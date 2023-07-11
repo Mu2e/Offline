@@ -47,7 +47,6 @@ mainlib = helper.make_mainlib ( [
     'cetlib_except',
     rootlibs,
     'CLHEP',
-    'HepPDT',
     'xerces-c',
     extrarootlibs,
     ] )
@@ -72,6 +71,7 @@ helper.make_plugins( [
    'mu2e_GeneralUtilities',
    'mu2e_TrkReco',
    'mu2e_GeomPrimitives',
+   'mu2e_DbTables',
    babarlibs,
    'art_Framework_Core',
    'art_Framework_Principal',
@@ -90,7 +90,6 @@ helper.make_plugins( [
    'cetlib',
    'cetlib_except',
    'CLHEP',
-   'HepPDT',
    rootlibs,
    'xerces-c',
    'boost_filesystem',

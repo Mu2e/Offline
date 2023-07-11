@@ -1,94 +1,323 @@
 BEGIN_PROLOG
 Mu2eKinKal : {
-# general configuration
-# configuration for seed fits (no drift)
-  KKSeedFit : {
-    module_type : LoopHelixFit
-    MaterialSettings : {
-      elements  : "Offline/TrackerConditions/data/ElementsList.data"
-      isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
-      materials : "Offline/TrackerConditions/data/MaterialsList.data"
-      strawGasMaterialName  : "straw-gas"
-      strawWallMaterialName : "straw-wall"
-      strawWireMaterialName : "straw-wire"
-      dahlLynchScatteringFraction : 0.995
-    }
-  
-    KKFitSettings: {
-      PrintLevel : 0
-      TimeBuffer : 0.1 # ns
-      TPOCAPrecision : 1e-4 # mm
-      NullHitDimension : 2 # constrain position or position+time
-      NullHitVarianceScale : 1.0
-      TimeBuffer : 0.1 # ns
-      UseCaloCluster : true
-      AddMaterial : true
-      CaloTrackerTimeOffset : -1.35 #ns
-      CaloPositionResolution : 15.0 #mm 
-      CaloPropagationSpeed : 200.0 #mm/ns
-      MinCaloClusterEnergy : 10.0 #MeV
-      MaxCaloClusterDt : 5.0 # ns
-      MaxCaloClusterDOCA : 50.0 # mm
-      AddHitSelect : []
-      AddHitReject : ["Dead"]
-      MaxStrawHitDOCA : 4.0 # mm
-      MaxStrawHitDt : 5.0 # ns
-      MaxStrawHitChi : 4.0
-      StrawBuffer : 1 #
-      MaxStrawDOCA : 2.5 # mm
-    }
-    
-    KinKalFitSettings : {
-      PrintLevel : 0
-      MinNDOF : 5
-      MaxNIter : 10
-      Deweight : 1.0e6
-      DeltaParams : 1e4 # chisquared
-      TimeBuffer : 0.1 # ns
-      BFieldCorrection : 0
-      BCorrTolerance : 0.01 # mm
-      MetaIterationSettings : [ 
-        [ 10.0, 1.0, 10.0 ],
-        [ 2.0, 0.5, 10.0 ],
-        [ 0.0, 0.2, 20.0]]
+  # general configuration
+  #
+  MAT: {
+    elements  : "Offline/TrackerConditions/data/ElementsList.data"
+    isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
+    materials : "Offline/TrackerConditions/data/MaterialsList.data"
+    strawGasMaterialName  : "straw-gas"
+    strawWallMaterialName : "straw-wall"
+    strawWireMaterialName : "straw-wire"
+    dahlLynchScatteringFraction : 0.995
+  }
+  KKFIT: {
+    PrintLevel : 0
+    TPOCAPrecision : 1e-4 # mm
+    UseCaloCluster : true
+    MaterialCorrection : true
+    AddHits : true
+    AddMaterial : true
+    StrawHitClusterDeltaStraw : 3 # straw index space
+    StrawHitClusterDeltaT : 1.0 # ns
+    StrawHitClusterLevel : "none"
+    CaloTrackerTimeOffset : -0.85 #ns
+    CaloPositionResolution : 9.0 #mm
+    CaloTimeResolution : 0.5 #ns
+    CaloPropagationSpeed : 200.0 #mm/ns
+    MinCaloClusterEnergy : 10.0 #MeV
+    MaxCaloClusterDt : 5.0 # ns
+    MaxCaloClusterDOCA : 100.0 # mm
+    AddHitSelect : []
+    AddHitReject : ["Dead"]
+    MaxStrawHitDOCA : 10.0 # mm
+    MaxStrawHitDt : 50.0 # ns
+    StrawBuffer : 2 #
+    MaxStrawDOCA : 5.0 # mm
+    MaxStrawDOCAConsistency : 1.0 # units of chi
+  }
 
-      KKStrawHitUpdaterSettings : [
-        [100.0, 3.0, 10.0, 2, 2]
-      ]
-    }
-    KinKalExtensionSettings : {
-      PrintLevel : 0
-      MinNDOF : 5
-      MaxNIter : 10
-      Deweight : 1.0e6
-      DeltaParams : 1e4 # chisquared
-      TimeBuffer : 0.1 # ns
-      BFieldCorrection : 0
-      BCorrTolerance : 0.01 # mm
-      MetaIterationSettings : [ 
-        [ 0.0, 0.2, 20.0 ]]
-      KKStrawHitUpdaterSettings : [
-      ]
-    }
-  
-    ModuleSettings : {
-      SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 25.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
-      HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
-      SaveFullFit : true
-#      ZSavePositions : [-1520., 0.0, 1520.0 ]
-    }
+  SEEDFIT: {
+    PrintLevel : 0
+    MinNDOF : 1
+    MaxNIter : 10
+    Deweight : 1.0e6
+    ConvergenceDeltaChisq : 0.1
+    DivergenceDeltaChisq : 10.0
+    DivergenceDeltaParams : 1e6
+    DivergenceGap : 10 # mm
+    BFieldCorrection : false
+    BCorrTolerance : 1e-2 # momemntum fraction
+    ProcessEnds : false
+    MetaIterationSettings : [
+      # annealing temp, strawhit updater algorithm
+      [ 5.0, "CADSHU" ],
+      [ 2.0, "CADSHU" ],
+      [ 1.0, "CADSHU" ]
+    ]
+    CADSHUSettings : [
+      # maxdoca, maxderr, minrdrift, maxrdrift, flag, , allowed, freeze, diag
+      [ 40.0, 80.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 20.0, 40.0, 5.0, 4.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 10.0, 20.0, 5.0, 3.0, "TOT", "Null:Inactive", "", 0 ]
+    ]
+    StrawXingUpdaterSettings : [
+      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
+      [10.0, -1.0, -1.0, true, 0 ],
+      [10.0, -1.0, -1.0, true, 0 ],
+      [10.0, -1.0, -1.0, true, 0 ]
+    ]
+  }
+
+  KKNOEXT: {
+    PrintLevel : 0
+    MinNDOF : 1
+    MaxNIter : 10
+    Deweight : 1.0e6
+    ConvergenceDeltaChisq : 0.1
+    DivergenceDeltaChisq : 10.0
+    DivergenceDeltaParams : 1e6
+    DivergenceGap : 10 # mm
+    BFieldCorrection : false
+    ProcessEnds : false
+    BCorrTolerance : 1e-4 # momemntum fraction
+    MetaIterationSettings : []
+    CADSHUSettings : []
+    StrawXingUpdaterSettings : []
+  }
+
+  SEEDEXT: {
+    PrintLevel : 0
+    MinNDOF : 1
+    MaxNIter : 10
+    Deweight : 1.0e6
+    ConvergenceDeltaChisq : 0.1
+    DivergenceDeltaChisq : 10.0
+    DivergenceDeltaParams : 1e6
+    DivergenceGap : 10 # mm
+    BFieldCorrection : true
+    ProcessEnds : false
+    BCorrTolerance : 1e-2 # relative momemntum precision
+    MetaIterationSettings : [
+      # annealing temp, strawhit updater algorithm
+      [ 2.0, "CADSHU" ],
+      [ 1.0, "CADSHU" ],
+      [ 0.3, "CADSHU" ],
+      [ 0.0, "CADSHU:BkgANNSHU" ]
+    ]
+    CADSHUSettings : [
+      # maxdoca, maderr, minrdrift, maxrdrift, flag, allow, tofreeze, diag
+      [ 10.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 10.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 0 ],
+      [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 0 ]
+    ]
+    StrawXingUpdaterSettings : [
+      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
+      [10.0, -1.0, -1.0, true, 0 ],
+      [5.0, -1.0, -1.0, true, 0 ],
+      [3.0, 3.0, -1.0, true, 0 ]
+    ]
+    BkgANNSHUSettings : [
+      [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.2,"Inactive", 1]
+    ]
+  }
+
+  DRIFTEXT: {
+    PrintLevel : 0
+    MinNDOF : 1
+    MaxNIter : 10
+    Deweight : 1.0e6
+    ConvergenceDeltaChisq : 0.1
+    DivergenceDeltaChisq : 10.0
+    DivergenceDeltaParams : 1e6
+    DivergenceGap : 10 # mm
+    BFieldCorrection : true
+    ProcessEnds : true
+    BCorrTolerance : 1e-4 # momemntum fraction
+    MetaIterationSettings : [
+      # annealing temp, strawhit updater algorithms
+      [ 2.0, "CADSHU" ],
+      [ 1.0, "CADSHU" ],
+      [ 0.3, "CADSHU" ],
+      [ 0.0, "CADSHU:BkgANNSHU" ],
+      [ 0.0, "CADSHU:DriftANNSHU" ],
+      [ 0.0, "CADSHU:DriftANNSHU" ],
+      [ 0.0, "CADSHU:DriftANNSHU" ],
+      [ 0.0, "CADSHU:DriftANNSHU:BkgANNSHU" ],
+      [ 0.0, "CADSHU:DriftANNSHU" ]
+    ]
+    CADSHUSettings : [
+      # maxdoca, maxderr, minrdrift, maxrdrift, flag, allow, freeze, diag
+      [ 10.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 1 ],
+      [ 10.0, 20.0, 5.0, 4.0, "TOT", "Null:Inactive", "", 1 ],
+      [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
+      [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
+      [ 6.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ]
+    ]
+
+    BkgANNSHUSettings : [
+      [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.1,"Inactive", 1],
+      [ "Offline/Mu2eKinKal/data/TrainBkgFinal.dat",0.1,"Inactive", 1]
+    ]
+
+    DriftANNSHUSettings : [
+      # sign ANN weights, cut, cluster ANN weights, cut, dt cut, freeze, flag, diag
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage0.dat",0.5, "Offline/Mu2eKinKal/data/TrainCluster_Stage0.dat",0.5, 1.1, "", "TOT:NullDriftVar", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.4, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.4, 1.1, "", "TOT:NullDriftVar", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.3, 1.1, "", "TOT:NullDriftVar", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.2, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, 1.1, "", "TOT:NullDriftVar", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.1, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.1, 1.1, "", "TOT:NullDriftVar", 1]
+    ]
+    Chi2SHUSettings : [
+    ]
+    StrawXingUpdaterSettings : [
+      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
+      [ 10.0, -1.0, -1.0, true, 0 ],
+      [ 5.0,  -1.0, -1.0, true, 0 ],
+      [ 4.0,  -1.0, -1.0, true, 0 ],
+      [ 4.0,  -1.0, -1.0, false, 0 ],
+      [ 4.0,   2.0, 0.2,  false, 0 ],
+      [ 3.5,   2.0, 0.2,  false, 0 ],
+      [ 3.0,   2.0, 0.2,  false, 0 ],
+      [ 3.0,   2.3, 0.1,  false, 0 ],
+      [ 3.0,   2.3, 0.1,  false, 0 ]
+    ]
+  }
+
+  KKPrecursors : {
+    ComboHitCollection : "makeSH"
+    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+    CaloClusterCollection : "CaloClusterMaker"
+  }
+
+  LOOPHELIX : {
+    SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
+    HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
+    SaveFullFit : true
+    ZSavePositions : [-1635.1,-1522.0,0.0,1522.0,1635.1,1671,2371] # VDs, tracker front, mid, and end, and calo disks
+  }
+
+  KINEMATICLINE : {
+    SeedMomentum : 2000.0
+    SeedErrors : [15, 0.05, 10, 0.02, 2.0, 1.0] # //d0_ = 0, phi0_ = 1,z0_ = 2,theta_ = 3,t0_ = 4,mom_ = 5,
+    ParameterConstraints : [0.0,0.0,0.0,0.0,0.0,1e-4]
+    CosmicTrackSeedCollections : ["LineFinder"]
+    ComboHitCollection : "makeSH"
+    CaloClusterCollection : "CaloClusterMaker"
+    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+    LineFlags : [ "HelixOK" ]
+    SaveFullFit : true
+    #    ZSavePositions : [-1522.0,0.0,1522.0]
   }
 }
+
+Mu2eKinKal : {
+  @table::Mu2eKinKal
+
+  KKSeedFit : {
+    module_type : LoopHelixFit
+    MaterialSettings : @local::Mu2eKinKal.MAT
+    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    FitSettings : @local::Mu2eKinKal.SEEDFIT
+    ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
+    ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
+  }
+
+  KK : {
+    module_type : LoopHelixFit
+    MaterialSettings : @local::Mu2eKinKal.MAT
+    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    FitSettings : @local::Mu2eKinKal.SEEDFIT
+    ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
+    ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
+  }
+
+  KKLineSeedFit : {
+    module_type : KinematicLineFit
+    MaterialSettings : @local::Mu2eKinKal.MAT
+    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    FitSettings : @local::Mu2eKinKal.SEEDFIT
+    ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
+    ModuleSettings : @local::Mu2eKinKal.KINEMATICLINE
+  }
+
+  KKLine : {
+    module_type : KinematicLineFit
+    MaterialSettings : @local::Mu2eKinKal.MAT
+    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    FitSettings : @local::Mu2eKinKal.SEEDFIT
+    ExtensionSettings : {
+      @table::Mu2eKinKal.DRIFTEXT
+      BFieldCorrection : false
+      MetaIterationSettings : [
+        # annealing temp, strawhit updater algorithms
+        [ 2.0, "CADSHU" ],
+        [ 1.0, "CADSHU" ],
+        [ 0.3, "CADSHU" ],
+        [ 0.0, "CADSHU:BkgANNSHU" ],
+        [ 1.0, "CADSHU:DriftANNSHU" ],
+        [ 0.5, "CADSHU:DriftANNSHU" ],
+        [ 0.2, "CADSHU:DriftANNSHU" ],
+        [ 0.0, "CADSHU:DriftANNSHU:BkgANNSHU" ],
+        [ 0.0, "CADSHU:DriftANNSHU" ]
+      ]
+    }
+    ModuleSettings : @local::Mu2eKinKal.KINEMATICLINE
+  }
+}
+
 Mu2eKinKal : {
   @table::Mu2eKinKal
   producers : {
+    # seed fits: these don't use drift information or BField corrections
     KKDePSeedFit: @local::Mu2eKinKal.KKSeedFit
     KKDeMSeedFit: @local::Mu2eKinKal.KKSeedFit
+    KKLineSeedFit: @local::Mu2eKinKal.KKLineSeedFit
+    # drift fits, with BField corrections
+    KKLine: @local::Mu2eKinKal.KKLine
+    KKDeP: @local::Mu2eKinKal.KK
+    KKDeM: @local::Mu2eKinKal.KK
+    KKUeP: @local::Mu2eKinKal.KK
+    KKUeM: @local::Mu2eKinKal.KK
+    KKDmuP: @local::Mu2eKinKal.KK
+    KKDmuM: @local::Mu2eKinKal.KK
+    KKUmuP: @local::Mu2eKinKal.KK
+    KKUmuM: @local::Mu2eKinKal.KK
+
   }
 }
+
+Mu2eKinKal.producers.KKLineSeedFit.ExtensionSettings.BFieldCorrection : false
+Mu2eKinKal.producers.KKLineSeedFit.KKFitSettings.FitParticle : 13
+Mu2eKinKal.producers.KKLineSeedFit.KKFitSettings.FitDirection : 1
+Mu2eKinKal.producers.KKLine.KKFitSettings.FitParticle : 13
+Mu2eKinKal.producers.KKLine.KKFitSettings.FitDirection : 1
+
 Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitParticle : 11
 Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitDirection : 0
 Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitParticle : -11
 Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitDirection : 0
 
-END_PROLOG 
+Mu2eKinKal.producers.KKDeM.KKFitSettings.FitParticle : 11
+Mu2eKinKal.producers.KKDeM.KKFitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDeP.KKFitSettings.FitParticle : -11
+Mu2eKinKal.producers.KKDeP.KKFitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKUeM.KKFitSettings.FitParticle : 11
+Mu2eKinKal.producers.KKUeM.KKFitSettings.FitDirection : 1
+Mu2eKinKal.producers.KKUeP.KKFitSettings.FitParticle : -11
+Mu2eKinKal.producers.KKUeP.KKFitSettings.FitDirection : 1
+Mu2eKinKal.producers.KKDmuM.KKFitSettings.FitParticle : 13
+Mu2eKinKal.producers.KKDmuM.KKFitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDmuP.KKFitSettings.FitParticle : -13
+Mu2eKinKal.producers.KKDmuP.KKFitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKUmuM.KKFitSettings.FitParticle : 13
+Mu2eKinKal.producers.KKUmuM.KKFitSettings.FitDirection : 1
+Mu2eKinKal.producers.KKUmuP.KKFitSettings.FitParticle : -13
+Mu2eKinKal.producers.KKUmuP.KKFitSettings.FitDirection : 1
+
+END_PROLOG

@@ -7,8 +7,6 @@
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
 using namespace mu2e;
 
@@ -20,8 +18,8 @@ namespace mu2e {
       TEveMu2eCustomHelix(const TEveMu2eCustomHelix &helix);
       virtual ~TEveMu2eCustomHelix(){};
       #endif
-      
-      KalSeed fKalSeed_; 
+
+      KalSeed fKalSeed_;
       HelixSeed fHelixSeed_;
       TrkExtTraj fTrkExtTraj_;
 
@@ -34,8 +32,8 @@ namespace mu2e {
       void SetMomentumExt();
       void SetParticleExt();
 
-      XYZVec Direction_;
-      XYZVec Position_;
+      XYZVectorF Direction_;
+      XYZVectorF Position_;
       double Momentum_;
       int PDGcode_;
       double Charge_;

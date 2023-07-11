@@ -41,7 +41,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 void setRecursiveColorTransp(TGeoVolume *vol, Int_t color, Int_t transp)
   {
@@ -54,15 +53,15 @@ void setRecursiveColorTransp(TGeoVolume *vol, Int_t color, Int_t transp)
   }
 
 
-namespace mu2e 
+namespace mu2e
 {
   class TEveGDMLTest : public art::EDAnalyzer {
-	public:
+        public:
 
       struct Config{
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
-        fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("for info"),0};   
+        fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("for info"),0};
       };
 
       typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -74,10 +73,10 @@ namespace mu2e
       virtual void endJob() override;
     private:
       Config _conf;
-      int _diagLevel;     
+      int _diagLevel;
       bool isFirstEvent = true;
       TApplication* application_;
-      TDirectory*   directory_ = nullptr;   
+      TDirectory*   directory_ = nullptr;
       TGeoManager *geom;
       fhicl::ParameterSet _pset;
       void MakeTEveMu2eMainWindow();
@@ -86,15 +85,15 @@ namespace mu2e
   TEveGDMLTest::TEveGDMLTest(const Parameters& conf) :
   art::EDAnalyzer(conf),
   _diagLevel(conf().diagLevel())
-  
-	{}
+
+        {}
 
   TEveGDMLTest::~TEveGDMLTest(){}
-  
+
   void TEveGDMLTest::MakeTEveMu2eMainWindow()
   {
     TEveBrowser* browser = gEve->GetBrowser();
-    browser->StartEmbedding(TRootBrowser::kLeft); 
+    browser->StartEmbedding(TRootBrowser::kLeft);
     TGMainFrame* frmMain = new TGMainFrame(gClient->GetRoot(), 1000, 600);
     frmMain->SetWindowName("EVT NAV");
     frmMain->SetCleanup(kDeepCleanup);
@@ -124,7 +123,7 @@ namespace mu2e
       browser->SetTabTitle("Event Nav", 0);
     }
   }
-  
+
   void TEveGDMLTest::beginJob(){
     std::cout<<"[Starting TEveGDMLTest::beginJob()]"<<std::endl;
     directory_ = gDirectory;
@@ -144,14 +143,14 @@ namespace mu2e
 
   void TEveGDMLTest::beginRun(const art::Run& run){
     std::cout<<"[Starting TEveGDMLTest::beginRun()]"<<std::endl;
-    
+
     if(gGeoManager){
       gGeoManager->GetListOfNodes()->Delete();
       gGeoManager->GetListOfVolumes()->Delete();
       gGeoManager->GetListOfShapes()->Delete();
     }
     gEve->GetGlobalScene()->DestroyElements();
-    
+
     // Import the GDML of entire Mu2e Geometry
     geom = geom->TGeoManager::Import("TEveEventDisplay/src/fix.gdml");
 
@@ -182,7 +181,7 @@ namespace mu2e
     int runid = event.run();
     int subrunid = event.subRun();
     std::cout<<"Drawing Run : "<<runid<<" Sub-Run "<<subrunid<<" Event : "<<eventid<<std::endl;
-    
+
     if(!isFirstEvent){
       gEve->GetViewers()->DeleteAnnotations();
       gEve->GetCurrentEvent()->DestroyElements();
@@ -194,11 +193,11 @@ namespace mu2e
     gPad->WaitPrimitive();
     isFirstEvent = false;
     std::cout<<"[Ending TEveGDMLTest::analyze()]"<<std::endl;
-  } 
+  }
 
 
-  void TEveGDMLTest::endJob(){}  
+  void TEveGDMLTest::endJob(){}
 
 }
 using mu2e::TEveGDMLTest;
-DEFINE_ART_MODULE(TEveGDMLTest);
+DEFINE_ART_MODULE(TEveGDMLTest)

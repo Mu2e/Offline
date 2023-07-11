@@ -9,6 +9,7 @@
 
 #include <ostream>
 #include <cassert>
+#include <vector>
 
 #include "Offline/DataProducts/inc/ExtMonFNALPixelId.hh"
 
@@ -48,6 +49,7 @@ namespace mu2e {
     return false;
   }
 #endif/*ENABLE_MU2E_GENREFLEX_HACKS*/
+  typedef std::vector<mu2e::ExtMonFNALRawHit> ExtMonFNALRawHitCollection;
 
 } // namespace mu2e
 

@@ -4,6 +4,7 @@
 #define RecoDataProducts_AvikPIDNewProduct_HH
 
 #include <utility>
+#include <vector>
 
 namespace mu2e {
 
@@ -11,43 +12,43 @@ namespace mu2e {
   class AvikPIDNewProduct {
 
   private:
-    int    _trkID;			// track ID
+    int    _trkID;                        // track ID
     int    _nMatched;
     int    _nMatchedAll;
     int    _nUsedOsH;
     int    _nUsedSsH;
     int    _nUsedOsD;
-					// dE/dX - electron and muon hypotheses
+                                        // dE/dX - electron and muon hypotheses
     float  _logDedxProbEle;
     float  _logDedxProbMuo;
-					// Vadim's dr/ds - all hits
+                                        // Vadim's dr/ds - all hits
     float  _drdsVadim;
     float  _drdsVadimErr;
-    float  _drdsOs;			// dr/ds, OS doublets only
+    float  _drdsOs;                        // dr/ds, OS doublets only
     float  _drdsOsErr;
-    float  _drdsSs;			// dr/ds, SS doublets only
+    float  _drdsSs;                        // dr/ds, SS doublets only
     float  _drdsSsErr;
-					// Avik's part
-    float  _sumAvik;			// sum of Avik's terms
-    float  _sq2Avik;	                // sum of local slope residuals, OS float ts 
+                                        // Avik's part
+    float  _sumAvik;                        // sum of Avik's terms
+    float  _sq2Avik;                        // sum of local slope residuals, OS float ts
     float  _sumAvikOs;
 
   public:
 
-    AvikPIDNewProduct(); 
-    AvikPIDNewProduct (const AvikPIDNewProduct & p) ; 
-    ~AvikPIDNewProduct() {} 
+    AvikPIDNewProduct();
+    AvikPIDNewProduct (const AvikPIDNewProduct & p) ;
+    ~AvikPIDNewProduct() {}
     AvikPIDNewProduct & operator = (const AvikPIDNewProduct & p) ;
 
     void   clear() ;
 
     void   init(int     TrkID         , int   NMatched      , int   NMatchedAll,
-		int     NUsedSsH      , int   NUsedOsH      , int   NUsedOsD   ,
-		float   LogDedxProbEle, float LogDedxProbMuo, 
-		float   DrdsVadim     , float DrdsVadimErr  ,
-		float   DrdsOs        , float DrdsOsErr     ,
-		float   DrdsSs        , float DrdsSsErr     ,
-		float   SumAvik       , float Sq2Avik       , float SumAvikOs);
+                int     NUsedSsH      , int   NUsedOsH      , int   NUsedOsD   ,
+                float   LogDedxProbEle, float LogDedxProbMuo,
+                float   DrdsVadim     , float DrdsVadimErr  ,
+                float   DrdsOs        , float DrdsOsErr     ,
+                float   DrdsSs        , float DrdsSsErr     ,
+                float   SumAvik       , float Sq2Avik       , float SumAvikOs);
 
     int    trkID       () const { return _trkID; }
     int    nMatched    () const { return _nMatched; }
@@ -72,7 +73,7 @@ namespace mu2e {
     float  sumAvikOs   () const { return _sumAvikOs; }
   };
 
-
+   typedef std::vector<mu2e::AvikPIDNewProduct> AvikPIDNewProductCollection;
 
 } // end namespace mu2e
 

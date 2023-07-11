@@ -66,7 +66,7 @@ namespace mu2e {
     double errTanDip2 = _trk->helix(_pathLengthEntrance).covariance()(5,5);
     double TanDip     = _trk->helix(_pathLengthEntrance).tanDip();
     HelixTraj trkHel(_trk->helix(_pathLengthEntrance).params    (),
-		     _trk->helix(_pathLengthEntrance).covariance());
+                     _trk->helix(_pathLengthEntrance).covariance());
 
     //    double z0 = trkHel.z0();
     //      , z = _pathLengthEntrance*trkHel.sinDip() + z0;
@@ -76,8 +76,8 @@ namespace mu2e {
     Hep3Vector Waxes(0.0, 0.0, 1.0);
 
     Hep3Vector momentumRotUnit = TrkToCaloExtrapol::momentum().unit();
-	
-        
+
+
     double thetaW = std::atan(-1.0*momentumRotUnit.getZ() / momentumRotUnit.getX() ) ;
 
     double scaleErrW = 1.0/fabs( cos(thetaW) );
@@ -175,8 +175,8 @@ namespace mu2e {
   void TrkToCaloExtrapol::print( ostream& ost, bool doEndl ) const {
 
     ost << "TrkToCaloExtrapol :   "
-	<< " section: "          << _diskId
-	<< " time: "          << TrkToCaloExtrapol::time();
+        << " section: "          << _diskId
+        << " time: "          << TrkToCaloExtrapol::time();
 
 
     if ( doEndl ){

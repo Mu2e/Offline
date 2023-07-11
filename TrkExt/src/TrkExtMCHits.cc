@@ -1,8 +1,5 @@
 //
-//
-//
 //  Original author MyeongJae Lee
-//
 //
 
 // C++ includes.
@@ -14,21 +11,19 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Offline/TrkExt/inc/TrkExtMCHits.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
-
 using namespace CLHEP;
 using namespace std;
 
 namespace mu2e {
 
- 
-  TrkExtMCHits::TrkExtMCHits( ) { 
+
+  TrkExtMCHits::TrkExtMCHits( ) {
     _g4ModuleLabel = "";
     _instanceName = "";
     _hitcol.clear();
@@ -227,6 +222,6 @@ namespace mu2e {
     }
   }
 
-    
+
 } // end namespace mu2e
 

@@ -6,12 +6,10 @@
 #include <iostream>
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 namespace mu2e {
@@ -44,4 +42,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StepPointsPrinter);
+DEFINE_ART_MODULE(mu2e::StepPointsPrinter)

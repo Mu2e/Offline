@@ -52,9 +52,9 @@ namespace mu2e {
     // this is used to transorm particle momentum and position from
     // the PrimaryProtonGun frame to the Mu2e frame
     const CLHEP::HepRotation& protonBeamRotation() const { return _protonBeamRotation; }
- 
+
     const CLHEP::Hep3Vector& haymanPosition() const { return _haymanProdTargetPosition; }
- 
+
 
 
     // "passive" rotation, used for placing the production target.
@@ -69,8 +69,8 @@ namespace mu2e {
     ~ProductionTarget() {
 
       if (!_tier1TargetType.empty()){
-	delete _pHubsRgtParams;
-	delete _pHubsLftParams;
+        delete _pHubsRgtParams;
+        delete _pHubsLftParams;
       }
     }
 
@@ -85,9 +85,9 @@ namespace mu2e {
     std::string supportRingMaterial()        const  {return _supportRingMaterial;}
     std::string spokeMaterial()              const  {return _spokeMaterial;}
 
-    double rotHaymanX()                      const  {return _rotHaymanX;} 
-    double rotHaymanY()                      const  {return _rotHaymanY;} 
-    double rotHaymanZ()                      const  {return _rotHaymanZ;} 
+    double rotHaymanX()                      const  {return _rotHaymanX;}
+    double rotHaymanY()                      const  {return _rotHaymanY;}
+    double rotHaymanZ()                      const  {return _rotHaymanZ;}
     CLHEP::Hep3Vector haymanProdTargetPosition()           const {return _haymanProdTargetPosition; }
     int numberOfTargetSections()                           const {return _numberOfTargetSections;}
     std::vector<double> startingSectionThickness()         const {return _startingSectionThickness;}
@@ -104,7 +104,7 @@ namespace mu2e {
     double supportRingOuterRadius()         const {return _supportRingOuterRadius;}
     double supportRingCutoutThickness()     const {return _supportRingCutoutThickness;}
     double supportRingCutoutLength()        const {return _supportRingCutoutLength;}
-    
+
     //define the supports for the Hayman_v2
     bool                       supportsBuild       () const {return _supportsBuild       ;}
     double                     supportWheelRIn     () const {return _supportWheelRIn     ;}
@@ -138,19 +138,19 @@ namespace mu2e {
 
     CLHEP::Hep3Vector targetPositionByVersion() const {
       if (_haymanTargetType == hayman_v_2_0){
-	return _haymanProdTargetPosition;} 
+        return _haymanProdTargetPosition;}
       else if  (_tier1TargetType == "MDC2018"){
-	return _prodTargetPosition;}
-      else throw cet::exception("BADCONFIG") 
-	     << "in ProductionTarget.hh, no valid target specified"<< std::endl;
+        return _prodTargetPosition;}
+      else throw cet::exception("BADCONFIG")
+             << "in ProductionTarget.hh, no valid target specified"<< std::endl;
     }
     double targetHalfLengthByVersion() const {
      if (_haymanTargetType == hayman_v_2_0){
-	return _halfHaymanLength;} 
+        return _halfHaymanLength;}
      else if  (_tier1TargetType == "MDC2018"){
-	return _halfLength;}
-      else throw cet::exception("BADCONFIG") 
-	     << "in ProductionTarget.hh, no valid target specified"<< std::endl;
+        return _halfLength;}
+      else throw cet::exception("BADCONFIG")
+             << "in ProductionTarget.hh, no valid target specified"<< std::endl;
     }
 
 
@@ -162,45 +162,45 @@ namespace mu2e {
 
     // Private ctr: the class should be only obtained via ProductionTargetFNAL::ProductionTargetMaker.
     ProductionTarget(std::string tier1TargetType, int version, double rOut, double halfLength, double rotX,
-		     double rotY, const CLHEP::Hep3Vector& position, 
-		     int    nFins,
-		     double finHeight, double finThickness, 
-		     double hubDistUS, double hubDistDS,
-		     double hubAngleUS, double hubAngleDS,
-		     double hubOverhangUS, double hubOverhangDS );
+                     double rotY, const CLHEP::Hep3Vector& position,
+                     int    nFins,
+                     double finHeight, double finThickness,
+                     double hubDistUS, double hubDistDS,
+                     double hubAngleUS, double hubAngleDS,
+                     double hubOverhangUS, double hubOverhangDS );
 
     ProductionTarget(
-		     std::string haymanTargetType, int version
-		     ,double productionTargetMotherOuterRadius
-		     ,double productionTargetMotherHalfLength
-		     ,double rOut
-		     ,double halfHaymanLength
-		     ,double rotHaymanX
-		     ,double rotHaymanY
-		     ,double rotHaymanZ
-		     ,const CLHEP::Hep3Vector& haymanProdTargetPosition
-		     ,std::string targetCoreMaterial
-		     ,std::string targetFinMaterial
-		     ,std::string targetVacuumMaterial
-		     ,std::string supportRingMaterial
-		     ,std::string spokeMaterial
-		     ,int numberOfTargetSections
-		     ,std::vector<double> startingSectionThickness
-		     ,std::vector<int> numberOfSegmentsPerSection
-		     ,std::vector<double> thicknessOfSegmentPerSection
-		     ,std::vector<double> heightOfRectangularGapPerSection
-		     ,std::vector<double> thicknessOfGapPerSection
-		     ,int nHaymanFins
-		     ,std::vector<double> finAngles
-		     ,double haymanFinThickness
-		     ,double finOuterRadius
-		     ,double supportRingLength
-		     ,double supportRingInnerRadius
-		     ,double supportRingOuterRadius
-		     ,double supportRingCutoutThickness
-		     ,double supportRingCutoutLength
-		     );
- 
+                     std::string haymanTargetType, int version
+                     ,double productionTargetMotherOuterRadius
+                     ,double productionTargetMotherHalfLength
+                     ,double rOut
+                     ,double halfHaymanLength
+                     ,double rotHaymanX
+                     ,double rotHaymanY
+                     ,double rotHaymanZ
+                     ,const CLHEP::Hep3Vector& haymanProdTargetPosition
+                     ,std::string targetCoreMaterial
+                     ,std::string targetFinMaterial
+                     ,std::string targetVacuumMaterial
+                     ,std::string supportRingMaterial
+                     ,std::string spokeMaterial
+                     ,int numberOfTargetSections
+                     ,std::vector<double> startingSectionThickness
+                     ,std::vector<int> numberOfSegmentsPerSection
+                     ,std::vector<double> thicknessOfSegmentPerSection
+                     ,std::vector<double> heightOfRectangularGapPerSection
+                     ,std::vector<double> thicknessOfGapPerSection
+                     ,int nHaymanFins
+                     ,std::vector<double> finAngles
+                     ,double haymanFinThickness
+                     ,double finOuterRadius
+                     ,double supportRingLength
+                     ,double supportRingInnerRadius
+                     ,double supportRingOuterRadius
+                     ,double supportRingCutoutThickness
+                     ,double supportRingCutoutLength
+                     );
+
     CLHEP::HepRotation _protonBeamRotation;
 
     // can't return by const ref if invert on the fly so need to store redundant data
@@ -217,14 +217,14 @@ namespace mu2e {
 
     std::string _tier1TargetType;
     std::string _haymanTargetType;
- 
+
     int    _version;
     double _productionTargetMotherOuterRadius;
     double _productionTargetMotherHalfLength;
     double _rOut;
     double _halfLength;
     double _envelHalfLength;
-    
+
     // version 1+ parameters
     int    _nFins;
     double _finHeight;
@@ -244,7 +244,7 @@ namespace mu2e {
 
     double _halfHaymanLength;
     double _rotHaymanX;
-    double _rotHaymanY; 
+    double _rotHaymanY;
     double _rotHaymanZ;
     CLHEP::Hep3Vector _haymanProdTargetPosition;
 
@@ -268,14 +268,14 @@ namespace mu2e {
     double _supportRingOuterRadius;
     double _supportRingCutoutThickness;
     double _supportRingCutoutLength;
-    
+
     //parameters for the support wheel
     bool                _supportsBuild       ; //whether or not to build the supports
     double              _supportWheelRIn     ;
     double              _supportWheelROut    ;
     double              _supportWheelHL      ; //half thickness in z
     std::string         _supportWheelMaterial;
-    
+
     //parameters for the non-wheel features near the support rods that are on the wheel
     std::vector<double> _supportWheelFeatureAngles;
     std::vector<double> _supportWheelFeatureArcs  ;
@@ -288,7 +288,7 @@ namespace mu2e {
     std::vector<double> _supportWheelRodRadialOffset; //radius from the wheel center the rod is centered at
     std::vector<double> _supportWheelRodWireOffsetD ; //z offset from the end of the rod the wire connects (downstream)
     std::vector<double> _supportWheelRodWireOffsetU ; //z offset from the end of the rod the wire connects (upstream)
-    std::vector<double> _supportWheelRodAngles      ; //angle about the wheel the rod is 
+    std::vector<double> _supportWheelRodAngles      ; //angle about the wheel the rod is
 
     //parameters for the wires (spokes) connecting the support wheel and the target
     // std::string         _spokeMaterial; (defined above)
@@ -296,7 +296,7 @@ namespace mu2e {
     std::vector<double> _spokeTargetAnglesD; //angle about the target the wire connects to (downstream)
     std::vector<double> _spokeTargetAnglesU; //angle about the target the wire connects to (upstream)
     double              _spokeRadius       ; //radius of the wire
-    
+
     // Needed for persistency
     template<class T> friend class art::Wrapper;
     ProductionTarget():_pHubsRgtParams(NULL), _pHubsLftParams(NULL) {}

@@ -15,43 +15,43 @@
 
 
 namespace mu2e {
-   
+
     //helper class
     template <typename T> class CaloInfoData
     {
-       public:     
+       public:
           CaloInfoData() : data_() {};
 
           const T& get(const std::string& key) const
-          { 
-             auto iter = data_.find(key); 
+          {
+             auto iter = data_.find(key);
              if (iter == data_.end()) throw cet::exception("CaloInfo") << " unknown element "<<key<<"\n";
              return iter->second;
           };
 
-          void set(const std::string key, const T& value) {data_[key] = value;} 
+          void set(const std::string key, const T& value) {data_[key] = value;}
 
 
-       private:    
+       private:
           std::map<std::string,T> data_;
     };
 
-    
-        
+
+
     class CaloInfo {
 
        public:
-           CaloInfo() : dataBool_(),dataInt_(),dataDouble_(),dataVDouble_() {}                
+           CaloInfo() : dataBool_(),dataInt_(),dataDouble_(),dataVDouble_() {}
 
            void set(const std::string& key, int value)                       {dataInt_.set(key,value);}
            void set(const std::string& key, double value)                    {dataDouble_.set(key,value);}
            void set(const std::string& key, const std::vector<double>& value){dataVDouble_.set(key,value);}
-           
+
            const bool                getBool(const std::string& key)    const {return dataBool_.get(key);}
            const int                 getInt(const std::string& key)     const {return dataInt_.get(key);}
            const double              getDouble(const std::string& key)  const {return dataDouble_.get(key);}
            const std::vector<double> getVDouble(const std::string& key) const {return dataVDouble_.get(key);}
-          
+
            //helper function
            double crystalVolume() const {return dataDouble_.get("crystalXYLength")*dataDouble_.get("crystalXYLength")*dataDouble_.get("crystalZLength");}
 
@@ -62,6 +62,6 @@ namespace mu2e {
           CaloInfoData<std::vector<double>> dataVDouble_;
      };
 
-}    
+}
 
-#endif 
+#endif

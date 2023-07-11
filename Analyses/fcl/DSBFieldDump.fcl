@@ -1,0 +1,43 @@
+#
+#  Graph the DS field on its axis
+#
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : DSField
+
+#services : @local::Services.Reco
+services : {
+  message : @local::default_message
+  GlobalConstantsService  : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
+    GeometryService            : {
+      inputFile      : "Offline/Mu2eG4/geom/geom_common.txt"
+      bFieldFile          : "Offline/Mu2eG4/geom/bfgeom_reco_v01.txt"
+      simulatedDetector   : { tool_type: "Mu2e" }
+    }
+  TFileService: {
+    fileName : "DSField.root"
+  }
+}
+source : {
+  module_type : EmptyEvent
+}
+
+physics : {
+  analyzers: {
+    BFieldPlotter  : {
+      module_type : BFieldPlotter
+      plane : "x"
+      planeValue : -3904.0
+      axisOneMin : 0.0
+      axisOneMax : 0.0
+      axisTwoMin : 4100
+      axisTwoMax : 13500
+      mapBinSize : 10.0
+      dump : true
+      dumpName : "Test"
+      detector : true
+    }
+  }
+  e1        : [BFieldPlotter]
+  end_paths : [e1]
+}

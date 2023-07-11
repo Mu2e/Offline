@@ -1,6 +1,5 @@
 // Prints out all GenParticles in a collection.
 //
-//
 // Original author Andrei Gaponenko
 //
 
@@ -10,10 +9,8 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 
 namespace mu2e {
 
@@ -31,7 +28,7 @@ namespace mu2e {
     std::string instanceName_;
   };
 
-  PrintGenParticles::PrintGenParticles(const fhicl::ParameterSet& pset) : 
+  PrintGenParticles::PrintGenParticles(const fhicl::ParameterSet& pset) :
     art::EDAnalyzer(pset),
     moduleLabel_(pset.get<std::string>("inputModuleLabel")),
     instanceName_(pset.get<std::string>("inputInstanceName"))
@@ -59,4 +56,4 @@ namespace mu2e {
 
 // Register the module with the framework
 //using mu2e::PrintGenParticles;
-DEFINE_ART_MODULE(mu2e::PrintGenParticles);
+DEFINE_ART_MODULE(mu2e::PrintGenParticles)

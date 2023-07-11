@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include <iostream> 
+#include <iostream>
 #include <map>
 #include <string>
 
@@ -17,13 +17,13 @@
 using namespace TMVA;
 
 
-   
-void TMVAWriteRegress(int choice, TString trainDS, int mode=1, bool noSpectator=0) 
+
+void TMVAWriteRegress(int choice, TString trainDS, int mode=1, bool noSpectator=0)
 {
-   
+
    if (choice!=1 && choice !=2&& choice !=3) {cout<<"Choice must be 1 or 2 or 3"<<endl; return;}
    if (mode!=1 && mode !=2 && mode!=3 ) {cout<<"Mose must be 1 or 2 or 3"<<endl; return;}
-     
+
 
    TMVA::Tools::Instance();
 
@@ -32,7 +32,7 @@ void TMVAWriteRegress(int choice, TString trainDS, int mode=1, bool noSpectator=
    TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
 
    TMVA::Factory *factory = new TMVA::Factory("TMVARegression", outputFile,"!V:!Silent:Color:DrawProgressBar:analysisType=Regression" );
-   
+
    TString dlname="weightsX";
    if (choice==2) dlname="weightsY";
    if (choice==3) dlname="weightsA";
@@ -40,7 +40,7 @@ void TMVAWriteRegress(int choice, TString trainDS, int mode=1, bool noSpectator=
 
    // Define the input variables that shall be used for the MVA training
    if (mode==3) dataloader->AddVariable( "e0",  "Energy cell 0",  "MeV", 'F' );
-   if (mode==3) dataloader->AddVariable( "e1",  "Energy cell 1",  "MeV", 'F' );   
+   if (mode==3) dataloader->AddVariable( "e1",  "Energy cell 1",  "MeV", 'F' );
    dataloader->AddVariable( "e2",  "Energy cell 2",  "MeV", 'F' );
    dataloader->AddVariable( "e3",  "Energy cell 3",  "MeV", 'F' );
    dataloader->AddVariable( "e4",  "Energy cell 4",  "MeV", 'F' );
@@ -71,7 +71,7 @@ void TMVAWriteRegress(int choice, TString trainDS, int mode=1, bool noSpectator=
 
    if (!noSpectator)
    {
-       // You can add so-called "Spectator variables", which are not used in the MVA training, 
+       // You can add so-called "Spectator variables", which are not used in the MVA training,
        dataloader->AddSpectator( "c0",  "c0", "mm", 'F' );
        dataloader->AddSpectator( "c1",  "c1", "mm", 'F' );
        dataloader->AddSpectator( "c2",  "c2", "mm", 'F' );
@@ -87,9 +87,9 @@ void TMVAWriteRegress(int choice, TString trainDS, int mode=1, bool noSpectator=
    }
 
    // Add the variable carrying the regression target
-   if (choice==1) dataloader->AddTarget( "targetX" ); 
-   if (choice==2) dataloader->AddTarget( "targetY" ); 
-   if (choice==3) dataloader->AddTarget( "targetA" ); 
+   if (choice==1) dataloader->AddTarget( "targetX" );
+   if (choice==2) dataloader->AddTarget( "targetY" );
+   if (choice==3) dataloader->AddTarget( "targetA" );
 
 
 
@@ -103,7 +103,7 @@ void TMVAWriteRegress(int choice, TString trainDS, int mode=1, bool noSpectator=
 
 
    // Apply additional cuts on the signal and background samples (can be different)
-   TCut mycut = "";   //"target>0&&target<2"; 
+   TCut mycut = "";   //"target>0&&target<2";
 
 
    // tell the factory to use all remaining events in the trees after training for testing:
@@ -112,14 +112,14 @@ void TMVAWriteRegress(int choice, TString trainDS, int mode=1, bool noSpectator=
 
    //linear regression
    //factory->BookMethod( dataloader, TMVA::Types::kLD, "LD", "!H:!V:VarTransform=None" );
- 
+
    //MLP
    //factory->BookMethod( dataloader,  TMVA::Types::kMLP, "MLP","!H:!V:VarTransform=Norm:NeuronType=tanh:NCycles=100:HiddenLayers=N+10:TestRate=6:TrainingMethod=BFGS:Sampling=0.3:SamplingEpoch=0.8:ConvergenceImprove=1e-6:ConvergenceTests=15:!UseRegulator" );
 
    //svm
    //factory->BookMethod( dataloader,  TMVA::Types::kSVM, "SVM", "Gamma=0.25:Tol=0.001:VarTransform=Norm" );
 
-   
+
    // Boosted Decision Trees
    //factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDT","!H:!V:NTrees=100:MinNodeSize=1.0%:BoostType=AdaBoostR2:SeparationType=RegressionVariance:nCuts=20:PruneMethod=CostComplexity:PruneStrength=30" );
 
@@ -130,11 +130,10 @@ void TMVAWriteRegress(int choice, TString trainDS, int mode=1, bool noSpectator=
 
    factory->TrainAllMethods();
    factory->TestAllMethods();
-   factory->EvaluateAllMethods();    
-   
+   factory->EvaluateAllMethods();
+
    outputFile->Close();
 
    delete factory;
    delete dataloader;
 }
-

@@ -9,7 +9,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
@@ -24,9 +23,9 @@ namespace mu2e {
       using Comment=fhicl::Comment;
 
       struct Config {
-	fhicl::Atom<art::InputTag> ewMarkerTag{ Name("EventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
-	fhicl::Atom<art::InputTag> pbtmcTag{ Name("ProtonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
-	fhicl::Atom<art::InputTag> pbtimeTag{ Name("ProtonBunchTimeTag"), Comment("ProtonBunchTime producer"),"PBTFSD" };
+        fhicl::Atom<art::InputTag> ewMarkerTag{ Name("EventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
+        fhicl::Atom<art::InputTag> pbtmcTag{ Name("ProtonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
+        fhicl::Atom<art::InputTag> pbtimeTag{ Name("ProtonBunchTimeTag"), Comment("ProtonBunchTime producer"),"PBTFSD" };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit ProtonBunchTimeDiag(Parameters const& config);
@@ -54,7 +53,7 @@ namespace mu2e {
 
   ProtonBunchTimeDiag::~ProtonBunchTimeDiag() {}
 
-  void ProtonBunchTimeDiag::beginJob(){ 
+  void ProtonBunchTimeDiag::beginJob(){
     art::ServiceHandle<art::TFileService> tfs;
     pbttest_=tfs->make<TTree>("pbtdiag","proton bunch time diagnostics");
     pbttest_->Branch("iev",&iev_,"iev/I");
@@ -64,7 +63,7 @@ namespace mu2e {
     pbttest_->Branch("ewlength",&ewlength_,"ewlength/I");
   }
 
-  void ProtonBunchTimeDiag::analyze(art::Event const& event) {        
+  void ProtonBunchTimeDiag::analyze(art::Event const& event) {
     auto pbtH = event.getValidHandle<ProtonBunchTime>(pbttag_);
     auto const& pbt(*pbtH);
     auto pbtmcH = event.getValidHandle<ProtonBunchTimeMC>(pbtmctag_);
@@ -73,8 +72,8 @@ namespace mu2e {
     auto const& ewm(*ewmH);
 
     iev_ = event.id().event();
-    tmean_= pbt.pbtime_; 
-    terr_ = pbt.pbterr_; 
+    tmean_= pbt.pbtime_;
+    terr_ = pbt.pbterr_;
     pbtimemc_ = pbtmc.pbtime_;
     ewlength_ = ewm.eventLength();
     pbttest_->Fill();
@@ -82,5 +81,5 @@ namespace mu2e {
 }
 
 using mu2e::ProtonBunchTimeDiag;
-DEFINE_ART_MODULE(ProtonBunchTimeDiag);
+DEFINE_ART_MODULE(ProtonBunchTimeDiag)
 

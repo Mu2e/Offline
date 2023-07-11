@@ -18,28 +18,28 @@ namespace mu2e {
 
   class FullReadoutStraw : public ProditionsEntity {
 
-  public:
+    public:
 
-    typedef std::shared_ptr<FullReadoutStraw> ptr_t;
-    typedef std::shared_ptr<const FullReadoutStraw> cptr_t;
-    typedef std::vector<StrawId> vec_t;
-    constexpr static const char* cxname = {"FullReadoutStraw"};
+      typedef std::shared_ptr<FullReadoutStraw> ptr_t;
+      typedef std::shared_ptr<const FullReadoutStraw> cptr_t;
+      typedef std::vector<StrawId> vec_t;
+      constexpr static const char* cxname = {"FullReadoutStraw"};
 
-    FullReadoutStraw(vec_t const& straws):
-      ProditionsEntity(cxname),_straws(straws) {}
+      FullReadoutStraw(vec_t const& straws):
+        ProditionsEntity(cxname),_straws(straws) {}
 
-    virtual ~FullReadoutStraw() {}
+      virtual ~FullReadoutStraw() {}
 
-    // Accessors; test if a straw is dead.  The position argument refers to 
-    // distance from the straw center in mm
-    bool isFull( StrawId id) const { return 
-	std::find (_straws.begin(), _straws.end(), id)!=_straws.end();
-    }
+      // Accessors; test if a straw is dead.  The position argument refers to
+      // distance from the straw center in mm
+      bool isFull( StrawId id) const { return
+        std::find (_straws.begin(), _straws.end(), id)!=_straws.end();
+      }
 
-    void print( std::ostream& ) const;
+      void print( std::ostream& ) const;
 
-  private:
-    std::vector<StrawId> _straws; // sparse list of straws
+    private:
+      std::vector<StrawId> _straws; // sparse list of straws
 
   };
 

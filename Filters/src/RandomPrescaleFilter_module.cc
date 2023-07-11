@@ -6,7 +6,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -23,7 +22,8 @@ namespace mu2e
     public:
 
       struct Config {
-	fhicl::Atom<float> nPrescale { fhicl::Name("nPrescale"), fhicl::Comment("Average number of events to process for 1 to pass the filter"), 1.0};
+        fhicl::Atom<float> nPrescale { fhicl::Name("nPrescale"), fhicl::Comment("Average number of events to process for 1 to pass the filter"), 1.0};
+        fhicl::Atom<int>   debugLevel{ fhicl::Name("debugLevel"),fhicl::Comment("debug level"),0 };
       };
       using Parameters = art::EDFilter::Table<Config>;
 
@@ -42,8 +42,9 @@ namespace mu2e
       virtual bool endRun(art::Run& run ) override;
 
     private:
-      art::RandomNumberGenerator::base_engine_t& engine_;	
+      art::RandomNumberGenerator::base_engine_t& engine_;
       CLHEP::RandFlat randflat_;
+      int debug_;
       unsigned nevt_, npass_;
   };
 
@@ -51,6 +52,7 @@ namespace mu2e
     art::EDFilter{conf},
     engine_(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
     randflat_( engine_, 0.0, conf().nPrescale() ),
+    debug_(conf().debugLevel()),
     nevt_(0), npass_(0)
     {}
 
@@ -63,7 +65,9 @@ namespace mu2e
   }
 
   bool RandomPrescaleFilter::endRun( art::Run& run ) {
-    std::cout << moduleDescription().moduleLabel() << " passed " << npass_ << " events out of " << nevt_ << " for a ratio of " << float(npass_)/float(nevt_) << std::endl;
+    if(debug_ > 0 && nevt_ > 0){
+      std::cout << moduleDescription().moduleLabel() << " passed " << npass_ << " events out of " << nevt_ << " for a ratio of " << float(npass_)/float(nevt_) << std::endl;
+    }
     return true;
   }
 

@@ -7,7 +7,6 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
@@ -103,4 +102,4 @@ void mu2e::ReadPtr::analyze(art::Event const& event) {
 }
 
 
-DEFINE_ART_MODULE(mu2e::ReadPtr);
+DEFINE_ART_MODULE(mu2e::ReadPtr)

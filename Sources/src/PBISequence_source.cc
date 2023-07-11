@@ -54,7 +54,6 @@
 #include "canvas/Persistency/Provenance/SubRunID.h"
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "canvas/Persistency/Provenance/BranchType.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -82,7 +81,7 @@ namespace mu2e {
   };
   typedef fhicl::WrappedTable<Config> Parameters;
 
- //================================================================
+  //================================================================
   class PBISequenceDetail : private boost::noncopyable {
     std::string myModuleLabel_;
     std::string deprecatedInstanceName_;
@@ -103,36 +102,36 @@ namespace mu2e {
     // A helper function used to manage the principals.
     // This is boilerplate that does not change if you change the data products.
     void managePrincipals ( int runNumber,
-	int subRunNumber,
-	int eventNumber,
-	art::RunPrincipal*&    outR,
-	art::SubRunPrincipal*& outSR,
-	art::EventPrincipal*&  outE);
+        int subRunNumber,
+        int eventNumber,
+        art::RunPrincipal*&    outR,
+        art::SubRunPrincipal*& outSR,
+        art::EventPrincipal*&  outE);
 
     void computeRunDataProducts( std::vector<std::string> const& inputFiles );
 
     public:
     PBISequenceDetail(const Parameters &conf,
-	art::ProductRegistryHelper &,
-	const art::SourceHelper &);
+        art::ProductRegistryHelper &,
+        const art::SourceHelper &);
 
-      void readFile(std::string const& filename, art::FileBlock*& fb);
+    void readFile(std::string const& filename, art::FileBlock*& fb);
 
-      bool readNext(art::RunPrincipal* const& inR,
-                    art::SubRunPrincipal* const& inSR,
-                    art::RunPrincipal*& outR,
-                    art::SubRunPrincipal*& outSR,
-                    art::EventPrincipal*& outE);
+    bool readNext(art::RunPrincipal* const& inR,
+        art::SubRunPrincipal* const& inSR,
+        art::RunPrincipal*& outR,
+        art::SubRunPrincipal*& outSR,
+        art::EventPrincipal*& outE);
 
-      void closeCurrentFile();
+    void closeCurrentFile();
 
-    };
+  };
 
-    //----------------------------------------------------------------
-    PBISequenceDetail::PBISequenceDetail(const Parameters& conf,
-                                             art::ProductRegistryHelper& rh,
-                                             const art::SourceHelper& pm)
-      : myModuleLabel_(conf().moduleLabel())
+  //----------------------------------------------------------------
+  PBISequenceDetail::PBISequenceDetail(const Parameters& conf,
+      art::ProductRegistryHelper& rh,
+      const art::SourceHelper& pm)
+    : myModuleLabel_(conf().moduleLabel())
       , deprecatedInstanceName_(conf().instance())
       , pm_(pm)
       , runNumber_(conf().runNumber())
@@ -140,84 +139,84 @@ namespace mu2e {
       , currentEventNumber_(0)
       , verbosity_(conf().verbosity())
       , integratedSummary_(conf().integratedSummary())
-    {
-      if(!art::RunID(runNumber_).isValid()) {
-        throw cet::exception("BADCONFIG", " PBISequence: ")
-          << " fhicl::ParameterSet specifies an invalid runNumber = "<<runNumber_<<"\n";
-      }
-//    For a source module, "produces" is spelled "reconstitutes"
-      rh.reconstitutes<mu2e::ProtonBunchIntensity,art::InEvent>(myModuleLabel_);
-      rh.reconstitutes<mu2e::ProtonBunchIntensity,art::InSubRun>(myModuleLabel_,deprecatedInstanceName_);
-      rh.reconstitutes<mu2e::ProtonBunchIntensitySummary,art::InSubRun>(myModuleLabel_);
-
-      computeRunDataProducts( conf().inputFiles() );
+  {
+    if(!art::RunID(runNumber_).isValid()) {
+      throw cet::exception("BADCONFIG", " PBISequence: ")
+        << " fhicl::ParameterSet specifies an invalid runNumber = "<<runNumber_<<"\n";
     }
+    //    For a source module, "produces" is spelled "reconstitutes"
+    rh.reconstitutes<mu2e::ProtonBunchIntensity,art::InEvent>(myModuleLabel_);
+    rh.reconstitutes<mu2e::ProtonBunchIntensity,art::InSubRun>(myModuleLabel_,deprecatedInstanceName_);
+    rh.reconstitutes<mu2e::ProtonBunchIntensitySummary,art::InSubRun>(myModuleLabel_);
 
-    //----------------------------------------------------------------
-    void PBISequenceDetail::readFile(const std::string& filename, art::FileBlock*& fb) {
-      using namespace boost::accumulators;
-      currentFileName_ = filename;
-      currentFile_ = new ifstream(currentFileName_,std::ifstream::in);
-      // reset counters
-      subRunNumber_++;
-      currentEventNumber_ = 0;
-      // compute statistics on protons in this file
-      nprotAcc_ = {};
-      double protons;
-      unsigned nprotons;
-      while(true) {
-	*currentFile_ >> protons;
-	if ( currentFile_->good()) {
-	  nprotons = (unsigned)rint(protons);
-	  nprotAcc_(double(nprotons));
-	} else
-	break;
-      }
-      if ( verbosity_ > 0 ){
-        std::cout << "Read " << extract_result<tag::count>(nprotAcc_) << " events with " << extract_result<tag::mean>(nprotAcc_) << " <protons> " << extract_result<tag::variance>(nprotAcc_) << " variance from file " << currentFileName_ << std::endl;
-      }
-      // rewind the file
-      currentFile_->clear(ios::eofbit);
-      currentFile_->seekg (0, ios::beg);
-      fb = new art::FileBlock(art::FileFormatVersion(1, "PBISequenceTextInput"), currentFileName_);
+    computeRunDataProducts( conf().inputFiles() );
+  }
+
+  //----------------------------------------------------------------
+  void PBISequenceDetail::readFile(const std::string& filename, art::FileBlock*& fb) {
+    using namespace boost::accumulators;
+    currentFileName_ = filename;
+    currentFile_ = new ifstream(currentFileName_,std::ifstream::in);
+    // reset counters
+    subRunNumber_++;
+    currentEventNumber_ = 0;
+    // compute statistics on protons in this file
+    nprotAcc_ = {};
+    double protons;
+    unsigned long long nprotons;
+    while(true) {
+      *currentFile_ >> protons;
+      if ( currentFile_->good()) {
+        nprotons = static_cast<unsigned long long>(llrint(protons));
+        nprotAcc_(double(nprotons));
+      } else
+        break;
     }
-
-    //----------------------------------------------------------------
-    void PBISequenceDetail::closeCurrentFile() {
-      currentFileName_ = "";
-      currentFile_->close();
-      delete currentFile_;
-      currentFile_ = nullptr;
+    if ( verbosity_ > 0 ){
+      std::cout << "Read " << extract_result<tag::count>(nprotAcc_) << " events with " << extract_result<tag::mean>(nprotAcc_) << " <protons> " << extract_result<tag::variance>(nprotAcc_) << " variance from file " << currentFileName_ << std::endl;
     }
+    // rewind the file
+    currentFile_->clear(ios::eofbit);
+    currentFile_->seekg (0, ios::beg);
+    fb = new art::FileBlock(art::FileFormatVersion(1, "PBISequenceTextInput"), currentFileName_);
+  }
 
-    //----------------------------------------------------------------
-    bool PBISequenceDetail::readNext(art::RunPrincipal* const& inR,
-                                       art::SubRunPrincipal* const& inSR,
-                                       art::RunPrincipal*& outR,
-                                       art::SubRunPrincipal*& outSR,
-                                       art::EventPrincipal*& outE)
-    {
-      double protons;
-      unsigned nprotons;
-      (*currentFile_) >>  protons;
-      if (!currentFile_->good()) return false;
-      nprotons = (unsigned)rint(protons);
-      managePrincipals(runNumber_, subRunNumber_, ++currentEventNumber_, outR, outSR, outE);
-      std::unique_ptr<ProtonBunchIntensity> pbi(new ProtonBunchIntensity(nprotons));
-      art::put_product_in_principal(std::move(pbi), *outE, myModuleLabel_);
-      return true;
+  //----------------------------------------------------------------
+  void PBISequenceDetail::closeCurrentFile() {
+    currentFileName_ = "";
+    currentFile_->close();
+    delete currentFile_;
+    currentFile_ = nullptr;
+  }
 
-    } // readNext()
+  //----------------------------------------------------------------
+  bool PBISequenceDetail::readNext(art::RunPrincipal* const& inR,
+      art::SubRunPrincipal* const& inSR,
+      art::RunPrincipal*& outR,
+      art::SubRunPrincipal*& outSR,
+      art::EventPrincipal*& outE)
+  {
+    double protons;
+    unsigned long long nprotons;
+    (*currentFile_) >>  protons;
+    if (!currentFile_->good()) return false;
+    nprotons = static_cast<unsigned long long>(llrint(protons));
+    managePrincipals(runNumber_, subRunNumber_, ++currentEventNumber_, outR, outSR, outE);
+    std::unique_ptr<ProtonBunchIntensity> pbi(new ProtonBunchIntensity(nprotons));
+    art::put_product_in_principal(std::move(pbi), *outE, myModuleLabel_);
+    return true;
+
+  } // readNext()
 
 
   // Each time that we encounter a new run, a new subRun or a new event, we need to make a new principal
   // of the appropriate type.  This code does not need to change as the number and type of data products changes.
   void PBISequenceDetail::managePrincipals ( int runNumber,
-                                          int subRunNumber,
-                                          int eventNumber,
-                                          art::RunPrincipal*&    outR,
-                                          art::SubRunPrincipal*& outSR,
-                                          art::EventPrincipal*&  outE){
+      int subRunNumber,
+      int eventNumber,
+      art::RunPrincipal*&    outR,
+      art::SubRunPrincipal*& outSR,
+      art::EventPrincipal*&  outE){
 
     art::Timestamp ts;
 
@@ -227,8 +226,8 @@ namespace mu2e {
       outR = pm_.makeRunPrincipal(runNumber, ts);
       // art takes ownership of the object pointed to by outSR and will delete it at the appropriate time.
       outSR = pm_.makeSubRunPrincipal(runNumber,
-                                      subRunNumber,
-                                      ts);
+          subRunNumber,
+          ts);
       // create the PBI subrun summary object
       std::unique_ptr<ProtonBunchIntensitySummary> pbis = ( integratedSummary_ ) ?
         std::make_unique<ProtonBunchIntensitySummary>( extract_result<tag::count>(runNprotAcc_),extract_result<tag::mean>(runNprotAcc_), extract_result<tag::variance>(runNprotAcc_)) :
@@ -240,8 +239,8 @@ namespace mu2e {
       art::put_product_in_principal(std::move(pbis), *outSR, myModuleLabel_);
       // for backwards-compatibility
       std::unique_ptr<ProtonBunchIntensity> pbi = ( integratedSummary_ ) ?
-        std::make_unique<ProtonBunchIntensity>((unsigned)rint(extract_result<tag::mean>(runNprotAcc_))):
-        std::make_unique<ProtonBunchIntensity>((unsigned)rint(extract_result<tag::mean>(nprotAcc_)));
+        std::make_unique<ProtonBunchIntensity>(static_cast<unsigned long long>(llrint(extract_result<tag::mean>(runNprotAcc_)))):
+        std::make_unique<ProtonBunchIntensity>(static_cast<unsigned long long>(llrint(extract_result<tag::mean>(nprotAcc_))));
       art::put_product_in_principal(std::move(pbi), *outSR, myModuleLabel_, deprecatedInstanceName_);
 
     }
@@ -258,13 +257,13 @@ namespace mu2e {
     for ( auto const& file : inputFiles){
       std::ifstream in(file,std::ifstream::in);
       double protons;
-      int nprotons;
+      unsigned long long nprotons;
       while (in){
-	in >> protons;
-	if ( in.good()) {
-	  nprotons = (unsigned)rint(protons);
-	  runNprotAcc_(double(nprotons));
-	} else {
+        in >> protons;
+        if ( in.good()) {
+          nprotons = static_cast<unsigned long long>(llrint(protons));
+          runNprotAcc_(double(nprotons));
+        } else {
           break;
         }
       }

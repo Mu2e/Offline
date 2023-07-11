@@ -11,13 +11,12 @@
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 
@@ -352,4 +351,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::VetoIncorrectHits);
+DEFINE_ART_MODULE(mu2e::VetoIncorrectHits)

@@ -178,7 +178,6 @@ G4GLOBALIBS = [
               'libG4track',
               'libG4tracking',
               'libG4visHepRep',
-              'libG4visXXX',
               'libG4vis_management',
               'libG4zlib'
               ]
@@ -256,7 +255,6 @@ mainlib = helper.make_mainlib ( [
         'MF_MessageLogger',
         'cetlib',
         'cetlib_except',
-        'HepPDT',
         G4LIBS,
         GS_LIBS,
         XERCESC_LIBS,

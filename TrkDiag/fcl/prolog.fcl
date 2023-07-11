@@ -2,163 +2,121 @@
 #include "Offline/Compression/fcl/prolog.fcl"
 #include "Offline/fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG
-# Diagnostic modules    
-  BD : {
-	module_type : BkgDiag
-	StrawDigiMCCollection : "compressDigiMCs"
-	ComboHitCollection : "makePH"
-	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-        BackgroundHitClusterCollection:"FlagBkgHits"
-	UseFlagCollection : true
-	TimeOffsets : {
-	  inputs : [ @sequence::DigiCompression.TimeMaps ]
-	}
-  }
-  
-  TRD : {
-    module_type : TrkRecoDiag
-    StrawDigiMCCollection : "compressDigiMCs"
-    VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
-    TimeOffsets : {
-      inputs : [ @sequence::DigiCompression.TimeMaps ]
-    }
-  }
+# Diagnostic modules
+BD : {
+  module_type : BkgDiag
+  StrawDigiMCCollection : "compressDigiMCs"
+  ComboHitCollection : "makePH"
+  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  BkgClusterCollection:"FlagBkgHits"
+  BkgClusterHitCollection:"FlagBkgHits"
+  MCPrimary : compressDigiMCs
+  useFlagCollection : true
+}
 
-  SHD : {
-	module_type : StrawHitDiag
-	StrawDigiMCCollection : "compressDigiMCs"
-	ComboHitFlag : false
-	StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-	TimeOffsets : {
-	  inputs : [ @sequence::DigiCompression.TimeMaps ]
-	}
-  }
+TRD : {
+  module_type : TrkRecoDiag
+  StrawDigiMCCollection : "compressDigiMCs"
+  VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
+}
 
-  TCD : {
-	module_type : TimeClusterDiag
-	StrawDigiMCCollection : "compressDigiMCs"
-	ComboHitCollection : "makePH"
-	UseFlagCollection : true
-	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
-	HitBackgroundBits	    : ["Background"]
-	TimeOffsets         :  { inputs : [ @sequence::DigiCompression.TimeMaps ] }
-        ClusterMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
-        ClusterCaloMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
-	PlotTimeSpectra : false
-	VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
-        T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
-    }
+SHD : {
+  module_type : StrawHitDiag
+  StrawDigiMCCollection : "compressDigiMCs"
+  ComboHitFlag : false
+  StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+}
 
-  HD : {
-	module_type : HelixDiag
-	StrawDigiMCCollection : "compressDigiMCs"
-	VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
-	HelixSeedCollection : "MHDeM"
-	ComboHitCollection : "makePH"
-	UseFlagCollection : true
-	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-	PlotHelices : false
-	InclusivePlotFlagBits : ["HitsOK"]
-	TimeOffsets         :  { inputs : [ @sequence::DigiCompression.TimeMaps ] }
-  }
+TCD : {
+  module_type : TimeClusterDiag
+  StrawDigiMCCollection : "compressDigiMCs"
+  ComboHitCollection : "makePH"
+  UseFlagCollection : true
+  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  HitSelectionBits      : ["EnergySelection","TimeSelection","RadiusSelection"]
+  HitBackgroundBits     : ["Background"]
+  ClusterMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
+  ClusterCaloMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
+  PlotTimeSpectra : false
+  VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
+  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+}
 
-  CHD : {
-	module_type : ComboHitDiag
-	StrawDigiMCCollection : "compressDigiMCs"
-	ComboHitCollection : "makePH"
-	UseFlagCollection : true
-	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-	TimeOffsets : {
-	  inputs : [ @sequence::DigiCompression.TimeMaps ]
-	}
-  }
+HD : {
+  module_type : HelixDiag
+  StrawDigiMCCollection : "compressDigiMCs"
+  VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
+  HelixSeedCollection : "MHDeM"
+  ComboHitCollection : "makePH"
+  UseFlagCollection : true
+  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  PlotHelices : false
+  InclusivePlotFlagBits : ["HitsOK"]
+}
 
-  # Track quality module
-  # Example of how to add a new training through fcl
-  # -- trainName is the name of the training
-  # -- xmlFileName is the name of the XML file
-  #  YourNewTrkQualConfig : { trainName : "YourNewTrkQual"
-  #    		       	      xmlFileName : "path/to/YourNewTrkQual.weights.xml"
-  #		     	    }
-  #  TrkQualCatalog.mvaConfigs : [ @sequence::TrkQualCatalog.mvaConfigs, @local::YourNewTrkQualConfig  ] 
+CHD : {
+  module_type : ComboHitDiag
+  digiDiag : true
+  useFlagCollection : true
+  StrawDigiMCCollection : "compressDigiMCs"
+  StrawDigiCollection : "makeSD"
+  ComboHitCollection : "makePH"
+  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  MCPrimary : compressDigiMCs
+}
 
-  TrkQual : {
-  	  module_type : TrackQuality
-  }
-  TrkQualNeg : @local::TrkQual
-  TrkQualNeg.TrainingName : "TrkQualNeg"
-  TrkQualPos : @local::TrkQual
-  TrkQualPos.TrainingName : "TrkQualPos"
-
-  TrkQualDeM		       : @local::TrkQualNeg
-  TrkQualDeM.KalSeedCollection : "KFFDeM"
-  TrkQualUeM		       : @local::TrkQualNeg
-  TrkQualUeM.KalSeedCollection : "KFFUeM"
-  TrkQualDmuM		       : @local::TrkQualNeg
-  TrkQualDmuM.KalSeedCollection : "KFFDmuM"
-  TrkQualUmuM		       : @local::TrkQualNeg
-  TrkQualUmuM.KalSeedCollection : "KFFUmuM"
-  TrkQualDeP		       : @local::TrkQualPos
-  TrkQualDeP.KalSeedCollection : "KFFDeP"
-  TrkQualUeP		       : @local::TrkQualPos
-  TrkQualUeP.KalSeedCollection : "KFFUeP"
-  TrkQualDmuP		       : @local::TrkQualPos
-  TrkQualDmuP.KalSeedCollection : "KFFDmuP"
-  TrkQualUmuP		       : @local::TrkQualPos
-  TrkQualUmuP.KalSeedCollection : "KFFUmuP"
-  # track PID module
-  TrkPID : {
-    module_type : TrackPID
-    MaxDE : 5.0 # MeV
-    DeltaTOffset : -1.15 # specific to MDC2018h
-    MVAConfig : { MVAWeights : "Offline/TrkDiag/data/TrkCaloHitPID.weights.xml"}
-  }
+# track PID module
+TrkPID : {
+  module_type : TrackPID
+  MaxDE : 5.0 # MeV
+  DeltaTOffset : -1.15 # specific to MDC2018h
+  MVAConfig : { MVAWeights : "Offline/TrkDiag/data/TrkCaloHitPID.weights.xml"}
+}
 # this module only makes sense for downstream electron fits
-  TrkPIDDeM		       : @local::TrkPID
-  TrkPIDDeM.KalSeedCollection : "KFFDeM"
-  TrkPIDDeP		       : @local::TrkPID
-  TrkPIDDeP.KalSeedCollection : "KFFDeP"
+TrkPIDDeM          : @local::TrkPID
+TrkPIDDeM.KalSeedCollection : "KFFDeM"
+TrkPIDDeP          : @local::TrkPID
+TrkPIDDeP.KalSeedCollection : "KFFDeP"
 
-  TrkDiag : {
-    analyzers : {
-      TCD : @local::TCD
-      CHD : @local::CHD
-      SHD : @local::SHD
-      HD : @local::HD
-      TRD : @local::TRD
-      BD : @local::BD
-    }
+TrkDiag : {
+  analyzers : {
+    TCD : @local::TCD
+    CHD : @local::CHD
+    SHD : @local::SHD
+    HD : @local::HD
+    TRD : @local::TRD
+    BD : @local::BD
   }
+}
 
 # DIO weighting for flat spectrum electrons
-  DIOWeight: {
-    module_type: DecayInOrbitWeight
-    weightingScheme : pol58
-    inputModule : compressDigiMCs
-    verbosityLevel: 1
-  }
+DIOWeight: {
+  module_type: DecayInOrbitWeight
+  weightingScheme : pol58
+  inputModule : compressDigiMCs
+  verbosityLevel: 1
+}
 # converts ProtonBunchIntensity object to EventWeight object
-  PBIWeight : { 
-    module_type : PBIWeight
-    PBITag : "protonBunchIntensity"
-    meanPBITag : "protonBunchIntensity:MeanIntensity"
-  }
+PBIWeight : {
+  module_type : PBIWeight
+  PBITag : "protonBunchIntensity"
+  meanPBITag : "protonBunchIntensity:MeanIntensity"
+}
 #Example configuration of RMCWeightModule
-  RMCWeight : { 
-    module_type : RMCWeight
-    kinematic_endpoint : 100
-    internalConversion : 1
-    verbosityLevel : 0
-  }
-  dioLLWeight : {
-    module_type : BinnedSpectrumWeight
-    genParticleTag : "compressDigiMCs"
-    genParticlePdgId : 11
-    genParticleGenId : dioTail
-    spectrumFileName : "Offline/ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
-    BinCenter : false
-  }
-  genCountLogger: { module_type: GenEventCountReader }
+RMCWeight : {
+  module_type : RMCWeight
+  kinematic_endpoint : 100
+  internalConversion : 1
+  verbosityLevel : 0
+}
+dioLLWeight : {
+  module_type : BinnedSpectrumWeight
+  genParticleTag : "compressDigiMCs"
+  genParticlePdgId : 11
+  genParticleGenId : dioTail
+  spectrumFileName : "Offline/ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
+  BinCenter : false
+}
+genCountLogger: { module_type: GenEventCountReader }
 
 END_PROLOG

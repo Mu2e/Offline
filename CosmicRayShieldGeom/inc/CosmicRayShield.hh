@@ -21,14 +21,14 @@
 #include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 
-namespace mu2e 
+namespace mu2e
 {
 
   // Forward reference.
   class SimpleConfig;
   class CosmicRayShieldMaker;
 
-  class CosmicRayShield : virtual public Detector 
+  class CosmicRayShield : virtual public Detector
   {
 
     friend class CosmicRayShieldMaker;
@@ -59,17 +59,17 @@ namespace mu2e
       return _scintillatorShields.at(bid.getShieldNumber()).getBar(bid);
     }
 
-    std::vector<CRSScintillatorShield> const & getCRSScintillatorShields() const 
+    std::vector<CRSScintillatorShield> const & getCRSScintillatorShields() const
     {
       return _scintillatorShields;
     }
 
-    std::vector<std::shared_ptr<CRSScintillatorBar> > const & getAllCRSScintillatorBars() const 
+    std::vector<std::shared_ptr<CRSScintillatorBar> > const & getAllCRSScintillatorBars() const
     {
       return _allCRSScintillatorBars;
     }
 
-    const CRSScintillatorBar& getBar ( CRSScintillatorBarIndex index ) const 
+    const CRSScintillatorBar& getBar ( CRSScintillatorBarIndex index ) const
     {
       return *_allCRSScintillatorBars.at(index.asInt());
     }
@@ -80,11 +80,15 @@ namespace mu2e
 
     std::vector<CRSSupportStructure> const & getSupportStructures() const {return _supportStructures;}
 
+    const std::string& getName() const { return _name; }
+
     private:
+
+    std::string _name;  // name of loaded geometry to coordinate with conditions
 
     std::vector<CRSScintillatorShield>                _scintillatorShields;    //Every "shield" holds a vector of modules.
                                                                                //Every module hold a vector of layers.
-                                                                               //Every layer holds a vector of pointers 
+                                                                               //Every layer holds a vector of pointers
                                                                                //to CRV bars.
     std::vector<std::shared_ptr<CRSScintillatorBar> > _allCRSScintillatorBars; //This vector holds pointers to all CRV bars,
                                                                                //(the same objects used in all layers).

@@ -82,7 +82,7 @@ namespace mu2e {
       TS2_Bend, TS4_Bend, // 98, 99: Virtual detectors requested by Mau for testing magnetic field effects - in the bends of TS
       STM_FieldOfViewCollDnStr, STM_SpotSizeCollUpStr, // 100,101: inside STM area
       EMC_FEB_0_SurfIn, EMC_FEB_0_SurfOut, EMC_FEB_1_SurfIn, EMC_FEB_1_SurfOut,// 102,103,104,105
-      EMC_FEB_0_EdgeIn, EMC_FEB_0_EdgeOut, EMC_FEB_1_EdgeIn, EMC_FEB_1_EdgeOut,// 106,107,108,109      
+      EMC_FEB_0_EdgeIn, EMC_FEB_0_EdgeOut, EMC_FEB_1_EdgeIn, EMC_FEB_1_EdgeOut,// 106,107,108,109
       Coll1_pBarCollar_In, Coll1_pBarCollar_Out, // 110, 111, Requested by Bob Bernstein for pbar studies.  Immediately upstream of the TS1 pBar Collar, and immediately downstream of VD 2, but with radius equal to the Coll1 inner radius
       PTM_1_In, PTM_2_In, // 112, 113, upstream faces of the production target monitor wire chambers between the PS and the proton beam stop
       STM_Final, // 114 
@@ -145,6 +145,14 @@ namespace mu2e {
     explicit VirtualDetectorId( enum_type id):
       _id(id)
     {}
+
+    // Constructor from a string;
+    //  - if throwIfUnknown is true, the c'tor will throw an exception if the string is "unknown".
+    //  - if throwIfUndefined is true, the c'tor will throw an exception if the string is not
+    //    found among the known strings.
+    explicit VirtualDetectorId( std::string const& idName,
+                                bool throwIfUnknown=true,
+                                bool throwIfUndefined=true);
 
     enum_type id() const { return _id;}
 
@@ -285,7 +293,7 @@ namespace mu2e {
   private:
 
     // The one and only per-instance member datum.
-    enum_type _id;
+    enum_type _id = unknown;
 
   };
 

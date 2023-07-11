@@ -17,13 +17,12 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 
 // Mu2e includes.
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 // Root includes.
 #include "TApplication.h"
@@ -142,4 +141,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::Histforpabs;
-DEFINE_ART_MODULE(Histforpabs);
+DEFINE_ART_MODULE(Histforpabs)

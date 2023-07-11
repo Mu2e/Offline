@@ -1,0 +1,260 @@
+# -*- mode:tcl -*-
+#------------------------------------------------------------------------------
+# performs the calorimeter and track reconstruciton
+#------------------------------------------------------------------------------
+#  > mu2e -c Offline/triggerAna_CE.fcl -s /pnfs/mu2e/tape/phy-sim/dig/mu2e/CeEndpointMix1BBSignal/MDC2020r_perfect_v1_0/art/4c/f6/dig.mu2e.CeEndpointMix1BBSignal.MDC2020r_perfect_v1_0.001210_00000990.art --nskip 9
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+
+#include "Offline/Mu2eKinKal/fcl/prolog.fcl"
+
+## #include "CommonMC/fcl/prolog.fcl"
+## #include "TrackerMC/fcl/prolog.fcl"
+## #include "CaloMC/fcl/prolog.fcl"
+
+#include "Offline/Trigger/fcl/prolog_trigger.fcl"
+#include "TrkAna/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+#Trigger.PrepareDigis : [ @sequence::CommonMC.DigiSim, @sequence::TrackerMC.DigiSim, @sequence::CaloMC.DigiSim ]
+END_PROLOG
+
+process_name : globalTrigger
+
+source :
+{
+  module_type : RootInput
+}
+# we don't need any simulation services for this job
+# services : @local::Services.Reco
+
+services : @local::Services.Reco
+
+# timing information
+services.TimeTracker : {
+  dbOutput : {
+    filename : ""
+    # filename : "runGlobalTrigger.db" #uncomment to create the .db output
+    overwrite : true
+  }
+}
+
+services.scheduler.wantSummary: true
+
+physics : {
+  producers : {
+    # @table::CommonMC.producers
+    # @table::TrackerMC.DigiProducers
+    @table::CaloReco.producers
+    @table::CaloCluster.producers
+    @table::CalPatRec.producers
+
+    @table::Trigger.producers
+
+    @table::Mu2eKinKal.producers
+    TTCalSeedFitDem : { @table::Mu2eKinKal.producers.KKDeMSeedFit
+      KKFitSettings   : { @table::Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings
+        AddMaterial    : false
+        MaterialCorrection : true
+        #MaterialCorrection : false
+        PrintLevel     : 0
+        UseCaloCluster : true
+        CaloTimeResolution : 1.5 # ns
+        MaxCaloClusterDt : 15 #ns
+        MaxCaloClusterDOCA : 500 #mm
+        AddHits : false
+      }
+      ExtensionSettings: { @table::Mu2eKinKal.producers.KKDeMSeedFit.ExtensionSettings
+        #MaxNIter : 3
+        BFieldCorrection         : true
+        BCorrTolerance           : 1e-2
+        PrintLevel               : 0
+        MetaIterationSettings    : [
+          [ 0.0, "CADSHU" ]
+          # [ 2.0, "CADSHU" ]
+        ]
+        CADSHUSettings           : [
+           [ 10.0, 20.0, 5.0, 5.0, "Null:Inactive", "", 0 ]
+          # [ 15.0, 15.0, 5.0, 4.0, "Null:Inactive", "", 0 ]
+        ]
+        StrawXingUpdaterSettings : [
+          [10.0, -1.0, -1.0, true, 0 ]
+          # [10.0, -1.0, -1.0, true, 0 ]
+        ]
+        BkgANNSHUSettings        : []
+        Chi2SHUSettings          : []
+      }
+      FitSettings : { @table::Mu2eKinKal.producers.KKDeMSeedFit.FitSettings
+        PrintLevel : 0
+        #BFieldCorrection         : true
+        BFieldCorrection         : false
+        BCorrTolerance           : 1e-2
+        DivergenceGap: 10
+        MaxNIter : 3
+      }
+      ModuleSettings : { @table::Mu2eKinKal.producers.KKDeMSeedFit.ModuleSettings
+        HelixSeedCollections   : [ "TTCalHelixMergerDeM" ]
+        ComboHitCollection     : "TTmakeSH"
+        CaloClusterCollection  : "CaloClusterFast"
+        StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+        PrintLevel             : 0
+        SaveAllFits            : false
+      }
+    }
+
+    TTCalSeedFitDep : { @table::Mu2eKinKal.producers.KKDePSeedFit
+      KKFitSettings   : {@table::Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings
+        AddMaterial : false
+      }
+      ExtensionSettings: {@table::Mu2eKinKal.producers.KKDePSeedFit.ExtensionSettings
+        BFieldCorrection : false
+
+      }
+      ModuleSettings : {@table::Mu2eKinKal.producers.KKDePSeedFit.ModuleSettings
+        HelixSeedCollections   : [ "TTCalHelixMergerDeP" ]
+        ComboHitCollection     : "TTmakeSH"
+        CaloClusterCollection  : "CaloClusterFast"
+        StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+        PrintLevel             : 0
+        SaveAllFits            : false
+      }
+    }
+
+    TTKSFDeM : { @table::Mu2eKinKal.producers.KKDeMSeedFit
+      KKFitSettings   : {@table::Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings
+        AddMaterial : false
+        PrintLevel : 0
+        UseCaloCluster : false
+
+      }
+      ExtensionSettings: {@table::Mu2eKinKal.producers.KKDeMSeedFit.ExtensionSettings
+        BFieldCorrection : false
+
+      }
+      FitSettings : { @table::Mu2eKinKal.producers.KKDeMSeedFit.FitSettings
+        PrintLevel : 0
+      }
+      ModuleSettings : {@table::Mu2eKinKal.producers.KKDeMSeedFit.ModuleSettings
+        HelixSeedCollections   : [ "TTHelixMergerDeM" ]
+        ComboHitCollection     : "TTmakeSH"
+        CaloClusterCollection  : "CaloClusterFast"
+        StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+        SaveAllFits            : false
+        PrintLevel             : 0
+      }
+    }
+
+    TTKSFDeP : { @table::Mu2eKinKal.producers.KKDePSeedFit
+      KKFitSettings   : {@table::Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings
+        AddMaterial : false
+      }
+      ExtensionSettings: {@table::Mu2eKinKal.producers.KKDePSeedFit.ExtensionSettings
+        BFieldCorrection : false
+      }
+      ModuleSettings : {@table::Mu2eKinKal.producers.KKDePSeedFit.ModuleSettings
+        HelixSeedCollections   : [ "TTHelixMergerDeP" ]
+        ComboHitCollection     : "TTmakeSH"
+        CaloClusterCollection  : "CaloClusterFast"
+        StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+        PrintLevel             : 0
+        SaveAllFits            : false
+      }
+    }
+
+  }
+
+  filters   : { @table::Trigger.filters
+    @table::CalPatRec.filters
+  }
+
+  analyzers : { @table::Trigger.analyzers
+
+    readTriggerInfo : { @table::Trigger.analyzers.ReadTriggerInfo
+      nPathIDs       : 250
+      nTrackTriggers : 25
+      processName    : globalTrigger
+    }
+    TAKK : @local::TrkAnaReco.analyzers.TrkAnaNeg
+
+  }
+
+  reco_offline : [ @sequence::CaloReco.Reco, @sequence::CaloCluster.Reco,
+    @sequence::TrkHitReco.PrepareHits,
+    CalTimePeakFinder  , DeltaFinder  , CalHelixFinderDe]
+
+  #out       : [ readTriggerInfo ]
+  out : [TAKK]
+  end_paths : [ out ]
+}
+
+outputs : {  @table::Trigger.outputs }
+
+
+services.TFileService.fileName : "debug_CE1BB_20221102.root"
+
+physics.analyzers.readTriggerInfo.SelectEvents : [ tprDeM_highP_stopTarg_trigger, tprDeP_highP_stopTarg_trigger, cprDeM_highP_stopTarg_trigger, cprDeP_highP_stopTarg_trigger, cprDeM_lowP_stopTarg_trigger, cprDeP_lowP_stopTarg_trigger, tprDeM_lowP_stopTarg_trigger, tprDeP_lowP_stopTarg_trigger, tprHelixDeM_ipa_trigger, tprHelixDeM_ipa_phiScaled_trigger ]
+
+physics.analyzers.readTriggerInfo.triggerPathsList : [ tprDeM_highP_stopTarg_trigger, tprDeP_highP_stopTarg_trigger, cprDeM_highP_stopTarg_trigger, cprDeP_highP_stopTarg_trigger, cprDeM_lowP_stopTarg_trigger, cprDeP_lowP_stopTarg_trigger, tprDeM_lowP_stopTarg_trigger, tprDeP_lowP_stopTarg_trigger, tprHelixDeM_ipa_trigger, tprHelixDeM_ipa_phiScaled_trigger ]
+
+#CommonMC.DigiSim : []
+#TrackerMC.DigiSim : []
+#CaloMC.DigiSim : []
+
+outputs.triggerOutput.SelectEvents : [   "*_trigger"]
+outputs.triggerOutput.fileName : "debug_20210619.art"
+
+#physics.filters.TTCalTimePeakFinder.dtOffset           : -61.
+
+#turn on the helix-finder diagnostics
+#physics.filters.TTCalTimePeakFinder.diagLevel               : 1
+# physics.filters.TTCalTimePeakFinder.DtMax                   :  20.
+# physics.filters.TTCalTimePeakFinder.DtMin                   : -20.
+
+# physics.trigger_paths[0] : reco_offline
+# physics.filters.CalTimePeakFinder.diagLevel               : 1
+# physics.filters.CalTimePeakFinder.DtMax                   :  100.
+# physics.filters.CalHelixFinderDe.diagLevel                  : 0
+# physics.filters.CalHelixFinderDe.HelixFinderAlg.diagLevel   : 0
+
+
+#physics.producers.TThelixFinder.DiagLevel                   : 1
+#physics.producers.TThelixFinder.HelixFitter.diagLevel       : 1
+
+#physics.producers.TTmakeSH.ProtonBunchTimeTag : "makeSD"
+## physics.producers.TTmakeSH.ProtonBunchTimeTag : "CaloDigiMaker"
+
+
+### #include "gen/fcl/Trigger/OnSpillTrigMenu/cprLowPSeedDeM.fcl"
+### physics.cprLowPSeedDeM_trigger : [ @sequence::Trigger.PrepareDigis, @sequence::Trigger.paths.cprLowPSeedDeM ]
+### physics.trigger_paths :  [cprLowPSeedDeM_trigger]
+services.DbService.purpose: MDC2020_perfect
+services.DbService.version: v1_0
+services.DbService.verbose : 2
+
+###### #include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
+#include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/cprDeM_highP_stopTarg.fcl"
+physics.cprDeM_highP_stopTarg_trigger : [ @sequence::Trigger.PrepareDigis, @sequence::Trigger.paths.cprDeM_highP_stopTarg ]
+physics.trigger_paths[150] : cprDeM_highP_stopTarg_trigger
+
+#####include "OnSpillMenuTest.fcl"
+
+#physics.producers.CaloClusterFast : { @table::CaloClusterTrigger.producers.CaloClusterOnline}
+
+#physics.filters.TTCalHelixFinderDe.StrawHitCollectionLabel : "TTflagBkgHits"
+
+
+physics.analyzers.TAKK.candidate.options : @local::AllOpt
+physics.analyzers.TAKK.candidate.options.fillBestCrv : false
+physics.analyzers.TAKK.diagLevel : 2
+physics.analyzers.TAKK.FillMCInfo : false
+physics.analyzers.TAKK.FillCRV : false
+physics.analyzers.TAKK.FillTrkQualInfo : false
+physics.analyzers.TAKK.FillTrkPIDInfo : false
+physics.analyzers.TAKK.FillHitInfo : true
+physics.analyzers.TAKK.FillTriggerInfo : false
+physics.analyzers.TAKK.candidate.input : "TT"
+physics.analyzers.TAKK.candidate.suffix : "CalSeedFitDem"
+physics.analyzers.TAKK.candidate.options.fillHits : true
+physics.analyzers.TAKK.supplements : []
+physics.analyzers.TAKK.SelectEvents : [ "cprDeM_highP_stopTarg_trigger" ]

@@ -6,7 +6,6 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
@@ -229,4 +228,4 @@ namespace mu2e {
 
 
 using mu2e::ReadTrkExtrapol;
-DEFINE_ART_MODULE(ReadTrkExtrapol);
+DEFINE_ART_MODULE(ReadTrkExtrapol)

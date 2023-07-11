@@ -10,7 +10,7 @@ int Saddle.version    = 2;
 int Saddle.numberOfBoxTypes = 9;
 
 // How many of each type box to make
-int Saddle.nBoxType1 = 2;  // PS Saddles.  
+int Saddle.nBoxType1 = 2;  // PS Saddles.
 int Saddle.nBoxType2 = 2;  // PS axial Stands (long)
 int Saddle.nBoxType3 = 2;  // PS transverse Stands (short)
 
@@ -35,7 +35,7 @@ int Saddle.nBoxType9 = 1; // DS Special Saddle (near cal)
 // Vertices in u, v for each type of box.  Dimensions should be in mm.
 //
 //====
-// PS Saddles 
+// PS Saddles
 vector<double> Saddle.outlineType1UVerts = {1264,1264,-1264,-1264};
 vector<double> Saddle.outlineType1VVerts = {-50,971,971,-50};
 double Saddle.lengthType1                = 700; // mm in w (z) dimension

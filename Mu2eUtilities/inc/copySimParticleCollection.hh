@@ -6,27 +6,27 @@
 //
 // When making a new SimparticleCollection from an existing collection,
 // it is not as simple to copy the objects.
-// The art::Ptr's in the SimParticles need to be fixed so they point 
+// The art::Ptr's in the SimParticles need to be fixed so they point
 // the their parents (and daughters) in the new collection.
-// 
+//
 // The inputs are the old collection, the new collection,
 // and the art product pieces needed for making art::Ptr's
-// to the new collection.  Examples of how to get those 
+// to the new collection.  Examples of how to get those
 // pieces are in Filters.
-// 
-// 
+//
+//
 
 #include <memory>
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "canvas/Persistency/Common/EDProductGetter.h"
 
 namespace mu2e {
 
   void copySimParticleCollection (SimParticleCollection  const& oldColl,
-				SimParticleCollection& newColl,
-				art::ProductID const& SPpid,
-				art::EDProductGetter const* SPpg) {
+                                SimParticleCollection& newColl,
+                                art::ProductID const& SPpid,
+                                art::EDProductGetter const* SPpg) {
 
     // loop over the collection
     for(auto const& spPair : oldColl) {
@@ -36,11 +36,11 @@ namespace mu2e {
       newColl[key] = oldSP;
       auto& newSP = newColl[key];
       // point the parent art::Ptr to the parent in the new collection
-      newSP.parent() = 
-	art::Ptr<SimParticle>(SPpid,oldSP.parent().key(),SPpg);
+      newSP.parent() =
+        art::Ptr<SimParticle>(SPpid,oldSP.parent().key(),SPpg);
       // and repoint daughter art::Ptr's
       for (auto& dauPtr : newSP.daughters()) {
-	dauPtr = art::Ptr<SimParticle>(SPpid,dauPtr.key(),SPpg);
+        dauPtr = art::Ptr<SimParticle>(SPpid,dauPtr.key(),SPpg);
       }
     } // loop over SimParticles
 

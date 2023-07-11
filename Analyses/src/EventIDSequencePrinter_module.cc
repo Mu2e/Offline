@@ -6,7 +6,6 @@
 #include <iostream>
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/IO/ProductMix/MixTypes.h"
@@ -57,4 +56,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::EventIDSequencePrinter);
+DEFINE_ART_MODULE(mu2e::EventIDSequencePrinter)

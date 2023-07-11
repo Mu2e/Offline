@@ -1,6 +1,17 @@
 #include "Offline/RecoDataProducts/inc/KalSegment.hh"
 
 namespace mu2e {
+
+  KinKal::TimeRange KalSegment::timeRange() const {
+    // protect against unphysical times
+    if(_tmin <= _tmax){
+      return KinKal::TimeRange(_tmin,_tmax);
+    } else {
+      std::cout << "KalSegment: Invalid time range, tmin " << _tmin << " tmax " << _tmax << std::endl;
+      return KinKal::TimeRange(_pstate.time(),_pstate.time());
+    }
+  }
+
   HelixVal KalSegment::helix() const {
     // CentralHelix uses the same parameter convention as BTrk.  First,
     // convert the state estimate into a helix.
@@ -21,36 +32,40 @@ namespace mu2e {
     CLHEP::HepSymMatrix cov(5,1);
     for(size_t ipar=0; ipar <5; ipar++){
       for(size_t jpar=0; jpar <=ipar; jpar++){
-	// stupid fotran-like interface
-	cov.fast(ipar+1,jpar+1) = kkcov(ipar,jpar);
+        // stupid fotran-like interface
+        cov.fast(ipar+1,jpar+1) = kkcov(ipar,jpar);
       }
     }
     return HelixCov(cov);
   }
 
-
-  void KalSegment::mom(double flt, XYZVec& momvec) const { 
+  void KalSegment::mom(double flt, XYZVectorF& momvec) const {
     auto chel = centralHelix();
     // momentum at the time corresponding to this flight
     auto momv = chel.momentum3(fltToTime(flt));
     // translate
-    momvec = XYZVec(momv.X(),momv.Y(),momv.Z());
+    momvec = XYZVectorF(momv.X(),momv.Y(),momv.Z());
   }
 
   double KalSegment::fltToTime(double flt) const {
-    auto chel = centralHelix();
-    return chel.t0() + flt/chel.speed();
+    auto vel = _pstate.velocity();
+    return t0Val() + flt/vel.R();
   }
 
   double KalSegment::timeToFlt(double time) const {
-    auto chel = centralHelix();
-    return (time -chel.t0())*chel.speed();
+    auto vel = _pstate.velocity();
+    return (time - t0Val())*vel.R();
+  }
+
+  double KalSegment::t0Val() const {
+    auto vel = _pstate.velocity();
+    return _pstate.time() - _pstate.position3().Z()/vel.Z();
   }
 
   HitT0 KalSegment::t0() const {
-  // convert to LoopHelix.  In that parameterization, t0 is defined WRT z=0
+    // convert to LoopHelix.  In that parameterization, t0 is defined WRT z=0
     auto lhelix = loopHelix();
-    return HitT0(lhelix.params().parameters()(KinKal::LoopHelix::t0_), 
-	sqrt(lhelix.params().covariance()(KinKal::LoopHelix::t0_,KinKal::LoopHelix::t0_)));
+    return HitT0(lhelix.params().parameters()(KinKal::LoopHelix::t0_),
+        sqrt(lhelix.params().covariance()(KinKal::LoopHelix::t0_,KinKal::LoopHelix::t0_)));
   }
 }

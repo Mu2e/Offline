@@ -12,7 +12,6 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -84,4 +83,4 @@ namespace mu2e {
 } // end namespace mu2e
 
 using mu2e::HelloWorld2;
-DEFINE_ART_MODULE(HelloWorld2);
+DEFINE_ART_MODULE(HelloWorld2)

@@ -1,0 +1,21 @@
+//
+// Variant of the bfield maps using the DSMap_altDS11_helical map instead of the regular DSMap.
+//
+
+#include "Offline/Mu2eG4/geom/bfgeom_v01.txt"
+
+vector<string> bfield.innerMaps = {
+  "BFieldMaps/Mau13/DSMap_altDS11_helical.header",
+  "BFieldMaps/Mau13/PSMap.header",
+  "BFieldMaps/Mau13/TSuMap_fix.header",
+  "BFieldMaps/Mau13/TSdMap.header",
+  "BFieldMaps/Mau13/PStoDumpAreaMap.header",
+  "BFieldMaps/Mau13/ProtonDumpAreaMap.header",
+  "BFieldMaps/Mau13/DSExtension.header"
+};
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -24,7 +24,7 @@ class RootFileManager
 {
   bool                         _active;
   TDirectory*                  _directory;
-  TObjArray*                   _objArray; 
+  TObjArray*                   _objArray;
   boost::shared_ptr<TFile>     _file;
   boost::shared_ptr<TTree>     _tree;
 
@@ -43,7 +43,7 @@ class RootFileManager
     TDirectory *tmpDirectory=gDirectory;
     _file=boost::shared_ptr<TFile>(new TFile(c,"RECREATE"));
     _directory=gDirectory;
-    
+
     _objArray = nullptr;
     _tree = boost::shared_ptr<TTree>(new TTree("Tree","Tree"));
     _tree->Branch("Branch","TObjArray",&_objArray);
@@ -86,7 +86,7 @@ class RootFileManager
         {
           TText *t = dynamic_cast<TText*>(obj);
           if(t)
-          { 
+          {
             TText *p = new TText();
             *p = *t;    //copy constructor of TText seems to have a bug, that's why I use the assignment operator
             _objArray->Add(p);

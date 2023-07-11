@@ -12,7 +12,6 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Provenance.h"
 #include "canvas/Utilities/InputTag.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
@@ -88,4 +87,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StatusG4Analyzer);
+DEFINE_ART_MODULE(mu2e::StatusG4Analyzer)

@@ -4,21 +4,18 @@
 //
 // framework
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
 // mu2e
 // data
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
-#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
-#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 // #include "RecoDataProducts/inc/TriggerInfo.hh"
 // c++
 #include <iostream>
 #include <memory>
-#include <string> 
+#include <string>
 
 using namespace std;
 
@@ -79,27 +76,27 @@ namespace mu2e
       sdcol = sdH.product();
       nsd   = (int)sdcol->size();
     }
-    
+
     if (_useCD){
       auto cdH = event.getValidHandle<CaloDigiCollection>(_cdTag);
-      cdcol = cdH.product();    
+      cdcol = cdH.product();
       ncd   = (int)cdcol->size();
     }
-    
+
     if (_useSD) {
-      if ( (nsd >= _minnsd) && 
-	   (nsd <= _maxnsd) ){
-	retvalSD = true;
+      if ( (nsd >= _minnsd) &&
+           (nsd <= _maxnsd) ){
+        retvalSD = true;
       }
     }
 
     if (_useCD) {
-      if ( (ncd >= _minncd) && 
-	   (ncd <= _maxncd) ){
-	retvalCD = true;
+      if ( (ncd >= _minncd) &&
+           (ncd <= _maxncd) ){
+        retvalCD = true;
       }
     }
-    
+
     if (_useSD && _useCD) {
       retval = retvalSD && retvalCD;
     }else if (_useSD){
@@ -107,12 +104,12 @@ namespace mu2e
     }else if (_useCD){
       retval = retvalCD;
     }
-    
+
     if (retval){
       ++_npass;
-      
+
       if(_debug > 1){
-	cout << moduleDescription().moduleLabel() << " passed event " << event.id() << endl;
+        cout << moduleDescription().moduleLabel() << " passed event " << event.id() << endl;
       }
     }
     return retval;
@@ -126,4 +123,4 @@ namespace mu2e
   }
 }
 using mu2e::DigiFilter;
-DEFINE_ART_MODULE(DigiFilter);
+DEFINE_ART_MODULE(DigiFilter)

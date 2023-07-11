@@ -19,7 +19,6 @@
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -31,29 +30,25 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 
 namespace mu2e {
 
-  template <class Phys> 
-
-  class WeightModule : public art::EDProducer {
+  template <class Phys> class WeightModule : public art::EDProducer {
     Phys _myPhys;
     public:
     explicit WeightModule(const fhicl::ParameterSet& pset):
       art::EDProducer{pset},
       _myPhys(pset)
-    {
-      produces<mu2e::EventWeight>();
-    } ;
+      {
+        produces<mu2e::EventWeight>();
+      } ;
     virtual void produce(art::Event& event) {
       double weight (-1.);
       weight = _myPhys.weight(event);
       std::unique_ptr<mu2e::EventWeight> evtwt ( new EventWeight(weight) );
       event.put(std::move(evtwt));
     };
-
   };
 
 } //namespace mu2e

@@ -1,6 +1,6 @@
 // Original author David Norvil Brown, University of Louisville
 // Numbers based on Mu2e geometry 14 as of November 2014
-// Modified 02/09/2015 by Steve Boi - Moved east side TS shielding to proper 
+// Modified 02/09/2015 by Steve Boi - Moved east side TS shielding to proper
 //                                    location against building wall
 //                                  - Added and relocated north cap block
 // Sort boxes into "types"
@@ -23,7 +23,7 @@ int ExtShieldUpstream.nBoxType11 = 2;  // Block label  BRP-152
 int ExtShieldUpstream.nBoxType12 = 1;  // Special block "1" for shielding CR muons
 int ExtShieldUpstream.nBoxType13 = 1;  // Special block "3" for shielding CR muons
 int ExtShieldUpstream.nBoxType14 = 1;  // Special block "5" for shielding CR muons
-int ExtShieldUpstream.nBoxType15 = 1;  // Borated poly: Outer CRV-U 
+int ExtShieldUpstream.nBoxType15 = 1;  // Borated poly: Outer CRV-U
 int ExtShieldUpstream.nBoxType16 = 1;  // Borated poly: Inner CRV-U
 int ExtShieldUpstream.nBoxType17 = 1;  // Borated poly: Inner CRV-TS
 int ExtShieldUpstream.nBoxType18 = 1;  // Borated poly: Outer CRV-TS
@@ -65,7 +65,7 @@ vector<double> ExtShieldUpstream.dimsType16 = {6400.8,2743.2,25.4};
 vector<double> ExtShieldUpstream.dimsType17 = {6908.8,4876.6,25.4};
 vector<double> ExtShieldUpstream.dimsType18 = {5486.4,4978.6,25.4};
 vector<double> ExtShieldUpstream.dimsType19 = {1625.6,4978.6,25.4};
-vector<double> ExtShieldUpstream.dimsType20 = {609.6,4418,6090};
+vector<double> ExtShieldUpstream.dimsType20 = {609.6,4418,6426.2};
 
 // "Tolerances" on the dimensions in u, v, and w for each type of box.
 // Tolerance here means the amount the size is changed from nominal, in mm.
@@ -115,7 +115,7 @@ string ExtShieldUpstream.materialType19  = "Polyethylene092B050d095";
 string ExtShieldUpstream.materialType20  = "CONCRETE_MARS";
 
 // The center of the boxes in Mu2e Offline coordinates
-vector<double> ExtShieldUpstream.centerType1Box1 = {812.5,-382,-2997};// 5 
+vector<double> ExtShieldUpstream.centerType1Box1 = {812.5,-382,-2997};// 5
 vector<double> ExtShieldUpstream.centerType1Box2 = {1345.5,-382,-2997};//BRP152
 vector<double> ExtShieldUpstream.centerType1Box3 = {812.5,-382,-1829};//BRP152
 vector<double> ExtShieldUpstream.centerType1Box4 = {1345.5,-382,-1829};//BRP152
@@ -156,7 +156,19 @@ vector<double> ExtShieldUpstream.centerType18Box1 = {-3620.6,2780.2,  213.6};
 vector<double> ExtShieldUpstream.centerType19Box1 = {-267.8 ,2952.0,  202.4};
 
 // Remote handling room door
-vector<double> ExtShieldUpstream.centerType20Box1 = {9381 ,-103, -11931};
+vector<double> ExtShieldUpstream.centerType20Box1 = {9381 ,-103, -12077.7};
+
+// To move the shielding door in two directions to allow a small gap during remote handling operations.
+// To move in Z-direction (East-West) : apply 'OpenDistance' (double) between 0.0 (fully closed) and 6248.4 (fully open).
+// OpenDistance = 0.0; default case (fully closed)
+// To move in X-direction (towards north) : apply 'FrameGap' (double) between 0.0 (closed) and 254.0 (10" open).
+// FrameGap = 0.0; default case (closed position)
+//NB: Neither OpenDistance nor FrameGap can be supplied a negative value.
+
+
+double ExtShieldUpstream.OpenDistance = 0.0;
+double ExtShieldUpstream.FrameGap = 0.0;
+
 
 // The orientation of each detector.  See docdb xxx for details.
 string ExtShieldUpstream.orientationType1Box1 = "000";

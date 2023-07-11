@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
@@ -23,9 +22,11 @@
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Offline/Mu2eUtilities/inc/compressPdgId.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "TH1F.h"
 #include "TH2F.h"
@@ -93,7 +94,7 @@ class mu2e::CORSIKAGenPlots : public art::EDAnalyzer {
     PDGCode::type _pdgId;
 
     void bookHists(art::ServiceHandle<art::TFileService> &);
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 };
 
 mu2e::CORSIKAGenPlots::CORSIKAGenPlots(fhicl::ParameterSet const &p)
@@ -176,8 +177,8 @@ void mu2e::CORSIKAGenPlots::analyze(art::Event const & e)
     _hXZ->Fill(p.position().x(), p.position().z());
     _hY->Fill(p.position().y());
 
-    const HepPDT::ParticleData& p_data = pdt->particle(p.pdgId()).ref();
-    double mass = p_data.mass().value(); // in MeV
+    const ParticleData& p_data = pdt->particle(p.pdgId());
+    double mass = p_data.mass(); // in MeV
 
     HepLorentzVector mom4 = p.momentum();
     Hep3Vector mom3(mom4.px(), mom4.py(), mom4.pz());
@@ -209,45 +210,8 @@ void mu2e::CORSIKAGenPlots::analyze(art::Event const & e)
     _pdgId = p.pdgId();
     _cosmicTree->Fill();
 
-    switch (p.pdgId()) {
-      case 13: // mu-
-        _hPtypeKE->Fill(mom4.e(), 0); break;
-      case -13: // mu+
-        _hPtypeKE->Fill(mom4.e(), 0); break;
-      case 22: // photon
-        _hPtypeKE->Fill(mom4.e(), 1); break;
-      case -11: // e+
-        _hPtypeKE->Fill(mom4.e(), 2); break;
-      case 11: // e-
-        _hPtypeKE->Fill(mom4.e(), 2); break;
-      case 2112: // neutron
-        _hPtypeKE->Fill(mom4.e(), 3); break;
-      case -2112: // neutron
-        _hPtypeKE->Fill(mom4.e(), 3); break;
-      case 2212: // proton
-        _hPtypeKE->Fill(mom4.e(), 4); break;
-      case -2212: // proton
-        _hPtypeKE->Fill(mom4.e(), 4); break;
-      case 111: // pi0
-        _hPtypeKE->Fill(mom4.e(), 5); break;
-      case 211: // pi+
-        _hPtypeKE->Fill(mom4.e(), 5); break;
-      case -211: // pi-
-        _hPtypeKE->Fill(mom4.e(), 5); break;
-      case 130: // k0 L
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      case 310: // k0 S
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      case 311: // k0
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      case 321: // k+
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      case -321: // k-
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      default: // others
-        _hPtypeKE->Fill(mom4.e(), 7); break;
-    }
-
+    int pbin = compressPdgIdCosmic(p.pdgId());
+    _hPtypeKE->Fill(mom4.e(), pbin);
   }
 
 }

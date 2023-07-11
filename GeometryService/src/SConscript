@@ -80,23 +80,6 @@ helper.make_plugins( [
     'boost_filesystem',
     ] )
 
-helper.make_dict_and_map( [
-    mainlib,
-    'mu2e_ProtonBeamDumpGeom',
-    'mu2e_ExtinctionMonitorFNAL_Geometry',
-    'mu2e_Mu2eHallGeom',
-    'mu2e_Mu2eInterfaces',
-    'mu2e_ConfigTools',
-    'art_Persistency_Common',
-    'art_Utilities',
-    'canvas',
-    'cetlib',
-    'cetlib_except',
-    'CLHEP',
-    'Core',
-    ] )
-
-
 # This tells emacs to view this file in python mode.
 # Local Variables:
 # mode:python

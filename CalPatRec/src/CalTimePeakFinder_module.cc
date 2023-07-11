@@ -13,7 +13,6 @@
 
 // framework
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 
@@ -60,9 +59,8 @@ namespace mu2e {
     _minNHits        (pset.get<int>            ("MinNHits"                       )),
     _minClusterEnergy(pset.get<double>         ("minClusterEnergy"               )),
     _minClusterSize  (pset.get<int>            ("minClusterSize"                 )),
-    _minClusterTime  (pset.get<double>         ("minClusterTime"                 )),
     _pitchAngle      (pset.get<double>         ("pitchAngle"                     )),
-    _beta            (pset.get<double>         ("beta"                           )),  
+    _beta            (pset.get<double>         ("beta"                           )),
     _dtoffset        (pset.get<double>         ("dtOffset"                       ))
   {
     consumes<ComboHitCollection>(_shLabel);
@@ -184,8 +182,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void CalTimePeakFinder::findTimePeaks(TimeClusterCollection& TimeClusterColl) {
 
-    //    const char* oname = "CalTimePeakFinder::findTimePeaks";
-
     int                 ncl, nch;
     double              time, dt, tof, zstraw, cl_time;//, stime;
     double              xcl, ycl, zcl/*, dz_cl*/;
@@ -200,7 +196,6 @@ namespace mu2e {
     static const double twopi(2*pi);
 
     double              mphi(-9999.);
-    double              meanDriftTime = 1.25/0.06;// half straw tube radius / drift velocity
 
 //-----------------------------------------------------------------------------
 // Loop over calorimeter clusters
@@ -229,29 +224,29 @@ namespace mu2e {
           ycl     = tpos.y();
           zcl     = tpos.z();
           mphi    = polyAtan2(ycl, xcl);
-	  if (_debugLevel > 0) printf("[CalTimePeakFinder::findTimePeaks] x_cl=%6.3f y_cl=%6.3f z_cl=%6.3f\n",  xcl, ycl, zcl);
+          if (_debugLevel > 0) printf("[CalTimePeakFinder::findTimePeaks] x_cl=%6.3f y_cl=%6.3f z_cl=%6.3f\n",  xcl, ycl, zcl);
 
           // create time peak
           TimeCluster tpeak;
 //-----------------------------------------------------------------------------
 // record hits in time with each peak, and accept them if they have a minimum # of hits
 //-----------------------------------------------------------------------------
-	  if (_debugLevel > 0){
-	    printf("[CalTimePeakFinder::findTimePeaks] nComboHits=%i\n",  nch);
-	    printf("[CalTimePeakFinder::findTimePeaks]     TOF      Dt\n");
-	  }
+          if (_debugLevel > 0){
+            printf("[CalTimePeakFinder::findTimePeaks] nComboHits=%i\n",  nch);
+            printf("[CalTimePeakFinder::findTimePeaks]     TOF      Dt\n");
+          }
           for(int istr=0; istr<nch;++istr) {
 
             hit    = &_data.chcol->at(istr);
-            time   = hit->time();
+            time   = hit->correctedTime();
             zstraw = hit->pos().z();
 //-----------------------------------------------------------------------------
 // estimate time-of-flight and calculate residual between the predicted and the hit times
 // 2017-03-31 P.M.: this assumes electron (e^- or e^+), not muon
 //-----------------------------------------------------------------------------
             tof = (zcl-zstraw)/_sinPitch/(CLHEP::c_light*_beta);
-            dt  = cl_time-(time+tof-meanDriftTime);
-	    if (_debugLevel > 0) printf("[CalTimePeakFinder::findTimePeaks] %10.3f %10.3f\n",  tof, dt);
+            dt  = cl_time-(time+tof);
+            if (_debugLevel > 0) printf("[CalTimePeakFinder::findTimePeaks] %10.3f %10.3f\n",  tof, dt);
 //--------------------------------------------------------------------------------
 // check the angular distance from the calorimeter cluster
 //--------------------------------------------------------------------------------
@@ -265,12 +260,12 @@ namespace mu2e {
                 tpeak._strawHitIdxs.push_back( StrawHitIndex(istr) );
                 nsh += hit->nStrawHits();
 
-		if (_diagLevel > 0) {
+                if (_diagLevel > 0) {
 //-----------------------------------------------------------------------------
 // accumulate diag data
 //-----------------------------------------------------------------------------
-		  dtvec.push_back(dt);
-		}
+                  dtvec.push_back(dt);
+                }
               }
             }
           }
@@ -281,17 +276,17 @@ namespace mu2e {
             tpeak._pos              = tpos;
             tpeak._caloCluster      = art::Ptr<mu2e::CaloCluster>(_ccH, ic);
             TimeClusterColl.push_back(tpeak);
-	    _data.ntc              += 1;
+            _data.ntc              += 1;
 
-	    if (_diagLevel > 0) {
-	      int nh = dtvec.size();
-	      for (int i=0; i<nh; i++) {
-		_data.dtvec.push_back(dtvec[i]);
-	      }
-	    }
+            if (_diagLevel > 0) {
+              int nh = dtvec.size();
+              for (int i=0; i<nh; i++) {
+                _data.dtvec.push_back(dtvec[i]);
+              }
+            }
           }
 
-	  if (_diagLevel > 0) dtvec.clear();
+          if (_diagLevel > 0) dtvec.clear();
         }
       }
     }
@@ -300,4 +295,4 @@ namespace mu2e {
 }
 
 using mu2e::CalTimePeakFinder;
-DEFINE_ART_MODULE(CalTimePeakFinder);
+DEFINE_ART_MODULE(CalTimePeakFinder)

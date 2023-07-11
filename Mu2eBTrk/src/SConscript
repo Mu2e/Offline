@@ -38,8 +38,6 @@ mainlib = helper.make_mainlib ( [
     'cetlib_except',
     rootlibs,
     'CLHEP',
-    'HepPDT',
-    'HepPID',
     'xerces-c'
     ] )
 
@@ -69,7 +67,6 @@ helper.make_plugins( [
    'cetlib',
    'cetlib_except',
    'CLHEP',
-   'HepPDT',
    rootlibs,
    'xerces-c',
    'boost_filesystem',

@@ -5,14 +5,13 @@
 // Original author Rob Kutschke
 //
 
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include <iostream>
 #include <iomanip>
@@ -168,4 +167,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::CountPionDecays;
-DEFINE_ART_MODULE(CountPionDecays);
+DEFINE_ART_MODULE(CountPionDecays)

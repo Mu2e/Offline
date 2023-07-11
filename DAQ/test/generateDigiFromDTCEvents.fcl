@@ -1,0 +1,134 @@
+# Run StrawAndCaloDigisFromFragments module to convert artdaq::Fragment collections
+# into TRK and CAL digi collections.
+# Usage: mu2e -c DAQ/test/generateDigiFromFragment.fcl -s <input art files> -n '-1'
+#
+#
+# Contact person G. Pezzullo
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/DAQ/fcl/prolog_trigger.fcl"
+
+#include "Offline/CaloCluster/fcl/prolog_trigger.fcl"
+
+process_name : DTCEventsToFrags
+
+source : {
+   module_type : RootInput
+   fileNames   : @nil
+
+   # firstEvent  : 500
+   maxEvents   : -1
+#   inputCommands: ["keep *",
+#                   "drop *Mu2eEventHeader*_*_*_*"]
+}
+
+services : @local::Services.Reco
+
+physics : {
+
+   producers : {
+      fetchData:
+      {
+          module_type : PrefetchDAQData
+          debugLevel             : 0
+          fetchCaloDigis         : 0
+          fetchStrawDigis        : 0
+          fetchCaloFragments     : 1
+          fetchTrkFragments      : 1
+          caloDigiCollectionTag  : "notNow"
+          strawDigiCollectionTag : "notNow"
+          caloFragmentTag        : "daq:calo"
+          trkFragmentTag         : "daq:trk"
+      }
+
+       genFrags : {
+       module_type : ArtFragmentsFromDTCEvents
+       diagLevel   : 10
+       makeCaloFrag : 1
+       makeTrkFrag  : 1
+       makeCRVFrag  : 0
+       makeSTMFrag  : 0
+
+       }
+
+      makeSD:
+      {
+         @table::DAQ.producers.makeSD
+      }
+
+       makeSH:
+       {
+       @table::DAQ.producers.makeSH
+       TrackerFragmentTag : ""
+       }
+
+       CaloDigiMaker:
+       {
+         @table::DAQ.producers.CaloDigiMaker
+       }
+
+      CaloHitMaker:
+      {
+         @table::DAQ.producers.CaloHitMaker
+      }
+       CaloClusterFast:
+       {
+           @table::CaloClusterTrigger.producers.CaloClusterFast
+       }
+
+       EWMProducer : { module_type : EventWindowMarkerProducer
+       SpillType : 0
+       }
+
+   }
+
+   analyzers  : {
+      readFragments : {
+         module_type : FragmentAna
+         diagLevel   : 0
+         parseCAL    : 0
+         parseTRK    : 1
+         caloTag     : "daq:calo"
+         trkTag      : "daq:trk"
+      }
+   }
+
+   #  t1 : [ makeSD ]
+   #   t1 : [ fetchData, makeSD , CaloDigiMaker, CaloHitMaker, CaloClusterFast]
+   t1 : [ genFrags ] #,  makeSD , CaloHitMaker ] #, CaloClusterFast]
+   #e1 : [ outfile, readFragments]
+   #e1 : [outfile]
+e1 : [dump, outfile]
+
+   trigger_paths  : [t1]
+   end_paths      : [e1]
+#     end_paths      : []
+
+}
+
+outputs:  {
+   outfile :  {
+      module_type   :   RootOutput
+      fileName      :   "digis_from_dtcevts_debug.art"
+
+      outputCommands: [
+         "drop *_*_*_*",
+         "keep *_*_*_*"
+      ]
+   }
+    dump: { module_type: FileDumperOutput
+wantProductFriendlyClassName: true
+    onlyIfPresent: true }
+}
+
+services.TFileService.fileName : "generateDigiFromDTCEvts_test.root"
+services.TimeTracker : {
+    dbOutput : {
+        filename : "timing.csv"
+        overwrite : true
+    }
+}
+services.scheduler.wantSummary: true
+physics.producers.makeSD.useTrkADC : 0
+#physics.producers.makeSD.diagLevel : 10
+#physics.producers.CaloDigiMaker.diagLevel : 10

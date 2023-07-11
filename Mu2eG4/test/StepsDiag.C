@@ -1,7 +1,7 @@
 //
 //
 //
-// Original author KLG 
+// Original author KLG
 //
 // to Retrieve/prepare histograms based on histograms/ntuples from the
 // files that were created by g4validate_01.fcl
@@ -32,7 +32,7 @@
 bool getPushNextHist(TString hname, TDirectory* tdir, std::vector<TH1*>& plots) {
   TH1F*    _tmp = 0x0;
   _tmp = static_cast<TH1F*>(tdir->Get(hname));
-  if (_tmp == 0x0 ) {cerr << "missing histogram" <<endl; return false;} 
+  if (_tmp == 0x0 ) {cerr << "missing histogram" <<endl; return false;}
   plots.push_back(_tmp);
   return true;
 }
@@ -70,21 +70,21 @@ void StepsDiag(TFile* tfile,std::vector<TH1*>& plots) {
   if (!getPushNextHist("hxHit",           sdir, plots)) return;
   if (!getPushNextHist("hyHit",           sdir, plots)) return;
   if (!getPushNextHist("hzHit",           sdir, plots)) return;
-					  
+
   // readStrawHits plots
-					  
-  if (!getPushNextHist("hHitTime",        shdir, plots)) return; 
-  if (!getPushNextHist("hHitDeltaTime",   shdir, plots)) return; 
-  if (!getPushNextHist("hHitEnergy",      shdir, plots)) return; 
-  if (!getPushNextHist("hNHits",          shdir, plots)) return; 
-  if (!getPushNextHist("hNHitsPerWire",   shdir, plots)) return; 
-  if (!getPushNextHist("hDriftTime",      shdir, plots)) return; 
-  if (!getPushNextHist("hDriftDistance",  shdir, plots)) return; 
-  if (!getPushNextHist("hDistanceToMid",  shdir, plots)) return; 
-  if (!getPushNextHist("hNG4Steps",       shdir, plots)) return; 
-  if (!getPushNextHist("hG4StepLength",   shdir, plots)) return; 
-  if (!getPushNextHist("hG4StepRelTimes", shdir, plots)) return; 
-  if (!getPushNextHist("hG4StepEdep",     shdir, plots)) return; 
+
+  if (!getPushNextHist("hHitTime",        shdir, plots)) return;
+  if (!getPushNextHist("hHitDeltaTime",   shdir, plots)) return;
+  if (!getPushNextHist("hHitEnergy",      shdir, plots)) return;
+  if (!getPushNextHist("hNHits",          shdir, plots)) return;
+  if (!getPushNextHist("hNHitsPerWire",   shdir, plots)) return;
+  if (!getPushNextHist("hDriftTime",      shdir, plots)) return;
+  if (!getPushNextHist("hDriftDistance",  shdir, plots)) return;
+  if (!getPushNextHist("hDistanceToMid",  shdir, plots)) return;
+  if (!getPushNextHist("hNG4Steps",       shdir, plots)) return;
+  if (!getPushNextHist("hG4StepLength",   shdir, plots)) return;
+  if (!getPushNextHist("hG4StepRelTimes", shdir, plots)) return;
+  if (!getPushNextHist("hG4StepEdep",     shdir, plots)) return;
 
   // ntuple based plot
 

@@ -4,7 +4,6 @@
 // Andrei Gaponenko, 2018
 
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/IO/ProductMix/MixHelper.h"
 #include "art/Framework/Modules/MixFilter.h"
 #include "art_root_io/RootIOPolicy.h"
@@ -73,16 +72,16 @@ namespace mu2e {
     using Parameters = art::MixFilterTable<Config>;
     ResamplingMixerDetail(const Parameters& pset, art::MixHelper &helper);
 
-    size_t eventsToSkip() { 
+    size_t eventsToSkip() {
       static bool first(true);
       size_t result(0);
       if(first) {
-	first = false;
-	std::uniform_int_distribution<size_t> uniform(0, maxEventsToSkip_);
-	result = uniform(urbg_);
+        first = false;
+        std::uniform_int_distribution<size_t> uniform(0, maxEventsToSkip_);
+        result = uniform(urbg_);
       }
       if(debugLevel_ > 0) {
-	std::cout << " Skipping " << result << " Secondaries " << std::endl;
+        std::cout << " Skipping " << result << " Secondaries " << std::endl;
       }
       return result;
     }
@@ -111,6 +110,9 @@ namespace mu2e {
     }
 
   void ResamplingMixerDetail::processEventIDs(const art::EventIDSequence& seq) {
+
+    spm_.processEventIDs(seq);
+
     if(writeEventIDs_) {
       idseq_ = seq;
     }
@@ -145,4 +147,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::ResamplingMixer);
+DEFINE_ART_MODULE(mu2e::ResamplingMixer)

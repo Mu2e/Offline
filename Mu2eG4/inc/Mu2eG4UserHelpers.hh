@@ -23,7 +23,7 @@
 
 // Mu2e includes
 
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 class G4Track;
 class G4Step;
@@ -53,11 +53,13 @@ namespace mu2e {
     void printProcessNotSpecifiedWarning(G4Track const* const trk);
     ProcessCode findCreationCode(G4Track const* const trk);
 
-    // kinematics at the point of annihilation
+    // kinematics at the point of reaction/decay
+    double getEndGlobalTime(G4Track const* const trk);
+    double getEndProperTime(G4Track const* const trk);
     double getEndKE(G4Track const* const trk);
     CLHEP::HepLorentzVector getEndMomentum(G4Track const* const trk);
 
-    int  getNSteps(G4Track const* const trk);  
+    int  getNSteps(G4Track const* const trk);
 
     // Control the saving of trajectories.
     // The first method does the big picture bookkeeping.

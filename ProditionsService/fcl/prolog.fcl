@@ -1,13 +1,16 @@
 #include "Offline/DAQConditions/fcl/prolog.fcl"
+#include "Offline/STMConditions/fcl/prolog.fcl"
 #include "Offline/TrackerConditions/fcl/prolog.fcl"
 #include "Offline/AnalysisConditions/fcl/prolog.fcl"
 #include "Offline/SimulationConditions/fcl/prolog.fcl"
 #include "Offline/CaloConditions/fcl/prolog.fcl"
+#include "Offline/CRVConditions/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
 Proditions : {
    eventTiming : @local::EventTiming
+   stmEnergyCalib : @local::STMEnergyCalib
    fullReadoutStraw : @local::FullReadoutStraw
    trackerStatus : @local::TrackerStatus
    strawDrift : @local::StrawDrift
@@ -19,7 +22,9 @@ Proditions : {
    mu2eDetector : @local::Mu2eDetector
    caloDAQConditions : @local::CaloDAQConditions
    trkQualCatalog : @local::TrkQualCatalog
-
+   crvOrdinal : @local::CRVOrdinal
+   crvStatus : @local::CRVStatus
+   crvCalib : @local::CRVCalib
    simbookkeeper : @local::SimBookkeeper
    verbose : 0
 }

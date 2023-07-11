@@ -8,7 +8,6 @@
 
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "fhiclcpp/ParameterSet.h"
@@ -21,7 +20,7 @@
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 
 
@@ -39,7 +38,7 @@ namespace mu2e {
       bool beginRun(art::Run& run) override;
       bool endRun(art::Run& run) override;
       bool filter(art::Event& event) override;
-      
+
       art::InputTag _evtWtModule;
       art::InputTag _genParticleModule;
       art::RandomNumberGenerator::base_engine_t& _engine;
@@ -83,4 +82,4 @@ namespace mu2e {
 }
 
 using mu2e::WeightSamplingFilter;
-DEFINE_ART_MODULE(WeightSamplingFilter);
+DEFINE_ART_MODULE(WeightSamplingFilter)

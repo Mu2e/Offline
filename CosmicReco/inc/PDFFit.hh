@@ -1,7 +1,7 @@
 #ifndef _COSMIC_RECO_PDFFit_HH
 #define _COSMIC_RECO_PDFFit_HH
 
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
@@ -85,10 +85,16 @@ public:
 
   int excludeHit;
 
+  bool fixedT0;
+  bool fixedDriftRes;
+  double driftRes;
+  bool constrainToStraw;
+
   GaussianDriftFit(ComboHitCollection const& _shs, StrawResponse const& _srep,
                    const Tracker* _tracker) :
       shs(_shs),
-      srep(_srep), tracker(_tracker), excludeHit(-1){};
+      srep(_srep), tracker(_tracker), excludeHit(-1),
+      fixedT0(false), fixedDriftRes(false), driftRes(0), constrainToStraw(true) {};
   // this tells Minuit to scale variances as if operator() returns a chi2 instead of a log
   // likelihood
   double Up() const { return 1.0; };
@@ -97,6 +103,11 @@ public:
   void setExcludeHit(int const& hitIdx) {
     excludeHit = hitIdx;
   }
+  void setFixedT0(bool fix) { fixedT0 = fix;}
+  void setFixedDriftRes(bool fix, double dr=10) { fixedDriftRes = fix; driftRes = dr; }
+  void setConstrainToStraw(bool constrain) { constrainToStraw = constrain; }
+
+  double averageT0(const std::vector<double> &x) const;
 
   double DOCAresidual(ComboHit const& sh, CosmicTrackSeed const& tseed) const {
     std::vector<double> x = {tseed._track.MinuitParams.A0, tseed._track.MinuitParams.B0,

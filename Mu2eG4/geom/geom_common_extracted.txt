@@ -1,7 +1,7 @@
-// Top level geometry file for extracted detector cosmics running
+// Top level geometry file for extracted detector cosmics running with no magnetic field
 
 // Start from recent baseline geometry
-#include "Offline/Mu2eG4/geom/geom_common_current.txt"
+#include "Offline/Mu2eG4/geom/geom_common.txt"
 
 // Special - for garage position!
 bool inGaragePosition   = true;

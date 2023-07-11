@@ -6,7 +6,6 @@
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 
 
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include "Offline/ExtinctionMonitorFNAL/Analyses/inc/GenericCollectionPrinter.hh"
 
@@ -44,4 +43,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::EMFDetPrintRecoClusters);
+DEFINE_ART_MODULE(mu2e::EMFDetPrintRecoClusters)

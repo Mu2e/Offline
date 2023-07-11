@@ -23,12 +23,12 @@ namespace mu2e {
   public:
 
     PolyhedraParams( int  nSides,
-		     const std::vector<double>& zPlanes,
-		     const std::vector<double>& rInner,
-		     const std::vector<double>& rOuter,
-		     double phiStart = 0.,
-		     double phiTotal = CLHEP::twopi) :
-      _nSides( nSides ), _zPlanes( zPlanes ), _rInner( rInner ), 
+                     const std::vector<double>& zPlanes,
+                     const std::vector<double>& rInner,
+                     const std::vector<double>& rOuter,
+                     double phiStart = 0.,
+                     double phiTotal = CLHEP::twopi) :
+      _nSides( nSides ), _zPlanes( zPlanes ), _rInner( rInner ),
       _rOuter( rOuter ),
       _phiStart( phiStart ), _phiTotal( phiTotal )
     {}

@@ -13,7 +13,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
@@ -71,7 +70,7 @@ namespace mu2e {
     mf::LogInfo("Summary")<<"Creating GenEventCount record: "<<seenEvents_
                           <<" events for "<<sr.id()<<"\n";
 
-    sr.put(std::unique_ptr<GenEventCount>(new GenEventCount(seenEvents_)));
+    sr.put(std::unique_ptr<GenEventCount>(new GenEventCount(seenEvents_)), art::fullSubRun());
 
     seenEvents_ = 0; // in case the job has more than one subrun
   }
@@ -79,4 +78,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::GenEventCounter);
+DEFINE_ART_MODULE(mu2e::GenEventCounter)

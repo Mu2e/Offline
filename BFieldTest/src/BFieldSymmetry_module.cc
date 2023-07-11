@@ -21,7 +21,6 @@
 #include "Offline/SeedService/inc/SeedService.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art_root_io/TFileDirectory.h"
@@ -249,4 +248,4 @@ CLHEP::Hep3Vector mu2e::BFieldSymmetry::fire(mu2e::BFMap const& map) {
     return val;
 }
 
-DEFINE_ART_MODULE(mu2e::BFieldSymmetry);
+DEFINE_ART_MODULE(mu2e::BFieldSymmetry)

@@ -7,7 +7,7 @@ process_name : CRVResponse
 source :
 {
   module_type : RootInput
-  inputCommands: ["keep *", 
+  inputCommands: ["keep *",
                   "drop *KalRepPayload*_*_*_*",
                   "drop *CaloCrystalOnlyHit*_*_*_*",
                   "drop *Crv*_*_*_*"]
@@ -56,7 +56,7 @@ physics :
   end_paths:     [out]
 }
 
-physics.producers.CrvPhotons.startTime         : 0.0 
+physics.producers.CrvPhotons.startTime         : 0.0
 physics.producers.CrvSiPMCharges.blindTime     : 0.0
 #physics.producers.CrvWaveforms.minVoltage      : 0.0
 

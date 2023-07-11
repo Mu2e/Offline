@@ -59,7 +59,7 @@ namespace mu2e {
 
     // Map used to look up persistent index of each physical volume.
     VolMapType _volumeMap;
-      
+
     bool m_helperInitialized;
 
   };

@@ -5,13 +5,13 @@
 //
 // Original author David Norvil Brown
 // University of Louisville, Mu2e Collaboration
-// March 2016 
+// March 2016
 
-// Pipes for various services.  Each pipe is really a set of pipes 
+// Pipes for various services.  Each pipe is really a set of pipes
 // (referred to here as "components") contained
 // within the first.  If only one component - it is just a plain single pipe.
-// The pipes can be described using G4Tubs.  
-// Details can be found in docdb #4678 
+// The pipes can be described using G4Tubs.
+// Details can be found in docdb #4678
 
 
 #include <vector>
@@ -30,10 +30,10 @@ namespace mu2e {
   class Pipe : virtual public Detector {
   public:
 
-    // Straight sections of pipe and pipe bends can be (separately) 
+    // Straight sections of pipe and pipe bends can be (separately)
     // represented with the same number of parameters, as long as we
     // assume bends will always be of 90 degrees.  If needed later,
-    // can add a "bendAngle" parameter which will be meaningless for a 
+    // can add a "bendAngle" parameter which will be meaningless for a
     // straight section.
 
     // ***
@@ -64,9 +64,9 @@ namespace mu2e {
     // If a straight section, center means the actual center of the pipe.
     // If a bend, then center means the center of curvature of the toroidal
     // section
-    const std::vector<std::vector<CLHEP::Hep3Vector> >&    getCentersOfPipes() const 
+    const std::vector<std::vector<CLHEP::Hep3Vector> >&    getCentersOfPipes() const
     { return _centerPositions; }
-    const std::vector<std::vector<std::string> >&          getOrientations() const 
+    const std::vector<std::vector<std::string> >&          getOrientations() const
     { return _orientations; }
 
     // The following are component-level information
@@ -87,31 +87,31 @@ namespace mu2e {
 
     // Private ctr: the class should only be constructed via Pipe::PipeMaker.
     Pipe(const int&                               version,
-	 const std::vector<int>&                  nComponentsInPipe,
-	 const std::vector<int>&                  nPipes,
-	 const std::vector<double>&               lengths,
-	 const std::vector<std::string>&          flavs,
-	 const std::vector<std::string>&          fillMats,
-	 const std::vector<std::vector<CLHEP::Hep3Vector> >&    sites, 
-	 const std::vector<std::vector<std::string> >&          orients,
-	 const std::vector<std::vector<double> >& innerRads, 
-	 const std::vector<std::vector<double> >& outerRads, 
-	 const std::vector<std::vector<std::string> >&          mats, 
-	 const std::vector<std::vector<double> >& uOffsets, 
-	 const std::vector<std::vector<double> >& vOffsets)      
-      : _version          (version), 
-	_nComponentsInPipe (nComponentsInPipe),
-	_nPipes           (nPipes),
-	_lengths          (lengths),
-	_flavors          (flavs),
-	_fillMaterialNames     (fillMats),
-	_centerPositions  (sites),
-	_orientations     (orients),
-	_innerRads        (innerRads),
-	_outerRads        (outerRads),
-	_materialNames    (mats),
-	_uOffsets         (uOffsets),
-	_vOffsets         (vOffsets)
+         const std::vector<int>&                  nComponentsInPipe,
+         const std::vector<int>&                  nPipes,
+         const std::vector<double>&               lengths,
+         const std::vector<std::string>&          flavs,
+         const std::vector<std::string>&          fillMats,
+         const std::vector<std::vector<CLHEP::Hep3Vector> >&    sites,
+         const std::vector<std::vector<std::string> >&          orients,
+         const std::vector<std::vector<double> >& innerRads,
+         const std::vector<std::vector<double> >& outerRads,
+         const std::vector<std::vector<std::string> >&          mats,
+         const std::vector<std::vector<double> >& uOffsets,
+         const std::vector<std::vector<double> >& vOffsets)
+      : _version          (version),
+        _nComponentsInPipe (nComponentsInPipe),
+        _nPipes           (nPipes),
+        _lengths          (lengths),
+        _flavors          (flavs),
+        _fillMaterialNames     (fillMats),
+        _centerPositions  (sites),
+        _orientations     (orients),
+        _innerRads        (innerRads),
+        _outerRads        (outerRads),
+        _materialNames    (mats),
+        _uOffsets         (uOffsets),
+        _vOffsets         (vOffsets)
     { }
 
     // Or read back from persistent storage
@@ -120,7 +120,7 @@ namespace mu2e {
 
 
     // Current description based on Geometry 14, adapted by
-    // David Norvil Brown, 
+    // David Norvil Brown,
 
     int                                  _version;
     // The following vectors hold information about the pipes

@@ -14,7 +14,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 using namespace std;
 
@@ -40,10 +39,10 @@ namespace mu2e {
   void EventLister::analyze(const art::Event& event) {
     _ievent++;
     printf("Event: %8i run: %10i subRun: %5i event: %10i\n",
-	   _ievent,event.run(),event.subRun(),event.event());
+           _ievent,event.run(),event.subRun(),event.event());
     //    cout << "Event: " << event.id() << endl;
   }
 
 }  // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::EventLister);
+DEFINE_ART_MODULE(mu2e::EventLister)

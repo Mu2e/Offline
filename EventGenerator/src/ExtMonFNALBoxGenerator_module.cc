@@ -3,7 +3,6 @@
 // kinematic of input particles read from a file.
 // The output is in the Mu2e coordinate system.
 //
-//
 // Original author Andrei Gaponenko, 2012
 
 #include <iostream>
@@ -24,7 +23,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -42,9 +40,7 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/MARSInfo.hh"
-#include "Offline/MCDataProducts/inc/MARSInfoCollection.hh"
 #include "Offline/MCDataProducts/inc/GenParticleMARSAssns.hh"
 
 #include "Offline/ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
@@ -56,7 +52,6 @@
 
 #define AGDEBUG(stuff) do { std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<", func "<<__func__<<": "<<stuff<<std::endl; } while(0)
 //#define AGDEBUG(stuff)
-
 
 namespace mu2e {
   namespace ExtMonFNAL {
@@ -648,7 +643,7 @@ namespace mu2e {
 
       const Hep3Vector posMu2e(extmon_->extMonToMu2e_position(posExtMon));
 
-      static const double muonMass = mc_.mass(PDGCode::type(13));
+      static const double muonMass = mc_.mass(PDGCode::mu_minus);
       const CLHEP::HepLorentzVector momMu2e(Hep3Vector(), muonMass);
 
       return GenParticle(PDGCode::type(ms.muon.pdgId),
@@ -663,4 +658,4 @@ namespace mu2e {
   }
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ExtMonFNAL::ExtMonFNALBoxGenerator);
+DEFINE_ART_MODULE(mu2e::ExtMonFNAL::ExtMonFNALBoxGenerator)

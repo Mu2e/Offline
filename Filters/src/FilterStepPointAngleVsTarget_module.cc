@@ -1,5 +1,5 @@
-// Select hits from an StepPointMCCollection-s based on its angle 
-// vs productoin target axis and copy selected hits to output collections, 
+// Select hits from an StepPointMCCollection-s based on its angle
+// vs productoin target axis and copy selected hits to output collections,
 // preserving product instance names.
 //
 // Zhengyun You, 2013
@@ -16,10 +16,8 @@
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 
@@ -42,7 +40,7 @@ namespace mu2e {
     double targetAngle_;
     double targetDirx_;
     double targetDiry_;
-    double targetDirz_;    
+    double targetDirz_;
 
     double thetaMin_;
     double thetaMax_;
@@ -109,7 +107,7 @@ namespace mu2e {
     targetDirx_ = -1.0*sin(targetAngle_*CLHEP::deg);
     targetDiry_ = 0.0;
     targetDirz_ = -1.0*cos(targetAngle_*CLHEP::deg);
-    //std::cout << "target direction (" << targetDirx_ << ", " << targetDiry_ << ", " << targetDirz_ << ")" << std::endl; 
+    //std::cout << "target direction (" << targetDirx_ << ", " << targetDiry_ << ", " << targetDirz_ << ")" << std::endl;
 
     thetaMin_ *= CLHEP::deg;
     thetaMax_ *= CLHEP::deg;
@@ -128,7 +126,6 @@ namespace mu2e {
       outHits.insert(std::move(std::make_pair(i, std::move(p))));
     }
 
-
     for(const auto& tag : inputs_) {
 
       auto ih = event.getValidHandle<StepPointMCCollection>(tag);
@@ -143,8 +140,8 @@ namespace mu2e {
         const double px = hit.momentum().x();
         const double py = hit.momentum().y();
         const double pz = hit.momentum().z();
-        const double p = sqrt(px*px+py*py+pz*pz); 
-        if (p == 0) continue;  
+        const double p = sqrt(px*px+py*py+pz*pz);
+        if (p == 0) continue;
 
         // rotate around y by targetAngle
         double rotateAngle = targetAngle_*CLHEP::deg;
@@ -162,7 +159,7 @@ namespace mu2e {
         //std::cout << "theta " << theta << " in [" << thetaMin_ << ", " << thetaMax_ << "]?" << std::endl
         //  << "  phi " << phi << " in [" << phiMin_ << ", " << phiMax_ << "]?" << std::endl;
 
-        if ( theta < thetaMin_ || theta > thetaMax_ || 
+        if ( theta < thetaMin_ || theta > thetaMax_ ||
              phi < phiMin_ || phi > phiMax_ ) {
           continue;
         }
@@ -212,4 +209,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FilterStepPointAngleVsTarget);
+DEFINE_ART_MODULE(mu2e::FilterStepPointAngleVsTarget)

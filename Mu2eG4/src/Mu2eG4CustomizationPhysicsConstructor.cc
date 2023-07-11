@@ -21,8 +21,6 @@ namespace mu2e {
 
   G4_DECLARE_PHYSCONSTR_FACTORY(Mu2eG4CustomizationPhysicsConstructor);
 
-  G4ThreadLocal G4bool Mu2eG4CustomizationPhysicsConstructor::wasActivated = false;
-
   Mu2eG4CustomizationPhysicsConstructor::
   Mu2eG4CustomizationPhysicsConstructor(const Mu2eG4Config::Physics* phys
                                         , const Mu2eG4Config::Debug* debug
@@ -44,9 +42,6 @@ namespace mu2e {
     , mu2elimits_(nullptr)
   {}
 
-  Mu2eG4CustomizationPhysicsConstructor::~Mu2eG4CustomizationPhysicsConstructor()
-  {}
-
   void Mu2eG4CustomizationPhysicsConstructor::ConstructParticle()
   {
     // Empty on purpose, for now
@@ -54,8 +49,6 @@ namespace mu2e {
 
   void Mu2eG4CustomizationPhysicsConstructor::ConstructProcess()
   {
-    if(wasActivated) { return; }
-    wasActivated = true;
 
     if (debug_->diagLevel()>0) {
       G4cout << "Mu2eG4CustomizationPhysicsConstructor::"
@@ -85,6 +78,46 @@ namespace mu2e {
       G4EmParameters* params = G4EmParameters::Instance();
       params->SetMuHadLateralDisplacement(true);
     }
+
+    { bool disableEnergyLossFluctuations = false; // they are enabled by deafult
+      if (phys_->disableEnergyLossFluctuations(disableEnergyLossFluctuations)) {
+        if (disableEnergyLossFluctuations) {
+          if (debug_->diagLevel()>0) {
+            G4cout << __func__
+                   << " Turning off energy loss fluctuations "
+                   << G4endl;
+          }
+          G4EmParameters* params = G4EmParameters::Instance();
+          params->SetLossFluctuations(!disableEnergyLossFluctuations);
+        }
+      }
+    }
+
+#if G4VERSION>4110
+    { unsigned int energyLossFluctuationModel = 2; // 2 is geant4 11.1 default
+      if (phys_->setEnergyLossFluctuationModel(energyLossFluctuationModel)) {
+        if (debug_->diagLevel()>0) {
+          G4cout << __func__
+                 << " Setting energy loss fluctuations model to: "
+                 << energyLossFluctuationModel
+                 << G4endl;
+        }
+        G4EmParameters* params = G4EmParameters::Instance();
+        // a potential maintance point, 3 options as of Geant4 11.1
+        G4EmFluctuationType fluctType = fDummyFluctuation; // actually a model
+        if (energyLossFluctuationModel == 0) { fluctType = fDummyFluctuation; }
+        else if (energyLossFluctuationModel == 1) { fluctType = fUniversalFluctuation; }
+        else if (energyLossFluctuationModel == 2) { fluctType = fUrbanFluctuation; }
+        else {
+          throw cet::exception("BADINPUT")
+            << "Mu2eG4CustomizationPhysicsConstructor::ConstructProcess() Error: unknown energyLossFluctuationModel: "
+            << energyLossFluctuationModel
+            << "\n";
+        }
+        params->SetFluctuationType(fluctType);
+      }
+    }
+#endif
 
   }
 

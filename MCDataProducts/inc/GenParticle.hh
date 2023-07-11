@@ -109,6 +109,7 @@ namespace mu2e {
     return ost;
   }
   typedef std::vector<mu2e::GenParticle> GenParticleCollection;
+  typedef std::vector<mu2e::GenParticleCollection> GenParticleCollections;
 }
 
 #endif /* MCDataProducts_GenParticle_hh */

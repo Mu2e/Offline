@@ -249,7 +249,7 @@ void LookupBin::Read(std::ifstream &lookupfile, const unsigned int &i)
   if(i!=binNumber) throw std::logic_error("Corrupt lookup table.");
 }
 
-void MakeCrvPhotons::LoadLookupTable(const std::string &filename)
+  void MakeCrvPhotons::LoadLookupTable(const std::string &filename, int debug)
 {
   _fileName = filename;
   std::ifstream lookupfile(filename,std::ios::binary);
@@ -257,7 +257,7 @@ void MakeCrvPhotons::LoadLookupTable(const std::string &filename)
 
   _LC.Read(lookupfile);
   if(_LC.version1!=6) throw std::logic_error("This version of Offline expects a lookup table version 6.x.");
-  if(_LC.reflector!=0 && _LC.reflector!=1) throw std::logic_error("Lookup tables can have either no reflector, or a reflector on the +z side.");
+  if(_LC.reflector!=0 && _LC.reflector!=1 && _LC.reflector!=2) throw std::logic_error("Lookup tables can have either no reflector/absorber, or a reflector/absorber on the +z side.");
 
   _LCerenkov.Read(lookupfile);
   _LBD.Read(lookupfile);
@@ -271,11 +271,11 @@ void MakeCrvPhotons::LoadLookupTable(const std::string &filename)
   _bins[1].resize(nScintillatorCerenkovBins);
   _bins[2].resize(nFiberCerenkovBins);
 
-  std::cout<<"Reading CRV lookup tables "<<filename<<" ... "<<std::flush;
+  if(debug>0) std::cout<<"Reading CRV lookup tables "<<filename<<" ... "<<std::flush;
   for(unsigned int i=0; i<nScintillatorScintillationBins; i++) _bins[0][i].Read(lookupfile,i);
   for(unsigned int i=0; i<nScintillatorCerenkovBins; i++)      _bins[1][i].Read(lookupfile,i);
   for(unsigned int i=0; i<nFiberCerenkovBins; i++)             _bins[2][i].Read(lookupfile,i);
-  std::cout<<"Done."<<std::endl;
+  if(debug>0) std::cout<<"Done."<<std::endl;
 
   lookupfile.close();
 }
@@ -289,12 +289,11 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
                           double timeStart, double timeEnd,
                           double beta, double charge,
                           double visibleEnergyDeposited,
-                          double trueTotalStepLength,   //may be longer than stepEnd-stepStart due to scattering 
+                          double trueTotalStepLength,   //may be longer than stepEnd-stepStart due to scattering
                                                         //is needed for the Cerenkov photons
                           int    reflector)
 {
-  if(_LC.reflector!=0 && reflector==0) throw std::logic_error("Expected a lookup table without reflector.");
-  if(_LC.reflector==0 && reflector==1) throw std::logic_error("Expected a lookup table with reflector.");
+  if(_LC.reflector!=std::abs(reflector)) throw std::logic_error("Expected reflector/absorber doesn't match lookup table.");
 
   for(int SiPM=0; SiPM<4; SiPM++) _arrivalTimes[SiPM].clear();
 
@@ -307,7 +306,7 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
   {
     stepStart[SiPM] = stepStartTmp;
     stepEnd[SiPM]   = stepEndTmp;
-    if(reflector==-1)
+    if(reflector==-1 || reflector==-2)
     {
       stepStart[SiPM].setZ(-stepStart[SiPM].z());
       stepEnd[SiPM].setZ(-stepEnd[SiPM].z());
@@ -338,9 +337,9 @@ static int nPCerenkov=0;
     int    nSteps=std::max(static_cast<int>(totalStepLength/precision),1);
 
     double avgNPhotonsScintillation = _scintillationYield*visibleEnergyDeposited;
-    double avgNPhotonsCerenkovInScintillator 
+    double avgNPhotonsCerenkovInScintillator
            = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsScintillator)*trueTotalStepLength;  //use the true path, since it  may be longer due to curved paths
-    double avgNPhotonsCerenkovInFiber 
+    double avgNPhotonsCerenkovInFiber
            = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsFiber)*trueTotalStepLength;  //use the true path, since it  may be longer due to curved paths
 
     int nPhotonsScintillationPerStep          = GetNumberOfPhotonsFromAverage(avgNPhotonsScintillation,nSteps);
@@ -355,7 +354,7 @@ static int nPCerenkov=0;
 
       bool isInScintillator = IsInsideScintillator(p);
       double r=0;  //distance from fiber center for fiber tables
-      double phi=0;  //angle w.r.t. the radius vector from the fiber center to the point in the 2D cross section plane 
+      double phi=0;  //angle w.r.t. the radius vector from the fiber center to the point in the 2D cross section plane
                      //0...+pi due to symmetry
       bool isInFiber = IsInsideFiber(p,distanceVector, r,phi);
 
@@ -414,7 +413,7 @@ nPCerenkov+=nPhotonsCerenkov;
           //add additional time delay due to the photons bouncing around
           arrivalTime+=GetRandomTime(theBin);
 
-          if(reflector!=-1) _arrivalTimes[SiPM].push_back(arrivalTime);
+          if(reflector!=-1 && reflector!=-2) _arrivalTimes[SiPM].push_back(arrivalTime);
           else _arrivalTimes[SiPM+1].push_back(arrivalTime);
 
         }// if a photon was created
@@ -441,14 +440,14 @@ bool MakeCrvPhotons::IsInsideScintillator(const CLHEP::Hep3Vector &p)
   {
     double tmp=(pos2D[i]-fiberPos2D[i])/fiberRadius2D[i];
     ellipseSum+=tmp*tmp;
-  } 
+  }
   if(ellipseSum<1) return false; // <1 means inside ellipse, i.e. inside fiber hole. ellipse formula: (x-P_x)^2 / r_x^2 + (y-P_y)^2 / r_y^2 = 1
 
   CLHEP::Hep2Vector cornerPos2D(_LC.halfThickness-_LC.scintillatorCornerRadius,_LC.halfWidth-_LC.scintillatorCornerRadius);
   if(pos2D[0]>cornerPos2D[0] && pos2D[1]>cornerPos2D[1])
   {
     if((pos2D-cornerPos2D).mag()>_LC.scintillatorCornerRadius) return false;
-  } 
+  }
 
   return true;
 }
@@ -478,7 +477,7 @@ bool MakeCrvPhotons::IsInsideFiber(const CLHEP::Hep3Vector &p, const CLHEP::Hep3
 
 double MakeCrvPhotons::GetRandomTime(const LookupBin *theBin)
 {
-  //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255), 
+  //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255),
   //so that the probabilities can be stored as integers. For example, the probability of 1 is stored as 255.
   //Due to rounding issues, the sum of all entries for this bin may not be 255.
   //This bin-specifc sum is the probabilityScaleTimeDelays.
@@ -498,7 +497,7 @@ double MakeCrvPhotons::GetRandomTime(const LookupBin *theBin)
 
 int MakeCrvPhotons::GetRandomFiberEmissions(const LookupBin *theBin)
 {
-  //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255), 
+  //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255),
   //so that the probabilities can be stored as integers. For example, the probability of 1 is stored as 255.
   //Due to rounding issues, the sum of all entries for this bin may not be 255.
   //This bin-specifc sum is the probabilityScaleFiberEmissions.
@@ -567,6 +566,6 @@ double MakeCrvPhotons::GetAverageNumberOfCerenkovPhotons(double beta, double cha
     }
   }
   return photons.rbegin()->second*fabs(charge/eplus); //this shouldn't happen
-} 
+}
 
 } //namespace mu2e

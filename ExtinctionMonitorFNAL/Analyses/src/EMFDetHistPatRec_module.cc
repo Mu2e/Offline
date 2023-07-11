@@ -14,14 +14,12 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Utilities/InputTag.h"
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -31,7 +29,6 @@
 
 #include "TH1D.h"
 #include "TH2D.h"
-
 
 #define AGDEBUG(stuff) do { std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<", func "<<__func__<<": "<<stuff<<std::endl; } while(0)
 //#define AGDEBUG(stuff)
@@ -160,4 +157,4 @@ namespace mu2e {
   } // namespace ExtMonFNAL
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFDetHistPatRec);
+DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFDetHistPatRec)

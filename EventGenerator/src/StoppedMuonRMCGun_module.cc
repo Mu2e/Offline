@@ -19,7 +19,6 @@
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -31,10 +30,9 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
@@ -59,7 +57,6 @@ namespace mu2e {
     double rhoInternal_;
     double elow_; // BinnedSpectrum does not store emin and emax reliably
     double ehi_;
-
 
     BinnedSpectrum spectrum_;
 
@@ -89,7 +86,6 @@ namespace mu2e {
     double internalNormalization{0.};
     double externalNormalization{0.};
 
-
     TH1F* _hmomentum;
     TH1F* _hCosz;
     TH1F* _hEnergyElectron;
@@ -99,7 +95,7 @@ namespace mu2e {
     TH1F* _hMee;
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;
-    TH1F* _hy;				// splitting function
+    TH1F* _hy;                                // splitting function
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -113,7 +109,6 @@ namespace mu2e {
     ~StoppedMuonRMCGun();
     virtual void produce(art::Event& event);
   };
-
 
 //================================================================
   StoppedMuonRMCGun::StoppedMuonRMCGun(const fhicl::ParameterSet& pset)
@@ -146,8 +141,8 @@ namespace mu2e {
       std::cout<<"StoppedMuonRMCGun: producing photon " << std::endl;
     }
 
-    me_  = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::e_minus ).ref().mass().value();
-    mmu_ = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::mu_minus).ref().mass().value();
+    me_  = GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::e_minus ).mass();
+    mmu_ = GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::mu_minus).mass();
 
     // initialize binned spectrum - this needs to be done right
     parseSpectrumShape(psphys_);
@@ -220,7 +215,6 @@ namespace mu2e {
       if (spectrum_.getXMax() > kMax) upperEnergy = kMax;
       // papers measure R(photon>57) = 1.43e-05. Hardwire that.
       const double rGammaEnergy = 57.; // this is what was measured, won't change unless someone does it again. Measurements are e>57.
-
 
       if (spectrum_.getXMin() < rGammaEnergy){
         lowestEnergy = rGammaEnergy;
@@ -312,14 +306,14 @@ namespace mu2e {
                             pos,
                             mome,
                             //fakeElectron,
-                            //			    800. );
+                            //                            800. );
                             stop.t );
       output->emplace_back( PDGCode::e_plus,
                             GenId::InternalRMC,
                             pos,
                             momp,
                             //fakePositron,
-                            //			    800.);
+                            //                            800.);
                             stop.t );
 
       event.put(std::move(output));
@@ -364,8 +358,7 @@ namespace mu2e {
     return result;
   }
 
-
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StoppedMuonRMCGun);
+DEFINE_ART_MODULE(mu2e::StoppedMuonRMCGun)

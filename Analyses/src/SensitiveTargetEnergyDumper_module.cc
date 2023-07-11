@@ -22,19 +22,13 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
 
-
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
-
 
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -44,7 +38,7 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
@@ -61,15 +55,9 @@ namespace mu2e {
     // unlike generic conditions, MC particle data
     // should not change run-to-run, so static is safe
     // use static for efficiency
-    static GlobalConstantsHandle<ParticleDataTable> pdt;
+    static GlobalConstantsHandle<ParticleDataList> pdt;
 
-    ParticleDataTable::maybe_ref info = pdt->particle(pdgId);
-
-    if(!info.isValid()) {
-      throw cet::exception("MISSINGINFO")<<"No valid PDG info for pdgId = "<<pdgId<<"\n";
-    }
-
-    return info.ref().charge();
+    return pdt->particle(pdgId).charge();
   }
 
   //================================================================
@@ -77,15 +65,9 @@ namespace mu2e {
     // unlike generic conditions, MC particle data
     // should not change run-to-run, so static is safe
     // use static for efficiency
-    static GlobalConstantsHandle<ParticleDataTable> pdt;
+    static GlobalConstantsHandle<ParticleDataList> pdt;
 
-    ParticleDataTable::maybe_ref info = pdt->particle(hit.simParticle()->pdgId());
-
-    if(!info.isValid()) {
-      throw cet::exception("MISSINGINFO")<<"No valid PDG info for hit = "<<hit<<"\n";
-    }
-
-    const double mass = info.ref().mass();
+    const double mass = pdt->particle(hit.simParticle()->pdgId()).mass();
     return sqrt(hit.momentum().mag2() + std::pow(mass, 2)) - mass;
   }
 
@@ -109,7 +91,6 @@ namespace mu2e {
     int   pdgId;
     unsigned particleId;
     unsigned volumeCopyNumber;
-
 
     VDHit() : x(std::numeric_limits<double>::quiet_NaN())
             , y(std::numeric_limits<double>::quiet_NaN())
@@ -151,9 +132,9 @@ namespace mu2e {
 
       , charge(getCharge(hit.simParticle()->pdgId()))
 
-									   , pdgId(hit.simParticle()->pdgId())
-									   , particleId(hit.simParticle()->id().asUint())
-					   , volumeCopyNumber(hit.volumeId())
+                                                                           , pdgId(hit.simParticle()->pdgId())
+                                                                           , particleId(hit.simParticle()->id().asUint())
+                                           , volumeCopyNumber(hit.volumeId())
     {}
 
   }; // struct VDHit
@@ -245,59 +226,55 @@ namespace mu2e {
     //if(writeProperTime_) {
     //  nt_->Branch("tau", &tau_, "tauNormalized/F");
     // }
-    // }
 
     void SensitiveTargetEnergyDumper::beginRun(art::Run const& run){
       art::ServiceHandle<art::TFileService> tfs;
 
       if (!booked) // a workaround for geometry service not being available at job start
-	//
-	// geometry service to get initial proton info
-	art::ServiceHandle<GeometryService> geom;
+        //
+        // geometry service to get initial proton info
+        art::ServiceHandle<GeometryService> geom;
 
       _gunRotation = GeomHandle<ProductionTarget>()->protonBeamRotation();
       _gunOrigin = GeomHandle<ProductionTarget>()->haymanPosition();
 
-      std::cout << "gun origin pieces in analysis module \n " << 
-	GeomHandle<ProductionTarget>()->haymanPosition()  << "\n"<<
-	_gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->halfHaymanLength()) << "\n" <<
-	_gunOrigin << std::endl;
+      std::cout << "gun origin pieces in analysis module \n " <<
+        GeomHandle<ProductionTarget>()->haymanPosition()  << "\n"<<
+        _gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->halfHaymanLength()) << "\n" <<
+        _gunOrigin << std::endl;
 
       Int_t nbins = +2.0*GeomHandle<ProductionTarget>()->halfHaymanLength() + 0.5;
       std::cout << " nbins = " << nbins << std::endl;
 
       _hEnergyVsZ = tfs->make<TH1F>("_hEnergyVsZ","Energy vs Z",nbins+10
-				    ,0.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
+                                    ,0.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
       //300,-6300.,-6000.);
       _hHitX = tfs->make<TH1F>("_hHitX","Internal X Position of Hit, Energy Weighted",200,-20.,20.);
       _hHitY = tfs->make<TH1F>("_hHitY","Internal Y Position Of Hit, Energy Weighted",200,-20.,20.);
       std::cout << " half length = " << GeomHandle<ProductionTarget>()->halfHaymanLength() << std::endl;
- 
+
       _hHitZCore = tfs->make<TH1F>("_hHitZCore","Internal Z Position of Hit, Core Section, Energy Weighted",nbins+10
-				   ,-10.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
+                                   ,-10.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
 
       _hHitZStartingCore = tfs->make<TH1F>("_hHitZStartingCore","Internal Z Position of Hit, Starting Core Section, Energy Weighted",nbins+10
-					   ,-10.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
+                                           ,-10.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
 
       _hHitZFin = tfs->make<TH1F>("_hHitZFin","Internal Z Position of Hit, Fin Section, Energy Weighted",nbins+10
-				  ,-10.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
+                                  ,-10.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
 
       _hHitZStartingFin = tfs->make<TH1F>("_hHitZStartingFin","Internal Z Position of Hit, Starting Fin Section, Energy Weighted",nbins+10
-					  ,-10.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
-
+                                          ,-10.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
 
       _hHitNegRing = tfs->make<TH2F>("_hHitNegRing","Scatter Plot for Ring at Beginning of Target",50,-25.,25.,50,-25.,25.);
       _hHitPosRing = tfs->make<TH2F>("_hHitPosRing","Scatter Plot for Ring at End of Target",50,-25.,25.,50,-25.,25.);
 
       _hEnergyVsZAll = tfs->make<TH1F>("_hEnergyVsZAll","Energy vs Z",nbins+10
-				    ,0.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
+                                    ,0.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
       _hHitXAll = tfs->make<TH1F>("_hHitXAll","Internal X Position of Hit, Energy Weighted",200,-20.,20.);
       _hHitYAll = tfs->make<TH1F>("_hHitYAll","Internal Y Position Of Hit, Energy Weighted",200,-20.,20.);
 
       booked = true;
     }
-  
-
 
 
   //================================================================
@@ -311,40 +288,38 @@ namespace mu2e {
     }
     */
     bool useThisInstance = false;
- 
+
     ++numberOfCalls;
        std::cout << "number Of Calls = " << numberOfCalls << std::endl;
     std::string hitInputTagInstance = hitsInputTag_.instance();
- 
+
           std::cout << "hitInputTagInstance " << hitInputTagInstance << " " << useThisInstance << std::endl;
- 
-    // 
+
+    //
     // do we want this instance?
-    if (hitInputTagInstance.find("ProductionTarget") != std::string::npos) { 
+    if (hitInputTagInstance.find("ProductionTarget") != std::string::npos) {
       useThisInstance = true;
                  std::cout << "hitInputTagInstance Found " << hitInputTagInstance << " " << useThisInstance << std::endl;
     }
 
-
     const auto& ih = event.getValidHandle<StepPointMCCollection>(hitsInputTag_);
 
     for(const auto& i : *ih) {
-
 
       hit_ = VDHit(toff_, i);
       CLHEP::Hep3Vector hitLoc(hit_.x,hit_.y,hit_.z);
 
            std::cout << "hit x = " << hitLoc << std::endl;
       //     if (hit_.totalEDep > 0){_hEnergyVsZ->Fill(hit_.z,hit_.totalEDep);}
-  
+
       //
-      // this rotation takes me from mu2e coordinates to internal  
+      // this rotation takes me from mu2e coordinates to internal
       // at generation time  we apply _gunRotation to go from target coord to mu2e coord.  A little tricky
       // since gunOrigin is defined to be the downstream end of the gun for the rotated target, that is, where the protons hit. Let's transform that away.
- 
+
       hitPositionInternal = _gunRotation.inverse()*(hitLoc - _gunOrigin) - CLHEP::Hep3Vector(0.,0., GeomHandle<ProductionTarget>()->halfHaymanLength());
       //      std::cout << "hitloc, rotation, core = " << hitLoc << "\n" << _gunOrigin << "\n" << _gunRotation << "\n" << hitPositionInternal << std::endl;
-      //	   std::cout << " x val " << hitLoc << std::endl;
+      //           std::cout << " x val " << hitLoc << std::endl;
       ntMembers[0] = hitPositionInternal.x();
       ntMembers[1] = hitPositionInternal.y();
       ntMembers[2] = hitPositionInternal.z();
@@ -360,58 +335,58 @@ namespace mu2e {
       //
       // - sign since beam travels toward negative z in Mu2e coordinates.  make plot run from zero and look like the target...
       if (hitInputTagInstance == "ProductionTargetCoreSection") {
-	_hHitZCore->Fill(-hitPositionInternal.z(),hit_.totalEDep);
-	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
-	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
-	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
-	++nInCore;
-	//	std::cout << " in core section " << nInCore << std::endl; 
+        _hHitZCore->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+        _hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+        _hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+        _hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+        ++nInCore;
+        //        std::cout << " in core section " << nInCore << std::endl;
      } else if (hitInputTagInstance == "ProductionTargetPositiveEndRing"){
-	//	std::cout << "in pos ring" << std::endl;
-	//  	   std::cout << " x val " << hitLoc << std::endl;
-	_hHitPosRing->Fill(hitPositionInternal.x(),hitPositionInternal.y(),hit_.totalEDep);
-	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
-	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
-	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+        //        std::cout << "in pos ring" << std::endl;
+        //             std::cout << " x val " << hitLoc << std::endl;
+        _hHitPosRing->Fill(hitPositionInternal.x(),hitPositionInternal.y(),hit_.totalEDep);
+        _hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+        _hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+        _hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
       } else if (hitInputTagInstance == "ProductionTargetNegativeEndRing"){
-	//	std::cout << "in neg ring" << std::endl;
-	//   	   std::cout << " x val " << hitLoc << std::endl;
-	_hHitNegRing->Fill(hitPositionInternal.x(),hitPositionInternal.y(),hit_.totalEDep);
-	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
-	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
-	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+        //        std::cout << "in neg ring" << std::endl;
+        //              std::cout << " x val " << hitLoc << std::endl;
+        _hHitNegRing->Fill(hitPositionInternal.x(),hitPositionInternal.y(),hit_.totalEDep);
+        _hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+        _hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+        _hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
       } else if (hitInputTagInstance == "ProductionTargetStartingCoreSection"){
-	//	std::cout << "in  starting core" << std::endl;
-	//  	   std::cout << " x val " << hitLoc << std::endl;
-	_hHitZStartingCore->Fill(-hitPositionInternal.z(),hit_.totalEDep);
-	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
-	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
-	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+        //        std::cout << "in  starting core" << std::endl;
+        //             std::cout << " x val " << hitLoc << std::endl;
+        _hHitZStartingCore->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+        _hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+        _hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+        _hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
       } else if (hitInputTagInstance == "ProductionTargetFinSection"){
-	//	std::cout << "in  starting core" << std::endl;
-	//  	   std::cout << " x val " << hitLoc << std::endl;
-	_hHitZFin->Fill(-hitPositionInternal.z(),hit_.totalEDep);
-	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
-	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
-	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+        //        std::cout << "in  starting core" << std::endl;
+        //             std::cout << " x val " << hitLoc << std::endl;
+        _hHitZFin->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+        _hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+        _hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+        _hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
       } else if (hitInputTagInstance == "ProductionTargetFinStartingSection"){
-	//	std::cout << "in  starting core" << std::endl;
-	//  	   std::cout << " x val " << hitLoc << std::endl;
-	_hHitZStartingFin->Fill(-hitPositionInternal.z(),hit_.totalEDep);
-	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
-	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
-	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+        //        std::cout << "in  starting core" << std::endl;
+        //             std::cout << " x val " << hitLoc << std::endl;
+        _hHitZStartingFin->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+        _hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+        _hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+        _hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
       } else if (hitInputTagInstance == "ProductionTargetFinTopSection" || hitInputTagInstance == "ProductionTargetFinTopStartingSection"){
-	//	std::cout << "in  starting core" << std::endl;
-	//  	   std::cout << " x val " << hitLoc << std::endl;
-	_hHitZStartingFin->Fill(-hitPositionInternal.z(),hit_.totalEDep);
-	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
-	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
-	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+        //        std::cout << "in  starting core" << std::endl;
+        //             std::cout << " x val " << hitLoc << std::endl;
+        _hHitZStartingFin->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+        _hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+        _hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+        _hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
       }
 
       //      if(writeProperTime_) {
-      //	tau_ = SimParticleGetTau::calculate(i, spMCColls, decayOffCodes_);
+      //        tau_ = SimParticleGetTau::calculate(i, spMCColls, decayOffCodes_);
       //      }
     }
 
@@ -422,4 +397,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::SensitiveTargetEnergyDumper);
+DEFINE_ART_MODULE(mu2e::SensitiveTargetEnergyDumper)

@@ -6,7 +6,7 @@
 
 #include "Offline/CosmicRayShieldGeom/inc/CRSSupportStructure.hh"
 
-namespace mu2e 
+namespace mu2e
 {
 
   CRSSupportStructure::CRSSupportStructure(const std::string &name, const CLHEP::Hep3Vector &position, const std::vector<double> &halfLengths, const std::string &materialName) :

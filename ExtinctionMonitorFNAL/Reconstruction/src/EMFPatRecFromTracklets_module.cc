@@ -6,10 +6,8 @@
 // momentum and extrapolated donwstream where the consistency with the
 // donwstream tracklet is checked.
 //
-//
 // Original author Andrei Gaponenko
 //
-
 
 #include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/Tracklet.hh"
 #include <string>
@@ -33,7 +31,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -45,7 +42,6 @@
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
@@ -75,7 +71,7 @@ namespace mu2e {
       void book(const ExtMon& extmon, const std::string& relativePath="");
 
       // Book histograms in the specified TFileDirectory.
-      void book(const ExtMon& extmon, art::TFileDirectory& tfdir);
+      void book(const ExtMon& extmon, const art::TFileDirectory& tfdir);
 
       void fill(const Tracklet& tl);
       void fill(const Tracklets& tls);
@@ -92,12 +88,12 @@ namespace mu2e {
     void HistTracklet::book(const ExtMonFNAL::ExtMon& extmon, const std::string& relativePath)
     {
       art::ServiceHandle<art::TFileService> tfs;
-      art::TFileDirectory tfdir = relativePath.empty() ? *tfs : tfs->mkdir(relativePath.c_str());
+      art::TFileDirectory tfdir = tfs->mkdir(relativePath.c_str());
       book (extmon, tfdir);
     }
 
     // Book the histograms.
-    void HistTracklet::book(const ExtMonFNAL::ExtMon& extmon, art::TFileDirectory& tfdir) {
+    void HistTracklet::book(const ExtMonFNAL::ExtMon& extmon, const art::TFileDirectory& tfdir) {
 
       hclock_ = tfdir.make<TH1D>("clock", "Tracklet clock", 100, -20.5, 79.5);
 
@@ -143,7 +139,7 @@ namespace mu2e {
       void book(const ExtMon& extmon, const std::string& relativePath="");
 
       // Book histograms in the specified TFileDirectory.
-      void book(const ExtMon& extmon, art::TFileDirectory& tfdir);
+      void book(const ExtMon& extmon, const art::TFileDirectory& tfdir);
 
       void fill(const Tracklet& up, const Tracklet& dn);
       void fill(const Tracklets& ups, const Tracklets& dns);
@@ -158,12 +154,12 @@ namespace mu2e {
     void HistTrkMatch::book(const ExtMonFNAL::ExtMon& extmon, const std::string& relativePath)
     {
       art::ServiceHandle<art::TFileService> tfs;
-      art::TFileDirectory tfdir = relativePath.empty() ? *tfs : tfs->mkdir(relativePath.c_str());
+      art::TFileDirectory tfdir = tfs->mkdir(relativePath.c_str());
       book (extmon, tfdir);
     }
 
     // Book the histograms.
-    void HistTrkMatch::book(const ExtMonFNAL::ExtMon& extmon, art::TFileDirectory& tfdir) {
+    void HistTrkMatch::book(const ExtMonFNAL::ExtMon& extmon, const art::TFileDirectory& tfdir) {
 
       hclockMatch_ = tfdir.make<TH2D>("clockMatch", "Tracklet clock dn vs up",
                                       100, -20.5, 79.5, 100, -20.5, 79.5);
@@ -301,12 +297,12 @@ namespace mu2e {
 
       // finds all clusters in stackPlane that are compatible with a straigth line track going through c1 and c2
       std::vector<unsigned> findCompatibleClusterIndices(
-							 const ExtMonFNALRecoCluster& c1, 
-							 const ExtMonFNALRecoCluster& c2,
-							 const art::Handle<ExtMonFNALRecoClusterCollection>& coll,
-							 const ExtMonFNALPlaneStack& stack,
-							 unsigned stackPlane
-							 );
+                                                         const ExtMonFNALRecoCluster& c1,
+                                                         const ExtMonFNALRecoCluster& c2,
+                                                         const art::Handle<ExtMonFNALRecoClusterCollection>& coll,
+                                                         const ExtMonFNALPlaneStack& stack,
+                                                         unsigned stackPlane
+                                                         );
 
       Tracklet createTracklet(const Tracklet& orig, const art::Ptr<ExtMonFNALRecoCluster>& cl);
 
@@ -475,23 +471,22 @@ namespace mu2e {
       std::list< std::vector<unsigned> > foundCombinations;
       for(unsigned seedPlane=0; seedPlane <= maxMissedHits_; ++seedPlane) {
         unsigned backPlane = stack.nplanes() - maxMissedHits_  + seedPlane - 1;
-	const unsigned plane1 = stack.planeNumberOffset() + seedPlane;
+        const unsigned plane1 = stack.planeNumberOffset() + seedPlane;
         const unsigned plane2 = stack.planeNumberOffset() + backPlane;
 
-
-	// This vector is used to simplify loooping over the non-seed planes
-	std::vector< unsigned > additionalPlanes ( stack.nplanes() -2, 0 );
-	for(unsigned count = 0, stackPlane=0; stackPlane < stack.nplanes(); ++stackPlane) {
+        // This vector is used to simplify loooping over the non-seed planes
+        std::vector< unsigned > additionalPlanes ( stack.nplanes() -2, 0 );
+        for(unsigned count = 0, stackPlane=0; stackPlane < stack.nplanes(); ++stackPlane) {
           if( stackPlane == seedPlane ) continue;
           if( stackPlane == backPlane ) continue;
-	  additionalPlanes[count] = stackPlane; ++count;
-	}
+          additionalPlanes[count] = stackPlane; ++count;
+        }
 
         const PC pc1 = coll->clusters(plane1);
         const PC pc2 = coll->clusters(plane2);
 
         // This will hold the list of cluster combinations found using this seed plane
-	std::list< std::vector<unsigned> > newCombinations;
+        std::list< std::vector<unsigned> > newCombinations;
 
         // find seed pairs
         for(unsigned i1 = 0; i1 < pc1.size(); ++i1) {
@@ -502,88 +497,88 @@ namespace mu2e {
             hClockDiffTrackletSeedClusters_->Fill(c2->clock() - c1->clock());
 
             if( (std::abs(c1->clock() - c2->clock()) <= clusterClockTolerance_) &&
-		(std::abs(c1->position().x() - c2->position().x()) < dxmax) &&
-		(std::abs(c1->position().y() - c2->position().y()) < dymax) )
+                (std::abs(c1->position().x() - c2->position().x()) < dxmax) &&
+                (std::abs(c1->position().y() - c2->position().y()) < dymax) )
               {
 
               // This will hold the list of cluster combinations found using this seed pair
-	      std::list< std::vector<unsigned> > newSeedCombinations;
-	
-	      for(unsigned p=0; p < stack.nplanes() - 2; ++p) {
-	        unsigned stackPlane = additionalPlanes[p];
-	        std::vector<unsigned> clusters = findCompatibleClusterIndices(*c1, *c2, coll, stack, stackPlane);
+              std::list< std::vector<unsigned> > newSeedCombinations;
+
+              for(unsigned p=0; p < stack.nplanes() - 2; ++p) {
+                unsigned stackPlane = additionalPlanes[p];
+                std::vector<unsigned> clusters = findCompatibleClusterIndices(*c1, *c2, coll, stack, stackPlane);
 
                 // This will hold the list of extra cluster combinations found using this plane
-	        std::list< std::vector<unsigned> > newPlaneCombinations;
+                std::list< std::vector<unsigned> > newPlaneCombinations;
 
-	        for( unsigned i = 0; i < clusters.size(); i++ ) {
+                for( unsigned i = 0; i < clusters.size(); i++ ) {
 
-	          // check if this combination was found using an earlier seed plane
-	          bool notfound = true;
-	          for(auto comb = foundCombinations.begin(); comb != foundCombinations.end(); ++comb ) {
-	            if( (*comb)[seedPlane] == i1 &&
-	        	(*comb)[backPlane] == i2 &&
-	        	(*comb)[stackPlane] == i )
-	              {
-	        	notfound = false; break;
-	              }
-	          }
+                  // check if this combination was found using an earlier seed plane
+                  bool notfound = true;
+                  for(auto comb = foundCombinations.begin(); comb != foundCombinations.end(); ++comb ) {
+                    if( (*comb)[seedPlane] == i1 &&
+                        (*comb)[backPlane] == i2 &&
+                        (*comb)[stackPlane] == i )
+                      {
+                        notfound = false; break;
+                      }
+                  }
 
-	          if( notfound ) {
-	            if( newSeedCombinations.size() == 0 ) {
-		    // This is the first new combination using this seed pair
-	        	std::vector<unsigned> planes( stack.nplanes(), -1u );
-	        	planes[seedPlane] = i1;
-	        	planes[backPlane] = i2;
-	        	newSeedCombinations.push_back(planes);
-		    }
-		    for(auto comb = newSeedCombinations.begin(); comb != newSeedCombinations.end(); ++comb ) {
-		    // Form all possible coombinations of this plane's hits with those of earlier planes
-		    //  the 1st one can be included into the existing combinations will go into copies of them 
-	              if( i == 0 ) {
-	        	(*comb)[stackPlane] = i;
-	              } else {
-	        	std::vector<unsigned> planes( *comb );
-	        	planes[stackPlane] = i;
-	        	newPlaneCombinations.push_back(planes);
-	              }
-	            }
+                  if( notfound ) {
+                    if( newSeedCombinations.size() == 0 ) {
+                    // This is the first new combination using this seed pair
+                        std::vector<unsigned> planes( stack.nplanes(), -1u );
+                        planes[seedPlane] = i1;
+                        planes[backPlane] = i2;
+                        newSeedCombinations.push_back(planes);
+                    }
+                    for(auto comb = newSeedCombinations.begin(); comb != newSeedCombinations.end(); ++comb ) {
+                    // Form all possible coombinations of this plane's hits with those of earlier planes
+                    //  the 1st one can be included into the existing combinations will go into copies of them
+                      if( i == 0 ) {
+                        (*comb)[stackPlane] = i;
+                      } else {
+                        std::vector<unsigned> planes( *comb );
+                        planes[stackPlane] = i;
+                        newPlaneCombinations.push_back(planes);
+                      }
+                    }
 
-	          } // if combination found
-	        } // additional plane clusters
+                  } // if combination found
+                } // additional plane clusters
 
                 newSeedCombinations.splice( newSeedCombinations.begin(), newPlaneCombinations );
 
-	      } // additional planes
+              } // additional planes
 
-	      newCombinations.splice( newCombinations.begin(), newSeedCombinations );
+              newCombinations.splice( newCombinations.begin(), newSeedCombinations );
 
-	    } // if seed ok
+            } // if seed ok
           } // back plane clusters
         } // seed plane clusters
 
-	// create new tracklets
-	for(auto comb = newCombinations.begin(); comb != newCombinations.end(); ++comb ) {
-	  // this piece of code can be replaced with an appropriate Tracklet constructor
-	  std::vector<art::Ptr<ExtMonFNALRecoCluster> > additionalClusters;
+        // create new tracklets
+        for(auto comb = newCombinations.begin(); comb != newCombinations.end(); ++comb ) {
+          // this piece of code can be replaced with an appropriate Tracklet constructor
+          std::vector<art::Ptr<ExtMonFNALRecoCluster> > additionalClusters;
           art::Ptr<ExtMonFNALRecoCluster> c1(coll, coll->globalIndex(plane1, (*comb)[seedPlane]));
           art::Ptr<ExtMonFNALRecoCluster> c2(coll, coll->globalIndex(plane2, (*comb)[backPlane]));
-	  for(unsigned p=0; p < stack.nplanes() - 2; ++p) {
-	    unsigned stackPlane = additionalPlanes[p];
-	    if( (*comb)[stackPlane] == -1u ) continue;
-	    unsigned globalPlane = stack.planeNumberOffset() + stackPlane;
-	    additionalClusters.push_back(art::Ptr<ExtMonFNALRecoCluster>(coll, coll->globalIndex(globalPlane, (*comb)[stackPlane])));
-	  }
-	  if( additionalClusters.size() >= stack.nplanes() - maxMissedHits_  - 2 ) {
-	    Tracklet track(c1,c2);
-	    for( unsigned ic = 0; ic < additionalClusters.size(); ic++ ) {
-	      modifyInPlace(&track, additionalClusters[ic]);
-	    }
-	    res.push_back( track );
-	  }
-	} // new combinations
+          for(unsigned p=0; p < stack.nplanes() - 2; ++p) {
+            unsigned stackPlane = additionalPlanes[p];
+            if( (*comb)[stackPlane] == -1u ) continue;
+            unsigned globalPlane = stack.planeNumberOffset() + stackPlane;
+            additionalClusters.push_back(art::Ptr<ExtMonFNALRecoCluster>(coll, coll->globalIndex(globalPlane, (*comb)[stackPlane])));
+          }
+          if( additionalClusters.size() >= stack.nplanes() - maxMissedHits_  - 2 ) {
+            Tracklet track(c1,c2);
+            for( unsigned ic = 0; ic < additionalClusters.size(); ic++ ) {
+              modifyInPlace(&track, additionalClusters[ic]);
+            }
+            res.push_back( track );
+          }
+        } // new combinations
 
-	foundCombinations.splice( foundCombinations.begin(), newCombinations );
+        foundCombinations.splice( foundCombinations.begin(), newCombinations );
 
       } // seed plane
 
@@ -592,11 +587,11 @@ namespace mu2e {
 
     //================================================================
     std::vector<unsigned> EMFPatRecFromTracklets::findCompatibleClusterIndices(const ExtMonFNALRecoCluster& c1,
-									       const ExtMonFNALRecoCluster& c2,
-									       const art::Handle<ExtMonFNALRecoClusterCollection>& coll,
-									       const ExtMonFNALPlaneStack& stack,
-									       unsigned stackPlane
-									       )
+                                                                               const ExtMonFNALRecoCluster& c2,
+                                                                               const art::Handle<ExtMonFNALRecoClusterCollection>& coll,
+                                                                               const ExtMonFNALPlaneStack& stack,
+                                                                               unsigned stackPlane
+                                                                               )
     {
       const unsigned anchorPlane1 = c1.plane();
       const unsigned anchorPlane2 = c2.plane();
@@ -638,17 +633,17 @@ namespace mu2e {
       const unsigned int globalPlane = stackPlane + stack.planeNumberOffset();
       const ExtMonFNALRecoClusterCollection::PlaneClusters& clusters = coll->clusters(globalPlane);
       for(unsigned ic=0; ic<clusters.size(); ++ic) {
-	const ExtMonFNALRecoCluster& cl = clusters[ic];
-	if(inTime(c1, cl) || inTime(c2, cl)) {
-	  const double dx = interpolated.x() - cl.position().x();
-	  const double dy = interpolated.y() - cl.position().y();
+        const ExtMonFNALRecoCluster& cl = clusters[ic];
+        if(inTime(c1, cl) || inTime(c2, cl)) {
+          const double dx = interpolated.x() - cl.position().x();
+          const double dy = interpolated.y() - cl.position().y();
 
-	  hClusterAddXY_[globalPlane]->Fill(dx/dxmax, dy/dymax);
-	  hClusterAddXXMax_[globalPlane]->Fill(dxmax, dx);
-	  hClusterAddYYMax_[globalPlane]->Fill(dymax, dy);
+          hClusterAddXY_[globalPlane]->Fill(dx/dxmax, dy/dymax);
+          hClusterAddXXMax_[globalPlane]->Fill(dxmax, dx);
+          hClusterAddYYMax_[globalPlane]->Fill(dymax, dy);
 
-	  if((std::abs(dx) < dxmax) && (std::abs(dy) < dymax) ) { res.push_back(ic); }
-	}
+          if((std::abs(dx) < dxmax) && (std::abs(dy) < dymax) ) { res.push_back(ic); }
+        }
       }
       return res;
     }

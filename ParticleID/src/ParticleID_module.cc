@@ -16,7 +16,6 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -41,10 +40,8 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
-#include "Offline/RecoDataProducts/inc/PIDProductCollection.hh"
 
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
@@ -101,9 +98,7 @@ int findlowhist(float d){
   else
     {    cout<<"Out of  bounds. Should never end up here\n"; return -9999.;}
 
-
 }
-
 
   class ParticleID : public art::EDProducer {
 
@@ -118,7 +113,6 @@ int findlowhist(float d){
 
   private:
 
-
     PIDProduct _pid;
 
     int _processed_events;
@@ -132,7 +126,6 @@ int findlowhist(float d){
 
     TrkParticle _tpart;
     TrkFitDirection _fdir;
-
 
     int _trkid;
     double _trkmom;
@@ -156,16 +149,13 @@ int findlowhist(float d){
     float _templateslastbin ;
     float _templatesbinsize ;
 
-
-
     TTree *       _pidtree;
     TCanvas*      _plotCanvas;
 
-
-    bool calculateSlope(std::vector<double>vresd,std::vector<double>vflt, 
-			std::vector<double>evresd,std::vector<double>evflt,  
-			double * slope, 
-			double * eslope);
+    bool calculateSlope(std::vector<double>vresd,std::vector<double>vflt,
+                        std::vector<double>evresd,std::vector<double>evflt,
+                        double * slope,
+                        double * eslope);
 
     double calculateProb(std::vector<double>gaspaths, std::vector<double>edeps, TH1D** templates);
 
@@ -216,13 +206,9 @@ int findlowhist(float d){
     _templateslastbin = _heletemp[0]->GetBinLowEdge(_templatesnbins)+_heletemp[0]->GetBinWidth(1);
     _templatesbinsize = _heletemp[0]->GetBinWidth(1);
 
-
-
-
   }
 
   void ParticleID::beginJob(){
-
 
     // histograms
 
@@ -237,7 +223,6 @@ int findlowhist(float d){
       _pidtree->Branch("logeprob", &_logeprob           , "logeprob/D");
       _pidtree->Branch("logmprob", &_logmprob           , "logmprob/D");
     }
-
 
     if(_doDisplay) {
       // If needed, create the ROOT interactive environment. See note 1.
@@ -259,7 +244,6 @@ int findlowhist(float d){
   void ParticleID::beginRun(art::Run & run){
     if (_verbosity>=2) cout << "ParticleID: From beginRun: " << run.id().run() << endl;
 
-
   }
 
   void ParticleID::beginSubRun(art::SubRun & lblock ) {
@@ -270,9 +254,7 @@ int findlowhist(float d){
     if (_verbosity>=2) cout << "ParticleID: From endJob. " << endl;
     if (_doDisplay) delete _plotCanvas;
 
-
   }
-
 
 ////////// Produce ///////////
 
@@ -289,11 +271,9 @@ int findlowhist(float d){
 
     unique_ptr<PIDProductCollection> pids(new PIDProductCollection );
 
-
    art::Handle<KalRepPtrCollection> trksHandle;
    event.getByLabel(_fitterModuleLabel,trksHandle);
    const KalRepPtrCollection* const trks = trksHandle.product();
-
 
    if (!trksHandle.isValid()) {
      if (_verbosity>=1) cout << "ParticleID : " << "no" << " obj for " << _fitterModuleLabel.c_str() << " of event " << _evtid << endl;
@@ -303,9 +283,7 @@ int findlowhist(float d){
      if (_verbosity>=1) cout << "ParticleID : " << trks->size() << " obj for " << _fitterModuleLabel.c_str() << " of event " << _evtid << endl;
    }
 
-
    for ( size_t i=0; i< trks->size(); ++i ){
-
 
      _trkid = i;
      const KalRep* krep = trks->at(i).get();
@@ -324,14 +302,10 @@ int findlowhist(float d){
      std::vector<double> gaspaths;
      std::vector<double> edeps;
 
-
      for(unsigned isite=0;isite<kalsites.size();isite++){
        KalSite* ksite = kalsites[isite];
 
-
-
        if (ksite->type() == KalSite::hitSite){
-
 
          TrkStrawHit* hit = dynamic_cast<TrkStrawHit*>(ksite->kalHit()->hit());
          double resid, residerr;
@@ -358,10 +332,7 @@ int findlowhist(float d){
        }
      }
 
-
      calculateSlope(vresd,vflt,evresd,evflt,&_residualsSlope,&_residualsSlopeError);
-
-
 
      double eprob = calculateProb(gaspaths, edeps, _heletemp);
      double muprob = calculateProb(gaspaths, edeps, _hmuotemp);
@@ -379,7 +350,6 @@ int findlowhist(float d){
      _pid.SetLogEProb(_logeprob);
      _pid.SetLogMProb(_logmprob);
 
-
      pids->push_back(_pid);
 
    }  // end of trks loop
@@ -387,12 +357,10 @@ int findlowhist(float d){
 
   }
 
-
   double ParticleID::calculateProb(std::vector<double>gaspaths, std::vector<double>edeps, TH1D** templates){
 
     static const double _minpath = 0.5;
     static const double _maxpath = 10.;
-
 
     double thisprob = 1;
 
@@ -403,7 +371,6 @@ int findlowhist(float d){
       double tmpprob = 0;
       if (thispath > _minpath && thispath<=_maxpath){
           int lowhist = findlowhist(thispath);
-
 
           PIDUtilities util;
           TH1D* hinterp = util.th1dmorph(templates[lowhist],templates[lowhist+1],pathbounds[lowhist],pathbounds[lowhist+1],thispath,1,0);
@@ -428,16 +395,13 @@ int findlowhist(float d){
       if (tmpprob> 0)
         thisprob = thisprob * tmpprob;
 
-
     }
 
     return thisprob;
 
   }
 
-
   bool ParticleID::calculateSlope(std::vector<double>vresd,std::vector<double>vflt,std::vector<double>evresd,std::vector<double>evflt,  double * slope, double * eslope) {
-
 
     error = new TGraphErrors(vresd.size(),vflt.data(),vresd.data(),evflt.data(),evresd.data());
 
@@ -468,7 +432,6 @@ int findlowhist(float d){
     *slope = sfpar[1];
     *eslope = errsfpar[1];
 
-
     if (_doDisplay){
       error->Draw("AP");
       _plotCanvas->WaitPrimitive();
@@ -479,10 +442,7 @@ int findlowhist(float d){
     return converged;
   }
 
-
-
-
 } // end namespace mu2e
 
 using mu2e::ParticleID;
-DEFINE_ART_MODULE(ParticleID);
+DEFINE_ART_MODULE(ParticleID)

@@ -17,8 +17,8 @@ public:
 
   void   clear();
   void   init(const BuildLinearFitMatrixSums& S);
-  void   addPoint(XYZVec point_i, XYZVec XPrime, XYZVec YPrime,XYZVec ZPrime, double errX, double errY);
- 
+  void   addPoint(XYZVectorF point_i, XYZVectorF XPrime, XYZVectorF YPrime,XYZVectorF ZPrime, double errX, double errY);
+
 
   double Get2DParameter(int i, TMatrixD Alpha);
   void SetChi2(double chi2);
@@ -30,7 +30,7 @@ public:
   TMatrixD GetGammaY();
   TMatrixD GetBetaY();
   TMatrixD GetCovY();
-  
+
   double GetChi2X();
   double GetChi2Y();
   double GetTotalChi2();

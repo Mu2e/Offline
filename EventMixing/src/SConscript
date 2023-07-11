@@ -8,6 +8,7 @@ Import('env')
 Import('mu2e_helper')
 
 helper=mu2e_helper(env);
+rootlibs = env['ROOTLIBS']
 
 mainlib = helper.make_mainlib ( [
     'mu2e_MCDataProducts',
@@ -37,12 +38,14 @@ mainlib = helper.make_mainlib ( [
     'Core', # dependence on gVersionCheck, reportedly due to some bug upstream
 ] )
 
+
 helper.make_plugins ( [ mainlib,
         'mu2e_Mu2eUtilities',
         'mu2e_SeedService_SeedService_service',
         'mu2e_MCDataProducts',
         'mu2e_DataProducts',
         'mu2e_SimulationConditions',
+        'mu2e_DbTables',
         'art_Framework_Core',
         'art_Framework_Principal',
         'art_Framework_Services_Registry',
@@ -64,8 +67,7 @@ helper.make_plugins ( [ mainlib,
         'cetlib_except',
         'hep_concurrency',
         'CLHEP',
-        'Hist',
-        'Core',
+        rootlibs,
         'boost_filesystem',
     'pthread'
  ] )

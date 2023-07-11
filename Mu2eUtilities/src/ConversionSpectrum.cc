@@ -10,10 +10,8 @@
 
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "HepPDT/Measurement.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
-#include "HepPDT/ParticleData.hh"
 #include "gsl/gsl_integration.h"
 #include "gsl/gsl_math.h"
 
@@ -28,9 +26,9 @@ namespace mu2e {
     _bin          (bin         ),
     _spectrumType (RadCorrected)
   {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 
-    _par.me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
+    _par.me    = pdt->particle(PDGCode::e_minus ).mass();
     _par.alpha = 1./137.035999139;
     _par.eMax  = maxEnergy;
     _nbins     = maxEnergy/_bin;
@@ -39,7 +37,7 @@ namespace mu2e {
       _nbins += 1;
       de = _par.eMax-_bin*(_nbins-1);
     }
-					// calculate integral.... for n-1 bins;
+                                        // calculate integral.... for n-1 bins;
      _integral = evalIntegral(de);
 
   }
@@ -105,13 +103,13 @@ namespace mu2e {
     double emax = _par.eMax-de;
 
     gsl_integration_qags(&F,
-			 emin, emax,
-			 epsabs,
-			 epsrel,
-			 limit,
-			 ws,
-			 &result,
-			 &abserr);
+                         emin, emax,
+                         epsabs,
+                         epsrel,
+                         limit,
+                         ws,
+                         &result,
+                         &abserr);
 
     gsl_integration_workspace_free(ws);
     //    std::cout<<"il valore dell'integrale fino al penultimo bin e' "<< result<<std::endl;

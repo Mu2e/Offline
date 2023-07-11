@@ -20,18 +20,18 @@ namespace mu2e {
   friend class BeamlineMaker;
 
   public:
-    // fixme: improve  _materialName initialization 
-    TorusSection() : 
+    // fixme: improve  _materialName initialization
+    TorusSection() :
       _rTorus(0.),_rIn(0.),_rOut(0.),
-      _phiBegin(0.),_deltaPhi(0.) 
+      _phiBegin(0.),_deltaPhi(0.)
     {
       fillData();
     }
 
 
-    TorusSection(double rTorus, double rIn, double rOut, double phi0, double dPhi, 
-                 CLHEP::Hep3Vector const & origin, 
-                 CLHEP::HepRotation const & rotation = CLHEP::HepRotation(), 
+    TorusSection(double rTorus, double rIn, double rOut, double phi0, double dPhi,
+                 CLHEP::Hep3Vector const & origin,
+                 CLHEP::HepRotation const & rotation = CLHEP::HepRotation(),
                  std::string const & materialName = ""):
       TSSection(origin, rotation, materialName),
       _rTorus(rTorus),_rIn(rIn),_rOut(rOut),
@@ -39,7 +39,7 @@ namespace mu2e {
     {
       fillData();
     }
-    
+
     TorusSection(const Torus& torus) :
       TSSection(torus.originInMu2e(), torus.rotation(), torus.materialName()),
       _rTorus(torus.torusRadius()),
@@ -53,8 +53,8 @@ namespace mu2e {
 
     ~TorusSection(){}
 
-    void set(double rTorus, double rIn, double rOut, double phi0, double dPhi, 
-             CLHEP::Hep3Vector  const & origin, 
+    void set(double rTorus, double rIn, double rOut, double phi0, double dPhi,
+             CLHEP::Hep3Vector  const & origin,
              CLHEP::HepRotation  const & rotation = CLHEP::HepRotation(),
              std::string const & materialName = "") {
       _rTorus  =rTorus;

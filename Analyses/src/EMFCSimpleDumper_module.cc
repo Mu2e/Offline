@@ -9,11 +9,10 @@
 // Mu2e includes.
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
@@ -25,7 +24,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 // ROOT
@@ -47,7 +45,6 @@
 #include <iterator>
 #include <limits>
 
-
 #include <iostream>
 //#define AGDEBUG(stuff) do { std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl; } while(0)
 #define AGDEBUG(stuff) do {} while(0)
@@ -62,21 +59,13 @@ namespace mu2e {
       // unlike generic conditions, MC particle data
       // should not change run-to-run, so static is safe
       // use static for efficiency
-      static GlobalConstantsHandle<ParticleDataTable> pdt;
+      static GlobalConstantsHandle<ParticleDataList> pdt;
 
-      ParticleDataTable::maybe_ref info = pdt->particle(pdgId);
+      ParticleData info = pdt->particle(pdgId);
 
       // Negatives will be rejected by the analysis
       // Use an impossible number which is in the range of the "charge" histogram to signal "uninitialized"
-      double charge(-0.2);
-
-      if(!info.isValid()) {
-        std::cout<<"AG: warning: no valid PDG info for pdgId = "<<pdgId<<" using charge = "<<charge<<std::endl;
-      }
-      else {
-        charge = info.ref().charge();
-      }
-
+      double charge = info.charge();
       return charge;
     }
 
@@ -276,4 +265,4 @@ namespace mu2e {
   } // namespace ExtMonFNAL
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFCSimpleDumper);
+DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFCSimpleDumper)

@@ -37,12 +37,12 @@ namespace mu2e {
     void EMFPatRecFakeHistograms::book(const ExtMon& extmon, const std::string& relativePath)
     {
       art::ServiceHandle<art::TFileService> tfs;
-      art::TFileDirectory tfdir = relativePath.empty() ? *tfs : tfs->mkdir(relativePath.c_str());
+      art::TFileDirectory tfdir = tfs->mkdir(relativePath.c_str());
       book (extmon, tfdir);
     }
 
     // Book the histograms.
-    void EMFPatRecFakeHistograms::book(const ExtMon& extmon, art::TFileDirectory& tfdir) {
+    void EMFPatRecFakeHistograms::book(const ExtMon& extmon, const art::TFileDirectory& tfdir) {
 
       fracDups_ = tfdir.make<TEfficiency>("fracDups", "Fraction of duplicates vs multiplicity;signal multiplicity",
                                           500, 0.5, 500.5);

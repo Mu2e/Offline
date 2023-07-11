@@ -10,14 +10,13 @@
 #include <vector>
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/types/Sequence.h"
 
 #include "Offline/SeedService/inc/SeedService.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 #include "Offline/EventGenerator/inc/ExtMonFNALGunImpl.hh"
 
@@ -75,4 +74,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ExtMonFNALGun);
+DEFINE_ART_MODULE(mu2e::ExtMonFNALGun)

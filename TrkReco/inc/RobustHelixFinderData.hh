@@ -8,9 +8,9 @@
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
@@ -31,14 +31,14 @@ namespace mu2e {
   typedef ROOT::Math::XYVectorF  XYVec;
   // struct for weighted positions
   class XYWVec : public XYVec {
-  public :
-    XYWVec(XYZVec pos, int face, float weight=1.0) : XYVec(pos.x(),pos.y()), _face(face), _weight(weight){}
-    float weight() const { return _weight; }
-    int   face() const { return _face; }
+    public :
+      XYWVec(XYZVectorF pos, int face, float weight=1.0) : XYVec(pos.x(),pos.y()), _face(face), _weight(weight){}
+      float weight() const { return _weight; }
+      int   face() const { return _face; }
 
-  private :
-    int   _face;
-    float _weight; // weight for this position
+    private :
+      int   _face;
+      float _weight; // weight for this position
   };
 
   class TimeCluster;
@@ -49,185 +49,185 @@ namespace mu2e {
   // output struct
   //-----------------------------------------------------------------------------
   class RobustHelixFinderData {
-  public:
-    
-    enum { kMaxResidIndex = 500 };
+    public:
 
-    constexpr static uint16_t        kNMaxChHits = 150;
+      enum { kMaxResidIndex = 500 };
 
-    struct ChannelID {
-      int Station;
-      int Plane; 
-      int Face; 
-      int Panel; 
-      //      int Layer;
-    };
+      constexpr static uint16_t        kNMaxChHits = 150;
 
-    struct Diag_t {
-      
-      int       nShFitCircle;
-      int       nChFitCircle;
+      struct ChannelID {
+        int Station;
+        int Plane;
+        int Face;
+        int Panel;
+        //      int Layer;
+      };
 
-      int       nShFitXY;
-      int       nChFitXY;
+      struct Diag_t {
 
-      int       nChPPanel;
-      int       nChHits;
+        int       nShFitCircle;
+        int       nChFitCircle;
 
-      float    resid[kMaxResidIndex];
-      float    dist [kMaxResidIndex];
-      float    rwdot[kMaxResidIndex];
-      float    dz   [kMaxResidIndex];
-      
-      int      nXYCh;
-      int      nZPhiCh;
-      
-      int       circleFitCounter;
-      int       nrescuedhits;
+        int       nShFitXY;
+        int       nChFitXY;
 
-      float    dr;
-      float    chi2d_helix;
-      
-      float    chi2dXY;
-      float    chi2dZPhi;
+        int       nChPPanel;
+        int       nChHits;
 
-      int       ntriple_0;    //number of triplets used in the first call of RobustHelix::fitCircle
-      float    radius_0;     //radius resulting from the first call of RobustHelix::fitCircle
-  
-      int       nshsxy_0;
-      float    rsxy_0;
-      float    chi2dsxy_0;
+        float    resid[kMaxResidIndex];
+        float    dist [kMaxResidIndex];
+        float    rwdot[kMaxResidIndex];
+        float    dz   [kMaxResidIndex];
 
-      int       nshsxy_1;
-      float    rsxy_1;
-      float    chi2dsxy_1;
+        int      nXYCh;
+        int      nZPhiCh;
 
-      int       nfz0counter;
+        int       circleFitCounter;
+        int       nrescuedhits;
 
-      int       nshszphi;
-      float    lambdaszphi;
-      float    chi2dszphi;
+        float    dr;
+        float    chi2d_helix;
 
-      int       nshszphi_0;
-      float    lambdaszphi_0;
-      float    chi2dszphi_0;
+        float    chi2dXY;
+        float    chi2dZPhi;
 
-      int       nshszphi_1;
-      float    lambdaszphi_1;
-      float    chi2dszphi_1;
+        int       ntriple_0;    //number of triplets used in the first call of RobustHelix::fitCircle
+        float    radius_0;     //radius resulting from the first call of RobustHelix::fitCircle
+
+        int       nshsxy_0;
+        float    rsxy_0;
+        float    chi2dsxy_0;
+
+        int       nshsxy_1;
+        float    rsxy_1;
+        float    chi2dsxy_1;
+
+        int       nfz0counter;
+
+        int       nshszphi;
+        float    lambdaszphi;
+        float    chi2dszphi;
+
+        int       nshszphi_0;
+        float    lambdaszphi_0;
+        float    chi2dszphi_0;
+
+        int       nshszphi_1;
+        float    lambdaszphi_1;
+        float    chi2dszphi_1;
 
 
-      int       ntriple_1;    //number of triplets used in the first call of RobustHelix::fitCircle
-      float    radius_1;     //radius resulting from the first call of RobustHelix::fitCircle
-      
-      int       ntriple_2;
-      float    radius_2;
+        int       ntriple_1;    //number of triplets used in the first call of RobustHelix::fitCircle
+        float    radius_1;     //radius resulting from the first call of RobustHelix::fitCircle
 
-      float    lambda_0;
-      float    lambda_1;
+        int       ntriple_2;
+        float    radius_2;
 
-      int       xyniter;
-      int       fzniter;
-      int       niter;
+        float    lambda_0;
+        float    lambda_1;
 
-      int       nLoops;
-      float     meanHitRadialDist;
-      int       nHitsLoopFailed;
+        int       xyniter;
+        int       fzniter;
+        int       niter;
 
-    };
-    
-    const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices
-    art::Ptr<TimeCluster>             _timeClusterPtr;
+        int       nLoops;
+        float     meanHitRadialDist;
+        int       nHitsLoopFailed;
 
-    //    HelixTraj*                        _helix;
+      };
 
-    HelixSeed                         _hseed;
+      const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices
+      art::Ptr<TimeCluster>             _timeClusterPtr;
 
-    //    std::vector<StrawHitIndex>        _goodhits;
+      //    HelixTraj*                        _helix;
 
-    // SeedInfo_t                        _seedIndex;
-    // SeedInfo_t                        _candIndex;
+      HelixSeed                         _hseed;
 
-    int                               _nStrawHits;      
-    int                               _nComboHits;    
+      //    std::vector<StrawHitIndex>        _goodhits;
 
-    int                               _nXYSh;
-    int                               _nZPhiSh;
+      // SeedInfo_t                        _seedIndex;
+      // SeedInfo_t                        _candIndex;
 
-    int                               _nXYCh;
-    int                               _nZPhiCh;
-  
-    int                               _nFiltComboHits;  //ComboHits from the TimeCluster + DeltaFinder filtering 
-    int                               _nFiltStrawHits;  //StrawHits from the TimeCluster + DeltaFinder filtering 
+      int                               _nStrawHits;
+      int                               _nComboHits;
 
-    // double                            _helixChi2;
+      int                               _nXYSh;
+      int                               _nZPhiSh;
 
-    // TrkParticle                       _tpart;
-    // TrkFitDirection                   _fdir;
+      int                               _nXYCh;
+      int                               _nZPhiCh;
 
-    const ComboHitCollection*         _chcol;
-    // const StrawHitPositionCollection* _shpos;
-    const StrawHitFlagCollection*     _chfcol;
-    
-    //    TrkErrCode                        _fit;	    // fit status code from last fit
-//-----------------------------------------------------------------------------
-// circle parameters; the z center is ignored.
-//-----------------------------------------------------------------------------
-    ::LsqSums4         _sxy;
-    ::LsqSums4         _szphi;
+      int                               _nFiltComboHits;  //ComboHits from the TimeCluster + DeltaFinder filtering
+      int                               _nFiltStrawHits;  //StrawHits from the TimeCluster + DeltaFinder filtering
 
-    // XYZVec             _center;
-    // double             _radius;
+      // double                            _helixChi2;
 
-    // double             _chi2;
-//-----------------------------------------------------------------------------
-// Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)), 
-// fz0 is the phi value of the particle where it goes through z=0
-// note that dfdz has a physical ambiguity in q*zdir.
-//-----------------------------------------------------------------------------
-    // double             _dfdz;
-    // double             _fz0;
-//-----------------------------------------------------------------------------
-// diagnostics, histogramming
-//-----------------------------------------------------------------------------
-    Diag_t             _diag;
-//-----------------------------------------------------------------------------
-// structure used to organize thei strawHits for the pattern recognition
-//-----------------------------------------------------------------------------
-    std::array<FaceZ_t,StrawId::_ntotalfaces>            _oTracker;
+      // TrkParticle                       _tpart;
+      // TrkFitDirection                   _fdir;
 
-    std::vector<ComboHit>                                _chHitsToProcess;
-    std::vector<XYWVec>                                  _chHitsWPos;
-    // std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
-//-----------------------------------------------------------------------------
-// functions
-//-----------------------------------------------------------------------------
-    RobustHelixFinderData();
-    ~RobustHelixFinderData();
+      const ComboHitCollection*         _chcol;
+      // const StrawHitPositionCollection* _shpos;
+      const StrawHitFlagCollection*     _chfcol;
 
-    // RobustHelixFinderData(const RobustHelixFinderData& Data);
+      //    TrkErrCode                        _fit;     // fit status code from last fit
+      //-----------------------------------------------------------------------------
+      // circle parameters; the z center is ignored.
+      //-----------------------------------------------------------------------------
+      ::LsqSums4         _sxy;
+      ::LsqSums4         _szphi;
 
-    // RobustHelixFinderData& operator =(RobustHelixFinderData const& other);
+      // XYZVectorF             _center;
+      // double             _radius;
 
-    const ComboHitCollection*         chcol () { return _chcol ; }
-    // const StrawHitPositionCollection* shpos () { return _shpos ; }
-    const StrawHitFlagCollection*     chfcol() { return _chfcol; }
+      // double             _chi2;
+      //-----------------------------------------------------------------------------
+      // Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)),
+      // fz0 is the phi value of the particle where it goes through z=0
+      // note that dfdz has a physical ambiguity in q*zdir.
+      //-----------------------------------------------------------------------------
+      // double             _dfdz;
+      // double             _fz0;
+      //-----------------------------------------------------------------------------
+      // diagnostics, histogramming
+      //-----------------------------------------------------------------------------
+      Diag_t             _diag;
+      //-----------------------------------------------------------------------------
+      // structure used to organize thei strawHits for the pattern recognition
+      //-----------------------------------------------------------------------------
+      std::array<FaceZ_t,StrawId::_ntotalfaces>            _oTracker;
 
-    // bool          fitIsValid        () { return _sxy.qn() > 0; }
-    // bool          weightedFitIsValid() { return _sxy.qn() > 0; }
-    int           maxIndex          () { return kMaxResidIndex; }
-    // HelixTraj*    helix             () { return _helix;        }
+      std::vector<ComboHit>                                _chHitsToProcess;
+      std::vector<XYWVec>                                  _chHitsWPos;
+      // std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
+      //-----------------------------------------------------------------------------
+      // functions
+      //-----------------------------------------------------------------------------
+      RobustHelixFinderData();
+      ~RobustHelixFinderData();
 
-    // int           nGoodHits         () { return _goodhits.size(); }
+      // RobustHelixFinderData(const RobustHelixFinderData& Data);
 
-    void          orderID           (ChannelID* X, ChannelID* O);
+      // RobustHelixFinderData& operator =(RobustHelixFinderData const& other);
 
-    void          print(const char* Title);
-    void          clearTempVariables();
-    void          clearResults();
+      const ComboHitCollection*         chcol () { return _chcol ; }
+      // const StrawHitPositionCollection* shpos () { return _shpos ; }
+      const StrawHitFlagCollection*     chfcol() { return _chfcol; }
+
+      // bool          fitIsValid        () { return _sxy.qn() > 0; }
+      // bool          weightedFitIsValid() { return _sxy.qn() > 0; }
+      int           maxIndex          () { return kMaxResidIndex; }
+      // HelixTraj*    helix             () { return _helix;        }
+
+      // int           nGoodHits         () { return _goodhits.size(); }
+
+      void          orderID           (ChannelID* X, ChannelID* O);
+
+      void          print(const char* Title);
+      void          clearTempVariables();
+      void          clearResults();
 
   };
 
-};
+}
 #endif
 

@@ -6,7 +6,7 @@
 #ifndef TrkDef_HH
 #define TrkDef_HH
 // Mu2e
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 // BTrk includes
@@ -20,33 +20,33 @@
 
 class TrkDifPieceTraj;
 
-namespace mu2e 
+namespace mu2e
 {
 
   class TrkDef {
-  public:
-    TrkDef(TimeCluster const& tcluster, HelixTraj const& helix,
-      TrkParticle const& tpart, TrkFitDirection const& fdir);
-    TrkDef(const TrkDef&);
-    TrkDef& operator = (const TrkDef&);
-    ~TrkDef();
-  // append a straw hit to this track definition
-    void appendHit(size_t index) { _timeCluster._strawHitIdxs.push_back(index); }
-  // accessors
-    std::vector<StrawHitIndex> const& strawHitIndices() const { return _timeCluster._strawHitIdxs;}
-    HelixTraj const& helix() const { return _h0; }
-    TrkT0 const& t0() const { return _timeCluster._t0; }
-    TrkParticle const& particle() const { return _tpart; }
-    TrkFitDirection const& fitdir() const { return _fdir; }
-    //non-const accessors to allow updates
-    std::vector<StrawHitIndex>& strawHitIndices() { return _timeCluster._strawHitIdxs;}
-    HelixTraj& helix() { return _h0; }
-    TrkT0& t0() { return _timeCluster._t0; }
-  private:
-    TimeCluster _timeCluster; // t0 and hit indices
-    HelixTraj _h0; // helix estimate, valid in the region around z=0
-    TrkParticle _tpart; // particle type.  Note this defines both the charge and the mass
-    TrkFitDirection _fdir; // fit direction
+    public:
+      TrkDef(TimeCluster const& tcluster, HelixTraj const& helix,
+          TrkParticle const& tpart, TrkFitDirection const& fdir);
+      TrkDef(const TrkDef&);
+      TrkDef& operator = (const TrkDef&);
+      ~TrkDef();
+      // append a straw hit to this track definition
+      void appendHit(size_t index) { _timeCluster._strawHitIdxs.push_back(index); }
+      // accessors
+      std::vector<StrawHitIndex> const& strawHitIndices() const { return _timeCluster._strawHitIdxs;}
+      HelixTraj const& helix() const { return _h0; }
+      TrkT0 const& t0() const { return _timeCluster._t0; }
+      TrkParticle const& particle() const { return _tpart; }
+      TrkFitDirection const& fitdir() const { return _fdir; }
+      //non-const accessors to allow updates
+      std::vector<StrawHitIndex>& strawHitIndices() { return _timeCluster._strawHitIdxs;}
+      HelixTraj& helix() { return _h0; }
+      TrkT0& t0() { return _timeCluster._t0; }
+    private:
+      TimeCluster _timeCluster; // t0 and hit indices
+      HelixTraj _h0; // helix estimate, valid in the region around z=0
+      TrkParticle _tpart; // particle type.  Note this defines both the charge and the mass
+      TrkFitDirection _fdir; // fit direction
   };
 }
 

@@ -4,7 +4,7 @@
 //
 //
 // Author: dnbrow01
-// Date: 2017/03/22 
+// Date: 2017/03/22
 //
 
 // Include the degrader or not
@@ -29,12 +29,12 @@ double degrader.frame.halfLength           = 6.35;
 double degrader.frame.centerOffFromPivot   = 300.0;  // dist from pivot of
        // degrader arm to center of the frame (and filter)
 
-double degrader.filter.rIn		   = 0.0;
+double degrader.filter.rIn                 = 0.0;
 double degrader.filter.rOut                = 172.7;
 double degrader.filter.halfLength          = 1.75;
 
-double degrader.counterweight.rIn	   = 0.0;
-double degrader.counterweight.rOut	   = 57.0;
+double degrader.counterweight.rIn          = 0.0;
+double degrader.counterweight.rOut         = 57.0;
 double degrader.counterweight.halfLength   = 20.0;
 double degrader.counterweight.centerOffFromPivot = 150.0;
 

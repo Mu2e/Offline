@@ -30,12 +30,12 @@ namespace mu2e {
   void EMFRecoClusterHistograms::book(const ExtMonFNAL::ExtMon& extmon, const std::string& relativePath)
   {
     art::ServiceHandle<art::TFileService> tfs;
-    art::TFileDirectory tfdir = relativePath.empty() ? *tfs : tfs->mkdir(relativePath.c_str());
+    art::TFileDirectory tfdir = tfs->mkdir(relativePath.c_str());
     book (extmon, tfdir);
   }
 
   // Book the histograms.
-  void EMFRecoClusterHistograms::book(const ExtMonFNAL::ExtMon& extmon, art::TFileDirectory& tfdir) {
+  void EMFRecoClusterHistograms::book(const ExtMonFNAL::ExtMon& extmon, const art::TFileDirectory& tfdir) {
 
     extmon_ = &extmon;
 
@@ -70,7 +70,7 @@ namespace mu2e {
     // Bin cluster position histograms according to pixel size
     const unsigned nx = extmon.module().nxChips() * extmon.chip().nColumns();
     const double   lx = nx * extmon.chip().xPitch();
- 
+
     clusterPosition_.resize(nplanes);
     for(unsigned plane=0; plane < nplanes; ++plane) {
       const unsigned ny = extmon.plane(plane).nModules()*extmon.module().nyChips() * extmon.chip().nRows();

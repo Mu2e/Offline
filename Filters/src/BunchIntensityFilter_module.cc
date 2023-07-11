@@ -4,7 +4,6 @@
 //
 // framework
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
@@ -79,4 +78,4 @@ namespace mu2e
   }
 }
 using mu2e::BunchIntensityFilter;
-DEFINE_ART_MODULE(BunchIntensityFilter);
+DEFINE_ART_MODULE(BunchIntensityFilter)

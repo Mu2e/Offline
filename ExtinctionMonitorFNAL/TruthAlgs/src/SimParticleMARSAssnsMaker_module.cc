@@ -1,6 +1,5 @@
 // Associate SimParticles to MARSInfo in a newly produced compressed MARSInfoCollection.
 //
-//
 // Original author Andrei Gaponenko
 //
 
@@ -13,7 +12,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -23,11 +21,8 @@
 #include "canvas/Utilities/InputTag.h"
 
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/MARSInfo.hh"
-#include "Offline/MCDataProducts/inc/MARSInfoCollection.hh"
 #include "Offline/MCDataProducts/inc/SimParticleMARSAssns.hh"
 
 #include "Offline/Mu2eUtilities/inc/SimParticleParentGetter.hh"

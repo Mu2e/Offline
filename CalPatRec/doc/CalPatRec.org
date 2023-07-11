@@ -1,0 +1,39 @@
+# 
+* ------------------------------------------------------------------------------
+* quick help on CalPatRec modules
+* ------------------------------------------------------------------------------
+* module [[file:../src/DeltaFinder_module.cc][DeltaFinder]]                                                         
+
+  - defaults : [file:../fcl/prolog.fcl::/DeltaFinder/::]
+
+  - flags hits produced by delta-electrons and protons
+
+  - a seed: an intersection of hits in two panels of the same station corresponding 
+            to two hits close in time
+
+  - to see what is found: 
+
+    mu2e -c CalPatRec/test/deltaFinder_debug.fcl -e r:sr:ev -n 1 ...
+
+    use emacs to open the log file, and switch to org mode to see conveniently 
+    the printout of reconstructed DeltaCandidate's
+* ------------------------------------------------------------------------------
+* the following is an example for TrkHitReco package
+* ------------------------------------------------------------------------------
+* module [[file:../../TrkHitReco/src/FlagBkgHits_module.cc][FlagBkgHits]] : 
+  - defaults : [file:../../TrkHitReco/fcl/prolog.fcl::/FlagBkgHits/::]
+
+  - by default, writes out flag collections for CH and SSCH hits
+  - optionally, writes out CH collection for non-background hits
+* ------------------------------------------------------------------------------
+* straw ID bitmask : 16 bits  [file:../../DataProducts/inc/StrawId.hh]
+* ------------------------------------------------------------------------------
+     1
+     2    8    4    0
+  SSSS SPpp Fsss ssss
+
+  S : station
+  P : plane
+  p : panel
+  F : face
+  s : straw

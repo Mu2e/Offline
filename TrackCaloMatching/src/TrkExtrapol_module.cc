@@ -1,5 +1,4 @@
 //
-//
 // Original author G. Pezzullo
 //
 
@@ -7,7 +6,6 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
@@ -39,12 +37,10 @@
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 // data
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/RecoDataProducts/inc/TrkToCaloExtrapol.hh"
-
 
 //calorimeter includes
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
@@ -52,20 +48,16 @@
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 
-
 // Other includes.
 #include "cetlib_except/exception.h"
-
 
 // Mu2e includes.
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Offline/MCDataProducts/inc/VisibleGenElTrack.hh"
-#include "Offline/MCDataProducts/inc/VisibleGenElTrackCollection.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 //root includes
 #include "TFile.h"
@@ -92,14 +84,13 @@
 #include <vector>
 #include <functional>
 
-
 using namespace std;
 
 namespace mu2e {
 
   struct IntersectData_t {
       int    fSection;
-      int    fRC;			// return code, 0=success, <0: failure, details TBD
+      int    fRC;                        // return code, 0=success, <0: failure, details TBD
       double fSEntr;
       double fSExit;
     };
@@ -115,12 +106,12 @@ namespace mu2e {
       _diagLevel(pset.get<int>("diagLevel",0)),
       _outPutNtup(pset.get<int>("outPutNtup",0)),
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel",
-						  "generate")),
+                                                  "generate")),
       _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
       _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel",
-						    "CaloReadoutHitsMaker")),
+                                                    "CaloReadoutHitsMaker")),
       _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel",
-						    "CaloHitsMaker")),
+                                                    "CaloHitsMaker")),
       _directory(0),
       _firstEvent(true),
       _trkdiag(0){
@@ -140,15 +131,15 @@ namespace mu2e {
     void produce(art::Event & e );
 
     void caloExtrapol(int&             diagLevel,
-		      int              evtNumber,
-		      TrkFitDirection  fdir,
-		      KalRep*          Krep,
-		      double&          lowrange,
-		      double&          highrange,
-		      HelixTraj        &trkHel,
-		      int              &res0,
-		      int&             NIntersections,
-		      IntersectData_t* Intersections);
+                      int              evtNumber,
+                      TrkFitDirection  fdir,
+                      KalRep*          Krep,
+                      double&          lowrange,
+                      double&          highrange,
+                      HelixTraj        &trkHel,
+                      int              &res0,
+                      int&             NIntersections,
+                      IntersectData_t* Intersections);
 
     double ZfrontFaceCalo() const{ return _ZfrontFaceCalo;}
 
@@ -210,11 +201,10 @@ namespace mu2e {
     double _ZfrontFaceCalo;
     double _ZbackFaceCalo;
 
-
     CLHEP::Hep3Vector fromTrkToMu2eFrame(CLHEP::Hep3Vector  &vec);
 
     void filltrkdiag(int itrk, IntersectData_t *intersec,
-		     int size, KalRep const* kalrep);
+                     int size, KalRep const* kalrep);
 
   };
 
@@ -231,15 +221,15 @@ namespace mu2e {
   }
 
   void TrkExtrapol::caloExtrapol(int&             diagLevel,
-				 int              evtNumber,
-				 TrkFitDirection  fdir,
-				 KalRep*          Krep,
-				 double&          lowrange,
-				 double&          highrange,
-				 HelixTraj        &trkHel,
-				 int              &res0,
-				 int&              NIntersections,
-				 IntersectData_t*  Intersection  ) {
+                                 int              evtNumber,
+                                 TrkFitDirection  fdir,
+                                 KalRep*          Krep,
+                                 double&          lowrange,
+                                 double&          highrange,
+                                 HelixTraj        &trkHel,
+                                 int              &res0,
+                                 int&              NIntersections,
+                                 IntersectData_t*  Intersection  ) {
     art::ServiceHandle<GeometryService> geom;
     GeomHandle<DiskCalorimeter> cg;
     static const char* oname = "TrkExtrapol::caloExtrapol";
@@ -247,11 +237,11 @@ namespace mu2e {
     if(diagLevel>2){
 
       cout<<"start caloExtrapol, lowrange = "<<lowrange<<
-	", highrange = "<<highrange<<endl;
+        ", highrange = "<<highrange<<endl;
       cout<<"point of traj at lowrange : "<<Krep->traj().position(lowrange)<<endl;
       cout<<"point of traj at highrange : "<<Krep->traj().position(highrange)<<endl;
       cout<<"fltLMin = "<<Krep->startValidRange()<<
-	", fltLMax = "<<Krep->endValidRange()<<endl;
+        ", fltLMax = "<<Krep->endValidRange()<<endl;
     }
 
     TrkErrCode rc;
@@ -264,12 +254,12 @@ namespace mu2e {
 
     if(diagLevel>2){
       cout<<", after extention..."<<
-	", lowrange = "<<lowrange<<
-	", highrange = "<<highrange<<endl;
+        ", lowrange = "<<lowrange<<
+        ", highrange = "<<highrange<<endl;
       cout<<"point of traj at lowrange : "<<Krep->traj().position(lowrange)<<endl;
       cout<<"point of traj at highrange : "<<Krep->traj().position(highrange)<<endl;
       cout<<"fltLMin = "<<Krep->startValidRange()<<
-	", fltLMax = "<<Krep->endValidRange()<<endl;
+        ", fltLMax = "<<Krep->endValidRange()<<endl;
     }
 
     TrkDifTraj const &traj = Krep->traj();
@@ -299,7 +289,7 @@ namespace mu2e {
 
     if (diagLevel>2){
       cout<< "circle radius = "<< circleRadius<<
-	", pathStepSize = "<<pathStepSize<<endl;
+        ", pathStepSize = "<<pathStepSize<<endl;
     }
 
     double tmpRange = startLowrange;
@@ -310,65 +300,64 @@ namespace mu2e {
 
     for(int iStep = 0; iStep< nAngleSteps; ++iStep){
       for(int jSection=0; jSection<nSections; ++jSection){
-	trjPoint = traj.position(tmpRange);
-	if(diagLevel>4){
-	  cout<<" tmpRange = "<< tmpRange<<
-	    ", trj.position(tmpRange) = "<<trjPoint<<endl;
-	}
+        trjPoint = traj.position(tmpRange);
+        if(diagLevel>4){
+          cout<<" tmpRange = "<< tmpRange<<
+            ", trj.position(tmpRange) = "<<trjPoint<<endl;
+        }
 
-	trjVec.setX(trjPoint.x());
-	trjVec.setY(trjPoint.y());
-	trjVec.setZ(trjPoint.z());
+        trjVec.setX(trjPoint.x());
+        trjVec.setY(trjPoint.y());
+        trjVec.setZ(trjPoint.z());
 
-	trjVec = fromTrkToMu2eFrame(trjVec);
+        trjVec = fromTrkToMu2eFrame(trjVec);
 
-	if( cg->geomUtil().isInsideSection(jSection,trjVec ) ){
-	  if(!isInside[jSection]){
-	    if(diagLevel>4){
-	      cout<<"Event Number : "<< evtNumber<< endl;
-	      cout<<" vane "<<jSection<<
-		"isInside : true"<<
-		"pathLength entrance = "<<tmpRange<<endl;
-	    }
-	    isInside[jSection] = true;
-	    if(fdir.dzdt() == 1.0){
-	      entr[jSection] = tmpRange - pathStepSize;
-	    }else if(fdir.dzdt() == -1.0){
-	      entr[jSection] = tmpRange + pathStepSize;
-	    }
-	  }
-	}else if(isInside[jSection]){
-	  ex[jSection] = tmpRange + pathStepSize;
-	  if(diagLevel>4){
-	    cout<<"Event Number : "<< evtNumber<< endl;
-	    cout<<" vane "<<jSection<<
-	      "isInside : true"<<
-	      "hasExit : true"<<
-	      "pathLength entrance = "<<entr[jSection]<<
-	      "pathLength exit = "<<tmpRange<<endl;
-	  }
-	  isInside[jSection] = false;
+        if( cg->geomUtil().isInsideSection(jSection,trjVec ) ){
+          if(!isInside[jSection]){
+            if(diagLevel>4){
+              cout<<"Event Number : "<< evtNumber<< endl;
+              cout<<" vane "<<jSection<<
+                "isInside : true"<<
+                "pathLength entrance = "<<tmpRange<<endl;
+            }
+            isInside[jSection] = true;
+            if(fdir.dzdt() == 1.0){
+              entr[jSection] = tmpRange - pathStepSize;
+            }else if(fdir.dzdt() == -1.0){
+              entr[jSection] = tmpRange + pathStepSize;
+            }
+          }
+        }else if(isInside[jSection]){
+          ex[jSection] = tmpRange + pathStepSize;
+          if(diagLevel>4){
+            cout<<"Event Number : "<< evtNumber<< endl;
+            cout<<" vane "<<jSection<<
+              "isInside : true"<<
+              "hasExit : true"<<
+              "pathLength entrance = "<<entr[jSection]<<
+              "pathLength exit = "<<tmpRange<<endl;
+          }
+          isInside[jSection] = false;
 
-	  if (NIntersections < 100) {
-	    Intersection[NIntersections].fSection  = jSection;
-	    Intersection[NIntersections].fRC    = 0;
-	    Intersection[NIntersections].fSEntr = entr[jSection];
-	    Intersection[NIntersections].fSExit = ex  [jSection];
-	    NIntersections++;
-	  }
-	  else {
-	    printf("%s ERROR: NIntersections > 100, TRUNCATE LIST\n",oname);
-	  }
-	}
+          if (NIntersections < 100) {
+            Intersection[NIntersections].fSection  = jSection;
+            Intersection[NIntersections].fRC    = 0;
+            Intersection[NIntersections].fSEntr = entr[jSection];
+            Intersection[NIntersections].fSExit = ex  [jSection];
+            NIntersections++;
+          }
+          else {
+            printf("%s ERROR: NIntersections > 100, TRUNCATE LIST\n",oname);
+          }
+        }
       }
       if(fdir.dzdt() == 1.0){
-	tmpRange += pathStepSize;
+        tmpRange += pathStepSize;
       }else if(fdir.dzdt() == -1.0){
-	tmpRange -= pathStepSize;
+        tmpRange -= pathStepSize;
       }
     }
     //  }
-
 
     if (diagLevel>2) {
       cout<<"end search behindSection(), position is : "<<traj.position(tmpRange)<<endl;
@@ -381,14 +370,14 @@ namespace mu2e {
       lrange = Intersection[i].fSEntr;
       trk_rc = Krep->extendThrough(lrange);
       if (trk_rc.success() != 1) {
-	//-----------------------------------------------------------------------------
-	// failed to extend
-	//-----------------------------------------------------------------------------
-	Intersection[i].fRC = -1;
-	if (diagLevel>2) {
-	  printf("%s ERROR vane = %2i FAILED to EXTEND TRAJECTORY, rc = %i\n",
-		 oname,Intersection[i].fSection,trk_rc.success());
-	}
+        //-----------------------------------------------------------------------------
+        // failed to extend
+        //-----------------------------------------------------------------------------
+        Intersection[i].fRC = -1;
+        if (diagLevel>2) {
+          printf("%s ERROR vane = %2i FAILED to EXTEND TRAJECTORY, rc = %i\n",
+                 oname,Intersection[i].fSection,trk_rc.success());
+        }
       }
 
     }
@@ -398,10 +387,6 @@ namespace mu2e {
     delete [] ex;
 
   }//end proce_dUre
-
-
-
-
 
   void TrkExtrapol::beginJob() {
 
@@ -422,9 +407,7 @@ namespace mu2e {
       _trkdiag->Branch("trkmom[trkint]", _trkmom, "trkmom[trkint]/F");
     }
 
-
   }
-
 
   void TrkExtrapol::filltrkdiag(int itrk, IntersectData_t *intersec, int size, KalRep const* kalrep){
     _trkid = itrk;
@@ -454,7 +437,6 @@ namespace mu2e {
     doExtrapolation(evt, _skipEvent);
   }
 
-
 //-----------------------------------------------------------------------------
   void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
 
@@ -465,7 +447,6 @@ namespace mu2e {
 
     _ZfrontFaceCalo = cg->geomUtil().origin().z() + _solenoidOffSetZ;
     _ZbackFaceCalo = cg->geomUtil().origin().z() + _solenoidOffSetZ;
-
 
     const char* oname = "TrkExtrapol::doExtrapolation";
     double      lowrange, highrange, zmin, zmax;
@@ -492,7 +473,7 @@ namespace mu2e {
 
     for (int itrk=0; itrk< ntrk; ++itrk ){
       res0 = -1;
-					// extrapolation extends the track and thus changes it...
+                                        // extrapolation extends the track and thus changes it...
 
       KalRep* krep = (KalRep*) trks->at(itrk).get();
       if ( !krep ) continue;
@@ -515,76 +496,76 @@ namespace mu2e {
       zmax = _ZbackFaceCalo  + 100.;
 
       if(_fitDir ==  TrkFitDirection::downstream){
-	lowrange  = trkHel.zFlight(zmin);  /*1740*/
-	highrange = trkHel.zFlight(zmax); /*3500*/
+        lowrange  = trkHel.zFlight(zmin);  /*1740*/
+        highrange = trkHel.zFlight(zmax); /*3500*/
       }else if(_fitDir ==  TrkFitDirection::upstream ){
-	lowrange  = trkHel.zFlight(zmax);
-	highrange = trkHel.zFlight(zmin);
+        lowrange  = trkHel.zFlight(zmax);
+        highrange = trkHel.zFlight(zmin);
       }
 
       if (_diagLevel>2) {
 
-	cout<<endl<<"Event Number : "<< evt.event()<< endl;
-	cout<<"------ trk number : "<<itrk<<" ------"<<endl;
-	cout<<"found traj, point of traj at "<<traj.position(pos)<<endl;
-	cout<<"*************** lowRange =  "<< lowrange <<", highRange = "<< highrange << endl;
-	cout<< " is the particle in the 0 quadrant?"<<endl<<
-	  ", traj.position(lowrange).x() = "<< traj.position(lowrange).x()<<
-	  ", traj.position(lowrange).y() = "<< traj.position(lowrange).y()<<
-	  ", traj.position(lowrange).z() = "<< traj.position(lowrange).z()<<endl;
+        cout<<endl<<"Event Number : "<< evt.event()<< endl;
+        cout<<"------ trk number : "<<itrk<<" ------"<<endl;
+        cout<<"found traj, point of traj at "<<traj.position(pos)<<endl;
+        cout<<"*************** lowRange =  "<< lowrange <<", highRange = "<< highrange << endl;
+        cout<< " is the particle in the 0 quadrant?"<<endl<<
+          ", traj.position(lowrange).x() = "<< traj.position(lowrange).x()<<
+          ", traj.position(lowrange).y() = "<< traj.position(lowrange).y()<<
+          ", traj.position(lowrange).z() = "<< traj.position(lowrange).z()<<endl;
 
-	printf("circle: R = %10.3f X0 = %10.3f  Y0 = %10.3f phi0 = %10.3f\n",
-	       circleRadius,centerCircleX,centerCircleY,angle);
+        printf("circle: R = %10.3f X0 = %10.3f  Y0 = %10.3f phi0 = %10.3f\n",
+               circleRadius,centerCircleX,centerCircleY,angle);
       }
 
       IntersectData_t  intersection[100];
       int                                     nint(0);
 
       caloExtrapol(_diagLevel,
-		   (int) evt.event(),
-		   _fitDir, krep, lowrange, highrange,
-		   trkHel,
-		   res0,
-		   nint,
-		   intersection);
+                   (int) evt.event(),
+                   _fitDir, krep, lowrange, highrange,
+                   trkHel,
+                   res0,
+                   nint,
+                   intersection);
 
       if (nint == 0) {
-	printf("\n%s , run / event : %d / %d, \nERROR: intersection not found : res0 = %i\nfitdirection = %s \n",
-	       oname,
-	        evt.id().run(), evt.id().event(),
-	       res0,
-	       _fdir.name().c_str());
-	point = krep->traj().position(lowrange);
-	printf("point of trj at lowrange(%10.3f)  : ( %10.3f, %10.3f, %10.3f )\n",
-	       lowrange,
-	       point.x(), point.y(), point.z());
+        printf("\n%s , run / event : %d / %d, \nERROR: intersection not found : res0 = %i\nfitdirection = %s \n",
+               oname,
+                evt.id().run(), evt.id().event(),
+               res0,
+               _fdir.name().c_str());
+        point = krep->traj().position(lowrange);
+        printf("point of trj at lowrange(%10.3f)  : ( %10.3f, %10.3f, %10.3f )\n",
+               lowrange,
+               point.x(), point.y(), point.z());
 
-	point = krep->traj().position(highrange);
-	printf("point of trj at highrange(%10.3f) : ( %10.3f, %10.3f, %10.3f )\n",
-	       highrange,
-	       point.x(), point.y(), point.z());
+        point = krep->traj().position(highrange);
+        printf("point of trj at highrange(%10.3f) : ( %10.3f, %10.3f, %10.3f )\n",
+               highrange,
+               point.x(), point.y(), point.z());
       }
 
       if(_outPutNtup ==1){
-	filltrkdiag(int(itrk), intersection, nint, krep);
+        filltrkdiag(int(itrk), intersection, nint, krep);
       }
 
       for (int i=0; i<nint; i++) {
-	KalRepPtr tmpRecTrk = trksHandle->at(itrk);
-	tmpExtrapolatedTracks.push_back(
-					TrkToCaloExtrapol(intersection[i].fSection,
-							  itrk,
-							  tmpRecTrk,
-							  intersection[i].fSEntr,
-							  intersection[i].fSExit)
-					);
+        KalRepPtr tmpRecTrk = trksHandle->at(itrk);
+        tmpExtrapolatedTracks.push_back(
+                                        TrkToCaloExtrapol(intersection[i].fSection,
+                                                          itrk,
+                                                          tmpRecTrk,
+                                                          intersection[i].fSEntr,
+                                                          intersection[i].fSExit)
+                                        );
       }
 
       // P.Murat: why would one need to sort at this point?
 
       //      std::sort(tmpExtrapolatedTracks.begin(), tmpExtrapolatedTracks.end());
       for(TrkToCaloExtrapolCollection::iterator it = tmpExtrapolatedTracks.begin(); it != tmpExtrapolatedTracks.end(); ++it){
-	extrapolatedTracks->push_back(*it);
+        extrapolatedTracks->push_back(*it);
       }
 
     }//end loop on recoTrj
@@ -598,4 +579,4 @@ namespace mu2e {
 }
 
 using mu2e::TrkExtrapol;
-DEFINE_ART_MODULE(TrkExtrapol);
+DEFINE_ART_MODULE(TrkExtrapol)

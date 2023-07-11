@@ -1,0 +1,71 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Production/JobConfig/reco/prolog.fcl"
+#include "Offline/CosmicReco/fcl/prolog.fcl"
+#
+process_name : cosmicslfit
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : {
+    @table::Reconstruction.producers
+    @table::CosmicTracking.producers
+  }
+  filters :  {
+  }
+  analyzers: {
+    @table::CosmicTracking.analyzers
+  }
+  RecoPath : [ @sequence::TrkHitReco.PrepareHits, SimpleTimeCluster, LineFinder, CosmicTrackFinderTimeFit ]
+  EndPath : [ CosmicTrackDiag  ]
+}
+
+outputs : {
+  Output : {
+    module_type : RootOutput
+    SelectEvents : [ RecoPath ]
+    fileName    : @nil
+    outputCommands : [ "keep *_*_*_*" ]
+  }
+}
+
+# My epilog
+#include "Production/JobConfig/reco/epilog.fcl"
+#include "Production/JobConfig/reco/offspill_epilog.fcl"
+
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
+services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
+
+#
+outputs.Output.SelectEvents : [ "RecoPath" ]
+#
+# the following need to be overwritten for the specific channel
+services.TFileService.fileName: "nts.owner.RecoMCTrig.version.sequencer.root"
+
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+services.scheduler.wantSummary: true
+
+physics.producers.makePH.TestFlag : false
+
+physics.producers.SimpleTimeCluster.minNStrawHits : 10
+physics.producers.SimpleTimeCluster.maxNStrawHits : 100
+
+physics.producers.CosmicTrackFinderTimeFit.minNStrawHits : 2
+physics.producers.CosmicTrackFinderTimeFit.minNComboHits : 2
+physics.producers.CosmicTrackFinderTimeFit.minNHitsTimeCluster : 0
+
+physics.producers.LineFinder.NSteps : 2
+physics.producers.LineFinder.NTSteps : 0
+physics.producers.LineFinder.StepSize : 0.5
+physics.producers.LineFinder.maxDOCA : 3
+physics.producers.LineFinder.minPeak : 3
+
+physics.analyzers.CosmicTrackDiag.mcdiag : true
+physics.analyzers.CosmicTrackDiag.shdiag : true
+physics.analyzers.CosmicTrackDiag.ubresids : true

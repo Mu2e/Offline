@@ -19,7 +19,7 @@ namespace mu2e {
     fhicl::Atom<int> verbose{
       Name("verbose"), Comment("verbosity: 0,1,2")};
     fhicl::Atom<bool> useDb{
-      Name("useDb"), Comment("use database or fcl")}; 
+      Name("useDb"), Comment("use database or fcl")};
 
   };
 

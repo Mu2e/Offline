@@ -68,7 +68,7 @@ outputs : {
                         "drop *_neutronMixer_tracker_MixPBI",
                         "drop *_dioMixer_tracker_MixPBI",
                         "drop *_protonMixer_tracker_MixPBI",
-			"drop *_TriggerResults_*_modifyTrackSPM"
+                        "drop *_TriggerResults_*_modifyTrackSPM"
                       ]
 
   }

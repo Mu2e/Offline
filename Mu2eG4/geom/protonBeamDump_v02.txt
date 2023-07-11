@@ -6,7 +6,7 @@
 
 //----------------------------------------------------------------
 // 2013-12-13 Update angle and center position per the e-mail:
-// 
+//
 // Date: Fri, 13 Dec 2013 14:01:12
 // From: Peter H Kasper <kasper@fnal.gov>
 // To: Andrei Gaponenko <gandr@fnal.gov>

@@ -52,7 +52,7 @@ namespace mu2e {
       do {
         x         = _xmin + ( _xmax - _xmin )*_randFlat.fire();
         y         = _ymin + ( _ymax - _ymin )*_randFlat.fire();
-	threshold = _pdf.get2DWeight(x, y, energy);
+        threshold = _pdf.get2DWeight(x, y, energy);
         prob      = pdfMax*_randFlat.fire();
 
       } while ( prob > threshold );

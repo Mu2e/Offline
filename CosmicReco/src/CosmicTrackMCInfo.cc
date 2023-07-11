@@ -1,7 +1,9 @@
 #include "Offline/CosmicReco/inc/CosmicTrackMCInfo.hh"
 
+namespace mu2e {
+
 CosmicTrackMCInfo::CosmicTrackMCInfo(){
-     
+
      TrueFitEquation.Pos.SetXYZ(0,0,0);
      TrueFitEquation.Dir.SetXYZ(0,0,0);
      TrueTrackCoordSystem._XDoublePrime.SetXYZ(0,0,0);
@@ -11,7 +13,7 @@ CosmicTrackMCInfo::CosmicTrackMCInfo(){
      RawTrueParams.A1 = 0.;
      RawTrueParams.B0 =0;
      RawTrueParams.B1 = 0.;
-	
-} 
 
+}
 
+}

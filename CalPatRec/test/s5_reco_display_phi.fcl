@@ -1,0 +1,110 @@
+# -*- mode:tcl -*-
+
+BEGIN_PROLOG
+  INPUT_MODULE  @protect_ignore: RootInput        # choices: EmptyEvent / RootInput
+  TRIGGER_PATHS @protect_ignore: [ p1       ]     # defined below
+END_PROLOG
+
+#include "Stntuple/fcl/stntuple.fcl"
+
+process_name : S5Reco
+
+physics : {
+
+    producers : { @table::Reconstruction.producers
+
+        FlagBkgHits        : { @table::CalPatRec.producers.DeltaFinder }
+
+        TZClusterFinder    : { @table::CalPatRec.producers.TZClusterFinder }
+        PhiClusterFinder   : { @table::CalPatRec.producers.PhiClusterFinder
+            # TimeClusterCollection : "TimeClusterFinderDmu"
+            TimeClusterCollection : "TZClusterFinder"
+        }
+
+        MHFinderDmu   : { @table::TrkReco.producers.MergeHelices
+            HelixFinders: [ "MHDmuM", "MHDmuP" ]
+        }
+
+        KSFDmu : { @table::KSFDmuM
+            SeedCollection : "MHFinderDmu"
+            CheckHelicity  : false
+        }
+
+        KFFDmu : { @table::KFFDmuM
+            SeedCollection : "KSFDmu"
+        }
+    }
+
+    filters    : { @table::Reconstruction.filters   }
+    analyzers  : { @table::stntuple.analyzers       }
+
+    p1        : [ @sequence::Reconstruction.CaloReco,
+                  # @sequence::Reconstruction.TrkReco ,   # PBTFSD, makeSH, makePH, FlagBkgHits
+                  @sequence::TrkHitReco.PrepareHits ,     # PBTFSD, makeSH, makePH, FlagBkgHits
+                                                          # ------------ @sequence::Reconstruction.DmuReco
+                  # TimeClusterFinderDmu,
+                  TZClusterFinder,
+                  PhiClusterFinder,
+                  HelixFinderDmu,
+                         #
+                  CalTimePeakFinderMu,
+                  CalHelixFinderDmu,                      # CalPatRec
+
+                  MHDmuM , MHDmuP ,                       # 1st step: RobustHelixFinder(M/P)+CalHelixFinder(M/P)
+                  MHFinderDmu                             # 2nd step: MHDmuM + MHDmuP
+#------------------------------------------------------------------------------
+# 2022-09-13 P.M. Kalman fitter crashes, comment it out - don't need for this dataset
+# the seed fitter also fails, use the same medicine
+#------------------------------------------------------------------------------
+                  , KSFDmu                                # Seed fit (chisquared, no drift)
+                  , KFFDmu                                # final Kalman filter fit
+                 ]
+
+    trigger_paths : [ p1            ]
+
+    e1            : [ MuHitDisplay  ] # defaultOutput ]
+    end_paths     : [ e1            ]
+
+}
+#------------------------------------------------------------------------------
+physics.producers.TimeClusterFinderDmu : { @table::physics.producers.TimeClusterFinderDmu
+    ComboHitCollection     : "makePH"
+    UseCaloCluster         : false
+    TestFlag               : false
+    MinNHits               : 10
+    MinKeepHitMVA          : -1.0
+    MinAddHitMVA           : -1.0
+    MaxdPhi                : 100.0
+    PeakWidth              : 100
+}
+
+# physics.producers.FlagBkgHits.BkgMVACut                   : 10.
+
+physics.producers.TZClusterFinder.clusterThresh           : 10     # min N straw hits
+physics.producers.TZClusterFinder.runDisplay              : 1
+physics.producers.TZClusterFinder.doComptonClean          : 0
+
+physics.producers.PhiClusterFinder.useCC                  : false
+physics.producers.PhiClusterFinder.debug                  : 1
+physics.producers.PhiClusterFinder.TimeClusterCollection  : "TZClusterFinder"
+
+physics.producers.HelixFinderDmu.ComboHitCollection       : "makePH"
+physics.producers.HelixFinderDmu.TimeClusterCollection    : "PhiClusterFinder"
+
+physics.analyzers.MuHitDisplay.primaryParticleTag : ""
+physics.analyzers.MuHitDisplay.timeClusterCollTag : "TZClusterFinder" ##
+physics.analyzers.MuHitDisplay.phiClusterCollTag  : "PhiClusterFinder" ##
+physics.analyzers.MuHitDisplay.helixSeedCollTag   : "MHFinderDmu"
+physics.analyzers.MuHitDisplay.trackCollTag       : "KSFDmu"
+physics.analyzers.MuHitDisplay.ksfCollTag         : "KSFDmu"
+physics.analyzers.MuHitDisplay.kffCollTag         : "KFFDmu"
+physics.analyzers.MuHitDisplay.rootMacro          : "Offline/CalPatRec/test/display_phi.C"
+#------------------------------------------------------------------------------
+#services.GeometryService.inputFile    : "Offline/Mu2eG4/geom/TransportSolenoid_v08.txt"
+services.TFileService.fileName        : "nts.user.pbar1s51b0.pbar2m.001000_00000000.root"
+outputs.defaultOutput.fileName        : "mcs.user.pbar1s51b0.pbar2m.001000_00000000.art"
+
+# Uncomment the below lines if one wants a truncated report i.e with the "Run,Event,SubRun" numbers not mentioned for every event
+# services.message.destinations.log.categories.ArtReport.reportEvery : 50
+# services.message.destinations.log.categories.ArtReport.limit : 5
+# services.message.destinations.log.categories.ArtReport.timespan : 1000

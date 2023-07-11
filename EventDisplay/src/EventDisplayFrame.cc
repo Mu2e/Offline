@@ -33,6 +33,7 @@ using namespace std;
 #include "Offline/EventDisplay/src/dict_classes/ComponentInfoContainer.h"
 #include "Offline/EventDisplay/src/dict_classes/HistDraw.h"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 
 #include "TGGC.h"
 #include "TGFont.h"
@@ -44,11 +45,13 @@ using namespace std;
 namespace mu2e_eventdisplay
 {
 
-EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) : 
+EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) :
   TGMainFrame(p, w, h),
+  _wideband(pset.get<bool>("wideband",false)),
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
   _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV")),
   _protonBunchTimeLabel(pset.get<std::string>("protonBunchTimeTag","EWMProducer")),
+  _kalStepSize(pset.get<double>("kalSeedStepSize")),
   _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets"))
 {
   SetCleanup(kDeepCleanup);
@@ -126,7 +129,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _subFrame->AddFrame(trackLabel, lh1);
   _subFrame->AddFrame(trackBox, lh1);
 
-  _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, crvHitBox, trackBox,  
+  _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, crvHitBox, trackBox,
                                                                           _g4ModuleLabel, _physicalVolumesMultiLabel,
                                                                           _protonBunchTimeLabel));
 
@@ -253,9 +256,9 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   TGLabel *zoomLabel7  = new TGLabel(zoomFrame2, "mm  maxz");
   TGLabel *zoomLabel8  = new TGLabel(zoomFrame2, "mm");
   TGLabel *angleLabel1 = new TGLabel(angleFrame, "phi");
-  TGLabel *angleLabel2 = new TGLabel(angleFrame, "°  theta");
-  TGLabel *angleLabel3 = new TGLabel(angleFrame, "°  psi");
-  TGLabel *angleLabel4 = new TGLabel(angleFrame, "°");
+  TGLabel *angleLabel2 = new TGLabel(angleFrame, "deg  theta");
+  TGLabel *angleLabel3 = new TGLabel(angleFrame, "deg  psi");
+  TGLabel *angleLabel4 = new TGLabel(angleFrame, "deg");
   _minXField = new TGTextEntry(zoomFrame1, new TGTextBuffer, 1501);
   _minYField = new TGTextEntry(zoomFrame1, new TGTextBuffer, 1502);
   _minZField = new TGTextEntry(zoomFrame1, new TGTextBuffer, 1503);
@@ -401,7 +404,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   goButton->Associate(this);
 
   mu2e::ConfigFileLookupPolicy configFile;
-  std::string logoFileName = configFile("EventDisplay/src/logo_small.png");
+  std::string logoFileName = configFile("Offline/EventDisplay/src/logo_small.png");
   const TGPicture *logo = gClient->GetPicture(logoFileName.c_str());
   TGIcon *icon = new TGIcon(navigationFrame, logo, 50, 50);
   navigationFrame->AddFrame(icon, new TGLayoutHints(kLHintsLeft,20,0,0,0));
@@ -431,12 +434,12 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   }
 
   _mainPad->cd();
-  _dataInterface = boost::shared_ptr<DataInterface>(new DataInterface(this));
+  _dataInterface = boost::shared_ptr<DataInterface>(new DataInterface(this,_kalStepSize));
   _rootFileManager = boost::shared_ptr<RootFileManager>(new RootFileManager);
   _rootFileManagerAnim = boost::shared_ptr<RootFileManager>(new RootFileManager);
 
 //syntax for Format from http://root.cern.ch/phpBB3/viewtopic.php?t=8700
-  gPad->AddExec("keyboardInput",TString::Format("((mu2e_eventdisplay::EventDisplayFrame*)%p)->keyboardInput()",this));
+  gPad->AddExec("keyboardInput",TString::Format("((mu2e_eventdisplay::EventDisplayFrame*)%p)->keyboardInput()",static_cast<void*>(this)));
 }
 
 void EventDisplayFrame::initSetup()
@@ -449,13 +452,18 @@ void EventDisplayFrame::initSetup()
   _showOtherStructures=false;
   _showMuonBeamStop=false;
   _showProtonAbsorber=false;
+  if(_wideband)
+  {
+    _showSupportStructures=false;
+    _showCRV=true;
+  }
 }
 
 void EventDisplayFrame::changeSetup(bool whiteBackground, bool useHitColors, bool useTrackColors,
                                     bool showSupportStructures,
                                     bool showCRV,
                                     bool showOtherStructures,
-                                    bool showMuonBeamStop, 
+                                    bool showMuonBeamStop,
                                     bool showProtonAbsorber)
 {
   _mainPad->cd();
@@ -490,31 +498,31 @@ void EventDisplayFrame::changeSetup(bool whiteBackground, bool useHitColors, boo
      redraw=true;
      _showSupportStructures=showSupportStructures;
      _dataInterface->makeSupportStructuresVisible(showSupportStructures);
-  }  
+  }
   if(_showCRV!=showCRV)
   {
      redraw=true;
      _showCRV=showCRV;
      _dataInterface->makeCrvScintillatorBarsVisible(showCRV);
-  }  
+  }
   if(_showOtherStructures!=showOtherStructures)
   {
      redraw=true;
      _showOtherStructures=showOtherStructures;
      _dataInterface->makeOtherStructuresVisible(showOtherStructures);
-  }  
+  }
   if(_showMuonBeamStop!=showMuonBeamStop)
   {
      redraw=true;
      _showMuonBeamStop=showMuonBeamStop;
      _dataInterface->makeMuonBeamStopStructuresVisible(showMuonBeamStop);
-  }  
+  }
   if(_showProtonAbsorber!=showProtonAbsorber)
   {
      redraw=true;
      _showProtonAbsorber=showProtonAbsorber;
      _dataInterface->makeMecoStyleProtonAbsorberVisible(showProtonAbsorber);
-  }  
+  }
 
   if(std::isnan(_timeCurrent) || redraw) drawEverything();
   else drawSituation();
@@ -588,20 +596,30 @@ void EventDisplayFrame::fillGeometry()
 {
   _mainPad->cd();
   _dataInterface->fillGeometry();
-  DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, false);
+  DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, false, _showCRV);
+  if(_wideband) m=_dataInterface->getSpaceBoundary(false, false, false, true);
   _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
-  EventDisplayViewSetup::perspectiveview();
+  if(_wideband)
+  {
+    EventDisplayViewSetup::sideview();
+    _parallelButton->SetState(kButtonDown);
+    _perspectiveButton->SetState(kButtonUp);
+    _mainPad->GetView()->SetParallel();
+  }
+  else EventDisplayViewSetup::perspectiveview();
   _mainPad->Modified();
   _mainPad->Update();
 }
 
-void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop)
+void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop, const mu2e::CRVCalib &calib)
 {
   _timeOffsets.updateMap(event);
 
   _eventNumber=event.id().event();
   _subrunNumber=event.id().subRun();
   _runNumber=event.id().run();
+
+  _dataInterface->setCRVCalib(calib);
 
   _contentSelector->setAvailableCollections(event);
   if(firstLoop) _contentSelector->firstLoop();
@@ -618,7 +636,7 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
 
   std::string eventInfoText;
   eventInfoText=Form("Event #: %i",_eventNumber);
-  if(_eventNumberText==nullptr) 
+  if(_eventNumberText==nullptr)
   {
     _eventNumberText = new TText(0.6,-0.8,eventInfoText.c_str());
     _eventNumberText->SetTextColor(5);
@@ -780,22 +798,22 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
             double phi = _phiField->GetNumber();
             double theta = _thetaField->GetNumber();
             double psi = _psiField->GetNumber();
-            while (phi>360) 
+            while (phi>360)
             {
               phi-=360;
               _phiField->SetText(Form("%.0f",phi));
             }
-            while (phi<0) 
+            while (phi<0)
             {
               phi+=360;
               _phiField->SetText(Form("%.0f",phi));
             }
-            while (theta>360) 
+            while (theta>360)
             {
               theta-=360;
               _thetaField->SetText(Form("%.0f",theta));
             }
-            while (theta<0) 
+            while (theta<0)
             {
               theta+=360;
               _thetaField->SetText(Form("%.0f",theta));
@@ -804,7 +822,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
               psi-=360;
               _psiField->SetText(Form("%.0f",psi));
             }
-            while (psi<0) 
+            while (psi<0)
             {
               psi+=360;
               _psiField->SetText(Form("%.0f",psi));
@@ -866,7 +884,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          if(param1>=70 && param1<=74)
                          {
                            _mainPad->cd();
-                           DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, param1==73);
+                           DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, param1==73, _showCRV);
                            _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
                            if(param1<73)
                            {
@@ -939,13 +957,13 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _mainPad->Modified();
                            _mainPad->Update();
                          }
-                         if(param1==1507 || param1==1508) 
+                         if(param1==1507 || param1==1508)
                          {
                            double min[3],max[3],hdist,cen;
                            _mainPad->GetView()->GetRange(min,max);
-                           if(min[0]<max[0] && min[1]<max[1] && min[2]<max[2]) 
+                           if(min[0]<max[0] && min[1]<max[1] && min[2]<max[2])
                            {
-                             for(int i=0; i<3; i++) 
+                             for(int i=0; i<3; i++)
                              {
                                hdist = (max[i] - min[i])/2.0;
                                cen   = min[i] + hdist;
@@ -965,7 +983,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                              _mainPad->Update();
                            }
                          }
-                         if(1509 <= param1 && param1 <= 1514) 
+                         if(1509 <= param1 && param1 <= 1514)
                          {
                            double min[3],max[3];
                            min[0]=atof(_minXField->GetText());
@@ -978,22 +996,22 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            int dir = (param1 - 1509)%2;
                            double diff = 100;
                            if (!dir) diff*=-1;
-                           if (0 <= mode && mode <3) 
+                           if (0 <= mode && mode <3)
                            {
                              min[mode] += diff;
                              max[mode] += diff;
                              _mainPad->GetView()->SetRange(min,max);
-                             if(mode == 0) 
+                             if(mode == 0)
                              {
                                _minXField->SetText(Form("%.0f",min[0]));
                                _maxXField->SetText(Form("%.0f",max[0]));
                              }
-                             else if(mode == 1) 
+                             else if(mode == 1)
                              {
                                _minYField->SetText(Form("%.0f",min[1]));
                                _maxYField->SetText(Form("%.0f",max[1]));
                              }
-                             else if(mode == 2) 
+                             else if(mode == 2)
                              {
                                _minZField->SetText(Form("%.0f",min[2]));
                                _maxZField->SetText(Form("%.0f",max[2]));
@@ -1012,7 +1030,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          }
                          if(param1==64)
                          {
-                           new SetupDialog(gClient->GetRoot(), this, _whiteBackground, 
+                           new SetupDialog(gClient->GetRoot(), this, _whiteBackground,
                                            _useHitColors, _useTrackColors,
                                            _showSupportStructures, _showCRV, _showOtherStructures,
                                            _showMuonBeamStop, _showProtonAbsorber);

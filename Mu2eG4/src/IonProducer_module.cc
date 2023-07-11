@@ -15,12 +15,11 @@
 #include "CLHEP/Vector/LorentzVector.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SubRun.h"
 
 #include "Offline/DataProducts/inc/PDGCode.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 
 #include "Geant4/G4IonTable.hh"
@@ -82,7 +81,7 @@ namespace mu2e {
     // content for the ion test use, but we still need a stage count.
     mvi->resize(1);
 
-    sr.put(std::move(mvi));
+    sr.put(std::move(mvi), art::fullSubRun());
   }
 
   //================================================================
@@ -139,4 +138,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::IonProducer);
+DEFINE_ART_MODULE(mu2e::IonProducer)

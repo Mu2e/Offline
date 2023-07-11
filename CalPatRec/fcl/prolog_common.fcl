@@ -9,37 +9,65 @@ CommonTrk                : {
 #------------------------------------------------------------------------------
 # track fit, downstream electron hypothesis
 #------------------------------------------------------------------------------
-	KSFDeMH     : { @table::KSFDeM                            SeedCollection : MHFinderDe  CheckHelicity:false }
-	KFFDeMHPar  : { @table::KFFDeM                            SeedCollection : KSFDeMH  }
-	KFFDeMHDar  : { @table::CalPatRec.producers.CalTrkFitDem  SeedCollection : KSFDeMH  }
+        KSFDeMH     : { @table::KSFDeM                            SeedCollection : MHFinderDe  CheckHelicity:false }
+        KFFDeMHPar  : { @table::KFFDeM                            SeedCollection : KSFDeMH  }
+        KFFDeMHDar  : { @table::CalPatRec.producers.CalTrkFitDem  SeedCollection : KSFDeMH  }
+#------------------------------------------------------------------------------
+# track fit, upstream electron hypothesis
+#------------------------------------------------------------------------------
+        KSFUeMH     : { @table::KSFUeM                            SeedCollection : MHFinderUe  CheckHelicity:false }
+        KFFUeMHPar  : { @table::KFFUeM                            SeedCollection : KSFUeMH  }
+         KFFUeMHDar  : { @table::CalPatRec.producers.CalTrkFitUem  SeedCollection : KSFUeMH  }
 #------------------------------------------------------------------------------
 # track fit, downstream muon hypothesis
 #------------------------------------------------------------------------------
-	KSFDmuMH    : { @table::KSFDmuM                           SeedCollection : MHFinderDmu CheckHelicity:false}
-	KFFDmuMHPar : { @table::KFFDmuM                           SeedCollection : KSFDmuMH }
-	KFFDmuMHDar : { @table::CalPatRec.producers.CalTrkFitDmm  SeedCollection : KSFDmuMH }
+        KSFDmuMH    : { @table::KSFDmuM                           SeedCollection : MHFinderDmu CheckHelicity:false}
+        KFFDmuMHPar : { @table::KFFDmuM                           SeedCollection : KSFDmuMH }
+        KFFDmuMHDar : { @table::CalPatRec.producers.CalTrkFitDmm  SeedCollection : KSFDmuMH }
     }
+#------------------------------------------------------------------------------
+# track fit, upstream muon hypothesis
+#------------------------------------------------------------------------------
+        KSFUmuMH    : { @table::KSFUmuM                           SeedCollection : MHFinderUmu CheckHelicity:false }
+        KFFUmuMHPar : { @table::KFFUmuM                           SeedCollection : KSFUmuMH }
+         KFFUmuMHDar : { @table::CalPatRec.producers.CalTrkFitUmm  SeedCollection : KSFUmuMH }
 }
 #------------------------------------------------------------------------------
 # helix reconstruction: put downstream electron and positron helices together
 #------------------------------------------------------------------------------
-CommonTrk.helix_reco_De   : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDe, MHFinderCprDe, 
-			      TimeClusterFinderDe, HelixFinderDe, MHFinderTprDe    ,
-			      MHFinderDe ]
+CommonTrk.helix_reco_De   : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDe, MHFinderCprDe,
+                              TimeClusterFinderDe, HelixFinderDe, MHFinderTprDe    ,
+                              MHFinderDe ]
 
-CommonTrk.helix_reco_Dmu  : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmu, MHFinderCprDmu, 
-			      TimeClusterFinderDmu, HelixFinderDmu, MHFinderTprDmu    ,
-			      MHFinderDmu ]
+CommonTrk.helix_reco_Ue   : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderUe,
+                              TimeClusterFinderUe, HelixFinderUe,
+                              MHFinderUe ]
+
+CommonTrk.helix_reco_Dmu  : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmu, MHFinderCprDmu,
+                              TimeClusterFinderDmu, HelixFinderDmu, MHFinderTprDmu    ,
+                              MHFinderDmu ]
+
+CommonTrk.helix_reco_Umu  : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderUmu, MHFinderCprUmu,
+                              TimeClusterFinderUmu, HelixFinderUmu, MHFinderTprUmu    ,
+                              MHFinderUmu ]
 #------------------------------------------------------------------------------
-# by default, write out two lists of tracks corresponding to two different 
+# by default, write out two lists of tracks corresponding to two different
 # ambiguity resolvers
 #------------------------------------------------------------------------------
 CommonTrk.reco_DeMHPar   : [ @sequence::CommonTrk.helix_reco_De , KSFDeMH , KFFDeMHPar  ]
 CommonTrk.reco_DeMHDar   : [ @sequence::CommonTrk.helix_reco_De , KSFDeMH , KFFDeMHDar  ]
 CommonTrk.reco_DeMH      : [ @sequence::CommonTrk.helix_reco_De , KSFDeMH , KFFDeMHPar,  KFFDeMHDar  ]
 
+CommonTrk.reco_UeMHPar   : [ @sequence::CommonTrk.helix_reco_Ue , KSFUeMH , KFFUeMHPar  ]
+CommonTrk.reco_UeMHDar   : [ @sequence::CommonTrk.helix_reco_Ue , KSFUeMH , KFFUeMHDar  ]
+CommonTrk.reco_UeMH      : [ @sequence::CommonTrk.helix_reco_Ue , KSFUeMH , KFFUeMHPar,  KFFUeMHDar  ]
+
 CommonTrk.reco_DmuMHPar  : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuMH, KFFDmuMHPar ]
 CommonTrk.reco_DmuMHDar  : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuMH, KFFDmuMHDar ]
 CommonTrk.reco_DmuMH     : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuMH, KFFDmuMHPar, KFFDmuMHDar ]
+
+CommonTrk.reco_UmuMHPar  : [ @sequence::CommonTrk.helix_reco_Umu, KSFUmuMH, KFFUmuMHPar ]
+CommonTrk.reco_UmuMHDar  : [ @sequence::CommonTrk.helix_reco_Umu, KSFUmuMH, KFFUmuMHDar ]
+CommonTrk.reco_UmuMH     : [ @sequence::CommonTrk.helix_reco_Umu, KSFUmuMH, KFFUmuMHPar, KFFUmuMHDar ]
 
 END_PROLOG

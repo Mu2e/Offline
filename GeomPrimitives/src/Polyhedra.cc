@@ -17,15 +17,15 @@
 namespace mu2e {
 
   Polyhedra::Polyhedra( int   nSides,
-			const std::vector<double>& zPlanes,
-			const std::vector<double>& rInner,
-			const std::vector<double>& rOuter,
-			const CLHEP::Hep3Vector& originInMu2e,
-			const std::string& materialName,
-			double phiStart,
-			double phiTotal):
-    _params ( nSides, 
-	      zPlanes,
+                        const std::vector<double>& zPlanes,
+                        const std::vector<double>& rInner,
+                        const std::vector<double>& rOuter,
+                        const CLHEP::Hep3Vector& originInMu2e,
+                        const std::string& materialName,
+                        double phiStart,
+                        double phiTotal):
+    _params ( nSides,
+              zPlanes,
               rInner,
               rOuter,
               phiStart,
@@ -46,7 +46,7 @@ namespace mu2e {
                                   <<" does not match zPlanes.size() = "<<zPlanes.size()
                                   <<"\n";
     }
-  };
+  }
 
   std::ostream& operator<<(std::ostream& os, const Polyhedra& p) {
     os<<"Polyhedra(nSides = " << p.nSides() << ", numZPlanes = "<<p.numZPlanes()<<", z={";

@@ -6,7 +6,7 @@
 // simulation proditions
 //
 // As of Oct 2020 this includes:
-// 1) simulation stage efficiencies (DbTable: SimEfficiencies)
+// 1) simulation stage efficiencies (DbTable: SimEfficiencies2)
 // and nothing else
 //
 

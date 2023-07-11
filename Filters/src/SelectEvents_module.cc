@@ -7,7 +7,6 @@
 // Framework includes.
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 // Root includes
 //#include "TNtuple.h"
@@ -57,4 +56,4 @@ namespace mu2e {
 }
 
 using mu2e::SelectEvents;
-DEFINE_ART_MODULE(SelectEvents);
+DEFINE_ART_MODULE(SelectEvents)

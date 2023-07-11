@@ -1,0 +1,43 @@
+#
+# Create STMHits from STMMWDDigis
+#
+
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: MakeSTMHits
+
+source : {
+  module_type : RootInput
+}
+
+services : @local::Services.Reco
+physics: {
+  producers : {
+    stmHitsHPGe : { module_type : MakeSTMHits
+                    stmMWDDigisTag : "mwdHPGe"
+    }
+    stmHitsLaBr : { module_type : MakeSTMHits
+                    stmMWDDigisTag : "mwdLaBr"
+    }
+  }
+  filters : {
+  }
+  analyzers : {
+  }
+  # setup paths
+  HPGePath : [ stmHitsHPGe ]
+  LaBrPath : [ stmHitsLaBr ]
+  trigger_paths: [ HPGePath, LaBrPath ]
+  outPath : [ STMOutput ]
+  end_paths: [outPath]
+}
+
+outputs: {
+
+  STMOutput : {
+    module_type: RootOutput
+    outputCommands:   [ "keep *_*_*_*" ]
+    SelectEvents: [ ]
+    fileName : "mcs.owner.STM.version.sequencer.art"
+  }
+}

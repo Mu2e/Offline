@@ -199,7 +199,7 @@ namespace mu2e {
               const float x = wrapvarBoxNo(_buf.fl[iword + i_part + 5] * _cm2mm + xOffset, _targetBoxXmin - _showerAreaExtension, _targetBoxXmax + _showerAreaExtension, boxnox);
               const float z = wrapvarBoxNo(-_buf.fl[iword + i_part + 4] * _cm2mm + zOffset, _targetBoxZmin - _showerAreaExtension, _targetBoxZmax + _showerAreaExtension, boxnoz);
               std::pair xz(boxnox, boxnoz);
-              const float m = pdt->particle(pdgId).ref().mass(); // to MeV
+              const float m = pdt->particle(pdgId).mass(); // to MeV
 
               const float energy = safeSqrt(P_x * P_x + P_y * P_y + P_z * P_z + m * m);
 
@@ -244,7 +244,7 @@ namespace mu2e {
       return true;
   }
 
-  bool CosmicCORSIKA::generate( GenParticleCollection& genParts, unsigned int &primaries)
+  bool CosmicCORSIKA::generate( GenParticleCollection& genParts, unsigned long long &primaries)
   {
     // loop over particles in the truth object
     bool passed = false;

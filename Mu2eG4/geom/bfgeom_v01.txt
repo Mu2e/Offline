@@ -8,7 +8,13 @@
 //    - bfgeom_no_ds_v01.txt     ( DS map removed     )
 //    - bfgeom_reco_v01.txt      ( only maps needed for reconstruction )
 //    - bfgeom_no_tsu_ps_v01.txt ( PS and TSu maps removed.
+//    - bfgeam_DS50_v01.txt      ( DS field reduced to 50% )
+//    - bfgeam_DS50_no_ds_v01.txt ( DS field reduced to 50% and with DS map removed )
+//    - bfgeam_DS50_no_tsu_ps_v01.txt ( DS field reduced to 50% and with PS and TSu maps removed )
+//    - bfgeam_DS50_reco_v01.txt ( DS field reduced to 50% and only maps needed for reconstrucion )
 //
+
+bool hasBFieldManager   = true;
 
 // Form of DS field: 0 is full field;
 //                   1 is full upstream, const downstream;
@@ -33,10 +39,10 @@ double toyDS.bz            = 1.0;
 // of detSolFieldForm=1 or detSolFieldForm=2.
 double toyDS.gradient      = 0.0; // Tesla/m
 
-// This is recommended field map. See geom_mecofield.txt to use the meco field.
+// This is recommended field map.
 string bfield.format  = "G4BL";
 
-// The other option is "meco"
+// method for interpolation between field grid points
 string bfield.interpolationStyle = trilinear;
 
 int  bfield.verbosityLevel =  0;

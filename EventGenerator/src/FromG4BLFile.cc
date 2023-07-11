@@ -47,14 +47,14 @@
 
 // Mu2e includes
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/EventGenerator/inc/FromG4BLFile.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/WorldG4.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
-#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 
 // Root includes
@@ -180,7 +180,7 @@ namespace mu2e {
     }
 
     // Particle data table.
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 
     GeomHandle<WorldG4> worldG4;
 
@@ -264,7 +264,7 @@ namespace mu2e {
       }
 
       // 4 Momentum.
-      double mass = pdt->particle(id).ref().mass().value();
+      double mass = pdt->particle(id).mass();
       double e    = sqrt( px*px + py*py + pz*pz + mass*mass);
       CLHEP::HepLorentzVector p4(px,py,pz,e);
 

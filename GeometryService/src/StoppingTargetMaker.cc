@@ -132,8 +132,8 @@ namespace mu2e {
       if(zclosest < opaZCenter - opaHL) zclosest = opaZCenter - opaHL; //if goes past the opa
       if(zclosest > opaZCenter + opaHL) zclosest = opaZCenter + opaHL; //if goes past the opa
       double rclosest = opaR1 + (opaR2-opaR1)*((zclosest - side*_foilTarget_supportStructure_radius)
-					       - (opaZCenter - opaHL))/(2.*opaHL); //linear radial increase from z = opa_z - opa_hl to opa_z + opa_hl (plus radius of the wire)
-      _foilTarget_supportStructure_rOut = rclosest - 0.01; //add small buffer 
+                                               - (opaZCenter - opaHL))/(2.*opaHL); //linear radial increase from z = opa_z - opa_hl to opa_z + opa_hl (plus radius of the wire)
+      _foilTarget_supportStructure_rOut = rclosest - 0.01; //add small buffer
     } else
        _foilTarget_supportStructure_rOut = 250.; //default value used previously of 500 mm diameter OPA
 

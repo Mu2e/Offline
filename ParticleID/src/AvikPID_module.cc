@@ -17,7 +17,6 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -40,10 +39,8 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
-#include "Offline/RecoDataProducts/inc/PIDProductCollection.hh"
 #include "Offline/BTrkData/inc/Doublet.hh"
 
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -51,7 +48,7 @@
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 #include "Offline/ParticleID/inc/PIDUtilities.hh"
-#include "Offline/RecoDataProducts/inc/AvikPIDProductCollection.hh"
+#include "Offline/RecoDataProducts/inc/AvikPIDProduct.hh"
 
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/Mu2eDetector.hh"
@@ -186,7 +183,6 @@ namespace mu2e {
     virtual void produce(art::Event& event);
     void endJob();
 
-
     static  void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t);
     static  int  findlowhist(float d);
 
@@ -226,9 +222,7 @@ namespace mu2e {
     // Save directory from beginJob so that we can go there in endJob.
     //    TDirectory* _directory;
 
-
   };
-
 
   TGraphErrors *error;
 
@@ -275,7 +269,6 @@ namespace mu2e {
 
     return -9999.;
   }
-
 
 //-----------------------------------------------------------------------------
   AvikPID::AvikPID(fhicl::ParameterSet const& pset):
@@ -339,13 +332,11 @@ namespace mu2e {
 
   }
 
-
 //-----------------------------------------------------------------------------
   AvikPID::~AvikPID() {
     if (_minuit) delete _minuit;
     delete _dar;
   }
-
 
 //-----------------------------------------------------------------------------
   void AvikPID::beginJob() {
@@ -374,7 +365,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void AvikPID::beginRun(art::Run & run){
     if (_debugLevel >= 2) cout << "AvikPID: From beginRun: " << run.id().run() << endl;
-
 
   }
 
@@ -747,9 +737,9 @@ namespace mu2e {
 
     if (_debugLevel > 0) {
       printf( "res_ele_sum  is:  %8.4f res_muo_sum  is: %8.4f res_ele_sum2 is:  %8.4f res_muo_sum2 is: %8.4f\n",
-	      res_ele_sum ,res_muo_sum, res_ele_sum2,res_muo_sum2);
+              res_ele_sum ,res_muo_sum, res_ele_sum2,res_muo_sum2);
       printf("logratio  is: %8.4f logratio2 is: %8.4f logratio3 is: %8.4f\n",
-	     logratio, logratio2, logratio3);
+             logratio, logratio2, logratio3);
     }
   }
 
@@ -915,7 +905,6 @@ namespace mu2e {
     return 0;
   }
 
-
 //-----------------------------------------------------------------------------
 // doublet ambiguity resolver best combinations: 0:(++) 1:(+-) 2:(--) 3:(-+)
 // so 0 and 2 correspond to the SS doublet, 1 and 3 - to the OS doublet
@@ -989,7 +978,6 @@ namespace mu2e {
     return 0;
   }
 
-
 //-----------------------------------------------------------------------------
 // calculate parameters of the straight line fit
 //-----------------------------------------------------------------------------
@@ -1062,7 +1050,6 @@ namespace mu2e {
     AddOsMultiplets(ListOfDoublets,fltLen,resid);
     CalculateSlope(fltLen,resid,Drds,DrdsErr);
     NUsedHits = fltLen.size();
-
 
     NUsedDoublets = 0;
     Sum           = 0.;
@@ -1503,7 +1490,6 @@ namespace mu2e {
     return res;
   }
 
-
 } // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::AvikPID);
+DEFINE_ART_MODULE(mu2e::AvikPID)

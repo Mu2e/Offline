@@ -53,7 +53,7 @@ namespace mu2e{
         }
         return {sposi, sposf, strawtitle, colorid};
   }
-  
+
   /*------------Function to 3D draw hits:-------------*/
   void TEveMu2eHit::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList)
   {
@@ -64,19 +64,18 @@ namespace mu2e{
       CLHEP::Hep3Vector sposfn = det->toMu2e(sposf);
       TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
       line->SetLineWidth(1);
-      line->SetPoint(0,sposin.x(),sposin.y(),sposin.z());
-      line->SetNextPoint(sposfn.x(),sposfn.y(),sposfn.z());
+      line->SetPoint(0,pointmmTocm(sposin.x()),pointmmTocm(sposin.y()),pointmmTocm(sposin.z()));
+      line->SetNextPoint(pointmmTocm(sposfn.x()),pointmmTocm(sposfn.y()),pointmmTocm(sposfn.z()));
       line->SetLineColor(colorid);
       line->SetTitle(Form(title.c_str()));
       HitList->AddElement(line);
     }
-  
+
     this->SetTitle((DataTitle(pstr, n)).c_str());
-    //hep3vectorTocm(pointInMu2e);
+    //hep3vectormmTocm(pointInMu2e);
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);
-    //this->SetMarkerSize(mSize_);
     this->SetPickable(kTRUE);
     if(AddErrorBar_){
       TEveLine *error = new TEveLine();
@@ -106,7 +105,7 @@ namespace mu2e{
   }
 
   /*------------Function to 2D draw hits:-------------*/
- void TEveMu2eHit::DrawHit2D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList2DXY, TEveElementList *HitList2DXZ)
+ void TEveMu2eHit::DrawHit2DXY(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList2DXY)
   {
     auto [sposi, sposf, title, colorid] = DrawStraw();
     if(sposi.x()!=0){
@@ -117,23 +116,15 @@ namespace mu2e{
       line_twoDstrawXY->SetLineColor(colorid);
       line_twoDstrawXY->SetTitle(Form(title.c_str()));
       HitList2DXY->AddElement(line_twoDstrawXY);
-      
-      TEveMu2eCustomHelix *line_twoDstrawXZ = new TEveMu2eCustomHelix();
-      line_twoDstrawXZ->SetLineWidth(1);
-      line_twoDstrawXZ->SetPoint(0,pointmmTocm(sposi.x()),pointmmTocm(sposi.y())+ 1000,pointmmTocm(sposi.z()));
-      line_twoDstrawXZ->SetNextPoint(pointmmTocm(sposf.x()),pointmmTocm(sposf.y())+ 1000,pointmmTocm(sposf.z()));
-      line_twoDstrawXZ->SetLineColor(colorid);
-      line_twoDstrawXZ->SetTitle(Form(title.c_str()));
-      HitList2DXZ->AddElement(line_twoDstrawXZ);
+
     }
     this->SetTitle((DataTitle(pstr, n)).c_str());
-    hep3vectorTocm(pointInMu2e);
-    this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
+    hep3vectormmTocm(pointInMu2e);
+    this->SetNextPoint(pointmmTocm(pointInMu2e.x()), pointmmTocm(pointInMu2e.y()), pointmmTocm(pointInMu2e.z()));
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);
-    //this->SetMarkerSize(mSize_);
     this->SetPickable(kTRUE);
-      
+
     if(AddErrorBar_){
       TEveLine *error = new TEveLine();
       auto const& p = fComboHit_.pos();
@@ -145,7 +136,7 @@ namespace mu2e{
       double z2 = (p.z()-s*w.z());
       double y1 = (p.y()+s*w.y());
       double y2 = (p.y()-s*w.y());
-    
+
       std::string errorbar = "ErrorBar Length: %d, %d, %d";
       error->SetTitle(Form(errorbar.c_str(), (x1 - x2), (y1 - y2), (z1 - z2)));
       error->SetPoint(0, pointmmTocm(x1),pointmmTocm(y1),pointmmTocm(z1));
@@ -153,9 +144,29 @@ namespace mu2e{
       error->SetLineColor(kRed);
       error->SetPickable(kTRUE);
       HitList2DXY->AddElement(error);
-    } 
-    HitList2DXY->AddElement(this);
-    HitList2DXZ->AddElement(this);
     }
+    HitList2DXY->AddElement(this);
   }
-  
+
+ void TEveMu2eHit::DrawHit2DXZ(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList2DXZ)
+  {
+    auto [sposi, sposf, title, colorid] = DrawStraw();
+    if(sposi.x()!=0){
+      TEveMu2eCustomHelix *line_twoDstrawXZ = new TEveMu2eCustomHelix();
+      line_twoDstrawXZ->SetLineWidth(1);
+      line_twoDstrawXZ->SetPoint(0,pointmmTocm(sposi.x()),pointmmTocm(sposi.y()),pointmmTocm(sposi.z()));
+      line_twoDstrawXZ->SetNextPoint(pointmmTocm(sposf.x()),pointmmTocm(sposf.y()),pointmmTocm(sposf.z()));
+      line_twoDstrawXZ->SetLineColor(colorid);
+      line_twoDstrawXZ->SetTitle(Form(title.c_str()));
+      HitList2DXZ->AddElement(line_twoDstrawXZ);
+    }
+    this->SetTitle((DataTitle(pstr, n)).c_str());
+    hep3vectormmTocm(pointInMu2e);
+    this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
+    int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
+    this->SetMarkerColor(kSpring + colors[energylevel]);
+    this->SetPickable(kTRUE);
+    HitList2DXZ->AddElement(this);
+  }
+}
+

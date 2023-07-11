@@ -19,7 +19,6 @@
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -47,12 +46,12 @@ namespace mu2e {
   };
 
   //================================================================
-  PBIWeight::PBIWeight(const fhicl::ParameterSet& pset) : 
+  PBIWeight::PBIWeight(const fhicl::ParameterSet& pset) :
     art::EDProducer{pset},
     _PBITag(pset.get<art::InputTag>("PBITag")),
     _meanPBITag(pset.get<art::InputTag>("meanPBITag")),
     _meanPBI(0.0)
-	    
+
   {
     produces<mu2e::EventWeight>();
   }
@@ -81,4 +80,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::PBIWeight);
+DEFINE_ART_MODULE(mu2e::PBIWeight)

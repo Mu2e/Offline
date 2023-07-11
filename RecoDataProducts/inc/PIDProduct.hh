@@ -6,6 +6,7 @@
 #define PIDProduct_HH
 
 #include <utility>
+#include <vector>
 
 namespace mu2e {
 
@@ -14,9 +15,9 @@ namespace mu2e {
   class PIDProduct {
 
   public:
-    PIDProduct(); 
-    PIDProduct (const PIDProduct & p) ; 
-    ~PIDProduct() {;} 
+    PIDProduct();
+    PIDProduct (const PIDProduct & p) ;
+    ~PIDProduct() {;}
     PIDProduct & operator = (const PIDProduct & p) ;
 
     void clear() ;
@@ -27,7 +28,7 @@ namespace mu2e {
 
     void SetLogEProb(double d) { _logeprob = d;}
     void SetLogMProb(double d) { _logmprob = d;}
-    
+
     double GetResidualsSlope() const { return _residualsSlope;}
     double GetResidualsSlopeError() const { return _residualsSlopeError;}
     double GetTrkID() const { return _trkid;}
@@ -44,6 +45,7 @@ namespace mu2e {
 
   };
 
+  typedef std::vector<mu2e::PIDProduct> PIDProductCollection;
 
 
 } // end namespace mu2e

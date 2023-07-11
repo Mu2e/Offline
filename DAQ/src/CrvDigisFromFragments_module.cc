@@ -5,16 +5,15 @@
 // ======================================================================
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
 
+#include "Offline/CRVConditions/inc/CRVOrdinal.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "art/Framework/Principal/Handle.h"
-#include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
-#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
-#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "artdaq-core-mu2e/Data/CRVFragment.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
 #include <iostream>
@@ -50,11 +49,13 @@ public:
   virtual void produce(Event&);
 
 private:
-  int decompressCrvDigi(uint8_t adc);
+  //  int decompressCrvDigi(uint8_t adc);
+  int16_t decompressCrvDigi(int16_t adc);
 
   int diagLevel_;
 
   art::InputTag crvFragmentsTag_;
+  mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
 
 }; // CrvDigisFromFragments
 
@@ -63,32 +64,21 @@ private:
 CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}, diagLevel_(config().diagLevel()),
     crvFragmentsTag_(config().crvFragmentsTag()) {
-  produces<EventNumber_t>();
   produces<mu2e::CrvDigiCollection>();
 }
 
 // ----------------------------------------------------------------------
 
-int CrvDigisFromFragments::decompressCrvDigi(uint8_t adc) {
-  // TODO: Temporary implementation until we have the real compression used at the FEBs
-  int toReturn = adc;
-  if (adc >= 50 && adc < 75)
-    toReturn = (adc - 50) * 2 + 50;
-  if (adc >= 75 && adc < 100)
-    toReturn = (adc - 75) * 4 + 100;
-  if (adc >= 100 && adc < 125)
-    toReturn = (adc - 100) * 8 + 200;
-  if (adc >= 125)
-    toReturn = (adc - 125) * 16 + 400;
-  toReturn += 95;
-  return toReturn;
+int16_t CrvDigisFromFragments::decompressCrvDigi(int16_t adc) {
+  // TODO: This is a temporary implementation.
+  return adc;
 }
 
 void CrvDigisFromFragments::produce(Event& event) {
 
   art::EventNumber_t eventNumber = event.event();
 
-  auto crvFragments = event.getValidHandle<artdaq::Fragments>(crvFragmentsTag_);
+  auto crvFragments = event.getValidHandle<std::vector<mu2e::CRVFragment> >(crvFragmentsTag_);
   size_t numCrvFrags = crvFragments->size();
 
   if (diagLevel_ > 1) {
@@ -97,9 +87,11 @@ void CrvDigisFromFragments::produce(Event& event) {
     std::cout << crvFragments->size() << " CRV fragments." << std::endl;
 
     size_t totalSize = 0;
-    for (size_t idx = 0; idx < crvFragments->size(); ++idx) {
-      auto size = ((*crvFragments)[idx]).size() * sizeof(artdaq::RawDataType);
-      totalSize += size;
+    for (auto frag : *crvFragments) {
+      for (size_t i = 0; i < frag.block_count(); ++i) {
+        auto size = frag.blockSizeBytes(i); //((*crvFragments)[idx]) * sizeof(artdaq::RawDataType);
+        totalSize += size;
+      }
       //      std::cout << "\tCRV Fragment " << idx << " has size " << size << std::endl;
     }
 
@@ -108,179 +100,114 @@ void CrvDigisFromFragments::produce(Event& event) {
 
   // Collection of CaloDigis for the event
   std::unique_ptr<mu2e::CrvDigiCollection> crv_digis(new mu2e::CrvDigiCollection);
+  auto const& channelMap = _channelMap_h.get(event.id());
 
   // Loop over the CRV fragments
   for (size_t idx = 0; idx < numCrvFrags; ++idx) {
 
     const auto& fragment((*crvFragments)[idx]);
-    mu2e::CRVFragment cc(fragment);
 
-    if (diagLevel_ > 1) {
-      std::cout << std::endl;
-      std::cout << "ArtFragmentReader: ";
-      std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
-      std::cout << "\tByte Count: " << fragment.dataSizeBytes() << std::endl;
-      std::cout << std::endl;
-      std::cout << "\t"
-                << "====== Example Block Sizes ======" << std::endl;
-      for (size_t i = 0; i < 10; i++) {
-        if (i < cc.block_count()) {
-          std::cout << "\t" << i << "\t" << cc.blockSizeBytes(i) << std::endl;
-        }
-      }
-      std::cout << "\t"
-                << "=========================" << std::endl;
-    }
+    mu2e::CRVFragment crvFragment(fragment);
 
-    for (size_t curBlockIdx = 0; curBlockIdx < cc.block_count(); curBlockIdx++) {
-
-#if 0 // TODO: Look into restoring some form of this later...
-      if (diagLevel_ > 1) {
-        // Print binary contents the first 3 packets starting at the current position
-        // In the case of the tracker simulation, this will be the whole tracker
-        // DataBlock. In the case of the calorimeter, the number of data packets
-        // following the header packet is variable.
-        cc.printPacketAtByte(cc.blockIndexBytes(0) + 16 * (0 + 3 * curBlockIdx));
-        cc.printPacketAtByte(cc.blockIndexBytes(0) + 16 * (1 + 3 * curBlockIdx));
-        cc.printPacketAtByte(cc.blockIndexBytes(0) + 16 * (2 + 3 * curBlockIdx));
-
-        // Print out decimal values of 16 bit chunks of packet data
-        for (int i = 7; i >= 0; i--) {
-          std::cout << (adc_t) * (pos + i);
-          std::cout << " ";
-        }
-        std::cout << std::endl;
-      }
-#endif
-
-      auto block = cc.dataAtBlockIndex(curBlockIdx);
+    for (size_t iDataBlock = 0; iDataBlock < crvFragment.block_count(); ++iDataBlock) {
+      auto block = crvFragment.dataAtBlockIndex(iDataBlock);
       if (block == nullptr) {
-        std::cerr << "Unable to retrieve block " << curBlockIdx << "!" << std::endl;
+        std::cerr << "Unable to retrieve block " << iDataBlock << "!" << std::endl;
         continue;
       }
-      auto hdr = block->GetHeader();
-
-      if (hdr->GetSubsystemID() != 2) {
+      auto header = block->GetHeader();
+      if (header->GetSubsystemID() != 2) {
         throw cet::exception("DATA") << " CRV packet does not have system ID 2";
       }
 
-      // Parse phyiscs information from the CRV packets
-      if (hdr->GetPacketCount() > 0) {
-        auto crvRocHdr = cc.GetCRVROCStatusPacket(curBlockIdx);
-        if (crvRocHdr == nullptr) {
-          std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock " << curBlockIdx
-                    << "!" << std::endl;
+      if (header->GetPacketCount() > 0) {
+        auto crvRocHeader = crvFragment.GetCRVROCStatusPacket(iDataBlock);
+        if (crvRocHeader == nullptr) {
+          std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock " << iDataBlock
+                    << std::endl;
           continue;
         }
 
-        auto crvHits = cc.GetCRVHitReadoutPackets(curBlockIdx);
+        auto crvHits = crvFragment.GetCRVHits(iDataBlock);
         for (auto const& crvHit : crvHits) {
+          const auto& crvHitInfo = crvHit.first;
+          const auto& waveform = crvHit.second;
 
-          // Fill the CrvDigiCollection
-          // CrvDigi(const std::array<unsigned int, NSamples> &ADCs, unsigned int startTDC,
-          //         mu2e::CRSScintillatorBarIndex scintillatorBarIndex, int SiPMNumber) :
-          // TODO: This is a temporary implementation.
-          // There will be a major change on the barIndex+SiPMNumber system,
-          // which will be replaced by a channel ID system
-          // Only a toy model is used here. The real implementation will follow.
-          int channel = crvHit.SiPMID & 0x7F; // right 7 bits
-          int FEB = crvHit.SiPMID >> 7;
-          int crvBarIndex = (FEB * 64 + channel) / 4;
-          int SiPMNumber = (FEB * 64 + channel) % 4;
+          uint16_t rocID = crvHitInfo.controllerNumber +
+                           1; // FIXME ROC IDs between 1 and 17   //also: header->GetLinkID()+1;
+          uint16_t rocPort = crvHitInfo.portNumber;
+          uint16_t febChannel = crvHitInfo.febChannel;
+          mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
 
-          std::array<unsigned int, 8> adc;
-          for (int j = 0; j < 8; j++)
-            adc[j] = decompressCrvDigi(crvHit.Waveform().at(j));
-          crv_digis->emplace_back(adc, crvHit.HitTime, mu2e::CRSScintillatorBarIndex(crvBarIndex),
-                                  SiPMNumber);
-        }
+          uint16_t offlineChannel = channelMap.offline(onlineChannel);
+          int crvBarIndex = offlineChannel / 4;
+          int SiPMNumber = offlineChannel % 4;
 
-        if (diagLevel_ > 1) {
+          for (int i = 0; i < crvHitInfo.NumSamples; i += 8) {
+            std::array<int16_t, 8> adc = {0};
+            for (int j = i; j < i + 8 && j < crvHitInfo.NumSamples; ++j)
+              adc[j] = decompressCrvDigi(waveform.at(j).ADC);
 
-          for (auto const& crvHit : crvHits) {
-
-              #if LONG_FORM_CRV
-            // TODO: This is a temporary implementation.
-            // There will be a major change on the barIndex+SiPMNumber system,
-            // which will be replaced by a channel ID system
-            // Only a toy model is used here. The real implementation will follow.
-            int channel = crvHit.SiPMID & 0x7F; // right 7 bits
-            int FEB = crvHit.SiPMID >> 7;
-            int crvBarIndex = (FEB * 64 + channel) / 4;
-            int SiPMNumber = (FEB * 64 + channel) % 4;
-
-            std::cout << "MAKEDIGI: " << SiPMNumber << " " << crvBarIndex << " " << crvHit.HitTime
-                      << " " << crvHits.size() << " ";
-
-            auto hits = crvHit.Waveform();
-            for (size_t j = 0; j < hits.size(); j++) {
-              std::cout << decompressCrvDigi(hits[j]);
-              if (j < hits.size() - 1) {
-                std::cout << " ";
-              }
-            }
-            std::cout << std::endl;
-
-            std::cout << "timestamp: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
-            std::cout << "hdr->SubsystemID: " << hdr->GetSubsystemID() << std::endl;
-            std::cout << "hdr->DTCID: " << hdr->GetID() << std::endl;
-            std::cout << "rocID: " << hdr->GetLinkID() << std::endl;
-            std::cout << "packetCount: " << hdr->GetPacketCount() << std::endl;
-            std::cout << "EVB mode: " << hdr->GetEVBMode() << std::endl;
-
-            //	    for(int i=7; i>=0; i--) {
-            //	      std::cout << (adc_t) *(pos+8+i);
-            //	      std::cout << " ";
-            //	    }
-            //	    std::cout << std::endl;
-            //
-            //	    for(int i=7; i>=0; i--) {
-            //	      std::cout << (adc_t) *(pos+8*2+i);
-            //	      std::cout << " ";
-            //	    }
-            //	    std::cout << std::endl;
-
-            std::cout << "SiPMNumber: " << crvHit.SiPMID % 4 << std::endl;
-            std::cout << "scintillatorBarIndex: " << crvHit.SiPMID / 4 << std::endl;
-            std::cout << "TDC: " << crvHit.HitTime << std::endl;
-            std::cout << "Waveform: {";
-            for (size_t j = 0; j < hits.size(); j++) {
-              std::cout << hits[j];
-              if (j < hits.size() - 1) {
-                std::cout << " ";
-              }
-            }
-            std::cout << "}" << std::endl;
-            #else
-            // Text format: timestamp sipmID tdc nsamples sample_list
-            std::cout << "GREPMECRV: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " ";
-            std::cout << crvHit.SiPMID << " ";
-            std::cout << crvHit.HitTime << " ";
-            auto hits = crvHit.Waveform();
-            for (size_t j = 0; j < hits.size(); j++) {
-              std::cout << hits[j];
-              if (j < hits.size() - 1) {
-                std::cout << " ";
-              }
-            }
-            std::cout << std::endl;
-            #endif
+            // CrvDigis use a constant array size of 8 samples
+            // waveforms with more than 8 samples need to be written to multiple CrvDigis
+            // the TDC increases by 8 for every subsequent CrvDigi
+            crv_digis->emplace_back(adc, crvHitInfo.HitTime + i,
+                                   mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
           }
+        } // loop over all crvHits
 
-          std::cout << "LOOP: " << eventNumber << " " << curBlockIdx << " "
-                    << "(" << hdr->GetEventWindowTag().GetEventWindowTag(true) << ")" << std::endl;
+        if (diagLevel_ > 0) {
+          for (auto const& crvHit : crvHits) {
+            std::cout << "iSubEvent/iDataBlock: " << idx << "/" << iDataBlock << std::endl;
+            if (diagLevel_ > 1) {
+              std::cout << "EventWindowTag (TDC header): "
+                        << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
+              std::cout << "SubsystemID: " << (uint16_t)header->GetSubsystemID() << std::endl;
+              std::cout << "DTCID: " << (uint16_t)header->GetID() << std::endl;
+              std::cout << "ROCID: " << (uint16_t)header->GetLinkID() << std::endl;
+              std::cout << "packetCount: " << header->GetPacketCount() << std::endl;
+              std::cout << "EVB mode: " << header->GetEVBMode() << std::endl;
+              std::cout << "TriggerCount: " << crvRocHeader->TriggerCount << std::endl;
+              std::cout << "ActiveFEBFlags: " << crvRocHeader->GetActiveFEBFlags() << std::endl;
+              std::cout << "ROCID (ROC header): " << (uint16_t)crvRocHeader->ControllerID
+                        << std::endl;
+              std::cout << "EventWindowTag (ROC header): " << crvRocHeader->GetEventWindowTag()
+                        << std::endl;
+            }
 
-        } // End debug output
-      }   // End parsing CRV packets
-    }     // End loop over DataBlocks within fragment
-  }       // Close loop over fragments
+            const auto& crvHitInfo = crvHit.first;
+            const auto& waveform = crvHit.second;
 
-  if (diagLevel_ > 0) {
-    std::cout << "mu2e::CrvDigisFromFragments::produce exiting eventNumber=" << (int)(event.event())
-              << " / timestamp=" << (int)eventNumber << std::endl;
-  }
+            uint16_t rocID =
+                crvHitInfo.controllerNumber + 1; // FIXME  //ROC IDs are between 1 and 17
+            uint16_t rocPort = crvHitInfo.portNumber;
+            uint16_t febChannel = crvHitInfo.febChannel;
+            mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
 
-  event.put(std::unique_ptr<EventNumber_t>(new EventNumber_t(eventNumber)));
+            uint16_t offlineChannel = channelMap.offline(onlineChannel);
+            int crvBarIndex = offlineChannel / 4;
+            int SiPMNumber = offlineChannel % 4;
+
+            std::cout << "ROCID (increased by 1 to match the Online/Offline-Channel Map) " << rocID
+                      << "   rocPort " << rocPort << "   febChannel " << febChannel
+                      << "   crvBarIndex " << crvBarIndex << "   SiPMNumber " << SiPMNumber
+                      << std::endl;
+            std::cout << "TDC: " << crvHitInfo.HitTime << std::endl;
+            std::cout << "nSamples " << crvHitInfo.NumSamples << "  ";
+            std::cout << "Waveform: {";
+            for (size_t i = 0; i < crvHitInfo.NumSamples; i++)
+              std::cout << "  " << waveform.at(i).ADC;
+            std::cout << "}" << std::endl;
+            std::cout << "Waveform decompressed: {";
+            for (size_t i = 0; i < crvHitInfo.NumSamples; i++)
+              std::cout << "  " << decompressCrvDigi(waveform.at(i).ADC);
+            std::cout << "}" << std::endl;
+            std::cout << std::endl;
+          } // loop over hits
+        }   // debug output
+      }     // end parsing CRV DataBlocks
+    }       // loop over DataBlocks within CRVFragments
+  }         // Close loop over fragments
 
   // Store the straw digis and calo digis in the event
   event.put(std::move(crv_digis));
@@ -290,5 +217,3 @@ void CrvDigisFromFragments::produce(Event& event) {
 // ======================================================================
 
 DEFINE_ART_MODULE(CrvDigisFromFragments)
-
-// ======================================================================

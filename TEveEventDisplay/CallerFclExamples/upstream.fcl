@@ -1,4 +1,4 @@
-# Sophie Middleton 
+# Sophie Middleton
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
@@ -15,6 +15,6 @@ physics :
  analyzers : { @table::TEveDis.analyzers}
 }
 
-physics.EndPath  : [ @sequence::TEveDis.seqPOT] 
+physics.EndPath  : [ @sequence::TEveDis.seqPOT]
 
 

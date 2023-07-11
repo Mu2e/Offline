@@ -27,7 +27,8 @@ namespace mu2e {
 
     class BFieldManagerMaker {
        public:
-        friend class BFieldManagerMakerMaker;
+
+        typedef std::vector<std::shared_ptr<BFMap>> MapContainerType;
 
         explicit BFieldManagerMaker(const BFieldConfig& config);
 
@@ -41,45 +42,28 @@ namespace mu2e {
         // Hold the object while we are creating it. The GeometryService will take ownership.
         std::unique_ptr<BFieldManager> _bfmgr;
 
-        // Hold the types of the inner and outer maps (if they differ)
-        std::vector<BFMapType> _innerTypes;
-        std::vector<BFMapType> _outerTypes;
-
-        // Load a series of parametric magnetic field maps.
-        void loadParam(BFieldManager::MapContainerType* whichMap,
+        // Load a series of G4BL or parametric magnetic field maps.
+        void loadMaps(MapContainerType& whichMap,
                        const BFieldConfig::FileSequenceType& files,
                        std::vector<BFMapType> mapTypeList,
-                       BFInterpolationStyle interpStyle,
-                       double scaleFactor);
+                      const BFieldConfig& config);
+
 
         // Create a new parametric magnetic field map, get information from config file.
-        void loadParam(BFieldManager::MapContainerType* whichMap,
+        void loadParam(MapContainerType& whichMap,
                        const std::string& key,
                        const std::string& resolvedFileName,
-                       double scaleFactor);
-
-        // Load a series of G4BL magnetic field maps.
-        void loadG4BL(BFieldManager::MapContainerType* whichMap,
-                      const BFieldConfig::FileSequenceType& files,
-                      double scaleFactor,
-                      BFInterpolationStyle interpStyle);
+                       const BFieldConfig& config);
 
         // Create a new magnetic field map, get information from config file.
-        void loadG4BL(BFieldManager::MapContainerType* whichMap,
+        void loadG4BL(MapContainerType& whichMap,
                       const std::string& key,
                       const std::string& resolvedFileName,
-                      double scaleFactor,
-                      BFInterpolationStyle interpStyle);
-
-        // Create and fill a new magnetic field map
-        void readGMCMap(const std::string& mapKey,
-                        const std::string& resolvedFileName,
-                        const std::vector<int>& dim,
-                        double scaleFactor,
-                        BFInterpolationStyle interpStyle);
+                      const BFieldConfig& config);
 
         // Read a G4BL text format map.
-        void readG4BLMap(const std::string& filename, BFGridMap& bfmap, CLHEP::Hep3Vector offset);
+        void readG4BLMap(const std::string& filename, BFGridMap& bfmap,
+                         CLHEP::Hep3Vector offset);
 
         // Read a G4BL map that was stored using writeG4BLBinary.
         void readG4BLBinary(const std::string& headerFilename, BFGridMap& bfmap);
@@ -89,10 +73,6 @@ namespace mu2e {
 
         // Write an existing BFMap in binary format.
         void writeG4BLBinary(const BFGridMap& bf, const std::string& outputfile);
-
-        // Compute the size of the array needed to hold the raw data of the field map.
-        int computeArraySize(int fd, const std::string& filename);
-
         void flipMap(BFGridMap& bf);
 
     };  // end class BFieldManagerMaker

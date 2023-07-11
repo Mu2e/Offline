@@ -42,7 +42,7 @@ void EPSeparation(TTree* sh, EffStruct& eff,const char* fname=0) {
   pe->SetLineColor(kBlack);
   ee->SetStats(0);
   pe->SetStats(0);
-//  ee->Sumw2();
+  //  ee->Sumw2();
   sh->Project("ee","1000.0*edep",conv);
   sh->Project("pe","1000.0*edep",prot);
   ee->Scale(escale);
@@ -51,7 +51,7 @@ void EPSeparation(TTree* sh, EffStruct& eff,const char* fname=0) {
   TH1F* pdedx = new TH1F("pdedx","dE/dx;Straw energy/pathlength (KeV/mm)",100,0,6);
   ededx->SetLineColor(kRed);
   pdedx->SetLineColor(kBlack);
-//  ededx->Sumw2();
+  //  ededx->Sumw2();
   sh->Project("ededx","500.*edep/sqrt(2.5^2-mcshd^2)",conv);
   sh->Project("pdedx","500.*edep/sqrt(2.5^2-mcshd^2)",prot);
   ededx->Scale(escale);
@@ -61,7 +61,7 @@ void EPSeparation(TTree* sh, EffStruct& eff,const char* fname=0) {
   int ibin = ee->FindFixBin(eff._ecut);
   double eint = ee->Integral(1,ibin);
   double etot = ee->Integral();
-  eff._eeff = eint/etot; 
+  eff._eeff = eint/etot;
   eff._eefferr = sqrt(eint*(etot-eint)/pow(etot,3));
   double pint = pe->Integral(1,ibin);
   double ptot = pe->Integral();
@@ -119,7 +119,7 @@ void EPSeparation(TTree* sh, EffStruct& eff,const char* fname=0) {
   TLine *ldecut = new TLine(eff._decut,0.0,eff._decut,pdedx->GetMaximum());
   ldecut->SetLineStyle(3);
   ldecut->Draw();
-  
+
   TCanvas* e2can = new TCanvas("e2can","e2can",700,700);
   pe->Draw();
   ee->Draw("same");
@@ -127,7 +127,7 @@ void EPSeparation(TTree* sh, EffStruct& eff,const char* fname=0) {
   lecut->SetLineStyle(3);
   lecut->Draw();
 
-  
+
   if(fname !=0)
     e2can->SaveAs(fname);
 

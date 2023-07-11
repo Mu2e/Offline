@@ -1,0 +1,84 @@
+#
+# generate and simulate full CRV waveforms to find the pedestal
+#
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/EventGenerator/fcl/prolog.fcl"
+#include "Production/JobConfig/common/prolog.fcl"
+#include "Production/JobConfig/primary/prolog.fcl"
+#include "Production/JobConfig/digitize/prolog.fcl"
+#include "Production/JobConfig/cosmic/prolog.fcl"
+#include "Production/JobConfig/reco/prolog.fcl"
+
+process_name : cosmicSimReco
+
+source : {
+  module_type :EmptyEvent
+  firstRun: 1200
+}
+services : @local::Services.Sim
+
+physics: {
+  producers : {
+    @table::Common.producers
+    @table::Primary.producers
+    @table::Digitize.producers
+    @table::CrvDAQPackage.producers
+    cosmicTimeOffset : @local::Cosmic.cosmicTimeOffset
+    generate : @local::Cosmic.generateCRY
+  }
+  analyzers: {
+    CrvPedestalFinder: @local::CrvPedestalFinder
+  }
+
+  TriggerPath : [
+    @sequence::Common.generateSequence,
+    cosmicTimeOffset,
+    g4run,
+    CrvSteps,
+    EWMProducer,
+    @sequence::CrvDAQPackage.CrvDAQSequence
+  ]
+  EndPath : [ CrvPedestalFinder ]
+  trigger_paths : [ TriggerPath ]
+  end_paths : [ EndPath ]
+}
+
+physics.analyzers.digiCompressionCheck.SelectEvents : [ TriggerPath ]
+physics.producers.FindMCPrimary.PrimaryGenIds: ["CosmicCRY"]
+
+# set the event timing for OffSpill
+physics.producers.EWMProducer.SpillType : 0
+# override the Untriggered filter to just prescale
+# nofield geometry
+services.GeometryService.bFieldFile : "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
+# g4 config
+physics.producers.g4run.TrajectoryControl: @local::mu2eg4NoTrajectories
+physics.producers.g4run.inputs.primaryTag : cosmicTimeOffset
+physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicNoField
+physics.producers.g4run.physics.minRangeCut : 1.0 // mm
+# stop showers outside the detector
+physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicNoField
+
+physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
+physics.producers.CrvPhotons.crvStepProcessNames  : ["cosmicSimReco"]
+
+#record full waveforms
+physics.producers.CrvWaveforms.minVoltage : -100 //-100V --> records everything
+
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
+# histogram file
+services.TFileService.fileName : "nts.owner.val-cosmicSimReco.dsconf.seq.root"
+
+# run 1h by default
+source.maxEvents: 50000
+
+# Initialze seeding of random engines
+services.SeedService.baseSeed         :  8
+##include "Production/Validation/database.fcl"

@@ -11,16 +11,13 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/FindMany.h"
 #include "canvas/Utilities/InputTag.h"
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"
 
@@ -136,7 +133,6 @@ namespace mu2e {
       , effSoftware_(pset.get<unsigned>("cutMinCommonClusters"))
       , fakes_(pset.get<unsigned>("cutMinCommonClusters"))
 
-
       , singleParticleMode_(pset.get<bool>("singleParticleMode", false))
       , clusterModuleLabel_(singleParticleMode_ ? pset.get<std::string>("singleParticleClusterModuleLabel") : "")
       , clusterInstanceName_(pset.get<std::string>("singleParticleClusterInstanceName", ""))
@@ -174,7 +170,6 @@ namespace mu2e {
         hMultiplicitySignal_->SetOption("colz");
         hMultiplicitySignal_->GetXaxis()->SetTitle("num signal particles");
         hMultiplicitySignal_->GetYaxis()->SetTitle("num PatRec tracks");
-
 
         hCommonClusters_ = tfs->make<TH2D>("commonClusters", "Track&SimParticle vs SimParticle clusters for best track",
                                            10, -0.5, 9.5, 10, -0.5, 9.5);
@@ -343,7 +338,6 @@ namespace mu2e {
         (std::abs(par.posy()) < cutHitYmax_);
     }
 
-
     //================================================================
     bool EMFDetMCHistPatRec::signalParticleSofware(const art::FindMany<ExtMonFNALRecoCluster,ExtMonFNALRecoClusterTruthBits>& clusterFinder,
                                                    unsigned iParticle)
@@ -357,14 +351,12 @@ namespace mu2e {
       return hitPlanes.size() == extmon_->nplanes();
     }
 
-
     //================================================================
     bool EMFDetMCHistPatRec::acceptSingleParticleEvent(const art::Event& event) {
       art::Handle<ExtMonFNALRecoClusterCollection> coll;
       event.getByLabel(clusterModuleLabel_, clusterInstanceName_, coll);
       return perfectSingleParticleEvent(*coll, extmon_->nplanes());
     }
-
 
     //================================================================
     void EMFDetMCHistPatRec::fillRTR(const art::Event& event) {
@@ -401,4 +393,4 @@ namespace mu2e {
   } // namespace ExtMonFNAL
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFDetMCHistPatRec);
+DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFDetMCHistPatRec)

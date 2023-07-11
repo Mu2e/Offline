@@ -19,10 +19,10 @@ namespace mu2e {
 
   public:
 
-    Torus(double torusRadius, double innerRadius, double outerRadius, 
+    Torus(double torusRadius, double innerRadius, double outerRadius,
           double phi0, double deltaPhi,
           CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(),
-          CLHEP::HepRotation const & rotation = CLHEP::HepRotation(), 
+          CLHEP::HepRotation const & rotation = CLHEP::HepRotation(),
           std::string const & materialName = "" ) :
       _torusRadius( torusRadius ),
       _innerRadius( innerRadius ),
@@ -50,11 +50,11 @@ namespace mu2e {
 
   private:
 
-    double _torusRadius; 
-    double _innerRadius; 
-    double _outerRadius; 
-    double _phi0       ; 
-    double _deltaPhi   ; 
+    double _torusRadius;
+    double _innerRadius;
+    double _outerRadius;
+    double _phi0       ;
+    double _deltaPhi   ;
 
     CLHEP::Hep3Vector  _originInMu2e;
     CLHEP::HepRotation _rotation; // wrt to parent volume

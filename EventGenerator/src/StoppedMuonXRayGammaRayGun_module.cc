@@ -24,7 +24,6 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -32,12 +31,8 @@
 
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "CLHEP/Random/RandFlat.h"
 #include "Offline/Mu2eUtilities/inc/Table.hh"
@@ -134,7 +129,6 @@ namespace mu2e {
     if ( _doHistograms ) bookHistograms();
   }
 
-
   //================================================================
   void StoppedMuonXRayGammaRayGun::produce(art::Event& event) {
 
@@ -213,10 +207,8 @@ namespace mu2e {
       }
     }
 
-
     event.put(std::move(output));
   }
-
 
   void StoppedMuonXRayGammaRayGun::bookHistograms(){
 
@@ -260,4 +252,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StoppedMuonXRayGammaRayGun);
+DEFINE_ART_MODULE(mu2e::StoppedMuonXRayGammaRayGun)

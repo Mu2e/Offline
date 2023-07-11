@@ -20,7 +20,7 @@ namespace mu2e{
                                                  )
 
     : G4VProcess(aName,fUserDefined),
-      mu2elimits_(&lim)
+      mu2elimits_(lim)
   {
     SetProcessSubType(0);
 
@@ -39,13 +39,13 @@ namespace mu2e{
                                                  G4double  ,
                                                  G4double& ,
                                                  G4GPILSelection*
-                                                 ){ return -1.0; };
+                                                 ){ return -1.0; }
 
   //  no operation in  AlongStepDoIt for now
   G4VParticleChange* Mu2eSpecialCutsProcess::AlongStepDoIt(
                                    const G4Track& ,
                                    const G4Step&
-                                   ) { return nullptr; };
+                                   ) { return nullptr; }
 
   // PostStep (not AtRest)
 
@@ -61,19 +61,21 @@ namespace mu2e{
 
     // Maximum number of steps
 
-    if (aTrack.GetCurrentStepNumber() >= static_cast<G4int>(mu2elimits_->maxStepsPerTrack())) {
+    if (aTrack.GetCurrentStepNumber() >= static_cast<G4int>(mu2elimits_.maxStepsPerTrack())) {
       proposedStep = 0.;
     }
     if (verboseLevel>0) {
+      G4int prec = G4cout.precision(15);
       G4cout << __func__ << " : "
              << GetProcessName()
              << " : current step "
              << aTrack.GetCurrentStepNumber()
              << ", max step limit "
-             << static_cast<G4int>(mu2elimits_->maxStepsPerTrack())
+             << static_cast<G4int>(mu2elimits_.maxStepsPerTrack())
              << ", proposed step "
-             << proposedStep
+             << std::setw(24) << std::scientific << proposedStep << std::defaultfloat
              << G4endl;
+      G4cout.precision(prec);
     }
     return proposedStep;
 
@@ -91,13 +93,13 @@ namespace mu2e{
              << " : current step "
              << aTrack.GetCurrentStepNumber()
              << ", max step limit "
-             << static_cast<G4int>(mu2elimits_->maxStepsPerTrack())
+             << static_cast<G4int>(mu2elimits_.maxStepsPerTrack())
              << G4endl;
     }
     aParticleChange.Initialize(aTrack);
     // if the track reached too many steps deposit its energy
     if (aTrack.GetCurrentStepNumber() >=
-        static_cast<G4int>(mu2elimits_->maxStepsPerTrack())) {
+        static_cast<G4int>(mu2elimits_.maxStepsPerTrack())) {
       aParticleChange.ProposeEnergy(0.) ;
       aParticleChange.ProposeLocalEnergyDeposit(aTrack.GetKineticEnergy()) ;
     }
@@ -119,19 +121,21 @@ namespace mu2e{
 
     // Maximum number of steps
 
-    if (aTrack.GetCurrentStepNumber() > static_cast<G4int>(mu2elimits_->maxStepsPerTrack())) {
+    if (aTrack.GetCurrentStepNumber() > static_cast<G4int>(mu2elimits_.maxStepsPerTrack())) {
       proposedStep = std::numeric_limits<double>::min();
     }
     if (verboseLevel>0) {
+      G4int prec = G4cout.precision(15);
       G4cout << __func__ << " : "
              << GetProcessName()
              << " : current step "
              << aTrack.GetCurrentStepNumber()
              << ", max step limit "
-             << static_cast<G4int>(mu2elimits_->maxStepsPerTrack())
+             << static_cast<G4int>(mu2elimits_.maxStepsPerTrack())
              << ", proposed step "
-             << proposedStep
+             << std::setw(24) << std::scientific << proposedStep << std::defaultfloat
              << G4endl;
+      G4cout.precision(prec);
     }
     return proposedStep;
   }
@@ -148,13 +152,13 @@ namespace mu2e{
              << " : current step "
              << aTrack.GetCurrentStepNumber()
              << ", max step limit "
-             << static_cast<G4int>(mu2elimits_->maxStepsPerTrack())
+             << static_cast<G4int>(mu2elimits_.maxStepsPerTrack())
              << G4endl;
     }
     aParticleChange.Initialize(aTrack);
     // if the track reached too many steps deposit its energy
     if (aTrack.GetCurrentStepNumber() >=
-        static_cast<G4int>(mu2elimits_->maxStepsPerTrack())) {
+        static_cast<G4int>(mu2elimits_.maxStepsPerTrack())) {
       aParticleChange.ProposeEnergy(0.) ;
       aParticleChange.ProposeLocalEnergyDeposit(aTrack.GetKineticEnergy()) ;
     }

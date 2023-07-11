@@ -30,7 +30,6 @@ class EventDisplayGeoVolumeBox : public TGeoVolume, public ComponentInfoContaine
   EventDisplayGeoVolumeBox& operator=(const EventDisplayGeoVolumeBox &);
 
   public:
-#ifndef __CINT__
   EventDisplayGeoVolumeBox(double dx, double dy, double dz, EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info):TGeoVolume(),ComponentInfoContainer(info),_mainframe(mainframe)
   {
     //bare pointer needed since ROOT manages this object
@@ -38,7 +37,6 @@ class EventDisplayGeoVolumeBox : public TGeoVolume, public ComponentInfoContaine
     SetShape(box);
     SetNumber(GetGeoManager()->AddVolume(this)); //this is what happens in the base TGeoVolume constructor
   }
-#endif
 
   virtual ~EventDisplayGeoVolumeBox()
   {
@@ -49,7 +47,7 @@ class EventDisplayGeoVolumeBox : public TGeoVolume, public ComponentInfoContaine
     TList  *l=IsA()->GetMenuList();
     l->Clear();
 
-    TObject *obj = dynamic_cast<TObject*>(_mainframe);    
+    TObject *obj = dynamic_cast<TObject*>(_mainframe);
     TClassMenuItem *m = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,IsA(),"Information","showInfo",obj,"TObject*",1); //TClassMenuItem accepts only bare pointers. m needs to be bare pointer because it is managed by ROOT.
     l->AddFirst(m);
 

@@ -67,10 +67,13 @@ namespace mu2e {
                                                     ) override;
 
   private:
- 
-    Mu2eSpecialCutsProcess& operator=(const Mu2eSpecialCutsProcess&) = delete;
 
-    const Mu2eG4ResourceLimits *mu2elimits_;
+    Mu2eSpecialCutsProcess(const Mu2eSpecialCutsProcess&) = delete;
+    Mu2eSpecialCutsProcess(Mu2eSpecialCutsProcess&&) = delete;
+    Mu2eSpecialCutsProcess& operator=(const Mu2eSpecialCutsProcess&) = delete;
+    Mu2eSpecialCutsProcess& operator=(Mu2eSpecialCutsProcess&&) = delete;
+
+    const Mu2eG4ResourceLimits& mu2elimits_;
 
   };
 }

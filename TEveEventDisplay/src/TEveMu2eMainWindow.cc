@@ -7,6 +7,7 @@ namespace fhicl
 }
 
 using namespace mu2e;
+using namespace std;
 
   /*------------Function to make colour scheme:-------------*/
   void setRecursiveColorTransp(TGeoVolume *vol, Int_t color, Int_t transp)
@@ -21,11 +22,15 @@ using namespace mu2e;
 
 namespace mu2e{
 
+
+  /*------ Default Constructor ------ */
   TEveMu2eMainWindow::TEveMu2eMainWindow() : TGMainFrame(gClient->GetRoot(), 320, 320){}
-  
+
   /*------------Function to construct main frame, add buttons and GUI:-------------*/
-  TEveMu2eMainWindow::TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset): 
+  TEveMu2eMainWindow::TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset, const DrawOptions drawOpts, const GeomOptions geomOpts) :
     TGMainFrame(p, w, h),
+    DrawOpts(drawOpts),
+    GeomOpts(geomOpts),
     fTeRun(0),
     fTeEvt(0),
     fTTEvt(0),
@@ -38,18 +43,18 @@ namespace mu2e{
     trackscheck(0),
     cosmicscheck(0),
     cosmictrkscheck(0),
-    mctrajcheck(0)	
-    {	
+    mctrajcheck(0)
+    {
       //Create TEve Manager:
       TEveManager::Create();
       //Create Browser :
       gEve->GetBrowser()->GetTabRight()->SetTab(0);
       gClient->GetRoot();
       browser = gEve->GetBrowser();
-      //Build GUI (function below)
+            //Build GUI (function below)
       CreateGUI();
       //Build Multiple View Window:
-      //CreateMultiViews();
+      //CreateMultiViews(); --> option for pop up window no deprecated
       //Add your Event:
       gEve->AddEvent(new TEveEventManager("Event", "Empty Event"));
 
@@ -68,7 +73,7 @@ namespace mu2e{
    fSplitFrame->HSplit(350);
    fSplitFrame->GetFirst()->VSplit(410);
    fSplitFrame->GetSecond()->VSplit(410);
-  // get top (main) split frame
+   // get top (main) split frame
    frm = fSplitFrame->GetFirst()->GetFirst();
    frm->SetName("Calorimeter_XY_View");
    fViewer0 = new TGLEmbeddedViewer(frm, fPad);
@@ -92,8 +97,7 @@ namespace mu2e{
      gEve->AddToListTree(axes_xy,kTRUE);
      gEve->AddToListTree(CfXYMgr,kTRUE);
      fViewer[0]->AddScene(proj0);
-  }
-
+   }
    frm = fSplitFrame->GetFirst()->GetSecond();
    frm->SetName("Calorimeter_RZ_View");
    fViewer1 = new TGLEmbeddedViewer(frm, fPad);
@@ -117,7 +121,7 @@ namespace mu2e{
      gEve->AddToListTree(axes_xy,kTRUE);
      gEve->AddToListTree(CfRZMgr,kTRUE);
      fViewer[1]->AddScene(proj1);
-}
+   }
 
    frm = fSplitFrame->GetSecond()->GetFirst();
    frm->SetName("Tracker_XY_View");
@@ -142,7 +146,7 @@ namespace mu2e{
      gEve->AddToListTree(axes_xytracker,kTRUE);
      gEve->AddToListTree(TfXYMgr,kTRUE);
      fViewer[2]->AddScene(proj2);
-}
+   }
 
    frm = fSplitFrame->GetSecond()->GetSecond();
    frm->SetName("Tracker_RZ_View");
@@ -160,15 +164,74 @@ namespace mu2e{
      gEve->GetViewers()->AddElement(fViewer[3]);
      proj3 = gEve->SpawnNewScene("Tracker RZ Scene");
      //fViewer[1]->AddScene(fdetXY);
-     TfRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
+     TfRZMgr = new TEveProjectionManager(TEveProjection::kPT_ZY);
      proj3->AddElement(TfRZMgr);
      TEveProjectionAxes* axes_xytracker = new TEveProjectionAxes(TfRZMgr);
      proj3->AddElement(axes_xytracker);
      gEve->AddToListTree(axes_xytracker,kTRUE);
      gEve->AddToListTree(TfRZMgr,kTRUE);
      fViewer[3]->AddScene(proj3);
-}
-	
+   }
+          // create the split frames
+   fPadCRV = new TEvePad();
+   fPadCRV->SetFillColor(kBlack);
+
+   fSplitFrameCRV = new TGSplitFrame(this, 900, 1300);
+   AddFrame(fSplitFrameCRV, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+   // split it once
+   fSplitFrameCRV->HSplit(350);
+   //fSplitFrameCRV->GetFirst()->VSplit(410);
+   //fSplitFrameCRV->GetSecond()->VSplit(410);
+   //get top (main) split frame
+   frmCRV = fSplitFrameCRV->GetFirst();//->GetFirst();
+   frmCRV->SetName("CRV_XY_View");
+   fViewer4 = new TGLEmbeddedViewer(frmCRV, fPadCRV);
+   frmCRV->AddFrame(fViewer4->GetFrame(), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+   // set the camera to perspective (XOZ) for this viewer
+   fViewer4->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+   // connect signal we are interested to
+
+   fViewer[4] = new TEveViewer("SplitGLViewer[4]");
+   fViewer[4]->SetGLViewer(fViewer4, fViewer4->GetFrame());
+   fViewer[4]->IncDenyDestroy();
+   if (fIsEmbedded && gEve) {
+     gEve->GetViewers()->AddElement(fViewer[4]);
+     proj4 = gEve->SpawnNewScene("CRV XY Scene");
+     //fViewer[1]->AddScene(fdetXY);
+     CrfXYMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
+     proj4->AddElement(CrfXYMgr);
+     TEveProjectionAxes* axes_xy = new TEveProjectionAxes(CrfXYMgr);
+     proj4->AddElement(axes_xy);
+     gEve->AddToListTree(axes_xy,kTRUE);
+     gEve->AddToListTree(CrfXYMgr,kTRUE);
+     fViewer[4]->AddScene(proj4);
+   }
+
+   frmCRV = fSplitFrameCRV->GetSecond();//->GetSecond();
+   frmCRV->SetName("CRV_YZ_View");
+   fViewer5 = new TGLEmbeddedViewer(frmCRV, fPadCRV);
+   frmCRV->AddFrame(fViewer5->GetFrame(), new TGLayoutHints(kLHintsExpandX |
+                 kLHintsExpandY));
+   // set the camera to perspective (XOZ) for this viewer
+   fViewer5->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+   // connect signal we are interested to
+
+   fViewer[5] = new TEveViewer("SplitGLViewer[5]");
+   fViewer[5]->SetGLViewer(fViewer5, fViewer5->GetFrame());
+   fViewer[5]->IncDenyDestroy();
+   if (fIsEmbedded && gEve) {
+     gEve->GetViewers()->AddElement(fViewer[5]);
+     proj5 = gEve->SpawnNewScene("CRV YZ Scene");
+     //fViewer[1]->AddScene(fdetXY);
+     CrfRZMgr = new TEveProjectionManager(TEveProjection::kPT_ZY);
+     proj5->AddElement(CrfRZMgr);
+     TEveProjectionAxes* axes_xytracker = new TEveProjectionAxes(CrfRZMgr);
+     proj5->AddElement(axes_xytracker);
+     gEve->AddToListTree(axes_xytracker,kTRUE);
+     gEve->AddToListTree(CrfRZMgr,kTRUE);
+     fViewer[5]->AddScene(proj5);
+   }
+
    Resize(GetDefaultSize());
    MapSubwindows();
    MapWindow();
@@ -227,9 +290,9 @@ namespace mu2e{
 
         evnoFrame->AddFrame(fTeEvt,new TGLayoutHints(kLHintsExpandX));
         fTeEvt->Associate(this);
-        
+
         TGTextButton *Gobutton         = new TGTextButton(navFrame, "&Go", 1999);
-        navFrame->AddFrame(Gobutton, new TGLayoutHints(kLHintsLeft,3,0,3,0));         
+        navFrame->AddFrame(Gobutton, new TGLayoutHints(kLHintsLeft,3,0,3,0));
         Gobutton->Associate(this);
 
         //Add Mu2e logo
@@ -297,9 +360,9 @@ namespace mu2e{
         cosmicscheck->SetState(kButtonDown);
         cosmictrkscheck = new TGCheckButton(br, new TGHotString("Cosmic Tracks"), 1204);
         cosmictrkscheck->SetState(kButtonDown);
-        mctrajcheck = new TGCheckButton(br, new TGHotString("MC Trajectories"), 1205);	
+        mctrajcheck = new TGCheckButton(br, new TGHotString("MC Trajectories"), 1205);
         mctrajcheck->SetState(kButtonDown);
-        
+
         // ... Add horizontal run & event number subframes to vertical evtidFrame
         evtidFrame->AddFrame(runoFrame,new TGLayoutHints(kLHintsExpandX));
         evtidFrame->AddFrame(evnoFrame,new TGLayoutHints(kLHintsExpandX));
@@ -319,7 +382,7 @@ namespace mu2e{
         trackscheck->Associate(this);
         cosmictrkscheck->Associate(this);
         mctrajcheck->Associate(this);
-        
+
         // ... Add navFrame and evtidFrame to MainFrame
         frmMain->AddFrame(navFrame);
         TGHorizontal3DLine *separator = new TGHorizontal3DLine(frmMain);
@@ -339,11 +402,11 @@ namespace mu2e{
 
   /*------------Function to create 2D Tabs:-------------*/
   void TEveMu2eMainWindow::StartProjectionTabs(){
-	  //pass_proj->CreateCRVProjection(CRV2Dproj);
-	  pass_proj->CreateCaloProjection(calo2Dproj);
-	  pass_proj->CreateTrackerProjection(tracker2Dproj);
+          if(DrawOpts.addCRVInfo) {pass_proj->CreateCRVProjection(CRV2Dproj);}
+          if(DrawOpts.addClusters or DrawOpts.addCryHits)pass_proj->CreateCaloProjection(calo2Dproj);
+          pass_proj->CreateTrackerProjection(tracker2Dproj);
   }
-  
+
     /*------------Function to add calo 2D projection to display:-------------*/
   void TEveMu2eMainWindow::CreateCaloProjection(){
     // Create detector and event scenes for ortho views
@@ -370,7 +433,7 @@ namespace mu2e{
     TEveWindowPack *pack = 0;
 
     slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
-    pack = slot->MakePack();
+           pack = slot->MakePack();
     pack->SetElementName("Calo Views");
     pack->SetHorizontal();
     pack->SetShowTitleBar(kFALSE);
@@ -389,7 +452,7 @@ namespace mu2e{
 
     gEve->GetBrowser()->GetTabRight()->SetTab(0);
   }
-  
+
   /*------------Function to add tracker 2D projection to display:-------------*/
   void TEveMu2eMainWindow::CreateTrackerProjection(){
     // Create detector and event scenes for ortho views
@@ -406,7 +469,7 @@ namespace mu2e{
     gEve->AddToListTree(axes_xy,kTRUE);
     gEve->AddToListTree(tracker2Dproj->fXYMgr,kTRUE);
 
-    tracker2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
+    tracker2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_ZY);
     TEveProjectionAxes* axes_rz = new TEveProjectionAxes(tracker2Dproj->fRZMgr);
     tracker2Dproj->fDetRZScene->AddElement(axes_rz);
     tracker2Dproj->fEvtRZScene->AddElement(axes_rz);
@@ -438,23 +501,80 @@ namespace mu2e{
     gEve->GetBrowser()->GetTabRight()->SetTab(0);
 
   }
+         /*------------Function to add CRV 2D projection to display:-------------*/
+  void TEveMu2eMainWindow::CreateCRVProjection(){
+    // Create detector and event scenes for ortho views
+    CRV2Dproj->fDetXYScene = gEve->SpawnNewScene("CRV Det XY Scene", "");
+    CRV2Dproj->fDetRZScene = gEve->SpawnNewScene("CRV Det RZ Scene", "");
+    CRV2Dproj->fEvtXYScene = gEve->SpawnNewScene("CRV Evt XY Scene", "");
+    CRV2Dproj->fEvtRZScene = gEve->SpawnNewScene("CRV Evt RZ Scene", "");
+
+    // Create XY/RZ CRV2Dprojection mgrs, draw projected axes, & add them to scenes
+    CRV2Dproj->fXYMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
+    TEveProjectionAxes* axes_xy = new TEveProjectionAxes(CRV2Dproj->fXYMgr);
+    CRV2Dproj->fDetXYScene->AddElement(axes_xy);
+    CRV2Dproj->fEvtXYScene->AddElement(axes_xy);
+    gEve->AddToListTree(axes_xy,kTRUE);
+    gEve->AddToListTree(CRV2Dproj->fXYMgr,kTRUE);
+
+    // Create side-by-side ortho XY & RZ views in new tab & add det/evt scenes
+    TEveWindowSlot *slot = 0;
+    TEveWindowPack *pack = 0;
+
+    slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
+    pack = slot->MakePack();
+    pack->SetElementName("CRV XY View");
+    pack->SetHorizontal();
+    pack->SetShowTitleBar(kFALSE);
+
+    pack->NewSlot()->MakeCurrent();
+    CRV2Dproj->fXYView = gEve->SpawnNewViewer("CRV XY View", "");
+    CRV2Dproj->fXYView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+    CRV2Dproj->fXYView->AddScene(CRV2Dproj->fDetXYScene);
+    CRV2Dproj->fXYView->AddScene(CRV2Dproj->fEvtXYScene);
+
+    gEve->GetBrowser()->GetTabRight()->SetTab(0);
+
+    CRV2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_ZY);
+    TEveProjectionAxes* axes_rz = new TEveProjectionAxes(CRV2Dproj->fRZMgr);
+    CRV2Dproj->fDetRZScene->AddElement(axes_rz);
+    CRV2Dproj->fEvtRZScene->AddElement(axes_rz);
+    gEve->AddToListTree(axes_rz,kTRUE);
+    gEve->AddToListTree(CRV2Dproj->fRZMgr,kTRUE);
+
+    TEveWindowSlot *slotnew = 0;
+    TEveWindowPack *packnew = 0;
+    slotnew = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
+    packnew = slotnew->MakePack();
+    packnew->SetElementName("CRV YZ View");
+    packnew->SetHorizontal();
+    packnew->SetShowTitleBar(kFALSE);
+    packnew->NewSlot()->MakeCurrent();
+    CRV2Dproj->fRZView = gEve->SpawnNewViewer("CRV YZ View", "");
+    CRV2Dproj->fRZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+    CRV2Dproj->fRZView->AddScene(CRV2Dproj->fDetRZScene);
+    CRV2Dproj->fRZView->AddScene(CRV2Dproj->fEvtRZScene);
+
+    gEve->GetBrowser()->GetTabRight()->SetTab(0);
+
+  }
+
 
   /*------------Function to create Calo 2D tab:-------------*/
   void TEveMu2eMainWindow::PrepareCaloProjectionTab(const art::Run& run){
     calo2Dproj->fDetXYScene->DestroyElements();
     calo2Dproj->fDetRZScene->DestroyElements();
-    
+
     TEveElementList *orthodet0 = new TEveElementList("CaloOrthoDet0");
     TEveElementList *orthodet1 = new TEveElementList("CaloOrthoDet1");
-    TGeoVolume* topvol = geom->GetTopVolume(); 
+    TGeoVolume* topvol = geom->GetTopVolume();
     Mu2eCalo->DrawCaloDetector(run, topvol,orthodet0,orthodet1);
-  
     gEve->AddGlobalElement(orthodet0);
     gEve->AddGlobalElement(orthodet1);
-    
+
     //CfXYMgr->ImportElements(orthodet0);
     //CfRZMgr->ImportElements(orthodet1);
-    
+
     // ... Import elements of the list into the projected views
     calo2Dproj->fXYMgr->ImportElements(orthodet0, calo2Dproj->fDetXYScene);
     calo2Dproj->fRZMgr->ImportElements(orthodet1, calo2Dproj->fDetRZScene);
@@ -467,9 +587,9 @@ namespace mu2e{
     // ... Turn ON rendering of detector in RPhi and RZ views
     calo2Dproj->fDetXYScene->FindChild("CaloOrthoDet0 [P]")->SetRnrState(kTRUE);
     calo2Dproj->fDetRZScene->FindChild("CaloOrthoDet1 [P]")->SetRnrState(kTRUE);
-    
+
   }
-  
+
   /*------------Function to create Tracker 2D tab:-------------*/
   void TEveMu2eMainWindow::PrepareTrackerProjectionTab(const art::Run& run){
     tracker2Dproj->fDetXYScene->DestroyElements();
@@ -483,17 +603,17 @@ namespace mu2e{
     TGeoVolume* topvol = geom->GetTopVolume();
     Mu2eTracker->DrawTrackerDetector(topvol, orthodetXZ, orthodetXY);
     //Mu2eTracker->DrawTrackerDetector(run, topvol, orthodetsplit);
-    
+
     gEve->AddGlobalElement(orthodetXY);
     gEve->AddGlobalElement(orthodetXZ);
-    
+
     // ... Import elements of the list into the projected views
     //TfXYMgr->ImportElements(orthodetsplit);
     //TfRZMgr->ImportElements(orthodetsplit);
 
-    tracker2Dproj->fXYMgr->ImportElements(orthodetXY, tracker2Dproj->fDetXYScene);	
+    tracker2Dproj->fXYMgr->ImportElements(orthodetXY, tracker2Dproj->fDetXYScene);
     tracker2Dproj->fRZMgr->ImportElements(orthodetXZ, tracker2Dproj->fDetRZScene);
-   
+
     // ... Turn OFF rendering of duplicate detector in main 3D view
     gEve->GetGlobalScene()->FindChild("OrthoDetXY")->SetRnrState(kFALSE);
     gEve->GetGlobalScene()->FindChild("OrthoDetXZ")->SetRnrState(kFALSE);
@@ -512,33 +632,36 @@ namespace mu2e{
 
   TGeoVolume* topvol = geom->GetTopVolume();
 
-  TEveElementList *orthodetT1 = new TEveElementList("CRVT1OrthoDet");
-  TEveElementList *orthodetT2 = new TEveElementList("CRVT2OrthoDet");
+  //TEveElementList *orthodetT1 = new TEveElementList("CRVT1OrthoDet");
+  // TEveElementList *orthodetT2 = new TEveElementList("CRVT2OrthoDet");
   TEveElementList *orthodetT3 = new TEveElementList("CRVT3OrthoDet");
   TEveElementList *orthodetT4 = new TEveElementList("CRVT4OrthoDet");
-  TEveElementList *orthodetlist[] = {orthodetT1, orthodetT2, orthodetT3, orthodetT4};
+  //TEveElementList *orthodetlist[] = {orthodetT1, orthodetT2, orthodetT3, orthodetT4};
 
-  Mu2eCRV->DrawCRVDetector(run, topvol, orthodetlist);
+  Mu2eCRV->DrawCRVDetector(run, topvol, orthodetT3, orthodetT4);
 
-  for (unsigned int i=0; i<4; i++){
-    gEve->AddGlobalElement(orthodetlist[i]);
-  }
+  //for (unsigned int i=0; i<2; i++){
+  gEve->AddGlobalElement(orthodetT3);
+  gEve->AddGlobalElement(orthodetT4);
+  // }
 
-  for (unsigned int i=0; i<4; i++){
-    CRV2Dproj->fXYMgr->ImportElements(orthodetlist[i], CRV2Dproj->fDetXYScene);
-  }
+  //for (unsigned int i=0; i<2; i++){
+  CRV2Dproj->fXYMgr->ImportElements(orthodetT4, CRV2Dproj->fDetXYScene);
+  CRV2Dproj->fRZMgr->ImportElements(orthodetT4, CRV2Dproj->fDetRZScene);
+ // }
 
   // ... Turn OFF rendering of duplicate detector in main 3D view
-  gEve->GetGlobalScene()->FindChild("OrthoDet")->SetRnrState(kFALSE);
+  gEve->GetGlobalScene()->FindChild("CRVT4OrthoDet")->SetRnrState(kFALSE);
+  gEve->GetGlobalScene()->FindChild("CRVT4OrthoDet")->SetRnrState(kFALSE);
 
   // ... Turn ON rendering of detector in RPhi and RZ views
-  //CRV2Dproj->fDetXYScene->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
-  //CRV2Dproj->fDetRZScene->FindChild("OrthoDets0 [P]")->SetRnrState(kTRUE);
+  CRV2Dproj->fDetXYScene->FindChild("CRVT4OrthoDet [P]")->SetRnrState(kTRUE);
+  CRV2Dproj->fDetRZScene->FindChild("CRVT4OrthoDet [P]")->SetRnrState(kTRUE);
 
   }
 
   /*------------Function to import the GDML and make 3D geometry:-------------*/
-  void TEveMu2eMainWindow::SetRunGeometry(const art::Run& run, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV){
+  void TEveMu2eMainWindow::SetRunGeometry(const art::Run& run, std::string gdmlname, int _diagLevel){
     if(gGeoManager){
       gGeoManager->GetListOfNodes()->Delete();
       gGeoManager->GetListOfVolumes()->Delete();
@@ -548,10 +671,10 @@ namespace mu2e{
 
     // Import the GDML of entire Mu2e Geometry
     ConfigFileLookupPolicy configFile;
-    std::string fn =  configFile("Offline/TEveEventDisplay/src/fix.gdml");
-    
+    std::string fn =  configFile(gdmlname.c_str());
+
     geom = mu2e_geom->Geom_Interface::getGeom(fn);
- 
+
     //Get Top Volume
     TGeoVolume* topvol = geom->GetTopVolume();
 
@@ -560,7 +683,7 @@ namespace mu2e{
     gGeoManager->SetTopVisible(kTRUE);
     int nn = gGeoManager->GetNNodes();
     printf("nodes in geom = %d\n",nn);
-    
+
     //Get Top Node:
     TGeoNode* topnode = gGeoManager->GetTopNode();
     TEveGeoTopNode* etopnode = new TEveGeoTopNode(gGeoManager, topnode);
@@ -569,13 +692,13 @@ namespace mu2e{
 
     setRecursiveColorTransp(etopnode->GetNode()->GetVolume(), kWhite-10,70);
 
-    if(!_showBuilding){   
+    if(!GeomOpts.showbuilding){
       mu2e_geom->SolenoidsOnly(topnode);
       mu2e_geom->hideTop(topnode, _diagLevel);
     }
-    if(_showDSOnly) mu2e_geom->InsideDS(topnode, false );
-  
-    if(_showCRV) mu2e_geom->InsideCRV(topnode, true);
+    if(GeomOpts.showDSOnly) mu2e_geom->InsideDS(topnode, false );
+    if(GeomOpts.showInsidePS) mu2e_geom->InsidePS(topnode, false );
+    if(GeomOpts.showCRV) mu2e_geom->InsideCRV(topnode, true);
 
     //Add static detector geometry to global scene
     gEve->AddGlobalElement(etopnode);
@@ -589,15 +712,18 @@ namespace mu2e{
     }
     if (type == "Hits"){
       if (_data.chcol !=0){*hitenergy = pass_data->AddComboHits(_firstLoop, _emptydata.chcol, tracker2Dproj,  true, fhitmin, fhitmax,ftimemin, ftimemax,_accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+      if (_data.tccol !=0){pass_data->AddTimeClusters(_firstLoop, _emptydata.tccol, tracker2Dproj,  true, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+      if (_data.chcol !=0){pass_data->AddTrkHits(_firstLoop, _emptydata.chcol, _emptydata.track_tuple, tracker2Dproj,  true, fhitmin, fhitmax,ftimemin, ftimemax,_accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
       if(_data.cryHitcol !=0){pass_data->AddCrystalHits(_firstLoop, _emptydata.cryHitcol, calo2Dproj, ftimemin, ftimemax, true, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);}
+
     }
     if (type == "Tracks"){
       pass_data->AddHelixPieceWise3D(_firstLoop, _emptydata.track_tuple, tracker2Dproj, ftimemin, ftimemax, true,  _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
     }
     if (type == "Cosmics"){
-      if(_data.crvcoincol!= 0){pass_data->AddCRVInfo(_firstLoop, _emptydata.crvcoincol, ftimemin, ftimemax, true,  _accumulate);}
+      if(_data.crvcoincol!= 0){pass_data->AddCRVInfo(_firstLoop, _emptydata.crvcoincol, ftimemin, ftimemax, CRV2Dproj, true,  _accumulate, TfXYMgr, TfRZMgr, proj4, proj5); }
       }
-    if (type == "Cosmic Tracks"){
+    if (type == "Cosmic Tracks"){std::cout<<"Cosmic tracks "<<std::endl;
       if(_data.cosmiccol!=0){pass_data->AddCosmicTrack(_firstLoop, _emptydata.cosmiccol, tracker2Dproj, ftimemin, ftimemax, true, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
     }
     if (type == "MC Trajectories"){
@@ -606,13 +732,13 @@ namespace mu2e{
     gSystem->ProcessEvents();
     gClient->NeedRedraw(fTeRun);
     gApplication->Run(true);
-	}
+    }
 
   /*------------Function to call button options:-------------*/
   Bool_t TEveMu2eMainWindow::ProcessMessage(Long_t msg, Long_t param1, Long_t param2){
     switch (GET_MSG(msg))
-    {  
-    
+    {
+
     case kC_TEXTENTRY:
     switch (GET_SUBMSG(msg)){
       case kTE_TEXTCHANGED:
@@ -630,27 +756,32 @@ namespace mu2e{
       if (param1 == 1702){
         fhitmin = atof(_hitminenergy->GetString());
         fhitmax = atof(_hitmaxenergy->GetString());
-        if (fhitmin < fhitmax) {*hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
-        if (fhitmin > fhitmax){
+        //if (fhitmin < fhitmax) {*hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+        //if (fhitmin < fhitmax) {pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+              if (fhitmin > fhitmax){
           std::cout<<"Hit Minimum Energy is greater than Maximum Energy"<<std::endl;
           char msg[300];
           sprintf(msg, "Error #%i : Hit minimum energy larger than maximum", true);
           new TGMsgBox(gClient->GetRoot(), gClient->GetRoot(), "Event Not Found", msg, kMBIconExclamation,kMBOk);
         }
-	    }	
-	    if (param1 == 1703){
+            }
+ if (param1 == 1703){
         ftimemin = atof(_hitmintime->GetString());
         ftimemax = atof(_hitmaxtime->GetString());
         if (ftimemin < ftimemax) {
            if(_data.chcol!=0) {
             *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax, ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-           }  if(_data.clustercol!=0) {
+            pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax, ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+           }
+           if(_data.tccol!=0) {
+             pass_data->AddTimeClusters(_firstLoop, _data.tccol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+           }if(_data.clustercol!=0){
             *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj,  false, fclustmin, fclustmax,ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
             }if(_data.crvcoincol!=0) {
-               pass_data->AddCRVInfo(_firstLoop, _data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
+               pass_data->AddCRVInfo(_firstLoop, _data.crvcoincol, ftimemin, ftimemax, CRV2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj4, proj5);
             }
           }
-	    }
+            }
       break;
     }
     case kC_COMMAND:
@@ -665,37 +796,39 @@ namespace mu2e{
       if(param1==1201){
         if(hitscheck->IsDown()){
         *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-        pass_data->AddCrystalHits(_firstLoop, _data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+        pass_data->AddTimeClusters(_firstLoop, _data.tccol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+        pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+                pass_data->AddCrystalHits(_firstLoop, _data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
         }
         if(!hitscheck->IsDown()){RedrawDataProducts("Hits");}
       }
       if(param1==1202){
 
         if(trackscheck->IsDown()){pass_data->AddHelixPieceWise3D(_firstLoop, _data.track_tuple, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
-       
+
         if(!trackscheck->IsDown()){RedrawDataProducts("Tracks");}
       }
       if(param1==1203){
         if(cosmicscheck->IsDown()){
-        pass_data->AddCRVInfo(_firstLoop, _data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
-        
+        pass_data->AddCRVInfo(_firstLoop, _data.crvcoincol, ftimemin, ftimemax, CRV2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj4, proj5);
+
         }
         if(!cosmicscheck->IsDown()){RedrawDataProducts("Cosmics");}
       }
       if(param1==1204){
         if(cosmictrkscheck->IsDown()){
-          pass_data->AddCosmicTrack(_firstLoop, _data.cosmiccol,  tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);		
+          pass_data->AddCosmicTrack(_firstLoop, _data.cosmiccol,  tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
           }
-        if(!cosmictrkscheck->IsDown()){RedrawDataProducts("Cosmic Tracks");}
+      if(!cosmictrkscheck->IsDown()){RedrawDataProducts("Cosmic Tracks");}
       }
       if(param1==1205){
         if(mctrajcheck->IsDown()){
-          pass_mc->AddFullMCTrajectory(_firstLoop, _data.mctrajcol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3, particles);	
+          pass_mc->AddFullMCTrajectory(_firstLoop, _data.mctrajcol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3, particles);
         }
         if(!mctrajcheck->IsDown()){RedrawDataProducts("MC Trajectories");}
       }
       break;
-      case kCM_BUTTON: 
+      case kCM_BUTTON:
        if(param1==1111)
        {}
        if(param1==1001)//Forward
@@ -712,12 +845,12 @@ namespace mu2e{
           runToFind = atoi(fTeRun->GetText());
           usereventSelected = true;
           gApplication->Terminate(0);
-       } 
+       }
        if(param1==1400){
-          //RedrawGeometry(); 
+          //RedrawGeometry();
       }
       break;
-	  } 
+          }
   break;
   }
   return kTRUE;
@@ -726,38 +859,54 @@ namespace mu2e{
   /*------------Function to add the actual data to the plot (entrance from module):-------------*/
   void TEveMu2eMainWindow::setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int &runn, int &eventn, bool &eventSelected, bool isMCOnly)
   {
-    _event=event.id().event();
-    _subrun=event.id().subRun();
-    _run=event.id().run();
-    _firstLoop = firstLoop;
-    _accumulate = accumulate;
-    _data.chcol = data.chcol; 
-    _data.clustercol = data.clustercol;
-    _data.crvcoincol = data.crvcoincol;
-    _data.track_tuple = data.track_tuple;
-    _data.mctrajcol = data.mctrajcol;
-    _data.crvcoincol = data.crvcoincol;
-    _data.cryHitcol = data.cryHitcol;
-    _data.cosmiccol = data.cosmiccol;
 
+      _event=event.id().event();
+      _subrun=event.id().subRun();
+      _run=event.id().run();
+      _firstLoop = firstLoop;
+      _accumulate = accumulate;
+      _data.chcol = data.chcol;
+      _data.tccol = data.tccol;
+      _data.clustercol = data.clustercol;
+      _data.crvcoincol = data.crvcoincol;
+      _data.track_tuple = data.track_tuple;
+      _data.mctrajcol = data.mctrajcol;
+      _data.crvcoincol = data.crvcoincol;
+      _data.cryHitcol = data.cryHitcol;
+      _data.cosmiccol = data.cosmiccol;
+
+      std::string eveinfo = Form("Event : %i     Run : %i     Subrun : %i",_event,_run,_subrun);
+      auto evinfo = new TEveText(eveinfo.c_str());
+      double posy = -140.0;
+      double posz = 0.0;
+      evinfo->SetFontSize(15);
+      evinfo->SetMainColor(kRed);
+      evinfo->RefMainTrans().SetPos(posz,posy,posz);
+      gEve->AddElement(evinfo);
     if(!isMCOnly){
       std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
-      std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
-    
-      if(_data.crvcoincol->size()!=0 or _data.crvcoincol !=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
+      std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol, DrawOpts.addCRVInfo, DrawOpts.addComboHits, DrawOpts.addClusters );
+
+      if(DrawOpts.addCRVInfo){
+        pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, CRV2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj4, proj5);
+      }
       hitenergy = new vector<double>(2);
-      
-      if(_data.chcol->size()!=0 or _data.chcol !=0) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+
+      if(DrawOpts.addComboHits) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      if(DrawOpts.addTrkHits) pass_data->AddTrkHits(firstLoop, data.chcol, data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      if(DrawOpts.addTimeClusters) pass_data->AddTimeClusters(firstLoop, data.tccol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
       clusterenergy = new std::vector<double>(2);
 
-      if(_data.clustercol->size() !=0 ) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-      
-      if (_data.cryHitcol->size()!=0 or  _data.cryHitcol!=0) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-      
-      if (track_list.size() !=0) pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      if(DrawOpts.addClusters ) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
 
-      if(_data.cosmiccol->size() != 0 or _data.cosmiccol != 0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      if (DrawOpts.addCryHits) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+
+      if (DrawOpts.addTracks) pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      if (DrawOpts.addTracks) pass_data->FillKinKalTrajectory(firstLoop, data.track_tuple, tracker2Dproj,  TfXYMgr, TfRZMgr, proj2, proj3);
+      
+
+      if(DrawOpts.addCosmicTracks) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
       _clustminenergy->Clear();
       _clustmaxenergy->Clear();
@@ -773,16 +922,16 @@ namespace mu2e{
       _hitmintime->AddText(0, (to_string(times.at(0))).c_str());
       _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
     }
-    
-    if(_data.mctrajcol!=0) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3, particles);
+
+    if(DrawOpts.addMCTraj) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3, particles);
 
     gSystem->ProcessEvents();
     gSystem->IgnoreInterrupt();
     gSystem->IgnoreSignal(kSigTermination);
     gSystem->IgnoreSignal(kSigSegmentationViolation);
- 
+
     gClient->NeedRedraw(fTeRun);
-    
+
     gApplication->Run(true);
 
     gEve->Redraw3D(kTRUE);
@@ -791,59 +940,7 @@ namespace mu2e{
       runn = runToFind;
       eventSelected = true;
     }
-
-    /*stringstream sEvent;
-    sEvent << eventn;
-    //const char* tEvent = " Event : ";
-    const char* eventlabel = sEvent.str().c_str();
-    auto t = new TEveText(eventlabel);
-    t->SetFontSize(15);
-    t->SetText(eventlabel);
-    t->SetMainColor(kRed);
-    t->RefMainTrans().SetPos(0.0,200.0,3000.0);
-    pass_data->fTrackList3D->AddElement(t); */
-  }
-
-  /*------------Function to fill event selection:-------------*/
-  void TEveMu2eMainWindow::fillEvent(bool firstLoop)
-   {
-    std::string eventInfoText;
-    eventInfoText=Form("Event #: %i",_event);
-    if(_eventNumberText==nullptr) 
-    {
-      _eventNumberText = new TText(0.6,-0.8, eventInfoText.c_str());
-      _eventNumberText->SetTextColor(5);
-      _eventNumberText->SetTextSize(0.025);
-      _eventNumberText->Draw("same");
-    }
-    else _eventNumberText->SetTitle(eventInfoText.c_str());
-    eventInfoText=Form("Sub Run #: %i",_subrun);
-    if(_subrunNumberText==nullptr)
-    {
-      _subrunNumberText = new TText(0.6,-0.75,eventInfoText.c_str());
-      _subrunNumberText->SetTextColor(5);
-      _subrunNumberText->SetTextSize(0.025);
-      _subrunNumberText->Draw("same");
-    }
-    else _subrunNumberText->SetTitle(eventInfoText.c_str());
-    eventInfoText=Form("Run #: %i",_run);
-    if(_runNumberText==nullptr)
-    {
-      _runNumberText = new TText(0.6,-0.7,eventInfoText.c_str());
-      _runNumberText->SetTextColor(5);
-      _runNumberText->SetTextSize(0.025);
-      _runNumberText->Draw("same");
-    }
-    else _runNumberText->SetTitle(eventInfoText.c_str());
-    if(_timeText==nullptr)
-    {
-      _timeText = new TText(0.6,-0.7,eventInfoText.c_str());
-      _timeText->SetTextColor(5);
-      _timeText->SetTextSize(0.025);
-      _timeText->Draw("same");
-    }
-    else _timeText->SetTitle(eventInfoText.c_str());
-    this->Layout();
+    delete evinfo;
   }
 
   /*------------Function to find event:-------------*/
@@ -859,3 +956,4 @@ namespace mu2e{
     return _isClosed;
   }
 }
+

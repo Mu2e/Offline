@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_passageFar.ccl
 
@@ -12,7 +12,7 @@ double dirt.passage.E.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.passage.E.yHalfThickness           = 1371.6;
 
-vector<int>    dirt.passage.E.xreplace   = { 4, 5 }; 
+vector<int>    dirt.passage.E.xreplace   = { 4, 5 };
 vector<double> dirt.passage.E.xPositions = {
   17856.2,   // q5
   17856.2,   // q6

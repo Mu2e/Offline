@@ -11,7 +11,6 @@
 #include "cetlib_except/exception.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
@@ -22,8 +21,7 @@
 // Mu2e includes.
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include "TH1D.h"
 
@@ -44,48 +42,48 @@ namespace mu2e {
   }
 
   class SimParticleDaughterSelector : public art::EDProducer {
-  public:
+    public:
 
-    struct Config {
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
-      fhicl::Atom<art::InputTag> particleInput{ Name("particleInput"), Comment("The input collection.") };
-      fhicl::Sequence<std::string> processes{ Name("processes"),
+      struct Config {
+        using Name=fhicl::Name;
+        using Comment=fhicl::Comment;
+        fhicl::Atom<art::InputTag> particleInput{ Name("particleInput"), Comment("The input collection.") };
+        fhicl::Sequence<std::string> processes{ Name("processes"),
           Comment("A list of production process names, like \"DIO\", \"NuclearCapture\".\n"
-                  "SimParticles with the given production codes will be written  to the output.\n"
-                  "If the process list is empty, all particles are passed to the output.\n"
-                  "You can use this mode to produce diagnostic histograms that will contain\nthe names of possible processes."
-                  )
-          };
-    };
+              "SimParticles with the given production codes will be written  to the output.\n"
+              "If the process list is empty, all particles are passed to the output.\n"
+              "You can use this mode to produce diagnostic histograms that will contain\nthe names of possible processes."
+              )
+        };
+      };
 
-    using Parameters = art::EDProducer::Table<Config>;
-    explicit SimParticleDaughterSelector(const Parameters& conf);
+      using Parameters = art::EDProducer::Table<Config>;
+      explicit SimParticleDaughterSelector(const Parameters& conf);
 
-    void produce(art::Event& evt) override;
-  private:
-    art::InputTag particleInput_;
-    std::set<ProcessCode::enum_type> procs_;
+      void produce(art::Event& evt) override;
+    private:
+      art::InputTag particleInput_;
+      std::set<ProcessCode::enum_type> procs_;
 
-    art::ServiceHandle<art::TFileService> tfs() { return art::ServiceHandle<art::TFileService>(); }
-    TH1* haccepted_;
-    TH1* hignored_;
+      art::ServiceHandle<art::TFileService> tfs() { return art::ServiceHandle<art::TFileService>(); }
+      TH1* haccepted_;
+      TH1* hignored_;
   };
 
   //================================================================
   SimParticleDaughterSelector::SimParticleDaughterSelector(const Parameters& conf)
     : EDProducer{conf}
-    , particleInput_(conf().particleInput())
+  , particleInput_(conf().particleInput())
     , haccepted_(tfs()->make<TH1D>("accepted", "Accepted pdgId and process code pairs", 1, 0., 1.))
     , hignored_(tfs()->make<TH1D>("ignored", "Ignored pdgId and process code pairs", 1, 0., 1.))
-  {
-    produces<SimParticlePtrCollection>();
-    const auto& processes = conf().processes();
-    for(const auto& proc: processes) {
-      procs_.insert(ProcessCode::findByName(proc).id());
-    }
+    {
+      produces<SimParticlePtrCollection>();
+      const auto& processes = conf().processes();
+      for(const auto& proc: processes) {
+        procs_.insert(ProcessCode::findByName(proc).id());
+      }
 
-  }
+    }
 
   //================================================================
   void SimParticleDaughterSelector::produce(art::Event& event) {
@@ -114,4 +112,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::SimParticleDaughterSelector);
+DEFINE_ART_MODULE(mu2e::SimParticleDaughterSelector)

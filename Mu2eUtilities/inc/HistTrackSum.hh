@@ -21,7 +21,7 @@ namespace mu2e {
     // Books histograms in the newly created subdirectory, with the
     // name of the subdir given by the last arg.  This is relative to
     // the root TFileDirectory for the current module.
-    HistTrackSum(art::TFileDirectory topdir, const std::string& subdir);
+    HistTrackSum(art::TFileDirectory& topdir, const std::string& subdir);
 
     // noncopyable because of the TH*
     HistTrackSum(const HistTrackSum&) = delete;

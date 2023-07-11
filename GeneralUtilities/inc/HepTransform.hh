@@ -1,6 +1,6 @@
 #ifndef GeneralUtilities_HepTransform_HH
 #define GeneralUtilities_HepTransform_HH
-// 
+//
 // A class to represent a rotation about local axes
 // followed by a displacement.  Operates on Hep3Vector.
 //
@@ -14,12 +14,12 @@ namespace mu2e {
   class HepTransform {
   public:
     HepTransform():_displacement(0,0,0),
-		   _rotation(CLHEP::HepRotation::IDENTITY) {}
+                   _rotation(CLHEP::HepRotation::IDENTITY) {}
     HepTransform( CLHEP::Hep3Vector & disp, CLHEP::HepRotation & rot ) :
       _displacement(disp),
       _rotation(rot) {}
-    HepTransform( double dx, double dy, double dz,  
-		  double rx, double ry, double rz):
+    HepTransform( double dx, double dy, double dz,
+                  double rx, double ry, double rz):
       _displacement(dx,dy,dz) {
       _rotation.rotateX(rx);
       _rotation.rotateY(ry);
@@ -29,7 +29,7 @@ namespace mu2e {
     CLHEP::Hep3Vector const&  displacement() const { return _displacement;}
     CLHEP::HepRotation const& rotation()     const { return _rotation;    }
 
-    void  setDisplacement ( CLHEP::Hep3Vector & aDisp ) { 
+    void  setDisplacement ( CLHEP::Hep3Vector & aDisp ) {
                                    _displacement = aDisp;}
     void  setRotation ( CLHEP::HepRotation & aRot ) { _rotation = aRot; }
 
@@ -41,8 +41,8 @@ namespace mu2e {
     HepTransform inverse() const;
 
     // apply to a vector
-    friend CLHEP::Hep3Vector operator*(HepTransform const& a, 
-				CLHEP::Hep3Vector const& v);
+    friend CLHEP::Hep3Vector operator*(HepTransform const& a,
+                                CLHEP::Hep3Vector const& v);
 
   private:
     CLHEP::Hep3Vector  _displacement;

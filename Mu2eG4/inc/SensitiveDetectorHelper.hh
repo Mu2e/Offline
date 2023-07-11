@@ -9,7 +9,7 @@
 
 // From Mu2e
 #include "Offline/Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepInstanceName.hh"
 #include "Offline/Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"

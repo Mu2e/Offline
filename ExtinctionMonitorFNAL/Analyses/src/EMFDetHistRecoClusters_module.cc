@@ -12,7 +12,6 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 #include "Offline/ExtinctionMonitorFNAL/Analyses/inc/EMFRecoClusterHistograms.hh"
@@ -76,4 +75,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::EMFDetHistRecoClusters);
+DEFINE_ART_MODULE(mu2e::EMFDetHistRecoClusters)

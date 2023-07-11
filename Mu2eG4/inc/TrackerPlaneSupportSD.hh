@@ -9,7 +9,7 @@
 
 // Mu2e includes
 #include "Offline/Mu2eG4/inc/EventNumberList.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
 
 // Art includes

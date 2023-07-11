@@ -1,7 +1,6 @@
 //
 // read ascii file for momentum and position of particle.  Set pdgid in constructor.
 //
-//
 // Original author Rob Kutschke
 //
 
@@ -26,19 +25,17 @@
 #include "cetlib/pow.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
-
 
 // Mu2e includes
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
@@ -47,11 +44,9 @@
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "art_root_io/TFileService.h"
 
-
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 
 // ROOT includes
 #include "TTree.h"
@@ -90,8 +85,6 @@ namespace mu2e {
     int lengthOfVertexFile_;
     int ncalls;
 
-
-
     double mass_;
     double protonMass_;
 
@@ -125,12 +118,12 @@ namespace mu2e {
   {
 
     //pick up particle mass and other constants
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-    const HepPDT::ParticleData& p_data = pdt->particle(particlePdgId_).ref();
-    mass_ = p_data.mass().value();
+    GlobalConstantsHandle<ParticleDataList> pdt;
+    auto p_data = pdt->particle(particlePdgId_);
+    mass_ = p_data.mass();
 
-    const HepPDT::ParticleData& proton_data = pdt->particle(PDGCode::proton).ref();
-    protonMass_ = proton_data.mass().value();
+    auto proton_data = pdt->particle(PDGCode::proton);
+    protonMass_ = proton_data.mass();
 
     ConfigFileLookupPolicy findConfig;
     std::string vertexFileString_ = findConfig(vertexFileName_);
@@ -160,15 +153,11 @@ namespace mu2e {
                                                  CLHEP::Hep3Vector(initialAntiProtonMomentumX_,initialAntiProtonMomentumY_,initialAntiProtonMomentumZ_));
    }
 
-
-
-
    lengthOfVertexFile_ = startPos_.size();
 
       std::cout << "length of vertex file =  " << startPos_.size() << std::endl;
 
   ncalls = 0;
-
 
    produces <mu2e::GenParticleCollection>();
 
@@ -260,4 +249,4 @@ namespace mu2e {
 
 } //end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FromAsciiMomentumAndPosition);
+DEFINE_ART_MODULE(mu2e::FromAsciiMomentumAndPosition)

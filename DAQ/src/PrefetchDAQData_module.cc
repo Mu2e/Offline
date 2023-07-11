@@ -3,7 +3,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 // data
@@ -11,15 +10,15 @@
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 
 // DAQ data
-//#include "mu2e-artdaq-core/Overlays/FragmentType.hh"
-//#include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
+//#include "artdaq-core-mu2e/Overlays/FragmentType.hh"
+//#include "artdaq-core-mu2e/Overlays/TrackerFragment.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
 
 namespace mu2e {
-  
+
   class PrefetchDAQData : public art::EDProducer {
-  
+
   protected:
 
   public:
@@ -35,8 +34,8 @@ namespace mu2e {
   private:
 
     bool findData(const art::Event& e);
-					// control flags
-    int   _debugLevel; 
+                                        // control flags
+    int   _debugLevel;
     int   _fetchCaloDigis;
     int   _fetchStrawDigis;
     int   _fetchCaloFragments;
@@ -47,7 +46,7 @@ namespace mu2e {
     art::InputTag                  _sdTag;
     art::InputTag                  _cfTag;
     art::InputTag                  _tfTag;
-					// cache of event objects
+                                        // cache of event objects
     const CaloDigiCollection*      _cdcol;
     const StrawDigiCollection*     _sdcol;
     const artdaq::Fragments*       _cfcol;
@@ -56,8 +55,8 @@ namespace mu2e {
   };
 
   //-----------------------------------------------------------------------------
-  PrefetchDAQData::PrefetchDAQData(fhicl::ParameterSet const& pset): 
-    art::EDProducer(pset), 
+  PrefetchDAQData::PrefetchDAQData(fhicl::ParameterSet const& pset):
+    art::EDProducer(pset),
     _debugLevel        (pset.get<int>        ("debugLevel")),
     _fetchCaloDigis    (pset.get<int>        ("fetchCaloDigis" )),
     _fetchStrawDigis   (pset.get<int>        ("fetchStrawDigis")),
@@ -76,18 +75,18 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void PrefetchDAQData::beginJob() {
   }
- 
+
 //-----------------------------------------------------------------------------
   void PrefetchDAQData::fake_access(const CaloDigi& Hit) {
   }
- 
+
 //-----------------------------------------------------------------------------
   void PrefetchDAQData::fake_access(const StrawDigi& X) {
   }
 //-----------------------------------------------------------------------------
   void PrefetchDAQData::fake_access(const artdaq::Fragment& Frag) {
   }
- 
+
 //-----------------------------------------------------------------------------
   bool PrefetchDAQData::findData(const art::Event& evt){
     _cdcol   = 0;
@@ -109,7 +108,7 @@ namespace mu2e {
       auto cfH = evt.getValidHandle<artdaq::Fragments>(_cfTag);
       _cfcol = cfH.product();
     }
-    
+
     if (_fetchStrawDigis) {
       auto sdH = evt.getValidHandle<StrawDigiCollection>(_sdTag);
       _sdcol = sdH.product();
@@ -129,31 +128,31 @@ namespace mu2e {
     if (_cdcol) {
       int ncd = _cdcol->size();
       for(int i=0;i<ncd;++i){
-	const CaloDigi& cd = _cdcol->at(i);
-	fake_access(cd);
+        const CaloDigi& cd = _cdcol->at(i);
+        fake_access(cd);
       }
     }
 
     if (_sdcol) {
       int nsd = _sdcol->size();
       for(int i=0;i<nsd;++i){
-	const StrawDigi& sdigi = _sdcol->at(i);
-	fake_access(sdigi);
+        const StrawDigi& sdigi = _sdcol->at(i);
+        fake_access(sdigi);
       }
     }
 
     if (_cfcol) {
       int ncf = _cfcol->size();
       for(int i=0;i<ncf;++i){
-	auto frag = _cfcol->at(i);
- 	fake_access(frag);
+        auto frag = _cfcol->at(i);
+         fake_access(frag);
       }
     }
     if (_tfcol) {
       int ntf = _tfcol->size();
       for(int i=0;i<ntf;++i){
-	auto frag = _tfcol->at(i);
- 	fake_access(frag);
+        auto frag = _tfcol->at(i);
+         fake_access(frag);
       }
     }
 
@@ -165,7 +164,7 @@ namespace mu2e {
 
     _eventNum = Event.event();
 
-    if (_debugLevel > 0) printf("[PrefetchDAQData::produce] event number: %10i\n",_eventNum);  
+    if (_debugLevel > 0) printf("[PrefetchDAQData::produce] event number: %10i\n",_eventNum);
 
     findData(Event);
   }
@@ -177,4 +176,4 @@ DEFINE_ART_MODULE(PrefetchDAQData)
 }
 
 
-   
+

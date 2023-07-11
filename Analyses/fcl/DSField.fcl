@@ -1,0 +1,31 @@
+#
+#  Graph the DS field on its axis
+#
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : DSField
+
+services : @local::Services.Reco
+source : {
+  module_type : EmptyEvent
+}
+
+physics : {
+  analyzers: {
+    BFieldPlotter  : {
+      module_type : BFieldPlotter
+      plane : "x"
+      planeValue : -3904.0
+      axisOneMin : 0.0
+      axisOneMax : 0.0
+      axisTwoMin : 4100
+      axisTwoMax : 13500
+      mapBinSize : 10.0
+      dumpFile : true
+      detector : true
+    }
+  }
+  e1        : [BFieldPlotter]
+  end_paths : [e1]
+}
+services.GeometryService.bFieldFile     : "Offline/Mu2eG4/geom/bfgeom_no_tsu_ps_v01.txt"

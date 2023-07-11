@@ -1,0 +1,34 @@
+#
+# File for running on STM test beam data
+#
+
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: STMTestBeamData
+source : {
+  module_type : FromSTMTestBeamData
+  verbosityLevel : 0
+}
+
+services : {
+  message : @local::Services.Core.message
+}
+
+physics : {
+  producers : {  }
+  filters: {  }
+  analyzers: {  }
+  TriggerPath : [ ]
+  EndPath : [ Output ]
+}
+
+outputs : {
+  Output: {
+     module_type : RootOutput
+     fileName    : @nil
+     outputCommands : [ "keep *_*_*_*"]
+  }
+}
+
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+outputs.Output.fileName: "dig.owner.description.version.sequencer.art"

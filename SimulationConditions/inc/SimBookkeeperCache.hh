@@ -11,7 +11,7 @@
 #include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
 #include "Offline/DbTables/inc/DbIoV.hh"
 #include "Offline/DbService/inc/DbHandle.hh"
-#include "Offline/DbTables/inc/SimEfficiencies.hh"
+#include "Offline/DbTables/inc/SimEfficiencies2.hh"
 #include "Offline/SimulationConditions/inc/SimBookkeeperMaker.hh"
 
 namespace mu2e {
@@ -33,8 +33,8 @@ namespace mu2e {
 
     // these handles are not default constructed
     // so the db can be completely turned off
-    std::unique_ptr<DbHandle<SimEfficiencies> > _tqDb_p;
+    std::unique_ptr<DbHandle<SimEfficiencies2> > _tqDb_p;
   };
-};
+}
 
 #endif

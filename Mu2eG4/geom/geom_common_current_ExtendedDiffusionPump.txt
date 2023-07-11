@@ -1,0 +1,15 @@
+// A geometry that uses all the latest Offline code
+// and features & Extended Diffusion pump in the RHR for a radiation dose study.
+
+#include "Offline/Mu2eG4/geom/geom_common_current.txt"
+
+// Changes to Type7Pipe1 (diffusion pump in RHR)
+vector<double> Pipe.centerType7Pipe1 = {8500.0,-103.0,-7642.4};
+double Pipe.lengthType7Pipe1 = 4418.0;
+
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

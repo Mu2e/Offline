@@ -16,18 +16,16 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "Offline/SeedService/inc/SeedService.hh"
 
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/RootTreeSampler.hh"
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
@@ -49,11 +47,11 @@ namespace mu2e {
     CLHEP::RandFlat flat_;
 
     static double electronMass2() {
-      static double emass = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::e_minus).ref().mass().value();
+      static double emass = GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::e_minus).mass();
       return emass*emass;
     }
     static double muMass() {
-      static double mumass = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::mu_minus).ref().mass().value();
+      static double mumass = GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::mu_minus).mass();
       return mumass;
     }
 
@@ -105,4 +103,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StoppedMuplusDecayGun);
+DEFINE_ART_MODULE(mu2e::StoppedMuplusDecayGun)
