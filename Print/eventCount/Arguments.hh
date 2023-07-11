@@ -11,22 +11,20 @@
 
 namespace mu2e {
 
-  struct Arguments{
+struct Arguments {
+  // Style of printout.
+  enum PrintStyle { minimal, full, events, subruns, sam };
 
-    // Style of printout.
-    enum PrintStyle { minimal, full, events, subruns, sam};
+  Arguments(int argc, char** argv);
 
-    Arguments ( int argc, char**argv );
+  std::vector<std::string> fileNames;
 
-    std::vector<std::string> fileNames;
+  PrintStyle style = minimal;
 
-    PrintStyle style = minimal;
+ private:
+  void usage() const;
+};
 
-  private:
-    void usage() const;
-
-  };
-
-}
+}  // namespace mu2e
 
 #endif /* ROOTtools_eventCount_Arguments_hh */

@@ -19,6 +19,7 @@
 #include "Offline/GeometryService/inc/G4GeometryOptions.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSEnclosure.hh"
 #include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Offline/Mu2eG4/inc/constructPS.hh"
 #include "Offline/Mu2eG4/inc/constructPSShield.hh"
@@ -39,6 +40,8 @@
 #include "Geant4/G4Polycone.hh"
 #include "Geant4/G4SDManager.hh"
 #include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4SubtractionSolid.hh"
 
 #include "cetlib_except/exception.h"
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -87,7 +90,7 @@ namespace mu2e {
                parent,
                0,
                G4Colour::Green(),
-	       "PS"
+               "PS"
                );
 
     VolumeInfo psVacVesselOuterInfo =
@@ -99,7 +102,7 @@ namespace mu2e {
                parent,
                0,
                G4Colour::Green(),
-	       "PS"
+               "PS"
                );
 
 
@@ -109,14 +112,14 @@ namespace mu2e {
     G4Material* ringMaterial = findMaterialOrThrow(psRing1Params.materialName());
     VolumeInfo psRing1Info =
       nestTubs("PSRing1", psRing1Params.getTubsParams(),
-	       ringMaterial, 0,
-	       psRing1Params.originInMu2e() - _hallOriginInMu2e,
-	       parent, 0, G4Colour::Blue(), "PS");
+               ringMaterial, 0,
+               psRing1Params.originInMu2e() - _hallOriginInMu2e,
+               parent, 0, G4Colour::Blue(), "PS");
     VolumeInfo psRing2Info =
       nestTubs("PSRing2", psRing2Params.getTubsParams(),
-	       ringMaterial, 0,
-	       psRing2Params.originInMu2e() - _hallOriginInMu2e,
-	       parent, 0, G4Colour::Blue(), "PS");
+               ringMaterial, 0,
+               psRing2Params.originInMu2e() - _hallOriginInMu2e,
+               parent, 0, G4Colour::Blue(), "PS");
 
     // two endplates
 
@@ -132,7 +135,7 @@ namespace mu2e {
                parent,
                0,
                G4Colour::Yellow(),
-	       "PS"
+               "PS"
                );
 
     VolumeInfo psVacVesselEndPlateUInfo
@@ -144,7 +147,7 @@ namespace mu2e {
                  parent,
                  0,
                  G4Colour::Red(),
-		 "PS"
+                 "PS"
                  );
 
 
@@ -156,12 +159,12 @@ namespace mu2e {
 
     VolumeInfo psVacuumVesselVacuumInfo
       = nestTubs ( "psVacuumVesselVacuum",
-		   TubsParams(vacRIn, vacROut, vacHalfLength),
-		   findMaterialOrThrow("PSVacuum"),
-		   0,
-		   psVacVesselOuterParams.originInMu2e() - _hallOriginInMu2e,
-		   parent, 0, G4Colour::White(),
-		   "PS" );
+                   TubsParams(vacRIn, vacROut, vacHalfLength),
+                   findMaterialOrThrow("PSVacuum"),
+                   0,
+                   psVacVesselOuterParams.originInMu2e() - _hallOriginInMu2e,
+                   parent, 0, G4Colour::White(),
+                   "PS" );
 
 
 
@@ -195,7 +198,7 @@ namespace mu2e {
                   psVacuumVesselVacuumInfo.logical,
                   0,
                   G4Colour::White(),
-		  "PS"
+                  "PS"
                   );
 
     // the superconducting Coils
@@ -215,7 +218,7 @@ namespace mu2e {
                                       psCoilShellInfo,
                                       0,
                                       G4Colour::Red(),
-				      "PS"
+                                      "PS"
                                       );
 
 
@@ -229,7 +232,7 @@ namespace mu2e {
                                       psCoilShellInfo,
                                       0,
                                       G4Colour::Red(),
-				      "PS"
+                                      "PS"
                                       );
 
 
@@ -243,7 +246,7 @@ namespace mu2e {
                                       psCoilShellInfo,
                                       0,
                                       G4Colour::Red(),
-				      "PS"
+                                      "PS"
                                       );
 
 
@@ -292,17 +295,65 @@ namespace mu2e {
 
 
     Tube const & psVacuumParams  = GeomHandle<PSVacuum>()->vacuum();
-
-    VolumeInfo psVacuumInfo   = nestTubs( "PSVacuum",
-                                          psVacuumParams.getTubsParams(),
-                                          findMaterialOrThrow(psVacuumParams.materialName()),
-                                          0,
-                                          psVacuumParams.originInMu2e()-_hallOriginInMu2e,
-                                          parent,
-                                          0,
-                                          G4Colour::Blue(),
-					  "PS"
-                                          );
+    GeomHandle<PSEnclosure> pse;
+    VolumeInfo psVacuumInfo("PSVacuum", psVacuumParams.originInMu2e() - _hallOriginInMu2e, parent.centerInWorld);
+    if(pse->version() < 3) {
+      psVacuumInfo = nestTubs( "PSVacuum",
+                               psVacuumParams.getTubsParams(),
+                               findMaterialOrThrow(psVacuumParams.materialName()),
+                               0,
+                               psVacuumParams.originInMu2e()-_hallOriginInMu2e,
+                               parent,
+                               0,
+                               G4Colour::Blue(),
+                               "PS"
+                               );
+    } else { //remove any of the PS vacuum from the PS end cap region
+      CLHEP::Hep3Vector extraOffset(0.,0.,pse->getExtraOffset());
+      const TubsParams& psVacuumTubsParams = psVacuumParams.getTubsParams();
+      G4Tubs* psVacuumTubs = new G4Tubs("PSVacuumTube",
+                                        psVacuumTubsParams.innerRadius(),
+                                        psVacuumTubsParams.outerRadius(),
+                                        psVacuumTubsParams.zHalfLength(),
+                                        0., CLHEP::twopi);
+      auto polycone = pse->endPlatePolycone();
+      std::vector<double> rInners, rOuters(polycone.rOuter()), zPlanes(polycone.zPlanes());
+      if ( verbosityLevel > 1) {
+        cout << __func__ << " printing PS enclosure planes to subtract from PS vacuum:\n";
+      }
+      for(unsigned iplane = 0; iplane <= polycone.numZPlanes(); ++iplane) {
+        rInners.push_back(0.); //clear from center to outer radius
+        if( verbosityLevel > 1) {
+          if(iplane < polycone.numZPlanes()) {
+            cout << " (r1, r2, z) = (" << rInners[iplane] << ", " << rOuters[iplane]
+                 << ", " << zPlanes[iplane] << ")\n";
+          }
+        }
+      }
+      rOuters.insert(rOuters.begin(), rOuters.front());
+      zPlanes.insert(zPlanes.begin(), zPlanes.front()-1.e3); //clear beyond the endcap as well
+      G4Polycone* basecone = new G4Polycone("PSEnclosureEndplateBaseCone_FromPS",
+                                            polycone.phi0(),
+                                            polycone.phiTotal(),
+                                            zPlanes.size(),
+                                            &zPlanes[0],
+                                            &rInners[0],
+                                            &rOuters[0]
+                                            );
+      G4SubtractionSolid* psVacuumSolid = new G4SubtractionSolid("PSVacuum", psVacuumTubs, basecone,
+                                                                 nullptr, //assume no relative rotation
+                                                                 polycone.originInMu2e() - psVacuumParams.originInMu2e() + extraOffset);
+      psVacuumInfo.solid = psVacuumSolid;
+      finishNesting(psVacuumInfo,
+                    findMaterialOrThrow(psVacuumParams.materialName()),
+                    nullptr,
+                    psVacuumParams.originInMu2e()-_hallOriginInMu2e,
+                    parent.logical,
+                    0,
+                    G4Colour::Blue(),
+                    "PS"
+                    );
+    }
     //    std::cout << "inside " << __func__ << psVacuumParams.originInMu2e() << " " << _hallOriginInMu2e << std::endl;
 
     // Build the production target.
@@ -322,7 +373,7 @@ namespace mu2e {
         << targetPS_model
         << "\n";
     }
- 
+
    // FIXME: make unconditional
     if(art::ServiceHandle<GeometryService>()->hasElement<PSShield>()) {
       constructPSShield(psVacuumInfo, _config);

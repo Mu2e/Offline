@@ -8,7 +8,7 @@
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
 #include <vector>
 
-namespace mu2e 
+namespace mu2e
 {
   class CrvPhotons
   {
@@ -32,13 +32,13 @@ namespace mu2e
 
     mu2e::CRSScintillatorBarIndex    GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
     int                              GetSiPMNumber() const           {return _SiPMNumber;}
-    std::vector<SinglePhoton>       &GetPhotons()                    {return _photons;} 
+    std::vector<SinglePhoton>       &GetPhotons()                    {return _photons;}
     const std::vector<SinglePhoton> &GetPhotons() const              {return _photons;}
 
     private:
 
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
-    int                            _SiPMNumber; 
+    int                            _SiPMNumber;
     std::vector<SinglePhoton>      _photons;
   };
 

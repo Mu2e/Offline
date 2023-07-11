@@ -17,10 +17,9 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 // Root includes.
 #include "TH1F.h"
@@ -124,4 +123,4 @@ namespace mu2e {
 
 }  // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::SimParticleCheck00);
+DEFINE_ART_MODULE(mu2e::SimParticleCheck00)

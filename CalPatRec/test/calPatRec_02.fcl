@@ -19,7 +19,7 @@ source : {
 #                   , 'drop mu2eStrawDigis_*_*_*'
 #                   , 'drop mu2eStrawHits_*_*_*'
 # Uncomment the above line to reduce file size.
-		     ]  
+                     ]
 }
 #------------------------------------------------------------------------------
 # services
@@ -29,21 +29,21 @@ services : {
 
     # Adjust configuration of message logger:
     # Load the standard message logger configuration:
-    # Threshold=Info (from using mf_interactive). 
+    # Threshold=Info (from using mf_interactive).
     # Limit of 5 per category; then exponential backoff.
     #  message.destinations.log.default.limit : 5
-    
-    
+
+
     TFileService : { fileName   : "calPatRec.root" }
     RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
     GeometryService        : { inputFile : "Offline/Mu2eG4/geom/geom_common.txt" }
-    
+
     ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
     GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
     BTrkHelper             : @local::BTrkHelperDefault
     Mu2eG4Helper : { }
-    
+
     SeedService : @local::automaticSeeds
 
 } # close of services block
@@ -51,135 +51,135 @@ services : {
 # physics
 #------------------------------------------------------------------------------
 physics : {
-    
+
     producers : {
 
-	# Generate the event
-	generate: @local::generate
+        # Generate the event
+        generate: @local::generate
 
-	# Run G4 and add hits to the event
-	g4run : @local::g4run
+        # Run G4 and add hits to the event
+        g4run : @local::g4run
 
-	protonTimeMap : { module_type : GenerateProtonTimes }
-	muonTimeMap   : { module_type : GenerateMuonLife }
+        protonTimeMap : { module_type : GenerateProtonTimes }
+        muonTimeMap   : { module_type : GenerateMuonLife }
 
-	# Form StrawHits (SH).
-	makeSD : @local::makeSD
-	makeSH : @local::makeSHfromSD
-	
-	makeSHnew: {
-	    module_type             : MakeStrawHitsNew
-	    diagLevel               : 1
-	    StrawHitCollectionLabel : makeSH
-	    caloClusterModuleLabel  : makeCaloCluster
-	    maxEemc                 : 60.0
-	    t1                      : -70.0
-	    t2                      : 40.0
-	}
-	
-	FSHPreStereo: @local::FSHPreStereo
+        # Form StrawHits (SH).
+        makeSD : @local::makeSD
+        makeSH : @local::makeSHfromSD
 
-	MakeStereoHits : @local::MakeStereoHits
-	FlagStrawHits  : @local::FlagStrawHits
-	FlagBkgHits    : @local::FlagBkgHits
+        makeSHnew: {
+            module_type             : MakeStrawHitsNew
+            diagLevel               : 1
+            StrawHitCollectionLabel : makeSH
+            caloClusterModuleLabel  : makeCaloCluster
+            maxEemc                 : 60.0
+            t1                      : -70.0
+            t2                      : 40.0
+        }
 
-	MakeStereoHits2: {
-	    module_type             :  MakeStrawHitPositions
-	}
-	FlagStrawHits2  : @local::FlagStrawHits
-	FlagBkgHits2    : @local::FlagBkgHits
+        FSHPreStereo: @local::FSHPreStereo
 
-	# Form CaloHits (APD hits)
-	CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+        MakeStereoHits : @local::MakeStereoHits
+        FlagStrawHits  : @local::FlagStrawHits
+        FlagBkgHits    : @local::FlagBkgHits
 
-	# Form CaloCrystalHits (reconstruct crystals from APDs)
-	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+        MakeStereoHits2: {
+            module_type             :  MakeStrawHitPositions
+        }
+        FlagStrawHits2  : @local::FlagStrawHits
+        FlagBkgHits2    : @local::FlagBkgHits
 
-	calPatRec     : {
-	    module_type                             : CalPatRec
-	    includeCaloInfo				: 0
-	    FindTimePeaks                           : false
-	    # Kalman fit configuration for the helix seed fit
-	    SeedFit :
-	    {
+        # Form CaloHits (APD hits)
+        CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+
+        # Form CaloCrystalHits (reconstruct crystals from APDs)
+        CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+
+        calPatRec     : {
+            module_type                             : CalPatRec
+            includeCaloInfo                                : 0
+            FindTimePeaks                           : false
+            # Kalman fit configuration for the helix seed fit
+            SeedFit :
+            {
                 maxiter                                 : 3
                 materialCorrection                      : false
-                seedsmear       			: 10000
+                seedsmear                               : 10000
                 maxhitchi                               : 5.0
                 hiterr                                  : [ 5.0, 1.44 ]
-                ambiguityStrategy       		: [0,0]
-		t0Tolerance				: [5.0,5.0]
-		initT0					: true 
-		updateT0				: false
-	    }
-	    # Kalman fit configuration for the final track fit
-	    KalFit :
-	    {
+                ambiguityStrategy                       : [0,0]
+                t0Tolerance                                : [5.0,5.0]
+                initT0                                        : true
+                updateT0                                : false
+            }
+            # Kalman fit configuration for the final track fit
+            KalFit :
+            {
                 materialCorrection                      : true
-		mingap					: 1.0
-		hiterr 					: [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
-		ambiguityStrategy    			: [ 0, 0, 2, 2, 2, 2, 2, 2, 2 ]
-		t0Tolerance				: [2.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.2, 0.2, 0.1]
-		initT0					: true
-		updateT0				: true
-		HitAmbigPenalty 			: false
-		HitMinDrift 				: 0.1
-		ZeroDriftPenalty 			: 0.05
-		Neutralize 				: true
-		fieldCorrection				: true
-	    }
-	    TimeSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
-	    HelixFitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
-	    KalmanFitSelectionBits : []
-	    BackgroundSelectionBits : ["Background","Isolated"]
-	}
+                mingap                                        : 1.0
+                hiterr                                         : [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
+                ambiguityStrategy                            : [ 0, 0, 2, 2, 2, 2, 2, 2, 2 ]
+                t0Tolerance                                : [2.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.2, 0.2, 0.1]
+                initT0                                        : true
+                updateT0                                : true
+                HitAmbigPenalty                         : false
+                HitMinDrift                                 : 0.1
+                ZeroDriftPenalty                         : 0.05
+                Neutralize                                 : true
+                fieldCorrection                                : true
+            }
+            TimeSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
+            HelixFitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
+            KalmanFitSelectionBits : []
+            BackgroundSelectionBits : ["Background","Isolated"]
+        }
 
-	makeCaloCluster: {
-	    module_type           : MakeCaloClusterHack
-	    diagLevel             : 0
-	    generatorModuleLabel   : generate
-	    caloCrystalModuleLabel : CaloCrystalHitsMaker
-	    g4ModuleLabel          : g4run
-	    caloClusterAlgorithm   : closest
-	    caloClusterSeeding     : energy
-	    nCryPerCrystal         : 1
-	    EnoiseCut              : 0.10 # MeV
-	    EclusterCut            : 0.10 # MeV  
-	    maxFullPrint           : 201
-	}
+        makeCaloCluster: {
+            module_type           : MakeCaloClusterHack
+            diagLevel             : 0
+            generatorModuleLabel   : generate
+            caloCrystalModuleLabel : CaloCrystalHitsMaker
+            g4ModuleLabel          : g4run
+            caloClusterAlgorithm   : closest
+            caloClusterSeeding     : energy
+            nCryPerCrystal         : 1
+            EnoiseCut              : 0.10 # MeV
+            EclusterCut            : 0.10 # MeV
+            maxFullPrint           : 201
+        }
 
-	trkPatRec   : @local::TrkPatRecDeM
+        trkPatRec   : @local::TrkPatRecDeM
 
-	mergePatRec :{
-	    module_type                  : MergePatRec
-	    diagLevel                    : 0
-	    debugLevel                   : 0
-	    trkPatReclabel               : trkPatRec
-	    calPatReclabel               : calPatRec
-	}
+        mergePatRec :{
+            module_type                  : MergePatRec
+            diagLevel                    : 0
+            debugLevel                   : 0
+            trkPatReclabel               : trkPatRec
+            calPatReclabel               : calPatRec
+        }
 
-	trkExtrapol : {
-	    module_type                  : TrkExtrapol
-	    diagLevel                    : 1
-	    fitterModuleLabel            : calPatRec
-	    maxNumberStoresPoints        : 1
-	    # MC truth finder, analyzer configuration
-	    KalFitMC : {
-	    }        
-	}
+        trkExtrapol : {
+            module_type                  : TrkExtrapol
+            diagLevel                    : 1
+            fitterModuleLabel            : calPatRec
+            maxNumberStoresPoints        : 1
+            # MC truth finder, analyzer configuration
+            KalFitMC : {
+            }
+        }
 
-	caloMatching : @local::TrackCaloMatching
+        caloMatching : @local::TrackCaloMatching
     }
 
-    filters : {  
+    filters : {
 
 muHitDisplay: {
     module_type                  : MuHitDisplay # the class name
-    debugBits                    : { 
-#	bit3:1
+    debugBits                    : {
+#        bit3:1
     }          # need for TAnaModule
     interactiveMode              : 1
-	
+
     generatorModuleLabel         : generate
     g4ModuleLabel                : g4run
 #
@@ -192,7 +192,7 @@ muHitDisplay: {
     trkExtrapol                  : trkExtrapol
     trkCalMatch                  : caloMatching
     trkPatRecModuleLabel         : calPatRec
-	
+
     # if set to true, all hits will be displayed unconditionally
     # otherwise, display only hits with right flags
     displayBackgroundHits        : true
@@ -201,7 +201,7 @@ muHitDisplay: {
     #      goodHitMask                 : ["EnergySelection","RadiusSelection","TimeSelection"]
     goodHitMask                  : ["EnergySelection", "RadiusSelection"]
     badHitMask                   : ["Background", "Isolated"]
-	
+
     trackerStepPoints            : tracker
     minHits                      : 5
     clickToAdvance               : true
@@ -216,44 +216,44 @@ muHitDisplay: {
     # paths
     #------------------------------------------------------------------------------
     p1 : [
-#	  generate, g4run, 
-          protonTimeMap, muonTimeMap, 
+#          generate, g4run,
+          protonTimeMap, muonTimeMap,
           makeSD, makeSH, FSHPreStereo,
-	  MakeStereoHits, FlagStrawHits, FlagBkgHits,trkPatRec, 
+          MakeStereoHits, FlagStrawHits, FlagBkgHits,trkPatRec,
 #
-	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,
-	  makeCaloCluster, 
-	  makeSHnew,
-          MakeStereoHits2, FlagStrawHits2, FlagBkgHits2, calPatRec, 
+          CaloReadoutHitsMaker, CaloCrystalHitsMaker,
+          makeCaloCluster,
+          makeSHnew,
+          MakeStereoHits2, FlagStrawHits2, FlagBkgHits2, calPatRec,
 #
-	  mergePatRec,
+          mergePatRec,
 #
-	  trkExtrapol, caloMatching
+          trkExtrapol, caloMatching
 #
           , muHitDisplay
-	 ]
+         ]
 
     p2 : [
 
-#          protonTimeMap, muonTimeMap, 
+#          protonTimeMap, muonTimeMap,
 #          makeSD, makeSH,
           makeSHnew,
 #
-#	   CaloReadoutHitsMaker, CaloCrystalHitsMaker,
-	   makeCaloCluster, 
+#           CaloReadoutHitsMaker, CaloCrystalHitsMaker,
+           makeCaloCluster,
 
-          MakeStereoHits2, FlagStrawHits2, FlagBkgHits2, calPatRec, 
+          MakeStereoHits2, FlagStrawHits2, FlagBkgHits2, calPatRec,
 #
-	  trkExtrapol, caloMatching
+          trkExtrapol, caloMatching
 #
           , muHitDisplay
-	 ]
+         ]
 
     e1 : []
 
     trigger_paths  : [p2]
     end_paths      : [e1]
-    
+
 }
 
 
@@ -266,7 +266,7 @@ services.scheduler.wantSummary: true
 # print timing summary
 #------------------------------------------------------------------------------
 # services.scheduler.wantSummary: true
-source.firstRun                            :  1 
+source.firstRun                            :  1
 services.SeedService.baseSeed         :  1
 services.SeedService.maxUniqueEngines :  20
 

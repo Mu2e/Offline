@@ -19,10 +19,11 @@ namespace mu2e {
           float propTimeSimu(float z);
           float propTimeLine(float z);
 
-      private:      
+      private:
          std::vector<float>       timeProp_;
          std::vector<float>       cdf_;
-         unsigned                 nTimeDiv_; 
+         unsigned                 nTimeDiv_;
+         unsigned                 nZDiv_;
          float                    dzTime_;
          CLHEP::RandFlat          randFlat_;
          float                    lightSpeed_;

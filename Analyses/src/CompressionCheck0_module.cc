@@ -15,11 +15,10 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/MCDataProducts/inc/StepInstanceName.hh"
 #include "Offline/GeneralUtilities/inc/Binning.hh"
 
@@ -79,7 +78,7 @@ namespace mu2e {
     art::InputTag simsTag1_;
     art::InputTag simsTag2_;
 
-    // Bin definitions: must be specified in the 
+    // Bin definitions: must be specified in the
     Binning trackerStepBins_;
     Binning caloStepBins_;
     Binning croStepBins_;
@@ -241,4 +240,4 @@ namespace mu2e {
 
 }  // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::CompressionCheck0);
+DEFINE_ART_MODULE(mu2e::CompressionCheck0)

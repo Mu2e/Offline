@@ -1,6 +1,5 @@
 // Pixel digitization: create ExtMonFNALRawClusters from raw hits.
 //
-//
 // Original author Andrei Gaponenko
 //
 
@@ -11,7 +10,6 @@
 #include <iterator>
 #include <algorithm>
 
-
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
@@ -20,7 +18,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -31,9 +28,7 @@
 #include "canvas/Persistency/Common/Ptr.h"
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawClusterCollection.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 

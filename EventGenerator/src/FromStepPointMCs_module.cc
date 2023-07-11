@@ -10,18 +10,15 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/Assns.h"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/MCDataProducts/inc/GenParticleSPMHistory.hh"
 
 namespace mu2e {
@@ -39,7 +36,6 @@ namespace mu2e {
         <<")";
       return os.str();
     }
-
 
     // In art v1_00_06 the ValidHandle::id() method needed by an
     // art::Ptr constructor was missing.  A workaround:
@@ -60,7 +56,7 @@ namespace mu2e {
   private:
     typedef std::vector<art::InputTag> InputTags;
     InputTags inputs_;
-    GlobalConstantsHandle<ParticleDataTable> pdt_;
+    GlobalConstantsHandle<ParticleDataList> pdt_;
     int logLevel_;
     bool allowDuplicates_;  // easily get a wrong answer by double counting particles
   };
@@ -127,11 +123,10 @@ namespace mu2e {
           std::cout<<"AG: creating new GenParticle from hit "<<*i<<std::endl;
         }
 
-        if(pdt_->particle(particle->pdgId())) {
-          const double mass = pdt_->particle(particle->pdgId()).ref().mass().value();
-          const CLHEP::HepLorentzVector fourMom(i->momentum(), sqrt(mass*mass + i->momentum().mag2()));
+        const double mass = pdt_->particle(particle->pdgId()).mass();
+        const CLHEP::HepLorentzVector fourMom(i->momentum(), sqrt(mass*mass + i->momentum().mag2()));
 
-          output->push_back(GenParticle(particle->pdgId(),
+        output->push_back(GenParticle(particle->pdgId(),
                                         GenId::fromStepPointMCs,
                                         i->position(),
                                         fourMom,
@@ -139,14 +134,9 @@ namespace mu2e {
                                         i->properTime()
                                         ));
 
-          history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
-                             art::Ptr<StepPointMC>(makeMyHandle(ih), std::distance(ih->begin(), i))
-                             );
-        }
-        else {
-          mf::LogWarning warn("FromStepPointMCs");
-          warn<<"WARNING: No particle data for pdgId = "<<particle->pdgId()<<"\n";
-        }
+        history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
+                           art::Ptr<StepPointMC>(makeMyHandle(ih), std::distance(ih->begin(), i))
+                           );
 
       } // for (StepPointMCCollection entries)
     } // for(inputs_)
@@ -156,4 +146,4 @@ namespace mu2e {
   }
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FromStepPointMCs);
+DEFINE_ART_MODULE(mu2e::FromStepPointMCs)

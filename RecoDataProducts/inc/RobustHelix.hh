@@ -6,7 +6,7 @@
 #define RecoDataProducts_RobustHelix_HH
 // Mu2e
 #include "Offline/DataProducts/inc/Helicity.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 // Root
 #include "Rtypes.h"
 // C++
@@ -19,9 +19,9 @@ namespace mu2e {
     RobustHelix() : _rcent(-1.0), _fcent(0.0), _radius(-1.0), _lambda(0.0) , _fz0(0.0), _helicity(Helicity::unknown) {}
     ~RobustHelix(){}
     // accessors
-    Float_t radius() const { return _radius; } 
-    Float_t rcent() const { return _rcent; } 
-    Float_t fcent() const { return _fcent; } 
+    Float_t radius() const { return _radius; }
+    Float_t rcent() const { return _rcent; }
+    Float_t fcent() const { return _fcent; }
     Float_t lambda() const { return _lambda; }
     Float_t fz0() const { return _fz0; }
     // simple functions that can be derived from the data members
@@ -32,26 +32,26 @@ namespace mu2e {
     Helicity helicity() const { return _helicity; }
     float centerx() const { return _rcent*cos(_fcent); }
     float centery() const { return _rcent*sin(_fcent); }
-    XYZVec center() const { return XYZVec(centerx(),centery(),0.0); }
+    XYZVectorF center() const { return XYZVectorF(centerx(),centery(),0.0); }
     CLHEP::Hep3Vector centerCLHEP() const { return CLHEP::Hep3Vector(centerx(),centery(),0.0); }
     float chi2dXY  () const { return _chi2dXY; }
     float chi2dZPhi() const { return _chi2dZPhi; }
     // azimuth wrt the circle center expected for a given z position
     Float_t circleAzimuth( double zpos) const { return _lambda != 0.0 ? _fz0 + zpos/_lambda : 0.0; }
     // position in space given the Z position of the input vector
-    XYZVec position(float z) const {
-      return XYZVec(centerx() + _radius*cos(circleAzimuth(z)), centery() + _radius*sin(circleAzimuth(z)), z);
+    XYZVectorF position(float z) const {
+      return XYZVectorF(centerx() + _radius*cos(circleAzimuth(z)), centery() + _radius*sin(circleAzimuth(z)), z);
     }
-    void position(XYZVec& pos) const {
+    void position(XYZVectorF& pos) const {
       pos.SetX(centerx() + _radius*cos(circleAzimuth(pos.z())));
       pos.SetY(centery() + _radius*sin(circleAzimuth(pos.z())));
     }
     // unit vector in direction at the given z
-    XYZVec direction(float zval) const {
-      return XYZVec( -_radius*sin(circleAzimuth(zval)),
-	  _radius*cos(circleAzimuth(zval)),
-	  _lambda)/momentum(); }
-    void direction(float zval,XYZVec& dir) const {
+    XYZVectorF direction(float zval) const {
+      return XYZVectorF( -_radius*sin(circleAzimuth(zval)),
+          _radius*cos(circleAzimuth(zval)),
+          _lambda)/momentum(); }
+    void direction(float zval,XYZVectorF& dir) const {
       float mom = momentum();
       dir.SetX(-_radius*sin(circleAzimuth(zval))/mom);
       dir.SetY(_radius*cos(circleAzimuth(zval))/mom);

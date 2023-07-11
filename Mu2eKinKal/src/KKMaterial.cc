@@ -1,10 +1,10 @@
 #include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "KinKal/MatEnv/DetMaterial.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 
 namespace mu2e {
-  using StrawMaterial = KinKal::StrawMaterial;
   using MatDBInfo = MatEnv::MatDBInfo;
 
   KKMaterial::KKMaterial(KKMaterial::Config const& matconfig) :
@@ -12,18 +12,24 @@ namespace mu2e {
     wallmatname_(matconfig.strawWallMaterialName()),
     gasmatname_(matconfig.strawGasMaterialName()),
     wirematname_(matconfig.strawWireMaterialName()),
-    matdbinfo_(0) {}
+    eloss_((MatEnv::DetMaterial::energylossmode)matconfig.eloss()),
+    matdbinfo_(new MatDBInfo(filefinder_,eloss_)) {
+      std::cout << "Setting KinKal scattering Dahl-Lynch fraction to " << matconfig.dahlLynchScatteringFraction() << std::endl;
+      // MatEnv forces const-cast to change scattering parameter
+      const_cast<MatEnv::DetMaterial*>(matdbinfo_->findDetMaterial(wallmatname_))->setScatterFraction(matconfig.dahlLynchScatteringFraction());
+      const_cast<MatEnv::DetMaterial*>(matdbinfo_->findDetMaterial(gasmatname_))->setScatterFraction(matconfig.dahlLynchScatteringFraction());
+      const_cast<MatEnv::DetMaterial*>(matdbinfo_->findDetMaterial(wirematname_))->setScatterFraction(matconfig.dahlLynchScatteringFraction());
+    }
 
-  StrawMaterial const& KKMaterial::strawMaterial() const {
-    if(matdbinfo_ == 0){
-      matdbinfo_ = new MatDBInfo(filefinder_);
+  KKStrawMaterial const& KKMaterial::strawMaterial() const {
+    if(smat_ == 0){
       Tracker const & tracker = *(GeomHandle<Tracker>());
       auto const& sprop = tracker.strawProperties();
-      smat_ = std::make_unique<StrawMaterial>(
-	sprop._strawOuterRadius, sprop._strawWallThickness, sprop._wireRadius,
-	matdbinfo_->findDetMaterial(wallmatname_),
-	matdbinfo_->findDetMaterial(gasmatname_),
-	matdbinfo_->findDetMaterial(wirematname_));
+      smat_ = std::make_unique<KKStrawMaterial>(
+          sprop,
+          matdbinfo_->findDetMaterial(wallmatname_),
+          matdbinfo_->findDetMaterial(gasmatname_),
+          matdbinfo_->findDetMaterial(wirematname_));
     }
     return *smat_;
   }

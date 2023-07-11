@@ -11,14 +11,12 @@
 #include "art/Framework/Principal/Run.h"
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
 
-#include "art/Framework/Core/ModuleMacros.h"
 
 namespace mu2e {
 
@@ -75,20 +73,19 @@ namespace mu2e {
 
     for(ExtMonFNALRawHitCollection::const_iterator i=inputs.begin(); i!=inputs.end(); ++i) {
       ++numSeenHits_;
-      
+
       if(i->pixelId().chip().module().plane() >= extmon_->nplanes()) {
         throw cet::exception("BUG")<<*i<<": invalid plane number\n";
       }
-      
+
       if(i->pixelId().chip().module().plane() < extmon_->dn().nplanes()) {
         if(i->pixelId().chip().module().number() >= extmon_->dn().nModulesPerPlane())
           throw cet::exception("BUG")<<*i<<": invalid module number\n";
       }
-      
+
       else if (i->pixelId().chip().module().number() >= extmon_->up().nModulesPerPlane()) {
         throw cet::exception("BUG")<<*i<<": invalid module number\n";
       }
-
 
       if(i->pixelId().chip().chipCol() >= extmon_->module().nxChips()) {
         throw cet::exception("BUG")<<*i<<": invalid chipCol\n";
@@ -130,4 +127,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::EMFRawHitsValidator);
+DEFINE_ART_MODULE(mu2e::EMFRawHitsValidator)

@@ -12,10 +12,10 @@
 #include "Geant4/G4Threading.hh"
 
 //Mu2e includes
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
@@ -73,14 +73,14 @@ namespace mu2e {
     Mu2eG4TrackingAction* _trackingAction;
     Mu2eG4SteppingAction* _steppingAction;
 
-    SensitiveDetectorHelper* _sensitiveDetectorHelper;
+    SensitiveDetectorHelper* _sensitiveDetectorHelper = nullptr;
 
     const CLHEP::Hep3Vector& _originInWorld;
 
     // local Mu2e per Geant4 event timer
     std::unique_ptr<G4Timer> _timer;
 
-    PhysicsProcessInfo *_processInfo;
+    PhysicsProcessInfo *_processInfo = nullptr;
 
     bool _g4InternalFiltering;
 

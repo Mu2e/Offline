@@ -8,15 +8,13 @@
 #include "cetlib_except/exception.h"
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art_root_io/TFileService.h"
 
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
@@ -29,23 +27,23 @@ namespace mu2e {
 
   //================================================================
   class InFlightStepDumper : public art::EDAnalyzer {
-  public:
-    explicit InFlightStepDumper(fhicl::ParameterSet const& pset);
-    void beginJob() override;
-    void analyze(const art::Event& evt) override;
-  private:
-    art::InputTag input_;
-    TTree *nt_;
-    int pie_; // particle number in the current event
-    IO::InFlightParticleD data_;
+    public:
+      explicit InFlightStepDumper(fhicl::ParameterSet const& pset);
+      void beginJob() override;
+      void analyze(const art::Event& evt) override;
+    private:
+      art::InputTag input_;
+      TTree *nt_;
+      int pie_; // particle number in the current event
+      IO::InFlightParticleD data_;
   };
 
   //================================================================
   InFlightStepDumper::InFlightStepDumper(const fhicl::ParameterSet& pset)
     : art::EDAnalyzer(pset)
-    , input_(pset.get<std::string>("inputCollection"))
-    , nt_()
-    , pie_()
+      , input_(pset.get<std::string>("inputCollection"))
+      , nt_()
+      , pie_()
   {}
 
   //================================================================
@@ -81,4 +79,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::InFlightStepDumper);
+DEFINE_ART_MODULE(mu2e::InFlightStepDumper)

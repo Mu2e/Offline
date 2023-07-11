@@ -8,7 +8,6 @@
 
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -33,7 +32,7 @@ namespace mu2e {
       bool beginRun(art::Run& run) override;
       bool endRun(art::Run& run) override;
       bool filter(art::Event& event) override;
-      
+
       std::string _moduleRoot;
       std::vector<std::string> _trkTags;
       std::vector<double> _momCutoff;
@@ -46,8 +45,8 @@ namespace mu2e {
     _momCutoff(pset.get<std::vector<double> >("MomentumCutoff"))
     {
       if (_trkTags.size() != _momCutoff.size())
-	throw cet::exception("CONFIG")
-	  << "RecoMomFilter module: TrkTags length must be the same as MomentumCutoff length.\n";
+        throw cet::exception("CONFIG")
+          << "RecoMomFilter module: TrkTags length must be the same as MomentumCutoff length.\n";
     }
 
   bool RecoMomFilter::beginRun(art::Run& run) {
@@ -76,7 +75,7 @@ namespace mu2e {
         if (ks.segments().begin()->mom() > _momCutoff[mniter-moduleNames.begin()]){
           pass = true;
           break;
-        } 
+        }
       }
     }
 
@@ -88,4 +87,4 @@ namespace mu2e {
 }
 
 using mu2e::RecoMomFilter;
-DEFINE_ART_MODULE(RecoMomFilter);
+DEFINE_ART_MODULE(RecoMomFilter)

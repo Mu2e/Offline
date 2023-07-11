@@ -23,12 +23,12 @@ physics :{
       }
       genParticlePrinter : {
         verbose: 1  # only 1 necessary
-	#inputTags : [ "mothersFilter" ] # select instances
+        #inputTags : [ "mothersFilter" ] # select instances
       }
 
       simParticlePrinter : {
         verbose: 2   # 0, 1, 2
-	#inputTags : [ "mothersFilter" ] # select instances
+        #inputTags : [ "mothersFilter" ] # select instances
         #pCut : 10.0          # cut on all particles
         #emPCut : -1.0       # cut on +/-11,22
         #primaryOnly : true  # only first particles
@@ -38,7 +38,7 @@ physics :{
       }
       stepPointMCPrinter : {
         verbose: 2   # 0, 1, 2
-	#inputTags : [ "mothersFilter", "virtualdetector" ] # select instances
+        #inputTags : [ "mothersFilter", "virtualdetector" ] # select instances
         #pCut : 10.0          # cut on all particles
       }
       simParticleTimeMapPrinter : {
@@ -46,87 +46,87 @@ physics :{
       }
       mcTrajectoryPrinter : {
         verbose: 2   # 0, 1, 2
-	#inputTags : [ "g4run" ] # select instances
+        #inputTags : [ "g4run" ] # select instances
       }
 
       caloShowerStepPrinter : {
         verbose: 1   # 0, 1
         #eCut : 10.0          # cut on hits
-	#inputTags : [ "CaloShowerStepFromShowerStep" ] # select instances
+        #inputTags : [ "CaloShowerStepFromShowerStep" ] # select instances
       }
       caloDigiPrinter : {
         verbose: 1   # 0, 1
-	#inputTags : [ "CaloDigiMaker" ] # select instances
+        #inputTags : [ "CaloDigiMaker" ] # select instances
       }
       caloRecoDigiPrinter : {
         verbose: 1   # 0, 1
-	#inputTags : [ "CaloRecoDigiMaker" ] # select instances
+        #inputTags : [ "CaloRecoDigiMaker" ] # select instances
       }
       caloHitPrinter : {
         verbose: 1   # 0, 1, 2
         #eCut : 10.0          # cut on hits
-	#inputTags : [ "CaloShowerStepFromShowerStep" ] # select instances
+        #inputTags : [ "CaloShowerStepFromShowerStep" ] # select instances
       }
       caloClusterPrinter : {
         verbose: 1   # 0, 1
         eCut : -10.0          # cut on hits
-	#inputTags : [ "CaloClusterMaker" ] # select instances
+        #inputTags : [ "CaloClusterMaker" ] # select instances
       }
 
       crvStepPrinter : {
         verbose: 1      # 0.1
         eCut : -10.0          # cut on hits
-	#inputTags : [ "CrvStep" ]
+        #inputTags : [ "CrvStep" ]
       }
       crvDigiPrinter : {
         verbose: 1
-	#inputTags : [ "CrvDigi" ]
+        #inputTags : [ "CrvDigi" ]
       }
       crvDigiMCPrinter : {
         verbose: 1
-	#inputTags : [ "CrvWaveforms" ]
+        #inputTags : [ "CrvWaveforms" ]
       }
       crvRecoPulsePrinter : {
         verbose: 1
-	#inputTags : [ "CrvRecoPulses" ]
+        #inputTags : [ "CrvRecoPulses" ]
       }
       crvCoincidenceClusterPrinter : {
         verbose: 1    # 0,1,2
-	#inputTags : [ "CrvCoincidenceClusterFinder" ]
+        #inputTags : [ "CrvCoincidenceClusterFinder" ]
       }
 
       strawGasStepPrinter : {
         verbose: 1   # 0, 1
-	#inputTags : [ "MakeSGS" ] # select instances
+        #inputTags : [ "MakeSGS" ] # select instances
       }
       strawDigiPrinter : {
         verbose: 1   # 0, 1
-	#inputTags : [ "MakeSD" ] # select instances
+        #inputTags : [ "MakeSD" ] # select instances
       }
       strawDigiMCPrinter : {
         verbose: 1   # 0, 1, 2
-	#inputTags : [ "MakeSD" ] # select instances
+        #inputTags : [ "MakeSD" ] # select instances
       }
       strawHitPrinter : {
         verbose: 1   # 0, 1
         eCut : -1.0          # cut, typically 0.002
-	#inputTags : [ "MakeSH" ] # select instances
+        #inputTags : [ "MakeSH" ] # select instances
       }
       strawHitFlagPrinter : {
         verbose: 0   # 0, 1
-	#inputTags : [ "MakeSH" ] # select instances
+        #inputTags : [ "MakeSH" ] # select instances
       }
       bkgClusterPrinter : {
         verbose: 0   # 0, 1
-	#inputTags : [ "MakeSH" ] # select instances
+        #inputTags : [ "MakeSH" ] # select instances
       }
       bkgQualPrinter : {
         verbose: 0   # 0, 1
-	#inputTags : [ "MakeSH" ] # select instances
+        #inputTags : [ "MakeSH" ] # select instances
       }
       comboHitPrinter : {
         verbose: 1   # 0, 1
-	#inputTags : [ "MakeSH" ] # select instances
+        #inputTags : [ "MakeSH" ] # select instances
       }
 
       timeClusterPrinter : {
@@ -134,26 +134,31 @@ physics :{
       }
       trackClusterMatchPrinter : {
         verbose: 2   # 0, 1, 2
-	#inputTags : [ "TrackCaloMatchingDem" ] # select instances
+        #inputTags : [ "TrackCaloMatchingDem" ] # select instances
       }
       trkCaloIntersectPrinter : {
         verbose: 1   # 0, 1
-	#inputTags : [ "TrackCaloIntersectionDem" ] # select instances
+        #inputTags : [ "TrackCaloIntersectionDem" ] # select instances
       }
 
       trackSummaryPrinter : {
         verbose: 4   # 0 - 4
-	#inputTags : [ "TrackSummaryMaker" ] # select instances
+        #inputTags : [ "TrackSummaryMaker" ] # select instances
       }
 
       kalRepPrinter : {
         verbose: 0   # 0 - 5 (5 is KalRep printAll)
-	#inputTags : [ "TRFDeM" ] # select instances
+        #inputTags : [ "TRFDeM" ] # select instances
       }
 
       kalSeedPrinter : {
         verbose: 4   # 0,1,2,3,4
-	#inputTags : [ "KFFDeM" ] # select instances
+        #inputTags : [ "KFFDeM" ] # select instances
+      }
+
+      stmWaveformDigiPrinter : {
+        verbose: 1   # 0,1,2
+        #inputTags : [ "KFFDeM" ] # select instances
       }
 
       physicalVolumePrinter : {

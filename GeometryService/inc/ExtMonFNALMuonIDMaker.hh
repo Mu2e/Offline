@@ -32,7 +32,7 @@ namespace mu2e {
     static std::unique_ptr<ExtMonFNALMuonID> make(const SimpleConfig& config);
     };
 
-  };
+  }
 
 #endif/*EXTMONFNALMUONIDMAKER_HH*/
 

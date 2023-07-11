@@ -1,10 +1,10 @@
 // -*- mode: c++ -*-
 ///////////////////////////////////////////////////////////////////////////////
-// 2016-06-02 P.Murat 
-// given a list of tracks reconstructed under a certain hypothesis, calculates 
+// 2016-06-02 P.Murat
+// given a list of tracks reconstructed under a certain hypothesis, calculates
 // PID variables for this track
-// As the number of hypotheses can be large, to determine the best one, 
-// the calculated probabilities need to be combined into likelihoods 
+// As the number of hypotheses can be large, to determine the best one,
+// the calculated probabilities need to be combined into likelihoods
 ///////////////////////////////////////////////////////////////////////////////
 
 // C++ includes.
@@ -16,7 +16,6 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -39,10 +38,8 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
-#include "Offline/RecoDataProducts/inc/PIDProductCollection.hh"
 #include "Offline/BTrkData/inc/Doublet.hh"
 
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -50,7 +47,7 @@
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 #include "Offline/ParticleID/inc/PIDUtilities.hh"
-#include "Offline/RecoDataProducts/inc/AvikPIDNewProductCollection.hh"
+#include "Offline/RecoDataProducts/inc/AvikPIDNewProduct.hh"
 
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/Mu2eDetector.hh"
@@ -90,9 +87,9 @@ namespace mu2e {
 
     TrkParticle     _tpart;
     TrkFitDirection _fdir;
-    std::string     _iname;		// data instance name
+    std::string     _iname;                // data instance name
 
-					// electron and muon dE/dX template histograms
+                                        // electron and muon dE/dX template histograms
     TH1D* _heletemp[kNbounds];
     TH1D* _hmuotemp[kNbounds];
 
@@ -105,9 +102,9 @@ namespace mu2e {
     int    _trkid;
     int    _nMatched;
     int    _nMatchedAll;
-    int    _nusedSsH;	       // Nhits used to calculate the SS slopes
-    int    _nusedOsH;	       // Nhits used to calculate the OS slopes
-    int    _nusedOsD;	       // Ndoublets used to calculate the sums
+    int    _nusedSsH;               // Nhits used to calculate the SS slopes
+    int    _nusedOsH;               // Nhits used to calculate the OS slopes
+    int    _nusedOsD;               // Ndoublets used to calculate the sums
 
     double _trkmom;
 
@@ -155,15 +152,14 @@ namespace mu2e {
     virtual void produce    (art::Event& event);
     virtual void endJob     ();
 
-
     static  void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t);
     static  int  findlowhist(float d);
 
     bool   calculateVadimSlope(const KalRep* KRep, double *Slope, double *Eslope);
 
     double calculateDedxProb  (std::vector<double>* GasPaths ,
-			       std::vector<double>* EDeps    ,
-			       TH1D**               Templates);
+                               std::vector<double>* EDeps    ,
+                               TH1D**               Templates);
 
     void   doubletMaker(const KalRep* Trk);
 
@@ -195,9 +191,7 @@ namespace mu2e {
     // Save directory from beginJob so that we can go there in endJob.
     //    TDirectory* _directory;
 
-
   };
-
 
   TGraphErrors *error;
 
@@ -243,7 +237,6 @@ namespace mu2e {
 
     return -9999;
   }
-
 
 //-----------------------------------------------------------------------------
   AvikPIDNew::AvikPIDNew(fhicl::ParameterSet const& pset):
@@ -298,7 +291,6 @@ namespace mu2e {
 
   }
 
-
 //-----------------------------------------------------------------------------
   AvikPIDNew::~AvikPIDNew() {
     if (_minuit) delete _minuit;
@@ -331,7 +323,6 @@ namespace mu2e {
   void AvikPIDNew::beginRun(art::Run & run){
     if (_debugLevel >= 2) cout << "AvikPIDNew: From beginRun: " << run.id().run() << endl;
 
-
   }
 
 //-----------------------------------------------------------------------------
@@ -343,7 +334,6 @@ namespace mu2e {
   void AvikPIDNew::endJob(){
     if (_debugLevel>=2) cout << "AvikPIDNew: From endJob. " << endl;
   }
-
 
 //-----------------------------------------------------------------------------
 // Avik's weighted residual
@@ -387,7 +377,7 @@ namespace mu2e {
 
     nhits = hot_list.size();
 
-    int   iamb0(0);			// number of hits with undefined drift direction
+    int   iamb0(0);                        // number of hits with undefined drift direction
 
     //    float resall   [nhits];
     int   resgood  [nhits];
@@ -411,14 +401,14 @@ namespace mu2e {
       const mu2e::TrkStrawHit* hit = dynamic_cast<const mu2e::TrkStrawHit*>(hot_list.at(i));
 
       if (hit) {
-	mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
+        mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
 
-	panelall[i] = straw->id().getPanel();
-	planeall[i] = straw->id().getPlane();
-	layall  [i] = straw->id().getLayer();
-	Nall    [i] = straw->id().getStraw();
-	iamball [i] = hit->ambig();
-	resgood [i] = hit->resid(hitres,hiterr,1);
+        panelall[i] = straw->id().getPanel();
+        planeall[i] = straw->id().getPlane();
+        layall  [i] = straw->id().getLayer();
+        Nall    [i] = straw->id().getStraw();
+        iamball [i] = hit->ambig();
+        resgood [i] = hit->resid(hitres,hiterr,1);
       }
     }
 //-----------------------------------------------------------------------------
@@ -439,10 +429,10 @@ namespace mu2e {
 
           nmatchall[i]+=1;    // number of matches to other hits
           if((nmatchall[i-(j+1)]==0) && (nmatchall[i]==1)) {  // i.e. has found a doublet
-	    //            res[ncount+1]=resall[i];   // i is current hit
-	    //            straw[ncount+1]=strawall[i];
-	    //            res[ncount]=resall[i-(j+1)];   // i-(j+1) is successful matched (previous) hit
-	    //            straw[ncount]=strawall[i-(j+1)];
+            //            res[ncount+1]=resall[i];   // i is current hit
+            //            straw[ncount+1]=strawall[i];
+            //            res[ncount]=resall[i-(j+1)];   // i-(j+1) is successful matched (previous) hit
+            //            straw[ncount]=strawall[i-(j+1)];
             ncount+=2;
             nmatchall[i-(j+1)]+=1;    //number of matches to other hits
             nnlet[1]+=1;
@@ -450,8 +440,8 @@ namespace mu2e {
           }
 
           else if (nmatchall[i-(j+1)]==0) {
-	    //            res[ncount]=resall[i-(j+1)];   // i-(j+1) is successful matched (previous) hit
-	    //            straw[ncount]=strawall[i-(j+1)];
+            //            res[ncount]=resall[i-(j+1)];   // i-(j+1) is successful matched (previous) hit
+            //            straw[ncount]=strawall[i-(j+1)];
             ncount+=1;
             nnlet[nmatchall[i]]+=1;
             nnlet[nmatchall[i]-1]-=1;
@@ -460,8 +450,8 @@ namespace mu2e {
           }
 
           else {
-	    //            res[ncount]=resall[i];   // i is current hit
-	    //            straw[ncount]=strawall[i];
+            //            res[ncount]=resall[i];   // i is current hit
+            //            straw[ncount]=strawall[i];
             ncount+=1;
             nnlet[nmatchall[i-(j+1)]+nmatchall[i]]+=1;
             nnlet[nmatchall[i-(j+1)]]-=1;
@@ -534,8 +524,8 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   double AvikPIDNew::calculateDedxProb(std::vector<double>* GasPaths ,
-				       std::vector<double>* EDeps    ,
-				       TH1D**               Templates) {
+                                       std::vector<double>* EDeps    ,
+                                       TH1D**               Templates) {
 
     static const double _minpath = 0.5;
     static const double _maxpath = 10.;
@@ -578,9 +568,9 @@ namespace mu2e {
 // the straight line fit should be done explicitly
 //-----------------------------------------------------------------------------
   bool AvikPIDNew::calculateVadimSlope(const KalRep  *KRep  ,
-				       double        *Slope ,
-				       double        *Eslope) {
-    
+                                       double        *Slope ,
+                                       double        *Eslope) {
+
     std::vector<double>   res, flt, eres, eflt;
     mu2e::TrkStrawHit*    hit;
     double                resid, residerr, aresd, normflt, normresd;
@@ -669,8 +659,8 @@ namespace mu2e {
 // use SS doublets, require the best slope to be close to that of the track
 //-----------------------------------------------------------------------------
   int AvikPIDNew::AddSsMultiplets(const vector<Doublet>* ListOfDoublets,
-				  vector<double>&        Fltlen        ,
-				  vector<double>&        Resid         ) {
+                                  vector<double>&        Fltlen        ,
+                                  vector<double>&        Resid         ) {
 
     const mu2e::Doublet  *multiplet;
     double               dxdzresid;
@@ -694,15 +684,14 @@ namespace mu2e {
     return 0;
   }
 
-
 //-----------------------------------------------------------------------------
 // doublet ambiguity resolver best combinations: 0:(++) 1:(+-) 2:(--) 3:(-+)
 // so 0 and 2 correspond to the SS doublet, 1 and 3 - to the OS doublet
 // see KalmanTests/src/DoubletAmbigResolver.cc for details
 //-----------------------------------------------------------------------------
   int AvikPIDNew::AddOsMultiplets(const vector<Doublet>* ListOfDoublets,
-				  vector<double>&        Fltlen        ,
-				  vector<double>&        Resid         ) {
+                                  vector<double>&        Fltlen        ,
+                                  vector<double>&        Resid         ) {
 
     const mu2e::Doublet  *multiplet, *mj;
     int                  best, bestj, sid, sidj;
@@ -768,7 +757,6 @@ namespace mu2e {
     return 0;
   }
 
-
 //-----------------------------------------------------------------------------
 // calculate parameters of the straight line fit
 //-----------------------------------------------------------------------------
@@ -826,8 +814,8 @@ namespace mu2e {
 // residuals are weighted, as Avik is trying to de-weight the tails
 //-----------------------------------------------------------------------------
   void AvikPIDNew::calculateOsSums(const vector<Doublet>* ListOfDoublets,
-				   double& Drds, double& DrdsErr, int& NUsedHits,
-				   double& Sum , int& NUsedDoublets) {
+                                   double& Drds, double& DrdsErr, int& NUsedHits,
+                                   double& Sum , int& NUsedDoublets) {
 
     vector<double> fltLen;
     vector<double> resid;
@@ -872,7 +860,7 @@ namespace mu2e {
     double         path, dedx_prob_ele, dedx_prob_muo;
 
     int const      max_ntrk(100);
-    int            n_trk; 
+    int            n_trk;
 
     vector<Doublet>                    listOfDoublets;
 
@@ -882,7 +870,6 @@ namespace mu2e {
 
     const TrkHitVector*      hots;
     const TrkStrawHit*       hit ;
-
 
     _evtid = event.id().event();
 
@@ -937,29 +924,29 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       double        firsthitfltlen(1.e6), lasthitfltlen(1.e6), entlen;
 
-      const TrkHit  *first(nullptr), *last(nullptr); 
+      const TrkHit  *first(nullptr), *last(nullptr);
 
       for (int ih=0; ih<nh; ++ih) {
         const TrkHit* hit =  dynamic_cast<const TrkHit*> (hots->at(ih));
-      	if (hit   != nullptr) {
-      	  if (first == nullptr) first = hit;
-      	  last = hit;
-      	}
+              if (hit   != nullptr) {
+                if (first == nullptr) first = hit;
+                last = hit;
+              }
       }
 
       // first = dynamic_cast<const TrkHit*> (trk->firstHit()->kalHit()->hit());
       // last  = dynamic_cast<const TrkHit*> (trk->lastHit ()->kalHit()->hit());
 
-      // if (dynamic_cast<const TrkStrawHit*> (first) == nullptr) { 
-      // 	printf("ERROR in AvikPIDNew::produce for Event: %8i : first hit is not a TrkStrawHit, test fltLen*\n",_evtid);
-      // 	double len = first->fltLen();
-      // 	printf("first->fltLen() = %10.3f\n",len);
+      // if (dynamic_cast<const TrkStrawHit*> (first) == nullptr) {
+      //         printf("ERROR in AvikPIDNew::produce for Event: %8i : first hit is not a TrkStrawHit, test fltLen*\n",_evtid);
+      //         double len = first->fltLen();
+      //         printf("first->fltLen() = %10.3f\n",len);
       // }
 
-      // if (dynamic_cast<const TrkStrawHit*> (last ) == nullptr) { 
-      // 	printf("ERROR in AvikPIDNew::produce for Event: %8i : last  hit is not a TrkStrawHit, test fltLen*\n",_evtid);
-      // 	double len = last->fltLen();
-      // 	printf("last->fltLen() = %10.3f\n",len);
+      // if (dynamic_cast<const TrkStrawHit*> (last ) == nullptr) {
+      //         printf("ERROR in AvikPIDNew::produce for Event: %8i : last  hit is not a TrkStrawHit, test fltLen*\n",_evtid);
+      //         double len = last->fltLen();
+      //         printf("last->fltLen() = %10.3f\n",len);
       // }
 
       if (first) firsthitfltlen = first->fltLen() - 10;
@@ -977,7 +964,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // hit charges: '2.*' here because KalmanFit reports half-path through gas.
 //-----------------------------------------------------------------------------
-	  const Straw* straw = &hit->straw();
+          const Straw* straw = &hit->straw();
           const DetStrawElem* strawelem = detmodel->strawElem(*straw);
           path = 2.*strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
           gaspaths.push_back(path);
@@ -1004,13 +991,13 @@ namespace mu2e {
 // save...
 //-----------------------------------------------------------------------------
       _pid.init(_trkid         , _nMatched       , _nMatchedAll   ,
-		_nusedOsH      , _nusedSsH   , _nusedOsD  , 
-		_logDedxProbEle, _logDedxProbMuo ,
-		_drdsVadim  , _drdsVadimErr,
-		_drdsOs     , _drdsOsErr   ,
-		_drdsSs     , _drdsSsErr   ,
-		_sumAvik    , _sq2Avik     , _resSumOs);
-      
+                _nusedOsH      , _nusedSsH   , _nusedOsD  ,
+                _logDedxProbEle, _logDedxProbMuo ,
+                _drdsVadim  , _drdsVadimErr,
+                _drdsOs     , _drdsOsErr   ,
+                _drdsSs     , _drdsSsErr   ,
+                _sumAvik    , _sq2Avik     , _resSumOs);
+
       pids->push_back(_pid);
 //-----------------------------------------------------------------------------
 // fill ntuple
@@ -1026,4 +1013,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::AvikPIDNew);
+DEFINE_ART_MODULE(mu2e::AvikPIDNew)

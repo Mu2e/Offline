@@ -62,7 +62,6 @@
 
 #include "Geant4/G4hIonisation.hh"
 #include "Geant4/G4ionIonisation.hh"
-#include "Geant4/G4alphaIonisation.hh"
 
 #include "Geant4/G4Gamma.hh"
 #include "Geant4/G4Electron.hh"
@@ -101,11 +100,6 @@ Mu2eG4MinDEDXPhysicsConstructor::Mu2eG4MinDEDXPhysicsConstructor(G4int ver)
   param->SetLossFluctuations(false); // special case
   SetPhysicsType(bElectromagnetic);
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-Mu2eG4MinDEDXPhysicsConstructor::~Mu2eG4MinDEDXPhysicsConstructor()
-{}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -213,18 +207,18 @@ void Mu2eG4MinDEDXPhysicsConstructor::ConstructProcess()
       ph->RegisterProcess(kp, particle);
 
     } else if (particleName == "proton" ||
-	       particleName == "anti_proton") {
+               particleName == "anti_proton") {
 
       ph->RegisterProcess(new G4hIonisation(), particle);
       ph->RegisterProcess(pb, particle);
       ph->RegisterProcess(pp, particle);
 
     } else if (particleName == "B+" ||
-	       particleName == "B-" ||
-	       particleName == "D+" ||
-	       particleName == "D-" ||
-	       particleName == "Ds+" ||
-	       particleName == "Ds-" ||
+               particleName == "B-" ||
+               particleName == "D+" ||
+               particleName == "D-" ||
+               particleName == "Ds+" ||
+               particleName == "Ds-" ||
                particleName == "anti_He3" ||
                particleName == "anti_alpha" ||
                particleName == "anti_deuteron" ||
@@ -237,8 +231,8 @@ void Mu2eG4MinDEDXPhysicsConstructor::ConstructProcess()
                particleName == "anti_triton" ||
                particleName == "anti_xi_c+" ||
                particleName == "anti_xi-" ||
-	       particleName == "deuteron" ||
-	       particleName == "lambda_c+" ||
+               particleName == "deuteron" ||
+               particleName == "lambda_c+" ||
                particleName == "omega-" ||
                particleName == "sigma_c+" ||
                particleName == "sigma_c++" ||
@@ -246,7 +240,7 @@ void Mu2eG4MinDEDXPhysicsConstructor::ConstructProcess()
                particleName == "sigma-" ||
                particleName == "tau+" ||
                particleName == "tau-" ||
-	       particleName == "triton" ||
+               particleName == "triton" ||
                particleName == "xi_c+" ||
                particleName == "xi-" ) {
 

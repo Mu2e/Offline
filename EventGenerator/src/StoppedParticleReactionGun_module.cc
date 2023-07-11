@@ -17,7 +17,6 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"  
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -26,11 +25,10 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/ConversionSpectrum.hh"
@@ -73,11 +71,11 @@ namespace mu2e {
     TH1F*   _hGenId;
     TH1F*   _hTime;
     TH1F*   _hZ;
-  
+
   private:
     static SpectrumVar    parseSpectrumVar(const std::string& name);
     double                generateEnergy();
-    
+
   public:
     explicit StoppedParticleReactionGun(const fhicl::ParameterSet& pset);
 
@@ -89,7 +87,7 @@ namespace mu2e {
     : EDProducer{pset}
     , psphys_(pset.get<fhicl::ParameterSet>("physics"))
     , pdgId_(PDGCode::type(psphys_.get<int>("pdgId")))
-    , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
+    , mass_(GlobalConstantsHandle<ParticleDataList>()->particle(pdgId_).mass())
     , spectrumVariable_(parseSpectrumVar(psphys_.get<std::string>("spectrumVariable")))
     , spectrum_(BinnedSpectrum(psphys_))
     , genId_(GenId::findByName(psphys_.get<std::string>("genId")))
@@ -119,11 +117,11 @@ namespace mu2e {
       std::cout<<"StoppedParticleReactionGun: producing particle "<< pdgId_ << ", mass = "<< mass_ << std::endl;
 
       std::cout <<"StoppedParticleReactionGun: spectrum shape = "
-		<<psphys_.get<std::string>("spectrumShape") << std::endl;
+                <<psphys_.get<std::string>("spectrumShape") << std::endl;
       if (psphys_.get<std::string>("spectrumShape")  == "tabulated")
-	std::cout << " Spectrum file = "
-		  << psphys_.get<std::string>("spectrumFileName")
-		  << std::endl;
+        std::cout << " Spectrum file = "
+                  << psphys_.get<std::string>("spectrumFileName")
+                  << std::endl;
     }
     if (verbosityLevel_ > 1){
       std::cout <<"StoppedParticleReactionGun: spectrum: " << std::endl;
@@ -142,7 +140,6 @@ namespace mu2e {
     }
   }
 
-
   //================================================================
   StoppedParticleReactionGun::SpectrumVar StoppedParticleReactionGun::parseSpectrumVar(const std::string& name) {
     if (name == "totalEnergy"  )  return TOTAL_ENERGY;
@@ -150,7 +147,6 @@ namespace mu2e {
     if (name == "momentum"     )  return MOMENTUM;
     throw cet::exception("BADCONFIG")<<"StoppedParticleReactionGun: unknown spectrum variable "<<name<<"\n";
   }
-
 
   //================================================================
   void StoppedParticleReactionGun::produce(art::Event& event) {
@@ -186,8 +182,8 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// generate (pseudo-)random particle energy 
-// the spectrum itself doesn't know whether is stored momentum, kinetic or full 
+// generate (pseudo-)random particle energy
+// the spectrum itself doesn't know whether is stored momentum, kinetic or full
 // energy
 //-----------------------------------------------------------------------------
   double StoppedParticleReactionGun::generateEnergy() {
@@ -208,4 +204,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StoppedParticleReactionGun);
+DEFINE_ART_MODULE(mu2e::StoppedParticleReactionGun)

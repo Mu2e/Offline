@@ -3,8 +3,10 @@
 //  Original author: Dave Brown (LBNL) 3/1/2017
 //
 // framework
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
@@ -35,72 +37,105 @@ namespace mu2e
 {
   class HelixFilter : public art::EDFilter
   {
-  public:
-    explicit HelixFilter(fhicl::ParameterSet const& pset);
-    virtual bool filter(art::Event& event) override;
-    virtual bool beginRun(art::Run&   run   );
-    virtual bool endRun( art::Run& run ) override;
+    public:
+      struct Config{
+        using Name    = fhicl::Name;
+        using Comment = fhicl::Comment;
+        fhicl::Atom<art::InputTag>      helixSeedCollection  {     Name("helixSeedCollection"),     Comment("helixSeedCollection") };
+        fhicl::Atom<bool>               requireCaloCluster   {     Name("requireCaloCluster"),      Comment("requireCaloCluster") };
+        fhicl::Atom<bool>               doHelicityCheck      {     Name("doHelicityCheck"),         Comment("doHelicityCheck") };
+        fhicl::Atom<int>                helicity             {     Name("helicity"),                Comment("helicity       ") };
+        fhicl::Atom<int>                minNStrawHits        {     Name("minNStrawHits"),           Comment("minNStrawHits  ") };
+        fhicl::Atom<double>             minHitRatio          {     Name("minHitRatio"),             Comment("minHitRatio    ") };
+        fhicl::Atom<double>             minMomentum          {     Name("minMomentum"),             Comment("minMomentum    ") };
+        fhicl::Atom<double>             maxMomentum          {     Name("maxMomentum"),             Comment("maxMomentum    ") };
+        fhicl::Atom<double>             minPt                {     Name("minPt"),                   Comment("minPt          ") };
+        fhicl::Atom<double>             maxChi2XY            {     Name("maxChi2XY"),               Comment("maxChi2XY      ") };
+        fhicl::Atom<double>             maxChi2PhiZ          {     Name("maxChi2PhiZ"),             Comment("maxChi2PhiZ    ") };
+        fhicl::Atom<double>             maxD0                {     Name("maxD0"),                   Comment("maxD0          ") };
+        fhicl::Atom<double>             minD0                {     Name("minD0"),                   Comment("minD0          ") };
+        fhicl::Atom<double>             maxAbsLambda         {     Name("maxAbsLambda"),            Comment("maxAbsLambda   ") };
+        fhicl::Atom<double>             minAbsLambda         {     Name("minAbsLambda"),            Comment("minAbsLambda   ") };
+        fhicl::Atom<double>             maxNLoops            {     Name("maxNLoops"),               Comment("maxNLoops      ") };
+        fhicl::Atom<double>             minNLoops            {     Name("minNLoops"),               Comment("minNLoops      ") };
+        fhicl::Sequence<std::string>    helixFitFlag         {     Name("helixFitFlag"),            Comment("helixFitFlag   "), std::vector<std::string>{"HelixOK"} };
+        fhicl::Atom<int>                debugLevel           {     Name("debugLevel"),              Comment("debugLevel")     , 0 };
+        fhicl::OptionalAtom<bool>       prescaleUsingD0Phi   {     Name("prescaleUsingD0Phi"),      Comment("prescaleUsingD0Phi") };
+        fhicl::Table<PhiPrescalingParams::Config>             prescalerPar{     Name("prescalerPar"),      Comment("prescalerPar") };
+      };
 
-  private:
-    art::InputTag _hsTag;
-    bool          _hascc; // Calo Cluster
-    bool          _doHelicityCheck;
-    int           _hel;
-    int           _minnstrawhits;
-    double        _minHitRatio;
-    double        _minmom, _maxmom;
-    double        _maxpT;
-    double        _minpT;
-    double        _maxchi2XY;
-    double        _maxchi2PhiZ;
-    double        _maxd0;
-    double        _mind0;
-    double        _maxlambda;
-    double        _minlambda;
-    double        _maxnloops;
-    double        _minnloops;
-    double        _bz0;
-    const Tracker* _tracker;
-    TrkFitFlag    _goodh; // helix fit flag
-    std::string   _trigPath;
-    bool          _prescaleUsingD0Phi;
-    PhiPrescalingParams     _prescalerPar;
-    int           _debug;
-    // counters
-    unsigned      _nevt, _npass;
-    
-    int evalIPAPresc(const float &phi0);
+      using Parameters = art::EDFilter::Table<Config>;
+
+      explicit HelixFilter(const Parameters& conf);
+      virtual bool filter(art::Event& event) override;
+      virtual bool beginRun(art::Run&   run   );
+      virtual bool endRun( art::Run& run ) override;
+
+    private:
+      art::InputTag _hsTag;
+      bool          _hascc; // Calo Cluster
+      bool          _doHelicityCheck;
+      int           _hel;
+      int           _minnstrawhits;
+      double        _minHitRatio;
+      double        _minmom, _maxmom;
+      double        _maxpT;
+      double        _minpT;
+      double        _maxchi2XY;
+      double        _maxchi2PhiZ;
+      double        _maxd0;
+      double        _mind0;
+      double        _maxlambda;
+      double        _minlambda;
+      double        _maxnloops;
+      double        _minnloops;
+      double        _bz0;
+      const Tracker* _tracker;
+      TrkFitFlag    _goodh; // helix fit flag
+      std::string   _trigPath;
+      bool          _prescaleUsingD0Phi;
+      PhiPrescalingParams     _prescalerPar;
+      int           _debug;
+      // counters
+      unsigned      _nevt, _npass;
+
+      int evalIPAPresc(const float &phi0);
   };
 
-  HelixFilter::HelixFilter(fhicl::ParameterSet const& pset) :
-    art::EDFilter{pset},
-    _hsTag             (pset.get<art::InputTag>("helixSeedCollection","PosHelixFinder")),
-    _hascc             (pset.get<bool>  ("requireCaloCluster",false)),
-    _doHelicityCheck   (pset.get<bool>  ("doHelicityCheck",true)),
-    _hel               (pset.get<int>   ("helicity")),
-    _minnstrawhits     (pset.get<int>   ("minNStrawHits",15)),
-    _minHitRatio       (pset.get<double>("minHitRatio",0.)),
-    _minmom            (pset.get<double>("minMomentum",70.0)),
-    _maxmom            (pset.get<double>("maxMomentum",120.0)),
-    _minpT             (pset.get<double>("minPt", 0.)),
-    _maxchi2XY         (pset.get<double>("maxChi2XY", 8.)),
-    _maxchi2PhiZ       (pset.get<double>("maxChi2PhiZ", 8.)),
-    _maxd0             (pset.get<double>("maxD0", 200.)),
-    _mind0             (pset.get<double>("minD0", -200.)),
-    _maxlambda         (pset.get<double>("maxAbsLambda",350.)),
-    _minlambda         (pset.get<double>("minAbsLambda",150.)),
-    _maxnloops         (pset.get<double>("maxNLoops",30.)),
-    _minnloops         (pset.get<double>("minNLoops",0.)),
-    _goodh             (pset.get<std::vector<std::string> >("helixFitFlag",std::vector<std::string>{"HelixOK"})),
-    _prescaleUsingD0Phi(pset.get<bool>  ("prescaleUsingD0Phi",false)),
-    _debug             (pset.get<int>   ("debugLevel",0)),
+  HelixFilter::HelixFilter(const Parameters& config):
+    art::EDFilter{config},
+    _hsTag             (config().helixSeedCollection()),
+    _hascc             (config().requireCaloCluster()),
+    _doHelicityCheck   (config().doHelicityCheck()),
+    _hel               (config().helicity()),
+    _minnstrawhits     (config().minNStrawHits()),
+    _minHitRatio       (config().minHitRatio()),
+    _minmom            (config().minMomentum()),
+    _maxmom            (config().maxMomentum()),
+    _minpT             (config().minPt()),
+    _maxchi2XY         (config().maxChi2XY()),
+    _maxchi2PhiZ       (config().maxChi2PhiZ()),
+    _maxd0             (config().maxD0()),
+    _mind0             (config().minD0()),
+    _maxlambda         (config().maxAbsLambda()),
+    _minlambda         (config().minAbsLambda()),
+    _maxnloops         (config().maxNLoops()),
+    _minnloops         (config().minNLoops()),
+    _goodh             (config().helixFitFlag()),
+    _debug             (config().debugLevel()),
     _nevt(0), _npass(0)
-  {
-    if (_prescaleUsingD0Phi){
-      _prescalerPar    = fhicl::getPhiPrescalerParams(pset, "prescalerPar");
+    {
+      bool val;
+      if (config().prescaleUsingD0Phi(val)) {
+        _prescaleUsingD0Phi = val;
+        if (_prescaleUsingD0Phi){
+          _prescalerPar    = PhiPrescalingParams(config().prescalerPar());
+        }
+      }else {
+        _prescaleUsingD0Phi = false;
+      }
+      produces<TriggerInfo>();
     }
-    produces<TriggerInfo>();
-  }
 
   bool HelixFilter::beginRun(art::Run & run){
     // get bfield
@@ -133,7 +168,7 @@ namespace mu2e
     // loop over the collection: if any pass the selection, pass this event
     for(auto ihs = hscol->begin();ihs != hscol->end(); ++ihs) {
       auto const& hs = *ihs;
-      
+
       //check the helicity
       if (_doHelicityCheck && !(hs.helix().helicity() == Helicity(_hel)))        continue;
 
@@ -150,39 +185,40 @@ namespace mu2e
       float hRatio     = helTool.hitRatio();
 
       if(_debug > 2){
-	std::cout << moduleDescription().moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << std::endl;
+        std::cout << moduleDescription().moduleLabel() << ": status = " << hs.status() << " nhits = " << nstrawhits << " mom = " << hmom << std::endl;
+        std::cout << moduleDescription().moduleLabel() << ": chi2XY = " << chi2XY << " chi2ZPHI = " << chi2PhiZ << " d0 = " << d0 << " lambda = "<< lambda << " nLoops = " << nLoops << " hRatio = "<< hRatio << std::endl;
       }
       if( hs.status().hasAllProperties(_goodh) &&
           (!_hascc || hs.caloCluster().isNonnull()) &&
-	  nstrawhits >= _minnstrawhits &&
+          nstrawhits >= _minnstrawhits &&
           hpT        >= _minpT &&
-	  chi2XY     <= _maxchi2XY &&
-	  chi2PhiZ   <= _maxchi2PhiZ &&
-	  d0         <= _maxd0 &&
-	  d0         >= _mind0 &&
-	  lambda     <= _maxlambda &&
-	  lambda     >= _minlambda &&
-	  nLoops     <= _maxnloops &&
-	  nLoops     >= _minnloops &&
-          hmom       >= _minmom    && 
-	  hmom       <= _maxmom    &&
-	  hRatio     >= _minHitRatio ) {
+          chi2XY     <= _maxchi2XY &&
+          chi2PhiZ   <= _maxchi2PhiZ &&
+          d0         <= _maxd0 &&
+          d0         >= _mind0 &&
+          lambda     <= _maxlambda &&
+          lambda     >= _minlambda &&
+          nLoops     <= _maxnloops &&
+          nLoops     >= _minnloops &&
+          hmom       >= _minmom    &&
+          hmom       <= _maxmom    &&
+          hRatio     >= _minHitRatio ) {
 
-	//now check if we want to prescake or not 
-	if (_prescaleUsingD0Phi) {
-	  float phiAtD0   = hs.helix().fcent();
-	  int   prescaler = evalIPAPresc(phiAtD0);
-	  if (_nevt % prescaler != 0)               continue;
-	}
+        //now check if we want to prescake or not
+        if (_prescaleUsingD0Phi) {
+          float phiAtD0   = hs.helix().fcent();
+          int   prescaler = evalIPAPresc(phiAtD0);
+          if (_nevt % prescaler != 0)               continue;
+        }
         retval = true;
         ++_npass;
         // Fill the trigger info object
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(hscol->begin(),ihs);
-	triginfo->_helixes.push_back(art::Ptr<HelixSeed>(hsH,index));
-	if(_debug > 1){
-	  std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
+        triginfo->_helixes.push_back(art::Ptr<HelixSeed>(hsH,index));
+        if(_debug > 1){
+          std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
       }
     }
@@ -199,4 +235,4 @@ namespace mu2e
 
 }
 using mu2e::HelixFilter;
-DEFINE_ART_MODULE(HelixFilter);
+DEFINE_ART_MODULE(HelixFilter)

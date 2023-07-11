@@ -1,0 +1,4 @@
+#include "Offline/STMReco/fcl/prolog_testbeam.fcl"
+#include "Offline/STMReco/fcl/zeroSuppression.fcl"
+
+services.ProditionsService.stmEnergyCalib.samplingFrequencies : @local::STMTestBeam.Conditions.samplingFrequencies

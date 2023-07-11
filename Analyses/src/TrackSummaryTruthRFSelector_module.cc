@@ -15,7 +15,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
@@ -23,7 +22,7 @@
 
 #include "Offline/RecoDataProducts/inc/TrackSummary.hh"
 #include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -152,4 +151,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::TrackSummaryTruthRFSelector);
+DEFINE_ART_MODULE(mu2e::TrackSummaryTruthRFSelector)

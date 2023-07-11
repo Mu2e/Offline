@@ -12,7 +12,7 @@
 
 #include "Geant4/G4UserTrackingAction.hh"
 
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include "Offline/Mu2eG4/inc/EventNumberList.hh"
 #include "Offline/Mu2eG4/inc/PhysicsProcessInfo.hh"
@@ -126,6 +126,14 @@ namespace mu2e {
     // If the track passes, the min hits cut and the momentum cut, add the
     // trajectory information to the output data product.
     void swapTrajectory( const G4Track* trk );
+
+    // the muon specific decay proper time; it is ignored if set to a negative value
+    double _muonPreAssignedDecayProperTime;
+    // the maximum specific decay proper time; the specific time above excludes
+    // the min max time use
+    double _muonMinPreAssignedDecayProperTime;
+    // the minimum specific decay proper time;
+    double _muonMaxPreAssignedDecayProperTime;
 
   };
 

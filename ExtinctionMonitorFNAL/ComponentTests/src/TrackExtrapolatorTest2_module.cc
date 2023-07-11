@@ -16,13 +16,11 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Utilities/InputTag.h"
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
 
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
@@ -85,7 +83,6 @@ namespace mu2e {
         hycorr_ = tfdir.make<TH2D>("ycorr", "y extrapolated vs hit", ny, -ly/2, +ly/2, ny, -ly/2, +ly/2);
         hycorr_->SetOption("colz");
 
-
         // Smaller range for residuals
         const double approximateHalfRange = 1.; // mm
 
@@ -119,7 +116,6 @@ namespace mu2e {
       }
 
     } // namespace {}
-
 
     //================================================================
     class TrackExtrapolatorTest2 : public art::EDAnalyzer {
@@ -233,4 +229,4 @@ namespace mu2e {
   } // namespace ExtMonFNAL
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ExtMonFNAL::TrackExtrapolatorTest2);
+DEFINE_ART_MODULE(mu2e::ExtMonFNAL::TrackExtrapolatorTest2)

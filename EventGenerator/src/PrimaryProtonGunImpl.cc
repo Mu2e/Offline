@@ -17,7 +17,7 @@
 #include "Offline/EventGenerator/inc/PrimaryProtonGunImpl.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 
@@ -30,12 +30,12 @@ using namespace std;
 namespace mu2e {
 
     PrimaryProtonGunImpl::PrimaryProtonGunImpl(CLHEP::HepRandomEngine& engine, const PrimaryProtonGunConfig& config):
-    
+
     _gunRotation(GeomHandle<ProductionTarget>()->protonBeamRotation()),
     _gunOrigin(GeomHandle<ProductionTarget>()->targetPositionByVersion()
                + _gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->targetHalfLengthByVersion())),
 
-    _proton_mass(GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::p_plus).ref().mass().value()),
+    _proton_mass(GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::proton).mass()),
 
     // Parameters from the run time configuration.
     _config(config),
@@ -48,7 +48,7 @@ namespace mu2e {
     _tmax(config.tmax()),
     _shape(config.shape()),
     _rmax(config.rmax()),
-    
+
     // For all distributions, use the engine managed by the RandomNumberGenerator.
     _randPoissonQ{engine, std::abs(config.mean())},
     _randFlat{engine},
@@ -56,7 +56,7 @@ namespace mu2e {
     _randomUnitSphere{engine, config.czmin(), config.czmax(), config.phimin(), config.phimax()}
     {
         _config.proton_momentum(_p);
-        
+
     }
 
   void PrimaryProtonGunImpl::generate( GenParticleCollection& genParts ){
@@ -108,14 +108,14 @@ namespace mu2e {
 
 
     // Add the proton to the list of generated particles.
-    genParts.push_back( GenParticle( PDGCode::p_plus, GenId::primaryProtonGun,
+    genParts.push_back( GenParticle( PDGCode::proton, GenId::primaryProtonGun,
                                      // Convert position to Mu2e coordinates
                                      _gunRotation*pos + _gunOrigin,
                                      // Convert momentum to Mu2e coordinates
                                      _gunRotation*mom,
                                      time));
-      
+
   }//generateOne
-    
+
 
 }

@@ -83,17 +83,17 @@ namespace mu2e
     x_(),
     y_(),
     fv_(),
-    wgts_(), 
-    maxNeurons_(0), 
+    wgts_(),
+    maxNeurons_(0),
     activeType_(aType::null),
     oldMVA_(false),
     isNorm_(false),
-    voffset_(), 
-    vscale_(), 
-    title_(), 
+    voffset_(),
+    vscale_(),
+    title_(),
     label_(),
     activationTypeString_("none"),
-    mvaWgtsFile_() { 
+    mvaWgtsFile_() {
 
     ConfigFileLookupPolicy configFile;
     mvaWgtsFile_ = configFile(xmlfilename);
@@ -141,18 +141,18 @@ namespace mu2e
           std::string label,value;
           for( XMLSize_t ia = 0 ; ia < attrs->getLength() ; ++ia )
           {
-	     DOMNode* attr = attrs->item(ia);
-	     char* attValue = XMLString::transcode(attr->getNodeValue());
-	     if (XMLString::equals(TAG_NAME,attr->getNodeName()) )     label = std::string(attValue);
-	     if (XMLString::equals(TAG_VALUE,attr->getNodeName()) )    value = std::string(attValue);
+             DOMNode* attr = attrs->item(ia);
+             char* attValue = XMLString::transcode(attr->getNodeValue());
+             if (XMLString::equals(TAG_NAME,attr->getNodeName()) )     label = std::string(attValue);
+             if (XMLString::equals(TAG_VALUE,attr->getNodeName()) )    value = std::string(attValue);
              XMLString::release(&attValue);
           }
-	  if (label.find("TMVA Release") != std::string::npos)
-	  {
- 	     std::string code = value.substr(value.find("[")+1,value.find("]")-value.find("[")-1);
-	     int iversion = atoi(code.c_str());
+          if (label.find("TMVA Release") != std::string::npos)
+          {
+              std::string code = value.substr(value.find("[")+1,value.find("]")-value.find("[")-1);
+             int iversion = atoi(code.c_str());
              if (iversion < 262657) oldMVA_ = true;
-	  }
+          }
       }
 
       XMLString::release(&ATT_GENERAL);
@@ -184,27 +184,27 @@ namespace mu2e
           std::string label, modified;
           for( XMLSize_t ia = 0 ; ia < attrs->getLength() ; ++ia )
           {
-	     DOMNode* attr = attrs->item(ia);
-	     char* attValue = XMLString::transcode(attr->getNodeValue());
-	     if (XMLString::equals(TAG_NAME,attr->getNodeName()) ) label = std::string(attValue);
-	     if (XMLString::equals(TAG_MODIFIED,attr->getNodeName()) ) modified = std::string(attValue);
+             DOMNode* attr = attrs->item(ia);
+             char* attValue = XMLString::transcode(attr->getNodeValue());
+             if (XMLString::equals(TAG_NAME,attr->getNodeName()) ) label = std::string(attValue);
+             if (XMLString::equals(TAG_MODIFIED,attr->getNodeName()) ) modified = std::string(attValue);
              XMLString::release(&attValue);
           }
           if (label.find("NeuronType") != std::string::npos)
-	  {
-	     std::string val(value);
-	     if (val.find("tanh") != std::string::npos)    activeType_ = aType::tanh;
-	     if (val.find("sigmoid") != std::string::npos) activeType_ = aType::sigmoid;
-	     if (val.find("ReLU") != std::string::npos)    activeType_ = aType::relu;
+          {
+             std::string val(value);
+             if (val.find("tanh") != std::string::npos)    activeType_ = aType::tanh;
+             if (val.find("sigmoid") != std::string::npos) activeType_ = aType::sigmoid;
+             if (val.find("ReLU") != std::string::npos)    activeType_ = aType::relu;
              activationTypeString_ = val;
-	  }
+          }
           if (label.find("VarTransform") != std::string::npos)
-	  {
-	     std::string val(value);
-	     if (modified.find("Yes") != std::string::npos) isNorm_ = true;
-	     if (isNorm_ && val.find("N") == std::string::npos)
+          {
+             std::string val(value);
+             if (modified.find("Yes") != std::string::npos) isNorm_ = true;
+             if (isNorm_ && val.find("N") == std::string::npos)
                throw cet::exception("RECO")<<"mu2e::MVATools: unknown normalization mode" << std::endl;
-	  }
+          }
       }
 
       if (activeType_ == aType::null) throw cet::exception("RECO")<<"mu2e::MVATools: unknown activation function" << std::endl;
@@ -240,13 +240,13 @@ namespace mu2e
          DOMNamedNodeMap* attrs = childNode->getAttributes();
          for( XMLSize_t ia = 0 ; ia < attrs->getLength() ; ++ia )
          {
-	    DOMNode* attr = attrs->item(ia);
-	    char* attValue = XMLString::transcode(attr->getNodeValue());
+            DOMNode* attr = attrs->item(ia);
+            char* attValue = XMLString::transcode(attr->getNodeValue());
 
-	    if (XMLString::equals(ATT_MIN,attr->getNodeName()) )      vmin = strtof(attValue,NULL);
-	    if (XMLString::equals(ATT_MAX,attr->getNodeName()) )      vmax = strtof(attValue,NULL);
-	    if (XMLString::equals(ATT_TITLE,attr->getNodeName()) )    title = std::string(attValue);
-	    if (XMLString::equals(ATT_LABEL,attr->getNodeName()) )    label = std::string(attValue);
+            if (XMLString::equals(ATT_MIN,attr->getNodeName()) )      vmin = strtof(attValue,NULL);
+            if (XMLString::equals(ATT_MAX,attr->getNodeName()) )      vmax = strtof(attValue,NULL);
+            if (XMLString::equals(ATT_TITLE,attr->getNodeName()) )    title = std::string(attValue);
+            if (XMLString::equals(ATT_LABEL,attr->getNodeName()) )    label = std::string(attValue);
 
             XMLString::release( &attValue ) ;
          }
@@ -268,25 +268,25 @@ namespace mu2e
 
     try
       {
-	XMLPlatformUtils::Initialize();
-      } 
+        XMLPlatformUtils::Initialize();
+      }
     catch (XMLException& e)
       {
-	char* message = XMLString::transcode( e.getMessage() ) ;
-	throw cet::exception("RECO")<<"mu2e::MVATools: XML initialization error: " <<  message << std::endl;
-	XMLString::release( &message ) ;
+        char* message = XMLString::transcode( e.getMessage() ) ;
+        throw cet::exception("RECO")<<"mu2e::MVATools: XML initialization error: " <<  message << std::endl;
+        XMLString::release( &message ) ;
       }
-  
+
     XercesDOMParser* parser = new XercesDOMParser();
     parser->setValidationScheme(XercesDOMParser::Val_Never);
     parser->setDoNamespaces(false);
     parser->setDoSchema(false);
     parser->setLoadExternalDTD( false );
-  
+
     XMLCh *xmlFile = XMLString::transcode(mvaWgtsFile_.c_str());
     parser->parse(xmlFile);
     XMLString::release( &xmlFile ) ;
-  
+
     xercesc::DOMDocument* xmlDoc = parser->adoptDocument() ; // adopt the document so that the parser no longer owns it...
     delete parser; // ...can then delete the parser and solve a memory leak
 
@@ -333,24 +333,24 @@ namespace mu2e
           unsigned iSynapses  = atoi(nSynapses);
 
           if (iLayer != iCurrentLayer)
-	  {
+          {
               if (iCurrentLayer > -1) links_.push_back(nNeurons);
-	      iCurrentLayer=iLayer;
+              iCurrentLayer=iLayer;
               nNeurons=0;
-	  }
+          }
 
-	  if (nNeuron->getFirstChild()==NULL) continue; //output neuron has no children
+          if (nNeuron->getFirstChild()==NULL) continue; //output neuron has no children
 
-	  char* cw = XMLString::transcode(nNeuron->getFirstChild()->getNodeValue());
-	  std::string sw(cw),temp;
+          char* cw = XMLString::transcode(nNeuron->getFirstChild()->getNodeValue());
+          std::string sw(cw),temp;
           std::stringstream ss(sw);
           std::vector<float> w;
-	  while(ss >> temp) w.push_back(strtof(temp.c_str(),NULL));
-	  if (w.size() != iSynapses) throw cet::exception("RECO")<<"mu2e::MVATools: internal error" << std::endl;
-	  wtemp.push_back(std::move(w));
+          while(ss >> temp) w.push_back(strtof(temp.c_str(),NULL));
+          if (w.size() != iSynapses) throw cet::exception("RECO")<<"mu2e::MVATools: internal error" << std::endl;
+          wtemp.push_back(std::move(w));
 
-	  XMLString::release(&cw);
-	  ++nNeurons;
+          XMLString::release(&cw);
+          ++nNeurons;
       }
 
       // the weights are given in a back-propagation style, continuous weights are from a neuron of the previous layer to all neurons of the next layer
@@ -364,11 +364,11 @@ namespace mu2e
 
       for (unsigned iLayer=1;iLayer < layerToNeurons.size(); ++iLayer)
       {
-	  for (unsigned iOut=0;iOut<synapsessPerLayer[iLayer-1];++iOut)
-	  {
-	     std::vector<float> temp;
-	     for (unsigned iIn=layerToNeurons[iLayer-1];iIn<layerToNeurons[iLayer];++iIn) wgts_.push_back(wtemp[iIn][iOut]);
-	  }
+          for (unsigned iOut=0;iOut<synapsessPerLayer[iLayer-1];++iOut)
+          {
+             std::vector<float> temp;
+             for (unsigned iIn=layerToNeurons[iLayer-1];iIn<layerToNeurons[iLayer];++iIn) wgts_.push_back(wtemp[iIn][iOut]);
+          }
       }
 
       maxNeurons_ = *std::max_element(links_.begin(),links_.end());
@@ -378,7 +378,7 @@ namespace mu2e
       XMLString::release(&ATT_INDEX);
       XMLString::release(&ATT_NSYNAPSES);
   }
-  
+
   void MVATools::getCalib(std::map<float, float>& effCalib) {
 
     xercesc::DOMDocument* xmlDoc = getXmlDoc();
@@ -387,37 +387,37 @@ namespace mu2e
     XMLCh* ATT_INDEX = XMLString::transcode("Index");
     XMLCh* ATT_EFF = XMLString::transcode("CalibVal");
     XMLCh* ATT_CUT = XMLString::transcode("Val");
-    
+
     XMLCh *xpathStr = XMLString::transcode("/MethodSetup/Calibration");
     DOMXPathResult* xpathRes = xmlDoc->evaluate(xpathStr,xmlDoc->getDocumentElement(),NULL,
-						DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
+                                                DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
     XMLString::release(&xpathStr);
     DOMElement* varElem = dynamic_cast<DOMElement* >(xpathRes->getNodeValue()) ;
     if (!varElem) {
       throw cet::exception("MVATools") << "No calibration for this MVA (" << mvaWgtsFile_ << ")" << std::endl;
     }
     xpathRes->release();
-    
+
     DOMNodeList* children = varElem->getElementsByTagName(TAG_CALIBRATION);
-    for( XMLSize_t ix = 0 ; ix < children->getLength() ; ++ix ) {       
+    for( XMLSize_t ix = 0 ; ix < children->getLength() ; ++ix ) {
       float eff(0.0);
       float cut(0.0);
-      
+
       DOMNode* childNode = children->item( ix ) ;
       DOMNamedNodeMap* attrs = childNode->getAttributes();
       for( XMLSize_t ia = 0 ; ia < attrs->getLength() ; ++ia ) {
-	DOMNode* attr = attrs->item(ia);
-	char* attValue = XMLString::transcode(attr->getNodeValue());
-	
-	if (XMLString::equals(ATT_EFF,attr->getNodeName()) )      eff = strtof(attValue,NULL);
-	if (XMLString::equals(ATT_CUT,attr->getNodeName()) )      cut = strtof(attValue,NULL);
-	
-	XMLString::release( &attValue ) ;
+        DOMNode* attr = attrs->item(ia);
+        char* attValue = XMLString::transcode(attr->getNodeValue());
+
+        if (XMLString::equals(ATT_EFF,attr->getNodeName()) )      eff = strtof(attValue,NULL);
+        if (XMLString::equals(ATT_CUT,attr->getNodeName()) )      cut = strtof(attValue,NULL);
+
+        XMLString::release( &attValue ) ;
       }
 
-      effCalib.insert(std::pair<float, float>(eff, cut));      
+      effCalib.insert(std::pair<float, float>(eff, cut));
     }
-  
+
     XMLString::release(&TAG_CALIBRATION);
     XMLString::release(&ATT_INDEX);
     XMLString::release(&ATT_EFF);
@@ -441,14 +441,14 @@ namespace mu2e
       {
          if ( mask & (1<<ivar) )
          {
-	    x_[ival]= isNorm_ ? (v[ivar]-voffset_[ival])*vscale_[ival] - 1.0 : v[ivar];
-	    ++ival;
+            x_[ival]= isNorm_ ? (v[ivar]-voffset_[ival])*vscale_[ival] - 1.0 : v[ivar];
+            ++ival;
          }
       }
       x_[ival] = 1.0;
 
       if (ival != links_[0]-1)
-	throw cet::exception("RECO")<<"mu2e::MVATools: mismatch input dimension (ival = " << ival << ") and network architecture (links_[0]-1 = " << links_[0]-1 << ")" << std::endl;
+        throw cet::exception("RECO")<<"mu2e::MVATools: mismatch input dimension (ival = " << ival << ") and network architecture (links_[0]-1 = " << links_[0]-1 << ")" << std::endl;
 
 
       //perform feed forward calculation up to the last hidden layer
@@ -458,8 +458,8 @@ namespace mu2e
           //the number of synpases is given by the number of neurons in the next layer -1 (do not count bias neuron!)
           for (unsigned j=0;j<links_[k+1]-1;++j)
           {
-	     y_[j]=0.0f;
-	     for (unsigned i=0;i<links_[k];++i) y_[j] += wgts_[i+idxWeight]*x_[i];
+             y_[j]=0.0f;
+             for (unsigned i=0;i<links_[k];++i) y_[j] += wgts_[i+idxWeight]*x_[i];
              y_[j] = activation(y_[j]);
              idxWeight += links_[k];
           }
@@ -527,9 +527,9 @@ namespace mu2e
         std::cout<<"Layer "<<k<<std::endl;
         for (unsigned j=0;j<links_[k+1]-1;++j)
         {
-	  std::cout<<"Synapses 1.."<<links_[k]<<" of current layer to synapse "<<j<<" of next layer"<<std::endl;
-	  for (unsigned i=idx;i<idx+links_[k];++i)std::cout<<wgts_[i]<<" ";
-	  std::cout<<std::endl;
+          std::cout<<"Synapses 1.."<<links_[k]<<" of current layer to synapse "<<j<<" of next layer"<<std::endl;
+          for (unsigned i=idx;i<idx+links_[k];++i)std::cout<<wgts_[i]<<" ";
+          std::cout<<std::endl;
           idx += links_[k];
         }
       }

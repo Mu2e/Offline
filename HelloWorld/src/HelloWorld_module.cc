@@ -10,7 +10,6 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 
 using namespace std;
@@ -41,4 +40,4 @@ namespace mu2e {
 } // end namespace mu2e
 
 using mu2e::HelloWorld;
-DEFINE_ART_MODULE(HelloWorld);
+DEFINE_ART_MODULE(HelloWorld)

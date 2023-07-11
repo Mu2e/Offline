@@ -1,7 +1,7 @@
 //
 // Root c++ function to compare plots based on steps, hits, track fits
-// 
-// 
+//
+//
 // Original author KLG somewat based on Rob Kutschke's example
 //
 // 1) Retrieve histograms, ntuples and tree from the files that was created
@@ -63,7 +63,7 @@ void sthktfO()
   // gStyle->SetOptStat("emruo");
   gStyle->SetOptStat(kFALSE);
 
-  // flag controlling the pause after each canvas 
+  // flag controlling the pause after each canvas
   // bool const interactive = true;
   bool const interactive = false;
 
@@ -128,23 +128,23 @@ void sthktfO()
   std::vector<TH1F*> _hyHit(nfiles);
   std::vector<TH1F*> _hzHit(nfiles);
 
-  std::vector<TH1F*> _hHitTime(nfiles);      
-  std::vector<TH1F*> _hHitDeltaTime(nfiles); 
-  std::vector<TH1F*> _hHitEnergy(nfiles);    
-  std::vector<TH1F*> _hNHits(nfiles);        
-  std::vector<TH1F*> _hNHitsPerWire(nfiles); 
-  std::vector<TH1F*> _hDriftTime(nfiles);    
+  std::vector<TH1F*> _hHitTime(nfiles);
+  std::vector<TH1F*> _hHitDeltaTime(nfiles);
+  std::vector<TH1F*> _hHitEnergy(nfiles);
+  std::vector<TH1F*> _hNHits(nfiles);
+  std::vector<TH1F*> _hNHitsPerWire(nfiles);
+  std::vector<TH1F*> _hDriftTime(nfiles);
   std::vector<TH1F*> _hDriftDistance(nfiles);
   std::vector<TH1F*> _hDistanceToMid(nfiles);
-  std::vector<TH1F*> _hNG4Steps(nfiles);     
-  std::vector<TH1F*> _hG4StepLength(nfiles); 
-  std::vector<TH1F*> _hG4StepEdep(nfiles);   
-  std::vector<TH1F*> _hG4StepRelTimes(nfiles);   
+  std::vector<TH1F*> _hNG4Steps(nfiles);
+  std::vector<TH1F*> _hG4StepLength(nfiles);
+  std::vector<TH1F*> _hG4StepEdep(nfiles);
+  std::vector<TH1F*> _hG4StepRelTimes(nfiles);
 
-  std::vector<TNtuple*>  _nt(nfiles);   
-  std::vector<TNtuple*> _snt(nfiles);   
+  std::vector<TNtuple*>  _nt(nfiles);
+  std::vector<TNtuple*> _snt(nfiles);
 
-  std::vector<TTree*>   _tftree(nfiles);   
+  std::vector<TTree*>   _tftree(nfiles);
 
   TH1F*    _tmp = 0x0;
   TNtuple* _tmpnt = 0x0;
@@ -175,43 +175,43 @@ void sthktfO()
     files[ii]->GetObject("checkhits/hzHit",          _tmp); if (ii==0) {++nhistc;}
     if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hzHit[ii]=_tmp;
 
-    files[ii]->GetObject("readStrawHits/hHitTime",       _tmp); if (ii==0) {++nhistc;} 
-    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hHitTime[ii]=_tmp; 
-    files[ii]->GetObject("readStrawHits/hHitDeltaTime",  _tmp); if (ii==0) {++nhistc;} 
-    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hHitDeltaTime[ii]=_tmp; 
-    files[ii]->GetObject("readStrawHits/hHitEnergy",     _tmp); if (ii==0) {++nhistc;} 
-    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hHitEnergy[ii]=_tmp; 
-    files[ii]->GetObject("readStrawHits/hNHits",         _tmp); if (ii==0) {++nhistc;} 
-    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hNHits[ii]=_tmp; 
-    files[ii]->GetObject("readStrawHits/hNHitsPerWire",  _tmp); if (ii==0) {++nhistc;} 
-    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hNHitsPerWire[ii]=_tmp; 
-    files[ii]->GetObject("readStrawHits/hDriftTime",     _tmp); if (ii==0) {++nhistc;} 
-    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hDriftTime[ii]=_tmp; 
-    files[ii]->GetObject("readStrawHits/hDriftDistance", _tmp); if (ii==0) {++nhistc;} 
-    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hDriftDistance[ii]=_tmp; 
-    files[ii]->GetObject("readStrawHits/hDistanceToMid", _tmp); if (ii==0) {++nhistc;} 
-    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hDistanceToMid[ii]=_tmp; 
-    files[ii]->GetObject("readStrawHits/hNG4Steps",      _tmp); if (ii==0) {++nhistc;} 
-    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hNG4Steps[ii]=_tmp; 
-    files[ii]->GetObject("readStrawHits/hG4StepLength",  _tmp); if (ii==0) {++nhistc;} 
-    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hG4StepLength[ii]=_tmp; 
-    files[ii]->GetObject("readStrawHits/hG4StepRelTimes",    _tmp); if (ii==0) {++nhistc;} 
-    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hG4StepRelTimes[ii]=_tmp; 
-    files[ii]->GetObject("readStrawHits/hG4StepEdep",    _tmp); if (ii==0) {++nhistc;} 
-    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hG4StepEdep[ii]=_tmp; 
+    files[ii]->GetObject("readStrawHits/hHitTime",       _tmp); if (ii==0) {++nhistc;}
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hHitTime[ii]=_tmp;
+    files[ii]->GetObject("readStrawHits/hHitDeltaTime",  _tmp); if (ii==0) {++nhistc;}
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hHitDeltaTime[ii]=_tmp;
+    files[ii]->GetObject("readStrawHits/hHitEnergy",     _tmp); if (ii==0) {++nhistc;}
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hHitEnergy[ii]=_tmp;
+    files[ii]->GetObject("readStrawHits/hNHits",         _tmp); if (ii==0) {++nhistc;}
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hNHits[ii]=_tmp;
+    files[ii]->GetObject("readStrawHits/hNHitsPerWire",  _tmp); if (ii==0) {++nhistc;}
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hNHitsPerWire[ii]=_tmp;
+    files[ii]->GetObject("readStrawHits/hDriftTime",     _tmp); if (ii==0) {++nhistc;}
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hDriftTime[ii]=_tmp;
+    files[ii]->GetObject("readStrawHits/hDriftDistance", _tmp); if (ii==0) {++nhistc;}
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hDriftDistance[ii]=_tmp;
+    files[ii]->GetObject("readStrawHits/hDistanceToMid", _tmp); if (ii==0) {++nhistc;}
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hDistanceToMid[ii]=_tmp;
+    files[ii]->GetObject("readStrawHits/hNG4Steps",      _tmp); if (ii==0) {++nhistc;}
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hNG4Steps[ii]=_tmp;
+    files[ii]->GetObject("readStrawHits/hG4StepLength",  _tmp); if (ii==0) {++nhistc;}
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hG4StepLength[ii]=_tmp;
+    files[ii]->GetObject("readStrawHits/hG4StepRelTimes",    _tmp); if (ii==0) {++nhistc;}
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hG4StepRelTimes[ii]=_tmp;
+    files[ii]->GetObject("readStrawHits/hG4StepEdep",    _tmp); if (ii==0) {++nhistc;}
+    if (_tmp==0) {cerr << "missing histogram" <<endl; return;} _hG4StepEdep[ii]=_tmp;
 
     // ntuples
 
-    files[ii]->GetObject("checkhits/ntup",     _tmpnt); if (ii==0) {++nntc;} 
-    if (_tmpnt==0) {cerr << "missing ntuple" <<endl; return;} _nt[ii]=_tmpnt; 
+    files[ii]->GetObject("checkhits/ntup",     _tmpnt); if (ii==0) {++nntc;}
+    if (_tmpnt==0) {cerr << "missing ntuple" <<endl; return;} _nt[ii]=_tmpnt;
 
-    files[ii]->GetObject("readStrawHits/ntup", _tmpnt); if (ii==0) {++nntc;} 
-    if (_tmpnt==0) {cerr << "missing ntuple" <<endl; return;} _snt[ii]=_tmpnt; 
+    files[ii]->GetObject("readStrawHits/ntup", _tmpnt); if (ii==0) {++nntc;}
+    if (_tmpnt==0) {cerr << "missing ntuple" <<endl; return;} _snt[ii]=_tmpnt;
 
     // trees
 
-    files[ii]->GetObject("RKFDownstreameMinus/trkdiag", _tmptree); if (ii==0) {++ntreec;} 
-    if (_tmptree==0) {cerr << "missing tree" <<endl; return;} _tftree[ii]=_tmptree; 
+    files[ii]->GetObject("RKFDownstreameMinus/trkdiag", _tmptree); if (ii==0) {++ntreec;}
+    if (_tmptree==0) {cerr << "missing tree" <<endl; return;} _tftree[ii]=_tmptree;
 
   }
 
@@ -264,8 +264,8 @@ void sthktfO()
 
   if (initialNhist!=nhistc) {
 
-    cout << " inconsistent number of nhistograms " << nhistc 
-         << " expected " << initialNhist 
+    cout << " inconsistent number of nhistograms " << nhistc
+         << " expected " << initialNhist
          << endl;
     return;
 
@@ -298,7 +298,7 @@ void sthktfO()
     // Draw some histograms, one per pad.
     // cd(n): move to graphics pad number "n".
     // "H9": draw outline histogram ("H") in high resolution mode (9)
-    
+
     islog = (jj==1000) ? 0 : 1;
 
     delete leg;
@@ -312,22 +312,22 @@ void sthktfO()
 
       canvas->cd(ii+1);
       gPad->SetLogy(islog);
-      cout << jj << " " << ii << " Drawing " << ((*_histograms[jj])[ii])->GetTitle() 
-           << ", " << fileLabel[ii]->GetLabel() 
+      cout << jj << " " << ii << " Drawing " << ((*_histograms[jj])[ii])->GetTitle()
+           << ", " << fileLabel[ii]->GetLabel()
            << ", " << fileText[ii]
            <<endl;
-      if (ii==0) 
+      if (ii==0)
         {((*_histograms[jj])[ii])->SetLineColor(602); }
-      else 
+      else
         {((*_histograms[jj])[ii])->SetLineColor(ii+1);}
       gStyle->SetOptStat("neMRuo");
-      
+
       // collecting legend info
       leg->AddEntry((*_histograms[jj])[ii],fileText[ii],"L");
 
       ((*_histograms[jj])[ii])->Draw("H9");
       fileLabel[ii]->Draw("9");
-      
+
       if ( vscalemax < ((*_histograms[jj])[ii])->GetMaximum() ) {
         vscalemax = ((*_histograms[jj])[ii])->GetMaximum();
       }
@@ -342,18 +342,18 @@ void sthktfO()
     for (Int_t ii=0; ii!=nfiles; ++ii) {
 
       gPad->SetLogy(islog);
-      cout << jj << " " << ii << " Drawing " << ((*_histograms[jj])[ii])->GetTitle() 
-           << ", " << fileLabel[ii]->GetLabel() 
+      cout << jj << " " << ii << " Drawing " << ((*_histograms[jj])[ii])->GetTitle()
+           << ", " << fileLabel[ii]->GetLabel()
            << ", " << fileText[ii]
            <<endl;
-      if (ii==0) 
+      if (ii==0)
         {((*_histograms[jj])[ii])->SetLineColor(602); }
-      else 
+      else
         {((*_histograms[jj])[ii])->SetLineColor(ii+1);}
-            
+
       delete _histograms_copy[ii];
       _histograms_copy[ii] = static_cast<TH1F*>(((*_histograms[jj])[ii])->Clone());
-      
+
       histtmpSuffix.str("");
       histtmpSuffix.width(3);
       histtmpSuffix.fill('0');
@@ -414,13 +414,13 @@ void sthktfO()
     TString htmpname = "hitR"+histIdos.str();
     TString drawInputString("sqrt(hity*hity+hitx*hitx)>>"+htmpname+"(500,300.,800.)");
 
-    cout << 0 << " " << ii << " Drawing " << ((*_ntuples[1])[ii])->GetTitle() 
+    cout << 0 << " " << ii << " Drawing " << ((*_ntuples[1])[ii])->GetTitle()
          << ", " << fileLabel[ii]->GetLabel() << ", " << drawInputString
          << ", " << fileText[ii]
          <<endl;
     ((*_ntuples[1])[ii])->Draw(drawInputString ,"","");
     delete _histograms_copy[ii];
-    if (ii==0) 
+    if (ii==0)
       { (static_cast<TH1F*>(gDirectory->Get(htmpname)))->SetLineColor(602); }
     else
       { (static_cast<TH1F*>(gDirectory->Get(htmpname)))->SetLineColor(ii+1); }
@@ -443,7 +443,7 @@ void sthktfO()
 
   canvas->cd(nfiles+1);
   for (Int_t ii=0; ii!=nfiles; ++ii) {
-    cout << 1 << " " << ii << " Drawing " << (_histograms_copy[ii])->GetTitle() 
+    cout << 1 << " " << ii << " Drawing " << (_histograms_copy[ii])->GetTitle()
          << ", " << fileLabel[ii]->GetLabel()
          << ", " << fileText[ii]
          <<endl;
@@ -550,7 +550,7 @@ void sthktfO()
     delete _histograms_orig[ii];
     _histograms_orig[ii] = new TH1F(htmpname,"KTF Chisq/NDof",100,0.,10.);
 
-    cout << 0 << " " << ii << " Drawing " << ((*_trees[0])[ii])->GetTitle() 
+    cout << 0 << " " << ii << " Drawing " << ((*_trees[0])[ii])->GetTitle()
          << ", " << fileLabel[ii]->GetLabel() << ", " << _histograms_orig[ii]->GetTitle()
          << ", " << fileText[ii]
          <<endl;
@@ -560,7 +560,7 @@ void sthktfO()
     cout << 0 << " done"  <<endl;
 
     delete _histograms_copy[ii];
-    if (ii==0) 
+    if (ii==0)
       { _histograms_orig[ii]->SetLineColor(602); }
     else
       { _histograms_orig[ii]->SetLineColor(ii+1); }
@@ -580,7 +580,7 @@ void sthktfO()
 
   canvas->cd(nfiles+1);
   for (Int_t ii=0; ii!=nfiles; ++ii) {
-    cout << 1 << " " << ii << " Drawing " << (_histograms_copy[ii])->GetTitle() 
+    cout << 1 << " " << ii << " Drawing " << (_histograms_copy[ii])->GetTitle()
          << ", " << fileLabel[ii]->GetLabel()
          << ", " << fileText[ii]
          <<endl;
@@ -634,7 +634,7 @@ void sthktfO()
     delete _histograms_orig[ii];
     _histograms_orig[ii] = new TH1F(htmpname,"momentum resolution at tracker entrance;MeV",100,-2.,2.);
 
-    cout << 0 << " " << ii << " Drawing " << ((*_trees[0])[ii])->GetTitle() 
+    cout << 0 << " " << ii << " Drawing " << ((*_trees[0])[ii])->GetTitle()
          << ", " << fileLabel[ii]->GetLabel() << ", " << _histograms_orig[ii]->GetTitle()
          << ", " << fileText[ii]
          <<endl;
@@ -644,7 +644,7 @@ void sthktfO()
     cout << 0 << " done"  <<endl;
 
     delete _histograms_copy[ii];
-    if (ii==0) 
+    if (ii==0)
       { _histograms_orig[ii]->SetLineColor(602); }
     else
       { _histograms_orig[ii]->SetLineColor(ii+1); }
@@ -664,7 +664,7 @@ void sthktfO()
 
   canvas->cd(nfiles+1);
   for (Int_t ii=0; ii!=nfiles; ++ii) {
-    cout << 1 << " " << ii << " Drawing " << (_histograms_copy[ii])->GetTitle() 
+    cout << 1 << " " << ii << " Drawing " << (_histograms_copy[ii])->GetTitle()
          << ", " << fileLabel[ii]->GetLabel()
          << ", " << fileText[ii]
          <<endl;

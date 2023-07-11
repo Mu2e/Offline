@@ -31,7 +31,7 @@ namespace mu2e {
   }
 
 
- 
+
 
   ExtMonFNALModuleDenseId ExtMonFNALModuleIdConverter::getModuleDenseId(unsigned plane, unsigned mod) const{
     unsigned res = mod;
@@ -39,10 +39,10 @@ namespace mu2e {
       res += extmon_->plane(iplane).nModules();
     return ExtMonFNALModuleDenseId(res);
   }
-  
+
   ExtMonFNALModuleId ExtMonFNALModuleIdConverter::getModuleId(unsigned plane, unsigned mod) const{
     ExtMonFNALModuleDenseId did = this->getModuleDenseId(plane, mod);
     return this->moduleId(did);
   }
-  
+
 } // namespace mu2e

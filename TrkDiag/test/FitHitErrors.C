@@ -10,10 +10,10 @@
 
 // characterize the hit error as a function of the DOCA
 void FitHitErrors(TTree* ta) {
-// pure radial error
+  // pure radial error
   TProfile* dc = new TProfile("dc","Unsigned Drift Calibration;DOCA (mm);Unsigned Drift Residual (mm)",50,0,2.5,-1.5,1.5,"s");
   TH2F* dch = new TH2F("dch","Unsigned Drift Calibration;DOCA (mm);Unsigned Drift Residual (mm)",50,0,2.5,100,-3.0,3.0);
-// error including ambiguity assignment 
+  // error including ambiguity assignment
   TProfile* dcs = new TProfile("dcs","Signed Drift Calibration;DOCA (mm);Signed Drift Residual (mm)",50,0,2.5,-1.5,1.5,"s");
   TH2F* dchs = new TH2F("dchs","Signed Drift Calibration;DOCA (mm);Signed Drift Residual (mm)",50,0,2.5,100,-3.0,3.0);
   TCut goodtrack("de.status>0&&de.trkqual>0.2");
@@ -42,7 +42,7 @@ void FitHitErrors(TTree* ta) {
   std::vector<double> mean(nx,0.0);
   std::vector<double> errs(nx,0.0);
   std::vector<double> doca(nx,0.0);
- 
+
 
   for(unsigned ibin=1;ibin<=nx;++ibin){
     err[ibin-1] = dc->GetBinError(ibin);

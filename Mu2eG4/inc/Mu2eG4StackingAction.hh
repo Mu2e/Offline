@@ -18,8 +18,8 @@ namespace mu2e {
 
   private:
     // owned by Mu2eG4 module.
-    IMu2eG4Cut* stackingCuts_;
-    IMu2eG4Cut* commonCuts_;
+    IMu2eG4Cut* stackingCuts_ = nullptr;
+    IMu2eG4Cut* commonCuts_ = nullptr;
   };
 
 } // end namespace mu2e

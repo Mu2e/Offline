@@ -4,20 +4,19 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include <iostream>
 #include <string>
 
 namespace mu2e {
 
-  class CaloShowerUpdater : public art::EDProducer 
+  class CaloShowerUpdater : public art::EDProducer
   {
       public:
-         struct Config 
+         struct Config
          {
              fhicl::Atom<std::string> showerInput     { fhicl::Name("showerInput")     };
              fhicl::Atom<std::string> newSimParticles { fhicl::Name("newSimParticles") };
@@ -64,4 +63,4 @@ namespace mu2e {
 }
 
 using mu2e::CaloShowerUpdater;
-DEFINE_ART_MODULE(CaloShowerUpdater);
+DEFINE_ART_MODULE(CaloShowerUpdater)

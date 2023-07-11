@@ -16,28 +16,22 @@ using namespace std;
 namespace mu2e {
 
   TrackerStatus::ptr_t TrackerStatusMaker::fromFcl() {
+    auto trkstatptr = std::make_shared<TrackerStatus>();
 
-    TrackerStatus::estat_t estats;
     for(auto const& estat : config_.status()) {
-      estats.emplace(StrawId(std::get<0>(estat)),
-	  StrawIdMask(std::get<1>(estat)), 
-	  StrawStatus(std::get<2>(estat)));
+      trkstatptr->addStatus(StrawId(std::get<0>(estat)),
+          StrawIdMask(std::get<1>(estat)),
+          StrawStatus(std::get<2>(estat)));
     }
     auto const& settings = config_.settings();
     if ( settings.verbose() > 0 ) {
-      cout << "TrackerStatus created with " << estats.size() 
-	<< " elements " << endl;
-      if(settings.verbose() > 1){
-	for(auto const& estat : estats) {
-	  std::cout << "Tracker Element Id " << estat.sid_
-	    << " level " << estat.mask_.levelName()  
-	    << " mask " << estat.mask_.mask()  
-	    << " status " << estat.status_ << std::endl;
-	}
-      }
+      cout << "TrackerStatus create from fcl with " << config_.status().size()
+        << " elements " << endl;
     }
-    // make shared_ptr to the TrackerStatus object on the heap
-    return std::make_shared<TrackerStatus>(estats);
+    if(settings.verbose() > 1){
+      trkstatptr->print(cout);
+    }
+    return trkstatptr;
   }
 
   TrackerStatus::ptr_t TrackerStatusMaker::fromDb(
@@ -45,8 +39,8 @@ namespace mu2e {
       TrkPanelStatus::cptr_t   tpas_p,
       TrkStrawStatusLong::cptr_t   tssl_p,
       TrkStrawStatusShort::cptr_t   tsss_p ) {
-    // convert the tables to TrackerElementStatus sets
-    TrackerStatus::estat_t estatus;
+    // create return object
+    auto trkstatptr = std::make_shared<TrackerStatus>();
     auto const& settings = config_.settings();
     if ( settings.verbose() > 1 ) {
       cout << "TrackerStatus fromDb, with tables:" << endl;
@@ -56,32 +50,13 @@ namespace mu2e {
       cout << "Short-term Straw table has " << tsss_p->rows().size() << " rows " << endl;
     }
 
-    for (auto const& row : tpls_p->rows()) estatus.insert(TrackerElementStatus(row.id(),tpls_p->sidMask(),row.status()));
-    for (auto const& row : tpas_p->rows()) estatus.insert(TrackerElementStatus(row.id(),tpas_p->sidMask(),row.status()));
-    for (auto const& row : tssl_p->rows()) estatus.insert(TrackerElementStatus(row.id(),tssl_p->sidMask(),row.status()));
-    for (auto const& row : tsss_p->rows()) estatus.insert(TrackerElementStatus(row.id(),tsss_p->sidMask(),row.status()));
+    for (auto const& row : tpls_p->rows()) trkstatptr->addStatus(row.id(),tpls_p->sidMask(),row.status());
+    for (auto const& row : tpas_p->rows()) trkstatptr->addStatus(row.id(),tpas_p->sidMask(),row.status());
+    for (auto const& row : tssl_p->rows()) trkstatptr->addStatus(row.id(),tssl_p->sidMask(),row.status());
+    for (auto const& row : tsss_p->rows()) trkstatptr->addStatus(row.id(),tsss_p->sidMask(),row.status());
 
-    // check for consistency
-    //
-    unsigned ntotal = tpls_p->rows().size() + tpas_p->rows().size() + tssl_p->rows().size() + tsss_p->rows().size();
-    if(estatus.size() != ntotal){
-      throw cet::exception("TrackerStatus BadTable")
-	<< "input table size inconsistency "<< ntotal 
-	<< " " << estatus.size()  << "\n";
-
-    }
-
-    if ( settings.verbose() > 1 ) {
-      cout << "Elements have status " << endl;
-      for(auto const& estat : estatus){
-	std::cout << "Tracker Element Id " << estat.sid_
-	  << " level " << estat.mask_.levelName()  
-	  << " mask " << estat.mask_.mask()  
-	  << " status " << estat.status_ << std::endl;
-      }
-    }
-
-    return std::make_shared<TrackerStatus>(estatus);
+    if ( settings.verbose() > 1 ) trkstatptr->print(cout);
+    return trkstatptr;
   }
 
 } // namespace mu2e

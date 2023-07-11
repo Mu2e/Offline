@@ -1,5 +1,4 @@
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art_root_io/TFileService.h"
@@ -42,7 +41,7 @@ using namespace std;
 
 namespace mu2e {
 
-  
+
   class FilterEcalMVATrigger : public art::EDFilter {
   public:
     explicit FilterEcalMVATrigger(fhicl::ParameterSet const& pset);
@@ -68,7 +67,7 @@ namespace mu2e {
     float _ENEMIN;
     float _DTMAX;
 
-  
+
     float                      _MVAhighcut0;
     float                      _MVArpivot0;
     float                      _MVApivotcut0;
@@ -103,8 +102,8 @@ namespace mu2e {
   FilterEcalMVATrigger::FilterEcalMVATrigger(fhicl::ParameterSet const& pset):
     art::EDFilter{pset},
     _diagLevel                  (pset.get<int>("diagLevel",0)),
-    _MVAMethodLabel             (pset.get<std::string>("MVAMethod","BDT")), 
-    _caloTrigSeedModuleLabel    (pset.get<std::string>("caloTrigSeedModuleLabel")),  
+    _MVAMethodLabel             (pset.get<std::string>("MVAMethod","BDT")),
+    _caloTrigSeedModuleLabel    (pset.get<std::string>("caloTrigSeedModuleLabel")),
     _weightsfile                (pset.get<string>("weightsfile")),
     _TOFF                       (pset.get<float>("TimeOFFSET",22.5)),
     _MVAhighcut0                (pset.get<float>("MVAhighcut0",0.5)),
@@ -117,10 +116,10 @@ namespace mu2e {
     _MVAlowcut1                 (pset.get<float>("MVAlowcut1",0.2)),
     _downscale500_factor        (pset.get<float>("downscale500factor",0)),
     _step                       (pset.get<float>("step",10)),
-    _nProcessed(0)  
+    _nProcessed(0)
   {
-    _MVAmethod= _MVAMethodLabel + " method"; 
- 
+    _MVAmethod= _MVAMethodLabel + " method";
+
     _MVAcutB[0]=(_MVAhighcut0-_MVApivotcut0)/(395.-_MVArpivot0); // high cut is at r=395 mm
     _MVAcutA[0]=_MVApivotcut0-_MVAcutB[0]*_MVArpivot0;
     _MVArpivot[0]= _MVArpivot0;
@@ -129,7 +128,7 @@ namespace mu2e {
     _MVAcutA[1]=_MVApivotcut1-_MVAcutB[1]*_MVArpivot1;
     _MVArpivot[1]= _MVArpivot1;
     _MVAlowcut[1]= _MVAlowcut1;
-    
+
     produces<TriggerInfo>();
   }
 
@@ -137,11 +136,11 @@ namespace mu2e {
   void FilterEcalMVATrigger::beginJob(){
     // art::ServiceHandle<art::TFileService> tfs;
     // art::TFileDirectory tfdir = tfs->mkdir("diag");
-    
+
     ConfigFileLookupPolicy configFile;
     // this loads the TMVA library
     TMVA::Tools::Instance();
-    reader = new TMVA::Reader( "!Color:Silent" );  
+    reader = new TMVA::Reader( "!Color:Silent" );
     reader->AddVariable("rpeak",&_rpeak);
     reader->AddVariable("tpeak",&_tpeak);
     reader->AddVariable("Epeak",&_Epeak);
@@ -149,7 +148,7 @@ namespace mu2e {
     reader->AddVariable("E11",&_E11);
     reader->AddVariable("E20",&_E20);
     reader->AddSpectator("fdiskpeak",&_fdiskpeak);
-    reader->AddSpectator("fevt",&_fevt);  
+    reader->AddSpectator("fevt",&_fevt);
     reader->BookMVA(_MVAmethod ,configFile(_weightsfile));
   }
 
@@ -163,7 +162,7 @@ namespace mu2e {
 
     ++_nProcessed;
     if (_nProcessed%10==0 && _diagLevel > 0) std::cout<<"Processing event from FilterEcalMVATrigger =  "<<_nProcessed <<std::endl;
-   
+
     //Handle to the calorimeter
     art::ServiceHandle<GeometryService> geom;
     if( ! geom->hasElement<Calorimeter>() ) {
@@ -176,8 +175,8 @@ namespace mu2e {
     event.getByLabel(_caloTrigSeedModuleLabel, caloTrigSeedsHandle);
     CaloTrigSeedCollection const& caloTrigSeeds(*caloTrigSeedsHandle);
     if (_step==4) {
-      event.put(std::move(triginfo));      
-      return false;    
+      event.put(std::move(triginfo));
+      return false;
     }
     for (CaloTrigSeedCollection::const_iterator seedIt = caloTrigSeeds.begin(); seedIt != caloTrigSeeds.end(); ++seedIt){
       disk= cal.crystal((int)seedIt->crystalid()).diskID();
@@ -190,33 +189,33 @@ namespace mu2e {
       _E20   = seedIt->ring2max();
       //
       if (_step>5){
-	_MVA= reader->EvaluateMVA(_MVAmethod);
-	if (_diagLevel > 0){
-	  std::cout<<"EVENT " << event.id().event() << " DISK " << disk << " Epeak=" << _Epeak << " tpeak=" << _tpeak << " E10=" << _E10 << " E11=" << _E11 << " E20=" << _E20 << " MVA=" << _MVA << " rpeak=" << _rpeak ;
-	    
-	  if (_rpeak>_MVArpivot[disk]){
-	    std::cout << " cut at " << _MVAlowcut[disk] << std::endl;
-	  }
-	  else{
-	    MVAcut=_MVAcutA[disk]+_MVAcutB[disk]*_rpeak;
-	    std::cout << " cut at " << MVAcut <<  std::endl;
-	  }
-	}
-	if (_rpeak>_MVArpivot[disk]){
-	  if (_MVA>_MVAlowcut[disk]) {
-	    retval = true;
-	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
-	    triginfo->_caloTrigSeeds.push_back(art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index));
-	  }
-	}
-	else{
-	  MVAcut=_MVAcutA[disk]+_MVAcutB[disk]*_rpeak;
-	  if (_MVA>MVAcut) {
-	    retval = true;
-	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
-	    triginfo->_caloTrigSeeds.push_back(art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index));
-	  }
-	}
+        _MVA= reader->EvaluateMVA(_MVAmethod);
+        if (_diagLevel > 0){
+          std::cout<<"EVENT " << event.id().event() << " DISK " << disk << " Epeak=" << _Epeak << " tpeak=" << _tpeak << " E10=" << _E10 << " E11=" << _E11 << " E20=" << _E20 << " MVA=" << _MVA << " rpeak=" << _rpeak ;
+
+          if (_rpeak>_MVArpivot[disk]){
+            std::cout << " cut at " << _MVAlowcut[disk] << std::endl;
+          }
+          else{
+            MVAcut=_MVAcutA[disk]+_MVAcutB[disk]*_rpeak;
+            std::cout << " cut at " << MVAcut <<  std::endl;
+          }
+        }
+        if (_rpeak>_MVArpivot[disk]){
+          if (_MVA>_MVAlowcut[disk]) {
+            retval = true;
+            size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
+            triginfo->_caloTrigSeeds.push_back(art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index));
+          }
+        }
+        else{
+          MVAcut=_MVAcutA[disk]+_MVAcutB[disk]*_rpeak;
+          if (_MVA>MVAcut) {
+            retval = true;
+            size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
+            triginfo->_caloTrigSeeds.push_back(art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index));
+          }
+        }
       }
     }
     event.put(std::move(triginfo));
@@ -225,8 +224,8 @@ namespace mu2e {
   void FilterEcalMVATrigger::endJob(){
     cout << "FilterEcalMVATrigger filter end job:" << _nProcessed << " events processed" << endl;
   }
-  
+
 }
 
 using mu2e::FilterEcalMVATrigger;
-DEFINE_ART_MODULE(FilterEcalMVATrigger);
+DEFINE_ART_MODULE(FilterEcalMVATrigger)

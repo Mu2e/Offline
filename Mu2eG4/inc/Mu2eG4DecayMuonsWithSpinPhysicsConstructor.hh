@@ -47,8 +47,10 @@ class Mu2eG4DecayMuonsWithSpinPhysicsConstructor : public G4VPhysicsConstructor
   public:
     Mu2eG4DecayMuonsWithSpinPhysicsConstructor(G4int ver = 1);
     Mu2eG4DecayMuonsWithSpinPhysicsConstructor(const G4String& name, G4int ver = 1);
-    virtual ~Mu2eG4DecayMuonsWithSpinPhysicsConstructor();
-
+    virtual ~Mu2eG4DecayMuonsWithSpinPhysicsConstructor() = default;
+    Mu2eG4DecayMuonsWithSpinPhysicsConstructor(const Mu2eG4DecayMuonsWithSpinPhysicsConstructor &) = delete;
+    Mu2eG4DecayMuonsWithSpinPhysicsConstructor & operator=(const Mu2eG4DecayMuonsWithSpinPhysicsConstructor &) = delete;
+    Mu2eG4DecayMuonsWithSpinPhysicsConstructor & operator=( Mu2eG4DecayMuonsWithSpinPhysicsConstructor && ) = delete;
   public:
     // This method will be invoked in the Construct() method.
     // each particle type will be instantiated
@@ -59,12 +61,9 @@ class Mu2eG4DecayMuonsWithSpinPhysicsConstructor : public G4VPhysicsConstructor
     // registered to the process manager of each particle type
   virtual void ConstructProcess();
 
-  virtual G4Decay* GetDecayProcess() { return fDecayWithSpinProcess; }
-
 private:
-  G4Decay* fDecayWithSpinProcess;
+
   G4int    verbose;
-  G4bool   wasActivated;
 };
 
 

@@ -6,7 +6,7 @@
 // G4 includes
 #include "Geant4/G4ThreeVector.hh"
 #include "Geant4/G4RotationMatrix.hh"
-#include "TMath.h"
+
 namespace mu2e {
 
   class VolumeInfo;

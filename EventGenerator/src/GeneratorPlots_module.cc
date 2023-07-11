@@ -3,9 +3,8 @@
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art_root_io/TFileService.h"
@@ -24,7 +23,7 @@ using namespace std;
 namespace mu2e {
 
   class GeneratorPlots : public art::EDAnalyzer {
-     
+
      public:
 
       struct Config {
@@ -52,8 +51,8 @@ namespace mu2e {
 
       Int_t _genPdgId;
       Int_t _genCrCode;
-      XYZVec _genmom;
-      XYZVec _genpos;
+      XYZVectorF _genmom;
+      XYZVectorF _genpos;
       Float_t _genStartT;
       bool findData(const art::Event& evt);
       void GetGenPartInfo(const art::Event& evt);
@@ -79,14 +78,14 @@ namespace mu2e {
 
   void GeneratorPlots::analyze(const art::Event& event) {
 
-    if(!findData(event)) 
-      throw cet::exception("RECO")<<"No data in  event"<< endl; 
-
-    GetGenPartInfo(event);
+    if(!findData(event)){
+      throw cet::exception("RECO")<<"No data in  event"<< endl;
+    }else{
+      GetGenPartInfo(event);
+    }
 }
 
 void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
-	
   cet::map_vector<mu2e::SimParticle>::const_iterator iter;
   for(iter=_gencol->begin(); iter!=_gencol->end(); iter++)
   {
@@ -97,7 +96,7 @@ void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
     _genpos = particle.startPosition();
     _genStartT  = particle.startGlobalTime();
     _Ntup->Fill();
-  } 
+  }
 }
 
 
@@ -105,12 +104,12 @@ void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
     _gencol=0;
     auto genpart = evt.getValidHandle<SimParticleCollection>(_genTag);
     _gencol = genpart.product();
-    return  _gencol!=0 ;
+    return  _gencol!=0;
   }
 
  void GeneratorPlots::endJob(){}
 
 }  // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::GeneratorPlots);
+DEFINE_ART_MODULE(mu2e::GeneratorPlots)
 

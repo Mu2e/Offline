@@ -21,7 +21,6 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
@@ -50,7 +49,7 @@
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/TrkBase/TrkRep.hh"
-#include "Offline/RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 
@@ -454,7 +453,7 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::TrackCaloIntersection);
+DEFINE_ART_MODULE(mu2e::TrackCaloIntersection)
 
 
 /*

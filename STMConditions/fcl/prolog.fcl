@@ -1,0 +1,10 @@
+BEGIN_PROLOG
+
+STMEnergyCalib : {
+   useDb : false
+   verbose : 0
+   pedestals : [ ["HPGe",0.0], ["LaBr",0.0] ]
+   samplingFrequencies : [ ["HPGe",1.0], ["LaBr",1.0] ]
+}
+
+END_PROLOG

@@ -1,5 +1,5 @@
 //
-// Geometry file for study of pi-> e nu at rest as a 
+// Geometry file for study of pi-> e nu at rest as a
 // calibration tool.
 //
 //

@@ -34,7 +34,7 @@ namespace mu2e {
     ExtMonFNALModule(const ExtMonFNALPixelChip& chip, const std::vector<double>& hs)
       : chip_(chip), sensorHalfSize_(hs)
     {}
-   // Required by genreflex persistency
+    // Required by genreflex persistency
     ExtMonFNALModule() {}
 
     //----------------------------------------------------------------

@@ -12,12 +12,11 @@
 #include "fhiclcpp/types/Sequence.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
 #include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 namespace mu2e {
 
@@ -102,4 +101,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StepPointMCCollectionUpdater);
+DEFINE_ART_MODULE(mu2e::StepPointMCCollectionUpdater)

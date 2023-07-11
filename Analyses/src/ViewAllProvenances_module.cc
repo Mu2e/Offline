@@ -6,7 +6,6 @@
 //
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Provenance.h"
@@ -51,4 +50,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ViewAllProvenances);
+DEFINE_ART_MODULE(mu2e::ViewAllProvenances)

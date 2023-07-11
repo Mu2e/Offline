@@ -1,5 +1,5 @@
 //
-// Types used in low-level tracker electronics 
+// Types used in low-level tracker electronics
 // Dave Brown (LBNL) 25 Jun 2017
 //
 #ifndef TrackerConditions_Types_hh
@@ -13,7 +13,7 @@ namespace mu2e {
     static constexpr size_t NADC_MIN = 3; // number of ADC samples included in main packet
     static constexpr size_t NADC_PERPACKET = 12; // number of ADC samples in each additional packet
     static constexpr size_t NENDS = 2; // number of straw ends
-    // typedefs used for tracker data structures 
+    // typedefs used for tracker data structures
     typedef uint32_t TDCValue;
     typedef uint16_t TOTValue;
     typedef uint16_t ADCValue;

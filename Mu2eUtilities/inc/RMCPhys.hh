@@ -19,7 +19,6 @@
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -31,7 +30,6 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 
 #include "TF1.h"
@@ -39,7 +37,7 @@
 namespace mu2e {
 
   class RMCPhys {
-    
+
     private :
       art::InputTag input_;
       double kmax_;
@@ -66,12 +64,12 @@ namespace mu2e {
               std::cout << "Particle id:" << i.pdgId() << "& momentum: " << i.momentum().e() << std::endl;
             }
           }
-        } 
+        }
       }
       else {
         for ( const auto& i: *genColl ) {
           if (i.pdgId() == 22 && i.generatorId().id() == 41 ) {
-            energy = i.momentum().e(); 
+            energy = i.momentum().e();
           }
         }
       }
@@ -84,7 +82,7 @@ namespace mu2e {
         std::cout << "Norm: " << norm << std::endl;
         std::cout << "Energy: " << energy << std::endl;
         std::cout << "Weight:" << wt << std::endl;
-      
+
       }
       return wt;
     };

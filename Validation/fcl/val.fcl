@@ -1,5 +1,5 @@
 #
-# 
+#
 #
 
 #include "Offline/fcl/minimalMessageService.fcl"
@@ -9,7 +9,7 @@
 
 process_name : validation1
 
-services : { @table::Services.Core 
+services : { @table::Services.Core
 #  message : @local::mf_production
    TFileService          : { fileName : "validation.root" }
 }

@@ -16,16 +16,13 @@
 #include "cetlib_except/exception.h"
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art_root_io/TFileService.h"
 
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
@@ -61,15 +58,15 @@ namespace mu2e {
         , y(p->endPosition().y())
         , z(p->endPosition().z())
         , t(p->endGlobalTime())
-	, tau(tt)
-	, pdg(p->pdgId())
-	, origin(p->creationCode())
-	, term(p->stoppingCode()) {
-	  if(!p->endDefined()) {
-	    throw cet::exception("BADINPUTS")
-	      <<"StoppedParticlesDumper: input SimParticle does not have end defined!\n";
-	  }
-	}
+        , tau(tt)
+        , pdg(p->pdgId())
+        , origin(p->creationCode())
+        , term(p->stoppingCode()) {
+          if(!p->endDefined()) {
+            throw cet::exception("BADINPUTS")
+              <<"StoppedParticlesDumper: input SimParticle does not have end defined!\n";
+          }
+        }
     };
 
   }// namespace
@@ -175,7 +172,7 @@ namespace mu2e {
     if(writeCodes_){
       branchDesc += ":pdg/I:origin/I:term/I";
     }
-      
+
     nt_ = tfs->make<TTree>( "stops", "Stopped particles ntuple");
     nt_->Branch("stops", &data_, branchDesc.c_str());
   }
@@ -189,7 +186,6 @@ namespace mu2e {
       auto spColl = event.getValidHandle<StepPointMCCollection>(iColl);
       spMCColls.push_back( *spColl );
     }
-
 
     if(dumpSimParticleLeaves_) {
       auto ih = event.getValidHandle<SimParticleCollection>(input_);
@@ -224,4 +220,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StoppedParticlesDumper);
+DEFINE_ART_MODULE(mu2e::StoppedParticlesDumper)

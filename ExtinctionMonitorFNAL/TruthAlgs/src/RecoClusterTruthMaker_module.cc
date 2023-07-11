@@ -1,6 +1,5 @@
 // Associate truth info to ExtMonFNALRecoClusters.
 //
-//
 // Original author Andrei Gaponenko
 //
 
@@ -13,7 +12,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -23,9 +21,7 @@
 #include "canvas/Utilities/InputTag.h"
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawClusterCollection.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"

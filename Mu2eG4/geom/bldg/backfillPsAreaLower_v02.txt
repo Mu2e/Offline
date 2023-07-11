@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_FillpsAreaLower.ccl
 
@@ -18,7 +18,7 @@ vector<double> building.backfill.psArea.Lower.xPositions = {
   -4089.4,   // P2
   -4851.4,   // P3
   -4851.4,   // P4
-  -6254.75,   // P5  
+  -6254.75,   // P5
   -7889.49,   // P6
   -7491.88,   // P7
   -8232.14,   // P8
@@ -41,14 +41,14 @@ vector<double> building.backfill.psArea.Lower.yPositions = {
   -2286,   // P3
   -609.6,   // P4
   -609.6,   // P5
-  -1008.71,   // P6 
+  -1008.71,   // P6
   -2637.28,   // P7
   -2818.01,   // P8
-  -1189.44,   // P9 
-  -1920.03,   // Q0 
+  -1189.44,   // P9
+  -1920.03,   // Q0
   -3542.43,   // Q1
   -3723.16,   // Q2
-  -2194.8,   // Q3 
+  -2194.8,   // Q3
   -3297.85,   // Q4
   -3396.55,  // Q5
   -3649.57,  // Q6

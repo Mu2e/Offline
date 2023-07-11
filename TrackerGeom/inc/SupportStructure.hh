@@ -21,7 +21,7 @@ namespace mu2e {
 
     friend class TrackerMaker;
 
-  public:
+    public:
 
     SupportStructure();
 
@@ -54,7 +54,7 @@ namespace mu2e {
 
     void print ( std::ostream& ost ) const;
 
-  private:
+    private:
 
     // The pieces described in Mu2e-doc-888
     PlacedTubs _centerPlate;
@@ -96,7 +96,7 @@ namespace mu2e {
   };
 
   inline std::ostream& operator<<(std::ostream& ost,
-                                  const SupportStructure& ss ){
+      const SupportStructure& ss ){
     ss.print(ost);
     return ost;
   }

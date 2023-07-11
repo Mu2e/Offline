@@ -112,7 +112,7 @@ namespace mu2e {
                         VolumeInfo const & parent,
                         int copyNo,
                         G4Colour const color,
-			string const & lookupToken
+                        string const & lookupToken
                         ){
 
 
@@ -128,7 +128,7 @@ namespace mu2e {
                   parent.logical,
                   copyNo,
                   color,
-		  lookupToken
+                  lookupToken
                   );
 
     return info;

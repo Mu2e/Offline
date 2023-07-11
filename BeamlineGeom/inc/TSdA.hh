@@ -36,7 +36,7 @@ namespace mu2e {
     double _r4;
 
     double _halfLength4;
-    
+
     std::string _mat4;
 
     CLHEP::Hep3Vector _position;

@@ -2,22 +2,19 @@
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/ConfigTools/inc/requireUniqueKey.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 
 // Includes from art and its toolchain.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
 // C++ includes.
 #include <iostream>
@@ -33,7 +30,8 @@
 #include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "Offline/GeneralUtilities/inc/safeSqrt.hh"
@@ -59,11 +57,12 @@ namespace mu2e {
         using Name = fhicl::Name;
         using Comment = fhicl::Comment;
 
-        fhicl::Atom<std::string> corsikaModuleLabel{Name("corsikaModuleLabel"), Comment("Reference point in the coordinate system"), "FromCorsikaBinary"};
+        fhicl::Atom<std::string> corsikaModuleLabel{Name("corsikaModuleLabel"), Comment("Name of CORSIKA module label"), "FromCorsikaBinary"};
         fhicl::Atom<std::string> refPointChoice{Name("refPointChoice"), Comment("Reference point in the coordinate system"), "UNDEFINED"};
         fhicl::Atom<bool> projectToTargetBox{Name("projectToTargetBox"), Comment("Store only events that cross the target box"), false};
         fhicl::Atom<float> targetBoxYmax{Name("targetBoxYmax"), Comment("Top coordinate of the target box on the Y axis")};
         fhicl::Atom<float> intDist{Name("intDist"), Comment("Maximum distance of closest approach for backtracked trajectories")};
+        fhicl::OptionalAtom<art::InputTag> simTimeOffset{Name("simTimeOffset"), Comment("Simulation time offset to apply (optional)")};
       };
       typedef art::EDProducer::Table<Config> Parameters;
 
@@ -78,7 +77,6 @@ namespace mu2e {
       std::vector<CLHEP::Hep3Vector> _worldIntersections;
 
       bool  _geomInfoObtained = false;
-      Config _conf;
       std::string _corsikaModuleLabel =  "FromCorsikaBinary";
 
       float _worldXmin = 0;
@@ -96,24 +94,32 @@ namespace mu2e {
 
       float _intDist = 0;
 
-      unsigned int _primaries = 0;
+      unsigned long long _primaries = 0;
       float _area = 0;
       float _lowE = 0;
       float _highE = 0;
       float _fluxConstant = 0;
 
+      bool _applyTimeOffset;
+      art::InputTag _timeOffsetTag;
+      SimTimeOffset _stoff; // time offset for SimParticles and StepPointMCs
+
   };
 
   CorsikaEventGenerator::CorsikaEventGenerator(const Parameters &conf) : EDProducer{conf},
-                                                                         _conf(conf()),
-                                                                         _corsikaModuleLabel(_conf.corsikaModuleLabel()),
-                                                                         _targetBoxYmax(_conf.targetBoxYmax()),
-                                                                         _projectToTargetBox(_conf.projectToTargetBox()),
-                                                                         _refPointChoice(_conf.refPointChoice()),
-                                                                         _intDist(_conf.intDist())
+                                                                         _corsikaModuleLabel(conf().corsikaModuleLabel()),
+                                                                         _targetBoxYmax(conf().targetBoxYmax()),
+                                                                         _projectToTargetBox(conf().projectToTargetBox()),
+                                                                         _refPointChoice(conf().refPointChoice()),
+                                                                         _intDist(conf().intDist()),
+                                                                         _applyTimeOffset(conf().simTimeOffset.hasValue()),
+                                                                         _stoff(0.0)
   {
     produces<GenParticleCollection>();
     produces<CosmicLivetime,art::InSubRun>();
+    if (_applyTimeOffset) {
+      _timeOffsetTag = conf().simTimeOffset().value();
+    }
   }
 
   void CorsikaEventGenerator::beginSubRun(art::SubRun &subrun)
@@ -125,11 +131,18 @@ namespace mu2e {
   {
     std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(_primaries, _area, _lowE, _highE, _fluxConstant));
     std::cout << *livetime << std::endl;
-    subrun.put(std::move(livetime));
+    subrun.put(std::move(livetime), art::fullSubRun());
   }
 
   void CorsikaEventGenerator::produce(art::Event &evt)
   {
+
+    if (_applyTimeOffset) {
+      // find the time offset in the event, and copy it locally
+      const auto& stoH = evt.getValidHandle<SimTimeOffset>(_timeOffsetTag);
+      _stoff = *stoH;
+    }
+
     if (!_geomInfoObtained) {
       GeomHandle<Mu2eEnvelope> env;
       GeomHandle<WorldG4> worldGeom;
@@ -243,7 +256,7 @@ namespace mu2e {
 
           genParticles->push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),
                                               GenId::cosmicCORSIKA, projectedPos, mom4,
-                                              particle.time()));
+                                              particle.time() + _stoff.timeOffset_));
         } else {
           _worldIntersections.clear();
           VectorVolume particleWorld(position, particle.momentum().vect(),
@@ -256,13 +269,13 @@ namespace mu2e {
             const Hep3Vector projectedPos = _worldIntersections.at(0);
             genParticles->push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),
                                                 GenId::cosmicCORSIKA, projectedPos, mom4,
-                                                particle.time()));
+                                                particle.time() + _stoff.timeOffset_));
           }
         }
       } else {
         genParticles->push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),
                   GenId::cosmicCORSIKA, position, mom4,
-                  particle.time()));
+                  particle.time() + _stoff.timeOffset_));
       }
     }
 
@@ -273,4 +286,4 @@ namespace mu2e {
 
 
 using mu2e::CorsikaEventGenerator;
-DEFINE_ART_MODULE(CorsikaEventGenerator);
+DEFINE_ART_MODULE(CorsikaEventGenerator)

@@ -9,7 +9,6 @@
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -21,16 +20,16 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 
+#include <cmath>
 
 namespace mu2e {
 
   //================================================================
-  class CaloTBGun : public art::EDProducer 
+  class CaloTBGun : public art::EDProducer
   {
      public:
        explicit     CaloTBGun  (const fhicl::ParameterSet& pset);
@@ -52,7 +51,7 @@ namespace mu2e {
     , angle_                     (pset.get<double>("angle",          0.0  ))
     , time_                      (pset.get<double>("time",           700.0))
     , frontVD_                   (pset.get<bool>  ("frontVD",        true ))
-   
+
   {
       produces<mu2e::GenParticleCollection>();
       if (verbosityLevel_ > 0) std::cout<<"CaloTB gun: shoot! " << std::endl;
@@ -62,10 +61,10 @@ namespace mu2e {
   void CaloTBGun::produce(art::Event& event)
   {
        const Calorimeter& cal = *(GeomHandle<Calorimeter>());
-       
-       double                  angleRad = angle_*3.1415926/180;
-       double                  Zbuffer  = cal.disk(0).crystal(400).position().z()-cal.disk(0).geomInfo().origin().z()+cal.disk(0).geomInfo().size().z()/2.0+1;     
-       double                  dz       = (frontVD_)? Zbuffer : 0;       
+
+       double                  angleRad = angle_*M_PI/180;
+       double                  Zbuffer  = cal.disk(0).crystal(400).position().z()-cal.disk(0).geomInfo().origin().z()+cal.disk(0).geomInfo().size().z()/2.0+1;
+       double                  dz       = (frontVD_)? Zbuffer : 0;
        CLHEP::Hep3Vector       pos      = cal.disk(0).crystal(400).position() - CLHEP::Hep3Vector(tan(angleRad)*dz,0,dz);
        CLHEP::HepLorentzVector mom(energy_*sin(angleRad),0.0,energy_*cos(angleRad),energy_);
 
@@ -76,4 +75,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::CaloTBGun);
+DEFINE_ART_MODULE(mu2e::CaloTBGun)

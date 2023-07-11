@@ -9,7 +9,7 @@
 
 // Mu2e includes
 #include "Offline/Mu2eG4/inc/EventNumberList.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 // G4 includes
 #include "Geant4/G4VSensitiveDetector.hh"
@@ -45,10 +45,10 @@ namespace mu2e {
   protected:
 
     // Non-owning pointer to the  collection into which hits will be added.
-    StepPointMCCollection* _collection;
+    StepPointMCCollection* _collection = nullptr;
 
     // Non-ownning pointer and object that returns code describing physics processes.
-    PhysicsProcessInfo* _processInfo;
+    PhysicsProcessInfo* _processInfo = nullptr;
 
     // Mu2e point of origin
     G4ThreeVector _mu2eOrigin;
@@ -61,7 +61,7 @@ namespace mu2e {
     int _currentSize;
 
     // A helper to create pointers to SimParticles
-    const SimParticleHelper *_spHelper;
+    const SimParticleHelper *_spHelper = nullptr;
   };
 
 } // namespace mu2e

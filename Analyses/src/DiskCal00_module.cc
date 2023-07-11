@@ -17,13 +17,12 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
-#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
 
 // Root includes.
 #include "TH1F.h"
@@ -284,4 +283,4 @@ namespace mu2e {
 
 // Part of the magic that makes this class a module.
 // create an instance of the module.  It also registers
-DEFINE_ART_MODULE(mu2e::DiskCal00);
+DEFINE_ART_MODULE(mu2e::DiskCal00)

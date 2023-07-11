@@ -301,7 +301,7 @@ const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
     case 1 : if(typeid(CollectionType)!=typeid(mu2e::StepPointMCCollection)) return(nullptr);
              if(index>=static_cast<int>(_caloStepPointMCVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_caloStepPointMCVector[index].product()));
-    case 2 : if(typeid(CollectionType)!=typeid(mu2e::CaloHitCollection)) return(nullptr);
+    case 3 : if(typeid(CollectionType)!=typeid(mu2e::CaloHitCollection)) return(nullptr);
              if(index>=static_cast<int>(_caloHitVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_caloHitVector[index].product()));
   };
@@ -375,7 +375,7 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
     {
       case 1 : if(typeid(CollectionType)!=typeid(mu2e::SimParticleCollection)) break;
                if(index>=static_cast<int>(_simParticleVector.size())) break;
-               to_return.push_back(reinterpret_cast<const CollectionType*>(_simParticleVector[index].product())); 
+               to_return.push_back(reinterpret_cast<const CollectionType*>(_simParticleVector[index].product()));
                t.productId=_simParticleVector[index].id();
                v.push_back(t);
                break;
@@ -430,7 +430,7 @@ const mu2e::MCTrajectoryCollection* ContentSelector::getMCTrajectoryCollection(c
   itertype iter;
   for(iter=_mcTrajectoryVector.begin(); iter!=_mcTrajectoryVector.end(); iter++)
   {
-//    if(t.moduleLabel==iter->provenance()->moduleLabel() && t.productInstanceName==iter->provenance()->productInstanceName()) 
+//    if(t.moduleLabel==iter->provenance()->moduleLabel() && t.productInstanceName==iter->provenance()->productInstanceName())
     if(t.moduleLabel==iter->provenance()->moduleLabel()) //TODO: why no check for product instance name?
       return(iter->product());
   }

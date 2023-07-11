@@ -4,29 +4,33 @@ BEGIN_PROLOG
 # define non-proton GenIDs
 nonProtonGenIds : ["unknown", "particleGun", "cosmicToy", "cosmicDYB", "cosmic", "CosmicCRY", "pbarFlat", "CosmicCORSIKA"]
 muLifeGenIds : [ "StoppedParticleReactionGun", "dioTail", "ExternalRMC", "InternalRMC",
-                 "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", "MuCapPhotonGenTool", "MuCapGammaRayGenTool" ]
+  "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", "MuCapPhotonGenTool", "MuCapGammaRayGenTool" ]
 CommonMC: {
   producers: {
-#
-# time offset producers
+    #
+    # time offset producers
     protonTimeOffset : { module_type: ProtonTimeOffset }
     cosmicTimeOffset : { module_type: CosmicTimeOffset }
-# Event window marker
-    EWMProducer : { module_type : EventWindowMarkerProducer }
+    # Event window marker
+    EWMProducer : {
+      module_type : EventWindowMarkerProducer
+      RecoFromMCTruth : true
+      RecoFromMCTruthErr : 0.5
+    }
   }
-  TimeMaps : [ ]
   FindMCPrimary : {
     module_type : FindMCPrimary
     debugLevel : 0
-    GenParticles : "compressDigiMCs"
     SimParticles : "compressDigiMCs"
     PrimaryGenIds : ["CeEndpoint", "CeLeadingLog", "dioTail",
-        "cosmicDYB", "CosmicCRY", "CosmicCORSIKA",
-        "InternalRPC" , "InternalRMC", "ExternalRPC", "ExternalRMC"  ]
+      "cosmicDYB", "CosmicCRY", "CosmicCORSIKA",
+      "InternalRPC" , "InternalRMC", "ExternalRPC", "ExternalRMC"  ]
   }
-  
+
   SelectRecoMC : {
     module_type : SelectRecoMC
+    PBTMC : EWMProducer
+    EventWindowMarker : EWMProducer
     debugLevel : 0
   }
   DigiSim : [ EWMProducer  ]

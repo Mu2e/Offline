@@ -4,11 +4,9 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "HepPDT/Measurement.hh"
 
-#include "HepPDT/ParticleData.hh"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/exception.h"
 
@@ -30,7 +28,7 @@ namespace mu2e {
     if (spectrumShape == "Czarnecki") {
       // should be total energy
       PDGCode::type pdgId = PDGCode::type(psphys.get<int>("pdgId"));
-      const double mass(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId).ref().mass().value());
+      const double mass(GlobalConstantsHandle<ParticleDataList>()->particle(pdgId).mass());
       double elow = psphys.get<double>("elow", mass);
       double ehi  = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy();
       double res = psphys.get<double>("spectrumResolution");
@@ -65,7 +63,8 @@ namespace mu2e {
     }else if (spectrumShape == "ejectedProtons") {
       // should be kinetic energy
       double elow = 0.;
-      double ehi = 105.; // cut off at muon mass
+      // cut off at muon mass
+      double ehi =  GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::mu_minus).mass();
       double bin = (ehi - elow)/psphys.get<unsigned>("nbins");
       this->initialize<EjectedProtonSpectrum>(elow, ehi, bin);
     }else if (spectrumShape == "RMC") {
@@ -74,10 +73,10 @@ namespace mu2e {
       double res = psphys.get<double>("spectrumResolution");
       bool kMaxUserSet = psphys.get<bool>  ("kMaxUserSet",false);
       double kMaxUser = psphys.get<double>("kMaxUser",0);
-      const double bindingEnergyFit{0.464};
-      const double recoilEnergyFit {0.220};
-      const double deltaMassFit    {3.121};
-      const double mmu = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::mu_minus).ref().mass().value();
+      const double bindingEnergyFit = GlobalConstantsHandle<PhysicsParams>()->getRMCbindingEnergyFit("Al");
+      const double recoilEnergyFit  = GlobalConstantsHandle<PhysicsParams>()->getRMCrecoilEnergyFit("Al");
+      const double deltaMassFit     = GlobalConstantsHandle<PhysicsParams>()->getRMCdeltaMassFit("Al");
+      const double mmu = GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::mu_minus).mass();
       const double kMaxMax =mmu - bindingEnergyFit - recoilEnergyFit - deltaMassFit;
       this->initialize<MuonCaptureSpectrum>(elow, ehi, res, kMaxUserSet, kMaxUser, kMaxMax);
     }else if (spectrumShape == "Bistirlich") {

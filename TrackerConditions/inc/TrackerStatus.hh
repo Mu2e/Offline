@@ -12,45 +12,42 @@
 #include "fhiclcpp/type_traits.h"
 
 // C++ includes
-#include <set>
+#include <map>
 #include <memory>
 
 namespace mu2e {
 
-  struct TrackerElementStatus {
-    StrawId sid_; // ID of this tracker element.  Only the fields covered by the mask are relevant
-    StrawIdMask mask_; // level of this element (straw, panel, or plane)
-    StrawStatus status_; // status of this tracker element
-    TrackerElementStatus(StrawId const& sid, StrawIdMask const& mask, StrawStatus const& status) : sid_(sid), mask_(mask), status_(status) {}
-    bool operator < (const TrackerElementStatus& other) const { return sid_ < other.sid_; } // needed for std::set
-  };
-
   class TrackerStatus : public ProditionsEntity {
-  public:
+    public:
 
-    typedef std::shared_ptr<TrackerStatus> ptr_t;
-    typedef std::shared_ptr<const TrackerStatus> cptr_t;
-    typedef std::set<TrackerElementStatus> estat_t;
-    constexpr static const char* cxname = {"TrackerStatus"};
+      typedef std::shared_ptr<TrackerStatus> ptr_t;
+      typedef std::shared_ptr<const TrackerStatus> cptr_t;
+      typedef std::map<StrawId,StrawStatus> stat_t;
+      typedef std::map<StrawIdMask,stat_t> estat_t;
+      constexpr static const char* cxname = {"TrackerStatus"};
 
-    TrackerStatus(estat_t const& estatus): ProditionsEntity(cxname), _estatus(estatus) {}
+      TrackerStatus(): ProditionsEntity(cxname){}
 
-    virtual ~TrackerStatus() {}
+      virtual ~TrackerStatus() {}
 
-    void print( std::ostream& ) const override;
-    // convenience operators for some common situations
-    bool noSignal(StrawId const& sid) const;    // return 'true' if we expect no signal from this straw
-    bool suppress(StrawId const& sid) const;  // This straw may produce a signal, but it should be suppressed as it is inaccurate 
-    bool noMaterial(StrawId const& sid) const;  // straw doesn't contribute to scattering or energy loss
+      // add status for an element.  This is cumulative
+      void addStatus(StrawId const& sid, StrawIdMask const& mask, StrawStatus const& status);
 
-    // Net status of an individual Straw.  If the straw is in a plane or panel with status, that will be aggregated
-    StrawStatus strawStatus(StrawId const& sid) const;
-    // same for panel, plane.  Note; these will return only status that applies to the ENTIRE PANEL (or plane)
-    // It will NOT detect (say) a panel where every straw has had the same status individually set (that's not a good configuration)
-    StrawStatus panelStatus(StrawId const& sid) const;
-    StrawStatus planeStatus(StrawId const& sid) const;
-  private:
-    estat_t _estatus; // sparse list of tracker element status
+      void print( std::ostream& ) const override;
+      // convenience operators for some common situations
+      bool noSignal(StrawId const& sid) const;    // return 'true' if we expect no signal from this straw
+      bool noisy(StrawId const& sid) const;  // This straw sometimes produces a valid signal, but not always
+      bool suppress(StrawId const& sid) const;  // This straw may produce a signal, but it should be suppressed as it is inaccurate
+      bool noMaterial(StrawId const& sid) const;  // straw doesn't contribute to scattering or energy loss
+
+      // Net status of an individual Straw.  If the straw is in a plane or panel with status, that will be aggregated
+      StrawStatus strawStatus(StrawId const& sid) const;
+      // same for panel, plane.  Note; these will return only status that applies to the ENTIRE PANEL (or plane)
+      // It will NOT detect (say) a panel where every straw has had the same status individually set (that's not a good configuration)
+      StrawStatus panelStatus(StrawId const& sid) const;
+      StrawStatus planeStatus(StrawId const& sid) const;
+    private:
+      estat_t _status;
   };
 
 } // namespace mu2e

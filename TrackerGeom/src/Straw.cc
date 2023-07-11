@@ -11,7 +11,7 @@ using std::vector;
 
 namespace mu2e {
 
-// unaligned construct
+  // unaligned construct
   Straw::Straw( const StrawId& id,
       const xyzVec& c,
       double halflen,
@@ -27,16 +27,16 @@ namespace mu2e {
     _wmid(c), _smid(c),_wdir(w.unit()), _sdir(w.unit()), _hlen(halfLength) {}
 
 
-// aligned constructor
+  // aligned constructor
   Straw::Straw (const StrawId& id,
-	  const xyzVec& calwireend, const xyzVec& hvwireend,
-	  const xyzVec& calstrawend, const xyzVec& hvstrawend) :
-	  _id(id),
-	  _wmid(0.5*(hvwireend + calwireend)), 
-	  _smid(0.5*(hvstrawend + calstrawend)),
-	  _wdir((calwireend - hvwireend).unit()),  // convention is U points from HV to cal
-	  _sdir((calstrawend - hvstrawend).unit()),
-	  _hlen(0.5*(hvwireend - calwireend).mag()) {}
+      const xyzVec& calwireend, const xyzVec& hvwireend,
+      const xyzVec& calstrawend, const xyzVec& hvstrawend) :
+    _id(id),
+    _wmid(0.5*(hvwireend + calwireend)),
+    _smid(0.5*(hvstrawend + calstrawend)),
+    _wdir((calwireend - hvwireend).unit()),  // convention is U points from HV to cal
+    _sdir((calstrawend - hvstrawend).unit()),
+    _hlen(0.5*(hvwireend - calwireend).mag()) {}
 
   std::string Straw::name( std::string const& base ) const{
     std::ostringstream os;

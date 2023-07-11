@@ -33,6 +33,8 @@ gen
 *.pdf
 *.pyc
 *.orig
+*nfs
+*.bz2
 *.swp
 BaBar/include
 EMFCAnalysis

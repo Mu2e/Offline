@@ -11,7 +11,7 @@ vector<string>  crs.sectorNames = {"Test"};
 
 double          crs.scintillatorBarLengthTest    =  6000;
 
-double          crs.scintillatorBarThickness     =  19.78; //mm 
+double          crs.scintillatorBarThickness     =  19.78; //mm
 double          crs.scintillatorBarWidth         =  51.34; //mm
 double          crs.layerOffset                  =  42.0; //mm
 double          crs.gapLarge                     =   0.5; //mm
@@ -26,7 +26,7 @@ int             crs.nCountersPerModuleTest       =   16;
 vector<double>  crs.firstCounterTest             =  {-3904.0, 2663.21, 2014.55};
 
 vector<double>  crs.layerDirectionTest           =  {0, 1, 0};
-vector<double>  crs.offsetDirectionTest          =  {0, 0, -1}; 
+vector<double>  crs.offsetDirectionTest          =  {0, 0, -1};
 vector<double>  crs.gapDirectionTest             =  {0, 0, 1};
 
 int crs.precedingSectorForTest  = -1;   //no preceding sector

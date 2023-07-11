@@ -14,21 +14,29 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     fhicl::Atom<int> verbose{
-      Name("verbose"), Comment("verbosity: 0 or 1")}; 
+      Name("verbose"), Comment("verbosity: 0 or 1")};
     fhicl::Atom<bool> useDb{
-      Name("useDb"), Comment("use database or fcl")}; 
+      Name("useDb"), Comment("use database or fcl")};
     fhicl::Atom<double> eBins {
       Name("eBins"), Comment("Number of energy bins")};
     fhicl::Atom<double> eBinWidth {
       Name("eBinWidth"), Comment("Width of energy bins (KeV)")};
-    fhicl::Sequence<double> halfPropVelocity {
-      Name("halfPropVelocity"), Comment(" mm/ns ")};
+    fhicl::Sequence<double> ehalfPVScale {
+      Name("eHalfPVScale"), Comment(" fraction of nominal ")};
     fhicl::Atom<double> centralWirePos {
       Name("centralWirePos"), Comment(" mm ")};
     fhicl::Sequence<double> tdCentralRes {
       Name("tdCentralRes"), Comment(" tdCentralRes ")};
     fhicl::Sequence<double> tdResSlope {
       Name("tdResSlope"), Comment(" tdResSlope ")};
+    fhicl::Sequence<double> strawHalfPropVelocity {
+      Name("strawHalfPropVelocity"), Comment(" mm/ns ")};
+    fhicl::Atom<double> defaultHalfPropVelocity {
+      Name("defaultHalfPropVelocity"), Comment(" mm/ns ")};
+    fhicl::Atom<bool> truncateLongitudinal {
+      Name("truncateLongitudinal"), Comment("truncate reco longitudinal at straw end")};
+    fhicl::Atom<bool> rmsLongErrors {
+      Name("rmsLongErrors"), Comment("Use errors tuned from residual profile rms")};
     fhicl::Atom<int> totTBins {
       Name("totTBins"), Comment("TOT drift time t bins")};
     fhicl::Atom<double> totTBinWidth {
@@ -39,39 +47,42 @@ namespace mu2e {
       Name("totEBinWidth"), Comment("TOT drift time e bin width")};
     fhicl::Sequence<double>  totDriftTime {
       Name("totDriftTime"), Comment(" totDriftTime ")};
-    fhicl::Atom<bool>  useDriftErrorCalibration {
-      Name("useDriftErrorCalibration"), Comment(" useDriftErrorCalibration ")};
-    fhicl::Sequence<double> driftErrorParameters {
-      Name("driftErrorParameters"), Comment(" driftErrorParameters ")};
-    fhicl::Atom<bool>  useParameterizedDriftErrors {
-      Name("useParameterizedDriftErrors"), Comment(" use errors calculated from formula instead of numbers from fcl ")};
-    fhicl::Atom<int> parameterizedDriftBins {
-      Name("parameterizedDriftBins"), Comment(" number of bins for calculating error and drift offset ")};
-    fhicl::Atom<double> parameterizedDriftSigma {
-      Name("parameterizedDriftSigma"), Comment(" sigma for calculating drift error and offset ")};
-    fhicl::Atom<double> parameterizedDriftTau {
-      Name("parameterizedDriftTau"), Comment(" tau for calculating drift error and offset ")};
+    fhicl::Sequence<double>  totDriftError {
+      Name("totDriftError"), Comment(" totDriftError ")};
+    fhicl::Sequence<double> llDriftTimeOffBins {
+      Name("llDriftTimeOffBins"), Comment("Drift time Offset Bin edges for likelihood fit (mm)")};
+    fhicl::Sequence<double> llDriftTimeOffset {
+      Name("llDriftTimeOffset"), Comment("Drift time offset for likelihood fit (ns)")};
+    fhicl::Sequence<double> llDriftTimeRMSBins {
+      Name("llDriftTimeRMSBins"), Comment("Drift time RMS Bin edges for likelihood fit (mm)")};
+    fhicl::Sequence<double> llDriftTimeRMS {
+      Name("llDriftTimeRMS"), Comment("Drift time RMS for likelihood fit (ns)")};
+    fhicl::Sequence<double> driftOffBins {
+      Name("driftOffBins"), Comment("Drift Offset Bin edges (mm)")};
+    fhicl::Sequence<double> driftOffset {
+      Name("driftOffset"), Comment("Drift Offset (mm)")};
+    fhicl::Sequence<double> driftRMSBins {
+      Name("driftRMSBins"), Comment("Drift RMS Bin edges (mm)")};
+    fhicl::Sequence<double> signedDriftRMS {
+      Name("signedDriftRMS"), Comment("Signed Drift RMS (mm)")};
+    fhicl::Sequence<double> unsignedDriftRMS {
+      Name("unsignedDriftRMS"), Comment("Unsigned Drift RMS (mm)")};
+    fhicl::Atom<double> dRdTScale {
+      Name("dRdTScale"), Comment("Scale factor for dRdT")};
+
+    fhicl::Atom<bool> driftIgnorePhi {
+      Name("driftIgnorePhi"), Comment("Ignore phi for no field reco")};
 
     fhicl::Atom<double> wireLengthBuffer {
       Name("wireLengthBuffer"), Comment(" wireLengthBuffer ")};
     fhicl::Atom<double> strawLengthFactor {
       Name("strawLengthFactor"), Comment(" strawLengthFactor ")};
     fhicl::Atom<double> errorFactor {
-      Name("errorFactor"), Comment(" errorFactor ")};
+      Name("errorFactor"), Comment("Error scaling for longitudinal reco outside straw length")};
     fhicl::Atom<bool> useNonLinearDrift {
       Name("useNonLinearDrift"), Comment(" useNonLinearDrift ")};
     fhicl::Atom<double> linearDriftVelocity {
       Name("linearDriftVelocity"), Comment(" mm/ns, only used if nonlindrift= ")};
-    fhicl::Atom<double> minDriftRadiusResolution {
-      Name("minDriftRadiusResolution"), Comment(" mm ")};
-    fhicl::Atom<double> maxDriftRadiusResolution {
-      Name("maxDriftRadiusResolution"), Comment(" mm ")};
-    fhicl::Atom<double> driftRadiusResolutionRadius {
-      Name("driftRadiusResolutionRadius"), Comment(" mm ")};
-    fhicl::Atom<double> minT0DOCA {
-      Name("minT0DOCA"), Comment("FIXME should be moved to a reconstruction configuration ")};
-    fhicl::Atom<double> t0shift {
-      Name("t0shift"), Comment("FIXME should be average slewing?")};
     fhicl::Atom<double> defaultPeakMinusPedestalEnergyScale {
       Name("defaultPeakMinusPedestalEnergyScale"), Comment("default constant value for pmp energy method calibration")};
     fhicl::Sequence<double> peakMinusPedestalEnergyScale {

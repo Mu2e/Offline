@@ -8,35 +8,35 @@
 
 namespace mu2e {
   class FullReadoutStrawCache : public ProditionsCache {
-  public: 
-    FullReadoutStrawCache(FullReadoutStrawConfig const& config):
-      ProditionsCache(FullReadoutStraw::cxname,config.verbose()),
-      _useDb(config.useDb()),_maker(config) {}
+    public:
+      FullReadoutStrawCache(FullReadoutStrawConfig const& config):
+        ProditionsCache(FullReadoutStraw::cxname,config.verbose()),
+        _useDb(config.useDb()),_maker(config) {}
 
 
-    void initialize() {
-    }
+      void initialize() {
+      }
 
-    set_t makeSet(art::EventID const& eid) {
-      return ProditionsEntity::set_t();
-    }
+      set_t makeSet(art::EventID const& eid) {
+        return ProditionsEntity::set_t();
+      }
 
-    DbIoV makeIov(art::EventID const& eid) {
-      DbIoV iov;
-      iov.setMax();
-      return iov;
-    }
+      DbIoV makeIov(art::EventID const& eid) {
+        DbIoV iov;
+        iov.setMax();
+        return iov;
+      }
 
-    ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
-      return _maker.fromFcl();
-    }
+      ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
+        return _maker.fromFcl();
+      }
 
 
-  private:
-    bool _useDb;
-    FullReadoutStrawMaker _maker;
+    private:
+      bool _useDb;
+      FullReadoutStrawMaker _maker;
 
   };
-};
+}
 
 #endif

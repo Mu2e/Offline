@@ -1,5 +1,4 @@
 //
-//
 using namespace std;
 #include "Offline/EventDisplay/src/DataInterface.h"
 
@@ -22,23 +21,22 @@ using namespace std;
 #include "Offline/EventDisplay/src/dict_classes/ComponentInfo.h"
 #include "Offline/EventDisplay/src/dict_classes/EventDisplayViewSetup.h"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
-#include "HepPID/ParticleName.hh"
-#include "HepPDT/ParticleData.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
-#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "Offline/StoppingTargetGeom/inc/TargetFoil.hh"
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
@@ -64,8 +62,8 @@ using namespace CLHEP;
 namespace mu2e_eventdisplay
 {
 
-DataInterface::DataInterface(EventDisplayFrame *mainframe):
-              _geometrymanager(nullptr),_topvolume(nullptr),_mainframe(mainframe)
+DataInterface::DataInterface(EventDisplayFrame *mainframe, double kalStepSize):
+              _geometrymanager(nullptr),_topvolume(nullptr),_mainframe(mainframe),_kalStepSize(kalStepSize)
 {
     _minPoints=0;
     _minTime=NAN;
@@ -227,6 +225,7 @@ void DataInterface::fillGeometry()
   resetBoundaryP(_targetMinmax);
   resetBoundaryP(_calorimeterMinmax);
   resetBoundaryP(_tracksMinmax);
+  resetBoundaryP(_crvMinmax);
 
   art::ServiceHandle<mu2e::GeometryService> geom;
 
@@ -370,27 +369,35 @@ void DataInterface::fillGeometry()
     double diskOuterRingOut      = calo->caloInfo().getDouble("diskOuterRingOut");
     double diskOuterRailOut      = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
 
-
-
     double FPCarbonDZ               = calo->caloInfo().getDouble("FPCarbonZLength")/2.0;
     double FPFoamDZ                 = calo->caloInfo().getDouble("FPFoamZLength")/2.0;
     double FPCoolPipeRadius         = calo->caloInfo().getDouble("FPCoolPipeRadius");
     double pipeRadius               = calo->caloInfo().getDouble("pipeRadius");
     double frontPanelHalfThick      = (2.0*FPCarbonDZ+2.0*FPFoamDZ-pipeRadius+FPCoolPipeRadius)/2.0;
-    double holeDZ                   = calo->caloInfo().getDouble("BPHoleZLength")/2.0;
 
     double crystalDXY            = calo->caloInfo().getDouble("crystalXYLength")/2.0;
-    double crystalDZ             = calo->caloInfo().getDouble("crystalZLength")/2.0;    
-    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalFrameZLength")/2.0;    
-    double wrapperHalfThick      = calo->caloInfo().getDouble("wrapperThickness")/2.0;    
+    double crystalDZ             = calo->caloInfo().getDouble("crystalZLength")/2.0;
+    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalFrameZLength")/2.0;
+    double wrapperHalfThick      = calo->caloInfo().getDouble("wrapperThickness")/2.0;
     double wrapperDXY            = crystalDXY + 2.0*wrapperHalfThick;
     double wrapperDZ             = crystalDZ + 2.0*crystalFrameDZ;
+
+    double FEEDZ                = calo->caloInfo().getDouble("FEEZLength")/2.0;
+    double FEEBoxThickness      = calo->caloInfo().getDouble("FEEBoxThickness");
+    double FEEBoxDZ             = FEEDZ + 2*FEEBoxThickness;
+    double BPPipeRadiusHigh     = calo->caloInfo().getDouble("BPPipeRadiusHigh");
+    double BPPipeDZOffset       = calo->caloInfo().getDouble("BPPipeZOffset")/2.0;
+    double BPFEEDZ              = FEEBoxDZ + BPPipeDZOffset + BPPipeRadiusHigh;
+    double holeDZ               = calo->caloInfo().getDouble("BPHoleZLength")/2.0;
+    double zHalfBP              = BPFEEDZ+holeDZ;
+
+    double crystalDiskLogOffset = frontPanelHalfThick - zHalfBP;
 
     int icrystal=0;
     for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++)
     {
       CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
-      diskPos += CLHEP::Hep3Vector(0.0, 0.0, -holeDZ+frontPanelHalfThick);
+      diskPos += CLHEP::Hep3Vector(0.0, 0.0, crystalDiskLogOffset);
 
       findBoundaryP(_calorimeterMinmax, diskPos.x()+diskOuterRailOut, diskPos.y()+diskOuterRailOut, diskPos.z()+diskCaseDZLength);
       findBoundaryP(_calorimeterMinmax, diskPos.x()-diskOuterRailOut, diskPos.y()-diskOuterRailOut, diskPos.z()-diskCaseDZLength);
@@ -431,10 +438,9 @@ void DataInterface::fillGeometry()
     }
   }
 
-
   //MBS
 /*
-  if(config.getBool("hasMBS", false)) 
+  if(config.getBool("hasMBS", false))
   {
     double mbsinr[3], mbsoutr[3], mbslen[3], mbsz[3];
     mbsinr[0]  = config.getDouble("mbs.BSTCInnerRadius");
@@ -452,7 +458,7 @@ void DataInterface::fillGeometry()
     mbsz[0] = mbsstartz + mbslen[0] ;
     mbsz[1] = mbsstartz + mbslen[0]*2. + mbslen[1];
     mbsz[2] = mbsstartz +mbstotallen - mbslen[2];
-    for (unsigned int i = 0 ; i <3 ; ++i) 
+    for (unsigned int i = 0 ; i <3 ; ++i)
     {
       boost::shared_ptr<ComponentInfo> infoMBS(new ComponentInfo());
       std::string c=Form(c,"MBS %d", i);
@@ -470,9 +476,9 @@ void DataInterface::fillGeometry()
   }
 */
   //MecoStyleProtonAbsorber
-  if(config.getBool("hasProtonAbsorber", false)) 
+  if(config.getBool("hasProtonAbsorber", false))
   {
-    if (!config.getBool("protonabsorber.isHelical", false)) 
+    if (!config.getBool("protonabsorber.isHelical", false))
     {
       double inr[2], outr[2], thickness, halflength, z;
       outr[0] = config.getDouble("protonabsorber.OutRadius0");
@@ -510,6 +516,9 @@ void DataInterface::fillGeometry()
     {
       mu2e::CRSScintillatorShield const& shield = *ishield;
       std::string const& shieldName = shield.getName();
+//if(shieldName.find("CRV_C1")!=std::string::npos) continue;
+//if(shieldName.find("CRV_C2")!=std::string::npos) continue;
+//if(shieldName.find("CRV_T")!=std::string::npos) continue;
 
       mu2e::CRSScintillatorBarDetail const& barDetail = shield.getCRSScintillatorBarDetail();
       double dx=barDetail.getHalfLengths()[0];
@@ -535,6 +544,9 @@ void DataInterface::fillGeometry()
             double x=barOffset.x();
             double y=barOffset.y();
             double z=barOffset.z();
+
+            findBoundaryP(_crvMinmax, x+dx, y+dy, z+dz);
+            findBoundaryP(_crvMinmax, x-dx, y-dy, z-dz);
 
             boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
             std::string c=Form("CRV Scintillator %s  module %i  layer %i  bar %i  (index %i)",shieldName.c_str(),im,il,ib, index);
@@ -735,7 +747,7 @@ void DataInterface::resetBoundaryP(spaceminmax &m)
   m.maxz=NAN;
 }
 
-DataInterface::spaceminmax DataInterface::getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks)
+DataInterface::spaceminmax DataInterface::getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks, bool useCRV)
 {
   spaceminmax m;
   resetBoundaryP(m);
@@ -755,6 +767,11 @@ DataInterface::spaceminmax DataInterface::getSpaceBoundary(bool useTarget, bool 
   {
     findBoundaryP(m, _tracksMinmax.minx, _tracksMinmax.miny, _tracksMinmax.minz);
     findBoundaryP(m, _tracksMinmax.maxx, _tracksMinmax.maxy, _tracksMinmax.maxz);
+  }
+  if(useCRV)
+  {
+    findBoundaryP(m, _crvMinmax.minx, _crvMinmax.miny, _crvMinmax.minz);
+    findBoundaryP(m, _crvMinmax.maxx, _crvMinmax.maxy, _crvMinmax.maxz);
   }
 
   if(std::isnan(m.minx)) m.minx=-1000;
@@ -782,9 +799,38 @@ void DataInterface::findBoundaryP(spaceminmax &m, double x, double y, double z)
   if(std::isnan(m.maxz) || z>m.maxz) m.maxz=z;
 }
 
+using LHPT = mu2e::KalSeed::LHPT;
+using CHPT = mu2e::KalSeed::CHPT;
+using KLPT = mu2e::KalSeed::KLPT;
+
+template<class KTRAJ> void DataInterface::fillKalSeedTrajectory(std::unique_ptr<KTRAJ> &trajectory,
+                                                                int particleid, int trackclass, int trackclassindex, double p1,
+                                                                boost::shared_ptr<ComponentInfo> info)
+{
+  double t1=trajectory->range().begin();
+  double t2=trajectory->range().end();
+
+  const auto &pos1=trajectory->position3(t1);
+  const auto &pos2=trajectory->position3(t2);
+
+  boost::shared_ptr<Track> track(new Track(pos1.x(),pos1.y(),pos1.z(),t1, pos2.x(),pos2.y(),pos2.z(),t2,
+                                           particleid, trackclass, trackclassindex, p1,
+                                           _geometrymanager, _topvolume, _mainframe, info, false));
+  _components.push_back(track);
+  _tracks.push_back(track);
+
+  for(double t=t1; t<=t2; t+=_kalStepSize)
+  {
+    const auto &p = trajectory->position3(t);
+    findBoundaryT(_tracksTimeMinmax, t);
+    findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
+    track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
+  }
+}
+
 void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets)
 {
-  auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataTable>();
+  auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataList>();
   removeNonGeometryComponents();
   if(!_geometrymanager) createGeometryManager();
   resetBoundaryT(_hitsTimeMinmax);
@@ -1015,22 +1061,15 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   }
 
   const mu2e::CaloHitCollection *calohits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloHitCollection>();
-  art::ServiceHandle<mu2e::GeometryService> geoservice;
-  if(calohits!=nullptr && (geoservice->hasElement<mu2e::DiskCalorimeter>()))
+  if(calohits!=nullptr)
   {
     _numberCrystalHits=calohits->size();  //this is not accurate since the return value gives the RO hits
     std::vector<mu2e::CaloHit>::const_iterator iter;
     for(iter=calohits->begin(); iter!=calohits->end(); iter++)
     {
       const mu2e::CaloHit& calohit = *iter;
-      int roid = calohit.crystalID();
-      int crystalid=0;
+      int crystalid = calohit.crystalID();
 
-      if(geoservice->hasElement<mu2e::DiskCalorimeter>())
-      {
-        mu2e::GeomHandle<mu2e::DiskCalorimeter> diskCalo;
-        crystalid=diskCalo->caloIDMapper().crystalIDFromSiPMID(roid);
-      }
       double time = calohit.time();
       double energy = calohit.energyDep();
       std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
@@ -1043,14 +1082,12 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           crystal->second->setStartTime(time);
           crystal->second->getComponentInfo()->setText(2,Form("hit time(s): %gns",time/CLHEP::ns));
           crystal->second->getComponentInfo()->setText(3,Form("deposited energy(s): %geV",energy/CLHEP::eV));
-          crystal->second->getComponentInfo()->setText(4,Form("RO ID(s): %i",roid));
           _crystalhits.push_back(crystal->second);
         }
         else
         {
           crystal->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
           crystal->second->getComponentInfo()->expandLine(3,Form("%geV",energy/CLHEP::eV));
-          crystal->second->getComponentInfo()->expandLine(4,Form("%i",roid));
         }
       }
     }
@@ -1064,7 +1101,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
   mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
   double digitizationPeriod = crvPar->digitizationPeriod;
-  double recoPulsePedestal  = crvPar->pedestal;
 
   double TDC0time = contentSelector->getTDC0time();
   const std::vector<art::Handle<mu2e::CrvDigiCollection> > &crvDigisVector = contentSelector->getSelectedCrvDigiCollection();
@@ -1101,7 +1137,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         graph->SetMarkerStyle(20);
         graph->SetMarkerSize(2);
         for(size_t k=0; k<mu2e::CrvDigi::NSamples; k++)
-        { 
+        {
           graph->SetPoint(k,TDC0time+(digi.GetStartTDC()+k)*digitizationPeriod,digi.GetADCs()[k]);
         }
         boost::dynamic_pointer_cast<TMultiGraph>(v[multigraphIndex])->Add(graph,"p");
@@ -1120,6 +1156,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int    sipm  = recoPulse.GetSiPMNumber();
       double time  = recoPulse.GetPulseTime();
       int    PEs   = recoPulse.GetPEs();
+
+      size_t channel  = index*4 + sipm;
+      double recoPulsePedestal = _calib->pedestal(channel);
 
       std::map<int,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.find(index);
       if(crvbar!=_crvscintillatorbars.end() && !std::isnan(time))
@@ -1168,7 +1207,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     }
   }
 
-
   const mu2e::PhysicalVolumeInfoMultiCollection *physicalVolumesMulti=contentSelector->getPhysicalVolumeInfoMultiCollection();
 
   resetBoundaryP(_tracksMinmax);
@@ -1189,12 +1227,12 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int trackclass=trackInfos[i].classID;
       int trackclassindex=trackInfos[i].index;
       std::string particlecollection=trackInfos[i].entryText;
-      std::string particlename=HepPID::particleName(particle.pdgId());
+      std::string particlename=ptable->particle(particle.pdgId()).name();
       std::string startVolumeName="unknown volume";
       std::string endVolumeName="unknown volume";
       if(physicalVolumesMulti!=nullptr)
       {
-        mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(*physicalVolumesMulti);
+        mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(physicalVolumesMulti);
         startVolumeName=volumeMultiHelper.startVolume(particle).name();
         endVolumeName=volumeMultiHelper.endVolume(particle).name();
       }
@@ -1249,7 +1287,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         int trackclassindex=trackInfos[i].index;
         std::string trackcollection=trackInfos[i].entryText;
         int particleid=kalrep->particleType().particleType();
-        std::string particlename=HepPID::particleName(particleid);
+        std::string particlename=ptable->particle(particleid).name();
         std::string c=Form("Kalman Track %i  %s  (%s)",j,particlename.c_str(),trackcollection.c_str());
         boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
         info->setName(c.c_str());
@@ -1321,7 +1359,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
         }
 
-	int charge = kalrep->charge();
+        int charge = kalrep->charge();
         double t0=kalrep->t0().t0();
         double firsthitfltlen = kalrep->lowFitRange();
         double lasthitfltlen = kalrep->hiFitRange();
@@ -1333,9 +1371,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         double om = params[2];
         double rmax = d0+2.0/om;
 
-	info->setText(1,Form("Charge %i",charge));
-	info->setText(2,Form("Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV));
-	info->setText(3,Form("t0 %gns  d0 %gmm  rmax %gmm",t0/CLHEP::ns,d0/CLHEP::mm,rmax/CLHEP::mm));
+        info->setText(1,Form("Charge %i",charge));
+        info->setText(2,Form("Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV));
+        info->setText(3,Form("t0 %gns  d0 %gmm  rmax %gmm",t0/CLHEP::ns,d0/CLHEP::mm,rmax/CLHEP::mm));
     }
   }
 
@@ -1352,7 +1390,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int trackclassindex=trackInfos[i].index;
       std::string trackcollection=trackInfos[i].entryText;
       int particleid=kalseed.particle();
-      std::string particlename=HepPID::particleName(particleid);
+      std::string particlename=ptable->particle(particleid).name();
 
       const std::vector<mu2e::KalSegment> &segments = kalseed.segments();
       size_t nSegments=segments.size();
@@ -1361,16 +1399,11 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       const mu2e::KalSegment &segmentLast = kalseed.segments().back();
       double fltLMin=segmentFirst.fmin();
       double fltLMax=segmentLast.fmax();
-      XYZVec momvec1, momvec2;
+      XYZVectorF momvec1, momvec2;
       segmentFirst.mom(fltLMin, momvec1);
       segmentLast.mom(fltLMax, momvec2);
-      double p1=Geom::Hep3Vec(momvec1).mag();
-      double p2=Geom::Hep3Vec(momvec2).mag();
-
-      double t0   = kalseed.t0().t0();
-      double flt0 = kalseed.flt0();
-      double mass = ptable->particle(kalseed.particle()).ref().mass().value(); 
-      double v  = mu2e::TrkUtilities::beta(mass,(p1+p2)/2.0)*CLHEP::c_light;
+      double p1=mu2e::GenVector::Hep3Vec(momvec1).mag();
+      double p2=mu2e::GenVector::Hep3Vec(momvec2).mag();
 
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       std::string c=Form("KalSeed Track %lu  %s  (%s)",j,particlename.c_str(),trackcollection.c_str());
@@ -1378,57 +1411,86 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       info->setText(0,c.c_str());
       info->setText(1,Form("Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV));
 
-      for(size_t k=0; k<nSegments; k++)
+      if(kalseed.loopHelixFit())
       {
-        const mu2e::KalSegment &segment = segments.at(k);
+        info->setText(2,"Loop Helix Fit");
+        auto trajectory=kalseed.loopHelixFitTrajectory();
+        fillKalSeedTrajectory<LHPT>(trajectory, particleid, trackclass, trackclassindex, p1, info);
+      }
+      else if(kalseed.centralHelixFit())
+      {
+        info->setText(2,"Central Helix Fit");
+        auto trajectory=kalseed.centralHelixFitTrajectory();
+        fillKalSeedTrajectory<CHPT>(trajectory, particleid, trackclass, trackclassindex, p1, info);
+      }
+      else if(kalseed.kinematicLineFit())
+      {
+        info->setText(2,"Kinematic Line Fit");
+        auto trajectory=kalseed.kinematicLineFitTrajectory();
+        fillKalSeedTrajectory<KLPT>(trajectory, particleid, trackclass, trackclassindex, p1, info);
+      }
+      else
+      {
+//old KalSeed
+        info->setText(2,"Old KalSeed using Segments");
 
-        fltLMin=segment.fmin();
-        fltLMax=segment.fmax();
+        double t0   = kalseed.t0().t0();
+        double flt0 = kalseed.flt0();
+        double mass = ptable->particle(kalseed.particle()).mass();
+        double v  = mu2e::TrkUtilities::beta(mass,(p1+p2)/2.0)*CLHEP::c_light;
+
+        for(size_t k=0; k<nSegments; k++)
+        {
+          const mu2e::KalSegment &segment = segments.at(k);
+
+          fltLMin=segment.fmin();
+          fltLMax=segment.fmax();
+
 /*
 //interpolation between segments doesn't seem to work anymore
-        if(k>0)
-        {
-          double fltLMaxPrev=segments.at(k-1).fmax();
-          fltLMin=(fltLMin+fltLMaxPrev)/2.0;
-        }
-        if(k+1<nSegments)
-        {
-          double fltLMinNext=segments.at(k+1).fmin();
-          fltLMax=(fltLMax+fltLMinNext)/2.0;
-        }
+          if(k>0)
+          {
+            double fltLMaxPrev=segments.at(k-1).fmax();
+            fltLMin=(fltLMin+fltLMaxPrev)/2.0;
+          }
+          if(k+1<nSegments)
+          {
+            double fltLMinNext=segments.at(k+1).fmin();
+            fltLMax=(fltLMax+fltLMinNext)/2.0;
+          }
 */
 
-        XYZVec pos1, pos2;
-        segment.helix().position(fltLMin,pos1);
-        segment.helix().position(fltLMax,pos2);
-        double x1=Geom::Hep3Vec(pos1).x();
-        double y1=Geom::Hep3Vec(pos1).y();
-        double z1=Geom::Hep3Vec(pos1).z();
-        double x2=Geom::Hep3Vec(pos2).x();
-        double y2=Geom::Hep3Vec(pos2).y();
-        double z2=Geom::Hep3Vec(pos2).z();
-        double t1=t0+(fltLMin-flt0)/v;
-        double t2=t0+(fltLMax-flt0)/v;
-        boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
-                                                 particleid, trackclass, trackclassindex, p1,
-                                                 _geometrymanager, _topvolume, _mainframe, info, false));
-        _components.push_back(track);
-        _tracks.push_back(track);
+          XYZVectorF pos1, pos2;
+          segment.helix().position(fltLMin,pos1);
+          segment.helix().position(fltLMax,pos2);
+          double x1=mu2e::GenVector::Hep3Vec(pos1).x();
+          double y1=mu2e::GenVector::Hep3Vec(pos1).y();
+          double z1=mu2e::GenVector::Hep3Vec(pos1).z();
+          double x2=mu2e::GenVector::Hep3Vec(pos2).x();
+          double y2=mu2e::GenVector::Hep3Vec(pos2).y();
+          double z2=mu2e::GenVector::Hep3Vec(pos2).z();
+          double t1=t0+(fltLMin-flt0)/v;
+          double t2=t0+(fltLMax-flt0)/v;
+          boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
+                                                   particleid, trackclass, trackclassindex, p1,
+                                                   _geometrymanager, _topvolume, _mainframe, info, false));
+          _components.push_back(track);
+          _tracks.push_back(track);
 
-        for(double fltL=fltLMin; fltL<=fltLMax; fltL+=1.0)
-        {
-          double t=t0+(fltL-flt0)/v;
-          XYZVec pos;
-          segment.helix().position(fltL,pos);
-          CLHEP::Hep3Vector p = Geom::Hep3Vec(pos);
-          findBoundaryT(_tracksTimeMinmax, t);
-          findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
-          track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
-        }
-      }
+          for(double fltL=fltLMin; fltL<=fltLMax; fltL+=1.0)
+          {
+            double t=t0+(fltL-flt0)/v;
+            XYZVectorF pos;
+            segment.helix().position(fltL,pos);
+            CLHEP::Hep3Vector p = mu2e::GenVector::Hep3Vec(pos);
+            findBoundaryT(_tracksTimeMinmax, t);
+            findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
+            track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
+          }
+        } //segments
+      } //old KalSeed
     }
   }
-
 
   // TrkExt track
   trackInfos.clear();
@@ -1446,7 +1508,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int trackclassindex=trackInfos[i].index;
       std::string trackcollection=trackInfos[i].entryText;
 
-      std::string particlename=HepPID::particleName(particleid);
+      std::string particlename=ptable->particle(particleid).name();
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       std::string c=Form("TrkExt Trajectory %i  %s  (%s)", trkExtTraj.id(), particlename.c_str(),trackcollection.c_str());
       info->setName(c.c_str());

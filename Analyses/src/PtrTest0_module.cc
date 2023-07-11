@@ -11,14 +11,13 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
 // Mu2e includes.
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 using namespace std;
 
@@ -60,7 +59,7 @@ namespace mu2e {
       size_t offset = &(*i)-&gens.front();
       cout << "Gen: "
            << offset << " "
-           << gen.pdgId() <<  " " 
+           << gen.pdgId() <<  " "
            << gen.generatorId() << " "
            << gen.time() << " "
            << endl;
@@ -70,9 +69,9 @@ namespace mu2e {
     // Read back the Ptrs.
     for ( size_t i=0; i< genPtrs.size(); ++i ){
       GenParticle const& gen = *genPtrs.at(i);
-      cout << "Gen from Ptr: " 
+      cout << "Gen from Ptr: "
            << i << " "
-           << gen.pdgId()       <<  " " 
+           << gen.pdgId()       <<  " "
            << gen.generatorId() << " "
            << gen.time()
            << endl;
@@ -87,13 +86,13 @@ namespace mu2e {
       SimParticle const& sim = i->second;
 
       if ( sim.fromGenerator() ){
-        cout << "Sim: " 
-             << key.asInt()          << " " 
-             << sim.id().asInt()     << " " 
-             << sim.generatorIndex() << " " 
+        cout << "Sim: "
+             << key.asInt()          << " "
+             << sim.id().asInt()     << " "
+             << sim.generatorIndex() << " "
              << sim.startGlobalTime() << " "
              << endl;
-        
+
         simPtrs.push_back( art::Ptr<SimParticle>() );
         simPtrs.back() = art::Ptr<SimParticle>(simsHandle,key.asInt());
 
@@ -107,10 +106,10 @@ namespace mu2e {
 
       SimParticle const& sim = *simPtrs.at(i);
 
-      cout << "Sim from Ptr: " 
+      cout << "Sim from Ptr: "
            << i << " "
-           << sim.id().asInt()     << " " 
-           << sim.generatorIndex() << " " 
+           << sim.id().asInt()     << " "
+           << sim.generatorIndex() << " "
            << sim.startGlobalTime() << " "
            << endl;
 
@@ -124,4 +123,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::PtrTest0;
-DEFINE_ART_MODULE(PtrTest0);
+DEFINE_ART_MODULE(PtrTest0)

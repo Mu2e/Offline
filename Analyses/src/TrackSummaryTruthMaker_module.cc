@@ -9,17 +9,15 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "Offline/RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
-#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include "Offline/Mu2eUtilities/inc/particleEnteringG4Volume.hh"
 
@@ -83,7 +81,7 @@ namespace mu2e {
           ++nPrincipal[particleEnteringG4Volume(*dmc.strawGasStep(end))];
           // Aggregate all the steps, so that each particle is counted no more than once per hit
           std::set<art::Ptr<SimParticle> > parts;
-	  parts.insert(particleEnteringG4Volume(*dmc.strawGasStep(end)));
+          parts.insert(particleEnteringG4Volume(*dmc.strawGasStep(end)));
           for(const auto& p: parts) {
             ++nAll[p];
           }
@@ -107,4 +105,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::TrackSummaryTruthMaker);
+DEFINE_ART_MODULE(mu2e::TrackSummaryTruthMaker)

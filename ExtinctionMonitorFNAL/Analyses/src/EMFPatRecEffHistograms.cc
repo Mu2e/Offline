@@ -30,12 +30,12 @@ namespace mu2e {
     void EMFPatRecEffHistograms::book(const ExtMon& extmon, const std::string& relativePath)
     {
       art::ServiceHandle<art::TFileService> tfs;
-      art::TFileDirectory tfdir = relativePath.empty() ? *tfs : tfs->mkdir(relativePath.c_str());
+      art::TFileDirectory tfdir = tfs->mkdir(relativePath.c_str());
       book (extmon, tfdir);
     }
 
     // Book the histograms.
-    void EMFPatRecEffHistograms::book(const ExtMon& extmon, art::TFileDirectory& tfdir) {
+    void EMFPatRecEffHistograms::book(const ExtMon& extmon, const art::TFileDirectory& tfdir) {
 
       hcommon_ = tfdir.make<TH1D>("ncommon", "Num common clusters for best match", 7, -0.5, 6.5);
 

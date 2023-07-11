@@ -1,7 +1,7 @@
 //
 // A module to extract number of PEs, arrival times, hit positions, etc. from the CRV waveforms
 //
-// 
+//
 // Original Author: Ralf Ehrlich
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -10,19 +10,20 @@
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/CrvParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/MCDataProducts/inc/CrvPhotons.hh"
 #include "Offline/MCDataProducts/inc/CrvSiPMCharges.hh"
-#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileDirectory.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -39,7 +40,7 @@
 #include <TMarker.h>
 #include <TStyle.h>
 
-namespace mu2e 
+namespace mu2e
 {
   class CrvPlot : public art::EDAnalyzer
   {
@@ -57,10 +58,11 @@ namespace mu2e
     std::string _crvDigiModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
     double      _timeStart, _timeEnd;
-    double      _recoPulsePedestal;
 
     double      _microBunchPeriod;
     double      _digitizationPeriod;
+
+    ProditionsHandle<CRVCalib> _calib_h;
 
     std::map<std::pair<int,int>, TCanvas*> _canvas;
   };
@@ -103,10 +105,9 @@ namespace mu2e
 
     mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
     _digitizationPeriod  = crvPar->digitizationPeriod;
-    _recoPulsePedestal   = crvPar->pedestal;
   }
 
-  void CrvPlot::analyze(const art::Event& event) 
+  void CrvPlot::analyze(const art::Event& event)
   {
     int eventID = event.id().event();
 
@@ -125,6 +126,8 @@ namespace mu2e
 
     art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
     event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
+
+    auto const& calib = _calib_h.get(event.id());
 
     GeomHandle<CosmicRayShield> CRS;
     for(size_t bi=0; bi<_crvBarIndices.size(); ++bi)
@@ -152,7 +155,7 @@ namespace mu2e
           for(timeIter=photonTimes.begin(); timeIter!=photonTimes.end(); ++timeIter)
           {
             double time = timeIter->_time;
-            time = fmod(time,_microBunchPeriod); 
+            time = fmod(time,_microBunchPeriod);
             photonTimesAdjusted[SiPM].push_back(time);
           }
         }
@@ -240,7 +243,7 @@ namespace mu2e
       CrvDigiCollection::const_iterator digis;
       for(digis=crvDigiCollection->begin(); digis!=crvDigiCollection->end(); ++digis)
       {
-        if(digis->GetScintillatorBarIndex()==barIndex) 
+        if(digis->GetScintillatorBarIndex()==barIndex)
         {
           int SiPM=digis->GetSiPMNumber();
           if(SiPM<0 || SiPM>3) throw cet::exception("SIM")<<"mu2e::CrvPlot: Invalid SiPM# at event "<<eventID<<std::endl;
@@ -248,15 +251,15 @@ namespace mu2e
           std::vector<double> ADCsTmp;
           std::vector<double> timesTmp;
           for(size_t j=0; j<digis->GetADCs().size(); ++j)
-          {    
+          {
             double ADC=digis->GetADCs()[j];
             double time=(digis->GetStartTDC()+j)*_digitizationPeriod;
             ADCsTmp.push_back(ADC);
-            timesTmp.push_back(time); 
+            timesTmp.push_back(time);
             if(maxADC[SiPM]<ADC || isnan(maxADC[SiPM])) maxADC[SiPM]=ADC;
           }
           ADCs[SiPM].push_back(ADCsTmp);
-          times[SiPM].push_back(timesTmp); 
+          times[SiPM].push_back(timesTmp);
         }
       }
 
@@ -300,12 +303,15 @@ namespace mu2e
       CrvRecoPulseCollection::const_iterator recoPulse;
       for(recoPulse=crvRecoPulseCollection->begin(); recoPulse!=crvRecoPulseCollection->end(); ++recoPulse)
       {
-        if(recoPulse->GetScintillatorBarIndex()==barIndex) 
+        if(recoPulse->GetScintillatorBarIndex()==barIndex)
         {
           int SiPM=recoPulse->GetSiPMNumber();
           if(SiPM<0 || SiPM>3) throw cet::exception("SIM")<<"mu2e::CrvPlot: Invalid SiPM# at event "<<eventID<<std::endl;
           if(isnan(scale[SiPM])) continue; //don't draw anything, if there are no digis
           _canvas[eventBarIndex]->cd(SiPM+1);
+
+          size_t channel  = barIndex.asUint()*4 + SiPM;
+          double pedestal = calib.pedestal(channel);
 
           double fitParam0 = recoPulse->GetPulseHeight()*TMath::E();
           double fitParam1 = recoPulse->GetPulseTime();
@@ -320,7 +326,7 @@ namespace mu2e
           {
             tF[iF] = tF1 + iF*1.0;
             vF[iF] = fitParam0*TMath::Exp(-(tF[iF]-fitParam1)/fitParam2-TMath::Exp(-(tF[iF]-fitParam1)/fitParam2));
-            vF[iF]+=_recoPulsePedestal;
+            vF[iF]+= pedestal;
             vF[iF]*=scale[SiPM];
             if(isnan(vF[iF])) nF=0;
           }

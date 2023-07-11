@@ -48,8 +48,8 @@ physics :
     # Form StrawHits (SH).
     makeSH : @local::makeSH
     FSHPreStereo   : @local::FSHPreStereo
-    MakeStereoHits : @local::MakeStereoHits 
-    FlagStrawHits :@local::FlagStrawHits 
+    MakeStereoHits : @local::MakeStereoHits
+    FlagStrawHits :@local::FlagStrawHits
     FlagBkgHits : @local::FlagBkgHits
     tprDem : @local::TrkPatRecDeM
     tprDep : @local::TrkPatRecDeP
@@ -68,7 +68,7 @@ physics :
       fitparticleArray : [11, -11, 11, -11]
       fitdirectionArray : [0, 0, 1, 1]
       g4ModuleLabel : g4run
-      makerModuleLabel : makeSH 
+      makerModuleLabel : makeSH
       maxMomentum : 110.0
       turnOnMaterialEffect : true
       useStoppingPower : false
@@ -84,17 +84,17 @@ physics :
     }
 
 
-   }
+  }
 
- 
-  analyzers : 
+
+  analyzers :
   {
 
     # analyzer module for extrapolation
-    extRec : 
+    extRec :
     {
       module_type : ReadTrkExt
-      # for following three lines, see the comments at producer module 
+      # for following three lines, see the comments at producer module
       fitterModuleLabelArray : ["tprDem", "tprDep", "tprUem", "tprUep"]
       fitparticleArray : [11, -11, 11, -11]
       fitdirectionArray : [0, 0, 1, 1]
@@ -107,7 +107,7 @@ physics :
       }
       TrkExt : {
         g4ModuleLabel : g4run
-        makerModuleLabel : makeSH 
+        makerModuleLabel : makeSH
       }
     }
 
@@ -139,13 +139,13 @@ physics :
 }
 
 outputs: {
-    
+
   outfile : {
     module_type   :   RootOutput
     fileName      :   "alloutput-TrkExt.root"
-    
-  } 
-    
+
+  }
+
 }
 
 

@@ -1,7 +1,7 @@
 #ifndef RecoDataProducts_HelixHit_hh
 #define RecoDataProducts_HelixHit_hh
 //
-// deprecated class, now absorbed into ComboHit 
+// deprecated class, now absorbed into ComboHit
 //
 // Original author David Brown
 //

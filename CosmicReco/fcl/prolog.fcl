@@ -6,7 +6,7 @@
 
 BEGIN_PROLOG
 
-# time clustering is the 1st stage of track finding 
+# time clustering is the 1st stage of track finding
 TimeClusterFinder : {
     module_type  : TimeClusterFinder
     ClusterMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
@@ -43,6 +43,12 @@ LineFinder : {
     module_type : LineFinder
     ComboHitCollection : "makePH"
     TimeClusterCollection : "SimpleTimeCluster"
+    NSteps: 0
+    NTSteps: 0
+    StepSize : 0.5
+    t0offset : 0
+    maxDOCA : 10
+    minPeak : 10
 }
 
 CosmicDriftFit : {
@@ -58,7 +64,7 @@ CosmicTrackFit : {
     minNComboHits : 8
     Noutliers : 2
     maxNiter : 1000
-    minNHitsTimeCluster : 1
+    minNHitsTimeCluster : 0
     MaxSeedChi2DOF : 2.5
     MaxDeltaChi2 : 0.001
     MaxPosDev : 200
@@ -72,17 +78,18 @@ CosmicTrackFit : {
 }
 
 CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
-    module_type		   : CosmicTrackFinder
+    module_type                   : CosmicTrackFinder
     ComboHitCollection     : "makePH"
     TimeClusterCollection  : "SimpleTimeCluster"
     LineFinderTag          : "LineFinder"
     minNStrawHits          : 2
     minNComboHits          : 8
-    minNHitsTimeCluster    : 1
+    minNHitsTimeCluster    : 0
     UseLineFinder          : false
     UseChiFit              : true
     DoDrift                : true
     UseTime                : false
+    DriftRes               : 10
     MinuitTolerance        : 0.1
     MinuitPrecision        : -1
     CosmicTrackFit : @local::CosmicTrackFit
@@ -94,11 +101,11 @@ CosmicTrackFinderLoose : {
     UseTime : false
     UseLineFinder : false
     CosmicTrackFit :{
-        @table::CosmicTrackFit
-	minNComboHits : 4
-	MaxSeedChi2DOF : 10
-	MaxDeltaChi2 : 0.5
-	MaxPosDev : 20000
+    @table::CosmicTrackFit
+        minNComboHits : 4
+        MaxSeedChi2DOF : 10
+        MaxDeltaChi2 : 0.5
+        MaxPosDev : 20000
     }
 }
 
@@ -122,8 +129,17 @@ CosmicTrackDetails : {
     #TimeClusterCollection : TimeClusterFinderCosmics
     CosmicTrackSeedCollection : CosmicTrackFinder
     StrawDigiMCCollection : "compressDigiMCs"
-    TimeOffsets : {inputs : [ @sequence::DigiCompression.TimeMaps ]}
 }
+
+CosmicMCRecoDiff  : {
+    module_type : CosmicMCRecoDiff
+    ComboHitCollection : "makePH"
+    TimeClusterCollection : SimpleTimeCluster
+    #TimeClusterCollection : TimeClusterFinderCosmics
+    CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
+    StrawDigiMCCollection : "compressDigiMCs"
+}
+
 
 CosmicAnalysis : {
     module_type : CosmicAnalyzer
@@ -132,27 +148,38 @@ CosmicAnalysis : {
     #TimeClusterCollection : TimeClusterFinderCosmics
     CosmicTrackSeedCollection : CosmicTrackFinder
     StrawDigiMCCollection : "compressDigiMCs"
-    TimeOffsets : {inputs : [ @sequence::DigiCompression.TimeMaps ]}
 }
 
 CosmicFitDisplay : {
     module_type : CosmicFitDisplay
     ComboHitCollection : "makePH"
-    _chtag : "makePH"
-    _tctag : TimeClusterFinderCosmics
-    _sttag : CosmicTrackFinder
+    TimeClusterCollection : TimeClusterFinderCosmics
+    CosmicTrackSeedCollection : CosmicTrackFinder
     doDisplay            : true
     TimeClusterCollection : TimeClusterFinderCosmicsr
     CosmicTrackSeedCollection : CosmicTrackFinder
-    
+
 }
+
 
 CosmicTrackDiag : {
     module_type : CosmicTrackDiag
     StrawHitCollection : "makeSH"
+    ComboHitCollection : "makeSH"
+    PanelHitCollection : "makePH"
     TimeClusterCollection : SimpleTimeCluster
     StrawDigiMCCollection : "compressDigiMCs"
-    CosmicTrackSeedCollection : "CosmicTrackFinder"
+    ProtonBunchTimeMC : "EWMProducer"
+    CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
+}
+
+CosmicShowerFilter : {
+    module_type : CosmicShowerFilter
+    maxCrossingGap : 2
+    maxSameGap : 1
+    maxTotalSameGap : 1
+    TimeClusterCollection : "SimpleTimeCluster"
+    ComboHitCollection : "makePH"
 }
 
 CosmicMuonInfo : {
@@ -164,51 +191,53 @@ CosmicMuonInfo : {
     caloDigisTag    : "CaloDigiMaker"
     diagLevel       : 0
     filterCuts      : {
-	pmin          : 200. # MeV/c set low 
-	pmax          : 1000000. # MeV/c currnetly not using 
-	minStrawDigis :    2  # Minimum number of digis made by the primary muon //10
-	minPlanes     :    2  # Minimum number of planes hit by the muon track//3
-	minBackground :    0  # Make > 0 to select events with background digis
-	maxBackground : 9999  # Make a small number to limit digis not from the muon
+        pmin          : 200. # MeV/c set low
+        pmax          : 1000000. # MeV/c currnetly not using
+        minStrawDigis :    2  # Minimum number of digis made by the primary muon //10
+        minPlanes     :    2  # Minimum number of planes hit by the muon track//3
+        minBackground :    0  # Make > 0 to select events with background digis
+        maxBackground : 9999  # Make a small number to limit digis not from the muon
     }
 }
 CosmicTracking : {
     producers :{
-	SimpleTimeCluster  : @local::SimpleTimeCluster
-	TimeClusterFinderCosmics : @local::TimeClusterFinderCosmics
-	CosmicTrackFinder  : @local::CosmicTrackFinder
-	CosmicTrackFinderLoose  : @local::CosmicTrackFinderLoose
-	CosmicTrackFinderTimeFit  : @local::CosmicTrackFinderTimeFit
-	LineFinder : @local::LineFinder
-	CosmicDriftFit : @local::CosmicDriftFit
+        SimpleTimeCluster  : @local::SimpleTimeCluster
+        CosmicShowerFilter : @local::CosmicShowerFilter
+        TimeClusterFinderCosmics : @local::TimeClusterFinderCosmics
+        CosmicTrackFinder  : @local::CosmicTrackFinder
+        CosmicTrackFinderLoose  : @local::CosmicTrackFinderLoose
+        CosmicTrackFinderTimeFit  : @local::CosmicTrackFinderTimeFit
+        LineFinder : @local::LineFinder
+        CosmicDriftFit : @local::CosmicDriftFit
     }
     analyzers : {
 
-	CosmicAnalysis : @local::CosmicAnalysis
-	CosmicFitDisplay : @local::CosmicFitDisplay
-	CosmicTrackDetails : @local::CosmicTrackDetails
-	CosmicTrackDiag : @local::CosmicTrackDiag
+        CosmicAnalysis : @local::CosmicAnalysis
+        CosmicFitDisplay : @local::CosmicFitDisplay
+        CosmicTrackDetails : @local::CosmicTrackDetails
+        CosmicMCRecoDiff  : @local::CosmicMCRecoDiff
+        CosmicTrackDiag : @local::CosmicTrackDiag
     }
     filters : {
-	CosmicMuonInfo: @local::CosmicMuonInfo
+        CosmicMuonInfo: @local::CosmicMuonInfo
     }
 }
-# 
-# define standard outputs 
+#
+# define standard outputs
 Output : {
-    Digis : [ "keep mu2e::StrawDigis_*_*_*" ]
-    Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
-	     "keep mu2e::ComboHitCollection_*_*_*",
-	     "keep mu2e::StrawHits_*_*_*"	]
+  Digis : [ "keep mu2e::StrawDigis_*_*_*" ]
+  Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
+  "keep mu2e::ComboHitCollection_*_*_*",
+  "keep mu2e::StrawHits_*_*_*"        ]
 
-    Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
-	       "keep mu2e::ComboHitCollection_makePH_*_*",
-	       "keep mu2e::TimeClusters_*_*_*" ]
-    MCTracks : ["keep mu2e::GenParticles_*_*_*",
-		"keep mu2e::SimParticles_*_*_*" ]
-    MCDigis : ["keep mu2e::StrawDigiMCs_*_*_*"]
-    MCHits : [ "keep mu2e::StepPointMCs_*_tracker_*",
-	       "keep mu2e::StepPointMCs_*_virtualdetector_*"]
+  Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
+  "keep mu2e::ComboHitCollection_makePH_*_*",
+  "keep mu2e::TimeClusters_*_*_*" ]
+  MCTracks : ["keep mu2e::GenParticles_*_*_*",
+  "keep mu2e::SimParticles_*_*_*" ]
+  MCDigis : ["keep mu2e::StrawDigiMCs_*_*_*"]
+  MCHits : [ "keep mu2e::StepPointMCs_*_tracker_*",
+  "keep mu2e::StepPointMCs_*_virtualdetector_*"]
 
 }
 

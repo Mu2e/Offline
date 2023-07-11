@@ -52,10 +52,9 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 // Root includes.
 #include "TApplication.h"
@@ -201,4 +200,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::InteractiveRoot;
-DEFINE_ART_MODULE(InteractiveRoot);
+DEFINE_ART_MODULE(InteractiveRoot)

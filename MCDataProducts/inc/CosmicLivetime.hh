@@ -15,16 +15,8 @@ namespace mu2e {
   struct CosmicLivetime{
 
   public:
-
-    CosmicLivetime():
-      _primaries(0),
-      _area(0),
-      _lowE(0),
-      _highE(0),
-      _fluxConstant(0)  {
-    }
-
-    CosmicLivetime( unsigned int primaries,
+    CosmicLivetime() {}
+    CosmicLivetime( unsigned long long primaries,
                     float area,
                     float lowE,
                     float highE,
@@ -42,13 +34,27 @@ namespace mu2e {
         _livetime = _primaries / (M_PI * _area * _fluxConstant * (EfToOneMinusGamma - EiToOneMinusGamma) / (1. + eslope));
     }
 
+    CosmicLivetime( unsigned long long primaries,
+                    float area,
+                    float lowE,
+                    float highE,
+                    float fluxConstant,
+                    float livetime ):
+      _primaries(primaries),
+      _area(area),
+      _lowE(lowE),
+      _highE(highE),
+      _fluxConstant(fluxConstant),
+      _livetime(livetime) {
+    }
+
     // Accessors
-    unsigned int primaries() const { return _primaries; }
-    float area()             const { return _area; }
-    float lowE()             const { return _lowE;}
-    float highE()            const { return _highE; }
-    float fluxConstant()     const { return _fluxConstant; }
-    float liveTime()         const { return _livetime; }
+    auto primaries() const { return _primaries; }
+    auto area()             const { return _area; }
+    auto lowE()             const { return _lowE;}
+    auto highE()            const { return _highE; }
+    auto fluxConstant()     const { return _fluxConstant; }
+    auto liveTime()         const { return _livetime; }
 
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
@@ -58,12 +64,12 @@ namespace mu2e {
 
   private:
 
-    unsigned int _primaries;
-    float _area;             // m2
-    float _lowE;             // (GeV)
-    float _highE;            // (GeV)
-    float _fluxConstant;
-    float _livetime;         // s
+    unsigned long long _primaries = 0;
+    float _area = 0;             // m2
+    float _lowE = 0;             // (GeV)
+    float _highE = 0;            // (GeV)
+    float _fluxConstant = 0;
+    float _livetime = 0;         // s
 
   };
 

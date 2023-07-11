@@ -5,10 +5,10 @@ string dirt.beamline.berm.sw.name     = "dirtBeamlineBermSW";
 string dirt.beamline.berm.sw.material = "MBOverburden";
 
 double dirt.beamline.berm.sw.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.berm.sw.offsetFromFloorSurface.y = 9017; 
+double dirt.beamline.berm.sw.offsetFromFloorSurface.y = 9017;
 double dirt.beamline.berm.sw.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.beamline.berm.sw.yHalfThickness           =1244.6; 
+double dirt.beamline.berm.sw.yHalfThickness           =1244.6;
 
 //trapezoid vertices
 vector<double> dirt.beamline.berm.sw.xPositions = {

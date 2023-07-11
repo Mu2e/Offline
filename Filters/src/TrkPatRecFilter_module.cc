@@ -1,9 +1,8 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 using namespace CLHEP;
@@ -15,9 +14,9 @@ using namespace CLHEP;
 
 using namespace std;
 
-namespace mu2e 
+namespace mu2e
 {
-  class TrkPatRecFilter : public art::EDFilter 
+  class TrkPatRecFilter : public art::EDFilter
   {
     public:
     explicit TrkPatRecFilter(fhicl::ParameterSet const& pset);
@@ -46,14 +45,14 @@ namespace mu2e
     _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")),
     _minCEHits(pset.get<int>("MinCEHits",-1))
   {
-    if(_fitterModuleLabels.size() != _trkPatRecInstances.size()) 
+    if(_fitterModuleLabels.size() != _trkPatRecInstances.size())
     {
         throw cet::exception("G4CONTROL")
           << "Sizes of fitterModuleLabels and trkPatRecInstances do not match.\n";
     }
   }
 
-  bool TrkPatRecFilter::filter(art::Event& event) 
+  bool TrkPatRecFilter::filter(art::Event& event)
   {
     bool retval(false);
     for(unsigned int i=0; i<_fitterModuleLabels.size(); i++)
@@ -61,8 +60,8 @@ namespace mu2e
       art::Handle<KalRepPtrCollection> trksHandle;
       if(event.getByLabel(_fitterModuleLabels[i],_trkPatRecInstances[i],trksHandle))
       {
-	KalRepPtrCollection const& kalReps = *trksHandle;
-	for(unsigned int j=0; j<kalReps.size(); j++)
+        KalRepPtrCollection const& kalReps = *trksHandle;
+        for(unsigned int j=0; j<kalReps.size(); j++)
         {
           KalRep const* kalrep = kalReps.at(j).get();
           if(kalrep!=NULL)
@@ -74,7 +73,7 @@ namespace mu2e
             if(p1/CLHEP::MeV<_minMomentum ) continue;
             if(p2/CLHEP::MeV>_maxMomentum ) continue;
             retval = true;
-	    break;
+            break;
           }
         }
       }
@@ -85,13 +84,13 @@ namespace mu2e
       int ncehits(0);
       art::Handle<StrawDigiMCCollection> mcdigisHandle;
       if(event.getByLabel(_mcdigislabel,mcdigisHandle)){
-	const StrawDigiMCCollection* mcdigis = mcdigisHandle.product();
-	for(auto imcdigi = mcdigis->begin(); imcdigi != mcdigis->end(); ++imcdigi){
-	  if( imcdigi->wireEndTime(StrawEnd::cal) > _minCETime ) {
-	    if(imcdigi->strawGasStep(StrawEnd::cal)->simParticle()->genParticle().isNonnull() &&
-		imcdigi->strawGasStep(StrawEnd::cal)->simParticle()->genParticle()->generatorId().isConversion()) ++ncehits;
-	  }
-	}
+        const StrawDigiMCCollection* mcdigis = mcdigisHandle.product();
+        for(auto imcdigi = mcdigis->begin(); imcdigi != mcdigis->end(); ++imcdigi){
+          if( imcdigi->wireEndTime(StrawEnd::cal) > _minCETime ) {
+            if(imcdigi->strawGasStep(StrawEnd::cal)->simParticle()->genParticle().isNonnull() &&
+                imcdigi->strawGasStep(StrawEnd::cal)->simParticle()->genParticle()->generatorId().isConversion()) ++ncehits;
+          }
+        }
       }
       retval &= ncehits >= _minCEHits;
     }
@@ -99,4 +98,4 @@ namespace mu2e
   }
 }
 
-DEFINE_ART_MODULE(mu2e::TrkPatRecFilter);
+DEFINE_ART_MODULE(mu2e::TrkPatRecFilter)

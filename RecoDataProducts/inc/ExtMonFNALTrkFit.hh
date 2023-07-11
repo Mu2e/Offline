@@ -47,6 +47,7 @@ namespace mu2e {
     Clusters clusters_;
     Residuals residuals_;
   };
+  typedef std::vector<ExtMonFNALTrkFit> ExtMonFNALTrkFitCollection;
 
 } // namespace mu2e
 

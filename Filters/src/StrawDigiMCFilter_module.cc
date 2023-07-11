@@ -7,12 +7,11 @@
 
 // Mu2e includes.
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 // Framework includes.
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 // Other includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -26,19 +25,19 @@ using namespace std;
 namespace mu2e {
 
   class StrawDigiMCFilter : public art::EDFilter {
-  public:
-    explicit StrawDigiMCFilter(fhicl::ParameterSet const& pset);
-    virtual ~StrawDigiMCFilter() { }
+    public:
+      explicit StrawDigiMCFilter(fhicl::ParameterSet const& pset);
+      virtual ~StrawDigiMCFilter() { }
 
-    bool filter( art::Event& event);
+      bool filter( art::Event& event);
 
-  private:
+    private:
 
-    unsigned minndigi_;
-    double minpmom_, maxpmom_;
-    std::vector<PDGCode::type> pdgs_;
-    int diag_, debug_;
-    art::InputTag _mcdigisTag;
+      unsigned minndigi_;
+      double minpmom_, maxpmom_;
+      std::vector<PDGCode::type> pdgs_;
+      int diag_, debug_;
+      art::InputTag _mcdigisTag;
 
   };
 
@@ -53,7 +52,7 @@ namespace mu2e {
       produces<SimParticlePtrCollection>();
       auto pdgs = pset.get<std::vector<int>>("particleTypes");
       for(auto pdg : pdgs )
-	pdgs_.push_back(PDGCode::type(pdg));
+        pdgs_.push_back(PDGCode::type(pdg));
     }
 
 
@@ -65,7 +64,7 @@ namespace mu2e {
     // keep count of digis produced by specific particle
     std::map<art::Ptr<SimParticle>,unsigned> pmap;
     for(auto const& mcdigi : *mcdigis) {
-    // look at the early end
+      // look at the early end
       StrawEnd fend = mcdigi.earlyEnd();
       auto const& step =  mcdigi.strawGasStep(fend);
       art::Ptr<SimParticle> const& sp = step->simParticle();
@@ -73,28 +72,28 @@ namespace mu2e {
       if(debug_ > 0)std::cout <<"SimParticle PDG = " << sp->pdgId() << " Mom = " << sqrt(mom.mag2()) << std::endl;
       bool goodpdg(true);
       if(pdgs_.size() > 0)
-	goodpdg = std::find(pdgs_.begin(),pdgs_.end(),sp->pdgId()) != pdgs_.end();
+        goodpdg = std::find(pdgs_.begin(),pdgs_.end(),sp->pdgId()) != pdgs_.end();
       if(goodpdg && sqrt(mom.mag2()) > minpmom_ && sqrt(mom.mag2()) < maxpmom_ ){
-	auto mapfnd = pmap.find(sp);
-	if(mapfnd == pmap.end()) 
-	  pmap[sp] = 1;
-	else
-	  ++mapfnd->second;
+        auto mapfnd = pmap.find(sp);
+        if(mapfnd == pmap.end())
+          pmap[sp] = 1;
+        else
+          ++mapfnd->second;
       }
     }
     // check if any single particle generated enough digis.  Save All the particles
     // that have enough in the map
     for(auto const& imap : pmap) {
       if(imap.second >= minndigi_){
-	retval = true;
-	output->push_back(imap.first);
+        retval = true;
+        output->push_back(imap.first);
       }
     }
     evt.put(std::move(output));
-    return retval; 
+    return retval;
   }
 
 }
 
 using mu2e::StrawDigiMCFilter;
-DEFINE_ART_MODULE(StrawDigiMCFilter);
+DEFINE_ART_MODULE(StrawDigiMCFilter)

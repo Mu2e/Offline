@@ -64,13 +64,38 @@ namespace mu2e {
 
     }
 
-    // kinetic energy at the point of annihilation
+    // The following functions attempt to get the particle end
+    // parameters. For the one which have a chance to travel, the
+    // Mu2eRecorderProcess stores the information in the
+    // Mu2eG4UserTrackInformation just before they interact
+    // inelastically or decay. For the particles born at rest, such
+    // information is not provided and their times are taken from the
+    // pre step point. Note that for the particles decaying in flight,
+    // the end times are the ones after they decay, while for the ones
+    // decaying at rest, the recorded times are the ones before they
+    // decay. Also note, that while the particle decays at rest the
+    // track length is not changing, so no special treatment is needed.
+    // Similarly, when the KE is zero, the momentum direction does not matter
+
+    // global time at the point of interaction/decay
+    double getEndGlobalTime(G4Track const* const trk) {
+      auto const* uti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation());
+      return (uti->GetGlobalTime() >= 0.) ? uti->GetGlobalTime() :
+        trk->GetStep()->GetPreStepPoint()->GetGlobalTime();
+    }
+    // proper time at the point of interaction/decay
+    double getEndProperTime(G4Track const* const trk) {
+      auto const* uti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation());
+      return (uti->GetProperTime() >= 0.) ? uti->GetProperTime() :
+        trk->GetStep()->GetPreStepPoint()->GetProperTime();
+    }
+    // kinetic energy at the point of interaction/decay
     double getEndKE(G4Track const* const trk) {
       auto const* uti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation());
       return uti->GetKineticEnergy();
     }
 
-    // momentum at the point of annihilation
+    // momentum at the point of interaction/decay
     CLHEP::HepLorentzVector getEndMomentum(G4Track const* const trk) {
       auto const* const uti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation());
       auto const& pdir = uti->GetMomentumDirection();
@@ -78,11 +103,11 @@ namespace mu2e {
       double mass = trk->GetParticleDefinition()->GetPDGMass();
       double e=0,p=0;
       if(mass > std::numeric_limits<double>::epsilon() ) {
-	e = ke + mass;
-	p = sqrtOrThrow<double>(e*e-mass*mass,std::numeric_limits<double>::epsilon());
+        e = ke + mass;
+        p = sqrtOrThrow<double>(e*e-mass*mass,std::numeric_limits<double>::epsilon());
       } else {
-	e = ke;
-	p = ke;
+        e = ke;
+        p = ke;
       }
       return CLHEP::HepLorentzVector(p*pdir,e);
     }
@@ -177,17 +202,19 @@ namespace mu2e {
       if (process) {
         if ( process->GetProcessName() == "Transportation" ) {
           if (trVerbosity>2) {
-            cout << __func__ << " checking if particle was killed by the Field Propagator in "
-                 << theStep->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetName()
-                 <<", "
-                 << theStep->GetPostStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetName()
-                 << endl;
+            if( trk->GetNextVolume() != nullptr ) {
+              cout << __func__ << " checking if particle was killed by the Field Propagator in "
+                   << theStep->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetName()
+                   <<", "
+                   << theStep->GetPostStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetName()
+                   << endl;
+            }
             printKilledTrackInfo(trk);
           }
-          if (theStep->GetPreStepPoint()->GetPhysicalVolume()==
-              theStep->GetPostStepPoint()->GetPhysicalVolume()) {
+          if ( trk->GetNextVolume() != nullptr &&
+               theStep->GetPreStepPoint()->GetPhysicalVolume()==
+               theStep->GetPostStepPoint()->GetPhysicalVolume()) {
             // the two volumes should not be the same in standard cases
-
             if (trVerbosity>0) {
               cout << __func__ << " WARNING: particle killed by the Field Propagator in "
                    << theStep->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetName()

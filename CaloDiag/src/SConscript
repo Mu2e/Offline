@@ -63,8 +63,6 @@ helper.make_plugins( [ mainlib,
                        'cetlib',
                        'cetlib_except',
                        'CLHEP',
-                       'HepPDT',
-                       'HepPID',
                        rootlibs,
                        extrarootlibs,
                        'xerces-c',
@@ -72,7 +70,7 @@ helper.make_plugins( [ mainlib,
                        'pthread',
                        'hep_concurrency',
                        'DTCInterface',
-                       'mu2e-artdaq-core_Overlays'
+                       'Overlays'
                        ] )
 
 # this tells emacs to view this file in python mode.

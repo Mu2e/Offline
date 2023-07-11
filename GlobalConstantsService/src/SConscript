@@ -16,8 +16,6 @@ mainlib = helper.make_mainlib ( [ 'art_Framework_Services_Registry',
                                   'mu2e_Mu2eInterfaces',
                                   'mu2e_ConfigTools',
                                   'mu2e_DataProducts',
-                                  'HepPDT',
-                                  'HepPID',
                                   'MF_MessageLogger',
                                   'fhiclcpp',
                                   'fhiclcpp_types',
@@ -32,6 +30,8 @@ helper.make_plugins( [ mainlib,
                        'art_Utilities',
                        'canvas',
                        'boost_filesystem',
+                       'cetlib',
+                       'cetlib_except',
                        ] )
 
 # This tells emacs to view this file in python mode.

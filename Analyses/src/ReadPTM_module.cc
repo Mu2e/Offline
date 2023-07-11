@@ -5,9 +5,9 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "TH1F.h"
 #include "TNtuple.h"
 #include "TTree.h"
@@ -15,7 +15,6 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "cetlib_except/exception.h"
@@ -180,4 +179,4 @@ namespace mu2e {
 } // namespace mu2e
 
 //using mu2e::ReadPTM;
-DEFINE_ART_MODULE(mu2e::ReadPTM);
+DEFINE_ART_MODULE(mu2e::ReadPTM)

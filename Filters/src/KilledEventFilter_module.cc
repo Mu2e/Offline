@@ -12,7 +12,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 // Root includes
@@ -212,7 +211,7 @@ namespace mu2e {
 
     ntup_->Fill();
 
-    mf::LogInfo("Summary") 
+    mf::LogInfo("Summary")
       << "KilledEventFilter_module: Number of events passing the filter: "
       << _nPassed
       << "\nNumber of events skipped: "
@@ -230,4 +229,4 @@ namespace mu2e {
 }
 
 using mu2e::KilledEventFilter;
-DEFINE_ART_MODULE(KilledEventFilter);
+DEFINE_ART_MODULE(KilledEventFilter)

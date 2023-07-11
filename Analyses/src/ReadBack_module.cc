@@ -6,7 +6,7 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -14,12 +14,12 @@
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
@@ -35,7 +35,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "cetlib_except/exception.h"
@@ -408,17 +407,17 @@ namespace mu2e {
           const StepPointMCCollection& steps(*handle);
 
           for (const auto& step : steps )
-	  {
-	      stepPtMap[step.volumeId()] += step.totalEDep();
-	      ++stepPtMap2[step.volumeId()];
+          {
+              stepPtMap[step.volumeId()] += step.totalEDep();
+              ++stepPtMap2[step.volumeId()];
 
 
               CLHEP::Hep3Vector hitPos  = cal.geomUtil().mu2eToCrystal(step.volumeId(),step.position());
-	      _hCaCrystalXY->Fill(hitPos.x(),hitPos.y());
+              _hCaCrystalXY->Fill(hitPos.x(),hitPos.y());
 
               if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
-        	cout << "Readback: Calo StepPointMC (" << step.volumeId() << "," << step.totalEDep() << ")";
-	  }
+                cout << "Readback: Calo StepPointMC (" << step.volumeId() << "," << step.totalEDep() << ")";
+          }
      }
 
      for (const auto& iter : stepPtMap) _hCaStepEdep->Fill(iter.first,iter.second);
@@ -438,8 +437,8 @@ namespace mu2e {
          _hCaTime->Fill(showerSim.time());
 
          if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
-	   std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalID()<<" eDep = "<<showerSim.energyDep()
-	            <<" time = "<<showerSim.time()<<std::endl;
+           std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalID()<<" eDep = "<<showerSim.energyDep()
+                    <<" time = "<<showerSim.time()<<std::endl;
      }
 
      for (const auto& iter : showerMap)  _hCaShowerEdep->Fill(iter.first,iter.second);
@@ -459,8 +458,8 @@ namespace mu2e {
          totalEdep += hit.energyDep();
          hit_crystals.insert(hit.crystalID());
 
-	 if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
-	   cout<<"Readback: caloHit id = "<<hit.crystalID()<<" "<<"energy = "<<hit.energyDep()<<" time= "<<hit.time()<<endl;
+         if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
+           cout<<"Readback: caloHit id = "<<hit.crystalID()<<" "<<"energy = "<<hit.energyDep()<<" time= "<<hit.time()<<endl;
      }
 
      _hCaEdep->Fill(totalEdep);
@@ -704,7 +703,7 @@ namespace mu2e {
     // Additional printout and histograms about the simulated particles.
     if ( haveSimPart && (_nAnalyzed < _maxFullPrint) ){
 
-      GlobalConstantsHandle<ParticleDataTable> pdt;
+      GlobalConstantsHandle<ParticleDataList> pdt;
 
       for ( SimParticleCollection::const_iterator i=simParticles->begin();
             i!=simParticles->end(); ++i ){
@@ -721,8 +720,7 @@ namespace mu2e {
           int pdgId = sim.pdgId();
 
           // Name of this particle type.
-          ParticleDataTable::maybe_ref particle = pdt->particle(pdgId);
-          string pname = particle.ref().name();
+          string pname = pdt->particle(pdgId).name();
 
           // Information about generated particle.
           GenParticle const& gen = *sim.genParticle();
@@ -764,7 +762,7 @@ namespace mu2e {
 
     for ( auto const& step : *hits ){
       if ( step.strawId().nearestNeighbor(straw.id()) ){
-	++count;
+        ++count;
       }
     }
     return count;
@@ -1032,4 +1030,4 @@ namespace mu2e {
 
 }  // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ReadBack);
+DEFINE_ART_MODULE(mu2e::ReadBack)

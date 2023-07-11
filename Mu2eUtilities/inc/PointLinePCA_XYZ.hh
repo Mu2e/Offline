@@ -1,27 +1,27 @@
 #ifndef Mu2eUtilities_PointLinePCA_XYZ_hh
 #define Mu2eUtilities_PointLinePCA_XYZ_hh
 
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 
 namespace mu2e {
 
   class PointLinePCA_XYZ{
 
   public:
-	PointLinePCA_XYZ( XYZVec const& point,       
-                XYZVec const& start ,
-                XYZVec const& end);
+        PointLinePCA_XYZ( XYZVectorF const& point,
+                XYZVectorF const& start ,
+                XYZVectorF const& end);
         ~PointLinePCA_XYZ();
-	double dca()   const { return _dca;};
-        XYZVec const& pca() const { return _pca;}; 
-	
+        double dca()   const { return _dca;};
+        XYZVectorF const& pca() const { return _pca;};
+
     private:
-	
-	XYZVec _point;
-	XYZVec _start;
-	XYZVec _end;
-	double _dca;
-	XYZVec _pca;
+
+        XYZVectorF _point;
+        XYZVectorF _start;
+        XYZVectorF _end;
+        double _dca;
+        XYZVectorF _pca;
    };
 }
 #endif

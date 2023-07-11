@@ -3,7 +3,6 @@
 // Purpose: For Developing Straight Track Trigger
 
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
@@ -30,7 +29,7 @@ namespace mu2e
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<art::InputTag>   cosmictag {Name("CosmicTrackSeedCollection"),Comment("track collection")};
-      fhicl::Sequence<std::string> goodcosmic{Name("cosmicseedFitFlag"),Comment("Required flags"),vector<string>{"HelixOK","HelixConverged"}};
+      fhicl::Sequence<std::string> goodcosmic{Name("cosmicseedFitFlag"),Comment("Required flags"),std::vector<std::string>{"HelixOK","HelixConverged"}};
       fhicl::Atom<int>             minnsh    {Name("minnsh"), Comment("minimum number of straw hits ")};
       fhicl::Atom<int>             debug     {Name("debugLevel"), Comment("set to 1 for debug prints")};
     };
@@ -43,7 +42,7 @@ namespace mu2e
   private:
 
     art::InputTag   _cosmicTag;
-    TrkFitFlag      _goodcosmic; 
+    TrkFitFlag      _goodcosmic;
     unsigned int    _minnsh;
     int             _debug;
     unsigned        _nevt, _npass;
@@ -69,12 +68,13 @@ namespace mu2e
     const CosmicTrackSeedCollection* coscol = cosH.product();
     for(auto icos = coscol->begin(); icos != coscol->end(); ++icos) {
       auto const& cosmic = *icos;
-     
+
       if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.trkstrawhits().size() > _minnsh ){
-       
-        ++_npass;        
+
+        ++_npass;
+        retval = true;
         size_t index = std::distance(coscol->begin(),icos);
-	triginfo->_cosmics.push_back(art::Ptr<CosmicTrackSeed>(cosH,index));
+        triginfo->_cosmics.push_back(art::Ptr<CosmicTrackSeed>(cosH,index));
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
@@ -93,4 +93,4 @@ namespace mu2e
   }
 }
 using mu2e::CosmicSeedFilter;
-DEFINE_ART_MODULE(CosmicSeedFilter);
+DEFINE_ART_MODULE(CosmicSeedFilter)

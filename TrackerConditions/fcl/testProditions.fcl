@@ -9,7 +9,7 @@ services.TimeTracker.printSummary: true
 
 # histogram file
 services.TFileService.fileName: "nts.owner.val-ceSimReco.dsconf.seq.root"
-# art file 
+# art file
 outputs.fullOutput.fileName : "mcs.owner.val-ceSimReco.dsconf.seq.art"
 
 # Initialze seeding of random engines

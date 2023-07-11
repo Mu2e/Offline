@@ -10,11 +10,10 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 
 // Mu2e includes.
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 using namespace std;
 
@@ -56,4 +55,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::HelloProducer);
+DEFINE_ART_MODULE(mu2e::HelloProducer)

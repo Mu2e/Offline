@@ -154,7 +154,7 @@ namespace mu2e {
                      );
 
   }
-  
+
   // Alternate argument list (and different behavior)
   // using a TubsParams & VolumeInfo object for the parameters.
   VolumeInfo nestTubs ( std::string const& name,
@@ -165,30 +165,30 @@ namespace mu2e {
                         VolumeInfo const & parent,
                         int copyNo,
                         G4Colour const color,
-			std::string const& lookupToken=""
+                        std::string const& lookupToken=""
                         );
 
-  inline VolumeInfo nestTubs ( std::string const& name,             
-				TubsParams const & params,
-				G4Material* material,
-				G4RotationMatrix const* rot,
-				G4ThreeVector const & offset,
-				VolumeInfo const & parent,
-				int copyNo,
-				G4Colour const color,
-				std::string const& lookupToken=""
-				) {
+  inline VolumeInfo nestTubs ( std::string const& name,
+                                TubsParams const & params,
+                                G4Material* material,
+                                G4RotationMatrix const* rot,
+                                G4ThreeVector const & offset,
+                                VolumeInfo const & parent,
+                                int copyNo,
+                                G4Colour const color,
+                                std::string const& lookupToken=""
+                                ) {
 
     return nestTubs ( name,
-		      params.data(),
-		      material,
-		      rot,
-		      offset,
-		      parent,
-		      copyNo,
-		      color,
-		      lookupToken
-		      );
+                      params.data(),
+                      material,
+                      rot,
+                      offset,
+                      parent,
+                      copyNo,
+                      color,
+                      lookupToken
+                      );
   }
 
 }

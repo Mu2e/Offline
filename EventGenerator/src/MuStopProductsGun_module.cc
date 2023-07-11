@@ -16,7 +16,6 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -30,11 +29,9 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/RootTreeSampler.hh"
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
@@ -73,7 +70,7 @@ namespace mu2e {
 
     double _decayFraction;
     double _captureFraction;
-    
+
 
     std::vector<std::unique_ptr<ParticleGeneratorTool>> _muonDecayGenerators;
     std::vector<std::unique_ptr<ParticleGeneratorTool>> _muonCaptureGenerators;
@@ -119,7 +116,6 @@ namespace mu2e {
     }
   }
 
-
   //================================================================
   void MuStopProductsGun::produce(art::Event& event) {
 
@@ -144,4 +140,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::MuStopProductsGun);
+DEFINE_ART_MODULE(mu2e::MuStopProductsGun)

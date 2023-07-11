@@ -8,16 +8,15 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Utilities/InputTag.h"
 
 #include "art_root_io/TFileDirectory.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 
 #include "TH1.h"
@@ -44,7 +43,7 @@ namespace mu2e {
     //----------------------------------------------------------------
 
     explicit PionMomentumAnalyzer(const Conf& config);
-    explicit PionMomentumAnalyzer(const Conf& config, art::TFileDirectory tfdir);
+    explicit PionMomentumAnalyzer(const Conf& config, const art::TFileDirectory& tfdir);
 
     virtual void beginJob() override;
     virtual void analyze(const art::Event&) override;
@@ -56,7 +55,7 @@ namespace mu2e {
     TH2* h_p_by_parent_;
     TH2* h_p_by_process_;
 
-    const ParticleDataTable *particleTable_;
+    const ParticleDataList *particleTable_;
 
     static bool is_muon_daughter(const SimParticle& p);
   };
@@ -66,7 +65,7 @@ namespace mu2e {
     : PionMomentumAnalyzer(config, *art::ServiceHandle<art::TFileService>())
   {}
 
-  PionMomentumAnalyzer::PionMomentumAnalyzer(const Conf& c, art::TFileDirectory tf)
+  PionMomentumAnalyzer::PionMomentumAnalyzer(const Conf& c, const art::TFileDirectory& tf)
     : art::EDAnalyzer(c)
     , conf_{c}
 
@@ -81,7 +80,7 @@ namespace mu2e {
 
   //================================================================
   void PionMomentumAnalyzer::beginJob() {
-    GlobalConstantsHandle<ParticleDataTable> ph;
+    GlobalConstantsHandle<ParticleDataList> ph;
     particleTable_ = &(*ph);
   }
 
@@ -98,7 +97,7 @@ namespace mu2e {
 
         const SimParticle& parent{*p.parent()};
 
-        const auto pref = particleTable_->particle(parent.pdgId()).ref();
+        const auto pref = particleTable_->particle(parent.pdgId());
         std::string parentName = pref.name();
         h_p_by_parent_->Fill(parentName.c_str(), momentum, 1.0);
 
@@ -110,4 +109,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::PionMomentumAnalyzer);
+DEFINE_ART_MODULE(mu2e::PionMomentumAnalyzer)

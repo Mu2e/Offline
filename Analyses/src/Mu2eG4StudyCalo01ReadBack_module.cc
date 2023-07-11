@@ -9,17 +9,16 @@
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "TH1F.h"
 #include "TNtuple.h"
 #include "TTree.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "cetlib_except/exception.h"
@@ -171,7 +170,7 @@ namespace mu2e {
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
 
-    // Save in the particles ntuple only those particles, which die 
+    // Save in the particles ntuple only those particles, which die
     // after this time (in ns)
     double _timeCut;
 
@@ -271,8 +270,8 @@ namespace mu2e {
 
     ++_nAnalyzed;
 
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-    ParticleDataTable const & pdt_ = *pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
+    ParticleDataList const & pdt_ = *pdt;
 
     // print the pdt content
 
@@ -285,32 +284,7 @@ namespace mu2e {
       art::ServiceHandle<GeometryService> geom;
       SimpleConfig const& config  = geom->config();
       if (config.getBool("mu2e.printParticleDataTable",false)) {
-
-        cout << __func__ 
-             << " pdt size : "
-             << pdt_.size() 
-             << endl;
-      
-        for ( ParticleDataTable::const_iterator pdti=pdt_.begin(), e=pdt_.end(); 
-              pdti!=e; ++pdti ) {
-      
-          cout << __func__ 
-               << " pdt particle : "
-               << pdti->first.pid()  
-               << ", name: "          
-               << pdt_.particle(pdti->first.pid()).ref().name()
-               << ", PDTname: "          
-               << pdt_.particle(pdti->first.pid()).ref().PDTname()
-               << ", "
-               << pdt_.particle(pdti->first.pid()).ref().mass()
-               << ", "
-               << pdt_.particle(pdti->first.pid()).ref().totalWidth()
-               << ", "
-               << pdt_.particle(pdti->first.pid()).ref().lifetime()
-               << endl;
-
-        }
-
+        pdt_.printTable();
       }
 
     } // end of oneTime
@@ -326,7 +300,7 @@ namespace mu2e {
     event.getByLabel(_g4ModuleLabel, simParticles);
     bool haveSimPart = simParticles.isValid();
     if ( haveSimPart ) haveSimPart = !(simParticles->empty());
-    
+
     // Loop over all stepper points.
     if( points.isValid() ) for ( size_t i=0; i<points->size(); ++i ){
 
@@ -348,8 +322,8 @@ namespace mu2e {
         } else {
           SimParticle const& sim = simParticles->at(trackId);
           pdgId = sim.pdgId();
-      	  mass = pdt_.particle(pdgId).ref().mass();
-	}
+                mass = pdt_.particle(pdgId).mass();
+        }
       }
 
       // Fill the ntuple.
@@ -379,9 +353,8 @@ namespace mu2e {
              << event.id().event() << " | "
              << point.volumeId()   << " | "
              << point.trackId().asInt() << " | "
-             << pdgId              << " , name: "  
-             << pdt_.particle(pdgId).ref().name() << " , PDTname: "
-             << pdt_.particle(pdgId).ref().PDTname() << " | "
+             << pdgId              << " , name: "
+             << pdt_.particle(pdgId).name() << " | "
              << point.time()       << " "
              << pos                << " "
              << mom.mag()          << " | "
@@ -402,10 +375,10 @@ namespace mu2e {
       tstp.gtime  = point.properTime();
       tstp.x      = pos.x();
       tstp.y      = pos.y();
-      tstp.z      = pos.z();  
-      tstp.px     = mom.x(); 
-      tstp.py     = mom.y(); 
-      tstp.pz     = mom.z(); 
+      tstp.z      = pos.z();
+      tstp.px     = mom.x();
+      tstp.py     = mom.y();
+      tstp.pz     = mom.z();
       tstp.p      = mom.mag();
       tstp.ke     = sqrt(mom.mag2()+mass*mass)-mass;
       tstp.tedep  = point.totalEDep();
@@ -444,7 +417,7 @@ namespace mu2e {
         } else {
           SimParticle const& sim = simParticles->at(trackId);
           pdgId = sim.pdgId();
-	  mass = pdt_.particle(pdgId).ref().mass();
+          mass = pdt_.particle(pdgId).mass();
         }
       }
 
@@ -475,9 +448,8 @@ namespace mu2e {
              << event.id().event() << " | "
              << hit.volumeId()     << " | "
              << hit.trackId().asInt() << " | "
-             << pdgId              << " , name: "  
-             << pdt_.particle(pdgId).ref().name() << " , PDTname: "
-             << pdt_.particle(pdgId).ref().PDTname() << " | "
+             << pdgId              << " , name: "
+             << pdt_.particle(pdgId).name() << " | "
              << hit.time()         << " "
              << pos                << " "
              << mom.mag()          << " | "
@@ -509,17 +481,17 @@ namespace mu2e {
 
         ttp.pdg = sim.pdgId();           // PDG id
 
-	// Calculate parent proper time
-	double gtime_parent = 0.0;
-	if( _add_proper_time ) {
-	  SimParticle const* sim_parent = &sim;
-	  while( sim_parent && sim_parent->hasParent() ) {
-	    sim_parent = simParticles->getOrNull(sim_parent->parentId());
-	    if( sim_parent && sim_parent->pdgId()==ttp.pdg && sim.endDefined() ) {
-	      gtime_parent += sim_parent->endProperTime();
-	    }
-	  }
-	}
+        // Calculate parent proper time
+        double gtime_parent = 0.0;
+        if( _add_proper_time ) {
+          SimParticle const* sim_parent = &sim;
+          while( sim_parent && sim_parent->hasParent() ) {
+            sim_parent = simParticles->getOrNull(sim_parent->parentId());
+            if( sim_parent && sim_parent->pdgId()==ttp.pdg && sim.endDefined() ) {
+              gtime_parent += sim_parent->endProperTime();
+            }
+          }
+        }
 
         // Save SimParticle other info
         ttp.time = sim.startGlobalTime(); // start time
@@ -548,29 +520,55 @@ namespace mu2e {
           ttp.ystop  = pos_end.y();
           ttp.zstop  = pos_end.z();
 
-          // calculation of the prestep info is more involved...
-          // assume the step points are sorted by time by construction, get the last one
-          size_t thei(-1);
-          size_t trackiid = sim.id().asInt();     
-          for ( size_t i=points->size()-1; i!=0; --i ){
-            if ( trackiid == ((*points)[i]).trackId().asInt() ) {
-              thei = i;
-              break;
-            }
-          }
-          // we may need to protect this
-          CLHEP::Hep3Vector const& mom_preend = (*points)[thei].momentum();
-
-          ttp.pxprestop = mom_preend.x();
-          ttp.pyprestop = mom_preend.y();
-          ttp.pzprestop = mom_preend.z();
-          ttp.pprestop  = mom_preend.mag();
-
           ttp.pxstop = mom_end.x();
           ttp.pystop = mom_end.y();
           ttp.pzstop = mom_end.z();
           ttp.pstop  = mom_end.mag();
           ttp.codestop = sim.stoppingCode();
+
+          // calculation of the prestep info is more involved...
+          // assume the step points are sorted by time by construction, get the last one
+          int thei(-1);
+          size_t trackiid = sim.id().asInt();
+          for ( int i=points->size()-1; i!=-1; --i ){
+            // if ( _nAnalyzed < _maxPrint){
+            //   cout << __func__ << " steppoint trackid = "
+            //        << ((*points)[i]).trackId().asInt()
+            //        << endl;
+            // }
+            if ( trackiid == ((*points)[i]).trackId().asInt() ) {
+              thei = i;
+              break;
+            }
+          }
+
+          if ( thei >= 0 ) {
+
+            CLHEP::Hep3Vector const& mom_preend = (*points)[thei].momentum();
+
+            ttp.pxprestop = mom_preend.x();
+            ttp.pyprestop = mom_preend.y();
+            ttp.pzprestop = mom_preend.z();
+            ttp.pprestop  = mom_preend.mag();
+
+          } else {
+
+            cout << __func__ << " WARNING thei = " << thei
+                 << " did not find matching steppoint in event "
+                 << event.id().event()
+                 << " points->size() "
+                 << points->size()
+                 << " for trackiid "
+                 << trackiid
+                 << endl;
+
+            ttp.pxprestop = 0.0;
+            ttp.pyprestop = 0.0;
+            ttp.pzprestop = 0.0;
+            ttp.pprestop  = 0.0;
+
+          }
+
         } else {
           ttp.isstop = false;
           ttp.tstop  = 0.0;
@@ -638,4 +636,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::Mu2eG4StudyCalo01ReadBack;
-DEFINE_ART_MODULE(Mu2eG4StudyCalo01ReadBack);
+DEFINE_ART_MODULE(Mu2eG4StudyCalo01ReadBack)

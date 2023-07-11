@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Offline/DataProducts/inc/StrawEnd.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Math/VectorUtil.h"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
@@ -14,38 +14,38 @@ namespace mu2e { struct ComboHit; }
 
 using namespace mu2e;
 namespace ParametricFit{
-       
-	XYZVec pointOnLineFromX(XYZVec lineStartPoint, XYZVec lineEndPoint, double x,XYZVec outputPoint);
-	bool LineToLineCA(XYZVec& FirstLinePos, XYZVec& FirstLineDir, 
-	 XYZVec& SecondLinePos, XYZVec& SecondLineDir, 
-	 XYZVec& closestPointOnFirstLine, XYZVec& closestPointOnSecondLine);
-	double LineToLineDCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint,XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, double& dca);
-	
-        
-	std::vector<XYZVec>GetAxes(XYZVec TrackDirection);
-	TrackAxes GetTrackAxes(XYZVec TrackDirection);
-	XYZVec GetXPrime(XYZVec track_dir);
-	XYZVec GetYPrime(XYZVec OrthX, XYZVec YPrime);
-	XYZVec GetXDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime);
-	XYZVec GetYDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime);
-	
-	void TestConditions(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime);
-	XYZVec ConvertToPrimePoint(ComboHit* chit, TrackAxes axes);
-	
-	std::vector<double> GetErrors(ComboHit* Hit, XYZVec XAxis, XYZVec YAxis);
-	XYZVec MajorAxis(ComboHit* Hit);
-	XYZVec MinorAxis(ComboHit* Hit);
-	double HitErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec XPrime);
-        double HitErrorY(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec YPrime);
-        double TotalHitError(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec XPrime, XYZVec YPrime);
-        
-        double GetHitChi2(double A0, double A1, double errorX, XYZVec point, XYZVec XDoublePrime, XYZVec ZPrime);
-        double GetGlobalChi2(double a0, double a1, double b0, double b1, XYZVec prime_point, double errX, double errY, int DOF);
-        double GetResidualX(double A0, double A1,  XYZVec point);
-        double GetResidualY( double B0, double B1,  XYZVec point);
+
+        XYZVectorF pointOnLineFromX(XYZVectorF lineStartPoint, XYZVectorF lineEndPoint, double x,XYZVectorF outputPoint);
+        bool LineToLineCA(XYZVectorF& FirstLinePos, XYZVectorF& FirstLineDir,
+         XYZVectorF& SecondLinePos, XYZVectorF& SecondLineDir,
+         XYZVectorF& closestPointOnFirstLine, XYZVectorF& closestPointOnSecondLine);
+        double LineToLineDCA(XYZVectorF& firstLineStartPoint, XYZVectorF& firstLineEndPoint,XYZVectorF& secondLineStartPoint, XYZVectorF& secondLineEndPoint, double& dca);
+
+
+        std::vector<XYZVectorF>GetAxes(XYZVectorF TrackDirection);
+        TrackAxes GetTrackAxes(XYZVectorF TrackDirection);
+        XYZVectorF GetXPrime(XYZVectorF track_dir);
+        XYZVectorF GetYPrime(XYZVectorF OrthX, XYZVectorF YPrime);
+        XYZVectorF GetXDoublePrime(XYZVectorF XPrime, XYZVectorF YPrime, XYZVectorF ZPrime);
+        XYZVectorF GetYDoublePrime(XYZVectorF XPrime, XYZVectorF YPrime, XYZVectorF ZPrime);
+
+        void TestConditions(XYZVectorF XPrime, XYZVectorF YPrime, XYZVectorF ZPrime);
+        XYZVectorF ConvertToPrimePoint(ComboHit* chit, TrackAxes axes);
+
+        std::vector<double> GetErrors(ComboHit* Hit, XYZVectorF XAxis, XYZVectorF YAxis);
+        XYZVectorF MajorAxis(ComboHit* Hit);
+        XYZVectorF MinorAxis(ComboHit* Hit);
+        double HitErrorX(ComboHit* Hit, XYZVectorF major_axis, XYZVectorF minor_axis, XYZVectorF XPrime);
+        double HitErrorY(ComboHit* Hit, XYZVectorF major_axis, XYZVectorF minor_axis, XYZVectorF YPrime);
+        double TotalHitError(ComboHit* Hit, XYZVectorF major_axis, XYZVectorF minor_axis, XYZVectorF XPrime, XYZVectorF YPrime);
+
+        double GetHitChi2(double A0, double A1, double errorX, XYZVectorF point, XYZVectorF XDoublePrime, XYZVectorF ZPrime);
+        double GetGlobalChi2(double a0, double a1, double b0, double b1, XYZVectorF prime_point, double errX, double errY, int DOF);
+        double GetResidualX(double A0, double A1,  XYZVectorF point);
+        double GetResidualY( double B0, double B1,  XYZVectorF point);
         double GetTotalResidual(double resid_x,double resid_y);
-	double GetResidualError(XYZVec Major_Axis, XYZVec Minor_Axis, XYZVec track_direction, XYZVec& POCA, double DOCA);
-        
-	}
+        double GetResidualError(XYZVectorF Major_Axis, XYZVectorF Minor_Axis, XYZVectorF track_direction, XYZVectorF& POCA, double DOCA);
+
+        }
 
 #endif

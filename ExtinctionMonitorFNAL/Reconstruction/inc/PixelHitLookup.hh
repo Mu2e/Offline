@@ -8,7 +8,7 @@
 #include <map>
 
 // can't forward declare a typedef
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 
 namespace mu2e {
   class ExtMonFNALPixelId;

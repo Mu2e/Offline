@@ -151,7 +151,7 @@ namespace mu2e {
                   parent.logical,
                   copyNo,
                   color,
-		  lookupToken
+                  lookupToken
                   );
 
     return info;
@@ -216,7 +216,7 @@ namespace mu2e {
                   parent.logical,
                   copyNo,
                   color,
-		  lookupToken
+                  lookupToken
                   );
 
     return info;
@@ -296,7 +296,7 @@ namespace mu2e {
                   parent.logical,
                   copyNo,
                   color,
-		  lookupToken
+                  lookupToken
                   );
 
     return info;

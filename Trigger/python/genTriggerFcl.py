@@ -2,8 +2,8 @@
 ################################################################################
 #           HOW RUN THE TRIGGER-FCL GENERATOR SCRIPT                           #
 #------------------------------------------------------------------------------#
-# 
-# Trigger/python/genTriggerFcl.py -c Trigger/data/allPaths.config 
+#
+# Trigger/python/genTriggerFcl.py -c Trigger/data/allPaths.config
 # or just
 # Trigger/python/genTriggerFcl.py -c allPaths
 #
@@ -19,37 +19,46 @@ from argparse import ArgumentParser
 
 from codecs import open
 
+def capitalize(word):
+    if not word:
+        return word
+    nLetters=1
+    nn = word[0].upper()
+    if word[0:2] == 'sd' or word[0:2] == 'cd' or word[0:2] == 'hs' or word[0:2] == 'tc' or word[0:2] == 'ts':
+        nLetters=2
+        nn = word[0].upper() + word[1].upper()
+    return nn + word[nLetters:]
+
 #
 # process one subdirectory (one path)
 #
 
 def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sourceFiles, targetFiles):
 
-    trk_filters      = ['EventPrescale','TCFilter', 'HSFilter', 'TSFilter']
-    helix_filters    = ['EventPrescale','TCFilter', 'HSFilter']
-    tc_filters       = ['EventPrescale','TCFilter']
-    calo_filters     = ['EventPrescale','Filter'  ]
-    unbiased_filters = ['EventPrescale']
-    minbias_filters  = ['EventPrescale','Filter'       ]
-    cst_filters      = ['EventPrescale','TCFilter', 'TSFilter']
-    
+    trk_filters      = ['eventPrescale','tcFilter', 'hsFilter', 'tsFilter']
+    helix_filters    = ['eventPrescale','tcFilter', 'hsFilter']
+    tc_filters       = ['eventPrescale','tcFilter']
+    calo_filters     = ['eventPrescale','filter'  ]
+    unbiased_filters = ['eventPrescale']
+    minbias_filters  = ['eventPrescale','filter'       ]
+    cst_filters      = ['eventPrescale','tcFilter', 'tsFilter']
+
     filters     = []
 
     #understand which kind of trigger path are we dealing with
-    if "Seed" in trig_path:
-        if "cst" in trig_path:
-            filters = cst_filters
-        else:
-            filters = trk_filters
+    if trig_path == 'cst':
+        filters = cst_filters
+    elif "cprDe" in trig_path or 'tprDe' in trig_path:
+        filters = trk_filters
     elif "Helix" in trig_path:
         filters = helix_filters
     elif "TimeCluster" in trig_path:
         filters = tc_filters
-    elif "calo" in trig_path:
+    elif "caloFast" in trig_path:
         filters = calo_filters
     elif "unbiased" in trig_path:
         filters = unbiased_filters
-    elif "Count" in trig_path:
+    elif "minBias" in trig_path:
         filters = minbias_filters
 
     if len(filters) == 0 :
@@ -75,12 +84,12 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
     targetFiles.append(subEpilogName)
 
     for filter in filters :
-        filterName       = trig_path+filter
+        filterName       = trig_path+"_"+filter
 
-        subSubEpilogInputFileName = srcDir+"Trigger/data/" + trig_path + "/main_"+ filterName + '.fcl' 
+        subSubEpilogInputFileName = srcDir+"Trigger/data/" + trig_path + "/main_"+ filterName + '.fcl'
         sourceFiles.append(subSubEpilogInputFileName)
-        subSubEpilogFileName      = subEpilogDirName + "/main_"+ filterName + '.fcl' 
-        relSubSubEpilogFileName   = relSubEpilogDirName + "/main_"+ filterName + '.fcl' 
+        subSubEpilogFileName      = subEpilogDirName + "/main_"+ filterName + '.fcl'
+        relSubSubEpilogFileName   = relSubEpilogDirName + "/main_"+ filterName + '.fcl'
         targetFiles.append(subSubEpilogFileName)
         if verbose:
             print("Creating {}".format(subSubEpilogFileName))
@@ -102,7 +111,13 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
 
     #now create the instance for the TriggerInfo Merger
     if  doWrite :
-        trigInfoMergerName         = trig_path + "TriggerInfoMerger"
+        trig_path_nu = ""
+        for n in trig_path.split("_"):
+            if n == trig_path.split("_")[0]:
+                trig_path_nu += n
+            else:
+                trig_path_nu += capitalize(n)
+        trigInfoMergerName         = trig_path_nu + "TriggerInfoMerger"
         subSubEpilogMergerFileName = subEpilogDirName + "/main_" + trigInfoMergerName + '.fcl'
         if verbose:
             print("Creating {}".format(subSubEpilogMergerFileName))
@@ -110,7 +125,7 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
         subSubEpilogMergerFile.write("physics.producers."+trigInfoMergerName+" : { module_type : MergeTriggerInfo }");
         subSubEpilogMergerFile.close();
 
-        relSubSubEpilogFileName    = relSubEpilogDirName + "/main_"+ trigInfoMergerName + '.fcl' 
+        relSubSubEpilogFileName    = relSubEpilogDirName + "/main_"+ trigInfoMergerName + '.fcl'
         epilog=("\n#include \"Offline/"+relSubSubEpilogFileName +"\"")
 
         subEpilogFile.write(epilog)
@@ -134,10 +149,10 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
         print("configFileText = ",configFileText)
         print("doWrite = ",doWrite)
 
-    # when we run from SConscript to create the targets, 
+    # when we run from SConscript to create the targets,
     # we are in the subdir.  When running in Offline scons, we are in Offline,
     # when in Muse, we are in Offline parent dir
-    # This code makes this always run in the scons default dir, either 
+    # This code makes this always run in the scons default dir, either
     # Offline or its parent dir
     srcDir=""
     outDir=""
@@ -196,7 +211,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
         sourceFiles.append(fn)
 
     hasFilteroutput = False
-    
+
     relProjectDir = "gen/fcl/Trigger/" + configFileBaseName
     projectDir = outDir+relProjectDir
 
@@ -221,7 +236,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
         mainFclFile = open(mainFclFileName,"a",encoding="utf-8")
 
     path_list = ""
-    trig_list = ""
+    #trig_list = ""
 
     mainEpilogFileName   = projectDir + "/" + "{}.fcl".format(configFileBaseName)
     mainEpilogTimingFileName = projectDir + "/" + "{}_timing.fcl".format(configFileBaseName)
@@ -248,38 +263,39 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
         words    = line.split()
         pathName = words[0].split(":")[0]
         pathID   = words[0].split(":")[1]
-        if pathName != "triggerOutput":
+        pathNameNoTags = pathName#.split("_")[0]
+        if pathNameNoTags != "triggerOutput":
 
             # check if the name of the path is present in the prolog_trigger files
             pathCheck=False
             for i in range(0, len(trig_prolog_files)):
-                if pathName in open(trig_prolog_files[i]).read():
+                if pathNameNoTags in open(trig_prolog_files[i]).read():
                     pathCheck  = True
-            if pathCheck == False: 
-                print ("{} NOT FOUND IN ANY PROLOG_TRIGGER.FCL FILES. PLEASE, CHECK THE INPUT FILE PROVIDED".format(pathName))
+            if pathCheck == False:
+                print ("{} NOT FOUND IN ANY PROLOG_TRIGGER.FCL FILES. PLEASE, CHECK THE INPUT FILE PROVIDED".format(pathNameNoTags))
                 exit(1)
 
             if path_list != "":
                 path_list += ", "
-                trig_list += ", "
+                #trig_list += ", "
             path_list += pathName+"_trigger"
-            trig_list += "\""+pathName+"\""
+            #trig_list += "\""+pathName+"\""
 
             digi_path = "@sequence::Trigger.PrepareDigis, "
-            
-            new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+" ] \nphysics.trigger_paths["+str(pathID)+"] : "+pathName+"_trigger \n")
+
+            new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathNameNoTags+" ] \nphysics.trigger_paths["+str(pathID)+"] : "+pathName+"_trigger \n")
             timing_paths = []
-            if "Seed" in pathName:
+            if "tprDe" in pathName or "cprDe" in pathName:
                 nFilters = 3
                 if "cst" in pathName:
-                    nFilters = 2                    
+                    nFilters = 2
                 for ind in range(nFilters):
-                    timing_label = "Timing{:d}".format(ind)
-                    timing_paths.append("\nphysics."+pathName+timing_label+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+timing_label+" ] \n")
+                    timing_label = "_timing{:d}".format(ind)
+                    timing_paths.append("\nphysics."+pathName+timing_label+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathNameNoTags+timing_label+" ] \n")
 
             #now append the epilog files for setting the filters in the path
-            subEpilogInclude = appendEpilog(pathName, relProjectDir, 
-                                            outDir, srcDir, verbose, 
+            subEpilogInclude = appendEpilog(pathNameNoTags, relProjectDir,
+                                            outDir, srcDir, verbose,
                                             doWrite, sourceFiles, targetFiles)
 
             if doWrite :
@@ -287,10 +303,10 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
                 mainEpilogFile.write(new_path)
                 #
                 mainEpilogTimingFile.write(subEpilogInclude)
-                mainEpilogTimingFile.write(new_path)
+                #mainEpilogTimingFile.write(new_path)
                 for l in range(len(timing_paths)):
                     mainEpilogTimingFile.write(timing_paths[l])
-                
+
 
         else:
             # triggerOutput keyword means create an output path
@@ -298,7 +314,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
             if doWrite :
                 mainFclFile.write(trigerOutput_line)
             hasFilteroutput = True
-    
+
     if doWrite :
         mainEpilogFile.write("\n")
         mainEpilogTimingFile.write("\n")
@@ -347,7 +363,7 @@ if __name__ == "__main__":
     parser.add_argument("-q", "--quiet",
                         action="store_false", dest="verbose", default=True,
                         help="don't print status messages to stdout")
-    
+
     args = parser.parse_args()
     if args.verbose :
         print("Config file name: {}".format(args.configFileText))

@@ -328,4 +328,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-DEFINE_ART_SERVICE(mu2e::SeedService);
+DEFINE_ART_SERVICE(mu2e::SeedService)

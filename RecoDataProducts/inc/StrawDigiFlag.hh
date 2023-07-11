@@ -2,7 +2,7 @@
 #define RecoDataProducts_StrawDigiFlag_hh
 //
 // Class to describe straw digi bits
-// 
+//
 // Original author David Brown
 //
 // Mu2e includes

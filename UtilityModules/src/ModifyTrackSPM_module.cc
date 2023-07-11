@@ -5,11 +5,9 @@
 //
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 //#include <iostream>

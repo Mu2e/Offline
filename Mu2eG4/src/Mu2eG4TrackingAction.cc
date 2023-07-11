@@ -23,6 +23,7 @@
 // C++ includes
 #include <iostream>
 #include <cassert>
+#include <algorithm>
 
 // Mu2e includes
 #include "Offline/Mu2eG4/inc/Mu2eG4UserHelpers.hh"
@@ -36,7 +37,8 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
 #include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
@@ -58,6 +60,9 @@
 #include "Geant4/G4MaterialCutsCouple.hh"
 #include "Geant4/G4ParticleChange.hh"
 #include "Geant4/G4DynamicParticle.hh"
+#include "Geant4/G4Exp.hh"
+#include "Geant4/G4Log.hh"
+#include "Geant4/Randomize.hh"
 
 using namespace std;
 
@@ -83,7 +88,10 @@ namespace mu2e {
     _steppingAction(steppingAction),
     _processInfo(0),
     _printTrackTiming(conf.debug().printTrackTiming()),
-    _stepLimitKillerVerbose(conf.debug().stepLimitKillerVerbose())
+    _stepLimitKillerVerbose(conf.debug().stepLimitKillerVerbose()),
+    _muonPreAssignedDecayProperTime(-1.0),
+    _muonMinPreAssignedDecayProperTime(-1.0),
+    _muonMaxPreAssignedDecayProperTime(-1.0)
   {
 
     if ( _stepLimitKillerVerbose && (G4Threading::G4GetThreadId() <= 0) ) {
@@ -95,6 +103,54 @@ namespace mu2e {
              << G4endl;
     }
 
+    // validate muon preassigned proper time
+    if (conf.physics().muonPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime) &&
+        conf.physics().muonMaxPreAssignedDecayProperTime(_muonMaxPreAssignedDecayProperTime)) {
+      throw cet::exception("CONFIG")
+        << "In Mu2eG4TrackingAction(): only one of  muonPreAssignedDecayProperTime or "
+        << "muonMaxPreAssignedDecayProperTime can be set"
+        << G4endl;
+    }
+    if (conf.physics().muonPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime) &&
+        conf.physics().muonMinPreAssignedDecayProperTime(_muonMinPreAssignedDecayProperTime)) {
+      throw cet::exception("CONFIG")
+        << "In Mu2eG4TrackingAction(): only one of  muonPreAssignedDecayProperTime or "
+        << "muonMinPreAssignedDecayProperTime can be set"
+        << G4endl;
+    }
+    if (conf.physics().muonMinPreAssignedDecayProperTime(_muonMinPreAssignedDecayProperTime) &&
+        conf.physics().muonMaxPreAssignedDecayProperTime(_muonMaxPreAssignedDecayProperTime)) {
+      if ( _muonMinPreAssignedDecayProperTime >= _muonMaxPreAssignedDecayProperTime ) {
+        throw cet::exception("CONFIG")
+          << "In Mu2eG4TrackingAction(): inconsistent "
+          << "muonMinPreAssignedDecayProperTime muonMaxPreAssignedDecayProperTime: "
+          << _muonMinPreAssignedDecayProperTime << " ns,"
+          << _muonMaxPreAssignedDecayProperTime << " ns"
+          << G4endl;
+      }
+    }
+
+    if (conf.physics().muonPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime)) {
+      if (conf.debug().diagLevel()>0) {
+        G4cout << __func__
+               << " Setting muonPreAssignedDecayProperTime to "
+               << _muonPreAssignedDecayProperTime << " ns" << G4endl;
+      }
+    }
+    if (conf.physics().muonMaxPreAssignedDecayProperTime(_muonMaxPreAssignedDecayProperTime)) {
+      if (conf.debug().diagLevel()>0) {
+        G4cout << __func__
+               << " Setting muonMaxPreAssignedDecayProperTime to "
+               << _muonMaxPreAssignedDecayProperTime << " ns" << G4endl;
+      }
+    }
+    if (conf.physics().muonMinPreAssignedDecayProperTime(_muonMinPreAssignedDecayProperTime)) {
+      if (conf.debug().diagLevel()>0) {
+        G4cout << __func__
+               << " Setting muonMinPreAssignedDecayProperTime to "
+               << _muonMinPreAssignedDecayProperTime << " ns" << G4endl;
+      }
+    }
   }
 
   // Receive information that has a lifetime of a run.
@@ -116,14 +172,14 @@ namespace mu2e {
     // an old code used when mu2e was using a custom geant4 version
     G4VUserTrackInformation* tui = trk->GetUserInformation();
     if (tui) {
-      if ( trackingVerbosityLevel > 0 ) {
+      if ( trackingVerbosityLevel > 1 ) {
         G4cout << __func__
                << " the track was labeled as " << tui->GetType() << G4endl;
       }
       ProcessCode cCode = Mu2eG4UserHelpers::findCreationCode(trk);
       if (cCode == ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
         ti->setMuCapCode(ProcessCode::findByName((tui->GetType()).c_str()));
-        if ( trackingVerbosityLevel > 0 ) {
+        if ( trackingVerbosityLevel > 1 ) {
           G4cout << __func__ << " set Mu2eG4UserTrackInformation  muCapCode "
                  << ti->muCapCode()  << G4endl;
         }
@@ -141,7 +197,7 @@ namespace mu2e {
       const G4String& creatorModelName =  trk->GetCreatorModelName();
       size_t delPosition = creatorModelName.find_last_of("_");
 
-      if ( trackingVerbosityLevel > 0 ) {
+      if ( trackingVerbosityLevel > 1 ) {
         G4cout << __func__
                << " full creatorModelName "
                << creatorModelName << G4endl;
@@ -152,7 +208,7 @@ namespace mu2e {
         string modelName = creatorModelName.substr(delPosition+1);
         ProcessCode cCode = Mu2eG4UserHelpers::findCreationCode(trk);
 
-        if ( trackingVerbosityLevel > 0 ) {
+        if ( trackingVerbosityLevel > 1 ) {
           G4cout << __func__
                  << " Mu2e used model name: "
                  << modelName << G4endl;
@@ -171,7 +227,7 @@ namespace mu2e {
         if (cCode == ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
           ti->setMuCapCode(ProcessCode::findByName(modelName.c_str()));
 
-          if ( trackingVerbosityLevel > 0 ) {
+          if ( trackingVerbosityLevel > 1 ) {
             G4cout << __func__ << " set Mu2eG4UserTrackInformation  muCapCode "
                    << ti->muCapCode()  << G4endl;
           }
@@ -184,6 +240,56 @@ namespace mu2e {
 
     // Need to cast away const-ness to do this.
     const_cast<G4Track*>(trk)->SetUserInformation(ti);
+
+    if (_muonPreAssignedDecayProperTime>=0.0) {
+      const G4DynamicParticle* dynPart = trk->GetDynamicParticle();
+      if (dynPart->GetPDGcode() == PDGCode::mu_minus) {
+        // if track is a muon and preassigned proper time is set, assing it
+        if (trackingVerbosityLevel>0) {
+          G4cout << __func__
+                 << " Setting muonPreAssignedDecayProperTime to track "
+                 << trk->GetTrackID() << G4endl;
+        }
+        const_cast<G4DynamicParticle*>(dynPart)
+          ->SetPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime*CLHEP::ns);
+      }
+    }
+
+    // bias muon proper time if requested
+    if ((_muonMaxPreAssignedDecayProperTime>=0.0) ||
+        (_muonMinPreAssignedDecayProperTime>=0.0)) {
+      const G4DynamicParticle* dynPart = trk->GetDynamicParticle();
+      if (dynPart->GetPDGcode() == PDGCode::mu_minus) {
+        // if track is a muon and preassigned proper time is set, assing it
+        if (trackingVerbosityLevel>0) {
+          G4cout << __func__
+                 << " Setting random muonPreAssignedDecayProperTime to the track "
+                 << " between muonMaxPreAssignedDecayProperTime and muonMaxPreAssignedDecayProperTime to track "
+                 << trk->GetTrackID() << G4endl;
+        }
+        // 0 is a special case
+        if (_muonMaxPreAssignedDecayProperTime == 0.0) {
+          const_cast<G4DynamicParticle*>(dynPart)
+            ->SetPreAssignedDecayProperTime(_muonMaxPreAssignedDecayProperTime*CLHEP::ns);
+        } else {
+          double pdgLifeTime = dynPart->GetParticleDefinition()->GetPDGLifeTime();
+          double expNormalizedMaxProperTime =
+            (_muonMaxPreAssignedDecayProperTime>=0.0) ?
+            G4Exp(-1.0*_muonMaxPreAssignedDecayProperTime*CLHEP::ns/pdgLifeTime) :
+            0.0;
+          double expNormalizedMinProperTime =
+            (_muonMinPreAssignedDecayProperTime>=0.0) ?
+            G4Exp(-1.0*_muonMinPreAssignedDecayProperTime*CLHEP::ns/pdgLifeTime) :
+            1.0;
+          double offset = std::max(expNormalizedMaxProperTime, 0.0);
+          double width  = std::min(expNormalizedMinProperTime, 1.0) - offset;
+          // transforming the value into the potentially narrower interval
+          double theValue = offset + G4UniformRand()*width;
+          const_cast<G4DynamicParticle*>(dynPart)
+            ->SetPreAssignedDecayProperTime(-1.0*G4Log(theValue)*pdgLifeTime);
+        }
+      }
+    }
 
     // saveSimParticle must be called before controlTrajectorySaving.
     // but after attaching the  user track information
@@ -240,12 +346,12 @@ namespace mu2e {
     const Mu2eG4IOConfigHelper& ioconf = perThreadObjects_->ioconf;
 
     // Read in data products from previous stages and reseat SimParticle pointers
-    // The returned handle is not valid for GenParticle driven jobs
-    // but also for non-filtered events in subsequent stages which do not
-    // have any primary StepPointMCs, for example.
-    const auto inputSimHandle = ioconf.inputs().inputSimParticles(*perThreadObjects_->artEvent);
-    if(inputSimHandle.isValid()) {
-      const SimParticleCollection& inputSims = *inputSimHandle;
+    // The returned object is allowed to be in an invalid state for GenParticle driven jobs
+    // and non-filtered events in subsequent stages which do not have any primary
+    // StepPointMCs, for example.
+    auto simsInfo = ioconf.inputs().inputSimParticles(*perThreadObjects_->artEvent);
+    if( simsInfo.isValid()) {
+      const SimParticleCollection& inputSims = simsInfo.sims.ref();
       // We do not compress anything here, but use the call to reseat the pointers
       // while copying the inputs to _transientMap.
       compressSimParticleCollection(perThreadObjects_->simParticleHelper->productID(),
@@ -256,7 +362,7 @@ namespace mu2e {
 
       // old -> new particle remapping
       for(const auto& sim: inputSims) {
-        art::ProductID oldID(inputSimHandle.id());
+        art::ProductID oldID(simsInfo.id);
         auto key(sim.second.id().asUint());
         art::Ptr<SimParticle> oldSim(oldID, key, perThreadObjects_->simParticleHelper->otherProductGetter(oldID));
         art::Ptr<SimParticle> newSim(perThreadObjects_->simParticleHelper->productID(), key, perThreadObjects_->simParticleHelper->productGetter());
@@ -352,7 +458,7 @@ namespace mu2e {
 
       if (creationCode==ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
 
-        if ( trackingVerbosityLevel > 0 ) {
+        if ( trackingVerbosityLevel > 1 ) {
           G4cout << __func__
                  << " particle created by " << creationCode.name()
                  << " will try to replace the creation code "
@@ -379,7 +485,7 @@ namespace mu2e {
     } // else - not a primary
 
 
-    if ( trackingVerbosityLevel > 0 ) {
+    if ( trackingVerbosityLevel > 1 ) {
       G4cout << __func__
              << " saving particle "
              << trk->GetParticleDefinition()->GetPDGEncoding()
@@ -411,7 +517,7 @@ namespace mu2e {
     PDGCode::type ppdgId = static_cast<PDGCode::type>(trk->GetDefinition()->GetPDGEncoding());
 
     // printing ions
-    if ( trackingVerbosityLevel > 0 && ppdgId>PDGCode::G4Threshold ) {
+    if ( trackingVerbosityLevel > 1 && ppdgId>PDGCode::G4Threshold ) {
       G4cout << __func__ << " Ion pdgid:          "
              << ppdgId
              << G4endl;
@@ -429,8 +535,7 @@ namespace mu2e {
              << ", " << pG4Ion->GetIsomerLevel()
              << ", " << flbi
         //   << ", " << static_cast<G4int>(pG4Ion->GetFloatLevelBase())
-             << ", " << G4String(G4Ions::FloatLevelBaseChar(G4Ions::FloatLevelBase(flbi)))
-        //   << ", " << G4String(G4Ions::FloatLevelBaseChar(pG4Ion->GetFloatLevelBase()))
+             << ", " << std::string(1,G4Ions::FloatLevelBaseChar(G4Ions::FloatLevelBase(flbi)))
              << G4endl;
       Mu2eG4UserHelpers::printTrackInfo( trk, " Ion:          ", _transientMap,
                                          _timer, _mu2eOrigin);
@@ -527,8 +632,8 @@ namespace mu2e {
     if (pname == "Transportation" &&
         Mu2eG4UserHelpers::isTrackKilledByFieldPropagator(trk, trVerbosity)) {
       pname = G4String("mu2eFieldPropagator");
-      if ( !(trk->GetDefinition()->GetPDGEncoding() == 11 || // electron & proton codes hardcoded for now
-             trk->GetDefinition()->GetPDGEncoding() == 2212 ) ||
+      if ( !(trk->GetDefinition()->GetPDGEncoding() == PDGCode::e_minus ||
+             trk->GetDefinition()->GetPDGEncoding() == PDGCode::proton ) ||
            G4LossTableManager::Instance()->
            GetRange(trk->GetDefinition(),
                     trk->GetKineticEnergy(),
@@ -557,39 +662,60 @@ namespace mu2e {
 
     ProcessCode stoppingCode(_processInfo->findAndCount(pname));
 
-    if (trackingVerbosityLevel > 0 ) {
+
+    //Get kinematics just before the post step doit process acted (e.g., decay, annihilation, etc.)
+    //note that while we have the intermediate position we use it only for diagnostic printouts
+    double endKE = Mu2eG4UserHelpers::getEndKE(trk);
+    CLHEP::HepLorentzVector endMomentum =  Mu2eG4UserHelpers::getEndMomentum(trk);
+    double endGlobalTime = Mu2eG4UserHelpers::getEndGlobalTime(trk);
+    double endProperTime = Mu2eG4UserHelpers::getEndProperTime(trk);
+
+    //Get number of steps the track is made of
+    int nSteps = Mu2eG4UserHelpers::getNSteps(trk);
+
+    if (trackingVerbosityLevel > 1 ) {
       G4int prec = G4cout.precision(15);
       const G4DynamicParticle*  pParticle = trk->GetDynamicParticle();
       double theKEnergy  = pParticle->GetKineticEnergy();
       const G4ThreeVector& theMomentumDirection = pParticle->GetMomentumDirection();
       Mu2eG4UserTrackInformation* uti =
         (dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation()));
+      G4StepPoint const* lastPreStepPoint = trk->GetStep()->GetPreStepPoint();
+      G4cout << __func__ << " KE pre step   "  << lastPreStepPoint->GetKineticEnergy()
+             << " Momentum direction pre step   " << lastPreStepPoint->GetMomentumDirection()
+             << " Position pre step   " << lastPreStepPoint->GetPosition()
+             << " Global time pre step   " << lastPreStepPoint->GetGlobalTime()
+             << " Proper time pre step   " << lastPreStepPoint->GetProperTime()
+             << G4endl;
       G4cout << __func__ << " KE before int " << uti->GetKineticEnergy()
              << " Momentum direction before int " << uti->GetMomentumDirection()
+             << " Position before int " << uti->GetPosition()
+             << " Global time before int " << uti->GetGlobalTime()
+             << " Proper time before int " << uti->GetProperTime()
              << G4endl;
       G4cout << __func__ << " KE            " << theKEnergy
              << " Momentum direction            " << theMomentumDirection
+             << " Position            " << trk->GetPosition()
+             << " Global time            " << trk->GetGlobalTime()
+             << " Proper time            " << trk->GetProperTime()
+             << G4endl;
+      G4cout << __func__ << " KE stored     " << endKE
+             << " G4 Position stored  " << trk->GetPosition()
+             << " Global time stored     " << endGlobalTime
+             << " Proper time stored     " << endProperTime
              << G4endl;
       G4cout.precision(prec);
     }
 
-
-    //Get kinematics just before annihilation
-    double endKE = Mu2eG4UserHelpers::getEndKE(trk);
-    CLHEP::HepLorentzVector endMomentum =  Mu2eG4UserHelpers::getEndMomentum(trk);
-
-    //Get number od steps the track is made of
-    int nSteps = Mu2eG4UserHelpers::getNSteps(trk);
-
     // Add info about the end of the track.  Throw if SimParticle not already there.
     i->second.addEndInfo( trk->GetPosition()-_mu2eOrigin,
-                          endMomentum,
-                          trk->GetGlobalTime(),
-                          trk->GetProperTime(),
+                          endMomentum, // based on pre last step
+                          endGlobalTime, // based on pre last step
+                          endProperTime, // based on pre last step
                           _physVolHelper->index(trk),
                           trk->GetTrackStatus(),
                           stoppingCode,
-                          endKE,
+                          endKE, // based on pre last step
                           nSteps,
                           trk->GetTrackLength()
                           );
@@ -615,7 +741,7 @@ namespace mu2e {
     //   parPDGId = i->second.pdgId();
     // }
 
-    if ( trackingVerbosityLevel > 0
+    if ( trackingVerbosityLevel > 1
          // || trk->GetDefinition()->GetPDGEncoding()>PDGCode::G4Threshold
         ) {
       G4int prec = G4cout.precision(15);
@@ -651,7 +777,7 @@ namespace mu2e {
                << " with excitaion energy: "
                << pG4Ion->GetExcitationEnergy()
                << " with float level base: "
-               << G4String(G4Ions::FloatLevelBaseChar(G4Ions::FloatLevelBase(flbi))) << " " << flbi
+               << std::string(1,G4Ions::FloatLevelBaseChar(G4Ions::FloatLevelBase(flbi))) << " " << flbi
                << G4endl;
       }
       G4cout.precision(prec);

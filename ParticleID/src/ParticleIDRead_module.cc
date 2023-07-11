@@ -1,7 +1,6 @@
 //
 // Read the pid
 //
-//
 // Original author Vadim Rusu
 //
 
@@ -12,23 +11,19 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 // ROOT incldues
 #include "TH1F.h"
-
 
 // C++ includes.
 #include <iostream>
 #include <string>
 
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
-#include "Offline/RecoDataProducts/inc/PIDProductCollection.hh"
 
 #include "BTrk/TrkBase/TrkParticle.hh"
 // mu2e tracking
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
-
 
 //ROOT
 #include "TTree.h"
@@ -46,7 +41,6 @@ namespace mu2e {
     void beginJob();
     void analyze(const art::Event& e);
 
-
   private:
 
     // Module label of the module that performed the fits.
@@ -63,7 +57,6 @@ namespace mu2e {
     // Histograms
 
     TTree* _diag;
-
 
     Int_t _trkid,_eventid;
 
@@ -128,4 +121,4 @@ namespace mu2e {
 // Part of the magic that makes this class a module.
 // create an instance of the module.  It also registers
 using mu2e::ParticleIDRead;
-DEFINE_ART_MODULE(ParticleIDRead);
+DEFINE_ART_MODULE(ParticleIDRead)

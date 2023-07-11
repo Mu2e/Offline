@@ -7,16 +7,14 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "TH1F.h"
 #include "TNtuple.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
-#include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -65,7 +63,6 @@ namespace mu2e {
 
     // DataType_ModuleLabel_InstanceName_ProcessName
 
-
     // Module label of the g4 module that produced the particles
     std::string _g4ModuleLabel;
 
@@ -92,7 +89,7 @@ namespace mu2e {
   void SimParticleAnalyzer::analyze(const art::Event& event) {
 
     ++_nAnalyzed;
-    
+
     // ntuple buffer.
     float nt[_ntpssp->GetNvar()];
 
@@ -169,4 +166,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::SimParticleAnalyzer;
-DEFINE_ART_MODULE(SimParticleAnalyzer);
+DEFINE_ART_MODULE(SimParticleAnalyzer)

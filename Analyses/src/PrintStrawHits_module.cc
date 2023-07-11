@@ -1,6 +1,5 @@
 // Prints out all StrawHits in a collection.
 //
-//
 // Original author Pavel Murat
 //
 
@@ -10,10 +9,8 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
 
 namespace mu2e {
 
@@ -33,11 +30,11 @@ namespace mu2e {
     int         _printStrawHits;
   };
 
-  PrintStrawHits::PrintStrawHits(const fhicl::ParameterSet& pset) : 
+  PrintStrawHits::PrintStrawHits(const fhicl::ParameterSet& pset) :
     art::EDAnalyzer   (pset),
     _makeSHmoduleLabel(pset.get<std::string>("makeSHModuleLabel","makeSH")),
     _makeSHinstance   (pset.get<std::string>("makeSHinstance"   ,""      )),
-    _printStrawHits   (pset.get<int>        ("printStrawHits"   ,       0)) 
+    _printStrawHits   (pset.get<int>        ("printStrawHits"   ,       0))
   {}
 
   void PrintStrawHits::analyze(const art::Event& event) {
@@ -49,15 +46,15 @@ namespace mu2e {
       const StrawHitCollection&     coll(*h);
 
       std::cout<<"PrintStrawHits: begin printing collection moduleLabel = \"" << _makeSHmoduleLabel
-	       <<"\", makeSHinstance = \""<<_makeSHinstance<<"\""
-	       <<std::endl;
+               <<"\", makeSHinstance = \""<<_makeSHinstance<<"\""
+               <<std::endl;
       for (StrawHitCollection::const_iterator i = coll.begin(); i != coll.end(); ++i) {
-	printf("Straw hit index: %8i time: %10.3f dt: %10.3f eDep: %10.5f\n",
-	       i->strawId().asUint16(), i->time(), i->dt(), i->energyDep());
+        printf("Straw hit index: %8i time: %10.3f dt: %10.3f eDep: %10.5f\n",
+               i->strawId().asUint16(), i->time(), i->dt(), i->energyDep());
       }
       std::cout<<"PrintStrawHits:   end printing collection moduleLabel = \""<<_makeSHmoduleLabel
-	       <<"\", makeSHinstance = \""<<_makeSHinstance<<"\""
-	       <<std::endl;
+               <<"\", makeSHinstance = \""<<_makeSHinstance<<"\""
+               <<std::endl;
     }
   } // analyze()
 
@@ -65,4 +62,4 @@ namespace mu2e {
 
 // Register the module with the framework
 //using mu2e::PrintStrawHits;
-DEFINE_ART_MODULE(mu2e::PrintStrawHits);
+DEFINE_ART_MODULE(mu2e::PrintStrawHits)

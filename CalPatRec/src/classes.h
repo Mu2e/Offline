@@ -1,14 +1,10 @@
 //
-// Original author Rob Kutschke
+// headers needed when genreflex creates root dictionaries
+// for objects written to art files
 //
 
-#include <vector>
+#define ENABLE_MU2E_GENREFLEX_HACKS
 
-#include "canvas/Persistency/Common/Wrapper.h"
-#include "canvas/Persistency/Common/Assns.h"
+#include "Offline/CalPatRec/inc/DeltaSeed.hh"
 
-/* #include "CalPatRec/inc/AlgorithmID.hh" */
-/* #include "CalPatRec/inc/AlgorithmIDCollection.hh" */
-
-// #include "CalPatRec/inc/CalTimePeak.hh"
-
+#undef ENABLE_MU2E_GENREFLEX_HACKS

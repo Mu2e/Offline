@@ -46,7 +46,7 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 double    ds.CableRunCalCore.dRadiusFraction = 0.0864; //increase fiber sizes for increased statistics
 double    ds.CableRunCalCore.dPhiFraction    = 0.0864;
 double    ds.CableRunTrkCore.dRadiusFraction = 0.1051; // changed to be 100 mm^2
-double    ds.CableRunTrkCore.dPhiFraction    = 0.1051; 
+double    ds.CableRunTrkCore.dPhiFraction    = 0.1051;
 #include "Offline/Mu2eG4/geom/DSShielding_v02.txt"
 #include "Offline/Mu2eG4/geom/ProductionSolenoid_v02.txt"
 #include "Offline/Mu2eG4/geom/psEnclosure_v04.txt"
@@ -117,10 +117,10 @@ double toyDS.bz            = 1.0;
 // of detSolFieldForm=1 or detSolFieldForm=2.
 double toyDS.gradient      = 0.0; // Tesla/m
 
-// This is recommended field map. See geom_mecofield.txt to use the meco field.
+// This is recommended field map.
 string bfield.format  = "G4BL";
 
-// The other option is "meco"
+// method for interpolation between field grid points
 string bfield.interpolationStyle = trilinear;
 
 int  bfield.verbosityLevel =  0;

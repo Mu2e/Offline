@@ -120,11 +120,16 @@ namespace mu2e {
       fhicl::Atom<std::string> physicsListName {Name("physicsListName")};
       fhicl::Atom<bool> turnOffRadioactiveDecay {Name("turnOffRadioactiveDecay"), false};
       fhicl::Atom<bool> turnOnRadioactiveDecay {Name("turnOnRadioactiveDecay"), false};
+      fhicl::Atom<bool> turnOnThermalNeutronPhysics {Name("turnOnThermalNeutronPhysics"), false};
       fhicl::Atom<bool> decayMuonsWithSpin {Name("decayMuonsWithSpin"), false};
       fhicl::Atom<double> minRangeCut {Name("minRangeCut")};
 
 
       fhicl::Atom<bool> setMuHadLateralDisplacement {Name("setMuHadLateralDisplacement"), false};
+
+      fhicl::Atom<bool> useDensityEffectInIonizationLossCalc {Name("useDensityEffectInIonizationLossCalc"), false};
+      fhicl::Sequence<std::string> conductingMaterials {Name("conductingMaterials"),
+          Comment("List of materials which are electrical conductors.")};
 
       fhicl::Sequence<int> noDecay {Name("noDecay"), Comment("List of PDG IDs that for which to turn decays off.")};
 
@@ -137,7 +142,14 @@ namespace mu2e {
                   "or one of \"PDG\", \"All\", \"None\" pre-defined settings.")
           };
 
+      fhicl::OptionalAtom<bool> disableEnergyLossFluctuations {Name("disableEnergyLossFluctuations")};
+#if G4VERSION>4110
+      fhicl::OptionalAtom<unsigned int> setEnergyLossFluctuationModel {Name("energyLossFluctuationModel")};
+#endif
       fhicl::OptionalAtom<double> mscModelTransitionEnergy {Name("mscModelTransitionEnergy")};
+      fhicl::OptionalAtom<double> muonPreAssignedDecayProperTime {Name("muonPreAssignedDecayProperTime")};
+      fhicl::OptionalAtom<double> muonMaxPreAssignedDecayProperTime {Name("muonMaxPreAssignedDecayProperTime")};
+      fhicl::OptionalAtom<double> muonMinPreAssignedDecayProperTime {Name("muonMinPreAssignedDecayProperTime")};
 
       OptionalDelegatedParameter BirksConsts {Name("BirksConsts")};
       OptionalDelegatedParameter minRangeRegionCuts {Name("minRangeRegionCuts")};

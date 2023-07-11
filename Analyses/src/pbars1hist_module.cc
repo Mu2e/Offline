@@ -11,7 +11,6 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "canvas/Utilities/InputTag.h"
 
@@ -20,11 +19,12 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 namespace mu2e {
 
@@ -33,7 +33,7 @@ namespace mu2e {
     art::InputTag particlesTag_;
 
     const ProductionTarget *targetGeom_;
-    const ParticleDataTable *particleTable_;
+    const ParticleDataList *particleTable_;
 
     // This is a workaround for geometry not being available at beginJob()
     bool booked_;
@@ -79,7 +79,7 @@ namespace mu2e {
       GeomHandle<ProductionTarget> gh;
       targetGeom_ = gh.get();
 
-      GlobalConstantsHandle<ParticleDataTable> ph;
+      GlobalConstantsHandle<ParticleDataList> ph;
       particleTable_ = &(*ph);
 
       art::ServiceHandle<art::TFileService> tfs;
@@ -120,7 +120,7 @@ namespace mu2e {
     auto particles = event.getValidHandle<SimParticleCollection>(particlesTag_);
     for(const auto& it: *particles) {
       const SimParticle& p = it.second;
-      if(p.pdgId() == -2212) {
+      if(p.pdgId() == PDGCode::anti_proton) {
         ++pbarCount;
 
         const CLHEP::Hep3Vector& mom = mu2eToTarget_momentum(p.startMomentum());
@@ -139,7 +139,7 @@ namespace mu2e {
         const SimParticle& parent = *p.parent();
         auto parentId = parent.pdgId();
 
-        std::string parentName = particleTable_->particle(parentId).ref().name();
+        std::string parentName = particleTable_->particle(parentId).name();
         const double parentStartMomentum = parent.startMomentum().vect().mag();
         //const double parentEndMomentum = parent.endMomentum().vect().mag();
         //std::cout<<"parent "<<parentName<<", pstart = "<<parentStartMomentum<<", pend = "<<parentEndMomentum
@@ -174,4 +174,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::pbars1hist);
+DEFINE_ART_MODULE(mu2e::pbars1hist)

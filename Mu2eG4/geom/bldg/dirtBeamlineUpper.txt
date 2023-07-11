@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_beamline_upper.ccl
 
@@ -14,7 +14,7 @@ double dirt.beamline.upper.offsetFromMu2eOrigin.z   = -3581.4;
 //double dirt.beamline.upper.yHalfThickness           = 355.6;
 double dirt.beamline.upper.yHalfThickness           = 330.2;
 
-vector<int>    dirt.beamline.upper.xreplace   = { 19, 20 }; 
+vector<int>    dirt.beamline.upper.xreplace   = { 19, 20 };
 vector<double> dirt.beamline.upper.xPositions = {
   17856.3,   // o2
   27363.7,   // o3
@@ -39,7 +39,7 @@ vector<double> dirt.beamline.upper.xPositions = {
   50000   // o2_to_E
 };
 
-vector<int>    dirt.beamline.upper.yreplace   = { 12, 13, 18, 19 }; 
+vector<int>    dirt.beamline.upper.yreplace   = { 12, 13, 18, 19 };
 vector<double> dirt.beamline.upper.yPositions = {
   6281.78,   // o2
   8595.96,   // o3

@@ -20,13 +20,12 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
@@ -47,7 +46,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
       fhicl::Atom<std::string> stoppingTargetMaterial{Name("stoppingTargetMaterial"),Comment("material")};
       fhicl::Atom<unsigned> verbosity{Name("verbosity")};
-      fhicl::Atom<int> pdgId{Name("pdgId")};
+      fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle")};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -71,14 +70,15 @@ namespace mu2e {
     CLHEP::RandFlat randFlat_;
     CLHEP::RandExponential randExp_;
     RandomUnitSphere   randomUnitSphere_;
-
+    ProcessCode process;
     int pdgId_;
+    PDGCode::type pid;
   };
 
   //================================================================
   FlatMuonDaughterGenerator::FlatMuonDaughterGenerator(const Parameters& conf)
     : EDProducer{conf}
-    , particleMass_(GlobalConstantsHandle<ParticleDataTable>()->particle(static_cast<PDGCode::type>(conf().pdgId())).ref().mass().value())
+    , particleMass_(GlobalConstantsHandle<ParticleDataList>()->particle(static_cast<PDGCode::type>(conf().pdgId())).mass())
     , startMom_(conf().startMom())
     , endMom_(conf().endMom())
     , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
@@ -92,7 +92,16 @@ namespace mu2e {
 
   {
     produces<mu2e::StageParticleCollection>();
-   
+    pid = static_cast<PDGCode::type>(pdgId_);
+
+    if (pid == PDGCode::e_minus) { process = ProcessCode::mu2eFlateMinus; }
+    else if (pid == PDGCode::e_plus) { process = ProcessCode::mu2eFlatePlus; }
+    else if (pid == PDGCode::gamma) { process = ProcessCode::mu2eFlatPhoton; }
+    else {
+      throw   cet::exception("BADINPUT")
+        <<"FlatMuonDaughterGenerator::produce(): No process associated with chosen PDG id\n";
+    }
+
   }
 
   //================================================================
@@ -112,20 +121,20 @@ namespace mu2e {
     double randomMom = randFlat_.fire(startMom_, endMom_);
     double randomE = sqrt(particleMass_*particleMass_ + randomMom*randomMom);
     double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
-    
-    PDGCode::type pid = static_cast<PDGCode::type>(pdgId_);
+
+
     output->emplace_back(mustop,
-                         ProcessCode::mu2eFlateMinus,
+                         process,
                          pid,
                          mustop->endPosition(),
                          CLHEP::HepLorentzVector{randomUnitSphere_.fire(randomMom), randomE},
                          time
                          );
-    
+
     event.put(std::move(output));
   }
 
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FlatMuonDaughterGenerator);
+DEFINE_ART_MODULE(mu2e::FlatMuonDaughterGenerator)

@@ -17,7 +17,6 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 // Framework includes
 #include "canvas/Persistency/Common/Ptr.h"
 
@@ -31,8 +30,8 @@ namespace mu2e {
   public:
     typedef std::vector<StepPointMCCollection> VspMC;
 
-    static double calculate( const art::Ptr<SimParticle>& p, 
-                             const VspMC& hitColls, 
+    static double calculate( const art::Ptr<SimParticle>& p,
+                             const VspMC& hitColls,
                              const std::vector<int>& decayOffCodes = std::vector<int>(),
                              const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>());
 
@@ -41,8 +40,8 @@ namespace mu2e {
                              const std::vector<int>& decayOffCodes = std::vector<int>(),
                              const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>());
   private:
-    static double getMultiStageTau( const art::Ptr<SimParticle>& sp,                                            
-                                    const VspMC& hitColls,                                            
+    static double getMultiStageTau( const art::Ptr<SimParticle>& sp,
+                                    const VspMC& hitColls,
                                     const std::vector<int>& decayOffCodes,
                                     const PhysicsParams& gc );
   };

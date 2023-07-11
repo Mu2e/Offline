@@ -1,0 +1,130 @@
+#
+#  Trigger-specific overrides for KinKal settings
+#
+#include "Offline/Mu2eKinKal/fcl/prolog.fcl"
+BEGIN_PROLOG
+Mu2eKinKalTrigger : {
+   MAT: {
+     @table::Mu2eKinKal.MAT
+  }
+
+  KKFIT: {
+    @table::Mu2eKinKal.KKFIT
+    AddHits : false
+    AddMaterial : false
+    MaterialCorrection : true
+    MaxCaloClusterDt : 10.0
+    MaxCaloClusterDOCA : 150.0 # mm
+  }
+
+  SEEDFIT: {
+    @table::Mu2eKinKal.SEEDFIT
+    MaxNIter : 2
+    MetaIterationSettings : [
+      [ 4.0, "CADSHU" ],
+      [ 2.0, "CADSHU" ],
+      [ 1.0, "CADSHU:BkgANNSHU" ]
+    ]
+    CADSHUSettings : [
+      # maxdoca, maxderr, minrdrift, maxrdrift, flag, , allowed, freeze, diag
+      [ 60.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 40.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 30.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
+    ]
+    StrawXingUpdaterSettings : [
+      [10.0, -1.0, -1.0, true, 0 ]
+    ]
+    BkgANNSHUSettings : [
+      [ "Offline/Mu2eKinKal/data/TrainBkgTTtpr.dat",0.01,"Inactive", 1]
+      #  [ "Offline/Mu2eKinKal/data/TrainBkgTTcpr.dat",0.01,"Inactive", 1]  This should be used for cpr FIXME
+    ]
+  }
+
+  SEEDEXT: {
+    @table::Mu2eKinKal.SEEDEXT
+    MaxNIter : 2
+    BFieldCorrection : false
+
+    CADSHUSettings : [
+      #      [ 40.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
+    ]
+    MetaIterationSettings : [
+      # annealing temp, strawhit updater algorithm
+      # [ 3.0, "CADSHU" ]
+    ]
+    StrawXingUpdaterSettings : [
+      # [10.0, -1.0, -1.0, true, 0 ]
+    ]
+    BkgANNSHUSettings : [
+    ]
+ }
+
+  LOOPHELIX : {
+    @table::Mu2eKinKal.LOOPHELIX
+    SeedErrors: [ 5, 5, 5, 5, 2e-2, 5 ]
+    ZSavePositions: [ 0 ]
+    SaveFullFit : false
+  }
+
+  KINEMATICLINE : {
+    @table::Mu2eKinKal.KINEMATICLINE
+  }
+}
+
+TTMu2eKinKal : {
+  @table::Mu2eKinKal
+  @table::Mu2eKinKalTrigger
+
+  TTKKSeedFit : {
+    module_type : LoopHelixFit
+    MaterialSettings : @local::Mu2eKinKalTrigger.MAT
+    KKFitSettings: @local::Mu2eKinKalTrigger.KKFIT
+    FitSettings : @local::Mu2eKinKalTrigger.SEEDFIT
+    ExtensionSettings : @local::Mu2eKinKalTrigger.SEEDEXT
+    ModuleSettings : @local::Mu2eKinKalTrigger.LOOPHELIX
+  }
+
+  TTKKLineSeedFit : {
+    module_type : KinematicLineFit
+    MaterialSettings : @local::Mu2eKinKalTrigger.MAT
+    KKFitSettings: @local::Mu2eKinKalTrigger.KKFIT
+    FitSettings : @local::Mu2eKinKalTrigger.SEEDFIT
+    ExtensionSettings : @local::Mu2eKinKalTrigger.SEEDEXT
+    ModuleSettings : @local::Mu2eKinKalTrigger.KINEMATICLINE
+  }
+
+  CosmicFilter : {
+    module_type : LineFit
+  }
+}
+
+TTMu2eKinKal : {
+  @table::TTMu2eKinKal
+  producers : {
+    # seed fits: these don't use drift information
+    TTKKDePSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
+    TTKKDeMSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
+    TTKKUePSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
+    TTKKUeMSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
+    TTKKLineSeedFit: @local::TTMu2eKinKal.KKLineSeedFit
+    # do we want other fits here?
+
+  }
+  filters : {
+    CosmicFilter: @local::TTMu2eKinKal.CosmicFilter
+  }
+}
+
+TTMu2eKinKal.producers.TTKKLineSeedFit.ExtensionSettings.BFieldCorrection : false
+TTMu2eKinKal.producers.TTKKLineSeedFit.KKFitSettings.FitParticle : 13
+TTMu2eKinKal.producers.TTKKLineSeedFit.KKFitSettings.FitDirection : 1
+TTMu2eKinKal.producers.TTKKDeMSeedFit.KKFitSettings.FitParticle : 11
+TTMu2eKinKal.producers.TTKKDeMSeedFit.KKFitSettings.FitDirection : 0
+TTMu2eKinKal.producers.TTKKDePSeedFit.KKFitSettings.FitParticle : -11
+TTMu2eKinKal.producers.TTKKDePSeedFit.KKFitSettings.FitDirection : 0
+TTMu2eKinKal.producers.TTKKUeMSeedFit.KKFitSettings.FitParticle : 11
+TTMu2eKinKal.producers.TTKKUeMSeedFit.KKFitSettings.FitDirection : 1
+TTMu2eKinKal.producers.TTKKUePSeedFit.KKFitSettings.FitParticle : -11
+TTMu2eKinKal.producers.TTKKUePSeedFit.KKFitSettings.FitDirection : 1
+
+END_PROLOG

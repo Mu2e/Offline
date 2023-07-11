@@ -7,12 +7,11 @@
 
 // Mu2e includes.
 #include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
-#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 // Framework includes.
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 // Other includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -69,16 +68,16 @@ namespace mu2e {
       art::Ptr<SimParticle> const& sp = css.sim();
       double energy = css.energyDep();
       etot += energy;
-      if(debug_ > 0)std::cout <<"SimParticle PDG = " << sp->pdgId() 
+      if(debug_ > 0)std::cout <<"SimParticle PDG = " << sp->pdgId()
       << " Crystal " << css.crystalID()
       << " Shower Energy = " << energy << std::endl;
       auto pdgfnd = std::find(pdgs_.begin(),pdgs_.end(),sp->pdgId());
       if(pdgfnd != pdgs_.end() ){
-	auto mapfnd = emap.find(sp);
-	if(mapfnd == emap.end()) 
-	  emap[sp] = energy;
-	else
-	  emap[sp] += energy;
+        auto mapfnd = emap.find(sp);
+        if(mapfnd == emap.end())
+          emap[sp] = energy;
+        else
+          emap[sp] += energy;
       }
     }
     // check if any single particle generated enough energy.  Save All the particles
@@ -86,17 +85,17 @@ namespace mu2e {
     for(auto const& imap : emap) {
       if(debug_ > 0)std::cout << "Energy sum = " << imap.second << std::endl;
       if(imap.second >= minpe_){
-	retval = true;
-	output->push_back(imap.first);
+        retval = true;
+        output->push_back(imap.first);
       }
     }
     evt.put(std::move(output));
     // look at total energy too
     retval |= etot > minetot_;
-    return retval; 
+    return retval;
   }
 
 }
 
 using mu2e::CaloShowerSimFilter;
-DEFINE_ART_MODULE(CaloShowerSimFilter);
+DEFINE_ART_MODULE(CaloShowerSimFilter)

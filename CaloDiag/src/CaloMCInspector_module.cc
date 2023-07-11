@@ -4,7 +4,6 @@
 // Original author Bertrand Echenard
 //
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art_root_io/TFileService.h"
@@ -53,7 +52,7 @@ namespace mu2e {
 
        TH1F *hcryMatchE_,*hcryNoMatchE_,*hsimMatchT_,*hsimMatchE_,*hsimNoMatchE_,*hsimNoMatchT_,*hsimMatchELT_;
        TH1F *hSimNoMatchCE_,*hDigiSize_;
-       
+
        TH2F *hETimeErr_,*hETimePull_,*hEEnerErr_,*hEEnerPull_;
        TH1F *hTimePull_[5],*hEnerPull_[5];
   };
@@ -71,7 +70,7 @@ namespace mu2e {
   void CaloMCInspector::beginJob(){
 
        art::ServiceHandle<art::TFileService> tfs;
-       
+
        hcryMatchE_      = tfs->make<TH1F>("hcryMatchE",    "crystal Edep match;Edep (MeV);Entries",      100,0,100);
        hcryNoMatchE_    = tfs->make<TH1F>("hcryNoMatchE",  "crystal Edep NO match;Edep (MeV);Entries",   100,0,100);
        hsimMatchT_      = tfs->make<TH1F>("hsimMatchDT",   "sim Time match;DT (ns);Entries",             100,0,500);
@@ -81,7 +80,7 @@ namespace mu2e {
        hsimNoMatchT_    = tfs->make<TH1F>("hsimNoMatchT",  "sim Time match;time (ns);Entries",           100,0,2000);
        hSimNoMatchCE_   = tfs->make<TH1F>("hSimNoMatchCE", "sim E no match Ce match;Edep (MeV);Entries", 100,0,100);
        hDigiSize_       = tfs->make<TH1F>("hDigiSize",     "Digi size;size;Entries",                     100,0,100);
-       
+
        hETimeErr_       = tfs->make<TH2F>("hETimeErr",     "Reco time error;Edep (MeV);#Deltat (ns)",      100,0,100,100,0,3);
        hETimePull_      = tfs->make<TH2F>("hETimePull",    "Reco time pull;Edep (MeV);(t-t_{mc})/#Deltat", 100,0,100,100,-10,10);
        hEEnerErr_       = tfs->make<TH2F>("hEEnerErr",     "Reco ener error;Edep (MeV);#DeltaE (MeV)",     100,0,100,100,0,5);
@@ -95,8 +94,8 @@ namespace mu2e {
 
 
 
-  void CaloMCInspector::analyze(const art::Event& event) 
-  {      
+  void CaloMCInspector::analyze(const art::Event& event)
+  {
       //Calorimeter crystal hits (average from readouts)
       art::Handle<CaloHitCollection> CaloHitsHandle;
       event.getByLabel(caloCrystalModuleLabel_, CaloHitsHandle);
@@ -106,72 +105,72 @@ namespace mu2e {
       art::Handle<CaloShowerSimCollection> caloShowerSimHandle;
       event.getByLabel(caloShowerSimModuleLabel_, caloShowerSimHandle);
       const CaloShowerSimCollection& caloShowerSims(*caloShowerSimHandle);
-      
+
       //Calorimeter Hit truth assignment
       art::Handle<CaloHitMCTruthAssn> caloHitTruthHandle;
       event.getByLabel(caloHitTruthModuleLabel_, caloHitTruthHandle);
       const CaloHitMCTruthAssn& caloHitTruth(*caloHitTruthHandle);
- 
+
      //Calorimeter Hit truth assignment
       art::Handle<CaloDigiCollection> caloDigiHandle;
       event.getByLabel(caloDigiModuleLabel_, caloDigiHandle);
       const CaloDigiCollection& caloDigis(*caloDigiHandle);
-      
+
 
       for (const auto& digi : caloDigis) hDigiSize_->Fill(digi.waveform().size());
 
 
       for (const auto& hit :CaloHits )
       {
-          //Find the caloHitMC in the truth map          
+          //Find the caloHitMC in the truth map
           auto itMC = caloHitTruth.begin();
           while (itMC != caloHitTruth.end()) {if (itMC->first.get() == &hit) break; ++itMC;}
           unsigned nCrySims = (itMC != caloHitTruth.end()) ? itMC->second->nParticles() : 0;
-          
+
           if (nCrySims>0) hcryMatchE_->Fill(hit.energyDep());
-          else            hcryNoMatchE_->Fill(hit.energyDep());          
+          else            hcryNoMatchE_->Fill(hit.energyDep());
           if (diagLevel_ > 0) std::cout<<"Crystal "<<hit.crystalID()<<" "<<hit.energyDep()<<" "<<hit.time()<<" "<<nCrySims<<std::endl;
 
           for (unsigned i=0;i< nCrySims;++i)
-	  {	                      
-	      const auto& eDepMC = itMC->second->energyDeposit(i);
+          {
+              const auto& eDepMC = itMC->second->energyDeposit(i);
               double deltaT      = std::abs(eDepMC.time()-hit.time());
-              
+
               hsimMatchT_->Fill(eDepMC.time()-hit.time());
               if (deltaT > 5 ) hsimMatchELT_->Fill(eDepMC.energyDep());
               if (diagLevel_ > 0) std::cout<<"Sim "<<eDepMC.sim()->id().asInt()<<" "<<eDepMC.sim()->pdgId()<<" "<<eDepMC.sim()->creationCode()
                                            <<" "<<eDepMC.time()<<" "<<eDepMC.energyDep()<<" "<<eDepMC.momentumIn()<<std::endl;
           }
           if (diagLevel_ > 0) std::cout<<std::endl;
-          
+
 
           hETimeErr_->Fill(hit.energyDep(), hit.timeErr());
           hEEnerErr_->Fill(hit.energyDep(), hit.energyDepErr());
           if (nCrySims==0) continue;
 
           const auto& eDepMC = itMC->second->energyDeposit(0);
-          double mcEdep = eDepMC.energyDep(); 
-          double mcTime = eDepMC.time()+1.9;      
+          double mcEdep = eDepMC.energyDep();
+          double mcTime = eDepMC.time()+1.9;
 
           hETimePull_->Fill(hit.energyDep(),(hit.time()-mcTime)/hit.timeErr());
           hEEnerPull_->Fill(hit.energyDep(), (hit.energyDep()-mcEdep)/hit.energyDepErr());
 
-          if (hit.energyDep()>10 && hit.energyDep()<20)  hTimePull_[0]->Fill((hit.time()-mcTime)/hit.timeErr()); 
-          if (hit.energyDep()>20 && hit.energyDep()<30)  hTimePull_[1]->Fill((hit.time()-mcTime)/hit.timeErr()); 
-          if (hit.energyDep()>30 && hit.energyDep()<40)  hTimePull_[2]->Fill((hit.time()-mcTime)/hit.timeErr()); 
-          if (hit.energyDep()>40 && hit.energyDep()<50)  hTimePull_[3]->Fill((hit.time()-mcTime)/hit.timeErr()); 
-          if (hit.energyDep()>50 && hit.energyDep()<100) hTimePull_[4]->Fill((hit.time()-mcTime)/hit.timeErr()); 
+          if (hit.energyDep()>10 && hit.energyDep()<20)  hTimePull_[0]->Fill((hit.time()-mcTime)/hit.timeErr());
+          if (hit.energyDep()>20 && hit.energyDep()<30)  hTimePull_[1]->Fill((hit.time()-mcTime)/hit.timeErr());
+          if (hit.energyDep()>30 && hit.energyDep()<40)  hTimePull_[2]->Fill((hit.time()-mcTime)/hit.timeErr());
+          if (hit.energyDep()>40 && hit.energyDep()<50)  hTimePull_[3]->Fill((hit.time()-mcTime)/hit.timeErr());
+          if (hit.energyDep()>50 && hit.energyDep()<100) hTimePull_[4]->Fill((hit.time()-mcTime)/hit.timeErr());
 
-          if (hit.energyDep()>10 && hit.energyDep()<20)  hEnerPull_[0]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr()); 
-          if (hit.energyDep()>20 && hit.energyDep()<30)  hEnerPull_[1]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr()); 
-          if (hit.energyDep()>30 && hit.energyDep()<40)  hEnerPull_[2]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr()); 
-          if (hit.energyDep()>40 && hit.energyDep()<50)  hEnerPull_[3]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr()); 
-          if (hit.energyDep()>50 && hit.energyDep()<100) hEnerPull_[4]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr()); 
+          if (hit.energyDep()>10 && hit.energyDep()<20)  hEnerPull_[0]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr());
+          if (hit.energyDep()>20 && hit.energyDep()<30)  hEnerPull_[1]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr());
+          if (hit.energyDep()>30 && hit.energyDep()<40)  hEnerPull_[2]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr());
+          if (hit.energyDep()>40 && hit.energyDep()<50)  hEnerPull_[3]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr());
+          if (hit.energyDep()>50 && hit.energyDep()<100) hEnerPull_[4]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr());
       }
 
       // set of all sims matched to reco hits
       std::set<int> simMatch;
-      for (const auto& kv :caloHitTruth ) 
+      for (const auto& kv :caloHitTruth )
       {
          for (const auto& edep : kv.second->energyDeposits()) simMatch.insert(edep.sim()->id().asInt());
       }
@@ -182,23 +181,23 @@ namespace mu2e {
          int simId = showerSim.sim()->id().asInt();
          bool isMatched = simMatch.find(simId) != simMatch.end();
          if (isMatched)  hsimMatchE_->Fill(showerSim.energyDep() );
-         else            hsimNoMatchE_->Fill(showerSim.energyDep() ); 
-         
-         if (!isMatched) hsimNoMatchT_->Fill(showerSim.time());      
+         else            hsimNoMatchE_->Fill(showerSim.energyDep() );
+
+         if (!isMatched) hsimNoMatchT_->Fill(showerSim.time());
       }
- 
+
 
       double sumEno(0);
       for (const auto& showerSim : caloShowerSims)
       {
          int simId = showerSim.sim()->id().asInt();
          bool isMatched = simMatch.find(simId) != simMatch.end();
-         
+
          auto parent(showerSim.sim());
-         while (parent->hasParent()) parent = parent->parent();                     
-	 bool isConversion(false);
+         while (parent->hasParent()) parent = parent->parent();
+         bool isConversion(false);
          if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) isConversion=true;
-         
+
          if (!isConversion) continue;
          if (!isMatched) sumEno += showerSim.energyDep();
       }
@@ -206,10 +205,10 @@ namespace mu2e {
    }
 
 
-   
 
 
 
-}  
 
-DEFINE_ART_MODULE(mu2e::CaloMCInspector);
+}
+
+DEFINE_ART_MODULE(mu2e::CaloMCInspector)

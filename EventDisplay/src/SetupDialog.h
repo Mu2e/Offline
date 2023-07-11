@@ -26,8 +26,8 @@ class SetupDialog : public TGMainFrame
               bool showSupportStructures,
               bool showCRV,
               bool showOtherStructures,
-              bool showMuonBeamStop, 
-              bool showProtonAbsorber) : 
+              bool showMuonBeamStop,
+              bool showProtonAbsorber) :
               TGMainFrame(p, 400, 400), _eventDisplayFrame(eventDisplayFrame)
   {
     SetCleanup(kDeepCleanup);
@@ -95,8 +95,8 @@ class SetupDialog : public TGMainFrame
                                             bool showOtherStructures   =(_checkButton[5]->GetState()==kButtonDown);
                                             bool showMuonBeamStop      =(_checkButton[6]->GetState()==kButtonDown);
                                             bool showProtonAbsorber    =(_checkButton[7]->GetState()==kButtonDown);
-                                            if(_eventDisplayFrame) _eventDisplayFrame->changeSetup(whiteBackground, 
-                                                                                                   useHitColors, 
+                                            if(_eventDisplayFrame) _eventDisplayFrame->changeSetup(whiteBackground,
+                                                                                                   useHitColors,
                                                                                                    useTrackColors,
                                                                                                    showSupportStructures,
                                                                                                    showCRV,

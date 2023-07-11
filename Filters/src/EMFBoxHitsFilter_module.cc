@@ -1,7 +1,6 @@
 // Filters outputs of ExtMonFNAL "room" jobs to select VD hits and
 // stopped muons that should be passed to the next stage "box" jobs.
 //
-//
 // Andrei Gaponenko, 2012
 
 #include <iostream>
@@ -15,18 +14,17 @@
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "art_root_io/TFileService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleParentGetter.hh"
@@ -97,7 +95,6 @@ namespace mu2e {
       , cutEKineAtStop_(pset.get<double>("cutEKineAtStop"))
       , cutStoppedMuonPosition_(pset.get<std::vector<double> >("cutStoppedMuonPosition"))
 
-
       , nVDHits_()
       , nStoppedMuons_()
       , nPassedEvents_()
@@ -139,7 +136,7 @@ namespace mu2e {
 
       for(SimParticleCollection::const_iterator i=inparticles.begin(); i!=inparticles.end(); ++i) {
         const SimParticle& sp = i->second;
-        if(std::abs(sp.pdgId())==13) {
+        if(std::abs(sp.pdgId())==PDGCode::mu_minus) {
           const double eKine = sp.endMomentum().e() - sp.endMomentum().m();
           if(eKine < cutEKineAtStop_) {
 
@@ -237,4 +234,4 @@ namespace mu2e {
   } // namespace ExtMonFNAL
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFBoxHitsFilter);
+DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFBoxHitsFilter)

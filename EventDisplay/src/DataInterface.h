@@ -9,8 +9,9 @@
 #define EventDisplay_src_DataInterface_h
 
 #include "CLHEP/Vector/ThreeVector.h"
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/EventDisplay/src/ContentSelector.h"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/Mu2eBTrk/inc/ParticleInfo.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -77,7 +78,7 @@ class DataInterface
   std::vector<boost::shared_ptr<Cone> > _mecostylepastructures;
   CLHEP::Hep3Vector _detSysOrigin;
   timeminmax        _hitsTimeMinmax, _tracksTimeMinmax;
-  spaceminmax       _trackerMinmax, _targetMinmax, _calorimeterMinmax, _tracksMinmax;
+  spaceminmax       _trackerMinmax, _targetMinmax, _calorimeterMinmax, _tracksMinmax, _crvMinmax;
   int               _numberHits, _numberCrystalHits;
   bool              _showUnhitStraws, _showUnhitCrystals;
   unsigned int _minPoints;
@@ -91,6 +92,7 @@ class DataInterface
   bool _showNeutrons;
   bool _showOthers;
   mu2e::StrawHitFlag _hitFlagSetting;
+  double _kalStepSize;
 
   std::unique_ptr<mu2e::ParticleInfo> _particleInfo;
 
@@ -114,13 +116,17 @@ class DataInterface
   };
 
   public:
-  DataInterface(EventDisplayFrame *mainframe);
+  DataInterface(EventDisplayFrame *mainframe, double kalStepSize);
   virtual ~DataInterface();
 
   void startComponents();
   void updateComponents(double time, boost::shared_ptr<ContentSelector> contentSelector);
   void fillGeometry();
+  template<class KTRAJ> void fillKalSeedTrajectory(std::unique_ptr<KTRAJ> &trajectory,
+                                                   int particleid, int trackclass, int trackclassindex, double p1,
+                                                   boost::shared_ptr<ComponentInfo> info);
   void fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets);
+  void setCRVCalib(const mu2e::CRVCalib &calib) {_calib=&calib;}
   void makeSupportStructuresVisible(bool visible);
   void makeOtherStructuresVisible(bool visible);
   void makeCrvScintillatorBarsVisible(bool visible);
@@ -131,24 +137,27 @@ class DataInterface
   void useHitColors(bool hitcolors, bool whitebackground);
   void useTrackColors(boost::shared_ptr<ContentSelector> const &contentSelector, bool trackcolors, bool whitebackground);
   void getFilterValues(unsigned int &minPoints, double &minTime, double &maxTime, double &minMomentum,
-                       bool &showElectrons, bool &showMuons, bool &showGammas, 
+                       bool &showElectrons, bool &showMuons, bool &showGammas,
                        bool &showNeutrinos, bool &showNeutrons, bool &showOthers,
                        mu2e::StrawHitFlag &hitFlagSetting);
   void setFilterValues(unsigned int minPoints, double minTime, double maxTime, double minMomentum,
-                       bool showElectrons, bool showMuons, bool showGammas, 
+                       bool showElectrons, bool showMuons, bool showGammas,
                        bool showNeutrinos, bool showNeutrons, bool showOthers,
                        mu2e::StrawHitFlag hitFlagSetting);
   int getNumberHits() {return _numberHits;}
   int getNumberCrystalHits() {return _numberCrystalHits;}
 
-  timeminmax getHitsTimeBoundary(); 
+  timeminmax getHitsTimeBoundary();
   timeminmax getTracksTimeBoundary();
 
   spaceminmax getTrackerBoundary() {return _trackerMinmax;}
   spaceminmax getTargetBoundary() {return _targetMinmax;}
   spaceminmax getCalorimeterBoundary() {return _calorimeterMinmax;}
   spaceminmax getTracksBoundary() {return _tracksMinmax;}
-  spaceminmax getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks);
+  spaceminmax getCrvBoundary() {return _crvMinmax;}
+  spaceminmax getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks, bool useCRV);
+
+  const mu2e::CRVCalib  *_calib;
 };
 
 }

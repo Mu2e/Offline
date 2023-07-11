@@ -4,12 +4,10 @@
 //
 // Within a SimParticleColleciton, check that all mother/daughter pointers are self-consistent.
 //
-//
 // Contact person Rob Kutschke
 //
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 namespace mu2e{
 

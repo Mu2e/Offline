@@ -26,11 +26,13 @@
 
 namespace mu2e {
 
+#ifndef __ROOTCLING__
   SimParticleTimeOffset::SimParticleTimeOffset(const Config& conf) {
     for(const auto& i: conf.inputs()) {
       inputs_.emplace_back(i);
     }
   }
+#endif
 
   SimParticleTimeOffset::SimParticleTimeOffset(const fhicl::ParameterSet& pset) {
     // Do not add any offsets by default

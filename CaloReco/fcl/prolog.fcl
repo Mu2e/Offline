@@ -5,7 +5,7 @@
 
 BEGIN_PROLOG
 
-RawProcessor : 
+RawProcessor :
 {
     windowPeak       : 3
     minPeakAmplitude : 5
@@ -14,7 +14,7 @@ RawProcessor :
     diagLevel        : 0
 }
 
-TemplateProcessor : 
+TemplateProcessor :
 {
     windowPeak         : 3
     minPeakAmplitude   : 24
@@ -31,13 +31,14 @@ TemplateProcessor :
 
 
 CaloRecoDigiMaker :
-{ 
+{
     module_type         : CaloRecoDigiMaker
     caloDigiCollection  : CaloDigiMaker
     RawProcessor        : { @table::RawProcessor }
     TemplateProcessor   : { @table::TemplateProcessor }
-    processorStrategy   : "TemplateFit"     
+    processorStrategy   : "TemplateFit"
     digiSampling        : @local::HitMakerDigiSampling
+    ProtonBunchTimeTag  : "EWMProducer"
     maxChi2Cut          : 2.0
     maxPlots            : 50
     diagLevel           : 0
@@ -47,14 +48,14 @@ CaloRecoDigiMaker :
 CaloHitMaker:
 {
     module_type            : CaloHitMaker
-    caloRecoDigiCollection : CaloRecoDigiMaker	    	    
+    caloRecoDigiCollection : CaloRecoDigiMaker
     time4Merge             : 6.0   #ns
     diagLevel              : 0
 }
 
 
 
-CaloReco : 
+CaloReco :
 {
    producers : {
      CaloRecoDigiMaker  : @local::CaloRecoDigiMaker

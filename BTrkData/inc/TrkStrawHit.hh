@@ -31,9 +31,9 @@ namespace mu2e
   public:
   // enum for hit flags
     TrkStrawHit(StrawResponse::cptr_t strawResponse,
-		const ComboHit& strawhit, const Tracker& tracker,StrawHitIndex index,
-		const TrkT0& trkt0, double fltlen, double maxdriftpull,
-		double timeWeight);
+                const ComboHit& strawhit, const Tracker& tracker,StrawHitIndex index,
+                const TrkT0& trkt0, double fltlen, double maxdriftpull,
+                double timeWeight);
     virtual ~TrkStrawHit();
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
@@ -46,7 +46,7 @@ namespace mu2e
     const Straw& straw() const { return _straw; }
     virtual double time() const { return _combohit.time(); }
     //    virtual bool time(HitT0& t0) ;// 2019-04-22: GIANIPEZ change
-    StrawEnd const& driftEnd() const { return _combohit.driftEnd(); }
+    StrawEnd const& earlyEnd() const { return _combohit.earlyEnd(); }
     double driftTime() const; // drift time for the current end strategy
     double driftPhi() const { return _phi;}
     double driftRadius() const { return _rdrift;}
@@ -56,7 +56,7 @@ namespace mu2e
     double timeDiffDistErr() const { return _combohit.wireRes(); }
     const CLHEP::Hep3Vector& wirePosition() const { return _wpos; }
     void hitPosition(CLHEP::Hep3Vector& hpos) const;
-    virtual bool signalPropagationTime( TrkT0& t0 ); // time and error 
+    virtual bool signalPropagationTime( TrkT0& t0 ); // time and error
     virtual void trackT0Time(double &htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
 
     double signalTime() const { return _stime; } // time for signal to reach the end of the wire
@@ -89,7 +89,7 @@ namespace mu2e
 
     const ComboHit&   _combohit;
     const Straw&      _straw;
-    double	      _rstraw; // straw radius; cached from Tracker
+    double              _rstraw; // straw radius; cached from Tracker
     StrawHitIndex     _index;
     TrkLineTraj*      _hittraj;
     CLHEP::Hep3Vector _wpos;
@@ -101,7 +101,7 @@ namespace mu2e
     double            _phi;
     double            _vdriftinst;
     double            _vprop; // effective signal propagation velocity
-    double	      _stime; // signal propagation time
+    double              _stime; // signal propagation time
     double            _maxdriftpull;
 
   };

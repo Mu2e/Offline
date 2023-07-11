@@ -10,7 +10,6 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Utilities/InputTag.h"
 
 // Need this for the BaBar headers.
@@ -91,4 +90,4 @@ void mu2e::PtrTest::produce(art::Event& event)
 
 }
 
-DEFINE_ART_MODULE(mu2e::PtrTest);
+DEFINE_ART_MODULE(mu2e::PtrTest)

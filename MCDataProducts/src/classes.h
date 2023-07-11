@@ -13,8 +13,7 @@
 #include "cetlib/map_vector.h"
 
 // generation
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollections.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/GenParticleSPMHistory.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/GenSimParticleLink.hh"
@@ -24,14 +23,12 @@
 
 // simulation
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
-#include "Offline/MCDataProducts/inc/VisibleGenElTrackCollection.hh"
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
 #include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
 
@@ -46,11 +43,9 @@
 
 // G4
 #include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
-#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 
 // MARS
 #include "Offline/MCDataProducts/inc/MARSInfo.hh"
-#include "Offline/MCDataProducts/inc/MARSInfoCollection.hh"
 #include "Offline/MCDataProducts/inc/GenParticleMARSAssns.hh"
 #include "Offline/MCDataProducts/inc/SimParticleMARSAssns.hh"
 
@@ -66,7 +61,7 @@
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 
-// tracking 
+// tracking
 #include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
 #include "Offline/MCDataProducts/inc/KalSeedMC.hh"
 
@@ -75,12 +70,11 @@
 #include "Offline/MCDataProducts/inc/CrvPhotons.hh"
 #include "Offline/MCDataProducts/inc/CrvSiPMCharges.hh"
 #include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
-#include "Offline/MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
+#include "Offline/MCDataProducts/inc/CrvCoincidenceClusterMC.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 // ExtMon
 #include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"

@@ -7,7 +7,8 @@
 #include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "Offline/DataProducts/inc/PDGCode.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
@@ -32,19 +33,19 @@ namespace mu2e {
     MCRelationship _rel; // relationship of this particle to its primary
     uint16_t _nhits; // number of associated StrawHits
     uint16_t _nactive; // number of associated active hits
-    XYZVec _mom; // initial momentum 
+    XYZVectorF _mom; // initial momentum
     cet::map_vector_key _spkey; // key to the SimParticle
     // construct a Ptr from Handle and key
     SPPtr simParticle(SPCH spcH) const { return SPPtr(spcH,_spkey.asUint()); }
-    SimPartStub() : _pdg(PDGCode::null), _nhits(0), _nactive(0) {}
+    SimPartStub() : _pdg(PDGCode::unknown), _nhits(0), _nactive(0) {}
     // partial constructor from a SimParticle;
     SimPartStub(SPPtr const& spp)  : _pdg(spp->pdgId()),
     _proc(spp->creationCode()), _gid(GenId::unknown), _rel(MCRelationship::none),
-    _nhits(0), _nactive(0), _mom(Geom::toXYZVec(spp->startMomentum())), _spkey(spp.key()){
+    _nhits(0), _nactive(0), _mom(XYZVectorF(spp->startMomentum())), _spkey(spp.key()){
     // dig down to the GenParticle
       auto simPtr = spp;
       while (simPtr->genParticle().isNull() && simPtr->parent().isNonnull()) {
-	simPtr = simPtr->parent();
+        simPtr = simPtr->parent();
       }
       if(simPtr->genParticle().isNonnull())_gid = simPtr->genParticle()->generatorId();
     }
@@ -52,14 +53,14 @@ namespace mu2e {
   // sampled pair of momentum and position (tracker system) of the primary matched particle
   // These come from the virtual detectors
   struct VDStep {
-    XYZVec _pos;  // postion in DETECTOR COORDINATES
-    XYZVec _mom;
+    XYZVectorF _pos;  // postion in DETECTOR COORDINATES
+    XYZVectorF _mom;
     double _time;
     VirtualDetectorId _vdid;
     VDStep() : _time(0.0) {}
     VDStep(CLHEP::Hep3Vector const& pos,CLHEP::Hep3Vector const& mom, double time, VirtualDetectorId const& vdid) :
-      _pos(Geom::toXYZVec(pos)),
-    _mom(Geom::toXYZVec(mom)),
+      _pos(XYZVectorF(pos)),
+    _mom(XYZVectorF(mom)),
     _time(time),
     _vdid(vdid) {}
   };
@@ -71,18 +72,22 @@ namespace mu2e {
     StrawId const& strawid() const { return _strawId; }
     float energySum() const { return _energySum; }
     float stepTime() const { return _time; }
-    XYZVec const& clusterPosition() const { return _cpos; }
-    XYZVec const& particleMomentum() const { return _mom; }
+    XYZVectorF const& clusterPosition() const { return _cpos; }
+    XYZVectorF const& particleMomentum() const { return _mom; }
     StrawHitIndex _sdmcindex; // index into the original StrawDigiMC collection
     StrawHitIndex _spindex; // index into the associated SimPartStub of this DigiMC
     StrawId _strawId; // the ID of the straw that was hit
+    StrawEnd _earlyend; // end with the earliest MC true signal above threshold
     float _energySum; // sum of all MC true energy deposited by trigger particles
     float _time; // time of trigger StepPoint with time maps applied, wrapped to the beam
-    XYZVec _cpos; // trigger cluster position in detector coordinates
-    XYZVec _mom; // momentum of particle at point where digi created
+    float _tdrift; // true drift time (from particle crossing to threshold-crossing signal reaching wire)
+    float _rdrift; // true drift radius, given the above (using single-cluster time-to-distance)
+    float _tprop; // signal propagation time of from the wire crossing point to the nearest end
+    XYZVectorF _cpos; // trigger cluster position in detector coordinates
+    XYZVectorF _mom; // momentum of particle at point where digi created
   };
 
-  struct KalSeedMC { 
+  struct KalSeedMC {
     SimPartStub const& simParticle(size_t index=0) const { return _simps.at(index); }
     std::vector<SimPartStub> const& simParticles() const { return _simps; }
     std::vector<TrkStrawHitMC> const & trkStrawHitMCs() const { return _tshmcs; }

@@ -18,7 +18,6 @@
 #include "fhiclcpp/types/Table.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SubRun.h"
 
@@ -102,7 +101,7 @@ namespace mu2e {
                                        <<".  Write a better algorithm for the task."<<"\n";
     }
     if(debug_ > 0)
-      std::cout << "LogNormal PBI with mean " << lognd_.m() << " sigma " << lognd_.s() 
+      std::cout << "LogNormal PBI with mean " << lognd_.m() << " sigma " << lognd_.s()
       << " SDF " << exp(-lognd_.s()*lognd_.s())
       << " min " << lognd_.min() << " max " << lognd_.max() << std::endl;
   }
@@ -114,12 +113,12 @@ namespace mu2e {
     }
 
     // convert to nearest ingeger and write out
-    event.put(std::make_unique<ProtonBunchIntensity>(unsigned(rint(res))));
+    event.put(std::make_unique<ProtonBunchIntensity>(static_cast<unsigned long long>(llrint(res))));
   }
 
   //================================================================
   void ProtonBunchIntensityLogNormal::beginSubRun(art::SubRun & subrun ) {
-    subrun.put(std::make_unique<ProtonBunchIntensity>(unsigned(rint(mean_))),"MeanIntensity");
+    subrun.put(std::make_unique<ProtonBunchIntensity>(static_cast<unsigned long long>(llrint(mean_))),"MeanIntensity", art::fullSubRun());
   }
 
   //================================================================
@@ -143,4 +142,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::ProtonBunchIntensityLogNormal);
+DEFINE_ART_MODULE(mu2e::ProtonBunchIntensityLogNormal)

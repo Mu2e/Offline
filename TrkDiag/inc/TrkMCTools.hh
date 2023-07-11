@@ -6,8 +6,7 @@
 #define TrkDiag_TrkMCTools_hh
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/MCDataProducts/inc/KalSeedMC.hh"
@@ -38,15 +37,15 @@ namespace mu2e {
       spcount() : _count(0), _acount(0) {}
       spcount(art::Ptr<SimParticle> const& spp) : _spp(spp), _count(0), _acount(0) {}
       spcount(art::Ptr<SimParticle> const& spp,bool active) : _spp(spp), _count(1), _acount(0) {
-	if(active)_acount =1; }
+        if(active)_acount =1; }
       void append(art::Ptr<SimParticle> const& sp,bool active) { if(sp == _spp){
-	++_count; if(active)++_acount; } }
+        ++_count; if(active)++_acount; } }
       bool operator ==(art::Ptr<SimParticle> const& sp) const { return _spp == sp; }
       art::Ptr<SimParticle> _spp;
       unsigned _count; // counts all hits
-      unsigned _acount; // counts active 
+      unsigned _acount; // counts active
     };
-// sort by active hits
+    // sort by active hits
     struct spcountcomp : public std::binary_function <spcount, spcount, bool> {
       bool operator() (spcount a, spcount b) { return a._acount > b._acount; }
     };
@@ -54,8 +53,7 @@ namespace mu2e {
     typedef StepPointMCCollection::const_iterator MCStepItr;
     struct timecomp : public std::binary_function<MCStepItr,MCStepItr, bool> {
       bool operator()(MCStepItr x,MCStepItr y) { return x->time() < y->time(); }
-    };    
-
+    };
 
     // find associated sim particles to a track.  The first returns a hit-weighted vector of
     // all particles, the second just the one with the most hits
@@ -70,8 +68,8 @@ namespace mu2e {
 
     // find relationship of a set of StrawDigis to the primary particle in the event
     void primaryRelation(PrimaryParticle const& primary,
-	StrawDigiMCCollection const& sdmccol, std::vector<StrawDigiIndex> const& indices,
-	art::Ptr<SimParticle>& primarysim, unsigned& nprimary, MCRelationship& mcrel);
+        StrawDigiMCCollection const& sdmccol, std::vector<StrawDigiIndex> const& indices,
+        art::Ptr<SimParticle>& primarysim, unsigned& nprimary, MCRelationship& mcrel);
 
   }
 }

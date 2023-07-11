@@ -1,6 +1,5 @@
 // Precompute particle randomization from MARS inputs for g4s1 ExtMonFNALRoom jobs.
 //
-//
 // Original author Andrei Gaponenko, 2012
 
 #include <iostream>
@@ -25,7 +24,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/FindOne.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
@@ -39,17 +37,12 @@
 #include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/MARSInfo.hh"
-#include "Offline/MCDataProducts/inc/MARSInfoCollection.hh"
 #include "Offline/MCDataProducts/inc/GenParticleMARSAssns.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "Offline/ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
 #include "Offline/ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
@@ -232,7 +225,6 @@ namespace mu2e {
 //old_geom:       building = &*bh;
       }
 
-
 //old_geom:      const double yFloor = dump_->mu2eToBeamDump_position(CLHEP::Hep3Vector(0,building->roomInsideYmin(),0)).y();
 //old_geom:      const double yCeiling = dump_->mu2eToBeamDump_position(CLHEP::Hep3Vector(0,building->roomInsideYmax(),0)).y();
 //old_geom:
@@ -378,7 +370,6 @@ namespace mu2e {
 
           if(!group.empty()) {
 
-
             if(verbosityLevel_ > 1) {
               std::cout<<"EMFRoomFluxAnalyzer: starting K nearest neighbors search for group size "
                        <<group.size()<<std::endl;
@@ -507,7 +498,6 @@ namespace mu2e {
       writeParticleNtuple();
     }
 
-
     //================================================================
     void EMFRoomFluxAnalyzer::writeParticleNtuple() {
       art::ServiceHandle<art::TFileService> tfs;
@@ -547,4 +537,4 @@ namespace mu2e {
   } // namespace ExtMonFNAL
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFRoomFluxAnalyzer);
+DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFRoomFluxAnalyzer)

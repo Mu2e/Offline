@@ -26,7 +26,6 @@
 //
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 
@@ -128,9 +127,9 @@ namespace {
             std::fprintf(file, "%15.10f %15.10f %15.10f %15.10f %15.10f %15.10f\n", x, y, z,
                          field[0], field[1], field[2]);
         }
-    };
+    }
 
-};  // namespace
+}  // namespace
 
 namespace mu2e {
     class BFieldTest01 : public art::EDAnalyzer {
@@ -164,8 +163,8 @@ namespace mu2e {
         for (auto const& c : scans_) {
             scanCSV(c, *bfmgr);
         }
-    };
+    }
 
 }  // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::BFieldTest01);
+DEFINE_ART_MODULE(mu2e::BFieldTest01)

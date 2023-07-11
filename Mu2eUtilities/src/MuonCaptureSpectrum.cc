@@ -17,11 +17,9 @@
 
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "HepPDT/Measurement.hh"
 
-#include "HepPDT/ParticleData.hh"
 #include "cetlib/pow.h"
 
 #include "Offline/Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
@@ -43,15 +41,15 @@ namespace mu2e {
     _rnFlat      (rnFlat          ),
     _rnUnitSphere(rnUnitSphere    )
   {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 
-    _me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
-    _mmu   = pdt->particle(PDGCode::mu_minus).ref().mass().value();
+    _me    = pdt->particle(PDGCode::e_minus ).mass();
+    _mmu   = pdt->particle(PDGCode::mu_minus).mass();
     _MN    = GlobalConstantsHandle<PhysicsParams>()->getAtomicMass("Al");
   }
 
   MuonCaptureSpectrum::MuonCaptureSpectrum(bool kMaxUserSet, double kMaxUser, double kMaxMax,
-					   CLHEP::RandFlat* rnFlat, RandomUnitSphere* rnUnitSphere):
+                                           CLHEP::RandFlat* rnFlat, RandomUnitSphere* rnUnitSphere):
     _spectrum    (RMC             ),
     _spectrum2D  (KrollWadaJoseph ),
     _kMaxUserSet (kMaxUserSet     ),
@@ -60,10 +58,10 @@ namespace mu2e {
     _rnFlat      (rnFlat          ),
     _rnUnitSphere(rnUnitSphere    )
   {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 
-    _me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
-    _mmu   = pdt->particle(PDGCode::mu_minus).ref().mass().value();
+    _me    = pdt->particle(PDGCode::e_minus ).mass();
+    _mmu   = pdt->particle(PDGCode::mu_minus).mass();
     _MN    = GlobalConstantsHandle<PhysicsParams>()->getAtomicMass("Al");
   }
 
@@ -139,7 +137,7 @@ namespace mu2e {
   //=======================================================
 
   double MuonCaptureSpectrum::get2DMax(double E) const {
-    //    static const GlobalConstantsHandle<ParticleDataTable> pdt;
+    //    static const GlobalConstantsHandle<ParticleDataList> pdt;
 
     return getKrollWadaJosephSpectrum( E, 2*_me, 0. );
   }
@@ -205,7 +203,7 @@ namespace mu2e {
   void MuonCaptureSpectrum::getElecPosiVectors(double ePhoton,CLHEP::HepLorentzVector& mome, CLHEP::HepLorentzVector& momp) const {
 
     double x, y;
-					// generate invariant mass and energy splitting
+                                        // generate invariant mass and energy splitting
     fire(ePhoton,x,y);
 
     double eElectron = 0.5*( ePhoton - y*std::sqrt( cet::diff_of_squares( ePhoton, x ) ) );

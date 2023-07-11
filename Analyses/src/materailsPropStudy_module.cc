@@ -10,7 +10,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/SeedService/inc/SeedService.hh"
 
 // BaBar
@@ -182,4 +181,4 @@ namespace mu2e
 }  // end namespace mu2e
 
 using mu2e::materailsPropStudy;
-DEFINE_ART_MODULE(materailsPropStudy);
+DEFINE_ART_MODULE(materailsPropStudy)

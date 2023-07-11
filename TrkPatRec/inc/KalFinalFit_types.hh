@@ -11,17 +11,17 @@
 
 namespace art {
   class Event;
-};
+}
 
 namespace mu2e {
-  
+
   class KalFitData;
   class Tracker;
   class Calorimeter;
   class DoubletAmbigResolver;
 
   namespace KalFinalFitTypes {
-  
+
     struct Data_t {
       const art::Event*     event;
       const Tracker*       tracker;
@@ -34,14 +34,14 @@ namespace mu2e {
       std::vector<Doublet>* listOfDoublets;
       DoubletAmbigResolver* dar;
       int                   eventNumber;
-      
-      unsigned              tchDiskId; 
+
+      unsigned              tchDiskId;
       unsigned              tchAdded;
-      double                tchDepth;  
-      double                tchDOCA;   
-      double                tchDt;     
+      double                tchDepth;
+      double                tchDOCA;
+      double                tchDt;
       double                tchTrkPath;
-      double                tchEnergy; 
+      double                tchEnergy;
     };
   }
 }
