@@ -555,9 +555,6 @@ namespace mu2e {
 
         if ( c.getBool("vd.STMUpStr.build", false) ) {
           //place this VD 1 cm downstream of the CRS (Cosmic Ray Shield)
-          // const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
-          // const double yExtentLow      = c.getDouble("yOfFloorSurface.below.mu2eOrigin");
-          // const double y_vd_center     = (yExtentLow + y_crv_max)/2.0;
           const double y_vd_center = 0.0;
 
           CLHEP::Hep3Vector vdPositionWRTparent     = mstmReferencePositionInParent + CLHEP::Hep3Vector(0.0,y_vd_center, 1.0*mm-vd->_halfLength);
@@ -577,13 +574,6 @@ namespace mu2e {
         //VD 86 Hole filler
         if ( c.getBool("vd.STMUpStrHole.build", false) ) {
           //place this VD 1 cm downstream of the CRS (Cosmic Ray Shield)
-          // const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
-          // const double yExtentLow      = c.getDouble("yOfFloorSurface.below.mu2eOrigin");
-          // const double y_vd_center     = (yExtentLow + y_crv_max)/2.0;
-
-          //const VolumeInfo& parent = _helper->locateVolInfo("STM_CRVShieldPipe");
-          //bCLHEP::Hep3Vector parentPositionInMu2e = parent.centerInMu2e();
-
           const double y_vd_center = 0.0;
 
           CLHEP::Hep3Vector vdPositionWRTparent     = mstmReferencePositionInParent + CLHEP::Hep3Vector(0.0,y_vd_center, 1.0*mm-vd->_halfLength);
@@ -601,36 +591,8 @@ namespace mu2e {
         }
 
 
-//         if ( c.getBool("vd.STMCRVShieldDnStr.build", false) ) {
-//           //place this VD just downstream of the shield wall dnStr of the CRV (Cosmic Ray Veto)
-//           // const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
-//           // const double yExtentLow      = c.getDouble("yOfFloorSurface.below.mu2eOrigin");
-//           // const double y_vd_center     = (yExtentLow + y_crv_max)/2.0;
-//           const double y_vd_center = 0.0;
-//
-//           //CLHEP::Hep3Vector vdPositionWRTmstmMother = CLHEP::Hep3Vector(0.0,y_vd_center, -mstmMotherHalfLength+1.0*mm-vd->_halfLength);
-//           const double z_offset =   c.getDouble("stm.crvshield.upStrSpace")
-//                                   + 2.0*c.getDouble("stm.crvshield.halflength")
-//                                   + 1.0*mm   // another 1mm gap
-//                                   - vd->_halfLength;
-//           CLHEP::Hep3Vector vdPositionWRTparent = mstmReferencePositionInParent + CLHEP::Hep3Vector(0.0,y_vd_center, z_offset);
-//
-//           vd->addVirtualDetector(VirtualDetectorId::STM_CRVShieldDnStr, //ID
-//                                  parentPositionInMu2e,//mstmMotherPositionInMu2e,//reference position
-//                                  0x0,                               //rotation
-//                                  vdPositionWRTparent);    //vdPositionWRTmstmMother);//placement w.r.t. reference
-//
-//            if ( verbosityLevel > -1) {
-//               cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_CRVShieldDnStr) << endl;
-//               cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_CRVShieldDnStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_CRVShieldDnStr) <<endl;
-//            }
-//         }
-
         if ( c.getBool("vd.STMFieldOfViewCollDnStr.build", false) ) {
           //place this VD just downstream of the STM Field-Of-View Collimator
-          // const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
-          // const double yExtentLow      = c.getDouble("yOfFloorSurface.below.mu2eOrigin");
-          // const double y_vd_center     = (yExtentLow + y_crv_max)/2.0;
           const double y_vd_center = 0.0;
 
           double z_offset =   c.getDouble("stm.magnet.UpStrSpace")
@@ -658,9 +620,6 @@ namespace mu2e {
 
         if ( c.getBool("vd.STMMagDnStr.build", false) ) {
           //place this VD downstream of the magnet
-          // const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
-          // const double yExtentLow      = c.getDouble("yOfFloorSurface.below.mu2eOrigin");
-          // const double y_vd_center     = (yExtentLow + y_crv_max)/2.0;
           const double y_vd_center = 0.0;
 
           double z_offset =   c.getDouble("stm.magnet.UpStrSpace")
