@@ -1374,22 +1374,6 @@ namespace mu2e {
       //const double y_vd_halflength = (y_crv_max + yExtentLow)/2.0;
       const double y_mother_halflength = yExtentLow;
       const double dimVD[3] = { x_vd_halflength, y_mother_halflength, vdg->getHalfLength() };
-      /*
-      VolumeInfo vdFullInfo = nestBox(VirtualDetector::volumeName(vdId),
-                                  dimVD,
-                                  downstreamVacuumMaterial,
-                                  0,                              //rotation
-                                  vdg->getLocal(vdId),
-                                  parent,
-                                  vdId,
-                                  vdIsVisible,
-                                  G4Color::White(),
-                                  vdIsSolid,
-                                  forceAuxEdgeVisible,
-                                  placePV,
-                                  false
-                                  );
-      */
 
       VolumeInfo vdFullInfo;
       vdFullInfo.solid = new G4Box("STM_UpStr_Full",
@@ -1446,42 +1430,6 @@ namespace mu2e {
 
     doSurfaceCheck && checkForOverlaps(vdHollowInfo.physical, _config, verbosityLevel>0);
   }
-    //     vdId = VirtualDetectorId::STM_CRVShieldDnStr;
-    //     if ( vdg->exist(vdId) ) {
-    //
-    //       const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
-    //       GeomHandle<CosmicRayShield> CRS;
-    //       //const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
-    //       const double yExtentLow      = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
-    //       const double x_vd_halflength = (CRS->getSectorHalfLengths("D"))[0];
-    //       //const double y_vd_halflength = (y_crv_max + yExtentLow)/2.0;
-    //       const double y_mother_halflength = yExtentLow;
-    //       const double dimVD[3] = { x_vd_halflength, y_mother_halflength, vdg->getHalfLength() };
-    //
-    //       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-    //                                   dimVD,
-    //                                   downstreamVacuumMaterial,
-    //                                   0,                              //rotation
-    //                                   vdg->getLocal(vdId),
-    //                                   parent,
-    //                                   vdId,
-    //                                   vdIsVisible,
-    //                                   G4Color::White(),
-    //                                   vdIsSolid,
-    //                                   forceAuxEdgeVisible,
-    //                                   placePV,
-    //                                   false
-    //                                   );
-    //
-    //       if ( verbosityLevel > 0) {
-    //           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-    //                << " at " << vdg->getGlobal(vdId) << endl
-    //                << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
-    //           cout << __func__ << "    VD parameters: " << vdParams << endl;
-    //           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
-    //       }
-    //       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-    //     }
 
     vdId = VirtualDetectorId::STM_FieldOfViewCollDnStr;
     if ( vdg->exist(vdId) ) {
