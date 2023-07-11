@@ -1390,52 +1390,51 @@ namespace mu2e {
                                   false
                                   );
       */
-      
+
       VolumeInfo vdFullInfo;
       vdFullInfo.solid = new G4Box("STM_UpStr_Full",
-				   dimVD[0],dimVD[1],dimVD[2]);
+                                   dimVD[0],dimVD[1],dimVD[2]);
 
       //Subtracting hole from original VD86
       ///////////////////////////////////////////////////////////////////////////////
-	
-	VolumeInfo HoleInfo;
-	VolumeInfo vdHollowInfo;
-	//double shieldHoleRadius = _config.getDouble("ExtShieldDownstream.detecHoleRadius")*CLHEP::mm;	
-	double shieldHoleRadius = _config.getDouble("stm.shield.rOut")*CLHEP::mm;
+      VolumeInfo HoleInfo;
+      VolumeInfo vdHollowInfo;
+      //double shieldHoleRadius = _config.getDouble("ExtShieldDownstream.detecHoleRadius")*CLHEP::mm;
+      double shieldHoleRadius = _config.getDouble("stm.shield.rOut")*CLHEP::mm;
       HoleInfo.solid = new G4Tubs(vdFullInfo.name,
-				  0,
-				  shieldHoleRadius,
-				  2*vdg->getHalfLength(),
-				  0*CLHEP::deg, 
-				  360*CLHEP::deg);
-    
-      
+                                  0,
+                                  shieldHoleRadius,
+                                  2*vdg->getHalfLength(),
+                                  0*CLHEP::deg,
+                                  360*CLHEP::deg);
+
+
       G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
-      
+
       vdHollowInfo.name = VirtualDetector::volumeName(vdId);
       vdHollowInfo.solid = new G4SubtractionSolid(vdHollowInfo.name,
-						  vdFullInfo.solid,
-						  HoleInfo.solid,
-						  0,
-						  /*HoleInfo.centerInMu2e()-
-						    vdg->getGlobal(vdId)*/G4ThreeVector(0,0,0));
+                                                  vdFullInfo.solid,
+                                                  HoleInfo.solid,
+                                                  0,
+                                                  /*HoleInfo.centerInMu2e()-
+                                                    vdg->getGlobal(vdId)*/G4ThreeVector(0,0,0));
 
     vdHollowInfo.centerInParent = vdLocalOffset;
     vdHollowInfo.centerInWorld  = vdHollowInfo.centerInParent + parent.centerInWorld;
 
 
     finishNesting(vdHollowInfo,
-		  downstreamVacuumMaterial,
-		  0,
-		  vdLocalOffset,
-		  parent.logical,
-		  vdId,
-		  vdIsVisible,
-		  G4Color::Red(),
-		  vdIsSolid,
-		  forceAuxEdgeVisible,
-		  placePV,
-		  false);
+                  downstreamVacuumMaterial,
+                  0,
+                  vdLocalOffset,
+                  parent.logical,
+                  vdId,
+                  vdIsVisible,
+                  G4Color::Red(),
+                  vdIsSolid,
+                  forceAuxEdgeVisible,
+                  placePV,
+                  false);
 
       if ( verbosityLevel > 0) {
         cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
@@ -1444,9 +1443,7 @@ namespace mu2e {
         cout << __func__ << "    VD parameters: " << vdParams << endl;
         cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
-    
-    
- 
+
     doSurfaceCheck && checkForOverlaps(vdHollowInfo.physical, _config, verbosityLevel>0);
   }
     //     vdId = VirtualDetectorId::STM_CRVShieldDnStr;
@@ -1896,9 +1893,9 @@ namespace mu2e {
     // placing virtual detector at exit of DS neutron shielding
 
     vdId = VirtualDetectorId::STM_UpStrHole;
-    
-      VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
-      CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+
+    VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
+    CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
 
     if( vdg->exist(vdId) ) {
       if ( verbosityLevel > 0) {
@@ -1916,19 +1913,19 @@ namespace mu2e {
       const TubsParams vdParams(0, shieldHoleRadius, vdg->getHalfLength());
 
       VolumeInfo vdHoleInfo = nestTubs(VirtualDetector::volumeName(vdId),
-				       vdParams,
-				       downstreamVacuumMaterial,
-				       0,
-				       vdg->getGlobal(vdId) - parentInMu2e, //position w.r.t. parent
-				       parent,
-				       vdId,
-				       vdIsVisible,
-				       G4Color::Red(),
-				       vdIsSolid,
-				       forceAuxEdgeVisible,
-				       placePV,
-                                   false
-				       );
+                                       vdParams,
+                                       downstreamVacuumMaterial,
+                                       0,
+                                       vdg->getGlobal(vdId) - parentInMu2e, //position w.r.t. parent
+                                       parent,
+                                       vdId,
+                                       vdIsVisible,
+                                       G4Color::Red(),
+                                       vdIsSolid,
+                                       forceAuxEdgeVisible,
+                                       placePV,
+                                       false
+                                       );
 
       doSurfaceCheck && checkForOverlaps(vdHoleInfo.physical, _config, verbosityLevel>0);
 
