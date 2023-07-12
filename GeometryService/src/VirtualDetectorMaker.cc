@@ -632,6 +632,14 @@ namespace mu2e {
              z_offset +=  0.5*c.getDouble("stm.FOVcollimator.UpStrSpace");
           }
 
+          // if things are defined with the pipe as the origin, change the z_offset
+          // (copied from STMMaker.cc)
+          if(c.getBool("stm.magnet.usePipeAsOrigin", false)) {
+            z_offset = 2.0*c.getDouble("stm.magnet.halfLength") + c.getDouble("stm.shield.DnStrWall.gap") + 2.*c.getDouble("stm.shield.pipe.halfLength") + c.getDouble("stm.shield.UpStrWall.gap") +  0.5*c.getDouble("stm.FOVcollimator.UpStrSpace");
+            if(! c.getBool ("stm.shield.matchPipeBlock", false)) z_offset += 2.*c.getDouble("stm.shield.DnStrWall.halfLength");
+          }
+
+
           CLHEP::Hep3Vector vdPositionWRTparent     = mstmReferencePositionInParent +  CLHEP::Hep3Vector(0.0,y_vd_center, z_offset );
 
           vd->addVirtualDetector(VirtualDetectorId::STM_MagDnStr, //ID
