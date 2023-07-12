@@ -619,4 +619,4 @@ namespace mu2e {
   }  // end namespace mu2e
 
   using mu2e::TimeClusterDiag;
-  DEFINE_ART_MODULE(TimeClusterDiag);
+  DEFINE_ART_MODULE(TimeClusterDiag)

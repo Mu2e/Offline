@@ -51,21 +51,21 @@ DAQ : {
          module_type: StrawRecoFromFragments
          diagLevel : 0
          useTrkADC : 0
-         trkTag    : "daq:trk"
+         trkTag    : "genFrags:" #"daq:trk"
       }
 
       CaloDigiMaker:
       {
          module_type : CaloRecoFromFragments
          diagLevel   : 0
-         caloTag     : "daq:calo"
+         caloTag     : "" #"daq:calo"
       }
 
-       FastCaloHitMaker:
+       CaloHitMaker:
       {
          module_type   : CaloHitsFromFragments
          diagLevel     : 0
-         caloTag       : "daq:calo"
+         caloTag       : "" #"daq:calo"
          digiSampling  : 5
          deltaTPulses  : 5.
          nPEperMeV     : 30
@@ -82,10 +82,10 @@ DAQ : {
       {
          module_type: CrvDigisFromFragments
          diagLevel: 0
-         crvTag   : "daq:crv"
+         fragmentsTag   : "daq:crv"
       }
 
-      FastMakeSH:
+      makeSH:
       {
          module_type : StrawHitRecoFromFragments
          diagLevel : 0
@@ -95,6 +95,8 @@ DAQ : {
          clusterDt : 100
          minimumEnergy : 0.0
          maximumEnergy : 0.0035
+      minimumRho   : 0.
+      maximumRho   : 800.
          crossTalkEnergy : 0.007
          crossTalkMinimumTime : -1
          crossTalkMaximumTime : 100

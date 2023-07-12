@@ -248,4 +248,4 @@ CLHEP::Hep3Vector mu2e::BFieldSymmetry::fire(mu2e::BFMap const& map) {
     return val;
 }
 
-DEFINE_ART_MODULE(mu2e::BFieldSymmetry);
+DEFINE_ART_MODULE(mu2e::BFieldSymmetry)

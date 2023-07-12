@@ -230,4 +230,4 @@ namespace mu2e
   }
 }
 using mu2e::CaloCosmicCalib;
-DEFINE_ART_MODULE(CaloCosmicCalib);
+DEFINE_ART_MODULE(CaloCosmicCalib)

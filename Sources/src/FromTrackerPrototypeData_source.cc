@@ -319,4 +319,4 @@ namespace mu2e {
 } // namespace mu2e
 
 typedef art::Source<mu2e::TrackerPrototypeDataDetail> FromTrackerPrototypeData;
-DEFINE_ART_INPUT_SOURCE(FromTrackerPrototypeData);
+DEFINE_ART_INPUT_SOURCE(FromTrackerPrototypeData)

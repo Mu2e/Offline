@@ -96,4 +96,4 @@ namespace mu2e {
 }
 
 using mu2e::StrawDigiMCFilter;
-DEFINE_ART_MODULE(StrawDigiMCFilter);
+DEFINE_ART_MODULE(StrawDigiMCFilter)

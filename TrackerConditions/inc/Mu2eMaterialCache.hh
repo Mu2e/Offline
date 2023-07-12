@@ -39,6 +39,6 @@ namespace mu2e {
       Mu2eMaterialMaker _maker;
 
   };
-};
+}
 
 #endif

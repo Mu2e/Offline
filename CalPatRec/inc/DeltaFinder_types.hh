@@ -3,11 +3,11 @@
 
 namespace art {
   class Event;
-};
+}
 
 namespace fhicl {
   class ParameterSet;
-};
+}
 
 #include "TObject.h"
 #include "TClonesArray.h"

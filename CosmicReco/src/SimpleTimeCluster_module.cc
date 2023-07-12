@@ -267,4 +267,4 @@ bool SimpleTimeCluster::goodHit(const StrawHitFlag& flag) const {
 } // namespace mu2e
 
 using mu2e::SimpleTimeCluster;
-DEFINE_ART_MODULE(SimpleTimeCluster);
+DEFINE_ART_MODULE(SimpleTimeCluster)

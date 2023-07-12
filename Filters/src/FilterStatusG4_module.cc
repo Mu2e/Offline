@@ -80,4 +80,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FilterStatusG4);
+DEFINE_ART_MODULE(mu2e::FilterStatusG4)

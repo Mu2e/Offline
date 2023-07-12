@@ -1,7 +1,8 @@
 //
 //
 //
-#include "Offline/AnalysisConditions/inc/TrkQualCatalogCache.hh"
+//#include "Offline/AnalysisConditions/inc/TrkQualCatalogCache.hh"
+#include "Offline/DbService/inc/DbHandle.hh"
 #include "Offline/CRVConditions/inc/CRVCalibCache.hh"
 #include "Offline/CRVConditions/inc/CRVOrdinalCache.hh"
 #include "Offline/CRVConditions/inc/CRVStatusCache.hh"
@@ -84,9 +85,9 @@ ProditionsService::ProditionsService(Parameters const& sTable,
   auto cdc =
       std::make_shared<mu2e::CaloDAQMapCache>(_config.caloDAQConditions());
   _caches[cdc->name()] = cdc;
-  auto tqc =
-      std::make_shared<mu2e::TrkQualCatalogCache>(_config.trkQualCatalog());
-  _caches[tqc->name()] = tqc;
+//  auto tqc =
+//      std::make_shared<mu2e::TrkQualCatalogCache>(_config.trkQualCatalog());
+//  _caches[tqc->name()] = tqc;
   auto bkc =
       std::make_shared<mu2e::SimBookkeeperCache>(_config.simbookkeeper());
   _caches[bkc->name()] = bkc;
@@ -103,4 +104,4 @@ ProditionsService::ProditionsService(Parameters const& sTable,
 
 }  // namespace mu2e
 
-DEFINE_ART_SERVICE(mu2e::ProditionsService);
+DEFINE_ART_SERVICE(mu2e::ProditionsService)

@@ -516,4 +516,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::CaloCalibAna);
+DEFINE_ART_MODULE(mu2e::CaloCalibAna)

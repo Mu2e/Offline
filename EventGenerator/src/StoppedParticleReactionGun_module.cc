@@ -204,4 +204,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StoppedParticleReactionGun);
+DEFINE_ART_MODULE(mu2e::StoppedParticleReactionGun)

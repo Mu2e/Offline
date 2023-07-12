@@ -137,7 +137,7 @@ namespace mu2e{
     std::vector<double> times;
     for ( double t = tmin_ ; t <= tmax_ ; t += tres_ ) times.push_back( t );
     return times;
-  };
+  }
 
   //============================================================================================================
   TableVec<2> ProtonPulseRandPDF::setPotPulseShape( const std::string& shapeTxtFile ) {

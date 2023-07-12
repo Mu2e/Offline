@@ -123,4 +123,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::PtrTest0;
-DEFINE_ART_MODULE(PtrTest0);
+DEFINE_ART_MODULE(PtrTest0)

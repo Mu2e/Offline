@@ -1313,4 +1313,4 @@ void     RobustHelixFinder::updateHelixZPhiInfo(RobustHelixFinderData& helixData
 }
 }
 using mu2e::RobustHelixFinder;
-DEFINE_ART_MODULE(RobustHelixFinder);
+DEFINE_ART_MODULE(RobustHelixFinder)

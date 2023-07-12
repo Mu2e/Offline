@@ -59,6 +59,8 @@ physics : {
        {
            @table::CaloClusterTrigger.producers.CaloClusterFast
        }
+
+       EWMProducer : { module_type : EventWindowMarkerProducer }
    }
 
    analyzers  : {
@@ -74,7 +76,7 @@ physics : {
 
    #  t1 : [ makeSD ]
    #   t1 : [ fetchData, makeSD , CaloDigiMaker, CaloHitMaker, CaloClusterFast]
-   t1 : [ fetchData, makeSD , CaloHitMaker, CaloClusterFast]
+   t1 : [ EWMProducer, makeSD , CaloHitMaker, CaloClusterFast]
    #e1 : [ outfile, readFragments]
    e1 : []
 

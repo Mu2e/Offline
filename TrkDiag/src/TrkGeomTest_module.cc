@@ -148,4 +148,4 @@ namespace mu2e {
 }
 
 using mu2e::TrkGeomTest;
-DEFINE_ART_MODULE(TrkGeomTest);
+DEFINE_ART_MODULE(TrkGeomTest)

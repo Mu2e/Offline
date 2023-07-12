@@ -11,11 +11,11 @@ class TH2F;
 
 namespace art {
   class Event;
-};
+}
 
 namespace fhicl {
   class ParameterSet;
-};
+}
 
 //#include "RecoDataProducts/inc/KalSeed.hh"
 

@@ -500,4 +500,4 @@ namespace mu2e
 }
 
 using mu2e::CosmicTrackDetails;
-DEFINE_ART_MODULE(CosmicTrackDetails);
+DEFINE_ART_MODULE(CosmicTrackDetails)

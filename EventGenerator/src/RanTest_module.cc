@@ -56,4 +56,4 @@ namespace mu2e {
 
 
 using mu2e::RanTest;
-DEFINE_ART_MODULE(RanTest);
+DEFINE_ART_MODULE(RanTest)

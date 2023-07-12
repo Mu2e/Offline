@@ -171,4 +171,4 @@ bool CaloClusterCounter::filter(art::Event& event) {
 
 } // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::CaloClusterCounter);
+DEFINE_ART_MODULE(mu2e::CaloClusterCounter)

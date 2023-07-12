@@ -166,4 +166,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::SimParticleAnalyzer;
-DEFINE_ART_MODULE(SimParticleAnalyzer);
+DEFINE_ART_MODULE(SimParticleAnalyzer)

@@ -118,5 +118,5 @@ class TrkStrawStatusLong : public TrkElementStatus {
               "Absent:NoWire:NoHV:NoHVPreamp:NoCalPreamp:NoADC:NoTDC")) {}
 };
 
-};  // namespace mu2e
+}  // namespace mu2e
 #endif

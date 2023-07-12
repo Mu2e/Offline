@@ -228,4 +228,4 @@ namespace mu2e {
 
 
 using mu2e::ReadTrkExtrapol;
-DEFINE_ART_MODULE(ReadTrkExtrapol);
+DEFINE_ART_MODULE(ReadTrkExtrapol)
