@@ -279,16 +279,6 @@
  <class name="art::Ptr<mu2e::PIDProduct>" />
  <class name="art::Wrapper<mu2e::PIDProductCollection>" />
 
- <class name="mu2e::AvikPIDProduct" />
- <class name="mu2e::AvikPIDProductCollection" />
- <class name="art::Ptr<mu2e::AvikPIDProduct>" />
- <class name="art::Wrapper<mu2e::AvikPIDProductCollection>" />
-
- <class name="mu2e::AvikPIDNewProduct" />
- <class name="mu2e::AvikPIDNewProductCollection" />
- <class name="art::Ptr<mu2e::AvikPIDNewProduct>" />
- <class name="art::Wrapper<mu2e::AvikPIDNewProductCollection>" />
-
  <class name="std::pair<art::Ptr<mu2e::KalRepPtr>,art::Ptr<mu2e::CaloCluster> >" />
  <class name="std::pair<art::Ptr<mu2e::CaloCluster>,art::Ptr<mu2e::KalRepPtr> >" />
 
