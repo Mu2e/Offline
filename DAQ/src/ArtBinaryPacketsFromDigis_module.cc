@@ -794,21 +794,17 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(CaloDAQMap const& calo
   CaloData.dataPacket.NumberOfHits = 1;
 
   CalorimeterBoardID ccBoardID;
-  // Change # 1: get roid and cryID from Digi
-  //=========================================
 
-  uint16_t roId      = CD.SiPMID();
-  uint16_t crystalId = _calorimeter->caloIDMapper().crystalIDFromSiPMID(roId);
-  if( _diagLevel==1) printf( "...FromDigis: cryId %d roId %d \n",crystalId,roId);
+  CaloSiPMId offId(CD.SiPMID());
+  //  uint16_t roId      = CD.SiPMID();
+  uint16_t crystalId = offId.crystal().id();
+  if( _diagLevel==1) printf( "...FromDigis: cryId %d roId %d \n",crystalId,offId.id());
 
-  //=========================================================================================
-  // Change # 2: get packetId from DMAP and roId to extract: Dirac#, Chan# and Dettype
-  // For the moment (wait OTSDAQ) define BoardId as consecutive with Dirac# and 6 Diracs=1DTC
-  //=========================================================================================
-  uint16_t packetId     = calodaqconds.caloRoIdToPacketId(roId);
-  uint16_t globalROCID  = (packetId & (0x00FF));
-  uint16_t DiracChannel = (packetId & (0x1F00)) >> 8;
-  uint16_t DetType      = (packetId & (0xE000)) >> 13;
+  CaloRawSiPMId rawId   = calodaqconds.rawId(offId);
+  uint16_t globalROCID  = rawId.dirac();
+  uint16_t DiracChannel = rawId.ROCchannel();
+  uint16_t DetType      = offId.detType();
+  uint16_t packetId     = globalROCID | (DiracChannel << 8) | (DetType<< 13);
 
   if( _diagLevel==1) printf( "..FromDigis: DTYPE %d ROCID %d CHAN %d \n",DetType,globalROCID,DiracChannel);
   if( _diagLevel==1 && DetType==1) printf("Caphri \n");
@@ -980,11 +976,10 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(CaloDAQMap const
 
   // get only Dirac# and DetType from roID and DMAP ....
   // ---------------------------------------------------------------
-  size_t roId = CD.SiPMID();
-  //    size_t globalROCID = crystalId / number_of_crystals_per_roc;
-  uint16_t packetId     = calodaqconds.caloRoIdToPacketId(roId);
-  uint16_t globalROCID  = (packetId & (0x00FF));
-  uint16_t DetType      = (packetId & (0xE000)) >> 13;
+  CaloSiPMId offId = CaloSiPMId(CD.SiPMID());
+  CaloRawSiPMId rawId     = calodaqconds.rawId(offId);
+  uint16_t globalROCID  = rawId.dirac();
+  uint16_t DetType      = offId.detType();
   // ----------------------------------------------------------------
   if( _diagLevel==1 && DetType == 1) printf(" CAPHRI !!! \n");
 
