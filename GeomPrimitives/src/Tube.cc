@@ -23,7 +23,7 @@ namespace mu2e {
     _originInMu2e(originInMu2e),
     _materialName(materialName),
     _rotation(rotation)
-  {};
+  {}
 
   Tube::Tube(double rIn, double rOut, double halfLength, CLHEP::Hep3Vector const & originInMu2e,
              CLHEP::HepRotation const & rotation,
@@ -37,7 +37,7 @@ namespace mu2e {
     _originInMu2e(originInMu2e),
     _materialName(materialName),
     _rotation(rotation)
-  {};
+  {}
 
   Tube::Tube(std::string const & materialName, CLHEP::Hep3Vector const & originInMu2e,
              double rIn, double rOut, double halfLength, double phi0, double phiMax,
@@ -51,7 +51,7 @@ namespace mu2e {
     _originInMu2e(originInMu2e),
     _materialName(materialName),
     _rotation(rotation)
-  {};
+  {}
 
   std::ostream& operator<<(std::ostream& os, const Tube& t) {
     os<<"Tube: " << t.getTubsParams()

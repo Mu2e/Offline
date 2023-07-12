@@ -19,6 +19,8 @@ namespace mu2e {
 
     CaloRawSiPMId():_id(CaloConst::_invalid) {}
     explicit CaloRawSiPMId(value_type id):_id(id) {}
+    explicit CaloRawSiPMId(value_type dirac, value_type ROCchannel) :
+      _id(dirac*CaloConst::_nChPerDIRAC + ROCchannel) {}
 
     value_type id() const { return _id; }
     value_type dirac() const { return _id/CaloConst::_nChPerDIRAC; }

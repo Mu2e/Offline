@@ -10,8 +10,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Overlays/CalorimeterFragment.hh"
-#include "artdaq-core-mu2e/Overlays/Mu2eEventFragment.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 
 //-- insert calls to proditions ..for calodmap-----
@@ -83,36 +82,15 @@ void art::CaloRecoFromFragments::produce(Event& event) {
 
   size_t totalSize = 0;
   size_t numCalFrags = 0;
-  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
+  auto fragmentHandle =
+      event.getValidHandle<std::vector<mu2e::CalorimeterFragment> >(caloFragmentsTag_);
 
-  for (const auto& handle : fragmentHandles) {
-    if (!handle.isValid() || handle->empty()) {
-      continue;
+  for (auto frag : *fragmentHandle) {
+    analyze_calorimeter_(calodaqconds, frag, calo_digis);
+    for (size_t i = 0; i < frag.block_count(); ++i) {
+      totalSize += frag.blockSizeBytes(i);
     }
-
-    if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
-      for (const auto& cont : *handle) {
-        mu2e::Mu2eEventFragment mef(cont);
-        for (size_t ii = 0; ii < mef.calorimeter_block_count(); ++ii) {
-          auto pair = mef.calorimeterAtPtr(ii);
-          mu2e::CalorimeterFragment cc(pair);
-          analyze_calorimeter_(calodaqconds, cc, calo_digis);
-
-          totalSize += pair.second;
-          numCalFrags++;
-        }
-      }
-    } else {
-      if (handle->front().type() == mu2e::detail::FragmentType::CAL) {
-        for (auto frag : *handle) {
-          mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-          analyze_calorimeter_(calodaqconds, cc, calo_digis);
-
-          totalSize += frag.dataSizeBytes();
-          numCalFrags++;
-        }
-      }
-    }
+    numCalFrags++;
   }
 
   if (numCalFrags == 0) {
@@ -142,7 +120,6 @@ void art::CaloRecoFromFragments::produce(Event& event) {
 void art::CaloRecoFromFragments::analyze_calorimeter_(
     mu2e::CaloDAQMap const& calodaqconds, const mu2e::CalorimeterFragment& cc,
     std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis) {
-
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
@@ -241,25 +218,19 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
                     << std::endl;
           std::cout << "[CaloRecoFromFragments] \tErrorFlags " << (int)hits[hitIdx].first.ErrorFlags
                     << std::endl;
-          std::cout << "[CaloRecoFromFragments] \tTime              " << (int)hits[hitIdx].first.Time
-                    << std::endl;
+          std::cout << "[CaloRecoFromFragments] \tTime              "
+                    << (int)hits[hitIdx].first.Time << std::endl;
           std::cout << "[CaloRecoFromFragments] \tNSamples   "
                     << (int)hits[hitIdx].first.NumberOfSamples << std::endl;
           std::cout << "[CaloRecoFromFragments] \tIndexMax   "
                     << (int)hits[hitIdx].first.IndexOfMaxDigitizerSample << std::endl;
         }
 
-        // IMPORTANT NOTE: we don't have a final
-        // mapping yet so for the moment, the BoardID field (described in docdb 4914) is just a
-        // placeholder. Because we still need to know which crystal a hit belongs to, we are
-        // temporarily storing the 4-bit roID and 12-bit crystalID in the Reserved DIRAC A slot.
-        // Also, note that until we have an actual map, channel index does not actually correspond
-        // to the physical readout channel on a ROC.
-        // uint16_t crystalID = hits[hitIdx].first.DIRACB & 0x0FFF;
-        // uint16_t roID = hits[hitIdx].first.DIRACB >> 12;
-
         uint16_t packetid = hits[hitIdx].first.DIRACA;
-        uint16_t roID = calodaqconds.packetIdTocaloRoId(packetid);
+        uint16_t dirac = packetid & 0xFF;
+        uint16_t diracChannel = (packetid >>8) & 0x1F;
+        mu2e::CaloRawSiPMId rawId(dirac,diracChannel);
+        uint16_t roID = calodaqconds.offlineId(rawId).id();
         // uint16_t dettype = (packetId & 0x7000) >> 13;
 
         // FIXME: Can we match vector types here?

@@ -1487,7 +1487,7 @@ bool CosmicFitDisplay::findData(const art::Event& evt){
 }//End Namespace Mu2e
 
 using mu2e::CosmicFitDisplay;
-DEFINE_ART_MODULE(CosmicFitDisplay);
+DEFINE_ART_MODULE(CosmicFitDisplay)
 
 
 

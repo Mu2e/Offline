@@ -28,7 +28,7 @@ namespace mu2e {
 
   struct ComboHit {
     enum edir{wire=0,trans,z}; // should switch to  UVW TODO
-    constexpr static size_t MaxNCombo = 8; // needs tuning TODO
+    constexpr static size_t MaxNCombo = 8;
     using PIArray = std::array<uint16_t,MaxNCombo>; // array of indices into parent collection
     // General accessors that apply to all kinds of combo hits
     auto const& pos() const { return _pos; }
@@ -103,7 +103,7 @@ namespace mu2e {
     float _time = 0.0; // best estimate of time the physical particle created this hit: aggregate and calibrated
     float _timeres = -1.0; // estimated resolution of time measurement
     float _edep = 0.0; // average energy deposition
-    float _qual = 0.0;; // quality of hit or combination
+    float _qual = 0.0; // quality of hit or combination
     StrawHitFlag _flag; // condition of this hit
     StrawId _sid; // straw identifier; for composites, not all fields are complete, use in conjunction with mask
     StrawIdMask _mask; // mask of valid StrawId fields

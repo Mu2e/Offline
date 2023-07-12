@@ -87,7 +87,7 @@ FullDriftFit::FullDriftFit(ComboHitCollection const& _chits, StrawResponse const
     pdf_taus[i] = Min_tau + delta_Tau * i;
   }
   this->CalculateFullPDF();
-};
+}
 
 int FullDriftFit::Factorial(int const& k) {
   if (k == 0)

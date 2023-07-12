@@ -76,5 +76,5 @@ class TrkAlignStraw : public DbTable {
   std::vector<TrkStrawEndAlign> _rows;
 };
 
-};  // namespace mu2e
+}  // namespace mu2e
 #endif

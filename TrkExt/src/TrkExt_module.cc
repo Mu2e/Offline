@@ -74,7 +74,7 @@ namespace mu2e {
       ReflectionLimit = 4,
       MaximumPoints = 5
     };
-  };
+  }
 
   class TrkExt : public art::EDProducer {
 
@@ -1164,4 +1164,4 @@ namespace mu2e {
 } // end namespace mu2e
 
 using mu2e::TrkExt;
-DEFINE_ART_MODULE(TrkExt);
+DEFINE_ART_MODULE(TrkExt)

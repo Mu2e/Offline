@@ -235,4 +235,4 @@ namespace mu2e
 
 }
 using mu2e::HelixFilter;
-DEFINE_ART_MODULE(HelixFilter);
+DEFINE_ART_MODULE(HelixFilter)

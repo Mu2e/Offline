@@ -46,7 +46,7 @@ namespace mu2e {
                                   <<" does not match zPlanes.size() = "<<zPlanes.size()
                                   <<"\n";
     }
-  };
+  }
 
   std::ostream& operator<<(std::ostream& os, const Polyhedra& p) {
     os<<"Polyhedra(nSides = " << p.nSides() << ", numZPlanes = "<<p.numZPlanes()<<", z={";

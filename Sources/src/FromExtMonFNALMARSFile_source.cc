@@ -296,4 +296,4 @@ namespace mu2e {
 } // namespace mu2e
 
 typedef art::Source<mu2e::ExtMonFNALMARSDetail> FromExtMonFNALMARSFile;
-DEFINE_ART_INPUT_SOURCE(FromExtMonFNALMARSFile);
+DEFINE_ART_INPUT_SOURCE(FromExtMonFNALMARSFile)

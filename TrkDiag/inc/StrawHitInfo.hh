@@ -20,6 +20,7 @@ namespace mu2e {
     int _layer = 0.0;
     int _straw = 0.0;
     bool _bkg = false;
+    bool _bkgc = false;
     bool _isolated = false;
     bool _tsel = false;
     bool _esel = false;
@@ -28,18 +29,16 @@ namespace mu2e {
     bool _tdiv = false;
     bool _strawxtalk = false;
     bool _elecxtalk = false;
-    int _relation = 0;
     XYZVectorF _mcpos;
     int _mcpdg = 0;
-    int _mcgen = 0;
     int _mcproc = 0;
-    int _mcid = 0;
     float _mcedep = 0.0;
     float _mctime = 0.0;
-    float _mct0 = 0.0;
     float _mcht = 0.0;
     float _mcmom = 0.0;
     float _mctd = 0.0;
+    int _prel = -1;
+    int _mrel = -1;
   };
 }
 #endif

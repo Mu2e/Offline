@@ -370,5 +370,5 @@ namespace mu2e
 }
 
 using mu2e::TSTrackAna;
-DEFINE_ART_MODULE(TSTrackAna);
+DEFINE_ART_MODULE(TSTrackAna)
 

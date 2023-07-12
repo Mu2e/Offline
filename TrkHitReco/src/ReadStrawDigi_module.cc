@@ -50,5 +50,5 @@ namespace mu2e {
 }
 
 using mu2e::ReadStrawDigi;
-DEFINE_ART_MODULE(ReadStrawDigi);
+DEFINE_ART_MODULE(ReadStrawDigi)
 

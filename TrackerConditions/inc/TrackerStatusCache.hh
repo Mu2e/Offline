@@ -73,6 +73,6 @@ namespace mu2e {
       std::unique_ptr<DbHandle<TrkStrawStatusLong>>   _tssl_p;
       std::unique_ptr<DbHandle<TrkStrawStatusShort>>  _tsss_p;
   };
-};
+}
 
 #endif

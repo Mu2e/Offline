@@ -235,4 +235,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::DetectorStepFilter);
+DEFINE_ART_MODULE(mu2e::DetectorStepFilter)

@@ -324,4 +324,4 @@ namespace mu2e {
 }
 
 using mu2e::EcalTriggerPreselect;
-DEFINE_ART_MODULE(EcalTriggerPreselect);
+DEFINE_ART_MODULE(EcalTriggerPreselect)

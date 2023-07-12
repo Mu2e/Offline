@@ -8,9 +8,9 @@ BD : {
   StrawDigiMCCollection : "compressDigiMCs"
   ComboHitCollection : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-  BkgQualCollection:"FlagBkgHits"
   BkgClusterCollection:"FlagBkgHits"
   BkgClusterHitCollection:"FlagBkgHits"
+  MCPrimary : compressDigiMCs
   useFlagCollection : true
 }
 
@@ -62,6 +62,7 @@ CHD : {
   StrawDigiCollection : "makeSD"
   ComboHitCollection : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  MCPrimary : compressDigiMCs
 }
 
 # track PID module

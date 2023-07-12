@@ -340,4 +340,4 @@ namespace mu2e {
 
 }
 using mu2e::CosmicTrackFinder;
-DEFINE_ART_MODULE(CosmicTrackFinder);
+DEFINE_ART_MODULE(CosmicTrackFinder)

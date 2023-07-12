@@ -125,7 +125,7 @@ namespace mu2e {
 }
 
 using mu2e::CaloClusterTruthMatch;
-DEFINE_ART_MODULE(CaloClusterTruthMatch);
+DEFINE_ART_MODULE(CaloClusterTruthMatch)
 
 
 

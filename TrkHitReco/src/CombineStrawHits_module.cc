@@ -6,7 +6,6 @@
 // Modified by B. Echenard (Caltech), assumes that the hits are ordered by panels
 // Dave Brown confirmed this is the case
 
-#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
@@ -16,6 +15,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
 #include <iostream>
 
@@ -29,7 +30,8 @@ namespace mu2e {
         using Name    = fhicl::Name;
         using Comment = fhicl::Comment;
         fhicl::Atom<int>              debug   { Name("debugLevel"),            Comment("Debug level"),0 };
-        fhicl::Atom<art::InputTag>    chTag   { Name("ComboHitCollection"),    Comment("Input single-straw ComboHit collection") };
+        fhicl::Atom<art::InputTag>    CHC     { Name("ComboHitCollection"),    Comment("Input single-straw ComboHit collection") };
+        fhicl::Atom<art::InputTag>    EWM     { Name("EventWindowMarker"),     Comment("EventWindowMarker")};
         fhicl::Atom<bool>             testflag{ Name("TestFlag"),              Comment("test input collection flag or not") };
         fhicl::Sequence<std::string>  shsel   { Name("StrawHitSelectionBits"), Comment("Input flag selection") };
         fhicl::Sequence<std::string>  shmask  { Name("StrawHitMask"),          Comment("Input flag anti-selection") };
@@ -55,11 +57,12 @@ namespace mu2e {
       void produce( art::Event& e);
 
     private:
-      void combine(const ComboHitCollection* chcolOrig, ComboHitCollection& chcol);
-      void combineHits(const ComboHitCollection* chcolOrig, ComboHit& combohit);
+      void combine(EventWindowMarker const& ewm, ComboHitCollection const& chcOrig, ComboHitCollection& chcol);
+      void combineHits(const ComboHitCollection& chcOrig, ComboHit& combohit);
 
       int           _debug;
-      art::InputTag _chTag;
+      art::ProductToken<ComboHitCollection> const _chctoken;
+      art::ProductToken<EventWindowMarker> const _ewmtoken;
       bool          _testflag;
       StrawHitFlag  _shsel;
       StrawHitFlag  _shmask;
@@ -81,7 +84,8 @@ namespace mu2e {
   CombineStrawHits::CombineStrawHits(const art::EDProducer::Table<Config>& config) :
     EDProducer{config},
     _debug(     config().debug()),
-    _chTag(     config().chTag()),
+    _chctoken{consumes<ComboHitCollection>(config().CHC())},
+    _ewmtoken{consumes<EventWindowMarker>(config().EWM())},
     _testflag(  config().testflag()),
     _shsel(     config().shsel()),
     _shmask(    config().shmask()),
@@ -101,70 +105,73 @@ namespace mu2e {
     _unsorted( config().unsorted()),
     _checkWres( config().checkWres()),
     _filter(    config().filter()),
-    _mask(      "uniquepanel")     // define the mask: ComboHits are made from straws in the same unique panel
+    _mask("uniquepanel")     // define the mask: ComboHits are made from straws in the same unique panel
     {
-      consumes<ComboHitCollection>(_chTag);
       produces<ComboHitCollection>();
     }
 
   void CombineStrawHits::produce(art::Event& event)
   {
-    // I have to get a Handle, not a ValidHandle, as a literal handle is needed to find the productID
-    art::Handle<ComboHitCollection> chH;
-    if(!event.getByLabel(_chTag, chH))
-      throw cet::exception("RECO")<<"mu2e::CombineStrawHits: No ComboHit collection found for tag" <<  _chTag << std::endl;
-    const ComboHitCollection* chcolOrig = chH.product();
+    auto chcH = event.getValidHandle(_chctoken);
+    const ComboHitCollection& chcOrig(*chcH);
+    auto ewmH = event.getValidHandle(_ewmtoken);
+    const EventWindowMarker& ewm(*ewmH);
 
     auto chcolNew = std::make_unique<ComboHitCollection>();
-    chcolNew->reserve(chcolOrig->size());
-    chcolNew->setParent(chH);
+    chcolNew->reserve(chcOrig.size());
+    chcolNew->setParent(chcH);
 
     if (_unsorted){
       // currently VST data is not sorted by panel number so we must sort manually
       // sort hits by panel
-      ComboHitCollection* chcolsort = new ComboHitCollection();
-      chcolsort->reserve(chcolOrig->size());
-      chcolsort->setParent(chcolOrig->parent());
+      ComboHitCollection chcolsort;
+      chcolsort.reserve(chcOrig.size());
+      chcolsort.setParent(chcOrig.parent());
       std::array<std::vector<uint16_t>,StrawId::_nupanels> panels;
-      size_t nsh = chcolOrig->size();
+      size_t nsh = chcOrig.size();
       for(uint16_t ish=0;ish<nsh;++ish){
-        ComboHit const& ch = (*chcolOrig)[ish];
+        ComboHit const& ch = chcOrig[ish];
         // select hits based on flag
         panels[ch.strawId().uniquePanel()].push_back(ish);
       }
       for (uint16_t ipanel=0;ipanel<StrawId::_nupanels;ipanel++){
         for (uint16_t ish=0;ish<panels[ipanel].size();ish++){
-          chcolsort->push_back(chcolOrig->at(panels[ipanel][ish]));
+          chcolsort.push_back(chcOrig.at(panels[ipanel][ish]));
         }
       }
-      combine(chcolsort, *chcolNew);
+      combine(ewm, chcolsort, *chcolNew);
     }else{
-      combine(chcolOrig, *chcolNew);
+      combine(ewm, chcOrig, *chcolNew);
     }
     event.put(std::move(chcolNew));
   }
 
 
-  void CombineStrawHits::combine(const ComboHitCollection* chcolOrig, ComboHitCollection& chcol)
+  void CombineStrawHits::combine(EventWindowMarker const& ewm, ComboHitCollection const& chcOrig, ComboHitCollection& chcol)
   {
-    std::vector<bool> isUsed(chcolOrig->size(),false);
-    for (size_t ich=0;ich<chcolOrig->size();++ich) {
+
+    // don't filter OffSpill
+    bool filter = _filter && ewm.spillType() == EventWindowMarker::onspill;
+    bool testflag = _testflag && ewm.spillType() == EventWindowMarker::onspill;
+
+    std::vector<bool> isUsed(chcOrig.size(),false);
+    for (size_t ich=0;ich<chcOrig.size();++ich) {
       if (isUsed[ich]) continue;
       isUsed[ich] = true;
 
-      const ComboHit& hit1 = (*chcolOrig)[ich];
-      if ( _testflag && (!hit1.flag().hasAllProperties(_shsel) || hit1.flag().hasAnyProperty(_shmask)) ) continue;
+      const ComboHit& hit1 = chcOrig[ich];
+      if ( testflag && (!hit1.flag().hasAllProperties(_shsel) || hit1.flag().hasAnyProperty(_shmask))) continue;
       ComboHit combohit;
       combohit.init(hit1,ich);
       int panel1 = hit1.strawId().uniquePanel();
 
-      for (size_t jch=ich+1;jch<chcolOrig->size();++jch) {
+      for (size_t jch=ich+1;jch<chcOrig.size();++jch) {
         if (isUsed[jch]) continue;
-        const ComboHit& hit2 = (*chcolOrig)[jch];
+        const ComboHit& hit2 = chcOrig[jch];
 
         if (hit2.strawId().uniquePanel() != panel1) break;
         if (abs(hit2.strawId().straw()-hit1.strawId().straw())> _maxds ) continue; // hits are not sorted by straw number
-        if ( _testflag && (!hit2.flag().hasAllProperties(_shsel) || hit2.flag().hasAnyProperty(_shmask)) ) continue;
+        if ( testflag && (!hit2.flag().hasAllProperties(_shsel) || hit2.flag().hasAnyProperty(_shmask)) ) continue;
 
         float dt = _useTOT ? fabs(hit1.correctedTime() - hit2.correctedTime()) : fabs(hit1.time() - hit2.time());
         if (dt > _maxdt) continue;
@@ -174,35 +181,38 @@ namespace mu2e {
         if (wdchi > _maxwdchi) continue;
 
         bool ok = combohit.addIndex(jch);
-        if (!ok) std::cout << "CombineStrawHits past limit" << std::endl;
-        isUsed[jch]= true;
+        if (!ok){
+          std::cout << "CombineStrawHits past limit" << std::endl;
+        } else {
+          isUsed[jch]= true;
+        }
       }
       // clear the flag bits; they are reset later
       const static StrawHitFlag initialFlag("TimeDivision");
       combohit._flag = initialFlag;
       int nch = combohit.nCombo();
       if(nch  < _minN || nch > _maxN){
-        if(_filter)break;
+        if(filter)break;
       } else
         combohit._flag.merge(StrawHitFlag::nhitsel);
       // actually combine the hits if necessar, and make the cuts
-      if (nch > 1) combineHits(chcolOrig, combohit);
+      if (nch > 1) combineHits(chcOrig, combohit);
 
       auto time = _useTOT ? combohit.correctedTime() : combohit.time();
       if (time < _minT || time > _maxT ){
-        if(_filter)break;
+        if(filter)break;
       } else
         combohit._flag.merge(StrawHitFlag::timesel);
 
       auto energy = combohit.energyDep(); // switch to dE/dx TODO
       if( energy > _maxE || energy < _minE ) {
-        if(_filter)break;
+        if(filter)break;
       } else
         combohit._flag.merge(StrawHitFlag::energysel);
 
       auto r2 = combohit.pos().Perp2();
       if( r2 < _minR2 || r2 > _maxR2 ) {
-        if(_filter)break;
+        if(filter)break;
       } else
         combohit._flag.merge(StrawHitFlag::radsel);
       combohit._mask = _mask;
@@ -212,7 +222,7 @@ namespace mu2e {
   }
 
 
-  void CombineStrawHits::combineHits(const ComboHitCollection* chcolOrig, ComboHit& combohit)
+  void CombineStrawHits::combineHits(const ComboHitCollection& chcOrig, ComboHit& combohit)
   {
     // simple sums to speed up the trigger
     double eacc(0),ctacc(0),dtacc(0),twtsum(0),ptacc(0),wacc(0),wacc2(0),wwtsum(0);
@@ -225,10 +235,10 @@ namespace mu2e {
     {
       size_t index = combohit.index(ich);
       if (_debug > 3)std::cout << index << ", ";
-      if (index > chcolOrig->size())
+      if (index > chcOrig.size())
         throw cet::exception("RECO")<<"mu2e::CombineStrawHits: inconsistent index "<<std::endl;
 
-      const ComboHit& ch = (*chcolOrig)[index];
+      const ComboHit& ch = chcOrig[index];
       // simple average of basic quantities.  End times cannot take advantage of corrected time resolution
       combohit._nsh += ch.nStrawHits();
       eacc += ch.energyDep();

@@ -86,4 +86,4 @@ void mu2e::VMMonitor::endJob() {
   std::cout << "VMMonitor: Peak RSS:          " << _maxRSS << std::endl;
 }
 
-DEFINE_ART_MODULE(mu2e::VMMonitor);
+DEFINE_ART_MODULE(mu2e::VMMonitor)

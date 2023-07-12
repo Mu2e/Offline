@@ -53,6 +53,6 @@ namespace mu2e {
       std::unique_ptr<ProditionsHandle<StrawElectronics> > _strawElectronics_p;
       std::unique_ptr<ProditionsHandle<StrawPhysics> > _strawPhysics_p;
   };
-};
+}
 
 #endif

@@ -5,6 +5,7 @@
 #include "Offline/TrkHitReco/inc/ComboPeakFitRoot.hh"
 
 #include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
 #include <numeric>
 
@@ -72,23 +73,27 @@ namespace mu2e {
     return (peak-pedestal);
   }
 
-  bool StrawHitRecoUtils::createComboHit(size_t isd, std::unique_ptr<ComboHitCollection> const& chCol,
+  bool StrawHitRecoUtils::createComboHit(EventWindowMarker const& ewm, size_t isd, std::unique_ptr<ComboHitCollection> const& chCol,
       std::unique_ptr<StrawHitCollection> const& shCol, const CaloClusterCollection* caloClusters,
       double pbtOffset,
       StrawId const& sid, TrkTypes::TDCValues const& tdc, TrkTypes::TOTValues const& tot,
       double pmp,
       TrackerStatus const& trackerStatus, StrawResponse const& srep, Tracker const& tt) const {
 
-    // flag digis that shouldn't be here or we don't want
+    // don't filter OffSpill.  But always flag if not filtering
+    bool filter = _filter && ewm.spillType() == EventWindowMarker::onspill;
+
+    // flag digis that shouldn't be here or we don't want; true for both On and OffSpill
     StrawHitFlag flag;
     if (trackerStatus.noSignal(sid) || trackerStatus.suppress(sid)) {
       if(_filter)
         return false;
       else
-        flag.merge(StrawHitFlag::dead); // hits from these straws will not be used in track reconstruction
-    } else if ( trackerStatus.noisy(sid)) {
-      flag.merge(StrawHitFlag::noisy); // these hits may be used in track reconstruction but not pattern recognition
+        flag.merge(StrawHitFlag::dead);
     }
+
+    if ( trackerStatus.noisy(sid))
+      flag.merge(StrawHitFlag::noisy); // these hits may be used in track reconstruction but not pattern recognition; just flag them
 
     //extract energy from waveform
     double charge(0.0);
@@ -104,10 +109,9 @@ namespace mu2e {
     float energy = srep.ionizationEnergy(charge);
 
     // energy selection
-    // filter on specific ionization TODO!
     // filter based on composite e/P separation TODO!
     if( energy > _maxE || energy < _minE ) {
-      if(_filter) return false;
+      if(filter) return false;
     } else
       flag.merge(StrawHitFlag::energysel);
 
@@ -139,7 +143,7 @@ namespace mu2e {
     // select based on radial position
     auto rho = pos.Rho();
     if( rho < _minR || rho > _maxR) {
-      if(_filter)return false;
+      if(filter)return false;
     } else
       flag.merge(StrawHitFlag::radsel);
 
@@ -148,7 +152,7 @@ namespace mu2e {
     double tres = srep.TOTdriftTimeError(straw,selected_tot,energy);
     double time = times[eend.end()] - ptime - dtime;
     if (time < _minT || time > _maxT ){
-      if(_filter) return false;
+      if(filter) return false;
     } else
       flag.merge(StrawHitFlag::timesel);
 
@@ -158,7 +162,7 @@ namespace mu2e {
       for (auto const& cluster : *caloClusters)
         if (std::abs(time-cluster.time())<_clusterDt) {outsideCaloTime=false; break;}
       if (outsideCaloTime){
-        if(_filter) return false;
+        if(filter) return false;
       } else
         flag.merge(StrawHitFlag::calosel);
     }

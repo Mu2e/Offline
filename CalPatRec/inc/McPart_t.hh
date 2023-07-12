@@ -73,6 +73,6 @@ namespace mu2e {
       int   PdgID    () { return fPdgID; }
     };
 
-  };
+  }
 }
 #endif

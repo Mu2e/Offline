@@ -196,4 +196,4 @@ namespace mu2e {
 } // namespace mu2e
 
 typedef art::Source<mu2e::CorsikaBinaryDetail> FromCorsikaBinary;
-DEFINE_ART_INPUT_SOURCE(FromCorsikaBinary);
+DEFINE_ART_INPUT_SOURCE(FromCorsikaBinary)

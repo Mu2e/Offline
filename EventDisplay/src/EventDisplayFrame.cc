@@ -47,6 +47,7 @@ namespace mu2e_eventdisplay
 
 EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) :
   TGMainFrame(p, w, h),
+  _wideband(pset.get<bool>("wideband",false)),
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
   _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV")),
   _protonBunchTimeLabel(pset.get<std::string>("protonBunchTimeTag","EWMProducer")),
@@ -438,7 +439,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _rootFileManagerAnim = boost::shared_ptr<RootFileManager>(new RootFileManager);
 
 //syntax for Format from http://root.cern.ch/phpBB3/viewtopic.php?t=8700
-  gPad->AddExec("keyboardInput",TString::Format("((mu2e_eventdisplay::EventDisplayFrame*)%p)->keyboardInput()",this));
+  gPad->AddExec("keyboardInput",TString::Format("((mu2e_eventdisplay::EventDisplayFrame*)%p)->keyboardInput()",static_cast<void*>(this)));
 }
 
 void EventDisplayFrame::initSetup()
@@ -451,6 +452,11 @@ void EventDisplayFrame::initSetup()
   _showOtherStructures=false;
   _showMuonBeamStop=false;
   _showProtonAbsorber=false;
+  if(_wideband)
+  {
+    _showSupportStructures=false;
+    _showCRV=true;
+  }
 }
 
 void EventDisplayFrame::changeSetup(bool whiteBackground, bool useHitColors, bool useTrackColors,
@@ -590,9 +596,17 @@ void EventDisplayFrame::fillGeometry()
 {
   _mainPad->cd();
   _dataInterface->fillGeometry();
-  DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, false);
+  DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, false, _showCRV);
+  if(_wideband) m=_dataInterface->getSpaceBoundary(false, false, false, true);
   _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
-  EventDisplayViewSetup::perspectiveview();
+  if(_wideband)
+  {
+    EventDisplayViewSetup::sideview();
+    _parallelButton->SetState(kButtonDown);
+    _perspectiveButton->SetState(kButtonUp);
+    _mainPad->GetView()->SetParallel();
+  }
+  else EventDisplayViewSetup::perspectiveview();
   _mainPad->Modified();
   _mainPad->Update();
 }
@@ -870,7 +884,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          if(param1>=70 && param1<=74)
                          {
                            _mainPad->cd();
-                           DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, param1==73);
+                           DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, param1==73, _showCRV);
                            _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
                            if(param1<73)
                            {

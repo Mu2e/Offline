@@ -35,5 +35,5 @@ namespace mu2e {
   std::ostream& operator<<(std::ostream& ost,
                            const CrystalId& id );
 
-};
+}
 #endif /* DataProducts_CrystalId_hh */

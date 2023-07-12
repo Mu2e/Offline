@@ -34,7 +34,7 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
-
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
 #include "TH1F.h"
 
@@ -72,7 +72,8 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> sdadcTag{ Name("StrawDigiADCWaveformCollectionTag"), Comment("StrawDigiADCWaveformCollection producer")};
         fhicl::Atom<art::InputTag> cccTag{ Name("CaloClusterCollectionTag"), Comment("CaloClusterCollection producer")};
         fhicl::Atom<art::InputTag> pbttoken{ Name("ProtonBunchTimeTag"), Comment("ProtonBunchTime producer")};
-      };
+        fhicl::Atom<art::InputTag> EWM { Name("EventWindowMarker"), Comment("EventWindowMarker")};
+     };
 
       using Parameters = art::EDProducer::Table<Config>;
       explicit StrawHitReco(Parameters const& config);
@@ -91,7 +92,8 @@ namespace mu2e {
       art::ProductToken<StrawDigiCollection> const _sdctoken;
       art::ProductToken<StrawDigiADCWaveformCollection> const _sdadctoken;
       art::ProductToken<CaloClusterCollection> const _ccctoken;
-      art::ProductToken<ProtonBunchTime> const _pbttoken; // name of the module that makes eventwindowmarkers
+      art::ProductToken<ProtonBunchTime> const _pbttoken;
+      art::ProductToken<EventWindowMarker> const _ewmtoken;
       std::unique_ptr<TrkHitReco::PeakFit> _pfit; // peak fitting algorithm
       // diagnostic
       TH1F* _maxiter;
@@ -128,7 +130,9 @@ namespace mu2e {
     _sdctoken{consumes<StrawDigiCollection>(config().sdcTag())},
     _sdadctoken{mayConsume<StrawDigiADCWaveformCollection>(config().sdadcTag())},
     _ccctoken{mayConsume<CaloClusterCollection>(config().cccTag())},
-    _pbttoken{consumes<ProtonBunchTime>(config().pbttoken())}
+    _pbttoken{consumes<ProtonBunchTime>(config().pbttoken())},
+    _ewmtoken{consumes<EventWindowMarker>(config().EWM())}
+
   {
     produces<ComboHitCollection>();
     produces<IntensityInfoTrackerHits>();
@@ -167,10 +171,11 @@ namespace mu2e {
       caloClusters = ccH.product();
     }
 
-    art::Handle<ProtonBunchTime> pbtHandle;
     auto pbtH = event.getValidHandle(_pbttoken);
     const ProtonBunchTime& pbt(*pbtH);
     double pbtOffset = pbt.pbtime_;
+    auto ewmH = event.getValidHandle(_ewmtoken);
+    const EventWindowMarker& ewm(*ewmH);
 
     std::unique_ptr<StrawHitCollection> shCol;
     if(_writesh){
@@ -195,7 +200,7 @@ namespace mu2e {
         pmp = _shrUtils.peakMinusPedWF(adcwf,srep,maxiter);
         if(_diagLevel > 0)_maxiter->Fill( std::distance(adcwf.begin(),maxiter));
       }
-      _shrUtils.createComboHit(isd, chCol, shCol, caloClusters, pbtOffset,
+      _shrUtils.createComboHit(ewm, isd, chCol, shCol, caloClusters, pbtOffset,
           digi.strawId(), digi.TDC(), digi.TOT(), pmp,
           trackerStatus,  srep, tt);
       //flag straw and electronic cross-talk
@@ -211,4 +216,4 @@ namespace mu2e {
 }
 
 using mu2e::StrawHitReco;
-DEFINE_ART_MODULE(StrawHitReco);
+DEFINE_ART_MODULE(StrawHitReco)
