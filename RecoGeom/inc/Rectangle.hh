@@ -21,7 +21,7 @@ namespace mu2e {
         }
         bool onRectangle(double udist, double vdist) const { return fabs(udist) < uhalflen_ && fabs(vdist) < vhalflen_; }
         bool onSurface(XYZVectorD const& point, double tol=1e-8) const override;
-        bool intersect(Ray const& ray,double& dist, double tol=1e-8) const override;
+        IntersectFlag intersect(Ray const& ray,double& dist, double tol=1e-8) const override;
         auto const& uDirection() const { return udir_; }
         auto const& vDirection() const { return vdir_; }
         double uHalfLength() const { return uhalflen_; }

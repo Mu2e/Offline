@@ -25,7 +25,7 @@ helper.make_plugins([mainlib,
   rootlibs
   ])
 
-BINLIBS   = [ mainlib, 'GenVector', 'MathCore']
+BINLIBS   = [ mainlib, 'mu2e_GeneralUtilities', 'GenVector', 'MathCore']
 helper.make_bin("RecoGeomTest",BINLIBS,[])
 
 # This tells emacs to view this file in python mode.

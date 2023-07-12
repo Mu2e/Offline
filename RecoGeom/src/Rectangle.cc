@@ -14,10 +14,10 @@ namespace mu2e {
       return retval;
     }
 
-    bool Rectangle::intersect(Ray const& ray,double& dist, double tol) const {
-      bool retval = Plane::intersect(ray,dist,tol);
-      if(retval){
-        retval = onSurface(ray.position(dist),tol);
+    IntersectFlag Rectangle::intersect(Ray const& ray,double& dist, double tol) const {
+      auto retval = Plane::intersect(ray,dist,tol);
+      if(retval.hasAllProperties(IntersectFlag::onsurface)){
+        if(onSurface(ray.position(dist),tol))retval.merge(IntersectFlag::inbounds);
       }
       return retval;
     }
