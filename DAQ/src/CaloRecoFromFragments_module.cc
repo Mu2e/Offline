@@ -226,17 +226,11 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
                     << (int)hits[hitIdx].first.IndexOfMaxDigitizerSample << std::endl;
         }
 
-        // IMPORTANT NOTE: we don't have a final
-        // mapping yet so for the moment, the BoardID field (described in docdb 4914) is just a
-        // placeholder. Because we still need to know which crystal a hit belongs to, we are
-        // temporarily storing the 4-bit roID and 12-bit crystalID in the Reserved DIRAC A slot.
-        // Also, note that until we have an actual map, channel index does not actually correspond
-        // to the physical readout channel on a ROC.
-        // uint16_t crystalID = hits[hitIdx].first.DIRACB & 0x0FFF;
-        // uint16_t roID = hits[hitIdx].first.DIRACB >> 12;
-
         uint16_t packetid = hits[hitIdx].first.DIRACA;
-        uint16_t roID = calodaqconds.packetIdTocaloRoId(packetid);
+        uint16_t dirac = packetid & 0xFF;
+        uint16_t diracChannel = (packetid >>8) & 0x1F;
+        mu2e::CaloRawSiPMId rawId(dirac,diracChannel);
+        uint16_t roID = calodaqconds.offlineId(rawId).id();
         // uint16_t dettype = (packetId & 0x7000) >> 13;
 
         // FIXME: Can we match vector types here?
