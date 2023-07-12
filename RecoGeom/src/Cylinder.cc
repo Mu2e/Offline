@@ -11,8 +11,8 @@ namespace mu2e {
       return retval;
     }
 
-    bool Cylinder::intersect(Ray const& ray,double& dist, double tol) const {
-      bool retval(false);
+    IntersectFlag Cylinder::intersect(Ray const& ray,double& dist, double tol) const {
+      IntersectFlag retval;
       double ddot = ray.dir_.Dot(axis_);
       double alpha = (1.0 - ddot*ddot); // always positive
       // make sure the ray isn't co-linear
@@ -28,18 +28,18 @@ namespace mu2e {
           double delta = sqrt(beta2 - ag);
           // choose smallest positive solution
           if(beta > delta){
-            retval = true;
+            retval.merge(IntersectFlag::onsurface);
             dist = (beta - delta)/alpha;
           } else if( beta + delta > 0) {
-            retval = true;
+            retval.merge(IntersectFlag::onsurface);
             dist = (beta + delta)/alpha;
           }
         }
       }
       // test that the point is on the cylinder
-      if(retval){
+      if(retval.hasAllProperties(IntersectFlag::onsurface)){
         auto point = ray.position(dist);
-        retval = onSurface(point,tol);
+        if(onSurface(point,tol))retval.merge(IntersectFlag::inbounds);
       }
       return retval;
     }

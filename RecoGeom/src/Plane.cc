@@ -5,13 +5,13 @@ namespace mu2e {
       return fabs(norm_.Dot(point-center_)) < tol;
     }
 
-    bool Plane::intersect(Ray const& ray,double& dist, double tol) const {
-      bool retval(false);
+    IntersectFlag Plane::intersect(Ray const& ray,double& dist, double tol) const {
+      IntersectFlag retval;
       double ddir = norm_.Dot(ray.dir_);
       if(fabs(ddir)>tol){
         double pdist = norm_.Dot(center_ - ray.start_);
         dist = pdist/ddir;
-        retval = true;
+        retval.merge(IntersectFlag::onsurface);
       }
       return retval;
     }

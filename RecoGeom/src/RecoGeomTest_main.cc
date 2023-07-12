@@ -11,6 +11,7 @@ using mu2e::RecoGeom::Ray;
 using mu2e::RecoGeom::Cylinder;
 using mu2e::RecoGeom::Annulus;
 using mu2e::RecoGeom::Rectangle;
+using mu2e::RecoGeom::IntersectFlag;
 static struct option long_options[] = {
   {"x",     required_argument, 0, 'x' },
   {"y",     required_argument, 0, 'y'  },
@@ -81,18 +82,21 @@ int main(int argc, char** argv) {
     std::cout << "Not On Cylinder "<< std::endl;
 
   double dist;
-  if(ann.intersect(ray,dist,tol))
-    std::cout << "Annulus intersect at distance " << dist << " point " << ray.position(dist) << std::endl;
+  auto iflag = ann.intersect(ray,dist,tol);
+  if(iflag.hasAnyProperty(IntersectFlag::onsurface))
+    std::cout << "Annulus intersect " << iflag << " at distance " << dist << " point " << ray.position(dist) << std::endl;
   else
     std::cout << "No Annulus intersection" << std::endl;
 
-  if(rect.intersect(ray,dist,tol))
-    std::cout << "Rectangle intersect at distance " << dist << " point " << ray.position(dist) << std::endl;
+  iflag = rect.intersect(ray,dist,tol);
+  if(iflag.hasAnyProperty(IntersectFlag::onsurface))
+    std::cout << "Rectangle intersect " << iflag << " at distance " << dist << " point " << ray.position(dist) << std::endl;
   else
     std::cout << "No Rectangle intersection" << std::endl;
 
-  if(cyl.intersect(ray,dist,tol))
-    std::cout << "Cylinder intersect at distance " << dist << " point " << ray.position(dist) << std::endl;
+  iflag = cyl.intersect(ray,dist,tol);
+  if(iflag.hasAnyProperty(IntersectFlag::onsurface))
+    std::cout << "Cylinder intersect " << iflag << " at distance " << dist << " point " << ray.position(dist) << std::endl;
   else
     std::cout << "No Cylinder intersection" << std::endl;
 
