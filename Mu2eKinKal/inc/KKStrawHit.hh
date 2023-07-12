@@ -126,12 +126,12 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateReference(KTRAJPTR const& ktrajptr) {
     // if we already computed PCA in the previous iteration, use that to set the hint.  This speeds convergence
     // otherwise use the time at the center of the wire, corrected for drift
-    CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(wire_.range().mid()-chit_.driftTime(),wire_.range().mid());
+    CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(wire_.timeAtMidpoint()-chit_.driftTime(),wire_.timeAtMidpoint());
     ca_ = CA(ktrajptr,wire_,tphint,precision());
     // check that we're on the right branch: we can move off if t0 changes a lot between iterations
     double dz = straw().origin().z() - ca_.particlePoca().Z();
     if((!ca_.usable()) || fabs(dz) >  100) { // need a better absolute scale; should come from KTRAJ FIXME
-      tphint = CAHint(Mu2eKinKal::zTime(*ktrajptr,straw().origin().z(),wire_.range().mid()), wire_.range().mid());
+      tphint = CAHint(Mu2eKinKal::zTime(*ktrajptr,straw().origin().z(),wire_.timeAtMidpoint()), wire_.timeAtMidpoint());
       ca_ = CA(ktrajptr,wire_,tphint,precision());
       dz = straw().origin().z() - ca_.particlePoca().Z();
       if((!ca_.usable()) || fabs(dz) >  100) whstate_.state_ = WireHitState::unusable;// give up on 2nd try
@@ -245,7 +245,7 @@ namespace mu2e {
       ost << std::endl;
     }
     if(detail > 1) {
-      ost << "Propagation speed " << wire_.speed() << " Ref " << ca_.tpData() << std::endl;
+      ost << " Ref " << ca_.tpData() << std::endl;
     }
     if(detail > 0)chit_.print(ost,true);
   }
