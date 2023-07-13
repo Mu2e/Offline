@@ -16,7 +16,7 @@ using mu2e::RecoGeom::Cylinder;
 using mu2e::RecoGeom::Annulus;
 using mu2e::RecoGeom::Rectangle;
 using mu2e::RecoGeom::IntersectFlag;
-using KTRAJ = KinKal::LoopHelix;
+using KTRAJ = KinKal::KinematicLine;
 using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
 using KinKal::ParticleState;
 using KinKal::TimeRange;
@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
   int opt;
   int long_index =0;
   VEC3 point(0.0,0.0,0.0);
-  double ccost(0.5), cphi(0.0), crad(400), clen(1000);
+  double ccost(1.0), cphi(0.0), crad(400), clen(1000);
   double pcost(0.5), pphi(0.0), pmom(400);
   while ((opt = getopt_long_only(argc, argv,"",
           long_options, &long_index )) != -1) {
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
   double psint = sqrt(1.0-pcost*pcost);
   VEC3 momvec(psint*cos(pphi), psint*sin(pphi), pcost);
   momvec *= pmom;
-  ParticleState pstate(origin,momvec,0.0,0.5,-1.0);
+  ParticleState pstate(origin,momvec,0.0,0.5,-1);
 //  std::cout << "Test " << pstate << std::endl;
   std::cout << "Test particle momentum " << pstate.momentum3() << std::endl;
   double speed = pstate.speed();

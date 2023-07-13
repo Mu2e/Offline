@@ -15,6 +15,8 @@ namespace mu2e {
 
         bool onSurface(XYZVectorD const& point, double tol=1e-8) const override;
         IntersectFlag intersect(Ray const& ray,double& dist, double tol=1e-8) const override;
+        XYZVectorD normal(XYZVectorD const& point) const override;
+        // cylinder-specific interface
         auto const& axis() const { return axis_; }
         auto const& center() const { return center_; }
         double radius() const { return radius_; }
