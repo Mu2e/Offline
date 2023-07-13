@@ -8,8 +8,6 @@
 #include "Offline/RecoGeom/inc/InterData.hh"
 #include "Offline/RecoGeom/inc/Cylinder.hh"
 #include "Offline/RecoGeom/inc/Plane.hh"
-#include "Offline/RecoGeom/inc/Annulus.hh"
-#include "Offline/RecoGeom/inc/Rectangle.hh"
 #include "KinKal/Trajectory/LoopHelix.hh"
 #include "KinKal/Trajectory/CentralHelix.hh"
 #include "KinKal/Trajectory/KinematicLine.hh"
