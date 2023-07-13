@@ -14,6 +14,7 @@ namespace mu2e {
         // surface interface
         bool onSurface(XYZVectorD const& point, double tol=1e-8) const override;
         IntersectFlag intersect(Ray const& ray,double& dist, double tol=1e-8) const override;
+        XYZVectorD normal(XYZVectorD const& point) const override { return norm_; }
         auto const& normal() const { return norm_; }
         auto const& center() const { return center_; }
       private:

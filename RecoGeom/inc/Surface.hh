@@ -18,6 +18,8 @@ namespace mu2e {
         virtual bool onSurface(XYZVectorD const& point, double tol=1e-8) const = 0;
         // find the distance along a ray where it would intersect this surface; Returned flag describes what happened
         virtual IntersectFlag intersect(Ray const& ray,double& dist, double tol=1e-12) const = 0;
+        // find the normal to the surface at the given point.  Direction convention is surface-dependent
+        virtual XYZVectorD normal(XYZVectorD const& point) const  = 0;
     };
   }
 }

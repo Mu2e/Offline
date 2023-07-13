@@ -11,6 +11,13 @@ namespace mu2e {
       return retval;
     }
 
+    XYZVectorD Cylinder::normal(XYZVectorD const& point) const {
+      // normal is perpendicular part of the difference
+      auto rvec = point - center_;
+      auto pvec = PerpVector(rvec,axis_);
+      return pvec.Unit();
+    }
+
     IntersectFlag Cylinder::intersect(Ray const& ray,double& dist, double tol) const {
       IntersectFlag retval;
       double ddot = ray.dir_.Dot(axis_);
