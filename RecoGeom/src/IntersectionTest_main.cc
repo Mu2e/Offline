@@ -16,8 +16,6 @@ using mu2e::RecoGeom::Cylinder;
 using mu2e::RecoGeom::Annulus;
 using mu2e::RecoGeom::Rectangle;
 using mu2e::RecoGeom::IntersectFlag;
-using KTRAJ = KinKal::KinematicLine;
-using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
 using KinKal::ParticleState;
 using KinKal::TimeRange;
 static struct option long_options[] = {
@@ -81,10 +79,10 @@ int main(int argc, char** argv) {
 
   VEC3 bnom(0.0,0.0,1.0);
   TimeRange trange(0.0,tmax);
-  KTRAJ ktraj(pstate,bnom,trange);
-  mu2e::RecoGeom::Intersection inter(ktraj,cyl, 0.0);
-  auto const& idata = inter.interData();
-  std::cout << "Intersection status " << idata.flag_ << " position " << idata.pos_ << " time " << idata.time_ << std::endl;
+  KinKal::KinematicLine ktraj(pstate,bnom,trange);
+  mu2e::RecoGeom::Intersect<KinKal::KinematicLine, mu2e::RecoGeom::Cylinder> isect;
+  auto inter = isect.intersect(ktraj,cyl, 0.0, 1.0e-8);
+  std::cout << "Intersection status " << inter.flag_ << " position " << inter.pos_ << " time " << inter.time_ << std::endl;
 
   return 0;
 }

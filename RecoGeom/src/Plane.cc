@@ -8,15 +8,17 @@ namespace mu2e {
     IntersectFlag Plane::intersect(Ray const& ray,double& dist, double tol) const {
       IntersectFlag retval;
       double ddir = norm_.Dot(ray.dir_);
-      if(fabs(ddir)>tol){
+      if(fabs(ddir)>tol) {
         double pdist = norm_.Dot(center_ - ray.start_);
         dist = pdist/ddir;
-        retval.merge(IntersectFlag::onsurface);
+        retval.onsurface_ = true;
+        retval.inbounds_ = inBounds(ray.position(dist),tol);
       }
       return retval;
     }
   }
 }
+
 std::ostream& operator <<(std::ostream& ost, mu2e::RecoGeom::Plane const& plane) {
   ost << "Plane with center " << plane.center() << " , normal " << plane.normal();
   return ost;

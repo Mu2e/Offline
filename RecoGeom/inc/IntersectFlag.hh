@@ -6,24 +6,16 @@
 //
 // Original author David Brown
 //
-// Mu2e includes
-#include "Offline/GeneralUtilities/inc/BitMap.hh"
 #include <string>
 #include <map>
 namespace mu2e {
   namespace RecoGeom {
-    struct IntersectFlagDetail {
-      // I need 16 bits for this class
-      typedef unsigned short mask_type;
-      enum bit_type {onsurface=0,inbounds=1 };
-      // functions needed for the BitMap template
-      static std::string const& typeName();
-      static std::map<std::string,mask_type> const& bitNames();
-      // maximum track Id I can flag
-      static unsigned _maxTrkId;
-      static mask_type bit_to_mask( bit_type b){ return 1<<b; }
+    struct IntersectFlag {
+      IntersectFlag() : onsurface_(false), inbounds_(false) {}
+      bool onsurface_; // intersection is on the surface
+      bool inbounds_;  // intersection is inside the surface boundaries
     };
-    typedef BitMap<IntersectFlagDetail> IntersectFlag;
   }
 }
+std::ostream& operator <<(std::ostream& ost, mu2e::RecoGeom::IntersectFlag const& iflag);
 #endif

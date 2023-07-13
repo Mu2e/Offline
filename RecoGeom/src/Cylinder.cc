@@ -6,9 +6,12 @@ namespace mu2e {
     bool Cylinder::onSurface(XYZVectorD const& point, double tol) const {
       auto rvec = point - center_;
       auto pvec = PerpVector(rvec,axis_);
-      bool retval = fabs(pvec.R()-radius_) < tol;
-      if(retval) retval = fabs(rvec.Dot(axis_)) - halflen_ < tol;
-      return retval;
+      return fabs(pvec.R()-radius_) < tol;
+    }
+
+    bool Cylinder::inBounds(XYZVectorD const& point, double tol) const {
+      auto rvec = point - center_;
+      return fabs(rvec.Dot(axis_)) - halflen_ < tol;
     }
 
     XYZVectorD Cylinder::normal(XYZVectorD const& point) const {
@@ -35,18 +38,18 @@ namespace mu2e {
           double delta = sqrt(beta2 - ag);
           // choose smallest positive solution
           if(beta > delta){
-            retval.merge(IntersectFlag::onsurface);
+            retval.onsurface_ = true;
             dist = (beta - delta)/alpha;
           } else if( beta + delta > 0) {
-            retval.merge(IntersectFlag::onsurface);
+            retval.onsurface_ = true;
             dist = (beta + delta)/alpha;
           }
         }
       }
       // test that the point is on the cylinder
-      if(retval.hasAllProperties(IntersectFlag::onsurface)){
+      if(retval.onsurface_){
         auto point = ray.position(dist);
-        if(onSurface(point,tol))retval.merge(IntersectFlag::inbounds);
+        retval.inbounds_ = inBounds(point,tol);
       }
       return retval;
     }
