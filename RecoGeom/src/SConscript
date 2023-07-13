@@ -25,8 +25,14 @@ helper.make_plugins([mainlib,
   rootlibs
   ])
 
-BINLIBS   = [ mainlib, 'mu2e_GeneralUtilities', 'GenVector', 'MathCore']
+BINLIBS   = [ mainlib,
+'mu2e_GeneralUtilities',
+'KinKal_Trajectory',
+'KinKal_General',
+'GenVector',
+'MathCore']
 helper.make_bin("RecoGeomTest",BINLIBS,[])
+helper.make_bin("IntersectionTest",BINLIBS,[])
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

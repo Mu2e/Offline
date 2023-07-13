@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
   Annulus ann(zdir,origin,1.0,2.0);
   VEC3 udir(1.0,0.0,0.0);
   Rectangle rect(zdir,origin,udir,1.0,2.0);
-  Cylinder cyl(zdir,origin,2.0,1.0);
+  Cylinder cyl(zdir,origin,2.0,10.0);
 
   std::cout << "Test " << ray << std::endl;
   std::cout << "Test " << ann << std::endl;
