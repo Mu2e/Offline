@@ -11,14 +11,7 @@ namespace mu2e {
     class Rectangle : public Plane {
       public:
         // construct from necessary parameters
-        Rectangle(XYZVectorD const& norm, XYZVectorD const& center,
-            XYZVectorD uaxis,
-            double uhalflen, double vhalflen) : Plane(norm,center) , uhalflen_(uhalflen), vhalflen_(vhalflen), udir_(uaxis.Unit()){
-          // check that U is perpendicular
-          if(udir_.Dot(normal()) > 1e-10) throw std::invalid_argument("U direction not perpendicular to normal");
-          // V direction is implicit
-          vdir_ = normal().Cross(udir_);
-        }
+        Rectangle(XYZVectorD const& norm, XYZVectorD const& center, XYZVectorD const& uaxis, double uhalflen, double vhalflen);
         // surface interface
         bool inBounds(XYZVectorD const& point, double tol=1e-8) const override;
         // rectangle-specific interface
