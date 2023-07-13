@@ -11,9 +11,9 @@ namespace mu2e {
       public:
         // construct from necessary parameters
         Cylinder(XYZVectorD const& axis, XYZVectorD const& center, double radius, double halflen ) : axis_(axis), center_(center), radius_(radius), halflen_(halflen), radius2_(radius*radius) {}
-        // surface interface
-
+        // Surface interface
         bool onSurface(XYZVectorD const& point, double tol=1e-8) const override;
+        bool inBounds(XYZVectorD const& point, double tol=1e-8) const override;
         IntersectFlag intersect(Ray const& ray,double& dist, double tol=1e-8) const override;
         XYZVectorD normal(XYZVectorD const& point) const override;
         // cylinder-specific interface

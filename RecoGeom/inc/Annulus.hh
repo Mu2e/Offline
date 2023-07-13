@@ -14,16 +14,16 @@ namespace mu2e {
           radii_[0] = innerrad;
           radii_[1] = outerrad;
         }
+        // surface interface
+        bool inBounds(XYZVectorD const& point, double tol=1e-8) const override;
+        // annulus-specific interface
         auto innerRadius() const { return radii_[0]; }
         auto outerRadius() const { return radii_[1]; }
         bool onAnnulus(double radius) const { return radius >= radii_[0] && radius <= radii_[1]; }
-        bool onSurface(XYZVectorD const& point, double tol=1e-8) const override;
-        IntersectFlag intersect(Ray const& ray,double& dist, double tol=1e-8) const override;
       private:
         double radii_[2]; // inner and outer radii
     };
   }
 }
 std::ostream& operator <<(std::ostream& ost, mu2e::RecoGeom::Annulus const& annulus);
-
 #endif

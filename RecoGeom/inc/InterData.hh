@@ -10,7 +10,7 @@
 namespace mu2e {
   namespace RecoGeom {
     struct InterData {
-      RecoGeom::IntersectFlag flag_; // intersection status
+      IntersectFlag flag_; // intersection status
       XYZVectorD pos_; // intersection position
       XYZVectorD norm_; // surface normal at intersection
       XYZVectorD pdir_; // particle direction at intersection

@@ -83,19 +83,19 @@ int main(int argc, char** argv) {
 
   double dist;
   auto iflag = ann.intersect(ray,dist,tol);
-  if(iflag.hasAnyProperty(IntersectFlag::onsurface))
+  if(iflag.onsurface_)
     std::cout << "Annulus intersect " << iflag << " at distance " << dist << " point " << ray.position(dist) << std::endl;
   else
     std::cout << "No Annulus intersection" << std::endl;
 
   iflag = rect.intersect(ray,dist,tol);
-  if(iflag.hasAnyProperty(IntersectFlag::onsurface))
+  if(iflag.onsurface_)
     std::cout << "Rectangle intersect " << iflag << " at distance " << dist << " point " << ray.position(dist) << std::endl;
   else
     std::cout << "No Rectangle intersection" << std::endl;
 
   iflag = cyl.intersect(ray,dist,tol);
-  if(iflag.hasAnyProperty(IntersectFlag::onsurface))
+  if(iflag.onsurface_)
     std::cout << "Cylinder intersect " << iflag << " at distance " << dist << " point " << ray.position(dist) << std::endl;
   else
     std::cout << "No Cylinder intersection" << std::endl;
