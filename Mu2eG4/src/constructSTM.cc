@@ -1437,7 +1437,7 @@ namespace mu2e {
 
     // create wall with hole
     VolumeInfo crvshield;
-    crvshield.name = "crvshield";
+    crvshield.name = "STM_CRVShieldMatingBlock";
     crvshield.solid = new G4SubtractionSolid(crvshield.name,crvShieldBox,crvShieldHole,0,G4ThreeVector(0.0,0.0,0.0));
 
     //Make the tube to shield CRV
