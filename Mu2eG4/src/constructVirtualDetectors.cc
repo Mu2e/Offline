@@ -1588,7 +1588,7 @@ namespace mu2e {
     if ( vdg->exist(vdId) ) {
 
       //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
-      const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
+      const VolumeInfo& parent = _helper->locateVolInfo("stmDownstreamEnvelope");
       const double vdRIn  = 0.0;
       const double vdROut = _config.getDouble("stm.det1.rOut");
       const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
@@ -1623,7 +1623,7 @@ namespace mu2e {
     if ( vdg->exist(vdId) ) {
 
       //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
-      const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
+      const VolumeInfo& parent = _helper->locateVolInfo("stmDownstreamEnvelope");
       const double vdRIn  = 0.0;
       const double vdROut = _config.getDouble("stm.det2.rOut");
       const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
