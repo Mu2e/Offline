@@ -8,6 +8,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Offline/Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/STMGeom/inc/STMDownstreamEnvelope.hh"
 #include "Offline/STMGeom/inc/PermanentMagnet.hh"
 #include "Offline/STMGeom/inc/TransportPipe.hh"
 #include "Offline/STMGeom/inc/SupportTable.hh"
@@ -23,6 +24,7 @@ namespace mu2e {
 
   public:
 
+    STMDownstreamEnvelope  const * getSTMDnStrEnvPtr()               const { return _pSTMDnStrEnvParams.get(); }
     PermanentMagnet  const * getSTMMagnetPtr()               const { return _pSTMMagnetParams.get(); }
     TransportPipe    const * getSTMTransportPipePtr()        const { return _pSTMTransportPipeParams.get(); }
     SupportTable     const * getSTMMagnetSupportTablePtr()   const { return _pSTMMagnetSupportTableParams.get(); }
@@ -46,6 +48,7 @@ namespace mu2e {
     STM( STM const & );
     STM const & operator= ( STM const & );
 
+    std::unique_ptr<STMDownstreamEnvelope>  _pSTMDnStrEnvParams;
     std::unique_ptr<PermanentMagnet>  _pSTMMagnetParams;
     std::unique_ptr<TransportPipe>    _pSTMTransportPipeParams;
     std::unique_ptr<SupportTable>     _pSTMMagnetSupportTableParams;
