@@ -1123,7 +1123,7 @@ namespace mu2e {
                                            stmDnStrEnvMaterial,
                                            0x0,
                                            stmDnStrEnvPositionInParent, //mstmDetectorStandPositionInMother,
-                                           parentInfo.logical,
+                                           parentInfo,
                                            0,
                                            STMisVisible,
                                            G4Color::Gray(),
@@ -1132,6 +1132,9 @@ namespace mu2e {
                                            placePV,
                                            doSurfaceCheck
                                            );
+
+      VolumeInfo const & parentInfo = stmDnStrEnvInfo;
+      G4ThreeVector parentCenterInMu2e = parentInfo.centerInMu2e();
 
       //===================== STM Detector Support Table ==========================
 
@@ -1161,7 +1164,7 @@ namespace mu2e {
                                                    stmDetectorSupportTableMaterial,
                                                    0x0,
                                                    stmDetectorSupportTablePositionInParent, //mstmDetectorStandPositionInMother,
-                                                   parentInfo.logical,
+                                                   parentInfo,
                                                    0,
                                                    STMisVisible,
                                                    G4Color::Gray(),
