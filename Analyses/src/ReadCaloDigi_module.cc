@@ -614,7 +614,7 @@ namespace mu2e {
     }
 
     int        ncrystals(_caloCrystals);
-    int        nWordsCrystals       [ncrystals] = {0};
+    vector<int>        nWordsCrystals(ncrystals,0);
 
     std::vector<int>   pulse;
     CLHEP::Hep3Vector  crystalPos(0);
