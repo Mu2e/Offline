@@ -686,7 +686,8 @@ namespace mu2e {
         if ( c.getBool("vd.STMCollDnStr.build", false) ) {
           const double mstmZAllowed =  c.getDouble("stm.z.allowed");
           const double mstmCollHalfLength =  c.getDouble("stm.SScollimator.halfLength");
-          CLHEP::Hep3Vector mstmCollPositionInParent = mstmReferencePositionInParent + CLHEP::Hep3Vector(0.0,0.0,2.0*mstmMotherHalfLength) - CLHEP::Hep3Vector(0.0,0.0,mstmZAllowed) + CLHEP::Hep3Vector(0.0,0.0,mstmCollHalfLength);
+          CLHEP::Hep3Vector mstmCollPositionInMu2e = BeamAxisAtEastWallInMu2e + - CLHEP::Hep3Vector(0.0,0.0,mstmZAllowed) + CLHEP::Hep3Vector(0.0,0.0,mstmCollHalfLength);
+          CLHEP::Hep3Vector mstmCollPositionInParent = mstmCollPositionInMu2e - stmDnStrEnvPositionInMu2e;
           const double mstmCanUpStrSpace             = c.getDouble("stm.det1.can.UpStrSpace");
 
           CLHEP::Hep3Vector vdPositionWRTparent     = mstmCollPositionInParent + CLHEP::Hep3Vector(0.0,0.0,mstmCollHalfLength+0.5*mstmCanUpStrSpace+vd->_halfLength);
