@@ -757,7 +757,7 @@ namespace mu2e
                       [](L &a, L &b){return a->_maxSlope < b->_maxSlope;}))->_maxSlope;
     double maxSlopeDifference = (*std::max_element(layerIterators,layerIterators+n,
                                 [](L &a, L &b){return a->_maxSlopeDifference < b->_maxSlopeDifference;}))->_maxSlopeDifference;
-    double slopes[n-1];
+    std::vector<double> slopes(n-1);
     for(int d=0; d<n-1; ++d)
     {
       //slope = width direction / thickness direction
