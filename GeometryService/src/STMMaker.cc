@@ -188,9 +188,12 @@ namespace mu2e {
     GeomHandle<Mu2eHall> hall;
     const double z_hall_inside_max = hall->getWallExtentz("dsArea",1)/CLHEP::mm;//the integer allows you to specify which side of which wall you want the z for: 1 = west side of east wall (i.e. the z of the inside surface of the east wall)
     const CLHEP::Hep3Vector BeamAxisAtEastWallInMu2e(dsP.x(), 0.0, z_hall_inside_max );
+    const double yExtentLow = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
+    const CLHEP::Hep3Vector FloorAtEastWallInMu2e = BeamAxisAtEastWallInMu2e - CLHEP::Hep3Vector(0.0, yExtentLow, 0.0);
 
+    // Define the envelope w.r.t the floor at the east wall
     const CLHEP::HepRotation _stmDnStrEnvRotation     = CLHEP::HepRotation::IDENTITY;
-    const CLHEP::Hep3Vector _stmDnStrEnvPositionInMu2e = BeamAxisAtEastWallInMu2e + CLHEP::Hep3Vector(0.0, 0.0, -_stmDnStrEnvHalfLength);
+    const CLHEP::Hep3Vector _stmDnStrEnvPositionInMu2e = FloorAtEastWallInMu2e + CLHEP::Hep3Vector(0.0, +_stmDnStrEnvHalfHeight, -_stmDnStrEnvHalfLength);
     stm._pSTMDnStrEnvParams = std::unique_ptr<STMDownstreamEnvelope>
       (new STMDownstreamEnvelope(_stmDnStrEnvBuild,
                                  _stmDnStrEnvHalfWidth,
