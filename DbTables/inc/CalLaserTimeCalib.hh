@@ -79,5 +79,5 @@ namespace mu2e {
       //std::map<int,std::size_t> _chanIndex;
   };
 
-};
+}
 #endif
