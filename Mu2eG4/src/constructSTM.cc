@@ -956,165 +956,152 @@ namespace mu2e {
       G4ThreeVector parentCenterInMu2e = parentInfo.centerInMu2e();
 
 
-    //===================== Spot-Size (SS) Collimator ==========================
+      //===================== Spot-Size (SS) Collimator ==========================
 
-    const double stmSSCollHalfLength1 = pSTMSSCollimatorParams.halfLength();
-    const double stmSSCollHalfWidth1  = pSTMSSCollimatorParams.halfWidth();
-    const double stmSSCollHalfHeight1 = pSTMSSCollimatorParams.halfHeight();
-    const double stmSSCollHalfLength2 = pSTMSSCollimatorParams.linerHalfLength();
-    const double stmSSCollHalfWidth2  = pSTMSSCollimatorParams.linerHalfWidth();
-    const double stmSSCollHalfHeight2 = pSTMSSCollimatorParams.linerHalfHeight();
+      const double stmSSCollHalfLength1 = pSTMSSCollimatorParams.halfLength();
+      const double stmSSCollHalfWidth1  = pSTMSSCollimatorParams.halfWidth();
+      const double stmSSCollHalfHeight1 = pSTMSSCollimatorParams.halfHeight();
+      const double stmSSCollHalfLength2 = pSTMSSCollimatorParams.linerHalfLength();
+      const double stmSSCollHalfWidth2  = pSTMSSCollimatorParams.linerHalfWidth();
+      const double stmSSCollHalfHeight2 = pSTMSSCollimatorParams.linerHalfHeight();
 
-    // position of SS collimator
-    G4ThreeVector stmSSCollPositionInMu2e1   = pSTMSSCollimatorParams.originInMu2e();
-    G4ThreeVector stmSSCollPositionInParent1 = pSTMSSCollimatorParams.originInMu2e() - parentCenterInMu2e;
-    // Make the box for the collimator
-    G4Box* boxSSColl = new G4Box("boxSSColl",stmSSCollHalfWidth1,stmSSCollHalfHeight1,stmSSCollHalfLength1);
-    //---
-/*    //Make the tube(s) for the hole(s)
-    G4Tubs *tubSSColl1 = new G4Tubs("tubSSColl1", 0.0, pSTMSSCollimatorParams.hole1RadiusUpStr(), stmSSCollHalfLength1+1.0, 0.0, CLHEP::twopi );
-    G4Tubs *tubSSColl2 = new G4Tubs("tubSSColl2", 0.0, pSTMSSCollimatorParams.hole2RadiusUpStr(), stmSSCollHalfLength1+1.0, 0.0, CLHEP::twopi );
-    G4SubtractionSolid *collimatorSStemp1 = new G4SubtractionSolid("collimatorSStemp1",boxSSColl,         tubSSColl1,0,G4ThreeVector(pSTMSSCollimatorParams.hole1xOffset(),0.0,0.0));
-    G4SubtractionSolid *collimatorSStemp2 = 0;
-    if (pSTMSSCollimatorParams.hole2Build()){
-      collimatorSStemp2 = new G4SubtractionSolid("collimatorSStemp2",collimatorSStemp1, tubSSColl2,0,G4ThreeVector(pSTMSSCollimatorParams.hole2xOffset(),0.0,0.0));
-    } else {
-      collimatorSStemp2 = collimatorSStemp1;
-    } */
-    //---
+      // position of SS collimator
+      G4ThreeVector stmSSCollPositionInMu2e1   = pSTMSSCollimatorParams.originInMu2e();
+      G4ThreeVector stmSSCollPositionInParent1 = pSTMSSCollimatorParams.originInMu2e() - parentCenterInMu2e;
+      // Make the box for the collimator
+      G4Box* boxSSColl = new G4Box("boxSSColl",stmSSCollHalfWidth1,stmSSCollHalfHeight1,stmSSCollHalfLength1);
+      //---
+      /*    //Make the tube(s) for the hole(s)
+            G4Tubs *tubSSColl1 = new G4Tubs("tubSSColl1", 0.0, pSTMSSCollimatorParams.hole1RadiusUpStr(), stmSSCollHalfLength1+1.0, 0.0, CLHEP::twopi );
+            G4Tubs *tubSSColl2 = new G4Tubs("tubSSColl2", 0.0, pSTMSSCollimatorParams.hole2RadiusUpStr(), stmSSCollHalfLength1+1.0, 0.0, CLHEP::twopi );
+            G4SubtractionSolid *collimatorSStemp1 = new G4SubtractionSolid("collimatorSStemp1",boxSSColl,         tubSSColl1,0,G4ThreeVector(pSTMSSCollimatorParams.hole1xOffset(),0.0,0.0));
+            G4SubtractionSolid *collimatorSStemp2 = 0;
+            if (pSTMSSCollimatorParams.hole2Build()){
+            collimatorSStemp2 = new G4SubtractionSolid("collimatorSStemp2",collimatorSStemp1, tubSSColl2,0,G4ThreeVector(pSTMSSCollimatorParams.hole2xOffset(),0.0,0.0));
+            } else {
+            collimatorSStemp2 = collimatorSStemp1;
+            } */
+      //---
 
-    GeomHandle<StoppingTarget> stoppingTarget;
-    TargetFoil const& foil_downstream = stoppingTarget->foil(stoppingTarget->nFoils()-1);
-    const double z_tgtfoil_downstream = foil_downstream.centerInMu2e().z();
-    const double z_collimator_downstream = stmSSCollPositionInMu2e1.z() + stmSSCollHalfLength1;
-    const double z_distance_tgt_coll = (z_collimator_downstream-z_tgtfoil_downstream);
+      GeomHandle<StoppingTarget> stoppingTarget;
+      TargetFoil const& foil_downstream = stoppingTarget->foil(stoppingTarget->nFoils()-1);
+      const double z_tgtfoil_downstream = foil_downstream.centerInMu2e().z();
+      const double z_collimator_downstream = stmSSCollPositionInMu2e1.z() + stmSSCollHalfLength1;
+      const double z_distance_tgt_coll = (z_collimator_downstream-z_tgtfoil_downstream);
 
-    //Make the conical.disk for the first hole as wide as the StoppingTarget+extra on one end
-    //and as narrow as the desired collimation on the other end
-    G4Cons* collWindow1 = new G4Cons( "collWindow1",
-                                      0.0,                          // rMin cone upstream
-                                      foil_downstream.rOut()+150.0, // rMax cone upStream
-                                      0.0,                          // rMin cone downstream
-                                      pSTMSSCollimatorParams.hole1RadiusDnStr(), // rMax cone downstream
-                                      z_distance_tgt_coll/2.0,      //halflength
-                                      0.0,                          //start angle
-                                      CLHEP::twopi                  //end angle
-                                    );
-    //Make the conical.disk for the second hole as wide as the StoppingTarget+extra on one end
-    //and as narrow as the desired collimation on the other end
-    G4Cons* collWindow2 = new G4Cons( "collWindow2",
-                                      0.0,                          // rMin cone upstream
-                                      foil_downstream.rOut()+150.0, // rMax cone upStream
-                                      0.0,                          // rMin cone downstream
-                                      pSTMSSCollimatorParams.hole2RadiusDnStr(), // rMax cone downstream
-                                      z_distance_tgt_coll/2.0,      //halflength
-                                      0.0,                          //start angle
-                                      CLHEP::twopi                  //end angle
-                                    );
+      //Make the conical.disk for the first hole as wide as the StoppingTarget+extra on one end
+      //and as narrow as the desired collimation on the other end
+      G4Cons* collWindow1 = new G4Cons( "collWindow1",
+                                        0.0,                          // rMin cone upstream
+                                        foil_downstream.rOut()+150.0, // rMax cone upStream
+                                        0.0,                          // rMin cone downstream
+                                        pSTMSSCollimatorParams.hole1RadiusDnStr(), // rMax cone downstream
+                                        z_distance_tgt_coll/2.0,      //halflength
+                                        0.0,                          //start angle
+                                        CLHEP::twopi                  //end angle
+                                        );
+      //Make the conical.disk for the second hole as wide as the StoppingTarget+extra on one end
+      //and as narrow as the desired collimation on the other end
+      G4Cons* collWindow2 = new G4Cons( "collWindow2",
+                                        0.0,                          // rMin cone upstream
+                                        foil_downstream.rOut()+150.0, // rMax cone upStream
+                                        0.0,                          // rMin cone downstream
+                                        pSTMSSCollimatorParams.hole2RadiusDnStr(), // rMax cone downstream
+                                        z_distance_tgt_coll/2.0,      //halflength
+                                        0.0,                          //start angle
+                                        CLHEP::twopi                  //end angle
+                                        );
 
 
-    const double xoffset_hole1 = pSTMSSCollimatorParams.hole1xOffset();
-    const double angleY1 = -1.0*std::atan( (xoffset_hole1/2.0)/(z_distance_tgt_coll/2.0) );
-    CLHEP::HepRotationY RYForCone1(angleY1);
-    G4RotationMatrix *rotMatrixYforCone1 = reg.add(G4RotationMatrix(RYForCone1));
-    const double z_shift1 = z_distance_tgt_coll/2.0*std::sin(std::abs(angleY1)) + pSTMSSCollimatorParams.hole1RadiusDnStr()*std::sin(std::abs(angleY1));
+      const double xoffset_hole1 = pSTMSSCollimatorParams.hole1xOffset();
+      const double angleY1 = -1.0*std::atan( (xoffset_hole1/2.0)/(z_distance_tgt_coll/2.0) );
+      CLHEP::HepRotationY RYForCone1(angleY1);
+      G4RotationMatrix *rotMatrixYforCone1 = reg.add(G4RotationMatrix(RYForCone1));
+      const double z_shift1 = z_distance_tgt_coll/2.0*std::sin(std::abs(angleY1)) + pSTMSSCollimatorParams.hole1RadiusDnStr()*std::sin(std::abs(angleY1));
 
-    const double xoffset_hole2 = pSTMSSCollimatorParams.hole2xOffset();
-    const double angleY2 = -1.0*std::atan( (xoffset_hole2/2.0)/(z_distance_tgt_coll/2.0) );
-    CLHEP::HepRotationY RYForCone2(angleY2);
-    G4RotationMatrix *rotMatrixYforCone2 = reg.add(G4RotationMatrix(RYForCone2));
-    const double z_shift2 = z_distance_tgt_coll/2.0*std::sin(std::abs(angleY2)) + pSTMSSCollimatorParams.hole2RadiusDnStr()*std::sin(std::abs(angleY2));
+      const double xoffset_hole2 = pSTMSSCollimatorParams.hole2xOffset();
+      const double angleY2 = -1.0*std::atan( (xoffset_hole2/2.0)/(z_distance_tgt_coll/2.0) );
+      CLHEP::HepRotationY RYForCone2(angleY2);
+      G4RotationMatrix *rotMatrixYforCone2 = reg.add(G4RotationMatrix(RYForCone2));
+      const double z_shift2 = z_distance_tgt_coll/2.0*std::sin(std::abs(angleY2)) + pSTMSSCollimatorParams.hole2RadiusDnStr()*std::sin(std::abs(angleY2));
 
-//     const double z_FOVColl_downstream = stmFOVCollPositionInMu2e1.z() + stmFOVCollHalfLength1;
-//     const double z_SScollimator_downstream = stmSSCollPositionInMu2e1.z() + stmSSCollHalfLength1;
-//     const double z_distance_tgt_coll = (z_SScollimator_downstream-z_FOVColl_downstream);
-//     G4Cons* collWindow1 = new G4Cons( "collWindow1",
-//                                       0.0,                     // rMin upstream
-//                                       pSTMFOVCollimatorParams.hole1RadiusUpStr()+5.0,  // rMax upStream, 0.5cm larger than FOV coll opening
-//                                       0.0,                     // rMin downstream
-//                                       pSTMSSCollimatorParams.hole1RadiusDnStr(), // rMax downstream
-//                                       z_distance_tgt_coll/2.0, //halflength
-//                                       0.0,                     //start angle
-//                                       CLHEP::twopi             //end angle
-//                                     );
-//     //Make the conical.disk for the first hole as wide as the Stopping Target on one end
-//     //and as narrow as the desired collimation on the other end
-//     G4Cons* collWindow2 = new G4Cons( "collWindow2",
-//                                       0.0,                     // rMin upstream
-//                                       pSTMFOVCollimatorParams.hole1RadiusUpStr()+5.0,  // rMax upStream, 0.5cm larger than FOV coll opening
-//                                       0.0,                     // rMin downstream
-//                                       pSTMSSCollimatorParams.hole2RadiusUpStr(), // rMax downstream
-//                                       z_distance_tgt_coll/2.0, //halflength
-//                                       0.0,                     //start angle
-//                                       CLHEP::twopi             //end angle
-//                                     );
+      //     const double z_FOVColl_downstream = stmFOVCollPositionInMu2e1.z() + stmFOVCollHalfLength1;
+      //     const double z_SScollimator_downstream = stmSSCollPositionInMu2e1.z() + stmSSCollHalfLength1;
+      //     const double z_distance_tgt_coll = (z_SScollimator_downstream-z_FOVColl_downstream);
+      //     G4Cons* collWindow1 = new G4Cons( "collWindow1",
+      //                                       0.0,                     // rMin upstream
+      //                                       pSTMFOVCollimatorParams.hole1RadiusUpStr()+5.0,  // rMax upStream, 0.5cm larger than FOV coll opening
+      //                                       0.0,                     // rMin downstream
+      //                                       pSTMSSCollimatorParams.hole1RadiusDnStr(), // rMax downstream
+      //                                       z_distance_tgt_coll/2.0, //halflength
+      //                                       0.0,                     //start angle
+      //                                       CLHEP::twopi             //end angle
+      //                                     );
+      //     //Make the conical.disk for the first hole as wide as the Stopping Target on one end
+      //     //and as narrow as the desired collimation on the other end
+      //     G4Cons* collWindow2 = new G4Cons( "collWindow2",
+      //                                       0.0,                     // rMin upstream
+      //                                       pSTMFOVCollimatorParams.hole1RadiusUpStr()+5.0,  // rMax upStream, 0.5cm larger than FOV coll opening
+      //                                       0.0,                     // rMin downstream
+      //                                       pSTMSSCollimatorParams.hole2RadiusUpStr(), // rMax downstream
+      //                                       z_distance_tgt_coll/2.0, //halflength
+      //                                       0.0,                     //start angle
+      //                                       CLHEP::twopi             //end angle
+      //                                     );
 
-    // Combine into the Wall with the Hole
-    // Use a G4SubtractionSolid to allow for another volume placement through it
-    G4SubtractionSolid *collimatorSStemp1 = new G4SubtractionSolid("collimatorSStemp1",boxSSColl,collWindow1,rotMatrixYforCone1,G4ThreeVector(xoffset_hole1/2.0,0.0,-1.0*z_distance_tgt_coll/2.0+stmSSCollHalfLength1+z_shift1 ));
-    G4SubtractionSolid *collimatorSStemp2 = 0;
-    if (pSTMSSCollimatorParams.hole2Build()){
-      collimatorSStemp2 = new G4SubtractionSolid("collimatorSStemp2",collimatorSStemp1,collWindow2,rotMatrixYforCone2,G4ThreeVector(xoffset_hole2/2.0,0.0,-1.0*z_distance_tgt_coll/2.0+stmSSCollHalfLength1+z_shift2 ));
-    } else {
-      collimatorSStemp2 = collimatorSStemp1;
-    }
+      // Combine into the Wall with the Hole
+      // Use a G4SubtractionSolid to allow for another volume placement through it
+      G4SubtractionSolid *collimatorSStemp1 = new G4SubtractionSolid("collimatorSStemp1",boxSSColl,collWindow1,rotMatrixYforCone1,G4ThreeVector(xoffset_hole1/2.0,0.0,-1.0*z_distance_tgt_coll/2.0+stmSSCollHalfLength1+z_shift1 ));
+      G4SubtractionSolid *collimatorSStemp2 = 0;
+      if (pSTMSSCollimatorParams.hole2Build()){
+        collimatorSStemp2 = new G4SubtractionSolid("collimatorSStemp2",collimatorSStemp1,collWindow2,rotMatrixYforCone2,G4ThreeVector(xoffset_hole2/2.0,0.0,-1.0*z_distance_tgt_coll/2.0+stmSSCollHalfLength1+z_shift2 ));
+      } else {
+        collimatorSStemp2 = collimatorSStemp1;
+      }
 
-    //---
+      //---
 
-    //Make a box to subtract so liner can fit inside
-    G4Box* boxSSCollLinerToSubt = new G4Box("boxSSCollLinerToSubt",stmSSCollHalfWidth2+0.001,stmSSCollHalfHeight2+0.001,stmSSCollHalfLength2+0.001);
-    // Combine into the collimator with the liner cut-out and collimation hole
-    VolumeInfo collimatorSS;
-    collimatorSS.name = "collimatorSS";
-    if (pSTMSSCollimatorParams.linerBuild()){
-       collimatorSS.solid = new G4SubtractionSolid(collimatorSS.name,collimatorSStemp2,boxSSCollLinerToSubt,0,G4ThreeVector(0.0,0.0,-stmSSCollHalfLength1+stmSSCollHalfLength2));
-    } else {
-       collimatorSS.solid = collimatorSStemp2;
-    }
-
-    //position of liner
-    G4ThreeVector stmSSCollPositionInMu2e2   = stmSSCollPositionInMu2e1   + G4ThreeVector(0.0,0.0, -stmSSCollHalfLength1+stmSSCollHalfLength2);
-    G4ThreeVector stmSSCollPositionInParent2 = stmSSCollPositionInParent1 + G4ThreeVector(0.0,0.0, -stmSSCollHalfLength1+stmSSCollHalfLength2);
-    // make the box for the liner
-    G4Box* boxSSCollLiner = 0;
-    G4SubtractionSolid *collimatorSSLinerTemp1 = 0;
-    if (pSTMSSCollimatorParams.linerBuild()){
-      boxSSCollLiner = new G4Box("boxSSCollLiner",stmSSCollHalfWidth2,stmSSCollHalfHeight2,stmSSCollHalfLength2);
-      collimatorSSLinerTemp1 = new G4SubtractionSolid("collimatorSSLinerTemp1",boxSSCollLiner,collWindow1,rotMatrixYforCone1,G4ThreeVector(xoffset_hole1/2.0,0.0,-1.0*z_distance_tgt_coll/2.0+stmSSCollHalfLength1+z_shift1 ));
-    } else {
-      collimatorSSLinerTemp1 = 0;
-    }
-    // tubSSColl1,0,(stmSSCollPositionInMu2e1-stmSSCollPositionInMu2e1)+G4ThreeVector(pSTMSSCollimatorParams.hole1xOffset(),0.0,0.0));
-    G4SubtractionSolid *collimatorSSLinerTemp2 = 0;
-    if (pSTMSSCollimatorParams.hole2Build()){
-      collimatorSSLinerTemp2 = new G4SubtractionSolid("collimatorSSLinerTemp2",collimatorSSLinerTemp1,collWindow2,rotMatrixYforCone2,G4ThreeVector(xoffset_hole2/2.0,0.0,-1.0*z_distance_tgt_coll/2.0+stmSSCollHalfLength1+z_shift2 ));
-      //tubSSColl2,0,(stmSSCollPositionInMu2e1-stmSSCollPositionInMu2e1)+G4ThreeVector(pSTMSSCollimatorParams.hole2xOffset(),0.0,0.0));
-    } else {
-      collimatorSSLinerTemp2 = collimatorSSLinerTemp1;
-    }
-
-    VolumeInfo collimatorSSliner;
-    collimatorSSliner.name = "collimatorSSliner";
-    collimatorSSliner.solid = collimatorSSLinerTemp2;
-
-    if (pSTMSSCollimatorParams.build()){
-      finishNesting(collimatorSS,
-                    findMaterialOrThrow(pSTMSSCollimatorParams.material()),
-                    0,
-                    stmSSCollPositionInParent1,
-                    parentInfo.logical,
-                    0,
-                    STMisVisible,
-                    G4Colour::Magenta(),
-                    STMisSolid,
-                    forceAuxEdgeVisible,
-                    placePV,
-                    doSurfaceCheck);
+      //Make a box to subtract so liner can fit inside
+      G4Box* boxSSCollLinerToSubt = new G4Box("boxSSCollLinerToSubt",stmSSCollHalfWidth2+0.001,stmSSCollHalfHeight2+0.001,stmSSCollHalfLength2+0.001);
+      // Combine into the collimator with the liner cut-out and collimation hole
+      VolumeInfo collimatorSS;
+      collimatorSS.name = "collimatorSS";
       if (pSTMSSCollimatorParams.linerBuild()){
-        finishNesting(collimatorSSliner,
-                      findMaterialOrThrow(pSTMSSCollimatorParams.linerMaterial()),
+        collimatorSS.solid = new G4SubtractionSolid(collimatorSS.name,collimatorSStemp2,boxSSCollLinerToSubt,0,G4ThreeVector(0.0,0.0,-stmSSCollHalfLength1+stmSSCollHalfLength2));
+      } else {
+        collimatorSS.solid = collimatorSStemp2;
+      }
+
+      //position of liner
+      G4ThreeVector stmSSCollPositionInMu2e2   = stmSSCollPositionInMu2e1   + G4ThreeVector(0.0,0.0, -stmSSCollHalfLength1+stmSSCollHalfLength2);
+      G4ThreeVector stmSSCollPositionInParent2 = stmSSCollPositionInParent1 + G4ThreeVector(0.0,0.0, -stmSSCollHalfLength1+stmSSCollHalfLength2);
+      // make the box for the liner
+      G4Box* boxSSCollLiner = 0;
+      G4SubtractionSolid *collimatorSSLinerTemp1 = 0;
+      if (pSTMSSCollimatorParams.linerBuild()){
+        boxSSCollLiner = new G4Box("boxSSCollLiner",stmSSCollHalfWidth2,stmSSCollHalfHeight2,stmSSCollHalfLength2);
+        collimatorSSLinerTemp1 = new G4SubtractionSolid("collimatorSSLinerTemp1",boxSSCollLiner,collWindow1,rotMatrixYforCone1,G4ThreeVector(xoffset_hole1/2.0,0.0,-1.0*z_distance_tgt_coll/2.0+stmSSCollHalfLength1+z_shift1 ));
+      } else {
+        collimatorSSLinerTemp1 = 0;
+      }
+      // tubSSColl1,0,(stmSSCollPositionInMu2e1-stmSSCollPositionInMu2e1)+G4ThreeVector(pSTMSSCollimatorParams.hole1xOffset(),0.0,0.0));
+      G4SubtractionSolid *collimatorSSLinerTemp2 = 0;
+      if (pSTMSSCollimatorParams.hole2Build()){
+        collimatorSSLinerTemp2 = new G4SubtractionSolid("collimatorSSLinerTemp2",collimatorSSLinerTemp1,collWindow2,rotMatrixYforCone2,G4ThreeVector(xoffset_hole2/2.0,0.0,-1.0*z_distance_tgt_coll/2.0+stmSSCollHalfLength1+z_shift2 ));
+        //tubSSColl2,0,(stmSSCollPositionInMu2e1-stmSSCollPositionInMu2e1)+G4ThreeVector(pSTMSSCollimatorParams.hole2xOffset(),0.0,0.0));
+      } else {
+        collimatorSSLinerTemp2 = collimatorSSLinerTemp1;
+      }
+
+      VolumeInfo collimatorSSliner;
+      collimatorSSliner.name = "collimatorSSliner";
+      collimatorSSliner.solid = collimatorSSLinerTemp2;
+
+      if (pSTMSSCollimatorParams.build()){
+        finishNesting(collimatorSS,
+                      findMaterialOrThrow(pSTMSSCollimatorParams.material()),
                       0,
-                      stmSSCollPositionInParent2,
+                      stmSSCollPositionInParent1,
                       parentInfo.logical,
                       0,
                       STMisVisible,
@@ -1123,18 +1110,31 @@ namespace mu2e {
                       forceAuxEdgeVisible,
                       placePV,
                       doSurfaceCheck);
+        if (pSTMSSCollimatorParams.linerBuild()){
+          finishNesting(collimatorSSliner,
+                        findMaterialOrThrow(pSTMSSCollimatorParams.linerMaterial()),
+                        0,
+                        stmSSCollPositionInParent2,
+                        parentInfo.logical,
+                        0,
+                        STMisVisible,
+                        G4Colour::Magenta(),
+                        STMisSolid,
+                        forceAuxEdgeVisible,
+                        placePV,
+                        doSurfaceCheck);
+        }
       }
-    }
 
-    if (verbosityLevel>0){
-      std::cout<<__func__<<" STM SS Coll (lead)   z_center     = "<< stmSSCollPositionInMu2e1.z() <<std::endl;
-      std::cout<<__func__<<" STM SS Coll (lead)   z_halflength = "<< stmSSCollHalfLength1 <<std::endl;
-      std::cout<<__func__<<" STM SS Coll (lead)   z_max        = "<< stmSSCollPositionInMu2e1.z()+stmSSCollHalfLength1 <<std::endl;
-      std::cout<<__func__<<" STM SS Coll (lead)   r_DnStr      = "<< pSTMSSCollimatorParams.hole1RadiusDnStr() <<std::endl;
-      std::cout<<__func__<<" STM SS Coll (cutout) z_center     = "<< stmSSCollPositionInMu2e2.z() <<std::endl;
-      std::cout<<__func__<<" STM SS Coll (cutout) z_halflength = "<< stmSSCollHalfLength2 <<std::endl;
-      std::cout<<__func__<<" STM SS Coll (cutout) z_min        = "<< stmSSCollPositionInMu2e2.z()-stmSSCollHalfLength2 <<std::endl;
-    }
+      if (verbosityLevel>0){
+        std::cout<<__func__<<" STM SS Coll (lead)   z_center     = "<< stmSSCollPositionInMu2e1.z() <<std::endl;
+        std::cout<<__func__<<" STM SS Coll (lead)   z_halflength = "<< stmSSCollHalfLength1 <<std::endl;
+        std::cout<<__func__<<" STM SS Coll (lead)   z_max        = "<< stmSSCollPositionInMu2e1.z()+stmSSCollHalfLength1 <<std::endl;
+        std::cout<<__func__<<" STM SS Coll (lead)   r_DnStr      = "<< pSTMSSCollimatorParams.hole1RadiusDnStr() <<std::endl;
+        std::cout<<__func__<<" STM SS Coll (cutout) z_center     = "<< stmSSCollPositionInMu2e2.z() <<std::endl;
+        std::cout<<__func__<<" STM SS Coll (cutout) z_halflength = "<< stmSSCollHalfLength2 <<std::endl;
+        std::cout<<__func__<<" STM SS Coll (cutout) z_min        = "<< stmSSCollPositionInMu2e2.z()-stmSSCollHalfLength2 <<std::endl;
+      }
 
       //===================== STM Detector Support Table ==========================
 
