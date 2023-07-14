@@ -1132,176 +1132,145 @@ namespace mu2e {
                                            placePV,
                                            doSurfaceCheck
                                            );
-    }
 
-    //===================== STM Detector Support Table ==========================
+      //===================== STM Detector Support Table ==========================
 
-    //Just use a block of material for now (maybe stainless steel?, specified in configuration)
-    G4Material*  stmDetectorSupportTableMaterial   = findMaterialOrThrow(pSTMDetectorSupportTableParams.materialName());
-    const double stmDetectorSupportTableHalfLengths[3] = {pSTMDetectorSupportTableParams.tabletopHalfWidth(),
-                                                 pSTMDetectorSupportTableParams.tabletopHalfHeight(),
-                                                 pSTMDetectorSupportTableParams.tabletopHalfLength()};
+      //Just use a block of material for now (maybe stainless steel?, specified in configuration)
+      G4Material*  stmDetectorSupportTableMaterial   = findMaterialOrThrow(pSTMDetectorSupportTableParams.materialName());
+      const double stmDetectorSupportTableHalfLengths[3] = {pSTMDetectorSupportTableParams.tabletopHalfWidth(),
+                                                            pSTMDetectorSupportTableParams.tabletopHalfHeight(),
+                                                            pSTMDetectorSupportTableParams.tabletopHalfLength()};
 
-    const double mstmDetectorStandLegRadius  = pSTMDetectorSupportTableParams.legRadius();
+      const double mstmDetectorStandLegRadius  = pSTMDetectorSupportTableParams.legRadius();
 
-    G4ThreeVector stmDetectorSupportTablePositionInMu2e   = pSTMDetectorSupportTableParams.originInMu2e();
-    G4ThreeVector stmDetectorSupportTablePositionInParent = pSTMDetectorSupportTableParams.originInMu2e() - parentCenterInMu2e;
+      G4ThreeVector stmDetectorSupportTablePositionInMu2e   = pSTMDetectorSupportTableParams.originInMu2e();
+      G4ThreeVector stmDetectorSupportTablePositionInParent = pSTMDetectorSupportTableParams.originInMu2e() - parentCenterInMu2e;
 
-    //const double yExtentLow = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
-    const double mstmDetectorStandLegHalfHeight = (yExtentLow-pSTMSSCollimatorParams.halfHeight()-2.0*stmDetectorSupportTableHalfLengths[1])/2.0;
-    const TubsParams mstmDetectorStandLegParams(0.0, mstmDetectorStandLegRadius, mstmDetectorStandLegHalfHeight , 0.0, CLHEP::twopi);
-    const double mstmDetectorStandLegOffsetX = stmDetectorSupportTableHalfLengths[0]  - mstmDetectorStandLegRadius - 1.0*CLHEP::cm;
-    const double mstmDetectorStandLegOffsetZ = stmDetectorSupportTableHalfLengths[2] - mstmDetectorStandLegRadius - 1.0*CLHEP::cm;
+      //const double yExtentLow = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
+      const double mstmDetectorStandLegHalfHeight = (yExtentLow-pSTMSSCollimatorParams.halfHeight()-2.0*stmDetectorSupportTableHalfLengths[1])/2.0;
+      const TubsParams mstmDetectorStandLegParams(0.0, mstmDetectorStandLegRadius, mstmDetectorStandLegHalfHeight , 0.0, CLHEP::twopi);
+      const double mstmDetectorStandLegOffsetX = stmDetectorSupportTableHalfLengths[0]  - mstmDetectorStandLegRadius - 1.0*CLHEP::cm;
+      const double mstmDetectorStandLegOffsetZ = stmDetectorSupportTableHalfLengths[2] - mstmDetectorStandLegRadius - 1.0*CLHEP::cm;
 
-    //CLHEP::HepRotationX RXForLegs(90.0*CLHEP::degree);
-    //G4RotationMatrix *rotMatrixXforLegs = reg.add(G4RotationMatrix(RXForLegs));
+      //CLHEP::HepRotationX RXForLegs(90.0*CLHEP::degree);
+      //G4RotationMatrix *rotMatrixXforLegs = reg.add(G4RotationMatrix(RXForLegs));
 
-    if (pSTMDetectorSupportTableParams.build()){
-      VolumeInfo mstmDetectorStandInfo = nestBox("mstmDetectorStandPlatform",
-                                          stmDetectorSupportTableHalfLengths,
-                                          stmDetectorSupportTableMaterial,
-                                          0x0,
-                                          stmDetectorSupportTablePositionInParent, //mstmDetectorStandPositionInMother,
-                                          parentInfo.logical,
-                                          0,
-                                          STMisVisible,
-                                          G4Color::Gray(),
-                                          STMisSolid,
-                                          forceAuxEdgeVisible,
-                                          placePV,
-                                          doSurfaceCheck
-                                         );
+      if (pSTMDetectorSupportTableParams.build()){
+        VolumeInfo mstmDetectorStandInfo = nestBox("mstmDetectorStandPlatform",
+                                                   stmDetectorSupportTableHalfLengths,
+                                                   stmDetectorSupportTableMaterial,
+                                                   0x0,
+                                                   stmDetectorSupportTablePositionInParent, //mstmDetectorStandPositionInMother,
+                                                   parentInfo.logical,
+                                                   0,
+                                                   STMisVisible,
+                                                   G4Color::Gray(),
+                                                   STMisSolid,
+                                                   forceAuxEdgeVisible,
+                                                   placePV,
+                                                   doSurfaceCheck
+                                                   );
 
-      VolumeInfo mstmDetectorStandLeg1Info = nestTubs( "mstmDetectorStandLeg1",
-                                              mstmDetectorStandLegParams,
-                                              stmDetectorSupportTableMaterial,
-                                              rotMatrixXforLegs,
-                                              stmDetectorSupportTablePositionInParent+G4ThreeVector(mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight,-mstmDetectorStandLegOffsetZ),//mstmDetectorStandPositionInMother+G4ThreeVector(mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight,-mstmDetectorStandLegOffsetZ),
-                                              parentInfo,
-                                              0,
-                                              STMisVisible,
-                                              G4Color::Gray(),
-                                              STMisSolid,
-                                              forceAuxEdgeVisible,
-                                              placePV,
-                                              doSurfaceCheck
-                                              );
+        VolumeInfo mstmDetectorStandLeg1Info = nestTubs( "mstmDetectorStandLeg1",
+                                                         mstmDetectorStandLegParams,
+                                                         stmDetectorSupportTableMaterial,
+                                                         rotMatrixXforLegs,
+                                                         stmDetectorSupportTablePositionInParent+G4ThreeVector(mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight,-mstmDetectorStandLegOffsetZ),//mstmDetectorStandPositionInMother+G4ThreeVector(mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight,-mstmDetectorStandLegOffsetZ),
+                                                         parentInfo,
+                                                         0,
+                                                         STMisVisible,
+                                                         G4Color::Gray(),
+                                                         STMisSolid,
+                                                         forceAuxEdgeVisible,
+                                                         placePV,
+                                                         doSurfaceCheck
+                                                         );
 
-      VolumeInfo mstmDetectorStandLeg2Info = nestTubs( "mstmDetectorStandLeg2",
-                                              mstmDetectorStandLegParams,
-                                              stmDetectorSupportTableMaterial,
-                                              rotMatrixXforLegs,
-                                              stmDetectorSupportTablePositionInParent+G4ThreeVector(mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight, mstmDetectorStandLegOffsetZ),//mstmDetectorStandPositionInMother+G4ThreeVector(mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight, mstmDetectorStandLegOffsetZ),
-                                              parentInfo,
-                                              0,
-                                              STMisVisible,
-                                              G4Color::Gray(),
-                                              STMisSolid,
-                                              forceAuxEdgeVisible,
-                                              placePV,
-                                              doSurfaceCheck
-                                              );
+        VolumeInfo mstmDetectorStandLeg2Info = nestTubs( "mstmDetectorStandLeg2",
+                                                         mstmDetectorStandLegParams,
+                                                         stmDetectorSupportTableMaterial,
+                                                         rotMatrixXforLegs,
+                                                         stmDetectorSupportTablePositionInParent+G4ThreeVector(mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight, mstmDetectorStandLegOffsetZ),//mstmDetectorStandPositionInMother+G4ThreeVector(mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight, mstmDetectorStandLegOffsetZ),
+                                                         parentInfo,
+                                                         0,
+                                                         STMisVisible,
+                                                         G4Color::Gray(),
+                                                         STMisSolid,
+                                                         forceAuxEdgeVisible,
+                                                         placePV,
+                                                         doSurfaceCheck
+                                                         );
 
-      VolumeInfo mstmDetectorStandLeg3Info = nestTubs( "mstmDetectorStandLeg3",
-                                              mstmDetectorStandLegParams,
-                                              stmDetectorSupportTableMaterial,
-                                              rotMatrixXforLegs,
-                                              stmDetectorSupportTablePositionInParent+G4ThreeVector(-mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight,-mstmDetectorStandLegOffsetZ),//mstmDetectorStandPositionInMother+G4ThreeVector(-mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight,-mstmDetectorStandLegOffsetZ),
-                                              parentInfo,
-                                              0,
-                                              STMisVisible,
-                                              G4Color::Gray(),
-                                              STMisSolid,
-                                              forceAuxEdgeVisible,
-                                              placePV,
-                                              doSurfaceCheck
-                                              );
+        VolumeInfo mstmDetectorStandLeg3Info = nestTubs( "mstmDetectorStandLeg3",
+                                                         mstmDetectorStandLegParams,
+                                                         stmDetectorSupportTableMaterial,
+                                                         rotMatrixXforLegs,
+                                                         stmDetectorSupportTablePositionInParent+G4ThreeVector(-mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight,-mstmDetectorStandLegOffsetZ),//mstmDetectorStandPositionInMother+G4ThreeVector(-mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight,-mstmDetectorStandLegOffsetZ),
+                                                         parentInfo,
+                                                         0,
+                                                         STMisVisible,
+                                                         G4Color::Gray(),
+                                                         STMisSolid,
+                                                         forceAuxEdgeVisible,
+                                                         placePV,
+                                                         doSurfaceCheck
+                                                         );
 
-      VolumeInfo mstmDetectorStandLeg4Info = nestTubs( "mstmDetectorStandLeg4",
-                                              mstmDetectorStandLegParams,
-                                              stmDetectorSupportTableMaterial,
-                                              rotMatrixXforLegs,
-                                              stmDetectorSupportTablePositionInParent+G4ThreeVector(-mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight, mstmDetectorStandLegOffsetZ),//mstmDetectorStandPositionInMother+G4ThreeVector(-mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight, mstmDetectorStandLegOffsetZ),
-                                              parentInfo,
-                                              0,
-                                              STMisVisible,
-                                              G4Color::Gray(),
-                                              STMisSolid,
-                                              forceAuxEdgeVisible,
-                                              placePV,
-                                              doSurfaceCheck
-                                              );
+        VolumeInfo mstmDetectorStandLeg4Info = nestTubs( "mstmDetectorStandLeg4",
+                                                         mstmDetectorStandLegParams,
+                                                         stmDetectorSupportTableMaterial,
+                                                         rotMatrixXforLegs,
+                                                         stmDetectorSupportTablePositionInParent+G4ThreeVector(-mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight, mstmDetectorStandLegOffsetZ),//mstmDetectorStandPositionInMother+G4ThreeVector(-mstmDetectorStandLegOffsetX,-stmDetectorSupportTableHalfLengths[1]-mstmDetectorStandLegHalfHeight, mstmDetectorStandLegOffsetZ),
+                                                         parentInfo,
+                                                         0,
+                                                         STMisVisible,
+                                                         G4Color::Gray(),
+                                                         STMisSolid,
+                                                         forceAuxEdgeVisible,
+                                                         placePV,
+                                                         doSurfaceCheck
+                                                         );
 
-    }
+      }
 
 
-    //===================== STM Detector 1 ==========================
+      //===================== STM Detector 1 ==========================
 
-    G4Material*  stmDet1Material                 =  findMaterialOrThrow(pSTMDetector1Params.crystalMaterial());
-    const double stmDet1ROut                     =  pSTMDetector1Params.crystalRadiusOut();
-    const double stmDet1HalfLength               =  pSTMDetector1Params.crystalHalfLength();
-    G4Material*  stmDet1CanMaterial              =  findMaterialOrThrow(pSTMDetector1Params.canMaterial());
-    const double stmDet1CanRIn                   =  pSTMDetector1Params.canRadiusIn();
-    const double stmDet1CanROut                  =  pSTMDetector1Params.canRadiusOut();
-    const double stmDet1CanHalfLength            =  pSTMDetector1Params.canHalfLength();
-    G4Material*  stmDet1CanUpStrWindowMaterial   =  findMaterialOrThrow(pSTMDetector1Params.canUpStrWindowMaterial());
-    const double stmDet1CanUpStrWindowHalfLength =  pSTMDetector1Params.canUpStrWindowHalfLength();
-    G4Material*  stmDet1CanDnStrWindowMaterial   =  stmDet1CanMaterial;
-    const double stmDet1CanDnStrWindowHalfLength =  stmDet1CanROut - stmDet1CanRIn;
+      G4Material*  stmDet1Material                 =  findMaterialOrThrow(pSTMDetector1Params.crystalMaterial());
+      const double stmDet1ROut                     =  pSTMDetector1Params.crystalRadiusOut();
+      const double stmDet1HalfLength               =  pSTMDetector1Params.crystalHalfLength();
+      G4Material*  stmDet1CanMaterial              =  findMaterialOrThrow(pSTMDetector1Params.canMaterial());
+      const double stmDet1CanRIn                   =  pSTMDetector1Params.canRadiusIn();
+      const double stmDet1CanROut                  =  pSTMDetector1Params.canRadiusOut();
+      const double stmDet1CanHalfLength            =  pSTMDetector1Params.canHalfLength();
+      G4Material*  stmDet1CanUpStrWindowMaterial   =  findMaterialOrThrow(pSTMDetector1Params.canUpStrWindowMaterial());
+      const double stmDet1CanUpStrWindowHalfLength =  pSTMDetector1Params.canUpStrWindowHalfLength();
+      G4Material*  stmDet1CanDnStrWindowMaterial   =  stmDet1CanMaterial;
+      const double stmDet1CanDnStrWindowHalfLength =  stmDet1CanROut - stmDet1CanRIn;
 
-    if ( stmDet1ROut > stmDet1CanRIn ){
-      throw cet::exception("GEOM")<< " STM: det1 radius is larger than the inner radius of the can. \n" ;
-    }
-    if ( stmDet1HalfLength > stmDet1CanHalfLength-stmDet1CanDnStrWindowHalfLength-stmDet1CanUpStrWindowHalfLength ){
-      throw cet::exception("GEOM")<< " STM: det1 crystal length is larger than the inner length of the can. \n" ;
-    }
+      if ( stmDet1ROut > stmDet1CanRIn ){
+        throw cet::exception("GEOM")<< " STM: det1 radius is larger than the inner radius of the can. \n" ;
+      }
+      if ( stmDet1HalfLength > stmDet1CanHalfLength-stmDet1CanDnStrWindowHalfLength-stmDet1CanUpStrWindowHalfLength ){
+        throw cet::exception("GEOM")<< " STM: det1 crystal length is larger than the inner length of the can. \n" ;
+      }
 
-    const TubsParams stmDet1Params(0., stmDet1ROut, stmDet1HalfLength);
-    const TubsParams stmDet1CanParams(stmDet1CanRIn, stmDet1CanROut, stmDet1CanHalfLength);
-    const TubsParams stmDet1CanGasParams(0.,  stmDet1CanRIn, stmDet1CanHalfLength - stmDet1CanUpStrWindowHalfLength - stmDet1CanDnStrWindowHalfLength);
-    const TubsParams stmDet1CanUpStrWindowParams(0., stmDet1CanRIn, stmDet1CanUpStrWindowHalfLength);
-    const TubsParams stmDet1CanDnStrWindowParams(0., stmDet1CanRIn, stmDet1CanDnStrWindowHalfLength);
+      const TubsParams stmDet1Params(0., stmDet1ROut, stmDet1HalfLength);
+      const TubsParams stmDet1CanParams(stmDet1CanRIn, stmDet1CanROut, stmDet1CanHalfLength);
+      const TubsParams stmDet1CanGasParams(0.,  stmDet1CanRIn, stmDet1CanHalfLength - stmDet1CanUpStrWindowHalfLength - stmDet1CanDnStrWindowHalfLength);
+      const TubsParams stmDet1CanUpStrWindowParams(0., stmDet1CanRIn, stmDet1CanUpStrWindowHalfLength);
+      const TubsParams stmDet1CanDnStrWindowParams(0., stmDet1CanRIn, stmDet1CanDnStrWindowHalfLength);
 
-    G4ThreeVector stmDet1CanPositionInMu2e   = pSTMDetector1Params.originInMu2e();
-    G4ThreeVector stmDet1CanPositionInParent = pSTMDetector1Params.originInMu2e() - parentCenterInMu2e;
-    G4ThreeVector stmDet1PositionInMu2e      = stmDet1CanPositionInMu2e;
-    G4ThreeVector stmDet1PositionInParent    = stmDet1CanPositionInParent;
+      G4ThreeVector stmDet1CanPositionInMu2e   = pSTMDetector1Params.originInMu2e();
+      G4ThreeVector stmDet1CanPositionInParent = pSTMDetector1Params.originInMu2e() - parentCenterInMu2e;
+      G4ThreeVector stmDet1PositionInMu2e      = stmDet1CanPositionInMu2e;
+      G4ThreeVector stmDet1PositionInParent    = stmDet1CanPositionInParent;
 
-    VolumeInfo stmDet1CanInfo = nestTubs( "stmDet1Can",
-                                         stmDet1CanParams,
-                                         stmDet1CanMaterial,
-                                         0x0,
-                                         stmDet1CanPositionInParent,
-                                         parentInfo,
-                                         0,
-                                         STMisVisible,
-                                         G4Color::Green(),
-                                         STMisSolid,
-                                         forceAuxEdgeVisible,
-                                         placePV,
-                                         doSurfaceCheck
-                                         );
-
-    VolumeInfo stmDet1 = nestTubs("stmDet1",
-                                      stmDet1Params,
-                                      stmDet1Material,
-                                      0x0,
-                                      stmDet1CanPositionInParent,
-                                      parentInfo,
-                                      0,
-                                      STMisVisible,
-                                      G4Color::Red(),
-                                      STMisSolid,
-                                      forceAuxEdgeVisible,
-                                      placePV,
-                                      doSurfaceCheck
-                                      );
-
-    VolumeInfo stmDet1CanUpStrWindowInfo = nestTubs( "stmDet1CanUpStrWindow",
-                                            stmDet1CanUpStrWindowParams,
-                                            stmDet1CanUpStrWindowMaterial,
+      VolumeInfo stmDet1CanInfo = nestTubs( "stmDet1Can",
+                                            stmDet1CanParams,
+                                            stmDet1CanMaterial,
                                             0x0,
-                                            stmDet1CanPositionInParent + G4ThreeVector(0.0,0.0,-1.0*stmDet1CanHalfLength + stmDet1CanUpStrWindowHalfLength),
+                                            stmDet1CanPositionInParent,
                                             parentInfo,
                                             0,
                                             STMisVisible,
@@ -1312,11 +1281,92 @@ namespace mu2e {
                                             doSurfaceCheck
                                             );
 
-    VolumeInfo stmDet1CanDnStrWindowInfo = nestTubs( "stmDet1CanDnStrWindow",
-                                            stmDet1CanDnStrWindowParams,
-                                            stmDet1CanDnStrWindowMaterial,
+      VolumeInfo stmDet1 = nestTubs("stmDet1",
+                                    stmDet1Params,
+                                    stmDet1Material,
+                                    0x0,
+                                    stmDet1CanPositionInParent,
+                                    parentInfo,
+                                    0,
+                                    STMisVisible,
+                                    G4Color::Red(),
+                                    STMisSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    doSurfaceCheck
+                                    );
+
+      VolumeInfo stmDet1CanUpStrWindowInfo = nestTubs( "stmDet1CanUpStrWindow",
+                                                       stmDet1CanUpStrWindowParams,
+                                                       stmDet1CanUpStrWindowMaterial,
+                                                       0x0,
+                                                       stmDet1CanPositionInParent + G4ThreeVector(0.0,0.0,-1.0*stmDet1CanHalfLength + stmDet1CanUpStrWindowHalfLength),
+                                                       parentInfo,
+                                                       0,
+                                                       STMisVisible,
+                                                       G4Color::Green(),
+                                                       STMisSolid,
+                                                       forceAuxEdgeVisible,
+                                                       placePV,
+                                                       doSurfaceCheck
+                                                       );
+
+      VolumeInfo stmDet1CanDnStrWindowInfo = nestTubs( "stmDet1CanDnStrWindow",
+                                                       stmDet1CanDnStrWindowParams,
+                                                       stmDet1CanDnStrWindowMaterial,
+                                                       0x0,
+                                                       stmDet1CanPositionInParent + G4ThreeVector(0.0,0.0, stmDet1CanHalfLength - stmDet1CanDnStrWindowHalfLength),
+                                                       parentInfo,
+                                                       0,
+                                                       STMisVisible,
+                                                       G4Color::Green(),
+                                                       STMisSolid,
+                                                       forceAuxEdgeVisible,
+                                                       placePV,
+                                                       doSurfaceCheck
+                                                       );
+
+      if (verbosityLevel>0){
+        std::cout << __func__ << " Warning: Gas not implemented inside STM detector1 can! (so that VD inside can does not overlap with can gas)" << std::endl;
+      }
+
+      //===================== STM Detector 2 ==========================
+
+      G4Material*  stmDet2Material                 =  findMaterialOrThrow(pSTMDetector2Params.crystalMaterial());
+      const double stmDet2ROut                     =  pSTMDetector2Params.crystalRadiusOut();
+      const double stmDet2HalfLength               =  pSTMDetector2Params.crystalHalfLength();
+      G4Material*  stmDet2CanMaterial              =  findMaterialOrThrow(pSTMDetector2Params.canMaterial());
+      const double stmDet2CanRIn                   =  pSTMDetector2Params.canRadiusIn();
+      const double stmDet2CanROut                  =  pSTMDetector2Params.canRadiusOut();
+      const double stmDet2CanHalfLength            =  pSTMDetector2Params.canHalfLength();
+      G4Material*  stmDet2CanUpStrWindowMaterial   =  findMaterialOrThrow(pSTMDetector2Params.canUpStrWindowMaterial());
+      const double stmDet2CanUpStrWindowHalfLength =  pSTMDetector2Params.canUpStrWindowHalfLength();
+      G4Material*  stmDet2CanDnStrWindowMaterial   =  stmDet2CanMaterial;
+      const double stmDet2CanDnStrWindowHalfLength =  stmDet2CanROut - stmDet2CanRIn;
+
+      if ( stmDet2ROut > stmDet2CanRIn ){
+        throw cet::exception("GEOM")<< " STM: det1 radius is larger than the inner radius of the can. \n" ;
+      }
+      if ( stmDet2HalfLength > stmDet2CanHalfLength-stmDet2CanDnStrWindowHalfLength-stmDet2CanUpStrWindowHalfLength ){
+        throw cet::exception("GEOM")<< " STM: det1 crystal length is larger than the inner length of the can. \n" ;
+      }
+
+      const TubsParams stmDet2Params(0., stmDet2ROut, stmDet2HalfLength);
+      const TubsParams stmDet2CanParams(stmDet2CanRIn, stmDet2CanROut, stmDet2CanHalfLength);
+      const TubsParams stmDet2CanGasParams(0.,  stmDet2CanRIn, stmDet2CanHalfLength - stmDet2CanUpStrWindowHalfLength - stmDet2CanDnStrWindowHalfLength);
+      const TubsParams stmDet2CanUpStrWindowParams(0., stmDet2CanRIn, stmDet2CanUpStrWindowHalfLength);
+      const TubsParams stmDet2CanDnStrWindowParams(0., stmDet2CanRIn, stmDet2CanDnStrWindowHalfLength);
+
+      G4ThreeVector stmDet2CanPositionInMu2e   = pSTMDetector2Params.originInMu2e();
+      G4ThreeVector stmDet2CanPositionInParent = pSTMDetector2Params.originInMu2e() - parentCenterInMu2e;
+      G4ThreeVector stmDet2PositionInMu2e      = stmDet2CanPositionInMu2e;
+      G4ThreeVector stmDet2PositionInParent    = stmDet2CanPositionInParent;
+
+      VolumeInfo stmDet2CanInfo = nestTubs( "stmDet2Can",
+                                            stmDet2CanParams,
+                                            stmDet2CanMaterial,
                                             0x0,
-                                            stmDet1CanPositionInParent + G4ThreeVector(0.0,0.0, stmDet1CanHalfLength - stmDet1CanDnStrWindowHalfLength),
+                                            stmDet2CanPositionInParent,
                                             parentInfo,
                                             0,
                                             STMisVisible,
@@ -1327,104 +1377,54 @@ namespace mu2e {
                                             doSurfaceCheck
                                             );
 
-    if (verbosityLevel>0){
-      std::cout << __func__ << " Warning: Gas not implemented inside STM detector1 can! (so that VD inside can does not overlap with can gas)" << std::endl;
-    }
+      VolumeInfo stmDet2 = nestTubs("stmDet2",
+                                    stmDet2Params,
+                                    stmDet2Material,
+                                    0x0,
+                                    stmDet2CanPositionInParent,
+                                    parentInfo,
+                                    1,
+                                    STMisVisible,
+                                    G4Color::Red(),
+                                    STMisSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    doSurfaceCheck
+                                    );
 
-    //===================== STM Detector 2 ==========================
+      VolumeInfo stmDet2CanUpStrWindowInfo = nestTubs( "stmDet2CanUpStrWindow",
+                                                       stmDet2CanUpStrWindowParams,
+                                                       stmDet2CanUpStrWindowMaterial,
+                                                       0x0,
+                                                       stmDet2CanPositionInParent + G4ThreeVector(0.0,0.0,-1.0*stmDet2CanHalfLength + stmDet2CanUpStrWindowHalfLength),
+                                                       parentInfo,
+                                                       0,
+                                                       STMisVisible,
+                                                       G4Color::Green(),
+                                                       STMisSolid,
+                                                       forceAuxEdgeVisible,
+                                                       placePV,
+                                                       doSurfaceCheck
+                                                       );
 
-    G4Material*  stmDet2Material                 =  findMaterialOrThrow(pSTMDetector2Params.crystalMaterial());
-    const double stmDet2ROut                     =  pSTMDetector2Params.crystalRadiusOut();
-    const double stmDet2HalfLength               =  pSTMDetector2Params.crystalHalfLength();
-    G4Material*  stmDet2CanMaterial              =  findMaterialOrThrow(pSTMDetector2Params.canMaterial());
-    const double stmDet2CanRIn                   =  pSTMDetector2Params.canRadiusIn();
-    const double stmDet2CanROut                  =  pSTMDetector2Params.canRadiusOut();
-    const double stmDet2CanHalfLength            =  pSTMDetector2Params.canHalfLength();
-    G4Material*  stmDet2CanUpStrWindowMaterial   =  findMaterialOrThrow(pSTMDetector2Params.canUpStrWindowMaterial());
-    const double stmDet2CanUpStrWindowHalfLength =  pSTMDetector2Params.canUpStrWindowHalfLength();
-    G4Material*  stmDet2CanDnStrWindowMaterial   =  stmDet2CanMaterial;
-    const double stmDet2CanDnStrWindowHalfLength =  stmDet2CanROut - stmDet2CanRIn;
+      VolumeInfo stmDet2CanDnStrWindowInfo = nestTubs( "stmDet2CanDnStrWindow",
+                                                       stmDet2CanDnStrWindowParams,
+                                                       stmDet2CanDnStrWindowMaterial,
+                                                       0x0,
+                                                       stmDet2CanPositionInParent + G4ThreeVector(0.0,0.0, stmDet2CanHalfLength - stmDet2CanDnStrWindowHalfLength),
+                                                       parentInfo,
+                                                       0,
+                                                       STMisVisible,
+                                                       G4Color::Green(),
+                                                       STMisSolid,
+                                                       forceAuxEdgeVisible,
+                                                       placePV,
+                                                       doSurfaceCheck
+                                                       );
 
-    if ( stmDet2ROut > stmDet2CanRIn ){
-      throw cet::exception("GEOM")<< " STM: det1 radius is larger than the inner radius of the can. \n" ;
-    }
-    if ( stmDet2HalfLength > stmDet2CanHalfLength-stmDet2CanDnStrWindowHalfLength-stmDet2CanUpStrWindowHalfLength ){
-      throw cet::exception("GEOM")<< " STM: det1 crystal length is larger than the inner length of the can. \n" ;
-    }
-
-    const TubsParams stmDet2Params(0., stmDet2ROut, stmDet2HalfLength);
-    const TubsParams stmDet2CanParams(stmDet2CanRIn, stmDet2CanROut, stmDet2CanHalfLength);
-    const TubsParams stmDet2CanGasParams(0.,  stmDet2CanRIn, stmDet2CanHalfLength - stmDet2CanUpStrWindowHalfLength - stmDet2CanDnStrWindowHalfLength);
-    const TubsParams stmDet2CanUpStrWindowParams(0., stmDet2CanRIn, stmDet2CanUpStrWindowHalfLength);
-    const TubsParams stmDet2CanDnStrWindowParams(0., stmDet2CanRIn, stmDet2CanDnStrWindowHalfLength);
-
-    G4ThreeVector stmDet2CanPositionInMu2e   = pSTMDetector2Params.originInMu2e();
-    G4ThreeVector stmDet2CanPositionInParent = pSTMDetector2Params.originInMu2e() - parentCenterInMu2e;
-    G4ThreeVector stmDet2PositionInMu2e      = stmDet2CanPositionInMu2e;
-    G4ThreeVector stmDet2PositionInParent    = stmDet2CanPositionInParent;
-
-    VolumeInfo stmDet2CanInfo = nestTubs( "stmDet2Can",
-                                         stmDet2CanParams,
-                                         stmDet2CanMaterial,
-                                         0x0,
-                                         stmDet2CanPositionInParent,
-                                         parentInfo,
-                                         0,
-                                         STMisVisible,
-                                         G4Color::Green(),
-                                         STMisSolid,
-                                         forceAuxEdgeVisible,
-                                         placePV,
-                                         doSurfaceCheck
-                                         );
-
-    VolumeInfo stmDet2 = nestTubs("stmDet2",
-                                      stmDet2Params,
-                                      stmDet2Material,
-                                      0x0,
-                                      stmDet2CanPositionInParent,
-                                      parentInfo,
-                                      1,
-                                      STMisVisible,
-                                      G4Color::Red(),
-                                      STMisSolid,
-                                      forceAuxEdgeVisible,
-                                      placePV,
-                                      doSurfaceCheck
-                                      );
-
-    VolumeInfo stmDet2CanUpStrWindowInfo = nestTubs( "stmDet2CanUpStrWindow",
-                                            stmDet2CanUpStrWindowParams,
-                                            stmDet2CanUpStrWindowMaterial,
-                                            0x0,
-                                            stmDet2CanPositionInParent + G4ThreeVector(0.0,0.0,-1.0*stmDet2CanHalfLength + stmDet2CanUpStrWindowHalfLength),
-                                            parentInfo,
-                                            0,
-                                            STMisVisible,
-                                            G4Color::Green(),
-                                            STMisSolid,
-                                            forceAuxEdgeVisible,
-                                            placePV,
-                                            doSurfaceCheck
-                                            );
-
-    VolumeInfo stmDet2CanDnStrWindowInfo = nestTubs( "stmDet2CanDnStrWindow",
-                                            stmDet2CanDnStrWindowParams,
-                                            stmDet2CanDnStrWindowMaterial,
-                                            0x0,
-                                            stmDet2CanPositionInParent + G4ThreeVector(0.0,0.0, stmDet2CanHalfLength - stmDet2CanDnStrWindowHalfLength),
-                                            parentInfo,
-                                            0,
-                                            STMisVisible,
-                                            G4Color::Green(),
-                                            STMisSolid,
-                                            forceAuxEdgeVisible,
-                                            placePV,
-                                            doSurfaceCheck
-                                            );
-
-    if (verbosityLevel>0){
-      std::cout << __func__ << " Warning: Gas not implemented inside STM detector1 can! (so that VD inside can does not overlap with can gas)" << std::endl;
+      if (verbosityLevel>0){
+        std::cout << __func__ << " Warning: Gas not implemented inside STM detector1 can! (so that VD inside can does not overlap with can gas)" << std::endl;
+      }
     }
 
     //===================== Shield Pipe/Wall to prevent michel electrons from causing deadtime in the CRV  ==========================
