@@ -44,6 +44,12 @@ namespace mu2e {
     int          _verbosityLevel;
     double       _stmZAllowed;
 
+    bool         _stmDnStrEnvBuild;
+    double       _stmDnStrEnvHalfLength;
+    double       _stmDnStrEnvHalfWidth;
+    double       _stmDnStrEnvHalfHeight;
+    std::string  _stmDnStrEnvMaterial;
+
     bool         _magnetBuild;
     double       _magnetUpStrSpace;
     double       _magnetHalfLength;

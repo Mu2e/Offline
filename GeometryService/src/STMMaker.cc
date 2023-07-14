@@ -181,10 +181,25 @@ namespace mu2e {
     //}
 
 
+      ////////////////////////////////////
+      // STM Downstream Area
+      //
     //The STM geometry must fit inside the detector hall, so find the z of the East hall wall
     GeomHandle<Mu2eHall> hall;
     const double z_hall_inside_max = hall->getWallExtentz("dsArea",1)/CLHEP::mm;//the integer allows you to specify which side of which wall you want the z for: 1 = west side of east wall (i.e. the z of the inside surface of the east wall)
     const CLHEP::Hep3Vector BeamAxisAtEastWallInMu2e(dsP.x(), 0.0, z_hall_inside_max );
+
+    const CLHEP::HepRotation _stmDnStrEnvRotation     = CLHEP::HepRotation::IDENTITY;
+    const CLHEP::Hep3Vector _stmDnStrEnvPositionInMu2e = BeamAxisAtEastWallInMu2e + CLHEP::Hep3Vector(0.0, 0.0, -_stmDnStrEnvHalfLength);
+    stm._pSTMDnStrEnvParams = std::unique_ptr<STMDownstreamEnvelope>
+      (new STMDownstreamEnvelope(_stmDnStrEnvBuild,
+                                 _stmDnStrEnvHalfWidth,
+                                 _stmDnStrEnvHalfHeight,
+                                 _stmDnStrEnvHalfLength,
+                                 _stmDnStrEnvPositionInMu2e,
+                                 _stmDnStrEnvRotation,
+                                 _stmDnStrEnvMaterial
+                                 ));
 
     const CLHEP::HepRotation _SSCollimatorRotation     = CLHEP::HepRotation::IDENTITY;
     const CLHEP::Hep3Vector  _SSCollimatorOffsetInMu2e = BeamAxisAtEastWallInMu2e + CLHEP::Hep3Vector(0.0,0.,-_stmZAllowed+_SSCollimatorHalfLength);
@@ -461,6 +476,11 @@ namespace mu2e {
     _shieldUpStrWallGap         = _config.getDouble("stm.shield.UpStrWall.gap", 0.); //only if using pipe as origin
     _shieldDnStrWallMaterial    = _config.getString("stm.shield.DnStrWall.material", _shieldMaterial);
 
+    _stmDnStrEnvBuild       = _config.getBool("stm.downstream.build");
+    _stmDnStrEnvHalfLength  = _config.getDouble("stm.downstream.halfLength");
+    _stmDnStrEnvHalfWidth   = _config.getDouble("stm.downstream.halfWidth");
+    _stmDnStrEnvHalfHeight  = _config.getDouble("stm.downstream.halfHeight");
+    _stmDnStrEnvMaterial    = _config.getString("stm.downstream.material");
   }
 
 } // namespace mu2e

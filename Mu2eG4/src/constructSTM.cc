@@ -76,6 +76,7 @@ namespace mu2e {
     GeDetector      const & pSTMDetector1Params            = *stmgh.getSTMDetector1Ptr();
     GeDetector      const & pSTMDetector2Params            = *stmgh.getSTMDetector2Ptr();
     ShieldPipe      const & pSTMShieldPipeParams           = *stmgh.getSTMShieldPipePtr();
+    STMDownstreamEnvelope const & pSTMDnStrEnvParams       = *stmgh.getSTMDnStrEnvPtr();
 
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( _config, "stm", "stm");
@@ -1108,7 +1109,30 @@ namespace mu2e {
       std::cout<<__func__<<" STM SS Coll (cutout) z_min        = "<< stmSSCollPositionInMu2e2.z()-stmSSCollHalfLength2 <<std::endl;
     }
 
+    // ========== STM Downstream Envelope =============
+    G4Material*  stmDnStrEnvMaterial   = findMaterialOrThrow(pSTMDnStrEnvParams.materialName());
+    const double stmDnStrEnvHalfLengths[3] = {pSTMDnStrEnvParams.xHalfLength(),
+                                              pSTMDnStrEnvParams.yHalfLength(),
+                                              pSTMDnStrEnvParams.zHalfLength()};
+    G4ThreeVector stmDnStrEnvPositionInMu2e   = pSTMDnStrEnvParams.originInMu2e();
+    G4ThreeVector stmDnStrEnvPositionInParent = pSTMDnStrEnvParams.originInMu2e() - parentCenterInMu2e;
 
+    if (pSTMDnStrEnvParams.build()){
+      VolumeInfo stmDnStrEnvInfo = nestBox("stmDownstreamEnvelope",
+                                           stmDnStrEnvHalfLengths,
+                                           stmDnStrEnvMaterial,
+                                           0x0,
+                                           stmDnStrEnvPositionInParent, //mstmDetectorStandPositionInMother,
+                                           parentInfo.logical,
+                                           0,
+                                           STMisVisible,
+                                           G4Color::Gray(),
+                                           STMisSolid,
+                                           forceAuxEdgeVisible,
+                                           placePV,
+                                           doSurfaceCheck
+                                           );
+    }
 
     //===================== STM Detector Support Table ==========================
 
