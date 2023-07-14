@@ -43,6 +43,7 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -529,7 +530,7 @@ namespace mu2e {
     }
 
     // ntuple buffer.
-    float nt[_ntup->GetNvar()];
+    vector<float> nt(_ntup->GetNvar());
 
     // Loop over all hits.
     for ( size_t i=0; i<hits->size(); ++i ){
@@ -671,7 +672,7 @@ namespace mu2e {
       nt[19] = normS;
       nt[20] = straw.id().getStraw();
 
-      _ntup->Fill(nt);
+      _ntup->Fill(nt.data());
 
       // Fill the TGraph; need to manage size by hand.
       if ( _xyHitCount < _xyHitsMax ){
@@ -906,7 +907,7 @@ namespace mu2e {
     }
 
     // ntuple buffer.
-    float nt[_ntupCRV->GetNvar()];
+    vector<float> nt(_ntupCRV->GetNvar());
 
     // Loop over all hits.
     for ( size_t i=0; i<hits->size(); ++i ){
@@ -980,7 +981,7 @@ namespace mu2e {
       nt[22] = mom.mag();
       nt[23] = hit.stepLength();
 
-      _ntupCRV->Fill(nt);
+      _ntupCRV->Fill(nt.data());
 
       _hCRVMultiplicity->Fill(hit.volumeId());
 
