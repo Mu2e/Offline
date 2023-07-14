@@ -928,6 +928,33 @@ namespace mu2e {
     }
 
 
+    // ========== STM Downstream Envelope =============
+    G4Material*  stmDnStrEnvMaterial   = findMaterialOrThrow(pSTMDnStrEnvParams.materialName());
+    const double stmDnStrEnvHalfLengths[3] = {pSTMDnStrEnvParams.xHalfLength(),
+                                              pSTMDnStrEnvParams.yHalfLength(),
+                                              pSTMDnStrEnvParams.zHalfLength()};
+    G4ThreeVector stmDnStrEnvPositionInMu2e   = pSTMDnStrEnvParams.originInMu2e();
+    G4ThreeVector stmDnStrEnvPositionInParent = pSTMDnStrEnvParams.originInMu2e() - parentCenterInMu2e;
+
+    if (pSTMDnStrEnvParams.build()){
+      VolumeInfo stmDnStrEnvInfo = nestBox("stmDownstreamEnvelope",
+                                           stmDnStrEnvHalfLengths,
+                                           stmDnStrEnvMaterial,
+                                           0x0,
+                                           stmDnStrEnvPositionInParent, //mstmDetectorStandPositionInMother,
+                                           parentInfo,
+                                           0,
+                                           STMisVisible,
+                                           G4Color::Gray(),
+                                           STMisSolid,
+                                           forceAuxEdgeVisible,
+                                           placePV,
+                                           doSurfaceCheck
+                                           );
+
+      VolumeInfo const & parentInfo = stmDnStrEnvInfo;
+      G4ThreeVector parentCenterInMu2e = parentInfo.centerInMu2e();
+
 
     //===================== Spot-Size (SS) Collimator ==========================
 
@@ -1108,33 +1135,6 @@ namespace mu2e {
       std::cout<<__func__<<" STM SS Coll (cutout) z_halflength = "<< stmSSCollHalfLength2 <<std::endl;
       std::cout<<__func__<<" STM SS Coll (cutout) z_min        = "<< stmSSCollPositionInMu2e2.z()-stmSSCollHalfLength2 <<std::endl;
     }
-
-    // ========== STM Downstream Envelope =============
-    G4Material*  stmDnStrEnvMaterial   = findMaterialOrThrow(pSTMDnStrEnvParams.materialName());
-    const double stmDnStrEnvHalfLengths[3] = {pSTMDnStrEnvParams.xHalfLength(),
-                                              pSTMDnStrEnvParams.yHalfLength(),
-                                              pSTMDnStrEnvParams.zHalfLength()};
-    G4ThreeVector stmDnStrEnvPositionInMu2e   = pSTMDnStrEnvParams.originInMu2e();
-    G4ThreeVector stmDnStrEnvPositionInParent = pSTMDnStrEnvParams.originInMu2e() - parentCenterInMu2e;
-
-    if (pSTMDnStrEnvParams.build()){
-      VolumeInfo stmDnStrEnvInfo = nestBox("stmDownstreamEnvelope",
-                                           stmDnStrEnvHalfLengths,
-                                           stmDnStrEnvMaterial,
-                                           0x0,
-                                           stmDnStrEnvPositionInParent, //mstmDetectorStandPositionInMother,
-                                           parentInfo,
-                                           0,
-                                           STMisVisible,
-                                           G4Color::Gray(),
-                                           STMisSolid,
-                                           forceAuxEdgeVisible,
-                                           placePV,
-                                           doSurfaceCheck
-                                           );
-
-      VolumeInfo const & parentInfo = stmDnStrEnvInfo;
-      G4ThreeVector parentCenterInMu2e = parentInfo.centerInMu2e();
 
       //===================== STM Detector Support Table ==========================
 
