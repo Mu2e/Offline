@@ -22,6 +22,7 @@
 #include "fhiclcpp/types/Sequence.h"
 
 #include <string>
+#include <array>
 
 namespace mu2e
 {
@@ -757,7 +758,7 @@ namespace mu2e
                       [](L &a, L &b){return a->_maxSlope < b->_maxSlope;}))->_maxSlope;
     double maxSlopeDifference = (*std::max_element(layerIterators,layerIterators+n,
                                 [](L &a, L &b){return a->_maxSlopeDifference < b->_maxSlopeDifference;}))->_maxSlopeDifference;
-    std::vector<double> slopes(n-1);
+    std::array<double,3> slopes;
     for(int d=0; d<n-1; ++d)
     {
       //slope = width direction / thickness direction
