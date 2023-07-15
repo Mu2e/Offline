@@ -39,6 +39,7 @@
 // C++ includes.
 #include <iostream>
 #include <string>
+#include <vector>
 
 
 using namespace std;
@@ -192,7 +193,7 @@ namespace mu2e {
 
       GenParticle const& gen = output->back();
 
-      float buf[nt_->GetNvar()];
+      vector<float> buf(nt_->GetNvar());
 
       int itarget = findTarget(gen.position().z());
       double dz = 5071. + itarget*50. - gen.position().z();
@@ -206,7 +207,7 @@ namespace mu2e {
       buf[3] = gen.time();
       buf[4] = dz;
       buf[5] = sqrt(xl*xl + yl*yl);
-      nt_->Fill(buf);
+      nt_->Fill(buf.data());
 
       hzPos_->Fill(gen.position().z());
       hcz_->Fill(gen.momentum().cosTheta());
