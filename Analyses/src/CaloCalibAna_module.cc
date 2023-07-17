@@ -19,6 +19,7 @@
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/VirtualDetector.hh"
@@ -318,8 +319,8 @@ namespace mu2e {
         float cryT1(invalid),cryT2(invalid),cryT1Err(invalid),cryT2Err(invalid);
         if (hit.recoCaloDigis().size()>1)
         {
-          int idx0 = cal.caloIDMapper().SiPMIdx(hit.recoCaloDigis().at(0)->SiPMID());
-          int idx1 = cal.caloIDMapper().SiPMIdx(hit.recoCaloDigis().at(1)->SiPMID());
+          int idx0 = CaloSiPMId(hit.recoCaloDigis().at(0)->SiPMID()).SiPMLocalId();
+          int idx1 = CaloSiPMId(hit.recoCaloDigis().at(1)->SiPMID()).SiPMLocalId();
           cryT1    = hit.recoCaloDigis().at(idx0)->time();
           cryT2    = hit.recoCaloDigis().at(idx1)->time();
           cryT1Err = hit.recoCaloDigis().at(idx0)->timeErr();
