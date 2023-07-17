@@ -64,7 +64,7 @@ namespace mu2e {
           //CALO INFO DATA
           verbosityLevel_ = config.getInt("calorimeter.verbosityLevel",0);
 
-          calo_->nDisks_  = config.getInt("calorimeter.numberOfDisks");
+          calo_->nDisks_  = CaloConst::_nDisk;
 
           calo_->caloInfo_.set("envelopeRadiusIn",       config.getDouble("calorimeter.caloMotherRadiusIn") );
           calo_->caloInfo_.set("envelopeRadiusOut",      config.getDouble("calorimeter.caloMotherRadiusOut") );
@@ -96,7 +96,7 @@ namespace mu2e {
           calo_->caloInfo_.set("readoutXLength",         config.getDouble("calorimeter.readoutXLength") );
           calo_->caloInfo_.set("readoutYLength",         config.getDouble("calorimeter.readoutYLength") );
           calo_->caloInfo_.set("readoutZLength",         config.getDouble("calorimeter.readoutZLength") );
-          calo_->caloInfo_.set("nSiPMPerCrystal",        config.getInt(   "calorimeter.readoutPerCrystal") );
+          calo_->caloInfo_.set("nSiPMPerCrystal",        CaloConst::_nSiPMPerCrystal );
 
           calo_->caloInfo_.set("FEEXLength",             config.getDouble("calorimeter.FEEXLength") );
           calo_->caloInfo_.set("FEEYLength",             config.getDouble("calorimeter.FEEYLength") );
@@ -199,12 +199,6 @@ namespace mu2e {
           calo_->geomUtil_.origin( CLHEP::Hep3Vector(xOrigin,0,0.5*(zCaloStart+zCaloEnd)) );
           calo_->geomUtil_.trackerCenter(CLHEP::Hep3Vector(xOrigin,0,zTrackerCenter));
           calo_->geomUtil_.crystalZLength(config.getDouble("calorimeter.crystalZLength"));
-
-
-
-          // CACHE THIS ONE FOR EFFICIENCY (REALLY NEEDED SO DON'T REMOVE)
-          calo_->caloIDMapper_.nSiPMPerCrystal(config.getInt("calorimeter.readoutPerCrystal") );
-
 
 
           // CALCULATE THE TOTAL Z LENGTH OF THE FULL DISK AND SUB-COMPONENTS
@@ -378,8 +372,8 @@ namespace mu2e {
     {
         //check number of readouts (now fixed to 2)
         int nROPerCrystal = calo_->caloInfo_.getInt("readoutPerCrystal");
-        if (nROPerCrystal !=2 && nROPerCrystal !=0)
-          throw cet::exception("DiskCaloGeom") << "calorimeter.readoutPerCrystal must be 2 at the moment (or 0 if no backplate is desired)\n";
+        if (nROPerCrystal !=CaloConst::_nSiPMPerCrystal && nROPerCrystal !=0)
+          throw cet::exception("DiskCaloGeom") << "calorimeter.readoutPerCrystal must be "<<CaloConst::_nSiPMPerCrystal<<" at the moment (or 0 if no backplate is desired)\n";
 
 
         //check calorimeter fits inside mother envelope

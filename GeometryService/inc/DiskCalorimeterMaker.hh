@@ -19,6 +19,7 @@
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/Disk.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 
 
 namespace mu2e{
