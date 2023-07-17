@@ -157,8 +157,8 @@ namespace mu2e {
         double dv = tolsDS[i][1];
         double dw = tolsDS[i][2];
         double hlen = lengDS[i];
-        double xCnt[vertices.size()];
-        double yCnt[vertices.size()];
+        std::vector<double> xCnt(vertices.size());
+        std::vector<double> yCnt(vertices.size());
         double epsilon = 1.0e-4;
 
         for ( unsigned int idim = 0; idim < vertices.size(); idim++ ) {
