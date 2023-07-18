@@ -315,7 +315,7 @@ namespace mu2e {
        TF1 f("f",fitfunctionPlot,xvec_[x0_],xvec_[x1_-1],param_.size());
        for (unsigned i=0;i<param_.size();++i) f.SetParameter(i,param_[i]);
 
-       TF1 *f2[nParTot_];
+       std::vector<TF1*> f2(nParTot_);
        int nPeaks(0);
        for (unsigned i=nParBkg_;i<nParTot_;i+=nParFcn_)
        {

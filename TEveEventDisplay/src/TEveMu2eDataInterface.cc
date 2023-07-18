@@ -1,5 +1,7 @@
 #include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eDataInterface.h"
 
+#include <vector>
+
 using namespace mu2e;
 using namespace std;
 namespace mu2e{
@@ -402,8 +404,8 @@ void TEveMu2eDataInterface::FillKinKalTrajectory(bool firstloop, std::tuple<std:
         }
       }
     }
-    StrawId usedtrksid[trkhitsize];
-    unsigned int usedid[trkhitsize];
+    vector<StrawId> usedtrksid(trkhitsize);
+    vector<unsigned int> usedid(trkhitsize);
     DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fTrkHitsList3D, &fTrkHitsList2DXY, &fTrkHitsList2DXZ, tracker2Dproj);
     //Compare the straw IDs of the Kal seed hits with the hits in the ComboHit Collection
     if(chcol!=0){

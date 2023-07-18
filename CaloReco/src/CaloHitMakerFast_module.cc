@@ -4,10 +4,9 @@
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/types/Sequence.h"
 
-#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
@@ -116,13 +115,13 @@ namespace mu2e {
    //--------------------------------------------------------------------------------------------------------------
    void CaloHitMakerFast::extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, IntensityInfoCalo& intInfo, double pbtOffset)
    {
-       const Calorimeter& cal = *(GeomHandle<Calorimeter>());
+
        ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
        pulseMapType pulseMap;
        for (const auto& caloDigi : caloDigis)
        {
-           int crystalID   = cal.caloIDMapper().crystalIDFromSiPMID(caloDigi.SiPMID());
+           int crystalID   = CaloSiPMId(caloDigi.SiPMID()).crystal().id();
 
            size_t nSamPed  = caloDigi.peakpos() > 3 ? 4 : std::max(caloDigi.peakpos()-1, 1);
            double baseline(0);

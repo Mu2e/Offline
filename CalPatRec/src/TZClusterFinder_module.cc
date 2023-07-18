@@ -392,8 +392,8 @@ namespace mu2e {
     // create graph for t vs. z
     int dPoints = 0;
     for (size_t i=0; i<_f.cHits.size(); i++) { dPoints = dPoints + _f.cHits[i].plnHits.size(); }
-    float zPoints[dPoints];
-    float tPoints[dPoints];
+    std::vector<float> zPoints(dPoints);
+    std::vector<float> tPoints(dPoints);
     int arrayIndex = 0;
     for (size_t i=0; i<_f.cHits.size(); i++) {
       for (size_t j=0; j<_f.cHits[i].plnHits.size(); j++) {
@@ -403,16 +403,16 @@ namespace mu2e {
       }
     }
     if (dPoints > 0 ) {
-      TGraph* g1 = new TGraph(dPoints, zPoints, tPoints);
+      TGraph* g1 = new TGraph(dPoints, zPoints.data(), tPoints.data());
       g1->SetMarkerStyle(20);
       g1->SetMarkerSize(1.1);
       mg->Add(g1);
-      TGraph* clusterPlots[_data._nTZClusters];
+      std::vector<TGraph*> clusterPlots(_data._nTZClusters);
       TF1* fit = new TF1("fit", "pol1");
       for (int i=0; i<_data._nTZClusters; i++) {
         int dcPoints = (int)_data._tcColl->at(i)._strawHitIdxs.size();
-        double_t zcPoints[dcPoints];
-        double_t tcPoints[dcPoints];
+        std::vector<double_t> zcPoints(dcPoints);
+        std::vector<double_t> tcPoints(dcPoints);
         for (int j=0; j<dcPoints; j++) {
           int index = (int)_data._tcColl->at(i)._strawHitIdxs[j];
           hit = &_data._chColl->at(index);
@@ -421,7 +421,7 @@ namespace mu2e {
           zcPoints[j] = zPosition;
           tcPoints[j] = hitTime;
         }
-        clusterPlots[i] = new TGraph(dcPoints, zcPoints, tcPoints);
+        clusterPlots[i] = new TGraph(dcPoints, zcPoints.data(), tcPoints.data());
         clusterPlots[i]->SetMarkerStyle(20);
         clusterPlots[i]->SetMarkerSize(0.65);
         if (i>7) {

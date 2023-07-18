@@ -37,6 +37,7 @@
 //
 
 #include <iostream>
+#include <vector>
 
 // Framework includes
 #include "art/Framework/Principal/Run.h"
@@ -295,7 +296,7 @@ namespace mu2e {
         _hT0->Fill( t );
 
         // Ntuple buffer.
-        float nt[_ntup->GetNvar()];
+        vector<float> nt(_ntup->GetNvar());
 
         nt[0]  = x;
         nt[1]  = y;
@@ -310,7 +311,7 @@ namespace mu2e {
         nt[10] = trkid;
         nt[11] = parentid;
         nt[12] = weight;
-        _ntup->Fill(nt);
+        _ntup->Fill(nt.data());
       }
 
     }
