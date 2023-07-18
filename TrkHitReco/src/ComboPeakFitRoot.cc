@@ -130,7 +130,7 @@ namespace mu2e {
       const Double_t *adcValues = gr.GetY();
       const Double_t *measurementTimes = gr.GetX();
       const int numSamplesPerHit = gr.GetN();
-      Double_t subtractedValues[numSamplesPerHit];
+      std::vector<Double_t> subtractedValues(numSamplesPerHit);
 
       const double earlyPeakCharge = adcValues[0];
 
@@ -143,8 +143,8 @@ namespace mu2e {
       }
 
       //New peak is max value of difference between of adc values and dynamic pedestal
-      const Float_t newAdcPeak = TMath::MaxElement(numSamplesPerHit, subtractedValues);
-      const Float_t newTPeak = TMath::LocMax(numSamplesPerHit, subtractedValues);
+      const Float_t newAdcPeak = TMath::MaxElement(numSamplesPerHit, subtractedValues.data());
+      const Float_t newTPeak = TMath::LocMax(numSamplesPerHit, subtractedValues.data());
 
       peakResult newPeakData(newTPeak, newAdcPeak);
       initialGuess.push_back(newPeakData);

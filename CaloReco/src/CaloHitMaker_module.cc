@@ -6,6 +6,7 @@
 #include "fhiclcpp/types/Sequence.h"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
@@ -117,7 +118,7 @@ namespace mu2e {
 
     for (unsigned i=0; i< recoCaloDigis.size(); ++i)
     {
-        int crystalId = cal.caloIDMapper().crystalIDFromSiPMID(recoCaloDigis[i].SiPMID());
+        int crystalId = CaloSiPMId(recoCaloDigis[i].SiPMID()).crystal().id();
         hitMap[crystalId].push_back(&recoCaloDigis[i]);
     }
 
