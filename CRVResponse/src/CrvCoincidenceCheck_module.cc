@@ -23,6 +23,7 @@
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
 
 #include <string>
+#include <vector>
 
 #include <TMath.h>
 #include <TH2D.h>
@@ -459,10 +460,10 @@ if(crvCoincidenceCollection->size()==0)
     size_t n=layerIterators.size();
     if(n==0) return;
 
-    double maxTimeDifferences[n];
-    double times[n];
-    double timesPulseStart[n], timesPulseEnd[n];
-    double x[n], y[n];
+    std::vector<double> maxTimeDifferences(n);
+    std::vector<double> times(n);
+    std::vector<double> timesPulseStart(n), timesPulseEnd(n);
+    std::vector<double> x(n), y(n);
     std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses;
     std::vector<int> layers;
     for(size_t i=0; i<n; ++i)
@@ -480,15 +481,15 @@ if(crvCoincidenceCollection->size()==0)
 
     if(!_usePulseOverlaps)
     {
-      double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+n);
-      double timeMin = *std::min_element(times,times+n);
-      double timeMax = *std::max_element(times,times+n);
+      double maxTimeDifference=*std::max_element(maxTimeDifferences.begin(),maxTimeDifferences.end());
+      double timeMin = *std::min_element(times.begin(),times.end());
+      double timeMax = *std::max_element(times.begin(),times.end());
       if(timeMax-timeMin>maxTimeDifference) return;  //hits don't fall within the time window
     }
     else
     {
-      double timeMaxPulseStart = *std::max_element(timesPulseStart,timesPulseStart+n);
-      double timeMinPulseEnd = *std::min_element(timesPulseEnd,timesPulseEnd+n);
+      double timeMaxPulseStart = *std::max_element(timesPulseStart.begin(),timesPulseStart.end());
+      double timeMinPulseEnd = *std::min_element(timesPulseEnd.begin(),timesPulseEnd.end());
       if(timeMinPulseEnd-timeMaxPulseStart<_minOverlapTime) return;  //pulses don't overlap, or overlap time too short
     }
 
