@@ -20,12 +20,12 @@ void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double 
   if(!f.good()) throw std::logic_error("Could not open single PE waveform file. "+filename);
 
   double currentTime=0, currentVoltage=0;
-  double previousTime=NAN, previousVoltage=NAN;
+  double previousTime=0, previousVoltage=0;
   unsigned int index=0;
   while(f >> currentTime >> currentVoltage)
   {
     currentTime*=singlePEWaveformStretchFactor;
-    if(!std::isnan(previousTime))
+    if(index!=0)
     {
       double t=index*singlePEWaveformPrecision;
       while(currentTime>=t && index*singlePEWaveformPrecision<singlePEWaveformMaxTime)
