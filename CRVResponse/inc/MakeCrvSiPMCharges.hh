@@ -22,8 +22,8 @@ namespace mu2eCrv
   struct Pixel
   {
     bool   _discharged;
-    double _t;          //time of last discharge (if _discharged is true), or NAN (if _discharged is false)
-    Pixel() : _discharged(false), _t(NAN) {}
+    double _t;          //time of last discharge (if _discharged is true), or 0 (if _discharged is false)
+    Pixel() : _discharged(false), _t(0) {}
   };
 
   struct SiPMresponse
