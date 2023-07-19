@@ -279,7 +279,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
     float  pulseHeight  = fitParam0/TMath::E();
     float  pulseBeta    = fitParam2;
     float  pulseFitChi2 = (fr->Ndf()>0?fr->Chi2()/fr->Ndf():-1);
-    bool   zeroNdf      = (fr->Ndf()>0?0:1);
+    bool   zeroNdf      = (fr->Ndf()>0?false:true);
     bool   failedFit    = FailedFit(fr);
 
     if(failedFit)
