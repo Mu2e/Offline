@@ -1,6 +1,6 @@
 // ======================================================================
 //
-// StrawRecoFromFragmnets_plugin:  Add tracker data products to the event
+// StrawRecoFromFragments_plugin:  Add tracker data products to the event
 //
 // ======================================================================
 
@@ -27,12 +27,12 @@
 #include <memory>
 
 namespace art {
-class StrawRecoFromFragmnets;
+class StrawRecoFromFragments;
 }
 
 // ======================================================================
 
-class art::StrawRecoFromFragmnets : public EDProducer {
+class art::StrawRecoFromFragments : public EDProducer {
 
 public:
   struct Config {
@@ -43,8 +43,8 @@ public:
   };
 
   // --- C'tor/d'tor:
-  explicit StrawRecoFromFragmnets(const art::EDProducer::Table<Config>& config);
-  virtual ~StrawRecoFromFragmnets() {}
+  explicit StrawRecoFromFragments(const art::EDProducer::Table<Config>& config);
+  virtual ~StrawRecoFromFragments() {}
 
   // --- Production:
   virtual void produce(Event&);
@@ -61,11 +61,11 @@ private:
 
   const int hexShiftPrint = 7;
 
-}; // StrawRecoFromFragmnets
+}; // StrawRecoFromFragments
 
 // ======================================================================
 
-art::StrawRecoFromFragmnets::StrawRecoFromFragmnets(const art::EDProducer::Table<Config>& config) :
+art::StrawRecoFromFragments::StrawRecoFromFragments(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}, diagLevel_(config().diagLevel()), useTrkADC_(config().useTrkADC()),
     trkFragmentsTag_(config().trkTag()) {
   produces<mu2e::StrawDigiCollection>();
@@ -79,7 +79,7 @@ art::StrawRecoFromFragmnets::StrawRecoFromFragmnets(const art::EDProducer::Table
 
 // ----------------------------------------------------------------------
 
-void art::StrawRecoFromFragmnets::produce(Event& event) {
+void art::StrawRecoFromFragments::produce(Event& event) {
   art::EventNumber_t eventNumber = event.event();
 
   // Collection of StrawDigis for the event
@@ -108,7 +108,7 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
   }
 
   if (numTrkFrags == 0) {
-    std::cout << "[StrawRecoFromFragmnets::produce] found no Tracker fragments!" << std::endl;
+    std::cout << "[StrawRecoFromFragments::produce] found no Tracker fragments!" << std::endl;
   }
 
   if (diagLevel_ > 1) {
@@ -120,7 +120,7 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
   }
 
   if (diagLevel_ > 0) {
-    std::cout << "mu2e::StrawRecoFromFragmnets::produce exiting eventNumber="
+    std::cout << "mu2e::StrawRecoFromFragments::produce exiting eventNumber="
               << (int)(event.event()) << " / timestamp=" << (int)eventNumber << std::endl;
   }
 
@@ -134,7 +134,7 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
 
 } // produce()
 
-void art::StrawRecoFromFragmnets::analyze_tracker_(
+void art::StrawRecoFromFragments::analyze_tracker_(
     const mu2e::TrackerFragment& cc, std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
     std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> const& straw_digi_adcs) {
 
@@ -177,7 +177,7 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
 
     auto block = cc.dataAtBlockIndex(curBlockIdx);
     if (block == nullptr) {
-      mf::LogError("StrawRecoFromFragmnets")
+      mf::LogError("StrawRecoFromFragments")
           << "Unable to retrieve block " << curBlockIdx << "!" << std::endl;
       continue;
     }
@@ -202,7 +202,7 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
       // Create the StrawDigi data products
       auto trkDataVec = cc.GetTrackerData(curBlockIdx, useTrkADC_);
       if (trkDataVec.empty()) {
-        mf::LogError("StrawRecoFromFragmnets")
+        mf::LogError("StrawRecoFromFragments")
             << "Error retrieving Tracker data from DataBlock " << curBlockIdx
             << "! Aborting processing of this block!";
         continue;
@@ -290,6 +290,6 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
 
 // ======================================================================
 
-DEFINE_ART_MODULE(art::StrawRecoFromFragmnets)
+DEFINE_ART_MODULE(art::StrawRecoFromFragments)
 
 // ======================================================================
