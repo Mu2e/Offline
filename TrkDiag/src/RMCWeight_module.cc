@@ -37,4 +37,4 @@
 namespace mu2e {
   typedef WeightModule<RMCPhys> RMCWeight;
 }
-DEFINE_ART_MODULE(mu2e::RMCWeight);
+DEFINE_ART_MODULE(mu2e::RMCWeight)

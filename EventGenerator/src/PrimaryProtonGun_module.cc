@@ -95,4 +95,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::PrimaryProtonGun);
+DEFINE_ART_MODULE(mu2e::PrimaryProtonGun)

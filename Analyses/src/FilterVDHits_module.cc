@@ -275,4 +275,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FilterVDHits);
+DEFINE_ART_MODULE(mu2e::FilterVDHits)

@@ -486,4 +486,4 @@ namespace mu2e {
 }
 
 using mu2e::CaloShowerStepMaker;
-DEFINE_ART_MODULE(CaloShowerStepMaker);
+DEFINE_ART_MODULE(CaloShowerStepMaker)

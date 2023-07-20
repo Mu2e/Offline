@@ -158,4 +158,4 @@ namespace mu2e
   }
 }
 using mu2e::SeedFilter;
-DEFINE_ART_MODULE(SeedFilter);
+DEFINE_ART_MODULE(SeedFilter)

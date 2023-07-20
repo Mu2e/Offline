@@ -167,4 +167,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::CountPionDecays;
-DEFINE_ART_MODULE(CountPionDecays);
+DEFINE_ART_MODULE(CountPionDecays)

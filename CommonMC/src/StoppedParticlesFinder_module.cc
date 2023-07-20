@@ -289,4 +289,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StoppedParticlesFinder);
+DEFINE_ART_MODULE(mu2e::StoppedParticlesFinder)

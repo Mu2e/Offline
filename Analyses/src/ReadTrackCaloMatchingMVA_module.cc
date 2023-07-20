@@ -522,4 +522,4 @@ namespace mu2e {
 
 
 using mu2e::ReadTrackCaloMatchingMVA;
-DEFINE_ART_MODULE(ReadTrackCaloMatchingMVA);
+DEFINE_ART_MODULE(ReadTrackCaloMatchingMVA)

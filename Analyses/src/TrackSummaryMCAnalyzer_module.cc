@@ -117,4 +117,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::TrackSummaryMCAnalyzer);
+DEFINE_ART_MODULE(mu2e::TrackSummaryMCAnalyzer)

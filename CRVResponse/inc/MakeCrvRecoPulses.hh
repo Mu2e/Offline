@@ -25,6 +25,7 @@ class MakeCrvRecoPulses
   const std::vector<float>  &GetPulseHeights() const   {return _pulseHeights;}
   const std::vector<float>  &GetPulseBetas() const     {return _pulseBetas;}
   const std::vector<float>  &GetPulseFitChi2s() const  {return _pulseFitChi2s;}
+  const std::vector<bool>   &GetZeroNdfs() const       {return _zeroNdf;}
   const std::vector<bool>   &GetFailedFits() const     {return _failedFits;}
 
   private:
@@ -49,7 +50,7 @@ class MakeCrvRecoPulses
   std::vector<float>  _PEs, _PEsPulseHeight;
   std::vector<double> _pulseTimes, _LEtimes;
   std::vector<float>  _pulseHeights, _pulseBetas, _pulseFitChi2s;
-  std::vector<bool>   _failedFits, _duplicateNoFitPulses, _separatedDoublePulses;
+  std::vector<bool>   _zeroNdf, _failedFits, _duplicateNoFitPulses, _separatedDoublePulses;
 
   public:
   const std::vector<float>  &GetPEsNoFit() const        {return _PEsNoFit;}

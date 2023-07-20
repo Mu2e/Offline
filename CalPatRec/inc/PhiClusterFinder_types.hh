@@ -6,7 +6,7 @@
 
 namespace art {
   class Event;
-};
+}
 
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 

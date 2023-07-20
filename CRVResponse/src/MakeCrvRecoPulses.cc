@@ -230,6 +230,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
   _PEs.clear();
   _PEsPulseHeight.clear();
   _LEtimes.clear();
+  _zeroNdf.clear();
   _failedFits.clear();
   _duplicateNoFitPulses.clear();
   _separatedDoublePulses.clear();
@@ -277,7 +278,8 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
     double pulseTime    = fitParam1;
     float  pulseHeight  = fitParam0/TMath::E();
     float  pulseBeta    = fitParam2;
-    float  pulseFitChi2 = (fr->Ndf()>0?fr->Chi2()/fr->Ndf():NAN);
+    float  pulseFitChi2 = (fr->Ndf()>0?fr->Chi2()/fr->Ndf():-1);
+    bool   zeroNdf      = (fr->Ndf()>0?false:true);
     bool   failedFit    = FailedFit(fr);
 
     if(failedFit)
@@ -286,7 +288,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
       pulseTime    = peakTime;
       pulseHeight  = waveform[peakStartBin]-pedestal;
       pulseBeta    = _defaultBeta;
-      pulseFitChi2 = NAN;
+      pulseFitChi2 = -1;
     }
 
     double LEtime         = pulseTime-_LEtimeFactor*pulseBeta;  //50% pulse height is reached at -0.985*beta before the peak
@@ -299,6 +301,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
     _PEs.push_back(PEs);
     _PEsPulseHeight.push_back(PEsPulseHeight);
     _LEtimes.push_back(LEtime);
+    _zeroNdf.push_back(zeroNdf);
     _failedFits.push_back(failedFit);
   }
 

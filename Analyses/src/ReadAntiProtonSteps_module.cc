@@ -282,4 +282,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::ReadAntiProtonSteps;
-DEFINE_ART_MODULE(ReadAntiProtonSteps);
+DEFINE_ART_MODULE(ReadAntiProtonSteps)

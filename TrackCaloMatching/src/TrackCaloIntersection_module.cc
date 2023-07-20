@@ -453,7 +453,7 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::TrackCaloIntersection);
+DEFINE_ART_MODULE(mu2e::TrackCaloIntersection)
 
 
 /*

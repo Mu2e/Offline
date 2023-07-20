@@ -22,6 +22,6 @@ namespace mu2e {
       std::vector<std::string> _tokens;
     };
 
-  };
+  }
 }
 #endif

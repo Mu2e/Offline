@@ -10,7 +10,6 @@
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/CaloInfo.hh"
-#include "Offline/CalorimeterGeom/inc/CaloIDMapper.hh"
 #include "Offline/CalorimeterGeom/inc/CaloGeomUtil.hh"
 #include "Offline/CalorimeterGeom/inc/Disk.hh"
 #include "Offline/CalorimeterGeom/inc/Crystal.hh"
@@ -47,10 +46,8 @@ namespace mu2e {
 
             // calorimeter geometry information
             virtual const CaloInfo&           caloInfo()     const  {return caloInfo_;}
-            virtual const CaloIDMapper&       caloIDMapper() const  {return caloIDMapper_;}
             virtual const CaloGeomUtil&       geomUtil()     const  {return geomUtil_;}
                           CaloInfo&           caloInfo()            {return caloInfo_;}
-                          CaloIDMapper&       caloIDMapper()        {return caloIDMapper_;}
                           CaloGeomUtil&       geomUtil()            {return geomUtil_;}
 
 
@@ -80,7 +77,6 @@ namespace mu2e {
 
             std::vector<const Crystal*>   fullCrystalList_; //non-owning crystal pointers
             CaloInfo                      caloInfo_;
-            CaloIDMapper                  caloIDMapper_;
             CaloGeomUtil                  geomUtil_;
      };
 

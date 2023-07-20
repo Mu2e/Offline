@@ -1056,4 +1056,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::ReadVirtualDetector;
-DEFINE_ART_MODULE(ReadVirtualDetector);
+DEFINE_ART_MODULE(ReadVirtualDetector)

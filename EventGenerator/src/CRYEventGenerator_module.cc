@@ -89,4 +89,4 @@ namespace mu2e {
 
 
 using mu2e::CryEventGenerator;
-DEFINE_ART_MODULE(CryEventGenerator);
+DEFINE_ART_MODULE(CryEventGenerator)

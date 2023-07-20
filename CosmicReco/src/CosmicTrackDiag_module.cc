@@ -884,4 +884,4 @@ namespace mu2e
 }
 
 using mu2e::CosmicTrackDiag;
-DEFINE_ART_MODULE(CosmicTrackDiag);
+DEFINE_ART_MODULE(CosmicTrackDiag)

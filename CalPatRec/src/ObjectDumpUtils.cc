@@ -106,7 +106,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
   if ((opt == "") || (opt.Index("data") >= 0)) {
 
     printf("%16p  %3i %5i %5i %10.3f %10.3f\n",
-           Cluster,
+           static_cast<const void*>(Cluster),
            section_id,
            nh,
            Cluster->isSplit(),
@@ -230,7 +230,7 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
     printf("%s",form);
 
     printf("  %-16p %3i   %3i %3i %8.3f %8.3f %8.4f %7.4f %7.3f %8.4f",
-           Krep,
+           static_cast<const void*>(Krep),
            -1,
            nhits,
            nact,

@@ -220,4 +220,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StoppedParticlesDumper);
+DEFINE_ART_MODULE(mu2e::StoppedParticlesDumper)

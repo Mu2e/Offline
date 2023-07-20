@@ -239,4 +239,4 @@ namespace mu2e {
 } // namespace mu2e
 
 typedef art::Source<mu2e::ExtMonFNAL::EMFMARSWeightedDetail> FromEMFMARSFileWeighted;
-DEFINE_ART_INPUT_SOURCE(FromEMFMARSFileWeighted);
+DEFINE_ART_INPUT_SOURCE(FromEMFMARSFileWeighted)
