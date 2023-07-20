@@ -22,9 +22,20 @@ TrackSummaryMaker: {
     trackInput : "TrkPatRec:DeM"
 }
 
+CRYGenPlots : {
+  module_type : CRYGenPlots
+  CRYModuleLabel : "compressDetStepMCs"
+  CRYInstanceName :   "Primary"
+}
+
 CaloClusterCompareNew : {
         module_type : CaloClusterCompare
         CaloClusterCollection : CaloClusterOnline
+}
+
+PhotonAna : {
+        module_type : PhotonAna
+        KalSeedCollection : "TTKSFDeM:Digitize"
 }
 
 CaloClusterCompareOld : {
@@ -80,6 +91,22 @@ ClusterCompareNew :
         CaloClusterCompareNew : @local::CaloClusterCompareNew
    }
    Analysis : [CaloClusterCompareNew]
+}
+
+PhotonAnalysis : 
+{
+   analyzers : {
+        PhotonAna : @local::PhotonAna
+   }
+   Analysis : [PhotonAna]
+}
+
+CRYAnalysis : 
+{
+   analyzers : {
+        CRYGenPlots : @local::CRYGenPlots
+   }
+   Analysis : [CRYGenPlots]
 }
 
 ClusterCompareOld :

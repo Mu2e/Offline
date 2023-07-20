@@ -1,0 +1,21 @@
+# author : Sophie Middleton 
+# purpose : example for cry analysis
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/Analyses/fcl/prolog.fcl"
+
+services : @local::Services.Reco
+
+process_name : CRYGenPlots
+
+source : { module_type : RootInput }
+
+physics :
+{
+ analyzers : { @table::CRYAnalysis.analyzers}
+}
+physics.EndPath  : [ @sequence::CRYAnalysis.Analysis] 
+
+services.TFileService.fileName: "nts.owner.CRYAnalysis.version.sequencer.root"
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
