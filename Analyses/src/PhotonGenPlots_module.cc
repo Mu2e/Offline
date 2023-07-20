@@ -24,24 +24,24 @@
 #include "TH2F.h"
 #include "TTree.h"
 namespace mu2e {
-  class CRYGenPlots;
+  class PhotonGenPlots;
 }
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;
 
 
-class mu2e::CRYGenPlots : public art::EDAnalyzer {
+class mu2e::PhotonGenPlots : public art::EDAnalyzer {
   public:
-    explicit CRYGenPlots(fhicl::ParameterSet const & p);
+    explicit PhotonGenPlots(fhicl::ParameterSet const & p);
     // The compiler-generated destructor is fine for non-base
     // classes without bare pointers or other resource use.
 
     // Plugins should not be copied or assigned.
-    CRYGenPlots(CRYGenPlots const &) = delete;
-    CRYGenPlots(CRYGenPlots &&) = delete;
-    CRYGenPlots & operator = (CRYGenPlots const &) = delete;
-    CRYGenPlots & operator = (CRYGenPlots &&) = delete;
+    PhotonGenPlots(PhotonGenPlots const &) = delete;
+    PhotonGenPlots(PhotonGenPlots &&) = delete;
+    PhotonGenPlots & operator = (PhotonGenPlots const &) = delete;
+    PhotonGenPlots & operator = (PhotonGenPlots &&) = delete;
 
     // Required functions.
     void analyze(art::Event const & e) override;
@@ -89,7 +89,7 @@ class mu2e::CRYGenPlots : public art::EDAnalyzer {
     GlobalConstantsHandle<ParticleDataList> pdt;
 };
 
-mu2e::CRYGenPlots::CRYGenPlots(fhicl::ParameterSet const &p)
+mu2e::PhotonGenPlots::PhotonGenPlots(fhicl::ParameterSet const &p)
     : EDAnalyzer(p),
     processName_(p.get<std::string>("processName", "")),
     CRYModuleLabel_(p.get<std::string>("CRYModuleLabel", "FromCRYBinary")),
@@ -120,7 +120,7 @@ mu2e::CRYGenPlots::CRYGenPlots(fhicl::ParameterSet const &p)
 }
 
 
-void mu2e::CRYGenPlots::analyze(art::Event const & e)
+void mu2e::PhotonGenPlots::analyze(art::Event const & e)
 {
   art::Handle<GenParticleCollection> gpHandle;
   bool success;
@@ -208,17 +208,17 @@ void mu2e::CRYGenPlots::analyze(art::Event const & e)
 
 }
 
-void mu2e::CRYGenPlots::beginJob()
+void mu2e::PhotonGenPlots::beginJob()
 {
   // Implementation of optional member function here.
 }
 
-void mu2e::CRYGenPlots::endJob()
+void mu2e::PhotonGenPlots::endJob()
 {
   // Implementation of optional member function here.
 }
 
-void mu2e::CRYGenPlots::bookHists(art::ServiceHandle<art::TFileService> &tfs)
+void mu2e::PhotonGenPlots::bookHists(art::ServiceHandle<art::TFileService> &tfs)
 {
 
   _hXZ = tfs->make<TH2F>("XZ", "XZ", 500, -2.0e5,  2.0e5, 500, -2.0e5, 2.0e5 );
@@ -249,4 +249,4 @@ void mu2e::CRYGenPlots::bookHists(art::ServiceHandle<art::TFileService> &tfs)
   _hPtypeKE->GetYaxis()->SetBinLabel(7, "kaon");
   _hPtypeKE->GetYaxis()->SetBinLabel(8, "others");
 }
-DEFINE_ART_MODULE(mu2e::CRYGenPlots)
+DEFINE_ART_MODULE(mu2e::PhotonGenPlots)
