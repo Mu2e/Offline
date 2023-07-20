@@ -3,12 +3,19 @@
 #include "Offline/DbTables/inc/CRVBadChan.hh"
 #include "Offline/DbTables/inc/CRVSiPM.hh"
 #include "Offline/DbTables/inc/CRVTime.hh"
-#include "Offline/DbTables/inc/CalRoIDMapDIRACToOffline.hh"
-#include "Offline/DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
 #include "Offline/DbTables/inc/STMEnergyPar.hh"
 #include "Offline/DbTables/inc/STMPedestals.hh"
 #include "Offline/DbTables/inc/SimEfficiencies.hh"
 #include "Offline/DbTables/inc/SimEfficiencies2.hh"
+
+#include "Offline/DbTables/inc/CalSourceEnergyCalib.hh"
+#include "Offline/DbTables/inc/CalCosmicEnergyCalib.hh"
+#include "Offline/DbTables/inc/CalLaserEnergyCalib.hh"
+#include "Offline/DbTables/inc/CalCosmicTimeCalib.hh"
+#include "Offline/DbTables/inc/CalLaserTimeCalib.hh"
+#include "Offline/DbTables/inc/CalLaserEnergyCalib.hh"
+#include "Offline/DbTables/inc/CalEnergyCalib.hh"
+
 #include "Offline/DbTables/inc/TrkAlignElement.hh"
 #include "Offline/DbTables/inc/TrkAlignStraw.hh"
 #include "Offline/DbTables/inc/TrkDelayPanel.hh"
@@ -19,6 +26,7 @@
 #include "Offline/DbTables/inc/TstCalib2.hh"
 #include "Offline/DbTables/inc/TstCalib3.hh"
 #include "cetlib_except/exception.h"
+
 
 mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
   if (name == "TstCalib1") {
@@ -55,10 +63,6 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::SimEfficiencies());
   } else if (name == "SimEfficiencies2") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::SimEfficiencies2());
-  } else if (name == "CalRoIDMapDIRACToOffline") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapDIRACToOffline());
-  } else if (name == "CalRoIDMapOfflineToDIRAC") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapOfflineToDIRAC());
   } else if (name == "STMEnergyPar") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::STMEnergyPar());
   } else if (name == "STMPedestals") {
@@ -69,7 +73,19 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVSiPM());
   } else if (name == "CRVTime") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVTime());
-  } else {
+  }  else if (name=="CalSourceEnergyCalib") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalSourceEnergyCalib());
+  }  else if (name=="CalCosmicTimeCalib") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalCosmicTimeCalib());
+  } else if (name=="CalCosmicEnergyCalib") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalCosmicEnergyCalib());
+  } else if (name=="CalLaserEnergyCalib") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalLaserEnergyCalib());
+  } else if (name=="CalLaserTimeCalib") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalLaserTimeCalib());
+  } else if (name=="CalEnergyCalib") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalEnergyCalib());
+  }else {
     throw cet::exception("DBFILE_BAD_TABLE_NAME")
         << "DbTableFactory::newTable call with bad table name: " + name + "\n";
   }

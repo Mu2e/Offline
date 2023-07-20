@@ -639,4 +639,4 @@ namespace mu2e {
 
 } // End of namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::Mu2eG4);
+DEFINE_ART_MODULE(mu2e::Mu2eG4)

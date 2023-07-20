@@ -34,6 +34,6 @@ namespace mu2e {
       StrawDriftMaker _maker;
 
   };
-};
+}
 
 #endif

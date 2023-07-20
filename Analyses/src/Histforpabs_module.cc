@@ -141,4 +141,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::Histforpabs;
-DEFINE_ART_MODULE(Histforpabs);
+DEFINE_ART_MODULE(Histforpabs)

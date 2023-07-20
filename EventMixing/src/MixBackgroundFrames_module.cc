@@ -267,4 +267,4 @@ namespace mu2e {
   typedef art::MixFilter<MixBackgroundFramesDetail,art::RootIOPolicy> MixBackgroundFrames;
 }
 
-DEFINE_ART_MODULE(mu2e::MixBackgroundFrames);
+DEFINE_ART_MODULE(mu2e::MixBackgroundFrames)

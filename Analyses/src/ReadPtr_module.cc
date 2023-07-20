@@ -102,4 +102,4 @@ void mu2e::ReadPtr::analyze(art::Event const& event) {
 }
 
 
-DEFINE_ART_MODULE(mu2e::ReadPtr);
+DEFINE_ART_MODULE(mu2e::ReadPtr)

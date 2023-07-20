@@ -121,4 +121,4 @@ namespace mu2e {
 // Part of the magic that makes this class a module.
 // create an instance of the module.  It also registers
 using mu2e::ParticleIDRead;
-DEFINE_ART_MODULE(ParticleIDRead);
+DEFINE_ART_MODULE(ParticleIDRead)

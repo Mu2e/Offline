@@ -92,7 +92,7 @@ namespace mu2e
     {
       bool   hasMCInfo                = (crvDigiMCCollection.isValid()?true:false); //MC
       double visibleEnergyDeposited   = 0;         //MC
-      double earliestHitTime          = NAN;       //MC
+      double earliestHitTime          = 0;         //MC
       art::Ptr<SimParticle> simParticle;           //MC
       CLHEP::Hep3Vector     earliestHitPos;        //MC
 
@@ -106,7 +106,7 @@ namespace mu2e
         const art::Ptr<CrvRecoPulse> crvRecoPulse = crvRecoPulses[i];
         art::Ptr<SimParticle> simParticleThisPulse;
         double visibleEnergyDepositedThisPulse = 0;
-        double earliestHitTimeThisPulse = NAN; //not used here
+        double earliestHitTimeThisPulse = 0; //not used here
         CLHEP::Hep3Vector earliestHitPosThisPulse; //not used here
 
         //get MC information, if available
@@ -131,7 +131,7 @@ namespace mu2e
                                        visibleEnergyDeposited, earliestHitTime, earliestHitPos, simParticle);
 
       //insert the cluster information into the vector of the crv coincidence clusters (collection of pulses, most likely sim particle, etc.)
-      //unless the reco pulse was caused by a noise hit (and doesn't have an associated simParticle)
+      //if the cluster was caused by noise, the simParticle will be null, the visibleEnergyDeposited, earliestHitTime, and earliestHitPos will be 0
       crvCoincidenceClusterMCCollection->emplace_back(hasMCInfo, pulses, simParticle, visibleEnergyDeposited, earliestHitTime, earliestHitPos);
     }//loop over all clusters
 

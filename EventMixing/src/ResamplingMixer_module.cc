@@ -147,4 +147,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::ResamplingMixer);
+DEFINE_ART_MODULE(mu2e::ResamplingMixer)

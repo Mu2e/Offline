@@ -1260,5 +1260,5 @@ namespace mu2e {
     // _Ntup->Fill();
   }
 }// end namespace mu2e
-DEFINE_ART_MODULE(mu2e::KineticFracAnalysis);
+DEFINE_ART_MODULE(mu2e::KineticFracAnalysis)
 

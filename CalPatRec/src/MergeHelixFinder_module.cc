@@ -182,7 +182,7 @@ namespace mu2e {
                                   int Index, AlgorithmIDCollection* AidColl) {
 
     AlgorithmID                              aid;
-    short                                    best(0),  mask(0xffff);
+    short                                    best(0),  mask(-1);
     art::Handle<mu2e::AlgorithmIDCollection> algH;
 
     HelixColl->push_back(*Helix);
@@ -364,4 +364,4 @@ namespace mu2e {
 }
 
 using mu2e::MergeHelixFinder;
-DEFINE_ART_MODULE(MergeHelixFinder);
+DEFINE_ART_MODULE(MergeHelixFinder)

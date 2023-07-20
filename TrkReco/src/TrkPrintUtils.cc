@@ -131,7 +131,7 @@ namespace mu2e {
 
       printf("%5i %16p %3i %3i %8.3f %7.3f  %8.4f %8.4f %7.3f %7.4f",
           -1,
-          Trk,
+          static_cast<const void*>(Trk),
           nhits,
           nactive,
           q*mom,pt,momerr,costh,t0,t0err

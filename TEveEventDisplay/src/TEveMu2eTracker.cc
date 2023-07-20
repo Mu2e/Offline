@@ -4,7 +4,7 @@ Int_t transpOpt = 100;
 using namespace mu2e;
 namespace mu2e{
 
-    TEveMu2eTracker::TEveMu2eTracker(){};
+    TEveMu2eTracker::TEveMu2eTracker(){}
 
      /*------------Function to construct Tracker (for 2D only):-------------*/
     void TEveMu2eTracker::DrawTrackerDetector(TGeoVolume* topvol, TEveElementList *orthodetXZ, TEveElementList *orthodetXY){

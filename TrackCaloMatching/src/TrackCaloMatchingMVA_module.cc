@@ -408,4 +408,4 @@ namespace mu2e {
 
 
 using mu2e::TrackCaloMatchingMVA;
-DEFINE_ART_MODULE(TrackCaloMatchingMVA);
+DEFINE_ART_MODULE(TrackCaloMatchingMVA)

@@ -90,4 +90,4 @@ void mu2e::PtrTest::produce(art::Event& event)
 
 }
 
-DEFINE_ART_MODULE(mu2e::PtrTest);
+DEFINE_ART_MODULE(mu2e::PtrTest)

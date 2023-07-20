@@ -60,4 +60,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::TrackSummaryTruthUpdater);
+DEFINE_ART_MODULE(mu2e::TrackSummaryTruthUpdater)

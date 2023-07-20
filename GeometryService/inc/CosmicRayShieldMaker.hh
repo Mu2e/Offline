@@ -30,7 +30,7 @@ namespace mu2e
                           int isector,
                           const std::string &name,
                           const CLHEP::Hep3Vector &firstCounter,
-                          const CLHEP::Hep3Vector *layerOffsets,
+                          const std::vector<CLHEP::Hep3Vector> &layerOffsets,
                           const CLHEP::Hep3Vector &VTNCSmallGap,
                           const CLHEP::Hep3Vector &VTNCLargeGap,
                           const CLHEP::Hep3Vector &VTNCBetweenModules,

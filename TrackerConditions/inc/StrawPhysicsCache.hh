@@ -40,6 +40,6 @@ namespace mu2e {
       // so to not create a dependency loop on construction
       std::unique_ptr<ProditionsHandle<StrawDrift> > _strawDrift_p;
   };
-};
+}
 
 #endif

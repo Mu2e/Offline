@@ -11,7 +11,7 @@
 
 namespace art {
   class Event;
-};
+}
 
 namespace mu2e {
 

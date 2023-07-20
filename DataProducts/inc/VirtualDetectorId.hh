@@ -85,6 +85,8 @@ namespace mu2e {
       EMC_FEB_0_EdgeIn, EMC_FEB_0_EdgeOut, EMC_FEB_1_EdgeIn, EMC_FEB_1_EdgeOut,// 106,107,108,109
       Coll1_pBarCollar_In, Coll1_pBarCollar_Out, // 110, 111, Requested by Bob Bernstein for pbar studies.  Immediately upstream of the TS1 pBar Collar, and immediately downstream of VD 2, but with radius equal to the Coll1 inner radius
       PTM_1_In, PTM_2_In, // 112, 113, upstream faces of the production target monitor wire chambers between the PS and the proton beam stop
+      STM_Final, // 114
+      STM_UpStrHole, //115
       lastEnum
     };
 
@@ -133,7 +135,9 @@ namespace mu2e {
       "EMC_FEB_0_SurfIn", "EMC_FEB_0_SurfOut","EMC_FEB_1_SurfIn", "EMC_FEB_1_SurfOut", \
       "EMC_FEB_0_EdgeIn", "EMC_FEB_0_EdgeOut","EMC_FEB_1_EdgeIn", "EMC_FEB_1_EdgeOut", \
       "Coll1_pBarCollar_In", "Coll1_pBarCollar_Out", \
-      "PTM_1_In", "PTM_2_In"
+      "PTM_1_In", "PTM_2_In", \
+      "STM_Final", \
+      "STM_UpStrHole"
 
   public:
 

@@ -834,4 +834,4 @@ namespace mu2e {
 }
 
 using mu2e::HelixDiag;
-DEFINE_ART_MODULE(HelixDiag);
+DEFINE_ART_MODULE(HelixDiag)

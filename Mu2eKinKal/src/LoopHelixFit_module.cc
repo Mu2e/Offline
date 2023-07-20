@@ -87,4 +87,4 @@ namespace mu2e {
     return retval;
   }
 }
-DEFINE_ART_MODULE(mu2e::LoopHelixFit);
+DEFINE_ART_MODULE(mu2e::LoopHelixFit)

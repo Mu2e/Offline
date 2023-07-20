@@ -5,7 +5,7 @@
 using namespace mu2e;
 namespace mu2e{
 
-  TEveMu2eCustomHelix::TEveMu2eCustomHelix(){};
+  TEveMu2eCustomHelix::TEveMu2eCustomHelix(){}
 
   /*------------Function to build Infor after contruction:-------------*/
   void TEveMu2eCustomHelix::SetSeedInfo(KalSeed seed) {

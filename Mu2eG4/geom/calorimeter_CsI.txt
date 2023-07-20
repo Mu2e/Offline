@@ -8,7 +8,6 @@ double calorimeter.vdThickness                  = 0.02;
 
 
 
-int    calorimeter.numberOfDisks               = 2;
 double calorimeter.diskCaseZLength             = 206.;
 double calorimeter.diskInnerRingIn             = 356.;
 double calorimeter.diskInnerRingOut            = 361.;

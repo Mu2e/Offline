@@ -56,4 +56,4 @@ namespace mu2e {
   }
 }
 using mu2e::CosmicsTrackSeedFilter;
-DEFINE_ART_MODULE(CosmicsTrackSeedFilter);
+DEFINE_ART_MODULE(CosmicsTrackSeedFilter)

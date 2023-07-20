@@ -24,7 +24,7 @@ namespace mu2e {
       ProtonAbsorber = 1,
       StoppingTarget = 2
     };
-  };
+  }
 
   class TrkExtDetectors : public TrkExtShape
   {
