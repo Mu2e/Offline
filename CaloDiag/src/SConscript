@@ -70,7 +70,7 @@ helper.make_plugins( [ mainlib,
                        'pthread',
                        'hep_concurrency',
                        'DTCInterface',
-                       'Overlays'
+                       'artdaq-core-mu2e_Overlays'
                        ] )
 
 # this tells emacs to view this file in python mode.
