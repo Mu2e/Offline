@@ -16,28 +16,24 @@ namespace mu2e {
 
       class Row {
         public:
-        Row(CaloSiPMId  roid, double Peak, double ErrPeak, double Width, double ErrWidth, double Chi2):
-        _roid(roid),_Peak(Peak),_ErrPeak(ErrPeak),_Width(Width),_ErrWidth(ErrWidth),_Chi2(Chi2) {}
+        Row(CaloSiPMId  roid, double T0, double ErrT0, double Chi2):
+        _roid(roid),_T0(T0),_ErrT0(ErrT0),,_Chi2(Chi2) {}
         CaloSiPMId       roid()     const { return _roid;} // Offline ID
-        float     Peak()     const { return _Peak; }
-        float     ErrPeak()  const { return _ErrPeak; }
-        float     Width()    const { return _Width; }
-        float     ErrWidth() const { return _ErrWidth; }
+        float     T0()     const { return _T0; }
+        float     ErrT0()  const { return _ErrT0; }
         float     Chi2()     const { return _Chi2; }
 
       private:
-        CaloSiPMId    _roid;
-        float _Peak;
-        float _ErrPeak;
-        float _Width;
-        float _ErrWidth;
+        CaloSiPMId _roid;
+        float _T0;
+        float _ErrT0;
         float _Chi2;
     };
 
     constexpr static const char* cxname = "CalLaserTimeCalib";
 
     CalLaserTimeCalib():DbTable(cxname,"calolasertimecalib",
-    "roid,Peak,ErrPeak,Width,ErrWidth,Chi2") {}
+    "roid,T0,ErrT0,Chi2") {}
 
     const Row& row(const std::uint16_t roid) const { return _rows.at(roid); }
     std::vector<Row> const& rows() const {return _rows;}
@@ -49,26 +45,22 @@ namespace mu2e {
       std::uint16_t index = std::stoul(columns[0]);
     // enforce order, so channels can be looked up by index
     if (index >= CaloConst::_nChannel  || index != _rows.size()) {
-        throw cet::exception("CaloLaserTimeCalib_BAD_INDEX")
-        << "CaloLaserTimeTable::addRow found index out of order: "
+        throw cet::exception("CalLaserTimeCalib_BAD_INDEX")
+        << "CalLaserTimeTable::addRow found index out of order: "
         <<index<< " != " << _rows.size() <<"\n";
       }
       _rows.emplace_back(CaloSiPMId(index),
       std::stof(columns[1]),
       std::stof(columns[2]),
-      std::stoi(columns[3]),
-      std::stof(columns[4]),
-      std::stof(columns[5]) );
+      std::stof(columns[3]));
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << std::fixed << std::setprecision(5);
       sstream << r.roid()<<",";
-      sstream << r.Peak()<<",";
-      sstream << r.ErrPeak()<<",";
-      sstream << r.Width()<<",";
-      sstream << r.ErrWidth()<<",";
+      sstream << r.T0()<<",";
+      sstream << r.ErrT0()<<",";
       sstream << r.Chi2();
     }
 
