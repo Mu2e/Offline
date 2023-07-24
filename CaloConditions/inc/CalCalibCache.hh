@@ -20,13 +20,14 @@ namespace mu2e {
     void initialize() {
      if(_useDb) {
         _calenergycalib_p = std::make_unique<DbHandle<CalEnergyCalib>>();
+        //_caltimecalib_p = std::make_unique<DbHandle<CalTimeCalib>>(); TODO - time calibration
       }
     }
-    
+  
     set_t makeSet(art::EventID const& eid) {
       ProditionsEntity::set_t cids;
       if(_useDb) {  
-        //auto cal = _calenergycalib_p->get(eid);
+        _calenergycalib_p->get(eid);
         cids.insert(_calenergycalib_p->cid());
       }
       return cids;
@@ -36,7 +37,7 @@ namespace mu2e {
       DbIoV iov;
       iov.setMax(); // start with full IOV range
       if(_useDb) { 
-         _calenergycalib_p->get(eid);
+        _calenergycalib_p->get(eid);
         iov.overlap(_calenergycalib_p->iov());
       }
       return iov;
@@ -54,6 +55,7 @@ namespace mu2e {
     bool _useDb;
     CalCalibMaker _maker;
     std::unique_ptr<DbHandle<CalEnergyCalib>> _calenergycalib_p;
+    //std::unique_ptr<DbHandle<CalTimeCalib>> _caltimecalib_p;
   };
 };
 
