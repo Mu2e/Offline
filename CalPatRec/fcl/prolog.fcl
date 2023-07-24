@@ -646,8 +646,8 @@ CalPatRec : { @table::CalPatRec
             StrawHitCollectionLabel                     : makePH            # CalTimePeakFinder uses ComboHits
             StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
             caloClusterModuleLabel                      : CaloClusterMaker
-            HitSelectionBits                            : []
-            BackgroundSelectionBits                     : ["Noisy","Dead"]
+#            HitSelectionBits                            : []
+#            BackgroundSelectionBits                     : ["Noisy","Dead"]
             MinNHits                                    : @local::CalPatRec.minNStrawHits
             DtMin                                       : -20.   # value before 2022-02-14 was -30. ns
             DtMax                                       :  20.   # value before 2022-02-14 was 30. ns
