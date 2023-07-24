@@ -146,4 +146,4 @@ namespace mu2e {
 
 
 using mu2e::G4BeamlineGenerator;
-DEFINE_ART_MODULE(G4BeamlineGenerator);
+DEFINE_ART_MODULE(G4BeamlineGenerator)

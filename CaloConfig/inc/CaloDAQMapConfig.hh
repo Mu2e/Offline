@@ -3,19 +3,17 @@
 //
 // Initialize CaloDAQMap from fcl
 //
-#include <string>
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
+#include <string>
 
 namespace mu2e {
 
   struct CaloDAQMapConfig {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
-    fhicl::Sequence<uint16_t> DIRAC2CaloMap{
-      Name("DIRAC2CaloMap"), Comment("map from DIRAC channel to Calo roID")};
-    fhicl::Sequence<uint16_t> Calo2DIRACMap{
-      Name("Calo2DIRACMap"), Comment("map from Calo roID to DIRAC channel")};
+    fhicl::Atom<std::string> fileSpec{
+      Name("fileSpec"), Comment("Filespec for DAQMap file")};
     fhicl::Atom<int> verbose{
       Name("verbose"), Comment("verbosity: 0,1,2")};
     fhicl::Atom<bool> useDb{

@@ -62,4 +62,4 @@ namespace mu2e {
 
 // Register the module with the framework
 //using mu2e::PrintStrawHits;
-DEFINE_ART_MODULE(mu2e::PrintStrawHits);
+DEFINE_ART_MODULE(mu2e::PrintStrawHits)

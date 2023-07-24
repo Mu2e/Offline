@@ -176,10 +176,12 @@ namespace mu2e
         bool   failedFit              = _makeCrvRecoPulses->GetFailedFits().at(j);
         bool   duplicateNoFitPulse    = _makeCrvRecoPulses->GetDuplicateNoFitPulses().at(j);
         bool   separatedDoublePulse   = _makeCrvRecoPulses->GetSeparatedDoublePulses().at(j);
+        bool   zeroNdf                = _makeCrvRecoPulses->GetZeroNdfs().at(j);
         CrvRecoPulseFlags flags;
         if(failedFit)              flags.set(CrvRecoPulseFlagEnums::failedFit);
         if(duplicateNoFitPulse)    flags.set(CrvRecoPulseFlagEnums::duplicateNoFitPulse);
         if(separatedDoublePulse)   flags.set(CrvRecoPulseFlagEnums::separatedDoublePulse);
+        if(zeroNdf)                flags.set(CrvRecoPulseFlagEnums::zeroNdf);
 
         float  PEsNoFit          = _makeCrvRecoPulses->GetPEsNoFit().at(j);
         double pulseTimeNoFit    = _makeCrvRecoPulses->GetPulseTimesNoFit().at(j) + TDC0time + timeOffset;

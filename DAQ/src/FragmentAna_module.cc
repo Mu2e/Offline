@@ -316,4 +316,4 @@ void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterFragment& cc) {
 
 } // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FragmentAna);
+DEFINE_ART_MODULE(mu2e::FragmentAna)

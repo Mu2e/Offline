@@ -58,6 +58,6 @@ namespace mu2e {
       std::unique_ptr<ProditionsHandle<Tracker> > _alignedDetector_p;
 
   };
-};
+}
 
 #endif

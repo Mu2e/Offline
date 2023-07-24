@@ -304,4 +304,4 @@ namespace mu2e {
    }
 }
 
-DEFINE_ART_MODULE(mu2e::CaloHitFinderInspect);
+DEFINE_ART_MODULE(mu2e::CaloHitFinderInspect)

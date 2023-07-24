@@ -111,5 +111,5 @@ void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
 
 }  // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::GeneratorPlots);
+DEFINE_ART_MODULE(mu2e::GeneratorPlots)
 

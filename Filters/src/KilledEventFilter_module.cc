@@ -229,4 +229,4 @@ namespace mu2e {
 }
 
 using mu2e::KilledEventFilter;
-DEFINE_ART_MODULE(KilledEventFilter);
+DEFINE_ART_MODULE(KilledEventFilter)

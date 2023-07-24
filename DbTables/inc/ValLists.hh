@@ -75,5 +75,5 @@ class ValLists : public DbTable {
   std::map<int, std::size_t> _index;
 };
 
-};  // namespace mu2e
+}  // namespace mu2e
 #endif

@@ -13,6 +13,16 @@ namespace mu2e {
       }
     }
 
+  CaloSiPMId::value_type CaloSiPMId::detType() const {
+    if(crystal().isCaphri()) {
+      return CaloConst::detType::CAPHRI;
+    } else if(isCrystal()) {
+      return CaloConst::detType::CsI;
+    } else {
+      return CaloConst::detType::PINDiode;
+    }
+  }
+
   std::ostream& operator<<(std::ostream& ost,
                            const CaloSiPMId& id ){
     ost << id.id() ;

@@ -91,7 +91,7 @@ namespace mu2e {
     ++_nAnalyzed;
 
     // ntuple buffer.
-    float nt[_ntpssp->GetNvar()];
+    std::vector<float> nt(_ntpssp->GetNvar());
 
     art::Handle<SimParticleCollection> simPCH;
     event.getByLabel(_g4ModuleLabel, simPCH);
@@ -157,7 +157,7 @@ namespace mu2e {
       nt[30] = simP.endKineticEnergy();
       nt[31] = simP.nSteps();
 
-      _ntpssp->Fill(nt);
+      _ntpssp->Fill(nt.data());
 
     } // end loop over simparticles
 
@@ -166,4 +166,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::SimParticleAnalyzer;
-DEFINE_ART_MODULE(SimParticleAnalyzer);
+DEFINE_ART_MODULE(SimParticleAnalyzer)

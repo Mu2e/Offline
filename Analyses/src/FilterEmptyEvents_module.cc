@@ -139,4 +139,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::FilterEmptyEvents);
+DEFINE_ART_MODULE(mu2e::FilterEmptyEvents)

@@ -6,11 +6,11 @@
 
 namespace art {
   class Event;
-};
+}
 
 namespace fhicl {
   class ParameterSet;
-};
+}
 
 namespace mu2e {
   class Tracker;

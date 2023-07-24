@@ -264,4 +264,4 @@ namespace mu2e {
 } // namespace mu2e
 
 typedef art::Source<mu2e::STMTestBeamDataDetail> FromSTMTestBeamData;
-DEFINE_ART_INPUT_SOURCE(FromSTMTestBeamData);
+DEFINE_ART_INPUT_SOURCE(FromSTMTestBeamData)

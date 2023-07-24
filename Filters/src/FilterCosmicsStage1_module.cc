@@ -138,4 +138,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FilterCosmicsStage1);
+DEFINE_ART_MODULE(mu2e::FilterCosmicsStage1)

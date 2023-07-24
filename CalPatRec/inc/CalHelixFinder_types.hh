@@ -3,11 +3,11 @@
 
 namespace art {
   class Event;
-};
+}
 
 namespace fhicl {
   class ParameterSet;
-};
+}
 
 class TH1F;
 class TH2F;

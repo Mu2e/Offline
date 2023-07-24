@@ -706,4 +706,4 @@ namespace mu2e
 
   }// mu2e
 
-  DEFINE_ART_MODULE(mu2e::KalFinalFit);
+  DEFINE_ART_MODULE(mu2e::KalFinalFit)

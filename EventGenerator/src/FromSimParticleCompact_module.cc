@@ -242,4 +242,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FromSimParticleCompact);
+DEFINE_ART_MODULE(mu2e::FromSimParticleCompact)

@@ -5,6 +5,7 @@
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/DataProducts/inc/CRVId.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
@@ -22,6 +23,7 @@
 #include "fhiclcpp/types/Sequence.h"
 
 #include <string>
+#include <array>
 
 namespace mu2e
 {
@@ -159,7 +161,6 @@ namespace mu2e
     void checkCoincidence(const std::vector<CrvHit> &hits, std::list<CrvHit> &coincidenceHits);
     bool checkCombination(std::vector<CrvHit>::const_iterator layerIterators[], int n);
 
-    constexpr static const int nLayers = 4;
   };
 
   CrvCoincidenceFinder::CrvCoincidenceFinder(const Parameters& conf) :
@@ -578,7 +579,7 @@ namespace mu2e
   {
     if(hits.empty()) return;
 
-    std::vector<CrvHit> hitsLayers[nLayers];  //separated by layers
+    std::vector<CrvHit> hitsLayers[CRVId::nLayers];  //separated by layers
     std::vector<CrvHit>::const_iterator iterHit;
     for(iterHit=hits.begin(); iterHit!=hits.end(); ++iterHit)
     {
@@ -602,7 +603,7 @@ namespace mu2e
       //this cluster has so many hits that it makes no sense anymore to search for individual coincidences.
       //we still need to check that the minimum number of layers were hit to skip the coincidence check.
       int nonEmptyLayers=0;
-      for(int iLayer=0; iLayer<nLayers; ++iLayer)
+      for(size_t iLayer=0; iLayer<CRVId::nLayers; ++iLayer)
       {
         if(!hitsLayers[iLayer].empty()) ++nonEmptyLayers;
       }
@@ -757,7 +758,7 @@ namespace mu2e
                       [](L &a, L &b){return a->_maxSlope < b->_maxSlope;}))->_maxSlope;
     double maxSlopeDifference = (*std::max_element(layerIterators,layerIterators+n,
                                 [](L &a, L &b){return a->_maxSlopeDifference < b->_maxSlopeDifference;}))->_maxSlopeDifference;
-    double slopes[n-1];
+    std::array<double,CRVId::nLayers-1> slopes;
     for(int d=0; d<n-1; ++d)
     {
       //slope = width direction / thickness direction

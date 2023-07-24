@@ -62,6 +62,7 @@
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 #include <array>
+#include <vector>
 #include <iostream>
 #include <sstream>
 
@@ -131,8 +132,8 @@ namespace mu2e {
     // Construct the full disk / FEB volumes, place the subcomponents inside and put them in the mother volumes
     // IMPORTANT: keep a 1mm buffer for virtual detectors, except for disk outer radius
 
-       VolumeInfo calorimeterFEB[nDisks];
-       VolumeInfo calorimeterDisk[nDisks];
+       std::vector<VolumeInfo> calorimeterFEB(nDisks);
+       std::vector<VolumeInfo> calorimeterDisk(nDisks);
 
        G4LogicalVolume* FEBLog = (crateVersion > 1) ? caloBuildFEB(config,materialFinder, cal ) : nullptr;
        G4Tubs* FEB             = (crateVersion > 1) ? static_cast<G4Tubs*>(FEBLog->GetSolid())  : nullptr;

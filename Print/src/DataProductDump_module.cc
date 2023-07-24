@@ -129,4 +129,4 @@ void mu2e::DataProductDumpDetail::print(provs_type const& provs) const {
 
 }  // end print
 
-DEFINE_ART_MODULE(mu2e::DataProductDump);
+DEFINE_ART_MODULE(mu2e::DataProductDump)

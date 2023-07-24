@@ -84,4 +84,4 @@ void ProditionsTest::analyze(const art::Event& event) {
 
 }  // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ProditionsTest);
+DEFINE_ART_MODULE(mu2e::ProditionsTest)

@@ -3,7 +3,7 @@
 using namespace mu2e;
 namespace mu2e{
 
-  TEveMu2eMCTraj::TEveMu2eMCTraj(){};
+  TEveMu2eMCTraj::TEveMu2eMCTraj(){}
 
   /*------------Function to make track title:-------------*/
   std::string TEveMu2eMCTraj::DataTitle(const std::string &pstr, Int_t n){

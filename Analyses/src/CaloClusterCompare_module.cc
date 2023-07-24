@@ -135,7 +135,7 @@ namespace mu2e
 }
 
 using mu2e::CaloClusterCompare;
-DEFINE_ART_MODULE(CaloClusterCompare);
+DEFINE_ART_MODULE(CaloClusterCompare)
 
 
 

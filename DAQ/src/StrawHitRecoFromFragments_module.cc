@@ -278,4 +278,4 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
   // cc.ClearUpgradedPackets();
 }
 
-DEFINE_ART_MODULE(art::StrawHitRecoFromFragments);
+DEFINE_ART_MODULE(art::StrawHitRecoFromFragments)
