@@ -15,7 +15,7 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(CaloSiPMId  roid, float T0, float ErrT0, _chisq(chisq){}
+      Row(CaloSiPMId  roid, float T0, float ErrT0, float chisq) : _roid(roid), _T0(T0), _ErrT0(ErrT0), _chisq(chisq){}
       CaloSiPMId   roid() const { return _roid;}
       float T0() const { return _T0; }
       float ErrT0() const { return _ErrT0; }

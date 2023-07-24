@@ -16,7 +16,7 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(CaloSiPMId roid, float fullEPeak,float fullErrEPeak,float fullWidth,float fullErrWidth,float firstescEPeak,float firstescErrEPeak,float firstescWidth,float firstescErrWidth,float secescEPeak,float secescErrEPeak,float secescWidth,float secescErrWidth,float chisq): _roid(roid), _fullEPeak(fullEPeak), _fullErrEPeak(fullErrEPeak), _fullWidth(fullWidth), _fullErrWidth(fullErrWidth),_firstescEPeak(firstescEPeak), _firstescErrEPeak(firstescErrEPeak), _firstescWidth(firstescWidth), _firstescErrWidth(firstescErrWidth),_secescEPeak(secescEPeak), _secescErrEPeak(secescErrEPeak), _secescWidth(secescWidth), _secescErrWidth(secescErrWidth), _frFull, _frFirst, _frSecond, _chisq(chisq){}
+      Row(CaloSiPMId roid, float fullEPeak,float fullErrEPeak,float fullWidth,float fullErrWidth,float firstescEPeak,float firstescErrEPeak,float firstescWidth,float firstescErrWidth,float secescEPeak,float secescErrEPeak,float secescWidth,float secescErrWidth, float frFull, float frFirst, float frSecond, float chisq): _roid(roid), _fullEPeak(fullEPeak), _fullErrEPeak(fullErrEPeak), _fullWidth(fullWidth), _fullErrWidth(fullErrWidth),_firstescEPeak(firstescEPeak), _firstescErrEPeak(firstescErrEPeak), _firstescWidth(firstescWidth), _firstescErrWidth(firstescErrWidth),_secescEPeak(secescEPeak), _secescErrEPeak(secescErrEPeak), _secescWidth(secescWidth), _secescErrWidth(secescErrWidth), _frFull(frFull), _frFirst(frFirst), _frSecond(frSecond), _chisq(chisq){}
 
       CaloSiPMId  roid() const { return _roid;}
       float fullEPeak() const { return _fullEPeak; }
@@ -35,7 +35,7 @@ namespace mu2e {
       float secescErrWidth() const { return _secescErrWidth; }
 
       float frFull() const { return _frFull; }
-      float frFirs() const { return _frFirst; }
+      float frFirst() const { return _frFirst; }
       float frSecond() const { return _frSecond; }
 
       float chisq() const { return _chisq; }
@@ -56,12 +56,16 @@ namespace mu2e {
       float _secescErrEPeak;
       float _secescWidth;
       float _secescErrWidth;
+      
+      float _frFull;
+      float _frFirst;
+      float _frSecond;
       float _chisq;
     };
 
     constexpr static const char* cxname = "CalSourceEnergyCalib";
 
-    CalSourceEnergyCalib():DbTable(cxname,"cal.sourceenergycalib","roid,fullEPeak,fullErrEPeak,fullWidth,fullErrWidth,firstescEPeak,firstescErrEPeak,firstescWidth,firstescErrWidth,secescEPeak,secescErrEPeak,secescWidth,secescErrWidth, chisq"){}
+    CalSourceEnergyCalib():DbTable(cxname,"cal.sourceenergycalib","roid,fullEPeak,fullErrEPeak,fullWidth,fullErrWidth,firstescEPeak,firstescErrEPeak,firstescWidth,firstescErrWidth,secescEPeak,secescErrEPeak,secescWidth,secescErrWidth, frFull,frFirst,frSecond,chisq"){}
 
     const Row& row(const int roid) const { 
                 return _rows.at(roid); }
@@ -81,7 +85,7 @@ namespace mu2e {
        _rows.emplace_back(CaloSiPMId(index),std::stof(columns[1]),std::stof(columns[2]),std::stof(columns[3]),
        std::stof(columns[4]),std::stof(columns[5]),std::stof(columns[6]),std::stof(columns[7]),
        std::stof(columns[8]),std::stof(columns[9]),std::stof(columns[10]),std::stof(columns[11]),
-       std::stof(columns[12]),std::stof(columns[13]));
+       std::stof(columns[12]),std::stof(columns[13]),std::stof(columns[14]),std::stof(columns[15]),std::stof(columns[16]));
 
     }
 
