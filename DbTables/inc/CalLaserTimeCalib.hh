@@ -16,24 +16,24 @@ namespace mu2e {
 
       class Row {
         public:
-        Row(CaloSiPMId  roid, double T0, double ErrT0, double Chi2):
-        _roid(roid),_T0(T0),_ErrT0(ErrT0),,_Chi2(Chi2) {}
+        Row(CaloSiPMId  roid, double T0, double ErrT0, double chisq):
+        _roid(roid),_T0(T0),_ErrT0(ErrT0),_chisq(chisq) {}
         CaloSiPMId       roid()     const { return _roid;} // Offline ID
         float     T0()     const { return _T0; }
         float     ErrT0()  const { return _ErrT0; }
-        float     Chi2()     const { return _Chi2; }
+        float     chisq()     const { return _chisq; }
 
       private:
         CaloSiPMId _roid;
         float _T0;
         float _ErrT0;
-        float _Chi2;
+        float _chisq;
     };
 
     constexpr static const char* cxname = "CalLaserTimeCalib";
 
     CalLaserTimeCalib():DbTable(cxname,"calolasertimecalib",
-    "roid,T0,ErrT0,Chi2") {}
+    "roid,T0,ErrT0,chisq") {}
 
     const Row& row(const std::uint16_t roid) const { return _rows.at(roid); }
     std::vector<Row> const& rows() const {return _rows;}
@@ -61,7 +61,7 @@ namespace mu2e {
       sstream << r.roid()<<",";
       sstream << r.T0()<<",";
       sstream << r.ErrT0()<<",";
-      sstream << r.Chi2();
+      sstream << r.chisq();
     }
 
     virtual void clear() override { baseClear(); _rows.clear();}
