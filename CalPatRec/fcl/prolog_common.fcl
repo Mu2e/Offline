@@ -40,7 +40,6 @@ CommonTrk                : {
         KSFDmuMH    : { @table::KSFDmuM                           SeedCollection : MHFinderDmu CheckHelicity:false}
         KFFDmuMHPar : { @table::KFFDmuM                           SeedCollection : KSFDmuMH }
         KFFDmuMHDar : { @table::CalPatRec.producers.CalTrkFitDmm  SeedCollection : KSFDmuMH }
-    }
 #------------------------------------------------------------------------------
 # BTRK track fit, upstream muon hypothesis
 #------------------------------------------------------------------------------
