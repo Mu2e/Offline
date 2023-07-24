@@ -46,6 +46,7 @@
 #include "Geant4/G4Cons.hh"
 #include "Geant4/G4SubtractionSolid.hh"
 #include "Geant4/G4IntersectionSolid.hh"
+#include "Geant4/G4Box.hh"
 
 using namespace std;
 
@@ -1374,20 +1375,50 @@ namespace mu2e {
       const double y_mother_halflength = yExtentLow;
       const double dimVD[3] = { x_vd_halflength, y_mother_halflength, vdg->getHalfLength() };
 
-      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-                                  dimVD,
-                                  downstreamVacuumMaterial,
-                                  0,                              //rotation
-                                  vdg->getLocal(vdId),
-                                  parent,
-                                  vdId,
-                                  vdIsVisible,
-                                  G4Color::White(),
-                                  vdIsSolid,
-                                  forceAuxEdgeVisible,
-                                  placePV,
-                                  false
-                                  );
+      VolumeInfo vdFullInfo;
+      vdFullInfo.solid = new G4Box("STM_UpStr_Full",
+                                   dimVD[0],dimVD[1],dimVD[2]);
+
+      //Subtracting hole from original VD86
+      ///////////////////////////////////////////////////////////////////////////////
+      VolumeInfo HoleInfo;
+      VolumeInfo vdHollowInfo;
+      //double shieldHoleRadius = _config.getDouble("ExtShieldDownstream.detecHoleRadius")*CLHEP::mm;
+      double shieldHoleRadius = _config.getDouble("stm.shield.rOut")*CLHEP::mm;
+      HoleInfo.solid = new G4Tubs(vdFullInfo.name,
+                                  0,
+                                  shieldHoleRadius,
+                                  2*vdg->getHalfLength(),
+                                  0*CLHEP::deg,
+                                  360*CLHEP::deg);
+
+
+      G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+
+      vdHollowInfo.name = VirtualDetector::volumeName(vdId);
+      vdHollowInfo.solid = new G4SubtractionSolid(vdHollowInfo.name,
+                                                  vdFullInfo.solid,
+                                                  HoleInfo.solid,
+                                                  0,
+                                                  /*HoleInfo.centerInMu2e()-
+                                                    vdg->getGlobal(vdId)*/G4ThreeVector(0,0,0));
+
+    vdHollowInfo.centerInParent = vdLocalOffset;
+    vdHollowInfo.centerInWorld  = vdHollowInfo.centerInParent + parent.centerInWorld;
+
+
+    finishNesting(vdHollowInfo,
+                  downstreamVacuumMaterial,
+                  0,
+                  vdLocalOffset,
+                  parent.logical,
+                  vdId,
+                  vdIsVisible,
+                  G4Color::Red(),
+                  vdIsSolid,
+                  forceAuxEdgeVisible,
+                  placePV,
+                  false);
 
       if ( verbosityLevel > 0) {
         cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
@@ -1396,45 +1427,9 @@ namespace mu2e {
         cout << __func__ << "    VD parameters: " << vdParams << endl;
         cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
-      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-    }
 
-    //     vdId = VirtualDetectorId::STM_CRVShieldDnStr;
-    //     if ( vdg->exist(vdId) ) {
-    //
-    //       const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
-    //       GeomHandle<CosmicRayShield> CRS;
-    //       //const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
-    //       const double yExtentLow      = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
-    //       const double x_vd_halflength = (CRS->getSectorHalfLengths("D"))[0];
-    //       //const double y_vd_halflength = (y_crv_max + yExtentLow)/2.0;
-    //       const double y_mother_halflength = yExtentLow;
-    //       const double dimVD[3] = { x_vd_halflength, y_mother_halflength, vdg->getHalfLength() };
-    //
-    //       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-    //                                   dimVD,
-    //                                   downstreamVacuumMaterial,
-    //                                   0,                              //rotation
-    //                                   vdg->getLocal(vdId),
-    //                                   parent,
-    //                                   vdId,
-    //                                   vdIsVisible,
-    //                                   G4Color::White(),
-    //                                   vdIsSolid,
-    //                                   forceAuxEdgeVisible,
-    //                                   placePV,
-    //                                   false
-    //                                   );
-    //
-    //       if ( verbosityLevel > 0) {
-    //           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-    //                << " at " << vdg->getGlobal(vdId) << endl
-    //                << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
-    //           cout << __func__ << "    VD parameters: " << vdParams << endl;
-    //           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
-    //       }
-    //       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-    //     }
+    doSurfaceCheck && checkForOverlaps(vdHollowInfo.physical, _config, verbosityLevel>0);
+  }
 
     vdId = VirtualDetectorId::STM_FieldOfViewCollDnStr;
     if ( vdg->exist(vdId) ) {
@@ -1485,8 +1480,8 @@ namespace mu2e {
       //double y_vd_halflength = (y_crv_max + yExtentLow)/2.0;
 
       if (_config.getBool("stm.magnet.build",false)){
-        yExtentLow          = _config.getDouble("stm.magnet.halfHeight");
-        x_vd_halflength     = _config.getDouble("stm.magnet.halfWidth");
+        yExtentLow          = _config.getDouble("stm.magnet.holeHalfHeight");
+        x_vd_halflength     = _config.getDouble("stm.magnet.holeHalfWidth");
       } else {
         yExtentLow      = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
         x_vd_halflength = (CRS->getSectorHalfLengths("D"))[0];
@@ -1812,6 +1807,85 @@ namespace mu2e {
 
           }
       }
+
+    vdId = VirtualDetectorId::STM_Final;
+    if ( vdg->exist(vdId) ) {
+      const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
+      const double vdRIn  = 0.0;
+      const double vdROut = _config.getDouble("vd.STMFin.r");
+      const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
+      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                   vdParams,
+                                   downstreamVacuumMaterial,
+                                   0,
+                                   vdg->getLocal(vdId), //local position w.r.t. parent
+                                   parent,
+                                   vdId,
+                                   vdIsVisible, //
+                                   G4Color::White(),
+                                   vdIsSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   false
+                                   );
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+             << " at " << vdg->getGlobal(vdId) << endl
+             << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
+        cout << __func__ << "    VD parameters: " << vdParams << endl;
+        cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+      }
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+    }
+
+    // placing virtual detector at exit of DS neutron shielding
+
+    vdId = VirtualDetectorId::STM_UpStrHole;
+
+    VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
+    CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+
+    if( vdg->exist(vdId) ) {
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+      }
+
+
+      // The following code is adding the inner part of vd 86 to account for
+      // overlapping of old VD boundaries with the STM_CRVShieldPipe
+
+      VolumeInfo vdInfo;
+
+      double shieldHoleRadius = _config.getDouble("stm.shield.rIn")*CLHEP::mm;
+
+      const TubsParams vdParams(0, shieldHoleRadius, vdg->getHalfLength());
+
+      VolumeInfo vdHoleInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                       vdParams,
+                                       downstreamVacuumMaterial,
+                                       0,
+                                       vdg->getGlobal(vdId) - parentInMu2e, //position w.r.t. parent
+                                       parent,
+                                       vdId,
+                                       vdIsVisible,
+                                       G4Color::Red(),
+                                       vdIsSolid,
+                                       forceAuxEdgeVisible,
+                                       placePV,
+                                       false
+                                       );
+
+      doSurfaceCheck && checkForOverlaps(vdHoleInfo.physical, _config, verbosityLevel>0);
+
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+             << " at " << vdg->getGlobal(vdId) << endl
+             << " at " << vdg->getGlobal(vdId) - parentInMu2e <<" or local "<< vdg->getLocal(vdId)<< " w.r.t. parent (HallAir) " << endl;
+        cout << __func__ << "    VD parameters: " << vdParams << endl;
+        cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+      }
+    }
+
 
   } // constructVirtualDetectors()
 }

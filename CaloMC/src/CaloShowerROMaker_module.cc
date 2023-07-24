@@ -12,6 +12,7 @@
 
 #include "Offline/CaloMC/inc/CaloPhotonPropagation.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/DataProducts/inc/CrystalId.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
@@ -262,7 +263,7 @@ namespace mu2e {
               art::Ptr<CaloShowerStep> stepPtr = art::Ptr<CaloShowerStep>(showerHandle,idx);
 
               int   crystalID  = step.volumeG4ID();
-              int   SiPMIDBase = cal.caloIDMapper().SiPMIDFromCrystalID(crystalID);
+              int   SiPMIDBase = CrystalId(crystalID).SiPMId(CaloConst::SiPM0);
               float posZ       = step.position().z();
 
               float edep_corr(step.energyDepG4());

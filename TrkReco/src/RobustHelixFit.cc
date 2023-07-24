@@ -296,7 +296,7 @@ namespace mu2e
     // float          minX(30);
     // float          maxX(530);
     // float          stepX(20);
-    int            hist[_initFZNBins] = {0};
+    vector<int>       hist(_initFZNBins,0);
     // int            nbins(25);
     int            wg      = 1;
     unsigned       counter = 0;
@@ -955,7 +955,7 @@ void RobustHelixFit::fitFZ(RobustHelixFinderData& HelixData) {
   // float          minX(10);
   // float          maxX(510);//500
   // float          stepX(4); //10
-  int            hist[_fitFZNBins] = {0};// 49
+  vector<int>       hist(_fitFZNBins,0);// 49
   // int            nbins(125);     // 49
 
   //iterate over lambda and loop resolution

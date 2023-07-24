@@ -20,6 +20,7 @@
 
 // Mu2e includes.
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
@@ -268,7 +269,7 @@ namespace mu2e {
     int nSiPM = cal.nCrystal()*cal.caloInfo().getInt("nSiPMPerCrystal");
     cout << "Information about the disk Calorimeter: "  << endl;
     cout << "Number of disks:    " << cal.nDisk()      << endl;
-    cout << "Number of Readouts: " << nSiPM << " "  << cal.caloIDMapper().nSiPMPerCrystal() << " " << nSiPM/cal.caloIDMapper().nSiPMPerCrystal() << endl;
+    cout << "Number of Readouts: " << nSiPM << " "  << CaloConst::_nSiPMPerCrystal << " " << nSiPM/CaloConst::_nSiPMPerCrystal << endl;
     cout << "Hex side size:      " << 2.0*cal.caloInfo().getDouble("crystalXYLength") << endl;
 
     cout << "Depth:              " << cal.caloInfo().getDouble("crystalZLength")   << endl;

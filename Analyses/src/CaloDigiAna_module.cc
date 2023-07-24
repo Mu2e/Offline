@@ -26,6 +26,7 @@
 // Mu2e includes.
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -141,7 +142,7 @@ namespace mu2e {
     for (int i=0; i< nCalodigi; ++i){
       caloDigi   = &caloDigiCol->at(i);
       roId       = caloDigi->SiPMID();
-      crystalID  = _calorimeter->caloIDMapper().crystalIDFromSiPMID(roId);
+      crystalID  = CaloSiPMId(roId).crystal().id();
       diskId     = _calorimeter->crystal(crystalID).diskID();
       ++nDigi[diskId];
 

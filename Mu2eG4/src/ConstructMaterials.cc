@@ -1601,6 +1601,16 @@ namespace mu2e {
       wires->AddMaterial(findMaterialOrThrow("G4_Au"), 0.06);
     }
 
+    //Carbon steel
+    mat = uniqueMaterialOrThrow( "MildSteel"); // DocDB-42993
+    {
+      G4Material* MildSteel = new G4Material(mat.name, 7.86*CLHEP::g/CLHEP::cm3, 4); //used an example density of steel
+      MildSteel->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.0100);
+      MildSteel->AddMaterial(findMaterialOrThrow("G4_Si"), 0.0025);
+      MildSteel->AddMaterial(findMaterialOrThrow("G4_C" ), 0.0025);
+      MildSteel->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.9850);
+    }
+
     // Completed constructMu2eMaterials2(), second function for
     // building all Mu2e materials.
 

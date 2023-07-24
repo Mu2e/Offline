@@ -77,6 +77,6 @@ namespace mu2e {
     std::vector<Row> _rows;
 
   };
-  
-};
+
+}
 #endif
