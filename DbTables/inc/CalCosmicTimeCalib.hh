@@ -65,7 +65,6 @@ namespace mu2e {
 
   private:
     std::vector<Row> _rows;
-    //std::map<int,std::size_t> _chanIndex;
   };
 };
 #endif
