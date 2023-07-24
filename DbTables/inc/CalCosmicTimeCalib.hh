@@ -1,7 +1,6 @@
 #ifndef DbTables_CalCosmicTimeCalib_hh
 #define DbTables_CalCosmicTimeCalib_hh
 
-
 #include <string>
 #include <iomanip>
 #include <sstream>
