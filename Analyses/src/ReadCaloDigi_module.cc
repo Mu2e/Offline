@@ -32,6 +32,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -614,7 +615,7 @@ namespace mu2e {
     }
 
     int        ncrystals(_caloCrystals);
-    int        nWordsCrystals       [ncrystals] = {0};
+    vector<int>        nWordsCrystals(ncrystals,0);
 
     std::vector<int>   pulse;
     CLHEP::Hep3Vector  crystalPos(0);
@@ -639,7 +640,7 @@ namespace mu2e {
       recoDigi   = &recoCaloDigiCol->at(i);
       //amplitude  = recoDigi->amplitude()*ADC2mV;
       roId       = recoDigi->SiPMID();
-      crystalID  = _calorimeter->caloIDMapper().crystalIDFromSiPMID(roId);
+      crystalID  = CaloSiPMId(roId).crystal().id();
       diskId     = _calorimeter->crystal(crystalID).diskID();
 
       crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalID).position());

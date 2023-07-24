@@ -12,7 +12,7 @@
 
 namespace mu2e {
   class CalCalibCache : public ProditionsCache {
-  public: 
+  public:
     CalCalibCache(CalCalibConfig const& config):
       ProditionsCache(CalCalib::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
@@ -23,7 +23,7 @@ namespace mu2e {
         //_caltimecalib_p = std::make_unique<DbHandle<CalTimeCalib>>(); TODO - time calibration
       }
     }
-  
+
     set_t makeSet(art::EventID const& eid) {
       ProditionsEntity::set_t cids;
       if(_useDb) {  
@@ -32,20 +32,22 @@ namespace mu2e {
       }
       return cids;
     }
-    
+
     DbIoV makeIov(art::EventID const& eid) {
       DbIoV iov;
       iov.setMax(); // start with full IOV range
-      if(_useDb) { 
-        _calenergycalib_p->get(eid);
+
+      if(_useDb) {
+         _calenergycalib_p->get(eid);
+
         iov.overlap(_calenergycalib_p->iov());
       }
       return iov;
     }
-    
+
     ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
       if(_useDb) {
-        return _maker.fromDb( _calenergycalib_p->getPtr(eid)); 
+        return _maker.fromDb( _calenergycalib_p->getPtr(eid));
       } else {
         return _maker.fromFcl();
       }
@@ -57,6 +59,6 @@ namespace mu2e {
     std::unique_ptr<DbHandle<CalEnergyCalib>> _calenergycalib_p;
     //std::unique_ptr<DbHandle<CalTimeCalib>> _caltimecalib_p;
   };
-};
+}
 
 #endif

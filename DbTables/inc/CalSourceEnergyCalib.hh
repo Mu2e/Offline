@@ -67,7 +67,7 @@ namespace mu2e {
 
     CalSourceEnergyCalib():DbTable(cxname,"cal.sourceenergycalib","roid,fullEPeak,fullErrEPeak,fullWidth,fullErrWidth,firstescEPeak,firstescErrEPeak,firstescWidth,firstescErrWidth,secescEPeak,secescErrEPeak,secescWidth,secescErrWidth, frFull,frFirst,frSecond,chisq"){}
 
-    const Row& row(const int roid) const { 
+    const Row& row(const int roid) const {
                 return _rows.at(roid); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
@@ -113,6 +113,6 @@ namespace mu2e {
   private:
     std::vector<Row> _rows;
   };
-  
-};
+
+}
 #endif

@@ -65,5 +65,5 @@ namespace mu2e {
   private:
     std::vector<Row> _rows;
   };
-};
+}
 #endif

@@ -19,6 +19,7 @@ namespace mu2e {
     constexpr static std::size_t nChanPerBar = 4;
     // some bars have only 2 SiPMs so this count is sparse
     constexpr static std::size_t nChannels = nBars*nChanPerBar;
+    constexpr static std::size_t nLayers = 4;
     // not all the implied possible channels below are active
     // these are the dimensions of sparse containers
     constexpr static std::size_t nChanPerFEB = 64;
