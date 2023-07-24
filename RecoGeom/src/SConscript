@@ -23,11 +23,11 @@ helper.make_plugins([mainlib,
 
 BINLIBS   = [ mainlib,
 'KinKal_Trajectory',
+'KinKal_Geometry',
 'KinKal_General',
 'GenVector',
 'MathCore']
-helper.make_bin("RecoGeomTest",BINLIBS,[])
-helper.make_bin("IntersectionTest",BINLIBS,[])
+#helper.make_bin("RecoGeomTest",BINLIBS,[])
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
