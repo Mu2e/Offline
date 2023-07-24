@@ -86,7 +86,7 @@ namespace mu2e {
     if(shptr_){
       ca_ = shptr_->closestApproach();
     } else {
-      CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(axis_.range().mid(),axis_.range().mid());
+      CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(axis_.timeAtMidpoint(),axis_.timeAtMidpoint());
       ca_ = CA(ktrajptr,axis_,tphint,precision());
       if(!ca_.usable())
         sxconfig_.hitstate_ = WireHitState::inactive;

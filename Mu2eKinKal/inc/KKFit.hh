@@ -206,7 +206,7 @@ namespace mu2e {
     bool retval(false);
     auto caxis = caloAxis(*cluster,calo,pktraj);
     // find the time the seed traj passes the middle of the crystal to form the hint
-    auto pmid = caxis.position3(caxis.range().mid());
+    auto pmid = caxis.position3(caxis.timeAtMidpoint());
     double zt = Mu2eKinKal::zTime(pktraj,pmid.Z(),pktraj.range().end());
     CAHint hint( zt, caxis.t0());
     // compute a preliminary PCA between the seed trajectory and the cluster axis
@@ -259,7 +259,7 @@ namespace mu2e {
             const Straw& straw = tracker.getStraw(strawhit.strawId());
             auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse);
             double psign = wline.direction().Dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
-            double htime = wline.t0() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed();
+            double htime = wline.t0() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed(wline.timeAtMidpoint());
             CAHint hint(zt,htime);
             // compute PCA between the trajectory and this straw
             PCA pca(ftraj, wline, hint, tprec_ );
@@ -377,7 +377,7 @@ namespace mu2e {
         // create PCA from this cluster and the traj
         auto caxis = caloAxis(cc,calo,ftraj);
         // find the time the seed traj passes the middle of the crystal to form the hint
-        auto pmid = caxis.position3(caxis.range().mid());
+        auto pmid = caxis.position3(caxis.timeAtMidpoint());
         double zt = Mu2eKinKal::zTime(ftraj,pmid.Z(),ftraj.range().end());
         CAHint hint( zt, caxis.t0());
         // compute closest approach between the fit trajectory and the cluster axis
