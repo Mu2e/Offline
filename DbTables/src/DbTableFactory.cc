@@ -15,6 +15,7 @@
 #include "Offline/DbTables/inc/CalLaserTimeCalib.hh"
 #include "Offline/DbTables/inc/CalLaserEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalEnergyCalib.hh"
+#include "Offline/DbTables/inc/CalCosmicT0Align.hh"
 
 #include "Offline/DbTables/inc/TrkAlignElement.hh"
 #include "Offline/DbTables/inc/TrkAlignStraw.hh"
@@ -85,6 +86,8 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalLaserTimeCalib());
   } else if (name=="CalEnergyCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalEnergyCalib());
+  } else if (name=="CalCosmicT0Align") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalCosmicT0Align());
   }else {
     throw cet::exception("DBFILE_BAD_TABLE_NAME")
         << "DbTableFactory::newTable call with bad table name: " + name + "\n";
