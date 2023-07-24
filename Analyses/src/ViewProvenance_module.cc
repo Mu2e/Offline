@@ -78,4 +78,4 @@ namespace mu2e {
 } // end namespace mu2e
 
 using mu2e::ViewProvenance;
-DEFINE_ART_MODULE(ViewProvenance);
+DEFINE_ART_MODULE(ViewProvenance)

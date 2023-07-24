@@ -63,4 +63,4 @@ namespace mu2e {
 }
 
 using mu2e::CaloShowerUpdater;
-DEFINE_ART_MODULE(CaloShowerUpdater);
+DEFINE_ART_MODULE(CaloShowerUpdater)

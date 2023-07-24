@@ -240,4 +240,4 @@ namespace mu2e {
 
 
 using mu2e::ReadTrackCaloMatching;
-DEFINE_ART_MODULE(ReadTrackCaloMatching);
+DEFINE_ART_MODULE(ReadTrackCaloMatching)

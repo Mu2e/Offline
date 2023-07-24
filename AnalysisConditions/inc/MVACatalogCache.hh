@@ -66,6 +66,6 @@ namespace mu2e {
     // so the db can be completely turned off
     std::unique_ptr<DbHandle<DB> > _tqDb_p;
   };
-};
+}
 
 #endif

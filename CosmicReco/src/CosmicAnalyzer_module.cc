@@ -907,4 +907,4 @@ bool CosmicAnalyzer::findData(const art::Event& evt){
 }
 
 using mu2e::CosmicAnalyzer;
-DEFINE_ART_MODULE(CosmicAnalyzer);
+DEFINE_ART_MODULE(CosmicAnalyzer)

@@ -87,10 +87,10 @@ namespace mu2e {
 
     void PeakFitRoot::adcWaveform2TGraphErrors(TrkTypes::ADCWaveform const& adcData, TGraphErrors &fitData) const
     {
-      Double_t adcDataTemp[adcData.size()];
-      Double_t measurementTimes[adcData.size()];
-      Double_t measurementTimesErrors[adcData.size()];
-      Double_t adcDataErrors[adcData.size()];
+      std::vector<Double_t> adcDataTemp(adcData.size());
+      std::vector<Double_t> measurementTimes(adcData.size());
+      std::vector<Double_t> measurementTimesErrors(adcData.size());
+      std::vector<Double_t> adcDataErrors(adcData.size());
 
       for (size_t i = 0; i < adcData.size(); ++i)
       {
@@ -99,7 +99,7 @@ namespace mu2e {
         measurementTimesErrors[i] = 0.0; //_srep.adcPeriod();
         adcDataErrors[i] = 1.0*_srep.analogNoise(StrawElectronics::adc)/_srep.adcLSB(); // should be able to scale the error FIXME!!
       }
-      fitData = TGraphErrors(adcData.size(),measurementTimes,adcDataTemp,measurementTimesErrors,adcDataErrors);
+      fitData = TGraphErrors(adcData.size(),measurementTimes.data(),adcDataTemp.data(),measurementTimesErrors.data(),adcDataErrors.data());
     }
 
 

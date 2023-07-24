@@ -142,7 +142,7 @@ namespace mu2e
                                               const int isector,
                                               const std::string &name,
                                               const CLHEP::Hep3Vector &firstCounter,
-                                              const CLHEP::Hep3Vector *layerOffsets,
+                                              const std::vector<CLHEP::Hep3Vector> &layerOffsets,
                                               const CLHEP::Hep3Vector &VTNCSmallGap,
                                               const CLHEP::Hep3Vector &VTNCLargeGap,
                                               const CLHEP::Hep3Vector &VTNCBetweenModules,
@@ -357,7 +357,7 @@ namespace mu2e
       counterHalfLengths[thicknessDirection]=_counterThickness/2.0;
       counterHalfLengths[widthDirection]=_counterWidth/2.0;
 
-      CLHEP::Hep3Vector layerOffsets[_nLayers];
+      std::vector<CLHEP::Hep3Vector> layerOffsets(_nLayers);
       layerOffsets[0].set(0,0,0);
       for(int j=1; j<_nLayers; j++)
       {

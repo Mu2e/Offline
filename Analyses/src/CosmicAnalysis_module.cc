@@ -614,5 +614,5 @@ namespace mu2e
 }
 
 using mu2e::CosmicAnalysis;
-DEFINE_ART_MODULE(CosmicAnalysis);
+DEFINE_ART_MODULE(CosmicAnalysis)
 

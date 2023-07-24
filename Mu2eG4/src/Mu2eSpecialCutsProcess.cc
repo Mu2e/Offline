@@ -39,13 +39,13 @@ namespace mu2e{
                                                  G4double  ,
                                                  G4double& ,
                                                  G4GPILSelection*
-                                                 ){ return -1.0; };
+                                                 ){ return -1.0; }
 
   //  no operation in  AlongStepDoIt for now
   G4VParticleChange* Mu2eSpecialCutsProcess::AlongStepDoIt(
                                    const G4Track& ,
                                    const G4Step&
-                                   ) { return nullptr; };
+                                   ) { return nullptr; }
 
   // PostStep (not AtRest)
 

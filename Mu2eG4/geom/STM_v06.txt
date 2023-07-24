@@ -1,0 +1,110 @@
+// (Muon) Stoping Target Monitor (STM)
+// v06 Updates: Correct magnet dimensions, update shielding thickness
+
+#include "Offline/Mu2eG4/geom/STM_v05.txt"
+
+/////////////////////////////////////////////////////////////
+// Sweeper magnet parameters
+
+string stm.magnet.material             = "MildSteel";
+double stm.magnet.halfLength           =  584.2;
+double stm.magnet.halfWidth            =  149.45; //set to be the hole width + 1.75"
+double stm.magnet.halfHeight           =  247.45; //set to be the hole width + 1.75"
+double stm.magnet.holeHalfHeight       =  203.0;  // 12 inch high hole
+double stm.magnet.holeHalfWidth        =  105.0;  // this must be larger than stm.pipe.rOut
+double stm.magnet.holeXOffset          =  0.0; //offset the magnet hole axis wrt the outer shell
+double stm.magnet.holeYOffset          =  0.0; //ignore if the top of the yoke is thicker than the bottom, set identical
+bool   stm.magnet.hasLiner             =  false; //turn off the poly liner
+bool   stm.magnet.usePipeAsOrigin      =  true; //place magnet based on pipe wrt shield wall
+bool   stm.magnet.centerHole           =  true; //place the hole center along viewing axis
+double stm.magnet.field                =  0.0;// 0.051;  // Tesla (510 Gauss) --> set to 0 if assuming no magnetized material
+bool   stm.magnet.field.visible        =  false;
+
+/////////////////////////////////////////////////////////////
+// turn off the support table material
+string stm.magnet.stand.material       = "G4_AIR";
+
+/////////////////////////////////////////////////////////////
+// Poly absorber downstream of the IFB window
+
+bool   stm.ifbPoly.build               = true;
+double stm.ifbPoly.rIn                 =   0.0;
+double stm.ifbPoly.rOut                = 110.0;
+double stm.ifbPoly.halfLength          =   3.0; //z half length
+double stm.ifbPoly.gap                 =  10.0; //gap between poly and IFB window
+string stm.ifbPoly.material            = "Polyethylene094";
+
+/////////////////////////////////////////////////////////////
+// Poly absorber in the shielding hole upstream of trolly
+
+bool   stm.shieldingHolePoly.build               = true;
+double stm.shieldingHolePoly.rIn                 =   0.0;
+double stm.shieldingHolePoly.rOut                = 110.0;
+double stm.shieldingHolePoly.halfLength          =  25.0; //z half length
+double stm.shieldingHolePoly.gap                 = 215.0; //gap between poly and IFB window, to put into shielding hole
+string stm.shieldingHolePoly.material            = "Polyethylene094";
+
+/////////////////////////////////////////////////////////////
+// FOV collimator
+
+bool   stm.FOVcollimator.liner.build            =  false; //remove the poly liner
+double stm.FOVcollimator.liner.cutOutHalfLength =    0.0; //no region with rectangular cut-out
+double stm.FOVcollimator.UpStrSpace             =    3.0; //gap between magnet and FOV collimator
+double stm.FOVcollimator.halfWidth              =  149.45; //match the sweeper magnet
+double stm.FOVcollimator.halfHeight             =  247.45;
+double stm.FOVcollimator.halfLength             =   63.5;
+double stm.FOVcollimator.hole1.radiusUpStr      =   71.0; //make it a cylindrical hole, so both radii are the same
+double stm.FOVcollimator.hole1.radiusDnStr      =   71.0;
+string stm.FOVcollimator.material               = "G4_Pb";
+
+/////////////////////////////////////////////////////////////
+// Poly plug in the FOV collimator
+
+bool   stm.FOVcollimator.plug.build      = true;
+double stm.FOVcollimator.plug.radius     = 70.99; //make smaller than the FOVcollimator.hole1 radii
+double stm.FOVcollimator.plug.halfLength = 50.;
+double stm.FOVcollimator.plug.offset     = 0.; //offset from downstream end of hole
+string stm.FOVcollimator.plug.material   = "Polyethylene094";
+
+/////////////////////////////////////////////////////////////
+// CRV shield pipe + mating block
+
+double stm.shield.rIn                  = 139.70;
+double stm.shield.rOut                 = 171.45;
+bool   stm.shield.hasLiner             = false; //don't build the poly liner in the CRV shield pipe
+double stm.shield.widthLiner           = 0.0;
+string stm.shield.material             = "MildSteel";
+double stm.shield.pipe.halfLength      = 254.0;
+bool   stm.shield.matchPipeBlock       = true; //position the mating block based on the pipe position/length
+double stm.shield.DnStrWall.holeRadius = 184.21; //added 10um to prevent an overlap with the shield pipe
+double stm.shield.DnStrWall.halfLength =  25.40; //DnStrWall = mating block between CRV shield pipe and the magnet
+double stm.shield.DnStrWall.halfHeight = 244.475;
+double stm.shield.DnStrWall.halfWidth  = 197.485;
+// double stm.shield.DnStrWall.halfHeight = 247.45; //match to the magnet
+// double stm.shield.DnStrWall.halfWidth  = 149.45;
+double stm.shield.DnStrWall.gap        = 0.10; //add small gap between the mating block and the magnet
+double stm.shield.UpStrWall.gap        = -223.75; //position is based on CRV, not shielding, so correct by adjusting the gap so the gap is ~50 +-20 um (measured in ROOT viewer)
+string stm.shield.DnStrWall.material   = "StainlessSteel"; //Stainless steel, not steel like the other components
+
+/////////////////////////////////////////////////////////////////////////////////////
+//Adding hole vd in shield pipe for vd 86
+int stm.verbosityLevel = 0;
+bool vd.STMUpStrHole.build = true;
+bool   vd.STMUpStr.build     = true; //VD86 Rectangle in x-y plane, same size as the CRV (1mm dnStr of CRV)
+bool   vd.STMMagDnStr.build  = true; //VD87 Rectangle in x-y plane, same size as the CRV
+bool   vd.STMSSCollUpStr.build = true; //VD101 Disk upstream of Spot-Size collimator
+double vd.STMSSCollUpStr.r     = 200.0;// r=20cm
+bool   vd.STMCollDnStr.build = true; //VD88 Disk downstream of Spot-Size collimator
+double vd.STMCollDnStr.r     = 200.0;// r=20cm
+bool   vd.STMDet1UpStr.build = true; //VD89 Disk in x-y plane, same size as the Ge detector 1
+bool   vd.STMDet2UpStr.build = true; //VD90 Disk in x-y plane, same size as the Ge detector 2
+bool   vd.STMFieldOfViewCollDnStr.build = true; //VD100
+// build virtual detector inside DS Neutron Shielding
+bool   vd.DSNeutronShieldExit.build = true; //VD81
+double vd.DSNeutronShieldExit.r     =  110.0;//Must be the same as the following 2 values,
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -16,7 +16,6 @@ double calorimeter.caseThickness                = 0;
 
 
 //disk description
-int    calorimeter.numberOfDisks               =  2;
 vector<double> calorimeter.diskInnerRadius     = {352.,352.}; //mm
 vector<double> calorimeter.diskOuterRadius     = {664.,664.}; //mm
 vector<double> calorimeter.diskRotationAngle   = {0.,0.};     //rad

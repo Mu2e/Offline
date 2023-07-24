@@ -98,4 +98,4 @@ namespace mu2e {
 }
 
 using mu2e::TrkQualFilter;
-DEFINE_ART_MODULE(TrkQualFilter);
+DEFINE_ART_MODULE(TrkQualFilter)

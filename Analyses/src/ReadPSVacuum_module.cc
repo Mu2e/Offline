@@ -179,4 +179,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::ReadPSVacuum;
-DEFINE_ART_MODULE(ReadPSVacuum);
+DEFINE_ART_MODULE(ReadPSVacuum)

@@ -1,47 +1,80 @@
 #include "Offline/CaloConditions/inc/CaloDAQMapMaker.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/DataProducts/inc/CaloConst.hh"
+#include "cetlib_except/exception.h"
 #include <vector>
+#include <fstream>
 
+using namespace std;
 
 namespace mu2e {
-  typedef std::shared_ptr<CaloDAQMap> ptr_t;
 
-  ptr_t CaloDAQMapMaker::fromFcl() {
+  CaloDAQMap::ptr_t CaloDAQMapMaker::fromFcl() {
 
-    // creat this at the beginning since it must be used,
-    // partially constructed, to complete the construction
-    auto ptr = std::make_shared<CaloDAQMap>(_config.DIRAC2CaloMap(), _config.Calo2DIRACMap());
+    if (_config.verbose()>0) {
+      cout << "CaloDAQMapMaker::fromFcl making nominal CaloDAQMap\n";
+    }
+
+    ConfigFileLookupPolicy configFile;
+    string fileSpec = configFile(_config.fileSpec());
+    if (_config.verbose()>0) {
+      cout << "CaloDAQMapMaker::fromFcl reading from " << fileSpec << "\n";
+    }
+
+    ifstream ordFile;
+    ordFile.open(fileSpec);
+    if (!ordFile.is_open()) {
+      throw cet::exception("CALODAQMAP_OPEN_FAILED")
+        << " failed to open file " << fileSpec << "\n";
+    }
+
+    string line;
+
+    CaloDAQMap::RawArray raw2Offline;
+    CaloDAQMap::OfflineArray offline2Raw;
+    uint16_t oid,rid,nRead(0);
+
+    ordFile >> oid >> rid;
+    while (!ordFile.eof()) {
+
+      if(rid >= CaloConst::_nRawChannel) {
+        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CaloDAQMapMaker read invalid rawId" << rid << endl;
+      }
+      if(oid != CaloConst::_invalid && oid >= CaloConst::_nChannel) {
+        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CaloDAQMapMaker read invalid offlineId " << oid << endl;
+      }
+
+      nRead++;
+
+      raw2Offline[rid] = CaloSiPMId(oid);
+
+      if(oid < CaloConst::_nChannel) {
+        offline2Raw[oid] = CaloRawSiPMId(rid);
+      }
+
+      ordFile >> oid >> rid;
+
+    }
+
+    if(nRead != CaloConst::_nRawChannel) {
+      throw cet::exception("CALODAQMAPMAKER_COUNT")
+        << "CaloDAQMapMaker read the wrong number of id's "
+        << nRead << ", expected " << CaloConst::_nRawChannel << endl;
+    }
+
+    auto ptr = make_shared<CaloDAQMap>(raw2Offline, offline2Raw);
 
     return ptr;
 
   } // end fromFcl
 
-  ptr_t CaloDAQMapMaker::fromDb(CalRoIDMapDIRACToOffline::cptr_t tdtc,
-                                CalRoIDMapOfflineToDIRAC::cptr_t tctd ) {
+
+  CaloDAQMap::ptr_t CaloDAQMapMaker::fromDb() {
 
     // initially fill from fcl to get all the constants
     auto ptr = fromFcl();
 
-    // now fill it up ..
-    // For calorimeter local array#1: DIRAC2Calo
-    // Loops over NumCaloDIRAC*NumChanDIRAC channels
-    //
-    int NumDIRACTotChannel(CaloConst::_nRawChannel);
-    std::vector<uint16_t> dirac2calo(NumDIRACTotChannel);
-    for (int i=0;i<NumDIRACTotChannel;i++){
-      dirac2calo[i] = tdtc->rowAt(i).caloRoID();
-    }
-    ptr->setDIRAC2CaloMap(dirac2calo);
-    //
-    // For Calo crystals to DIRAC: 674*2*2 values
-    //
-    int NumCaloTotChannel(CaloConst::_nChannel);
-    std::vector<uint16_t> calo2dirac(NumCaloTotChannel);
-
-    for (int i=0;i<NumCaloTotChannel;i++){
-      calo2dirac[i] = tctd->rowAt(i).diracID();
-    }
-    ptr->setCalo2DIRACMap(calo2dirac);
+    // swaps table added here when needed
 
     return ptr;
 

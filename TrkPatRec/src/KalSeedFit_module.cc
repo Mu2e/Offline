@@ -564,4 +564,4 @@ namespace mu2e
 
 }// mu2e
 using mu2e::KalSeedFit;
-DEFINE_ART_MODULE(KalSeedFit);
+DEFINE_ART_MODULE(KalSeedFit)

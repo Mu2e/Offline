@@ -216,4 +216,4 @@ namespace mu2e {
 }
 
 using mu2e::StrawHitReco;
-DEFINE_ART_MODULE(StrawHitReco);
+DEFINE_ART_MODULE(StrawHitReco)

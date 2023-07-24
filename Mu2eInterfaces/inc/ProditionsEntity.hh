@@ -20,6 +20,6 @@ namespace mu2e {
     set_t _cids;
     const std::string _name;
   };
-};
+}
 
 #endif

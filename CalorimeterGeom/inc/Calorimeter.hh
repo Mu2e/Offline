@@ -10,7 +10,6 @@
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/CaloGeomUtil.hh"
 #include "Offline/CalorimeterGeom/inc/CaloInfo.hh"
-#include "Offline/CalorimeterGeom/inc/CaloIDMapper.hh"
 #include "Offline/CalorimeterGeom/inc/Disk.hh"
 #include "Offline/CalorimeterGeom/inc/Crystal.hh"
 
@@ -40,7 +39,6 @@ namespace mu2e {
 
            // calorimeter geometry information
            virtual const CaloInfo&               caloInfo()     const = 0;
-           virtual const CaloIDMapper&           caloIDMapper() const = 0;
            virtual const CaloGeomUtil&           geomUtil()     const = 0;
 
 

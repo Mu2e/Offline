@@ -378,4 +378,4 @@ namespace mu2e
 }
 
 using mu2e::CosmicMCRecoDiff;
-DEFINE_ART_MODULE(CosmicMCRecoDiff);
+DEFINE_ART_MODULE(CosmicMCRecoDiff)

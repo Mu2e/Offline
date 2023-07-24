@@ -295,4 +295,4 @@ namespace mu2e {
 }
 
 using mu2e::CalTimePeakFinder;
-DEFINE_ART_MODULE(CalTimePeakFinder);
+DEFINE_ART_MODULE(CalTimePeakFinder)

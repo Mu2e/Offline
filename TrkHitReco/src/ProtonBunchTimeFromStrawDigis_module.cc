@@ -129,5 +129,5 @@ namespace mu2e {
 }
 
 using mu2e::ProtonBunchTimeFromStrawDigis;
-DEFINE_ART_MODULE(ProtonBunchTimeFromStrawDigis);
+DEFINE_ART_MODULE(ProtonBunchTimeFromStrawDigis)
 
