@@ -222,8 +222,13 @@ CprTrigger: { @table::CprTrigger
             }
         }
         TTCalSeedFitDep                  : { @table::CprTrigger.producers.TTCalSeedFit
-            fitparticle                : @local::Particle.eplus
-            SeedCollection             : "TTCalHelixMergerDeP"
+            ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
+                HelixSeedCollections   : [ "TTCalHelixMergerDeP" ]
+            }
+            KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
+                FitParticle : -11
+                FitDirection : 0
+            }
         }
         TTCalSeedFitUCCDep             : { @table::CprTrigger.producers.TTCalSeedFit
             ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
@@ -250,7 +255,7 @@ CprTrigger: { @table::CprTrigger
     filters : { @table::CprTrigger.filters
         TTCalHelixFinderDe              : { @table::CprTrigger.filters.TTCalHelixFinder    }
         TTCalHelixFinderUCCDe           : { @table::CprTrigger.filters.TTCalHelixFinderUCC }
-        TTCalHelixFinderDm              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.muminus }
+        TTCalHelixFinderDm              : { @table::CprTrigger.filters.TTCalHelixFinder    FitParticle: @local::Particle.muminus }
     }
 
     sequences : {
