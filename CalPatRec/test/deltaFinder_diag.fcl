@@ -56,9 +56,6 @@ physics : {
     analyzers : { @table::stntuple.analyzers
         DeltaFinderAna: { @table::CalPatRec.analyzers.DeltaFinderAna
             debugLevel                    : 0 ## 1
-
-            chfCollTag                    : "DeltaFinder:ComboHits"
-            shfCollTag                    : "DeltaFinder:StrawHits"
         }
     }
 
