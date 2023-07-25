@@ -50,10 +50,15 @@ TTrobustHelixFinderUe : { @table::RobustHelixFinder
 # Kalman fit configuration for the seed fit (least squares configuration of Kalman fit)
 
 # same for trigger
-TTKSF : { @table::KSF
-  ComboHitCollection        : "TTmakeSH"
-  #    SeedCollection       : "TThelixFinder:Positive"
-  SeedCollection        : "TTHelixMergerDeM"
+TTKSF : {  @table::TTMu2eKinKal.producers.TTKKDeMSeedFit
+    ModuleSettings : { @table::TTMu2eKinKal.producers.TTKKDeMSeedFit.ModuleSettings
+        ComboHitCollection     : "TTmakeSH"
+        HelixSeedCollections   : [ "TTHelixMergerDeM" ]
+        CaloClusterCollection  : "CaloClusterFast"
+        StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+        PrintLevel             : 0
+        SaveAllFits            : false
+    }
 }
 # Final Kalman fit, including material and magnetic inhomogeneity effects
 TTKFF : { @table::KFF
@@ -63,38 +68,15 @@ TTKFF : { @table::KFF
 
 # seed Fit configuration for specific particles
 #  First, downstream electrons
-TTKSFDeM                      : @local::TTKSF
-TTKSFDeM.ComboHitCollection   : "TTmakeSH"
-#TTKSFDeM.SeedCollection       : "TThelixFinder:Positive"
-TTKSFDeM.SeedCollection       : "TTHelixMergerDeM"
-TTKSFDeM.fitparticle        : @local::Particle.eminus
-TTKSFDeM.fitdirection       : @local::FitDir.downstream
+TTKSFDeM                                     : @local::TTKSF
+TTKSFDeM.ModuleSettings.HelixSeedCollections : ["TTHelixMergerDeM"]
+TTKSFDeM.KKFitSettings.FitParticle           : 11
+TTKSFDeM.KKFitSettings.FitDirection          : 0
 
-TTKSFDeP                      : @local::TTKSF
-TTKSFDeP.ComboHitCollection   : "TTmakeSH"
-#TTKSFDeP.SeedCollection       : "TThelixFinder:Negative"
-TTKSFDeP.SeedCollection       : "TTHelixMergerDeP"
-TTKSFDeP.fitparticle        : @local::Particle.eplus
-TTKSFDeP.fitdirection       : @local::FitDir.downstream
-
-# Final Fit configuration for specific particles
-#  First, downstream electrons
-TTKFFDeM          : @local::KFF
-TTKFFDeM.SeedCollection       : "TTKSFDeM"
-TTKFFDeM.fitparticle        : @local::Particle.eminus
-TTKFFDeM.fitdirection       : @local::FitDir.downstream
-TTKFFDeM.ComboHitCollection : "TTmakeSH"
-TTKFFDeM.StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
-TTKFFDeM.CaloClusterCollection  : "CaloClusterFast"
-
-#  downstream positrons
-TTKFFDeP          : @local::KFF
-TTKFFDeP.SeedCollection       : "TTKSFDeP"
-TTKFFDeP.fitparticle        : @local::Particle.eplus
-TTKFFDeP.fitdirection       : @local::FitDir.downstream
-TTKFFDeP.ComboHitCollection : "TTmakeSH"
-TTKFFDeP.StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
-TTKFFDeP.CaloClusterCollection  : "CaloClusterFast"
+TTKSFDeP                                     : @local::TTKSF
+TTKSFDeP.ModuleSettings.HelixSeedCollections : ["TTHelixMergerDeP"]
+TTKSFDeP.KKFitSettings.FitParticle           : -11
+TTKSFDeP.KKFitSettings.FitDirection          : 0
 
 # Declare a table with all the modules needed for track reconstruction
 # This should be divided into sim, reco FIXME!
@@ -138,25 +120,49 @@ TprTrigger : {
     TTKSFDeM       : @local::TTKSFDeM
     TTKSFDeP       : @local::TTKSFDeP
 
+    TTKSFDmuM      : { @table::TTKSFDeM
+        ModuleSettings : { @table::TTKSFDeM.ModuleSettings
+            HelixSeedCollections   : [ "TTHelixFinderMergerDmuM" ]
+        }
+        KKFitSettings  : { @table::TTKSFDeM.KKFitSettings
+            FitParticle  : 13
+            FitDirection : 0
+        }
+    }
+
+    TTKSFDmuP      : { @table::TTKSFDeP
+        ModuleSettings : { @table::TTKSFDeP.ModuleSettings
+            HelixSeedCollections   : [ "TTHelixFinderMergerDmuP" ]
+        }
+        KKFitSettings  : { @table::TTKSFDeP.KKFitSettings
+            FitParticle  : -13
+            FitDirection : 0
+        }
+    }
 
     TTKSFUCCDeM      : { @table::TTKSFDeM
-      ComboHitCollection    : "TTmakeSHUCC"
-      SeedCollection        : "TThelixFinderUCC:Positive"
+        ModuleSettings : { @table::TTKSFDeM.ModuleSettings
+            ComboHitCollection     : "TTmakeSHUCC"
+            HelixSeedCollections   : [ "TThelixFinderUCC:Positive" ]
+        }
     }
     TTKSFUCCDeP      : { @table::TTKSFDeP
-      ComboHitCollection    : "TTmakeSHUCC"
-      SeedCollection        : "TThelixFinderUCC:Negative"
+        ModuleSettings : { @table::TTKSFDeP.ModuleSettings
+            ComboHitCollection     : "TTmakeSHUCC"
+            HelixSeedCollections   : [ "TThelixFinderUCC:Negative" ]
+        }
     }
 
     TTFKSFDeM      : { @table::TTKSFDeM
-      SeedCollection : "TTfastHelixFinder:Positive"
+        ModuleSettings : { @table::TTKSFDeM.ModuleSettings
+            HelixSeedCollections   : [ "TTfastHelixFinder:Positive" ]
+        }
     }
     TTFKSFDeP      : { @table::TTKSFDeP
-      SeedCollection : "TTfastHelixFinder:Negative"
+        ModuleSettings : { @table::TTKSFDeP.ModuleSettings
+            HelixSeedCollections   : [ "TTfastHelixFinder:Negative" ]
+        }
     }
-
-    TTKFFDeM             : @local::TTKFFDeM
-    TTKFFDeP             : @local::TTKFFDeP
   }
 
   sequences : {
@@ -165,9 +171,6 @@ TprTrigger : {
     # production sequence to find TrackSeeds
     KSFDeM          : [ TTtimeClusterFinder, TThelixFinder, TTKSFDeM ]
     KSFDeP          : [ TTtimeClusterFinder, TThelixFinder, TTKSFDeP ]
-    # production sequence to find KalReps
-    KFFDeM          : [ TTtimeClusterFinder, TThelixFinder, TTKSFDeM, TTKFFDeM ]
-    KFFDeP          : [ TTtimeClusterFinder, TThelixFinder, TTKSFDeP, TTKFFDeP ]
   }
 
   # define standard outputs
