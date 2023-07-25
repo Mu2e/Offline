@@ -58,14 +58,12 @@ namespace mu2e {
     _printfreq          (pset.get<int>   ("printFrequency"                 )),
     _useAsFilter        (pset.get<int>   ("useAsFilter"                    )),
     _shLabel            (pset.get<string>("StrawHitCollectionLabel"        )),
-    _shfLabel           (pset.get<string>("StrawHitFlagCollectionLabel"    )),
     _timeclLabel        (pset.get<string>("TimeClusterCollectionLabel"     )),
     _minNHitsTimeCluster(pset.get<int>   ("minNHitsTimeCluster"            )),
     _tpart              ((TrkParticle::type)(pset.get<int>("fitparticle"))),
     _fdir               ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
     _hfinder            (pset.get<fhicl::ParameterSet>("HelixFinderAlg",fhicl::ParameterSet())){
       consumes<ComboHitCollection>(_shLabel);
-      consumes<StrawHitFlagCollection>(_shfLabel);
       consumes<TimeClusterCollection>(_timeclLabel);
 
       std::vector<int> helvals = pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel}); //pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel});
@@ -191,17 +189,6 @@ namespace mu2e {
     //          _shpLabel.data());
     // }
 
-    art::Handle<mu2e::StrawHitFlagCollection> shflagH;
-    if (evt.getByLabel(_shfLabel,shflagH)) {
-      _shfcol = shflagH.product();
-    }
-    else {
-      _shfcol = 0;
-      printf(" >>> ERROR in CalHelixFinder::findData: StrawHitFlagCollection with label=%s not found.\n",
-             _shfLabel.data());
-    }
-
-
     if (evt.getByLabel(_timeclLabel, _timeclcolH)) {
       _timeclcol = _timeclcolH.product();
     }
@@ -213,7 +200,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // done
 //-----------------------------------------------------------------------------
-    return (_chcol != 0) && (_shfcol != 0) /*&& (_shpcol != 0) */&& (_timeclcol != 0);
+   return (_chcol != 0) /*&& (_shpcol != 0) */&& (_timeclcol != 0);
   }
 
 //-----------------------------------------------------------------------------
@@ -251,7 +238,7 @@ namespace mu2e {
     _hfResult._fdir   = _fdir;
     _hfResult._chcol  = _chcol;
     // _hfResult._shpos  = _shpcol;
-    _hfResult._shfcol = _shfcol;
+    //_hfResult._shfcol = _shfcol;
 
     _data.nTimePeaks  = _timeclcol->size();
     for (int ipeak=0; ipeak<_data.nTimePeaks; ipeak++) {
@@ -520,16 +507,17 @@ namespace mu2e {
   int CalHelixFinder::initHelixFinderData(CalHelixFinderData&                Data,
                                           const TrkParticle&                 TPart,
                                           const TrkFitDirection&             FDir,
-                                          const ComboHitCollection*          ComboCollection ,
+                                          // const ComboHitCollection*          ComboCollection ,
                                           // const StrawHitPositionCollection*  ShPosCollection ,
-                                          const StrawHitFlagCollection*      ShFlagCollection) {
+                                          // const StrawHitFlagCollection*      ShFlagCollection) {
+                                          const ComboHitCollection*          ComboCollection ) {
     Data._fit         = TrkErrCode::fail;
     Data._tpart       = TPart;
     Data._fdir        = FDir;
 
     Data._chcol       = ComboCollection;
     // Data._shpos       = ShPosCollection;
-    Data._shfcol      = ShFlagCollection;
+    // Data._shfcol      = ShFlagCollection;
 
     Data._radius      = -1.0;
     Data._dfdz        = 0.;
@@ -544,8 +532,9 @@ namespace mu2e {
     //    double     minT(500.), maxT(2000.);
     for (int i=0; i<nhits; ++i){
       int          index   = TCluster->hits().at(i);
-      StrawHitFlag flag    = _shfcol->at(index);
+      // StrawHitFlag flag    = _shfcol->at(index);
       ComboHit     sh      = _chcol ->at(index);
+      StrawHitFlag flag    = sh.flag();
       int          bkg_hit = flag.hasAnyProperty(StrawHitFlag::bkg);
       if (bkg_hit)                              continue;
       //       if ( (sh.time() < minT) || (sh.time() > maxT) )  continue;

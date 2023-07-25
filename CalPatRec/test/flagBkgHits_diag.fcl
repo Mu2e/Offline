@@ -53,13 +53,13 @@ physics : {
     analyzers : { @table::stntuple.analyzers
         DeltaFinderAna: { @table::CalPatRec.analyzers.DeltaFinderAna
             debugLevel                    : 0 ## 1
+            chCollTag                     : "makePH"
+            sschCollTag                   : "makePH:StrawHits"
             printElectrons                : 1
             printElectronsMinNHits        : 10
             printElectronsMaxFReco        : 1.1
             printElectronHits             : 1
 
-            chfCollTag                    : "FlagBkgHits:ComboHits"
-            shfCollTag                    : "FlagBkgHits:StrawHits"
         }
     }
 
@@ -68,6 +68,7 @@ physics : {
     e1            : [ DeltaFinderAna ] ## MuHitDisplay  ] # defaultOutput ]
     end_paths     : [ e1             ]
 }
+physics.producers.FlagBkgHits.FilterHits : false     ## write out all hits
 
 # physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection", "EnergySelection" ]
 # physics.producers.makePH.MaxDS                     : 5
