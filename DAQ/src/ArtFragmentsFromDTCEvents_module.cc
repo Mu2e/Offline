@@ -184,7 +184,7 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
           auto block = cf.dataAtBlockIndex(0);
           if(block == nullptr) continue;
           auto header = block->GetHeader();
-          if(header->GetSubsystemID() != 2) continue;
+          if(header->GetSubsystemID() != DTCLib::DTC_Subsystem::DTC_Subsystem_CRV) continue;
 
           crvFragColl->emplace_back(cf);
           ++nFrags;

@@ -117,7 +117,7 @@ void CrvDigisFromFragments::produce(Event& event)
         continue;
       }
       auto header = block->GetHeader();
-      if(header->GetSubsystemID() != 2)
+      if(header->GetSubsystemID() != DTCLib::DTC_Subsystem::DTC_Subsystem_CRV)
       {
         throw cet::exception("DATA") << " CRV packet does not have system ID 2";
       }
