@@ -8,7 +8,6 @@
 
 #include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "art/Framework/Principal/Handle.h"
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -25,13 +24,11 @@ namespace mu2e
                                               const art::Handle<CrvDigiMCCollection> &digis,
                                               std::set<art::Ptr<CrvStep> > &steps);
     static void GetInfoFromStepPoints(const std::set<art::Ptr<CrvStep> > &steps,
-                                      const SimParticleTimeOffset &timeOffsets,
                                       double &visibleEnergyDeposited,
                                       double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                       art::Ptr<SimParticle> &mostLikelySimParticle);
     static void GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
                                         const art::Handle<CrvDigiMCCollection> &digis,
-                                        const SimParticleTimeOffset &timeOffsets,
                                         double &visibleEnergyDeposited,
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         art::Ptr<SimParticle> &mostLikelySimParticle);
