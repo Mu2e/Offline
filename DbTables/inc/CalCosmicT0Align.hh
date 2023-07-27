@@ -31,7 +31,7 @@ namespace mu2e {
 
     constexpr static const char* cxname = "CalCosmicT0Align";
 
-    CalCosmicT0Align():DbTable(cxname,"cal.cosmicT0align","roid,Tcorr,Terr,chisq"){}
+    CalCosmicT0Align():DbTable(cxname,"cal.cosmicT0align","roid,tcorr,terr,chisq"){}
 
     const Row& row(std::uint16_t roid) const { return _rows.at(roid); }
     std::vector<Row> const& rows() const {return _rows;}
