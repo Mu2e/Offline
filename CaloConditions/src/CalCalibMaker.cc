@@ -11,7 +11,7 @@ namespace mu2e {
   ptr_t CalCalibMaker::fromFcl() {
   
   if (_config.verbose()) {
-    std::cout << "CRalCalibMaker::fromFcl making nominal CalCalib\n";
+    std::cout << "CalCalibMaker::fromFcl making nominal CalCalib\n";
   }
   CalCalibPar nominal(_config.ADC2MeV(), _config.ECombAlgID(), _config.timeoffset());
 
