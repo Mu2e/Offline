@@ -33,7 +33,8 @@ namespace mu2e {
 
     CalCosmicT0Align():DbTable(cxname,"cal.cosmicT0align","roid,tcorr,terr,chisq"){}
 
-    const Row& row(std::uint16_t roid) const { return _rows.at(roid); }
+    const Row& row(CaloSiPMId  _roid) const {
+                return _rows.at(_roid.id()); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
@@ -66,5 +67,5 @@ namespace mu2e {
   private:
     std::vector<Row> _rows;
   };
-};
+}
 #endif

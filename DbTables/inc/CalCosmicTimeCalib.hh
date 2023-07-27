@@ -32,7 +32,8 @@ namespace mu2e {
 
     CalCosmicTimeCalib():DbTable(cxname,"cal.cosmictimecalib","roid,T0,ErrT0,chisq"){}
 
-    const Row& row(std::uint16_t roid) const { return _rows.at(roid); }
+    const Row& row(CaloSiPMId  _roid) const {
+                return _rows.at(_roid.id()); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
