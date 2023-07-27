@@ -26,15 +26,24 @@ physics :
 {
   producers :
   {
-    CrvDigi:
+    genFrags :
+    {
+       module_type  : ArtFragmentsFromDTCEvents
+       diagLevel    : 10
+       makeCaloFrag : 0
+       makeTrkFrag  : 0
+       makeCRVFrag  : 1
+       makeSTMFrag  : 0
+
+    }
+    CrvDigi :
     {
       @table::DAQ.producers.CrvDigi
-      diagLevel: 2
-      fragmentsTag: "daq:DTCEVT"
+      diagLevel : 2
     }
   }
 
-  t1 : [ CrvDigi ]
+  t1 : [ genFrags, CrvDigi]
   e1 : [ outfile ]
 
   trigger_paths  : [t1]
