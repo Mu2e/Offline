@@ -27,7 +27,7 @@ namespace mu2e {
     std::vector<std::string> const& getTrigPaths   () const  { return _trigPathsNames; }
     std::string              const& getTrigPath    (unsigned int const i) const { return _trigPathsNames.at(i); }
     std::string              const  getTrigPathName(unsigned int const i) const;
-
+    size_t                   const  getTrigBit     (unsigned int const pathID) const;
     size_t    findTrigPath(std::string const& name) const;
     size_t    find(std::map<std::string, unsigned int> const& posmap, std::string const& name) const;
     size_t    findTrigPathID(std::string const& name) const;

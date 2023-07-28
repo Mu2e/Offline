@@ -11,8 +11,14 @@
 #include "Offline/DbService/inc/DbService.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/ProditionsService/inc/ProditionsService.hh"
+
+#include "Offline/CaloConditions/inc/CaloDAQMapCache.hh"
+#include "Offline/CaloConditions/inc/CalCalibCache.hh"
+
+#include "Offline/DAQConditions/inc/EventTimingCache.hh"
 #include "Offline/STMConditions/inc/STMEnergyCalibCache.hh"
 #include "Offline/SimulationConditions/inc/SimBookkeeperCache.hh"
+
 #include "Offline/TrackerConditions/inc/AlignedTrackerCache.hh"
 #include "Offline/TrackerConditions/inc/FullReadoutStrawCache.hh"
 #include "Offline/TrackerConditions/inc/Mu2eDetectorCache.hh"
@@ -22,6 +28,10 @@
 #include "Offline/TrackerConditions/inc/StrawPhysicsCache.hh"
 #include "Offline/TrackerConditions/inc/StrawResponseCache.hh"
 #include "Offline/TrackerConditions/inc/TrackerStatusCache.hh"
+
+#include "Offline/AnalysisConditions/inc/TrkQualCatalogCache.hh"
+#include "Offline/SimulationConditions/inc/SimBookkeeperCache.hh"
+
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include <iostream>
 #include <typeinfo>
@@ -81,7 +91,9 @@ ProditionsService::ProditionsService(Parameters const& sTable,
   auto bkc =
       std::make_shared<mu2e::SimBookkeeperCache>(_config.simbookkeeper());
   _caches[bkc->name()] = bkc;
-
+  auto cec = 
+      std::make_shared<mu2e::CalCalibCache>(_config.calCalib());
+  _caches[cec->name()] = cec;
   if (_config.verbose() > 0) {
     cout << "Proditions built caches:" << endl;
     for (auto cc : _caches) {

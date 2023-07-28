@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <set>
+#include <vector>
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -133,7 +134,7 @@ namespace mu2e {
     _hNstraw->Fill(hits.size());
 
     // ntuple buffer.
-    float nt[_ntup->GetNvar()];
+    vector<float> nt(_ntup->GetNvar());
 
     // Loop over all hits.
     for ( size_t i=0; i<hits.size(); ++i ){
@@ -163,7 +164,7 @@ namespace mu2e {
       nt[6]  = straw.id().getLayer();
       nt[7]  = hit.eDep()/CLHEP::keV;
 
-      _ntup->Fill(nt);
+      _ntup->Fill(nt.data());
 
     } // end loop over hits.
 

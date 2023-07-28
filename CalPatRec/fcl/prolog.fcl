@@ -343,9 +343,9 @@ CalPatRec : { @table::CalPatRec
             goodHitMask                 : [ "TimeDivision" ]    ## is there a point in using combohits made
                                                                 ## out of straw hits with an apriory wrong wdist ?
             bkgHitMask                  : [  ]                  ##
-            writeFilteredComboHits      : 0                     ##
-            writeStrawHitFlags          : 1                     ## used by the track fit
-                                                                ## debugging/diagnostics/testing
+            writeFilteredComboHits      : 0                     ## by default, clone all hits with updated flags
+            writeStrawHits              : 1                     ## used by the track fit
+#           writeStrawHitFlags          : 1                     ## used by the track fit
             testOrder                   : 0
 
             debugLevel                  : 0
@@ -433,15 +433,15 @@ CalPatRec : { @table::CalPatRec
             }
         }
     }
-
+#------------------------------------------------------------------------------
+# no separate hit flag collections any longer, hit flags are stored
+# as the ComboHit payload
 #------------------------------------------------------------------------------
     analyzers : {
         DeltaFinderAna : { module_type:DeltaFinderAna
-            chCollTag              : "makePH"                # use combo hits
-            chfCollTag             : "DeltaFinder:ComboHits" #
+            chCollTag              : "DeltaFinder"           ## "makePH"                # use combo hits
             shCollTag              : "makeSH"                # assume StrawHits have been written out
-            shfCollTag             : "DeltaFinder:StrawHits" ## input coll, so far - debugging
-            sschCollTag            : "makeSH"                # 1-straw combohits
+            sschCollTag            : "DeltaFinder:StrawHits" ## "makeSH"                # 1-straw combohits
             sdmcCollTag            : "compressDigiMCs"
             debugLevel             : 0
             diagLevel              : 0
@@ -568,12 +568,12 @@ CalPatRec : { @table::CalPatRec
             saveProtCand               : 0
             useCCs                     : 1
             recoverCCs                 : 1
-            chCollLabel                : "makePH"
+            chCollLabel                : "FlagBkgHits"
             chCollLabel2               : "makeSH"
             tcCollLabel                : "TimeClusterFinderDe"
-            shfCollLabel               : "FlagBkgHits:ComboHits"
             ccCollLabel                : "CaloClusterMaker"
             hitBkgBits                 : ["Noisy","Dead","Background"]
+            radSelect                  : 1
             chunkSep                   : 5
             chunkWindow                : 20.0
             chunkThresh                : 3
@@ -646,8 +646,8 @@ CalPatRec : { @table::CalPatRec
             StrawHitCollectionLabel                     : makePH            # CalTimePeakFinder uses ComboHits
             StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
             caloClusterModuleLabel                      : CaloClusterMaker
-            HitSelectionBits                            : []
-            BackgroundSelectionBits                     : ["Noisy","Dead"]
+#            HitSelectionBits                            : []
+#            BackgroundSelectionBits                     : ["Noisy","Dead"]
             MinNHits                                    : @local::CalPatRec.minNStrawHits
             DtMin                                       : -20.   # value before 2022-02-14 was -30. ns
             DtMax                                       :  20.   # value before 2022-02-14 was 30. ns

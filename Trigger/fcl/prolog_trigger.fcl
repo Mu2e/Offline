@@ -3,6 +3,7 @@
 # this file includes all the prolog needed to run the reconstruction
 # at the trigger level and the filters used to make the trigger decision
 #------------------------------------------------------------------------------
+#include "Offline/Mu2eKinKal/fcl/prolog_trigger.fcl"
 #include "Offline/TrkReco/fcl/prolog_trigger.fcl"
 #include "Offline/TrkPatRec/fcl/prolog_trigger.fcl"
 #include "Offline/CalPatRec/fcl/prolog.fcl"
@@ -11,6 +12,7 @@
 #include "Offline/CaloCluster/fcl/prolog_trigger.fcl"
 #include "Offline/TrkHitReco/fcl/prolog_trigger.fcl"
 #include "Offline/TrkFilters/fcl/prolog_trigger.fcl"
+#include "Offline/Compression/fcl/prolog.fcl"
 #include "Offline/CosmicReco/fcl/prolog.fcl"
 #include "Offline/CosmicReco/fcl/prolog_trigger.fcl"
 #include "Offline/CaloFilters/fcl/prolog_trigger.fcl"
@@ -24,6 +26,7 @@ Trigger : {
         @table::TrkHitRecoTrigger.producers
         @table::TrkHitReco.producers
         @table::TrkRecoTrigger.producers
+        @table::TTMu2eKinKal.producers
         @table::CosmicTracking.producers
         @table::CstTrigger.producers
         @table::TprTrigger.producers

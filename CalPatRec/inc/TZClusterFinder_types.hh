@@ -66,7 +66,6 @@ namespace mu2e {
       const ComboHitCollection*       _chColl;
       const ComboHitCollection*       _chColl2; // for tool to get simID info before selection cuts
       const CaloClusterCollection*    _ccColl;
-      const StrawHitFlagCollection*   _shfColl;
       TimeClusterCollection*          _tcColl; // 'tcColl': time cluster collection
       IntensityInfoTimeCluster*       _iiTC;
       int                             _nTZClusters;
