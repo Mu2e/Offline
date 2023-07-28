@@ -30,6 +30,7 @@
 #include "TNtuple.h"
 
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -161,7 +162,7 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
     }
 
     // Fill the ntuple:
-    float nt[_ntup->GetNvar()];
+    vector<float> nt(_ntup->GetNvar());
     nt[0]  = evt.id().event();
     nt[1]  = id;
     nt[2]  = sid.getStraw();
@@ -177,7 +178,7 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
     nt[12] = frac;
     nt[13] = td;
 
-    _ntup->Fill(nt);
+    _ntup->Fill(nt.data());
 
     // Calculate number of hits per wire
     ++nhperwire[hit.strawId()];

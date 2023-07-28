@@ -25,6 +25,11 @@
 #include "Offline/TrackerConfig/inc/StrawPhysicsConfig.hh"
 #include "Offline/TrackerConfig/inc/StrawResponseConfig.hh"
 #include "Offline/TrackerConfig/inc/TrackerStatusConfig.hh"
+
+#include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
+#include "Offline/SimulationConfig/inc/SimBookkeeperConfig.hh"
+#include "Offline/CaloConfig/inc/CalCalibConfig.hh"
+
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -35,6 +40,7 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
 #include <string>
+
 
 namespace mu2e {
 
@@ -82,6 +88,10 @@ class ProditionsService {
         Name("trkQualCatalog"), Comment("Catalog of TrkQual trainings")};
     fhicl::Table<SimBookkeeperConfig> simbookkeeper{
         Name("simbookkeeper"), Comment("simulation bookkeeping")};
+    fhicl::Table<CalCalibConfig> calCalib{
+          Name("calCalib"),
+          Comment("calorimeter energy calib") };
+          
   };
 
   // this line is required by art to allow the command line help print

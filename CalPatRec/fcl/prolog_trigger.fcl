@@ -76,7 +76,6 @@ CprTrigger : { @table::CprTrigger
         TTDeltaFinder : { @table::CalPatRec.producers.DeltaFinder
             chCollTag                     : TTmakePH                # input coll
             sschCollTag                   : TTmakeSH                # input coll
-            writeStrawHitFlags            : 0
             writeFilteredComboHits        : 1
         }
 
@@ -84,17 +83,16 @@ CprTrigger : { @table::CprTrigger
 # default configuration: DEM
 # CalPatRec, so far, has been validated only for e-
 #------------------------------------------------------------------------------
-        TTCalSeedFit : { @table::CalPatRec.producers.CalSeedFit
-            ComboHitCollection          : TTmakeSH
-#            SeedCollection              : "TTCalHelixFinder:Positive"
-            SeedCollection              : "TTCalHelixMergerDeM"
+        TTCalSeedFit : { @table::TTMu2eKinKal.producers.TTKKDeMSeedFit
+            ModuleSettings : { @table::TTMu2eKinKal.producers.TTKKDeMSeedFit.ModuleSettings
+                ComboHitCollection     : "TTmakeSH"
+                CaloClusterCollection  : "CaloClusterFast"
+                StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+                PrintLevel             : 0
+                SaveAllFits            : false
+            }
         }
 
-        TTCalTrkFit  : { @table::CalPatRec.producers.CalTrkFit
-            ComboHitCollection          : TTmakeSH
-            SeedCollection              : TTCalSeedFit
-            StrawHitFlagCollection      : "TTflagBkgHits:StrawHits"
-        }
     }
 
     filters : {
@@ -104,10 +102,10 @@ CprTrigger : { @table::CprTrigger
         TTfastTimeClusterFinder      : { @table::CalPatRec.filters.CalTimePeakFinder
             useAsFilter                                 : 0
             StrawHitCollectionLabel                     : TTmakePH
-            StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
+#            StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
             caloClusterModuleLabel                      : CaloClusterFast
-            HitSelectionBits                            : ["EnergySelection","TimeSelection"]
-            BackgroundSelectionBits                     : ["Background"]
+#            HitSelectionBits                            : ["EnergySelection","TimeSelection"]
+#            BackgroundSelectionBits                     : ["Background"]
             minClusterEnergy                            : 50.    # MeV
             minClusterSize                              : 2      # number of crystals
             #            dtOffset                                    : -61. #FIXME! this is necessary because CaloClusterFast returns an uncalibrated time!
@@ -117,11 +115,11 @@ CprTrigger : { @table::CprTrigger
 
         TTCalTimePeakFinder          : { @table::CalPatRec.filters.CalTimePeakFinder
             useAsFilter                                 : 0
-            StrawHitCollectionLabel                     : TTmakePH
+            StrawHitCollectionLabel                     : "TTflagBkgHits"
             StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
             caloClusterModuleLabel                      : CaloClusterFast
-            HitSelectionBits                            : ["EnergySelection","TimeSelection"]
-            BackgroundSelectionBits                     : ["Background"]
+#            HitSelectionBits                            : ["EnergySelection","TimeSelection"]
+#            BackgroundSelectionBits                     : ["Background"]
             minClusterEnergy                            : 50.    # MeV
             minClusterSize                              : 2      # number of crystals
             #            dtOffset                                    : -61. #-41.8 #FIXME! this is necessary because CaloClusterFast returns an uncalibrated time!
@@ -130,11 +128,12 @@ CprTrigger : { @table::CprTrigger
 
         TTCalTimePeakFinderUe          : { @table::CalPatRec.filters.CalTimePeakFinder
             useAsFilter                                 : 0
-            StrawHitCollectionLabel                     : TTmakePH
-            StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
+#            StrawHitCollectionLabel                     : TTmakePH
+            StrawHitCollectionLabel                     : "TTflagBkgHits"
+#            StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
             caloClusterModuleLabel                      : CaloClusterFast
-            HitSelectionBits                            : ["EnergySelection","TimeSelection"]
-            BackgroundSelectionBits                     : ["Background"]
+#            HitSelectionBits                            : ["EnergySelection","TimeSelection"]
+#            BackgroundSelectionBits                     : ["Background"]
             minClusterEnergy                            : 50.    # MeV
             minClusterSize                              : 2      # number of crystals
             pitchAngle                                  : -0.67
@@ -142,8 +141,9 @@ CprTrigger : { @table::CprTrigger
 
         TTCalHelixFinder             : { @table::CalPatRec.filters.CalHelixFinder
             useAsFilter                                 : 0
-            StrawHitCollectionLabel                     : TTmakePH
-            StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
+#           StrawHitCollectionLabel                     : TTmakePH
+#           StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
+            StrawHitCollectionLabel                     : "TTflagBkgHits"
             TimeClusterCollectionLabel                  : TTCalTimePeakFinder
 
             # HelixFinderAlg configuraton (pattern recognition)
@@ -152,8 +152,9 @@ CprTrigger : { @table::CprTrigger
 
         TTCalHelixFinderUe             : { @table::CalPatRec.filters.CalHelixFinder
             useAsFilter                                 : 0
-            StrawHitCollectionLabel                     : TTmakePH
-            StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
+#            StrawHitCollectionLabel                     : TTmakePH
+#            StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
+            StrawHitCollectionLabel                     : "TTflagBkgHits"
             TimeClusterCollectionLabel                  : TTCalTimePeakFinderUe
 
             # HelixFinderAlg configuraton (pattern recognition)
@@ -162,11 +163,12 @@ CprTrigger : { @table::CprTrigger
 
         TTCalTimePeakFinderUCC       : { @table::CalPatRec.filters.CalTimePeakFinder
             useAsFilter                                 : 0
-            StrawHitCollectionLabel                     : TTmakePHUCC
-            StrawHitFlagCollectionLabel                 : "TTflagBkgHitsUCC:ComboHits"
+#            StrawHitCollectionLabel                     : TTmakePHUCC
+#            StrawHitFlagCollectionLabel                 : "TTflagBkgHitsUCC:ComboHits"
+            StrawHitCollectionLabel                     : "TTflagBkgHits"
             caloClusterModuleLabel                      : CaloClusterFast
-            HitSelectionBits                            : ["EnergySelection","TimeSelection"]
-            BackgroundSelectionBits                     : ["Background"]
+#            HitSelectionBits                            : ["EnergySelection","TimeSelection"]
+#            BackgroundSelectionBits                     : ["Background"]
             minClusterEnergy                            : 50.    # MeV
             minClusterSize                              : 2      # number of crystals
             #            dtOffset                                    : -41.8 #FIXME! this is necessary because CaloClusterFast returns an uncalibrated time!
@@ -176,7 +178,7 @@ CprTrigger : { @table::CprTrigger
         TTCalHelixFinderUCC          : { @table::CalPatRec.filters.CalHelixFinder
             useAsFilter                                 : 0
             StrawHitCollectionLabel                     : TTmakePHUCC
-            StrawHitFlagCollectionLabel                 : "TTflagBkgHitsUCC:ComboHits"
+#            StrawHitFlagCollectionLabel                 : "TTflagBkgHitsUCC:ComboHits"
             TimeClusterCollectionLabel                  : TTCalTimePeakFinderUCC
 
             # HelixFinderAlg configuraton (pattern recognition)
@@ -192,44 +194,68 @@ CprTrigger: { @table::CprTrigger
     producers : { @table::CprTrigger.producers
 
         TTCalSeedFitDem                : { @table::CprTrigger.producers.TTCalSeedFit
-            SeedCollection             : "TTCalHelixMergerDeM"
+            ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
+                HelixSeedCollections   : [ "TTCalHelixMergerDeM" ]
+            }
+            KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
+                FitParticle : 11
+                FitDirection : 0
+            }
         }
         TTCalSeedFitUCCDem             : { @table::CprTrigger.producers.TTCalSeedFit
-            ComboHitCollection          : TTmakeSHUCC
-            SeedCollection             : "TTCalHelixUCCMergerDeM"
+            ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
+                ComboHitCollection     : "TTmakeSHUCC"
+                HelixSeedCollections   : [ "TTCalHelixUCCMergerDeM" ]
+            }
+            KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
+                FitParticle : 11
+                FitDirection : 0
+            }
         }
         TTCalSeedFitDmm                  : { @table::CprTrigger.producers.TTCalSeedFit
-            fitparticle                : @local::Particle.muminus
-            SeedCollection             : "TTCalHelixFinderDm:Positive"
+            ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
+                HelixSeedCollections   : [ "TTCalHelixFinderDm:Positive" ]
+            }
+            KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
+                FitParticle : 13
+                FitDirection : 0
+            }
         }
         TTCalSeedFitDep                  : { @table::CprTrigger.producers.TTCalSeedFit
-            fitparticle                : @local::Particle.eplus
-            SeedCollection             : "TTCalHelixMergerDeP"
+            ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
+                HelixSeedCollections   : [ "TTCalHelixMergerDeP" ]
+            }
+            KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
+                FitParticle : -11
+                FitDirection : 0
+            }
         }
         TTCalSeedFitUCCDep             : { @table::CprTrigger.producers.TTCalSeedFit
-            ComboHitCollection         : TTmakeSHUCC
-            fitparticle                : @local::Particle.eplus
-            SeedCollection             : "TTCalHelixUCCMergerDeP"
+            ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
+                ComboHitCollection     : "TTmakeSHUCC"
+                HelixSeedCollections   : [ "TTCalHelixUCCMergerDeP" ]
+            }
+            KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
+                FitParticle : -11
+                FitDirection : 0
+            }
         }
         TTCalSeedFitDmp                  : { @table::CprTrigger.producers.TTCalSeedFit
-            fitparticle                : @local::Particle.muplus
-            SeedCollection             : "TTCalHelixFinderDm:Negative"
+            ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
+                HelixSeedCollections   : [ "TTCalHelixFinderDm:Negative" ]
+            }
+            KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
+                FitParticle : -13
+                FitDirection : 0
+            }
         }
 
-        TTCalTrkFitDem                 : { @table::CprTrigger.producers.TTCalTrkFit
-            SeedCollection             : TTCalSeedFitDem
-            CaloClusterCollection  : "CaloClusterFast"
-        }
-        TTCalTrkFitDep                 : { @table::CprTrigger.producers.TTCalTrkFit
-            SeedCollection             : TTCalSeedFitDep
-            CaloClusterCollection  : "CaloClusterFast"
-        }
     }
 
     filters : { @table::CprTrigger.filters
         TTCalHelixFinderDe              : { @table::CprTrigger.filters.TTCalHelixFinder    }
         TTCalHelixFinderUCCDe           : { @table::CprTrigger.filters.TTCalHelixFinderUCC }
-        TTCalHelixFinderDm              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.muminus }
+        TTCalHelixFinderDm              : { @table::CprTrigger.filters.TTCalHelixFinder    FitParticle: @local::Particle.muminus }
     }
 
     sequences : {
@@ -238,9 +264,7 @@ CprTrigger: { @table::CprTrigger
         # production sequence to find TrackSeeds
         KSFDeM          : [ TTCalTimePeakFinder, TTCalHelixFinderDe, TTCalSeedFitDem ]
         KSFDeP          : [ TTCalTimePeakFinder, TTCalHelixFinderDe, TTCalSeedFitDep ]
-        # production sequence to find KalReps
-        KFFDeM          : [ TTCalTimePeakFinder, TTCalHelixFinderDe, TTCalSeedFitDem, TTCalTrkFitDem ]
-        KFFDeP          : [ TTCalTimePeakFinder, TTCalHelixFinderDe, TTCalSeedFitDep, TTCalTrkFitDep ]
+
     }
 }
 

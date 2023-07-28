@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <vector>
 
 
 // CLHEP includes
@@ -171,7 +172,7 @@ namespace mu2e {
     // Fill histogram with number of hits per event.
     _hNtsetH->Fill(nhits);
 
-    float nt[_nttts->GetNvar()];
+    vector<float> nt(_nttts->GetNvar());
 
     // Loop over all TS hits.
     for ( size_t i=0; i<nhits; ++i ){
@@ -215,7 +216,7 @@ namespace mu2e {
       nt[10] = mom.z();
       nt[11] = hit.properTime();
 
-      _nttts->Fill(nt);
+      _nttts->Fill(nt.data());
 
       if ( _nAnalyzed < _maxFullPrint){
         cout <<  "ReadTrackerSteps::" << __func__

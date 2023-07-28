@@ -80,9 +80,9 @@ DAQ : {
 
       CrvDigi:
       {
-         module_type: CrvDigisFromFragments
-         diagLevel: 0
-         fragmentsTag   : "daq:crv"
+         module_type : CrvDigisFromFragments
+         diagLevel   : 0
+         crvTag      : "genFrags"
       }
 
       makeSH:

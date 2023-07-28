@@ -88,9 +88,9 @@ helper.make_plugins( [ mainlib,
                        'Minuit',  # Needed for BetaTauPitch_module.cc and ReadStrawCluster_module.cc
                                   # See the Fixme at the top of the file.
                        'DTCInterface',
-                       'Overlays',
+                       'artdaq-core-mu2e_Overlays',
                        'artdaq-core_Data',
-                       'Data',
+                       'artdaq-core-mu2e_Data',
                        'artdaq-core-mu2e_Data_dict'
                      ]
                      )
