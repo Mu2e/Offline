@@ -506,7 +506,6 @@ BEGIN_PROLOG
       module_type                            : CrvCoincidenceClusterMatchMC
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
       crvWaveformsModuleLabel                : "CrvWaveforms"
-      timeOffsets                            : { inputs : [ ] }
     }
     CrvPlot:
     {
