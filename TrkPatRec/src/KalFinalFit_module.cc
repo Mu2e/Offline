@@ -154,7 +154,7 @@ namespace mu2e
 
       produces<KalRepCollection>();
       produces<KalRepPtrCollection>();
-      produces<StrawHitFlagCollection>();
+      //produces<StrawHitFlagCollection>();
       produces<KalSeedCollection>();
       produces<KalHelixAssns>();
       //-----------------------------------------------------------------------------
@@ -216,18 +216,18 @@ namespace mu2e
     unique_ptr<KalRepPtrCollection> krPtrcol(new KalRepPtrCollection );
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
     unique_ptr<KalHelixAssns> kfhassns (new KalHelixAssns());
-    unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection());
+    //unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection());
     // lookup productID for payload saver
     art::ProductID kalRepsID(event.getProductID<KalRepCollection>());
     auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
     auto KalSeedCollectionGetter = event.productGetter(KalSeedCollectionPID);
     // copy and merge hit flags
-    size_t index(0);
-    for(auto const& ch : *_chcol) {
-      StrawHitFlag flag(ch.flag());
-      if(_shfcol != 0) flag.merge(_shfcol->at(index++));
-      shfcol->push_back(flag);
-    }
+    //    size_t index(0);
+    //for(auto const& ch : *_chcol) {
+    //  StrawHitFlag flag(ch.flag());
+    //  if(_shfcol != 0) flag.merge(_shfcol->at(index++));
+    //  shfcol->push_back(flag);
+    //}
 
     if (_diag!=0){
       _data.event  = &event;
@@ -240,7 +240,8 @@ namespace mu2e
     _result.fitType        = 1;
     _result.event          = &event ;
     _result.chcol          = _chcol ;
-    _result.shfcol         = _shfcol ;
+    //_result.shfcol         = _shfcol ;
+    _result.shfcol         = nullptr; // _shfcol ;
     if (_kfit.useTrkCaloHit()) _result.caloClusterCol = _clCol;
     //    _result.tpart       = _tpart ;
     _result.fdir           = _fdir  ;
@@ -358,7 +359,11 @@ namespace mu2e
             if(ikseed<StrawHitFlag::_maxTrkId){
               for(auto ihit=_result.krep->hitVector().begin();ihit != _result.krep->hitVector().end();++ihit){
                 TrkStrawHit* tsh = dynamic_cast<TrkStrawHit*>(*ihit);
-                if((*ihit)->isActive() && tsh != 0)shfcol->at(tsh->index()).merge(StrawHitFlag::track);
+                //if((*ihit)->isActive() && tsh != 0)shfcol->at(tsh->index()).merge(StrawHitFlag::track);
+                if (tsh == nullptr) continue;
+                StrawHitFlag* flag = (StrawHitFlag*) &tsh->comboHit().flag();
+                //if((*ihit)->isActive() && tsh != 0)shfcol->at(tsh->index()).merge(StrawHitFlag::track);
+                if ((*ihit)->isActive()) flag->merge(StrawHitFlag::track);
               }
             }
 
@@ -438,7 +443,7 @@ namespace mu2e
     event.put(move(krPtrcol));
     event.put(move(kscol));
     event.put(move(kfhassns));
-    event.put(move(shfcol));
+    //event.put(move(shfcol));
   }
 
   // find the input data objects
@@ -454,12 +459,12 @@ namespace mu2e
     auto khaH = evt.getValidHandle(_khaToken);
     _khassns = khaH.product();
     if(_shfTag.label() != "none"){
-      auto shfH = evt.getValidHandle(_shfToken);
-      _shfcol = shfH.product();
-      if(_shfcol->size() != _chcol->size())
-        throw cet::exception("RECO")<<"mu2e::KalFinalFit: inconsistent input collections"<< endl;
+      // auto shfH = evt.getValidHandle(_shfToken);
+      //_shfcol = shfH.product();
+      //if(_shfcol->size() != _chcol->size())
+      //  throw cet::exception("RECO")<<"mu2e::KalFinalFit: inconsistent input collections"<< endl;
     } else {
-      _shfcol = 0;
+      // _shfcol = 0;
     }
     if(_kfit.useTrkCaloHit() == 1){
       auto clH = evt.getValidHandle(_clToken);
@@ -647,10 +652,16 @@ namespace mu2e
       TrkStrawHitVector tshv;
       convert(krep->hitVector(),tshv);
       for(unsigned istr=0; istr<nstrs;++istr){
-        if(_shfcol->at(istr).hasAllProperties(_addsel)&& !_shfcol->at(istr).hasAnyProperty(_addbkg)){
-          ComboHit const& sh = _chcol->at(istr);
-          if (sh.flag().hasAnyProperty(StrawHitFlag::dead)) {
-            continue;
+        //if(_shfcol->at(istr).hasAllProperties(_addsel)&& !_shfcol->at(istr).hasAnyProperty(_addbkg)){
+        //  ComboHit const& sh = _chcol->at(istr);
+        //  if (sh.flag().hasAnyProperty(StrawHitFlag::dead)) {
+         ComboHit const& sh = _chcol->at(istr);
+         StrawHitFlag flag = sh.flag();
+
+         // if(_shfcol->at(istr).hasAllProperties(_addsel)&& !_shfcol->at(istr).hasAnyProperty(_addbkg)){
+         if(flag.hasAllProperties(_addsel)&& !flag.hasAnyProperty(_addbkg)){
+           if (flag.hasAnyProperty(StrawHitFlag::dead)) {
+             continue;
           }
           if(fabs(_chcol->at(istr).time()-krep->t0()._t0) < _maxdtmiss) {
             // make sure we haven't already used this hit

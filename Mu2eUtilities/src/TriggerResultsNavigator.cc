@@ -61,6 +61,20 @@ namespace mu2e {
     return _trigPathsNames[i].substr(pos+1, _trigPathsNames[i].length());
   }
 
+  size_t const
+  TriggerResultsNavigator::getTrigBit(unsigned int const i) const
+  {
+    if (i>_trigPathsNames.size()) {
+      throw cet::exception("TRIG PATHID NOT FOUND");
+      //std::cout << "TRIG PATHID "<< i <<" NOT FOUND" <<std::endl;
+      return 0;
+    }
+    std::string   delimeter =":";
+    size_t        pos       = _trigPathsNames[i].find(delimeter);
+    unsigned int  bit       = std::stoi(_trigPathsNames[i].substr(0, pos));
+    return bit;
+  }
+
   size_t
   TriggerResultsNavigator::findTrigPath(std::string const& name) const
   {
@@ -89,7 +103,9 @@ namespace mu2e {
   TriggerResultsNavigator::accepted(std::string const& name) const
   {
     size_t index = findTrigPath(name);
-    return _trigResults->accept(index);
+    //    return _trigResults->accept(index);
+    if (index == _trigResults->size()) return false;
+    else                             return _trigResults->accept(index);
   }
 
   bool

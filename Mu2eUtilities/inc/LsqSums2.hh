@@ -41,10 +41,11 @@ public:
   double det     () { return sigXX()*sigYY() -sigXY()*sigXY(); }
 
   // reconstructed parameters of the line
+  // note: error computations assume that weights on data points (x,y) with error on y were set using weight = 1/error^2
   double dydx();
   double dydxErr();
   double y0();
-
+  double y0Err();
   double chi2Dof();
   //  ClassDef(LsqSums2,0)
 
