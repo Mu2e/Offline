@@ -52,8 +52,8 @@ namespace mu2e {
     _shLabel         (pset.get<string>         ("StrawHitCollectionLabel"        )),
     _shfLabel        (pset.get<string>         ("StrawHitFlagCollectionLabel"    )),
     _ccmLabel        (pset.get<string>         ("caloClusterModuleLabel"         )),
-    _hsel            (pset.get<vector<string> >("HitSelectionBits"               )),
-    _bkgsel          (pset.get<vector<string> >("BackgroundSelectionBits"        )),
+    //    _hsel            (pset.get<vector<string> >("HitSelectionBits"               )),
+    //    _bkgsel          (pset.get<vector<string> >("BackgroundSelectionBits"        )),
     _mindt           (pset.get<double>         ("DtMin"                          )),
     _maxdt           (pset.get<double>         ("DtMax"                          )),
     _minNHits        (pset.get<int>            ("MinNHits"                       )),
@@ -233,7 +233,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
           if (_debugLevel > 0){
             printf("[CalTimePeakFinder::findTimePeaks] nComboHits=%i\n",  nch);
-            printf("[CalTimePeakFinder::findTimePeaks]     TOF      Dt\n");
+            printf("[CalTimePeakFinder::findTimePeaks]     TOF      Dt       z_ch \n");
           }
           for(int istr=0; istr<nch;++istr) {
 
@@ -246,7 +246,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
             tof = (zcl-zstraw)/_sinPitch/(CLHEP::c_light*_beta);
             dt  = cl_time-(time+tof);
-            if (_debugLevel > 0) printf("[CalTimePeakFinder::findTimePeaks] %10.3f %10.3f\n",  tof, dt);
+            if (_debugLevel > 0) printf("[CalTimePeakFinder::findTimePeaks] %10.3f %10.3f %10.3f\n",  tof, dt, zstraw);
 //--------------------------------------------------------------------------------
 // check the angular distance from the calorimeter cluster
 //--------------------------------------------------------------------------------

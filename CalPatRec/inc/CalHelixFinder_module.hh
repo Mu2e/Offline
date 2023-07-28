@@ -15,9 +15,6 @@
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 
-#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
-#include "Offline/RecoDataProducts/inc/StereoHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
 #include "Offline/DataProducts/inc/Helicity.hh"
@@ -90,7 +87,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     std::string                           _shLabel ; // MakeStrawHit label (makeSH)
     // std::string                           _shpLabel;
-    std::string                           _shfLabel;
     std::string                           _timeclLabel;
 
     int                                   _minNHitsTimeCluster; //min nhits within a TimeCluster after check of Delta-ray hits
@@ -106,8 +102,6 @@ namespace mu2e {
     fhicl::ParameterSet*                  _timeOffsets;
 
     const ComboHitCollection*             _chcol;
-    const StrawHitFlagCollection*         _shfcol;
-    // const StrawHitPositionCollection*     _shpcol;
     const TimeClusterCollection*          _timeclcol;
 
     HelixTraj*                            _helTraj;
@@ -150,9 +144,7 @@ namespace mu2e {
     int  initHelixFinderData(CalHelixFinderData&                Data,
                              const TrkParticle&                 TPart,
                              const TrkFitDirection&             FDir,
-                             const ComboHitCollection*          ComboCollection ,
-                             // const StrawHitPositionCollection*  ShPosCollection ,
-                             const StrawHitFlagCollection*      ShFlagCollection);
+                             const ComboHitCollection*          ComboCollection);
 
     int  goodHitsTimeCluster(const TimeCluster* TimeCluster);
 
@@ -160,4 +152,3 @@ namespace mu2e {
   };
 }
 #endif
-

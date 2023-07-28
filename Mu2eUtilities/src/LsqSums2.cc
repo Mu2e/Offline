@@ -110,13 +110,11 @@ double LsqSums2::dydx() {
 
 
 double LsqSums2::dydxErr(){
-  double slopeErr(0), D;
+  double slopeErr(0), N, D;
   if (_qn > 2) {
+    N = sw;
     D = sw*sx2 - sx*sx;
-
-    slopeErr = (sy2 - y0()*sy - dydx()*sxy)/(_qn - 2.);
-    slopeErr = std::sqrt(slopeErr);
-    slopeErr /= std::sqrt(D);
+    slopeErr = std::sqrt(N/D);
   }
 
   return slopeErr;
@@ -130,6 +128,18 @@ double LsqSums2::y0(){
   y0 /= D;
 
   return y0;
+}
+
+double LsqSums2::y0Err(){
+  double interceptErr(0), N, D;
+  if (_qn > 2) {
+  N = sx2;
+  D = sw*sx2 - sx*sx;
+
+  interceptErr = std::sqrt(N/D);
+  }
+
+  return interceptErr;
 }
 
 double LsqSums2::chi2Dof() {
