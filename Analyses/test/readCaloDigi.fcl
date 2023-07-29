@@ -86,7 +86,6 @@ physics : {
             caloClusterModuleLabel : MakeCaloCluster
             vdStepPoints           : virtualdetector
             trackModuleLabel       : ""
-            TimeOffsets            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
             TimeFoldingBuffer      : 100. # ns
             blindTime              : 500. # ns
             fillWaveforms          : 0
