@@ -26,7 +26,6 @@
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 namespace mu2e {
@@ -64,7 +63,6 @@ namespace mu2e {
     private:
 
       art::InputTag           hitsInputTag_;
-      SimParticleTimeOffset   toff_;
       int _nProcess;
 
       TTree *nt_;
@@ -78,7 +76,6 @@ namespace mu2e {
   StepPointMCDumperCalo::StepPointMCDumperCalo(const fhicl::ParameterSet& pset)
     : art::EDAnalyzer(pset)
     , hitsInputTag_(pset.get<std::string>("hitsInputTag"))
-    , toff_(pset.get<fhicl::ParameterSet>("TimeOffsets"))
     , _nProcess(0)
     , nt_(0)
 
@@ -115,7 +112,6 @@ namespace mu2e {
   {
 
     ++_nProcess;
-    toff_.updateMap(event);
     const auto& ih = event.getValidHandle<StepPointMCCollection>(hitsInputTag_);
     StepPointMCCollection const& hits(*ih);
 
@@ -132,7 +128,7 @@ namespace mu2e {
            _stepX[i]        = hit.position().x();
            _stepY[i]        = hit.position().y();
            _stepZ[i]        = hit.position().z();
-           _stepT[i]        = toff_.timeWithOffsetsApplied(hit);
+           _stepT[i]        = hit.time();
 
            _stepPx[i]       = hit.momentum().x();
            _stepPy[i]       = hit.momentum().y();
