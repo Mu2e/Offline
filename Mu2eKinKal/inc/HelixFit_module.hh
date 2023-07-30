@@ -124,7 +124,6 @@ namespace mu2e {
       // parameter-specific functions that need to be overridden in subclasses
       virtual KTRAJ makeSeedTraj(HelixSeed const& hseed) const = 0;
       virtual bool goodFit(KKTRK const& ktrk) const = 0;
-      void fillSaveTimes(KKTRK const& ktrk,std::set<double>& savetimes) const;
       // data payload
       std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
       art::ProductToken<ComboHitCollection> chcol_T_;
@@ -263,10 +262,20 @@ namespace mu2e {
               fitflag.merge(TrkFitFlag::FitOK);
             else
               fitflag.clear(TrkFitFlag::FitOK);
-            // Decide which segments to save
-            std::set<double> savetimes;
-            fillSaveTimes(*kktrk,savetimes);
-            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h,savetimes));
+            if(savefull_){
+              kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h));
+            } else {
+              std::set<double> savetimes;
+              // add explicitly-requested z positions
+              auto const& fittraj = kktrk->fitTraj();
+              for(auto zpos : zsave_ ) {
+                // compute the time the trajectory crosses this plane
+                // replace this with surface intersections TODO
+                double tz = Mu2eKinKal::zTime(fittraj,zpos,fittraj.range().begin());
+                savetimes.insert(tz);
+              }
+              kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h,savetimes));
+            }
             // fill assns with the helix seed
             auto hptr = art::Ptr<HelixSeed>(hseedcol_h,iseed);
             auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
@@ -284,16 +293,4 @@ namespace mu2e {
     event.put(move(kkseedassns));
   }
 
-  void HelixFit::fillSaveTimes(KKTRK const& ktrk,std::set<double>& savetimes) const {
-    auto const& fittraj = ktrk.fitTraj();
-    if(savefull_){ // loop over all pieces of the fit trajectory and record their times
-      for (auto const& traj : fittraj.pieces() ) savetimes.insert(traj->range().mid());
-    }
-    // also add explicitly-requested z positions
-    for(auto zpos : zsave_ ) {
-      // compute the time the trajectory crosses this plane
-      double tz = Mu2eKinKal::zTime(fittraj,zpos,fittraj.range().begin());
-      savetimes.insert(tz);
-    }
-  }
 } // mu2e
