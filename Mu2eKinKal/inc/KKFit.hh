@@ -91,6 +91,9 @@ namespace mu2e {
           StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
           Calorimeter const& calo, CCHandle const& cchandle,
           KKTRK& kktrk) const;
+      // save the complete fit trajectory as a seed
+      KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo) const;
+      // save the fit only at the specified times
       KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, std::set<double> const& tsave) const;
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
       bool useCalo() const { return usecalo_; }
@@ -438,6 +441,13 @@ namespace mu2e {
       tmax = std::max(tmax,strawxing->time());
     }
     return TimeRange(tmin,tmax);
+  }
+
+  template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo) const {
+    std::set<double> savetimes;
+    auto const& fittraj = kktrk.fitTraj();
+    for (auto const& traj : fittraj.pieces() ) if(traj->range().range() > 0.0)savetimes.insert(traj->range().mid());
+    return createSeed(kktrk,seedflag,calo,savetimes);
   }
 
   template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, std::set<double> const& savetimes) const {

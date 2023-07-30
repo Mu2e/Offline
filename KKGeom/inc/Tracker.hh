@@ -1,40 +1,35 @@
 //
-//  Define the nominal tracker boundary and reference surfaces.  These are used to extrapolate and sample track fits, and to build
-//  passive material models
+//  Define the nominal tracker boundary and reference surfaces, used to extrapolate and sample KinKal track fits, and to build
+//  the passive materials in the fit
 //  original author: David Brown (LBN) 2023
 //
-#ifndef RecoGeom_Tracker_hh
-#define RecoGeom_Tracker_hh
-#include "KinKal/Geometry/inc/Cylinder.hh"
-#include "KinKal/Geometry/inc/Disk.hh"
-#include "KinKal/Geometry/inc/Annulus.hh"
+#ifndef KKGeom_Tracker_hh
+#define KKGeom_Tracker_hh
+#include "KinKal/Geometry/Cylinder.hh"
+#include "KinKal/Geometry/Disk.hh"
+#include "KinKal/Geometry/Annulus.hh"
 #include <exception>
 namespace mu2e {
-  namespace RecoGeom {
+  namespace KKGeom {
     class Tracker {
       public:
-        // construction parameters should come from a database or the geometry service
-        explicit Tracker(XYZVectorD const& axis, XYZVectorD const& center, double halflen,
-            double activeradius, double outradius) :
-        activevol_(axis,center,halflen,activeradius),
-        totalvol_(axis,center,halflen,outradius),
-        ent_(axis,XYZvectorD(center.X(),center.Y(),center.Z()-halflen),activeradius),
-        mid_(axis,center,activeradius),
-        xit_(axis,XYZvectorD(center.X(),center.Y(),center.Z()+halflen),activeradius),
-      {}
+        // default constructor with nominal geometry
+        Tracker();
         // accessors
+        // define the positions corresponding to the G4 virtual detectors
         // 'entrance' refers to upstream (negative z) end, 'middle' to the middle of the tracker, 'exit' refers to downstream (positive z) end
-        auto const& activeVolume() const { return activevol_; }
-        auto const& totalVolume() const { return totalvol_; }
-        auto const& entrancePlane() const { return ent_; }
-        auto const& mid() const { return mid_; }
-        auto const& exitActiveDisk() const { return xit_; }
+        auto const& outerCylinder() const { return outercyl_; }
+        auto const& innerCylinder() const { return innercyl_; }
+        auto const& entDisk() const { return ent_; }
+        auto const& midDisk() const { return mid_; }
+        auto const& exitDisk() const { return exit_; }
 
       private:
-        Cylinder activevol_; // active volume cylinder
-        Cylinder totalvol_; // total volume cylinder (including manifolds)
-        Disk ent_, mid_, xit_; // standard reference point planes
-        std::vector<Annulus> manifolds_; // manifolds
+        KinKal::Cylinder outercyl_; // outer cylinder
+        KinKal::Cylinder innercyl_; //  inner cylinder
+        KinKal::Disk ent_, mid_, exit_; // standard reference point planes
+        // TODO: add passive material for manifolds, absorber rings, beams, ...
+ //       std::vector<Annulus> manifolds_; // manifolds
     };
   }
 }

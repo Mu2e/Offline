@@ -290,19 +290,18 @@ namespace mu2e {
             // Decide which segments to save
             std::set<double> savetimes;
             if(savefull_){
+              kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h));
               // loop over all pieces of the fit trajectory and record their times
-              for (auto const& traj : fittraj.pieces() ) savetimes.insert(traj->range().mid());
             } else {
+              // saving at z positions is inappropriate for KKLine FIXME
               for(auto zpos : zsave_ ) {
                 // compute the time the trajectory crosses this plane
                 double tz = Mu2eKinKal::zTime(fittraj,zpos,fittraj.range().begin());
-                // find the explicit trajectory piece at this time, and store the midpoint time.  This enforces uniqueness (no duplicates)
                 auto const& zpiece = fittraj.nearestPiece(tz);
                 savetimes.insert(zpiece.range().mid());
               }
+              kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h,savetimes));
             }
-
-            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h,savetimes));
             //kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
             kktrkcol->push_back(kktrk.release());
             // fill assns with the cosmic seed
