@@ -2,13 +2,13 @@
 //  Define the foils and bounding surfaces of the target
 //  original author: David Brown (LBN) 2023
 //
-#ifndef KKGeom_StoppingTarget_hh
-#define KKGeom_StoppingTarget_hh
+#ifndef KinKalGeom_StoppingTarget_hh
+#define KinKalGeom_StoppingTarget_hh
 #include "KinKal/Geometry/Cylinder.hh"
 #include "KinKal/Geometry/Annulus.hh"
 #include <vector>
 namespace mu2e {
-  namespace KKGeom {
+  namespace KinKalGeom {
     class StoppingTarget {
       public:
         // default constructor with nominal geometry

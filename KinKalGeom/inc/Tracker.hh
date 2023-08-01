@@ -3,14 +3,14 @@
 //  the passive materials in the fit
 //  original author: David Brown (LBN) 2023
 //
-#ifndef KKGeom_Tracker_hh
-#define KKGeom_Tracker_hh
+#ifndef KinKalGeom_Tracker_hh
+#define KinKalGeom_Tracker_hh
 #include "KinKal/Geometry/Cylinder.hh"
 #include "KinKal/Geometry/Disk.hh"
 #include "KinKal/Geometry/Annulus.hh"
 #include <exception>
 namespace mu2e {
-  namespace KKGeom {
+  namespace KinKalGeom {
     class Tracker {
       public:
         // default constructor with nominal geometry
