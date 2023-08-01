@@ -26,7 +26,7 @@ namespace mu2e {
 
     set_t makeSet(art::EventID const& eid) {
       ProditionsEntity::set_t cids;
-      if(_useDb) {  
+      if(_useDb) {
         _calenergycalib_p->get(eid);
         cids.insert(_calenergycalib_p->cid());
       }
