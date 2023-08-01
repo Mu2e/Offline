@@ -1,7 +1,6 @@
 #ifndef DbTables_CalCosmicTimeCalib_hh
 #define DbTables_CalCosmicTimeCalib_hh
 
-
 #include <string>
 #include <iomanip>
 #include <sstream>
@@ -16,28 +15,25 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(CaloSiPMId  roid, float EPeak, float ErrEPeak, float Width, float ErrWidth, float chisq):_roid(roid),_EPeak(EPeak), _ErrEPeak(ErrEPeak), _Width(Width), _ErrWidth(ErrWidth), _chisq(chisq){}
+      Row(CaloSiPMId  roid, float T0, float ErrT0, float chisq) : _roid(roid), _T0(T0), _ErrT0(ErrT0), _chisq(chisq){}
       CaloSiPMId   roid() const { return _roid;}
-      float EPeak() const { return _EPeak; }
-      float ErrEPeak() const { return _ErrEPeak; }
-      float Width() const { return _Width; }
-      float ErrWidth() const { return _ErrWidth; }
+      float T0() const { return _T0; }
+      float ErrT0() const { return _ErrT0; }
       float chisq() const { return _chisq; }
 
     private:
-      CaloSiPMId   _roid;
-      float _EPeak;
-      float _ErrEPeak;
-      float _Width;
-      float _ErrWidth;
+      CaloSiPMId _roid;
+      float _T0;
+      float _ErrT0;
       float _chisq;
     };
 
     constexpr static const char* cxname = "CalCosmicTimeCalib";
 
-    CalCosmicTimeCalib():DbTable(cxname,"cal.cosmictimecalib","roid,EPeak,ErrEPeak,Width,ErrWidth,chisq"){}
+    CalCosmicTimeCalib():DbTable(cxname,"cal.cosmictimecalib","roid,T0,ErrT0,chisq"){}
 
-    const Row& row(std::uint16_t roid) const { return _rows.at(roid); }
+    const Row& row(CaloSiPMId  roid) const {
+                return _rows.at(roid.id()); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
@@ -52,18 +48,16 @@ namespace mu2e {
         <<index<< " != " << _rows.size() <<"\n";
       }
 
- _rows.emplace_back(CaloSiPMId (index),std::stof(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
+ _rows.emplace_back(CaloSiPMId (index),std::stof(columns[1]),std::stof(columns[2]),std::stof(columns[3]));
 
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << std::fixed << std::setprecision(5);
-      sstream << r.roid() <<","; //TODO
-      sstream << r.EPeak()<<",";
-      sstream << r.ErrEPeak()<<",";
-      sstream << r.Width()<<",";
-      sstream << r.ErrWidth()<<",";
+      sstream << r.roid() <<",";
+      sstream << r.T0()<<",";
+      sstream << r.ErrT0()<<",";
       sstream << r.chisq();
     }
 
@@ -71,7 +65,6 @@ namespace mu2e {
 
   private:
     std::vector<Row> _rows;
-    //std::map<int,std::size_t> _chanIndex;
   };
 }
 #endif

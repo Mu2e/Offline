@@ -16,29 +16,56 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(CaloSiPMId roid, float EPeak, float ErrEPeak, float Width, float ErrWidth, float chisq):_roid(roid),_EPeak(EPeak), _ErrEPeak(ErrEPeak), _Width(Width), _ErrWidth(ErrWidth), _chisq(chisq){}
+      Row(CaloSiPMId roid, float fullEPeak,float fullErrEPeak,float fullWidth,float fullErrWidth,float firstescEPeak,float firstescErrEPeak,float firstescWidth,float firstescErrWidth,float secescEPeak,float secescErrEPeak,float secescWidth,float secescErrWidth, float frFull, float frFirst, float frSecond, float chisq): _roid(roid), _fullEPeak(fullEPeak), _fullErrEPeak(fullErrEPeak), _fullWidth(fullWidth), _fullErrWidth(fullErrWidth),_firstescEPeak(firstescEPeak), _firstescErrEPeak(firstescErrEPeak), _firstescWidth(firstescWidth), _firstescErrWidth(firstescErrWidth),_secescEPeak(secescEPeak), _secescErrEPeak(secescErrEPeak), _secescWidth(secescWidth), _secescErrWidth(secescErrWidth), _frFull(frFull), _frFirst(frFirst), _frSecond(frSecond), _chisq(chisq){}
+
       CaloSiPMId  roid() const { return _roid;}
-      float EPeak() const { return _EPeak; }
-      float ErrEPeak() const { return _ErrEPeak; }
-      float Width() const { return _Width; }
-      float ErrWidth() const { return _ErrWidth; }
+      float fullEPeak() const { return _fullEPeak; }
+      float fullErrEPeak() const { return _fullErrEPeak; }
+      float fullWidth() const { return _fullWidth; }
+      float fullErrWidth() const { return _fullErrWidth; }
+
+      float firstescEPeak() const { return _firstescEPeak; }
+      float firstescErrEPeak() const { return _firstescErrEPeak; }
+      float firstescWidth() const { return _firstescWidth; }
+      float firstescErrWidth() const { return _firstescErrWidth; }
+
+      float secescEPeak() const { return _secescEPeak; }
+      float secescErrEPeak() const { return _secescErrEPeak; }
+      float secescWidth() const { return _secescWidth; }
+      float secescErrWidth() const { return _secescErrWidth; }
+
+      float frFull() const { return _frFull; }
+      float frFirst() const { return _frFirst; }
+      float frSecond() const { return _frSecond; }
+
       float chisq() const { return _chisq; }
 
     private:
       CaloSiPMId  _roid;
-      float _EPeak;
-      float _ErrEPeak;
-      float _Width;
-      float _ErrWidth;
+      float _fullEPeak;
+      float _fullErrEPeak;
+      float _fullWidth;
+      float _fullErrWidth;
+      float _firstescEPeak;
+      float _firstescErrEPeak;
+      float _firstescWidth;
+      float _firstescErrWidth;
+      float _secescEPeak;
+      float _secescErrEPeak;
+      float _secescWidth;
+      float _secescErrWidth;
+      float _frFull;
+      float _frFirst;
+      float _frSecond;
       float _chisq;
     };
 
     constexpr static const char* cxname = "CalSourceEnergyCalib";
 
-    CalSourceEnergyCalib():DbTable(cxname,"cal.sourceenergycalib","roid,EPeak,ErrEPeak,Width,ErrWidth,chisq"){}
+    CalSourceEnergyCalib():DbTable(cxname,"cal.sourceenergycalib","roid,fullEPeak,fullErrEPeak,fullWidth,fullErrWidth,firstescEPeak,firstescErrEPeak,firstescWidth,firstescErrWidth,secescEPeak,secescErrEPeak,secescWidth,secescErrWidth, frFull,frFirst,frSecond,chisq"){}
 
-    const Row& row(const int roid) const {
-                return _rows.at(roid); }
+    const Row& row(CaloSiPMId  roid) const {
+                return _rows.at(roid.id()); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
@@ -52,19 +79,29 @@ namespace mu2e {
       << "CalSourceEnergyCalib::addRow found index out of order: "
       <<index << " != " << _rows.size() <<"\n";
       }
-       _rows.emplace_back(CaloSiPMId(index),std::stof(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
-      // add this channel to the map index - optional
-      //_chanIndex[_rows.back().roid()] = _rows.size()-1;
+       _rows.emplace_back(CaloSiPMId(index),std::stof(columns[1]),std::stof(columns[2]),std::stof(columns[3]),
+       std::stof(columns[4]),std::stof(columns[5]),std::stof(columns[6]),std::stof(columns[7]),
+       std::stof(columns[8]),std::stof(columns[9]),std::stof(columns[10]),std::stof(columns[11]),
+       std::stof(columns[12]),std::stof(columns[13]),std::stof(columns[14]),std::stof(columns[15]),std::stof(columns[16]));
+
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << std::fixed << std::setprecision(5);
       sstream << r.roid()<<",";
-      sstream << r.EPeak()<<",";
-      sstream << r.ErrEPeak()<<",";
-      sstream << r.Width()<<",";
-      sstream << r.ErrWidth()<<",";
+      sstream << r.fullEPeak()<<",";
+      sstream << r.fullErrEPeak()<<",";
+      sstream << r.fullWidth()<<",";
+      sstream << r.fullErrWidth()<<",";
+      sstream << r.firstescEPeak()<<",";
+      sstream << r.firstescErrEPeak()<<",";
+      sstream << r.firstescWidth()<<",";
+      sstream << r.firstescErrWidth()<<",";
+      sstream << r.secescEPeak()<<",";
+      sstream << r.secescErrEPeak()<<",";
+      sstream << r.secescWidth()<<",";
+      sstream << r.secescErrWidth()<<",";
       sstream << r.chisq();
     }
 
@@ -72,7 +109,6 @@ namespace mu2e {
 
   private:
     std::vector<Row> _rows;
-    //std::map<int,std::size_t> _chanIndex;
   };
 
 }
