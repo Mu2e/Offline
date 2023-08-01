@@ -9,7 +9,7 @@ namespace mu2e {
 
 /*******************************************************************/
   ptr_t CalCalibMaker::fromFcl() {
-  
+
   if (_config.verbose()) {
     std::cout << "CalCalibMaker::fromFcl making nominal CalCalib\n";
   }
@@ -24,7 +24,7 @@ namespace mu2e {
          << nominal.ECombAlgID() << setprecision(3) << setw(10)
          << nominal.timeOffset() << setprecision(3) << setw(10) << "\n";
   }
-  
+
   CalCalib::CalibVec cvec(nChan, nominal);
   auto ptr = std::make_shared<CalCalib>(cvec);
   return ptr;
@@ -54,11 +54,10 @@ namespace mu2e {
         << "  geometry: " << nChan << "  CalSiPM: " << ecalib->nrow()<< "\n";
   }
 
-  CalCalib::CalibVec cvec(nChan, CalCalibPar(0.0, 0.0, 0.0)); 
+  CalCalib::CalibVec cvec(nChan, CalCalibPar(0.0, 0.0, 0.0));
 
   for (auto const& row : ecalib->rows()) {
-    cvec[row.roid().id()] = CalCalibPar(row.ADC2MeV(), row.algID(),
-                                      0); //TODO - time offset needs setting from time table
+    cvec[row.roid().id()] = CalCalibPar(row.ADC2MeV(), row.algID(),0); //TODO - time offset needs setting from time table
   }
 
   auto ptr = make_shared<CalCalib>(cvec);

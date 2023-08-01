@@ -46,17 +46,14 @@ namespace mu2e {
       float _fullErrEPeak;
       float _fullWidth;
       float _fullErrWidth;
-
       float _firstescEPeak;
       float _firstescErrEPeak;
       float _firstescWidth;
       float _firstescErrWidth;
-
       float _secescEPeak;
       float _secescErrEPeak;
       float _secescWidth;
       float _secescErrWidth;
-      
       float _frFull;
       float _frFirst;
       float _frSecond;
