@@ -1,6 +1,6 @@
-#include "Offline/KKGeom/inc/Tracker.hh"
+#include "Offline/KinKalGeom/inc/Tracker.hh"
 namespace mu2e {
-  namespace KKGeom {
+  namespace KinKalGeom {
     using KinKal::VEC3;
     // currently use hard-coded geometry.  Note: these are only comparable to the MC virtual detector positions
     // at the ~10 um level, as the G4 virtual detector steppoints are random by roughly that amount (step tolerance)

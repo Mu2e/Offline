@@ -1,6 +1,6 @@
-#include "Offline/KKGeom/inc/StoppingTarget.hh"
+#include "Offline/KinKalGeom/inc/StoppingTarget.hh"
 namespace mu2e {
-  namespace KKGeom {
+  namespace KinKalGeom {
     using KinKal::VEC3;
     using KinKal::Annulus;
     // currently use hard-coded geometry
