@@ -30,7 +30,7 @@ namespace mu2e {
 
     constexpr static const char* cxname = "CalCosmicTimeCalib";
 
-    CalCosmicTimeCalib():DbTable(cxname,"cal.cosmictimecalib","roid,T0,ErrT0,chisq"){}
+    CalCosmicTimeCalib():DbTable(cxname,"cal.cosmictimecalib","roid,t0,errt0,chisq"){}
 
     const Row& row(CaloSiPMId  roid) const {
                 return _rows.at(roid.id()); }
