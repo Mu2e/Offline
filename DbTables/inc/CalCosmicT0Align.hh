@@ -31,10 +31,10 @@ namespace mu2e {
 
     constexpr static const char* cxname = "CalCosmicT0Align";
 
-    CalCosmicT0Align():DbTable(cxname,"cal.cosmicT0align","roid,tcorr,terr,chisq"){}
+    CalCosmicT0Align():DbTable(cxname,"cal.cosmict0align","roid,tcorr,terr,chisq"){}
 
-    const Row& row(CaloSiPMId  _roid) const {
-                return _rows.at(_roid.id()); }
+    const Row& row(CaloSiPMId  roid) const {
+                return _rows.at(roid.id()); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
