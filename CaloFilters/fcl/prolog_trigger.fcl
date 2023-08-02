@@ -14,7 +14,6 @@ CaloFilters : {
         trackClusterMatchModuleLabel : TrackCaloMatching
         fitparticle            : 11
         fitdirection           : 0
-        TimeOffsets            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
         virtualhit             : 1 # ask for CE hit on a ECAL virtual detector
         trkgood                : 1 # 0:no match 1:good track
         matchgood              : 1 # 0:no match 1:good track match

@@ -118,7 +118,7 @@ namespace mu2e {
             randPoisson_        (engine_),
             photonProp_         (engine_)
          {
-             // the following consumes statements are necessary because SimParticleTimeOffset::updateMap calls getValidHandle.
+
              for (auto const& tag : config().caloShowerStepCollection()) crystalShowerTokens_.push_back(consumes<CaloShowerStepCollection>(tag));
              consumes<EventWindowMarker>(ewMarkerTag_);
              consumes<ProtonBunchTimeMC>(pbtmcTag_);
