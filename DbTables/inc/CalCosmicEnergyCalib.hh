@@ -35,7 +35,7 @@ namespace mu2e {
 
     constexpr static const char* cxname = "CalCosmicEnergyCalib";
 
-    CalCosmicEnergyCalib():DbTable(cxname,"cal.cosmicenergycalib","roid,EPeak,ErrEPeak,Width,ErrWidth,chisq"){}
+    CalCosmicEnergyCalib():DbTable(cxname,"cal.cosmicenergycalib","roid,epeak,errepeak,width,errwidth,chisq"){}
 
     const Row& row(CaloSiPMId  roid) const {
                 return _rows.at(roid.id()); }

@@ -62,7 +62,7 @@ namespace mu2e {
 
     constexpr static const char* cxname = "CalSourceEnergyCalib";
 
-    CalSourceEnergyCalib():DbTable(cxname,"cal.sourceenergycalib","roid,fullEPeak,fullErrEPeak,fullWidth,fullErrWidth,firstescEPeak,firstescErrEPeak,firstescWidth,firstescErrWidth,secescEPeak,secescErrEPeak,secescWidth,secescErrWidth, frFull,frFirst,frSecond,chisq"){}
+    CalSourceEnergyCalib():DbTable(cxname,"cal.sourceenergycalib","roid,fullepeak,fullerrepeak,fullwidth,fullerrwidth,firstescepeak,firstescerrepeak,firstescwidth,firstescerrwidth,secescepeak,secescerrepeak,secescwidth,secescerrwidth, frfull,frfirst,frsecond,chisq"){}
 
     const Row& row(CaloSiPMId  roid) const {
                 return _rows.at(roid.id()); }

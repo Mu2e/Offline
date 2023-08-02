@@ -33,7 +33,7 @@ namespace mu2e {
     constexpr static const char* cxname = "CalLaserTimeCalib";
 
     CalLaserTimeCalib():DbTable(cxname,"calolasertimecalib",
-    "roid,T0,ErrT0,chisq") {}
+    "roid,t0,errt0,chisq") {}
 
     const Row& row(CaloSiPMId  roid) const {
                 return _rows.at(roid.id()); }
