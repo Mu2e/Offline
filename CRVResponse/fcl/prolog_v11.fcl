@@ -72,7 +72,6 @@ BEGIN_PROLOG
       digitizationStart                     :  400.0    //400ns
       digitizationEnd                       : 1750.0    //1750ns
       digitizationStartMargin               :   50.0    //50ns
-      timeOffsets                           : [ ]
     }
     CrvSiPMCharges:
     {
