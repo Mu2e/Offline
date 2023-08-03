@@ -8,6 +8,7 @@
 #include "fhiclcpp/types/OptionalSequence.h"
 #include "fhiclcpp/types/Tuple.h"
 #include "KinKal/Fit/Config.hh"
+#include "canvas/Utilities/InputTag.h"
 #include "KinKal/Fit/MetaIterConfig.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
@@ -75,13 +76,24 @@ namespace mu2e {
       fhicl::Atom<float> maxCaloDoca { Name("MaxCaloClusterDOCA"), Comment("Max DOCA to add a CaloCluster (mm)") };
       fhicl::Sequence<std::string> addHitSelect { Name("AddHitSelect"), Comment("Flags required to be present to add a hit") };
       fhicl::Sequence<std::string> addHitReject { Name("AddHitReject"), Comment("Flags required not to be present to add a hit") };
-      fhicl::Sequence<std::string> sampleElements { Name("SampleElements"), Comment("Elements at which to sample the fit") };
-      fhicl::Sequence<std::string> extensionElements { Name("extensionElements"), Comment("Elements to which to extend the fit") };
+      fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
+      fhicl::Sequence<std::string> extensionSurfaces { Name("extensionSurfaces"), Comment("Extend the fit to be valid to these surfaces") };
       fhicl::Atom<float> maxStrawHitDOCA { Name("MaxStrawHitDOCA"), Comment("Max DOCA to add a hit (mm)") };
       fhicl::Atom<float> maxStrawHitDt { Name("MaxStrawHitDt"), Comment("Max Detla time to add a hit (ns)") };
       fhicl::Atom<int> strawBuffer { Name("StrawBuffer"), Comment("Buffer to add when searching for straws") };
       fhicl::Atom<float> maxStrawDOCA { Name("MaxStrawDOCA"), Comment("Max DOCA to add straw material (mm)") };
       fhicl::Atom<float> maxStrawDOCAConsistency { Name("MaxStrawDOCAConsistency"), Comment("Max DOCA chi-consistency to add straw material") };
+    };
+    // struct for configuring a KinKal fit module
+    struct KKModuleConfig {
+      fhicl::Sequence<art::InputTag> seedCollections         {Name("SeedCollections"),     Comment("Seed fit collections to be processed ") };
+      fhicl::Atom<art::InputTag>     comboHitCollection     {Name("ComboHitCollection"),     Comment("Single Straw ComboHit collection ") };
+      fhicl::Atom<art::InputTag>     caloClusterCollection     {Name("CaloClusterCollection"),     Comment("CaloCluster collection ") };
+      fhicl::Atom<art::InputTag>     strawHitFlagCollection {Name("StrawHitFlagCollection"), Comment("StrawHitFlag collection ") };
+      fhicl::Sequence<std::string> seedFlags { Name("SeedFlags"), Comment("Flags required to be present to convert a seed to a KinKal track") };
+      fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level"), 0 };
+      fhicl::Sequence<float> seederrors { Name("SeedErrors"), Comment("Initial value of seed parameter errors (rms, various units)") };
+      fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
     };
   }
 }

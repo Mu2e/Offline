@@ -35,6 +35,8 @@ Mu2eKinKal : {
     StrawBuffer : 2 #
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
+    SampleSurfaces : ["TT_Front","TT_Mid","TT_Back","TT_Inner", "TT_Outer"]
+    ExtendSurfaces : ["TT_Front","TT_Mid","TT_Back","TT_Inner", "TT_Outer"]
   }
 
   SEEDFIT: {
@@ -197,22 +199,18 @@ Mu2eKinKal : {
 
   LOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
-    HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
-    SaveFullFit : true
-    ZSavePositions : [-1635.1,-1522.0,0.0,1522.0,1635.1,1671,2371] # VDs, tracker front, mid, and end, and calo disks
+    SeedFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
   }
 
   KINEMATICLINE : {
     SeedMomentum : 2000.0
     SeedErrors : [15, 0.05, 10, 0.02, 2.0, 1.0] # //d0_ = 0, phi0_ = 1,z0_ = 2,theta_ = 3,t0_ = 4,mom_ = 5,
     ParameterConstraints : [0.0,0.0,0.0,0.0,0.0,1e-4]
-    CosmicTrackSeedCollections : ["LineFinder"]
+    SeedCollections : ["LineFinder"]
     ComboHitCollection : "makeSH"
     CaloClusterCollection : "CaloClusterMaker"
     StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-    LineFlags : [ "HelixOK" ]
-    SaveFullFit : true
-    #    ZSavePositions : [-1522.0,0.0,1522.0]
+    SeedFlags : [ "HelixOK" ]
   }
 }
 
