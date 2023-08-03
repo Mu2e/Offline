@@ -184,6 +184,11 @@
  <class name="std::vector<mu2e::TrkCaloHitSeed>"/>
  <class name="std::vector<mu2e::TrkStraw>"/>
  <class name="std::vector<mu2e::KalSegment>"/>
+ <class name="mu2e::SurfaceIdDetail"/>
+ <class name="mu2e::SurfaceIdEnum"/>
+ <class name="mu2e::SurfaceId"/>
+ <class name="mu2e::KalIntersection"/>
+ <class name="mu2e::KalIntersectionCollection"/>
 
  <class name="mu2e::KalSeed"/>
  <class name="mu2e::KalSeedCollection"/>

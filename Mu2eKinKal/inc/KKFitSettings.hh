@@ -75,6 +75,8 @@ namespace mu2e {
       fhicl::Atom<float> maxCaloDoca { Name("MaxCaloClusterDOCA"), Comment("Max DOCA to add a CaloCluster (mm)") };
       fhicl::Sequence<std::string> addHitSelect { Name("AddHitSelect"), Comment("Flags required to be present to add a hit") };
       fhicl::Sequence<std::string> addHitReject { Name("AddHitReject"), Comment("Flags required not to be present to add a hit") };
+      fhicl::Sequence<std::string> sampleElements { Name("SampleElements"), Comment("Elements at which to sample the fit") };
+      fhicl::Sequence<std::string> extensionElements { Name("extensionElements"), Comment("Elements to which to extend the fit") };
       fhicl::Atom<float> maxStrawHitDOCA { Name("MaxStrawHitDOCA"), Comment("Max DOCA to add a hit (mm)") };
       fhicl::Atom<float> maxStrawHitDt { Name("MaxStrawHitDt"), Comment("Max Detla time to add a hit (ns)") };
       fhicl::Atom<int> strawBuffer { Name("StrawBuffer"), Comment("Buffer to add when searching for straws") };

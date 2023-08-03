@@ -12,6 +12,7 @@
 #include "Offline/RecoDataProducts/inc/TrkCaloHitSeed.hh"
 #include "Offline/RecoDataProducts/inc/TrkStraw.hh"
 #include "Offline/RecoDataProducts/inc/KalSegment.hh"
+#include "Offline/RecoDataProducts/inc/KalIntersection.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
@@ -46,7 +47,7 @@ namespace mu2e {
     double t0Val() const;
     Float_t chisquared() const { return _chisq; }
     Float_t fitConsistency() const { return _fitcon; }
-    UInt_t nTrajSegments() const { return _nseg; }
+    UInt_t nTrajSegments() const { return _segments.size(); }
     bool hasCaloCluster() const { return _chit.caloCluster().isNonnull(); }
     art::Ptr<CaloCluster> const& caloCluster() const { return _chit.caloCluster(); }
     std::vector<KalSegment>::const_iterator nearestSeg(double time)  const;
@@ -68,13 +69,13 @@ namespace mu2e {
     TrkFitFlag        _status; // status of this fit: includes alglorithm information
     Float_t           _chisq = -1; // fit chisquared value
     Float_t           _fitcon = -1; // fit consistency
-    UInt_t            _nseg = 0; // # of fit trajectory segments
     Float_t           _maxgap = 0;
     Float_t           _avggap = 0; // information about trajectory gaps
     //
     // contained content substructure.
     //
     std::vector<KalSegment>     _segments; // segments of the Kalman filter fit result
+    std::vector<KalIntersection>     _inters; // intersections with materials or reference locations
     std::vector<TrkStrawHitSeed>    _hits; // hit seeds for all the hits used in this fit
     std::vector<TrkStraw>     _straws; // straws interesected by this fit
     TrkCaloHitSeed        _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content

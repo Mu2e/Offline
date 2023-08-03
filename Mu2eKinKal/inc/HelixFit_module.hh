@@ -262,20 +262,7 @@ namespace mu2e {
               fitflag.merge(TrkFitFlag::FitOK);
             else
               fitflag.clear(TrkFitFlag::FitOK);
-            if(savefull_){
-              kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h));
-            } else {
-              std::set<double> savetimes;
-              // add explicitly-requested z positions
-              auto const& fittraj = kktrk->fitTraj();
-              for(auto zpos : zsave_ ) {
-                // compute the time the trajectory crosses this plane
-                // replace this with surface intersections TODO
-                double tz = Mu2eKinKal::zTime(fittraj,zpos,fittraj.range().begin());
-                savetimes.insert(tz);
-              }
-              kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h,savetimes));
-            }
+            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h));
             // fill assns with the helix seed
             auto hptr = art::Ptr<HelixSeed>(hseedcol_h,iseed);
             auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);

@@ -14,6 +14,9 @@ rootlibs = env['ROOTLIBS']
 helper = mu2e_helper(env)
 
 mainlib = helper.make_mainlib([
+  'mu2e_Mu2eUtilities',
+  'mu2e_GeneralUtilities',
+  'cetlib_except',
   'KinKal_Trajectory',
   'KinKal_Geometry',
   'KinKal_General',
@@ -23,6 +26,9 @@ mainlib = helper.make_mainlib([
 ])
 
 helper.make_plugins([mainlib,
+  'mu2e_Mu2eUtilities',
+  'mu2e_GeneralUtilities',
+  'cetlib_except',
   'KinKal_Trajectory',
   'KinKal_Geometry',
   'KinKal_General',

@@ -1,35 +1,40 @@
 //
 //  Define the nominal tracker boundary and reference surfaces, used to extrapolate and sample KinKal track fits, and to build
 //  the passive materials in the fit
-//  original author: David Brown (LBN) 2023
+//  original author: David Brown (LBNL) 2023
 //
 #ifndef KinKalGeom_Tracker_hh
 #define KinKalGeom_Tracker_hh
 #include "KinKal/Geometry/Cylinder.hh"
 #include "KinKal/Geometry/Disk.hh"
 #include "KinKal/Geometry/Annulus.hh"
-#include <exception>
+#include <memory>
 namespace mu2e {
   namespace KinKalGeom {
     class Tracker {
       public:
+        using CylPtr = std::shared_ptr<KinKal::Cylinder>;
+        using DiskPtr = std::shared_ptr<KinKal::Disk>;
         // default constructor with nominal geometry
         Tracker();
         // accessors
-        // define the positions corresponding to the G4 virtual detectors
-        // 'entrance' refers to upstream (negative z) end, 'middle' to the middle of the tracker, 'exit' refers to downstream (positive z) end
-        auto const& outerCylinder() const { return outercyl_; }
-        auto const& innerCylinder() const { return innercyl_; }
-        auto const& entDisk() const { return ent_; }
-        auto const& midDisk() const { return mid_; }
-        auto const& exitDisk() const { return exit_; }
+        // return by reference
+        auto const& outer() const { return *outer_; }
+        auto const& inner() const { return *inner_; }
+        auto const& front() const { return *front_; }
+        auto const& middle() const { return *mid_; }
+        auto const& back() const { return *back_; }
+        // return by ptr
+        auto const& outerPtr() const { return outer_; }
+        auto const& innerPtr() const { return inner_; }
+        auto const& frontPtr() const { return front_; }
+        auto const& middlePtr() const { return mid_; }
+        auto const& backPtr() const { return back_; }
 
       private:
-        KinKal::Cylinder outercyl_; // outer cylinder
-        KinKal::Cylinder innercyl_; //  inner cylinder
-        KinKal::Disk ent_, mid_, exit_; // standard reference point planes
+        CylPtr outer_, inner_; // active volume boundary
+        DiskPtr front_, mid_, back_; // standard reference planes
         // TODO: add passive material for manifolds, absorber rings, beams, ...
- //       std::vector<Annulus> manifolds_; // manifolds
     };
   }
 }
