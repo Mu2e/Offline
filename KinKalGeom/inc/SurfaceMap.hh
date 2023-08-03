@@ -22,7 +22,8 @@ namespace mu2e {
       // default constructor with nominal geometry.  Eventually serve this from GeometryService.  TODO
       SurfaceMap();
       auto const& map() const { return map_; }
-      // find a surface by its Id.  Return value is an iterator, which may be null
+      // find a surface by its Id.  Return value is an iterator, which may be null.  Note that if
+      // a generic index (-1) is given for surfaces with >1 value, this will return a valid but unspecified matching surface
       auto surface(SurfaceId const& sid) const { return map_.find(sid); }
       // fill a vector of surfaces given a vector of Ids.  This will throw if the id doesn't match
       void surfaces(std::vector<SurfaceId> const& ids, std::vector<SurfacePair>& surfs) const;
@@ -33,7 +34,7 @@ namespace mu2e {
       KinKalGeom::DetectorSolenoid ds_;
       KinKalGeom::TestCRV tcrv_;
       // the actual map
-      std::map<SurfaceId,SurfacePtr> map_;
+      std::multimap<SurfaceId,SurfacePtr> map_;
   };
 }
 

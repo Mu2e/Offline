@@ -10,10 +10,12 @@
 #include <vector>
 namespace mu2e {
   struct KalIntersection {
-    XYZVectorF norm_; // surface unit normal at intersection point
+    KinKal::ParticleStateEstimate pstate_; // particle state at intersection point/time
     XYZVectorF bnom_; // Bfield at this intersection, needed to reconstitute trajectory
-    KinKal::ParticleStateEstimate _pstate; // particle state at intersection point/time
-    SurfaceId surface_; // which surface in the reco geometry was interestected
+    SurfaceId surfid_; // which surface in the reco geometry was interestected
+    XYZVectorF norm_; // surface unit normal at intersection point
+    KalIntersection(){}
+    KalIntersection(KinKal::ParticleStateEstimate const& pstate, XYZVectorF const& bnom, SurfaceId const& surfid, XYZVectorF const& norm) : pstate_(pstate), bnom_(bnom), surfid_(surfid), norm_(norm) {}
   };
   using KalIntersectionCollection = std::vector<KalIntersection>;
 }

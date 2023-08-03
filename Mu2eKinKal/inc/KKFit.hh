@@ -30,6 +30,7 @@
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
 #include "Offline/KinKalGeom/inc/SurfaceId.hh"
 #include "Offline/KinKalGeom/inc/SurfaceMap.hh"
+#include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 // geometry
 #include "Offline/KinKalGeom/inc/Tracker.hh"
 // KinKal includes
@@ -142,6 +143,7 @@ namespace mu2e {
       mutable double rmin_, rmax_; // plane-level info
       mutable double spitch_;
       mutable bool needstrackerinfo_;
+      SurfaceMap smap_;
       SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
       SurfaceMap::SurfacePairCollection extend_; // surfaces to extend the fit to
   };
@@ -171,7 +173,20 @@ namespace mu2e {
     sbuff_(fitconfig.strawBuffer()),
     printLevel_(fitconfig.printLevel()),
     needstrackerinfo_(true)
-  {}
+  {
+ // translate the sample and extend surface names to actual surfaces using the SurfaceMap.  This should come from the
+ // geometry service eventually, TODO
+    SurfaceIdCollection ssids;
+    for(auto const& sidname : fitconfig.sampleSurfaces()) {
+      ssids.push_back(SurfaceId(sidname,-1)); // match all elements
+    }
+    smap_.surfaces(ssids,sample_);
+    SurfaceIdCollection xsids;
+    for(auto const& sidname : fitconfig.extensionSurfaces()) {
+      xsids.push_back(SurfaceId(sidname,0)); // only generic elements
+    }
+    smap_.surfaces(xsids,extend_);
+  }
 
   template <class KTRAJ> void KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
       PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
@@ -565,13 +580,27 @@ namespace mu2e {
     return fseed;
   }
 
-   template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
-     for(auto sid : sample_){
-       // find the surface from this SurfaceId
-       // Intersect the fit trajectory with this element
-       // save the intersection information
-     }
-   }
-
+  template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
+    static const double tol(1.0e-8); // should come from config FIXME
+    auto const& ftraj = kktrk.fitTraj();
+    for(auto const& surf : sample_){
+      // Intersect the fit trajectory with this element.  Add a large buffer, which should come from config FIXME
+      double tstart = ftraj.range().begin()-50;
+      double tend =ftraj.range().end()+50;
+      bool hasinter(true);
+      while(hasinter){
+        TimeRange irange(tstart,tend);
+        auto surfinter = KinKal::ptIntersect(ftraj,*surf.second,irange,tol);
+        hasinter = surfinter.flag_.onsurface_ && surfinter.inRange();
+        if(hasinter){
+          // save the intersection information
+          auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
+          inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,XYZVectorF(surfinter.norm_));
+          // update for the next intersection
+          tstart = surfinter.time_ + tol;
+        }
+      }
+    }
+  }
 }
 #endif
