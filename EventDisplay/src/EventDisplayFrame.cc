@@ -51,8 +51,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
   _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV")),
   _protonBunchTimeLabel(pset.get<std::string>("protonBunchTimeTag","EWMProducer")),
-  _kalStepSize(pset.get<double>("kalSeedStepSize")),
-  _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets"))
+  _kalStepSize(pset.get<double>("kalSeedStepSize"))
 {
   SetCleanup(kDeepCleanup);
   Move(20,20);
@@ -613,7 +612,6 @@ void EventDisplayFrame::fillGeometry()
 
 void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop, const mu2e::CRVCalib &calib)
 {
-  _timeOffsets.updateMap(event);
 
   _eventNumber=event.id().event();
   _subrunNumber=event.id().subRun();
@@ -663,7 +661,7 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
   }
   else _runNumberText->SetTitle(eventInfoText.c_str());
 
-  _dataInterface->fillEvent(_contentSelector, _timeOffsets);
+  _dataInterface->fillEvent(_contentSelector);
   _dataInterface->useHitColors(_useHitColors, _whiteBackground);
   _dataInterface->useTrackColors(_contentSelector, _useTrackColors, _whiteBackground);
   _dataInterface->makeCrvScintillatorBarsVisible(_showCRV);
