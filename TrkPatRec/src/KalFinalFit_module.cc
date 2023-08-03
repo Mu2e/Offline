@@ -382,7 +382,6 @@ namespace mu2e
             fseed._chisq = krep->chisq();
             // compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
             fseed._fitcon =  TrkUtilities::chisqConsistency(krep);
-            fseed._nseg = krep->pieceTraj().localTrajectory().size();
             TrkUtilities::fillStrawHitSeeds(krep,*_chcol,fseed._hits);
             TrkUtilities::fillStraws(krep,fseed._straws);
             // sample the fit at the requested z positions.  Need options here to define a set of

@@ -1,20 +1,21 @@
 //
-//  Class recording the intersection (geometric and physical) of a KinKal fit with a
-//  geometric surface.
+//  Class recording the intersection (geometric and physical) of a KinKal fit result with
+//  a geometric surface.
 //
 #ifndef RecoDataProducts_KalIntersection_HH
 #define RecoDataProducts_KalIntersection_HH
-#include "KinKal/Geometry/InterData.hh"
-#include "CLHEP/Matrix/Vector.h"
 #include "Offline/DataProducts/inc/GenVector.hh"
+#include "KinKal/General/ParticleStateEstimate.hh"
+#include "Offline/KinKalGeom/inc/SurfaceId.hh"
+#include <vector>
 namespace mu2e {
   struct KalIntersection {
-    // record which system the intersection was in
-    enum system{tracker=0,  calo, crv, target, ds, crvtest};
-    KinKal::InterData data_; // main payload from KinKal intersection
-    system sys_; // which system the intersection surface is in
-    int elem_; // which element in the system
+    XYZVectorF norm_; // surface unit normal at intersection point
+    XYZVectorF bnom_; // Bfield at this intersection, needed to reconstitute trajectory
+    KinKal::ParticleStateEstimate _pstate; // particle state at intersection point/time
+    SurfaceId surface_; // which surface in the reco geometry was interestected
   };
+  using KalIntersectionCollection = std::vector<KalIntersection>;
 }
 
 #endif
