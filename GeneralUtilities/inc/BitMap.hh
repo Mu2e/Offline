@@ -289,7 +289,7 @@ namespace mu2e {
       if(invalid){
       // try to interpret as a (text) hex string; make sure to edit out spaces first!
         std::string cname(name);
-        cname.erase(cname.begin(), std::find_if(cname.begin(), cname.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+        cname.erase(std::remove_if(cname.begin(), cname.end(), ::isspace), cname.end());
         if(cname.compare(0,2,"0x") == 0 || cname.compare(0,2,"0X") == 0){
           mask = std::stoul(name,0,16);
           if((isValid(mask)) && mask != 0){
