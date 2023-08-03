@@ -27,7 +27,6 @@
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 //Utilities
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
@@ -73,7 +72,6 @@ namespace mu2e
         fhicl::Atom<art::InputTag> tstag{Name("CosmicTrackSeedCollection"),Comment("CosmicTrackSeed collection tag")};
         fhicl::Atom<art::InputTag> mcdigistag{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag")};
         fhicl::Atom<art::InputTag> pbtmcTag{Name("ProtonBunchTimeMC"),Comment("ProtonBunchTimeMC tag")};
-        fhicl::Table<SimParticleTimeOffset::Config> toff{Name("TimeOffsets"), Comment("Sim particle time offset ")};
       };
       typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -97,7 +95,6 @@ namespace mu2e
       art::InputTag   _tstag;//Striaght tracks
       art::InputTag   _mcdigistag; //MC digis
       art::InputTag _pbtmcTag;
-      SimParticleTimeOffset _toff;
       const ComboHitCollection* _phcol;
       const ComboHitCollection* _chcol;
       const StrawHitCollection* _shcol;
@@ -180,15 +177,9 @@ namespace mu2e
     _tctag (conf().tctag()),
     _tstag (conf().tstag()),
     _mcdigistag (conf().mcdigistag()),
-    _pbtmcTag (conf().pbtmcTag()),
-    _toff (conf().toff())
+    _pbtmcTag (conf().pbtmcTag())
   {
     consumes<CosmicTrackSeedCollection>(_tstag);
-    if(_mcdiag){
-      for (auto const& tag : conf().toff().inputs()) {
-        consumes<SimParticleTimeMap>(tag);
-      }
-    }
   }
 
   CosmicTrackDiag::~CosmicTrackDiag(){}
@@ -499,7 +490,6 @@ namespace mu2e
       _mcdigis=0;
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigistag);
       _mcdigis = mcdH.product();
-      _toff.updateMap(evt);
     }
 
     if (_shdiag){
@@ -566,7 +556,7 @@ namespace mu2e
             ppdirection = ppdir[j];
             if (ppdirection.y() > 0)
               ppdirection *= -1;
-            double mctime = sgs.time() + _toff.totalTimeOffset(sgs.simParticle());// - _ewMarkerOffset;
+            double mctime = sgs.time();// - _ewMarkerOffset;
             double trajtime = (pca2.point2()-ppintercept).dot(ppdirection.unit())/299.9;
             mctime -= trajtime;
             avg_t0 += mctime;
