@@ -103,6 +103,7 @@ namespace mu2e {
     using Comment = fhicl::Comment;
   // extend the generic module configuration as needed
     struct KKLineModuleConfig : public KKModuleConfig {
+      fhicl::Sequence<art::InputTag> seedCollections         {Name("CosmicTrackSeedCollections"),     Comment("Seed fit collections to be processed ") };
       fhicl::Atom<float> seedmom { Name("SeedMomentum"), Comment("Initial momentum value")};
       fhicl::Sequence<float> paramconstraints { Name("ParameterConstraints"), Comment("Sigma of direct gaussian constraints on each parameter (0=no constraint)")};
     };
