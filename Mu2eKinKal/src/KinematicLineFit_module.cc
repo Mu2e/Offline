@@ -45,6 +45,7 @@
 #include "KinKal/Trajectory/Line.hh"
 // Mu2eKinKal
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
+#include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
