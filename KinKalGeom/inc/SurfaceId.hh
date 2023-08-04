@@ -32,6 +32,10 @@ namespace mu2e {
       SurfaceId(std::string const& name, int index=0) : sid_(name), index_(index) {}
       SurfaceId(SurfaceIdDetail::enum_type sid, int index=0) : sid_(sid), index_(index) {}
 
+      // forward some accessors
+      auto const& id() const { return sid_; }
+      int index() const { return index_; }
+      auto const& name() const { return sid_.name(); }
 
       bool indexMatch(SurfaceId const& other) const { return index_ == other.index_ || index_ < 0 || other.index_ < 0; }
       bool indexCompare(SurfaceId const& other) const { return index_<0 || other.index_ < 0 ? false : index_ < other.index_; }
