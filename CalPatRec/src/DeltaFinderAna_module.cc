@@ -3,8 +3,8 @@
 //
 // parameter defaults: CalPatRec/fcl/prolog.fcl
 // this module doesn't do reconstruction
-// on input, it takes a list  of StrawHitFlags flags and evaluates performance
-// of the delta electron tagging
+// on input, it takes a list  of flagged hits flags and evaluates the
+// performance of the delta electron tagging
 //
 // hit type = 0 : proton
 //            1 : ele 0 < p < 20
@@ -57,8 +57,6 @@ namespace mu2e {
       fhicl::Atom<art::InputTag>    shCollTag              {Name("shCollTag"             ), Comment("SComboHit collection tag"         ) };
       fhicl::Atom<art::InputTag>    chCollTag              {Name("chCollTag"             ), Comment("ComboHit collection tag"          ) };
       fhicl::Atom<art::InputTag>    sschCollTag            {Name("sschCollTag"           ), Comment("SS ComboHit collection tag"       ) };
-      fhicl::Atom<art::InputTag>    chfCollTag             {Name("chfCollTag"            ), Comment("ComboHit flag collection tag"     ) };
-      fhicl::Atom<art::InputTag>    shfCollTag             {Name("shfCollTag"            ), Comment("SSC Hit  flag collection tag"     ) };
       fhicl::Atom<art::InputTag>    sdmcCollTag            {Name("sdmcCollTag"           ), Comment("StrawDigiMC collection Name"      ) };
       fhicl::Atom<int>              debugLevel             {Name("debugLevel"            ), Comment("debug level"                      ) };
       fhicl::Atom<int>              diagLevel              {Name("diagLevel"             ), Comment("diag level"                       ) };
@@ -168,10 +166,10 @@ namespace mu2e {
       const SimParticle*               fSim;
 
       std::vector<const ComboHit*>     fListOfSsComboHits;     // 1-straw combo hits (SSCH)
-      std::vector<const StrawHitFlag*> fListOfSsComboHitFlags; // a parallel list, flags are those of SS ComboHits
+      //      std::vector<const StrawHitFlag*> fListOfSsComboHitFlags; // a parallel list, flags are those of SS ComboHits
 
       std::vector<const ComboHit*>     fListOfComboHits;       // "combo" combo hits
-      std::vector<const StrawHitFlag*> fListOfChFlags;         // a parallel list, the flags are those of "Combo" ComboHits
+      // std::vector<const StrawHitFlag*> fListOfChFlags;         // a parallel list, the flags are those of "Combo" ComboHits
 
       McPart_t(const SimParticle* Sim = NULL) {
         fSim              = Sim;
@@ -200,7 +198,7 @@ namespace mu2e {
       int                 nShFlaggedProton() const { return fNShFlaggedProton; }
       int                 nChFlaggedProton() const { return fNChFlaggedProton; }
 
-      const StrawHitFlag* ChFlag     (int I) const { return fListOfChFlags[I];  }
+      const StrawHitFlag* ChFlag     (int I) const { return &fListOfComboHits[I]->flag();  }
 
       float Momentum() const {
         float px = fSim->startMomentum().px();
@@ -254,8 +252,6 @@ namespace mu2e {
     art::InputTag                  _shCollTag;              // straw hits        by "makeSH"
     art::InputTag                  _chCollTag;
     art::InputTag                  _sschCollTag;            // single straw combohits by "makeSH"
-    art::InputTag                  _shfCollTag;             // 1-straw  ComboHit flags
-    art::InputTag                  _chfCollTag;             // combined ComboHit flags
     art::InputTag                  _sdmcCollTag;
     int                            _debugLevel;
     int                            _diagLevel;
@@ -271,8 +267,6 @@ namespace mu2e {
     const ComboHitCollection*      _chColl;
     const ComboHitCollection*      _sschColl; // one straw hit per combo hit
     const StrawHitCollection*      _shColl;
-    const StrawHitFlagCollection*  _chfColl;
-    const StrawHitFlagCollection*  _shfColl;
     const StrawDigiMCCollection*   _sdmcColl;
 
     const Tracker*                 _tracker;
@@ -337,8 +331,6 @@ namespace mu2e {
     _shCollTag             (config().shCollTag  ()      ),
     _chCollTag             (config().chCollTag  ()      ),
     _sschCollTag           (config().sschCollTag()      ),
-    _shfCollTag            (config().shfCollTag ()      ),  // what are those flags ? - any assumption about which module sets them?
-    _chfCollTag            (config().chfCollTag ()      ),
     _sdmcCollTag           (config().sdmcCollTag()      ),
     _debugLevel            (config().debugLevel ()      ),
     _diagLevel             (config().diagLevel  ()      ),
@@ -443,15 +435,55 @@ namespace mu2e {
     int book_combo_hit_histset[kNComboHitHistSets];
     for (int i=0; i<kNComboHitHistSets; i++) book_combo_hit_histset[i] = 0;
 
-    book_combo_hit_histset[  0] = 1;                // all
-    book_combo_hit_histset[  1] = 1;                // all prot and deut
-    book_combo_hit_histset[  2] = 1;                // all e-: p<20
-    book_combo_hit_histset[  3] = 1;                // all e- 20<p<80
-    book_combo_hit_histset[  4] = 1;                // all e-: 80<p<110
-    book_combo_hit_histset[  5] = 1;                // all e-  p > 110
-    book_combo_hit_histset[  6] = 1;                // all e+
-    book_combo_hit_histset[  7] = 1;                // all mu- and mu+
-    book_combo_hit_histset[  8] = 1;                // all everything else
+    book_combo_hit_histset[  0] = 1;                // all:
+    book_combo_hit_histset[  1] = 1;                // all: prot and deut
+    book_combo_hit_histset[  2] = 1;                // all: e-: p<20
+    book_combo_hit_histset[  3] = 1;                // all: e- 20<p<80
+    book_combo_hit_histset[  4] = 1;                // all: e-: 80<p<110
+    book_combo_hit_histset[  5] = 1;                // all: e-  p > 110
+    book_combo_hit_histset[  6] = 1;                // all: e+
+    book_combo_hit_histset[  7] = 1;                // all: mu- and mu+
+    book_combo_hit_histset[  8] = 1;                // all: everything else
+
+    book_combo_hit_histset[ 10] = 1;                // flagged delta:
+    book_combo_hit_histset[ 11] = 1;                // flagged delta: prot and deut
+    book_combo_hit_histset[ 12] = 1;                // flagged delta: e-: p<20
+    book_combo_hit_histset[ 13] = 1;                // flagged delta: e- 20<p<80
+    book_combo_hit_histset[ 14] = 1;                // flagged delta: e-: 80<p<110
+    book_combo_hit_histset[ 15] = 1;                // flagged delta: e-  p > 110
+    book_combo_hit_histset[ 16] = 1;                // flagged delta: e+
+    book_combo_hit_histset[ 17] = 1;                // flagged delta: mu- and mu+
+    book_combo_hit_histset[ 18] = 1;                // flagged delta: everything else
+
+    book_combo_hit_histset[ 20] = 1;                // not flagged delta:
+    book_combo_hit_histset[ 21] = 1;                // not flagged delta: prot and deut
+    book_combo_hit_histset[ 22] = 1;                // not flagged delta: e-: p<20
+    book_combo_hit_histset[ 23] = 1;                // not flagged delta: e- 20<p<80
+    book_combo_hit_histset[ 24] = 1;                // not flagged delta: e-: 80<p<110
+    book_combo_hit_histset[ 25] = 1;                // not flagged delta: e-  p > 110
+    book_combo_hit_histset[ 26] = 1;                // not flagged delta: e+
+    book_combo_hit_histset[ 27] = 1;                // not flagged delta: mu- and mu+
+    book_combo_hit_histset[ 28] = 1;                // not flagged delta: everything else
+
+    book_combo_hit_histset[ 30] = 1;                // flagged proton:
+    book_combo_hit_histset[ 31] = 1;                // flagged proton: prot and deut
+    book_combo_hit_histset[ 32] = 1;                // flagged proton: e-: p<20
+    book_combo_hit_histset[ 33] = 1;                // flagged proton: e- 20<p<80
+    book_combo_hit_histset[ 34] = 1;                // flagged proton: e-: 80<p<110
+    book_combo_hit_histset[ 35] = 1;                // flagged proton: e-  p > 110
+    book_combo_hit_histset[ 36] = 1;                // flagged proton: e+
+    book_combo_hit_histset[ 37] = 1;                // flagged proton: mu- and mu+
+    book_combo_hit_histset[ 38] = 1;                // flagged proton: everything else
+
+    book_combo_hit_histset[ 40] = 1;                // flagged delta or proton:
+    book_combo_hit_histset[ 41] = 1;                // flagged delta or proton: prot and deut
+    book_combo_hit_histset[ 42] = 1;                // flagged delta or proton: e-: p<20
+    book_combo_hit_histset[ 43] = 1;                // flagged delta or proton: e- 20<p<80
+    book_combo_hit_histset[ 44] = 1;                // flagged delta or proton: e-: 80<p<110
+    book_combo_hit_histset[ 45] = 1;                // flagged delta or proton: e-  p > 110
+    book_combo_hit_histset[ 46] = 1;                // flagged delta or proton: e+
+    book_combo_hit_histset[ 47] = 1;                // flagged delta or proton: mu- and mu+
+    book_combo_hit_histset[ 48] = 1;                // flagged delta or proton: everything else
 
     for (int i=0; i<kNComboHitHistSets; i++) {
       if (book_combo_hit_histset[i] != 0) {
@@ -478,25 +510,25 @@ namespace mu2e {
     book_straw_hit_histset[  7] = 1;                // all mu- and mu+
     book_straw_hit_histset[  8] = 1;                // all everything else
 
-    book_straw_hit_histset[ 10] = 1;                // delta
-    book_straw_hit_histset[ 11] = 1;                // delta prot and deut
-    book_straw_hit_histset[ 12] = 1;                // delta e-: p<20
-    book_straw_hit_histset[ 13] = 1;                // delta e- 20<p<80
-    book_straw_hit_histset[ 14] = 1;                // delta e-: 80<p<110
-    book_straw_hit_histset[ 15] = 1;                // delta e-  p > 110
-    book_straw_hit_histset[ 16] = 1;                // delta e+
-    book_straw_hit_histset[ 17] = 1;                // delta mu- and mu+
-    book_straw_hit_histset[ 18] = 1;                // delta everything else
+    book_straw_hit_histset[ 10] = 1;                // flagged delta:
+    book_straw_hit_histset[ 11] = 1;                // flagged delta: prot and deut
+    book_straw_hit_histset[ 12] = 1;                // flagged delta: e-: p<20
+    book_straw_hit_histset[ 13] = 1;                // flagged delta: e- 20<p<80
+    book_straw_hit_histset[ 14] = 1;                // flagged delta: e-: 80<p<110
+    book_straw_hit_histset[ 15] = 1;                // flagged delta: e-  p > 110
+    book_straw_hit_histset[ 16] = 1;                // flagged delta: e+
+    book_straw_hit_histset[ 17] = 1;                // flagged delta: mu- and mu+
+    book_straw_hit_histset[ 18] = 1;                // flagged delta: everything else
 
-    book_straw_hit_histset[ 20] = 1;                // non-delta
-    book_straw_hit_histset[ 21] = 1;                // non-delta prot and deut
-    book_straw_hit_histset[ 22] = 1;                // non-delta e-: p<20
-    book_straw_hit_histset[ 23] = 1;                // non-delta e- 20<p<80
-    book_straw_hit_histset[ 24] = 1;                // non-delta e-: 80<p<110
-    book_straw_hit_histset[ 25] = 1;                // non-delta e-  p > 110
-    book_straw_hit_histset[ 26] = 1;                // non-delta e+
-    book_straw_hit_histset[ 27] = 1;                // non-delta mu- and mu+
-    book_straw_hit_histset[ 28] = 1;                // non-delta everything else
+    book_straw_hit_histset[ 20] = 1;                // not flagged delta:
+    book_straw_hit_histset[ 21] = 1;                // not flagged delta: prot and deut
+    book_straw_hit_histset[ 22] = 1;                // not flagged delta: e-: p<20
+    book_straw_hit_histset[ 23] = 1;                // not flagged delta: e- 20<p<80
+    book_straw_hit_histset[ 24] = 1;                // not flagged delta: e-: 80<p<110
+    book_straw_hit_histset[ 25] = 1;                // not flagged delta: e-  p > 110
+    book_straw_hit_histset[ 26] = 1;                // not flagged delta: e+
+    book_straw_hit_histset[ 27] = 1;                // not flagged delta: mu- and mu+
+    book_straw_hit_histset[ 28] = 1;                // not flagged delta: everything else
 
     for (int i=0; i<kNStrawHitHistSets; i++) {
       if (book_straw_hit_histset[i] != 0) {
@@ -645,91 +677,163 @@ namespace mu2e {
 // straw hit histograms, mc_hit_info relates to the straw hit type
 // 0:p, 1:ele p<20, 2:ele 20<p<80  3:ele 100<p<110 4:everything else
 //-----------------------------------------------------------------------------
-    int loc = 0;
     for (int i=0; i<_nComboHits; i++) {
-      const ComboHit* ch         = &_chColl->at(i);
+      const ComboHit*     ch  = &_chColl ->at(i);
+      //      const StrawHitFlag* chf = &_chfColl->at(i);
+      const StrawHitFlag* chf = &ch->flag();
 
-      int nsh = ch->nStrawHits();
-      for (int ish=0; ish<nsh; ish++) {
-        int ind = ch->indexArray().at(ish);
-
-        const StrawHit* sh = &_shColl->at(ind);
-
-        const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
-        const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
-        const SimParticle*  sim  = sgs->simParticle().get();
-
-        McPart_t mc(sim);
-        McHitInfo_t    mc_hit_info;
-
-        int mc_type = mc.Type();
-
-        mc_hit_info.fMc   = &mc;
-        mc_hit_info.fType = mc_type;
-        mc_hit_info.fFlag = &_chfColl->at(i);
-
+      //      int nsh = ch->nStrawHits();
 //-----------------------------------------------------------------------------
-// fill combo hit histograms in the same loop
+// 'mark' CH by its first straw hit - with some unavoidable uncertainties
 //-----------------------------------------------------------------------------
-        if (ish == 0) {
-          fillComboHitHistograms(_hist.fComboHit[0],ch,&mc_hit_info);  // all
+      int ind                  = ch->index(0);
+      // const StrawHit*     sh   = &_shColl->at(ind);
+      const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
+      const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
+      const SimParticle*  sim  = sgs->simParticle().get();
 
-          if      (mc_type == kProtonOrDeut ) fillComboHitHistograms(_hist.fComboHit[1],ch,&mc_hit_info);
-          else if (mc_type == kLoMomElectron) fillComboHitHistograms(_hist.fComboHit[2],ch,&mc_hit_info);
-          else if (mc_type == kMdMomElectron) fillComboHitHistograms(_hist.fComboHit[3],ch,&mc_hit_info);
-          else if (mc_type == kCeMomElectron) fillComboHitHistograms(_hist.fComboHit[4],ch,&mc_hit_info);
-          else if (mc_type == kHiMomElectron) fillComboHitHistograms(_hist.fComboHit[5],ch,&mc_hit_info);
-          else if (mc_type == kPositron     ) fillComboHitHistograms(_hist.fComboHit[6],ch,&mc_hit_info);
-          else if (mc_type == kMuon         ) fillComboHitHistograms(_hist.fComboHit[7],ch,&mc_hit_info);
-          else                                fillComboHitHistograms(_hist.fComboHit[8],ch,&mc_hit_info);
-        }
+      McPart_t mc(sim);
+      McHitInfo_t    mc_hit_info;
 
-        fillStrawHitHistograms(_hist.fStrawHit[0],sh,&mc_hit_info);  // all
+      int mc_type = mc.Type();
 
-        if      (mc_type == kProtonOrDeut ) fillStrawHitHistograms(_hist.fStrawHit[1],sh,&mc_hit_info);
-        else if (mc_type == kLoMomElectron) fillStrawHitHistograms(_hist.fStrawHit[2],sh,&mc_hit_info);
-        else if (mc_type == kMdMomElectron) fillStrawHitHistograms(_hist.fStrawHit[3],sh,&mc_hit_info);
-        else if (mc_type == kCeMomElectron) fillStrawHitHistograms(_hist.fStrawHit[4],sh,&mc_hit_info);
-        else if (mc_type == kHiMomElectron) fillStrawHitHistograms(_hist.fStrawHit[5],sh,&mc_hit_info);
-        else if (mc_type == kPositron     ) fillStrawHitHistograms(_hist.fStrawHit[6],sh,&mc_hit_info);
-        else if (mc_type == kMuon         ) fillStrawHitHistograms(_hist.fStrawHit[7],sh,&mc_hit_info);
-        else                                fillStrawHitHistograms(_hist.fStrawHit[8],sh,&mc_hit_info);
+      mc_hit_info.fMc   = &mc;
+      mc_hit_info.fType = mc_type;
+      //      mc_hit_info.fFlag = &_chfColl->at(i);
+      mc_hit_info.fFlag = chf;
 
-        const StrawHitFlag* flag = mc_hit_info.fFlag;
+      fillComboHitHistograms(_hist.fComboHit[0],ch,&mc_hit_info);  // all
 
-        // int edepOK = flag->hasAllProperties(StrawHitFlag::energysel);
-        int delta  = flag->hasAllProperties(StrawHitFlag::bkg);
+      if      (mc_type == kProtonOrDeut ) fillComboHitHistograms(_hist.fComboHit[1],ch,&mc_hit_info);
+      else if (mc_type == kLoMomElectron) fillComboHitHistograms(_hist.fComboHit[2],ch,&mc_hit_info);
+      else if (mc_type == kMdMomElectron) fillComboHitHistograms(_hist.fComboHit[3],ch,&mc_hit_info);
+      else if (mc_type == kCeMomElectron) fillComboHitHistograms(_hist.fComboHit[4],ch,&mc_hit_info);
+      else if (mc_type == kHiMomElectron) fillComboHitHistograms(_hist.fComboHit[5],ch,&mc_hit_info);
+      else if (mc_type == kPositron     ) fillComboHitHistograms(_hist.fComboHit[6],ch,&mc_hit_info);
+      else if (mc_type == kMuon         ) fillComboHitHistograms(_hist.fComboHit[7],ch,&mc_hit_info);
+      else                                fillComboHitHistograms(_hist.fComboHit[8],ch,&mc_hit_info);
 
-        if (delta) {
+      int delta  = chf->hasAnyProperty(StrawHitFlag::bkg);
+      int proton = (chf->hasAnyProperty(StrawHitFlag::energysel) == false);
+
+      if (delta) {
+        fillComboHitHistograms(_hist.fComboHit[10],ch,&mc_hit_info);  // all
+
+        if      (mc_type == kProtonOrDeut ) fillComboHitHistograms(_hist.fComboHit[11],ch,&mc_hit_info);
+        else if (mc_type == kLoMomElectron) fillComboHitHistograms(_hist.fComboHit[12],ch,&mc_hit_info);
+        else if (mc_type == kMdMomElectron) fillComboHitHistograms(_hist.fComboHit[13],ch,&mc_hit_info);
+        else if (mc_type == kCeMomElectron) fillComboHitHistograms(_hist.fComboHit[14],ch,&mc_hit_info);
+        else if (mc_type == kHiMomElectron) fillComboHitHistograms(_hist.fComboHit[15],ch,&mc_hit_info);
+        else if (mc_type == kPositron     ) fillComboHitHistograms(_hist.fComboHit[16],ch,&mc_hit_info);
+        else if (mc_type == kMuon         ) fillComboHitHistograms(_hist.fComboHit[17],ch,&mc_hit_info);
+        else                                fillComboHitHistograms(_hist.fComboHit[18],ch,&mc_hit_info);
+      }
+      else {
+        fillComboHitHistograms(_hist.fComboHit[20],ch,&mc_hit_info);  // all
+
+        if      (mc_type == kProtonOrDeut ) fillComboHitHistograms(_hist.fComboHit[21],ch,&mc_hit_info);
+        else if (mc_type == kLoMomElectron) fillComboHitHistograms(_hist.fComboHit[22],ch,&mc_hit_info);
+        else if (mc_type == kMdMomElectron) fillComboHitHistograms(_hist.fComboHit[23],ch,&mc_hit_info);
+        else if (mc_type == kCeMomElectron) fillComboHitHistograms(_hist.fComboHit[24],ch,&mc_hit_info);
+        else if (mc_type == kHiMomElectron) fillComboHitHistograms(_hist.fComboHit[25],ch,&mc_hit_info);
+        else if (mc_type == kPositron     ) fillComboHitHistograms(_hist.fComboHit[26],ch,&mc_hit_info);
+        else if (mc_type == kMuon         ) fillComboHitHistograms(_hist.fComboHit[27],ch,&mc_hit_info);
+        else                                fillComboHitHistograms(_hist.fComboHit[28],ch,&mc_hit_info);
+      }
+
+      if (proton) {
+        fillComboHitHistograms(_hist.fComboHit[30],ch,&mc_hit_info);  // all
+
+        if      (mc_type == kProtonOrDeut ) fillComboHitHistograms(_hist.fComboHit[31],ch,&mc_hit_info);
+        else if (mc_type == kLoMomElectron) fillComboHitHistograms(_hist.fComboHit[32],ch,&mc_hit_info);
+        else if (mc_type == kMdMomElectron) fillComboHitHistograms(_hist.fComboHit[33],ch,&mc_hit_info);
+        else if (mc_type == kCeMomElectron) fillComboHitHistograms(_hist.fComboHit[34],ch,&mc_hit_info);
+        else if (mc_type == kHiMomElectron) fillComboHitHistograms(_hist.fComboHit[35],ch,&mc_hit_info);
+        else if (mc_type == kPositron     ) fillComboHitHistograms(_hist.fComboHit[36],ch,&mc_hit_info);
+        else if (mc_type == kMuon         ) fillComboHitHistograms(_hist.fComboHit[37],ch,&mc_hit_info);
+        else                                fillComboHitHistograms(_hist.fComboHit[38],ch,&mc_hit_info);
+      }
+
+      if (delta or proton) {
+        fillComboHitHistograms(_hist.fComboHit[40],ch,&mc_hit_info);  // all
+
+        if      (mc_type == kProtonOrDeut ) fillComboHitHistograms(_hist.fComboHit[41],ch,&mc_hit_info);
+        else if (mc_type == kLoMomElectron) fillComboHitHistograms(_hist.fComboHit[42],ch,&mc_hit_info);
+        else if (mc_type == kMdMomElectron) fillComboHitHistograms(_hist.fComboHit[43],ch,&mc_hit_info);
+        else if (mc_type == kCeMomElectron) fillComboHitHistograms(_hist.fComboHit[44],ch,&mc_hit_info);
+        else if (mc_type == kHiMomElectron) fillComboHitHistograms(_hist.fComboHit[45],ch,&mc_hit_info);
+        else if (mc_type == kPositron     ) fillComboHitHistograms(_hist.fComboHit[46],ch,&mc_hit_info);
+        else if (mc_type == kMuon         ) fillComboHitHistograms(_hist.fComboHit[47],ch,&mc_hit_info);
+        else                                fillComboHitHistograms(_hist.fComboHit[48],ch,&mc_hit_info);
+      }
+   }
+
+    for (int i=0; i<_nSingleSH; i++) {
+      const ComboHit*     ssch  = &_sschColl ->at(i);
+      //      const StrawHitFlag* sschf = &_sschfColl->at(i);
+
+      int ind = ssch->index(0);
+
+      const StrawHit*     sh   = &_shColl->at(ind);
+      const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
+      const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
+      const SimParticle*  sim  = sgs->simParticle().get();
+
+      McPart_t mc(sim);
+      McHitInfo_t    mc_hit_info;
+
+      int mc_type = mc.Type();
+
+      mc_hit_info.fMc   = &mc;
+      mc_hit_info.fType = mc_type;
+      mc_hit_info.fFlag = &ssch->flag();
+//-----------------------------------------------------------------------------
+// fill single straw histograms
+//-----------------------------------------------------------------------------
+      fillStrawHitHistograms(_hist.fStrawHit[0],sh,&mc_hit_info);  // all
+
+      if      (mc_type == kProtonOrDeut ) fillStrawHitHistograms(_hist.fStrawHit[1],sh,&mc_hit_info);
+      else if (mc_type == kLoMomElectron) fillStrawHitHistograms(_hist.fStrawHit[2],sh,&mc_hit_info);
+      else if (mc_type == kMdMomElectron) fillStrawHitHistograms(_hist.fStrawHit[3],sh,&mc_hit_info);
+      else if (mc_type == kCeMomElectron) fillStrawHitHistograms(_hist.fStrawHit[4],sh,&mc_hit_info);
+      else if (mc_type == kHiMomElectron) fillStrawHitHistograms(_hist.fStrawHit[5],sh,&mc_hit_info);
+      else if (mc_type == kPositron     ) fillStrawHitHistograms(_hist.fStrawHit[6],sh,&mc_hit_info);
+      else if (mc_type == kMuon         ) fillStrawHitHistograms(_hist.fStrawHit[7],sh,&mc_hit_info);
+      else                                fillStrawHitHistograms(_hist.fStrawHit[8],sh,&mc_hit_info);
+
+      const StrawHitFlag* flag = mc_hit_info.fFlag;
+
+      int delta  = flag->hasAllProperties(StrawHitFlag::bkg);
+
+      if (delta) {
 //-----------------------------------------------------------------------------
 // set 2: all hits flagged as delta electrons
 //-----------------------------------------------------------------------------
-          fillStrawHitHistograms(_hist.fStrawHit[10],sh,&mc_hit_info);
+        fillStrawHitHistograms(_hist.fStrawHit[10],sh,&mc_hit_info);
 
-          if      (mc_type == kProtonOrDeut ) fillStrawHitHistograms(_hist.fStrawHit[11],sh,&mc_hit_info);
-          else if (mc_type == kLoMomElectron) fillStrawHitHistograms(_hist.fStrawHit[12],sh,&mc_hit_info);
-          else if (mc_type == kMdMomElectron) fillStrawHitHistograms(_hist.fStrawHit[13],sh,&mc_hit_info);
-          else if (mc_type == kCeMomElectron) fillStrawHitHistograms(_hist.fStrawHit[14],sh,&mc_hit_info);
-          else if (mc_type == kHiMomElectron) fillStrawHitHistograms(_hist.fStrawHit[15],sh,&mc_hit_info);
-          else if (mc_type == kPositron     ) fillStrawHitHistograms(_hist.fStrawHit[16],sh,&mc_hit_info);
-          else if (mc_type == kMuon         ) fillStrawHitHistograms(_hist.fStrawHit[17],sh,&mc_hit_info);
-          else                                fillStrawHitHistograms(_hist.fStrawHit[18],sh,&mc_hit_info);
-        }
-        else {
-          fillStrawHitHistograms(_hist.fStrawHit[20],sh,&mc_hit_info);
-
-          if      (mc_type == kProtonOrDeut ) fillStrawHitHistograms(_hist.fStrawHit[21],sh,&mc_hit_info);
-          else if (mc_type == kLoMomElectron) fillStrawHitHistograms(_hist.fStrawHit[22],sh,&mc_hit_info);
-          else if (mc_type == kMdMomElectron) fillStrawHitHistograms(_hist.fStrawHit[23],sh,&mc_hit_info);
-          else if (mc_type == kCeMomElectron) fillStrawHitHistograms(_hist.fStrawHit[24],sh,&mc_hit_info);
-          else if (mc_type == kHiMomElectron) fillStrawHitHistograms(_hist.fStrawHit[25],sh,&mc_hit_info);
-          else if (mc_type == kPositron     ) fillStrawHitHistograms(_hist.fStrawHit[26],sh,&mc_hit_info);
-          else if (mc_type == kMuon         ) fillStrawHitHistograms(_hist.fStrawHit[27],sh,&mc_hit_info);
-          else                                fillStrawHitHistograms(_hist.fStrawHit[28],sh,&mc_hit_info);
-        }
-
-        loc++;
+        if      (mc_type == kProtonOrDeut ) fillStrawHitHistograms(_hist.fStrawHit[11],sh,&mc_hit_info);
+        else if (mc_type == kLoMomElectron) fillStrawHitHistograms(_hist.fStrawHit[12],sh,&mc_hit_info);
+        else if (mc_type == kMdMomElectron) fillStrawHitHistograms(_hist.fStrawHit[13],sh,&mc_hit_info);
+        else if (mc_type == kCeMomElectron) fillStrawHitHistograms(_hist.fStrawHit[14],sh,&mc_hit_info);
+        else if (mc_type == kHiMomElectron) fillStrawHitHistograms(_hist.fStrawHit[15],sh,&mc_hit_info);
+        else if (mc_type == kPositron     ) fillStrawHitHistograms(_hist.fStrawHit[16],sh,&mc_hit_info);
+        else if (mc_type == kMuon         ) fillStrawHitHistograms(_hist.fStrawHit[17],sh,&mc_hit_info);
+        else                                fillStrawHitHistograms(_hist.fStrawHit[18],sh,&mc_hit_info);
       }
+      else {
+        fillStrawHitHistograms(_hist.fStrawHit[20],sh,&mc_hit_info);
+
+        if      (mc_type == kProtonOrDeut ) fillStrawHitHistograms(_hist.fStrawHit[21],sh,&mc_hit_info);
+        else if (mc_type == kLoMomElectron) fillStrawHitHistograms(_hist.fStrawHit[22],sh,&mc_hit_info);
+        else if (mc_type == kMdMomElectron) fillStrawHitHistograms(_hist.fStrawHit[23],sh,&mc_hit_info);
+        else if (mc_type == kCeMomElectron) fillStrawHitHistograms(_hist.fStrawHit[24],sh,&mc_hit_info);
+        else if (mc_type == kHiMomElectron) fillStrawHitHistograms(_hist.fStrawHit[25],sh,&mc_hit_info);
+        else if (mc_type == kPositron     ) fillStrawHitHistograms(_hist.fStrawHit[26],sh,&mc_hit_info);
+        else if (mc_type == kMuon         ) fillStrawHitHistograms(_hist.fStrawHit[27],sh,&mc_hit_info);
+        else                                fillStrawHitHistograms(_hist.fStrawHit[28],sh,&mc_hit_info);
+      }
+
+      //      loc++;
     }
 //-----------------------------------------------------------------------------
 // fill MC histograms
@@ -807,7 +911,7 @@ namespace mu2e {
 bool DeltaFinderAna::findData(const art::Event& Evt) {
     _chColl     = nullptr;
     _sdmcColl   = nullptr;
-    _chfColl    = nullptr;
+    // _chfColl    = nullptr;
 
     auto chcH   = Evt.getValidHandle<ComboHitCollection>(_chCollTag);
     _chColl     = chcH.product();
@@ -820,16 +924,17 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     auto sschcH = Evt.getValidHandle<ComboHitCollection>(_sschCollTag);
     _sschColl   = sschcH.product();
 
-    auto chfcH  = Evt.getValidHandle<StrawHitFlagCollection>(_chfCollTag);
-    _chfColl    = chfcH.product();
+    // auto chfcH  = Evt.getValidHandle<StrawHitFlagCollection>(_chfCollTag);
+    // _chfColl    = chfcH.product();
 
-    auto shfcH  = Evt.getValidHandle<StrawHitFlagCollection>(_shfCollTag);
-    _shfColl    = shfcH.product();
+    // auto shfcH  = Evt.getValidHandle<StrawHitFlagCollection>(_shfCollTag);
+    // _shfColl    = shfcH.product();
 
     auto sdmccH = Evt.getValidHandle<StrawDigiMCCollection>(_sdmcCollTag);
     _sdmcColl   = sdmccH.product();
 
-    return (_chColl != 0) && (_chfColl != 0) && (_shfColl != 0) && (_sdmcColl != 0) ;
+    //    return (_chColl != 0) && (_chfColl != 0) && (_shfColl != 0) && (_sdmcColl != 0) ;
+    return (_chColl != 0) && (_sdmcColl != 0) ;
   }
 
 //-----------------------------------------------------------------------------
@@ -911,13 +1016,14 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 // at this point, all MC particles should already be registered
 //-----------------------------------------------------------------------------
       const ComboHit* ssch    = &_sschColl->at(i);
-      const StrawHitFlag* shf = &_shfColl->at(i);
+      // const StrawHitFlag* shf = &_shfColl->at(i);
+      // const StrawHitFlag* shf = &ssch->flag();
 //-----------------------------------------------------------------------------
 // the SSCH flags from the flag collection could be redefined and different
 // from the ones stored in the hit payload
 //-----------------------------------------------------------------------------
       mc->fListOfSsComboHits.push_back(ssch);     // these come with their own flags in payload
-      mc->fListOfSsComboHitFlags.push_back(shf);
+      //      mc->fListOfSsComboHitFlags.push_back(shf);
 
       int station = ssch->strawId().getStation();
 
@@ -941,13 +1047,14 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     // int loc = 0;
     for (int i=0; i<_nComboHits; i++) {
       const ComboHit*     ch   = &_chColl->at(i);
-      const StrawHitFlag* chf  = &_chfColl->at(i);
+      //      const StrawHitFlag* chf  = &_chfColl->at(i);
+      const StrawHitFlag* chf  = &ch->flag();
 
       int       ind = ch->index(0);
       McPart_t* mc  = _listOfMcHitInfo.at(ind).fMc;
 
       mc->fListOfComboHits.push_back(ch);
-      mc->fListOfChFlags.push_back  (chf);
+      // mc->fListOfChFlags.push_back  (chf);
 //-----------------------------------------------------------------------------
 // delta and proton flagging is done using combo hits
 //-----------------------------------------------------------------------------
@@ -1061,7 +1168,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 // print ComboHits with flags stored in the external hit collection
 //-----------------------------------------------------------------------------
       _hlp->printComboHitCollection(_chCollTag.encode().data(),
-                                    _chfCollTag.encode().data(),
+                                    "",                            // _chfCollTag.encode().data(),
                                     _sdmcCollTag.encode().data());
     }
 
@@ -1071,7 +1178,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 // print single-straw ComboHits with flags stored in the external hit collection
 //-----------------------------------------------------------------------------
       _hlp->printComboHitCollection(_shCollTag.encode().data(),
-                                    _shfCollTag.encode().data(),
+                                    "",                            // _shfCollTag.encode().data(),
                                     _sdmcCollTag.encode().data());
     }
   }

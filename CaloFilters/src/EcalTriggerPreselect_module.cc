@@ -33,8 +33,6 @@
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
 
@@ -96,7 +94,6 @@ namespace mu2e {
     std::string _instanceName;
     TrkParticle _tpart;
     TrkFitDirection _fdir;
-    SimParticleTimeOffset _toff;  // time offset smearing
     int nch; // number of combo hits
     const ComboHit*     comboHit;
     const ComboHitCollection* _chcol;
@@ -141,7 +138,6 @@ namespace mu2e {
     _trackClusterMatchModuleLabel(pset.get<std::string>("trackClusterMatchModuleLabel")),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _virtualhit_good(pset.get<int>("virtualhit",1)),
     _trk_good(pset.get<int>("trkgood",1)),
     _match_good(pset.get<int>("matchgood",1)),
@@ -183,7 +179,6 @@ namespace mu2e {
     //load the timeoffset
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     double _mbtime = accPar->deBuncherPeriod;
-    _toff.updateMap(event);
 
     //--------------------------  Prefetch Calo Digis  --------------------------------
     auto caloDigiFlag = event.getValidHandle<mu2e::CaloDigiCollection>(_caloDigiModuleLabel);
@@ -251,8 +246,7 @@ namespace mu2e {
           // HITS in CALORIMETER VIRTUAL DETECTORS
           if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
 
-          double hitTimeUnfolded = _toff.timeWithOffsetsApplied(hit);
-          double hitTime         = fmod(hitTimeUnfolded,_mbtime);
+          double hitTime         = fmod(hit.time(),_mbtime);
 
           if (hit.simParticle()->pdgId()==_VDPID && hitTime>(double) _T0MIN ){
             virtualhit_good=true;

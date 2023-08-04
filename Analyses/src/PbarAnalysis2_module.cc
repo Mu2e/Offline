@@ -51,8 +51,6 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/CaloMCTruthAssns.hh"
 
-
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/RecoDataProducts/inc/TrkCaloMatch.hh"
 // data
 #include "Offline/CaloCluster/inc/ClusterUtils.hh"
@@ -163,7 +161,6 @@ namespace mu2e {
     std::string _stepPointMCLabel;
     std::string _trkFitterModuleLabel;
     std::string _trackClusterMatchModuleLabel;
-    SimParticleTimeOffset _toff;  // time offset smearing
 
     double _maxChi2Match;
     bool _writeVertexFile;
@@ -264,7 +261,6 @@ namespace mu2e {
     _stepPointMCLabel(pset.get<std::string>("stepPointMCLabel")),
     _trkFitterModuleLabel(pset.get<std::string>("trkFitterModuleLabel")),
     _trackClusterMatchModuleLabel(pset.get<std::string>("trackClusterMatchModuleLabel")),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _maxChi2Match(pset.get<double>("maxChi2Match")),
     _writeVertexFile(pset.get<bool>("writeVertexFile")),
     _pbarVertexOutName(pset.get<std::string>("pbarVertexOut")),
@@ -449,7 +445,6 @@ namespace mu2e {
 
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       double _mbtime = accPar->deBuncherPeriod;
-      _toff.updateMap(event);
 
 
       //Handle to the calorimeter
@@ -926,8 +921,7 @@ namespace mu2e {
 
                if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
 
-               double hitTimeUnfolded = _toff.timeWithOffsetsApplied(hit);
-                  double hitTime         = fmod(hitTimeUnfolded,_mbtime);
+               double hitTime         = fmod(hit.time(),_mbtime);
 
                CLHEP::Hep3Vector VDPos = cal.geomUtil().mu2eToTracker(hit.position());
 

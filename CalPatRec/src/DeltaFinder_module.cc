@@ -1,5 +1,15 @@
 /////////////////////////////////////////////////////////////////////////////
-// framework
+// P.Murat
+//
+// flag combo hits as 'delta'  - hits of identified low energy electrons
+//                and 'proton' - hits of identified protons/deuterons
+//
+// always writes out a ComboHitCollection with correct flags,
+// to be used by downstream modules
+//
+// WriteFilteredComboHits = 0: write out all hits
+//                        = 1: write out only hits not flagged as 'delta' or 'proton'
+//                             (to be used in trigger)
 //
 // parameter defaults: CalPatRec/fcl/prolog.fcl
 //////////////////////////////////////////////////////////////////////////////
@@ -58,8 +68,8 @@ namespace mu2e {
       fhicl::Atom<int>             debugLevel             {Name("debugLevel"        )    , Comment("debug level"                ) };
       fhicl::Atom<int>             diagLevel              {Name("diagLevel"         )    , Comment("diag level"                 ) };
       fhicl::Atom<int>             printErrors            {Name("printErrors"       )    , Comment("print errors"               ) };
-      fhicl::Atom<int>             writeFilteredComboHits {Name("writeFilteredComboHits"), Comment("1: write filtered CH coll"  ) };
-      fhicl::Atom<int>             writeStrawHitFlags     {Name("writeStrawHitFlags")    , Comment("1: write SH flag coll"      ) };
+      fhicl::Atom<int>             writeFilteredComboHits {Name("writeFilteredComboHits"), Comment("0: write all CH, 1: write filtered CH") };
+      fhicl::Atom<int>             writeStrawHits         {Name("writeStrawHits"    )    , Comment("1: write all SH, new flags" ) };
       fhicl::Atom<int>             testOrder              {Name("testOrder"         )    , Comment("1: test order"              ) };
       fhicl::Atom<bool>            testHitMask            {Name("testHitMask"       )    , Comment("true: test hit mask"        ) };
       fhicl::Sequence<std::string> goodHitMask            {Name("goodHitMask"       )    , Comment("good hit mask"              ) };
@@ -78,7 +88,8 @@ namespace mu2e {
     art::InputTag   _sdmcCollTag;
 
     int             _writeFilteredComboHits;   // write filtered combo hits
-    int             _writeStrawHitFlags;
+    // int             _writeStrawHitFlags;       // obsolete
+    int             _writeStrawHits;           // write out filtered (?) straw hits
 
     int             _debugLevel;
     int             _diagLevel;
@@ -126,7 +137,8 @@ namespace mu2e {
     _chCollTag             (config().chCollTag()         ),
     _sdmcCollTag           (config().sdmcCollTag()       ),
     _writeFilteredComboHits(config().writeFilteredComboHits()    ),
-    _writeStrawHitFlags    (config().writeStrawHitFlags()),
+    // _writeStrawHitFlags    (config().writeStrawHitFlags()),
+    _writeStrawHits        (config().writeStrawHits()    ),
     _debugLevel            (config().debugLevel()        ),
     _diagLevel             (config().diagLevel()         ),
     _printErrors           (config().printErrors()       ),
@@ -137,11 +149,11 @@ namespace mu2e {
     consumesMany<ComboHitCollection>(); // ??? Necessary because fillStrawHitIndices calls getManyByType.
 
     produces<IntensityInfoTimeCluster>();
-    produces<StrawHitFlagCollection>("ComboHits");
-    if (_writeStrawHitFlags     == 1) produces<StrawHitFlagCollection>("StrawHits");
-    if (_writeFilteredComboHits == 1) produces<ComboHitCollection>    ("");
 
-                                        // this is a list of delta-electron candidates
+    produces<ComboHitCollection>("");
+    if (_writeStrawHits         == 1) produces<ComboHitCollection>("StrawHits");
+
+                                        // this is a list of delta-electron candidates (or proton ones ?)
     produces<TimeClusterCollection>();
 
     _finder = new DeltaFinderAlg(config().finderParameters,&_data);
@@ -226,20 +238,22 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     _finder->run();
 //-----------------------------------------------------------------------------
-// form output - flag combo hits -
-// if flagged combo hits are written out, likely don't need writing out the flags
+// done with the pattern recognition part
+// create a temporary straw hit flag collection
 // need to drop previously set 'energy' flag
+// flag collections are going away, keep this one as a temp storage
 //-----------------------------------------------------------------------------
-    unique_ptr<StrawHitFlagCollection> up_chfcol(new StrawHitFlagCollection(_data._nComboHits));
-    _data.outputChfColl = up_chfcol.get();
+    vector<StrawHitFlag> up_chfcol(_data._nComboHits);
 
     for (int i=0; i<_data._nComboHits; i++) {
 //-----------------------------------------------------------------------------
 // initialize output flags to the flags of the input combo hits, in parallel
 // count the number of hits in the potentially to be written out straw hit collection
+// the number of the output combo hits is the same as the number of input ones,
+// no filtering here
 //-----------------------------------------------------------------------------
       const ComboHit* ch = &(*_data.chcol)[i];
-      StrawHitFlag* flag = &(*_data.outputChfColl)[i];
+      StrawHitFlag* flag = &up_chfcol[i];
       flag->merge(ch->flag());
 //-----------------------------------------------------------------------------
 // always flag delta hits here, don't need previously set delta bits
@@ -251,10 +265,9 @@ namespace mu2e {
 
     const ComboHit* ch0(0);
     if (_data._nComboHits > 0) ch0 = &_data.chcol->at(0);
-
-    unique_ptr<TimeClusterCollection>  tcColl(new TimeClusterCollection);
 //-----------------------------------------------------------------------------
-// set delta flags
+// loop over delta candidates and protons and update the flags
+// a) set delta ('bkg') flags
 //-----------------------------------------------------------------------------
     int ndeltas = _data.nDeltaCandidates();
     for (int i=0; i<ndeltas; i++) {
@@ -277,7 +290,7 @@ namespace mu2e {
             const HitData_t* hd = ds->HitData(face);
             if (hd == nullptr)                                        continue;
             int loc = hd->fHit-ch0;
-            StrawHitFlag* flag = &(*_data.outputChfColl)[loc];
+            StrawHitFlag* flag = &up_chfcol[loc];
             flag->merge(StrawHitFlag::bkg);           // set delta-electron bit
           }
         }
@@ -285,10 +298,13 @@ namespace mu2e {
     }
 //-----------------------------------------------------------------------------
 // set proton flags, 'energy' now means 'proton'
+// tcColl represents the proton time clusters
 //-----------------------------------------------------------------------------
+    unique_ptr<TimeClusterCollection>  tcColl(new TimeClusterCollection);
+
     int np15(0);
-    int nprotons = _data.nProtonCandidates();
-    for (int i=0; i<nprotons; i++) {
+    int npc = _data.nProtonCandidates();
+    for (int i=0; i<npc; i++) {
       ProtonCandidate* pc = _data.protonCandidate(i);
       if (pc->nHitsTot() >= 15) np15++;
       if (pc->nStationsWithHits() == 1) {
@@ -305,7 +321,7 @@ namespace mu2e {
           for (int ih=0; ih<nh; ih++) {
             const HitData_t* hd = pc->hitData(is,face,ih);
             int loc = hd->fHit-ch0;
-            StrawHitFlag* flag = &(*_data.outputChfColl)[loc];
+            StrawHitFlag* flag = &up_chfcol[loc];
             flag->clear(StrawHitFlag::energysel);
           }
         }
@@ -317,56 +333,49 @@ namespace mu2e {
       // initTimeCluster(dc,&new_tc);
       // tcColl->push_back(new_tc);
     }
-
-    Event.put(std::move(tcColl));
 //-----------------------------------------------------------------------------
-// 'ppii' - proton counting-based proxy to the stopped muon rate
-//-----------------------------------------------------------------------------
-    std::unique_ptr<IntensityInfoTimeCluster> ppii(new IntensityInfoTimeCluster(np15));
-    Event.put(std::move(ppii));
-//-----------------------------------------------------------------------------
-// in the end of event processing fill diagnostic histograms
-//-----------------------------------------------------------------------------
-    if (_diagLevel  > 0) _hmanager->fillHistograms(&_data);
-    if (_debugLevel > 0) _hmanager->debug(&_data,2);
-
-    if (_writeFilteredComboHits) {
-//-----------------------------------------------------------------------------
+// form the output - flag combo hits -
+// if flagged combo hits are written out, likely don't need writing out the flags
+// 2023-06-02: from now on, always write the output collection with updated flags
+// if _writeFilteredComboHits=true (trigger), write out only "good" hits
+//
 // write out filtered out collection of ComboHits with right flags, use deep copy
 // the output ComboHit collection doesn't need a parallel flag collection
 //-----------------------------------------------------------------------------
-      auto outputChColl = std::make_unique<ComboHitCollection>();
-      outputChColl->reserve(_data._nComboHits);
+    auto outputChColl = std::make_unique<ComboHitCollection>();
+    outputChColl->reserve(_data._nComboHits);
+    _data.outputChColl = outputChColl.get();
 
-      outputChColl->setParent(_data.chcol->parent());
-      for (int i=0; i<_data._nComboHits; i++) {
-        StrawHitFlag const* flag = &(*_data.outputChfColl)[i];
-        if (flag->hasAnyProperty(_bkgHitMask))                        continue;
+    outputChColl->setParent(_data.chcol->parent());
+    for (int i=0; i<_data._nComboHits; i++) {
+      StrawHitFlag* flag = & up_chfcol[i];
+      if (_writeFilteredComboHits and flag->hasAnyProperty(_bkgHitMask)) continue;
 //-----------------------------------------------------------------------------
 // for the moment, assume bkgHitMask to be empty, so write out all hits
 // normally, don't need delta and proton hits
 //-----------------------------------------------------------------------------
-        const ComboHit* ch = &(*_data.chcol)[i];
-        outputChColl->push_back(*ch);
-        outputChColl->back()._flag.merge(*flag);
-      }
-      Event.put(std::move(outputChColl));
+      const ComboHit* ch = &(*_data.chcol)[i];
+      outputChColl->push_back(*ch);
+      //      outputChColl->back()._flag.merge(*flag);
+      outputChColl->back()._flag = *flag;
     }
 //-----------------------------------------------------------------------------
-// create the collection of StrawHitFlag for the StrawHitCollection
-// why would that be needed? - straw hits are also combo hits and have flags
-// stored in their data
+// single-straw hits are also combo hits and they have flags
+// flags need to be redefined
 //-----------------------------------------------------------------------------
-    if (_writeStrawHitFlags == 1) {
-                                        // first, copy over the original flags
+    unique_ptr<ComboHitCollection> outputSschColl;
 
-      std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(_data._nStrawHits));
+    if (_writeStrawHits == 1) {
+                                                          // first, copy over the original hits
+
+      outputSschColl = std::make_unique<ComboHitCollection>(*_sschColl);
+
+      outputSschColl->setParent(_sschColl->parent());
 
       for (int i=0; i<_data._nStrawHits; i++) {
-        StrawHitFlag&   flag =  (*shfcol)[i]; // should be empty at this point
-        flag.merge((*_sschColl)[i].flag());     // merge in the original flag
-        flag.clear(StrawHitFlag::bkg       ); // clear delta selection
-        flag.merge(StrawHitFlag::energysel ); // and assume all hits are not from protons
+        StrawHitFlag* flag = (StrawHitFlag*) &outputSschColl->at(i).flag(); // original
+        flag->clear(StrawHitFlag::bkg       );             // clear delta selection
+        flag->merge(StrawHitFlag::energysel );             // and assume all hits are not from protons
       }
 //-----------------------------------------------------------------------------
 // after that, loop over [flagged] combo hits and update 'delta'(bkg) and 'proton'(energysel)
@@ -374,21 +383,34 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       for (int ich=0; ich<_data._nComboHits; ich++) {
         const ComboHit* ch   = &(*_data.chcol )[ich];
-        StrawHitFlag    flag =  (*_data.outputChfColl)[ich];
-        flag.merge(ch->flag());
+        StrawHitFlag    flag = up_chfcol[ich];
         for (auto ish : ch->indexArray()) {
-          if (not flag.hasAnyProperty(StrawHitFlag::energysel)) (*shfcol)[ish].clear(StrawHitFlag::energysel);
-          if (    flag.hasAnyProperty(StrawHitFlag::bkg      )) (*shfcol)[ish].merge(StrawHitFlag::energysel);
+          StrawHitFlag* shflag = (StrawHitFlag*) &(*outputSschColl)[ish].flag();
+          if (not flag.hasAnyProperty(StrawHitFlag::energysel)) shflag->clear(StrawHitFlag::energysel);
+          if (    flag.hasAnyProperty(StrawHitFlag::bkg      )) shflag->merge(StrawHitFlag::bkg);
         }
       }
 
-      Event.put(std::move(shfcol),"StrawHits");
+      //      Event.put(std::move(outputSschColl),"StrawHits");
     }
+//-----------------------------------------------------------------------------
+// 'ppii' - proton counting-based proxy to the stopped muon rate
+//-----------------------------------------------------------------------------
+    std::unique_ptr<IntensityInfoTimeCluster> ppii(new IntensityInfoTimeCluster(np15));
+//-----------------------------------------------------------------------------
+// in the end of event processing fill diagnostic histograms
+//-----------------------------------------------------------------------------
+    if (_diagLevel  > 0) _hmanager->fillHistograms(&_data);
+    if (_debugLevel > 0) _hmanager->debug(&_data,2);
 //-----------------------------------------------------------------------------
 // moving in the end, after diagnostics plugin routines have been called - move
 // invalidates the original pointer...
 //-----------------------------------------------------------------------------
-    Event.put(std::move(up_chfcol),"ComboHits");
+    Event.put(std::move(outputChColl));
+    if (_writeStrawHits == 1) Event.put(std::move(outputSschColl),"StrawHits");
+
+    Event.put(std::move(tcColl));
+    Event.put(std::move(ppii));
   }
 }
 //-----------------------------------------------------------------------------
