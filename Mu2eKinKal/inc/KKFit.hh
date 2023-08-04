@@ -182,7 +182,7 @@ namespace mu2e {
     }
     smap_.surfaces(ssids,sample_);
     SurfaceIdCollection xsids;
-    for(auto const& sidname : fitconfig.extensionSurfaces()) {
+    for(auto const& sidname : fitconfig.extendSurfaces()) {
       xsids.push_back(SurfaceId(sidname,0)); // only generic elements
     }
     smap_.surfaces(xsids,extend_);

@@ -94,7 +94,8 @@ namespace mu2e {
 
   // extend the generic module configuration as needed
   struct KKHelixModuleConfig : KKModuleConfig {
-    fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
+    fhicl::Sequence<art::InputTag> seedCollections         {Name("HelixSeedCollections"),     Comment("Seed fit collections to be processed ") };
+  fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
   };
 
   struct GlobalConfig {
