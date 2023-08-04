@@ -23,12 +23,12 @@ namespace mu2e {
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::ST_Inner),std::static_pointer_cast<Surface>(st_.innerPtr())));
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::ST_Outer),std::static_pointer_cast<Surface>(st_.outerPtr())));
     for(size_t ifoil=0;ifoil < st_.foils().size();++ifoil){
-      map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::ST_Foil,ifoil),std::static_pointer_cast<Surface>(st_.foilPtr(ifoil))));
+      map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::ST_Foils,ifoil),std::static_pointer_cast<Surface>(st_.foilPtr(ifoil))));
     }
     // test CRV; Planes are numbered by their vertical (y) position
-    map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV_Plane,0),std::static_pointer_cast<Surface>(tcrv_.t1Ptr())));
-    map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV_Plane,1),std::static_pointer_cast<Surface>(tcrv_.ex1Ptr())));
-    map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV_Plane,2),std::static_pointer_cast<Surface>(tcrv_.t2Ptr())));
+    map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,0),std::static_pointer_cast<Surface>(tcrv_.t1Ptr())));
+    map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,1),std::static_pointer_cast<Surface>(tcrv_.ex1Ptr())));
+    map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,2),std::static_pointer_cast<Surface>(tcrv_.t2Ptr())));
   }
   void SurfaceMap::surfaces(SurfaceIdCollection const& ids,SurfacePairCollection& surfs) const {
     surfs.clear();
