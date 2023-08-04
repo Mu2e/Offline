@@ -585,17 +585,17 @@ namespace mu2e {
     auto const& ftraj = kktrk.fitTraj();
     for(auto const& surf : sample_){
       // Intersect the fit trajectory with this element.  Add a large buffer, which should come from config FIXME
-      double tstart = ftraj.range().begin()-50;
-      double tend =ftraj.range().end()+50;
+      double tstart = ftraj.range().begin()-10;
+      double tend =ftraj.range().end()+10;
       bool hasinter(true);
       while(hasinter){
         TimeRange irange(tstart,tend);
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,tol);
-        hasinter = surfinter.flag_.onsurface_ && surfinter.inRange();
-        if(hasinter){
+        hasinter = surfinter.flag_.onsurface_;
+        if(hasinter) {
           // save the intersection information
           auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
-          inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,XYZVectorF(surfinter.norm_));
+          inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,static_cast<KinKal::InterData const&>(surfinter));
           // update for the next intersection
           tstart = surfinter.time_ + tol;
         }

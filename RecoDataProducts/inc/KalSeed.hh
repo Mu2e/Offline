@@ -49,6 +49,7 @@ namespace mu2e {
     Float_t chisquared() const { return _chisq; }
     Float_t fitConsistency() const { return _fitcon; }
     UInt_t nTrajSegments() const { return _segments.size(); }
+    KinKal::TimeRange timeRange() const { return KinKal::TimeRange(_segments.front()._tmin,_segments.back()._tmax); }
     bool hasCaloCluster() const { return _chit.caloCluster().isNonnull(); }
     art::Ptr<CaloCluster> const& caloCluster() const { return _chit.caloCluster(); }
     std::vector<KalSegment>::const_iterator nearestSeg(double time)  const;
