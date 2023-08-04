@@ -590,7 +590,7 @@ namespace mu2e {
       bool hasinter(true);
       while(hasinter){
         TimeRange irange(tstart,tend);
-        auto surfinter = KinKal::ptIntersect(ftraj,*surf.second,irange,tol);
+        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,tol);
         hasinter = surfinter.flag_.onsurface_ && surfinter.inRange();
         if(hasinter){
           // save the intersection information

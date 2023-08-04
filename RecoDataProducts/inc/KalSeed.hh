@@ -38,12 +38,13 @@ namespace mu2e {
       _tpart(tpart), _fdir(fdir), _status(status), _flt0(static_cast<Float_t>(flt0)){}
 
     PDGCode::type particle() const { return _tpart; }
-    TrkFitDirection const& fitDirection() const { return _fdir; }
-    std::vector<TrkStrawHitSeed> const& hits() const { return _hits;}
-    TrkCaloHitSeed const& caloHit() const { return _chit; }
-    std::vector<TrkStraw> const& straws() const { return _straws;}
-    std::vector<KalSegment> const& segments() const { return _segments; }
-    TrkFitFlag const& status() const { return _status; }
+    auto const& fitDirection() const { return _fdir; }
+    auto const& hits() const { return _hits;}
+    auto const& caloHit() const { return _chit; }
+    auto const& straws() const { return _straws;}
+    auto const& segments() const { return _segments; }
+    auto const& intersections() const { return _inters; }
+    auto const& status() const { return _status; }
     double t0Val() const;
     Float_t chisquared() const { return _chisq; }
     Float_t fitConsistency() const { return _fitcon; }
@@ -51,6 +52,7 @@ namespace mu2e {
     bool hasCaloCluster() const { return _chit.caloCluster().isNonnull(); }
     art::Ptr<CaloCluster> const& caloCluster() const { return _chit.caloCluster(); }
     std::vector<KalSegment>::const_iterator nearestSeg(double time)  const;
+    std::vector<KalIntersection>::const_iterator intersection(SurfaceId const& id)  const;
     bool loopHelixFit() const { return _status.hasAllProperties(TrkFitFlag::KKLoopHelix); }
     bool centralHelixFit() const { return _status.hasAllProperties(TrkFitFlag::KKCentralHelix); }
     bool kinematicLineFit() const { return _status.hasAllProperties(TrkFitFlag::KKLine); }

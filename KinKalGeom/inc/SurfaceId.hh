@@ -17,8 +17,8 @@ namespace mu2e {
         TT_Front=0, TT_Mid, TT_Back, TT_Inner, TT_Outer, // tracker VD equivalents
         DS_Front=80, DS_Back, DS_Inner, DS_Outer,
         IPA, OPA, TSDA, // Absorbers in the DS.  These are the inner surfaces for the OPA and TSDA
-        ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foil, // stopping target bounding surfaces and foils
-        TCRV_Plane=200 // CRV test plane
+        ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foils, // stopping target bounding surfaces and foils
+        TCRV=200 // CRV test planes
       };
 
     static std::string const& typeName();

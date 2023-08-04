@@ -16,7 +16,20 @@ namespace mu2e {
     XYZVectorF norm_; // surface unit normal at intersection point
     KalIntersection(){}
     KalIntersection(KinKal::ParticleStateEstimate const& pstate, XYZVectorF const& bnom, SurfaceId const& surfid, XYZVectorF const& norm) : pstate_(pstate), bnom_(bnom), surfid_(surfid), norm_(norm) {}
-  };
+// simple accessors
+    double time() const { return pstate_.time(); }
+    double mom() const { return pstate_.momentum(); }
+    double momerr() const { return sqrt(pstate_.momentumVariance()); }
+    KinKal::VEC3 momentum3() const { return pstate_.momentum3(); }
+    KinKal::VEC3 velocity() const { return pstate_.velocity(); }
+    KinKal::VEC3 position3() const { return pstate_.position3(); }
+     // convert content to a LoopHelix
+    KinKal::LoopHelix loopHelix() const { return KinKal::LoopHelix(pstate_, KinKal::VEC3(bnom_)); }
+    // convert to a CentralHelix
+    KinKal::CentralHelix centralHelix() const { return KinKal::CentralHelix(pstate_, KinKal::VEC3(bnom_)); }
+    // convert to a KinematicLine
+    KinKal::KinematicLine kinematicLine() const { return KinKal::KinematicLine(pstate_, KinKal::VEC3(bnom_)); }
+ };
   using KalIntersectionCollection = std::vector<KalIntersection>;
 }
 
