@@ -74,7 +74,6 @@ namespace mu2e
               fhicl::Atom<art::InputTag> tctag{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
               fhicl::Atom<art::InputTag> costag{Name("CosmicTrackSeedCollection"),Comment("tag for cosmci track seed collection")};
               fhicl::Atom<art::InputTag> mcdigistag{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag"),"makeSD"};
-              fhicl::Table<SimParticleTimeOffset::Config> toff{Name("TimeOffsets"), Comment("Sim particle time offset ")};
             };
         typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -95,7 +94,6 @@ namespace mu2e
         art::InputTag   _tctag; //Timeclusters
         art::InputTag   _costag; //Straight tracks
         art::InputTag   _mcdigistag; //MC Digis
-        SimParticleTimeOffset _toff;
 
         const ComboHitCollection* _chcol;
         const CosmicTrackSeedCollection* _coscol;
@@ -185,15 +183,8 @@ namespace mu2e
         _chtag (conf().chtag()),
         _tctag (conf().tctag()),
         _costag (conf().costag()),
-        _mcdigistag (conf().mcdigistag()),
-        _toff (conf().toff())
-        {
-                      if(_mcdiag){
-                        for (auto const& tag : conf().toff().inputs()) {
-                                consumes<SimParticleTimeMap>(tag);
-                        }
-                }
-       }
+        _mcdigistag (conf().mcdigistag())
+        {}
 
     CosmicTrackDetails::~CosmicTrackDetails(){}
 
@@ -491,7 +482,6 @@ namespace mu2e
                 _mcdigis=0;
                 auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigistag);
                 _mcdigis = mcdH.product();
-                _toff.updateMap(evt);
         }
         return _chcol != 0 && _tccol!=0 && _coscol !=0 && (_mcdigis != 0 || !_mcdiag);
        }
