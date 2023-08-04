@@ -7,30 +7,85 @@ BEGIN_PROLOG
 CommonTrk                : {
     producers : {
 #------------------------------------------------------------------------------
-# track fit, downstream electron hypothesis
+# helix mergers: each combines all found helices with the same direction and mass
+# into one collection
+#------------------------------------------------------------------------------
+        MHFinderDe : { @table::TrkReco.producers.MergeHelices
+            HelixFinders : [ "HelixFinderDe:Positive" , "CalHelixFinderDe:Positive" , "HelixFinderDe:Negative" , "CalHelixFinderDe:Negative" ]
+        }
+        MHFinderDmu : { @table::TrkReco.producers.MergeHelices
+            HelixFinders : [ "HelixFinderDmu:Positive", "CalHelixFinderDmu:Positive", "HelixFinderDmu:Negative", "CalHelixFinderDmu:Negative"]
+        }
+        MHFinderUe : { @table::TrkReco.producers.MergeHelices
+            HelixFinders : [ "HelixFinderUe:Positive" , "CalHelixFinderUe:Positive" , "HelixFinderUe:Negative" , "CalHelixFinderUe:Negative" ]
+        }
+        MHFinderUmu : { @table::TrkReco.producers.MergeHelices
+            HelixFinders : [ "HelixFinderUmu:Positive", "CalHelixFinderUmu:Positive", "HelixFinderUmu:Negative", "CalHelixFinderUmu:Negative"]
+        }
+#------------------------------------------------------------------------------
+# BTRK track fit, downstream electron hypothesis
 #------------------------------------------------------------------------------
         KSFDeMH     : { @table::KSFDeM                            SeedCollection : MHFinderDe  CheckHelicity:false }
         KFFDeMHPar  : { @table::KFFDeM                            SeedCollection : KSFDeMH  }
         KFFDeMHDar  : { @table::CalPatRec.producers.CalTrkFitDem  SeedCollection : KSFDeMH  }
 #------------------------------------------------------------------------------
-# track fit, upstream electron hypothesis
+# BTRK track fit, upstream electron hypothesis
 #------------------------------------------------------------------------------
         KSFUeMH     : { @table::KSFUeM                            SeedCollection : MHFinderUe  CheckHelicity:false }
         KFFUeMHPar  : { @table::KFFUeM                            SeedCollection : KSFUeMH  }
-         KFFUeMHDar  : { @table::CalPatRec.producers.CalTrkFitUem  SeedCollection : KSFUeMH  }
+        KFFUeMHDar  : { @table::CalPatRec.producers.CalTrkFitUem  SeedCollection : KSFUeMH  }
 #------------------------------------------------------------------------------
-# track fit, downstream muon hypothesis
+# BTRK track fit, downstream muon hypothesis
 #------------------------------------------------------------------------------
         KSFDmuMH    : { @table::KSFDmuM                           SeedCollection : MHFinderDmu CheckHelicity:false}
         KFFDmuMHPar : { @table::KFFDmuM                           SeedCollection : KSFDmuMH }
         KFFDmuMHDar : { @table::CalPatRec.producers.CalTrkFitDmm  SeedCollection : KSFDmuMH }
-    }
 #------------------------------------------------------------------------------
-# track fit, upstream muon hypothesis
+# BTRK track fit, upstream muon hypothesis
 #------------------------------------------------------------------------------
         KSFUmuMH    : { @table::KSFUmuM                           SeedCollection : MHFinderUmu CheckHelicity:false }
         KFFUmuMHPar : { @table::KFFUmuM                           SeedCollection : KSFUmuMH }
-         KFFUmuMHDar : { @table::CalPatRec.producers.CalTrkFitUmm  SeedCollection : KSFUmuMH }
+        KFFUmuMHDar : { @table::CalPatRec.producers.CalTrkFitUmm  SeedCollection : KSFUmuMH }
+#------------------------------------------------------------------------------
+# assume KinKal doesn't check the helicity, using that of the helix
+# KinKal track fit, downstream electron hypothesis
+#------------------------------------------------------------------------------
+        KKDeMHPar   : { @table::Mu2eKinKal.producers.KKDeM
+            ModuleSettings : { @table::Mu2eKinKal.producers.KKDeM.ModuleSettings
+                @table::Mu2eKinKal.KKPrecursors
+                HelixSeedCollections : [ "MHFinderDe"  ]
+            }
+        }
+        # KFFDeMHDar  : { @table::CalPatRec.producers.CalTrkFitDem  SeedCollection : KSFDeMH  }
+#------------------------------------------------------------------------------
+# KinKal track fit, downstream muon hypothesis
+#------------------------------------------------------------------------------
+        KKDmuMHPar  : { @table::Mu2eKinKal.producers.KKDmuM
+            ModuleSettings : { @table::Mu2eKinKal.producers.KKDmuM.ModuleSettings
+                @table::Mu2eKinKal.KKPrecursors
+                HelixSeedCollections  : [ "MHFinderDmu" ]
+            }
+        }
+        # KKDmuMHDar : { @table::CalPatRec.producers.CalTrkFitDmm  SeedCollection : KSFDmuMH }
+#------------------------------------------------------------------------------
+# KinKal track fit, upstream electron hypothesis
+#------------------------------------------------------------------------------
+        KKUeMHPar   : { @table::Mu2eKinKal.producers.KKUeM
+            ModuleSettings : { @table::Mu2eKinKal.producers.KKUeM.ModuleSettings
+                @table::Mu2eKinKal.KKPrecursors
+                HelixSeedCollections : [ "MHFinderUe"  ]
+            }
+        }
+#------------------------------------------------------------------------------
+# KinKal track fit, upstream muon hypothesis
+#------------------------------------------------------------------------------
+        KKUmuMHPar  : { @table::Mu2eKinKal.producers.KKUmuM
+            ModuleSettings : { @table::Mu2eKinKal.producers.KKUmuM.ModuleSettings
+                @table::Mu2eKinKal.KKPrecursors
+                HelixSeedCollections : [ "MHFinderUmu" ]
+            }
+        }
+    }
 }
 #------------------------------------------------------------------------------
 # helix reconstruction: put downstream electron and positron helices together

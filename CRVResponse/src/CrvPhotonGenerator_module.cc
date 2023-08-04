@@ -17,7 +17,6 @@
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
 #include "Offline/MCDataProducts/inc/CrvPhotons.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
@@ -80,7 +79,6 @@ namespace mu2e
                                Comment("time window before digitization starts to account for photon travel time and electronics response.")};
       fhicl::Atom<art::InputTag> eventWindowMarkerTag{ Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
       fhicl::Atom<art::InputTag> protonBunchTimeMCTag{ Name("protonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
-      fhicl::Sequence<art::InputTag> timeOffsets { Name("timeOffsets"), Comment("Sim Particle Time Offset Maps")};
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit CrvPhotonGenerator(const Parameters& conf);
@@ -145,8 +143,6 @@ namespace mu2e
     art::InputTag _protonBunchTimeMCTag;
     double      _microBunchPeriod;
 
-    SimParticleTimeOffset _timeOffsets;
-
     CLHEP::HepRandomEngine& _engine;
     CLHEP::RandFlat       _randFlat;
     CLHEP::RandGaussQ     _randGaussQ;
@@ -173,7 +169,6 @@ namespace mu2e
     _digitizationStartMargin(conf().digitizationStartMargin()),
     _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeMCTag(conf().protonBunchTimeMCTag()),
-    _timeOffsets(conf().timeOffsets()),
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat(_engine),
     _randGaussQ(_engine),
@@ -257,7 +252,6 @@ namespace mu2e
 
   void CrvPhotonGenerator::produce(art::Event& event)
   {
-    _timeOffsets.updateMap(event);
 
     _scintillationYieldsAdjusted.clear();
 
@@ -295,9 +289,8 @@ namespace mu2e
         {
           CrvStep const& step(CrvSteps->at(istep));
 
-          double timeOffset = _timeOffsets.totalTimeOffset(step.simParticle());
-          double t1 = step.startTime()+timeOffset;
-          double t2 = step.endTime()+timeOffset;
+          double t1 = step.startTime();
+          double t2 = step.endTime();
           if(isnan(t1) || isnan(t2)) continue;  //This situation was observed once. Not sure how it happened.
 
           //see explanation above

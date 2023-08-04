@@ -3,7 +3,7 @@ BEGIN_PROLOG
 calCalib : {
   verbose: 0
   useDb: false
-  algorithm: 1
+  energyalgorithm: 1
   ADC2MeV: 0.0625
   timeoffset: 0.0
 }

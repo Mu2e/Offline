@@ -25,8 +25,6 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-// Utilities
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
 #include <algorithm>
 #include <cmath>

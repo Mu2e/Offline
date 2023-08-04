@@ -19,7 +19,7 @@ namespace mu2e {
     public:
       CalCalibMaker(CalCalibConfig const& config):_config(config) {};
       ptr_t fromFcl();
-      ptr_t fromDb(CalEnergyCalib::cptr_t ecalib0);
+      ptr_t fromDb(CalEnergyCalib::cptr_t ecalib0);//TODO CalTimeCalib::cptr_t tcalib0
 
     private:
 

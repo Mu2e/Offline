@@ -1,5 +1,6 @@
-#ifndef DbTables_CalCosmicTimeCalib_hh
-#define DbTables_CalCosmicTimeCalib_hh
+#ifndef DbTables_CalCosmicT0Align_hh
+#define DbTables_CalCosmicT0Align_hh
+
 
 #include <string>
 #include <iomanip>
@@ -10,27 +11,27 @@
 
 namespace mu2e {
 
-  class CalCosmicTimeCalib : public DbTable {
+  class CalCosmicT0Align : public DbTable {
   public:
 
     class Row {
     public:
-      Row(CaloSiPMId  roid, float T0, float ErrT0, float chisq) : _roid(roid), _T0(T0), _ErrT0(ErrT0), _chisq(chisq){}
+      Row(CaloSiPMId  roid, float Tcorr, float Terr, float chisq):_roid(roid),_Tcorr(Tcorr), _Terr(Terr), _chisq(chisq){}
       CaloSiPMId   roid() const { return _roid;}
-      float T0() const { return _T0; }
-      float ErrT0() const { return _ErrT0; }
+      float Tcorr() const { return _Tcorr; }
+      float Terr() const { return _Terr; }
       float chisq() const { return _chisq; }
 
     private:
-      CaloSiPMId _roid;
-      float _T0;
-      float _ErrT0;
+      CaloSiPMId   _roid;
+      float _Tcorr;
+      float _Terr;
       float _chisq;
     };
 
-    constexpr static const char* cxname = "CalCosmicTimeCalib";
+    constexpr static const char* cxname = "CalCosmicT0Align";
 
-    CalCosmicTimeCalib():DbTable(cxname,"cal.cosmictimecalib","roid,t0,errt0,chisq"){}
+    CalCosmicT0Align():DbTable(cxname,"cal.cosmict0align","roid,tcorr,terr,chisq"){}
 
     const Row& row(CaloSiPMId  roid) const {
                 return _rows.at(roid.id()); }
@@ -44,7 +45,7 @@ namespace mu2e {
     // enforce order, so channels can be looked up by index
     if (index >= CaloConst::_nChannel  || index != _rows.size()) {
         throw cet::exception("CALOCOSMICCALIB_BAD_INDEX")
-        << "CalCosmicTimeCalib::addRow found index out of order: "
+        << "CalCosmicT0Align::addRow found index out of order: "
         <<index<< " != " << _rows.size() <<"\n";
       }
 
@@ -56,8 +57,8 @@ namespace mu2e {
       Row const& r = _rows.at(irow);
       sstream << std::fixed << std::setprecision(5);
       sstream << r.roid() <<",";
-      sstream << r.T0()<<",";
-      sstream << r.ErrT0()<<",";
+      sstream << r.Tcorr()<<",";
+      sstream << r.Terr() <<",";
       sstream << r.chisq();
     }
 

@@ -26,7 +26,6 @@
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 
 namespace mu2e {
@@ -102,7 +101,7 @@ namespace mu2e {
     {}
 
     //----------------------------------------------------------------
-    VDHit(const SimParticleTimeOffset& toff, const art::Event& event, const StepPointMC& hit)
+    VDHit(const art::Event& event, const StepPointMC& hit)
       : x(hit.position().x())
       , y(hit.position().y())
       , z(hit.position().z())
@@ -111,7 +110,7 @@ namespace mu2e {
       , InitY(hit.simParticle()->startPosition().y())
       , InitZ(hit.simParticle()->startPosition().z())
 
-      , time(toff.timeWithOffsetsApplied(hit))
+      , time(hit.time())
 
       , px(hit.momentum().x())
       , py(hit.momentum().y())
@@ -138,7 +137,6 @@ namespace mu2e {
     typedef std::vector<StepPointMCCollection> VspMC;
 
     art::InputTag hitsInputTag_;
-    SimParticleTimeOffset toff_;
 
     bool writeProperTime_;
     VS tauHitCollections_;
@@ -159,7 +157,6 @@ namespace mu2e {
   StepPointMC1stHitDumper::StepPointMC1stHitDumper(const fhicl::ParameterSet& pset)
     : art::EDAnalyzer(pset)
     , hitsInputTag_(pset.get<std::string>("hitsInputTag"))
-    , toff_(pset.get<fhicl::ParameterSet>("TimeOffsets"))
     , writeProperTime_(pset.get<bool>("writeProperTime", false))
     , tauHitCollections_( writeProperTime_ ? pset.get<VS>("tauHitCollections") : VS() )
     , nt_(0)
@@ -185,7 +182,6 @@ namespace mu2e {
 
   //================================================================
   void StepPointMC1stHitDumper::analyze(const art::Event& event) {
-    toff_.updateMap(event);
 
     VspMC spMCColls;
     for ( const auto& iColl : tauHitCollections_ ){
@@ -201,7 +197,7 @@ namespace mu2e {
         // std::cout << event.id() << ": " << stepPoints.at(i) << std::endl;
       // }
       if (stepPoints.size()) {
-        hit_ = VDHit(toff_, event, stepPoints.at(0));
+        hit_ = VDHit(event, stepPoints.at(0));
         // std::cout << event.id() << ", " << hit_.pdgId
           // << ", " << hit_.time << ", " << hit_.charge
           // << std::endl;

@@ -35,6 +35,7 @@ namespace mu2e {
 
       unsigned minndigi_;
       double minpmom_, maxpmom_;
+      size_t minnparticles_;
       std::vector<PDGCode::type> pdgs_;
       int diag_, debug_;
       art::InputTag _mcdigisTag;
@@ -46,6 +47,7 @@ namespace mu2e {
     minndigi_(pset.get<unsigned>("MinNDigis")),
     minpmom_(pset.get<double>("MinParticleMom")),
     maxpmom_(pset.get<double>("MaxParticleMom")),
+    minnparticles_(pset.get<size_t>("MinNParticles", 1)),
     diag_(pset.get<int>("diagLevel",0)),
     debug_(pset.get<int>("debugLevel",0)),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")){
@@ -83,12 +85,15 @@ namespace mu2e {
     }
     // check if any single particle generated enough digis.  Save All the particles
     // that have enough in the map
+    size_t nParticles(0);
     for(auto const& imap : pmap) {
       if(imap.second >= minndigi_){
         retval = true;
         output->push_back(imap.first);
+        ++nParticles;
       }
     }
+    if (nParticles < minnparticles_) retval = false;
     evt.put(std::move(output));
     return retval;
   }
