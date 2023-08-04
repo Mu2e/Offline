@@ -30,7 +30,6 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #include "Offline/MCDataProducts/inc/GenId.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 namespace mu2e {
   class StepPointsInDigis;
@@ -79,7 +78,6 @@ private:
   double _digiTime;
   unsigned _digiProductId;
 
-  SimParticleTimeOffset _toff;
 };
 
 
@@ -87,8 +85,7 @@ mu2e::StepPointsInDigis::StepPointsInDigis(fhicl::ParameterSet const & pset)
   : art::EDAnalyzer(pset),
     _strawDigiMCTag(pset.get<art::InputTag>("strawDigiMCTag")),
     _crvDigiMCTag(pset.get<art::InputTag>("crvDigiMCTag")),
-    _diagLevel(pset.get<int>("diagLevel", 0)),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
+    _diagLevel(pset.get<int>("diagLevel", 0))
 {
   // Call appropriate produces<>() functions here.
   art::ServiceHandle<art::TFileService> tfs;
@@ -112,7 +109,6 @@ mu2e::StepPointsInDigis::StepPointsInDigis(fhicl::ParameterSet const & pset)
 void mu2e::StepPointsInDigis::analyze(art::Event const& event)
 {
   // Implementation of required member function here.
-  _toff.updateMap(event);
 
   event.getByLabel(_strawDigiMCTag, _strawDigiMCsHandle);
   const auto& strawDigiMCs = *_strawDigiMCsHandle;
@@ -149,7 +145,7 @@ void mu2e::StepPointsInDigis::fillTree(const mu2e::StepPointMC& old_step) {
   _stepY = old_step.position().y();
   _stepZ = old_step.position().z();
   _stepRawTime = old_step.time();
-  _stepOffsettedTime = _toff.timeWithOffsetsApplied(old_step);
+  _stepOffsettedTime = old_step.time();
   _stepEDep = old_step.totalEDep();
   art::Ptr<SimParticle> simPtr = old_step.simParticle();
   while (simPtr->isSecondary()) {
@@ -166,7 +162,7 @@ void mu2e::StepPointsInDigis::fillTree(const mu2e::StrawGasStep& old_step) {
   _stepY = old_step.position().y();
   _stepZ = old_step.position().z();
   _stepRawTime = old_step.time();
-  _stepOffsettedTime = _toff.timeWithOffsetsApplied(old_step);
+  _stepOffsettedTime = old_step.time();
   _stepEDep = old_step.totalEDep();
   art::Ptr<SimParticle> simPtr = old_step.simParticle();
   while (simPtr->isSecondary()) {
@@ -183,8 +179,7 @@ void mu2e::StepPointsInDigis::fillTree(const mu2e::CrvStep& old_step) {
   _stepY = old_step.startPos().y();
   _stepZ = old_step.startPos().z();
   _stepRawTime = old_step.startTime();
-  double timeOffset = _toff.totalTimeOffset(old_step.simParticle());
-  _stepOffsettedTime = old_step.startTime()+timeOffset;
+  _stepOffsettedTime = old_step.startTime();
   _stepEDep = old_step.visibleEDep();
   art::Ptr<SimParticle> simPtr = old_step.simParticle();
   while (simPtr->isSecondary()) {

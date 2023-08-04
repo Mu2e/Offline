@@ -30,8 +30,7 @@
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
-// Utilities
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+
 using namespace std;
 using CLHEP::Hep3Vector;
 
@@ -66,8 +65,6 @@ namespace mu2e
       const StrawDigiMCCollection *_mcdigis;
       const StrawDigiCollection *_digis;
       const StrawDigiADCWaveformCollection *_digiadcs;
-      // time offset
-      SimParticleTimeOffset _toff;
       // strawhit tuple variables
       TTree *_shdiag;
       Int_t _eventid, _subrunid, _runid;
@@ -120,7 +117,6 @@ namespace mu2e
     _pbtmcTag(pset.get<art::InputTag>("ProtonBunchTimeMC","EWMProducer")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _digisTag(pset.get<art::InputTag>("StrawDigiCollection","makeSD")),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
     _end{StrawEnd::cal,StrawEnd::hv}
   {
     if(pset.get<bool>("TestStrawId",false)) {
@@ -174,8 +170,6 @@ namespace mu2e
     if(_mcdiag){
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
       _mcdigis = mcdH.product();
-      // update time offsets
-      _toff.updateMap(evt);
       auto pbtmcHandle = evt.getValidHandle<ProtonBunchTimeMC>(_pbtmcTag);
       _pbtmc = pbtmcHandle.product()->pbtime_;
     }
@@ -378,7 +372,7 @@ namespace mu2e
         _mcgen = -1;
         if(osp.genParticle().isNonnull())
           _mcgen = osp.genParticle()->generatorId().id();
-        _mcsptime = _toff.timeWithOffsetsApplied(*spmcp) + _pbtmc;
+        _mcsptime = _pbtmc;
         for(size_t iend=0;iend<2; ++iend){
           _mcwt[iend] = mcdigi.wireEndTime(_end[iend]);
           _mcct[iend] = mcdigi.clusterPosition(_end[iend]).t();
@@ -405,7 +399,7 @@ namespace mu2e
           SimParticle const& posp =psp->originParticle();
           _mcppdg = posp.pdgId();
           _mcpproc = posp.creationCode();
-          _mcptime = _toff.totalTimeOffset(psp) + psp->startGlobalTime();
+          _mcptime = psp->startGlobalTime();
           _mcpop = det->toDetector(posp.startPosition());
           _mcpoe = posp.startMomentum().e();
           _mcpom = posp.startMomentum().vect().mag();
