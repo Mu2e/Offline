@@ -15,7 +15,6 @@
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 
 // #include "MCDataProducts/inc/SimParticleCollection.hh"
-// #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 
