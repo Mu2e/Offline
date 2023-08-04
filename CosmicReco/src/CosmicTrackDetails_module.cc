@@ -25,7 +25,6 @@
 #include "Offline/DataProducts/inc/GenVector.hh"
 
 //Utilities
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
 #include "Offline/CosmicReco/inc/DriftFitUtils.hh"
 #include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
