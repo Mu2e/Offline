@@ -19,7 +19,8 @@ namespace mu2e {
       using SurfacePtr = std::shared_ptr<KinKal::Surface>;
       using SurfacePair =std::pair<const SurfaceId, SurfacePtr >;
       using SurfacePairCollection = std::vector<SurfacePair>;
-      // default constructor with nominal geometry.  Eventually serve this from GeometryService.  TODO
+      using SurfacePairIter = std::multimap<SurfaceId,SurfacePtr>::const_iterator;
+     // default constructor with nominal geometry.  Eventually serve this from GeometryService.  TODO
       SurfaceMap();
       auto const& map() const { return map_; }
       // find a surface by its Id.  Return value is an iterator, which may be null.  Note that if

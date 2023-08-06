@@ -77,7 +77,8 @@ namespace mu2e {
       fhicl::Sequence<std::string> addHitSelect { Name("AddHitSelect"), Comment("Flags required to be present to add a hit") };
       fhicl::Sequence<std::string> addHitReject { Name("AddHitReject"), Comment("Flags required not to be present to add a hit") };
       fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
-      fhicl::Sequence<std::string> extendSurfaces { Name("ExtendSurfaces"), Comment("Extend the fit to be valid to these surfaces") };
+      fhicl::Atom<std::string> upExtendSurf { Name("UpstreamExtendSurface"), Comment("Extend the fit Upstream to this surface" ) };
+      fhicl::Atom<std::string> downExtendSurf { Name("DownstreamExtendSurface"), Comment("Extend the fit Downstream to this surface") };
       fhicl::Atom<float> maxStrawHitDOCA { Name("MaxStrawHitDOCA"), Comment("Max DOCA to add a hit (mm)") };
       fhicl::Atom<float> maxStrawHitDt { Name("MaxStrawHitDt"), Comment("Max Detla time to add a hit (ns)") };
       fhicl::Atom<int> strawBuffer { Name("StrawBuffer"), Comment("Buffer to add when searching for straws") };

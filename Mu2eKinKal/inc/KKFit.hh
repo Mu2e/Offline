@@ -96,12 +96,10 @@ namespace mu2e {
           StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
           Calorimeter const& calo, CCHandle const& cchandle,
           KKTRK& kktrk) const;
-      // extend the fit to the specified elements
+      // extend the fit to the surfaces specified in the config
       void extendFit(KKTRK& kktrk);
       // save the complete fit trajectory as a seed
       KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo) const;
-      // save the fit only at the specified times
-      KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, std::set<double> const& tsave) const;
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
       bool useCalo() const { return usecalo_; }
       PDGCode::type fitParticle() const { return tpart_;}
@@ -116,7 +114,7 @@ namespace mu2e {
           KKTRK const& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& hits) const;
       void addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK const& kktrk, KKSTRAWHITCOL const& addhits, KKSTRAWXINGCOL& addexings) const;
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
-      void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const;
+      void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const; // sample fit at the surfaces specified in the config
       void extendFit(KKTRK& kktrk) const;
       PDGCode::type tpart_;
       TrkFitDirection tdir_;
@@ -145,7 +143,7 @@ namespace mu2e {
       mutable bool needstrackerinfo_;
       SurfaceMap smap_;
       SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
-      SurfaceMap::SurfacePairCollection extend_; // surfaces to extend the fit to
+      SurfaceMap::SurfacePairIter upextend_, downextend_; // surfaces to extend the fit to
   };
 
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(KKFitConfig const& fitconfig) :
@@ -181,11 +179,9 @@ namespace mu2e {
       ssids.push_back(SurfaceId(sidname,-1)); // match all elements
     }
     smap_.surfaces(ssids,sample_);
-    SurfaceIdCollection xsids;
-    for(auto const& sidname : fitconfig.extendSurfaces()) {
-      xsids.push_back(SurfaceId(sidname,0)); // only generic elements
-    }
-    smap_.surfaces(xsids,extend_);
+    // extension surfaces
+    upextend_ = smap_.surface(SurfaceId(fitconfig.upExtendSurf(),0));
+    downextend_ = smap_.surface(SurfaceId(fitconfig.downExtendSurf(),0));
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
@@ -469,18 +465,12 @@ namespace mu2e {
   }
 
    template <class KTRAJ> void KKFit<KTRAJ>::extendFit(KKTRK& kktrk) {
-
+     // extend the fit upstream and downstream (up and down for cosmics) to the specified surfaces;
+ //TODO
 
    }
 
   template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo) const {
-    std::set<double> savetimes;
-    auto const& fittraj = kktrk.fitTraj();
-    for (auto const& traj : fittraj.pieces() ) if(traj->range().range() > 0.0)savetimes.insert(traj->range().mid());
-    return createSeed(kktrk,seedflag,calo,savetimes);
-  }
-
-  template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, std::set<double> const& savetimes) const {
     TrkFitFlag fflag(seedflag);  // initialize the flag with the seed fit flag
     if(kktrk.fitStatus().usable()){
       fflag.merge(TrkFitFlag::kalmanOK);
@@ -572,22 +562,26 @@ namespace mu2e {
           dm.R(),
           sxing->active() );
     }
-     // sample the fit at the requested times and save those segments.  Uniqueness needs to be checked in the calling function
-    fseed._segments.reserve(savetimes.size());
-    for(auto time : savetimes) fseed._segments.emplace_back(fittraj.nearestPiece(time),time);
-    // find the intersections and sample them
+
+     // save the fit segments
+    fseed._segments.reserve(fittraj.pieces().size());
+    for (auto const& traj : fittraj.pieces() ){
+      // skip zero-range segments.  By convention, sample the state at the mid-time
+      if(traj->range().range() > 0.0) fseed._segments.emplace_back(*traj,traj->range().mid());
+    }
     sampleFit(kktrk,fseed._inters);
     return fseed;
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
-    static const double tol(1.0e-8); // should come from config FIXME
+    static const double tol(1.0e-4); // should come from config FIXME
     auto const& ftraj = kktrk.fitTraj();
     for(auto const& surf : sample_){
-      // Intersect the fit trajectory with this element.  Add a large buffer, which should come from config FIXME
+      // Intersect the fit trajectory with this surface.  Add a large buffer, which should come from config FIXME
       double tstart = ftraj.range().begin()-10;
       double tend =ftraj.range().end()+10;
       bool hasinter(true);
+      // check for multiple intersections
       while(hasinter){
         TimeRange irange(tstart,tend);
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,tol);
