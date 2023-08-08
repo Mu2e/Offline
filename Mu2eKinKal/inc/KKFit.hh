@@ -585,11 +585,11 @@ namespace mu2e {
       while(hasinter){
         TimeRange irange(tstart,tend);
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,tol);
-        hasinter = surfinter.flag_.onsurface_;
+        hasinter = surfinter.inRange(irange);;
         if(hasinter) {
           // save the intersection information
           auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
-          inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,static_cast<KinKal::InterData const&>(surfinter));
+          inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
           // update for the next intersection
           tstart = surfinter.time_ + tol;
         }
