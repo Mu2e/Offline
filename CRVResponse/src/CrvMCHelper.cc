@@ -1,8 +1,8 @@
-#include "Offline/CRVResponse/inc/CrvHelper.hh"
+#include "Offline/CRVResponse/inc/CrvMCHelper.hh"
 
 namespace mu2e
 {
-  void CrvHelper::GetStepPointsFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
+  void CrvMCHelper::GetStepPointsFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
                                                 const art::Handle<CrvDigiMCCollection> &digis,
                                                 std::set<art::Ptr<CrvStep> > &steps)
   {
@@ -21,7 +21,7 @@ namespace mu2e
     }
   }
 
-  void CrvHelper::GetInfoFromStepPoints(const std::set<art::Ptr<CrvStep> > &steps,
+  void CrvMCHelper::GetInfoFromStepPoints(const std::set<art::Ptr<CrvStep> > &steps,
                                         double &visibleEnergyDeposited,
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         art::Ptr<SimParticle> &mostLikelySimParticle)
@@ -66,7 +66,7 @@ namespace mu2e
     }
   }
 
-  void CrvHelper::GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
+  void CrvMCHelper::GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
                                           const art::Handle<CrvDigiMCCollection> &digis,
                                           double &visibleEnergyDeposited,
                                           double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
@@ -74,41 +74,10 @@ namespace mu2e
   {
     std::set<art::Ptr<CrvStep> > steps;
 
-    CrvHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, digis, steps);
-    CrvHelper::GetInfoFromStepPoints(steps, visibleEnergyDeposited,
+    CrvMCHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, digis, steps);
+    CrvMCHelper::GetInfoFromStepPoints(steps, visibleEnergyDeposited,
                                      earliestHitTime, earliestHitPos, mostLikelySimParticle);
   }
 
-  void CrvHelper::GetCrvCounterInfo(const GeomHandle<CosmicRayShield> &CRS,
-                                    mu2e::CRSScintillatorBarIndex crvBarIndex,
-                                    int &sectorNumber, int &moduleNumber, int &layerNumber, int &counterNumber)
-  {
-    const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndex);
-    const CRSScintillatorBarId &crvCounterId = crvCounter.id();
-
-    counterNumber=crvCounterId.getBarNumber();
-    layerNumber  =crvCounterId.getLayerNumber();
-    moduleNumber =crvCounterId.getModuleNumber();
-    sectorNumber =crvCounterId.getShieldNumber();
-  }
-
-  std::string CrvHelper::GetSectorName(const GeomHandle<CosmicRayShield> &CRS, int sectorNumber)
-  {
-    const CRSScintillatorShield &sector = CRS->getCRSScintillatorShields().at(sectorNumber);
-    return sector.getName();
-  }
-
-  int CrvHelper::GetSectorType(const GeomHandle<CosmicRayShield> &CRS, int sectorNumber)
-  {
-    const CRSScintillatorShield &sector = CRS->getCRSScintillatorShields().at(sectorNumber);
-    return sector.getSectorType();
-  }
-
-  CLHEP::Hep3Vector CrvHelper::GetCrvCounterPos(const GeomHandle<CosmicRayShield> &CRS,
-                                     mu2e::CRSScintillatorBarIndex crvBarIndex)
-  {
-    const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndex);
-    return crvCounter.getPosition();
-  }
 
 } // end namespace mu2e
