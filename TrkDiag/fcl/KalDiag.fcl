@@ -4,7 +4,6 @@ BEGIN_PROLOG
 KalDiag : {
   StrawDigiMCLabel   : makeSD
   MCStepsInstance     : "virtualdetector"
-  TimeOffsets       :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 }
 
 # If running KalDiag directly on G4 use KalDiagDirect
@@ -45,7 +44,6 @@ KalDiagReadMDC : {
   StrawDigiMCLabel : "compressDigiMCs" #Update Labels
   MCStepsLabel : "compressDigiMCs"
   SimParticleLabel : "compressDigiMCs"
-  TimeOffsets : { inputs : [ @sequence::DigiCompression.TimeMaps ] }
 }
 
 END_PROLOG
