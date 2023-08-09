@@ -1,2 +1,2 @@
 # Offline
-Offline software for the Mu2e experiment
+Offline software for the Mu2e experiment.

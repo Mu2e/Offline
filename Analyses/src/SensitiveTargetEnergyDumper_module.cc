@@ -27,7 +27,6 @@
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 
 #include "art/Framework/Principal/Run.h"
@@ -113,12 +112,12 @@ namespace mu2e {
     {}
 
     //----------------------------------------------------------------
-    VDHit(const SimParticleTimeOffset& toff, const StepPointMC& hit)
+    VDHit(const StepPointMC& hit)
       : x(hit.position().x())
       , y(hit.position().y())
       , z(hit.position().z())
 
-      , time(toff.timeWithOffsetsApplied(hit))
+      , time(hit.time())
 
       , px(hit.momentum().x())
       , py(hit.momentum().y())
@@ -145,7 +144,6 @@ namespace mu2e {
     typedef std::vector<StepPointMCCollection> VspMC;
 
     art::InputTag hitsInputTag_;
-    SimParticleTimeOffset toff_;
 
     bool writeProperTime_;
     VS tauHitCollections_;
@@ -200,7 +198,6 @@ namespace mu2e {
   SensitiveTargetEnergyDumper::SensitiveTargetEnergyDumper(const fhicl::ParameterSet& pset)
     : art::EDAnalyzer(pset)
     , hitsInputTag_(pset.get<std::string>("hitsInputTag"))
-    , toff_(pset.get<fhicl::ParameterSet>("TimeOffsets"))
     , writeProperTime_(pset.get<bool>("writeProperTime", false))
     , tauHitCollections_( writeProperTime_ ? pset.get<VS>("tauHitCollections") : VS() )
     , tau_()
@@ -279,7 +276,6 @@ namespace mu2e {
 
   //================================================================
   void SensitiveTargetEnergyDumper::analyze(const art::Event& event) {
-    // toff_.updateMap(event);
 
     /*    VspMC spMCColls;
     for ( const auto& iColl : tauHitCollections_ ){
@@ -306,7 +302,7 @@ namespace mu2e {
 
     for(const auto& i : *ih) {
 
-      hit_ = VDHit(toff_, i);
+      hit_ = VDHit(i);
       CLHEP::Hep3Vector hitLoc(hit_.x,hit_.y,hit_.z);
 
            std::cout << "hit x = " << hitLoc << std::endl;

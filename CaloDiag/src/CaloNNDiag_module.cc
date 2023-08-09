@@ -16,7 +16,6 @@
 
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -53,9 +52,7 @@ namespace mu2e {
          {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
-             using SPTO    = SimParticleTimeOffset::Config;
              fhicl::Atom<art::InputTag>     vdCollection          { Name("vdCollection"),           Comment("Virtual detector collection name") };
-             fhicl::Table<SPTO>             timeOffsets           { Name("timeOffsets"),            Comment("Sim Particle Time Offset Maps")};
              fhicl::Atom<art::InputTag>     caloHitCollection     { Name("caloHitCollection"),      Comment("Calo Hit collection name") };
              fhicl::Atom<art::InputTag>     caloClusterCollection { Name("caloClusterCollection"),  Comment("Calo cluster collection name") };
              fhicl::Atom<art::InputTag>     caloHitTruth          { Name("caloHitTruth"),           Comment("CaloHit truth name") };
@@ -73,7 +70,6 @@ namespace mu2e {
 
      private:
        art::InputTag         virtualDetectorTag_;
-       SimParticleTimeOffset toff_;
        art::InputTag         caloHitTag_;
        art::InputTag         caloClusterTag_;
        art::InputTag         caloHitTruthTag_;
@@ -110,7 +106,6 @@ namespace mu2e {
   CaloNNDiag::CaloNNDiag(const art::EDAnalyzer::Table<Config>& config) :
     EDAnalyzer{config},
     virtualDetectorTag_ (config().vdCollection()),
-    toff_               (config().timeOffsets()),
     caloHitTag_         (config().caloHitCollection()),
     caloClusterTag_     (config().caloClusterCollection()),
     caloHitTruthTag_    (config().caloHitTruth()),
@@ -224,7 +219,6 @@ namespace mu2e {
 
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       double _mbtime = accPar->deBuncherPeriod;
-      toff_.updateMap(event);
 
       //Handle to the calorimeter
       art::ServiceHandle<GeometryService> geom;
@@ -495,8 +489,7 @@ namespace mu2e {
                if ( (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut)
                      && hit.volumeId() != VirtualDetectorId::TT_Back) continue;
 
-               double hitTimeUnfolded = toff_.totalTimeOffset(hit.simParticle()) + hit.time();
-                  double hitTime         = fmod(hitTimeUnfolded,_mbtime);
+                  double hitTime         = fmod(hit.time(),_mbtime);
 
                CLHEP::Hep3Vector VDPos = cal.geomUtil().mu2eToTracker(hit.position());
 

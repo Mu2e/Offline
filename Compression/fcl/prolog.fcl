@@ -46,16 +46,10 @@ DigiCompressionTags : {
 }
 
 DigiCompression : {
-    TimeMaps : [ ]
-}
-DigiCompression : {
-  @table::DigiCompression
     Check : {
         module_type : CompressDigiMCsCheck
         oldStrawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
         newStrawDigiMCTag : "compressDigiMCs"
-        OldTimeOffsets : { inputs : [ ] }
-        NewTimeOffsets : { inputs : [ ] }
         oldCaloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
         newCaloShowerSimTag : "compressDigiMCs"
         oldCrvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
@@ -68,17 +62,11 @@ DigiCompression : {
     }
 }
 
-RecoCompression : {
-    TimeMaps : [ ]
-}
 RecoCompression: {
-  @table::RecoCompression
     Check : {
       module_type : CompressDigiMCsCheck
       oldStrawDigiMCTag : "compressDigiMCs"
       newStrawDigiMCTag : "compressRecoMCs"
-      OldTimeOffsets : { inputs : [ ] }
-      NewTimeOffsets : { inputs : [ ] }
       strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
       oldCrvDigiMCTag : "compressDigiMCs"
       newCrvDigiMCTag : "compressRecoMCs"

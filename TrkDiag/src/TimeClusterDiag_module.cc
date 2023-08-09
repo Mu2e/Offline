@@ -15,7 +15,6 @@
 #include "Offline/Mu2eUtilities/inc/MVATools.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
 // tracking
 #include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
@@ -112,8 +111,6 @@ namespace mu2e {
     MCClusterInfo     _ceclust; // info about 'cluster' of MC CE hits
     vector<TimeClusterHitInfo>    _tchinfo; // info about hits of best time cluster
     vector<TimeClusterInfo>   _alltc; // info about all TimeClusters in the event, sorted by # CE
-    // time offsets
-    SimParticleTimeOffset _toff;
     float   _pitch; // average helix pitch (= dz/dflight, =sin(lambda))
     //t0 calculator
     TrkTimeCalculator _ttcalc;
@@ -157,7 +154,6 @@ namespace mu2e {
     _tmin   (pset.get<double>("tmin",500.0)),
     _tmax   (pset.get<double>("tmax",1700.0)),
     _tbin    (pset.get<double>("tbin",15.0)),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
     _pitch             (pset.get<float>(  "AveragePitch",0.6)), // =sin(lambda)
     _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet()))
     {
@@ -211,7 +207,7 @@ namespace mu2e {
           }
         }
         if (jmc != _vdmcsteps->end())
-          _mcmidt0 = _toff.timeWithOffsetsApplied(*jmc);
+          _mcmidt0 = jmc->time();
       }
     }
     // fill info for all TimeClusters
@@ -256,7 +252,6 @@ namespace mu2e {
         auto mcstepsH = evt.getValidHandle<StepPointMCCollection>(_vdmcstepsTag);
         _vdmcsteps = mcstepsH.product();
       }
-      _toff.updateMap(evt);
     }
     if(_useflagcol){
       auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
@@ -389,7 +384,7 @@ namespace mu2e {
         _chcol->fillStrawDigiIndices(event,ich,shids);
         StrawDigiMC const& mcdigi = _mcdigis->at(shids[0]);// FIXME!
         StrawEnd itdc;
-        tchi._mctime = _toff.timeWithOffsetsApplied( *mcdigi.strawGasStep(itdc));
+        tchi._mctime = mcdigi.strawGasStep(itdc)->time();
         tchi._mcmom = sqrt(mcdigi.strawGasStep(itdc)->momentum().mag2());
         art::Ptr<SimParticle> sp = mcdigi.earlyStrawGasStep()->simParticle();
         tchi._mcpdg = sp->pdgId();

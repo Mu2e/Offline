@@ -182,7 +182,6 @@ namespace mu2e
    void CRVAnalysis::FillCrvPulseInfoCollections (const std::string &crvRecoPulseCollectionModuleLabel,
                                                   const std::string &crvWaveformsModuleLabel,
                                                   const std::string &crvDigiModuleLabel,
-                                                  const SimParticleTimeOffset &timeOffsets,
                                                   const art::Event& event, CrvPulseInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo, CrvWaveformInfoCollection &waveformInfo){
 
 
@@ -238,7 +237,7 @@ namespace mu2e
          CLHEP::Hep3Vector earliestHitPos;
          art::Ptr<SimParticle> mostLikelySimParticle;
          //for this reco pulse
-         CrvHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, timeOffsets, visibleEnergyDeposited,
+         CrvHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, visibleEnergyDeposited,
                                             earliestHitTime, earliestHitPos, mostLikelySimParticle);
 
          bool hasMCInfo = (mostLikelySimParticle.isNonnull()?true:false); //MC

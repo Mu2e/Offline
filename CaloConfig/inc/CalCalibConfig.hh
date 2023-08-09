@@ -1,7 +1,7 @@
 #ifndef CaloConditions_CalCalibConfig_hh
 #define CaloConditions_CalCalibConfig_hh
 //
-// Initialize energy calibration of calorimeter from fcl
+// Initialize calibration info from fcl
 // author: S. Middleton 2022
 #include <string>
 #include "fhiclcpp/types/Atom.h"
@@ -18,7 +18,7 @@ namespace mu2e {
     //fhicl::Atom<uint16_t> roid {Name("roid"), Comment("unique offline readout ID")};
     fhicl::Atom<float> ADC2MeV {Name("ADC2MeV"), Comment("constant per SiPM")};
     fhicl::Atom<float> timeoffset {Name("timeoffset"), Comment("constant per SiPM")};
-    fhicl::Atom<int> algID{Name("algorithm"), Comment("codename of the combination alogrithm used for these results") };
+    fhicl::Atom<int> ECombAlgID{Name("energyalgorithm"), Comment("codename of the energy combination alogrithm used for these results") };
   };
 
 }

@@ -19,7 +19,6 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
@@ -93,8 +92,6 @@ namespace mu2e {
       const PrimaryParticle* _primary;
       const StepPointMCCollection* _vdmcsteps;
       const TrkQualCollection* _tqcol;
-      // time offsets
-      SimParticleTimeOffset _toff;
       // Virtual Detector IDs
       vector<int> _midvids, _entvids, _xitvids;
       // cache of BField at 0,0,0
@@ -160,8 +157,7 @@ namespace mu2e {
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _primaryTag(pset.get<art::InputTag>("PrimaryParticleTag","FindMCPrimary")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
-    _beamWtModule( pset.get<art::InputTag>("beamWeightModule","PBIWeight" )),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
+    _beamWtModule( pset.get<art::InputTag>("beamWeightModule","PBIWeight" ))
     {
       if(_diag > 0){
         art::ServiceHandle<art::TFileService> tfs;
@@ -349,8 +345,6 @@ namespace mu2e {
     if(_mcdiag){
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
       _mcdigis = mcdH.product();
-      // update time offsets
-      _toff.updateMap(evt);
       auto mcstepsH = evt.getValidHandle<StepPointMCCollection>(_vdmcstepsTag);
       _vdmcsteps = mcstepsH.product();
       auto pph = evt.getValidHandle<PrimaryParticle>(_primaryTag);
@@ -643,7 +637,7 @@ namespace mu2e {
         // get momentum and position from this point
         _mcmidmom = jmc->momentum().mag();
         _mcmidpz = jmc->momentum().z();
-        _mcmidt0 = _toff.timeWithOffsetsApplied(*jmc);
+        _mcmidt0 = jmc->time();
         Hep3Vector pos = det->toDetector(jmc->position());
         double charge = pdt->particle(pspp->pdgId()).charge();
         TrkUtilities::RobustHelixFromMom(pos,jmc->momentum(),charge,_bz0,_mch);
@@ -664,7 +658,7 @@ namespace mu2e {
         // get momentum and position from this point
         _mcentmom = jmc->momentum().mag();
         _mcentpz = jmc->momentum().z();
-        _mcentt0 = _toff.timeWithOffsetsApplied(*jmc);
+        _mcentt0 = jmc->time();
       }
       jmc = _vdmcsteps->end();
       for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
@@ -680,7 +674,7 @@ namespace mu2e {
         // get momentum and position from this point
         _mcxitmom = jmc->momentum().mag();
         _mcxitpz = jmc->momentum().z();
-        _mcxitt0 = _toff.timeWithOffsetsApplied(*jmc);
+        _mcxitt0 = jmc->time();
       }
     }
     return retval;
