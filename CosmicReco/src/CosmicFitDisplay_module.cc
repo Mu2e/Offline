@@ -24,7 +24,6 @@
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
 // Mu2e Utilities
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
 #include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 

@@ -13,8 +13,6 @@
 #include "BTrk/BbrGeom/HepPoint.h"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-
 #include <vector>
 #include <functional>
 namespace mu2e {

@@ -16,30 +16,27 @@ namespace mu2e {
 
       class Row {
         public:
-        Row(CaloSiPMId  roid, double Peak, double ErrPeak, double Width, double ErrWidth, double Chi2):
-        _roid(roid),_Peak(Peak),_ErrPeak(ErrPeak),_Width(Width),_ErrWidth(ErrWidth),_Chi2(Chi2) {}
+        Row(CaloSiPMId  roid, double T0, double ErrT0, double chisq):
+        _roid(roid),_T0(T0),_ErrT0(ErrT0),_chisq(chisq) {}
         CaloSiPMId       roid()     const { return _roid;} // Offline ID
-        float     Peak()     const { return _Peak; }
-        float     ErrPeak()  const { return _ErrPeak; }
-        float     Width()    const { return _Width; }
-        float     ErrWidth() const { return _ErrWidth; }
-        float     Chi2()     const { return _Chi2; }
+        float     T0()     const { return _T0; }
+        float     ErrT0()  const { return _ErrT0; }
+        float     chisq()     const { return _chisq; }
 
       private:
-        CaloSiPMId    _roid;
-        float _Peak;
-        float _ErrPeak;
-        float _Width;
-        float _ErrWidth;
-        float _Chi2;
+        CaloSiPMId _roid;
+        float _T0;
+        float _ErrT0;
+        float _chisq;
     };
 
     constexpr static const char* cxname = "CalLaserTimeCalib";
 
     CalLaserTimeCalib():DbTable(cxname,"calolasertimecalib",
-    "roid,Peak,ErrPeak,Width,ErrWidth,Chi2") {}
+    "roid,t0,errt0,chisq") {}
 
-    const Row& row(const std::uint16_t roid) const { return _rows.at(roid); }
+    const Row& row(CaloSiPMId  roid) const {
+                return _rows.at(roid.id()); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
@@ -49,27 +46,23 @@ namespace mu2e {
       std::uint16_t index = std::stoul(columns[0]);
     // enforce order, so channels can be looked up by index
     if (index >= CaloConst::_nChannel  || index != _rows.size()) {
-        throw cet::exception("CaloLaserTimeCalib_BAD_INDEX")
-        << "CaloLaserTimeTable::addRow found index out of order: "
+        throw cet::exception("CalLaserTimeCalib_BAD_INDEX")
+        << "CalLaserTimeTable::addRow found index out of order: "
         <<index<< " != " << _rows.size() <<"\n";
       }
       _rows.emplace_back(CaloSiPMId(index),
       std::stof(columns[1]),
       std::stof(columns[2]),
-      std::stoi(columns[3]),
-      std::stof(columns[4]),
-      std::stof(columns[5]) );
+      std::stof(columns[3]));
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << std::fixed << std::setprecision(5);
       sstream << r.roid()<<",";
-      sstream << r.Peak()<<",";
-      sstream << r.ErrPeak()<<",";
-      sstream << r.Width()<<",";
-      sstream << r.ErrWidth()<<",";
-      sstream << r.Chi2();
+      sstream << r.T0()<<",";
+      sstream << r.ErrT0()<<",";
+      sstream << r.chisq();
     }
 
     virtual void clear() override { baseClear(); _rows.clear();}

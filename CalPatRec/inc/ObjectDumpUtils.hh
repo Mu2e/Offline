@@ -20,7 +20,6 @@ namespace art {
 class KalRep;
 
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "Offline/RecoDataProducts/inc/CaloProtoCluster.hh"
 
@@ -41,7 +40,6 @@ namespace mu2e {
 
     static std::string                            _FlagBgrHitsModuleLabel;
     static const  StrawDigiMCCollection*          _ListOfMCStrawHits;
-    static const  SimParticleTimeOffset*          _TimeOffsets;
 
   public:
 //-----------------------------------------------------------------------------

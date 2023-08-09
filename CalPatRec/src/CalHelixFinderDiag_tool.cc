@@ -17,8 +17,6 @@
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-
 namespace mu2e {
 
   using namespace CalHelixFinderTypes;
@@ -28,9 +26,7 @@ namespace mu2e {
   protected:
     Hist_t                     _hist;
     Data_t*                    _data;
-    int                        _first_call;
     int                        _event_number;
-    SimParticleTimeOffset*     _timeOffsets;
 
   public:
 
@@ -47,9 +43,7 @@ namespace mu2e {
 //
 //-----------------------------------------------------------------------------
 CalHelixFinderDiag::CalHelixFinderDiag(const fhicl::ParameterSet& PSet) {
-  _first_call   = 1;
   _event_number = -1;
-  _timeOffsets  = NULL;
 }
 
 CalHelixFinderDiag::~CalHelixFinderDiag() {
@@ -113,13 +107,7 @@ int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tf
     int en = _data->event->event();
     if ( en == _event_number) return -1;
 
-    if (_first_call == 1) {
-      _timeOffsets = new SimParticleTimeOffset(*_data->timeOffsets);
-      _first_call = 0;
-    }
-
     _event_number = en;
-    _timeOffsets->updateMap(*_data->event);
 //-----------------------------------------------------------------------------
 // this part is so far simple
 //-----------------------------------------------------------------------------

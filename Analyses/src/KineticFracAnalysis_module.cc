@@ -42,8 +42,6 @@
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
 #include "Offline/RecoDataProducts/inc/TrkCaloMatch.hh"
@@ -137,7 +135,6 @@ namespace mu2e {
     std::string _trkPatRecModuleLabel;
     TrkParticle _tpart;
     TrkFitDirection _fdir;
-    SimParticleTimeOffset _toff;  // time offset smearing
     std::string _shLabel;
     std::string _shpLabel;
     std::string _shfLabel;
@@ -363,7 +360,6 @@ namespace mu2e {
     _trkPatRecModuleLabel(pset.get<string>("trkPatRecModuleLabel")),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
     _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _shfLabel    (pset.get<std::string>("StrawHitFlagCollectionLabel" ,"FlagStrawHits"  )),
@@ -667,7 +663,6 @@ namespace mu2e {
 
     //   ConditionsHandle<AcceleratorParams> accPar("ignored");
     //double _mbtime = accPar->deBuncherPeriod;
-    //_toff.updateMap(event);
 
     ConditionsHandle<CalorimeterPhysicalConstants> calPhys("ignored");
     _density = calPhys->density();

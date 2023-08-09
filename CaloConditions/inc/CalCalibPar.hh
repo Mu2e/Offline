@@ -3,23 +3,23 @@
 
 //
 // a container for Calo SiPM calibrations
-//
+// will provide both energy and time calibration for specific SiPM
 
 namespace mu2e {
 
 class CalCalibPar {
  public:
-  CalCalibPar(float ADC2MeV, int algID,
+  CalCalibPar(float ADC2MeV, int ECombAlgID,
               float timeOffset) :
       _ADC2MeV(ADC2MeV),
-      _algID(algID),
+      _ECombAlgID(ECombAlgID),
       _timeOffset(timeOffset) {}
   float ADC2MeV() const { return _ADC2MeV; }
-  int algID() const { return _algID; }
+  int ECombAlgID() const { return _ECombAlgID; }
   float timeOffset() const { return _timeOffset; }
 
   float _ADC2MeV;
-  int  _algID;
+  int  _ECombAlgID;
   float _timeOffset;
 };
 

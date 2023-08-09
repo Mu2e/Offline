@@ -19,7 +19,6 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
@@ -91,9 +90,6 @@ namespace mu2e {
       const StrawDigiMCCollection* _mcdigis;
       const StepPointMCCollection* _vdmcsteps;
       const PrimaryParticle* _primary;
-      // reco offsets
-      // mc time offsets
-      SimParticleTimeOffset _toff;
       // Virtual Detector IDs
       vector<int> _midvids;
       // cache of BField at 0,0,0
@@ -155,8 +151,7 @@ namespace mu2e {
     _shfTag   (pset.get<string>("StrawHitFlagCollection")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
-    _primaryTag(pset.get<art::InputTag>("PrimaryParticleTag","FindMCPrimary")),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
+    _primaryTag(pset.get<art::InputTag>("PrimaryParticleTag","FindMCPrimary"))
     {
       if(_diag > 0){
         art::ServiceHandle<art::TFileService> tfs;
@@ -275,7 +270,7 @@ namespace mu2e {
                 StrawDigiMC const& mcdigi = _mcdigis->at(idigi);
                 if ( mcdigi.earlyStrawGasStep()->simParticle() == pspp ){
                   ++nmc;
-                  _mct0 += _toff.timeWithOffsetsApplied(*mcdigi.earlyStrawGasStep());
+                  _mct0 += mcdigi.earlyStrawGasStep()->time();
                   if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))++_npused;
                 }
               }
@@ -382,8 +377,6 @@ namespace mu2e {
       _mcdigis = mcdH.product();
       auto mcstepsH = evt.getValidHandle<StepPointMCCollection>(_vdmcstepsTag);
       _vdmcsteps = mcstepsH.product();
-      // update time offsets
-      _toff.updateMap(evt);
       auto pph = evt.getValidHandle<PrimaryParticle>(_primaryTag);
       _primary = pph.product();
     }
@@ -753,7 +746,7 @@ namespace mu2e {
       hinfomc._gen = spp->genParticle()->generatorId().id();
     MCRelationship rel(pspp,spp);
     hinfomc._rel = rel.relationship();
-    hinfomc._t0 = _toff.timeWithOffsetsApplied(*digimc.earlyStrawGasStep());
+    hinfomc._t0 = digimc.earlyStrawGasStep()->time();
   }
 
   bool HelixDiag::fillMCHelix(art::Ptr<SimParticle> const& pspp) {
