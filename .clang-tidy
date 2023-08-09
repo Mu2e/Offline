@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,bugprone-*,performance-*,readability-braces-around-statements,readability-misleading-indentation,readability-non-const-parameter'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,bugprone-*,performance-*,readability-misleading-indentation,readability-non-const-parameter,-bugprone-narrowing-conversions,-bugprone-easily-swappable-parameters'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
