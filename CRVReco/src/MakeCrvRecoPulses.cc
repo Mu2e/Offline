@@ -1,4 +1,4 @@
-#include "Offline/CRVResponse/inc/MakeCrvRecoPulses.hh"
+#include "Offline/CRVReco/inc/MakeCrvRecoPulses.hh"
 #ifndef CRVStandalone
 #include "canvas/Utilities/Exception.h"
 #endif

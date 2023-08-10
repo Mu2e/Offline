@@ -1,5 +1,5 @@
-#ifndef CrvHelper_h
-#define CrvHelper_h
+#ifndef CrvMCHelper_h
+#define CrvMCHelper_h
 //
 // A class with static helper functions used at various CRV modules.
 //
@@ -10,13 +10,9 @@
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "art/Framework/Principal/Handle.h"
 
-#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
-
 namespace mu2e
 {
-  class CrvHelper
+  class CrvMCHelper
   {
     public:
     //CrvRecoPulse to MC match function
@@ -33,20 +29,8 @@ namespace mu2e
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         art::Ptr<SimParticle> &mostLikelySimParticle);
 
-    //scintillator bar index function
-    static void                          GetCrvCounterInfo(const GeomHandle<CosmicRayShield> &CRS,
-                                                           mu2e::CRSScintillatorBarIndex crvBarIndex,
-                                                           int &sectorNumber, int &moduleNumber,
-                                                           int &layerNumber, int &counterNumber);
-    static std::string                   GetSectorName(const GeomHandle<CosmicRayShield> &CRS, int sectorNumber);
-    static int                           GetSectorType(const GeomHandle<CosmicRayShield> &CRS, int sectorNumber);
-    static CLHEP::Hep3Vector             GetCrvCounterPos(const GeomHandle<CosmicRayShield> &CRS,
-                                                          unsigned long SiPMID);
-    static CLHEP::Hep3Vector             GetCrvCounterPos(const GeomHandle<CosmicRayShield> &CRS,
-                                                          mu2e::CRSScintillatorBarIndex crvBarIndex);
-
     private:
-    CrvHelper();
+    CrvMCHelper();
   };
 
 } // end namespace mu2e

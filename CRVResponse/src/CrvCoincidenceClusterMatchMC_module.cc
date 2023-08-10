@@ -7,7 +7,7 @@
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
-#include "Offline/CRVResponse/inc/CrvHelper.hh"
+#include "Offline/CRVResponse/inc/CrvMCHelper.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
@@ -109,10 +109,10 @@ namespace mu2e
         if(hasMCInfo)
         {
           //get the step points of this reco pulse and add it to the collection of all step points
-          CrvHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, steps);
+          CrvMCHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, steps);
 
           //get the sim particle and deposited energy of this reco pulse
-          CrvHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection,
+          CrvMCHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection,
                                              visibleEnergyDepositedThisPulse,
                                              earliestHitTimeThisPulse, earliestHitPosThisPulse, simParticleThisPulse);
         }
@@ -123,7 +123,7 @@ namespace mu2e
       }//loop over reco pulses
 
       //based on all step points, get the most likely sim particle, total energy, etc.
-      CrvHelper::GetInfoFromStepPoints(steps,
+      CrvMCHelper::GetInfoFromStepPoints(steps,
                                        visibleEnergyDeposited, earliestHitTime, earliestHitPos, simParticle);
 
       //insert the cluster information into the vector of the crv coincidence clusters (collection of pulses, most likely sim particle, etc.)
