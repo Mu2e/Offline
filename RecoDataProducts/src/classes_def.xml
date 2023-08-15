@@ -185,6 +185,7 @@
  <class name="std::vector<mu2e::TrkStraw>"/>
  <class name="std::vector<mu2e::KalSegment>"/>
  <class name="KinKal::IntersectFlag"/>
+ <class name="KinKal::Intersection"/>
  <class name="mu2e::SurfaceIdDetail"/>
  <class name="mu2e::SurfaceIdEnum"/>
  <class name="mu2e::SurfaceId"/>

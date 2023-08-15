@@ -141,9 +141,9 @@ namespace mu2e {
       mutable double rmin_, rmax_; // plane-level info
       mutable double spitch_;
       mutable bool needstrackerinfo_;
-      SurfaceMap smap_;
+      SurfaceMap smap_, emap_;
       SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
-      SurfaceMap::SurfacePairIter upextend_, downextend_; // surfaces to extend the fit to
+      SurfaceMap::SurfacePairCollection extend_; // surfaces to extend the fit to
   };
 
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(KKFitConfig const& fitconfig) :
@@ -179,9 +179,11 @@ namespace mu2e {
       ssids.push_back(SurfaceId(sidname,-1)); // match all elements
     }
     smap_.surfaces(ssids,sample_);
-    // extension surfaces
-    upextend_ = smap_.surface(SurfaceId(fitconfig.upExtendSurf(),0));
-    downextend_ = smap_.surface(SurfaceId(fitconfig.downExtendSurf(),0));
+    SurfaceIdCollection esids;
+    for(auto const& sidname : fitconfig.extendSurfaces()) {
+      esids.push_back(SurfaceId(sidname,-1)); // match all elements
+    }
+    emap_.surfaces(esids,extend_);
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
@@ -585,7 +587,7 @@ namespace mu2e {
       while(hasinter){
         TimeRange irange(tstart,tend);
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,tol);
-        hasinter = surfinter.inRange(irange);;
+        hasinter = irange.inRange(surfinter.time_);
         if(hasinter) {
           // save the intersection information
           auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
