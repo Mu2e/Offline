@@ -587,7 +587,7 @@ namespace mu2e {
       while(hasinter){
         TimeRange irange(tstart,tend);
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,tol);
-        hasinter = irange.inRange(surfinter.time_);
+        hasinter = surfinter.onsurface_ && irange.inRange(surfinter.time_);
         if(hasinter) {
           // save the intersection information
           auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
