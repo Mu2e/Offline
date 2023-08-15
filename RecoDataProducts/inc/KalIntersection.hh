@@ -14,17 +14,21 @@ namespace mu2e {
     KinKal::ParticleStateEstimate pstate_; // particle state at intersection point/time
     XYZVectorF bnom_; // Bfield at this intersection, needed to reconstitute trajectory
     SurfaceId surfid_; // which surface in the reco geometry was interestected
-    KinKal::IntersectFlag flag_; // intersection flag
-    XYZVectorF norm_; // surface unit normal at intersection point
+    KinKal::Intersection kkinter_; // kinkal intersection
     KalIntersection(){}
-    KalIntersection(KinKal::ParticleStateEstimate const& pstate, XYZVectorF const& bnom, SurfaceId const& surfid, KinKal::Intersection const& idata) : pstate_(pstate), bnom_(bnom), surfid_(surfid), flag_(idata.flag_), norm_(XYZVectorF(idata.norm_)) {}
+    KalIntersection(KinKal::ParticleStateEstimate const& pstate, XYZVectorF const& bnom, SurfaceId const& surfid, KinKal::Intersection const& kkinter) : pstate_(pstate), bnom_(bnom), surfid_(surfid), kkinter_(kkinter) {}
 // simple accessors
+    auto const& surfaceId() const { return surfid_; }
     double time() const { return pstate_.time(); }
     double mom() const { return pstate_.momentum(); }
     double momerr() const { return sqrt(pstate_.momentumVariance()); }
     KinKal::VEC3 momentum3() const { return pstate_.momentum3(); }
     KinKal::VEC3 velocity() const { return pstate_.velocity(); }
     KinKal::VEC3 position3() const { return pstate_.position3(); }
+    auto const & intersection() const { return kkinter_; }
+    auto onSurface() const { return kkinter_.onsurface_; }
+    auto inBounds() const { return kkinter_.inbounds_; }
+    auto gap() const { return kkinter_.gap_; }
      // convert content to a LoopHelix
     KinKal::LoopHelix loopHelix() const { return KinKal::LoopHelix(pstate_, KinKal::VEC3(bnom_)); }
     // convert to a CentralHelix

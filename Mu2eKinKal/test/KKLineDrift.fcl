@@ -61,9 +61,9 @@ physics :
           bestCrvInstances : [ "first" ]
           bestCrvBranches : [ "bestcrv" ]
         }
-        segmentSuffixes : [ "ent", "mid", "xit", "out", "in" ]
-        segmentVIDs : [ [ "TT_FrontHollow", "TT_FrontPA"], [ "TT_Mid", "TT_MidInner"], ["TT_Back"], ["TT_OutSurf"], ["TT_InSurf"] ]
-        SurfaceNames : [ "TT_Front", "TT_Back", "TT_Outer", "TCRV" ]
+        segmentSuffixes : [ "ent","xit", "out", "in" ]
+        segmentVIDs : [ [ "TT_FrontHollow", "TT_FrontPA"], ["TT_Back"], ["TT_OutSurf"], ["TT_InSurf"] ]
+        SurfaceNames : [ "TT_Front", "TT_Back", "TT_Inner","TT_Outer", "TCRV" ]
       }
       diagLevel : 2
       FillMCInfo : true

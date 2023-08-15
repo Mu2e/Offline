@@ -230,8 +230,7 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Front","TT_Mid","TT_Back"]
-      UpstreamExtendSurface : "TT_Front"
-      DownstreamExtendSurface : "TT_Back"
+      ExtendSurfaces : ["TT_Front","TT_Back"]
     }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
@@ -252,8 +251,8 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
-      SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
-      ExtendSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
+      SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
+      ExtendSurfaces : ["TT_Front","TT_Back","TT_Outer"]
     }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : {
