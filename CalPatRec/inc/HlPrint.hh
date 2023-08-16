@@ -1,6 +1,6 @@
 //
-#ifndef __CalPatRec_inc_HlPrint_hh__
-#define __CalPatRec_inc_HlPrint_hh__
+#ifndef CalPatRec_HlPrint_hh
+#define CalPatRec_HlPrint_hh
 
 #include "TObject.h"
 #include "TObjArray.h"

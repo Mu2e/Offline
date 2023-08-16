@@ -2,8 +2,8 @@
 // Compton electron finder algorithm
 //
 //
-#ifndef __DeltaFinderAlg_hh__
-#define __DeltaFinderAlg_hh__
+#ifndef CalPatRec_DeltaFinderAlg_hh
+#define CalPatRec_DeltaFinderAlg_hh
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
