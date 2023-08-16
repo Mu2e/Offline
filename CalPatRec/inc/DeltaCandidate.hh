@@ -1,5 +1,5 @@
-#ifndef __CalPatRec_DeltaCandidate_hh__
-#define __CalPatRec_DeltaCandidate_hh__
+#ifndef CalPatRec_DeltaCandidate_hh
+#define CalPatRec_DeltaCandidate_hh
 
 #include "Offline/CalPatRec/inc/DeltaFinder_structures.hh"
 #include "Offline/CalPatRec/inc/DeltaSeed.hh"
