@@ -1,5 +1,5 @@
-#ifndef __TrkPatRec_RobustHelixFinder_types_hh__
-#define __TrkPatRec_RobustHelixFinder_types_hh__
+#ifndef TrkPatRec_RobustHelixFinder_types_hh
+#define TrkPatRec_RobustHelixFinder_types_hh
 
 #include "TObject.h"
 #include <vector>

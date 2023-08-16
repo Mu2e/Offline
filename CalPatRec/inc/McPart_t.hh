@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // ComboHit.hh needs the definition of ProductID ...
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef __CalPatRec_inc_MCPart_t_hh__
-#define __CalPatRec_inc_MCPart_t_hh__
+#ifndef CalPatRec_MCPart_t_hh
+#define CalPatRec_MCPart_t_hh
 
 #include "TObject.h"
 

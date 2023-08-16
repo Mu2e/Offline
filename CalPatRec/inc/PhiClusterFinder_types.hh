@@ -1,5 +1,5 @@
-#ifndef __TrkPatRec_PhiClusterFinder_types_hh__
-#define __TrkPatRec_PhiClusterFinder_types_hh__
+#ifndef CalPatRec_PhiClusterFinder_types_hh
+#define CalPatRec_PhiClusterFinder_types_hh
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
