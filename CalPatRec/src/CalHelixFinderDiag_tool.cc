@@ -1,6 +1,3 @@
-#ifndef __CalPatRec_CalHelixFinderDiag_hh__
-#define __CalPatRec_CalHelixFinderDiag_hh__
-
 #include "TH1.h"
 #include "TH2.h"
 
@@ -176,5 +173,3 @@ int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tf
 }
 
 DEFINE_ART_CLASS_TOOL(mu2e::CalHelixFinderDiag)
-
-#endif

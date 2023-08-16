@@ -1,5 +1,5 @@
-#ifndef __CalPatRec_TZClusterFinder_types_hh__
-#define __CalPatRec_TZClusterFinder_types_hh__
+#ifndef CalPatRec_TZClusterFinder_types_hh
+#define CalPatRec_TZClusterFinder_types_hh
 
 #include <vector>
 
