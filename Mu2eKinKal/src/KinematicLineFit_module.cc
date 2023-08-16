@@ -138,7 +138,6 @@ namespace mu2e {
     ProditionsHandle<Tracker> alignedTracker_h_;
     int print_;
     float seedmom_;
-    float maxDoca_, maxDt_, maxChi_, maxDU_;
     KKFIT kkfit_; // fit helper
     KKMaterial kkmat_; // material helper
     DMAT seedcov_; // seed covariance matrix
@@ -200,7 +199,7 @@ namespace mu2e {
     // create KKBField
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
-    kkbf_ = std::move(std::make_unique<KKBField>(*bfmgr,*det));
+    kkbf_ = std::make_unique<KKBField>(*bfmgr,*det);
   }
 
   void KinematicLineFit::produce(art::Event& event ) {
