@@ -76,23 +76,23 @@ namespace mu2e {
     int eventId;
     int subrunId;
 
-    VDHit() : x(std::numeric_limits<double>::quiet_NaN())
-            , y(std::numeric_limits<double>::quiet_NaN())
-            , z(std::numeric_limits<double>::quiet_NaN())
+    VDHit() : x(std::numeric_limits<double>::max())
+            , y(std::numeric_limits<double>::max())
+            , z(std::numeric_limits<double>::max())
 
-            , InitX(std::numeric_limits<double>::quiet_NaN())
-            , InitY(std::numeric_limits<double>::quiet_NaN())
-            , InitZ(std::numeric_limits<double>::quiet_NaN())
+            , InitX(std::numeric_limits<double>::max())
+            , InitY(std::numeric_limits<double>::max())
+            , InitZ(std::numeric_limits<double>::max())
 
-            , time(std::numeric_limits<double>::quiet_NaN())
+            , time(std::numeric_limits<double>::max())
 
-            , px(std::numeric_limits<double>::quiet_NaN())
-            , py(std::numeric_limits<double>::quiet_NaN())
-            , pz(std::numeric_limits<double>::quiet_NaN())
-            , pmag(std::numeric_limits<double>::quiet_NaN())
-            , ek(std::numeric_limits<double>::quiet_NaN())
+            , px(std::numeric_limits<double>::max())
+            , py(std::numeric_limits<double>::max())
+            , pz(std::numeric_limits<double>::max())
+            , pmag(std::numeric_limits<double>::max())
+            , ek(std::numeric_limits<double>::max())
 
-      , charge(std::numeric_limits<double>::quiet_NaN())
+      , charge(std::numeric_limits<double>::max())
       , pdgId(0)
       , particleId(-1U)
       , volumeCopyNumber(-1U)
