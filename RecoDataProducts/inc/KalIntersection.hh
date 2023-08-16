@@ -26,8 +26,8 @@ namespace mu2e {
     KinKal::VEC3 velocity() const { return pstate_.velocity(); }
     KinKal::VEC3 position3() const { return pstate_.position3(); }
     auto const & intersection() const { return kkinter_; }
-    auto onSurface() const { return kkinter_.onsurface_; }
     auto inBounds() const { return kkinter_.inbounds_; }
+    auto const& surfaceNormal() const { return kkinter_.norm_; }
     auto gap() const { return kkinter_.gap_; }
      // convert content to a LoopHelix
     KinKal::LoopHelix loopHelix() const { return KinKal::LoopHelix(pstate_, KinKal::VEC3(bnom_)); }
