@@ -16,8 +16,7 @@ Mu2eKinKalTrigger : {
     MaxCaloClusterDt : 10.0
     MaxCaloClusterDOCA : 150.0 # mm
     SampleSurfaces : ["TT_Mid"]
-    UpstreamExtendSurface : "TT_Mid"
-    DownstreamExtendSurface : "TT_Mid"
+    ExtendSurfaces : ["TT_Mid"]
   }
 
   SEEDFIT: {
