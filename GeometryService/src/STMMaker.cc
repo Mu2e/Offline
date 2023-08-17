@@ -326,6 +326,124 @@ namespace mu2e {
     //}
 
 
+    double fW_x = -0.15*25.4 - _STM_SSCdelta_WlR/2 + _STM_SSCdelta_WlL/2;
+    double fW_z_1 =  -stm._copperdepth - stm._leaddepth2 - stm._BPdepth*2 - stm._leaddepth -(_STM_SSCWdepth_b+_STM_SSCWdepth_f)/2 - _STM_SSCleak;
+
+   
+    const CLHEP::Hep3Vector  _STMShieldingRef = BeamAxisAtEastWallInMu2e + CLHEP::Hep3Vector(0., 0., -_stmZAllowed+(_STM_SSCWdepth_b+_STM_SSCWdepth_f)/2);
+    const CLHEP::HepRotation _STM_SSCRotation     = CLHEP::HepRotation::IDENTITY;
+    const CLHEP::Hep3Vector  _STM_SSCOffsetInMu2e = _STMShieldingRef  + CLHEP::Hep3Vector(fW_x, 0, fW_z_1 - (_STM_SSCWdepth_b+_STM_SSCWdepth_f)/2);
+ 
+          stm._pSTM_SSCParams = std::unique_ptr<STM_SSC>
+                  (new STM_SSC(_STM_SSCBuild,
+                               _STM_SSCdelta_WlR,
+                               _STM_SSCdelta_WlL,
+                               _STM_SSCW_length,
+                               _STM_SSCW_height,
+                               _STM_SSCleak,
+                               _STM_SSCWdepth_f,
+                               _STM_SSCWdepth_b,
+                               _STM_SSCAperture_HPGe1,
+                               _STM_SSCAperture_HPGe2,
+                               _STM_SSCAperture_LaBr1,
+                               _STM_SSCAperture_LaBr2,
+                               _STM_SSCoffset_Spot,
+                               _STM_SSCOffsetInMu2e,
+                               _STM_SSCRotation,
+                               _STM_SSCMaterial));
+   
+    const double offset_HPGe=_HPGeoffset_HPGe;
+
+    CLHEP::HepRotation rotHPGe = CLHEP::HepRotation::IDENTITY;
+    rotHPGe.rotateY(45*CLHEP::degree);
+
+    const CLHEP::HepRotation _HPGeRotation     = rotHPGe;
+    const CLHEP::Hep3Vector  _HPGeOffsetInMu2e = _STMShieldingRef + CLHEP::Hep3Vector(-_STM_SSCoffset_Spot + offset_HPGe, 0., _HPGeZ_HPGe);
+          stm._pSTMHPGeDetectorParams = std::unique_ptr<HPGeDetector>
+          (new HPGeDetector(_HPGeBuild,
+                            _HPGecrystalMaterial,
+                            _HPGeholeMaterial,
+                            _HPGewindowMaterial,
+                            _HPGewallMaterial,
+                            _HPGecapsuleMaterial, 
+                            _HPGeEndcupR,
+                            _HPGeEndcupL,
+                            _HPGeCrystalR,
+                            _HPGeCrystalL,
+                            _HPGeZ_HPGe,
+                            _HPGeHoleR,
+                            _HPGeHoleL,
+                            _HPGeCapsule_Wallthick,
+                            _HPGeCapsule_Windowthick,
+                            _HPGeCapsule_Endthick,
+                            _HPGeCapsule_Walllength,
+                            _HPGeWindowD,
+                            _HPGeEndcupD,
+                            _HPGeAirD,
+                            _HPGeoffset_HPGe,
+                            _HPGeOffsetInMu2e,
+                            _HPGeRotation));
+
+
+    const double offset_LaBr=_LaBroffset_LaBr;
+    const CLHEP::HepRotation _LaBrRotation     = CLHEP::HepRotation::IDENTITY;
+    const CLHEP::Hep3Vector  _LaBrOffsetInMu2e = _STMShieldingRef + CLHEP::Hep3Vector(_STM_SSCoffset_Spot + offset_LaBr, 0., _LaBrZ_LaBr);
+          stm._pSTMLaBrDetectorParams = std::unique_ptr<LaBrDetector>
+          (new LaBrDetector(_LaBrBuild,
+                            _LaBrcrystalMaterial,
+                            _LaBrwindowMaterial,
+                            _LaBrwallMaterial,
+                            _LaBrEndcupR,
+                            _LaBrEndcupL,
+                            _LaBrCrystalR,
+                            _LaBrCrystalL,
+                            _LaBrZ_LaBr,
+                            _LaBrWindowD,
+                            _LaBrEndcupD,
+                            _LaBrAirD,
+                            _LaBroffset_LaBr,
+                            _LaBrOffsetInMu2e,
+                            _LaBrRotation));
+
+
+          stm._pSTMFrontShieldingParams = std::unique_ptr<FrontShielding>
+          (new FrontShielding(_FrontShieldingBuild));
+
+          stm._pSTMLeftShieldingParams = std::unique_ptr<LeftShielding>
+          (new LeftShielding(_LeftShieldingBuild));
+
+          stm._pSTMRightShieldingParams = std::unique_ptr<RightShielding>
+          (new RightShielding(_RightShieldingBuild));
+
+          stm._pSTMTopShieldingParams = std::unique_ptr<TopShielding>
+          (new TopShielding(_TopShieldingBuild));
+
+          stm._pSTMBottomShieldingParams = std::unique_ptr<BottomShielding>
+          (new BottomShielding(_BottomShieldingBuild));
+
+          stm._pSTMInnerShieldingParams = std::unique_ptr<InnerShielding>
+          (new InnerShielding(_InnerShieldingBuild));
+
+          stm._pSTMBackShieldingParams = std::unique_ptr<BackShielding>
+          (new BackShielding(_BackShieldingBuild));
+
+          stm._pSTMElectronicShieldingParams = std::unique_ptr<ElectronicShielding>
+          (new ElectronicShielding(_ElectronicShieldingBuild,   
+                                   _ElectronicShieldingSiGridX,                            
+                                   _ElectronicShieldingSiGridY,
+                                   _ElectronicShieldingSiGridZ,
+                                   _ElectronicShieldingSiXcenter,
+                                   _ElectronicShieldingSiYcenter,
+                                   _ElectronicShieldingSiZcenter,
+                                   _ElectronicShieldingConcreteT));
+
+          stm._pSTMSTM_AbsorberParams = std::unique_ptr<STM_Absorber>
+          (new STM_Absorber(_STM_AbsorberBuild,
+                            _STM_Absorber_hW,
+                            _STM_Absorber_hH,
+                            _STM_Absorber_hT,
+                            _STM_Absorber_GaptoSSC));
+
   }
 
   void STMMaker::parseConfig( SimpleConfig const & _config ){
@@ -484,6 +602,82 @@ namespace mu2e {
     _stmDnStrEnvHalfWidth   = _config.getDouble("stm.downstream.halfWidth");
     _stmDnStrEnvHalfHeight  = _config.getDouble("stm.downstream.halfHeight");
     _stmDnStrEnvMaterial    = _config.getString("stm.downstream.material");
+
+    _STM_SSCBuild          = _config.getBool(  "stm.STM_SSC.build");
+    _STM_SSCdelta_WlR      = _config.getDouble("stm.STM_SSC.delta_WlR");
+    _STM_SSCdelta_WlL      = _config.getDouble("stm.STM_SSC.delta_WlL");
+    _STM_SSCW_length       = _config.getDouble("stm.STM_SSC.W_length");
+    _STM_SSCW_height       = _config.getDouble("stm.STM_SSC.W_height");
+    _STM_SSCleak           = _config.getDouble("stm.STM_SSC.leak");
+    _STM_SSCWdepth_f       = _config.getDouble("stm.STM_SSC.Wdepth_f");
+    _STM_SSCWdepth_b       = _config.getDouble("stm.STM_SSC.Wdepth_b");
+    _STM_SSCAperture_HPGe1 = _config.getDouble("stm.STM_SSC.Aperture_HPGe1");
+    _STM_SSCAperture_HPGe2 = _config.getDouble("stm.STM_SSC.Aperture_HPGe2");
+    _STM_SSCAperture_LaBr1 = _config.getDouble("stm.STM_SSC.Aperture_LaBr1");
+    _STM_SSCAperture_LaBr2 = _config.getDouble("stm.STM_SSC.Aperture_LaBr2");
+    _STM_SSCoffset_Spot    = _config.getDouble("stm.STM_SSC.offset_Spot");
+    _STM_SSCMaterial       = _config.getString("stm.STM_SSC.material");
+
+    _HPGeBuild                  = _config.getBool("stm.HPGe.build");
+    _HPGecrystalMaterial        = _config.getString("stm.HPGe.crystalMaterial");
+    _HPGeholeMaterial           = _config.getString("stm.HPGe.holeMaterial");
+    _HPGewindowMaterial         = _config.getString("stm.HPGe.windowMaterial");
+    _HPGewallMaterial           = _config.getString("stm.HPGe.wallMaterial");
+    _HPGecapsuleMaterial        = _config.getString("stm.HPGe.capsuleMaterial");
+    _HPGeEndcupR                = _config.getDouble("stm.HPGe.EndcupR");
+    _HPGeEndcupL                = _config.getDouble("stm.HPGe.EndcupL");
+    _HPGeCrystalR               = _config.getDouble("stm.HPGe.CrystalR");
+    _HPGeCrystalL               = _config.getDouble("stm.HPGe.CrystalL");
+    _HPGeZ_HPGe                 = _config.getDouble("stm.HPGe.Z_HPGe");
+    _HPGeHoleR                  = _config.getDouble("stm.HPGe.HoleR");
+    _HPGeHoleL                  = _config.getDouble("stm.HPGe.HoleL");
+    _HPGeCapsule_Wallthick      = _config.getDouble("stm.HPGe.Capsule_Wallthick");
+    _HPGeCapsule_Windowthick    = _config.getDouble("stm.HPGe.Capsule_Windowthick");
+    _HPGeCapsule_Endthick       = _config.getDouble("stm.HPGe.Capsule_Endthick");
+    _HPGeCapsule_Walllength     = _config.getDouble("stm.HPGe.Capsule_Walllength");
+    _HPGeWindowD                = _config.getDouble("stm.HPGe.WindowD");
+    _HPGeEndcupD                = _config.getDouble("stm.HPGe.EndcupD");
+    _HPGeAirD                   = _config.getDouble("stm.HPGe.AirD");
+    _HPGeoffset_HPGe            = _config.getDouble("stm.HPGe.offset_HPGe");
+
+    _LaBrBuild                  = _config.getBool("stm.LaBr.build");
+    _LaBrcrystalMaterial        = _config.getString("stm.LaBr.crystalMaterial");
+    _LaBrwindowMaterial         = _config.getString("stm.LaBr.windowMaterial");
+    _LaBrwallMaterial           = _config.getString("stm.LaBr.wallMaterial");
+    _LaBrEndcupR                = _config.getDouble("stm.LaBr.EndcupR");
+    _LaBrEndcupL                = _config.getDouble("stm.LaBr.EndcupL");
+    _LaBrCrystalR               = _config.getDouble("stm.LaBr.CrystalR");
+    _LaBrCrystalL               = _config.getDouble("stm.LaBr.CrystalL");
+    _LaBrZ_LaBr                 = _config.getDouble("stm.LaBr.Z_LaBr");
+    _LaBrWindowD                = _config.getDouble("stm.LaBr.WindowD");
+    _LaBrEndcupD                = _config.getDouble("stm.LaBr.EndcupD");
+    _LaBrAirD                   = _config.getDouble("stm.LaBr.AirD");
+    _LaBroffset_LaBr            = _config.getDouble("stm.LaBr.offset_LaBr");
+
+    _FrontShieldingBuild        = _config.getBool("stm.FrontShielding.build");
+    _LeftShieldingBuild         = _config.getBool("stm.LeftShielding.build");
+    _RightShieldingBuild        = _config.getBool("stm.RightShielding.build");
+    _TopShieldingBuild          = _config.getBool("stm.TopShielding.build");
+    _BottomShieldingBuild       = _config.getBool("stm.BottomShielding.build");
+    _InnerShieldingBuild        = _config.getBool("stm.InnerShielding.build");
+    _BackShieldingBuild         = _config.getBool("stm.BackShielding.build");
+
+    _ElectronicShieldingBuild      = _config.getBool("stm.ElectronicShielding.build");
+    _ElectronicShieldingSiGridX    = _config.getDouble("stm.ElectronicShielding.SiGridX");
+    _ElectronicShieldingSiGridY    = _config.getDouble("stm.ElectronicShielding.SiGridY");
+    _ElectronicShieldingSiGridZ    = _config.getDouble("stm.ElectronicShielding.SiGridZ");
+    _ElectronicShieldingSiXcenter  = _config.getDouble("stm.ElectronicShielding.SiXcenter");
+    _ElectronicShieldingSiYcenter  = _config.getDouble("stm.ElectronicShielding.SiYcenter");
+    _ElectronicShieldingSiZcenter  = _config.getDouble("stm.ElectronicShielding.SiZcenter");
+    _ElectronicShieldingConcreteT  = _config.getDouble("stm.ElectronicShielding.ConcreteT");
+
+
+    _STM_AbsorberBuild          = _config.getBool("stm.STM_Absorber.build");
+    _STM_Absorber_hW            = _config.getDouble("stm.STM_Absorber.hW");
+    _STM_Absorber_hH            = _config.getDouble("stm.STM_Absorber.hH");
+    _STM_Absorber_hT            = _config.getDouble("stm.STM_Absorber.hT");
+    _STM_Absorber_GaptoSSC      = _config.getDouble("stm.STM_Absorber.GaptoSSC");
+
   }
 
 } // namespace mu2e
