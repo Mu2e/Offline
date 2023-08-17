@@ -192,6 +192,80 @@ namespace mu2e {
     double       _shieldUpStrWallGap;
     std::string  _shieldDnStrWallMaterial;
 
+    bool        _STM_SSCBuild;
+    double      _STM_SSCdelta_WlR;
+    double      _STM_SSCdelta_WlL;
+    double      _STM_SSCW_length;
+    double      _STM_SSCW_height;
+    double      _STM_SSCleak;
+    double      _STM_SSCWdepth_f;
+    double      _STM_SSCWdepth_b;
+    double      _STM_SSCAperture_HPGe1;
+    double      _STM_SSCAperture_HPGe2;
+    double      _STM_SSCAperture_LaBr1;
+    double      _STM_SSCAperture_LaBr2;
+    double      _STM_SSCoffset_Spot;
+    std::string _STM_SSCMaterial;
+
+    bool   _HPGeBuild;
+    std::string _HPGecrystalMaterial;
+    std::string _HPGeholeMaterial;
+    std::string _HPGewindowMaterial;
+    std::string _HPGewallMaterial;
+    std::string _HPGecapsuleMaterial;
+    double _HPGeEndcupR;
+    double _HPGeEndcupL;
+    double _HPGeCrystalR;
+    double _HPGeCrystalL;
+    double _HPGeZ_HPGe;
+    double _HPGeHoleR;
+    double _HPGeHoleL;
+    double _HPGeCapsule_Wallthick;
+    double _HPGeCapsule_Windowthick;
+    double _HPGeCapsule_Endthick;
+    double _HPGeCapsule_Walllength;
+    double _HPGeWindowD;
+    double _HPGeEndcupD;
+    double _HPGeAirD;
+    double _HPGeoffset_HPGe;
+
+    bool   _LaBrBuild;
+    std::string _LaBrcrystalMaterial;
+    std::string _LaBrwindowMaterial;
+    std::string _LaBrwallMaterial;
+    double _LaBrEndcupR;
+    double _LaBrEndcupL;
+    double _LaBrCrystalR;
+    double _LaBrCrystalL;
+    double _LaBrZ_LaBr;
+    double _LaBrWindowD;
+    double _LaBrEndcupD;
+    double _LaBrAirD;
+    double _LaBroffset_LaBr;
+
+    bool   _FrontShieldingBuild;
+    bool   _LeftShieldingBuild;
+    bool   _RightShieldingBuild;
+    bool   _TopShieldingBuild;
+    bool   _BottomShieldingBuild;
+    bool   _InnerShieldingBuild;
+    bool   _BackShieldingBuild;
+
+    bool     _ElectronicShieldingBuild;
+    double   _ElectronicShieldingSiGridX;
+    double   _ElectronicShieldingSiGridY;
+    double   _ElectronicShieldingSiGridZ;
+    double   _ElectronicShieldingSiXcenter;
+    double   _ElectronicShieldingSiYcenter;
+    double   _ElectronicShieldingSiZcenter;
+    double   _ElectronicShieldingConcreteT;
+
+    bool     _STM_AbsorberBuild;
+    double   _STM_Absorber_hW;
+    double   _STM_Absorber_hH;
+    double   _STM_Absorber_hT;
+    double   _STM_Absorber_GaptoSSC;
+
   };
 
 }  //namespace mu2e
