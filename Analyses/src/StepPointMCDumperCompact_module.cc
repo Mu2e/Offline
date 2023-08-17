@@ -43,13 +43,13 @@ namespace mu2e {
     float pz;
     int   pdgId;
 
-    VDHit() : x(std::numeric_limits<double>::quiet_NaN())
-            , y(std::numeric_limits<double>::quiet_NaN())
-            , z(std::numeric_limits<double>::quiet_NaN())
-            , time(std::numeric_limits<double>::quiet_NaN())
-            , px(std::numeric_limits<double>::quiet_NaN())
-            , py(std::numeric_limits<double>::quiet_NaN())
-            , pz(std::numeric_limits<double>::quiet_NaN())
+    VDHit() : x(std::numeric_limits<double>::max())
+            , y(std::numeric_limits<double>::max())
+            , z(std::numeric_limits<double>::max())
+            , time(std::numeric_limits<double>::max())
+            , px(std::numeric_limits<double>::max())
+            , py(std::numeric_limits<double>::max())
+            , pz(std::numeric_limits<double>::max())
             , pdgId(0)
     {}
 
