@@ -80,9 +80,10 @@ namespace mu2e {
       fhicl::Sequence<std::string> extendSurfaces { Name("ExtendSurfaces"), Comment("Extend the fit to reach these surfaces") };
       fhicl::Atom<float> maxStrawHitDOCA { Name("MaxStrawHitDOCA"), Comment("Max DOCA to add a hit (mm)") };
       fhicl::Atom<float> maxStrawHitDt { Name("MaxStrawHitDt"), Comment("Max Detla time to add a hit (ns)") };
-      fhicl::Atom<int> strawBuffer { Name("StrawBuffer"), Comment("Buffer to add when searching for straws") };
+      fhicl::Atom<int> maxDStraw { Name("MaxDStraw"), Comment("Maximum (integer) straw separation when adding straw hits") };
       fhicl::Atom<float> maxStrawDOCA { Name("MaxStrawDOCA"), Comment("Max DOCA to add straw material (mm)") };
       fhicl::Atom<float> maxStrawDOCAConsistency { Name("MaxStrawDOCAConsistency"), Comment("Max DOCA chi-consistency to add straw material") };
+      fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Buffer to add to the trajectory when sampling the fit (mm)") };
     };
     // struct for configuring a KinKal fit module
     struct KKModuleConfig {

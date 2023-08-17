@@ -32,9 +32,10 @@ Mu2eKinKal : {
     AddHitReject : ["Dead"]
     MaxStrawHitDOCA : 10.0 # mm
     MaxStrawHitDt : 50.0 # ns
-    StrawBuffer : 2 #
+    MaxDStraw : 2 # integer (straw)
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
+    SampleTimeBuffer : 10.0 # time buffer on trajectory ends for finding intersections with sample surfaces
   }
 
   SEEDFIT: {
@@ -253,6 +254,7 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
       ExtendSurfaces : ["TT_Front","TT_Back","TT_Outer"]
+      SampleTimeBuffer : 50
     }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : {
