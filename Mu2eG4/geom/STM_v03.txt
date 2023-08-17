@@ -36,7 +36,7 @@ double vd.DSNeutronShieldExit.r     =  110.0;//Must be the same as the following
 double stm.z.allowed = 863.6;
 
 //STM may have two detectors
-bool   stm.det1.build                     = true;
+bool   stm.det1.build                     = false;
 string stm.det1.material                  = "G4_Ge";
 double stm.det1.rIn                       =   0.0;
 double stm.det1.rOut                      =  45.0;
@@ -51,7 +51,7 @@ double stm.det1.can.halfLength            =  50.0;
 string stm.det1.can.UpStrWindowMaterial   = "G4_Al";
 double stm.det1.can.UpStrWindowHalfLength =   0.5; //Standard Al window is 1mm thick
 
-bool   stm.det2.build                     = true;
+bool   stm.det2.build                     = false;
 string stm.det2.material                  = "G4_Ge";
 double stm.det2.rIn                       =   0.0;
 double stm.det2.rOut                      =  45.0;
@@ -67,13 +67,13 @@ string stm.det2.can.UpStrWindowMaterial   = "G4_Al"; //"G4_Be";
 double stm.det2.can.UpStrWindowHalfLength =   0.5;   //0.381; //Standard Be window is 0.762mm thick
 
 //"spot-size" collimator, just upstream of the detector(s)
-bool   stm.SScollimator.build             =  true; //
+bool   stm.SScollimator.build             =  false; //
 string stm.SScollimator.material          = "G4_Pb";
 double stm.SScollimator.UpStrSpace        =    0.0; // this parameter not used for this collimator
 double stm.SScollimator.halfWidth         =  215.9; //
 double stm.SScollimator.halfHeight        =  228.6; //
 double stm.SScollimator.halfLength        =   76.2; // 76.2mm = 3 inch halflength
-bool   stm.SScollimator.liner.build       =  true; //
+bool   stm.SScollimator.liner.build       =  false; //
 string stm.SScollimator.liner.material    =  "G4_W";
 double stm.SScollimator.liner.halfWidth   =  105.0; //
 double stm.SScollimator.liner.halfHeight  =   55.0; //
@@ -158,7 +158,7 @@ double stm.pipe.flange.halfLength      = 0.9; //was 15.0
 double stm.pipe.flange.overhangR       = 20.0;
 
 //Support (Table) on which to put the sweeper magnet and field-of-view collimator
-bool   stm.detector.stand.build          = true;
+bool   stm.detector.stand.build          = false;
 string stm.detector.stand.material       = "StainlessSteel";
 double stm.detector.stand.topExtraWidth  = 100.0;
 double stm.detector.stand.topExtraLength =   0.0;
@@ -166,7 +166,7 @@ double stm.detector.stand.topHalfHeight  =  30.0;
 double stm.detector.stand.legRadius      =  50.0;
 
 //shield pipe to reduce CRV deadtime
-bool   stm.shield.build                = true;
+bool   stm.shield.build                = false;
 double stm.shield.rIn                  = 110.0;
 double stm.shield.widthLiner           = 10.0;
 double stm.shield.rOut                 = 130.0;//WARNING: should be 160
