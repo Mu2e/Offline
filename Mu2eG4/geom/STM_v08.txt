@@ -1,0 +1,99 @@
+// (Muon) Stoping Target Monitor (STM)
+//
+//
+// Author: Haichuan Cao
+//
+// Notes: All dimensions in mm
+
+
+#include "Offline/Mu2eG4/geom/STM_v07.txt"
+
+bool   stm.build  = true;
+int    stm.verbosityLevel = 0;
+bool   stm.visible = true;
+bool   stm.isolid   = false;
+
+
+//"spot-size" collimator, just upstream of the detector(s)
+bool   stm.STM_SSC.build     =  true;
+string stm.STM_SSC.material  = "G4_W";
+double stm.STM_SSC.delta_WlR = 63.5;    //2.5 in;
+double stm.STM_SSC.delta_WlL = 33.02;   //1.3 in; 
+double stm.STM_SSC.W_length  = 220.98;  //8.7*25.4;
+double stm.STM_SSC.W_height  = 177.8;   //7*25.4;
+double stm.STM_SSC.leak      = 10.16;   //0.4*25.4;
+double stm.STM_SSC.Wdepth_f  = 50.8;    //2*25.4;
+double stm.STM_SSC.Wdepth_b  = 50.8;    //2*25.4;
+double stm.STM_SSC.Aperture_HPGe1  = 150;
+double stm.STM_SSC.Aperture_HPGe2  = 50;
+double stm.STM_SSC.Aperture_LaBr1  = 150;
+double stm.STM_SSC.Aperture_LaBr2  = 50;
+double stm.STM_SSC.offset_Spot     = 40.6;
+
+bool   stm.HPGe.build     = true;
+string stm.HPGe.crystalMaterial = "G4_Ge";
+string stm.HPGe.holeMaterial    = "G4_AIR";
+string stm.HPGe.windowMaterial  = "G4_Al";
+string stm.HPGe.wallMaterial    = "G4_Al";
+string stm.HPGe.capsuleMaterial = "G4_Al";
+double stm.HPGe.EndcupR         = 50.165; 
+double stm.HPGe.EndcupL         = 173;
+double stm.HPGe.CrystalR        = 36.05;
+double stm.HPGe.CrystalL        = 78.5;
+double stm.HPGe.Z_HPGe      = 63.131;
+double stm.HPGe.HoleR       = 5.25;
+double stm.HPGe.HoleL       = 64.7;
+double stm.HPGe.Capsule_Wallthick    = 0.8;
+double stm.HPGe.Capsule_Windowthick  = 0.03;
+double stm.HPGe.Capsule_Endthick     = 3;
+double stm.HPGe.Capsule_Walllength   = 130;
+double stm.HPGe.WindowD      = 1.5;
+double stm.HPGe.EndcupD      = 1.5;
+double stm.HPGe.AirD         = 4.0;
+double stm.HPGe.offset_HPGe  = 2.45;
+
+bool   stm.LaBr.build     = true;
+string stm.LaBr.crystalMaterial = "LaBr3Ce";
+string stm.LaBr.windowMaterial  = "G4_Al";
+string stm.LaBr.wallMaterial    = "G4_Al";
+double stm.LaBr.EndcupR         = 48.0;
+double stm.LaBr.EndcupL         = 66.3;
+double stm.LaBr.CrystalR        = 38.1;
+double stm.LaBr.CrystalL        = 76.2;
+double stm.LaBr.Z_LaBr       = 320.142;
+double stm.LaBr.WindowD      = 1.5;
+double stm.LaBr.EndcupD      = 1.5;
+double stm.LaBr.AirD         = 4.0;
+double stm.LaBr.offset_LaBr  = 0.0;
+
+
+bool   stm.FrontShielding.build    = true;
+bool   stm.LeftShielding.build     = true;
+bool   stm.RightShielding.build    = true;
+bool   stm.TopShielding.build      = true;
+bool   stm.BottomShielding.build   = true;
+bool   stm.InnerShielding.build    = true;
+bool   stm.BackShielding.build     = true;
+
+bool    stm.ElectronicShielding.build     = true;
+double  stm.ElectronicShielding.SiGridX   = 127.0;
+double  stm.ElectronicShielding.SiGridY   = 127.0;
+double  stm.ElectronicShielding.SiGridZ   = 25.4;
+double  stm.ElectronicShielding.SiXcenter = -381.0;
+double  stm.ElectronicShielding.SiYcenter = -1219.2;
+double  stm.ElectronicShielding.SiZcenter = 254.0;
+double  stm.ElectronicShielding.ConcreteT = 457.2;
+
+
+
+bool   stm.STM_Absorber.build         = true;
+double stm.STM_Absorber.hW            = 25;
+double stm.STM_Absorber.hH            = 25;
+double stm.STM_Absorber.hT            = 195;
+double stm.STM_Absorber.GaptoSSC      = 5.08;
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End
