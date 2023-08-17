@@ -265,7 +265,7 @@ namespace mu2e {
           if(goodfit && exconfig_.schedule().size() > 0){
             kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
           }
-          bool save(true);//TODO - when would we like not to save?
+          bool save = goodFit(*kktrk);
           if(save || saveall_){
             TrkFitFlag fitflag(hptr->status());
             fitflag.merge(TrkFitFlag::KKLine);

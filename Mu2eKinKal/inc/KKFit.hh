@@ -133,7 +133,8 @@ namespace mu2e {
       StrawHitFlag addsel_, addrej_; // selection and rejection flags when adding hits
       // parameters controlling adding hits
       float maxStrawHitDoca_, maxStrawHitDt_, maxStrawDoca_, maxStrawDocaCon_;
-      int sbuff_; // maximum distance from the track a strawhit can be to consider it for adding.
+      int maxDStraw_; // maximum distance from the track a strawhit can be to consider it for adding.
+      float stbuff_; // time buffer to fit trajectory when finding surface intersections (fit samples)
       int printLevel_;
       // cached info computed from the tracker, used in hit adding; these must be lazy-evaluated as the tracker doesn't exist on construction
       mutable double strawradius_;
@@ -168,7 +169,8 @@ namespace mu2e {
     maxStrawHitDt_(fitconfig.maxStrawHitDt()),
     maxStrawDoca_(fitconfig.maxStrawDOCA()),
     maxStrawDocaCon_(fitconfig.maxStrawDOCAConsistency()),
-    sbuff_(fitconfig.strawBuffer()),
+    maxDStraw_(fitconfig.maxDStraw()),
+    stbuff_(fitconfig.sampleTBuff()),
     printLevel_(fitconfig.printLevel()),
     needstrackerinfo_(true)
   {
@@ -339,11 +341,11 @@ namespace mu2e {
             // translate the y position into a rough straw number
             int istraw = static_cast<int>(rint( (pposv.y()-ymin_)*spitch_));
             // require this be within the (integral) straw buffer.  This just reduces the number of calls to PCA
-            if(istraw >= -sbuff_ && istraw < static_cast<int>(panel.nStraws()) + sbuff_ ){
-              unsigned istrmin = static_cast<unsigned>(std::max(istraw-sbuff_,0));
+            if(istraw >= -maxDStraw_ && istraw < static_cast<int>(panel.nStraws()) + maxDStraw_ ){
+              unsigned istrmin = static_cast<unsigned>(std::max(istraw-maxDStraw_,0));
               // largest straw is the innermost; use that to test length
               if(fabs(pposv.x()) < panel.getStraw(istrmin).halfLength() ) {
-                unsigned istrmax = static_cast<unsigned>(std::min(istraw+sbuff_,static_cast<int>(panel.nStraws())-1));
+                unsigned istrmax = static_cast<unsigned>(std::min(istraw+maxDStraw_,static_cast<int>(panel.nStraws())-1));
                 // loop over straws
                 for(unsigned istr = istrmin; istr <= istrmax; ++istr){
                   auto const& straw = panel.getStraw(istr);
@@ -441,8 +443,8 @@ namespace mu2e {
     ymax_ = outerstraw_origin.y();
     umax_ = innerstraw.halfLength() + strawradius_; // longest possible straw
     // plane-level variables: these add some buffer
-    rmin_ = innerstraw_origin.y() - sbuff_*strawradius_;
-    rmax_ = outerstraw.wireEnd(StrawEnd::cal).mag() + sbuff_*strawradius_;
+    rmin_ = innerstraw_origin.y() - maxDStraw_*strawradius_;
+    rmax_ = outerstraw.wireEnd(StrawEnd::cal).mag() + maxDStraw_*strawradius_;
     spitch_ = (StrawId::_nstraws-1)/(ymax_-ymin_);
     needstrackerinfo_= false;
   }
@@ -576,12 +578,14 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
-    static const double tol(1.0e-4); // should come from config FIXME
+    // translate time precision to distance precision for surfaces
+    auto speed = kktrk.fitTraj().front().speed();
+    double tol = tprec_*speed;
     auto const& ftraj = kktrk.fitTraj();
     for(auto const& surf : sample_){
-      // Intersect the fit trajectory with this surface.  Add a large buffer, which should come from config FIXME
-      double tstart = ftraj.range().begin()-10;
-      double tend =ftraj.range().end()+10;
+      // Intersect the fit trajectory with this surface, including a time buffer
+      double tstart = ftraj.range().begin() - stbuff_;
+      double tend =ftraj.range().end() + stbuff_;
       bool hasinter(true);
       // check for multiple intersections
       while(hasinter){
