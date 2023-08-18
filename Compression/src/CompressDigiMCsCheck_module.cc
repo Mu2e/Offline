@@ -10,7 +10,6 @@
 #include "art_root_io/TFileService.h"
 
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/DataProducts/inc/IndexMap.hh"
 #include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
@@ -28,8 +27,6 @@ namespace mu2e {
 
       fhicl::Atom<art::InputTag> oldStrawDigiMCTag{Name("oldStrawDigiMCTag"), Comment("InputTag for uncompressed StrawDigiMCCollection")};
       fhicl::Atom<art::InputTag> newStrawDigiMCTag{Name("newStrawDigiMCTag"), Comment("InputTag for compressed StrawDigiMCCollection")};
-      fhicl::Table<SimParticleTimeOffset::Config> oldTOff{Name("OldTimeOffsets"), Comment("TimeOffsets for uncompressed SimParticleCollection")};
-      fhicl::Table<SimParticleTimeOffset::Config> newTOff{Name("NewTimeOffsets"), Comment("TimeOffsets for compressed SimParticleCollection")};
       fhicl::Atom<art::InputTag> strawDigiMCIndexMapTag{Name("strawDigiMCIndexMapTag"), Comment("If a StrawDigiMCIndexMap was passed to the compression originally, then pass it here too")};
       fhicl::Atom<art::InputTag> oldCrvDigiMCTag{Name("oldCrvDigiMCTag"), Comment("InputTag for uncompressed CrvDigiMCCollection")};
       fhicl::Atom<art::InputTag> newCrvDigiMCTag{Name("newCrvDigiMCTag"), Comment("InputTag for compressed CrvDigiMCCollection")};
@@ -44,9 +41,6 @@ namespace mu2e {
 
     art::InputTag _oldStrawDigiMCTag;
     art::InputTag _newStrawDigiMCTag;
-
-    SimParticleTimeOffset _oldTOff;
-    SimParticleTimeOffset _newTOff;
 
     art::InputTag _strawDigiMCIndexMapTag;
     IndexMap _strawDigiMCIndexMap;
@@ -73,8 +67,6 @@ namespace mu2e {
     : art::EDAnalyzer(conf)
     , _oldStrawDigiMCTag(conf().oldStrawDigiMCTag())
     , _newStrawDigiMCTag(conf().newStrawDigiMCTag())
-    , _oldTOff(conf().oldTOff())
-    , _newTOff(conf().newTOff())
     , _strawDigiMCIndexMapTag(conf().strawDigiMCIndexMapTag())
     , _oldCrvDigiMCTag(conf().oldCrvDigiMCTag())
     , _newCrvDigiMCTag(conf().newCrvDigiMCTag())
@@ -106,9 +98,6 @@ namespace mu2e {
     if (oldStrawDigiMCHandle.isValid() && newStrawDigiMCHandle.isValid()) {
       const auto& oldStrawDigiMCs = *oldStrawDigiMCHandle;
       const auto& newStrawDigiMCs = *newStrawDigiMCHandle;
-
-      _oldTOff.updateMap(event);
-      _newTOff.updateMap(event);
 
       unsigned int n_old_straw_digi_mcs = oldStrawDigiMCs.size();
       unsigned int n_new_straw_digi_mcs = newStrawDigiMCs.size();
@@ -153,8 +142,8 @@ namespace mu2e {
           throw cet::exception("CompressDigiMCsCheck") << "New StrawDigiMC's StrawId is inconsistent with its StepPointMC's StrawId" << std::endl;
         }
 
-        double old_time = _oldTOff.timeWithOffsetsApplied(*i_oldStepPointMC);
-        double new_time = _newTOff.timeWithOffsetsApplied(*i_newStepPointMC);
+        double old_time = i_oldStepPointMC->time();
+        double new_time = i_newStepPointMC->time();
         if (std::fabs(old_time - new_time) > 1e-5) {
           throw cet::exception("CompressDigiMCsCheck") << "Old and new StepPointMC times with offsets applied do not match (StrawDigiMC)" << std::endl;
         }
@@ -191,9 +180,6 @@ namespace mu2e {
     if (oldCrvDigiMCHandle.isValid() && newCrvDigiMCHandle.isValid()) {
       const auto& oldCrvDigiMCs = *oldCrvDigiMCHandle;
       const auto& newCrvDigiMCs = *newCrvDigiMCHandle;
-
-      _oldTOff.updateMap(event);
-      _newTOff.updateMap(event);
 
       unsigned int n_old_crv_digi_mcs = oldCrvDigiMCs.size();
       unsigned int n_new_crv_digi_mcs = newCrvDigiMCs.size();
@@ -239,10 +225,8 @@ namespace mu2e {
             throw cet::exception("CompressDigiMCsCheck") << "New CrvDigiMC's BarIndex is inconsistent with its StepPointMC's BarIndex" << std::endl;
           }
 
-          double old_timeOffset = _oldTOff.totalTimeOffset(i_oldCrvStep->simParticle());
-          double new_timeOffset = _newTOff.totalTimeOffset(i_newCrvStep->simParticle());
-          double old_time = i_oldCrvStep->startTime() + old_timeOffset;
-          double new_time = i_newCrvStep->startTime() + new_timeOffset;
+          double old_time = i_oldCrvStep->startTime();
+          double new_time = i_newCrvStep->startTime();
           if (std::fabs(old_time - new_time) > 1e-5) {
             throw cet::exception("CompressDigiMCsCheck") << "Old and new StepPointMC times with offsets applied do not match (CrvDigiMC)" << std::endl;
           }

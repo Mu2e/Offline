@@ -34,7 +34,6 @@
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
@@ -134,8 +133,6 @@ private:
   // record the SimParticles that we are keeping so we can use compressSimParticleCollection to do all the work for us
   SimParticleSelector _simParticlesToKeep;
 
-  SimParticleTimeOffset _toff;
-
   double _minTime;
   double _maxTime;
   double _minEdep;
@@ -162,7 +159,6 @@ mu2e::CompressStepPointMCs::CompressStepPointMCs(fhicl::ParameterSet const & pse
     _caloShowerStepTags(pset.get<std::vector<art::InputTag> >("caloShowerStepTags")),
     _simParticleTag(pset.get<art::InputTag>("simParticleTag")),
     _timeMapTags(pset.get<std::vector<art::InputTag> >("timeMapTags")),
-    _toff(_timeMapTags),
     _minTime(pset.get<double>("minTime")),
     _maxTime(pset.get<double>("maxTime")),
     _minEdep(pset.get<double>("minEdep")),
@@ -228,7 +224,6 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
 
   ConditionsHandle<AcceleratorParams> accPar("ignored");
   _mbtime = accPar->deBuncherPeriod;
-  _toff.updateMap(event);
 
   _newStepPointMCs.clear();
   for (const auto& i_stepTag : _stepPointMCTags) {
@@ -240,7 +235,7 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
     const auto& stepPointMCs = *_stepPointMCsHandle;
     for (const auto& i_stepPointMC : stepPointMCs) {
       double i_edep = i_stepPointMC.totalEDep();
-      double i_time = std::fmod(_toff.timeWithOffsetsApplied(i_stepPointMC), _mbtime);
+      double i_time = std::fmod(i_stepPointMC.time(), _mbtime);
       while (i_time < 0) {
         i_time += _mbtime;
       }
@@ -289,7 +284,7 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
       double i_edep = i_caloShowerStep.energyDepG4();
       double i_time;
       if (i_caloShowerStep.simParticle().get()) { // see note below in copyCaloShowerStep
-        i_time = std::fmod(i_caloShowerStep.time()+_toff.totalTimeOffset(i_caloShowerStep.simParticle()), _mbtime);
+        i_time = std::fmod(i_caloShowerStep.time(), _mbtime);
       }
       else {
         continue;

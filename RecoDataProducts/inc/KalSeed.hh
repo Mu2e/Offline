@@ -12,6 +12,7 @@
 #include "Offline/RecoDataProducts/inc/TrkCaloHitSeed.hh"
 #include "Offline/RecoDataProducts/inc/TrkStraw.hh"
 #include "Offline/RecoDataProducts/inc/KalSegment.hh"
+#include "Offline/RecoDataProducts/inc/KalIntersection.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
@@ -37,19 +38,22 @@ namespace mu2e {
       _tpart(tpart), _fdir(fdir), _status(status), _flt0(static_cast<Float_t>(flt0)){}
 
     PDGCode::type particle() const { return _tpart; }
-    TrkFitDirection const& fitDirection() const { return _fdir; }
-    std::vector<TrkStrawHitSeed> const& hits() const { return _hits;}
-    TrkCaloHitSeed const& caloHit() const { return _chit; }
-    std::vector<TrkStraw> const& straws() const { return _straws;}
-    std::vector<KalSegment> const& segments() const { return _segments; }
-    TrkFitFlag const& status() const { return _status; }
+    auto const& fitDirection() const { return _fdir; }
+    auto const& hits() const { return _hits;}
+    auto const& caloHit() const { return _chit; }
+    auto const& straws() const { return _straws;}
+    auto const& segments() const { return _segments; }
+    auto const& intersections() const { return _inters; }
+    auto const& status() const { return _status; }
     double t0Val() const;
     Float_t chisquared() const { return _chisq; }
     Float_t fitConsistency() const { return _fitcon; }
-    UInt_t nTrajSegments() const { return _nseg; }
+    UInt_t nTrajSegments() const { return _segments.size(); }
+    KinKal::TimeRange timeRange() const { return KinKal::TimeRange(_segments.front()._tmin,_segments.back()._tmax); }
     bool hasCaloCluster() const { return _chit.caloCluster().isNonnull(); }
     art::Ptr<CaloCluster> const& caloCluster() const { return _chit.caloCluster(); }
     std::vector<KalSegment>::const_iterator nearestSeg(double time)  const;
+    std::vector<KalIntersection>::const_iterator intersection(SurfaceId const& id)  const;
     bool loopHelixFit() const { return _status.hasAllProperties(TrkFitFlag::KKLoopHelix); }
     bool centralHelixFit() const { return _status.hasAllProperties(TrkFitFlag::KKCentralHelix); }
     bool kinematicLineFit() const { return _status.hasAllProperties(TrkFitFlag::KKLine); }
@@ -68,13 +72,13 @@ namespace mu2e {
     TrkFitFlag        _status; // status of this fit: includes alglorithm information
     Float_t           _chisq = -1; // fit chisquared value
     Float_t           _fitcon = -1; // fit consistency
-    UInt_t            _nseg = 0; // # of fit trajectory segments
     Float_t           _maxgap = 0;
     Float_t           _avggap = 0; // information about trajectory gaps
     //
     // contained content substructure.
     //
     std::vector<KalSegment>     _segments; // segments of the Kalman filter fit result
+    std::vector<KalIntersection>     _inters; // intersections with materials or reference locations
     std::vector<TrkStrawHitSeed>    _hits; // hit seeds for all the hits used in this fit
     std::vector<TrkStraw>     _straws; // straws interesected by this fit
     TrkCaloHitSeed        _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content

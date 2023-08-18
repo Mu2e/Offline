@@ -1,5 +1,5 @@
-#ifndef __CalPatRec_DeltaFinder_types_hh__
-#define __CalPatRec_DeltaFinder_types_hh__
+#ifndef CalPatRec_DeltaFinder_types_hh
+#define CalPatRec_DeltaFinder_types_hh
 
 namespace art {
   class Event;
@@ -165,12 +165,14 @@ namespace mu2e {
       const DiskCalorimeter*        calorimeter;
 
       art::InputTag                 chCollTag;
-      art::InputTag                 chfCollTag;
+      // art::InputTag                 chfCollTag;
       art::InputTag                 sdmcCollTag;
 
       const ComboHitCollection*     chcol;
-      const StrawHitFlagCollection* chfColl;                 // input  combohit flags
-      StrawHitFlagCollection*       outputChfColl;           // output combohit flags
+      // const StrawHitFlagCollection* chfColl;                 // input  combohit flags
+      ComboHitCollection*           outputChColl;
+
+      // const StrawHitFlagCollection* chfColl;                 // input  combohit flags
 
       DeltaFinderAlg*               _finder;
 

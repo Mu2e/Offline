@@ -24,7 +24,6 @@
 
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 //Utilities
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
 #include "Offline/CosmicReco/inc/DriftFitUtils.hh"
 #include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
@@ -65,7 +64,6 @@ namespace mu2e
         fhicl::Atom<art::InputTag> tctag{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
         fhicl::Atom<art::InputTag> costag{Name("CosmicTrackSeedCollection"),Comment("tag for cosmci track seed collection")};
         fhicl::Atom<art::InputTag> mcdigistag{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag"),"makeSD"};
-        fhicl::Table<SimParticleTimeOffset::Config> toff{Name("TimeOffsets"), Comment("Sim particle time offset ")};
       };
       typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -84,7 +82,6 @@ namespace mu2e
       art::InputTag   _tctag; //Timeclusters
       art::InputTag   _costag; //Straight tracks
       art::InputTag   _mcdigistag; //MC Digis
-      SimParticleTimeOffset _toff;
 
       const ComboHitCollection* _chcol;
       const CosmicTrackSeedCollection* _coscol;
@@ -144,13 +141,8 @@ namespace mu2e
       _chtag (conf().chtag()),
       _tctag (conf().tctag()),
       _costag (conf().costag()),
-      _mcdigistag (conf().mcdigistag()),
-      _toff (conf().toff())
-    {
-        for (auto const& tag : conf().toff().inputs()) {
-          consumes<SimParticleTimeMap>(tag);
-      }
-    }
+      _mcdigistag (conf().mcdigistag())
+    {}
 
     CosmicMCRecoDiff::~CosmicMCRecoDiff(){}
 
@@ -330,7 +322,7 @@ namespace mu2e
             ppdirection = ppdir[j];
             if (ppdirection.y() > 0)
               ppdirection *= -1;
-            double mctime = sgs.time() + _toff.totalTimeOffset(sgs.simParticle());// - _ewMarkerOffset;
+            double mctime = sgs.time();// - _ewMarkerOffset;
             double trajtime = (pca2.point2()-ppintercept).dot(ppdirection.unit())/299.9;
             mctime -= trajtime;
             avg_t0 += mctime;
@@ -370,7 +362,6 @@ namespace mu2e
 
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigistag);
       _mcdigis = mcdH.product();
-      _toff.updateMap(evt);
 
       return  _coscol !=0 && _mcdigis != 0 ;
     }

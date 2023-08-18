@@ -27,7 +27,6 @@
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 
 #include "art/Framework/Principal/Run.h"
@@ -92,33 +91,33 @@ namespace mu2e {
     unsigned particleId;
     unsigned volumeCopyNumber;
 
-    VDHit() : x(std::numeric_limits<double>::quiet_NaN())
-            , y(std::numeric_limits<double>::quiet_NaN())
-            , z(std::numeric_limits<double>::quiet_NaN())
+    VDHit() : x(std::numeric_limits<double>::max())
+            , y(std::numeric_limits<double>::max())
+            , z(std::numeric_limits<double>::max())
 
-            , time(std::numeric_limits<double>::quiet_NaN())
+            , time(std::numeric_limits<double>::max())
 
-            , px(std::numeric_limits<double>::quiet_NaN())
-            , py(std::numeric_limits<double>::quiet_NaN())
-            , pz(std::numeric_limits<double>::quiet_NaN())
-            , pmag(std::numeric_limits<double>::quiet_NaN())
-            , ek(std::numeric_limits<double>::quiet_NaN())
-      , totalEDep(std::numeric_limits<double>::quiet_NaN())
-      , nonIonizingEDep(std::numeric_limits<double>::quiet_NaN())
+            , px(std::numeric_limits<double>::max())
+            , py(std::numeric_limits<double>::max())
+            , pz(std::numeric_limits<double>::max())
+            , pmag(std::numeric_limits<double>::max())
+            , ek(std::numeric_limits<double>::max())
+      , totalEDep(std::numeric_limits<double>::max())
+      , nonIonizingEDep(std::numeric_limits<double>::max())
 
-      , charge(std::numeric_limits<double>::quiet_NaN())
+      , charge(std::numeric_limits<double>::max())
       , pdgId(0)
       , particleId(-1U)
       , volumeCopyNumber(-1U)
     {}
 
     //----------------------------------------------------------------
-    VDHit(const SimParticleTimeOffset& toff, const StepPointMC& hit)
+    VDHit(const StepPointMC& hit)
       : x(hit.position().x())
       , y(hit.position().y())
       , z(hit.position().z())
 
-      , time(toff.timeWithOffsetsApplied(hit))
+      , time(hit.time())
 
       , px(hit.momentum().x())
       , py(hit.momentum().y())
@@ -145,7 +144,6 @@ namespace mu2e {
     typedef std::vector<StepPointMCCollection> VspMC;
 
     art::InputTag hitsInputTag_;
-    SimParticleTimeOffset toff_;
 
     bool writeProperTime_;
     VS tauHitCollections_;
@@ -200,7 +198,6 @@ namespace mu2e {
   SensitiveTargetEnergyDumper::SensitiveTargetEnergyDumper(const fhicl::ParameterSet& pset)
     : art::EDAnalyzer(pset)
     , hitsInputTag_(pset.get<std::string>("hitsInputTag"))
-    , toff_(pset.get<fhicl::ParameterSet>("TimeOffsets"))
     , writeProperTime_(pset.get<bool>("writeProperTime", false))
     , tauHitCollections_( writeProperTime_ ? pset.get<VS>("tauHitCollections") : VS() )
     , tau_()
@@ -279,7 +276,6 @@ namespace mu2e {
 
   //================================================================
   void SensitiveTargetEnergyDumper::analyze(const art::Event& event) {
-    // toff_.updateMap(event);
 
     /*    VspMC spMCColls;
     for ( const auto& iColl : tauHitCollections_ ){
@@ -306,7 +302,7 @@ namespace mu2e {
 
     for(const auto& i : *ih) {
 
-      hit_ = VDHit(toff_, i);
+      hit_ = VDHit(i);
       CLHEP::Hep3Vector hitLoc(hit_.x,hit_.y,hit_.z);
 
            std::cout << "hit x = " << hitLoc << std::endl;

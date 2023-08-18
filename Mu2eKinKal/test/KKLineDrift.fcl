@@ -61,8 +61,6 @@ physics :
           bestCrvInstances : [ "first" ]
           bestCrvBranches : [ "bestcrv" ]
         }
-        segmentSuffixes : [ "ent", "mid", "xit", "out", "in" ]
-        segmentVIDs : [ [ "TT_FrontHollow", "TT_FrontPA"], [ "TT_Mid", "TT_MidInner"], ["TT_Back"], ["TT_OutSurf"], ["TT_InSurf"] ]
       }
       diagLevel : 2
       FillMCInfo : true

@@ -50,9 +50,10 @@ namespace mu2e {
       fhicl::Atom<art::InputTag>     chCollLabel      {Name("chCollLabel"      ), Comment("combo hit collection label"  ) };
       fhicl::Atom<art::InputTag>     chCollLabel2     {Name("chCollLabel2"     ), Comment("for MC tool"                 ) };
       fhicl::Atom<art::InputTag>     tcCollLabel      {Name("tcCollLabel"      ), Comment("time cluster coll label"     ) };
-      fhicl::Atom<art::InputTag>     shfCollLabel     {Name("shfCollLabel"     ), Comment("straw hit flag coll label"   ) };
+      // fhicl::Atom<art::InputTag>     shfCollLabel     {Name("shfCollLabel"     ), Comment("straw hit flag coll label"   ) };
       fhicl::Atom<art::InputTag>     ccCollLabel      {Name("ccCollLabel"      ), Comment("Calo Cluster coll label"     ) };
       fhicl::Sequence<std::string>   hitBkgBits       {Name("hitBkgBits"       ), Comment("background bits"             ) };
+      fhicl::Atom<int>               radSelect        {Name("radSelect"        ), Comment("whether or not to radial cut") };
       fhicl::Atom<int>               chunkSep         {Name("chunkSep"         ), Comment("max # of planes for chunk"   ) };
       fhicl::Atom<double>            chunkWindow      {Name("chunkWindow"      ), Comment("time window in ns"           ) };
       fhicl::Atom<int>               chunkThresh      {Name("chunkThresh"      ), Comment("number of combo hits"        ) };
@@ -99,9 +100,10 @@ namespace mu2e {
     art::InputTag   _chLabel ;
     art::InputTag   _chLabel2;
     art::InputTag   _tcLabel ;
-    art::InputTag   _shfLabel;
+    //art::InputTag   _shfLabel;
     art::InputTag   _ccLabel;
     StrawHitFlag    _hbkg;
+    int             _radSelect;
 
     //-----------------------------------------------------------------------------
     // cluster search parameters
@@ -190,9 +192,10 @@ namespace mu2e {
     _chLabel                (config().chCollLabel()                             ),
     _chLabel2               (config().chCollLabel2()                            ),
     _tcLabel                (config().tcCollLabel()                             ),
-    _shfLabel               (config().shfCollLabel()                            ),
+    // _shfLabel               (config().shfCollLabel()                            ),
     _ccLabel                (config().ccCollLabel()                             ),
     _hbkg                   (config().hitBkgBits()                              ),
+    _radSelect              (config().radSelect()                               ),
     _chunkSep               (config().chunkSep()                                ),
     _chunkWindow            (config().chunkWindow()                             ),
     _chunkThresh            (config().chunkThresh()                             ),
@@ -283,16 +286,6 @@ namespace mu2e {
       }
     }
 
-    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfLabel);
-    if (shfH.product() != 0) { _data._shfColl = shfH.product(); }
-    else {
-      _data._shfColl = 0;
-      std::cout << ">>> ERROR in TZClusterFinder::findData: StrawHitFlagCollection not found." << std::endl;
-    }
-
-    if(_data._shfColl->size() != _data._chColl->size())
-      throw cet::exception("RECO")<<"TimeClusterFinder: inconsistent flag collection length " << std::endl;
-
     return (_data._chColl != 0);
   }
 
@@ -346,7 +339,10 @@ namespace mu2e {
     const mu2e::ComboHit* hit;
     // fill cHits indexed by pln, each column being a vector housing cHit info
     for (size_t i=0; i<_data._chColl->size(); i++) {
-      if ((*_data._shfColl)[i].hasAnyProperty(StrawHitFlag::energysel)) { if (bkgHit((*_data._shfColl)[i])) {continue;} }
+      // if ((*_data._shfColl)[i].hasAnyProperty(StrawHitFlag::energysel)) { if (bkgHit((*_data._shfColl)[i])) {continue;} }
+      const StrawHitFlag flag = _data._chColl->at(i).flag();
+      if (!flag.hasAnyProperty(StrawHitFlag::radsel) && _radSelect == 1) {continue;}
+      if (flag.hasAnyProperty(StrawHitFlag::energysel)) { if (bkgHit(flag)) {continue;} }
       hit = &_data._chColl->at(i);
       int plnID = hit->strawId().plane();
       cHit comboHit;
@@ -456,7 +452,9 @@ namespace mu2e {
     _f.seedTime = _f.cHits[seedPln].plnHits[seedPlnHit].hTime;
     _f.seedWeight = _f.cHits[seedPln].plnHits[seedPlnHit].hWeight;
     _f.seedZpos = _f.cHits[seedPln].plnHits[seedPlnHit].hZpos;
-    if ((*_data._shfColl)[_f.seedIndice].hasAnyProperty(StrawHitFlag::energysel)) { _f.seedNRGselection = 1; }
+    //if ((*_data._shfColl)[_f.seedIndice].hasAnyProperty(StrawHitFlag::energysel)) { _f.seedNRGselection = 1; }
+    const StrawHitFlag flag = _data._chColl->at(_f.seedIndice).flag();
+    if (flag.hasAnyProperty(StrawHitFlag::energysel)) { _f.seedNRGselection = 1; }
     else { _f.seedNRGselection = 0; }
     _f._indicePair.first = seedPln;
     _f._indicePair.second = seedPlnHit;
@@ -492,8 +490,11 @@ namespace mu2e {
     _f.testIndice = _f.cHits[testPln].plnHits[testPlnHit].hIndex;
     _f.testTime = _f.cHits[testPln].plnHits[testPlnHit].hTime;
     _f.testWeight = _f.cHits[testPln].plnHits[testPlnHit].hWeight;
-    _f.testZpos = _f.cHits[testPln].plnHits[testPlnHit].hZpos;;
-    if ((*_data._shfColl)[_f.testIndice].hasAnyProperty(StrawHitFlag::energysel)) { _f.testNRGselection = 1; }
+    //_f.testZpos = _f.cHits[testPln].plnHits[testPlnHit].hZpos;;
+    //if ((*_data._shfColl)[_f.testIndice].hasAnyProperty(StrawHitFlag::energysel)) { _f.testNRGselection = 1; }
+    _f.testZpos = _f.cHits[testPln].plnHits[testPlnHit].hZpos;
+    const StrawHitFlag flag = _data._chColl->at(_f.testIndice).flag();
+    if (flag.hasAnyProperty(StrawHitFlag::energysel)) { _f.testNRGselection = 1; }
     else { _f.testNRGselection = 0; }
 
   }
@@ -661,7 +662,9 @@ namespace mu2e {
         _f.testWeight = _f.cHits[i].plnHits[j].hWeight;
         _f.testZpos = _f.cHits[i].plnHits[j].hZpos;
         _f.testIndice = _f.cHits[i].plnHits[j].hIndex;
-        if ((*_data._shfColl)[_f.testIndice].hasAnyProperty(StrawHitFlag::energysel)) { _f.testNRGselection = 1; }
+        //if ((*_data._shfColl)[_f.testIndice].hasAnyProperty(StrawHitFlag::energysel)) { _f.testNRGselection = 1; }
+        const StrawHitFlag flag = _data._chColl->at(_f.testIndice).flag();
+        if (flag.hasAnyProperty(StrawHitFlag::energysel)) { _f.testNRGselection = 1; }
         else { _f.testNRGselection = 0; }
         validLinesFound = 0;
         minValidDtFound = 0.0;
@@ -924,8 +927,12 @@ namespace mu2e {
           _f._chunkInfo.nStrawHits = 0;
           _f._chunkInfo.caloIndex = i;
           for (size_t k=0; k<_data._chColl->size(); k++) {
-            if (bkgHit((*_data._shfColl)[k])) {continue;}
-            if (!(*_data._shfColl)[k].hasAnyProperty(StrawHitFlag::energysel)) {continue;}
+            //if (bkgHit((*_data._shfColl)[k])) {continue;}
+            //if (!(*_data._shfColl)[k].hasAnyProperty(StrawHitFlag::energysel)) {continue;}
+            const StrawHitFlag flag = _data._chColl->at(k).flag();
+            if (!flag.hasAnyProperty(StrawHitFlag::radsel) && _radSelect == 1) {continue;}
+            if (bkgHit(flag)) {continue;}
+            if (!flag.hasAnyProperty(StrawHitFlag::energysel)) {continue;}
             hit = &_data._chColl->at(k);
             if (std::abs(hit->correctedTime() - ccTime) < _caloDtMax) {
               _f._chunkInfo.hIndices.push_back(k);
@@ -998,6 +1005,7 @@ namespace mu2e {
       else {
         _f._clusterInfo._caloCluster = art::Ptr<mu2e::CaloCluster>();
       }
+      _f._clusterInfo._nsh = _f.chunks[i].nStrawHits;
       TimeClusterColl.push_back(_f._clusterInfo);
       if (_diagLevel != 0 || _runDisplay != 0) {
         _data.lineSlope.push_back(_f.chunks[i].fitter.dydx());

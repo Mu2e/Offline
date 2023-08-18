@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // no-empty implementation stores StrawDigiMCCollection
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef __CalPatRec_McUtilsToolsBase_hh__
-#define __CalPatRec_McUtilsToolsBase_hh__
+#ifndef Mu2eUtilities_McUtilsToolsBase_hh
+#define Mu2eUtilities_McUtilsToolsBase_hh
 
 #include "fhiclcpp/types/Atom.h"
 

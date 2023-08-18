@@ -50,7 +50,7 @@ physics :
       @table::TTMu2eKinKal.producers.TTKKDeMSeedFit
       ModuleSettings : {
         @table::TTMu2eKinKal.producers.TTKKDeMSeedFit.ModuleSettings
-        HelixSeedCollections   : [ "TTHelixMergerDeM" ]
+        SeedCollections   : [ "TTHelixMergerDeM" ]
         ComboHitCollection     : "TTmakeSH"
         CaloClusterCollection  : "CaloClusterFast"
         StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
@@ -62,7 +62,7 @@ physics :
       @table::TTMu2eKinKal.producers.TTKKDeMSeedFit
       ModuleSettings : {
         @table::TTMu2eKinKal.producers.TTKKDeMSeedFit.ModuleSettings
-        HelixSeedCollections   : [ "TTCalHelixMergerDeM" ]
+        SeedCollections   : [ "TTCalHelixMergerDeM" ]
         ComboHitCollection     : "TTmakeSH"
         CaloClusterCollection  : "CaloClusterFast"
         StrawHitFlagCollection : "TTflagBkgHits:StrawHits"

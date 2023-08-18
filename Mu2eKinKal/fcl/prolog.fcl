@@ -32,9 +32,10 @@ Mu2eKinKal : {
     AddHitReject : ["Dead"]
     MaxStrawHitDOCA : 10.0 # mm
     MaxStrawHitDt : 50.0 # ns
-    StrawBuffer : 2 #
+    MaxDStraw : 2 # integer (straw)
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
+    SampleTimeBuffer : 10.0 # time buffer on trajectory ends for finding intersections with sample surfaces
   }
 
   SEEDFIT: {
@@ -197,9 +198,7 @@ Mu2eKinKal : {
 
   LOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
-    HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
-    SaveFullFit : true
-    ZSavePositions : [-1635.1,-1522.0,0.0,1522.0,1635.1,1671,2371] # VDs, tracker front, mid, and end, and calo disks
+    SeedFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
   }
 
   KINEMATICLINE : {
@@ -210,9 +209,7 @@ Mu2eKinKal : {
     ComboHitCollection : "makeSH"
     CaloClusterCollection : "CaloClusterMaker"
     StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-    LineFlags : [ "HelixOK" ]
-    SaveFullFit : true
-    #    ZSavePositions : [-1522.0,0.0,1522.0]
+    SeedFlags : [ "HelixOK" ]
   }
 }
 
@@ -231,7 +228,11 @@ Mu2eKinKal : {
   KK : {
     module_type : LoopHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
-    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SampleSurfaces : ["TT_Front","TT_Mid","TT_Back"]
+      ExtendSurfaces : ["TT_Front","TT_Back"]
+    }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
     ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
@@ -249,7 +250,12 @@ Mu2eKinKal : {
   KKLine : {
     module_type : KinematicLineFit
     MaterialSettings : @local::Mu2eKinKal.MAT
-    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
+      ExtendSurfaces : ["TT_Front","TT_Back","TT_Outer"]
+      SampleTimeBuffer : 50
+    }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : {
       @table::Mu2eKinKal.DRIFTEXT
