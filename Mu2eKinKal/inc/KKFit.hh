@@ -588,7 +588,7 @@ namespace mu2e {
       double tend =ftraj.range().end() + stbuff_;
       bool hasinter(true);
       // check for multiple intersections
-      while(hasinter){
+      while(hasinter && tend > tstart){
         TimeRange irange(tstart,tend);
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,tol);
         hasinter = surfinter.onsurface_ && irange.inRange(surfinter.time_);
