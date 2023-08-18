@@ -86,26 +86,20 @@ namespace mu2e {
 
   using KKConfig = Mu2eKinKal::KinKalConfig;
   using KKFitConfig = Mu2eKinKal::KKFitConfig;
+  using KKModuleConfig = Mu2eKinKal::KKModuleConfig;
+
   using KKMaterialConfig = KKMaterial::Config;
   using Name    = fhicl::Name;
   using Comment = fhicl::Comment;
-  // direct configuration used explicitly in this module.  Other configurations are handled in subclasses
-  struct ModuleConfig {
-    fhicl::Sequence<art::InputTag> helixSeedCollections         {Name("HelixSeedCollections"),     Comment("Helix seed fit collections to be processed ") };
-    fhicl::Atom<art::InputTag>     comboHitCollection     {Name("ComboHitCollection"),     Comment("Single Straw ComboHit collection ") };
-    fhicl::Atom<art::InputTag>     caloClusterCollection     {Name("CaloClusterCollection"),     Comment("CaloCluster collection ") };
-    fhicl::Atom<art::InputTag>     strawHitFlagCollection {Name("StrawHitFlagCollection"), Comment("StrawHitFlag collection ") };
-    fhicl::Sequence<std::string> helixFlags { Name("HelixFlags"), Comment("Flags required to be present to convert a helix seed to a KinKal track") };
-    fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level"), 0 };
-    fhicl::Sequence<float> seederrors { Name("SeedErrors"), Comment("Initial value of seed parameter errors (rms, various units)") };
-    fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
-    fhicl::Atom<bool> saveFull { Name("SaveFullFit"), Comment("Save all helix segments associated with the fit"), false};
-    fhicl::Sequence<float> zsave { Name("ZSavePositions"), Comment("Z positions to sample and save the fit result helices"), std::vector<float>()};
-    fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
- };
+
+  // extend the generic module configuration as needed
+  struct KKHelixModuleConfig : KKModuleConfig {
+    fhicl::Sequence<art::InputTag> seedCollections         {Name("HelixSeedCollections"),     Comment("Seed fit collections to be processed ") };
+  fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
+  };
 
   struct GlobalConfig {
-    fhicl::Table<ModuleConfig> modSettings { Name("ModuleSettings") };
+    fhicl::Table<KKHelixModuleConfig> modSettings { Name("ModuleSettings") };
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
@@ -124,15 +118,13 @@ namespace mu2e {
       // parameter-specific functions that need to be overridden in subclasses
       virtual KTRAJ makeSeedTraj(HelixSeed const& hseed) const = 0;
       virtual bool goodFit(KKTRK const& ktrk) const = 0;
-      void fillSaveTimes(KKTRK const& ktrk,std::set<double>& savetimes) const;
       // data payload
       std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
       art::ProductToken<ComboHitCollection> chcol_T_;
       art::ProductToken<CaloClusterCollection> cccol_T_;
       art::ProductToken<StrawHitFlagCollection> shfcol_T_;
-      TrkFitFlag goodhelix_;
-      bool saveall_, savefull_;
-      std::vector<float> zsave_;
+      TrkFitFlag goodseed_;
+      bool saveall_;
       ProditionsHandle<StrawResponse> strawResponse_h_;
       ProditionsHandle<Tracker> alignedTracker_h_;
       int print_;
@@ -152,10 +144,8 @@ namespace mu2e {
     chcol_T_(consumes<ComboHitCollection>(settings().modSettings().comboHitCollection())),
     cccol_T_(mayConsume<CaloClusterCollection>(settings().modSettings().caloClusterCollection())),
     shfcol_T_(mayConsume<StrawHitFlagCollection>(settings().modSettings().strawHitFlagCollection())),
-    goodhelix_(settings().modSettings().helixFlags()),
+    goodseed_(settings().modSettings().seedFlags()),
     saveall_(settings().modSettings().saveAll()),
-    savefull_(settings().modSettings().saveFull()),
-    zsave_(settings().modSettings().zsave()),
     print_(settings().modSettings().printLevel()),
     kkfit_(settings().kkfitSettings()),
     kkmat_(settings().matSettings()),
@@ -163,10 +153,8 @@ namespace mu2e {
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
     fixedfield_(false)
     {
-      if((!savefull_) && zsave_.size() == 0)
-        throw cet::exception("RECO")<<"mu2e::HelixFit:Segment saving configuration error"<< endl;
       // collection handling
-      for(const auto& hseedtag : settings().modSettings().helixSeedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
+      for(const auto& hseedtag : settings().modSettings().seedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
       produces<KKTRKCOL>();
       produces<KalSeedCollection>();
       produces<KalHelixAssns>();
@@ -215,17 +203,17 @@ namespace mu2e {
     auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
     auto KalSeedCollectionGetter = event.productGetter(KalSeedCollectionPID);
     // find the helix seed collections
-    unsigned nhelix(0);
+    unsigned nseed(0);
     for (auto const& hseedtag : hseedCols_) {
       auto const& hseedcol_h = event.getValidHandle<HelixSeedCollection>(hseedtag);
       auto const& hseedcol = *hseedcol_h;
-      nhelix += hseedcol.size();
+      nseed += hseedcol.size();
       // loop over the seeds
       for(size_t iseed=0; iseed < hseedcol.size(); ++iseed) {
         auto const& hseed = hseedcol[iseed];
         auto hptr = HPtr(hseedcol_h,iseed);
         // check helicity.  The test on the charge and helicity
-        if(hseed.status().hasAllProperties(goodhelix_) ){
+        if(hseed.status().hasAllProperties(goodseed_) ){
           // construt the seed trajectory
           KTRAJ seedtraj = makeSeedTraj(hseed);
           // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
@@ -263,10 +251,7 @@ namespace mu2e {
               fitflag.merge(TrkFitFlag::FitOK);
             else
               fitflag.clear(TrkFitFlag::FitOK);
-            // Decide which segments to save
-            std::set<double> savetimes;
-            fillSaveTimes(*kktrk,savetimes);
-            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h,savetimes));
+            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h));
             // fill assns with the helix seed
             auto hptr = art::Ptr<HelixSeed>(hseedcol_h,iseed);
             auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
@@ -278,22 +263,10 @@ namespace mu2e {
       }
     }
     // put the output products into the event
-    if(print_ > 0) std::cout << "Fitted " << kktrkcol->size() << " tracks from " << nhelix << " Helices" << std::endl;
+    if(print_ > 0) std::cout << "Fitted " << kktrkcol->size() << " tracks from " << nseed << " Seeds" << std::endl;
     event.put(move(kktrkcol));
     event.put(move(kkseedcol));
     event.put(move(kkseedassns));
   }
 
-  void HelixFit::fillSaveTimes(KKTRK const& ktrk,std::set<double>& savetimes) const {
-    auto const& fittraj = ktrk.fitTraj();
-    if(savefull_){ // loop over all pieces of the fit trajectory and record their times
-      for (auto const& traj : fittraj.pieces() ) savetimes.insert(traj->range().mid());
-    }
-    // also add explicitly-requested z positions
-    for(auto zpos : zsave_ ) {
-      // compute the time the trajectory crosses this plane
-      double tz = Mu2eKinKal::zTime(fittraj,zpos,fittraj.range().begin());
-      savetimes.insert(tz);
-    }
-  }
 } // mu2e
