@@ -44,6 +44,16 @@ namespace mu2e {
       return KLPTPtr();
   }
 
+  std::vector<KalIntersection>::const_iterator KalSeed::intersection(SurfaceId const& surfid) const{
+    auto retval = _inters.end();
+    for(auto iinter = _inters.begin(); iinter != _inters.end(); ++iinter) {
+      if(iinter->surfid_ == surfid){
+        retval = iinter;
+        break;
+      }
+    }
+    return retval;
+  }
 
   std::vector<KalSegment>::const_iterator KalSeed::nearestSeg(double time)  const {
     auto retval = segments().end();

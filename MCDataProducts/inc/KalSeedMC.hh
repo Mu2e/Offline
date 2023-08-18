@@ -9,6 +9,7 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
@@ -53,7 +54,7 @@ namespace mu2e {
   // sampled pair of momentum and position (tracker system) of the primary matched particle
   // These come from the virtual detectors
   struct VDStep {
-    XYZVectorF _pos;  // postion in DETECTOR COORDINATES
+    XYZVectorF _pos;  // position in DETECTOR COORDINATES
     XYZVectorF _mom;
     double _time;
     VirtualDetectorId _vdid;

@@ -13,6 +13,7 @@
 #include "Offline/TrkHitReco/fcl/prolog.fcl"
 #include "Offline/TrkReco/fcl/prolog.fcl"
 #include "Offline/TrkPatRec/fcl/prolog.fcl"
+#include "Offline/Mu2eKinKal/fcl/prolog.fcl"
 #include "Offline/CalPatRec/fcl/prolog.fcl"
 #include "Offline/CalPatRec/fcl/prolog_common.fcl"
 #include "Offline/TrackCaloMatching/fcl/prolog.fcl"

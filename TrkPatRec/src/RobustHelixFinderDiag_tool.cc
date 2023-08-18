@@ -1,6 +1,3 @@
-#ifndef __TrkPatRec_RobustHelixFinderDiag_hh__
-#define __TrkPatRec_RobustHelixFinderDiag_hh__
-
 #include "Offline/TrkPatRec/inc/RobustHelixFinder_types.hh"
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Offline/TrkReco/inc/RobustHelixFit.hh"
@@ -366,5 +363,3 @@ namespace mu2e {
 }
 
 DEFINE_ART_CLASS_TOOL(mu2e::RobustHelixFinderDiag)
-
-#endif

@@ -13,7 +13,8 @@
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "art/Framework/Principal/Handle.h"
-#include "Offline/CRVResponse/inc/CrvHelper.hh"
+#include "Offline/CRVResponse/inc/CrvMCHelper.hh"
+#include "Offline/CRVReco/inc/CrvHelper.hh"
 #include "Offline/ConditionsService/inc/CrvParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
@@ -182,7 +183,6 @@ namespace mu2e
    void CRVAnalysis::FillCrvPulseInfoCollections (const std::string &crvRecoPulseCollectionModuleLabel,
                                                   const std::string &crvWaveformsModuleLabel,
                                                   const std::string &crvDigiModuleLabel,
-                                                  const SimParticleTimeOffset &timeOffsets,
                                                   const art::Event& event, CrvPulseInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo, CrvWaveformInfoCollection &waveformInfo){
 
 
@@ -238,7 +238,7 @@ namespace mu2e
          CLHEP::Hep3Vector earliestHitPos;
          art::Ptr<SimParticle> mostLikelySimParticle;
          //for this reco pulse
-         CrvHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, timeOffsets, visibleEnergyDeposited,
+         CrvMCHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, visibleEnergyDeposited,
                                             earliestHitTime, earliestHitPos, mostLikelySimParticle);
 
          bool hasMCInfo = (mostLikelySimParticle.isNonnull()?true:false); //MC

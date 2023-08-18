@@ -1,5 +1,5 @@
-#ifndef __Mu2eUtilities_ModuleHistToolBase_hh__
-#define __Mu2eUtilities_ModuleHistToolBase_hh__
+#ifndef Mu2eUtilities_ModuleHistToolBase_hh
+#define Mu2eUtilities_ModuleHistToolBase_hh
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"

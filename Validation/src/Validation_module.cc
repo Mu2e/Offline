@@ -27,7 +27,6 @@
 #include "Offline/Validation/inc/ValProtonBunchTime.hh"
 #include "Offline/Validation/inc/ValProtonBunchTimeMC.hh"
 #include "Offline/Validation/inc/ValSimParticle.hh"
-#include "Offline/Validation/inc/ValSimParticleTimeMap.hh"
 #include "Offline/Validation/inc/ValStatusG4.hh"
 #include "Offline/Validation/inc/ValStepPointMC.hh"
 #include "Offline/Validation/inc/ValSTMWaveformDigi.hh"
@@ -104,7 +103,6 @@ class Validation : public art::EDAnalyzer {
   std::vector<std::shared_ptr<ValHelixSeed>> _hxsd;
   std::vector<std::shared_ptr<ValKalSeed>> _klsd;
   std::vector<std::shared_ptr<ValStrawHitFlag>> _shfl;
-  std::vector<std::shared_ptr<ValSimParticleTimeMap>> _sptm;
   std::vector<std::shared_ptr<ValTimeCluster>> _tmcl;
   std::vector<std::shared_ptr<ValComboHit>> _stht;
   std::vector<std::shared_ptr<ValTriggerResults>> _trrs;
@@ -136,7 +134,6 @@ void mu2e::Validation::analyze(art::Event const& event) {
   analyzeProduct<EventWindowMarker, ValEventWindowMarker>(_evwm, event);
   analyzeProduct<GenParticleCollection, ValGenParticle>(_genp, event);
   analyzeProduct<SimParticleCollection, ValSimParticle>(_simp, event);
-  analyzeProduct<SimParticleTimeMap, ValSimParticleTimeMap>(_sptm, event);
   analyzeProduct<StepPointMCCollection, ValStepPointMC>(_spmc, event);
   analyzeProduct<CaloShowerStepCollection, ValCaloShowerStep>(_cals, event);
   analyzeProduct<CaloDigiCollection, ValCaloDigi>(_cald, event);
@@ -191,8 +188,6 @@ int mu2e::Validation::analyzeProduct(std::vector<std::shared_ptr<V>>& list,
       fcn = "MCTrajectory";
     if (fcn == "mu2e::StrawHitFlagDetailmu2e::BitMaps") fcn = "StrawHitFlag";
     if (fcn == "mu2e::TrkQualDetailmu2e::MVAStructs") fcn = "TrkQual";
-    if (fcn == "mu2e::SimParticleart::Ptrdoublestd::map")
-      fcn = "SimParticleTimeMap";
     if (fcn == "mu2e::BkgQualDetailmu2e::MVAStructs") fcn = "BkgQual";
     if (fcn.find("mu2e::", 0) == 0) fcn.erase(0, 6);
     if (fcn.find("art::", 0) == 0) fcn.erase(0, 5);

@@ -4,7 +4,7 @@
 //
 // Original Author: Ralf Ehrlich
 
-#include "Offline/CRVResponse/inc/MakeCrvRecoPulses.hh"
+#include "Offline/CRVReco/inc/MakeCrvRecoPulses.hh"
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"

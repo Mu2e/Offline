@@ -14,7 +14,6 @@
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/Mu2eBTrk/inc/ParticleInfo.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
 #include <TObject.h>
@@ -106,7 +105,6 @@ class DataInterface
   void toForeground();
   void findTrajectory(boost::shared_ptr<ContentSelector> const &contentSelector,
                       boost::shared_ptr<Track> const &track, const cet::map_vector_key &id,
-                      double timeOffset,
                       const ContentSelector::trackInfoStruct &trackInfo);
   struct trajectoryStruct
   {
@@ -125,7 +123,7 @@ class DataInterface
   template<class KTRAJ> void fillKalSeedTrajectory(std::unique_ptr<KTRAJ> &trajectory,
                                                    int particleid, int trackclass, int trackclassindex, double p1,
                                                    boost::shared_ptr<ComponentInfo> info);
-  void fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets);
+  void fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector);
   void setCRVCalib(const mu2e::CRVCalib &calib) {_calib=&calib;}
   void makeSupportStructuresVisible(bool visible);
   void makeOtherStructuresVisible(bool visible);

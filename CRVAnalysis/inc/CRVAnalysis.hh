@@ -7,7 +7,6 @@
 #include "Offline/CRVAnalysis/inc/CrvSummaryMC.hh"
 #include "Offline/CRVAnalysis/inc/CrvPlaneInfoMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/CRVAnalysis/inc/CrvPulseInfoReco.hh"
 #include "art/Framework/Principal/Event.h"
 
@@ -32,7 +31,6 @@ namespace mu2e
     static void FillCrvPulseInfoCollections(const std::string &crvRecoPulseCollection,
                                             const std::string &crvWaveformsModuleLabel,
                                             const std::string &crvDigiModuleLabel,
-                                            const SimParticleTimeOffset &timeOffsets,
                                             const art::Event& event, CrvPulseInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo, CrvWaveformInfoCollection &waveformInfo);
 
     private:

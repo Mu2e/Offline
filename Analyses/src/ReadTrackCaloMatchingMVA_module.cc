@@ -33,7 +33,6 @@
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/MCDataProducts/inc/CaloMCTruthAssns.hh"
 
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 
 #include "BTrk/TrkBase/HelixParams.hh"

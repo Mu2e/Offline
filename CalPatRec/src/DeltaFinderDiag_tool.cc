@@ -1,6 +1,3 @@
-#ifndef __CalPatRec_DeltaFinderDiag_hh__
-#define __CalPatRec_DeltaFinderDiag_hh__
-
 #include "TH1.h"
 #include "TH2.h"
 
@@ -382,7 +379,7 @@ namespace mu2e {
       for (int ih=0; ih<nh; ih++) {
         const HitData_t* hd = mc->fListOfHits[ih];
         int loc = hd->fHit-ch_hit_0;
-        const StrawHitFlag* flag = &_data->outputChfColl->at(loc);
+        const StrawHitFlag* flag = &_data->outputChColl->at(loc).flag();
 
         if (flag->hasAnyProperty(StrawHitFlag::bkg)) mc->fNChFlaggedDelta += 1;
 
@@ -392,7 +389,11 @@ namespace mu2e {
 
         if (hd->fProtonIndex > 0) {
           ProtonCandidate* pc = _data->protonCandidate(hd->fProtonIndex);
-          if (pc->eDep() > 0.004) {
+//-----------------------------------------------------------------------------
+// this is just a consistency check - 1-station proton candidates are required
+// to have eDep > 4 keV
+//-----------------------------------------------------------------------------
+          if ((pc->nStationsWithHits() == 1) and(pc->eDep() > 0.004)) {
             assert (not flag->hasAnyProperty(StrawHitFlag::energysel));
           }
         }
@@ -1226,7 +1227,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // count N(hits) flagged as delta
 //-----------------------------------------------------------------------------
-          const StrawHitFlag* flag = &_data->outputChfColl->at(ich);
+          const StrawHitFlag* flag = &_data->outputChColl->at(ich).flag();
           if (flag->hasAnyProperty(StrawHitFlag::bkg)) mc->fNChFlaggedDelta += 1;
 
           int station        = ch->strawId().station();
@@ -1661,7 +1662,7 @@ namespace mu2e {
           for (int ih=0; ih<nhits; ih++) {
             HitData_t* hd = &fz->fHitData[ih];
             int loc = hd->fHit-ch_hit_0;
-            const StrawHitFlag* flag = &_data->outputChfColl->at(loc);
+            const StrawHitFlag* flag = &_data->outputChColl->at(loc).flag();
 
             if (  flag->hasAnyProperty(StrawHitFlag::bkg      )) continue;
             if (! flag->hasAnyProperty(StrawHitFlag::energysel)) continue;
@@ -1995,7 +1996,7 @@ namespace mu2e {
     const ComboHit* ch  = Hd->fHit;
     int loc             = ch-ch0;
 
-    const StrawHitFlag* flag = &(*_data->outputChfColl)[loc];
+    const StrawHitFlag* flag = &(*_data->outputChColl)[loc].flag();
 
     // int radselOK        = (! flag->hasAnyProperty(StrawHitFlag::radsel   ));
     // int edepOK          = (! flag->hasAnyProperty(StrawHitFlag::energysel));
@@ -2276,5 +2277,3 @@ namespace mu2e {
 }
 
 DEFINE_ART_CLASS_TOOL(mu2e::DeltaFinderDiag)
-
-#endif
