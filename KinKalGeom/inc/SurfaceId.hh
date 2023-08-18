@@ -27,10 +27,11 @@ namespace mu2e {
   using SurfaceIdEnum = EnumToStringSparse<SurfaceIdDetail>;
   class SurfaceId {
     public:
+      using enum_type = SurfaceIdDetail::enum_type;
       // copy the constructors
       SurfaceId() : index_(0) {}
       SurfaceId(std::string const& name, int index=0) : sid_(name), index_(index) {}
-      SurfaceId(SurfaceIdDetail::enum_type sid, int index=0) : sid_(sid), index_(index) {}
+      SurfaceId(enum_type sid, int index=0) : sid_(sid), index_(index) {}
 
       // forward some accessors
       auto const& id() const { return sid_; }
