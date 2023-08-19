@@ -5,8 +5,10 @@
 //
 #include "KinKal/Trajectory/Line.hh"
 #include "KinKal/General/Vectors.hh"
+#include "KinKal/General/TimeRange.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "cetlib_except/exception.h"
 namespace mu2e {
   class ComboHit;
@@ -45,6 +47,10 @@ namespace mu2e {
       return ztime;
     }
     bool insideStraw(KinKal::ClosestApproachData const& tpdata,Straw const& straw,double tolerance=0.0);
+    // return the time range bounding a set of hits
+    KinKal::TimeRange timeBounds(ComboHitCollection const& chits);
+    // return the middle of a set of hits
+    double zMid(ComboHitCollection const& chits);
 
   }
 }

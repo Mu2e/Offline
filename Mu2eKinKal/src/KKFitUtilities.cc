@@ -24,5 +24,31 @@ namespace mu2e {
       double upos = ca.sensorDirection().Dot((ca.sensorPoca().Vect() - KinKal::VEC3(straw.origin())));
       return fabs(upos) < straw.halfLength() + ubuffer;
     }
+
+    KinKal::TimeRange timeBounds(ComboHitCollection const& chits) {
+      if(chits.size() == 0) return KinKal::TimeRange();
+      double tmin = std::numeric_limits<float>::max();
+      double tmax = std::numeric_limits<float>::min();
+      for( auto const& hit : chits) {
+        // filter out hits already flagged as bad TODO
+        tmin = std::min(tmin,(double)hit.correctedTime());
+        tmax = std::max(tmax,(double)hit.correctedTime());
+      }
+      return KinKal::TimeRange(tmin,tmax);
+    }
+
+    double zMid(ComboHitCollection const& chits) {
+      if(chits.size() == 0) return 0.0;
+      double zmin = std::numeric_limits<float>::max();
+      double zmax = std::numeric_limits<float>::min();
+      for( auto const& hit : chits) {
+        // filter out hits already flagged as bad TODO
+        double zpos = hit.pos().z();
+        zmin = std::min(zmin,zpos);
+        zmax = std::max(zmax,zpos);
+      }
+      return 0.5*(zmin+zmax);
+    }
+
   }
 }
