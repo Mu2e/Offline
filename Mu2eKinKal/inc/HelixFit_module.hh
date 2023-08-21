@@ -104,6 +104,8 @@ namespace mu2e {
     fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
+// helix module specific config
+    fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
   };
 
   class HelixFit : public art::EDProducer {
@@ -116,7 +118,7 @@ namespace mu2e {
     protected:
       TrkFitFlag fitflag_;
       // parameter-specific functions that need to be overridden in subclasses
-      virtual KTRAJ makeSeedTraj(HelixSeed const& hseed) const = 0;
+      virtual KTRAJ makeSeedTraj(HelixSeed const& hseed,TimeRange const& trange,VEC3 const& bnom, int charge) const = 0;
       virtual bool goodFit(KKTRK const& ktrk) const = 0;
       // data payload
       std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
@@ -132,7 +134,8 @@ namespace mu2e {
       KKMaterial kkmat_; // material helper
       DMAT seedcov_; // seed covariance matrix
       double mass_; // particle mass
-      int charge_; // particle charge
+      int charge_; // PDG particle charge
+      bool usePDGCharge_; // use the pdg particle charge: otherwise use the helicity and direction to determine the charge
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
       Config config_; // initial fit configuration object
       Config exconfig_; // extension configuration object
@@ -149,6 +152,7 @@ namespace mu2e {
     print_(settings().modSettings().printLevel()),
     kkfit_(settings().kkfitSettings()),
     kkmat_(settings().matSettings()),
+    usePDGCharge_(settings().pdgCharge()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
     fixedfield_(false)
@@ -214,8 +218,23 @@ namespace mu2e {
         auto hptr = HPtr(hseedcol_h,iseed);
         // check helicity.  The test on the charge and helicity
         if(hseed.status().hasAllProperties(goodseed_) ){
+          // test helix
+          auto const& helix = hseed.helix();
+          if(helix.radius() == 0.0 || helix.lambda() == 0.0 )
+            throw cet::exception("RECO")<<"mu2e::HelixFit: degenerate seed parameters" << endl;
+          auto zcent = Mu2eKinKal::zMid(hseed.hits());
+          // take the magnetic field at the helix center as nominal
+          VEC3 center(helix.centerx(), helix.centery(),zcent);
+          auto bnom = kkbf_->fieldVect(center);
+          // compute the charge from the helicity, fit direction, and BField direction
+          double bz = bnom.Z();
+          int charge = static_cast<int>(copysign(charge_,(-1)*helix.helicity().value()*kkfit_.fitDirection().dzdt()*bz));
+          // test consistency.  Modify this later when the HelixSeed knows which direction it's going TODO
+          if(usePDGCharge_ && charge*charge_ < 0)throw cet::exception("RECO")<<"mu2e::HelixFit: inconsistent charge" << endl;
+           // time range of the hits
+          auto trange = Mu2eKinKal::timeBounds(hseed.hits());
           // construt the seed trajectory
-          KTRAJ seedtraj = makeSeedTraj(hseed);
+          KTRAJ seedtraj = makeSeedTraj(hseed,trange,bnom,charge);
           // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
           PKTRAJ pseedtraj(seedtraj);
           // first, we need to unwind the combohits.  We use this also to find the time range
@@ -228,7 +247,7 @@ namespace mu2e {
           strawhits.reserve(hhits.size());
           strawxings.reserve(hhits.size());
           kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
-          // optionally (and if present) add the CaloCluster hi
+          // optionally (and if present) add the CaloCluster as a constraint
           // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO
           KKCALOHITCOL calohits;
           if (kkfit_.useCalo() && hseed.caloCluster().isNonnull())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
