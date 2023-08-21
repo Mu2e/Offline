@@ -296,7 +296,7 @@ namespace mu2e {
     mom3 = mom3.Unit()*seedmom_;
     KinKal::MOM4 mom(mom3.x(),mom3.y(),mom3.z(),mass_);
 
-    auto seedtraj = KTRAJ(pos,mom,charge_,bnom,TimeRange());
+    auto seedtraj = KTRAJ(pos,mom,charge_,bnom,Mu2eKinKal::timeBounds(hseed.hits()));
     seedtraj.params().covariance() = seedcov_;
     return seedtraj;
   }
