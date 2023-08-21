@@ -82,6 +82,7 @@ TTMu2eKinKal : {
     FitSettings : @local::Mu2eKinKalTrigger.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKalTrigger.SEEDEXT
     ModuleSettings : @local::Mu2eKinKalTrigger.LOOPHELIX
+    UsePDGCharge : true
   }
 
   TTKKLineSeedFit : {
@@ -91,6 +92,7 @@ TTMu2eKinKal : {
     FitSettings : @local::Mu2eKinKalTrigger.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKalTrigger.SEEDEXT
     ModuleSettings : @local::Mu2eKinKalTrigger.KINEMATICLINE
+    UsePDGCharge : true
   }
 
   CosmicFilter : {
