@@ -254,7 +254,7 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
       ExtendSurfaces : ["TT_Front","TT_Back","TT_Outer"]
-      SampleTimeBuffer : 50
+      SampleTimeBuffer : 100
     }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : {
