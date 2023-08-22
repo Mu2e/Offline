@@ -296,7 +296,7 @@ namespace mu2e
         double           vflt  = seeddef.particle().beta(mom)*CLHEP::c_light;
         double           helt0 = hseed.t0().t0();
 
-        KalSeed kf(PDGCode::type(tpart.particleType()),_fdir, hseed.status(), flt0 );
+        KalSeed kf(PDGCode::type(tpart.particleType()),hseed.status(), flt0 );
         // extract the hits from the rep and put the hitseeds into the KalSeed
         int nsh = seeddef.strawHitIndices().size();//tclust._strawHitIdxs.size();
         for (int i=0; i< nsh; ++i){
@@ -355,7 +355,7 @@ namespace mu2e
           // create a KalSeed object from this fit, recording the particle and fit direction
           //    KalSeed kseed(_tpart,_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
 
-          KalSeed kseed(PDGCode::type(_result.krep->particleType().particleType()),_fdir,kf.status(), _result.krep->flt0());
+          KalSeed kseed(PDGCode::type(_result.krep->particleType().particleType()),kf.status(), _result.krep->flt0());
           kseed._status.merge(_ksf);
           if(_result.krep->fitStatus().success())kseed._status.merge(TrkFitFlag::kalmanOK);
           // add CaloCluster if present
