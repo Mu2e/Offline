@@ -58,8 +58,6 @@ namespace mu2e {
     struct KKFitConfig {
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level") };
       fhicl::Atom<float> tpocaPrec { Name("TPOCAPrecision"), Comment("TPOCA calculation precision (ns)") };
-      fhicl::Atom<int> fitParticle {  Name("FitParticle"), Comment("Particle type to fit: e-, e+, mu-, ...")};
-      fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream") };
       fhicl::Atom<bool> matCorr { Name("MaterialCorrection"), Comment("Correct the fit fo material effects") };
       fhicl::Atom<bool> addHits { Name("AddHits"), Comment("Add hits to the fit") };
       fhicl::Atom<bool> addMaterial { Name("AddMaterial"), Comment("Add materials to the fit") };
@@ -87,6 +85,7 @@ namespace mu2e {
     };
     // struct for configuring a KinKal fit module
     struct KKModuleConfig {
+      fhicl::Atom<int> fitParticle {  Name("FitParticle"), Comment("Particle type to fit: e-, e+, mu-, ...")};
       fhicl::Atom<art::InputTag>     comboHitCollection     {Name("ComboHitCollection"),     Comment("Single Straw ComboHit collection ") };
       fhicl::Atom<art::InputTag>     caloClusterCollection     {Name("CaloClusterCollection"),     Comment("CaloCluster collection ") };
       fhicl::Atom<art::InputTag>     strawHitFlagCollection {Name("StrawHitFlagCollection"), Comment("StrawHitFlag collection ") };

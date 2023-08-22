@@ -26,7 +26,7 @@ namespace mu2e {
     DVEC pars;
     double psign = copysign(1.0,-charge*bnom.Z());
     pars[KTRAJ::rad_] = helix.radius()*psign;
-    pars[KTRAJ::lam_] = helix.lambda()*kkfit_.fitDirection().dzdt();
+    pars[KTRAJ::lam_] = helix.lambda()*fdir_.dzdt();
     pars[KTRAJ::cx_] = helix.centerx();
     pars[KTRAJ::cy_] = helix.centery();
     pars[KTRAJ::phi0_] = helix.fz0()+psign*M_PI_2;

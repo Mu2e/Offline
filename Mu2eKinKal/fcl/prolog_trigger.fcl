@@ -12,7 +12,7 @@ Mu2eKinKalTrigger : {
     @table::Mu2eKinKal.KKFIT
     AddHits : false
     AddMaterial : false
-    MaterialCorrection : false
+    MaterialCorrection : true
     MaxCaloClusterDt : 10.0
     MaxCaloClusterDOCA : 150.0 # mm
     SampleSurfaces : ["TT_Mid"]
@@ -45,17 +45,17 @@ Mu2eKinKalTrigger : {
   SEEDEXT: {
     @table::Mu2eKinKal.SEEDEXT
     MaxNIter : 2
-    BFieldCorrection : false
+    BFieldCorrection : true
 
     CADSHUSettings : [
-      #      [ 40.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
+      [ 40.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
     ]
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
-      # [ 3.0, "CADSHU" ]
+      [ 3.0, "CADSHU" ]
     ]
     StrawXingUpdaterSettings : [
-      # [10.0, -1.0, -1.0, true, 0 ]
+      [10.0, -1.0, -1.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
     ]
@@ -118,15 +118,14 @@ TTMu2eKinKal : {
 }
 
 TTMu2eKinKal.producers.TTKKLineSeedFit.ExtensionSettings.BFieldCorrection : false
-TTMu2eKinKal.producers.TTKKLineSeedFit.KKFitSettings.FitParticle : 13
-TTMu2eKinKal.producers.TTKKLineSeedFit.KKFitSettings.FitDirection : 1
-TTMu2eKinKal.producers.TTKKDeMSeedFit.KKFitSettings.FitParticle : 11
-TTMu2eKinKal.producers.TTKKDeMSeedFit.KKFitSettings.FitDirection : 0
-TTMu2eKinKal.producers.TTKKDePSeedFit.KKFitSettings.FitParticle : -11
-TTMu2eKinKal.producers.TTKKDePSeedFit.KKFitSettings.FitDirection : 0
-TTMu2eKinKal.producers.TTKKUeMSeedFit.KKFitSettings.FitParticle : 11
-TTMu2eKinKal.producers.TTKKUeMSeedFit.KKFitSettings.FitDirection : 1
-TTMu2eKinKal.producers.TTKKUePSeedFit.KKFitSettings.FitParticle : -11
-TTMu2eKinKal.producers.TTKKUePSeedFit.KKFitSettings.FitDirection : 1
+TTMu2eKinKal.producers.TTKKLineSeedFit.ModuleSettings.FitParticle : 13
+TTMu2eKinKal.producers.TTKKDeMSeedFit.ModuleSettings.FitParticle : 11
+TTMu2eKinKal.producers.TTKKDeMSeedFit.FitDirection : 0
+TTMu2eKinKal.producers.TTKKDePSeedFit.ModuleSettings.FitParticle : -11
+TTMu2eKinKal.producers.TTKKDePSeedFit.FitDirection : 0
+TTMu2eKinKal.producers.TTKKUeMSeedFit.ModuleSettings.FitParticle : 11
+TTMu2eKinKal.producers.TTKKUeMSeedFit.FitDirection : 1
+TTMu2eKinKal.producers.TTKKUePSeedFit.ModuleSettings.FitParticle : -11
+TTMu2eKinKal.producers.TTKKUePSeedFit.FitDirection : 1
 
 END_PROLOG
