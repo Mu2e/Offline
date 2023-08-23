@@ -132,8 +132,8 @@ BEGIN_PROLOG
     CrvCoincidenceClusterMatchMC:
     {
       module_type                            : CrvCoincidenceClusterMatchMC
-      crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
-      crvWaveformsModuleLabel                : "CrvWaveforms"
+      crvCoincidenceClusterFinderModuleLabels : ["CrvCoincidenceClusterFinder"]
+      crvWaveformsModuleLabels                : ["CrvWaveforms"]
     }
     CrvPlot:
     {
@@ -159,13 +159,6 @@ BEGIN_PROLOG
       crvRecoPulsesModuleLabel  : "CrvRecoPulses"
     }
 
-    # Makes one big Assns for mutiple CrvCoincidenceCluster collections
-    CrvCoincidenceClusterMCAssns : {
-      module_type : "MakeCrvCoincidenceClusterMCAssns"
-      crvCoincidenceTags : [ "CrvCoincidenceClusterFinder" ]
-      crvCoincidenceMCTags : [ "CrvCoincidenceClusterMatchMC" ]
-    }
-
 
 CrvDAQPackage :
 {
@@ -186,9 +179,8 @@ CrvRecoMCPackage :
    {
      @table::CrvRecoPackage.producers
      CrvCoincidenceClusterMatchMC : @local::CrvCoincidenceClusterMatchMC
-     CrvCoincidenceClusterMCAssns : @local::CrvCoincidenceClusterMCAssns
    }
-   CrvRecoMCSequence : [ @sequence::CrvRecoPackage.CrvRecoSequence, CrvCoincidenceClusterMatchMC, CrvCoincidenceClusterMCAssns ]
+   CrvRecoMCSequence : [ @sequence::CrvRecoPackage.CrvRecoSequence, CrvCoincidenceClusterMatchMC ]
 }
 
 CrvResponsePackage :
