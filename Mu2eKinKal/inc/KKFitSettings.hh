@@ -11,7 +11,6 @@
 #include "canvas/Utilities/InputTag.h"
 #include "KinKal/Fit/MetaIterConfig.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
-#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 // updaters
 #include "Offline/Mu2eKinKal/inc/CADSHU.hh"
 #include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"

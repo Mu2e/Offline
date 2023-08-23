@@ -70,13 +70,13 @@ TTKFF : { @table::KFF
 #  First, downstream electrons
 TTKSFDeM                                     : @local::TTKSF
 TTKSFDeM.ModuleSettings.HelixSeedCollections : ["TTHelixMergerDeM"]
-TTKSFDeM.KKFitSettings.FitParticle           : 11
-TTKSFDeM.KKFitSettings.FitDirection          : 0
+TTKSFDeM.ModuleSettings.FitParticle           : 11
+TTKSFDeM.FitDirection          : 0
 
 TTKSFDeP                                     : @local::TTKSF
 TTKSFDeP.ModuleSettings.HelixSeedCollections : ["TTHelixMergerDeP"]
-TTKSFDeP.KKFitSettings.FitParticle           : -11
-TTKSFDeP.KKFitSettings.FitDirection          : 0
+TTKSFDeP.ModuleSettings.FitParticle           : -11
+TTKSFDeP.FitDirection          : 0
 
 # Declare a table with all the modules needed for track reconstruction
 # This should be divided into sim, reco FIXME!
