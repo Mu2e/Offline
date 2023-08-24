@@ -51,7 +51,10 @@ physics :
     @sequence::Reconstruction.MCReco
   ]
   analyzers : {
-    TAKK : @local::TrkAnaReco.analyzers.TrkAnaNeg
+    TAKK : {
+      @table::TrkAnaReco.analyzers.TrkAnaNeg
+      FitType : LoopHelix
+    }
     evtprint : {
       module_type : RunEventSubRun
       printSam    : false
