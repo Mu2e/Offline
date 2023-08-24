@@ -223,6 +223,7 @@ Mu2eKinKal : {
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
     ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
+    UsePDGCharge: true
   }
 
   KK : {
@@ -236,6 +237,7 @@ Mu2eKinKal : {
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
     ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
+    UsePDGCharge: true
   }
 
   KKLineSeedFit : {
@@ -299,31 +301,29 @@ Mu2eKinKal : {
 }
 
 Mu2eKinKal.producers.KKLineSeedFit.ExtensionSettings.BFieldCorrection : false
-Mu2eKinKal.producers.KKLineSeedFit.KKFitSettings.FitParticle : 13
-Mu2eKinKal.producers.KKLineSeedFit.KKFitSettings.FitDirection : 1
-Mu2eKinKal.producers.KKLine.KKFitSettings.FitParticle : 13
-Mu2eKinKal.producers.KKLine.KKFitSettings.FitDirection : 1
+Mu2eKinKal.producers.KKLineSeedFit.ModuleSettings.FitParticle : 13
+Mu2eKinKal.producers.KKLine.ModuleSettings.FitParticle : 13
 
-Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitParticle : 11
-Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitParticle : -11
-Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDeMSeedFit.ModuleSettings.FitParticle : 11
+Mu2eKinKal.producers.KKDeMSeedFit.FitDirection : 0
+Mu2eKinKal.producers.KKDePSeedFit.ModuleSettings.FitParticle : -11
+Mu2eKinKal.producers.KKDePSeedFit.FitDirection : 0
 
-Mu2eKinKal.producers.KKDeM.KKFitSettings.FitParticle : 11
-Mu2eKinKal.producers.KKDeM.KKFitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKDeP.KKFitSettings.FitParticle : -11
-Mu2eKinKal.producers.KKDeP.KKFitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKUeM.KKFitSettings.FitParticle : 11
-Mu2eKinKal.producers.KKUeM.KKFitSettings.FitDirection : 1
-Mu2eKinKal.producers.KKUeP.KKFitSettings.FitParticle : -11
-Mu2eKinKal.producers.KKUeP.KKFitSettings.FitDirection : 1
-Mu2eKinKal.producers.KKDmuM.KKFitSettings.FitParticle : 13
-Mu2eKinKal.producers.KKDmuM.KKFitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKDmuP.KKFitSettings.FitParticle : -13
-Mu2eKinKal.producers.KKDmuP.KKFitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKUmuM.KKFitSettings.FitParticle : 13
-Mu2eKinKal.producers.KKUmuM.KKFitSettings.FitDirection : 1
-Mu2eKinKal.producers.KKUmuP.KKFitSettings.FitParticle : -13
-Mu2eKinKal.producers.KKUmuP.KKFitSettings.FitDirection : 1
+Mu2eKinKal.producers.KKDeM.ModuleSettings.FitParticle : 11
+Mu2eKinKal.producers.KKDeM.FitDirection : 0
+Mu2eKinKal.producers.KKDeP.ModuleSettings.FitParticle : -11
+Mu2eKinKal.producers.KKDeP.FitDirection : 0
+Mu2eKinKal.producers.KKUeM.ModuleSettings.FitParticle : 11
+Mu2eKinKal.producers.KKUeM.FitDirection : 1
+Mu2eKinKal.producers.KKUeP.ModuleSettings.FitParticle : -11
+Mu2eKinKal.producers.KKUeP.FitDirection : 1
+Mu2eKinKal.producers.KKDmuM.ModuleSettings.FitParticle : 13
+Mu2eKinKal.producers.KKDmuM.FitDirection : 0
+Mu2eKinKal.producers.KKDmuP.ModuleSettings.FitParticle : -13
+Mu2eKinKal.producers.KKDmuP.FitDirection : 0
+Mu2eKinKal.producers.KKUmuM.ModuleSettings.FitParticle : 13
+Mu2eKinKal.producers.KKUmuM.FitDirection : 1
+Mu2eKinKal.producers.KKUmuP.ModuleSettings.FitParticle : -13
+Mu2eKinKal.producers.KKUmuP.FitDirection : 1
 
 END_PROLOG

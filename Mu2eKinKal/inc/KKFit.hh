@@ -22,7 +22,6 @@
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
-#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
@@ -89,7 +88,7 @@ namespace mu2e {
       void makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf, KKStrawMaterial const& smat,
           PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
           KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
-      Line caloAxis(CaloCluster const& cluster, Calorimeter const& calo, PKTRAJ const& ptraj) const; // should come from CaloCluster TODO
+      Line caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const; // should come from CaloCluster TODO
       bool makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PKTRAJ const& pktraj, KKCALOHITCOL& hits) const;
       // extend a track with a new configuration, optionally searching for and adding hits and straw material
       void extendTrack(Config const& config, BFieldMap const& kkbf, Tracker const& tracker,
@@ -102,8 +101,6 @@ namespace mu2e {
       KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo) const;
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
       bool useCalo() const { return usecalo_; }
-      PDGCode::type fitParticle() const { return tpart_;}
-      TrkFitDirection fitDirection() const { return tdir_;}
       bool correctMaterial() const { return matcorr_; }
       bool addMaterial() const { return addmat_; }
       bool addHits() const { return addhits_; }
@@ -116,8 +113,6 @@ namespace mu2e {
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
       void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const; // sample fit at the surfaces specified in the config
       void extendFit(KKTRK& kktrk) const;
-      PDGCode::type tpart_;
-      TrkFitDirection tdir_;
       bool matcorr_, addhits_, addmat_, usecalo_; // flags
       KKSTRAWHITCLUSTERER shclusterer_; // functor to cluster KKStrawHits
       // CaloHit configuration
@@ -148,8 +143,6 @@ namespace mu2e {
   };
 
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(KKFitConfig const& fitconfig) :
-    tpart_(static_cast<PDGCode::type>(fitconfig.fitParticle())),
-    tdir_(static_cast<TrkFitDirection::FitDirection>(fitconfig.fitDirection())),
     matcorr_(fitconfig.matCorr()),
     addhits_(fitconfig.addHits()),
     addmat_(fitconfig.addMaterial()),
@@ -217,7 +210,7 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ> Line KKFit<KTRAJ>::caloAxis(CaloCluster const& cluster, Calorimeter const& calo, PKTRAJ const& ptraj) const {
+  template <class KTRAJ> Line KKFit<KTRAJ>::caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const {
     // move cluster COG into the tracker frame.  COG is at the front face of the disk
     CLHEP::Hep3Vector cog = calo.geomUtil().mu2eToTracker(calo.geomUtil().diskFFToMu2e( cluster.diskID(), cluster.cog3Vector()));
     // project this along the crystal axis to the SIPM, which is at the back.  This is the point the time measurement corresponds to
@@ -232,7 +225,7 @@ namespace mu2e {
 
   template <class KTRAJ> bool KKFit<KTRAJ>::makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PKTRAJ const& pktraj, KKCALOHITCOL& hits) const {
     bool retval(false);
-    auto caxis = caloAxis(*cluster,calo,pktraj);
+    auto caxis = caloAxis(*cluster,calo);
     // find the time the seed traj passes the middle of the crystal to form the hint
     auto pmid = caxis.position3(caxis.timeAtMidpoint());
     double zt = Mu2eKinKal::zTime(pktraj,pmid.Z(),pktraj.range().end());
@@ -390,11 +383,12 @@ namespace mu2e {
       double rmin = calo.disk(idisk).geomInfo().innerEnvelopeR() - maxCaloDoca_;
       double rmax = calo.disk(idisk).geomInfo().outerEnvelopeR() + maxCaloDoca_;
       // test at both faces; if the track is in the right area, test the clusters on this disk
+      // Replace this with an intersection with the calo face TODO
       for(int iface=0; iface<2; ++iface){
         double zt = Mu2eKinKal::zTime(ftraj,ffpos.z()+iface*crystalLength,ftraj.range().end());
         auto tpos = ftraj.position3(zt);
         double rho = tpos.Rho();
-        test[idisk] = rho > rmin && rho < rmax;
+        test[idisk] |= rho > rmin && rho < rmax;
       }
     }
     // now loop over crystals and find the best match
@@ -403,11 +397,11 @@ namespace mu2e {
       auto idisk = static_cast<size_t>(cc.diskID());
       if (test[idisk] && cc.energyDep() > minCaloEnergy_ && cc.energyDep() > edep){
         // create PCA from this cluster and the traj
-        auto caxis = caloAxis(cc,calo,ftraj);
+        auto caxis = caloAxis(cc,calo);
         // find the time the seed traj passes the middle of the crystal to form the hint
         auto pmid = caxis.position3(caxis.timeAtMidpoint());
         double zt = Mu2eKinKal::zTime(ftraj,pmid.Z(),ftraj.range().end());
-        CAHint hint( zt, caxis.t0());
+        CAHint hint( zt, caxis.timeAtMidpoint());
         // compute closest approach between the fit trajectory and the cluster axis
         auto pca = PCA(ftraj, caxis, hint, tprec_ );
         if(pca.usable() && fabs(pca.doca()) < maxCaloDoca_ && fabs(pca.deltaT()) < maxCaloDt_){
@@ -490,8 +484,8 @@ namespace mu2e {
     double t0val = t0piece.paramVal(KTRAJ::t0_);
     double t0sig = sqrt(t0piece.params().covariance()(KTRAJ::t0_,KTRAJ::t0_));
     HitT0 t0(t0val,t0sig);
-    // create the shell for the output.
-    KalSeed fseed(tpart_,tdir_,fflag);
+    // create the shell for the output
+    KalSeed fseed(kktrk.fitParticle(),fflag);
     auto const& fstatus = kktrk.fitStatus();
     fseed._chisq = fstatus.chisq_.chisq();
     fseed._fitcon = fstatus.chisq_.probability();

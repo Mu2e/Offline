@@ -380,7 +380,7 @@ namespace mu2e
             if(krep->fitStatus().success()) fflag.merge(TrkFitFlag::kalmanOK);
             if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
             //    KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
-            KalSeed fseed(PDGCode::type(krep->particleType().particleType()),_fdir,fflag,krep->flt0());
+            KalSeed fseed(PDGCode::type(krep->particleType().particleType()),fflag,krep->flt0());
             // fill with new information
             fseed._flt0 = krep->flt0();
             // global fit information

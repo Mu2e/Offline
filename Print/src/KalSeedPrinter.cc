@@ -84,7 +84,7 @@ void mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind,
 
     os << " fitStatus: " << std::setw(3) << obj.status() << "\n";
     os << " part: " << ptable->particle(obj.particle()).name()
-       << " dir: " << obj.fitDirection().name() << "  flt0: " << std::setw(7)
+       << "  flt0: " << std::setw(7)
        << std::setprecision(1) << obj.flt0() << "  t0: " << std::setw(7)
        << std::setprecision(1) << obj.t0().t0() << "\n";
     os << " chi2: " << std::setw(7) << std::setprecision(2) << obj.chisquared()

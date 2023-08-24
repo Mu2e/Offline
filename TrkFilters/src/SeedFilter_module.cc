@@ -112,16 +112,16 @@ namespace mu2e
     }
     for(auto iks = kscol->begin(); iks != kscol->end(); ++iks) {
       auto const& ks = *iks;
+      // get the first segment
+      KalSegment const& fseg = ks.segments().front();
       //check particle type and fitdirection
-      if ( (ks.particle() != _tpart) || (ks.fitDirection() != _fdir))       continue;
+      if ( (ks.particle() != _tpart) || (fseg.momentum3().Z()*_fdir.dzdt() < 0))       continue;
 
       // I should not be calculating NDOF here, this should be in an adapter, FIXME!!
       unsigned nactive(0);
       for(auto const& ish : ks.hits())
         if(ish.flag().hasAllProperties(StrawHitFlag::active))++nactive;
       float ndof = std::max(1.0,nactive - 5.0);
-      // get the first segment
-      KalSegment const& fseg = ks.segments().front();
       if(_debug > 2){
         printf("[SeedFilter::filter] %4d %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n", nactive, fseg.mom(), fseg.momerr(),ks.chisquared()/ndof, ks.fitConsistency(), fseg.helix().tanDip(), fseg.helix().d0());
 
