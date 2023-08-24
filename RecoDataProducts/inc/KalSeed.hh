@@ -34,11 +34,10 @@ namespace mu2e {
     using CHPTPtr = std::unique_ptr<CHPT>;
     using KLPTPtr = std::unique_ptr<KLPT>;
     KalSeed() {}
-    KalSeed(PDGCode::type tpart,TrkFitDirection fdir, TrkFitFlag const& status, double flt0=0.0 ) :
-      _tpart(tpart), _fdir(fdir), _status(status), _flt0(static_cast<Float_t>(flt0)){}
+    KalSeed(PDGCode::type tpart, TrkFitFlag const& status, double flt0=0.0 ) :
+      _tpart(tpart), _status(status), _flt0(static_cast<Float_t>(flt0)){}
 
     PDGCode::type particle() const { return _tpart; }
-    auto const& fitDirection() const { return _fdir; }
     auto const& hits() const { return _hits;}
     auto const& caloHit() const { return _chit; }
     auto const& straws() const { return _straws;}
@@ -68,7 +67,6 @@ namespace mu2e {
 
     // global information about the track
     PDGCode::type     _tpart = PDGCode::unknown; // particle assumed for this fit
-    TrkFitDirection   _fdir = TrkFitDirection::downstream; // direction in which this particle was fit
     TrkFitFlag        _status; // status of this fit: includes alglorithm information
     Float_t           _chisq = -1; // fit chisquared value
     Float_t           _fitcon = -1; // fit consistency

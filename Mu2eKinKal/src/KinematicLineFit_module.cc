@@ -138,6 +138,7 @@ namespace mu2e {
     ProditionsHandle<Tracker> alignedTracker_h_;
     int print_;
     float seedmom_;
+    PDGCode::type fpart_;
     KKFIT kkfit_; // fit helper
     KKMaterial kkmat_; // material helper
     DMAT seedcov_; // seed covariance matrix
@@ -157,6 +158,7 @@ namespace mu2e {
     saveall_(settings().modSettings().saveAll()),
     print_(settings().modSettings().printLevel()),
     seedmom_(settings().modSettings().seedmom()),
+    fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
     kkfit_(settings().mu2eSettings()),
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
@@ -194,8 +196,8 @@ namespace mu2e {
   void KinematicLineFit::beginRun(art::Run& run) {
     // setup particle parameters
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
-    mass_ = ptable->particle(kkfit_.fitParticle()).mass();
-    charge_ = static_cast<int>(ptable->particle(kkfit_.fitParticle()).charge());
+    mass_ = ptable->particle(fpart_).mass();
+    charge_ = static_cast<int>(ptable->particle(fpart_).charge());
     // create KKBField
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
@@ -260,7 +262,7 @@ namespace mu2e {
             seedtraj.print(std::cout,print_);
           }
           // create and fit the track
-          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
+          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fpart_,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
           auto goodfit = goodFit(*kktrk);
           if(goodfit && exconfig_.schedule().size() > 0){
             kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
@@ -296,7 +298,7 @@ namespace mu2e {
     mom3 = mom3.Unit()*seedmom_;
     KinKal::MOM4 mom(mom3.x(),mom3.y(),mom3.z(),mass_);
 
-    auto seedtraj = KTRAJ(pos,mom,charge_,bnom,TimeRange());
+    auto seedtraj = KTRAJ(pos,mom,charge_,bnom,Mu2eKinKal::timeBounds(hseed.hits()));
     seedtraj.params().covariance() = seedcov_;
     return seedtraj;
   }

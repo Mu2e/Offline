@@ -4,7 +4,7 @@
 // File:        CompressDigiMCs_module.cc
 //
 // Creates new StrawDigiMC and CrvDigiMC collections after creating new
-// StepPointMC, SimParticle, GenParticle and SimParticleTimeMaps with all
+// StepPointMC, SimParticle, and GenParticle with all
 // unnecessary MC objects removed.
 //
 // Also creates new CaloShowerStep, CaloShowerRO and CaloShowerSim collections after
@@ -40,7 +40,6 @@
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
 #include "Offline/DataProducts/inc/IndexMap.hh"
 #include "Offline/MCDataProducts/inc/CrvCoincidenceClusterMC.hh"
@@ -98,7 +97,6 @@ public:
     fhicl::Atom<art::InputTag> crvDigiMCTag{Name("crvDigiMCTag"), Comment("InputTag for the CrvDigiMCCollection")};
     fhicl::Sequence<art::InputTag> simParticleTags{Name("simParticleTags"), Comment("Sequence of InputTags to the SimParticleCollections")};
     fhicl::Sequence<art::InputTag> extraStepPointMCTags{Name("extraStepPointMCTags"), Comment("Sequence of InputTags for additional StepPointMCCollections that you want to keep the steps from")};
-    fhicl::Sequence<art::InputTag> timeMapTags{Name("timeMapTags"), Comment("Sequence of InputTags for TimeMaps")};
     fhicl::Sequence<art::InputTag> caloShowerStepTags{Name("caloShowerStepTags"), Comment("Sequence of InputTags for CaloShowerSteps")};
     fhicl::Atom<art::InputTag> caloShowerSimTag{Name("caloShowerSimTag"), Comment("InputTag for the CaloShowerSim")};
     fhicl::Atom<art::InputTag> caloShowerROTag{Name("caloShowerROTag"), Comment("InputTag for the CaloShowerRO")};
@@ -149,7 +147,6 @@ private:
   art::InputTag _crvDigiMCTag;
   std::vector<art::InputTag> _simParticleTags;
   std::vector<art::InputTag> _extraStepPointMCTags;
-  std::vector<art::InputTag> _timeMapTags;
   art::InputTag _caloClusterMCTag;
   std::vector<art::InputTag> _crvCoincClusterMCTags;
   art::InputTag _primaryParticleTag;
@@ -165,7 +162,6 @@ private:
   // handles to the old collections
   art::Handle<StrawDigiMCCollection> _strawDigiMCsHandle;
   art::Handle<CrvDigiMCCollection> _crvDigiMCsHandle;
-  std::vector<SimParticleTimeMap> _oldTimeMaps;
   art::Handle<CaloShowerSimCollection> _caloShowerSimsHandle;
   art::Handle<CaloShowerROCollection> _CaloShowerROsHandle;
 
@@ -177,7 +173,6 @@ private:
   std::unique_ptr<CrvStepCollection> _newCrvSteps;
   std::unique_ptr<SimParticleCollection> _newSimParticles;
   std::unique_ptr<GenParticleCollection> _newGenParticles;
-  std::vector<std::unique_ptr<SimParticleTimeMap> > _newSimParticleTimeMaps;
   std::unique_ptr<CaloShowerStepCollection> _newCaloShowerSteps;
   std::unique_ptr<CaloShowerSimCollection> _newCaloShowerSims;
   std::unique_ptr<CaloShowerROCollection> _newCaloShowerROs;
@@ -246,7 +241,6 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
     _crvDigiMCTag(conf().crvDigiMCTag()),
     _simParticleTags(conf().simParticleTags()),
     _extraStepPointMCTags(conf().extraStepPointMCTags()),
-    _timeMapTags(conf().timeMapTags()),
     _caloClusterMCTag(conf().caloClusterMCTag()),
     _crvCoincClusterMCTags(conf().crvCoincClusterMCTags()),
     _primaryParticleTag(conf().primaryParticleTag()),
@@ -275,15 +269,6 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
   produces<CrvStepCollection>();
   produces<SimParticleCollection>();
   produces<GenParticleCollection>();
-
-  for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
-    if ( (*i_tag).instance() == "") {
-      produces<SimParticleTimeMap>( (*i_tag).label() ); // in the case where we have two time maps from different modules
-    }
-    else {
-      produces<SimParticleTimeMap>( (*i_tag).instance() ); // in the case where we have two time maps from the same module (e.g. a first stage compression)
-    }
-  }
 
   // Two possible compressions for calorimeter
   if (_caloShowerStepTags.size() != 0) {
@@ -358,22 +343,6 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
         }
       }
     }
-  }
-
-  _oldTimeMaps.clear();
-  for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
-    art::Handle<SimParticleTimeMap> i_timeMapHandle;
-    event.getByLabel(*i_tag, i_timeMapHandle);
-
-    if (!i_timeMapHandle.isValid()) {
-      throw cet::exception("CompressDigiMCs") << "Couldn't find SimParticleTimeMap " << *i_tag << " in event\n";
-    }
-    _oldTimeMaps.push_back(*i_timeMapHandle);
-  }
-
-  _newSimParticleTimeMaps.clear();
-  for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
-    _newSimParticleTimeMaps.push_back(std::unique_ptr<SimParticleTimeMap>(new SimParticleTimeMap));
   }
 
   // If we've been given IndexMap tags, then use those
@@ -599,21 +568,6 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
 
 
   // Now update all objects with SimParticlePtrs
-  // Update the time maps
-  for (std::vector<SimParticleTimeMap>::const_iterator i_time_map = _oldTimeMaps.begin(); i_time_map != _oldTimeMaps.end(); ++i_time_map) {
-    size_t i_element = i_time_map - _oldTimeMaps.begin();
-
-    const SimParticleTimeMap& i_oldTimeMap = *i_time_map;
-    SimParticleTimeMap& i_newTimeMap = *_newSimParticleTimeMaps.at(i_element);
-    for (const auto& timeMapPair : i_oldTimeMap) {
-      art::Ptr<SimParticle> oldSimPtr = timeMapPair.first;
-      const auto& newSimPtrIter = remap.find(oldSimPtr);
-      if (newSimPtrIter != remap.end()) {
-        art::Ptr<SimParticle> newSimPtr = newSimPtrIter->second;
-        i_newTimeMap[newSimPtr] = timeMapPair.second;
-      }
-    }
-  }
 
    // Update the StepPointMCs
   for (const auto& i_instance : _newStepPointMCInstances) {
@@ -710,16 +664,6 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
 
   event.put(std::move(_newSimParticles));
   event.put(std::move(_newGenParticles));
-
-  for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
-    size_t i_element = i_tag - _timeMapTags.begin();
-    if ( (*i_tag).instance() == "") {
-      event.put(std::move(_newSimParticleTimeMaps.at(i_element)), (*i_tag).label());
-    }
-    else {
-      event.put(std::move(_newSimParticleTimeMaps.at(i_element)), (*i_tag).instance());
-    }
-  }
 
   if (_caloShowerStepTags.size() != 0) {
     event.put(std::move(_newCaloShowerSteps));
