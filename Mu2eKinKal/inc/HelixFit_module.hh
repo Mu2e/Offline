@@ -105,6 +105,7 @@ namespace mu2e {
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
 // helix module specific config
+    fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream") };
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
   };
 
@@ -130,17 +131,19 @@ namespace mu2e {
       ProditionsHandle<StrawResponse> strawResponse_h_;
       ProditionsHandle<Tracker> alignedTracker_h_;
       int print_;
+      PDGCode::type fpart_;
+      TrkFitDirection fdir_;
+      bool usePDGCharge_; // use the pdg particle charge: otherwise use the helicity and direction to determine the charge
       KKFIT kkfit_; // fit helper
       KKMaterial kkmat_; // material helper
       DMAT seedcov_; // seed covariance matrix
       double mass_; // particle mass
-      int charge_; // PDG particle charge
-      bool usePDGCharge_; // use the pdg particle charge: otherwise use the helicity and direction to determine the charge
+      int PDGcharge_; // PDG particle charge
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
       Config config_; // initial fit configuration object
       Config exconfig_; // extension configuration object
       bool fixedfield_; //
-  };
+    };
 
   HelixFit::HelixFit(const Parameters& settings,TrkFitFlag fitflag) : art::EDProducer{settings},
     fitflag_(fitflag),
@@ -150,9 +153,11 @@ namespace mu2e {
     goodseed_(settings().modSettings().seedFlags()),
     saveall_(settings().modSettings().saveAll()),
     print_(settings().modSettings().printLevel()),
+    fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
+    fdir_(static_cast<TrkFitDirection::FitDirection>(settings().fitDirection())),
+    usePDGCharge_(settings().pdgCharge()),
     kkfit_(settings().kkfitSettings()),
     kkmat_(settings().matSettings()),
-    usePDGCharge_(settings().pdgCharge()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
     fixedfield_(false)
@@ -180,8 +185,8 @@ namespace mu2e {
   void HelixFit::beginRun(art::Run& run) {
     // setup things that rely on data related to beginRun
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
-    mass_ = ptable->particle(kkfit_.fitParticle()).mass();
-    charge_ = static_cast<int>(ptable->particle(kkfit_.fitParticle()).charge());
+    mass_ = ptable->particle(fpart_).mass();
+    PDGcharge_ = static_cast<int>(ptable->particle(fpart_).charge());
     // create KKBField
     if(!fixedfield_){
       GeomHandle<BFieldManager> bfmgr;
@@ -228,9 +233,13 @@ namespace mu2e {
           auto bnom = kkbf_->fieldVect(center);
           // compute the charge from the helicity, fit direction, and BField direction
           double bz = bnom.Z();
-          int charge = static_cast<int>(copysign(charge_,(-1)*helix.helicity().value()*kkfit_.fitDirection().dzdt()*bz));
+          int charge = static_cast<int>(copysign(PDGcharge_,(-1)*helix.helicity().value()*fdir_.dzdt()*bz));
           // test consistency.  Modify this later when the HelixSeed knows which direction it's going TODO
-          if(usePDGCharge_ && charge*charge_ < 0)throw cet::exception("RECO")<<"mu2e::HelixFit: inconsistent charge" << endl;
+          auto fitpart = fpart_;
+          if(charge*PDGcharge_ < 0){
+            if(usePDGCharge_)throw cet::exception("RECO")<<"mu2e::HelixFit: inconsistent charge" << endl;
+            fitpart = static_cast<PDGCode::type>(-1*fitpart); // reverse sign
+          }
            // time range of the hits
           auto trange = Mu2eKinKal::timeBounds(hseed.hits());
           // construt the seed trajectory
@@ -254,7 +263,7 @@ namespace mu2e {
           // extend the seed range given the hits and xings
           seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
           // create and fit the track
-          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
+          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
           // Check the fit
           auto goodfit = goodFit(*kktrk);
           // if we have an extension schedule, extend.

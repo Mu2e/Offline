@@ -27,7 +27,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
-#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/KinKalGeom/inc/SurfaceId.hh"
 #include "Offline/KinKalGeom/inc/SurfaceMap.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
@@ -102,8 +101,6 @@ namespace mu2e {
       KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo) const;
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
       bool useCalo() const { return usecalo_; }
-      PDGCode::type fitParticle() const { return tpart_;}
-      TrkFitDirection fitDirection() const { return tdir_;}
       bool correctMaterial() const { return matcorr_; }
       bool addMaterial() const { return addmat_; }
       bool addHits() const { return addhits_; }
@@ -116,8 +113,6 @@ namespace mu2e {
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
       void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const; // sample fit at the surfaces specified in the config
       void extendFit(KKTRK& kktrk) const;
-      PDGCode::type tpart_;
-      TrkFitDirection tdir_;
       bool matcorr_, addhits_, addmat_, usecalo_; // flags
       KKSTRAWHITCLUSTERER shclusterer_; // functor to cluster KKStrawHits
       // CaloHit configuration
@@ -148,8 +143,6 @@ namespace mu2e {
   };
 
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(KKFitConfig const& fitconfig) :
-    tpart_(static_cast<PDGCode::type>(fitconfig.fitParticle())),
-    tdir_(static_cast<TrkFitDirection::FitDirection>(fitconfig.fitDirection())),
     matcorr_(fitconfig.matCorr()),
     addhits_(fitconfig.addHits()),
     addmat_(fitconfig.addMaterial()),
@@ -491,8 +484,8 @@ namespace mu2e {
     double t0val = t0piece.paramVal(KTRAJ::t0_);
     double t0sig = sqrt(t0piece.params().covariance()(KTRAJ::t0_,KTRAJ::t0_));
     HitT0 t0(t0val,t0sig);
-    // create the shell for the output.
-    KalSeed fseed(tpart_,tdir_,fflag);
+    // create the shell for the output
+    KalSeed fseed(kktrk.fitParticle(),fflag);
     auto const& fstatus = kktrk.fitStatus();
     fseed._chisq = fstatus.chisq_.chisq();
     fseed._fitcon = fstatus.chisq_.probability();
