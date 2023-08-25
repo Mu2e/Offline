@@ -53,8 +53,8 @@ namespace mu2e
 
   CrvCoincidenceClusterMatchMC::CrvCoincidenceClusterMatchMC(fhicl::ParameterSet const& pset) :
    art::EDProducer{pset},
-    _crvCoincidenceClusterFinderModuleLabels(pset.get<std::vector<std::string> > ("crvCoincidenceClusterFinderModuleLabel")),
-    _crvWaveformsModuleLabels(pset.get<std::vector<std::string> >("crvWaveformsModuleLabel"))
+    _crvCoincidenceClusterFinderModuleLabels(pset.get<std::vector<std::string> > ("crvCoincidenceClusterFinderModuleLabels")),
+    _crvWaveformsModuleLabels(pset.get<std::vector<std::string> >("crvWaveformsModuleLabels"))
   {
     // Will produce one CrvCoincidenceClusterMCCollection per crvWaveforms simulation
     for (const auto& waveform_label : _crvWaveformsModuleLabels) {
