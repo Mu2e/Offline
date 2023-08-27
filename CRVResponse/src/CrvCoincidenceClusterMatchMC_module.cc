@@ -83,7 +83,7 @@ namespace mu2e
 
     for (size_t i_collection = 0; i_collection < n_collections; ++i_collection) {
       std::unique_ptr<CrvCoincidenceClusterMCCollection> crvCoincidenceClusterMCCollection(new CrvCoincidenceClusterMCCollection);
-      auto newCrvCoincClusterMCProdID = event.getProductID<CrvCoincidenceClusterMCCollection>(_crvWaveformsModuleLabels.at(i_collection)); // will be needed to make a Ptr later
+      auto newCrvCoincClusterMCProdID = event.getProductID<CrvCoincidenceClusterMCCollection>(); // will be needed to make a Ptr later
       auto newCrvCoincClusterMCGetter = event.productGetter(newCrvCoincClusterMCProdID);
 
 
