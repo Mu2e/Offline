@@ -188,7 +188,8 @@ CrvRecoMCPackage :
      CrvCoincidenceClusterMatchMC : @local::CrvCoincidenceClusterMatchMC
      CrvCoincidenceClusterMCAssns : @local::CrvCoincidenceClusterMCAssns
    }
-   CrvRecoMCSequence : [ @sequence::CrvRecoPackage.CrvRecoSequence, CrvCoincidenceClusterMatchMC, CrvCoincidenceClusterMCAssns ]
+   CrvRecoMCSequence : [ @sequence::CrvRecoPackage.CrvRecoSequence, CrvCoincidenceClusterMatchMC ]
+   CrvMCAssnsSequence : [ CrvCoincidenceClusterMCAssns ] # want to run this after compression in Production so put in a separate sequence
 }
 
 CrvResponsePackage :
