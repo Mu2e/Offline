@@ -290,6 +290,12 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="mu2e::CrvCoincidenceClusterMCCollection" />
 <class name="art::Wrapper<mu2e::CrvCoincidenceClusterMCCollection>" />
 
+<class name="art::Assns<mu2e::CrvCoincidenceCluster,mu2e::CrvCoincidenceClusterMC,void>" />
+<class name="art::Assns<mu2e::CrvCoincidenceClusterMC,mu2e::CrvCoincidenceCluster,void>" />
+<class name="art::Wrapper<art::Assns<mu2e::CrvCoincidenceCluster,mu2e::CrvCoincidenceClusterMC,void> >" />
+<class name="art::Wrapper<art::Assns<mu2e::CrvCoincidenceClusterMC,mu2e::CrvCoincidenceCluster,void> >" />
+
+
 <!--  ********* ExtMon  ********* -->
 
 <class name="mu2e::ExtMonFNALSimHit" />

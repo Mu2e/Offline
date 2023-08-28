@@ -159,6 +159,14 @@ BEGIN_PROLOG
       crvRecoPulsesModuleLabel  : "CrvRecoPulses"
     }
 
+    # Makes one big Assns for mutiple CrvCoincidenceCluster collections
+    CrvCoincidenceClusterMCAssns : {
+      module_type : "MakeCrvCoincidenceClusterMCAssns"
+      crvCoincidenceTags : [ "CrvCoincidenceClusterFinder" ]
+      crvCoincidenceMCTags : [ "CrvCoincidenceClusterMatchMC" ]
+    }
+
+
 CrvDAQPackage :
 {
    producers :
@@ -178,8 +186,10 @@ CrvRecoMCPackage :
    {
      @table::CrvRecoPackage.producers
      CrvCoincidenceClusterMatchMC : @local::CrvCoincidenceClusterMatchMC
+     CrvCoincidenceClusterMCAssns : @local::CrvCoincidenceClusterMCAssns
    }
    CrvRecoMCSequence : [ @sequence::CrvRecoPackage.CrvRecoSequence, CrvCoincidenceClusterMatchMC ]
+   CrvMCAssnsSequence : [ CrvCoincidenceClusterMCAssns ] # want to run this after compression in Production so put in a separate sequence
 }
 
 CrvResponsePackage :

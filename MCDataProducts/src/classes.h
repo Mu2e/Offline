@@ -72,6 +72,7 @@
 #include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
 #include "Offline/MCDataProducts/inc/CrvCoincidenceClusterMC.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/MCDataProducts/inc/CrvCoincidenceClusterMCAssns.hh"
 
 // ExtMon
 #include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
