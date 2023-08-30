@@ -230,7 +230,7 @@ namespace mu2e {
       const GenParticleCollection& particles(*particlesh);
       for(unsigned i=0; i < particles.size(); ++i) {
 
-        const MARSInfo& info = marsInfoFinder.at(i).ref();
+        const MARSInfo info = marsInfoFinder.at(i).ref();
 
         gpnt_.run = info.runNumber();
         gpnt_.marsSubRun = info.subRunNumber();
