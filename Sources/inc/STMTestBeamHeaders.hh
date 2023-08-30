@@ -10,6 +10,7 @@
 #include <array>
 #include <ctime>
 #include <iomanip>
+#include <cstdint>
 
 namespace mu2e {
 

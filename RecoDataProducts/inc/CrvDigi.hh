@@ -8,6 +8,7 @@
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include <array>
 #include <vector>
+#include <cstdint>
 
 namespace mu2e
 {
