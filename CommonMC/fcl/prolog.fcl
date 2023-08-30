@@ -7,10 +7,6 @@ muLifeGenIds : [ "StoppedParticleReactionGun", "dioTail", "ExternalRMC", "Intern
   "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", "MuCapPhotonGenTool", "MuCapGammaRayGenTool" ]
 CommonMC: {
   producers: {
-    #
-    # time offset producers
-    protonTimeOffset : { module_type: ProtonTimeOffset }
-    cosmicTimeOffset : { module_type: CosmicTimeOffset }
     # Event window marker
     EWMProducer : {
       module_type : EventWindowMarkerProducer
