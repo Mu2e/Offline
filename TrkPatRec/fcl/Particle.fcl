@@ -1,5 +1,11 @@
 BEGIN_PROLOG
 
+# fit directions
+FitDir : {
+  downstream : 0
+  upstream : 1
+}
+
 #NB: fcl doesn't allow underscores in parameter names
 Particle : {
   eminus : 11
