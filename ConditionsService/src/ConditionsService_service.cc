@@ -21,7 +21,6 @@
 // Would like to break the coupling to these.
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/CrvParams.hh"
-#include "Offline/ConditionsService/inc/DAQParams.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/ConditionsService/inc/CalorimeterPhysicalConstants.hh"
 #include "Offline/ConditionsService/inc/ExtMonFNALConditions.hh"
@@ -88,7 +87,6 @@ namespace mu2e {
     const AcceleratorParams& accp = *acctmp;
     addEntity( std::move(acctmp) );
     addEntity( std::move(std::unique_ptr<CrvParams>          ( new CrvParams          (_config))) );
-    addEntity( std::move(std::unique_ptr<DAQParams>          ( new DAQParams          (_config))) );
     addEntity( std::move(std::unique_ptr<CalorimeterCalibrations>( new CalorimeterCalibrations(_config))) );
     addEntity( std::move(std::unique_ptr<CalorimeterPhysicalConstants>( new CalorimeterPhysicalConstants(_config))) );
     addEntity( std::move(std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config))) );
