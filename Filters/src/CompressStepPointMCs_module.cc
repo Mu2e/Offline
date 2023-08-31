@@ -32,7 +32,6 @@
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
@@ -105,19 +104,16 @@ private:
   std::vector<art::InputTag> _stepPointMCTags;
   std::vector<art::InputTag> _caloShowerStepTags;
   art::InputTag _simParticleTag;
-  std::vector<art::InputTag> _timeMapTags;
 
   // handles to the old collections
   art::Handle<StepPointMCCollection> _stepPointMCsHandle;
   art::Handle<CaloShowerStepCollection> _caloShowerStepsHandle;
-  std::vector<SimParticleTimeMap> _oldTimeMaps;
 
   // unique_ptrs to the new output collections
   std::vector<std::unique_ptr<StepPointMCCollection> > _newStepPointMCs;
   std::vector<std::unique_ptr<CaloShowerStepCollection> > _newCaloShowerSteps;
   std::unique_ptr<SimParticleCollection> _newSimParticles;
   std::unique_ptr<GenParticleCollection> _newGenParticles;
-  std::vector<std::unique_ptr<SimParticleTimeMap> > _newSimParticleTimeMaps;
 
   // for StepPointMCs, SimParticles and GenParticles we also need reference their new locations with art::Ptrs and so need their ProductIDs and Getters
   art::ProductID _newStepPointMCsPID;
@@ -158,7 +154,6 @@ mu2e::CompressStepPointMCs::CompressStepPointMCs(fhicl::ParameterSet const & pse
     _stepPointMCTags(pset.get<std::vector<art::InputTag> >("stepPointMCTags")),
     _caloShowerStepTags(pset.get<std::vector<art::InputTag> >("caloShowerStepTags")),
     _simParticleTag(pset.get<art::InputTag>("simParticleTag")),
-    _timeMapTags(pset.get<std::vector<art::InputTag> >("timeMapTags")),
     _minTime(pset.get<double>("minTime")),
     _maxTime(pset.get<double>("maxTime")),
     _minEdep(pset.get<double>("minEdep")),
@@ -177,10 +172,6 @@ mu2e::CompressStepPointMCs::CompressStepPointMCs(fhicl::ParameterSet const & pse
   }
   produces<SimParticleCollection>();
   produces<GenParticleCollection>();
-
-  for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
-    produces<SimParticleTimeMap>( (*i_tag).label() );
-  }
 
   if (_diagLevel > 0) {
     art::ServiceHandle<art::TFileService> tfs;
@@ -205,22 +196,6 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
   _newGenParticles = std::unique_ptr<GenParticleCollection>(new GenParticleCollection);
   _newGenParticlesPID = event.getProductID<GenParticleCollection>();
   _newGenParticleGetter = event.productGetter(_newGenParticlesPID);
-
-  _oldTimeMaps.clear();
-  for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
-    art::Handle<SimParticleTimeMap> i_timeMapHandle;
-    event.getByLabel(*i_tag, i_timeMapHandle);
-
-    if (!i_timeMapHandle.isValid()) {
-      throw cet::exception("CompressStepPointMCs") << "Couldn't find SimParticleTimeMap " << *i_tag << " in event\n";
-    }
-    _oldTimeMaps.push_back(*i_timeMapHandle);
-  }
-
-  _newSimParticleTimeMaps.clear();
-  for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
-    _newSimParticleTimeMaps.push_back(std::unique_ptr<SimParticleTimeMap>(new SimParticleTimeMap));
-  }
 
   ConditionsHandle<AcceleratorParams> accPar("ignored");
   _mbtime = accPar->deBuncherPeriod;
@@ -322,7 +297,6 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
 
   // Now compress the SimParticleCollections into their new collections
   const auto& oldSimParticles = event.getValidHandle<SimParticleCollection>(_simParticleTag);
-  art::ProductID i_product_id = oldSimParticles.id();
   compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles,
                                 _simParticlesToKeep, *_newSimParticles);
 
@@ -337,19 +311,6 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
       newsim.genParticle() = art::Ptr<GenParticle>(_newGenParticlesPID, _newGenParticles->size()-1, _newGenParticleGetter);
     }
 
-    // Update the time maps
-    art::Ptr<SimParticle> oldSimPtr(i_product_id, newsim.id().asUint(), _oldSimParticleGetter);
-    art::Ptr<SimParticle> newSimPtr(_newSimParticlesPID, newsim.id().asUint(), _newSimParticleGetter);
-    for (std::vector<SimParticleTimeMap>::const_iterator i_time_map = _oldTimeMaps.begin(); i_time_map != _oldTimeMaps.end(); ++i_time_map) {
-      size_t i_element = i_time_map - _oldTimeMaps.begin();
-
-      const SimParticleTimeMap& i_oldTimeMap = *i_time_map;
-      SimParticleTimeMap& i_newTimeMap = *_newSimParticleTimeMaps.at(i_element);
-      auto it = i_oldTimeMap.find(oldSimPtr);
-      if (it != i_oldTimeMap.end()) {
-        i_newTimeMap[newSimPtr] = it->second;
-      }
-    }
   }
 
   // Now add everything to the event
@@ -363,11 +324,6 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
   }
   event.put(std::move(_newSimParticles));
   event.put(std::move(_newGenParticles));
-
-  for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
-    size_t i_element = i_tag - _timeMapTags.begin();
-    event.put(std::move(_newSimParticleTimeMaps.at(i_element)), (*i_tag).label());
-  }
 
   ++_numInputEvents;
   if (passed) { ++_numOutputEvents; }
