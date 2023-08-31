@@ -13,7 +13,4 @@ physics : {
 }
 #include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
 physics.producers.EWMProducer.SpillType : 1
-services.DbService.purpose: MDC2020_perfect
-services.DbService.version: v1_1
-services.DbService.verbose : 2
 #include "Production/JobConfig/common/epilog.fcl"
