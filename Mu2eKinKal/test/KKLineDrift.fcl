@@ -29,7 +29,6 @@ physics :
     @table::CosmicTracking.producers
     KKLine : @local::Reconstruction.producers.KKLine
     BestCrvLine : @local::BestCrvLine
-    @table::MakeCrvCoincidenceClusterMCAssnsProducers
     @table::CosmicTracking.producers
   }
   filters : {
@@ -41,8 +40,7 @@ physics :
    }
   }
   RecoPath : [
-    @sequence::Reconstruction.LineRecoMCPath,
-    BestCrvLine, MakeCrvCoincidenceClusterMCAssns  ]
+    @sequence::Reconstruction.LineRecoMCPath, BestCrvLine ]
   analyzers : {
     TAKK : {
       @table::TrkAnaTreeMaker
@@ -87,6 +85,9 @@ physics :
 
 #include "Production/JobConfig/reco/epilog.fcl"
 #include "Offline/CRVResponse/fcl/epilog_extracted.fcl"
+
+# no need for Lorentz effects
+services.ProditionsService.strawResponse.driftIgnorePhi: true
 
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
 services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"

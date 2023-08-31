@@ -1,0 +1,19 @@
+#
+#  Run the Extracted trigger paths
+#
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/Trigger/fcl/prolog_trigger.fcl"
+process_name : OffSpillTrigger
+services : @local::Services.Reco
+source : { module_type : RootInput }
+physics : {
+  producers : { @table::Trigger.producers }
+  filters :  { @table::Trigger.filters }
+  analyzers : { @table::Trigger.analyzers }
+}
+#include "Offline/gen/fcl/Trigger/ExtrPosTrigMenu/ExtrPosTrigMenu.fcl"
+physics.producers.EWMProducer.SpillType : 0
+services.DbService.purpose: MDC2020_perfect
+services.DbService.version: v1_1
+services.DbService.verbose : 2
+#include "Production/JobConfig/common/epilog.fcl"
