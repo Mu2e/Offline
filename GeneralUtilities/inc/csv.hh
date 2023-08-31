@@ -75,8 +75,12 @@ namespace io {
             with_file_name() { std::memset(file_name, 0, max_file_name_length + 1); }
 
             void set_file_name(const char* file_name) {
-                std::strncpy(this->file_name, file_name, max_file_name_length+1);
-                this->file_name[max_file_name_length] = '\0';
+                size_t i = 0;
+                while( file_name[i] != '\0' && i < max_file_name_length) {
+                  this->file_name[i] = file_name[i];
+                  i++;
+                };
+                this->file_name[i] = '\0';
             }
 
             char file_name[max_file_name_length + 1];
