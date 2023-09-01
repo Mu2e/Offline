@@ -22,7 +22,6 @@
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/CrvParams.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "Offline/ConditionsService/inc/CalorimeterPhysicalConstants.hh"
 #include "Offline/ConditionsService/inc/ExtMonFNALConditions.hh"
 
 using namespace std;
@@ -88,7 +87,6 @@ namespace mu2e {
     addEntity( std::move(acctmp) );
     addEntity( std::move(std::unique_ptr<CrvParams>          ( new CrvParams          (_config))) );
     addEntity( std::move(std::unique_ptr<CalorimeterCalibrations>( new CalorimeterCalibrations(_config))) );
-    addEntity( std::move(std::unique_ptr<CalorimeterPhysicalConstants>( new CalorimeterPhysicalConstants(_config))) );
     addEntity( std::move(std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config))) );
   }
 
