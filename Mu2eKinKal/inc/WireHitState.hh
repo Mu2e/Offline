@@ -5,6 +5,7 @@
 #include "Offline/Mu2eKinKal/inc/WHSMask.hh"
 #include <stdexcept>
 #include <iostream>
+#include <array>
 
 namespace mu2e {
   // struct describing wire hit internal state
