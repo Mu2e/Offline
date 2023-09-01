@@ -85,9 +85,9 @@ namespace mu2e {
     std::unique_ptr<AcceleratorParams>  acctmp(new AcceleratorParams(_config));
     const AcceleratorParams& accp = *acctmp;
     addEntity( std::move(acctmp) );
-    addEntity( std::move(std::unique_ptr<CrvParams>          ( new CrvParams          (_config))) );
-    addEntity( std::move(std::unique_ptr<CalorimeterCalibrations>( new CalorimeterCalibrations(_config))) );
-    addEntity( std::move(std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config))) );
+    addEntity( std::unique_ptr<CrvParams>          ( new CrvParams          (_config)) );
+    addEntity( std::unique_ptr<CalorimeterCalibrations>( new CalorimeterCalibrations(_config)) );
+    addEntity( std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config)) );
   }
 
   // Check that the configuration is self consistent.
