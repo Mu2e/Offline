@@ -16,7 +16,8 @@ namespace mu2e {
     StrawHitUpdaters::algorithm algo_ = StrawHitUpdaters::unknown; // algorithm used to set this state
     bool frozen_ = false; // if set, state not allowed to change during update
     KKSHFlag flag_; // flags for KKStrawHit
-    std::array<double,4> quality_ = {-1.0,-1.0,-1.0,-1.0}; // algorithm-dependent, dimensionless quality of this state assignment
+    using QType = std::array<double,4>;
+    QType quality_ = {-1.0,-1.0,-1.0,-1.0}; // algorithm-dependent, dimensionless quality of this state assignment
 // convenience functions
     bool frozen() const { return frozen_; }
     bool wireConstraint() const { return state_ == null; }
