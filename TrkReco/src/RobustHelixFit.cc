@@ -880,7 +880,7 @@ bool RobustHelixFit::initFZ_from_dzFrequency(RobustHelixFinderData& HelixData, i
 
   int                peaks_found(0);
   std::vector<float> swmax(_initFZFrequencyNMaxPeaks), xmp(_initFZFrequencyNMaxPeaks), sigma(_initFZFrequencyNMaxPeaks);
-  std::vector<int>   indexPeak;(_initFZFrequencyNMaxPeaks);
+  std::vector<int>   indexPeak(_initFZFrequencyNMaxPeaks);
   int                first_peak(-1);
   float              minNCounts(10.);
 

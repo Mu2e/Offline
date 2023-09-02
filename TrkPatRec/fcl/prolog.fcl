@@ -7,11 +7,6 @@
 #include "Offline/fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG
 
-# this should go in a general file FIXME!!
-FitDir : {
-  downstream : 0
-  upstream : 1
-}
 
 TimeCalculator : {
   TrkToCaloTimeOffset : @local::TrackCaloMatching.DtOffset
