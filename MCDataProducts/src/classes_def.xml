@@ -30,9 +30,6 @@
  <class name="mu2e::GenParticleSPMHistory" />
  <class name="art::Wrapper<mu2e::GenParticleSPMHistory>"/>
 
- <class name="mu2e::FixedTimeMap"/>
- <class name="art::Wrapper<mu2e::FixedTimeMap>" />
-
  <class name="mu2e::StageParticle"/>
  <class name="mu2e::StageParticleCollection"/>
  <class name="art::Wrapper<mu2e::StageParticleCollection>"/>
@@ -68,10 +65,6 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
   _endMomentum = ROOT::Math::XYZTVectorF(onfile._endMomentum);
 ]]>
 </ioread>
-
-<class name="mu2e::SimParticleTimeMap" />
-<class name="std::pair<art::Ptr<mu2e::SimParticle>,double>" />
-<class name="art::Wrapper<mu2e::SimParticleTimeMap>" />
 
 <class name="mu2e::StepPointMC"/>
 <class name="mu2e::StepPointMCCollection"/>
