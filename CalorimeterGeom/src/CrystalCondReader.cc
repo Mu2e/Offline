@@ -77,11 +77,11 @@ namespace mu2e {
       const void CrystalCondReader::print(std::ostream &os) const
       {
            os<<"Crystal position"<<std::endl;
-           for (const auto iter : dataPosition_)
+           for (const auto& iter : dataPosition_)
              os<<iter.first<<" "<<iter.second.at(0)<<" "<<iter.second.at(1)<<std::endl;
 
            os<<"Crystal size"<<std::endl;
-           for (const auto iter : dataSize_)
+           for (const auto& iter : dataSize_)
              os<<iter.first<<" "<<iter.second.at(0)<<" "<<iter.second.at(1)<<std::endl;
       }
 

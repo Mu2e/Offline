@@ -101,7 +101,7 @@ namespace mu2e {
         };
 
         std::string present;
-        for(const auto k: keys) {
+        for(const auto& k: keys) {
             if(config.hasName(k)) {
                 present += k+" ";
             }
