@@ -49,12 +49,15 @@ namespace mu2e {
 
 #ifndef __ROOTCLING__
   void ComboHitCollection::setParentHandle(art::Event const& event, art::Handle<ComboHitCollection>& phandle) const  {
+    // I need to replace calls to this function with ones that just return the ProductPtr.  There's no need to work with
+    // explicit handles when making collections or sub-collections  TODO
     // set the handle to an invalid state in case we find no such
     phandle = art::Handle<ComboHitCollection>();
     vector<art::Handle<ComboHitCollection> > all_handles =  event.getMany<ComboHitCollection>();
-    // exhaustive search is fast enough
+// exhaustive search is fast enough
     for (auto const& handle : all_handles) {
-      if(_parent == handle.id()){
+      CHCPTR temp(handle);
+      if(_parent == temp){
         phandle = handle;
         break;
       }
@@ -63,15 +66,15 @@ namespace mu2e {
 
   void ComboHitCollection::setParent(art::Handle<ComboHitCollection> const& phandle) {
     if(phandle.isValid()){
-      _parent = phandle.id();
+      _parent = CHCPTR(phandle);
     } else {
       throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid handle" << std::endl;
     }
   }
 
   void ComboHitCollection::setParent(art::ValidHandle<ComboHitCollection> const& phandle) {
-    if(phandle.isValid()){
-      _parent = phandle.id();
+    if(phandle.isValid()){ // this should be unnecessary for a phandle FIXME
+      _parent = CHCPTR(phandle);
     } else {
       throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid handle" << std::endl;
     }
@@ -80,7 +83,7 @@ namespace mu2e {
   void ComboHitCollection::fillStrawDigiIndices(art::Event const& event, uint16_t chindex, vector<StrawDigiIndex>& shids) const {
     ComboHit const& ch = this->at(chindex);
    // see if this collection references other collections: if so, go down 1 layer
-    if(_parent.isValid()){
+    if(_parent.refCore().isNonnull()){
     // get the parent handle
       art::Handle<ComboHitCollection> ph;
       setParentHandle(event,ph);
@@ -105,7 +108,7 @@ namespace mu2e {
   void ComboHitCollection::fillStrawHitIndices(art::Event const& event, uint16_t chindex, vector<StrawHitIndex>& shids) const {
     ComboHit const& ch = this->at(chindex);
    // see if this collection references other collections: if so, go down 1 layer
-    if(_parent.isValid()){
+    if(_parent.refCore().isNonnull()){
     // get the parent handle
       art::Handle<ComboHitCollection> ph;
       setParentHandle(event,ph);
@@ -131,14 +134,14 @@ namespace mu2e {
   // reset
     shids = vector<vector<StrawHitIndex> >(size());
    // see if this collection references other collections: if so, go down 1 layer
-    if(parent().isValid()){
+    if(_parent.refCore().isNonnull()){
     // get the parent handle
       art::Handle<ComboHitCollection> ph;
       setParentHandle(event,ph);
       if(ph.isValid()){
         const ComboHitCollection *pc = ph.product();
         // check down 1 more layer
-        if(pc->parent().isValid()){
+        if(pc->parent().refCore().isNonnull()){
         // call down 1 layer
           vector<vector<StrawHitIndex>> pshids(size());
           pc->fillStrawHitIndices(event,pshids);
@@ -166,7 +169,7 @@ namespace mu2e {
   }
 
   void ComboHitCollection::fillComboHits(art::Event const& event, std::vector<uint16_t> const& indices, CHCIter& iters) const {
-    if(_parent.isValid()){
+    if(_parent.refCore().isNonnull()){
     // get the parent handle
       art::Handle<ComboHitCollection> ph;
       setParentHandle(event,ph);
@@ -196,7 +199,7 @@ namespace mu2e {
     iters.clear();
     ComboHit const& ch = (*this)[chindex];
    // see if this collection references other collections: if so, we can fill the vector, if not reference myself
-    if(_parent.isValid()){
+    if(_parent.refCore().isNonnull()){
     // get the parent handle
       art::Handle<ComboHitCollection> ph;
       setParentHandle(event,ph);
@@ -213,6 +216,9 @@ namespace mu2e {
     }
     return retval;
   }
+  void ComboHitCollection::setParent(ComboHitCollection const& other) { _parent = other.parent(); }
+  void ComboHitCollection::setParent(CHCPTR const& parent) { _parent = parent; }
+
 #endif
 
   uint16_t ComboHitCollection::nStrawHits() const {
