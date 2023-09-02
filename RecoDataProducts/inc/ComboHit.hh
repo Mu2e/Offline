@@ -19,8 +19,9 @@
 #ifndef __ROOTCLING__
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "canvas/Persistency/Provenance/ProductID.h"
+//#include "canvas/Persistency/Provenance/ProductID.h"
 #endif
+#include "canvas/Persistency/Common/ProductPtr.h"
 // C++ includes
 #include <array>
 #include <vector>
@@ -126,6 +127,7 @@ namespace mu2e {
   // ComboHitCollection is a non-trivial subclass of vector which includes navigation of nested ComboHits
   class ComboHitCollection : public std::vector<mu2e::ComboHit> {
     public:
+      using CHCPTR = art::ProductPtr<ComboHitCollection>;
       ComboHitCollection(bool sorted=false) : _sorted(sorted) {}
       typedef std::vector<ComboHitCollection::const_iterator> CHCIter;
       // fill a vector of indices to the underlying digis used in a given ComboHit
@@ -146,17 +148,20 @@ namespace mu2e {
       // set the parent Id given a handle to the parent collection
       void setParent(art::Handle<ComboHitCollection> const& phandle);
       void setParent(art::ValidHandle<ComboHitCollection> const& phandle);
-      // or directly from the product ID
+      // or directly from the productPtr
+      void setParent(CHCPTR const& parent);
+      // or from another collection
+      void setParent(ComboHitCollection const& other);
 #endif
-      void setParent(art::ProductID const& par){ _parent = par; }
       // accessors
-      art::ProductID const& parent() const { return _parent; }
+      auto const& parent() const { return _parent; }
       bool sorted() const { return _sorted; }
       uint16_t nStrawHits() const;
     private:
       // reference back to the input ComboHit collection this one references
       // This can be used to chain back to the original StrawHit indices
-      art::ProductID _parent;
+//      art::ProductID _parent;
+      CHCPTR _parent; // pointer to the parent object
       bool _sorted; // record if this collection was sorted
   };
   inline std::ostream& operator<<( std::ostream& ost,
