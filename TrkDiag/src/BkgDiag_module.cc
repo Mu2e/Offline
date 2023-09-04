@@ -48,11 +48,9 @@ namespace mu2e
         fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"),0 };
         fhicl::Atom<bool> mcdiag{ Name("MCDiag"), Comment("MonteCarlo Diag"), true };
         fhicl::Atom<bool> hdiag{ Name("HitDiag"), Comment("Hit-level Diag tuple"), false };
-        fhicl::Atom<bool> useflagcol{ Name("useFlagCollection"), Comment("Use Flag Collection"), false };
         fhicl::Atom<float> maxdt{ Name("maxTimeDifference"), Comment("Max Time Difference"), 50.0 };
         fhicl::Atom<float> maxdrho{ Name("maxRhoDifference"), Comment("Max Rho Difference"), 50.0 };
         fhicl::Atom<art::InputTag> ComboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
-        fhicl::Atom<art::InputTag> StrawHitFlagCollection{   Name("StrawHitFlagCollection"),   Comment("StrawHitFlag collection name") };
         fhicl::Atom<art::InputTag> BkgClusterCollection{   Name("BkgClusterCollection"),   Comment("BackgroundCluster collection name") };
         fhicl::Atom<art::InputTag> BkgClusterHitCollection{   Name("BkgClusterHitCollection"),   Comment("BackgroundClusterHit collection name") };
         fhicl::Atom<art::InputTag> StrawDigiMCCollection{   Name("StrawDigiMCCollection"),   Comment("StrawDigiMC collection name") };
@@ -72,11 +70,10 @@ namespace mu2e
 
       // control flags
       int _diag,_debug;
-      bool _mcdiag, _hdiag, _useflagcol;
+      bool _mcdiag, _hdiag;
       float _maxdt, _maxdrho;
       // data tags
       art::ProductToken<ComboHitCollection> _chToken;
-      art::ProductToken<StrawHitFlagCollection> _shfToken;
       art::ProductToken<BkgClusterCollection> _bkgcToken;
       art::ProductToken<BkgClusterHitCollection> _bkghToken;
       art::ProductToken<StrawDigiMCCollection> _mcdigisToken;
@@ -84,7 +81,6 @@ namespace mu2e
       // time offset
       // cache of event objects
       const ComboHitCollection* _chcol;
-      const StrawHitFlagCollection* _shfcol;
       const StrawDigiMCCollection *_mcdigis;
       const PrimaryParticle *_mcprimary;
       const BkgClusterCollection *_bkgccol;
@@ -135,11 +131,9 @@ namespace mu2e
     _debug( config().debug() ),
     _mcdiag( config().mcdiag() ),
     _hdiag( config().hdiag() ),
-    _useflagcol( config().useflagcol() ),
     _maxdt( config().maxdt() ),
     _maxdrho( config().maxdrho() ),
     _chToken{ consumes<ComboHitCollection>(config().ComboHitCollection() ) },
-    _shfToken{ consumes<StrawHitFlagCollection>(config().StrawHitFlagCollection() ) },
     _bkgcToken{ consumes<BkgClusterCollection>(config().BkgClusterCollection() ) },
     _bkghToken{ consumes<BkgClusterHitCollection>(config().BkgClusterHitCollection() ) },
     _mcdigisToken{ consumes<StrawDigiMCCollection>(config().StrawDigiMCCollection() ) },
@@ -404,12 +398,10 @@ namespace mu2e
   }
 
   bool BkgDiag::findData(const art::Event& evt){
-    _chcol = 0; _shfcol = 0; _bkgccol = 0; _mcdigis = 0;
+    _chcol = 0; _bkgccol = 0; _mcdigis = 0;
     // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
     auto chH = evt.getValidHandle(_chToken);
     _chcol = chH.product();
-    auto shfH = evt.getValidHandle(_shfToken);
-    _shfcol = shfH.product();
     auto bkgcH = evt.getValidHandle(_bkgcToken);
     _bkgccol = bkgcH.product();
     auto bkghH = evt.getValidHandle(_bkghToken);
@@ -420,7 +412,7 @@ namespace mu2e
       auto mcpH = evt.getValidHandle(_mcprimaryToken);
       _mcprimary = mcpH.product();
     }
-    return _chcol != 0 && _shfcol != 0 && _bkgccol != 0
+    return _chcol != 0 && _bkgccol != 0
       && ( (_mcdigis != 0 && _mcprimary != 0)  || !_mcdiag);
   }
 
@@ -562,11 +554,7 @@ namespace mu2e
 
   void BkgDiag::fillStrawHitInfo(size_t ich, StrawHitInfo& shinfo) const {
     ComboHit const& ch = _chcol->at(ich);
-    StrawHitFlag shf;
-    if(_useflagcol)
-      shf = _shfcol->at(ich);
-    else
-      shf = ch.flag();
+    auto const& shf = ch.flag();
 
     shinfo._stereo = shf.hasAllProperties(StrawHitFlag::stereo);
     shinfo._tdiv = shf.hasAllProperties(StrawHitFlag::tdiv);

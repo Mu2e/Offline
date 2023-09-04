@@ -25,7 +25,6 @@
 #include "TTree.h"
 // data
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
@@ -49,9 +48,7 @@ namespace mu2e
         fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug"),0 };
         fhicl::Atom<bool> mcdiag{ Name("MCDiag"), Comment("MonteCarlo Diag"), true };
         fhicl::Atom<bool> digidiag{ Name("digiDiag"), Comment("Digi Diag"), true };
-        fhicl::Atom<bool> useflagcol{ Name("useFlagCollection"), Comment("UseFlagCollection"), false };
         fhicl::Atom<art::InputTag> ComboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
-        fhicl::Atom<art::InputTag> StrawHitFlagCollection{   Name("StrawHitFlagCollection"),   Comment("StrawHitFlag collection name") };
         fhicl::Atom<art::InputTag> StrawDigiCollection{   Name("StrawDigiCollection"),   Comment("StrawDigi collection name") };
         fhicl::Atom<art::InputTag> StrawDigiMCCollection{   Name("StrawDigiMCCollection"),   Comment("StrawDigiMC collection name") };
         fhicl::Atom<art::InputTag> MCPrimary{ Name("MCPrimary"),Comment("MC Primary Particle") };
@@ -64,17 +61,15 @@ namespace mu2e
     private:
       // configuration
       int _diag;
-      bool _mcdiag, _digidiag, _useflagcol;
+      bool _mcdiag, _digidiag;
       // event object Tags
       art::ProductToken<ComboHitCollection> _chToken;
-      art::ProductToken<StrawHitFlagCollection> _shfToken;
       art::ProductToken<StrawDigiMCCollection> _mcdigisToken;
       art::ProductToken<StrawDigiCollection> _digisToken;
       art::ProductToken<StrawDigiADCWaveformCollection> _digiadcsToken;
       art::ProductToken<PrimaryParticle> _mcprimaryToken;
      // event data cache
       const ComboHitCollection* _chcol;
-      const StrawHitFlagCollection* _shfcol;
       const StrawDigiMCCollection *_mcdigis;
       const StrawDigiCollection *_digis;
       const StrawDigiADCWaveformCollection *_digiadcs;
@@ -128,9 +123,7 @@ namespace mu2e
     _diag( config().diag() ),
     _mcdiag( config().mcdiag() ),
     _digidiag( config().digidiag() ),
-    _useflagcol( config().useflagcol() ),
     _chToken{ consumes<ComboHitCollection>(config().ComboHitCollection() ) },
-    _shfToken{ consumes<StrawHitFlagCollection>(config().StrawHitFlagCollection() ) },
     _mcdigisToken{ consumes<StrawDigiMCCollection>(config().StrawDigiMCCollection() ) },
     _digisToken{ consumes<StrawDigiCollection>(config().StrawDigiCollection() ) },
     _digiadcsToken{ consumes<StrawDigiADCWaveformCollection>(config().StrawDigiCollection() ) },
@@ -243,11 +236,7 @@ namespace mu2e
       _ptime = ch.propTime();
       _edep = ch.energyDep();
       _qual = ch.qual();
-      StrawHitFlag flag;
-      if(_useflagcol)
-        flag = _shfcol->at(ich);
-      else
-        flag = ch.flag();
+      auto const& flag = ch.flag();
       _stereo = flag.hasAllProperties(StrawHitFlag::stereo);
       _tdiv = flag.hasAllProperties(StrawHitFlag::tdiv);
       _esel = flag.hasAllProperties(StrawHitFlag::energysel);
@@ -404,7 +393,7 @@ namespace mu2e
   }
 
   bool ComboHitDiag::findData(const art::Event& evt){
-    _chcol = 0;  _shfcol = 0; _mcdigis = 0; _digis = 0; _digiadcs = 0;
+    _chcol = 0; _mcdigis = 0; _digis = 0; _digiadcs = 0;
     auto chH = evt.getValidHandle(_chToken);
     _chcol = chH.product();
     if(_mcdiag){
@@ -413,17 +402,13 @@ namespace mu2e
        auto mcpH = evt.getValidHandle(_mcprimaryToken);
       _mcprimary = mcpH.product();
    }
-    if(_useflagcol){
-      auto shfH = evt.getValidHandle(_shfToken);
-      _shfcol = shfH.product();
-    }
     if (_digidiag){
       auto dH = evt.getValidHandle(_digisToken);
       _digis = dH.product();
       auto daH = evt.getValidHandle(_digiadcsToken);
       _digiadcs = daH.product();
     }
-    return _chcol != 0 && (!_useflagcol || _shfcol != 0) && ( (_mcdigis != 0 && _mcprimary != 0)  || !_mcdiag)
+    return _chcol != 0 && ( (_mcdigis != 0 && _mcprimary != 0)  || !_mcdiag)
       && ((_digis != 0 && _digiadcs != 0) || !_digidiag);
   }
 }

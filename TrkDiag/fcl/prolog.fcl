@@ -10,7 +10,6 @@ BD : {
   BkgClusterCollection:"FlagBkgHits"
   BkgClusterHitCollection:"FlagBkgHits"
   MCPrimary : compressDigiMCs
-  useFlagCollection : true
 }
 
 TRD : {
@@ -29,7 +28,6 @@ TCD : {
   module_type : TimeClusterDiag
   StrawDigiMCCollection : "compressDigiMCs"
   ComboHitCollection : "FlagBkgHits"
-  UseFlagCollection : true
   HitSelectionBits      : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits     : ["Background"]
   ClusterMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
@@ -45,7 +43,6 @@ HD : {
   VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
   HelixSeedCollection : "MHDeM"
   ComboHitCollection : "FlagBkgHits"
-  UseFlagCollection : true
   PlotHelices : false
   InclusivePlotFlagBits : ["HitsOK"]
 }
@@ -53,7 +50,6 @@ HD : {
 CHD : {
   module_type : ComboHitDiag
   digiDiag : true
-  useFlagCollection : true
   StrawDigiMCCollection : "compressDigiMCs"
   StrawDigiCollection : "makeSD"
   ComboHitCollection : "FlagBkgHits"
