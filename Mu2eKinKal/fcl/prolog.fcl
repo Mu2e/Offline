@@ -192,7 +192,6 @@ Mu2eKinKal : {
 
   KKPrecursors : {
     ComboHitCollection : "makeSH"
-    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
     CaloClusterCollection : "CaloClusterMaker"
   }
 
@@ -208,7 +207,6 @@ Mu2eKinKal : {
     CosmicTrackSeedCollections : ["LineFinder"]
     ComboHitCollection : "makeSH"
     CaloClusterCollection : "CaloClusterMaker"
-    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
     SeedFlags : [ "HelixOK" ]
   }
 }

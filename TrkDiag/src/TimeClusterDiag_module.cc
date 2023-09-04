@@ -280,7 +280,7 @@ namespace mu2e {
       if(_useflagcol)_shfcol.back().merge(_evtshfcol->at(ich));
       if(_mcdiag){
         std::vector<StrawDigiIndex> shids;
-        _chcol->fillStrawDigiIndices(event,ich,shids);
+        _chcol->fillStrawDigiIndices(ich,shids);
         unsigned nce(0);
         for(auto idigi : shids) {
           StrawDigiMC const& mcdigi = _mcdigis->at(idigi);
@@ -381,7 +381,7 @@ namespace mu2e {
       // MC truth
       if(_mcdiag){
         std::vector<StrawDigiIndex> shids;
-        _chcol->fillStrawDigiIndices(event,ich,shids);
+        _chcol->fillStrawDigiIndices(ich,shids);
         StrawDigiMC const& mcdigi = _mcdigis->at(shids[0]);// FIXME!
         StrawEnd itdc;
         tchi._mctime = mcdigi.strawGasStep(itdc)->time();
@@ -514,7 +514,7 @@ namespace mu2e {
     vector<spcount> sct;
     for (auto ich : tc._strawHitIdxs) {
       std::vector<StrawDigiIndex> shids;
-      _chcol->fillStrawDigiIndices(event,ich,shids);
+      _chcol->fillStrawDigiIndices(ich,shids);
       for(auto shid : shids ) {
         StrawDigiMC const& mcdigi = _mcdigis->at(shid);
         StrawEnd itdc;

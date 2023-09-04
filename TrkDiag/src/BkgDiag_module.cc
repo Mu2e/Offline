@@ -243,7 +243,7 @@ namespace mu2e
       art::Ptr<SimParticle> spp; // main SimParticle for this
       if(_mcdiag){
         std::vector<StrawDigiIndex> dids;
-        _chcol->fillStrawDigiIndices(event,ich,dids);
+        _chcol->fillStrawDigiIndices(ich,dids);
         StrawDigiMC const& mcdigi = _mcdigis->at(dids[0]);// taking 1st digi: is there a better idea??
         art::Ptr<SimParticle> const& spp = mcdigi.earlyStrawGasStep()->simParticle();
         _hitPdg[_nhits] = spp->pdgId();
@@ -297,7 +297,7 @@ namespace mu2e
         std::vector<StrawDigiIndex> cdids;
         for(auto const& ich : cluster.hits()){
           // get the list of StrawHit indices associated with this ComboHit
-          _chcol->fillStrawDigiIndices(event,ich,cdids);
+          _chcol->fillStrawDigiIndices(ich,cdids);
         }
         std::vector<int> icontrib;
         findMain(cdids,mptr,_mmom,icontrib);
@@ -350,7 +350,7 @@ namespace mu2e
         fillStrawHitInfo(ich,bkghinfo);
         if(_mcdiag){
           std::vector<StrawDigiIndex> dids;
-          _chcol->fillStrawDigiIndices(event,ich,dids);
+          _chcol->fillStrawDigiIndices(ich,dids);
           StrawDigiMC const& mcdigi = _mcdigis->at(dids[0]);// taking 1st digi: is there a better idea??
           fillStrawHitInfoMC(mcdigi,mptr,bkghinfo);
           //global counting for the cluster: count signal hits only, but background from background is OK

@@ -266,9 +266,9 @@ namespace mu2e
       // now hit-by-hit info
       _chinfo.clear();
       if(_diag > 1){
-        // loop over comopnents (also ComboHits)
+        // loop over components (also ComboHits)
         ComboHitCollection::CHCIter compis;
-        _chcol->fillComboHits(evt,ich,compis);
+        _chcol->fillComboHits(ich,compis);
         float minz(1.0e6),maxz(-1.0);
         for(auto compi : compis) {
           ComboHit const& comp = *compi;
@@ -299,7 +299,7 @@ namespace mu2e
         _prel=-1;
         // get the StrawDigi indices associated with this ComboHit
         std::vector<StrawDigiIndex> shids;
-        _chcol->fillStrawDigiIndices(evt,ich,shids);
+        _chcol->fillStrawDigiIndices(ich,shids);
         if(shids.size() != ch.nStrawHits())
           throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit Nesting, nshids = "
             << shids.size() << " , n strawhits = " << ch.nStrawHits() << std::endl;
@@ -368,7 +368,7 @@ namespace mu2e
       }
       if (_digis != 0){
         std::vector<StrawDigiIndex> shids;
-        _chcol->fillStrawDigiIndices(evt,ich,shids);
+        _chcol->fillStrawDigiIndices(ich,shids);
         // use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
         auto digi = _digis->at(shids[0]);
         for(size_t iend=0;iend<2;++iend){
@@ -384,7 +384,7 @@ namespace mu2e
       }
       if (_digiadcs != 0){
         std::vector<StrawDigiIndex> shids;
-        _chcol->fillStrawDigiIndices(evt,ich,shids);
+        _chcol->fillStrawDigiIndices(ich,shids);
         // use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
         auto digiadc = _digiadcs->at(shids[0]);
         _digiadc = digiadc.samples();

@@ -378,7 +378,7 @@ namespace mu2e {
     for(auto ihs = hsc.begin(); ihs != hsc.end(); ++ihs) {
       std::vector<StrawDigiIndex> sdis;
       for(size_t ihit=0;ihit < ihs->hits().size();ihit++)
-        ihs->hits().fillStrawDigiIndices(evt,ihit,sdis);
+        ihs->hits().fillStrawDigiIndices(ihit,sdis);
       unsigned nmc = TrkMCTools::primaryParticle(spp,sdis,_mcdigis);
       if(spp == bestspp && nmc > nprimary){
         retval = ihs;
@@ -396,7 +396,7 @@ namespace mu2e {
       // translate from ComboHit to StrawDigi indices
       std::vector<StrawDigiIndex> sdis;
       for(auto ihit : itc->hits())
-        _chcol->fillStrawDigiIndices(evt,ihit,sdis);
+        _chcol->fillStrawDigiIndices(ihit,sdis);
       unsigned nmc = TrkMCTools::primaryParticle(spp,sdis,_mcdigis);
       if(spp == bestspp && nmc > nprimary){
         retval = itc;

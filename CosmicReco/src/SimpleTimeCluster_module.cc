@@ -15,7 +15,6 @@
 // data
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 // tracking
 #include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
@@ -53,7 +52,6 @@ public:
     fhicl::Atom<bool> useonepanel{Name("UseOnlyOnePanel"), Comment("Use hits from one panel only"), false};
     fhicl::Atom<bool> useoneplane{Name("UseOnlyOnePlane"), Comment("Use hits from one plane only"), false};
     fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"), Comment("tag for combo hit collection")};
-    fhicl::Atom<art::InputTag> shfToken{Name("StrawHitFlagCollection"), Comment("tag for StrawHitFlag collection")};
     fhicl::Sequence<std::string> hsel{Name("HitSelectionBits"), Comment("Required flags if TestFlag is set"), std::vector<std::string>{"EnergySelection", "TimeSelection"}};
     fhicl::Sequence<std::string> hbkg{Name("HitBackgroundBits"), Comment("Excluded flags if TestFlag is set"), std::vector<std::string>{}};
   };
@@ -77,7 +75,6 @@ private:
   bool _useonepanel;
   bool _useoneplane;
   art::InputTag _chToken;
-  art::InputTag _shfToken;
   const ComboHitCollection* _chcol;
   StrawHitFlag _hsel, _hbkg;
 
@@ -100,7 +97,6 @@ SimpleTimeCluster::SimpleTimeCluster(const Parameters& conf) :
     _useonepanel(conf().useonepanel()),
     _useoneplane(conf().useoneplane()),
     _chToken(conf().chToken()),
-    _shfToken(conf().shfToken()),
     _hsel(conf().hsel()),
     _hbkg(conf().hbkg())
 {
