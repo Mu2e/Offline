@@ -111,7 +111,7 @@ namespace mu2e {
 
           for (int ich=0; ich <data_->Nch_ ; ++ich){
               std::vector<StrawDigiIndex> dids;
-              data_->chcol_->fillStrawDigiIndices(*data_->event_,ich,dids);
+              data_->chcol_->fillStrawDigiIndices(ich,dids);
               const StrawDigiMC& mcdigi        = mcdigis.at(dids[0]);// taking 1st digi: is there a better idea??
               const art::Ptr<SimParticle>& spp = mcdigi.earlyStrawGasStep()->simParticle();
               data_->chPdg_[ich]    = spp->pdgId();

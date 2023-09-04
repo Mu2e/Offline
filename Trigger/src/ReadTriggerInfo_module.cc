@@ -1383,7 +1383,7 @@ namespace mu2e {
 
       for (int j=0; j<nch; ++j){
         std::vector<StrawDigiIndex> shids;
-        HSeed->hits().fillStrawDigiIndices((*_event),j,shids);
+        HSeed->hits().fillStrawDigiIndices(j,shids);
         //        hit            = &HSeed->hits().at(j);
 
         for (size_t k=0; k<shids.size(); ++k) {

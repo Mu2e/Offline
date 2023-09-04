@@ -6,8 +6,7 @@ BEGIN_PROLOG
 BD : {
   module_type : BkgDiag
   StrawDigiMCCollection : "compressDigiMCs"
-  ComboHitCollection : "makePH"
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  ComboHitCollection : "FlagBkgHits"
   BkgClusterCollection:"FlagBkgHits"
   BkgClusterHitCollection:"FlagBkgHits"
   MCPrimary : compressDigiMCs
@@ -24,15 +23,13 @@ SHD : {
   module_type : StrawHitDiag
   StrawDigiMCCollection : "compressDigiMCs"
   ComboHitFlag : false
-  StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 }
 
 TCD : {
   module_type : TimeClusterDiag
   StrawDigiMCCollection : "compressDigiMCs"
-  ComboHitCollection : "makePH"
+  ComboHitCollection : "FlagBkgHits"
   UseFlagCollection : true
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   HitSelectionBits      : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits     : ["Background"]
   ClusterMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
@@ -47,9 +44,8 @@ HD : {
   StrawDigiMCCollection : "compressDigiMCs"
   VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
   HelixSeedCollection : "MHDeM"
-  ComboHitCollection : "makePH"
+  ComboHitCollection : "FlagBkgHits"
   UseFlagCollection : true
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   PlotHelices : false
   InclusivePlotFlagBits : ["HitsOK"]
 }
@@ -60,8 +56,7 @@ CHD : {
   useFlagCollection : true
   StrawDigiMCCollection : "compressDigiMCs"
   StrawDigiCollection : "makeSD"
-  ComboHitCollection : "makePH"
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  ComboHitCollection : "FlagBkgHits"
   MCPrimary : compressDigiMCs
 }
 

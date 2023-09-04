@@ -17,7 +17,6 @@
 #include <stdint.h>
 // art includes
 #ifndef __ROOTCLING__
-#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 //#include "canvas/Persistency/Provenance/ProductID.h"
 #endif
@@ -68,7 +67,7 @@ namespace mu2e {
     auto nStrawHits() const { return _nsh; }
     auto const& mask() const { return _mask;}
     void init(ComboHit const& other, size_t index);
-    auto index(uint16_t ish=0) const { return _pind.at(ish); }
+    auto index(size_t ish=0) const { return _pind.at(ish); }
     bool addIndex(size_t shi); // append an index to the
     auto const& indexArray() const { return _pind; }
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
@@ -127,42 +126,41 @@ namespace mu2e {
   // ComboHitCollection is a non-trivial subclass of vector which includes navigation of nested ComboHits
   class ComboHitCollection : public std::vector<mu2e::ComboHit> {
     public:
+      enum Sort {unsorted=0,zsort,sidsort,timesort}; // define sort state of the contents
       using CHCPTR = art::ProductPtr<ComboHitCollection>;
-      ComboHitCollection(bool sorted=false) : _sorted(sorted) {}
+      ComboHitCollection(StrawIdMask::Level level=StrawIdMask::none, Sort sort=unsorted) :_mask(level), _sort(sort) {}
       typedef std::vector<ComboHitCollection::const_iterator> CHCIter;
       // fill a vector of indices to the underlying digis used in a given ComboHit
       // This function is called recursively, so the the vector must be empty on the top-most call
 #ifndef __ROOTCLING__
-      void fillStrawDigiIndices(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
+      void fillStrawDigiIndices( size_t chindex, std::vector<StrawHitIndex>& shids) const;
       // similarly fill to the StrawHit level
-      void fillStrawHitIndices(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
+      void fillStrawHitIndices( size_t chindex, std::vector<StrawHitIndex>& shids) const;
       // do this for all the hits in the collection
-      void fillStrawHitIndices(art::Event const& event, std::vector<std::vector<StrawHitIndex> >& shids) const;
+      void fillStrawHitIndices( std::vector<std::vector<StrawHitIndex> >& shids) const;
       // translate a collection of ComboHits into the lowest-level (straw) combo hits.  This function is recursive
-      void fillComboHits(art::Event const& event, std::vector<uint16_t> const& indices, CHCIter& iters) const;
+      void fillComboHits( std::vector<uint16_t> const& indices, CHCIter& iters) const;
       // fill a vector of iterators to the ComboHits 1 layer below a given ComboHit.  This is NOT RECURSIVE
       // return value says whether there's a layer below or not (if not, output is empty)
-      bool fillComboHits(art::Event const& event, uint16_t chindex, CHCIter& iters) const;
-      // recover the parent collection handle from the event
-      void setParentHandle(art::Event const& event, art::Handle<ComboHitCollection>& phandle) const;
+      bool fillComboHits( size_t chindex, CHCIter& iters) const;
       // set the parent Id given a handle to the parent collection
       void setParent(art::Handle<ComboHitCollection> const& phandle);
       void setParent(art::ValidHandle<ComboHitCollection> const& phandle);
       // or directly from the productPtr
       void setParent(CHCPTR const& parent);
-      // or from another collection
-      void setParent(ComboHitCollection const& other);
+      // or set to be the same as another collection
+      void setSameParent(ComboHitCollection const& other);
 #endif
       // accessors
       auto const& parent() const { return _parent; }
-      bool sorted() const { return _sorted; }
-      uint16_t nStrawHits() const;
+      StrawIdMask const& mask() const { return _mask; }
+      auto sort() const { return _sort; }
+      unsigned nStrawHits() const;
     private:
       // reference back to the input ComboHit collection this one references
-      // This can be used to chain back to the original StrawHit indices
-//      art::ProductID _parent;
       CHCPTR _parent; // pointer to the parent object
-      bool _sorted; // record if this collection was sorted
+      StrawIdMask _mask; // define the level of ComboHits in this collection
+      Sort _sort; // record how this collection was sorted
   };
   inline std::ostream& operator<<( std::ostream& ost,
                                    ComboHit const& hit){

@@ -96,9 +96,9 @@ namespace mu2e {
       const auto& tclust = tccol[index];
 
       // get the individual straw level hits
-      ComboHitCollection shcol;
+      ComboHitCollection shcol(StrawIdMask::uniquestraw);;
       std::vector<ComboHitCollection::const_iterator> chids;
-      chcol.fillComboHits(event, tclust._strawHitIdxs, chids);
+      chcol.fillComboHits(tclust._strawHitIdxs, chids);
       for (auto const& it : chids){
         shcol.push_back(it[0]);
       }

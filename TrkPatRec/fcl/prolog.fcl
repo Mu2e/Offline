@@ -22,7 +22,6 @@ TimeClusterFinder : {
   module_type            : TimeClusterFinder
 
   ComboHitCollection     : "makePH"
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   CaloClusterCollection  : "CaloClusterMaker"
   ClusterMVA             : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
   ClusterCaloMVA         : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
@@ -58,7 +57,6 @@ TimeClusterFinder : {
 TimeAndPhiClusterFinder : {
   module_type             : TimeAndPhiClusterFinder
   ComboHitCollection     : "makePH"
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   CaloClusterCollection  : "CaloClusterMaker"
   HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits      : @local::PatRecBackground
@@ -338,8 +336,7 @@ KSF : {
 # Final Kalman fit, including material and magnetic inhomogeneity effects
 KFF : {
   module_type                 : KalFinalFit
-  ComboHitCollection        : "makeSH"
-  StrawHitFlagCollection      : "FlagBkgHits:StrawHits"
+  ComboHitCollection        : "FlagBkgHits"
   CaloClusterCollection       : "CaloClusterMaker"
   KalFit          : @local::KFFinal
   GoodKallSeedFitBits       : ["SeedOK"]

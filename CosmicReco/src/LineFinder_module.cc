@@ -117,7 +117,7 @@ void LineFinder::produce(art::Event& event ) {
 
     int nhits = 0;
     std::vector<ComboHitCollection::const_iterator> chids;
-    chcol.fillComboHits(event, tclust.hits(), chids);
+    chcol.fillComboHits( tclust.hits(), chids);
     for (auto const& it : chids){
       tchits.push_back(it[0]);
       nhits += it[0].nStrawHits();
@@ -261,7 +261,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
   // For compatibility FIXME
   for(size_t ich= 0; ich<tseed._straw_chits.size(); ich++){
     std::vector<StrawHitIndex> shitids;
-    tseed._straw_chits.fillStrawHitIndices(event, ich, shitids);
+    tseed._straw_chits.fillStrawHitIndices(ich, shitids);
 
     for(auto const& ids : shitids){
       size_t    istraw   = (ids);
