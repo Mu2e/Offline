@@ -758,7 +758,7 @@ namespace mu2e
           _hitused = 1;
 
         auto tclust = tseed._timeCluster;
-        ComboHitCollection tchits(StrawIdMask::uniquestraw);
+        ComboHitCollection tchits;
         std::vector<ComboHitCollection::const_iterator> chids;
         _phcol->fillComboHits(tclust->hits(), chids);
         for (auto const& it : chids){

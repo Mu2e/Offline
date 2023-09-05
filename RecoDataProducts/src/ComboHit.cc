@@ -66,8 +66,7 @@ namespace mu2e {
   void ComboHitCollection::fillStrawDigiIndices(size_t chindex, vector<StrawDigiIndex>& shids) const {
     // if this is a straw-level ComboHit, get the digi index
     ComboHit const& ch = this->at(chindex);
-    if(ch.mask().level() == StrawIdMask::uniquestraw) {
-//    if(mask_.level() == StrawIdMask::uniquestraw) {
+    if(level() == StrawIdMask::uniquestraw) {
       shids.push_back(ch.index(0));
       // if this collection references a sub-collection, go down recursively
     } else if(_parent.refCore().isNonnull()){
@@ -82,8 +81,7 @@ namespace mu2e {
   void ComboHitCollection::fillStrawHitIndices( size_t chindex, vector<StrawHitIndex>& shids) const {
     // if this is a straw-level Collection, the input is the index
     ComboHit const& ch = this->at(chindex);
-    if(ch.mask().level() == StrawIdMask::uniquestraw) {
-      //    if(mask_.level() == StrawIdMask::uniquestraw) {
+    if(level() == StrawIdMask::uniquestraw) {
       shids.push_back(chindex);
       // if this collection references other collections, go down recursively
     } else if(_parent.refCore().isNonnull()){
@@ -99,8 +97,7 @@ namespace mu2e {
     // reset
     shids = vector<vector<StrawHitIndex> >(size());
     // if this is a straw-level Collection, the input is the index
-    if((*this).front().mask().level() == StrawIdMask::uniquestraw) {
-//    if(mask_.level() == StrawIdMask::uniquestraw) {
+    if(level() == StrawIdMask::uniquestraw) {
       for(size_t ich = 0;ich < size(); ++ich){
         shids[ich].push_back(ich);
       }
@@ -161,6 +158,7 @@ namespace mu2e {
   }
 
 #endif
+  StrawIdMask::Level ComboHitCollection::level() const { return this->size() > 0 ? this->front().mask().level() : StrawIdMask::none; }
 
   unsigned ComboHitCollection::nStrawHits() const {
     unsigned retval(0);
