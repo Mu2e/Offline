@@ -128,7 +128,7 @@ namespace mu2e {
     public:
       enum Sort {unsorted=0,zsort,sidsort,timesort}; // define sort state of the contents
       using CHCPTR = art::ProductPtr<ComboHitCollection>;
-      ComboHitCollection(StrawIdMask::Level level=StrawIdMask::none, Sort sort=unsorted) :_mask(level), _sort(sort) {}
+      ComboHitCollection(Sort sort=unsorted) : _sort(sort) {}
       typedef std::vector<ComboHitCollection::const_iterator> CHCIter;
       // fill a vector of indices to the underlying digis used in a given ComboHit
       // This function is called recursively, so the the vector must be empty on the top-most call
@@ -153,13 +153,12 @@ namespace mu2e {
 #endif
       // accessors
       auto const& parent() const { return _parent; }
-      StrawIdMask const& mask() const { return _mask; }
+      StrawIdMask::Level level() const;
       auto sort() const { return _sort; }
       unsigned nStrawHits() const;
     private:
       // reference back to the input ComboHit collection this one references
       CHCPTR _parent; // pointer to the parent object
-      StrawIdMask _mask; // define the level of ComboHits in this collection
       Sort _sort; // record how this collection was sorted
   };
   inline std::ostream& operator<<( std::ostream& ost,
