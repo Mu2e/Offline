@@ -29,6 +29,7 @@
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 // Utilities
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
 // diagnostics

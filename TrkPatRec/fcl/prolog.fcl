@@ -21,7 +21,7 @@ TrkFitBackground : ["Dead"]
 TimeClusterFinder : {
   module_type            : TimeClusterFinder
 
-  ComboHitCollection     : "makePH"
+  ComboHitCollection     : "FlagBkgHits"
   CaloClusterCollection  : "CaloClusterMaker"
   ClusterMVA             : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
   ClusterCaloMVA         : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
@@ -144,8 +144,7 @@ TimeClusterFinderUpi : {
 # helix finding.  Search for both helicities
 RobustHelixFinder : {
   module_type   : RobustHelixFinder
-  ComboHitCollection     : "makePH"
-  chfCollTag             : "FlagBkgHits:ComboHits"
+  ComboHitCollection     : "FlagBkgHits"
   HelixStereoHitMVA      : { MVAWeights : "Offline/TrkPatRec/data/HelixStereoHitMVA.weights.xml" }
   HelixNonStereoHitMVA   : { MVAWeights : "Offline/TrkPatRec/data/HelixNonStereoHitMVA.weights.xml" }
   DiagPlugin : {
