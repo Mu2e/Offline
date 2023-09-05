@@ -1,8 +1,10 @@
-#include "Offline/Filters/fcl/prolog.fcl"
+
 #include "Offline/Compression/fcl/prolog.fcl"
 #include "Offline/fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG
 # Diagnostic modules
+
+
 BD : {
   module_type : BkgDiag
   StrawDigiMCCollection : "compressDigiMCs"
@@ -30,11 +32,14 @@ TCD : {
   ComboHitCollection : "FlagBkgHits"
   HitSelectionBits      : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits     : ["Background"]
-  ClusterMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
-  ClusterCaloMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
   PlotTimeSpectra : false
   VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
-  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+  MCPrimary : compressDigiMCs
+  T0Calculator : {
+    TrkToCaloTimeOffset : @local::TrackCaloMatching.DtOffset
+    CaloTimeErr : 0.5
+    StrawHitBeta : 1.0
+  }
 }
 
 HD : {
