@@ -88,8 +88,6 @@ namespace mu2e
     kerasQ_(      config().kerasQuality()),
     iev_(0)
     {
-      // Must call consumesMany because fillStrawHitIndices calls getManyByType.
-      consumesMany<ComboHitCollection>();
       ConfigFileLookupPolicy configFile;
       auto kerasWgtsFile = configFile(kerasW_);
       sofiePtr = std::make_shared<TMVA_SOFIE_TrainBkgDiag::Session>(kerasWgtsFile);

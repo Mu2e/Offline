@@ -127,22 +127,26 @@ namespace mu2e {
   class ComboHitCollection : public std::vector<mu2e::ComboHit> {
     public:
       enum Sort {unsorted=0,zsort,sidsort,timesort}; // define sort state of the contents
+      using CHCIter = std::vector<ComboHitCollection::const_iterator>;
       using CHCPTR = art::ProductPtr<ComboHitCollection>;
+      using SHIV = std::vector<StrawHitIndex>;
       ComboHitCollection(Sort sort=unsorted) : _sort(sort) {}
-      typedef std::vector<ComboHitCollection::const_iterator> CHCIter;
       // fill a vector of indices to the underlying digis used in a given ComboHit
       // This function is called recursively, so the the vector must be empty on the top-most call
 #ifndef __ROOTCLING__
-      void fillStrawDigiIndices( size_t chindex, std::vector<StrawHitIndex>& shids) const;
-      // similarly fill to the StrawHit level
-      void fillStrawHitIndices( size_t chindex, std::vector<StrawHitIndex>& shids) const;
-      // do this for all the hits in the collection
-      void fillStrawHitIndices( std::vector<std::vector<StrawHitIndex> >& shids) const;
+      void fillStrawDigiIndices( size_t chindex, SHIV& shids) const;
+      // Fill indices to the specified level.  Return value is the collection to whic
+      // the indices apply.  first, given all my hits
+      ComboHitCollection const* fillStrawHitIndices( SHIV& shiv, StrawIdMask::Level clevel=StrawIdMask::uniquestraw) const;
+      // given a specific hit (index) in myself
+      ComboHitCollection const* fillStrawHitIndices( size_t chindex, SHIV& shiv, StrawIdMask::Level clevel=StrawIdMask::uniquestraw) const;
+      // given a vector of indices
+      ComboHitCollection const* fillStrawHitIndices(SHIV const& inshiv, SHIV& outshiv, StrawIdMask::Level clevel=StrawIdMask::uniquestraw) const;
+      // the following are deprecated in favor of the more-efficient and self-checking functions above
       // translate a collection of ComboHits into the lowest-level (straw) combo hits.  This function is recursive
       void fillComboHits( std::vector<uint16_t> const& indices, CHCIter& iters) const;
       // fill a vector of iterators to the ComboHits 1 layer below a given ComboHit.  This is NOT RECURSIVE
-      // return value says whether there's a layer below or not (if not, output is empty)
-      bool fillComboHits( size_t chindex, CHCIter& iters) const;
+      void fillComboHits( size_t chindex, CHCIter& iters) const;
       // set the parent Id given a handle to the parent collection
       void setParent(art::Handle<ComboHitCollection> const& phandle);
       void setParent(art::ValidHandle<ComboHitCollection> const& phandle);
