@@ -12,9 +12,9 @@
 #include "art_root_io/TFileService.h"
 // mu2e
 #include "Offline/GeneralUtilities/inc/Angles.hh"
-#include "Offline/Mu2eUtilities/inc/MVATools.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
 // tracking
 #include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
@@ -42,6 +42,29 @@ using namespace std;
 namespace mu2e {
   // ttree structs
   class TimeClusterDiag : public art::EDAnalyzer {
+    struct Config {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag"),0 };
+      fhicl::Atom<bool> mcdiag{ Name("MCDiag"), Comment("MonteCarlo Diag"), true};
+      fhicl::Atom<bool> plotTS{ Name("PlotTimeSpectra"), Comment("Plot individual event time spectra"), false };
+      fhicl::Atom<int> minNCE{ Name("MinimumNCEHits"), Comment("Mininum # Ce hits to plot event time spectra"), 15 };
+
+      fhicl::Sequence<std::string> hsel { Name("HitSelectionBits"), Comment("Good hit bits") };
+      fhicl::Sequence<std::string> hbkg { Name("HitBackgroundBits"), Comment("Background hit bits") };
+      fhicl::Atom<double> tmin { Name("tmin"), Comment("Histogram lower time"),500.0 };
+      fhicl::Atom<double> tmax { Name("tmax"), Comment("Histogram upper time"),1700.0};
+      fhicl::Atom<double> tbin { Name("tbin"), Comment("Histogram time bin"),15.0};
+      fhicl::Atom<double> pitch { Name("AveragePitch"), Comment("Average Pitch for time correctin"),0.6};
+
+      fhicl::Atom<art::InputTag> ComboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
+      fhicl::Atom<art::InputTag> StrawDigiMCCollection{   Name("StrawDigiMCCollection"),   Comment("StrawDigiMC collection name") };
+      fhicl::Atom<art::InputTag> TimeClusterCollection{   Name("TimeClusterCollection"),   Comment("TimeCluster collection name") };
+      fhicl::Atom<art::InputTag> MCPrimary{ Name("MCPrimary"),Comment("MC Primary Particle") };
+      fhicl::Atom<art::InputTag> VDMC{ Name("VDStepPointMCCollection"),Comment("Virtual Detector StepPointMC collection name") };
+      fhicl::Table<TrkTimeCalculator::Config> ttcalc {Name("T0Calculator"),           Comment("TimeTracker calculator config") };
+    };
+
     // MC matching
     struct spcount {
       spcount() : _count(0) {}
@@ -56,55 +79,41 @@ namespace mu2e {
     };
 
     public:
-    explicit TimeClusterDiag(fhicl::ParameterSet const& pset);
+    explicit TimeClusterDiag(const art::EDAnalyzer::Table<Config>& config);
     virtual ~TimeClusterDiag();
-
     virtual void beginJob();
-
-    // This is called for each event.
     virtual void analyze(art::Event const& e);
 
     private:
 
-    int           _diag;
-    bool _mcdiag, _useflagcol;
-    int _mcgen;
+    int  _diag;
+    bool _mcdiag;
     bool    _plotts;
-    unsigned _minnce; // minimum # CE hits to make plots
-    double _ccmine; // min calo cluster energy to plot
-    double _ccwt;
-
-    // event object Tags
-    art::InputTag   _chTag;
-    art::InputTag   _tcTag;
-    art::InputTag   _shfTag;
-    art::InputTag   _ccTag;
-    art::InputTag   _mcdigisTag;
-    art::InputTag _vdmcstepsTag;
+    // event objects
+    art::ProductToken<ComboHitCollection> _chToken;
+    art::ProductToken<TimeClusterCollection> _tcToken;
+    art::ProductToken<StrawDigiMCCollection> _mcdigisToken;
+    art::ProductToken<PrimaryParticle> _mcprimaryToken;
+    art::ProductToken<StepPointMCCollection> _vdmcstepsToken;
     // hit selectors
     StrawHitFlag  _hsel, _tcsel, _hbkg;
 
-    // mva stuff
-    MVATools          _tcMVA; // MVA for peak cleaning
-    MVATools          _tcCaloMVA; // MVA for peak cleaning, with calo cluster
     // time spectrum parameters
     double        _tmin;
     double        _tmax;
     double        _tbin;
     unsigned      _nbins;
     // cache of event objects
-    const ComboHitCollection*     _chcol;
-    const TimeClusterCollection*    _tccol;
-    const CaloClusterCollection*    _cccol;
-    const StrawDigiMCCollection*          _mcdigis;
-    const StrawHitFlagCollection*   _evtshfcol;
+    const ComboHitCollection*    _chcol;
+    const TimeClusterCollection* _tccol;
+    const StrawDigiMCCollection* _mcdigis;
     const StepPointMCCollection* _vdmcsteps;
-    StrawHitFlagCollection _shfcol; // local copy of flag collection
+    const PrimaryParticle *_mcprimary;
     StrawHitFlag _cesel; // flag bit for Ce (from truth)
     // TTree variables
-    TTree*                                _tcdiag;
+    TTree*  _tcdiag;
     // event number
-    Int_t      _iev;
+    Int_t     _iev;
     Int_t     _ntc; // # clusters/event
     Float_t   _mcmidt0;
     TimeClusterInfo     _besttc;  // info about best time cluster (most CE hits)
@@ -112,8 +121,10 @@ namespace mu2e {
     vector<TimeClusterHitInfo>    _tchinfo; // info about hits of best time cluster
     vector<TimeClusterInfo>   _alltc; // info about all TimeClusters in the event, sorted by # CE
     float   _pitch; // average helix pitch (= dz/dflight, =sin(lambda))
+    StrawHitFlagCollection _shfcol;
     //t0 calculator
     TrkTimeCalculator _ttcalc;
+    unsigned _minnce;
     // helper functions
     void createDiagnostics();
     bool findData(art::Event const& evt);
@@ -131,32 +142,24 @@ namespace mu2e {
   TimeClusterDiag::~TimeClusterDiag() {
   }
 
-  TimeClusterDiag::TimeClusterDiag(fhicl::ParameterSet const& pset) :
-    art::EDAnalyzer(pset),
-    _diag   (pset.get<int>("diagLevel",1)),
-    _mcdiag   (pset.get<bool>("MCdiag",true)),
-    _useflagcol   (pset.get<bool>("UseFlagCollection")),
-    _mcgen              (pset.get<int>("MCGenerator",2)),// default for conversion electron
-    _plotts   (pset.get<bool>("PlotTimeSpectra",false)),
-    _minnce   (pset.get<unsigned>("MinimumCEHits",15)),
-    _ccmine   (pset.get<double>("CaloClusteriMinE",50.0)),
-    _ccwt   (pset.get<double>("CaloClusterWeight",10.0)),
-    _chTag    (pset.get<art::InputTag>("ComboHitCollection")),
-    _tcTag    (pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
-    _shfTag   (pset.get<string>("StrawHitFlagCollection")),
-    _ccTag              (pset.get<art::InputTag>("caloClusterModuleLabel","MakeCaloCluster")),
-    _mcdigisTag   (pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
-    _vdmcstepsTag       (pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
-    _hsel   (pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
-    _hbkg   (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
-    _tcMVA           (pset.get<fhicl::ParameterSet>("ClusterMVA",fhicl::ParameterSet())),
-    _tcCaloMVA           (pset.get<fhicl::ParameterSet>("ClusterCaloMVA",fhicl::ParameterSet())),
-    _tmin   (pset.get<double>("tmin",500.0)),
-    _tmax   (pset.get<double>("tmax",1700.0)),
-    _tbin    (pset.get<double>("tbin",15.0)),
-    _pitch             (pset.get<float>(  "AveragePitch",0.6)), // =sin(lambda)
-    _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet()))
-    {
+  TimeClusterDiag::TimeClusterDiag(const art::EDAnalyzer::Table<Config>& config) :
+    art::EDAnalyzer(config),
+    _diag   (config().diag()),
+    _mcdiag   (config().mcdiag()),
+    _plotts   (config().plotTS()),
+    _chToken{ consumes<ComboHitCollection>(config().ComboHitCollection() ) },
+    _tcToken{ consumes<TimeClusterCollection>(config().TimeClusterCollection() ) },
+    _mcdigisToken{ consumes<StrawDigiMCCollection>(config().StrawDigiMCCollection() ) },
+    _mcprimaryToken{ consumes<PrimaryParticle>(config().MCPrimary() ) },
+    _vdmcstepsToken{ consumes<StepPointMCCollection>(config().VDMC() ) },
+    _hsel   (config().hsel()),
+    _hbkg   (config().hbkg()),
+    _tmin   (config().tmin()),
+    _tmax   (config().tmax()),
+    _tbin    (config().tbin()),
+    _pitch   (config().pitch()),
+    _ttcalc  (config().ttcalc()),
+    _minnce (config().minNCE()) {
       // set # bins for time spectrum plot
       _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
       _tcsel = StrawHitFlag(StrawHitFlag::tclust);
@@ -164,9 +167,6 @@ namespace mu2e {
     }
 
   void TimeClusterDiag::beginJob(){
-    // initialize MVA: this is used just for diagnostics
-    _tcMVA.initMVA();
-    _tcCaloMVA.initMVA();
     createDiagnostics();
   }
 
@@ -187,28 +187,18 @@ namespace mu2e {
       art::Ptr<SimParticle> spp;
       _mcmidt0 = -1000;
       // loop over the digis and find the ones that match
-      for(auto mcd : *_mcdigis) {
-        art::Ptr<SimParticle> sp = mcd.earlyStrawGasStep()->simParticle();
-        if(sp.isNonnull() &&
-            sp->genParticle().isNonnull() &&
-            sp->genParticle()->generatorId().id() == _mcgen){
-          spp = sp;
-        }
-      }
-      if(spp.isNonnull()){
-        cet::map_vector_key trkid = spp->id();
-        auto jmc = _vdmcsteps->end();
-        for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
-          // find matching steps
-          if(  imc->trackId() == trkid &&
-              (imc->volumeId() == VirtualDetectorId::TT_Mid || imc->volumeId() == VirtualDetectorId::TT_MidInner)) {
-            if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
+      cet::map_vector_key trkid = _mcprimary->primarySimParticles().front()->id();
+      auto jmc = _vdmcsteps->end();
+      for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
+        // find matching steps
+        if(  imc->trackId() == trkid &&
+            (imc->volumeId() == VirtualDetectorId::TT_Mid || imc->volumeId() == VirtualDetectorId::TT_MidInner)) {
+            if(jmc == _vdmcsteps->end() || imc->time() < jmc->time()) // earliest time
               jmc = imc;
-          }
         }
-        if (jmc != _vdmcsteps->end())
-          _mcmidt0 = jmc->time();
       }
+      if (jmc != _vdmcsteps->end())
+        _mcmidt0 = jmc->time();
     }
     // fill info for all TimeClusters
     fillClusterInfo(primaries);
@@ -239,33 +229,21 @@ namespace mu2e {
 
   // find the input data objects
   bool TimeClusterDiag::findData(art::Event const& evt){
-    _evtshfcol = 0; _chcol = 0; _tccol = 0; _mcdigis = 0;
+     _chcol = 0; _tccol = 0; _mcdigis = 0;
     _vdmcsteps = 0;
-    auto chH = evt.getValidHandle<ComboHitCollection>(_chTag);
+    auto chH = evt.getValidHandle(_chToken);
     _chcol = chH.product();
-    auto tcH = evt.getValidHandle<TimeClusterCollection>(_tcTag);
+    auto tcH = evt.getValidHandle(_tcToken);
     _tccol = tcH.product();
     if(_mcdiag){
-      auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
+      auto mcdH = evt.getValidHandle(_mcdigisToken);
       _mcdigis = mcdH.product();
-      if(_mcgen > 0){
-        auto mcstepsH = evt.getValidHandle<StepPointMCCollection>(_vdmcstepsTag);
-        _vdmcsteps = mcstepsH.product();
-      }
-    }
-    if(_useflagcol){
-      auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
-      _evtshfcol = shfH.product();
-    }
-    // calorimeter data may or may not be present
-    art::Handle<CaloClusterCollection> ccH;
-    evt.getByLabel<CaloClusterCollection>(_ccTag,ccH);
-    if(ccH.isValid())
-      _cccol = ccH.product();
-    else
-      _cccol = 0;
-
-    return _chcol != 0 && _tccol != 0 && (_mcdigis != 0 || !_mcdiag);
+      auto mcstepsH = evt.getValidHandle(_vdmcstepsToken);
+      _vdmcsteps = mcstepsH.product();
+      auto mcpH = evt.getValidHandle(_mcprimaryToken);
+      _mcprimary = mcpH.product();
+   }
+    return _chcol != 0 && _tccol != 0 && ( (_mcdigis != 0 && _vdmcsteps != 0 && _mcprimary != 0) || !_mcdiag);
   }
 
   void TimeClusterDiag::setFlags(art::Event const& event ) {
@@ -277,10 +255,9 @@ namespace mu2e {
     for(unsigned ich=0; ich<nch;++ich){
       ComboHit const& ch = _chcol->at(ich);
       _shfcol.push_back(ch.flag());
-      if(_useflagcol)_shfcol.back().merge(_evtshfcol->at(ich));
       if(_mcdiag){
         std::vector<StrawDigiIndex> shids;
-        _chcol->fillStrawDigiIndices(event,ich,shids);
+        _chcol->fillStrawDigiIndices(ich,shids);
         unsigned nce(0);
         for(auto idigi : shids) {
           StrawDigiMC const& mcdigi = _mcdigis->at(idigi);
@@ -365,23 +342,10 @@ namespace mu2e {
       tchi._edep = ch.energyDep();
       tchi._nsh = ch.nStrawHits();
       tchi._plane = ch.strawId().plane();
-      // compute MVA
-      std::vector<Double_t> pars;
-      pars.push_back(fabs(tchi._dt));
-      pars.push_back(fabs(tchi._dphi));
-      pars.push_back(tchi._rho*tchi._rho);
-      pars.push_back(tchi._nsh);
-      pars.push_back(tchi._plane);
-      pars.push_back(tchi._werr);
-      pars.push_back(fabs(tchi._wdist));
-      if (tc._caloCluster.isNonnull())
-        tchi._mva = _tcCaloMVA.evalMVA(pars);
-      else
-        tchi._mva = _tcMVA.evalMVA(pars);
       // MC truth
       if(_mcdiag){
         std::vector<StrawDigiIndex> shids;
-        _chcol->fillStrawDigiIndices(event,ich,shids);
+        _chcol->fillStrawDigiIndices(ich,shids);
         StrawDigiMC const& mcdigi = _mcdigis->at(shids[0]);// FIXME!
         StrawEnd itdc;
         tchi._mctime = mcdigi.strawGasStep(itdc)->time();
@@ -402,7 +366,7 @@ namespace mu2e {
 
   void TimeClusterDiag::plotTimeSpectra() {
     art::ServiceHandle<art::TFileService> tfs;
-    TH1F *rtsp, *stsp, *ctsp, *actsp, *sctsp, *cctsp, *catsp;
+    TH1F *rtsp, *stsp, *ctsp, *actsp, *sctsp, *cctsp;
 
     char rsname[100];
     char ssname[100];
@@ -410,7 +374,6 @@ namespace mu2e {
     char acsname[100];
     char scsname[100];
     char ccsname[100];
-    char casname[100];
 
     snprintf(rsname,100,"rawtspectrum%i",_iev);
     snprintf(ssname,100,"seltspectrum%i",_iev);
@@ -418,7 +381,6 @@ namespace mu2e {
     snprintf(acsname,100,"allconvtspectrum%i",_iev);
     snprintf(scsname,100,"selconvtspectrum%i",_iev);
     snprintf(ccsname,100,"clustconvtspectrum%i",_iev);
-    snprintf(casname,100,"calotspectrum%i",_iev);
 
     rtsp = tfs->make<TH1F>(rsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
     rtsp->SetLineColor(kCyan);
@@ -434,8 +396,6 @@ namespace mu2e {
     sctsp->SetFillStyle(3001);
     cctsp = tfs->make<TH1F>(ccsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
     cctsp->SetLineColor(kRed);
-    catsp = tfs->make<TH1F>(casname,"time spectrum;nsec",_nbins,_tmin,_tmax);
-    catsp->SetLineColor(kMagenta);
 
     unsigned nstrs = _chcol->size();
     for(unsigned ich=0; ich<nstrs;++ich){
@@ -452,13 +412,6 @@ namespace mu2e {
         actsp->Fill(time,ch.nStrawHits());
         if(selected)sctsp->Fill(time,ch.nStrawHits());
         if(tclust)cctsp->Fill(time,ch.nStrawHits());
-      }
-    }
-    // clusters if available
-    if(_cccol != 0){
-      for(auto cc : *_cccol) {
-        if(cc.energyDep() > _ccmine)
-          catsp->Fill( _ttcalc.caloClusterTime(cc,_pitch),_ccwt);
       }
     }
     // plot time cluster times
@@ -514,7 +467,7 @@ namespace mu2e {
     vector<spcount> sct;
     for (auto ich : tc._strawHitIdxs) {
       std::vector<StrawDigiIndex> shids;
-      _chcol->fillStrawDigiIndices(event,ich,shids);
+      _chcol->fillStrawDigiIndices(ich,shids);
       for(auto shid : shids ) {
         StrawDigiMC const& mcdigi = _mcdigis->at(shid);
         StrawEnd itdc;

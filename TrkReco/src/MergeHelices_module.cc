@@ -175,12 +175,12 @@ namespace mu2e {
     for(size_t ihit=0;ihit < h1.hits().size(); ihit++){
       auto const& hh = h1.hits()[ihit];
       if(!hh.flag().hasAnyProperty(_badhit))
-        h1.hits().fillStrawHitIndices(evt,ihit,shiv1);
+        h1.hits().fillStrawHitIndices(ihit,shiv1);
     }
     for(size_t ihit=0;ihit < h2.hits().size(); ihit++){
       auto const& hh = h2.hits()[ihit];
       if(!hh.flag().hasAnyProperty(_badhit))
-        h2.hits().fillStrawHitIndices(evt,ihit,shiv2);
+        h2.hits().fillStrawHitIndices(ihit,shiv2);
     }
     nh1 = shiv1.size();
     nh2 = shiv2.size();

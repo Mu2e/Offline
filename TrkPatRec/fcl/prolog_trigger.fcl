@@ -17,7 +17,6 @@ TTTimeCalculator : {
 TTtimeClusterFinder : {
   @table::TimeClusterFinder
   ComboHitCollection     : "TTflagBkgHits"
-  StrawHitFlagCollection : "none"
   CaloClusterCollection  : "CaloClusterFast"
   TestFlag               : false
   T0Calculator           : @local::TTTimeCalculator
@@ -26,7 +25,6 @@ TTtimeClusterFinder : {
 TTtimeClusterFinderUe : {
   @table::TimeClusterFinder
   ComboHitCollection     : "TTflagBkgHits"
-  StrawHitFlagCollection : "none"
   CaloClusterCollection  : "CaloClusterFast"
   TestFlag               : false
   AveragePitch : -0.63
@@ -55,7 +53,6 @@ TTKSF : {  @table::TTMu2eKinKal.producers.TTKKDeMSeedFit
         ComboHitCollection     : "TTmakeSH"
         HelixSeedCollections   : [ "TTHelixMergerDeM" ]
         CaloClusterCollection  : "CaloClusterFast"
-        StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
         PrintLevel             : 0
         SaveAllFits            : false
     }
