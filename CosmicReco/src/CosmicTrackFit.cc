@@ -159,10 +159,10 @@ namespace mu2e
     }
 
     void CosmicTrackFit::FillTrackHitCollections(CosmicTrackSeed &tseed, art::Event const& event, ComboHitCollection const& chcol, std::vector<StrawHitIndex> &panelHitIdxs){
-      std::vector<ComboHitCollection::const_iterator> chids;
+      ComboHitCollection::CHCIter chids;
       chcol.fillComboHits( panelHitIdxs, chids);
       for (auto const& it : chids){
-        tseed._straw_chits.push_back(it[0]);
+        tseed._straw_chits.push_back(*it);
       }
       for(size_t ich= 0; ich<tseed._straw_chits.size(); ich++){
         std::vector<StrawHitIndex> shitids;

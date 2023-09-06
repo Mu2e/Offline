@@ -63,68 +63,113 @@ namespace mu2e {
     _parent = CHCPTR(phandle);
   }
 
-  void ComboHitCollection::fillStrawDigiIndices(size_t chindex, vector<StrawDigiIndex>& shids) const {
+  void ComboHitCollection::fillStrawDigiIndices(size_t chindex, vector<StrawDigiIndex>& shiv) const {
     // if this is a straw-level ComboHit, get the digi index
     ComboHit const& ch = this->at(chindex);
     if(level() == StrawIdMask::uniquestraw) {
-      shids.push_back(ch.index(0));
+      shiv.push_back(ch.index(0));
       // if this collection references a sub-collection, go down recursively
     } else if(_parent.refCore().isNonnull()){
       for(size_t iind = 0;iind < ch.nCombo(); ++iind){
-        _parent->fillStrawDigiIndices(ch.index(iind),shids);
+        _parent->fillStrawDigiIndices(ch.index(iind),shiv);
       }
     } else {
       throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHit" << std::endl;
     }
   }
 
-  void ComboHitCollection::fillStrawHitIndices( size_t chindex, vector<StrawHitIndex>& shids) const {
-    // if this is a straw-level Collection, the input is the index
-    ComboHit const& ch = this->at(chindex);
-    if(level() == StrawIdMask::uniquestraw) {
-      shids.push_back(chindex);
+  ComboHitCollection const* ComboHitCollection::fillStrawHitIndices( size_t chindex, SHIV& shiv, StrawIdMask::Level clevel) const {
+    ComboHitCollection const* retval = this;
+    if(level() == clevel){
+      shiv.push_back(chindex);
       // if this collection references other collections, go down recursively
     } else if(_parent.refCore().isNonnull()){
-       for(size_t iind = 0;iind < ch.nCombo(); ++iind){
-        _parent->fillStrawHitIndices(ch.index(iind),shids);
-      }
-    } else {
-      throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHit" << std::endl;
-    }
-  }
-
-  void ComboHitCollection::fillStrawHitIndices( vector<vector<StrawHitIndex> >& shids) const {
-    // reset
-    shids = vector<vector<StrawHitIndex> >(size());
-    // if this is a straw-level Collection, the input is the index
-    if(level() == StrawIdMask::uniquestraw) {
-      for(size_t ich = 0;ich < size(); ++ich){
-        shids[ich].push_back(ich);
-      }
-    } else if(_parent.refCore().isNonnull()){
-      vector<vector<StrawHitIndex>> pshids(size());
-      _parent->fillStrawHitIndices(pshids);
-        // check down 1 more layer
-      if(_parent->parent().refCore().isNonnull()){
-        // call down 1 layer
-        vector<vector<StrawHitIndex>> pshids(size());
-        _parent->fillStrawHitIndices(pshids);
-        // roll these up
-        for(size_t ich=0;ich < size();++ich){
-          ComboHit const& ch = (*this)[ich];
-          for(auto iph : ch.indexArray())
-            shids[ich].insert(shids[ich].end(),pshids[iph].begin(),pshids[iph].end());//FIX ME , problem with indices when using StereoHits, side stepped by if(pshids.size() == 8)
+      ComboHit const& ch = this->at(chindex);
+      if(_parent->level() == clevel){
+        retval = _parent.get();
+        shiv.reserve(shiv.size() + ch.nCombo());
+        for(size_t iind = 0;iind < ch.nCombo(); ++iind){
+          shiv.push_back(ch.index(iind));
         }
       } else {
-        // can skip a step in the hierarchy since the parent of this collection is at the top
-        for(size_t ich=0;ich < size();++ich){
-          ComboHit const& ch = (*this)[ich];
-          shids[ich].insert(shids[ich].end(),ch.indexArray().begin(),ch.indexArray().end());
+        SHIV tempshiv;
+        tempshiv.reserve(2*ch.nCombo());
+        for(size_t iind = 0;iind < ch.nCombo(); ++iind){
+          tempshiv.push_back(ch.index(iind));
         }
+        retval = _parent->fillStrawHitIndices(tempshiv,shiv,clevel);
       }
     } else {
-      throw cet::exception("RECO")<<"mu2e::ComboHitCollection: Can't find parent collection" << std::endl;
+      throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHitCollection nesting" << std::endl;
     }
+    return retval;
+  }
+
+  ComboHitCollection const* ComboHitCollection::fillStrawHitIndices(SHIV const& inshiv, SHIV& outshiv, StrawIdMask::Level clevel) const {
+    ComboHitCollection const* retval = this;
+    if(level() == clevel){
+      outshiv = inshiv;
+    } else if(_parent.refCore().isNonnull()){
+      if(_parent->level() == clevel){
+        // parent hits are at the correct level
+        retval = _parent.get();
+        outshiv.reserve(2*inshiv.size()); // just a guess TODO
+        for(auto shi : inshiv) {
+          auto const& ch = (*this)[shi]; // don't need to check range
+          for(size_t iind = 0;iind < ch.nCombo(); ++iind){
+            outshiv.push_back(ch.index(iind));
+          }
+        }
+      } else {
+        SHIV tempshiv;
+        tempshiv.reserve(2*inshiv.size());
+        for(auto shi : inshiv) {
+          auto const& ch = (*this)[shi]; // don't need to check range
+          for(size_t iind = 0;iind < ch.nCombo(); ++iind){
+            tempshiv.push_back(ch.index(iind));
+          }
+        }
+        retval = _parent->fillStrawHitIndices(tempshiv,outshiv,clevel);
+      }
+    } else {
+      throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHitCollection nesting" << std::endl;
+    }
+    return retval;
+  }
+
+  ComboHitCollection const* ComboHitCollection::fillStrawHitIndices( SHIV& shiv, StrawIdMask::Level clevel) const {
+    shiv.clear();
+    const ComboHitCollection* retval = this;
+    if(level() == clevel){
+      shiv.reserve(shiv.size() + this->size());
+      for(size_t iind = 0;iind < this->size(); ++iind)shiv.push_back(iind);
+      // if this collection references other collections, go down recursively
+    } else if(_parent.refCore().isNonnull()){
+      if(_parent->level() == clevel){
+        retval = _parent.get();
+        shiv.reserve(shiv.size()+2*(this->size()));
+        // current hits reference into the desired level.  Fill the indices from the current hits and done
+        for(auto const& ch : *this){
+          for(size_t iind = 0;iind < ch.nCombo(); ++iind){
+            shiv.push_back(ch.index(iind));
+          }
+        }
+      } else {
+        // we need to descend, but only picking up the hits in the sub-collection referenced by my hits
+        // build a temporary array
+        SHIV tempshiv;
+        tempshiv.reserve(2*this->size()); // size is a guess, verify on data TODO
+        for(auto const& ch : *this){
+          for(size_t iind = 0;iind < ch.nCombo(); ++iind){
+            tempshiv.push_back(ch.index(iind));
+          }
+        }
+        retval = _parent->fillStrawHitIndices(tempshiv,shiv,clevel);
+      }
+    } else {
+      throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHitCollection Nesting" << std::endl;
+    }
+    return retval;
   }
 
   void ComboHitCollection::fillComboHits( std::vector<uint16_t> const& indices, CHCIter& iters) const {
@@ -143,8 +188,7 @@ namespace mu2e {
     }
   }
 
-  bool ComboHitCollection::fillComboHits( size_t chindex, CHCIter& iters) const {
-    bool retval(false);
+  void ComboHitCollection::fillComboHits( size_t chindex, CHCIter& iters) const {
     iters.clear();
       // if this collection references other collections: if so, we can fill the vector
     if(_parent.refCore().isNonnull()){
@@ -152,9 +196,7 @@ namespace mu2e {
       for(size_t iind = 0;iind < ch.nCombo(); ++iind){
         iters.push_back(std::next(_parent->begin(), ch.index(iind)));
       }
-      retval = true;
     }
-    return retval;
   }
 
 #endif

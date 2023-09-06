@@ -250,9 +250,9 @@ namespace mu2e {
           for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){ hhits.fillStrawHitIndices(ihit,strawHitIdxs); }
           // next, build straw hits and materials from these
           KKSTRAWHITCOL strawhits;
+          strawhits.reserve(strawHitIdxs.size());
           KKSTRAWXINGCOL strawxings;
-          strawhits.reserve(hhits.size());
-          strawxings.reserve(hhits.size());
+          strawxings.reserve(strawHitIdxs.size());
           kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
           // optionally (and if present) add the CaloCluster as a constraint
           // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO
