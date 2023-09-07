@@ -15,11 +15,6 @@ namespace mu2e {
 
     // Throws if the entity is not given in the config file.
     deBuncherPeriod     = config.getDouble("acceleratorParams.deBuncherPeriod"   );
-//    intrinsicExtinction = config.getDouble("acceleratorParams.intrinsicExt"      );
-    limitingHalfWidth   = config.getDouble("acceleratorParams.limitingHalfWidth" );
-
-    potPulse  = config.getString("acceleratorParams.potPulse" );
-    acDipole  = config.getString("acceleratorParams.acDipole" );
 
   }
 
