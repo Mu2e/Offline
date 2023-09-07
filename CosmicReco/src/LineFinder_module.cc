@@ -113,17 +113,19 @@ void LineFinder::produce(art::Event& event ) {
   for (size_t index=0;index< tccol.size();++index) {
     const auto& tclust = tccol[index];
 
+    // convert (presumably) panel hits in time clusterto straw hits
+    CosmicTrackSeed tseed;
     ComboHitCollection tchits;
+    tchits.reserve(tclust.hits().size()*2); // guess 2 straw hits/panel hit
 
     int nhits = 0;
-    std::vector<ComboHitCollection::const_iterator> chids;
+    ComboHitCollection::CHCIter chids;
     chcol.fillComboHits( tclust.hits(), chids);
     for (auto const& it : chids){
-      tchits.push_back(it[0]);
-      nhits += it[0].nStrawHits();
+      tchits.push_back(*it);
+      nhits += it->nStrawHits();
     }
 
-    CosmicTrackSeed tseed;
     tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
     tseed._track.converged = true;
 
@@ -139,9 +141,7 @@ void LineFinder::produce(art::Event& event ) {
       tseed._status.merge(TrkFitFlag::helixOK);
       tseed._status.merge(TrkFitFlag::helixConverged);
       tseed._track.MinuitParams.cov = std::vector<double>(15, 0);
-      tseed._straw_chits.setParent(chcol.parent());
-      CosmicTrackSeedCollection*  tcol  = seed_col.get();
-      tcol->push_back(tseed);
+      seed_col->push_back(tseed);
     }
   }
 

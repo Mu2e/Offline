@@ -69,6 +69,12 @@ void mu2e::CosmicTrackSeedPrinter::Print(const mu2e::CosmicTrackSeed& obj, int i
      << " " << std::setw(8) << std::setprecision(3) << obj.track().MinuitParams.B0
      << " " << std::setw(8) << std::setprecision(3) << obj.track().MinuitParams.B1
      << " " << std::setw(8) << std::setprecision(3) << obj.t0().t0() << std::endl;
+
+  if(verbose() > 2){
+    for(auto const& hit : obj.hits()) {
+      os << hit << std::endl;
+    }
+  }
 }
 
 void mu2e::CosmicTrackSeedPrinter::PrintHeader(const std::string& tag,
