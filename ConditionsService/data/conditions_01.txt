@@ -6,10 +6,6 @@
 // Accelerator parameters
 double acceleratorParams.deBuncherPeriod   = 1695. ; // ns
 //double acceleratorParams.intrinsicExt      = 1.64e-5; // S. Werkema, docdb-4044-v1  No longer used!  comes from pulses below
-double acceleratorParams.limitingHalfWidth = 125.  ; // ns, ""
-
-string acceleratorParams.potPulse  = "Offline/ConditionsService/data/potTimingDistribution_20160511.txt";
-string acceleratorParams.acDipole  = "Offline/ConditionsService/data/acDipoleTransmissionFunction_20160511.txt";
 
 // ExtMonFNAL clock timing.  1694/68 = 24.9118
 int extMonFNAL.numClockTicksPerDebuncherPeriod = 68;
