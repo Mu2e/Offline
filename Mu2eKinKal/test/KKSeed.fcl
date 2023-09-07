@@ -68,7 +68,6 @@ outputs : {
 #include "Production/JobConfig/reco/epilog.fcl"
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
-physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
 physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDeMSeedFit"]
 physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM"]
 physics.producers.SelectRecoMC.debugLevel : 0
@@ -76,7 +75,6 @@ physics.producers.SelectRecoMC.debugLevel : 0
 physics.producers.KKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKDeMSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
 physics.producers.KKDeMSeedFit.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
-physics.producers.KKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 physics.producers.KKDeMSeedFit.ModuleSettings.PrintLevel : 0
 physics.producers.KKDeMSeedFit.ModuleSettings.SaveAllFits : true
 
