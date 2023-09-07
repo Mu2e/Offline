@@ -70,6 +70,11 @@ void mu2e::HelixSeedPrinter::Print(const mu2e::HelixSeed& obj, int ind,
      << " " << std::setw(8) << std::setprecision(3) << obj.helix().lambda()
      << " " << std::setw(8) << std::setprecision(3) << obj.helix().fz0()
      << std::setw(7) << std::setprecision(1) << obj.t0().t0() << std::endl;
+  if(verbose() > 2){
+    for(auto const& hit : obj.hits()) {
+      os << hit << std::endl;
+    }
+  }
 }
 
 void mu2e::HelixSeedPrinter::PrintHeader(const std::string& tag,
