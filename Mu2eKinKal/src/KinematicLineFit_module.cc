@@ -234,14 +234,15 @@ namespace mu2e {
           PKTRAJ pseedtraj(seedtraj);
           // first, we need to unwind the combohits.  We use this also to find the time range
           StrawHitIndexCollection strawHitIdxs;
-          auto const& hhits = hseed.hits();
-          for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){ hhits.fillStrawHitIndices(ihit,strawHitIdxs); }
+          auto chcolptr = hseed.hits().fillStrawHitIndices(strawHitIdxs, StrawIdMask::uniquestraw);
+//          if(chcolptr != &chcol)
+//            throw cet::exception("RECO")<<"mu2e::KinematicLineFit: inconsistent ComboHitCollection" << std::endl;
           // next, build straw hits and materials from these
           KKSTRAWHITCOL strawhits;
           KKSTRAWXINGCOL strawxings;
-          strawhits.reserve(hhits.size());
-          strawxings.reserve(hhits.size());
-          kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
+          strawhits.reserve(strawHitIdxs.size());
+          strawxings.reserve(strawHitIdxs.size());
+          kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, *chcolptr, strawHitIdxs, strawhits, strawxings);
 
           //here
           KKCALOHITCOL calohits;

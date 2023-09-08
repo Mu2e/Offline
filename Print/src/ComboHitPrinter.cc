@@ -74,6 +74,7 @@ void mu2e::ComboHitPrinter::Print(const mu2e::ComboHit& obj, int ind,
       << std::setw(8) << std::setprecision(4) << obj.qual() << std::endl;
   } else if (verbose() == 2) {
     os << " StrawId: " << std::setw(5) << obj.strawId().asUint16();
+    os << " Level " << obj._mask.level();
     os << " flag " << obj.flag()<< " Early end " << obj.earlyEnd() << "\n";
     os << " nCombo: " << std::setw(2) << obj.nCombo()
       << " nStraw: " << std::setw(2) << obj.nStrawHits()

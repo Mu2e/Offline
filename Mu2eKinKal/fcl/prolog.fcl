@@ -217,7 +217,11 @@ Mu2eKinKal : {
   KKSeedFit : {
     module_type : LoopHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
-    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SampleSurfaces : ["TT_Front","TT_Mid","TT_Back"]
+      ExtendSurfaces : ["TT_Front","TT_Back"]
+    }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
     ModuleSettings : @local::Mu2eKinKal.LOOPHELIX

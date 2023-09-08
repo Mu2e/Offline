@@ -35,7 +35,7 @@ namespace mu2e {
     using KLPTPtr = std::unique_ptr<KLPT>;
     KalSeed() {}
     KalSeed(PDGCode::type tpart, TrkFitFlag const& status, double flt0=0.0 ) :
-      _tpart(tpart), _status(status), _flt0(static_cast<Float_t>(flt0)){}
+      _tpart(tpart), _status(status), _flt0(static_cast<float>(flt0)){}
 
     PDGCode::type particle() const { return _tpart; }
     auto const& hits() const { return _hits;}
@@ -45,8 +45,9 @@ namespace mu2e {
     auto const& intersections() const { return _inters; }
     auto const& status() const { return _status; }
     double t0Val() const;
-    Float_t chisquared() const { return _chisq; }
-    Float_t fitConsistency() const { return _fitcon; }
+    float chisquared() const { return _chisq; }
+    int nDOF() const { return _ndof; }
+    float fitConsistency() const { return _fitcon; }
     UInt_t nTrajSegments() const { return _segments.size(); }
     KinKal::TimeRange timeRange() const { return KinKal::TimeRange(_segments.front()._tmin,_segments.back()._tmax); }
     bool hasCaloCluster() const { return _chit.caloCluster().isNonnull(); }
@@ -68,10 +69,11 @@ namespace mu2e {
     // global information about the track
     PDGCode::type     _tpart = PDGCode::unknown; // particle assumed for this fit
     TrkFitFlag        _status; // status of this fit: includes alglorithm information
-    Float_t           _chisq = -1; // fit chisquared value
-    Float_t           _fitcon = -1; // fit consistency
-    Float_t           _maxgap = 0;
-    Float_t           _avggap = 0; // information about trajectory gaps
+    float           _chisq = -1; // fit chisquared value
+    int               _ndof = -1;
+    float           _fitcon = -1; // fit consistency
+    float           _maxgap = 0;
+    float           _avggap = 0; // information about trajectory gaps
     //
     // contained content substructure.
     //
@@ -86,9 +88,9 @@ namespace mu2e {
     // find the nearest segment to a given the time
     std::vector<KalSegment>::const_iterator nearestSegmentFlt(float fltlen)  const;
     std::vector<KalSegment>::const_iterator nearestSegment(const XYZVectorF& pos)  const; // find nearest segment to a GLOBAL position
-    Float_t flt0() const { return _flt0; }
+    float flt0() const { return _flt0; }
     HitT0 t0() const;
-    Float_t         _flt0 = 0.0; // flight distance where the track crosses the tracker midplane (z=0).  Redundant with t0 in KinKal fits, and in the wrong unit
+    float         _flt0 = 0.0; // flight distance where the track crosses the tracker midplane (z=0).  Redundant with t0 in KinKal fits, and in the wrong unit
   };
   typedef std::vector<mu2e::KalSeed> KalSeedCollection;
 }
