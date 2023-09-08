@@ -397,6 +397,7 @@ namespace mu2e
       double sumYY=0;
       double sumXY=0;
       double minClusterPEs=cluster.front()._minClusterPEs;  //find the minimum of all minClusterPEs of the cluster hits
+      std::map<std::pair<int,int>,std::vector<CrvHit>::const_iterator> recoTimes[2];  //<<counter,SiPM>,CrvHit> for SiPMs 0/2 and 1/3
       for(auto hit=cluster.begin(); hit!=cluster.end(); ++hit)
       {
         crvRecoPulses.push_back(hit->_crvRecoPulse);
@@ -430,6 +431,16 @@ namespace mu2e
         }
 
         if(minClusterPEs>hit->_minClusterPEs) minClusterPEs=hit->_minClusterPEs;
+
+        //separate hit times for both sides of the modules, i.e. even/odd SiPMs
+        int side=hit->_SiPM%2;
+        auto recoTimeIter = recoTimes[side].find(std::pair<int,int>(hit->_counter,hit->_SiPM));
+        //if one SiPM has two pulse, use the bigger one only, because the other one could be an after pulse, reflection, or noise hit
+        if(recoTimeIter==recoTimes[side].end()) recoTimes[side].emplace(std::pair<int,int>(hit->_counter,hit->_SiPM),hit);
+        else
+        {
+          if(recoTimeIter->second->_crvRecoPulse->GetPEs()<hit->_crvRecoPulse->GetPEs()) recoTimeIter->second=hit;
+        }
       } //loop over hits of the cluster
 
       assert(PEs>0);
@@ -443,8 +454,24 @@ namespace mu2e
       //don't store clusters that are below the minimum number of PEs for this sector (or sectors, if the cluster involves multiple sectors)
       if(PEs<minClusterPEs) continue;
 
+      //find average hit times on both sides of the modules
+      std::vector<size_t> sideHits{recoTimes[0].size(),recoTimes[1].size()};
+      std::vector<float>  sidePEs{0,0};
+      std::vector<double> sideTimes{0,0};
+      for(int side=0; side<2; ++side)
+      {
+        for(auto recoTimeIter=recoTimes[side].begin(); recoTimeIter!=recoTimes[side].end(); ++recoTimeIter)
+        {
+          //use fit values and not the no-fit option
+          sidePEs[side]+=recoTimeIter->second->_crvRecoPulse->GetPEs();
+          sideTimes[side]+=recoTimeIter->second->_crvRecoPulse->GetPulseTime()*recoTimeIter->second->_crvRecoPulse->GetPEs();  //PE-weighted pulse time average
+        }
+        if(sidePEs[side]>0) sideTimes[side]/=sidePEs[side]; else sideTimes[side]=0.0;
+      }
+
       //insert the cluster information into the vector of the crv coincidence clusters
-      crvCoincidenceClusterCollection->emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, crvRecoPulses, slope, layers);
+      crvCoincidenceClusterCollection->emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, crvRecoPulses, slope, layers,
+                                                    sideHits, sidePEs, sideTimes);
     } //loop through all clusters
   } //end cluster properies
 
