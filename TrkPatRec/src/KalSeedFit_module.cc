@@ -366,6 +366,7 @@ namespace mu2e
           if(_result.krep->fitStatus().success()==1)kseed._status.merge(TrkFitFlag::seedConverged);
           if(kseed._hits.size() >= _minnhits)kseed._status.merge(TrkFitFlag::hitsOK);
           kseed._chisq = _result.krep->chisq();
+          kseed._ndof = _result.krep->nDof();
           // use the default consistency calculation, as t0 is not fit here
           kseed._fitcon = _result.krep->chisqConsistency().significanceLevel();
           // extract the helix trajectory from the fit (there is just 1)

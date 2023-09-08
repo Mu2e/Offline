@@ -385,6 +385,7 @@ namespace mu2e
             fseed._flt0 = krep->flt0();
             // global fit information
             fseed._chisq = krep->chisq();
+            fseed._ndof = krep->nDof();
             // compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
             fseed._fitcon =  TrkUtilities::chisqConsistency(krep);
             TrkUtilities::fillStrawHitSeeds(krep,*_chcol,fseed._hits);
