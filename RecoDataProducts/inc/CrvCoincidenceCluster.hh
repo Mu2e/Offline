@@ -20,9 +20,11 @@ namespace mu2e
     CrvCoincidenceCluster() {}
 
     CrvCoincidenceCluster(int crvSectorType, const CLHEP::Hep3Vector &avgCounterPos, double startTime, double endTime, float PEs,
-              const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses, float slope, const std::vector<int> &layers) :
+              const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses, float slope, const std::vector<int> &layers,
+              const std::vector<size_t> &sideHits, const std::vector<float> &sidePEs, const std::vector<double> &sideTimes) :
               _crvSectorType(crvSectorType), _avgCounterPos(avgCounterPos), _startTime(startTime), _endTime(endTime), _PEs(PEs),
-              _crvRecoPulses(crvRecoPulses), _slope(slope), _layers(layers) {}
+              _crvRecoPulses(crvRecoPulses), _slope(slope), _layers(layers),
+              _sideHits(sideHits), _sidePEs(sidePEs), _sideTimes(sideTimes) {}
 
     int                                         GetCrvSectorType() const {return _crvSectorType;}
     const CLHEP::Hep3Vector                    &GetAvgCounterPos() const {return _avgCounterPos;}
@@ -32,6 +34,10 @@ namespace mu2e
     const std::vector<art::Ptr<CrvRecoPulse> > &GetCrvRecoPulses() const {return _crvRecoPulses;}
     float                                       GetSlope() const         {return _slope;}
     const std::vector<int>                     &GetLayers() const        {return _layers;}
+
+    const std::vector<size_t>                  &GetSideHits() const      {return _sideHits;}
+    const std::vector<float>                   &GetSidePEs() const       {return _sidePEs;}
+    const std::vector<double>                  &GetSideTimes() const     {return _sideTimes;}
 
     // allow setting the Ptrs for reco compression
     void SetCrvRecoPulses(std::vector<art::Ptr<CrvRecoPulse> > const& pulses) { _crvRecoPulses = pulses; }
@@ -46,6 +52,10 @@ namespace mu2e
     std::vector<art::Ptr<CrvRecoPulse> > _crvRecoPulses;
     float                                _slope;
     std::vector<int>                     _layers;
+
+    std::vector<size_t>                  _sideHits;  //number of hits on both sides of the modules of this cluster
+    std::vector<float>                   _sidePEs;   //number of PEs on both sides
+    std::vector<double>                  _sideTimes; //average pulse times on both sides //entries are only valid, if the corresponding entries in sidePEs > 0;
   };
   typedef std::vector<mu2e::CrvCoincidenceCluster> CrvCoincidenceClusterCollection;
 }
