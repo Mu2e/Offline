@@ -1,6 +1,7 @@
 #include "Offline/CRVAnalysis/inc/CRVAnalysis.hh"
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
@@ -15,8 +16,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/CRVResponse/inc/CrvMCHelper.hh"
 #include "Offline/CRVReco/inc/CrvHelper.hh"
-#include "Offline/ConditionsService/inc/CrvParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
 namespace mu2e
 {
@@ -190,8 +189,6 @@ namespace mu2e
      event.getByLabel(crvRecoPulseCollectionModuleLabel,"",crvRecoPulseCollection);
      if(!crvRecoPulseCollection.isValid()) return;
 
-     mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
-     double _digitizationPeriod  = crvPar->digitizationPeriod;
      GeomHandle<CosmicRayShield> CRS;
 
      // Create SiPM map to extract sequantial SiPM IDs
@@ -265,7 +262,7 @@ namespace mu2e
          mu2e::CrvDigi const& digi(crvDigis->at(j));
          int _SiPMId = sipm_map.find(digi.GetScintillatorBarIndex().asInt()*4 + digi.GetSiPMNumber())->second;
          for(size_t k=0; k<mu2e::CrvDigi::NSamples; k++)
-           waveformInfo.emplace_back(digi.GetADCs()[k], (digi.GetStartTDC()+k)*_digitizationPeriod, _SiPMId);
+           waveformInfo.emplace_back(digi.GetADCs()[k], (digi.GetStartTDC()+k)*CRVDigitizationPeriod, _SiPMId);
        }
    } //FillCrvPulseInfoCollections
 
