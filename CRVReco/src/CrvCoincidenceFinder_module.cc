@@ -293,7 +293,7 @@ namespace mu2e
       int SiPM = crvRecoPulse->GetSiPMNumber();
 
       //ignore SiPMs on counter sides which don't have SiPMs according to the geometry file
-      int counterSide=SiPM%2;
+      int counterSide=SiPM%CRVId::nSidesPerBar;
       if(counterSide==0 && !sector.sipmsAtSide0) continue;
       if(counterSide==1 && !sector.sipmsAtSide1) continue;
 
@@ -343,7 +343,7 @@ namespace mu2e
         std::vector<CrvHit> cluster1;  //cluster for SiPMs at positive end
         for(auto hit=cluster.begin(); hit!=cluster.end(); ++hit)
         {
-          if(hit->_SiPM%2==0) cluster0.push_back(*hit); else cluster1.push_back(*hit);
+          if(hit->_SiPM%CRVId::nSidesPerBar==0) cluster0.push_back(*hit); else cluster1.push_back(*hit);
         }
 
         //check whether this hit cluster has coincidences
@@ -397,7 +397,7 @@ namespace mu2e
       double sumYY=0;
       double sumXY=0;
       double minClusterPEs=cluster.front()._minClusterPEs;  //find the minimum of all minClusterPEs of the cluster hits
-      std::map<std::pair<int,int>,std::vector<CrvHit>::const_iterator> recoTimes[2];  //<<counter,SiPM>,CrvHit> for SiPMs 0/2 and 1/3
+      std::map<int,std::vector<CrvHit>::const_iterator> recoTimes[CRVId::nSidesPerBar];  //<counter*nChannelsPerBar+SiPM,CrvHit> for SiPMs 0/2 and 1/3
       for(auto hit=cluster.begin(); hit!=cluster.end(); ++hit)
       {
         crvRecoPulses.push_back(hit->_crvRecoPulse);
@@ -433,10 +433,10 @@ namespace mu2e
         if(minClusterPEs>hit->_minClusterPEs) minClusterPEs=hit->_minClusterPEs;
 
         //separate hit times for both sides of the modules, i.e. even/odd SiPMs
-        int side=hit->_SiPM%2;
-        auto recoTimeIter = recoTimes[side].find(std::pair<int,int>(hit->_counter,hit->_SiPM));
+        int side=hit->_SiPM%CRVId::nSidesPerBar;
+        auto recoTimeIter = recoTimes[side].find(hit->_counter*CRVId::nChannelsPerBar+hit->_SiPM);
         //if one SiPM has two pulse, use the bigger one only, because the other one could be an after pulse, reflection, or noise hit
-        if(recoTimeIter==recoTimes[side].end()) recoTimes[side].emplace(std::pair<int,int>(hit->_counter,hit->_SiPM),hit);
+        if(recoTimeIter==recoTimes[side].end()) recoTimes[side].emplace(hit->_counter*CRVId::nChannelsPerBar+hit->_SiPM,hit);
         else
         {
           if(recoTimeIter->second->_crvRecoPulse->GetPEs()<hit->_crvRecoPulse->GetPEs()) recoTimeIter->second=hit;
@@ -455,10 +455,10 @@ namespace mu2e
       if(PEs<minClusterPEs) continue;
 
       //find average hit times on both sides of the modules
-      std::vector<size_t> sideHits{recoTimes[0].size(),recoTimes[1].size()};
-      std::vector<float>  sidePEs{0,0};
-      std::vector<double> sideTimes{0,0};
-      for(int side=0; side<2; ++side)
+      std::array<size_t, CRVId::nSidesPerBar> sideHits{recoTimes[0].size(),recoTimes[1].size()};
+      std::array<float, CRVId::nSidesPerBar>  sidePEs{0,0};
+      std::array<double, CRVId::nSidesPerBar> sideTimes{0,0};
+      for(int side=0; side<CRVId::nSidesPerBar; ++side)
       {
         for(auto recoTimeIter=recoTimes[side].begin(); recoTimeIter!=recoTimes[side].end(); ++recoTimeIter)
         {
