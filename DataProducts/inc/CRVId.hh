@@ -17,6 +17,7 @@ namespace mu2e {
     // taken from dynamic geometry
     constexpr static std::size_t nBars = 5504;
     constexpr static std::size_t nChanPerBar = 4;
+    constexpr static std::size_t nSidesPerBar = 2;
     // some bars have only 2 SiPMs so this count is sparse
     constexpr static std::size_t nChannels = nBars*nChanPerBar;
     constexpr static std::size_t nLayers = 4;
