@@ -23,7 +23,8 @@ namespace mu2e
 
     CrvCoincidenceCluster(int crvSectorType, const CLHEP::Hep3Vector &avgCounterPos, double startTime, double endTime, float PEs,
               const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses, float slope, const std::vector<int> &layers,
-              const std::vector<size_t> &sideHits, const std::vector<float> &sidePEs, const std::vector<double> &sideTimes) :
+              const std::array<size_t,CRVId::nSidesPerBar> &sideHits, const std::array<float, CRVId::nSidesPerBar> &sidePEs,
+              const std::array<double,CRVId::nSidesPerBar> &sideTimes) :
               _crvSectorType(crvSectorType), _avgCounterPos(avgCounterPos), _startTime(startTime), _endTime(endTime), _PEs(PEs),
               _crvRecoPulses(crvRecoPulses), _slope(slope), _layers(layers),
               _sideHits(sideHits), _sidePEs(sidePEs), _sideTimes(sideTimes) {}
