@@ -8,8 +8,8 @@
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/CrvParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -60,7 +60,6 @@ namespace mu2e
     double      _timeStart, _timeEnd;
 
     double      _microBunchPeriod;
-    double      _digitizationPeriod;
 
     ProditionsHandle<CRVCalib> _calib_h;
 
@@ -102,9 +101,6 @@ namespace mu2e
   {
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     _microBunchPeriod = accPar->deBuncherPeriod;
-
-    mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
-    _digitizationPeriod  = crvPar->digitizationPeriod;
   }
 
   void CrvPlot::analyze(const art::Event& event)
@@ -253,7 +249,7 @@ namespace mu2e
           for(size_t j=0; j<digis->GetADCs().size(); ++j)
           {
             double ADC=digis->GetADCs()[j];
-            double time=(digis->GetStartTDC()+j)*_digitizationPeriod;
+            double time=(digis->GetStartTDC()+j)*CRVDigitizationPeriod;
             ADCsTmp.push_back(ADC);
             timesTmp.push_back(time);
             if(maxADC[SiPM]<ADC || isnan(maxADC[SiPM])) maxADC[SiPM]=ADC;
