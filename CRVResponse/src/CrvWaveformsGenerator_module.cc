@@ -6,11 +6,10 @@
 
 #include "Offline/CRVResponse/inc/MakeCrvWaveforms.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
-#include "Offline/ConditionsService/inc/CrvParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
@@ -54,7 +53,6 @@ namespace mu2e
     boost::shared_ptr<mu2eCrv::MakeCrvWaveforms> _makeCrvWaveforms;
 
     double                              _digitizationStart, _digitizationEnd;
-    double                              _digitizationPeriod;
     double                              _FEBtimeSpread;
     double                              _minVoltage;
     double                              _noise;
@@ -109,8 +107,6 @@ namespace mu2e
 
   void CrvWaveformsGenerator::beginRun(art::Run &run)
   {
-    mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
-    _digitizationPeriod  = crvPar->digitizationPeriod;
   }
 
   void CrvWaveformsGenerator::produce(art::Event& event)
@@ -153,8 +149,8 @@ namespace mu2e
       //the closest digitization point with respect to a certain time
       //can happen anywhere within the digitization period of 12.55ns.
       //this time is different for each FEB.
-      _digitizationPointShiftFEBsSide0.emplace_back(_randFlat.fire()*_digitizationPeriod);
-      _digitizationPointShiftFEBsSide1.emplace_back(_randFlat.fire()*_digitizationPeriod);
+      _digitizationPointShiftFEBsSide0.emplace_back(_randFlat.fire()*CRVDigitizationPeriod);
+      _digitizationPointShiftFEBsSide1.emplace_back(_randFlat.fire()*CRVDigitizationPeriod);
       //the FEBs will be synchronized to account for cable length differences etc.,
       //but there may still be small time differences between the FEBs.
       _timeShiftFEBsSide0.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
@@ -191,13 +187,13 @@ namespace mu2e
 
         //find the TDC time when the first charge occurs (adjusted for this FEB)
         double firstChargeTime=chargeClusters[iCluster].timesAndCharges.front().first;
-        firstChargeTime-=1.0*_digitizationPeriod;
-        double TDCstartTimeAdjusted=ceil((firstChargeTime-TDC0timeAdjusted)/_digitizationPeriod) * _digitizationPeriod + TDC0timeAdjusted;
+        firstChargeTime-=1.0*CRVDigitizationPeriod;
+        double TDCstartTimeAdjusted=ceil((firstChargeTime-TDC0timeAdjusted)/CRVDigitizationPeriod) * CRVDigitizationPeriod + TDC0timeAdjusted;
 
         //first create the full waveform
         std::vector<double> fullWaveform;
         _makeCrvWaveforms->MakeWaveform(chargeClusters[iCluster].timesAndCharges,
-                                        fullWaveform, TDCstartTimeAdjusted, _digitizationPeriod);
+                                        fullWaveform, TDCstartTimeAdjusted, CRVDigitizationPeriod);
         _makeCrvWaveforms->AddElectronicNoise(fullWaveform, _noise, _randGaussQ);
 
         //break the waveform apart into short pieces (CrvDigiMC::NSamples) and apply the zero suppression
@@ -207,16 +203,16 @@ namespace mu2e
           if(SingleWaveformStart(fullWaveform, i)) //acts as a zero suppression
           {
             //start new single waveform
-            double digiStartTime=TDCstartTimeAdjusted+i*_digitizationPeriod;
+            double digiStartTime=TDCstartTimeAdjusted+i*CRVDigitizationPeriod;
             if(digiStartTime<digitizationStart) continue; //digis cannot start before the digitization interval
             if(digiStartTime>digitizationEnd) continue; //digis cannot start after the digitization interval
-//            if(digiStartTime+(CrvDigiMC::NSamples-1)*_digitizationPeriod>digitizationEnd) continue; //digis cannot end after the digitization interval
+//            if(digiStartTime+(CrvDigiMC::NSamples-1)*CRVDigitizationPeriod>digitizationEnd) continue; //digis cannot end after the digitization interval
 
             //collect voltages
             std::array<double,CrvDigiMC::NSamples> voltages;
             for(size_t singleWaveformIndex=0; singleWaveformIndex<CrvDigiMC::NSamples; ++i, ++singleWaveformIndex)
             {
-              if(i<fullWaveform.size() && TDCstartTimeAdjusted+i*_digitizationPeriod<=digitizationEnd) voltages[singleWaveformIndex]=fullWaveform[i];
+              if(i<fullWaveform.size() && TDCstartTimeAdjusted+i*CRVDigitizationPeriod<=digitizationEnd) voltages[singleWaveformIndex]=fullWaveform[i];
               else voltages[singleWaveformIndex]=0.0;  //so that all unused single waveform samples are set to zero
             }
 
@@ -226,7 +222,7 @@ namespace mu2e
             for(size_t j=0; j<timesAndCharges.size(); ++j)
             {
               if(timesAndCharges[j]._time>=digiStartTime-_singlePEWaveformMaxTime &&
-                 timesAndCharges[j]._time<=digiStartTime+CrvDigiMC::NSamples*_digitizationPeriod)
+                 timesAndCharges[j]._time<=digiStartTime+CrvDigiMC::NSamples*CRVDigitizationPeriod)
               {
                 steps.insert(timesAndCharges[j]._step);
                 if(timesAndCharges[j]._step.isNonnull()) simparticles[timesAndCharges[j]._step->simParticle()]++;
@@ -280,7 +276,7 @@ namespace mu2e
       }
       else
       {
-        if(timeTmp-chargeClusters.back().timesAndCharges.back().first>_singlePEWaveformMaxTime+4.0*_digitizationPeriod)
+        if(timeTmp-chargeClusters.back().timesAndCharges.back().first>_singlePEWaveformMaxTime+4.0*CRVDigitizationPeriod)
         {
           chargeClusters.resize(chargeClusters.size()+1);
           chargeClusters.back().timesAndCharges.reserve(timesAndCharges.size());

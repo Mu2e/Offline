@@ -44,10 +44,6 @@ string calorimeter.pulseHistName = "h_waveform";
 string calorimeter.propagFileName = "OfflineData/ConditionsService/CsI-propag-2020-07-29.root";
 string calorimeter.propagHistName = "h_zposTime";
 
-
-//CRV digi parameters
-double crv.digitizationPeriod = 12.55; //ns
-
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++
