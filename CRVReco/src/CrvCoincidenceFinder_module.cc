@@ -434,9 +434,9 @@ namespace mu2e
 
         //separate hit times for both sides of the modules, i.e. even/odd SiPMs
         int side=hit->_SiPM%CRVId::nSidesPerBar;
-        auto recoTimeIter = recoTimes[side].find(hit->_counter*CRVId::nChannelsPerBar+hit->_SiPM);
+        auto recoTimeIter = recoTimes[side].find(hit->_counter*CRVId::nChanPerBar+hit->_SiPM);
         //if one SiPM has two pulse, use the bigger one only, because the other one could be an after pulse, reflection, or noise hit
-        if(recoTimeIter==recoTimes[side].end()) recoTimes[side].emplace(hit->_counter*CRVId::nChannelsPerBar+hit->_SiPM,hit);
+        if(recoTimeIter==recoTimes[side].end()) recoTimes[side].emplace(hit->_counter*CRVId::nChanPerBar+hit->_SiPM,hit);
         else
         {
           if(recoTimeIter->second->_crvRecoPulse->GetPEs()<hit->_crvRecoPulse->GetPEs()) recoTimeIter->second=hit;
@@ -458,7 +458,7 @@ namespace mu2e
       std::array<size_t, CRVId::nSidesPerBar> sideHits{recoTimes[0].size(),recoTimes[1].size()};
       std::array<float, CRVId::nSidesPerBar>  sidePEs{0,0};
       std::array<double, CRVId::nSidesPerBar> sideTimes{0,0};
-      for(int side=0; side<CRVId::nSidesPerBar; ++side)
+      for(size_t side=0; side<CRVId::nSidesPerBar; ++side)
       {
         for(auto recoTimeIter=recoTimes[side].begin(); recoTimeIter!=recoTimes[side].end(); ++recoTimeIter)
         {
