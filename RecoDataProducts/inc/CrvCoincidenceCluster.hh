@@ -5,10 +5,12 @@
 // Contact person Ralf Ehrlich
 //
 
+#include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
+#include <array>
 #include <vector>
 
 namespace mu2e
@@ -35,9 +37,9 @@ namespace mu2e
     float                                       GetSlope() const         {return _slope;}
     const std::vector<int>                     &GetLayers() const        {return _layers;}
 
-    const std::vector<size_t>                  &GetSideHits() const      {return _sideHits;}
-    const std::vector<float>                   &GetSidePEs() const       {return _sidePEs;}
-    const std::vector<double>                  &GetSideTimes() const     {return _sideTimes;}
+    const std::array<size_t, CRVId::nSidesPerBar>   &GetSideHits() const    {return _sideHits;}
+    const std::array<float, CRVId::nSidesPerBar>    &GetSidePEs() const     {return _sidePEs;}
+    const std::array<double, CRVId::nSidesPerBar>   &GetSideTimes() const   {return _sideTimes;}
 
     // allow setting the Ptrs for reco compression
     void SetCrvRecoPulses(std::vector<art::Ptr<CrvRecoPulse> > const& pulses) { _crvRecoPulses = pulses; }
@@ -53,9 +55,9 @@ namespace mu2e
     float                                _slope;
     std::vector<int>                     _layers;
 
-    std::vector<size_t>                  _sideHits;  //number of hits on both sides of the modules of this cluster
-    std::vector<float>                   _sidePEs;   //number of PEs on both sides
-    std::vector<double>                  _sideTimes; //average pulse times on both sides //entries are only valid, if the corresponding entries in sidePEs > 0;
+    std::array<size_t, CRVId::nSidesPerBar>  _sideHits;  //number of hits on both sides of the modules of this cluster
+    std::array<float, CRVId::nSidesPerBar>   _sidePEs;   //number of PEs on both sides
+    std::array<double, CRVId::nSidesPerBar>  _sideTimes; //average pulse times on both sides //entries are only valid, if the corresponding entries in sidePEs > 0;
   };
   typedef std::vector<mu2e::CrvCoincidenceCluster> CrvCoincidenceClusterCollection;
 }
