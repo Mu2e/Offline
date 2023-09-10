@@ -73,7 +73,7 @@ physics :
     }
 
     evtprint : {
-      module_type : RunEventSubRun
+      module_type : RunSubrunEvent
       printSam    : false
       printRun    : false
       printSubrun : false
