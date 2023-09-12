@@ -13,7 +13,7 @@ namespace mu2e {
     Float_t _dw; // distance from this hit to the parent ComboHit in W
     Float_t _ures; // estimated error along the U direction
     Float_t _vres; // estimated error along the V direction
-    Float_t _wres; // estimated error along the W direction
+    Float_t _wres = std::numeric_limits<Float_t>::max(); // estimated error along the W direction
     Float_t _tres; // estimated time error
     Float_t _thit; // hit time
     Int_t _strawid; // strawid info
