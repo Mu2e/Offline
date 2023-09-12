@@ -197,7 +197,7 @@ Mu2eKinKal : {
 
   LOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
-    SeedFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
+    SeedFlags : [ "HelixOK" ]
   }
 
   KINEMATICLINE : {
