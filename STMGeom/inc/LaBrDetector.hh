@@ -3,8 +3,8 @@
 
 // Germanium Detector Object
 //
-// Author: Anthony Palladino
-//
+// Author: Haichuan Cao
+// Sept 2023
 
 #include <string>
 
@@ -19,10 +19,10 @@ namespace mu2e {
                std::string const & crystalMaterial,
                std::string const & windowMaterial,
                std::string const & wallMaterial,
-               double EndcupR, double EndcupL,
+               double EndcapR, double EndcapL,
                double CrystalR, double CrystalL,
                double Z_LaBr,
-               double WindowD, double EndcupD, double AirD, double offset_LaBr,
+               double WindowD, double EndcapD, double AirD, double offset_LaBr,
                CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(),
                CLHEP::HepRotation const & rotation = CLHEP::HepRotation()
               ):
@@ -30,10 +30,10 @@ namespace mu2e {
       _crystalMaterial(crystalMaterial),
       _windowMaterial(windowMaterial),
       _wallMaterial(wallMaterial),
-      _EndcupR(EndcupR), _EndcupL(EndcupL),
+      _EndcapR(EndcapR), _EndcapL(EndcapL),
       _CrystalR(CrystalR), _CrystalL(CrystalL),
       _Z_LaBr(Z_LaBr),
-      _WindowD(WindowD), _EndcupD(EndcupD), _AirD(AirD),
+      _WindowD(WindowD), _EndcapD(EndcapD), _AirD(AirD),
       _originInMu2e(originInMu2e),
       _rotation(rotation)
     {}
@@ -43,13 +43,13 @@ namespace mu2e {
     std::string const & windowMaterial()         const {return _windowMaterial;}
     std::string const & wallMaterial()           const {return _wallMaterial;}
 
-    double EndcupR()                    const {return _EndcupR;}
-    double EndcupL()                    const {return _EndcupL;}
+    double EndcapR()                    const {return _EndcapR;}
+    double EndcapL()                    const {return _EndcapL;}
     double CrystalR()                   const {return _CrystalR;}
     double CrystalL()                   const {return _CrystalL;}
     double Z_LaBr()                          const {return _Z_LaBr;}
     double WindowD()                         const {return _WindowD;}
-    double EndcupD()                         const {return _EndcupD;}
+    double EndcapD()                         const {return _EndcapD;}
     double AirD()                            const {return _AirD;}
     double offset_LaBr()                     const {return _offset_LaBr;}
 
@@ -70,13 +70,13 @@ namespace mu2e {
     std::string        _windowMaterial;
     std::string        _wallMaterial;
 
-    double _EndcupR;
-    double _EndcupL;
+    double _EndcapR;
+    double _EndcapL;
     double _CrystalR;
     double _CrystalL;
     double _Z_LaBr;
     double _WindowD;
-    double _EndcupD; 
+    double _EndcapD;
     double _AirD;
     double _offset_LaBr;
     

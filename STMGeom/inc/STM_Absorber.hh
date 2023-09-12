@@ -3,8 +3,8 @@
 
 // Germanium Detector Object
 //
-// Author: Anthony Palladino
-//
+// Author: Haichuan Cao
+// Sept 2023
 
 #include <string>
 

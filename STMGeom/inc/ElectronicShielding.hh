@@ -3,8 +3,8 @@
 
 // Germanium Detector Object
 //
-// Author: Anthony Palladino
-//
+// Author: Haichuan Cao
+// Sept 2023
 
 #include <string>
 
@@ -18,11 +18,12 @@ namespace mu2e {
     ElectronicShielding(bool build, 
     double SiGridX, double SiGridY, double SiGridZ,
     double SiXcenter, double SiYcenter, double SiZcenter,
-    double ConcreteT):
+    double ConcreteT, double GapToSi
+    ):
       _build(build),
      _SiGridX(SiGridX), _SiGridY(SiGridY), _SiGridZ(SiGridZ),
      _SiXcenter(SiXcenter), _SiYcenter(SiYcenter), _SiZcenter(SiZcenter), 
-     _ConcreteT(ConcreteT)    
+     _ConcreteT(ConcreteT), _GapToSi(GapToSi)
     {}
 
     bool    build()                              const {return _build;}
@@ -33,6 +34,8 @@ namespace mu2e {
     double  SiYcenter()                          const {return _SiYcenter;}
     double  SiZcenter()                          const {return _SiZcenter;}
     double  ConcreteT()                          const {return _ConcreteT;}
+    double  GapToSi()                            const {return _GapToSi;}
+
 
     ElectronicShielding() {}
 
@@ -46,6 +49,8 @@ namespace mu2e {
     double             _SiYcenter;
     double             _SiZcenter;
     double             _ConcreteT;
+    double             _GapToSi;
+
    
   };
 
