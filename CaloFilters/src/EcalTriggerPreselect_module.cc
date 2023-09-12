@@ -110,7 +110,7 @@ namespace mu2e {
     float _TANDIPMIN;
     float _TANDIPMAX;
     float _MVAMIN;
-    float _VDPID;
+    int _VDPID;
     float _PMIN;
     float _PMATCHMIN;
     float _ECLUMIN;
