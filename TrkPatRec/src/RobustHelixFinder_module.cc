@@ -1007,7 +1007,7 @@ unsigned  RobustHelixFinder::filterCircleHits(RobustHelixFinderData& helixData)
 
       if(oldoutBest) ++changed;
 
-      if (chCounter < RobustHelixFinderData::kMaxResidIndex) {
+      if (chCounter < float(RobustHelixFinderData::kMaxResidIndex)) {
         drBestVec   [int(chCounter)] = drBest;
         rwdotBestVec[int(chCounter)] = rwdotBest;
       }

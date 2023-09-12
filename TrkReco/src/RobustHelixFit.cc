@@ -599,7 +599,7 @@ bool RobustHelixFit::initFZ_2(RobustHelixFinderData& HelixData) {
   // Part 2: perform a more accurate estimate - straight line fit
   //-----------------------------------------------------------------------------
   if (nstations_with_hits < 2) return false;//hdfdz = _mpDfDz;
-  else                         hdfdz = xmp*rhel.helicity()._value;
+  else                         hdfdz = xmp*double(rhel.helicity()._value);
   //-----------------------------------------------------------------------------
   // last step - determine phi0 = phi(z=0)
   //-----------------------------------------------------------------------------
