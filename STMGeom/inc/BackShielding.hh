@@ -3,8 +3,8 @@
 
 // Germanium Detector Object
 //
-// Author: Anthony Palladino
-//
+// Author: Haichuan Cao
+// Sept 2023
 
 #include <string>
 
@@ -15,18 +15,34 @@ namespace mu2e {
 
   class BackShielding {
   public:
-    BackShielding(bool build):
-      _build(build)
+    BackShielding(bool build, double thick, double length, double height,
+    double Back_dX, double Back_dY,
+    CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(), CLHEP::HepRotation const & rotation = CLHEP::HepRotation()
+    ):
+      _build(build), _BPThick(thick), _BPLength(length), _BPHeight(height),
+      _originInMu2e(originInMu2e), _rotation(rotation)
     {}
 
-    bool   build()                               const { return _build;  }
+   bool     build()                    const {return _build;}
+   double   BPThick()                  const {return _BPThick;}
+   double   BPLength()                 const {return _BPLength;}
+   double   BPHeight()                 const {return _BPHeight;}
+   double   Back_dX()                  const {return _Back_dX;}
+   double   Back_dY()                  const {return _Back_dY;}
 
 
     BackShielding() {}
   private:
 
     bool               _build;
+    double             _BPThick;
+    double             _BPLength;
+    double             _BPHeight;
+    double             _Back_dX;
+    double             _Back_dY;
 
+    CLHEP::Hep3Vector  _originInMu2e;
+    CLHEP::HepRotation _rotation;
   };
 
 }

@@ -193,11 +193,11 @@ namespace mu2e {
     std::string  _shieldDnStrWallMaterial;
 
     bool        _STM_SSCBuild;
+    bool        _STM_SSCVDBuild;
     double      _STM_SSCdelta_WlR;
     double      _STM_SSCdelta_WlL;
-    double      _STM_SSCW_length;
+    double      _STM_SSCW_middle;
     double      _STM_SSCW_height;
-    double      _STM_SSCleak;
     double      _STM_SSCWdepth_f;
     double      _STM_SSCWdepth_b;
     double      _STM_SSCAperture_HPGe1;
@@ -205,7 +205,27 @@ namespace mu2e {
     double      _STM_SSCAperture_LaBr1;
     double      _STM_SSCAperture_LaBr2;
     double      _STM_SSCoffset_Spot;
+    double      _STM_SSCleak;
+    double      _STM_SSCFrontToWall;
     std::string _STM_SSCMaterial;
+
+    bool    _FrontShieldingBuild;
+    double  _FrontSHeightofRoom;
+    double  _FrontStungstenlength;
+    double  _FrontStungstendepth;
+    double  _FrontSleaddepth1;
+    double  _FrontSleaddepth2;
+    double  _FrontSaluminumdepth;
+    double  _FrontScopperdepth;
+    double  _FrontSBPdepth;
+    double  _FrontSBPdepth2;
+    double  _FrontSfPb_lengthL;
+    double  _FrontSfPb_lengthR;
+    double  _FrontSGapForTop;
+    double  _FrontSLeakForSSC;
+    double  _FrontS_Thickness;
+    double  _FrontS_Height;
+    double  _FrontS_Length;
 
     bool   _HPGeBuild;
     std::string _HPGecrystalMaterial;
@@ -213,8 +233,8 @@ namespace mu2e {
     std::string _HPGewindowMaterial;
     std::string _HPGewallMaterial;
     std::string _HPGecapsuleMaterial;
-    double _HPGeEndcupR;
-    double _HPGeEndcupL;
+    double _HPGeEndcapR;
+    double _HPGeEndcapL;
     double _HPGeCrystalR;
     double _HPGeCrystalL;
     double _HPGeZ_HPGe;
@@ -225,7 +245,7 @@ namespace mu2e {
     double _HPGeCapsule_Endthick;
     double _HPGeCapsule_Walllength;
     double _HPGeWindowD;
-    double _HPGeEndcupD;
+    double _HPGeEndcapD;
     double _HPGeAirD;
     double _HPGeoffset_HPGe;
 
@@ -233,32 +253,75 @@ namespace mu2e {
     std::string _LaBrcrystalMaterial;
     std::string _LaBrwindowMaterial;
     std::string _LaBrwallMaterial;
-    double _LaBrEndcupR;
-    double _LaBrEndcupL;
+    double _LaBrEndcapR;
+    double _LaBrEndcapL;
     double _LaBrCrystalR;
     double _LaBrCrystalL;
     double _LaBrZ_LaBr;
     double _LaBrWindowD;
-    double _LaBrEndcupD;
+    double _LaBrEndcapD;
     double _LaBrAirD;
     double _LaBroffset_LaBr;
 
-    bool   _FrontShieldingBuild;
-    bool   _LeftShieldingBuild;
-    bool   _RightShieldingBuild;
-    bool   _TopShieldingBuild;
-    bool   _BottomShieldingBuild;
+    bool    _BottomShieldingBuild;
+    double  _BottomSFront_LB;
+    double  _BottomSfloor_Zlength;
+    double  _BottomSleaddepth;
+    double  _BottomScopperdepth;
+    double  _BottomSBPdepth;
+
+
+    bool    _LeftShieldingBuild;
+    double  _LeftS_Length;
+    double  _LeftSleaddepth;
+    double  _LeftScopperdepth;
+    double  _LeftSBPdepth;
+    double  _LeftSXmin;
+
+    bool    _RightShieldingBuild;
+    double  _RightS_Length;
+    double  _RightSleaddepth;
+    double  _RightScopperdepth;
+    double  _RightSBPdepth;
+    double  _RightSXmax;
+
+
+    bool    _TopShieldingBuild;
+    bool    _TopShieldingSkirtBuild;
+    double  _TopSZlength;
+    double  _TopSXlength;
+    double  _TopSFront_LT;
+    double  _TopScontainerdepth;
+    double  _TopSleaddepth;
+    double  _TopScopperdepth;
+    double  _TopSBPdepth;
+    double  _TopSZHole;
+    double  _TopSBarLeft;
+    double  _TopSBarRight;
+    double  _TopSGapLeft;
+    double  _TopSGapRight;
+    double  _TopSLeak;
+
+    bool    _BackShieldingBuild;
+    double  _BackSBPThick;
+    double  _BackSBPLength;
+    double  _BackSBPHeight;
+    double  _BackS_dX;
+    double  _BackS_dY;
+
+
     bool   _InnerShieldingBuild;
-    bool   _BackShieldingBuild;
 
     bool     _ElectronicShieldingBuild;
-    double   _ElectronicShieldingSiGridX;
-    double   _ElectronicShieldingSiGridY;
-    double   _ElectronicShieldingSiGridZ;
-    double   _ElectronicShieldingSiXcenter;
-    double   _ElectronicShieldingSiYcenter;
-    double   _ElectronicShieldingSiZcenter;
-    double   _ElectronicShieldingConcreteT;
+    double   _ElectronicSSiGridX;
+    double   _ElectronicSSiGridY;
+    double   _ElectronicSSiGridZ;
+    double   _ElectronicSSiXcenter;
+    double   _ElectronicSSiYcenter;
+    double   _ElectronicSSiZcenter;
+    double   _ElectronicSConcreteT;
+    double   _ElectronicSGapToSi;
+
 
     bool     _STM_AbsorberBuild;
     double   _STM_Absorber_hW;

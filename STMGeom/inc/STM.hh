@@ -66,23 +66,13 @@ namespace mu2e {
 
     CLHEP::Hep3Vector const & originInMu2e() const { return _originInMu2e; };
 
-    double _leaddepth;
-    double _leaddepth1;
-    double _leaddepth2;
-    double _copperdepth;
-    double _aluminumdepth;
-    double _BPdepth;
-    double _BPdepth2;
-    double _offset_Y;
 
   private:
 
     friend class STMMaker;
 
     // The class should only be constructed via STM::STMMaker.
-    STM(double leaddepth=2*25.4, double leaddepth1=1*25.4, double leaddepth2=4*25.4, double copperdepth=0.5*25.4, double aluminumdepth=0.75*25.4, double BPdepth=0.5*25.4, double BPdepth2=1*25.4, double offset_Y=0):
-    _leaddepth(leaddepth), _leaddepth1(leaddepth1), _leaddepth2(leaddepth2), _copperdepth(copperdepth), _aluminumdepth(aluminumdepth), _BPdepth(BPdepth), _BPdepth2(BPdepth2), _offset_Y(offset_Y)
-    {};
+    STM(){};
 
     // hide automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
     STM( STM const & );
@@ -108,11 +98,10 @@ namespace mu2e {
     std::unique_ptr<TopShielding>     _pSTMTopShieldingParams;
     std::unique_ptr<BottomShielding>  _pSTMBottomShieldingParams;
     std::unique_ptr<InnerShielding>   _pSTMInnerShieldingParams;
-    std::unique_ptr<BackShielding>   _pSTMBackShieldingParams;
+    std::unique_ptr<BackShielding>    _pSTMBackShieldingParams;
 
     std::unique_ptr<ElectronicShielding>   _pSTMElectronicShieldingParams;
     std::unique_ptr<STM_Absorber>          _pSTMSTM_AbsorberParams;
-
 
     CLHEP::Hep3Vector   _originInMu2e;
   };
