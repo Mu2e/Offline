@@ -65,12 +65,12 @@ namespace mu2e {
 //   };
 
   // comparison functor for sorting by z
-  struct zcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
+  struct zcomp {
     bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
 
   // comparison functor for sorting byuniquePanel ID
-  struct panelcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
+  struct panelcomp {
     bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1.strawId().uniquePanel() < p2.strawId().uniquePanel(); }
   };
 

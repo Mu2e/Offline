@@ -27,7 +27,7 @@
 
 namespace {
 // comparison functor for sorting by t
-struct tcomp : public std::binary_function<mu2e::ComboHit, mu2e::ComboHit, bool> {
+struct tcomp {
   bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) {
     return p1.correctedTime() < p2.correctedTime();
   }

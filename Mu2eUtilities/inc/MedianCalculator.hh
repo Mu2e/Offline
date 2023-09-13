@@ -20,7 +20,7 @@ class MedianCalculator {
     float val;
     float wg;
   };
-  struct lessByValue : public std::binary_function<MedianData, MedianData, bool> {
+  struct lessByValue {
     bool operator()(MedianData const& p1, MedianData const& p2) { return p1.val < p2.val; }
   };
 
