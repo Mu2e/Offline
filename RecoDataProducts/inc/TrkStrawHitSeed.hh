@@ -155,7 +155,7 @@ namespace mu2e {
     float     _stime =0;   // signal propagation time for this hit, to the nearest end
   };
   // binary functor to sort TrkStrawHits by StrawHit index
-  struct indexcompseed : public std::binary_function<TrkStrawHitSeed,TrkStrawHitSeed, bool> {
+  struct indexcompseed {
     bool operator()(const TrkStrawHitSeed& x,const TrkStrawHitSeed& y) { return x.index() < y.index(); }
   };
 }
