@@ -44,12 +44,12 @@ namespace mu2e {
       unsigned _acount; // counts active
     };
     // sort by active hits
-    struct spcountcomp : public std::binary_function <spcount, spcount, bool> {
+    struct spcountcomp {
       bool operator() (spcount a, spcount b) { return a._acount > b._acount; }
     };
 
     typedef StepPointMCCollection::const_iterator MCStepItr;
-    struct timecomp : public std::binary_function<MCStepItr,MCStepItr, bool> {
+    struct timecomp {
       bool operator()(MCStepItr x,MCStepItr y) { return x->time() < y->time(); }
     };
 

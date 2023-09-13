@@ -58,7 +58,7 @@ using namespace ROOT::Math;
 
 std::vector<double> TrackerConstraints(1500, 1500);
 
-struct ycomp : public std::binary_function<XYZVectorF,XYZVectorF,bool> {
+struct ycomp {
     bool operator()(XYZVectorF const& p1, XYZVectorF p2) { return p1.y() > p2.y(); }
   };
 
