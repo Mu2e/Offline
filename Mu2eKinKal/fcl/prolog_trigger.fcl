@@ -55,7 +55,7 @@ Mu2eKinKalTrigger : {
       [10.0, -1.0, -1.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainBkgTTtpr.dat",0.01,"Inactive", 1]
+      [ "Offline/Mu2eKinKal/data/TrainBkgTrigger.dat",0.01,"Inactive", 1]
     ]
  }
 
