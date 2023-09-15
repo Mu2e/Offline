@@ -115,6 +115,7 @@ FlagBkgHits : {
   ClusterPositionError : 10
   FilterHits           : false
   BackgroundMask       : ["Background"]
+  OutputLevel          : "uniquepanel"
   SaveBkgClusters      : false
   KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiag.dat"
   KerasQuality         : 0.5
