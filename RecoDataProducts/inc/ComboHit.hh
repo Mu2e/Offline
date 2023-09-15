@@ -134,6 +134,8 @@ namespace mu2e {
       // fill a vector of indices to the underlying digis used in a given ComboHit
       // This function is called recursively, so the the vector must be empty on the top-most call
 #ifndef __ROOTCLING__
+      // find the parent at a given level
+      CHCPTR parent(StrawIdMask::Level level) const;
       void fillStrawDigiIndices( size_t chindex, SHIV& shids) const;
       // Fill indices to the specified level.  Return value is the collection to whic
       // the indices apply.  first, given all my hits
