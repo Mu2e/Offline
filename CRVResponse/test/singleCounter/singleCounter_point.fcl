@@ -2,59 +2,10 @@
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/CRVResponse/fcl/prolog.fcl"
 #include "Offline/Mu2eG4/fcl/prolog.fcl"
+#include "Production/JobConfig/common/prolog.fcl"
+#include "Production/JobConfig/cosmic/prolog.fcl"
 
-process_name : CRVEfficiency
-
-source :
-{
-  module_type : EmptyEvent
-  maxEvents : @nil
-}
-
-services :
-{
-  message               : @local::default_message
-  TFileService          : { fileName : "hist.root" }
-  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
-
-  GeometryService        : { inputFile      : "CRVResponse/singleCounter/geom.txt" }
-  ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
-  GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
-  Mu2eG4Helper           : { }
-  SeedService            : @local::automaticSeeds
-}
-
-physics :
-{
-  producers:
-  {
-    generate:
-    {
-       module_type          : EventGenerator
-       inputfile            : "CRVResponse/singleCounter/genconfig_point.txt"
-    }
-
-    g4run :
-    {
-       module_type: Mu2eG4
-       physics: @local::mu2eg4DefaultPhysics
-       ResourceLimits: @local::mu2eg4DefaultResourceLimits
-       TrajectoryControl: @local::mu2eg4DefaultTrajectories
-       debug: @local::mu2eg4DefaultDebug
-       visualization: @local::mu2eg4NoVisualization
-
-       generatorModuleLabel: generate
-
-       SDConfig:
-       {
-            enableSD: [ CRV ]
-            sensitiveVolumes: []
-            TimeVD: { times: [] }
-       }
-
-       Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
-
-       Mu2eG4SteppingOnlyCut: {}
+BEGIN_PROLOG
 
        Mu2eG4CommonCut:
        {
@@ -72,16 +23,43 @@ physics :
             }
          ]
        }
+
+END_PROLOG
+
+
+process_name : CRVEfficiency
+
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : @nil
+}
+
+services :
+{
+  @table::Services.SimAndReco
+  TFileService          : { fileName : "hist.root" }
+}
+
+physics :
+{
+  producers:
+  {
+    generate:
+    {
+       module_type          : EventGenerator
+       inputfile            : "Offline/CRVResponse/test/singleCounter/genconfig_point.txt"
     }
+    @table::Common.producers
+    @table::CommonMC.producers
+    @table::CrvResponsePackage.producers
+    CrvSteps       : @local::CrvSteps
+    CrvRecoPulses  : @local::CrvRecoPulses
+  }
 
-    protonTimeMap: { module_type : GenerateProtonTimes }
-    muonTimeMap: { module_type : GenerateMuonLife }
-
-    CrvPhotons       : @local::CrvPhotons
-    CrvSiPMCharges   : @local::CrvSiPMCharges
-    CrvWaveforms     : @local::CrvWaveforms
-    CrvDigi          : @local::CrvDigi
-    CrvRecoPulses    : @local::CrvRecoPulses
+  filters:
+  {
+    @table::Common.filters
   }
 
   analyzers:
@@ -91,12 +69,13 @@ physics :
       module_type                 : CRVTest
       crvStepsModuleLabel         : "g4run"
       crvSiPMChargesModuleLabel   : "CrvSiPMCharges"
+      crvDigiModuleLabel          : "CrvDigi"
       crvRecoPulsesModuleLabel    : "CrvRecoPulses"
       genParticleModuleLabel      : "generate"
     }
   }
 
-  trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses ]
+  trig : [generate, @sequence::Common.g4Sequence, CrvSteps, @sequence::CommonMC.DigiSim, @sequence::CrvDAQPackage.CrvDAQSequence, CrvRecoPulses ]
   trigger_paths  : [trig]
 
 #  out: [CrvTest, Output]
@@ -109,11 +88,15 @@ outputs:
     Output :
     {
         module_type : RootOutput
-        fileName    : "data_crv.root"
+        fileName    : "data_crv_test.root"
     }
 }
 
-physics.producers.CrvPhotons.timeOffsets                  : {}
+physics.producers.EWMProducer.SpillType : 0
+physics.producers.CrvSteps.stepPointsModuleLabels   : ["g4run"]
+physics.producers.CrvPhotons.crvStepModuleLabels    : ["CrvSteps"]
+physics.producers.CrvPhotons.crvStepProcessNames    : ["CRVEfficiency"]
+physics.producers.CrvPhotons.scintillationYields    : [39400]
 physics.producers.CrvPhotons.scintillationYieldVariation  : 0.0
 physics.producers.CrvPhotons.CRVSectors                   : ["Test"]
 #physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0/LookupTable_3000_0"]
@@ -130,4 +113,7 @@ physics.producers.CrvWaveforms.FEBtimeSpread              : 0.0
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.GeometryService.inputFile  : "Offline/CRVResponse/test/singleCounter/geom.txt"
+
+physics.producers.g4run.Mu2eG4CommonCut: @local::Mu2eG4CommonCut
 

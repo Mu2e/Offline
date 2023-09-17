@@ -70,9 +70,9 @@ void mu2e::CrvCoincidenceClusterPrinter::Print(
      << std::setprecision(1) << obj.GetStartTime() << " " << std::setw(8)
      << std::setprecision(1) << obj.GetEndTime() << "   "
      << " " << std::setw(8) << std::setprecision(1)
-     << obj.GetAvgCounterPos().x() << " " << std::setw(8)
-     << std::setprecision(1) << obj.GetAvgCounterPos().y() << " "
-     << std::setw(8) << std::setprecision(1) << obj.GetAvgCounterPos().z()
+     << obj.GetAvgHitPos().x() << " " << std::setw(8)
+     << std::setprecision(1) << obj.GetAvgHitPos().y() << " "
+     << std::setw(8) << std::setprecision(1) << obj.GetAvgHitPos().z()
      << " ";
   os << std::endl;
   if (verbose() > 1) {
