@@ -61,7 +61,7 @@ namespace mu2e {
     PerParticleCount nPrincipal;
     PerParticleCount nAll;
 
-    for(const auto recoMapEntry: *ireco) {
+    for(const auto& recoMapEntry: *ireco) {
       const KalRep& krep = **recoMapEntry.first;
       for(const auto hot : krep.hitVector()) {
         const TrkStrawHit *hit = dynamic_cast<const TrkStrawHit*>(hot);

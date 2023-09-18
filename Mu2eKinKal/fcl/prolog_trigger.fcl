@@ -24,21 +24,17 @@ Mu2eKinKalTrigger : {
     MaxNIter : 2
     MetaIterationSettings : [
       [ 4.0, "CADSHU" ],
-      [ 2.0, "CADSHU" ],
-      [ 1.0, "CADSHU:BkgANNSHU" ]
+      [ 3.0, "CADSHU" ]
     ]
     CADSHUSettings : [
       # maxdoca, maxderr, minrdrift, maxrdrift, flag, , allowed, freeze, diag
       [ 60.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
-      [ 40.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
-      [ 30.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
+      [ 40.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
       [10.0, -1.0, -1.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainBkgTTtpr.dat",0.01,"Inactive", 1]
-      #  [ "Offline/Mu2eKinKal/data/TrainBkgTTcpr.dat",0.01,"Inactive", 1]  This should be used for cpr FIXME
     ]
   }
 
@@ -48,16 +44,18 @@ Mu2eKinKalTrigger : {
     BFieldCorrection : true
 
     CADSHUSettings : [
-      [ 40.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
+      [ 30.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 20.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
     ]
     MetaIterationSettings : [
-      # annealing temp, strawhit updater algorithm
-      [ 3.0, "CADSHU" ]
+      [ 2.0, "CADSHU" ],
+      [ 1.0, "CADSHU:BkgANNSHU" ]
     ]
     StrawXingUpdaterSettings : [
       [10.0, -1.0, -1.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
+      [ "Offline/Mu2eKinKal/data/TrainBkgTrigger.dat",0.01,"Inactive", 1]
     ]
  }
 

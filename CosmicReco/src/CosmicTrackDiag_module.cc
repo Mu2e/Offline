@@ -18,7 +18,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/MCRelationship.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
@@ -616,7 +615,7 @@ namespace mu2e
   }
 
   void CosmicTrackDiag::hitDiag(const art::Event& event, StrawResponse const& srep, int its, const Tracker* tracker) {
-    GaussianDriftFit gdf(_shcol, srep, tracker);
+    GaussianDriftFit gdf(*_chcol, srep, tracker);
     // loop over combohits
     for (size_t ich=0;ich<_chcol->size();ich++){
       const ComboHit &sh = _chcol->at(ich);
@@ -760,7 +759,7 @@ namespace mu2e
         auto tclust = tseed._timeCluster;
         ComboHitCollection tchits;
         std::vector<ComboHitCollection::const_iterator> chids;
-        _phcol->fillComboHits(event, tclust->hits(), chids);
+        _phcol->fillComboHits(tclust->hits(), chids);
         for (auto const& it : chids){
           if (it[0].strawId() == sh.strawId() && it[0].time() == sh.time()){
             _hitintclust = 1;

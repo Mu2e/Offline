@@ -22,7 +22,6 @@
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/CrvParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 

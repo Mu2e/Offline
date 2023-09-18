@@ -63,7 +63,7 @@ using CLHEP::HepSymMatrix;
 namespace mu2e
 {
   // comparison functor for ordering hits.  This should operate on TrkHit, FIXME!
-  struct fcomp : public binary_function<TrkHit*, TrkHit*, bool> {
+  struct fcomp {
     bool operator()(TrkHit* x, TrkHit* y) {
       return x->fltLen() < y->fltLen();
     }
@@ -79,7 +79,7 @@ namespace mu2e
 
   // comparison operators understand that the same straw could be hit twice, so the flight lengths need
   // to be similar befoew we consider these 'the same'
-  struct StrawFlightComp : public binary_function<StrawFlight, StrawFlight, bool> {
+  struct StrawFlightComp {
     double _maxdiff; // maximum flight difference; below this, consider 2 intersections 'the same'
     StrawFlightComp(double maxdiff) : _maxdiff(maxdiff) {}
     bool operator () (StrawFlight const& a, StrawFlight const& b) const { return a._id < b._id ||

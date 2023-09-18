@@ -1,0 +1,55 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CRVResponse/fcl/prolog.fcl"
+
+process_name : CRVResponseReco
+
+source :
+{
+  module_type : RootInput
+  inputCommands: ["keep *",
+                  "drop *KalRepPayload*_*_*_*",
+                  "drop *CaloCrystalOnlyHit*_*_*_*"]
+}
+
+services :
+{
+  @table::Services.SimAndReco
+  TFileService : { fileName : "test.root" }
+}
+
+physics :
+{
+  producers:
+  {
+    @table::CommonMC.producers
+    @table::CrvResponsePackage.producers
+  }
+
+  an : [ @sequence::CrvRecoMCPackage.CrvRecoMCSequence]
+  out: [Output]
+#  out: []
+
+  trigger_paths: [an]
+  end_paths:     [out]
+}
+
+outputs:
+{
+  Output :
+  {
+    module_type : RootOutput
+    fileName    : "data_crv_reco.art"
+  }
+}
+
+physics.producers.CrvRecoPulses.crvDigiModuleLabel        : "SelectRecoMC"
+physics.producers.CrvCoincidenceClusterMatchMC.crvWaveformsModuleLabel                : "compressRecoMCs"
+physics.producers.CrvCoincidenceClusterMatchMC.doNtuples  : true
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+
+services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_common_extracted.txt"
+#include "Offline/CRVResponse/fcl/epilog_extracted_v03.fcl"

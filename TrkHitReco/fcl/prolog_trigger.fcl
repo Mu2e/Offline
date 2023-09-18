@@ -48,10 +48,7 @@ TTmakeSTH : {
 TTflagBkgHits : {
   @table::FlagBkgHits
   ComboHitCollection   : "TTmakePH"
-  StrawHitCollection   : "TTmakeSH"
   FilterHits           : true
-  FlagStrawHits        : false
-  FlagComboHits        : true
 }
 
 # stereo versions

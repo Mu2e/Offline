@@ -58,7 +58,7 @@ using namespace ROOT::Math;
 
 std::vector<double> TrackerConstraints(1500, 1500);
 
-struct ycomp : public std::binary_function<XYZVectorF,XYZVectorF,bool> {
+struct ycomp {
     bool operator()(XYZVectorF const& p1, XYZVectorF p2) { return p1.y() > p2.y(); }
   };
 
@@ -159,14 +159,14 @@ namespace mu2e
     }
 
     void CosmicTrackFit::FillTrackHitCollections(CosmicTrackSeed &tseed, art::Event const& event, ComboHitCollection const& chcol, std::vector<StrawHitIndex> &panelHitIdxs){
-      std::vector<ComboHitCollection::const_iterator> chids;
-      chcol.fillComboHits(event, panelHitIdxs, chids);
+      ComboHitCollection::CHCIter chids;
+      chcol.fillComboHits( panelHitIdxs, chids);
       for (auto const& it : chids){
-        tseed._straw_chits.push_back(it[0]);
+        tseed._straw_chits.push_back(*it);
       }
       for(size_t ich= 0; ich<tseed._straw_chits.size(); ich++){
         std::vector<StrawHitIndex> shitids;
-        tseed._straw_chits.fillStrawHitIndices(event, ich, shitids);
+        tseed._straw_chits.fillStrawHitIndices(ich, shitids);
 
         for(auto const& ids : shitids){
           size_t    istraw   = (ids);
