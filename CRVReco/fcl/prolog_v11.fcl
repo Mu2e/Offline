@@ -372,6 +372,8 @@ BEGIN_PROLOG
       useNoFitReco                     : true
       usePEsPulseHeight                : false  //using the PEs that were calculated using the pulse height instead of pulse area
       bigClusterThreshold              : 800
+      fiberSignalSpeed                 : 140    //140 mm/ns  //FIXME: The correct value should be 175 mm/ns.
+      timeOffset                       :  34.5  //34.5 ns
     }
 
 

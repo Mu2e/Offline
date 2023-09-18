@@ -7,7 +7,6 @@
 //is fully covered by the Offline counters.
 
 #include "Offline/CommonMC/fcl/prolog.fcl"
-#include "Offline/CRVReco/fcl/prolog.fcl"
 BEGIN_PROLOG
 
     CrvSteps:
@@ -134,6 +133,7 @@ BEGIN_PROLOG
       module_type                            : CrvCoincidenceClusterMatchMC
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
       crvWaveformsModuleLabel                : "CrvWaveforms"
+      doNtuples                              : false
     }
     CrvPlot:
     {
