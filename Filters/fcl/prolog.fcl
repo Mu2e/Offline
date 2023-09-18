@@ -21,6 +21,7 @@ FilterStepPointMomentum : {
     cutMomentumMin : 10. # MeV/c
 }
 
+
 # throw when hits are outside their sensitive volumes
 VetoIncorrectHits: {
     module_type          : VetoIncorrectHits
