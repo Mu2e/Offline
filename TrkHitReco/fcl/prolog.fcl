@@ -108,17 +108,13 @@ TNTClusterer : {
 FlagBkgHits : {
   module_type          : FlagBkgHits
   ComboHitCollection   : "makePH"
-  StrawHitCollection   : "makeSH"
   ClusterAlgorithm     : 1
   TNTClustering        : {@table::TNTClusterer}
   MinActiveHits        : 3
   MinNPlanes           : 2
   ClusterPositionError : 10
   FilterHits           : false
-  FlagStrawHits        : true
-  FlagComboHits        : true
   BackgroundMask       : ["Background"]
-  StereoSelection      : ["Stereo","PanelCombo"]
   SaveBkgClusters      : false
   KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiag.dat"
   KerasQuality         : 0.5

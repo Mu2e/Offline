@@ -22,11 +22,13 @@ namespace mu2e
     static void GetInfoFromStepPoints(const std::set<art::Ptr<CrvStep> > &steps,
                                       double &visibleEnergyDeposited,
                                       double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
+                                      double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
                                       art::Ptr<SimParticle> &mostLikelySimParticle);
     static void GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
                                         const art::Handle<CrvDigiMCCollection> &digis,
                                         double &visibleEnergyDeposited,
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
+                                        double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
                                         art::Ptr<SimParticle> &mostLikelySimParticle);
 
     private:

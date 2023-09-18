@@ -20,7 +20,7 @@
 #include <gsl/gsl_sf_bessel.h>
 #include "CLHEP/Vector/ThreeVector.h"
 #include "cetlib_except/exception.h"
-#include "math.h"
+#include <cmath>
 
 using namespace std;
 

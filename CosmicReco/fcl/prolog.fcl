@@ -12,7 +12,6 @@ TimeClusterFinder : {
     ClusterMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
     ClusterCaloMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
     ComboHitCollection : "makePH"
-    StrawHitFlagCollection : "FlagBkgHits:ComboHits"
     CaloClusterCollection : "CaloClusterMaker"
     T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
     UseCaloCluster : true
@@ -35,7 +34,6 @@ TimeClusterFinderCosmics : {
 SimpleTimeCluster : {
     module_type : SimpleTimeCluster
     ComboHitCollection : "makePH"
-    StrawHitFlagCollection : "FlagBkgHits:ComboHits"
     TestFlag : false
 }
 

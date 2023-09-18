@@ -488,6 +488,7 @@ namespace mu2e {
     KalSeed fseed(kktrk.fitParticle(),fflag);
     auto const& fstatus = kktrk.fitStatus();
     fseed._chisq = fstatus.chisq_.chisq();
+    fseed._ndof = fstatus.chisq_.nDOF();
     fseed._fitcon = fstatus.chisq_.probability();
     size_t igap;
     double maxgap,avggap;

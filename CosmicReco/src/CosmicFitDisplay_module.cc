@@ -21,7 +21,6 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/MCRelationship.hh"
 // Mu2e Utilities
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"

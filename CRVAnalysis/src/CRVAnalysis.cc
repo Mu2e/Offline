@@ -1,6 +1,7 @@
 #include "Offline/CRVAnalysis/inc/CRVAnalysis.hh"
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
@@ -15,8 +16,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/CRVResponse/inc/CrvMCHelper.hh"
 #include "Offline/CRVReco/inc/CrvHelper.hh"
-#include "Offline/ConditionsService/inc/CrvParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
 namespace mu2e
 {
@@ -54,7 +53,7 @@ namespace mu2e
       const CrvCoincidenceCluster &cluster = crvCoincidenceClusterCollection->at(i);
 
       //fill the Reco collection
-      recoInfo.emplace_back(cluster.GetCrvSectorType(), cluster.GetAvgCounterPos(),
+      recoInfo.emplace_back(cluster.GetCrvSectorType(), cluster.GetAvgHitPos(),
                             cluster.GetStartTime(), cluster.GetEndTime(),
                             cluster.GetPEs(), cluster.GetCrvRecoPulses().size(),
                             cluster.GetLayers().size(), cluster.GetSlope());
@@ -91,8 +90,8 @@ namespace mu2e
                               primaryParticle->pdgId(), primaryParticle->startMomentum().e() - primaryParticle->startMomentum().m(), primaryParticle->startPosition(),
                               parentParticle->pdgId(),  parentParticle->startMomentum().e()  - parentParticle->startMomentum().m(),  parentParticle->startPosition(),
                               gparentParticle->pdgId(), gparentParticle->startMomentum().e() - gparentParticle->startMomentum().m(), gparentParticle->startPosition(),
-                              clusterMC.GetEarliestHitPos(),
-                              clusterMC.GetEarliestHitTime(),
+                              clusterMC.GetAvgHitPos(),
+                              clusterMC.GetAvgHitTime(),
                               clusterMC.GetTotalEnergyDeposited());
         }
         else MCInfo.emplace_back();
@@ -190,8 +189,6 @@ namespace mu2e
      event.getByLabel(crvRecoPulseCollectionModuleLabel,"",crvRecoPulseCollection);
      if(!crvRecoPulseCollection.isValid()) return;
 
-     mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
-     double _digitizationPeriod  = crvPar->digitizationPeriod;
      GeomHandle<CosmicRayShield> CRS;
 
      // Create SiPM map to extract sequantial SiPM IDs
@@ -234,12 +231,14 @@ namespace mu2e
          art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
          if(crvWaveformsModuleLabel!="") event.getByLabel(crvWaveformsModuleLabel,"",crvDigiMCCollection); //this is an optional part for MC information
          double visibleEnergyDeposited  = 0;
-         double earliestHitTime         = NAN;
+         double earliestHitTime         = 0;
+         double avgHitTime              = 0;
          CLHEP::Hep3Vector earliestHitPos;
+         CLHEP::Hep3Vector avgHitPos;
          art::Ptr<SimParticle> mostLikelySimParticle;
          //for this reco pulse
          CrvMCHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, visibleEnergyDeposited,
-                                            earliestHitTime, earliestHitPos, mostLikelySimParticle);
+                                            earliestHitTime, earliestHitPos, avgHitTime, avgHitPos, mostLikelySimParticle);
 
          bool hasMCInfo = (mostLikelySimParticle.isNonnull()?true:false); //MC
          if(hasMCInfo)
@@ -251,7 +250,7 @@ namespace mu2e
                                  primaryParticle->pdgId(), primaryParticle->startMomentum().e() - primaryParticle->startMomentum().m(), primaryParticle->startPosition(),
                                  parentParticle->pdgId(),  parentParticle->startMomentum().e()  - parentParticle->startMomentum().m(),  parentParticle->startPosition(),
                                  gparentParticle->pdgId(), gparentParticle->startMomentum().e() - gparentParticle->startMomentum().m(), gparentParticle->startPosition(),
-                                 earliestHitPos, earliestHitTime, visibleEnergyDeposited);
+                                 avgHitPos, avgHitTime, visibleEnergyDeposited);
            }
          else
            MCInfo.emplace_back();
@@ -265,7 +264,7 @@ namespace mu2e
          mu2e::CrvDigi const& digi(crvDigis->at(j));
          int _SiPMId = sipm_map.find(digi.GetScintillatorBarIndex().asInt()*4 + digi.GetSiPMNumber())->second;
          for(size_t k=0; k<mu2e::CrvDigi::NSamples; k++)
-           waveformInfo.emplace_back(digi.GetADCs()[k], (digi.GetStartTDC()+k)*_digitizationPeriod, _SiPMId);
+           waveformInfo.emplace_back(digi.GetADCs()[k], (digi.GetStartTDC()+k)*CRVDigitizationPeriod, _SiPMId);
        }
    } //FillCrvPulseInfoCollections
 

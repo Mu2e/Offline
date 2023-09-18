@@ -4,7 +4,7 @@
 #ifndef CalPatRec_HitData_t_hh
 #define CalPatRec_HitData_t_hh
 
-#include "cmath"
+#include <cmath>
 
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"

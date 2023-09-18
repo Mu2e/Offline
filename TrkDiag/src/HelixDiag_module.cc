@@ -241,7 +241,7 @@ namespace mu2e {
         std::vector<StrawDigiIndex> sdis;
         for(size_t ihh = 0;ihh < hhits.size(); ++ihh) {
           ComboHit const& hhit = hhits[ihh];
-          hhits.fillStrawDigiIndices(evt,ihh,sdis);
+          hhits.fillStrawDigiIndices(ihh,sdis);
           if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_nused += hhit.nStrawHits();
         }
         art::Ptr<SimParticle> pspp;
@@ -265,7 +265,7 @@ namespace mu2e {
             for(size_t ihh = 0;ihh < hhits.size(); ++ihh) {
               ComboHit const& hhit = hhits[ihh];
               vector<StrawDigiIndex> sdis;
-              hhits.fillStrawDigiIndices(evt,ihh,sdis);
+              hhits.fillStrawDigiIndices(ihh,sdis);
               for(auto idigi : sdis) {
                 StrawDigiMC const& mcdigi = _mcdigis->at(idigi);
                 if ( mcdigi.earlyStrawGasStep()->simParticle() == pspp ){
@@ -458,7 +458,7 @@ namespace mu2e {
       // mc truth
       if(_mcdiag){
         std::vector<StrawDigiIndex> sdis;
-        hhits.fillStrawDigiIndices(evt,ihit,sdis);
+        hhits.fillStrawDigiIndices(ihit,sdis);
 
         if(primary(pspp,sdis[0])){
 
@@ -523,7 +523,7 @@ namespace mu2e {
       if(_mcdiag){
         // get digi pointers from combo hits
         std::vector<StrawDigiIndex> sdis;
-        _chcol->fillStrawDigiIndices(evt,ich,sdis);
+        _chcol->fillStrawDigiIndices(ich,sdis);
         for(auto isd : sdis) {
           StrawDigiMC const& mcdigi = _mcdigis->at(isd);
           auto const& spmcp = mcdigi.earlyStrawGasStep();
@@ -650,7 +650,7 @@ namespace mu2e {
       // mc truth
       if(_mcdiag){
         std::vector<StrawDigiIndex> sdis;
-        hhits.fillStrawDigiIndices(evt,ihit,sdis);
+        hhits.fillStrawDigiIndices(ihit,sdis);
 
         if(primary(pspp,sdis[0])){
           if (use(hhit) ) {
@@ -704,7 +704,7 @@ namespace mu2e {
       if(_mcdiag){
         // get digi pointers from combo hits
         std::vector<StrawDigiIndex> sdis;
-        _chcol->fillStrawDigiIndices(evt,ich,sdis);
+        _chcol->fillStrawDigiIndices(ich,sdis);
         for(auto isd : sdis) {
           StrawDigiMC const& mcdigi = _mcdigis->at(isd);
           auto const& spmcp = mcdigi.earlyStrawGasStep();

@@ -24,6 +24,7 @@ namespace mu2e
   void CrvMCHelper::GetInfoFromStepPoints(const std::set<art::Ptr<CrvStep> > &steps,
                                         double &visibleEnergyDeposited,
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
+                                        double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
                                         art::Ptr<SimParticle> &mostLikelySimParticle)
   {
     visibleEnergyDeposited=0;
@@ -53,6 +54,8 @@ namespace mu2e
     //could be accidentally found to be the step point with the earliest hit time.
     //therefore, only step points of the most likely sim particle will be considered.
     bool firstLoop=true;
+    avgHitTime=0;
+    avgHitPos.set(0,0,0);
     for(stepPointIter=steps.begin(); stepPointIter!=steps.end(); stepPointIter++)
     {
       const CrvStep &step = **stepPointIter;
@@ -63,6 +66,13 @@ namespace mu2e
         earliestHitTime=t;
         earliestHitPos=step.startPosition();
       }
+      avgHitTime+=0.5*(step.startTime()+step.endTime())*step.visibleEDep();
+      avgHitPos+=0.5*(step.startPosition()+step.endPosition())*step.visibleEDep();
+    }
+    if(visibleEnergyDeposited>0.0)
+    {
+      avgHitTime/=visibleEnergyDeposited;
+      avgHitPos/=visibleEnergyDeposited;
     }
   }
 
@@ -70,13 +80,14 @@ namespace mu2e
                                           const art::Handle<CrvDigiMCCollection> &digis,
                                           double &visibleEnergyDeposited,
                                           double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
+                                          double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
                                           art::Ptr<SimParticle> &mostLikelySimParticle)
   {
     std::set<art::Ptr<CrvStep> > steps;
 
     CrvMCHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, digis, steps);
     CrvMCHelper::GetInfoFromStepPoints(steps, visibleEnergyDeposited,
-                                     earliestHitTime, earliestHitPos, mostLikelySimParticle);
+                                     earliestHitTime, earliestHitPos, avgHitTime, avgHitPos, mostLikelySimParticle);
   }
 
 

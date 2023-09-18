@@ -13,6 +13,9 @@ double physicsParams.protonMass               = 938.2720   ; // PDG value (2010 
 // Proton Kinetic Energy
 double physicsParams.protonKE = 8000.; // - in MeV
 
+// nominal delivery ring period (time beween proton pulses)
+double physicsParams.nominalDRPeriod = 1695.; // ns
+
 // charged pion and kaon
 vector<int> physicsParams.freeLifePDGId = { 211, 312 };
 // in Mu2e units (ns), per PDG 2013 partial update

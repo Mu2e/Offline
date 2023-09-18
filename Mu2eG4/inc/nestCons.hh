@@ -9,6 +9,7 @@
 
 #include <string>
 #include <vector>
+#include <array>
 
 #include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 

@@ -4,7 +4,7 @@
 
 #include "Offline/fcl/minimalMessageService.fcl"
 
-process_name : runEventSubrun
+process_name : runSubrunEvent
 
 services : {
   message : @local::mf_interactive
@@ -13,7 +13,7 @@ services : {
 physics :{
   analyzers: {
     res : {
-      module_type : RunEventSubRun
+      module_type : RunSubrunEvent
       printSam    : false
       printRun    : false
       printSubrun : false

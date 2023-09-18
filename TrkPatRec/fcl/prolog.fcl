@@ -7,11 +7,6 @@
 #include "Offline/fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG
 
-# this should go in a general file FIXME!!
-FitDir : {
-  downstream : 0
-  upstream : 1
-}
 
 TimeCalculator : {
   TrkToCaloTimeOffset : @local::TrackCaloMatching.DtOffset
@@ -32,8 +27,7 @@ PhotonConversionFinder : { # TODO - add parameters
 TimeClusterFinder : {
   module_type            : TimeClusterFinder
 
-  ComboHitCollection     : "makePH"
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  ComboHitCollection     : "FlagBkgHits"
   CaloClusterCollection  : "CaloClusterMaker"
   ClusterMVA             : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
   ClusterCaloMVA         : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
@@ -69,7 +63,6 @@ TimeClusterFinder : {
 TimeAndPhiClusterFinder : {
   module_type             : TimeAndPhiClusterFinder
   ComboHitCollection     : "makePH"
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   CaloClusterCollection  : "CaloClusterMaker"
   HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits      : @local::PatRecBackground
@@ -157,8 +150,7 @@ TimeClusterFinderUpi : {
 # helix finding.  Search for both helicities
 RobustHelixFinder : {
   module_type   : RobustHelixFinder
-  ComboHitCollection     : "makePH"
-  chfCollTag             : "FlagBkgHits:ComboHits"
+  ComboHitCollection     : "FlagBkgHits"
   HelixStereoHitMVA      : { MVAWeights : "Offline/TrkPatRec/data/HelixStereoHitMVA.weights.xml" }
   HelixNonStereoHitMVA   : { MVAWeights : "Offline/TrkPatRec/data/HelixNonStereoHitMVA.weights.xml" }
   DiagPlugin : {
@@ -349,8 +341,7 @@ KSF : {
 # Final Kalman fit, including material and magnetic inhomogeneity effects
 KFF : {
   module_type                 : KalFinalFit
-  ComboHitCollection        : "makeSH"
-  StrawHitFlagCollection      : "FlagBkgHits:StrawHits"
+  ComboHitCollection        : "FlagBkgHits"
   CaloClusterCollection       : "CaloClusterMaker"
   KalFit          : @local::KFFinal
   GoodKallSeedFitBits       : ["SeedOK"]
