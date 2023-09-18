@@ -152,7 +152,7 @@ namespace mu2e
 
     //produce BkgClusterHit info collection
     if (savebkg_) {
-      for (size_t ich=0;ich < chcol.size(); ++ich) {
+      for (size_t ich=0;ich < nch; ++ich) {
         const ComboHit& ch = chcol[ich];
         int icl = findClusterIdx(bkgccol,ich);
         if (icl > -1) bkghitcol.emplace_back(BkgClusterHit(clusterer_->distance(bkgccol[icl],ch),ch.flag()));
@@ -170,7 +170,7 @@ namespace mu2e
       for(size_t ich=0;ich < nch; ++ich) {
         StrawHitFlag const& flag = chfcol[ich];
         if (! filter_ || !flag.hasAnyProperty(bkgmsk_)) {
-          // write out all hits
+          // write out hits
           chcol_out->push_back(chcol[ich]);
           chcol_out->back()._flag.merge(flag);
         }
@@ -181,18 +181,24 @@ namespace mu2e
       auto const& chcol_p = *pptr;
       chcol_out->setSameParent(chcol_p);
       ComboHitCollection::SHIV shiv;
-      chcol_out->reserve(nch*2);
+      chcol_out->reserve(chcol_p.size()*2);
       for(size_t ich=0;ich < nch; ++ich) {
+        shiv.clear();
         StrawHitFlag const& flag = chfcol[ich];
-        if(&chcol_p == chcol.fillStrawHitIndices(ich,shiv,level_)){
-          for(auto ishi : shiv ){
-            chcol_out->push_back(chcol_p[ishi]);
-            chcol_out->back()._flag.merge(flag);
+        if (! filter_ || !flag.hasAnyProperty(bkgmsk_)) {
+          // write out hits
+          if(&chcol_p == chcol.fillStrawHitIndices(ich,shiv,level_)){
+            for(auto ishi : shiv ){
+              chcol_out->push_back(chcol_p[ishi]);
+              chcol_out->back()._flag.merge(flag);
+            }
+          } else {
+            throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHits" << std::endl;
           }
-        } else {
-          throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHits" << std::endl;
         }
       }
+      if(chcol_out->size() != chcol_p.size())
+        throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHit outout" << std::endl;
     }
     event.put(std::move(chcol_out));
 
