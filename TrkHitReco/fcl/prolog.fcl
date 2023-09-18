@@ -61,6 +61,7 @@ makePH : {
 makeSTH : {
   module_type           : MakeStereoHits
   # input configuration
+  DebugLevel            : 0
   TestFlag              : true
   ComboHitCollection    : "makePH"
   StrawHitSelectionBits : ["RadiusSelection","EnergySelection","TimeSelection"]
