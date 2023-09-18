@@ -127,6 +127,8 @@ FlagBkgHits : {
 SFlagBkgHits : {
   @table::FlagBkgHits
   ComboHitCollection : "makeSTH"
+  OutputLevel        : "station"
+# stereo should have a dedicated training TODO
 }
 
 # combine together

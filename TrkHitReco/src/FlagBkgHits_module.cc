@@ -163,42 +163,44 @@ namespace mu2e
     // produce output ComboHit collection, either filtered or not
 
     auto chcol_out = std::make_unique<ComboHitCollection>();
-    // same parent as the original collection
-    if(level_ == chcol.level()){
-      chcol_out->setSameParent(chcol);
-      chcol_out->reserve(nch);
-      for(size_t ich=0;ich < nch; ++ich) {
-        StrawHitFlag const& flag = chfcol[ich];
-        if (! filter_ || !flag.hasAnyProperty(bkgmsk_)) {
-          // write out hits
-          chcol_out->push_back(chcol[ich]);
-          chcol_out->back()._flag.merge(flag);
-        }
-      }
-    } else {
-      // go down to the specified level
-      auto pptr = chcol.parent(level_);
-      auto const& chcol_p = *pptr;
-      chcol_out->setSameParent(chcol_p);
-      ComboHitCollection::SHIV shiv;
-      chcol_out->reserve(chcol_p.size()*2);
-      for(size_t ich=0;ich < nch; ++ich) {
-        shiv.clear();
-        StrawHitFlag const& flag = chfcol[ich];
-        if (! filter_ || !flag.hasAnyProperty(bkgmsk_)) {
-          // write out hits
-          if(&chcol_p == chcol.fillStrawHitIndices(ich,shiv,level_)){
-            for(auto ishi : shiv ){
-              chcol_out->push_back(chcol_p[ishi]);
-              chcol_out->back()._flag.merge(flag);
-            }
-          } else {
-            throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHits" << std::endl;
+    if(chfcol.size()>0){
+      // same parent as the original collection
+      if(level_ == chcol.level()){
+        chcol_out->setSameParent(chcol);
+        chcol_out->reserve(nch);
+        for(size_t ich=0;ich < nch; ++ich) {
+          StrawHitFlag const& flag = chfcol[ich];
+          if (! filter_ || !flag.hasAnyProperty(bkgmsk_)) {
+            // write out hits
+            chcol_out->push_back(chcol[ich]);
+            chcol_out->back()._flag.merge(flag);
           }
         }
+      } else {
+        // go down to the specified level
+        auto pptr = chcol.parent(level_);
+        auto const& chcol_p = *pptr;
+        chcol_out->setSameParent(chcol_p);
+        ComboHitCollection::SHIV shiv;
+        chcol_out->reserve(chcol_p.size()*2);
+        for(size_t ich=0;ich < nch; ++ich) {
+          shiv.clear();
+          StrawHitFlag const& flag = chfcol[ich];
+          if (! filter_ || !flag.hasAnyProperty(bkgmsk_)) {
+            // write out hits
+            if(&chcol_p == chcol.fillStrawHitIndices(ich,shiv,level_)){
+              for(auto ishi : shiv ){
+                chcol_out->push_back(chcol_p[ishi]);
+                chcol_out->back()._flag.merge(flag);
+              }
+            } else {
+              throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHits" << std::endl;
+            }
+          }
+        }
+        if(chcol_out->size() != chcol_p.size())
+          throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHit outout" << std::endl;
       }
-      if(chcol_out->size() != chcol_p.size())
-        throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHit outout" << std::endl;
     }
     event.put(std::move(chcol_out));
 
