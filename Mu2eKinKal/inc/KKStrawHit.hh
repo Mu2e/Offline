@@ -201,6 +201,7 @@ namespace mu2e {
       }
       // distance residual
       if(whstate.driftConstraint()){
+        if(whstate_.constrainDriftDt())dinfo.rDrift_ += 0.06; // temporary hack FIXME
         double dr = whstate.lrSign()*dinfo.rDrift_ - ca_.doca();
         DVEC dRdP = whstate.lrSign()*dDdT_*ca_.dTdP() -ca_.dDdP();
         resids[Mu2eKinKal::dresid] = Residual(dr,dVar_,0.0,true,dRdP);
