@@ -107,7 +107,7 @@ namespace mu2e
   };
 
 // binary functor to sort TrkStrawHits by StrawHit index
-  struct indexcomp : public std::binary_function<TrkStrawHit,TrkStrawHit, bool> {
+  struct indexcomp {
     bool operator()(const TrkStrawHit* x,const TrkStrawHit* y) { return x->index() < y->index(); }
   };
 

@@ -1,0 +1,56 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CRVResponse/fcl/prolog.fcl"
+
+process_name : CRVResponseDAQ
+
+source :
+{
+  module_type : RootInput
+  inputCommands: ["keep *",
+                  "drop *KalRepPayload*_*_*_*",
+                  "drop *CaloCrystalOnlyHit*_*_*_*"]
+}
+
+services :
+{
+  @table::Services.SimAndReco
+  TFileService : { fileName : "testFull.root" }
+}
+
+physics :
+{
+  producers:
+  {
+    @table::CommonMC.producers
+    @table::CrvResponsePackage.producers
+  }
+
+  an : [ @sequence::CommonMC.DigiSim, @sequence::CrvDAQPackage.CrvDAQSequence, @sequence::CrvRecoMCPackage.CrvRecoMCSequence]
+#  out: [Output]
+  out: []
+
+  trigger_paths: [an]
+  end_paths:     [out]
+}
+
+outputs:
+{
+  Output :
+  {
+    module_type : RootOutput
+    fileName    : "data_crv_full.art"
+  }
+}
+
+physics.producers.EWMProducer.SpillType : 0
+physics.producers.CrvWaveforms.FEBtimeSpread              : 0.0
+physics.producers.CrvCoincidenceClusterMatchMC.doNtuples  : true
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+
+services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_common_extracted.txt"
+#include "Offline/CRVResponse/fcl/epilog_extracted_v03.fcl"
+physics.producers.CrvPhotons.crvStepModuleLabels    : ["compressRecoMCs"]
+physics.producers.CrvPhotons.crvStepProcessNames    : ["Reconstruct"]
