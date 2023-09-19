@@ -10,6 +10,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/TrkHitReco/inc/BkgClusterer.hh"
+#include "Offline/GeneralUtilities/inc/CombineTwoDPoints.hh"//NEW ADD
 #include "fhiclcpp/types/Sequence.h"
 
 #include <string>
@@ -61,6 +62,7 @@ namespace mu2e {
       void          init        ();
       virtual void  findClusters(BkgClusterCollection& clusters, const ComboHitCollection& shcol, int iev);
       virtual float distance    (const BkgCluster& cluster,      const ComboHit& hit) const;
+      virtual float dchi2    (CombineTwoDPoints& points,      const ComboHit& hit) const;//NEW ADD
 
 
     private:
@@ -68,7 +70,7 @@ namespace mu2e {
 
       void     initClustering  (const ComboHitCollection& chcol, std::vector<BkgHit>& hinfo);
       void     doClustering    (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo);
-      unsigned formClusters    (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo);
+      unsigned formClusters    (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<CombineTwoDPoints>& points, std::vector<BkgHit>& hinfo);
       void     mergeClusters   (std::vector<BkgCluster>& clusters, const ComboHitCollection& chcol, std::vector<BkgHit>& hinfo,
                                 float dt, float dd2);
       void     mergeTwoClusters(BkgCluster& clu1, BkgCluster& clu2);
