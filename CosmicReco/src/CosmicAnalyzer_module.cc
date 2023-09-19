@@ -18,7 +18,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/MCRelationship.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"

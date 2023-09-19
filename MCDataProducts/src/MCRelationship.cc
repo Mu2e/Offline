@@ -52,7 +52,7 @@ namespace mu2e
             _rem = std::distance(pvi.begin(),idau);
           } else if(jdau != pvj.end()){
             _rel = umother;
-            _rem = std::distance(pvj.end(),jdau);
+            _rem = std::distance(pvj.begin(),jdau);
           } else {
             for(size_t jj=0;jj<pvj.size();++jj){
               auto icuz = find(pvi.begin(),pvi.end(),pvj[jj]);

@@ -17,6 +17,7 @@
 // Mu2e-specific classes
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/TrackerConditions/inc/DriftInfo.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/Mu2eKinKal/inc/CADSHU.hh"
 #include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
@@ -141,7 +142,7 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
     // search for updaters that work directly on StrawHits (not StrawHitClusters)
     auto cashu = miconfig.findUpdater<CADSHU>();
-    auto annshu = miconfig.findUpdater<DriftANNSHU>();
+    auto driftshu = miconfig.findUpdater<DriftANNSHU>();
     auto bkgshu = miconfig.findUpdater<BkgANNSHU>();
     CA ca = unbiasedClosestApproach();
     if(ca.usable()){
@@ -149,13 +150,14 @@ namespace mu2e {
       // there can be multiple updaters: apply them all
       if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
-      if(annshu)whstate_ = annshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
+      if(driftshu)whstate_ = driftshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(whstate_.driftConstraint()){
-        if(whstate_.constrainDriftDt())
-          dDdT_ = dinfo.driftVelocity_;
-        else
-          dDdT_ = 0.0;
         dVar_ = dinfo.driftHitVar();
+        if(whstate_.constrainDriftDt()){
+          dDdT_ = dinfo.driftVelocity_;
+        } else{
+          dDdT_ = 0.0;
+        }
       } else {
         if(whstate_.nullDriftVar()) {
           dVar_ = dinfo.nullHitVar();
