@@ -75,9 +75,10 @@ namespace mu2e
   {
     unsigned niter(0);
     float odist(2.0f*maxDistSum_),tdist(0.0f);
+    std::vector<CombineTwoDPoints> clusterPts;//NEW ADD
     while (std::abs(odist - tdist) > maxDistSum_ && niter < maxNiter_) {
       ++niter;
-      formClusters(chcol, clusters, BkgHits);
+      formClusters(chcol, clusters, clusterPts, BkgHits);
 
       odist = tdist;
       tdist = 0.0f;
@@ -93,7 +94,7 @@ namespace mu2e
   // candidate clusters to check if they could be added. If not, make a new cluster.
   // speed up: don't update clusters who haven't changed + cache cluster id in a given time window in clusterIndex (array if vectors)
   //
-  unsigned TNTClusterer::formClusters(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& BkgHits)
+  unsigned TNTClusterer::formClusters(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<CombineTwoDPoints>& clPoints, std::vector<BkgHit>& BkgHits)
   {
     std::array<std::vector<int>, numBuckets_> clusterIndices;
     for (size_t ic=0;ic<clusters.size();++ic) {
@@ -112,12 +113,15 @@ namespace mu2e
       // -- if hit is ok, reassign it right away
       if (hit.distance_ < dhit_) {
         clusters[hit.clusterIdx_].addHit(ihit);
+        clPoints[hit.clusterIdx_].addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),hit.chidx_);//NEW ADD
         continue;
       }
 
       // -- find closest cluster. restrict search to clusters close in time using the clusterIndices structure
       int minc(-1);
+      int chi2minc(-1);//NEW ADD
       float mindist(dseed_ + 1.0f);
+      float mindistChi2(100.);//NEW ADD
       int itime = int(chit.correctedTime()/tbin_);
       int imin = std::max(0,itime-ditime);
       int imax = std::min(numBuckets_,itime+ditime+1);
@@ -125,17 +129,23 @@ namespace mu2e
       for (int i=imin;i<imax;++i) {
         for (const auto& ic : clusterIndices[i]) {
           float dist = distance(clusters[ic],chcol[hit.chidx_]);
+          float distChi2 = dchi2(clPoints[ic],chcol[hit.chidx_]);//NEW ADD
           if (dist < mindist) {mindist = dist;minc = ic;}
+          if (distChi2 < mindistChi2) {mindistChi2 = distChi2;chi2minc = ic;}//NEW ADD
         }
       }
-
+      //std::cout<<"mindist\t"<<mindist<<"\tminc\t"<<minc<<"\tmindistChi2\t"<<mindistChi2<<"\tmincChi2\t"<<chi2minc<<"\n";//NEW ADD
       // -- either add hit to existing cluster, form new cluster, or do nothing if hit is "in between"
       if (mindist < dhit_) {
         clusters[minc].addHit(ihit);
+        clPoints[minc].addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),hit.chidx_);//NEW ADD
       }
       else if (mindist > dseed_) {
         minc = clusters.size();
         clusters.emplace_back(BkgCluster(chit.pos(),chit.correctedTime()));
+        std::vector<mu2e::TwoDPoint> points;//NEW ADD
+        points.push_back(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()));//NEW ADD
+        clPoints.emplace_back(CombineTwoDPoints(points));//NEW ADD
         clusters[minc].addHit(ihit);
         int itime = int(chit.correctedTime()/tbin_);
         clusterIndices[itime].emplace_back(minc);
@@ -143,6 +153,7 @@ namespace mu2e
       else{
         BkgHits[ihit].distance_ = 10000.0f;
         minc = -1;
+        chi2minc = -1;
       }
 
       // -- update cluster flag and hit->cluster pointer if association has changed
@@ -245,6 +256,14 @@ namespace mu2e
     return retval;
   }
 
+  //NEW ADD FUNCTION
+  //---------------------------------------------------------------------------------------
+  // distance but using CombineTwoDPoints
+  float TNTClusterer::dchi2(CombineTwoDPoints& points, const ComboHit& hit) const
+  {
+    TwoDPoint ch(hit.pos(),hit.uDir(),hit.uVar(),hit.vVar());
+    return points.dChi2(ch);
+  }
 
   //-------------------------------------------------------------------------------------------------------------------
   void TNTClusterer::updateCluster(BkgCluster& cluster, const ComboHitCollection& chcol, std::vector<BkgHit>& BkgHits)
