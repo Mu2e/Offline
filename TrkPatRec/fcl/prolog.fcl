@@ -335,7 +335,7 @@ KSF : {
 # Final Kalman fit, including material and magnetic inhomogeneity effects
 KFF : {
   module_type                 : KalFinalFit
-  ComboHitCollection        : "FlagBkgHits"
+  ComboHitCollection        : "makeSH"
   CaloClusterCollection       : "CaloClusterMaker"
   KalFit          : @local::KFFinal
   GoodKallSeedFitBits       : ["SeedOK"]
