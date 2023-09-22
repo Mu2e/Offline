@@ -3435,7 +3435,7 @@ namespace mu2e {
       VolumeInfo AbsorberPV;
       AbsorberPV.name = "AbsorberPV";
       AbsorberPV.solid = AbsorberS;
-      G4ThreeVector stmAbsorberInParent = STMShieldingRef + G4ThreeVector(-offset_Spot, 0., Absorber_GaptoSSC - Absorber_hT);
+      G4ThreeVector stmAbsorberInParent = STMShieldingRef + G4ThreeVector(-offset_Spot, 0., -Absorber_GaptoSSC - Absorber_hT);
 
       finishNesting(AbsorberPV,
       PolyMaterial,
