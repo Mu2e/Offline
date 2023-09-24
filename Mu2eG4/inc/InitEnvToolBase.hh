@@ -1,5 +1,5 @@
-#ifndef __Mu2eG4_InitEnvToolBase_hh__
-#define __Mu2eG4_InitEnvToolBase_hh__
+#ifndef Mu2eG4_InitEnvToolBase_hh
+#define Mu2eG4_InitEnvToolBase_hh
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"

@@ -12,7 +12,6 @@
 #include <TGFrame.h>
 #include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TVirtualX.h"
 
 class TBox;
@@ -111,6 +110,7 @@ namespace mu2e_eventdisplay
     bool                _showSupportStructures, _showCRV, _showOtherStructures;
     bool                _showMuonBeamStop, _showProtonAbsorber;
     bool                _wideband;
+    bool                _extracted;
 
     //bare pointers needed since ROOT manages these objects
     TGHorizontalFrame   *_mainFrame, *_footLine;
@@ -134,8 +134,6 @@ namespace mu2e_eventdisplay
     TPolyLine           *_legendParticleLine[30];
     std::string         _g4ModuleLabel, _physicalVolumesMultiLabel, _protonBunchTimeLabel;
     double              _kalStepSize;
-
-    mu2e::SimParticleTimeOffset _timeOffsets;
 
     ClassDef(EventDisplayFrame,0);
   };

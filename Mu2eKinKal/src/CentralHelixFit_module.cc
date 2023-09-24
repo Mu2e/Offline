@@ -19,33 +19,15 @@ namespace mu2e {
       explicit CentralHelixFit(const Parameters& settings) :
         HelixFit(settings,TrkFitFlag::KKCentralHelix) {}
       // parameter-specific functions
-      KTRAJ makeSeedTraj(HelixSeed const& hseed) const override;
+      KTRAJ makeSeedTraj(HelixSeed const& hseed,TimeRange const& trange,VEC3 const& bnom, int charge) const override;
       bool goodFit(KKTRK const& ktrk) const override;
       virtual ~CentralHelixFit() {}
   };
 
-  KTRAJ CentralHelixFit::makeSeedTraj(HelixSeed const& hseed) const {
-    // compute the magnetic field at the helix center.  We only want the z compontent, as the helix fit assumes B points along Z
-    auto const& helix = hseed.helix();
-    double zmin = std::numeric_limits<float>::max();
-    double zmax = std::numeric_limits<float>::min();
-    double tmin = std::numeric_limits<float>::max();
-    double tmax = std::numeric_limits<float>::min();
-    auto const& hits = hseed.hits();
-    for( auto const& hit : hits) {
-      double zpos = hit.pos().z();
-      zmin = std::min(zmin,zpos);
-      zmax = std::max(zmax,zpos);
-      tmin = std::min(tmin,(double)hit.correctedTime());
-      tmax = std::max(tmax,(double)hit.correctedTime());
-    }
-    float zcent = 0.5*(zmin+zmax);
-    VEC3 center(helix.centerx(), helix.centery(),zcent);
-    auto bcent = kkbf_->fieldVect(center);
-    double amsign = copysign(1.0,-charge_*bcent.Z());
-    if(helix.radius() == 0.0 || helix.lambda() == 0.0 )
-      throw cet::exception("RECO")<<"mu2e::CentralHelixFit: degenerate seed parameters" << endl;
+  KTRAJ CentralHelixFit::makeSeedTraj(HelixSeed const& hseed,TimeRange const& trange,VEC3 const& bnom, int charge) const {
+    double amsign = copysign(1.0,-charge*bnom.Z());
     DVEC pars;
+    auto const& helix = hseed.helix();
     // radius and omega have inverse magnitude, omega is signed by the angular momentum
     pars[KTRAJ::omega_] = amsign/helix.radius();
     // phi0 is the azimuthal angle of the particle velocity vector at the point
@@ -68,8 +50,9 @@ namespace mu2e {
     pars[KTRAJ::t0_] = hseed.t0().t0();
     // create the initial trajectory
     KinKal::Parameters kkpars(pars,seedcov_);
-    //  construct the seed trajectory (infinite initial time range)
-    return KTRAJ(kkpars, mass_, charge_, bcent.Z(), TimeRange(tmin,tmax));
+    //  construct the seed trajectory
+    //  CentralHelix has no bnom constructor FIXME
+    return KTRAJ(kkpars, mass_, charge, bnom.Z(), trange);
   }
 
   bool CentralHelixFit::goodFit(KKTRK const& ktrk) const {

@@ -26,9 +26,6 @@ physics :{
         pCut : 10.0
       }
 
-      simParticleTimeMapPrinter : {
-        verbose : 1
-      }
       stepPointMCPrinter : {
         verbose : 1
         pCut : 10.0

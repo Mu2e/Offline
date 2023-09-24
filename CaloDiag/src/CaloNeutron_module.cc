@@ -22,7 +22,6 @@
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
@@ -88,7 +87,6 @@ namespace mu2e {
        std::string calorimeterROCardStepPoints_;
        std::string calorimeterCrateStepPoints_;
        std::string virtualDetectorLabel_;
-       SimParticleTimeOffset toff_;
        int diagLevel_;
        int nProcess_;
        int numEvents_;
@@ -125,7 +123,6 @@ namespace mu2e {
     calorimeterROCardStepPoints_( pset.get<std::string>("calorimeterROCardStepPoints") ),
     calorimeterCrateStepPoints_( pset.get<std::string>("calorimeterCrateStepPoints") ),
     virtualDetectorLabel_(pset.get<std::string>("virtualDetectorName")),
-    toff_(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     diagLevel_(pset.get<int>("diagLevel",0)),
     nProcess_(0),
     numEvents_(0),
@@ -241,7 +238,6 @@ namespace mu2e {
 
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       double _mbtime = accPar->deBuncherPeriod;
-      toff_.updateMap(event);
 
       //Handle to the calorimeter
       art::ServiceHandle<GeometryService> geom;
@@ -366,8 +362,7 @@ namespace mu2e {
 
               //if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
 
-              double hitTimeUnfolded = toff_.timeWithOffsetsApplied(hit);
-                 double hitTime         = fmod(hitTimeUnfolded,_mbtime);
+              double hitTime         = fmod(hit.time(),_mbtime);
 
               CLHEP::Hep3Vector VDPos = cal.geomUtil().mu2eToTracker(hit.position());
               //CLHEP::Hep3Vector VDPos = cal.toTrackerFrame(hit.position());

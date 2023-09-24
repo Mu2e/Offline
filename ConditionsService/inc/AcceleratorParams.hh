@@ -21,11 +21,6 @@ namespace mu2e
 
     // The nominal debuncher orbital period.
     double deBuncherPeriod;
-    double intrinsicExtinction;
-    double limitingHalfWidth;
-
-    std::string potPulse;
-    std::string acDipole;
 
     AcceleratorParams ( SimpleConfig const& config );
 
@@ -43,9 +38,7 @@ namespace mu2e
   inline std::ostream& operator<<(std::ostream& ost,
                                   const AcceleratorParams& lw ){
     ost << "( "
-        << lw.deBuncherPeriod << ", "
-        << lw.intrinsicExtinction << ", "
-        << lw.limitingHalfWidth
+        << lw.deBuncherPeriod
         << " )";
 
     return ost;

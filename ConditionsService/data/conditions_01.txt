@@ -3,16 +3,9 @@
 //
 //
 
-// Times in ns
-double DAQParams.t0 = 700.;
-
 // Accelerator parameters
 double acceleratorParams.deBuncherPeriod   = 1695. ; // ns
 //double acceleratorParams.intrinsicExt      = 1.64e-5; // S. Werkema, docdb-4044-v1  No longer used!  comes from pulses below
-double acceleratorParams.limitingHalfWidth = 125.  ; // ns, ""
-
-string acceleratorParams.potPulse  = "Offline/ConditionsService/data/potTimingDistribution_20160511.txt";
-string acceleratorParams.acDipole  = "Offline/ConditionsService/data/acDipoleTransmissionFunction_20160511.txt";
 
 // ExtMonFNAL clock timing.  1694/68 = 24.9118
 int extMonFNAL.numClockTicksPerDebuncherPeriod = 68;
@@ -45,11 +38,6 @@ double Peak2MeVConversionFactor =  0.022981700;
 //value of the sigma used to do the Gaussian smearing due to the electronic noise,
 //this is the quadratic sum of all APDs.....
 double ReadOutElectronicNoise = 0.15;//MeV
-
-double calorimeter.radiationLengthCsI = 1.860;   // cm
-double calorimeter.criticalEnergyPosCsI = 11.17; //MeV
-double calorimeter.criticalEnergyNegCsI = 10.80; //MeV
-double calorimeter.densityCsI           = 4.51; // gm/cc
 
 string calorimeter.pulseFileName = "OfflineData/ConditionsService/CsI-waveform-2020-02-12.root";
 string calorimeter.pulseHistName = "h_waveform";

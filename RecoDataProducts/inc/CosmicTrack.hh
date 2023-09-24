@@ -185,12 +185,12 @@ namespace mu2e {
       }
 
       //Kinkal params:
-      double d0(){ return d0_; }
-      double z0(){ return z0_; }
-      double phi0(){ return phi0_; }
-      double cost(){ return cost_; }
-      double t0(){ return t0_; }
-      double mom(){ return mom_; }
+      double d0() const { return d0_; }
+      double z0() const { return z0_; }
+      double phi0() const { return phi0_; }
+      double cost() const { return cost_; }
+      double t0() const { return t0_; }
+      double mom() const { return mom_; }
 
     private:
       int niters;

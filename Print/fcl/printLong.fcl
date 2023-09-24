@@ -41,9 +41,6 @@ physics :{
         #inputTags : [ "mothersFilter", "virtualdetector" ] # select instances
         #pCut : 10.0          # cut on all particles
       }
-      simParticleTimeMapPrinter : {
-        verbose : 1  # 0,1
-      }
       mcTrajectoryPrinter : {
         verbose: 2   # 0, 1, 2
         #inputTags : [ "g4run" ] # select instances

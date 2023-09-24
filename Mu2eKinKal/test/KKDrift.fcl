@@ -51,7 +51,10 @@ physics :
     @sequence::Reconstruction.MCReco
   ]
   analyzers : {
-    TAKK : @local::TrkAnaReco.analyzers.TrkAnaNeg
+    TAKK : {
+      @table::TrkAnaReco.analyzers.TrkAnaNeg
+      FitType : LoopHelix
+    }
     evtprint : {
       module_type : RunEventSubRun
       printSam    : false
@@ -73,8 +76,6 @@ outputs : {
 
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
-physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
-physics.filters.CalHelixFinderDmu.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
 physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDeM", "KKDmuM", "KKUeP"]
 physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM"]
 physics.producers.SelectRecoMC.debugLevel : 0
@@ -82,7 +83,6 @@ physics.producers.SelectRecoMC.debugLevel : 0
 physics.producers.KKDeM.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKDeM.ModuleSettings.ComboHitCollection : "makeSH"
 physics.producers.KKDeM.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
-physics.producers.KKDeM.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 physics.producers.KKDeM.ModuleSettings.PrintLevel : 0
 physics.producers.KKDeM.ModuleSettings.SaveAllFits : true
 physics.producers.KKDeM.FitSettings.PrintLevel : 0
@@ -90,7 +90,6 @@ physics.producers.KKDeM.FitSettings.PrintLevel : 0
 physics.producers.KKUeP.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKUeP.ModuleSettings.ComboHitCollection : "makeSH"
 physics.producers.KKUeP.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
-physics.producers.KKUeP.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 physics.producers.KKUeP.ModuleSettings.PrintLevel : 0
 physics.producers.KKUeP.ModuleSettings.SaveAllFits : true
 physics.producers.KKUeP.FitSettings.PrintLevel : 0
@@ -98,7 +97,6 @@ physics.producers.KKUeP.FitSettings.PrintLevel : 0
 physics.producers.KKDmuM.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKDmuM.ModuleSettings.ComboHitCollection : "makeSH"
 physics.producers.KKDmuM.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
-physics.producers.KKDmuM.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 physics.producers.KKDmuM.ModuleSettings.PrintLevel : 0
 physics.producers.KKDmuM.ModuleSettings.SaveAllFits : true
 physics.producers.KKDmuM.FitSettings.PrintLevel : 0

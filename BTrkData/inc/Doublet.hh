@@ -3,8 +3,8 @@
 // 2015 - 02 - 17 G. Pezzullo created class for housing the straw hits doublets
 //
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef __CalPatRec_Doublet_hh__
-#define __CalPatRec_Doublet_hh__
+#ifndef BTrkData_Doublet_hh
+#define BTrkData_Doublet_hh
 
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"

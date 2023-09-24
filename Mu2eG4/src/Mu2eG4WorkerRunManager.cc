@@ -46,11 +46,6 @@
 #include <atomic>
 #include "CLHEP/Random/JamesRandom.h"
 
-//Crypto++ includes
-#include "sha3.h"
-#include "hex.h"
-#include "files.h"
-
 using namespace std;
 
 namespace {
@@ -58,21 +53,6 @@ namespace {
   int get_new_thread_index() { return thread_counter++; }
   thread_local int s_thread_index = get_new_thread_index();
   int getThreadIndex() { return s_thread_index; }
-
-
-  string CryptoPP_Hash(const string msg){
-
-    CryptoPP::SHA3_224 hash;
-    string digest, str_hex;
-
-    //digest is 56 hex numbers, or 28 pairs of hex numbers = 28 bytes
-    //compute the digest and keep 8 bytes of it
-    CryptoPP::StringSource(msg, true, new CryptoPP::HashFilter(hash, new CryptoPP::StringSink(digest), false, 8));
-    CryptoPP::CRYPTOPP_DLL HexEncoder encoder_out(new CryptoPP::StringSink(str_hex));
-    CryptoPP::StringSource(digest, true, new CryptoPP::Redirector(encoder_out));
-    return str_hex;
-  }
-
 }
 
 namespace mu2e {
@@ -301,12 +281,12 @@ namespace mu2e {
 
     if(eventHasToBeSeeded)
       {
-        string msg = "r" + to_string(evtID.run()) + "s" + to_string(evtID.subRun()) + "e" + to_string(evtID.event()) + salt_;
-        string hash_out = CryptoPP_Hash(msg);
-        vector<string> randnumstrings = {hash_out.substr(0,8), hash_out.substr(8,8)};
-
-        long rn1 = stol(randnumstrings[0],nullptr,16);
-        long rn2 = stol(randnumstrings[1],nullptr,16);
+        string msg = "r" + to_string(evtID.run())
+          + "s" + to_string(evtID.subRun())
+          + "e" + to_string(evtID.event()) + salt_;
+        std::hash<string> hf;
+        long rn1 = hf(msg+"1") & 0xFFFFFFFF;
+        long rn2 = hf(msg+"2") & 0xFFFFFFFF;
         long seeds[3] = { rn1, rn2, 0 };
         G4Random::setTheSeeds(seeds,-1);
         runIsSeeded = true;

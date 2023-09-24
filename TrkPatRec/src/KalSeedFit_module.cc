@@ -283,7 +283,7 @@ namespace mu2e
         for(uint16_t ihit=0;ihit < hseed.hits().size(); ++ihit){
           ComboHit const& ch = hseed.hits()[ihit];
           if((!_fhoutliers) || (!ch.flag().hasAnyProperty(StrawHitFlag::outlier)))
-            hseed.hits().fillStrawHitIndices(event,ihit,tclust._strawHitIdxs);
+            hseed.hits().fillStrawHitIndices(ihit,tclust._strawHitIdxs);
         }
         // create a TrkDef; it should be possible to build a fit from the helix seed directly FIXME!
         //  TrkDef seeddef(tclust,hstraj,_tpart,_fdir);
@@ -296,7 +296,7 @@ namespace mu2e
         double           vflt  = seeddef.particle().beta(mom)*CLHEP::c_light;
         double           helt0 = hseed.t0().t0();
 
-        KalSeed kf(PDGCode::type(tpart.particleType()),_fdir, hseed.status(), flt0 );
+        KalSeed kf(PDGCode::type(tpart.particleType()),hseed.status(), flt0 );
         // extract the hits from the rep and put the hitseeds into the KalSeed
         int nsh = seeddef.strawHitIndices().size();//tclust._strawHitIdxs.size();
         for (int i=0; i< nsh; ++i){
@@ -355,7 +355,7 @@ namespace mu2e
           // create a KalSeed object from this fit, recording the particle and fit direction
           //    KalSeed kseed(_tpart,_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
 
-          KalSeed kseed(PDGCode::type(_result.krep->particleType().particleType()),_fdir,kf.status(), _result.krep->flt0());
+          KalSeed kseed(PDGCode::type(_result.krep->particleType().particleType()),kf.status(), _result.krep->flt0());
           kseed._status.merge(_ksf);
           if(_result.krep->fitStatus().success())kseed._status.merge(TrkFitFlag::kalmanOK);
           // add CaloCluster if present
@@ -366,6 +366,7 @@ namespace mu2e
           if(_result.krep->fitStatus().success()==1)kseed._status.merge(TrkFitFlag::seedConverged);
           if(kseed._hits.size() >= _minnhits)kseed._status.merge(TrkFitFlag::hitsOK);
           kseed._chisq = _result.krep->chisq();
+          kseed._ndof = _result.krep->nDof();
           // use the default consistency calculation, as t0 is not fit here
           kseed._fitcon = _result.krep->chisqConsistency().significanceLevel();
           // extract the helix trajectory from the fit (there is just 1)

@@ -166,8 +166,6 @@ namespace mu2e {
       // TrkFitDirection                   _fdir;
 
       const ComboHitCollection*         _chcol;
-      // const StrawHitPositionCollection* _shpos;
-      const StrawHitFlagCollection*     _chfcol;
 
       //    TrkErrCode                        _fit;     // fit status code from last fit
       //-----------------------------------------------------------------------------
@@ -210,8 +208,6 @@ namespace mu2e {
       // RobustHelixFinderData& operator =(RobustHelixFinderData const& other);
 
       const ComboHitCollection*         chcol () { return _chcol ; }
-      // const StrawHitPositionCollection* shpos () { return _shpos ; }
-      const StrawHitFlagCollection*     chfcol() { return _chfcol; }
 
       // bool          fitIsValid        () { return _sxy.qn() > 0; }
       // bool          weightedFitIsValid() { return _sxy.qn() > 0; }

@@ -352,12 +352,15 @@ namespace mu2e {
      */
     void printAllSummaries( std::ostream& ost, int verbosity, std::string const& tag) const;
 
+    // A type used for some internal record keeping.
+    // In gcc 13.1.0 and c++20 it has to be public so that it is visible to
+    // the function template, markDefault, defined in SimpleConfig.cc .
+    // The alternative is to friend it to all of the instantiations of that template.
+    typedef std::map<std::string, int> DefaultCounter_type;
+
     // Private instance data.
 
   private:
-
-    // A type used for some internal record keeping.
-    typedef std::map<std::string, int> DefaultCounter_type;
 
     // input file string
     std::string _inputFileString;

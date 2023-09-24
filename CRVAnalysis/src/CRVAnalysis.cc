@@ -13,7 +13,8 @@
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "art/Framework/Principal/Handle.h"
-#include "Offline/CRVResponse/inc/CrvHelper.hh"
+#include "Offline/CRVResponse/inc/CrvMCHelper.hh"
+#include "Offline/CRVReco/inc/CrvHelper.hh"
 #include "Offline/ConditionsService/inc/CrvParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
@@ -53,7 +54,7 @@ namespace mu2e
       const CrvCoincidenceCluster &cluster = crvCoincidenceClusterCollection->at(i);
 
       //fill the Reco collection
-      recoInfo.emplace_back(cluster.GetCrvSectorType(), cluster.GetAvgCounterPos(),
+      recoInfo.emplace_back(cluster.GetCrvSectorType(), cluster.GetAvgHitPos(),
                             cluster.GetStartTime(), cluster.GetEndTime(),
                             cluster.GetPEs(), cluster.GetCrvRecoPulses().size(),
                             cluster.GetLayers().size(), cluster.GetSlope());
@@ -90,8 +91,8 @@ namespace mu2e
                               primaryParticle->pdgId(), primaryParticle->startMomentum().e() - primaryParticle->startMomentum().m(), primaryParticle->startPosition(),
                               parentParticle->pdgId(),  parentParticle->startMomentum().e()  - parentParticle->startMomentum().m(),  parentParticle->startPosition(),
                               gparentParticle->pdgId(), gparentParticle->startMomentum().e() - gparentParticle->startMomentum().m(), gparentParticle->startPosition(),
-                              clusterMC.GetEarliestHitPos(),
-                              clusterMC.GetEarliestHitTime(),
+                              clusterMC.GetAvgHitPos(),
+                              clusterMC.GetAvgHitTime(),
                               clusterMC.GetTotalEnergyDeposited());
         }
         else MCInfo.emplace_back();
@@ -182,7 +183,6 @@ namespace mu2e
    void CRVAnalysis::FillCrvPulseInfoCollections (const std::string &crvRecoPulseCollectionModuleLabel,
                                                   const std::string &crvWaveformsModuleLabel,
                                                   const std::string &crvDigiModuleLabel,
-                                                  const SimParticleTimeOffset &timeOffsets,
                                                   const art::Event& event, CrvPulseInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo, CrvWaveformInfoCollection &waveformInfo){
 
 
@@ -234,12 +234,14 @@ namespace mu2e
          art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
          if(crvWaveformsModuleLabel!="") event.getByLabel(crvWaveformsModuleLabel,"",crvDigiMCCollection); //this is an optional part for MC information
          double visibleEnergyDeposited  = 0;
-         double earliestHitTime         = NAN;
+         double earliestHitTime         = 0;
+         double avgHitTime              = 0;
          CLHEP::Hep3Vector earliestHitPos;
+         CLHEP::Hep3Vector avgHitPos;
          art::Ptr<SimParticle> mostLikelySimParticle;
          //for this reco pulse
-         CrvHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, timeOffsets, visibleEnergyDeposited,
-                                            earliestHitTime, earliestHitPos, mostLikelySimParticle);
+         CrvMCHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, visibleEnergyDeposited,
+                                            earliestHitTime, earliestHitPos, avgHitTime, avgHitPos, mostLikelySimParticle);
 
          bool hasMCInfo = (mostLikelySimParticle.isNonnull()?true:false); //MC
          if(hasMCInfo)
@@ -251,7 +253,7 @@ namespace mu2e
                                  primaryParticle->pdgId(), primaryParticle->startMomentum().e() - primaryParticle->startMomentum().m(), primaryParticle->startPosition(),
                                  parentParticle->pdgId(),  parentParticle->startMomentum().e()  - parentParticle->startMomentum().m(),  parentParticle->startPosition(),
                                  gparentParticle->pdgId(), gparentParticle->startMomentum().e() - gparentParticle->startMomentum().m(), gparentParticle->startPosition(),
-                                 earliestHitPos, earliestHitTime, visibleEnergyDeposited);
+                                 avgHitPos, avgHitTime, visibleEnergyDeposited);
            }
          else
            MCInfo.emplace_back();
