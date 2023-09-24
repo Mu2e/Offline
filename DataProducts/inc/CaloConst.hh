@@ -5,6 +5,7 @@
 // used in geometry, channel number ID classes, and database access
 //
 #include <array>
+#include <cstdint>
 
 namespace mu2e {
 

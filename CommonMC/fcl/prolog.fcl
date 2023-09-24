@@ -9,7 +9,15 @@ CommonMC: {
   producers: {
     #
     # time offset producers
-    protonTimeOffset : { module_type: ProtonTimeOffset }
+    protonTimeOffset : {
+        module_type: ProtonTimeOffset
+        randPDFparameters : {
+            pulseType : default
+            limitingHalfWidth : 125.0
+            potPulse  : "Offline/Mu2eUtilities/data/potTimingDistribution_20160511.txt"
+            acDipole  : "Offline/Mu2eUtilities/data/acDipoleTransmissionFunction_20160511.txt"
+        }
+    }
     cosmicTimeOffset : { module_type: CosmicTimeOffset }
     # Event window marker
     EWMProducer : {

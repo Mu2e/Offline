@@ -10,7 +10,8 @@
 //
 
 // Mu2e includes
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GeneralUtilities/inc/EnumToStringSparse.hh"
 #include "Offline/Mu2eUtilities/inc/Table.hh"
 
@@ -69,8 +70,22 @@ namespace mu2e {
 
       fhicl::Atom<std::string> pulseType {
         Name("pulseType"),
-          Comment("Allowed values are: default, total, oot, allflat."),
-          "default"
+          Comment("Allowed values are: default, total, oot, allflat.")
+          };
+
+      fhicl::Atom<double> limitingHalfWidth {
+        Name("limitingHalfWidth"),
+          Comment("limit on the shape tail during generation")
+          };
+
+      fhicl::Atom<std::string> potPulse {
+        Name("potPulse"),
+          Comment("Text file with proton pulse shape"),
+          };
+
+      fhicl::Atom<std::string> acDipole {
+        Name("acDipole"),
+          Comment("Text file with AC dipole transmission function"),
           };
 
       fhicl::OptionalAtom<double> tmin {
@@ -92,8 +107,6 @@ namespace mu2e {
 
     ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine, const Config& conf);
 
-    ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine,
-                       const fhicl::ParameterSet pset );
     ~ProtonPulseRandPDF(){}
 
     std::string pulseType()                  const { return pulseEnum_.name(); }
@@ -103,9 +116,10 @@ namespace mu2e {
 
   private:
 
-    const AcceleratorParams* accPar_;
-
     const ProtonPulseEnum pulseEnum_;
+
+    double limitingHalfWidth_;
+    double DRPeriod_;
 
     double tmin_;
     double tmax_;

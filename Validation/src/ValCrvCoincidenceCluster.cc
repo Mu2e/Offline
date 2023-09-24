@@ -28,9 +28,9 @@ int mu2e::ValCrvCoincidenceCluster::fill(
     _hPE->Fill(cc.GetPEs());
     _ht->Fill(cc.GetStartTime());
     _ht2->Fill(cc.GetStartTime());
-    _hx->Fill(cc.GetAvgCounterPos().x());
-    _hy->Fill(cc.GetAvgCounterPos().y());
-    _hz->Fill(cc.GetAvgCounterPos().z());
+    _hx->Fill(cc.GetAvgHitPos().x());
+    _hy->Fill(cc.GetAvgHitPos().y());
+    _hz->Fill(cc.GetAvgHitPos().z());
   }
   return 0;
 }

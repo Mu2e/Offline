@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // ComboHit.hh needs the definition of ProductID ...
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef __CalPatRec_DeltaFinder_structures_hh__
-#define __CalPatRec_DeltaFinder_structures_hh__
+#ifndef CalPatRec_DeltaFinder_structures_hh
+#define CalPatRec_DeltaFinder_structures_hh
 
 #include "Offline/CalPatRec/inc/DeltaFinder_enums.hh"
 #include "Offline/CalPatRec/inc/HitData_t.hh"

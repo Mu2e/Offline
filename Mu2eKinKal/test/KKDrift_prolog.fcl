@@ -1,4 +1,0 @@
-#include "Offline/Mu2eKinKal/test/KKDrift.fcl"
-services.DbService.purpose: MDC2020_perfect
-services.DbService.version: v1_0
-services.DbService.verbose : 2

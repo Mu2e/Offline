@@ -21,7 +21,6 @@
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
@@ -56,7 +55,6 @@ namespace mu2e {
       // const Straw*      Straw) override ;
 
       // virtual int    nGenHits(const art::Event*         Event      ,
-      //          fhicl::ParameterSet*      TimeOffsets,
       //          const StrawHitCollection* Shcol      ) override;
 
       // virtual const StrawDigiMCCollection* getListOfMcStrawHits(const art::Event* Event,
@@ -152,7 +150,6 @@ namespace mu2e {
   // // calculates N(MC hits) produced by the signal particle, SIM_ID = 1, with P > 100
   // //-----------------------------------------------------------------------------
   //   int TrkRecoMcUtils::nGenHits(const art::Event*         Event         ,
-  //         fhicl::ParameterSet*      TimeOffsets   ,
   //         const StrawHitCollection* Shcol         ) {
 
   //     //    static int     last_event(-1);
@@ -185,7 +182,7 @@ namespace mu2e {
   //       }
 
   //       if ((gen_index > 0) && (sim_id == 1)) {
-  //  double step_time = timeOffsets->timeWithOffsetsApplied(*step);
+  //  double step_time = step->time();
   //  step_time = fmod(step_time,_mbtime);
   //  if (step_time > time_threshold) {
   //    ++n_gen_hits;

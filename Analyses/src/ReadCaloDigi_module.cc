@@ -38,7 +38,6 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
@@ -136,7 +135,6 @@ namespace mu2e {
     TrkParticle                _tpart;
     TrkFitDirection            _fdir;
 
-    SimParticleTimeOffset      _toff;     // time offset smearing
     double                     _mbtime;
     double                     _mbbuffer;
     double                     _blindTime;
@@ -235,7 +233,6 @@ namespace mu2e {
     _trackModuleLabel              (pset.get<string>("trackModuleLabel")),
     _tpart     ((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _toff                          (pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _mbbuffer                      (pset.get<double>             ("TimeFoldingBuffer")),  // ns
     _blindTime                     (pset.get<double>             ("blindTime" )),         // ns
     _fillWaveforms                 (pset.get<int>                ("fillWaveforms" )),
@@ -378,7 +375,6 @@ namespace mu2e {
     //load the timeoffset
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     _mbtime = accPar->deBuncherPeriod;
-    _toff.updateMap(event);
 
     //data about hits in the calorimeter crystals
     art::Handle<CaloHitMCCollection> caloDigiMCHandle;
@@ -534,7 +530,7 @@ namespace mu2e {
               }
               if ( !sim.fromGenerator() )                 continue;
 
-              double     hitTime = fmod(hit.time() + _toff.totalTimeOffset(simptr), _mbtime);
+              double     hitTime = fmod(hit.time(), _mbtime);
               if (hitTime < _mbbuffer) {
                 if (hitTime+_mbtime > _blindTime) {
                   hitTime = hitTime + _mbtime;

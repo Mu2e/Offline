@@ -1,5 +1,5 @@
-#ifndef __CalPatRec_CalTimePeakFinder_types_hh__
-#define __CalPatRec_CalTimePeakFinder_types_hh__
+#ifndef CalPatRec_CalTimePeakFinder_types_hh
+#define CalPatRec_CalTimePeakFinder_types_hh
 
 #include <vector>
 

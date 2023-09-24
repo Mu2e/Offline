@@ -45,7 +45,6 @@
 
 namespace mu2e {
 
-  const SimParticleTimeOffset           *ObjectDumpUtils::_TimeOffsets(NULL);
   const StrawDigiMCCollection           *ObjectDumpUtils::_ListOfMCStrawHits(NULL);
   std::string                            ObjectDumpUtils::_FlagBgrHitsModuleLabel;
 
@@ -53,14 +52,6 @@ namespace mu2e {
 // ObjectDumpUtils::ObjectDumpUtils() {
 
 //   _FlagBgrHitsModuleLabel = "FlagBkgHits";
-
-//   std::vector<std::string> VS;
-//   VS.push_back(std::string("protonTimeMap"));
-//   VS.push_back(std::string("muonTimeMap"));
-
-//   fhicl::ParameterSet  pset;
-//   pset.put("inputs", VS);
-//   fgTimeOffsets = new mu2e::SimParticleTimeOffset(pset);
 
 // }
 

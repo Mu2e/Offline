@@ -446,7 +446,7 @@ namespace mu2e {
         ttp.time = sim.startGlobalTime(); // start time
         ttp.gtime = gtime_parent+sim.startProperTime(); // start time
         CLHEP::Hep3Vector const & pos_start = sim.startPosition();
-        CLHEP::Hep3Vector const & mom_start = sim.startMomentum();
+        CLHEP::Hep3Vector const mom_start = sim.startMomentum();
         ttp.x = pos_start.x();
         ttp.y = pos_start.y();
         ttp.z = pos_start.z();
@@ -463,7 +463,7 @@ namespace mu2e {
           ttp.tstop = sim.endGlobalTime();
           ttp.gtstop = gtime_parent+sim.endProperTime();
           CLHEP::Hep3Vector const & pos_end = sim.endPosition();
-          CLHEP::Hep3Vector const & mom_end = sim.endMomentum();
+          CLHEP::Hep3Vector const mom_end = sim.endMomentum();
 
           ttp.xstop  = pos_end.x();
           ttp.ystop  = pos_end.y();
@@ -551,7 +551,7 @@ namespace mu2e {
         if( sim_parent ) {
           ttp.parent_pdg = sim_parent->pdgId();
           CLHEP::Hep3Vector const & pos_parent = sim_parent->startPosition();
-          CLHEP::Hep3Vector const & mom_parent = sim_parent->startMomentum();
+          CLHEP::Hep3Vector const mom_parent = sim_parent->startMomentum();
           ttp.parent_x = pos_parent.x();
           ttp.parent_y = pos_parent.y();
           ttp.parent_z = pos_parent.z();

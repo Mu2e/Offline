@@ -17,7 +17,6 @@
 #include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 // data
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 // tracking
@@ -75,7 +74,6 @@ namespace mu2e {
         using Name    = fhicl::Name;
         using Comment = fhicl::Comment;
         fhicl::Atom<art::InputTag>              comboHitCollection     {Name("ComboHitCollection"),     Comment("ComboHit collection {Name") };
-        fhicl::Atom<art::InputTag>              strawHitFlagCollection {Name("StrawHitFlagCollection"), Comment("StrawHitFlag collection {Name") };
         fhicl::Atom<art::InputTag>              caloClusterCollection  {Name("CaloClusterCollection"),  Comment("Calo cluster collection {Name") };
         fhicl::Table<MVATools::Config>          tcMVA                  {Name("ClusterMVA"),             Comment("MVA for time cluster cleaning") };
         fhicl::Table<MVATools::Config>          tcCaloMVA              {Name("ClusterCaloMVA"),         Comment("MVA for time clsuter cleaning with calo") };
@@ -117,9 +115,7 @@ namespace mu2e {
 
       int                                             _iev;
       const art::ProductToken<ComboHitCollection>     _chToken;
-      const art::ProductToken<StrawHitFlagCollection> _shfToken;
       const art::ProductToken<CaloClusterCollection>  _ccToken;
-      const StrawHitFlagCollection* _shfcol;
       const ComboHitCollection*     _chcol;
       const CaloClusterCollection*  _cccol;
       StrawHitFlag                  _hsel;
@@ -166,7 +162,6 @@ namespace mu2e {
   TimeClusterFinder::TimeClusterFinder(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config},
     _chToken      { consumes<ComboHitCollection>(      config().comboHitCollection()) },
-    _shfToken     { mayConsume<StrawHitFlagCollection>(config().strawHitFlagCollection()) },
     _ccToken      { mayConsume<CaloClusterCollection>( config().caloClusterCollection()) },
     _hsel         ( config().hsel()),
     _hbkg         ( config().hbkg()),
@@ -226,13 +221,6 @@ namespace mu2e {
     if(_usecc){
       ccH = event.getHandle<CaloClusterCollection>(_ccToken);
       _cccol = ccH.product();
-    }
-
-    if(_testflag){
-      auto shfH = event.getValidHandle(_shfToken);
-      _shfcol = shfH.product();
-      if(_shfcol->size() != _chcol->size())
-        throw cet::exception("RECO")<<"TimeClusterFinder: inconsistent flag collection length " << endl;
     }
 
     std::unique_ptr<TimeClusterCollection> tccol(new TimeClusterCollection);
@@ -312,7 +300,7 @@ namespace mu2e {
   void TimeClusterFinder::fillTimeSpectrum() {
     _timespec.Reset();
     for (unsigned istr=0; istr<_chcol->size();++istr) {
-      if (_testflag && !goodHit((*_shfcol)[istr])) continue;
+      if (_testflag && !goodHit((*_chcol)[istr].flag())) continue;
       ComboHit const& ch = (*_chcol)[istr];
       float time = _ttcalc.comboHitTime((*_chcol)[istr],_pitch);
       _timespec.Fill(time,ch.nStrawHits());
@@ -322,7 +310,7 @@ namespace mu2e {
   void TimeClusterFinder::assignHits(TimeClusterCollection& tccol ) {
     // assign hits to the closest time peak
     for(size_t istr=0; istr<_chcol->size(); ++istr) {
-      if ((!_testflag) || goodHit((*_shfcol)[istr])) {
+      if ((!_testflag) || goodHit((*_chcol)[istr].flag())) {
         ComboHit const& ch =(*_chcol)[istr];
         float time = _ttcalc.comboHitTime(ch,_pitch);
         float mindt(1e5);
@@ -388,7 +376,7 @@ namespace mu2e {
     unsigned nstrs = tc._strawHitIdxs.size();
     tc._nsh = 0;
     for(auto ish :tc._strawHitIdxs) {
-      if (_testflag && !goodHit((*_shfcol)[ish])) continue;
+      if (_testflag && !goodHit((*_chcol)[ish].flag())) continue;
       ComboHit const& ch = (*_chcol)[ish];
       unsigned nsh = ch.nStrawHits();
       tc._nsh += nsh;
@@ -453,7 +441,7 @@ namespace mu2e {
       changed = false;
       float pphi = polyAtan2(tc._pos.y(), tc._pos.x());
       for(size_t ich=0;ich < _chcol->size(); ++ich){
-        if ((!_testflag) || goodHit((*_shfcol)[ich])) {
+        if ((!_testflag) || goodHit((*_chcol)[ich].flag())) {
           if(std::find(tc._strawHitIdxs.begin(),tc._strawHitIdxs.end(),ich) == tc._strawHitIdxs.end()){
             ComboHit const& ch = (*_chcol)[ich];
             float cht = _ttcalc.comboHitTime(ch,_pitch);

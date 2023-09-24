@@ -22,7 +22,7 @@
 // Other includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "cetlib_except/exception.h"
-#include "math.h"
+#include <cmath>
 
 using namespace std;
 

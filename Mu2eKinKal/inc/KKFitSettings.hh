@@ -8,9 +8,9 @@
 #include "fhiclcpp/types/OptionalSequence.h"
 #include "fhiclcpp/types/Tuple.h"
 #include "KinKal/Fit/Config.hh"
+#include "canvas/Utilities/InputTag.h"
 #include "KinKal/Fit/MetaIterConfig.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
-#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 // updaters
 #include "Offline/Mu2eKinKal/inc/CADSHU.hh"
 #include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
@@ -57,8 +57,6 @@ namespace mu2e {
     struct KKFitConfig {
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level") };
       fhicl::Atom<float> tpocaPrec { Name("TPOCAPrecision"), Comment("TPOCA calculation precision (ns)") };
-      fhicl::Atom<int> fitParticle {  Name("FitParticle"), Comment("Particle type to fit: e-, e+, mu-, ...")};
-      fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream") };
       fhicl::Atom<bool> matCorr { Name("MaterialCorrection"), Comment("Correct the fit fo material effects") };
       fhicl::Atom<bool> addHits { Name("AddHits"), Comment("Add hits to the fit") };
       fhicl::Atom<bool> addMaterial { Name("AddMaterial"), Comment("Add materials to the fit") };
@@ -75,11 +73,24 @@ namespace mu2e {
       fhicl::Atom<float> maxCaloDoca { Name("MaxCaloClusterDOCA"), Comment("Max DOCA to add a CaloCluster (mm)") };
       fhicl::Sequence<std::string> addHitSelect { Name("AddHitSelect"), Comment("Flags required to be present to add a hit") };
       fhicl::Sequence<std::string> addHitReject { Name("AddHitReject"), Comment("Flags required not to be present to add a hit") };
+      fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
+      fhicl::Sequence<std::string> extendSurfaces { Name("ExtendSurfaces"), Comment("Extend the fit to reach these surfaces") };
       fhicl::Atom<float> maxStrawHitDOCA { Name("MaxStrawHitDOCA"), Comment("Max DOCA to add a hit (mm)") };
       fhicl::Atom<float> maxStrawHitDt { Name("MaxStrawHitDt"), Comment("Max Detla time to add a hit (ns)") };
-      fhicl::Atom<int> strawBuffer { Name("StrawBuffer"), Comment("Buffer to add when searching for straws") };
+      fhicl::Atom<int> maxDStraw { Name("MaxDStraw"), Comment("Maximum (integer) straw separation when adding straw hits") };
       fhicl::Atom<float> maxStrawDOCA { Name("MaxStrawDOCA"), Comment("Max DOCA to add straw material (mm)") };
       fhicl::Atom<float> maxStrawDOCAConsistency { Name("MaxStrawDOCAConsistency"), Comment("Max DOCA chi-consistency to add straw material") };
+      fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Buffer to add to the trajectory when sampling the fit (mm)") };
+    };
+    // struct for configuring a KinKal fit module
+    struct KKModuleConfig {
+      fhicl::Atom<int> fitParticle {  Name("FitParticle"), Comment("Particle type to fit: e-, e+, mu-, ...")};
+      fhicl::Atom<art::InputTag>     comboHitCollection     {Name("ComboHitCollection"),     Comment("Single Straw ComboHit collection ") };
+      fhicl::Atom<art::InputTag>     caloClusterCollection     {Name("CaloClusterCollection"),     Comment("CaloCluster collection ") };
+      fhicl::Sequence<std::string> seedFlags { Name("SeedFlags"), Comment("Flags required to be present to convert a seed to a KinKal track") };
+      fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level"), 0 };
+      fhicl::Sequence<float> seederrors { Name("SeedErrors"), Comment("Initial value of seed parameter errors (rms, various units)") };
+      fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
     };
   }
 }

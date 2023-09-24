@@ -40,7 +40,7 @@ namespace mu2e {
 
     constexpr static const char* cxname = "CalEnergyCalib";
 
-    CalEnergyCalib():DbTable(cxname,"cal.energycalib","roid,ADC2MeV,ErrADC2MeV,algID"){}
+    CalEnergyCalib():DbTable(cxname,"cal.energycalib","roid,adc2mev,erradc2mev,algid"){}
 
     const Row& row(CaloSiPMId id) const {
                 return _rows[id.id()];

@@ -36,7 +36,6 @@
 #include "Offline/Print/inc/ProtonBunchTimePrinter.hh"
 #include "Offline/Print/inc/SimParticlePrinter.hh"
 #include "Offline/Print/inc/SimParticlePtrPrinter.hh"
-#include "Offline/Print/inc/SimParticleTimeMapPrinter.hh"
 #include "Offline/Print/inc/StatusG4Printer.hh"
 #include "Offline/Print/inc/StepPointMCPrinter.hh"
 #include "Offline/Print/inc/STMWaveformDigiPrinter.hh"
@@ -47,6 +46,8 @@
 #include "Offline/Print/inc/StrawHitFlagPrinter.hh"
 #include "Offline/Print/inc/StrawHitPrinter.hh"
 #include "Offline/Print/inc/TimeClusterPrinter.hh"
+#include "Offline/Print/inc/HelixSeedPrinter.hh"
+#include "Offline/Print/inc/CosmicTrackSeedPrinter.hh"
 #include "Offline/Print/inc/TrackClusterMatchPrinter.hh"
 #include "Offline/Print/inc/TrackSummaryPrinter.hh"
 #include "Offline/Print/inc/TriggerInfoPrinter.hh"
@@ -134,12 +135,14 @@ class PrintModule : public art::EDAnalyzer {
         fhicl::Name("trackSummaryPrinter")};
     fhicl::Table<ProductPrinter::Config> kalRepPrinter{
         fhicl::Name("kalRepPrinter")};
-    fhicl::Table<ProductPrinter::Config> simParticleTimeMapPrinter{
-        fhicl::Name("simParticleTimeMapPrinter")};
     fhicl::Table<ProductPrinter::Config> comboHitPrinter{
         fhicl::Name("comboHitPrinter")};
     fhicl::Table<ProductPrinter::Config> timeClusterPrinter{
         fhicl::Name("timeClusterPrinter")};
+    fhicl::Table<ProductPrinter::Config> helixSeedPrinter{
+        fhicl::Name("helixSeedPrinter")};
+    fhicl::Table<ProductPrinter::Config> cosmicTrackSeedPrinter{
+        fhicl::Name("cosmicTrackSeedPrinter")};
     fhicl::Table<ProductPrinter::Config> kalSeedPrinter{
         fhicl::Name("kalSeedPrinter")};
     fhicl::Table<ProductPrinter::Config> stmWaveformDigiPrinter{
@@ -233,11 +236,10 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
   _printers.push_back(
       make_unique<TrackSummaryPrinter>(conf().trackSummaryPrinter()));
   _printers.push_back(make_unique<KalRepPrinter>(conf().kalRepPrinter()));
-  _printers.push_back(make_unique<SimParticleTimeMapPrinter>(
-      conf().simParticleTimeMapPrinter()));
   _printers.push_back(make_unique<ComboHitPrinter>(conf().comboHitPrinter()));
-  _printers.push_back(
-      make_unique<TimeClusterPrinter>(conf().timeClusterPrinter()));
+  _printers.push_back(make_unique<TimeClusterPrinter>(conf().timeClusterPrinter()));
+  _printers.push_back(make_unique<HelixSeedPrinter>(conf().helixSeedPrinter()));
+  _printers.push_back(make_unique<CosmicTrackSeedPrinter>(conf().cosmicTrackSeedPrinter()));
   _printers.push_back(make_unique<KalSeedPrinter>(conf().kalSeedPrinter()));
   _printers.push_back(make_unique<STMWaveformDigiPrinter>(
       conf().stmWaveformDigiPrinter()));

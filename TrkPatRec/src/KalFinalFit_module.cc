@@ -380,14 +380,14 @@ namespace mu2e
             if(krep->fitStatus().success()) fflag.merge(TrkFitFlag::kalmanOK);
             if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
             //    KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
-            KalSeed fseed(PDGCode::type(krep->particleType().particleType()),_fdir,fflag,krep->flt0());
+            KalSeed fseed(PDGCode::type(krep->particleType().particleType()),fflag,krep->flt0());
             // fill with new information
             fseed._flt0 = krep->flt0();
             // global fit information
             fseed._chisq = krep->chisq();
+            fseed._ndof = krep->nDof();
             // compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
             fseed._fitcon =  TrkUtilities::chisqConsistency(krep);
-            fseed._nseg = krep->pieceTraj().localTrajectory().size();
             TrkUtilities::fillStrawHitSeeds(krep,*_chcol,fseed._hits);
             TrkUtilities::fillStraws(krep,fseed._straws);
             // sample the fit at the requested z positions.  Need options here to define a set of

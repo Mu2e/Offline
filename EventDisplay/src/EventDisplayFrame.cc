@@ -48,11 +48,11 @@ namespace mu2e_eventdisplay
 EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) :
   TGMainFrame(p, w, h),
   _wideband(pset.get<bool>("wideband",false)),
+  _extracted(pset.get<bool>("extracted",false)),
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
   _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV")),
   _protonBunchTimeLabel(pset.get<std::string>("protonBunchTimeTag","EWMProducer")),
-  _kalStepSize(pset.get<double>("kalSeedStepSize")),
-  _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets"))
+  _kalStepSize(pset.get<double>("kalSeedStepSize"))
 {
   SetCleanup(kDeepCleanup);
   Move(20,20);
@@ -452,7 +452,7 @@ void EventDisplayFrame::initSetup()
   _showOtherStructures=false;
   _showMuonBeamStop=false;
   _showProtonAbsorber=false;
-  if(_wideband)
+  if(_wideband || _extracted)
   {
     _showSupportStructures=false;
     _showCRV=true;
@@ -598,8 +598,9 @@ void EventDisplayFrame::fillGeometry()
   _dataInterface->fillGeometry();
   DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, false, _showCRV);
   if(_wideband) m=_dataInterface->getSpaceBoundary(false, false, false, true);
+  if(_extracted) m=_dataInterface->getSpaceBoundary(false, true, false, true);
   _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
-  if(_wideband)
+  if(_wideband || _extracted)
   {
     EventDisplayViewSetup::sideview();
     _parallelButton->SetState(kButtonDown);
@@ -613,7 +614,6 @@ void EventDisplayFrame::fillGeometry()
 
 void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop, const mu2e::CRVCalib &calib)
 {
-  _timeOffsets.updateMap(event);
 
   _eventNumber=event.id().event();
   _subrunNumber=event.id().subRun();
@@ -663,7 +663,7 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
   }
   else _runNumberText->SetTitle(eventInfoText.c_str());
 
-  _dataInterface->fillEvent(_contentSelector, _timeOffsets);
+  _dataInterface->fillEvent(_contentSelector);
   _dataInterface->useHitColors(_useHitColors, _whiteBackground);
   _dataInterface->useTrackColors(_contentSelector, _useTrackColors, _whiteBackground);
   _dataInterface->makeCrvScintillatorBarsVisible(_showCRV);
@@ -885,6 +885,8 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          {
                            _mainPad->cd();
                            DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, param1==73, _showCRV);
+                           if(_wideband) m=_dataInterface->getSpaceBoundary(false, false, false, true);
+                           if(_extracted) m=_dataInterface->getSpaceBoundary(false, true, false, true);
                            _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
                            if(param1<73)
                            {
