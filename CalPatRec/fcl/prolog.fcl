@@ -663,6 +663,15 @@ CalPatRec : { @table::CalPatRec
             }
         }
 
+        CosmicHelixMCFilter : {
+            module_type : CosmicHelixMCFilter
+            diag :0
+            debug : 1
+            checkpid : 13
+            HelixSeedCollection : "MHFinderDmu" 
+            StrawDigiMCCollection : compressDigiMCs     
+	    }
+
         CalHelixFinder          : { module_type:CalHelixFinder
             diagLevel                                   : 0
             debugLevel                                  : 0
