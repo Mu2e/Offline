@@ -26,11 +26,6 @@ physics :
     @table::Reconstruction.producers
     @table::TrkAnaReco.producers
     @table::Mu2eKinKal.producers
-    BestCrvLine : {
-      module_type : BestCrvHitDeltaT
-      crvCoincidenceTag : "SelectRecoMC"
-      kalSeedTag : "KKLine"
-    }
   }
   filters : {
     RecoFilter : {
@@ -40,10 +35,7 @@ physics :
       MomentumCutoff: [ 60 ]
    }
   }
-  RecoPath : [
-    @sequence::Reconstruction.LineRecoMCPath,
-    BestCrvLine
-  ]
+  RecoPath : [ @sequence::Reconstruction.LineRecoMCPath ]
   analyzers : {
     TAKK : {
       @table::TrkAnaTreeMaker
@@ -57,10 +49,6 @@ physics :
           fillTrkQual : false
           fillTrkPID : false
           genealogyDepth : 5
-          fillBestCrv : true
-          bestCrvModules : [ "BestCrv" ]
-          bestCrvInstances : [ "first" ]
-          bestCrvBranches : [ "bestcrv" ]
         }
         segmentSuffixes : [ "ent", "mid", "xit" ]
         segmentVIDs : [ [ "TT_FrontHollow", "TT_FrontPA"], [ "TT_Mid", "TT_MidInner"], ["TT_Back"] ]
