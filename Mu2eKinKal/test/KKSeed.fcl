@@ -79,7 +79,6 @@ physics.producers.KKDeMSeedFit.ModuleSettings.PrintLevel : 0
 physics.producers.KKDeMSeedFit.ModuleSettings.SaveAllFits : true
 
 physics.analyzers.TAKK.candidate.options : @local::AllOpt
-physics.analyzers.TAKK.candidate.options.fillBestCrv : false
 physics.analyzers.TAKK.diagLevel : 2
 physics.analyzers.TAKK.FillCRV : false
 physics.analyzers.TAKK.FillMCInfo : true

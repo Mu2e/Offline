@@ -102,7 +102,6 @@ physics.producers.KKDmuM.ModuleSettings.SaveAllFits : true
 physics.producers.KKDmuM.FitSettings.PrintLevel : 0
 
 physics.analyzers.TAKK.candidate.options : @local::AllOpt
-physics.analyzers.TAKK.candidate.options.fillBestCrv : false
 physics.analyzers.TAKK.diagLevel : 2
 physics.analyzers.TAKK.FillMCInfo : true
 physics.analyzers.TAKK.FillCRV : false
