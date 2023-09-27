@@ -57,7 +57,7 @@ physics :
       }
       diagLevel : 2
       FillMCInfo : true
-      FillCRV : true
+      FillCRVHits : true
 
       FillTrkQualInfo : false
       FillTrkPIDInfo : false
