@@ -96,7 +96,7 @@ void mu2e::RunSubrunEvent::beginSubRun(art::SubRun const& subRun) {
   if (!_printSam) return;
 
   // add this subrun to the list, if it is not already there
-  unsigned long long id = subRun.run()*1000000 + subRun.subRun();
+  unsigned long long id = subRun.run()*1000000ull + subRun.subRun();
   subvec::iterator beg = _subruns.begin();
   subvec::iterator end = _subruns.end();
   if (std::find(beg, end, id) == end) _subruns.emplace_back(id);
