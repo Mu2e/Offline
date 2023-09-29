@@ -1,5 +1,5 @@
-#ifndef __CalPatRec_CalHelixFinder_types_hh__
-#define __CalPatRec_CalHelixFinder_types_hh__
+#ifndef CalPatRec_CalHelixFinder_types_hh
+#define CalPatRec_CalHelixFinder_types_hh
 
 namespace art {
   class Event;

@@ -15,9 +15,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/DAQParams.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
@@ -160,10 +157,6 @@ namespace mu2e
         << "cosmicDYB.dy = " << _dy <<"mm, "
         << "cosmicDYB.dz = " << _dz <<"mm\n"
         << "cosmicDYB.productionCenterInMu2e = " << _productionCenterInMu2e << "\n";
-
-    // Access conditions data.
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
-    ConditionsHandle<DAQParams>         daqPar("ignored");
 
     // convert to GeV
     _muEMin /= GeV;

@@ -23,21 +23,18 @@ namespace mu2e {
   WireHitState BkgANNSHU::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate = input;
     if(input.updateable(StrawHitUpdaters::BkgANN)){
-      std::array<float,7> pars;
+      std::array<float,6> pars;
       // this order is given by the training
       pars[0] = fabs(tpdata.doca());
       pars[1] = dinfo.cDrift_;
-      pars[2] = tpdata.docaVar();
+      pars[2] = sqrt(tpdata.docaVar());
       pars[3] = chit.driftTime();
-      // normalize edep to the estimated path length through the straw
-      double sint = sqrt(1.0-tpdata.dirDot()*tpdata.dirDot());
-      double plen = sqrt(std::max(0.25, 6.25-dinfo.rDrift_*dinfo.rDrift_))/sint;
-      pars[4] = chit.energyDep()/plen;
+      // EDep is no longe used: it helps reject proton hits, but might bias muon reconstruction
       // compare the delta-t based U position with the fit U position; requires relative end
       double endsign = chit.earlyEnd().endSign();
       double upos = -endsign*tpdata.sensorDirection().Dot(tpdata.sensorPoca().Vect() - chit.centerPos());
-      pars[5] = fabs(chit.wireDist() - upos);
-      pars[6] = tpdata.particlePoca().Vect().Rho();
+      pars[4] = fabs(chit.wireDist() - upos);
+      pars[5] = tpdata.particlePoca().Vect().Rho();
       auto mvaout = mva_->infer(pars.data());
       whstate.quality_[WireHitState::bkg] = mvaout[0];
       if(diag_ > 2){

@@ -1,5 +1,5 @@
 #
-# Minimal job to create BkgDiag output
+# Minimal job to create BkgDiag output off of digis
 #
 # To create a functional job you must add database purpose and version; ie create a fcl stub that #includes this file and
 # adds (for instance):
@@ -23,7 +23,7 @@ physics :
       diagLevel : 1
     }
     evtprint : {
-      module_type : RunEventSubRun
+      module_type : RunSubrunEvent
       printSam    : false
       printRun    : false
       printSubrun : false

@@ -1,5 +1,6 @@
 #include "Offline/GeneralUtilities/inc/Binning.hh"
 #include <cmath>
+#include <limits>
 
 const Binning::IndexType Binning::nobin(-1);
 
@@ -35,6 +36,6 @@ double Binning::binCenter(IndexType i) const {
     return low_ + binwidth_*(0.5+i);
   }
   else {
-    return nan("");
+    return std::numeric_limits<double>::max();
   }
 }

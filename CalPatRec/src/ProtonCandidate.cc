@@ -186,7 +186,7 @@ namespace mu2e {
         fNHitsStation[Station] -= 1;
         if (fNHitsStation[Station] == 0) fNStationsWithHits--;
 
-        if (fNHitsStation == 0) {
+        if (fNHitsStation[Station] == 0) {
 //-----------------------------------------------------------------------------
 // may need to redefined the first or the last station
 //-----------------------------------------------------------------------------

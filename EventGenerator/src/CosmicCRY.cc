@@ -12,9 +12,6 @@
 
 // Mu2e includes.
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/DAQParams.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"

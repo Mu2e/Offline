@@ -12,10 +12,6 @@
 #include "Offline/GlobalConstantsService/inc/unknownPDGIdName.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/CalorimeterPhysicalConstants.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
@@ -334,9 +330,6 @@ namespace mu2e {
     //CLHEP::Hep3Vector _secondDiskLoc;
     double _firstDiskZ;
     double _secondDiskZ;
-    double _eCritPos;
-    double _eCritNeg;
-    double _density;
     double _tol = 1.0*CLHEP::mm; // for comparisons, slight differences in computations at 1e-9 level
   };
 
@@ -660,15 +653,6 @@ namespace mu2e {
     if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from KineticFracAnalysis =  "<<_nProcess << " with instance name " << _instanceName <<std::endl;
 
     if (_diagLevel > 0){std::cout << "******************new event in KineticFracAnalysis*******************" << std::endl;}
-
-    //   ConditionsHandle<AcceleratorParams> accPar("ignored");
-    //double _mbtime = accPar->deBuncherPeriod;
-
-    ConditionsHandle<CalorimeterPhysicalConstants> calPhys("ignored");
-    _density = calPhys->density();
-    //    std::cout << "density is " << _density/(CLHEP::g/CLHEP::cm3) << std::endl;
-    _eCritPos = calPhys->criticalEnergyPos();
-    _eCritNeg = calPhys->criticalEnergyNeg();
 
     //Get handle to the calorimeter
     art::ServiceHandle<GeometryService> geom;

@@ -144,7 +144,7 @@ namespace mu2e
         float DXmax, DYmax;
         float RMax(-999), RMin(-999), XMin(999.), XMax(-999.), YoutMin(999.), YoutMax(-999.);
 
-        float xval,yval,rval;
+        float xval=0.,yval=0.,rval=0.;
         for( int icry=0; icry< clsize; icry++){
           hitcalo = &(*caloClusterHits->at(icry));
           float ene   = hitcalo->energyDep();

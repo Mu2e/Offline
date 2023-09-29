@@ -1,5 +1,5 @@
-#ifndef __CalPatRec_DeltaSeed_hh__
-#define __CalPatRec_DeltaSeed_hh__
+#ifndef CalPatRec_DeltaSeed_hh
+#define CalPatRec_DeltaSeed_hh
 
 #include "TObject.h"
 #include "TClonesArray.h"

@@ -43,6 +43,8 @@ namespace mu2e
     double   getProtonKE      () const { return _protonKE;       }
     double   getProtonMomentum() const { return _protonMomentum; }
 
+    double   getNominalDRPeriod() const { return _nominalDRPeriod; }
+
     // Lifetimes of free (not stopped) particles.  We provide them
     // here because values coming from other sources are not accurate
     double getParticleLifetime(PDGCode::type pdgId) const;
@@ -162,6 +164,8 @@ namespace mu2e
     double _protonEnergy;
     double _protonKE;
     double _protonMomentum;
+
+    double _nominalDRPeriod;
 
     typedef std::map<PDGCode::type, double> FreeLifeMap;
     FreeLifeMap freeLifetime_;

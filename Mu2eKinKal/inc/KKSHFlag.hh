@@ -16,7 +16,9 @@ namespace mu2e {
     typedef unsigned mask_type;
     enum bit_type { tot=0, absdrift=1, driftdt=2,// if set, these values are used to constrain t0
       nhdrift=8, // if set, use drift radius to set null hit variance (otherwise use straw radius)
-      annprob=15}; // if set, interpret sign ANN probabilistically
+      annprob=15, // if set, interpret sign ANN probabilistically
+      added=20 // record if the hit was added (otherwise original)
+    };
     // functions needed for the BitMap template
     static std::string const& typeName();
     static std::map<std::string,mask_type> const& bitNames();

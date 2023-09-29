@@ -131,7 +131,7 @@ namespace mu2e {
 
      KalSeed MakeMCKalSeed::makeKalSeed(SDMCSimCol const& sdmcsim) const {
        // create seed with basic information
-      KalSeed kseed(sdmcsim.simParticle()->pdgId(),tdir_,TrkFitFlag(TrkFitFlag::MCSeed));
+      KalSeed kseed(sdmcsim.simParticle()->pdgId(),TrkFitFlag(TrkFitFlag::MCSeed));
       // fill in segment, hit, and straw information TODO
       return kseed;
     }

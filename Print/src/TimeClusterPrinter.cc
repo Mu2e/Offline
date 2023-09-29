@@ -44,8 +44,8 @@ void mu2e::TimeClusterPrinter::Print(
 void mu2e::TimeClusterPrinter::Print(const TimeClusterCollection& coll,
                                      std::ostream& os) {
   if (verbose() < 1) return;
-  os << "TimeClusterCollection has " << coll.size() << " hits\n";
-  if (verbose() == 1) PrintListHeader();
+  os << "TimeClusterCollection has " << coll.size() << " Time Clusters\n";
+  if (verbose() >= 1) PrintListHeader();
   int i = 0;
   for (const auto& obj : coll) Print(obj, i++);
 }

@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+#
+# Script to build the files found in this directory.
+#
+# Original author Rob Kutschke.
+#
+
+import os
+Import('env')
+Import('mu2e_helper')
+
+rootlibs = env['ROOTLIBS']
+
+helper = mu2e_helper(env)
+
+mainlib = helper.make_mainlib([
+  'mu2e_Mu2eUtilities',
+  'mu2e_GeneralUtilities',
+  'cetlib_except',
+  'KinKal_Trajectory',
+  'KinKal_Geometry',
+  'KinKal_General',
+  'GenVector',
+  'MathCore',
+  rootlibs
+])
+
+helper.make_plugins([mainlib,
+  'mu2e_Mu2eUtilities',
+  'mu2e_GeneralUtilities',
+  'cetlib_except',
+  'KinKal_Trajectory',
+  'KinKal_Geometry',
+  'KinKal_General',
+  'GenVector',
+  'MathCore',
+  rootlibs
+])
+
+#helper.make_bin("RecoGeomTest",BINLIBS,[])
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:

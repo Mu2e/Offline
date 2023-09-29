@@ -29,9 +29,11 @@ namespace mu2e
     CrvCoincidenceClusterMC() {}
 
     CrvCoincidenceClusterMC(bool hasMCInfo, const std::vector<PulseInfo> &pulses, const art::Ptr<SimParticle> mostLikelySimParticle,
-                            double totalEnergyDeposited, double earliestHitTime, const CLHEP::Hep3Vector &earliestHitPos) :
+                            double totalEnergyDeposited, double earliestHitTime, const CLHEP::Hep3Vector &earliestHitPos,
+                            double avgHitTime, const CLHEP::Hep3Vector &avgHitPos) :
                             _hasMCInfo(hasMCInfo), _pulses(pulses), _mostLikelySimParticle(mostLikelySimParticle),
-                            _totalEnergyDeposited(totalEnergyDeposited), _earliestHitTime(earliestHitTime), _earliestHitPos(earliestHitPos) {}
+                            _totalEnergyDeposited(totalEnergyDeposited), _earliestHitTime(earliestHitTime), _earliestHitPos(earliestHitPos),
+                            _avgHitTime(avgHitTime), _avgHitPos(avgHitPos) {}
 
     bool                                HasMCInfo() const                {return _hasMCInfo;}
     const std::vector<PulseInfo>       &GetPulses() const                {return _pulses;}
@@ -41,6 +43,8 @@ namespace mu2e
     double                              GetTotalEnergyDeposited() const  {return _totalEnergyDeposited;}
     double                              GetEarliestHitTime() const       {return _earliestHitTime;}
     const CLHEP::Hep3Vector            &GetEarliestHitPos() const        {return _earliestHitPos;}
+    double                              GetAvgHitTime() const            {return _avgHitTime;}
+    const CLHEP::Hep3Vector            &GetAvgHitPos() const             {return _avgHitPos;}
 
     private:
 
@@ -50,6 +54,8 @@ namespace mu2e
     double                 _totalEnergyDeposited;
     double                 _earliestHitTime;
     CLHEP::Hep3Vector      _earliestHitPos;
+    double                 _avgHitTime;
+    CLHEP::Hep3Vector      _avgHitPos;
   };
   typedef std::vector<mu2e::CrvCoincidenceClusterMC> CrvCoincidenceClusterMCCollection;
 }

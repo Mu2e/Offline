@@ -1,5 +1,5 @@
-#ifndef __TrkPatRec_KalFinalFit_types_hh__
-#define __TrkPatRec_KalFinalFit_types_hh__
+#ifndef TrkPatRec_KalFinalFit_types_hh
+#define TrkPatRec_KalFinalFit_types_hh
 
 #include "TObject.h"
 #include "TH1.h"

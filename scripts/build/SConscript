@@ -30,7 +30,6 @@ for dd in inclist:
 if 'G4INCLUDE' in os.environ:
     incpath = incpath + " -I" + os.environ['G4INCLUDE']
     incpath = incpath + " -I" + os.environ['G4INCLUDE'] + "/Geant4"
-    incpath = incpath + " -I" + os.environ['CRYPTOPP_INC']
 if 'CRYHOME' in os.environ:
     incpath = incpath + " -I" + os.environ['CRYHOME'] + '/src'
 
