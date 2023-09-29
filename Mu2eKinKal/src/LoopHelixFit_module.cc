@@ -16,46 +16,26 @@ namespace mu2e {
       explicit LoopHelixFit(const Parameters& settings) :
         HelixFit(settings,TrkFitFlag::KKLoopHelix) {}
       // parameter-specific functions
-      KTRAJ makeSeedTraj(HelixSeed const& hseed) const override;
+      KTRAJ makeSeedTraj(HelixSeed const& hseed,TimeRange const& trange,VEC3 const& bnom, int charge) const override;
       bool goodFit(KKTRK const& ktrk) const override;
       virtual ~LoopHelixFit() {}
   };
 
-  KTRAJ LoopHelixFit::makeSeedTraj(HelixSeed const& hseed) const {
-    // compute the magnetic field at the helix center.  We only want the z compontent, as the helix fit assumes B points along Z
-    auto const& shelix = hseed.helix();
-    double zmin = std::numeric_limits<float>::max();
-    double zmax = std::numeric_limits<float>::min();
-    double tmin = std::numeric_limits<float>::max();
-    double tmax = std::numeric_limits<float>::min();
-    auto const& hits = hseed.hits();
-    for( auto const& hit : hits) {
-      double zpos = hit.pos().z();
-      zmin = std::min(zmin,zpos);
-      zmax = std::max(zmax,zpos);
-      tmin = std::min(tmin,(double)hit.correctedTime());
-      tmax = std::max(tmax,(double)hit.correctedTime());
-    }
-    float zcent = 0.5*(zmin+zmax);
-    VEC3 center(shelix.centerx(), shelix.centery(),zcent);
-    auto bcent = kkbf_->fieldVect(center);
-    VEC3 bnom(0.0,0.0,bcent.Z());
-    // create a KTRAJ from the helix fit result, to seed the KinKal fit.  First, translate the parameters
-    // Note the sign adjustments; RobustHelix is a purely geometric helix, with slightly different conventions
+  KTRAJ LoopHelixFit::makeSeedTraj(HelixSeed const& hseed,TimeRange const& trange,VEC3 const& bnom, int charge) const {
+    auto const& helix = hseed.helix();
     DVEC pars;
-    double psign = copysign(1.0,-charge_*bcent.Z());
-    pars[KTRAJ::rad_] = shelix.radius()*psign;
-    pars[KTRAJ::lam_] = shelix.lambda()*kkfit_.fitDirection().dzdt();
-    pars[KTRAJ::cx_] = shelix.centerx();
-    pars[KTRAJ::cy_] = shelix.centery();
-    pars[KTRAJ::phi0_] = shelix.fz0()+psign*M_PI_2;
+    double psign = copysign(1.0,-charge*bnom.Z());
+    pars[KTRAJ::rad_] = helix.radius()*psign;
+    pars[KTRAJ::lam_] = helix.lambda()*fdir_.dzdt();
+    pars[KTRAJ::cx_] = helix.centerx();
+    pars[KTRAJ::cy_] = helix.centery();
+    pars[KTRAJ::phi0_] = helix.fz0()+psign*M_PI_2;
     pars[KTRAJ::t0_] = hseed.t0().t0();
     // create the initial trajectory
     KinKal::Parameters kkpars(pars,seedcov_);
     //  construct the seed trajectory (infinite initial time range)
-    return KTRAJ(kkpars, mass_, charge_, bnom, TimeRange(tmin,tmax));
+    return KTRAJ(kkpars, mass_, charge, bnom, trange);
   }
-
 
   bool LoopHelixFit::goodFit(KKTRK const& ktrk) const {
     // require physical consistency: fit can succeed but the result can have changed charge or helicity

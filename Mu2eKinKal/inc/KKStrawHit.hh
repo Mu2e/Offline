@@ -17,6 +17,7 @@
 // Mu2e-specific classes
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/TrackerConditions/inc/DriftInfo.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/Mu2eKinKal/inc/CADSHU.hh"
 #include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
@@ -126,12 +127,12 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateReference(KTRAJPTR const& ktrajptr) {
     // if we already computed PCA in the previous iteration, use that to set the hint.  This speeds convergence
     // otherwise use the time at the center of the wire, corrected for drift
-    CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(wire_.range().mid()-chit_.driftTime(),wire_.range().mid());
+    CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(wire_.timeAtMidpoint()-chit_.driftTime(),wire_.timeAtMidpoint());
     ca_ = CA(ktrajptr,wire_,tphint,precision());
     // check that we're on the right branch: we can move off if t0 changes a lot between iterations
     double dz = straw().origin().z() - ca_.particlePoca().Z();
     if((!ca_.usable()) || fabs(dz) >  100) { // need a better absolute scale; should come from KTRAJ FIXME
-      tphint = CAHint(Mu2eKinKal::zTime(*ktrajptr,straw().origin().z(),wire_.range().mid()), wire_.range().mid());
+      tphint = CAHint(Mu2eKinKal::zTime(*ktrajptr,straw().origin().z(),wire_.timeAtMidpoint()), wire_.timeAtMidpoint());
       ca_ = CA(ktrajptr,wire_,tphint,precision());
       dz = straw().origin().z() - ca_.particlePoca().Z();
       if((!ca_.usable()) || fabs(dz) >  100) whstate_.state_ = WireHitState::unusable;// give up on 2nd try
@@ -141,7 +142,7 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
     // search for updaters that work directly on StrawHits (not StrawHitClusters)
     auto cashu = miconfig.findUpdater<CADSHU>();
-    auto annshu = miconfig.findUpdater<DriftANNSHU>();
+    auto driftshu = miconfig.findUpdater<DriftANNSHU>();
     auto bkgshu = miconfig.findUpdater<BkgANNSHU>();
     CA ca = unbiasedClosestApproach();
     if(ca.usable()){
@@ -149,13 +150,14 @@ namespace mu2e {
       // there can be multiple updaters: apply them all
       if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
-      if(annshu)whstate_ = annshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
+      if(driftshu)whstate_ = driftshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(whstate_.driftConstraint()){
-        if(whstate_.constrainDriftDt())
-          dDdT_ = dinfo.driftVelocity_;
-        else
-          dDdT_ = 0.0;
         dVar_ = dinfo.driftHitVar();
+        if(whstate_.constrainDriftDt()){
+          dDdT_ = dinfo.driftVelocity_;
+        } else{
+          dDdT_ = 0.0;
+        }
       } else {
         if(whstate_.nullDriftVar()) {
           dVar_ = dinfo.nullHitVar();
@@ -245,7 +247,7 @@ namespace mu2e {
       ost << std::endl;
     }
     if(detail > 1) {
-      ost << "Propagation speed " << wire_.speed() << " Ref " << ca_.tpData() << std::endl;
+      ost << " Ref " << ca_.tpData() << std::endl;
     }
     if(detail > 0)chit_.print(ost,true);
   }

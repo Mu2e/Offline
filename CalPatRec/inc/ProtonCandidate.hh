@@ -1,5 +1,5 @@
-#ifndef __CalPatRec_ProtonCandidate_hh__
-#define __CalPatRec_ProtonCandidate_hh__
+#ifndef CalPatRec_ProtonCandidate_hh
+#define CalPatRec_ProtonCandidate_hh
 
 #include "Offline/CalPatRec/inc/DeltaFinder_structures.hh"
 #include "Offline/CalPatRec/inc/DeltaSeed.hh"

@@ -6,9 +6,8 @@ using namespace std;
 #include "CLHEP/Vector/Rotation.h"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/ConditionsService/inc/CrvParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "Offline/EventDisplay/src/Cube.h"
 #include "Offline/EventDisplay/src/Cylinder.h"
@@ -1099,9 +1098,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     crvbar->second->getComponentInfo()->getHistVector().clear();
   }
 
-  mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
-  double digitizationPeriod = crvPar->digitizationPeriod;
-
   double TDC0time = contentSelector->getTDC0time();
   const std::vector<art::Handle<mu2e::CrvDigiCollection> > &crvDigisVector = contentSelector->getSelectedCrvDigiCollection();
   for(size_t i=0; i<crvDigisVector.size(); i++)
@@ -1138,7 +1134,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         graph->SetMarkerSize(2);
         for(size_t k=0; k<mu2e::CrvDigi::NSamples; k++)
         {
-          graph->SetPoint(k,TDC0time+(digi.GetStartTDC()+k)*digitizationPeriod,digi.GetADCs()[k]);
+          graph->SetPoint(k,TDC0time+(digi.GetStartTDC()+k)*mu2e::CRVDigitizationPeriod,digi.GetADCs()[k]);
         }
         boost::dynamic_pointer_cast<TMultiGraph>(v[multigraphIndex])->Add(graph,"p");
       }

@@ -77,27 +77,32 @@ namespace mu2e {
   template <class KTRAJ> void KKCaloHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
     // check that TPCA position is consistent with the physical sensor. This can be off if the CA algorithm finds the wrong helix branch
     // early in the fit when t0 has very large errors.
-    // If it is unphysical try to adjust it back using a better hint.
+    // If it is inconsistent with the crystal position try to adjust it back using a better hint.
     auto ppos = tpca_.particlePoca().Vect();
     auto sstart = saxis_.startPosition();
     auto send = saxis_.endPosition();
-    double slen = (send-sstart).R();
-    // tolerance should come from the miconfig.  Should also test relative to the error. FIXME
-    double tol = slen*1.0;
-    if( (ppos-sstart).Dot(saxis_.direction()) < -tol ||
-        (ppos-send).Dot(saxis_.direction()) > tol) {
-      // adjust hint to the middle and try agian
+    // tolerance should come from the miconfig.  Should also test relative to the error. TODO
+    double tol = 1.0*saxis_.length();
+    double sdist = (ppos-sstart).Dot(saxis_.direction());
+    double edist = (ppos-send).Dot(saxis_.direction());
+    if( sdist < -tol || edist > tol) {
+      // adjust hint to the middle of the crystal and try again
       double sspeed = tpca_.particleTraj().velocity(tpca_.particleToca()).Dot(saxis_.direction());
-      double sdist = (ppos - saxis_.position3(saxis_.range().mid())).Dot(saxis_.direction());
       auto tphint = tpca_.hint();
-      tphint.particleToca_ -= sdist/sspeed;
+      tphint.particleToca_ -= 0.5*(sdist+edist)/sspeed;
+      tphint.sensorToca_ = saxis_.timeAtMidpoint();
       tpca_ = CA(tpca_.particleTrajPtr(),saxis_,tphint,precision());
     }
     if(tpca_.usable()){
       // residual is just delta-T at CA.
-      // the variance includes the measurement variance and the tranvserse size (which couples to the relative direction)
-      double dd2 = std::max(0.0001,tpca_.dirDot()*tpca_.dirDot());
-      double totvar = tvar_ + wvar_/(saxis_.speed()*saxis_.speed()*(1.0-dd2));
+      // the variance includes the intrinsic measurement variance and the tranvserse position resolution (which couples to the relative direction)
+      double speed = saxis_.speed(tpca_.sensorToca());
+      double s2 = speed*speed;
+      double cost = tpca_.dirDot();  // cosine of angle between track and crystal axis
+      double sint2 = std::max(1e-3,1.0-cost*cost);// protect against track co-linear with crystal
+      double ldt = saxis_.length()/speed; // time to go the full length of the crystal
+      double twvar = std::min(wvar_/(s2*sint2),ldt*ldt/12.0); // maximimum time uncertainty due to crystal size
+      double totvar = tvar_ + twvar;
       rresid_ = Residual(tpca_.deltaT(),totvar,0.0,true,tpca_.dTdP());
     } else {
       rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,false,rresid_.dRdP());

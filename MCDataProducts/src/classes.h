@@ -18,7 +18,6 @@
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/GenSimParticleLink.hh"
 #include "Offline/MCDataProducts/inc/GenEventCount.hh"
-#include "Offline/MCDataProducts/inc/FixedTimeMap.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 
 // simulation
@@ -27,7 +26,6 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
 #include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
@@ -72,6 +70,7 @@
 #include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
 #include "Offline/MCDataProducts/inc/CrvCoincidenceClusterMC.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/MCDataProducts/inc/CrvCoincidenceClusterMCAssns.hh"
 
 // ExtMon
 #include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"

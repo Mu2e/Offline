@@ -796,7 +796,7 @@ namespace mu2e {
         ntp.gtime = gtime_parent+sim.startProperTime(); // start time
         if( sim_child ) {
           CLHEP::Hep3Vector const & pos_start = sim_child->startPosition();
-          CLHEP::Hep3Vector const & mom_start = sim_child->startMomentum();
+          CLHEP::Hep3Vector const mom_start = sim_child->startMomentum();
           ntp.x = pos_start.x();
           ntp.y = pos_start.y();
           ntp.z = pos_start.z();
@@ -833,7 +833,7 @@ namespace mu2e {
           ntp.ystop = pos_end.y();
           ntp.zstop = pos_end.z();
           ntp.codestop = sim.stoppingCode();
-          CLHEP::Hep3Vector const & mom_end = sim.endMomentum();
+          CLHEP::Hep3Vector const mom_end = sim.endMomentum();
           ntp.pxstop = mom_end.x();
           ntp.pystop = mom_end.y();
           ntp.pzstop = mom_end.z();
@@ -869,7 +869,7 @@ namespace mu2e {
           ntp.parent_id = sim_parent->id().asInt();
           ntp.parent_pdg = sim_parent->pdgId();
           CLHEP::Hep3Vector const & pos_parent = sim_parent->startPosition();
-          CLHEP::Hep3Vector const & mom_parent = sim_parent->startMomentum();
+          CLHEP::Hep3Vector const mom_parent = sim_parent->startMomentum();
           ntp.parent_x = pos_parent.x();
           ntp.parent_y = pos_parent.y();
           ntp.parent_z = pos_parent.z();
@@ -877,7 +877,7 @@ namespace mu2e {
           ntp.parent_py = mom_parent.y();
           ntp.parent_pz = mom_parent.z();
           ntp.parent_p = mom_parent.mag();
-          CLHEP::Hep3Vector const & endmom_parent = sim_parent->endMomentum();
+          CLHEP::Hep3Vector const endmom_parent = sim_parent->endMomentum();
           ntp.parent_pxstop = endmom_parent.x();
           ntp.parent_pystop = endmom_parent.y();
           ntp.parent_pzstop = endmom_parent.z();

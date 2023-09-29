@@ -28,8 +28,6 @@ physics :
     @table::TrkAnaReco.producers
     @table::CosmicTracking.producers
     KKLine : @local::Reconstruction.producers.KKLine
-    BestCrvLine : @local::BestCrvLine
-    @table::MakeCrvCoincidenceClusterMCAssnsProducers
     @table::CosmicTracking.producers
   }
   filters : {
@@ -41,8 +39,7 @@ physics :
    }
   }
   RecoPath : [
-    @sequence::Reconstruction.LineRecoMCPath,
-    BestCrvLine, MakeCrvCoincidenceClusterMCAssns  ]
+    @sequence::Reconstruction.LineRecoMCPath ]
   analyzers : {
     TAKK : {
       @table::TrkAnaTreeMaker
@@ -56,17 +53,11 @@ physics :
           fillTrkQual : false
           fillTrkPID : false
           genealogyDepth : 5
-          fillBestCrv : true
-          bestCrvModules : [ "BestCrv" ]
-          bestCrvInstances : [ "first" ]
-          bestCrvBranches : [ "bestcrv" ]
         }
-        segmentSuffixes : [ "ent", "mid", "xit", "out", "in" ]
-        segmentVIDs : [ [ "TT_FrontHollow", "TT_FrontPA"], [ "TT_Mid", "TT_MidInner"], ["TT_Back"], ["TT_OutSurf"], ["TT_InSurf"] ]
       }
       diagLevel : 2
       FillMCInfo : true
-      FillCRV : true
+      FillCRVHits : true
 
       FillTrkQualInfo : false
       FillTrkPIDInfo : false
@@ -77,7 +68,7 @@ physics :
     }
 
     evtprint : {
-      module_type : RunEventSubRun
+      module_type : RunSubrunEvent
       printSam    : false
       printRun    : false
       printSubrun : false
@@ -89,6 +80,9 @@ physics :
 
 #include "Production/JobConfig/reco/epilog.fcl"
 #include "Offline/CRVResponse/fcl/epilog_extracted.fcl"
+
+# no need for Lorentz effects
+services.ProditionsService.strawResponse.driftIgnorePhi: true
 
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
 services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"

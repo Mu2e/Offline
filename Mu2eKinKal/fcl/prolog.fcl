@@ -32,9 +32,10 @@ Mu2eKinKal : {
     AddHitReject : ["Dead"]
     MaxStrawHitDOCA : 10.0 # mm
     MaxStrawHitDt : 50.0 # ns
-    StrawBuffer : 2 #
+    MaxDStraw : 2 # integer (straw)
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
+    SampleTimeBuffer : 10.0 # time buffer on trajectory ends for finding intersections with sample surfaces
   }
 
   SEEDFIT: {
@@ -191,15 +192,12 @@ Mu2eKinKal : {
 
   KKPrecursors : {
     ComboHitCollection : "makeSH"
-    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
     CaloClusterCollection : "CaloClusterMaker"
   }
 
   LOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
-    HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
-    SaveFullFit : true
-    ZSavePositions : [-1635.1,-1522.0,0.0,1522.0,1635.1,1671,2371] # VDs, tracker front, mid, and end, and calo disks
+    SeedFlags : [ "HelixOK" ]
   }
 
   KINEMATICLINE : {
@@ -209,10 +207,7 @@ Mu2eKinKal : {
     CosmicTrackSeedCollections : ["LineFinder"]
     ComboHitCollection : "makeSH"
     CaloClusterCollection : "CaloClusterMaker"
-    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-    LineFlags : [ "HelixOK" ]
-    SaveFullFit : true
-    #    ZSavePositions : [-1522.0,0.0,1522.0]
+    SeedFlags : [ "HelixOK" ]
   }
 }
 
@@ -222,19 +217,29 @@ Mu2eKinKal : {
   KKSeedFit : {
     module_type : LoopHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
-    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SampleSurfaces : ["TT_Front","TT_Mid","TT_Back"]
+      ExtendSurfaces : ["TT_Front","TT_Back"]
+    }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
     ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
+    UsePDGCharge: true
   }
 
   KK : {
     module_type : LoopHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
-    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SampleSurfaces : ["TT_Front","TT_Mid","TT_Back"]
+      ExtendSurfaces : ["TT_Front","TT_Back"]
+    }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
     ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
+    UsePDGCharge: true
   }
 
   KKLineSeedFit : {
@@ -249,7 +254,12 @@ Mu2eKinKal : {
   KKLine : {
     module_type : KinematicLineFit
     MaterialSettings : @local::Mu2eKinKal.MAT
-    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
+      ExtendSurfaces : ["TT_Front","TT_Back","TT_Outer"]
+      SampleTimeBuffer : 100
+    }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : {
       @table::Mu2eKinKal.DRIFTEXT
@@ -293,31 +303,29 @@ Mu2eKinKal : {
 }
 
 Mu2eKinKal.producers.KKLineSeedFit.ExtensionSettings.BFieldCorrection : false
-Mu2eKinKal.producers.KKLineSeedFit.KKFitSettings.FitParticle : 13
-Mu2eKinKal.producers.KKLineSeedFit.KKFitSettings.FitDirection : 1
-Mu2eKinKal.producers.KKLine.KKFitSettings.FitParticle : 13
-Mu2eKinKal.producers.KKLine.KKFitSettings.FitDirection : 1
+Mu2eKinKal.producers.KKLineSeedFit.ModuleSettings.FitParticle : 13
+Mu2eKinKal.producers.KKLine.ModuleSettings.FitParticle : 13
 
-Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitParticle : 11
-Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitParticle : -11
-Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDeMSeedFit.ModuleSettings.FitParticle : 11
+Mu2eKinKal.producers.KKDeMSeedFit.FitDirection : 0
+Mu2eKinKal.producers.KKDePSeedFit.ModuleSettings.FitParticle : -11
+Mu2eKinKal.producers.KKDePSeedFit.FitDirection : 0
 
-Mu2eKinKal.producers.KKDeM.KKFitSettings.FitParticle : 11
-Mu2eKinKal.producers.KKDeM.KKFitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKDeP.KKFitSettings.FitParticle : -11
-Mu2eKinKal.producers.KKDeP.KKFitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKUeM.KKFitSettings.FitParticle : 11
-Mu2eKinKal.producers.KKUeM.KKFitSettings.FitDirection : 1
-Mu2eKinKal.producers.KKUeP.KKFitSettings.FitParticle : -11
-Mu2eKinKal.producers.KKUeP.KKFitSettings.FitDirection : 1
-Mu2eKinKal.producers.KKDmuM.KKFitSettings.FitParticle : 13
-Mu2eKinKal.producers.KKDmuM.KKFitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKDmuP.KKFitSettings.FitParticle : -13
-Mu2eKinKal.producers.KKDmuP.KKFitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKUmuM.KKFitSettings.FitParticle : 13
-Mu2eKinKal.producers.KKUmuM.KKFitSettings.FitDirection : 1
-Mu2eKinKal.producers.KKUmuP.KKFitSettings.FitParticle : -13
-Mu2eKinKal.producers.KKUmuP.KKFitSettings.FitDirection : 1
+Mu2eKinKal.producers.KKDeM.ModuleSettings.FitParticle : 11
+Mu2eKinKal.producers.KKDeM.FitDirection : 0
+Mu2eKinKal.producers.KKDeP.ModuleSettings.FitParticle : -11
+Mu2eKinKal.producers.KKDeP.FitDirection : 0
+Mu2eKinKal.producers.KKUeM.ModuleSettings.FitParticle : 11
+Mu2eKinKal.producers.KKUeM.FitDirection : 1
+Mu2eKinKal.producers.KKUeP.ModuleSettings.FitParticle : -11
+Mu2eKinKal.producers.KKUeP.FitDirection : 1
+Mu2eKinKal.producers.KKDmuM.ModuleSettings.FitParticle : 13
+Mu2eKinKal.producers.KKDmuM.FitDirection : 0
+Mu2eKinKal.producers.KKDmuP.ModuleSettings.FitParticle : -13
+Mu2eKinKal.producers.KKDmuP.FitDirection : 0
+Mu2eKinKal.producers.KKUmuM.ModuleSettings.FitParticle : 13
+Mu2eKinKal.producers.KKUmuM.FitDirection : 1
+Mu2eKinKal.producers.KKUmuP.ModuleSettings.FitParticle : -13
+Mu2eKinKal.producers.KKUmuP.FitDirection : 1
 
 END_PROLOG
