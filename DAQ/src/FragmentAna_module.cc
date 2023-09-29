@@ -14,9 +14,9 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileDirectory.h"
 #include "art_root_io/TFileService.h"
-#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
-#include "artdaq-core-mu2e/Data/TrackerFragment.hh"
+#include "artdaq-core-mu2e/Data/TrackerDataDecoder.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 #include <artdaq-core/Data/Fragment.hh>
@@ -52,8 +52,8 @@ public:
   virtual void analyze(const art::Event& e) override;
 
 private:
-  void analyze_tracker_(const mu2e::TrackerFragment& cc);
-  void analyze_calorimeter_(const mu2e::CalorimeterFragment& cc);
+  void analyze_tracker_(const mu2e::TrackerDataDecoder& cc);
+  void analyze_calorimeter_(const mu2e::CalorimeterDataDecoder& cc);
 
   int diagLevel_;
 
@@ -134,8 +134,8 @@ void FragmentAna::analyze(const art::Event& event) {
   size_t numTrkFrags = 0;
   size_t numCalFrags = 0;
 
-  auto caloFragmentsH = event.getValidHandle<std::vector<mu2e::CalorimeterFragment>>(caloFragmentsTag_);
-  auto trkFragmentsH  = event.getValidHandle<std::vector<mu2e::TrackerFragment>>    (trkFragmentsTag_);
+  auto caloFragmentsH = event.getValidHandle<std::vector<mu2e::CalorimeterDataDecoder>>(caloFragmentsTag_);
+  auto trkFragmentsH  = event.getValidHandle<std::vector<mu2e::TrackerDataDecoder>>    (trkFragmentsTag_);
 
   for (auto frag : *trkFragmentsH) {
     analyze_tracker_(frag);
@@ -175,7 +175,7 @@ void FragmentAna::analyze(const art::Event& event) {
   }
 }
 
-void FragmentAna::analyze_tracker_(const mu2e::TrackerFragment& cc) {
+void FragmentAna::analyze_tracker_(const mu2e::TrackerDataDecoder& cc) {
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
@@ -244,7 +244,7 @@ void FragmentAna::analyze_tracker_(const mu2e::TrackerFragment& cc) {
   // cc.ClearUpgradedPackets();
 }
 
-void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterFragment& cc) {
+void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterDataDecoder& cc) {
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
