@@ -12,6 +12,7 @@
 #include "Offline/CRVConditions/inc/CRVOrdinal.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/DataProducts/inc/CrvStatus.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Data/CRVFragment.hh"
 #include <artdaq-core/Data/Fragment.hh>
@@ -62,6 +63,7 @@ CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config
     art::EDProducer{config}, _diagLevel(config().diagLevel()), _crvFragmentsTag(config().crvFragmentsTag())
 {
   produces<mu2e::CrvDigiCollection>();
+  produces<mu2e::CrvStatusCollection>();
 }
 
 // ----------------------------------------------------------------------
@@ -100,6 +102,7 @@ void CrvDigisFromFragments::produce(Event& event)
 
   // Collection of CaloDigis for the event
   std::unique_ptr<mu2e::CrvDigiCollection> crv_digis(new mu2e::CrvDigiCollection);
+  std::unique_ptr<mu2e::CrvStatusCollection> crv_status(new mu2e::CrvStatusCollection);
   auto const& channelMap = _channelMap_h.get(event.id());
 
   // Loop over the CRV fragments
@@ -130,6 +133,29 @@ void CrvDigisFromFragments::produce(Event& event)
           std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock " << iDataBlock << std::endl;
           continue;
         }
+
+        if (_diagLevel > 1) {
+          std::cout << std::hex << std::setfill('0') << std::setw(2);
+          std::cout << "CRV ROC Status" << std::endl;
+          std::cout << "unused          0x" << +crvRocHeader->unused1 << std::endl;
+          std::cout << "PacketType      0x" << +crvRocHeader->PacketType << std::endl;
+          std::cout << "ControllerID    0x" << +crvRocHeader->ControllerID << std::endl;
+          std::cout << "ControllerEvCnt 0x" << crvRocHeader->ControllerEventWordCount << std::endl;
+          std::cout << "unused          0x" << +crvRocHeader->unused2 << std::endl;
+          std::cout << "Active FEBs     0x" << +crvRocHeader->ActiveFEBFlags2 << " " << +crvRocHeader->ActiveFEBFlags1 << " " << +crvRocHeader->ActiveFEBFlags0 << std::endl;
+          std::cout << "TriggerCount    0x" << crvRocHeader->TriggerCount << std::endl;
+          std::cout << "Status          0x" << crvRocHeader->MicroBunchStatus << std::endl;//+crvRocHeader->Status << +crvRocHeader->Status2 << std::endl;
+          std::cout << "EvWindowTag     0x" << crvRocHeader->EventWindowTag1 << " " << crvRocHeader->EventWindowTag0 << std::endl;
+          std::cout << std::dec;
+        }
+
+        crv_status->emplace_back(+crvRocHeader->ControllerID,
+                                  crvRocHeader->ControllerEventWordCount,
+                                  ((uint32_t)crvRocHeader->ActiveFEBFlags2 << 16) + ((uint32_t)crvRocHeader->ActiveFEBFlags1 << 8) + crvRocHeader->ActiveFEBFlags0,
+                                  crvRocHeader->TriggerCount,
+                                  crvRocHeader->MicroBunchStatus, //((uint16_t)crvRocHeader->Status2 << 8) + crvRocHeader->Status,
+                                  ((uint32_t)crvRocHeader->EventWindowTag1 << 16) + crvRocHeader->EventWindowTag0);
+
 
         auto crvHits = crvFragment.GetCRVHits(iDataBlock);
         for(auto const& crvHit : crvHits)
@@ -212,8 +238,11 @@ void CrvDigisFromFragments::produce(Event& event)
     }       // loop over DataBlocks within CRVFragments
   }         // Close loop over fragments
 
-  // Store the straw digis and calo digis in the event
+  // Store the crv digis in the event
   event.put(std::move(crv_digis));
+
+  // Store the crv status in the event
+  event.put(std::move(crv_status));
 
 } // produce()
 
