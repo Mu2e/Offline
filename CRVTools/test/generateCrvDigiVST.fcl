@@ -1,0 +1,108 @@
+# Run CrvDigisFromFragments module to convert artdaq::Fragment collections
+# into CRV collections.
+# Usage: mu2e -c DAQ/test/CrvDigisFromFragmentsTest.fcl -s <input root files> -n '-1'
+#
+#
+# Contact person G. Pezzullo, R. Ehrlich, Simon Corrodi
+
+#include "Offline/DAQ/fcl/prolog_trigger.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/DbService/fcl/prolog.fcl"
+#include "Offline/ProditionsService/fcl/prolog.fcl"
+
+process_name : FragmentToDigiVST
+
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+
+  # firstEvent  : 500
+  maxEvents   : -1
+#  inputCommands: ["keep *",
+#                  "drop *Mu2eEventHeader*_*_*_*"]
+
+}
+
+services : {
+    message                    : @local::default_message
+    GeometryService            : {
+        inputFile           : "Offline/Mu2eG4/geom/geom_common.txt"
+        bFieldFile          : "Offline/Mu2eG4/geom/bfgeom_v01.txt"
+        simulatedDetector   : { tool_type: "Mu2e" }
+    }
+    ConditionsService            : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"      }
+    GlobalConstantsService  : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
+    DbService : @local::DbEmpty
+    ProditionsService: @local::Proditions
+
+  TFileService : {fileName : "CRVDigiDump_000.root"}
+}
+
+physics : {
+
+  producers : {
+    genFrags :
+    {
+       module_type  : ArtFragmentsFromDTCEvents
+       diagLevel    : 10
+       makeCaloFrag : 0
+       makeTrkFrag  : 0
+       makeCRVFrag  : 1
+       makeSTMFrag  : 0
+    }
+
+
+    CrvDigi:
+      {
+         @table::DAQ.producers.CrvDigi
+         diagLevel: 10
+         crvTag: "genFrags"
+      }
+
+    EventHeader:
+      {
+         module_type : EventHeaderFromDTCEvents
+         diagLevel   : 0
+      }
+
+   }
+   analyzers : {
+      CRVDumper :
+      {
+          module_type : CRVDigiDumper
+          eventHeaderModuleLabel : "EventHeader"
+          crvDigiModuleLabel     : "CrvDigi"
+          crvStatusModuleLabel   : "CrvDigi"
+          diagLevel : 10
+      }
+
+      eventdisplay: {
+        module_type               : EventDisplay
+        #g4ModuleLabel             : "g4run"
+        timeOffsets               : { inputs : [ ] }  #if the art file has no time maps
+      }
+  }
+
+  t1 : [ genFrags, CrvDigi ]
+  #t2 : [ EventHeader ]
+  e1 : [ CRVDumper, outfile ]
+
+  trigger_paths  : [t1] # t2]
+  end_paths      : [e1]
+
+}
+
+outputs:  {
+  outfile :  {
+    module_type   :   RootOutput
+    fileName      :   "digis_from_frags_crv.art"
+
+#    outputCommands: [ "drop *",
+#                       "keep mu2e::StrawDigis_makeSD_*_*",
+#                       "keep mu2e::CaloDigis_CaloDigiMaker_*_*",
+#                      "keep mu2e::DataBlocks_TrackerPacketProducer_*_*",
+#                      "keep mu2e::DataBlocks_CalorimeterPacketProducer_*_*",
+#                      "keep mu2e::DataBlocks_CosmicRayVetoPacketProducer_*_*"
+#                     ]
+  }
+}
