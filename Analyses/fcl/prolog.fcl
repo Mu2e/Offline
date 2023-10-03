@@ -17,11 +17,6 @@ PrintStrawHits : {
     makeSHinstance    : "CosmicFilter"
 }
 
-KalSeedCount : {
-  module_type : ExampleFilter
-  debugLevel : 0
-}
-
 TrackSummaryMaker: {
     module_type: TrackSummaryMaker
     trackInput : "TrkPatRec:DeM"
@@ -34,7 +29,10 @@ CaloClusterCompareNew : {
 
 PhotonAna : {
         module_type : PhotonAna
-        MCTrajectoryCollection : compressDigiMCs
+        diag : 1
+        StrawGasStepCollection : compressDigiMCs
+MCTrajectoryCollection : compressDigiMCs
+SimParticleCollection : compressDetStepMCs#compressDigiMCs
 }
 
 CaloClusterCompareOld : {
@@ -97,11 +95,7 @@ PhotonAnalysis :
    analyzers : {
         PhotonAna : @local::PhotonAna
    }
-   filters : {
-        KalSeedCount : @local::KalSeedCount
-   }
    Analysis : [PhotonAna]
-   Filter : [KalSeedCount]
 }
 
 ClusterCompareOld :
