@@ -58,11 +58,9 @@ using DataBlockHeader = DataHeaderPacket;
 using TrackerDataPacket = mu2e::TrackerFragment::TrackerDataPacket;
 using TrackerADCPacket = mu2e::TrackerFragment::TrackerADCPacket;
 using adc_t = uint16_t;
-
 using CalorimeterDataPacket = mu2e::CalorimeterFragment::CalorimeterDataPacket;
 using CalorimeterBoardID = mu2e::CalorimeterFragment::CalorimeterBoardID;
 using CalorimeterHitReadoutPacket = mu2e::CalorimeterFragment::CalorimeterHitReadoutPacket;
-
 using CRVROCStatusPacket = mu2e::CRVFragment::CRVROCStatusPacket;
 using CRVHitWaveformSample = mu2e::CRVFragment::CRVHitWaveformSample;
 using CRVHitInfo = mu2e::CRVFragment::CRVHitInfo;
@@ -71,7 +69,7 @@ using CRVHit = mu2e::CRVFragment::CRVHit;
 // data struct for the calorimeter
 struct CaloDataPacket {
   CalorimeterDataPacket dataPacket;
-  CalorimeterBoardID boardID; //TODO - remove
+  CalorimeterBoardID boardID;
   std::vector<CalorimeterHitReadoutPacket> hitPacketVec;
   std::vector<std::vector<adc_t>> waveformVec;
   std::vector<uint16_t> hitIndex;
@@ -366,7 +364,7 @@ void ArtBinaryPacketsFromDigis::printTrackerData(std::vector<TrackerFullHitForma
 
 void ArtBinaryPacketsFromDigis::printCalorimeterData(CaloDataPacket const& caloData) {
   CalorimeterDataPacket packet = caloData.dataPacket;
-  CalorimeterBoardID boardId = caloData.boardID; //TODO - replace with Hit?
+  CalorimeterBoardID boardId = caloData.boardID;
   size_t nHits = caloData.hitPacketVec.size();
   printf("[ArtBinaryPacketsFromDigis::printCaloData] START calorimeter-data print \n");
   printf("[ArtBinaryPacketsFromDigis::printCaloData] NumberofHits        : %i \n",
@@ -700,16 +698,13 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
   for (size_t i = 0; i < hits_CD.size(); ++i) {
     CaloDigi   const& CD = hits_CD.at(i);
     // Fill struct with info for current hit
-    // fill data header
     DataBlockHeader headerData;
     fillCalorimeterHeaderDataPacket(calodaqconds, CD, headerData, eventNum);
-    //fill calo packer
     CaloDataPacket caloData;
     fillCalorimeterDataPacket(calodaqconds, CD, caloData);
     if (_diagLevel > 1) {
       printCalorimeterData(caloData);
     }
-    //add to data block list
     tmpCaloDataBlockList.push_back(
         std::pair<DataBlockHeader, CaloDataPacket>(headerData, caloData));
   }
@@ -748,7 +743,7 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
           }
         }
       }
-      // fill header
+
       if (is_first) {
         // No hits, so just fill a header packet and no data packets
         DataBlockHeader headerData;
@@ -771,7 +766,7 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
 //--------------------------------------------------------------------------------
 void ArtBinaryPacketsFromDigis::fillHeaderByteAndPacketCounts(calo_data_block_t& caloData) {
   caloData.first.s.TransferByteCount = 16 /*header packet*/ + sizeof(uint16_t) /* num hits */ +
-                                       sizeof(CalorimeterBoardID) + //TODO - is it needed?
+                                       sizeof(CalorimeterBoardID) +
                                        (sizeof(uint16_t) + sizeof(CalorimeterHitReadoutPacket)) *
                                            caloData.second.hitPacketVec.size();
 
@@ -791,23 +786,20 @@ void ArtBinaryPacketsFromDigis::fillHeaderByteAndPacketCounts(calo_data_block_t&
 }
 
 //--------------------------------------------------------------------------------
-// crate a caloPacket from the digi TODO
+// crate a caloPacket from the digi
 //--------------------------------------------------------------------------------
-// here is where we fill the fagrment information
 void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(CaloDAQMap const& calodaqconds,
                                                           const CaloDigi& CD,
                                                           CaloDataPacket& CaloData) {
   CaloData.dataPacket.NumberOfHits = 1;
 
-  CalorimeterBoardID ccBoardID; //TODO - replace with Hit?
-  
-  // Offline ID:
+  CalorimeterBoardID ccBoardID;
+
   CaloSiPMId offId(CD.SiPMID());
   //  uint16_t roId      = CD.SiPMID();
   uint16_t crystalId = offId.crystal().id();
   if( _diagLevel==1) printf( "...FromDigis: cryId %d roId %d \n",crystalId,offId.id());
 
-  // Online ID:
   CaloRawSiPMId rawId   = calodaqconds.rawId(offId);
   uint16_t globalROCID  = rawId.dirac();
   uint16_t DiracChannel = rawId.ROCchannel();
@@ -905,7 +897,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(DTCLib::DTC_Event& cur
   // check that the trkDataBlock is not empty
   if (caloData.second.hitPacketVec.size() != 0) {
     sz += sizeof(CalorimeterDataPacket) + caloData.second.hitPacketVec.size() * sizeof(uint16_t) +
-          sizeof(CalorimeterBoardID); //TODO - is it needed?
+          sizeof(CalorimeterBoardID);
     for (size_t i = 0; i < caloData.second.hitPacketVec.size(); ++i) {
       auto nSamples = caloData.second.hitPacketVec[i].NumberOfSamples;
       sz += sizeof(uint16_t) * nSamples + sizeof(CalorimeterHitReadoutPacket);
@@ -948,8 +940,8 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(DTCLib::DTC_Event& cur
     pos += sizeof(uint16_t) * caloData.second.hitIndex.size();
 
     memcpy(thisBlock.allocBytes->data() + pos, &(caloData.second.boardID),
-           sizeof(CalorimeterBoardID)); //TODO - is it needed?
-    pos += sizeof(CalorimeterBoardID); //TODO - is it needed?
+           sizeof(CalorimeterBoardID));
+    pos += sizeof(CalorimeterBoardID);
 
     for (size_t i = 0; i < caloData.second.hitPacketVec.size(); ++i) {
 
@@ -977,7 +969,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(CaloDAQMap const
   // Word 0
   adc_t nBytes =
       sizeof(DataBlockHeader) + sizeof(CalorimeterDataPacket) +
-      sizeof(CalorimeterBoardID); // this needs to be increased every time a new hit is addeded! //TODO - is it needed?
+      sizeof(CalorimeterBoardID); // this needs to be increased every time a new hit is addeded!
   HeaderData.s.TransferByteCount = nBytes;
   // Word 1
   HeaderData.s.PacketType = 5; // PacketType::Dataheader;

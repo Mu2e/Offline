@@ -1,4 +1,4 @@
-# -*- mode: tcl -*-
+## -*- mode: tcl -*-
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
@@ -20,7 +20,6 @@ FilterStepPointMomentum : {
     inputs         : [ "g4run:tracker", "g4run:calorimeter"]
     cutMomentumMin : 10. # MeV/c
 }
-
 
 # throw when hits are outside their sensitive volumes
 VetoIncorrectHits: {
