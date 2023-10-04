@@ -2042,7 +2042,6 @@ namespace mu2e {
     }
 
 
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //   HPGe Detector
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2056,7 +2055,7 @@ namespace mu2e {
      const double AirD_HPGe     = pHPGeDetectorParams.AirD();
 
      const double Z_HPGe       =  pHPGeDetectorParams.Z_HPGe();
-     const double offset_HPGe  = pHPGeDetectorParams.offset_HPGe();
+     const double offset_HPGe  =  pHPGeDetectorParams.offset_HPGe();
 
      const double HoleR_HPGe   =  pHPGeDetectorParams.HoleR();
      const double HoleL_HPGe   =  pHPGeDetectorParams.HoleL();
@@ -2067,8 +2066,11 @@ namespace mu2e {
      const double Capsule_Walllength  = pHPGeDetectorParams.Capsule_Walllength();
 
      const G4RotationMatrix* rotHPGe = &pHPGeDetectorParams.rotation();
-     G4RotationMatrix* rotBox = new G4RotationMatrix();
 
+     //G4RotationMatrix* rotHPGe =  new G4RotationMatrix();
+     //rotHPGe->rotateY(45*CLHEP::deg);
+
+     G4RotationMatrix* rotBox = new G4RotationMatrix();
      rotBox->rotateX(90*CLHEP::degree);
 
      G4Tubs* HPGe_Hole1 = new G4Tubs  ("HPGe_Hole1", 0, HoleR_HPGe, HoleL_HPGe/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
@@ -2084,6 +2086,7 @@ namespace mu2e {
      fHPGePV.solid = HPGe_Detector;
      G4ThreeVector stmHPGeCrystalInParent = STMShieldingRef + G4ThreeVector(-offset_Spot + offset_HPGe - (WindowD_HPGe + AirD_HPGe + Capsule_Windowthick + CrystalL_HPGe/2)*sqrt(2)/2, 0., Front_T +  Z_HPGe + (WindowD_HPGe + AirD_HPGe + Capsule_Windowthick + CrystalL_HPGe/2)*sqrt(2)/2);
 
+
      if(pHPGeDetectorParams.build()){
                       finishNesting(fHPGePV,
                       findMaterialOrThrow(pHPGeDetectorParams.crystalMaterial()),
@@ -2098,7 +2101,6 @@ namespace mu2e {
                       placePV,
                       doSurfaceCheck);
     }
-
 
      VolumeInfo HolePV;
      HolePV.name = "HolePV";

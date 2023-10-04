@@ -113,8 +113,8 @@ double stm.RightShielding.copperdepth    = 12.7;
 double stm.RightShielding.BPdepth        = 12.7;
 double stm.RightShielding.Right_Xmax     = -428.33;
 
-bool   stm.TopShielding.build       = false;
-bool   stm.TopShielding.Skirtbuild  = false;
+bool   stm.TopShielding.build       = true;
+bool   stm.TopShielding.Skirtbuild  = true;
 double stm.TopShielding.Zlength     = 901.7;     //35.5 in
 double stm.TopShielding.Xlength     = 1351.28;   //53.2 in
 double stm.TopShielding.Front_LT    = 579.12;

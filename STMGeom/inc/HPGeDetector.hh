@@ -41,7 +41,7 @@ namespace mu2e {
       _Z_HPGe(Z_HPGe), _HoleR(HoleR), _HoleL(HoleL),
       _Capsule_Wallthick(Capsule_Wallthick), _Capsule_Windowthick(Capsule_Windowthick),
       _Capsule_Endthick(Capsule_Endthick), _Capsule_Walllength(Capsule_Walllength),
-      _WindowD(WindowD), _EndcapD(EndcapD), _AirD(AirD),
+      _WindowD(WindowD), _EndcapD(EndcapD), _AirD(AirD), _offset_HPGe(offset_HPGe),
       _originInMu2e(originInMu2e),
       _rotation(rotation)
     {}

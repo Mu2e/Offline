@@ -390,7 +390,7 @@ namespace mu2e {
     CLHEP::HepRotation rotHPGe = CLHEP::HepRotation::IDENTITY;
     rotHPGe.rotateY(45*CLHEP::degree);
 
-    const CLHEP::HepRotation _HPGeRotation     = rotHPGe;
+    const CLHEP::HepRotation _HPGeRotation     =  rotHPGe;
     const CLHEP::Hep3Vector  _HPGeOffsetInMu2e = _STMShieldingRef + CLHEP::Hep3Vector(-_STM_SSCoffset_Spot + _HPGeoffset_HPGe, 0., _HPGeZ_HPGe);
           stm._pSTMHPGeDetectorParams = std::unique_ptr<HPGeDetector>
           (new HPGeDetector(_HPGeBuild,
