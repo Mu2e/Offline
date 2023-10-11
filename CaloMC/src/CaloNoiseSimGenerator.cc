@@ -36,9 +36,6 @@ namespace mu2e {
      randGauss_     (engine),
      randFlat_      (engine),
      nMaxFragment_  (config.nMaxFragment()),
-     enableAR_      (config.enableAR()),
-     nparFitAR_     (config.nparAR()),
-     ARFitter_      (engine, config.nparAR(), config.diagLevel()),
      pulseShape_    (digiSampling_),
      diagLevel_     (config.diagLevel())
    {}
@@ -48,9 +45,7 @@ namespace mu2e {
    void CaloNoiseSimGenerator::initialize(const CaloWFExtractor& wfExtractor)
    {
        pulseShape_.buildShapes();
-
        generateWF(waveform_);
-       if (enableAR_) initAR();
        generateFragments(wfExtractor);
    }
 
@@ -91,16 +86,6 @@ namespace mu2e {
    }
 
    //------------------------------------------------------------------------------------------------------------------
-   void CaloNoiseSimGenerator::initAR()
-   {
-       std::vector<double> wf(waveform_);
-       for (auto& val : wf) val -= pedestal_;
-
-       ARFitter_.setWaveform(wf);
-       ARFitter_.fitARCoeff();
-   }
-
-   //------------------------------------------------------------------------------------------------------------------
    void CaloNoiseSimGenerator::generateFragments(const CaloWFExtractor& wfExtractor)
    {
        constexpr unsigned enoughFragments(20);
@@ -108,7 +93,6 @@ namespace mu2e {
        for (;nwf<nMaxFragment_;++nwf)
        {
           std::vector<double> temp(length,0.0);
-          addFullNoise(temp,false);
 
           std::vector<int> wf;
           wf.reserve(temp.size());
@@ -147,26 +131,6 @@ namespace mu2e {
 
    }
 
-   //------------------------------------------------------------------------------------------------------------------
-   void CaloNoiseSimGenerator::addFullNoise(std::vector<double>& wfVector, bool doAR)
-   {
-       if (doAR && enableAR_)
-       {
-           std::vector<double> ynew(wfVector.size());
-           ARFitter_.generateWF(ynew);
-           for (unsigned i=0;i<wfVector.size();++i) wfVector[i] += ynew[i]+pedestal_;
-       }
-       else
-       {
-           if (wfVector.size() >=waveform_.size())
-                throw cet::exception("CATEGORY")<<"[CaloNoiseSimGenerator] noise length request too long";
-
-           std::vector<double> ynew(wfVector.size());
-           generateWF(ynew);
-           for (unsigned i=0;i<wfVector.size();++i) wfVector[i] += ynew[i];
-       }
-   }
-
 
    //------------------------------------------------------------------------------------------------------------------
    void CaloNoiseSimGenerator::addSaltAndPepper(std::vector<double>& wfVector)
@@ -198,28 +162,15 @@ namespace mu2e {
        TGraph gr(x.size(),x.data(),waveform_.data());
        gr.SetTitle("Original waveform");
 
-       std::vector<double> ynew(waveform_.size());
-       ARFitter_.generateWF(ynew);
-       for (auto& val : ynew) val += pedestal_;
-       TGraph gr2(x.size(),x.data(),ynew.data());
-       gr2.SetTitle("SImulated AR waveform");
-
        TH1F h1("h1","Projection waveform",100,-50,50);
        for (const auto& val: waveform_) h1.Fill(val-pedestal_);
-
-       TH1F h2("h2","Projection AR waveform",100,-50,50);
-       for (const auto& val: ynew) h2.Fill(val-pedestal_);
 
        TCanvas c1("c1","c1");
        c1.Divide(2,2);
        c1.cd(1);
        gr.Draw("AL");
        c1.cd(2);
-       gr2.Draw("AL");
-       c1.cd(3);
        h1.Draw();
-       c1.cd(4);
-       h2.Draw();
        c1.SaveAs(name.c_str());
    }
 
