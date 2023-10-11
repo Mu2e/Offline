@@ -43,7 +43,7 @@ namespace mu2e {
 
         void                         addSampleNoise(std::vector<double>& wfVector, unsigned istart, unsigned ilength);
         void                         addSaltAndPepper(std::vector<double>& wfVector);
-        void                         plotNoise(std::string name);
+        void                         plotNoise(const std::string& name);
 
         const std::vector<double>&   noise()    const {return waveform_;}
         int                          pedestal() const {return pedestal_;}

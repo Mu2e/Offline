@@ -155,7 +155,7 @@ namespace mu2e {
 
 
    //------------------------------------------------------------------------------------------------------------------
-   void CaloNoiseSimGenerator::plotNoise(std::string name)
+   void CaloNoiseSimGenerator::plotNoise(const std::string& name)
    {
        std::vector<double> x(waveform_.size()),y;
        std::iota(x.begin(),x.end(),0);
