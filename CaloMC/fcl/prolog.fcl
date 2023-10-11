@@ -2,7 +2,7 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
-#include "Offline/CaloMC/fcl/common.fcl"
+#include "Offline/CaloReco/fcl/common.fcl"
 #include "Offline/CommonMC/fcl/prolog.fcl"
 
 
