@@ -33,7 +33,7 @@ namespace mu2e {
       _EndcapR(EndcapR), _EndcapL(EndcapL),
       _CrystalR(CrystalR), _CrystalL(CrystalL),
       _Z_LaBr(Z_LaBr),
-      _WindowD(WindowD), _EndcapD(EndcapD), _AirD(AirD),
+      _WindowD(WindowD), _EndcapD(EndcapD), _AirD(AirD), _offset_LaBr(offset_LaBr),
       _originInMu2e(originInMu2e),
       _rotation(rotation)
     {}
