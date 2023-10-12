@@ -68,7 +68,7 @@ namespace mu2e {
 
         void makeClusters(CaloClusterCollection&, const art::Handle<CaloHitCollection>&);
         void fillCluster(const Calorimeter&, const art::Handle<CaloHitCollection>&, const CaloHitCollection&,
-                         const std::vector<int>&, CaloClusterCollection&);
+                         const std::vector<size_t>&, CaloClusterCollection&);
   };
 
 
@@ -91,26 +91,25 @@ namespace mu2e {
       const CaloHitCollection& caloHits(*caloHitsHandle);
       if (caloHits.empty()) return;
 
-      std::vector<int> hits;
+      std::vector<size_t> hits;
       hits.reserve(caloHits.size());
-      for (unsigned i=0;i<caloHits.size();++i) if (caloHits[i].energyDep() > EnoiseCut_ && caloHits[i].nSiPMs() >= minSiPMPerHit_) hits.emplace_back(i);
-      auto functorTime = [&caloHits](int a, int b) {return (caloHits[a].time() < caloHits[b].time()+1e-3) ||
-                                                           ( abs(caloHits[a].time()-caloHits[b].time())<2e-3 &&
-                                                             caloHits[a].crystalID()<caloHits[b].crystalID());};
-      std::sort(hits.begin(),hits.end(),functorTime);
+      for (size_t i=0;i<caloHits.size();++i) if (caloHits[i].energyDep() > EnoiseCut_ && caloHits[i].nSiPMs() >= minSiPMPerHit_) hits.emplace_back(i);
+
+      auto functorTime = [&caloHits,&hits](auto a, auto b) {return caloHits[a].time() < caloHits[b].time();};
+      std::stable_sort(hits.begin(),hits.end(),functorTime);
 
       auto iterSeed = hits.begin();
       while (iterSeed != hits.end())
       {
           //find the first hit above the energy threshold, and the last hit within the required time window
           const CaloHit& hitSeed = caloHits[*iterSeed];
-          if (*iterSeed==-1 || hitSeed.energyDep()< EminSeed_) {++iterSeed; continue;}
+          if (*iterSeed==hits.size() || hitSeed.energyDep()< EminSeed_) {++iterSeed; continue;}
           double timeStart = hitSeed.time();
 
           //find the range around the seed time to search for other hits to form clusters
           auto iterStart(iterSeed), iterStop(iterSeed);
-          while (iterStop  != hits.end()   && (*iterStop==-1  || caloHits[*iterStop].time() - timeStart < deltaTime_))  ++iterStop;
-          while (iterStart != hits.begin() && (*iterStart==-1 || timeStart - caloHits[*iterStart].time() < deltaTime_)) --iterStart;
+          while (iterStop  != hits.end()   && (*iterStop==hits.size()  || caloHits[*iterStop].time() - timeStart < deltaTime_))  ++iterStop;
+          while (iterStart != hits.begin() && (*iterStart==hits.size() || timeStart - caloHits[*iterStart].time() < deltaTime_)) --iterStart;
           ++iterStart;
 
           //start the clustering algorithm for the hits between iStart and iStop
@@ -118,18 +117,18 @@ namespace mu2e {
           std::vector<bool> isVisited(cal.nCrystal());
 
           //put the first hit in the cluster list
-          std::vector<int> clusterList{*iterSeed};
-          int seedId = caloHits[*iterSeed].crystalID();
+          std::vector<size_t> clusterList{*iterSeed};
+          auto seedId = caloHits[*iterSeed].crystalID();
           crystalToVisit.push(seedId);
-          *iterSeed=-1;
+          *iterSeed=hits.size();
 
           // loop until all seeds are processed
           while (!crystalToVisit.empty())
           {
-              int visitId = crystalToVisit.front();
+              auto visitId = crystalToVisit.front();
               isVisited[visitId]=true;
 
-              std::vector<int>  neighborsId = cal.crystal(visitId).neighbors();
+              auto neighborsId = cal.crystal(visitId).neighbors();
               if (extendSearch_) std::copy(cal.nextNeighbors(visitId).begin(), cal.nextNeighbors(visitId).end(), std::back_inserter(neighborsId));
 
               for (const auto& iId : neighborsId)
@@ -140,12 +139,12 @@ namespace mu2e {
                   //loop over the caloHits, check if one is in the neighbor list and add it to the cluster
                   for (auto it=iterStart; it != iterStop; ++it)
                   {
-                      if (*it==-1) continue;
+                      if (*it==hits.size()) continue;
                       if (caloHits[*it].crystalID() != iId) continue;
 
                       if (caloHits[*it].energyDep() > ExpandCut_) crystalToVisit.push(iId);
                       clusterList.push_back(*it);
-                      *it = -1;
+                      *it = hits.size();
                   }
                }
                crystalToVisit.pop();
@@ -163,7 +162,7 @@ namespace mu2e {
 
   //----------------------------------------------------------------------------------------------------------
   void CaloClusterFast::fillCluster(const Calorimeter& cal, const art::Handle<CaloHitCollection>& caloHitsHandle,
-                                      const CaloHitCollection& caloHits, const std::vector<int>& clusterList,
+                                      const CaloHitCollection& caloHits, const std::vector<size_t>& clusterList,
                                       CaloClusterCollection& caloClusters)
   {
       std::vector<art::Ptr<CaloHit>> caloHitsPtrs;
