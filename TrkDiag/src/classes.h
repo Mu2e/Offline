@@ -6,12 +6,5 @@
 #include "Offline/TrkDiag/inc/HelixHitInfo.hh"
 #include "Offline/TrkDiag/inc/BkgHitInfo.hh"
 #include "Offline/TrkDiag/inc/ComboHitInfo.hh"
-#include "Offline/CRVAnalysis/inc/CrvHitInfoReco.hh"
-#include "Offline/CRVAnalysis/inc/CrvHitInfoMC.hh"
-#include "Offline/CRVAnalysis/inc/CrvPlaneInfoMC.hh"
-#include "Offline/CRVAnalysis/inc/CrvSummaryReco.hh"
-#include "Offline/CRVAnalysis/inc/CrvSummaryMC.hh"
-#include "Offline/CRVAnalysis/inc/CrvPulseInfoReco.hh"
-#include "Offline/CRVAnalysis/inc/CrvWaveformInfo.hh"
 #include <map>
 #include <vector>

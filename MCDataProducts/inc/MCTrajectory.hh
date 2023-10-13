@@ -12,6 +12,7 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "cetlib/map_vector.h"
 #include <vector>
+#include <map>
 
 namespace mu2e {
 
@@ -64,7 +65,7 @@ namespace mu2e {
     std::vector<Point> points_;
 
   };
-
+  typedef std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory> MCTrajectoryCollection;
 }
 
 #endif /* MCDataProducts_MCTrajectory_hh */
