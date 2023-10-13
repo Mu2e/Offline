@@ -102,7 +102,7 @@ namespace mu2e {
     double _EndcapD;
     double _AirD;
     double _offset_HPGe;
-    
+
     CLHEP::Hep3Vector  _originInMu2e;
     CLHEP::HepRotation _rotation; // wrt to parent volume
 
