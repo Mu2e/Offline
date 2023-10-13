@@ -28,7 +28,6 @@ physics :
     @table::TrkAnaReco.producers
     @table::CosmicTracking.producers
     KKLine : @local::Reconstruction.producers.KKLine
-    BestCrvLine : @local::BestCrvLine
     @table::CosmicTracking.producers
   }
   filters : {
@@ -40,7 +39,7 @@ physics :
    }
   }
   RecoPath : [
-    @sequence::Reconstruction.LineRecoMCPath, BestCrvLine ]
+    @sequence::Reconstruction.LineRecoMCPath ]
   analyzers : {
     TAKK : {
       @table::TrkAnaTreeMaker
@@ -54,15 +53,11 @@ physics :
           fillTrkQual : false
           fillTrkPID : false
           genealogyDepth : 5
-          fillBestCrv : true
-          bestCrvModules : [ "BestCrv" ]
-          bestCrvInstances : [ "first" ]
-          bestCrvBranches : [ "bestcrv" ]
         }
       }
       diagLevel : 2
       FillMCInfo : true
-      FillCRV : true
+      FillCRVHits : true
 
       FillTrkQualInfo : false
       FillTrkPIDInfo : false
