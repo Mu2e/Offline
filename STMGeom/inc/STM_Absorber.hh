@@ -15,7 +15,7 @@ namespace mu2e {
 
   class STM_Absorber {
   public:
-    STM_Absorber(bool build, 
+    STM_Absorber(bool build,
     double Absorber_hW, double Absorber_hH, double Absorber_hT,
     double Absorber_GaptoSSC):
       _build(build),

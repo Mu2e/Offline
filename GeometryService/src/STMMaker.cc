@@ -398,7 +398,7 @@ namespace mu2e {
                             _HPGeholeMaterial,
                             _HPGewindowMaterial,
                             _HPGewallMaterial,
-                            _HPGecapsuleMaterial, 
+                            _HPGecapsuleMaterial,
                             _HPGeEndcapR,
                             _HPGeEndcapL,
                             _HPGeCrystalR,
@@ -573,7 +573,7 @@ namespace mu2e {
    ////////////////////////////////////////////////////////////////
    //STM Electronic Shielding
           stm._pSTMElectronicShieldingParams = std::unique_ptr<ElectronicShielding>
-          (new ElectronicShielding(_ElectronicShieldingBuild,   
+          (new ElectronicShielding(_ElectronicShieldingBuild,
                                    _ElectronicSSiGridX,
                                    _ElectronicSSiGridY,
                                    _ElectronicSSiGridZ,
