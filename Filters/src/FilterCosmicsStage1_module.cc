@@ -98,7 +98,7 @@ namespace mu2e {
       else{
         auto ih = event.getValidHandle<StepPointMCCollection>(cn);
         for(const auto& hit : *ih)
-          totalEDep += hit.ionizingEdep();
+          totalEDep += hit.visibleEDep();
       }
     }
     // Select only events with energy deposition in specified range
