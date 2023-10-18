@@ -102,6 +102,9 @@ TNTClusterer : {
   TestFlag         : true
   BackgroundMask   : []
   SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+  DistanceMethod   : 0
+  Chi2HitDistance  : 10
+  Chi2SeedDistance : 100
 }
 
 

@@ -128,7 +128,6 @@ namespace mu2e
   //------------------------------------------------------------------------------------------
   void FlagBkgHits::produce(art::Event& event )
   {
-
     auto chH = event.getValidHandle(chtoken_);
     const ComboHitCollection& chcol = *chH.product();
     unsigned nch = chcol.size();
@@ -155,7 +154,7 @@ namespace mu2e
       for (size_t ich=0;ich < nch; ++ich) {
         const ComboHit& ch = chcol[ich];
         int icl = findClusterIdx(bkgccol,ich);
-        if (icl > -1) bkghitcol.emplace_back(BkgClusterHit(clusterer_->distance(bkgccol[icl],ch),ch.flag()));
+        if (icl > -1) bkghitcol.emplace_back(BkgClusterHit(clusterer_->distance(bkgccol[icl],ch,config().TNTClustering().distMethod()),ch.flag()));
         else          bkghitcol.emplace_back(BkgClusterHit(999.0,ch.flag()));
       }
     }

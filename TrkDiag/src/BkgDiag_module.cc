@@ -21,6 +21,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "Offline/RecoDataProducts/inc/BkgCluster.hh"
 #include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
@@ -168,6 +169,7 @@ namespace mu2e
     _bcdiag->Branch("nch",&_nch,"nch/I");
     _bcdiag->Branch("nsh",&_nsh,"nsh/I");
     _bcdiag->Branch("nactive",&_nactive,"nactive/I");
+    _bcdiag->Branch("nsha",&_nsha,"nsha/I");
     _bcdiag->Branch("nbkg",&_nbkg,"nbkg/I");
     _bcdiag->Branch("cluIdx",&_cluIdx,"cluIdx/I");
     // cluster hit info branch
@@ -315,7 +317,7 @@ namespace mu2e
       _bkghinfo.clear();
       _bkghinfo.reserve(cluster.hits().size());
       _nch = cluster.hits().size();
-      _nsh = _nactive = _nbkg = _nrel = 0;
+      _nsh = _nactive = _nsha =_nbkg = _nrel = 0;
       double sumEdep(0.);
       double sqrSumDeltaTime(0.);
       double sqrSumDeltaX(0.);
@@ -335,7 +337,8 @@ namespace mu2e
         StrawHitFlag const& shf = bhit.flag();
         if(shf.hasAllProperties(StrawHitFlag::active)){
           _nactive += ch.nStrawHits();
-          if(shf.hasAllProperties(StrawHitFlag::stereo))_nsha+= ch.nStrawHits();
+          //if(shf.hasAllProperties(StrawHitFlag::stereo))_nsha+= ch.nStrawHits();//StrawHitFlag::stereo is redundant
+          if(StrawIdMask::station == ch._mask) _nsha+= ch.nStrawHits();
         }
         if(shf.hasAllProperties(StrawHitFlag::bkg))_nbkg+= ch.nStrawHits();
         // fill hit-specific information
