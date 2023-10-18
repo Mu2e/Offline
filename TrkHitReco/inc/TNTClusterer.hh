@@ -10,7 +10,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/TrkHitReco/inc/BkgClusterer.hh"
-#include "Offline/GeneralUtilities/inc/CombineTwoDPoints.hh"//NEW ADD
+#include "Offline/GeneralUtilities/inc/CombineTwoDPoints.hh"
 #include "fhiclcpp/types/Sequence.h"
 
 #include <string>
@@ -21,10 +21,11 @@ namespace mu2e {
 
   struct BkgHit
   {
-    BkgHit(unsigned chidx): chidx_(chidx),distance_(1000.0),clusterIdx_(-1) {};
+    BkgHit(unsigned chidx): chidx_(chidx),distance_(1000.0),dchi2_(1000.0),clusterIdx_(-1) {};
 
     unsigned     chidx_;
     float        distance_;
+    float        dchi2_;
     int          clusterIdx_;
   };
 
@@ -53,6 +54,9 @@ namespace mu2e {
         fhicl::Sequence<std::string>  sigmsk{           Name("SignalMask"),       Comment("Signal hit selection mask") };
         fhicl::Atom<bool>             testflag{         Name("TestFlag"),         Comment("Test hit flags") };
         fhicl::Atom<int>              diag{             Name("Diag"),             Comment("Diagnosis level"),0 };
+        fhicl::Atom<int>              distMethod{       Name("DistanceMethod"),   Comment("Distance method") };
+        fhicl::Atom<float>            chi2HitDistance{  Name("Chi2HitDistance"),  Comment("Minimum chi2 hit seperation") };
+        fhicl::Atom<float>            chi2SeedDistance{ Name("Chi2SeedDistance"), Comment("Minimum seperation for new chi2 seed") };
       };
 
 
@@ -61,8 +65,8 @@ namespace mu2e {
 
       void          init        ();
       virtual void  findClusters(BkgClusterCollection& clusters, const ComboHitCollection& shcol, int iev);
-      virtual float distance    (const BkgCluster& cluster,      const ComboHit& hit) const;
-      virtual float dchi2    (CombineTwoDPoints& points,      const ComboHit& hit) const;//NEW ADD
+      virtual float distance    (const BkgCluster& cluster,      const ComboHit& hit, const int method) const;
+      enum mode {useDistance,useChi2};
 
 
     private:
@@ -70,7 +74,7 @@ namespace mu2e {
 
       void     initClustering  (const ComboHitCollection& chcol, std::vector<BkgHit>& hinfo);
       void     doClustering    (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo);
-      unsigned formClusters    (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<CombineTwoDPoints>& points, std::vector<BkgHit>& hinfo);
+      unsigned formClusters    (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo);
       void     mergeClusters   (std::vector<BkgCluster>& clusters, const ComboHitCollection& chcol, std::vector<BkgHit>& hinfo,
                                 float dt, float dd2);
       void     mergeTwoClusters(BkgCluster& clu1, BkgCluster& clu2);
@@ -95,6 +99,9 @@ namespace mu2e {
       StrawHitFlag     sigmask_;
       bool             testflag_;
       int              diag_;
+      int              distMethod_;
+      float            chi2HitDistance_;
+      float            chi2SeedDistance_;
   };
 }
 #endif

@@ -18,7 +18,10 @@ namespace mu2e
     bkgmask_    (config.bkgmsk()),
     sigmask_    (config.sigmsk()),
     testflag_   (config.testflag()),
-    diag_       (config.diag())
+    diag_       (config.diag()),
+    distMethod_ (config.distMethod()),
+    chi2HitDistance_ (config.chi2HitDistance()),
+    chi2SeedDistance_ (config.chi2SeedDistance())
   {
      float minerr (config.minHitError());
      float maxdist(config.maxDistance());
@@ -74,11 +77,11 @@ namespace mu2e
   void TNTClusterer::doClustering(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& BkgHits)
   {
     unsigned niter(0);
-    float odist(2.0f*maxDistSum_),tdist(0.0f);
-    std::vector<CombineTwoDPoints> clusterPts;//NEW ADD
-    while (std::abs(odist - tdist) > maxDistSum_ && niter < maxNiter_) {
+    float odist(2.0f*maxDistSum_);
+    float tdist(0.0f);
+    while ( std::abs(odist - tdist) > maxDistSum_ && niter < maxNiter_ ) {
       ++niter;
-      formClusters(chcol, clusters, clusterPts, BkgHits);
+      formClusters(chcol, clusters, BkgHits);
 
       odist = tdist;
       tdist = 0.0f;
@@ -94,7 +97,7 @@ namespace mu2e
   // candidate clusters to check if they could be added. If not, make a new cluster.
   // speed up: don't update clusters who haven't changed + cache cluster id in a given time window in clusterIndex (array if vectors)
   //
-  unsigned TNTClusterer::formClusters(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<CombineTwoDPoints>& clPoints, std::vector<BkgHit>& BkgHits)
+  unsigned TNTClusterer::formClusters(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& BkgHits)
   {
     std::array<std::vector<int>, numBuckets_> clusterIndices;
     for (size_t ic=0;ic<clusters.size();++ic) {
@@ -103,6 +106,7 @@ namespace mu2e
       clusters[ic].clearHits();
     }
 
+    int method = distMethod_;
     int ditime(int(maxHitdt_/tbin_));
     unsigned nchanged(0);
     for (size_t ihit=0;ihit<BkgHits.size();++ihit) {
@@ -110,50 +114,53 @@ namespace mu2e
       auto& hit  = BkgHits[ihit];
       const auto& chit = chcol[hit.chidx_];
 
+      float dhit(0.), dseed(0.), mindist(0.);
+      if(method == TNTClusterer::useDistance){
+        dhit = dhit_;
+        dseed = dseed_;
+        mindist = dseed_ + 1.0f;
+      }
+      else if(method == TNTClusterer::useChi2){
+        dhit = chi2HitDistance_;
+        dseed = chi2SeedDistance_;
+        mindist = chi2SeedDistance_ + 1.0f;
+      }
+      else{
+        throw cet::exception("RECO")<< "Unknown clustering mode" << method << std::endl;
+      }
+
       // -- if hit is ok, reassign it right away
-      if (hit.distance_ < dhit_) {
+      if (hit.distance_ < dhit || hit.dchi2_ < dhit) {
         clusters[hit.clusterIdx_].addHit(ihit);
-        clPoints[hit.clusterIdx_].addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),hit.chidx_);//NEW ADD
         continue;
       }
 
       // -- find closest cluster. restrict search to clusters close in time using the clusterIndices structure
       int minc(-1);
-      int chi2minc(-1);//NEW ADD
-      float mindist(dseed_ + 1.0f);
-      float mindistChi2(100.);//NEW ADD
       int itime = int(chit.correctedTime()/tbin_);
       int imin = std::max(0,itime-ditime);
       int imax = std::min(numBuckets_,itime+ditime+1);
 
       for (int i=imin;i<imax;++i) {
         for (const auto& ic : clusterIndices[i]) {
-          float dist = distance(clusters[ic],chcol[hit.chidx_]);
-          float distChi2 = dchi2(clPoints[ic],chcol[hit.chidx_]);//NEW ADD
+          float dist = distance(clusters[ic],chcol[hit.chidx_],method);
           if (dist < mindist) {mindist = dist;minc = ic;}
-          if (distChi2 < mindistChi2) {mindistChi2 = distChi2;chi2minc = ic;}//NEW ADD
         }
       }
-      //std::cout<<"mindist\t"<<mindist<<"\tminc\t"<<minc<<"\tmindistChi2\t"<<mindistChi2<<"\tmincChi2\t"<<chi2minc<<"\n";//NEW ADD
-      // -- either add hit to existing cluster, form new cluster, or do nothing if hit is "in between"
-      if (mindist < dhit_) {
+      if (mindist < dhit) {
         clusters[minc].addHit(ihit);
-        clPoints[minc].addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),hit.chidx_);//NEW ADD
       }
-      else if (mindist > dseed_) {
+      else if (mindist > dseed) {
         minc = clusters.size();
-        clusters.emplace_back(BkgCluster(chit.pos(),chit.correctedTime()));
-        std::vector<mu2e::TwoDPoint> points;//NEW ADD
-        points.push_back(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()));//NEW ADD
-        clPoints.emplace_back(CombineTwoDPoints(points));//NEW ADD
+        clusters.emplace_back(BkgCluster(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),chit.correctedTime()));
         clusters[minc].addHit(ihit);
         int itime = int(chit.correctedTime()/tbin_);
         clusterIndices[itime].emplace_back(minc);
       }
       else{
         BkgHits[ihit].distance_ = 10000.0f;
+        BkgHits[ihit].dchi2_ = 10000.0f;
         minc = -1;
-        chi2minc = -1;
       }
 
       // -- update cluster flag and hit->cluster pointer if association has changed
@@ -181,7 +188,7 @@ namespace mu2e
         updateCluster(cluster, chcol, BkgHits);
         if (cluster.hits().size()==1) {BkgHits[cluster.hits().at(0)].distance_ = 0.0f;}
         else {
-          for (auto& hit : cluster.hits()) BkgHits[hit].distance_ = distance(cluster,chcol[BkgHits[hit].chidx_]);
+          for (auto& hit : cluster.hits()) BkgHits[hit].distance_ = distance(cluster,chcol[BkgHits[hit].chidx_],method);
         }
       }
     }
@@ -228,55 +235,64 @@ namespace mu2e
 
   //---------------------------------------------------------------------------------------
   // only count differences if they are above the natural hit size (drift time, straw size)
-  float TNTClusterer::distance(const BkgCluster& cluster, const ComboHit& hit) const
+  float TNTClusterer::distance(const BkgCluster& cluster, const ComboHit& hit, int method) const
   {
-    float psep_x = hit.pos().x()-cluster.pos().x();
-    float psep_y = hit.pos().y()-cluster.pos().y();
-    float d2     = psep_x*psep_x+psep_y*psep_y;
-
-    if (d2 > md2_) return dseed_+1.0f;
-
-    float dt = std::abs(hit.correctedTime()-cluster.time());
-    if (dt > maxHitdt_) return dseed_+1.0f;
-
-
     float retval(0.0f);
-    if (dt > dt_) {float tdist = dt -dt_;retval = tdist*tdist*trms2inv_;}
-    if (d2 > dd2_) {
-      //This is equivalent to but faster than the commented lines
-      //XYZVectorF that(-hit.wdir().y(),hit.wdir().x(),0.0);
-      //float dw = std::max(0.0f,hit.wdir().Dot(psep)-dd_)/hit.posRes(ComboHit::wire);
-      //float dp = std::max(0.0f,that.Dot(psep)-dd_)*maxwt_;//maxwt = 1/minerr
-      float hwx = hit.wdir().x();
-      float hwy = hit.wdir().y();
-      float dw  = std::max(0.0f,(psep_x*hwx+psep_y*hwy-dd_)/hit.posRes(ComboHit::wire));
-      float dp  = std::max(0.0f,(hwx*psep_y-hwy*psep_x-dd_)*maxwt_);
-      retval += dw*dw + dp*dp;
+    if(method == TNTClusterer::useDistance)
+    {
+      float psep_x = hit.pos().x()-cluster.pos().x();
+      float psep_y = hit.pos().y()-cluster.pos().y();
+      float d2     = psep_x*psep_x+psep_y*psep_y;
+
+      if (d2 > md2_) return dseed_+1.0f;
+
+      float dt = std::abs(hit.correctedTime()-cluster.time());
+      if (dt > maxHitdt_) return dseed_+1.0f;
+
+
+      if (dt > dt_) {float tdist = dt -dt_;retval = tdist*tdist*trms2inv_;}
+      if (d2 > dd2_) {
+        //This is equivalent to but faster than the commented lines
+        //XYZVectorF that(-hit.wdir().y(),hit.wdir().x(),0.0);
+        //float dw = std::max(0.0f,hit.wdir().Dot(psep)-dd_)/hit.posRes(ComboHit::wire);
+        //float dp = std::max(0.0f,that.Dot(psep)-dd_)*maxwt_;//maxwt = 1/minerr
+        float hwx = hit.wdir().x();
+        float hwy = hit.wdir().y();
+        float dw  = std::max(0.0f,(psep_x*hwx+psep_y*hwy-dd_)/hit.posRes(ComboHit::wire));
+        float dp  = std::max(0.0f,(hwx*psep_y-hwy*psep_x-dd_)*maxwt_);
+        retval += dw*dw + dp*dp;
+      }
     }
+    if(method == TNTClusterer::useChi2)
+    {
+      TwoDPoint ch(hit.pos(),hit.uDir(),hit.uVar(),hit.vVar());
+      std::vector<TwoDPoint> points = {cluster.point(),ch};
+      auto combinedPts = CombineTwoDPoints(points);
+      retval = combinedPts.dChi2(points.size()-1);
+    }
+
     return retval;
   }
 
-  //NEW ADD FUNCTION
-  //---------------------------------------------------------------------------------------
-  // distance but using CombineTwoDPoints
-  float TNTClusterer::dchi2(CombineTwoDPoints& points, const ComboHit& hit) const
-  {
-    TwoDPoint ch(hit.pos(),hit.uDir(),hit.uVar(),hit.vVar());
-    return points.dChi2(ch);
-  }
-
-  //-------------------------------------------------------------------------------------------------------------------
   void TNTClusterer::updateCluster(BkgCluster& cluster, const ComboHitCollection& chcol, std::vector<BkgHit>& BkgHits)
   {
 
-    if (cluster.hits().empty()) {cluster.time(0.0f);cluster.pos(XYZVectorF(0.0f,0.0f,0.0f));return;}
+    if (cluster.hits().empty()) {cluster.time(0.0f);cluster.pos(XYZVectorF(0.0f,0.0f,0.0f));cluster.point(TwoDPoint(XYZVectorF(0.0f,0.0f,0.0f),XYZVectorF(0.0f,0.0f,0.0f),0.0f,0.0f));return;}
 
     if (cluster.hits().size()==1) {
       int idx = BkgHits[cluster.hits().at(0)].chidx_;
       cluster.time(chcol[idx].correctedTime());
       cluster.pos(XYZVectorF(chcol[idx].pos().x(),chcol[idx].pos().y(),0.0f));
+      cluster.point(TwoDPoint(chcol[idx].pos(),chcol[idx].uDir(),chcol[idx].uVar(),chcol[idx].vVar()));
       return;
     }
+
+    std::vector<TwoDPoint> points;
+    for (auto& hit : cluster.hits()) {
+      int idx  = BkgHits[hit].chidx_;
+      points.push_back(TwoDPoint(chcol[idx].pos(),chcol[idx].uDir(),chcol[idx].uVar(),chcol[idx].vVar()));
+    }
+    auto combinedPts = CombineTwoDPoints(points);
 
     float crho  = sqrtf(cluster.pos().perp2());
     float cphi  = cluster.pos().phi();
@@ -334,6 +350,7 @@ namespace mu2e
 
     cluster.time(ctime);
     cluster.pos(XYZVectorF(crho*cos(cphi),crho*sin(cphi),0.0f));
+    cluster.point(combinedPts.point());
   }
 
 
