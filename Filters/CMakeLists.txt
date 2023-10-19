@@ -1,0 +1,79 @@
+cet_build_plugin(BunchIntensityFilter art::module REG_SOURCE src/BunchIntensityFilter_module.cc)
+
+cet_build_plugin(CaloShowerSimFilter art::module REG_SOURCE src/CaloShowerSimFilter_module.cc)
+
+cet_build_plugin(ChooseTrackFilter art::module REG_SOURCE src/ChooseTrackFilter_module.cc)
+
+cet_build_plugin(CompressPhysicalVolumes art::module REG_SOURCE src/CompressPhysicalVolumes_module.cc)
+
+cet_build_plugin(CompressStepPointMCs art::module REG_SOURCE src/CompressStepPointMCs_module.cc)
+
+cet_build_plugin(CosmicMixingFilter art::module REG_SOURCE src/CosmicMixingFilter_module.cc)
+
+cet_build_plugin(DetectorStepFilter art::module REG_SOURCE src/DetectorStepFilter_module.cc)
+
+cet_build_plugin(EMFBoxHitsFilter art::module REG_SOURCE src/EMFBoxHitsFilter_module.cc)
+
+cet_build_plugin(EMFPixelHitsFilter art::module REG_SOURCE src/EMFPixelHitsFilter_module.cc)
+
+cet_build_plugin(EMFPixelSimFilter art::module REG_SOURCE src/EMFPixelSimFilter_module.cc)
+
+cet_build_plugin(FilterCosmicsStage1 art::module REG_SOURCE src/FilterCosmicsStage1_module.cc)
+
+cet_build_plugin(FilterG4Out art::module REG_SOURCE src/FilterG4Out_module.cc)
+
+cet_build_plugin(FilterStatusG4 art::module REG_SOURCE src/FilterStatusG4_module.cc)
+
+cet_build_plugin(FilterStepPointAngleVsTarget art::module REG_SOURCE src/FilterStepPointAngleVsTarget_module.cc)
+
+cet_build_plugin(FilterStepPointKinEnPDG art::module REG_SOURCE src/FilterStepPointKinEnPDG_module.cc)
+
+cet_build_plugin(FilterStepPointMomentum art::module REG_SOURCE src/FilterStepPointMomentum_module.cc)
+
+cet_build_plugin(FilterStepPointPDG art::module REG_SOURCE src/FilterStepPointPDG_module.cc)
+
+cet_build_plugin(FilterStepPointPositionMomentum art::module REG_SOURCE src/FilterStepPointPositionMomentum_module.cc)
+
+cet_build_plugin(FilterStepPointPzVsTarget art::module REG_SOURCE src/FilterStepPointPzVsTarget_module.cc)
+
+cet_build_plugin(FilterStepPointReflection art::module REG_SOURCE src/FilterStepPointReflection_module.cc)
+
+cet_build_plugin(GenParticleMomFilter art::module REG_SOURCE src/GenParticleMomFilter_module.cc)
+
+cet_build_plugin(KilledEventFilter art::module REG_SOURCE src/KilledEventFilter_module.cc)
+
+cet_build_plugin(ParticleCodeFilter art::module REG_SOURCE src/ParticleCodeFilter_module.cc)
+
+cet_build_plugin(RandomPrescaleFilter art::module REG_SOURCE src/RandomPrescaleFilter_module.cc)
+
+cet_build_plugin(RecoMomFilter art::module REG_SOURCE src/RecoMomFilter_module.cc)
+
+cet_build_plugin(SelectEvents art::module REG_SOURCE src/SelectEvents_module.cc)
+
+cet_build_plugin(SelectStepPointsByTime art::module REG_SOURCE src/SelectStepPointsByTime_module.cc)
+
+cet_build_plugin(StepPointFilter art::module REG_SOURCE src/StepPointFilter_module.cc)
+
+cet_build_plugin(StepPointMCCollectionUpdater art::module REG_SOURCE src/StepPointMCCollectionUpdater_module.cc)
+
+cet_build_plugin(StepPointsInDigis art::module REG_SOURCE src/StepPointsInDigis_module.cc)
+
+cet_build_plugin(StrawDigiMCFilter art::module REG_SOURCE src/StrawDigiMCFilter_module.cc)
+
+cet_build_plugin(TrackerStepPointFilter art::module REG_SOURCE src/TrackerStepPointFilter_module.cc)
+
+cet_build_plugin(TrackSummaryTruthUpdater art::module REG_SOURCE src/TrackSummaryTruthUpdater_module.cc)
+
+cet_build_plugin(TriggerResultsFilter art::module REG_SOURCE src/TriggerResultsFilter_module.cc)
+
+cet_build_plugin(TrkPatRecFilter art::module REG_SOURCE src/TrkPatRecFilter_module.cc)
+
+cet_build_plugin(TrkQualFilter art::module REG_SOURCE src/TrkQualFilter_module.cc)
+
+cet_build_plugin(VetoIncorrectHits art::module REG_SOURCE src/VetoIncorrectHits_module.cc)
+
+cet_build_plugin(WeightSamplingFilter art::module REG_SOURCE src/WeightSamplingFilter_module.cc)
+
+
+install_source(SUBDIRS src)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Filters)
