@@ -1,15 +1,23 @@
 cet_make_library(
     SOURCE
-src/CrvHelper.cc
-src/MakeCrvRecoPulses.cc
-LIBRARIES PUBLIC
-cetlib::cetlib
+      src/CrvHelper.cc
+      src/MakeCrvRecoPulses.cc
+    LIBRARIES PUBLIC
+      
+      offline::CosmicRayShieldGeom
+      offline::DataProducts
+      offline::GeometryService
 )
 
-cet_build_plugin(CrvCoincidenceFinder art::module REG_SOURCE src/CrvCoincidenceFinder_module.cc)
+cet_build_plugin(CrvCoincidenceFinder art::module
+    REG_SOURCE src/CrvCoincidenceFinder_module.cc
+    LIBRARIES REG
+)
 
-cet_build_plugin(CrvRecoPulsesFinder art::module REG_SOURCE src/CrvRecoPulsesFinder_module.cc)
-
+cet_build_plugin(CrvRecoPulsesFinder art::module
+    REG_SOURCE src/CrvRecoPulsesFinder_module.cc
+    LIBRARIES REG
+)
 
 install_source(SUBDIRS src)
 install_headers(SUBDIRS inc)

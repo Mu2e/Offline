@@ -1,11 +1,14 @@
 cet_make_library(
     SOURCE
-src/EventTiming.cc
-src/EventTimingMaker.cc
-LIBRARIES PUBLIC
-cetlib::cetlib
+      src/EventTiming.cc
+      src/EventTimingMaker.cc
+    LIBRARIES PUBLIC
+      
+      offline::DAQConfig
+      offline::DataProducts
+      offline::Mu2eInterfaces
+      offline::TrackerGeom
 )
-
 
 install_source(SUBDIRS src)
 install_headers(SUBDIRS inc)

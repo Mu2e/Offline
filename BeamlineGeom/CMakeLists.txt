@@ -1,10 +1,12 @@
 cet_make_library(
     SOURCE
-src/TSdA.cc
-LIBRARIES PUBLIC
-cetlib::cetlib
+      src/TSdA.cc
+    LIBRARIES PUBLIC
+      
+      offline::GeneralUtilities
+      offline::GeomPrimitives
+      offline::Mu2eInterfaces
 )
-
 
 install_source(SUBDIRS src)
 install_headers(SUBDIRS inc)
