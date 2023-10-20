@@ -5,47 +5,126 @@ for dir in */;do
     if [ -f CMakeLists.txt ];then
       mv CMakeLists.txt{,.bak}
     fi
-
-    if [ -d src ]; then
+    
+    lib_list=''
+    for file in src/*.cc inc/*.hh;do
+      if ! [ -f $file ]; then continue; fi
+      if [[ $file =~ "_.*.cc" ]]; then
+        continue
+      fi
+      if [[ $file =~ "_.*.hh" ]]; then
+        continue
+      fi
+      lib_list="$lib_list`grep Offline/ $file|grep -v $dir|sed 's|.*Offline/|offline::|g;s|/.*||g'|uniq|tr '\n' ','`"
+    done
+    lib_list=`echo $lib_list|tr ',' '\n'|sort|uniq|awk '{print "      "$1}'`
 
     make_lib=0
+    make_ilib=0
     for file in src/*.cc;do
-      if [[ $file =~ "_module.cc" ]]; then
+      if ! [ -f $file ]; then continue; fi
+      if [[ $file =~ "_.*.cc" ]]; then
         continue
       fi
       make_lib=1
       break
     done
+    for file in inc/*.hh;do
+      if ! [ -f $file ]; then continue; fi
+      make_ilib=1
+      break
+    done
 
     if [ $make_lib -eq 1 ];then
       echo 'cet_make_library(
-      SOURCE' >CMakeLists.txt
+    SOURCE' >CMakeLists.txt
 
       for file in src/*.cc;do
-        if [[ $file =~ "_module.cc" ]]; then
+        if [[ $file =~ "_.*.cc" ]]; then
           continue
         fi
-        echo $file >>CMakeLists.txt
+        echo "      $file" >>CMakeLists.txt
       done
 
-      echo "LIBRARIES PUBLIC" >>CMakeLists.txt
-      echo "cetlib::cetlib" >>CMakeLists.txt # For example
+      echo "    LIBRARIES PUBLIC" >>CMakeLists.txt
+      echo "$lib_list" >>CMakeLists.txt
       echo ")" >>CMakeLists.txt
       echo >>CMakeLists.txt
+
+    elif [ $make_ilib -eq 1 ];then
+      echo 'cet_make_library(INTERFACE
+    SOURCE' >>CMakeLists.txt
+      
+      for file in inc/*.hh;do
+        echo "      $file" >>CMakeLists.txt
+      done
+      
+      echo "    LIBRARIES INTERFACE" >>CMakeLists.txt
+      echo "$lib_list" >>CMakeLists.txt
+      echo ")" >>CMakeLists.txt
+      echo >>CMakeLists.txt
+
+    fi
+    
+    execcount=`ls src/*_main.cc 2>/dev/null|wc -l`
+    if [ execcount -gt 0 ]; then
+      for file in src/*_main.cc;do
+        execname=`echo $file|sed 's|src/||g;s/_main.cc//g'`
+        echo "cet_make_exec(NAME $execname
+    SOURCE $file
+    LIBRARIES" >>CMakeLists.txt
+        echo "      offline::$dirname" >>CMakeLists.txt
+        file_lib_list="`grep Offline/ $file|grep -v $dir|sed 's|.*Offline/|offline::|g;s|/.*||g'|uniq|tr '\n' ','`"
+        file_lib_list=`echo $file_lib_list|tr ',' '\n'|sort|uniq|awk '{print "      "$1}'`
+        echo "$file_lib_list" >>CMakeLists.txt
+        echo ")" >>CMakeLists.txt
+        echo >> CMakeLists.txt
+      done
+    fi
+
+    svccount=`ls src/*_service.cc 2>/dev/null|wc -l`
+    if [ $svccount -gt 0 ]; then
+      for file in src/*_service.cc;do
+        svcname=`echo $file|sed 's|src/||g;s/_service.cc//g'`
+        echo "cet_build_plugin($svcname art::service
+    REG_SOURCE $file
+    LIBRARIES REG" >>CMakeLists.txt
+        echo "      offline::$dirname" >>CMakeLists.txt
+        file_lib_list="`grep Offline/ $file|grep -v $dir|sed 's|.*Offline/|offline::|g;s|/.*||g'|uniq|tr '\n' ','`"
+        file_lib_list=`echo $file_lib_list|tr ',' '\n'|sort|uniq|awk '{print "      "$1}'`
+        echo "$file_lib_list" >>CMakeLists.txt
+        echo ")" >>CMakeLists.txt
+        echo >> CMakeLists.txt
+      done
     fi
 
     modcount=`ls src/*_module.cc 2>/dev/null |wc -l`
     if [ $modcount -gt 0 ]; then
       for file in src/*_module.cc;do
         modname=`echo $file|sed 's|src/||g;s/_module.cc//g'`
-        echo "cet_build_plugin($modname art::module REG_SOURCE $file)" >>CMakeLists.txt
+        echo "cet_build_plugin($modname art::module
+    REG_SOURCE $file
+    LIBRARIES REG" >>CMakeLists.txt
+        echo "      offline::$dirname" >>CMakeLists.txt
+        file_lib_list="`grep Offline/ $file|grep -v $dir|sed 's|.*Offline/|offline::|g;s|/.*||g'|uniq|tr '\n' ','`"
+        file_lib_list=`echo $file_lib_list|tr ',' '\n'|sort|uniq|awk '{print "      "$1}'`
+        echo "$file_lib_list" >>CMakeLists.txt
+        echo ")" >>CMakeLists.txt
         echo >> CMakeLists.txt
       done
     fi
 
-    echo >>CMakeLists.txt
-    echo "install_source(SUBDIRS src)" >> CMakeLists.txt
-
+    if [ -f src/classes.h ]; then
+      echo 'art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults'  >>CMakeLists.txt
+      echo '    CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml' >>CMakeLists.txt
+      echo '    CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h' >>CMakeLists.txt
+      echo '     DICTIONARY_LIBRARIES' >>CMakeLists.txt
+      echo "      offline::$dirname" >>CMakeLists.txt
+      echo ')' >>CMakeLists.txt
+    fi
+      
+    if [ -d src ]; then
+      echo "install_source(SUBDIRS src)" >> CMakeLists.txt
     fi
     if [ -d inc ]; then
       echo "install_headers(SUBDIRS inc)" >> CMakeLists.txt
