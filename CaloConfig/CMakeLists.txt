@@ -1,1 +1,9 @@
+cet_make_library(INTERFACE
+    SOURCE
+      inc/CalCalibConfig.hh
+      inc/CaloDAQMapConfig.hh
+    LIBRARIES INTERFACE
+      
+)
+
 install_headers(SUBDIRS inc)

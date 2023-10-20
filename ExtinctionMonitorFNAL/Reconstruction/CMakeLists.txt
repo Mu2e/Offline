@@ -1,0 +1,38 @@
+cet_make_library(
+    SOURCE
+      src/ClusterOnTrackPrecisionTool.cc
+      src/LinearRegression.cc
+      src/PixelHitLookup.cc
+      src/PixelRecoUtils.cc
+      src/TrackExtrapolator.cc
+    LIBRARIES PUBLIC
+      
+      offline::RecoDataProducts
+)
+
+cet_build_plugin(EMFPatRecFromTracklets art::module
+    REG_SOURCE src/EMFPatRecFromTracklets_module.cc
+    LIBRARIES REG
+      offline::ExtinctionMonitorFNAL_Reconstruction
+)
+
+cet_build_plugin(EMFTrackClusterArbiter art::module
+    REG_SOURCE src/EMFTrackClusterArbiter_module.cc
+    LIBRARIES REG
+      offline::ExtinctionMonitorFNAL_Reconstruction
+)
+
+cet_build_plugin(ExtMonFNALRawClusterization art::module
+    REG_SOURCE src/ExtMonFNALRawClusterization_module.cc
+    LIBRARIES REG
+      offline::ExtinctionMonitorFNAL_Reconstruction
+)
+
+cet_build_plugin(ExtMonFNALRecoClusterization art::module
+    REG_SOURCE src/ExtMonFNALRecoClusterization_module.cc
+    LIBRARIES REG
+      offline::ExtinctionMonitorFNAL_Reconstruction
+)
+
+install_source(SUBDIRS src)
+install_headers(SUBDIRS inc)
