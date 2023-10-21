@@ -25,24 +25,29 @@ cet_make_library(
 cet_build_plugin(TEveEventDisplay art::module
     REG_SOURCE src/TEveEventDisplay_module.cc
     LIBRARIES REG
+      offline::TEveEventDisplay
+      
 )
 
 cet_build_plugin(TEveGDMLTest art::module
     REG_SOURCE src/TEveGDMLTest_module.cc
     LIBRARIES REG
+      offline::TEveEventDisplay
+      
 )
 
 cet_build_plugin(TEveNonGDMLTest art::module
     REG_SOURCE src/TEveNonGDMLTest_module.cc
     LIBRARIES REG
+      offline::TEveEventDisplay
+      
 )
 
-art_dictionary(
-  CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
-  CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
-  DICTIONARY_LIBRARIES
-    offline::TEveEventDisplay
+art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
+    CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
+    CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
+     DICTIONARY_LIBRARIES
+      offline::TEveEventDisplay
 )
-
 install_source(SUBDIRS src)
 install_fhicl(SUBDIRS fcl SUBDIRNAME TEveEventDisplay)

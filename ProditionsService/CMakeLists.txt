@@ -18,17 +18,25 @@ cet_make_library(INTERFACE
 cet_build_plugin(ProditionsService art::service
     REG_SOURCE src/ProditionsService_service.cc
     LIBRARIES REG
+      offline::ProditionsService
+      
       offline::AnalysisConditions
       offline::CaloConditions
       offline::CRVConditions
-      offline::ProditionsService
+      offline::DAQConditions
+      offline::DbService
+      offline::GeometryService
       offline::SimulationConditions
+      offline::STMConditions
+      offline::TrackerConditions
 )
 
 cet_build_plugin(ProditionsTest art::module
     REG_SOURCE src/ProditionsTest_module.cc
     LIBRARIES REG
       offline::ProditionsService
+      
+      offline::CRVConditions
 )
 
 install_source(SUBDIRS src)

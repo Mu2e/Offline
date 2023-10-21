@@ -26,7 +26,6 @@ cet_make_library(
       src/trimInPlace.cc
       src/TwoBodyKinematics.cc
       src/TwoDPoint.cc
-      src/TwoDPointTest_main.cc
       src/TwoDWeight.cc
       src/VMInfo.cc
     LIBRARIES PUBLIC
@@ -36,7 +35,14 @@ cet_make_library(
       cetlib_except::cetlib_except
       CLHEP::CLHEP
       fhiclcpp::fhiclcpp
-      canvas::canvas
+      canvas::canvas      
+)
+
+cet_make_exec(NAME TwoDPointTest
+    SOURCE src/TwoDPointTest_main.cc
+    LIBRARIES
+      offline::GeneralUtilities
+      
 )
 
 install_source(SUBDIRS src)

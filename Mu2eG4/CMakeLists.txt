@@ -12,11 +12,6 @@ cet_make_library(
       src/constructDiskCalorimeter.cc
       src/constructDS.cc
       src/constructDummyStoppingTarget.cc
-      src/ConstructEnvBox_tool.cc
-      src/ConstructEnvCalo01_tool.cc
-      src/ConstructEnvMuCapture_tool.cc
-      src/ConstructEnvNBoxes_tool.cc
-      src/ConstructEnvTube_tool.cc
       src/constructExternalShielding.cc
       src/constructExtMonFNALBuilding.cc
       src/constructExtMonFNAL.cc
@@ -159,16 +154,78 @@ cet_make_library(
 cet_build_plugin(IonProducer art::module
     REG_SOURCE src/IonProducer_module.cc
     LIBRARIES REG
+      offline::Mu2eG4
+      
+      offline::DataProducts
+      offline::MCDataProducts
 )
 
 cet_build_plugin(Mu2eG4 art::module
     REG_SOURCE src/Mu2eG4_module.cc
     LIBRARIES REG
+      offline::Mu2eG4
+      
+      offline::ConfigTools
+      offline::GeometryService
+      offline::MCDataProducts
+      offline::Mu2eHallGeom
+      offline::SeedService
 )
 
 cet_build_plugin(Mu2eG4MT art::module
     REG_SOURCE src/Mu2eG4MT_module.cc
     LIBRARIES REG
+      offline::Mu2eG4
+      
+      offline::ConfigTools
+      offline::GeometryService
+      offline::MCDataProducts
+      offline::Mu2eHallGeom
+)
+
+cet_build_plugin(ConstructEnvBox art::tool
+    REG_SOURCE src/ConstructEnvBox_tool.cc
+    LIBRARIES REG
+      offline::Mu2eG4
+      
+      offline::ConfigTools
+      offline::Mu2eG4Helper
+)
+
+cet_build_plugin(ConstructEnvCalo01 art::tool
+    REG_SOURCE src/ConstructEnvCalo01_tool.cc
+    LIBRARIES REG
+      offline::Mu2eG4
+      
+      offline::ConfigTools
+      offline::Mu2eG4Helper
+)
+
+cet_build_plugin(ConstructEnvMuCapture art::tool
+    REG_SOURCE src/ConstructEnvMuCapture_tool.cc
+    LIBRARIES REG
+      offline::Mu2eG4
+      
+      offline::ConfigTools
+      offline::Mu2eG4Helper
+)
+
+cet_build_plugin(ConstructEnvNBoxes art::tool
+    REG_SOURCE src/ConstructEnvNBoxes_tool.cc
+    LIBRARIES REG
+      offline::Mu2eG4
+      
+      offline::ConfigTools
+      offline::Mu2eG4Helper
+)
+
+cet_build_plugin(ConstructEnvTube art::tool
+    REG_SOURCE src/ConstructEnvTube_tool.cc
+    LIBRARIES REG
+      offline::Mu2eG4
+      
+      offline::ConfigTools
+      offline::Mu2eG4Helper
 )
 
 install_source(SUBDIRS src)

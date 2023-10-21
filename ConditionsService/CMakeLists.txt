@@ -13,6 +13,8 @@ cet_build_plugin(ConditionsService art::service
     REG_SOURCE src/ConditionsService_service.cc
     LIBRARIES REG
       offline::ConditionsService
+      
+      offline::GeometryService
 )
 
 install_source(SUBDIRS src)

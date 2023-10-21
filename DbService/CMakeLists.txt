@@ -16,27 +16,35 @@ cet_make_library(
 )
 
 cet_make_exec(NAME dbTool
-    SOURCE src/dbTool_main.cc 
-    LIBRARIES offline::DbService
+    SOURCE src/dbTool_main.cc
+    LIBRARIES
+      offline::DbService
+      
 )
 
-cet_make_exec(NAME epicsTool 
-    SOURCE src/epicsTool_main.cc 
-    LIBRARIES 
-      offline::DbService
+cet_make_exec(NAME epicsTool
+    SOURCE src/epicsTool_main.cc
+    LIBRARIES
       Boost::program_options
+      offline::DbService
+      
 )
 
 cet_build_plugin(DbService art::service
     REG_SOURCE src/DbService_service.cc
     LIBRARIES REG
       offline::DbService
+      
+      offline::ConfigTools
+      offline::DbTables
 )
 
 cet_build_plugin(DbServiceTest art::module
     REG_SOURCE src/DbServiceTest_module.cc
     LIBRARIES REG
       offline::DbService
+      
+      offline::DbTables
 )
 
 install_source(SUBDIRS src)

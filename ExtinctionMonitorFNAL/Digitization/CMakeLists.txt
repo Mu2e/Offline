@@ -18,6 +18,13 @@ cet_build_plugin(ExtMonFNALHitMaker art::module
     REG_SOURCE src/ExtMonFNALHitMaker_module.cc
     LIBRARIES REG
       offline::ExtinctionMonitorFNAL_Digitization
+      
+      offline::ConditionsService
+      offline::GeometryService
+      offline::GlobalConstantsService
+      offline::MCDataProducts
+      offline::RecoDataProducts
+      offline::SeedService
 )
 
 install_source(SUBDIRS src)

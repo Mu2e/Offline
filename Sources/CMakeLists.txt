@@ -50,6 +50,5 @@ cet_build_plugin(PBISequence art::source
       offline::Sources
 )
 
-
 install_source(SUBDIRS src)
 install_headers(SUBDIRS inc)

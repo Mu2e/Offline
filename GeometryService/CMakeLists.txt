@@ -71,6 +71,26 @@ cet_build_plugin(GeometryService art::service
     REG_SOURCE src/GeometryService_service.cc
     LIBRARIES REG
       offline::GeometryService
+      
+      offline::BeamlineGeom
+      offline::BFieldGeom
+      offline::CalorimeterGeom
+      offline::ConfigTools
+      offline::CosmicRayShieldGeom
+      offline::DetectorSolenoidGeom
+      offline::ExternalShieldingGeom
+      offline::ExtinctionMonitorFNAL_Geometry
+      offline::MBSGeom
+      offline::MECOStyleProtonAbsorberGeom
+      offline::Mu2eHallGeom
+      offline::ProductionSolenoidGeom
+      offline::ProductionTargetGeom
+      offline::ProtonBeamDumpGeom
+      offline::PTMGeom
+      offline::ServicesGeom
+      offline::STMGeom
+      offline::StoppingTargetGeom
+      offline::TrackerGeom
 )
 
 install_source(SUBDIRS src)

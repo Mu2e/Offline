@@ -86,18 +86,21 @@ cet_build_plugin(DataProductDump art::module
     REG_SOURCE src/DataProductDump_module.cc
     LIBRARIES REG
       offline::Print
+      
 )
 
 cet_build_plugin(PrintModule art::module
     REG_SOURCE src/PrintModule_module.cc
     LIBRARIES REG
       offline::Print
+      
 )
 
 cet_build_plugin(RunSubrunEvent art::module
     REG_SOURCE src/RunSubrunEvent_module.cc
     LIBRARIES REG
       offline::Print
+      
 )
 
 install_source(SUBDIRS src)

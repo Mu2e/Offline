@@ -17,6 +17,7 @@ cet_build_plugin(GlobalConstantsService art::service
     REG_SOURCE src/GlobalConstantsService_service.cc
     LIBRARIES REG
       offline::GlobalConstantsService
+      
 )
 
 install_source(SUBDIRS src)
