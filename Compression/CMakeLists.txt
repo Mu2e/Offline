@@ -8,16 +8,29 @@ cet_make_library(
 cet_build_plugin(CompressDetStepMCs art::module
     REG_SOURCE src/CompressDetStepMCs_module.cc
     LIBRARIES REG
+      offline::Compression
+      
+      offline::MCDataProducts
+      offline::Mu2eUtilities
 )
 
 cet_build_plugin(CompressDigiMCsCheck art::module
     REG_SOURCE src/CompressDigiMCsCheck_module.cc
     LIBRARIES REG
+      offline::Compression
+      
+      offline::DataProducts
+      offline::MCDataProducts
 )
 
 cet_build_plugin(CompressDigiMCs art::module
     REG_SOURCE src/CompressDigiMCs_module.cc
     LIBRARIES REG
+      offline::Compression
+      
+      offline::DataProducts
+      offline::MCDataProducts
+      offline::Mu2eUtilities
 )
 
 install_source(SUBDIRS src)

@@ -27,6 +27,15 @@ cet_make_library(
 cet_build_plugin(TrkExt art::module
     REG_SOURCE src/TrkExt_module.cc
     LIBRARIES REG
+      offline::TrkExt
+      
+      offline::BFieldGeom
+      offline::BTrkData
+      offline::DataProducts
+      offline::GeneralUtilities
+      offline::GeometryService
+      offline::MCDataProducts
+      offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

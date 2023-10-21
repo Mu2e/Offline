@@ -13,21 +13,42 @@ cet_make_library(
 cet_build_plugin(CaloClusterFast art::module
     REG_SOURCE src/CaloClusterFast_module.cc
     LIBRARIES REG
+      offline::CaloCluster
+      
+      offline::CalorimeterGeom
+      offline::GeometryService
+      offline::RecoDataProducts
 )
 
 cet_build_plugin(CaloClusterMaker art::module
     REG_SOURCE src/CaloClusterMaker_module.cc
     LIBRARIES REG
+      offline::CaloCluster
+      
+      offline::CalorimeterGeom
+      offline::GeometryService
+      offline::RecoDataProducts
 )
 
 cet_build_plugin(CaloProtoClusterMaker art::module
     REG_SOURCE src/CaloProtoClusterMaker_module.cc
     LIBRARIES REG
+      offline::CaloCluster
+      
+      offline::CalorimeterGeom
+      offline::GeometryService
+      offline::RecoDataProducts
 )
 
 cet_build_plugin(CaloTrigger art::module
     REG_SOURCE src/CaloTrigger_module.cc
     LIBRARIES REG
+      offline::CaloCluster
+      
+      offline::CalorimeterGeom
+      offline::ConditionsService
+      offline::GeometryService
+      offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

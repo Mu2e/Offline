@@ -12,11 +12,25 @@ cet_make_library(
 cet_build_plugin(CrvCoincidenceFinder art::module
     REG_SOURCE src/CrvCoincidenceFinder_module.cc
     LIBRARIES REG
+      offline::CRVReco
+      
+      offline::CosmicRayShieldGeom
+      offline::DataProducts
+      offline::GeometryService
+      offline::RecoDataProducts
 )
 
 cet_build_plugin(CrvRecoPulsesFinder art::module
     REG_SOURCE src/CrvRecoPulsesFinder_module.cc
     LIBRARIES REG
+      offline::CRVReco
+      
+      offline::CosmicRayShieldGeom
+      offline::CRVConditions
+      offline::DataProducts
+      offline::GeometryService
+      offline::ProditionsService
+      offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

@@ -12,16 +12,34 @@ cet_make_library(
 cet_build_plugin(CaloHitMakerFast art::module
     REG_SOURCE src/CaloHitMakerFast_module.cc
     LIBRARIES REG
+      offline::CaloReco
+      
+      offline::ConditionsService
+      offline::DataProducts
+      offline::GeneralUtilities
+      offline::RecoDataProducts
 )
 
 cet_build_plugin(CaloHitMaker art::module
     REG_SOURCE src/CaloHitMaker_module.cc
     LIBRARIES REG
+      offline::CaloReco
+      
+      offline::CalorimeterGeom
+      offline::DataProducts
+      offline::GeometryService
+      offline::RecoDataProducts
 )
 
 cet_build_plugin(CaloRecoDigiMaker art::module
     REG_SOURCE src/CaloRecoDigiMaker_module.cc
     LIBRARIES REG
+      offline::CaloReco
+      
+      offline::ConditionsService
+      offline::DAQConditions
+      offline::ProditionsService
+      offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

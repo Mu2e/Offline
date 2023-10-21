@@ -9,10 +9,10 @@ for dir in */;do
     lib_list=''
     for file in src/*.cc inc/*.hh;do
       if ! [ -f $file ]; then continue; fi
-      if [[ $file =~ "_.*.cc" ]]; then
+      if [[ $file =~ _.*\.cc ]]; then
         continue
       fi
-      if [[ $file =~ "_.*.hh" ]]; then
+      if [[ $file =~ _.*\.hh ]]; then
         continue
       fi
       lib_list="$lib_list`grep Offline/ $file|grep -v $dir|sed 's|.*Offline/|offline::|g;s|/.*||g'|uniq|tr '\n' ','`"
@@ -23,7 +23,7 @@ for dir in */;do
     make_ilib=0
     for file in src/*.cc;do
       if ! [ -f $file ]; then continue; fi
-      if [[ $file =~ "_.*.cc" ]]; then
+      if [[ $file =~ _.*\.cc ]]; then
         continue
       fi
       make_lib=1
@@ -40,7 +40,7 @@ for dir in */;do
     SOURCE' >CMakeLists.txt
 
       for file in src/*.cc;do
-        if [[ $file =~ "_.*.cc" ]]; then
+        if [[ $file =~ _.*\.cc ]]; then
           continue
         fi
         echo "      $file" >>CMakeLists.txt
@@ -67,13 +67,15 @@ for dir in */;do
     fi
     
     execcount=`ls src/*_main.cc 2>/dev/null|wc -l`
-    if [ execcount -gt 0 ]; then
+    if [ $execcount -gt 0 ]; then
       for file in src/*_main.cc;do
         execname=`echo $file|sed 's|src/||g;s/_main.cc//g'`
         echo "cet_make_exec(NAME $execname
     SOURCE $file
     LIBRARIES" >>CMakeLists.txt
-        echo "      offline::$dirname" >>CMakeLists.txt
+        if [ $make_lib -eq 1 ] || [ $make_ilib -eq 1 ]; then
+          echo "      offline::$dirname" >>CMakeLists.txt
+        fi
         file_lib_list="`grep Offline/ $file|grep -v $dir|sed 's|.*Offline/|offline::|g;s|/.*||g'|uniq|tr '\n' ','`"
         file_lib_list=`echo $file_lib_list|tr ',' '\n'|sort|uniq|awk '{print "      "$1}'`
         echo "$file_lib_list" >>CMakeLists.txt
@@ -89,7 +91,27 @@ for dir in */;do
         echo "cet_build_plugin($svcname art::service
     REG_SOURCE $file
     LIBRARIES REG" >>CMakeLists.txt
-        echo "      offline::$dirname" >>CMakeLists.txt
+        if [ $make_lib -eq 1 ] || [ $make_ilib -eq 1 ]; then
+          echo "      offline::$dirname" >>CMakeLists.txt
+        fi
+        file_lib_list="`grep Offline/ $file|grep -v $dir|sed 's|.*Offline/|offline::|g;s|/.*||g'|uniq|tr '\n' ','`"
+        file_lib_list=`echo $file_lib_list|tr ',' '\n'|sort|uniq|awk '{print "      "$1}'`
+        echo "$file_lib_list" >>CMakeLists.txt
+        echo ")" >>CMakeLists.txt
+        echo >> CMakeLists.txt
+      done
+    fi
+    
+    srccount=`ls src/*_source.cc 2>/dev/null |wc -l`
+    if [ $srccount -gt 0 ]; then
+      for file in src/*_module.cc;do
+        srcname=`echo $file|sed 's|src/||g;s/_source.cc//g'`
+        echo "cet_build_plugin($modname art::source
+    REG_SOURCE $file
+    LIBRARIES REG" >>CMakeLists.txt
+        if [ $make_lib -eq 1 ] || [ $make_ilib -eq 1 ]; then
+          echo "      offline::$dirname" >>CMakeLists.txt
+        fi
         file_lib_list="`grep Offline/ $file|grep -v $dir|sed 's|.*Offline/|offline::|g;s|/.*||g'|uniq|tr '\n' ','`"
         file_lib_list=`echo $file_lib_list|tr ',' '\n'|sort|uniq|awk '{print "      "$1}'`
         echo "$file_lib_list" >>CMakeLists.txt
@@ -105,7 +127,27 @@ for dir in */;do
         echo "cet_build_plugin($modname art::module
     REG_SOURCE $file
     LIBRARIES REG" >>CMakeLists.txt
-        echo "      offline::$dirname" >>CMakeLists.txt
+        if [ $make_lib -eq 1 ] || [ $make_ilib -eq 1 ]; then
+          echo "      offline::$dirname" >>CMakeLists.txt
+        fi
+        file_lib_list="`grep Offline/ $file|grep -v $dir|sed 's|.*Offline/|offline::|g;s|/.*||g'|uniq|tr '\n' ','`"
+        file_lib_list=`echo $file_lib_list|tr ',' '\n'|sort|uniq|awk '{print "      "$1}'`
+        echo "$file_lib_list" >>CMakeLists.txt
+        echo ")" >>CMakeLists.txt
+        echo >> CMakeLists.txt
+      done
+    fi
+    
+    toolcount=`ls src/*_tool.cc 2>/dev/null |wc -l`
+    if [ $toolcount -gt 0 ]; then
+      for file in src/*_tool.cc;do
+        toolname=`echo $file|sed 's|src/||g;s/_tool.cc//g'`
+        echo "cet_build_plugin($toolname art::tool
+    REG_SOURCE $file
+    LIBRARIES REG" >>CMakeLists.txt
+        if [ $make_lib -eq 1 ] || [ $make_ilib -eq 1 ]; then
+          echo "      offline::$dirname" >>CMakeLists.txt
+        fi
         file_lib_list="`grep Offline/ $file|grep -v $dir|sed 's|.*Offline/|offline::|g;s|/.*||g'|uniq|tr '\n' ','`"
         file_lib_list=`echo $file_lib_list|tr ',' '\n'|sort|uniq|awk '{print "      "$1}'`
         echo "$file_lib_list" >>CMakeLists.txt
@@ -119,7 +161,9 @@ for dir in */;do
       echo '    CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml' >>CMakeLists.txt
       echo '    CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h' >>CMakeLists.txt
       echo '     DICTIONARY_LIBRARIES' >>CMakeLists.txt
-      echo "      offline::$dirname" >>CMakeLists.txt
+        if [ $make_lib -eq 1 ] || [ $make_ilib -eq 1 ]; then
+          echo "      offline::$dirname" >>CMakeLists.txt
+        fi
       echo ')' >>CMakeLists.txt
     fi
       

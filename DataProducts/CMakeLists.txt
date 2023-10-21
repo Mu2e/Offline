@@ -18,12 +18,11 @@ cet_make_library(
       offline::GeneralUtilities
 )
 
-art_dictionary(
-  CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
-  CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
-  DICTIONARY_LIBRARIES
-    offline::DataProducts
+art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
+    CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
+    CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
+     DICTIONARY_LIBRARIES
+      offline::DataProducts
 )
-
 install_source(SUBDIRS src)
 install_headers(SUBDIRS inc)

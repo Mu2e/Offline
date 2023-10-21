@@ -68,9 +68,10 @@ cet_make_library(LIBRARY_NAME Validation_Root
 
 cet_make_exec(NAME valCompare
     SOURCE src/valCompare_main.cc
-    LIBRARIES 
+    LIBRARIES
       offline::Validation_Root
       offline::Validation_dict
+      
 )
 
 cet_build_plugin(Validation art::module
@@ -78,6 +79,7 @@ cet_build_plugin(Validation art::module
     LIBRARIES REG
       offline::Validation_Root
       offline::Validation_dict
+      
 )
 
 art_dictionary(
@@ -85,7 +87,7 @@ art_dictionary(
   CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/root/classes.h
   DICTIONARY_LIBRARIES
     offline::Validation_Root
-)
+ )
 
 install_source(SUBDIRS src root)
 install_headers(SUBDIRS inc)

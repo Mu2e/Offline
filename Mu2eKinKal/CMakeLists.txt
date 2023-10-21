@@ -22,6 +22,7 @@ cet_make_library(
       KinKal_Fit
       KinKal_General
       KinKal_MatEnv
+      
       offline::BFieldGeom
       offline::CalorimeterGeom
       offline::ConfigTools
@@ -29,7 +30,6 @@ cet_make_library(
       offline::GeneralUtilities
       offline::GeometryService
       offline::KinKalGeom
-      offline::RecoDataProducts
       offline::TrackerConditions
       offline::TrackerGeom
       ROOT::ROOTTMVASofie
@@ -40,24 +40,43 @@ cet_build_plugin(CentralHelixFit art::module
     REG_SOURCE src/CentralHelixFit_module.cc
     LIBRARIES REG
       offline::Mu2eKinKal
+      
+      offline::GeneralUtilities
+      offline::TrkReco
 )
 
 cet_build_plugin(CosmicTrackSeedFilter art::module
     REG_SOURCE src/CosmicTrackSeedFilter_module.cc
     LIBRARIES REG
       offline::Mu2eKinKal
+      
+      offline::RecoDataProducts
 )
 
 cet_build_plugin(KinematicLineFit art::module
     REG_SOURCE src/KinematicLineFit_module.cc
     LIBRARIES REG
       offline::Mu2eKinKal
+      
+      offline::BFieldGeom
+      offline::CalorimeterGeom
+      offline::DataProducts
+      offline::GeneralUtilities
+      offline::GeometryService
+      offline::GlobalConstantsService
+      offline::Mu2eUtilities
+      offline::ProditionsService
+      offline::RecoDataProducts
+      offline::TrackerConditions
+      offline::TrackerGeom
+      offline::TrkReco
 )
 
 cet_build_plugin(LoopHelixFit art::module
     REG_SOURCE src/LoopHelixFit_module.cc
     LIBRARIES REG
       offline::Mu2eKinKal
+      
 )
 
 install_source(SUBDIRS src)

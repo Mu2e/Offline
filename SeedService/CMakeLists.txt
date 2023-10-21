@@ -14,6 +14,7 @@ cet_build_plugin(SeedService art::service
     IMPL_SOURCE src/SeedService_service.cc
     LIBRARIES PUBLIC
       offline::SeedService
+      
 )
 
 cet_build_plugin(SeedTest01 art::module
@@ -21,6 +22,7 @@ cet_build_plugin(SeedTest01 art::module
     LIBRARIES REG
       offline::SeedService
       offline::SeedService_SeedService_service
+      
 )
 
 install_source(SUBDIRS src)
