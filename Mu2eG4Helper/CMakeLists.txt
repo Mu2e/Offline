@@ -9,7 +9,8 @@ cet_make_library(
 
 cet_build_plugin(Mu2eG4Helper art::service
     REG_SOURCE src/Mu2eG4Helper_service.cc
-    LIBRARIES REG
+    IMPL_SOURCE src/Mu2eG4Helper_service.cc
+    LIBRARIES PUBLIC
       offline::Mu2eG4Helper
       
 )

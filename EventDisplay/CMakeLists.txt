@@ -21,12 +21,17 @@ cet_make_library(
       offline::StoppingTargetGeom
       offline::TrackerGeom
       offline::TrkReco
+      ROOT::Gui
+      ROOT::Geom
+      ROOT::Cling
 )
 
 cet_build_plugin(EventDisplay art::module
     REG_SOURCE src/EventDisplay_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::EventDisplay
+      offline::EventDisplay_dict
       
       offline::CRVConditions
       offline::MCDataProducts

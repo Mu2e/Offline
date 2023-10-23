@@ -137,18 +137,25 @@ cet_make_library(
       offline::MBSGeom
       offline::MCDataProducts
       offline::MECOStyleProtonAbsorberGeom
-      offline::Mu2eG4Helper
+      offline::Mu2eG4Helper_Mu2eG4Helper_service
       offline::Mu2eHallGeom
       offline::Mu2eUtilities
       offline::ProductionSolenoidGeom
       offline::ProductionTargetGeom
       offline::ProtonBeamDumpGeom
       offline::PTMGeom
-      offline::SeedService
+      offline::SeedService_SeedService_service
       offline::ServicesGeom
       offline::STMGeom
       offline::StoppingTargetGeom
       offline::TrackerGeom
+      Geant4::G4global
+      Geant4::G4digits_hits
+      Geant4::G4processes
+      Geant4::G4run
+      Geant4::G4physicslists
+      Geant4::G4persistency
+      Geant4::G4error_propagation
 )
 
 cet_build_plugin(IonProducer art::module
@@ -166,10 +173,11 @@ cet_build_plugin(Mu2eG4 art::module
       offline::Mu2eG4
       
       offline::ConfigTools
-      offline::GeometryService
+      offline::GeometryService_GeometryService_service
       offline::MCDataProducts
       offline::Mu2eHallGeom
       offline::SeedService
+      Geant4::G4interfaces
 )
 
 cet_build_plugin(Mu2eG4MT art::module
@@ -178,7 +186,7 @@ cet_build_plugin(Mu2eG4MT art::module
       offline::Mu2eG4
       
       offline::ConfigTools
-      offline::GeometryService
+      offline::GeometryService_GeometryService_service
       offline::MCDataProducts
       offline::Mu2eHallGeom
 )
