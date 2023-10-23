@@ -23,6 +23,7 @@ cet_build_plugin(CaloClusterFast art::module
 cet_build_plugin(CaloClusterMaker art::module
     REG_SOURCE src/CaloClusterMaker_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CaloCluster
       
       offline::CalorimeterGeom
@@ -43,6 +44,7 @@ cet_build_plugin(CaloProtoClusterMaker art::module
 cet_build_plugin(CaloTrigger art::module
     REG_SOURCE src/CaloTrigger_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CaloCluster
       
       offline::CalorimeterGeom

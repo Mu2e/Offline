@@ -7,6 +7,7 @@ cet_make_library(
       offline::CosmicRayShieldGeom
       offline::DataProducts
       offline::GeometryService
+      ROOT::Hist
 )
 
 cet_build_plugin(CrvCoincidenceFinder art::module
@@ -23,6 +24,7 @@ cet_build_plugin(CrvCoincidenceFinder art::module
 cet_build_plugin(CrvRecoPulsesFinder art::module
     REG_SOURCE src/CrvRecoPulsesFinder_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CRVReco
       
       offline::CosmicRayShieldGeom

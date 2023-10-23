@@ -11,6 +11,7 @@ cet_build_plugin(MakeSTMHits art::module
 cet_build_plugin(PlotSTMEnergySpectrum art::module
     REG_SOURCE src/PlotSTMEnergySpectrum_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::RecoDataProducts
@@ -19,6 +20,7 @@ cet_build_plugin(PlotSTMEnergySpectrum art::module
 cet_build_plugin(PlotSTMMWDSpectrum art::module
     REG_SOURCE src/PlotSTMMWDSpectrum_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::RecoDataProducts

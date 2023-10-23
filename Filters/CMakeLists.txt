@@ -10,12 +10,14 @@ cet_build_plugin(BunchIntensityFilter art::module
 cet_build_plugin(CaloShowerSimFilter art::module
     REG_SOURCE src/CaloShowerSimFilter_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::MCDataProducts
 )
 
 cet_build_plugin(ChooseTrackFilter art::module
     REG_SOURCE src/ChooseTrackFilter_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CalorimeterGeom
       offline::DataProducts
       offline::GeometryService
@@ -163,6 +165,7 @@ cet_build_plugin(GenParticleMomFilter art::module
 cet_build_plugin(KilledEventFilter art::module
     REG_SOURCE src/KilledEventFilter_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::MCDataProducts
 )
 
@@ -176,7 +179,7 @@ cet_build_plugin(ParticleCodeFilter art::module
 cet_build_plugin(RandomPrescaleFilter art::module
     REG_SOURCE src/RandomPrescaleFilter_module.cc
     LIBRARIES REG
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(RecoMomFilter art::module
@@ -188,6 +191,7 @@ cet_build_plugin(RecoMomFilter art::module
 cet_build_plugin(SelectEvents art::module
     REG_SOURCE src/SelectEvents_module.cc
     LIBRARIES REG
+      ROOT::Tree
 )
 
 cet_build_plugin(SelectStepPointsByTime art::module
@@ -211,12 +215,14 @@ cet_build_plugin(StepPointMCCollectionUpdater art::module
 cet_build_plugin(StepPointsInDigis art::module
     REG_SOURCE src/StepPointsInDigis_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::MCDataProducts
 )
 
 cet_build_plugin(StrawDigiMCFilter art::module
     REG_SOURCE src/StrawDigiMCFilter_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::MCDataProducts
 )
 
@@ -269,7 +275,7 @@ cet_build_plugin(WeightSamplingFilter art::module
     LIBRARIES REG
       offline::DataProducts
       offline::MCDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 install_source(SUBDIRS src)

@@ -2,6 +2,7 @@ cet_make_library(
     SOURCE
       src/CompressionLevel.cc
     LIBRARIES PUBLIC
+      Boost::headers
       
 )
 
@@ -17,6 +18,7 @@ cet_build_plugin(CompressDetStepMCs art::module
 cet_build_plugin(CompressDigiMCsCheck art::module
     REG_SOURCE src/CompressDigiMCsCheck_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::Compression
       
       offline::DataProducts

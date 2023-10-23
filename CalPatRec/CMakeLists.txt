@@ -23,6 +23,7 @@ cet_make_library(
       offline::RecoDataProducts
       offline::TrackerGeom
       offline::TrkReco
+      ROOT::Physics
 )
 
 cet_build_plugin(CalHelixFinder art::module

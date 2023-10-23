@@ -22,7 +22,7 @@ cet_make_library(
       KinKal_Fit
       KinKal_General
       KinKal_MatEnv
-      
+      KinKal_Trajectory
       offline::BFieldGeom
       offline::CalorimeterGeom
       offline::ConfigTools
@@ -76,6 +76,7 @@ cet_build_plugin(LoopHelixFit art::module
     REG_SOURCE src/LoopHelixFit_module.cc
     LIBRARIES REG
       offline::Mu2eKinKal
+      offline::TrkReco
       
 )
 

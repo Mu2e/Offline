@@ -23,6 +23,7 @@ find_package(CURL REQUIRED)
 find_package(Boost COMPONENTS iostreams program_options REQUIRED)
 find_package(XercesC REQUIRED)
 find_package(BLAS REQUIRED)
+find_package(artdaq_core_mu2e REQUIRED)
 
 # BTrk and KinKal have non-standard Find*.cmake...
 include_directories($ENV{KINKAL_INC})

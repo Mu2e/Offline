@@ -16,7 +16,7 @@ cet_make_library(
       src/TrkTimeCalculator.cc
       src/TrkUtilities.cc
     LIBRARIES PUBLIC
-      
+      BTrk_difAlgebra
       offline::BFieldGeom
       offline::BTrkData
       offline::CalorimeterGeom

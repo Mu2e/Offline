@@ -7,6 +7,7 @@ cet_build_plugin(DigiFilter art::module
 cet_build_plugin(EvalWeightedEventCounts art::module
     REG_SOURCE src/EvalWeightedEventCounts_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::MCDataProducts
 )
 

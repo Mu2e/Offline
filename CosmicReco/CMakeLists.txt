@@ -14,6 +14,7 @@ cet_make_library(
       offline::RecoDataProducts
       offline::TrackerConditions
       offline::TrackerGeom
+      ROOT::Minuit2
 )
 
 cet_build_plugin(CosmicAnalyzer art::module
@@ -43,6 +44,7 @@ cet_build_plugin(CosmicFitDisplay art::module
       offline::RecoDataProducts
       offline::TrackerGeom
       offline::TrkDiag
+      ROOT::Geom
 )
 
 cet_build_plugin(CosmicMCRecoDiff art::module

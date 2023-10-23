@@ -10,6 +10,7 @@ cet_make_library(
       src/TrkExtStoppingTarget.cc
       src/TrkExtToyDS.cc
     LIBRARIES PUBLIC
+      art_root_io::TFileService_service
       
       offline::BFieldGeom
       offline::BTrkData

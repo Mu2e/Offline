@@ -12,6 +12,7 @@ cet_make_library(
 cet_build_plugin(EMFPatRecFromTracklets art::module
     REG_SOURCE src/EMFPatRecFromTracklets_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::ExtinctionMonitorFNAL_Reconstruction
       offline::GeometryService
       offline::RecoDataProducts
@@ -20,6 +21,7 @@ cet_build_plugin(EMFPatRecFromTracklets art::module
 cet_build_plugin(EMFTrackClusterArbiter art::module
     REG_SOURCE src/EMFTrackClusterArbiter_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::ExtinctionMonitorFNAL_Reconstruction
       
       offline::RecoDataProducts
@@ -28,6 +30,7 @@ cet_build_plugin(EMFTrackClusterArbiter art::module
 cet_build_plugin(ExtMonFNALRawClusterization art::module
     REG_SOURCE src/ExtMonFNALRawClusterization_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::ExtinctionMonitorFNAL_Reconstruction
       offline::GeometryService
       offline::RecoDataProducts

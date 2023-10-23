@@ -12,6 +12,7 @@ cet_make_library(
       src/PrimaryProtonGunImpl.cc
     LIBRARIES PUBLIC
       
+      art_root_io::tfile_support
       offline::CalorimeterGeom
       offline::ConditionsService
       offline::ConfigTools
