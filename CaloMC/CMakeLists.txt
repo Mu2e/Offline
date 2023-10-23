@@ -11,7 +11,7 @@ cet_make_library(
       offline::ConditionsService
       offline::GeometryService
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(CaloClusterTruthMatch art::module
@@ -37,7 +37,7 @@ cet_build_plugin(CaloDigiMaker art::module
       offline::Mu2eUtilities
       offline::ProditionsService
       offline::RecoDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(CaloHitTruthMatch art::module
@@ -64,7 +64,7 @@ cet_build_plugin(CaloShowerROMaker art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::ProditionsService
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(CaloShowerStepMaker art::module

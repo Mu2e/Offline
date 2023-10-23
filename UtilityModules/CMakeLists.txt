@@ -7,7 +7,7 @@ cet_build_plugin(ModifyTrackSPM art::module
 cet_build_plugin(NullProducer art::module
     REG_SOURCE src/NullProducer_module.cc
     LIBRARIES REG      
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(ReadTrackSPM art::module

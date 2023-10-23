@@ -27,6 +27,7 @@ cet_build_plugin(CombineStrawHits art::module
 cet_build_plugin(FlagBkgHits art::module
     REG_SOURCE src/FlagBkgHits_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::TrkHitReco
       
       offline::ConditionsService
@@ -51,6 +52,7 @@ cet_build_plugin(MakeStereoHits art::module
 cet_build_plugin(ProtonBunchTimeFromStrawDigis art::module
     REG_SOURCE src/ProtonBunchTimeFromStrawDigis_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::TrkHitReco
       
       offline::ProditionsService
@@ -69,6 +71,7 @@ cet_build_plugin(ReadStrawDigi art::module
 cet_build_plugin(StrawHitReco art::module
     REG_SOURCE src/StrawHitReco_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::TrkHitReco
       
       offline::ConditionsBase

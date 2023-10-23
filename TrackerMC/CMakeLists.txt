@@ -16,6 +16,7 @@ cet_make_library(
 cet_build_plugin(MakeMCKalSeed art::module
     REG_SOURCE src/MakeMCKalSeed_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::TrackerMC
       
       offline::BFieldGeom

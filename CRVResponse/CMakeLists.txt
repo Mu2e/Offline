@@ -15,6 +15,7 @@ cet_make_library(
 cet_build_plugin(CrvCalibration art::module
     REG_SOURCE src/CrvCalibration_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CRVResponse
       
       offline::CosmicRayShieldGeom
@@ -25,6 +26,7 @@ cet_build_plugin(CrvCalibration art::module
 cet_build_plugin(CrvCoincidenceClusterMatchMC art::module
     REG_SOURCE src/CrvCoincidenceClusterMatchMC_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CRVResponse
       
       offline::ConditionsService
@@ -53,6 +55,7 @@ cet_build_plugin(CrvDigitizer art::module
 cet_build_plugin(CrvPedestalFinder art::module
     REG_SOURCE src/CrvPedestalFinder_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CRVResponse
       
       offline::CosmicRayShieldGeom
@@ -80,6 +83,7 @@ cet_build_plugin(CrvPhotonGenerator art::module
 cet_build_plugin(CrvPlot art::module
     REG_SOURCE src/CrvPlot_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CRVResponse
       
       offline::ConditionsService
@@ -111,6 +115,7 @@ cet_build_plugin(CrvSiPMChargeGenerator art::module
 cet_build_plugin(CrvStepsFromStepPointMCs art::module
     REG_SOURCE src/CrvStepsFromStepPointMCs_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CRVResponse
       
       offline::DataProducts
@@ -123,6 +128,7 @@ cet_build_plugin(CrvStepsFromStepPointMCs art::module
 cet_build_plugin(CRVTest art::module
     REG_SOURCE src/CRVTest_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CRVResponse
       
       offline::CosmicRayShieldGeom

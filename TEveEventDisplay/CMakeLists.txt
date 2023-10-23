@@ -20,6 +20,7 @@ cet_make_library(
       offline::ConfigTools
       offline::GeometryService
       offline::GlobalConstantsService
+      ROOT::Eve
 )
 
 cet_build_plugin(TEveEventDisplay art::module

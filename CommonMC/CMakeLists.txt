@@ -2,7 +2,7 @@ cet_build_plugin(CosmicTimeOffset art::module
     REG_SOURCE src/CosmicTimeOffset_module.cc
     LIBRARIES REG      
       offline::MCDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(EventWindowMarkerProducer art::module
@@ -13,7 +13,7 @@ cet_build_plugin(EventWindowMarkerProducer art::module
       offline::MCDataProducts
       offline::ProditionsService
       offline::RecoDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(FindMCPrimary art::module
@@ -25,12 +25,14 @@ cet_build_plugin(FindMCPrimary art::module
 cet_build_plugin(GenEventCountReader art::module
     REG_SOURCE src/GenEventCountReader_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::MCDataProducts
 )
 
 cet_build_plugin(InFlightStepDumper art::module
     REG_SOURCE src/InFlightStepDumper_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::GeneralUtilities
       offline::MCDataProducts
 )
@@ -46,7 +48,7 @@ cet_build_plugin(ProtonTimeOffset art::module
     LIBRARIES REG
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(SelectRecoMC art::module
@@ -66,6 +68,7 @@ cet_build_plugin(SelectRecoMC art::module
 cet_build_plugin(SimParticleDaughterSelector art::module
     REG_SOURCE src/SimParticleDaughterSelector_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::DataProducts
       offline::MCDataProducts
 )

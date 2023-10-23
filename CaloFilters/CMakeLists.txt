@@ -1,6 +1,7 @@
 cet_build_plugin(CaloClusterCounterFilter art::module
     REG_SOURCE src/CaloClusterCounterFilter_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CalorimeterGeom
       offline::ConfigTools
       offline::GeometryService
@@ -19,6 +20,7 @@ cet_build_plugin(CaloCosmicCalib art::module
 cet_build_plugin(CaloLikelihood art::module
     REG_SOURCE src/CaloLikelihood_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CaloCluster
       offline::CalorimeterGeom
       offline::ConfigTools
@@ -30,6 +32,7 @@ cet_build_plugin(CaloLikelihood art::module
 cet_build_plugin(EcalTriggerPreselect art::module
     REG_SOURCE src/EcalTriggerPreselect_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CalorimeterGeom
       offline::ConditionsService
       offline::GeometryService
@@ -40,6 +43,7 @@ cet_build_plugin(EcalTriggerPreselect art::module
 cet_build_plugin(FilterEcalMixedTrigger art::module
     REG_SOURCE src/FilterEcalMixedTrigger_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CalorimeterGeom
       offline::ConditionsService
       offline::ConfigTools
@@ -50,6 +54,7 @@ cet_build_plugin(FilterEcalMixedTrigger art::module
 cet_build_plugin(FilterEcalMVATrigger art::module
     REG_SOURCE src/FilterEcalMVATrigger_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::CalorimeterGeom
       offline::ConditionsService
       offline::ConfigTools

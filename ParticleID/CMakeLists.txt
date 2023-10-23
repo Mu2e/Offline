@@ -5,7 +5,7 @@ cet_make_library(
       src/PIDLogLRatio.cc
       src/PIDUtilities.cc
     LIBRARIES PUBLIC
-      
+      ROOT::Hist
       offline::ConfigTools
       offline::GeneralUtilities
 )
@@ -13,6 +13,7 @@ cet_make_library(
 cet_build_plugin(ParticleID art::module
     REG_SOURCE src/ParticleID_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::ParticleID
       
       offline::BTrkData
@@ -27,6 +28,7 @@ cet_build_plugin(ParticleID art::module
 cet_build_plugin(ParticleIDRead art::module
     REG_SOURCE src/ParticleIDRead_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::ParticleID
       
       offline::RecoDataProducts

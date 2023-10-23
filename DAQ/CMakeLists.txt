@@ -2,6 +2,7 @@ cet_make_library(
     SOURCE
       src/CaloDAQUtilities.cc
     LIBRARIES PUBLIC
+      artdaq_core_mu2e::artdaq-core-mu2e_Data
       
 )
 
@@ -60,14 +61,16 @@ cet_build_plugin(CrvDigisFromFragments art::module
 cet_build_plugin(FragmentAna art::module
     REG_SOURCE src/FragmentAna_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::DAQ
-      
       offline::DataProducts
+      ROOT::Hist
 )
 
 cet_build_plugin(PrefetchDAQData art::module
     REG_SOURCE src/PrefetchDAQData_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::DAQ
       
       offline::RecoDataProducts
@@ -76,6 +79,7 @@ cet_build_plugin(PrefetchDAQData art::module
 cet_build_plugin(StrawHitRecoFromFragments art::module
     REG_SOURCE src/StrawHitRecoFromFragments_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::DAQ
       
       offline::ConditionsBase
