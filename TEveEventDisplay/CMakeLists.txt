@@ -16,31 +16,39 @@ cet_make_library(
       src/TEveMu2eStraightTrack.cc
       src/TEveMu2eTracker.cc
     LIBRARIES PUBLIC
-      
+      BTrk_difAlgebra
       offline::ConfigTools
       offline::GeometryService
       offline::GlobalConstantsService
+      offline::RecoDataProducts
       ROOT::Eve
+      ROOT::Cling
 )
 
 cet_build_plugin(TEveEventDisplay art::module
     REG_SOURCE src/TEveEventDisplay_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::TEveEventDisplay
+      offline::TEveEventDisplay_dict
       
 )
 
 cet_build_plugin(TEveGDMLTest art::module
     REG_SOURCE src/TEveGDMLTest_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::TEveEventDisplay
+      offline::TEveEventDisplay_dict
       
 )
 
 cet_build_plugin(TEveNonGDMLTest art::module
     REG_SOURCE src/TEveNonGDMLTest_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::TEveEventDisplay
+      offline::TEveEventDisplay_dict
       
 )
 

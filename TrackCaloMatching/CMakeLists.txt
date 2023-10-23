@@ -33,6 +33,7 @@ cet_build_plugin(TrackCaloMatching art::module
       offline::ConditionsService
       offline::GeometryService
       offline::RecoDataProducts
+      ROOT::Physics
 )
 
 cet_build_plugin(TrackCaloMatchingMVA art::module

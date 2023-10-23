@@ -58,7 +58,7 @@ cet_build_plugin(StrawDigisFromStrawGasSteps art::module
       offline::Mu2eUtilities
       offline::ProditionsService
       offline::RecoDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
       offline::TrackerConditions
       offline::TrackerGeom
 )

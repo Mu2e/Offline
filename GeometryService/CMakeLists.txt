@@ -69,7 +69,8 @@ cet_make_library(
 
 cet_build_plugin(GeometryService art::service
     REG_SOURCE src/GeometryService_service.cc
-    LIBRARIES REG
+    IMPL_SOURCE src/GeometryService_service.cc
+    LIBRARIES PUBLIC
       offline::GeometryService
       
       offline::BeamlineGeom

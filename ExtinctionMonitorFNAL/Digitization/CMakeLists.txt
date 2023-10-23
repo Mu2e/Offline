@@ -24,7 +24,7 @@ cet_build_plugin(ExtMonFNALHitMaker art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::RecoDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 install_source(SUBDIRS src)

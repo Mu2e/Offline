@@ -18,6 +18,7 @@ cet_make_library(
 cet_build_plugin(EMFBoxFluxAnalyzer art::module
     REG_SOURCE src/EMFBoxFluxAnalyzer_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       offline::ConfigTools
       offline::DataProducts
       offline::ExtinctionMonitorFNAL_Utilities
@@ -149,6 +150,7 @@ cet_build_plugin(EMFRoomFluxAnalyzer art::module
     REG_SOURCE src/EMFRoomFluxAnalyzer_module.cc
     LIBRARIES REG
       offline::ExtinctionMonitorFNAL_Analyses
+      offline::ExtinctionMonitorFNAL_Utilities
       
       offline::ConfigTools
       offline::DataProducts
@@ -163,6 +165,7 @@ cet_build_plugin(MARSGenParticleDumper art::module
     REG_SOURCE src/MARSGenParticleDumper_module.cc
     LIBRARIES REG
       offline::ExtinctionMonitorFNAL_Analyses
+      offline::ExtinctionMonitorFNAL_Utilities
       offline::GeometryService
       offline::GlobalConstantsService
       offline::MCDataProducts
@@ -173,6 +176,7 @@ cet_build_plugin(MARSGenParticleHist art::module
     REG_SOURCE src/MARSGenParticleHist_module.cc
     LIBRARIES REG
       offline::ExtinctionMonitorFNAL_Analyses
+      offline::ExtinctionMonitorFNAL_Utilities
       
       offline::GeometryService
       offline::MCDataProducts

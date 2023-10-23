@@ -26,6 +26,7 @@ cet_make_library(
       offline::ProductionTargetGeom
       offline::SeedService
       offline::StoppingTargetGeom
+      CRY
 )
 
 cet_build_plugin(AntiProtonGun art::module
@@ -40,7 +41,7 @@ cet_build_plugin(AntiProtonGun art::module
       offline::MCDataProducts
       offline::Mu2eUtilities
       offline::ProductionTargetGeom
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(CaloCalibGun art::module
@@ -53,7 +54,7 @@ cet_build_plugin(CaloCalibGun art::module
       offline::GeometryService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(CaloTBGun art::module
@@ -67,7 +68,7 @@ cet_build_plugin(CaloTBGun art::module
       offline::GeometryService
       offline::GlobalConstantsService
       offline::MCDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(CeEndpoint art::module
@@ -79,7 +80,7 @@ cet_build_plugin(CeEndpoint art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(CORSIKAEventGenerator art::module
@@ -94,7 +95,7 @@ cet_build_plugin(CORSIKAEventGenerator art::module
       offline::GeometryService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(CRYEventGenerator art::module
@@ -104,7 +105,7 @@ cet_build_plugin(CRYEventGenerator art::module
       
       offline::ConfigTools
       offline::MCDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(CryResampler art::module
@@ -116,7 +117,7 @@ cet_build_plugin(CryResampler art::module
       offline::GeneralUtilities
       offline::GlobalConstantsService
       offline::MCDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(DecayInOrbitWeight art::module
@@ -127,7 +128,7 @@ cet_build_plugin(DecayInOrbitWeight art::module
       offline::ConfigTools
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(EplusFromStoppedPion art::module
@@ -139,7 +140,7 @@ cet_build_plugin(EplusFromStoppedPion art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(EventGenerator art::module
@@ -149,7 +150,7 @@ cet_build_plugin(EventGenerator art::module
       
       offline::ConfigTools
       offline::MCDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(ExtMonFNALBoxGenerator art::module
@@ -164,7 +165,7 @@ cet_build_plugin(ExtMonFNALBoxGenerator art::module
       offline::GeometryService
       offline::GlobalConstantsService
       offline::MCDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(ExtMonFNALGun art::module
@@ -173,7 +174,7 @@ cet_build_plugin(ExtMonFNALGun art::module
       offline::EventGenerator
       
       offline::MCDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(ExtMonFNALRoomGenerator art::module
@@ -184,11 +185,12 @@ cet_build_plugin(ExtMonFNALRoomGenerator art::module
       offline::ConfigTools
       offline::DataProducts
       offline::ExtinctionMonitorFNAL_Geometry
+      offline::ExtinctionMonitorFNAL_Utilities
       offline::GeometryService
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::ProtonBeamDumpGeom
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(FlatMuonDaughterGenerator art::module
@@ -200,7 +202,7 @@ cet_build_plugin(FlatMuonDaughterGenerator art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(FromAsciiMomentumAndPosition art::module
@@ -217,7 +219,7 @@ cet_build_plugin(FromAsciiMomentumAndPosition art::module
       offline::MCDataProducts
       offline::Mu2eUtilities
       offline::ProductionTargetGeom
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(FromSimParticleCompact art::module
@@ -232,7 +234,7 @@ cet_build_plugin(FromSimParticleCompact art::module
       offline::MCDataProducts
       offline::Mu2eUtilities
       offline::ProductionTargetGeom
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(FromStepPointMCs art::module
@@ -253,7 +255,7 @@ cet_build_plugin(FromStepPointMCsRotateTarget art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::ProductionTargetGeom
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(G4BeamlineGenerator art::module
@@ -263,7 +265,7 @@ cet_build_plugin(G4BeamlineGenerator art::module
       
       offline::ConfigTools
       offline::MCDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(GeneratorPlots art::module
@@ -293,7 +295,7 @@ cet_build_plugin(InFlightParticleSampler art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(LeadingLog art::module
@@ -305,7 +307,7 @@ cet_build_plugin(LeadingLog art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(MuStopProductsGun art::module
@@ -319,7 +321,7 @@ cet_build_plugin(MuStopProductsGun art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(PBIWeight art::module
@@ -339,7 +341,7 @@ cet_build_plugin(Pileup art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(PrimaryAntiProtonGun art::module
@@ -356,7 +358,7 @@ cet_build_plugin(PrimaryAntiProtonGun art::module
       offline::MCDataProducts
       offline::Mu2eUtilities
       offline::ProductionTargetGeom
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(PrimaryProtonGun art::module
@@ -365,7 +367,7 @@ cet_build_plugin(PrimaryProtonGun art::module
       offline::EventGenerator
       
       offline::MCDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(RanTest art::module
@@ -374,7 +376,7 @@ cet_build_plugin(RanTest art::module
       offline::EventGenerator
       
       offline::MCDataProducts
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(RMCGun art::module
@@ -388,7 +390,7 @@ cet_build_plugin(RMCGun art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(RPCGun art::module
@@ -400,7 +402,7 @@ cet_build_plugin(RPCGun art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(SingleProcessGenerator art::module
@@ -412,7 +414,7 @@ cet_build_plugin(SingleProcessGenerator art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(StoppedMuonRMCGun art::module
@@ -426,7 +428,7 @@ cet_build_plugin(StoppedMuonRMCGun art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(StoppedMuonXRayGammaRayGun art::module
@@ -440,7 +442,7 @@ cet_build_plugin(StoppedMuonXRayGammaRayGun art::module
       offline::GeometryService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
       offline::StoppingTargetGeom
 )
 
@@ -454,7 +456,7 @@ cet_build_plugin(StoppedMuplusDecayGun art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(StoppedParticleG4Gun art::module
@@ -467,7 +469,7 @@ cet_build_plugin(StoppedParticleG4Gun art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(StoppedParticleReactionGun art::module
@@ -481,7 +483,7 @@ cet_build_plugin(StoppedParticleReactionGun art::module
       offline::GlobalConstantsService
       offline::MCDataProducts
       offline::Mu2eUtilities
-      offline::SeedService
+      offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(DIOGenerator art::tool
