@@ -15,6 +15,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/CrvStep.hh"
 
 namespace mu2e {
 
@@ -24,8 +25,7 @@ namespace mu2e {
     InputTags inputs_;
     double cutEDepMin_;
     double cutEDepMax_;
-    double cutZMin_;
-    double cutZMax_;
+    double useCrvSteps_;
 
     // statistics counters
     unsigned numInputEvents_;
@@ -55,18 +55,10 @@ namespace mu2e {
           std::numeric_limits<double>::max()
           };
 
-      fhicl::Atom<double> cutZMin {
-        Name("cutZMin"),
-          Comment("The filter passes events if z-pos of the first step in CRV > cutZMin\n"
-                  "By default cutZMin=-inf\n"),
-          -std::numeric_limits<double>::max()
-          };
-
-      fhicl::Atom<double> cutZMax {
-        Name("cutZMax"),
-          Comment("The filter passes events if z-pos of the first step in CRV < cutZMax\n"
-                  "By default cutZMax=inf\n"),
-          std::numeric_limits<double>::max()
+      fhicl::Atom<bool> useCrvSteps {
+        Name("useCrvSteps"),
+          Comment("If true then use CRV steps as input, otherwise use StepPointMC\n"),
+          false
           };
 
     };
@@ -83,8 +75,7 @@ namespace mu2e {
     : art::EDFilter{conf}
     , cutEDepMin_(conf().cutEDepMin())
     , cutEDepMax_(conf().cutEDepMax())
-    , cutZMin_(conf().cutZMin())
-    , cutZMax_(conf().cutZMax())
+    , useCrvSteps_(conf().useCrvSteps())
 
     , numInputEvents_(0)
     , numPassedEvents_(0)
@@ -96,33 +87,23 @@ namespace mu2e {
 
   //================================================================
   bool FilterCosmicsStage1::filter(art::Event& event) {
-    bool passedE = false;
-    bool passedZ = false;
+    bool passed = false;
     double totalEDep = 0;
     for(const auto& cn : inputs_) {
-      auto ih = event.getValidHandle<StepPointMCCollection>(cn);
-      for(const auto& hit : *ih) {
-        // skip steps w/o energy deposition
-        if( hit.ionizingEdep() < std::numeric_limits<double>::epsilon())
-          continue;
-        // Sum up the total energy deposition in CRV
-        totalEDep = totalEDep + hit.ionizingEdep();
-
+      if(useCrvSteps_){
+        auto ih = event.getValidHandle<CrvStepCollection>(cn);
+        for(const auto& hit : *ih)
+          totalEDep += hit.visibleEDep();
       }
-      std::vector<mu2e::StepPointMC> stepPoints = *ih;
-      if (stepPoints.size()){
-        // Check if any steps are inside the specified z-region
-        if(stepPoints.at(0).position().z() > cutZMin_ && stepPoints.at(0).position().z() < cutZMax_)
-          passedZ = true;
+      else{
+        auto ih = event.getValidHandle<StepPointMCCollection>(cn);
+        for(const auto& hit : *ih)
+          totalEDep += hit.visibleEDep();
       }
-      else
-        passedZ = true; // No hits in CRV. Pass z-cut as the default
     }
     // Select only events with energy deposition in specified range
     if(totalEDep > cutEDepMin_ && totalEDep < cutEDepMax_)
-      passedE = true;
-
-    bool passed=passedE&passedZ;
+      passed = true;
     ++numInputEvents_;
     if(passed) { ++numPassedEvents_; }
     return passed;
