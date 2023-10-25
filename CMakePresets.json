@@ -13,6 +13,18 @@
             "CMAKE_CXX_STANDARD_REQUIRED" : {
                "type" : "BOOL",
                "value" : "ON"
+            },
+            "offline_ADD_NOARCH_DIRS_INIT" : {
+               "type" : "INTERNAL",
+               "value" : "INCLUDE_DIR;FHICL_DIR"
+            },
+            "offline_FHICL_DIR_INIT" : {
+               "type" : "STRING",
+               "value" : "fcl/Offline"
+            },
+            "offline_INCLUDE_DIR_INIT" : {
+               "type" : "STRING",
+               "value" : "include/Offline"
             }
          },
          "description" : "Configuration settings translated from ups/product_deps",

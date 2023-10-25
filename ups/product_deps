@@ -127,7 +127,7 @@ defaultqual s124:e28
 #
 #     CMake modules.
 #
-#>  fcldir		product_dir	fcl
+fcldir		product_dir	fcl/Offline
 #
 #     FHiCL framework configuration files.
 #
@@ -139,7 +139,7 @@ defaultqual s124:e28
 #
 #     GDML geometry description files.
 #
-#>  incdir		product_dir	include
+incdir		product_dir	include/Offline
 #
 #     Headers.
 #
