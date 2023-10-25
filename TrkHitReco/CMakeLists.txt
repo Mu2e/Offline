@@ -85,6 +85,6 @@ cet_build_plugin(StrawHitReco art::module
       offline::TrackerGeom
 )
 
-install_source(SUBDIRS src)
+install_source(SUBDIRS src inc)
 install_headers(SUBDIRS inc)
-install_fhicl(SUBDIRS fcl SUBDIRNAME TrkHitReco)
+install_fhicl(SUBDIRS fcl SUBDIRNAME TrkHitReco/fcl)
