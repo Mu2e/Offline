@@ -10,7 +10,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Data/TrackerFragment.hh"
+#include "artdaq-core-mu2e/Data/TrackerDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 
 #include "Offline/DataProducts/inc/TrkTypes.hh"
@@ -51,7 +51,7 @@ public:
 
 private:
   void
-  analyze_tracker_(const mu2e::TrackerFragment& cc,
+  analyze_tracker_(const mu2e::TrackerDataDecoder& cc,
                    std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
                    std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> const& straw_digi_adcs);
   int diagLevel_;
@@ -97,7 +97,7 @@ void art::StrawRecoFromFragments::produce(Event& event) {
 
   size_t totalSize = 0;
   size_t numTrkFrags = 0;
-  auto fragmentHandle = event.getValidHandle<std::vector<mu2e::TrackerFragment> >(trkFragmentsTag_);
+  auto fragmentHandle = event.getValidHandle<std::vector<mu2e::TrackerDataDecoder> >(trkFragmentsTag_);
 
   for (auto frag : *fragmentHandle) {
     analyze_tracker_(frag, straw_digis, straw_digi_adcs);
@@ -135,12 +135,12 @@ void art::StrawRecoFromFragments::produce(Event& event) {
 } // produce()
 
 void art::StrawRecoFromFragments::analyze_tracker_(
-    const mu2e::TrackerFragment& cc, std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
+    const mu2e::TrackerDataDecoder& cc, std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
     std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> const& straw_digi_adcs) {
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
-    std::cout << "TrackerFragment: ";
+    std::cout << "TrackerDataDecoder: ";
     std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
     std::cout << std::endl;
     std::cout << "\t"
