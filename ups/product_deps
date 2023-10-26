@@ -245,7 +245,7 @@ art_root_io v1_12_04
 gallery     v1_21_03
 geant4      v4_11_1_p02a
 xerces_c v3_2_3e
-artdaq_core_mu2e v1_09_03
+artdaq_core_mu2e v2_00_00
 BTrk   v1_02_44 
 KinKal  v02_04_03 
 cry   v1_7q 
