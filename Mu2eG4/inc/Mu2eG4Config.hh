@@ -118,7 +118,8 @@ namespace mu2e {
       fhicl::Atom<double> protonProductionCut {Name("protonProductionCut")};
 
       fhicl::Atom<std::string> physicsListName {Name("physicsListName")};
-      fhicl::Atom<bool> turnOffRadioactiveDecay {Name("turnOffRadioactiveDecay"), false};
+      fhicl::Atom<bool> turnOffRadioactiveDecay {Name("turnOffRadioactiveDecay"),
+          Comment("turnOn/Off radioactive decay. If both are false, we get the G4 default, which may be physics list dependent. If both are true, it is a configuration error."), false};
       fhicl::Atom<bool> turnOnRadioactiveDecay {Name("turnOnRadioactiveDecay"), false};
       fhicl::Atom<bool> turnOnThermalNeutronPhysics {Name("turnOnThermalNeutronPhysics"), false};
       fhicl::Atom<bool> decayMuonsWithSpin {Name("decayMuonsWithSpin"), false};
