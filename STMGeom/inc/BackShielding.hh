@@ -20,6 +20,7 @@ namespace mu2e {
     CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(), CLHEP::HepRotation const & rotation = CLHEP::HepRotation()
     ):
       _build(build), _BPThick(thick), _BPLength(length), _BPHeight(height),
+      _Back_dX(Back_dX), _Back_dY(Back_dY),
       _originInMu2e(originInMu2e), _rotation(rotation)
     {}
 
