@@ -69,7 +69,6 @@ namespace mu2e {
     geomOptions->loadEntry( config, "electronicRack", "electronicRack");
     geomOptions->loadEntry( config, "pipe",           "pipe");
 
-    const bool electronicRackBuild = false;
 
     const bool electronicRackIsVisible = geomOptions->isVisible("electronicRack");
     const bool electronicRackIsSolid   = geomOptions->isSolid("electronicRack");
@@ -245,7 +244,7 @@ namespace mu2e {
     int nBoxER = dimsER.size();
 
     for(int i = 0; i < nBoxER; i++)
-      {
+   {
 
         // Dimensions for this rack
         std::vector<double> lwhsER = dimsER[i];
@@ -263,7 +262,6 @@ namespace mu2e {
 
         // Build each box here
 
-        if(electronicRackBuild){
         nestBox( nameER.str(), lwhsER, findMaterialOrThrow(matsER[i]),
                  itsRotatER, sitesER[i]-parent.centerInMu2e(),
                  parent.logical,
@@ -274,8 +272,7 @@ namespace mu2e {
                  forceAuxEdgeVisible,
                  placePV,
                  doSurfaceCheck);
-          }
-      } // end loop over ElectronicRack boxes
+   } // end loop over ElectronicRack boxes
 
 
   } // end of constructServicesGeom fn
