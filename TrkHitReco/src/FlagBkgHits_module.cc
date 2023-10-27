@@ -154,7 +154,7 @@ namespace mu2e
       for (size_t ich=0;ich < nch; ++ich) {
         const ComboHit& ch = chcol[ich];
         int icl = findClusterIdx(bkgccol,ich);
-        if (icl > -1) bkghitcol.emplace_back(BkgClusterHit(clusterer_->distance(bkgccol[icl],ch,config().TNTClustering().distMethod()),ch.flag()));
+        if (icl > -1) bkghitcol.emplace_back(BkgClusterHit(clusterer_->distance(bkgccol[icl],ch),ch.flag()));
         else          bkghitcol.emplace_back(BkgClusterHit(999.0,ch.flag()));
       }
     }
@@ -240,6 +240,7 @@ namespace mu2e
         }
         nhits += hitplanes[ip];
       }
+
       if(nhits >= minnhits_ && np >= minnp_){
         // find averages
         double sumEdep(0.);

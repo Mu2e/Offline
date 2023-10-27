@@ -71,7 +71,7 @@ namespace mu2e
 
       // control flags
       int _diag,_debug;
-      bool _mcdiag, _hdiag;
+      bool _mcdiag, _hdiag, _station;
       float _maxdt, _maxdrho;
       // data tags
       art::ProductToken<ComboHitCollection> _chToken;
@@ -95,6 +95,7 @@ namespace mu2e
       float _rmscposx = 0;
       float _rmscposy = 0;
       float _rmscrho = 0;
+      float _cchi2 = 0;
       float _ctime = 0;
       float _rmsctime = 0;
       float _avecedep = 0;
@@ -105,7 +106,7 @@ namespace mu2e
       bool _isref = false;
       bool _isolated = false;
       bool _stereo = false;
-      int _cluIdx, _nactive, _nch, _nsh, _nsha, _nbkg;
+      int _cluIdx, _nactive, _nch, _nsh, _nsha, _nbkg, _ncpoints;
       float _crho;
       float _zmin;
       float _zmax;
@@ -139,7 +140,9 @@ namespace mu2e
     _bkghToken{ consumes<BkgClusterHitCollection>(config().BkgClusterHitCollection() ) },
     _mcdigisToken{ consumes<StrawDigiMCCollection>(config().StrawDigiMCCollection() ) },
     _mcprimaryToken{ consumes<PrimaryParticle>(config().MCPrimary() ) }
-  {}
+  {
+    _station = config().ComboHitCollection().label() == "SFlagBkgHits";
+  }
 
   BkgDiag::~BkgDiag(){}
 
@@ -156,6 +159,7 @@ namespace mu2e
     _bcdiag->Branch("rmscposx",&_rmscposx,"rmscposx/F");
     _bcdiag->Branch("rmscposy",&_rmscposy,"rmscposy/F");
     _bcdiag->Branch("rmscrho",&_rmscrho,"rmscrho/F");
+    _bcdiag->Branch("cchi2",&_cchi2,"cchi2/F");
     _bcdiag->Branch("ctime",&_ctime,"ctime/F");
     _bcdiag->Branch("rmsctime",&_rmsctime,"rmsctime/F");
     _bcdiag->Branch("avecedep",&_avecedep,"avecedep/F");
@@ -171,6 +175,7 @@ namespace mu2e
     _bcdiag->Branch("nactive",&_nactive,"nactive/I");
     _bcdiag->Branch("nsha",&_nsha,"nsha/I");
     _bcdiag->Branch("nbkg",&_nbkg,"nbkg/I");
+    _bcdiag->Branch("ncpoints",&_ncpoints,"ncpoints/I");
     _bcdiag->Branch("cluIdx",&_cluIdx,"cluIdx/I");
     // cluster hit info branch
     if(_diag > 0)
@@ -223,15 +228,19 @@ namespace mu2e
   void BkgDiag::analyze(const art::Event& event ) {
     if(!findData(event))
       throw cet::exception("RECO")<<"mu2e::BkgDiag: data missing or incomplete"<< std::endl;
-    // check consistency,bkgqcol is eliminated from the code, we should add a different check TO DO
-    //if(_bkgccol->size() != _bkgqcol->size())
-    //  throw cet::exception("RECO")<<"mu2e::BkgDiag: data inconsistent"<< std::endl;
+    if(_station){
+      if( !(_chcol->level() == StrawIdMask::station) ){
+        throw cet::exception("RECO")<< "mu2e::BkgDiag: inconsistent outputlevel with stereo hits\n"
+                                    << "SFlagBkgHits outputlevel must be \"station\" to train"<< std::endl;
+      }
+    }
     // loop over background clusters
 
     _nhits=0;
     _hitPos.clear();
     _hitPos.reserve(_chcol->size());
     for(size_t ich=0;ich<_chcol->size();++ich){
+
       _hitPos.push_back(_chcol->at(ich).pos());
       _hitTime[_nhits]   = _chcol->at(ich).time();
       _hitnch[_nhits] = _chcol->at(ich).nCombo();
@@ -258,6 +267,8 @@ namespace mu2e
       _crho = sqrtf(cluster.pos().perp2());
       _cpos = cluster.pos();
       _ctime = cluster.time();
+      _cchi2 = cluster.points().chisquared();
+      _ncpoints = cluster.points().nPoints();
       _isinit = cluster.flag().hasAllProperties(BkgClusterFlag::init);
       _isbkg = cluster.flag().hasAllProperties(BkgClusterFlag::bkg);
       _isref = cluster.flag().hasAllProperties(BkgClusterFlag::refined);

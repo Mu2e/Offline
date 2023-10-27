@@ -42,6 +42,7 @@ namespace mu2e {
         fhicl::Atom<float>            seedDistance{     Name("SeedDistance"),     Comment("Minimum distance for cluster seed")  };
         fhicl::Atom<float>            clusterDiameter{  Name("ClusterDiameter"),  Comment("Average cluster diameter")  };
         fhicl::Atom<float>            clusterTime{      Name("ClusterTime"),      Comment("Average cluster time spread")  };
+        fhicl::Atom<int>              minClusterHits{   Name("MinClusterHits"),   Comment("Cut for minimum cluster hit size"),1 };
         fhicl::Atom<float>            maxHitTimeDiff{   Name("MaxHitTimeDiff"),   Comment("Maximum hit cluster tme difference")  };
         fhicl::Atom<float>            maxSumDistance{   Name("MaxSumDistance"),   Comment("Maximum sum pf hit-cluster distance for convergence") };
         fhicl::Atom<float>            minHitError{      Name("MinHitError"),      Comment("Min value of hit error")  };
@@ -65,7 +66,7 @@ namespace mu2e {
 
       void          init        ();
       virtual void  findClusters(BkgClusterCollection& clusters, const ComboHitCollection& shcol, int iev);
-      virtual float distance    (const BkgCluster& cluster,      const ComboHit& hit, const int method) const;
+      virtual float distance    (const BkgCluster& cluster,      const ComboHit& hit) const;
       enum mode {useDistance,useChi2};
 
 
@@ -87,6 +88,7 @@ namespace mu2e {
       float            dd_;
       float            dd2_;
       float            dt_;
+      int              minClusterHits_;
       float            maxwt_;
       float            md2_;
       float            trms2inv_;
