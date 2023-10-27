@@ -6,7 +6,7 @@ cet_make_library(
       src/SimpleConfigRecord.cc
     LIBRARIES PUBLIC
       messagefacility::MF_MessageLogger
-      offline::GeneralUtilities
+      Offline::GeneralUtilities
 )
 
 install_source(SUBDIRS src)

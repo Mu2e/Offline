@@ -7,10 +7,10 @@ cet_make_library(
       src/EMFSimHitHistograms.cc
     LIBRARIES PUBLIC
       
-      offline::ConditionsService
-      offline::DataProducts
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
       art_root_io::TFileService_service
       ROOT::Hist
 )
@@ -19,168 +19,168 @@ cet_build_plugin(EMFBoxFluxAnalyzer art::module
     REG_SOURCE src/EMFBoxFluxAnalyzer_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::ConfigTools
-      offline::DataProducts
-      offline::ExtinctionMonitorFNAL_Utilities
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::ExtinctionMonitorFNAL_Utilities
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
       ROOT::Tree
 )
 
 cet_build_plugin(EMFBoxMuonAnalyzer art::module
     REG_SOURCE src/EMFBoxMuonAnalyzer_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
+      Offline::ExtinctionMonitorFNAL_Analyses
       ROOT::Tree
-      offline::GeometryService
-      offline::MCDataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(EMFDetHistPatRec art::module
     REG_SOURCE src/EMFDetHistPatRec_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
-      offline::GeometryService
-      offline::RecoDataProducts
+      Offline::ExtinctionMonitorFNAL_Analyses
+      Offline::GeometryService
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(EMFDetHistRawHits art::module
     REG_SOURCE src/EMFDetHistRawHits_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
-      offline::GeometryService
-      offline::RecoDataProducts
+      Offline::ExtinctionMonitorFNAL_Analyses
+      Offline::GeometryService
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(EMFDetHistRecoClusters art::module
     REG_SOURCE src/EMFDetHistRecoClusters_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
-      offline::GeometryService
-      offline::RecoDataProducts
+      Offline::ExtinctionMonitorFNAL_Analyses
+      Offline::GeometryService
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(EMFDetHistSimHits art::module
     REG_SOURCE src/EMFDetHistSimHits_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
-      offline::GeometryService
-      offline::MCDataProducts
+      Offline::ExtinctionMonitorFNAL_Analyses
+      Offline::GeometryService
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(EMFDetMCHistPatRec art::module
     REG_SOURCE src/EMFDetMCHistPatRec_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
-      offline::ExtinctionMonitorFNAL_Reconstruction
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::ExtinctionMonitorFNAL_Analyses
+      Offline::ExtinctionMonitorFNAL_Reconstruction
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(EMFDetPrintRawClusters art::module
     REG_SOURCE src/EMFDetPrintRawClusters_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
+      Offline::ExtinctionMonitorFNAL_Analyses
       
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(EMFDetPrintRawHits art::module
     REG_SOURCE src/EMFDetPrintRawHits_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
+      Offline::ExtinctionMonitorFNAL_Analyses
       
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(EMFDetPrintRawHitTruth art::module
     REG_SOURCE src/EMFDetPrintRawHitTruth_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::ExtinctionMonitorFNAL_Analyses
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(EMFDetPrintRecoClusters art::module
     REG_SOURCE src/EMFDetPrintRecoClusters_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
+      Offline::ExtinctionMonitorFNAL_Analyses
       
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(EMFDetPrintRecoClusterTruth art::module
     REG_SOURCE src/EMFDetPrintRecoClusterTruth_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
+      Offline::ExtinctionMonitorFNAL_Analyses
       
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(EMFDetPrintSim art::module
     REG_SOURCE src/EMFDetPrintSim_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
+      Offline::ExtinctionMonitorFNAL_Analyses
       
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(EMFDigiTuning art::module
     REG_SOURCE src/EMFDigiTuning_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
-      offline::GeometryService
-      offline::RecoDataProducts
+      Offline::ExtinctionMonitorFNAL_Analyses
+      Offline::GeometryService
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(EMFRawHitsValidator art::module
     REG_SOURCE src/EMFRawHitsValidator_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
-      offline::GeometryService
-      offline::RecoDataProducts
+      Offline::ExtinctionMonitorFNAL_Analyses
+      Offline::GeometryService
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(EMFRoomFluxAnalyzer art::module
     REG_SOURCE src/EMFRoomFluxAnalyzer_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
-      offline::ExtinctionMonitorFNAL_Utilities
+      Offline::ExtinctionMonitorFNAL_Analyses
+      Offline::ExtinctionMonitorFNAL_Utilities
       
-      offline::ConfigTools
-      offline::DataProducts
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::ProtonBeamDumpGeom
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::ProtonBeamDumpGeom
 )
 
 cet_build_plugin(MARSGenParticleDumper art::module
     REG_SOURCE src/MARSGenParticleDumper_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
-      offline::ExtinctionMonitorFNAL_Utilities
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::ProtonBeamDumpGeom
+      Offline::ExtinctionMonitorFNAL_Analyses
+      Offline::ExtinctionMonitorFNAL_Utilities
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::ProtonBeamDumpGeom
 )
 
 cet_build_plugin(MARSGenParticleHist art::module
     REG_SOURCE src/MARSGenParticleHist_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Analyses
-      offline::ExtinctionMonitorFNAL_Utilities
+      Offline::ExtinctionMonitorFNAL_Analyses
+      Offline::ExtinctionMonitorFNAL_Utilities
       
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::ProtonBeamDumpGeom
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::ProtonBeamDumpGeom
 )
 
 install_source(SUBDIRS src)

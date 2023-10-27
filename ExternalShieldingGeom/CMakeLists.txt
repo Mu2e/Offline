@@ -5,7 +5,7 @@ cet_make_library(
       src/Saddle.cc
     LIBRARIES PUBLIC
       
-      offline::Mu2eInterfaces
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

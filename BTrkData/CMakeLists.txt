@@ -5,9 +5,9 @@ cet_make_library(
       src/TrkStrawHit.cc
     LIBRARIES PUBLIC
       
-      offline::RecoDataProducts
-      offline::TrackerConditions
-      offline::TrackerGeom
+      Offline::RecoDataProducts
+      Offline::TrackerConditions
+      Offline::TrackerGeom
 )
 
 install_source(SUBDIRS src)

@@ -5,10 +5,10 @@ cet_make_library(
       src/SimBookkeeperMaker.cc
     LIBRARIES PUBLIC
       art::Framework_Core
-      offline::DbService
-      offline::DbTables
-      offline::Mu2eInterfaces
-      offline::SimulationConfig
+      Offline::DbService
+      Offline::DbTables
+      Offline::Mu2eInterfaces
+      Offline::SimulationConfig
 )
 
 install_source(SUBDIRS src)

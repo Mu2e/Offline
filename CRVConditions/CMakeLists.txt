@@ -5,13 +5,13 @@ cet_make_library(
       src/CRVStatusMaker.cc
     LIBRARIES PUBLIC
       
-      offline::ConfigTools
-      offline::CosmicRayShieldGeom
-      offline::CRVConfig
-      offline::DataProducts
-      offline::DbTables
-      offline::GeometryService
-      offline::Mu2eInterfaces
+      Offline::ConfigTools
+      Offline::CosmicRayShieldGeom
+      Offline::CRVConfig
+      Offline::DataProducts
+      Offline::DbTables
+      Offline::GeometryService
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

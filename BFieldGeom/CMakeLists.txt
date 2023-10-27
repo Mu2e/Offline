@@ -9,9 +9,9 @@ cet_make_library(
     LIBRARIES PUBLIC
       messagefacility::MF_MessageLogger
       GSL::gsl
-      offline::DataProducts
-      offline::GeneralUtilities
-      offline::Mu2eInterfaces
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

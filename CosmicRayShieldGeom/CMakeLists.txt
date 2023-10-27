@@ -12,8 +12,8 @@ cet_make_library(
       src/CRSSupportStructure.cc
     LIBRARIES PUBLIC
       
-      offline::DataProducts
-      offline::Mu2eInterfaces
+      Offline::DataProducts
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

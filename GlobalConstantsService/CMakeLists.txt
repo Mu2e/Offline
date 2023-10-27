@@ -8,15 +8,15 @@ cet_make_library(
       src/unknownPDGIdName.cc
     LIBRARIES PUBLIC
       art::Framework_Core
-      offline::ConfigTools
-      offline::DataProducts
-      offline::Mu2eInterfaces
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::Mu2eInterfaces
 )
 
 cet_build_plugin(GlobalConstantsService art::service
     REG_SOURCE src/GlobalConstantsService_service.cc
     LIBRARIES REG
-      offline::GlobalConstantsService
+      Offline::GlobalConstantsService
       
 )
 

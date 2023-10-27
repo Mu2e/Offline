@@ -5,10 +5,10 @@ cet_make_library(
       src/getCharge.cc
     LIBRARIES PUBLIC
       
-      offline::DataProducts
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::ProtonBeamDumpGeom
+      Offline::DataProducts
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::ProtonBeamDumpGeom
 )
 
 install_source(SUBDIRS src)

@@ -3,10 +3,10 @@ cet_make_library(
       src/STMEnergyCalibMaker.cc
     LIBRARIES PUBLIC
       
-      offline::DataProducts
-      offline::DbTables
-      offline::Mu2eInterfaces
-      offline::STMConfig
+      Offline::DataProducts
+      Offline::DbTables
+      Offline::Mu2eInterfaces
+      Offline::STMConfig
 )
 
 install_source(SUBDIRS src)

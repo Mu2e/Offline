@@ -8,7 +8,7 @@ cet_make_library(
       src/SquareShiftMapper.cc
     LIBRARIES PUBLIC
       
-      offline::Mu2eInterfaces
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

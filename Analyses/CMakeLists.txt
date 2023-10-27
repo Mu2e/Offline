@@ -3,8 +3,8 @@ cet_build_plugin(BFieldPlotter art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       
-      offline::BFieldGeom
-      offline::GeometryService
+      Offline::BFieldGeom
+      Offline::GeometryService
       ROOT::Hist
 )
 
@@ -14,14 +14,14 @@ cet_build_plugin(CaloCalibAna art::module
       art_root_io::TFileService_service
       
       
-      offline::CaloCluster
-      offline::CalorimeterGeom
-      offline::ConditionsService
-      offline::DataProducts
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::CaloCluster
+      Offline::CalorimeterGeom
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CaloCalib art::module
@@ -29,19 +29,19 @@ cet_build_plugin(CaloCalib art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       
-      offline::CalorimeterGeom
-      offline::DataProducts
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::CalorimeterGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CaloClusterCompare art::module
     REG_SOURCE src/CaloClusterCompare_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CaloDigiAna art::module
@@ -49,51 +49,51 @@ cet_build_plugin(CaloDigiAna art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       
-      offline::CalorimeterGeom
-      offline::ConditionsService
-      offline::DataProducts
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::RecoDataProducts
+      Offline::CalorimeterGeom
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CaloHitFinderInspect art::module
     REG_SOURCE src/CaloHitFinderInspect_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::CalorimeterGeom
-      offline::ConditionsService
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::CalorimeterGeom
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CaloTrackMatchExample art::module
     REG_SOURCE src/CaloTrackMatchExample_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::CalorimeterGeom
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::CalorimeterGeom
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CollectionSizeAnalyzer art::module
     REG_SOURCE src/CollectionSizeAnalyzer_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(CompressionCheck0 art::module
     REG_SOURCE src/CompressionCheck0_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::GeneralUtilities
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::GeneralUtilities
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CORSIKAGenPlots art::module
@@ -102,10 +102,10 @@ cet_build_plugin(CORSIKAGenPlots art::module
       art_root_io::TFileService_service
       
       
-      offline::DataProducts
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::DataProducts
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(CosmicAnalysis art::module
@@ -113,24 +113,24 @@ cet_build_plugin(CosmicAnalysis art::module
     LIBRARIES REG
       
       
-      offline::BTrkData
-      offline::CosmicRayShieldGeom
-      offline::DataProducts
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::BTrkData
+      Offline::CosmicRayShieldGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CosmicFilter art::module
     REG_SOURCE src/CosmicFilter_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::CalorimeterGeom
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::CalorimeterGeom
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(CountPionDecays art::module
@@ -138,8 +138,8 @@ cet_build_plugin(CountPionDecays art::module
     LIBRARIES REG
       
       
-      offline::DataProducts
-      offline::MCDataProducts
+      Offline::DataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(CRYGenPlots art::module
@@ -148,33 +148,33 @@ cet_build_plugin(CRYGenPlots art::module
       art_root_io::TFileService_service
       
       
-      offline::DataProducts
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::DataProducts
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(DiskCal00 art::module
     REG_SOURCE src/DiskCal00_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::CalorimeterGeom
-      offline::DataProducts
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::CalorimeterGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(EMFCSimpleDumper art::module
     REG_SOURCE src/EMFCSimpleDumper_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::DataProducts
-      offline::ExtinctionMonitorFNAL_Geometry
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::ProtonBeamDumpGeom
+      Offline::DataProducts
+      Offline::ExtinctionMonitorFNAL_Geometry
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::ProtonBeamDumpGeom
 )
 
 cet_build_plugin(EventIDSequencePrinter art::module
@@ -198,7 +198,7 @@ cet_build_plugin(ExtremeHitTimes art::module
       art_root_io::TFileService_service
       
       
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(FilterEmptyEvents art::module
@@ -206,10 +206,10 @@ cet_build_plugin(FilterEmptyEvents art::module
     LIBRARIES REG
       
       
-      offline::CalorimeterGeom
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::CalorimeterGeom
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(FilterVDHits art::module
@@ -217,15 +217,15 @@ cet_build_plugin(FilterVDHits art::module
     LIBRARIES REG
       
       
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(G4ReactionAnalyzer art::module
     REG_SOURCE src/G4ReactionAnalyzer_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(GenParticlesAnalyzer art::module
@@ -233,16 +233,16 @@ cet_build_plugin(GenParticlesAnalyzer art::module
     LIBRARIES REG
       
       
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(GeomVis art::module
     REG_SOURCE src/GeomVis_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::DataProducts
-      offline::MCDataProducts
+      Offline::DataProducts
+      Offline::MCDataProducts
       ROOT::Geom
       ROOT::Physics
 )
@@ -253,8 +253,8 @@ cet_build_plugin(Histforpabs art::module
       
       art_root_io::TFileService_service
       
-      offline::GeometryService
-      offline::MCDataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(InteractiveRoot art::module
@@ -263,21 +263,21 @@ cet_build_plugin(InteractiveRoot art::module
       art_root_io::TFileService_service
       
       
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(KineticFracAnalysis art::module
     REG_SOURCE src/KineticFracAnalysis_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::CalorimeterGeom
-      offline::DataProducts
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::CalorimeterGeom
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(materailsPropStudy art::module
@@ -286,7 +286,7 @@ cet_build_plugin(materailsPropStudy art::module
       art_root_io::TFileService_service
       BTrk_MatEnv
       BTrk_TrkBase
-      offline::SeedService
+      Offline::SeedService
       ROOT::Tree
 )
 
@@ -295,60 +295,60 @@ cet_build_plugin(MTVerification art::module
     LIBRARIES REG
       
       
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(Mu2eG4StudyCalo01ReadBack art::module
     REG_SOURCE src/Mu2eG4StudyCalo01ReadBack_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::ConditionsService
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(Mu2eG4StudyReadBack art::module
     REG_SOURCE src/Mu2eG4StudyReadBack_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::ConditionsService
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(ParticleIDScan art::module
     REG_SOURCE src/ParticleIDScan_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::ParticleID
+      Offline::ParticleID
 )
 
 cet_build_plugin(PbarAnalysis2 art::module
     REG_SOURCE src/PbarAnalysis2_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::CaloCluster
-      offline::CalorimeterGeom
-      offline::ConditionsService
-      offline::DataProducts
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::CaloCluster
+      Offline::CalorimeterGeom
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(pbars1hist art::module
     REG_SOURCE src/pbars1hist_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::DataProducts
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::ProductionTargetGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::ProductionTargetGeom
 )
 
 cet_build_plugin(PionMomentumAnalyzer art::module
@@ -356,9 +356,9 @@ cet_build_plugin(PionMomentumAnalyzer art::module
     LIBRARIES REG
       
       
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(PointerCheck art::module
@@ -366,7 +366,7 @@ cet_build_plugin(PointerCheck art::module
     LIBRARIES REG
       
       
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(PrimaryProtonEnergyDumper art::module
@@ -374,13 +374,13 @@ cet_build_plugin(PrimaryProtonEnergyDumper art::module
     LIBRARIES REG
       
       
-      offline::ConfigTools
-      offline::DataProducts
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::ProductionTargetGeom
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::ProductionTargetGeom
 )
 
 cet_build_plugin(PrintGenParticles art::module
@@ -388,7 +388,7 @@ cet_build_plugin(PrintGenParticles art::module
     LIBRARIES REG
       
       
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(PrintSTMGeom art::module
@@ -396,12 +396,12 @@ cet_build_plugin(PrintSTMGeom art::module
     LIBRARIES REG
       
       
-      offline::CosmicRayShieldGeom
-      offline::DetectorSolenoidGeom
-      offline::GeometryService
-      offline::STMGeom
-      offline::StoppingTargetGeom
-      offline::TrackerGeom
+      Offline::CosmicRayShieldGeom
+      Offline::DetectorSolenoidGeom
+      Offline::GeometryService
+      Offline::STMGeom
+      Offline::StoppingTargetGeom
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(PrintStrawHits art::module
@@ -409,7 +409,7 @@ cet_build_plugin(PrintStrawHits art::module
     LIBRARIES REG
       
       
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(PrintTrackerGeom art::module
@@ -417,15 +417,15 @@ cet_build_plugin(PrintTrackerGeom art::module
     LIBRARIES REG
       
       
-      offline::GeometryService
-      offline::TrackerGeom
+      Offline::GeometryService
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(ProtonBunchIntensityAnalyzer art::module
     REG_SOURCE src/ProtonBunchIntensityAnalyzer_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(PtrTest0 art::module
@@ -433,7 +433,7 @@ cet_build_plugin(PtrTest0 art::module
     LIBRARIES REG
       
       
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(PtrTest art::module
@@ -441,26 +441,26 @@ cet_build_plugin(PtrTest art::module
     LIBRARIES REG
       
       
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(ReadAntiProtonSteps art::module
     REG_SOURCE src/ReadAntiProtonSteps_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::ConditionsService
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(ReadBack0 art::module
     REG_SOURCE src/ReadBack0_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::TrackerGeom
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(ReadBack art::module
@@ -468,129 +468,129 @@ cet_build_plugin(ReadBack art::module
     LIBRARIES REG
       
       
-      offline::CalorimeterGeom
-      offline::CosmicRayShieldGeom
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::CalorimeterGeom
+      Offline::CosmicRayShieldGeom
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(ReadCaloDigi art::module
     REG_SOURCE src/ReadCaloDigi_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::CalorimeterGeom
-      offline::ConditionsService
-      offline::DataProducts
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::RecoDataProducts
-      offline::SeedService
+      Offline::CalorimeterGeom
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      Offline::SeedService
 )
 
 cet_build_plugin(ReadMCTrajectories art::module
     REG_SOURCE src/ReadMCTrajectories_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(ReadPSVacuum art::module
     REG_SOURCE src/ReadPSVacuum_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::ConditionsService
-      offline::GeometryService
-      offline::MCDataProducts
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(ReadPTM art::module
     REG_SOURCE src/ReadPTM_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::ConditionsService
-      offline::GeometryService
-      offline::MCDataProducts
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(ReadPtr art::module
     REG_SOURCE src/ReadPtr_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(ReadStrawDigiReco art::module
     REG_SOURCE src/ReadStrawDigiReco_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(ReadStrawHitReco art::module
     REG_SOURCE src/ReadStrawHitReco_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::GeometryService
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::TrackerConditions
-      offline::TrackerGeom
+      Offline::GeometryService
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::TrackerConditions
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(ReadTrackCaloMatching art::module
     REG_SOURCE src/ReadTrackCaloMatching_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::ConditionsService
-      offline::GeometryService
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(ReadTrackCaloMatchingMVA art::module
     REG_SOURCE src/ReadTrackCaloMatchingMVA_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::CalorimeterGeom
-      offline::DataProducts
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::CalorimeterGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(ReadTrackerSteps art::module
     REG_SOURCE src/ReadTrackerSteps_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::ConditionsService
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::TrackerGeom
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(ReadTrkExtrapol art::module
     REG_SOURCE src/ReadTrkExtrapol_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::ConditionsService
-      offline::GeometryService
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(ReadTrkExtrapolMVA art::module
     REG_SOURCE src/ReadTrkExtrapolMVA_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::ConditionsService
-      offline::GeometryService
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(ReadVirtualDetector art::module
@@ -598,11 +598,11 @@ cet_build_plugin(ReadVirtualDetector art::module
     LIBRARIES REG
       
       
-      offline::ConditionsService
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(SelectiveStepPtPrinter art::module
@@ -610,7 +610,7 @@ cet_build_plugin(SelectiveStepPtPrinter art::module
     LIBRARIES REG
       
       
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(SelectPiMinusAtTS5 art::module
@@ -618,9 +618,9 @@ cet_build_plugin(SelectPiMinusAtTS5 art::module
     LIBRARIES REG
       
       
-      offline::DataProducts
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::DataProducts
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(SensitiveTargetEnergyDumper art::module
@@ -628,13 +628,13 @@ cet_build_plugin(SensitiveTargetEnergyDumper art::module
     LIBRARIES REG
       
       
-      offline::ConfigTools
-      offline::DataProducts
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::ProductionTargetGeom
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::ProductionTargetGeom
 )
 
 cet_build_plugin(SimParticleAnalyzer art::module
@@ -642,21 +642,21 @@ cet_build_plugin(SimParticleAnalyzer art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(SimParticleCheck00 art::module
     REG_SOURCE src/SimParticleCheck00_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(SimParticleDumperCompact art::module
     REG_SOURCE src/SimParticleDumperCompact_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(SimParticlesPrinter art::module
@@ -664,15 +664,15 @@ cet_build_plugin(SimParticlesPrinter art::module
     LIBRARIES REG
       
       
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(StatusG4Analyzer art::module
     REG_SOURCE src/StatusG4Analyzer_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(StepPointMC1stHitDumper art::module
@@ -680,24 +680,24 @@ cet_build_plugin(StepPointMC1stHitDumper art::module
     LIBRARIES REG
       
       
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(StepPointMCDumperCalo art::module
     REG_SOURCE src/StepPointMCDumperCalo_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::GlobalConstantsService
-      offline::MCDataProducts
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(StepPointMCDumperCompact art::module
     REG_SOURCE src/StepPointMCDumperCompact_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(StepPointMCDumper art::module
@@ -705,10 +705,10 @@ cet_build_plugin(StepPointMCDumper art::module
     LIBRARIES REG
       
       
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(StepPointsPrinter art::module
@@ -716,7 +716,7 @@ cet_build_plugin(StepPointsPrinter art::module
     LIBRARIES REG
       
       
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(StoppedParticlesDumper art::module
@@ -724,9 +724,9 @@ cet_build_plugin(StoppedParticlesDumper art::module
     LIBRARIES REG
       
       
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(StoppedParticlesPrinter art::module
@@ -734,8 +734,8 @@ cet_build_plugin(StoppedParticlesPrinter art::module
     LIBRARIES REG
       
       
-      offline::DataProducts
-      offline::MCDataProducts
+      Offline::DataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(TrackSummaryDataAnalyzer art::module
@@ -743,8 +743,8 @@ cet_build_plugin(TrackSummaryDataAnalyzer art::module
     LIBRARIES REG
       
       
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(TrackSummaryMaker art::module
@@ -752,10 +752,10 @@ cet_build_plugin(TrackSummaryMaker art::module
     LIBRARIES REG
       
       
-      offline::DataProducts
-      offline::GeometryService
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(TrackSummaryMCAnalyzer art::module
@@ -763,9 +763,9 @@ cet_build_plugin(TrackSummaryMCAnalyzer art::module
     LIBRARIES REG
       
       
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(TrackSummaryTruthMaker art::module
@@ -773,25 +773,25 @@ cet_build_plugin(TrackSummaryTruthMaker art::module
     LIBRARIES REG
       
       
-      offline::BTrkData
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::BTrkData
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(TrackSummaryTruthRFSelector art::module
     REG_SOURCE src/TrackSummaryTruthRFSelector_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(TSTrackAna art::module
     REG_SOURCE src/TSTrackAna_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::MCDataProducts
+      Offline::MCDataProducts
       ROOT::Geom
       ROOT::Physics
 )
@@ -801,8 +801,8 @@ cet_build_plugin(TVirtDebug art::module
     LIBRARIES REG
       
       
-      offline::GeometryService
-      offline::MCDataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(ViewAllProvenances art::module
@@ -817,7 +817,7 @@ cet_build_plugin(ViewProvenance art::module
     LIBRARIES REG
       
       
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(VMMonitor art::module
@@ -825,7 +825,7 @@ cet_build_plugin(VMMonitor art::module
     LIBRARIES REG
       
       
-      offline::GeneralUtilities
+      Offline::GeneralUtilities
 )
 
 install_source(SUBDIRS src)

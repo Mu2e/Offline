@@ -121,34 +121,34 @@ cet_make_library(
       src/writePhysicalVolumes.cc
     LIBRARIES PUBLIC
       
-      offline::BeamlineGeom
-      offline::BFieldGeom
-      offline::CalorimeterGeom
-      offline::ConfigTools
-      offline::CosmicRayShieldGeom
-      offline::DataProducts
-      offline::DetectorSolenoidGeom
-      offline::ExternalShieldingGeom
-      offline::ExtinctionMonitorFNAL_Geometry
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::GeomPrimitives
-      offline::GlobalConstantsService
-      offline::MBSGeom
-      offline::MCDataProducts
-      offline::MECOStyleProtonAbsorberGeom
-      offline::Mu2eG4Helper_Mu2eG4Helper_service
-      offline::Mu2eHallGeom
-      offline::Mu2eUtilities
-      offline::ProductionSolenoidGeom
-      offline::ProductionTargetGeom
-      offline::ProtonBeamDumpGeom
-      offline::PTMGeom
-      offline::SeedService_SeedService_service
-      offline::ServicesGeom
-      offline::STMGeom
-      offline::StoppingTargetGeom
-      offline::TrackerGeom
+      Offline::BeamlineGeom
+      Offline::BFieldGeom
+      Offline::CalorimeterGeom
+      Offline::ConfigTools
+      Offline::CosmicRayShieldGeom
+      Offline::DataProducts
+      Offline::DetectorSolenoidGeom
+      Offline::ExternalShieldingGeom
+      Offline::ExtinctionMonitorFNAL_Geometry
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::GeomPrimitives
+      Offline::GlobalConstantsService
+      Offline::MBSGeom
+      Offline::MCDataProducts
+      Offline::MECOStyleProtonAbsorberGeom
+      Offline::Mu2eG4Helper_Mu2eG4Helper_service
+      Offline::Mu2eHallGeom
+      Offline::Mu2eUtilities
+      Offline::ProductionSolenoidGeom
+      Offline::ProductionTargetGeom
+      Offline::ProtonBeamDumpGeom
+      Offline::PTMGeom
+      Offline::SeedService_SeedService_service
+      Offline::ServicesGeom
+      Offline::STMGeom
+      Offline::StoppingTargetGeom
+      Offline::TrackerGeom
       Geant4::G4global
       Geant4::G4digits_hits
       Geant4::G4processes
@@ -161,79 +161,79 @@ cet_make_library(
 cet_build_plugin(IonProducer art::module
     REG_SOURCE src/IonProducer_module.cc
     LIBRARIES REG
-      offline::Mu2eG4
+      Offline::Mu2eG4
       
-      offline::DataProducts
-      offline::MCDataProducts
+      Offline::DataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(Mu2eG4 art::module
     REG_SOURCE src/Mu2eG4_module.cc
     LIBRARIES REG
-      offline::Mu2eG4
+      Offline::Mu2eG4
       
-      offline::ConfigTools
-      offline::GeometryService_GeometryService_service
-      offline::MCDataProducts
-      offline::Mu2eHallGeom
-      offline::SeedService
+      Offline::ConfigTools
+      Offline::GeometryService_GeometryService_service
+      Offline::MCDataProducts
+      Offline::Mu2eHallGeom
+      Offline::SeedService
       Geant4::G4interfaces
 )
 
 cet_build_plugin(Mu2eG4MT art::module
     REG_SOURCE src/Mu2eG4MT_module.cc
     LIBRARIES REG
-      offline::Mu2eG4
+      Offline::Mu2eG4
       
-      offline::ConfigTools
-      offline::GeometryService_GeometryService_service
-      offline::MCDataProducts
-      offline::Mu2eHallGeom
+      Offline::ConfigTools
+      Offline::GeometryService_GeometryService_service
+      Offline::MCDataProducts
+      Offline::Mu2eHallGeom
 )
 
 cet_build_plugin(ConstructEnvBox art::tool
     REG_SOURCE src/ConstructEnvBox_tool.cc
     LIBRARIES REG
-      offline::Mu2eG4
+      Offline::Mu2eG4
       
-      offline::ConfigTools
-      offline::Mu2eG4Helper
+      Offline::ConfigTools
+      Offline::Mu2eG4Helper
 )
 
 cet_build_plugin(ConstructEnvCalo01 art::tool
     REG_SOURCE src/ConstructEnvCalo01_tool.cc
     LIBRARIES REG
-      offline::Mu2eG4
+      Offline::Mu2eG4
       
-      offline::ConfigTools
-      offline::Mu2eG4Helper
+      Offline::ConfigTools
+      Offline::Mu2eG4Helper
 )
 
 cet_build_plugin(ConstructEnvMuCapture art::tool
     REG_SOURCE src/ConstructEnvMuCapture_tool.cc
     LIBRARIES REG
-      offline::Mu2eG4
+      Offline::Mu2eG4
       
-      offline::ConfigTools
-      offline::Mu2eG4Helper
+      Offline::ConfigTools
+      Offline::Mu2eG4Helper
 )
 
 cet_build_plugin(ConstructEnvNBoxes art::tool
     REG_SOURCE src/ConstructEnvNBoxes_tool.cc
     LIBRARIES REG
-      offline::Mu2eG4
+      Offline::Mu2eG4
       
-      offline::ConfigTools
-      offline::Mu2eG4Helper
+      Offline::ConfigTools
+      Offline::Mu2eG4Helper
 )
 
 cet_build_plugin(ConstructEnvTube art::tool
     REG_SOURCE src/ConstructEnvTube_tool.cc
     LIBRARIES REG
-      offline::Mu2eG4
+      Offline::Mu2eG4
       
-      offline::ConfigTools
-      offline::Mu2eG4Helper
+      Offline::ConfigTools
+      Offline::Mu2eG4Helper
 )
 
 install_source(SUBDIRS src)

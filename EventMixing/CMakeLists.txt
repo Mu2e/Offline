@@ -3,7 +3,7 @@ cet_make_library(
       src/Mu2eProductMixer.cc
     LIBRARIES PUBLIC
       
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(MixBackgroundFrames art::module
@@ -11,33 +11,33 @@ cet_build_plugin(MixBackgroundFrames art::module
     LIBRARIES REG
       art::Framework_IO_ProductMix
       art_root_io::art_root_io
-      offline::EventMixing
+      Offline::EventMixing
       
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::ProditionsService
-      offline::SeedService_SeedService_service
-      offline::SimulationConditions
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::ProditionsService
+      Offline::SeedService_SeedService_service
+      Offline::SimulationConditions
 )
 
 cet_build_plugin(ProtonBunchIntensityFlat art::module
     REG_SOURCE src/ProtonBunchIntensityFlat_module.cc
     LIBRARIES REG
-      offline::EventMixing
+      Offline::EventMixing
       
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::SeedService_SeedService_service
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(ProtonBunchIntensityLogNormal art::module
     REG_SOURCE src/ProtonBunchIntensityLogNormal_module.cc
     LIBRARIES REG
-      offline::EventMixing
+      Offline::EventMixing
       
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::SeedService_SeedService_service
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(ResamplingMixer art::module
@@ -45,10 +45,10 @@ cet_build_plugin(ResamplingMixer art::module
     LIBRARIES REG
       art::Framework_IO_ProductMix
       art_root_io::art_root_io
-      offline::EventMixing
+      Offline::EventMixing
       
-      offline::Mu2eUtilities
-      offline::SeedService_SeedService_service
+      Offline::Mu2eUtilities
+      Offline::SeedService_SeedService_service
 )
 
 install_source(SUBDIRS src)

@@ -20,18 +20,18 @@ cet_make_library(
       src/TrackerStatusMaker.cc
     LIBRARIES PUBLIC
       BTrk_MatEnv
-      offline::BFieldGeom
-      offline::DAQConditions
-      offline::DataProducts
-      offline::DbService
-      offline::DbTables
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::Mu2eBTrk
-      offline::Mu2eInterfaces
-      offline::ProditionsService
-      offline::TrackerConfig
-      offline::TrackerGeom
+      Offline::BFieldGeom
+      Offline::DAQConditions
+      Offline::DataProducts
+      Offline::DbService
+      Offline::DbTables
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::Mu2eBTrk
+      Offline::Mu2eInterfaces
+      Offline::ProditionsService
+      Offline::TrackerConfig
+      Offline::TrackerGeom
 )
 
 install_source(SUBDIRS src)

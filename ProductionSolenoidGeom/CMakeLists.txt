@@ -5,8 +5,8 @@ cet_make_library(
       src/PSShield.cc
     LIBRARIES PUBLIC
       
-      offline::GeomPrimitives
-      offline::Mu2eInterfaces
+      Offline::GeomPrimitives
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

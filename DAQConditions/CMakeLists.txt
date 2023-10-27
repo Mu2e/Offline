@@ -4,10 +4,10 @@ cet_make_library(
       src/EventTimingMaker.cc
     LIBRARIES PUBLIC
       
-      offline::DAQConfig
-      offline::DataProducts
-      offline::Mu2eInterfaces
-      offline::TrackerGeom
+      Offline::DAQConfig
+      Offline::DataProducts
+      Offline::Mu2eInterfaces
+      Offline::TrackerGeom
 )
 
 install_source(SUBDIRS src)

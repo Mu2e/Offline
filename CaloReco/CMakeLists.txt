@@ -5,41 +5,41 @@ cet_make_library(
       src/CaloTemplateWFUtil.cc
     LIBRARIES PUBLIC
       
-      offline::ConditionsService
-      offline::Mu2eUtilities
+      Offline::ConditionsService
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(CaloHitMakerFast art::module
     REG_SOURCE src/CaloHitMakerFast_module.cc
     LIBRARIES REG
-      offline::CaloReco
+      Offline::CaloReco
       
-      offline::ConditionsService
-      offline::DataProducts
-      offline::GeneralUtilities
-      offline::RecoDataProducts
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CaloHitMaker art::module
     REG_SOURCE src/CaloHitMaker_module.cc
     LIBRARIES REG
-      offline::CaloReco
+      Offline::CaloReco
       
-      offline::CalorimeterGeom
-      offline::DataProducts
-      offline::GeometryService
-      offline::RecoDataProducts
+      Offline::CalorimeterGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CaloRecoDigiMaker art::module
     REG_SOURCE src/CaloRecoDigiMaker_module.cc
     LIBRARIES REG
-      offline::CaloReco
+      Offline::CaloReco
       
-      offline::ConditionsService
-      offline::DAQConditions
-      offline::ProditionsService
-      offline::RecoDataProducts
+      Offline::ConditionsService
+      Offline::DAQConditions
+      Offline::ProditionsService
+      Offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

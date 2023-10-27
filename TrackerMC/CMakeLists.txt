@@ -6,68 +6,68 @@ cet_make_library(
       src/StrawWaveform.cc
     LIBRARIES PUBLIC
       
-      offline::ConditionsService
-      offline::DataProducts
-      offline::MCDataProducts
-      offline::TrackerConditions
-      offline::TrackerGeom
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::MCDataProducts
+      Offline::TrackerConditions
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(MakeMCKalSeed art::module
     REG_SOURCE src/MakeMCKalSeed_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::TrackerMC
+      Offline::TrackerMC
       
-      offline::BFieldGeom
-      offline::ConditionsService
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::SeedService
-      offline::TrackerGeom
+      Offline::BFieldGeom
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::SeedService
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(MakeStrawGasSteps art::module
     REG_SOURCE src/MakeStrawGasSteps_module.cc
     LIBRARIES REG
-      offline::TrackerMC
+      Offline::TrackerMC
       
-      offline::BFieldGeom
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::ProditionsService
-      offline::TrackerConditions
-      offline::TrackerGeom
+      Offline::BFieldGeom
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::ProditionsService
+      Offline::TrackerConditions
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(StrawDigisFromStrawGasSteps art::module
     REG_SOURCE src/StrawDigisFromStrawGasSteps_module.cc
     LIBRARIES REG
-      offline::TrackerMC
+      Offline::TrackerMC
       
-      offline::BFieldGeom
-      offline::ConditionsService
-      offline::ConfigTools
-      offline::DataProducts
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::SeedService_SeedService_service
-      offline::TrackerConditions
-      offline::TrackerGeom
+      Offline::BFieldGeom
+      Offline::ConditionsService
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::SeedService_SeedService_service
+      Offline::TrackerConditions
+      Offline::TrackerGeom
 )
 
 art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
     CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
     CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
      DICTIONARY_LIBRARIES
-      offline::TrackerMC
+      Offline::TrackerMC
 )
 install_source(SUBDIRS src)
 install_headers(SUBDIRS inc)

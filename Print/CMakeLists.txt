@@ -47,13 +47,13 @@ cet_make_library(
       src/TrkCaloIntersectPrinter.cc
     LIBRARIES PUBLIC
       KinKal_General
-      offline::ConditionsService
-      offline::DataProducts
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 cet_make_exec(NAME artProductSizes
@@ -63,14 +63,14 @@ cet_make_exec(NAME artProductSizes
       artProductSizes/rootFileSizeTools.cc
       artProductSizes/RootSizeOnDisk.cc
     LIBRARIES
-      offline::Print
+      Offline::Print
 )
 
 cet_make_exec(NAME deps
     SOURCE
       deps/deps_main.cc
     LIBRARIES
-      offline::Print
+      Offline::Print
 )
 
 cet_make_exec(NAME eventCount
@@ -79,27 +79,27 @@ cet_make_exec(NAME eventCount
       eventCount/eventCount_main.cc
       eventCount/FileInfo.cc
     LIBRARIES
-      offline::Print
+      Offline::Print
 )
 
 cet_build_plugin(DataProductDump art::module
     REG_SOURCE src/DataProductDump_module.cc
     LIBRARIES REG
-      offline::Print
+      Offline::Print
       
 )
 
 cet_build_plugin(PrintModule art::module
     REG_SOURCE src/PrintModule_module.cc
     LIBRARIES REG
-      offline::Print
+      Offline::Print
       
 )
 
 cet_build_plugin(RunSubrunEvent art::module
     REG_SOURCE src/RunSubrunEvent_module.cc
     LIBRARIES REG
-      offline::Print
+      Offline::Print
       
 )
 

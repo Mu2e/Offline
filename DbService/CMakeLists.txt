@@ -10,15 +10,15 @@ cet_make_library(
     LIBRARIES PUBLIC
       PostgreSQL::PostgreSQL
       CURL::libcurl
-      offline::ConfigTools
-      offline::DbTables
-      offline::GeneralUtilities
+      Offline::ConfigTools
+      Offline::DbTables
+      Offline::GeneralUtilities
 )
 
 cet_make_exec(NAME dbTool
     SOURCE src/dbTool_main.cc
     LIBRARIES
-      offline::DbService
+      Offline::DbService
       
 )
 
@@ -26,25 +26,25 @@ cet_make_exec(NAME epicsTool
     SOURCE src/epicsTool_main.cc
     LIBRARIES
       Boost::program_options
-      offline::DbService
+      Offline::DbService
       
 )
 
 cet_build_plugin(DbService art::service
     REG_SOURCE src/DbService_service.cc
     LIBRARIES REG
-      offline::DbService
+      Offline::DbService
       
-      offline::ConfigTools
-      offline::DbTables
+      Offline::ConfigTools
+      Offline::DbTables
 )
 
 cet_build_plugin(DbServiceTest art::module
     REG_SOURCE src/DbServiceTest_module.cc
     LIBRARIES REG
-      offline::DbService
+      Offline::DbService
       
-      offline::DbTables
+      Offline::DbTables
 )
 
 install_source(SUBDIRS src)
