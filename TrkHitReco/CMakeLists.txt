@@ -9,80 +9,80 @@ cet_make_library(
       src/TNTClusterer.cc
     LIBRARIES PUBLIC
       
-      offline::DataProducts
-      offline::RecoDataProducts
-      offline::TrackerConditions
-      offline::TrackerGeom
+      Offline::DataProducts
+      Offline::RecoDataProducts
+      Offline::TrackerConditions
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(CombineStrawHits art::module
     REG_SOURCE src/CombineStrawHits_module.cc
     LIBRARIES REG
-      offline::TrkHitReco
+      Offline::TrkHitReco
       
-      offline::DataProducts
-      offline::RecoDataProducts
+      Offline::DataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(FlagBkgHits art::module
     REG_SOURCE src/FlagBkgHits_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::TrkHitReco
+      Offline::TrkHitReco
       
-      offline::ConditionsService
-      offline::ConfigTools
-      offline::DataProducts
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::ConditionsService
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(MakeStereoHits art::module
     REG_SOURCE src/MakeStereoHits_module.cc
     LIBRARIES REG
-      offline::TrkHitReco
+      Offline::TrkHitReco
       
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(ProtonBunchTimeFromStrawDigis art::module
     REG_SOURCE src/ProtonBunchTimeFromStrawDigis_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::TrkHitReco
+      Offline::TrkHitReco
       
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::TrackerConditions
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::TrackerConditions
 )
 
 cet_build_plugin(ReadStrawDigi art::module
     REG_SOURCE src/ReadStrawDigi_module.cc
     LIBRARIES REG
-      offline::TrkHitReco
+      Offline::TrkHitReco
       
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(StrawHitReco art::module
     REG_SOURCE src/StrawHitReco_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::TrkHitReco
+      Offline::TrkHitReco
       
-      offline::ConditionsBase
-      offline::ConditionsService
-      offline::ConfigTools
-      offline::DataProducts
-      offline::GeometryService
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::TrackerConditions
-      offline::TrackerGeom
+      Offline::ConditionsBase
+      Offline::ConditionsService
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::TrackerConditions
+      Offline::TrackerGeom
 )
 
 install_source(SUBDIRS src inc)

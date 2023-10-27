@@ -6,14 +6,14 @@ cet_make_library(
       src/CaloDAQMapMaker.cc
     LIBRARIES PUBLIC
       
-      offline::CaloConfig
-      offline::CalorimeterGeom
-      offline::ConfigTools
-      offline::DataProducts
-      offline::DbService
-      offline::DbTables
-      offline::Mu2eInterfaces
-      offline::ProditionsService
+      Offline::CaloConfig
+      Offline::CalorimeterGeom
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::DbService
+      Offline::DbTables
+      Offline::Mu2eInterfaces
+      Offline::ProditionsService
 )
 
 install_source(SUBDIRS src)

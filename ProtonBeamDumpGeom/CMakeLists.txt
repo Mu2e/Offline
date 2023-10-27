@@ -3,8 +3,8 @@ cet_make_library(
       src/ProtonBeamDump.cc
     LIBRARIES PUBLIC
       
-      offline::Mu2eHallGeom
-      offline::Mu2eInterfaces
+      Offline::Mu2eHallGeom
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

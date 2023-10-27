@@ -41,7 +41,7 @@ cet_make_library(
 cet_make_exec(NAME TwoDPointTest
     SOURCE src/TwoDPointTest_main.cc
     LIBRARIES
-      offline::GeneralUtilities
+      Offline::GeneralUtilities
       
 )
 

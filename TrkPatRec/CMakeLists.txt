@@ -12,119 +12,119 @@ cet_make_library(INTERFACE
 cet_build_plugin(KalFinalFit art::module
     REG_SOURCE src/KalFinalFit_module.cc
     LIBRARIES REG
-      offline::TrkPatRec
+      Offline::TrkPatRec
       
-      offline::BTrkData
-      offline::CalorimeterGeom
-      offline::DataProducts
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::Mu2eUtilities
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::TrackerConditions
-      offline::TrackerGeom
-      offline::TrkReco
+      Offline::BTrkData
+      Offline::CalorimeterGeom
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::TrackerConditions
+      Offline::TrackerGeom
+      Offline::TrkReco
 )
 
 cet_build_plugin(KalSeedFit art::module
     REG_SOURCE src/KalSeedFit_module.cc
     LIBRARIES REG
-      offline::TrkPatRec
+      Offline::TrkPatRec
       
-      offline::BFieldGeom
-      offline::BTrkData
-      offline::ConditionsService
-      offline::DataProducts
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::Mu2eUtilities
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::TrackerConditions
-      offline::TrackerGeom
-      offline::TrkReco
+      Offline::BFieldGeom
+      Offline::BTrkData
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::TrackerConditions
+      Offline::TrackerGeom
+      Offline::TrkReco
 )
 
 cet_build_plugin(RobustHelixFinder art::module
     REG_SOURCE src/RobustHelixFinder_module.cc
     LIBRARIES REG
-      offline::TrkPatRec
+      Offline::TrkPatRec
       
-      offline::boost_fix
-      offline::CalorimeterGeom
-      offline::ConfigTools
-      offline::DataProducts
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::Mu2eUtilities
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::TrackerGeom
-      offline::TrkReco
+      Offline::boost_fix
+      Offline::CalorimeterGeom
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
+      Offline::TrkReco
 )
 
 cet_build_plugin(TimeAndPhiClusterFinder art::module
     REG_SOURCE src/TimeAndPhiClusterFinder_module.cc
     LIBRARIES REG
-      offline::TrkPatRec
+      Offline::TrkPatRec
       
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(TimeClusterFinder art::module
     REG_SOURCE src/TimeClusterFinder_module.cc
     LIBRARIES REG
-      offline::TrkPatRec
+      Offline::TrkPatRec
       
-      offline::GeneralUtilities
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrkReco
+      Offline::GeneralUtilities
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrkReco
 )
 
 cet_build_plugin(KalFinalFitDiag art::tool
     REG_SOURCE src/KalFinalFitDiag_tool.cc
     LIBRARIES REG
-      offline::TrkPatRec
+      Offline::TrkPatRec
       
-      offline::BTrkData
-      offline::CalorimeterGeom
-      offline::Mu2eUtilities
-      offline::TrackerGeom
-      offline::TrkReco
+      Offline::BTrkData
+      Offline::CalorimeterGeom
+      Offline::Mu2eUtilities
+      Offline::TrackerGeom
+      Offline::TrkReco
 )
 
 cet_build_plugin(KalSeedFitDiag art::tool
     REG_SOURCE src/KalSeedFitDiag_tool.cc
     LIBRARIES REG
-      offline::TrkPatRec
+      Offline::TrkPatRec
       
-      offline::BTrkData
-      offline::Mu2eUtilities
-      offline::TrkReco
+      Offline::BTrkData
+      Offline::Mu2eUtilities
+      Offline::TrkReco
 )
 
 cet_build_plugin(RobustHelixFinderDiag art::tool
     REG_SOURCE src/RobustHelixFinderDiag_tool.cc
     LIBRARIES REG
-      offline::TrkPatRec
+      Offline::TrkPatRec
       
-      offline::BTrkData
-      offline::Mu2eUtilities
-      offline::TrkReco
+      Offline::BTrkData
+      Offline::Mu2eUtilities
+      Offline::TrkReco
 )
 
 cet_build_plugin(TimeAndPhiClusterFinderDiag art::tool
     REG_SOURCE src/TimeAndPhiClusterFinderDiag_tool.cc
     LIBRARIES REG
-      offline::TrkPatRec
+      Offline::TrkPatRec
       
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

@@ -13,15 +13,15 @@ cet_build_plugin(SeedService art::service
     REG_SOURCE src/SeedService_service.cc
     IMPL_SOURCE src/SeedService_service.cc
     LIBRARIES PUBLIC
-      offline::SeedService
+      Offline::SeedService
       
 )
 
 cet_build_plugin(SeedTest01 art::module
     REG_SOURCE src/SeedTest01_module.cc
     LIBRARIES REG
-      offline::SeedService
-      offline::SeedService_SeedService_service
+      Offline::SeedService
+      Offline::SeedService_SeedService_service
       
 )
 

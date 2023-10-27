@@ -1,25 +1,25 @@
 cet_build_plugin(HelixFilter art::module
     REG_SOURCE src/HelixFilter_module.cc
     LIBRARIES REG      
-      offline::BFieldGeom
-      offline::DataProducts
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::BFieldGeom
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(SeedFilter art::module
     REG_SOURCE src/SeedFilter_module.cc
     LIBRARIES REG      
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(TimeClusterFilter art::module
     REG_SOURCE src/TimeClusterFilter_module.cc
     LIBRARIES REG      
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

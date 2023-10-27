@@ -1,84 +1,84 @@
 cet_build_plugin(CosmicTimeOffset art::module
     REG_SOURCE src/CosmicTimeOffset_module.cc
     LIBRARIES REG      
-      offline::MCDataProducts
-      offline::SeedService_SeedService_service
+      Offline::MCDataProducts
+      Offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(EventWindowMarkerProducer art::module
     REG_SOURCE src/EventWindowMarkerProducer_module.cc
     LIBRARIES REG
-      offline::DAQConditions
-      offline::DataProducts
-      offline::MCDataProducts
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::SeedService_SeedService_service
+      Offline::DAQConditions
+      Offline::DataProducts
+      Offline::MCDataProducts
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(FindMCPrimary art::module
     REG_SOURCE src/FindMCPrimary_module.cc
     LIBRARIES REG
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(GenEventCountReader art::module
     REG_SOURCE src/GenEventCountReader_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(InFlightStepDumper art::module
     REG_SOURCE src/InFlightStepDumper_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::GeneralUtilities
-      offline::MCDataProducts
+      Offline::GeneralUtilities
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(NullMCPrimary art::module
     REG_SOURCE src/NullMCPrimary_module.cc
     LIBRARIES REG
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(ProtonTimeOffset art::module
     REG_SOURCE src/ProtonTimeOffset_module.cc
     LIBRARIES REG
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::SeedService_SeedService_service
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::SeedService_SeedService_service
 )
 
 cet_build_plugin(SelectRecoMC art::module
     REG_SOURCE src/SelectRecoMC_module.cc
     LIBRARIES REG
-      offline::ConditionsService
-      offline::DataProducts
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::TrackerConditions
-      offline::TrackerGeom
-      offline::TrkDiag
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::TrackerConditions
+      Offline::TrackerGeom
+      Offline::TrkDiag
 )
 
 cet_build_plugin(SimParticleDaughterSelector art::module
     REG_SOURCE src/SimParticleDaughterSelector_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::DataProducts
-      offline::MCDataProducts
+      Offline::DataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(StoppedParticlesFinder art::module
     REG_SOURCE src/StoppedParticlesFinder_module.cc
     LIBRARIES REG
-      offline::DataProducts
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::DataProducts
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 install_source(SUBDIRS src)

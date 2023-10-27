@@ -1,11 +1,11 @@
 cet_build_plugin(CrvCoincidenceClusterFilter art::module
     REG_SOURCE src/CrvCoincidenceClusterFilter_module.cc
     LIBRARIES REG
-      offline::CalorimeterGeom
-      offline::ConfigTools
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::RecoDataProducts
+      Offline::CalorimeterGeom
+      Offline::ConfigTools
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

@@ -4,7 +4,7 @@ cet_make_library(
       src/Detector.cc
     LIBRARIES PUBLIC
       
-      offline::DbTables
+      Offline::DbTables
 )
 
 install_source(SUBDIRS src)

@@ -38,18 +38,18 @@ cet_make_library(
       BTrk_ProbTools
       KinKal_Trajectory
       
-      offline::DataProducts
-      offline::GeneralUtilities
-      offline::KinKalGeom
-      offline::Mu2eKinKal
-      offline::TrackerConditions
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::KinKalGeom
+      Offline::Mu2eKinKal
+      Offline::TrackerConditions
 )
 
 art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
     CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
     CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
      DICTIONARY_LIBRARIES
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 install_source(SUBDIRS src)
 install_headers(SUBDIRS inc)

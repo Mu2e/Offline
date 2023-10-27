@@ -17,49 +17,49 @@ cet_make_library(
       src/TrkUtilities.cc
     LIBRARIES PUBLIC
       BTrk_difAlgebra
-      offline::BFieldGeom
-      offline::BTrkData
-      offline::CalorimeterGeom
-      offline::ConditionsService
-      offline::DataProducts
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::Mu2eBTrk
-      offline::Mu2eUtilities
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::StoppingTargetGeom
-      offline::TrackerConditions
-      offline::TrackerGeom
+      Offline::BFieldGeom
+      Offline::BTrkData
+      Offline::CalorimeterGeom
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::Mu2eBTrk
+      Offline::Mu2eUtilities
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::StoppingTargetGeom
+      Offline::TrackerConditions
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(MergeHelices art::module
     REG_SOURCE src/MergeHelices_module.cc
     LIBRARIES REG
-      offline::TrkReco
+      Offline::TrkReco
       
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(TrkRecoMcUtils art::tool
     REG_SOURCE src/TrkRecoMcUtils_tool.cc
     LIBRARIES REG
-      offline::TrkReco
+      Offline::TrkReco
       
-      offline::BTrkData
-      offline::ConditionsService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::BTrkData
+      Offline::ConditionsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
     CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
     CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
      DICTIONARY_LIBRARIES
-      offline::TrkReco
+      Offline::TrkReco
 )
 install_source(SUBDIRS src)
 install_headers(SUBDIRS inc)

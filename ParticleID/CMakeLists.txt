@@ -6,32 +6,32 @@ cet_make_library(
       src/PIDUtilities.cc
     LIBRARIES PUBLIC
       ROOT::Hist
-      offline::ConfigTools
-      offline::GeneralUtilities
+      Offline::ConfigTools
+      Offline::GeneralUtilities
 )
 
 cet_build_plugin(ParticleID art::module
     REG_SOURCE src/ParticleID_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::ParticleID
+      Offline::ParticleID
       
-      offline::BTrkData
-      offline::ConditionsService
-      offline::ConfigTools
-      offline::GeometryService
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::TrackerConditions
+      Offline::BTrkData
+      Offline::ConditionsService
+      Offline::ConfigTools
+      Offline::GeometryService
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::TrackerConditions
 )
 
 cet_build_plugin(ParticleIDRead art::module
     REG_SOURCE src/ParticleIDRead_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::ParticleID
+      Offline::ParticleID
       
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

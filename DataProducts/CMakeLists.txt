@@ -15,14 +15,14 @@ cet_make_library(
       src/VirtualDetectorId.cc
     LIBRARIES PUBLIC
       ROOT::MathMore
-      offline::GeneralUtilities
+      Offline::GeneralUtilities
 )
 
 art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
     CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
     CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
      DICTIONARY_LIBRARIES
-      offline::DataProducts
+      Offline::DataProducts
 )
 install_source(SUBDIRS src)
 install_headers(SUBDIRS inc)

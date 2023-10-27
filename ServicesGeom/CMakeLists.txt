@@ -4,7 +4,7 @@ cet_make_library(
       src/Pipe.cc
     LIBRARIES PUBLIC
       
-      offline::Mu2eInterfaces
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

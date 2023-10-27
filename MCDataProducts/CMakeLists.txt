@@ -22,15 +22,15 @@ cet_make_library(
       src/TrackSummaryTruthAssns.cc
     LIBRARIES PUBLIC
       
-      offline::DataProducts
-      offline::RecoDataProducts
+      Offline::DataProducts
+      Offline::RecoDataProducts
 )
 
 art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
     CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
     CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
      DICTIONARY_LIBRARIES
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 install_source(SUBDIRS src)
 install_headers(SUBDIRS inc)

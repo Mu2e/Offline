@@ -54,20 +54,20 @@ cet_make_library(
       src/VectorVolume.cc
     LIBRARIES PUBLIC
       art_root_io::tfile_support
-      offline::BFieldGeom
-      offline::ConditionsService
-      offline::ConfigTools
-      offline::DataProducts
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::GeomPrimitives
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::RecoDataProducts
-      offline::SeedService
-      offline::STMConditions
-      offline::StoppingTargetGeom
-      offline::TrackerGeom
+      Offline::BFieldGeom
+      Offline::ConditionsService
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::GeomPrimitives
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      Offline::SeedService
+      Offline::STMConditions
+      Offline::StoppingTargetGeom
+      Offline::TrackerGeom
       ROOT::Hist
       ROOT::Matrix
       XercesC::XercesC

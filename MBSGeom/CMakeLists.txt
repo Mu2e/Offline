@@ -3,8 +3,8 @@ cet_make_library(INTERFACE
       inc/MBS.hh
     LIBRARIES INTERFACE
       
-      offline::GeomPrimitives
-      offline::Mu2eInterfaces
+      Offline::GeomPrimitives
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

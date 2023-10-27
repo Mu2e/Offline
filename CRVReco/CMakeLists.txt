@@ -4,35 +4,35 @@ cet_make_library(
       src/MakeCrvRecoPulses.cc
     LIBRARIES PUBLIC
       
-      offline::CosmicRayShieldGeom
-      offline::DataProducts
-      offline::GeometryService
+      Offline::CosmicRayShieldGeom
+      Offline::DataProducts
+      Offline::GeometryService
       ROOT::Hist
 )
 
 cet_build_plugin(CrvCoincidenceFinder art::module
     REG_SOURCE src/CrvCoincidenceFinder_module.cc
     LIBRARIES REG
-      offline::CRVReco
+      Offline::CRVReco
       
-      offline::CosmicRayShieldGeom
-      offline::DataProducts
-      offline::GeometryService
-      offline::RecoDataProducts
+      Offline::CosmicRayShieldGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CrvRecoPulsesFinder art::module
     REG_SOURCE src/CrvRecoPulsesFinder_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::CRVReco
+      Offline::CRVReco
       
-      offline::CosmicRayShieldGeom
-      offline::CRVConditions
-      offline::DataProducts
-      offline::GeometryService
-      offline::ProditionsService
-      offline::RecoDataProducts
+      Offline::CosmicRayShieldGeom
+      Offline::CRVConditions
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::ProditionsService
+      Offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

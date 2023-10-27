@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
 find_package(cetmodules)
 
-project(offline VERSION 11.00.00)
+project(Offline VERSION 11.00.00)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -14,7 +14,7 @@ cet_set_compiler_flags(DIAGS VIGILANT
  EXTRA_FLAGS -pedantic -Wno-error=unused-parameter -Wno-error=type-limits -Wno-error=ignored-qualifiers -Wno-error=unused-but-set-parameter -Wno-error=extra -Wno-error=non-virtual-dtor -Wno-error=implicit-fallthrough -Wno-error=deprecated-copy
 )
 
-include_directories(..)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
  
 find_package(art_root_io REQUIRED)
 find_package(GSL REQUIRED)

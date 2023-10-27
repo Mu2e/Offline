@@ -8,7 +8,7 @@ cet_make_library(
       src/Tracker.cc
     LIBRARIES PUBLIC
       KinKal_Geometry
-      offline::GeneralUtilities
+      Offline::GeneralUtilities
 )
 
 install_source(SUBDIRS src)

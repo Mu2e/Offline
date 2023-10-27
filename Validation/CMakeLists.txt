@@ -38,14 +38,14 @@ cet_make_library(
       src/ValTriggerResults.cc
     LIBRARIES PUBLIC
       
-      offline::DataProducts
-      offline::GeometryService
-      offline::KinKalGeom
-      offline::MCDataProducts
-      offline::Mu2eKinKal
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::KinKalGeom
+      Offline::MCDataProducts
+      Offline::Mu2eKinKal
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_make_library(LIBRARY_NAME Validation_Root
@@ -59,7 +59,7 @@ cet_make_library(LIBRARY_NAME Validation_Root
       root/TValPar.cc
     LIBRARIES PUBLIC
       BTrk_difAlgebra
-      offline::Validation
+      Offline::Validation
       ROOT::Postscript
       ROOT::Core
       ROOT::Cling
@@ -69,16 +69,16 @@ cet_make_library(LIBRARY_NAME Validation_Root
 cet_make_exec(NAME valCompare
     SOURCE src/valCompare_main.cc
     LIBRARIES
-      offline::Validation_Root
-      offline::Validation_dict
+      Offline::Validation_Root
+      Offline::Validation_dict
       
 )
 
 cet_build_plugin(Validation art::module
     REG_SOURCE src/Validation_module.cc
     LIBRARIES REG
-      offline::Validation_Root
-      offline::Validation_dict
+      Offline::Validation_Root
+      Offline::Validation_dict
       
 )
 
@@ -86,7 +86,7 @@ art_dictionary(
   CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/root/classes_def.xml
   CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/root/classes.h
   DICTIONARY_LIBRARIES
-    offline::Validation_Root
+    Offline::Validation_Root
  )
 
 install_source(SUBDIRS src root)

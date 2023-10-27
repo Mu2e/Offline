@@ -5,16 +5,16 @@ cet_make_library(
       src/ExtMonFNALConditions.cc
     LIBRARIES PUBLIC
       
-      offline::ConfigTools
-      offline::Mu2eInterfaces
+      Offline::ConfigTools
+      Offline::Mu2eInterfaces
 )
 
 cet_build_plugin(ConditionsService art::service
     REG_SOURCE src/ConditionsService_service.cc
     LIBRARIES REG
-      offline::ConditionsService
+      Offline::ConditionsService
       
-      offline::GeometryService
+      Offline::GeometryService
 )
 
 install_source(SUBDIRS src)

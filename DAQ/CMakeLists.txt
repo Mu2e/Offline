@@ -9,61 +9,61 @@ cet_make_library(
 cet_build_plugin(ArtBinaryPacketsFromDigis art::module
     REG_SOURCE src/ArtBinaryPacketsFromDigis_module.cc
     LIBRARIES REG
-      offline::DAQ
+      Offline::DAQ
       
-      offline::CaloConditions
-      offline::CalorimeterGeom
-      offline::CosmicRayShieldGeom
-      offline::CRVConditions
-      offline::GeometryService
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::SeedService
+      Offline::CaloConditions
+      Offline::CalorimeterGeom
+      Offline::CosmicRayShieldGeom
+      Offline::CRVConditions
+      Offline::GeometryService
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::SeedService
 )
 
 cet_build_plugin(ArtFragmentsFromDTCEvents art::module
     REG_SOURCE src/ArtFragmentsFromDTCEvents_module.cc
     LIBRARIES REG
-      offline::DAQ
+      Offline::DAQ
       
 )
 
 cet_build_plugin(CaloHitsFromFragments art::module
     REG_SOURCE src/CaloHitsFromFragments_module.cc
     LIBRARIES REG
-      offline::DAQ
+      Offline::DAQ
       
-      offline::CaloConditions
-      offline::ProditionsService
-      offline::RecoDataProducts
+      Offline::CaloConditions
+      Offline::ProditionsService
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CaloRecoFromFragments art::module
     REG_SOURCE src/CaloRecoFromFragments_module.cc
     LIBRARIES REG
-      offline::DAQ
+      Offline::DAQ
       
-      offline::CaloConditions
-      offline::ProditionsService
-      offline::RecoDataProducts
+      Offline::CaloConditions
+      Offline::ProditionsService
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CrvDigisFromFragments art::module
     REG_SOURCE src/CrvDigisFromFragments_module.cc
     LIBRARIES REG
-      offline::DAQ
+      Offline::DAQ
       
-      offline::CRVConditions
-      offline::ProditionsService
-      offline::RecoDataProducts
+      Offline::CRVConditions
+      Offline::ProditionsService
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(FragmentAna art::module
     REG_SOURCE src/FragmentAna_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::DAQ
-      offline::DataProducts
+      Offline::DAQ
+      Offline::DataProducts
       ROOT::Hist
 )
 
@@ -71,36 +71,36 @@ cet_build_plugin(PrefetchDAQData art::module
     REG_SOURCE src/PrefetchDAQData_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::DAQ
+      Offline::DAQ
       
-      offline::RecoDataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(StrawHitRecoFromFragments art::module
     REG_SOURCE src/StrawHitRecoFromFragments_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::DAQ
+      Offline::DAQ
       
-      offline::ConditionsBase
-      offline::ConditionsService
-      offline::ConfigTools
-      offline::DataProducts
-      offline::GeometryService
-      offline::ProditionsService
-      offline::RecoDataProducts
-      offline::TrackerConditions
-      offline::TrackerGeom
-      offline::TrkHitReco
+      Offline::ConditionsBase
+      Offline::ConditionsService
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::TrackerConditions
+      Offline::TrackerGeom
+      Offline::TrkHitReco
 )
 
 cet_build_plugin(StrawRecoFromFragments art::module
     REG_SOURCE src/StrawRecoFromFragments_module.cc
     LIBRARIES REG
-      offline::DAQ
+      Offline::DAQ
       
-      offline::DataProducts
-      offline::RecoDataProducts
+      Offline::DataProducts
+      Offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

@@ -9,10 +9,10 @@ cet_make_library(
       src/Tracker.cc
     LIBRARIES PUBLIC
       
-      offline::DataProducts
-      offline::GeneralUtilities
-      offline::GeomPrimitives
-      offline::Mu2eInterfaces
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeomPrimitives
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

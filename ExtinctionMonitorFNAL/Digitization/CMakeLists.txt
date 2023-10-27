@@ -6,25 +6,25 @@ cet_make_library(
       src/SiliconProperties.cc
     LIBRARIES PUBLIC
       
-      offline::ConditionsService
-      offline::DataProducts
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(ExtMonFNALHitMaker art::module
     REG_SOURCE src/ExtMonFNALHitMaker_module.cc
     LIBRARIES REG
-      offline::ExtinctionMonitorFNAL_Digitization
+      Offline::ExtinctionMonitorFNAL_Digitization
       
-      offline::ConditionsService
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::MCDataProducts
-      offline::RecoDataProducts
-      offline::SeedService_SeedService_service
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      Offline::SeedService_SeedService_service
 )
 
 install_source(SUBDIRS src)

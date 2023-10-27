@@ -5,12 +5,12 @@ cet_make_library(
       src/ParticleInfo.cc
     LIBRARIES PUBLIC
       
-      offline::BFieldGeom
-      offline::ConfigTools
-      offline::DataProducts
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::TrackerGeom
+      Offline::BFieldGeom
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::TrackerGeom
       BTrk_BaBar
       BTrk_BbrGeom
       BTrk_BField

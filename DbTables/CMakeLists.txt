@@ -9,8 +9,8 @@ cet_make_library(
       src/DbValCache.cc
     LIBRARIES PUBLIC
       
-      offline::DataProducts
-      offline::GeneralUtilities
+      Offline::DataProducts
+      Offline::GeneralUtilities
 )
 
 install_source(SUBDIRS src)

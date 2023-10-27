@@ -3,9 +3,9 @@ cet_make_library(
       src/TSdA.cc
     LIBRARIES PUBLIC
       
-      offline::GeneralUtilities
-      offline::GeomPrimitives
-      offline::Mu2eInterfaces
+      Offline::GeneralUtilities
+      Offline::GeomPrimitives
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

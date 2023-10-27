@@ -2,7 +2,7 @@ cet_build_plugin(HelloProducer art::module
     REG_SOURCE src/HelloProducer_module.cc
     LIBRARIES REG
       
-      offline::MCDataProducts
+      Offline::MCDataProducts
 )
 
 cet_build_plugin(HelloWorld2 art::module

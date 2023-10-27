@@ -12,31 +12,31 @@ cet_make_library(
     LIBRARIES PUBLIC
       art_root_io::TFileService_service
       
-      offline::BFieldGeom
-      offline::BTrkData
-      offline::ConfigTools
-      offline::DataProducts
-      offline::DetectorSolenoidGeom
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::MECOStyleProtonAbsorberGeom
-      offline::RecoDataProducts
-      offline::StoppingTargetGeom
+      Offline::BFieldGeom
+      Offline::BTrkData
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::DetectorSolenoidGeom
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::MECOStyleProtonAbsorberGeom
+      Offline::RecoDataProducts
+      Offline::StoppingTargetGeom
 )
 
 cet_build_plugin(TrkExt art::module
     REG_SOURCE src/TrkExt_module.cc
     LIBRARIES REG
-      offline::TrkExt
+      Offline::TrkExt
       
-      offline::BFieldGeom
-      offline::BTrkData
-      offline::DataProducts
-      offline::GeneralUtilities
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::RecoDataProducts
+      Offline::BFieldGeom
+      Offline::BTrkData
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

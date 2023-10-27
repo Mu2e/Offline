@@ -9,7 +9,7 @@ cet_make_library(INTERFACE
       inc/TransportPipe.hh
     LIBRARIES INTERFACE
       
-      offline::Mu2eInterfaces
+      Offline::Mu2eInterfaces
 )
 
 install_headers(SUBDIRS inc)

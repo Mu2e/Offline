@@ -3,8 +3,8 @@ cet_make_library(
       src/zBinningForFoils.cc
     LIBRARIES PUBLIC
       
-      offline::GeneralUtilities
-      offline::Mu2eInterfaces
+      Offline::GeneralUtilities
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

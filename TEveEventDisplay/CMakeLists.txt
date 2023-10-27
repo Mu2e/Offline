@@ -17,10 +17,10 @@ cet_make_library(
       src/TEveMu2eTracker.cc
     LIBRARIES PUBLIC
       BTrk_difAlgebra
-      offline::ConfigTools
-      offline::GeometryService
-      offline::GlobalConstantsService
-      offline::RecoDataProducts
+      Offline::ConfigTools
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::RecoDataProducts
       ROOT::Eve
       ROOT::Cling
 )
@@ -29,8 +29,8 @@ cet_build_plugin(TEveEventDisplay art::module
     REG_SOURCE src/TEveEventDisplay_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::TEveEventDisplay
-      offline::TEveEventDisplay_dict
+      Offline::TEveEventDisplay
+      Offline::TEveEventDisplay_dict
       
 )
 
@@ -38,8 +38,8 @@ cet_build_plugin(TEveGDMLTest art::module
     REG_SOURCE src/TEveGDMLTest_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::TEveEventDisplay
-      offline::TEveEventDisplay_dict
+      Offline::TEveEventDisplay
+      Offline::TEveEventDisplay_dict
       
 )
 
@@ -47,8 +47,8 @@ cet_build_plugin(TEveNonGDMLTest art::module
     REG_SOURCE src/TEveNonGDMLTest_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      offline::TEveEventDisplay
-      offline::TEveEventDisplay_dict
+      Offline::TEveEventDisplay
+      Offline::TEveEventDisplay_dict
       
 )
 
@@ -56,7 +56,7 @@ art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
     CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
     CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
      DICTIONARY_LIBRARIES
-      offline::TEveEventDisplay
+      Offline::TEveEventDisplay
 )
 install_source(SUBDIRS src)
 install_fhicl(SUBDIRS fcl SUBDIRNAME TEveEventDisplay)

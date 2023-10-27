@@ -7,12 +7,12 @@ cet_make_library(INTERFACE
       inc/TrkQualCatalog.hh
     LIBRARIES INTERFACE
       
-      offline::AnalysisConfig
-      offline::DbService
-      offline::DbTables
-      offline::Mu2eInterfaces
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::AnalysisConfig
+      Offline::DbService
+      Offline::DbTables
+      Offline::Mu2eInterfaces
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 install_headers(SUBDIRS inc)

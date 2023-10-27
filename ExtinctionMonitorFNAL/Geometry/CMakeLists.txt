@@ -13,8 +13,8 @@ cet_make_library(
       src/PixelNeighbors.cc
     LIBRARIES PUBLIC
       
-      offline::DataProducts
-      offline::Mu2eInterfaces
+      Offline::DataProducts
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

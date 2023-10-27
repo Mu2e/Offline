@@ -12,201 +12,201 @@ cet_make_library(
       src/ProtonCandidate.cc
     LIBRARIES PUBLIC
       
-      offline::BFieldGeom
-      offline::BTrkData
-      offline::CalorimeterGeom
-      offline::ConditionsService
-      offline::DataProducts
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrackerGeom
-      offline::TrkReco
+      Offline::BFieldGeom
+      Offline::BTrkData
+      Offline::CalorimeterGeom
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
+      Offline::TrkReco
       ROOT::Physics
 )
 
 cet_build_plugin(CalHelixFinder art::module
     REG_SOURCE src/CalHelixFinder_module.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::BFieldGeom
-      offline::CalorimeterGeom
-      offline::ConditionsService
-      offline::ConfigTools
-      offline::GeometryService
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::BFieldGeom
+      Offline::CalorimeterGeom
+      Offline::ConditionsService
+      Offline::ConfigTools
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(CalTimePeakFinder art::module
     REG_SOURCE src/CalTimePeakFinder_module.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::CalorimeterGeom
-      offline::ConditionsService
-      offline::ConfigTools
-      offline::GeometryService
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::CalorimeterGeom
+      Offline::ConditionsService
+      Offline::ConfigTools
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(ComboHitFilter art::module
     REG_SOURCE src/ComboHitFilter_module.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::CalorimeterGeom
-      offline::ConditionsService
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::CalorimeterGeom
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(DeltaFinderAna art::module
     REG_SOURCE src/DeltaFinderAna_module.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::ConditionsService
-      offline::DataProducts
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(DeltaFinder art::module
     REG_SOURCE src/DeltaFinder_module.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::CalorimeterGeom
-      offline::ConditionsService
-      offline::GeometryService
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::CalorimeterGeom
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(MergeHelixFinder art::module
     REG_SOURCE src/MergeHelixFinder_module.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::BTrkData
-      offline::CalorimeterGeom
-      offline::ConfigTools
-      offline::GeometryService
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrkReco
+      Offline::BTrkData
+      Offline::CalorimeterGeom
+      Offline::ConfigTools
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrkReco
 )
 
 cet_build_plugin(PhiClusterFinder art::module
     REG_SOURCE src/PhiClusterFinder_module.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::ConfigTools
-      offline::GeneralUtilities
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrkReco
+      Offline::ConfigTools
+      Offline::GeneralUtilities
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrkReco
 )
 
 cet_build_plugin(PrefetchData art::module
     REG_SOURCE src/PrefetchData_module.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::ConditionsService
-      offline::GeometryService
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(TZClusterFinder art::module
     REG_SOURCE src/TZClusterFinder_module.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::ConfigTools
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::ConfigTools
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CalHelixFinderDiag art::tool
     REG_SOURCE src/CalHelixFinderDiag_tool.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(CalTimePeakFinderDiag art::tool
     REG_SOURCE src/CalTimePeakFinderDiag_tool.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::BTrkData
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
-      offline::TrackerGeom
+      Offline::BTrkData
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(DeltaFinderDiag art::tool
     REG_SOURCE src/DeltaFinderDiag_tool.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::DataProducts
-      offline::MCDataProducts
-      offline::Mu2eUtilities
+      Offline::DataProducts
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(MergePatRecDiag art::tool
     REG_SOURCE src/MergePatRecDiag_tool.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::Mu2eUtilities
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(PhiClusterFinderDiag art::tool
     REG_SOURCE src/PhiClusterFinderDiag_tool.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(TZClusterFinderDiag art::tool
     REG_SOURCE src/TZClusterFinderDiag_tool.cc
     LIBRARIES REG
-      offline::CalPatRec
+      Offline::CalPatRec
       
-      offline::MCDataProducts
-      offline::Mu2eUtilities
-      offline::RecoDataProducts
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
 )
 
 art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
     CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
     CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
      DICTIONARY_LIBRARIES
-      offline::CalPatRec
+      Offline::CalPatRec
 )
 install_source(SUBDIRS src)
 install_headers(SUBDIRS inc)
