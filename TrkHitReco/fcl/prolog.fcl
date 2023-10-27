@@ -91,6 +91,7 @@ TNTClusterer : {
   SeedDistance     : 20.0
   ClusterDiameter  : 5.0
   ClusterTime      : 20.0
+  MinClusterHits   : 1
   MaxHitTimeDiff   : 30.0
   MaxSumDistance   : 100.0
   MaxCluIterations : 10

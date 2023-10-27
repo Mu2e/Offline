@@ -6,21 +6,22 @@
 namespace mu2e
 {
   TNTClusterer::TNTClusterer(const Config& config) :
-    dhit_       (config.hitDistance()),
-    dseed_      (config.seedDistance()),
-    dd_         (config.clusterDiameter()),
-    dt_         (config.clusterTime()),
-    maxHitdt_   (config.maxHitTimeDiff()),
-    maxDistSum_ (config.maxSumDistance()),
-    maxNiter_   (config.maxCluIterations()),
-    useMedian_  (config.medianCentroid()),
-    comboInit_  (config.comboInit()),
-    bkgmask_    (config.bkgmsk()),
-    sigmask_    (config.sigmsk()),
-    testflag_   (config.testflag()),
-    diag_       (config.diag()),
-    distMethod_ (config.distMethod()),
-    chi2HitDistance_ (config.chi2HitDistance()),
+    dhit_             (config.hitDistance()),
+    dseed_            (config.seedDistance()),
+    dd_               (config.clusterDiameter()),
+    dt_               (config.clusterTime()),
+    minClusterHits_   (config.minClusterHits()),
+    maxHitdt_         (config.maxHitTimeDiff()),
+    maxDistSum_       (config.maxSumDistance()),
+    maxNiter_         (config.maxCluIterations()),
+    useMedian_        (config.medianCentroid()),
+    comboInit_        (config.comboInit()),
+    bkgmask_          (config.bkgmsk()),
+    sigmask_          (config.sigmsk()),
+    testflag_         (config.testflag()),
+    diag_             (config.diag()),
+    distMethod_       (config.distMethod()),
+    chi2HitDistance_  (config.chi2HitDistance()),
     chi2SeedDistance_ (config.chi2SeedDistance())
   {
      float minerr (config.minHitError());
@@ -49,7 +50,8 @@ namespace mu2e
     initClustering(chcol, BkgHits);
     doClustering(chcol, clusters, BkgHits);
 
-    auto removePred = [](auto& cluster) {return cluster.hits().empty();};
+    long unsigned int minchits = minClusterHits_;
+    auto removePred = [minchits](auto& cluster) {return cluster.hits().size() < minchits;};
     clusters.erase(std::remove_if(clusters.begin(),clusters.end(),removePred),clusters.end());
 
     auto transPred = [&BkgHits] (const int i) {return BkgHits[i].chidx_;};
@@ -132,6 +134,7 @@ namespace mu2e
       // -- if hit is ok, reassign it right away
       if (hit.distance_ < dhit || hit.dchi2_ < dhit) {
         clusters[hit.clusterIdx_].addHit(ihit);
+        clusters[hit.clusterIdx_].points().addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),clusters[hit.clusterIdx_].points().nPoints());
         continue;
       }
 
@@ -143,12 +146,13 @@ namespace mu2e
 
       for (int i=imin;i<imax;++i) {
         for (const auto& ic : clusterIndices[i]) {
-          float dist = distance(clusters[ic],chcol[hit.chidx_],method);
+          float dist = distance(clusters[ic],chcol[hit.chidx_]);
           if (dist < mindist) {mindist = dist;minc = ic;}
         }
       }
       if (mindist < dhit) {
         clusters[minc].addHit(ihit);
+        clusters[minc].points().addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),clusters[minc].points().nPoints());
       }
       else if (mindist > dseed) {
         minc = clusters.size();
@@ -188,7 +192,7 @@ namespace mu2e
         updateCluster(cluster, chcol, BkgHits);
         if (cluster.hits().size()==1) {BkgHits[cluster.hits().at(0)].distance_ = 0.0f;}
         else {
-          for (auto& hit : cluster.hits()) BkgHits[hit].distance_ = distance(cluster,chcol[BkgHits[hit].chidx_],method);
+          for (auto& hit : cluster.hits()) BkgHits[hit].distance_ = distance(cluster,chcol[BkgHits[hit].chidx_]);
         }
       }
     }
@@ -235,19 +239,19 @@ namespace mu2e
 
   //---------------------------------------------------------------------------------------
   // only count differences if they are above the natural hit size (drift time, straw size)
-  float TNTClusterer::distance(const BkgCluster& cluster, const ComboHit& hit, int method) const
+  float TNTClusterer::distance(const BkgCluster& cluster, const ComboHit& hit) const
   {
     float retval(0.0f);
-    if(method == TNTClusterer::useDistance)
+    if(distMethod_ == TNTClusterer::useDistance)
     {
       float psep_x = hit.pos().x()-cluster.pos().x();
       float psep_y = hit.pos().y()-cluster.pos().y();
       float d2     = psep_x*psep_x+psep_y*psep_y;
 
-      if (d2 > md2_) return dseed_+1.0f;
+      if (d2 > md2_) {return dseed_+1.0f;}
 
       float dt = std::abs(hit.correctedTime()-cluster.time());
-      if (dt > maxHitdt_) return dseed_+1.0f;
+      if (dt > maxHitdt_) {return dseed_+1.0f;}
 
 
       if (dt > dt_) {float tdist = dt -dt_;retval = tdist*tdist*trms2inv_;}
@@ -263,36 +267,24 @@ namespace mu2e
         retval += dw*dw + dp*dp;
       }
     }
-    if(method == TNTClusterer::useChi2)
+    if(distMethod_ == TNTClusterer::useChi2)
     {
-      TwoDPoint ch(hit.pos(),hit.uDir(),hit.uVar(),hit.vVar());
-      std::vector<TwoDPoint> points = {cluster.point(),ch};
-      auto combinedPts = CombineTwoDPoints(points);
-      retval = combinedPts.dChi2(points.size()-1);
+      retval = cluster.points().dChi2(TwoDPoint(hit.pos(),hit.uDir(),hit.uVar(),hit.vVar()));
     }
-
     return retval;
   }
 
   void TNTClusterer::updateCluster(BkgCluster& cluster, const ComboHitCollection& chcol, std::vector<BkgHit>& BkgHits)
   {
 
-    if (cluster.hits().empty()) {cluster.time(0.0f);cluster.pos(XYZVectorF(0.0f,0.0f,0.0f));cluster.point(TwoDPoint(XYZVectorF(0.0f,0.0f,0.0f),XYZVectorF(0.0f,0.0f,0.0f),0.0f,0.0f));return;}
+    if (cluster.hits().empty()) {cluster.time(0.0f);cluster.pos(XYZVectorF(0.0f,0.0f,0.0f));return;}
 
     if (cluster.hits().size()==1) {
       int idx = BkgHits[cluster.hits().at(0)].chidx_;
       cluster.time(chcol[idx].correctedTime());
       cluster.pos(XYZVectorF(chcol[idx].pos().x(),chcol[idx].pos().y(),0.0f));
-      cluster.point(TwoDPoint(chcol[idx].pos(),chcol[idx].uDir(),chcol[idx].uVar(),chcol[idx].vVar()));
       return;
     }
-
-    std::vector<TwoDPoint> points;
-    for (auto& hit : cluster.hits()) {
-      int idx  = BkgHits[hit].chidx_;
-      points.push_back(TwoDPoint(chcol[idx].pos(),chcol[idx].uDir(),chcol[idx].uVar(),chcol[idx].vVar()));
-    }
-    auto combinedPts = CombineTwoDPoints(points);
 
     float crho  = sqrtf(cluster.pos().perp2());
     float cphi  = cluster.pos().phi();
@@ -350,7 +342,7 @@ namespace mu2e
 
     cluster.time(ctime);
     cluster.pos(XYZVectorF(crho*cos(cphi),crho*sin(cphi),0.0f));
-    cluster.point(combinedPts.point());
+
   }
 
 

@@ -1,6 +1,7 @@
 
 #include "Offline/Compression/fcl/prolog.fcl"
 #include "Offline/fcl/TrkCaloDt.fcl"
+#include "Offline/TrkHitReco/fcl/prolog.fcl"
 BEGIN_PROLOG
 # Diagnostic modules
 
