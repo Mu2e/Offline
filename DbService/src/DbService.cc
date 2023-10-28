@@ -48,7 +48,7 @@ DbService::DbService(Parameters const& config,
   _config.textFile(files);
   ConfigFileLookupPolicy configFile;
   std::string fn;
-  for (auto ss : files) {
+  for (auto const& ss : files) {
     if (_verbose > 2)
       std::cout << "DbService::beginJob reading file " << ss << std::endl;
     fn = configFile(ss);

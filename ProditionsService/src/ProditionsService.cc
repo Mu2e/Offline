@@ -96,7 +96,7 @@ ProditionsService::ProditionsService(Parameters const& sTable,
   _caches[cec->name()] = cec;
   if (_config.verbose() > 0) {
     cout << "Proditions built caches:" << endl;
-    for (auto cc : _caches) {
+    for (auto const& cc : _caches) {
       cout << "  " << cc.first << endl;
     }
   }
