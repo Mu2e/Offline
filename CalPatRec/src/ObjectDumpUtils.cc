@@ -169,7 +169,7 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
     printf("-----------------------------------------------------\n");
   }
 
-  if ((opt == "") || (opt.find("data") >= 0)) {
+  if ((opt == "") || (opt.find("data") != std::string::npos)) {
     double chi2   = Krep->chisq();
 
     int    nhits(0);
@@ -236,7 +236,7 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
            fit_consistency);
   }
 
-  if (opt.find("hits") >= 0) {
+  if (opt.find("hits") != std::string::npos) {
 //-----------------------------------------------------------------------------
 // print detailed information about the track hits
 //-----------------------------------------------------------------------------
