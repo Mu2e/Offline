@@ -51,16 +51,12 @@ namespace mu2e {
 // constructors and such
 //-----------------------------------------------------------------------------
     Doublet();
-    Doublet(const Doublet& R);                 // unfortunately, need a copy constructor...
-
     Doublet(int index,
             int station, int panel,
             CLHEP::Hep3Vector shdir,
             CLHEP::Hep3Vector trkdir,
             CLHEP::Hep3Vector trkpos,
             TrkStrawHit*      hit);
-
-    ~Doublet();
 
     double chi2Best     () const { return fChi2     [fIBest]; }
     double chi2SlopeBest() const { return fChi2Slope[fIBest]; }
