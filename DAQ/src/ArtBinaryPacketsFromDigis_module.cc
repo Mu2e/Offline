@@ -29,9 +29,9 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 
 // artdaq-core-mu2e includes
-#include "artdaq-core-mu2e/Data/CRVFragment.hh"
-#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
-#include "artdaq-core-mu2e/Data/TrackerFragment.hh"
+#include "artdaq-core-mu2e/Data/CRVDataDecoder.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterDataDecoder.hh"
+#include "artdaq-core-mu2e/Data/TrackerDataDecoder.hh"
 
 // pci_linux_kernel_module includes
 #include "dtcInterfaceLib/DTC_Packets.h"
@@ -55,16 +55,16 @@
 using timestamp = uint64_t;
 
 using DataBlockHeader = DataHeaderPacket;
-using TrackerDataPacket = mu2e::TrackerFragment::TrackerDataPacket;
-using TrackerADCPacket = mu2e::TrackerFragment::TrackerADCPacket;
+using TrackerDataPacket = mu2e::TrackerDataDecoder::TrackerDataPacket;
+using TrackerADCPacket = mu2e::TrackerDataDecoder::TrackerADCPacket;
 using adc_t = uint16_t;
-using CalorimeterDataPacket = mu2e::CalorimeterFragment::CalorimeterDataPacket;
-using CalorimeterBoardID = mu2e::CalorimeterFragment::CalorimeterBoardID;
-using CalorimeterHitReadoutPacket = mu2e::CalorimeterFragment::CalorimeterHitReadoutPacket;
-using CRVROCStatusPacket = mu2e::CRVFragment::CRVROCStatusPacket;
-using CRVHitWaveformSample = mu2e::CRVFragment::CRVHitWaveformSample;
-using CRVHitInfo = mu2e::CRVFragment::CRVHitInfo;
-using CRVHit = mu2e::CRVFragment::CRVHit;
+using CalorimeterDataPacket = mu2e::CalorimeterDataDecoder::CalorimeterDataPacket;
+using CalorimeterBoardID = mu2e::CalorimeterDataDecoder::CalorimeterBoardID;
+using CalorimeterHitReadoutPacket = mu2e::CalorimeterDataDecoder::CalorimeterHitReadoutPacket;
+using CRVROCStatusPacket = mu2e::CRVDataDecoder::CRVROCStatusPacket;
+using CRVHitWaveformSample = mu2e::CRVDataDecoder::CRVHitWaveformSample;
+using CRVHitInfo = mu2e::CRVDataDecoder::CRVHitInfo;
+using CRVHit = mu2e::CRVDataDecoder::CRVHit;
 
 // data struct for the calorimeter
 struct CaloDataPacket {
