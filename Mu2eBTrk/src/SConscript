@@ -57,7 +57,7 @@ helper.make_plugins( [
    'art_Framework_Services_Registry',
    'art_root_io_tfile_support',
    'art_root_io_TFileService',
-   'art_Framework_Services_Optional_RandomNumberGenerator_service',
+   'art_Framework_Services_Optional_RandomNumberGenerator',
    'art_Persistency_Common',
    'art_Persistency_Provenance',
    'art_Utilities',
