@@ -54,7 +54,7 @@ namespace mu2e {
     double W_length()    const {return _W_middle+_delta_WlR+_delta_WlL;}
     double W_height()    const {return _W_height;}
     double Wdepth_f()    const {return _Wdepth_f;}
-    double Wdepth_b()    const {return _Wdepth_b;}    
+    double Wdepth_b()    const {return _Wdepth_b;}
     double W_depth()     const {return _Wdepth_f+_Wdepth_b;}
 
     double Aperture_HPGe1()    const {return _Aperture_HPGe1;}
@@ -82,7 +82,7 @@ namespace mu2e {
     double _delta_WlL;
     double _W_middle;
     double _W_height;
-    double _Wdepth_f; 
+    double _Wdepth_f;
     double _Wdepth_b;
     double _Aperture_HPGe1;
     double _Aperture_HPGe2;

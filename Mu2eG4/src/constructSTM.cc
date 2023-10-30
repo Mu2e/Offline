@@ -974,7 +974,7 @@ namespace mu2e {
       VolumeInfo const & parentInfo = stmDnStrEnvInfo;
       G4ThreeVector parentCenterInMu2e = parentInfo.centerInMu2e();
 
-     
+
       //===================== Spot-Size (SS) Collimator ==========================
 
       const double stmSSCollHalfLength1 = pSTMSSCollimatorParams.halfLength();
@@ -1429,7 +1429,7 @@ namespace mu2e {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //   Spot-Size Collimator
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    
+
    const double delta_WlR  = pSTM_SSCParams.delta_WlR();
    const double delta_WlL  = pSTM_SSCParams.delta_WlL();
    const double W_middle   = pSTM_SSCParams.W_middle();
@@ -1798,7 +1798,7 @@ namespace mu2e {
      G4ThreeVector Pos_hole1 = G4ThreeVector( -offset_Spot - fW_x, -Front_dY , 0);
      G4ThreeVector Pos_hole2 = G4ThreeVector( +offset_Spot - fW_x, -Front_dY, 0);
 
-    ////////////////////////////////////////     
+    ////////////////////////////////////////
      G4Box*  CopperFwallLayer  = new G4Box("CopperFwallLayer", Front_L/2, height/2, Fcopperdepth/2);
      G4Tubs* Spot_FCopper_HPGe = new G4Tubs("Spot_FCopper_HPGe", 0, r_HPGe1+10, Fcopperdepth/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
      G4Tubs* Spot_FCopper_LaBr = new G4Tubs("Spot_FCopper_LaBr", 0, r_LaBr1+10, Fcopperdepth/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
@@ -1828,7 +1828,7 @@ namespace mu2e {
      G4Box*  Lead1FwallLayer  = new G4Box("Lead1FwallLayer", Front_L/2, Front_H/2, Fleaddepth2/2);
      G4Tubs* Spot_FLead1_HPGe = new G4Tubs("Spot_FLead_HPGe", 0, r_HPGe1+10, Fleaddepth2/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
      G4Tubs* Spot_FLead1_LaBr = new G4Tubs("Spot_FLead_LaBr", 0, r_LaBr1+10, Fleaddepth2/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
- 
+
      G4SubtractionSolid* Lead1Fwall_1hole = new G4SubtractionSolid("Lead1Fwall_1hole", Lead1FwallLayer, Spot_FLead1_HPGe, 0, Pos_hole1);
      G4SubtractionSolid* Lead1Fwall = new G4SubtractionSolid("Lead1Fwall", Lead1Fwall_1hole, Spot_FLead1_LaBr, 0, Pos_hole2);
 
@@ -1927,7 +1927,7 @@ namespace mu2e {
      forceAuxEdgeVisible,
      placePV,
      doSurfaceCheck);
- 
+
 
     ////////////////////////////////////////
 

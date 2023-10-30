@@ -15,14 +15,14 @@ namespace mu2e {
 
   class ElectronicShielding {
   public:
-    ElectronicShielding(bool build, 
+    ElectronicShielding(bool build,
     double SiGridX, double SiGridY, double SiGridZ,
     double SiXcenter, double SiYcenter, double SiZcenter,
     double ConcreteT, double GapToSi
     ):
       _build(build),
      _SiGridX(SiGridX), _SiGridY(SiGridY), _SiGridZ(SiGridZ),
-     _SiXcenter(SiXcenter), _SiYcenter(SiYcenter), _SiZcenter(SiZcenter), 
+     _SiXcenter(SiXcenter), _SiYcenter(SiYcenter), _SiZcenter(SiZcenter),
      _ConcreteT(ConcreteT), _GapToSi(GapToSi)
     {}
 
@@ -51,7 +51,6 @@ namespace mu2e {
     double             _ConcreteT;
     double             _GapToSi;
 
-   
   };
 
 }
