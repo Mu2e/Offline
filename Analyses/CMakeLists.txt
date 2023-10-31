@@ -284,6 +284,7 @@ cet_build_plugin(materailsPropStudy art::module
     REG_SOURCE src/materailsPropStudy_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
+      BTrk_DetectorModel
       BTrk_MatEnv
       BTrk_TrkBase
       Offline::SeedService
