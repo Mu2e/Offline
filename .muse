@@ -4,3 +4,5 @@ ENVSET p050
 PYTHONPATH Trigger/python
 # add Offline/bin to path
 PATH bin
+# recent commits can take enforce these flags
+CPPFLAGS -Wtype-limits
