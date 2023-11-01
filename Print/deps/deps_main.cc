@@ -277,7 +277,7 @@ int readGraph(string fn) {
 
 int printDep(type tt, string pkgName) {
   size_t np = findNode(pkgName);
-  if (np < 0) {
+  if (np == std::numeric_limits<size_t>::max()) {
     cout << "package " << pkgName << " is not in the dependency list " << endl;
     return 1;
   }
