@@ -57,6 +57,7 @@ namespace mu2e {
       int              nrgSelection; // 1 if passes energy selection (CE), 0 if not (protons)
       int              nCombines;
       int              caloIndex;
+      bool             goodCluster;
     };
 
     struct Data_t {
