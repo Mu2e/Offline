@@ -564,7 +564,6 @@ CalPatRec : { @table::CalPatRec
             debugLevel                 : 0
             printFrequency             : 1000
             runDisplay                 : 0
-            saveProtCand               : 0
             useCCs                     : 1
             recoverCCs                 : 1
             chCollLabel                : "FlagBkgHits"
@@ -585,16 +584,7 @@ CalPatRec : { @table::CalPatRec
             minCaloEnergy              : 50.0
             caloDtMax                  : 30.0
             caloTimeOffset             : @local::TrackCaloMatching.DtOffset
-            doComptonClean             : 0
-            maxIntersectSig            : 5.0
-            maxApproachSigma           : 5.0
-            maxAppSigmaTrans           : 5.0
-            comptonThresh              : 8
-            doIsoClean                 : 0
-            isoRad                     : 100.0
-            doPhiClean                 : 0
-            phiCleanPhi                : 45.0
-            phiCleanThresh             : 5
+            doRefine                   : 1
 
             diagPlugin : { tool_type  : "TZClusterFinderDiag"
                  mcTruth       : 1
