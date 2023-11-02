@@ -39,7 +39,7 @@ makePH : {
   ComboHitCollection    : makeSH
   EventWindowMarker     : EWMProducer
   StrawHitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
-  StrawHitMask          : ["Noisy"]
+  StrawHitMask          : ["Dead","Noisy"]
   MaxDt                 : 45 # ns
   UseTOT                : true
   MaxWireDistDiffPull   : 5.0
