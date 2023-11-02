@@ -38,8 +38,6 @@ namespace mu2e {
       {
         using Name    = fhicl::Name;
         using Comment = fhicl::Comment;
-        fhicl::Atom<float>            hitDistance {     Name("HitDistance"),      Comment("Minimum cluster hit distance")  };
-        fhicl::Atom<float>            seedDistance{     Name("SeedDistance"),     Comment("Minimum distance for cluster seed")  };
         fhicl::Atom<float>            clusterDiameter{  Name("ClusterDiameter"),  Comment("Average cluster diameter")  };
         fhicl::Atom<float>            clusterTime{      Name("ClusterTime"),      Comment("Average cluster time spread")  };
         fhicl::Atom<int>              minClusterHits{   Name("MinClusterHits"),   Comment("Cut for minimum cluster hit size"),1 };
@@ -56,8 +54,6 @@ namespace mu2e {
         fhicl::Atom<bool>             testflag{         Name("TestFlag"),         Comment("Test hit flags") };
         fhicl::Atom<int>              diag{             Name("Diag"),             Comment("Diagnosis level"),0 };
         fhicl::Atom<int>              distMethod{       Name("DistanceMethod"),   Comment("Distance method") };
-        fhicl::Atom<float>            chi2HitDistance{  Name("Chi2HitDistance"),  Comment("Minimum chi2 hit seperation") };
-        fhicl::Atom<float>            chi2SeedDistance{ Name("Chi2SeedDistance"), Comment("Minimum seperation for new chi2 seed") };
       };
 
 
@@ -102,8 +98,6 @@ namespace mu2e {
       bool             testflag_;
       int              diag_;
       int              distMethod_;
-      float            chi2HitDistance_;
-      float            chi2SeedDistance_;
   };
 }
 #endif

@@ -6,8 +6,6 @@
 namespace mu2e
 {
   TNTClusterer::TNTClusterer(const Config& config) :
-    dhit_             (config.hitDistance()),
-    dseed_            (config.seedDistance()),
     dd_               (config.clusterDiameter()),
     dt_               (config.clusterTime()),
     minClusterHits_   (config.minClusterHits()),
@@ -20,19 +18,29 @@ namespace mu2e
     sigmask_          (config.sigmsk()),
     testflag_         (config.testflag()),
     diag_             (config.diag()),
-    distMethod_       (config.distMethod()),
-    chi2HitDistance_  (config.chi2HitDistance()),
-    chi2SeedDistance_ (config.chi2SeedDistance())
+    distMethod_       (config.distMethod())
   {
-     float minerr (config.minHitError());
-     float maxdist(config.maxDistance());
-     float trms   (config.timeRMS());
+    float minerr (config.minHitError());
+    float maxdist(config.maxDistance());
+    float trms   (config.timeRMS());
 
-     tbin_     =1.0;
-     dd2_      = dd_*dd_;
-     maxwt_    = 1.0f/minerr;
-     md2_      = maxdist*maxdist;
-     trms2inv_ = 1.0f/trms/trms;
+    tbin_     =1.0;
+    dd2_      = dd_*dd_;
+    maxwt_    = 1.0f/minerr;
+    md2_      = maxdist*maxdist;
+    trms2inv_ = 1.0f/trms/trms;
+    std::cout<<"TNTClusterer constructor"<<"\n";
+
+    switch(distMethod_) {
+      case TNTClusterer::useDistance:
+        dhit_ = 5.;//mm
+        dseed_ = 20.;//mm
+        break;
+      case TNTClusterer::useChi2:
+        dhit_ = 5.;
+        dseed_ = 5.1;
+        break;
+    }
   }
 
 
@@ -108,7 +116,7 @@ namespace mu2e
       clusters[ic].clearHits();
     }
 
-    int method = distMethod_;
+    //int method = distMethod_;
     int ditime(int(maxHitdt_/tbin_));
     unsigned nchanged(0);
     for (size_t ihit=0;ihit<BkgHits.size();++ihit) {
@@ -116,23 +124,8 @@ namespace mu2e
       auto& hit  = BkgHits[ihit];
       const auto& chit = chcol[hit.chidx_];
 
-      float dhit(0.), dseed(0.), mindist(0.);
-      if(method == TNTClusterer::useDistance){
-        dhit = dhit_;
-        dseed = dseed_;
-        mindist = dseed_ + 1.0f;
-      }
-      else if(method == TNTClusterer::useChi2){
-        dhit = chi2HitDistance_;
-        dseed = chi2SeedDistance_;
-        mindist = chi2SeedDistance_ + 1.0f;
-      }
-      else{
-        throw cet::exception("RECO")<< "Unknown clustering mode" << method << std::endl;
-      }
-
       // -- if hit is ok, reassign it right away
-      if (hit.distance_ < dhit || hit.dchi2_ < dhit) {
+      if (hit.distance_ < dhit_ || hit.dchi2_ < dhit_) {
         clusters[hit.clusterIdx_].addHit(ihit);
         clusters[hit.clusterIdx_].points().addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),clusters[hit.clusterIdx_].points().nPoints());
         continue;
@@ -140,6 +133,7 @@ namespace mu2e
 
       // -- find closest cluster. restrict search to clusters close in time using the clusterIndices structure
       int minc(-1);
+      float mindist(dseed_ + 1.0f);
       int itime = int(chit.correctedTime()/tbin_);
       int imin = std::max(0,itime-ditime);
       int imax = std::min(numBuckets_,itime+ditime+1);
@@ -150,11 +144,11 @@ namespace mu2e
           if (dist < mindist) {mindist = dist;minc = ic;}
         }
       }
-      if (mindist < dhit) {
+      if (mindist < dhit_) {
         clusters[minc].addHit(ihit);
         clusters[minc].points().addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),clusters[minc].points().nPoints());
       }
-      else if (mindist > dseed) {
+      else if (mindist > dseed_) {
         minc = clusters.size();
         clusters.emplace_back(BkgCluster(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),chit.correctedTime()));
         clusters[minc].addHit(ihit);

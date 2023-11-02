@@ -87,8 +87,6 @@ makeSTH : {
 # flag hits from low-energy electrons (Compton electrons, delta rays, ...)
 # First, configure the clusters
 TNTClusterer : {
-  HitDistance      : 5.0
-  SeedDistance     : 20.0
   ClusterDiameter  : 5.0
   ClusterTime      : 20.0
   MinClusterHits   : 1
@@ -104,8 +102,6 @@ TNTClusterer : {
   BackgroundMask   : []
   SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
   DistanceMethod   : 0
-  Chi2HitDistance  : 10
-  Chi2SeedDistance : 100
 }
 
 
@@ -122,7 +118,7 @@ FlagBkgHits : {
   BackgroundMask       : ["Background"]
   OutputLevel          : "uniquepanel"
   SaveBkgClusters      : false
-  KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiag.dat"
+  KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiagPanelDist.dat"
   KerasQuality         : 0.5
   DebugLevel           : 0
 }
@@ -132,7 +128,7 @@ SFlagBkgHits : {
   @table::FlagBkgHits
   ComboHitCollection : "makeSTH"
   OutputLevel        : "station"
-# stereo should have a dedicated training TODO
+  KerasWeights       : "Offline/TrkHitReco/data/TrainBkgDiagStationDist.dat"
 }
 
 # combine together
