@@ -31,6 +31,8 @@ namespace mu2e {
 
     virtual std::vector<Kinematic> generate() = 0;
 
+    virtual ProcessCode   processCode() { return ProcessCode::unknown; }
+
     // This interface should be removed when we retire ntuple-based muon resampling
     virtual void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) = 0;
 

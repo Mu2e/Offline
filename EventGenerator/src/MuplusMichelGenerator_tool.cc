@@ -36,7 +36,9 @@ namespace mu2e {
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
-    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&) override {
+    virtual ProcessCode   processCode() override { return ProcessCode::mu2eMuonDecayAtRest; }
+
+    virtual void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&) override {
       _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng);
       _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
     }
