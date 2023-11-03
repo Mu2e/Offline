@@ -17,9 +17,9 @@ double physicsParams.protonKE = 8000.; // - in MeV
 double physicsParams.nominalDRPeriod = 1695.; // ns
 
 // charged pion and kaon
-vector<int> physicsParams.freeLifePDGId = { 211, 312 };
+vector<int> physicsParams.freeLifePDGId   = {  211   , 312   ,  13    , 2212};
 // in Mu2e units (ns), per PDG 2013 partial update
-vector<double> physicsParams.freeLifetime =  { 26.033, 12.38 };
+vector<double> physicsParams.freeLifetime =  { 26.033, 12.38 , 2196.98, 1.e20};
 
 // Available stopping target materials
 vector<string> physicsParams.stoppingTargets = {"Al","Ti","Cu","Se","Sb","Au","C","IPA"};
