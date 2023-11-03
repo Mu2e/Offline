@@ -9,14 +9,11 @@
 #include "Offline/SeedService/inc/SeedService.hh"
 
 #include "Offline/CaloMC/inc/CaloWFExtractor.hh"
-#include "Offline/CaloMC/inc/CaloNoiseARFitter.hh"
 #include "Offline/Mu2eUtilities/inc/CaloPulseShape.hh"
 
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandFlat.h"
-#include <vector>
-#include <string>
 
 
 namespace mu2e {
@@ -33,8 +30,6 @@ namespace mu2e {
             fhicl::Atom<double>   darkNphotPerNs { Name("darkNphotPerNs"), Comment("SiPM Dark noise number of PE / ns ") };
             fhicl::Atom<double>   digiSampling   { Name("digiSampling"),   Comment("Digitization time sampling") };
             fhicl::Atom<unsigned> noiseWFSize    { Name("noiseWFSize"),    Comment("Noise WF size") };
-            fhicl::Atom<bool>     enableAR       { Name("enableAR"),       Comment("Enable AR noise generation ") };
-            fhicl::Atom<double>   nparAR         { Name("nParAR"),         Comment("Number parameters for AR fit ") };
             fhicl::Atom<unsigned> nMaxFragment   { Name("nMaxFragment"),   Comment("maximum number of wf generated for extracting noise fragments ") };
             fhicl::Atom<int>      minPeakADC     { Name("minPeakADC"),     Comment("Minimum ADC hits of local peak to digitize") };
             fhicl::Atom<int>      diagLevel      { Name("diagLevel"),      Comment("Diag Level"),0 };
@@ -46,10 +41,9 @@ namespace mu2e {
         void                         initialize(const CaloWFExtractor& wfExtractor);
         void                         refresh();
 
-        void                         addFullNoise(std::vector<double>& wfVector, bool doAR);
         void                         addSampleNoise(std::vector<double>& wfVector, unsigned istart, unsigned ilength);
         void                         addSaltAndPepper(std::vector<double>& wfVector);
-        void                         plotNoise(std::string name);
+        void                         plotNoise(const std::string& name);
 
         const std::vector<double>&   noise()    const {return waveform_;}
         int                          pedestal() const {return pedestal_;}
@@ -60,7 +54,6 @@ namespace mu2e {
 
         void                  generateWF(std::vector<double>& wfVector);
         void                  generateFragments(const CaloWFExtractor& wfExtractor);
-        void                  initAR();
 
         unsigned              iRO_;
         std::vector<double>   waveform_;
@@ -75,9 +68,6 @@ namespace mu2e {
         CLHEP::RandGaussQ     randGauss_;
         CLHEP::RandFlat       randFlat_;
         unsigned              nMaxFragment_;
-        bool                  enableAR_;
-        unsigned              nparFitAR_;
-        CaloNoiseARFitter     ARFitter_;
         CaloPulseShape        pulseShape_;
         int                   diagLevel_;
    };
