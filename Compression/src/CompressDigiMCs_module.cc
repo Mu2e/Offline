@@ -116,6 +116,9 @@ public:
     fhicl::Atom<bool> rekeySimParticleCollection{Name("rekeySimParticleCollection"), Comment("Set to true to change the keys in the SimParticleCollection (necessary for mixed events)")};
 
     fhicl::Atom<bool> noCompression{Name("noCompression"), Comment("Set to true to turn off compression"), false};
+
+    // detector steps we may want to keep (for the moment, just CrvSteps)
+    fhicl::Sequence<art::InputTag> crvStepsToKeep{Name("crvStepsToKeep"), Comment("InputTags for CrvSteps we want to keep")};
   };
   typedef art::EDProducer::Table<Config> Parameters;
 
@@ -158,6 +161,7 @@ private:
   art::InputTag _caloShowerSimTag;
   art::InputTag _caloShowerROTag;
   bool _rekeySimParticleCollection;
+  std::vector<art::InputTag> _crvStepsToKeep;
 
   // handles to the old collections
   art::Handle<StrawDigiMCCollection> _strawDigiMCsHandle;
@@ -252,7 +256,8 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
   _caloShowerSimTag(conf().caloShowerSimTag()),
   _caloShowerROTag(conf().caloShowerROTag()),
   _rekeySimParticleCollection(conf().rekeySimParticleCollection()),
-  _noCompression(conf().noCompression())
+                                     _crvStepsToKeep(conf().crvStepsToKeep()),
+                                   _noCompression(conf().noCompression())
 {
   // Call appropriate produces<>() functions here.
   produces<StrawDigiMCCollection>();
@@ -428,6 +433,31 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     if ((_crvDigiMCIndexMapTag == "" || _noCompression) && crvDigiMCs.size() != _newCrvDigiMCs->size()) {
       throw cet::exception("CompressDigiMCs") << "The number of CrvDigiMCs before and after compression does not match ("
                                               << crvDigiMCs.size() << " != " << _newCrvDigiMCs->size() << ")" << std::endl;
+    }
+
+    // Sometimes we want to keep all CrvSteps regardless of whether they are in a CrvDigiMCs.
+    // Here we loop through and add any that were not already included
+    for (const auto& crvStepsTag : _crvStepsToKeep) {
+      const auto& oldCrvStepsHandle = event.getValidHandle<mu2e::CrvStepCollection>(crvStepsTag);
+
+      // Loop through the CrvSteps we want to keep
+      //
+      // So far, we have been keeping track of which CrvSteps we have seen through the Ptrs that point to them
+      //
+      // Since these CrvSteps might not be being referred to by any object, we need to create a fake ptr to make sure we haven't seen it before
+      // so let's get the product id and getter so we can construct it
+      art::ProductID old_crv_step_product_id = oldCrvStepsHandle.id();
+      const art::EDProductGetter* old_crv_step_product_getter = event.productGetter(old_crv_step_product_id);
+
+      for (CrvStepCollection::const_iterator i_crvStep = oldCrvStepsHandle->begin(); i_crvStep != oldCrvStepsHandle->end(); ++i_crvStep) {
+        const auto& crvStep = *i_crvStep; // convert from iterator to actual object
+
+        const auto& fake_old_ptr = art::Ptr<CrvStep>(old_crv_step_product_id, i_crvStep - oldCrvStepsHandle->begin(), old_crv_step_product_getter);
+        if (_crvStepsSeen.insert(fake_old_ptr).second == true) { // if we have inserted this CrvStepPtrs (i.e. it hasn't already been seen)
+          art::Ptr<CrvStep> newStepPtr = copyCrvStep(crvStep);
+          _crvStepsMap[fake_old_ptr] = newStepPtr; // need to keep track of these
+        }
+      }
     }
   }
 
