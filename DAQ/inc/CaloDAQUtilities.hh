@@ -33,7 +33,7 @@ namespace mu2e {
 
     void   printWaveform(std::vector<uint16_t> const& Pulse);
 
-    void   printAllHitInfo(int CrystalID, int SiPMID, std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header, CalorimeterDataDecoder::CalorimeterHitReadoutPacket const& Hit, uint16_t PulseMax);
+    void   printAllHitInfo(int CrystalID, int SiPMID, std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header, CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit, uint16_t PulseMax);
 
   private:
     std::string  moduleName_;

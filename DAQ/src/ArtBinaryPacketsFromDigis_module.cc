@@ -34,7 +34,7 @@
 #include "artdaq-core-mu2e/Data/TrackerDataDecoder.hh"
 
 // pci_linux_kernel_module includes
-#include "dtcInterfaceLib/DTC_Packets.h"
+#include "artdaq-core-mu2e/Data/DTCDataDecoder.h"
 
 // Mu2e includes.
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
