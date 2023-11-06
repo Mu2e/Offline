@@ -104,9 +104,7 @@ namespace mu2e {
     return PieceLineDrift(_llDriftTimeRMSBins, _llDriftTimeRMS, ddist);
   }
 
-  double StrawResponse::driftInstantSpeed(StrawId strawId, double ddist, double phi) const {
-    if (_driftIgnorePhi)
-      phi = 0;
+  double StrawResponse::driftInstantSpeed(StrawId strawId, double ddist, double) const {
     if(_usenonlindrift){
       return _strawDrift->GetInstantSpeedFromD(ddist);
     }else{
