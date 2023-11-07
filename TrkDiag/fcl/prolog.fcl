@@ -13,6 +13,7 @@ BD : {
   BkgClusterCollection:"FlagBkgHits"
   BkgClusterHitCollection:"FlagBkgHits"
   MCPrimary : compressDigiMCs
+  ExpectedCHLevel : "uniquepanel"
 }
 
 TRD : {
