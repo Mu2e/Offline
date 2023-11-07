@@ -6,6 +6,10 @@
 namespace mu2e
 {
   TNTClusterer::TNTClusterer(const Config& config) :
+    dhitDist_         (config.hitDistance()),
+    dseedDist_        (config.seedDistance()),
+    dhitChi2_         (config.hitChi2()),
+    dseedChi2_        (config.seedChi2()),
     dd_               (config.clusterDiameter()),
     dt_               (config.clusterTime()),
     minClusterHits_   (config.minClusterHits()),
@@ -32,13 +36,13 @@ namespace mu2e
 
     switch(distMethod_) {
       case TNTClusterer::useDistance:
-        dhit_ = 5.;//mm
-        dseed_ = 20.;//mm
+        dhit_ = dhitDist_;
+        dseed_ = dseedDist_;
         distMethodFlag_ = BkgCluster::distance;
         break;
       case TNTClusterer::useChi2:
-        dhit_ = 5.;
-        dseed_ = 5.1;
+        dhit_ = dhitChi2_;
+        dseed_ = dseedChi2_;
         distMethodFlag_ = BkgCluster::chi2;
         break;
     }
