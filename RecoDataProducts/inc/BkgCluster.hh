@@ -18,8 +18,10 @@ namespace mu2e
        //Default hit count chosen for compuational efficiency
        BkgCluster() {_hits.reserve(16);}
        BkgCluster(TwoDPoint point, float time) : _point(point), _time(time) {_hits.reserve(16);_cpoints.addPoint(_point,0);}
+       enum  distMethod {distance,chi2};
 
        float                        getKerasQ() const {return _kerasQ; }
+       auto const&                  getDistMethod() const {return _distMethod; }
        auto const&                  flag() const {return _flag; }
        auto const                   pos()  const {return _cpoints.point().pos3();  }
        auto &                       points()  {return _cpoints;  }
@@ -33,6 +35,7 @@ namespace mu2e
        void addHit(unsigned val)                     {_hits.emplace_back(val);}
        void clearHits()                              {_hits.clear();}
        void setKerasQ(float kerasQ)                  {_kerasQ = kerasQ;}
+       void setDistanceMethod(distMethod method)     {_distMethod = method;}
 
        XYZVectorF               _pos;// ideally should be a 2d vec - FIXME
        TwoDPoint                _point;//initial point
@@ -41,6 +44,7 @@ namespace mu2e
        std::vector<unsigned>    _hits;
        BkgClusterFlag           _flag = BkgClusterFlag(BkgClusterFlag::update);
        float                    _kerasQ = -0.5; //result of keras result for the cluster
+       distMethod               _distMethod;//which distMethod used in clusterer to create the cluster
    };
 
    typedef std::vector<mu2e::BkgCluster> BkgClusterCollection;

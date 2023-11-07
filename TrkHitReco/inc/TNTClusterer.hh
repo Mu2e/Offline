@@ -21,11 +21,10 @@ namespace mu2e {
 
   struct BkgHit
   {
-    BkgHit(unsigned chidx): chidx_(chidx),distance_(1000.0),dchi2_(1000.0),clusterIdx_(-1) {};
+    BkgHit(unsigned chidx): chidx_(chidx),distance_(1000.0),clusterIdx_(-1) {};
 
     unsigned     chidx_;
     float        distance_;
-    float        dchi2_;
     int          clusterIdx_;
   };
 
@@ -78,26 +77,27 @@ namespace mu2e {
       void     updateCluster   (BkgCluster& cluster, const ComboHitCollection& chcol, std::vector<BkgHit>& hinfo);
       void     dump            (const std::vector<BkgCluster>& clusters, const std::vector<BkgHit>& hinfo);
 
-      float            tbin_;
-      float            dhit_;
-      float            dseed_;
-      float            dd_;
-      float            dd2_;
-      float            dt_;
-      int              minClusterHits_;
-      float            maxwt_;
-      float            md2_;
-      float            trms2inv_;
-      float            maxHitdt_;
-      float            maxDistSum_;
-      unsigned         maxNiter_;
-      bool             useMedian_;
-      bool             comboInit_;
-      StrawHitFlag     bkgmask_;
-      StrawHitFlag     sigmask_;
-      bool             testflag_;
-      int              diag_;
-      int              distMethod_;
+      float                   tbin_;
+      float                   dhit_;
+      float                   dseed_;
+      float                   dd_;
+      float                   dd2_;
+      float                   dt_;
+      int                     minClusterHits_;
+      float                   maxwt_;
+      float                   md2_;
+      float                   trms2inv_;
+      float                   maxHitdt_;
+      float                   maxDistSum_;
+      unsigned                maxNiter_;
+      bool                    useMedian_;
+      bool                    comboInit_;
+      StrawHitFlag            bkgmask_;
+      StrawHitFlag            sigmask_;
+      bool                    testflag_;
+      int                     diag_;
+      int                     distMethod_;
+      BkgCluster::distMethod  distMethodFlag_;
   };
 }
 #endif

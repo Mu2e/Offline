@@ -29,16 +29,17 @@ namespace mu2e
     maxwt_    = 1.0f/minerr;
     md2_      = maxdist*maxdist;
     trms2inv_ = 1.0f/trms/trms;
-    std::cout<<"TNTClusterer constructor"<<"\n";
 
     switch(distMethod_) {
       case TNTClusterer::useDistance:
         dhit_ = 5.;//mm
         dseed_ = 20.;//mm
+        distMethodFlag_ = BkgCluster::distance;
         break;
       case TNTClusterer::useChi2:
         dhit_ = 5.;
         dseed_ = 5.1;
+        distMethodFlag_ = BkgCluster::chi2;
         break;
     }
   }
@@ -125,7 +126,7 @@ namespace mu2e
       const auto& chit = chcol[hit.chidx_];
 
       // -- if hit is ok, reassign it right away
-      if (hit.distance_ < dhit_ || hit.dchi2_ < dhit_) {
+      if (hit.distance_ < dhit_) {
         clusters[hit.clusterIdx_].addHit(ihit);
         clusters[hit.clusterIdx_].points().addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),clusters[hit.clusterIdx_].points().nPoints());
         continue;
@@ -154,10 +155,10 @@ namespace mu2e
         clusters[minc].addHit(ihit);
         int itime = int(chit.correctedTime()/tbin_);
         clusterIndices[itime].emplace_back(minc);
+        clusters[minc].setDistanceMethod(distMethodFlag_);
       }
       else{
         BkgHits[ihit].distance_ = 10000.0f;
-        BkgHits[ihit].dchi2_ = 10000.0f;
         minc = -1;
       }
 
