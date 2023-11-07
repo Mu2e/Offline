@@ -18,7 +18,7 @@ namespace mu2e
        //Default hit count chosen for compuational efficiency
        BkgCluster() {_hits.reserve(16);}
        BkgCluster(TwoDPoint point, float time) : _point(point), _time(time) {_hits.reserve(16);_cpoints.addPoint(_point,0);}
-       enum  distMethod {distance,chi2};
+       enum  distMethod {spatial,chi2};
 
        float                        getKerasQ() const {return _kerasQ; }
        auto const&                  getDistMethod() const {return _distMethod; }
