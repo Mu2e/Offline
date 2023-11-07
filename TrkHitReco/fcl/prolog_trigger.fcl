@@ -45,16 +45,13 @@ TTmakeSTH : {
   TestFlag           : false
   ComboHitCollection : "TTSmakePH"
 }
+TTdummyMakeSTH : {
+  @table::dummyMakeSTH
+}
 TTflagBkgHits : {
   @table::FlagBkgHits
   ComboHitCollection   : "TTmakePH"
   FilterHits           : true
-}
-
-# stereo versions
-TTSflagBkgHits : {
-  @table::TTflagBkgHits
-  ComboHitCollection : TTSmakePH
 }
 
 # combine together
@@ -75,7 +72,7 @@ TrkHitRecoTrigger : {
   # SEQUENCES
   # production sequence to prepare hits for tracking
   sequences: {
-    TTprepareHits     : [ TTmakeSH, TTmakePH,TTflagBkgHits ]
+    TTprepareHits     : [ TTmakeSH, TTmakePH, TTdummyMakeSTH, TTflagBkgHits ]
     TTprepareHitsUCC  : [ TTmakeSHUCC, TTmakePHUCC, TTflagBkgHitsUCC ]
     TTmakefastHits    : [ TTmakeSH, TTmakePH ]
     TTSprepareHits    : [ TTmakeSH, TTSmakePH, TTmakeSTH ,TTSflagBkgHits ]

@@ -1,0 +1,3 @@
+# post-prolog switch to make station-level ComboHits
+physics.producers.makeSTH : @local::TrkHitReco.dummyMakeSTH
+physics.producers.FlagBkgHits.ComboHitCollection : "makePH"
