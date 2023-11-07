@@ -1,0 +1,3 @@
+# post-prolog switch to make station-level ComboHits
+#include "Offline/TrkHitReco/fcl/epilog_Stereo.fcl"
+physics.producers.makeSTH.SelectionMask          : "station"
