@@ -6,24 +6,6 @@ BEGIN_PROLOG
 PBTFSD : {
   module_type             : ProtonBunchTimeFromStrawDigis
 }
-# configure the cluster used in FlagBkgHits
-TNTClusterer : {
-  HitDistance      : 5.0
-  SeedDistance     : 20.0
-  ClusterDiameter  : 5.0
-  ClusterTime      : 20.0
-  MaxHitTimeDiff   : 30.0
-  MaxSumDistance   : 100.0
-  MaxCluIterations : 10
-  MaxDistance      : 100.0
-  MinHitError      : 5.0
-  TimeRMS          : 2.0
-  MedianCentroid   : false
-  ComboInit        : true
-  TestFlag         : true
-  BackgroundMask   : []
-  SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
-}
 
 makeSH : {
   module_type             : StrawHitReco
@@ -103,11 +85,35 @@ dummyMakeSTH : {
   module_type : DummyProducer
 }
 
+# flag hits from low-energy electrons (Compton electrons, delta rays, ...)
+# First, configure the clusters
+TNTClusterer : {
+  HitDistance      : 5
+  SeedDistance     : 20
+  HitChi2          : 5.0
+  SeedChi2         : 5.1
+  ClusterDiameter  : 5.0
+  ClusterTime      : 20.0
+  MinClusterHits   : 1
+  MaxHitTimeDiff   : 30.0
+  MaxSumDistance   : 100.0
+  MaxCluIterations : 10
+  MaxDistance      : 100.0
+  MinHitError      : 5.0
+  TimeRMS          : 2.0
+  MedianCentroid   : false
+  ComboInit        : true
+  TestFlag         : true
+  BackgroundMask   : []
+  SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+  DistanceMethod   : 0
+}
+
 
 # Background hit flagging
 FlagBkgHits : {
   module_type          : FlagBkgHits
-  ComboHitCollection   : "makePH"
+  ComboHitCollection   : "makeSTH"
   ClusterAlgorithm     : 1
   TNTClustering        : {@table::TNTClusterer}
   MinActiveHits        : 3
@@ -117,7 +123,7 @@ FlagBkgHits : {
   BackgroundMask       : ["Background"]
   OutputLevel          : "uniquepanel"
   SaveBkgClusters      : false
-  KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiag.dat"
+  KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiagStationDist.dat"
   KerasQuality         : 0.5
   DebugLevel           : 0
 }
