@@ -45,17 +45,18 @@ namespace mu2e
       struct Config {
         using Name = fhicl::Name;
         using Comment = fhicl::Comment;
-        fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag Level"),0 };
-        fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"),0 };
-        fhicl::Atom<bool> mcdiag{ Name("MCDiag"), Comment("MonteCarlo Diag"), true };
-        fhicl::Atom<bool> hdiag{ Name("HitDiag"), Comment("Hit-level Diag tuple"), false };
-        fhicl::Atom<float> maxdt{ Name("maxTimeDifference"), Comment("Max Time Difference"), 50.0 };
-        fhicl::Atom<float> maxdrho{ Name("maxRhoDifference"), Comment("Max Rho Difference"), 50.0 };
-        fhicl::Atom<art::InputTag> ComboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
-        fhicl::Atom<art::InputTag> BkgClusterCollection{   Name("BkgClusterCollection"),   Comment("BackgroundCluster collection name") };
-        fhicl::Atom<art::InputTag> BkgClusterHitCollection{   Name("BkgClusterHitCollection"),   Comment("BackgroundClusterHit collection name") };
-        fhicl::Atom<art::InputTag> StrawDigiMCCollection{   Name("StrawDigiMCCollection"),   Comment("StrawDigiMC collection name") };
-        fhicl::Atom<art::InputTag> MCPrimary{ Name("MCPrimary"),Comment("MC Primary Particle") };
+        fhicl::Atom<int>              diag{                     Name("diagLevel"),                 Comment("Diag Level"),0 };
+        fhicl::Atom<int>              debug{                    Name("debugLevel"),                Comment("Debug Level"),0 };
+        fhicl::Atom<bool>             mcdiag{                   Name("MCDiag"),                    Comment("MonteCarlo Diag"), true };
+        fhicl::Atom<bool>             hdiag{                    Name("HitDiag"),                   Comment("Hit-level Diag tuple"), false };
+        fhicl::Atom<float>            maxdt{                    Name("maxTimeDifference"),         Comment("Max Time Difference"), 50.0 };
+        fhicl::Atom<float>            maxdrho{                  Name("maxRhoDifference"),          Comment("Max Rho Difference"), 50.0 };
+        fhicl::Atom<art::InputTag>    ComboHitCollection{       Name("ComboHitCollection"),        Comment("ComboHit collection name") };
+        fhicl::Atom<art::InputTag>    BkgClusterCollection{     Name("BkgClusterCollection"),      Comment("BackgroundCluster collection name") };
+        fhicl::Atom<art::InputTag>    BkgClusterHitCollection{  Name("BkgClusterHitCollection"),   Comment("BackgroundClusterHit collection name") };
+        fhicl::Atom<art::InputTag>    StrawDigiMCCollection{    Name("StrawDigiMCCollection"),     Comment("StrawDigiMC collection name") };
+        fhicl::Atom<art::InputTag>    MCPrimary{                Name("MCPrimary"),                 Comment("MC Primary Particle") };
+        fhicl::Atom<std::string>      expectedCHLevel{          Name("ExpectedCHLevel"),           Comment("Level of the input ComboHitCollection") };
      };
 
       explicit BkgDiag(const art::EDAnalyzer::Table<Config>& config);
@@ -71,7 +72,7 @@ namespace mu2e
 
       // control flags
       int _diag,_debug;
-      bool _mcdiag, _hdiag, _station;
+      bool _mcdiag, _hdiag;
       float _maxdt, _maxdrho;
       // data tags
       art::ProductToken<ComboHitCollection> _chToken;
@@ -86,6 +87,10 @@ namespace mu2e
       const PrimaryParticle *_mcprimary;
       const BkgClusterCollection *_bkgccol;
       const BkgClusterHitCollection *_bkghitcol;
+
+      //Input Level Check
+      StrawIdMask::Level expectedCHLevel_;
+      std::string expectedCHLevelName_;
 
       // background diagnostics
       TTree* _bcdiag = 0;
@@ -141,7 +146,9 @@ namespace mu2e
     _mcdigisToken{ consumes<StrawDigiMCCollection>(config().StrawDigiMCCollection() ) },
     _mcprimaryToken{ consumes<PrimaryParticle>(config().MCPrimary() ) }
   {
-    _station = config().ComboHitCollection().label() == "SFlagBkgHits";
+    StrawIdMask mask(config().expectedCHLevel());
+    expectedCHLevel_ = mask.level();
+    expectedCHLevelName_ = mask.levelName();
   }
 
   BkgDiag::~BkgDiag(){}
@@ -228,11 +235,9 @@ namespace mu2e
   void BkgDiag::analyze(const art::Event& event ) {
     if(!findData(event))
       throw cet::exception("RECO")<<"mu2e::BkgDiag: data missing or incomplete"<< std::endl;
-    if(_station){
-      if( !(_chcol->level() == StrawIdMask::station) ){
-        throw cet::exception("RECO")<< "mu2e::BkgDiag: inconsistent outputlevel with stereo hits\n"
-                                    << "SFlagBkgHits outputlevel must be \"station\" to train"<< std::endl;
-      }
+    if( !(_chcol->level() == expectedCHLevel_) ){
+      throw cet::exception("RECO")<< "mu2e::BkgDiag: inconsistent outputlevel with input combo hits.\n"
+                                  << "FlagBkgHits outputlevel must be "<< expectedCHLevelName_ <<" for training purposes."<< std::endl;
     }
     // loop over background clusters
 
