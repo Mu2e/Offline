@@ -10,7 +10,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
@@ -89,7 +89,7 @@ private:
   mu2e::ProditionsHandle<mu2e::CaloDAQMap> _calodaqconds_h;
 
   void analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
-                            const mu2e::CalorimeterFragment& cc,
+                            const mu2e::CalorimeterDataDecoder& cc,
                             std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
                             std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
                             unsigned short& evtEnergy);
@@ -208,7 +208,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
   unsigned short evtEnergy(0);
 
   auto fragmentHandle =
-      event.getValidHandle<std::vector<mu2e::CalorimeterFragment>>(caloFragmentsTag_);
+      event.getValidHandle<std::vector<mu2e::CalorimeterDataDecoder>>(caloFragmentsTag_);
 
   for (auto frag : *fragmentHandle) {
     analyze_calorimeter_(calodaqconds, frag, calo_hits, caphri_hits, evtEnergy);
@@ -247,7 +247,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
 
 void art::CaloHitsFromFragments::analyze_calorimeter_(
     mu2e::CaloDAQMap const& calodaqconds,
-    const mu2e::CalorimeterFragment& cc, std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
+    const mu2e::CalorimeterDataDecoder& cc, std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
     std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits, unsigned short& evtEnergy) {
 
   if (diagLevel_ > 1) {

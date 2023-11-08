@@ -10,7 +10,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 
 //-- insert calls to proditions ..for calodmap-----
@@ -54,7 +54,7 @@ private:
   mu2e::ProditionsHandle<mu2e::CaloDAQMap> _calodaqconds_h;
 
   void analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
-                            const mu2e::CalorimeterFragment& cc,
+                            const mu2e::CalorimeterDataDecoder& cc,
                             std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis);
 
   int diagLevel_;
@@ -83,7 +83,7 @@ void art::CaloRecoFromFragments::produce(Event& event) {
   size_t totalSize = 0;
   size_t numCalFrags = 0;
   auto fragmentHandle =
-      event.getValidHandle<std::vector<mu2e::CalorimeterFragment> >(caloFragmentsTag_);
+      event.getValidHandle<std::vector<mu2e::CalorimeterDataDecoder> >(caloFragmentsTag_);
 
   for (auto frag : *fragmentHandle) {
     analyze_calorimeter_(calodaqconds, frag, calo_digis);
@@ -118,7 +118,7 @@ void art::CaloRecoFromFragments::produce(Event& event) {
 } // produce()
 
 void art::CaloRecoFromFragments::analyze_calorimeter_(
-    mu2e::CaloDAQMap const& calodaqconds, const mu2e::CalorimeterFragment& cc,
+    mu2e::CaloDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,
     std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis) {
 
   if (diagLevel_ > 1) {
