@@ -1,4 +1,4 @@
-/*// ======================================================================
+// ======================================================================
 //
 // CaloHitsFromFragments_plugin:  Add cal data products to the event
 //
@@ -299,14 +299,9 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
       continue;
     }
 
-    if (diagLevel_ > 0) {
-      std::cout << "[CaloHitsFromFragments] NEW CALDATA: NumberOfHits " << calData->NumberOfHits
-                << std::endl;
-    }
-
     auto hits = cc.GetCalorimeterHitsForTrigger(curBlockIdx);
     bool err = false;
-    for (size_t hitIdx = 0; hitIdx < calData->NumberOfHits; hitIdx++) {
+    for (size_t hitIdx = 0; hitIdx < calData->size(); hitIdx++) {
 
       // Fill the CaloDigiCollection
       if (hitIdx > hits.size()) {
@@ -364,4 +359,4 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
 
 DEFINE_ART_MODULE(art::CaloHitsFromFragments)
 
-// ======================================================================*/
+// ======================================================================
