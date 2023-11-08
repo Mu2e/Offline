@@ -1,4 +1,4 @@
-// ======================================================================
+/*// ======================================================================
 //
 // CaloHitsFromFragments_plugin:  Add cal data products to the event
 //
@@ -291,7 +291,7 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
     if (hdr->GetPacketCount() == 0)
       continue;
 
-    auto calData = cc.GetCalorimeterData(curBlockIdx);
+    auto calData = cc.GetCalorimeterHitData(curBlockIdx);
     if (calData == nullptr) {
       mf::LogError("CaloHitsFromFragments")
           << "Error retrieving Calorimeter data from block " << curBlockIdx
@@ -364,4 +364,4 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
 
 DEFINE_ART_MODULE(art::CaloHitsFromFragments)
 
-// ======================================================================
+// ======================================================================*/

@@ -1,4 +1,4 @@
-// ======================================================================
+/*// ======================================================================
 //
 // CaloRecoFromFragments_plugin:  Add cal data products to the event
 //
@@ -182,7 +182,7 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
 
     if (hdr->GetPacketCount() > 0) { // Parse phyiscs information from CAL packets
 
-      auto calData = cc.GetCalorimeterData(curBlockIdx);
+      auto calData = cc.GetCalorimeterHitData(curBlockIdx);
       if (calData == nullptr) {
         mf::LogError("CaloRecoFromFragments")
             << "Error retrieving Calorimeter data from block " << curBlockIdx
@@ -286,4 +286,4 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
 
 DEFINE_ART_MODULE(art::CaloRecoFromFragments)
 
-// ======================================================================
+// ======================================================================*/
