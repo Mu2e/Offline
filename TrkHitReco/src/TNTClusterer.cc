@@ -6,10 +6,8 @@
 namespace mu2e
 {
   TNTClusterer::TNTClusterer(const Config& config) :
-    dhitDist_         (config.hitDistance()),
-    dseedDist_        (config.seedDistance()),
-    dhitChi2_         (config.hitChi2()),
-    dseedChi2_        (config.seedChi2()),
+    dhit_             (config.hitDistance()),
+    dseed_            (config.seedDistance()),
     dd_               (config.clusterDiameter()),
     dt_               (config.clusterTime()),
     minClusterHits_   (config.minClusterHits()),
@@ -35,14 +33,10 @@ namespace mu2e
     trms2inv_ = 1.0f/trms/trms;
 
     switch(distMethod_) {
-      case TNTClusterer::useDistance:
-        dhit_ = dhitDist_;
-        dseed_ = dseedDist_;
-        distMethodFlag_ = BkgCluster::distance;
+      case TNTClusterer::useSpatial:
+        distMethodFlag_ = BkgCluster::spatial;
         break;
       case TNTClusterer::useChi2:
-        dhit_ = dhitChi2_;
-        dseed_ = dseedChi2_;
         distMethodFlag_ = BkgCluster::chi2;
         break;
     }
@@ -241,7 +235,7 @@ namespace mu2e
   float TNTClusterer::distance(const BkgCluster& cluster, const ComboHit& hit) const
   {
     float retval(0.0f);
-    if(distMethod_ == TNTClusterer::useDistance)
+    if(distMethod_ == TNTClusterer::useSpatial)
     {
       float psep_x = hit.pos().x()-cluster.pos().x();
       float psep_y = hit.pos().y()-cluster.pos().y();

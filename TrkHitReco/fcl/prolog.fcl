@@ -90,8 +90,6 @@ dummyMakeSTH : {
 TNTClusterer : {
   HitDistance      : 5
   SeedDistance     : 20
-  HitChi2          : 5.0
-  SeedChi2         : 5.1
   ClusterDiameter  : 5.0
   ClusterTime      : 20.0
   MinClusterHits   : 1
@@ -123,7 +121,7 @@ FlagBkgHits : {
   BackgroundMask       : ["Background"]
   OutputLevel          : "uniquepanel"
   SaveBkgClusters      : false
-  KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiagStationDist.dat"
+  KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiagStationSpatial.dat"
   KerasQuality         : 0.5
   DebugLevel           : 0
 }
