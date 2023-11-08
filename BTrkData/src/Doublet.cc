@@ -35,37 +35,6 @@ namespace mu2e {
     fOs    = -999;
   }
 
-//-----------------------------------------------------------------------------
-//
-  Doublet::Doublet(const Doublet& R) {
-    fIndex      = R.fIndex;
-    fStationId  = R.fStationId;
-    fPanelId    = R.fPanelId;
-    fShDir      = R.fShDir;
-    fNStrawHits = R.fNStrawHits;
-
-    for (int i=0; i<kMaxNHits; i++) {
-      fStrawAmbig[i] = R.fStrawAmbig[i];
-      fHit       [i] = R.fHit[i];
-      fMcDoca    [i] = R.fMcDoca[i];
-      fTrkDir    [i] = R.fTrkDir[i];
-      fTrkPos    [i] = R.fTrkPos[i];
-    }
-
-    fHitIndex[0] = R.fHitIndex[0];
-    fHitIndex[1] = R.fHitIndex[1];
-    fTrkDxDz     = R.fTrkDxDz;
-
-    for (int i=0; i<kMaxNComb; i++) {
-      fDxDz[i] = R.fDxDz[i];
-      fChi2[i] = R.fChi2[i];
-    }
-
-    fIBest = R.fIBest;
-    fINext = R.fINext;
-    fOs    = R.fOs;
-  }
-
 
 //-----------------------------------------------------------------------------
   Doublet::Doublet(int               Index,
@@ -100,9 +69,6 @@ namespace mu2e {
     fINext       = -1;
     fOs          = -1;
   }
-
-//-----------------------------------------------------------------------------
-  Doublet::~Doublet(){}
 
 //-----------------------------------------------------------------------------
   void Doublet::addStrawHit(CLHEP::Hep3Vector trkdir,
