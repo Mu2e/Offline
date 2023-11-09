@@ -197,7 +197,7 @@ namespace mu2e
             }
           }
         }
-        if(chcol_out->size() != chcol_p.size())
+        if((! filter_) && chcol_out->size() != chcol_p.size())
           throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHit output" << std::endl;
       }
     }
