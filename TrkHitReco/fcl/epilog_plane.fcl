@@ -1,4 +1,4 @@
 # post-prolog switch to make station-level ComboHits
-#include "Offline/TrkHitReco/fcl/epilog_Stereo.fcl"
+#include "Offline/TrkHitReco/fcl/epilog_stereo.fcl"
 physics.producers.makeSTH.SelectionMask          : "plane"
-physics.producers.FlagBkgHits.ComboHitCollection.KerasWeights : "Offline/TrkHitReco/data/TrainBkgDiagPlaneDist.dat"
+physics.producers.FlagBkgHits.KerasWeights : "Offline/TrkHitReco/data/TrainBkgDiagPlaneSpatial.dat"
