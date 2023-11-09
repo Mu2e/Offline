@@ -5,4 +5,4 @@ PYTHONPATH Trigger/python
 # add Offline/bin to path
 PATH bin
 # recent commits can take enforce these flags
-CPPFLAGS -Wtype-limits
+CPPFLAGS -Wtype-limits -Wimplicit-fallthrough -Wunused-but-set-parameter
