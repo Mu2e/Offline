@@ -35,6 +35,7 @@
 #include "Offline/Print/inc/ProtonBunchTimeMCPrinter.hh"
 #include "Offline/Print/inc/ProtonBunchTimePrinter.hh"
 #include "Offline/Print/inc/SimParticlePrinter.hh"
+#include "Offline/Print/inc/ConversionPrinter.hh"
 #include "Offline/Print/inc/SimParticlePtrPrinter.hh"
 #include "Offline/Print/inc/StatusG4Printer.hh"
 #include "Offline/Print/inc/StepPointMCPrinter.hh"
@@ -81,6 +82,8 @@ class PrintModule : public art::EDAnalyzer {
         fhicl::Name("genParticlePrinter")};
     fhicl::Table<SimParticlePrinter::Config> simParticlePrinter{
         fhicl::Name("simParticlePrinter")};
+    fhicl::Table<ConversionPrinter::Config> conversionPrinter{
+        fhicl::Name("conversionPrinter")};
     fhicl::Table<ProductPrinter::Config> simParticlePtrPrinter{
         fhicl::Name("simParticlePtrPrinter")};
     fhicl::Table<StepPointMCPrinter::Config> stepPointMCPrinter{
@@ -192,6 +195,8 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
       make_unique<GenParticlePrinter>(conf().genParticlePrinter()));
   _printers.push_back(
       make_unique<SimParticlePrinter>(conf().simParticlePrinter()));
+  _printers.push_back(
+      make_unique<ConversionPrinter>(conf().conversionPrinter()));
   _printers.push_back(
       make_unique<SimParticlePtrPrinter>(conf().simParticlePtrPrinter()));
   _printers.push_back(

@@ -54,7 +54,9 @@ namespace mu2e {
         fhicl::Atom<double> minPartMom { Name("MinimumPartMom"), Comment("Minimum particle momentum"), 0.0 };
         fhicl::Atom<double> maxPartMom { Name("MaximumPartMom"), Comment("Maximum particle momentum"), maxE_ };
 
-        fhicl::Atom<bool> orRequirements { Name("ORRequirements"), Comment("Take the logical OR of requirements, otherwise take the AND"), true };
+        fhicl::Atom<bool> orRequirements { Name("ORRequirements"), Comment("Take the logical OR of requirements, otherwise take the AND"), true };  
+	fhicl::Atom<bool> skipSelection { Name("SkipSelection"), Comment("Flag to skip filter selection") };
+
 
         fhicl::Atom<unsigned> minNTrkSteps { Name("MinimumTrkSteps"), Comment("Minimum number of good tracker steps"), 10};
         fhicl::Atom<double> minSumCaloStepE { Name("MinimumSumCaloStepE"), Comment("Minimum E sum of good calorimeter steps (MeV) "), 50.0 };
@@ -81,6 +83,7 @@ namespace mu2e {
       double minTrkE_, minCaloE_, minCrvE_;
       double minPartM_, maxPartM_;
       bool or_;
+      bool skipSel_;
       std::vector<PDGCode::type> pdgToKeep_;
       std::vector<art::InputTag> trkStepCols_, caloStepCols_, crvStepCols_;
       unsigned minNTrk_, minNCrv_;
@@ -101,6 +104,7 @@ namespace mu2e {
     , minPartM_(conf().minPartMom())
     , maxPartM_(conf().maxPartMom())
     , or_(conf().orRequirements())
+    , skipSel_(conf().skipSelection())
     , minNTrk_(conf().minNTrkSteps())
     , minNCrv_(conf().minNCrvSteps())
     , minSumCaloE_(conf().minSumCaloStepE())
@@ -212,6 +216,7 @@ namespace mu2e {
     // global selection
     bool retval =( (or_ && (selecttrk || selectcalo || selectcrv)) ||
         ((!or_) && ( selecttrk && selectcalo && selectcrv)) );
+    if (skipSel_) retval=true;
     if(retval)nPassed_++;
     return retval;
   }

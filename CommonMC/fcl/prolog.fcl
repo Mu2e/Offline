@@ -32,7 +32,8 @@ CommonMC: {
     SimParticles : "compressDigiMCs"
     PrimaryGenIds : ["CeEndpoint", "CeLeadingLog", "dioTail",
       "cosmicDYB", "CosmicCRY", "CosmicCORSIKA",
-      "InternalRPC" , "InternalRMC", "ExternalRPC", "ExternalRMC"  ]
+      "InternalRPC" , "InternalRMC", "ExternalRPC", "ExternalRMC",
+      "mu2eFlatPhoton" , "gammaPairProduction"  ]
   }
 
   SelectRecoMC : {
