@@ -27,6 +27,7 @@
 #include "Offline/GeometryService/inc/VirtualDetector.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "Offline/Mu2eG4/inc/checkForOverlaps.hh"
 #include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Offline/Mu2eG4/inc/finishNesting.hh"
@@ -417,10 +418,105 @@ namespace mu2e {
           doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
 
         }
+      //  
+      for( int vdId=VirtualDetectorId::ST_Front;
+           vdId<=VirtualDetectorId::ST_Side;
+           ++vdId) if( vdg->exist(vdId) ) {
+          if ( verbosityLevel > 0) {
+            cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+          }
+          double rmin = 75.+vdHalfLength;
+	  //          double rvd = rmin+10.;
+          double rvd = rmin+vdHalfLength;
+          double zvd = vdg->getGlobal(vdId).z();
+	  
+          if ( verbosityLevel > 0) {
+            cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+              " z, r : " << zvd << ", " << rvd << endl;
+          }
+    
+	  TubsParams vdParamsTarget(0.,rvd,vdHalfLength);  
+	  //	  TubsParams vdParamsTarget(0.,rvd,5.);  
+	  GeomHandle<StoppingTarget> target;
+
+	  TubsParams vdParamsTargetSide(rmin,rvd,target->cylinderLength()/2.-2.*vdHalfLength);
+	  if (vdId==VirtualDetectorId::ST_Side) vdParamsTarget=vdParamsTargetSide;
+	  
+          std::string theDS3("DS3Vacuum");
+          if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
+
+          VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ?
+            _helper->locateVolInfo(theDS3) :
+            _helper->locateVolInfo("StoppingTargetMother"); //DS3Vacuum to move the targets
+
+          if (verbosityLevel >0) {
+            cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z offset in Mu2e    : " <<
+              zvd << endl;
+            cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z extent in Mu2e    : " <<
+              zvd - vdHalfLength << ", " << zvd + vdHalfLength << endl;
+          }
+
+          VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
+                                    vdParamsTarget, downstreamVacuumMaterial, 0,
+                                    vdg->getLocal(vdId),
+                                    parent,
+				    vdId, 
+                                    vdIsVisible,
+                                    G4Color::Red(), vdIsSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    false);
+
+          doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
+
+        }
     }
 
     if ( _config.getBool("hasTracker",false)  ) {
+	  // the radius of tracker support
+      Tracker const & tracker = *(GeomHandle<Tracker>());
+      double orvd = tracker.g4Tracker()->getSupportParams().getTubsParams().outerRadius();
+        if ( tracker.g4Tracker()->getSupportModel() == SupportModel::detailedv0 ) {
+          auto const& beams =  tracker.g4Tracker()->getSupportStructure().beamBody();
+          if ( beams.empty() ){
+            throw cet::exception("GEOM")
+              << "Cannot create virtual detector " << VirtualDetectorId(vdId).name()
+              << " unless support beams are defined\n";
 
+          }
+          orvd = beams.at(0).tubsParams().innerRadius();
+        }
+      double irvd = tracker.g4Tracker()->getSupportParams().getTubsParams().innerRadius();
+      cout << "TRACKER FEB VD OUTER INNER RADIUS " << orvd << " "  << irvd << endl;
+      TubsParams vdParamsTracker(irvd,orvd,vdHalfLength);
+      cout << "Tracker_FEB_SurfIn parameters: " << vdParamsTracker << endl;
+      VolumeInfo const & parent = _helper->locateVolInfo("TrackerMother");
+      for ( int ipln=0; ipln<StrawId::_nplanes+1; ipln+=2 ){
+	// placing virtual detectors before FEB of tracker stations
+	vdId = VirtualDetectorId::Tracker_FEB_0_SurfIn+ipln/2;
+	if( vdg->exist(vdId) ) {
+	  if ( verbosityLevel > 0) {
+	    cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	  }
+	  CLHEP::Hep3Vector vdPos = vdg->getGlobal(vdId)-parent.centerInMu2e();
+	  cout << "Tracker_FEB_" << ipln/2 << "_SurfIn: " << vdPos << " " << vdg->getLocal(vdId) << endl;
+	 
+
+	  VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
+				    vdParamsTracker, downstreamVacuumMaterial, 0,
+				    vdPos,
+				    parent,
+				    vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
+				    forceAuxEdgeVisible,
+				    placePV,
+				    false);
+
+	  //        doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
+	  doSurfaceCheck && checkForOverlaps(vd.physical, _config, true);
+	}
+
+	
+      }
 
       // placing virtual detectors in the middle of the tracker
 
@@ -952,6 +1048,63 @@ namespace mu2e {
         doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
       }
+ // MBS Front VD 
+      vdId = VirtualDetectorId::MBS_Front;
+      if( vdg->exist(vdId) ) {
+
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	}
+	if ( _config.getBool("hasTracker",false)  ) {
+
+	  const VolumeInfo& caloDisk = _helper->locateVolInfo("caloDisk_1");
+	  G4Tubs* disk  = static_cast<G4Tubs*>(caloDisk.logical->GetSolid());
+	  double orvd = disk->GetOuterRadius();
+	  // the radius of tracker mother
+	  //Tracker const & tracker = *(GeomHandle<Tracker>());
+	  //double orvd = tracker.g4Tracker()->mother().tubsParams().outerRadius();
+          double vdZ  = vdg->getGlobal(vdId).z();
+	  if ( verbosityLevel > 0) {
+	    cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+	      " z, r : " << vdZ << ", " << orvd << endl;
+	  }
+
+	  
+	  TubsParams vdParamsMBSFront(0.,orvd,vdHalfLength);
+	  std::string theDS3("DS3Vacuum");
+	  if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
+	  VolumeInfo const & parent = _helper->locateVolInfo(theDS3);
+	  
+	  
+	  
+	  G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+
+
+
+	  VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+				       vdParamsMBSFront,
+				       downstreamVacuumMaterial,
+				       0,
+				       vdLocalOffset,
+				       parent,
+				       vdId,
+				       vdIsVisible,
+				       G4Color::Red(),
+				       vdIsSolid,
+				       forceAuxEdgeVisible,
+				       placePV,
+				       false);
+	  
+	  doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+	  
+	}
+      }
+
+
+
+
+
+
 
     } // end hasTracker
 

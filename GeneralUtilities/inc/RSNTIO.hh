@@ -63,6 +63,27 @@ namespace mu2e {
     };
 
     //================================================================
+    struct ConversionPointF {
+      float x;
+      float y;
+      float z;
+      float time;
+      float px;
+      float py;
+      float pz;
+    
+
+      ConversionPointF() : x(), y(), z(), time(), px(), py(), pz() {}
+
+      static const std::string branchDescription() {
+	char description[200];
+	sprintf(description,"x/F:y/F:z/F:time/F:px/F:py/F:pz/F");
+	const std::string description_s = description;
+	return description_s;
+      }
+
+      static unsigned numBranchLeaves() { return 7; }
+    };
 
   } // IO
 } // mu2e

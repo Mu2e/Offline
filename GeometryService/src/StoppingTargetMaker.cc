@@ -207,7 +207,10 @@ namespace mu2e {
 
                       if ( ((_foilTarget_supportStructure_rOut - _rOut[i])) > 0 ) {
                               temp_foilTarget_supportStructure_length = ((_foilTarget_supportStructure_rOut - _rOut[i]));
-                              temp_foilTarget_supportStructure_length -= 1; // remove 1mm to avoid overlap problems with mother volume
+                              temp_foilTarget_supportStructure_length -= 1; // remove 1mm to avoid overlap problems with mother volume   
+			    temp_foilTarget_supportStructure_length -= 5; // remove 1mm to avoid overlap problems with mother volume   
+			  
+			      //			      temp_foilTarget_supportStructure_length -= 21.; // TMP remove 1cm to avoid overlap problems with virtual detectors surrounding ST
                       } else {
                               temp_foilTarget_supportStructure_length=0;
                       }
@@ -219,7 +222,7 @@ namespace mu2e {
                                               _foilTarget_supportStructure_radius,
                                               temp_foilTarget_supportStructure_length,
                                               _foilTarget_supportStructure_angleOffset,
-                                              _rOut[i], // outer radius of the foil the wire connects to
+                                              _rOut[i]+2., // outer radius of the foil the wire connects to (add 50um to avoid overlap problems with virtual detectors surrounding ST)
                                               _foilTarget_supportStructure_fillMaterial,
                                               _detSysOrigin
                                               )
@@ -248,8 +251,10 @@ namespace mu2e {
     _targ->_radius=radius;
 
     // set the length to accomodate generous tilts to the first and last foils
-    double zmin=_targ->_foils[0].centerInMu2e().z()-5;
-    double zmax=_targ->_foils[_targ->_foils.size()-1].centerInMu2e().z()+5;
+    //    double zmin=_targ->_foils[0].centerInMu2e().z()-5;
+    //double zmax=_targ->_foils[_targ->_foils.size()-1].centerInMu2e().z()+5;
+    double zmin=_targ->_foils[0].centerInMu2e().z()-11;
+    double zmax=_targ->_foils[_targ->_foils.size()-1].centerInMu2e().z()+11;
 
     _targ->_zLen=zmax-zmin;
     _targ->_centerInMu2e = CLHEP::Hep3Vector(_detSysOrigin.x(), _detSysOrigin.y(), (zmax+zmin)/2.);

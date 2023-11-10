@@ -870,7 +870,8 @@ namespace mu2e {
        G4double crateDZ                  = cal.caloInfo().getDouble("crateZLength")/2.0;
        G4double crateFShieldDisp         = cal.caloInfo().getDouble("crateFShieldDeltaZ");
        G4double crateFShieldThick        = cal.caloInfo().getDouble("crateFShieldThickness");
-       G4double crateBottomThick         = cal.caloInfo().getDouble("crateBShieldThickness");
+       G4double crateBottomThick         = cal.caloInfo().getDouble("crateBShieldThickness"); 
+       G4double crateBottomLength        = cal.caloInfo().getDouble("crateBShieldLength");
        G4double crateTopThick            = cal.caloInfo().getDouble("crateTThickness");
        G4double crateSideThick           = cal.caloInfo().getDouble("crateSThickness");
        G4double crateFShieldDY           = cal.caloInfo().getDouble("crateFShieldYLength")/2.0;
@@ -890,7 +891,7 @@ namespace mu2e {
        G4Box *crateFullBox = new G4Box("ccrateFullBox",crateDX,crateFullDY,crateFullDZ);
        G4Box *crateBox     = new G4Box("ccrateBoxTop", crateDX,crateDY,crateDZ);
        G4Box *crateBoxIn   = new G4Box("ccrateBoxSide",crateDX-crateSideThick,crateBoxInDY,crateDZ);
-       G4Box *crateBottom  = new G4Box("ccrateBottom", crateDX,crateBottomThick/2.0,crateFullDZ);
+       G4Box *crateBottom  = new G4Box("ccrateBottom", crateDX,crateBottomThick/2.0,crateBottomLength/2.);
        G4Box *crateShieldF = new G4Box("ccrateShieldF",crateDX,crateFShieldDY,crateFShieldThick/2.0);
 
        //define the logical volumes
@@ -902,14 +903,15 @@ namespace mu2e {
 
        //place the crate box and shield pieces
        G4double crateFZpos  = -crateFullDZ + crateFShieldThick/2.0;
+       G4double crateBZpos  = -crateFullDZ + crateFShieldThick + crateBottomLength/2.0;
        G4double crateABYpos = -crateFullDY + crateBottomThick/2.0;
-       G4double crateFYpos  = -crateFullDY + crateBottomThick + crateFShieldDY;
+       G4double crateFYpos  = -crateFullDY + crateFShieldDY;
 
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,crateBottomThick/2.0,crateFullDZ-crateDZ),crateBoxLog,"ccrateBoxPV",crateFullBoxLog,false,0,false);
        doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,-crateTopThick/2.0,0),crateBoxInLog,"ccrateBoxInPV",crateBoxLog,false,0,false);
        doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
-       pv = new G4PVPlacement(0,G4ThreeVector(0.0,crateABYpos,0.0),crateBottomLog,"ccrateBottomPV",crateFullBoxLog,false,0,false);
+       pv = new G4PVPlacement(0,G4ThreeVector(0.0,crateABYpos,crateBZpos),crateBottomLog,"ccrateBottomPV",crateFullBoxLog,false,0,false);
        doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
        if (crateFShieldThick>0.01) pv = new G4PVPlacement(0,G4ThreeVector(0.0, crateFYpos,crateFZpos),crateShieldFLog,"ccrateShieldFPV",crateFullBoxLog,false,0,false);
        doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
