@@ -1,4 +1,4 @@
 #
-#  Post-prolog switch to output station-level ComboHits from FlagBkgHits
+#  Post-prolog switch to output plane-level ComboHits from FlagBkgHits
 #
 physics.producers.FlagBkgHits.OutputLevel : "plane"
