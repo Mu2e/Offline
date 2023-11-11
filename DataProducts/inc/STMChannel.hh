@@ -47,7 +47,7 @@ namespace mu2e {
       _id(unknown){
     }
 
-    virtual ~STMChannel(){}
+    virtual ~STMChannel() = default;
 
     bool operator==(const STMChannel g) const{
       return ( _id == g._id );

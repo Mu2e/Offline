@@ -9,5 +9,7 @@
 
 namespace mu2e
 {
-  Detector::~Detector() { }
+  Detector::~Detector() = default;
+  Detector::Detector(const Detector&) = default;
+  Detector& Detector::operator=(const Detector &) = default;
 }

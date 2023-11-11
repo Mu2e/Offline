@@ -10,5 +10,7 @@
 
 namespace mu2e
 {
-  ConditionsEntity::~ConditionsEntity() { }
+  ConditionsEntity::~ConditionsEntity() = default;
+  ConditionsEntity::ConditionsEntity(const ConditionsEntity&) = default;
+  ConditionsEntity& ConditionsEntity::operator=(const ConditionsEntity &) = default;
 }

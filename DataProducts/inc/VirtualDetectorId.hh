@@ -239,8 +239,6 @@ namespace mu2e {
       isValidorThrow(_id);
     }
 
-    virtual ~VirtualDetectorId(){}
-
     // This operator implements:
     //   VirtualDetectorId a;
     //   enum_type b;

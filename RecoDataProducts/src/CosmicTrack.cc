@@ -56,10 +56,5 @@ TrackSeedDiag::TrackSeedDiag(){
     InitParams.T0 = 0;
          }
 
-        // Destructor
-        CosmicTrack::~CosmicTrack() {}
-
-
-
 
 }

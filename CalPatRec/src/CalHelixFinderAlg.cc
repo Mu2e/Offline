@@ -1131,7 +1131,7 @@ namespace mu2e {
           mu2e::ComboHit* hit   = &Helix._chHitsToProcess[index];
           if (Helix._hitsUsed[index] != 1)            continue;
 
-          szphi.init(Helix._szphi);
+          szphi = Helix._szphi;
           phi      = hit->_hphi;
 
           if (PhiZInfo.useInteligentWeight == 1){
@@ -2449,7 +2449,7 @@ namespace mu2e {
           //          int index = facez->evalUniqueHitIndex(f,p,i);
           if (Helix._hitsUsed[index] != 1)                    continue;
 
-          sxy.init(Helix._sxy);
+          sxy = Helix._sxy;
 
           x  = hit->_pos.x();
           y  = hit->_pos.y();
@@ -2515,7 +2515,7 @@ namespace mu2e {
     // doWeightedCircleFit (Trk,SeedIndex,helCenter,r,Print,Banner);
 
     //now initialize the LsqSum4 variable
-    // sxyw.init(Trk._sxy);
+    // sxyw = Trk._sxy;
 
     searchWorstHitWeightedCircleFit(Trk,SeedIndex,helCenter,r,iworst,hitChi2Worst);
 
@@ -2642,7 +2642,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // update circle parameters
 //-----------------------------------------------------------------------------
-      // Trk._sxyw.init(sxyw);
+      // Trk._sxyw = sxyw;
       Trk._center.SetX(Trk._sxy.x0());
       Trk._center.SetY(Trk._sxy.y0());
       Trk._radius = Trk._sxy.radius();
@@ -3289,7 +3289,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // initialize only the xy part, z-phi part is not needed here
 //-----------------------------------------------------------------------------
-    Helix._sxy.init(sxy);
+    Helix._sxy = sxy;
     Helix._nXYSh      = NPoints;
     Helix._radius     = sxy.radius();
     Helix._center.SetXYZ(sxy.x0(), sxy.y0(), 0.0);
@@ -3310,7 +3310,7 @@ namespace mu2e {
     // Helix._radius  = Helix._rw;
     radius_end     = Helix._radius;
 
-    // Helix._sxy.init(Helix._sxyw);
+    // Helix._sxy = Helix._sxyw;
                                         // doWeightedCircleFit still adds the ST and the cluster
     Chi2    = Helix._sxy.chi2DofCircle();
     NPoints = Helix._nStrawHits;   //  *FIXME*  in principle, the fit can remove ST as well as the cluster
