@@ -15,7 +15,10 @@ namespace mu2e
   class ConditionsEntity
   {
   public:
+    ConditionsEntity() {}
     virtual ~ConditionsEntity();
+    ConditionsEntity(const ConditionsEntity&);
+    ConditionsEntity& operator=(const ConditionsEntity &);
   };
 }
 

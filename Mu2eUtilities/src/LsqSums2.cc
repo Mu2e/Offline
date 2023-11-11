@@ -9,13 +9,6 @@ LsqSums2::LsqSums2() {
   clear();
 }
 
-LsqSums2::LsqSums2(const LsqSums2& S) {
-  init(S);
-  //  printf(" LsqSums2::LsqSums2 : dont use me!\n");
-}
-
-LsqSums2::~LsqSums2() {
-}
 
 void LsqSums2::clear() {
   _qn   = 0;
@@ -28,19 +21,6 @@ void LsqSums2::clear() {
 
   fX0   = 0;
   fY0   = 0;
-}
-
-void LsqSums2::init(const LsqSums2& S) {
-  _qn   = S._qn  ;
-  sw    = S.sw   ;
-  sx    = S.sx   ;
-  sy    = S.sy   ;
-  sx2   = S.sx2  ;
-  sxy   = S.sxy  ;
-  sy2   = S.sy2  ;
-
-  fX0   = S.fX0;
-  fY0   = S.fY0;
 }
 
 void LsqSums2::addPoint(double XX, double YY, double W) {
