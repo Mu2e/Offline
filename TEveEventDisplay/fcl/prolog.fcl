@@ -23,7 +23,7 @@ TEveEventDisplayBase : {
       HelixSeedCollection       :  "HelixFinderDe:Negative"
       KalSeedCollection         :  ["KFFDeM"]
       TrkExtTrajCollection      :  NULL
-      MCTrajectoryCollection    :  "compressDetStepMCs"
+      MCTrajectoryCollection    :  "compressRecoMCs"
       addHits                   : true
       addTrkHits                   : true
       addTimeClusters           : true
