@@ -52,7 +52,6 @@ namespace mu2e{
       double FEBHalfZLength_;
       double motherHalfZ_;
       double crateToDiskDeltaZ_;
-      double FEBOffsetZ_;
       CLHEP::Hep3Vector diskOriginToCrystalOrigin_;
 
 
