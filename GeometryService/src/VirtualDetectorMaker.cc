@@ -183,15 +183,6 @@ namespace mu2e {
                                ds2centerInMu2e, 0, targetOffset-shift);
       vd->addVirtualDetector( VirtualDetectorId::ST_Out,
                                ds2centerInMu2e, 0, targetOffset+shift);
-      Hep3Vector shiftFromST(0., 0., vdHL + target->cylinderLength()/2-5.);
-      //      Hep3Vector shiftFromST(0., 0., 10.*vdHL + target->cylinderLength()/2-6.);
-      const CLHEP::Hep3Vector noshift(0., 0., 0.);
-      vd->addVirtualDetector( VirtualDetectorId::ST_Front,
-                               noshift, 0, -shiftFromST);
-      vd->addVirtualDetector( VirtualDetectorId::ST_Back,
-                               noshift, 0, shiftFromST);
-      vd->addVirtualDetector( VirtualDetectorId::ST_Side,
-                               noshift, 0, noshift);
 
 
       /*******new virtual detector for STM Upstream halfway between coll5Out and STIn   ****/
@@ -245,32 +236,6 @@ namespace mu2e {
         //         }
         //       }
 
-
-	//
-	if ( c.getBool("TrackerHasBrassRings",false) ){
-	  TubsParams planeEnvelope = tracker.g4Tracker()->getPlaneEnvelopeParams();
-	  double dzplane= planeEnvelope.zHalfLength();
-	  for ( int ipln=0; ipln<StrawId::_nplanes+1; ipln+=2 ){
-	    Hep3Vector vdTracker_FEB_offset(0.,0.,0.);
-	    double zplane;
-	    double z_Tracker_FEB;
-	    if (ipln < StrawId::_nplanes){
-	      zplane = tracker.getPlane(ipln).origin().z();
-	      z_Tracker_FEB=zplane-dzplane-vdHL;
-	    }
-	    else{
-	      zplane = -tracker.getPlane(0).origin().z();
-	      z_Tracker_FEB=zplane+dzplane+vdHL;
-	    }
-	    vdTracker_FEB_offset.setZ(z_Tracker_FEB);
-	    cout << "z_Tracker_FEB_" << ipln/2 << "=" << z_Tracker_FEB << " zplane=" << zplane << " dzplane=" << dzplane <<  endl;
-	    
-	    int vdId = VirtualDetectorId::Tracker_FEB_0_SurfIn+ipln/2;
-	    vd->addVirtualDetector( vdId, ttOffset, 0,vdTracker_FEB_offset);
-	    //
-	  }
-	}
-	
         // Global position is in Mu2e coordinates; local position in the detector system.
         double zFrontGlobal = tracker.g4Tracker()->mother().position().z()-tracker.g4Tracker()->mother().tubsParams().zHalfLength()-vdHL;
         double zBackGlobal  = tracker.g4Tracker()->mother().position().z()+tracker.g4Tracker()->mother().tubsParams().zHalfLength()+vdHL;
@@ -314,21 +279,6 @@ namespace mu2e {
                                  ttOffset,
                                  0,
                                  vdTTBackOffset);
-
- // this is to monitor particle fluxes in front of MBS
-	double ttback2mbsfront=1400.; // mm
-        double zFrontMBSGlobal = tracker.g4Tracker()->mother().position().z()+tracker.g4Tracker()->mother().tubsParams().zHalfLength()+
-	  ttback2mbsfront-vdHL;
-        double zFrontMBSLocal  = zFrontMBSGlobal - tracker.g4Tracker()->z0();
-
-        Hep3Vector vdMBSFrontOffset(0.,
-                                  0.,
-                                  zFrontMBSLocal);
-
-        vd->addVirtualDetector( VirtualDetectorId::MBS_Front,
-                                 ttOffset,
-                                 0,
-                                 vdMBSFrontOffset);
 
         // these next two detectors are also thin, but they are not disks but cylinders
         // placed on the inner and outer surface of the tracker envelope

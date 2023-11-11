@@ -80,7 +80,7 @@ class PrintModule : public art::EDAnalyzer {
     fhicl::Table<ProductPrinter::Config> genParticlePrinter{
         fhicl::Name("genParticlePrinter")};
     fhicl::Table<SimParticlePrinter::Config> simParticlePrinter{
-        fhicl::Name("simParticlePrinter")};  
+        fhicl::Name("simParticlePrinter")};
     fhicl::Table<ProductPrinter::Config> simParticlePtrPrinter{
         fhicl::Name("simParticlePtrPrinter")};
     fhicl::Table<StepPointMCPrinter::Config> stepPointMCPrinter{

@@ -155,12 +155,10 @@ namespace mu2e {
           calo_->caloInfo_.set("crateZLength",           config.getDouble("calorimeter.crateZLength") );
           calo_->caloInfo_.set("crateFShieldThickness",  config.getDouble("calorimeter.crateFShieldThickness") );
           calo_->caloInfo_.set("crateBShieldThickness",  config.getDouble("calorimeter.crateBShieldThickness") );
-          calo_->caloInfo_.set("crateBShieldLength",  config.getDouble("calorimeter.crateBShieldLength") );
           calo_->caloInfo_.set("crateTThickness",        config.getDouble("calorimeter.crateTThickness") );
           calo_->caloInfo_.set("crateSThickness",        config.getDouble("calorimeter.crateSThickness") );
           calo_->caloInfo_.set("crateFShieldYLength",    config.getDouble("calorimeter.crateFShieldYLength") );
           calo_->caloInfo_.set("crateFShieldDeltaZ",     config.getDouble("calorimeter.crateFShieldDeltaZ") );
-          calo_->caloInfo_.set("FEBOffsetZ",     config.getDouble("calorimeter.FEBOffsetZ") );
           calo_->caloInfo_.set("cratephi0",              config.getDouble("calorimeter.cratephi0") );
           calo_->caloInfo_.set("crateDeltaPhi",          config.getDouble("calorimeter.crateDeltaPhi") );
           calo_->caloInfo_.set("radiatorThickness",      config.getDouble("calorimeter.radiatorThickness") );
@@ -230,9 +228,9 @@ namespace mu2e {
           diskHalfZLength_      = FPHalfZLength_+diskCaseHalfZLength_+BPHalfZLength_ + vdThickness;
           FEBHalfZLength_       = (crateZLength+crateFShieldDeltaZ+crateFShieldThick + 2.0*vdThickness)/2.0;
           motherHalfZ_          = (calo_->caloInfo_.getDouble("envelopeZ1")-calo_->caloInfo_.getDouble("envelopeZ0"))/2.0;
-	  FEBOffsetZ_ = calo_->caloInfo_.getDouble("FEBOffsetZ");
+
           // OFFSET TO ALIGN BEGINNING OF BOTTOM SHIESLDING TO BEGINNING OF CRYSTAL IN Z
-          crateToDiskDeltaZ_ = FEBHalfZLength_ - diskHalfZLength_ + 2.0*FPHalfZLength_ + vdThickness-FEBOffsetZ_;
+          crateToDiskDeltaZ_ = FEBHalfZLength_ - diskHalfZLength_ + 2.0*FPHalfZLength_ + vdThickness;
 
 
 
