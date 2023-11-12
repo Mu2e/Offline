@@ -19,7 +19,7 @@ bool   stm.det2.build                 = false;
 bool   stm.SScollimator.build         = false;
 bool   stm.SScollimator.liner.build   = false;
 bool   stm.detector.stand.build       = false;
-bool   stm.shield.build               = false;
+bool   stm.shield.build               = true;
 
 
 //"spot-size" collimator, just upstream of the detector(s)
