@@ -527,13 +527,13 @@ namespace mu2e {
       }
       // calculate the unbiased time residual
       auto tres = (kktrk.fitStatus().usable()) ? calohit->residual(0) : calohit->refResidual(0);
-      // calculate the cluster depth
-      // First, find the Z of the front face of this disk
-      double frontz = calo.geomUtil().mu2eToTracker(calo.disk(calohit->caloCluster()->diskID()).geomInfo().frontFaceCenter()).z();
-      // calculate the distance from the front to the POCA, projected along the track
-      float clen = (ca.sensorPoca().Z()- frontz)/ca.particleTraj().direction(ca.particleToca()).Z();
+      // calculate the cluster depth = distance along the crystal axis from the POCA to the back face of this disk (where the SiPM sits)
+      double backz = calo.geomUtil().mu2eToTracker(calo.disk(calohit->caloCluster()->diskID()).geomInfo().backFaceCenter()).z();
+      // calculate the distance from POCA to the SiPM, along the crystal (Z) direction, and projected along the track
+      float clen = backz-ca.sensorPoca().Z();
+      float trklen = clen/ca.particleTraj().direction(ca.particleToca()).Z();
       fseed._chit = TrkCaloHitSeed(calohit->caloCluster(),hflag,
-          clen,
+          clen,trklen,
           ca.tpData(),
           calohit->unbiasedClosestApproach().tpData(),
           tres,ca.particleTraj().momentum3(ca.particleToca()));

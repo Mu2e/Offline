@@ -34,7 +34,10 @@ TimeClusterFinderCosmics : {
 SimpleTimeCluster : {
     module_type : SimpleTimeCluster
     ComboHitCollection : "makePH"
-    TestFlag : false
+    TestFlag : true
+    HitSelectionBits  : ["EnergySelection"]
+    HitBackgroundBits : ["Background","Noisy","Dead"]
+    minNPanels : 3
 }
 
 LineFinder : {

@@ -10,6 +10,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/TrkHitReco/inc/BkgClusterer.hh"
+#include "Offline/GeneralUtilities/inc/CombineTwoDPoints.hh"
 #include "fhiclcpp/types/Sequence.h"
 
 #include <string>
@@ -36,10 +37,11 @@ namespace mu2e {
       {
         using Name    = fhicl::Name;
         using Comment = fhicl::Comment;
-        fhicl::Atom<float>            hitDistance {     Name("HitDistance"),      Comment("Minimum cluster hit distance")  };
+        fhicl::Atom<float>            hitDistance{      Name("HitDistance"),      Comment("Minimum cluster hit distance")  };
         fhicl::Atom<float>            seedDistance{     Name("SeedDistance"),     Comment("Minimum distance for cluster seed")  };
         fhicl::Atom<float>            clusterDiameter{  Name("ClusterDiameter"),  Comment("Average cluster diameter")  };
         fhicl::Atom<float>            clusterTime{      Name("ClusterTime"),      Comment("Average cluster time spread")  };
+        fhicl::Atom<int>              minClusterHits{   Name("MinClusterHits"),   Comment("Cut for minimum cluster hit size"),1 };
         fhicl::Atom<float>            maxHitTimeDiff{   Name("MaxHitTimeDiff"),   Comment("Maximum hit cluster tme difference")  };
         fhicl::Atom<float>            maxSumDistance{   Name("MaxSumDistance"),   Comment("Maximum sum pf hit-cluster distance for convergence") };
         fhicl::Atom<float>            minHitError{      Name("MinHitError"),      Comment("Min value of hit error")  };
@@ -52,6 +54,7 @@ namespace mu2e {
         fhicl::Sequence<std::string>  sigmsk{           Name("SignalMask"),       Comment("Signal hit selection mask") };
         fhicl::Atom<bool>             testflag{         Name("TestFlag"),         Comment("Test hit flags") };
         fhicl::Atom<int>              diag{             Name("Diag"),             Comment("Diagnosis level"),0 };
+        fhicl::Atom<int>              distMethod{       Name("DistanceMethod"),   Comment("Distance method") };
       };
 
 
@@ -61,6 +64,7 @@ namespace mu2e {
       void          init        ();
       virtual void  findClusters(BkgClusterCollection& clusters, const ComboHitCollection& shcol, int iev);
       virtual float distance    (const BkgCluster& cluster,      const ComboHit& hit) const;
+      enum mode {useSpatial,useChi2};
 
 
     private:
@@ -75,24 +79,27 @@ namespace mu2e {
       void     updateCluster   (BkgCluster& cluster, const ComboHitCollection& chcol, std::vector<BkgHit>& hinfo);
       void     dump            (const std::vector<BkgCluster>& clusters, const std::vector<BkgHit>& hinfo);
 
-      float            tbin_;
-      float            dhit_;
-      float            dseed_;
-      float            dd_;
-      float            dd2_;
-      float            dt_;
-      float            maxwt_;
-      float            md2_;
-      float            trms2inv_;
-      float            maxHitdt_;
-      float            maxDistSum_;
-      unsigned         maxNiter_;
-      bool             useMedian_;
-      bool             comboInit_;
-      StrawHitFlag     bkgmask_;
-      StrawHitFlag     sigmask_;
-      bool             testflag_;
-      int              diag_;
+      float                   tbin_;
+      float                   dhit_;
+      float                   dseed_;
+      float                   dd_;
+      float                   dd2_;
+      float                   dt_;
+      int                     minClusterHits_;
+      float                   maxwt_;
+      float                   md2_;
+      float                   trms2inv_;
+      float                   maxHitdt_;
+      float                   maxDistSum_;
+      unsigned                maxNiter_;
+      bool                    useMedian_;
+      bool                    comboInit_;
+      StrawHitFlag            bkgmask_;
+      StrawHitFlag            sigmask_;
+      bool                    testflag_;
+      int                     diag_;
+      int                     distMethod_;
+      BkgCluster::distMethod  distMethodFlag_;
   };
 }
 #endif
