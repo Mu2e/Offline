@@ -39,6 +39,9 @@ namespace mu2e {
     loadSolids           ( b.dirtSolids_, geomOptions, c, "dirt.prefix.list" );
     replaceBoundaryValues( b.dirtSolids_, c, "dirt.prefix.list", "y", mu2eEnv.xmin(), mu2eEnv.xmax() );
     replaceBoundaryValues( b.dirtSolids_, c, "dirt.prefix.list", "x", mu2eEnv.zmin(), mu2eEnv.zmax() );
+    std:: cout<<"--------------------------"<<std::endl;
+    std::cout << " -------dirt file received ------"<<std::endl;
+    std::cout<<"--------------------------"<<std::endl;
   }
 
   //==================================================================
