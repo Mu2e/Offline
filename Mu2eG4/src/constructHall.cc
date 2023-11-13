@@ -12,7 +12,7 @@
 #include "Offline/GeneralUtilities/inc/OrientationResolver.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
-#include "Offline/GeometryService/inc/NotchManager.hh"
+#include "Offline/GeometryService/inc/NotchHoleManager.hh"
 #include "Offline/GeometryService/inc/WorldG4.hh"
 #include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "Offline/Mu2eG4/inc/constructHall.hh"
@@ -30,6 +30,7 @@
 #include "Geant4/G4RotationMatrix.hh"
 #include "Geant4/G4Orb.hh"
 #include "Geant4/G4Box.hh"
+#include "Geant4/G4Tubs.hh"
 #include "Geant4/G4SubtractionSolid.hh"
 #include "Geant4/G4TwoVector.hh"
 #include "CLHEP/Vector/Rotation.h"
@@ -83,8 +84,9 @@ namespace mu2e {
     horizontalConcreteRotation.rotateZ( 90*CLHEP::degree);
 
     // Allow notches/holes in building walls
-    NotchManager notchMgr;
+    NotchHoleManager notchMgr;
     notchMgr.loadNotches(config);
+    notchMgr.loadHoles(config);
 
     constructSolids( config, hallInfo, building->getBldgSolids(), horizontalConcreteRotation, notchMgr );
     constructSolids( config, hallInfo, building->getDirtSolids(), horizontalConcreteRotation, notchMgr );
@@ -99,7 +101,7 @@ namespace mu2e {
                         const VolumeInfo& hallInfo,
                         const std::map<std::string,ExtrudedSolid>& solidMap,
                         const CLHEP::HepRotation& rot,
-                        const NotchManager& notchMgr) {
+                        const NotchHoleManager& notchMgr) {
 
     //-----------------------------------------------------------------
     // Building and dirt volumes are extruded solids.
@@ -113,6 +115,7 @@ namespace mu2e {
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     OrientationResolver* OR = new OrientationResolver();
+    OrientationResolver* ORH = new OrientationResolver();
 
     // Loop over all volumes in the map
     for ( const auto& keyVolumePair : solidMap ) {
@@ -122,25 +125,34 @@ namespace mu2e {
 
       geoOptions->loadEntry( config, volume.getName(), volume.getName() );
 
-      if ( notchMgr.hasNotches( volName ) ) {
-        // First do volumes with notches
-
-        // Make the VolumeInfo, without solid info
+      if ( notchMgr.hasNotches( volName )||notchMgr.hasHoles( volName ) ) {
+       //------debug--------------------------
+       std::cout<<"-------------------------"<<std::endl;
+       std::cout<<"Volume with Notch or hole (building & Dirt): "<<volume.getName()<<std::endl;
+       //	std::cout<<"Volume with Hole: "<<volume.getName()<<std::endl;
+       std::cout<<"-------------------------"<<std::endl;
+       vector<Notch> volNotches = notchMgr.getNotchVector(volName);
+       vector<Hole> volHoles = notchMgr.getHoleVector(volName);
+       std::cout<<"Number of notches: "<<volNotches.size()<<std::endl;
+       std::cout<<"Number of holes: "<<volHoles.size()<<std::endl;
+       std::cout<<"-------------------------"<<std::endl;
+       // First do volumes with notches
+       // Make the VolumeInfo, without solid info
         VolumeInfo tmpVol(volume.getName(),
                           volume.getOffsetFromMu2eOrigin() - hallInfo.centerInMu2e(),
                           hallInfo.centerInWorld);
-
-        // Make the main extruded solid from which notches will be subtracted
+       // Make the main extruded solid from which notches will be subtracted
         G4ExtrudedSolid* aVol = new G4ExtrudedSolid(tmpVol.name,
                                                     volume.getVertices(),
                                                     volume.getYhalfThickness(),
                                                     G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-
-        // Now loop over the notches and subtract them from above
-        // First, create the eventual solid
-        G4SubtractionSolid* aSolid = 0;
-        // Get the vector of notches
-        vector<Notch> volNotches = notchMgr.getNotchVector(volName);
+       //-------------------------------------------------------------------------------------
+       // Now loop over the notches and subtract them from above
+       // First, create the eventual solid
+       G4SubtractionSolid* aSolid = 0;
+       //-------------------------------------------------------------------------------------
+       // Get the vector of notches
+       //vector<Notch> volNotches = notchMgr.getNotchVector(volName);
         for ( unsigned int iNotch = 0; iNotch < volNotches.size(); iNotch++ ) {
           ostringstream notchName;
           notchName << "Notch" << iNotch+1;
@@ -168,6 +180,47 @@ namespace mu2e {
             aSolid = bSolid;
           } // end if...else for first or later notch
         } // end loop over all notches
+       //-----------------------------------------------------------------------------------
+       //-------------------------------------------------------------------------------------
+       // Get the vector of holes
+       //        vector<Hole> volHoles = notchMgr.getHoleVector(volName);
+        for ( unsigned int iHole = 0; iHole < volHoles.size(); iHole++ ) {
+          ostringstream holeName;
+          holeName << "hole" << iHole+1;
+          Hole tmpHole = volHoles[iHole];
+          double radius = tmpHole.getRad();
+          double halfLength = tmpHole.getHalfLen();
+          //	  double FullLength = halfLength*2.0;
+          string orientationHH = tmpHole.getOrient();
+          //debug-----------------
+          std::cout<<"---------**********------------"<<std::endl;
+          G4Tubs*holeTub = new G4Tubs(holeName.str(),
+                                      0.0, //inner radius
+                                      radius,//outer radius
+                                      halfLength,  //FullLength+2.0, //height
+                                      0.0, //angle_0
+                                      CLHEP::twopi); //angle_span;
+
+          CLHEP::HepRotation* holeRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
+          ORH->getRotationFromOrientation( *holeRotat, tmpHole.getOrient());
+          std::cout<<"Hole Name: "<<holeName.str()<<" radius: "<<radius<<" halfLength: "<<halfLength<<" ori: "<<orientationHH<<" hole rotaion: "<<*holeRotat<<std::endl;
+          if ( 0 == aSolid ) {
+            aSolid = new G4SubtractionSolid( tmpVol.name,
+                                             aVol,
+                                             holeTub,
+                                             holeRotat,
+                                             tmpHole.getCenter() );
+          } else {
+            G4SubtractionSolid * bSolid = new G4SubtractionSolid
+              ( tmpVol.name,
+                aSolid,
+                holeTub,
+                holeRotat,
+                tmpHole.getCenter() );
+            aSolid = bSolid;
+          } // end if...else for first or later hole
+        } // end loop over all holes
+        //-----------------------------------------------------------------------------------
 
         tmpVol.solid = aSolid;
 
@@ -185,7 +238,7 @@ namespace mu2e {
                       doSurfaceCheck
                       );
 
-      } else {  // Now for walls without notches
+      } else {  // Now for walls without notches or holes
 
         VolumeInfo tmpVol(volume.getName(),
                           volume.getOffsetFromMu2eOrigin() - hallInfo.centerInMu2e(),
@@ -210,7 +263,7 @@ namespace mu2e {
                       doSurfaceCheck
                       );
 
-      } // end else of if for has notches
+      } // end else of if for has notches and holes
 
     } // end loop over parts
 
@@ -219,6 +272,10 @@ namespace mu2e {
       delete OR;
       OR = 0;
     }
+ if ( 0 != ORH ) {
+      delete ORH;
+      ORH = 0;
+    }
   } // end function def for constructSolids
 
   //================================================================================
@@ -226,7 +283,7 @@ namespace mu2e {
                             const VolumeInfo& hallInfo,
                             const std::map<std::string,GenericTrap>& solidMap,
                             const CLHEP::HepRotation& rot,
-                            const NotchManager& notchMgr) {
+                            const NotchHoleManager& notchMgr) {
 
     //-----------------------------------------------------------------
     // Building and dirt volumes are generic trapezoids.
@@ -240,6 +297,7 @@ namespace mu2e {
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     OrientationResolver* OR = new OrientationResolver();
+    OrientationResolver* ORH = new OrientationResolver();
 
     // Loop over all volumes in the map
     for ( const auto& keyVolumePair : solidMap ) {
@@ -251,7 +309,12 @@ namespace mu2e {
       const CLHEP::HepRotation vRot = rot*volume.getRotation();
       const G4RotationMatrix* vRotG4 = reg.add(G4RotationMatrix(vRot));
 
-      if ( notchMgr.hasNotches( volName ) ) {
+      if ( notchMgr.hasNotches( volName )||notchMgr.hasHoles( volName ) ) {
+        //------debug--------------------------
+        std::cout<<"-------------------------"<<std::endl;
+        std::cout<<"Volume with Notch or hole (trapSolid): "<<volume.getName()<<std::endl;
+        //	std::cout<<"Volume with Hole: "<<volume.getName()<<std::endl;
+        std::cout<<"-------------------------"<<std::endl;
         // First do volumes with notches
 
         // Make the VolumeInfo, without solid info
@@ -298,6 +361,42 @@ namespace mu2e {
           } // end if...else for first or later notch
         } // end loop over all notches
 
+        //-------------------------holes---------------------------------------------
+        // Get the vector of holes
+        vector<Hole> volHoles = notchMgr.getHoleVector(volName);
+        for ( unsigned int iHole = 0; iHole < volHoles.size(); iHole++ ) {
+          ostringstream holeName;
+          holeName << "Hole" << iHole+1;
+          Hole tmpHole = volHoles[iHole];
+          double radius = tmpHole.getRad();
+          double halfLength = tmpHole.getHalfLen();
+          G4Tubs*holeTub = new G4Tubs(holeName.str(),
+                                      0.0, //inner radius
+                                      radius,//outer radius
+                                      halfLength, //height
+                                      0.0, //angle_0
+                                      CLHEP::twopi); //angle_span
+
+          CLHEP::HepRotation* holeRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
+          ORH->getRotationFromOrientation( *holeRotat, tmpHole.getOrient());
+
+          if ( 0 == aSolid ) {
+            aSolid = new G4SubtractionSolid( tmpVol.name,
+                                             aVol,
+                                             holeTub,
+                                             holeRotat,
+                                             tmpHole.getCenter() );
+          } else {
+            G4SubtractionSolid * bSolid = new G4SubtractionSolid
+              ( tmpVol.name,
+                aSolid,
+                holeTub,
+                holeRotat,
+                tmpHole.getCenter() );
+            aSolid = bSolid;
+          } // end if...else for first or later hole
+        } // end loop over all holes
+
         tmpVol.solid = aSolid;
 
         finishNesting(tmpVol,
@@ -314,7 +413,7 @@ namespace mu2e {
                       doSurfaceCheck
                       );
 
-      } else {  // Now for volumes without notches
+      } else {  // Now for volumes without notches or holes
 
         VolumeInfo tmpVol(volume.getName(),
                           volume.getOffsetFromMu2eOrigin() - hallInfo.centerInMu2e(),
@@ -350,6 +449,10 @@ namespace mu2e {
       delete OR;
       OR = 0;
     }
-  } // end function def for constructTrapSolids
+ if ( 0 != ORH ) {
+      delete ORH;
+      ORH = 0;
+    }
+   } // end function def for constructTrapSolids
 
 } // end namespace mu2e
