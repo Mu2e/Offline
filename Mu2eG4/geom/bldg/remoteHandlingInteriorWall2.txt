@@ -25,6 +25,26 @@ vector<double> building.remote.handling.Interior.Wall.2.yPositions = {
   9702.8,   // P2
   9702.8   // P3
 };
+// Continue hole definitions from remoteHandlingInteriorWall5.txt
+//6th hole
+int building.remote.handling.Interior.Wall.2.Hole.numberOfHoles = 3;
+double building.remote.handling.Interior.Wall.2.Hole.radius.1 = 50.8;
+double building.remote.handling.Interior.Wall.2.Hole.halfLength.1 = 229.; //wall thickness: 228.6
+vector<double> building.remote.handling.Interior.Wall.2.Hole.position.1 = {3479.8,8737.6,847.47};
+string  building.remote.handling.Interior.Wall.2.Hole.orientation.1 = "010";
+
+//7th hole
+double building.remote.handling.Interior.Wall.2.Hole.radius.2 = 50.8;
+double building.remote.handling.Interior.Wall.2.Hole.halfLength.2 = 229.; //wall thickness: 228.6
+vector<double> building.remote.handling.Interior.Wall.2.Hole.position.2 = {3479.8,9042.4,847.47};
+string  building.remote.handling.Interior.Wall.2.Hole.orientation.2 = "010";
+
+//8th hole
+double building.remote.handling.Interior.Wall.2.Hole.radius.3 = 50.8;
+double building.remote.handling.Interior.Wall.2.Hole.halfLength.3 = 229.; //wall thickness: 228.6
+vector<double> building.remote.handling.Interior.Wall.2.Hole.position.3 = {3479.8,9347.2,847.47};
+string  building.remote.handling.Interior.Wall.2.Hole.orientation.3 = "010";
+
 
 // Local Variables:
 // mode:c++
