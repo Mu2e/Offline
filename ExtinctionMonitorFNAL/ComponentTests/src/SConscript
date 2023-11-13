@@ -11,7 +11,7 @@ my_libs=['mu2e_ExtinctionMonitorFNAL_Geometry',
          'mu2e_RecoDataProducts',
          'mu2e_DataProducts',
          'mu2e_GeometryService',
-         'mu2e_SeedService_SeedService_service',
+         'mu2e_SeedService',
          'art_Framework_Core',
          'CLHEP']
 

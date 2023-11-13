@@ -18,9 +18,16 @@ mainlib = helper.make_mainlib ( [ 'mu2e_RecoDataProducts',
                                   'mu2e_DataProducts',
                                   'art_Framework_Core',
                                   'art_Framework_Services_Registry',
-                                  'CLHEP',
+                                  'art_Utilities',
+                                  'MF_MessageLogger',
+                                  'fhiclcpp',
+                                  'fhiclcpp_types',
+                                  'tbb',
+                                  'canvas',
                                   'cetlib',
                                   'cetlib_except',
+                                  'CLHEP',
+                                  'boost_filesystem'
                                   ] )
 
 helper.make_plugins( [ mainlib,

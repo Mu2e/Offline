@@ -89,8 +89,6 @@ namespace mu2e {
       _id(unknown){
     }
 
-    virtual ~GenId(){}
-
     bool operator==(const GenId g) const{
       return ( _id == g._id );
     }

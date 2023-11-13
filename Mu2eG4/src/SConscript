@@ -213,9 +213,9 @@ XERCESC_LIBS = [ 'xerces-c' ]
 
 
 mainlib = helper.make_mainlib ( [
-        'mu2e_Mu2eG4Helper_Mu2eG4Helper_service',
         'mu2e_Mu2eG4Helper',
-        'mu2e_SeedService_SeedService_service',
+        'mu2e_Mu2eG4Helper',
+        'mu2e_SeedService',
         'mu2e_Mu2eUtilities',
         'mu2e_GeometryService',
         'mu2e_MCDataProducts',
@@ -268,9 +268,9 @@ mainlib = helper.make_mainlib ( [
 
 helper.make_plugins( [
     mainlib,
-    'mu2e_SeedService_SeedService_service',
+    'mu2e_SeedService',
     'mu2e_Mu2eUtilities',
-    'mu2e_GeometryService_GeometryService_service',
+    'mu2e_GeometryService',
     'mu2e_GeometryService',
     'mu2e_Mu2eHallGeom',
     'mu2e_MCDataProducts',
@@ -281,7 +281,7 @@ helper.make_plugins( [
     'art_Framework_Services_Registry',
     'art_root_io_tfile_support',
     'art_root_io_TFileService',
-    'art_Framework_Services_Optional_RandomNumberGenerator_service',
+    'art_Framework_Services_Optional_RandomNumberGenerator',
     'art_Persistency_Common',
     'art_Persistency_Provenance',
     'art_Utilities',
