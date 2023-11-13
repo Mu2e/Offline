@@ -22,7 +22,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Offline/Mu2eUtilities/inc/MVATools.hh"
 #include "Offline/GeneralUtilities/inc/CombineTwoDPoints.hh"
 // boost
 #include <boost/accumulators/accumulators.hpp>
@@ -36,20 +35,6 @@ using namespace boost::accumulators;
 #include <iostream>
 #include <cfloat>
 #include <list>
-
-namespace {
-
-  struct StereoMVA
-  {
-    StereoMVA() : _pars(4,0.0),_dt(_pars[0]),_chisq(_pars[1]),_rho(_pars[2]),_ndof(_pars[3]){}
-
-    std::vector <float> _pars;
-    float& _dt;
-    float& _chisq;
-    float& _rho;
-    float& _ndof;
-  };
-}
 
 namespace mu2e {
   class MakeStereoHits : public art::EDProducer {
@@ -65,16 +50,13 @@ namespace mu2e {
         fhicl::Atom<float>               maxDPerp { Name("MaxDPerp"),   Comment("maximum perpendicular distance (mm)") };
         fhicl::Atom<float>               maxwdot  { Name("MaxWdot"),   Comment("maximum cos of angle between straws") };
         fhicl::Atom<float>               maxChisq { Name("MaxChisquared"),   Comment("position matching") };
-        fhicl::Atom<float>               minMVA   { Name("MinMVA"),   Comment("MVA cut") };
         fhicl::Atom<float>               uvres    { Name("UVRes"),   Comment("Resolution in U,V (X,Y) plane") };
         fhicl::Atom<float>               minRho   { Name("MinRho"),   Comment("Minimum transverse radius of combination (mm)") };
         fhicl::Atom<float>               maxRho   { Name("MaxRho"),   Comment("Maximum transverse radius of combination (mm)") };
-        fhicl::Atom<bool>                doMVA    { Name("DoMVA"),   Comment("Use MVA") };
         fhicl::Atom<unsigned>            maxfsep  { Name("MaxFaceSeparation"),   Comment("max separation between faces") };
         fhicl::Atom<float>               maxDz    { Name("MaxDz"),   Comment("max Z separation between panels (mm)") };
         fhicl::Atom<bool>                testflag { Name("TestFlag"),   Comment("Test input hit flags") };
         fhicl::Atom<std::string>         smask    { Name("SelectionMask"),   Comment("define the mask to select hits") };
-        fhicl::Table<MVATools::Config>   MVA      { Name("MVA"), Comment("MVA Configuration") };
       };
 
       explicit MakeStereoHits(const art::EDProducer::Table<Config>& config);
@@ -93,17 +75,12 @@ namespace mu2e {
       float         _maxDPerp;   // maximum transverse separation
       float         _maxwdot;    // minimum dot product of straw directions
       float         _maxChisq;   // maximum chisquared to allow making stereo hits
-      float         _minMVA;     // minimum MVA output
       float         _uvvar;      // intrinsic variance in UV plane
       float  _minrho, _maxrho;   // transverse radius range
-      bool          _doMVA;      // do MVA eval or simply use chi2 cut
       unsigned      _maxfsep;    // max face separation
       float         _maxDz;      // max z sepration
       bool          _testflag;   // test the flag or not
       StrawIdMask   _smask;      // mask for combining hits
-
-      MVATools _mvatool;
-      StereoMVA _vmva;
 
       std::array<std::vector<StrawId>,StrawId::_nupanels > _panelOverlap;   // which panels overlap each other
       void genMap();
@@ -120,29 +97,19 @@ namespace mu2e {
     _maxDPerp(config().maxDPerp()),
     _maxwdot(config().maxwdot()),
     _maxChisq(config().maxChisq()),
-    _minMVA(config().minMVA()),
     _uvvar(config().uvres()*config().uvres()),
     _minrho(config().minRho()),
     _maxrho(config().maxRho()),
-    _doMVA(config().doMVA()),
     _maxfsep(config().maxfsep()),
     _maxDz(config().maxDz()),
     _testflag(config().testflag()),
-    _smask(config().smask()),
-    _mvatool(config().MVA())
+    _smask(config().smask())
     {
       consumes<ComboHitCollection>(_chTag);
       produces<ComboHitCollection>();
     }
 
   void MakeStereoHits::beginJob() {
-    if(_doMVA){
-      _mvatool.initMVA();
-      if (_debug > 0){
-        std::cout << "MakeStereoHits MVA parameters: " << std::endl;
-       _mvatool.showMVA();
-      }
-    }
   }
 
   void MakeStereoHits::beginRun(art::Run & run) {
