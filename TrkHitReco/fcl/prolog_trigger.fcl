@@ -43,6 +43,7 @@ TTSmakePH : {
 TTmakeSTH : {
   @table::makeSTH
   TestFlag           : false
+  FilterHits         : true
   ComboHitCollection : "TTmakePH"
 }
 TTflagBkgHits : {

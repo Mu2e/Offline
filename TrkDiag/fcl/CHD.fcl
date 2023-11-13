@@ -3,8 +3,8 @@
 # David Brown (LBNL) 24 Oct. 2019
 #
 #include "Offline/fcl/minimalMessageService.fcl"
-#include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
+#include "Offline/TrkHitReco/fcl/prolog.fcl"
 #include "Offline/TrkDiag/fcl/prolog.fcl"
 
 process_name : ComboHitDiag
@@ -19,6 +19,8 @@ physics : {
       digiDiag : true
     }
   }
+  EndPath : [CHD]
+  RecoPath : [@sequence::TrkHitReco.PrepareHits ]
 }
 services.TimeTracker.printSummary: true
 services.TFileService.fileName: "nts.owner.CHD.version.sequence.root"
