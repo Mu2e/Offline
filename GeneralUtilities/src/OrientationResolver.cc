@@ -52,6 +52,22 @@ namespace mu2e {
       aRotation.rotateX(-2.0*CLHEP::degree);
       return;
     }
+    if ( orient == "a00" ) { // Special +90 x
+      aRotation.rotateX(90.0*CLHEP::degree);
+      //aRotation.rotateX(-2.0*CLHEP::degree);
+      return;
+    }
+   if ( orient == "0a0" ) { // Special +90 y
+      aRotation.rotateY(90.0*CLHEP::degree);
+      //aRotation.rotateX(-2.0*CLHEP::degree);
+      return;
+    }
+   if ( orient == "ab0" ) { // Special +90 y + 13.6deg
+      aRotation.rotateX(-90.0*CLHEP::degree);
+      aRotation.rotateY(-13.6*CLHEP::degree);
+      return;
+    }
+
 
     int uRotNum=0,vRotNum=0,wRotNum=0;
     for ( int iChar = 0; iChar < 3; iChar++ ) {
