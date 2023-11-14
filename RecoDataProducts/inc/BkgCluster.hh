@@ -24,7 +24,6 @@ namespace mu2e
        auto const&                  getDistMethod() const {return _distMethod; }
        auto const&                  flag() const {return _flag; }
        auto const                   pos()  const {return _pos;  }
-       auto const                   weightedPos()  const {return _cpoints.point().pos3();  }
        auto &                       points()  {return _cpoints;  }
        auto const&                  points() const  {return _cpoints;  }
        auto const&                  time() const {return _time; }
