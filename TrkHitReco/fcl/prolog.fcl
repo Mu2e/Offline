@@ -57,12 +57,13 @@ makePH : {
   Unsorted              : false # sim data are sorted, VST currently not
 }
 
-# combine panel hits in a station
+# combine panel hits in a station (or plane)
 makeSTH : {
   module_type           : MakeStereoHits
   # input configuration
   DebugLevel            : 0
   TestFlag              : true
+  FilterHits            : false
   ComboHitCollection    : "makePH"
   StrawHitSelectionBits : ["RadiusSelection","EnergySelection","TimeSelection"]
   StrawHitRejectionBits : []
@@ -71,17 +72,18 @@ makeSTH : {
   MaxDPerp              : 300 # mm
   MaxChisquared         : 20.0
   UVRes                 : 5.0 # intrinsic resolution mm
-  MinRho                : 300 # mm
-  MaxRho                : 800 # mm
-  # MVA parameters
-  DoMVA                 : false
-  MinMVA                : 0.6
-  MVA                   : { MVAWeights : "Offline/TrkHitReco/test/StereoMVA.weights.xml" }
+  MinRho                : 380 # mm
+  MaxRho                : 700 # mm
   # parameters used to define overlapping panels
   MaxWdot               : 0.9
   MaxFaceSeparation     : 3
   MaxDz                 : 100.0 # mm
   SelectionMask         : "station"
+}
+
+# dummy 'stereo' module, used as a placeholder
+dummyMakeSTH : {
+  module_type : RecoNullProducer
 }
 
 # flag hits from low-energy electrons (Compton electrons, delta rays, ...)
@@ -107,10 +109,10 @@ TNTClusterer : {
 }
 
 
-# Now configure the module
+# Background hit flagging
 FlagBkgHits : {
   module_type          : FlagBkgHits
-  ComboHitCollection   : "makePH"
+  ComboHitCollection   : "makeSTH"
   ClusterAlgorithm     : 1
   TNTClustering        : {@table::TNTClusterer}
   MinActiveHits        : 3
@@ -120,35 +122,25 @@ FlagBkgHits : {
   BackgroundMask       : ["Background"]
   OutputLevel          : "uniquepanel"
   SaveBkgClusters      : false
-  KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiagPanelSpatial.dat"
+  KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiagStationSpatial.dat"
   KerasQuality         : 0.5
   DebugLevel           : 0
-}
-
-
-SFlagBkgHits : {
-  @table::FlagBkgHits
-  ComboHitCollection : "makeSTH"
-  OutputLevel        : "station"
-  KerasWeights       : "Offline/TrkHitReco/data/TrainBkgDiagStationDist.dat"
 }
 
 # combine together
 TrkHitReco : {
   producers : {
     # normal reco
-    PBTFSD       : { @table::PBTFSD       }
+    PBTFSD        : { @table::PBTFSD       }
     makeSH        : { @table::makeSH       }
     makePH        : { @table::makePH       }
     makeSTH       : { @table::makeSTH      }
     FlagBkgHits   : { @table::FlagBkgHits  }
-    SFlagBkgHits  : { @table::SFlagBkgHits }
   }
 
   # SEQUENCES
   # production sequence to prepare hits for tracking
-  PrepareHits  : [ PBTFSD, makeSH, makePH, FlagBkgHits ]
-  SPrepareHits : [ PBTFSD, makeSH, makePH, makeSTH, SFlagBkgHits ]
+  PrepareHits  : [ PBTFSD, makeSH, makePH, makeSTH, FlagBkgHits ]
 }
 
 END_PROLOG

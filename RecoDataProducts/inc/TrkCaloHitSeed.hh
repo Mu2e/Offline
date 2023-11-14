@@ -19,12 +19,12 @@ namespace mu2e {
 
     // KinKal constructor
     TrkCaloHitSeed(art::Ptr<CaloCluster>const& cluster, StrawHitFlag const& flag,
-        Float_t cdepth,
+        Float_t cdepth, Float_t trkdepth,
         KinKal::ClosestApproachData const& rptca,
         KinKal::ClosestApproachData const& uptca,
         KinKal::Residual const& tresid,
         KinKal::VEC3 const& tmom) : _cluster(cluster),_flag(flag),
-    _cdepth(cdepth),
+    _cdepth(cdepth),_trkdepth(trkdepth),
     _rdoca(rptca.doca()), _rptoca(rptca.particlePoca().T()), _rtocavar(rptca.tocaVar()), _rdt(rptca.deltaT()),
     _udoca(uptca.doca()), _uptoca(uptca.particlePoca().T()), _utocavar(uptca.tocaVar()), _udt(uptca.deltaT()),
     _tresid(tresid.value()), _tresidmvar(tresid.measurementVariance()), _tresidpvar(tresid.parameterVariance()),
@@ -34,7 +34,7 @@ namespace mu2e {
     // Legacy constructor for BTrk
     TrkCaloHitSeed(HitT0 const& t0, Float_t trklen, Float_t hitlen, Float_t cdoca, Float_t rerr,
         Float_t time, Float_t terr, XYZVectorF const& cpos, XYZVectorF const& tmom, StrawHitFlag const& flag) :
-      _flag(flag), _cdepth(0),
+      _flag(flag), _cdepth(0), _trkdepth(0),
       _rdoca(cdoca), _rptoca(0), _rtocavar(0), _rdt(0),
       _udoca(cdoca), _uptoca(0), _utocavar(0), _udt(0),
       _tresid(0), _tresidmvar(0), _tresidpvar(0),
@@ -56,7 +56,8 @@ namespace mu2e {
     //
     art::Ptr<CaloCluster> _cluster; // cluster this hit is based on
     StrawHitFlag          _flag;          // flag describing the status of this hit (active, ....)
-    Float_t               _cdepth =0;   // depth along the particle from the disk front face
+    Float_t               _cdepth =0;   // distance along the crystal axis from POCA to the SiPM
+    Float_t               _trkdepth =0;   // cdepth projected along the track direction
     Float_t               _rdoca =0;          // reference  DOCA from the track to the cluster axis, signed by the angular momentum WRT the wire
     Float_t               _rptoca =0;          // reference  particle TOCA at POCA
     Float_t               _rtocavar =0;      // reference  variance on TOCA
