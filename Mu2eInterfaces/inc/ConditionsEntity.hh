@@ -16,9 +16,7 @@ namespace mu2e
   {
   public:
     ConditionsEntity() {}
-    virtual ~ConditionsEntity();
-    ConditionsEntity(const ConditionsEntity&);
-    ConditionsEntity& operator=(const ConditionsEntity &);
+    virtual ~ConditionsEntity() = default;
   };
 }
 

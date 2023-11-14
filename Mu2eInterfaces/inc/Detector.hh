@@ -17,9 +17,7 @@ namespace mu2e
   {
   public:
     Detector() {}
-    virtual ~Detector();
-    Detector(const Detector&);
-    Detector& operator=(const Detector &);
+    virtual ~Detector() = default;
   };
 }
 
