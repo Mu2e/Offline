@@ -73,12 +73,20 @@ mf_interactive :
 {
   destinations :
   {
-    log:      @local::mf_coutInfo  # a destination which will react to
+    log: {
+      @table::mf_coutInfo  # a destination which will react to
                                    # messages of ERROR or WARNING or
                                    # INFO severity, but not DEBUG severity                                      # LogPrint).
                                    # (INFO severity is LogInfo or
                                    # LogVerbatim).
-  }
+     categories : {
+       INFO : {
+         limit : 1
+         reportEvery : 1
+       }
+     }
+   }
+ }
 }
 
 # debugging -- intended for debugging one or more modules; every message
