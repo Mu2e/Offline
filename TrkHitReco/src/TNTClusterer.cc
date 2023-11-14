@@ -115,7 +115,6 @@ namespace mu2e
       clusters[ic].clearHits();
     }
 
-    //int method = distMethod_;
     int ditime(int(maxHitdt_/tbin_));
     unsigned nchanged(0);
     for (size_t ihit=0;ihit<BkgHits.size();++ihit) {
@@ -143,6 +142,8 @@ namespace mu2e
           if (dist < mindist) {mindist = dist;minc = ic;}
         }
       }
+
+      // -- either add hit to existing cluster, form new cluster, or do nothing if hit is "in between"
       if (mindist < dhit_) {
         clusters[minc].addHit(ihit);
         clusters[minc].points().addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),clusters[minc].points().nPoints());
