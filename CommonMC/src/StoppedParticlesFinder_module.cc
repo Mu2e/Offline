@@ -213,7 +213,7 @@ namespace mu2e {
     for(const auto& i : *ih) {
       const SimParticle& particle = i.second;
       if(verbosityLevel_ > 3) {
-	std::cout <<  "STAGE " << particle.simStage() << " vs " << simStageThreshold_ << " pid=" <<particle.pdgId() << 
+          std::cout <<  "STAGE " << particle.simStage() << " vs " << simStageThreshold_ << " pid=" <<particle.pdgId() <<
 	  " stopcode=" << particle.stoppingCode().id() << " name=" <<  particle.stoppingCode().name() << std::endl;
       }
       if(particle.simStage() >= simStageThreshold_) {
