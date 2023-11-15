@@ -140,6 +140,8 @@ mf_coutInfo:
    COSMIC_STEPPOINTS : { limit : 0 }
    Summary : { limit : 0 }
    INFO : { limit : 0 }
+   GenEventCount        : { limit : 1   reportEvery : 1 }
+   GenEventCountSummary : { limit : 1   reportEvery : 1 }
  } # end categories
 } # end mf_coutInfo
 
