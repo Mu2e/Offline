@@ -140,9 +140,8 @@ namespace mu2e {
   }
 
   //================================================================
-  double AntiProtonGun::zLambda(double *val, double *par) {
+  double AntiProtonGun::zLambda(double *val, double *) {
 
-    par = 0;
     double kLambda = 99.4;
     double kTgtHL = 80.0;
     double value=1/kLambda*exp(-(kTgtHL-val[0])/kLambda);
@@ -179,9 +178,8 @@ namespace mu2e {
   } // plmax
 
   //================================================================
-  double AntiProtonGun::dsigma(double *val, double *parm) {
+  double AntiProtonGun::dsigma(double *val, double *) {
 
-    parm=0;
     double x=1.9;
     double total=0;
     double theta=val[0];

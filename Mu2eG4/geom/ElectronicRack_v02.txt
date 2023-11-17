@@ -1,0 +1,8 @@
+#include "Offline/Mu2eG4/geom/ElectronicRack_v01.txt"
+
+int ElectronicRack.nRackType2 = 0;  // Electronics "board" for STM
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
