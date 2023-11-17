@@ -784,6 +784,7 @@ namespace mu2e{
             }
       break;
     }
+    break;
     case kC_COMMAND:
       switch (GET_SUBMSG(msg))
       {

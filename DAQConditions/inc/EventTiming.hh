@@ -42,7 +42,7 @@ namespace mu2e {
       _onSpillBins(onSpillBins),
       _onSpillMaxLength(onSpillMaxLength){}
 
-    virtual ~EventTiming() {}
+    virtual ~EventTiming() = default;
 
     double systemClockSpeed() const { return _systemClockSpeed; }
     double timeFromProtonsToDRMarker() const { return _timeFromProtonsToDRMarker; }
