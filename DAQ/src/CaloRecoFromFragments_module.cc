@@ -192,7 +192,7 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
 
       bool err = false;
       for (unsigned int hitIdx = 0; hitIdx < calHitDataVec->size(); hitIdx++) {
-        std::pair<mu2e::CalorimeterDataDecoder::CalorimeterHitDataPacket, std::vector<uint16_t>>  calData = calHitDataVec->at(hitIdx); 
+        std::pair<mu2e::CalorimeterDataDecoder::CalorimeterHitDataPacket, std::vector<uint16_t>>  calData = calHitDataVec->at(hitIdx);
           // Fill the CaloDigiCollection
 
           if (diagLevel_ > 0) {
