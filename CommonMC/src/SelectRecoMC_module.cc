@@ -43,8 +43,8 @@
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 // C++
 #include <vector>
@@ -177,8 +177,7 @@ namespace mu2e {
     }
 
   void SelectRecoMC::produce(art::Event& event) {
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
-    _mbtime = accPar->deBuncherPeriod;
+    _mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
     auto pph = event.getValidHandle<PrimaryParticle>(_pp);
     auto const& pp = *pph;
     auto pbtmc = event.getValidHandle<ProtonBunchTimeMC>(_pbtmc);
