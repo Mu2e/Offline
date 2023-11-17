@@ -5,9 +5,8 @@
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloTrigSeed.hh"
 
@@ -101,8 +100,7 @@ namespace mu2e {
 
     if (diagLevel_ > 0) std::cout<<"[CaloTrigSeed::produce] begin"<<std::endl;
 
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
-    mbtime_ = accPar->deBuncherPeriod;
+    mbtime_ = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
     if (diagLevel_ > 1) std::cout<<"Debuncher time: " << mbtime_ << std::endl;
 
     //Get the calorimeter Digis

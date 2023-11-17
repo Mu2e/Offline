@@ -19,7 +19,6 @@
 
 // Calibration entities.
 // Would like to break the coupling to these.
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/ConditionsService/inc/ExtMonFNALConditions.hh"
 
@@ -81,11 +80,8 @@ namespace mu2e {
     checkConsistency();
 
     // Can we break the coupling to the entities?
-    std::unique_ptr<AcceleratorParams>  acctmp(new AcceleratorParams(_config));
-    const AcceleratorParams& accp = *acctmp;
-    addEntity( std::move(acctmp) );
     addEntity( std::unique_ptr<CalorimeterCalibrations>( new CalorimeterCalibrations(_config)) );
-    addEntity( std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config)) );
+    addEntity( std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(_config)) );
   }
 
   // Check that the configuration is self consistent.
