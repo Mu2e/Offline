@@ -56,13 +56,13 @@ using timestamp = uint64_t;
 struct DataBlockHeader // From mu2e_pcie_utils mu2e_mmap_ioctl.h TODO: Use DTC_DataHeaderPacket instead!
 {
 	uint16_t TransferByteCount;  ///< Block Byte count
-
+	
 	uint16_t Resv1 : 4;        ///< Reserved
 	uint16_t PacketType : 4;   ///< Type of packet
 	uint16_t LinkID : 4;       ///< Link ID of packet
 	uint16_t SubsystemID : 3;  ///< Subsystem ID
 	uint16_t Valid : 1;        ///< Is the packet valid?
-
+	
 	uint16_t PacketCount : 11;     ///< Packet count requested
 	uint16_t Resv2 : 5;            ///< Reserved
 	uint16_t ts10;                 ///< Timestamp bytes 1 and 2 (Least significant)
