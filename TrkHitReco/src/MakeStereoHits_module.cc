@@ -12,8 +12,6 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art_root_io/TFileService.h"
 
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -22,7 +20,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Offline/GeneralUtilities/inc/CombineTwoDPoints.hh"
+#include "Offline/TrkHitReco/inc/CombineStereoPoints.hh"
 // boost
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
@@ -86,7 +84,7 @@ namespace mu2e {
 
       std::array<std::vector<StrawId>,StrawId::_nupanels > _panelOverlap;   // which panels overlap each other
       void genMap();
-      void fillComboHit(ComboHit& ch, CombineTwoDPoints const& cpts, ComboHitCollection const& inchcol) const;
+      void fillComboHit(ComboHit& ch, CombineStereoPoints const& cpts, ComboHitCollection const& inchcol) const;
   };
 
   MakeStereoHits::MakeStereoHits(const art::EDProducer::Table<Config>& config) :
@@ -156,8 +154,8 @@ namespace mu2e {
       ComboHit combohit;
       combohit._sid = _smask.maskStrawId(ch1.strawId());
       // create a combiner seeded on this hit
-      CombineTwoDPoints cpts(_uvvar);
-      cpts.addPoint(TwoDPoint(ch1.pos(),ch1.uDir(),ch1.uVar(),ch1.vVar()),ihit);
+      CombineStereoPoints cpts(_uvvar);
+      cpts.addPoint(StereoPoint(ch1.pos(),ch1.uDir(),ch1.uVar(),ch1.vVar()),ihit);
       if( (!_testflag) ||( ch1.flag().hasAllProperties(_shsel) && (!ch1.flag().hasAnyProperty(_shrej))) ){
         // loop over the panels which overlap this hit's panel
         for (auto sid : _panelOverlap[ch1.strawId().uniquePanel()]) {
@@ -176,13 +174,13 @@ namespace mu2e {
                 if(_debug > 4) std::cout << " dperp = " << dperp;
                 if (dperp < _maxDPerp ) {
                   // compute chisq WRT this point
-                  TwoDPoint twodpt(ch2.pos(),ch2.uDir(),ch2.uVar(),ch2.vVar());
+                  StereoPoint twodpt(ch2.pos(),ch2.uDir(),ch2.uVar(),ch2.vVar());
                   double dchi2 = cpts.dChi2(twodpt);
                   if(_debug > 3) std::cout << " dchisq = " << dchi2;
                   if(dchi2 < _maxChisq){
                     // provisionally add this hit
                     cpts.addPoint(twodpt,jhit);
-                    auto rho = cpts.point().pos2().R();
+                    auto rho = cpts.point().point().pos2().R();
                     if(_debug > 4) std::cout << " rho = " << rho << std::endl;
                     if(rho < _maxrho && rho > _minrho ){
                       if(_debug > 3) std::cout << " added index";
@@ -221,7 +219,7 @@ namespace mu2e {
     event.put(std::move(chcol));
   }
 
-  void MakeStereoHits::fillComboHit(ComboHit& combohit, CombineTwoDPoints const& cpts, ComboHitCollection const& inchcol) const {
+  void MakeStereoHits::fillComboHit(ComboHit& combohit, CombineStereoPoints const& cpts, ComboHitCollection const& inchcol) const {
     if(_debug > 1){
       std::cout << "Combining " << cpts.nPoints() << " hits" << std::endl;
     }
@@ -259,8 +257,8 @@ namespace mu2e {
     }
     // fill position and variance from combined info
     auto const& pt = cpts.point();
-    auto uvres = pt.uvRes();
-    combohit._pos = pt.pos3(zsum/wtsum);
+    auto uvres = pt.point().uvRes();
+    combohit._pos = pt.point().pos3(zsum/wtsum);
     combohit._udir = XYZVectorF(uvres.udir_.X(),uvres.udir_.Y(),0.0);
     combohit._vdir = XYZVectorF(-uvres.udir_.Y(),uvres.udir_.X(),0.0);
     combohit._ures = uvres.ures_;

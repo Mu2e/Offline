@@ -35,8 +35,8 @@ namespace mu2e {
     auto const& wdir() const { return _udir; } // legacy function
     // in UVW coordinate system
     auto const& uDir() const { return _udir; } // along wire
-    auto const& vDir() const { return _vdir; } // perp to wire and Z
-    auto wDir() const { return XYZVectorF(0.0,0.0,1.0); }
+    auto const& vDir() const { return _vdir; } // perp to wire
+    auto wDir() const { return _udir.Cross(_vdir); } // propagation direction (generally z)
     auto centerPos() const { return _pos - _wdist*_udir; }
 //
     float posRes(edir dir) const;
