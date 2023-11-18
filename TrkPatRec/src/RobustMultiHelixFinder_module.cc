@@ -30,29 +30,30 @@ namespace {
   {
     using artCptr = art::Ptr<mu2e::CaloCluster>;
 
-    CandHelix() : nsh_(0), x_(0), y_(0),r_(0),fita_zp_(0),fitb_zp_(0),fita_zt_(0),fitb_zt_(0),caloPtr_{} {} ;
+    CandHelix() : nStrawHits_(0),x_(0),y_(0),r_(0),fita_zp_(0),fitb_zp_(0),fita_zt_(0),fitb_zt_(0),caloPtr_{} {};
 
-    CandHelix(int nsh, float x, float y, float r, const std::vector<unsigned>& hits, artCptr& caloPtr) :
-       nsh_(nsh), x_(x), y_(y),r_(r), fita_zp_(0),fitb_zp_(0),fita_zt_(0),fitb_zt_(0),hits_(hits),caloPtr_(caloPtr)
-    {hits_.reserve(32);};
+    CandHelix(int nsh, float x, float y, float r, const std::vector<size_t>& hitIdxs, artCptr& caloPtr) :
+       nStrawHits_(nsh), x_(x), y_(y),r_(r), fita_zp_(0),fitb_zp_(0),fita_zt_(0),fitb_zt_(0),
+       hitIndices_(hitIdxs),caloPtr_(caloPtr)
+    {hitIndices_.reserve(32);};
 
-    void remove(int it, unsigned weight) {hits_.erase(hits_.begin()+it); nsh_ -= weight;}
+    void remove(unsigned it, unsigned weight) {hitIndices_.erase(hitIndices_.begin()+it); nStrawHits_ -= weight;}
 
-    unsigned              nsh_;
+    unsigned              nStrawHits_;
     float                 x_,y_,r_,fita_zp_,fitb_zp_,fita_zt_,fitb_zt_;
-    std::vector<unsigned> hits_;
-    artCptr               caloPtr_;
+    std::vector<size_t>   hitIndices_;  //combo hit indices for the helix candidate
+    artCptr caloPtr_;
   };
 
   struct LSFitter
   {
-       LSFitter() : sn_(0),sx_(0),sx2_(0),sy_(0),sxy_(0) {};
+    LSFitter() : sn_(0),sx_(0),sx2_(0),sy_(0),sxy_(0) {};
 
-       float fa() {return fabs(sn_*sx2_-sx_*sx_)>1e-6 ? (sn_*sxy_-sx_*sy_) /(sn_*sx2_-sx_*sx_) : 0.0;}
-       float fb() {return fabs(sn_*sx2_-sx_*sx_)>1e-6 ? (sy_*sx2_-sx_*sxy_)/(sn_*sx2_-sx_*sx_) : 0.0;}
-       void  add(float x, float y, float w=1.0) {sx_+=x*w; sx2_+=x*x*w; sy_+=y*w; sxy_+=x*y*w; sn_+=w;}
+    float fa()  {return fabs(sn_*sx2_-sx_*sx_)>1e-6 ? (sn_*sxy_-sx_*sy_) /(sn_*sx2_-sx_*sx_) : 0.0;}
+    float fb()  {return fabs(sn_*sx2_-sx_*sx_)>1e-6 ? (sy_*sx2_-sx_*sxy_)/(sn_*sx2_-sx_*sx_) : 0.0;}
+    void  add(float x, float y, float w=1.0) {sx_+=x*w; sx2_+=x*x*w; sy_+=y*w; sxy_+=x*y*w; sn_+=w;}
 
-       float sn_,sx_,sx2_,sy_,sxy_;
+    float sn_,sx_,sx2_,sy_,sxy_;
   };
 }
 
@@ -68,38 +69,39 @@ namespace mu2e {
       using Config_types    = RobustMultiHelixFinderTypes::Config ;
       using Data_types      = RobustMultiHelixFinderTypes::Data_t;
 
+      enum circleFitter {NoChoice, HyperFit, ChiSquared};
+
       struct Config
       {
-         using Name = fhicl::Name;
-         using Comment = fhicl::Comment;
+        using Name = fhicl::Name;
+        using Comment = fhicl::Comment;
 
-         fhicl::Atom<art::InputTag> comboHitCollection    {Name("ComboHitCollection"),     Comment("ComboHit collection {Name")    };
-         fhicl::Atom<art::InputTag> timeClusterCollection {Name("TimeClusterCollection"),  Comment("TimeCluster collection {Name") };
-         fhicl::Sequence<int>       helicities            {Name("Helicities"),             Comment("Helicity values") };
-         fhicl::Atom<float>         clusteringPhiBin      {Name("ClusteringPhiBin"),       Comment("Compton clustering phi bin ") };
-         fhicl::Atom<float>         clusteringMinBin      {Name("ClusteringMinBin"),       Comment("Minimum bin content for a Compton cluster") };
-         fhicl::Atom<float>         minDRCircle           {Name("MinDRCircle"),            Comment("Maximum radial distance between circle and hit") };
-         fhicl::Atom<float>         minRadCircle          {Name("MinRadCircle"),           Comment("Minimum circle radius") };
-         fhicl::Atom<float>         maxRadCircle          {Name("MaxRadCircle"),           Comment("Maximum circle radius") };
-         fhicl::Atom<float>         minDXY2Circle         {Name("MinDXY2Circle"),          Comment("Minimum XY distance between hits for circle fit") };
-         fhicl::Atom<float>         maxDXY2Circle         {Name("MaxDXY2Circle"),          Comment("Maximum XY distance between hits for circle fit") };
-         fhicl::Atom<bool>          targetCon             {Name("TargetCon"),              Comment("Require track to be produced in target") };
-         fhicl::Atom<float>         targetRadius          {Name("TargetRadius"),           Comment("Target radius") };
-         fhicl::Atom<float>         ccMinEnergy           {Name("CaloClusterMinE"),        Comment("Minimum calo cluster energy") };
-         fhicl::Atom<int>           ccWeight              {Name("CaloClusterWeight"),      Comment("Calo cluster weight ") };
-         fhicl::Atom<float>         minDPDZSlope          {Name("MinDPDZSlope"),           Comment("Minimum dz/dphi slope for track") };
-         fhicl::Atom<float>         maxDPDZSlope          {Name("MaxDPDZSlope"),           Comment("Maximum dz/dphi slope for track") };
-         fhicl::Atom<float>         DPDZStep              {Name("DPDZStep"),               Comment("Step in dz/dphi scan for dz/dp fit init ") };
-         fhicl::Atom<float>         maxDPhiHelInit        {Name("MaxDPhiHelInit"),         Comment("Maximum phi difference between hit and dz/dphi line init fit") };
-         fhicl::Atom<float>         maxDPhiHelFit         {Name("MaxDPhiHelFit"),          Comment("Maximum phi difference between hit and dz/dphi line") };
-         fhicl::Atom<float>         maxDTHelFit           {Name("MaxDTHelFit"),            Comment("Maximum time difference between hit time and z-time fit") };
-         fhicl::Atom<float>         maxChi2Hit            {Name("MaxChi2Hit"),             Comment("Maximum chi2 for a hit to be associated to the helix") };
-         fhicl::Atom<float>         minDZTrk              {Name("MinDZTrk"),               Comment("Minimum z span of a trk") };
-         fhicl::Atom<int>           fitCircleAlg          {Name("FitCircleAlgorithm"),     Comment("Fit Circle algorhithm 1=Algebraic  otherwise Chi2") };
-         fhicl::Atom<unsigned>      minStrawHits          {Name("MinStrawHits"),           Comment("Minimum number of Straw hits for a helix candidate") };
-         fhicl::Atom<unsigned>      nMaxTrkIter           {Name("NMaxTrkIter"),            Comment("Number of track finding iterations ") };
-         fhicl::Atom<int>           diagLevel             {Name("DiagLevel"),              Comment("Diag level"), 0 };
-         fhicl::Table<Config_types> diagPlugin            {Name("DiagPlugin"),             Comment("Diag Plugin config")};
+        fhicl::Atom<art::InputTag> comboHitCollection    {Name("ComboHitCollection"),     Comment("ComboHit collection {Name")    };
+        fhicl::Atom<art::InputTag> timeClusterCollection {Name("TimeClusterCollection"),  Comment("TimeCluster collection {Name") };
+        fhicl::Sequence<int>       helicities            {Name("Helicities"),             Comment("Helicity values") };
+        fhicl::Atom<float>         clusteringPhiBin      {Name("ClusteringPhiBin"),       Comment("Compton clustering phi bin ") };
+        fhicl::Atom<float>         clusteringMinBin      {Name("ClusteringMinBin"),       Comment("Minimum bin content for a Compton cluster") };
+        fhicl::Atom<float>         minDRCircle           {Name("MinDRCircle"),            Comment("Maximum radial distance between circle and hit") };
+        fhicl::Atom<float>         minRadCircle          {Name("MinRadCircle"),           Comment("Minimum circle radius") };
+        fhicl::Atom<float>         maxRadCircle          {Name("MaxRadCircle"),           Comment("Maximum circle radius") };
+        fhicl::Atom<float>         minDXY2Circle         {Name("MinDXY2Circle"),          Comment("Minimum XY distance between hits for circle fit") };
+        fhicl::Atom<bool>          targetCon             {Name("TargetCon"),              Comment("Require track to be produced in target") };
+        fhicl::Atom<float>         targetRadius          {Name("TargetRadius"),           Comment("Target radius") };
+        fhicl::Atom<float>         ccMinEnergy           {Name("CaloClusterMinE"),        Comment("Minimum calo cluster energy") };
+        fhicl::Atom<int>           ccWeight              {Name("CaloClusterWeight"),      Comment("Calo cluster weight ") };
+        fhicl::Atom<float>         minDPDZSlope          {Name("MinDPDZSlope"),           Comment("Minimum dz/dphi slope for track") };
+        fhicl::Atom<float>         maxDPDZSlope          {Name("MaxDPDZSlope"),           Comment("Maximum dz/dphi slope for track") };
+        fhicl::Atom<float>         DPDZStep              {Name("DPDZStep"),               Comment("Step in dz/dphi scan for dz/dp fit init ") };
+        fhicl::Atom<float>         maxDPhiHelInit        {Name("MaxDPhiHelInit"),         Comment("Maximum phi difference between hit and dz/dphi line init fit") };
+        fhicl::Atom<float>         maxDPhiHelFit         {Name("MaxDPhiHelFit"),          Comment("Maximum phi difference between hit and dz/dphi line") };
+        fhicl::Atom<float>         maxDTHelFit           {Name("MaxDTHelFit"),            Comment("Maximum time difference between hit time and z-time fit") };
+        fhicl::Atom<float>         maxChi2Hit            {Name("MaxChi2Hit"),             Comment("Maximum chi2 for a hit to be associated to the helix") };
+        fhicl::Atom<float>         minDZTrk              {Name("MinDZTrk"),               Comment("Minimum z span of a trk") };
+        fhicl::Atom<std::string>   fitCircleStr          {Name("FitCircleStrategy"),      Comment("Fit Circle algorhithm HyperFit or ChiSquared") };
+        fhicl::Atom<unsigned>      minStrawHits          {Name("MinStrawHits"),           Comment("Minimum number of Straw hits for a helix candidate") };
+        fhicl::Atom<unsigned>      nMaxTrkIter           {Name("NMaxTrkIter"),            Comment("Number of track finding iterations ") };
+        fhicl::Atom<int>           diagLevel             {Name("DiagLevel"),              Comment("Diag level"), 0 };
+        fhicl::Table<Config_types> diagPlugin            {Name("DiagPlugin"),             Comment("Diag Plugin config")};
       };
       explicit RobustMultiHelixFinder(const art::EDProducer::Table<Config>& config);
       virtual void produce(art::Event& event);
@@ -115,7 +117,6 @@ namespace mu2e {
       float                                          minRadCircle_;
       float                                          maxRadCircle_;
       float                                          minDXY2Circle_;
-      float                                          maxDXY2Circle_;
       bool                                           targetCon_;
       float                                          targetRadius_;
       float                                          ccMinEnergy_;
@@ -128,7 +129,7 @@ namespace mu2e {
       float                                          maxDTHelFit_;
       float                                          maxChi2Hit_;
       float                                          minDZTrk_;
-      int                                            fitCircleAlg_;
+      circleFitter                                   fitCircleStrategy_;
       unsigned                                       minStrawHits_;
       unsigned                                       nMaxTrkIter_;
       const Calorimeter*                             cal_;
@@ -167,49 +168,50 @@ namespace mu2e {
 
   RobustMultiHelixFinder::RobustMultiHelixFinder(const art::EDProducer::Table<Config>& config):
     art::EDProducer{config},
-    chToken_       {consumes<ComboHitCollection>(config().comboHitCollection())},
+    chToken_       {consumes<ComboHitCollection>   (config().comboHitCollection())},
     tcToken_       {consumes<TimeClusterCollection>(config().timeClusterCollection())},
-    clusteringPhiBin_(config().clusteringPhiBin()),
-    clusteringMinBin_(config().clusteringMinBin()),
-    minDR2Circle_    (config().minDRCircle()*config().minDRCircle()),
-    minRadCircle_    (config().minRadCircle()),
-    maxRadCircle_    (config().maxRadCircle()),
-    minDXY2Circle_   (config().minDXY2Circle()),
-    maxDXY2Circle_   (config().maxDXY2Circle()),
-    targetCon_       (config().targetCon()),
-    targetRadius_    (config().targetRadius()),
-    ccMinEnergy_     (config().ccMinEnergy()),
-    ccWeight_        (config().ccWeight()),
-    minDPDZSlope_    (config().minDPDZSlope()),
-    maxDPDZSlope_    (config().maxDPDZSlope()),
-    DPDZStep_        (config().DPDZStep()),
-    MaxDPhiHelInit_  (config().maxDPhiHelInit()),
-    maxDPhiHelFit_   (config().maxDPhiHelFit()),
-    maxDTHelFit_     (config().maxDTHelFit()),
-    maxChi2Hit_      (config().maxChi2Hit()),
-    minDZTrk_        (config().minDZTrk()),
-    fitCircleAlg_    (config().fitCircleAlg()),
-    minStrawHits_    (std::max(config().minStrawHits(),3u)),
-    nMaxTrkIter_     (config().nMaxTrkIter()),
-    iev_             (0),
-    diag_            (config().diagLevel()),
+    clusteringPhiBin_ (config().clusteringPhiBin()),
+    clusteringMinBin_ (config().clusteringMinBin()),
+    minDR2Circle_     (config().minDRCircle()*config().minDRCircle()),
+    minRadCircle_     (config().minRadCircle()),
+    maxRadCircle_     (config().maxRadCircle()),
+    minDXY2Circle_    (config().minDXY2Circle()),
+    targetCon_        (config().targetCon()),
+    targetRadius_     (config().targetRadius()),
+    ccMinEnergy_      (config().ccMinEnergy()),
+    ccWeight_         (config().ccWeight()),
+    minDPDZSlope_     (config().minDPDZSlope()),
+    maxDPDZSlope_     (config().maxDPDZSlope()),
+    DPDZStep_         (config().DPDZStep()),
+    MaxDPhiHelInit_   (config().maxDPhiHelInit()),
+    maxDPhiHelFit_    (config().maxDPhiHelFit()),
+    maxDTHelFit_      (config().maxDTHelFit()),
+    maxChi2Hit_       (config().maxChi2Hit()),
+    minDZTrk_         (config().minDZTrk()),
+    fitCircleStrategy_(circleFitter::NoChoice),
+    minStrawHits_     (std::max(config().minStrawHits(),3u)),
+    nMaxTrkIter_      (config().nMaxTrkIter()),
+    iev_              (0),
+    diag_             (config().diagLevel()),
     diagTool_(),
     data_()
   {
-     std::vector<int> helvals = config().helicities();
-     for (auto hv : helvals) {
-       Helicity hel(hv);
-       hels_.emplace_back(hel);
-       produces<HelixSeedCollection>(Helicity::name(hel));
-     }
+    std::vector<int> helvals = config().helicities();
+    for (const auto& hv : helvals) {
+      Helicity hel(hv);
+      hels_.emplace_back(hel);
+      produces<HelixSeedCollection>(Helicity::name(hel));
+    }
+    if (diag_) diagTool_ = art::make_tool<ModuleHistToolBase>(config().diagPlugin," ");
 
-     if (diag_) diagTool_ = art::make_tool<ModuleHistToolBase>(config().diagPlugin," ");
+    if      (config().fitCircleStr()=="HyperFit")   fitCircleStrategy_ = circleFitter::HyperFit;
+    else if (config().fitCircleStr()=="ChiSquared") fitCircleStrategy_ = circleFitter::ChiSquared;
+    else    throw cet::exception("CATEGORY")<< "RobustMultiHelixFinder: unrecognixed FitCirclestrategy specified";
   }
 
 
   //--------------------------------------------------------------------------------------------------------------
-  void RobustMultiHelixFinder::beginJob()
-  {
+  void RobustMultiHelixFinder::beginJob(){
     if (diag_){
        art::ServiceHandle<art::TFileService> tfs;
        diagTool_->bookHistograms(tfs);
@@ -220,18 +222,18 @@ namespace mu2e {
   //---------------------------------------------------------------------------------------------------------------------------
   void RobustMultiHelixFinder::produce(art::Event& event )
   {
-     if (diag_>0) std::cout<<"Event "<<event.id().event()<<std::endl;
-     iev_ = event.id().event();
+    if (diag_>0) std::cout<<"Event "<<event.id().event()<<std::endl;
+    iev_ = event.id().event();
 
-     const auto& tcH = event.getValidHandle(tcToken_);
-     const auto& chH = event.getValidHandle(chToken_);
+    const auto& tcH = event.getValidHandle(tcToken_);
+    const auto& chH = event.getValidHandle(chToken_);
 
-     mapHelix helcols;
-     for (const auto& hel : hels_) helcols[hel] = std::unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
+    mapHelix helcols;
+    for (const auto& hel : hels_) helcols[hel] = std::unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
 
-     findAllHelices(event, helcols,tcH, chH);
+    findAllHelices(event, helcols,tcH, chH);
 
-     for (const auto& hel : hels_) event.put(std::move(helcols[hel]),Helicity::name(hel));
+    for (const auto& hel : hels_) event.put(std::move(helcols[hel]),Helicity::name(hel));
   }
 
 
@@ -248,7 +250,7 @@ namespace mu2e {
 
     if (diag_) {data_.reset(); data_.event_=&event; data_.chcol_ = &chcol;}
 
-    for (size_t index=0;index<tccol.size();++index){
+    for (size_t index=0;index<tccol.size();++index) {
       const auto tcArtPtr = art::Ptr<TimeCluster>(tcH,index);
       const auto& tc = tccol[index];
       findHelicesInTC(helcols,tcArtPtr,tc,chcol);
@@ -257,13 +259,12 @@ namespace mu2e {
     filterDuplicateHelices(*helcols[Helicity::poshel]);
     filterDuplicateHelices(*helcols[Helicity::neghel]);
 
-    if (diag_){
+    if (diag_) {
       fillDiag(helcols,chcol);
       diagTool_->fillHistograms(&data_);
       if (diag_>2) for (const auto& hel : *helcols[Helicity::poshel]) printHelix(hel);
       if (diag_>2) for (const auto& hel : *helcols[Helicity::neghel]) printHelix(hel);
     }
-
   }
 
 
@@ -320,28 +321,27 @@ namespace mu2e {
 
 
       // pick the best helix
-      const Helicity bestHelicity = poshelix.nsh_ >= neghelix.nsh_ ? Helicity::poshel: Helicity::neghel;
-      CandHelix& bestHelix        = poshelix.nsh_ >= neghelix.nsh_ ? poshelix : neghelix;
-      for (const auto& ich : bestHelix.hits_) usedHits.push_back(ich);
-      if (bestHelix.nsh_ < minStrawHits_) continue;
+      const Helicity bestHelicity = poshelix.nStrawHits_ >= neghelix.nStrawHits_ ? Helicity::poshel: Helicity::neghel;
+      CandHelix& bestHelix        = poshelix.nStrawHits_ >= neghelix.nStrawHits_ ? poshelix : neghelix;
+      for (const auto& ich : bestHelix.hitIndices_) usedHits.push_back(ich);
+      if (bestHelix.nStrawHits_ < minStrawHits_) continue;
 
 
       // other criteria to reject fake helices
-      float deltaZ = chcol[bestHelix.hits_.back()].pos().z() - chcol[bestHelix.hits_.front()].pos().z();
+      float deltaZ = chcol[bestHelix.hitIndices_.back()].pos().z() - chcol[bestHelix.hitIndices_.front()].pos().z();
       if (deltaZ < minDZTrk_)  continue;
 
 
       //calculate the remaining quantities to fill the RobustHelix object and add the helixSeed to the list
       float chi2dXY(0), chi2dZPhi(0);
-      for (const auto& ich : bestHelix.hits_) {
+      for (const auto& ich : bestHelix.hitIndices_) {
          chi2dXY   += chi2XYCircle(chcol[ich],bestHelix.x_,bestHelix.y_,bestHelix.r_)*chcol[ich].nStrawHits();
          chi2dZPhi += chi2XYHelix(chcol[ich],bestHelix)*chcol[ich].nStrawHits();
       }
-      chi2dXY   /= bestHelix.nsh_;
-      chi2dZPhi /= bestHelix.nsh_;
-
-      // --- Dirty hack to save particle propagation, will need to be fixed in the data product the future ---
-      chi2dXY = bestHelix.fita_zt_;
+      chi2dXY   /= bestHelix.nStrawHits_;
+      chi2dZPhi /= bestHelix.nStrawHits_;
+//Dirty hack to save particle propagation direction, will be gone when we have updated the data products
+chi2dXY = bestHelix.fita_zt_;
 
       float Rcent  = sqrt(bestHelix.x_*bestHelix.x_+bestHelix.y_*bestHelix.y_);
       float Fcent  = polyAtan2(bestHelix.y_,bestHelix.x_);
@@ -356,7 +356,7 @@ namespace mu2e {
       hseed._helix._chi2dXY   = chi2dXY;
       hseed._helix._chi2dZPhi = chi2dZPhi;
       hseed._t0 = TrkT0(t0,t0err);
-      for (const auto& ich : bestHelix.hits_) hseed._hhits.emplace_back(chcol[ich]);
+      for (const auto& ich : bestHelix.hitIndices_) hseed._hhits.emplace_back(chcol[ich]);
       hseed._status.merge(TrkFitFlag::TPRHelix);
       hseed._status.merge(TrkFitFlag::helixOK);
       hseed._timeCluster = tcArtPtr;
@@ -371,11 +371,11 @@ namespace mu2e {
   void RobustMultiHelixFinder::findHelicesInHits(const ComboHitCollection& chcol, strawHitIndices& hitsToProcess,
                                                  const art::Ptr<CaloCluster>& caloPtr, CandHelix& poshelix, CandHelix& neghelix)
   {
-    auto pred = [&chcol](auto i, auto j) {return chcol[i].strawId().uniquePanel()<chcol[j].strawId().uniquePanel();};
+    auto pred = [&chcol](const auto& i, const auto& j) {return chcol[i].strawId().uniquePanel()<chcol[j].strawId().uniquePanel();};
     sort(hitsToProcess.begin(),hitsToProcess.end(),pred);
 
     CandHelix circle = findCircleCandidate(chcol, hitsToProcess, caloPtr);
-    if (circle.nsh_ < minStrawHits_) return;
+    if (circle.nStrawHits_ < minStrawHits_) return;
 
     poshelix = circle;
     findHelixCandidate(poshelix, chcol, hitsToProcess, Helicity::poshel);
@@ -393,7 +393,7 @@ namespace mu2e {
   {
     CandHelix bestCircle;
     float sumChisqBest(1e6);
-    std::vector<unsigned> stubby;
+    std::vector<size_t> stubby;
     stubby.reserve(32);
 
     std::vector<bool> hitComptonFlag = flagCompton(chcol,hits);
@@ -411,7 +411,7 @@ namespace mu2e {
         float x2           = chj.pos().x()-x1;
         float y2           = chj.pos().y()-y1;
         float x12x12y12y12 = x2*x2+y2*y2;
-        if (x12x12y12y12<minDXY2Circle_ || x12x12y12y12>maxDXY2Circle_) continue;
+        if (x12x12y12y12<minDXY2Circle_) continue;
         float rad2x2y2 = chj.pos().x()*chj.pos().x()+chj.pos().y()*chj.pos().y();
 
         for (size_t k=j+1; k<hits.size(); ++k){
@@ -420,12 +420,12 @@ namespace mu2e {
           float x3           = chk.pos().x()-x1;
           float y3           = chk.pos().y()-y1;
           float x13x13y13y13 = x3*x3+y3*y3;
-          if (x13x13y13y13<minDXY2Circle_ || x13x13y13y13>maxDXY2Circle_) continue;
+          if (x13x13y13y13<minDXY2Circle_) continue;
 
           float x4           = chk.pos().x()-x2;
           float y4           = chk.pos().y()-y2;
           float x23x23y23y23 = x4*x4+y4*y4;
-          if (x23x23y23y23<minDXY2Circle_ || x23x23y23y23>maxDXY2Circle_) continue;
+          if (x23x23y23y23<minDXY2Circle_) continue;
           float rad2x3y3 = chk.pos().x()*chk.pos().x()+chk.pos().y()*chk.pos().y();
 
           float denominator = 2*(x2*y3 - x3*y2);
@@ -444,7 +444,7 @@ namespace mu2e {
           if (targetCon_ && abs(sqrt(radCenter2)-radius)>targetRadius_) continue;
 
           // Select hits with good deltaR and pick best deltaR if several hits have same unique panel id
-          // coudl also use the chi2, test which is better
+          // could alternatively use the chi2
           stubby.clear();
           unsigned id_prev(chcol[hits[0]].strawId().uniquePanel()), ilast(chcol.size()), nsh(0);
           float    val_prev(1e6),sumChisq(0);
@@ -473,8 +473,6 @@ namespace mu2e {
           if (ilast<chcol.size()) {stubby.push_back(hits[ilast]);nsh += chcol[hits[ilast]].nStrawHits(); sumChisq+=val_prev;}
           sumChisq /= nsh;
 
-          //Potential improvement, check if a cut on the number of hits flagged as Compton would help
-
           art::Ptr<CaloCluster> thisCaloPtr{};
           if (caloPtr && caloPtr->energyDep()>ccMinEnergy_) {
              float dx      = caloPtr->cog3Vector().x() - centerX;
@@ -485,7 +483,7 @@ namespace mu2e {
              thisCaloPtr = caloPtr;
           }
 
-          if (nsh < bestCircle.nsh_ || (nsh==bestCircle.nsh_ && sumChisq > sumChisqBest)) continue;
+          if (nsh < bestCircle.nStrawHits_ || (nsh==bestCircle.nStrawHits_ && sumChisq > sumChisqBest)) continue;
           bestCircle = CandHelix(nsh,centerX,centerY,radius,stubby,thisCaloPtr);
           sumChisqBest = sumChisq;
         }
@@ -493,8 +491,10 @@ namespace mu2e {
     }
 
     //Recalculate the number of Straw Hits to exclude the calo cluster contribution
-    bestCircle.nsh_ = 0;
-    for (const auto& ich : bestCircle.hits_) bestCircle.nsh_ += chcol[ich].nStrawHits();
+    bestCircle.nStrawHits_ = 0;
+    for (const auto& ich : bestCircle.hitIndices_) bestCircle.nStrawHits_ += chcol[ich].nStrawHits();
+    if (bestCircle.caloPtr_) bestCircle.nStrawHits_ += ccWeight_;
+
     return bestCircle;
   }
 
@@ -551,7 +551,7 @@ namespace mu2e {
     //perform dz/dphi fit and filter hits based on the fit result
     init_dzdp(helix,chcol,helicity);
     fit_dzdp(helix,chcol,helicity);
-    if (abs(helix.fita_zp_)<1e-3) {helix.hits_.clear(); helix.nsh_=0; return;}
+    if (abs(helix.fita_zp_)<1e-3) {helix.hitIndices_.clear(); helix.nStrawHits_=0; return;}
     filterZPhi(helix,chcol,maxDPhiHelFit_);
 
     //Perform a dz/dt fit and filter hits based on the fit result
@@ -560,19 +560,19 @@ namespace mu2e {
 
     //refit helix with algebraic or chisq fit and remove worst chi2 hit if above threshold
     //repeat until no hit is above threshold or we have too few hits
-    while (helix.nsh_>minStrawHits_){
+    while (helix.nStrawHits_>minStrawHits_){
       float helixFitX(0),helixFitY(0),helixFitR(0);
-      if (fitCircleAlg_==1) fitCircleAlg (helix,chcol,helixFitX,helixFitY,helixFitR);
-      else                  fitCircleChi2(helix,chcol,helixFitX,helixFitY,helixFitR);
+      if (fitCircleStrategy_==circleFitter::HyperFit) fitCircleAlg (helix,chcol,helixFitX,helixFitY,helixFitR);
+      else                                            fitCircleChi2(helix,chcol,helixFitX,helixFitY,helixFitR);
       if (helixFitR < minRadCircle_ || helixFitR > maxRadCircle_) break;
       helix.x_ = helixFitX;
       helix.y_ = helixFitY;
       helix.r_ = helixFitR;
 
       unsigned iWorst(-1);
-      float chi2Worst(0), nshWorst(0);
-      for (size_t i=0;i<helix.hits_.size();++i) {
-        unsigned ich = helix.hits_[i];
+      float chi2Worst(0),nshWorst(0);
+      for (size_t i=0;i<helix.hitIndices_.size();++i) {
+        unsigned ich = helix.hitIndices_[i];
         float chi2   = chi2XYCircle(chcol[ich],helix.x_,helix.y_,helix.r_);
         if (chi2>chi2Worst) {chi2Worst = chi2; iWorst = i; nshWorst=chcol[ich].nStrawHits();}
       }
@@ -584,8 +584,9 @@ namespace mu2e {
     fit_dzdp(helix,chcol,helicity);
     fit_dzdt(helix,chcol);
 
-    helix.nsh_=0;
-    for (auto ich : helix.hits_) helix.nsh_ += chcol[ich].nStrawHits();
+    helix.nStrawHits_=0;
+    for (const auto& ich : helix.hitIndices_) helix.nStrawHits_ += chcol[ich].nStrawHits();
+    if (helix.caloPtr_) helix.nStrawHits_ += ccWeight_;
 
     return;
   }
@@ -598,7 +599,7 @@ namespace mu2e {
   // Loop factor is determined dynamically and must increase by 0 or 1 between consecutive z-ordered hits. Add calo cluster if present
   unsigned RobustMultiHelixFinder::init_dzdp(CandHelix& circle, const ComboHitCollection& chcol, Helicity helicity)
   {
-    if (circle.hits_.empty()) return 0;
+    if (circle.hitIndices_.empty()) return 0;
 
     float caloPhi(-999),caloZ(-9999);
     if (circle.caloPtr_ && circle.caloPtr_->energyDep()>ccMinEnergy_){
@@ -609,16 +610,17 @@ namespace mu2e {
       caloPhi                    = polyAtan2(caloPosInTrk.y()-circle.y_,caloPosInTrk.x()-circle.x_);
     }
 
-    const auto& chits = circle.hits_;
+    const auto& chits = circle.hitIndices_;
     std::vector<float> p_vec(chcol.size(),-999.9);
     for (const auto& ich : chits) p_vec[ich] = polyAtan2(chcol[ich].pos().y() - circle.y_, chcol[ich].pos().x() - circle.x_);
 
     unsigned nhitsMax(0);
     float    sumDeltaMax(1e6);
-    float    fa_init = helicity == Helicity::poshel ? minDPDZSlope_   : -maxDPDZSlope_;
-    float    fa_end  = helicity == Helicity::poshel ? maxDPDZSlope_+1 : -minDPDZSlope_+1;
-
-    for (float fa=fa_init; fa < fa_end; fa += DPDZStep_){
+    float    fa_init = helicity == Helicity::poshel ? minDPDZSlope_ : -maxDPDZSlope_;
+    float    fa_end  = helicity == Helicity::poshel ? maxDPDZSlope_ : -minDPDZSlope_;
+    int      nsteps  = int(std::round((fa_end-fa_init)/DPDZStep_));
+    for (int i=0;i<=nsteps;++i){
+      float fa = fa_init + i*DPDZStep_;
       for (unsigned j=0;j<chits.size();j+=2){
          float fb = chcol[chits[j]].pos().z()-fa*p_vec[chits[j]];
 
@@ -659,7 +661,7 @@ namespace mu2e {
   // Perform dz/dphi linear fit, add calo cluster if present
   void RobustMultiHelixFinder::fit_dzdp(CandHelix& circle, const ComboHitCollection& chcol, Helicity helicity)
   {
-    const auto& chits = circle.hits_;
+    const auto& chits = circle.hitIndices_;
 
     LSFitter zphiFitter;
     for (const auto& ich : chits){
@@ -681,7 +683,6 @@ namespace mu2e {
       if (delta < MaxDPhiHelInit_) zphiFitter.add(phiLoop,caloPosInTrk.z(),ccWeight_);
     }
 
-
     float fa = zphiFitter.fa();
     float fb = zphiFitter.fb();
     if ((helicity==Helicity::poshel && fa<1e-3) || (helicity==Helicity::neghel  && fa>-1e-3)) return;
@@ -696,12 +697,12 @@ namespace mu2e {
   void RobustMultiHelixFinder::fit_dzdt(CandHelix& circle, const ComboHitCollection& chcol)
   {
     LSFitter tzFitter;
-    for (const auto& ich : circle.hits_) tzFitter.add(chcol[ich].pos().z(),chcol[ich].correctedTime());
+    for (const auto& ich : circle.hitIndices_) tzFitter.add(chcol[ich].pos().z(),chcol[ich].correctedTime());
 
     if (circle.caloPtr_ && circle.caloPtr_->energyDep()>ccMinEnergy_){
       const auto& caloCluster    = *(circle.caloPtr_);
-      const auto& posInMu2e      = cal_->geomUtil().diskFFToMu2e(caloCluster.diskID(),caloCluster.cog3Vector());
-      const auto& caloClusterPos = cal_->geomUtil().mu2eToTracker(posInMu2e);
+      const auto  posInMu2e      = cal_->geomUtil().diskFFToMu2e(caloCluster.diskID(),caloCluster.cog3Vector());
+      const auto  caloClusterPos = cal_->geomUtil().mu2eToTracker(posInMu2e);
       tzFitter.add(caloClusterPos.z(),caloCluster.time(),ccWeight_);
     }
 
@@ -715,10 +716,10 @@ namespace mu2e {
   int RobustMultiHelixFinder::filterZPhi(CandHelix& circle, const ComboHitCollection& chcol, float maxDphi)
   {
     int nRemoved(0);
-    auto it = circle.hits_.size();
+    auto it = circle.hitIndices_.size();
     while (it>0){
        --it;
-       unsigned ich = circle.hits_[it];
+       unsigned ich = circle.hitIndices_[it];
        float phi    = polyAtan2(chcol[ich].pos().y() - circle.y_,chcol[ich].pos().x() - circle.x_);
        int   n      = round((phi-(chcol[ich].pos().z()-circle.fitb_zp_)/circle.fita_zp_)/6.293185);
        float delta  = abs((chcol[ich].pos().z()-circle.fitb_zp_)/circle.fita_zp_-phi+n*6.293185);
@@ -735,15 +736,15 @@ namespace mu2e {
   int RobustMultiHelixFinder::filterZT(CandHelix& circle, const ComboHitCollection& chcol, float maxDt)
   {
     int nRemoved(0);
-    auto it = circle.hits_.size();
+    auto it = circle.hitIndices_.size();
     while (it>0){
-      --it;
-      unsigned ich = circle.hits_[it];
-      float delta  = abs(circle.fita_zt_*chcol[ich].pos().z()+circle.fitb_zt_ - chcol[ich].correctedTime());
-      if (delta < maxDt) continue;
+       --it;
+       unsigned ich = circle.hitIndices_[it];
+       float delta  = abs(circle.fita_zt_*chcol[ich].pos().z()+circle.fitb_zt_ - chcol[ich].correctedTime());
+       if (delta < maxDt) continue;
 
-      circle.remove(it, chcol[ich].nStrawHits());
-      ++nRemoved;
+       circle.remove(it, chcol[ich].nStrawHits());
+       ++nRemoved;
     }
     return nRemoved;
   }
@@ -756,11 +757,11 @@ namespace mu2e {
                                             float& centerY, float& radius)
   {
     std::vector<float> hitWeight(chcol.size(),0);
-    for (const auto ich : circle.hits_) hitWeight[ich] = weight(chcol[ich],circle);//*chcol[ich].nStrawHits();
+    for (const auto& ich : circle.hitIndices_) hitWeight[ich] = weight(chcol[ich],circle);//*chcol[ich].nStrawHits();
 
 
     float sumWeights(0),xmean(0),ymean(0);
-    for (const auto& ich : circle.hits_) {
+    for (const auto& ich : circle.hitIndices_) {
       xmean      += chcol[ich].pos().x()*hitWeight[ich];
       ymean      += chcol[ich].pos().y()*hitWeight[ich];
       sumWeights += hitWeight[ich];
@@ -769,17 +770,17 @@ namespace mu2e {
     ymean /= sumWeights;
 
     float Mxx(0),Mxy(0),Myy(0),Mxz(0),Myz(0),Mzz(0);
-    for (const auto &ich : circle.hits_){
-      float xx = chcol[ich].pos().x()-xmean;
-      float yy = chcol[ich].pos().y()-ymean;
-      float zz = xx*xx+yy*yy;
-      float w  = hitWeight[ich];
-      Mxy += xx*yy*w;
-      Mxx += xx*xx*w;
-      Myy += yy*yy*w;
-      Mxz += xx*zz*w;
-      Myz += yy*zz*w;
-      Mzz += zz*zz*w;
+    for (const auto& ich : circle.hitIndices_){
+        float xx = chcol[ich].pos().x()-xmean;
+        float yy = chcol[ich].pos().y()-ymean;
+        float zz = xx*xx+yy*yy;
+        float w  = hitWeight[ich];
+        Mxy += xx*yy*w;
+        Mxx += xx*xx*w;
+        Myy += yy*yy*w;
+        Mxz += xx*zz*w;
+        Myz += yy*zz*w;
+        Mzz += zz*zz*w;
     }
     Mxx /= sumWeights;
     Myy /= sumWeights;
@@ -799,12 +800,12 @@ namespace mu2e {
     unsigned iterMAX = 10;
     float x(0.0),y(A0);
     for (unsigned iter=0; iter<iterMAX; ++iter)  {
-      float Dy = A1 + x*(A22 + 16.*x*x);
-      float xnew = x - y/Dy;
-      if (abs(xnew-x) < 1e-4 || abs(x) > 1e10) break;
-      float ynew = A0 + xnew*(A1 + xnew*(A2 + 4.0*xnew*xnew));
-      if (abs(ynew)> abs(y)) break;
-      x = xnew;  y = ynew;
+        float Dy = A1 + x*(A22 + 16.*x*x);
+        float xnew = x - y/Dy;
+        if (abs(xnew-x) < 1e-4 || abs(x) > 1e10) break;
+        float ynew = A0 + xnew*(A1 + xnew*(A2 + 4.0*xnew*xnew));
+        if (abs(ynew)> abs(y)) break;
+        x = xnew;  y = ynew;
     }
 
     float DET = x*x - x*Mz + Cov_xy;
@@ -824,7 +825,7 @@ namespace mu2e {
   {
     float w_(0),x_(0),x2_(0),x3_(0),y_(0),y2_(0),y3_(0),xy_(0),x2y_(0),xy2_(0);
 
-    for (const auto ich : circle.hits_) {
+    for (const auto& ich : circle.hitIndices_) {
       float w = weight(chcol[ich],circle);
       float x = chcol[ich].pos().x();
       float y = chcol[ich].pos().y();
@@ -938,7 +939,7 @@ namespace mu2e {
   float RobustMultiHelixFinder::timeUncertainty(const ComboHitCollection& chcol, const CandHelix& helix)
   {
     float st(0),st2(0),sw(0);
-    for (const auto& ich : helix.hits_){
+    for (const auto& ich : helix.hitIndices_){
       st  += chcol[ich].correctedTime()*chcol[ich].nStrawHits();
       st2 += chcol[ich].correctedTime()*chcol[ich].correctedTime()*chcol[ich].nStrawHits();
       sw  += chcol[ich].nStrawHits();
