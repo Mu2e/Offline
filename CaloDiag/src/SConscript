@@ -67,7 +67,6 @@ helper.make_plugins( [ mainlib,
                        'boost_filesystem',
                        'pthread',
                        'hep_concurrency',
-                       'DTCInterface',
                        'artdaq-core-mu2e_Overlays'
                        ] )
 
