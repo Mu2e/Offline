@@ -40,7 +40,7 @@ namespace mu2e {
 
   }
 
-  void CaloDAQUtilities::printCaloPulse(CalorimeterDataDecoder::CalorimeterHitReadoutPacket const& Hit){
+  void CaloDAQUtilities::printCaloPulse(CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit){
     std::cout << "[CaloHitsFromFragments] \tChNumber   "
               << (int)Hit.ChannelNumber
               << std::endl;
@@ -76,7 +76,7 @@ namespace mu2e {
 
   void CaloDAQUtilities::printAllHitInfo(int CrystalID, int SiPMID,
                                          std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header,
-                                         CalorimeterDataDecoder::CalorimeterHitReadoutPacket const& Hit, uint16_t PulseMax){
+                                         CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit, uint16_t PulseMax){
 
     std::cout << "Crystal ID: " << CrystalID           << std::endl;
     std::cout << "SiPM ID: "    << SiPMID              << std::endl;
