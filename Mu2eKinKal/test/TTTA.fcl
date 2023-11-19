@@ -24,42 +24,79 @@ source : {
 physics : {
   producers : {
     @table::Trigger.producers
-    SelectRecoMCcpr : {
+    SelectRecoMCDeMcpr : {
       @table::CommonMCTrigger.TTSelectRecoMC
       KalSeedCollections  : [ "TTCalSeedFitDem" ]
       HelixSeedCollections  : ["TTCalHelixMergerDeM" ]
     }
-    SelectRecoMCtpr : {
+    SelectRecoMCDeMtpr : {
       @table::CommonMCTrigger.TTSelectRecoMC
       KalSeedCollections  : [ "TTKSFDeM" ]
       HelixSeedCollections  : ["TTHelixMergerDeM" ]
+    }
+    SelectRecoMCDePcpr : {
+      @table::CommonMCTrigger.TTSelectRecoMC
+      KalSeedCollections  : [ "TTCalSeedFitDep" ]
+      HelixSeedCollections  : ["TTCalHelixMergerDeP" ]
+    }
+    SelectRecoMCDePtpr : {
+      @table::CommonMCTrigger.TTSelectRecoMC
+      KalSeedCollections  : [ "TTKSFDeP" ]
+      HelixSeedCollections  : ["TTHelixMergerDeP" ]
     }
   }
   filters :  { @table::Trigger.filters }
   analyzers : {
     @table::Trigger.analyzers
-    TAtpr : @local::TrkAnaTrigger.TrkAnaTT
-    TAcpr : @local::TrkAnaTrigger.TrkAnaTT
+    TADeMtpr : {
+      @table::TrkAnaTrigger.TrkAnaDeMTT
+      FitType : LoopHelix
+    }
+
+    TADeMcpr : {
+      @table::TrkAnaTrigger.TrkAnaDeMTT
+      FitType : LoopHelix
+    }
+    TADePtpr : {
+      @table::TrkAnaTrigger.TrkAnaDePTT
+      FitType : LoopHelix
+    }
+    TADePcpr : {
+      @table::TrkAnaTrigger.TrkAnaDePTT
+      FitType : LoopHelix
+    }
   }
-  EndPath : [TAtpr, TAcpr]
+  EndPath : [TADeMtpr, TADeMcpr, TADePtpr, TADePcpr]
 }
 #include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
 physics.producers.EWMProducer.SpillType : 1
 #include "Production/JobConfig/common/epilog.fcl"
 physics.end_paths : [ EndPath ]
 # add MC truth matching to the relevant paths
-physics.tprDeM_highP_stopTarg_trigger           : [ @sequence::physics.tprDeM_highP_stopTarg_trigger, SelectRecoMCtpr]
-physics.cprDeM_highP_stopTarg_trigger           : [ @sequence::physics.cprDeM_highP_stopTarg_trigger, SelectRecoMCcpr]
+physics.tprDeM_highP_stopTarg_trigger           : [ @sequence::physics.tprDeM_highP_stopTarg_trigger, SelectRecoMCDeMtpr]
+physics.cprDeM_highP_stopTarg_trigger           : [ @sequence::physics.cprDeM_highP_stopTarg_trigger, SelectRecoMCDeMcpr]
+physics.tprDeP_highP_stopTarg_trigger           : [ @sequence::physics.tprDeP_highP_stopTarg_trigger, SelectRecoMCDePtpr]
+physics.cprDeP_highP_stopTarg_trigger           : [ @sequence::physics.cprDeP_highP_stopTarg_trigger, SelectRecoMCDePcpr]
 
-physics.analyzers.TAtpr.SelectEvents : [  tprDeM_highP_stopTarg_trigger  ]
-physics.analyzers.TAtpr.candidate.input : "TTKSF"
-physics.analyzers.TAtpr.candidate.suffix : "DeM"
-physics.analyzers.TAtpr.KalSeedMCAssns: "SelectRecoMCtpr"
+physics.analyzers.TADeMtpr.SelectEvents : [  tprDeM_highP_stopTarg_trigger  ]
+physics.analyzers.TADeMtpr.candidate.input : "TTKSF"
+physics.analyzers.TADeMtpr.candidate.suffix : "DeM"
+physics.analyzers.TADeMtpr.KalSeedMCAssns: "SelectRecoMCDeMtpr"
 
-physics.analyzers.TAcpr.SelectEvents : [  cprDeM_highP_stopTarg_trigger  ]
-physics.analyzers.TAcpr.candidate.input : "TTCalSeedFit"
-physics.analyzers.TAcpr.candidate.suffix : "Dem"
-physics.analyzers.TAcpr.KalSeedMCAssns: "SelectRecoMCcpr"
+physics.analyzers.TADeMcpr.SelectEvents : [  cprDeM_highP_stopTarg_trigger  ]
+physics.analyzers.TADeMcpr.candidate.input : "TTCalSeedFit"
+physics.analyzers.TADeMcpr.candidate.suffix : "Dem"
+physics.analyzers.TADeMcpr.KalSeedMCAssns: "SelectRecoMCDeMcpr"
+
+physics.analyzers.TADePtpr.SelectEvents : [  tprDeP_highP_stopTarg_trigger  ]
+physics.analyzers.TADePtpr.candidate.input : "TTKSF"
+physics.analyzers.TADePtpr.candidate.suffix : "DeP"
+physics.analyzers.TADePtpr.KalSeedMCAssns: "SelectRecoMCDePtpr"
+
+physics.analyzers.TADePcpr.SelectEvents : [  cprDeP_highP_stopTarg_trigger  ]
+physics.analyzers.TADePcpr.candidate.input : "TTCalSeedFit"
+physics.analyzers.TADePcpr.candidate.suffix : "Dep"
+physics.analyzers.TADePcpr.KalSeedMCAssns: "SelectRecoMCDePcpr"
 
 # this next is currently needed to get correct hit-level MC truth matching.  It needs to be fixed at the
 # ComboHitCollection.  This setting works, but will slow down the trigger: don't use this script for timing studies
