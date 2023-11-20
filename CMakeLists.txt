@@ -11,7 +11,8 @@ cet_cmake_env()
 cet_set_compiler_flags(DIAGS VIGILANT
  WERROR
  NO_UNDEFINED
- EXTRA_FLAGS -pedantic -Wno-error=unused-parameter -Wno-error=type-limits -Wno-error=ignored-qualifiers -Wno-error=unused-but-set-parameter -Wno-error=extra -Wno-error=non-virtual-dtor -Wno-error=implicit-fallthrough -Wno-error=deprecated-copy
+ EXTRA_FLAGS -pedantic #-Wno-error=unused-parameter -Wno-error=type-limits -Wno-error=ignored-qualifiers -Wno-error=unused-but-set-parameter -Wno-error=extra -Wno-error=non-virtual-dtor -Wno-error=implicit-fallthrough -Wno-error=deprecated-copy
+ -Wno-unused-parameter -Wno-type-limits -Wno-ignored-qualifiers -Wno-unused-but-set-parameter -Wno-extra -Wno-non-virtual-dtor -Wno-implicit-fallthrough -Wno-deprecated-copy
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
