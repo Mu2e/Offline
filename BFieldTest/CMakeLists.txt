@@ -4,7 +4,7 @@ cet_build_plugin(BFieldSymmetry art::module
       art_root_io::TFileService_service
       Offline::BFieldGeom
       Offline::GeometryService
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
       ROOT::Hist
       ROOT::Tree
 )

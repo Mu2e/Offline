@@ -241,13 +241,13 @@ incdir		product_dir	include/Offline
 #   entry to match for a given product.
 #
 product		version		qual	flags		<table_format=2>
-art_root_io v1_12_04
-gallery     v1_21_03
-geant4      v4_11_1_p02a
+art_root_io v1_13_01
+gallery     v1_22_01
+geant4      v4_11_1_p02b
 xerces_c v3_2_3e
-artdaq_core_mu2e v2_00_00
-BTrk   v1_02_44 
-KinKal  v02_04_03 
+artdaq_core_mu2e v2_01_02
+BTrk   v1_02_45
+KinKal  v02_05_00a
 cry   v1_7q 
 gsl v2_7
 swig - only_for_build
@@ -305,9 +305,9 @@ end_product_list
 #   *required* unless the only_for_build flag is specified, in which
 #   case it is optional.
 #
-qualifier	art_root_io	gallery		geant4			xerces_c	artdaq_core_mu2e	BTrk			KinKal			cry			gsl
-e28:s124:trig:debug	e28:debug	e28:debug	e28:mt:debug	e28			e28:s124:debug		e28:p3915:debug	e28:p3915:debug	e28:debug	-nq-
-e28:s124:trig:prof	e28:prof	e28:prof	e28:mt:prof		e28			e28:s124:prof		e28:p3915:prof	e28:p3915:prof	e28:prof	-nq-
+qualifier           art_root_io gallery     geant4          xerces_c    artdaq_core_mu2e    BTrk            KinKal          cry         gsl
+e28:s126:trig:debug e28:debug   e28:debug   e28:mt:debug    e28         e28:s126:debug      e28:p3915:debug e28:p3915:debug e28:debug   -nq-
+e28:s126:trig:prof  e28:prof    e28:prof    e28:mt:prof     e28         e28:s126:prof       e28:p3915:prof  e28:p3915:prof  e28:prof    -nq-
 end_qualifier_list
 ####################################
 

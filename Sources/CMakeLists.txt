@@ -21,7 +21,7 @@ cet_build_plugin(FromCorsikaBinary art::source
     REG_SOURCE src/FromCorsikaBinary_source.cc
     LIBRARIES REG
       Offline::Sources
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
 )
 cet_build_plugin(FromEMFMARSFileWeighted art::source
     REG_SOURCE src/FromEMFMARSFileWeighted_source.cc

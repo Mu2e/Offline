@@ -1,12 +1,14 @@
 cet_make_library(
     SOURCE
-      src/AcceleratorParams.cc
+      src/ConditionsService.cc
       src/CalorimeterCalibrations.cc
       src/ExtMonFNALConditions.cc
     LIBRARIES PUBLIC
       
       Offline::ConfigTools
       Offline::Mu2eInterfaces
+      Offline::GeometryService
+      art::Framework_Services_Registry
 )
 
 cet_build_plugin(ConditionsService art::service
@@ -14,7 +16,6 @@ cet_build_plugin(ConditionsService art::service
     LIBRARIES REG
       Offline::ConditionsService
       
-      Offline::GeometryService
 )
 
 install_source(SUBDIRS src)

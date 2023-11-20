@@ -16,7 +16,7 @@ cet_build_plugin(MixBackgroundFrames art::module
       Offline::MCDataProducts
       Offline::Mu2eUtilities
       Offline::ProditionsService
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
       Offline::SimulationConditions
 )
 
@@ -27,7 +27,7 @@ cet_build_plugin(ProtonBunchIntensityFlat art::module
       
       Offline::MCDataProducts
       Offline::Mu2eUtilities
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
 )
 
 cet_build_plugin(ProtonBunchIntensityLogNormal art::module
@@ -37,7 +37,7 @@ cet_build_plugin(ProtonBunchIntensityLogNormal art::module
       
       Offline::MCDataProducts
       Offline::Mu2eUtilities
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
 )
 
 cet_build_plugin(ResamplingMixer art::module
@@ -48,7 +48,7 @@ cet_build_plugin(ResamplingMixer art::module
       Offline::EventMixing
       
       Offline::Mu2eUtilities
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
 )
 
 install_source(SUBDIRS src)

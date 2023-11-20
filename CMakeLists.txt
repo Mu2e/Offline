@@ -25,7 +25,7 @@ find_package(Boost COMPONENTS iostreams program_options REQUIRED)
 find_package(XercesC REQUIRED)
 find_package(BLAS REQUIRED)
 find_package(artdaq_core_mu2e REQUIRED)
-find_package(Geant4 REQUIRED)
+find_package(Geant4)
 
 # TODO: Find or implement FindCRY.cmake
 include_directories($ENV{CRYHOME}/src)

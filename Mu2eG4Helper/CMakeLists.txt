@@ -1,6 +1,7 @@
 cet_make_library(
     SOURCE
       src/AntiLeakRegistry.cc
+      src/Mu2eG4Helper.cc
       src/VolumeInfo.cc
     LIBRARIES PUBLIC
       
@@ -9,8 +10,7 @@ cet_make_library(
 
 cet_build_plugin(Mu2eG4Helper art::service
     REG_SOURCE src/Mu2eG4Helper_service.cc
-    IMPL_SOURCE src/Mu2eG4Helper_service.cc
-    LIBRARIES PUBLIC
+    LIBRARIES REG
       Offline::Mu2eG4Helper
       
 )

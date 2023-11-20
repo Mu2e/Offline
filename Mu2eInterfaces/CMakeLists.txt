@@ -1,11 +1,12 @@
-cet_make_library(
+cet_make_library(INTERFACE
     SOURCE
-      src/ConditionsEntity.cc
-      src/Detector.cc
-    LIBRARIES PUBLIC
+      inc/ConditionsEntity.hh
+      inc/Detector.hh
+      inc/ProditionsCache.hh
+      inc/ProditionsEntity.hh
+    LIBRARIES INTERFACE
       
       Offline::DbTables
 )
 
-install_source(SUBDIRS src)
 install_headers(SUBDIRS inc)
