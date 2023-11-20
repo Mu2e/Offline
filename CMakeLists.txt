@@ -17,15 +17,15 @@ cet_set_compiler_flags(DIAGS VIGILANT
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
  
-find_package(art_root_io REQUIRED)
-find_package(GSL REQUIRED)
-find_package(PostgreSQL REQUIRED)
-find_package(CURL REQUIRED)
-find_package(Boost COMPONENTS iostreams program_options REQUIRED)
-find_package(XercesC REQUIRED)
-find_package(BLAS REQUIRED)
-find_package(artdaq_core_mu2e REQUIRED)
-find_package(Geant4)
+find_package(art_root_io REQUIRED EXPORT)
+find_package(GSL REQUIRED EXPORT)
+find_package(PostgreSQL REQUIRED EXPORT)
+find_package(CURL REQUIRED EXPORT)
+find_package(Boost COMPONENTS iostreams program_options REQUIRED EXPORT)
+find_package(XercesC REQUIRED EXPORT)
+find_package(BLAS REQUIRED EXPORT)
+find_package(artdaq_core_mu2e REQUIRED EXPORT)
+find_package(Geant4 REQUIRED EXPORT)
 
 # TODO: Find or implement FindCRY.cmake
 include_directories($ENV{CRYHOME}/src)
