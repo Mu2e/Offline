@@ -284,4 +284,4 @@ cet_build_plugin(WeightSamplingFilter art::module
 )
 
 install_source(SUBDIRS src)
-install_fhicl(SUBDIRS fcl SUBDIRNAME Filters)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/Filters/fcl)

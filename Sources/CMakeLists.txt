@@ -51,4 +51,4 @@ cet_build_plugin(PBISequence art::source
 )
 
 install_source(SUBDIRS src)
-install_headers(SUBDIRS inc)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)

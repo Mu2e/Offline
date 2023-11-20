@@ -12,4 +12,4 @@ cet_make_library(INTERFACE
       Offline::Mu2eInterfaces
 )
 
-install_headers(SUBDIRS inc)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)

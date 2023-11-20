@@ -15,5 +15,5 @@ cet_make_library(INTERFACE
       Offline::RecoDataProducts
 )
 
-install_headers(SUBDIRS inc)
-install_fhicl(SUBDIRS fcl SUBDIRNAME AnalysisConditions)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/AnalysisConditions/fcl)

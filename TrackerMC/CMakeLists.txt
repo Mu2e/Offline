@@ -70,5 +70,5 @@ art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
       Offline::TrackerMC
 )
 install_source(SUBDIRS src)
-install_headers(SUBDIRS inc)
-install_fhicl(SUBDIRS fcl SUBDIRNAME TrackerMC)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/TrackerMC/fcl)

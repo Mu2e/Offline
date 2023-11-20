@@ -830,4 +830,4 @@ cet_build_plugin(VMMonitor art::module
 )
 
 install_source(SUBDIRS src)
-install_fhicl(SUBDIRS fcl SUBDIRNAME Analyses)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/Analyses/fcl)

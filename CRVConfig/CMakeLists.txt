@@ -7,4 +7,4 @@ cet_make_library(INTERFACE
       
 )
 
-install_headers(SUBDIRS inc)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)

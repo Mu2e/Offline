@@ -39,4 +39,4 @@ cet_build_plugin(ReadTriggerInfo art::module
 )
 
 install_source(SUBDIRS src)
-install_fhicl(SUBDIRS fcl SUBDIRNAME Trigger)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/Trigger/fcl)

@@ -82,4 +82,4 @@ cet_build_plugin(StoppedParticlesFinder art::module
 )
 
 install_source(SUBDIRS src)
-install_fhicl(SUBDIRS fcl SUBDIRNAME CommonMC)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/CommonMC/fcl)

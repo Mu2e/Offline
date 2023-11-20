@@ -128,5 +128,5 @@ cet_build_plugin(TimeAndPhiClusterFinderDiag art::tool
 )
 
 install_source(SUBDIRS src)
-install_headers(SUBDIRS inc)
-install_fhicl(SUBDIRS fcl SUBDIRNAME TrkPatRec)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/TrkPatRec/fcl)
