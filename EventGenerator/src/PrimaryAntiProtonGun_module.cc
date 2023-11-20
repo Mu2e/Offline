@@ -34,8 +34,6 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 // Mu2e includes
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"

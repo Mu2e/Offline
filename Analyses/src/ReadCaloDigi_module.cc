@@ -28,12 +28,11 @@
 
 // Mu2e includes.
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
@@ -373,8 +372,7 @@ namespace mu2e {
     ++_nProcess;
 
     //load the timeoffset
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
-    _mbtime = accPar->deBuncherPeriod;
+    _mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
 
     //data about hits in the calorimeter crystals
     art::Handle<CaloHitMCCollection> caloDigiMCHandle;

@@ -6,14 +6,14 @@
 
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 namespace mu2e {
 
-  ExtMonFNALConditions::ExtMonFNALConditions(const AcceleratorParams& accp,
-                                             const SimpleConfig& config)
+  ExtMonFNALConditions::ExtMonFNALConditions(const SimpleConfig& config)
     : numClockTicksPerDebuncherPeriod_(config.getInt("extMonFNAL.numClockTicksPerDebuncherPeriod"))
-    , clockTick_(accp.deBuncherPeriod/numClockTicksPerDebuncherPeriod_)
+    , clockTick_(GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod()/numClockTicksPerDebuncherPeriod_)
     , temperature_(config.getDouble("extMonFNAL.temperature")*CLHEP::kelvin)
     , biasVoltage_(config.getDouble("extMonFNAL.biasVoltage")*CLHEP::volt)
   {

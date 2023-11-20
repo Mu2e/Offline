@@ -382,6 +382,7 @@ namespace mu2e {
       StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.68);
     }
 
+
     // Stainless Steel 316 http://en.wikipedia.org/wiki/Marine_grade_stainless
     mat = uniqueMaterialOrThrow( "StainlessSteel316");
     {
@@ -1634,6 +1635,32 @@ namespace mu2e {
      // and now tungsten
      ProductionTargetTungstenLa2_O3->AddMaterial(La2_O3,(100. - wPercentage)*CLHEP::perCent);
      ProductionTargetTungstenLa2_O3->AddElement(getElementOrThrow("W"),wPercentage*CLHEP::perCent);
+    }
+
+
+    mat = uniqueMaterialOrThrow("LaBr3Ce");
+    {
+     G4Material* LaBr3Ce = new G4Material(mat.name, 5.08*CLHEP::g/CLHEP::cm3, 2);
+     G4Material* LaBr3 = new G4Material("LaBr3", 5.06*CLHEP::g/CLHEP::cm3  ,2);
+     LaBr3->AddElement(getElementOrThrow("La"),1);
+     LaBr3->AddElement(getElementOrThrow("Br"),3);
+
+     G4Element* elCe  = new G4Element("Cerium"  ,"Ce" , 58., 140.116*CLHEP::g/CLHEP::mole);
+
+     LaBr3Ce -> AddElement(elCe, 1.9*CLHEP::perCent);
+     LaBr3Ce -> AddMaterial(LaBr3, 98.1*CLHEP::perCent);
+    }
+
+    mat = uniqueMaterialOrThrow("BP");   //Borated polyethylene
+    {
+     G4Material* BP  = new G4Material(mat.name, 1.04*CLHEP::g/CLHEP::cm3, 2);
+
+     G4Element* elB  = new G4Element("Boron"  ,"B" , 5., 10.81*CLHEP::g/CLHEP::mole);
+     G4Material* Poly = findMaterialOrThrow("G4_POLYETHYLENE");
+
+     BP -> AddElement(elB, 5*CLHEP::perCent);
+     BP -> AddMaterial(Poly, 95*CLHEP::perCent);
+
     }
 
     // Add new materials before this line

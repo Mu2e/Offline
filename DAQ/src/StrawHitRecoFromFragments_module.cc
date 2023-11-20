@@ -15,8 +15,6 @@
 
 // conditions
 #include "Offline/ConditionsBase/inc/TrackerCalibrationStructs.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
