@@ -240,18 +240,22 @@ incdir		product_dir	include/Offline
 # * It is an error for more than one non-(<qual-trigger> == "-default-")
 #   entry to match for a given product.
 #
-product		version		qual	flags		<table_format=2>
-art_root_io v1_13_01
-gallery     v1_22_01
-geant4      v4_11_1_p02b
-xerces_c v3_2_3e
-artdaq_core_mu2e v2_01_02
-BTrk   v1_02_45
-KinKal  v02_05_00a
-cry   v1_7q 
-gsl v2_7
-swig - only_for_build
-cetmodules	 v3_21_02	-	only_for_build
+product             version         qual    flags		<table_format=2>
+art_root_io         v1_13_01        s126
+art_root_io         v1_12_04        s124
+gallery             v1_22_01        s126
+gallery             v1_21_03        s124
+geant4              v4_11_1_p02b
+xerces_c            v3_2_3e
+artdaq_core_mu2e    v2_01_02
+BTrk                v1_02_45        s126
+BTrk                v1_02_44        s124
+KinKal              v02_05_00a      s126
+KinKal              v02_05_00       s124
+cry                 v1_7q
+gsl                 v2_7
+swig                -                       only_for_build
+cetmodules	       v3_22_02         -       only_for_build
 end_product_list
 ####################################
 
@@ -308,6 +312,13 @@ end_product_list
 qualifier           art_root_io gallery     geant4          xerces_c    artdaq_core_mu2e    BTrk            KinKal          cry         gsl
 e28:s126:trig:debug e28:debug   e28:debug   e28:mt:debug    e28         e28:s126:debug      e28:p3915:debug e28:p3915:debug e28:debug   -nq-
 e28:s126:trig:prof  e28:prof    e28:prof    e28:mt:prof     e28         e28:s126:prof       e28:p3915:prof  e28:p3915:prof  e28:prof    -nq-
+e20:s126:trig:debug e20:debug   e20:debug   e20:mt:debug    e20         e20:s126:debug      e20:p3915:debug e20:p3915:debug e20:debug   -nq-
+e20:s126:trig:prof  e20:prof    e20:prof    e20:mt:prof     e20         e20:s126:prof       e20:p3915:prof  e20:p3915:prof  e20:prof    -nq-
+
+e28:s124:trig:debug e28:debug   e28:debug   e28:mt:debug    e28         e28:s124:debug      e28:p3915:debug e28:p3915:debug e28:debug   -nq-
+e28:s124:trig:prof  e28:prof    e28:prof    e28:mt:prof     e28         e28:s124:prof       e28:p3915:prof  e28:p3915:prof  e28:prof    -nq-
+e20:s124:trig:debug e20:debug   e20:debug   e20:mt:debug    e20         e20:s124:debug      e20:p3915:debug e20:p3915:debug e20:debug   -nq-
+e20:s124:trig:prof  e20:prof    e20:prof    e20:mt:prof     e20         e20:s124:prof       e20:p3915:prof  e20:p3915:prof  e20:prof    -nq-
 end_qualifier_list
 ####################################
 
