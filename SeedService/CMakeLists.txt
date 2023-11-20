@@ -1,9 +1,7 @@
-cet_make_library(INTERFACE
+cet_make_library(
     SOURCE
-      inc/ArtState.hh
-      inc/EngineId.hh
-      inc/SeedService.hh
-    LIBRARIES INTERFACE
+      src/SeedService.cc
+    LIBRARIES PUBLIC
       art::Framework_Core
       fhiclcpp::fhiclcpp
       
@@ -11,8 +9,7 @@ cet_make_library(INTERFACE
 
 cet_build_plugin(SeedService art::service
     REG_SOURCE src/SeedService_service.cc
-    IMPL_SOURCE src/SeedService_service.cc
-    LIBRARIES PUBLIC
+    LIBRARIES REG
       Offline::SeedService
       
 )
@@ -21,7 +18,7 @@ cet_build_plugin(SeedTest01 art::module
     REG_SOURCE src/SeedTest01_module.cc
     LIBRARIES REG
       Offline::SeedService
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
       
 )
 

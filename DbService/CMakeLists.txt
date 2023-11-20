@@ -3,6 +3,7 @@ cet_make_library(
       src/DbEngine.cc
       src/DbIdList.cc
       src/DbReader.cc
+      src/DbService.cc
       src/DbSql.cc
       src/DbTool.cc
       src/DbValTool.cc
@@ -13,6 +14,7 @@ cet_make_library(
       Offline::ConfigTools
       Offline::DbTables
       Offline::GeneralUtilities
+      art::Framework_Services_Registry
 )
 
 cet_make_exec(NAME dbTool

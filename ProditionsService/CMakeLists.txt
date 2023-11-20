@@ -16,8 +16,9 @@ cet_make_library(INTERFACE
 )
 
 cet_build_plugin(ProditionsService art::service
+    IMPL_SOURCE src/ProditionsService.cc
     REG_SOURCE src/ProditionsService_service.cc
-    LIBRARIES REG
+    LIBRARIES PUBLIC
       Offline::ProditionsService
       
       Offline::AnalysisConditions

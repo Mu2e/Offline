@@ -3,7 +3,7 @@
 #    LIBRARIES REG
 #      Offline::DataProducts
 #      Offline::GeometryService
-#      Offline::SeedService_SeedService_service
+#      Offline::SeedService
 #)
 
 #cet_build_plugin(TrackExtrapolatorTest2 art::module

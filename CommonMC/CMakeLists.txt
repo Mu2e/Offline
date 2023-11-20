@@ -2,7 +2,7 @@ cet_build_plugin(CosmicTimeOffset art::module
     REG_SOURCE src/CosmicTimeOffset_module.cc
     LIBRARIES REG      
       Offline::MCDataProducts
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
 )
 
 cet_build_plugin(EventWindowMarkerProducer art::module
@@ -13,7 +13,7 @@ cet_build_plugin(EventWindowMarkerProducer art::module
       Offline::MCDataProducts
       Offline::ProditionsService
       Offline::RecoDataProducts
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
 )
 
 cet_build_plugin(FindMCPrimary art::module
@@ -48,7 +48,7 @@ cet_build_plugin(ProtonTimeOffset art::module
     LIBRARIES REG
       Offline::MCDataProducts
       Offline::Mu2eUtilities
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
 )
 
 cet_build_plugin(SelectRecoMC art::module

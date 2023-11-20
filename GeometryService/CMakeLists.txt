@@ -16,6 +16,7 @@ cet_make_library(
       src/ExtShieldDownstreamMaker.cc
       src/ExtShieldUpstreamMaker.cc
       src/G4GeometryOptions.cc
+      src/GeometryService.cc
       src/MBSMaker.cc
       src/MECOStyleProtonAbsorberMaker.cc
       src/Mu2eCoordTransform.cc
@@ -69,8 +70,7 @@ cet_make_library(
 
 cet_build_plugin(GeometryService art::service
     REG_SOURCE src/GeometryService_service.cc
-    IMPL_SOURCE src/GeometryService_service.cc
-    LIBRARIES PUBLIC
+    LIBRARIES REG
       Offline::GeometryService
       
       Offline::BeamlineGeom

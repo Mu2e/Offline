@@ -77,7 +77,7 @@ cet_build_plugin(CrvPhotonGenerator art::module
       Offline::GlobalConstantsService
       Offline::MCDataProducts
       Offline::ProditionsService
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
 )
 
 cet_build_plugin(CrvPlot art::module
@@ -109,7 +109,7 @@ cet_build_plugin(CrvSiPMChargeGenerator art::module
       Offline::GeometryService
       Offline::MCDataProducts
       Offline::ProditionsService
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
 )
 
 cet_build_plugin(CrvStepsFromStepPointMCs art::module
@@ -151,7 +151,7 @@ cet_build_plugin(CrvWaveformsGenerator art::module
       Offline::GeometryService
       Offline::MCDataProducts
       Offline::ProditionsService
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
 )
 
 cet_build_plugin(MakeCrvCoincidenceClusterMCAssns art::module

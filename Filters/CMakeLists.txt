@@ -155,6 +155,11 @@ cet_build_plugin(FilterStepPointReflection art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(FixedFilter art::module
+    REG_SOURCE src/FixedFilter_module.cc
+    LIBRARIES REG
+)
+
 cet_build_plugin(GenParticleMomFilter art::module
     REG_SOURCE src/GenParticleMomFilter_module.cc
     LIBRARIES REG
@@ -179,7 +184,7 @@ cet_build_plugin(ParticleCodeFilter art::module
 cet_build_plugin(RandomPrescaleFilter art::module
     REG_SOURCE src/RandomPrescaleFilter_module.cc
     LIBRARIES REG
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
 )
 
 cet_build_plugin(RecoMomFilter art::module
@@ -275,7 +280,7 @@ cet_build_plugin(WeightSamplingFilter art::module
     LIBRARIES REG
       Offline::DataProducts
       Offline::MCDataProducts
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
 )
 
 install_source(SUBDIRS src)

@@ -137,14 +137,14 @@ cet_make_library(
       Offline::MBSGeom
       Offline::MCDataProducts
       Offline::MECOStyleProtonAbsorberGeom
-      Offline::Mu2eG4Helper_Mu2eG4Helper_service
+      Offline::Mu2eG4Helper
       Offline::Mu2eHallGeom
       Offline::Mu2eUtilities
       Offline::ProductionSolenoidGeom
       Offline::ProductionTargetGeom
       Offline::ProtonBeamDumpGeom
       Offline::PTMGeom
-      Offline::SeedService_SeedService_service
+      Offline::SeedService
       Offline::ServicesGeom
       Offline::STMGeom
       Offline::StoppingTargetGeom
@@ -173,7 +173,7 @@ cet_build_plugin(Mu2eG4 art::module
       Offline::Mu2eG4
       
       Offline::ConfigTools
-      Offline::GeometryService_GeometryService_service
+      Offline::GeometryService
       Offline::MCDataProducts
       Offline::Mu2eHallGeom
       Offline::SeedService
@@ -186,7 +186,7 @@ cet_build_plugin(Mu2eG4MT art::module
       Offline::Mu2eG4
       
       Offline::ConfigTools
-      Offline::GeometryService_GeometryService_service
+      Offline::GeometryService
       Offline::MCDataProducts
       Offline::Mu2eHallGeom
 )
