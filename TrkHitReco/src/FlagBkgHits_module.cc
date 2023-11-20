@@ -128,7 +128,6 @@ namespace mu2e
   //------------------------------------------------------------------------------------------
   void FlagBkgHits::produce(art::Event& event )
   {
-
     auto chH = event.getValidHandle(chtoken_);
     const ComboHitCollection& chcol = *chH.product();
     unsigned nch = chcol.size();
@@ -198,8 +197,8 @@ namespace mu2e
             }
           }
         }
-        if(chcol_out->size() != chcol_p.size())
-          throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHit outout" << std::endl;
+        if((! filter_) && chcol_out->size() != chcol_p.size())
+          throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHit output" << std::endl;
       }
     }
     event.put(std::move(chcol_out));
@@ -241,6 +240,7 @@ namespace mu2e
         }
         nhits += hitplanes[ip];
       }
+
       if(nhits >= minnhits_ && np >= minnp_){
         // find averages
         double sumEdep(0.);

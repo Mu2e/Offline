@@ -26,10 +26,6 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 
-//Conditions
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-
 //Dataproducts
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloTrigSeed.hh"
@@ -769,8 +765,6 @@ namespace mu2e {
     //order the array with the filter used at the end of each path
     std::sort(_trigFinal.begin(), _trigFinal.end(), [](const auto a, const auto b) {return a.counts < b.counts; });
 
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
-    //double    mbtime         = accPar->deBuncherPeriod;
     double    mean_mb_rate   = 1.;///(mbtime/CLHEP::s)*_duty_cycle;
 
     bool      isFirst(true);

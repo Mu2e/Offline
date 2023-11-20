@@ -354,7 +354,7 @@ namespace mu2e {
 
       for (size_t icalo=0;icalo < cccol.size();++icalo){
           unsigned ibin = unsigned((cccol[icalo].time() - tmin)/tbin_);
-          if (cccol[icalo].energyDep() > ccmine_ && ibin>=0 && ibin<timeHist.size()) timeHist[ibin] += ccweight_;
+          if (cccol[icalo].energyDep() > ccmine_ && ibin<timeHist.size()) timeHist[ibin] += ccweight_;
       }
   }
 

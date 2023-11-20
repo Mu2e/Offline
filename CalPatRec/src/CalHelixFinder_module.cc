@@ -15,8 +15,6 @@
 #include "art_root_io/TFileService.h"
 
 // conditions
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"

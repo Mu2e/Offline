@@ -12,11 +12,10 @@
 namespace mu2e
 {
   class SimpleConfig;
-  class AcceleratorParams;
 
   struct ExtMonFNALConditions: virtual public ConditionsEntity {
 
-    explicit ExtMonFNALConditions(const AcceleratorParams& accp, const SimpleConfig& config);
+    explicit ExtMonFNALConditions(const SimpleConfig& config);
 
     int numClockTicksPerDebuncherPeriod() const { return numClockTicksPerDebuncherPeriod_; }
 

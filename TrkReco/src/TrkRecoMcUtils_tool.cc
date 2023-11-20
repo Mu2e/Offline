@@ -13,8 +13,8 @@
 
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
 
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 #include "CLHEP/Matrix/Vector.h"
 
@@ -98,8 +98,7 @@ namespace mu2e {
     _chColl   = chcH.product();
 
     if (_mbtime < 0) {
-      ConditionsHandle<AcceleratorParams> accPar("ignored");
-      _mbtime      = accPar->deBuncherPeriod;
+      _mbtime      = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
     }
     _lastEvent = Event->id();
 

@@ -22,8 +22,8 @@
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include <map>
 namespace mu2e {
 
@@ -128,8 +128,7 @@ namespace mu2e {
   bool DetectorStepFilter::timeCut(double ptime) const { return (!timecut_) || (ptime > minTime_ && ptime < maxTime_); }
 
   bool DetectorStepFilter::filter(art::Event& event) {
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
-    double mbtime = accPar->deBuncherPeriod;
+    double mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
     bool selecttrk(false), selectcalo(false), selectcrv(false);
     ++nEvt_;
     // Count Trk step from same particle

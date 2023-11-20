@@ -70,7 +70,6 @@ namespace mu2e {
   public:
     TrackClusterMatch();
     TrackClusterMatch(TrkCaloIntersectPtr& Textrapol, CaloClusterPtr & Cluster, Data_t* Data);
-    ~TrackClusterMatch();
 
     int                       icl        () const { return _icl; }
     int                       iex        () const { return _iex; }

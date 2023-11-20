@@ -8,6 +8,7 @@
 #include "Offline/fcl/standardServices.fcl"
 #include "Production/JobConfig/reco/prolog.fcl"
 #include "Offline/Mu2eKinKal/fcl/prolog.fcl"
+#include "Offline/CosmicReco/fcl/prolog.fcl"
 #include "TrkAna/fcl/prolog.fcl"
 
 process_name: KKDrift
@@ -25,7 +26,8 @@ physics :
     @table::CrvResponsePackage.producers
     @table::Reconstruction.producers
     @table::TrkAnaReco.producers
-    @table::Mu2eKinKal.producers
+    @table::CosmicTracking.producers
+    KKLine : @local::Reconstruction.producers.KKLine
   }
   filters : {
     RecoFilter : {
@@ -35,7 +37,8 @@ physics :
       MomentumCutoff: [ 60 ]
    }
   }
-  RecoPath : [ @sequence::Reconstruction.LineRecoMCPath ]
+  RecoPath : [
+    @sequence::Reconstruction.LineRecoMCPath ]
   analyzers : {
     TAKK : {
       @table::TrkAnaTreeMaker
@@ -50,8 +53,6 @@ physics :
           fillTrkPID : false
           genealogyDepth : 5
         }
-        segmentSuffixes : [ "ent", "mid", "xit" ]
-        segmentVIDs : [ [ "TT_FrontHollow", "TT_FrontPA"], [ "TT_Mid", "TT_MidInner"], ["TT_Back"] ]
       }
       diagLevel : 2
       FillMCInfo : true
@@ -62,6 +63,7 @@ physics :
       FillHitInfo : true
       FillTriggerInfo : false
       supplements : [ ]
+      FitType : "KinematicLine"
     }
 
     evtprint : {
@@ -85,8 +87,10 @@ physics.producers.KKLine : {
 }
 
 #include "Production/JobConfig/reco/epilog.fcl"
-#include "Production/JobConfig/reco/offspill_epilog.fcl"
 #include "Offline/CRVResponse/fcl/epilog_extracted.fcl"
+
+# no need for Lorentz effects
+services.ProditionsService.strawResponse.driftIgnorePhi: true
 
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
 services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"

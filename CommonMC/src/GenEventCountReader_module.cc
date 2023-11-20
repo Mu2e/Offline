@@ -77,7 +77,7 @@ namespace mu2e {
         <<"GenEventCountReader: no GenEventCount record in "<<sr.id()<<"\n";
     }
 
-    mf::LogInfo("INFO")<<"GenEventCount: "
+    mf::LogInfo("GenEventCount")<<"GenEventCount: "
       <<hh.front()->count()<<" events in "<<sr.id()
       <<"\n";
 
@@ -87,7 +87,7 @@ namespace mu2e {
 
   //================================================================
   void GenEventCountReader::endJob() {
-    mf::LogInfo("Summary")<<"GenEventCount total: "
+    mf::LogInfo("GenEventCountSummary")<<"GenEventCount total: "
       <<numEvents_<<" events in "
       <<numSubRuns_<<" SubRuns"
       <<"\n";
