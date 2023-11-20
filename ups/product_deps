@@ -245,7 +245,8 @@ art_root_io         v1_13_01        s126
 art_root_io         v1_12_04        s124
 gallery             v1_22_01        s126
 gallery             v1_21_03        s124
-geant4              v4_11_1_p02b
+geant4              v4_11_1_p02b    s126
+geant4              v4_11_1_p02a    s124
 xerces_c            v3_2_3e
 artdaq_core_mu2e    v2_01_02
 BTrk                v1_02_45        s126
@@ -312,13 +313,9 @@ end_product_list
 qualifier           art_root_io gallery     geant4          xerces_c    artdaq_core_mu2e    BTrk            KinKal          cry         gsl
 e28:s126:trig:debug e28:debug   e28:debug   e28:mt:debug    e28         e28:s126:debug      e28:p3915:debug e28:p3915:debug e28:debug   -nq-
 e28:s126:trig:prof  e28:prof    e28:prof    e28:mt:prof     e28         e28:s126:prof       e28:p3915:prof  e28:p3915:prof  e28:prof    -nq-
-e20:s126:trig:debug e20:debug   e20:debug   e20:mt:debug    e20         e20:s126:debug      e20:p3915:debug e20:p3915:debug e20:debug   -nq-
-e20:s126:trig:prof  e20:prof    e20:prof    e20:mt:prof     e20         e20:s126:prof       e20:p3915:prof  e20:p3915:prof  e20:prof    -nq-
 
 e28:s124:trig:debug e28:debug   e28:debug   e28:mt:debug    e28         e28:s124:debug      e28:p3915:debug e28:p3915:debug e28:debug   -nq-
 e28:s124:trig:prof  e28:prof    e28:prof    e28:mt:prof     e28         e28:s124:prof       e28:p3915:prof  e28:p3915:prof  e28:prof    -nq-
-e20:s124:trig:debug e20:debug   e20:debug   e20:mt:debug    e20         e20:s124:debug      e20:p3915:debug e20:p3915:debug e20:debug   -nq-
-e20:s124:trig:prof  e20:prof    e20:prof    e20:mt:prof     e20         e20:s124:prof       e20:p3915:prof  e20:p3915:prof  e20:prof    -nq-
 end_qualifier_list
 ####################################
 
