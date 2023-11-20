@@ -1233,8 +1233,6 @@ void ArtBinaryPacketsFromDigis::fillCrvDataStream(DTCLib::DTC_Event& currentEven
   size_t sz =
       crvData.header.TransferByteCount; // byte count was increased to get full chunks of 16 bytes
 
-  assert(sz < sizeof(mu2e_databuff_t));
-
   uint8_t dtcID = crvData.header.DTCID;
   DTCLib::DTC_DataBlock thisBlock(sz);
 
