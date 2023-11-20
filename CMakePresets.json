@@ -13,18 +13,6 @@
             "CMAKE_CXX_STANDARD_REQUIRED" : {
                "type" : "BOOL",
                "value" : "ON"
-            },
-            "offline_ADD_NOARCH_DIRS_INIT" : {
-               "type" : "INTERNAL",
-               "value" : "INCLUDE_DIR;FHICL_DIR"
-            },
-            "offline_FHICL_DIR_INIT" : {
-               "type" : "STRING",
-               "value" : "fcl/Offline"
-            },
-            "offline_INCLUDE_DIR_INIT" : {
-               "type" : "STRING",
-               "value" : "include/Offline"
             }
          },
          "description" : "Configuration settings translated from ups/product_deps",
@@ -49,6 +37,26 @@
             "CMAKE_Fortran_COMPILER" : {
                "type" : "STRING",
                "value" : "$env{CETPKG_Fortran_COMPILER}"
+            },
+            "Offline_EXEC_PREFIX_INIT" : {
+               "type" : "STRING",
+               "value" : "$env{CETPKG_FQ_DIR}"
+            },
+            "Offline_UPS_BUILD_ONLY_DEPENDENCIES_INIT" : {
+               "type" : "STRING",
+               "value" : "cetmodules"
+            },
+            "Offline_UPS_PRODUCT_FLAVOR_INIT" : {
+               "type" : "STRING",
+               "value" : "$env{CETPKG_FLAVOR}"
+            },
+            "Offline_UPS_PRODUCT_NAME_INIT" : {
+               "type" : "STRING",
+               "value" : "Offline"
+            },
+            "Offline_UPS_QUALIFIER_STRING_INIT" : {
+               "type" : "STRING",
+               "value" : "$env{CETPKG_QUALSPEC}"
             },
             "UPS_CXX_COMPILER_ID" : {
                "type" : "STRING",
@@ -77,26 +85,6 @@
             "WANT_UPS" : {
                "type" : "BOOL",
                "value" : true
-            },
-            "offline_EXEC_PREFIX_INIT" : {
-               "type" : "STRING",
-               "value" : "$env{CETPKG_FQ_DIR}"
-            },
-            "offline_UPS_BUILD_ONLY_DEPENDENCIES_INIT" : {
-               "type" : "STRING",
-               "value" : "cetmodules"
-            },
-            "offline_UPS_PRODUCT_FLAVOR_INIT" : {
-               "type" : "STRING",
-               "value" : "$env{CETPKG_FLAVOR}"
-            },
-            "offline_UPS_PRODUCT_NAME_INIT" : {
-               "type" : "STRING",
-               "value" : "offline"
-            },
-            "offline_UPS_QUALIFIER_STRING_INIT" : {
-               "type" : "STRING",
-               "value" : "$env{CETPKG_QUALSPEC}"
             }
          },
          "description" : "Extra configuration for UPS package generation",

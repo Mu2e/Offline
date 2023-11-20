@@ -7,4 +7,4 @@ add_subdirectory(Reconstruction)
 add_subdirectory(TruthAlgs)
 add_subdirectory(Utilities)
 
-install_fhicl(SUBDIRS fcl SUBDIRNAME ExtinctionMonitorFNAL)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/ExtinctionMonitorFNAL/fcl)

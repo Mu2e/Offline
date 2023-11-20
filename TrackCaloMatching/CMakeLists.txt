@@ -58,4 +58,4 @@ cet_build_plugin(TrkExtrapol art::module
 )
 
 install_source(SUBDIRS src)
-install_fhicl(SUBDIRS fcl SUBDIRNAME TrackCaloMatching)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/TrackCaloMatching/fcl)

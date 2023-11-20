@@ -171,10 +171,10 @@ for dir in */;do
       echo "install_source(SUBDIRS src)" >> CMakeLists.txt
     fi
     if [ -d inc ]; then
-      echo "install_headers(SUBDIRS inc)" >> CMakeLists.txt
+      echo "install_headers(USE_PROJECT_NAME SUBDIRS inc)" >> CMakeLists.txt
     fi
     if [ -d fcl ]; then
-      echo "install_fhicl(SUBDIRS fcl SUBDIRNAME $dirname)" >> CMakeLists.txt
+      echo "install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/$dirname/fcl)" >> CMakeLists.txt
     fi
 
     cd ..

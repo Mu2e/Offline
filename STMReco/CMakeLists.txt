@@ -56,4 +56,4 @@ cet_build_plugin(STMZeroSuppression art::module
 )
 
 install_source(SUBDIRS src)
-install_fhicl(SUBDIRS fcl SUBDIRNAME STMReco)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/STMReco/fcl)

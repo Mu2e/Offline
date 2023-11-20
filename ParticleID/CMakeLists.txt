@@ -35,5 +35,5 @@ cet_build_plugin(ParticleIDRead art::module
 )
 
 install_source(SUBDIRS src)
-install_headers(SUBDIRS inc)
-install_fhicl(SUBDIRS fcl SUBDIRNAME ParticleID)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/ParticleID/fcl)

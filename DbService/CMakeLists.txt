@@ -50,5 +50,5 @@ cet_build_plugin(DbServiceTest art::module
 )
 
 install_source(SUBDIRS src)
-install_headers(SUBDIRS inc)
-install_fhicl(SUBDIRS fcl SUBDIRNAME DbService)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/DbService/fcl)

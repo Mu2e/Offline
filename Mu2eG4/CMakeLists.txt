@@ -237,5 +237,5 @@ cet_build_plugin(ConstructEnvTube art::tool
 )
 
 install_source(SUBDIRS src)
-install_headers(SUBDIRS inc)
-install_fhicl(SUBDIRS fcl SUBDIRNAME Mu2eG4)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/Mu2eG4/fcl)

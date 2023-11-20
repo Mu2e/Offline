@@ -86,5 +86,5 @@ cet_build_plugin(StrawHitReco art::module
 )
 
 install_source(SUBDIRS src inc)
-install_headers(SUBDIRS inc)
-install_fhicl(SUBDIRS fcl SUBDIRNAME TrkHitReco/fcl)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/TrkHitReco/fcl)

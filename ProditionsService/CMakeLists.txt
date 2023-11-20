@@ -41,5 +41,5 @@ cet_build_plugin(ProditionsTest art::module
 )
 
 install_source(SUBDIRS src)
-install_headers(SUBDIRS inc)
-install_fhicl(SUBDIRS fcl SUBDIRNAME ProditionsService)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/ProditionsService/fcl)

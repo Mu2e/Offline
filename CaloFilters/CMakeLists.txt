@@ -72,4 +72,4 @@ cet_build_plugin(FilterEcalNNTrigger art::module
 )
 
 install_source(SUBDIRS src)
-install_fhicl(SUBDIRS fcl SUBDIRNAME CaloFilters)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/CaloFilters/fcl)

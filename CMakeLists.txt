@@ -140,6 +140,6 @@ add_subdirectory(ups_install)
 add_subdirectory(UtilityModules)
 add_subdirectory(Validation)
 
-install_fhicl(SUBDIRS fcl)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/fcl)
 
 cet_cmake_config()

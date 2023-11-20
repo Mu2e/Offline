@@ -570,5 +570,5 @@ cet_build_plugin(MuplusMichelGenerator art::tool
 )
 
 install_source(SUBDIRS src)
-install_headers(SUBDIRS inc)
-install_fhicl(SUBDIRS fcl SUBDIRNAME EventGenerator)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/EventGenerator/fcl)

@@ -81,5 +81,5 @@ cet_build_plugin(LoopHelixFit art::module
 )
 
 install_source(SUBDIRS src)
-install_headers(SUBDIRS inc)
-install_fhicl(SUBDIRS fcl SUBDIRNAME Mu2eKinKal)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/Mu2eKinKal/fcl)

@@ -46,4 +46,4 @@ cet_make_exec(NAME TwoDPointTest
 )
 
 install_source(SUBDIRS src)
-install_headers(SUBDIRS inc)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)

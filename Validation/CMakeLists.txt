@@ -90,5 +90,5 @@ art_dictionary(
  )
 
 install_source(SUBDIRS src root)
-install_headers(SUBDIRS inc)
-install_fhicl(SUBDIRS fcl SUBDIRNAME Validation)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/Validation/fcl)
