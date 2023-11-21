@@ -1,4 +1,4 @@
-// NotchManager.cc
+// NotchHoleManager.cc
 // This is the definitions file for the NotchManager class, a hopefully
 // unobtrusive way to add notches/holes to Mu2e building geometry objects.
 // David Norvil Brown, U. Louisville, December 2017
@@ -31,22 +31,7 @@ void mu2e::NotchHoleManager::loadNotches( const SimpleConfig& config ) {
       // We trigger on the latter here
       std::string partName = theVar.substr(0,pos);
       usedVariables.push_back(partName);
-      //debug
-      std::cout<<"--------///----------------"<<std::endl;
-      std::cout<<"Notch partname: "<<partName<<std::endl;
-      std::cout<<"--------///----------------"<<std::endl;
     } // end of if Notch found
-    // if ( (pos = theVar.find(searchString1)) != std::string::npos ) {
-    //   // Assume variable names go like this:
-    //   // part_name.Hole.numberOfHoles
-    //   // We trigger on the latter here
-    //   std::string partNameHH = theVar.substr(0,pos);
-    //   usedVariablesHH.push_back(partNameHH);
-    //   //debug
-    //   std::cout<<"--------///----------------"<<std::endl;
-    //   std::cout<<"Hole partname: "<<partNameHH<<std::endl;
-    //   std::cout<<"--------///----------------"<<std::endl;
-    // } // end of if Holes found
   } // end of loop over variables to find those with Notch specs
 
   // Have list of parts with notches now.  Build the notch map.
@@ -60,10 +45,6 @@ void mu2e::NotchHoleManager::loadNotches( const SimpleConfig& config ) {
     std::ostringstream tmpName1;
     tmpName1 << partName << ".Notch.numberOfNotches";
     int nNotches = config.getInt(tmpName1.str(),0);
-    //debug
-    std::cout<<"--------///----------------"<<std::endl;
-    std::cout<<"No. of notches: "<<nNotches<<std::endl;
-    std::cout<<"--------///----------------"<<std::endl;
     // Now create the vector of notches for this part
     std::vector<Notch> tmpVecNotch;
     tmpVecNotch.reserve(nNotches);
@@ -127,10 +108,6 @@ void mu2e::NotchHoleManager::loadHoles( const SimpleConfig& config ) {
       // We trigger on the latter here
       std::string partNameH = theVarH.substr(0,pos);
       usedVariablesH.push_back(partNameH);
-      //debug
-      std::cout<<"--------///----------------"<<std::endl;
-      std::cout<<"Hole partname2: "<<partNameH<<std::endl;
-      std::cout<<"--------///----------------"<<std::endl;
     } // end of if Holes found
   } // end of loop over variables to find those with Holes
 
@@ -145,10 +122,6 @@ void mu2e::NotchHoleManager::loadHoles( const SimpleConfig& config ) {
     std::ostringstream tmpName11;
     tmpName11 << partNameH << ".Hole.numberOfHoles";
     int nHoles = config.getInt(tmpName11.str(),0);
-    //debug
-    std::cout<<"--------///----------------"<<std::endl;
-    std::cout<<"No. of holes inside assignment: "<<nHoles<<std::endl;
-    std::cout<<"--------///----------------"<<std::endl;
     // Now create the vector of holes for this part
     std::vector<Hole> tmpVecHole;
     tmpVecHole.reserve(nHoles);
@@ -169,8 +142,6 @@ void mu2e::NotchHoleManager::loadHoles( const SimpleConfig& config ) {
       std::ostringstream tmpName55;
       tmpName55 << partNameH << ".Hole.orientation." << iHole+1;
       std::string tmpOriH = config.getString(tmpName55.str());
-      std::cout<<"radius inside assignment: "<<tmpRadius<<" halfLength: "<<tmphalfLength<<" tmpPositionH: "<<tmpPositionH<<" Ori: "<<tmpOriH<<std::endl;
-      std::cout<<"radius from config: "<<config.getDouble("building.remote.handling.Interior.Wall.5.Hole.radius.1")<<std::endl;
       // Make the hole from this info
       Hole tmpHole(tmpRadius,tmphalfLength,tmpPositionH,tmpOriH);
 

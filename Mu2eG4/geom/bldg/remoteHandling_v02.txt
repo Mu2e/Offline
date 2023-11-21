@@ -44,7 +44,7 @@ vector<double> building.remote.handling.yPositions = {
 //East Wall
 //1st notch
 int building.remote.handling.Notch.numberOfNotches = 1;
-vector<double> building.remote.handling.Notch.halfDims.1 = {152.4,229.0,152.4};//thickness: 457.2
+vector<double> building.remote.handling.Notch.halfDims.1 = {152.4,230.0,152.4};
 vector<double> building.remote.handling.Notch.position.1 = {3479.8,15443.2,2006.6};
 string  building.remote.handling.Notch.orientation.1 = "001";
 // Local Variables:
