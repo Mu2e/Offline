@@ -52,17 +52,7 @@ namespace mu2e {
       aRotation.rotateX(-2.0*CLHEP::degree);
       return;
     }
-    if ( orient == "a00" ) { // Special +90 x
-      aRotation.rotateX(90.0*CLHEP::degree);
-      //aRotation.rotateX(-2.0*CLHEP::degree);
-      return;
-    }
-   if ( orient == "0a0" ) { // Special +90 y
-      aRotation.rotateY(90.0*CLHEP::degree);
-      //aRotation.rotateX(-2.0*CLHEP::degree);
-      return;
-    }
-   if ( orient == "ab0" ) { // Special +90 y + 13.6deg
+   if ( orient == "ab0" ) { // Special +90 y + 13.6 degree turn for hole on the bent wall in the remote handling room
       aRotation.rotateX(-90.0*CLHEP::degree);
       aRotation.rotateY(-13.6*CLHEP::degree);
       return;

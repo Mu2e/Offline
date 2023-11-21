@@ -29,7 +29,6 @@ namespace mu2e {
 
     void getRotationFromOrientation ( CLHEP::HepRotation& aRotation,
                                     std::string orient );
-
   private:
 
   };

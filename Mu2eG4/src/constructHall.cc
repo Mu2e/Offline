@@ -126,16 +126,9 @@ namespace mu2e {
       geoOptions->loadEntry( config, volume.getName(), volume.getName() );
 
       if ( notchMgr.hasNotches( volName )||notchMgr.hasHoles( volName ) ) {
-       //------debug--------------------------
-       std::cout<<"-------------------------"<<std::endl;
-       std::cout<<"Volume with Notch or hole (building & Dirt): "<<volume.getName()<<std::endl;
-       //	std::cout<<"Volume with Hole: "<<volume.getName()<<std::endl;
-       std::cout<<"-------------------------"<<std::endl;
        vector<Notch> volNotches = notchMgr.getNotchVector(volName);
        vector<Hole> volHoles = notchMgr.getHoleVector(volName);
-       std::cout<<"Number of notches: "<<volNotches.size()<<std::endl;
-       std::cout<<"Number of holes: "<<volHoles.size()<<std::endl;
-       std::cout<<"-------------------------"<<std::endl;
+
        // First do volumes with notches
        // Make the VolumeInfo, without solid info
         VolumeInfo tmpVol(volume.getName(),
@@ -192,8 +185,6 @@ namespace mu2e {
           double halfLength = tmpHole.getHalfLen();
           //	  double FullLength = halfLength*2.0;
           string orientationHH = tmpHole.getOrient();
-          //debug-----------------
-          std::cout<<"---------**********------------"<<std::endl;
           G4Tubs*holeTub = new G4Tubs(holeName.str(),
                                       0.0, //inner radius
                                       radius,//outer radius
@@ -203,7 +194,6 @@ namespace mu2e {
 
           CLHEP::HepRotation* holeRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
           ORH->getRotationFromOrientation( *holeRotat, tmpHole.getOrient());
-          std::cout<<"Hole Name: "<<holeName.str()<<" radius: "<<radius<<" halfLength: "<<halfLength<<" ori: "<<orientationHH<<" hole rotaion: "<<*holeRotat<<std::endl;
           if ( 0 == aSolid ) {
             aSolid = new G4SubtractionSolid( tmpVol.name,
                                              aVol,
@@ -310,11 +300,6 @@ namespace mu2e {
       const G4RotationMatrix* vRotG4 = reg.add(G4RotationMatrix(vRot));
 
       if ( notchMgr.hasNotches( volName )||notchMgr.hasHoles( volName ) ) {
-        //------debug--------------------------
-        std::cout<<"-------------------------"<<std::endl;
-        std::cout<<"Volume with Notch or hole (trapSolid): "<<volume.getName()<<std::endl;
-        //	std::cout<<"Volume with Hole: "<<volume.getName()<<std::endl;
-        std::cout<<"-------------------------"<<std::endl;
         // First do volumes with notches
 
         // Make the VolumeInfo, without solid info

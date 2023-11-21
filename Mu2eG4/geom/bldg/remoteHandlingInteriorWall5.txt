@@ -33,71 +33,70 @@ vector<double> building.remote.handling.Interior.Wall.5.yPositions = {
   6248.4,   // P8
   6248.4   // P4'
 };
+int building.remote.handling.Interior.Wall.5.Notch.numberOfNotches = 1;
 //South Wall
 //1st notch
-int building.remote.handling.Interior.Wall.5.Notch.numberOfNotches = 1;
-vector<double> building.remote.handling.Interior.Wall.5.Notch.halfDims.1 = {211.1375,406.0,314.325};//thickness: 609.6
+vector<double> building.remote.handling.Interior.Wall.5.Notch.halfDims.1 = {211.1375,306.0,314.325};
 vector<double> building.remote.handling.Interior.Wall.5.Notch.position.1 = {-1624.0125,6553.2,1765.3};
 string  building.remote.handling.Interior.Wall.5.Notch.orientation.1 = "000";
+int building.remote.handling.Interior.Wall.5.Hole.numberOfHoles = 11;
 //East Wall
 // 1st hole
-int building.remote.handling.Interior.Wall.5.Hole.numberOfHoles = 11;
 double building.remote.handling.Interior.Wall.5.Hole.radius.1 = 76.2;
-double building.remote.handling.Interior.Wall.5.Hole.halfLength.1 = 229.0;
+double building.remote.handling.Interior.Wall.5.Hole.halfLength.1 = 230.;
 vector<double> building.remote.handling.Interior.Wall.5.Hole.position.1 = {3479.8,7645.4,1981.2};
-//-2218.0,6553.0,110.0 , 8200  7645.4
 string  building.remote.handling.Interior.Wall.5.Hole.orientation.1 = "010";
 // 2nd hole
 double building.remote.handling.Interior.Wall.5.Hole.radius.2 = 76.2;
-double building.remote.handling.Interior.Wall.5.Hole.halfLength.2 = 229.0; //325.
+double building.remote.handling.Interior.Wall.5.Hole.halfLength.2 = 230.;
 vector<double> building.remote.handling.Interior.Wall.5.Hole.position.2 = {3479.8,7886.7,1981.2};
 string  building.remote.handling.Interior.Wall.5.Hole.orientation.2 = "010";
 // 3rd hole
 double building.remote.handling.Interior.Wall.5.Hole.radius.3 = 76.2;
-double building.remote.handling.Interior.Wall.5.Hole.halfLength.3 = 229.0; //325.
+double building.remote.handling.Interior.Wall.5.Hole.halfLength.3 = 230.;
 vector<double> building.remote.handling.Interior.Wall.5.Hole.position.3 = {3479.8,8128.,1981.2};
 string  building.remote.handling.Interior.Wall.5.Hole.orientation.3 = "010";
 //4th hole
 double building.remote.handling.Interior.Wall.5.Hole.radius.4 = 50.8;
-double building.remote.handling.Interior.Wall.5.Hole.halfLength.4 = 229.0; //325.
+double building.remote.handling.Interior.Wall.5.Hole.halfLength.4 = 230.;
 vector<double> building.remote.handling.Interior.Wall.5.Hole.position.4 = {3479.8,8439.15,1968.5};
 string  building.remote.handling.Interior.Wall.5.Hole.orientation.4 = "010";
 //5th hole
 double building.remote.handling.Interior.Wall.5.Hole.radius.5 = 219.075;
-double building.remote.handling.Interior.Wall.5.Hole.halfLength.5 = 229.0; //325.
+double building.remote.handling.Interior.Wall.5.Hole.halfLength.5 = 230.;
 vector<double> building.remote.handling.Interior.Wall.5.Hole.position.5 = {3479.8,7905.75,1463.675};
 string  building.remote.handling.Interior.Wall.5.Hole.orientation.5 = "010";
 //Other holes in East Wall are defined in remoteHandingInteriorWall2.txt
 //South Wall
 // 1st hole
 double building.remote.handling.Interior.Wall.5.Hole.radius.6 = 101.6;
-double building.remote.handling.Interior.Wall.5.Hole.halfLength.6 = 305.; //thickness: 609.4
+double building.remote.handling.Interior.Wall.5.Hole.halfLength.6 = 306.;
 vector<double> building.remote.handling.Interior.Wall.5.Hole.position.6 = {-1647.825,6553.2,650.875};
 string  building.remote.handling.Interior.Wall.5.Hole.orientation.6 = "100";
 // 2nd hole
 double building.remote.handling.Interior.Wall.5.Hole.radius.7 = 50.8;
-double building.remote.handling.Interior.Wall.5.Hole.halfLength.7 = 305.; //thickness: 609.4
+double building.remote.handling.Interior.Wall.5.Hole.halfLength.7 = 306.;
 vector<double> building.remote.handling.Interior.Wall.5.Hole.position.7 = {-1000.125,6553.2,1073.15};
-string  building.remote.handling.Interior.Wall.5.Hole.orientation.7 = "a00";
+string  building.remote.handling.Interior.Wall.5.Hole.orientation.7 = "100";
 // 3rd hole
 double building.remote.handling.Interior.Wall.5.Hole.radius.8 = 50.8;
-double building.remote.handling.Interior.Wall.5.Hole.halfLength.8 = 305.; //thickness: 609.4
+double building.remote.handling.Interior.Wall.5.Hole.halfLength.8 = 306.;
 vector<double> building.remote.handling.Interior.Wall.5.Hole.position.8 = {-320.18,6553.2,1079.5};
-string  building.remote.handling.Interior.Wall.5.Hole.orientation.8 = "a00";
+string  building.remote.handling.Interior.Wall.5.Hole.orientation.8 = "100";
 // 4th  hole
 double building.remote.handling.Interior.Wall.5.Hole.radius.9 = 50.8;
-double building.remote.handling.Interior.Wall.5.Hole.halfLength.9 = 305.; //thickness: 609.4
+double building.remote.handling.Interior.Wall.5.Hole.halfLength.9 = 306.;
 vector<double> building.remote.handling.Interior.Wall.5.Hole.position.9 = {-320.18,6553.2,431.8};
-string  building.remote.handling.Interior.Wall.5.Hole.orientation.9 = "a00";
+string  building.remote.handling.Interior.Wall.5.Hole.orientation.9 = "100";
 // 5th hole
 double building.remote.handling.Interior.Wall.5.Hole.radius.10 = 114.3;
-double building.remote.handling.Interior.Wall.5.Hole.halfLength.10 = 305.; //thickness: 609.4
+double building.remote.handling.Interior.Wall.5.Hole.halfLength.10 = 306.;
 vector<double> building.remote.handling.Interior.Wall.5.Hole.position.10 = {474.345,6553.2,1038.225};
-string  building.remote.handling.Interior.Wall.5.Hole.orientation.10 = "a00";
+string  building.remote.handling.Interior.Wall.5.Hole.orientation.10 = "100";
 //bent region
 // 6th hole
 double building.remote.handling.Interior.Wall.5.Hole.radius.11 = 114.3;
-double building.remote.handling.Interior.Wall.5.Hole.halfLength.11 = 450.; //thicness : ~ 884.6
+double building.remote.handling.Interior.Wall.5.Hole.halfLength.11 = 306.;
 vector<double> building.remote.handling.Interior.Wall.5.Hole.position.11 = {2038.35,6690.7187,1108.075};
 string  building.remote.handling.Interior.Wall.5.Hole.orientation.11 = "ab0";
 // Local Variables:
