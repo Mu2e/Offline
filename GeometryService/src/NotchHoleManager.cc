@@ -2,7 +2,7 @@
 // This is the definitions file for the NotchManager class, a hopefully
 // unobtrusive way to add notches/holes to Mu2e building geometry objects.
 // David Norvil Brown, U. Louisville, December 2017
-
+// Modified to add holes too.
 #include "Offline/GeometryService/inc/NotchHoleManager.hh"
 #include "Offline/GeomPrimitives/inc/Notch.hh"
 #include "Offline/GeomPrimitives/inc/Tube.hh"
@@ -76,12 +76,11 @@ void mu2e::NotchHoleManager::loadNotches( const SimpleConfig& config ) {
     std::string volName = config.getString(tmpName5.str());
     // Now put the volume in the map
     theMap_.emplace( volName, tmpVecNotch);
-   // end of loop to build map //theMap has been called twice, first loadNotches and loadholes, err?
-  }
+  } // end of loop to build map
 
   // Information cached as long as this instance shall live
   hasLoaded_ = true;
-} // end def of NotchHoleManager::loadHoles
+} // end def of NotchHoleManager::load Notches
 
 
 

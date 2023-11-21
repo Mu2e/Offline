@@ -183,12 +183,11 @@ namespace mu2e {
           Hole tmpHole = volHoles[iHole];
           double radius = tmpHole.getRad();
           double halfLength = tmpHole.getHalfLen();
-          //	  double FullLength = halfLength*2.0;
           string orientationHH = tmpHole.getOrient();
           G4Tubs*holeTub = new G4Tubs(holeName.str(),
                                       0.0, //inner radius
                                       radius,//outer radius
-                                      halfLength,  //FullLength+2.0, //height
+                                      halfLength,  // Half Lengths are kept at least 1 mm longer.
                                       0.0, //angle_0
                                       CLHEP::twopi); //angle_span;
 

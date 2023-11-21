@@ -52,7 +52,7 @@ namespace mu2e {
       aRotation.rotateX(-2.0*CLHEP::degree);
       return;
     }
-   if ( orient == "ab0" ) { // Special +90 y + 13.6 degree turn for hole on the bent wall in the remote handling room
+   if ( orient == "ab0" ) { // Special 90 X & 13.6 Y degree turn for hole on the bent wall in the remote handling room
       aRotation.rotateX(-90.0*CLHEP::degree);
       aRotation.rotateY(-13.6*CLHEP::degree);
       return;
