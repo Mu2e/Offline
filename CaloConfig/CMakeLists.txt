@@ -1,4 +1,4 @@
-cet_make_library(INTERFACE
+cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline/CaloConfig
     SOURCE
       inc/CalCalibConfig.hh
       inc/CaloDAQMapConfig.hh

@@ -1,4 +1,4 @@
-cet_make_library(INTERFACE
+cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline/AnalysisConditions
     SOURCE
       inc/MVACatalogCache.hh
       inc/MVACatalog.hh
