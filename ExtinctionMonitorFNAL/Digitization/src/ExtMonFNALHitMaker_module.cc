@@ -45,9 +45,9 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConditionsService/inc/ExtMonFNALConditions.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 
 namespace mu2e {
@@ -93,7 +93,6 @@ namespace mu2e {
 
         , extMon_(0)
         , condExtMon_(0)
-        , condAcc_(0)
 
         , applyProtonPulseShape_(pset.get<bool>("applyProtonPulseShape"))
         , protonPulse_(applyProtonPulseShape_ ?
@@ -190,7 +189,6 @@ namespace mu2e {
       // as a class member.
       const ExtMon *extMon_;
       const ExtMonFNALConditions *condExtMon_;
-      const AcceleratorParams *condAcc_;
 
       SiliconProperties siProps_;
 
@@ -301,9 +299,6 @@ namespace mu2e {
 
       ConditionsHandle<ExtMonFNALConditions> cond("ignored");
       condExtMon_ = &*cond;
-
-      ConditionsHandle<AcceleratorParams> condAcc("ignored");
-      condAcc_ = &*condAcc;
 
       const double moduleThickness = 2*(extMon_->module().sensorHalfSize()[2] + extMon_->module().chipHalfSize()[2]);
 
@@ -459,7 +454,7 @@ namespace mu2e {
       PixelChargeHistory& in(*inout);
       PixelChargeHistory out;
 
-      const double period = condAcc_->deBuncherPeriod;
+      const double period = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
       const double margin = maxToT_ * condExtMon_->clockTick();
 
       while(!in.empty()) {

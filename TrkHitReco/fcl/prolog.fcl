@@ -63,6 +63,7 @@ makeSTH : {
   # input configuration
   DebugLevel            : 0
   TestFlag              : true
+  FilterHits            : false
   ComboHitCollection    : "makePH"
   StrawHitSelectionBits : ["RadiusSelection","EnergySelection","TimeSelection"]
   StrawHitRejectionBits : []
@@ -71,8 +72,8 @@ makeSTH : {
   MaxDPerp              : 300 # mm
   MaxChisquared         : 20.0
   UVRes                 : 5.0 # intrinsic resolution mm
-  MinRho                : 300 # mm
-  MaxRho                : 800 # mm
+  MinRho                : 380 # mm
+  MaxRho                : 700 # mm
   # parameters used to define overlapping panels
   MaxWdot               : 0.9
   MaxFaceSeparation     : 3

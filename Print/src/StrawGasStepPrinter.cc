@@ -1,7 +1,7 @@
 #include "Offline/Print/inc/StrawGasStepPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include <iomanip>
 #include <string>
 
@@ -67,8 +67,7 @@ void mu2e::StrawGasStepPrinter::Print(const mu2e::StrawGasStep& obj, int ind,
   long unsigned int pkey = 0;
   auto const& pptr = obj.simParticle();
   if (pptr) pkey = pptr->id().asUint();
-  ConditionsHandle<AcceleratorParams> accPar("ignored");
-  double mbtime = accPar->deBuncherPeriod;
+  double mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
 
   os << ", " << std::setw(5) << pkey << ", "
      << std::setw(8) << obj.strawId().asUint16() << "  "
