@@ -1,4 +1,4 @@
-cet_make_library(INTERFACE
+cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline/TrkPatRec
     SOURCE
       inc/KalFinalFit_types.hh
       inc/KalSeedFit_types.hh
