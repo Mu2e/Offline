@@ -7,8 +7,8 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -236,8 +236,7 @@ namespace mu2e {
       ++nProcess_;
       if (nProcess_%10==0 && diagLevel_ > 0) std::cout<<"Processing event from CaloNeutron =  "<<nProcess_ <<std::endl;
 
-      ConditionsHandle<AcceleratorParams> accPar("ignored");
-      double _mbtime = accPar->deBuncherPeriod;
+      double _mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
 
       //Handle to the calorimeter
       art::ServiceHandle<GeometryService> geom;

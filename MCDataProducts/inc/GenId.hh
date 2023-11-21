@@ -44,7 +44,8 @@ namespace mu2e {
       cosmicCRY,  pbarFlat, fromAscii, ExternalRMC, InternalRMC, CeLeadingLog, cosmicCORSIKA, //44
       MuCapProtonGenTool, MuCapDeuteronGenTool, DIOGenTool, MuCapNeutronGenTool, // 48
       MuCapPhotonGenTool, MuCapGammaRayGenTool, CeLeadingLogGenTool, MuplusMichelGenTool,// 52
-      lastEnum //53
+      gammaPairProduction, //53
+      lastEnum //54
     };
 
 #ifndef SWIG
@@ -62,7 +63,8 @@ namespace mu2e {
       "CaloCalib", "InFlightParticleSampler","muplusDecayGun", "StoppedMuonXRayGammaRayGun", \
       "CosmicCRY", "pbarFlat","fromAscii","ExternalRMC","InternalRMC","CeLeadingLog", "CosmicCORSIKA", \
     "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", \
-      "MuCapPhotonGenTool", "MuCapGammaRayGenTool","CeLeadingLogGenTool","MuplusMichelGenTool"
+      "MuCapPhotonGenTool", "MuCapGammaRayGenTool","CeLeadingLogGenTool","MuplusMichelGenTool", \
+      "gammaPairProduction"
 #endif
 
   public:
@@ -88,6 +90,8 @@ namespace mu2e {
     GenId():
       _id(unknown){
     }
+
+    virtual ~GenId(){}
 
     bool operator==(const GenId g) const{
       return ( _id == g._id );
