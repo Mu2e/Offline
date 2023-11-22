@@ -28,7 +28,6 @@ helper.make_plugins( [
   'mu2e_CosmicRayShieldGeom',
   'mu2e_ExtinctionMonitorFNAL_Geometry',
   'mu2e_GlobalConstantsService',
-  'mu2e_Mu2eInterfaces',
   'mu2e_DataProducts',
   'mu2e_GeneralUtilities',
   'mu2e_DbService',

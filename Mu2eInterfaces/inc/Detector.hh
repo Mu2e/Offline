@@ -16,7 +16,8 @@ namespace mu2e
   class Detector
   {
   public:
-    virtual ~Detector();
+    Detector() {}
+    virtual ~Detector() = default;
   };
 }
 

@@ -17,7 +17,7 @@ namespace mu2e {
     RobustHelix(Float_t rcent, Float_t fcent, Float_t radius, Float_t lambda, Float_t fz0) :
       _rcent(rcent), _fcent(fcent), _radius(radius), _lambda(lambda), _fz0(fz0) {}
     RobustHelix() : _rcent(-1.0), _fcent(0.0), _radius(-1.0), _lambda(0.0) , _fz0(0.0), _helicity(Helicity::unknown) {}
-    ~RobustHelix(){}
+
     // accessors
     Float_t radius() const { return _radius; }
     Float_t rcent() const { return _rcent; }

@@ -23,14 +23,13 @@
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/RecoDataProducts/inc/RobustHelix.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include <map>
 namespace mu2e {
 
@@ -113,8 +112,7 @@ namespace mu2e {
   bool CosmicMixingFilter::timeCut(double ptime) const { return (!timecut_) || (ptime > minTime_ && ptime < maxTime_); }
 
   bool CosmicMixingFilter::filter(art::Event& event) {
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
-    double mbtime = accPar->deBuncherPeriod;
+    double mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
     GlobalConstantsHandle<ParticleDataList> pdt;
     GeomHandle<DetectorSystem> det;
     GeomHandle<BFieldManager> bfmgr;

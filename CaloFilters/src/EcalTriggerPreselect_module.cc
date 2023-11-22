@@ -4,9 +4,8 @@
 
 // Mu2e includes.
 
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 
@@ -177,8 +176,7 @@ namespace mu2e {
     if( ! geom->hasElement<Calorimeter>() ) return false;
 
     //load the timeoffset
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
-    double _mbtime = accPar->deBuncherPeriod;
+    double _mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
 
     //--------------------------  Prefetch Calo Digis  --------------------------------
     auto caloDigiFlag = event.getValidHandle<mu2e::CaloDigiCollection>(_caloDigiModuleLabel);

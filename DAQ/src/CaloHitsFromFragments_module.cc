@@ -291,7 +291,7 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
     if (hdr->GetPacketCount() == 0)
       continue;
 
-    auto calData = cc.GetCalorimeterData(curBlockIdx);
+    auto calData = cc.GetCalorimeterHitData(curBlockIdx);
     if (calData == nullptr) {
       mf::LogError("CaloHitsFromFragments")
           << "Error retrieving Calorimeter data from block " << curBlockIdx
@@ -299,14 +299,9 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
       continue;
     }
 
-    if (diagLevel_ > 0) {
-      std::cout << "[CaloHitsFromFragments] NEW CALDATA: NumberOfHits " << calData->NumberOfHits
-                << std::endl;
-    }
-
     auto hits = cc.GetCalorimeterHitsForTrigger(curBlockIdx);
     bool err = false;
-    for (size_t hitIdx = 0; hitIdx < calData->NumberOfHits; hitIdx++) {
+    for (size_t hitIdx = 0; hitIdx < calData->size(); hitIdx++) {
 
       // Fill the CaloDigiCollection
       if (hitIdx > hits.size()) {

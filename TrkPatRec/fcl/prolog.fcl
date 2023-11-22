@@ -141,6 +141,43 @@ TimeClusterFinderUpi : {
   }
 }
 
+
+RobustMultiHelixFinder : {
+  module_type   : RobustMultiHelixFinder
+  ComboHitCollection      : "makePH"
+  TimeClusterCollection   : "TimeClusterFinderDe"
+  Helicities              : [-1,1]
+  MinDRCircle             : 40
+  MinRadCircle            : 150
+  MaxRadCircle            : 350
+  MinDXY2Circle           : 1600
+  MaxDXY2Circle           : 1.6e6
+  ClusteringPhiBin        : 0.1
+  ClusteringMinBin        : 30
+  TargetCon               : false
+  TargetRadius            : 150
+  MinDPDZSlope            : 150
+  MaxDPDZSlope            : 350
+  DPDZStep                : 25
+  MaxDPhiHelInit          : 1.0
+  MaxDPhiHelFit           : 0.7
+  MaxDTHelFit             : 25
+  CaloClusterMinE         : 30
+  CaloClusterWeight       : 5
+  MaxChi2Hit              : 50
+  MinDZTrk                : 1500
+  FitCircleAlgorithm      : 1
+  MinStrawHits            : 10
+  NMaxTrkIter             : 3
+  DiagLevel               : 0
+
+  DiagPlugin : {
+    tool_type             : "RobustMultiHelixFinderDiag"
+    MCDiag                : true
+    StrawDigiMCCollection : "compressDigiMCs"
+  }
+}
+
 # helix finding.  Search for both helicities
 RobustHelixFinder : {
   module_type   : RobustHelixFinder
