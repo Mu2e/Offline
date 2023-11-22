@@ -104,7 +104,7 @@ namespace mu2e {
             _triggerHysteresis(triggerHysteresis),
             _clusterLookbackTime(clusterLookbackTime) {}
 
-      virtual ~StrawElectronics() {}
+      virtual ~StrawElectronics() = default;
 
       // linear response to a charge pulse.  This does NOT include saturation effects,
       // since those are cumulative and cannot be computed for individual charges

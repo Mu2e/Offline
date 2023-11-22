@@ -14,7 +14,6 @@
 
 #include "CLHEP/Random/RandGeneral.h"
 
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 // Mu2e includes
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"

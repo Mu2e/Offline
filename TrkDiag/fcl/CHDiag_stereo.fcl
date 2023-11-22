@@ -1,0 +1,4 @@
+#include "Offline/TrkDiag/test/ComboDiag_stereo.fcl"
+services.DbService.purpose: MDC2020_perfect
+services.DbService.version : v1_1#
+physics.producers.SFlagBkgHits.OutputLevel: "uniquepanel"

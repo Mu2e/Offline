@@ -274,23 +274,15 @@ void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterDataDecoder& cc) {
 
     if (hdr->GetPacketCount() > 0 && parseCAL_ > 0) { // Parse phyiscs information from CAL packets
 
-      auto calData = cc.GetCalorimeterData(curBlockIdx);
-      if (calData == nullptr) {
+      auto calHitDataVec = cc.GetCalorimeterHitData(curBlockIdx);
+      if (calHitDataVec== nullptr) {
         mf::LogError("FragmentAna") << "Error retrieving Calorimeter data from block "
                                     << curBlockIdx << "! Aborting processing of this block!";
         continue;
       }
 
-      if (diagLevel_ > 0) {
-        std::cout << "[StrawAndCaloDigiFromFragments] NEW CALDATA: NumberOfHits "
-                  << calData->NumberOfHits << std::endl;
-      }
-
-      auto hits = cc.GetCalorimeterHits(curBlockIdx);
-
-      bool err = false;
-      for (auto& hit : hits) {
-
+      for (unsigned int i = 0; i < calHitDataVec->size(); i++) {
+        std::pair<CalorimeterDataDecoder::CalorimeterHitDataPacket, std::vector<uint16_t>> hitDataPair = calHitDataVec->at(i);
         // Fill the CaloDigiCollection
 
         // IMPORTANT NOTE: we don't have a final
@@ -300,16 +292,15 @@ void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterDataDecoder& cc) {
         // Also, note that until we have an actual map, channel index does not actually correspond
         // to the physical readout channel on a ROC.
 
-        uint16_t crystalID = hit.first.DIRACB & 0x0FFF;
-        uint16_t roId = hit.first.DIRACB >> 12;
+        uint16_t crystalID = hitDataPair.first.DIRACB & 0x0FFF;
+        uint16_t roId = hitDataPair.first.DIRACB >> 12;
         _hCalROId->Fill(crystalID * 2 + roId);
-        _hCalT0->Fill(hit.first.Time);
-        _hCalPeakPos->Fill(hit.first.IndexOfMaxDigitizerSample);
-        _hCalWfSize->Fill(hit.second.size());
+        _hCalT0->Fill(hitDataPair.first.Time);
+        _hCalPeakPos->Fill(hitDataPair.first.IndexOfMaxDigitizerSample);
+        _hCalWfSize->Fill(hitDataPair.second.size());
 
       } // End loop over readout channels in DataBlock
-      if (err)
-        continue;
+
     }
   }
 }
