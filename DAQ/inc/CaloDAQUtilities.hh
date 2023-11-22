@@ -18,13 +18,8 @@ namespace mu2e {
   public:
     CaloDAQUtilities(std::string ModuleName);
 
-<<<<<<< HEAD
-      uint16_t  getCrystalID(CalorimeterFragment::CalorimeterHitReadoutPacket const& Hit){ return Hit.DIRACB & 0x0FFF;}
-      uint16_t  getSiPMID   (CalorimeterFragment::CalorimeterHitReadoutPacket const& Hit){
-=======
     uint16_t  getCrystalID(CalorimeterDataDecoder::CalorimeterHitReadoutPacket const& Hit){ return Hit.DIRACB & 0x0FFF;}
     uint16_t  getSiPMID   (CalorimeterDataDecoder::CalorimeterHitReadoutPacket const& Hit){
->>>>>>> 23471b8a49bfdf49ad32eaf72956ac616a131c4c
       uint16_t  crystalID  = getCrystalID(Hit);
       uint16_t  sipmID     = Hit.DIRACB >> 12;
       return (crystalID * 2 + sipmID);
