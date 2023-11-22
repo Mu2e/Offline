@@ -16,12 +16,8 @@ protected:
 
 public:
   LsqSums4();
-  LsqSums4(const LsqSums4& Sums);
-
-  ~LsqSums4();
 
   void   clear();
-  void   init(const LsqSums4& S);
 
   void   addPoint   (double X, double Y, double W = 1.);
   void   removePoint(double X, double Y, double W = 1.);

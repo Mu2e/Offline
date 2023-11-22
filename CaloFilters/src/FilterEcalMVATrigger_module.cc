@@ -10,10 +10,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
-
 // #include "MCDataProducts/inc/SimParticleCollection.hh"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
