@@ -245,7 +245,6 @@ namespace mu2e
     _hitPos.clear();
     _hitPos.reserve(_chcol->size());
     for(size_t ich=0;ich<_chcol->size();++ich){
-
       _hitPos.push_back(_chcol->at(ich).pos());
       _hitTime[_nhits]   = _chcol->at(ich).time();
       _hitnch[_nhits] = _chcol->at(ich).nCombo();
