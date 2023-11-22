@@ -16,20 +16,27 @@ physics :
 {
   producers : {
     @table::TrkHitReco.producers
+    SFlagBkgHits : {
+      @table::SFlagBkgHits
+      KerasWeights         : "TrainBkgDiagSTHplane.dat"
+      OutputLevel        : "uniquepanel"
+    }
+    makeSTH : {
+      @table::makeSTH
+      SelectionMask         : "plane"
+    }
   }
-  RecoPath : [
-    @sequence::TrkHitReco.SPrepareHits
-  ]
   analyzers : {
     CHD : {
       @table::CHD
-      diagLevel : 2
-      digiDiag : true
       ComboHitCollection : "SFlagBkgHits"
     }
  }
   EndPath : [CHD]
-
+  RecoPath : [@sequence::TrkHitReco.SPrepareHits]
 }
+# #include "no_preselection.fcl"
 services.TimeTracker.printSummary: true
-services.TFileService.fileName: "nts.owner.ComboDiagStereo.version.sequence.root"
+services.TFileService.fileName: "nts.owner.ComboDiag.version.sequence.root"
+services.DbService.purpose: MDC2020_best
+services.DbService.version: v1_1

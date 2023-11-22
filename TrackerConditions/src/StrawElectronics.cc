@@ -222,8 +222,10 @@ namespace mu2e {
   }
 
   void StrawElectronics::uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const {
-    times[StrawEnd::hv] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.uniqueStraw()];
-    times[StrawEnd::cal] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.uniqueStraw()];
+    if (!overrideDbTimeOffsets()){
+      times[StrawEnd::hv] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.uniqueStraw()];
+      times[StrawEnd::cal] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.uniqueStraw()];
+    }
   }
 
   double StrawElectronics::adcVoltage(StrawId sid, ADCValue adcval) const {

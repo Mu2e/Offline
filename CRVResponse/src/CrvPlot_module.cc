@@ -7,8 +7,8 @@
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
@@ -99,8 +99,7 @@ namespace mu2e
 
   void CrvPlot::beginRun(art::Run const &run)
   {
-    mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
-    _microBunchPeriod = accPar->deBuncherPeriod;
+    _microBunchPeriod = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
   }
 
   void CrvPlot::analyze(const art::Event& event)

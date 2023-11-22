@@ -7,9 +7,8 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GlobalConstantsService/inc/unknownPDGIdName.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -38,7 +37,6 @@
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 // conditions
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 // data
 #include "Offline/RecoDataProducts/inc/TrackClusterMatch.hh"
@@ -443,8 +441,7 @@ namespace mu2e {
       ++_nProcess;
       if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from PbarAnalysis2 =  "<<_nProcess <<std::endl;
 
-      ConditionsHandle<AcceleratorParams> accPar("ignored");
-      double _mbtime = accPar->deBuncherPeriod;
+      double _mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
 
 
       //Handle to the calorimeter

@@ -17,7 +17,7 @@ class TValHist : public TObject {
 
   TValHist() { ClearB(); }
 
-  virtual ~TValHist() {}
+  virtual ~TValHist() = default;
 
   Double_t GetKsProb() { return fKsProb; }
   Double_t GetFrProb() { return fFrProb; }

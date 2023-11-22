@@ -275,23 +275,13 @@ namespace mu2e {
     std::array<double, StrawId::_nustraws> timeOffsetStrawHV;
     std::array<double, StrawId::_nustraws> timeOffsetStrawCal;
 
-    if (ptr->overrideDbTimeOffsets()){
-      for(size_t i=0; i<StrawId::_nupanels; i++) {
-        timeOffsetPanel[i] = 0;
-      }
-      for(size_t i=0; i<StrawId::_nustraws; i++) {
-        timeOffsetStrawHV[i] = 0;
-        timeOffsetStrawCal[i] = 0;
-      }
-    }else{
-      for(size_t i=0; i<StrawId::_nupanels; i++) {
-        timeOffsetPanel[i] = tdp->rowAt(i).delay();
-      }
-      for(size_t i=0; i<StrawId::_nustraws; i++) {
-        size_t istraw = i % StrawId::_nstraws;
-        timeOffsetStrawHV[i] = tdrs->rowAt(istraw).delayHv() + tps->rowAt(i).delayHv();
-        timeOffsetStrawCal[i] = tdrs->rowAt(istraw).delayCal() + tps->rowAt(i).delayCal();
-      }
+    for(size_t i=0; i<StrawId::_nupanels; i++) {
+      timeOffsetPanel[i] = tdp->rowAt(i).delay();
+    }
+    for(size_t i=0; i<StrawId::_nustraws; i++) {
+      size_t istraw = i % StrawId::_nstraws;
+      timeOffsetStrawHV[i] = tdrs->rowAt(istraw).delayHv() + tps->rowAt(i).delayHv();
+      timeOffsetStrawCal[i] = tdrs->rowAt(istraw).delayCal() + tps->rowAt(i).delayCal();
     }
 
     ptr->setOffsets( timeOffsetPanel,

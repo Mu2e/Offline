@@ -1,0 +1,4 @@
+# post-prolog switch to use station-level ComboHits in FlagBkgHits and downstream
+#include "Offline/TrkHitReco/fcl/epilog_stereo.fcl"
+physics.producers.makeSTH.SelectionMask          : "station"
+physics.producers.FlagBkgHits.KerasWeights : "Offline/TrkHitReco/data/TrainBkgDiagStationSpatial.dat"

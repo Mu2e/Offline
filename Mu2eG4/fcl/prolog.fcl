@@ -20,8 +20,9 @@ mu2eg4DefaultPhysics: {
 
     protonProductionCut: 0.0 // mm
     physicsListName:  "ShieldingM"
-    turnOffRadioactiveDecay:  false
-    turnOnRadioactiveDecay:  false
+
+    turnOffRadioactiveDecay:  false    // If both are false, we get the G4 default, which may be physics list dependent.
+    turnOnRadioactiveDecay:  false     // If both are true, it is a configuraiton error detected at run-time.
 
     // the following option is to be used mainly as an extention of
     // the physics lists activating HP neutron physics e.g., Shielding, ShieldingM

@@ -34,8 +34,8 @@
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 namespace mu2e {
   class CompressStepPointMCs;
@@ -197,8 +197,7 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
   _newGenParticlesPID = event.getProductID<GenParticleCollection>();
   _newGenParticleGetter = event.productGetter(_newGenParticlesPID);
 
-  ConditionsHandle<AcceleratorParams> accPar("ignored");
-  _mbtime = accPar->deBuncherPeriod;
+  _mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
 
   _newStepPointMCs.clear();
   for (const auto& i_stepTag : _stepPointMCTags) {
