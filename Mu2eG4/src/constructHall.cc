@@ -183,7 +183,6 @@ namespace mu2e {
           Hole tmpHole = volHoles[iHole];
           double radius = tmpHole.getRad();
           double halfLength = tmpHole.getHalfLen();
-          string orientationHH = tmpHole.getOrient();
           G4Tubs*holeTub = new G4Tubs(holeName.str(),
                                       0.0, //inner radius
                                       radius,//outer radius
