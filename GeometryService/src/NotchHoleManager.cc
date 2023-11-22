@@ -22,7 +22,7 @@ void mu2e::NotchHoleManager::loadNotches( const SimpleConfig& config ) {
   std::vector<std::string>  usedVariablesHH;
   std::string searchString(".Notch.numberOfNotches");
   std::string searchString1(".Hole.numberOfHoles");
-  for ( auto theVar : variables ) {
+  for ( auto const &theVar : variables ) {
     std::size_t pos = 0;
     if ( (pos = theVar.find(searchString)) != std::string::npos ) {
       // Assume variable names go like this:
@@ -35,7 +35,7 @@ void mu2e::NotchHoleManager::loadNotches( const SimpleConfig& config ) {
   } // end of loop over variables to find those with Notch specs
 
   // Have list of parts with notches now.  Build the notch map.
-  for ( auto partName : usedVariables ) {
+  for ( auto const &partName : usedVariables ) {
     // For each part that has a notch or notches, we have to first
     // ask how many notches for the part, then loop and for each notch,
     // find the dimensions, position, and orientation.  Dimensions are in
@@ -99,7 +99,7 @@ void mu2e::NotchHoleManager::loadHoles( const SimpleConfig& config ) {
   // and how many holes each
   std::vector<std::string>  usedVariablesH;
   std::string searchString2(".Hole.numberOfHoles");
-  for ( auto theVarH : variablesH ) {
+  for ( auto const &theVarH : variablesH ) {
     std::size_t pos = 0; // check if err
     if ( (pos = theVarH.find(searchString2)) != std::string::npos ) {
       // Assume variable names go like this:
@@ -111,7 +111,7 @@ void mu2e::NotchHoleManager::loadHoles( const SimpleConfig& config ) {
   } // end of loop over variables to find those with Holes
 
   // Have list of parts with holes now.  Build the hole map.
-  for ( auto partNameH : usedVariablesH ) {
+  for ( auto const &partNameH : usedVariablesH ) {
     // For each part that has a hole or holes, we have to first
     // ask how many holes for the part, then loop and for each hole,
     // find the radii,lengths, position, and orientation.  Dimensions (radii & lengths) are in
