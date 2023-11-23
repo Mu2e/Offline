@@ -30,39 +30,30 @@ namespace mu2e {
     constexpr static const char* cxname = {"EventTiming"};
 
     // construct with constants, then some values are computed and filled below
-    EventTiming( double systemClockSpeed,
-                 double timeFromProtonsToDRMarker,
+    EventTiming( double timeFromProtonsToDRMarker,
                  unsigned offSpillLength,
-                 int onSpillBins,
-                 int onSpillMaxLength) :
+                 int onSpillBins) :
       ProditionsEntity(cxname),
-      _systemClockSpeed(systemClockSpeed),
       _timeFromProtonsToDRMarker(timeFromProtonsToDRMarker),
       _offSpillLength(offSpillLength),
-      _onSpillBins(onSpillBins),
-      _onSpillMaxLength(onSpillMaxLength){}
+      _onSpillBins(onSpillBins) {}
 
     virtual ~EventTiming() = default;
 
-    double systemClockSpeed() const { return _systemClockSpeed; }
     double timeFromProtonsToDRMarker() const { return _timeFromProtonsToDRMarker; }
     unsigned offSpillLength() const { return _offSpillLength; }
     int onSpillBins() const { return _onSpillBins; }
-    int onSpillMaxLength() const { return _onSpillMaxLength; }
 
     void print(std::ostream& os) const;
 
   private:
 
-    double _systemClockSpeed;
     double _timeFromProtonsToDRMarker;
     unsigned _offSpillLength;
     int _onSpillBins;
-    int _onSpillMaxLength;
 
   };
 
 }
 
 #endif
-
