@@ -11,12 +11,16 @@
 #include "Math/SMatrix.h"
 #include <iostream>
 namespace mu2e {
-  struct UVRes {
+  struct UVVar {
     using VEC2 = ROOT::Math::XYVectorF; // spatial only 2D vector
+    VEC2 const& udir() const { return udir_;}
+    VEC2 vdir() const { return VEC2(-udir_.Y(),udir_.X()); }
+    float const& uvar() const { return uvar_; }
+    float const& vvar() const { return vvar_; }
+    float ures() const { return sqrt( uvar_); }
+    float vres() const { return sqrt( vvar_); }
     VEC2 udir_; // u direction
-    float ures_, vres_; // resolution along u, v
-    float uvar() const { return ures_*ures_; }
-    float vvar() const { return vres_*vres_; }
+    float uvar_, vvar_; // variance along u, v
   };
   class TwoDPoint {
     public:
@@ -26,7 +30,7 @@ namespace mu2e {
       using SMAT = ROOT::Math::SMatrix<double,2,2,ROOT::Math::MatRepSym<double,2>>; // 2D symmetric matrix
       TwoDPoint() {}
       TwoDPoint(SVEC const& pos, SMAT const& cov) : pos_(pos), cov_(cov) {} // explicit construct
-      TwoDPoint(VEC2 const& pos,UVRes const& uvres);// construct from a point and resolution information
+      TwoDPoint(VEC2 const& pos,UVVar const& uvvar);// construct from a point and resolution information
       TwoDPoint(VEC2 const& pos,VEC2 const& udir, float uvar, float vvar); // construct from a point, semi-major direction cosine to the X axis, and semi-major and minor variances
       TwoDPoint(VEC3 const& pos,VEC3 const& udir, float uvar, float vvar); // construct from a point, semi-major direction, and semi-major and minor variances.  This is used for ComboHit
       // accessors
@@ -35,7 +39,7 @@ namespace mu2e {
       VEC2 pos2() const { return VEC2(pos_[0],pos_[1]); } // physical vector
       VEC3 pos3(float zval=0.0) const { return VEC3(pos_[0],pos_[1],zval); } // physical vector; Z coordinate is meaningless
       // diagonzlied covariance, with angle, used to create new ComboHits
-      UVRes uvRes() const;
+      UVVar uvRes() const;
       void print(std::ostream& os) const;
     private:
       SVEC pos_; // position in XY cartesian coordinates represented as an algebraic vector
