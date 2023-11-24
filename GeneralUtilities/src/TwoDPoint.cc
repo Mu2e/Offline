@@ -19,27 +19,40 @@ namespace mu2e {
     cov_ = SMAT(cov,cov+3);
   }
 
-  TwoDPoint::TwoDPoint(VEC2 const& pos,UVRes const& uvres) : TwoDPoint(pos, uvres.udir_, uvres.uvar(),uvres.vvar()) {}
+  TwoDPoint::TwoDPoint(VEC2 const& pos,UVVar const& uvvar) : TwoDPoint(pos, uvvar.udir_, uvvar.uvar(),uvvar.vvar()) {}
   TwoDPoint::TwoDPoint(VEC3 const& pos,VEC3 const& udir, float uvar, float vvar) :
     TwoDPoint(VEC2(pos.X(),pos.Y()), VEC2(udir.X(),udir.Y()),uvar,vvar){}
 
-  UVRes TwoDPoint::uvRes() const {
-    // compute eignvalues
-    double ldiff = cov_(0,0)-cov_(1,1);
-    double lr = sqrt(ldiff*ldiff + 4*cov_(0,1)*cov_(0,1));
-    double lsum = cov_(0,0)+cov_(1,1);
-    if(lr > lsum) throw std::runtime_error( "Unphysical covariance" );
-    UVRes retval;
-    retval.ures_ = sqrt(0.5*(lsum+lr));// larger error along the u direction by convention
-    retval.vres_ = sqrt(0.5*(lsum-lr));
-    // compute angle: this can be degenerate
-    if(lr/lsum > 1e-6 ){
-      double ux2 = std::min(1.0,0.5*(1.0 + ldiff/lr));
-      float ux = sqrt(std::max(0.0,ux2));
-      float uy = copysign(sqrt(1.0 -ux2),cov_(0,1));
-      retval.udir_ = VEC2(ux,uy);
-    } else
-      retval.udir_ = VEC2(1.0,0.0); // circular errors, set an arbitrary angle
+  UVVar TwoDPoint::uvRes() const {
+    // diagonalize the covariance matrix.  First, compute the eignvalues
+    UVVar retval;
+    double det;
+    double halftr = 0.5*cov_.Trace();
+    // protect against degenerate matrices
+    bool ok = cov_.Det2(det);
+    if(ok){
+      double delta =  halftr*halftr - det;
+      ok = delta > 0.0;
+      if(ok){
+        double sqrtdelta = sqrt(delta);
+        retval.uvar_ = halftr + sqrtdelta; // by convention the larger eigenvalue is 'u'
+        retval.vvar_ = halftr - sqrtdelta;
+        // compute u eigenvector
+        retval.udir_ = VEC2(retval.uvar_ - cov_(1,1),cov_(2,2)).Unit();
+      }
+    }
+    if(!ok){
+      //fall back to circular errors
+      if(cov_(0,0)> cov_(1,1)){
+        retval.uvar_ = cov_(0,0);
+        retval.vvar_ = cov_(1,1);
+        retval.udir_ = VEC2(1.0,0.0);
+      } else {
+        retval.uvar_ = cov_(1,1);
+        retval.vvar_ = cov_(0,0);
+        retval.udir_ = VEC2(0.0,1.0);
+      }
+    }
     return retval;
   }
 

@@ -223,14 +223,29 @@ namespace mu2e {
     if(_debug > 1){
       std::cout << "Combining " << cpts.nPoints() << " hits" << std::endl;
     }
+// define initial perpendicular directions
+    // fill position and variance from combined info
+    auto const& pt = cpts.point();
+    auto uvres = pt.point().uvRes();
+    auto udir = uvres.udir();
+    auto vdir = uvres.vdir();
+    combohit._udir = XYZVectorF(udir.X(),udir.Y(),0.0);
+    combohit._vdir = XYZVectorF(vdir.X(),vdir.Y(),0.0);
+    combohit._ures = uvres.ures();
+    combohit._vres = uvres.vres();
+    combohit._qual = cpts.chisquared();
+   //      combohit._qual = cpts.consistency();
+
     double wtsum(0), twtsum(0), zsum(0), zmin(1.0e6), zmax(-1e6);
+
     // fill the remaining variables
     for(auto iwt = cpts.weights().begin(); iwt != cpts.weights().end(); ++iwt){
       auto ihit = iwt->first;
+      auto const& cwt = iwt->second;
       if(combohit.addIndex(ihit)) {
         auto const& ch = inchcol[ihit];
         combohit._nsh += ch.nStrawHits();
-        double wt = ch.nStrawHits(); // not sure if there's a better way to weight
+        double wt = cwt.wt_.wt().Trace(); // take combined inverse variance as weight
         wtsum += wt;
         combohit._flag.merge(ch.flag());
         double z = ch._pos.Z();
@@ -255,16 +270,7 @@ namespace mu2e {
         std::cout << "MakeStereoHits past limit" << std::endl;
       }
     }
-    // fill position and variance from combined info
-    auto const& pt = cpts.point();
-    auto uvres = pt.point().uvRes();
     combohit._pos = pt.point().pos3(zsum/wtsum);
-    combohit._udir = XYZVectorF(uvres.udir_.X(),uvres.udir_.Y(),0.0);
-    combohit._vdir = XYZVectorF(-uvres.udir_.Y(),uvres.udir_.X(),0.0);
-    combohit._ures = uvres.ures_;
-    combohit._vres = uvres.vres_;
-    combohit._qual = cpts.chisquared();
-    //      combohit._qual = cpts.consistency();
     // define w error from range
     static const double invsqrt12 = 1.0/sqrt(12.0);
     combohit._wres = invsqrt12*(zmax-zmin);

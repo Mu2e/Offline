@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 
   for(auto const& pt : points) {
     auto uvres = pt.uvRes();
-    std::cout << "Input point " << pt << " uvres " << uvres.ures_ << "," << uvres.vres_ << ", udir " <<  uvres.udir_ << std::endl;
+    std::cout << "Input point " << pt << " uvres " << uvres.ures() << "," << uvres.vres() << ", udir " <<  uvres.udir() << ", vdir " <<  uvres.vdir() << std::endl;
   }
 
   CombineTwoDPoints cp(points,invar);
