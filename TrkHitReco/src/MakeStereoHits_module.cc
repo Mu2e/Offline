@@ -233,8 +233,7 @@ namespace mu2e {
     combohit._vdir = XYZVectorF(vdir.X(),vdir.Y(),0.0);
     combohit._ures = uvres.ures();
     combohit._vres = uvres.vres();
-    combohit._qual = cpts.chisquared();
-   //      combohit._qual = cpts.consistency();
+    combohit._qual = cpts.consistency();
 
     double wtsum(0), twtsum(0), zsum(0), zmin(1.0e6), zmax(-1e6);
 

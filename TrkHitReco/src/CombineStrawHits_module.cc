@@ -17,6 +17,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
+#include "TMath.h"
 
 #include <iostream>
 
@@ -277,17 +278,19 @@ namespace mu2e {
     combohit._pos        = midpos + combohit._wdist*combohit.uDir();
     combohit._ures       = sqrt(1.0/wwtsum + _uerr2);
     combohit._vres       = sqrt(1.0/twtsum );
-    float wdist2 = wacc2/wwtsum;
-    float nc2 = pow(combohit.nCombo()-1,2);
-    float sigw = sqrt(std::max(_uerr2,(wdist2-combohit._wdist*combohit._wdist)/nc2));
-    combohit._qual       = sigw/combohit._ures; // set to ratio of original to reduced chi
-
+    // compute U chisquared
+    unsigned ndof = nsh - 1; // u direction only
+    double chisq = wacc2 - wacc/wwtsum;
+    combohit._qual       = TMath::Prob(chisq,ndof);
 //-----------------------------------------------------------------------------
 // for combohits made out of 2 and more straw hits:
 // if combohit._ures is less than the sigma calculated on the individual hit positions,
 // use the PDG prescription : scale the resolution to the sigma
 //-----------------------------------------------------------------------------
-   if (_checkWres && combohit._ures < sigw)combohit._ures = sigw;
+    float wdist2 = wacc2/wwtsum;
+    float nc2 = pow(ndof,2);
+    float sigw = sqrt(std::max(_uerr2,(wdist2-combohit._wdist*combohit._wdist)/nc2));
+    if (_checkWres && combohit._ures < sigw)combohit._ures = sigw;
   }
 }
 
