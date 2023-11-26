@@ -15,8 +15,6 @@
 
 // conditions
 #include "Offline/ConditionsBase/inc/TrackerCalibrationStructs.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
@@ -36,9 +34,9 @@
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
-#include "artdaq-core-mu2e/Data/TrackerFragment.hh"
+#include "artdaq-core-mu2e/Data/TrackerDataDecoder.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
 #include <memory>
@@ -80,7 +78,7 @@ public:
                                       Comment("CaloClusterCollection producer")};
     fhicl::Atom<art::InputTag> pbttoken{Name("ProtonBunchTimeTag"),
                                         Comment("ProtonBunchTime producer")};
-    fhicl::Atom<art::InputTag> tfTag{Name("TrackerFragmentTag"),
+    fhicl::Atom<art::InputTag> tfTag{Name("TrackerDataDecoderTag"),
                                      Comment("StrawDigiCollection producer")};
   };
 
@@ -106,7 +104,7 @@ private:
   //
   // helper function
   //
-  void analyze_tracker_(const mu2e::TrackerFragment& cc,
+  void analyze_tracker_(const mu2e::TrackerDataDecoder& cc,
                         std::unique_ptr<mu2e::StrawHitCollection> const& shCol,
                         std::unique_ptr<mu2e::ComboHitCollection> const& chCol, double pbtOffset,
                         mu2e::TrackerStatus const& trackerStatus, mu2e::StrawResponse const& srep,
@@ -148,7 +146,7 @@ void art::StrawHitRecoFromFragments::produce(art::Event& event) {
   //_tfTag = art::InputTag("test");
 
   size_t numTrkFrags = 0;
-  auto fragmentHandle = event.getValidHandle<std::vector<mu2e::TrackerFragment> >(_tfTag);
+  auto fragmentHandle = event.getValidHandle<std::vector<mu2e::TrackerDataDecoder> >(_tfTag);
 
   for (auto frag : *fragmentHandle) {
     numTrkFrags++;
@@ -196,14 +194,14 @@ void art::StrawHitRecoFromFragments::produce(art::Event& event) {
 }
 
 void art::StrawHitRecoFromFragments::analyze_tracker_(
-    const mu2e::TrackerFragment& cc, std::unique_ptr<mu2e::StrawHitCollection> const& shCol,
+    const mu2e::TrackerDataDecoder& cc, std::unique_ptr<mu2e::StrawHitCollection> const& shCol,
     std::unique_ptr<mu2e::ComboHitCollection> const& chCol, double pbtOffset,
     mu2e::TrackerStatus const& trackerStatus, mu2e::StrawResponse const& srep,
     const mu2e::CaloClusterCollection* caloClusters, mu2e::Tracker const& tt) {
 
   if (_diagLevel > 1) {
     std::cout << std::endl;
-    std::cout << "TrackerFragment: ";
+    std::cout << "TrackerDataDecoder: ";
     std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
     std::cout << std::endl;
     std::cout << "\t"

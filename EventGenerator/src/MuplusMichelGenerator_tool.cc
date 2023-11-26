@@ -18,18 +18,26 @@
 
 namespace mu2e {
   class MuplusMichelGenerator : public ParticleGeneratorTool {
+
+  private:
+    PDGCode::type                       _pdgCode;
+    double                              _mass;
+    BinnedSpectrum                      _spectrum;
+    std::unique_ptr<RandomUnitSphere>   _randomUnitSphere;
+    std::unique_ptr<CLHEP::RandGeneral> _randSpectrum;
+
   public:
     struct PhysConfig {
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
+      using Name   = fhicl::Name;
+      using Comment= fhicl::Comment;
 
-      fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
+      fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("BinnedSpectrum parameters)")};
     };
     typedef art::ToolConfigTable<PhysConfig> Parameters;
 
     explicit MuplusMichelGenerator(Parameters const& conf) :
-      _pdgId(PDGCode::e_plus),
-      _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgId).mass()),
+      _pdgCode(PDGCode::e_plus),
+      _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgCode).mass()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
     {}
 
@@ -42,18 +50,9 @@ namespace mu2e {
       _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng);
       _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
     }
-
-  private:
-    PDGCode::type _pdgId;
-    double _mass;
-
-    BinnedSpectrum    _spectrum;
-
-    std::unique_ptr<RandomUnitSphere>  _randomUnitSphere;
-    std::unique_ptr<CLHEP::RandGeneral> _randSpectrum;
   };
 
-
+//-----------------------------------------------------------------------------
   std::vector<ParticleGeneratorTool::Kinematic> MuplusMichelGenerator::generate() {
     std::vector<ParticleGeneratorTool::Kinematic>  res;
 
@@ -62,7 +61,7 @@ namespace mu2e {
     const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
     CLHEP::HepLorentzVector fourmom(_randomUnitSphere->fire(p), energy);
 
-    ParticleGeneratorTool::Kinematic k{_pdgId, ProcessCode::mu2ePrimary, fourmom};
+    ParticleGeneratorTool::Kinematic k{_pdgCode, ProcessCode::mu2ePrimary, fourmom};
     res.emplace_back(k);
 
     return res;
@@ -72,11 +71,7 @@ namespace mu2e {
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
     const auto daughters = generate();
     for(const auto& d: daughters) {
-      out->emplace_back(d.pdgId,
-                        GenId::MuplusMichelGenTool,
-                        pos,
-                        d.fourmom,
-                        stop.t);
+      out->emplace_back(d.pdgId, GenId::MuplusMichelGenTool, pos, d.fourmom, stop.t);
     }
   }
 

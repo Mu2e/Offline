@@ -74,7 +74,7 @@ namespace mu2e {
       art::Ptr<SimParticle> _spp;
       unsigned _count;
     };
-    struct spcountcomp : public binary_function<spcount, spcount , bool> {
+    struct spcountcomp {
       bool operator() (spcount a, spcount b) { return a._count > b._count; }
     };
 

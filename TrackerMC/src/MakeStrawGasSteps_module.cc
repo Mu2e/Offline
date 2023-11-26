@@ -25,7 +25,6 @@
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/MCRelationship.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include <utility>

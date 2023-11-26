@@ -10,7 +10,10 @@ namespace mu2e {
     Float_t _hhphi, _hphi;
     Float_t _werr, _terr;
     Float_t _whdot, _hrho;
-    Float_t _dwire, _dtrans, _wres, _wtres, _chisq, _hqual;
+    Float_t _dwire, _dtrans;
+    Float_t _wres = std::numeric_limits<Float_t>::max();
+    Float_t _wtres = std::numeric_limits<Float_t>::max();
+    Float_t _chisq, _hqual;
   };
 
   struct HelixHitInfoMC : public HitInfoMC {

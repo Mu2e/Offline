@@ -40,14 +40,16 @@ namespace mu2e {
   class EventGeneratorMu : public art::EDProducer {
   public:
     struct Config {
-      using Name   =fhicl::Name;
-      using Comment=fhicl::Comment;
+      using Name    = fhicl::Name;
+      using Comment = fhicl::Comment;
 
-      fhicl::Atom<art::InputTag> simpCollTag{Name("simpCollTag"  ),Comment("input SimParticleCollection")};
-      fhicl::DelegatedParameter  generator  {Name("generator"    ),Comment("generator tool")};
-      fhicl::Atom<int>           pdgCode    {Name("pdgCode"      ),Comment("PDG code"                   )};
-      fhicl::Atom<double>        lifetime   {Name("lifetime"     ),Comment("lifetime"                   )};
-      fhicl::Atom<unsigned>      verbosity  {Name("verbosity"    ),0};
+      fhicl::Atom<int>           stopPdgCode   {Name("stopPdgCode"   ),Comment("PDG code of the stop"       )};
+      fhicl::Atom<double>        lifetime      {Name("lifetime"      ),Comment("mu+ lifetime"               )};
+      fhicl::Atom<double>        tmin          {Name("tmin"          ), Comment("T min"                     )};
+      fhicl::Atom<double>        tmax          {Name("tmax"          ), Comment("T max"                     )};
+      fhicl::Atom<art::InputTag> simpCollTag   {Name("simpCollTag"   ),Comment("input SimParticleCollection")};
+      fhicl::DelegatedParameter  generator     {Name("generator"     ),Comment("generator tool"             )};
+      fhicl::Atom<int>           verbosityLevel{Name("verbosityLevel"),Comment("verbosity Level"            )};
     };
 
     using Parameters = art::EDProducer::Table<Config>;
@@ -57,83 +59,167 @@ namespace mu2e {
 
 //----------------------------------------------------------------
   private:
-    double                                     lifetime_   ;
-    int                                        pdgCode_    ;
-    const art::InputTag                        simpCollTag_;
-    unsigned                                   verbosity_  ;
-    art::RandomNumberGenerator::base_engine_t& eng_        ;
-    CLHEP::RandExponential                     randExp_    ;
-
-    std::unique_ptr<ParticleGeneratorTool>     generator_  ;
-
-    void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time, ParticleGeneratorTool* gen);
+    PDGCode::type                              _stopPdgCode;
+    double                                     _lifetime   ;          // mu+ lifetime
+    double                                     _tmin       ;
+    double                                     _tmax       ;
+    const art::InputTag                        _simpCollTag;
+    art::RandomNumberGenerator::base_engine_t& _eng        ;
+    std::unique_ptr<CLHEP::RandExponential>    _randExp    ;
+    std::unique_ptr<ParticleGeneratorTool>     _generator  ;
+    int                                        _verbosityLevel;
   };
 
 //================================================================
   EventGeneratorMu::EventGeneratorMu(const Parameters& conf) : EDProducer{conf}
-    , lifetime_   {conf().lifetime   ()}
-    , pdgCode_    {conf().pdgCode    ()}
-    , simpCollTag_{conf().simpCollTag()}
-    , verbosity_  {conf().verbosity  ()}
-    , eng_        {createEngine(art::ServiceHandle<SeedService>()->getSeed())}
-    , randExp_    {eng_}
+    , _lifetime    (conf().lifetime()   )
+    , _tmin        (conf().tmin       ())
+    , _tmax        (conf().tmax       ())
+    , _simpCollTag (conf().simpCollTag())
+    , _eng         (createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+    , _randExp     (std::make_unique<CLHEP::RandExponential>(_eng))
+    , _verbosityLevel(conf().verbosityLevel())
   {
-    consumes<SimParticleCollection>(simpCollTag_);
+    _stopPdgCode = static_cast<PDGCode::type>(conf().stopPdgCode());
+
+    if (_simpCollTag.empty()) {
+      produces <mu2e::GenParticleCollection>();
+      produces <mu2e::SimParticleCollection>();
+    }
+    else {
+      consumes<SimParticleCollection>(_simpCollTag);
+    }
     produces<mu2e::StageParticleCollection>();
 
     const auto pset = conf().generator.get<fhicl::ParameterSet>();
 
-    generator_      = art::make_tool<ParticleGeneratorTool>(pset);
-    generator_->finishInitialization(eng_,"who was the genius to introduce this interface? - Let me know, thanks, Pasha");
+    _generator      = art::make_tool<ParticleGeneratorTool>(pset);
+    _generator->finishInitialization(_eng,"wow");
 
-    if(verbosity_ > 0) {
+    if(_verbosityLevel > 0) {
       mf::LogInfo log("EventGeneratorMu");
-      log << ", lifetime = " << lifetime_ << std::endl;
+      log << ", lifetime = " << _lifetime << std::endl;
     }
   }
 
-  //================================================================
+//-----------------------------------------------------------------------------
   void EventGeneratorMu::produce(art::Event& event) {
     auto output{std::make_unique<StageParticleCollection>()};
-
-    const auto simpch = event.getValidHandle<SimParticleCollection>(simpCollTag_);
-
+//-----------------------------------------------------------------------------
+// practice of passing vectors by value is sprawling
+//-----------------------------------------------------------------------------
     std::vector<art::Ptr<SimParticle>> list;
 
-    if      (pdgCode_ ==   13) list = stoppedMuMinusList(simpch);
-    else if (pdgCode_ ==  -13) list = stoppedMuPlusList (simpch);
-    else if (pdgCode_ == -211) list = stoppedPiMinusList(simpch);
+    if (not _simpCollTag.empty()) {
+      art::Handle<SimParticleCollection> simpch;
+      event.getByLabel<SimParticleCollection>(_simpCollTag,simpch);
+      if (not simpch.isValid()) {
+        printf("EventGeneratorMu::%s ERROR: can\'t find SimParticleCollection tag=%s, BAIL OUT",
+               __func__,_simpCollTag.encode().data());
+        return;
+      }
+//-----------------------------------------------------------------------------
+// retrieve list of stopped particles with given PDG code
+//-----------------------------------------------------------------------------
+      // const SimParticleCollection* simpc = simpch->product();
+      for(auto i = simpch->begin(); i != simpch->end(); ++i) {
+        const auto& inpart = i->second;
+        if((inpart.pdgId() == _stopPdgCode) && (inpart.endMomentum().e() == 0)) {
+          list.emplace_back(simpch, i->first.asInt());
+        }
+      }
+    }
+    else {
+//-----------------------------------------------------------------------------
+// particle gun mode: need to produce the stop
+// --------------------
+// 1. create a GenParticle, store it in the event, and get a handle
+//-----------------------------------------------------------------------------
+      std::unique_ptr<GenParticleCollection> genp_collp(new GenParticleCollection);
 
-    for(const auto& simp: list) {
-      double time = simp->endGlobalTime() + randExp_.fire(lifetime_);
-      addParticles(output.get(), simp, time, generator_.get());
+      CLHEP::Hep3Vector       pos ;
+      double                  tstop(0);
+      CLHEP::HepLorentzVector mom(0,0,0,0) ;
+
+      _generator->getXYZ(&pos);
+
+      do { tstop = _tmin + _randExp->fire(_lifetime); } while (tstop > _tmax);
+
+      GenParticle genp(_stopPdgCode,_generator->genId(),pos,mom,tstop);
+
+      genp_collp->push_back(genp);
+      auto genpch = event.put(std::move(genp_collp));
+
+      GenParticleCollection* genpc =  (GenParticleCollection*) genpch.product();
+//-----------------------------------------------------------------------------
+// 2. create a SimParticle at rest corresponding to the GenParticle
+//    and store it in the event
+//-----------------------------------------------------------------------------
+      std::unique_ptr<SimParticleCollection> simp_collp(new SimParticleCollection);
+      art::Ptr<GenParticle>::key_type k9(1);
+      art::Ptr<GenParticle> genpPtr = art::Ptr<GenParticle>(genpch,k9);
+
+      SimParticle simp(SimParticle::key_type(),
+                       1,
+                       art::Ptr<SimParticle>(), // stopped particle has no parent
+                       _stopPdgCode,
+                       genpPtr,
+                       CLHEP::HepLorentzVector(pos,tstop),
+                       mom,
+                       0,
+                       0,
+                       0,
+                       0,
+                       _generator->processCode());
+
+      simp.addEndInfo(pos,mom,tstop,0,0,0,_generator->processCode(),0.,0,0.);
+
+      cet::map_vector_key o_my_gosh{1};
+      simp_collp->insert(std::make_pair(o_my_gosh,simp));
+      auto simpc_ph = event.put(std::move(simp_collp));
+
+      art::Ptr<SimParticle>::key_type s9(1);
+      art::Ptr<SimParticle> stop = art::Ptr<SimParticle>(simpc_ph,s9);
+      list.push_back(stop);
+
+      for(const auto& stop: list) {
+        double time = stop->endGlobalTime();
+//-----------------------------------------------------------------------------
+// re-package daughters into a list of "stage particles"
+//-----------------------------------------------------------------------------
+        auto daughters = _generator->generate();
+        for(const auto& d: daughters) {
+          genpc->push_back(GenParticle(d.pdgId,_generator->genId(),stop->endPosition(),d.fourmom,time));
+        }
+      }
+//-----------------------------------------------------------------------------
+// for each stop (vertex) generate secondary particle(s)
+// for the antiptoton annihilation, will set the _lifetime to zero
+//-----------------------------------------------------------------------------
+      for(const auto& stop: list) {
+        double time = stop->endGlobalTime();
+//-----------------------------------------------------------------------------
+// re-package daugters into a list of "stage particles"
+//-----------------------------------------------------------------------------
+        auto daughters = _generator->generate();
+        for(const auto& d: daughters) {
+          output->emplace_back(stop                     ,
+                               _generator->processCode(),
+                               d.pdgId                  ,
+                               stop->endPosition()      ,
+                               d.fourmom                ,
+                               time                     );
+        }
+      }
     }
 
-    if(verbosity_ >= 9) {
+    if(_verbosityLevel >= 9) {
       std::cout<<"EventGeneratorMu output: "<<*output<<std::endl;
     }
 
     event.put(std::move(output));
   }
 
-  //================================================================
-  void EventGeneratorMu::addParticles(StageParticleCollection* output,
-                                      art::Ptr<SimParticle>    mustop,
-                                      double                   time,
-                                      ParticleGeneratorTool*    gen)
-  {
-    auto daughters = gen->generate();
-    for(const auto& d: daughters) {
-      output->emplace_back(mustop               ,
-                           gen->processCode()   ,
-                           d.pdgId              ,
-                           mustop->endPosition(),
-                           d.fourmom            ,
-                           time                 );
-    }
-  }
-
-  //================================================================
 } // namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::EventGeneratorMu)

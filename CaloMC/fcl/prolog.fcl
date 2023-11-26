@@ -2,7 +2,7 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
-#include "Offline/CaloMC/fcl/common.fcl"
+#include "Offline/CaloReco/fcl/common.fcl"
 #include "Offline/CommonMC/fcl/prolog.fcl"
 
 
@@ -48,8 +48,6 @@ NoiseGenerator :
     rinNphotPerNs           : 0.36
     darkNphotPerNs          : 0.60
     digiSampling            : @local::HitMakerDigiSampling
-    enableAR                : true
-    nParAR                  : 5
     nMaxFragment            : 1000
     minPeakADC              : @local::HitMakerMinPeakADC
     diagLevel               : 0
@@ -64,13 +62,12 @@ CaloDigiMaker :
     digitizationStart       : @local::HitMakerDigitizationStart
     digitizationEnd         : @local::HitMakerDigitizationEnd
     addNoise                : true
-    generateSpotNoise       : true
     addRandomNoise          : false
     NoiseGenerator          : { @table::NoiseGenerator  }
     digiSampling            : @local::HitMakerDigiSampling
     nBits                   : 12
     minPeakADC              : @local::HitMakerMinPeakADC
-    nBinsPeak                    : 2
+    nBinsPeak               : 2
     bufferDigi              : 16
     diagLevel               : 0
 }
