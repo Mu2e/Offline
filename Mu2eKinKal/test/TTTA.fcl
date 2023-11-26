@@ -67,7 +67,7 @@ physics.producers.TTmakeSH.FilterHits : false
 physics.producers.TTmakePH.TestFlag : true
 #physics.producers.TTmakePH.FilterHits : true
 physics.producers.TTmakePH.StrawHitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
-physics.producers.TTmakePH.StrawHitMask          : ["Noisy"]
+physics.producers.TTmakePH.StrawHitMask          : ["Dead","Noisy"]
 
 services.TimeTracker.printSummary: true
 services.TFileService.fileName: "nts.owner.TTKKSeed.version.sequence.root"

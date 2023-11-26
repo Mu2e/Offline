@@ -90,8 +90,12 @@ namespace mu2e {
       }
       if(setLR){
         whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
-        // only use dt constraint if the MVA are below the tighter cut.  This should be split for cluster, sign TODO
-        if(clustermvaout[0] < dtmvacut_ || signmvaout[0] < dtmvacut_ ) whstate.flag_.clear(KKSHFlag::driftdt);
+        // only use dt constraint if the MVA are above the tighter cut.  This should be split for cluster, sign TODO
+        if(clustermvaout[0] > dtmvacut_ && signmvaout[0] > dtmvacut_ ){
+          whstate.flag_.merge(KKSHFlag::driftdt);
+        } else {
+          whstate.flag_.clear(KKSHFlag::driftdt);
+        }
       } else {
         whstate.state_ = WireHitState::null;
       }

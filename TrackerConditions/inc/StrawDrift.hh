@@ -42,7 +42,7 @@ namespace mu2e {
         _instantSpeed_dbins(instantSpeed_dbins), _times_dbins(times_dbins),
         _deltaT(deltaT), _distances_tbins(distances_tbins), _times_tbins(times_tbins) {}
 
-      virtual ~StrawDrift() {}
+      virtual ~StrawDrift() = default;
 
       double GetCC() const { return _cc;};
       double GetAverageSpeed(double dist) const; // avg nom. drift speed (phi = 0)

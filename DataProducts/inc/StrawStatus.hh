@@ -32,6 +32,7 @@ namespace mu2e {
       noise=12, // straw electronics generating noise
       pickup=13, // straw noisy due to pickup (ie adjacent noisy straw)
       suppress=14, // suppress signals from this straw for unspecified reasons
+      nosurvey=15, // this element hasn't been surved which can affect its geometric accuracy
     };
 
     // functions needed for the BitMap template

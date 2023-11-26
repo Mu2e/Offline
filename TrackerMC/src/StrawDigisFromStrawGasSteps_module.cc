@@ -18,8 +18,8 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 // conditions
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
@@ -430,11 +430,10 @@ namespace mu2e {
       static int ncalls(0);
       ++ncalls;
       // update conditions caches, etc
-      ConditionsHandle<AcceleratorParams> accPar("ignored");
       StrawPhysics const& strawphys = _strawphys_h.get(event.id());
       StrawElectronics const& strawele = _strawele_h.get(event.id());
       const Tracker& tracker = *GeomHandle<Tracker>();
-      _mbtime = accPar->deBuncherPeriod;
+      _mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
       art::Handle<EventWindowMarker> ewMarkerHandle;
       event.getByLabel(_ewMarkerTag, ewMarkerHandle);
       const EventWindowMarker& ewMarker(*ewMarkerHandle);

@@ -22,7 +22,6 @@
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/MCRelationship.hh"
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"

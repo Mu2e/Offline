@@ -16,7 +16,7 @@ rootlibs  = env['ROOTLIBS']
 
 
 helper.make_plugins( [
-  'mu2e_SeedService_SeedService_service',
+  'mu2e_SeedService',
   'mu2e_TrkReco',
   'mu2e_Mu2eUtilities',
   'mu2e_CaloCluster',
@@ -27,9 +27,7 @@ helper.make_plugins( [
   'mu2e_CalorimeterGeom',
   'mu2e_CosmicRayShieldGeom',
   'mu2e_ExtinctionMonitorFNAL_Geometry',
-  'mu2e_GlobalConstantsService_GlobalConstantsService_service',
   'mu2e_GlobalConstantsService',
-  'mu2e_Mu2eInterfaces',
   'mu2e_DataProducts',
   'mu2e_GeneralUtilities',
   'mu2e_DbService',
@@ -40,7 +38,7 @@ helper.make_plugins( [
   'art_Framework_Services_Registry',
   'art_root_io_tfile_support',
   'art_root_io_TFileService',
-  'art_Framework_Services_Optional_RandomNumberGenerator_service',
+  'art_Framework_Services_Optional_RandomNumberGenerator',
   'art_Persistency_Common',
   'art_Persistency_Provenance',
   'art_Utilities',

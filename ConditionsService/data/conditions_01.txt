@@ -3,10 +3,6 @@
 //
 //
 
-// Accelerator parameters
-double acceleratorParams.deBuncherPeriod   = 1695. ; // ns
-//double acceleratorParams.intrinsicExt      = 1.64e-5; // S. Werkema, docdb-4044-v1  No longer used!  comes from pulses below
-
 // ExtMonFNAL clock timing.  1694/68 = 24.9118
 int extMonFNAL.numClockTicksPerDebuncherPeriod = 68;
 
@@ -43,10 +39,6 @@ string calorimeter.pulseFileName = "OfflineData/ConditionsService/CsI-waveform-2
 string calorimeter.pulseHistName = "h_waveform";
 string calorimeter.propagFileName = "OfflineData/ConditionsService/CsI-propag-2020-07-29.root";
 string calorimeter.propagHistName = "h_zposTime";
-
-
-//CRV digi parameters
-double crv.digitizationPeriod = 12.55; //ns
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

@@ -20,7 +20,6 @@
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -64,7 +63,6 @@ namespace mu2e {
              fhicl::Atom<double>        digitizationStart    { Name("digitizationStart"),      Comment("Start of digitization window relative to nominal pb time") };
              fhicl::Atom<double>        digitizationEnd      { Name("digitizationEnd"),        Comment("End of digitization window relative to nominal pb time")};
              fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") };
-             fhicl::Atom<bool>          generateSpotNoise    { Name("generateSpotNoise"),      Comment("Only generate noise near energy deposits") };
              fhicl::Atom<bool>          addRandomNoise       { Name("addRandomNoise"),         Comment("Add random salt and pepper noise") };
              fhicl::Atom<double>        digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") };
              fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") };
@@ -89,7 +87,6 @@ namespace mu2e {
             wfExtractor_       (config().bufferDigi(),config().nBinsPeak(),config().minPeakADC(),config().bufferDigi()),
             engine_            (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
             addNoise_          (config().addNoise()),
-            generateSpotNoise_ (config().generateSpotNoise()),
             noiseGenerator_    (config().noise_gen_conf(), engine_, 0),
             addRandomNoise_    (config().addRandomNoise()),
             diagLevel_         (config().diagLevel())
@@ -112,7 +109,7 @@ namespace mu2e {
        void makeDigitization  (const CaloShowerROCollection&, CaloDigiCollection&, const EventWindowMarker&, const ProtonBunchTimeMC&);
        bool fillROHits        (unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection&,
                                const ConditionsHandle<CalorimeterCalibrations>&, const ProtonBunchTimeMC&);
-       void generateNoise     (std::vector<double>& waveform, unsigned iRO, const ConditionsHandle<CalorimeterCalibrations>&);
+       void generateSpotNoise (std::vector<double>& waveform, unsigned iRO, const ConditionsHandle<CalorimeterCalibrations>&);
        void buildOutputDigi   (unsigned iRO, std::vector<double>& waveform, int pedestal, CaloDigiCollection&);
        void diag0             (unsigned, const std::vector<int>&);
        void diag1             (unsigned, double, size_t, const std::vector<int>&, int);
@@ -133,7 +130,6 @@ namespace mu2e {
        CaloWFExtractor         wfExtractor_;
        CLHEP::HepRandomEngine& engine_;
        bool                    addNoise_;
-       bool                    generateSpotNoise_;
        CaloNoiseSimGenerator   noiseGenerator_;
        bool                    addRandomNoise_;
        const Calorimeter*      calorimeter_;
@@ -206,17 +202,19 @@ namespace mu2e {
       {
           if (resetWaveform) std::fill(waveform.begin(), waveform.end(), 0.0);
           bool isEmpty = fillROHits(iRO, waveform, CaloShowerROs, calorimeterCalibrations, pbtmc);
-          resetWaveform = (addNoise_ || !isEmpty);
+          resetWaveform = (addRandomNoise_ || !isEmpty);
 
-          if (addNoise_)
-          {
-              if (generateSpotNoise_) generateNoise(waveform, iRO, calorimeterCalibrations);
-              else                    noiseGenerator_.addFullNoise(waveform, false);
-              buildOutputDigi(iRO, waveform, noiseGenerator_.pedestal(), caloDigiColl);
+          // if we add random noise, then we need to scan all waveforms. Otherwise we can skip empty waveforms
+          if (addRandomNoise_) {
+            if (!isEmpty) generateSpotNoise(waveform, iRO, calorimeterCalibrations);
+            noiseGenerator_.addSaltAndPepper(waveform);
+            buildOutputDigi(iRO, waveform, noiseGenerator_.pedestal(), caloDigiColl);
           }
           else
           {
-              if (!isEmpty) buildOutputDigi(iRO, waveform, noiseGenerator_.pedestal(), caloDigiColl);
+            if (isEmpty) continue;
+            if (addNoise_) generateSpotNoise(waveform, iRO, calorimeterCalibrations);
+            buildOutputDigi(iRO, waveform, noiseGenerator_.pedestal(), caloDigiColl);
           }
      }
   }
@@ -224,7 +222,7 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------
   bool CaloDigiMaker::fillROHits(unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection& CaloShowerROs,
-                                     const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations, const ProtonBunchTimeMC& pbtmc)
+                                 const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations, const ProtonBunchTimeMC& pbtmc)
   {
       bool  isEmpty(true);
       float scaleFactor = calorimeterCalibrations->MeV2ADC(iRO)/calorimeterCalibrations->peMeV(iRO);
@@ -252,8 +250,8 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------
-  void CaloDigiMaker::generateNoise(std::vector<double>& waveform, unsigned iRO,
-                                    const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
+  void CaloDigiMaker::generateSpotNoise(std::vector<double>& waveform, unsigned iRO,
+                                        const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {
        double minAmplitude = 0.1*calorimeterCalibrations->MeV2ADC(iRO);
 
@@ -275,26 +273,23 @@ namespace mu2e {
            timeSample = sampleStop+1;
        }
 
-       // Since we add padding, they might overlap so we need to be deal with it
-       size_t iprev(0), icurrent(1);
-       while (icurrent < hitStarts.size())
+       // ranges might overlap and need to be concatenated if this is the case
+       size_t iprev(0),ic(1);
+       while (ic < hitStarts.size())
        {
-           if (hitStops[iprev] >= hitStarts[icurrent]) {hitStops[iprev]=hitStops[icurrent]; hitStarts[icurrent]=hitStops[icurrent]=waveform.size()+1;}
-           else                                        {iprev = icurrent;}
-           ++icurrent;
+           if (hitStops[iprev] >= hitStarts[ic]) {hitStops[iprev]=hitStops[ic]; hitStarts[ic]=hitStops[ic]=waveform.size()+1;}
+           else                                  {iprev = ic;}
+           ++ic;
        }
        auto pred = [&waveform](const auto a) {return a>waveform.size();};
        hitStarts.erase(std::remove_if(hitStarts.begin(),hitStarts.end(),pred),hitStarts.end());
-       hitStops.erase(std::remove_if(hitStops.begin(), hitStops.end(), pred),hitStops.end());
+       hitStops.erase( std::remove_if(hitStops.begin(), hitStops.end(), pred),hitStops.end());
 
        //Now take a random part of the noise waveform and add it to the waveform content
        for (size_t ihit=0; ihit<hitStarts.size(); ++ihit)
        {
-            noiseGenerator_.addSampleNoise(waveform,hitStarts[ihit],hitStops[ihit]-hitStarts[ihit]);
+          noiseGenerator_.addSampleNoise(waveform,hitStarts[ihit],hitStops[ihit]-hitStarts[ihit]);
        }
-
-       //Finally add salt and pepper noise
-       if (addRandomNoise_) noiseGenerator_.addSaltAndPepper(waveform);
   }
 
 

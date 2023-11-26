@@ -10,7 +10,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
@@ -89,7 +89,7 @@ private:
   mu2e::ProditionsHandle<mu2e::CaloDAQMap> _calodaqconds_h;
 
   void analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
-                            const mu2e::CalorimeterFragment& cc,
+                            const mu2e::CalorimeterDataDecoder& cc,
                             std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
                             std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
                             unsigned short& evtEnergy);
@@ -208,7 +208,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
   unsigned short evtEnergy(0);
 
   auto fragmentHandle =
-      event.getValidHandle<std::vector<mu2e::CalorimeterFragment>>(caloFragmentsTag_);
+      event.getValidHandle<std::vector<mu2e::CalorimeterDataDecoder>>(caloFragmentsTag_);
 
   for (auto frag : *fragmentHandle) {
     analyze_calorimeter_(calodaqconds, frag, calo_hits, caphri_hits, evtEnergy);
@@ -247,7 +247,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
 
 void art::CaloHitsFromFragments::analyze_calorimeter_(
     mu2e::CaloDAQMap const& calodaqconds,
-    const mu2e::CalorimeterFragment& cc, std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
+    const mu2e::CalorimeterDataDecoder& cc, std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
     std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits, unsigned short& evtEnergy) {
 
   if (diagLevel_ > 1) {
@@ -291,7 +291,7 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
     if (hdr->GetPacketCount() == 0)
       continue;
 
-    auto calData = cc.GetCalorimeterData(curBlockIdx);
+    auto calData = cc.GetCalorimeterHitData(curBlockIdx);
     if (calData == nullptr) {
       mf::LogError("CaloHitsFromFragments")
           << "Error retrieving Calorimeter data from block " << curBlockIdx
@@ -299,14 +299,9 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
       continue;
     }
 
-    if (diagLevel_ > 0) {
-      std::cout << "[CaloHitsFromFragments] NEW CALDATA: NumberOfHits " << calData->NumberOfHits
-                << std::endl;
-    }
-
     auto hits = cc.GetCalorimeterHitsForTrigger(curBlockIdx);
     bool err = false;
-    for (size_t hitIdx = 0; hitIdx < calData->NumberOfHits; hitIdx++) {
+    for (size_t hitIdx = 0; hitIdx < calData->size(); hitIdx++) {
 
       // Fill the CaloDigiCollection
       if (hitIdx > hits.size()) {

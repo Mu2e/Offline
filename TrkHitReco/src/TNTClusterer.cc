@@ -6,29 +6,40 @@
 namespace mu2e
 {
   TNTClusterer::TNTClusterer(const Config& config) :
-    dhit_       (config.hitDistance()),
-    dseed_      (config.seedDistance()),
-    dd_         (config.clusterDiameter()),
-    dt_         (config.clusterTime()),
-    maxHitdt_   (config.maxHitTimeDiff()),
-    maxDistSum_ (config.maxSumDistance()),
-    maxNiter_   (config.maxCluIterations()),
-    useMedian_  (config.medianCentroid()),
-    comboInit_  (config.comboInit()),
-    bkgmask_    (config.bkgmsk()),
-    sigmask_    (config.sigmsk()),
-    testflag_   (config.testflag()),
-    diag_       (config.diag())
+    dhit_             (config.hitDistance()),
+    dseed_            (config.seedDistance()),
+    dd_               (config.clusterDiameter()),
+    dt_               (config.clusterTime()),
+    minClusterHits_   (config.minClusterHits()),
+    maxHitdt_         (config.maxHitTimeDiff()),
+    maxDistSum_       (config.maxSumDistance()),
+    maxNiter_         (config.maxCluIterations()),
+    useMedian_        (config.medianCentroid()),
+    comboInit_        (config.comboInit()),
+    bkgmask_          (config.bkgmsk()),
+    sigmask_          (config.sigmsk()),
+    testflag_         (config.testflag()),
+    diag_             (config.diag()),
+    distMethod_       (config.distMethod())
   {
-     float minerr (config.minHitError());
-     float maxdist(config.maxDistance());
-     float trms   (config.timeRMS());
+    float minerr (config.minHitError());
+    float maxdist(config.maxDistance());
+    float trms   (config.timeRMS());
 
-     tbin_     =1.0;
-     dd2_      = dd_*dd_;
-     maxwt_    = 1.0f/minerr;
-     md2_      = maxdist*maxdist;
-     trms2inv_ = 1.0f/trms/trms;
+    tbin_     =1.0;
+    dd2_      = dd_*dd_;
+    maxwt_    = 1.0f/minerr;
+    md2_      = maxdist*maxdist;
+    trms2inv_ = 1.0f/trms/trms;
+
+    switch(distMethod_) {
+      case TNTClusterer::useSpatial:
+        distMethodFlag_ = BkgCluster::spatial;
+        break;
+      case TNTClusterer::useChi2:
+        distMethodFlag_ = BkgCluster::chi2;
+        break;
+    }
   }
 
 
@@ -46,7 +57,8 @@ namespace mu2e
     initClustering(chcol, BkgHits);
     doClustering(chcol, clusters, BkgHits);
 
-    auto removePred = [](auto& cluster) {return cluster.hits().empty();};
+    long unsigned int minchits = minClusterHits_;
+    auto removePred = [minchits](auto& cluster) {return cluster.hits().size() < minchits;};
     clusters.erase(std::remove_if(clusters.begin(),clusters.end(),removePred),clusters.end());
 
     auto transPred = [&BkgHits] (const int i) {return BkgHits[i].chidx_;};
@@ -74,8 +86,9 @@ namespace mu2e
   void TNTClusterer::doClustering(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& BkgHits)
   {
     unsigned niter(0);
-    float odist(2.0f*maxDistSum_),tdist(0.0f);
-    while (std::abs(odist - tdist) > maxDistSum_ && niter < maxNiter_) {
+    float odist(2.0f*maxDistSum_);
+    float tdist(0.0f);
+    while ( std::abs(odist - tdist) > maxDistSum_ && niter < maxNiter_ ) {
       ++niter;
       formClusters(chcol, clusters, BkgHits);
 
@@ -112,6 +125,7 @@ namespace mu2e
       // -- if hit is ok, reassign it right away
       if (hit.distance_ < dhit_) {
         clusters[hit.clusterIdx_].addHit(ihit);
+        clusters[hit.clusterIdx_].points().addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),clusters[hit.clusterIdx_].points().nPoints());
         continue;
       }
 
@@ -132,13 +146,15 @@ namespace mu2e
       // -- either add hit to existing cluster, form new cluster, or do nothing if hit is "in between"
       if (mindist < dhit_) {
         clusters[minc].addHit(ihit);
+        clusters[minc].points().addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),clusters[minc].points().nPoints());
       }
       else if (mindist > dseed_) {
         minc = clusters.size();
-        clusters.emplace_back(BkgCluster(chit.pos(),chit.correctedTime()));
+        clusters.emplace_back(BkgCluster(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),chit.correctedTime()));
         clusters[minc].addHit(ihit);
         int itime = int(chit.correctedTime()/tbin_);
         clusterIndices[itime].emplace_back(minc);
+        clusters[minc].setDistanceMethod(distMethodFlag_);
       }
       else{
         BkgHits[ihit].distance_ = 10000.0f;
@@ -219,34 +235,39 @@ namespace mu2e
   // only count differences if they are above the natural hit size (drift time, straw size)
   float TNTClusterer::distance(const BkgCluster& cluster, const ComboHit& hit) const
   {
-    float psep_x = hit.pos().x()-cluster.pos().x();
-    float psep_y = hit.pos().y()-cluster.pos().y();
-    float d2     = psep_x*psep_x+psep_y*psep_y;
-
-    if (d2 > md2_) return dseed_+1.0f;
-
-    float dt = std::abs(hit.correctedTime()-cluster.time());
-    if (dt > maxHitdt_) return dseed_+1.0f;
-
-
     float retval(0.0f);
-    if (dt > dt_) {float tdist = dt -dt_;retval = tdist*tdist*trms2inv_;}
-    if (d2 > dd2_) {
-      //This is equivalent to but faster than the commented lines
-      //XYZVectorF that(-hit.wdir().y(),hit.wdir().x(),0.0);
-      //float dw = std::max(0.0f,hit.wdir().Dot(psep)-dd_)/hit.posRes(ComboHit::wire);
-      //float dp = std::max(0.0f,that.Dot(psep)-dd_)*maxwt_;//maxwt = 1/minerr
-      float hwx = hit.wdir().x();
-      float hwy = hit.wdir().y();
-      float dw  = std::max(0.0f,(psep_x*hwx+psep_y*hwy-dd_)/hit.posRes(ComboHit::wire));
-      float dp  = std::max(0.0f,(hwx*psep_y-hwy*psep_x-dd_)*maxwt_);
-      retval += dw*dw + dp*dp;
+    if(distMethod_ == TNTClusterer::useSpatial)
+    {
+      float psep_x = hit.pos().x()-cluster.pos().x();
+      float psep_y = hit.pos().y()-cluster.pos().y();
+      float d2     = psep_x*psep_x+psep_y*psep_y;
+
+      if (d2 > md2_) {return dseed_+1.0f;}
+
+      float dt = std::abs(hit.correctedTime()-cluster.time());
+      if (dt > maxHitdt_) {return dseed_+1.0f;}
+
+
+      if (dt > dt_) {float tdist = dt -dt_;retval = tdist*tdist*trms2inv_;}
+      if (d2 > dd2_) {
+        //This is equivalent to but faster than the commented lines
+        //XYZVectorF that(-hit.wdir().y(),hit.wdir().x(),0.0);
+        //float dw = std::max(0.0f,hit.wdir().Dot(psep)-dd_)/hit.posRes(ComboHit::wire);
+        //float dp = std::max(0.0f,that.Dot(psep)-dd_)*maxwt_;//maxwt = 1/minerr
+        float hwx = hit.wdir().x();
+        float hwy = hit.wdir().y();
+        float dw  = std::max(0.0f,(psep_x*hwx+psep_y*hwy-dd_)/hit.posRes(ComboHit::wire));
+        float dp  = std::max(0.0f,(hwx*psep_y-hwy*psep_x-dd_)*maxwt_);
+        retval += dw*dw + dp*dp;
+      }
+    }
+    if(distMethod_ == TNTClusterer::useChi2)
+    {
+      retval = cluster.points().dChi2(TwoDPoint(hit.pos(),hit.uDir(),hit.uVar(),hit.vVar()));
     }
     return retval;
   }
 
-
-  //-------------------------------------------------------------------------------------------------------------------
   void TNTClusterer::updateCluster(BkgCluster& cluster, const ComboHitCollection& chcol, std::vector<BkgHit>& BkgHits)
   {
 
@@ -315,6 +336,7 @@ namespace mu2e
 
     cluster.time(ctime);
     cluster.pos(XYZVectorF(crho*cos(cphi),crho*sin(cphi),0.0f));
+
   }
 
 
