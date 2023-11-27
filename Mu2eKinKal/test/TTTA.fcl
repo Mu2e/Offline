@@ -12,13 +12,6 @@ process_name : OnSpillTrigger
 services : @local::Services.Reco
 source : {
   module_type : RootInput
-  inputCommands: ["keep *",
-    "drop mu2e::HelixSeeds_*_*_*",
-    "drop mu2e::KalSeeds_*_*_*",
-    "drop mu2e::TriggerInfo_*_*_*",
-    "drop mu2e::CaloClusters_*_*_*",
-    "drop mu2e::TimeClusters_*_*_*"
-  ]
 }
 
 physics : {
@@ -71,6 +64,7 @@ physics : {
 #include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
 physics.producers.EWMProducer.SpillType : 1
 #include "Production/JobConfig/common/epilog.fcl"
+#include "Production/JobConfig/reco/drop_trigger.fcl"
 physics.end_paths : [ EndPath ]
 # add MC truth matching to the relevant paths
 physics.tprDeM_highP_stopTarg_trigger           : [ @sequence::physics.tprDeM_highP_stopTarg_trigger, SelectRecoMCDeMtpr]
