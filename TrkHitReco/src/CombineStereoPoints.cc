@@ -2,12 +2,9 @@
 #include "TMath.h"
 #include <stdexcept>
 namespace mu2e {
-  using SVEC = ROOT::Math::SVector<double,2>;
-  using SMAT = ROOT::Math::SMatrix<double,2,2,ROOT::Math::MatRepSym<double,2>>;
-
   StereoPoint CombineStereoPoints::point(size_t key) const {
     auto const& wt = wts_.at(key);
-    return StereoPoint(wt.wt_.point(ivar_),wt.z_);
+    return StereoPoint(wt.pt_);
   }
 
   StereoPoint const& CombineStereoPoints::point() const {
@@ -18,7 +15,7 @@ namespace mu2e {
       for (auto const& wt : wts_){
         auto const& wm = wt.second.wt_.weight();
         double tr = wm.Trace();
-        z += wt.second.z_*tr;
+        z += wt.second.pt_.z()*tr;
         trsum += tr;
       }
       z /= trsum;
@@ -29,11 +26,10 @@ namespace mu2e {
   }
 
   void CombineStereoPoints::addPoint(StereoPoint const& point,size_t key) {
-    auto wt = TwoDWeight(point.point(),ivar_);
-    double dchi0 = ROOT::Math::Similarity(point.point().pos(),wt.weight());
-    wts_.emplace(std::make_pair(key,CWT(wt,point.z(),dchi0)));
-    wt_ += wt;
-    chi0_ += dchi0;
+    CWT cwt(point,ivar_);
+    wts_.emplace(std::make_pair(key,cwt));
+    wt_ += cwt.wt_;
+    chi0_ += cwt.dchi0_;
     chicalc_ = false;
     ptcalc_ = false;
   }
@@ -86,6 +82,56 @@ namespace mu2e {
       return TMath::Prob(chisquared(),ndof);
     else
       return -1.0;
+  }
+
+  bool CombineStereoPoints::stereoLine(StereoLine& sline) const {
+    bool retval(false);
+    // first solve for z0
+    double z0(0.0), trsum(0.0);
+    for (auto const& wt : wts_){
+      auto const& wm = wt.second.wt_.weight();
+      double tr = wm.Trace();
+      trsum += tr;
+      z0 += wt.second.pt_.z()*tr;
+    }
+    sline.z0_ = z0/trsum;
+    // now accumulate the z-dependent sums
+    double alpha(0.0);
+    StereoLine::SVEC beta;
+    StereoLine::SMAT gamma;
+    const static StereoLine::SMAT ident =  ROOT::Math::SMatrixIdentity();
+    for (auto const& wt : wts_){
+      auto const& spt = wt.second.pt_;
+      auto const& twodpt = spt.point();
+      auto pos = twodpt.pos2();
+      auto udir = twodpt.udir();
+      auto vdir = twodpt.vdir();
+      auto uwt = 1.0/twodpt.uvar();
+      auto vwt = 1.0/twodpt.vvar();
+      double pudot = pos.Dot(udir);
+      double pvdot = pos.Dot(vdir);
+      alpha += uwt*pudot*pudot + vwt*pvdot*pvdot;
+      double dz = spt.z()-sline.z0_;
+      StereoLine::SVEC etau(udir.X(),udir.Y(),dz*udir.X(),dz*udir.Y());
+      StereoLine::SVEC etav(vdir.X(),vdir.Y(),dz*vdir.X(),dz*vdir.Y());
+      beta += uwt*pudot*etau + vwt*pvdot*etav;
+      // cannot use TensorProd as that results in a non-symmetric matrix
+      StereoLine::SMAT etau_mat;
+      etau_mat.SetDiagonal(etau);
+      StereoLine::SMAT etav_mat;
+      etav_mat.SetDiagonal(etav);
+      gamma += uwt*ROOT::Math::Similarity(etau_mat,ident) + vwt*ROOT::Math::Similarity(etav_mat,ident);
+    }
+    int inv;
+    sline.cov_ = gamma.Inverse(inv);
+    if(inv == 0){
+      sline.pars_ = sline.cov_*beta;
+      sline.chisq_ = alpha - ROOT::Math::Similarity(beta,sline.cov_);
+      sline.ndof_ = wts_.size()*2 - 4;
+    } else {
+      retval = false;
+    }
+    return retval;
   }
 
   void CombineStereoPoints::print(std::ostream& os) const {

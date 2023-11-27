@@ -15,7 +15,6 @@
 
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
@@ -31,6 +30,7 @@
 using namespace boost::accumulators;
 
 #include <iostream>
+#include <limits>
 #include <cfloat>
 #include <list>
 
@@ -223,43 +223,37 @@ namespace mu2e {
     if(_debug > 1){
       std::cout << "Combining " << cpts.nPoints() << " hits" << std::endl;
     }
-// define initial perpendicular directions
     // fill position and variance from combined info
     auto const& pt = cpts.point();
-    auto uvres = pt.point().uvRes();
-    auto udir = uvres.udir();
-    auto vdir = uvres.vdir();
+    combohit._pos = pt.pos3();
+    auto udir = pt.udir();
+    auto vdir = pt.vdir();
     combohit._udir = XYZVectorF(udir.X(),udir.Y(),0.0);
     combohit._vdir = XYZVectorF(vdir.X(),vdir.Y(),0.0);
-    combohit._ures = uvres.ures();
-    combohit._vres = uvres.vres();
+    combohit._ures = sqrt(pt.uvar());
+    combohit._vres = sqrt(pt.vvar());
     combohit._qual = cpts.consistency();
 
-    double wtsum(0), twtsum(0), zsum(0), zmin(1.0e6), zmax(-1e6);
-
     // fill the remaining variables
+    double twtsum(0), zmin(std::numeric_limits<float>::max()), zmax(std::numeric_limits<float>::lowest());
     for(auto iwt = cpts.weights().begin(); iwt != cpts.weights().end(); ++iwt){
       auto ihit = iwt->first;
-      auto const& cwt = iwt->second;
       if(combohit.addIndex(ihit)) {
         auto const& ch = inchcol[ihit];
-        combohit._nsh += ch.nStrawHits();
-        double wt = cwt.wt_.wt().Trace(); // take combined inverse variance as weight
-        wtsum += wt;
+        unsigned nsh = ch.nStrawHits();
+        combohit._nsh += nsh;
         combohit._flag.merge(ch.flag());
         double z = ch._pos.Z();
-        zsum += z*wt;
         zmin = std::min(zmin,z);
         zmax = std::max(zmax,z);
         combohit._flag.merge(StrawHitFlag::stereo);
-        combohit._pos += ch._pos*wt;
-        combohit._edep += ch.energyDep()*wt;
+        combohit._edep += ch.energyDep()*nsh;
         // the following have unclear meaning for stereo hits, but we fill them anyways
-        for(size_t iend=0;iend<2;++iend){
-          combohit._etime[iend] += ch._etime[iend]*wt;
-          combohit._tot[iend] += ch._tot[iend]*wt;
-        }
         double twt = 1.0/ch.timeVar();
+        for(size_t iend=0;iend<2;++iend){
+          combohit._etime[iend] += ch._etime[iend]*twt;
+          combohit._tot[iend] += ch._tot[iend]*twt;
+        }
         twtsum += twt;
         combohit._time += ch.correctedTime()*twt;
         // to remove
@@ -269,20 +263,19 @@ namespace mu2e {
         std::cout << "MakeStereoHits past limit" << std::endl;
       }
     }
-    combohit._pos = pt.point().pos3(zsum/wtsum);
     // define w error from range
     static const double invsqrt12 = 1.0/sqrt(12.0);
     combohit._wres = invsqrt12*(zmax-zmin);
     // simple average for edep
-    combohit._edep /= wtsum;
+    combohit._edep /= combohit._nsh;
     // average time
     combohit._time /= twtsum;
-    combohit._dtime /= wtsum;
-    combohit._ptime  /= wtsum;
+    combohit._dtime /= twtsum;
+    combohit._ptime  /= twtsum;
     combohit._timeres = sqrt(1.0/twtsum);
     for(size_t iend=0;iend<2;++iend){
-      combohit._etime[iend] /= wtsum;
-      combohit._tot[iend] /= wtsum;
+      combohit._etime[iend] /=twtsum;
+      combohit._tot[iend] /= twtsum;
     }
   }
 
