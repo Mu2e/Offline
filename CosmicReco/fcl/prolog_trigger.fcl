@@ -30,7 +30,7 @@ CstLineFinder        : {
 CstTrigger : {
 
     producers : {
-            CstTimeClusterFinder : @local::CstTimeClusterFinder
+        CstTimeClusterFinder : @local::CstTimeClusterFinder
         CstSimpleTimeCluster : @local::CstSimpleTimeCluster
         CstLineFinder        : @local::CstLineFinder
 
