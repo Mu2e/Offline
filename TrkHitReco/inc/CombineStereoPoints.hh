@@ -6,6 +6,7 @@
 #ifndef TrkHitReco_CombineStereoPoints_hh
 #define TrkHitReco_CombineStereoPoints_hh
 #include "Offline/TrkHitReco/inc/StereoPoint.hh"
+#include "Offline/TrkHitReco/inc/StereoLine.hh"
 #include "Offline/GeneralUtilities/inc/TwoDWeight.hh"
 #include <map>
 #include <vector>
@@ -14,10 +15,13 @@
 namespace mu2e {
   class CombineStereoPoints{
     struct CWT {
+      StereoPoint pt_; // point
       TwoDWeight wt_; // weight
-      double z_; // z position of this hit
       double dchi0_; // chisquared contribution
-      CWT(TwoDWeight const& wt, double z, double dchi0) : wt_(wt), z_(z), dchi0_(dchi0) {}
+      CWT(StereoPoint const& pt,double ivar) : pt_(pt) {
+        wt_ = TwoDWeight(pt.point(),ivar);
+        dchi0_ = ROOT::Math::Similarity(pt_.point().pos(),wt_.weight());
+      }
     };
 
     public:
@@ -45,6 +49,8 @@ namespace mu2e {
       // compute chisquared contribution of a point already included
       double dChi2(size_t key) const;
       void print(std::ostream& os) const;
+      // convert points to a StereoLine.  This will fail if there are insufficient NDOF
+      bool stereoLine(StereoLine& sline) const;
     private:
       double ivar_ = 0.0; // intrinsic variance
       mutable bool ptcalc_ = false, chicalc_ = false;

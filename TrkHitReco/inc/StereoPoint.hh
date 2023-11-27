@@ -13,7 +13,12 @@ namespace mu2e {
       StereoPoint() : z_(0.0) {}
       StereoPoint(VEC3 const& pos,VEC3 const& udir, float uvar, float vvar) : point_(pos, udir, uvar, vvar),z_(pos.Z()) {}
       TwoDPoint const& point() const { return point_; }
+      VEC3 pos3() const { return point_.pos3(z_); }
       double z() const { return z_; }
+      auto udir() const { return point_.udir(); }
+      auto vdir() const { return point_.vdir(); }
+      auto uvar() const { return point_.uvar(); }
+      auto vvar() const { return point_.vvar(); }
     private:
       TwoDPoint point_;
       double z_; // z position of this point
