@@ -15,10 +15,10 @@
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include <stdint.h>
+#include "Math/SMatrix.h"
 // art includes
 #ifndef __ROOTCLING__
 #include "art/Framework/Principal/Handle.h"
-//#include "canvas/Persistency/Provenance/ProductID.h"
 #endif
 #include "canvas/Persistency/Common/ProductPtr.h"
 // C++ includes
@@ -31,17 +31,16 @@ namespace mu2e {
     constexpr static size_t MaxNCombo = 8;
     using PIArray = std::array<uint16_t,MaxNCombo>; // array of indices into parent collection
     // General accessors that apply to all kinds of combo hits
-    auto const& pos() const { return _pos; }
-    auto const& wdir() const { return _udir; } // legacy function
+    XYZVectorF const& pos() const { return _pos; }
     // in UVW coordinate system
-    auto const& uDir() const { return _udir; } // along wire
-    auto const& vDir() const { return _vdir; } // perp to wire
-    auto wDir() const { return _udir.Cross(_vdir); } // propagation direction (generally z)
-    auto centerPos() const { return _pos - _wdist*_udir; }
+    XYZVectorF const& uDir() const { return _udir; } // along wire
+    XYZVectorF const& vDir() const { return _vdir; } // perp to wire
+    XYZVectorF wDir() const { return XYZVectorF(0.0,0.0,1.0); }
+    XYZVectorF const& hDir() const { return _hdir; } // hit direction, generally the same as wDir except for stereo hits
+    XYZVectorF centerPos() const { return _pos - _wdist*_udir; }
 //
     float posRes(edir dir) const;
     auto energyDep() const { return _edep; }
-    auto phi() const { return _pos.phi();} // legacy function
     auto timeRes() const { return _timeres; }
     auto timeVar() const { return _timeres*_timeres; }
     auto correctedTime() const { return _time; }
@@ -56,6 +55,10 @@ namespace mu2e {
     auto vVar() const { return _vres*_vres; }
     auto wRes() const { return _wres; }
     auto wVar() const { return _wres*_wres; }
+    auto uzRes() const { return _uzres; } // resolution on the uz slope (dU/dZ)
+    auto vzRes() const { return _uzres; } // resolution on the vz slope (dV/dZ)
+    auto uzVar() const { return _uzres*_uzres; } // variance on the uz slope
+    auto vzVar() const { return _uzres*_vzres; } // variance on the vz slope
     auto transRes() const { return vRes(); }
     auto transVar() const { return vVar(); }
 
@@ -88,6 +91,8 @@ namespace mu2e {
     // legacy functions
     //  No new code should use these accessors, they should be removed soon TODO
 //    ComboHit(const ComboHit&, StrawHitIndex, double);
+    auto const& wdir() const { return _udir; } // old use of 'w = wire direction'
+    auto phi() const { return _pos.phi();}
     float time() const { return _etime[_eend]; }
     CLHEP::Hep3Vector posCLHEP() const { return GenVector::Hep3Vec(pos()); }
     // persistent payload
@@ -96,9 +101,12 @@ namespace mu2e {
     XYZVectorF _pos; // best estimate of the position of this hit in space
     XYZVectorF _udir; // wire direction of this hit
     XYZVectorF _vdir; // direction perp to hit and Z
+    XYZVectorF _hdir; // direction of the hit
     float _ures = -1.0; // resolution along U direction (wire direction)
     float _vres = -1.0; // resolution along V direction
     float _wres = -1.0; // resolution along W direction
+    float _uzres = -1.0; // resolution on hit slope
+    float _vzres = -1.0;
     float _wdist = 0.0; // distance from wire center along the wire direction
     float _time = 0.0; // best estimate of time the physical particle created this hit: aggregate and calibrated
     float _timeres = -1.0; // estimated resolution of time measurement

@@ -80,11 +80,13 @@ namespace mu2e
       int _evt; // add event id
       XYZVectorF _pos; // average position
       XYZVectorF _udir; // direction at this position (typically the wire direction)
+      XYZVectorF _hdir; // hit direction (generally Z)
       float _udist; // distance from wire center along this direction
       float _ures; // estimated error along this direction
       float _vres; // estimated error
       float _wres; // estimated error perpendicular to this direction
       float _tres; // estimated time error
+      float _uzres, _vzres; // resolutions on the angle
       float _etime[2]; // end times
       float _ctime; // corrected time
       float _dtime, _ptime; // drift and propagation times: these should be end-specific, TODO
@@ -142,10 +144,13 @@ namespace mu2e
     _chdiag->Branch("udist",&_udist,"udist/F");
     _chdiag->Branch("pos.",&_pos);
     _chdiag->Branch("udir.",&_udir);
+    _chdiag->Branch("hdir.",&_hdir);
     _chdiag->Branch("udist",&_udist,"udist/F");
     _chdiag->Branch("ures",&_ures,"ures/F");
     _chdiag->Branch("vres",&_vres,"vres/F");
     _chdiag->Branch("wres",&_wres,"wres/F");
+    _chdiag->Branch("uzres",&_uzres,"uzres/F");
+    _chdiag->Branch("vzres",&_vzres,"vzres/F");
     _chdiag->Branch("tres",&_tres,"tres/F");
     _chdiag->Branch("etime",&_etime,"etimecal/F:etimehv");
     _chdiag->Branch("ctime",&_ctime,"ctime/F");
@@ -221,12 +226,13 @@ namespace mu2e
       _plane = ch.strawId().plane();
       _level = ch.mask().level();
       _pos = ch.pos();
-
       _udir = ch.uDir();
+      _hdir = ch.hDir();
       _udist = ch.uPos();
       _ures = ch.uRes();
       _vres = ch.vRes();
-      _wres = ch.wRes();
+      _uzres = ch.uzRes();
+      _vzres = ch.vzRes();
       _tres = ch.timeRes();
       _eend = ch.earlyEnd().end();
       _etime[StrawEnd::cal] = ch.endTime(StrawEnd::cal);

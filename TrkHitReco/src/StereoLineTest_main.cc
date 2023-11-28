@@ -22,19 +22,22 @@ static struct option long_options[] = {
   {"ry",     required_argument, 0, 'y'  },
   {"ures",     required_argument, 0, 'u'  },
   {"vres",     required_argument, 0, 'v'  },
+  {"printlevel",     required_argument, 0, 'p'  },
+  {"nevts",     required_argument, 0, 'N'  },
   {NULL, 0,0,0}
 };
 
 void print_usage() {
-  printf("Usage: StereoLineTest  --npts --dz (z range) --px --py --pz (point) --rx --ry (slope) --ures --vres (transverse resolutions) \n");
+  printf("Usage: StereoLineTest  --npts --dz (z range) --px --py --pz (point) --rx --ry (slope) --ures --vres (transverse resolutions) --printlevel --nevts \n");
 }
 
 int main(int argc, char** argv) {
 
   int opt;
-  unsigned npts(5);
+  unsigned npts(5), nevts(1);
   VEC3 pos, dir(0.2,0.2,1.0);
   int long_index =0;
+  int plevel(0);
   double ures(30.0), vres(2.0), deltaz(150.0);
   while ((opt = getopt_long_only(argc, argv,"",
           long_options, &long_index )) != -1) {
@@ -57,6 +60,10 @@ int main(int argc, char** argv) {
                  break;
       case 'n' : npts = atoi(optarg);
                  break;
+      case 'N' : nevts = atoi(optarg);
+                 break;
+      case 'p' : plevel = atoi(optarg);
+                 break;
       default: print_usage();
                exit(EXIT_FAILURE);
     }
@@ -74,29 +81,33 @@ int main(int argc, char** argv) {
   std::normal_distribution urand{0.0, ures};
   std::normal_distribution vrand{0.0, vres};
 
-  CombineStereoPoints cp;
-  for(unsigned ipt = 0; ipt < npts; ++ipt) {
-    // set U direction
-    double du = urand(eng);
-    double dv = vrand(eng);
-    double eta = phirange(eng);
-    VEC3 udir(cos(eta),sin(eta),0.0);
-    VEC3 vdir(-sin(eta),cos(eta),0.0);
-    double z = dz*ipt - 0.5*deltaz;
-    VEC3 spos = pos + dir*z + du*udir + dv*vdir;
-    StereoPoint spoint(spos,udir,ures*ures,vres*vres);
-    cp.addPoint(spoint,ipt);
-    std::cout << "Creating point " << spos << std::endl;
+
+  for(unsigned ievt = 0; ievt < nevts; ++ievt ) {
+    CombineStereoPoints cp;
+    for(unsigned ipt = 0; ipt < npts; ++ipt) {
+      // set U direction
+      double du = urand(eng);
+      double dv = vrand(eng);
+      double eta = phirange(eng);
+      VEC3 udir(cos(eta),sin(eta),0.0);
+      VEC3 vdir(-sin(eta),cos(eta),0.0);
+      double z = dz*ipt - 0.5*deltaz;
+      VEC3 spos = pos + dir*z + du*udir + dv*vdir;
+      StereoPoint spoint(spos,udir,ures*ures,vres*vres);
+      cp.addPoint(spoint,ipt);
+      if(plevel > 2)std::cout << "Creating point " << spos << std::endl;
+    }
+    if(plevel > 1)std::cout << "CombineStereoPoints with " << cp.nPoints() << " points " << cp.point() << " chisq " << cp.chisquared() << " consistency " << cp.consistency() << std::endl;
+
+    mu2e::StereoLine sline;
+    bool doline = cp.stereoLine(sline);
+
+    if(plevel > 1){
+      std::cout << "Stereo Line status " << doline << std::endl;
+      if(doline) std::cout << sline;
+      std::cout << std::endl;
+    }
   }
-  std::cout << "CombineStereoPoints with " << cp.nPoints() << " points " << cp.point() << " chisq " << cp.chisquared() << " consistency " << cp.consistency() << std::endl;
-
-  mu2e::StereoLine sline;
-  bool doline = cp.stereoLine(sline);
-
-  std::cout << "Stereo Line status " << doline << std::endl;
-  if(doline) std::cout << sline;
-  std::cout << std::endl;
-
 
 
 
