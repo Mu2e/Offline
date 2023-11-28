@@ -85,6 +85,7 @@ namespace mu2e {
   }
 
   bool CombineStereoPoints::stereoLine(StereoLine& sline) const {
+    // 2-D weighted linear regression
     bool retval(false);
     // first solve for z0
     double z0(0.0), trsum(0.0);
@@ -108,14 +109,15 @@ namespace mu2e {
       auto vdir = twodpt.vdir();
       auto uwt = 1.0/twodpt.uvar();
       auto vwt = 1.0/twodpt.vvar();
-      double pudot = pos.Dot(udir);
-      double pvdot = pos.Dot(vdir);
-      alpha += uwt*pudot*pudot + vwt*pvdot*pvdot;
+      double pu = pos.Dot(udir);
+      double pv = pos.Dot(vdir);
+      alpha += uwt*pu*pu + vwt*pv*pv;
       double dz = spt.z()-sline.z0_;
       StereoLine::SVEC etau(udir.X(),udir.Y(),dz*udir.X(),dz*udir.Y());
       StereoLine::SVEC etav(vdir.X(),vdir.Y(),dz*vdir.X(),dz*vdir.Y());
-      beta += uwt*pudot*etau + vwt*pvdot*etav;
+      beta += uwt*pu*etau + vwt*pv*etav;
       // cannot use TensorProd as that results in a non-symmetric matrix
+      // The following is clumsy but works
       StereoLine::SMAT etau_mat;
       etau_mat.SetDiagonal(etau);
       StereoLine::SMAT etav_mat;
@@ -125,11 +127,10 @@ namespace mu2e {
     int inv;
     sline.cov_ = gamma.Inverse(inv);
     if(inv == 0){
+      retval = true;
       sline.pars_ = sline.cov_*beta;
       sline.chisq_ = alpha - ROOT::Math::Similarity(beta,sline.cov_);
       sline.ndof_ = wts_.size()*2 - 4;
-    } else {
-      retval = false;
     }
     return retval;
   }
