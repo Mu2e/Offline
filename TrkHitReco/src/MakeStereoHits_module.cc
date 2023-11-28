@@ -21,13 +21,14 @@
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/TrkHitReco/inc/CombineStereoPoints.hh"
 // boost
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/weighted_variance.hpp>
-#include <boost/accumulators/statistics/max.hpp>
-#include <boost/accumulators/statistics/min.hpp>
-using namespace boost::accumulators;
+//#include <boost/accumulators/accumulators.hpp>
+//#include <boost/accumulators/statistics/mean.hpp>
+//#include <boost/accumulators/statistics/stats.hpp>
+//#include <boost/accumulators/statistics/weighted_variance.hpp>
+//#include <boost/accumulators/statistics/max.hpp>
+//#include <boost/accumulators/statistics/min.hpp>
+//using namespace boost::accumulators;
+#include "TMath.h"
 
 #include <iostream>
 #include <limits>
@@ -223,16 +224,42 @@ namespace mu2e {
     if(_debug > 1){
       std::cout << "Combining " << cpts.nPoints() << " hits" << std::endl;
     }
-    // fill position and variance from combined info
-    auto const& pt = cpts.point();
-    combohit._pos = pt.pos3();
-    auto udir = pt.udir();
-    auto vdir = pt.vdir();
-    combohit._udir = XYZVectorF(udir.X(),udir.Y(),0.0);
-    combohit._vdir = XYZVectorF(vdir.X(),vdir.Y(),0.0);
-    combohit._ures = sqrt(pt.uvar());
-    combohit._vres = sqrt(pt.vvar());
-    combohit._qual = cpts.consistency();
+    // solve for the line
+    StereoLine sline;
+    if(cpts.stereoLine(sline)){
+      combohit._pos = sline.pos(sline.z0());
+      // create a 2-D point from the upper component of this
+      TwoDPoint spt(sline.pars().Sub<TwoDPoint::SVEC>(0), sline.cov().Sub<TwoDPoint::SMAT>(0,0));
+      auto ud2 =  spt.udir();
+      auto vd2 =  spt.vdir();
+      combohit._udir = XYZVectorF(ud2.X(),ud2.Y(),0.0);
+      combohit._vdir = XYZVectorF(vd2.X(),vd2.Y(),0.0);
+      combohit._ures = sqrt(spt.uvar());
+      combohit._vres = sqrt(spt.vvar());
+      // extract the slopes from the stereo line and turn them into a direction
+      combohit._hdir = sline.dir();
+      TwoDPoint::SVEC ud(ud2.X(),ud2.Y());
+      TwoDPoint::SVEC vd(vd2.X(),vd2.Y());
+      TwoDPoint::SMAT dmat = sline.cov().Sub<TwoDPoint::SMAT>(2,2);
+      double uzvar = ROOT::Math::Similarity(ud,dmat);
+      double vzvar = ROOT::Math::Similarity(vd,dmat);
+      combohit._uzres = sqrt(uzvar);
+      combohit._vzres = sqrt(vzvar);
+      // fit quality
+      combohit._qual = TMath::Prob(sline.chisq(),sline.ndof());
+    }  else {
+      // fall back to the 2D projection
+      // fill position and variance from combined info
+      auto const& pt = cpts.point();
+      combohit._pos = pt.pos3();
+      auto udir = pt.udir();
+      auto vdir = pt.vdir();
+      combohit._udir = XYZVectorF(udir.X(),udir.Y(),0.0);
+      combohit._vdir = XYZVectorF(vdir.X(),vdir.Y(),0.0);
+      combohit._ures = sqrt(pt.uvar());
+      combohit._vres = sqrt(pt.vvar());
+      combohit._qual = cpts.consistency();
+    }
 
     // fill the remaining variables
     double twtsum(0), zmin(std::numeric_limits<float>::max()), zmax(std::numeric_limits<float>::lowest());

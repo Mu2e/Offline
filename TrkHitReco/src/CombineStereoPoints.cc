@@ -129,7 +129,7 @@ namespace mu2e {
     if(inv == 0){
       retval = true;
       sline.pars_ = sline.cov_*beta;
-      sline.chisq_ = alpha - ROOT::Math::Similarity(beta,sline.cov_);
+      sline.chisq_ = std::max(alpha - ROOT::Math::Similarity(beta,sline.cov_), 0.0);
       sline.ndof_ = wts_.size()*2 - 4;
     }
     return retval;
