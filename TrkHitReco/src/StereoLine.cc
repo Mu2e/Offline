@@ -13,7 +13,8 @@ namespace mu2e {
 
 }
 std::ostream& operator << (std::ostream& ost, mu2e::StereoLine const& sline) {
-  ost << "StereoLine z0 " << sline.z0() << " chisquared " << sline.chisq() << " NDOF " << sline.ndof()
-    << " position at z0 " << sline.pos() << " direction " << sline.dir() << " covariance " << sline.cov();
+  ost << "StereoLine z0 " << sline.z0() << " chisquared " << sline.chisq() << " NDOF " << sline.ndof() << std::endl;
+  ost << "Position at z0 " << sline.pos(sline.z0()) << " direction " << sline.dir() << std::endl;
+  ost << "Covariance " << sline.cov();
   return ost;
 }

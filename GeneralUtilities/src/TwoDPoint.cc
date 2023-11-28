@@ -6,19 +6,21 @@ namespace mu2e {
   using VEC2 = ROOT::Math::XYVectorF;
 
   TwoDPoint::TwoDPoint(SVEC const& pos, SMAT const& cov) : pos_(pos), cov_(cov) {
-    // diagonalize the covariance matrix.  First, compute the eignvalues
+    // To compute the U direction from the covariance we have to find the eigenvalues and vectors
     double det;
     double halftr = 0.5*cov_.Trace();
     // protect against degenerate matrices
     bool ok = cov_.Det2(det);
     if(ok){
+      // check for degenerate eigenvalues
       double delta =  halftr*halftr - det;
-      ok = delta > 0.0;
-      if(ok){
+      if(delta > std::numeric_limits<float>::min()){
         double sqrtdelta = sqrt(delta);
         double uvar = halftr + sqrtdelta; // by convention the larger eigenvalue is 'u'
         // compute u eigenvector
-        udir_ = VEC2(uvar - cov_(1,1),cov_(2,2)).Unit();
+        udir_ = VEC2(uvar - cov_(1,1),cov_(0,1)).Unit();
+      } else {
+        udir_ = VEC2(1.0,0.0);
       }
     }
     if(!ok)throw std::invalid_argument( "Unphysical covariance matrix" );
@@ -28,11 +30,9 @@ namespace mu2e {
     if( uvar < std::numeric_limits<float>::min() || vvar < std::numeric_limits<float>::min())
       throw std::invalid_argument( "Unphysical variance" );
     auto ud = udir.Unit(); // unit vector
-    static const VEC2 xdir(1.0,0.0);
-    static const VEC2 ydir(0.0,1.0);
-    double ucos = ud.Dot(xdir);
+    double ucos = ud.X();
     double ucos2 = ucos*ucos;
-    double usin = ud.Dot(ydir);
+    double usin = ud.Y();
     double usin2 = usin*usin;
     double cov[3] = {ucos2*uvar + usin2*vvar, ucos*usin*(uvar -vvar),usin2*uvar + ucos2*vvar};
     cov_ = SMAT(cov,cov+3);

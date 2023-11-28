@@ -21,11 +21,11 @@ namespace mu2e {
     unsigned ndof() const { return ndof_; }
     double z0() const { return z0_; }
     VEC3 pos(float zval=0.0) const; // point at a given Z position
-    VEC3 dir() const; // constant direction
+    VEC3 dir() const; // constant direction unit vector
     // data payload
     SVEC pars_; //  parameters; Px, Py, Rx, Ry
     SMAT cov_; // covariance of the above
-    float z0_; // reference z position
+    double z0_; // reference z position
     double chisq_; // chisquared
     unsigned ndof_; // # of degress of freedom
   };
