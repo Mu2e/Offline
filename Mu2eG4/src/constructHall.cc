@@ -114,8 +114,8 @@ namespace mu2e {
 
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
-    OrientationResolver* OR = new OrientationResolver();
-    OrientationResolver ORH;
+    OrientationResolver OR;// = new OrientationResolver();
+    //    OrientationResolver ORH;
 
     // Loop over all volumes in the map
     for ( const auto& keyVolumePair : solidMap ) {
@@ -154,7 +154,7 @@ namespace mu2e {
                                        halfDims[0],halfDims[1],halfDims[2]);
 
           CLHEP::HepRotation* notchRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
-          OR->getRotationFromOrientation( *notchRotat, tmpNotch.getOrient());
+          OR.getRotationFromOrientation( *notchRotat, tmpNotch.getOrient());
 
           if ( 0 == aSolid ) {
             aSolid = new G4SubtractionSolid( tmpVol.name,
@@ -189,7 +189,7 @@ namespace mu2e {
                                       CLHEP::twopi); //angle_span;
 
           CLHEP::HepRotation* holeRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
-          ORH.getRotationFromOrientation( *holeRotat, tmpHole.getOrient());
+          OR.getRotationFromOrientation( *holeRotat, tmpHole.getOrient());
           if ( 0 == aSolid ) {
             aSolid = new G4SubtractionSolid( tmpVol.name,
                                              aVol,
@@ -254,10 +254,10 @@ namespace mu2e {
     } // end loop over parts
 
     // clean up a bit
-    if ( 0 != OR ) {
-      delete OR;
-      OR = 0;
-    }
+    //  if ( 0 != OR ) {
+    //  delete OR;
+    //  OR = 0;
+    // }
   } // end function def for constructSolids
 
   //================================================================================
@@ -278,8 +278,8 @@ namespace mu2e {
 
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
-    OrientationResolver* OR = new OrientationResolver();
-    OrientationResolver ORH;
+    OrientationResolver OR;// = new OrientationResolver();
+    //   OrientationResolver ORH;
 
     // Loop over all volumes in the map
     for ( const auto& keyVolumePair : solidMap ) {
@@ -319,7 +319,7 @@ namespace mu2e {
                                        halfDims[0],halfDims[1],halfDims[2]);
 
           CLHEP::HepRotation* notchRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
-          OR->getRotationFromOrientation( *notchRotat, tmpNotch.getOrient());
+          OR.getRotationFromOrientation( *notchRotat, tmpNotch.getOrient());
 
           if ( 0 == aSolid ) {
             aSolid = new G4SubtractionSolid( tmpVol.name,
@@ -355,7 +355,7 @@ namespace mu2e {
                                       CLHEP::twopi); //angle_span
 
           CLHEP::HepRotation* holeRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
-          ORH.getRotationFromOrientation( *holeRotat, tmpHole.getOrient());
+          OR.getRotationFromOrientation( *holeRotat, tmpHole.getOrient());
 
           if ( 0 == aSolid ) {
             aSolid = new G4SubtractionSolid( tmpVol.name,
@@ -422,10 +422,10 @@ namespace mu2e {
     } // end loop over parts
 
     // clean up a bit
-    if ( 0 != OR ) {
-      delete OR;
-      OR = 0;
-    }
+    //  if ( 0 != OR ) {
+    //  delete OR;
+    //  OR = 0;
+    // }
    } // end function def for constructTrapSolids
 
 } // end namespace mu2e
