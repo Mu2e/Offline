@@ -114,8 +114,7 @@ namespace mu2e {
 
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
-    OrientationResolver OR;// = new OrientationResolver();
-    //    OrientationResolver ORH;
+    OrientationResolver OR;
 
     // Loop over all volumes in the map
     for ( const auto& keyVolumePair : solidMap ) {
@@ -253,11 +252,6 @@ namespace mu2e {
 
     } // end loop over parts
 
-    // clean up a bit
-    //  if ( 0 != OR ) {
-    //  delete OR;
-    //  OR = 0;
-    // }
   } // end function def for constructSolids
 
   //================================================================================
@@ -278,8 +272,7 @@ namespace mu2e {
 
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
-    OrientationResolver OR;// = new OrientationResolver();
-    //   OrientationResolver ORH;
+    OrientationResolver OR;
 
     // Loop over all volumes in the map
     for ( const auto& keyVolumePair : solidMap ) {
@@ -421,11 +414,6 @@ namespace mu2e {
 
     } // end loop over parts
 
-    // clean up a bit
-    //  if ( 0 != OR ) {
-    //  delete OR;
-    //  OR = 0;
-    // }
    } // end function def for constructTrapSolids
 
 } // end namespace mu2e
