@@ -75,8 +75,8 @@ helper.make_plugins([mainlib,
   'pthread',
  ],
   )
-#BINLIBS   = [ mainlib,  'mu2e_GeneralUtilities', 'GenVector', 'MathCore' , 'openblas' ]
-#helper.make_bin("StereoLineTest",BINLIBS,[])
+BINLIBS   = [ mainlib,  'mu2e_GeneralUtilities', 'GenVector', 'MathCore' , 'openblas' ]
+helper.make_bin("StereoLineTest",BINLIBS,[])
 
 #
 # This tells emacs to view this file in python mode.
