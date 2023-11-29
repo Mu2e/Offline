@@ -43,7 +43,7 @@
 #include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 
 // diagnostics
-
+#include "Offline/CalPatRec/inc/ChannelID.hh"
 #include "Offline/CalPatRec/inc/PhiZSeedFinder_types.hh"
 #include "Offline/CalPatRec/inc/PhiZSeedFinderAlg.hh"
 
@@ -51,6 +51,8 @@
 #include <cmath>
 
 using namespace std;
+
+using CalPatRec::ChannelID;
 
 namespace mu2e {
 
@@ -62,9 +64,9 @@ namespace mu2e {
     struct Config {
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<art::InputTag>   sschCollTag            {Name("sschCollTag"       )    , Comment("SS ComboHit collection name") };
-      fhicl::Atom<art::InputTag>   chCollTag              {Name("chCollTag"         )    , Comment("ComboHit collection Name"   ) };
-      fhicl::Atom<art::InputTag>   sdmcCollTag            {Name("sdmcCollTag"       )    , Comment("StrawDigiMC collection Name") };
+      fhicl::Atom<art::InputTag>   sschCollTag            {Name("sschCollTag"       )    , Comment("SS ComboHit collection tag" ) };
+      fhicl::Atom<art::InputTag>   chCollTag              {Name("chCollTag"         )    , Comment("ComboHit collection tag"    ) };
+      fhicl::Atom<art::InputTag>   tcCollTag              {Name("tcCollTag"         )    , Comment("time cluster collection tag") };
       fhicl::Atom<int>             debugLevel             {Name("debugLevel"        )    , Comment("debug level"                ) };
       fhicl::Atom<int>             diagLevel              {Name("diagLevel"         )    , Comment("diag level"                 ) };
       fhicl::Atom<int>             printErrors            {Name("printErrors"       )    , Comment("print errors"               ) };
@@ -85,7 +87,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     art::InputTag   _sschCollTag;
     art::InputTag   _chCollTag;
-    art::InputTag   _sdmcCollTag;
+    art::InputTag   _tcCollTag;                // time cluster coll tag
 
     int             _writeFilteredComboHits;   // write filtered combo hits
     // int             _writeStrawHitFlags;       // obsolete
@@ -132,9 +134,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   PhiZSeedFinder::PhiZSeedFinder(const art::EDProducer::Table<Config>& config):
     art::EDProducer{config},
-    _tcCollTag             (config().sschCollTag()       ),
+    _sschCollTag           (config().sschCollTag()       ),
     _chCollTag             (config().chCollTag()         ),
-    _sdmcCollTag           (config().sdmcCollTag()       ),
+    _tcCollTag             (config().tcCollTag()         ),
     _debugLevel            (config().debugLevel()        ),
     _diagLevel             (config().diagLevel()         ),
     _printErrors           (config().printErrors()       ),
@@ -142,7 +144,8 @@ namespace mu2e {
     _bkgHitMask            (config().bkgHitMask()        )
   {
 
-    consumes<TimeClusterCollection>();
+    consumes<TimeClusterCollection>(_tcCollTag);
+    consumes<ComboHitCollection>   (_chCollTag);
 
     _finder = new PhiZSeedFinderAlg(config().finderParameters,&_data);
 
@@ -152,7 +155,7 @@ namespace mu2e {
     else                 _hmanager = std::make_unique<ModuleHistToolBase>();
 
     _data.chCollTag      = _chCollTag;
-    _data.sdmcCollTag    = _sdmcCollTag;
+    _data.tcCollTag      = _tcCollTag;
     _data._finder        = _finder;         // for diagnostics
   }
 
@@ -178,8 +181,8 @@ namespace mu2e {
 // it is enough to print that once
 //-----------------------------------------------------------------------------
     if (_testOrder && (_testOrderPrinted == 0)) {
-      _data.testOrderID  ();
-      _data.testdeOrderID();
+      ChannelID::testOrderID  ();
+      ChannelID::testdeOrderID();
       _testOrderPrinted = 1;
     }
 
