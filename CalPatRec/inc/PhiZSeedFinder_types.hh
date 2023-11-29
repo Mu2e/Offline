@@ -77,7 +77,7 @@ namespace mu2e {
       const DiskCalorimeter*        calorimeter;
 
       art::InputTag                 chCollTag;
-      art::InputTag                 sdmcCollTag;
+      art::InputTag                 tcCollTag;
 
       const ComboHitCollection*     chcol;
       const TimeClusterCollection*  tccol;

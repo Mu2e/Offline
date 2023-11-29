@@ -96,11 +96,11 @@ namespace mu2e {
 // this routine is called once per job
 //-----------------------------------------------------------------------------
   PhiZSeedFinderDiag::PhiZSeedFinderDiag(const fhicl::Table<mu2e::PhiZSeedFinderTypes::Config>& config):
-    _mcDiag                (config().mcDiag()                ),
-    _printOTracker         (config().printOTracker()         ),
-    _printComboHits        (config().printComboHits()        ),
-    _printGoodComboHits    (config().printGoodComboHits()    ),
-    _printShcol            (config().printShcol()            ),
+    _mcDiag                (config().mcDiag()                )
+    // _printOTracker         (config().printOTracker()         ),
+    // _printComboHits        (config().printComboHits()        ),
+    // _printGoodComboHits    (config().printGoodComboHits()    ),
+    // _printShcol            (config().printShcol()            ),
   {
     printf(" PhiZSeedFinderDiag::PhiZSeedFinderDiag : HOORAY Config! \n");
 
@@ -110,6 +110,11 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   PhiZSeedFinderDiag::~PhiZSeedFinderDiag() {
+  }
+
+//-----------------------------------------------------------------------------
+  void PhiZSeedFinderDiag::bookEventHistograms(EventHist_t* Hist, art::TFileDirectory* Dir) {
+    Hist->fEventNumber     = Dir->make<TH1F>("event" , "Event Number", 100, 0., 100000.);
   }
 
 //-----------------------------------------------------------------------------
@@ -173,6 +178,7 @@ namespace mu2e {
 // Mode = 2: event
 //-----------------------------------------------------------------------------
   int PhiZSeedFinderDiag::debug(void* Data, int Mode) {
+    return 0;
   }
 
 }
