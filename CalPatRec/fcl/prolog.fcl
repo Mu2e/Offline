@@ -431,6 +431,43 @@ CalPatRec : { @table::CalPatRec
                 }
             }
         }
+#------------------------------------------------------------------------------
+        PhiZSeedFinder : { module_type:PhiZSeedFinder
+            chCollTag                   : "makePH"              ## input CH coll
+            sschCollTag                 : "makeSH"              ## input single-straw CH coll
+            sdmcCollTag                 : "compressDigiMCs"     ## used for debug only
+
+            testHitMask                 : false                 ## off by default
+            goodHitMask                 : [ "TimeDivision" ]    ## is there a point in using combohits made
+                                                                ## out of straw hits with an apriory wrong wdist ?
+            bkgHitMask                  : [  ]                  ##
+            writeFilteredComboHits      : 0                     ## by default, clone all hits with updated flags
+            writeStrawHits              : 1                     ## used by the track fit
+            testOrder                   : 0
+
+            debugLevel                  : 0
+            diagLevel                   : 0
+            printErrors                 : 0
+                                                                # finder algorithm parameters
+            finderParameters            : {
+                testOrder               : 0
+                debugLevel              : 0
+                diagLevel               : 0
+                printErrors             : 0
+            }
+#
+            diagPlugin                  : { tool_type : "PhiZSeedFinderDiag"
+                diagLevel               : 0
+                mcDiag                  : false
+                mcTruth                 : 0
+                printComboHits          : 0
+                printGoodComboHits      : 0
+                mcUtils                 : { tool_type : "TrkRecoMcUtils"
+                    strawDigiMCCollTag : "compressDigiMCs"
+                    comboHitCollTag    : "makePH"
+                }
+            }
+        }
     }
 #------------------------------------------------------------------------------
 # no separate hit flag collections any longer, hit flags are stored
