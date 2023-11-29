@@ -88,8 +88,8 @@ namespace mu2e {
     }
     else {
       consumes<SimParticleCollection>(_simpCollTag);
+      produces<mu2e::StageParticleCollection>();
     }
-    produces<mu2e::StageParticleCollection>();
 
     const auto pset = conf().generator.get<fhicl::ParameterSet>();
 
@@ -119,13 +119,32 @@ namespace mu2e {
         return;
       }
 //-----------------------------------------------------------------------------
-// retrieve list of stopped particles with given PDG code
+// fill list of stopped particles with given PDG code
 //-----------------------------------------------------------------------------
-      // const SimParticleCollection* simpc = simpch->product();
       for(auto i = simpch->begin(); i != simpch->end(); ++i) {
         const auto& inpart = i->second;
-        if((inpart.pdgId() == _stopPdgCode) && (inpart.endMomentum().e() == 0)) {
+        if((inpart.pdgId() == _stopPdgCode) && (inpart.endMomentum().vect().mag2() == 0)) {
           list.emplace_back(simpch, i->first.asInt());
+        }
+      }
+//-----------------------------------------------------------------------------
+// for each stop (vertex) generate secondary particle(s)
+// decay_time = stop_time + lifetime
+// for the antiptoton annihilation, will set the _lifetime to zero
+//-----------------------------------------------------------------------------
+      for(const auto& stop: list) {
+        double decay_time = stop->endGlobalTime()+_randExp->fire(_lifetime);
+//-----------------------------------------------------------------------------
+// re-package daughters into a list of "stage particles"
+//-----------------------------------------------------------------------------
+        auto daughters = _generator->generate();
+        for(const auto& d: daughters) {
+          output->emplace_back(stop                     ,
+                               _generator->processCode(),
+                               d.pdgId                  ,
+                               stop->endPosition()      ,
+                               d.fourmom                ,
+                               decay_time               );
         }
       }
     }
@@ -143,8 +162,6 @@ namespace mu2e {
 
       _generator->getXYZ(&pos);
 
-      do { tstop = _tmin + _randExp->fire(_lifetime); } while (tstop > _tmax);
-
       GenParticle genp(_stopPdgCode,_generator->genId(),pos,mom,tstop);
 
       genp_collp->push_back(genp);
@@ -152,7 +169,7 @@ namespace mu2e {
 
       GenParticleCollection* genpc =  (GenParticleCollection*) genpch.product();
 //-----------------------------------------------------------------------------
-// 2. create a SimParticle at rest corresponding to the GenParticle
+// 2. create a fake SimParticle at rest corresponding to the GenParticle
 //    and store it in the event
 //-----------------------------------------------------------------------------
       std::unique_ptr<SimParticleCollection> simp_collp(new SimParticleCollection);
@@ -183,32 +200,16 @@ namespace mu2e {
       list.push_back(stop);
 
       for(const auto& stop: list) {
-        double time = stop->endGlobalTime();
+        double decay_time = _tmin;
+        if (_tmax > _tmin) {
+          do { decay_time = _tmin + _randExp->fire(_lifetime); } while (decay_time > _tmax);
+        }
 //-----------------------------------------------------------------------------
 // re-package daughters into a list of "stage particles"
 //-----------------------------------------------------------------------------
         auto daughters = _generator->generate();
         for(const auto& d: daughters) {
-          genpc->push_back(GenParticle(d.pdgId,_generator->genId(),stop->endPosition(),d.fourmom,time));
-        }
-      }
-//-----------------------------------------------------------------------------
-// for each stop (vertex) generate secondary particle(s)
-// for the antiptoton annihilation, will set the _lifetime to zero
-//-----------------------------------------------------------------------------
-      for(const auto& stop: list) {
-        double time = stop->endGlobalTime();
-//-----------------------------------------------------------------------------
-// re-package daugters into a list of "stage particles"
-//-----------------------------------------------------------------------------
-        auto daughters = _generator->generate();
-        for(const auto& d: daughters) {
-          output->emplace_back(stop                     ,
-                               _generator->processCode(),
-                               d.pdgId                  ,
-                               stop->endPosition()      ,
-                               d.fourmom                ,
-                               time                     );
+          genpc->push_back(GenParticle(d.pdgId,_generator->genId(),stop->endPosition(),d.fourmom,decay_time));
         }
       }
     }
