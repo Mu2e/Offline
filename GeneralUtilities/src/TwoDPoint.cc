@@ -14,13 +14,13 @@ namespace mu2e {
     if(ok){
       // check for degenerate eigenvalues
       double delta =  halftr*halftr - det;
-      if(delta > std::numeric_limits<float>::min()){
+      if(delta > std::numeric_limits<float>::min() && fabs(cov_(0,1)) > std::numeric_limits<float>::min()){
         double sqrtdelta = sqrt(delta);
         double uvar = halftr + sqrtdelta; // by convention the larger eigenvalue is 'u'
         // compute u eigenvector
         udir_ = VEC2(uvar - cov_(1,1),cov_(0,1)).Unit();
       } else {
-        udir_ = VEC2(1.0,0.0);
+        udir_ = cov_(0,0) > cov(1,1) ? VEC2(1.0,0.0) : VEC2(0.0,1.0);
       }
     }
     if(!ok)throw std::invalid_argument( "Unphysical covariance matrix" );
