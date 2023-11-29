@@ -100,7 +100,6 @@ namespace mu2e {
     double alpha(0.0);
     StereoLine::SVEC beta;
     StereoLine::SMAT gamma;
-    const static StereoLine::SMAT ident =  ROOT::Math::SMatrixIdentity();
     for (auto const& wt : wts_){
       auto const& spt = wt.second.pt_;
       auto const& twodpt = spt.point();
@@ -116,13 +115,12 @@ namespace mu2e {
       StereoLine::SVEC etau(udir.X(),udir.Y(),dz*udir.X(),dz*udir.Y());
       StereoLine::SVEC etav(vdir.X(),vdir.Y(),dz*vdir.X(),dz*vdir.Y());
       beta += uwt*pu*etau + vwt*pv*etav;
-      // cannot use TensorProd as that results in a non-symmetric matrix
+      // TensorProd results in a non-symmetric matrix
       // The following is clumsy but works
-      StereoLine::SMAT etau_mat;
-      etau_mat.SetDiagonal(etau);
-      StereoLine::SMAT etav_mat;
-      etav_mat.SetDiagonal(etav);
-      gamma += uwt*ROOT::Math::Similarity(etau_mat,ident) + vwt*ROOT::Math::Similarity(etav_mat,ident);
+      ROOT::Math::SMatrix<double,4,4> temp = uwt*ROOT::Math::TensorProd(etau,etau) + vwt*ROOT::Math::TensorProd(etav,etav);
+      ROOT::Math::SVector<double,10> templ = temp.LowerBlock();
+      StereoLine::SMAT gam(templ);
+      gamma += gam;
     }
     int inv;
     sline.cov_ = gamma.Inverse(inv);
