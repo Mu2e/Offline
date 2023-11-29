@@ -18,16 +18,13 @@ namespace mu2e {
     fhicl::Atom<bool> useDb{
       Name("useDb"), Comment("use database or fcl")};
 
-    fhicl::Atom<double> systemClockSpeed {
-      Name("SystemClockSpeed"), Comment("Detector clock speed in MHz")};
     fhicl::Atom<double> timeFromProtonsToDRMarker{
       Name("TimeFromProtonsToDRMarker"), Comment("Time shift in ns of DR marker wrt to proton peak. Positive means marker arrives after protons")};
     fhicl::Atom<unsigned> offSpillLength{
       Name("OffSpillEventLength"), Comment("Length of off spill events in clock counts" )};
     fhicl::Atom<int> onSpillBins{
       Name("OnSpillBins"), Comment("Number of microbunches before proton bunch phase repeats")};
-    fhicl::Atom<unsigned> onSpillMaxLength{
-      Name("OnSpillEventMaxLength"), Comment("Length of longest on spill events in clock counts")};
+
   };
 
 }

@@ -1,5 +1,5 @@
-#ifndef GeomPrimitives_NotchManager_HH
-#define GeomPrimitives_NotchManager_HH
+#ifndef GeomPrimitives_NotchHoleManager_HH
+#define GeomPrimitives_NotchHoleManager_HH
 // NotchManager is a class that keeps track of notches.  Specifically,
 // it is intended to keep track of notches in the walls/floors/etc of
 // the Mu2e building.  This allows us to add this possibility with
@@ -10,6 +10,10 @@
 // There is no reason this NotchManager couldn't also be used to track notches
 // used in other geometry elements, such as the external shielding.
 
+// Same logic used to create holes in the walls of Mu2e building.
+
+
+#include "Offline/GeomPrimitives/inc/Hole.hh"
 #include "Offline/GeomPrimitives/inc/Notch.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include <vector>
@@ -18,24 +22,30 @@
 
 namespace mu2e{
 
-  class NotchManager {
+  class NotchHoleManager {
   public:
-    NotchManager():hasLoaded_(false){}
-    ~NotchManager(){}
+    NotchHoleManager():hasLoaded_(false){}
+    ~NotchHoleManager(){}
 
     void loadNotches( const SimpleConfig& config );
+    void loadHoles( const SimpleConfig& config );
 
     const bool hasNotches( const std::string& part ) const;
+    const bool hasHoles( const std::string& part ) const;
 
     const std::vector<Notch>& getNotchVector( const std::string& part ) const;
+    const std::vector<Hole>& getHoleVector( const std::string& part ) const;
 
   private:
 
     std::unordered_map<std::string,std::vector<Notch> > theMap_;
+    std::unordered_map<std::string,std::vector<Hole> > theMapH_;
     std::vector<Notch> emptyVec_;
+    std::vector<Hole> emptyVecH_;
     bool hasLoaded_;
-  }; // end NotchManager class definition
+    bool hasLoadedH_;
+  }; // end NotchHoleManager class definition
 
 } // end namespace mu2e
 
-#endif //  GeomPrimitives_NotchManager_HH
+#endif //  GeomPrimitives_NotchHoleManager_HH
