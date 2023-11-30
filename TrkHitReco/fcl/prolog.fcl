@@ -65,15 +65,18 @@ makeSTH : {
   TestFlag              : true
   FilterHits            : false
   ComboHitCollection    : "makePH"
+  EventWindowMarker     : EWMProducer
   StrawHitSelectionBits : ["RadiusSelection","EnergySelection","TimeSelection"]
   StrawHitRejectionBits : []
-  # hit adding parameters
+  # hit selection parameters
   MaxDt                 : 40 # ns
   MaxDPerp              : 300 # mm
   MaxChisquared         : 20.0
   UVRes                 : 5.0 # intrinsic resolution mm
   MinRho                : 380 # mm
   MaxRho                : 700 # mm
+  MinimumEnergy         : 0.0001 # MeV
+  MaximumEnergy         : 0.004 # MeV
   # parameters used to define overlapping panels
   MaxWdot               : 0.9
   MaxFaceSeparation     : 3
