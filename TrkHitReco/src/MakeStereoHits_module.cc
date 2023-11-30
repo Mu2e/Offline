@@ -20,6 +20,7 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/TrkHitReco/inc/CombineStereoPoints.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 // boost
 //#include <boost/accumulators/accumulators.hpp>
 //#include <boost/accumulators/statistics/mean.hpp>
@@ -42,7 +43,8 @@ namespace mu2e {
         using Name    = fhicl::Name;
         using Comment = fhicl::Comment;
         fhicl::Atom<int>                 debug    { Name("DebugLevel"), Comment("Debug level")};
-        fhicl::Atom<art::InputTag>       chTag    { Name("ComboHitCollection"),   Comment("Input ComboHit collection") };
+        fhicl::Atom<art::InputTag>       CHC      { Name("ComboHitCollection"),   Comment("Input ComboHit collection") };
+        fhicl::Atom<art::InputTag>       EWM      { Name("EventWindowMarker"),     Comment("EventWindowMarker")};
         fhicl::Sequence<std::string>     shsel    { Name("StrawHitSelectionBits"),    Comment("Mask for selecting hits") };
         fhicl::Sequence<std::string>     shrej    { Name("StrawHitRejectionBits"),   Comment("Mask for rejecting hits") };
         fhicl::Atom<float>               maxDt    { Name("MaxDt"),   Comment("Maximum time separation (ns)") };
@@ -52,10 +54,12 @@ namespace mu2e {
         fhicl::Atom<float>               uvres    { Name("UVRes"),   Comment("Resolution in U,V (X,Y) plane") };
         fhicl::Atom<float>               minRho   { Name("MinRho"),   Comment("Minimum transverse radius of combination (mm)") };
         fhicl::Atom<float>               maxRho   { Name("MaxRho"),   Comment("Maximum transverse radius of combination (mm)") };
+        fhicl::Atom<float>               minE     { Name("MinimumEnergy"),         Comment("Minimum straw energy deposit (MeV)")};
+        fhicl::Atom<float>               maxE     { Name("MaximumEnergy"),         Comment("Maximum straw energy deposit (MeV)")};
         fhicl::Atom<unsigned>            maxfsep  { Name("MaxFaceSeparation"),   Comment("max separation between faces") };
         fhicl::Atom<float>               maxDz    { Name("MaxDz"),   Comment("max Z separation between panels (mm)") };
         fhicl::Atom<bool>                testflag { Name("TestFlag"),   Comment("Test input hit flags") };
-        fhicl::Atom<bool>                filter  { Name("FilterHits"),            Comment("Filter hits (alternative is to just flag)") };
+        fhicl::Atom<bool>                filter   { Name("FilterHits"),            Comment("Filter hits (alternative is to just flag)") };
         fhicl::Atom<std::string>         smask    { Name("SelectionMask"),   Comment("define the mask to select hits") };
       };
 
@@ -67,7 +71,8 @@ namespace mu2e {
       typedef std::vector<uint16_t> ComboHits;
 
       int            _debug;
-      art::InputTag _chTag;
+      art::ProductToken<ComboHitCollection> const _chctoken;
+      art::ProductToken<EventWindowMarker> const _ewmtoken;
 
       StrawHitFlag   _shsel;     // input flag selection
       StrawHitFlag   _shrej;     // input flag rejection
@@ -76,7 +81,8 @@ namespace mu2e {
       float         _maxwdot;    // minimum dot product of straw directions
       float         _maxChisq;   // maximum chisquared to allow making stereo hits
       float         _uvvar;      // intrinsic variance in UV plane
-      float  _minrho, _maxrho;   // transverse radius range
+      float         _minrho, _maxrho;   // transverse radius range
+      float         _minE, _maxE; // edep cuts
       unsigned      _maxfsep;    // max face separation
       float         _maxDz;      // max z sepration
       bool          _testflag;   // test the flag or not
@@ -91,7 +97,8 @@ namespace mu2e {
   MakeStereoHits::MakeStereoHits(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config},
     _debug(config().debug()),
-    _chTag(config().chTag()),
+    _chctoken{consumes<ComboHitCollection>(config().CHC())},
+    _ewmtoken{consumes<EventWindowMarker>(config().EWM())},
     _shsel(config().shsel()),
     _shrej(config().shrej()),
     _maxDt(config().maxDt()),
@@ -101,13 +108,14 @@ namespace mu2e {
     _uvvar(config().uvres()*config().uvres()),
     _minrho(config().minRho()),
     _maxrho(config().maxRho()),
+    _minE(config().minE()),
+    _maxE(config().maxE()),
     _maxfsep(config().maxfsep()),
     _maxDz(config().maxDz()),
     _testflag(config().testflag()),
     _filter(config().filter()),
     _smask(config().smask())
     {
-      consumes<ComboHitCollection>(_chTag);
       produces<ComboHitCollection>();
     }
 
@@ -119,14 +127,16 @@ namespace mu2e {
   }
 
   void MakeStereoHits::produce(art::Event& event) {
-    // I have to get a Handle, not a ValidHandle, as a literal handle is needed to find the productID
-    art::Handle<ComboHitCollection> chH;
-    if(!event.getByLabel(_chTag, chH))
-      throw cet::exception("RECO")<<"mu2e::MakeStereoHits: No ComboHit collection found for tag" <<  _chTag << std::endl;
-    auto const& inchcol = *chH.product();
+    auto chcH = event.getValidHandle(_chctoken);
+    const ComboHitCollection& inchcol(*chcH);
+    auto ewmH = event.getValidHandle(_ewmtoken);
+    const EventWindowMarker& ewm(*ewmH);
+    // accept all OffSpill hits
+    bool filter = _filter && ewm.spillType() == EventWindowMarker::onspill;
+    bool testflag = _testflag && ewm.spillType() == EventWindowMarker::onspill;
     auto chcol = std::make_unique<ComboHitCollection>();
     chcol->reserve(inchcol.size());
-    chcol->setParent(chH);
+    chcol->setParent(chcH);
     // sort hits by unique panel.  This should be built in by construction upstream TODO!!
     std::array<std::vector<uint16_t>,StrawId::_nupanels> phits;
     size_t nch = inchcol.size();
@@ -135,7 +145,7 @@ namespace mu2e {
     for(uint16_t ihit=0;ihit<nch;++ihit){
       ComboHit const& ch = inchcol[ihit];
       // select hits based on flag
-      if( (!_testflag) ||( ch.flag().hasAllProperties(_shsel) && (!ch.flag().hasAnyProperty(_shrej))) ){
+      if( (!testflag) ||( ch.flag().hasAllProperties(_shsel) && (!ch.flag().hasAnyProperty(_shrej))) ){
         phits[ch.strawId().uniquePanel()].push_back(ihit);
       }
     }
@@ -157,14 +167,14 @@ namespace mu2e {
       // create a combiner seeded on this hit
       CombineStereoPoints cpts(_uvvar);
       cpts.addPoint(StereoPoint(ch1.pos(),ch1.uDir(),ch1.uVar(),ch1.vVar()),ihit);
-      if( (!_testflag) ||( ch1.flag().hasAllProperties(_shsel) && (!ch1.flag().hasAnyProperty(_shrej))) ){
+      if( (!testflag) ||( ch1.flag().hasAllProperties(_shsel) && (!ch1.flag().hasAnyProperty(_shrej))) ){
         // loop over the panels which overlap this hit's panel
         for (auto sid : _panelOverlap[ch1.strawId().uniquePanel()]) {
           // loop over hits in the overlapping panel
           for (auto jhit : phits[sid.uniquePanel()]) {
             const ComboHit& ch2 = inchcol[jhit];
-            if(_debug > 3) std::cout << " comparing hits in panels " << ch1.strawId().uniquePanel() << " and " << ch2.strawId().uniquePanel() << std::endl;
-            if (!used[jhit] && cpts.nPoints() < ComboHit::MaxNCombo){
+            if (!used[jhit] && cpts.nPoints() < ComboHit::MaxNCombo  && ( (!testflag) ||( ch2.flag().hasAllProperties(_shsel) && (!ch2.flag().hasAnyProperty(_shrej)))) ){
+              if(_debug > 3) std::cout << " comparing hits in panels " << ch1.strawId().uniquePanel() << " and " << ch2.strawId().uniquePanel() << std::endl;
               float dt;
               dt = fabs(ch1.correctedTime()-ch2.correctedTime());
               if(_debug > 4) std::cout << " dt = " << dt;
@@ -202,20 +212,27 @@ namespace mu2e {
         // create the combined hit
         fillComboHit(combohit,cpts,inchcol);
       } else {
-        // reference the initial hit
+        // only 1 combo hit: either failed pre-selection or no matching hits.  Just reference the initial hit
         combohit.init(ch1,ihit);
-        // test radius
-        auto rho = combohit.pos().Rho();
-        if(rho < _maxrho && rho > _minrho )
-          combohit._flag.merge(StrawHitFlag::radsel);
-        else
-          combohit._flag.clear(StrawHitFlag::radsel);
+      }
+      // test the final hit
+      auto rho = combohit.pos().Rho();
+      if(rho < _maxrho && rho > _minrho ){
+        combohit._flag.merge(StrawHitFlag::radsel);
+      } else {
+        combohit._flag.clear(StrawHitFlag::radsel);
+      }
+      auto energy = combohit.energyDep();
+      if( energy < _maxE && energy > _minE ) {
+        combohit._flag.merge(StrawHitFlag::energysel);
+      } else {
+        combohit._flag.clear(StrawHitFlag::energysel);
       }
       // update the level
       combohit._mask = _smask;
       // final test
-      if( (!_filter) || ( combohit.flag().hasAllProperties(_shsel) && (!combohit.flag().hasAnyProperty(_shrej))) )
-        chcol->push_back(combohit);
+      if( (!filter) || ( combohit.flag().hasAllProperties(_shsel) &&
+            (!combohit.flag().hasAnyProperty(_shrej))) ) chcol->push_back(combohit);
     }
     event.put(std::move(chcol));
   }

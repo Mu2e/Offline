@@ -205,7 +205,7 @@ namespace mu2e {
       } else
         combohit._flag.merge(StrawHitFlag::timesel);
 
-      auto energy = combohit.energyDep(); // switch to dE/dx TODO
+      auto energy = combohit.energyDep();
       if( energy > _maxE || energy < _minE ) {
         if(filter)break;
       } else
