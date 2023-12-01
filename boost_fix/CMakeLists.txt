@@ -1,4 +1,4 @@
-cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline/boost_fix
+cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
     SOURCE
       accumulators/statistics.hpp
       accumulators/statistics/stats.hpp
