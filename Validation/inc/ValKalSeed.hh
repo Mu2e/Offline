@@ -38,6 +38,7 @@ class ValKalSeed {
   TH1D* _hfitConC;
   TH1D* _hfitConT;
   TH1D* _hp;
+  TH1D* _hp2;
   TH1D* _hpC;
   TH1D* _hpT;
   TH1D* _hpce;
