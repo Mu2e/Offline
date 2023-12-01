@@ -26,6 +26,9 @@ pixelDigitization : {
     // ToT calibration target
     totCalib : 1
 
+    temperature : 273.0  // Kelvin
+    biasVoltage : -150.0  // Volts
+
     pixelNoisePerBC : 6.e-10 // 1e-10 electronics + 5e-10 radioactivity
 
     // Arbitrary, but must be sane
