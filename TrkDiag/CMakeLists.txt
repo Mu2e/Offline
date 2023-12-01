@@ -88,6 +88,13 @@ cet_build_plugin(RMCWeight art::module
       Offline::SeedService
 )
 
+cet_build_plugin(RobustMultiHelixAnalyzer art::module
+    REG_SOURCE src/RobustMultiHelixAnalyzer_module.cc
+    LIBRARIES REG
+        Offline::TrkDiag
+)
+
+
 cet_build_plugin(StrawHitDiag art::module
     REG_SOURCE src/StrawHitDiag_module.cc
     LIBRARIES REG

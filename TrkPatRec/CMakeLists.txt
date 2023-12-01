@@ -3,6 +3,7 @@ cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline/TrkPatRec
       inc/KalFinalFit_types.hh
       inc/KalSeedFit_types.hh
       inc/RobustHelixFinder_types.hh
+      inc/RobustMultiHelixFinder_types.hh
       inc/TimeAndPhiClusterFinder_types.hh
       inc/TrkHitFilter.hh
     LIBRARIES INTERFACE
@@ -64,6 +65,24 @@ cet_build_plugin(RobustHelixFinder art::module
       Offline::TrkReco
 )
 
+cet_build_plugin(RobustMultiHelixFinder art::module
+    REG_SOURCE src/RobustMultiHelixFinder_module.cc
+    LIBRARIES REG
+      Offline::TrkPatRec
+      
+      Offline::boost_fix
+      Offline::CalorimeterGeom
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
+      Offline::TrkReco
+)
+
 cet_build_plugin(TimeAndPhiClusterFinder art::module
     REG_SOURCE src/TimeAndPhiClusterFinder_module.cc
     LIBRARIES REG
@@ -108,6 +127,16 @@ cet_build_plugin(KalSeedFitDiag art::tool
 
 cet_build_plugin(RobustHelixFinderDiag art::tool
     REG_SOURCE src/RobustHelixFinderDiag_tool.cc
+    LIBRARIES REG
+      Offline::TrkPatRec
+      
+      Offline::BTrkData
+      Offline::Mu2eUtilities
+      Offline::TrkReco
+)
+
+cet_build_plugin(RobustMultiHelixFinderDiag art::tool
+    REG_SOURCE src/RobustMultiHelixFinderDiag_tool.cc
     LIBRARIES REG
       Offline::TrkPatRec
       

@@ -22,7 +22,7 @@ cet_make_library(
       src/Mu2eCoordTransform.cc
       src/Mu2eEnvelope.cc
       src/Mu2eHallMaker.cc
-      src/NotchManager.cc
+      src/NotchHoleManager.cc
       src/PipeMaker.cc
       src/ProductionSolenoidMaker.cc
       src/ProductionTargetMaker.cc
