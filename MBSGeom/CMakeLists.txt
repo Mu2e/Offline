@@ -1,4 +1,4 @@
-cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline/MBSGeom
+cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
     SOURCE
       inc/MBS.hh
     LIBRARIES INTERFACE

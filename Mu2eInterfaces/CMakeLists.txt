@@ -1,4 +1,8 @@
-cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline/Mu2eInterfaces
+
+macro(FixSources)
+endmacro()
+
+cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
     SOURCE
       inc/ConditionsEntity.hh
       inc/Detector.hh

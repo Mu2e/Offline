@@ -1,4 +1,4 @@
-cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline/TrackerConfig
+cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
     SOURCE
       inc/AlignedTrackerConfig.hh
       inc/FullReadoutStrawConfig.hh

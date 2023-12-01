@@ -1,4 +1,4 @@
-cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline/SimulationConfig
+cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
     SOURCE
       inc/SimBookkeeperConfig.hh
     LIBRARIES INTERFACE

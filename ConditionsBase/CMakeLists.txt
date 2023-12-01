@@ -1,4 +1,4 @@
-cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline/ConditionsBase
+cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
     SOURCE
       inc/TrackerCalibrationStructs.hh
     LIBRARIES INTERFACE
