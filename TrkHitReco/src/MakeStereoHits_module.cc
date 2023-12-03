@@ -60,6 +60,7 @@ namespace mu2e {
         fhicl::Atom<float>               maxDz    { Name("MaxDz"),   Comment("max Z separation between panels (mm)") };
         fhicl::Atom<bool>                testflag { Name("TestFlag"),   Comment("Test input hit flags") };
         fhicl::Atom<bool>                filter   { Name("FilterHits"),            Comment("Filter hits (alternative is to just flag)") };
+        fhicl::Atom<bool>                sline    { Name("StereoLine"),            Comment("Fit stereohit ComboHit daughters to a line") };
         fhicl::Atom<std::string>         smask    { Name("SelectionMask"),   Comment("define the mask to select hits") };
       };
 
@@ -87,6 +88,7 @@ namespace mu2e {
       float         _maxDz;      // max z sepration
       bool          _testflag;   // test the flag or not
       bool          _filter;
+      bool          _sline;      // fit to a line
       StrawIdMask   _smask;      // mask for combining hits
 
       std::array<std::vector<StrawId>,StrawId::_nupanels > _panelOverlap;   // which panels overlap each other
@@ -114,6 +116,7 @@ namespace mu2e {
     _maxDz(config().maxDz()),
     _testflag(config().testflag()),
     _filter(config().filter()),
+    _sline(config().sline()),
     _smask(config().smask())
     {
       produces<ComboHitCollection>();
@@ -241,30 +244,35 @@ namespace mu2e {
     if(_debug > 1){
       std::cout << "Combining " << cpts.nPoints() << " hits" << std::endl;
     }
+    bool sth = _sline;
+    if(sth){
     // solve for the line
-    StereoLine sline;
-    if(cpts.stereoLine(sline)){
-      combohit._pos = sline.pos(sline.z0());
-      // create a 2-D point from the upper component of this
-      TwoDPoint spt(sline.pars().Sub<TwoDPoint::SVEC>(0), sline.cov().Sub<TwoDPoint::SMAT>(0,0));
-      auto ud2 =  spt.udir();
-      auto vd2 =  spt.vdir();
-      combohit._udir = XYZVectorF(ud2.X(),ud2.Y(),0.0);
-      combohit._vdir = XYZVectorF(vd2.X(),vd2.Y(),0.0);
-      combohit._ures = sqrt(spt.uvar());
-      combohit._vres = sqrt(spt.vvar());
-      // extract the slopes from the stereo line and turn them into a direction
-      combohit._hdir = sline.dir();
-      TwoDPoint::SVEC ud(ud2.X(),ud2.Y());
-      TwoDPoint::SVEC vd(vd2.X(),vd2.Y());
-      TwoDPoint::SMAT dmat = sline.cov().Sub<TwoDPoint::SMAT>(2,2);
-      double uzvar = ROOT::Math::Similarity(ud,dmat);
-      double vzvar = ROOT::Math::Similarity(vd,dmat);
-      combohit._uzres = sqrt(uzvar);
-      combohit._vzres = sqrt(vzvar);
-      // fit quality
-      combohit._qual = TMath::Prob(sline.chisq(),sline.ndof());
-    }  else {
+      StereoLine sline;
+      sth = cpts.stereoLine(sline);
+      if(sth){
+        combohit._pos = sline.pos(sline.z0());
+        // create a 2-D point from the upper component of this
+        TwoDPoint spt(sline.pars().Sub<TwoDPoint::SVEC>(0), sline.cov().Sub<TwoDPoint::SMAT>(0,0));
+        auto ud2 =  spt.udir();
+        auto vd2 =  spt.vdir();
+        combohit._udir = XYZVectorF(ud2.X(),ud2.Y(),0.0);
+        combohit._vdir = XYZVectorF(vd2.X(),vd2.Y(),0.0);
+        combohit._ures = sqrt(spt.uvar());
+        combohit._vres = sqrt(spt.vvar());
+        // extract the slopes from the stereo line and turn them into a direction
+        combohit._hdir = sline.dir();
+        TwoDPoint::SVEC ud(ud2.X(),ud2.Y());
+        TwoDPoint::SVEC vd(vd2.X(),vd2.Y());
+        TwoDPoint::SMAT dmat = sline.cov().Sub<TwoDPoint::SMAT>(2,2);
+        double uzvar = ROOT::Math::Similarity(ud,dmat);
+        double vzvar = ROOT::Math::Similarity(vd,dmat);
+        combohit._uzres = sqrt(uzvar);
+        combohit._vzres = sqrt(vzvar);
+        // fit quality
+        combohit._qual = TMath::Prob(sline.chisq(),sline.ndof());
+      }
+    }
+    if(!sth){
       // fall back to the 2D projection
       // fill position and variance from combined info
       auto const& pt = cpts.point();
@@ -291,6 +299,7 @@ namespace mu2e {
         zmin = std::min(zmin,z);
         zmax = std::max(zmax,z);
         combohit._flag.merge(StrawHitFlag::stereo);
+        combohit._flag.clear(StrawHitFlag::panelcombo);
         combohit._edep += ch.energyDep()*nsh;
         // the following have unclear meaning for stereo hits, but we fill them anyways
         double twt = 1.0/ch.timeVar();
