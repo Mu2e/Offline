@@ -14,6 +14,8 @@
 #include "art_root_io/TFileService.h"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 // root
 #include "TMath.h"
 #include "TH1F.h"
@@ -35,6 +37,7 @@
 // diagnostics
 #include "Offline/TrkDiag/inc/ComboHitInfo.hh"
 #include <map>
+#include <limits>
 
 namespace mu2e
 {
@@ -210,10 +213,12 @@ namespace mu2e
   }
 
   void ComboHitDiag::analyze(const art::Event& evt ) {
+    // conditions
+    auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
+    StrawElectronics const& strawele = _strawele_h.get(evt.id());
     // find data in event
     findData(evt);
     _evt = evt.id().event();  // add event id
-    StrawElectronics const& strawele = _strawele_h.get(evt.id());
     // loop over combo hits
     for(size_t ich = 0;ich < _chcol->size(); ++ich){
       ComboHit const& ch =(*_chcol)[ich];
@@ -306,8 +311,8 @@ namespace mu2e
         for(auto shi : shids) {
           ComboHitInfoMC chimc;
           StrawDigiMC const& mcd = _mcdigis->at(shi);
-          auto sgsp = mcd.earlyStrawGasStep();
-          art::Ptr<SimParticle> spp = sgsp->simParticle();
+          auto const& sgsp = mcd.earlyStrawGasStep();
+          auto const&  spp = sgsp->simParticle();
           auto fnd = spmap.find(spp);
           if(fnd == spmap.end())
             spmap[spp] = 1;
@@ -338,25 +343,39 @@ namespace mu2e
               _prel = rel.relationship();
           }
         }
-        // find the relation with each hit
+        // find the relation with each individual starw hit
         _mcpos = _mcmom = XYZVectorF();
         _mctime = 0.0;
+        // to define true position, etc, find the primary step closest in Z to the hit
+        double mindz = std::numeric_limits<float>::max();
+        art::Ptr<StrawGasStep> best_sgsp;
         for(auto shi : shids) {
           ComboHitInfoMC chimc;
           StrawDigiMC const& mcd = _mcdigis->at(shi);
-          auto const& sgsp = mcd.earlyStrawGasStep();
-          chimc._mcpos = sgsp->startPosition();
           MCRelationship rel(mcd,spmax);
           chimc._rel = rel.relationship();
           _chinfomc.push_back(chimc);
-          // find average MC properties
-          _mcpos += sgsp->startPosition();
-          _mctime += sgsp->time();
-          _mcmom += sgsp->momentum();
+          if(chimc._rel==0){
+            auto const& sgsp = mcd.earlyStrawGasStep();
+            auto const& mcpos = sgsp->startPosition();
+            double dz = fabs(_pos.Z()-mcpos.Z());
+            if(dz < mindz){
+              mindz = dz;
+              best_sgsp = sgsp;
+            }
+          }
         }
-        _mcpos /= shids.size();
-        _mctime /= shids.size();
-        _mcmom /= shids.size();
+        _mcmom = best_sgsp->momentum();
+        _mcpos = best_sgsp->startPosition();
+        _mctime = best_sgsp->time();
+        // correct mc position and time for z position difference
+        double dz = _pos.Z() -_mcpos.Z();
+        auto pdgid = best_sgsp->simParticle()->pdgId();
+        auto mass = ptable->particle(pdgid).mass();
+        auto vel = _mcmom * (CLHEP::c_light/sqrt(_mcmom.Mag2() + mass*mass));
+        double dt = dz/vel.Z();
+        _mctime += dt;
+        _mcpos += vel*dt;
         _mcudist = (_mcpos - cpos).Dot(_udir);
         // count mcdigis with the same StrawId as this hit
         _mcndigi = 0;
