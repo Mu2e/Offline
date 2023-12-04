@@ -80,7 +80,7 @@ namespace mu2e{
     if(AddErrorBar_){
       TEveLine *error = new TEveLine();
       auto const& p = fComboHit_.pos();
-      auto const& w = fComboHit_.wdir();
+      auto w = fComboHit_.uDir();
       auto const& s = fComboHit_.wireRes();
       double x1 = (p.x()+s*w.x());
       double x2 = (p.x()-s*w.x());
@@ -128,7 +128,7 @@ namespace mu2e{
     if(AddErrorBar_){
       TEveLine *error = new TEveLine();
       auto const& p = fComboHit_.pos();
-      auto const& w = fComboHit_.wdir();
+      auto w = fComboHit_.uDir();
       auto const& s = fComboHit_.wireRes();
       double x1 = (p.x()+s*w.x());
       double x2 = (p.x()-s*w.x());

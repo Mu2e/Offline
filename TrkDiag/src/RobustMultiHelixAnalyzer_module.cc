@@ -140,8 +140,8 @@ namespace mu2e {
          chUId_[ich]  = chcol[ich].strawId().uniquePanel();
          chTerr_[ich] = chcol[ich].posRes(StrawHitPosition::trans);
          chWerr_[ich] = chcol[ich].posRes(StrawHitPosition::wire);
-         chWDX_[ich]  = chcol[ich].wdir().x();
-         chWDY_[ich]  = chcol[ich].wdir().y();
+         chWDX_[ich]  = chcol[ich].uDir2D().x();
+         chWDY_[ich]  = chcol[ich].uDir2D().y();
 
          std::vector<StrawHitIndex> strawHitIdxs;
          chcol.fillStrawHitIndices(ich,strawHitIdxs);

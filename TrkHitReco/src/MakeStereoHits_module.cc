@@ -253,21 +253,19 @@ namespace mu2e {
         combohit._pos = sline.pos(sline.z0());
         // create a 2-D point from the upper component of this
         TwoDPoint spt(sline.pars().Sub<TwoDPoint::SVEC>(0), sline.cov().Sub<TwoDPoint::SMAT>(0,0));
-        auto ud2 =  spt.udir();
-        auto vd2 =  spt.vdir();
-        combohit._udir = XYZVectorF(ud2.X(),ud2.Y(),0.0);
-        combohit._vdir = XYZVectorF(vd2.X(),vd2.Y(),0.0);
-        combohit._ures = sqrt(spt.uvar());
-        combohit._vres = sqrt(spt.vvar());
+        // use this covariance to define the u direction
+        combohit._udir = spt.udir();
+        auto vdir = spt.vdir();
+        // project the covariances
+        combohit._uvar = spt.uvar();
+        combohit._vvar = spt.vvar();
         // extract the slopes from the stereo line and turn them into a direction
         combohit._hdir = sline.dir();
-        TwoDPoint::SVEC ud(ud2.X(),ud2.Y());
-        TwoDPoint::SVEC vd(vd2.X(),vd2.Y());
+        TwoDPoint::SVEC udv(spt.udir().X(),spt.udir().Y());
+        TwoDPoint::SVEC vdv(vdir.X(),vdir.Y());
         TwoDPoint::SMAT dmat = sline.cov().Sub<TwoDPoint::SMAT>(2,2);
-        double uzvar = ROOT::Math::Similarity(ud,dmat);
-        double vzvar = ROOT::Math::Similarity(vd,dmat);
-        combohit._uzres = sqrt(uzvar);
-        combohit._vzres = sqrt(vzvar);
+        combohit._dudwvar = ROOT::Math::Similarity(udv,dmat);
+        combohit._dvdwvar = ROOT::Math::Similarity(vdv,dmat);
         // fit quality
         combohit._qual = TMath::Prob(sline.chisq(),sline.ndof());
       }
@@ -277,12 +275,9 @@ namespace mu2e {
       // fill position and variance from combined info
       auto const& pt = cpts.point();
       combohit._pos = pt.pos3();
-      auto udir = pt.udir();
-      auto vdir = pt.vdir();
-      combohit._udir = XYZVectorF(udir.X(),udir.Y(),0.0);
-      combohit._vdir = XYZVectorF(vdir.X(),vdir.Y(),0.0);
-      combohit._ures = sqrt(pt.uvar());
-      combohit._vres = sqrt(pt.vvar());
+      combohit._udir = pt.udir();
+      combohit._uvar = pt.uvar();
+      combohit._vvar = pt.vvar();
       combohit._qual = cpts.consistency();
     }
 
@@ -317,15 +312,16 @@ namespace mu2e {
       }
     }
     // define w error from range
-    static const double invsqrt12 = 1.0/sqrt(12.0);
-    combohit._wres = invsqrt12*(zmax-zmin);
+    static const double inv12 = 1.0/12.0;
+    double dz = zmax-zmin;
+    combohit._wvar = inv12*dz*dz;
     // simple average for edep
     combohit._edep /= combohit._nsh;
     // average time
     combohit._time /= twtsum;
     combohit._dtime /= twtsum;
     combohit._ptime  /= twtsum;
-    combohit._timeres = sqrt(1.0/twtsum);
+    combohit._timevar = 1.0/twtsum;
     for(size_t iend=0;iend<2;++iend){
       combohit._etime[iend] /=twtsum;
       combohit._tot[iend] /= twtsum;

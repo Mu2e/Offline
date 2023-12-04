@@ -90,9 +90,9 @@ void mu2e::ComboHitPrinter::Print(const mu2e::ComboHit& obj, int ind,
     os << "   pos: " << std::setw(8) << std::setprecision(3) << obj.pos().x()
       << " " << std::setw(8) << std::setprecision(3) << obj.pos().y() << " "
       << std::setw(9) << std::setprecision(3) << obj.pos().z()
-      << "  dir: " << std::setw(8) << std::setprecision(3) << obj.wdir().x()
-      << " " << std::setw(8) << std::setprecision(3) << obj.wdir().y() << " "
-      << std::setw(9) << std::setprecision(3) << obj.wdir().z() << "\n";
+      << "  dir: " << std::setw(8) << std::setprecision(3) << obj.uDir().x()
+      << " " << std::setw(8) << std::setprecision(3) << obj.uDir().y() << " "
+      << std::setw(9) << std::setprecision(3) << obj.uDir().z() << "\n";
     os << "   indexArray:";
     for (auto ii : obj.indexArray()) os << " " << ii;
     os << std::endl;

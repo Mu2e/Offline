@@ -381,7 +381,7 @@ namespace mu2e
         auto psep = ch.pos()-cluster.pos();
         auto pdir = PerpVector(psep,GenVector::ZDir()).Unit();
         bkghinfo._rpos = psep;
-        bkghinfo._rerr = std::max(float(2.5),ch.posRes(ComboHit::wire)*fabs(pdir.Dot(ch.wdir())));
+        bkghinfo._rerr = std::max(float(2.5),ch.posRes(ComboHit::wire)*fabs(pdir.Dot(ch.uDir())));
         _bkghinfo.push_back(bkghinfo);
       }
       _avecedep = sumEdep/_nch;

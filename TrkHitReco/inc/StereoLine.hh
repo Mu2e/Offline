@@ -10,7 +10,7 @@
 #include <iostream>
 namespace mu2e {
   struct StereoLine {
-    enum PARS {px=0, py, rx, ry}; // parameter indices
+    enum PARS { posx=0, posy, dxdz, dydz };  // define the covariance matrix indices
     using VEC3 = ROOT::Math::XYZVectorF; // spatial 3D vector
     using SVEC = ROOT::Math::SVector<double,4>; // algebraic vector; first 2 rows are position, last 2 are direction (dX/dZ, dY/dZ)
     using SMAT = ROOT::Math::SMatrix<double,4,4,ROOT::Math::MatRepSym<double,4>>; // matrix for weights/covariance of above

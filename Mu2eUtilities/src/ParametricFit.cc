@@ -175,14 +175,14 @@ std::vector<double> GetErrors(ComboHit* Hit, XYZVectorF XAxis, XYZVectorF YAxis)
 
 }
 XYZVectorF MajorAxis(ComboHit* Hit){
-      XYZVectorF const& wdir = Hit->wdir();//direction along wire
+      XYZVectorF wdir = Hit->uDir();//direction along wire
       double werr_mag = Hit->wireRes(); //hit major error axis
       XYZVectorF major_axis = werr_mag*wdir;
       return major_axis;
 }
 
 XYZVectorF MinorAxis(ComboHit* Hit){
-      XYZVectorF const& wdir = Hit->wdir();//direction along wire
+      XYZVectorF wdir = Hit->uDir();//direction along wire
       XYZVectorF wtdir = GenVector::ZDir().Cross(wdir); // transverse direction to the wire
       double terr_mag = Hit->transRes(); //hit minor error axis
       XYZVectorF minor_axis = terr_mag*wtdir;
