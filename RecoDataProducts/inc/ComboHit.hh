@@ -56,9 +56,9 @@ namespace mu2e {
     auto wRes() const { return _wres; }
     auto wVar() const { return _wres*_wres; }
     auto uzRes() const { return _uzres; } // resolution on the uz slope (dU/dZ)
-    auto vzRes() const { return _uzres; } // resolution on the vz slope (dV/dZ)
+    auto vzRes() const { return _vzres; } // resolution on the vz slope (dV/dZ)
     auto uzVar() const { return _uzres*_uzres; } // variance on the uz slope
-    auto vzVar() const { return _uzres*_vzres; } // variance on the vz slope
+    auto vzVar() const { return _vzres*_vzres; } // variance on the vz slope
     auto transRes() const { return vRes(); }
     auto transVar() const { return vVar(); }
 
