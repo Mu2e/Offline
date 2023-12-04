@@ -84,12 +84,8 @@ namespace mu2e
       XYZVectorF _pos; // average position
       XYZVectorF _udir; // direction at this position (typically the wire direction)
       XYZVectorF _hdir; // hit direction (generally Z)
-      float _udist; // distance from wire center along this direction
-      float _ures; // estimated error along this direction
-      float _vres; // estimated error
-      float _wres; // estimated error perpendicular to this direction
-      float _tres; // estimated time error
-      float _uzres, _vzres; // resolutions on the angle
+      float _wdist; // distance from wire center along this direction
+      float _ures, _vres, _wres, _tres, _dudwres, _dvdwres; // estimated resolution
       float _etime[2]; // end times
       float _ctime; // corrected time
       float _dtime, _ptime; // drift and propagation times: these should be end-specific, TODO
@@ -103,7 +99,7 @@ namespace mu2e
       int _esel,_rsel, _tsel, _nsel,  _bkgclust, _bkg, _sth, _ph, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
       // mc diag
       XYZVectorF _mcpos, _mcmom;
-      float _mctime, _mcudist;
+      float _mctime, _mcwdist;
       int _mcpdg, _mcproc, _mcgen, _mcndigi;
       int _prel;
 
@@ -144,16 +140,15 @@ namespace mu2e
     // detailed diagnostics
     _chdiag=tfs->make<TTree>("chdiag","combo hit diagnostics");
     _chdiag->Branch("evt",&_evt,"evt/I");  // add event id
-    _chdiag->Branch("udist",&_udist,"udist/F");
+    _chdiag->Branch("wdist",&_wdist,"wdist/F");
     _chdiag->Branch("pos.",&_pos);
     _chdiag->Branch("udir.",&_udir);
     _chdiag->Branch("hdir.",&_hdir);
-    _chdiag->Branch("udist",&_udist,"udist/F");
     _chdiag->Branch("ures",&_ures,"ures/F");
     _chdiag->Branch("vres",&_vres,"vres/F");
     _chdiag->Branch("wres",&_wres,"wres/F");
-    _chdiag->Branch("uzres",&_uzres,"uzres/F");
-    _chdiag->Branch("vzres",&_vzres,"vzres/F");
+    _chdiag->Branch("dudwres",&_dudwres,"dudwres/F");
+    _chdiag->Branch("dvdwres",&_dvdwres,"dvdwres/F");
     _chdiag->Branch("tres",&_tres,"tres/F");
     _chdiag->Branch("etime",&_etime,"etimecal/F:etimehv");
     _chdiag->Branch("ctime",&_ctime,"ctime/F");
@@ -190,7 +185,7 @@ namespace mu2e
       _chdiag->Branch("mcpos.",&_mcpos);
       _chdiag->Branch("mcmom",&_mcmom);
       _chdiag->Branch("mctime",&_mctime,"mctime/F");
-      _chdiag->Branch("mcudist",&_mcudist,"mcudist/F");
+      _chdiag->Branch("mcudist",&_mcwdist,"mcudist/F");
       _chdiag->Branch("mcfrac",&_mcfrac,"mcfrac/F");
       _chdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
       _chdiag->Branch("mcproc",&_mcproc,"mcproc/I");
@@ -214,7 +209,6 @@ namespace mu2e
 
   void ComboHitDiag::analyze(const art::Event& evt ) {
     // conditions
-    auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
     StrawElectronics const& strawele = _strawele_h.get(evt.id());
     // find data in event
     findData(evt);
@@ -233,12 +227,12 @@ namespace mu2e
       _pos = ch.pos();
       _udir = ch.uDir();
       _hdir = ch.hDir();
-      _udist = ch.uPos();
-      _ures = ch.uRes();
-      _vres = ch.vRes();
-      _uzres = ch.uzRes();
-      _vzres = ch.vzRes();
-      _tres = ch.timeRes();
+      _wdist = ch.uPos();
+      _ures = sqrt(ch.uVar());
+      _vres = sqrt(ch.vVar());
+      _dudwres = sqrt(ch.dudwVar());
+      _dvdwres = sqrt(ch.dvdwVar());
+      _tres = sqrt(ch.timeVar());
       _eend = ch.earlyEnd().end();
       _etime[StrawEnd::cal] = ch.endTime(StrawEnd::cal);
       _etime[StrawEnd::hv] = ch.endTime(StrawEnd::hv);
@@ -265,7 +259,7 @@ namespace mu2e
       _bkgclust = flag.hasAllProperties(StrawHitFlag::bkgclust);
       _dz = 0.0;
       // center of this wire
-      XYZVectorF cpos = _pos - _udist*_udir;
+      XYZVectorF cpos = _pos - _wdist*_udir;
       // now hit-by-hit info
       _chinfo.clear();
       if(_diag > 1){
@@ -280,16 +274,17 @@ namespace mu2e
           ComboHitInfo chi;
 
           chi._pos= comp.pos();
+          chi._udir = comp.uDir();
           auto dp = comp.pos()-ch.pos();
           chi._du = dp.Dot(comp.uDir());
           chi._dv = dp.Dot(comp.vDir());
           chi._dw = dp.Dot(comp.wDir());
-          chi._ures = comp.uRes();
-          chi._vres = comp.vRes();
-          chi._tres = comp.timeRes();
+          chi._uvar = comp.uVar();
+          chi._vvar = comp.vVar();
+          chi._tvar = comp.timeVar();
           chi._thit = comp.time();
-          chi._strawid = comp.strawId().straw();
-          chi._panelid = comp.strawId().panel();
+          chi._straw = comp.strawId().straw();
+          chi._upanel = comp.strawId().uniquePanel();
           chi._nch = comp.nCombo();
           chi._nsh = comp.nStrawHits();
           _chinfo.push_back(chi);
@@ -343,12 +338,11 @@ namespace mu2e
               _prel = rel.relationship();
           }
         }
-        // find the relation with each individual starw hit
+        // find the relation with each individual straw hit
+        // average the primary MC particle properties
         _mcpos = _mcmom = XYZVectorF();
         _mctime = 0.0;
-        // to define true position, etc, find the primary step closest in Z to the hit
-        double mindz = std::numeric_limits<float>::max();
-        art::Ptr<StrawGasStep> best_sgsp;
+        unsigned npri=0;
         for(auto shi : shids) {
           ComboHitInfoMC chimc;
           StrawDigiMC const& mcd = _mcdigis->at(shi);
@@ -356,27 +350,19 @@ namespace mu2e
           chimc._rel = rel.relationship();
           _chinfomc.push_back(chimc);
           if(chimc._rel==0){
+            npri++;
             auto const& sgsp = mcd.earlyStrawGasStep();
-            auto const& mcpos = sgsp->startPosition();
-            double dz = fabs(_pos.Z()-mcpos.Z());
-            if(dz < mindz){
-              mindz = dz;
-              best_sgsp = sgsp;
-            }
+            _mcmom += sgsp->momentum();
+            _mcpos += 0.5*(sgsp->startPosition() + sgsp->endPosition());
+            _mctime += sgsp->time();
           }
         }
-        _mcmom = best_sgsp->momentum();
-        _mcpos = best_sgsp->startPosition();
-        _mctime = best_sgsp->time();
-        // correct mc position and time for z position difference
-        double dz = _pos.Z() -_mcpos.Z();
-        auto pdgid = best_sgsp->simParticle()->pdgId();
-        auto mass = ptable->particle(pdgid).mass();
-        auto vel = _mcmom * (CLHEP::c_light/sqrt(_mcmom.Mag2() + mass*mass));
-        double dt = dz/vel.Z();
-        _mctime += dt;
-        _mcpos += vel*dt;
-        _mcudist = (_mcpos - cpos).Dot(_udir);
+        if(npri > 0){
+          _mcmom /= npri;
+          _mcpos /= npri;
+          _mctime /= npri;
+        }
+        _mcwdist = (_mcpos - cpos).Dot(_udir);
         // count mcdigis with the same StrawId as this hit
         _mcndigi = 0;
         for(auto const& mcdigi : *_mcdigis) {

@@ -4,11 +4,11 @@ namespace mu2e {
   using VEC3 = ROOT::Math::XYZVectorF;
   VEC3 StereoLine::pos(float zval) const {
     double dz = zval - z0_;
-    return VEC3(pars_[px] + pars_[rx]*dz, pars_[py] + pars_[ry]*dz, zval);
+    return VEC3(pars_[posx] + pars_[dxdz]*dz, pars_[posy] + pars_[dydz]*dz, zval);
   }
 
   VEC3 StereoLine::dir() const {
-    return VEC3(pars_[rx], pars_[ry],1.0).Unit();
+    return VEC3(pars_[dxdz], pars_[dydz],1.0).Unit();
   }
 
 }

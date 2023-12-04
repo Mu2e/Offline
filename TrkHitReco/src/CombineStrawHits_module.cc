@@ -70,7 +70,7 @@ namespace mu2e {
       float         _maxdt;
       bool          _useTOT;
       float         _maxwdchi;
-      float         _uerr2;
+      float         _uvar;
       float         _minR2,_maxR2;
       float         _minT, _maxT;
       float         _minE, _maxE;
@@ -93,7 +93,7 @@ namespace mu2e {
     _maxdt(     config().maxdt()),
     _useTOT(    config().useTOT()),
     _maxwdchi(  config().maxwdchi()),
-    _uerr2(     config().uerr()*config().uerr()),
+    _uvar(     config().uerr()*config().uerr()),
     _minR2(     config().minR()*config().minR()),
     _maxR2(     config().maxR()*config().maxR()),
     _minT(      config().minT()),
@@ -273,11 +273,11 @@ namespace mu2e {
     combohit._dtime      = dtacc/nsh;
     combohit._ptime      = ptacc/nsh;
     combohit._time       = ctacc/twtsum;
-    combohit._timeres   = sqrt(1.0/twtsum);
+    combohit._timevar    = 1.0/twtsum;
     combohit._wdist      = wacc/wwtsum;
     combohit._pos        = midpos + combohit._wdist*combohit.uDir();
-    combohit._ures       = sqrt(1.0/wwtsum + _uerr2);
-    combohit._vres       = sqrt(1.0/twtsum );
+    combohit._uvar       = 1.0/wwtsum + _uvar;
+    combohit._vvar       = 1.0/twtsum;
     // compute U chisquared
     unsigned ndof = nsh - 1; // u direction only
     double chisq = wacc2 - wacc/wwtsum;
@@ -289,8 +289,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     float wdist2 = wacc2/wwtsum;
     float nc2 = pow(ndof,2);
-    float sigw = sqrt(std::max(_uerr2,(wdist2-combohit._wdist*combohit._wdist)/nc2));
-    if (_checkWres && combohit._ures < sigw)combohit._ures = sigw;
+    float wvar = std::max(_uvar,(wdist2-combohit._wdist*combohit._wdist)/nc2);
+    if (_checkWres)combohit._uvar = std::max(combohit._uvar,wvar);
   }
 }
 

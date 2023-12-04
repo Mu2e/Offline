@@ -726,7 +726,7 @@ namespace mu2e {
       for (size_t j=0; j<_f.chunks[i].hIndices.size(); j++) { // set first point for seed pair
         hit = &_data._chColl->at(_f.chunks[i].hIndices[j]);
         XYZVectorF h1pos = hit->pos(); // hit position
-        const XYZVectorF& h1wdir = hit->wdir(); // wire direction of hit
+        XYZVectorF h1wdir = hit->uDir(); // wire direction of hit
         float h1wsig = hit->wireRes(); // hit resolution along wire
         //float h1wtsig = hit->transRes(); // hit resolution transverse to wire
         // now set up linear line equation for wire
@@ -737,7 +737,7 @@ namespace mu2e {
           tempIndices.clear();
           hit = &_data._chColl->at(_f.chunks[i].hIndices[k]);
           XYZVectorF h2pos = hit->pos();
-          const XYZVectorF& h2wdir = hit->wdir();
+          XYZVectorF h2wdir = hit->uDir();
           float h2wsig = hit->wireRes();
           //float h2wtsig = hit->transRes();
           float m2 = h2wdir.y()/h2wdir.x();
@@ -756,7 +756,7 @@ namespace mu2e {
             if (q==j || q==k) {continue;}
             hit = &_data._chColl->at(_f.chunks[i].hIndices[q]);
             XYZVectorF h3pos = hit->pos();
-            const XYZVectorF& h3wdir = hit->wdir();
+            XYZVectorF h3wdir = hit->uDir();
             float h3wsig = hit->wireRes();
             float h3wtsig = hit->transRes();
             float m3 = h3wdir.y()/h3wdir.x();
