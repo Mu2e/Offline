@@ -255,17 +255,19 @@ namespace mu2e {
         TwoDPoint spt(sline.pars().Sub<TwoDPoint::SVEC>(0), sline.cov().Sub<TwoDPoint::SMAT>(0,0));
         // use this covariance to define the u direction
         combohit._udir = spt.udir();
-        auto vdir = spt.vdir();
         // project the covariances
         combohit._uvar = spt.uvar();
         combohit._vvar = spt.vvar();
-        // extract the slopes from the stereo line and turn them into a direction
+        // convert slopes from the fit into a direction and direction errors
         combohit._hdir = sline.dir();
-        TwoDPoint::SVEC udv(spt.udir().X(),spt.udir().Y());
-        TwoDPoint::SVEC vdv(vdir.X(),vdir.Y());
-        TwoDPoint::SMAT dmat = sline.cov().Sub<TwoDPoint::SMAT>(2,2);
-        combohit._dudwvar = ROOT::Math::Similarity(udv,dmat);
-        combohit._dvdwvar = ROOT::Math::Similarity(vdv,dmat);
+        TwoDPoint::SMAT dmat = sline.cov().Sub<TwoDPoint::SMAT>(StereoLine::dxdz,StereoLine::dxdz);
+        // variance is on cos(theta), so a flat prior
+        TwoDPoint::SVEC R = sline.pars().Sub<TwoDPoint::SVEC>(StereoLine::dxdz);
+        auto rmag = R(0)*R(0) + R(1)*R(1);
+        TwoDPoint::SVEC dCostdR =  R * std::pow(1.0 + rmag,-1.5);
+        TwoDPoint::SVEC dPhidR = TwoDPoint::SVEC(-R(1),R(0)) * (1.0/rmag);
+        combohit._hcostvar = ROOT::Math::Similarity(dCostdR,dmat);
+        combohit._hphivar = ROOT::Math::Similarity(dPhidR,dmat);
         // fit quality
         combohit._qual = TMath::Prob(sline.chisq(),sline.ndof());
       }

@@ -85,7 +85,7 @@ namespace mu2e
       XYZVectorF _udir; // direction at this position (typically the wire direction)
       XYZVectorF _hdir; // hit direction (generally Z)
       float _wdist; // distance from wire center along this direction
-      float _ures, _vres, _wres, _tres, _dudwres, _dvdwres; // estimated resolution
+      float _ures, _vres, _wres, _tres, _hcostres, _hphires; // estimated resolution
       float _etime[2]; // end times
       float _ctime; // corrected time
       float _dtime, _ptime; // drift and propagation times: these should be end-specific, TODO
@@ -147,8 +147,8 @@ namespace mu2e
     _chdiag->Branch("ures",&_ures,"ures/F");
     _chdiag->Branch("vres",&_vres,"vres/F");
     _chdiag->Branch("wres",&_wres,"wres/F");
-    _chdiag->Branch("dudwres",&_dudwres,"dudwres/F");
-    _chdiag->Branch("dvdwres",&_dvdwres,"dvdwres/F");
+    _chdiag->Branch("hcostres",&_hcostres,"hcostres/F");
+    _chdiag->Branch("hphires",&_hphires,"hphires/F");
     _chdiag->Branch("tres",&_tres,"tres/F");
     _chdiag->Branch("etime",&_etime,"etimecal/F:etimehv");
     _chdiag->Branch("ctime",&_ctime,"ctime/F");
@@ -230,8 +230,8 @@ namespace mu2e
       _wdist = ch.uPos();
       _ures = sqrt(ch.uVar());
       _vres = sqrt(ch.vVar());
-      _dudwres = sqrt(ch.dudwVar());
-      _dvdwres = sqrt(ch.dvdwVar());
+      _hcostres = sqrt(ch.hcostVar());
+      _hphires = sqrt(ch.hphiVar());
       _tres = sqrt(ch.timeVar());
       _eend = ch.earlyEnd().end();
       _etime[StrawEnd::cal] = ch.endTime(StrawEnd::cal);
