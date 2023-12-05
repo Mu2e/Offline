@@ -51,16 +51,15 @@ namespace mu2e {
     // position and slope variances
     float uVar() const { return _uvar; }
     float vVar() const { return _vvar; }
-    float dudwVar() const { return _dudwvar; }
-    float dvdwVar() const { return _dvdwvar; }
-// variance along W is separate
     float wVar() const { return _wvar; }
+    float hcostVar() const { return _hcostvar; }
+    float hphiVar() const { return _hphivar; }
     // resolutions from the variances
     float uRes() const { return sqrt(uVar()); }
     float vRes() const { return sqrt(vVar()); }
     float wRes() const { return sqrt(wVar()); }
-    float dudwRes() const { return sqrt(dudwVar()); }
-    float dvdwRes() const { return sqrt(dvdwVar()); }
+    float hcostRes() const { return sqrt(hcostVar()); }
+    float hphiRes() const { return sqrt(hphiVar()); }
     // other info
     float energyDep() const { return _edep; }
     float qual() const { return _qual; }
@@ -111,8 +110,8 @@ namespace mu2e {
     XYZVectorF _pos; // best estimate of the position of this hit in space
     XYVectorF _udir; // always perp to Z, defined as the semi-major direction of the covariance matrix
     XYZVectorF _hdir; // direction of the hit
-    float _uvar= 0.0, _vvar = 0.0, _dudwvar = 0.0, _dvdwvar = 0.0; // diagonals of position and direction covariance
-    float _wvar = 0.0; // variance along W direction, not correlated with other measurements
+    float _uvar= 0.0, _vvar = 0.0, _wvar = 0.0; // diagonals of position covariance;
+    float _hcostvar = 0.0, _hphivar = 0.0; // diagonals of hit direction covariance
     float _wdist = 0.0; // distance from wire center along the wire direction
     float _time = 0.0; // best estimate of time the physical particle created this hit: aggregate and calibrated
     float _timevar = 0.0; // estimated variance of time measurement
