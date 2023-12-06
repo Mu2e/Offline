@@ -55,8 +55,9 @@ namespace mu2e {
       bool _recoFromMCTruth;
       float _recoFromMCTruthErr;
       bool _fixInitialPhase;
-      float _period;
+      double _period;
       int _onSpillMaxLength;
+      int _onSpillBins;
       float _initialPhaseShift;
       art::RandomNumberGenerator::base_engine_t& _engine;
       CLHEP::RandGaussQ _randgauss;
@@ -74,6 +75,7 @@ namespace mu2e {
     _fixInitialPhase( false),
     _period(GlobalConstantsHandle<PhysicsParams>()->getNominalDAQClockTick()),
     _onSpillMaxLength(GlobalConstantsHandle<PhysicsParams>()->getNominalDAQTicks()),
+    _onSpillBins(GlobalConstantsHandle<PhysicsParams>()->getNominalDAQOnSpillBins()),
     _initialPhaseShift( 0),
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
     _randgauss( _engine ),
@@ -110,10 +112,10 @@ namespace mu2e {
       marker->_eventLength = eventTiming.offSpillLength()*_period;
     }else{
       // calculate which bin we are in from event number
-      int bin = event.id().event() % eventTiming.onSpillBins();
+      int bin = event.id().event() % _onSpillBins;
       // determine phase for this event
       // each microbunch the proton bunch gets shifted back 5 ns from the event window
-      double shiftPer = -1*_period/eventTiming.onSpillBins();
+      double shiftPer = -1*_period/_onSpillBins;
       double phaseShift = (_initialPhaseShift*_period + bin*shiftPer);
       if (phaseShift < -1*_period)
         phaseShift += _period;
