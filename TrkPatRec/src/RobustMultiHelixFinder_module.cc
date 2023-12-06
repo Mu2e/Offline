@@ -862,7 +862,7 @@ chi2dXY = bestHelix.fita_zt_;
   {
     float dx     = ch.pos().x() - circle.x_;
     float dy     = ch.pos().y() - circle.y_;
-    float rwdot  = (ch.wdir().x()*dx + ch.wdir().y()*dy);
+    float rwdot  = (ch.uDir2D().x()*dx + ch.uDir2D().y()*dy);
     float costh2 = rwdot*rwdot/(dx*dx+dy*dy);
     float werr   = ch.posRes(StrawHitPosition::wire);
     float terr   = ch.posRes(StrawHitPosition::trans);
@@ -881,8 +881,8 @@ chi2dXY = bestHelix.fita_zt_;
 
   float RobustMultiHelixFinder::chi2XYHelix(const ComboHit& ch,float centerX,float centerY,float radius,float dzdp,float fzb)
   {
-    float wx     = ch.wdir().x();
-    float wy     = ch.wdir().y();
+    float wx     = ch.uDir2D().x();
+    float wy     = ch.uDir2D().y();
     float phiAtZ = (ch.pos().z()-fzb) / dzdp;
     float dhx    = ch.pos().x() - (centerX + radius*cos(phiAtZ));
     float dhy    = ch.pos().y() - (centerY + radius*sin(phiAtZ));
@@ -897,7 +897,7 @@ chi2dXY = bestHelix.fita_zt_;
 
     /*
     This is a fast version of this
-    const XYZVectorF& wdir = hit->wdir();
+    const XYZVectorF& wdir = hit->uDir2D();
     XYZVectorF wtdir = zaxis.Cross(wdir);   // transverse direction to the wire
 
     XYZVectorF hpos = hit->pos(); // this sets the z position to the hit z
@@ -923,7 +923,7 @@ chi2dXY = bestHelix.fita_zt_;
     float dy     = ch.pos().y() - centerY;
     float r      = sqrt(dx*dx+dy*dy);
     float dr     = r - radius;
-    float rwdot  = (ch.wdir().x()*dx + ch.wdir().y()*dy)/r;
+    float rwdot  = (ch.uDir2D().x()*dx + ch.uDir2D().y()*dy)/r;
     float rwdot2 = rwdot*rwdot;
     float werr   = ch.posRes(StrawHitPosition::wire);
     float terr   = ch.posRes(StrawHitPosition::trans);
@@ -986,8 +986,8 @@ chi2dXY = bestHelix.fita_zt_;
        data_.chUId_[ich]  = chcol[ich].strawId().uniquePanel();
        data_.chTerr_[ich] = chcol[ich].posRes(StrawHitPosition::trans);
        data_.chWerr_[ich] = chcol[ich].posRes(StrawHitPosition::wire);
-       data_.chWDX_[ich]  = chcol[ich].wdir().x();
-       data_.chWDY_[ich]  = chcol[ich].wdir().y();
+       data_.chWDX_[ich]  = chcol[ich].uDir2D().x();
+       data_.chWDY_[ich]  = chcol[ich].uDir2D().y();
 
        std::vector<StrawHitIndex> strawHitIdxs;
        chcol.fillStrawHitIndices(ich,strawHitIdxs);
