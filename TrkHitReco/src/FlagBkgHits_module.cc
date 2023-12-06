@@ -65,7 +65,7 @@ namespace mu2e
       bool                                        savebkg_;
       StrawHitFlag                                bkgmsk_;
       StrawIdMask::Level                          level_; // output level
-      BkgClusterer*                               clusterer_;
+      std::unique_ptr<BkgClusterer>               clusterer_;
       float                                       cperr2_;
       int const                                   debug_;
       std::string                                 kerasW_;
@@ -109,7 +109,7 @@ namespace mu2e
       switch ( ctype )
       {
         case TwoNiveauThreshold:
-          clusterer_ = new TNTClusterer(config().TNTClustering());
+          clusterer_ = std::make_unique<TNTClusterer>(config().TNTClustering());
           break;
         default:
           throw cet::exception("RECO")<< "Unknown clusterer" << ctype << std::endl;
