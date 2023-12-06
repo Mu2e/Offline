@@ -64,7 +64,7 @@ makeSTH : {
   DebugLevel            : 0
   TestFlag              : true
   FilterHits            : false
-  StereoLine            : true
+  StereoLine            : false
   ComboHitCollection    : "makePH"
   EventWindowMarker     : EWMProducer
   StrawHitSelectionBits : ["RadiusSelection","EnergySelection","TimeSelection"]
