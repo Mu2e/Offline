@@ -537,7 +537,7 @@ namespace mu2e {
 
       if (hhit->_flag.hasAnyProperty(_outlier))   continue;
 
-      const XYZVectorF& wdir = hhit->wdir();
+      XYZVectorF wdir = hhit->uDir();
       XYZVectorF wtdir = zaxis.Cross(wdir); // transverse direction to the wire
       XYZVectorF cvec = PerpVector(hhit->pos() - helix.center(),GenVector::ZDir());// direction from the circle center to the hit
       XYZVectorF cdir = cvec.Unit();        // direction from the circle center to the hit
@@ -630,7 +630,7 @@ namespace mu2e {
         float hphi = polyAtan2(hit->pos().y(),hit->pos().x());//phi();
         float dphi = fabs(Angles::deltaPhi(hphi,helix.fcent()));
 
-        const XYZVectorF& wdir = hit->wdir();
+        XYZVectorF wdir = hit->uDir();
         XYZVectorF wtdir = zaxis.Cross(wdir);   // transverse direction to the wire
         XYZVectorF cvec = PerpVector(hit->pos() - helix.center(),GenVector::ZDir()); // direction from the circle center to the hit
         XYZVectorF cdir = cvec.Unit();          // direction from the circle center to the hit
@@ -950,7 +950,7 @@ unsigned  RobustHelixFinder::filterCircleHits(RobustHelixFinderData& helixData)
       bool oldout = hit->_flag.hasAnyProperty(_outlier);
       hit->_flag.clear(_outlier);
 
-      const XYZVectorF& wdir = hit->wdir();
+      XYZVectorF wdir = hit->uDir();
       XYZVectorF cvec = PerpVector(hit->pos() - helix.center(),GenVector::ZDir()); // direction from the circle center to the hit
       XYZVectorF cdir = cvec.Unit(); // direction from the circle center to the hit
       float rwdot = wdir.Dot(cdir); // compare directions of radius and wire
