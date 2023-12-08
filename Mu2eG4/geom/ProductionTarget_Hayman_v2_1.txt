@@ -21,11 +21,15 @@ string targetPS.supports.wheel.material   =  "G4_Al";
 
 int  targetPS.supports.nSpokes = 3;
 //features on the wheel
-vector<double> targetPS.supports.features.angles = {-30.,  90., 210.}; //degrees
+//vector<double> targetPS.supports.features.angles = {-30.,  90., 210.}; //degrees
+vector<double> targetPS.supports.features.angles = {-46.62.,  79.38., 194.38.}; //degrees
+//vector<double> targetPS.supports.features.angles = {-30.,  90., 197.12.}; //degrees
 vector<double> targetPS.supports.features.arcs   = { 28.,  28.,  28.}; //degrees
 vector<double> targetPS.supports.features.rIns   = {158.75, 158.75, 158.75}; //mm
 //support rods in the wheel that the wires connect to
-vector<double> targetPS.supports.rods.angles       = {-37, 83, 203}; //degrees
+//vector<double> targetPS.supports.rods.angles       = {-37, 83, 203}; //degrees
+//vector<double> targetPS.supports.rods.angles       = {-52.5., 71.5, 186.0}; //degrees
+vector<double> targetPS.supports.rods.angles       = {-54., 71.5, 186.0}; //degrees
 vector<double> targetPS.supports.rods.halfLength   = {70., 70., 70.}; //mm
 vector<double> targetPS.supports.rods.offset       = {-40., -10., 40.}; //mm
 vector<double> targetPS.supports.rods.radius       = {9., 9., 9.}; //mm
@@ -33,8 +37,10 @@ vector<double> targetPS.supports.rods.radialOffset = {177.8, 177.8, 177.8}; //mm
 vector<double> targetPS.supports.rods.wireOffset.downstream = {10., 10., 10.}; //mm
 vector<double> targetPS.supports.rods.wireOffset.upstream   = {10., 10., 10.}; //mm
 //spokes connecting the target to the wheel rods
-vector<double> targetPS.supports.spokes.targetAngles.downstream = {-37, 83, 203}; //degrees
-vector<double> targetPS.supports.spokes.targetAngles.upstream   = {-37, 83, 203}; //degrees
+//vector<double> targetPS.supports.spokes.targetAngles.downstream = {-37, 83, 203}; //degrees
+//vector<double> targetPS.supports.spokes.targetAngles.upstream   = {-37, 83, 203}; //degrees
+vector<double> targetPS.supports.spokes.targetAngles.downstream = {-54., 71.5, 186.0}; //degrees
+vector<double> targetPS.supports.spokes.targetAngles.upstream   = {-54., 71.5, 186.0}; //degrees
 double targetPS.supports.spokes.diameter = 2.;
 string targetPS.supports.spokes.material = "ProductionTargetTungstenLa2_O3";
 
