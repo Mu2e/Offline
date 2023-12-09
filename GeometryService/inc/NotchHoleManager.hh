@@ -25,7 +25,6 @@ namespace mu2e{
   class NotchHoleManager {
   public:
     NotchHoleManager():hasLoaded_(false),hasLoadedH_(false){}
-    ~NotchHoleManager(){}
 
     void loadNotches( const SimpleConfig& config );
     void loadHoles( const SimpleConfig& config );
