@@ -205,6 +205,7 @@ namespace mu2e
              if (isNorm_ && val.find("N") == std::string::npos)
                throw cet::exception("RECO")<<"mu2e::MVATools: unknown normalization mode" << std::endl;
           }
+          XMLString::release(&value);
       }
 
       if (activeType_ == aType::null) throw cet::exception("RECO")<<"mu2e::MVATools: unknown activation function" << std::endl;
@@ -329,8 +330,11 @@ namespace mu2e
 
           char* layerIndex = XMLString::transcode(parentElement->getAttribute(ATT_INDEX));
           int   iLayer     = atoi(layerIndex);
+          XMLString::release(&layerIndex);
+
           char* nSynapses  = XMLString::transcode(neuronElement->getAttribute(ATT_NSYNAPSES));
           unsigned iSynapses  = atoi(nSynapses);
+          XMLString::release(&nSynapses);
 
           if (iLayer != iCurrentLayer)
           {
@@ -544,4 +548,3 @@ namespace mu2e
   }
 
 }
-
