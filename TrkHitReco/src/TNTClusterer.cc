@@ -251,11 +251,11 @@ namespace mu2e
       if (dt > dt_) {float tdist = dt -dt_;retval = tdist*tdist*trms2inv_;}
       if (d2 > dd2_) {
         //This is equivalent to but faster than the commented lines
-        //XYZVectorF that(-hit.wdir().y(),hit.wdir().x(),0.0);
-        //float dw = std::max(0.0f,hit.wdir().Dot(psep)-dd_)/hit.posRes(ComboHit::wire);
+        //XYZVectorF that(-hit.uDir2D().y(),hit.uDir2D().x(),0.0);
+        //float dw = std::max(0.0f,hit.uDir2D().Dot(psep)-dd_)/hit.posRes(ComboHit::wire);
         //float dp = std::max(0.0f,that.Dot(psep)-dd_)*maxwt_;//maxwt = 1/minerr
-        float hwx = hit.wdir().x();
-        float hwy = hit.wdir().y();
+        float hwx = hit.uDir2D().x();
+        float hwy = hit.uDir2D().y();
         float dw  = std::max(0.0f,(psep_x*hwx+psep_y*hwy-dd_)/hit.posRes(ComboHit::wire));
         float dp  = std::max(0.0f,(hwx*psep_y-hwy*psep_x-dd_)*maxwt_);
         retval += dw*dw + dp*dp;
