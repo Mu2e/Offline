@@ -1,4 +1,0 @@
-#
-#  Post-prolog switch to output panel-level ComboHits from FlagBkgHits
-#
-physics.producers.FlagBkgHits.OutputLevel : "uniquepanel"

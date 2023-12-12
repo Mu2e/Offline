@@ -1,5 +1,0 @@
-#
-#  Post-prolog switch to use stereo ComboHits
-#
-physics.producers.makeSTH : @local::makeSTH
-physics.producers.FlagBkgHits.ComboHitCollection : "makeSTH"

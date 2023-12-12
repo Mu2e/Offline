@@ -1,4 +1,0 @@
-# post-prolog switch to use panel-level ComboHits in FlagBkgHits and downstream
-physics.producers.makeSTH : @local::dummyMakeSTH
-physics.producers.FlagBkgHits.ComboHitCollection : "makePH"
-physics.producers.FlagBkgHits.KerasWeights : "Offline/TrkHitReco/data/TrainBkgDiagPanelSpatial.dat"
