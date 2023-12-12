@@ -146,10 +146,10 @@ void CrvDigisFromFragments::produce(Event& event)
           int crvBarIndex = offlineChannel / 4;
           int SiPMNumber = offlineChannel % 4;
 
-          for(int i = 0; i < crvHitInfo.NumSamples; i += 8)
+          for(size_t i = 0; i < crvHitInfo.NumSamples; i += mu2e::CrvDigi::NSamples)
           {
-            std::array<int16_t, 8> adc = {0};
-            for(int j = i; j < i + 8 && j < crvHitInfo.NumSamples; ++j)
+            std::array<int16_t, mu2e::CrvDigi::NSamples> adc = {0};
+            for(size_t j = i; j < i + mu2e::CrvDigi::NSamples && j < crvHitInfo.NumSamples; ++j)
               adc[j] = decompressCrvDigi(waveform.at(j).ADC);
 
             // CrvDigis use a constant array size of 8 samples

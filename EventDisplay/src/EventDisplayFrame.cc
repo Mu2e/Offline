@@ -596,9 +596,9 @@ void EventDisplayFrame::fillGeometry()
 {
   _mainPad->cd();
   _dataInterface->fillGeometry();
-  DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, false, _showCRV);
-  if(_wideband) m=_dataInterface->getSpaceBoundary(false, false, false, true);
-  if(_extracted) m=_dataInterface->getSpaceBoundary(false, true, false, true);
+  DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, true, false, _showCRV);
+  if(_wideband) m=_dataInterface->getSpaceBoundary(false, false, false, false, true);
+  if(_extracted) m=_dataInterface->getSpaceBoundary(true, false, true, false, true);
   _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
   if(_wideband || _extracted)
   {
@@ -884,9 +884,9 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          if(param1>=70 && param1<=74)
                          {
                            _mainPad->cd();
-                           DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, param1==73, _showCRV);
-                           if(_wideband) m=_dataInterface->getSpaceBoundary(false, false, false, true);
-                           if(_extracted) m=_dataInterface->getSpaceBoundary(false, true, false, true);
+                           DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, true, param1==73, _showCRV);
+                           if(_wideband) m=_dataInterface->getSpaceBoundary(false, false, false, false, true);
+                           if(_extracted) m=_dataInterface->getSpaceBoundary(true, false, true, false, true);
                            _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
                            if(param1<73)
                            {
