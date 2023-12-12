@@ -1,0 +1,42 @@
+#
+# calibrates CRV channels
+#
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CRVResponse/fcl/prolog.fcl"
+
+process_name : calibrateWideband
+
+source :
+{
+  module_type : RootInput
+}
+services :
+{
+  @table::Services.Reco
+}
+
+physics: {
+  producers :
+  {
+    CrvRecoPulses: @local::CrvRecoPulses
+  }
+  analyzers:
+  {
+    CrvCalibration: @local::CrvCalibration
+  }
+
+  TriggerPath : [ CrvRecoPulses ]
+  EndPath :     [ CrvCalibration ]
+  trigger_paths : [ TriggerPath ]
+  end_paths :     [ EndPath ]
+}
+
+physics.producers.EWMProducer.SpillType : 0
+physics.producers.CrvRecoPulses.minADCdifference   : 5    //minimum ADC difference above pedestal to be considered for reconstruction
+services.TFileService.fileName : "calibWideband.root"
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband1module.txt"
+services.ProditionsService.crvCalib.useDb: true
+services.ProditionsService.crvCalib.verbose: 2
+services.DbService.textFile : ["pedestalWideband_run004.txt"]
+services.DbService.verbose: 2

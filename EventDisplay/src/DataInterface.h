@@ -153,7 +153,7 @@ class DataInterface
   spaceminmax getCalorimeterBoundary() {return _calorimeterMinmax;}
   spaceminmax getTracksBoundary() {return _tracksMinmax;}
   spaceminmax getCrvBoundary() {return _crvMinmax;}
-  spaceminmax getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks, bool useCRV);
+  spaceminmax getSpaceBoundary(bool useTracker, bool useTarget, bool useCalorimeter, bool useTracks, bool useCRV);
 
   const mu2e::CRVCalib  *_calib;
 };

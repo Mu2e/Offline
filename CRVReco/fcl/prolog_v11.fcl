@@ -1,5 +1,18 @@
 BEGIN_PROLOG
 
+    CrvPedestalFinder:
+    {
+      module_type               : CrvPedestalFinder
+      crvDigiModuleLabel        : "CrvDigi"
+      maxADCspread              : 5
+    }
+
+    CrvCalibration:
+    {
+      module_type               : CrvCalibration
+      crvRecoPulsesModuleLabel  : "CrvRecoPulses"
+    }
+
     CrvRecoPulses:
     {
       module_type               : CrvRecoPulsesFinder

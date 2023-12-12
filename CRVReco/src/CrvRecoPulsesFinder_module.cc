@@ -119,9 +119,10 @@ namespace mu2e
   {
     std::unique_ptr<CrvRecoPulseCollection> crvRecoPulseCollection(new CrvRecoPulseCollection);
 
+    double TDC0time = 0;
     art::Handle<ProtonBunchTime> protonBunchTime;
     event.getByLabel(_protonBunchTimeTag, protonBunchTime);
-    double TDC0time = -protonBunchTime->pbtime_;
+    if(protonBunchTime.isValid()) TDC0time = -protonBunchTime->pbtime_;
 
     art::Handle<CrvDigiCollection> crvDigiCollection;
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
@@ -187,6 +188,10 @@ namespace mu2e
         double pulseTimeNoFit    = _makeCrvRecoPulses->GetPulseTimesNoFit().at(j) + TDC0time + timeOffset;
         double pulseStart        = _makeCrvRecoPulses->GetPulseStarts().at(j) + TDC0time + timeOffset;
         double pulseEnd          = _makeCrvRecoPulses->GetPulseEnds().at(j) + TDC0time + timeOffset;
+
+        if(calibPulseArea<=0) PEs=0;
+        if(calibPulseArea<=0) PEsNoFit=0;
+        if(calibPulseHeight<=0) PEsPulseHeight=0;
 
         crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags,
                                              PEsNoFit, pulseTimeNoFit, pulseStart, pulseEnd,
