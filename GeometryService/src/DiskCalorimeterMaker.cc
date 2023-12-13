@@ -2,7 +2,7 @@
 // Make a Disk Calorimeter.
 //
 // original authors  Bertrand Echenarrd
-
+//
 // Disk geometry
 //
 //  see Mu2eG4/src/constructDiskCalorimeter.cc for the geometry
@@ -11,8 +11,8 @@
 //  front plate has calibration pipes
 //  disk case has crystal enveloped in wrapper (except the back of the crystal!)
 //  back plate has a solid plate with holes and readouts inside + FEE box outside
-
-
+//
+//
 //    Coordinate system
 //
 //           - crystal:
@@ -29,9 +29,9 @@
 //
 //         Note: The extra disk coordinate system is suffixed "FF" for FrontFace. The FF z origin is at the same position of the crystal z origin.
 //
-
-
+//
 // For reference, git tag (ef94504f51edbbfeb54a5e63651856bdf5c0a60d) has generic placement of the disk origin.
+
 
 #include "cetlib_except/exception.h"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -64,7 +64,7 @@ namespace mu2e {
           //CALO INFO DATA
           verbosityLevel_ = config.getInt("calorimeter.verbosityLevel",0);
 
-          calo_->nDisks_  = CaloConst::_nDisk;
+          calo_->nDisks_  = 1;//CaloConst::_nDisk;
 
           calo_->caloInfo_.set("envelopeRadiusIn",       config.getDouble("calorimeter.caloMotherRadiusIn") );
           calo_->caloInfo_.set("envelopeRadiusOut",      config.getDouble("calorimeter.caloMotherRadiusOut") );
@@ -72,24 +72,26 @@ namespace mu2e {
           calo_->caloInfo_.set("envelopeZ1",             config.getDouble("calorimeter.caloMotherZ1") );
           calo_->caloInfo_.set("vdThickness",            config.getDouble("calorimeter.vdThickness") );
 
-          calo_->caloInfo_.set("diskInnerRingIn",        config.getDouble("calorimeter.diskInnerRingIn") );
-          calo_->caloInfo_.set("diskInnerRingOut",       config.getDouble("calorimeter.diskInnerRingOut") );
-          calo_->caloInfo_.set("diskCrystalRadiusIn",    config.getDouble("calorimeter.diskCrystalRadiusIn") );
-          calo_->caloInfo_.set("diskCrystalRadiusOut",   config.getDouble("calorimeter.diskCrystalRadiusOut") );
-          calo_->caloInfo_.set("diskOuterRingIn",        config.getDouble("calorimeter.diskOuterRingIn") );
-          calo_->caloInfo_.set("diskOuterRingOut",       config.getDouble("calorimeter.diskOuterRingOut") );
+          calo_->caloInfo_.set("diskInAlRingRIn",        config.getDouble("calorimeter.diskInAlRingRIn") );
+          calo_->caloInfo_.set("diskInAlRingZLength",    config.getDouble("calorimeter.diskInAlRingZLength") );
+          calo_->caloInfo_.set("diskInCFRingRIn",        config.getDouble("calorimeter.diskInCFRingRIn") );
+          calo_->caloInfo_.set("diskInCFRingROut",       config.getDouble("calorimeter.diskInCFRingROut") );
+
+          calo_->caloInfo_.set("diskCrystalRIn",         config.getDouble("calorimeter.diskCrystalRIn") );
+          calo_->caloInfo_.set("diskCrystalROut",        config.getDouble("calorimeter.diskCrystalROut") );
+          //calo_->caloInfo_.set("diskOuterRingRIn",       config.getDouble("calorimeter.diskOuterRingRIn") );
+          calo_->caloInfo_.set("diskCaseRingROut",       config.getDouble("calorimeter.diskCaseRingROut") );
           calo_->caloInfo_.set("diskCaseZLength",        config.getDouble("calorimeter.diskCaseZLength") );
-          calo_->caloInfo_.set("diskOutRingEdgeZLength", config.getDouble("calorimeter.diskOutRingEdgeZLength") );
-          calo_->caloInfo_.set("diskOutRingEdgeRLength", config.getDouble("calorimeter.diskOutRingEdgeRLength") );
+          calo_->caloInfo_.set("diskOutRailZLength",     config.getDouble("calorimeter.diskOutRailZLength") );
+          calo_->caloInfo_.set("diskOutRailROut",        config.getDouble("calorimeter.diskOutRailROut") );
           calo_->caloInfo_.set("diskStepThickness",      config.getDouble("calorimeter.diskStepThickness") );
-          std::vector<double> temp;
-          config.getVectorDouble("calorimeter.diskZ0MotherShift", temp, calo_->nDisks_);
-          calo_->caloInfo_.set("diskZMotherShift",temp);
+          std::vector<double> tempDouble;
+          config.getVectorDouble("calorimeter.diskZ0MotherShift", tempDouble, calo_->nDisks_);
+          calo_->caloInfo_.set("diskZMotherShift",tempDouble);
 
           calo_->caloInfo_.set("crystalXYLength",        config.getDouble("calorimeter.crystalXYLength") );
           calo_->caloInfo_.set("crystalZLength",         config.getDouble("calorimeter.crystalZLength") );
-          calo_->caloInfo_.set("crystalFrameZLength",    config.getDouble("calorimeter.crystalFrameZLength") );
-          calo_->caloInfo_.set("crystalFrameThickness",  config.getDouble("calorimeter.crystalFrameThickness") );
+          calo_->caloInfo_.set("crystalCapZLength",      config.getDouble("calorimeter.crystalCapZLength") );
           calo_->caloInfo_.set("wrapperThickness",       config.getDouble("calorimeter.wrapperThickness") );
           calo_->caloInfo_.set("refractiveIndex",        config.getDouble("calorimeter.refractiveIndex") );
           calo_->caloInfo_.set("readoutPerCrystal",      config.getInt("calorimeter.readoutPerCrystal") );
@@ -97,6 +99,16 @@ namespace mu2e {
           calo_->caloInfo_.set("readoutYLength",         config.getDouble("calorimeter.readoutYLength") );
           calo_->caloInfo_.set("readoutZLength",         config.getDouble("calorimeter.readoutZLength") );
           calo_->caloInfo_.set("nSiPMPerCrystal",        CaloConst::_nSiPMPerCrystal );
+          calo_->caloInfo_.set("nSiPMPerCrystal",        CaloConst::_nSiPMPerCrystal );
+          std::vector<int> tempInt;
+          config.getVectorInt("calorimeter.caphriCrystalId", tempInt);
+          calo_->caloInfo_.set("caphriCrystalId",tempInt);
+          tempInt.clear();
+          config.getVectorInt("calorimeter.shimStepsInRowId", tempInt);
+          calo_->caloInfo_.set("shimStepsInRowId",tempInt);
+          tempInt.clear();
+          config.getVectorInt("calorimeter.shimStepsOutRowId", tempInt);
+          calo_->caloInfo_.set("shimStepsOutRowId",tempInt);
 
           calo_->caloInfo_.set("FEEXLength",             config.getDouble("calorimeter.FEEXLength") );
           calo_->caloInfo_.set("FEEYLength",             config.getDouble("calorimeter.FEEYLength") );
@@ -112,40 +124,39 @@ namespace mu2e {
           calo_->caloInfo_.set("BPPipeThickness",        config.getDouble("calorimeter.BPPipeThickness") );
           calo_->caloInfo_.set("BPPipeZOffset",          config.getDouble("calorimeter.BPPipeZOffset") );
 
-    calo_->caloInfo_.set("FPInnerRadius",          config.getDouble("calorimeter.FPInnerRadius") );
-    calo_->caloInfo_.set("FPOuterRadius",          config.getDouble("calorimeter.FPOuterRadius") );
-    calo_->caloInfo_.set("FPFoamZLength",          config.getDouble("calorimeter.FPFoamZLength") );
-    calo_->caloInfo_.set("FPCarbonZLength",        config.getDouble("calorimeter.FPCarbonZLength") );
-    calo_->caloInfo_.set("FPCoolPipeTorRadius",    config.getDouble("calorimeter.FPCoolPipeTorRadius") );
-    calo_->caloInfo_.set("FPCoolPipeRadius",       config.getDouble("calorimeter.FPCoolPipeRadius") );
-    calo_->caloInfo_.set("FPCoolPipeThickness",    config.getDouble("calorimeter.FPCoolPipeThickness") );
-    calo_->caloInfo_.set("nPipes",                 config.getInt("calorimeter.nPipes") );
+          calo_->caloInfo_.set("FPInnerRadius",          config.getDouble("calorimeter.FPInnerRadius") );
+          calo_->caloInfo_.set("FPOuterRadius",          config.getDouble("calorimeter.FPOuterRadius") );
+          calo_->caloInfo_.set("FPFoamZLength",          config.getDouble("calorimeter.FPFoamZLength") );
+          calo_->caloInfo_.set("FPCarbonZLength",        config.getDouble("calorimeter.FPCarbonZLength") );
+          calo_->caloInfo_.set("FPCoolPipeTorRadius",    config.getDouble("calorimeter.FPCoolPipeTorRadius") );
+          calo_->caloInfo_.set("FPCoolPipeRadius",       config.getDouble("calorimeter.FPCoolPipeRadius") );
+          calo_->caloInfo_.set("FPCoolPipeThickness",    config.getDouble("calorimeter.FPCoolPipeThickness") );
+          calo_->caloInfo_.set("nPipes",                 config.getInt("calorimeter.nPipes") );
           calo_->caloInfo_.set("pipeRadius",             config.getDouble("calorimeter.pipeRadius") );
           calo_->caloInfo_.set("pipeThickness",          config.getDouble("calorimeter.pipeThickness") );
-    calo_->caloInfo_.set("pipeInitSeparation",     config.getDouble("calorimeter.pipeInitSeparation") );
-    temp.clear();
-    config.getVectorDouble("calorimeter.pipeTorRadius", temp, calo_->caloInfo_.getInt("nPipes"));
-    calo_->caloInfo_.set("pipeTorRadius",temp );
-    temp.clear();
-    //For source calibration system:
-    config.getVectorDouble("calorimeter.largeTorPhi", temp, calo_->caloInfo_.getInt("nPipes"));
-    calo_->caloInfo_.set("largeTorPhi", temp );
-    temp.clear();
-    config.getVectorDouble("calorimeter.smallTorPhi", temp, calo_->caloInfo_.getInt("nPipes"));
-    calo_->caloInfo_.set("smallTorPhi", temp );
-    temp.clear();
-    config.getVectorDouble("calorimeter.yposition", temp, calo_->caloInfo_.getInt("nPipes"));
-    calo_->caloInfo_.set("yposition", temp );
-    temp.clear();
-    config.getVectorDouble("calorimeter.straightEndPhi", temp, calo_->caloInfo_.getInt("nPipes"));
-    calo_->caloInfo_.set("straightEndPhi", temp );
-    temp.clear();
-    calo_->caloInfo_.set("radSmTor", config.getDouble("calorimeter.radSmTor") );
-    calo_->caloInfo_.set("xsmall", config.getDouble("calorimeter.xsmall") );
-    calo_->caloInfo_.set("xdistance", config.getDouble("calorimeter.xdistance") );
-    calo_->caloInfo_.set("rInnerManifold", config.getDouble("calorimeter.rInnerManifold") );
-    temp.clear();
-
+          calo_->caloInfo_.set("pipeInitSeparation",     config.getDouble("calorimeter.pipeInitSeparation") );
+          tempDouble.clear();
+          config.getVectorDouble("calorimeter.pipeTorRadius", tempDouble, calo_->caloInfo_.getInt("nPipes"));
+          calo_->caloInfo_.set("pipeTorRadius",tempDouble );
+          tempDouble.clear();
+          //For source calibration system:
+          config.getVectorDouble("calorimeter.largeTorPhi", tempDouble, calo_->caloInfo_.getInt("nPipes"));
+          calo_->caloInfo_.set("largeTorPhi", tempDouble );
+          tempDouble.clear();
+          config.getVectorDouble("calorimeter.smallTorPhi", tempDouble, calo_->caloInfo_.getInt("nPipes"));
+          calo_->caloInfo_.set("smallTorPhi", tempDouble );
+          tempDouble.clear();
+          config.getVectorDouble("calorimeter.yposition", tempDouble, calo_->caloInfo_.getInt("nPipes"));
+          calo_->caloInfo_.set("yposition", tempDouble );
+          tempDouble.clear();
+          config.getVectorDouble("calorimeter.straightEndPhi", tempDouble, calo_->caloInfo_.getInt("nPipes"));
+          calo_->caloInfo_.set("straightEndPhi", tempDouble );
+          tempDouble.clear();
+          calo_->caloInfo_.set("radSmTor", config.getDouble("calorimeter.radSmTor") );
+          calo_->caloInfo_.set("xsmall", config.getDouble("calorimeter.xsmall") );
+          calo_->caloInfo_.set("xdistance", config.getDouble("calorimeter.xdistance") );
+          calo_->caloInfo_.set("rInnerManifold", config.getDouble("calorimeter.rInnerManifold") );
+          tempDouble.clear();
 
           calo_->caloInfo_.set("numberOfCrates",         config.getInt("calorimeter.numberOfCrates") );
           calo_->caloInfo_.set("nCrateBeforeSpace",      config.getInt("calorimeter.nCrateBeforeSpace") );
@@ -155,10 +166,12 @@ namespace mu2e {
           calo_->caloInfo_.set("crateZLength",           config.getDouble("calorimeter.crateZLength") );
           calo_->caloInfo_.set("crateFShieldThickness",  config.getDouble("calorimeter.crateFShieldThickness") );
           calo_->caloInfo_.set("crateBShieldThickness",  config.getDouble("calorimeter.crateBShieldThickness") );
+          calo_->caloInfo_.set("crateBShieldLength",     config.getDouble("calorimeter.crateBShieldLength") );
           calo_->caloInfo_.set("crateTThickness",        config.getDouble("calorimeter.crateTThickness") );
           calo_->caloInfo_.set("crateSThickness",        config.getDouble("calorimeter.crateSThickness") );
           calo_->caloInfo_.set("crateFShieldYLength",    config.getDouble("calorimeter.crateFShieldYLength") );
           calo_->caloInfo_.set("crateFShieldDeltaZ",     config.getDouble("calorimeter.crateFShieldDeltaZ") );
+          calo_->caloInfo_.set("FEBOffsetZ",             config.getDouble("calorimeter.FEBOffsetZ") );
           calo_->caloInfo_.set("cratephi0",              config.getDouble("calorimeter.cratephi0") );
           calo_->caloInfo_.set("crateDeltaPhi",          config.getDouble("calorimeter.crateDeltaPhi") );
           calo_->caloInfo_.set("radiatorThickness",      config.getDouble("calorimeter.radiatorThickness") );
@@ -183,10 +196,10 @@ namespace mu2e {
           if (calo_->caloInfo_.getInt("readoutPerCrystal")==0)
           {
              calo_->caloInfo_.set("FEEZLength",0.0 );
-              calo_->caloInfo_.set("BPStripThickness",0.0 );
+             calo_->caloInfo_.set("BPStripThickness",0.0 );
              calo_->caloInfo_.set("FEEBoxThickness",0.0 );
              calo_->caloInfo_.set("BPHoleZLength",0.0 );
-              calo_->caloInfo_.set("readoutZLength",0.0 );
+             calo_->caloInfo_.set("readoutZLength",0.0 );
           }
 
 
@@ -210,9 +223,10 @@ namespace mu2e {
           double FPFoamThick             = calo_->caloInfo_.getDouble("FPFoamZLength");
           double FPCoolPipeRadius        = calo_->caloInfo_.getDouble("FPCoolPipeRadius");
           double FPpipeRadius            = calo_->caloInfo_.getDouble("pipeRadius");
-          double diskCaseHalfZLength     = calo_->caloInfo_.getDouble("diskCaseZLength")/2.0;
+          //double diskCaseHalfZLength     = calo_->caloInfo_.getDouble("diskCaseZLength")/2.0;
+          double diskCaseHalfZLength     = calo_->caloInfo_.getDouble("crystalZLength")/2.0 + calo_->caloInfo_.getDouble("crystalCapZLength")/2.0 ;
           double crystalHalfZLength      = calo_->caloInfo_.getDouble("crystalZLength")/2.0;
-          double crystalFrameHalfZLength = calo_->caloInfo_.getDouble("crystalFrameZLength")/2.0;
+          double crystalFrameHalfZLength = calo_->caloInfo_.getDouble("crystalCapZLength")/2.0;
           double BPHoleHalfZ             = calo_->caloInfo_.getDouble("BPHoleZLength")/2.0;
           double FEEBoxHalfZ             = calo_->caloInfo_.getDouble("FEEZLength")/2.0;
           double FEEBoxThick             = calo_->caloInfo_.getDouble("FEEBoxThickness");
@@ -221,6 +235,8 @@ namespace mu2e {
           double crateZLength            = calo_->caloInfo_.getDouble("crateZLength");
           double crateFShieldThick       = calo_->caloInfo_.getDouble("crateFShieldThickness");
           double crateFShieldDeltaZ      = calo_->caloInfo_.getDouble("crateFShieldDeltaZ");
+          double FEBOffsetZ              = calo_->caloInfo_.getDouble("FEBOffsetZ");
+
 
           FPHalfZLength_        = (FPCarbonThick+FPFoamThick-FPpipeRadius+FPCoolPipeRadius)/2.0;
           diskCaseHalfZLength_  = diskCaseHalfZLength;
@@ -230,9 +246,7 @@ namespace mu2e {
           motherHalfZ_          = (calo_->caloInfo_.getDouble("envelopeZ1")-calo_->caloInfo_.getDouble("envelopeZ0"))/2.0;
 
           // OFFSET TO ALIGN BEGINNING OF BOTTOM SHIESLDING TO BEGINNING OF CRYSTAL IN Z
-          crateToDiskDeltaZ_ = FEBHalfZLength_ - diskHalfZLength_ + 2.0*FPHalfZLength_ + vdThickness;
-
-
+          crateToDiskDeltaZ_ = FEBHalfZLength_ - diskHalfZLength_ + 2.0*FPHalfZLength_ + vdThickness - FEBOffsetZ;
 
 
           // OFFSETS BETWEEN THE DISK AND CRYSTAL CORDINATE SYSTEMS, I.E. DISTANCE BETWEEN FRONT FACE DISK AND FRONT FACE CRYSTALS
@@ -255,26 +269,25 @@ namespace mu2e {
 
     void DiskCalorimeterMaker::MakeIt(void)
     {
-
-        double crystalHalfXY        = calo_->caloInfo_.getDouble("crystalXYLength")/2.0;
-        double wrapperHalfThick     = calo_->caloInfo_.getDouble("wrapperThickness")/2.0;
-        double crystalCellRadius    = crystalHalfXY + 2.0*wrapperHalfThick;
-        double innerCaseRadius      = calo_->caloInfo_.getDouble("diskInnerRingIn");
-        double outerCaseRadius      = calo_->caloInfo_.getDouble("diskOuterRingOut");
-        double innerCrysRadius      = calo_->caloInfo_.getDouble("diskCrystalRadiusIn");
-        double outerCrysRadius      = calo_->caloInfo_.getDouble("diskCrystalRadiusOut");
-        double outerRingEdgeThick   = calo_->caloInfo_.getDouble("diskOutRingEdgeRLength");
-
+        double crystalHalfXY     = calo_->caloInfo_.getDouble("crystalXYLength")/2.0;
+        double wrapperHalfThick  = calo_->caloInfo_.getDouble("wrapperThickness")/2.0;
+        double crystalCellRadius = crystalHalfXY + 2.0*wrapperHalfThick;
+        double innerDiskRadius   = calo_->caloInfo_.getDouble("diskInAlRingRIn");
+        double innerCrysRadius   = calo_->caloInfo_.getDouble("diskCrystalRIn");
+        double outerCrysRadius   = calo_->caloInfo_.getDouble("diskCrystalROut");
+        double outerCaseRadius   = calo_->caloInfo_.getDouble("diskCaseRingROut");
+        double diskOutRailROut   = calo_->caloInfo_.getDouble("diskOutRailROut");
+        auto   shimStepsInRowId  = calo_->caloInfo_.getVInt("shimStepsInRowId");
+        auto   shimStepsOutRowId = calo_->caloInfo_.getVInt("shimStepsOutRowId");
 
         for (int idisk=0; idisk<calo_->nDisks_; ++idisk)
         {
-            int crystalOffset      = calo_->fullCrystalList_.size();
+            int crystalOffset = calo_->fullCrystalList_.size();
+            double separation = calo_->caloInfo_.getVDouble("diskZMotherShift").at(idisk);
+            double angleZ     = 0;
 
-            double separation      = calo_->caloInfo_.getVDouble("diskZMotherShift").at(idisk);
-            double angleZ          = 0;
-
-            double dR1 = innerCaseRadius;
-            double dR2 = outerCaseRadius + outerRingEdgeThick;
+            double dR1 = innerDiskRadius;
+            double dR2 = diskOutRailROut;
             double dZ  = 2.0*diskHalfZLength_;
 
             CLHEP::Hep3Vector size(dR1,dR2,dZ) ;
@@ -284,8 +297,8 @@ namespace mu2e {
             CLHEP::Hep3Vector backFaceCenter  = frontFaceCenter + CLHEP::Hep3Vector(0,0,2.0*diskCaseHalfZLength_);
             CLHEP::HepRotation diskRotation   = CLHEP::HepRotation::IDENTITY*CLHEP::HepRotationZ(angleZ);
 
-            std::shared_ptr<Disk> thisDisk( new Disk(idisk,innerCaseRadius, outerCaseRadius,innerCrysRadius,outerCrysRadius,
-                                                     2.0*crystalCellRadius, crystalOffset, diskOriginToCrystalOrigin_) );
+            auto thisDisk = std::make_shared<Disk>(idisk,dR1,dR2,innerCrysRadius,outerCrysRadius,
+                                                   2.0*crystalCellRadius, crystalOffset, diskOriginToCrystalOrigin_);
             calo_->disks_.push_back(thisDisk);
 
             thisDisk->geomInfo().size(size);
@@ -316,33 +329,39 @@ namespace mu2e {
                  thisCrystal.setPosition(globalPosition);
             }
 
-            //calculate the position of the inner and outer steps.
-            std::vector<double> stepsInX, stepsInY, stepsOutX, stepsOutY;
 
-            int nrowIn = int(innerCaseRadius/2.0/crystalCellRadius)+1;
-            for (int irow=-nrowIn;irow<=nrowIn;++irow)
-            {
-                int icry = thisDisk->idMinCrystalInside(irow);
-                if (icry <0 || icry > int(thisDisk->nCrystals())) continue;
-                double xmin = thisDisk->crystal(icry).localPosition().x()-crystalCellRadius;
-                double ymin = thisDisk->crystal(icry).localPosition().y();
-                if (xmin > crystalCellRadius) {stepsInX.push_back(xmin);stepsInY.push_back(ymin);}
+            //calculate the position of the inner and outer steps, including the special shims to make the walls straight
+            std::vector<double> par,stepsInX, stepsInY, stepsOutX, stepsOutY;
+            int nrows = int(outerCaseRadius/2.0/crystalCellRadius)+1;
+            for (int i=-nrows;i<nrows;++i) {
+              thisDisk->boundingBoxes(i,par);
+              if (par.empty()) continue;
+
+              float p0(par[0]),p1(par[1]);
+              if (std::find(shimStepsOutRowId.begin(),shimStepsOutRowId.end(),i) != shimStepsOutRowId.end()){
+                p0 -= crystalCellRadius;
+                p1 += crystalCellRadius;
+              }
+              stepsOutX.push_back(p0);
+              stepsOutX.push_back(p1);
+              stepsOutY.push_back(par[2]);
+              stepsOutY.push_back(par[3]);
+
+              if (par.size()==6) {
+                 float p4(par[4]),p5(par[5]);
+                 if (std::find(shimStepsInRowId.begin(),shimStepsInRowId.end(),i) != shimStepsInRowId.end()){
+                   p4 += crystalCellRadius;
+                   p5 -= crystalCellRadius;
+                 }
+                 stepsInX.push_back(p4);stepsInX.push_back(p5);
+                 stepsInY.push_back(par[2]);stepsInY.push_back(par[3]);
+              }
             }
-
-            int nrowOut = int(outerCaseRadius/2.0/crystalCellRadius)+1;
-            for (int irow=-nrowOut;irow<=nrowOut;++irow)
-            {
-                int icry = thisDisk->idMaxCrystalInside(irow);
-                if (icry <0 || icry > int(thisDisk->nCrystals())) continue;
-                double xmax = thisDisk->crystal(icry).localPosition().x()+crystalCellRadius;
-                double ymax = thisDisk->crystal(icry).localPosition().y();
-                if (xmax > crystalCellRadius) {stepsOutX.push_back(xmax);stepsOutY.push_back(ymax);}
-            }
-
             calo_->caloInfo_.set("stepsInsideX",stepsInX);
             calo_->caloInfo_.set("stepsInsideY",stepsInY);
             calo_->caloInfo_.set("stepsOutsideX",stepsOutX);
             calo_->caloInfo_.set("stepsOutsideY",stepsOutY);
+
 
             if (verbosityLevel_) std::cout<<"Constructed Disk "<<thisDisk->id()<<":  Rin="<<thisDisk->innerRadius()<<"  Rout="<<thisDisk->outerRadius()
                                           <<" (X,Y,Z)="<<thisDisk->geomInfo().origin()<<"  local_(X,Y,Z)="<<thisDisk->geomInfo().originLocal()
@@ -350,16 +369,6 @@ namespace mu2e {
 
             if (verbosityLevel_ > 1) thisDisk->print()                     ;
 
-            if (verbosityLevel_ > 2)
-            {
-                double espace          = thisDisk->estimateEmptySpace();
-                double diskVolume    = M_PI*(thisDisk->outerRadius()*thisDisk->outerRadius()-thisDisk->innerRadius()*thisDisk->innerRadius());
-                double crystalVolume = 3.4641016*crystalCellRadius*crystalCellRadius*thisDisk->nCrystals();
-
-                std::cout<<"Estimated empty space between the disks and the crystals "<<std::endl;
-                std::cout<<"Inner edge and crystals = "<<espace<<std::endl;
-                std::cout<<"Outer edge and crystals = "<<diskVolume-crystalVolume-espace<<" "<<std::endl;
-            }
         }
 
 
@@ -377,15 +386,15 @@ namespace mu2e {
 
 
         //check calorimeter fits inside mother envelope
-        double diskRin            = calo_->caloInfo_.getDouble("diskInnerRingIn");
-        double diskRout           = calo_->caloInfo_.getDouble("diskOuterRingOut");
-        double outerRingEdgeThick = calo_->caloInfo_.getDouble("diskOutRingEdgeRLength");
+        double diskRin       = calo_->caloInfo_.getDouble("diskInAlRingRIn");
+        double diskRout      = calo_->caloInfo_.getDouble("diskCaseRingROut");
+        double outerRingROut = calo_->caloInfo_.getDouble("diskOutRailROut");
         for (int i=0;i<calo_->nDisks_;++i)
         {
             if (diskRin > diskRout)
                   throw cet::exception("DiskCaloGeom") << "calorimeter.diskInnerRingIn > calorimeter.diskOuterRingOut for disk="<<i<<".\n";
 
-            if (diskRout + outerRingEdgeThick > calo_->caloInfo_.getDouble("envelopeRadiusOut"))
+            if (outerRingROut > calo_->caloInfo_.getDouble("envelopeRadiusOut"))
                   throw cet::exception("DiskCaloGeom") << "calorimeter outer radius larger than calorimeter mother for disk="<<i<<".\n";
 
             if (diskRin < calo_->caloInfo_.getDouble("envelopeRadiusIn"))

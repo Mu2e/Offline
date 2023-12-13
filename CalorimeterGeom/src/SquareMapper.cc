@@ -59,8 +59,8 @@ namespace mu2e {
           step_.push_back( SquLK( 0, 1) );  //up
       }
 
-
-
+      //--------------------------------------------------------------------------------
+      int SquareMapper::nCrystalMax(int maxRing) const {return (2*maxRing+1)*(2*maxRing+1);}
 
 
       //--------------------------------------------------------------------------------
@@ -88,6 +88,18 @@ namespace mu2e {
       {
           SquLK lk(nCol,nRow);
           return index(lk);
+      }
+
+      int SquareMapper::rowFromIndex(int thisIndex) const
+      {
+          SquLK thisLK = lk(thisIndex);
+          return thisLK.k_;
+      }
+
+      int SquareMapper::colFromIndex(int thisIndex) const
+      {
+          SquLK thisLK = lk(thisIndex);
+          return thisLK.l_;
       }
 
 

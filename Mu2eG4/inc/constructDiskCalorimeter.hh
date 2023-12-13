@@ -19,6 +19,7 @@
 #include "Geant4/G4VSolid.hh"
 #include "Geant4/G4Material.hh"
 #include "Geant4/G4Color.hh"
+#include "Geant4/G4TwoVector.hh"
 
 
 
@@ -34,6 +35,7 @@ namespace mu2e {
   G4LogicalVolume* caloBuildBackPlate(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk);
   G4LogicalVolume* caloBuildCrate(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal);
   G4LogicalVolume* caloBuildFEB(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal);
+  std::vector<G4TwoVector> caloExtrudedVertices(const std::vector<double>& stepsX, const std::vector<double>& stepsY, double delta=0.0);
 
 
 }
