@@ -8,7 +8,6 @@
 #define CalorimeterGeom_CaloInfo_hh
 
 #include "cetlib_except/exception.h"
-
 #include <vector>
 #include <map>
 #include <string>
@@ -16,7 +15,6 @@
 
 namespace mu2e {
 
-    //helper class
     template <typename T> class CaloInfoData
     {
        public:
@@ -31,7 +29,6 @@ namespace mu2e {
 
           void set(const std::string key, const T& value) {data_[key] = value;}
 
-
        private:
           std::map<std::string,T> data_;
     };
@@ -41,27 +38,26 @@ namespace mu2e {
     class CaloInfo {
 
        public:
-           CaloInfo() : dataBool_(),dataInt_(),dataDouble_(),dataVDouble_() {}
+           CaloInfo() : dataBool_(),dataInt_(),dataDouble_(),dataVInt_(),dataVDouble_() {}
 
-           void set(const std::string& key, int value)                       {dataInt_.set(key,value);}
-           void set(const std::string& key, double value)                    {dataDouble_.set(key,value);}
-           void set(const std::string& key, const std::vector<double>& value){dataVDouble_.set(key,value);}
+           void set(const std::string& key, int value)                        {dataInt_.set(key,value);}
+           void set(const std::string& key, double value)                     {dataDouble_.set(key,value);}
+           void set(const std::string& key, const std::vector<int>& value)    {dataVInt_.set(key,value);}
+           void set(const std::string& key, const std::vector<double>& value) {dataVDouble_.set(key,value);}
 
-           const bool                getBool(const std::string& key)    const {return dataBool_.get(key);}
-           const int                 getInt(const std::string& key)     const {return dataInt_.get(key);}
-           const double              getDouble(const std::string& key)  const {return dataDouble_.get(key);}
+           const bool                getBool   (const std::string& key) const {return dataBool_.get(key);}
+           const int                 getInt    (const std::string& key) const {return dataInt_.get(key);}
+           const double              getDouble (const std::string& key) const {return dataDouble_.get(key);}
+           const std::vector<int>    getVInt   (const std::string& key) const {return dataVInt_.get(key);}
            const std::vector<double> getVDouble(const std::string& key) const {return dataVDouble_.get(key);}
-
-           //helper function
-           double crystalVolume() const {return dataDouble_.get("crystalXYLength")*dataDouble_.get("crystalXYLength")*dataDouble_.get("crystalZLength");}
 
        private:
           CaloInfoData<bool>                dataBool_;
           CaloInfoData<int>                 dataInt_;
           CaloInfoData<double>              dataDouble_;
+          CaloInfoData<std::vector<int>>    dataVInt_;
           CaloInfoData<std::vector<double>> dataVDouble_;
      };
-
 }
 
 #endif

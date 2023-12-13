@@ -66,6 +66,8 @@ namespace mu2e {
       }
 
 
+      //--------------------------------------------------------------------------------
+      int SquareShiftMapper::nCrystalMax(int maxRing) const {return 3*maxRing*(maxRing+1)+1;}
 
 
 
@@ -102,10 +104,24 @@ namespace mu2e {
       int SquareShiftMapper::indexFromRowCol(int nRow, int nCol) const
       {
           int k = nRow/2-nRow + nCol;
-          int l = nRow/2 + nCol;
+          int l = nRow/2      + nCol;
 
           SquShiftLK lk(l,k);
           return index(lk);
+      }
+
+      int SquareShiftMapper::rowFromIndex(int thisIndex) const
+      {
+          SquShiftLK thisLK = lk(thisIndex);
+          return thisLK.l_ - thisLK.k_;
+      }
+
+      int SquareShiftMapper::colFromIndex(int thisIndex) const
+      {
+          SquShiftLK thisLK = lk(thisIndex);
+          if ((thisLK.l_+thisLK.k_)%2) return (thisLK.l_+thisLK.k_)/2;
+          else if (thisLK.l_!=0)       return (thisLK.l_+thisLK.k_-abs(thisLK.l_)/thisLK.l_)/2+abs(thisLK.l_)/thisLK.l_;
+          else                         return thisLK.k_/2+abs(thisLK.k_)/thisLK.k_;
       }
 
 
