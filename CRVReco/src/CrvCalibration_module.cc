@@ -46,7 +46,8 @@ namespace mu2e
 
     private:
     std::string        _crvRecoPulsesModuleLabel;
-    std::vector<TH1F*> _calibHists;
+    std::vector<TH1F*> _calibHistsPulseArea;
+    std::vector<TH1F*> _calibHistsPulseHeight;
 
     ProditionsHandle<CRVCalib> _calib_h;
   };
@@ -62,7 +63,8 @@ namespace mu2e
   {
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
-    _calibHists.reserve(counters.size()*4);
+    _calibHistsPulseArea.reserve(counters.size()*4);
+    _calibHistsPulseHeight.reserve(counters.size()*4);
 
     art::ServiceHandle<art::TFileService> tfs;
     for(size_t barIndex=0; barIndex<counters.size(); ++barIndex)
@@ -71,9 +73,12 @@ namespace mu2e
       {
         //produce histograms also for non-existing channels to get a continuously running index
         size_t channelIndex=barIndex*4 + SiPM;
-        _calibHists.emplace_back(tfs->make<TH1F>(Form("crvCalibrationHist_%lu",channelIndex),
-                                                 Form("crvCalibrationHist_%lu",channelIndex),
+        _calibHistsPulseArea.emplace_back(tfs->make<TH1F>(Form("crvCalibrationHistPulseArea_%lu",channelIndex),
+                                                 Form("crvCalibrationHistPulseArea_%lu",channelIndex),
                                                  150,0,3000));
+        _calibHistsPulseHeight.emplace_back(tfs->make<TH1F>(Form("crvCalibrationHistPulseHeight_%lu",channelIndex),
+                                                 Form("crvCalibrationHistPulseHeight_%lu",channelIndex),
+                                                 150,0,75));
       }
     }
   }
@@ -97,7 +102,8 @@ namespace mu2e
         {
           size_t channelIndex=barIndex*4 + SiPM;
           float pedestal = calib.pedestal(channelIndex);
-          _calibHists.at(channelIndex)->SetTitle(Form("crvCalibrationHist_%lu_pedestal_%f",channelIndex,pedestal));
+          _calibHistsPulseArea.at(channelIndex)->SetTitle(Form("crvCalibrationHistPulseArea_%lu_pedestal_%f",channelIndex,pedestal));
+          _calibHistsPulseHeight.at(channelIndex)->SetTitle(Form("crvCalibrationHistPulseHeight_%lu_pedestal_%f",channelIndex,pedestal));
         }
       }
     }
@@ -109,7 +115,8 @@ namespace mu2e
       int barIndex = iter->GetScintillatorBarIndex().asInt();
       int SiPM = iter->GetSiPMNumber();
       int channelIndex=barIndex*4+SiPM;
-      _calibHists.at(channelIndex)->Fill(iter->GetPulseBeta()*iter->GetPulseHeight()*TMath::E());
+      _calibHistsPulseArea.at(channelIndex)->Fill(iter->GetPulseBeta()*iter->GetPulseHeight()*TMath::E());
+      _calibHistsPulseHeight.at(channelIndex)->Fill(iter->GetPulseHeight());
     }
   }
 
