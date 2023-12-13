@@ -16,7 +16,6 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include <vector>
 
-
 namespace mu2e {
 
     class Calorimeter: virtual public Detector {
@@ -24,9 +23,7 @@ namespace mu2e {
         public:
 
            //no constructor for this interface
-           // Fixme: clang-tidy finds a rule of 5 violation.
-           //        The obvious fix create errors compiling derived classes due to missing default c
-           virtual ~Calorimeter(){};
+           virtual ~Calorimeter() = default;
 
 
            // calo section
@@ -34,7 +31,7 @@ namespace mu2e {
            virtual const Disk&                   disk(int i) const = 0;
 
 
-             // crystal section - fast access
+           // crystal section - fast access
            virtual int                           nCrystal()     const = 0;
            virtual const Crystal&                crystal(int i) const = 0;
 
@@ -44,7 +41,7 @@ namespace mu2e {
            virtual const CaloGeomUtil&           geomUtil()     const = 0;
 
 
-             // neighbors, indexing
+           // neighbors, indexing
            virtual const std::vector<int>&  neighbors(int crystalId, bool rawMap=false)                     const = 0;
            virtual const std::vector<int>&  nextNeighbors(int crystalId, bool rawMap=false)                 const = 0;
            virtual       std::vector<int>   neighborsByLevel(int crystalId, int level, bool rawMap = false) const = 0;
@@ -52,9 +49,8 @@ namespace mu2e {
            virtual int                      nearestIdxFromPosition(const CLHEP::Hep3Vector& pos)            const = 0;
 
            // get to know me!
-           virtual void                     print(std::ostream &os = std::cout)  const = 0;
+           virtual void                     print(std::ostream &os = std::cout) const = 0;
     };
-
 }
 
 #endif

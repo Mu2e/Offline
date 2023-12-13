@@ -11,27 +11,24 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include <vector>
 
-
 namespace mu2e {
 
     class DiskGeomInfo {
 
-
        public:
-
            DiskGeomInfo() :
-             size_(CLHEP::Hep3Vector(0,0,0)),
-             origin_(CLHEP::Hep3Vector(0,0,0)),
-             originLocal_(CLHEP::Hep3Vector(0,0,0)),
-             rotation_(CLHEP::HepRotation::IDENTITY),
-             inverseRotation_(CLHEP::HepRotation::IDENTITY),
+             size_                 (CLHEP::Hep3Vector(0,0,0)),
+             origin_               (CLHEP::Hep3Vector(0,0,0)),
+             originLocal_          (CLHEP::Hep3Vector(0,0,0)),
+             rotation_             (CLHEP::HepRotation::IDENTITY),
+             inverseRotation_      (CLHEP::HepRotation::IDENTITY),
              originToCrystalOrigin_(CLHEP::Hep3Vector(0,0,0)),
-             crystalDirection_(CLHEP::Hep3Vector(0,0,0)),
-             frontFaceCenter_(CLHEP::Hep3Vector(0,0,0)),
-             backFaceCenter_(CLHEP::Hep3Vector(0,0,0)),
-             innerEnvelope_(0),
-             outerEnvelope_(0),
-             crateDeltaZ_(0)
+             crystalDirection_     (CLHEP::Hep3Vector(0,0,0)),
+             frontFaceCenter_      (CLHEP::Hep3Vector(0,0,0)),
+             backFaceCenter_       (CLHEP::Hep3Vector(0,0,0)),
+             innerEnvelope_        (0),
+             outerEnvelope_        (0),
+             crateDeltaZ_          (0)
            {}
 
            const CLHEP::Hep3Vector&  size()                    const {return size_; }
@@ -50,7 +47,7 @@ namespace mu2e {
 
 
            void size(const CLHEP::Hep3Vector& size)                 {size_ = size;}
-            void origin(const CLHEP::Hep3Vector& orig)               {origin_ = orig;}
+           void origin(const CLHEP::Hep3Vector& orig)               {origin_ = orig;}
            void originLocal(const CLHEP::Hep3Vector& orig)          {originLocal_ = orig;}
            void originToCrystalOrigin(const CLHEP::Hep3Vector& vec) {originToCrystalOrigin_ = vec;}
            void crystalDirection(const CLHEP::Hep3Vector& vec)      {crystalDirection_ = vec;}
@@ -58,28 +55,22 @@ namespace mu2e {
            void frontFaceCenter(const CLHEP::Hep3Vector& pos)       {frontFaceCenter_ = pos;}
            void backFaceCenter(const CLHEP::Hep3Vector& pos)        {backFaceCenter_ = pos;}
            void envelopeRad(double rin, double rout)                {innerEnvelope_ = rin; outerEnvelope_ = rout;}
-             void crateDeltaZ(double val)                             {crateDeltaZ_ = val;}
-
+           void crateDeltaZ(double val)                             {crateDeltaZ_ = val;}
 
 
        private:
-
            CLHEP::Hep3Vector    size_;
            CLHEP::Hep3Vector    origin_;
            CLHEP::Hep3Vector    originLocal_;
            CLHEP::HepRotation   rotation_;
            CLHEP::HepRotation   inverseRotation_;
-
            CLHEP::Hep3Vector    originToCrystalOrigin_;
            CLHEP::Hep3Vector    crystalDirection_;
            CLHEP::Hep3Vector    frontFaceCenter_;
            CLHEP::Hep3Vector    backFaceCenter_;
-
            double               innerEnvelope_;
            double               outerEnvelope_;
            double               crateDeltaZ_;
-
-
      };
 }
 
