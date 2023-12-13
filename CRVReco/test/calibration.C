@@ -1,3 +1,11 @@
+struct DatabaseEntry
+{
+  double _pedestal;
+  double _calibPulseHeight;
+  double _calibPulseArea;
+  DatabaseEntry() : _pedestal(0), _calibPulseArea(-1), _calibPulseHeight(-1) {};
+};
+
 void output(std::ofstream &outputFile, int channel, double pedestal, double calibPulseHeight, double calibPulseArea)
 {
   outputFile<<channel<<","<<pedestal<<","<<calibPulseHeight<<","<<calibPulseArea<<std::endl;
@@ -23,8 +31,10 @@ void calibration(const std::string &filename, int nPEpeaksToFit=1)
   outputFile<<"TABLE CRVSiPM"<<std::endl;
   outputFile<<"#channel, pedestal, calibPulseHeight, calibPulseArea"<<std::endl;
 
-  const std::string baseName="crvCalibrationHist_";
+  const std::string baseNamePulseArea="crvCalibrationHistPulseArea_";
+  const std::string baseNamePulseHeight="crvCalibrationHistPulseHeight_";
   const std::string pedestalTitle="_pedestal_";
+  std::map<int,DatabaseEntry> databaseEntries;
   TF1 funcCalibPeaks("f1", "gaus");
   TF1 funcCalib("f2","[0]*x");
   for(const auto&& key: *gDirectory->GetListOfKeys())
@@ -32,18 +42,24 @@ void calibration(const std::string &filename, int nPEpeaksToFit=1)
     TH1 *hist = dynamic_cast<TH1F*>(gDirectory->Get(key->GetName()));
     if(hist==NULL) continue;  //doesn't seem to be a histogram
     const std::string histName=hist->GetName();
-    if(histName.compare(0,baseName.length(),baseName)!=0) continue;  //doesn't seem to be a calibration histogram
-    const std::string channelName=histName.substr(baseName.length());
+    int histType=0;
+    if(histName.compare(0,baseNamePulseArea.length(),baseNamePulseArea)==0) histType=1;
+    else if(histName.compare(0,baseNamePulseHeight.length(),baseNamePulseHeight)==0) histType=2;
+    else continue;  //doesn't seem to be a calibration histogram
+
+    const std::string channelName=histName.substr(histType==1?baseNamePulseArea.length():baseNamePulseHeight.length());
     int channel=atoi(channelName.c_str());
 
     const std::string histTitle=hist->GetTitle();
     double pedestal=atof(histTitle.substr(histName.length()+pedestalTitle.length()).c_str());  //FIXME: add checks for wrongly formated hist titles
+    //create database entry for this channel and store pedestal
+    databaseEntries[channel]._pedestal=pedestal;
 
-    if(hist->GetEntries()<200) {output(outputFile,channel,pedestal,-1,-1); continue;}  //not enough entries
+    if(hist->GetEntries()<200) continue; //not enough entries
 
     int maxbin = 0;
     double maxbinContent = 0;
-    int startBin=hist->FindBin(250); //start at 250
+    int startBin=hist->FindBin(histType==1?250:7);
     for(int bin=startBin; bin<hist->GetNbinsX(); bin++)
     {
       double binContent = hist->GetBinContent(bin);
@@ -63,7 +79,7 @@ void calibration(const std::string &filename, int nPEpeaksToFit=1)
 
     //find other PE peaks
     std::vector<double> peaks;
-    if(peak1PE>250.0 && peak1PE<750.0)
+    if(peak1PE>(histType==1?250.0:7) && peak1PE<(histType==1?750.0:21))
     {
       peaks.push_back(peak1PE);
       for(int iPeak=2; iPeak<=nPEpeaksToFit; ++iPeak)
@@ -92,25 +108,24 @@ void calibration(const std::string &filename, int nPEpeaksToFit=1)
     for(size_t iPeak=0; iPeak<peaks.size(); ++iPeak) graph->SetPoint(iPeak+1,iPeak+1,peaks[iPeak]);
     funcCalib.SetRange(-0.5, peaks.size()+0.5);
     graph->Fit(&funcCalib, "NQR");
-    output(outputFile,channel,pedestal,-1,funcCalib.GetParameter(0));  //FIXME: do the same for the pulse height calibration
+
+    //store caibration constants for this channel
+    if(histType==1) databaseEntries[channel]._calibPulseArea=funcCalib.GetParameter(0);
+    if(histType==2) databaseEntries[channel]._calibPulseHeight=funcCalib.GetParameter(0);
   }
+
+  for(auto iter=databaseEntries.begin(); iter!=databaseEntries.end(); ++iter)
+    output(outputFile,iter->first,iter->second._pedestal,iter->second._calibPulseHeight,iter->second._calibPulseArea);
 
   outputFile<<std::endl;
 
   /***************************************************************************/
 
-  //CRVTime table - set all values to 0
+  //CRVTime table - not implemented, yet - set all values to 0
   outputFile<<"TABLE CRVTime"<<std::endl;
   outputFile<<"#channel, timeOffset"<<std::endl;
-  for(const auto&& key: *gDirectory->GetListOfKeys())
-  {
-    TH1 *hist = dynamic_cast<TH1F*>(gDirectory->Get(key->GetName()));
-    if(hist==NULL) continue;  //doesn't seem to be a histogram
-    const std::string histName=hist->GetName();
-    if(histName.compare(0,baseName.length(),baseName)!=0) continue;  //doesn't seem to be a pedestal histogram
-    const std::string channelName=histName.substr(baseName.length());
-    outputFile<<channelName<<",0"<<std::endl;
-  }
+  for(auto iter=databaseEntries.begin(); iter!=databaseEntries.end(); ++iter)
+    outputFile<<iter->first<<",0"<<std::endl;
 
   /***************************************************************************/
 
