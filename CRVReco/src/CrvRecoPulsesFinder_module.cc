@@ -189,9 +189,8 @@ namespace mu2e
         double pulseStart        = _makeCrvRecoPulses->GetPulseStarts().at(j) + TDC0time + timeOffset;
         double pulseEnd          = _makeCrvRecoPulses->GetPulseEnds().at(j) + TDC0time + timeOffset;
 
-        if(calibPulseArea<=0) PEs=0;
-        if(calibPulseArea<=0) PEsNoFit=0;
-        if(calibPulseHeight<=0) PEsPulseHeight=0;
+        if(calibPulseArea<=0) {PEs=0; PEsNoFit=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseArea);}
+        if(calibPulseHeight<=0) {PEsPulseHeight=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseHeight);}
 
         crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags,
                                              PEsNoFit, pulseTimeNoFit, pulseStart, pulseEnd,
