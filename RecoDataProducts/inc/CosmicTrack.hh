@@ -83,7 +83,6 @@ namespace mu2e {
     public:
       CosmicTrack();
       CosmicTrack(TrackParams params) : FitParams(params) {};
-      ~CosmicTrack();
 
       //---------------Accessors:--------------//
 

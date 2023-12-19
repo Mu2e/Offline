@@ -542,18 +542,18 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   }
 
   // Now compress the SimParticleCollections into their new collections
-  KeyRemap* keyRemap = new KeyRemap;
+  KeyRemap keyRemap;
   SimParticleRemapping remap;
   unsigned int keep_size = 0;
   for (std::vector<art::InputTag>::const_iterator i_tag = _simParticleTags.begin(); i_tag != _simParticleTags.end(); ++i_tag) {
-    keyRemap->clear();
+    keyRemap.clear();
     const auto& oldSimParticles = event.getValidHandle<SimParticleCollection>(*i_tag);
     art::ProductID i_product_id = oldSimParticles.id();
     SimParticleSelector simPartSelector(_simParticlesToKeep[i_product_id]);
     keep_size += _simParticlesToKeep[i_product_id].size();
     if (_rekeySimParticleCollection) {
       compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles,
-                                    simPartSelector, *_newSimParticles, keyRemap);
+                                    simPartSelector, *_newSimParticles, &keyRemap);
     }
     else {
       compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles,
@@ -565,8 +565,8 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       cet::map_vector_key oldKey = cet::map_vector_key(i_keptSimPart.key());
       cet::map_vector_key newKey = oldKey;
       if (_rekeySimParticleCollection) {
-        auto it = keyRemap->find(oldKey);
-        if(it == keyRemap->end()) {
+        auto it = keyRemap.find(oldKey);
+        if(it == keyRemap.end()) {
           throw cet::exception("CompressDigiMCs::badKeyRemap")
             << "keyRemap key "<< oldKey <<" not found\n";
         }

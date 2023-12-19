@@ -4,6 +4,8 @@
 
 #include "TFile.h"
 #include "TH2F.h"
+
+#include <memory>
 #include <vector>
 
 
@@ -25,12 +27,12 @@ namespace mu2e {
        std::string fileName = calorimeterCalibrations->pulseFileName();
        std::string histName = calorimeterCalibrations->pulseHistName();
 
-       TH1F *pshape(0);
+       std::unique_ptr<TH1F> pshape(nullptr);
        TFile pulseFile(fileName.c_str());
-         if (pulseFile.IsOpen()) pshape = (TH1F*) pulseFile.Get(histName.c_str());
-         if (!pshape) throw cet::exception("CATEGORY")<<"CaloPulseShape:: Hitsogram "<<histName.c_str()
-                                                     <<" from file "<<fileName.c_str()<<" does not exist";
-         pshape->SetDirectory(0);
+       if (pulseFile.IsOpen()) pshape.reset((TH1F*) pulseFile.Get(histName.c_str()));
+       if (!pshape) throw cet::exception("CATEGORY")<<"CaloPulseShape:: Hitsogram "<<histName.c_str()
+                                                    <<" from file "<<fileName.c_str()<<" does not exist";
+       pshape->SetDirectory(0);
        pulseFile.Close();
 
 
@@ -96,4 +98,3 @@ namespace mu2e {
 
 
 }
-

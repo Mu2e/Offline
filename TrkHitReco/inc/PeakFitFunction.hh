@@ -46,6 +46,9 @@ namespace mu2e {
         // construct the model from the Straw conditions, the fit configuration
         PeakFitFunction(const StrawResponse& srep);
         ~PeakFitFunction();
+        PeakFitFunction(const PeakFitFunction&) = default;
+        PeakFitFunction& operator=(const PeakFitFunction &) = delete;
+
 
         //initialize the object once config is done
         void init(const FitConfig& fitConfig);

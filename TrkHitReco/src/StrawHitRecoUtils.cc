@@ -173,15 +173,13 @@ namespace mu2e {
     ch._nsh = 1; // 'combo' of 1 digi
     ch._pos = pos;
     ch._udir = straw.getDirection();
-    ch._vdir = _zdir.Cross(ch._udir);
     ch._wdist = dw;
-    ch._ures = dwerr;
+    ch._uvar = dwerr*dwerr;
     // initial estimate of the transverse error is the straw diameter/sqrt(12)
-    static const float invsqrt3 = 1.0/sqrt(3.0);
-    ch._vres = tt.strawOuterRadius()*invsqrt3;
-    ch._wres = ch._vres;
+    static const float inv3 = 1.0/3.0;
+    ch._wvar = ch._vvar = tt.strawOuterRadius()*tt.strawOuterRadius()*inv3;
     ch._time = time;
-    ch._timeres = tres;
+    ch._timevar = tres*tres;
     ch._edep = energy;
     ch._sid = straw.id();
     ch._dtime = dtime;

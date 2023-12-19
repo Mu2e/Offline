@@ -25,7 +25,6 @@ mainlib = helper.make_mainlib ( [
   'mu2e_DataProducts',
 
   'mu2e_DataProducts',
-  'mu2e_Mu2eInterfaces',
   'mu2e_GeneralUtilities',
   'BTrk_BaBar',
   'BTrk_MatEnv',
@@ -37,12 +36,13 @@ mainlib = helper.make_mainlib ( [
   'fhiclcpp',
   'fhiclcpp_types',
   'tbb',
-  'gsl',
   'cetlib',
   'cetlib_except',
   'CLHEP',
   'MathCore',
-  rootlibs
+  rootlibs,
+  'openblas',
+   'gsl',
   ] )
 
 
