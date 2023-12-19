@@ -173,10 +173,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     CalHelixFinderData();
     ~CalHelixFinderData();
-
-    // CalHelixFinderData(const CalHelixFinderData& Data);
-
-    // CalHelixFinderData& operator =(CalHelixFinderData const& other);
+    CalHelixFinderData(const CalHelixFinderData&) = default;
+    CalHelixFinderData& operator=(const CalHelixFinderData &) = default;
 
     const ComboHitCollection*         chcol () { return _chcol ; }
     // const StrawHitPositionCollection* shpos () { return _shpos ; }

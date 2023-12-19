@@ -18,13 +18,6 @@ namespace mu2e {
   }
 
 
-
-  //-----------------------------------------------------------------------------
-  RobustHelixFinderData::~RobustHelixFinderData() {
-    // if (_helix) delete _helix;
-    // if (_hseed) delete _hseed;
-  }
-
   //-----------------------------------------------------------------------------
   void RobustHelixFinderData::orderID(RobustHelixFinderData::ChannelID* X, RobustHelixFinderData::ChannelID* O) {
     if (X->Panel % 2 == 0) X->Face = 0;

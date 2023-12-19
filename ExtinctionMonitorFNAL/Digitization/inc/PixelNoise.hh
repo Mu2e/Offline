@@ -14,8 +14,6 @@
 
 namespace mu2e {
 
-  class ExtMonFNALConditions;
-
   namespace ExtMonFNAL {
 
     class ExtMon;
@@ -25,7 +23,7 @@ namespace mu2e {
 
       PixelNoise(art::RandomNumberGenerator::base_engine_t& rng,
                  const ExtMon **em,
-                 const ExtMonFNALConditions **cond,
+                 const int numBCs,
                  double noisePerPixelPerBC);
 
       // Adds noise hits to the collection.  Noise hits can be
@@ -37,7 +35,7 @@ namespace mu2e {
       CLHEP::RandPoissonQ poisson_;
       CLHEP::RandFlat flat_;
       const ExtMon **extmon_;
-      const ExtMonFNALConditions **cond_;
+      int numBCs_;
       double noisePerPixelPerBC_;
     };
 
