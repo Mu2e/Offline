@@ -1,0 +1,5 @@
+//Dummy file, just to test the code
+//must be replaced soon after the transition to Art
+
+2000 0 6000 10
+2200 10 6541 150
