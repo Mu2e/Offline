@@ -38,5 +38,5 @@ services.TFileService.fileName : "calibWideband.root"
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband1module.txt"
 services.ProditionsService.crvCalib.useDb: true
 services.ProditionsService.crvCalib.verbose: 2
-services.DbService.textFile : ["pedestalWideband_run004.txt"]
+services.DbService.textFile : ["pedestalWideband_test.txt"]
 services.DbService.verbose: 2

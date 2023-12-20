@@ -55,7 +55,7 @@ void calibration(const std::string &filename, int nPEpeaksToFit=1)
     //create database entry for this channel and store pedestal
     databaseEntries[channel]._pedestal=pedestal;
 
-    if(hist->GetEntries()<200) continue; //not enough entries
+    if(hist->GetEntries()<150) continue; //not enough entries
 
     int maxbin = 0;
     double maxbinContent = 0;
@@ -79,7 +79,7 @@ void calibration(const std::string &filename, int nPEpeaksToFit=1)
 
     //find other PE peaks
     std::vector<double> peaks;
-    if(peak1PE>(histType==1?250.0:7) && peak1PE<(histType==1?750.0:21))
+    if(peak1PE>(histType==1?250.0:7) && peak1PE<(histType==1?750.0:25))
     {
       peaks.push_back(peak1PE);
       for(int iPeak=2; iPeak<=nPEpeaksToFit; ++iPeak)
