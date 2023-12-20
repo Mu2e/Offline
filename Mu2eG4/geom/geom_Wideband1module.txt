@@ -38,9 +38,9 @@ int crs.precedingSectorForW1  = -1;   //no preceding sector
 
 int crs.sectorTypeW1  = 1;
 
-bool crs.sipmsAtSide0W1 = true;
+bool crs.sipmsAtSide0W1 = false;
 
-bool crs.sipmsAtSide1W1 = false;
+bool crs.sipmsAtSide1W1 = true;
 
 int crs.FEBBoxesAtSide0W1  = 0;
 

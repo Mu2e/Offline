@@ -135,8 +135,8 @@ namespace mu2e
       const CrvDigi &digi = crvDigiCollection->at(waveformIndex);
       const CRSScintillatorBarIndex &barIndex = digi.GetScintillatorBarIndex();
       int SiPM = digi.GetSiPMNumber();
-      unsigned int startTDC = digi.GetStartTDC();
-      std::vector<unsigned int> ADCs;  //FIXME
+      uint16_t startTDC = digi.GetStartTDC();
+      std::vector<int16_t> ADCs;
       std::vector<size_t> waveformIndices;
       for(size_t i=0; i<CrvDigi::NSamples; ++i) ADCs.push_back(digi.GetADCs()[i]);
       waveformIndices.push_back(waveformIndex);

@@ -105,11 +105,11 @@ physics.producers.g4run.Mu2eG4CommonCut:
 physics.producers.EWMProducer.SpillType : 0
 physics.producers.CrvSteps.stepPointsModuleLabels   : ["g4run"]
 physics.producers.CrvPhotons.crvStepModuleLabels    : ["CrvSteps"]
-physics.producers.CrvPhotons.crvStepProcessNames    : ["CrvEfficiencyWideband"]
+physics.producers.CrvPhotons.crvStepProcessNames    : ["CrvWideband4ModulesSim"]
 physics.producers.CrvPhotons.scintillationYieldVariation  : 0.054  //gaussian distribution with sigma equal to 5.4% of the mean  //from source scan of module 169
 physics.producers.CrvPhotons.scintillationYieldVariationCutoffLow  : 0.8   //the scintillation yield variation is cut off at 70% below the mean
 physics.producers.CrvPhotons.scintillationYieldVariationCutoffHigh : 1.2   //the scintillation yield variation is cut off at 120% above the mean
-physics.producers.CrvPhotons.scintillationYieldScaleFactor: 1.0
+physics.producers.CrvPhotons.scintillationYieldScaleFactor: 1.05   //1.0 works with cross talk of 0.05
 physics.producers.CrvPhotons.CRVSectors                   : [ "W1", "W2", "W3", "W4"]
 physics.producers.CrvPhotons.reflectors                   : [    0,    0,    0,    0]
 physics.producers.CrvPhotons.scintillationYields          : [39400,39400,39400,39400]
@@ -118,7 +118,7 @@ physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0
                                                              "CRVConditions/v6_0/LookupTable_6000_0",
                                                              "CRVConditions/v6_0/LookupTable_6000_0"]
 physics.producers.CrvSiPMCharges.deadSiPMProbability      : 0.0
-#physics.producers.CrvSiPMCharges.CrossTalkProb            : 0.09
+physics.producers.CrvSiPMCharges.CrossTalkProb            : 0.04
 physics.producers.CrvSiPMCharges.ThermalRate              : 0.0  #to speed up things
 physics.producers.CrvWaveforms.FEBtimeSpread              : 0.0
 physics.producers.CrvCoincidenceClusterFinder.verboseLevel: 0
