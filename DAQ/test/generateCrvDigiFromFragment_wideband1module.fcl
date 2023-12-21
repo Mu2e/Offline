@@ -56,7 +56,7 @@ outputs:
   outfile :
   {
     module_type   :   RootOutput
-    fileName      :   "digis_from_frags_crv.art"
+    fileName      :   "crvDigis.art"
   }
 }
 
