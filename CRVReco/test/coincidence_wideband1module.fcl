@@ -43,9 +43,7 @@ outputs:
 services.TFileService.fileName : "recoWideband.root"
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband1module.txt"
 services.ProditionsService.crvCalib.useDb: true
-services.ProditionsService.crvCalib.verbose: 2
-services.DbService.textFile : ["calibWideband_test.txt"]
-services.DbService.verbose: 2
+services.DbService.textFile : ["Offline/CRVConditions/data/calib_wideband1module.txt"]
 physics.producers.CrvCoincidenceClusterFinder.verboseLevel: 1
 physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
       [

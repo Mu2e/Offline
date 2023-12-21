@@ -36,8 +36,5 @@ physics :
 
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband4modules.txt"
-#services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband1module.txt"
 #services.ProditionsService.crvCalib.pedestal : 0.0                 #for special cases (100.0 is default pedestal for simulations)
-#services.ProditionsService.crvCalib.useDb: true                    #for data
-#services.DbService.textFile : ["calibWideband_test.txt"]           #for data
 #source.readParameterSets : false

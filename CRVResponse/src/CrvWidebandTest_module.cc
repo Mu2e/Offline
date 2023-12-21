@@ -279,6 +279,8 @@ namespace mu2e
         uint16_t feb            = onlineChannel.FEB();
         uint16_t febChannel     = onlineChannel.FEBchannel();
 
+        //FIXME: check the bad channel map for channels that need to be ignored
+
         _recoPEs[feb*CRVId::nChanPerFEB+febChannel]   = recoPEs;
         _recoTime[feb*CRVId::nChanPerFEB+febChannel]  = recoTime;
         _fitStatus[feb*CRVId::nChanPerFEB+febChannel] = fitStatus;
