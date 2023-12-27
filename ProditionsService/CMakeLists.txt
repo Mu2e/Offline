@@ -3,12 +3,15 @@ cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
       inc/ProditionsHandle.hh
       inc/ProditionsService.hh
     LIBRARIES INTERFACE
-      
+      BTrk_MatEnv
+      BTrk_difAlgebra
+
       Offline::AnalysisConfig
       Offline::CaloConfig
       Offline::CRVConfig
       Offline::DAQConfig
       Offline::DbTables
+      Offline::Mu2eBTrk
       Offline::Mu2eInterfaces
       Offline::SimulationConfig
       Offline::STMConfig
