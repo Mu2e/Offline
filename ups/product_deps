@@ -245,7 +245,7 @@ art_root_io         v1_13_01        s126
 art_root_io         v1_12_04        s124
 gallery             v1_22_01        s126
 gallery             v1_21_03        s124
-geant4              v4_11_1_p02b    s126
+geant4              v4_11_1_p02d    s126
 geant4              v4_11_1_p02a    s124
 xerces_c            v3_2_3e
 artdaq_core_mu2e    v2_01_02
