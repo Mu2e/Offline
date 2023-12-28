@@ -65,10 +65,9 @@ BEGIN_PROLOG
       scintillationYieldScaleFactor         : 0.42  //scale factor applied to scintillation yields to mimic aging
                                                     //0.42 results in 28.6 PE/SiPM @ 1 m away from SiPM (expected in 2025)
                                                     //used in SU2020
-      scintillationYieldVariation           : 0.1   //gaussian distribution with sigma equal to 10% of the mean
-                                                    //previously used 0.2 without upper limit
-      scintillationYieldVariationCutoffLow  : 0.7   //the scintillation yield variation is cut off at 70% below the mean
-      scintillationYieldVariationCutoffHigh : 1.2   //the scintillation yield variation is cut off at 120% above the mean
+      scintillationYieldVariation           : 0.05  //gaussian distribution with sigma equal to 5% of the mean
+      scintillationYieldVariationCutoffLow  :-0.2   //the scintillation yield variation is cut off at 20% below the mean
+      scintillationYieldVariationCutoffHigh : 0.2   //the scintillation yield variation is cut off at 20% above the mean
       digitizationStart                     :  400.0    //400ns
       digitizationEnd                       : 1750.0    //1750ns
       digitizationStartMargin               :   50.0    //50ns
@@ -81,7 +80,6 @@ BEGIN_PROLOG
       digitizationEnd              : 1750.0    //1750ns
       digitizationStartMargin      :   50.0    //50ns
 
-      deadSiPMProbability          : 0.01
       nPixelsX                     : 40
       nPixelsY                     : 40
       inactivePixels               : [ [18,18], [18,19], [18,20], [18,21],
