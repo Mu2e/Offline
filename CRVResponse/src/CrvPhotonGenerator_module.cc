@@ -4,6 +4,7 @@
 //
 // Original Author: Ralf Ehrlich
 
+#include "Offline/CRVConditions/inc/CRVScintYield.hh"
 #include "Offline/CRVResponse/inc/MakeCrvPhotons.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
@@ -99,10 +100,11 @@ namespace mu2e
     std::vector<double>                                        _scintillationYields;
     std::vector<boost::shared_ptr<mu2eCrv::MakeCrvPhotons> >   _makeCrvPhotons;
 
-    double      _scintillationYieldScaleFactor;
-    double      _scintillationYieldVariation;
-    double      _scintillationYieldVariationCutoffLow;
-    double      _scintillationYieldVariationCutoffHigh;
+    mu2e::ProditionsHandle<mu2e::CRVScintYield> _scintillationYieldMap;
+    double                                      _scintillationYieldScaleFactor;
+    double                                      _scintillationYieldVariation;
+    double                                      _scintillationYieldVariationCutoffLow;
+    double                                      _scintillationYieldVariationCutoffHigh;
 
     //On-spill
     //-Digitization window
@@ -147,8 +149,6 @@ namespace mu2e
     CLHEP::RandFlat       _randFlat;
     CLHEP::RandGaussQ     _randGaussQ;
     CLHEP::RandPoissonQ   _randPoissonQ;
-
-    std::map<CRSScintillatorBarIndex,double>  _scintillationYieldsAdjusted;
   };
 
   CrvPhotonGenerator::CrvPhotonGenerator(const Parameters& conf) :
@@ -252,12 +252,11 @@ namespace mu2e
 
   void CrvPhotonGenerator::produce(art::Event& event)
   {
-
-    _scintillationYieldsAdjusted.clear();
-
     std::unique_ptr<CrvPhotonsCollection> crvPhotonsCollection(new CrvPhotonsCollection);
 
     std::map<std::pair<mu2e::CRSScintillatorBarIndex,int>,std::vector<CrvPhotons::SinglePhoton> > photonMap;
+
+    auto const& scintillationYieldMap = _scintillationYieldMap.get(event.id());
 
     GeomHandle<CosmicRayShield> CRS;
     GlobalConstantsHandle<ParticleDataList> particleDataList;
@@ -326,22 +325,17 @@ namespace mu2e
 
           const CRSScintillatorBarId &barId = CRSbar.id();
           int CRVSectorNumber=barId.getShieldNumber();
-          if(_scintillationYieldsAdjusted.find(step.barIndex())==_scintillationYieldsAdjusted.end())
-          {
-            double sectorScintillationYield=_scintillationYields[CRVSectorNumber];
-            double adjustedYield=0;
-            do
-            {
-              adjustedYield=_randGaussQ.fire(sectorScintillationYield, sectorScintillationYield*_scintillationYieldVariation);
-            } while(adjustedYield<sectorScintillationYield*_scintillationYieldVariationCutoffLow ||
-                    adjustedYield>sectorScintillationYield*_scintillationYieldVariationCutoffHigh);
 
-            _scintillationYieldsAdjusted[step.barIndex()] = adjustedYield;
-          }
-          double currentAdjustedYield = _scintillationYieldsAdjusted[step.barIndex()];
+          //get the deviation of the scintillation yield from the nominal scintillation yield for each counter
+          float sectorScintillationYield = _scintillationYields[CRVSectorNumber];
+          float scintillationYieldDeviation = scintillationYieldMap.scintYieldDeviation(step.barIndex().asUint());
+          scintillationYieldDeviation *= _scintillationYieldVariation;
+          if(scintillationYieldDeviation<_scintillationYieldVariationCutoffLow) scintillationYieldDeviation=_scintillationYieldVariationCutoffLow;
+          if(scintillationYieldDeviation>_scintillationYieldVariationCutoffHigh) scintillationYieldDeviation=_scintillationYieldVariationCutoffHigh;
+          float adjustedScintillationYield = sectorScintillationYield + scintillationYieldDeviation*sectorScintillationYield;
 
           boost::shared_ptr<mu2eCrv::MakeCrvPhotons> &photonMaker=_makeCrvPhotons.at(CRVSectorNumber);
-          photonMaker->SetScintillationYield(currentAdjustedYield);
+          photonMaker->SetScintillationYield(adjustedScintillationYield);
           photonMaker->MakePhotons(pos1Local, pos2Local, t1, t2,
                                         avgBeta, charge,
                                         step.visibleEDep(),

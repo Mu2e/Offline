@@ -6,6 +6,12 @@ CRVOrdinal : {
    filePath : "Offline/CRVConditions/data"
 }
 
+CRVScintYield : {
+   useDb : false
+   verbose : 0
+   fileName : "Offline/CRVConditions/data/scintyield_nominal.txt"
+}
+
 CRVStatus : {
    useDb : false
    verbose : 0
