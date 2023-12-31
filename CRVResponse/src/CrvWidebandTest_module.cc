@@ -35,6 +35,118 @@
 #include <TMath.h>
 #include <TNtuple.h>
 #include <TH1F.h>
+#include <TF1.h>
+#include <TFitResult.h>
+
+namespace
+{
+double LandauGaussFunction(double *x, double *par)
+{
+    //From $ROOTSYS/tutorials/fit/langaus.C
+    //Fit parameters:
+    //par[0]=Width (scale) parameter of Landau density
+    //par[1]=Most Probable (MP, location) parameter of Landau density
+    //par[2]=Total area (integral -inf to inf, normalization constant)
+    //par[3]=Width (sigma) of convoluted Gaussian function
+    //
+    //In the Landau distribution (represented by the CERNLIB approximation),
+    //the maximum is located at x=-0.22278298 with the location parameter=0.
+    //This shift is corrected within this function, so that the actual
+    //maximum is identical to the MP parameter.
+
+    // Numeric constants
+    Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
+    Double_t mpshift  = -0.22278298;       // Landau maximum location
+
+    // Control constants
+    Double_t np = 100.0;      // number of convolution steps
+    Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
+
+    // Variables
+    Double_t xx;
+    Double_t mpc;
+    Double_t fland;
+    Double_t sum = 0.0;
+    Double_t xlow,xupp;
+    Double_t step;
+    Double_t i;
+
+    // MP shift correction
+    mpc = par[1] - mpshift * par[0];
+
+    // Range of convolution integral
+    xlow = x[0] - sc * par[3];
+    xupp = x[0] + sc * par[3];
+    step = (xupp-xlow) / np;
+
+    // Convolution integral of Landau and Gaussian by sum
+    for(i=1.0; i<=np/2; i++)
+    {
+      xx = xlow + (i-.5) * step;
+      fland = TMath::Landau(xx,mpc,par[0]) / par[0];
+      sum += fland * TMath::Gaus(x[0],xx,par[3]);
+
+      xx = xupp - (i-.5) * step;
+      fland = TMath::Landau(xx,mpc,par[0]) / par[0];
+      sum += fland * TMath::Gaus(x[0],xx,par[3]);
+    }
+
+    return (par[2] * step * sum * invsq2pi / par[3]);
+}
+void LandauGauss(TH1F &h, float &mpv, float &fwhm, float &signals, float &chi2)
+{
+    std::multimap<float,float> bins;  //binContent,binCenter
+    for(int i=8; i<=h.GetNbinsX(); i++) bins.emplace(h.GetBinContent(i),h.GetBinCenter(i));  //ordered from smallest to largest bin entries
+    if(bins.size()<4) return;
+    if(bins.rbegin()->first<20) return;  //low statistics
+    int nBins=0;
+    float binSum=0;
+    for(auto bin=bins.rbegin(); bin!=bins.rend(); ++bin)
+    {
+      nBins++;
+      binSum+=bin->second;
+      if(nBins==4) break;
+    }
+    float maxX=binSum/4;
+    float fitRangeStart=0.7*maxX;  //0.6 @ 24
+    float fitRangeEnd  =2.0*maxX;
+    if(fitRangeStart<15.0) fitRangeStart=15.0;
+
+    //Parameters
+    Double_t startValues[4], parLimitsLow[4], parLimitsHigh[4];
+    //Most probable value
+    startValues[1]=maxX;
+    parLimitsLow[1]=fitRangeStart;
+    parLimitsHigh[1]=fitRangeEnd;
+    //Area
+    startValues[2]=h.Integral(h.FindBin(fitRangeStart),h.FindBin(fitRangeEnd));
+    parLimitsLow[2]=0.01*startValues[2];
+    parLimitsHigh[2]=100*startValues[2];
+    //Other parameters
+    startValues[0]=5.0;   startValues[3]=10.0;
+    parLimitsLow[0]=2.0;  parLimitsLow[3]=2.0;
+    parLimitsHigh[0]=15.0; parLimitsHigh[3]=20.0; //7 and 15 @ 21  //6 and 13 @ 23
+
+    TF1 fit("LandauGauss",LandauGaussFunction,fitRangeStart,fitRangeEnd,4);
+    fit.SetParameters(startValues);
+    fit.SetLineColor(kRed);
+    fit.SetParNames("Width","MP","Area","GSigma");
+    for(int i=0; i<4; i++) fit.SetParLimits(i, parLimitsLow[i], parLimitsHigh[i]);
+    TFitResultPtr fr = h.Fit(&fit,"LQRS");
+    fit.Draw("same");
+
+    mpv = fit.GetMaximumX();
+    chi2 = (fr->Ndf()>0?fr->Chi2()/fr->Ndf():NAN);
+    if(mpv==fitRangeStart) {mpv=0; return;}
+    float halfMaximum = fit.Eval(mpv)/2.0;
+    float leftX = fit.GetX(halfMaximum,0.0,mpv);
+    float rightX = fit.GetX(halfMaximum,mpv,10.0*mpv);
+    fwhm = rightX-leftX;
+    signals = fit.Integral(0,150);
+}
+
+} //end anonymous namespace for LandauGauss function
+
 
 namespace mu2e
 {
@@ -93,7 +205,16 @@ namespace mu2e
     float   _trackPEs;
     float   _trackChi2;
 
+    int     _eventsRecorded{0};
+    float  *_summaryPEs{NULL};
+    float  *_summaryFWHMs{NULL};
+    float  *_summarySignals{NULL};
+    float  *_summaryChi2s{NULL};
+
+    std::vector<TH1F*> _histPEs;
+
     TTree  *_tree;
+    TTree  *_treeSummary;
 
     ProditionsHandle<CRVOrdinal> _crvChannelMap_h;
   };
@@ -107,7 +228,8 @@ namespace mu2e
     _protonBunchTimeTag(conf().protonBunchTimeTag())
   {
     art::ServiceHandle<art::TFileService> tfs;
-    _tree = tfs->make<TTree>("WidebandTree", "WidebandTree");
+    _tree = tfs->make<TTree>("run", "run");
+    _treeSummary = tfs->make<TTree>("runSummary", "runSummary");
   }
 
   CrvWidebandTest::~CrvWidebandTest()
@@ -123,6 +245,31 @@ namespace mu2e
 
   void CrvWidebandTest::endJob()
   {
+    _summaryPEs     = new float[_nFEBs*CRVId::nChanPerFEB];
+    _summaryFWHMs   = new float[_nFEBs*CRVId::nChanPerFEB];
+    _summarySignals = new float[_nFEBs*CRVId::nChanPerFEB];
+    _summaryChi2s   = new float[_nFEBs*CRVId::nChanPerFEB];
+
+    _treeSummary->Branch("runNumber",&_runNumber,"runNumber/I");
+    _treeSummary->Branch("subrunNumber",&_subrunNumber,"subrunNumber/I");
+    _treeSummary->Branch("eventsRecorded",&_eventsRecorded,"eventsRecorded/I");
+    _treeSummary->Branch("PEs",_summaryPEs,Form("PEs[%i][%i]/F",_nFEBs,(unsigned int)CRVId::nChanPerFEB));
+    _treeSummary->Branch("FWHWs",_summaryFWHMs,Form("FWHMs[%i][%i]/F",_nFEBs,(unsigned int)CRVId::nChanPerFEB));
+    _treeSummary->Branch("signals",_summarySignals,Form("signals[%i][%i]/F",_nFEBs,(unsigned int)CRVId::nChanPerFEB));
+    _treeSummary->Branch("chi2s",_summaryChi2s,Form("chi2s[%i][%i]/F",_nFEBs,(unsigned int)CRVId::nChanPerFEB));
+
+    for(int iFEB=0; iFEB<_nFEBs; ++iFEB)
+    for(int iChannel=0; iChannel<(int)CRVId::nChanPerFEB; ++iChannel)
+    {
+      int index=iFEB*CRVId::nChanPerFEB+iChannel;
+      _summaryPEs[index]=0;
+      _summaryFWHMs[index]=0;
+      _summarySignals[index]=0;
+      _summaryChi2s[index]=0;
+      LandauGauss(*_histPEs[index], _summaryPEs[index], _summaryFWHMs[index], _summarySignals[index], _summaryChi2s[index]);
+    }
+
+    _treeSummary->Fill();
   }
 
   void CrvWidebandTest::analyze(const art::Event& event)
@@ -146,6 +293,7 @@ namespace mu2e
     _runNumber = event.run();
     _subrunNumber = event.subRun();
     _eventNumber = event.event();
+    ++_eventsRecorded;
 
     auto const& crvChannelMap = _crvChannelMap_h.get(event.id());
 
@@ -208,6 +356,19 @@ namespace mu2e
       _tree->Branch("trackPoints", &_trackPoints, "trackPoints/I");
       _tree->Branch("trackPEs", &_trackPEs, "trackPEs/F");
       _tree->Branch("trackChi2", &_trackChi2, "trackChi2/F");
+
+      art::ServiceHandle<art::TFileService> tfs;
+      art::TFileDirectory tfdir = tfs->mkdir("plots");
+
+      _histPEs.resize(_nFEBs*CRVId::nChanPerFEB);
+      for(int iFEB=0; iFEB<_nFEBs; ++iFEB)
+      for(int iChannel=0; iChannel<(int)CRVId::nChanPerFEB; ++iChannel)
+      {
+        int index=iFEB*CRVId::nChanPerFEB+iChannel;
+        _histPEs[index] = tfdir.make<TH1F>(Form("PEs_%i_%i",iFEB,iChannel),
+                                           Form("PE Distribution FEB %i Channel %i;PE;Counts",iFEB,iChannel),
+                                           75,0,150);
+      }
     }
 
     //initialize track variables
@@ -279,12 +440,12 @@ namespace mu2e
         uint16_t feb            = onlineChannel.FEB();
         uint16_t febChannel     = onlineChannel.FEBchannel();
 
-        //FIXME: check the bad channel map for channels that need to be ignored
-
-        _recoPEs[feb*CRVId::nChanPerFEB+febChannel]   = recoPEs;
-        _recoTime[feb*CRVId::nChanPerFEB+febChannel]  = recoTime;
-        _fitStatus[feb*CRVId::nChanPerFEB+febChannel] = fitStatus;
-        _depositedEnergy[feb*CRVId::nChanPerFEB+febChannel] = depositedEnergy;
+        int index=feb*CRVId::nChanPerFEB+febChannel;
+        _recoPEs[index]   = recoPEs;
+        _recoTime[index]  = recoTime;
+        _fitStatus[index] = fitStatus;
+        _depositedEnergy[index] = depositedEnergy;
+        _histPEs[index]->Fill(recoPEs);
 
         counterPEs+=recoPEs;
       }
