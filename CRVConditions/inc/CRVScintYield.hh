@@ -20,23 +20,22 @@ class CRVScintYield : virtual public ProditionsEntity {
   typedef std::shared_ptr<const CRVScintYield> cptr_t;
   constexpr static const char* cxname = {"CRVScintYield"};
 
-  typedef std::vector<float> ScintYieldMap;
+  typedef std::vector<float> ScintYieldVec;
 
-  CRVScintYield(ScintYieldMap const& scintYieldMap) :
-      ProditionsEntity(cxname), _scintYieldMap(scintYieldMap) {}
+  CRVScintYield(ScintYieldVec const& svec) : ProditionsEntity(cxname), _svec(svec) {}
 
   // scintillation yield deviation (from nominal value) for a scintillator bar index
   float scintYieldDeviation(size_t barIndex) const {
-    if (barIndex >= _scintYieldMap.size()) {
+    if (barIndex >= _svec.size()) {
       throw cet::exception("CRVSCINTYIELD_BAD_SCINTILLATOR BAR INDEX")
           << "CRVScintYield::scinYieldDeviation bad barIndex requested: "
           << " barIndex=" << barIndex << "\n";
     }
-    return _scintYieldMap.at(barIndex);
+    return _svec.at(barIndex);
   }
 
  private:
-  ScintYieldMap _scintYieldMap;
+  ScintYieldVec _svec;
 };
 
 }  // namespace mu2e

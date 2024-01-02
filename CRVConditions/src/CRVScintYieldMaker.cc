@@ -1,14 +1,8 @@
 #include "Offline/CRVConditions/inc/CRVScintYieldMaker.hh"
-#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "cetlib_except/exception.h"
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <cstdint>
-#include <fstream>
 #include <iomanip>
 #include <iostream>
 
@@ -20,75 +14,53 @@ namespace mu2e {
 
 CRVScintYield::ptr_t CRVScintYieldMaker::fromFcl() {
   if (_config.verbose()) {
-    cout << "CRVScintYieldMaker::fromFcl making nominal CRVScintYield\n";
+    cout << "scintillation yield spread set to 0 for all CRV counters, because database is not used.\n";
   }
 
-  size_t nBarIndices =
-      GeomHandle<CosmicRayShield>()->getAllCRSScintillatorBars().size();
+  size_t nCounters = GeomHandle<CosmicRayShield>()->getAllCRSScintillatorBars().size();
 
-  CRVScintYield::ScintYieldMap scintYieldMap(nBarIndices,0);  // initialized to 0 (no deviation from the nominal scintillation yield)
+  CRVScintYield::ScintYieldVec svec(nCounters, 0.0);
 
-  // load the scintillation spread
-  std::string fileStub = _config.fileName();
-
-  ConfigFileLookupPolicy configFile;
-  std::string fileSpec = configFile(fileStub);
-  if (_config.verbose()) {
-    cout << "CRVScintYieldMaker::fromFcl reading from " << fileSpec << "\n";
-  }
-
-  std::ifstream scintYieldFile;
-  scintYieldFile.open(fileSpec);
-  if (!scintYieldFile.is_open()) {
-    throw cet::exception("CRVSCINTYIELD_OPEN_FAILED")
-        << " failed to open file " << fileSpec << "\n";
-  }
-
-  std::string line;
-
-  // read the header line
-  std::getline(scintYieldFile, line);
-
-  size_t nRead = 0, maxBars = 0;
-  std::vector<std::string> words;
-  while (std::getline(scintYieldFile, line)) {
-    boost::split(words, line, boost::is_any_of(" \t"),
-                 boost::token_compress_on);
-    if (words.size() != 2) {
-      throw cet::exception("CRVSCINTYIELD_BAD_FILE")
-          << " failed to read line " << line << "\n";
-    }
-    std::uint16_t barIndex = std::stoul(words[0]);
-    if (barIndex >= scintYieldMap.size()) {
-      throw cet::exception("CRVSCINTYIELD_BAD_SCINTILLATOR BAR INDEX")
-          << "CRVScintYieldMaker::fromFcl read barIndex in file that doesn't exist in geometry: "
-          << " barIndex=" << barIndex << "\n";
-    }
-    float scintYieldDeviation = std::stof(words[1]);
-    scintYieldMap.at(barIndex) = scintYieldDeviation;
-    nRead++;
-    if (barIndex > maxBars) maxBars = barIndex;
-  }
-
-  if (_config.verbose()) {
-    cout << "CRVScintYieldMaker::fromFcl bar indices read: " << nRead
-         << "  max: " << maxBars << "  geom: "  << nBarIndices << "\n";
-  }
-
-  auto ptr = make_shared<CRVScintYield>(scintYieldMap);
+  auto ptr = make_shared<CRVScintYield>(svec);
   return ptr;
 
 }  // end fromFcl
 
 //***************************************************
 
-CRVScintYield::ptr_t CRVScintYieldMaker::fromDb() {
+CRVScintYield::ptr_t CRVScintYieldMaker::fromDb(CRVScint::cptr_t sci_p) {
   if (_config.verbose()) {
-    cout << "CRVScintyieldMaker::fromDb making CRVScintYield\n";
+    cout << "CRVScintYieldMaker::fromDb making CRVScintYield\n";
   }
 
-  // no database dependence yet, so just return nominal
-  return fromFcl();
+  size_t nCounters = GeomHandle<CosmicRayShield>()->getAllCRSScintillatorBars().size();
+
+  if (_config.verbose()) {
+    cout << "CRVScintYieldMaker::fromDb checking for " << nCounters << " counters\n";
+  }
+
+  // require the db tables are the same length as geometry
+  if (sci_p->nrow() != nCounters) {
+    throw cet::exception("CRVSCINTYIELDMAKE_BAD_N_COUNTERS")
+        << "CRVScintYieldMaker::fromDb bad counter counts: "
+        << "  geometry: " << nCounters << "  CRVScint: " << sci_p->nrow() << "\n";
+  }
+
+  CRVScintYield::ScintYieldVec svec(nCounters, 0.0);
+
+  for (auto const& row : sci_p->rows()) {
+    svec[row.counter()] = row.scintYieldDeviation();
+    if (_config.verbose()) {
+      if (_config.verbose() > 1 || row.counter() < 5 ||
+          CRVId::nBars - row.counter() <= 5) {
+        cout << setw(10) << row.counter() << fixed << setprecision(3)
+             << setw(10) << row.scintYieldDeviation() << "\n";
+      }
+    }
+  }
+
+  auto ptr = make_shared<CRVScintYield>(svec);
+  return ptr;
 
 }  // end fromDb
 

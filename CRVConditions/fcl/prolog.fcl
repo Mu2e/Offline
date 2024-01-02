@@ -7,9 +7,8 @@ CRVOrdinal : {
 }
 
 CRVScintYield : {
-   useDb : false
+   useDb : false  #false sets all scintillation yield deviations to 0
    verbose : 0
-   fileName : "Offline/CRVConditions/data/scintyield_nominal.txt"
 }
 
 CRVStatus : {

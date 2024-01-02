@@ -16,8 +16,6 @@ struct CRVScintYieldConfig {
 
   fhicl::Atom<int> verbose{Name("verbose"), Comment("verbosity: 0 or 1")};
   fhicl::Atom<bool> useDb{Name("useDb"), Comment("use database or fcl")};
-  fhicl::Atom<std::string> fileName{Name("fileName"), Comment("file name containing scint yield spread")};
-
 };
 
 }  // namespace mu2e

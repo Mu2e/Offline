@@ -4,9 +4,11 @@
 //
 // Original Author: Ralf Ehrlich
 
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/CRVResponse/inc/MakeCrvWaveforms.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
 #include "Offline/ConditionsService/inc/CrvParams.hh"
@@ -64,9 +66,8 @@ namespace mu2e
     CLHEP::RandFlat                     _randFlat;
     CLHEP::RandGaussQ                   _randGaussQ;
 
-
+    mu2e::ProditionsHandle<mu2e::CRVCalib> _calib;
     std::vector<double> _digitizationPointShiftFEBsSide0, _digitizationPointShiftFEBsSide1;
-    std::vector<double> _timeShiftFEBsSide0, _timeShiftFEBsSide1;
 
     struct ChargeCluster
     {
@@ -136,6 +137,8 @@ namespace mu2e
       digitizationEnd = digitizationStart + eventWindowLength;
     }
 
+    auto const& calib = _calib.get(event.id());
+
     std::unique_ptr<CrvDigiMCCollection> crvDigiMCCollection(new CrvDigiMCCollection);
 
     art::Handle<CrvSiPMChargesCollection> crvSiPMChargesCollection;
@@ -144,8 +147,6 @@ namespace mu2e
     GeomHandle<CosmicRayShield> CRS;
     _digitizationPointShiftFEBsSide0.clear();
     _digitizationPointShiftFEBsSide1.clear();
-    _timeShiftFEBsSide0.clear();
-    _timeShiftFEBsSide1.clear();
     unsigned int nCounters = CRS->getAllCRSScintillatorBars().size();
     unsigned int nFEBs = rint(ceil(nCounters/32.0));
     for(unsigned int i=0; i<nFEBs; ++i)
@@ -155,10 +156,6 @@ namespace mu2e
       //this time is different for each FEB.
       _digitizationPointShiftFEBsSide0.emplace_back(_randFlat.fire()*_digitizationPeriod);
       _digitizationPointShiftFEBsSide1.emplace_back(_randFlat.fire()*_digitizationPeriod);
-      //the FEBs will be synchronized to account for cable length differences etc.,
-      //but there may still be small time differences between the FEBs.
-      _timeShiftFEBsSide0.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
-      _timeShiftFEBsSide1.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
     }
 
     for(CrvSiPMChargesCollection::const_iterator iter=crvSiPMChargesCollection->begin();
@@ -169,9 +166,9 @@ namespace mu2e
       unsigned int FEB=barIndex.asUint()/32.0; //assume that the counters are ordered in the correct way,
                                                //i.e. that all counters beloning to the same FEB are grouped together
 
-      double timeShiftFEB=0;
-      if(SiPM%2==0 && FEB<_timeShiftFEBsSide0.size()) timeShiftFEB=_timeShiftFEBsSide0[FEB];
-      if(SiPM%2==1 && FEB<_timeShiftFEBsSide1.size()) timeShiftFEB=_timeShiftFEBsSide1[FEB];
+      //the FEBs will be synchronized to account for cable length differences etc.,
+      //but there may still be small time differences between the FEBs.
+      double timeShiftFEB = calib.timeOffset(barIndex.asUint()*CRVId::nChanPerBar + SiPM);
 
       const std::vector<CrvSiPMCharges::SingleCharge> &timesAndCharges = iter->GetCharges();
       std::vector<ChargeCluster> chargeClusters;
