@@ -9,6 +9,7 @@
 
 #include "Offline/CRVConditions/inc/CRVScintYield.hh"
 #include "Offline/CRVConfig/inc/CRVScintYieldConfig.hh"
+#include "Offline/DbTables/inc/CRVScint.hh"
 
 namespace mu2e {
 
@@ -17,7 +18,7 @@ class CRVScintYieldMaker {
   CRVScintYieldMaker(CRVScintYieldConfig const& config) : _config(config) {}
 
   CRVScintYield::ptr_t fromFcl();
-  CRVScintYield::ptr_t fromDb();
+  CRVScintYield::ptr_t fromDb(CRVScint::cptr_t sci_p);
 
  private:
   // this object needs to be thread safe,

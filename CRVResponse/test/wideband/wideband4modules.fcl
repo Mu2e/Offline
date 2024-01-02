@@ -177,9 +177,9 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
 
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband4modules.txt"
 services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
-services.ProditionsService.crvScintYield.fileName : "Offline/CRVConditions/data/scintyield_wideband4modules.txt"
+services.ProditionsService.crvScintYield.useDb : true
 services.ProditionsService.crvStatus.useDb: true
-services.DbService.textFile : ["Offline/CRVConditions/data/status_wideband4modules.txt"]
+services.DbService.textFile : ["Offline/CRVConditions/data/status_wideband4modules.txt","Offline/CRVConditions/data/scintyield_wideband4modules.txt"]
 
 services.SeedService.baseSeed : @local::Common.BaseSeed
 services.TFileService.fileName : "nts.owner.CRV_wideband_cosmics-mc.configuration.sequencer.root"

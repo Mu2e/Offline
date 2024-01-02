@@ -100,7 +100,7 @@ namespace mu2e
     std::vector<double>                                        _scintillationYields;
     std::vector<boost::shared_ptr<mu2eCrv::MakeCrvPhotons> >   _makeCrvPhotons;
 
-    mu2e::ProditionsHandle<mu2e::CRVScintYield> _scintillationYieldMap;
+    mu2e::ProditionsHandle<mu2e::CRVScintYield> _scintillationYieldVector;
     double                                      _scintillationYieldScaleFactor;
     double                                      _scintillationYieldVariation;
     double                                      _scintillationYieldVariationCutoffLow;
@@ -256,7 +256,7 @@ namespace mu2e
 
     std::map<std::pair<mu2e::CRSScintillatorBarIndex,int>,std::vector<CrvPhotons::SinglePhoton> > photonMap;
 
-    auto const& scintillationYieldMap = _scintillationYieldMap.get(event.id());
+    auto const& scintillationYieldVector = _scintillationYieldVector.get(event.id());
 
     GeomHandle<CosmicRayShield> CRS;
     GlobalConstantsHandle<ParticleDataList> particleDataList;
@@ -328,7 +328,7 @@ namespace mu2e
 
           //get the deviation of the scintillation yield from the nominal scintillation yield for each counter
           float sectorScintillationYield = _scintillationYields[CRVSectorNumber];
-          float scintillationYieldDeviation = scintillationYieldMap.scintYieldDeviation(step.barIndex().asUint());
+          float scintillationYieldDeviation = scintillationYieldVector.scintYieldDeviation(step.barIndex().asUint());
           scintillationYieldDeviation *= _scintillationYieldVariation;
           if(scintillationYieldDeviation<_scintillationYieldVariationCutoffLow) scintillationYieldDeviation=_scintillationYieldVariationCutoffLow;
           if(scintillationYieldDeviation>_scintillationYieldVariationCutoffHigh) scintillationYieldDeviation=_scintillationYieldVariationCutoffHigh;
