@@ -12,7 +12,6 @@ helper=mu2e_helper(env);
 my_libs=['mu2e_ExtinctionMonitorFNAL_Geometry',
          'mu2e_RecoDataProducts',
          'mu2e_DataProducts',
-         'mu2e_Mu2eInterfaces',
          'art_Persistency_Common',
          'art_Persistency_Provenance',
          'art_Utilities',
@@ -25,7 +24,6 @@ my_libs=['mu2e_ExtinctionMonitorFNAL_Geometry',
 
 mainlib = helper.make_mainlib ( my_libs )
 helper.make_plugins( [ mainlib, my_libs,
-                       'mu2e_Mu2eInterfaces',
                        'art_root_io_TFileService',
                        'art_Framework_Services_Registry',
                        'art_root_io_tfile_support',

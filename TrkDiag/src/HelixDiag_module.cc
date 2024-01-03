@@ -241,7 +241,7 @@ namespace mu2e {
         std::vector<StrawDigiIndex> sdis;
         for(size_t ihh = 0;ihh < hhits.size(); ++ihh) {
           ComboHit const& hhit = hhits[ihh];
-          hhits.fillStrawDigiIndices(evt,ihh,sdis);
+          hhits.fillStrawDigiIndices(ihh,sdis);
           if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_nused += hhit.nStrawHits();
         }
         art::Ptr<SimParticle> pspp;
@@ -265,7 +265,7 @@ namespace mu2e {
             for(size_t ihh = 0;ihh < hhits.size(); ++ihh) {
               ComboHit const& hhit = hhits[ihh];
               vector<StrawDigiIndex> sdis;
-              hhits.fillStrawDigiIndices(evt,ihh,sdis);
+              hhits.fillStrawDigiIndices(ihh,sdis);
               for(auto idigi : sdis) {
                 StrawDigiMC const& mcdigi = _mcdigis->at(idigi);
                 if ( mcdigi.earlyStrawGasStep()->simParticle() == pspp ){
@@ -284,9 +284,9 @@ namespace mu2e {
                 hhinfomc._hphi = _mch.circleAzimuth(hhit.pos().z());
 
                 XYZVectorF mcdh = hhit.pos() - mchpos;
-                hhinfomc._dwire = mcdh.Dot(hhit.wdir());
+                hhinfomc._dwire = mcdh.Dot(hhit.uDir());
                 static XYZVectorF zaxis(0.0,0.0,1.0); // unit in z direction
-                XYZVectorF wtdir = zaxis.Cross(hhit.wdir()); // transverse direction to the wire
+                XYZVectorF wtdir = zaxis.Cross(hhit.uDir()); // transverse direction to the wire
                 hhinfomc._dtrans = mcdh.Dot(wtdir);
                 _hhinfomc.push_back(hhinfomc);
               }
@@ -321,7 +321,7 @@ namespace mu2e {
             hhinfo._hpos = hpos;
             hhinfo._hphi = rhel.circleAzimuth(hhit.pos().z());
             // compute the chisquared componentes for this hit
-            XYZVectorF const& wdir = hhit.wdir();
+            XYZVectorF wdir = hhit.uDir();
             XYZVectorF wtdir = GenVector::ZDir().Cross(wdir); // transverse direction to the wire
             XYZVectorF cvec = PerpVector(hhit.pos() - rhel.center(),GenVector::ZDir()); // vector from the circle center to the hit
             XYZVectorF cdir = cvec.unit(); // direction from the circle center to the hit
@@ -450,7 +450,7 @@ namespace mu2e {
       // compute the projected phi (y) error for this elipse.  Z error is always the straw width
       // create an elipse for this hit
       XYZVectorF that = XYZVectorF(-(hhit.pos().y()-rhel.centery()),(hhit.pos().x()-rhel.centerx()),0.0).unit(); // local phi direction at this hit
-      double proj = that.Dot(hhit.wdir());
+      double proj = that.Dot(hhit.uDir());
       double fcent = rhel.circleAzimuth(hhit.pos().z());
       TEllipse* te = new TEllipse(hhit.pos().z(),hhit.helixPhi()-fcent,
           hhit.vRes(), hhit.uRes()*proj/rhel.radius());
@@ -458,7 +458,7 @@ namespace mu2e {
       // mc truth
       if(_mcdiag){
         std::vector<StrawDigiIndex> sdis;
-        hhits.fillStrawDigiIndices(evt,ihit,sdis);
+        hhits.fillStrawDigiIndices(ihit,sdis);
 
         if(primary(pspp,sdis[0])){
 
@@ -491,7 +491,7 @@ namespace mu2e {
         double dphi = atan2(rpos.y(),rpos.x()) - rhel.circleAzimuth(rpos.z());
         dphi -= rint(dphi/CLHEP::twopi)*CLHEP::twopi;
         XYZVectorF that = XYZVectorF(-rpos.y(),rpos.x(),0.0).unit(); // local phi direction at this hit
-        double proj = that.Dot(ch.wdir());
+        double proj = that.Dot(ch.uDir());
         TEllipse* te = new TEllipse(ch.pos().z(),dphi,
             ch.vRes(), ch.uRes()*proj/rhel.radius());
         te->SetLineColor(kGreen);
@@ -507,7 +507,7 @@ namespace mu2e {
       double dphi = atan2(rpos.y(),rpos.x()) - rhel.circleAzimuth(rpos.z());
       dphi -= rint(dphi/CLHEP::twopi)*CLHEP::twopi;
       XYZVectorF that = XYZVectorF(-rpos.y(),rpos.x(),0.0).unit(); // local phi direction at this hit
-      double proj = that.Dot(ch.wdir());
+      double proj = that.Dot(ch.uDir());
       TEllipse* te = new TEllipse(ch.pos().z(),dphi,
           ch.vRes(), ch.uRes()*proj/rhel.radius());
       te->SetLineColor(kYellow);
@@ -523,7 +523,7 @@ namespace mu2e {
       if(_mcdiag){
         // get digi pointers from combo hits
         std::vector<StrawDigiIndex> sdis;
-        _chcol->fillStrawDigiIndices(evt,ich,sdis);
+        _chcol->fillStrawDigiIndices(ich,sdis);
         for(auto isd : sdis) {
           StrawDigiMC const& mcdigi = _mcdigis->at(isd);
           auto const& spmcp = mcdigi.earlyStrawGasStep();
@@ -646,11 +646,11 @@ namespace mu2e {
       ComboHit const& hhit = hhits[ihit];
       // create an elipse for this hit
       TEllipse* te = new TEllipse(hhit.pos().x()-pcent.x(),hhit.pos().y()-pcent.y(),
-          hhit.uRes(), hhit.vRes(),0.0,360.0, hhit.wdir().phi()*180.0/TMath::Pi());
+          hhit.uRes(), hhit.vRes(),0.0,360.0, hhit.uDir().phi()*180.0/TMath::Pi());
       // mc truth
       if(_mcdiag){
         std::vector<StrawDigiIndex> sdis;
-        hhits.fillStrawDigiIndices(evt,ihit,sdis);
+        hhits.fillStrawDigiIndices(ihit,sdis);
 
         if(primary(pspp,sdis[0])){
           if (use(hhit) ) {
@@ -704,7 +704,7 @@ namespace mu2e {
       if(_mcdiag){
         // get digi pointers from combo hits
         std::vector<StrawDigiIndex> sdis;
-        _chcol->fillStrawDigiIndices(evt,ich,sdis);
+        _chcol->fillStrawDigiIndices(ich,sdis);
         for(auto isd : sdis) {
           StrawDigiMC const& mcdigi = _mcdigis->at(isd);
           auto const& spmcp = mcdigi.earlyStrawGasStep();

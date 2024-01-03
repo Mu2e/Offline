@@ -39,7 +39,7 @@ makePH : {
   ComboHitCollection    : makeSH
   EventWindowMarker     : EWMProducer
   StrawHitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
-  StrawHitMask          : ["Noisy"]
+  StrawHitMask          : ["Dead","Noisy"]
   MaxDt                 : 45 # ns
   UseTOT                : true
   MaxWireDistDiffPull   : 5.0
@@ -57,25 +57,27 @@ makePH : {
   Unsorted              : false # sim data are sorted, VST currently not
 }
 
-# combine panel hits in a station
+# combine panel hits in a station (or plane)
 makeSTH : {
   module_type           : MakeStereoHits
   # input configuration
+  DebugLevel            : 0
   TestFlag              : true
+  FilterHits            : false
+  StereoLine            : false
   ComboHitCollection    : "makePH"
+  EventWindowMarker     : EWMProducer
   StrawHitSelectionBits : ["RadiusSelection","EnergySelection","TimeSelection"]
   StrawHitRejectionBits : []
-  # hit adding parameters
+  # hit selection parameters
   MaxDt                 : 40 # ns
   MaxDPerp              : 300 # mm
   MaxChisquared         : 20.0
   UVRes                 : 5.0 # intrinsic resolution mm
-  MinRho                : 300 # mm
-  MaxRho                : 800 # mm
-  # MVA parameters
-  DoMVA                 : false
-  MinMVA                : 0.6
-  MVA                   : { MVAWeights : "Offline/TrkHitReco/test/StereoMVA.weights.xml" }
+  MinRho                : 380 # mm
+  MaxRho                : 700 # mm
+  MinimumEnergy         : 0.0001 # MeV
+  MaximumEnergy         : 0.004 # MeV
   # parameters used to define overlapping panels
   MaxWdot               : 0.9
   MaxFaceSeparation     : 3
@@ -83,13 +85,19 @@ makeSTH : {
   SelectionMask         : "station"
 }
 
+# dummy 'stereo' module, used as a placeholder
+dummyMakeSTH : {
+  module_type : RecoNullProducer
+}
+
 # flag hits from low-energy electrons (Compton electrons, delta rays, ...)
 # First, configure the clusters
 TNTClusterer : {
-  HitDistance      : 5.0
-  SeedDistance     : 20.0
+  HitDistance      : 5
+  SeedDistance     : 20
   ClusterDiameter  : 5.0
   ClusterTime      : 20.0
+  MinClusterHits   : 1
   MaxHitTimeDiff   : 30.0
   MaxSumDistance   : 100.0
   MaxCluIterations : 10
@@ -101,52 +109,42 @@ TNTClusterer : {
   TestFlag         : true
   BackgroundMask   : []
   SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+  DistanceMethod   : 0
 }
 
 
-# Now configure the module
+# Background hit flagging
 FlagBkgHits : {
   module_type          : FlagBkgHits
-  ComboHitCollection   : "makePH"
-  StrawHitCollection   : "makeSH"
+  ComboHitCollection   : "makeSTH"
   ClusterAlgorithm     : 1
   TNTClustering        : {@table::TNTClusterer}
   MinActiveHits        : 3
   MinNPlanes           : 2
   ClusterPositionError : 10
   FilterHits           : false
-  FlagStrawHits        : true
-  FlagComboHits        : true
   BackgroundMask       : ["Background"]
-  StereoSelection      : ["Stereo","PanelCombo"]
+  OutputLevel          : "uniquepanel"
   SaveBkgClusters      : false
-  KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiag.dat"
+  KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiagStationSpatial.dat"
   KerasQuality         : 0.5
   DebugLevel           : 0
-}
-
-
-SFlagBkgHits : {
-  @table::FlagBkgHits
-  ComboHitCollection : "makeSTH"
 }
 
 # combine together
 TrkHitReco : {
   producers : {
     # normal reco
-    PBTFSD       : { @table::PBTFSD       }
+    PBTFSD        : { @table::PBTFSD       }
     makeSH        : { @table::makeSH       }
     makePH        : { @table::makePH       }
     makeSTH       : { @table::makeSTH      }
     FlagBkgHits   : { @table::FlagBkgHits  }
-    SFlagBkgHits  : { @table::SFlagBkgHits }
   }
 
   # SEQUENCES
   # production sequence to prepare hits for tracking
-  PrepareHits  : [ PBTFSD, makeSH, makePH, FlagBkgHits ]
-  SPrepareHits : [ PBTFSD, makeSH, makePH, makeSTH, SFlagBkgHits ]
+  PrepareHits  : [ PBTFSD, makeSH, makePH, makeSTH, FlagBkgHits ]
 }
 
 END_PROLOG

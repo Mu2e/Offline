@@ -319,7 +319,6 @@ CalPatRec : { @table::CalPatRec
             fitparticle                                 : @local::Particle.eminus
             fitdirection                                : @local::FitDir.downstream
             KalFit                                      : { @table::CalPatRec.CprKFFinal }
-            TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
             AddHitBackgroundBits                        : ["Dead"]
             diagPlugin : { tool_type  : "KalFinalFitDiag"
                 mcTruth       : 0

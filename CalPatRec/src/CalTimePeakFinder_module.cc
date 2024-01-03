@@ -16,10 +16,6 @@
 #include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 
-// conditions
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 
@@ -50,7 +46,6 @@ namespace mu2e {
     _printfreq       (pset.get<int>            ("printFrequency"                 )),
     _useAsFilter     (pset.get<int>            ("useAsFilter"                    )),
     _shLabel         (pset.get<string>         ("StrawHitCollectionLabel"        )),
-    _shfLabel        (pset.get<string>         ("StrawHitFlagCollectionLabel"    )),
     _ccmLabel        (pset.get<string>         ("caloClusterModuleLabel"         )),
     //    _hsel            (pset.get<vector<string> >("HitSelectionBits"               )),
     //    _bkgsel          (pset.get<vector<string> >("BackgroundSelectionBits"        )),

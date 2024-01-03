@@ -88,6 +88,7 @@ namespace mu2e {
       mu2eCePlusLeadingLog, mu2ePionCaptureAtRest, mu2eExternalRPC, mu2eInternalRPC,
       mu2eCaloCalib, mu2eunused6, mu2eunused7, mu2eunused8,
       uninitialized, NoProcess, GammaGeneralProc,
+      mu2eGammaConversion, Radioactivation,
       lastEnum,
       // An alias for backward compatibility
       mu2eHallAir = mu2eKillerVolume
@@ -143,7 +144,8 @@ namespace mu2e {
     "mu2eExternalRMC",  "mu2eFlateMinus",      "mu2eFlatePlus", "mu2eFlatPhoton", \
   "mu2eCePlusLeadingLog", "mu2ePionCaptureAtRest", "mu2eExternalRPC", "mu2eInternalRPC", \
     "mu2eCaloCalib", "mu2eunused6", "mu2eunused7", "mu2eunused8", \
-      "uninitialized", "NoProcess", "GammaGeneralProc"
+      "uninitialized", "NoProcess", "GammaGeneralProc", \
+      "mu2eGammaConversion","Radioactivation"
 #endif
 
   public:

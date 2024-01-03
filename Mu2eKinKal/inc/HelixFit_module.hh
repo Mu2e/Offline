@@ -125,7 +125,6 @@ namespace mu2e {
       std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
       art::ProductToken<ComboHitCollection> chcol_T_;
       art::ProductToken<CaloClusterCollection> cccol_T_;
-      art::ProductToken<StrawHitFlagCollection> shfcol_T_;
       TrkFitFlag goodseed_;
       bool saveall_;
       ProditionsHandle<StrawResponse> strawResponse_h_;
@@ -149,7 +148,6 @@ namespace mu2e {
     fitflag_(fitflag),
     chcol_T_(consumes<ComboHitCollection>(settings().modSettings().comboHitCollection())),
     cccol_T_(mayConsume<CaloClusterCollection>(settings().modSettings().caloClusterCollection())),
-    shfcol_T_(mayConsume<StrawHitFlagCollection>(settings().modSettings().strawHitFlagCollection())),
     goodseed_(settings().modSettings().seedFlags()),
     saveall_(settings().modSettings().saveAll()),
     print_(settings().modSettings().printLevel()),
@@ -248,13 +246,14 @@ namespace mu2e {
           PKTRAJ pseedtraj(seedtraj);
           // first, we need to unwind the combohits.  We use this also to find the time range
           StrawHitIndexCollection strawHitIdxs;
-          auto const& hhits = hseed.hits();
-          for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){ hhits.fillStrawHitIndices(event,ihit,strawHitIdxs); }
+          auto chcolptr = hseed.hits().fillStrawHitIndices(strawHitIdxs, StrawIdMask::uniquestraw);
+          if(chcolptr != &chcol)
+            throw cet::exception("RECO")<<"mu2e::KKHelixFit: inconsistent ComboHitCollection" << std::endl;
           // next, build straw hits and materials from these
           KKSTRAWHITCOL strawhits;
+          strawhits.reserve(strawHitIdxs.size());
           KKSTRAWXINGCOL strawxings;
-          strawhits.reserve(hhits.size());
-          strawxings.reserve(hhits.size());
+          strawxings.reserve(strawHitIdxs.size());
           kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
           // optionally (and if present) add the CaloCluster as a constraint
           // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO

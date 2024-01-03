@@ -71,12 +71,12 @@ using namespace ROOT::Math::VectorUtil;
 
 namespace {
   // comparison functor for sorting by z
-  struct zcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
+  struct zcomp {
     bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
 
   // comparison functor for sorting byuniquePanel ID
-  struct panelcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
+  struct panelcomp {
     bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1.strawId().uniquePanel() < p2.strawId().uniquePanel(); }
   };
   struct HelixHitMVA
@@ -139,7 +139,6 @@ namespace mu2e {
         fhicl::Atom<float>                    MinMVA{               Name("MinMVA"),               Comment("Minimum MVA output to define an outlier") };
         fhicl::Atom<bool>                     UseTripletArea{       Name("UseTripletArea"),       Comment("Use triplet area flag") };
         fhicl::Atom<art::InputTag>            ComboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
-        fhicl::Atom<art::InputTag>            chfCollTag          { Name("chfCollTag")          , Comment("ComboHit flag collection tag") };
         fhicl::Atom<art::InputTag>            TimeClusterCollection{Name("TimeClusterCollection"),Comment("TimeCluster collection name") };
         fhicl::Sequence<std::string>          HitSelectionBits{     Name("HitSelectionBits"),     Comment("Hit selection bits") };
         fhicl::Sequence<std::string>          HitBackgroundBits{    Name("HitBackgroundBits"),    Comment("Hit background bits") };
@@ -189,7 +188,6 @@ namespace mu2e {
 
       art::ProductToken<ComboHitCollection>     const _chToken;
       art::ProductToken<TimeClusterCollection>  const _tcToken;
-      art::InputTag                                   _chfCollTag;
 
       StrawHitFlag  _hsel, _hbkg;
 
@@ -264,7 +262,6 @@ namespace mu2e {
     _useTripletAreaWt(config().UseTripletArea()),
     _chToken     {consumes<ComboHitCollection>(config().ComboHitCollection()) },
     _tcToken     {consumes<TimeClusterCollection>(config().TimeClusterCollection()) },
-    _chfCollTag  {config().chfCollTag()},
     _hsel        (config().HitSelectionBits()),
     _hbkg        (config().HitBackgroundBits()),
     _stmva       (config().HelixStereoHitMVA()),
@@ -274,8 +271,6 @@ namespace mu2e {
     _outlier     (StrawHitFlag::outlier),
     _updateStereo(config().UpdateStereo())
     {
-      consumes<StrawHitFlagCollection>(_chfCollTag);
-
       std::vector<int> helvals = config().Helicities();
       for(auto hv : helvals) {
         Helicity hel(hv);
@@ -331,13 +326,6 @@ namespace mu2e {
     auto const& chH = event.getValidHandle(_chToken);
     const ComboHitCollection& chcol(*chH);
     _hfResult._chcol  = &chcol;
-
-    _hfResult._chfcol = nullptr;
-    if (! _chfCollTag.empty()) {
-      art::Handle<mu2e::StrawHitFlagCollection> chfcH;
-      event.getByLabel(_chfCollTag,chfcH);
-      if (chfcH.isValid()) _hfResult._chfcol = chfcH.product();
-    }
 
    // create output: separate by helicity
     std::map<Helicity,unique_ptr<HelixSeedCollection>> helcols;
@@ -549,7 +537,7 @@ namespace mu2e {
 
       if (hhit->_flag.hasAnyProperty(_outlier))   continue;
 
-      const XYZVectorF& wdir = hhit->wdir();
+      XYZVectorF wdir = hhit->uDir();
       XYZVectorF wtdir = zaxis.Cross(wdir); // transverse direction to the wire
       XYZVectorF cvec = PerpVector(hhit->pos() - helix.center(),GenVector::ZDir());// direction from the circle center to the hit
       XYZVectorF cdir = cvec.Unit();        // direction from the circle center to the hit
@@ -642,7 +630,7 @@ namespace mu2e {
         float hphi = polyAtan2(hit->pos().y(),hit->pos().x());//phi();
         float dphi = fabs(Angles::deltaPhi(hphi,helix.fcent()));
 
-        const XYZVectorF& wdir = hit->wdir();
+        XYZVectorF wdir = hit->uDir();
         XYZVectorF wtdir = zaxis.Cross(wdir);   // transverse direction to the wire
         XYZVectorF cvec = PerpVector(hit->pos() - helix.center(),GenVector::ZDir()); // direction from the circle center to the hit
         XYZVectorF cdir = cvec.Unit();          // direction from the circle center to the hit
@@ -808,16 +796,6 @@ namespace mu2e {
     for (int i=0; i<size; ++i) {
       int loc             = shIndices[i];
       ComboHit ch((*_hfResult._chcol )[loc]);
-//-----------------------------------------------------------------------------
-// if external flag collection defined, merge the flags from there
-// by default, it is assumed that the compton hit tagger, FlagBkgHits or DeltaFinder,
-// writes out a filtered combo hit collection which consists only of 'good' hits
-// before the definition of 'good' is understood, need to write out all hits
-// that is supposed to reduce the collection length and improve the performance
-// make sure can do comparisons
-//-----------------------------------------------------------------------------
-      if (_hfResult._chfcol != nullptr) ch._flag.merge((*_hfResult._chfcol)[loc]);
-
       if (ch.flag().hasAnyProperty(_hsel) && !ch.flag().hasAnyProperty(_hbkg) ) {
         ordChCol.push_back(ch);
       }
@@ -972,7 +950,7 @@ unsigned  RobustHelixFinder::filterCircleHits(RobustHelixFinderData& helixData)
       bool oldout = hit->_flag.hasAnyProperty(_outlier);
       hit->_flag.clear(_outlier);
 
-      const XYZVectorF& wdir = hit->wdir();
+      XYZVectorF wdir = hit->uDir();
       XYZVectorF cvec = PerpVector(hit->pos() - helix.center(),GenVector::ZDir()); // direction from the circle center to the hit
       XYZVectorF cdir = cvec.Unit(); // direction from the circle center to the hit
       float rwdot = wdir.Dot(cdir); // compare directions of radius and wire
@@ -1029,7 +1007,7 @@ unsigned  RobustHelixFinder::filterCircleHits(RobustHelixFinderData& helixData)
 
       if(oldoutBest) ++changed;
 
-      if (chCounter < RobustHelixFinderData::kMaxResidIndex) {
+      if (chCounter < float(RobustHelixFinderData::kMaxResidIndex)) {
         drBestVec   [int(chCounter)] = drBest;
         rwdotBestVec[int(chCounter)] = rwdotBest;
       }

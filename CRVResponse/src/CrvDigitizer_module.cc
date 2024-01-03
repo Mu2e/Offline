@@ -10,9 +10,7 @@
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/CrvParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
@@ -49,7 +47,6 @@ namespace mu2e
     private:
     boost::shared_ptr<mu2eCrv::MakeCrvDigis> _makeCrvDigis;
 
-    double      _digitizationPeriod;
     std::string _crvWaveformsModuleLabel;
     double      _ADCconversionFactor;
     int         _pedestal;
@@ -75,8 +72,6 @@ namespace mu2e
 
   void CrvDigitizer::beginRun(art::Run &run)
   {
-    mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
-    _digitizationPeriod  = crvPar->digitizationPeriod;
   }
 
   void CrvDigitizer::produce(art::Event& event)
@@ -104,7 +99,7 @@ namespace mu2e
       std::vector<double> voltageVector;
       for(size_t i=0; i<voltages.size(); i++) voltageVector.push_back(voltages[i]);
 
-      _makeCrvDigis->SetWaveform(voltageVector,_ADCconversionFactor,_pedestal, startTime, _digitizationPeriod);
+      _makeCrvDigis->SetWaveform(voltageVector,_ADCconversionFactor,_pedestal, startTime, CRVDigitizationPeriod);
       const std::vector<int16_t> &ADCs = _makeCrvDigis->GetADCs();
       uint16_t startTDC = _makeCrvDigis->GetTDC();
 

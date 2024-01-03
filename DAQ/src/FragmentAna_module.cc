@@ -14,9 +14,9 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileDirectory.h"
 #include "art_root_io/TFileService.h"
-#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
-#include "artdaq-core-mu2e/Data/TrackerFragment.hh"
+#include "artdaq-core-mu2e/Data/TrackerDataDecoder.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 #include <artdaq-core/Data/Fragment.hh>
@@ -52,8 +52,8 @@ public:
   virtual void analyze(const art::Event& e) override;
 
 private:
-  void analyze_tracker_(const mu2e::TrackerFragment& cc);
-  void analyze_calorimeter_(const mu2e::CalorimeterFragment& cc);
+  void analyze_tracker_(const mu2e::TrackerDataDecoder& cc);
+  void analyze_calorimeter_(const mu2e::CalorimeterDataDecoder& cc);
 
   int diagLevel_;
 
@@ -134,8 +134,8 @@ void FragmentAna::analyze(const art::Event& event) {
   size_t numTrkFrags = 0;
   size_t numCalFrags = 0;
 
-  auto caloFragmentsH = event.getValidHandle<std::vector<mu2e::CalorimeterFragment>>(caloFragmentsTag_);
-  auto trkFragmentsH  = event.getValidHandle<std::vector<mu2e::TrackerFragment>>    (trkFragmentsTag_);
+  auto caloFragmentsH = event.getValidHandle<std::vector<mu2e::CalorimeterDataDecoder>>(caloFragmentsTag_);
+  auto trkFragmentsH  = event.getValidHandle<std::vector<mu2e::TrackerDataDecoder>>    (trkFragmentsTag_);
 
   for (auto frag : *trkFragmentsH) {
     analyze_tracker_(frag);
@@ -175,7 +175,7 @@ void FragmentAna::analyze(const art::Event& event) {
   }
 }
 
-void FragmentAna::analyze_tracker_(const mu2e::TrackerFragment& cc) {
+void FragmentAna::analyze_tracker_(const mu2e::TrackerDataDecoder& cc) {
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
@@ -244,7 +244,7 @@ void FragmentAna::analyze_tracker_(const mu2e::TrackerFragment& cc) {
   // cc.ClearUpgradedPackets();
 }
 
-void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterFragment& cc) {
+void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterDataDecoder& cc) {
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
@@ -274,23 +274,15 @@ void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterFragment& cc) {
 
     if (hdr->GetPacketCount() > 0 && parseCAL_ > 0) { // Parse phyiscs information from CAL packets
 
-      auto calData = cc.GetCalorimeterData(curBlockIdx);
-      if (calData == nullptr) {
+      auto calHitDataVec = cc.GetCalorimeterHitData(curBlockIdx);
+      if (calHitDataVec== nullptr) {
         mf::LogError("FragmentAna") << "Error retrieving Calorimeter data from block "
                                     << curBlockIdx << "! Aborting processing of this block!";
         continue;
       }
 
-      if (diagLevel_ > 0) {
-        std::cout << "[StrawAndCaloDigiFromFragments] NEW CALDATA: NumberOfHits "
-                  << calData->NumberOfHits << std::endl;
-      }
-
-      auto hits = cc.GetCalorimeterHits(curBlockIdx);
-
-      bool err = false;
-      for (auto& hit : hits) {
-
+      for (unsigned int i = 0; i < calHitDataVec->size(); i++) {
+        std::pair<CalorimeterDataDecoder::CalorimeterHitDataPacket, std::vector<uint16_t>> hitDataPair = calHitDataVec->at(i);
         // Fill the CaloDigiCollection
 
         // IMPORTANT NOTE: we don't have a final
@@ -300,16 +292,15 @@ void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterFragment& cc) {
         // Also, note that until we have an actual map, channel index does not actually correspond
         // to the physical readout channel on a ROC.
 
-        uint16_t crystalID = hit.first.DIRACB & 0x0FFF;
-        uint16_t roId = hit.first.DIRACB >> 12;
+        uint16_t crystalID = hitDataPair.first.DIRACB & 0x0FFF;
+        uint16_t roId = hitDataPair.first.DIRACB >> 12;
         _hCalROId->Fill(crystalID * 2 + roId);
-        _hCalT0->Fill(hit.first.Time);
-        _hCalPeakPos->Fill(hit.first.IndexOfMaxDigitizerSample);
-        _hCalWfSize->Fill(hit.second.size());
+        _hCalT0->Fill(hitDataPair.first.Time);
+        _hCalPeakPos->Fill(hitDataPair.first.IndexOfMaxDigitizerSample);
+        _hCalWfSize->Fill(hitDataPair.second.size());
 
       } // End loop over readout channels in DataBlock
-      if (err)
-        continue;
+
     }
   }
 }

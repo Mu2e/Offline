@@ -13,7 +13,7 @@
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Data/CRVFragment.hh"
+#include "artdaq-core-mu2e/Data/CRVDataDecoder.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
 #include <iostream>
@@ -35,7 +35,7 @@ class art::CrvDigisFromFragments : public EDProducer
   struct Config
   {
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
-    fhicl::Atom<art::InputTag> crvFragmentsTag{fhicl::Name("crvTag"),
+    fhicl::Atom<art::InputTag> CRVDataDecodersTag{fhicl::Name("crvTag"),
                                                fhicl::Comment("crv Fragments Tag")};
   };
 
@@ -51,7 +51,7 @@ class art::CrvDigisFromFragments : public EDProducer
   int16_t decompressCrvDigi(int16_t adc);
 
   int                                      _diagLevel;
-  art::InputTag                            _crvFragmentsTag;
+  art::InputTag                            _CRVDataDecodersTag;
   mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
 
 }; // CrvDigisFromFragments
@@ -59,7 +59,7 @@ class art::CrvDigisFromFragments : public EDProducer
 // ======================================================================
 
 CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config>& config) :
-    art::EDProducer{config}, _diagLevel(config().diagLevel()), _crvFragmentsTag(config().crvFragmentsTag())
+    art::EDProducer{config}, _diagLevel(config().diagLevel()), _CRVDataDecodersTag(config().CRVDataDecodersTag())
 {
   produces<mu2e::CrvDigiCollection>();
 }
@@ -76,17 +76,17 @@ void CrvDigisFromFragments::produce(Event& event)
 {
   art::EventNumber_t eventNumber = event.event();
 
-  auto crvFragments = event.getValidHandle<std::vector<mu2e::CRVFragment> >(_crvFragmentsTag);
-  size_t numCrvFrags = crvFragments->size();
+  auto CRVDataDecoders = event.getValidHandle<std::vector<mu2e::CRVDataDecoder> >(_CRVDataDecodersTag);
+  size_t numCrvFrags = CRVDataDecoders->size();
 
   if(_diagLevel>1)
   {
     std::cout << std::dec << "Producer: Run " << event.run() << ", subrun " << event.subRun()
               << ", event " << eventNumber << " has " << std::endl;
-    std::cout << crvFragments->size() << " CRV fragments." << std::endl;
+    std::cout << CRVDataDecoders->size() << " CRV fragments." << std::endl;
 
     size_t totalSize = 0;
-    for(auto frag : *crvFragments)
+    for(auto frag : *CRVDataDecoders)
     {
       for(size_t i = 0; i < frag.block_count(); ++i)
       {
@@ -105,12 +105,12 @@ void CrvDigisFromFragments::produce(Event& event)
   // Loop over the CRV fragments
   for(size_t idx = 0; idx < numCrvFrags; ++idx)
   {
-    const mu2e::CRVFragment& crvFragment((*crvFragments)[idx]);
-    crvFragment.setup_event();
+    const mu2e::CRVDataDecoder& CRVDataDecoder((*CRVDataDecoders)[idx]);
+    CRVDataDecoder.setup_event();
 
-    for(size_t iDataBlock = 0; iDataBlock < crvFragment.block_count(); ++iDataBlock)
+    for(size_t iDataBlock = 0; iDataBlock < CRVDataDecoder.block_count(); ++iDataBlock)
     {
-      auto block = crvFragment.dataAtBlockIndex(iDataBlock);
+      auto block = CRVDataDecoder.dataAtBlockIndex(iDataBlock);
       if(block == nullptr)
       {
         std::cerr << "Unable to retrieve block " << iDataBlock << "!" << std::endl;
@@ -124,14 +124,14 @@ void CrvDigisFromFragments::produce(Event& event)
 
       if(header->GetPacketCount() > 0)
       {
-        auto crvRocHeader = crvFragment.GetCRVROCStatusPacket(iDataBlock);
+        auto crvRocHeader = CRVDataDecoder.GetCRVROCStatusPacket(iDataBlock);
         if(crvRocHeader == nullptr)
         {
           std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock " << iDataBlock << std::endl;
           continue;
         }
 
-        auto crvHits = crvFragment.GetCRVHits(iDataBlock);
+        auto crvHits = CRVDataDecoder.GetCRVHits(iDataBlock);
         for(auto const& crvHit : crvHits)
         {
           const auto& crvHitInfo = crvHit.first;
@@ -209,7 +209,7 @@ void CrvDigisFromFragments::produce(Event& event)
           } // loop over hits
         }   // debug output
       }     // end parsing CRV DataBlocks
-    }       // loop over DataBlocks within CRVFragments
+    }       // loop over DataBlocks within CRVDataDecoders
   }         // Close loop over fragments
 
   // Store the straw digis and calo digis in the event

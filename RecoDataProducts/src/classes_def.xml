@@ -83,10 +83,27 @@
 
  <class name="mu2e::ComboHit"/>
  <class name="std::vector<mu2e::ComboHit>"/>
+ <class name="art::ProductPtr<mu2e::ComboHitCollection>"/>
  <class name="mu2e::ComboHitCollection"/>
  <class name="std::vector<art::Ptr<mu2e::ComboHit> >"/>
  <class name="art::Ptr<mu2e::ComboHit>"/>
  <class name="art::Wrapper<mu2e::ComboHitCollection>"/>
+
+<ioread sourceClass="mu2e::ComboHitCollection"
+        source="art::ProductID _parent;"
+        checksum="[1576381797]"
+        targetClass="mu2e::ComboHitCollection"
+        target="_parent"
+        include="canvas/Persistency/Provenance/ProductID.h, canvas/Persistency/Common/ProductPtr.h">
+<![CDATA[
+  if (onfile._parent.isValid()) {
+    _parent = art::ProductPtr<mu2e::ComboHitCollection>{onfile._parent, nullptr};
+  }
+  else {
+    _parent = {};
+  }
+]]>
+</ioread>
 
  <class name="mu2e::HelixHit"/>
  <class name="mu2e::HelixHitCollection"/>

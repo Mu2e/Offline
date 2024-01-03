@@ -599,7 +599,7 @@ bool RobustHelixFit::initFZ_2(RobustHelixFinderData& HelixData) {
   // Part 2: perform a more accurate estimate - straight line fit
   //-----------------------------------------------------------------------------
   if (nstations_with_hits < 2) return false;//hdfdz = _mpDfDz;
-  else                         hdfdz = xmp*rhel.helicity()._value;
+  else                         hdfdz = xmp*float(rhel.helicity()._value);
   //-----------------------------------------------------------------------------
   // last step - determine phi0 = phi(z=0)
   //-----------------------------------------------------------------------------
@@ -880,7 +880,7 @@ bool RobustHelixFit::initFZ_from_dzFrequency(RobustHelixFinderData& HelixData, i
 
   int                peaks_found(0);
   std::vector<float> swmax(_initFZFrequencyNMaxPeaks), xmp(_initFZFrequencyNMaxPeaks), sigma(_initFZFrequencyNMaxPeaks);
-  std::vector<int>   indexPeak;(_initFZFrequencyNMaxPeaks);
+  std::vector<int>   indexPeak(_initFZFrequencyNMaxPeaks);
   int                first_peak(-1);
   float              minNCounts(10.);
 

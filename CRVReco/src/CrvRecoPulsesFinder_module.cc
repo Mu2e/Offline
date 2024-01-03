@@ -9,8 +9,7 @@
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
-#include "Offline/ConditionsService/inc/CrvParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -75,7 +74,6 @@ namespace mu2e
     boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> _makeCrvRecoPulses;
 
     std::string _crvDigiModuleLabel;
-    float       _digitizationPeriod;
     art::InputTag _protonBunchTimeTag;
 
     ProditionsHandle<CRVCalib> _calib_h;
@@ -111,8 +109,6 @@ namespace mu2e
 
   void CrvRecoPulsesFinder::beginRun(art::Run &run)
   {
-    mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
-    _digitizationPeriod = crvPar->digitizationPeriod;
   }
 
   void CrvRecoPulsesFinder::produce(art::Event& event)
@@ -159,7 +155,7 @@ namespace mu2e
       double calibPulseHeight = calib.pulseHeight(channel);
       double timeOffset = calib.timeOffset(channel);
 
-      _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, _digitizationPeriod, pedestal, calibPulseArea, calibPulseHeight);
+      _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, CRVDigitizationPeriod, pedestal, calibPulseArea, calibPulseHeight);
 
       size_t n = _makeCrvRecoPulses->GetPEs().size();
       for(size_t j=0; j<n; ++j)

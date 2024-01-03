@@ -11,11 +11,9 @@ CommonMCTrigger : {
     SaveEnergySteps : false
     SaveUnusedDigiMCs : false
     SaveAllUnusedDigiMCs : false
-    UseStrawHitFlagCollection: false
     PrimaryParticle : "compressDigiMCs"
     StrawDigiCollection : "makeSD"
-    StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
-    ComboHitCollection : "TTmakeSH"
+    ComboHitCollection : "TTflagBkgHits"
     CaloDigiCollection : "CaloDigiMaker"
     CaloClusterCollection : "CaloClusterFast"
     StrawDigiMCCollection : "compressDigiMCs"
