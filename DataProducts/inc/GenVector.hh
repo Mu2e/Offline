@@ -2,10 +2,12 @@
 #define RecoDataProducts_GenVector
 // typedef for cartesian vector used in reconstruction
 /// root
+#include "Math/Vector2D.h"
 #include "Math/Vector3D.h"
 #include "Math/Vector4D.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
+using ROOT::Math::XYVectorF;
 using ROOT::Math::XYZVectorF;
 using ROOT::Math::XYZTVectorF;
 using ROOT::Math::XYZVectorD;

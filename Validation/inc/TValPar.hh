@@ -7,8 +7,6 @@ class TValPar : public TObject {
  public:
   TValPar() { Clear(); }
 
-  ~TValPar() {}
-
   Int_t GetMode() const { return fMode; }
   Int_t GetIndependent() const { return fIndep; }
   Double_t GetScale1() const { return fScale1; }

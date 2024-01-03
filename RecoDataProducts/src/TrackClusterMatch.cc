@@ -55,9 +55,6 @@ namespace mu2e {
     _sint      = Data->sint;
   }
 
-  TrackClusterMatch::~TrackClusterMatch() {
-  }
-
 
 //-----------------------------------------------------------------------------
   void TrackClusterMatch::print(const char* Option) const {

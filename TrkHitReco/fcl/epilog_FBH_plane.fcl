@@ -1,0 +1,4 @@
+#
+#  Post-prolog switch to output plane-level ComboHits from FlagBkgHits
+#
+physics.producers.FlagBkgHits.OutputLevel : "plane"

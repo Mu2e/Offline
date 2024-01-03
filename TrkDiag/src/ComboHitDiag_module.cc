@@ -14,6 +14,8 @@
 #include "art_root_io/TFileService.h"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 // root
 #include "TMath.h"
 #include "TH1F.h"
@@ -25,16 +27,17 @@
 #include "TTree.h"
 // data
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 // Utilities
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
 // diagnostics
 #include "Offline/TrkDiag/inc/ComboHitInfo.hh"
 #include <map>
+#include <limits>
 
 namespace mu2e
 {
@@ -49,9 +52,7 @@ namespace mu2e
         fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug"),0 };
         fhicl::Atom<bool> mcdiag{ Name("MCDiag"), Comment("MonteCarlo Diag"), true };
         fhicl::Atom<bool> digidiag{ Name("digiDiag"), Comment("Digi Diag"), true };
-        fhicl::Atom<bool> useflagcol{ Name("useFlagCollection"), Comment("UseFlagCollection"), false };
         fhicl::Atom<art::InputTag> ComboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
-        fhicl::Atom<art::InputTag> StrawHitFlagCollection{   Name("StrawHitFlagCollection"),   Comment("StrawHitFlag collection name") };
         fhicl::Atom<art::InputTag> StrawDigiCollection{   Name("StrawDigiCollection"),   Comment("StrawDigi collection name") };
         fhicl::Atom<art::InputTag> StrawDigiMCCollection{   Name("StrawDigiMCCollection"),   Comment("StrawDigiMC collection name") };
         fhicl::Atom<art::InputTag> MCPrimary{ Name("MCPrimary"),Comment("MC Primary Particle") };
@@ -64,17 +65,15 @@ namespace mu2e
     private:
       // configuration
       int _diag;
-      bool _mcdiag, _digidiag, _useflagcol;
+      bool _mcdiag, _digidiag;
       // event object Tags
       art::ProductToken<ComboHitCollection> _chToken;
-      art::ProductToken<StrawHitFlagCollection> _shfToken;
       art::ProductToken<StrawDigiMCCollection> _mcdigisToken;
       art::ProductToken<StrawDigiCollection> _digisToken;
       art::ProductToken<StrawDigiADCWaveformCollection> _digiadcsToken;
       art::ProductToken<PrimaryParticle> _mcprimaryToken;
      // event data cache
       const ComboHitCollection* _chcol;
-      const StrawHitFlagCollection* _shfcol;
       const StrawDigiMCCollection *_mcdigis;
       const StrawDigiCollection *_digis;
       const StrawDigiADCWaveformCollection *_digiadcs;
@@ -84,11 +83,9 @@ namespace mu2e
       int _evt; // add event id
       XYZVectorF _pos; // average position
       XYZVectorF _udir; // direction at this position (typically the wire direction)
-      float _udist; // distance from wire center along this direction
-      float _ures; // estimated error along this direction
-      float _vres; // estimated error
-      float _wres; // estimated error perpendicular to this direction
-      float _tres; // estimated time error
+      XYZVectorF _hdir; // hit direction (generally Z)
+      float _wdist; // distance from wire center along this direction
+      float _ures, _vres, _wres, _tres, _hcostres, _hphires; // estimated resolution
       float _etime[2]; // end times
       float _ctime; // corrected time
       float _dtime, _ptime; // drift and propagation times: these should be end-specific, TODO
@@ -99,10 +96,10 @@ namespace mu2e
       int _nsh, _nch; // number of associated straw hits
       int _strawid, _straw, _panel, _plane, _level; // strawid info
       int _eend;
-      int _esel,_rsel, _tsel, _nsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
+      int _esel,_rsel, _tsel, _nsel,  _bkgclust, _bkg, _sth, _ph, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
       // mc diag
       XYZVectorF _mcpos, _mcmom;
-      float _mctime, _mcudist;
+      float _mctime, _mcwdist;
       int _mcpdg, _mcproc, _mcgen, _mcndigi;
       int _prel;
 
@@ -128,9 +125,7 @@ namespace mu2e
     _diag( config().diag() ),
     _mcdiag( config().mcdiag() ),
     _digidiag( config().digidiag() ),
-    _useflagcol( config().useflagcol() ),
     _chToken{ consumes<ComboHitCollection>(config().ComboHitCollection() ) },
-    _shfToken{ consumes<StrawHitFlagCollection>(config().StrawHitFlagCollection() ) },
     _mcdigisToken{ consumes<StrawDigiMCCollection>(config().StrawDigiMCCollection() ) },
     _digisToken{ consumes<StrawDigiCollection>(config().StrawDigiCollection() ) },
     _digiadcsToken{ consumes<StrawDigiADCWaveformCollection>(config().StrawDigiCollection() ) },
@@ -145,13 +140,15 @@ namespace mu2e
     // detailed diagnostics
     _chdiag=tfs->make<TTree>("chdiag","combo hit diagnostics");
     _chdiag->Branch("evt",&_evt,"evt/I");  // add event id
-    _chdiag->Branch("udist",&_udist,"udist/F");
+    _chdiag->Branch("wdist",&_wdist,"wdist/F");
     _chdiag->Branch("pos.",&_pos);
     _chdiag->Branch("udir.",&_udir);
-    _chdiag->Branch("udist",&_udist,"udist/F");
+    _chdiag->Branch("hdir.",&_hdir);
     _chdiag->Branch("ures",&_ures,"ures/F");
     _chdiag->Branch("vres",&_vres,"vres/F");
     _chdiag->Branch("wres",&_wres,"wres/F");
+    _chdiag->Branch("hcostres",&_hcostres,"hcostres/F");
+    _chdiag->Branch("hphires",&_hphires,"hphires/F");
     _chdiag->Branch("tres",&_tres,"tres/F");
     _chdiag->Branch("etime",&_etime,"etimecal/F:etimehv");
     _chdiag->Branch("ctime",&_ctime,"ctime/F");
@@ -169,7 +166,8 @@ namespace mu2e
     _chdiag->Branch("nsel",&_nsel,"nsel/I");
     _chdiag->Branch("bkgclust",&_bkgclust,"bkgclust/I");
     _chdiag->Branch("bkg",&_bkg,"bkg/I");
-    _chdiag->Branch("stereo",&_stereo,"stereo/I");
+    _chdiag->Branch("sth",&_sth,"sth/I");
+    _chdiag->Branch("ph",&_ph,"ph/I");
     _chdiag->Branch("tdiv",&_tdiv,"tdiv/I");
     _chdiag->Branch("strawxtalk",&_strawxtalk,"strawxtalk/I");
     _chdiag->Branch("elecxtalk",&_elecxtalk,"elecxtalk/I");
@@ -187,7 +185,7 @@ namespace mu2e
       _chdiag->Branch("mcpos.",&_mcpos);
       _chdiag->Branch("mcmom",&_mcmom);
       _chdiag->Branch("mctime",&_mctime,"mctime/F");
-      _chdiag->Branch("mcudist",&_mcudist,"mcudist/F");
+      _chdiag->Branch("mcudist",&_mcwdist,"mcudist/F");
       _chdiag->Branch("mcfrac",&_mcfrac,"mcfrac/F");
       _chdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
       _chdiag->Branch("mcproc",&_mcproc,"mcproc/I");
@@ -210,10 +208,11 @@ namespace mu2e
   }
 
   void ComboHitDiag::analyze(const art::Event& evt ) {
+    // conditions
+    StrawElectronics const& strawele = _strawele_h.get(evt.id());
     // find data in event
     findData(evt);
     _evt = evt.id().event();  // add event id
-    StrawElectronics const& strawele = _strawele_h.get(evt.id());
     // loop over combo hits
     for(size_t ich = 0;ich < _chcol->size(); ++ich){
       ComboHit const& ch =(*_chcol)[ich];
@@ -226,13 +225,14 @@ namespace mu2e
       _plane = ch.strawId().plane();
       _level = ch.mask().level();
       _pos = ch.pos();
-
       _udir = ch.uDir();
-      _udist = ch.uPos();
-      _ures = ch.uRes();
-      _vres = ch.vRes();
-      _wres = ch.wRes();
-      _tres = ch.timeRes();
+      _hdir = ch.hDir();
+      _wdist = ch.uPos();
+      _ures = sqrt(ch.uVar());
+      _vres = sqrt(ch.vVar());
+      _hcostres = sqrt(ch.hcostVar());
+      _hphires = sqrt(ch.hphiVar());
+      _tres = sqrt(ch.timeVar());
       _eend = ch.earlyEnd().end();
       _etime[StrawEnd::cal] = ch.endTime(StrawEnd::cal);
       _etime[StrawEnd::hv] = ch.endTime(StrawEnd::hv);
@@ -243,12 +243,9 @@ namespace mu2e
       _ptime = ch.propTime();
       _edep = ch.energyDep();
       _qual = ch.qual();
-      StrawHitFlag flag;
-      if(_useflagcol)
-        flag = _shfcol->at(ich);
-      else
-        flag = ch.flag();
-      _stereo = flag.hasAllProperties(StrawHitFlag::stereo);
+      auto const& flag = ch.flag();
+      _sth = flag.hasAllProperties(StrawHitFlag::stereo);
+      _ph = flag.hasAllProperties(StrawHitFlag::panelcombo);
       _tdiv = flag.hasAllProperties(StrawHitFlag::tdiv);
       _esel = flag.hasAllProperties(StrawHitFlag::energysel);
       _rsel = flag.hasAllProperties(StrawHitFlag::radsel);
@@ -262,13 +259,13 @@ namespace mu2e
       _bkgclust = flag.hasAllProperties(StrawHitFlag::bkgclust);
       _dz = 0.0;
       // center of this wire
-      XYZVectorF cpos = _pos - _udist*_udir;
+      XYZVectorF cpos = _pos - _wdist*_udir;
       // now hit-by-hit info
       _chinfo.clear();
       if(_diag > 1){
-        // loop over comopnents (also ComboHits)
+        // loop over components (also ComboHits)
         ComboHitCollection::CHCIter compis;
-        _chcol->fillComboHits(evt,ich,compis);
+        _chcol->fillComboHits(ich,compis);
         float minz(1.0e6),maxz(-1.0);
         for(auto compi : compis) {
           ComboHit const& comp = *compi;
@@ -277,16 +274,17 @@ namespace mu2e
           ComboHitInfo chi;
 
           chi._pos= comp.pos();
+          chi._udir = comp.uDir();
           auto dp = comp.pos()-ch.pos();
           chi._du = dp.Dot(comp.uDir());
           chi._dv = dp.Dot(comp.vDir());
           chi._dw = dp.Dot(comp.wDir());
-          chi._ures = comp.uRes();
-          chi._vres = comp.vRes();
-          chi._tres = comp.timeRes();
+          chi._uvar = comp.uVar();
+          chi._vvar = comp.vVar();
+          chi._tvar = comp.timeVar();
           chi._thit = comp.time();
-          chi._strawid = comp.strawId().straw();
-          chi._panelid = comp.strawId().panel();
+          chi._straw = comp.strawId().straw();
+          chi._upanel = comp.strawId().uniquePanel();
           chi._nch = comp.nCombo();
           chi._nsh = comp.nStrawHits();
           _chinfo.push_back(chi);
@@ -299,7 +297,7 @@ namespace mu2e
         _prel=-1;
         // get the StrawDigi indices associated with this ComboHit
         std::vector<StrawDigiIndex> shids;
-        _chcol->fillStrawDigiIndices(evt,ich,shids);
+        _chcol->fillStrawDigiIndices(ich,shids);
         if(shids.size() != ch.nStrawHits())
           throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit Nesting, nshids = "
             << shids.size() << " , n strawhits = " << ch.nStrawHits() << std::endl;
@@ -308,8 +306,8 @@ namespace mu2e
         for(auto shi : shids) {
           ComboHitInfoMC chimc;
           StrawDigiMC const& mcd = _mcdigis->at(shi);
-          auto sgsp = mcd.earlyStrawGasStep();
-          art::Ptr<SimParticle> spp = sgsp->simParticle();
+          auto const& sgsp = mcd.earlyStrawGasStep();
+          auto const&  spp = sgsp->simParticle();
           auto fnd = spmap.find(spp);
           if(fnd == spmap.end())
             spmap[spp] = 1;
@@ -340,26 +338,31 @@ namespace mu2e
               _prel = rel.relationship();
           }
         }
-        // find the relation with each hit
+        // find the relation with each individual straw hit
+        // average the primary MC particle properties
         _mcpos = _mcmom = XYZVectorF();
         _mctime = 0.0;
+        unsigned npri=0;
         for(auto shi : shids) {
           ComboHitInfoMC chimc;
           StrawDigiMC const& mcd = _mcdigis->at(shi);
-          auto const& sgsp = mcd.earlyStrawGasStep();
-          chimc._mcpos = sgsp->startPosition();
           MCRelationship rel(mcd,spmax);
           chimc._rel = rel.relationship();
           _chinfomc.push_back(chimc);
-          // find average MC properties
-          _mcpos += sgsp->startPosition();
-          _mctime += sgsp->time();
-          _mcmom += sgsp->momentum();
+          if(chimc._rel==0){
+            npri++;
+            auto const& sgsp = mcd.earlyStrawGasStep();
+            _mcmom += sgsp->momentum();
+            _mcpos += 0.5*(sgsp->startPosition() + sgsp->endPosition());
+            _mctime += sgsp->time();
+          }
         }
-        _mcpos /= shids.size();
-        _mctime /= shids.size();
-        _mcmom /= shids.size();
-        _mcudist = (_mcpos - cpos).Dot(_udir);
+        if(npri > 0){
+          _mcmom /= npri;
+          _mcpos /= npri;
+          _mctime /= npri;
+        }
+        _mcwdist = (_mcpos - cpos).Dot(_udir);
         // count mcdigis with the same StrawId as this hit
         _mcndigi = 0;
         for(auto const& mcdigi : *_mcdigis) {
@@ -368,7 +371,7 @@ namespace mu2e
       }
       if (_digis != 0){
         std::vector<StrawDigiIndex> shids;
-        _chcol->fillStrawDigiIndices(evt,ich,shids);
+        _chcol->fillStrawDigiIndices(ich,shids);
         // use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
         auto digi = _digis->at(shids[0]);
         for(size_t iend=0;iend<2;++iend){
@@ -384,7 +387,7 @@ namespace mu2e
       }
       if (_digiadcs != 0){
         std::vector<StrawDigiIndex> shids;
-        _chcol->fillStrawDigiIndices(evt,ich,shids);
+        _chcol->fillStrawDigiIndices(ich,shids);
         // use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
         auto digiadc = _digiadcs->at(shids[0]);
         _digiadc = digiadc.samples();
@@ -404,7 +407,7 @@ namespace mu2e
   }
 
   bool ComboHitDiag::findData(const art::Event& evt){
-    _chcol = 0;  _shfcol = 0; _mcdigis = 0; _digis = 0; _digiadcs = 0;
+    _chcol = 0; _mcdigis = 0; _digis = 0; _digiadcs = 0;
     auto chH = evt.getValidHandle(_chToken);
     _chcol = chH.product();
     if(_mcdiag){
@@ -413,17 +416,13 @@ namespace mu2e
        auto mcpH = evt.getValidHandle(_mcprimaryToken);
       _mcprimary = mcpH.product();
    }
-    if(_useflagcol){
-      auto shfH = evt.getValidHandle(_shfToken);
-      _shfcol = shfH.product();
-    }
     if (_digidiag){
       auto dH = evt.getValidHandle(_digisToken);
       _digis = dH.product();
       auto daH = evt.getValidHandle(_digiadcsToken);
       _digiadcs = daH.product();
     }
-    return _chcol != 0 && (!_useflagcol || _shfcol != 0) && ( (_mcdigis != 0 && _mcprimary != 0)  || !_mcdiag)
+    return _chcol != 0 && ( (_mcdigis != 0 && _mcprimary != 0)  || !_mcdiag)
       && ((_digis != 0 && _digiadcs != 0) || !_digidiag);
   }
 }

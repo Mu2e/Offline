@@ -4,7 +4,7 @@
 #ifndef CalPatRec_HitData_t_hh
 #define CalPatRec_HitData_t_hh
 
-#include "cmath"
+#include <cmath>
 
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
@@ -45,8 +45,8 @@ namespace mu2e {
         fCorrTime    = Hit->correctedTime();
         fX           = Hit->pos ().x();
         fY           = Hit->pos ().y();
-        fWx          = Hit->wdir().x();
-        fWy          = Hit->wdir().y();
+        fWx          = Hit->uDir2D().x();
+        fWy          = Hit->uDir2D().y();
         fNr          = fX*fWy-fY*fWx;
         fNx2         = fWx*fWx;
         fNxy         = fWx*fWy;

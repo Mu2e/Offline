@@ -87,7 +87,6 @@ CprTrigger : { @table::CprTrigger
             ModuleSettings : { @table::TTMu2eKinKal.producers.TTKKDeMSeedFit.ModuleSettings
                 ComboHitCollection     : "TTmakeSH"
                 CaloClusterCollection  : "CaloClusterFast"
-                StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
                 PrintLevel             : 0
                 SaveAllFits            : false
             }
@@ -102,7 +101,6 @@ CprTrigger : { @table::CprTrigger
         TTfastTimeClusterFinder      : { @table::CalPatRec.filters.CalTimePeakFinder
             useAsFilter                                 : 0
             StrawHitCollectionLabel                     : TTmakePH
-#            StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
             caloClusterModuleLabel                      : CaloClusterFast
 #            HitSelectionBits                            : ["EnergySelection","TimeSelection"]
 #            BackgroundSelectionBits                     : ["Background"]
@@ -116,7 +114,6 @@ CprTrigger : { @table::CprTrigger
         TTCalTimePeakFinder          : { @table::CalPatRec.filters.CalTimePeakFinder
             useAsFilter                                 : 0
             StrawHitCollectionLabel                     : "TTflagBkgHits"
-            StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
             caloClusterModuleLabel                      : CaloClusterFast
 #            HitSelectionBits                            : ["EnergySelection","TimeSelection"]
 #            BackgroundSelectionBits                     : ["Background"]
@@ -128,9 +125,7 @@ CprTrigger : { @table::CprTrigger
 
         TTCalTimePeakFinderUe          : { @table::CalPatRec.filters.CalTimePeakFinder
             useAsFilter                                 : 0
-#            StrawHitCollectionLabel                     : TTmakePH
             StrawHitCollectionLabel                     : "TTflagBkgHits"
-#            StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
             caloClusterModuleLabel                      : CaloClusterFast
 #            HitSelectionBits                            : ["EnergySelection","TimeSelection"]
 #            BackgroundSelectionBits                     : ["Background"]
@@ -141,8 +136,6 @@ CprTrigger : { @table::CprTrigger
 
         TTCalHelixFinder             : { @table::CalPatRec.filters.CalHelixFinder
             useAsFilter                                 : 0
-#           StrawHitCollectionLabel                     : TTmakePH
-#           StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
             StrawHitCollectionLabel                     : "TTflagBkgHits"
             TimeClusterCollectionLabel                  : TTCalTimePeakFinder
 
@@ -152,8 +145,6 @@ CprTrigger : { @table::CprTrigger
 
         TTCalHelixFinderUe             : { @table::CalPatRec.filters.CalHelixFinder
             useAsFilter                                 : 0
-#            StrawHitCollectionLabel                     : TTmakePH
-#            StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
             StrawHitCollectionLabel                     : "TTflagBkgHits"
             TimeClusterCollectionLabel                  : TTCalTimePeakFinderUe
 
@@ -163,8 +154,6 @@ CprTrigger : { @table::CprTrigger
 
         TTCalTimePeakFinderUCC       : { @table::CalPatRec.filters.CalTimePeakFinder
             useAsFilter                                 : 0
-#            StrawHitCollectionLabel                     : TTmakePHUCC
-#            StrawHitFlagCollectionLabel                 : "TTflagBkgHitsUCC:ComboHits"
             StrawHitCollectionLabel                     : "TTflagBkgHits"
             caloClusterModuleLabel                      : CaloClusterFast
 #            HitSelectionBits                            : ["EnergySelection","TimeSelection"]
@@ -178,7 +167,6 @@ CprTrigger : { @table::CprTrigger
         TTCalHelixFinderUCC          : { @table::CalPatRec.filters.CalHelixFinder
             useAsFilter                                 : 0
             StrawHitCollectionLabel                     : TTmakePHUCC
-#            StrawHitFlagCollectionLabel                 : "TTflagBkgHitsUCC:ComboHits"
             TimeClusterCollectionLabel                  : TTCalTimePeakFinderUCC
 
             # HelixFinderAlg configuraton (pattern recognition)

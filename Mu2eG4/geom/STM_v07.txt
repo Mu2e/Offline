@@ -1,0 +1,19 @@
+// (Muon) Stoping Target Monitor (STM)
+// v07 Updates: Adding realistinc downstream geometry
+
+#include "Offline/Mu2eG4/geom/STM_v06.txt"
+
+/////////////////////////////////////////////////////////////
+// Sweeper magnet parameters
+
+bool stm.downstream.build = true;
+double stm.downstream.halfLength = 819.15; // full length = 1638.30 mm (Fig. 46 of DocDB-44436)
+double stm.downstream.halfWidth = 2000.0;
+double stm.downstream.halfHeight = 2000.0;
+string stm.downstream.material = "G4_AIR";
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

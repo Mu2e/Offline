@@ -74,9 +74,7 @@ namespace mu2e {
 
     // Check for a valid index
     bool isValid(unsigned int ix, unsigned int iy, unsigned int iz) const{
-      return ix >= 0 && ix < _nx &&
-             iy >= 0 && iy < _ny &&
-             iz >= 0 && iz < _nz;
+      return ix < _nx && iy < _ny && iz < _nz;
     }
 
     // Throw if the point is not valid.
@@ -185,9 +183,7 @@ namespace mu2e {
 
     // Check for a valid index
     bool isValid(unsigned int ix, unsigned int iy, unsigned int iz) const {
-      return ix >= 0 && ix < _nx &&
-             iy >= 0 && iy < _ny &&
-             iz >= 0 && iz < _nz;
+      return ix < _nx && iy < _ny && iz < _nz;
     }
 
     // Throw if the point is not valid.

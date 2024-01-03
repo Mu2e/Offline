@@ -1,17 +1,19 @@
-#include "Offline/Filters/fcl/prolog.fcl"
+
 #include "Offline/Compression/fcl/prolog.fcl"
 #include "Offline/fcl/TrkCaloDt.fcl"
+#include "Offline/TrkHitReco/fcl/prolog.fcl"
 BEGIN_PROLOG
 # Diagnostic modules
+
+
 BD : {
   module_type : BkgDiag
   StrawDigiMCCollection : "compressDigiMCs"
-  ComboHitCollection : "makePH"
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  ComboHitCollection : "FlagBkgHits"
   BkgClusterCollection:"FlagBkgHits"
   BkgClusterHitCollection:"FlagBkgHits"
   MCPrimary : compressDigiMCs
-  useFlagCollection : true
+  ExpectedCHLevel : "uniquepanel"
 }
 
 TRD : {
@@ -24,22 +26,22 @@ SHD : {
   module_type : StrawHitDiag
   StrawDigiMCCollection : "compressDigiMCs"
   ComboHitFlag : false
-  StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 }
 
 TCD : {
   module_type : TimeClusterDiag
   StrawDigiMCCollection : "compressDigiMCs"
-  ComboHitCollection : "makePH"
-  UseFlagCollection : true
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  ComboHitCollection : "FlagBkgHits"
   HitSelectionBits      : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits     : ["Background"]
-  ClusterMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
-  ClusterCaloMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
   PlotTimeSpectra : false
   VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
-  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+  MCPrimary : compressDigiMCs
+  T0Calculator : {
+    TrkToCaloTimeOffset : @local::TrackCaloMatching.DtOffset
+    CaloTimeErr : 0.5
+    StrawHitBeta : 1.0
+  }
 }
 
 HD : {
@@ -47,9 +49,7 @@ HD : {
   StrawDigiMCCollection : "compressDigiMCs"
   VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
   HelixSeedCollection : "MHDeM"
-  ComboHitCollection : "makePH"
-  UseFlagCollection : true
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  ComboHitCollection : "FlagBkgHits"
   PlotHelices : false
   InclusivePlotFlagBits : ["HitsOK"]
 }
@@ -57,11 +57,9 @@ HD : {
 CHD : {
   module_type : ComboHitDiag
   digiDiag : true
-  useFlagCollection : true
   StrawDigiMCCollection : "compressDigiMCs"
   StrawDigiCollection : "makeSD"
-  ComboHitCollection : "makePH"
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  ComboHitCollection : "FlagBkgHits"
   MCPrimary : compressDigiMCs
 }
 

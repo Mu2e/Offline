@@ -43,6 +43,12 @@ namespace mu2e
     double   getProtonKE      () const { return _protonKE;       }
     double   getProtonMomentum() const { return _protonMomentum; }
 
+    double   getNominalDRPeriod() const { return _nominalDRPeriod; } // ns
+    int      getNominalDAQTicks() const { return _nominalDAQTicks; } // counts, DAQ ticks per DRperiod
+    int      getNominalDAQOnSpillBins() const { return _nominalDAQOnSpillBins; } // how often to 68->67
+    double   getNominalDAQFrequency() const { return _nominalDAQFrequency; } // MHz
+    double   getNominalDAQClockTick() const { return 1000.0/_nominalDAQFrequency; } // ns
+
     // Lifetimes of free (not stopped) particles.  We provide them
     // here because values coming from other sources are not accurate
     double getParticleLifetime(PDGCode::type pdgId) const;
@@ -162,6 +168,11 @@ namespace mu2e
     double _protonEnergy;
     double _protonKE;
     double _protonMomentum;
+
+    double _nominalDRPeriod;
+    int    _nominalDAQTicks;
+    int    _nominalDAQOnSpillBins;
+    double _nominalDAQFrequency;
 
     typedef std::map<PDGCode::type, double> FreeLifeMap;
     FreeLifeMap freeLifetime_;

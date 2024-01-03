@@ -59,7 +59,6 @@ namespace mu2e {
           using Name    = fhicl::Name;
           using Comment = fhicl::Comment;
           fhicl::Atom<art::InputTag>              comboHitCollection     {Name("ComboHitCollection"),     Comment("ComboHit collection {Name") };
-          fhicl::Atom<art::InputTag>              strawHitFlagCollection {Name("StrawHitFlagCollection"), Comment("StrawHitFlag collection {Name") };
           fhicl::Atom<art::InputTag>              caloClusterCollection  {Name("CaloClusterCollection"),  Comment("Calo cluster collection {Name") };
           fhicl::Table<MVATools::Config>          MVATime                {Name("MVATime"),                Comment("MVA for time cluster cleaning") };
           fhicl::Sequence<std::string>            hsel                   {Name("HitSelectionBits"),       Comment("HitSelectionBits") };
@@ -94,7 +93,6 @@ namespace mu2e {
     private:
       int                                             iev_;
       const art::ProductToken<ComboHitCollection>     chToken_;
-      const art::ProductToken<StrawHitFlagCollection> shfToken_;
       const art::ProductToken<CaloClusterCollection>  ccToken_;
       MVATools                                        MVATime_;
       StrawHitFlag                                    hsel_, hbkg_;
@@ -118,9 +116,9 @@ namespace mu2e {
 
 
       void findClusters           (const art::Handle<CaloClusterCollection>& ccH, const ComboHitCollection& chcol,
-                                   const StrawHitFlagCollection& shfcol, TimeClusterCollection& tccol);
+                                   TimeClusterCollection& tccol);
       void findTimePeaks          (const art::Handle<CaloClusterCollection>& ccH, const ComboHitCollection& chcol,
-                                   const StrawHitFlagCollection& shfcol, TimePhiCandidateCollection& timeCandidates);
+                                   TimePhiCandidateCollection& timeCandidates);
       void assignHits1            (const ComboHitCollection& chcol, const std::vector<unsigned>& chCood,
                                    float timePeakLow, float timePeakHigh, TimePhiCandidate& tc);
       void assignHits2            (const ComboHitCollection& chcol, const std::vector<unsigned>& chCood,
@@ -136,7 +134,7 @@ namespace mu2e {
       void fillTCcol              (const TimePhiCandidateCollection& candidates,const ComboHitCollection& chcol,
                                          TimeClusterCollection& tccol);
       void fillDiag               (const TimePhiCandidateCollection& timeCandidates, const ComboHitCollection& chcol,
-                                   const StrawHitFlagCollection& shfcol, const TimeClusterCollection& tccol);
+                                   const TimeClusterCollection& tccol);
 
       inline bool goodHit(const StrawHitFlag& flag) const {return flag.hasAllProperties(hsel_) && !flag.hasAnyProperty(hbkg_);}
 
@@ -149,7 +147,6 @@ namespace mu2e {
     art::EDProducer{config},
     iev_(0),
     chToken_             {consumes<ComboHitCollection>      (config().comboHitCollection())     },
-    shfToken_            {mayConsume<StrawHitFlagCollection>(config().strawHitFlagCollection()) },
     ccToken_             {mayConsume<CaloClusterCollection> (config().caloClusterCollection())  },
     MVATime_             (config().MVATime()),
     hsel_                (config().hsel()),
@@ -203,18 +200,14 @@ namespace mu2e {
       art::Handle<CaloClusterCollection> ccH{};
       if (usecc_) ccH = event.getHandle<CaloClusterCollection>(ccToken_);
 
-      const auto& shfH = event.getValidHandle(shfToken_);
       const auto& chH = event.getValidHandle(chToken_);
-      const auto& shfcol(*shfH);
       const auto& chcol(*chH);
 
-      if (testflag_ && shfcol.size() != chcol.size())
-        throw cet::exception("RECO")<<"TimeAndPhiClusterFinder: inconsistent flag collection length " << std::endl;
 
       if (diag_) {data_.reset(); data_.event_=&event; data_.chcol_ = &chcol;}
 
       std::unique_ptr<TimeClusterCollection> tccol(new TimeClusterCollection);
-      findClusters(ccH, chcol, shfcol, *tccol);
+      findClusters(ccH, chcol, *tccol);
 
       if (diag_) diagTool_->fillHistograms(&data_);
       event.put(std::move(tccol));
@@ -223,12 +216,12 @@ namespace mu2e {
 
   //----------------------------------------------------------ch----------------------------------------------------
   void TimeAndPhiClusterFinder::findClusters(const art::Handle<CaloClusterCollection>& ccH, const ComboHitCollection& chcol,
-                                             const StrawHitFlagCollection& shfcol,          TimeClusterCollection& tccol)
+                                             TimeClusterCollection& tccol)
   {
       // Find time peaks
       std::vector<TimePhiCandidate> timeCandidates;
       timeCandidates.reserve(64);
-      findTimePeaks(ccH, chcol, shfcol, timeCandidates);
+      findTimePeaks(ccH, chcol, timeCandidates);
 
 
       // Refine time peaks and create split phi clusters
@@ -250,7 +243,7 @@ namespace mu2e {
       fillTCcol(timeCandidates,chcol,tccol);
       fillTCcol(phiCandidates,chcol,tccol);
 
-      if (diag_) fillDiag(timeCandidates, chcol, shfcol, tccol);
+      if (diag_) fillDiag(timeCandidates, chcol, tccol);
   }
 
 
@@ -259,13 +252,13 @@ namespace mu2e {
   //--------------------------------------------------------------------------------------------------------------
 
   void TimeAndPhiClusterFinder::findTimePeaks(const art::Handle<CaloClusterCollection>& ccH, const ComboHitCollection& chcol,
-                                              const StrawHitFlagCollection& shfcol, TimePhiCandidateCollection& timeCandidates)
+                                              TimePhiCandidateCollection& timeCandidates)
   {
       // Select good hits and sort them by time
       std::vector<unsigned> chGood;
       chGood.reserve(chcol.size());
       for (size_t ich=0; ich<chcol.size();++ich){
-          if (!testflag_ || goodHit(shfcol[ich])) chGood.emplace_back(ich);
+          if (!testflag_ || goodHit(chcol[ich].flag())) chGood.emplace_back(ich);
       }
       auto sortFcn = [&chcol](unsigned i1, unsigned i2){return chcol[i1].correctedTime() < chcol[i2].correctedTime();};
       sort(chGood.begin(),chGood.end(),sortFcn);
@@ -361,7 +354,7 @@ namespace mu2e {
 
       for (size_t icalo=0;icalo < cccol.size();++icalo){
           unsigned ibin = unsigned((cccol[icalo].time() - tmin)/tbin_);
-          if (cccol[icalo].energyDep() > ccmine_ && ibin>=0 && ibin<timeHist.size()) timeHist[ibin] += ccweight_;
+          if (cccol[icalo].energyDep() > ccmine_ && ibin<timeHist.size()) timeHist[ibin] += ccweight_;
       }
   }
 
@@ -568,16 +561,16 @@ namespace mu2e {
   // Diagnosis
   //--------------------------------------------------------------------------------------------------------------
   void TimeAndPhiClusterFinder::fillDiag(const TimePhiCandidateCollection& timeCandidates, const ComboHitCollection& chcol,
-                                         const StrawHitFlagCollection& shfcol,             const TimeClusterCollection& tccol )
+                                         const TimeClusterCollection& tccol )
   {
       data_.iev_ = iev_;
 
       data_.Nch_ = chcol.size();
       for (unsigned ich=0; ich<chcol.size();++ich)
       {
-         int   selFlag = (!testflag_ || goodHit(shfcol[ich])) ? 1 : 0;
+         int   selFlag = (!testflag_ || goodHit(chcol[ich].flag())) ? 1 : 0;
          //const StrawHitFlag ener("EnergySelection");
-         //if (shfcol[ich].hasAllProperties(ener) && !shfcol[ich].hasAnyProperty(hbkg_)) selFlag = 2;
+         //if (chcol[ich].flag().hasAllProperties(ener) && !chcol[ich].flag().hasAnyProperty(hbkg_)) selFlag = 2;
 
          data_.chSel_[ich]  = selFlag;
          data_.chTime_[ich] = chcol[ich].correctedTime();

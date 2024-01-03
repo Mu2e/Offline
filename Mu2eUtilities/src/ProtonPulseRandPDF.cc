@@ -14,7 +14,6 @@
 
 #include "CLHEP/Random/RandGeneral.h"
 
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 // Mu2e includes
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -62,7 +61,7 @@
 // =NB2= The proton pulse is always centered at 0 ns.
 //
 // =NB3= As currently structured, there is an erroneous 1-ns offset in
-//       the POT pulse as taken from the accPar_->potPulse file.  This is
+//       the POT pulse as taken from the potPulse file.  This is
 //       because the keys specified in the file correspond to the low-edge
 //       value of histogram bins.  This should be fixed in future versions,
 //       but is unlikely to result in any noticeable effect.
@@ -71,15 +70,16 @@ namespace mu2e{
 
   ProtonPulseRandPDF::ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine,
                                          const Config& conf)
-    : accPar_      ( &*ConditionsHandle<AcceleratorParams>( "ignored" ) )
-    , pulseEnum_   ( conf.pulseType() )
+    : pulseEnum_   ( conf.pulseType() )
+    , limitingHalfWidth_  ( conf.limitingHalfWidth() )
+    , DRPeriod_    ( GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod() )
     , tmin_        ( setTmin() )
     , tmax_        ( setTmax() )
     , tres_        ( conf.tres() )
     , times_       ( setTimes() )
-    , extFactor_   ( determineIntrinsicExt( ConfigFileLookupPolicy()( accPar_->potPulse ) ) )
-    , pulseShape_  ( setPotPulseShape(      ConfigFileLookupPolicy()( accPar_->potPulse ) ) )
-    , acdipole_    ( loadTable<2>(          ConfigFileLookupPolicy()( accPar_->acDipole ) ) )
+    , extFactor_   ( determineIntrinsicExt( ConfigFileLookupPolicy()( conf.potPulse() ) ) )
+    , pulseShape_  ( setPotPulseShape(      ConfigFileLookupPolicy()( conf.potPulse() ) ) )
+    , acdipole_    ( loadTable<2>(          ConfigFileLookupPolicy()( conf.acDipole() ) ) )
     , spectrum_    ( setSpectrum() )
     , randSpectrum_( engine, &spectrum_.front(), times_.size() )
   {
@@ -88,21 +88,6 @@ namespace mu2e{
     conf.tmin(tmin_);
     conf.tmax(tmax_);
   }
-
-  ProtonPulseRandPDF::ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine,
-                                         const fhicl::ParameterSet pset )
-    : accPar_      ( &*ConditionsHandle<AcceleratorParams>( "ignored" ) )
-    , pulseEnum_   ( pset.get<std::string>("pulseType","default") )
-    , tmin_        ( pset.get<double>("tmin", setTmin() ) )
-    , tmax_        ( pset.get<double>("tmax", setTmax() ) )
-    , tres_        ( pset.get<double>("tres", 1. ) )
-    , times_       ( setTimes() )
-    , extFactor_   ( determineIntrinsicExt( ConfigFileLookupPolicy()( accPar_->potPulse ) ) )
-    , pulseShape_  ( setPotPulseShape(      ConfigFileLookupPolicy()( accPar_->potPulse ) ) )
-    , acdipole_    ( loadTable<2>(          ConfigFileLookupPolicy()( accPar_->acDipole ) ) )
-    , spectrum_    ( setSpectrum() )
-    , randSpectrum_( engine, &spectrum_.front(), times_.size() )
-  {}
 
 
   //============================================================================================================
@@ -115,20 +100,20 @@ namespace mu2e{
   //============================================================================================================
   double ProtonPulseRandPDF::setTmin() {
     double min(0.);
-    if ( pulseEnum_ == DEFAULT ) min = -accPar_->limitingHalfWidth;
-    if ( pulseEnum_ == TOTAL   ) min = -accPar_->limitingHalfWidth;
-    if ( pulseEnum_ == OOT     ) min =  accPar_->limitingHalfWidth;
-    if ( pulseEnum_ == ALLFLAT ) min = -accPar_->limitingHalfWidth;
+    if ( pulseEnum_ == DEFAULT ) min = -limitingHalfWidth_;
+    if ( pulseEnum_ == TOTAL   ) min = -limitingHalfWidth_;
+    if ( pulseEnum_ == OOT     ) min =  limitingHalfWidth_;
+    if ( pulseEnum_ == ALLFLAT ) min = -limitingHalfWidth_;
     return min;
   }
 
   //============================================================================================================
   double ProtonPulseRandPDF::setTmax() {
     double max(0.);
-    if ( pulseEnum_ == DEFAULT ) max = accPar_->limitingHalfWidth;
-    if ( pulseEnum_ == TOTAL   ) max = accPar_->deBuncherPeriod - accPar_->limitingHalfWidth;
-    if ( pulseEnum_ == OOT     ) max = accPar_->deBuncherPeriod - accPar_->limitingHalfWidth;
-    if ( pulseEnum_ == ALLFLAT ) max = accPar_->deBuncherPeriod - accPar_->limitingHalfWidth;
+    if ( pulseEnum_ == DEFAULT ) max = limitingHalfWidth_;
+    if ( pulseEnum_ == TOTAL   ) max = DRPeriod_ - limitingHalfWidth_;
+    if ( pulseEnum_ == OOT     ) max = DRPeriod_ - limitingHalfWidth_;
+    if ( pulseEnum_ == ALLFLAT ) max = DRPeriod_ - limitingHalfWidth_;
     return max;
   }
 
@@ -160,8 +145,8 @@ namespace mu2e{
     // Now replace spectrum outside of halfwidth with flat
     // distribution given an expected intrinsic extinction level
     unsigned bins(0);
-    std::for_each( newshapevec.begin(), newshapevec.end(), [&](const TableRow<2>& pt) { if (std::abs(pt.first) >= accPar_->limitingHalfWidth ) ++bins;                            } );
-    std::for_each( newshapevec.begin(), newshapevec.end(), [&](      TableRow<2>& pt) { if (std::abs(pt.first) >= accPar_->limitingHalfWidth ) pt.second.at(0) = extFactor_/bins; } );
+    std::for_each( newshapevec.begin(), newshapevec.end(), [&](const TableRow<2>& pt) { if (std::abs(pt.first) >= limitingHalfWidth_ ) ++bins;                            } );
+    std::for_each( newshapevec.begin(), newshapevec.end(), [&](      TableRow<2>& pt) { if (std::abs(pt.first) >= limitingHalfWidth_ ) pt.second.at(0) = extFactor_/bins; } );
 
     return newshapevec;
 
@@ -194,7 +179,7 @@ namespace mu2e{
     std::for_each( shapevec.begin(), shapevec.end(),
                    [&](const TableRow<2>& pt )
                    {
-                     if ( std::abs(pt.first) >= accPar_->limitingHalfWidth ) { num += pt.second.at(0);}
+                     if ( std::abs(pt.first) >= limitingHalfWidth_ ) { num += pt.second.at(0);}
                      else denom += pt.second.at(0);
                    } );
 

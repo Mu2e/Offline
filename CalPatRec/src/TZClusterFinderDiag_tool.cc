@@ -209,7 +209,7 @@ namespace mu2e {
     if ( _mcTruth != 0 ) {
       for (size_t i=0; i<_data->_chColl2->size(); ++i){
         std::vector<StrawDigiIndex> shids;
-        _data->_chColl2->fillStrawDigiIndices((*_data->_event),i,shids);
+        _data->_chColl2->fillStrawDigiIndices(i,shids);
         int SimID = _mcUtils->strawHitSimId(_data->_event,shids[0]);
         _simParticle = _mcUtils->getSimParticle(_data->_event,shids[0]);
         int _pdgID = _simParticle->pdgId();

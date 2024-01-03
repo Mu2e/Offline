@@ -26,12 +26,12 @@ using CLHEP::HepVector;
 namespace mu2e {
   namespace PanelAmbig {
     // functor for sorting by panel.  Note that PanelId uniquely defines a panel
-    struct panelcomp : public std::binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
+    struct panelcomp {
       bool operator()(TrkStrawHit* x, TrkStrawHit* y) { return x->straw().id().getPanelId() < y->straw().id().getPanelId(); }
     };
 
     // functor to sort panel results by chisquared
-    struct resultcomp : public std::binary_function<PanelResult const&, PanelResult const&,bool> {
+    struct resultcomp {
       bool operator()(PanelResult const& a, PanelResult const& b) { return a._chisq < b._chisq; }
     };
 

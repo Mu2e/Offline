@@ -37,6 +37,11 @@ namespace mu2e {
     _protonEnergy   = _protonKE + pMass;
     _protonMomentum = std::sqrt( cet::diff_of_squares( _protonEnergy, pMass ) );
 
+    _nominalDRPeriod = config.getDouble("physicsParams.nominalDRPeriod");
+    _nominalDAQTicks  = config.getInt("physicsParams.nominalDAQTicks");
+    _nominalDAQOnSpillBins  = config.getInt("physicsParams.nominalDAQOnSpillBins");
+    _nominalDAQFrequency = config.getDouble("physicsParams.nominalDAQFrequency");
+
     std::vector<int> tmpPDGId;
     config.getVectorInt("physicsParams.freeLifePDGId", tmpPDGId, tmpPDGId);
     std::vector<double> tmpLifetime;

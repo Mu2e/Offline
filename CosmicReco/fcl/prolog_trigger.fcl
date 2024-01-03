@@ -10,7 +10,6 @@ CstTimeClusterFinder : {
     module_type            : TimeClusterFinderCosmics
     ComboHitCollection     : "TTflagBkgHits"
     CaloClusterCollection  : "none"
-    StrawHitFlagCollection : "none"
     TestFlag               : false
     T0Calculator            : @local::TimeCalculator
 
@@ -19,7 +18,6 @@ CstTimeClusterFinder : {
 CstSimpleTimeCluster     : {
     module_type : SimpleTimeCluster
     ComboHitCollection     : "TTmakePH"
-    StrawHitFlagCollection : "TTflagBkgHits:ComboHits"
     TestFlag               : false
 }
 

@@ -7,11 +7,6 @@
 #include "Offline/fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG
 
-# this should go in a general file FIXME!!
-FitDir : {
-  downstream : 0
-  upstream : 1
-}
 
 TimeCalculator : {
   TrkToCaloTimeOffset : @local::TrackCaloMatching.DtOffset
@@ -26,8 +21,7 @@ TrkFitBackground : ["Dead"]
 TimeClusterFinder : {
   module_type            : TimeClusterFinder
 
-  ComboHitCollection     : "makePH"
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  ComboHitCollection     : "FlagBkgHits"
   CaloClusterCollection  : "CaloClusterMaker"
   ClusterMVA             : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
   ClusterCaloMVA         : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
@@ -63,7 +57,6 @@ TimeClusterFinder : {
 TimeAndPhiClusterFinder : {
   module_type             : TimeAndPhiClusterFinder
   ComboHitCollection     : "makePH"
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   CaloClusterCollection  : "CaloClusterMaker"
   HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits      : @local::PatRecBackground
@@ -148,11 +141,47 @@ TimeClusterFinderUpi : {
   }
 }
 
+
+RobustMultiHelixFinder : {
+  module_type   : RobustMultiHelixFinder
+  ComboHitCollection      : "makePH"
+  TimeClusterCollection   : "TimeClusterFinderDe"
+  Helicities              : [-1,1]
+  MinDRCircle             : 40
+  MinRadCircle            : 150
+  MaxRadCircle            : 350
+  MinDXY2Circle           : 1600
+  MaxDXY2Circle           : 1.6e6
+  ClusteringPhiBin        : 0.1
+  ClusteringMinBin        : 30
+  TargetCon               : false
+  TargetRadius            : 150
+  MinDPDZSlope            : 150
+  MaxDPDZSlope            : 350
+  DPDZStep                : 25
+  MaxDPhiHelInit          : 1.0
+  MaxDPhiHelFit           : 0.7
+  MaxDTHelFit             : 25
+  CaloClusterMinE         : 30
+  CaloClusterWeight       : 5
+  MaxChi2Hit              : 50
+  MinDZTrk                : 1500
+  FitCircleAlgorithm      : 1
+  MinStrawHits            : 10
+  NMaxTrkIter             : 3
+  DiagLevel               : 0
+
+  DiagPlugin : {
+    tool_type             : "RobustMultiHelixFinderDiag"
+    MCDiag                : true
+    StrawDigiMCCollection : "compressDigiMCs"
+  }
+}
+
 # helix finding.  Search for both helicities
 RobustHelixFinder : {
   module_type   : RobustHelixFinder
-  ComboHitCollection     : "makePH"
-  chfCollTag             : "FlagBkgHits:ComboHits"
+  ComboHitCollection     : "FlagBkgHits"
   HelixStereoHitMVA      : { MVAWeights : "Offline/TrkPatRec/data/HelixStereoHitMVA.weights.xml" }
   HelixNonStereoHitMVA   : { MVAWeights : "Offline/TrkPatRec/data/HelixNonStereoHitMVA.weights.xml" }
   DiagPlugin : {
@@ -344,7 +373,6 @@ KSF : {
 KFF : {
   module_type                 : KalFinalFit
   ComboHitCollection        : "makeSH"
-  StrawHitFlagCollection      : "FlagBkgHits:StrawHits"
   CaloClusterCollection       : "CaloClusterMaker"
   KalFit          : @local::KFFinal
   GoodKallSeedFitBits       : ["SeedOK"]
