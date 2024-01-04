@@ -82,25 +82,15 @@ outputs:
 physics.producers.generate : @local::Cosmic.generateCRY
 physics.producers.generate.inputFile : "Offline/CRVResponse/test/wideband/widebandCRYconfig.txt"
 physics.producers.cosmicTimeOffset.intervalEnd : 99000
+physics.producers.cosmicTimeOffset.cosmicModuleLabel : "generate"
 physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
 physics.producers.g4run.inputs.primaryTag : cosmicTimeOffset
-physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
 #physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicNoField
 physics.producers.g4run.Mu2eG4CommonCut:
-       {
-         type: union
-         pars: [
-                 {
-                   type  : plane
-                   normal: [ 0, -1, 0 ]
-                   point : [ 0, -750, 0 ]
-                 },
                  {
                    type: inVolume
                    pars: [ worldDirtBottom ]
                  }
-               ]
-       }
 
 physics.producers.EWMProducer.SpillType : 0
 physics.producers.CrvSteps.stepPointsModuleLabels   : ["g4run"]
