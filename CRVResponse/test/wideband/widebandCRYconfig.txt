@@ -10,11 +10,15 @@ bool cosmicCRY.projectToTargetBox = true;
 double cosmicCRY.targetBoxXmin = -5654;  //~1.3m away from readout at negative x-side, 4cm wide
 double cosmicCRY.targetBoxXmax = -5554;
 
-double cosmicCRY.targetBoxYmin =   110;  //just the scintillator above the top module
-double cosmicCRY.targetBoxYmax =   130;
+//double cosmicCRY.targetBoxYmin =   110;  //just the scintillator above the top module
+//double cosmicCRY.targetBoxYmax =   130;
+double cosmicCRY.targetBoxYmin =   -2230;  //just the scintillator below the bottom module
+double cosmicCRY.targetBoxYmax =   -2250;
 
-double cosmicCRY.targetBoxZmin = 19900;  //~width of the module
-double cosmicCRY.targetBoxZmax = 21000;
+//double cosmicCRY.targetBoxZmin = 19900;  //~width of the module
+//double cosmicCRY.targetBoxZmax = 21000;
+double cosmicCRY.targetBoxZmin = 38950;  //~width of the module
+double cosmicCRY.targetBoxZmax = 39950;
 
 // Enable all particles by default
 bool cosmicCRY.returnMuons = true;

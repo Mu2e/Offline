@@ -35,10 +35,14 @@ int             crs.nCountersPerModuleW2         =   16;
 int             crs.nCountersPerModuleW3         =   16;
 int             crs.nCountersPerModuleW4         =   16;
 
-vector<double>  crs.firstCounterW1               =  {-3904.0,     0.0, 20000.0};
-vector<double>  crs.firstCounterW2               =  {-3904.0, -225.25, 20000.0};
-vector<double>  crs.firstCounterW3               =  {-3904.0, -450.50, 20000.0};
-vector<double>  crs.firstCounterW4               =  {-3904.0, -675.75, 20000.0};
+//vector<double>  crs.firstCounterW1               =  {-3904.0,     0.0, 20000.0};
+//vector<double>  crs.firstCounterW2               =  {-3904.0, -225.25, 20000.0};
+//vector<double>  crs.firstCounterW3               =  {-3904.0, -450.50, 20000.0};
+//vector<double>  crs.firstCounterW4               =  {-3904.0, -675.75, 20000.0};
+vector<double>  crs.firstCounterW1               =  {-3904.0, -1500.00, 39000.0};
+vector<double>  crs.firstCounterW2               =  {-3904.0, -1725.25, 39000.0};
+vector<double>  crs.firstCounterW3               =  {-3904.0, -1950.50, 39000.0};
+vector<double>  crs.firstCounterW4               =  {-3904.0, -2175.75, 39000.0};
 
 vector<double>  crs.layerDirectionW1             =  {0, 1, 0};
 vector<double>  crs.layerDirectionW2             =  {0, 1, 0};
