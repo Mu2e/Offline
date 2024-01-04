@@ -3,7 +3,8 @@ int cosmicCRY.verbose = 0;
 string cosmicCRY.refPoint = "UNDEFINED";
 double cosmicCRY.refX0 = -5604;
 double cosmicCRY.refY0 =   200;
-double cosmicCRY.refZ0 = 20450;
+//double cosmicCRY.refZ0 = 20450;
+double cosmicCRY.refZ0 = 39450;
 
 bool cosmicCRY.projectToTargetBox = true;
 
