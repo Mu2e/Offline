@@ -505,7 +505,7 @@ namespace mu2e {
           udres = strawhit->residual(Mu2eKinKal::dresid);
           utres = strawhit->residual(Mu2eKinKal::tresid);
         } catch (std::exception const& error) {
-          std::cout << "Unbiased residual calculation failure, nDOF = " << fstatus.chisq_.nDOF();
+          std::cout << "Unbiased residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
         }
       }
       fseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
