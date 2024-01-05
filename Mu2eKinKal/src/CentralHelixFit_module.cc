@@ -92,8 +92,6 @@ namespace mu2e {
   using CCPtr = art::Ptr<CaloCluster>;
   using CCHandle = art::ValidHandle<CaloClusterCollection>;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
-      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
-      using CA = KinKal::ClosestApproach<KTRAJ,Line>;
 
   using KKConfig = Mu2eKinKal::KinKalConfig;
   using KKFitConfig = Mu2eKinKal::KKFitConfig;
