@@ -57,6 +57,8 @@ outputs:
   {
     module_type   :   RootOutput
     fileName      :   "crvDigis.art"
+    outputCommands : [ "keep *_*_*_*",
+                       "drop mu2e::CRVDataDecoders_*_*_*" ] #dictionary doesn't exist
   }
 }
 
