@@ -37,14 +37,14 @@
 #include "KinKal/Fit/Config.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
-#include "KinKal/Trajectory/Line.hh"
+#include "KinKal/Trajectory/SensorLine.hh"
 // Other
 #include "cetlib_except/exception.h"
 #include <memory>
 #include <cmath>
 #include <algorithm>
 namespace mu2e {
-  using KinKal::Line;
+  using KinKal::SensorLine;
   using KinKal::TimeRange;
   using KinKal::Status;
   using KinKal::BFieldMap;
@@ -58,8 +58,8 @@ namespace mu2e {
       using KKTRK = KKTrack<KTRAJ>;
       using KKTRKPTR = std::unique_ptr<KKTRK>;
       using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
-      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
-      using TCA = KinKal::ClosestApproach<KTRAJ,Line>;
+      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
+      using TCA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using KKHIT = KinKal::Measurement<KTRAJ>;
       using KKMAT = KinKal::Material<KTRAJ>;
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
@@ -88,7 +88,7 @@ namespace mu2e {
       void makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf, KKStrawMaterial const& smat,
           PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
           KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
-      Line caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const; // should come from CaloCluster TODO
+      SensorLine caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const; // should come from CaloCluster TODO
       bool makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PKTRAJ const& pktraj, KKCALOHITCOL& hits) const;
       // extend a track with a new configuration, optionally searching for and adding hits and straw material
       void extendTrack(Config const& config, BFieldMap const& kkbf, Tracker const& tracker,
@@ -210,7 +210,7 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ> Line KKFit<KTRAJ>::caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const {
+  template <class KTRAJ> SensorLine KKFit<KTRAJ>::caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const {
     // move cluster COG into the tracker frame.  COG is at the front face of the disk
     CLHEP::Hep3Vector cog = calo.geomUtil().mu2eToTracker(calo.geomUtil().diskFFToMu2e( cluster.diskID(), cluster.cog3Vector()));
     // project this along the crystal axis to the SIPM, which is at the back.  This is the point the time measurement corresponds to
@@ -218,8 +218,8 @@ namespace mu2e {
     double lcrystal = calo.caloInfo().getDouble("crystalZLength"); // text-keyed lookup is very inefficient FIXME!
     VEC3 crystalF2B = VEC3(0.0,0.0,lcrystal); // this should come directly from the calogeometry, TODO
     VEC3 sipmcog = ffcog + crystalF2B;
-    // create the Line trajectory from this information: signal goes towards the sipm
-    return Line(sipmcog,ffcog,cluster.time()+caloDt_,caloPropSpeed_);
+    // create the SensorLine trajectory from this information: signal goes towards the sipm
+    return SensorLine(sipmcog,ffcog,cluster.time()+caloDt_,caloPropSpeed_);
   }
 
 
@@ -229,12 +229,12 @@ namespace mu2e {
     // find the time the seed traj passes the middle of the crystal to form the hint
     auto pmid = caxis.position3(caxis.timeAtMidpoint());
     double zt = Mu2eKinKal::zTime(pktraj,pmid.Z(),pktraj.range().end());
-    CAHint hint( zt, caxis.t0());
+    CAHint hint( zt, caxis.measurementTime());
     // compute a preliminary PCA between the seed trajectory and the cluster axis
     auto pca = PCA(pktraj, caxis, hint, tprec_ );
     if(pca.usable() && fabs(pca.doca()) < maxCaloDoca_ && fabs(pca.deltaT()) < maxCaloDt_){
       // check that CA is within the active volume of the calorimeter
-      double dz = pca.sensorPoca().Z() - caxis.position3(caxis.t0()).Z();
+      double dz = pca.sensorPoca().Z() - caxis.position3(caxis.measurementTime()).Z();
       if( dz > -caxis.length() -maxCaloDoca_ && dz < maxCaloDoca_) {
 //        double tvar = cluster->timeErr()*cluster->timeErr(); the returned value seems unphysically smalL, ~70 ps.
         double tvar = caloTimeRes_*caloTimeRes_; // temporary kludge, this number comes from MDC2020 sim studies.  FIXME
@@ -280,7 +280,7 @@ namespace mu2e {
             const Straw& straw = tracker.getStraw(strawhit.strawId());
             auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse);
             double psign = wline.direction().Dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
-            double htime = wline.t0() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed(wline.timeAtMidpoint());
+            double htime = wline.measurementTime() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed(wline.timeAtMidpoint());
             CAHint hint(zt,htime);
             // compute PCA between the trajectory and this straw
             PCA pca(ftraj, wline, hint, tprec_ );
@@ -349,7 +349,7 @@ namespace mu2e {
                     KinKal::VEC3 vp1(straw.wireEnd(StrawEnd::hv));
                     KinKal::VEC3 smid = 0.5*(vp0+vp1);
                     // eventually this trajectory should be a native member of Straw TODO
-                    KinKal::Line wline(vp0,vp1,zt,CLHEP::c_light); // time is irrelevant: use speed of light as sprop
+                    KinKal::SensorLine wline(vp0,vp1,zt,CLHEP::c_light); // time is irrelevant: use speed of light as sprop
                     CAHint hint(zt,zt);
                     // compute PCA between the trajectory and this straw
                     PCA pca(ftraj, wline, hint, tprec_ );
@@ -406,7 +406,7 @@ namespace mu2e {
         auto pca = PCA(ftraj, caxis, hint, tprec_ );
         if(pca.usable() && fabs(pca.doca()) < maxCaloDoca_ && fabs(pca.deltaT()) < maxCaloDt_){
           // check that the position is within the active position of the crystal
-          double dz = pca.sensorPoca().Z() - caxis.position3(caxis.t0()).Z();
+          double dz = pca.sensorPoca().Z() - caxis.position3(caxis.measurementTime()).Z();
           if( dz > -caxis.length() -maxCaloDoca_ && dz < maxCaloDoca_) {
             art::Ptr<CaloCluster> ccPtr = art::Ptr<CaloCluster>(cchandle,icc);
 //            double tvar = cc.timeErr()*cc.timeErr();

@@ -84,21 +84,21 @@ physics.producers.KKDeM.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKDeM.ModuleSettings.ComboHitCollection : "makeSH"
 physics.producers.KKDeM.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
 physics.producers.KKDeM.ModuleSettings.PrintLevel : 0
-physics.producers.KKDeM.ModuleSettings.SaveAllFits : true
+physics.producers.KKDeM.ModuleSettings.SaveAllFits : false
 physics.producers.KKDeM.FitSettings.PrintLevel : 0
 
 physics.producers.KKUeP.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKUeP.ModuleSettings.ComboHitCollection : "makeSH"
 physics.producers.KKUeP.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
 physics.producers.KKUeP.ModuleSettings.PrintLevel : 0
-physics.producers.KKUeP.ModuleSettings.SaveAllFits : true
+physics.producers.KKUeP.ModuleSettings.SaveAllFits : false
 physics.producers.KKUeP.FitSettings.PrintLevel : 0
 
 physics.producers.KKDmuM.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKDmuM.ModuleSettings.ComboHitCollection : "makeSH"
 physics.producers.KKDmuM.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
 physics.producers.KKDmuM.ModuleSettings.PrintLevel : 0
-physics.producers.KKDmuM.ModuleSettings.SaveAllFits : true
+physics.producers.KKDmuM.ModuleSettings.SaveAllFits : false
 physics.producers.KKDmuM.FitSettings.PrintLevel : 0
 
 physics.analyzers.TAKK.candidate.options : @local::AllOpt

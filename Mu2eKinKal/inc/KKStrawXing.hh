@@ -8,6 +8,7 @@
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
+#include "KinKal/Trajectory/SensorLine.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "cetlib_except/exception.h"
@@ -19,14 +20,14 @@ namespace mu2e {
   using KinKal::DPDV;
   using KinKal::MomBasis;
   using KinKal::NParams;
-  using KinKal::Line;
+  using KinKal::SensorLine;
   template <class KTRAJ> class KKStrawXing : public KinKal::ElementXing<KTRAJ> {
     public:
       using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       using EXING = KinKal::ElementXing<KTRAJ>;
-      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
-      using CA = KinKal::ClosestApproach<KTRAJ,Line>;
+      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
+      using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
       // construct without an associated StrawHit
@@ -54,7 +55,7 @@ namespace mu2e {
     private:
       StrawId sid_; // StrawId
       KKSTRAWHITPTR shptr_; // reference to associated StrawHit
-      Line axis_; // straw axis, expressed as a timeline
+      SensorLine axis_; // straw axis, expressed as a timeline
       KKStrawMaterial const& smat_;
       CA ca_; // result of most recent TPOCA
       double toff_; // small time offset
