@@ -18,7 +18,6 @@ namespace mu2e {
 
   public:
     IndexMap() { };
-    IndexMap(IndexMap const& other) : _theMap(other._theMap) { };
 
     void addElement(FullIndex full, CondensedIndex condensed) {
       std::pair<FullIndex, CondensedIndex> newPair(full, condensed);

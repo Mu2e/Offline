@@ -18,6 +18,8 @@
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
 
@@ -53,6 +55,9 @@ namespace mu2e {
       bool _recoFromMCTruth;
       float _recoFromMCTruthErr;
       bool _fixInitialPhase;
+      double _period;
+      int _onSpillMaxLength;
+      int _onSpillBins;
       float _initialPhaseShift;
       art::RandomNumberGenerator::base_engine_t& _engine;
       CLHEP::RandGaussQ _randgauss;
@@ -68,6 +73,9 @@ namespace mu2e {
     _recoFromMCTruth( config().recoFromMCTruth()),
     _recoFromMCTruthErr( config().recoFromMCTruthErr()),
     _fixInitialPhase( false),
+    _period(GlobalConstantsHandle<PhysicsParams>()->getNominalDAQClockTick()),
+    _onSpillMaxLength(GlobalConstantsHandle<PhysicsParams>()->getNominalDAQTicks()),
+    _onSpillBins(GlobalConstantsHandle<PhysicsParams>()->getNominalDAQOnSpillBins()),
     _initialPhaseShift( 0),
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
     _randgauss( _engine ),
@@ -97,28 +105,26 @@ namespace mu2e {
 
     EventTiming const& eventTiming = _eventTiming_h.get(event.id());
 
-    double period = (1/eventTiming.systemClockSpeed())*1000; // in ns
-
     if (_spillType == EventWindowMarker::SpillType::offspill){
       pbtmc->pbtime_ = 0;
       pbt->pbtime_ = 0;
       pbt->pbterr_ = 0;
-      marker->_eventLength = eventTiming.offSpillLength()*period;
+      marker->_eventLength = eventTiming.offSpillLength()*_period;
     }else{
       // calculate which bin we are in from event number
-      int bin = event.id().event() % eventTiming.onSpillBins();
+      int bin = event.id().event() % _onSpillBins;
       // determine phase for this event
       // each microbunch the proton bunch gets shifted back 5 ns from the event window
-      double shiftPer = -1*period/eventTiming.onSpillBins();
-      double phaseShift = (_initialPhaseShift*period + bin*shiftPer);
-      if (phaseShift < -1*period)
-        phaseShift += period;
+      double shiftPer = -1*_period/_onSpillBins;
+      double phaseShift = (_initialPhaseShift*_period + bin*shiftPer);
+      if (phaseShift < -1*_period)
+        phaseShift += _period;
       // when phase shift would be > than one clock period by next microbunch
       // the event window is one clock tick shorter
-      if (phaseShift < -1*period - shiftPer)
-        marker->_eventLength = (eventTiming.onSpillMaxLength()-1)*period;
+      if (phaseShift < -1*_period - shiftPer)
+        marker->_eventLength = (_onSpillMaxLength-1)*_period;
       else
-        marker->_eventLength = eventTiming.onSpillMaxLength()*period;
+        marker->_eventLength = _onSpillMaxLength*_period;
 
       // we set pbtime to be the time of the proton bunch in terms of the DAQ clock
       // t=0 (which is determined by the event window marker arrival time)
@@ -129,8 +135,8 @@ namespace mu2e {
           pbt->pbtime_ += _randgauss.fire(0,_recoFromMCTruthErr);
         pbt->pbterr_ = _recoFromMCTruthErr;
       }else{
-        pbt->pbtime_ = -1*eventTiming.timeFromProtonsToDRMarker() - period/2.;
-        pbt->pbterr_ = period/sqrt(12);
+        pbt->pbtime_ = -1*eventTiming.timeFromProtonsToDRMarker() - _period/2.;
+        pbt->pbterr_ = _period/sqrt(12);
       }
     }
 

@@ -16,11 +16,11 @@
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerRO.hh"
@@ -224,8 +224,7 @@ namespace mu2e {
       GlobalConstantsHandle<ParticleDataList>  pdt;
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
-      ConditionsHandle<AcceleratorParams> accPar("ignored");
-      float mbtime = accPar->deBuncherPeriod;
+      float mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
 
       const Calorimeter& cal       = *(GeomHandle<Calorimeter>());
       const int   nROs             = cal.caloInfo().getInt("nSiPMPerCrystal");

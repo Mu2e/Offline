@@ -33,7 +33,7 @@ vector<double> targetPS_heightOfRectangularGapPerSection = {12.135,12.135,12.640
 vector<double> targetPS_thicknessOfGapPerSection                 = {2.0,2.0,1.0}; //mm
 
 int targetPS_nHaymanFins                        = 4;
-vector<double> targetPS_finAngles                        = {30.,120.,210.,300.}; //degrees
+vector<double> targetPS_finAngles                        = {-30.,-120.,-210.,-300.}; //degrees
 double targetPS_finOuterRadius             = 16.15;
 double targetPS_finThickness               = 1.0; //                                                                                                                                                              full thickness
 double targetPS_supportRingLength          = 8.0; // full length in mm

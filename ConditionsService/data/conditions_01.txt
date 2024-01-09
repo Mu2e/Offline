@@ -3,18 +3,6 @@
 //
 //
 
-// Accelerator parameters
-double acceleratorParams.deBuncherPeriod   = 1695. ; // ns
-//double acceleratorParams.intrinsicExt      = 1.64e-5; // S. Werkema, docdb-4044-v1  No longer used!  comes from pulses below
-
-// ExtMonFNAL clock timing.  1694/68 = 24.9118
-int extMonFNAL.numClockTicksPerDebuncherPeriod = 68;
-
-double extMonFNAL.temperature = 273; // Kelvin
-double extMonFNAL.biasVoltage = -150; // Volts
-
-
-
 //Calorimeter calibration information
 
 // Longitudinal non-uniformity response, see Mu2e doc ...
