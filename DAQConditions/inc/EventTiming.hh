@@ -31,18 +31,15 @@ namespace mu2e {
 
     // construct with constants, then some values are computed and filled below
     EventTiming( double timeFromProtonsToDRMarker,
-                 unsigned offSpillLength,
-                 int onSpillBins) :
+                 unsigned offSpillLength) :
       ProditionsEntity(cxname),
       _timeFromProtonsToDRMarker(timeFromProtonsToDRMarker),
-      _offSpillLength(offSpillLength),
-      _onSpillBins(onSpillBins) {}
+      _offSpillLength(offSpillLength) {}
 
     virtual ~EventTiming() = default;
 
     double timeFromProtonsToDRMarker() const { return _timeFromProtonsToDRMarker; }
     unsigned offSpillLength() const { return _offSpillLength; }
-    int onSpillBins() const { return _onSpillBins; }
 
     void print(std::ostream& os) const;
 
@@ -50,7 +47,6 @@ namespace mu2e {
 
     double _timeFromProtonsToDRMarker;
     unsigned _offSpillLength;
-    int _onSpillBins;
 
   };
 

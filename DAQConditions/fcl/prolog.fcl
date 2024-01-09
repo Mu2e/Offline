@@ -8,7 +8,6 @@ EventTiming : {
    TimeFromProtonsToDRMarker : 200.0
    # clock counts
    OffSpillEventLength : 4000
-   OnSpillBins : 5
 }
 
 END_PROLOG

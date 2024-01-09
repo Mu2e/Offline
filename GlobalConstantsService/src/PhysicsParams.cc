@@ -39,6 +39,7 @@ namespace mu2e {
 
     _nominalDRPeriod = config.getDouble("physicsParams.nominalDRPeriod");
     _nominalDAQTicks  = config.getInt("physicsParams.nominalDAQTicks");
+    _nominalDAQOnSpillBins  = config.getInt("physicsParams.nominalDAQOnSpillBins");
     _nominalDAQFrequency = config.getDouble("physicsParams.nominalDAQFrequency");
 
     std::vector<int> tmpPDGId;
