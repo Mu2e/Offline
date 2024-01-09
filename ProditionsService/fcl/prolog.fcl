@@ -1,10 +1,10 @@
-#include "Offline/DAQConditions/fcl/prolog.fcl"
-#include "Offline/STMConditions/fcl/prolog.fcl"
-#include "Offline/TrackerConditions/fcl/prolog.fcl"
-#include "Offline/AnalysisConditions/fcl/prolog.fcl"
+#include "mu2e_common_config/DAQConditions/fcl/prolog.fcl"
+#include "mu2e_common_config/STMConditions/fcl/prolog.fcl"
+#include "mu2e_common_config/TrackerConditions/fcl/prolog.fcl"
+#include "mu2e_common_config/AnalysisConditions/fcl/prolog.fcl"
 #include "Offline/SimulationConditions/fcl/prolog.fcl"
-#include "Offline/CaloConditions/fcl/prolog.fcl"
-#include "Offline/CRVConditions/fcl/prolog.fcl"
+#include "mu2e_common_config/CaloConditions/fcl/prolog.fcl"
+#include "mu2e_common_config/CRVConditions/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
