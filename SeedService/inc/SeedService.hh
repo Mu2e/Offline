@@ -163,6 +163,7 @@ namespace mu2e {
     void preModuleConstruction (art::ModuleDescription const& md);
     void postModuleConstruction(art::ModuleDescription const& md);
     void preModuleBeginRun     (art::ModuleContext const& md);
+    void preModule             (art::ModuleContext const& md);
     void postModuleBeginRun    (art::ModuleContext const& md);
     void postEvent             (art::Event const& ev, art::ScheduleContext);
     void postEndJob();

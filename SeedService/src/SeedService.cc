@@ -86,6 +86,7 @@ namespace mu2e {
     // Register callbacks.
     iRegistry.sPreModuleConstruction.watch  (this, &SeedService::preModuleConstruction  );
     iRegistry.sPostModuleConstruction.watch (this, &SeedService::postModuleConstruction );
+    iRegistry.sPreModule.watch              (this, &SeedService::preModule              );
     iRegistry.sPreModuleBeginRun.watch      (this, &SeedService::preModuleBeginRun      );
     iRegistry.sPostModuleBeginRun.watch     (this, &SeedService::postModuleBeginRun     );
     iRegistry.sPostEndJob.watch             (this, &SeedService::postEndJob             );
@@ -311,6 +312,10 @@ namespace mu2e {
 
   void SeedService::preModuleBeginRun ( art::ModuleContext const& mc){
     state_.set( SeedServiceHelper::ArtState::inBeginRun, mc.moduleLabel() );
+  }
+
+  void SeedService::preModule ( art::ModuleContext const& mc){
+    std::cerr << "Calling preModule: " << mc.moduleLabel() << std::endl;
   }
 
   void SeedService::postModuleBeginRun( art::ModuleContext const&){
