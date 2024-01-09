@@ -37,7 +37,7 @@
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/Table.hh"
 #include "Offline/Mu2eUtilities/inc/RootTreeSampler.hh"
-#include "Offline/Mu2eUtilities/inc/ReSeedByEvent.hh"
+#include "Offline/Mu2eUtilities/inc/ReSeedByEventID.hh"
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
 #include "TH1.h"
@@ -74,7 +74,7 @@ namespace mu2e {
     TH1F*   _hTime;
     TH1F*   _hZ;
 
-    ReSeedByEvent reseeder_;
+    ReSeedByEventID reseeder_;
 
   private:
     static SpectrumVar    parseSpectrumVar(const std::string& name);
@@ -156,6 +156,8 @@ namespace mu2e {
 
   //================================================================
   void StoppedParticleReactionGun::produce(art::Event& event) {
+
+    reseeder_.reseed(event.id());
 
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
 
