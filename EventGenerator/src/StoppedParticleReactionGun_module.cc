@@ -37,6 +37,7 @@
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/Table.hh"
 #include "Offline/Mu2eUtilities/inc/RootTreeSampler.hh"
+#include "Offline/Mu2eUtilities/inc/ReSeedByEvent.hh"
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
 #include "TH1.h"
@@ -57,6 +58,7 @@ namespace mu2e {
     GenId             genId_;
     int               verbosityLevel_;
 
+    SeedService::seed_t seed_;
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandGeneral randSpectrum_;
     RandomUnitSphere   randomUnitSphere_;
@@ -71,6 +73,8 @@ namespace mu2e {
     TH1F*   _hGenId;
     TH1F*   _hTime;
     TH1F*   _hZ;
+
+    ReSeedByEvent reseeder_;
 
   private:
     static SpectrumVar    parseSpectrumVar(const std::string& name);
@@ -92,11 +96,13 @@ namespace mu2e {
     , spectrum_(BinnedSpectrum(psphys_))
     , genId_(GenId::findByName(psphys_.get<std::string>("genId")))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
-    , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+    , seed_(art::ServiceHandle<SeedService>()->getSeed())
+    , eng_(createEngine(seed_))
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
     , randomUnitSphere_(eng_)
     , stops_(eng_, pset.get<fhicl::ParameterSet>("muonStops"))
     , doHistograms_       (pset.get<bool>("doHistograms",false ) )
+    , reseeder_(eng_,seed_)
   {
     produces<mu2e::GenParticleCollection>();
 
