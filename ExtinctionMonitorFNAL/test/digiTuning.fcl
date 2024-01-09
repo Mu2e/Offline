@@ -47,6 +47,9 @@ physics : {
             // ToT calibration target.
             totCalib : 1
 
+            temperature : 273.0  // Kelvin
+            biasVoltage : -150.0  // Volts
+
             // Arbitrary, but must be sane
             numClustersPerHit : 128
 

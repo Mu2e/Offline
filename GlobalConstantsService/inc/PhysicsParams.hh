@@ -45,6 +45,7 @@ namespace mu2e
 
     double   getNominalDRPeriod() const { return _nominalDRPeriod; } // ns
     int      getNominalDAQTicks() const { return _nominalDAQTicks; } // counts, DAQ ticks per DRperiod
+    int      getNominalDAQOnSpillBins() const { return _nominalDAQOnSpillBins; } // how often to 68->67
     double   getNominalDAQFrequency() const { return _nominalDAQFrequency; } // MHz
     double   getNominalDAQClockTick() const { return 1000.0/_nominalDAQFrequency; } // ns
 
@@ -170,6 +171,7 @@ namespace mu2e
 
     double _nominalDRPeriod;
     int    _nominalDAQTicks;
+    int    _nominalDAQOnSpillBins;
     double _nominalDAQFrequency;
 
     typedef std::map<PDGCode::type, double> FreeLifeMap;

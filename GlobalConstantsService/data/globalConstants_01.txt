@@ -17,6 +17,7 @@ double physicsParams.protonKE = 8000.; // - in MeV
 // if significant variations appear, this can be moved to conditions database
 double physicsParams.nominalDRPeriod = 1695.; // ns
 int    physicsParams.nominalDAQTicks = 68; // ticks of DAQ clock in DRPeriod
+int    physicsParams.nominalDAQOnSpillBins = 5; // how often to 68->67
 double physicsParams.nominalDAQFrequency = 40.; // MHz
 
 // charged pion and kaon

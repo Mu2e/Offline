@@ -35,28 +35,29 @@ namespace CalPatRec {
     float                   fNxr;
     float                   fNyr;
 
-    HitData_t(const mu2e::ComboHit* Hit,int ZFace) {
-      fHit         = Hit;
-      fSeed        = nullptr;
-      fUsed        = 0;
-      fZFace       = ZFace;
-      fChi2Min     = 99999.0;
-      float sigw   = Hit->posRes(mu2e::ComboHit::wire);
-      fSigW2       = sigw*sigw;
-      fCorrTime    = Hit->correctedTime();
-      fX           = Hit->pos ().x();
-      fY           = Hit->pos ().y();
-      fWx          = Hit->wdir().x();
-      fWy          = Hit->wdir().y();
-      fNr          = fX*fWy-fY*fWx;
-      fNx2         = fWx*fWx;
-      fNxy         = fWx*fWy;
-      fNy2         = fWy*fWy;
-      fNxr         = fWx*fNr;
-      fNyr         = fWy*fNr;
-      fDeltaIndex  = -1;
-      fProtonIndex = -1;
-    }
+
+    HitData_t(const ComboHit* Hit,int ZFace) {
+        fHit         = Hit;
+        fSeed        = nullptr;
+        fUsed        = 0;
+        fZFace       = ZFace;
+        fChi2Min     = 99999.0;
+        float sigw   =  Hit->posRes(ComboHit::wire);
+        fSigW2       = sigw*sigw;
+        fCorrTime    = Hit->correctedTime();
+        fX           = Hit->pos ().x();
+        fY           = Hit->pos ().y();
+        fWx          = Hit->uDir2D().x();
+        fWy          = Hit->uDir2D().y();
+        fNr          = fX*fWy-fY*fWx;
+        fNx2         = fWx*fWx;
+        fNxy         = fWx*fWy;
+        fNy2         = fWy*fWy;
+        fNxr         = fWx*fNr;
+        fNyr         = fWy*fNr;
+        fDeltaIndex  = -1;
+        fProtonIndex = -1;
+      }
 
     int   Used       () const { return fUsed       ; }
     int   DeltaIndex () const { return fDeltaIndex ; }

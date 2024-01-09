@@ -42,6 +42,8 @@ namespace mu2e {
     TH1D* hitClock_;
     TH1D* hitToT_;
 
+    int numClockTicksPerDebuncherPeriod_;
+
     // per-chip histograms
     std::map<ExtMonFNALChipId, TH2D*> chipOccupancy_;
   };
