@@ -16,13 +16,13 @@ namespace mu2e {
   Float_t ComboHit::posRes(edir dir) const {
     switch ( dir ) {
       case ComboHit::wire : {
-        return _ures;
+        return uRes();
       }
       case ComboHit::trans : {
-        return _vres;
+        return vRes();
       }
       case ComboHit::z : {
-        return _wres;
+        return wRes();
       }
       default : {
         return -1.0;

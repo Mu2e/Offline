@@ -20,7 +20,6 @@
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"

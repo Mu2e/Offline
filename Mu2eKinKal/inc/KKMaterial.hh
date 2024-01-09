@@ -10,7 +10,10 @@
 #include "KinKal/MatEnv/MatDBInfo.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKFileFinder.hh"
+
+#include <memory>
 #include <string>
+
 namespace mu2e {
   class KKMaterial {
     public:
@@ -35,7 +38,7 @@ namespace mu2e {
       KKFileFinder filefinder_; // used to find material info
       std::string wallmatname_, gasmatname_, wirematname_;
       MatEnv::DetMaterial::energylossmode eloss_;
-      mutable MatDBInfo* matdbinfo_; // material database
+      mutable std::unique_ptr<MatDBInfo> matdbinfo_; // material database
       mutable std::unique_ptr<KKStrawMaterial> smat_; // straw material
   };
 }

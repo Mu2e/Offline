@@ -24,7 +24,6 @@ libs =  [
     'mu2e_ConfigTools',
     'mu2e_DbTables',
     'mu2e_GeneralUtilities',
-    'mu2e_Mu2eInterfaces',
     babarlibs,
     'art_Framework_Core',
     'art_Framework_Principal',

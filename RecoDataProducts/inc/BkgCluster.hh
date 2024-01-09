@@ -17,13 +17,13 @@ namespace mu2e
    {
        //Default hit count chosen for compuational efficiency
        BkgCluster() {_hits.reserve(16);}
-       BkgCluster(TwoDPoint point, float time) : _point(point), _time(time) {_hits.reserve(16);_cpoints.addPoint(_point,0);}
+       BkgCluster(TwoDPoint point, float time) : _point(point), _time(time) {_hits.reserve(16);_cpoints.addPoint(_point,0);_pos = point.pos3();}
        enum  distMethod {spatial,chi2};
 
        float                        getKerasQ() const {return _kerasQ; }
        auto const&                  getDistMethod() const {return _distMethod; }
        auto const&                  flag() const {return _flag; }
-       auto const                   pos()  const {return _cpoints.point().pos3();  }
+       auto const                   pos()  const {return _pos;  }
        auto &                       points()  {return _cpoints;  }
        auto const&                  points() const  {return _cpoints;  }
        auto const&                  time() const {return _time; }

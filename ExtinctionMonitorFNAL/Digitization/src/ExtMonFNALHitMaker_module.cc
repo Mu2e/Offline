@@ -43,11 +43,9 @@
 #include "Offline/ExtinctionMonitorFNAL/Digitization/inc/ProtonPulseShape.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/ExtMonFNALConditions.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 
 namespace mu2e {
@@ -87,13 +85,16 @@ namespace mu2e {
         , qCalib_(pset.get<double>("qCalib"))
         , totCalib_(pset.get<int>("totCalib"))
 
+        , numClockTicksPerDebuncherPeriod_(GlobalConstantsHandle<PhysicsParams>()->getNominalDAQTicks())
+        , clockTick_(GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod()/numClockTicksPerDebuncherPeriod_)
+        , temperature_(pset.get<double>("temperature")*CLHEP::kelvin)
+        , biasVoltage_(pset.get<double>("biasVoltage")*CLHEP::volt)
+
         , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
 
         , gaussian_(eng_)
 
         , extMon_(0)
-        , condExtMon_(0)
-        , condAcc_(0)
 
         , applyProtonPulseShape_(pset.get<bool>("applyProtonPulseShape"))
         , protonPulse_(applyProtonPulseShape_ ?
@@ -102,7 +103,7 @@ namespace mu2e {
 
         , noise_(eng_,
                  &extMon_,/*Geometry not available at module ctr, store the address of the ptr */
-                 &condExtMon_, /*similar for Conditions*/
+                 numClockTicksPerDebuncherPeriod_,
                  pset.get<double>("pixelNoisePerBC"))
 
         , cutClockEnabled_(false)
@@ -182,15 +183,18 @@ namespace mu2e {
       double qCalib_;
       int    totCalib_;
 
+      int numClockTicksPerDebuncherPeriod_;
+      double clockTick_;
+      double temperature_;
+      double biasVoltage_;
+
       art::RandomNumberGenerator::base_engine_t& eng_;
       CLHEP::RandGaussQ gaussian_;
 
-      // Non-owning pointers to the geometry and conditions objects. The
+      // Non-owning pointer to the geometry object. The
       // current Mu2e infrastructure does not allow the use of a Handle
       // as a class member.
       const ExtMon *extMon_;
-      const ExtMonFNALConditions *condExtMon_;
-      const AcceleratorParams *condAcc_;
 
       SiliconProperties siProps_;
 
@@ -238,7 +242,7 @@ namespace mu2e {
       }
 
       int timeStamp(double time_ns) const {
-        return time_ns/condExtMon_->clockTick();
+        return time_ns/clockTick_;
       }
 
       int timeStamp(int iplane, double time) const {
@@ -299,17 +303,11 @@ namespace mu2e {
         }
       }
 
-      ConditionsHandle<ExtMonFNALConditions> cond("ignored");
-      condExtMon_ = &*cond;
-
-      ConditionsHandle<AcceleratorParams> condAcc("ignored");
-      condAcc_ = &*condAcc;
-
       const double moduleThickness = 2*(extMon_->module().sensorHalfSize()[2] + extMon_->module().chipHalfSize()[2]);
 
-      const double electricField = std::abs(cond->biasVoltage())/moduleThickness;
+      const double electricField = std::abs(biasVoltage_)/moduleThickness;
 
-      siProps_.setConditions(cond->temperature(), electricField);
+      siProps_.setConditions(temperature_, electricField);
 
       std::cout<<"ExtMonFNALHitMaker:"
                <<"  electronHolePairsPerEnergy = "<<siProps_.electronHolePairsPerEnergy()
@@ -318,8 +316,8 @@ namespace mu2e {
                <<std::endl;
 
       std::cout<<"ExtMonFNALHitMaker:"
-               <<"  numClockTicksPerDebuncherPeriod = "<<cond->numClockTicksPerDebuncherPeriod()
-               <<", clockTick = "<<cond->clockTick()
+               <<"  numClockTicksPerDebuncherPeriod = "<<numClockTicksPerDebuncherPeriod_
+               <<", clockTick = "<<clockTick_
                <<std::endl;
     }
 
@@ -459,8 +457,8 @@ namespace mu2e {
       PixelChargeHistory& in(*inout);
       PixelChargeHistory out;
 
-      const double period = condAcc_->deBuncherPeriod;
-      const double margin = maxToT_ * condExtMon_->clockTick();
+      const double period = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
+      const double margin = maxToT_ * clockTick_;
 
       while(!in.empty()) {
         PixelTimedChargeDeposit dep = in.top();
@@ -504,7 +502,7 @@ namespace mu2e {
                                           const ExtMonFNALPixelId& pix,
                                           PixelChargeHistory& ch)
     {
-      PixelToTCircuit cap(discriminatorThreshold_, qCalib_, totCalib_, condExtMon_->clockTick());
+      PixelToTCircuit cap(discriminatorThreshold_, qCalib_, totCalib_, clockTick_);
       const unsigned iplane = pix.chip().module().plane();
 
       double t = ch.top().time;
@@ -562,7 +560,7 @@ namespace mu2e {
           // one microbunch, which compensates for hit duplication in
           // analogue time folding.
 
-          if((0 <= roStartTime) && (roStartTime < condExtMon_->numClockTicksPerDebuncherPeriod())) {
+          if((0 <= roStartTime) && (roStartTime < numClockTicksPerDebuncherPeriod_)) {
 
             if(chipSimInputsMode_) {
               addVerilogHit(pix, hitStart_ns, hitEnd_ns);
@@ -600,9 +598,9 @@ namespace mu2e {
     void ExtMonFNALHitMaker::addVerilogHit(const ExtMonFNALPixelId& pix, double tstart, double tend) {
       if(pix.chip() == chipSimChipId_) {
         const int bx = timeStamp(tstart) +
-          condExtMon_->numClockTicksPerDebuncherPeriod() * (chipSimProtonPulseNumber_ - 1);
+          numClockTicksPerDebuncherPeriod_ * (chipSimProtonPulseNumber_ - 1);
 
-        const double twalk = tstart - timeStamp(tstart) * condExtMon_->clockTick();
+        const double twalk = tstart - timeStamp(tstart) * clockTick_;
 
         const double tot = tend - tstart;
 
@@ -633,9 +631,9 @@ namespace mu2e {
 
       // The OVM input script wants to have a line for each clock tick
       // Therefore we do a fixed-size loop here and write out a lot of emtpy events.
-      for(int localClock = 0; localClock < condExtMon_->numClockTicksPerDebuncherPeriod(); ++localClock) {
+      for(int localClock = 0; localClock < numClockTicksPerDebuncherPeriod_; ++localClock) {
 
-        const int ibx =  localClock + condExtMon_->numClockTicksPerDebuncherPeriod() * (chipSimProtonPulseNumber_ - 1);
+        const int ibx =  localClock + numClockTicksPerDebuncherPeriod_ * (chipSimProtonPulseNumber_ - 1);
 
         *chipSimFile_ <<"BX "<<ibx<<std::endl;
 

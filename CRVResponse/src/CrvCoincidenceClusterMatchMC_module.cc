@@ -8,8 +8,6 @@
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "Offline/CRVResponse/inc/CrvMCHelper.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"

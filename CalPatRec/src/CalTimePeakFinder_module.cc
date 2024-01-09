@@ -16,10 +16,6 @@
 #include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 
-// conditions
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 
