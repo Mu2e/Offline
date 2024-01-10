@@ -53,7 +53,6 @@
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
 #include "Offline/RecoDataProducts/inc/TrkCaloHitPID.hh"
-#include "Offline/RecoDataProducts/inc/TrkQual.hh"
 #include "Offline/RecoDataProducts/inc/RecoQual.hh"
 #include "Offline/RecoDataProducts/inc/AlgorithmID.hh"
 #include "KinKal/General/ParticleState.hh"
