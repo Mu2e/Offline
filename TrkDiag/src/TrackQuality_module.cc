@@ -38,7 +38,7 @@ namespace TMVA_SOFIE_trkqual {
 namespace mu2e
 {
 
-  class TrackQualityV2 : public art::EDProducer
+  class TrackQuality : public art::EDProducer
   {
     public:
       struct Config {
@@ -50,7 +50,7 @@ namespace mu2e
       };
 
       using Parameters = art::EDProducer::Table<Config>;
-      TrackQualityV2(const Parameters& conf);
+      TrackQuality(const Parameters& conf);
 
     private:
       void produce(art::Event& event) override;
@@ -63,7 +63,7 @@ namespace mu2e
 
   };
 
-  TrackQualityV2::TrackQualityV2(const Parameters& conf) :
+  TrackQuality::TrackQuality(const Parameters& conf) :
     art::EDProducer{conf},
     _kalSeedTag(conf().kalSeedTag()),
     _printMVA(conf().printMVA())
@@ -72,7 +72,7 @@ namespace mu2e
       mva_ = std::make_shared<TMVA_SOFIE_trkqual::Session>("Offline/TrkDiag/data/trkqual.dat");
     }
 
-  void TrackQualityV2::produce(art::Event& event ) {
+  void TrackQuality::produce(art::Event& event ) {
     // create output
     unique_ptr<MVAResultCollection> mvacol(new MVAResultCollection());
 
@@ -140,7 +140,7 @@ namespace mu2e
     }
 
     if ( (mvacol->size() != kalSeeds.size()) ) {
-      throw cet::exception("TrackQualityV2") << "KalSeed and MVAResult sizes are inconsistent (" << kalSeeds.size() << ", " << mvacol->size();
+      throw cet::exception("TrackQuality") << "KalSeed and MVAResult sizes are inconsistent (" << kalSeeds.size() << ", " << mvacol->size();
     }
 
 
@@ -149,4 +149,4 @@ namespace mu2e
   }
 }// mu2e
 
-DEFINE_ART_MODULE(mu2e::TrackQualityV2)
+DEFINE_ART_MODULE(mu2e::TrackQuality)

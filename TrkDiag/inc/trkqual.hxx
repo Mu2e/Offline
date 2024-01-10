@@ -1,11 +1,11 @@
-//Code generated automatically by TMVA for Inference of Model file [trkqual.h5] at [Wed Sep  6 23:28:56 2023] 
+//Code generated automatically by TMVA for Inference of Model file [trkqual.h5] at [Tue Jan  9 22:41:10 2024] 
 
 #ifndef TMVA_SOFIE_TRKQUAL
 #define TMVA_SOFIE_TRKQUAL
 
 #include<algorithm>
-#include<vector>
 #include<cmath>
+#include<vector>
 #include "TMVA/SOFIE_common.hxx"
 #include <fstream>
 
@@ -18,46 +18,46 @@ namespace BLAS{
 	                       const float * beta, float * C, const int * ldc);
 }//BLAS
 struct Session {
+std::vector<float> fTensor_dense3bias0 = std::vector<float>(1);
+float * tensor_dense3bias0 = fTensor_dense3bias0.data();
 std::vector<float> fTensor_dense3kernel0 = std::vector<float>(6);
 float * tensor_dense3kernel0 = fTensor_dense3kernel0.data();
 std::vector<float> fTensor_dense2bias0 = std::vector<float>(6);
 float * tensor_dense2bias0 = fTensor_dense2bias0.data();
+std::vector<float> fTensor_dense2kernel0 = std::vector<float>(42);
+float * tensor_dense2kernel0 = fTensor_dense2kernel0.data();
+std::vector<float> fTensor_dense1bias0 = std::vector<float>(7);
+float * tensor_dense1bias0 = fTensor_dense1bias0.data();
+std::vector<float> fTensor_dense1kernel0 = std::vector<float>(49);
+float * tensor_dense1kernel0 = fTensor_dense1kernel0.data();
 std::vector<float> fTensor_densebias0 = std::vector<float>(7);
 float * tensor_densebias0 = fTensor_densebias0.data();
 std::vector<float> fTensor_densekernel0 = std::vector<float>(49);
 float * tensor_densekernel0 = fTensor_densekernel0.data();
-std::vector<float> fTensor_dense1kernel0 = std::vector<float>(49);
-float * tensor_dense1kernel0 = fTensor_dense1kernel0.data();
-std::vector<float> fTensor_dense3bias0 = std::vector<float>(1);
-float * tensor_dense3bias0 = fTensor_dense3bias0.data();
-std::vector<float> fTensor_dense1bias0 = std::vector<float>(7);
-float * tensor_dense1bias0 = fTensor_dense1bias0.data();
-std::vector<float> fTensor_dense2kernel0 = std::vector<float>(42);
-float * tensor_dense2kernel0 = fTensor_dense2kernel0.data();
-std::vector<float> fTensor_dense1Dense = std::vector<float>(7);
-float * tensor_dense1Dense = fTensor_dense1Dense.data();
-std::vector<float> fTensor_denseSigmoid0 = std::vector<float>(7);
-float * tensor_denseSigmoid0 = fTensor_denseSigmoid0.data();
-std::vector<float> fTensor_dense1Sigmoid0 = std::vector<float>(7);
-float * tensor_dense1Sigmoid0 = fTensor_dense1Sigmoid0.data();
 std::vector<float> fTensor_dense3Dense = std::vector<float>(1);
 float * tensor_dense3Dense = fTensor_dense3Dense.data();
+std::vector<float> fTensor_dense3bias0bcast = std::vector<float>(1);
+float * tensor_dense3bias0bcast = fTensor_dense3bias0bcast.data();
+std::vector<float> fTensor_dense2Sigmoid0 = std::vector<float>(6);
+float * tensor_dense2Sigmoid0 = fTensor_dense2Sigmoid0.data();
+std::vector<float> fTensor_dense2Dense = std::vector<float>(6);
+float * tensor_dense2Dense = fTensor_dense2Dense.data();
+std::vector<float> fTensor_dense1Sigmoid0 = std::vector<float>(7);
+float * tensor_dense1Sigmoid0 = fTensor_dense1Sigmoid0.data();
+std::vector<float> fTensor_dense3Sigmoid0 = std::vector<float>(1);
+float * tensor_dense3Sigmoid0 = fTensor_dense3Sigmoid0.data();
+std::vector<float> fTensor_dense1Dense = std::vector<float>(7);
+float * tensor_dense1Dense = fTensor_dense1Dense.data();
 std::vector<float> fTensor_dense1bias0bcast = std::vector<float>(7);
 float * tensor_dense1bias0bcast = fTensor_dense1bias0bcast.data();
-std::vector<float> fTensor_densebias0bcast = std::vector<float>(7);
-float * tensor_densebias0bcast = fTensor_densebias0bcast.data();
+std::vector<float> fTensor_denseSigmoid0 = std::vector<float>(7);
+float * tensor_denseSigmoid0 = fTensor_denseSigmoid0.data();
 std::vector<float> fTensor_denseDense = std::vector<float>(7);
 float * tensor_denseDense = fTensor_denseDense.data();
 std::vector<float> fTensor_dense2bias0bcast = std::vector<float>(6);
 float * tensor_dense2bias0bcast = fTensor_dense2bias0bcast.data();
-std::vector<float> fTensor_dense2Dense = std::vector<float>(6);
-float * tensor_dense2Dense = fTensor_dense2Dense.data();
-std::vector<float> fTensor_dense3Sigmoid0 = std::vector<float>(1);
-float * tensor_dense3Sigmoid0 = fTensor_dense3Sigmoid0.data();
-std::vector<float> fTensor_dense2Sigmoid0 = std::vector<float>(6);
-float * tensor_dense2Sigmoid0 = fTensor_dense2Sigmoid0.data();
-std::vector<float> fTensor_dense3bias0bcast = std::vector<float>(1);
-float * tensor_dense3bias0bcast = fTensor_dense3bias0bcast.data();
+std::vector<float> fTensor_densebias0bcast = std::vector<float>(7);
+float * tensor_densebias0bcast = fTensor_densebias0bcast.data();
 
 
 Session(std::string filename ="") {
@@ -69,6 +69,17 @@ Session(std::string filename ="") {
    }
    std::string tensor_name;
    int length;
+   f >> tensor_name >> length;
+   if (tensor_name != "tensor_dense3bias0" ) {
+      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor name; expected name is tensor_dense3bias0 , read " + tensor_name;
+      throw std::runtime_error(err_msg);
+    }
+   if (length != 1) {
+      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor size; expected size is 1 , read " + std::to_string(length) ;
+      throw std::runtime_error(err_msg);
+    }
+    for (int i =0; i < length; ++i) 
+       f >> tensor_dense3bias0[i];
    f >> tensor_name >> length;
    if (tensor_name != "tensor_dense3kernel0" ) {
       std::string err_msg = "TMVA-SOFIE failed to read the correct tensor name; expected name is tensor_dense3kernel0 , read " + tensor_name;
@@ -92,6 +103,39 @@ Session(std::string filename ="") {
     for (int i =0; i < length; ++i) 
        f >> tensor_dense2bias0[i];
    f >> tensor_name >> length;
+   if (tensor_name != "tensor_dense2kernel0" ) {
+      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor name; expected name is tensor_dense2kernel0 , read " + tensor_name;
+      throw std::runtime_error(err_msg);
+    }
+   if (length != 42) {
+      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor size; expected size is 42 , read " + std::to_string(length) ;
+      throw std::runtime_error(err_msg);
+    }
+    for (int i =0; i < length; ++i) 
+       f >> tensor_dense2kernel0[i];
+   f >> tensor_name >> length;
+   if (tensor_name != "tensor_dense1bias0" ) {
+      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor name; expected name is tensor_dense1bias0 , read " + tensor_name;
+      throw std::runtime_error(err_msg);
+    }
+   if (length != 7) {
+      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor size; expected size is 7 , read " + std::to_string(length) ;
+      throw std::runtime_error(err_msg);
+    }
+    for (int i =0; i < length; ++i) 
+       f >> tensor_dense1bias0[i];
+   f >> tensor_name >> length;
+   if (tensor_name != "tensor_dense1kernel0" ) {
+      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor name; expected name is tensor_dense1kernel0 , read " + tensor_name;
+      throw std::runtime_error(err_msg);
+    }
+   if (length != 49) {
+      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor size; expected size is 49 , read " + std::to_string(length) ;
+      throw std::runtime_error(err_msg);
+    }
+    for (int i =0; i < length; ++i) 
+       f >> tensor_dense1kernel0[i];
+   f >> tensor_name >> length;
    if (tensor_name != "tensor_densebias0" ) {
       std::string err_msg = "TMVA-SOFIE failed to read the correct tensor name; expected name is tensor_densebias0 , read " + tensor_name;
       throw std::runtime_error(err_msg);
@@ -113,50 +157,6 @@ Session(std::string filename ="") {
     }
     for (int i =0; i < length; ++i) 
        f >> tensor_densekernel0[i];
-   f >> tensor_name >> length;
-   if (tensor_name != "tensor_dense1kernel0" ) {
-      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor name; expected name is tensor_dense1kernel0 , read " + tensor_name;
-      throw std::runtime_error(err_msg);
-    }
-   if (length != 49) {
-      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor size; expected size is 49 , read " + std::to_string(length) ;
-      throw std::runtime_error(err_msg);
-    }
-    for (int i =0; i < length; ++i) 
-       f >> tensor_dense1kernel0[i];
-   f >> tensor_name >> length;
-   if (tensor_name != "tensor_dense3bias0" ) {
-      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor name; expected name is tensor_dense3bias0 , read " + tensor_name;
-      throw std::runtime_error(err_msg);
-    }
-   if (length != 1) {
-      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor size; expected size is 1 , read " + std::to_string(length) ;
-      throw std::runtime_error(err_msg);
-    }
-    for (int i =0; i < length; ++i) 
-       f >> tensor_dense3bias0[i];
-   f >> tensor_name >> length;
-   if (tensor_name != "tensor_dense1bias0" ) {
-      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor name; expected name is tensor_dense1bias0 , read " + tensor_name;
-      throw std::runtime_error(err_msg);
-    }
-   if (length != 7) {
-      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor size; expected size is 7 , read " + std::to_string(length) ;
-      throw std::runtime_error(err_msg);
-    }
-    for (int i =0; i < length; ++i) 
-       f >> tensor_dense1bias0[i];
-   f >> tensor_name >> length;
-   if (tensor_name != "tensor_dense2kernel0" ) {
-      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor name; expected name is tensor_dense2kernel0 , read " + tensor_name;
-      throw std::runtime_error(err_msg);
-    }
-   if (length != 42) {
-      std::string err_msg = "TMVA-SOFIE failed to read the correct tensor size; expected size is 42 , read " + std::to_string(length) ;
-      throw std::runtime_error(err_msg);
-    }
-    for (int i =0; i < length; ++i) 
-       f >> tensor_dense2kernel0[i];
    f.close();
    {
       float * data = TMVA::Experimental::SOFIE::UTILITY::UnidirectionalBroadcast<float>(tensor_densebias0,{ 7 }, { 1 , 7 });
