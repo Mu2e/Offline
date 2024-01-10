@@ -102,7 +102,7 @@ namespace mu2e {
     , randomUnitSphere_(eng_)
     , stops_(eng_, pset.get<fhicl::ParameterSet>("muonStops"))
     , doHistograms_       (pset.get<bool>("doHistograms",false ) )
-    , reseeder_(eng_,seed_)
+    , reseeder_(eng_,seed_,verbosityLevel_)
   {
     produces<mu2e::GenParticleCollection>();
 
