@@ -1,5 +1,5 @@
 //
-// A datsa product that stores the result of any MVA/ML/AI algorithm
+// A data product that stores the result of any MVA/ML/AI algorithm
 //
 #ifndef RecoDataProducts_MVAResult_hh
 #define RecoDataProducts_MVAResult_hh
