@@ -1,5 +1,5 @@
 //Code generated automatically by TMVA for Inference of Model file [trkqual.h5] at [Tue Jan  9 22:41:10 2024] 
-
+//from TrkQual repository commit ee3082b
 #ifndef TMVA_SOFIE_TRKQUAL
 #define TMVA_SOFIE_TRKQUAL
 
