@@ -1,7 +1,7 @@
-//Code generated automatically by TMVA for Inference of Model file [trkqual.h5] at [Tue Jan  9 22:41:10 2024] 
-//from TrkQual repository commit ee3082b
-#ifndef TMVA_SOFIE_TRKQUAL
-#define TMVA_SOFIE_TRKQUAL
+//Code generated automatically by TMVA for Inference of Model file [TrkQual_ANN1.h5] at [Fri Jan 12 14:02:22 2024] 
+
+#ifndef TMVA_SOFIE_TRKQUAL_ANN1
+#define TMVA_SOFIE_TRKQUAL_ANN1
 
 #include<algorithm>
 #include<cmath>
@@ -9,7 +9,7 @@
 #include "TMVA/SOFIE_common.hxx"
 #include <fstream>
 
-namespace TMVA_SOFIE_trkqual{
+namespace TMVA_SOFIE_TrkQual_ANN1{
 namespace BLAS{
 	extern "C" void sgemv_(const char * trans, const int * m, const int * n, const float * alpha, const float * A,
 	                       const int * lda, const float * X, const int * incx, const float * beta, const float * Y, const int * incy);
@@ -61,7 +61,7 @@ float * tensor_densebias0bcast = fTensor_densebias0bcast.data();
 
 
 Session(std::string filename ="") {
-   if (filename.empty()) filename = "trkqual.dat";
+   if (filename.empty()) filename = "TrkQual_ANN1.dat";
    std::ifstream f;
    f.open(filename);
    if (!f.is_open()){
@@ -249,6 +249,6 @@ std::vector<float> infer(float* tensor_denseinput){
    return ret;
 }
 };
-} //TMVA_SOFIE_trkqual
+} //TMVA_SOFIE_TrkQual_ANN1
 
-#endif  // TMVA_SOFIE_TRKQUAL
+#endif  // TMVA_SOFIE_TRKQUAL_ANN1
