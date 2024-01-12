@@ -20,7 +20,7 @@
 // data
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/MVAResult.hh"
-#include "Offline/TrkDiag/inc/trkqual.hxx"
+#include "Offline/TrkDiag/inc/TrkQual_ANN1.hxx"
 // C++
 #include <iostream>
 #include <fstream>
@@ -32,7 +32,7 @@ using namespace std;
 using CLHEP::Hep3Vector;
 using CLHEP::HepVector;
 
-namespace TMVA_SOFIE_trkqual {
+namespace TMVA_SOFIE_TrkQual_ANN1 {
   class Session;
 }
 namespace mu2e
@@ -60,7 +60,7 @@ namespace mu2e
       art::InputTag _kalSeedTag;
       bool _printMVA;
 
-    std::shared_ptr<TMVA_SOFIE_trkqual::Session> mva_;
+    std::shared_ptr<TMVA_SOFIE_TrkQual_ANN1::Session> mva_;
 
   };
 
@@ -70,7 +70,7 @@ namespace mu2e
     _printMVA(conf().printMVA())
     {
       produces<MVAResultCollection>();
-      mva_ = std::make_shared<TMVA_SOFIE_trkqual::Session>(conf().datFilename());
+      mva_ = std::make_shared<TMVA_SOFIE_TrkQual_ANN1::Session>(conf().datFilename());
     }
 
   void TrackQuality::produce(art::Event& event ) {
