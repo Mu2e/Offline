@@ -47,6 +47,7 @@ namespace mu2e
 
         fhicl::Atom<art::InputTag> kalSeedTag{Name("KalSeedCollection"), Comment("Input tag for KalSeedCollection")};
         fhicl::Atom<bool> printMVA{Name("PrintMVA"), Comment("Print the MVA used"), false};
+        fhicl::Atom<std::string> datFilename{Name("datFilename"), Comment("Filename for the .dat file to use")};
       };
 
       using Parameters = art::EDProducer::Table<Config>;
@@ -69,7 +70,7 @@ namespace mu2e
     _printMVA(conf().printMVA())
     {
       produces<MVAResultCollection>();
-      mva_ = std::make_shared<TMVA_SOFIE_trkqual::Session>("Offline/TrkDiag/data/trkqual.dat");
+      mva_ = std::make_shared<TMVA_SOFIE_trkqual::Session>(conf().datFilename());
     }
 
   void TrackQuality::produce(art::Event& event ) {
