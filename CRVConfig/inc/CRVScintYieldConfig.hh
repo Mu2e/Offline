@@ -1,7 +1,7 @@
 #ifndef STMConfig_CRVScintYieldConfig_hh
 #define STMConfig_CRVScintYieldConfig_hh
 //
-// Fcl stanza for CRV ScintYield (scintillation yield spread of CRV counters) prodition
+// Fcl stanza for CRV ScintYield (scintillation yield spread of CRV channels) prodition
 //
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"

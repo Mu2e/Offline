@@ -3,7 +3,7 @@
 
 //
 // construct a CRVScintYield proditions entity
-// (scintillation yield spread of CRV counters)
+// (scintillation yield spread of CRV channels)
 // from fcl or database
 //
 

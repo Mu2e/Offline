@@ -2,7 +2,7 @@
 #define CRVConditions_CRVScintYield_hh
 
 //
-// Holds scintillation yield spread of CRV counters
+// Holds scintillation yield spread of CRV channels
 //
 
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"

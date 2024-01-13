@@ -56,7 +56,7 @@ class ProditionsService {
         Comment("CRV online-offline numbering configuration")};
     fhicl::Table<CRVScintYieldConfig> crvScintYield{
         Name("crvScintYield"),
-        Comment("CRV scintillation yield deviation map for each counter")};
+        Comment("CRV scintillation yield deviation map for each channel")};
     fhicl::Table<CRVStatusConfig> crvStatus{
         Name("crvStatus"), Comment("CRV bad channels configuration")};
     fhicl::Table<CRVCalibConfig> crvCalib{
