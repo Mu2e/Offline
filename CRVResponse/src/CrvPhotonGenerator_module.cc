@@ -8,6 +8,7 @@
 #include "Offline/CRVResponse/inc/MakeCrvPhotons.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/DataProducts/inc/CRVId.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
@@ -64,14 +65,10 @@ namespace mu2e
       fhicl::Sequence<int> reflectors{ Name("reflectors"), Comment("location of reflectors at Crv sectors")};
       fhicl::Sequence<std::string> lookupTableFileNames{ Name("lookupTableFileNames"), Comment("lookup tables for Crv sectors")};
       fhicl::Sequence<double> scintillationYields{ Name("scintillationYields"), Comment("scintillation yields at Crv sectors")};
-      fhicl::Atom<double> scintillationYieldScaleFactor{ Name("scintillationYieldScaleFactor"),
-                                                        Comment("scale factor for scintillation yield")};
-      fhicl::Atom<double> scintillationYieldVariation{ Name("scintillationYieldVariation"),
-                                                      Comment("sigma of gaussian variation of scintillation yield")};
-      fhicl::Atom<double> scintillationYieldVariationCutoffLow{ Name("scintillationYieldVariationCutoffLow"),
-                                                               Comment("lower cutoff at scintillation yield variation")};
-      fhicl::Atom<double> scintillationYieldVariationCutoffHigh{ Name("scintillationYieldVariationCutoffHigh"),
-                                                                Comment("upper cutoff at scintillation yield variation")};
+      fhicl::Atom<double> photonYieldScaleFactor{ Name("photonYieldScaleFactor"), Comment("scale factor for light yield")};
+      fhicl::Atom<double> photonYieldVariationSigma{ Name("photonYieldVariationSigma"),Comment("sigma of gaussian variation of scintillation yield")};
+      fhicl::Atom<double> photonYieldVariationCutoffLow{ Name("photonYieldVariationCutoffLow"),Comment("lower cutoff at photon yield variation")};
+      fhicl::Atom<double> photonYieldVariationCutoffHigh{ Name("photonYieldVariationCutoffHigh"),Comment("upper cutoff at photon yield variation")};
       fhicl::Atom<double> digitizationStart{ Name("digitizationStart"), Comment("start of digitization")};
       fhicl::Atom<double> digitizationEnd{ Name("digitizationEnd"), Comment("end of digitization")};
       fhicl::Atom<double> digitizationStartMargin{ Name("digitizationStartMargin"),
@@ -98,11 +95,11 @@ namespace mu2e
     std::vector<double>                                        _scintillationYields;
     std::vector<boost::shared_ptr<mu2eCrv::MakeCrvPhotons> >   _makeCrvPhotons;
 
-    mu2e::ProditionsHandle<mu2e::CRVScintYield> _scintillationYieldVector;
-    double                                      _scintillationYieldScaleFactor;
-    double                                      _scintillationYieldVariation;
-    double                                      _scintillationYieldVariationCutoffLow;
-    double                                      _scintillationYieldVariationCutoffHigh;
+    double                                      _photonYieldScaleFactor;
+    mu2e::ProditionsHandle<mu2e::CRVScintYield> _photonYieldVariationVector;
+    double                                      _photonYieldVariationSigma;
+    double                                      _photonYieldVariationCutoffLow;
+    double                                      _photonYieldVariationCutoffHigh;
 
     //On-spill
     //-Digitization window
@@ -158,10 +155,10 @@ namespace mu2e
     _reflectors(conf().reflectors()),
     _lookupTableFileNames(conf().lookupTableFileNames()),
     _scintillationYields(conf().scintillationYields()),
-    _scintillationYieldScaleFactor(conf().scintillationYieldScaleFactor()),
-    _scintillationYieldVariation(conf().scintillationYieldVariation()),
-    _scintillationYieldVariationCutoffLow(conf().scintillationYieldVariationCutoffLow()),
-    _scintillationYieldVariationCutoffHigh(conf().scintillationYieldVariationCutoffHigh()),
+    _photonYieldScaleFactor(conf().photonYieldScaleFactor()),
+    _photonYieldVariationSigma(conf().photonYieldVariationSigma()),
+    _photonYieldVariationCutoffLow(conf().photonYieldVariationCutoffLow()),
+    _photonYieldVariationCutoffHigh(conf().photonYieldVariationCutoffHigh()),
     _digitizationStart(conf().digitizationStart()),
     _digitizationEnd(conf().digitizationEnd()),
     _digitizationStartMargin(conf().digitizationStartMargin()),
@@ -192,8 +189,6 @@ namespace mu2e
     std::set<std::string> filedirs;
     for(size_t i=0; i<_lookupTableFileNames.size(); ++i)
     {
-      _scintillationYields[i]*=_scintillationYieldScaleFactor;
-
       bool tableLoaded=false;
       for(size_t j=0; j<i; ++j)
       {
@@ -253,7 +248,7 @@ namespace mu2e
 
     std::map<std::pair<mu2e::CRSScintillatorBarIndex,int>,std::vector<CrvPhotons::SinglePhoton> > photonMap;
 
-    auto const& scintillationYieldVector = _scintillationYieldVector.get(event.id());
+    auto const& photonYieldVariationVector = _photonYieldVariationVector.get(event.id());
 
     GeomHandle<CosmicRayShield> CRS;
     GlobalConstantsHandle<ParticleDataList> particleDataList;
@@ -323,16 +318,20 @@ namespace mu2e
           const CRSScintillatorBarId &barId = CRSbar.id();
           int CRVSectorNumber=barId.getShieldNumber();
 
-          //get the deviation of the scintillation yield from the nominal scintillation yield for each counter
-          float sectorScintillationYield = _scintillationYields[CRVSectorNumber];
-          float scintillationYieldDeviation = scintillationYieldVector.scintYieldDeviation(step.barIndex().asUint());
-          scintillationYieldDeviation *= _scintillationYieldVariation;
-          if(scintillationYieldDeviation<_scintillationYieldVariationCutoffLow) scintillationYieldDeviation=_scintillationYieldVariationCutoffLow;
-          if(scintillationYieldDeviation>_scintillationYieldVariationCutoffHigh) scintillationYieldDeviation=_scintillationYieldVariationCutoffHigh;
-          float adjustedScintillationYield = sectorScintillationYield + scintillationYieldDeviation*sectorScintillationYield;
-
           boost::shared_ptr<mu2eCrv::MakeCrvPhotons> &photonMaker=_makeCrvPhotons.at(CRVSectorNumber);
-          photonMaker->SetScintillationYield(adjustedScintillationYield);
+
+          //get the channel-specific deviation of the light yield (total from scintillation and Cerenkov) from the nominal value,
+          //e.g. due to scintillator variations or SiPM misalignments
+          for(size_t SiPM=0; SiPM<CRVId::nChanPerBar; ++SiPM)
+          {
+            float photonYieldDeviation = photonYieldVariationVector.scintYieldDeviation(step.barIndex().asUint()*CRVId::nChanPerBar+SiPM);
+            photonYieldDeviation *= _photonYieldVariationSigma;
+            if(photonYieldDeviation<_photonYieldVariationCutoffLow) photonYieldDeviation=_photonYieldVariationCutoffLow;
+            if(photonYieldDeviation>_photonYieldVariationCutoffHigh) photonYieldDeviation=_photonYieldVariationCutoffHigh;
+            photonYieldDeviation = (photonYieldDeviation+1.0)*_photonYieldScaleFactor;  //global photon yield scale factor for e.g. aging
+            photonMaker->SetPhotonYieldDeviation(photonYieldDeviation,SiPM);
+          }
+
           photonMaker->MakePhotons(pos1Local, pos2Local, t1, t2,
                                         avgBeta, charge,
                                         step.visibleEDep(),
@@ -340,7 +339,7 @@ namespace mu2e
                                         _reflectors[CRVSectorNumber]);
 
           art::Ptr<CrvStep> crvStepPtr(CrvSteps,istep);
-          for(int SiPM=0; SiPM<4; ++SiPM)
+          for(size_t SiPM=0; SiPM<CRVId::nChanPerBar; ++SiPM)
           {
             std::pair<CRSScintillatorBarIndex,int> barIndexSiPMNumber(step.barIndex(),SiPM);
             const std::vector<double> &times=photonMaker->GetArrivalTimes(SiPM);

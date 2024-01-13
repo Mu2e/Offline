@@ -96,8 +96,8 @@ physics.producers.EWMProducer.SpillType : 0
 physics.producers.CrvSteps.stepPointsModuleLabels   : ["g4run"]
 physics.producers.CrvPhotons.crvStepModuleLabels    : ["CrvSteps"]
 physics.producers.CrvPhotons.crvStepProcessNames    : ["CrvWideband4ModulesSim"]
-physics.producers.CrvPhotons.scintillationYieldVariation  : 0.02  //gaussian distribution with sigma equal to 2.0% of the mean
-physics.producers.CrvPhotons.scintillationYieldScaleFactor: 1.01   //1.0 works with cross talk of 0.05
+physics.producers.CrvPhotons.photonYieldVariationSigma    : 0.02  //gaussian distribution with sigma equal to 2.0% of the mean
+physics.producers.CrvPhotons.photonYieldScaleFactor       : 1.01   //1.0 works with cross talk of 0.05
 physics.producers.CrvPhotons.CRVSectors                   : [ "W1", "W2", "W3", "W4"]
 physics.producers.CrvPhotons.reflectors                   : [    0,    0,    0,    0]
 physics.producers.CrvPhotons.scintillationYields          : [39400,39400,39400,39400]
@@ -165,7 +165,7 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
         }
       ]
 
-services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband4modules.txt"
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband4modules_v2.txt"
 services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
 services.ProditionsService.crvScintYield.useDb : true
 services.ProditionsService.crvStatus.useDb: true

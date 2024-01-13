@@ -35,6 +35,6 @@ physics :
 }
 
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
-services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband4modules.txt"
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband4modules_v2.txt"
 #services.ProditionsService.crvCalib.pedestal : 0.0                 #for special cases (100.0 is default pedestal for simulations)
 #source.readParameterSets : false
