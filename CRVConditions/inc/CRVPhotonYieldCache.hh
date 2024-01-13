@@ -1,20 +1,20 @@
-#ifndef CRVConditions_CRVScintYieldCache_hh
-#define CRVConditions_CRVScintYieldCache_hh
+#ifndef CRVConditions_CRVPhotonYieldCache_hh
+#define CRVConditions_CRVPhotonYieldCache_hh
 
-#include "Offline/CRVConditions/inc/CRVScintYieldMaker.hh"
+#include "Offline/CRVConditions/inc/CRVPhotonYieldMaker.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
 
 namespace mu2e {
 
-class CRVScintYieldCache : public ProditionsCache {
+class CRVPhotonYieldCache : public ProditionsCache {
  public:
-  CRVScintYieldCache(CRVScintYieldConfig const& config) :
-      ProditionsCache(CRVScintYield::cxname, config.verbose()),
+  CRVPhotonYieldCache(CRVPhotonYieldConfig const& config) :
+      ProditionsCache(CRVPhotonYield::cxname, config.verbose()),
       _useDb(config.useDb()), _maker(config) {}
 
   void initialize() {
     if (_useDb) {
-      _sci_p = std::make_unique<DbHandle<CRVScint>>();
+      _sci_p = std::make_unique<DbHandle<CRVPhoton>>();
     }
   }
 
@@ -47,11 +47,11 @@ class CRVScintYieldCache : public ProditionsCache {
 
  private:
   bool _useDb;
-  CRVScintYieldMaker _maker;
+  CRVPhotonYieldMaker _maker;
 
   // these handles are not default constructed
   // so the db can be completely turned off
-  std::unique_ptr<DbHandle<CRVScint>> _sci_p;
+  std::unique_ptr<DbHandle<CRVPhoton>> _sci_p;
 };
 
 }  // namespace mu2e

@@ -1,7 +1,7 @@
 #include "Offline/DbTables/inc/DbTableFactory.hh"
 #include "Offline/DbTables/inc/AnaTrkQualDb.hh"
 #include "Offline/DbTables/inc/CRVBadChan.hh"
-#include "Offline/DbTables/inc/CRVScint.hh"
+#include "Offline/DbTables/inc/CRVPhoton.hh"
 #include "Offline/DbTables/inc/CRVSiPM.hh"
 #include "Offline/DbTables/inc/CRVTime.hh"
 #include "Offline/DbTables/inc/STMEnergyPar.hh"
@@ -71,8 +71,8 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::STMPedestals());
   } else if (name == "CRVBadChan") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVBadChan());
-  } else if (name == "CRVScint") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVScint());
+  } else if (name == "CRVPhoton") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVPhoton());
   } else if (name == "CRVSiPM") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVSiPM());
   } else if (name == "CRVTime") {
