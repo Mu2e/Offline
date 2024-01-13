@@ -5,7 +5,7 @@
 #include "Offline/DbService/inc/DbHandle.hh"
 #include "Offline/CRVConditions/inc/CRVCalibCache.hh"
 #include "Offline/CRVConditions/inc/CRVOrdinalCache.hh"
-#include "Offline/CRVConditions/inc/CRVScintYieldCache.hh"
+#include "Offline/CRVConditions/inc/CRVPhotonYieldCache.hh"
 #include "Offline/CRVConditions/inc/CRVStatusCache.hh"
 #include "Offline/CaloConditions/inc/CaloDAQMapCache.hh"
 #include "Offline/DAQConditions/inc/EventTimingCache.hh"
@@ -51,7 +51,7 @@ ProditionsService::ProditionsService(Parameters const& sTable,
 
   auto cor = std::make_shared<mu2e::CRVOrdinalCache>(_config.crvOrdinal());
   _caches[cor->name()] = cor;
-  auto csy = std::make_shared<mu2e::CRVScintYieldCache>(_config.crvScintYield());
+  auto csy = std::make_shared<mu2e::CRVPhotonYieldCache>(_config.crvPhotonYield());
   _caches[csy->name()] = csy;
   auto cst = std::make_shared<mu2e::CRVStatusCache>(_config.crvStatus());
   _caches[cst->name()] = cst;

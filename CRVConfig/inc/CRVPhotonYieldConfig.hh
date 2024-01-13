@@ -1,7 +1,7 @@
-#ifndef STMConfig_CRVScintYieldConfig_hh
-#define STMConfig_CRVScintYieldConfig_hh
+#ifndef STMConfig_CRVPhotonYieldConfig_hh
+#define STMConfig_CRVPhotonYieldConfig_hh
 //
-// Fcl stanza for CRV ScintYield (scintillation yield spread of CRV channels) prodition
+// Fcl stanza for CRV PhotonYield (scintillation yield spread of CRV channels) prodition
 //
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -10,7 +10,7 @@
 
 namespace mu2e {
 
-struct CRVScintYieldConfig {
+struct CRVPhotonYieldConfig {
   using Name = fhicl::Name;
   using Comment = fhicl::Comment;
 

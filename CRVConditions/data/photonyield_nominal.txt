@@ -1,5 +1,5 @@
-TABLE CRVScint
-#channel,scintYieldDeviation
+TABLE CRVPhoton
+#channel,photonYieldDeviation
 0,1.303
 1,0.744
 2,-0.248

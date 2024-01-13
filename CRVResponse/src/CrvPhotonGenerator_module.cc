@@ -4,7 +4,7 @@
 //
 // Original Author: Ralf Ehrlich
 
-#include "Offline/CRVConditions/inc/CRVScintYield.hh"
+#include "Offline/CRVConditions/inc/CRVPhotonYield.hh"
 #include "Offline/CRVResponse/inc/MakeCrvPhotons.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
@@ -95,11 +95,11 @@ namespace mu2e
     std::vector<double>                                        _scintillationYields;
     std::vector<boost::shared_ptr<mu2eCrv::MakeCrvPhotons> >   _makeCrvPhotons;
 
-    double                                      _photonYieldScaleFactor;
-    mu2e::ProditionsHandle<mu2e::CRVScintYield> _photonYieldVariationVector;
-    double                                      _photonYieldVariationSigma;
-    double                                      _photonYieldVariationCutoffLow;
-    double                                      _photonYieldVariationCutoffHigh;
+    double                                       _photonYieldScaleFactor;
+    mu2e::ProditionsHandle<mu2e::CRVPhotonYield> _photonYieldVariationVector;
+    double                                       _photonYieldVariationSigma;
+    double                                       _photonYieldVariationCutoffLow;
+    double                                       _photonYieldVariationCutoffHigh;
 
     //On-spill
     //-Digitization window
@@ -324,7 +324,7 @@ namespace mu2e
           //e.g. due to scintillator variations or SiPM misalignments
           for(size_t SiPM=0; SiPM<CRVId::nChanPerBar; ++SiPM)
           {
-            float photonYieldDeviation = photonYieldVariationVector.scintYieldDeviation(step.barIndex().asUint()*CRVId::nChanPerBar+SiPM);
+            float photonYieldDeviation = photonYieldVariationVector.photonYieldDeviation(step.barIndex().asUint()*CRVId::nChanPerBar+SiPM);
             photonYieldDeviation *= _photonYieldVariationSigma;
             if(photonYieldDeviation<_photonYieldVariationCutoffLow) photonYieldDeviation=_photonYieldVariationCutoffLow;
             if(photonYieldDeviation>_photonYieldVariationCutoffHigh) photonYieldDeviation=_photonYieldVariationCutoffHigh;
