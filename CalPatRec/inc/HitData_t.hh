@@ -36,13 +36,13 @@ namespace CalPatRec {
     float                   fNyr;
 
 
-    HitData_t(const ComboHit* Hit,int ZFace) {
+    HitData_t(const mu2e::ComboHit* Hit,int ZFace) {
         fHit         = Hit;
         fSeed        = nullptr;
         fUsed        = 0;
         fZFace       = ZFace;
         fChi2Min     = 99999.0;
-        float sigw   =  Hit->posRes(ComboHit::wire);
+        float sigw   =  Hit->posRes(mu2e::ComboHit::wire);
         fSigW2       = sigw*sigw;
         fCorrTime    = Hit->correctedTime();
         fX           = Hit->pos ().x();
