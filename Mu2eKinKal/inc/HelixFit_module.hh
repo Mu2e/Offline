@@ -98,7 +98,7 @@ namespace mu2e {
   fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
   };
 
-  struct GlobalConfig {
+  struct HelixFitConfig {
     fhicl::Table<KKHelixModuleConfig> modSettings { Name("ModuleSettings") };
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
@@ -111,7 +111,7 @@ namespace mu2e {
 
   class HelixFit : public art::EDProducer {
     public:
-      using Parameters = art::EDProducer::Table<GlobalConfig>;
+      using Parameters = art::EDProducer::Table<HelixFitConfig>;
       explicit HelixFit(const Parameters& settings,TrkFitFlag fitflag);
       virtual ~HelixFit() {}
       void beginRun(art::Run& run) override;

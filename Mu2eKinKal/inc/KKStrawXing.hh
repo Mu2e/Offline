@@ -16,7 +16,6 @@ namespace mu2e {
   using KinKal::SVEC3;
   using KinKal::DVEC;
   using KinKal::CAHint;
-  using KinKal::TimeDir;
   using KinKal::DPDV;
   using KinKal::MomBasis;
   using KinKal::NParams;
@@ -38,7 +37,7 @@ namespace mu2e {
       // ElementXing interface
       void updateReference(KTRAJPTR const& ktrajptr) override;
       void updateState(MetaIterConfig const& config,bool first) override;
-      Parameters parameters(TimeDir tdir) const override;
+      Parameters params() const override;
       std::vector<MaterialXing>const&  matXings() const override { return mxings_; }
       // offset time WRT TOCA to avoid exact overlapp with the wire hit.  Note: the offset must be POSITIVE to insure
       // Xing is updated after the associated hit
@@ -94,11 +93,8 @@ namespace mu2e {
     }
  }
 
-  template <class KTRAJ> Parameters KKStrawXing<KTRAJ>::parameters(TimeDir tdir) const {
-    if(tdir == TimeDir::forwards)
-      return fparams_;
-    else
-      return Parameters(-fparams_.parameters(),fparams_.covariance());
+  template <class KTRAJ> Parameters KKStrawXing<KTRAJ>::params() const {
+    return fparams_;
   }
 
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
@@ -132,7 +128,7 @@ namespace mu2e {
     if(mxings_.size() > 0){
       // compute the parameter effect for forwards time
       std::array<double,3> dmom = {0.0,0.0,0.0}, momvar = {0.0,0.0,0.0};
-      this->materialEffects(TimeDir::forwards, dmom, momvar);
+      this->materialEffects(dmom, momvar);
       // get the parameter derivative WRT momentum
       DPDV dPdM = referenceTrajectory().dPardM(time());
       double mommag = referenceTrajectory().momentum(time());

@@ -542,7 +542,7 @@ namespace mu2e {
     for(auto const& sxing : kktrk.strawXings()) {
       std::array<double,3> dmom = {0.0,0.0,0.0}, momvar = {0.0,0.0,0.0};
       // compute energy loss
-      sxing->materialEffects(KinKal::TimeDir::forwards, dmom, momvar);
+      sxing->materialEffects(dmom, momvar);
       VEC3 dm(dmom[0],dmom[1],dmom[2]);
       // find material crossing properties
       double gaspath(0.0);
