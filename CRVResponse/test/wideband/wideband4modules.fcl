@@ -96,7 +96,7 @@ physics.producers.EWMProducer.SpillType : 0
 physics.producers.CrvSteps.stepPointsModuleLabels   : ["g4run"]
 physics.producers.CrvPhotons.crvStepModuleLabels    : ["CrvSteps"]
 physics.producers.CrvPhotons.crvStepProcessNames    : ["CrvWideband4ModulesSim"]
-physics.producers.CrvPhotons.photonYieldVariationSigma    : 0.02  //gaussian distribution with sigma equal to 2.0% of the mean
+physics.producers.CrvPhotons.photonYieldVariationScale    : 0.02   //gaussian distribution with sigma equal to 2.0% of the nominal photon yield
 physics.producers.CrvPhotons.photonYieldScaleFactor       : 1.01   //1.0 works with cross talk of 0.05
 physics.producers.CrvPhotons.CRVSectors                   : [ "W1", "W2", "W3", "W4"]
 physics.producers.CrvPhotons.reflectors                   : [    0,    0,    0,    0]
