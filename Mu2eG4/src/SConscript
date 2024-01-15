@@ -191,6 +191,12 @@ if g4vg != 'off':
 if g4_version > '4106':
     G4GLOBALIBS.append('libG4ptl')
 
+if g4_version > '4111':
+    G4GLOBALIBS.remove('libG4persistency')
+    G4GLOBALIBS.append('libG4gdml')
+    G4GLOBALIBS.append('libG4geomtext')
+    G4GLOBALIBS.append('libG4mctruth')
+
 if g4_version < '4095':
     G4LIBS = G4GRANULARLIBS
 else:
