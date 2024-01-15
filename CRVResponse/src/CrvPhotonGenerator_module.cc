@@ -65,8 +65,8 @@ namespace mu2e
       fhicl::Sequence<int> reflectors{ Name("reflectors"), Comment("location of reflectors at Crv sectors")};
       fhicl::Sequence<std::string> lookupTableFileNames{ Name("lookupTableFileNames"), Comment("lookup tables for Crv sectors")};
       fhicl::Sequence<double> scintillationYields{ Name("scintillationYields"), Comment("scintillation yields at Crv sectors")};
-      fhicl::Atom<double> photonYieldScaleFactor{ Name("photonYieldScaleFactor"), Comment("scale factor for light yield")};
-      fhicl::Atom<double> photonYieldVariationSigma{ Name("photonYieldVariationSigma"),Comment("sigma of gaussian variation of scintillation yield")};
+      fhicl::Atom<double> photonYieldScaleFactor{ Name("photonYieldScaleFactor"), Comment("global scale factor for the photon yield")};
+      fhicl::Atom<double> photonYieldVariationScale{ Name("photonYieldVariationScale"),Comment("scale factor of the photon yield variation")};
       fhicl::Atom<double> photonYieldVariationCutoffLow{ Name("photonYieldVariationCutoffLow"),Comment("lower cutoff at photon yield variation")};
       fhicl::Atom<double> photonYieldVariationCutoffHigh{ Name("photonYieldVariationCutoffHigh"),Comment("upper cutoff at photon yield variation")};
       fhicl::Atom<double> digitizationStart{ Name("digitizationStart"), Comment("start of digitization")};
@@ -97,7 +97,7 @@ namespace mu2e
 
     double                                       _photonYieldScaleFactor;
     mu2e::ProditionsHandle<mu2e::CRVPhotonYield> _photonYieldVariationVector;
-    double                                       _photonYieldVariationSigma;
+    double                                       _photonYieldVariationScale;
     double                                       _photonYieldVariationCutoffLow;
     double                                       _photonYieldVariationCutoffHigh;
 
@@ -156,7 +156,7 @@ namespace mu2e
     _lookupTableFileNames(conf().lookupTableFileNames()),
     _scintillationYields(conf().scintillationYields()),
     _photonYieldScaleFactor(conf().photonYieldScaleFactor()),
-    _photonYieldVariationSigma(conf().photonYieldVariationSigma()),
+    _photonYieldVariationScale(conf().photonYieldVariationScale()),
     _photonYieldVariationCutoffLow(conf().photonYieldVariationCutoffLow()),
     _photonYieldVariationCutoffHigh(conf().photonYieldVariationCutoffHigh()),
     _digitizationStart(conf().digitizationStart()),
@@ -325,7 +325,7 @@ namespace mu2e
           for(size_t SiPM=0; SiPM<CRVId::nChanPerBar; ++SiPM)
           {
             float photonYieldDeviation = photonYieldVariationVector.photonYieldDeviation(step.barIndex().asUint()*CRVId::nChanPerBar+SiPM);
-            photonYieldDeviation *= _photonYieldVariationSigma;
+            photonYieldDeviation *= _photonYieldVariationScale;  //scale factor for the variation
             if(photonYieldDeviation<_photonYieldVariationCutoffLow) photonYieldDeviation=_photonYieldVariationCutoffLow;
             if(photonYieldDeviation>_photonYieldVariationCutoffHigh) photonYieldDeviation=_photonYieldVariationCutoffHigh;
             photonYieldDeviation = (photonYieldDeviation+1.0)*_photonYieldScaleFactor;  //global photon yield scale factor for e.g. aging
