@@ -45,8 +45,8 @@ namespace mu2e {
         fCorrTime    = Hit->correctedTime();
         fX           = Hit->pos ().x();
         fY           = Hit->pos ().y();
-        fWx          = Hit->wdir().x();
-        fWy          = Hit->wdir().y();
+        fWx          = Hit->uDir2D().x();
+        fWy          = Hit->uDir2D().y();
         fNr          = fX*fWy-fY*fWx;
         fNx2         = fWx*fWx;
         fNxy         = fWx*fWy;

@@ -326,11 +326,11 @@ namespace mu2e {
       x2 =  p2.x();
       y2 =  p2.y();
 
-      const XYZVectorF& wdir1 = Hd1->fHit->wdir();
+      XYZVectorF wdir1 = Hd1->fHit->uDir();
       nx1 = wdir1.x();
       ny1 = wdir1.y();
 
-      const XYZVectorF& wdir2 = Hd2->fHit->wdir();
+      XYZVectorF wdir2 = Hd2->fHit->uDir();
       nx2 = wdir2.x();
       ny2 = wdir2.y();
 
