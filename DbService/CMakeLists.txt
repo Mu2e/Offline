@@ -49,6 +49,10 @@ cet_build_plugin(DbServiceTest art::module
       Offline::DbTables
 )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/connections.txt ${CURRENT_BINARY_DIR} data/connections.txt)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/create.sql ${CURRENT_BINARY_DIR} data/create.sql)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/DbService/fcl)

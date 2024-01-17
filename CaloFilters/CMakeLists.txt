@@ -71,5 +71,9 @@ cet_build_plugin(FilterEcalNNTrigger art::module
       Offline::RecoDataProducts
 )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/ce_bkg_20_BDT.weights.xml ${CURRENT_BINARY_DIR} data/ce_bkg_20_BDT.weights.xml)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/ce_bkg_ecal_20_BDT.weights.xml ${CURRENT_BINARY_DIR} data/ce_bkg_ecal_20_BDT.weights.xml)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/CE_NN_ReLU.weights.xml ${CURRENT_BINARY_DIR} data/CE_NN_ReLU.weights.xml)
+
 install_source(SUBDIRS src)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/CaloFilters/fcl)

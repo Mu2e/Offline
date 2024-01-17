@@ -569,6 +569,17 @@ cet_build_plugin(MuplusMichelGenerator art::tool
       Offline::Mu2eUtilities
 )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/cosmicDYB.txt	      ${CURRENT_BINARY_DIR} defaultConfigs/cosmicDYB.txt	     )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/defaultCRYconfig.txt   ${CURRENT_BINARY_DIR} defaultConfigs/defaultCRYconfig.txt  )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/extractedCRYconfig.txt ${CURRENT_BINARY_DIR} defaultConfigs/extractedCRYconfig.txt)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/fromG4BLFile.txt	      ${CURRENT_BINARY_DIR} defaultConfigs/fromG4BLFile.txt	     )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/muCRYconfig.txt	      ${CURRENT_BINARY_DIR} defaultConfigs/muCRYconfig.txt	     )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/othersCRYconfig.txt    ${CURRENT_BINARY_DIR} defaultConfigs/othersCRYconfig.txt   )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/particleGun.txt	      ${CURRENT_BINARY_DIR} defaultConfigs/particleGun.txt	     )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/primaryProtonGun.txt   ${CURRENT_BINARY_DIR} defaultConfigs/primaryProtonGun.txt  )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/surfaceCheck.txt       ${CURRENT_BINARY_DIR} defaultConfigs/surfaceCheck.txt      )
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/EventGenerator/fcl)

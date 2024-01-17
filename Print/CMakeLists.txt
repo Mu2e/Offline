@@ -103,6 +103,26 @@ cet_build_plugin(RunSubrunEvent art::module
       
 )
 
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/count.fcl   ${CURRENT_BINARY_DIR} fcl/count.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/dumpDataProducts.fcl   ${CURRENT_BINARY_DIR} fcl/dumpDataProducts.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/events.fcl   ${CURRENT_BINARY_DIR} fcl/events.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/fileDumper.fcl   ${CURRENT_BINARY_DIR} fcl/fileDumper.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/printCosmicLivetime.fcl   ${CURRENT_BINARY_DIR} fcl/printCosmicLivetime.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/printCrvCoincidenceCluster.fcl   ${CURRENT_BINARY_DIR} fcl/printCrvCoincidenceCluster.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/printEventWindowMarker.fcl   ${CURRENT_BINARY_DIR} fcl/printEventWindowMarker.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/print.fcl   ${CURRENT_BINARY_DIR} fcl/print.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/printGenParticle.fcl   ${CURRENT_BINARY_DIR} fcl/printGenParticle.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/printLong.fcl   ${CURRENT_BINARY_DIR} fcl/printLong.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/printMCTrajectory.fcl   ${CURRENT_BINARY_DIR} fcl/printMCTrajectory.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/printMetadata.fcl   ${CURRENT_BINARY_DIR} fcl/printMetadata.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/printMetadataSim.fcl   ${CURRENT_BINARY_DIR} fcl/printMetadataSim.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/printPrimaryParticle.fcl   ${CURRENT_BINARY_DIR} fcl/printPrimaryParticle.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/printSimParticle.fcl   ${CURRENT_BINARY_DIR} fcl/printSimParticle.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/printStepPointMC.fcl   ${CURRENT_BINARY_DIR} fcl/printStepPointMC.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/printStrawDigiMC.fcl   ${CURRENT_BINARY_DIR} fcl/printStrawDigiMC.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/printStrawGasStep.fcl   ${CURRENT_BINARY_DIR} fcl/printStrawGasStep.fcl   COPYONLY)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/Print/fcl)

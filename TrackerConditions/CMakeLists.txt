@@ -34,6 +34,20 @@ cet_make_library(
       Offline::TrackerGeom
 )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/E2v.tbl   ${CURRENT_BINARY_DIR} data/E2v.tbl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/ElementsList.data   ${CURRENT_BINARY_DIR} data/ElementsList.data   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/IsotopesList.data   ${CURRENT_BINARY_DIR} data/IsotopesList.data   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/MaterialsList.data   ${CURRENT_BINARY_DIR} data/MaterialsList.data   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/MisalignTracker.txt   ${CURRENT_BINARY_DIR} data/MisalignTracker.txt   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/NoMisalignTracker.txt   ${CURRENT_BINARY_DIR} data/NoMisalignTracker.txt   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrackerStatusTest.txt   ${CURRENT_BINARY_DIR} data/TrackerStatusTest.txt   COPYONLY)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/MDCThresholds.fcl   ${CURRENT_BINARY_DIR} fcl/MDCThresholds.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl   ${CURRENT_BINARY_DIR} fcl/prolog.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/testProditions.fcl   ${CURRENT_BINARY_DIR} fcl/testProditions.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/testTrackerAlignment.fcl   ${CURRENT_BINARY_DIR} fcl/testTrackerAlignment.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/testTrackerStatus.fcl   ${CURRENT_BINARY_DIR} fcl/testTrackerStatus.fcl   COPYONLY)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/TrackerConditions/fcl)

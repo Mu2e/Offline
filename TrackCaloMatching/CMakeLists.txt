@@ -57,5 +57,7 @@ cet_build_plugin(TrkExtrapol art::module
       Offline::TrackerGeom
 )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl   ${CURRENT_BINARY_DIR} fcl/prolog.fcl   COPYONLY)
+
 install_source(SUBDIRS src)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/TrackCaloMatching/fcl)
