@@ -162,6 +162,23 @@ cet_build_plugin(MakeCrvCoincidenceClusterMCAssns art::module
       Offline::MCDataProducts
 )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/epilog_extracted.fcl	  ${CURRENT_BINARY_DIR} fcl/epilog_extracted.fcl	 )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/epilog_extracted_v02.fcl   ${CURRENT_BINARY_DIR} fcl/epilog_extracted_v02.fcl )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/epilog_extracted_v03.fcl   ${CURRENT_BINARY_DIR} fcl/epilog_extracted_v03.fcl )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_extracted_v01.fcl   ${CURRENT_BINARY_DIR} fcl/prolog_extracted_v01.fcl )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_v03.fcl		  ${CURRENT_BINARY_DIR} fcl/prolog_v03.fcl		 )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_v05.fcl		  ${CURRENT_BINARY_DIR} fcl/prolog_v05.fcl		 )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_v06.fcl		  ${CURRENT_BINARY_DIR} fcl/prolog_v06.fcl		 )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_v07.fcl		  ${CURRENT_BINARY_DIR} fcl/prolog_v07.fcl		 )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_v08.fcl		  ${CURRENT_BINARY_DIR} fcl/prolog_v08.fcl		 )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_v09.fcl		  ${CURRENT_BINARY_DIR} fcl/prolog_v09.fcl		 )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_v10.fcl		  ${CURRENT_BINARY_DIR} fcl/prolog_v10.fcl		 )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_v11.fcl		  ${CURRENT_BINARY_DIR} fcl/prolog_v11.fcl		 )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/singlePEWaveform.txt	  ${CURRENT_BINARY_DIR} fcl/singlePEWaveform.txt	 )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/singlePEWaveform_v2.txt	  ${CURRENT_BINARY_DIR} fcl/singlePEWaveform_v2.txt	 )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/singlePEWaveform_v3.txt    ${CURRENT_BINARY_DIR} fcl/singlePEWaveform_v3.txt      )
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/CRVResponse/fcl)

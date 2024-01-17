@@ -73,5 +73,13 @@ cet_make_library(
       XercesC::XercesC
 )
 
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/acDipoleTransmissionFunction_20160511.txt   ${CURRENT_BINARY_DIR} data/acDipoleTransmissionFunction_20160511.txt   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/potTimingDistribution_20160511.txt   ${CURRENT_BINARY_DIR} data/potTimingDistribution_20160511.txt   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/potTimingDistribution_38ms.txt   ${CURRENT_BINARY_DIR} data/potTimingDistribution_38ms.txt   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/potTimingDistribution_avg.txt   ${CURRENT_BINARY_DIR} data/potTimingDistribution_avg.txt   COPYONLY)
+
+
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)

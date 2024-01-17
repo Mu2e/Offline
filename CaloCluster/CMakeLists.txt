@@ -53,6 +53,8 @@ cet_build_plugin(CaloTrigger art::module
       Offline::RecoDataProducts
 )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/CaloCluster/fcl)

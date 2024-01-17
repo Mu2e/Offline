@@ -20,5 +20,8 @@ cet_build_plugin(GlobalConstantsService art::service
       
 )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/globalConstants_01.txt ${CURRENT_BINARY_DIR} data/globalConstants_01.txt)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/ParticleList.txt ${CURRENT_BINARY_DIR} data/ParticleList.txt)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)

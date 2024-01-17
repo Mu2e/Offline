@@ -208,6 +208,20 @@ art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
      DICTIONARY_LIBRARIES
       Offline::CalPatRec
 )
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_common.fcl ${CURRENT_BINARY_DIR} fcl/prolog_common.fcl)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_7/cpr_qual_logfcons_1_lin.tab ${CURRENT_BINARY_DIR} data/v5_7_7/cpr_qual_logfcons_1_lin.tab)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_7/MLP_weights_chi2d_1_lin.xml ${CURRENT_BINARY_DIR} data/v5_7_7/MLP_weights_chi2d_1_lin.xml)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_7/MLP_weights_chi2d_2_exp.xml ${CURRENT_BINARY_DIR} data/v5_7_7/MLP_weights_chi2d_2_exp.xml)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_7/MLP_weights_logfcons_0_uni.xml ${CURRENT_BINARY_DIR} data/v5_7_7/MLP_weights_logfcons_0_uni.xml)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_7/MLP_weights_logfcons_1_lin.xml ${CURRENT_BINARY_DIR} data/v5_7_7/MLP_weights_logfcons_1_lin.xml)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_7/MLP_weights_logfcons_2_exp.xml ${CURRENT_BINARY_DIR} data/v5_7_7/MLP_weights_logfcons_2_exp.xml)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_7/MLP_weights_logfcons_3_pol.xml ${CURRENT_BINARY_DIR} data/v5_7_7/MLP_weights_logfcons_3_pol.xml)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_7/MLP_weights_logfcons_4_exp.xml ${CURRENT_BINARY_DIR} data/v5_7_7/MLP_weights_logfcons_4_exp.xml)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_7/MLP_weights_trkpatrec_logfcons_1_uni.xml ${CURRENT_BINARY_DIR} data/v5_7_7/MLP_weights_trkpatrec_logfcons_1_uni.xml)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_7/tpr_qual_logfcons_2_exp.tab ${CURRENT_BINARY_DIR} data/v5_7_7/tpr_qual_logfcons_2_exp.tab)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/CalPatRec/fcl)

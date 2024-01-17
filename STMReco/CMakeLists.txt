@@ -55,5 +55,18 @@ cet_build_plugin(STMZeroSuppression art::module
       Offline::STMConditions
 )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/makeSTMHits.fcl   ${CURRENT_BINARY_DIR} fcl/makeSTMHits.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/makeSTMHits_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/makeSTMHits_testbeam.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/mwd.fcl   ${CURRENT_BINARY_DIR} fcl/mwd.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/mwd_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/mwd_testbeam.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/plotSTMEnergySpectrum.fcl   ${CURRENT_BINARY_DIR} fcl/plotSTMEnergySpectrum.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/plotSTMMWDSpectrum.fcl   ${CURRENT_BINARY_DIR} fcl/plotSTMMWDSpectrum.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/plotSTMWaveformDigis.fcl   ${CURRENT_BINARY_DIR} fcl/plotSTMWaveformDigis.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl   ${CURRENT_BINARY_DIR} fcl/prolog.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/prolog_testbeam.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/zeroSuppression.fcl   ${CURRENT_BINARY_DIR} fcl/zeroSuppression.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/zeroSuppression_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/zeroSuppression_testbeam.fcl   COPYONLY)
+
+
 install_source(SUBDIRS src)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/STMReco/fcl)

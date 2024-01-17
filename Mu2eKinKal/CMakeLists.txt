@@ -80,6 +80,19 @@ cet_build_plugin(LoopHelixFit art::module
       
 )
 
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgFinal.dat   ${CURRENT_BINARY_DIR} data/TrainBkgFinal.dat   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgSeed.dat   ${CURRENT_BINARY_DIR} data/TrainBkgSeed.dat   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgTrigger.dat   ${CURRENT_BINARY_DIR} data/TrainBkgTrigger.dat   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainCluster_Stage0.dat   ${CURRENT_BINARY_DIR} data/TrainCluster_Stage0.dat   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainCluster_Stage1.dat   ${CURRENT_BINARY_DIR} data/TrainCluster_Stage1.dat   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainSign_Stage0.dat   ${CURRENT_BINARY_DIR} data/TrainSign_Stage0.dat   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainSign_Stage1.dat   ${CURRENT_BINARY_DIR} data/TrainSign_Stage1.dat   COPYONLY)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl   ${CURRENT_BINARY_DIR} fcl/prolog.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_trigger.fcl   ${CURRENT_BINARY_DIR} fcl/prolog_trigger.fcl   COPYONLY)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/Mu2eKinKal/fcl)
+
