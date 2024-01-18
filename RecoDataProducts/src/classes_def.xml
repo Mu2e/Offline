@@ -246,6 +246,7 @@
  <class name="art::Wrapper<mu2e::TrkQualCollection>"/>
 
  <class name="mu2e::MVAResult"/>
+ <class name="art::Wrapper<mu2e::MVAResult>"/>
  <class name="mu2e::MVAResultCollection"/>
  <class name="art::Wrapper<mu2e::MVAResultCollection>"/>
 
