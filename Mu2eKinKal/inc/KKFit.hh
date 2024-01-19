@@ -113,13 +113,14 @@ namespace mu2e {
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
       void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const; // sample fit at the surfaces specified in the config
       void extendFit(KKTRK& kktrk) const;
+      int printLevel_;
       bool matcorr_, addhits_, addmat_, usecalo_; // flags
       KKSTRAWHITCLUSTERER shclusterer_; // functor to cluster KKStrawHits
       // CaloHit configuration
-      double caloDt_; // calo time offset; should come from proditions FIXME!
-      double caloPosRes_; // calo cluster transverse position resolution; should come from proditions or CaloCluster FIXME!
-      double caloTimeRes_; // calo cluster time resolution; should come from proditions or CaloCluster FIXME!
-      double caloPropSpeed_; // effective light propagation speed in a crystal (including reflections).  Should come from prodtions FIXME
+      double caloDt_; // calo time offset; should come from proditions TODO!
+      double caloPosRes_; // calo cluster transverse position resolution; should come from proditions or CaloCluster TODO!
+      double caloTimeRes_; // calo cluster time resolution; should come from proditions or CaloCluster TODO!
+      double caloPropSpeed_; // effective light propagation speed in a crystal (including reflections).  Should come from prodtions TODO
       double minCaloEnergy_; // minimum CaloCluster energy
       double maxCaloDt_; // maximum track-calo time difference
       double maxCaloDoca_; // maximum track-calo DOCA
@@ -129,20 +130,21 @@ namespace mu2e {
       // parameters controlling adding hits
       float maxStrawHitDoca_, maxStrawHitDt_, maxStrawDoca_, maxStrawDocaCon_;
       int maxDStraw_; // maximum distance from the track a strawhit can be to consider it for adding.
-      float stbuff_; // time buffer to fit trajectory when finding surface intersections (fit samples)
-      int printLevel_;
       // cached info computed from the tracker, used in hit adding; these must be lazy-evaluated as the tracker doesn't exist on construction
       mutable double strawradius_;
       mutable double ymin_, ymax_, umax_; // panel-level info
       mutable double rmin_, rmax_; // plane-level info
       mutable double spitch_;
-      mutable bool needstrackerinfo_;
-      SurfaceMap smap_, emap_;
+      mutable bool needstrackerinfo_ = true;
+
+      double sampletol_; // surface intersection tolerance (mm)
+      double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
+      bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
-      SurfaceMap::SurfacePairCollection extend_; // surfaces to extend the fit to
   };
 
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(KKFitConfig const& fitconfig) :
+    printLevel_(fitconfig.printLevel()),
     matcorr_(fitconfig.matCorr()),
     addhits_(fitconfig.addHits()),
     addmat_(fitconfig.addMaterial()),
@@ -163,22 +165,19 @@ namespace mu2e {
     maxStrawDoca_(fitconfig.maxStrawDOCA()),
     maxStrawDocaCon_(fitconfig.maxStrawDOCAConsistency()),
     maxDStraw_(fitconfig.maxDStraw()),
-    stbuff_(fitconfig.sampleTBuff()),
-    printLevel_(fitconfig.printLevel()),
-    needstrackerinfo_(true)
+    sampletol_(fitconfig.sampleTol()),
+    sampletbuff_(fitconfig.sampleTBuff()),
+    sampleinrange_(fitconfig.sampleInRange()),
+    sampleinbounds_(fitconfig.sampleInBounds())
   {
- // translate the sample and extend surface names to actual surfaces using the SurfaceMap.  This should come from the
- // geometry service eventually, TODO
     SurfaceIdCollection ssids;
     for(auto const& sidname : fitconfig.sampleSurfaces()) {
       ssids.push_back(SurfaceId(sidname,-1)); // match all elements
     }
-    smap_.surfaces(ssids,sample_);
-    SurfaceIdCollection esids;
-    for(auto const& sidname : fitconfig.extendSurfaces()) {
-      esids.push_back(SurfaceId(sidname,-1)); // match all elements
-    }
-    emap_.surfaces(esids,extend_);
+    // translate the sample and extend surface names to actual surfaces using the SurfaceMap.  This should come from the
+    // geometry service eventually, TODO
+    SurfaceMap smap;
+    smap.surfaces(ssids,sample_);
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
@@ -561,8 +560,7 @@ namespace mu2e {
           dm.R(),
           sxing->active() );
     }
-
-     // save the fit segments
+    // save the fit segments
     fseed._segments.reserve(fittraj.pieces().size());
     for (auto const& traj : fittraj.pieces() ){
       // skip zero-range segments.  By convention, sample the state at the mid-time
@@ -573,26 +571,21 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
-    // translate time precision to distance precision for surfaces
-    auto speed = kktrk.fitTraj().front().speed();
-    double tol = tprec_*speed;
     auto const& ftraj = kktrk.fitTraj();
     for(auto const& surf : sample_){
-      // Intersect the fit trajectory with this surface, including a time buffer
-      double tstart = ftraj.range().begin() - stbuff_;
-      double tend =ftraj.range().end() + stbuff_;
+      double tstart = ftraj.range().begin() - sampletbuff_;
       bool hasinter(true);
-      // check for multiple intersections
-      while(hasinter && tend > tstart){
-        TimeRange irange(tstart,tend);
-        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,tol);
-        hasinter = surfinter.onsurface_ && irange.inRange(surfinter.time_);
+      // loop to find multiple intersections
+      while(hasinter) {
+        TimeRange irange(tstart,ftraj.range().end()+ sampletbuff_);
+        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
+        hasinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
         if(hasinter) {
           // save the intersection information
           auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
           inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
           // update for the next intersection
-          tstart = surfinter.time_ + tol;
+          tstart = surfinter.time_ + 1e-8;// move psst existing intersection to avoid repeating
         }
       }
     }
