@@ -16,6 +16,7 @@
 #include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"
 
 #include "Offline/TrkHitReco/inc/TNTClusterer.hh"
+#include "Offline/TrkHitReco/inc/Chi2Clusterer.hh"
 #include "Offline/TrkHitReco/inc/TrainBkgDiag.hxx"
 
 #include <string>
@@ -48,11 +49,13 @@ namespace mu2e
         fhicl::Atom<std::string>              outputLevel{          Name("OutputLevel"),          Comment("Level of the output ComboHitCollection") };
         fhicl::Atom<int>                      debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
         fhicl::Table<TNTClusterer::Config>    TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
+        fhicl::Table<Chi2Clusterer::Config>   Chi2Clustering{       Name("Chi2Clustering"),       Comment("Chi2 Clusterer config") };
         fhicl::Atom<std::string>              kerasWeights{         Name("KerasWeights"),         Comment("Weights for keras model") };
         fhicl::Atom<float>                    kerasQuality{         Name("KerasQuality"),         Comment("Keras quality cut") };
       };
 
-      enum clusterer {TwoNiveauThreshold=1};
+      //enum clusterer {TwoNiveauThreshold=1};
+      enum clusterer {TNT=1,Chi2=2};
       explicit FlagBkgHits(const art::EDProducer::Table<Config>& config);
       void beginJob() override;
       void produce(art::Event& event) override;
@@ -108,8 +111,12 @@ namespace mu2e
       clusterer ctype = static_cast<clusterer>(config().clusterAlgorithm());
       switch ( ctype )
       {
-        case TwoNiveauThreshold:
+        //case TwoNiveauThreshold:
+        case TNT:
           clusterer_ = std::make_unique<TNTClusterer>(config().TNTClustering());
+          break;
+        case Chi2:
+          clusterer_ = std::make_unique<Chi2Clusterer>(config().Chi2Clustering());
           break;
         default:
           throw cet::exception("RECO")<< "Unknown clusterer" << ctype << std::endl;
