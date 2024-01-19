@@ -12,11 +12,11 @@ Mu2eKinKalTrigger : {
     @table::Mu2eKinKal.KKFIT
     AddHits : false
     AddMaterial : false
+    ProcessEnds : false
     MaterialCorrection : true
     MaxCaloClusterDt : 10.0
     MaxCaloClusterDOCA : 150.0 # mm
     SampleSurfaces : ["TT_Mid"]
-    ExtendSurfaces : ["TT_Mid"]
   }
 
   SEEDFIT: {
