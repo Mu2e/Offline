@@ -109,9 +109,19 @@ TNTClusterer : {
   TestFlag         : true
   BackgroundMask   : []
   SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
-  DistanceMethod   : 0
 }
 
+Chi2Clusterer : {
+  HitDistance      : 2
+  SeedDistance     : 4
+  MinClusterHits   : 1
+  MaxHitTimeDiff   : 30.0
+  MaxCluIterations : 5
+  TestFlag         : true
+  BackgroundMask   : []
+  SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+  Diag             : 0
+}
 
 # Background hit flagging
 FlagBkgHits : {
@@ -119,6 +129,7 @@ FlagBkgHits : {
   ComboHitCollection   : "makeSTH"
   ClusterAlgorithm     : 1
   TNTClustering        : {@table::TNTClusterer}
+  Chi2Clustering        : {@table::Chi2Clusterer}
   MinActiveHits        : 3
   MinNPlanes           : 2
   ClusterPositionError : 10

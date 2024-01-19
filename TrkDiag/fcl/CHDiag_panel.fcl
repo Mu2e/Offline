@@ -1,3 +1,6 @@
-#include "Offline/TrkDiag/test/ComboDiag.fcl"
+#include "Offline/TrkDiag/fcl/CHD.fcl"
+#include "Offline/TrkHitReco/fcl/epilog_panel.fcl"
+#include "Offline/TrkHitReco/fcl/epilog_FBH_panel.fcl"
+physics.producers.makePH.TestFlag : true
 services.DbService.purpose: MDC2020_best
 services.DbService.version: v1_1

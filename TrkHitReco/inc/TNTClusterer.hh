@@ -10,7 +10,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/TrkHitReco/inc/BkgClusterer.hh"
-#include "Offline/GeneralUtilities/inc/CombineTwoDPoints.hh"
+//#include "Offline/GeneralUtilities/inc/CombineTwoDPoints.hh"
 #include "fhiclcpp/types/Sequence.h"
 
 #include <string>
@@ -54,7 +54,6 @@ namespace mu2e {
         fhicl::Sequence<std::string>  sigmsk{           Name("SignalMask"),       Comment("Signal hit selection mask") };
         fhicl::Atom<bool>             testflag{         Name("TestFlag"),         Comment("Test hit flags") };
         fhicl::Atom<int>              diag{             Name("Diag"),             Comment("Diagnosis level"),0 };
-        fhicl::Atom<int>              distMethod{       Name("DistanceMethod"),   Comment("Distance method") };
       };
 
 
@@ -64,7 +63,6 @@ namespace mu2e {
       void          init        ();
       virtual void  findClusters(BkgClusterCollection& clusters, const ComboHitCollection& shcol, int iev);
       virtual float distance    (const BkgCluster& cluster,      const ComboHit& hit) const;
-      enum mode {useSpatial,useChi2};
 
 
     private:
@@ -98,7 +96,6 @@ namespace mu2e {
       StrawHitFlag            sigmask_;
       bool                    testflag_;
       int                     diag_;
-      int                     distMethod_;
       BkgCluster::distMethod  distMethodFlag_;
   };
 }

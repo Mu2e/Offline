@@ -19,8 +19,7 @@ namespace mu2e
     bkgmask_          (config.bkgmsk()),
     sigmask_          (config.sigmsk()),
     testflag_         (config.testflag()),
-    diag_             (config.diag()),
-    distMethod_       (config.distMethod())
+    diag_             (config.diag())
   {
     float minerr (config.minHitError());
     float maxdist(config.maxDistance());
@@ -31,15 +30,8 @@ namespace mu2e
     maxwt_    = 1.0f/minerr;
     md2_      = maxdist*maxdist;
     trms2inv_ = 1.0f/trms/trms;
+    distMethodFlag_ = BkgCluster::spatial;
 
-    switch(distMethod_) {
-      case TNTClusterer::useSpatial:
-        distMethodFlag_ = BkgCluster::spatial;
-        break;
-      case TNTClusterer::useChi2:
-        distMethodFlag_ = BkgCluster::chi2;
-        break;
-    }
   }
 
 
@@ -125,7 +117,6 @@ namespace mu2e
       // -- if hit is ok, reassign it right away
       if (hit.distance_ < dhit_) {
         clusters[hit.clusterIdx_].addHit(ihit);
-        clusters[hit.clusterIdx_].points().addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),clusters[hit.clusterIdx_].points().nPoints());
         continue;
       }
 
@@ -146,11 +137,10 @@ namespace mu2e
       // -- either add hit to existing cluster, form new cluster, or do nothing if hit is "in between"
       if (mindist < dhit_) {
         clusters[minc].addHit(ihit);
-        clusters[minc].points().addPoint(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),clusters[minc].points().nPoints());
       }
       else if (mindist > dseed_) {
         minc = clusters.size();
-        clusters.emplace_back(BkgCluster(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),chit.correctedTime()));
+        clusters.emplace_back(chit.pos(),chit.correctedTime());
         clusters[minc].addHit(ihit);
         int itime = int(chit.correctedTime()/tbin_);
         clusterIndices[itime].emplace_back(minc);
@@ -236,34 +226,27 @@ namespace mu2e
   float TNTClusterer::distance(const BkgCluster& cluster, const ComboHit& hit) const
   {
     float retval(0.0f);
-    if(distMethod_ == TNTClusterer::useSpatial)
-    {
-      float psep_x = hit.pos().x()-cluster.pos().x();
-      float psep_y = hit.pos().y()-cluster.pos().y();
-      float d2     = psep_x*psep_x+psep_y*psep_y;
+    float psep_x = hit.pos().x()-cluster.pos().x();
+    float psep_y = hit.pos().y()-cluster.pos().y();
+    float d2     = psep_x*psep_x+psep_y*psep_y;
 
-      if (d2 > md2_) {return dseed_+1.0f;}
+    if (d2 > md2_) {return dseed_+1.0f;}
 
-      float dt = std::abs(hit.correctedTime()-cluster.time());
-      if (dt > maxHitdt_) {return dseed_+1.0f;}
+    float dt = std::abs(hit.correctedTime()-cluster.time());
+    if (dt > maxHitdt_) {return dseed_+1.0f;}
 
 
-      if (dt > dt_) {float tdist = dt -dt_;retval = tdist*tdist*trms2inv_;}
-      if (d2 > dd2_) {
-        //This is equivalent to but faster than the commented lines
-        //XYZVectorF that(-hit.uDir2D().y(),hit.uDir2D().x(),0.0);
-        //float dw = std::max(0.0f,hit.uDir2D().Dot(psep)-dd_)/hit.posRes(ComboHit::wire);
-        //float dp = std::max(0.0f,that.Dot(psep)-dd_)*maxwt_;//maxwt = 1/minerr
-        float hwx = hit.uDir2D().x();
-        float hwy = hit.uDir2D().y();
-        float dw  = std::max(0.0f,(psep_x*hwx+psep_y*hwy-dd_)/hit.posRes(ComboHit::wire));
-        float dp  = std::max(0.0f,(hwx*psep_y-hwy*psep_x-dd_)*maxwt_);
-        retval += dw*dw + dp*dp;
-      }
-    }
-    if(distMethod_ == TNTClusterer::useChi2)
-    {
-      retval = cluster.points().dChi2(TwoDPoint(hit.pos(),hit.uDir(),hit.uVar(),hit.vVar()));
+    if (dt > dt_) {float tdist = dt -dt_;retval = tdist*tdist*trms2inv_;}
+    if (d2 > dd2_) {
+      //This is equivalent to but faster than the commented lines
+      //XYZVectorF that(-hit.uDir2D().y(),hit.uDir2D().x(),0.0);
+      //float dw = std::max(0.0f,hit.uDir2D().Dot(psep)-dd_)/hit.posRes(ComboHit::wire);
+      //float dp = std::max(0.0f,that.Dot(psep)-dd_)*maxwt_;//maxwt = 1/minerr
+      float hwx = hit.uDir2D().x();
+      float hwy = hit.uDir2D().y();
+      float dw  = std::max(0.0f,(psep_x*hwx+psep_y*hwy-dd_)/hit.posRes(ComboHit::wire));
+      float dp  = std::max(0.0f,(hwx*psep_y-hwy*psep_x-dd_)*maxwt_);
+      retval += dw*dw + dp*dp;
     }
     return retval;
   }
