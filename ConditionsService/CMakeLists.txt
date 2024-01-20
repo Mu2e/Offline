@@ -2,7 +2,6 @@ cet_make_library(
     SOURCE
       src/ConditionsService.cc
       src/CalorimeterCalibrations.cc
-      src/ExtMonFNALConditions.cc
     LIBRARIES PUBLIC
       
       Offline::ConfigTools
