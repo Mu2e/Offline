@@ -35,10 +35,10 @@ Mu2eKinKal : {
     MaxDStraw : 2 # integer (straw)
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
-    SampleTimeBuffer : 10.0 # time buffer for intersections
-    SampleTolerance : 5 #  tolerance for intersection sample (mm)
+    SampleTimeBuffer : 0.1 # time buffer for intersections (ns)
+    SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
     SampleInRange : true # require sample be in time range
-    SampleInBounds : true # require sample be in surface bounds
+    SampleInBounds : false # require sample be in surface bounds
   }
 
    CHSEEDFIT: {
@@ -275,10 +275,9 @@ Mu2eKinKal : {
   LOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     SeedFlags : [ "HelixOK" ]
-#    ExtrapolateSurfaces : ["TT_Front","TT_Back"]
-    ExtrapolateSurfaces : []
+    ExtrapolateSurfaces : ["TT_Front","TT_Back"]
     ExtrapolationTolerance : 1.0e-3
-    ExtrapolationMaxDt : 10.0
+    ExtrapolationMaxDt : 100.0 # (ns)
   }
 
   CENTRALHELIX : {
@@ -291,7 +290,7 @@ Mu2eKinKal : {
     PanelHitCollection : "makePH"
     ExtrapolateSurfaces : ["TT_Front","TT_Back","TT_Outer"]
     ExtrapolationTolerance : 1.0e-3
-    ExtrapolationMaxDt : 10.0
+    ExtrapolationMaxDt : 100.0
   }
 
   KINEMATICLINE : {
@@ -304,8 +303,8 @@ Mu2eKinKal : {
     SeedFlags : [ "HelixOK" ]
     ExtrapolateSurfaces : ["TT_Front","TT_Back","TT_Outer"]
     ExtrapolationTolerance : 1.0e-3
-    ExtrapolationMaxDt : 10.0
-}
+    ExtrapolationMaxDt : 100.0
+  }
 }
 
 Mu2eKinKal : {

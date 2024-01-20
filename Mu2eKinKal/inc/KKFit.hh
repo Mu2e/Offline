@@ -577,7 +577,7 @@ namespace mu2e {
       bool hasinter(true);
       // loop to find multiple intersections
       while(hasinter) {
-        TimeRange irange(tstart,ftraj.range().end()+ sampletbuff_);
+        TimeRange irange(tstart,std::max(ftraj.range().end(),tstart)+sampletbuff_);
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
         hasinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
         if(hasinter) {
