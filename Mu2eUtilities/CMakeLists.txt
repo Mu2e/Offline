@@ -33,6 +33,7 @@ cet_make_library(
       src/ProtonPulseRandPDF.cc
       src/RandomLimitedExpo.cc
       src/RandomUnitSphere.cc
+      src/ReSeedByEventID.cc
       src/rm48.cc
       src/ShankerWatanabeSpectrum.cc
       src/SimParticleCollectionPrinter.cc
