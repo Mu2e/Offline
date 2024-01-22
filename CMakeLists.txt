@@ -15,6 +15,8 @@ cet_set_compiler_flags(DIAGS VIGILANT
  -Wno-unused-parameter -Wno-type-limits -Wno-ignored-qualifiers -Wno-unused-but-set-parameter -Wno-extra -Wno-non-virtual-dtor -Wno-implicit-fallthrough -Wno-deprecated-copy
 )
 
+message("EXCLUDE_G4 SET TO ${MY_VARIABLE}")
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
  
 find_package(art_root_io REQUIRED EXPORT)
@@ -25,7 +27,10 @@ find_package(Boost COMPONENTS iostreams program_options REQUIRED EXPORT)
 find_package(XercesC REQUIRED EXPORT)
 find_package(BLAS REQUIRED EXPORT)
 find_package(artdaq_core_mu2e REQUIRED EXPORT)
-find_package(Geant4 REQUIRED EXPORT)
+if( NOT ${MY_VARIABLE} ) 
+        message("--> ADDING G4 LIBS")	
+    find_package(Geant4 REQUIRED EXPORT)
+endif()
 
 # TODO: Find or implement FindCRY.cmake
 include_directories($ENV{CRYHOME}/src)
@@ -97,8 +102,11 @@ add_subdirectory(MCDataProducts)
 add_subdirectory(MECOStyleProtonAbsorberGeom)
 add_subdirectory(Mu2e)
 add_subdirectory(Mu2eBTrk)
-add_subdirectory(Mu2eG4)
-add_subdirectory(Mu2eG4Helper)
+if( !EXCLUDE_G4 ) 
+    message("ADDING G4 DIRS")
+    add_subdirectory(Mu2eG4)
+    add_subdirectory(Mu2eG4Helper)
+endif()
 add_subdirectory(Mu2eHallGeom)
 add_subdirectory(Mu2eInterfaces)
 add_subdirectory(Mu2eKinKal)
