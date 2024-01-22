@@ -1,15 +1,19 @@
 cet_make_library(
     SOURCE
+      src/CombineStereoPoints.cc
       src/ComboPeakFitRoot.cc
       src/PeakFit.cc
       src/PeakFitFunction.cc
       src/PeakFitParams.cc
       src/PeakFitRoot.cc
+      src/StereoLine.cc
+      src/StereoPoint.cc
       src/StrawHitRecoUtils.cc
       src/TNTClusterer.cc
     LIBRARIES PUBLIC
       
       Offline::DataProducts
+      Offline::GeneralUtilities
       Offline::RecoDataProducts
       Offline::TrackerConditions
       Offline::TrackerGeom
