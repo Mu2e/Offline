@@ -134,6 +134,6 @@ namespace mu2e {
   }
 
   void CombineStereoPoints::print(std::ostream& os) const {
-    //os << "CombineStereoPoints with " << nPoints() << " points, " << point().print() << " chisquared " << chisquared() << std::endl;
+    os << "CombineStereoPoints with " << nPoints() << " points, " << point() << " chisquared " << chisquared() << std::endl;
   }
 }
