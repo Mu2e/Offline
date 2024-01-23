@@ -283,9 +283,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // diagnostics
 //-----------------------------------------------------------------------------
-    void   plotXY               (int ISet);
-
-    void   plotZPhi             (int ISet);
     void   printInfo            (CalHelixFinderData& Helix);
     void   printXYZP            (CalHelixFinderData& Helix);
 

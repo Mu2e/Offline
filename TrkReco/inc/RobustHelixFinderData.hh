@@ -201,11 +201,6 @@ namespace mu2e {
       // functions
       //-----------------------------------------------------------------------------
       RobustHelixFinderData();
-      ~RobustHelixFinderData();
-
-      // RobustHelixFinderData(const RobustHelixFinderData& Data);
-
-      // RobustHelixFinderData& operator =(RobustHelixFinderData const& other);
 
       const ComboHitCollection*         chcol () { return _chcol ; }
 

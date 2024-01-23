@@ -21,7 +21,6 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/MCRelationship.hh"
 // Mu2e Utilities
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
@@ -278,7 +277,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
                                                       ihit = 29;
                                               }
                                         auto const& p = chit.pos();
-                                        auto const& w = chit.wdir();
+                                        auto w = chit.uDir();
                                         auto const& s = chit.wireRes();
                                         auto const& t = chit.transRes();
                                         double x0prime{(p.Dot(xprimes_drift[0]))} ;
@@ -334,7 +333,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
                                                       ihit = 29;
                                               }
                                         auto const& p = chit.pos();
-                                        auto const& w = chit.wdir();
+                                        auto w = chit.uDir();
                                         auto const& s = chit.wireRes();
                                         double y0prime{(p.Dot(yprimes_drift[0]))} ;
                                         double z0prime{(p.Dot(zprimes_drift[0]))};
@@ -375,7 +374,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
                                                       ihit = 29;
                                               }
                                         auto const& p = chit.pos();
-                                        auto const& w = chit.wdir();
+                                        auto w = chit.uDir();
                                         auto const& s = chit.wireRes();
                                         auto const& t = chit.transRes();
                                         double x0prime{(p.Dot(xprimes_seed[0]))} ;
@@ -430,7 +429,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
                                                       ihit = 29;
                                               }
                                         auto const& p = chit.pos();
-                                        auto const& w = chit.wdir();
+                                        auto w = chit.uDir();
                                         auto const& s = chit.wireRes();
                                         double y0prime{(p.Dot(yprimes_seed[0]))} ;
                                         double z0prime{(p.Dot(zprimes_seed[0]))};
@@ -611,7 +610,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
                                       ihit = 29;
                               }
                         auto const& p = chit.pos();
-                        auto const& w = chit.wdir();
+                        auto w = chit.uDir();
                         auto const& s = chit.wireRes();
                         auto const& t = chit.transRes();
                         double x0prime{(p.Dot(xprimes[0]))} ;
@@ -688,7 +687,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
                                       ihit = 29;
                               }
                         auto const& p = chit.pos();
-                        auto const& w = chit.wdir();
+                        auto w = chit.uDir();
                         auto const& s = chit.wireRes();
                         double y0prime{(p.Dot(yprimes[0]))} ;
                         double z0prime{(p.Dot(zprimes[0]))};
@@ -752,7 +751,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
                                       ihit = 29;
                               }
                         auto const& p = chit.pos();
-                        auto const& w = chit.wdir();
+                        auto w = chit.uDir();
                         auto const& s = chit.wireRes();
                         double x0primeinit{(p.Dot(xprimesinit[0]))} ;
                         double z0primeinit{(p.Dot(zprimesinit[0]))};
@@ -816,7 +815,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
                                       ihit = 29;
                               }
                         auto const& p = chit.pos();
-                        auto const& w = chit.wdir();
+                        auto w = chit.uDir();
                         auto const& s = chit.wireRes();
                         double y0prime{(p.Dot(yprimesinit[0]))} ;
                         double z0prime{(p.Dot(zprimesinit[0]))};
@@ -878,7 +877,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
                                       ihit = 29;
                               }
                         auto const& p = chit.pos();
-                        auto const& w = chit.wdir();
+                        auto w = chit.uDir();
                         auto const& s = chit.wireRes();
                         double y0prime{p.x()} ;
                         double z0prime{p.z()};
@@ -912,7 +911,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
                                       ihit = ihit+1;
                               }
                         auto const& p = chit.pos();
-                        auto const& w = chit.wdir();
+                        auto w = chit.uDir();
                         auto const& s = chit.wireRes();
                         double y0prime{p.y()} ;
                         double z0prime{p.z()};
@@ -1014,7 +1013,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
                               }
 
                         auto const& p = chit.pos();
-                        auto const& w = chit.wdir();
+                        auto w = chit.uDir();
                         auto const& s = chit.wireRes();
                         double y0prime{p.y()} ;
                         double z0prime{p.z()};
@@ -1147,7 +1146,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
                         TPolyLine3D *errors = new TPolyLine3D;
                         errors->SetLineColor(kRed);
                         auto const& p = chit.pos();
-                        auto const& w = chit.wdir();
+                        auto w = chit.uDir();
                         auto const& s = chit.wireRes();
                         double x1 = p.x()+s*w.x();
                         double x2 = p.x()-s*w.x();
@@ -1297,7 +1296,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
                         double xdoubleprime{p.Dot(xprimes[0])};
                         double ydoubleprime{p.Dot(yprimes[0])};
                         double zprime{p.Dot(zprimes[0])};
-                        auto const& w = chit.wdir();
+                        auto w = chit.uDir();
                         auto const& s = chit.wireRes();
                         double x1 = p.Dot(xprimes[0])+(s*w).Dot(xprimes[0]);
                         double x2 = p.Dot(xprimes[0])-(s*w).Dot(xprimes[0]);

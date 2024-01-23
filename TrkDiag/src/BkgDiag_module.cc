@@ -21,6 +21,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "Offline/RecoDataProducts/inc/BkgCluster.hh"
 #include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
@@ -44,17 +45,18 @@ namespace mu2e
       struct Config {
         using Name = fhicl::Name;
         using Comment = fhicl::Comment;
-        fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag Level"),0 };
-        fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"),0 };
-        fhicl::Atom<bool> mcdiag{ Name("MCDiag"), Comment("MonteCarlo Diag"), true };
-        fhicl::Atom<bool> hdiag{ Name("HitDiag"), Comment("Hit-level Diag tuple"), false };
-        fhicl::Atom<float> maxdt{ Name("maxTimeDifference"), Comment("Max Time Difference"), 50.0 };
-        fhicl::Atom<float> maxdrho{ Name("maxRhoDifference"), Comment("Max Rho Difference"), 50.0 };
-        fhicl::Atom<art::InputTag> ComboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
-        fhicl::Atom<art::InputTag> BkgClusterCollection{   Name("BkgClusterCollection"),   Comment("BackgroundCluster collection name") };
-        fhicl::Atom<art::InputTag> BkgClusterHitCollection{   Name("BkgClusterHitCollection"),   Comment("BackgroundClusterHit collection name") };
-        fhicl::Atom<art::InputTag> StrawDigiMCCollection{   Name("StrawDigiMCCollection"),   Comment("StrawDigiMC collection name") };
-        fhicl::Atom<art::InputTag> MCPrimary{ Name("MCPrimary"),Comment("MC Primary Particle") };
+        fhicl::Atom<int>              diag{                     Name("diagLevel"),                 Comment("Diag Level"),0 };
+        fhicl::Atom<int>              debug{                    Name("debugLevel"),                Comment("Debug Level"),0 };
+        fhicl::Atom<bool>             mcdiag{                   Name("MCDiag"),                    Comment("MonteCarlo Diag"), true };
+        fhicl::Atom<bool>             hdiag{                    Name("HitDiag"),                   Comment("Hit-level Diag tuple"), false };
+        fhicl::Atom<float>            maxdt{                    Name("maxTimeDifference"),         Comment("Max Time Difference"), 50.0 };
+        fhicl::Atom<float>            maxdrho{                  Name("maxRhoDifference"),          Comment("Max Rho Difference"), 50.0 };
+        fhicl::Atom<art::InputTag>    ComboHitCollection{       Name("ComboHitCollection"),        Comment("ComboHit collection name") };
+        fhicl::Atom<art::InputTag>    BkgClusterCollection{     Name("BkgClusterCollection"),      Comment("BackgroundCluster collection name") };
+        fhicl::Atom<art::InputTag>    BkgClusterHitCollection{  Name("BkgClusterHitCollection"),   Comment("BackgroundClusterHit collection name") };
+        fhicl::Atom<art::InputTag>    StrawDigiMCCollection{    Name("StrawDigiMCCollection"),     Comment("StrawDigiMC collection name") };
+        fhicl::Atom<art::InputTag>    MCPrimary{                Name("MCPrimary"),                 Comment("MC Primary Particle") };
+        fhicl::Atom<std::string>      expectedCHLevel{          Name("ExpectedCHLevel"),           Comment("Level of the input ComboHitCollection") };
      };
 
       explicit BkgDiag(const art::EDAnalyzer::Table<Config>& config);
@@ -86,6 +88,10 @@ namespace mu2e
       const BkgClusterCollection *_bkgccol;
       const BkgClusterHitCollection *_bkghitcol;
 
+      //Input Level Check
+      StrawIdMask::Level expectedCHLevel_;
+      std::string expectedCHLevelName_;
+
       // background diagnostics
       TTree* _bcdiag = 0;
       TTree* _bhdiag = 0;
@@ -94,6 +100,7 @@ namespace mu2e
       float _rmscposx = 0;
       float _rmscposy = 0;
       float _rmscrho = 0;
+      float _cchi2 = 0;
       float _ctime = 0;
       float _rmsctime = 0;
       float _avecedep = 0;
@@ -104,7 +111,7 @@ namespace mu2e
       bool _isref = false;
       bool _isolated = false;
       bool _stereo = false;
-      int _cluIdx, _nactive, _nch, _nsh, _nsha, _nbkg;
+      int _cluIdx, _nactive, _nch, _nsh, _nsha, _nbkg, _ncpoints;
       float _crho;
       float _zmin;
       float _zmax;
@@ -138,7 +145,11 @@ namespace mu2e
     _bkghToken{ consumes<BkgClusterHitCollection>(config().BkgClusterHitCollection() ) },
     _mcdigisToken{ consumes<StrawDigiMCCollection>(config().StrawDigiMCCollection() ) },
     _mcprimaryToken{ consumes<PrimaryParticle>(config().MCPrimary() ) }
-  {}
+  {
+    StrawIdMask mask(config().expectedCHLevel());
+    expectedCHLevel_ = mask.level();
+    expectedCHLevelName_ = mask.levelName();
+  }
 
   BkgDiag::~BkgDiag(){}
 
@@ -155,6 +166,7 @@ namespace mu2e
     _bcdiag->Branch("rmscposx",&_rmscposx,"rmscposx/F");
     _bcdiag->Branch("rmscposy",&_rmscposy,"rmscposy/F");
     _bcdiag->Branch("rmscrho",&_rmscrho,"rmscrho/F");
+    _bcdiag->Branch("cchi2",&_cchi2,"cchi2/F");
     _bcdiag->Branch("ctime",&_ctime,"ctime/F");
     _bcdiag->Branch("rmsctime",&_rmsctime,"rmsctime/F");
     _bcdiag->Branch("avecedep",&_avecedep,"avecedep/F");
@@ -168,7 +180,9 @@ namespace mu2e
     _bcdiag->Branch("nch",&_nch,"nch/I");
     _bcdiag->Branch("nsh",&_nsh,"nsh/I");
     _bcdiag->Branch("nactive",&_nactive,"nactive/I");
+    _bcdiag->Branch("nsha",&_nsha,"nsha/I");
     _bcdiag->Branch("nbkg",&_nbkg,"nbkg/I");
+    _bcdiag->Branch("ncpoints",&_ncpoints,"ncpoints/I");
     _bcdiag->Branch("cluIdx",&_cluIdx,"cluIdx/I");
     // cluster hit info branch
     if(_diag > 0)
@@ -221,9 +235,10 @@ namespace mu2e
   void BkgDiag::analyze(const art::Event& event ) {
     if(!findData(event))
       throw cet::exception("RECO")<<"mu2e::BkgDiag: data missing or incomplete"<< std::endl;
-    // check consistency,bkgqcol is eliminated from the code, we should add a different check TO DO
-    //if(_bkgccol->size() != _bkgqcol->size())
-    //  throw cet::exception("RECO")<<"mu2e::BkgDiag: data inconsistent"<< std::endl;
+    if( !(_chcol->level() == expectedCHLevel_) ){
+      throw cet::exception("RECO")<< "mu2e::BkgDiag: inconsistent outputlevel with input combo hits.\n"
+                                  << "FlagBkgHits outputlevel must be "<< expectedCHLevelName_ <<" for training purposes."<< std::endl;
+    }
     // loop over background clusters
 
     _nhits=0;
@@ -256,6 +271,8 @@ namespace mu2e
       _crho = sqrtf(cluster.pos().perp2());
       _cpos = cluster.pos();
       _ctime = cluster.time();
+      _cchi2 = cluster.points().chisquared();
+      _ncpoints = cluster.points().nPoints();
       _isinit = cluster.flag().hasAllProperties(BkgClusterFlag::init);
       _isbkg = cluster.flag().hasAllProperties(BkgClusterFlag::bkg);
       _isref = cluster.flag().hasAllProperties(BkgClusterFlag::refined);
@@ -315,7 +332,7 @@ namespace mu2e
       _bkghinfo.clear();
       _bkghinfo.reserve(cluster.hits().size());
       _nch = cluster.hits().size();
-      _nsh = _nactive = _nbkg = _nrel = 0;
+      _nsh = _nactive = _nsha =_nbkg = _nrel = 0;
       double sumEdep(0.);
       double sqrSumDeltaTime(0.);
       double sqrSumDeltaX(0.);
@@ -335,7 +352,8 @@ namespace mu2e
         StrawHitFlag const& shf = bhit.flag();
         if(shf.hasAllProperties(StrawHitFlag::active)){
           _nactive += ch.nStrawHits();
-          if(shf.hasAllProperties(StrawHitFlag::stereo))_nsha+= ch.nStrawHits();
+          //if(shf.hasAllProperties(StrawHitFlag::stereo))_nsha+= ch.nStrawHits();//StrawHitFlag::stereo is redundant
+          if(StrawIdMask::station == ch._mask) _nsha+= ch.nStrawHits();
         }
         if(shf.hasAllProperties(StrawHitFlag::bkg))_nbkg+= ch.nStrawHits();
         // fill hit-specific information
@@ -363,7 +381,7 @@ namespace mu2e
         auto psep = ch.pos()-cluster.pos();
         auto pdir = PerpVector(psep,GenVector::ZDir()).Unit();
         bkghinfo._rpos = psep;
-        bkghinfo._rerr = std::max(float(2.5),ch.posRes(ComboHit::wire)*fabs(pdir.Dot(ch.wdir())));
+        bkghinfo._rerr = std::max(float(2.5),ch.posRes(ComboHit::wire)*fabs(pdir.Dot(ch.uDir())));
         _bkghinfo.push_back(bkghinfo);
       }
       _avecedep = sumEdep/_nch;

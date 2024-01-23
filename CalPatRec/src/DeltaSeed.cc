@@ -4,7 +4,7 @@
 #include "Offline/CalPatRec/inc/DeltaFinder_types.hh"
 
 namespace mu2e {
-  using  DeltaFinderTypes::HitData_t;
+  using  CalPatRec::HitData_t;
 
   float DeltaSeed::fSigT2 = 8*8;    // resolution in tCorr, squared, ns^2
 //-----------------------------------------------------------------------------

@@ -91,7 +91,8 @@ namespace mu2e {
   struct KalSeedMC {
     SimPartStub const& simParticle(size_t index=0) const { return _simps.at(index); }
     std::vector<SimPartStub> const& simParticles() const { return _simps; }
-    std::vector<TrkStrawHitMC> const & trkStrawHitMCs() const { return _tshmcs; }
+    std::vector<TrkStrawHitMC> const& trkStrawHitMCs() const { return _tshmcs; }
+    std::vector<VDStep> const& vdSteps() const { return _vdsteps; }
     TrkStrawHitMC const& trkStrawHitMC(size_t index) const { return _tshmcs.at(index); }
     SimPartStub const& simParticle(TrkStrawHitMC const& tshmc) const { return simParticle(tshmc.simPartStubIndex()); }
     // data products

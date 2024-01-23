@@ -8,17 +8,16 @@
 
 using ROOT::Math::XYZVectorF;
 
-#include "Offline/CalPatRec/inc/DeltaFinder_enums.hh"
+// #include "Offline/CalPatRec/inc/CalPatRec_enums.hh"
 #include "Offline/CalPatRec/inc/DeltaFinder_structures.hh"
 
 namespace mu2e {
 
   namespace DeltaFinderTypes {
-    struct HitData_t;
     struct McPart_t;
   }
 
-  using  DeltaFinderTypes::HitData_t;
+  using  CalPatRec::HitData_t;
   using  DeltaFinderTypes::McPart_t;
 
   class  Panel;

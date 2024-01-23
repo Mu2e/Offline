@@ -19,7 +19,7 @@ class DbTable {
       _name(name),
       _dbname(dbname), _query(query) {}
 
-  virtual ~DbTable() {}
+  virtual ~DbTable() = default;
 
   // table name as it appears offline
   const std::string& name() const { return _name; }

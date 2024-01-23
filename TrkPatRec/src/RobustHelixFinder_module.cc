@@ -71,12 +71,12 @@ using namespace ROOT::Math::VectorUtil;
 
 namespace {
   // comparison functor for sorting by z
-  struct zcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
+  struct zcomp {
     bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
 
   // comparison functor for sorting byuniquePanel ID
-  struct panelcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
+  struct panelcomp {
     bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1.strawId().uniquePanel() < p2.strawId().uniquePanel(); }
   };
   struct HelixHitMVA
@@ -537,7 +537,7 @@ namespace mu2e {
 
       if (hhit->_flag.hasAnyProperty(_outlier))   continue;
 
-      const XYZVectorF& wdir = hhit->wdir();
+      XYZVectorF wdir = hhit->uDir();
       XYZVectorF wtdir = zaxis.Cross(wdir); // transverse direction to the wire
       XYZVectorF cvec = PerpVector(hhit->pos() - helix.center(),GenVector::ZDir());// direction from the circle center to the hit
       XYZVectorF cdir = cvec.Unit();        // direction from the circle center to the hit
@@ -630,7 +630,7 @@ namespace mu2e {
         float hphi = polyAtan2(hit->pos().y(),hit->pos().x());//phi();
         float dphi = fabs(Angles::deltaPhi(hphi,helix.fcent()));
 
-        const XYZVectorF& wdir = hit->wdir();
+        XYZVectorF wdir = hit->uDir();
         XYZVectorF wtdir = zaxis.Cross(wdir);   // transverse direction to the wire
         XYZVectorF cvec = PerpVector(hit->pos() - helix.center(),GenVector::ZDir()); // direction from the circle center to the hit
         XYZVectorF cdir = cvec.Unit();          // direction from the circle center to the hit
@@ -950,7 +950,7 @@ unsigned  RobustHelixFinder::filterCircleHits(RobustHelixFinderData& helixData)
       bool oldout = hit->_flag.hasAnyProperty(_outlier);
       hit->_flag.clear(_outlier);
 
-      const XYZVectorF& wdir = hit->wdir();
+      XYZVectorF wdir = hit->uDir();
       XYZVectorF cvec = PerpVector(hit->pos() - helix.center(),GenVector::ZDir()); // direction from the circle center to the hit
       XYZVectorF cdir = cvec.Unit(); // direction from the circle center to the hit
       float rwdot = wdir.Dot(cdir); // compare directions of radius and wire
@@ -1007,7 +1007,7 @@ unsigned  RobustHelixFinder::filterCircleHits(RobustHelixFinderData& helixData)
 
       if(oldoutBest) ++changed;
 
-      if (chCounter < RobustHelixFinderData::kMaxResidIndex) {
+      if (chCounter < float(RobustHelixFinderData::kMaxResidIndex)) {
         drBestVec   [int(chCounter)] = drBest;
         rwdotBestVec[int(chCounter)] = rwdotBest;
       }

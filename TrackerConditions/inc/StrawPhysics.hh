@@ -52,7 +52,7 @@ namespace mu2e {
         _nonlindrift(nonlindrift), _bz(bz),
         _strawDrift(strawDrift) {}
 
-      virtual ~StrawPhysics() {}
+      virtual ~StrawPhysics() = default;
 
       // models.  Note these are different from the corresponding
       // functions used in reconstruction, as those can be wire-

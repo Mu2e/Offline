@@ -15,7 +15,8 @@ namespace mu2e
   class ConditionsEntity
   {
   public:
-    virtual ~ConditionsEntity();
+    ConditionsEntity() {}
+    virtual ~ConditionsEntity() = default;
   };
 }
 
