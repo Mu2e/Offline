@@ -212,11 +212,15 @@ namespace mu2e {
     numTotalParticles_ += ih->size();
     for(const auto& i : *ih) {
       const SimParticle& particle = i.second;
+      if(verbosityLevel_ > 3) {
+          std::cout <<  "STAGE " << particle.simStage() << " vs " << simStageThreshold_ << " pid=" <<particle.pdgId() <<
+          " stopcode=" << particle.stoppingCode().id() << " name=" <<  particle.stoppingCode().name() << std::endl;
+      }
       if(particle.simStage() >= simStageThreshold_) {
         ++numStageParticles_;
 
         if((particleTypes_.find(particle.pdgId()) != particleTypes_.end())
-            && isStopped(particle))
+           && ( isStopped(particle) || particle.stoppingCode().id()==13 ) ) //13=photon conversion
         {
           ++numRequestedTypeStops_;
 

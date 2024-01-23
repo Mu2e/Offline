@@ -77,7 +77,7 @@ namespace mu2e {
     }
   };
   // predicate to sort by decreasing # of CE hits
-  struct NCEComp : public std::binary_function<TimeClusterInfo,TimeClusterInfo, bool> {
+  struct NCEComp {
     bool operator()(TimeClusterInfo const& x,TimeClusterInfo const& y) { return x._ncehits > y._ncehits; }
   };
 

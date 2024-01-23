@@ -16,13 +16,13 @@ namespace mu2e {
   Float_t ComboHit::posRes(edir dir) const {
     switch ( dir ) {
       case ComboHit::wire : {
-        return _ures;
+        return uRes();
       }
       case ComboHit::trans : {
-        return _vres;
+        return vRes();
       }
       case ComboHit::z : {
-        return _wres;
+        return wRes();
       }
       default : {
         return -1.0;
@@ -48,6 +48,18 @@ namespace mu2e {
   }
 
 #ifndef __ROOTCLING__
+
+  ComboHitCollection::CHCPTR ComboHitCollection::parent(StrawIdMask::Level level) const {
+    auto retval = _parent;
+    if(_parent.refCore().isNull() || level == this->level()){
+      throw cet::exception("RECO")<<"mu2e::ComboHitCollection: no such parent" << std::endl;
+    } else {
+      // recursive call
+      if(retval->level() != level) retval = _parent->parent(level);
+    }
+    return retval;
+  }
+
   void ComboHitCollection::setSameParent(ComboHitCollection const& other) { _parent = other.parent(); }
   void ComboHitCollection::setParent(CHCPTR const& parent) { _parent = parent; }
 
@@ -141,13 +153,13 @@ namespace mu2e {
     shiv.clear();
     const ComboHitCollection* retval = this;
     if(level() == clevel){
-      shiv.reserve(shiv.size() + this->size());
+      shiv.reserve(this->size());
       for(size_t iind = 0;iind < this->size(); ++iind)shiv.push_back(iind);
       // if this collection references other collections, go down recursively
     } else if(_parent.refCore().isNonnull()){
       if(_parent->level() == clevel){
         retval = _parent.get();
-        shiv.reserve(shiv.size()+2*(this->size()));
+        shiv.reserve(2*(this->size())); // estimated combo factor
         // current hits reference into the desired level.  Fill the indices from the current hits and done
         for(auto const& ch : *this){
           for(size_t iind = 0;iind < ch.nCombo(); ++iind){

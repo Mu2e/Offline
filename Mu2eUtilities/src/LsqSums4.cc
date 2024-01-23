@@ -10,14 +10,6 @@ LsqSums4::LsqSums4() {
   clear();
 }
 
-LsqSums4::LsqSums4(const LsqSums4& S) {
-  init(S);
-  //  printf(" LsqSums4::LsqSums4 : dont use me!\n");
-}
-
-LsqSums4::~LsqSums4() {
-}
-
 void LsqSums4::clear() {
   _qn   = 0;
   sw    = 0;
@@ -40,27 +32,6 @@ void LsqSums4::clear() {
   fY0   = 0;
 }
 
-void LsqSums4::init(const LsqSums4& S) {
-  _qn   = S._qn  ;
-  sw    = S.sw   ;
-  sx    = S.sx   ;
-  sy    = S.sy   ;
-  sx2   = S.sx2  ;
-  sxy   = S.sxy  ;
-  sy2   = S.sy2  ;
-  sx3   = S.sx3  ;
-  sx2y  = S.sx2y ;
-  sxy2  = S.sxy2 ;
-  sy3   = S.sy3  ;
-  sx4   = S.sx4  ;
-  sx3y  = S.sx3y ;
-  sx2y2 = S.sx2y2;
-  sxy3  = S.sxy3 ;
-  sy4   = S.sy4  ;
-
-  fX0   = S.fX0;
-  fY0   = S.fY0;
-}
 
 void LsqSums4::addPoint(double XX, double YY, double W) {
   double X, Y;

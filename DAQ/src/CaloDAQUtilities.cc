@@ -1,5 +1,5 @@
 
-#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
@@ -9,7 +9,7 @@
 namespace mu2e {
   CaloDAQUtilities::CaloDAQUtilities(std::string ModuleName):moduleName_(ModuleName){}
 
-  void CaloDAQUtilities::printCaloFragmentInfo(CalorimeterFragment const& cc){
+  void CaloDAQUtilities::printCaloFragmentInfo(CalorimeterDataDecoder const& cc){
     std::cout << std::endl;
     std::cout << "ArtFragmentReader: ";
     std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
@@ -40,7 +40,7 @@ namespace mu2e {
 
   }
 
-  void CaloDAQUtilities::printCaloPulse(CalorimeterFragment::CalorimeterHitReadoutPacket const& Hit){
+  void CaloDAQUtilities::printCaloPulse(CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit){
     std::cout << "[CaloHitsFromFragments] \tChNumber   "
               << (int)Hit.ChannelNumber
               << std::endl;
@@ -76,7 +76,7 @@ namespace mu2e {
 
   void CaloDAQUtilities::printAllHitInfo(int CrystalID, int SiPMID,
                                          std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header,
-                                         CalorimeterFragment::CalorimeterHitReadoutPacket const& Hit, uint16_t PulseMax){
+                                         CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit, uint16_t PulseMax){
 
     std::cout << "Crystal ID: " << CrystalID           << std::endl;
     std::cout << "SiPM ID: "    << SiPMID              << std::endl;

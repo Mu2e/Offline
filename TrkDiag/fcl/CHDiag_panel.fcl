@@ -1,0 +1,3 @@
+#include "Offline/TrkDiag/test/ComboDiag.fcl"
+services.DbService.purpose: MDC2020_best
+services.DbService.version: v1_1

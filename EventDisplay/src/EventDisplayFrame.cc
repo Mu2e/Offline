@@ -839,6 +839,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
         default:
           break;
       }
+      break;
 
     case kC_COMMAND:
       switch (GET_SUBMSG(msg))

@@ -2,6 +2,8 @@
 #define ValKalSeed_HH_
 
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/KinKalGeom/inc/SurfaceId.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
 #include "TH1D.h"
@@ -11,40 +13,43 @@ namespace mu2e {
 
 class ValKalSeed {
  public:
-  ValKalSeed(std::string name) : _name(name) {}
+  ValKalSeed(std::string name);
   int declare(const art::TFileDirectory& tfs);
   int fill(const KalSeedCollection& coll, art::Event const& event);
-  double mcTrkP(art::Event const& event);
+  double mcTrkP(art::Event const& event,VirtualDetectorId const& vdid,double& p_pri);
   std::string& name() { return _name; }
 
  private:
   std::string _name;
+  std::map<VirtualDetectorId,SurfaceId> _vdmap;
 
   TH1D* _hVer;
   TH1D* _hN;
   TH1D* _hNStraw;
   TH1D* _hNSeg;
+  TH1D* _hNInter;
+  TH1D* _hTraj;
   TH1D* _hStatus;
-  TH1D* _hflt0;
   TH1D* _ht0;
+  TH1D* _ht02;
   TH1D* _hchi2;
   TH1D* _hhasCal;
   TH1D* _hfitCon;
   TH1D* _hfitConC;
   TH1D* _hfitConT;
   TH1D* _hp;
+  TH1D* _hp2;
   TH1D* _hpC;
   TH1D* _hpT;
   TH1D* _hpce;
   TH1D* _hpcep;
   TH1D* _hpe;
-  TH1D* _hD0;
-  TH1D* _hPhi0;
-  TH1D* _hOmega;
-  TH1D* _hZ0;
-  TH1D* _hTan;
+  TH1D* _hRho;
+  TH1D* _hPhi;
+  TH1D* _hCost;
   TH1D* _hCuts;
   TH1D* _hPRes;
+  TH1D* _hPResA;
   TH1D* _hCCdisk;
   TH1D* _hCCEoverP;
   TH1D* _hCCDt;

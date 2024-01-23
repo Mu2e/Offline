@@ -20,7 +20,6 @@
 
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/ConditionsService/inc/ExtMonFNALConditions.hh"
 
 //#define AGDEBUG(stuff) do { std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<", func "<<__func__<<": "<<stuff<<std::endl; } while(0)
 #define AGDEBUG(stuff)
@@ -65,12 +64,12 @@ namespace mu2e {
     //================================================================
     PixelNoise::PixelNoise(art::RandomNumberGenerator::base_engine_t& rng,
                            const ExtMon **em,
-                           const ExtMonFNALConditions **cond,
+                           const int numBCs,
                            double noisePerPixelPerBC)
       : poisson_(rng)
       , flat_(rng)
       , extmon_(em)
-      , cond_(cond)
+      , numBCs_(numBCs)
       , noisePerPixelPerBC_(noisePerPixelPerBC)
     {}
 
@@ -78,9 +77,7 @@ namespace mu2e {
     void PixelNoise::add(ExtMonFNALRawHitCollection *hits) {
       ExtMonFNALPixelIdConverter conv(**extmon_);
 
-      const int numBCs = (**cond_).numClockTicksPerDebuncherPeriod();
-
-      const double meanNoise = conv.totalNumberOfPixels() * numBCs * noisePerPixelPerBC_;
+      const double meanNoise = conv.totalNumberOfPixels() * numBCs_ * noisePerPixelPerBC_;
 
       int numNoise = poisson_.fire(meanNoise);
 
@@ -90,7 +87,7 @@ namespace mu2e {
       NoiseMap noise;
       for(int i=0; i<numNoise; ++i) {
         ExtMonFNALPixelDenseId pix(flat_.fireInt(conv.totalNumberOfPixels()));
-        unsigned int clock = flat_.fireInt(numBCs);
+        unsigned int clock = flat_.fireInt(numBCs_);
         unsigned int tot = 0; // noise hits are short
         noise.insert(std::make_pair(pix, ExtMonFNALRawHit(conv.pixelId(pix), clock, tot)));
       }

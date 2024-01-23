@@ -39,7 +39,7 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 // CSV reader
-#include "Offline/GeneralUtilities/inc/csv.hh"
+#include "Offline/GeneralUtilities/inc/CsvReader.hh"
 
 using namespace std;
 
@@ -637,18 +637,14 @@ namespace mu2e {
     // Read one magnetic field parameter csv.
     //
     void BFieldManagerMaker::readParamFile(const string& filename, BFParamMap& bfmap) {
-        // Open the input file.
-        ifstream fin(filename.c_str());
-        if (!fin.is_open())
-            throw cet::exception("GEOM") << "Could not open file " << filename << "\n";
 
         // Read in csv, tokenize the parameter name, start filling
         // the private class members with the correct values.
         // This assumes the csv is ordered correctly, so I should have some assertions
         // that raise exceptions when ordering is incorrect.  Read-time is not critical,
         // as this is only read from file once, then stored in memory.
-        io::CSVReader<2> in(filename);
-        in.set_header("param", "val");
+        CsvReader cr(filename);
+        StringVec row;
         string param;
         double val(-1);
         int ns(-1);
@@ -658,7 +654,10 @@ namespace mu2e {
         vector<vector<double>> Bs;
         vector<double> Ds;
         // Grab the first 3 vals
-        while (in.read_row(param, val)) {
+        for(int i = 0; i<3; ++i) {
+            cr.getRow(row);
+            param = row[0];
+            val = std::stod(row[1]);
             vector<string> tparams = split(param, '_');
             if (tparams[0].compare("R") == 0) {
                 Reff = val;
@@ -676,7 +675,10 @@ namespace mu2e {
             Bs.push_back(vector<double>());
         }
         // Fill the 2D params
-        while (in.read_row(param, val)) {
+        while (cr.getRow(row)) {
+            param = row[0];
+            val = std::stod(row[1]);
+
             vector<string> tparams = split(param, '_');
             if (tparams[0].compare("A") == 0) {
                 As[stoi(tparams[1])].push_back(val);

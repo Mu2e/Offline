@@ -54,7 +54,7 @@ class RunSubrunEvent : public art::EDAnalyzer {
   bool _printEvent;
 
   // keep a list of subruns
-  typedef std::vector<art::SubRunID> subvec;
+  typedef std::vector<unsigned long long> subvec;
   subvec _subruns;
 
   art::RunNumber_t _max_run_s;  // min and max run number for subruns
@@ -96,7 +96,7 @@ void mu2e::RunSubrunEvent::beginSubRun(art::SubRun const& subRun) {
   if (!_printSam) return;
 
   // add this subrun to the list, if it is not already there
-  art::SubRunID id = subRun.id();
+  unsigned long long id = subRun.run()*1000000ull + subRun.subRun();
   subvec::iterator beg = _subruns.begin();
   subvec::iterator end = _subruns.end();
   if (std::find(beg, end, id) == end) _subruns.emplace_back(id);
@@ -186,6 +186,9 @@ void mu2e::RunSubrunEvent::endJob() {
   std::cout << "  rse.last_subrun        " << _max_sub_e  << std::endl;
   std::cout << "  rse.last_event         " << _max_evt  << std::endl;
   std::cout << "  rse.nevent             " << _eventCount  << std::endl;
+  std::cout << "  rs.runs                ";
+  for(auto sr : _subruns) std::cout << sr << " ";
+  std::cout << std::endl;
   std::cout << "end RunSubrunEvent::endJob summary" << std::endl;
 }
 

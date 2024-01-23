@@ -483,8 +483,8 @@ namespace mu2e {
   void TrkRecoDiag::fillKalFinal(SPP const& spp,KSI const& kfi) {
     KalSeed const& kf = *kfi;
     // find the corresponding TrkQual
-    size_t index = std::distance(_kfcol->begin(), kfi );
-    if(index < 0 || index >= _tqcol->size())
+    int index = std::distance(_kfcol->begin(), kfi );
+    if(index < 0 || index >= int(_tqcol->size()))
       throw cet::exception("DIAG")<<"mu2e::TrkRecoDiag: FinalFit data inconsistent"<< endl;
     // fill branches
     _kff = kf.status();

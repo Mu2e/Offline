@@ -65,7 +65,7 @@ using CLHEP::Hep3Vector;
 using CLHEP::HepVector;
 
 namespace{
-  struct ycomp_iter : public std::binary_function<std::vector<ComboHit>::const_iterator, std::vector<ComboHit>::const_iterator, bool> {
+  struct ycomp_iter {
     bool operator()(std::vector<ComboHit>::const_iterator p1, std::vector<ComboHit>::const_iterator p2) { return p1->_pos.y() > p2->_pos.y(); }
   };
 }

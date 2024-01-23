@@ -190,8 +190,8 @@ namespace mu2e {
 // it is enough to print that once
 //-----------------------------------------------------------------------------
     if (_testOrder && (_testOrderPrinted == 0)) {
-      _data.testOrderID  ();
-      _data.testdeOrderID();
+      ChannelID::testOrderID  ();
+      ChannelID::testdeOrderID();
       _testOrderPrinted = 1;
     }
 
