@@ -311,11 +311,17 @@ end_product_list
 #   case it is optional.
 #
 qualifier           art_root_io gallery     geant4          xerces_c    artdaq_core_mu2e    BTrk            KinKal          cry         gsl
-e28:s126:trig:debug e28:debug   e28:debug   e28:mt:debug    e28         e28:s126:debug      e28:p3915:debug e28:p3915:debug e28:debug   -nq-
-e28:s126:trig:prof  e28:prof    e28:prof    e28:mt:prof     e28         e28:s126:prof       e28:p3915:prof  e28:p3915:prof  e28:prof    -nq-
+e28:s126:trig:debug e28:debug   e28:debug   -               e28         e28:s126:debug      e28:p3915:debug e28:p3915:debug -           -nq-
+e28:s126:trig:prof  e28:prof    e28:prof    -               e28         e28:s126:prof       e28:p3915:prof  e28:p3915:prof  -           -nq-
 
-e28:s124:trig:debug e28:debug   e28:debug   e28:mt:debug    e28         e28:s124:debug      e28:p3915:debug e28:p3915:debug e28:debug   -nq-
-e28:s124:trig:prof  e28:prof    e28:prof    e28:mt:prof     e28         e28:s124:prof       e28:p3915:prof  e28:p3915:prof  e28:prof    -nq-
+e28:s124:trig:debug e28:debug   e28:debug   -               e28         e28:s124:debug      e28:p3915:debug e28:p3915:debug -           -nq-
+e28:s124:trig:prof  e28:prof    e28:prof    -               e28         e28:s124:prof       e28:p3915:prof  e28:p3915:prof  -           -nq-
+
+e28:s126:debug      e28:debug   e28:debug   e28:mt:debug    e28         e28:s126:debug      e28:p3915:debug e28:p3915:debug e28:debug   -nq-
+e28:s126:prof       e28:prof    e28:prof    e28:mt:prof     e28         e28:s126:prof       e28:p3915:prof  e28:p3915:prof  e28:prof    -nq-
+
+e28:s124:debug      e28:debug   e28:debug   e28:mt:debug    e28         e28:s124:debug      e28:p3915:debug e28:p3915:debug e28:debug   -nq-
+e28:s124:prof       e28:prof    e28:prof    e28:mt:prof     e28         e28:s124:prof       e28:p3915:prof  e28:p3915:prof  e28:prof    -nq-
 end_qualifier_list
 ####################################
 
@@ -326,22 +332,9 @@ end_qualifier_list
 # be copied to the table file verbatim.
 table_fragment_begin
 
-#    envSet (MU2E_BASE_RELEASE, \${OFFLINE_DIR} )
-#    envSet (MU2E_SEARCH_PATH, \${OFFLINE_DIR}/config:\${MU2E_DATA_PATH}:/cvmfs/mu2e.opensciencegrid.org/DataFiles )
-#    envSet (FHICL_FILE_PATH, \${OFFLINE_DIR}/config:\${OFFLINE_DIR}/config/Offline/fcl )
-#    envSet (OFFLINE_VERSION, \${UPS_PROD_VERSION} )
-#    pathAppend( ROOT_INCLUDE_PATH, \${OFFLINE_INC})
-
-#    exeActionRequired(GetFQDir)
-#    envSet (OFFLINE_LIB, \${OFFLINE_DIR}/\${OFFLINE_FQ}/lib )
-#    pathAppend( CET_PLUGIN_PATH, \${OFFLINE_LIB} )
-#    pathPrepend(PATH, "\${OFFLINE_DIR}/\${OFFLINE_FQ}/bin")
-
-#    if ( test \`uname\` = "Darwin" )
-#      pathPrepend(DYLD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})
-#    else()
-#      pathPrepend(LD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})
-#    endif ( test \`uname\` = "Darwin" )
+envSet (MU2E_BASE_RELEASE, \${OFFLINE_DIR} )
+envPrepend(MU2E_DATA_PATH, \${OFFLINE_DIR}/share:/cvmfs/mu2e.opensciencegrid.org/DataFiles)
+envPrepend (MU2E_SEARCH_PATH, \${OFFLINE_DIR}/fcl:\${MU2E_DATA_PATH} )
 
 table_fragment_end
 ####################################

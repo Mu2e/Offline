@@ -15,6 +15,16 @@ cet_set_compiler_flags(DIAGS VIGILANT
  -Wno-unused-parameter -Wno-type-limits -Wno-ignored-qualifiers -Wno-unused-but-set-parameter -Wno-extra -Wno-non-virtual-dtor -Wno-implicit-fallthrough -Wno-deprecated-copy
 )
 
+if(DEFINED Offline_UPS_QUALIFIER_STRING)
+  string(FIND ${Offline_UPS_QUALIFIER_STRING} "trig" TRIG_BUILD)
+  # TRIG_BUILD will be -1 if trig qualifier not found
+  if(${TRIG_BUILD} GREATER_EQUAL 0)
+    set(WITH_G4 FALSE)
+  else()
+    set(WITH_G4 TRUE)
+  endif()
+endif()
+
 message("WITH_G4 SET TO ${WITH_G4}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
@@ -30,11 +40,12 @@ find_package(artdaq_core_mu2e REQUIRED EXPORT)
 if( ${WITH_G4} ) 
     message("--> ADDING G4 LIBS")	
     find_package(Geant4 REQUIRED EXPORT)
-endif()
 
 # TODO: Find or implement FindCRY.cmake
 include_directories($ENV{CRYHOME}/src)
 link_directories($ENV{CRYHOME}/lib)
+endif()
+
 
 # BTrk and KinKal have non-standard Find*.cmake...
 include_directories($ENV{KINKAL_INC})
@@ -84,7 +95,6 @@ add_subdirectory(DbService)
 add_subdirectory(DbTables)
 add_subdirectory(DetectorSolenoidGeom)
 add_subdirectory(EventDisplay)
-add_subdirectory(EventGenerator)
 add_subdirectory(EventMixing)
 add_subdirectory(ExternalShieldingGeom)
 add_subdirectory(ExtinctionMonitorFNAL)
@@ -104,6 +114,7 @@ add_subdirectory(Mu2e)
 add_subdirectory(Mu2eBTrk)
 if( ${WITH_G4} ) 
     message("---> ADDING G4 DIRS")
+    add_subdirectory(EventGenerator)
     add_subdirectory(Mu2eG4)
     add_subdirectory(Mu2eG4Helper)
 endif()
