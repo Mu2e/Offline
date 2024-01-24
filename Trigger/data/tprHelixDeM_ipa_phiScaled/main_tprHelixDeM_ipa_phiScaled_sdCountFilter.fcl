@@ -1,9 +1,0 @@
-physics.filters.tprHelixIPAPhi0ScaledDeMsdCountFilter.caloDigiCollection  : notUsed
-physics.filters.tprHelixIPAPhi0ScaledDeMsdCountFilter.useStrawDigi        : true
-physics.filters.tprHelixIPAPhi0ScaledDeMsdCountFilter.useCaloDigi         : false
-physics.filters.tprHelixIPAPhi0ScaledDeMsdCountFilter.minNStrawDigi       : 10
-physics.filters.tprHelixIPAPhi0ScaledDeMsdCountFilter.maxNStrawDigi       : 10000
-physics.filters.tprHelixIPAPhi0ScaledDeMsdCountFilter.minNCaloDigi        : -1
-physics.filters.tprHelixIPAPhi0ScaledDeMsdCountFilter.maxNCaloDigi        : -1
-physics.filters.tprHelixIPAPhi0ScaledDeMsdCountFilter.maxCaloEnergy       : -1
-
