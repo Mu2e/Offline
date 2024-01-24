@@ -1,2 +1,0 @@
-physics.filters.cprHelixDeMEventPrescale.nPrescale    : 1
-physics.filters.cprHelixDeMEventPrescale.triggerFlag  : ["PrescaleRandom"]
