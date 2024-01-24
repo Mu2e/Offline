@@ -169,7 +169,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/DoubletAmbigResolver.fcl   ${CURR
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/PanelAmbigResolver.fcl   ${CURRENT_BINARY_DIR} fcl/PanelAmbigResolver.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/Particle.fcl   ${CURRENT_BINARY_DIR} fcl/Particle.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl   ${CURRENT_BINARY_DIR} fcl/prolog.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_trigger.fcl   ${CURRENT_BINARY_DIR} fcl/prolog_trigger.fcl   COPYONLY)
 
 install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/TrkPatRec)
 
