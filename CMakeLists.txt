@@ -27,7 +27,8 @@ endif()
 
 message("WITH_G4 SET TO ${WITH_G4}")
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
+message("Creating link from ${CMAKE_CURRENT_SOURCE_DIR} to ${CMAKE_CURRENT_SOURCE_DIR}/Offline to satisfy includes")
+file(CREATE_LINK ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/Offline SYMBOLIC)
  
 find_package(art_root_io REQUIRED EXPORT)
 find_package(GSL REQUIRED EXPORT)
