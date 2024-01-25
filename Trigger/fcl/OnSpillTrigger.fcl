@@ -2,15 +2,21 @@
 #  Run the OnSpill trigger paths
 #
 #include "Offline/fcl/standardServices.fcl"
-#include "Offline/Trigger/fcl/prolog_trigger.fcl"
+#include "mu2e_trig_config/gen/trig_physMenuPSConfig_OnSpill.fcl"
+#include "mu2e_trig_config/gen/trig_physMenu_OnSpill.fcl"
 process_name : OnSpillTrigger
 services : @local::Services.Reco
 source : { module_type : RootInput }
 physics : {
-  producers : { @table::Trigger.producers }
-  filters :  { @table::Trigger.filters }
-  analyzers : { @table::Trigger.analyzers }
+   @table::TrigSequences
+  producers : { @table::TrigProducers.producers }
+  filters :  {
+      @table::TrigFilters.filters
+      @table::Trig_physMenuPSConfig
+   }
 }
-#include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
+physics.trigger_paths : [@sequence::Trig_physMenu.trigger_paths]
+#include "mu2e_trig_config/core/trigDigiInputsEpilog.fcl"
+
 physics.producers.EWMProducer.SpillType : 1
 #include "Production/JobConfig/common/epilog.fcl"
