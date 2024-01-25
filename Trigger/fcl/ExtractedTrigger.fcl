@@ -2,15 +2,20 @@
 #  Run the Extracted trigger paths
 #
 #include "Offline/fcl/standardServices.fcl"
-#include "Offline/Trigger/fcl/prolog_trigger.fcl"
+#include "mu2e_trig_config/gen/trig_extrPosPSConfig_OffSpill.fcl"
+#include "mu2e_trig_config/gen/trig_extrPos_OffSpill.fcl"
 process_name : OffSpillTrigger
 services : @local::Services.Reco
 source : { module_type : RootInput }
 physics : {
-  producers : { @table::Trigger.producers }
-  filters :  { @table::Trigger.filters }
-  analyzers : { @table::Trigger.analyzers }
+   @table::TrigSequences
+  producers : { @table::TrigProducers.producers }
+  filters :  {
+      @table::TrigFilters.filters
+      @table::Trig_extrPosPSConfig
+   }
 }
-#include "Offline/gen/fcl/Trigger/ExtrPosTrigMenu/ExtrPosTrigMenu.fcl"
+physics.trigger_paths : [@sequence::Trig_extrPos.trigger_paths]
+#include "mu2e_trig_config/core/trigDigiInputsEpilog.fcl"
 physics.producers.EWMProducer.SpillType : 0
 #include "Production/JobConfig/common/epilog.fcl"
