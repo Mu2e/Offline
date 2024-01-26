@@ -332,7 +332,6 @@ end_qualifier_list
 # be copied to the table file verbatim.
 table_fragment_begin
 
-envSet (MU2E_BASE_RELEASE, \${OFFLINE_DIR} )
 envPrepend(MU2E_DATA_PATH, \${OFFLINE_DIR}/share:/cvmfs/mu2e.opensciencegrid.org/DataFiles)
 envPrepend (MU2E_SEARCH_PATH, \${OFFLINE_DIR}/fcl:\${MU2E_DATA_PATH} )
 
