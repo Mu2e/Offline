@@ -28,22 +28,23 @@ namespace mu2e {
              backFaceCenter_       (CLHEP::Hep3Vector(0,0,0)),
              innerEnvelope_        (0),
              outerEnvelope_        (0),
-             crateDeltaZ_          (0)
+             FEBZOffset_         (0),
+             FEBZLength_         (0)
            {}
 
-           const CLHEP::Hep3Vector&  size()                    const {return size_; }
-           const CLHEP::Hep3Vector&  origin()                  const {return origin_;}
-           const CLHEP::Hep3Vector&  originLocal()             const {return originLocal_; }
-           const CLHEP::Hep3Vector&  originToCrystalOrigin()   const {return originToCrystalOrigin_;}
-           const CLHEP::Hep3Vector&  crystalDirection()        const {return crystalDirection_;}
-           const CLHEP::HepRotation& rotation()                const {return rotation_;}
-           const CLHEP::HepRotation& inverseRotation()         const {return inverseRotation_;}
-           const CLHEP::Hep3Vector&  frontFaceCenter()         const {return frontFaceCenter_; }
-           const CLHEP::Hep3Vector&  backFaceCenter()          const {return backFaceCenter_; }
-           double innerEnvelopeR()                             const {return innerEnvelope_;}
-           double outerEnvelopeR()                             const {return outerEnvelope_;}
-           double crateDeltaZ()                                const {return crateDeltaZ_;}
-
+           const CLHEP::Hep3Vector&  size()                  const {return size_; }
+           const CLHEP::Hep3Vector&  origin()                const {return origin_;}
+           const CLHEP::Hep3Vector&  originLocal()           const {return originLocal_; }
+           const CLHEP::Hep3Vector&  originToCrystalOrigin() const {return originToCrystalOrigin_;}
+           const CLHEP::Hep3Vector&  crystalDirection()      const {return crystalDirection_;}
+           const CLHEP::HepRotation& rotation()              const {return rotation_;}
+           const CLHEP::HepRotation& inverseRotation()       const {return inverseRotation_;}
+           const CLHEP::Hep3Vector&  frontFaceCenter()       const {return frontFaceCenter_; }
+           const CLHEP::Hep3Vector&  backFaceCenter()        const {return backFaceCenter_; }
+           double innerEnvelopeR()                           const {return innerEnvelope_;}
+           double outerEnvelopeR()                           const {return outerEnvelope_;}
+           double FEBZOffset()                               const {return FEBZOffset_;}
+           double FEBZLength()                               const {return FEBZLength_;}
 
 
            void size(const CLHEP::Hep3Vector& size)                 {size_ = size;}
@@ -55,7 +56,8 @@ namespace mu2e {
            void frontFaceCenter(const CLHEP::Hep3Vector& pos)       {frontFaceCenter_ = pos;}
            void backFaceCenter(const CLHEP::Hep3Vector& pos)        {backFaceCenter_ = pos;}
            void envelopeRad(double rin, double rout)                {innerEnvelope_ = rin; outerEnvelope_ = rout;}
-           void crateDeltaZ(double val)                             {crateDeltaZ_ = val;}
+           void FEBZOffset(double val)                              {FEBZOffset_ = val;}
+           void FEBZLength(double val)                              {FEBZLength_ = val;}
 
 
        private:
@@ -70,7 +72,8 @@ namespace mu2e {
            CLHEP::Hep3Vector    backFaceCenter_;
            double               innerEnvelope_;
            double               outerEnvelope_;
-           double               crateDeltaZ_;
+           double               FEBZOffset_;
+           double               FEBZLength_;
      };
 }
 

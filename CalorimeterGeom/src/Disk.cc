@@ -92,7 +92,7 @@ namespace mu2e {
           mapToCrystal_.insert(mapToCrystal_.begin(), nCrystalMap, -1);
 
           //yes, this will be correctly done later
-          CrystalCondReader reader; // <-- thi sis the link to the database
+          WhateverDatabaseReader reader; // <-- this is the link to the database
 
           for (int i=0;i<nCrystalMap;++i)
           {
@@ -156,7 +156,6 @@ namespace mu2e {
              int irow = crystalMap_->rowFromIndex(crystalToMap_[cryId]);
              rowToCrystalId[irow].push_back(cryId);
           }
-
 
           float ymaxPrevious(-1e6);
           for (auto& kv : rowToCrystalId){
@@ -288,7 +287,7 @@ namespace mu2e {
           if (crystalId > -1) neighbors = crystalList_[crystalId].neighbors();
           else {
              std::vector<int> temp(crystalMap_->neighbors(mapIdx,1));
-             for (auto val : temp) if (mapToCrystal_.at(val) >-1) neighbors.push_back(mapToCrystal_.at(val));
+             for (const auto& val : temp) if (mapToCrystal_.at(val) >-1) neighbors.push_back(mapToCrystal_.at(val));
           }
 
           for (unsigned it : neighbors)
