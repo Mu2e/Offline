@@ -40,6 +40,7 @@ namespace mu2e {
        public:
            CaloInfo() : dataBool_(),dataInt_(),dataDouble_(),dataVInt_(),dataVDouble_() {}
 
+           void set(const std::string& key, bool value)                       {dataBool_.set(key,value);}
            void set(const std::string& key, int value)                        {dataInt_.set(key,value);}
            void set(const std::string& key, double value)                     {dataDouble_.set(key,value);}
            void set(const std::string& key, const std::vector<int>& value)    {dataVInt_.set(key,value);}

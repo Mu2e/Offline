@@ -14,12 +14,15 @@
 // Mu2e includes.
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Geant4/G4RotationMatrix.hh"
 #include "Geant4/G4String.hh"
 #include "Geant4/G4VSolid.hh"
 #include "Geant4/G4Material.hh"
 #include "Geant4/G4Color.hh"
 #include "Geant4/G4TwoVector.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4PVPlacement.hh"
 
 
 
@@ -29,15 +32,21 @@ namespace mu2e {
 
   VolumeInfo constructDiskCalorimeter(VolumeInfo const& mother, SimpleConfig const& config);
 
-  G4LogicalVolume* caloBuildLogical(G4VSolid* solid, G4Material* mat, const G4String& name, bool isVisible, const G4Color&  color, bool isSolid, bool forceEdge);
-  G4LogicalVolume* caloBuildFrontPlate(const SimpleConfig& config,MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk);
-  G4LogicalVolume* caloBuildDisk(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk);
-  G4LogicalVolume* caloBuildBackPlate(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk);
-  G4LogicalVolume* caloBuildCrate(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal);
-  G4LogicalVolume* caloBuildFEB(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal);
-  std::vector<G4TwoVector> caloExtrudedVertices(const std::vector<double>& stepsX, const std::vector<double>& stepsY, double delta=0.0);
+  VolumeInfo caloBuildDisk      (const SimpleConfig& config, unsigned idisk);
+  VolumeInfo caloBuildFrontPlate(const SimpleConfig& config, unsigned idisk);
+  VolumeInfo caloBuildCase      (const SimpleConfig& config, unsigned idisk);
+  VolumeInfo caloBuildBackPlate (const SimpleConfig& config, unsigned idisk);
+  VolumeInfo caloBuildFEB       (const SimpleConfig& config, unsigned idisk);
+  VolumeInfo caloBuildCrate     (const SimpleConfig& config, unsigned idisk);
+  VolumeInfo caloBuildCable     (const SimpleConfig& config, unsigned idisk, VolumeInfo FEBvol);
 
+  std::vector<G4TwoVector> caloExtrudedVertices(const std::vector<double>& stepsX, const std::vector<double>& stepsY, double delta=0.0);
+  std::vector<G4double>    calcFEBPhiRange     (const DiskCalorimeter& cal);
+  const G4LogicalVolume*   findCaloSolid       (const G4LogicalVolume* volume, G4String objectName, std::vector<const G4LogicalVolume*>& nodes);
+  G4LogicalVolume*         caloLogical         (VolumeInfo volume, G4Material* mat, bool isVisible, const G4Color& color, bool isSolid, bool forceEdge);
+  G4PVPlacement*           caloPlacement       (VolumeInfo& volume, const VolumeInfo& parent, G4RotationMatrix* rot, const G4ThreeVector& position,
+                                                bool pMany, int copyNo, const SimpleConfig& config, bool doSurfaceCheck, int verbosityLevel);
 
 }
 
-#endif /* Mu2eG4_constructDiskCalorimeter_hh */
+#endif
