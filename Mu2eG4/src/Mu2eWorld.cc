@@ -927,62 +927,46 @@ namespace mu2e {
     if ( const_cast<GeometryService&>(_geom).hasElement<Calorimeter>() ) {
 
       if(sdHelper_->enabled(StepInstanceName::calorimeter)) {
-        CaloCrystalSD* ccSD =
-          new CaloCrystalSD( SensitiveDetectorName::CaloCrystal(), _config );
+        CaloCrystalSD* ccSD = new CaloCrystalSD( SensitiveDetectorName::CaloCrystal(), _config );
         SDman->AddNewDetector(ccSD);
 
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
           G4String LVname = (*pos)->GetName();
-
-          if (LVname.find("caloCrystal") != std::string::npos) {
+          if (LVname.find("CaloCrystal_CsI") != std::string::npos || LVname.find("CaloCrystal_LYSO") != std::string::npos)
             (*pos)->SetSensitiveDetector(ccSD);
-          }
-        }//for
-      }//if calorimeter
+        }
+      }
 
       if(sdHelper_->enabled(StepInstanceName::calorimeterRO)) {
-        CaloReadoutSD* crSD =
-          new CaloReadoutSD( SensitiveDetectorName::CaloReadout(), _config );
+        CaloReadoutSD* crSD = new CaloReadoutSD( SensitiveDetectorName::CaloReadout(), _config );
         SDman->AddNewDetector(crSD);
 
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
           G4String LVname = (*pos)->GetName();
-
-          if (LVname.find("caloCrystalRO") != std::string::npos) {
-            (*pos)->SetSensitiveDetector(crSD);
-          }
-        }//for
-      }//if calorimeterRO
+          if (LVname.find("CaloCrystalRO") != std::string::npos) (*pos)->SetSensitiveDetector(crSD);
+        }
+      }
 
       if(sdHelper_->enabled(StepInstanceName::calorimeterROCard)) {
-        CaloReadoutCardSD* crCardSD =
-          new CaloReadoutCardSD( SensitiveDetectorName::CaloReadoutCard(), _config );
+        CaloReadoutCardSD* crCardSD = new CaloReadoutCardSD( SensitiveDetectorName::CaloReadoutCard(), _config );
         SDman->AddNewDetector(crCardSD);
 
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
           G4String LVname = (*pos)->GetName();
-
-          if (LVname.find("caloFEECard") != std::string::npos) {
-            (*pos)->SetSensitiveDetector(crCardSD);
-          }
-        }//for
-      }//if calorimeterROCard
+          if (LVname.find("CaloFEECard") != std::string::npos)(*pos)->SetSensitiveDetector(crCardSD);
+        }
+      }
 
       if(sdHelper_->enabled(StepInstanceName::calorimeterCrate)) {
-        CaloCrateSD* cCrateSD =
-          new CaloCrateSD( SensitiveDetectorName::CaloCrate(), _config );
+        CaloCrateSD* cCrateSD = new CaloCrateSD( SensitiveDetectorName::CaloCrate(), _config );
         SDman->AddNewDetector(cCrateSD);
-
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
           G4String LVname = (*pos)->GetName();
+          if (LVname.find("ccrateActiveStrip") != std::string::npos) (*pos)->SetSensitiveDetector(cCrateSD);
+        }
+      }
 
-          if (LVname.find("ccrateActiveStrip") != std::string::npos) {
-            (*pos)->SetSensitiveDetector(cCrateSD);
-          }
-        }//for
-      }//if calorimeterCrate
-
-    }//if calorimeter
+    } //if calorimeter
 
 
     /************************** ExtMonFNALPixelSD **************************/
