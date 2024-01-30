@@ -75,6 +75,7 @@ namespace mu2e {
        calo_->caloInfo_.set("diskInAlRingZLength",    config.getDouble("calorimeter.diskInAlRingZLength") );
        calo_->caloInfo_.set("diskInCFRingRIn",        config.getDouble("calorimeter.diskInCFRingRIn") );
        calo_->caloInfo_.set("diskInCFRingROut",       config.getDouble("calorimeter.diskInCFRingROut") );
+       calo_->caloInfo_.set("diskCaseZLength",        config.getDouble("calorimeter.crystalZLength") + config.getDouble("calorimeter.crystalCapZLength") );
 
        calo_->caloInfo_.set("diskCrystalRIn",         config.getDouble("calorimeter.diskCrystalRIn") );
        calo_->caloInfo_.set("diskCrystalROut",        config.getDouble("calorimeter.diskCrystalROut") );
