@@ -14,6 +14,7 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 #include "fhiclcpp/types/DelegatedParameter.h"
+#include "fhiclcpp/types/Atom.h"
 
 namespace mu2e {
   class DIOGenerator : public ParticleGeneratorTool {
@@ -23,13 +24,15 @@ namespace mu2e {
       using Comment=fhicl::Comment;
 
       fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
+      fhicl::Atom<double> rad_min{Name("rad_min"),0};
     };
     typedef art::ToolConfigTable<PhysConfig> Parameters;
 
     explicit DIOGenerator(Parameters const& conf) :
       _pdgId(PDGCode::e_minus),
       _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgId).mass()),
-      _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
+      _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
+      _rad_min(conf().rad_min())
     {}
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
@@ -43,8 +46,10 @@ namespace mu2e {
   private:
     PDGCode::type _pdgId;
     double _mass;
-
     BinnedSpectrum    _spectrum;
+    double _rad_min;
+
+    
 
     RandomUnitSphere*   _randomUnitSphere;
     CLHEP::RandGeneral* _randSpectrum;
@@ -53,7 +58,7 @@ namespace mu2e {
 
   std::vector<ParticleGeneratorTool::Kinematic> DIOGenerator::generate() {
     std::vector<ParticleGeneratorTool::Kinematic>  res;
-
+    
     double energy = _spectrum.sample(_randSpectrum->fire());
 
     const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
@@ -61,19 +66,22 @@ namespace mu2e {
     CLHEP::HepLorentzVector fourmom(p3, energy);
 
     ParticleGeneratorTool::Kinematic k{_pdgId, ProcessCode::mu2eMuonDecayAtRest, fourmom};
+ 
     res.emplace_back(k);
-
     return res;
   }
 
   void DIOGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
-    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
+    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);//position from stopped muon
     const auto daughters = generate();
+    std::cout<<"In DIO Tools Generator "<<std::endl;
     for(const auto& d: daughters) {
+
+      
       out->emplace_back(d.pdgId,
                         GenId::DIOGenTool,
                         pos,
-                        d.fourmom,
+                        d.fourmom, //CLHEP::HepLorentzVector type
                         stop.t);
     }
   }
