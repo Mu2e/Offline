@@ -78,6 +78,8 @@ class ProditionsService {
         Name("strawResponse"), Comment("Straw response model")};
     fhicl::Table<AlignedTrackerConfig> alignedTracker{
         Name("alignedTracker"), Comment("Tracker alignment in reco code")};
+    fhicl::Table<AlignedTrackerConfig> alignedTrackerSim{
+        Name("alignedTrackerSim"), Comment("Tracker alignment in sim code")};
     fhicl::Table<Mu2eMaterialConfig> mu2eMaterial{
         Name("mu2eMaterial"), Comment("Mu2e material for BTrk")};
     fhicl::Table<Mu2eDetectorConfig> mu2eDetector{
