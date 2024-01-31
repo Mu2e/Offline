@@ -6,7 +6,8 @@
 # services.DbService.version: v1_0
 #
 #include "Offline/fcl/standardServices.fcl"
-#include "Offline/Trigger/fcl/prolog_trigger.fcl"
+#include "mu2e_trig_config/gen/trig_physMenuPSConfig_OnSpill.fcl"
+#include "mu2e_trig_config/gen/trig_physMenu_OnSpill.fcl"
 #include "TrkAna/fcl/prolog_trigger.fcl"
 process_name : OnSpillTrigger
 services : @local::Services.Reco
@@ -15,37 +16,42 @@ source : {
 }
 
 physics : {
-  producers : {
-    @table::Trigger.producers
-  }
-  filters :  { @table::Trigger.filters }
-  analyzers : {
-    @table::Trigger.analyzers
-    TADeMtpr : {
-      @table::TrkAnaTrigger.TrkAnaDeMTT
-      FitType : LoopHelix
-      FillMCInfo : false
-    }
-
-    TADeMcpr : {
-      @table::TrkAnaTrigger.TrkAnaDeMTT
-      FitType : LoopHelix
-      FillMCInfo : false
-    }
-    TADePtpr : {
-      @table::TrkAnaTrigger.TrkAnaDePTT
-      FitType : LoopHelix
-      FillMCInfo : false
-    }
-    TADePcpr : {
-      @table::TrkAnaTrigger.TrkAnaDePTT
-      FitType : LoopHelix
-      FillMCInfo : false
+   @table::TrigSequences
+   producers : {
+      @table::TrigProducers.producers
    }
-  }
-  EndPath : [TADeMtpr, TADeMcpr, TADePtpr, TADePcpr]
+   filters :  {
+      @table::TrigFilters.filters
+      @table::Trig_physMenuPSConfig
+   }
+   analyzers : {
+      @table::Trigger.analyzers
+      TADeMtpr : {
+         @table::TrkAnaTrigger.TrkAnaDeMTT
+         FitType : LoopHelix
+         FillMCInfo : false
+      }
+
+      TADeMcpr : {
+         @table::TrkAnaTrigger.TrkAnaDeMTT
+         FitType : LoopHelix
+         FillMCInfo : false
+      }
+      TADePtpr : {
+         @table::TrkAnaTrigger.TrkAnaDePTT
+         FitType : LoopHelix
+         FillMCInfo : false
+      }
+      TADePcpr : {
+         @table::TrkAnaTrigger.TrkAnaDePTT
+         FitType : LoopHelix
+         FillMCInfo : false
+      }
+   }
+   EndPath : [TADeMtpr, TADeMcpr, TADePtpr, TADePcpr]
 }
-#include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
+physics.trigger_paths : [@sequence::Trig_physMenu.trigger_paths]
+#include "mu2e_trig_config/core/trigDigiInputsEpilog.fcl"
 physics.producers.EWMProducer.SpillType : 1
 #include "Production/JobConfig/common/epilog.fcl"
 #include "Production/JobConfig/reco/drop_trigger.fcl"
