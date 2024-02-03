@@ -14,7 +14,8 @@
 #include "KinKal/Trajectory/LoopHelix.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include <iostream>
 #include <string>
 
@@ -81,8 +82,8 @@ namespace mu2e {
       ROOT::Math::PxPyPzMVector mom0(aParticle.momentum().x(), aParticle.momentum().y(), aParticle.momentum().z(), aParticle.momentum().t());
 
       // extract charge
-      int charge = -1;
-      if(aParticle.pdgId()==PDGCode::e_plus) charge = 1;
+      static GlobalConstantsHandle<ParticleDataList> pdt;
+      auto charge = pdt->particle(aParticle.pdgId()).charge();
 
       // extact field
       GeomHandle<BFieldManager> bfmgr;
