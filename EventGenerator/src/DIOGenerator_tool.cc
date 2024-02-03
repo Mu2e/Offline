@@ -49,8 +49,6 @@ namespace mu2e {
     BinnedSpectrum    _spectrum;
     double _rad_min;
 
-    
-
     RandomUnitSphere*   _randomUnitSphere;
     CLHEP::RandGeneral* _randSpectrum;
   };
@@ -74,7 +72,7 @@ namespace mu2e {
   void DIOGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);//position from stopped muon
     const auto daughters = generate();
-    std::cout<<"In DIO Tools Generator "<<std::endl;
+
     for(const auto& d: daughters) {
 
       

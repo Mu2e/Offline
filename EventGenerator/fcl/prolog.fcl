@@ -165,6 +165,22 @@ EventGenerator : {
     }
 }
 
+GenFilter : {
+        module_type : GenFilter
+        StageParticleCollection : "generate"
+        maxr_min: 320
+        maxr_max : 500
+        makeplots : true
+}
+
+genFilters : # in case we want to add more here
+{
+   filters : {
+        GenFilter: @local::GenFilter
+   }
+}
+
+
 EventGenerator : { @table::EventGenerator
     producers : {
         CeEndpointGun               : { @table::CeEndpointGun               }
