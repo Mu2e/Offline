@@ -72,7 +72,6 @@ namespace mu2e {
     _SimCol = sim.product();
   
     for(const auto& aParticle : *_SimCol){
-      //const StageParticle &aParticle = p.second;
     //  make momentum and position vectors
       GeomHandle<DetectorSystem> det;
       ROOT::Math::XYZVectorF pos = XYZVectorF(det->toDetector(aParticle.position()));

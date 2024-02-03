@@ -168,8 +168,8 @@ EventGenerator : {
 GenFilter : {
         module_type : GenFilter
         StageParticleCollection : "generate"
-        maxr_min: 320
-        maxr_max : 500
+        maxr_min: 0
+        maxr_max : 1e7
         makeplots : true
 }
 
