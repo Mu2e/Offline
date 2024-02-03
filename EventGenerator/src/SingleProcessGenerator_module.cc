@@ -53,8 +53,6 @@ namespace mu2e {
       fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle"),PDGCode::e_minus};
       fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("spectrum (and variables) to be generated")};
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
-      fhicl::Atom<double> time_min{Name("time_min"),350};
-      fhicl::Atom<double> time_max{Name("time_max"),1700};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -67,8 +65,6 @@ namespace mu2e {
     double muonLifeTime_;
     art::ProductToken<SimParticleCollection> const simsToken_;
     unsigned verbosity_;
-    double time_min_;
-    double time_max_;
     int pdgId_;
 
 
@@ -78,32 +74,15 @@ namespace mu2e {
     std::unique_ptr<ParticleGeneratorTool> Generator_;
 
     void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time, ParticleGeneratorTool* gen);
-    TTree* genTree;
-    Float_t _maxr;
-    Float_t _momT;
-    Float_t _posT;
-    Float_t _cosTheta;
-    Float_t _time;
+
   };
 
-  void SingleProcessGenerator::beginJob(){
-    art::ServiceHandle<art::TFileService> tfs;
-    genTree  = tfs->make<TTree>("GenAna", "GenAna");
-    genTree->Branch("maxr", &_maxr, "maxr/F");   
-    genTree->Branch("momT", &_momT, "momT/F"); 
-    genTree->Branch("posT", &_posT, "posT/F");
-    genTree->Branch("cosTheta", &_cosTheta, "cosTheta/F");
-    genTree->Branch("time", &_time, "time/F");
-  }
-  
   //================================================================
   SingleProcessGenerator::SingleProcessGenerator(const Parameters& conf)
     : EDProducer{conf}
     , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , verbosity_{conf().verbosity()}
-    , time_min_{conf().time_min()}
-    , time_max_{conf().time_max()}
     , pdgId_{conf().pdgId()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
@@ -125,6 +104,11 @@ namespace mu2e {
     }
     
   }
+  
+  
+  void SingleProcessGenerator::beginJob(){
+  }
+  
 
   //================================================================
   void SingleProcessGenerator::produce(art::Event& event) {
@@ -149,34 +133,7 @@ namespace mu2e {
   {
     auto daughters = gen->generate();
     for(const auto& d: daughters) {
-     
-      if(time > time_min_ and time < time_max_){
 
-        //  make momentum and position vectors
-        GeomHandle<DetectorSystem> det;
-        ROOT::Math::XYZVectorF pos = XYZVectorF(det->toDetector(mustop->endPosition()));
-        ROOT::Math::XYZTVector pos0(pos.x(), pos.y(), pos.z(), time); 
-        ROOT::Math::PxPyPzMVector mom0(d.fourmom.x(), d.fourmom.y(), d.fourmom.z(), d.fourmom.t());
-
-        // extract charge
-        int charge = -1;
-        if(pdgId_==PDGCode::e_plus) charge = 1;
-        
-        // extact field
-        GeomHandle<BFieldManager> bfmgr;
-        XYZVectorF pos3Vec = XYZVectorF(mustop->endPosition().x(),mustop->endPosition().y(),mustop->endPosition().z());
-        ROOT::Math::XYZVector bnom(bfmgr->getBField(pos3Vec).x(),bfmgr->getBField(pos3Vec).y(),bfmgr->getBField(pos3Vec).z());
-
-        // make the loophelix
-        KinKal::LoopHelix lh(pos0, mom0, charge, bnom);
-        // calculate rmax and add maxr to siminfo
-        _maxr =sqrt(lh.cx()*lh.cx()+lh.cy()*lh.cy())+fabs(lh.rad());
-        
-        _momT =  sqrt(mom0.x()*mom0.x() + mom0.y()*mom0.y());
-        _posT = sqrt(pos.x()*pos.x() + pos.y()*pos.y());
-        _cosTheta = cos(atan2(_momT,mom0.z()));
-        _time = time;
-     
         output->emplace_back(mustop,
                              d.creationCode,
                              d.pdgId,
@@ -184,8 +141,6 @@ namespace mu2e {
                              d.fourmom,
                              time
                              );
-      }
-      genTree->Fill();
     }
   }
 
