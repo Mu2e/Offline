@@ -57,13 +57,15 @@ namespace mu2e {
     , maxr_max_(config().maxr_max())
     , makeplots_{config().makeplots()}
   {
-    art::ServiceHandle<art::TFileService> tfs;
-    genTree  = tfs->make<TTree>("GenAna", "GenAna");
-    genTree->Branch("maxr", &_maxr, "maxr/F");   
-    genTree->Branch("momT", &_momT, "momT/F"); 
-    genTree->Branch("posT", &_posT, "posT/F");
-    genTree->Branch("cosTheta", &_cosTheta, "cosTheta/F");
-    genTree->Branch("time", &_time, "time/F");
+    if(makeplots_){
+      art::ServiceHandle<art::TFileService> tfs;
+      genTree  = tfs->make<TTree>("GenAna", "GenAna");
+      genTree->Branch("maxr", &_maxr, "maxr/F");   
+      genTree->Branch("momT", &_momT, "momT/F"); 
+      genTree->Branch("posT", &_posT, "posT/F");
+      genTree->Branch("cosTheta", &_cosTheta, "cosTheta/F");
+      genTree->Branch("time", &_time, "time/F");
+    }
   }
 
   bool GenFilter::filter(art::Event& event) {
@@ -92,13 +94,14 @@ namespace mu2e {
       // calculate rmax and add maxr to siminfo
       _maxr =sqrt(lh.cx()*lh.cx()+lh.cy()*lh.cy())+fabs(lh.rad());
 
-      // fill other branches for plots
-      _momT =  sqrt(mom0.x()*mom0.x() + mom0.y()*mom0.y());
-      _posT = sqrt(pos.x()*pos.x() + pos.y()*pos.y());
-      _cosTheta = cos(atan2(_momT,mom0.z()));
-      _time = aParticle.time();
-      genTree->Fill();
-      
+      if(makeplots_){
+        // fill other branches for plots
+        _momT =  sqrt(mom0.x()*mom0.x() + mom0.y()*mom0.y());
+        _posT = sqrt(pos.x()*pos.x() + pos.y()*pos.y());
+        _cosTheta = cos(atan2(_momT,mom0.z()));
+        _time = aParticle.time();
+        genTree->Fill();
+      }
       if((_maxr < maxr_max_ and _maxr > maxr_min_ )){ passed = true; }
     }
     
