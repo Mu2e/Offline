@@ -33,6 +33,7 @@ namespace mu2e {
         fhicl::Atom<double> maxr_min{Name("maxr_min"),0};
         fhicl::Atom<double> maxr_max{Name("maxr_max"),1e7};
         fhicl::Atom<bool> makeplots{Name("makeplots"),false};
+        fhicl::Atom<bool> isNull{Name("isNull"),true};
       };
       explicit GenFilter(const art::EDFilter::Table<Config>& config);
       virtual bool filter(art::Event& event) override;
@@ -43,6 +44,7 @@ namespace mu2e {
       double maxr_min_;
       double maxr_max_;
       bool makeplots_;
+      bool isNull_;
       TTree* genTree;
       Float_t _maxr;
       Float_t _momT;
@@ -57,6 +59,7 @@ namespace mu2e {
     , maxr_min_(config().maxr_min())
     , maxr_max_(config().maxr_max())
     , makeplots_{config().makeplots()}
+    , isNull_{config().isNull()}
   {
     if(makeplots_){
       art::ServiceHandle<art::TFileService> tfs;
@@ -70,6 +73,7 @@ namespace mu2e {
   }
 
   bool GenFilter::filter(art::Event& event) {
+    if(isNull_) return true;
     bool passed = false;
     auto sim = event.getValidHandle<StageParticleCollection>(_SimToken);
     _SimCol = sim.product();
