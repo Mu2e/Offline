@@ -62,6 +62,7 @@ namespace mu2e
         fhicl::Atom<int>                debugLevel           {     Name("debugLevel"),              Comment("debugLevel")     , 0 };
         fhicl::OptionalAtom<bool>       prescaleUsingD0Phi   {     Name("prescaleUsingD0Phi"),      Comment("prescaleUsingD0Phi") };
         fhicl::Table<PhiPrescalingParams::Config>             prescalerPar{     Name("prescalerPar"),      Comment("prescalerPar") };
+        fhicl::Atom<int>                noFilter             {     Name("noFilter"),                Comment("Don't filter anything"),1 };
       };
 
       using Parameters = art::EDFilter::Table<Config>;
@@ -100,6 +101,7 @@ namespace mu2e
       unsigned      _nevt, _npass;
 
       int evalIPAPresc(const float &phi0);
+      int           _noFilter;
   };
 
   HelixFilter::HelixFilter(const Parameters& config):
@@ -123,7 +125,9 @@ namespace mu2e
     _minnloops         (config().minNLoops()),
     _goodh             (config().helixFitFlag()),
     _debug             (config().debugLevel()),
-    _nevt(0), _npass(0)
+    _nevt(0),
+    _npass(0),
+    _noFilter(config().noFilter())
     {
       bool val;
       if (config().prescaleUsingD0Phi(val)) {
@@ -223,7 +227,11 @@ namespace mu2e
       }
     }
     evt.put(std::move(triginfo));
-    return retval;
+    if (_noFilter != 1){
+      return retval;
+    }else {
+      return true;
+    }
   }
 
   bool HelixFilter::endRun( art::Run& run ) {
