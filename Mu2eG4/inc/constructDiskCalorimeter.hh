@@ -25,6 +25,9 @@
 #include "Geant4/G4PVPlacement.hh"
 
 
+namespace {
+  std::map<std::string, std::string> caloVolInfG4;
+}
 
 namespace mu2e {
 
@@ -43,6 +46,7 @@ namespace mu2e {
   std::vector<G4TwoVector> caloExtrudedVertices(const std::vector<double>& stepsX, const std::vector<double>& stepsY, double delta=0.0);
   std::vector<G4double>    calcFEBPhiRange     (const DiskCalorimeter& cal);
   const G4LogicalVolume*   findCaloSolid       (const G4LogicalVolume* volume, G4String objectName, std::vector<const G4LogicalVolume*>& nodes);
+  void                     browseCaloSolids    (const G4LogicalVolume* volume);
   G4LogicalVolume*         caloLogical         (VolumeInfo volume, G4Material* mat, bool isVisible, const G4Color& color, bool isSolid, bool forceEdge);
   G4PVPlacement*           caloPlacement       (VolumeInfo& volume, const VolumeInfo& parent, G4RotationMatrix* rot, const G4ThreeVector& position,
                                                 bool pMany, int copyNo, const SimpleConfig& config, bool doSurfaceCheck, int verbosityLevel);
