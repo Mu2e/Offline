@@ -222,6 +222,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_7/MLP_weights_logfcons_4_ex
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_7/MLP_weights_trkpatrec_logfcons_1_uni.xml ${CURRENT_BINARY_DIR} data/v5_7_7/MLP_weights_trkpatrec_logfcons_1_uni.xml)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_7/tpr_qual_logfcons_2_exp.tab ${CURRENT_BINARY_DIR} data/v5_7_7/tpr_qual_logfcons_2_exp.tab)
 
+install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/CalPatRec)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/CalPatRec/fcl)
