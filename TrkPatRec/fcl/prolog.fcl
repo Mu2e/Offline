@@ -16,13 +16,6 @@ TimeCalculator : {
 # define flag bits for pat rec and final fit
 PatRecBackground : ["Background","Noisy","Dead"]
 TrkFitBackground : ["Dead"]
-
-PhotonConversionFinder : { # TODO - add parameters
-  module_type            : PhotonConversionFinder
-  diag : 0
-  ComboHitCollection : "makeSH"
-  TimeClusterCollection : "TimeClusterFinder"
- }
  
 TimeClusterFinder : {
   module_type            : TimeClusterFinder
