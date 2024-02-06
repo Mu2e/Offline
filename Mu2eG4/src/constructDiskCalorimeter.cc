@@ -45,6 +45,7 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/TwoVector.h"
+#include "boost/regex.hpp"
 
 
 
@@ -84,22 +85,24 @@ namespace mu2e {
     //--------------------------------------
     // Construct calorimeter disks mother volume
     //
-    const CLHEP::Hep3Vector& posDS3  = mother.centerInMu2e();
+    caloVolInfG4.clear();
+
+    const auto& posDS3InWorld        = mother.centerInWorld;
+    const auto& posDS3               = mother.centerInMu2e();
     G4ThreeVector posDiskMother      = G4ThreeVector(posDS3.x(), 0, mother_zCenter);
     G4ThreeVector posDiskMotherInDS  = posDiskMother - posDS3;
 
-
     // Disk and FEB mother volumes
     VolumeInfo caloDiskInfo("CaloDiskMother");
-    caloDiskInfo.solid    = new G4Tubs(caloDiskInfo.name, caloDiskRadiusIn, caloDiskRadiusOut, mother_zlength/2.0, 0.0, CLHEP::twopi);
-    caloDiskInfo.logical  = caloLogical(caloDiskInfo, vacuumMaterial, 0, G4Color::Black(), 0, 0);
-    caloDiskInfo.physical = caloPlacement(caloDiskInfo, mother, 0, posDiskMotherInDS, false, 0, config, doSurfaceCheck, verbosity);
+    caloDiskInfo.solid         = new G4Tubs(caloDiskInfo.name, caloDiskRadiusIn, caloDiskRadiusOut, mother_zlength/2.0, 0.0, CLHEP::twopi);
+    caloDiskInfo.logical       = caloLogical(caloDiskInfo, vacuumMaterial, 0, G4Color::Black(), 0, 0);
+    caloDiskInfo.physical      = caloPlacement(caloDiskInfo, mother, 0, posDiskMotherInDS, false, 0, config, doSurfaceCheck, verbosity);
     helper.addVolInfo(caloDiskInfo);
 
     VolumeInfo caloFEBInfo("CaloFEBMother");
-    caloFEBInfo.solid    = new G4Tubs(caloDiskInfo.name, caloDiskRadiusOut, caloFEBRadiusOut, mother_zlength/2.0, FEBPhiMinMax[0], FEBPhiMinMax[1]-FEBPhiMinMax[0]);
-    caloFEBInfo.logical  = caloLogical(caloFEBInfo, vacuumMaterial, 0, G4Color::Black(), 0, 0);
-    caloFEBInfo.physical = caloPlacement(caloFEBInfo, mother, 0, posDiskMotherInDS, false, 0, config, doSurfaceCheck, verbosity);
+    caloFEBInfo.solid         = new G4Tubs(caloFEBInfo.name, caloDiskRadiusOut, caloFEBRadiusOut, mother_zlength/2.0, FEBPhiMinMax[0], FEBPhiMinMax[1]-FEBPhiMinMax[0]);
+    caloFEBInfo.logical       = caloLogical(caloFEBInfo, vacuumMaterial, 0, G4Color::Black(), 0, 0);
+    caloFEBInfo.physical      = caloPlacement(caloFEBInfo, mother, 0, posDiskMotherInDS, false, 0, config, doSurfaceCheck, verbosity);
     helper.addVolInfo(caloFEBInfo);
 
     if ( verbosity > 0) {
@@ -147,7 +150,33 @@ namespace mu2e {
       }
     }
 
+
+    //Fix the "world posiiton" of all wolumes
+    for (auto& kv : caloVolInfG4) {
+      CLHEP::Hep3Vector posWorld(0,0,0);
+      std::string mother(kv.first);
+      while (caloVolInfG4.find(mother) != caloVolInfG4.end()) {
+        posWorld += helper.locateVolInfo(mother).centerInParent;
+        mother = caloVolInfG4.find(mother)->second;
+      }
+      helper.locateVolInfo(kv.first).centerInWorld = posWorld + posDS3InWorld;
+    }
+
+    if (verbosity >1) {
+      if (verbosity==99) {
+        std::cout<<"List of all volumes in the calorimeter and FEB"<<std::endl;
+        browseCaloSolids(caloDiskInfo.logical);
+        browseCaloSolids(caloFEBInfo.logical);
+      }
+
+      for (auto& kv : caloVolInfG4){
+         const auto& vol = helper.locateVolInfo(kv.first);
+         std::cout<<vol.name<<"   posInWorld="<<vol.centerInWorld<<"    posInMu2e="<<vol.centerInMu2e()<<std::endl;
+      }
+    }
+
     if (verbosity > 0) G4cout << __func__ << " Calorimeter constructed "<< G4endl;
+
     return caloDiskInfo;
   }
 
@@ -838,10 +867,10 @@ namespace mu2e {
     // Build last cooling pipes
     // Trick: pipe in xy plane going from -alpha to beta = pipe going from pi-beta to pi+alpha, then rotated by pi around y axis
     //----
-    VolumeInfo BPPipe1("CaloBBPipe1_"+std::to_string(idisk));
-    VolumeInfo BPPipe2("CaloBBPipe2_"+std::to_string(idisk));
-    VolumeInfo BPPipe3("CaloBBPipe3_"+std::to_string(idisk));
-    VolumeInfo BPPipe4("CaloBBPipe4_"+std::to_string(idisk));
+    VolumeInfo BPPipe1("CaloBPPipe1_"+std::to_string(idisk));
+    VolumeInfo BPPipe2("CaloBPPipe2_"+std::to_string(idisk));
+    VolumeInfo BPPipe3("CaloBPPipe3_"+std::to_string(idisk));
+    VolumeInfo BPPipe4("CaloBPPipe4_"+std::to_string(idisk));
 
     BPPipe1.solid    = new G4Torus(BPPipe1.name,BPPipeRadiusHigh-BPPipeThickness, BPPipeRadiusHigh, BPPipeTorRadiusHigh, 0.5*CLHEP::pi, 0.9*CLHEP::pi);
     BPPipe2.solid    = new G4Torus(BPPipe2.name,BPPipeRadiusLow-BPPipeThickness,  BPPipeRadiusLow,  BPPipeTorRadiusHigh, 0.5*CLHEP::pi, 0.7*CLHEP::pi);
@@ -927,7 +956,7 @@ namespace mu2e {
        rotCrate->rotateZ(CLHEP::pi/2-phiCrate);
 
        G4ThreeVector posCrate = G4ThreeVector(cratePosY*std::cos(phiCrate),cratePosY*std::sin(phiCrate),0.0);
-       caloPlacement(crateBox, fullFEB, rotCrate,posCrate,false,0,config,doSurfaceCheck,verbosity);
+       caloPlacement(crateBox, fullFEB, rotCrate,posCrate,true,icrt,config,doSurfaceCheck,verbosity);
     }
     helper.addVolInfo(crateBox);
 
@@ -1063,7 +1092,6 @@ namespace mu2e {
     // ---------------
     // add the boards
     //
-
     VolumeInfo ccrateBoard     ("ccrateBoard_"+std::to_string(idisk));
     VolumeInfo ccrateRadiator  ("ccrateRadiator_"+std::to_string(idisk));
     VolumeInfo ccrateActiveStr ("ccrateActiveStrip_"+std::to_string(idisk));
@@ -1109,24 +1137,24 @@ namespace mu2e {
 
     MaterialFinder materialFinder(config);
 
-    Mu2eG4Helper& helper               = *(art::ServiceHandle<Mu2eG4Helper>());
-    const DiskCalorimeter& cal         = *(GeomHandle<DiskCalorimeter>());
-    const DetectorSolenoid& ds         = *(GeomHandle<DetectorSolenoid>());
+    Mu2eG4Helper& helper          = *(art::ServiceHandle<Mu2eG4Helper>());
+    const DiskCalorimeter& cal    = *(GeomHandle<DiskCalorimeter>());
+    const DetectorSolenoid& ds    = *(GeomHandle<DetectorSolenoid>());
 
-    const bool isCrateVisible          = geomOptions->isVisible("calorimeterCrate");
-    const bool isCrateSolid            = geomOptions->isSolid("calorimeterCrate");
-    const bool forceEdge               = geomOptions->forceAuxEdgeVisible("calorimeterCrate");
-    const bool doSurfaceCheck          = geomOptions->doSurfaceCheck("calorimeterCrate");
-    const int  verbosity               = config.getInt("calorimeter.verbosityLevel",1);
+    const bool isCrateVisible     = geomOptions->isVisible("calorimeterCrate");
+    const bool isCrateSolid       = geomOptions->isSolid("calorimeterCrate");
+    const bool forceEdge          = geomOptions->forceAuxEdgeVisible("calorimeterCrate");
+    const bool doSurfaceCheck     = geomOptions->doSurfaceCheck("calorimeterCrate");
+    const int  verbosity          = config.getInt("calorimeter.verbosityLevel",1);
 
-    G4Material* cableMaterial          = findMaterialOrThrow(ds.calCableRunMaterial());
-    G4Material* cableCoreMaterial      = findMaterialOrThrow(ds.materialCableRunCalCore());
+    G4Material* cableMaterial     = findMaterialOrThrow(ds.calCableRunMaterial());
+    G4Material* cableCoreMaterial = findMaterialOrThrow(ds.materialCableRunCalCore());
 
-    const double mother_z1             = cal.caloInfo().getDouble("caloMotherZ1");
-    const double crRin                 = ds.upRInCableRunCal();
-    const double crRout                = ds.upROutCableRunCal();
-    const double dPhi                  = ds.dPhiCableRunCal()*CLHEP::degree;
-    const double phi0                  = CLHEP::pi/2-dPhi/2.0;
+    const double mother_z1        = cal.caloInfo().getDouble("caloMotherZ1");
+    const double crRin            = ds.upRInCableRunCal();
+    const double crRout           = ds.upROutCableRunCal();
+    const double dPhi             = ds.dPhiCableRunCal()*CLHEP::degree;
+    const double phi0             = CLHEP::pi/2-dPhi/2.0;
 
 
     //length of the cable run = distance between FEBs = distance between disks
@@ -1136,7 +1164,7 @@ namespace mu2e {
     G4double cableHalfLength = (idisk+1 < cal.nDisk()) ? 0.5*distFEBtoNext - FEB->GetZHalfLength() : 0.5*distFEBtoNext - 0.5*FEB->GetZHalfLength();
 
 
-    VolumeInfo cableRunGap("CaloCableRunGap"+std::to_string(idisk));
+    VolumeInfo cableRunGap("CaloCableRunGap_"+std::to_string(idisk));
     cableRunGap.solid   = new G4Tubs(cableRunGap.name,crRin, crRout, cableHalfLength, phi0, dPhi);
     cableRunGap.logical = caloLogical(cableRunGap, cableMaterial, isCrateVisible,G4Color::Magenta(),isCrateSolid,forceEdge);
 
@@ -1188,7 +1216,8 @@ namespace mu2e {
 
      if (!pMany){
        volume.centerInParent = position;
-       volume.centerInWorld  = parent.centerInWorld + position;
+       caloVolInfG4[volume.name] = parent.name;
+       //volume.centerInWorld  = parent.centerInWorld + position;
      }
      return physical;
   }
@@ -1256,6 +1285,36 @@ namespace mu2e {
        toProcess.pop();
      }
      return nullptr;
+  }
+
+
+  //--------------------------------------------------------------------------------------------------------------------------------
+  // utility to traverse G4LogicalVolumes using recursion
+  void browseCaloSolids(const G4LogicalVolume* volume)
+  {
+
+     if (G4Box* obj = dynamic_cast<G4Box*>(volume->GetSolid()))
+        std::cout<<obj->GetName()<<",XXXX,G4Box,dX="<<2*obj->GetXHalfLength()<<",dY="<<2*obj->GetYHalfLength()<<",dZ="<<2*obj->GetZHalfLength()<<","<<volume->GetMaterial()->GetName()<<std::endl;
+
+     else if (G4Tubs* obj = dynamic_cast<G4Tubs*>(volume->GetSolid()))
+        std::cout<<obj->GetName()<<",XXXX,G4Tubs,Rin="<<obj->GetInnerRadius()<<",Rout="<<obj->GetOuterRadius()<<",dZ="<<2*obj->GetZHalfLength()<<",dPhi="<<obj->GetDeltaPhiAngle()<<","<<volume->GetMaterial()->GetName()<<std::endl;
+
+     else if (G4Torus* obj = dynamic_cast<G4Torus*>(volume->GetSolid()))
+        std::cout<<obj->GetName()<<",XXXX,G4Torus,Rmin="<<obj->GetRmin()<<",Rmax="<<obj->GetRmax()<<",Rtot="<<obj->GetRtor()<<",dPhi="<<obj->GetDPhi()<<","<<volume->GetMaterial()->GetName()<<std::endl;
+
+     else if (volume != nullptr && volume->GetSolid() != nullptr)
+        std::cout<<volume->GetSolid()->GetName()<<",XXXX ,OTHER,"<<volume->GetMaterial()->GetName()<<std::endl;
+
+     std::queue<G4LogicalVolume*> toProcess;
+     for (size_t i=0;i<volume->GetNoDaughters();++i){
+       if (volume->GetDaughter(i)->GetCopyNo()==0) toProcess.push(volume->GetDaughter(i)->GetLogicalVolume());
+     }
+
+     while (!toProcess.empty()){
+       browseCaloSolids(toProcess.front());
+       toProcess.pop();
+     }
+     return;
   }
 
 }
