@@ -22,9 +22,7 @@ namespace mu2e {
     struct PhysConfig {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-
       fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
-      fhicl::Atom<double> rad_min{Name("rad_min"),0};
     };
     typedef art::ToolConfigTable<PhysConfig> Parameters;
 
@@ -32,7 +30,6 @@ namespace mu2e {
       _pdgId(PDGCode::e_minus),
       _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgId).mass()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
-      _rad_min(conf().rad_min())
     {}
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
@@ -47,7 +44,6 @@ namespace mu2e {
     PDGCode::type _pdgId;
     double _mass;
     BinnedSpectrum    _spectrum;
-    double _rad_min;
 
     RandomUnitSphere*   _randomUnitSphere;
     CLHEP::RandGeneral* _randSpectrum;
