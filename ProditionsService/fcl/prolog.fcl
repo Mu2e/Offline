@@ -18,6 +18,7 @@ Proditions : {
    strawElectronics : @local::StrawElectronics
    strawResponse : @local::StrawResponse
    alignedTracker : @local::AlignedTracker
+   alignedTrackerSim : @local::AlignedTrackerSim
    mu2eMaterial : @local::Mu2eMaterial
    mu2eDetector : @local::Mu2eDetector
    caloDAQConditions : @local::CaloDAQConditions
