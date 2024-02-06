@@ -48,6 +48,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/testProditions.fcl   ${CURRENT_BI
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/testTrackerAlignment.fcl   ${CURRENT_BINARY_DIR} fcl/testTrackerAlignment.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/testTrackerStatus.fcl   ${CURRENT_BINARY_DIR} fcl/testTrackerStatus.fcl   COPYONLY)
 
+install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/TrackerConditions)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/TrackerConditions/fcl)
