@@ -7,8 +7,7 @@ namespace mu2e {
   struct DriftInfo {
     double LorentzAngle_ =0; // angle for EXB effects
     double rDrift_ =0; // calibrated drift distance
-    double cDrift_ =0
-    ; // single cluster drift distance
+    double cDrift_ =0; // single cluster drift distance
     double signedDriftError_ =0; // estimated error on signed drift distance (includes LR ambiguity error effects)
     double unsignedDriftError_ =0; // estimated error on unsigned drift distance
     double driftVelocity_; // instantaneous drift velocity
