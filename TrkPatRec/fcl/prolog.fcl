@@ -16,7 +16,8 @@ TimeCalculator : {
 # define flag bits for pat rec and final fit
 PatRecBackground : ["Background","Noisy","Dead"]
 TrkFitBackground : ["Dead"]
- 
+
+
 TimeClusterFinder : {
   module_type            : TimeClusterFinder
 
