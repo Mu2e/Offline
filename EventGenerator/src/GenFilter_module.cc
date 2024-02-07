@@ -16,6 +16,7 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 #include <iostream>
 #include <string>
 
@@ -91,14 +92,16 @@ namespace mu2e {
 
       // extact field
       GeomHandle<BFieldManager> bfmgr;
-      XYZVectorF pos3Vec = XYZVectorF(aParticle.position().x(),aParticle.position().y(),aParticle.position().z());
+      mu2e::GeomHandle<mu2e::Tracker> tracker;
+      auto tracker_origin = det->toMu2e(tracker->origin());
+      //XYZVectorF pos3Vec = XYZVectorF(aParticle.position().x(),aParticle.position().y(),aParticle.position().z());
+      XYZVectorF pos3Vec = XYZVectorF(tracker_origin.x(),tracker_origin.y(),tracker_origin.z());
       ROOT::Math::XYZVector bnom(bfmgr->getBField(pos3Vec).x(),bfmgr->getBField(pos3Vec).y(),bfmgr->getBField(pos3Vec).z());
 
       // make the loophelix
       KinKal::LoopHelix lh(pos0, mom0, charge, bnom);
       // calculate rmax and add maxr to siminfo
       _maxr =sqrt(lh.cx()*lh.cx()+lh.cy()*lh.cy())+fabs(lh.rad());
-
       if(makeplots_){
         // fill other branches for plots
         _momT =  sqrt(mom0.x()*mom0.x() + mom0.y()*mom0.y());
