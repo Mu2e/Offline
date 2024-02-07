@@ -128,8 +128,6 @@ FlagBkgHits : {
   module_type          : FlagBkgHits
   ComboHitCollection   : "makeSTH"
   ClusterAlgorithm     : 1
-  TNTClustering        : {@table::TNTClusterer}
-  Chi2Clustering        : {@table::Chi2Clusterer}
   MinActiveHits        : 3
   MinNPlanes           : 2
   ClusterPositionError : 10

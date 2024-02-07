@@ -15,11 +15,12 @@ namespace mu2e
 {
    struct BkgCluster
    {
+       enum  distMethod {spatial,chi2};
+
        //Default hit count chosen for compuational efficiency
        BkgCluster() {_hits.reserve(16);}
-       BkgCluster(TwoDPoint point, float time, float weight) : _point(point), _time(time), _weight(weight){_hits.reserve(16);_cpoints.addPoint(_point,0);_pos = point.pos3();_wtime = _time*_weight;}
-       BkgCluster(XYZVectorF const& pos, float time) : _pos(pos), _time(time) {_hits.reserve(16);}
-       enum  distMethod {spatial,chi2};
+       BkgCluster(TwoDPoint point, float time, float weight, distMethod method) : _point(point), _time(time), _weight(weight), _distMethod(method){_hits.reserve(16);_cpoints.addPoint(_point,0);_pos = point.pos3();_wtime = _time*_weight;}
+       BkgCluster(XYZVectorF const& pos, float time, distMethod method) : _pos(pos), _time(time), _distMethod(method) {_hits.reserve(16);}
 
        float                        getKerasQ() const {return _kerasQ; }
        auto const&                  getDistMethod() const {return _distMethod; }
@@ -35,7 +36,6 @@ namespace mu2e
        void time(float time)                                                {_time = time;}
        void clearHits()                                                     {_hits.clear();}
        void setKerasQ(float kerasQ)                                         {_kerasQ = kerasQ;}
-       void setDistanceMethod(distMethod method)                            {_distMethod = method;}
        void addHit(unsigned val)                                            {_hits.emplace_back(val);}
        void addHit(unsigned val, TwoDPoint point, float time, float weight) {
         _hits.push_back(val);

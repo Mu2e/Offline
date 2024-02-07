@@ -10,7 +10,6 @@
 #include "fhiclcpp/types/Atom.h"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/TrkHitReco/inc/BkgClusterer.hh"
-//#include "Offline/GeneralUtilities/inc/CombineTwoDPoints.hh"
 #include "fhiclcpp/types/Sequence.h"
 
 #include <string>
@@ -57,7 +56,7 @@ namespace mu2e {
       };
 
 
-      explicit TNTClusterer(const Config& config);
+      TNTClusterer(const std::optional<Config> config);
       virtual ~TNTClusterer() {};
 
       void          init        ();
