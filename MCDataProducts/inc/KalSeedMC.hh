@@ -34,7 +34,7 @@ namespace mu2e {
     MCRelationship _rel; // relationship of this particle to its primary
     uint16_t _nhits; // number of associated StrawHits
     uint16_t _nactive; // number of associated active hits
-    CLHEP::HepLorentzVector   _mom; // initial momentum
+    XYZTVectorF   _mom; // initial momentum
     CLHEP::Hep3Vector _pos; // initial position
     double _time; //global start time
     cet::map_vector_key _spkey; // key to the SimParticle
@@ -44,7 +44,7 @@ namespace mu2e {
     // partial constructor from a SimParticle;
     SimPartStub(SPPtr const& spp)  : _pdg(spp->pdgId()),
     _proc(spp->creationCode()), _gid(GenId::unknown), _rel(MCRelationship::none),
-    _nhits(0), _nactive(0), _mom(CLHEP::HepLorentzVector(spp->startMomentum())),  _pos(CLHEP::Hep3Vector(spp->startPosition())), _time(spp->startGlobalTime()), _spkey(spp.key()){
+    _nhits(0), _nactive(0), _mom(XYZTVectorF(spp->startMomentum())),  _pos(CLHEP::Hep3Vector(spp->startPosition())), _time(spp->startGlobalTime()), _spkey(spp.key()){
     // dig down to the GenParticle
       auto simPtr = spp;
       while (simPtr->genParticle().isNull() && simPtr->parent().isNonnull()) {
