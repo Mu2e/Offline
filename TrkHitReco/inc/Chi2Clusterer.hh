@@ -36,7 +36,7 @@ namespace mu2e {
         using Comment = fhicl::Comment;
         fhicl::Atom<float>            hitDistance{      Name("HitDistance"),      Comment("Minimum cluster hit distance")  };
         fhicl::Atom<float>            seedDistance{     Name("SeedDistance"),     Comment("Minimum distance for cluster seed")  };
-        fhicl::Atom<int>              minClusterHits{   Name("MinClusterHits"),   Comment("Cut for minimum cluster hit size"),1 };
+        fhicl::Atom<unsigned>         minClusterHits{   Name("MinClusterHits"),   Comment("Cut for minimum cluster hit size"),1 };
         fhicl::Atom<float>            maxHitTimeDiff{   Name("MaxHitTimeDiff"),   Comment("Maximum hit cluster time difference")  };
         fhicl::Atom<unsigned>         maxCluIterations{ Name("MaxCluIterations"), Comment("Maximum number of cluster algo iterations") };
         fhicl::Sequence<std::string>  bkgmsk{           Name("BackgroundMask"),   Comment("Bkg hit selection mask") };
@@ -45,7 +45,7 @@ namespace mu2e {
         fhicl::Atom<int>              diag{             Name("Diag"),             Comment("Diagnosis level"),0 };
       };
 
-      explicit Chi2Clusterer(const Config& config);
+      Chi2Clusterer(const std::optional<Config> config);
       virtual ~Chi2Clusterer() {};
 
       void init();
@@ -54,7 +54,7 @@ namespace mu2e {
 
 
     private:
-      static constexpr int numBuckets_ =256; //number of buckets to store the cluster ids vs time
+      size_t numBuckets_; //number of buckets to store the cluster ids vs time
 
       void     initClustering  (const ComboHitCollection& chcol, std::vector<Chi2BkgHit>& hinfo);
       void     doClustering    (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<Chi2BkgHit>& hinfo);
@@ -62,11 +62,13 @@ namespace mu2e {
       void     dump            (const std::vector<BkgCluster>& clusters, const std::vector<Chi2BkgHit>& hinfo);
 
       float                   tbin_;
+      float                   tmin_;
+      float                   tmax_;
       float                   dhit_;
       float                   dseed_;
       float                   dt_;
       float                   chi2Cut_;
-      int                     minClusterHits_;
+      unsigned                minClusterHits_;
       float                   maxHitdt_;
       unsigned                maxNiter_;
       StrawHitFlag            bkgmask_;

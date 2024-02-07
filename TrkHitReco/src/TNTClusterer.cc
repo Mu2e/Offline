@@ -5,25 +5,25 @@
 
 namespace mu2e
 {
-  TNTClusterer::TNTClusterer(const Config& config) :
-    dhit_             (config.hitDistance()),
-    dseed_            (config.seedDistance()),
-    dd_               (config.clusterDiameter()),
-    dt_               (config.clusterTime()),
-    minClusterHits_   (config.minClusterHits()),
-    maxHitdt_         (config.maxHitTimeDiff()),
-    maxDistSum_       (config.maxSumDistance()),
-    maxNiter_         (config.maxCluIterations()),
-    useMedian_        (config.medianCentroid()),
-    comboInit_        (config.comboInit()),
-    bkgmask_          (config.bkgmsk()),
-    sigmask_          (config.sigmsk()),
-    testflag_         (config.testflag()),
-    diag_             (config.diag())
+  TNTClusterer::TNTClusterer(const std::optional<Config> config) :
+    dhit_             (config.value().hitDistance()),
+    dseed_            (config.value().seedDistance()),
+    dd_               (config.value().clusterDiameter()),
+    dt_               (config.value().clusterTime()),
+    minClusterHits_   (config.value().minClusterHits()),
+    maxHitdt_         (config.value().maxHitTimeDiff()),
+    maxDistSum_       (config.value().maxSumDistance()),
+    maxNiter_         (config.value().maxCluIterations()),
+    useMedian_        (config.value().medianCentroid()),
+    comboInit_        (config.value().comboInit()),
+    bkgmask_          (config.value().bkgmsk()),
+    sigmask_          (config.value().sigmsk()),
+    testflag_         (config.value().testflag()),
+    diag_             (config.value().diag())
   {
-    float minerr (config.minHitError());
-    float maxdist(config.maxDistance());
-    float trms   (config.timeRMS());
+    float minerr (config.value().minHitError());
+    float maxdist(config.value().maxDistance());
+    float trms   (config.value().timeRMS());
 
     tbin_     =1.0;
     dd2_      = dd_*dd_;
@@ -140,11 +140,10 @@ namespace mu2e
       }
       else if (mindist > dseed_) {
         minc = clusters.size();
-        clusters.emplace_back(chit.pos(),chit.correctedTime());
+        clusters.emplace_back(chit.pos(),chit.correctedTime(),distMethodFlag_);
         clusters[minc].addHit(ihit);
         int itime = int(chit.correctedTime()/tbin_);
         clusterIndices[itime].emplace_back(minc);
-        clusters[minc].setDistanceMethod(distMethodFlag_);
       }
       else{
         BkgHits[ihit].distance_ = 10000.0f;

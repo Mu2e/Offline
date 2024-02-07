@@ -5,20 +5,22 @@
 
 namespace mu2e
 {
-  Chi2Clusterer::Chi2Clusterer(const Config& config) :
-    dhit_             (config.hitDistance()),
-    dseed_            (config.seedDistance()),
-    minClusterHits_   (config.minClusterHits()),
-    maxHitdt_         (config.maxHitTimeDiff()),
-    maxNiter_         (config.maxCluIterations()),
-    bkgmask_          (config.bkgmsk()),
-    sigmask_          (config.sigmsk()),
-    testflag_         (config.testflag()),
-    diag_             (config.diag())
+  Chi2Clusterer::Chi2Clusterer(const std::optional<Config> config) :
+    dhit_             (config.value().hitDistance()),
+    dseed_            (config.value().seedDistance()),
+    minClusterHits_   (config.value().minClusterHits()),
+    maxHitdt_         (config.value().maxHitTimeDiff()),
+    maxNiter_         (config.value().maxCluIterations()),
+    bkgmask_          (config.value().bkgmsk()),
+    sigmask_          (config.value().sigmsk()),
+    testflag_         (config.value().testflag()),
+    diag_             (config.value().diag())
   {
 
-    tbin_     = 1.0;
-    chi2Cut_  = std::pow(((dseed_+dhit_)/2),2);
+    tbin_     = 0.;
+    tmin_     = 1800.;
+    tmax_     = 0.;
+    chi2Cut_  = 1.;
     distMethodFlag_ = BkgCluster::chi2;
 
   }
@@ -38,10 +40,6 @@ namespace mu2e
     initClustering(chcol, BkgHits);
     doClustering(chcol, clusters, BkgHits);
 
-    long unsigned int minchits = minClusterHits_;
-    auto removePred = [minchits](auto& cluster) {return cluster.hits().size() < minchits;};
-    clusters.erase(std::remove_if(clusters.begin(),clusters.end(),removePred),clusters.end());
-
     auto transPred = [&BkgHits] (const int i) {return BkgHits[i].chidx_;};
     for (auto& cluster: clusters) std::transform(cluster.hits().begin(),cluster.hits().end(),cluster.hits().begin(),transPred);
 
@@ -53,13 +51,16 @@ namespace mu2e
   //----------------------------------------------------------------------------------------------------------------------
   void Chi2Clusterer::initClustering(const ComboHitCollection& chcol, std::vector<Chi2BkgHit>& BkgHits)
   {
-     float maxTime(0);
+     float sumDriftTime(0);
      for (size_t ich=0;ich<chcol.size();++ich) {
        if (testflag_ && (!chcol[ich].flag().hasAllProperties(sigmask_) || chcol[ich].flag().hasAnyProperty(bkgmask_))) continue;
        BkgHits.emplace_back(Chi2BkgHit(ich));
-       maxTime = std::max(maxTime,chcol[ich].correctedTime());
+       tmin_ = std::min(tmin_,chcol[ich].correctedTime());
+       tmax_ = std::max(tmax_,chcol[ich].correctedTime());
+       sumDriftTime += chcol[ich].driftTime();
      }
-     tbin_ = (maxTime+1.0)/float(numBuckets_);
+     tbin_ = (sumDriftTime/chcol.size())/2.;
+     numBuckets_ = (tmax_ - tmin_ + tbin_)/tbin_;
 
      auto resPred = [&chcol](const Chi2BkgHit& x, const Chi2BkgHit& y) {return chcol[x.chidx_].wireRes() < chcol[y.chidx_].wireRes();};
      std::sort(BkgHits.begin(),BkgHits.end(),resPred);
@@ -70,10 +71,10 @@ namespace mu2e
   void Chi2Clusterer::doClustering(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<Chi2BkgHit>& BkgHits)
   {
     unsigned niter(0);
-    float startChi2(0);
-    float deltaChi2(0);
-    //Check average Chi2 change. This is set to middle point of hit and seed radii(dhit_+dseed_/2)^2
-    while ( deltaChi2 < chi2Cut_ && niter < maxNiter_ ) {
+    float prevChi2(0);
+    float deltaChi2(1000);
+    //Check average Chi2 change.
+    while ( deltaChi2 > chi2Cut_ && niter < maxNiter_ ) {
       ++niter;
       formClusters(chcol, clusters, BkgHits);
 
@@ -87,8 +88,8 @@ namespace mu2e
         }
       }
       aveChi2 = sumChi2/nofCl;
-      if(niter == 1) startChi2 = aveChi2;
-      deltaChi2 = aveChi2 - startChi2;
+      deltaChi2 = aveChi2 - prevChi2;
+      prevChi2 = aveChi2;
     }
     if(diag_>0) std::cout<<"Nof_iter\t"<<niter<<"\tTotal_nof_clusters\t"<<clusters.size()<<"\tAverage_delta_chi2\t"<<deltaChi2<<"\n";
 
@@ -101,13 +102,15 @@ namespace mu2e
   // Remove clusters with only single combo hit and try again to place them into existing clusters.
   unsigned Chi2Clusterer::formClusters(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<Chi2BkgHit>& BkgHits)
   {
-    std::array<std::vector<int>, numBuckets_> clusterIndices;
+    std::vector<std::vector<size_t>> clusterIndices;
+    clusterIndices.resize(numBuckets_);
     for (size_t ic=0;ic<clusters.size();++ic) {
-      int itime  = int(clusters[ic].time()/tbin_);
+      size_t itime  = size_t((clusters[ic].time()-tmin_)/tbin_);
       clusterIndices[itime].emplace_back(ic);
+      clusterIndices[itime].shrink_to_fit();
     }
 
-    int ditime(int(maxHitdt_/tbin_));
+    size_t ditime(size_t(maxHitdt_/tbin_));
     for (size_t ihit=0;ihit<BkgHits.size();++ihit) {
 
       auto& hit  = BkgHits[ihit];
@@ -117,11 +120,11 @@ namespace mu2e
         // -- find closest cluster. restrict search to clusters close in time using the clusterIndices structure
         int minc(-1);
         float mindist(dseed_ + 1.0f);
-        int itime = int(chit.correctedTime()/tbin_);
-        int imin = std::max(0,itime-ditime);
-        int imax = std::min(numBuckets_,itime+ditime+1);
+        size_t itime = size_t((chit.correctedTime()-tmin_)/tbin_);
+        size_t imin = std::max((size_t)0,itime-ditime);
+        size_t imax = std::min(numBuckets_,itime+ditime+1);
 
-        for (int i=imin;i<imax;++i) {
+        for (size_t i=imin;i<imax;++i) {
           for (const auto& ic : clusterIndices[i]) {
             float dist = distance(clusters[ic],chcol[hit.chidx_]);
             if (dist < mindist) {mindist = dist;minc = ic;}
@@ -133,18 +136,17 @@ namespace mu2e
           clusters[minc].addHit(ihit,TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),chit.correctedTime(),chit.nStrawHits());
         else if (mindist > dseed_) {
           minc = clusters.size();
-          clusters.emplace_back(BkgCluster(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),chit.correctedTime(),chit.nStrawHits()));
+          clusters.emplace_back(BkgCluster(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),chit.correctedTime(),chit.nStrawHits(),distMethodFlag_));
           clusters[minc].addHit(ihit);
-          int itime = int(chit.correctedTime()/tbin_);
+          size_t itime = size_t((chit.correctedTime()-tmin_)/tbin_);
           clusterIndices[itime].emplace_back(minc);
-          clusters[minc].setDistanceMethod(distMethodFlag_);
         }
         else minc = -1;
       }
     }
 
     for(auto cluster = clusters.begin(); cluster != clusters.end();){
-      if((*cluster).hits().size() <= 1){
+      if((*cluster).hits().size() <= minClusterHits_){
         BkgHits[(*cluster).hits().at(0)].clusterIdx_ = -1;
         cluster = clusters.erase(cluster);
       }
@@ -167,7 +169,7 @@ namespace mu2e
   //-------------------------------------------------------------------------------------------
   void Chi2Clusterer::dump(const std::vector<BkgCluster>& clusters, const std::vector<Chi2BkgHit>& BkgHits)
   {
-    int iclu(0);
+    size_t iclu(0);
     for (auto& cluster: clusters) {
       std::cout<<"Cluster "<<iclu<<" "<<cluster.pos()<<" "<<cluster.time()<<"  "<<cluster.hits().size()<<"\n"
       <<"Cluster chi2 "<<cluster.points().chisquared()<<" cluster consistency "<<cluster.points().consistency()<<"  - ";
