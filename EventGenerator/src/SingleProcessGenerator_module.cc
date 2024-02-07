@@ -15,7 +15,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/DelegatedParameter.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "art_root_io/TFileService.h"
+
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
@@ -30,13 +30,7 @@
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
-#include "Offline/GeometryService/inc/DetectorSystem.hh"
 
-#include "KinKal/Trajectory/LoopHelix.hh"
-#include "Offline/BFieldGeom/inc/BFieldManager.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
-
-#include "TTree.h"
 namespace mu2e {
   //================================================================
   class SingleProcessGenerator : public art::EDProducer {
@@ -51,13 +45,15 @@ namespace mu2e {
           Comment("Material determines muon life time, capture fraction, and particle spectra.\n"
                   "Only aluminum (Al) is supported, emisson spectra for other materials are not implemented.\n"),"Al" };
       fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle"),PDGCode::e_minus};
+
       fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("spectrum (and variables) to be generated")};
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
+
     };
 
     using Parameters= art::EDProducer::Table<Config>;
     explicit SingleProcessGenerator(const Parameters& conf);
-    virtual void beginJob();
+
     virtual void produce(art::Event& event) override;
 
     //----------------------------------------------------------------
@@ -74,7 +70,6 @@ namespace mu2e {
     std::unique_ptr<ParticleGeneratorTool> Generator_;
 
     void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time, ParticleGeneratorTool* gen);
-
   };
 
   //================================================================
@@ -102,13 +97,7 @@ namespace mu2e {
     if(pdgId_==PDGCode::e_plus) {
       muonLifeTime_=0; //decay time already included for stopped muon(+) FIXME!!!
     }
-    
   }
-  
-  
-  void SingleProcessGenerator::beginJob(){
-  }
-  
 
   //================================================================
   void SingleProcessGenerator::produce(art::Event& event) {
@@ -134,13 +123,14 @@ namespace mu2e {
     auto daughters = gen->generate();
     for(const auto& d: daughters) {
 
-        output->emplace_back(mustop,
-                             d.creationCode,
-                             d.pdgId,
-                             mustop->endPosition(),
-                             d.fourmom,
-                             time
-                             );
+      output->emplace_back(mustop,
+                           d.creationCode,
+                           d.pdgId,
+                           mustop->endPosition(),
+                           d.fourmom,
+                           time
+                           );
+
     }
   }
 
