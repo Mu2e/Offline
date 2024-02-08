@@ -62,13 +62,19 @@ BEGIN_PROLOG
                                    39400,39400,39400,39400,              //D1...4
                                    0,0,39400,39400]                      //C1...4
 
-      scintillationYieldScaleFactor         : 0.42  //scale factor applied to scintillation yields to mimic aging
+      photonYieldScaleFactor                : 0.42  //scale factor applied to photon yields to mimic aging
                                                     //0.42 results in 28.6 PE/SiPM @ 1 m away from SiPM (expected in 2025)
                                                     //used in SU2020
-      scintillationYieldVariation           : 0.1   //gaussian distribution with sigma equal to 10% of the mean
-                                                    //previously used 0.2 without upper limit
-      scintillationYieldVariationCutoffLow  : 0.7   //the scintillation yield variation is cut off at 70% below the mean
-      scintillationYieldVariationCutoffHigh : 1.2   //the scintillation yield variation is cut off at 120% above the mean
+      photonYieldVariationScale             : 0.05  //scale factor for the photon yield variation
+                                                    //examples:
+                                                    //-if a database table of measured deviations from a nominal photon yield is used,
+                                                    // the scale factor should be set to 1.0 (i.e. no scaling)
+                                                    //-if a database table of a random gaussian distribution
+                                                    // with a sigma equal to 100% of the nominal photon yied is used
+                                                    // and one wants to run a simulation with a sigma of 5% of the nominal photon yield,
+                                                    // then the scale factor should be set to 0.05 (i.e. scaled to a sigma of 5%)
+      photonYieldVariationCutoffLow         :-0.2   //the photon yield variation is cut off at 20% below the mean
+      photonYieldVariationCutoffHigh        : 0.2   //the photon yield variation is cut off at 20% above the mean
       digitizationStart                     :  400.0    //400ns
       digitizationEnd                       : 1750.0    //1750ns
       digitizationStartMargin               :   50.0    //50ns
@@ -81,7 +87,6 @@ BEGIN_PROLOG
       digitizationEnd              : 1750.0    //1750ns
       digitizationStartMargin      :   50.0    //50ns
 
-      deadSiPMProbability          : 0.01
       nPixelsX                     : 40
       nPixelsY                     : 40
       inactivePixels               : [ [18,18], [18,19], [18,20], [18,21],
@@ -146,17 +151,6 @@ BEGIN_PROLOG
       crvRecoPulsesModuleLabel       : CrvRecoPulses
       timeStart                      : 500
       timeEnd                        : 1600
-    }
-    CrvPedestalFinder:
-    {
-      module_type               : CrvPedestalFinder
-      crvDigiModuleLabel        : "CrvDigi"
-      maxADCspread              : 5
-    }
-    CrvCalibration:
-    {
-      module_type               : CrvCalibration
-      crvRecoPulsesModuleLabel  : "CrvRecoPulses"
     }
 
     # Makes one big Assns for mutiple CrvCoincidenceCluster collections

@@ -6,6 +6,11 @@ CRVOrdinal : {
    filePath : "Offline/CRVConditions/data"
 }
 
+CRVPhotonYield : {
+   useDb : false  #false sets all photon yield deviations to 0
+   verbose : 0
+}
+
 CRVStatus : {
    useDb : false
    verbose : 0

@@ -62,7 +62,7 @@ namespace mu2e {
       CRYSetup * _crySetup;
       std::shared_ptr<CRYGenerator> _cryGen;
 
-      double _refY0;
+      double _refX0, _refY0, _refZ0;
       std::string _refPointChoice;
       std::string _directionChoice;
       CLHEP::Hep3Vector _cosmicReferencePointInMu2e;

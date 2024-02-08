@@ -24,6 +24,7 @@ Proditions : {
    caloDAQConditions : @local::CaloDAQConditions
    trkQualCatalog : @local::TrkQualCatalog
    crvOrdinal : @local::CRVOrdinal
+   crvPhotonYield : @local::CRVPhotonYield
    crvStatus : @local::CRVStatus
    crvCalib : @local::CRVCalib
    simbookkeeper : @local::SimBookkeeper
