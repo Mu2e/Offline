@@ -9,6 +9,7 @@
 #include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
 #include "Offline/CRVConfig/inc/CRVCalibConfig.hh"
 #include "Offline/CRVConfig/inc/CRVOrdinalConfig.hh"
+#include "Offline/CRVConfig/inc/CRVPhotonYieldConfig.hh"
 #include "Offline/CRVConfig/inc/CRVStatusConfig.hh"
 #include "Offline/CaloConfig/inc/CaloDAQMapConfig.hh"
 #include "Offline/DAQConfig/inc/EventTimingConfig.hh"
@@ -53,6 +54,9 @@ class ProditionsService {
     fhicl::Table<CRVOrdinalConfig> crvOrdinal{
         Name("crvOrdinal"),
         Comment("CRV online-offline numbering configuration")};
+    fhicl::Table<CRVPhotonYieldConfig> crvPhotonYield{
+        Name("crvPhotonYield"),
+        Comment("CRV photon yield deviation map for each channel")};
     fhicl::Table<CRVStatusConfig> crvStatus{
         Name("crvStatus"), Comment("CRV bad channels configuration")};
     fhicl::Table<CRVCalibConfig> crvCalib{

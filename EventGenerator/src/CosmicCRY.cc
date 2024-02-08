@@ -75,7 +75,9 @@ CosmicCRY::CosmicCRY(art::Run& run, const SimpleConfig& config, CLHEP::HepRandom
     _subboxLength(config.getDouble("cosmicCRY.subboxLength", 100.)),
     _maxShowerEn(config.getDouble("cosmicCRY.maxShowerEn", 1E6)),
     _minShowerEn(config.getDouble("cosmicCRY.minShowerEn", 50)), _setupString(""),
+    _refX0(config.getDouble("cosmicCRY.refX0", 0.)),
     _refY0(config.getDouble("cosmicCRY.refY0", 20000.)),
+    _refZ0(config.getDouble("cosmicCRY.refZ0", 0.)),
     _refPointChoice(config.getString("cosmicCRY.refPoint", "UNDEFINED")),
     _directionChoice(config.getString("cosmicCRY.directionChoice", "ALL")),
     _cosmicReferencePointInMu2e(), _vertical(false),
@@ -149,7 +151,7 @@ void CosmicCRY::generate(GenParticleCollection& genParts) {
       _cosmicReferencePointInMu2e =
           Hep3Vector(detsys->getOrigin().x(), _refY0, calorimeter->disk(0).geomInfo().origin().z());
     } else if (_refPointChoice == "UNDEFINED")
-      _cosmicReferencePointInMu2e = Hep3Vector(0., _refY0, 0.);
+      _cosmicReferencePointInMu2e = Hep3Vector(_refX0, _refY0, _refZ0);
 
     mf::LogInfo("CosmicCRY") << "Ref. point: " << _cosmicReferencePointInMu2e << std::endl;
     mf::LogInfo("CosmicCRY") << "Target box: " << _targetBoxXmin << ", " << _targetBoxXmax << ", "
