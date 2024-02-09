@@ -73,7 +73,6 @@ double calorimeter.BPPipeZOffset              = 43.0;
 bool   calorimeter.hasCrates                  = true;
 int    calorimeter.nCrates                    = 10;
 int    calorimeter.nBoards                    = 9;
-int    calorimeter.nCrateBeforeSpace          = 4;
 double calorimeter.crateXLength               = 190.;
 double calorimeter.crateZLength               = 350.;
 double calorimeter.crateYLength               = 183;
