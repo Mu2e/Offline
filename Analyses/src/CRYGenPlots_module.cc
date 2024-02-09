@@ -1,3 +1,11 @@
+////////////////////////////////////////////////////////////////////////
+// Class:       CRYGenPlots
+// Plugin Type: analyzer (art v2_10_04)
+// File:        CRYGenPlots_module.cc
+//
+// Generated at Wed Jun 27 18:05:40 2018 by Hoai Nam Tran using cetskelgen
+// from cetlib version v3_02_01.
+////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -16,7 +24,6 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Offline/Mu2eUtilities/inc/compressPdgId.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 
@@ -54,47 +61,46 @@ class mu2e::CRYGenPlots : public art::EDAnalyzer {
     std::string processName_;
     std::string CRYModuleLabel_;
     std::string CRYInstanceName_;
-    float _keMax = std::numeric_limits<float>::max();
+    double _keMax;
 
     // histograms
-    TH2F *_hXZ = nullptr;
-    TH1F *_hY = nullptr;
-    TH1F *_hKE = nullptr;
-    TH1F *_hTheta = nullptr;
-    TH1F *_hPhi = nullptr;
-    TH1F *_hPmag = nullptr;
-    TH1F *_hPyOverPmag = nullptr;
-    TH1F *_hTime = nullptr;
-    TH2F *_hPtypeKE = nullptr;
-    TH1F *_hNSecondaries = nullptr;
+    TH2F *_hXZ;
+    TH1F *_hY;
+    TH1F *_hKE;
+    TH1F *_hTheta;
+    TH1F *_hPhi;
+    TH1F *_hPmag;
+    TH1F *_hPyOverPmag;
+    TH1F *_hTime;
+    TH2F *_hPtypeKE;
+    TH1F *_hNSecondaries;
 
-    TTree *_cosmicTree = nullptr;
-    TTree *_eventTree = nullptr;
+    TTree *_cosmicTree;
 
-    float _x = std::numeric_limits<float>::lowest();
-    float _y = std::numeric_limits<float>::lowest();
-    float _z = std::numeric_limits<float>::lowest();
-    float _px = std::numeric_limits<float>::lowest();
-    float _py = std::numeric_limits<float>::lowest();
-    float _pz = std::numeric_limits<float>::lowest();
-    float _theta = std::numeric_limits<float>::lowest();
-    float _phi = std::numeric_limits<float>::lowest();
-    float _KE = std::numeric_limits<float>::lowest();
-    float _p = std::numeric_limits<float>::lowest();
-    float _t = std::numeric_limits<float>::lowest();
-    std::vector<float> _dca;
-    PDGCode::type _pdgId;
+    float _x;
+    float _y;
+    float _z;
+    float _px;
+    float _py;
+    float _pz;
+    float _theta;
+    float _phi;
+    float _KE;
+    float _p;
+    float _t;
+    int _pdgId;
 
     void bookHists(art::ServiceHandle<art::TFileService> &);
     GlobalConstantsHandle<ParticleDataList> pdt;
 };
 
-mu2e::CRYGenPlots::CRYGenPlots(fhicl::ParameterSet const &p)
-    : EDAnalyzer(p),
-    processName_(p.get<std::string>("processName", "")),
-    CRYModuleLabel_(p.get<std::string>("CRYModuleLabel", "FromCRYBinary")),
-    CRYInstanceName_(p.get<std::string>("CRYInstanceName", "")),
-    _keMax(p.get<double>("keMax", 10E3))
+
+  mu2e::CRYGenPlots::CRYGenPlots(fhicl::ParameterSet const & p)
+: EDAnalyzer(p)
+  , processName_(p.get<std::string>("processName", ""))
+  , CRYModuleLabel_(p.get<std::string>("CRYModuleLabel", "cryGen"))
+  , CRYInstanceName_(p.get<std::string>("CRYInstanceName", ""))
+  , _keMax(p.get<double>("keMax", 10E3))
 {
   art::ServiceHandle<art::TFileService> tfs;
 
@@ -114,9 +120,6 @@ mu2e::CRYGenPlots::CRYGenPlots(fhicl::ParameterSet const &p)
   _cosmicTree->Branch("p", &_p, "p/F");
   _cosmicTree->Branch("t", &_t, "t/F");
   _cosmicTree->Branch("pdgId", &_pdgId, "pdgId/I");
-
-  _eventTree = tfs->make<TTree>("eventTree", "TTree with cosmic ray info per shower");
-  _eventTree->Branch("dca", &_dca);
 }
 
 
@@ -129,41 +132,13 @@ void mu2e::CRYGenPlots::analyze(art::Event const & e)
      success = e.getByLabel(CRYModuleLabel_, CRYInstanceName_, processName_,
          gpHandle);
   else
-    success = e.getByLabel(CRYModuleLabel_, gpHandle);
+    success = e.getByLabel(CRYModuleLabel_, CRYInstanceName_, gpHandle);
 
   if (!success)
     return;
 
   const auto & particles = *gpHandle;
-
-  // Store the point of closest approach between target box and roof for
-  // events with more than one particle
-  _dca.clear();
-  for (GenParticleCollection::const_iterator i = particles.begin(); i != particles.end(); ++i)
-  {
-    for (GenParticleCollection::const_iterator j = i+1; j != particles.end(); ++j)
-    {
-        GenParticle const &particle1 = *i;
-        GenParticle const &particle2 = *j;
-
-        TwoLinePCA twoLine(particle1.position(), -particle1.momentum().vect(), particle2.position(), -particle2.momentum().vect());
-        const CLHEP::Hep3Vector point1 = twoLine.point1();
-        const CLHEP::Hep3Vector point2 = twoLine.point2();
-
-
-        if (point1.y() > 5000 &&
-            point1.y() < 15365.4 &&
-            point2.y() > 5000 &&
-            point2.y() < 15365.4)
-        {
-          _dca.push_back(twoLine.dca());
-        }
-    }
-  }
-  _eventTree->Fill();
-
   _hNSecondaries->Fill(particles.size());
-
   for(const auto & p : particles)
   {
     _hXZ->Fill(p.position().x(), p.position().z());
@@ -194,6 +169,7 @@ void mu2e::CRYGenPlots::analyze(art::Event const & e)
 
     _theta = yMom3.theta();
     _phi = yMom3.phi();
+
     _KE = mom4.e() - mass;
     _p = mom3.mag();
 
@@ -202,8 +178,17 @@ void mu2e::CRYGenPlots::analyze(art::Event const & e)
     _pdgId = p.pdgId();
     _cosmicTree->Fill();
 
+    _hKE->Fill(mom4.e() - mass);
+    _hTheta->Fill(yMom3.theta());
+    _hPhi->Fill(yMom3.phi());
+
+    _hPmag->Fill(mom3.mag());
+    _hTime->Fill(p.time());
+    _hPyOverPmag->Fill(mom4.py() / mom3.mag());
+
     int pbin = compressPdgIdCosmic(p.pdgId());
     _hPtypeKE->Fill(mom4.e(), pbin);
+
   }
 
 }
