@@ -17,9 +17,9 @@ class ProditionsHandle {
   typedef std::shared_ptr<ENTITY> ptr_t;
   typedef std::shared_ptr<const ENTITY> cptr_t;
 
-  ProditionsHandle() : ptr(nullptr) {
+  ProditionsHandle(const std::string& tag = std::string()) : ptr(nullptr) {
     // find the name of the ENTITY
-    _name = std::string(ENTITY::cxname);
+    _name = std::string(ENTITY::cxname) + tag;
     // connect to the service cache of this type
     art::ServiceHandle<ProditionsService> sg;
     _cptr = sg->getCache(_name);

@@ -38,8 +38,14 @@ outputs:
   }
 }
 
+physics.producers.EWMProducer.SpillType : 0
 physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
 physics.producers.CrvPhotons.crvStepProcessNames  : ["CrvStepsConverter"]
+#physics.producers.CrvPhotons.crvStepModuleLabels  : ["compressRecoMCs"]
+#physics.producers.CrvPhotons.crvStepProcessNames  : ["Reconstruct"]
+services.ProditionsService.crvPhotonYield.useDb : true
+services.ProditionsService.crvStatus.useDb: true
+services.DbService.textFile : ["Offline/CRVConditions/data/status_nominal.txt","Offline/CRVConditions/data/photonyield_nominal.txt"]
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20

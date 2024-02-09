@@ -9,6 +9,7 @@
 #include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
 #include "Offline/CRVConfig/inc/CRVCalibConfig.hh"
 #include "Offline/CRVConfig/inc/CRVOrdinalConfig.hh"
+#include "Offline/CRVConfig/inc/CRVPhotonYieldConfig.hh"
 #include "Offline/CRVConfig/inc/CRVStatusConfig.hh"
 #include "Offline/CaloConfig/inc/CaloDAQMapConfig.hh"
 #include "Offline/DAQConfig/inc/EventTimingConfig.hh"
@@ -53,6 +54,9 @@ class ProditionsService {
     fhicl::Table<CRVOrdinalConfig> crvOrdinal{
         Name("crvOrdinal"),
         Comment("CRV online-offline numbering configuration")};
+    fhicl::Table<CRVPhotonYieldConfig> crvPhotonYield{
+        Name("crvPhotonYield"),
+        Comment("CRV photon yield deviation map for each channel")};
     fhicl::Table<CRVStatusConfig> crvStatus{
         Name("crvStatus"), Comment("CRV bad channels configuration")};
     fhicl::Table<CRVCalibConfig> crvCalib{
@@ -78,6 +82,8 @@ class ProditionsService {
         Name("strawResponse"), Comment("Straw response model")};
     fhicl::Table<AlignedTrackerConfig> alignedTracker{
         Name("alignedTracker"), Comment("Tracker alignment in reco code")};
+    fhicl::Table<AlignedTrackerConfig> alignedTrackerSim{
+        Name("alignedTrackerSim"), Comment("Tracker alignment in sim code")};
     fhicl::Table<Mu2eMaterialConfig> mu2eMaterial{
         Name("mu2eMaterial"), Comment("Mu2e material for BTrk")};
     fhicl::Table<Mu2eDetectorConfig> mu2eDetector{

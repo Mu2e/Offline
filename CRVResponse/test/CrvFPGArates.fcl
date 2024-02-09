@@ -1,0 +1,40 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CRVResponse/fcl/prolog.fcl"
+
+process_name : CRVrates
+
+source :
+{
+  module_type : RootInput
+}
+
+services :
+{
+  @table::Services.SimAndReco
+}
+
+physics :
+{
+  analyzers:
+  {
+    CrvRates :
+    {
+      module_type                 : CrvFPGArate
+      crvDigiModuleLabel          : "CrvDigi"
+      minTDC                      : 0
+      maxTDC                      : 1000
+    }
+  }
+
+  an : [CrvRates]
+
+  trigger_paths: []
+  end_paths:     [an]
+}
+
+services.TFileService.fileName : "FPGAratesNew.root"
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20

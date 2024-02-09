@@ -5,6 +5,7 @@
 #include "Offline/DbService/inc/DbHandle.hh"
 #include "Offline/CRVConditions/inc/CRVCalibCache.hh"
 #include "Offline/CRVConditions/inc/CRVOrdinalCache.hh"
+#include "Offline/CRVConditions/inc/CRVPhotonYieldCache.hh"
 #include "Offline/CRVConditions/inc/CRVStatusCache.hh"
 #include "Offline/CaloConditions/inc/CaloDAQMapCache.hh"
 #include "Offline/DAQConditions/inc/EventTimingCache.hh"
@@ -50,6 +51,8 @@ ProditionsService::ProditionsService(Parameters const& sTable,
 
   auto cor = std::make_shared<mu2e::CRVOrdinalCache>(_config.crvOrdinal());
   _caches[cor->name()] = cor;
+  auto csy = std::make_shared<mu2e::CRVPhotonYieldCache>(_config.crvPhotonYield());
+  _caches[csy->name()] = csy;
   auto cst = std::make_shared<mu2e::CRVStatusCache>(_config.crvStatus());
   _caches[cst->name()] = cst;
   auto cca = std::make_shared<mu2e::CRVCalibCache>(_config.crvCalib());
@@ -75,9 +78,13 @@ ProditionsService::ProditionsService(Parameters const& sTable,
   auto src =
       std::make_shared<mu2e::StrawResponseCache>(_config.strawResponse());
   _caches[src->name()] = src;
+  // tracker alignment has two templated variants, for reco and simulation
   auto atc =
-      std::make_shared<mu2e::AlignedTrackerCache>(_config.alignedTracker());
+      std::make_shared<mu2e::AlignedTrackerCacheReco>(_config.alignedTracker());
   _caches[atc->name()] = atc;
+  auto atcs =
+    std::make_shared<mu2e::AlignedTrackerCacheSim>(_config.alignedTrackerSim());
+  _caches[atcs->name()+"Sim"] = atcs;
   auto mmc = std::make_shared<mu2e::Mu2eMaterialCache>(_config.mu2eMaterial());
   _caches[mmc->name()] = mmc;
   auto mdc = std::make_shared<mu2e::Mu2eDetectorCache>(_config.mu2eDetector());

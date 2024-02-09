@@ -49,5 +49,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_9/pid_muo_dt.tbl	       ${C
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_9/pid_muo_ep_vs_path.tbl  ${CURRENT_BINARY_DIR} data/v5_7_9/pid_muo_ep_vs_path.tbl )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_9/pid_muo_xdrds.tbl       ${CURRENT_BINARY_DIR} data/v5_7_9/pid_muo_xdrds.tbl      )
 
+install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/ConditionsService)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
