@@ -58,7 +58,6 @@ physics :
       FillMCInfo : true
       FillCRVHits : true
 
-      FillTrkQualInfo : false
       FillTrkPIDInfo : false
       FillHitInfo : true
       FillTriggerInfo : false
