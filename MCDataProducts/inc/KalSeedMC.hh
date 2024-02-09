@@ -35,7 +35,7 @@ namespace mu2e {
     uint16_t _nhits; // number of associated StrawHits
     uint16_t _nactive; // number of associated active hits
     XYZTVectorF   _mom; // initial momentum
-    CLHEP::Hep3Vector _pos; // initial position
+    XYZVectorF _pos; // initial position
     double _time; //global start time
     cet::map_vector_key _spkey; // key to the SimParticle
     // construct a Ptr from Handle and key
