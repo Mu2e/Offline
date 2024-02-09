@@ -388,15 +388,10 @@ namespace mu2e {
      //Calorimeter shower MC
      art::Handle<CaloShowerSimCollection> caloShowerSimHandle;
      event.getByLabel(_caloShowerSimModuleLabel, caloShowerSimHandle);
-     const CaloShowerSimCollection& caloShowerSims(*caloShowerSimHandle);
 
      //Crystal hits (average from readouts)
      art::Handle<CaloHitCollection> CaloHitsHandle;
      event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
-     CaloHitCollection const& CaloHits(*CaloHitsHandle);
-
-
-
 
      //collect all StepPointMC in crystal
 
@@ -424,10 +419,9 @@ namespace mu2e {
      for (const auto& iter : stepPtMap) _hCaStepEdep->Fill(iter.first,iter.second);
      for (const auto& iter : stepPtMap2) _hCaStepNum->Fill(iter.first,iter.second);
 
-
-
      //do the same with the CaloShowers
      if (!caloShowerSimHandle.isValid()) return;
+     const CaloShowerSimCollection& caloShowerSims(*caloShowerSimHandle);
 
      map<int,double> showerMap;
      map<int,int> showerMap2;
@@ -448,6 +442,7 @@ namespace mu2e {
 
      //look at reconstructed hits
      if (!CaloHitsHandle.isValid()) return;
+     CaloHitCollection const& CaloHits(*CaloHitsHandle);
 
      double totalEdep = 0.0;
      set<int> hit_crystals;
