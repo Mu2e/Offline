@@ -80,7 +80,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/potTimingDistribution_20160511.t
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/potTimingDistribution_38ms.txt   ${CURRENT_BINARY_DIR} data/potTimingDistribution_38ms.txt   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/potTimingDistribution_avg.txt   ${CURRENT_BINARY_DIR} data/potTimingDistribution_avg.txt   COPYONLY)
 
-
+install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/Mu2eUtilities)
 
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)

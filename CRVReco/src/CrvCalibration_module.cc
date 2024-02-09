@@ -5,7 +5,9 @@
 // Original Author: Ralf Ehrlich
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 
 #include "art_root_io/TFileDirectory.h"
@@ -44,7 +46,10 @@ namespace mu2e
 
     private:
     std::string        _crvRecoPulsesModuleLabel;
-    std::vector<TH1F*> _calibHists;
+    std::vector<TH1F*> _calibHistsPulseArea;
+    std::vector<TH1F*> _calibHistsPulseHeight;
+
+    ProditionsHandle<CRVCalib> _calib_h;
   };
 
 
@@ -58,7 +63,8 @@ namespace mu2e
   {
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
-    _calibHists.reserve(counters.size()*4);
+    _calibHistsPulseArea.reserve(counters.size()*4);
+    _calibHistsPulseHeight.reserve(counters.size()*4);
 
     art::ServiceHandle<art::TFileService> tfs;
     for(size_t barIndex=0; barIndex<counters.size(); ++barIndex)
@@ -67,9 +73,12 @@ namespace mu2e
       {
         //produce histograms also for non-existing channels to get a continuously running index
         size_t channelIndex=barIndex*4 + SiPM;
-        _calibHists.emplace_back(tfs->make<TH1F>(Form("crvCalibrationHist_%lu",channelIndex),
-                                                 Form("crvCalibrationHist_%lu",channelIndex),
+        _calibHistsPulseArea.emplace_back(tfs->make<TH1F>(Form("crvCalibrationHistPulseArea_%lu",channelIndex),
+                                                 Form("crvCalibrationHistPulseArea_%lu",channelIndex),
                                                  150,0,3000));
+        _calibHistsPulseHeight.emplace_back(tfs->make<TH1F>(Form("crvCalibrationHistPulseHeight_%lu",channelIndex),
+                                                 Form("crvCalibrationHistPulseHeight_%lu",channelIndex),
+                                                 150,0,75));
       }
     }
   }
@@ -79,14 +88,39 @@ namespace mu2e
     art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
     if(!event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection)) return;
 
+    //add pedestal to histogram title
+    static bool first=true;
+    if(first)
+    {
+      first=false;
+      auto const& calib = _calib_h.get(event.id());
+      GeomHandle<CosmicRayShield> CRS;
+      const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
+      for(size_t barIndex=0; barIndex<counters.size(); ++barIndex)
+      {
+        for(size_t SiPM=0; SiPM<4; ++SiPM)
+        {
+          size_t channelIndex=barIndex*4 + SiPM;
+          float pedestal = calib.pedestal(channelIndex);
+          _calibHistsPulseArea.at(channelIndex)->SetTitle(Form("crvCalibrationHistPulseArea_%lu_pedestal_%f",channelIndex,pedestal));
+          _calibHistsPulseHeight.at(channelIndex)->SetTitle(Form("crvCalibrationHistPulseHeight_%lu_pedestal_%f",channelIndex,pedestal));
+        }
+      }
+    }
+
     for(auto iter=crvRecoPulseCollection->begin(); iter!=crvRecoPulseCollection->end(); ++iter)
     {
-      if(!iter->GetRecoPulseFlags().none()) continue;
+      if(!iter->GetRecoPulseFlags().none())
+      {
+        if(!iter->GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::noCalibConstPulseArea) &&
+           !iter->GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::noCalibConstPulseHeight)) continue;
+      }
 
       int barIndex = iter->GetScintillatorBarIndex().asInt();
       int SiPM = iter->GetSiPMNumber();
       int channelIndex=barIndex*4+SiPM;
-      _calibHists.at(channelIndex)->Fill(iter->GetPulseBeta()*iter->GetPulseHeight()*TMath::E());
+      _calibHistsPulseArea.at(channelIndex)->Fill(iter->GetPulseBeta()*iter->GetPulseHeight()*TMath::E());
+      _calibHistsPulseHeight.at(channelIndex)->Fill(iter->GetPulseHeight());
     }
   }
 

@@ -106,6 +106,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/epilog_stereo.fcl   ${CURRENT_BIN
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl   ${CURRENT_BINARY_DIR} fcl/prolog.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_trigger.fcl   ${CURRENT_BINARY_DIR} fcl/prolog_trigger.fcl   COPYONLY)
 
+install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/TrkHitReco)
 
 install_source(SUBDIRS src inc)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)

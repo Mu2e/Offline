@@ -23,7 +23,7 @@ class CRVStatus : virtual public ProditionsEntity {
   CRVStatus(const StatusMap& smap) : ProditionsEntity(cxname), _smap(smap) {}
 
   // return status flag word for an offline channel
-  int status(std::uint16_t channel) {
+  int status(std::uint16_t channel) const {
     auto it = _smap.find(channel);
     if (it == _smap.end()) {
       return 0;

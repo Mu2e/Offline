@@ -24,6 +24,11 @@ AlignedTracker : {
   useDb : true
 }
 
+AlignedTrackerSim : {
+  verbose : 0
+  useDb : false
+}
+
 FullReadoutStraw : {
   verbose : 0
   useDb : false
