@@ -133,10 +133,10 @@ namespace mu2e
 
         // -- either add hit to existing cluster, form new cluster, or do nothing if hit is "in between"
         if (mindist < dhit_)
-          clusters[minc].addHit(ihit,TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),chit.correctedTime(),chit.nStrawHits());
+          clusters[minc].addHit(ihit,TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()));
         else if (mindist > dseed_) {
           minc = clusters.size();
-          clusters.emplace_back(BkgCluster(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),chit.correctedTime(),chit.nStrawHits(),distMethodFlag_));
+          clusters.emplace_back(BkgCluster(TwoDPoint(chit.pos(),chit.uDir(),chit.uVar(),chit.vVar()),distMethodFlag_));
           clusters[minc].addHit(ihit);
           size_t itime = size_t((chit.correctedTime()-tmin_)/tbin_);
           clusterIndices[itime].emplace_back(minc);
@@ -151,9 +151,14 @@ namespace mu2e
         cluster = clusters.erase(cluster);
       }
       else{
+        //update cluster idx and cluster time
+        float weight(0.),wtime(0.);
         for (auto& hit : (*cluster).hits()){
           BkgHits[hit].clusterIdx_ = std::distance(clusters.begin(),cluster);
+          weight += chcol[BkgHits[hit].chidx_].nStrawHits();
+          wtime += chcol[BkgHits[hit].chidx_].correctedTime()*chcol[BkgHits[hit].chidx_].nStrawHits();
         }
+        (*cluster)._time = wtime/weight;
         ++cluster;
       }
     }

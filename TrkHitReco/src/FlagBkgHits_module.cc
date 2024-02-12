@@ -61,7 +61,6 @@ namespace mu2e
       void produce(art::Event& event) override;
 
     private:
-      using BkgClustererRef = std::reference_wrapper<BkgClusterer const>;
       const art::ProductToken<ComboHitCollection> chtoken_;
       unsigned                                    minnhits_;
       unsigned                                    minnp_;
@@ -113,9 +112,19 @@ namespace mu2e
       switch ( ctype )
       {
         case TNT:
+          if(!config().TNTClustering())
+          {
+            throw cet::exception("RECO")<< "FlagBkgHits: TNTClusterer is not configured. Configure by adding\n"
+            << "physics.producers.FlagBkgHits.TNTClustering : {@table::TNTClusterer}" << std::endl;
+          }
           clusterer_ = std::make_unique<TNTClusterer>(config().TNTClustering());
           break;
         case Chi2:
+          if(!config().Chi2Clustering())
+          {
+            throw cet::exception("RECO")<< "FlagBkgHits: Chi2Clusterer is not configured. Configure by adding\n"
+            << "physics.producers.FlagBkgHits.Chi2Clustering : {@table::Chi2Clusterer}" << std::endl;
+          }
           clusterer_ = std::make_unique<Chi2Clusterer>(config().Chi2Clustering());
           break;
         default:
