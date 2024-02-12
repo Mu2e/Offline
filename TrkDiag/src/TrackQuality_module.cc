@@ -17,6 +17,7 @@
 #include "Offline/Mu2eUtilities/inc/MVATools.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 // data
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/MVAResult.hh"
@@ -70,7 +71,9 @@ namespace mu2e
     _printMVA(conf().printMVA())
     {
       produces<MVAResultCollection>();
-      mva_ = std::make_shared<TMVA_SOFIE_TrkQual_ANN1::Session>(conf().datFilename());
+
+      ConfigFileLookupPolicy configFile;
+      mva_ = std::make_shared<TMVA_SOFIE_TrkQual_ANN1::Session>(configFile(conf().datFilename()));
     }
 
   void TrackQuality::produce(art::Event& event ) {
