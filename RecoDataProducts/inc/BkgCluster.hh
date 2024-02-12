@@ -19,7 +19,7 @@ namespace mu2e
 
        //Default hit count chosen for compuational efficiency
        BkgCluster() {_hits.reserve(16);}
-       BkgCluster(TwoDPoint point, float time, float weight, distMethod method) : _point(point), _time(time), _weight(weight), _distMethod(method){_hits.reserve(16);_cpoints.addPoint(_point,0);_pos = point.pos3();_wtime = _time*_weight;}
+       BkgCluster(TwoDPoint point, distMethod method) : _point(point), _distMethod(method){_hits.reserve(16);_cpoints.addPoint(_point,0);_pos = point.pos3();}
        BkgCluster(XYZVectorF const& pos, float time, distMethod method) : _pos(pos), _time(time), _distMethod(method) {_hits.reserve(16);}
 
        float                        getKerasQ() const {return _kerasQ; }
@@ -37,21 +37,16 @@ namespace mu2e
        void clearHits()                                                     {_hits.clear();}
        void setKerasQ(float kerasQ)                                         {_kerasQ = kerasQ;}
        void addHit(unsigned val)                                            {_hits.emplace_back(val);}
-       void addHit(unsigned val, TwoDPoint point, float time, float weight) {
+       void addHit(unsigned val, TwoDPoint point) {
         _hits.push_back(val);
         _cpoints.addPoint(point,_cpoints.nPoints());
         _pos = _cpoints.point().pos3();
-        _weight += weight;
-        _wtime += time*weight;
-        _time = _wtime/_weight;
        }
 
        XYZVectorF               _pos;// ideally should be a 2d vec - FIXME
        TwoDPoint                _point;//initial point
        CombineTwoDPoints        _cpoints;//combined points
        float                    _time = 0.0;//cluster time
-       float                    _wtime;//weighted time
-       float                    _weight;//weighted by nStrawHits
        std::vector<unsigned>    _hits;
        BkgClusterFlag           _flag = BkgClusterFlag(BkgClusterFlag::update);
        float                    _kerasQ = -0.5; //result of keras result for the cluster
