@@ -63,13 +63,13 @@ namespace mu2e {
     , isNull_{config().isNull()}
   {
     if(makeplots_){
-      art::ServiceHandle<art::TFileService> tfs;
-      genTree  = tfs->make<TTree>("GenAna", "GenAna");
-      genTree->Branch("maxr", &_maxr, "maxr/F");   
-      genTree->Branch("momT", &_momT, "momT/F"); 
-      genTree->Branch("posT", &_posT, "posT/F");
-      genTree->Branch("cosTheta", &_cosTheta, "cosTheta/F");
-      genTree->Branch("time", &_time, "time/F");
+	art::ServiceHandle<art::TFileService> tfs;
+	genTree  = tfs->make<TTree>("GenAna", "GenAna");
+	genTree->Branch("maxr", &_maxr, "maxr/F");   
+	genTree->Branch("momT", &_momT, "momT/F"); 
+	genTree->Branch("posT", &_posT, "posT/F");
+	genTree->Branch("cosTheta", &_cosTheta, "cosTheta/F");
+	genTree->Branch("time", &_time, "time/F");
     }
   }
 
