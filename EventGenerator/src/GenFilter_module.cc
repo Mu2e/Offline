@@ -40,8 +40,8 @@ namespace mu2e {
       virtual bool filter(art::Event& event) override;
 
     private:
-	  	art::InputTag _SimToken;
-	  	const StageParticleCollection* _SimCol;
+      art::InputTag _SimToken;
+      const StageParticleCollection* _SimCol;
       double maxr_min_;
       double maxr_max_;
       bool makeplots_;
@@ -103,12 +103,12 @@ namespace mu2e {
       // calculate rmax and add maxr to siminfo
       _maxr =sqrt(lh.cx()*lh.cx()+lh.cy()*lh.cy())+fabs(lh.rad());
       if(makeplots_){
-        // fill other branches for plots
-        _momT =  sqrt(mom0.x()*mom0.x() + mom0.y()*mom0.y());
-        _posT = sqrt(pos.x()*pos.x() + pos.y()*pos.y());
-        _cosTheta = cos(atan2(_momT,mom0.z()));
-        _time = aParticle.time();
-        genTree->Fill();
+	// fill other branches for plots
+	_momT =  sqrt(mom0.x()*mom0.x() + mom0.y()*mom0.y());
+	_posT = sqrt(pos.x()*pos.x() + pos.y()*pos.y());
+	_cosTheta = cos(atan2(_momT,mom0.z()));
+	_time = aParticle.time();
+	genTree->Fill();
       }
       if((_maxr < maxr_max_ and _maxr > maxr_min_ )){ passed = true; }
     }
