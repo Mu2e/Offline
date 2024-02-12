@@ -58,16 +58,6 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      /*
-      -    gensTag: <art::InputTag>
-      -    trackerStepPoints: <string>
-      -    calorimeterStepPoints: <string>
-      -    caloShowerSimModuleLabel: <string>
-      -    caloCrystalModuleLabel: <string>
-      -    targetStepPoints: <string>
-      -    CRVStepPoints: <string>
-      */
-
       fhicl::Atom<int>            diagLevel{Name("diagLevel"), Comment("Level of diagnostic printout; larger = more printout."), 0};
       fhicl::Atom<art::InputTag>  gensTag{Name("gensTag"),     Comment("Input tag for generator output."), art::InputTag("generate")};
       fhicl::Atom<std::string>    generatorModuleLabel{Name("generatorModuleLabel"), Comment("Module label of event generator.")};
