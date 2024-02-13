@@ -65,7 +65,7 @@ Session(std::string filename ="") {
    std::ifstream f;
    f.open(filename);
    if (!f.is_open()){
-      throw std::runtime_error("tmva-sofie failed to open file for input weights");
+      throw std::runtime_error("tmva-sofie failed to open file \"" + filename +"\" for input weights");
    }
    std::string tensor_name;
    int length;
