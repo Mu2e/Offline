@@ -50,7 +50,6 @@ physics :
         options : {
           fillMC : true
           fillHits : true
-          fillTrkQual : false
           fillTrkPID : false
           genealogyDepth : 5
         }
@@ -59,7 +58,6 @@ physics :
       FillMCInfo : true
       FillCRVHits : true
 
-      FillTrkQualInfo : false
       FillTrkPIDInfo : false
       FillHitInfo : true
       FillTriggerInfo : false
