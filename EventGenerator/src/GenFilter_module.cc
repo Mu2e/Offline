@@ -78,12 +78,11 @@ namespace mu2e {
     bool passed = false;
     auto sim = event.getValidHandle<StageParticleCollection>(_SimToken);
     _SimCol = sim.product();
-  
     for(const auto& aParticle : *_SimCol){
     //  make momentum and position vectors
       GeomHandle<DetectorSystem> det;
       ROOT::Math::XYZVectorF pos = XYZVectorF(det->toDetector(aParticle.position()));
-      ROOT::Math::XYZTVector pos0(pos.x(), pos.y(), pos.z(), aParticle.time()); 
+      ROOT::Math::XYZTVector pos0(pos.x(), pos.y(), pos.z(), aParticle.time());
       ROOT::Math::PxPyPzMVector mom0(aParticle.momentum().x(), aParticle.momentum().y(), aParticle.momentum().z(), aParticle.momentum().t());
 
       // extract charge
@@ -112,7 +111,6 @@ namespace mu2e {
       }
       if((_maxr < maxr_max_ and _maxr > maxr_min_ )){ passed = true; }
     }
-
     return passed;
   }
 }
