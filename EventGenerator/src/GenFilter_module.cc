@@ -40,8 +40,8 @@ namespace mu2e {
       virtual bool filter(art::Event& event) override;
 
     private:
-	  	art::InputTag _SimToken;
-	  	const StageParticleCollection* _SimCol;
+      art::InputTag _SimToken;
+      const StageParticleCollection* _SimCol;
       double maxr_min_;
       double maxr_max_;
       bool makeplots_;
@@ -65,8 +65,8 @@ namespace mu2e {
     if(makeplots_){
       art::ServiceHandle<art::TFileService> tfs;
       genTree  = tfs->make<TTree>("GenAna", "GenAna");
-      genTree->Branch("maxr", &_maxr, "maxr/F");   
-      genTree->Branch("momT", &_momT, "momT/F"); 
+      genTree->Branch("maxr", &_maxr, "maxr/F");
+      genTree->Branch("momT", &_momT, "momT/F");
       genTree->Branch("posT", &_posT, "posT/F");
       genTree->Branch("cosTheta", &_cosTheta, "cosTheta/F");
       genTree->Branch("time", &_time, "time/F");
@@ -112,7 +112,7 @@ namespace mu2e {
       }
       if((_maxr < maxr_max_ and _maxr > maxr_min_ )){ passed = true; }
     }
-    
+
     return passed;
   }
 }
