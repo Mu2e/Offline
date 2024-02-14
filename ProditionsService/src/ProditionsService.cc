@@ -78,9 +78,13 @@ ProditionsService::ProditionsService(Parameters const& sTable,
   auto src =
       std::make_shared<mu2e::StrawResponseCache>(_config.strawResponse());
   _caches[src->name()] = src;
+  // tracker alignment has two templated variants, for reco and simulation
   auto atc =
-      std::make_shared<mu2e::AlignedTrackerCache>(_config.alignedTracker());
+      std::make_shared<mu2e::AlignedTrackerCacheReco>(_config.alignedTracker());
   _caches[atc->name()] = atc;
+  auto atcs =
+    std::make_shared<mu2e::AlignedTrackerCacheSim>(_config.alignedTrackerSim());
+  _caches[atcs->name()+"Sim"] = atcs;
   auto mmc = std::make_shared<mu2e::Mu2eMaterialCache>(_config.mu2eMaterial());
   _caches[mmc->name()] = mmc;
   auto mdc = std::make_shared<mu2e::Mu2eDetectorCache>(_config.mu2eDetector());

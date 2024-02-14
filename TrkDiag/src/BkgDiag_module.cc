@@ -101,6 +101,7 @@ namespace mu2e
       float _rmscposy = 0;
       float _rmscrho = 0;
       float _cchi2 = 0;
+      float _ccons = 0;
       float _ctime = 0;
       float _rmsctime = 0;
       float _avecedep = 0;
@@ -111,7 +112,8 @@ namespace mu2e
       bool _isref = false;
       bool _isolated = false;
       bool _stereo = false;
-      int _cluIdx, _nactive, _nch, _nsh, _nsha, _nbkg, _ncpoints;
+      int _cluIdx, _nactive, _nch, _nsh, _nsha, _nbkg;
+      int _cndof;
       float _crho;
       float _zmin;
       float _zmax;
@@ -167,6 +169,7 @@ namespace mu2e
     _bcdiag->Branch("rmscposy",&_rmscposy,"rmscposy/F");
     _bcdiag->Branch("rmscrho",&_rmscrho,"rmscrho/F");
     _bcdiag->Branch("cchi2",&_cchi2,"cchi2/F");
+    _bcdiag->Branch("ccons",&_ccons,"ccons/F");
     _bcdiag->Branch("ctime",&_ctime,"ctime/F");
     _bcdiag->Branch("rmsctime",&_rmsctime,"rmsctime/F");
     _bcdiag->Branch("avecedep",&_avecedep,"avecedep/F");
@@ -182,7 +185,7 @@ namespace mu2e
     _bcdiag->Branch("nactive",&_nactive,"nactive/I");
     _bcdiag->Branch("nsha",&_nsha,"nsha/I");
     _bcdiag->Branch("nbkg",&_nbkg,"nbkg/I");
-    _bcdiag->Branch("ncpoints",&_ncpoints,"ncpoints/I");
+    _bcdiag->Branch("cndof",&_cndof,"cndof/I");
     _bcdiag->Branch("cluIdx",&_cluIdx,"cluIdx/I");
     // cluster hit info branch
     if(_diag > 0)
@@ -271,8 +274,11 @@ namespace mu2e
       _crho = sqrtf(cluster.pos().perp2());
       _cpos = cluster.pos();
       _ctime = cluster.time();
-      _cchi2 = cluster.points().chisquared();
-      _ncpoints = cluster.points().nPoints();
+      if(cluster.getDistMethod() == BkgCluster::chi2){
+        _cchi2 = cluster.points().chisquared();
+        _ccons = cluster.points().consistency();
+        _cndof = cluster.points().nDOF();
+      }
       _isinit = cluster.flag().hasAllProperties(BkgClusterFlag::init);
       _isbkg = cluster.flag().hasAllProperties(BkgClusterFlag::bkg);
       _isref = cluster.flag().hasAllProperties(BkgClusterFlag::refined);
@@ -285,7 +291,6 @@ namespace mu2e
           BkgCluster const& ocluster = _bkgccol->at(jbkg);
           double dt = fabs(ocluster.time() - cluster.time());
           double drho = sqrt((ocluster.pos()-cluster.pos()).Perp2());
-//          // only look at differences whtn the other dimension difference is small
           if(dt < _mindt) _mindt = dt;
           if(drho < _mindrho) _mindrho = drho;
         }

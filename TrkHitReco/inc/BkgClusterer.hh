@@ -9,7 +9,7 @@ namespace mu2e
   class BkgClusterer
   {
     public:
-      virtual ~BkgClusterer() {}
+      virtual ~BkgClusterer() {};
       virtual void  init        () = 0;
       virtual void  findClusters(BkgClusterCollection& clusters, const ComboHitCollection& shcol, int iev) = 0;
       virtual float distance    (const BkgCluster& cluster, const ComboHit& hit) const = 0;

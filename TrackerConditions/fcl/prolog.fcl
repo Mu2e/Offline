@@ -21,6 +21,11 @@ Mu2eDetector : {
 
 AlignedTracker : {
   verbose : 0
+  useDb : true
+}
+
+AlignedTrackerSim : {
+  verbose : 0
   useDb : false
 }
 
@@ -34,7 +39,7 @@ FullReadoutStraw : {
 TrackerStatus : {
   Settings : {
     verbose : 0
-    useDb : false
+    useDb : true
   }
   Status : [
     #    [ "20_2_0", "uniquepanel", "Absent" ], # single panel is physically absent
@@ -87,7 +92,7 @@ StrawPhysics : {
 
 StrawElectronics : {
   verbose : 0
-  useDb : false
+  useDb : true
   overrideDbTimeOffsets : false
 
   defaultThresholddVdI : 8.43e6

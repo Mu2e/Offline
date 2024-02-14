@@ -84,7 +84,6 @@ physics.analyzers.TAtpr.FillCRVHits : false
 physics.analyzers.TAtpr.FillMCInfo : false
 physics.analyzers.TAtpr.RecoCountTag : ""
 physics.analyzers.TAtpr.FillTriggerInfo : true
-physics.analyzers.TAtpr.FillTrkQualInfo : false
 physics.analyzers.TAtpr.FillTrkPIDInfo : false
 physics.analyzers.TAtpr.FillHitInfo : true
 physics.analyzers.TAtpr.FillTriggerInfo : false
@@ -100,7 +99,6 @@ physics.analyzers.TAcpr.FillCRVHits : false
 physics.analyzers.TAcpr.FillMCInfo : false
 physics.analyzers.TAcpr.RecoCountTag : ""
 physics.analyzers.TAcpr.FillTriggerInfo : true
-physics.analyzers.TAcpr.FillTrkQualInfo : false
 physics.analyzers.TAcpr.FillTrkPIDInfo : false
 physics.analyzers.TAcpr.FillHitInfo : true
 physics.analyzers.TAcpr.FillTriggerInfo : false
