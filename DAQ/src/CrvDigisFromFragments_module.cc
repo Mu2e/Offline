@@ -113,21 +113,34 @@ void CrvDigisFromFragments::produce(Event& event)
       auto block = CRVDataDecoder.dataAtBlockIndex(iDataBlock);
       if(block == nullptr)
       {
-        std::cerr << "Unable to retrieve block " << iDataBlock << "!" << std::endl;
+        std::cerr << "Unable to retrieve block in ";
+        std::cerr << "fragment: " << idx << " data block: "<< iDataBlock << std::endl;
         continue;
       }
       auto header = block->GetHeader();
+/*
+      if(!header->isValid())
+      {
+        std::cerr << "CRV packet is not valid in " << std::endl;
+        std::cerr << "fragment: " << idx << " data block: "<< iDataBlock << std::endl;
+        std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
+        continue;
+      }
+*/
       if(header->GetSubsystemID() != DTCLib::DTC_Subsystem::DTC_Subsystem_CRV)
       {
-        throw cet::exception("DATA") << " CRV packet does not have system ID 2";
+        std::cerr << "CRV packet does not have system ID 2 in " << std::endl;
+        std::cerr << "fragment: " << idx << " data block: "<< iDataBlock << std::endl;
+        std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
+        continue;
       }
-
       if(header->GetPacketCount() > 0)
       {
         auto crvRocHeader = CRVDataDecoder.GetCRVROCStatusPacket(iDataBlock);
         if(crvRocHeader == nullptr)
         {
-          std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock " << iDataBlock << std::endl;
+          std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock in " << iDataBlock << std::endl;
+          std::cerr << "fragment: " << idx << " data block: "<< iDataBlock << std::endl;
           continue;
         }
 
