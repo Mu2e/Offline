@@ -171,6 +171,7 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
         ++nFrags;
       }
 
+/*
       //FIXME: Temporary implementation until the DTC header gets fixed.
       //Currently, the DTC header uses the Subsystem ID for the tracker.
       //Checking the TDAQ header of the first data block instead.
@@ -190,6 +191,7 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
           ++nFrags;
         }
       }
+*/
     }
   }
 

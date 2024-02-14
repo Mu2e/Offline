@@ -13,7 +13,7 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
       [
         {
           CRVSector : "EX"
-          PEthreshold : 20  //PEs
+          PEthreshold : 10  //PEs
           maxTimeDifferenceAdjacentPulses : 10  //ns
           maxTimeDifference : 20  //ns
           minOverlapTimeAdjacentPulses : 30  //ns
