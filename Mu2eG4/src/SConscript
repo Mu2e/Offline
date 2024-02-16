@@ -182,7 +182,10 @@ G4GLOBALIBS = [
 
 if g4vis != 'none':
     G4GLOBALIBS.append('libG4OpenGL')
-    G4GLOBALIBS.append('libG4gl2ps')
+    if g4_version < '4111':
+        G4GLOBALIBS.append('libG4gl2ps')
+    else :
+        G4GLOBALIBS.append('libG4ToolsSG')
 
 if g4vg != 'off':
     G4GLOBALIBS.append('libvecgeom')
