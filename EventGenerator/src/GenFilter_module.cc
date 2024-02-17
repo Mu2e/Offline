@@ -94,8 +94,7 @@ namespace mu2e {
       mu2e::GeomHandle<mu2e::Tracker> tracker;
       auto tracker_origin = det->toMu2e(tracker->origin());
       //XYZVectorF pos3Vec = XYZVectorF(aParticle.position().x(),aParticle.position().y(),aParticle.position().z());
-      XYZVectorF pos3Vec = XYZVectorF(tracker_origin.x(),tracker_origin.y(),tracker_origin.z());
-      ROOT::Math::XYZVector bnom(bfmgr->getBField(pos3Vec).x(),bfmgr->getBField(pos3Vec).y(),bfmgr->getBField(pos3Vec).z());
+      ROOT::Math::XYZVector bnom(bfmgr->getBField(tracker_origin));
 
       // make the loophelix
       KinKal::LoopHelix lh(pos0, mom0, charge, bnom);
