@@ -28,6 +28,7 @@ namespace mu2e {
   struct SimPartStub {
     typedef art::Ptr<SimParticle> SPPtr;
     typedef art::Handle<SimParticleCollection> SPCH;
+    typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double> > LVPM;
     PDGCode::type _pdg; // code of this particle
     ProcessCode _proc; // particle creation process
     GenId _gid; // generator code
