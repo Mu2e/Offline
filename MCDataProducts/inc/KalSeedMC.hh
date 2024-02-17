@@ -35,8 +35,7 @@ namespace mu2e {
     uint16_t _nhits; // number of associated StrawHits
     uint16_t _nactive; // number of associated active hits
     XYZTVectorF   _mom; // initial momentum
-    XYZVectorF _pos; // initial position
-    double _time; //global start time
+    XYZTVectorF _pos; // initial position
     cet::map_vector_key _spkey; // key to the SimParticle
     // construct a Ptr from Handle and key
     SPPtr simParticle(SPCH spcH) const { return SPPtr(spcH,_spkey.asUint()); }
@@ -44,7 +43,7 @@ namespace mu2e {
     // partial constructor from a SimParticle;
     SimPartStub(SPPtr const& spp)  : _pdg(spp->pdgId()),
     _proc(spp->creationCode()), _gid(GenId::unknown), _rel(MCRelationship::none),
-    _nhits(0), _nactive(0), _mom(XYZTVectorF(spp->startMomentum())),  _pos(CLHEP::Hep3Vector(spp->startPosition())), _time(spp->startGlobalTime()), _spkey(spp.key()){
+    _nhits(0), _nactive(0), _mom(XYZTVectorF(spp->startMomentum())),  _pos(CLHEP::Hep3Vector(spp->startPosition()).x(),CLHEP::Hep3Vector(spp->startPosition()).y(),CLHEP::Hep3Vector(spp->startPosition()).z(),spp->startGlobalTime() ), _spkey(spp.key()){
     // dig down to the GenParticle
       auto simPtr = spp;
       while (simPtr->genParticle().isNull() && simPtr->parent().isNonnull()) {
