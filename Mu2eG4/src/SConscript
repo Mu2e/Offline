@@ -176,8 +176,7 @@ G4GLOBALIBS = [
               'libG4track',
               'libG4tracking',
               'libG4visHepRep',
-              'libG4vis_management',
-              'libG4zlib'
+              'libG4vis_management'
               ]
 
 if g4vis != 'none':
