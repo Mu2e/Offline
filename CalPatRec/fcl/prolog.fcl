@@ -362,8 +362,8 @@ CalPatRec : { @table::CalPatRec
                 pickupProtonHits        : 1                     # the third step of proton finding
 
                 timeBin                 : 40                    # ns, prev: 50 (use 40 with makePH.maxDS=5)
-                minHitTime              : 350.                  # ns
-                minimumTime             : 400.                  # ns
+                minHitTime              : 350.                  # ns, not used
+                minimumTime             : 400.                  # ns, not used
                 maximumTime             : 1750.                 # ns
                 maxDeltaEDep            : 0.004                 # max allowed delta eDep
                 maxSeedEDep             : 0.005                 # max allowed seed eDep
