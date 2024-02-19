@@ -119,6 +119,7 @@ void CrvDigisFromFragments::produce(Event& event)
       }
       auto header = block->GetHeader();
 /*
+//TODO: Enable once isValid function is available
       if(!header->isValid())
       {
         std::cerr << "CRV packet is not valid in " << std::endl;
