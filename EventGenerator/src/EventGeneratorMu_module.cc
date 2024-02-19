@@ -1,6 +1,7 @@
 //-----------------------------------------------------------------------------
-// keep is simple - generic generator module which uses plugins to
-// generate various signal processes
+// P.M. : keep is simple - generic generator module which uses plugins
+//        to generate various signal processes
+//        probably could do for pions as well
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <string>
@@ -114,7 +115,7 @@ namespace mu2e {
       art::Handle<SimParticleCollection> simpch;
       event.getByLabel<SimParticleCollection>(_simpCollTag,simpch);
       if (not simpch.isValid()) {
-        printf("EventGeneratorMu::%s ERROR: can\'t find SimParticleCollection tag=%s, BAIL OUT",
+        printf("EventGeneratorMu::%s ERROR: can\'t find SimParticleCollection tag=%s, BAIL OUT\n",
                __func__,_simpCollTag.encode().data());
         return;
       }
