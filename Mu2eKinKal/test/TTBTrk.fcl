@@ -7,14 +7,8 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"
 #include "Production/JobConfig/reco/prolog.fcl"
-#include "Offline/Mu2eKinKal/fcl/prolog_trigger.fcl"
-#include "Offline/TrkHitReco/fcl/prolog_trigger.fcl"
-#include "Offline/TrkReco/fcl/prolog_trigger.fcl"
-#include "Offline/TrkPatRec/fcl/prolog_trigger.fcl"
-#include "Offline/TrkFilters/fcl/prolog_trigger.fcl"
-#include "Offline/CalPatRec/fcl/prolog.fcl"
-#include "Offline/CalPatRec/fcl/prolog_trigger.fcl"
-#include "Offline/Trigger/fcl/prolog_trigger.fcl"
+#include "mu2e_trig_config/gen/trig_physMenuPSConfig_OnSpill.fcl"
+#include "mu2e_trig_config/gen/trig_physMenu_OnSpill.fcl"
 #include "TrkAna/fcl/prolog.fcl"
 #include "Offline/CommonMC/fcl/prolog.fcl"
 
@@ -23,59 +17,49 @@ source : { module_type : RootInput }
 services : @local::Services.Reco
 physics :
 {
-  producers : {
-    @table::CaloHitRecoTrigger.producers
-    @table::CaloClusterTrigger.producers
-    @table::TrkHitRecoTrigger.producers
-    @table::TrkRecoTrigger.producers
-    @table::TrkHitRecoTrigger.producers
-    @table::TprTrigger.producers
-    @table::CprTrigger.producers
-    @table::TTMu2eKinKal.producers
-  }
-  filters : {
-    @table::CprTrigger.filters
-    @table::CaloFilters.filters
-    @table::TrkFilters.filters
-    @table::CstTrigger.filters
-    @table::Trigger.filters
-  }
+   @table::TrigSequences
+   producers : { @table::TrigProducers.producers }
 
-  analyzers : {
-    TAtpr : @local::TrkAnaReco.analyzers.TrkAnaNeg
-    evtprint : {
-      module_type : RunSubrunEvent
-      printSam    : false
-      printRun    : false
-      printSubrun : false
-      printEvent  : true
-    }
-    TAcpr : @local::TrkAnaReco.analyzers.TrkAnaNeg
-    evtprint : {
-      module_type : RunSubrunEvent
-      printSam    : false
-      printRun    : false
-      printSubrun : false
-      printEvent  : true
-    }
-  }
-  EndPath : [TAtpr, TAcpr]
+   filters : {
+      @table::TrigFilters.filters
+      @table::Trig_physMenuPSConfig
+   }
 
-  tprDeM_highP_stopTarg           : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-    @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-    TTtimeClusterFinder, tprDeMHighPStopTargTCFilter, TThelixFinder,
-    TTHelixMergerDeM, tprDeMHighPStopTargHSFilter,
-    TTKSFDeM, tprDeMHighPStopTargTSFilter ]
-  cprDeM_highP_stopTarg           : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-    @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-    TTCalTimePeakFinder, cprDeMHighPStopTargTCFilter, TTCalHelixFinderDe,
-    TTCalHelixMergerDeM, cprDeMHighPStopTargHSFilter,
-    TTCalSeedFitDem, cprDeMHighPStopTargTSFilter]
+   analyzers : {
+      TAtpr : @local::TrkAnaReco.analyzers.TrkAnaNeg
+      evtprint : {
+         module_type : RunSubrunEvent
+         printSam    : false
+         printRun    : false
+         printSubrun : false
+         printEvent  : true
+      }
+      TAcpr : @local::TrkAnaReco.analyzers.TrkAnaNeg
+      evtprint : {
+         module_type : RunSubrunEvent
+         printSam    : false
+         printRun    : false
+         printSubrun : false
+         printEvent  : true
+      }
+   }
+   EndPath : [TAtpr, TAcpr]
+
+   tprDeM_highP_stopTarg           : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
+      @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
+      TTtimeClusterFinder, tprDeMHighPStopTargTCFilter, TThelixFinder,
+      TTHelixMergerDeM, tprDeMHighPStopTargHSFilter,
+      TTKSFDeM, tprDeMHighPStopTargTSFilter ]
+   cprDeM_highP_stopTarg           : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
+      @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
+      TTCalTimePeakFinder, cprDeMHighPStopTargTCFilter, TTCalHelixFinderDe,
+      TTCalHelixMergerDeM, cprDeMHighPStopTargHSFilter,
+      TTCalSeedFitDem, cprDeMHighPStopTargTSFilter]
 
 }
-#include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
 physics.trigger_paths : [tprDeM_highP_stopTarg, cprDeM_highP_stopTarg ]
 physics.end_paths : [ EndPath ]
+#include "mu2e_trig_config/core/trigDigiInputsEpilog.fcl"
 
 physics.analyzers.TAtpr.SelectEvents : [  tprDeM_highP_stopTarg  ]
 physics.analyzers.TAtpr.candidate.options : @local::AllOpt
