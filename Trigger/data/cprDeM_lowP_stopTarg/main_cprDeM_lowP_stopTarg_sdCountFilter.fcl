@@ -1,9 +1,0 @@
-physics.filters.cprDeMLowPStopTargSDCountFilter.caloDigiCollection  : notUsed
-physics.filters.cprDeMLowPStopTargSDCountFilter.useStrawDigi        : true
-physics.filters.cprDeMLowPStopTargSDCountFilter.useCaloDigi         : false
-physics.filters.cprDeMLowPStopTargSDCountFilter.minNStrawDigi       : 10
-physics.filters.cprDeMLowPStopTargSDCountFilter.maxNStrawDigi       : 10000
-physics.filters.cprDeMLowPStopTargSDCountFilter.minNCaloDigi        : -1
-physics.filters.cprDeMLowPStopTargSDCountFilter.maxNCaloDigi        : -1
-physics.filters.cprDeMLowPStopTargSDCountFilter.maxCaloEnergy       : -1
-
