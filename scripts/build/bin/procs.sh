@@ -93,6 +93,14 @@ elif [ "$COMMAND" == "GDML"  ]; then
     [ $? -ne 0 ] && RC=1
     /bin/mv mu2e.gdml ${MUSE_BUILD_BASE}/Offline/gen/gdml/mu2e_extracted.gdml
     [ $? -ne 0 ] && RC=1
+
+    # make the current gdml file
+    cp Offline/Mu2eG4/fcl/gdmldump.fcl $TMPF
+    echo "services.GeometryService.inputFile : \"Offline/Mu2eG4/geom/geom_common_current.txt\"" >> $TMPF
+    mu2e -c $TMPF
+    [ $? -ne 0 ] && RC=1
+    /bin/mv mu2e.gdml ${MUSE_BUILD_BASE}/Offline/gen/gdml/mu2e_current.gdml
+    [ $? -ne 0 ] && RC=1
     rm -f $TMPF
 
 elif [ "$COMMAND" == "TEST03"  ]; then
