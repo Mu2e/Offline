@@ -70,20 +70,20 @@ namespace mu2e {
     CLHEP::RandFlat*   _rndFlat;
     bool               _correlateAngleOverKE; //add or remove correlation that disappeared in GEANT 4.10.4p03b --> 4.10.5.p01a
     double             _me; // electron mass
-    const double nele = 2.;
-    const double eps0max = 0.5; // photon energy>2*me <=> me<= 0.5 * photonenergy
-    const double min_gamma_energy = 2.; //MeV
-    const double middle_energy = 50.; // MeV
-    const double DF_const=136.; // delta factor constant
-    const double FZ_const=8.; // FZ constant
-    const double DM_const=4.; // delta min constant
-    const double cubic_root=1./3.;
-    const double deltamin=1.4;
-    std::array <const double,3> sf1a={42.038,-8.29,0.958}; // screen 1 function pars for delta>deltamin
-    std::array <const double,3> sf1b={42.184,7.444,-1.623};// screen 1 function pars for delta<=deltamin
-    std::array <const double,3> sf2b={41.326,5.848,-0.902}; // screen 2 function pars for delta<=deltamin
-    const double u_const=2.;
-    const int z_max=121;
+    static constexpr double nele = 2.;
+    static constexpr double eps0max = 0.5; // photon energy>2*me <=> me<= 0.5 * photonenergy
+    static constexpr double min_gamma_energy = 2.; //MeV
+    static constexpr double middle_energy = 50.; // MeV
+    static constexpr double DF_const=136.; // delta factor constant
+    static constexpr double FZ_const=8.; // FZ constant
+    static constexpr double DM_const=4.; // delta min constant
+    static constexpr double cubic_root=1./3.;
+    static constexpr double deltamin=1.4;
+    static constexpr std::array <double,3> sf1a={42.038,-8.29,0.958}; // screen 1 function pars for delta>deltamin
+    static constexpr std::array <double,3> sf1b={42.184,7.444,-1.623};// screen 1 function pars for delta<=deltamin
+    static constexpr std::array <double,3> sf2b={41.326,5.848,-0.902}; // screen 2 function pars for delta<=deltamin
+    static constexpr double u_const=2.;
+    static constexpr int z_max=121;
   };
 
 } // end of namespace mu2e
