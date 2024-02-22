@@ -2,7 +2,6 @@
 // Mu2e includes
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-//#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 // Framework includes
@@ -28,9 +27,9 @@ namespace mu2e {
 
   //get a random conversion event
   void GammaPairConversionSpectrum::fire(const CLHEP::HepLorentzVector &photon,
-      GammaPairConversionSpectrum::elementData &material,
-      CLHEP::HepLorentzVector &electron,
-      CLHEP::HepLorentzVector &positron) {
+    GammaPairConversionSpectrum::elementData &material,
+    CLHEP::HepLorentzVector &electron,
+    CLHEP::HepLorentzVector &positron) {
     if(photon.e() < nele*_me)
       throw cet::exception("ERROR") << "GammaPairConversion::fire:  Photon energy below conversion threshold!";
     if(material.z < 1)
@@ -41,9 +40,9 @@ namespace mu2e {
 
   //select a random element and then get a random conversion event
   void GammaPairConversionSpectrum::fire(const CLHEP::HepLorentzVector &photon,
-      GammaPairConversionSpectrum::materialData &material,
-      CLHEP::HepLorentzVector &electron,
-      CLHEP::HepLorentzVector &positron) {
+    GammaPairConversionSpectrum::materialData &material,
+    CLHEP::HepLorentzVector &electron,
+    CLHEP::HepLorentzVector &positron) {
     if(photon.e() < nele*_me)
       throw cet::exception("ERROR") << "GammaPairConversion::fire: Photon energy below conversion threshold!";
     if(material.elementDatas.size() < 1)
@@ -127,7 +126,7 @@ namespace mu2e {
       CLHEP::Hep3Vector positron_dir, electron_dir;
       //sample from anglular distribution from Modified Tsai spectrum
       GammaPairConversionSpectrum::samplePairDirections(photon, electron_ke,
-        positron_ke,electron_dir, positron_dir);
+         positron_ke,electron_dir, positron_dir);
 
       //set electron and positron lorentz vectors
       electron_dir.setMag(std::sqrt(electron_energy*electron_energy - _me*_me)); //use as p vector
@@ -159,8 +158,9 @@ namespace mu2e {
   }
 
   //From G4ModifiedTsai::SamplePairDirections
-  void GammaPairConversionSpectrum::samplePairDirections(const CLHEP::HepLorentzVector &photon, double electron_ke,
-    double positron_ke, CLHEP::Hep3Vector &electron_dir,CLHEP::Hep3Vector &positron_dir) {
+  void GammaPairConversionSpectrum::samplePairDirections(const CLHEP::HepLorentzVector &photon,
+    double electron_ke,double positron_ke, CLHEP::Hep3Vector &electron_dir,
+    CLHEP::Hep3Vector &positron_dir) {
     CLHEP::Hep3Vector photon_dir(photon.vect());
     photon_dir.setMag(1.);
 

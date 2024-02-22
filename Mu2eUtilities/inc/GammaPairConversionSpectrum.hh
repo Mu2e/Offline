@@ -1,9 +1,6 @@
 #ifndef Mu2eUtilities_GammaPairConversionSpectrum_hh
 #define Mu2eUtilities_GammaPairConversionSpectrum_hh
 
-// Mu2e includes
-// #include "Mu2eUtilities/inc/Table.hh"
-
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
