@@ -23,7 +23,6 @@
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
-#include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/Mu2eUtilities/inc/GammaPairConversionSpectrum.hh"
@@ -40,8 +39,6 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<std::string> physVolModuleLabel{Name("physVolModuleLabel"),Comment("module creating physical volumes")};
-      fhicl::Atom<std::string> physVolProcessLabel{Name("physVolProcessLabel"),Comment("module creating physical volumes"),"Primary"};
       fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input converted photons.")};
       fhicl::Atom<std::string> stopMaterial{Name("stopMaterial"),Comment("G4 name of the material where the photon has converted (temporary)."),"ST_Wires"};
       fhicl::Atom<unsigned> verbosity{Name("verbosity")};
@@ -52,15 +49,10 @@ namespace mu2e {
     explicit GammaConvGenerator(const Parameters& conf);
 
     void produce(art::Event& event) override;
-    void beginRun(art::Run&   r) override;
+    void beginSubRun(art::SubRun& subrun) override;
 
     //----------------------------------------------------------------
   private:
-
-    // Module label of the module that made the volume.
-    std::string physVolModuleLabel_;
-    // Module label of the last process that wrote the volume list.
-    std::string physVolProcessLabel_;
 
     art::ProductToken<SimParticleCollection> const simsToken_;
     std::string stopMaterial_;
@@ -80,8 +72,6 @@ namespace mu2e {
   //================================================================
   GammaConvGenerator::GammaConvGenerator(const Parameters& conf)
     : EDProducer{conf}
-    , physVolModuleLabel_{conf().physVolModuleLabel()}
-    , physVolProcessLabel_{conf().physVolProcessLabel()}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , stopMaterial_{conf().stopMaterial()}
     , verbosity_{conf().verbosity()}
@@ -95,52 +85,23 @@ namespace mu2e {
   }
 
   //================================================================
-  void GammaConvGenerator::beginRun( art::Run &run){
+  void GammaConvGenerator::beginSubRun( art::SubRun &subrun){
 
-    //
-    // Handle to information about G4 physical volumes.
-    bool PhysicalVolumeInfoFound=false;
-    std::string wantedbranch="mu2e::PhysicalVolumeInfomvs_"+physVolModuleLabel_+"_eventlevel_"+physVolProcessLabel_+".";
-    if (verbosity_>2) std::cout << "Searching for " << wantedbranch << std::endl;
-
-    std::vector< art::Handle<PhysicalVolumeInfoMultiCollection> > vah = run.getMany<PhysicalVolumeInfoMultiCollection>();
-    art::Handle<PhysicalVolumeInfoMultiCollection> PhysicalVolumeInfos;
-
-    for (auto const & ah : vah){
-      std::string branchName = ah.provenance()->productDescription().branchName();
-      if (verbosity_>2) std::cout << "PHYSICALVOLUMEINFO COLLECTION: " << branchName << std::endl;
-      if (branchName==wantedbranch){
-        PhysicalVolumeInfoFound=true;
-        PhysicalVolumeInfos=ah;
-        if (verbosity_>2){
-          std::cout << "PHYSICALVOLUMEINFO COLLECTION FOUND" << std::endl;
-          std::cout << PhysicalVolumeInfos << std::endl;
-        }
-      }
-    }
-    if (!PhysicalVolumeInfoFound){
-      throw   cet::exception("NO PHYSICALVOLUMEINFO COLLECTION")
-        <<"GammaConvGenerator::produce(): no suitable PhysicalVolume collection\n";
-    }
-    if (PhysicalVolumeInfos->empty()){
-      throw   cet::exception("EMPTY PHYSICALVOLUMEINFO COLLECTION")
-        <<"GammaConvGenerator::produce(): PhysicalVolume collection is empty\n";
-    }
     G4String const& stopmat=stopMaterial_;
     G4Material*stopMat = findMaterialOrThrow(stopmat);
     auto elements= stopMat->GetElementVector();
-    auto eleFracs= stopMat->GetFractionVector();
-    unsigned long ele_size=elements->size();
+    auto const& eleFracs= stopMat->GetFractionVector();
+    size_t ele_size=elements->size();
     if (ele_size > kMaxConversionMaterialElements) {
       throw cet::exception("TOO MANY MATERIAL ELEMENTS")
        << ele_size << " while maximum allowed is " << kMaxConversionMaterialElements << "\n";
     }
     //create a corresponding material
-    for (unsigned long iele=0;iele<ele_size;iele++){
+    for (size_t iele=0;iele<ele_size;++iele){
       materialData_.elementDatas.push_back(spectrum_->GetElementMap()[(int)elements->at(iele)->GetZ()]);
       materialData_.elementFractions.push_back(eleFracs[iele]);
       if (verbosity_>1){
-         std::cout << "Z= " << elements->at(iele)->GetZ() << " frac=" << eleFracs[iele] << std::endl;
+        std::cout << "Z= " << elements->at(iele)->GetZ() << " frac=" << eleFracs[iele] << std::endl;
       }
     }
 
