@@ -18,11 +18,9 @@
 namespace mu2e {
   GammaPairConversionSpectrum::GammaPairConversionSpectrum(CLHEP::RandFlat* rndFlat, bool correlateAngleOverKE):
     _rndFlat             (rndFlat),
-    _correlateAngleOverKE(correlateAngleOverKE),
-    _gMaxZet             (120){
+    _correlateAngleOverKE(correlateAngleOverKE){
 
     GlobalConstantsHandle<ParticleDataList> pdt;
-    //    _me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
     _me    = pdt->particle(PDGCode::e_minus ).mass();
     //initialize some element data
     GammaPairConversionSpectrum::initializeElementData();
@@ -30,77 +28,68 @@ namespace mu2e {
 
   //get a random conversion event
   void GammaPairConversionSpectrum::fire(const CLHEP::HepLorentzVector &photon,
-         GammaPairConversionSpectrum::elementData &material,
-         CLHEP::HepLorentzVector &electron,
-         CLHEP::HepLorentzVector &positron) {
-    if(photon.e() < 2.*_me)
-      throw cet::exception("ERROR") << "GammaPairConversion::" << __func__
-         << " Photon energy below conversion threshold!";
+      GammaPairConversionSpectrum::elementData &material,
+      CLHEP::HepLorentzVector &electron,
+      CLHEP::HepLorentzVector &positron) {
+    if(photon.e() < nele*_me)
+      throw cet::exception("ERROR") << "GammaPairConversion::fire:  Photon energy below conversion threshold!";
     if(material.z < 1)
-      throw cet::exception("ERROR") << "GammaPairConversion::" << __func__
-         << " Conversion material has a Z < 1!";
+      throw cet::exception("ERROR") << "GammaPairConversion::fire: Conversion material has a Z < 1!";
     //sample the actual spectrum
     betheHeitlerModel(photon, material, electron, positron);
   }
 
   //select a random element and then get a random conversion event
   void GammaPairConversionSpectrum::fire(const CLHEP::HepLorentzVector &photon,
-         GammaPairConversionSpectrum::materialData &material,
-         CLHEP::HepLorentzVector &electron,
-         CLHEP::HepLorentzVector &positron) {
-    if(photon.e() < 2.*_me)
-      throw cet::exception("ERROR") << "GammaPairConversion::" << __func__
-         << " Photon energy below conversion threshold!";
-    if(material.elements.size() < 1)
-      throw cet::exception("ERROR") << "GammaPairConversion::" << __func__
-         << " Conversion material has no elements!";
+      GammaPairConversionSpectrum::materialData &material,
+      CLHEP::HepLorentzVector &electron,
+      CLHEP::HepLorentzVector &positron) {
+    if(photon.e() < nele*_me)
+      throw cet::exception("ERROR") << "GammaPairConversion::fire: Photon energy below conversion threshold!";
+    if(material.elementDatas.size() < 1)
+      throw cet::exception("ERROR") << "GammaPairConversion::fire: Conversion material has no elements!";
     //select a random element
-    double r, frac;
-    unsigned nElements = material.elements.size(), index;
+    double r=0., frac=0.;
+    unsigned nElements = material.elementDatas.size(), index=0;
     do {
       r = _rndFlat->fire();
-      index = (unsigned) nElements*_rndFlat->fire();
+      index = (unsigned) _rndFlat->fireInt(nElements);
       frac = material.elementFractions[index];
     } while(r > frac);
     //fire with the specific material
-    fire(photon, material.elements[index], electron, positron);
+    fire(photon, material.elementDatas[index], electron, positron);
   }
 
   //recommended spectrum to use for photon energies below 80 GeV
   //From G4BetheHeitlerModel::SampleSecondaries
   void GammaPairConversionSpectrum::betheHeitlerModel(const CLHEP::HepLorentzVector &photon,
-      GammaPairConversionSpectrum::elementData &material,
-      CLHEP::HepLorentzVector &electron,
-      CLHEP::HepLorentzVector &positron){
+    GammaPairConversionSpectrum::elementData &material,
+    CLHEP::HepLorentzVector &electron,
+    CLHEP::HepLorentzVector &positron){
 
     double photon_energy = photon.e();
     double eps0          = _me/photon_energy;
     //must have at least 2*_me energy to convert
-    if(eps0 > 0.5) return;
+    if(eps0 > eps0max) return;
 
-    double eps;
-    double small_energy = 2.; //MeV
-    if(photon_energy < small_energy) {
-      //simple case if low energy conversion
-      eps = eps0 + (0.5-eps0)*_rndFlat->fire();
-    } else {
+    double eps=0.;
+    if(photon_energy >= min_gamma_energy) {
       //higher energy conversion (but BetheHeitlerModel used for < 80 GeV)
-      double middle_energy = 50.; // MeV
-      double deltaFactor = 136.*eps0/(material.z3);
+      double deltaFactor = DF_const*eps0/(material.z3);
       double deltaMax = material.deltaMaxLow;
-      double FZ = 8.*(material.logZ3);
+      double FZ = FZ_const*(material.logZ3);
       if(photon_energy > middle_energy) {
-        FZ += 8.*(material.fCoulomb);
+        FZ += FZ_const*(material.fCoulomb);
         deltaMax = material.deltaMaxHigh;
       }
-      double deltaMin = 4.*deltaFactor;
+      double deltaMin = DM_const*deltaFactor;
       //limits of esp
-      double epsp = 0.5 - 0.5*std::sqrt(1.-deltaMin/deltaMax);
+      double epsp = eps0max - eps0max*std::sqrt(1.-deltaMin/deltaMax);
       double epsMin = std::max(eps0, epsp);
-      double epsRange = 0.5 - epsMin;
+      double epsRange = eps0max - epsMin;
 
       //sample the energy rate (eps) of the created electron (or positron)
-      double F10, F20;
+      double F10=0., F20=0.;
       GammaPairConversionSpectrum::screenFunction12(deltaMin, F10, F20);
       F10 -= FZ;
       F20 -= FZ;
@@ -109,12 +98,12 @@ namespace mu2e {
       const double normCond = normF1 / (normF1 + normF2);
       //three random numbers per sampling
       double greject = 0.;
-      double rndnum;
+      double rndnum=0.;
       do {
         rndnum = _rndFlat->fire();
         if(normCond > rndnum) {
           rndnum = _rndFlat->fire();
-          eps = 0.5 - epsRange * pow(rndnum,1./3.); //G4Pow::A13(rand) = rand^(1/3)
+          eps = eps0max - epsRange * pow(rndnum,cubic_root); //G4Pow::A13(rand) = rand^(1/3)
           const double delta = deltaFactor/(eps*(1.-eps));
           greject = (GammaPairConversionSpectrum::screenFunction1(delta) - FZ)/F10;
         } else {
@@ -138,7 +127,7 @@ namespace mu2e {
       CLHEP::Hep3Vector positron_dir, electron_dir;
       //sample from anglular distribution from Modified Tsai spectrum
       GammaPairConversionSpectrum::samplePairDirections(photon, electron_ke,
-          positron_ke,electron_dir, positron_dir);
+        positron_ke,electron_dir, positron_dir);
 
       //set electron and positron lorentz vectors
       electron_dir.setMag(std::sqrt(electron_energy*electron_energy - _me*_me)); //use as p vector
@@ -152,26 +141,26 @@ namespace mu2e {
 
   //from G4BetheHeitlerModel::ScreenFunction1
   double GammaPairConversionSpectrum::screenFunction1(const double delta) {
-    return (delta > 1.4) ? 42.038 - 8.29*log(delta + 0.958) : 42.184 - delta*(7.444 - 1.623*delta);
+    return (delta > deltamin) ? sf1a[0]+sf1a[1]*log(delta + sf1a[2]) : sf1b[0] - delta*(sf1b[1] + sf1b[2]*delta);
   }
   //from G4BetheHeitlerModel::ScreenFunction2
   double GammaPairConversionSpectrum::screenFunction2(const double delta) {
-    return (delta > 1.4) ? 42.038 - 8.29*log(delta + 0.958) : 41.326 - delta*(5.848 - 0.902*delta);
+    return (delta > deltamin) ? sf1a[0]+sf1a[1]*log(delta + sf1a[2]) : sf2b[0] - delta*(sf2b[1] + sf2b[2]*delta);
   }
   //from G4BetheHeitlerModel::ScreenFunction12
   void GammaPairConversionSpectrum::screenFunction12(const double delta, double &f1, double &f2) {
-    if (delta > 1.4) {
-      f1 = 42.038 - 8.29*log(delta + 0.958);
+    if (delta > deltamin) {
+      f1 = sf1a[0]+sf1a[1]*log(delta + sf1a[2]);
       f2 = f1;
     } else {
-      f1 = 42.184 - delta*(7.444 - 1.623*delta);
-      f2 = 41.326 - delta*(5.848 - 0.902*delta);
+      f1 = sf1b[0] - delta*(sf1b[1] + sf1b[2]*delta);
+      f2 = sf2b[0] - delta*(sf2b[1] + sf2b[2]*delta);
     }
   }
 
   //From G4ModifiedTsai::SamplePairDirections
   void GammaPairConversionSpectrum::samplePairDirections(const CLHEP::HepLorentzVector &photon, double electron_ke,
-  double positron_ke, CLHEP::Hep3Vector &electron_dir,CLHEP::Hep3Vector &positron_dir) {
+    double positron_ke, CLHEP::Hep3Vector &electron_dir,CLHEP::Hep3Vector &positron_dir) {
     CLHEP::Hep3Vector photon_dir(photon.vect());
     photon_dir.setMag(1.);
 
@@ -204,7 +193,7 @@ namespace mu2e {
 
   //From G4ModifiedTsai::SampleCosTheta(G4double kinEnergy)
   double GammaPairConversionSpectrum::sampleCosTheta(double ke) {
-    double uMax = 2.*(1. + ke/_me);
+    double uMax = u_const*(1. + ke/_me);
     static const double a1 = 1.6;
     static const double a2 = a1/3.;
     static const double border = 0.25;
@@ -217,7 +206,7 @@ namespace mu2e {
       u = (border > rndnum1) ? uu*a1 : uu*a2;
     } while(u > uMax);
     //in GEANT 4.10.p03b used cos(u*me/ke) ~ 1 - (u*me/ke)^2 / 2 = 1 - 2*u^2/ (2 ke/me)^2 ~ 1 - 2*u^2/(2*(1+ke/me))^2
-    return 1. - 2.*u*u/uMax/uMax;
+    return 1. - u_const*u*u/uMax/uMax;
   }
 
   //From G4BetheHeitlerModel::SampleSecondaries, used in 4.10.4.p03b
@@ -234,23 +223,22 @@ namespace mu2e {
   }
 
   void GammaPairConversionSpectrum::initializeElementData() {
-    for(int z = 1; z < 121; ++z) {
-      double z3 = pow(z, 1./3.);
+    for(int z = 1; z < z_max; ++z) {
+      double z3 = pow(z, cubic_root);
       //from G4Element::ComputeCoulombFactor()
       const double k1 = 0.0083, k2 = 0.20206, k3 = 0.0020, k4 = 0.0369;
-      const double alpha = 1./137.036; //fine structure constant
-      double az2 = (alpha*z)*(alpha*z); //should use effective z!
+      double az2 = (CLHEP::fine_structure_const*z)*(CLHEP::fine_structure_const*z); //should use effective z!
       double az4 = az2*az2;
       double fCoulomb = (k1*az4 + k2 + 1./(1.+az2))*az2 - (k3*az4 + k4)*az4;
-      double FZLow = 8.*log(z3);
-      double FZHigh = FZLow + 8.*fCoulomb;
-      GammaPairConversionSpectrum::elementData data;
-      data.fCoulomb = fCoulomb;
-      data.z = z;
-      data.z3 = z3;
-      data.logZ3 = log(z)/3.;
-      data.deltaMaxLow  = exp((42.038 - FZLow )/8.29) - 0.958;
-      data.deltaMaxHigh = exp((42.038 - FZHigh)/8.29) - 0.958;
+      double FZLow = FZ_const*log(z3);
+      double FZHigh = FZLow + FZ_const*fCoulomb;
+      GammaPairConversionSpectrum::elementData data={
+        z,
+        z3,
+        log(z)*cubic_root,
+        exp(-(sf1a[0] - FZLow )/sf1a[1]) - sf1a[2],
+        exp(-(sf1a[0] - FZHigh )/sf1a[1]) - sf1a[2],
+        fCoulomb};
       _elementMap[z] = data;
     }
   }

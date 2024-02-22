@@ -1,5 +1,6 @@
 // Generates e+/e- from converted photons.
-// This generator uses ...
+// This generator uses Bethe Heitler model from G4 routines.
+// First implementation by M. Mackenzie in SU2020 repository
 //
 // S. Di Falco, 2023
 
@@ -50,12 +51,11 @@ namespace mu2e {
     using Parameters= art::EDProducer::Table<Config>;
     explicit GammaConvGenerator(const Parameters& conf);
 
-    virtual void produce(art::Event& event) override;
+    void produce(art::Event& event) override;
+    void beginRun(art::Run&   r) override;
 
     //----------------------------------------------------------------
   private:
-
-    double particleMass_;
 
     // Module label of the module that made the volume.
     std::string physVolModuleLabel_;
@@ -64,6 +64,7 @@ namespace mu2e {
 
     art::ProductToken<SimParticleCollection> const simsToken_;
     std::string stopMaterial_;
+    GammaPairConversionSpectrum::materialData materialData_;
 
     unsigned verbosity_;
 
@@ -79,7 +80,6 @@ namespace mu2e {
   //================================================================
   GammaConvGenerator::GammaConvGenerator(const Parameters& conf)
     : EDProducer{conf}
-      //    , particleMass_(GlobalConstantsHandle<ParticleDataList>()->particle(static_cast<PDGCode::type>(PDGCode::e_minus)).mass())
     , physVolModuleLabel_{conf().physVolModuleLabel()}
     , physVolProcessLabel_{conf().physVolProcessLabel()}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
@@ -95,32 +95,15 @@ namespace mu2e {
   }
 
   //================================================================
-  void GammaConvGenerator::produce(art::Event& event) {
-    auto output{std::make_unique<StageParticleCollection>()};
+  void GammaConvGenerator::beginRun( art::Run &run){
 
-    const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
-    const auto gammas = simParticleList(simh,PDGCode::gamma,ProcessCode::conv);
-
-    if(gammas.empty()) {
-      throw   cet::exception("NO GAMMAS")
-        <<"GammaConvGenerator::produce(): no suitable converted gamma in the input SimParticleCollection\n";
-    }
-
-    // Take the converted gamma as SimParticle
-    const auto gammapart = gammas.at(eng_.operator unsigned int() % gammas.size());
-    const auto p4_gamma = gammapart->endMomentum();
-    const auto t_gammastop = gammapart->endGlobalTime();
-    if (verbosity_>2){
-      std::cout << "GAMMA 4-MOMENTUM: " << p4_gamma << std::endl;
-      std::cout << "END VOLUME INDEX: " << gammapart->endVolumeIndex() << std::endl;
-    }
     //
     // Handle to information about G4 physical volumes.
     bool PhysicalVolumeInfoFound=false;
     std::string wantedbranch="mu2e::PhysicalVolumeInfomvs_"+physVolModuleLabel_+"_eventlevel_"+physVolProcessLabel_+".";
     if (verbosity_>2) std::cout << "Searching for " << wantedbranch << std::endl;
 
-    std::vector< art::Handle<PhysicalVolumeInfoMultiCollection> > vah = event.getMany<PhysicalVolumeInfoMultiCollection>();
+    std::vector< art::Handle<PhysicalVolumeInfoMultiCollection> > vah = run.getMany<PhysicalVolumeInfoMultiCollection>();
     art::Handle<PhysicalVolumeInfoMultiCollection> PhysicalVolumeInfos;
 
     for (auto const & ah : vah){
@@ -143,46 +126,50 @@ namespace mu2e {
       throw   cet::exception("EMPTY PHYSICALVOLUMEINFO COLLECTION")
         <<"GammaConvGenerator::produce(): PhysicalVolume collection is empty\n";
     }
-    //const auto& vols = PhysicalVolumeInfos->at(gammapart->simStage());
-    /*
-    PhysicalVolumeInfoSingleStage const* vols = &PhysicalVolumeInfos->at(gammapart->simStage());
-    if (verbosity_>2){
-      std::cout << "VOLUME COLLECTION SIZE: " << vols->size() << std::endl;
-      for ( long unsigned int i=0;i<vols->size();i++){
-        std::cout << i << " "  << vols->at(cet::map_vector_key(i)).name() << " made of " << vols->at(cet::map_vector_key(i)).materialName() << std::endl;
-        //for (auto const & vol : vols){
-        //	std::cout << vol << " "  << vol.name() << " made of " << vol.materialName() << std::endl;
-      }
-    }
-    //const auto& endInfo = vols.at(gammapart->endVolumeIndex());
-    PhysicalVolumeInfo const& endInfo = vols->at(cet::map_vector_key(gammapart->endVolumeIndex()));
-
-    if (verbosity_>1){
-      std::cout << "Gamma stop found in: " << endInfo.materialName() << std::endl;
-    std::cout << "Requested material is:" << " " << stopMaterial_ << std::endl;
-    }
-    G4Material*stopMat = findMaterialOrThrow((G4String const& )endInfo.materialName());
-    */
-    G4Material*stopMat = findMaterialOrThrow((G4String const& )stopMaterial_);
+    G4String const& stopmat=stopMaterial_;
+    G4Material*stopMat = findMaterialOrThrow(stopmat);
     auto elements= stopMat->GetElementVector();
     auto eleFracs= stopMat->GetFractionVector();
-    int ele_size=elements->size();
+    unsigned long ele_size=elements->size();
     if (ele_size > kMaxConversionMaterialElements) {
       throw cet::exception("TOO MANY MATERIAL ELEMENTS")
        << ele_size << " while maximum allowed is " << kMaxConversionMaterialElements << "\n";
     }
     //create a corresponding material
-    GammaPairConversionSpectrum::materialData material;
-    for (int iele=0;iele<ele_size;iele++){
-        material.elements.push_back(spectrum_->_elementMap[elements->at(iele)->GetZ()]);
-        material.elementFractions.push_back(eleFracs[iele]);
-        if (verbosity_>1){
-           std::cout << "Z= " << elements->at(iele)->GetZ() << " frac=" << eleFracs[iele] << std::endl;
-        }
+    for (unsigned long iele=0;iele<ele_size;iele++){
+      materialData_.elementDatas.push_back(spectrum_->GetElementMap()[(int)elements->at(iele)->GetZ()]);
+      materialData_.elementFractions.push_back(eleFracs[iele]);
+      if (verbosity_>1){
+         std::cout << "Z= " << elements->at(iele)->GetZ() << " frac=" << eleFracs[iele] << std::endl;
+      }
+    }
+
+  }
+  //================================================================
+  void GammaConvGenerator::produce(art::Event& event) {
+    auto output{std::make_unique<StageParticleCollection>()};
+
+    const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
+    const auto gammas = simParticleList(simh,PDGCode::gamma,ProcessCode::conv);
+
+    if(gammas.empty()) {
+      throw   cet::exception("NO GAMMAS")
+        <<"GammaConvGenerator::produce(): no suitable converted gamma in the input SimParticleCollection\n";
+    }
+
+    // Take the converted gamma as SimParticle
+    //
+    // const auto gammapart = gammas.at(eng_.operator unsigned int() % gammas.size());
+    const auto gammapart = gammas.at(randFlat_.fireInt(gammas.size()));
+    const auto p4_gamma = gammapart->endMomentum();
+    const auto t_gammastop = gammapart->endGlobalTime();
+    if (verbosity_>2){
+      std::cout << "GAMMA 4-MOMENTUM: " << p4_gamma << std::endl;
+      std::cout << "END VOLUME INDEX: " << gammapart->endVolumeIndex() << std::endl;
     }
     CLHEP::HepLorentzVector p4_eminus, p4_eplus;
     //sample the spectrum
-    spectrum_->fire(p4_gamma, material, p4_eminus, p4_eplus);
+    spectrum_->fire(p4_gamma, materialData_, p4_eminus, p4_eplus);
 
     output->emplace_back(gammapart,
                          process,
