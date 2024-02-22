@@ -78,7 +78,7 @@ namespace mu2e {
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randFlat_{eng_}
     , useCorrelatedAngleOverKE_(conf().useCorrelatedAngleOverKE())
-    , spectrum_                (GammaPairConversionSpectrum(&randFlat_, useCorrelatedAngleOverKE_))
+    , spectrum_                (&randFlat_, useCorrelatedAngleOverKE_)
   {
     produces<mu2e::StageParticleCollection>();
     process = ProcessCode::mu2eGammaConversion;
