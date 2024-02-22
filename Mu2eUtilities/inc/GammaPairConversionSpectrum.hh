@@ -13,6 +13,7 @@
 
 // C++ includes
 #include <cmath>
+#include <array>
 #include <vector>
 #include <map>
 #include <utility>
@@ -81,9 +82,9 @@ namespace mu2e {
     const double DM_const=4.; // delta min constant
     const double cubic_root=1./3.;
     const double deltamin=1.4;
-    const double sf1a[3]={42.038,-8.29,0.958}; // screen 1 funtion pars for delta>deltamin
-    const double sf1b[3]={42.184,7.444,-1.623}; // screen 1 funtion pars for delta<=deltamin
-    const double sf2b[3]={41.326,5.848,-0.902}; // screen 1 funtion pars for delta<=deltamin
+    std::array <const double,3> sf1a={42.038,-8.29,0.958}; // screen 1 function pars for delta>deltamin
+    std::array <const double,3> sf1b={42.184,7.444,-1.623};// screen 1 function pars for delta<=deltamin
+    std::array <const double,3> sf2b={41.326,5.848,-0.902}; // screen 2 function pars for delta<=deltamin
     const double u_const=2.;
     const int z_max=121;
   };

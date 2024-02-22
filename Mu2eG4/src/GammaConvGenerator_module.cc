@@ -121,7 +121,7 @@ namespace mu2e {
     // Take the converted gamma as SimParticle
     //
     // const auto gammapart = gammas.at(eng_.operator unsigned int() % gammas.size());
-    const auto gammapart = gammas.at(randFlat_.fireInt(gammas.size()));
+    const auto gammapart = gammas.at(randFlat_.fireInt((long)gammas.size()));
     const auto p4_gamma = gammapart->endMomentum();
     const auto t_gammastop = gammapart->endGlobalTime();
     if (verbosity_>2){
