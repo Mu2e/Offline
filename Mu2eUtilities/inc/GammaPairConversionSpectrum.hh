@@ -35,15 +35,12 @@ namespace mu2e {
       double fCoulomb;
     };
     struct materialData {
-      std::vector<elementData> elements;
+      std::vector<elementData> elementDatas;
       std::vector<double>      elementFractions;
     };
-    GammaPairConversionSpectrum(){ _correlateAngleOverKE = false;}
 
     GammaPairConversionSpectrum(CLHEP::RandFlat* randFlat, bool correlateAngleOverKE = false);
 
-    // random number generators are owned by the callers, no memory cleanup needed
-    ~GammaPairConversionSpectrum(){}
     void fire(const CLHEP::HepLorentzVector &photon, elementData &material,
        CLHEP::HepLorentzVector &electron, CLHEP::HepLorentzVector &positron);
 
@@ -66,15 +63,29 @@ namespace mu2e {
     double sampleThetaU(double ke);
 
     void initializeElementData();
+    std::map<int, elementData> GetElementMap(){return _elementMap;};
 
-  public:
-    std::map<int, elementData> _elementMap; //map of element data by Z (standard A values assumed)
   private:
+    std::map<int, elementData> _elementMap; //map of element data by Z (standard A values assumed)
+
 
     CLHEP::RandFlat*   _rndFlat;
     bool               _correlateAngleOverKE; //add or remove correlation that disappeared in GEANT 4.10.4p03b --> 4.10.5.p01a
-    int                _gMaxZet; //maximum element Z
     double             _me; // electron mass
+    const double nele = 2.;
+    const double eps0max = 0.5; // photon energy>2*me <=> me<= 0.5 * photonenergy
+    const double min_gamma_energy = 2.; //MeV
+    const double middle_energy = 50.; // MeV
+    const double DF_const=136.; // delta factor constant
+    const double FZ_const=8.; // FZ constant
+    const double DM_const=4.; // delta min constant
+    const double cubic_root=1./3.;
+    const double deltamin=1.4;
+    const double sf1a[3]={42.038,-8.29,0.958}; // screen 1 funtion pars for delta>deltamin
+    const double sf1b[3]={42.184,7.444,-1.623}; // screen 1 funtion pars for delta<=deltamin
+    const double sf2b[3]={41.326,5.848,-0.902}; // screen 1 funtion pars for delta<=deltamin
+    const double u_const=2.;
+    const int z_max=121;
   };
 
 } // end of namespace mu2e
