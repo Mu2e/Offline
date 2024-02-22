@@ -64,7 +64,7 @@ namespace mu2e {
     CLHEP::RandFlat randFlat_;
     bool   useCorrelatedAngleOverKE_; //correlate the cos/ke for the e+ and e-
 
-    GammaPairConversionSpectrum* spectrum_; //pair production spectrum
+    GammaPairConversionSpectrum spectrum_; //pair production spectrum
     enum {kMaxConversionMaterialElements = 10};
     ProcessCode process;
   };
@@ -78,7 +78,7 @@ namespace mu2e {
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randFlat_{eng_}
     , useCorrelatedAngleOverKE_(conf().useCorrelatedAngleOverKE())
-    , spectrum_                (new GammaPairConversionSpectrum(&randFlat_, useCorrelatedAngleOverKE_))
+    , spectrum_                (GammaPairConversionSpectrum(&randFlat_, useCorrelatedAngleOverKE_))
   {
     produces<mu2e::StageParticleCollection>();
     process = ProcessCode::mu2eGammaConversion;
@@ -98,7 +98,7 @@ namespace mu2e {
     }
     //create a corresponding material
     for (size_t iele=0;iele<ele_size;++iele){
-      materialData_.elementDatas.push_back(spectrum_->GetElementMap()[(int)elements->at(iele)->GetZ()]);
+      materialData_.elementDatas.push_back(spectrum_.GetElementMap()[(int)elements->at(iele)->GetZ()]);
       materialData_.elementFractions.push_back(eleFracs[iele]);
       if (verbosity_>1){
         std::cout << "Z= " << elements->at(iele)->GetZ() << " frac=" << eleFracs[iele] << std::endl;
@@ -129,7 +129,7 @@ namespace mu2e {
     }
     CLHEP::HepLorentzVector p4_eminus, p4_eplus;
     //sample the spectrum
-    spectrum_->fire(p4_gamma, materialData_, p4_eminus, p4_eplus);
+    spectrum_.fire(p4_gamma, materialData_, p4_eminus, p4_eplus);
 
     output->emplace_back(gammapart,
                          process,
