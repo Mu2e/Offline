@@ -15,7 +15,6 @@ namespace mu2e {
 
   class SimpleConfig;
   class ExtMonFNALMagnet;
-  class ExtMonFNALMuonID;
 
   void constructExtMonFNAL(const VolumeInfo& collimator1Parent,
                            const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
@@ -59,14 +58,6 @@ namespace mu2e {
                                   bool const doSurfaceCheck,
                                   bool const placePV
                                   );
-
-  void constructExtMonFNALMuonID(const ExtMonFNALModule& module,
-                                 const ExtMonFNALMuonID& muid,
-                                 const std::string& volNameSuffix,
-                                 const VolumeInfo& parent,
-                                 const CLHEP::HepRotation& parentRotationInMu2e,
-                                 const SimpleConfig& config
-                                 );
 
 }
 
