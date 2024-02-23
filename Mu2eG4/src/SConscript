@@ -282,6 +282,7 @@ helper.make_plugins( [
     'mu2e_Mu2eHallGeom',
     'mu2e_MCDataProducts',
     'mu2e_ConfigTools',
+    'mu2e_DataProducts',
     'art_Framework_Core',
     'art_Framework_Principal',
     'art_Framework_Services_Registry',
