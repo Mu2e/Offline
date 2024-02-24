@@ -1,12 +1,18 @@
 # Run trigger, add MC truth matching, and write TrkAna tree output
 # To create a functional job you must add database purpose and version; ie create a fcl stub that #includes this file and
 # adds (for instance):
-# services.DbService.purpose: MDC2020_perfect
-# services.DbService.version: v1_0
+# services.DbService.purpose: MDC2020_best
+# services.DbService.version: v1_1
 #
 #include "Offline/fcl/standardServices.fcl"
+#include "mu2e_trig_config/core/trigProducers.fcl"
+#include "mu2e_trig_config/core/trigFilters.fcl"
+#include "mu2e_trig_config/core/trigRecoSequences.fcl"
+#include "mu2e_trig_config/core/trigSequences.fcl"
+BEGIN_PROLOG
 #include "mu2e_trig_config/gen/trig_physMenuPSConfig_OnSpill.fcl"
 #include "mu2e_trig_config/gen/trig_physMenu_OnSpill.fcl"
+END_PROLOG
 #include "Offline/CommonMC/fcl/prolog_trigger.fcl"
 #include "TrkAna/fcl/prolog_trigger.fcl"
 process_name : OnSpillTrigger
@@ -16,8 +22,11 @@ source : {
 }
 
 physics : {
-   @table::TrigSequences
    producers : {
+      EWMProducer : { module_type : NullProducer }
+      CaloShowerROMaker : { module_type : NullProducer }
+      CaloDigiMaker : { module_type : NullProducer }
+      makeSD : { module_type : NullProducer }
       @table::TrigProducers.producers
       SelectRecoMCDeMcpr : {
          @table::CommonMCTrigger.TTSelectRecoMC
@@ -45,7 +54,6 @@ physics : {
       @table::Trig_physMenuPSConfig
    }
    analyzers : {
-      @table::Trigger.analyzers
       TADeMtpr : {
          @table::TrkAnaTrigger.TrkAnaDeMTT
          FitType : LoopHelix
@@ -64,6 +72,8 @@ physics : {
          FitType : LoopHelix
       }
    }
+   @table::TrigRecoSequences
+   @table::TrigSequences
    EndPath : [TADeMtpr, TADeMcpr, TADePtpr, TADePcpr]
 }
 physics.trigger_paths : [@sequence::Trig_physMenu.trigger_paths]
@@ -73,27 +83,27 @@ physics.trigger_paths : [@sequence::Trig_physMenu.trigger_paths]
 #include "Production/JobConfig/reco/drop_trigger.fcl"
 physics.end_paths : [ EndPath ]
 # add MC truth matching to the relevant paths
-physics.tprDeM_highP_stopTarg_trigger           : [ @sequence::physics.tprDeM_highP_stopTarg_trigger, SelectRecoMCDeMtpr]
-physics.cprDeM_highP_stopTarg_trigger           : [ @sequence::physics.cprDeM_highP_stopTarg_trigger, SelectRecoMCDeMcpr]
-physics.tprDeP_highP_stopTarg_trigger           : [ @sequence::physics.tprDeP_highP_stopTarg_trigger, SelectRecoMCDePtpr]
-physics.cprDeP_highP_stopTarg_trigger           : [ @sequence::physics.cprDeP_highP_stopTarg_trigger, SelectRecoMCDePcpr]
+physics.tprDeM_highP_stopTarg           : [ @sequence::physics.tprDeM_highP_stopTarg, SelectRecoMCDeMtpr]
+physics.cprDeM_highP_stopTarg           : [ @sequence::physics.cprDeM_highP_stopTarg, SelectRecoMCDeMcpr]
+physics.tprDeP_highP_stopTarg           : [ @sequence::physics.tprDeP_highP_stopTarg, SelectRecoMCDePtpr]
+physics.cprDeP_highP_stopTarg           : [ @sequence::physics.cprDeP_highP_stopTarg, SelectRecoMCDePcpr]
 
-physics.analyzers.TADeMtpr.SelectEvents : [  tprDeM_highP_stopTarg_trigger  ]
+physics.analyzers.TADeMtpr.SelectEvents : [  tprDeM_highP_stopTarg  ]
 physics.analyzers.TADeMtpr.candidate.input : "TTKSF"
 physics.analyzers.TADeMtpr.candidate.suffix : "DeM"
 physics.analyzers.TADeMtpr.KalSeedMCAssns: "SelectRecoMCDeMtpr"
 
-physics.analyzers.TADeMcpr.SelectEvents : [  cprDeM_highP_stopTarg_trigger  ]
+physics.analyzers.TADeMcpr.SelectEvents : [  cprDeM_highP_stopTarg  ]
 physics.analyzers.TADeMcpr.candidate.input : "TTCalSeedFit"
 physics.analyzers.TADeMcpr.candidate.suffix : "Dem"
 physics.analyzers.TADeMcpr.KalSeedMCAssns: "SelectRecoMCDeMcpr"
 
-physics.analyzers.TADePtpr.SelectEvents : [  tprDeP_highP_stopTarg_trigger  ]
+physics.analyzers.TADePtpr.SelectEvents : [  tprDeP_highP_stopTarg  ]
 physics.analyzers.TADePtpr.candidate.input : "TTKSF"
 physics.analyzers.TADePtpr.candidate.suffix : "DeP"
 physics.analyzers.TADePtpr.KalSeedMCAssns: "SelectRecoMCDePtpr"
 
-physics.analyzers.TADePcpr.SelectEvents : [  cprDeP_highP_stopTarg_trigger  ]
+physics.analyzers.TADePcpr.SelectEvents : [  cprDeP_highP_stopTarg  ]
 physics.analyzers.TADePcpr.candidate.input : "TTCalSeedFit"
 physics.analyzers.TADePcpr.candidate.suffix : "Dep"
 physics.analyzers.TADePcpr.KalSeedMCAssns: "SelectRecoMCDePcpr"
