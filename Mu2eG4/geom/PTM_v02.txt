@@ -132,7 +132,7 @@ double PTM.wedge.width = 355.6;
 double PTM.wedge.minHeight = 10.0;
 //double PTM.wedge.maxHeight = 50.782;
 double PTM.wedge.maxHeight = 50.3;
-double PTM.wedge.materialName = "A1100";
+string PTM.wedge.materialName = "A1100";
 // cutout for cables
 double PTM.wedge.cutoutLength = 197.6; // actual length 197.5; added 0.1 so the subtraction includes the edge instead of stopping there
 double PTM.wedge.cutoutWidth = 146.051;
