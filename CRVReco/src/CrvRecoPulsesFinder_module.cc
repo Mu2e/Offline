@@ -60,6 +60,9 @@ namespace mu2e
       fhicl::Atom<float> pulseAreaThreshold{Name("pulseAreaThreshold"), Comment("threshold to determine the pulse area for the the no-fit option")}; //5
       fhicl::Atom<float> doublePulseSeparation{Name("doublePulseSeparation"), Comment("fraction of both peaks at which double pulses can be separated in the no-fit option")}; //0.25
       fhicl::Atom<art::InputTag> protonBunchTimeTag{ Name("protonBunchTimeTag"), Comment("ProtonBunchTime producer"),"EWMProducer" };
+      fhicl::Atom<float> timeOffsetScale{Name("timeOffsetScale"), Comment("scale factor for time offsets from database (use 1.0, if measured values)")}; //1.0
+      fhicl::Atom<float> timeOffsetCutoffLow{Name("timeOffsetCutoffLow"), Comment("lower cutoff of time offsets (for random values - otherwise set to minimum value)")}; //-3.0ns
+      fhicl::Atom<float> timeOffsetCutoffHigh{Name("timeOffsetCutoffHigh"), Comment("upper cutoff of time offsets (for random values - otherwise set to maximum value)")}; //+3.0ns
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -76,6 +79,10 @@ namespace mu2e
     std::string _crvDigiModuleLabel;
     art::InputTag _protonBunchTimeTag;
 
+    float _timeOffsetScale;
+    float _timeOffsetCutoffLow;
+    float _timeOffsetCutoffHigh;
+
     ProditionsHandle<CRVCalib> _calib_h;
   };
 
@@ -83,7 +90,10 @@ namespace mu2e
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(const Parameters& conf) :
     art::EDProducer(conf),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
-    _protonBunchTimeTag(conf().protonBunchTimeTag())
+    _protonBunchTimeTag(conf().protonBunchTimeTag()),
+    _timeOffsetScale(conf().timeOffsetScale()),
+    _timeOffsetCutoffLow(conf().timeOffsetCutoffLow()),
+    _timeOffsetCutoffHigh(conf().timeOffsetCutoffHigh())
   {
     produces<CrvRecoPulseCollection>();
     _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(conf().minADCdifference(),
@@ -154,6 +164,9 @@ namespace mu2e
       double calibPulseArea = calib.pulseArea(channel);
       double calibPulseHeight = calib.pulseHeight(channel);
       double timeOffset = calib.timeOffset(channel);
+      timeOffset*=_timeOffsetScale;   //random time offsets can be scaled to a wider or smaller spread
+      if(timeOffset<_timeOffsetCutoffLow)  timeOffset=_timeOffsetCutoffLow;  //random time offsets can be cutoff at some limit
+      if(timeOffset>_timeOffsetCutoffHigh) timeOffset=_timeOffsetCutoffHigh;
 
       _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, CRVDigitizationPeriod, pedestal, calibPulseArea, calibPulseHeight);
 

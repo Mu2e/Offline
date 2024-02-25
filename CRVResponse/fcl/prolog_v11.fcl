@@ -65,7 +65,7 @@ BEGIN_PROLOG
       photonYieldScaleFactor                : 0.42  //scale factor applied to photon yields to mimic aging
                                                     //0.42 results in 28.6 PE/SiPM @ 1 m away from SiPM (expected in 2025)
                                                     //used in SU2020
-      photonYieldVariationScale             : 0.05  //scale factor for the photon yield variation
+      photonYieldVariationScale             : 0.05  //scale factor for the photon yield variation in the database
                                                     //examples:
                                                     //-if a database table of measured deviations from a nominal photon yield is used,
                                                     // the scale factor should be set to 1.0 (i.e. no scaling)
@@ -75,6 +75,7 @@ BEGIN_PROLOG
                                                     // then the scale factor should be set to 0.05 (i.e. scaled to a sigma of 5%)
       photonYieldVariationCutoffLow         :-0.2   //the photon yield variation is cut off at 20% below the mean
       photonYieldVariationCutoffHigh        : 0.2   //the photon yield variation is cut off at 20% above the mean
+                                                    //note: if measured deviations are used, the cutoffs should be set to the maximum values
       digitizationStart                     :  400.0    //400ns
       digitizationEnd                       : 1750.0    //1750ns
       digitizationStartMargin               :   50.0    //50ns
@@ -122,9 +123,18 @@ BEGIN_PROLOG
       singlePEWaveformMaxTime      : 100    //100 ns
       singlePEReferenceCharge      : 2.652e-13  //2.652e-13 C charge which was used to generate the above 1PE waveform
                                                 //capacitance of one pixel (8.84e-14C) * overvoltage (3.0V)
-      FEBtimeSpread                : 2.0    //2.0 ns
-      minVoltage                   : 0.0275  //27.5mV (corresponds to 5.5PE)
+      minVoltage                   : 0.0275 //27.5mV (corresponds to 5.5PE)
       noise                        : 4.0e-4 //0.4mV
+      timeOffsetScale              : 1.0    //scale factor for the time offsets from the database
+                                            //examples:
+                                            //-if a database table of measured time offset is used,
+                                            // the scale factor should be set to 1.0 (i.e. no scaling)
+                                            //-if a database table of a random gaussian distribution of time offsets
+                                            // with a sigma equal to 1ns is used and one wants to run a simulation with a sigma of 0.5ns,
+                                            // then the scale factor should be set to 0.5 (i.e. scaled to a sigma of 50%)
+      timeOffsetCutoffLow          :-3.0    //the time offsets are cut off at -3ns
+      timeOffsetCutoffHigh         : 3.0    //the time offsets are cut off at +3ns
+                                            //note: if measured time offsets are used, the cutoffs should be set to the maximum values
     }
     CrvDigi:
     {
