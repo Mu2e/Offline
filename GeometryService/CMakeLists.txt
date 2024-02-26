@@ -12,7 +12,6 @@ cet_make_library(
       src/ExtMonFNALBuildingMaker.cc
       src/ExtMonFNALMagnetMaker.cc
       src/ExtMonFNAL_Maker.cc
-      src/ExtMonFNALMuonIDMaker.cc
       src/ExtShieldDownstreamMaker.cc
       src/ExtShieldUpstreamMaker.cc
       src/G4GeometryOptions.cc

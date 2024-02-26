@@ -2,7 +2,6 @@
 
 #include "Offline/GeometryService/inc/ExtMonFNAL_Maker.hh"
 #include "Offline/GeometryService/inc/ExtMonFNALMagnetMaker.hh"
-#include "Offline/GeometryService/inc/ExtMonFNALMuonIDMaker.hh"
 
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
@@ -110,31 +109,6 @@ namespace mu2e {
       det->dn_.planeNumberOffset_ = 0;
       det->up_.planeNumberOffset_ = det->dn_.nplanes();
 
-      //----------------------------------------------------------------
-      //Muon ID Detector Addition
-      /*  det->muonID_ = ExtMonFNALMuonIDMaker::read(config,
-                                                  "extMonFNAL.muonID",
-                                                  room.collimator2RotationInMu2e(),
-                                                  refEntranceToMagnet,
-                                                  room.filterMagnet().nominalMomentum() + dp
-                                                  );*/
-      const CLHEP::Hep3Vector muonIDRefPointInMu2e = det->dn_.refPointInMu2e();
-      det->muonID_ = ExtMonFNALMuonIDMaker::read(config,
-                                                 "extMonFNAL.muonID",
-                                                  det->dn_.rotationInMu2e(),
-                                                  muonIDRefPointInMu2e,
-                                                  room.filterMagnet().nominalMomentum() + dp
-                                                  );
-      /*ExtMonFNALMuonID ExtMonFNALMuonIDMaker::read(const SimpleConfig& c, const std::string& prefix)
-      {
-        ExtMonFNALMuonID muid;
-
-        c. getVectorDouble(prefix + ".outerHalfSize", muid.outerHalfSize_, 3);
-           if(verbose){
-          std::cout<<"ExtMonFNALMuonID " <<prefix<<": outerHalfSize = "<<muid.outerHalfSize_<<std::endl;
-          }
-        return muid;
-      }*/
      //----------------------------------------------------------------
       if(verbose) {
         std::cout<<"ExtMonFNAL_Maker: UP stack center in Mu2e = "<<det->up_.m_stackRefPointInMu2e<<std::endl;
@@ -150,9 +124,6 @@ namespace mu2e {
 
         std::cout<<"ExtMonFNAL_Maker: DN stack center in Mu2e = "<<det->dn_.m_stackRefPointInMu2e<<std::endl;
         std::cout<<"ExtMonFNAL_Maker: DN stackRotationInMu2e = "<<det->dn_.m_stackRotationInMu2e<<std::endl;
-               std::cout<<"ExtMonFNAL_Maker: Muon ID ref in Mu2e = "<<det->muonID_.refPointInMu2e()<<std::endl;
-        //std::cout<<"ExtMonFNAL_Maker: Muon ID center in Mu2e = "<<det->muonID_.geometricCenterInMu2e()<<std::endl;
-               std::cout<<"ExtMonFNAL_Maker: Muon ID rotation in Mu2e = "<<det->muonID_.muonIDRotationInMu2e()<<std::endl;
       }
 
       AGDEBUG("ExtMonFNAL maker end");
