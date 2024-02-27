@@ -44,8 +44,8 @@ namespace mu2e
 
     public:
     explicit CrvWaveformsGenerator(fhicl::ParameterSet const& pset);
-    void produce(art::Event& e);
-    void beginRun(art::Run &run);
+    void produce(art::Event& e) override;
+    void beginRun(art::Run &run) override;
 
     private:
     std::string _crvSiPMChargesModuleLabel;
@@ -70,6 +70,8 @@ namespace mu2e
     ProditionsHandle<CRVCalib>         _calib;
     ProditionsHandle<CRVOrdinal>       _crvChannelMap;
     std::vector<double> _digitizationPointShiftFEBs;
+
+    static constexpr int nDigiPeriods = 4; //number of digitization periods to check for charges
 
     struct ChargeCluster
     {
@@ -212,7 +214,7 @@ namespace mu2e
 //            if(digiStartTime+(CrvDigiMC::NSamples-1)*CRVDigitizationPeriod>digitizationEnd) continue; //digis cannot end after the digitization interval
 
             //collect voltages
-            std::array<double,CrvDigiMC::NSamples> voltages;
+            std::array<double,CrvDigiMC::NSamples> voltages{0};
             for(size_t singleWaveformIndex=0; singleWaveformIndex<CrvDigiMC::NSamples; ++i, ++singleWaveformIndex)
             {
               if(i<fullWaveform.size() && TDCstartTimeAdjusted+i*CRVDigitizationPeriod<=digitizationEnd) voltages[singleWaveformIndex]=fullWaveform[i];
@@ -278,7 +280,10 @@ namespace mu2e
       }
       else
       {
-        if(timeTmp-chargeClusters.back().timesAndCharges.back().first>_singlePEWaveformMaxTime+4.0*CRVDigitizationPeriod)
+        if(timeTmp-chargeClusters.back().timesAndCharges.back().first>_singlePEWaveformMaxTime+nDigiPeriods*CRVDigitizationPeriod)
+        //if the difference b/w the time of the next charge and the time of the last charge
+        //is greater than a full single PE waveform plus four additional digitization periods
+        //-->start a new charge cluster
         {
           chargeClusters.resize(chargeClusters.size()+1);
           chargeClusters.back().timesAndCharges.reserve(timesAndCharges.size());

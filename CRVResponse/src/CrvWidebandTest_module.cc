@@ -55,21 +55,21 @@ double LandauGaussFunction(double *x, double *par)
     //maximum is identical to the MP parameter.
 
     // Numeric constants
-    Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
-    Double_t mpshift  = -0.22278298;       // Landau maximum location
+    constexpr Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
+    constexpr Double_t mpshift  = -0.22278298;       // Landau maximum location
 
     // Control constants
-    Double_t np = 100.0;      // number of convolution steps
-    Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
+    constexpr Double_t np = 100.0;      // number of convolution steps
+    constexpr Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
 
     // Variables
-    Double_t xx;
-    Double_t mpc;
-    Double_t fland;
+    Double_t xx = 0.0;
+    Double_t mpc = 0.0;
+    Double_t fland = 0.0;
     Double_t sum = 0.0;
-    Double_t xlow,xupp;
-    Double_t step;
-    Double_t i;
+    Double_t xlow = 0.0, xupp = 0.0;
+    Double_t step = 0.0;
+    Int_t    i = 0.0;
 
     // MP shift correction
     mpc = par[1] - mpshift * par[0];
@@ -167,10 +167,10 @@ namespace mu2e
 
     using Parameters = art::EDAnalyzer::Table<Config>;
     explicit CrvWidebandTest(const Parameters& conf);
-    ~CrvWidebandTest();
-    void analyze(const art::Event& e);
-    void beginJob();
-    void endJob();
+    ~CrvWidebandTest() override;
+    void analyze(const art::Event& e) override;
+    void beginJob() override;
+    void endJob() override;
 
     private:
     std::string   _crvStepsModuleLabel;
@@ -180,14 +180,14 @@ namespace mu2e
     const float   _minTrackFitPEs{5};
     art::InputTag _protonBunchTimeTag;
 
-    int     _nFEBs;
-    int     _nSectorTypes;
+    int     _nFEBs{0};
+    int     _nSectorTypes{0};
 
-    int     _runNumber;
-    int     _subrunNumber;
+    int     _runNumber{0};
+    int     _subrunNumber{0};
     int     _spillNumber{1};  //to have the same variables as in the Wideband files
     int     _spillIndex{1};   //to have the same variables as in the Wideband files
-    int     _eventNumber;
+    int     _eventNumber{0};
 
     float  *_recoPEs{NULL};
     float  *_recoTime{NULL};
@@ -346,7 +346,7 @@ namespace mu2e
       _tree->Branch("runNumber",&_runNumber,"runNumber/I");
       _tree->Branch("subrunNumber",&_subrunNumber,"subrunNumber/I");
       _tree->Branch("spillNumber",&_spillNumber,"spillNumber/I");
-      _tree->Branch("spillIndex",&_spillNumber,"spillIndex/I");
+      _tree->Branch("spillIndex",&_spillIndex,"spillIndex/I");
       _tree->Branch("eventNumber",&_eventNumber,"eventNumber/I");
       _tree->Branch("PEs",_recoPEs,Form("PEs[%i][%i]/F",_nFEBs,(unsigned int)CRVId::nChanPerFEB));
       _tree->Branch("time",_recoTime,Form("time[%i][%i]/F",_nFEBs,(unsigned int)CRVId::nChanPerFEB));
