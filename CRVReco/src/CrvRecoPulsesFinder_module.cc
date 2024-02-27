@@ -68,10 +68,10 @@ namespace mu2e
     typedef art::EDProducer::Table<Config> Parameters;
 
     explicit CrvRecoPulsesFinder(const Parameters& config);
-    void produce(art::Event& e);
-    void beginJob();
-    void beginRun(art::Run &run);
-    void endJob();
+    void produce(art::Event& e) override;
+    void beginJob() override;
+    void beginRun(art::Run &run) override;
+    void endJob() override;
 
     private:
     boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> _makeCrvRecoPulses;
