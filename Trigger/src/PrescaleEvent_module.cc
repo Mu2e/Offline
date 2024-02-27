@@ -91,7 +91,7 @@ namespace mu2e
     bool retval(false);
     bool condition = e.event() % ps == 0;
 
-    if(condition) {
+    if(condition && (ps > 0)) {
       ++_npass;
       retval = true;
     }
