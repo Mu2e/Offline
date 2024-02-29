@@ -88,6 +88,13 @@ namespace mu2e {
     float _tprop; // signal propagation time of from the wire crossing point to the nearest end
     XYZVectorF _cpos; // trigger cluster position in detector coordinates
     XYZVectorF _mom; // momentum of particle at point where digi created
+    float _wireDOCA; // signed doca to wire
+    float _wirePhi; // cylindrical phi from -pi to pi with 0 in Z direction
+    float _wireLen; // longitudinal position along wire from middle
+    float _wireDot; // cosine of angle between track and wire
+    float _wireTau; // threshold cluster distance to the wire along the perpedicular particle path
+    float _strawDOCA; // signed doca to straw
+    float _strawPhi; // cylindrical phi from -pi to pi with 0 in Z direction
   };
 
   struct KalSeedMC {

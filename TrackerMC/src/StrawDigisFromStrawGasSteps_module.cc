@@ -190,7 +190,7 @@ namespace mu2e {
         Int_t _sdplane, _sdpanel, _sdlayer, _sdstraw;
         Int_t _ncludd[2], _iclust[2];
         Int_t _nstep;
-        Float_t _ectime[2], _ecddist[2], _ecdtime[2], _ecptime[2];
+        Float_t _ectime[2], _ecddist[2], _ecdtime[2], _ecptime[2], _ecphi[2];
         Float_t _xtime[2], _tctime[2], _charge[2], _acharge[2], _ddist[2], _dtime[2], _ptime[2];
         Float_t _wdist[2], _vstart[2], _vcross[2];
         Float_t _phi[2];
@@ -318,6 +318,7 @@ namespace mu2e {
         produces<StrawDigiCollection>();
         produces<StrawDigiADCWaveformCollection>();
         produces<StrawDigiMCCollection>();
+        _alignedTrackerSim_h = ProditionsHandle<Tracker>("Sim");
       }
 
     void StrawDigisFromStrawGasSteps::beginJob(){
@@ -381,6 +382,7 @@ namespace mu2e {
           _sddiag->Branch("ectime",&_ectime,"ectimecal/F:ectimehv/F");
           _sddiag->Branch("ecdtime",&_ecdtime,"ecdtimecal/F:ecdtimehv/F");
           _sddiag->Branch("ecptime",&_ecptime,"ecptimecal/F:ecptimehv/F");
+          _sddiag->Branch("ecphi",&_ecphi,"ecphical/F:ecphihv/F");
           _sddiag->Branch("charge",&_charge,"chargecal/F:chargehv/F");
           _sddiag->Branch("acharge",&_acharge,"achargecal/F:achargehv/F");
           _sddiag->Branch("wdist",&_wdist,"wdistcal/F:wdisthv/F");
@@ -421,7 +423,6 @@ namespace mu2e {
 
         }
       }
-      _alignedTrackerSim_h = ProditionsHandle<Tracker>("Sim");
     }
 
     void StrawDigisFromStrawGasSteps::beginRun( art::Run& run ){
@@ -1145,6 +1146,7 @@ namespace mu2e {
           _ecddist[iend] = iclu->driftDistance();
           _ecdtime[iend] = iclu->driftTime();
           _ecptime[iend] = iclu->propTime();
+          _ecphi[iend] = iclu->driftPhi();
           // count how many clusters till we get to the trigger cluster
           size_t iclust(0);
           while( iclu != clist.end() && iclu != ctrig){
@@ -1180,7 +1182,7 @@ namespace mu2e {
       _mctime = sgs.time() + _pbtimemc;
       // compute the doca for this step
       TwoLinePCA wirepca( straw.wirePosition(), straw.wireDirection(),
-          GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
+          GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec((sgs.endPosition()-sgs.startPosition()).Unit()) );
       _mcdca = wirepca.dca();
       auto spos = strawCoordinates(XYZVectorF(wirepca.point2()),straw);
       _mcdcaphi = spos._wirePosition.Phi();

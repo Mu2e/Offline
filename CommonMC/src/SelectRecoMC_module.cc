@@ -45,6 +45,7 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 
 // C++
 #include <vector>
@@ -110,6 +111,7 @@ namespace mu2e {
       double _pbtimemc; // mc true proton bunch time
       bool _onSpill;
       ProditionsHandle<StrawResponse> _strawResponse_h;
+      ProditionsHandle<Tracker> _alignedTrackerSim_h;
   };
 
   SelectRecoMC::SelectRecoMC(const Parameters& config )  :
@@ -174,6 +176,7 @@ namespace mu2e {
         std::cout << "Using HelixSeed collections from ";
         for (auto const& hsc : _hscs) std::cout << hsc << " " << std::endl;
       }
+      _alignedTrackerSim_h = ProditionsHandle<Tracker>("Sim");
     }
 
   void SelectRecoMC::produce(art::Event& event) {
@@ -300,10 +303,32 @@ namespace mu2e {
     tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4; // temporary kludge offset FIXME!
     if (_onSpill)
       tshmc._tdrift = fmod(tshmc._tdrift,_mbtime);
-    auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
     const static XYZVectorF bdir(0.0,0.0,1.0);
-    double phi = acos(tperp.Dot(bdir)); // Lorentz angle
-    tshmc._rdrift = srep->strawDrift().T2D(tshmc._tdrift,phi);
+
+    TwoLinePCA_XYZ wirepca( XYZVectorF(straw.wirePosition()), XYZVectorF(straw.wireDirection()),
+          tshmc._cpos, tdir );
+    TwoLinePCA_XYZ strawpca( XYZVectorF(straw.strawPosition()), XYZVectorF(straw.strawDirection()),
+          tshmc._cpos, tdir );
+
+    auto mcsep = wirepca.point2() - wirepca.point1();
+    tshmc._wireLen = mcsep.Dot(wdir);
+    auto mcperp = tdir.Cross(wdir).Unit();
+    tshmc._wireDOCA = -1*mcperp.Dot(mcsep);
+    auto pdir = wdir.Cross(bdir);
+    if (pdir.Dot(XYZVectorF(straw.wirePosition())) < 0.0) pdir *= -1.0; //sign radially out
+    tshmc._wirePhi = atan2(mcsep.Dot(pdir),mcsep.Dot(bdir));
+    tshmc._wireDot = tdir.Dot(wdir);
+    auto wperp = wdir.Cross(mcperp);
+    tshmc._wireTau = mcsep.Dot(wperp);
+    tshmc._rdrift = srep->strawDrift().T2D(tshmc._tdrift,tshmc._wirePhi);
+
+    auto sdir = XYZVectorF(straw.strawDirection());
+    mcsep = strawpca.point2() - strawpca.point1();
+    mcperp = tdir.Cross(sdir).Unit();
+    tshmc._strawDOCA = -1*mcperp.Dot(mcsep);
+    pdir = sdir.Cross(bdir);
+    if (pdir.Dot(XYZVectorF(straw.strawPosition())) < 0.0) pdir *= -1.0; //sign radially out
+    tshmc._strawPhi = atan2(mcsep.Dot(pdir),mcsep.Dot(bdir));
   }
 
   void SelectRecoMC::fillSDMCI(KalSeedMC const& mcseed, SDIS& sdindices) {
@@ -350,7 +375,7 @@ namespace mu2e {
       PrimaryParticle const& pp, RecoCount& nrec) {
     GeomHandle<DetectorSystem> det;
     auto srep = _strawResponse_h.getPtr(event.id());
-    Tracker const & tracker = *(GeomHandle<Tracker>());
+    Tracker const& tracker = *(_alignedTrackerSim_h.getPtr(event.id()).get());
 
     // Tracker-reated data products
     auto sdch = event.getValidHandle<StrawDigiCollection>(_sdc);
