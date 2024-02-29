@@ -32,7 +32,9 @@ namespace mu2e {
     };
 
     struct EventHists {
+      TH1D*     nChuncks;
       TH1D*     nClusters;
+      TH1D*     nClustersRef;
       TH1D*     nProtonsPred;
       TH1D*     nProtonsMC;
       TH1D*     nProtPredMinusMC;
@@ -94,7 +96,9 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   int TZClusterFinderDiag::bookEventHistograms(EventHists* Hist, art::TFileDirectory* Dir) {
-    Hist->nClusters = Dir->make<TH1D>("nClusters" , "number of clusters", 50, 0.0, 50.0);
+    Hist->nChuncks = Dir->make<TH1D>("nChuncks", "Number of time clusters per event before refine", 30, 0.0, 30.0 );
+    Hist->nClusters = Dir->make<TH1D>("nClusters" , "number of time clusters per event after refine", 30, 0.0, 30.0);
+    Hist->nClustersRef = Dir->make<TH1D>("nClustersRef", "Number of time clusters that pass the refine", 3, 0.0, 3.0 );
     Hist->nProtonsPred = Dir->make<TH1D>("nProtonsPred" , "number of protons clusters counted (>= 15 straw hits)", 30, 0.0, 30.0 );
     Hist->nProtonsMC = Dir->make<TH1D>("nProtonsMC" , "number of MC truth protons (>= 15 straw hits)", 30, 0.0, 30.0 );
     Hist->nProtPredMinusMC = Dir->make<TH1D>("nProtPredMinusMC" , "number of protons predicted minus truth (>= 15 straw hits)", 20, -10.0, 10.0 );
@@ -145,7 +149,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   int TZClusterFinderDiag::fillEventHistograms(EventHists* Hist, Data_t* Data) {
 
+    Hist->nChuncks->Fill(Data->_nChuncks);
     Hist->nClusters->Fill(Data->_nTZClusters);
+    for(size_t i=0; i<Data->_nTCRef.size(); i++) Hist->nClustersRef->Fill(Data->_nTCRef[i]);
 
     // ---------------------
     // make proton predicted plots
