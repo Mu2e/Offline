@@ -26,6 +26,7 @@
 #include "Offline/TrackerConditions/inc/StrawPhysics.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 #include "BTrk/BField/BField.hh"
 // utiliities
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
@@ -172,6 +173,7 @@ namespace mu2e {
         // Proditions
         ProditionsHandle<StrawPhysics> _strawphys_h;
         ProditionsHandle<StrawElectronics> _strawele_h;
+        ProditionsHandle<TrackerStatus> _trackerStatus_h;
         art::Selector _selector;
         double _rstraw; // cache
         // diagnostics
@@ -215,7 +217,9 @@ namespace mu2e {
 
         //  helper functions
         void fillClusterMap(StrawPhysics const& strawphys,
-            StrawElectronics const& strawele,Tracker const& tracker,
+            StrawElectronics const& strawele,
+            TrackerStatus const& trackerStatus,
+            Tracker const& tracker,
             art::Event const& event, StrawClusterMap & hmap);
         void addStep(StrawPhysics const& strawphys,
             StrawElectronics const& strawele,
@@ -432,6 +436,7 @@ namespace mu2e {
       // update conditions caches, etc
       StrawPhysics const& strawphys = _strawphys_h.get(event.id());
       StrawElectronics const& strawele = _strawele_h.get(event.id());
+      TrackerStatus const& trackerStatus = _trackerStatus_h.get(event.id());
       const Tracker& tracker = *GeomHandle<Tracker>();
       _mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
       art::Handle<EventWindowMarker> ewMarkerHandle;
@@ -468,7 +473,7 @@ namespace mu2e {
       // this is a map from straw ids to a list of all clusters on that straw from this event
       StrawClusterMap hmap;
       // fill this from the event
-      fillClusterMap(strawphys,strawele,tracker,event,hmap);
+      fillClusterMap(strawphys,strawele,trackerStatus,tracker,event,hmap);
       // add noise clusts
       if(_addNoise)addNoise(hmap);
       // loop over the clust sequences (i.e. loop over straws, and for each get their list of clusters)
@@ -527,6 +532,7 @@ namespace mu2e {
 
     void StrawDigisFromStrawGasSteps::fillClusterMap(StrawPhysics const& strawphys,
         StrawElectronics const& strawele,
+        TrackerStatus const& trackerStatus,
         const Tracker& tracker,
         art::Event const& event, StrawClusterMap & hmap){
       // Get all of the tracker StrawGasStep collections from the event:
@@ -554,11 +560,14 @@ namespace mu2e {
           auto const& sgs = steps[isgs];
           // lookup straw here, to avoid having to find the tracker for every step
           StrawId const & sid = sgs.strawId();
-          Straw const& straw = tracker.getStraw(sid);
-          if(sgs.ionizingEdep() > _minstepE){
+          //temporary test
+          if ( (!trackerStatus.noSignal(sid)) && sgs.ionizingEdep() > _minstepE){
+            Straw const& straw = tracker.getStraw(sid);
             auto sgsptr = SGSPtr(sgsch,isgs);
             // create a clust from this step, and add it to the clust map
             addStep(strawphys,strawele,straw,sgsptr,hmap[sid]);
+          } else if(_debug > 0) {
+            std::cout << "Suppressing sid " << sid << " Status " << trackerStatus.strawStatus(sid) << " energy " << sgs.ionizingEdep() << std::endl;
           }
         }
       }
