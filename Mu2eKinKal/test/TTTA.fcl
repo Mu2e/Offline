@@ -9,10 +9,8 @@
 #include "mu2e_trig_config/core/trigFilters.fcl"
 #include "mu2e_trig_config/core/trigRecoSequences.fcl"
 #include "mu2e_trig_config/core/trigSequences.fcl"
-BEGIN_PROLOG
 #include "mu2e_trig_config/gen/trig_physMenuPSConfig_OnSpill.fcl"
 #include "mu2e_trig_config/gen/trig_physMenu_OnSpill.fcl"
-END_PROLOG
 #include "Offline/CommonMC/fcl/prolog_trigger.fcl"
 #include "TrkAna/fcl/prolog_trigger.fcl"
 process_name : OnSpillTrigger
