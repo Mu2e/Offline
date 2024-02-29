@@ -560,7 +560,6 @@ namespace mu2e {
           auto const& sgs = steps[isgs];
           // lookup straw here, to avoid having to find the tracker for every step
           StrawId const & sid = sgs.strawId();
-          //temporary test
           if ( (!trackerStatus.noSignal(sid)) && sgs.ionizingEdep() > _minstepE){
             Straw const& straw = tracker.getStraw(sid);
             auto sgsptr = SGSPtr(sgsch,isgs);
