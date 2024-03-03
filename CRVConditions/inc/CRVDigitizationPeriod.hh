@@ -3,7 +3,7 @@
 
 namespace mu2e {
 
-  constexpr double CRVDigitizationPeriod = 12.55; // ns
+  constexpr double CRVDigitizationPeriod = 12.5; // ns
 
 }  // namespace mu2e
 
