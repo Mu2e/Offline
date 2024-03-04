@@ -111,7 +111,7 @@ namespace mu2e {
       double _pbtimemc; // mc true proton bunch time
       bool _onSpill;
       ProditionsHandle<StrawResponse> _strawResponse_h;
-      ProditionsHandle<Tracker> _alignedTrackerSim_h;
+      ProditionsHandle<Tracker> _alignedTrackerSim_h{"Sim"};
   };
 
   SelectRecoMC::SelectRecoMC(const Parameters& config )  :
@@ -176,7 +176,6 @@ namespace mu2e {
         std::cout << "Using HelixSeed collections from ";
         for (auto const& hsc : _hscs) std::cout << hsc << " " << std::endl;
       }
-      _alignedTrackerSim_h = ProditionsHandle<Tracker>("Sim");
     }
 
   void SelectRecoMC::produce(art::Event& event) {

@@ -53,11 +53,12 @@ namespace mu2e {
             auto wireend_UVW = ds_to_panel*straw.wireEnd(end);
             auto strawend_UVW = ds_to_panel*straw.strawEnd(end);
             if ( _config.wireOnly() ){
-              wireend_UVW += (straw_align.wireDeltaUVW(end) - straw_align.strawDeltaUVW(end));
-            }else{
-              wireend_UVW += straw_align.wireDeltaUVW(end);
-              strawend_UVW += straw_align.strawDeltaUVW(end);
+              if (straw_align.strawDeltaUVW(end).mag() != 0.0){
+                cout << "AlignedTrackerMaker::fromDb Warning " << straw.id() << " StrawEnd alignment not zero." << std::endl;
+              }
             }
+            wireend_UVW += straw_align.wireDeltaUVW(end);
+            strawend_UVW += straw_align.strawDeltaUVW(end);
 
             // Transform back to global coordinates, including all the alignment corrections
             wireends[iend] = aligned_panel_to_ds*wireend_UVW;

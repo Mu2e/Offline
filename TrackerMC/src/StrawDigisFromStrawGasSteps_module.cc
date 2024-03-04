@@ -113,7 +113,6 @@ namespace mu2e {
           fhicl::Atom<int> diagpath{ Name("DiagPath"), Comment("Digitization Path for waveform diagnostics") ,0 };
           fhicl::Atom<string> spinstance { Name("StrawGasStepInstance"), Comment("StrawGasStep Instance name"),""};
           fhicl::Atom<string> spmodule { Name("StrawGasStepModule"), Comment("StrawGasStep Module name"),""};
-          fhicl::Atom<bool> wireoffsets { Name("SimWireOffsets"), Comment("Use wire offsets in sim")};
 
         };
 
@@ -160,7 +159,6 @@ namespace mu2e {
         std::vector<uint16_t> _allPlanes;
         unsigned _maxnclu;
         StrawElectronics::Path _diagpath;
-        bool _simWireOffsets;
         // Random number distributions
         art::RandomNumberGenerator::base_engine_t& _engine;
         CLHEP::RandGaussQ _randgauss;
@@ -174,7 +172,7 @@ namespace mu2e {
         // Proditions
         ProditionsHandle<StrawPhysics> _strawphys_h;
         ProditionsHandle<StrawElectronics> _strawele_h;
-        ProditionsHandle<Tracker> _alignedTrackerSim_h;
+        ProditionsHandle<Tracker> _alignedTrackerSim_h{"Sim"};
         const Tracker *_tracker;
         art::Selector _selector;
         double _rstraw; // cache
@@ -295,7 +293,6 @@ namespace mu2e {
       _allPlanes(config().allPlanes()),
       _maxnclu(config().maxnclu()),
       _diagpath(static_cast<StrawElectronics::Path>(config().diagpath())),
-      _simWireOffsets(config().wireoffsets()),
       // Random number distributions
       _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
       _randgauss( _engine ),
@@ -318,7 +315,6 @@ namespace mu2e {
         produces<StrawDigiCollection>();
         produces<StrawDigiADCWaveformCollection>();
         produces<StrawDigiMCCollection>();
-        _alignedTrackerSim_h = ProditionsHandle<Tracker>("Sim");
       }
 
     void StrawDigisFromStrawGasSteps::beginJob(){
@@ -1250,23 +1246,19 @@ namespace mu2e {
       float phi = atan2(cperp.Dot(pdir),cperp.Dot(zdir)); // angle around wire WRT z axis in range -pi,pi
       float rho = min(sqrt(cperp.mag2()),(float)_rstraw); // truncate!
       retval._strawPosition = StrawPosition(rho,dw,phi);
-      if (_simWireOffsets){
-        // now we get the wire position by calculating a position relative to the misaligned straw envelope
-        //XYZVectorF simAlignedPos = strawPositionToXYZ(retval._strawPosition, simStraw);
-        // calculate cylidrical coordinates relative to misaligned wire
-        smid = XYZVectorF(straw.wirePosition());
-        delta = cpos - smid; // cluster position WRT wire middle
-        sdir = XYZVectorF(straw.wireDirection());
-        pdir = sdir.Cross(zdir); // radial direction
-        if(pdir.Dot(smid) < 0.0)pdir *= -1.0; // sign radially outwards
-        dw = delta.Dot(sdir);
-        cperp = delta - dw*sdir; // just perp part
-        phi = atan2(cperp.Dot(pdir),cperp.Dot(zdir));// angle around wire WRT Z axis in range -pi,pi
-        rho = sqrt(cperp.mag2());
-        retval._wirePosition = StrawPosition(rho,dw,phi);
-      }else{
-        retval._wirePosition = retval._strawPosition;
-      }
+      // now we get the wire position by calculating a position relative to the misaligned straw envelope
+      //XYZVectorF simAlignedPos = strawPositionToXYZ(retval._strawPosition, simStraw);
+      // calculate cylidrical coordinates relative to misaligned wire
+      smid = XYZVectorF(straw.wirePosition());
+      delta = cpos - smid; // cluster position WRT wire middle
+      sdir = XYZVectorF(straw.wireDirection());
+      pdir = sdir.Cross(zdir); // radial direction
+      if(pdir.Dot(smid) < 0.0)pdir *= -1.0; // sign radially outwards
+      dw = delta.Dot(sdir);
+      cperp = delta - dw*sdir; // just perp part
+      phi = atan2(cperp.Dot(pdir),cperp.Dot(zdir));// angle around wire WRT Z axis in range -pi,pi
+      rho = sqrt(cperp.mag2());
+      retval._wirePosition = StrawPosition(rho,dw,phi);
       return retval;
     }
 
