@@ -1,0 +1,8 @@
+TABLE CRVBadChan
+#status 1: not connected
+#status 2: dead
+#status 3: no data
+#status 4: no pedestal
+#status 5: no calibration constant
+#status 6: noisy
+#channel,status
