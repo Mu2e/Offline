@@ -57,6 +57,7 @@
 #include "Offline/RecoDataProducts/inc/RecoQual.hh"
 #include "Offline/RecoDataProducts/inc/AlgorithmID.hh"
 #include "KinKal/General/ParticleState.hh"
+#include "Offline/RecoDataProducts/inc/MVAResult.hh"
 
 // extrapolation and PID
 #include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"

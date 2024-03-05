@@ -1,2 +1,0 @@
-physics.filters.tprDePHighPStopTargEventPrescale.nPrescale    : 1
-physics.filters.tprDePHighPStopTargEventPrescale.triggerFlag  : ["PrescaleRandom"]
