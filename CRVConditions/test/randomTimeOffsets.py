@@ -5,6 +5,7 @@ import csv
 if len(sys.argv) != 3:
   print("usage \"randomTimeOffsets nChannels path_to_channelMapFile\"")
   print("nChannels=22016 when using the full CRV\"")
+  print("nChannels=2048 when using the extracted position\"")
   sys.exit()
 
 nChannels=int(sys.argv[1])
