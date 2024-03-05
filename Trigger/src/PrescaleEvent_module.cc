@@ -89,11 +89,12 @@ namespace mu2e
     int ps = _eventMode[0].prescale();
 
     bool retval(false);
-    bool condition = e.event() % ps == 0;
 
-    if(condition && (ps > 0)) {
-      ++_npass;
-      retval = true;
+    if(ps > 0) {
+      retval = e.event() % ps == 0;
+      if (retval){
+        ++_npass;
+      }
     }
     return retval;
   }
