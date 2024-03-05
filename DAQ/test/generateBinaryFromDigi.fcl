@@ -7,7 +7,7 @@
 
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"
-#include "Offline/DAQ/fcl/prolog_trigger.fcl"
+#include "mu2e_trig_config/core/trigProducers.fcl"
 
 process_name : BinaryFromDigi
 
@@ -26,7 +26,7 @@ physics : {
 
    producers : {
       binaryOutput: {
-         @table::DAQ.producers.binaryOutput
+         @table::TrigDAQProducers.binaryOutput
          generateTimestampTable : 1
       }
    }
@@ -55,8 +55,8 @@ physics : {
    }
 
    t1 : [ binaryOutput ]
-   #e1 : [ readSD, readCD ]
-   e1 : [  readSD, readCD, readFragments ]
+   e1 : [ readSD, readCD ]
+   #e1 : [  readSD, readCD, readFragments ]
 
    trigger_paths  : [t1]
    end_paths      : [e1]
@@ -64,7 +64,7 @@ physics : {
 }
 
 physics.producers.binaryOutput.includeTracker : 1
-physics.producers.binaryOutput.includeCalorimeter : 1
+#physics.producers.binaryOutput.includeCalorimeter : 1
 physics.producers.binaryOutput.outputFile : "DTC_packets.bin"
 services.TFileService.fileName : "generateBinaryFromDigi_test.root"
 

@@ -80,6 +80,8 @@ class TrkAlignPanel : public TrkAlignElement {
   constexpr static const char* cxname = "TrkAlignPanel";
   TrkAlignPanel() :
       TrkAlignElement(cxname, "trk.alignpanel", StrawId::_nupanels) {}
+  TrkAlignPanel(const char* name, const char* dbname) :
+    TrkAlignElement(name, dbname,  StrawId::_nupanels) {}
 };
 
 class TrkAlignPlane : public TrkAlignElement {
@@ -87,12 +89,15 @@ class TrkAlignPlane : public TrkAlignElement {
   constexpr static const char* cxname = "TrkAlignPlane";
   TrkAlignPlane() :
       TrkAlignElement(cxname, "trk.alignplane", StrawId::_nplanes) {}
+  TrkAlignPlane(const char* name, const char* dbname) :
+      TrkAlignElement(name, dbname, StrawId::_nplanes) {}
 };
 
 class TrkAlignTracker : public TrkAlignElement {
  public:
   constexpr static const char* cxname = "TrkAlignTracker";
-  TrkAlignTracker() : TrkAlignElement(cxname, "trk.aligntracker", size_t(1)) {}
+  TrkAlignTracker() : TrkAlignElement(cxname, "trk.aligntracker", size_t(1)) {}   TrkAlignTracker(const char* name, const char* dbname) :
+      TrkAlignElement(name, dbname, size_t(1)) {}
 };
 
 }  // namespace mu2e
