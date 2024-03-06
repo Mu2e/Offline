@@ -176,6 +176,7 @@ namespace mu2e {
         ProditionsHandle<StrawPhysics> _strawphys_h;
         ProditionsHandle<StrawElectronics> _strawele_h;
         ProditionsHandle<Tracker> _alignedTrackerSim_h{"Sim"};
+        ProditionsHandle<TrackerStatus> _trackerStatus_h;
         const Tracker *_tracker;
         art::Selector _selector;
         double _rstraw; // cache
@@ -539,7 +540,6 @@ namespace mu2e {
 // get status if needed
       std::shared_ptr<const TrackerStatus> trackerStatus;
       if(_usestatus) {
-        ProditionsHandle<TrackerStatus> _trackerStatus_h;
         trackerStatus = _trackerStatus_h.getPtr(event.id());
       }
       // Get all of the tracker StrawGasStep collections from the event:
