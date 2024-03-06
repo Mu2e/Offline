@@ -114,6 +114,7 @@ namespace mu2e {
           fhicl::Atom<int> diagpath{ Name("DiagPath"), Comment("Digitization Path for waveform diagnostics") ,0 };
           fhicl::Atom<string> spinstance { Name("StrawGasStepInstance"), Comment("StrawGasStep Instance name"),""};
           fhicl::Atom<string> spmodule { Name("StrawGasStepModule"), Comment("StrawGasStep Module name"),""};
+          fhicl::Atom<bool> usestatus { Name("UseStatus"), Comment("Use TrackerStatus when making digis"), false};
 
         };
 
@@ -160,6 +161,7 @@ namespace mu2e {
         std::vector<uint16_t> _allPlanes;
         unsigned _maxnclu;
         StrawElectronics::Path _diagpath;
+        bool _usestatus;
         // Random number distributions
         art::RandomNumberGenerator::base_engine_t& _engine;
         CLHEP::RandGaussQ _randgauss;
@@ -175,7 +177,6 @@ namespace mu2e {
         ProditionsHandle<StrawElectronics> _strawele_h;
         ProditionsHandle<Tracker> _alignedTrackerSim_h{"Sim"};
         const Tracker *_tracker;
-        ProditionsHandle<TrackerStatus> _trackerStatus_h;
         art::Selector _selector;
         double _rstraw; // cache
         // diagnostics
@@ -221,7 +222,6 @@ namespace mu2e {
         //  helper functions
         void fillClusterMap(StrawPhysics const& strawphys,
             StrawElectronics const& strawele,
-            TrackerStatus const& trackerStatus,
             art::Event const& event, StrawClusterMap & hmap);
         void addStep(StrawPhysics const& strawphys,
             StrawElectronics const& strawele,
@@ -296,6 +296,7 @@ namespace mu2e {
       _allPlanes(config().allPlanes()),
       _maxnclu(config().maxnclu()),
       _diagpath(static_cast<StrawElectronics::Path>(config().diagpath())),
+      _usestatus(config().usestatus()),
       // Random number distributions
       _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
       _randgauss( _engine ),
@@ -441,7 +442,6 @@ namespace mu2e {
       StrawPhysics const& strawphys = _strawphys_h.get(event.id());
       StrawElectronics const& strawele = _strawele_h.get(event.id());
       _tracker = _alignedTrackerSim_h.getPtr(event.id()).get();
-      TrackerStatus const& trackerStatus = _trackerStatus_h.get(event.id());
       _mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
       art::Handle<EventWindowMarker> ewMarkerHandle;
       event.getByLabel(_ewMarkerTag, ewMarkerHandle);
@@ -477,7 +477,7 @@ namespace mu2e {
       // this is a map from straw ids to a list of all clusters on that straw from this event
       StrawClusterMap hmap;
       // fill this from the event
-      fillClusterMap(strawphys,strawele,trackerStatus,event,hmap);
+      fillClusterMap(strawphys,strawele,event,hmap);
       // add noise clusts
       if(_addNoise)addNoise(hmap);
       // loop over the clust sequences (i.e. loop over straws, and for each get their list of clusters)
@@ -535,8 +535,13 @@ namespace mu2e {
 
     void StrawDigisFromStrawGasSteps::fillClusterMap(StrawPhysics const& strawphys,
         StrawElectronics const& strawele,
-        TrackerStatus const& trackerStatus,
         art::Event const& event, StrawClusterMap & hmap){
+// get status if needed
+      std::shared_ptr<const TrackerStatus> trackerStatus;
+      if(_usestatus) {
+        ProditionsHandle<TrackerStatus> _trackerStatus_h;
+        trackerStatus = _trackerStatus_h.getPtr(event.id());
+      }
       // Get all of the tracker StrawGasStep collections from the event:
       typedef vector< art::Handle<StrawGasStepCollection> > HandleVector;
       HandleVector stepsHandles = event.getMany<StrawGasStepCollection>( _selector);
@@ -562,13 +567,15 @@ namespace mu2e {
           auto const& sgs = steps[isgs];
           // lookup straw here, to avoid having to find the tracker for every step
           StrawId const & sid = sgs.strawId();
-          if ( (!trackerStatus.noSignal(sid)) && sgs.ionizingEdep() > _minstepE){
+          if ( ((!_usestatus) || (!trackerStatus->noSignal(sid))) && sgs.ionizingEdep() > _minstepE){
             Straw const& straw = _tracker->getStraw(sid);
             auto sgsptr = SGSPtr(sgsch,isgs);
             // create a clust from this step, and add it to the clust map
             addStep(strawphys,strawele,straw,sgsptr,hmap[sid]);
           } else if(_debug > 0) {
-            std::cout << "Suppressing sid " << sid << " Status " << trackerStatus.strawStatus(sid) << " energy " << sgs.ionizingEdep() << std::endl;
+            StrawStatus stat;
+            if(_usestatus) stat = trackerStatus->strawStatus(sid);
+            std::cout << "Suppressing sid " << sid << " Status " << stat << " energy " << sgs.ionizingEdep() << std::endl;
           }
         }
       }
