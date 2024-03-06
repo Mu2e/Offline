@@ -261,7 +261,7 @@ namespace mu2e {
           const Straw& straw = tracker.getStraw(sgs.strawId());
           static double r2 = tracker.strawProperties()._strawInnerRadius * tracker.strawProperties()._strawInnerRadius;
           Hep3Vector hend = GenVector::Hep3Vec(sgs.endPosition());
-          double rd2 = (hend-straw.getMidPoint()).perpPart(straw.getDirection()).mag2();
+          double rd2 = (hend-straw.strawPosition()).perpPart(straw.strawDirection()).mag2();
           if(rd2 - r2 > 1e-5 ) cout << "End outside straw, radius " << sqrt(rd2) << endl;
         }
       } // end of pair loop
@@ -340,7 +340,7 @@ namespace mu2e {
       const auto& step = steps[ispmc];
       StrawId const & sid = step.strawId();
       Straw const& straw = tracker.getStraw(sid);
-      double wpos = fabs((step.position()-straw.getMidPoint()).dot(straw.getDirection()));
+      double wpos = fabs((step.position()-straw.strawPosition()).dot(straw.strawDirection()));
       //skip steps that occur in the deadened region near the end of each wire
       if( wpos <  straw.halfLength()){
         cet::map_vector_key tid = step.simParticle().get()->id();
@@ -432,7 +432,7 @@ namespace mu2e {
   }
 
   void MakeStrawGasSteps::fillStepDiag(Straw const& straw, StrawGasStep const& sgs, SPMCPV const& spmcptrs) {
-    _erad = sqrt((GenVector::Hep3Vec(sgs.endPosition())-straw.getMidPoint()).perpPart(straw.getDirection()).mag2());
+    _erad = sqrt((GenVector::Hep3Vec(sgs.endPosition())-straw.strawPosition()).perpPart(straw.strawDirection()).mag2());
     _hendrad->Fill(_erad);
     _hphi->Fill(_brot);
     if(_diag > 1){
@@ -447,7 +447,7 @@ namespace mu2e {
       _width = sgs.width();
       // compute DOCA to the wire
       TwoLinePCA poca(GenVector::Hep3Vec(sgs.startPosition()),GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()),
-          straw.getMidPoint(),straw.getDirection());
+          straw.wirePosition(),straw.wireDirection());
       _doca = poca.dca();
       _sdist.clear();
       _sdot.clear();

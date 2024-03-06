@@ -274,7 +274,7 @@ namespace mu2e
 
   void StrawHitDiag::fillStrawHitDiag(StrawElectronics const& strawele) {
     GeomHandle<DetectorSystem> det;
-    const Tracker& tracker = *GeomHandle<Tracker>();
+    const Tracker& tracker = *GeomHandle<Tracker>(); //FIXME switch to aligned
     static const double rstraw = tracker.strawOuterRadius();
     unsigned nstrs = _chcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
