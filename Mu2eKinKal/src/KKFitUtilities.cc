@@ -15,9 +15,8 @@ namespace mu2e {
       return point.Rho() < 900.0 && fabs(point.Z()) < 1800; // numbers should come from Tracker TODO
     }
     double LorentzAngle(KinKal::ClosestApproachData const& ptca, KinKal::VEC3 const& bdir) {
-      auto delta = ptca.particlePoca().Vect() - ptca.sensorPoca().Vect();
-      auto raddir = ptca.sensorDirection().Cross(bdir);
-      return atan(fabs(delta.Dot(raddir)/delta.Dot(bdir)));
+      auto tperp = (ptca.particleDirection() - ptca.particleDirection().Dot(ptca.sensorDirection())*ptca.sensorDirection()).unit();
+      return acos(tperp.Dot(bdir));
     }
     bool insideStraw(KinKal::ClosestApproachData const& ca,Straw const& straw,double ubuffer)  {
       // compute the position along the wire and compare to the 1/2 length
