@@ -374,7 +374,7 @@ namespace mu2e {
       PrimaryParticle const& pp, RecoCount& nrec) {
     GeomHandle<DetectorSystem> det;
     auto srep = _strawResponse_h.getPtr(event.id());
-    Tracker const& tracker = *(_alignedTrackerSim_h.getPtr(event.id()).get());
+    Tracker const& tracker = _alignedTrackerSim_h.get(event.id());
 
     // Tracker-reated data products
     auto sdch = event.getValidHandle<StrawDigiCollection>(_sdc);
