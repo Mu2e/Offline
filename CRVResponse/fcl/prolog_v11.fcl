@@ -64,7 +64,7 @@ BEGIN_PROLOG
                                 //CRV-R19-T module:        30442 - same as CRV-Top (1.4mm), because all counters come from scintillator batch 1
                                 //all other modules:       28573 - counters come from scintillator batch 2, with a photon yield ratio of 1.07/1.14
                                 //CRV-U, CRV-TS-Ext:       23811 - reference CRV-Top (1.8mm) was measured at 3.0V overvoltage,
-                                                           but CRV-U/CRV-TS-Ext will run at 2.5V --> scale to 2.5/3.0
+                                //                         but CRV-U/CRV-TS-Ext will run at 2.5V --> scale to 2.5/3.0
       scintillationYields       : [28573,28573,30442,28573,28573,28573,  //R1...6
                                    28573,28573,28573,                    //L1...3
                                    30442,30442,39794,39794,30442,        //T1...5
