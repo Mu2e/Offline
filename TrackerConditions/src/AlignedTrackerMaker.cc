@@ -50,8 +50,16 @@ namespace mu2e {
           std::array<xyzVec,2> wireends, strawends;
           for(int iend=0;iend < StrawEnd::nends; iend++){
             auto end = static_cast<StrawEnd::End>(iend);
-            auto wireend_UVW = ds_to_panel*straw.wireEnd(end) + straw_align.wireDeltaUVW(end);
-            auto strawend_UVW = ds_to_panel*straw.strawEnd(end) + straw_align.strawDeltaUVW(end);
+            auto wireend_UVW = ds_to_panel*straw.wireEnd(end);
+            auto strawend_UVW = ds_to_panel*straw.strawEnd(end);
+            if ( _config.wireOnly() ){
+              if (straw_align.strawDeltaUVW(end).mag() != 0.0){
+                cout << "AlignedTrackerMaker::fromDb Warning " << straw.id() << " StrawEnd alignment not zero." << std::endl;
+              }
+            }
+            wireend_UVW += straw_align.wireDeltaUVW(end);
+            strawend_UVW += straw_align.strawDeltaUVW(end);
+
             // Transform back to global coordinates, including all the alignment corrections
             wireends[iend] = aligned_panel_to_ds*wireend_UVW;
             strawends[iend] = aligned_panel_to_ds*strawend_UVW;
@@ -117,7 +125,15 @@ namespace mu2e {
       cout << "AlignedTrackerMaker::fromDb now aligning Tracker " << endl;
     }
 
-    alignTracker(ptr, tatr_p->rows(), tapl_p->rows(), tapa_p->rows(), tast_p->rows());
+    if ( _config.wireOnly() ) {
+      std::vector<TrkAlignParams> tracker_align_params(1,TrkAlignParams(0,StrawId(0,0,0),0,0,0,0,0,0));
+      std::vector<TrkAlignParams> plane_align_params(StrawId::_nplanes,TrkAlignParams(0,StrawId(0,0,0),0,0,0,0,0,0));
+      std::vector<TrkAlignParams> panel_align_params(StrawId::_nupanels,TrkAlignParams(0,StrawId(0,0,0),0,0,0,0,0,0));
+
+      alignTracker(ptr, tracker_align_params, plane_align_params, panel_align_params, tast_p->rows());
+    } else {
+      alignTracker(ptr, tatr_p->rows(), tapl_p->rows(), tapa_p->rows(), tast_p->rows());
+    }
 
     if ( _config.verbose() > 0 ) cout << "AlignedTrackerMaker::fromDb made Tracker with nStraws = " << ptr->nStraws() << endl;
     return ptr;
