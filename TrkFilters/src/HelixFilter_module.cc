@@ -62,7 +62,7 @@ namespace mu2e
         fhicl::Atom<int>                debugLevel           {     Name("debugLevel"),              Comment("debugLevel")     , 0 };
         fhicl::OptionalAtom<bool>       prescaleUsingD0Phi   {     Name("prescaleUsingD0Phi"),      Comment("prescaleUsingD0Phi") };
         fhicl::Table<PhiPrescalingParams::Config>             prescalerPar{     Name("prescalerPar"),      Comment("prescalerPar") };
-        fhicl::Atom<int>                noFilter             {     Name("noFilter"),                Comment("Don't filter anything"),1 };
+        fhicl::Atom<int>                noFilter             {     Name("noFilter"),                Comment("Don't filter anything"),0 };
       };
 
       using Parameters = art::EDFilter::Table<Config>;
