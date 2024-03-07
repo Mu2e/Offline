@@ -156,8 +156,8 @@ services.SeedService.maxUniqueEngines :  20
 #services.message.destinations.log.noTimeStamps : true
 # inform the geometry service it is not the standard Mu2e Detector
 # done via the tool_type above now
-#physics.producers.g4run.visualization.initMacro : "Mu2eG4/vis/visxz.mac"
-#physics.producers.g4run.visualization.initMacro : "Mu2eG4/vis/vismqt.mac"
+#physics.producers.g4run.visualization.initMacro : "Offline/Mu2eG4/vis/visxz.mac"
+#physics.producers.g4run.visualization.initMacro : "Offline/Mu2eG4/vis/vismqt.mac"
 #physics.producers.g4run.physics.physicsListName : "ShieldingM_EMZ"
 #physics.producers.g4run.physics.physicsListName : "QGSP_BERT_EMZ"
 #physics.producers.g4run.physics.physicsListName : "QGSP_BERT"
