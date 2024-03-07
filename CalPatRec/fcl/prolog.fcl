@@ -662,7 +662,7 @@ CalPatRec : { @table::CalPatRec
             maxTripletDz            : 500.0
             minTripletDist          : 50.0
             minTripletArea          : 1.0e4
-            maxSeedCircleResidual   : 1.0
+            maxSeedCircleResidual   : 2.0
             minSeedCircleHits       : 7
             maxDeltaPhi             : 2.0
             maxZWindow              : 500.0
