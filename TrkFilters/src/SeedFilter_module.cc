@@ -49,7 +49,7 @@ namespace mu2e
         fhicl::Atom<double>             minT0             {     Name("minT0"),                   Comment("minT0             ") };
         fhicl::Sequence<std::string>    seedFitFlag       {     Name("seedFitFlag"),             Comment("seedFitFlag       ") , std::vector<std::string>{"SeedOK"}};
         fhicl::Atom<int>                debugLevel        {     Name("debugLevel"),             Comment("debugLevel        ") , 0};
-        fhicl::Atom<int>                noFilter          {     Name("noFilter"),               Comment("Don't filter anything"),1 };
+        fhicl::Atom<int>                noFilter          {     Name("noFilter"),               Comment("Don't filter anything"),0 };
 
 
       };
