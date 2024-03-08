@@ -309,7 +309,7 @@ Mu2eKinKal : {
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
     ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
-    UsePDGCharge: false
+    UsePDGCharge: true
   }
 
   KK : {
@@ -323,7 +323,7 @@ Mu2eKinKal : {
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
     ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
-    UsePDGCharge: false
+    UsePDGCharge: true
   }
 
   KKLineSeedFit : {
