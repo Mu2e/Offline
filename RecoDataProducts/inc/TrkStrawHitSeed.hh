@@ -50,7 +50,7 @@ namespace mu2e {
       _udresid(udresid.value()),_udresidmvar(udresid.measurementVariance()),_udresidpvar(udresid.parameterVariance()),
       _rtresid(rtresid.value()),_rtresidmvar(rtresid.measurementVariance()),_rtresidpvar(rtresid.parameterVariance()),
       _rdresid(rdresid.value()),_rdresidmvar(rdresid.measurementVariance()),_rdresidpvar(rdresid.parameterVariance()),
-      _rpoca(XYZVectorF(rptca.particlePoca().Vect()))
+      _upoca(XYZVectorF(uptca.particlePoca().Vect()))
     {
       // compute position along wire according to Mu2e convention
       double endsign = chit.earlyEnd().endSign();
@@ -64,7 +64,7 @@ namespace mu2e {
       if(whs.active())_flag.merge(StrawHitFlag::active);
 
       // calculate the doca and phi relative to the straw envelope at POCA to wire
-      auto ppoca = XYZVectorF(rptca.particlePoca().Vect());
+      auto ppoca = XYZVectorF(uptca.particlePoca().Vect());
 
       static XYZVectorF zdir(0.0,0.0,1.0); // relative to Z
       auto wmid = XYZVectorF(straw.wirePosition());
@@ -74,7 +74,7 @@ namespace mu2e {
       if (raddir.Dot(wmid) < 0.0) raddir *= -1.0; // sign radially outwards
       float dw = delta.Dot(wdir);
       XYZVectorF cperp = delta - dw*wdir; // just perp part
-      _rwirephi = atan2(cperp.Dot(raddir),cperp.Dot(zdir));
+      _uwirephi = atan2(cperp.Dot(raddir),cperp.Dot(zdir));
 
       auto smid = XYZVectorF(straw.strawPosition());
       auto sdir = XYZVectorF(straw.strawDirection());
@@ -83,10 +83,10 @@ namespace mu2e {
       if(raddir.Dot(smid) < 0.0)raddir *= -1.0; // sign radially outwards
       dw = delta.Dot(sdir);
       cperp = delta - dw*sdir; // just perp part
-      _rstrawphi = atan2(cperp.Dot(raddir),cperp.Dot(zdir)); // angle around wire WRT z axis in range -pi,pi
-      _rstrawdist = sqrt(cperp.mag2());
+      _ustrawphi = atan2(cperp.Dot(raddir),cperp.Dot(zdir)); // angle around wire WRT z axis in range -pi,pi
+      _ustrawdist = sqrt(cperp.mag2());
 
-      _wdot = rptca.particleDirection().Dot(straw.wireDirection());
+      _wdot = uptca.particleDirection().Dot(straw.wireDirection());
     }
 
     //Legacy constructor for BTrk
@@ -101,7 +101,7 @@ namespace mu2e {
       _rdoca(wdoca), _rdocavar(rerr*rerr), _rdt(dt), _rtocavar(t0._t0err*t0._t0err), _udoca(wdoca), _udocavar(rerr*rerr), _udt(dt), _utocavar(t0._t0err*t0._t0err),
       _rupos(upos),_uupos(upos),
       _rdrift(rdrift),_cdrift(rdrift), _sderr(rerr), _dvel(0), _lang(0),
-      _rstrawdist(0), _rstrawphi(0), _rwirephi(0), _wdot(0),
+      _ustrawdist(0), _ustrawphi(0), _uwirephi(0), _wdot(0),
       _t0(t0), _trklen(trklen), _hitlen(hitlen),  _stime(stime){
         _etime[chit.earlyEnd()] = chit.time();
       }
@@ -176,11 +176,11 @@ namespace mu2e {
     float         _udresid=0, _udresidmvar=0, _udresidpvar =0; // unbiased distance residual and associated measurement and parameter variances
     float         _rtresid=0, _rtresidmvar=0, _rtresidpvar =0; // reference time residual and associated measurement and parameter variances
     float         _rdresid=0, _rdresidmvar=0, _rdresidpvar =0; // reference distance residual and associated measurement and parameter variances
-    float         _rstrawdist = 0;
-    float         _rstrawphi = 0;
-    float         _rwirephi = 0;
+    float         _ustrawdist = 0;
+    float         _ustrawphi = 0;
+    float         _uwirephi = 0;
     float         _wdot = 0;
-    XYZVectorF    _rpoca;
+    XYZVectorF    _upoca;
 
     // BTrk legacy payload
     HitT0       _t0;     // time origin for this hit = track t0 + particle propagation time to this straw
