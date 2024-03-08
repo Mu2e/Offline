@@ -1258,13 +1258,20 @@ namespace mu2e {
       float dw = delta.Dot(sdir);
       XYZVectorF cperp = delta - dw*sdir; // just perp part
       float phi = atan2(cperp.Dot(pdir),cperp.Dot(zdir)); // angle around wire WRT z axis in range -pi,pi
-      float rho = min(sqrt(cperp.mag2()),(float)_rstraw); // truncate!
+      float rho = sqrt(cperp.mag2());
+      XYZVectorF truncpos = cpos; // if outside straw, move inside
+      if (rho > (float)_rstraw){
+        truncpos = cpos - cperp.Unit()*(rho-(float)_rstraw);
+        rho = (float) _rstraw;
+      }
+//      float rho = min(sqrt(cperp.mag2()),(float)_rstraw); // truncate!
+
       retval._strawPosition = StrawPosition(rho,dw,phi);
       // now we get the wire position by calculating a position relative to the misaligned straw envelope
       //XYZVectorF simAlignedPos = strawPositionToXYZ(retval._strawPosition, simStraw);
       // calculate cylidrical coordinates relative to misaligned wire
       smid = XYZVectorF(straw.wirePosition());
-      delta = cpos - smid; // cluster position WRT wire middle
+      delta = truncpos - smid; // cluster position WRT wire middle
       sdir = XYZVectorF(straw.wireDirection());
       pdir = sdir.Cross(zdir); // radial direction
       if(pdir.Dot(smid) < 0.0)pdir *= -1.0; // sign radially outwards
