@@ -92,3 +92,5 @@ physics.producers.generate.muonStops.inputFiles : @local::mergedMuon_tgtStops_md
 
 // Enable diagnsotic printout for pedagogical purposes.
 #physics.producers.g4run.debug.diagLevel : 1
+// Demonstrate how to change the physics list
+// physics.producers.g4run.physics.physicsListName : "QGSP_BERT_HP"

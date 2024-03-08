@@ -18,7 +18,7 @@ namespace mu2e {
         float time,
         float charge,
         float wdist,
-        StrawPosition const& pos,
+        StrawCoordinates const& pos,
         float drifttime,
         float proptime,
         art::Ptr<StrawGasStep> const& sgsptr,
@@ -43,8 +43,8 @@ namespace mu2e {
         << " end " << _end
         << " time " << _time
         << " charge " << _charge
-        << " drift distance " << _pos.Rho()
-        << " phi " << _pos.Phi()
+        << " drift distance " << _pos._wirePosition.Rho()
+        << " phi " << _pos._wirePosition.Phi()
         << " wire propagation distance " << _wdist
         << " " << *_sgsptr << std::endl;
     }
