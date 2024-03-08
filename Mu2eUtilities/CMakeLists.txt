@@ -12,6 +12,7 @@ cet_make_library(
       src/EjectedProtonSpectrum.cc
       src/EventWeightHelper.cc
       src/fromStrings.cc
+      src/GammaPairConversionSpectrum.cc
       src/GeneratorSummaryHistograms.cc
       src/HelixTool.cc
       src/HistTrackSum.cc
