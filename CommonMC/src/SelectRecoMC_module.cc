@@ -310,7 +310,7 @@ namespace mu2e {
           tshmc._cpos, tdir );
 
     auto mcsep = wirepca.point2() - wirepca.point1();
-    tshmc._wireLen = mcsep.Dot(wdir);
+    tshmc._wireLen = (wirepca.point2()-XYZVectorF(straw.wirePosition())).Dot(wdir);
     auto mcperp = tdir.Cross(wdir).Unit();
     tshmc._wireDOCA = -1*mcperp.Dot(mcsep);
     auto pdir = wdir.Cross(bdir);
@@ -318,7 +318,7 @@ namespace mu2e {
     tshmc._wirePhi = atan2(mcsep.Dot(pdir),mcsep.Dot(bdir));
     tshmc._wireDot = tdir.Dot(wdir);
     auto wperp = wdir.Cross(mcperp);
-    tshmc._wireTau = mcsep.Dot(wperp);
+    tshmc._wireTau = (tshmc._cpos-XYZVectorF(straw.wirePosition())).Dot(wperp);
     tshmc._rdrift = srep->strawDrift().T2D(tshmc._tdrift,tshmc._wirePhi);
 
     auto sdir = XYZVectorF(straw.strawDirection());
