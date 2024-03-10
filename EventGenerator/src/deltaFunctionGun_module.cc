@@ -45,22 +45,29 @@ namespace mu2e {
 
       fhicl::TupleAs<Hep3Vector_t> position {
         Name("position"),
-        Comment("The point from which the particles are launched")
+        Comment("The point from which the particles are launched, in the GenParticle coordinate system.\n"
+                "This is usually the same as the Mu2e coordinate system, but the latter is not defined\n"
+                "for simplified geometries.  The units are mm."
+                )
       };
 
       fhicl::TupleAs<Hep3Vector_t> direction {
         Name("direction"),
-        Comment("A non-zero 3-vector ponting in the direction of the particle momentum")
+        Comment("A non-zero 3-vector ponting in the direction of the particle momentum, in the GenParticle\n"
+                "coordinate system."
+                )
       };
 
       fhicl::OptionalAtom<double> momentum {
         Name("momentum"),
-        Comment("The magnitude of momentum of the generated particles. This setting is mutially exclusive with kineticEnergy.")
+        Comment("The magnitude of momentum of the generated particles, in MeV/c.\n"
+                "This setting is mutially exclusive with kineticEnergy.")
       };
 
       fhicl::OptionalAtom<double> kineticEnergy {
         Name("kineticEnergy"),
-        Comment("Kinetic energy of the generated particles. This setting is mutially exclusive with momentum.")
+        Comment("Kinetic energy of the generated particles, in MeV/c2.\n"
+                "This setting is mutially exclusive with momentum.")
       };
     };
 
