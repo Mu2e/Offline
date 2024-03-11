@@ -2,7 +2,7 @@
 
 function check_directory() {
     dir=$1
-    
+
     if [ -d $dir/src ]; then
     pushd $dir >/dev/null 2>&1
 
@@ -18,7 +18,7 @@ function check_directory() {
         echo "File $dir/$item is not defined in CMakeLists.txt!"
     done
 
-    for item in ${badcmakes[@]};do 
+    for item in ${badcmakes[@]};do
         echo "File $dir/$item defined in CMakeLists.txt but not found in directory!"
     done
 
