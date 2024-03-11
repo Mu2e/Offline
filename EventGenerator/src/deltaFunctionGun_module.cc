@@ -92,9 +92,9 @@ namespace mu2e {
 
   //================================================================
   void deltaFunctionGun::produce(art::Event& event, const art::ProcessingFrame&) {
-    std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
-    output->emplace_back(particle_);
-    event.put(std::move(output));
+    using namespace std;
+    auto output{make_unique<GenParticleCollection,initializer_list<GenParticle>>({particle_})};
+    event.put(move(output));
   }
 
   //================================================================
