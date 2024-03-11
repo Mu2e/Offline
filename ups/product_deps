@@ -241,22 +241,17 @@ defaultqual s124:e28
 #   entry to match for a given product.
 #
 product             version         qual    flags		<table_format=2>
-art_root_io         v1_13_01        s126
-art_root_io         v1_12_04        s124
-gallery             v1_22_01        s126
-gallery             v1_21_03        s124
-geant4              v4_11_1_p02d    s126
-geant4              v4_11_1_p02a    s124
+art_root_io         v1_13_03        s128
+gallery             v1_22_03        s128
+geant4              v4_11_1_p02d    s128
 xerces_c            v3_2_3e
-artdaq_core_mu2e    v2_01_02
-BTrk                v1_02_45        s126
-BTrk                v1_02_44        s124
-KinKal              v02_05_00a      s126
-KinKal              v02_05_00       s124
+artdaq_core_mu2e    v3_00_00
+BTrk                v1_02_46        s128
+KinKal              v02_05_00b      s128
 cry                 v1_7q
 gsl                 v2_7
 swig                -                       only_for_build
-cetmodules	       v3_22_02         -       only_for_build
+cetmodules	       v3_24_01         -       only_for_build
 end_product_list
 ####################################
 
@@ -311,17 +306,11 @@ end_product_list
 #   case it is optional.
 #
 qualifier           art_root_io gallery     geant4          xerces_c    artdaq_core_mu2e    BTrk            KinKal          cry         gsl
-e28:s126:trig:debug e28:debug   e28:debug   -               e28         e28:s126:debug      e28:p3915:debug e28:p3915:debug -           -nq-
-e28:s126:trig:prof  e28:prof    e28:prof    -               e28         e28:s126:prof       e28:p3915:prof  e28:p3915:prof  -           -nq-
+e28:s128:trig:debug e28:debug   e28:debug   -               e28         e28:s128:debug      e28:p3915:debug e28:p3915:debug -           -nq-
+e28:s128:trig:prof  e28:prof    e28:prof    -               e28         e28:s128:prof       e28:p3915:prof  e28:p3915:prof  -           -nq-
 
-e28:s124:trig:debug e28:debug   e28:debug   -               e28         e28:s124:debug      e28:p3915:debug e28:p3915:debug -           -nq-
-e28:s124:trig:prof  e28:prof    e28:prof    -               e28         e28:s124:prof       e28:p3915:prof  e28:p3915:prof  -           -nq-
-
-e28:s126:debug      e28:debug   e28:debug   e28:mt:debug    e28         e28:s126:debug      e28:p3915:debug e28:p3915:debug e28:debug   -nq-
-e28:s126:prof       e28:prof    e28:prof    e28:mt:prof     e28         e28:s126:prof       e28:p3915:prof  e28:p3915:prof  e28:prof    -nq-
-
-e28:s124:debug      e28:debug   e28:debug   e28:mt:debug    e28         e28:s124:debug      e28:p3915:debug e28:p3915:debug e28:debug   -nq-
-e28:s124:prof       e28:prof    e28:prof    e28:mt:prof     e28         e28:s124:prof       e28:p3915:prof  e28:p3915:prof  e28:prof    -nq-
+e28:s128:debug      e28:debug   e28:debug   e28:mt:debug    e28         e28:s128:debug      e28:p3915:debug e28:p3915:debug e28:debug   -nq-
+e28:s128:prof       e28:prof    e28:prof    e28:mt:prof     e28         e28:s128:prof       e28:p3915:prof  e28:p3915:prof  e28:prof    -nq-
 end_qualifier_list
 ####################################
 
