@@ -17,7 +17,7 @@ namespace mu2e {
     std::string freeze = std::get<2>(config);
     diag_ = std::get<3>(config);
     freeze_ = WHSMask(freeze);
-    if(diag_ > 0)std::cout << "BkgANNSHU weights " << std::get<0>(config) << " cut " << mvacut_ << " freeze " << freeze_ << std::endl;
+    if(diag_ > 0)std::cout << "BkgANNSHU weights " << std::get<0>(config) << " cut " << mvacut_ << " freezing " << freeze_ << std::endl;
   }
 
   WireHitState BkgANNSHU::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
@@ -37,14 +37,17 @@ namespace mu2e {
       pars[5] = tpdata.particlePoca().Vect().Rho();
       auto mvaout = mva_->infer(pars.data());
       whstate.quality_[WireHitState::bkg] = mvaout[0];
-      if(diag_ > 2){
-        whstate.algo_  = StrawHitUpdaters::BkgANN;
-      }
+      whstate.algo_  = StrawHitUpdaters::BkgANN;
       if(mvaout[0] < mvacut_){
-        whstate.algo_  = StrawHitUpdaters::BkgANN;
         whstate.state_ = WireHitState::inactive;
-        whstate.frozen_ = whstate.isIn(freeze_);
+      } else {
+        // re-activate the hit if it was inactive
+        if(whstate.isInactive())whstate.state_ = WireHitState::null;
       }
+      whstate.frozen_ = whstate.isIn(freeze_);
+      if (diag_ > 1)std::cout << "BkgANNSHU set hit " << whstate << std::endl;
+    } else if (diag_ > 1) {
+      std::cout << "BkgANNSHU skipping hit " << whstate << std::endl;
     }
     return whstate;
   }
