@@ -48,7 +48,9 @@ namespace mu2e {
         whstate.flag_ = flag_;
         whstate.frozen_ = whstate.isIn(freeze_);
       }
-    }
+      if (diag_ > 1)std::cout << "CADSHU set hit " << whstate << std::endl;
+    } else if (diag_ > 1) {
+      std::cout << "CADSHU skipping hit " << whstate << std::endl;    }
     return whstate;
   }
 
