@@ -36,22 +36,10 @@ namespace mu2e {
 
   class ConstructEnvMuCapture: public InitEnvToolBase {
   public:
-    ConstructEnvMuCapture(const fhicl::ParameterSet& PSet);
-    ~ConstructEnvMuCapture();
+    ConstructEnvMuCapture(const fhicl::ParameterSet& PSet) {}
 
     int construct(VolumeInfo const& ParentVInfo, SimpleConfig const& Config);
   };
-
-
-//-----------------------------------------------------------------------------
-  ConstructEnvMuCapture::ConstructEnvMuCapture(const fhicl::ParameterSet& PSet) {
-    _name = "MuCapture";
-  }
-
-//-----------------------------------------------------------------------------
-  ConstructEnvMuCapture::~ConstructEnvMuCapture() {
-    _name = "MuCapture";
-  }
 
 //-----------------------------------------------------------------------------
   int ConstructEnvMuCapture::construct(VolumeInfo const& parentVInfo, SimpleConfig const& _config) {
