@@ -38,8 +38,7 @@ namespace mu2e {
 
   class ConstructEnvCalo01: public InitEnvToolBase {
   public:
-    ConstructEnvCalo01(const fhicl::ParameterSet& PSet);
-    ~ConstructEnvCalo01();
+    ConstructEnvCalo01(const fhicl::ParameterSet& PSet) {}
 
     int construct(VolumeInfo const& ParentVInfo, SimpleConfig const& Config);
   private:
@@ -64,16 +63,6 @@ namespace mu2e {
                          bool                const   doSurfaceCheck
                          );
   };
-
-//-----------------------------------------------------------------------------
-  ConstructEnvCalo01::ConstructEnvCalo01(const fhicl::ParameterSet& PSet) {
-    _name = "Calo01";
-  }
-
-//-----------------------------------------------------------------------------
-  ConstructEnvCalo01::~ConstructEnvCalo01() {
-    _name = "Calo01";
-  }
 
 //-----------------------------------------------------------------------------
   int ConstructEnvCalo01::construct(VolumeInfo const& parentVInfo, SimpleConfig const& config) {
