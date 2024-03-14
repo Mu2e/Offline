@@ -49,7 +49,8 @@ namespace mu2e
         fhicl::Atom<double>             minT0             {     Name("minT0"),                   Comment("minT0             ") };
         fhicl::Sequence<std::string>    seedFitFlag       {     Name("seedFitFlag"),             Comment("seedFitFlag       ") , std::vector<std::string>{"SeedOK"}};
         fhicl::Atom<int>                debugLevel        {     Name("debugLevel"),             Comment("debugLevel        ") , 0};
-
+        fhicl::Atom<int>                noFilter          {     Name("noFilter"),               Comment("Don't filter anything"),0 };
+        fhicl::Atom<int>                minNTracks        {     Name("minNTracks"),             Comment("Min number of tracks"),1 };
 
       };
 
@@ -73,6 +74,8 @@ namespace mu2e
       int             _debug;
       // counters
       unsigned        _nevt, _npass;
+    int             _noFilter;
+    int             _minNTracks;
   };
 
   SeedFilter::SeedFilter(const Parameters& config):
@@ -94,7 +97,10 @@ namespace mu2e
     _minT0     (config().minT0()),
     _goods     (config().seedFitFlag()),
     _debug     (config().debugLevel()),
-    _nevt(0), _npass(0)
+    _nevt(0),
+    _npass(0),
+    _noFilter(config().noFilter()),
+    _minNTracks(config().minNTracks())
     {
       produces<TriggerInfo>();
     }
@@ -102,7 +108,6 @@ namespace mu2e
   bool SeedFilter::filter(art::Event& evt){
     std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
-    bool retval(false); // preset to fail
     // find the collection
     auto ksH = evt.getValidHandle<KalSeedCollection>(_ksTag);
     const KalSeedCollection* kscol = ksH.product();
@@ -110,6 +115,7 @@ namespace mu2e
     if(_debug > 2){
       if (kscol->size()>0) printf("[SeedFilter::filter]   nhits     mom     momErr    chi2ndof     fitCon   tanDip    d0      \n");
     }
+    int nGoodTracks = 0;
     for(auto iks = kscol->begin(); iks != kscol->end(); ++iks) {
       auto const& ks = *iks;
       // get the first segment
@@ -134,8 +140,8 @@ namespace mu2e
           ks.fitConsistency()  > _minfitcons &&
           fseg.helix().tanDip() > _mintdip && fseg.helix().tanDip() < _maxtdip &&
           fseg.helix().d0() > _minD0 && fseg.helix().d0() < _maxD0 ) {
-        retval = true;
         ++_npass;
+        ++nGoodTracks;
         // Fill the trigger info object
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
@@ -147,7 +153,11 @@ namespace mu2e
       }
     }
     evt.put(std::move(triginfo));
-    return retval;
+    if (_noFilter != 1){
+      return (nGoodTracks >= _minNTracks);
+    }else {
+      return true;
+    }
   }
 
   bool SeedFilter::endRun( art::Run& run ) {

@@ -4,7 +4,8 @@
 #ifndef CalPatRec_DeltaFinder_structures_hh
 #define CalPatRec_DeltaFinder_structures_hh
 
-#include "Offline/CalPatRec/inc/DeltaFinder_enums.hh"
+#include "Offline/CalPatRec/inc/CalPatRec_enums.hh"
+#include "Offline/CalPatRec/inc/ChannelID.hh"
 #include "Offline/CalPatRec/inc/HitData_t.hh"
 
 namespace mu2e {
@@ -22,13 +23,6 @@ namespace mu2e {
       float fPhi;                       // predicted phi itself, -100 if no prediction
       float fErr;                       // uncertainty, defines the window
       int   fPanelID;                   // if can predict the panel, -1 otherwise
-    };
-
-    struct ChannelID {
-      int Station;
-      int Plane;
-      int Face;
-      int Panel;
     };
 //-----------------------------------------------------------------------------
 // intersection of the two hit wires

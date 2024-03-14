@@ -1,3 +1,7 @@
+///////////////////////////////////////////////////////////////////////////////
+// P.Murat: use 'ProcessCode::mu2ePienu' for pi--> e nu decay
+//          also use GenId::piEplusNuGun
+///////////////////////////////////////////////////////////////////////////////
 #include "art/Utilities/ToolMacros.h"
 #include <memory>
 
@@ -17,7 +21,7 @@
 #include "fhiclcpp/types/DelegatedParameter.h"
 
 namespace mu2e {
-  class MuplusMichelGenerator : public ParticleGeneratorTool {
+  class StoppedPiEnuGenerator : public ParticleGeneratorTool {
 
   private:
     PDGCode::type                       _pdgCode;
@@ -35,7 +39,7 @@ namespace mu2e {
     };
     typedef art::ToolConfigTable<PhysConfig> Parameters;
 
-    explicit MuplusMichelGenerator(Parameters const& conf) :
+    explicit StoppedPiEnuGenerator(Parameters const& conf) :
       _pdgCode(PDGCode::e_plus),
       _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgCode).mass()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
@@ -44,36 +48,35 @@ namespace mu2e {
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
-    virtual ProcessCode   processCode() override { return ProcessCode::mu2eMuonDecayAtRest; }
+    virtual ProcessCode   processCode() override { return ProcessCode::mu2ePienu; }
 
     virtual void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&) override {
       _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng);
-      _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
+      _randSpectrum     = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
     }
   };
 
 //-----------------------------------------------------------------------------
-  std::vector<ParticleGeneratorTool::Kinematic> MuplusMichelGenerator::generate() {
+  std::vector<ParticleGeneratorTool::Kinematic> StoppedPiEnuGenerator::generate() {
     std::vector<ParticleGeneratorTool::Kinematic>  res;
 
-    double energy = _spectrum.sample(_randSpectrum->fire());
-
+    double energy  = _spectrum.sample(_randSpectrum->fire());
     const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
     CLHEP::HepLorentzVector fourmom(_randomUnitSphere->fire(p), energy);
 
-    ParticleGeneratorTool::Kinematic k{_pdgCode, ProcessCode::mu2ePrimary, fourmom};
+    ParticleGeneratorTool::Kinematic k{_pdgCode, ProcessCode::mu2ePienu, fourmom};
     res.emplace_back(k);
 
     return res;
   }
 
-  void MuplusMichelGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
+  void StoppedPiEnuGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
     const auto daughters = generate();
     for(const auto& d: daughters) {
-      out->emplace_back(d.pdgId, GenId::MuplusMichelGenTool, pos, d.fourmom, stop.t);
+      out->emplace_back(d.pdgId, GenId::piEplusNuGun, pos, d.fourmom, stop.t);
     }
   }
 
 }
-DEFINE_ART_CLASS_TOOL(mu2e::MuplusMichelGenerator)
+DEFINE_ART_CLASS_TOOL(mu2e::StoppedPiEnuGenerator)

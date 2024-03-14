@@ -21,9 +21,9 @@ int    physicsParams.nominalDAQOnSpillBins = 5; // how often to 68->67
 double physicsParams.nominalDAQFrequency = 40.; // MHz
 
 // charged pion and kaon
-vector<int> physicsParams.freeLifePDGId = { 211, 312 };
+vector<int> physicsParams.freeLifePDGId   = {  211   , 312   ,  13    , 2212};
 // in Mu2e units (ns), per PDG 2013 partial update
-vector<double> physicsParams.freeLifetime =  { 26.033, 12.38 };
+vector<double> physicsParams.freeLifetime =  { 26.033, 12.38 , 2196.98, 1.e20};
 
 // Available stopping target materials
 vector<string> physicsParams.stoppingTargets = {"Al","Ti","Cu","Se","Sb","Au","C","IPA"};

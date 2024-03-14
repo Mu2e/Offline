@@ -1,5 +1,5 @@
-#ifndef DeltaFinder_enums_hh
-#define DeltaFinder_enums_hh
+#ifndef CalPatRec_inc__enums_hh
+#define CalPatRec_inc__enums_hh
 
 #include "Offline/DataProducts/inc/StrawId.hh"
 

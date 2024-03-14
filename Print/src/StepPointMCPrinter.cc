@@ -77,8 +77,9 @@ void mu2e::StepPointMCPrinter::Print(const mu2e::StepPointMC& obj, int ind,
        << " " << std::setw(10) << std::setprecision(3) << obj.position().y()
        << " " << std::setw(10) << std::setprecision(3) << obj.position().z()
        << " "
-       << " " << std::setw(8) << obj.momentum().mag() << " " << std::setw(8)
-       << obj.time() << " "
+       << " " << std::setw(8) << obj.momentum().mag()
+       << " " << std::setw(8) << obj.time() << " "
+       << " " << std::setw(8) << obj.properTime() << " "
        << " " << std::setiosflags(std::ios::left) << obj.endProcessCode().name()
        << std::endl;
 
@@ -114,6 +115,6 @@ void mu2e::StepPointMCPrinter::PrintHeader(const std::string& tag,
 void mu2e::StepPointMCPrinter::PrintListHeader(std::ostream& os) {
   if (verbose() < 1) return;
   os << "ind     parent     vol     eDep     noIonEDep         Position        "
-        "               P      time    endProc"
+        "               P      time    properTime endProc"
      << std::endl;
 }

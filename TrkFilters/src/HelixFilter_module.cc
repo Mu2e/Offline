@@ -62,6 +62,8 @@ namespace mu2e
         fhicl::Atom<int>                debugLevel           {     Name("debugLevel"),              Comment("debugLevel")     , 0 };
         fhicl::OptionalAtom<bool>       prescaleUsingD0Phi   {     Name("prescaleUsingD0Phi"),      Comment("prescaleUsingD0Phi") };
         fhicl::Table<PhiPrescalingParams::Config>             prescalerPar{     Name("prescalerPar"),      Comment("prescalerPar") };
+        fhicl::Atom<int>                noFilter             {     Name("noFilter"),                Comment("Don't filter anything"),0 };
+        fhicl::Atom<int>                minNHelices          {     Name("minNHelices"),             Comment("Min number of helices"),1 };
       };
 
       using Parameters = art::EDFilter::Table<Config>;
@@ -100,6 +102,8 @@ namespace mu2e
       unsigned      _nevt, _npass;
 
       int evalIPAPresc(const float &phi0);
+      int           _noFilter;
+      int           _minNHelices;
   };
 
   HelixFilter::HelixFilter(const Parameters& config):
@@ -123,7 +127,10 @@ namespace mu2e
     _minnloops         (config().minNLoops()),
     _goodh             (config().helixFitFlag()),
     _debug             (config().debugLevel()),
-    _nevt(0), _npass(0)
+    _nevt(0),
+    _npass(0),
+    _noFilter(config().noFilter()),
+    _minNHelices(config().minNHelices())
     {
       bool val;
       if (config().prescaleUsingD0Phi(val)) {
@@ -160,12 +167,12 @@ namespace mu2e
     // create output
     std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
-    bool retval(false); // preset to fail
     // find the collection
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     const HelixSeedCollection* hscol = hsH.product();
     float mm2MeV = 3./10.*_bz0;
     // loop over the collection: if any pass the selection, pass this event
+    int nGoodHelices = 0;
     for(auto ihs = hscol->begin();ihs != hscol->end(); ++ihs) {
       auto const& hs = *ihs;
 
@@ -210,8 +217,8 @@ namespace mu2e
           int   prescaler = evalIPAPresc(phiAtD0);
           if (_nevt % prescaler != 0)               continue;
         }
-        retval = true;
         ++_npass;
+        ++nGoodHelices;
         // Fill the trigger info object
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
@@ -223,7 +230,11 @@ namespace mu2e
       }
     }
     evt.put(std::move(triginfo));
-    return retval;
+    if (_noFilter != 1){
+      return (nGoodHelices >= _minNHelices);
+    }else {
+      return true;
+    }
   }
 
   bool HelixFilter::endRun( art::Run& run ) {

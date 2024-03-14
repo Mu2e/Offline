@@ -25,73 +25,23 @@ namespace fhicl {
 
 #include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
 
+#include "Offline/CalPatRec/inc/ManagedList.hh"
+#include "Offline/CalPatRec/inc/Pzz_t.hh"
+#include "Offline/CalPatRec/inc/ChannelID.hh"
+#include "Offline/CalPatRec/inc/HitData_t.hh"
 #include "Offline/CalPatRec/inc/DeltaFinder_structures.hh"
 #include "Offline/CalPatRec/inc/DeltaSeed.hh"
 #include "Offline/CalPatRec/inc/DeltaCandidate.hh"
 #include "Offline/CalPatRec/inc/ProtonCandidate.hh"
 
+using CalPatRec::ChannelID;
+using CalPatRec::HitData_t;
+using CalPatRec::Pzz_t;
+
 namespace mu2e {
   class Panel;
   class SimParticle;
   class DeltaFinderAlg;
-//-----------------------------------------------------------------------------
-// assume that class T has, say, Init method, which reinitialize an object
-// allocated before
-// in particular, that assumes that T owns all its pointers (if any) and Init
-// handles them correctly
-// T is supposed to have a constructor T(int N) , wher N is the element index in the list
-// light-weight and crippled version of TClonesArray
-//-----------------------------------------------------------------------------
-    template <class T> struct ManagedList {
-      int              fN;
-      int              fNAllocated;
-      std::vector<T*>  fList;
-
-      ManagedList() {
-        fN          = 0;
-        fNAllocated = 0;
-      }
-
-      ~ManagedList() {
-        for (int i=0; i<fNAllocated; i++) delete fList[i];
-      }
-
-      T* at(int I) { return fList[I]; }
-
-      void clear () { fN = 0; }
-
-      void reserve (int N) { fList.reserve(N); }
-
-      void reinitialize() {
-        for (int i=0; i<fNAllocated; i++) delete fList[i];
-        fList.clear();
-        fN          = 0;
-        fNAllocated = 0;
-      }
-
-      int N() { return fN; }
-
-      T* New() {
-        T* ds;
-        if (fN < (int) fList.size()) {
-//-----------------------------------------------------------------------------
-// reuse already allocated slot
-//-----------------------------------------------------------------------------
-          ds = fList[fN];
-        }
-        else {
-//-----------------------------------------------------------------------------
-// allocate new slot
-//-----------------------------------------------------------------------------
-          ds = new T(fN);
-          fList.push_back(ds);
-          fNAllocated++;
-        }
-        fN++;
-        return ds;
-      }
-
-    };
 //-----------------------------------------------------------------------------
 // delta-electron seed: structure within the station
 // doesn't own anything, no need to delete any pinters
@@ -127,15 +77,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // data structures passed to the diagnostics plugin
 //-----------------------------------------------------------------------------
-    struct Pzz_t {
-      int                              fID;         // 3*face+panel, for pre-calculating overlaps
-      double                           wx;          // direction cosines of the wire, all wires are assumed parallel
-      double                           wy;
-      double                           nx;          // direction cosines of the normal to the wires, pointing outwards
-      double                           ny;
-      float                            z;           // Z-coordinate of the face
-    };
-
     struct FaceZ_t {
       int                     fID;         // 3*face+panel, for pre-calculating overlaps
 
@@ -240,15 +181,9 @@ namespace mu2e {
 
       ProtonCandidate* newProtonCandidate() { return fListOfProtonCandidates.New(); }
 
-      static void orderID           (ChannelID* X, ChannelID* Ordered);
-      static void deOrderID         (ChannelID* X, ChannelID* Ordered);
-
       void        printHitData       (HitData_t*      HitData, const char* Option = "");
       void        printDeltaSeed     (DeltaSeed*      Seed   , const char* Option = "");
       void        printDeltaCandidate(DeltaCandidate* Delta  , const char* Option = "");
-
-      void        testOrderID  ();
-      void        testdeOrderID();
    };
 
 //-----------------------------------------------------------------------------

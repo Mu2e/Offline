@@ -659,7 +659,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // get Z-ordered location
 //-----------------------------------------------------------------------------
-      Data_t::orderID(&cx, &co);
+      ChannelID::orderID(&cx, &co);
 
       int os       = co.Station;
       int of       = co.Face;
