@@ -19,8 +19,9 @@ class TrkAlignStraw : public DbTable {
   typedef std::shared_ptr<const TrkAlignStraw> cptr_t;
   constexpr static const char* cxname = "TrkAlignStraw";
 
-  TrkAlignStraw() :
-      DbTable(cxname, "trk.alignstraw",
+  TrkAlignStraw() : TrkAlignStraw(cxname, "trk.alignstraw") {}
+  TrkAlignStraw(const char* name, const char* dbname) :
+      DbTable(name, dbname,
               "index,StrawId,wire_cal_dV,wire_cal_dW,wire_hv_dV,wire_hv_dW,"
               "straw_cal_dV,straw_cal_dW,straw_hv_dV,straw_hv_dW") {
   }  // this last should come from the Row class FIXME!

@@ -222,7 +222,7 @@ Mu2eKinKal : {
       [ 0.0, "CADSHU:DriftANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ],
-      [ 0.0, "CADSHU:DriftANNSHU:BkgANNSHU" ],
+      [ 0.0, "CADSHU:BkgANNSHU:DriftANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ]
     ]
     CADSHUSettings : [
@@ -239,8 +239,8 @@ Mu2eKinKal : {
     ]
 
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.1,"Inactive", 1],
-      [ "Offline/Mu2eKinKal/data/TrainBkgFinal.dat",0.1,"Inactive", 1]
+      [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.2,"Inactive", 1],
+      [ "Offline/Mu2eKinKal/data/TrainBkgFinal.dat",0.2,"Inactive", 1]
     ]
 
     DriftANNSHUSettings : [

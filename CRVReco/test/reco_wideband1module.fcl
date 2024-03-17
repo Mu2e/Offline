@@ -1,0 +1,45 @@
+#reconstructs CRV pulses
+#
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CRVResponse/fcl/prolog.fcl"
+
+process_name : CRVResponseReco
+
+source :
+{
+  module_type : RootInput
+}
+
+services :
+{
+  @table::Services.Reco
+}
+
+physics :
+{
+  producers:
+  {
+    CrvRecoPulses: @local::CrvRecoPulses
+  }
+
+  an : [CrvRecoPulses]
+  out: [Output]
+
+  trigger_paths: [an]
+  end_paths:     [out]
+}
+
+outputs:
+{
+  Output :
+  {
+    module_type : RootOutput
+    fileName    : "recoWideband.art"
+  }
+}
+
+services.TFileService.fileName : "recoWideband.root"
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband1module.txt"
+services.ProditionsService.crvCalib.useDb: true
+services.DbService.textFile : ["Offline/CRVConditions/data/calib_wideband1module.txt"]

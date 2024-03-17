@@ -245,6 +245,11 @@
  <class name="mu2e::TrkQualCollection"/>
  <class name="art::Wrapper<mu2e::TrkQualCollection>"/>
 
+ <class name="mu2e::MVAResult"/>
+ <class name="art::Wrapper<mu2e::MVAResult>"/>
+ <class name="mu2e::MVAResultCollection"/>
+ <class name="art::Wrapper<mu2e::MVAResultCollection>"/>
+
  <class name="mu2e::TrkCaloHitPID"/>
  <class name="mu2e::TrkCaloHitPIDCollection"/>
  <class name="mu2e::TrkCaloHitPIDDetail"/>

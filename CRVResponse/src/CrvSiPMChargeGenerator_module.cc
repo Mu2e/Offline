@@ -4,6 +4,7 @@
 //
 // Original Author: Ralf Ehrlich
 
+#include "Offline/CRVConditions/inc/CRVStatus.hh"
 #include "Offline/CRVResponse/inc/MakeCrvSiPMCharges.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
@@ -46,7 +47,6 @@ namespace mu2e
 
     private:
     std::string _crvPhotonsModuleLabel;
-    double      _deadSiPMProbability;
     int         _nPixelsX;
     int         _nPixelsY;
     double      _overvoltage;
@@ -55,6 +55,8 @@ namespace mu2e
     double      _digitizationStart, _digitizationEnd, _digitizationStartMargin;
     std::string _eventWindowMarkerLabel;
     std::string _protonBunchTimeMCLabel;
+
+    mu2e::ProditionsHandle<mu2e::CRVStatus> _sipmStatus;
 
     mu2eCrv::MakeCrvSiPMCharges::ProbabilitiesStruct _probabilities;
     std::vector<std::pair<int,int> >   _inactivePixels;
@@ -72,7 +74,6 @@ namespace mu2e
   CrvSiPMChargeGenerator::CrvSiPMChargeGenerator(fhicl::ParameterSet const& pset) :
     EDProducer{pset},
     _crvPhotonsModuleLabel(pset.get<std::string>("crvPhotonsModuleLabel")),
-    _deadSiPMProbability(pset.get<double>("deadSiPMProbability")),   //0.01
     _nPixelsX(pset.get<int>("nPixelsX")),                            //40
     _nPixelsY(pset.get<int>("nPixelsY")),                            //40
     _overvoltage(pset.get<double>("overvoltage")),                   //3.0V
@@ -137,6 +138,8 @@ namespace mu2e
     }
     startTime -= _digitizationStartMargin;
 
+    auto const& sipmStatus = _sipmStatus.get(event.id());
+
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
     std::vector<std::shared_ptr<CRSScintillatorBar> >::const_iterator iter;
@@ -144,21 +147,23 @@ namespace mu2e
     {
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
 
-      for(int SiPM=0; SiPM<4; SiPM++)
+      for(size_t SiPM=0; SiPM<CRVId::nChanPerBar; SiPM++)
       {
-        if(!(*iter)->getBarDetail().hasCMB(SiPM%2)) continue;  //no SiPM charges at non-existing SiPMs
+        if(!(*iter)->getBarDetail().hasCMB(SiPM%CRVId::nSidesPerBar)) continue;  //no SiPM charges at non-existing SiPMs
                                                                //SiPM%2 returns the side of the CRV counter
                                                                //0 ... negative side
                                                                //1 ... positive side
 
-        if(_randFlat.fire() < _deadSiPMProbability) continue;  //assume that this random SiPM is dead
+        size_t channel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
+        int status = sipmStatus.status(channel);
+        if(status==1 || status==2) continue; //SiPM not connected or dead
 
         //time wrapping happened in the photon generator
         std::vector<std::pair<double,size_t> > photonTimesNew;   //pair of photon time and index in the original photon vector
         CrvPhotonsCollection::const_iterator crvPhotons;
         for(crvPhotons=crvPhotonsCollection->begin(); crvPhotons!=crvPhotonsCollection->end(); crvPhotons++)
         {
-          if(crvPhotons->GetScintillatorBarIndex()==barIndex && crvPhotons->GetSiPMNumber()==SiPM)
+          if(crvPhotons->GetScintillatorBarIndex()==barIndex && crvPhotons->GetSiPMNumber()==(int)SiPM)
           {
             const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->GetPhotons();
             for(size_t iphoton=0; iphoton<photonTimes.size(); iphoton++)

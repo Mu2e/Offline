@@ -1,8 +1,6 @@
-physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
-physics.producers.CrvPhotons.crvStepProcessNames  : ["CrvStepsConverter"]
 physics.producers.CrvPhotons.CRVSectors           : ["EX","T1","T2"]
 physics.producers.CrvPhotons.reflectors           : [  0,   1,   0 ]
-physics.producers.CrvPhotons.scintillationYields  : [39400,39400,39400]
+physics.producers.CrvPhotons.scintillationYields  : [39794,28573,28573]   //assuming modules from CRV-T(1.8mm),CRV-DS,CRV-L
 physics.producers.CrvPhotons.lookupTableFileNames : [
                                                      "CRVConditions/v6_0/LookupTable_6000_0",
                                                      "CRVConditions/v6_0/LookupTable_2370_1",
@@ -13,7 +11,7 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
       [
         {
           CRVSector : "EX"
-          PEthreshold : 20  //PEs
+          PEthreshold : 10  //PEs
           maxTimeDifferenceAdjacentPulses : 10  //ns
           maxTimeDifference : 20  //ns
           minOverlapTimeAdjacentPulses : 30  //ns
@@ -21,12 +19,12 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
           minSlope :-11
           maxSlope : 11  //width direction over thickness direction
           maxSlopeDifference : 4
-          coincidenceLayers : 3
+          coincidenceLayers : 2
           minClusterPEs : 0
         },
         {
           CRVSector : "T1"
-          PEthreshold : 20
+          PEthreshold : 10
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20
           minOverlapTimeAdjacentPulses : 30
@@ -34,12 +32,12 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
           minSlope :-11
           maxSlope : 11
           maxSlopeDifference : 4
-          coincidenceLayers : 4
+          coincidenceLayers : 2
           minClusterPEs : 0
         },
         {
           CRVSector : "T2"
-          PEthreshold : 20
+          PEthreshold : 10
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20
           minOverlapTimeAdjacentPulses : 30
@@ -47,7 +45,7 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
           minSlope :-11
           maxSlope : 11
           maxSlopeDifference : 4
-          coincidenceLayers : 4
+          coincidenceLayers : 2
           minClusterPEs : 0
         }
       ]

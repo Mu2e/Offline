@@ -14,7 +14,7 @@ class MakeCrvRecoPulses
   MakeCrvRecoPulses(float minADCdifference, float defaultBeta, float minBeta, float maxBeta,
                     float maxTimeDifference, float minPulseHeightRatio, float maxPulseHeightRatio,
                     float LEtimeFactor, float pulseThreshold, float pulseAreaThreshold, float doublePulseSeparation);
-  void         SetWaveform(const std::vector<unsigned int> &waveform, unsigned int startTDC,
+  void         SetWaveform(const std::vector<int16_t> &waveform, uint16_t startTDC,
                            float digitizationPeriod, float pedestal, float calibrationFactor,
                            float calibrationFactorPulseHeight);
 
@@ -30,10 +30,10 @@ class MakeCrvRecoPulses
 
   private:
   MakeCrvRecoPulses();
-  void FillGraphAndFindPeaks(const std::vector<unsigned int> &waveform, unsigned int startTDC,
+  void FillGraphAndFindPeaks(const std::vector<int16_t> &waveform, uint16_t startTDC,
                              float digitizationPeriod, float pedestal,
                              TGraph &g, std::vector<std::pair<size_t,size_t> > &peaks);
-  void RangeFinder(const std::vector<unsigned int> &waveform, const size_t peakStart, const size_t peakEnd, size_t &start, size_t &end);
+  void RangeFinder(const std::vector<int16_t> &waveform, const size_t peakStart, const size_t peakEnd, size_t &start, size_t &end);
   bool FailedFit(TFitResultPtr fr);
 
   TF1    _f1;
@@ -61,8 +61,8 @@ class MakeCrvRecoPulses
   const std::vector<bool>   &GetSeparatedDoublePulses() const {return _separatedDoublePulses;}
 
   private:
-  void NoFitOption(const std::vector<unsigned int> &waveform, const std::vector<std::pair<size_t,size_t> > &peaks,
-                   unsigned int startTDC, float digitizationPeriod, float pedestal, float calibrationFactor);
+  void NoFitOption(const std::vector<int16_t> &waveform, const std::vector<std::pair<size_t,size_t> > &peaks,
+                   uint16_t startTDC, float digitizationPeriod, float pedestal, float calibrationFactor);
   std::vector<float>  _PEsNoFit;
   std::vector<double> _pulseTimesNoFit;
   std::vector<double> _pulseStart;
