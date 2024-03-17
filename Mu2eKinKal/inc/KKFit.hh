@@ -514,7 +514,8 @@ namespace mu2e {
           strawhit->refResidual(Mu2eKinKal::tresid),
           strawhit->refResidual(Mu2eKinKal::dresid),
           strawhit->fillDriftInfo(),
-          strawhit->hitState());
+          strawhit->hitState(),
+          strawhit->straw());
     }
     if(kktrk.caloHits().size() > 0){
       auto const& calohit = kktrk.caloHits().front(); // for now take the front: not sure if there will ever be >1 TODO

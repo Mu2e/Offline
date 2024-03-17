@@ -4,6 +4,10 @@
 namespace mu2e {
   namespace TrackerMC {
     typedef ROOT::Math::Cylindrical3D<Float_t> StrawPosition; // position WRT the straw.
+    struct StrawCoordinates {
+      StrawPosition _strawPosition;
+      StrawPosition _wirePosition;
+    };
   }
 }
 #endif

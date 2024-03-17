@@ -105,7 +105,6 @@ physics.analyzers.TAKK.candidate.options : @local::AllOpt
 physics.analyzers.TAKK.diagLevel : 2
 physics.analyzers.TAKK.FillMCInfo : true
 physics.analyzers.TAKK.FillCRVHits : true
-physics.analyzers.TAKK.FillTrkQualInfo : false
 physics.analyzers.TAKK.FillTrkPIDInfo : false
 physics.analyzers.TAKK.FillHitInfo : true
 physics.analyzers.TAKK.FillTriggerInfo : false

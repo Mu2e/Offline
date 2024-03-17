@@ -263,6 +263,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
     std::vector<StrawHitIndex> shitids;
     tseed._straw_chits.fillStrawHitIndices(ich, shitids);
 
+    /*
     for(auto const& ids : shitids){
       size_t    istraw   = (ids);
       TrkStrawHitSeed tshs;
@@ -270,6 +271,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
       tshs._t0 = tseed._t0;
       tseed._trkstrawhits.push_back(tshs);
     }
+    */
   }
 
   return good_hits;

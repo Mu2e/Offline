@@ -20,6 +20,7 @@ namespace mu2e {
     KinKal::SensorLine hitLine(ComboHit const& ch, Straw const& straw,StrawResponse const& strawresponse);
     // test whether a point is inside the detector
     bool inDetector(KinKal::VEC3 const& point);
+    // returns phi angle from 0 to pi/2, where 0 is in B field direction
     double LorentzAngle(KinKal::ClosestApproachData const& ptca, KinKal::VEC3 const& bdir);
 
     // this finds the time at which the traj crosses the given z value

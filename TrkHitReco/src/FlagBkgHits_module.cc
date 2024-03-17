@@ -5,6 +5,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/OptionalTable.h"
 
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -16,6 +17,7 @@
 #include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"
 
 #include "Offline/TrkHitReco/inc/TNTClusterer.hh"
+#include "Offline/TrkHitReco/inc/Chi2Clusterer.hh"
 #include "Offline/TrkHitReco/inc/TrainBkgDiag.hxx"
 
 #include <string>
@@ -37,22 +39,23 @@ namespace mu2e
       {
         using Name = fhicl::Name;
         using Comment = fhicl::Comment;
-        fhicl::Atom<art::InputTag>            comboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
-        fhicl::Atom<unsigned>                 minActiveHits{        Name("MinActiveHits"),        Comment("Minumim number of active hits in a cluster") };
-        fhicl::Atom<unsigned>                 minNPlanes{           Name("MinNPlanes"),           Comment("Minumim number of planes in a cluster") };
-        fhicl::Atom<float>                    clusterPositionError{ Name("ClusterPositionError"), Comment("Cluster poisiton error") };
-        fhicl::Atom<int>                      clusterAlgorithm{     Name("ClusterAlgorithm"),     Comment("Clusterer algorithm") };
-        fhicl::Atom<bool>                     filterHits{           Name("FilterHits"),           Comment("Produce filtered ComboHit collection")  };
-        fhicl::Sequence<std::string>          backgroundMask{       Name("BackgroundMask"),       Comment("Bkg hit selection mask") };
-        fhicl::Atom<bool>                     saveBkgClusters{      Name("SaveBkgClusters"),      Comment("Save bkg clusters") };
-        fhicl::Atom<std::string>              outputLevel{          Name("OutputLevel"),          Comment("Level of the output ComboHitCollection") };
-        fhicl::Atom<int>                      debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
-        fhicl::Table<TNTClusterer::Config>    TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
-        fhicl::Atom<std::string>              kerasWeights{         Name("KerasWeights"),         Comment("Weights for keras model") };
-        fhicl::Atom<float>                    kerasQuality{         Name("KerasQuality"),         Comment("Keras quality cut") };
+        fhicl::Atom<art::InputTag>                    comboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
+        fhicl::Atom<unsigned>                         minActiveHits{        Name("MinActiveHits"),        Comment("Minumim number of active hits in a cluster") };
+        fhicl::Atom<unsigned>                         minNPlanes{           Name("MinNPlanes"),           Comment("Minumim number of planes in a cluster") };
+        fhicl::Atom<float>                            clusterPositionError{ Name("ClusterPositionError"), Comment("Cluster poisiton error") };
+        fhicl::Atom<int>                              clusterAlgorithm{     Name("ClusterAlgorithm"),     Comment("Clusterer algorithm") };
+        fhicl::Atom<bool>                             filterHits{           Name("FilterHits"),           Comment("Produce filtered ComboHit collection")  };
+        fhicl::Sequence<std::string>                  backgroundMask{       Name("BackgroundMask"),       Comment("Bkg hit selection mask") };
+        fhicl::Atom<bool>                             saveBkgClusters{      Name("SaveBkgClusters"),      Comment("Save bkg clusters") };
+        fhicl::Atom<std::string>                      outputLevel{          Name("OutputLevel"),          Comment("Level of the output ComboHitCollection") };
+        fhicl::Atom<int>                              debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
+        fhicl::OptionalTable<TNTClusterer::Config>    TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
+        fhicl::OptionalTable<Chi2Clusterer::Config>   Chi2Clustering{       Name("Chi2Clustering"),       Comment("Chi2 Clusterer config") };
+        fhicl::Atom<std::string>                      kerasWeights{         Name("KerasWeights"),         Comment("Weights for keras model") };
+        fhicl::Atom<float>                            kerasQuality{         Name("KerasQuality"),         Comment("Keras quality cut") };
       };
 
-      enum clusterer {TwoNiveauThreshold=1};
+      enum clusterer {TNT=1,Chi2=2};
       explicit FlagBkgHits(const art::EDProducer::Table<Config>& config);
       void beginJob() override;
       void produce(art::Event& event) override;
@@ -108,8 +111,21 @@ namespace mu2e
       clusterer ctype = static_cast<clusterer>(config().clusterAlgorithm());
       switch ( ctype )
       {
-        case TwoNiveauThreshold:
+        case TNT:
+          if(!config().TNTClustering())
+          {
+            throw cet::exception("RECO")<< "FlagBkgHits: TNTClusterer is not configured. Configure by adding\n"
+            << "physics.producers.FlagBkgHits.TNTClustering : {@table::TNTClusterer}" << std::endl;
+          }
           clusterer_ = std::make_unique<TNTClusterer>(config().TNTClustering());
+          break;
+        case Chi2:
+          if(!config().Chi2Clustering())
+          {
+            throw cet::exception("RECO")<< "FlagBkgHits: Chi2Clusterer is not configured. Configure by adding\n"
+            << "physics.producers.FlagBkgHits.Chi2Clustering : {@table::Chi2Clusterer}" << std::endl;
+          }
+          clusterer_ = std::make_unique<Chi2Clusterer>(config().Chi2Clustering());
           break;
         default:
           throw cet::exception("RECO")<< "Unknown clusterer" << ctype << std::endl;

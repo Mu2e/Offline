@@ -65,6 +65,7 @@ makeSTH : {
   TestFlag              : true
   FilterHits            : false
   StereoLine            : false
+  StereoLineNDOF        : 1 # require at least
   ComboHitCollection    : "makePH"
   EventWindowMarker     : EWMProducer
   StrawHitSelectionBits : ["RadiusSelection","EnergySelection","TimeSelection"]
@@ -109,9 +110,19 @@ TNTClusterer : {
   TestFlag         : true
   BackgroundMask   : []
   SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
-  DistanceMethod   : 0
 }
 
+Chi2Clusterer : {
+  HitDistance      : 2
+  SeedDistance     : 4
+  MinClusterHits   : 1
+  MaxHitTimeDiff   : 30.0
+  MaxCluIterations : 5
+  TestFlag         : true
+  BackgroundMask   : []
+  SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+  Diag             : 0
+}
 
 # Background hit flagging
 FlagBkgHits : {

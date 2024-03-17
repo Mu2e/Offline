@@ -53,10 +53,36 @@ using CLHEP::keV;
 namespace mu2e {
 
   class ReadBack : public art::EDAnalyzer {
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<int>            diagLevel{Name("diagLevel"), Comment("Level of diagnostic printout; larger = more printout."), 0};
+      fhicl::Atom<art::InputTag>  gensTag{Name("gensTag"),     Comment("Input tag for generator output."), art::InputTag("generate")};
+      fhicl::Atom<std::string>    generatorModuleLabel{Name("generatorModuleLabel"), Comment("Module label of event generator.")};
+      fhicl::Atom<std::string>    g4ModuleLabel{Name("g4ModuleLabel"),         Comment("Module label of module that ran Geant4.")};
+      fhicl::Atom<std::string>    trackerStepPoints{Name("trackerStepPoints"), Comment("Instance name of tracker StepPointMCs."),"tracker"};
+      fhicl::Atom<std::string>    calorimeterStepPoints{Name("calorimeterStepPoints"), Comment("Instance name of StepPointMCs for the calorimeter Crystals."), "calorimeter"};
+      fhicl::Atom<std::string>    caloShowerSimModuleLabel{Name("caloShowerSimModuleLabel"), Comment("Module label of a CaloShowerSimCollection."), "CaloShowerROMaker"};
+      fhicl::Atom<std::string>    caloCrystalModuleLabel{Name("caloCrystalModuleLabel"), Comment("Module label of a CaloHitCollection."),"CaloHitMaker"};
+      fhicl::Atom<std::string>    targetStepPoints{Name("targetStepPoints"), Comment("Instance name of StepPointMCs for the stopping target."),"stoppingtarget"};
+      fhicl::Atom<std::string>    crvStepPoints{Name("CRVStepPoints"),
+                                                        Comment("Instance name of StepPointMCs for the CRV."),"CRV"};
+      fhicl::Atom<double>         minimumEnergy{Name("minimumEnergy"),
+                                                Comment("Minimum energy deposited for tracker StepPointMC to be counted.")};
+      fhicl::Atom<int>            maxFullPrint{Name("maxFullPrint"),
+                                               Comment("Maximum number of events for which to give full printout."), 5};
+      fhicl::Atom<int>            xyHitsMax{Name("xyHitsMax"),
+                                            Comment("Maximum number of tracker StepPointMCs to add to the example TGraph ."), 10000};
+      fhicl::Atom<double>         SHPositionTolerance{Name("SHPositionTolerance"),
+                                                      Comment("Minimum energy deposited for tracker StepPointMC to be counted."), 0.01};
+    };
+    typedef art::EDAnalyzer::Table<Config> Parameters;
+
   public:
 
-    explicit ReadBack(fhicl::ParameterSet const& pset);
-    virtual ~ReadBack() { }
+    explicit ReadBack( Parameters const& conf );
 
     virtual void beginJob() override;
     virtual void endJob() override;
@@ -78,9 +104,6 @@ namespace mu2e {
 
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
-
-    // Module label of the generator module that was passed as input to G4.
-    std::string _generatorModuleLabel;
 
     // Name of the tracker StepPoint collection
     std::string _trackerStepPoints;
@@ -115,55 +138,54 @@ namespace mu2e {
     // End: run time parameters
 
     // Number of events analyzed.
-    int _nAnalyzed;
+    int _nAnalyzed = 0;
 
     // Pointers to histograms, ntuples, TGraphs.
-    TH1F* _hRadius;
-    TH1F* _hEnergyDep;
-    TH1F* _hTime;
-    TH1F* _hMultiplicity;
-    TH1F* _hDriftDist;
-    TH1F* _hDriftDistW;
-    TH1F* _hxHit;
-    TH1F* _hyHit;
-    TH1F* _hzHit;
-    TH1F* _hHitNeighbours;
-    TH1F* _hCheckPointRadius;
-    TH1F* _hCheckPointRadiusW;
-    TH1F* _hCheckPointWireZ;
-    TH1F* _hMomentumG4;
-    TH1F* _hStepLength;
+    TH1F* _hRadius            = nullptr;
+    TH1F* _hEnergyDep         = nullptr;
+    TH1F* _hTime              = nullptr;
+    TH1F* _hMultiplicity      = nullptr;
+    TH1F* _hDriftDist         = nullptr;
+    TH1F* _hDriftDistW        = nullptr;
+    TH1F* _hxHit              = nullptr;
+    TH1F* _hyHit              = nullptr;
+    TH1F* _hzHit              = nullptr;
+    TH1F* _hHitNeighbours     = nullptr;
+    TH1F* _hCheckPointRadius  = nullptr;
+    TH1F* _hCheckPointRadiusW = nullptr;
+    TH1F* _hCheckPointWireZ   = nullptr;
+    TH1F* _hMomentumG4        = nullptr;
+    TH1F* _hStepLength        = nullptr;
 
-    TH1F* _hCaStepEdep;
-    TH1F* _hCaStepNum;
-    TH1F* _hCaShowerEdep;
-    TH1F* _hCaShowerNum;
-    TH1F* _hCaTime;
-    TH1F* _hCaEdep;
-    TH2F* _hCaCrystalXY;
-    TH1F* _hCaEdepMC;
-    TH1F* _hCaNcrystal;
+    TH1F* _hCaStepEdep   = nullptr;
+    TH1F* _hCaStepNum    = nullptr;
+    TH1F* _hCaShowerEdep = nullptr;
+    TH1F* _hCaShowerNum  = nullptr;
+    TH1F* _hCaTime       = nullptr;
+    TH1F* _hCaEdep       = nullptr;
+    TH2F* _hCaCrystalXY  = nullptr;
+    TH1F* _hCaNcrystal   = nullptr;
 
-    TH1F* _hTargetEdep;
-    TH1F* _hTargetPathLength;
-    TH1F* _hTargetNfoils;
-    TH2F* _hTargetNfoils2D;
+    TH1F* _hTargetEdep       = nullptr;
+    TH1F* _hTargetPathLength = nullptr;
+    TH1F* _hTargetNfoils     = nullptr;
+    TH2F* _hTargetNfoils2D   = nullptr;
 
-    TH1F* _hNPointTrajectories;
-    TH1F* _hNPointsPerTrajectory;
-    TH1F* _hNPointsPerTrajectoryLog;
+    TH1F* _hNPointTrajectories      = nullptr;
+    TH1F* _hNPointsPerTrajectory    = nullptr;
+    TH1F* _hNPointsPerTrajectoryLog = nullptr;
 
-    TNtuple* _ntup;
-    TGraph*  _xyHits;
+    TNtuple* _ntup  = nullptr;
+    TGraph*  _xyHits = nullptr;
 
     // Need to keep track of TGraph entries by hand.
-    int _xyHitCount;
+    int _xyHitCount = 0;
 
     // CRV
-    TH1F*    _hCRVMultiplicity;
-    TNtuple* _ntupCRV;
+    TH1F*    _hCRVMultiplicity = nullptr;
+    TNtuple* _ntupCRV          = nullptr;
 
-    int _nBadG4Status;
+    int _nBadG4Status = 0;
 
     // Examine various parts of the event.
     void doTracker         ( const art::Event& event );
@@ -177,66 +199,23 @@ namespace mu2e {
                             art::Handle<StepPointMCCollection>& hits );
 
   };
-  ReadBack::ReadBack(fhicl::ParameterSet const& pset) :
-    art::EDAnalyzer(pset),
+  ReadBack::ReadBack( Parameters const& conf) :
+    art::EDAnalyzer(conf),
 
     // Run time parameters
-    _diagLevel(pset.get<int>("diagLevel",0)),
-    _gensTag(pset.get<string>("gensTag","generate")),
-    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
-    _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
-    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
-    _calorimeterStepPoints(pset.get<string>("calorimeterStepPoints","calorimeter")),
-    _caloShowerSimModuleLabel(pset.get<string>("caloShowerSimModuleLabel","CaloShowerROMaker")),
-    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloHitMaker")),
-    _targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget")),
-    _crvStepPoints(pset.get<string>("CRVStepPoints","CRV")),
-    _minimumEnergy(pset.get<double>("minimumEnergy")),
-    _maxFullPrint(pset.get<int>("maxFullPrint",5)),
-    _xyHitsMax(pset.get<int>("xyHitsMax",10000)),
-    _strawHitPositionTolerance(pset.get<double>("SHPositionTolerance",0.01)),
-    // looking for gross errors only
-
-    // Histograms
-    _nAnalyzed(0),
-    _hRadius(0),
-    _hTime(0),
-    _hMultiplicity(0),
-    _hDriftDist(0),
-    _hDriftDistW(0),
-    _hxHit(0),
-    _hyHit(0),
-    _hzHit(0),
-    _hHitNeighbours(0),
-    _hCheckPointRadius(0),
-    _hCheckPointRadiusW(0),
-    _hCheckPointWireZ(0),
-    _hMomentumG4(0),
-    _hStepLength(0),
-    _hCaStepEdep(0),
-    _hCaStepNum(0),
-    _hCaShowerEdep(0),
-    _hCaShowerNum(0),
-    _hCaTime(0),
-    _hCaEdep(0),
-    _hCaCrystalXY(0),
-    _hCaEdepMC(0),
-    _hCaNcrystal(0),
-    _hTargetEdep(0),
-    _hTargetPathLength(0),
-    _hTargetNfoils(0),
-    _hTargetNfoils2D(0),
-    _hNPointTrajectories(0),
-    _hNPointsPerTrajectory(0),
-    _hNPointsPerTrajectoryLog(0),
-    _ntup(0),
-    _xyHits(0),
-    _xyHitCount(0),
-    // CRV
-    _hCRVMultiplicity(0),
-    _ntupCRV(0),
-    // Remaining member data
-    _nBadG4Status(0){
+    _diagLevel(conf().diagLevel()),
+    _gensTag(conf().gensTag()),
+    _g4ModuleLabel(conf().g4ModuleLabel()),
+    _trackerStepPoints(conf().trackerStepPoints()),
+    _calorimeterStepPoints(conf().calorimeterStepPoints()),
+    _caloShowerSimModuleLabel(conf().caloShowerSimModuleLabel()),
+    _caloCrystalModuleLabel(conf().caloCrystalModuleLabel()),
+    _targetStepPoints(conf().targetStepPoints()),
+    _crvStepPoints(conf().crvStepPoints()),
+    _minimumEnergy(conf().minimumEnergy()),
+    _maxFullPrint(conf().maxFullPrint()),
+    _xyHitsMax(conf().xyHitsMax()),
+    _strawHitPositionTolerance(conf().SHPositionTolerance()){
   }
 
   void ReadBack::beginJob(){
@@ -388,15 +367,10 @@ namespace mu2e {
      //Calorimeter shower MC
      art::Handle<CaloShowerSimCollection> caloShowerSimHandle;
      event.getByLabel(_caloShowerSimModuleLabel, caloShowerSimHandle);
-     const CaloShowerSimCollection& caloShowerSims(*caloShowerSimHandle);
 
      //Crystal hits (average from readouts)
      art::Handle<CaloHitCollection> CaloHitsHandle;
      event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
-     CaloHitCollection const& CaloHits(*CaloHitsHandle);
-
-
-
 
      //collect all StepPointMC in crystal
 
@@ -424,10 +398,9 @@ namespace mu2e {
      for (const auto& iter : stepPtMap) _hCaStepEdep->Fill(iter.first,iter.second);
      for (const auto& iter : stepPtMap2) _hCaStepNum->Fill(iter.first,iter.second);
 
-
-
      //do the same with the CaloShowers
      if (!caloShowerSimHandle.isValid()) return;
+     const CaloShowerSimCollection& caloShowerSims(*caloShowerSimHandle);
 
      map<int,double> showerMap;
      map<int,int> showerMap2;
@@ -448,6 +421,7 @@ namespace mu2e {
 
      //look at reconstructed hits
      if (!CaloHitsHandle.isValid()) return;
+     CaloHitCollection const& CaloHits(*CaloHitsHandle);
 
      double totalEdep = 0.0;
      set<int> hit_crystals;
@@ -871,10 +845,6 @@ namespace mu2e {
     art::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_crvStepPoints,hits);
     if ( ! hits.isValid() ) { return; }
-
-    // Get handles to the generated and simulated particles.
-    art::Handle<GenParticleCollection> genParticles;
-    event.getByLabel(_generatorModuleLabel,genParticles);
 
     art::Handle<SimParticleCollection> simParticles;
     event.getByLabel(_g4ModuleLabel,simParticles);

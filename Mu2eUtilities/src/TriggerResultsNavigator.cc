@@ -61,7 +61,7 @@ namespace mu2e {
     return _trigPathsNames[i].substr(pos+1, _trigPathsNames[i].length());
   }
 
-  size_t const
+  size_t
   TriggerResultsNavigator::getTrigBit(unsigned int const i) const
   {
     if (i>_trigPathsNames.size()) {

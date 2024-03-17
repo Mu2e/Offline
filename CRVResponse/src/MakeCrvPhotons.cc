@@ -295,14 +295,14 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
 {
   if(_LC.reflector!=std::abs(reflector)) throw std::logic_error("Expected reflector/absorber doesn't match lookup table.");
 
-  for(int SiPM=0; SiPM<4; SiPM++) _arrivalTimes[SiPM].clear();
+  for(int SiPM=0; SiPM<_nSiPMs; SiPM++) _arrivalTimes[SiPM].clear();
 
   //coordinates are in local coordinates of the scintillator (x:thickness, y:width, z:length)
-  CLHEP::Hep3Vector stepStart[4];
-  CLHEP::Hep3Vector stepEnd[4];
+  CLHEP::Hep3Vector stepStart[_nSiPMs];
+  CLHEP::Hep3Vector stepEnd[_nSiPMs];
   //local start/end positions for all for SiPMs derived from the symmetries of the counter,
   //because lookup tables are stored only for SiPM #0.
-  for(int SiPM=0; SiPM<4; SiPM++)
+  for(int SiPM=0; SiPM<_nSiPMs; SiPM++)
   {
     stepStart[SiPM] = stepStartTmp;
     stepEnd[SiPM]   = stepEndTmp;
@@ -324,7 +324,7 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
 static int nPScintillation=0;
 static int nPCerenkov=0;
 
-  for(int SiPM=0; SiPM<4; SiPM++)
+  for(int SiPM=0; SiPM<_nSiPMs; SiPM++)
   {
     //there are only lookup tables without reflector or with reflector on the +z side (i.e. at SiPMs #1 and #3)
     if(reflector!=0 && (SiPM==1 || SiPM==3)) continue;
@@ -401,6 +401,7 @@ nPCerenkov+=nPhotonsCerenkov;
 
         //photon arrival probability at SiPM
         double probability = theBin->arrivalProbability;
+        probability*=_photonYieldDeviation[SiPM];   //channel-specific deviation from nominal, e.g. due to scintillator variations or SiPM misalignments
         if(_randFlat.fire()<=probability)  //a photon arrives at the SiPM --> calculate arrival time
         {
           //start time of photons

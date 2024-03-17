@@ -113,7 +113,7 @@ mu2eg4DefaultResourceLimits: {
 #----------------
 mu2eg4NoVisualization: {
     initMacro : ""
-    GUIMacro : "Mu2eG4/vis/visqtGUI.mac"
+    GUIMacro : "Offline/Mu2eG4/vis/visqtGUI.mac"
 }
 #----------------
 mu2eg4NoTrajectories: {
