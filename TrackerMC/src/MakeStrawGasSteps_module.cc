@@ -19,7 +19,6 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
-#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
@@ -83,8 +82,7 @@ namespace mu2e {
       typedef map< SSPair , SPMCPV > SPSMap; // steps by straw, SimParticle
       typedef art::Handle<StepPointMCCollection> SPMCCH;
       typedef vector< SPMCCH > SPMCCHV;
-      void fillMap(Tracker const& tracker,TrackerStatus const& trackerStatus,
-          SPMCCH const& spmcch, SPSMap& spsmap);
+      void fillMap(Tracker const& tracker, SPMCCH const& spmcch, SPSMap& spsmap);
       void compressDeltas(SPSMap& spsmap);
       void setStepType(SPMCP const& spmcptr, ParticleData const& pdata, StrawGasStep::StepType& stype);
       void fillStep(SPMCPV const& spmcptrs, Straw const& straw,
@@ -107,7 +105,6 @@ namespace mu2e {
       Hep3Vector _bdir;
       float _bnom; // BField in units of (MeV/c)/mm
       double _rstraw; // straw radius cache
-      ProditionsHandle<TrackerStatus> _trackerStatus_h; // tracker element status
       // diagnostic histograms
       TH1F *_hendrad, *_hphi;
       TTree* _sgsdiag;
@@ -190,7 +187,6 @@ namespace mu2e {
     // setup conditions, etc
     const Tracker& tracker = *GeomHandle<Tracker>();
     GlobalConstantsHandle<ParticleDataList> pdt;
-    TrackerStatus const& trackerStatus = _trackerStatus_h.get(event.id());
     // create output
     unique_ptr<StrawGasStepCollection> sgsc(new StrawGasStepCollection);
     unique_ptr<StrawGasStepAssns> sgsa(new StrawGasStepAssns);
@@ -234,7 +230,7 @@ namespace mu2e {
       }
       // Loop over the StepPointMCs in this collection and sort them by straw and SimParticle
       SPSMap spsmap; // map of step points by straw,sim particle
-      fillMap(tracker,trackerStatus,handle, spsmap);
+      fillMap(tracker,handle, spsmap);
       // optionally combine delta-rays that never leave the straw with their parent particle
       if(dcomp)compressDeltas(spsmap);
       nspss += spsmap.size();
@@ -265,7 +261,7 @@ namespace mu2e {
           const Straw& straw = tracker.getStraw(sgs.strawId());
           static double r2 = tracker.strawProperties()._strawInnerRadius * tracker.strawProperties()._strawInnerRadius;
           Hep3Vector hend = GenVector::Hep3Vec(sgs.endPosition());
-          double rd2 = (hend-straw.getMidPoint()).perpPart(straw.getDirection()).mag2();
+          double rd2 = (hend-straw.strawPosition()).perpPart(straw.strawDirection()).mag2();
           if(rd2 - r2 > 1e-5 ) cout << "End outside straw, radius " << sqrt(rd2) << endl;
         }
       } // end of pair loop
@@ -337,33 +333,28 @@ namespace mu2e {
         start, end, momvec, first->simParticle());
   }
 
-  void MakeStrawGasSteps::fillMap(Tracker const& tracker,TrackerStatus const& trackerStatus,
+  void MakeStrawGasSteps::fillMap(Tracker const& tracker,
       SPMCCH const& spmcch, SPSMap& spsmap) {
     StepPointMCCollection const& steps(*spmcch);
     for (size_t ispmc =0; ispmc<steps.size();++ispmc) {
       const auto& step = steps[ispmc];
       StrawId const & sid = step.strawId();
-      // Skip straws that can't give signals,
-      if (!trackerStatus.noSignal(sid)) {
-        Straw const& straw = tracker.getStraw(sid);
-        double wpos = fabs((step.position()-straw.getMidPoint()).dot(straw.getDirection()));
-        //skip steps that occur in the deadened region near the end of each wire
-        if( wpos <  straw.halfLength()){
-          cet::map_vector_key tid = step.simParticle().get()->id();
-          // create key
-          SSPair stpair(sid,tid);
-          // create ptr to this step
-          SPMCP  spmcptr(spmcch,ispmc);
-          vector<SPMCP > spmcptrv;
-          spmcptrv.reserve(_ssize);
-          spmcptrv.push_back(spmcptr);
-          // check if this key exists and add it if not
-          auto ssp = spsmap.emplace(stpair,spmcptrv);
-          // if the key already exists, just add this Ptr to the vector
-          if(!ssp.second)ssp.first->second.push_back(spmcptr);
-        }
-      } else if ( _debug>1 ) {
-        std::cout << "No Signal, StrawId " << sid << endl;
+      Straw const& straw = tracker.getStraw(sid);
+      double wpos = fabs((step.position()-straw.strawPosition()).dot(straw.strawDirection()));
+      //skip steps that occur in the deadened region near the end of each wire
+      if( wpos <  straw.halfLength()){
+        cet::map_vector_key tid = step.simParticle().get()->id();
+        // create key
+        SSPair stpair(sid,tid);
+        // create ptr to this step
+        SPMCP  spmcptr(spmcch,ispmc);
+        vector<SPMCP > spmcptrv;
+        spmcptrv.reserve(_ssize);
+        spmcptrv.push_back(spmcptr);
+        // check if this key exists and add it if not
+        auto ssp = spsmap.emplace(stpair,spmcptrv);
+        // if the key already exists, just add this Ptr to the vector
+        if(!ssp.second)ssp.first->second.push_back(spmcptr);
       }
     }
   }
@@ -441,7 +432,7 @@ namespace mu2e {
   }
 
   void MakeStrawGasSteps::fillStepDiag(Straw const& straw, StrawGasStep const& sgs, SPMCPV const& spmcptrs) {
-    _erad = sqrt((GenVector::Hep3Vec(sgs.endPosition())-straw.getMidPoint()).perpPart(straw.getDirection()).mag2());
+    _erad = sqrt((GenVector::Hep3Vec(sgs.endPosition())-straw.strawPosition()).perpPart(straw.strawDirection()).mag2());
     _hendrad->Fill(_erad);
     _hphi->Fill(_brot);
     if(_diag > 1){
@@ -456,7 +447,7 @@ namespace mu2e {
       _width = sgs.width();
       // compute DOCA to the wire
       TwoLinePCA poca(GenVector::Hep3Vec(sgs.startPosition()),GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()),
-          straw.getMidPoint(),straw.getDirection());
+          straw.wirePosition(),straw.wireDirection());
       _doca = poca.dca();
       _sdist.clear();
       _sdot.clear();

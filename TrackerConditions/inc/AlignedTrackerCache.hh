@@ -4,28 +4,33 @@
 //
 // hold a set of run-dependent conditions objects
 // and update them when needed
+// this cache is templated so it can be instianted for reco or sim,
+// which are a different set of tables
 //
 
 #include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
 #include "Offline/DbService/inc/DbHandle.hh"
 #include "Offline/DbTables/inc/TrkAlignElement.hh"
+#include "Offline/DbTables/inc/TrkAlignElementSim.hh"
 #include "Offline/DbTables/inc/TrkAlignStraw.hh"
+#include "Offline/DbTables/inc/TrkAlignStrawSim.hh"
 #include "Offline/TrackerConditions/inc/AlignedTrackerMaker.hh"
 
 
 namespace mu2e {
+  template <typename TTr,typename TPl,typename TPa,typename TSt>
   class AlignedTrackerCache : public ProditionsCache {
     public:
-      AlignedTrackerCache(AlignedTrackerConfig const& config):
+    AlignedTrackerCache(AlignedTrackerConfig const& config):
         ProditionsCache(Tracker::cxname,config.verbose()),
         _useDb(config.useDb()),_maker(config) {}
 
       void initialize() {
         if(_useDb) {
-          _tatr_p = std::make_unique<DbHandle<TrkAlignTracker>>();
-          _tapl_p = std::make_unique<DbHandle<TrkAlignPlane>>();
-          _tapa_p = std::make_unique<DbHandle<TrkAlignPanel>>();
-          _tast_p = std::make_unique<DbHandle<TrkAlignStraw>>();
+          _tatr_p = std::make_unique<DbHandle<TTr>>();
+          _tapl_p = std::make_unique<DbHandle<TPl>>();
+          _tapa_p = std::make_unique<DbHandle<TPa>>();
+          _tast_p = std::make_unique<DbHandle<TSt>>();
         }
       }
 
@@ -72,12 +77,16 @@ namespace mu2e {
       bool _useDb;
       AlignedTrackerMaker _maker;
 
-      std::unique_ptr<DbHandle<TrkAlignTracker>> _tatr_p;
-      std::unique_ptr<DbHandle<TrkAlignPlane>>   _tapl_p;
-      std::unique_ptr<DbHandle<TrkAlignPanel>>   _tapa_p;
-      std::unique_ptr<DbHandle<TrkAlignStraw>>   _tast_p;
+    std::unique_ptr<DbHandle<TTr>> _tatr_p;
+    std::unique_ptr<DbHandle<TPl>> _tapl_p;
+    std::unique_ptr<DbHandle<TPa>> _tapa_p;
+    std::unique_ptr<DbHandle<TSt>> _tast_p;
 
   };
+
+  typedef AlignedTrackerCache<TrkAlignTracker,TrkAlignPlane,TrkAlignPanel,TrkAlignStraw> AlignedTrackerCacheReco;
+  typedef AlignedTrackerCache<TrkAlignTrackerSim,TrkAlignPlaneSim,TrkAlignPanelSim,TrkAlignStrawSim> AlignedTrackerCacheSim;
+
 }
 
 #endif

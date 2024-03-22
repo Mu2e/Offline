@@ -96,9 +96,7 @@ physics.producers.KKDeM.ModuleSettings.PrintLevel : 0
 physics.producers.KKDeM.ModuleSettings.SaveAllFits : true
 physics.producers.KKDeM.FitSettings.PrintLevel : 0
 
-
 physics.analyzers.TrkAna.ExtraMCStepCollectionTags : [ "compressDigiMCs:protonabsorber", "compressDigiMCs:stoppingtarget" ]
-
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 services.TimeTracker.printSummary: true
 services.TFileService.fileName: "nts.owner.KKDrift.version.sequence.root"

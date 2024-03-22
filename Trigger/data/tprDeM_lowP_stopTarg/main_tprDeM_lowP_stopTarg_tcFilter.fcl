@@ -1,2 +1,0 @@
-physics.filters.tprDeMLowPStopTargTCFilter.requireCaloCluster : false
-physics.filters.tprDeMLowPStopTargTCFilter.minNStrawHits : 10.0

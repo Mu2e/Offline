@@ -43,3 +43,5 @@ EMFCAnalysis
 tags
 .clangd/*
 compile_commands.json
+spack-*
+Offline
