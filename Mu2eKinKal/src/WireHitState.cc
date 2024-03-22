@@ -7,6 +7,7 @@ namespace mu2e {
     if(whs.frozen()) ost << " Frozen ";
     ost << WireHitState::StateNames_[whs.state_+3];
     ost << " Flags "  << whs.flag_;
+    ost << " algo " << StrawHitUpdaters::name(whs.algo_);
     return ost;
   }
 

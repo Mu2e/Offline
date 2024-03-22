@@ -168,6 +168,7 @@ namespace mu2e
         std::vector<StrawHitIndex> shitids;
         tseed._straw_chits.fillStrawHitIndices(ich, shitids);
 
+        /*
         for(auto const& ids : shitids){
           size_t    istraw   = (ids);
           TrkStrawHitSeed tshs;
@@ -175,6 +176,7 @@ namespace mu2e
           tshs._t0 = tseed._t0;
           tseed._trkstrawhits.push_back(tshs);
         }
+        */
       }
 
     }
