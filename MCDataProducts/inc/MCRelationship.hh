@@ -5,12 +5,12 @@
 #ifndef MCRelationship_HH
 #define MCRelationship_HH
 // art
-#include "canvas/Persistency/Common/Ptr.h"
-// MC data
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+//#include "canvas/Persistency/Common/Ptr.h"
+namespace art { template <typename product> class Ptr; }
 namespace mu2e
 {
+  class SimParticle;
+  class StrawDigiMC;
  // some convenient typedefs
   class MCRelationship {
     public:
