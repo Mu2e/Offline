@@ -11,6 +11,7 @@
 
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
+#include "Offline/CRVConditions/inc/CRVStatus.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
@@ -63,6 +64,7 @@ namespace mu2e
       fhicl::Atom<float> timeOffsetScale{Name("timeOffsetScale"), Comment("scale factor for time offsets from database (use 1.0, if measured values)")}; //1.0
       fhicl::Atom<float> timeOffsetCutoffLow{Name("timeOffsetCutoffLow"), Comment("lower cutoff of time offsets (for random values - otherwise set to minimum value)")}; //-3.0ns
       fhicl::Atom<float> timeOffsetCutoffHigh{Name("timeOffsetCutoffHigh"), Comment("upper cutoff of time offsets (for random values - otherwise set to maximum value)")}; //+3.0ns
+      fhicl::Atom<bool> ignoreChannels{Name("ignoreChannels"), Comment("ignore channels that have status 2 (bit 1) in CRVstatus DB")}; //true
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -83,7 +85,10 @@ namespace mu2e
     float _timeOffsetCutoffLow;
     float _timeOffsetCutoffHigh;
 
-    ProditionsHandle<CRVCalib> _calib_h;
+    bool  _ignoreChannels;
+
+    ProditionsHandle<CRVCalib>  _calib;
+    ProditionsHandle<CRVStatus> _sipmStatus;
   };
 
 
@@ -93,7 +98,8 @@ namespace mu2e
     _protonBunchTimeTag(conf().protonBunchTimeTag()),
     _timeOffsetScale(conf().timeOffsetScale()),
     _timeOffsetCutoffLow(conf().timeOffsetCutoffLow()),
-    _timeOffsetCutoffHigh(conf().timeOffsetCutoffHigh())
+    _timeOffsetCutoffHigh(conf().timeOffsetCutoffHigh()),
+    _ignoreChannels(conf().ignoreChannels())
   {
     produces<CrvRecoPulseCollection>();
     _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(conf().minADCdifference(),
@@ -133,7 +139,8 @@ namespace mu2e
     art::Handle<CrvDigiCollection> crvDigiCollection;
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
 
-    auto const& calib = _calib_h.get(event.id());
+    auto const& calib = _calib.get(event.id());
+    auto const& sipmStatus = _sipmStatus.get(event.id());
 
     size_t waveformIndex = 0;
     while(waveformIndex<crvDigiCollection->size())
@@ -159,7 +166,14 @@ namespace mu2e
         waveformIndices.push_back(waveformIndex);
       }
 
-      size_t channel = barIndex.asUint()*4 + SiPM;
+      size_t channel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
+
+      if(_ignoreChannels)
+      {
+        std::bitset<16> status(sipmStatus.status(channel));
+        if(status.test(CRVStatus::Flags::ignoreChannel)) continue; //ignore this channel (bit 1)
+      }
+
       double pedestal = calib.pedestal(channel);
       double calibPulseArea = calib.pulseArea(channel);
       double calibPulseHeight = calib.pulseHeight(channel);

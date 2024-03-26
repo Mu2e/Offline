@@ -14,6 +14,8 @@ namespace mu2e {
 
 class CRVStatus : virtual public ProditionsEntity {
  public:
+  enum Flags{notConnected=0, ignoreChannel=1, noData=2, noPedestal=3, noCalibConst=4, noisy=5};
+
   typedef std::shared_ptr<CRVStatus> ptr_t;
   typedef std::shared_ptr<const CRVStatus> cptr_t;
   constexpr static const char* cxname = {"CRVStatus"};

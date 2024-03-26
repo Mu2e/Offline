@@ -49,6 +49,7 @@ BEGIN_PROLOG
       timeOffsetCutoffLow       :-3.0    //the time offsets are cut off at -3ns
       timeOffsetCutoffHigh      : 3.0    //the time offsets are cut off at +3ns
                                          //note: if measured time offsets are used, the cutoffs should be set to the maximum values
+      ignoreChannels            : true   //ignore channels that have status 2 (bit 1) in CRVstatus DB
     }
 
     CrvCoincidenceClusterFinder:
