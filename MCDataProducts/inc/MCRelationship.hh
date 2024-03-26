@@ -4,11 +4,9 @@
 //
 #ifndef MCRelationship_HH
 #define MCRelationship_HH
-// art
-//#include "canvas/Persistency/Common/Ptr.h"
+#include <cstdint>
 namespace art { template <typename product> class Ptr; }
-namespace mu2e
-{
+namespace mu2e {
   class SimParticle;
   class StrawDigiMC;
  // some convenient typedefs
