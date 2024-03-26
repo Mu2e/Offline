@@ -148,8 +148,8 @@ namespace mu2e {
     if(ca.usable()){
       auto dinfo = fillDriftInfo();
       // there can be multiple updaters: apply them all
-      if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
+      if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(driftshu)whstate_ = driftshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(whstate_.driftConstraint()){
         dVar_ = dinfo.driftHitVar();

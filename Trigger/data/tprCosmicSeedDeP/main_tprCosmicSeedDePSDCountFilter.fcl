@@ -1,9 +1,0 @@
-physics.filters.tprCosmicSeedDePSDCountFilter.caloDigiCollection  : notUsed
-physics.filters.tprCosmicSeedDePSDCountFilter.useStrawDigi        : true
-physics.filters.tprCosmicSeedDePSDCountFilter.useCaloDigi         : false
-physics.filters.tprCosmicSeedDePSDCountFilter.minNStrawDigi       : 10
-physics.filters.tprCosmicSeedDePSDCountFilter.maxNStrawDigi       : 10000
-physics.filters.tprCosmicSeedDePSDCountFilter.minNCaloDigi        : -1
-physics.filters.tprCosmicSeedDePSDCountFilter.maxNCaloDigi        : -1
-physics.filters.tprCosmicSeedDePSDCountFilter.maxCaloEnergy       : -1
-

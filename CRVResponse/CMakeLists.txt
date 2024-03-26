@@ -12,17 +12,6 @@ cet_make_library(
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(CrvCalibration art::module
-    REG_SOURCE src/CrvCalibration_module.cc
-    LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::CRVResponse
-      
-      Offline::CosmicRayShieldGeom
-      Offline::GeometryService
-      Offline::RecoDataProducts
-)
-
 cet_build_plugin(CrvCoincidenceClusterMatchMC art::module
     REG_SOURCE src/CrvCoincidenceClusterMatchMC_module.cc
     LIBRARIES REG
@@ -49,17 +38,6 @@ cet_build_plugin(CrvDigitizer art::module
       Offline::GeometryService
       Offline::MCDataProducts
       Offline::ProditionsService
-      Offline::RecoDataProducts
-)
-
-cet_build_plugin(CrvPedestalFinder art::module
-    REG_SOURCE src/CrvPedestalFinder_module.cc
-    LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::CRVResponse
-      
-      Offline::CosmicRayShieldGeom
-      Offline::GeometryService
       Offline::RecoDataProducts
 )
 
@@ -152,6 +130,13 @@ cet_build_plugin(CrvWaveformsGenerator art::module
       Offline::MCDataProducts
       Offline::ProditionsService
       Offline::SeedService
+)
+
+cet_build_plugin(CrvWidebandTest art::module
+    REG_SOURCE src/CrvWidebandTest_module.cc
+    LIBRARIES REG
+      Offline::CRVResponse
+      art_root_io::TFileService_service
 )
 
 cet_build_plugin(MakeCrvCoincidenceClusterMCAssns art::module

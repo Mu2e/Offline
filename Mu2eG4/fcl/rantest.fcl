@@ -60,7 +60,7 @@ physics :
     #{
     #  module_type          : G4
     #  generatorModuleLabel : generate
-   #   visMacro             : "Mu2eG4/vis/visxy.mac"
+   #   visMacro             : "Offline/Mu2eG4/vis/visxy.mac"
    #   seed                 : [9877]
    # }
 

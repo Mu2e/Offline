@@ -89,8 +89,6 @@ art_dictionary(
     Offline::Validation_Root
  )
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/val.fcl   ${CURRENT_BINARY_DIR} fcl/val.fcl   COPYONLY)
-
 install_source(SUBDIRS src root)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/Validation/fcl)
