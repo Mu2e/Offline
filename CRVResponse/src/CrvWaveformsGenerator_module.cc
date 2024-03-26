@@ -217,7 +217,8 @@ namespace mu2e
             std::array<double,CrvDigiMC::NSamples> voltages{0};
             for(size_t singleWaveformIndex=0; singleWaveformIndex<CrvDigiMC::NSamples; ++i, ++singleWaveformIndex)
             {
-              if(i<fullWaveform.size() && TDCstartTimeAdjusted+i*CRVDigitizationPeriod<=digitizationEnd) voltages[singleWaveformIndex]=fullWaveform[i];
+//              if(i<fullWaveform.size() && TDCstartTimeAdjusted+i*CRVDigitizationPeriod<=digitizationEnd) voltages[singleWaveformIndex]=fullWaveform[i];  //cuts off pulse in the middle of the hit
+              if(i<fullWaveform.size()) voltages[singleWaveformIndex]=fullWaveform[i];
               else voltages[singleWaveformIndex]=0.0;  //so that all unused single waveform samples are set to zero
             }
 

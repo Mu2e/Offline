@@ -443,7 +443,7 @@ namespace mu2e
         if(minClusterPEs>hit->_minClusterPEs) minClusterPEs=hit->_minClusterPEs;
 
         //collect hits of individual counters
-        recoTimes[hit->_counter].push_back(hit);
+        recoTimes[hit->_crvRecoPulse->GetScintillatorBarIndex().asInt()].push_back(hit);
       } //loop over hits of the cluster
 
       assert(PEs>0);
@@ -555,12 +555,12 @@ namespace mu2e
         if(sidePEs[0]>0)
         {
           avgHalfLength/=sidePEs[0];
-          avgHitTime=sideTimes[0]-avgHalfLength*_fiberSignalSpeed;
+          avgHitTime=sideTimes[0]-avgHalfLength/_fiberSignalSpeed;
         }
         else if(sidePEs[1]>0)
         {
           avgHalfLength/=sidePEs[1];
-          avgHitTime=sideTimes[1]-avgHalfLength*_fiberSignalSpeed;
+          avgHitTime=sideTimes[1]-avgHalfLength/_fiberSignalSpeed;
         }
       }
       avgHitTime-=_timeOffset;  //remove additional time due to electronics response and processes such as scintillation/WLS decay times
