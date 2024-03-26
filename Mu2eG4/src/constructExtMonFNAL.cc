@@ -463,65 +463,6 @@ namespace mu2e {
       addBoxVDPlane(VirtualDetectorId::EMFBoxBottom,  boxZX, -zxOffset, extmon, parentRotationInMu2e, parent, config);
     }
   }
-  //===============================================================
-  void constructExtMonFNALMuonID(const ExtMonFNALModule& module,
-                                 const ExtMonFNALMuonID& muid,
-                                 const std::string& volNameSuffix,
-                                 const VolumeInfo& parent,
-                                 const CLHEP::HepRotation& parentRotationInMu2e,
-                                 const SimpleConfig& config
-                                 )
-  {
-    bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
-    bool const doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
-    bool const placePV             = true;
-
-    MaterialFinder materialFinder(config);
-    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
-
-
-    //----------------------------------------------------------------
-
-    CLHEP::HepRotation *muidRotationInRoomInv =
-      reg.add(muid.muonIDRotationInMu2e().inverse() * parentRotationInMu2e);
-
-    const CLHEP::HepRotation muidRotationInRoom(muidRotationInRoomInv->inverse());
-
-    const CLHEP::Hep3Vector muidRefPointInRoom(parentRotationInMu2e.inverse()*(muid.refPointInMu2e() - parent.centerInMu2e()));
-
-
-
-    //----------------------------------------------------------------
-    // Mother volume for planeStack
-
-    double muidpx = muid.motherTransverseHalfSize()[0];
-    double muidpy = muid.motherTransverseHalfSize()[1];
-    std::vector<G4TwoVector> polygon;
-    polygon.push_back({+muidpx,+muidpy});
-    polygon.push_back({-muidpx,+muidpy});
-    polygon.push_back({-muidpx,-muidpy});
-    polygon.push_back({+muidpx,-muidpy});
-
-    std::vector<G4ExtrudedSolid::ZSection> zsections;
-    zsections.emplace_back(muid.motherStartZ(), G4TwoVector(), 1.);
-    zsections.emplace_back(muid.motherEndZ(), G4TwoVector(), 1.);
-    VolumeInfo mother = nestExtrudedSolid("ExtMonMuonIDMother"+volNameSuffix,
-                                          polygon,
-                                          zsections,
-                                          findMaterialOrThrow("G4_Fe"),
-                                          muidRotationInRoomInv,
-                                          muidRefPointInRoom,
-                                          parent,
-                                          0,
-                                          config.getBool("extMonFNAL."+volNameSuffix+".iron.visible"),
-                                          G4Colour::Magenta(),
-                                          config.getBool("extMonFNAL."+volNameSuffix+".iron.solid"),
-                                          forceAuxEdgeVisible,
-                                          placePV,
-                                          doSurfaceCheck
-                                          );
-  }
-
   //================================================================
   VolumeInfo constructExtMonFNALDetectorRoom(const VolumeInfo& parent,
                                              const CLHEP::HepRotation& parentRotationInMu2e,
@@ -607,13 +548,6 @@ namespace mu2e {
     constructExtMonFNALMagnet(extmon->spectrometerMagnet(),
                               detectorRoom,
                               "spectrometer",
-                              emfb->detectorRoomRotationInMu2e(),
-                              config);
-
-    constructExtMonFNALMuonID(extmon->module(),
-                              extmon->muonID(),
-                              "muonID",
-                              detectorRoom,
                               emfb->detectorRoomRotationInMu2e(),
                               config);
 

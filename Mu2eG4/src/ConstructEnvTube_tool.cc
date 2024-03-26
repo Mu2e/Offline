@@ -37,22 +37,9 @@ namespace mu2e {
 
   class ConstructEnvTube: public InitEnvToolBase {
   public:
-    ConstructEnvTube(const fhicl::ParameterSet& PSet);
-    ~ConstructEnvTube();
-
+    ConstructEnvTube(const fhicl::ParameterSet& PSet) {}
     int construct(VolumeInfo const& ParentVInfo, SimpleConfig const& Config);
   };
-
-
-//-----------------------------------------------------------------------------
-  ConstructEnvTube::ConstructEnvTube(const fhicl::ParameterSet& PSet) {
-    _name = "Tube";
-  }
-
-//-----------------------------------------------------------------------------
-  ConstructEnvTube::~ConstructEnvTube() {
-    _name = "Tube";
-  }
 
 //-----------------------------------------------------------------------------
   int ConstructEnvTube::construct(VolumeInfo const& parentVInfo, SimpleConfig const& _config) {

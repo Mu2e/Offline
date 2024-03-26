@@ -1,5 +1,6 @@
 cet_make_library(
     SOURCE
+      src/Chi2Clusterer.cc
       src/CombineStereoPoints.cc
       src/ComboPeakFitRoot.cc
       src/PeakFit.cc
@@ -89,22 +90,11 @@ cet_build_plugin(StrawHitReco art::module
       Offline::TrackerGeom
 )
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/BkgMVAPanel.weights.xml   ${CURRENT_BINARY_DIR} data/BkgMVAPanel.weights.xml   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/BkgMVA.weights.xml   ${CURRENT_BINARY_DIR} data/BkgMVA.weights.xml   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgDiagPanelSpatial.dat   ${CURRENT_BINARY_DIR} data/TrainBkgDiagPanelSpatial.dat   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgDiagPlaneSpatial.dat   ${CURRENT_BINARY_DIR} data/TrainBkgDiagPlaneSpatial.dat   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgDiagStationChi2.dat   ${CURRENT_BINARY_DIR} data/TrainBkgDiagStationChi2.dat   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgDiagStationSpatial.dat   ${CURRENT_BINARY_DIR} data/TrainBkgDiagStationSpatial.dat   COPYONLY)
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/epilog_FBH_panel.fcl   ${CURRENT_BINARY_DIR} fcl/epilog_FBH_panel.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/epilog_FBH_plane.fcl   ${CURRENT_BINARY_DIR} fcl/epilog_FBH_plane.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/epilog_FBH_station.fcl   ${CURRENT_BINARY_DIR} fcl/epilog_FBH_station.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/epilog_panel.fcl   ${CURRENT_BINARY_DIR} fcl/epilog_panel.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/epilog_plane.fcl   ${CURRENT_BINARY_DIR} fcl/epilog_plane.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/epilog_station.fcl   ${CURRENT_BINARY_DIR} fcl/epilog_station.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/epilog_stereo.fcl   ${CURRENT_BINARY_DIR} fcl/epilog_stereo.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl   ${CURRENT_BINARY_DIR} fcl/prolog.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_trigger.fcl   ${CURRENT_BINARY_DIR} fcl/prolog_trigger.fcl   COPYONLY)
+cet_make_exec(NAME StereoLineTest
+    SOURCE src/StereoLineTest_main.cc
+    LIBRARIES
+      Offline::TrkHitReco
+)
 
 install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/TrkHitReco)
 

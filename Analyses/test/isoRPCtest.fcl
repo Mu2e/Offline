@@ -67,7 +67,7 @@ physics :
     {
       module_type          : G4
       generatorModuleLabel : generate
-      # visMacro           : "Mu2eG4/vis/visyz.mac"
+      # visMacro           : "Offline/Mu2eG4/vis/visyz.mac"
       stepsSizeLimit       : 10000                   # StepPoint
       particlesSizeLimit   : 10000                   # SimParticle
       seed                 : [9877]

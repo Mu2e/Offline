@@ -22,11 +22,13 @@ Mu2eDetector : {
 AlignedTracker : {
   verbose : 0
   useDb : true
+  onlyWireOffsets : false
 }
 
 AlignedTrackerSim : {
   verbose : 0
   useDb : false
+  onlyWireOffsets : true
 }
 
 FullReadoutStraw : {
