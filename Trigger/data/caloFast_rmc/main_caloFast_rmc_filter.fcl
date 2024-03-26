@@ -1,8 +1,0 @@
-physics.filters.caloFastRMCFilter.diagLevel        : 0
-physics.filters.caloFastRMCFilter.MinClusterEnergy : 120.0
-physics.filters.caloFastRMCFilter.MaxClusterEnergy : 200.0
-physics.filters.caloFastRMCFilter.MinClusterRadius : 490.
-physics.filters.caloFastRMCFilter.MinNCel          : 2
-physics.filters.caloFastRMCFilter.MaxNCel          : 10
-physics.filters.caloFastRMCFilter.MinNCl           : 1
-physics.filters.caloFastRMCFilter.DiskID           : [ 0 ]

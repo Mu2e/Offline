@@ -195,7 +195,7 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
     }
   }
 
-  if (nFrags == 0) {
+  if ( (diagLevel_ > 0) && (nFrags == 0)) {
     std::cout << "[ArtFragmentsFromDTCEvents::produce] found no fragments!" << std::endl;
   }
 

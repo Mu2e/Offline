@@ -418,7 +418,6 @@ string extMonFNAL.concreteMaterial = "G4_AIR";
 string extMonFNAL.filter.magnet.material = "G4_AIR";
 string extMonFNAL.spectrometer.magnet.material = "G4_AIR";
 string extMonFNAL.planeMaterial = "G4_AIR";
-string extMonFNAL.muonID.material = "G4_AIR";
 string extMonFNAL.room.materialName = "G4_AIR";
 string extMonFNAL.room.wall.materialName = "G4_AIR";
 string ExtShieldDownstream.materialType1 = "G4_AIR";

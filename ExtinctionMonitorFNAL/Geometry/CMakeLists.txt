@@ -5,7 +5,6 @@ cet_make_library(
       src/ExtMonFNALMagnet.cc
       src/ExtMonFNALModule.cc
       src/ExtMonFNALModuleIdConverter.cc
-      src/ExtMonFNALMuonID.cc
       src/ExtMonFNALPixelChip.cc
       src/ExtMonFNALPixelIdConverter.cc
       src/ExtMonFNALPlane.cc

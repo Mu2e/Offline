@@ -2,6 +2,7 @@ cet_make_library(
     SOURCE
       src/CRVCalibMaker.cc
       src/CRVOrdinalMaker.cc
+      src/CRVPhotonYieldMaker.cc
       src/CRVStatusMaker.cc
     LIBRARIES PUBLIC
       
