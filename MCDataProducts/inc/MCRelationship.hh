@@ -42,8 +42,8 @@ namespace mu2e {
     // from the mixture
     MCRelationship(StrawDigiMC const& mcd, SPPtr const& spp);
     private:
-    int8_t _rel; // relationship
-    int8_t _rem; // distance between relationship
+    int8_t _rel = none; // relationship
+    int8_t _rem = -1; // distance between relationship
   };
 }
 #endif
