@@ -37,7 +37,7 @@ namespace mu2e {
             float time,
             float charge,
             float wdist,
-            StrawPosition const& pos,
+            StrawCoordinates const& pos,
             float drifttime,
             float proptime,
             art::Ptr<StrawGasStep> const& sgs,
@@ -49,10 +49,10 @@ namespace mu2e {
         StrawEnd strawEnd() const { return _end; }
         double time()       const { return _time;}
         float   charge()  const { return _charge; }
-        StrawPosition const& cluPos() const { return _pos; }
+        StrawCoordinates const& cluPos() const { return _pos; }
         float wireDistance() const { return _wdist; }
-        float driftDistance() const { return _pos.Rho(); }
-        float driftPhi() const { return _pos.Phi(); }
+        float driftDistance() const { return _pos._wirePosition.Rho(); }
+        float driftPhi() const { return _pos._wirePosition.Phi(); }
         float   driftTime() const { return _drifttime; }
         float   propTime() const { return _proptime; }
         art::Ptr<StrawGasStep> const& strawGasStep() const { return _sgsptr; }
@@ -66,7 +66,7 @@ namespace mu2e {
         float  _time;            // microbunch time at the wire end, in ns since EventWindowMarker, offsets and wrapping applied
         float  _charge;          // charge at the wire end, in units of pC
         float _wdist;    // propagation distance from cluster to the wire end
-        StrawPosition _pos;  // cluster position WRT the straw
+        StrawCoordinates _pos;  // cluster position WRT the straw
         float _drifttime; // drift time to the wire
         float _proptime;  // propagation time to the wire end
         art::Ptr<StrawGasStep> _sgsptr;

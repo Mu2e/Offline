@@ -292,6 +292,14 @@ cet_build_plugin(GenEventCounter art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(GenFilter art::module
+    REG_SOURCE src/GenFilter_module.cc
+    LIBRARIES REG
+      Offline::EventGenerator
+      
+      Offline::MCDataProducts
+)
+
 cet_build_plugin(InFlightParticleSampler art::module
     REG_SOURCE src/InFlightParticleSampler_module.cc
     LIBRARIES REG

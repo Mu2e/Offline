@@ -10,6 +10,13 @@ cet_make_library(
       ROOT::Hist
 )
 
+cet_build_plugin(CrvCalibration art::module
+    REG_SOURCE src/CrvCalibration_module.cc
+    LIBRARIES REG
+      Offline::CRVReco
+      art_root_io::TFileService_service
+)
+
 cet_build_plugin(CrvCoincidenceFinder art::module
     REG_SOURCE src/CrvCoincidenceFinder_module.cc
     LIBRARIES REG
@@ -19,6 +26,21 @@ cet_build_plugin(CrvCoincidenceFinder art::module
       Offline::DataProducts
       Offline::GeometryService
       Offline::RecoDataProducts
+)
+
+
+cet_build_plugin(CrvFPGArate art::module
+    REG_SOURCE src/CrvFPGArate_module.cc
+    LIBRARIES REG
+      Offline::CRVReco
+      art_root_io::TFileService_service
+)
+
+cet_build_plugin(CrvPedestalFinder art::module
+    REG_SOURCE src/CrvPedestalFinder_module.cc
+    LIBRARIES REG
+      Offline::CRVReco
+      art_root_io::TFileService_service
 )
 
 cet_build_plugin(CrvRecoPulsesFinder art::module

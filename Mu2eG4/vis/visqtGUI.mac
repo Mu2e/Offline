@@ -15,7 +15,7 @@
 #
 # Start Here Menu/Button
 /gui/addMenu start "Start Here"
-/gui/addButton start "Start by clicking Here Once" "/control/execute Mu2eG4/vis/vismqtm.mac"
+/gui/addButton start "Start by clicking Here Once" "/control/execute Offline/Mu2eG4/vis/vismqtm.mac"
 #
 # Viewer menu :
 /gui/addMenu viewer Viewer

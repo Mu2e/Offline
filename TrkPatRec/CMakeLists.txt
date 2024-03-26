@@ -156,21 +156,6 @@ cet_build_plugin(TimeAndPhiClusterFinderDiag art::tool
       Offline::RecoDataProducts
 )
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/HelixHitMVA.weights.xml   ${CURRENT_BINARY_DIR} data/HelixHitMVA.weights.xml   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/HelixNonStereoHitMVA.weights.xml   ${CURRENT_BINARY_DIR} data/HelixNonStereoHitMVA.weights.xml   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/HelixStereoHitMVA.weights.xml   ${CURRENT_BINARY_DIR} data/HelixStereoHitMVA.weights.xml   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TimeCluster3.weights.xml   ${CURRENT_BINARY_DIR} data/TimeCluster3.weights.xml   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TimeClusterCalo.weights.xml   ${CURRENT_BINARY_DIR} data/TimeClusterCalo.weights.xml   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TimeCluster.weights.xml   ${CURRENT_BINARY_DIR} data/TimeCluster.weights.xml   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TimePhiCluster.weights.xml   ${CURRENT_BINARY_DIR} data/TimePhiCluster.weights.xml   COPYONLY)
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/AmbigResolver.fcl   ${CURRENT_BINARY_DIR} fcl/AmbigResolver.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/DoubletAmbigResolver.fcl   ${CURRENT_BINARY_DIR} fcl/DoubletAmbigResolver.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/PanelAmbigResolver.fcl   ${CURRENT_BINARY_DIR} fcl/PanelAmbigResolver.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/Particle.fcl   ${CURRENT_BINARY_DIR} fcl/Particle.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl   ${CURRENT_BINARY_DIR} fcl/prolog.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_trigger.fcl   ${CURRENT_BINARY_DIR} fcl/prolog_trigger.fcl   COPYONLY)
-
 install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/TrkPatRec)
 
 install_source(SUBDIRS src)

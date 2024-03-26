@@ -84,8 +84,6 @@
 #include "Offline/STMGeom/inc/STM.hh"
 #include "Offline/GeometryService/inc/STMMaker.hh"
 #include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
-#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMuonID.hh"
-#include "Offline/GeometryService/inc/ExtMonFNALMuonIDMaker.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/GeometryService/inc/PTMMaker.hh"
 #include "Offline/PTMGeom/inc/PTM.hh"
@@ -330,7 +328,6 @@ namespace mu2e {
     addDetector(std::move(tmpemb));
     if(_config->getBool("hasExtMonFNAL",false)){
       addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, emfb));
-      addDetector(ExtMonFNALMuonIDMaker::make(*_config));
     }
 
 

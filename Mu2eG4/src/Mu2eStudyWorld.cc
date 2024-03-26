@@ -144,17 +144,16 @@ namespace mu2e {
                                           placePV,
                                           doSurfaceCheck));
 
-    std::string simulatedDetector = _geom.simulatedDetector().get<std::string>("tool_type");
+    constructEnv_ = art::make_tool<InitEnvToolBase>(_geom.simulatedDetector());
 
-    if (simulatedDetector != "Mu2e") {
-
-      constructEnv_ = art::make_tool<InitEnvToolBase>(_geom.simulatedDetector());
-
-      if (constructEnv_) constructEnv_->construct(boxInTheWorldVInfo,_config);
-      else {
-        throw cet::exception("CONFIG") << __func__ << ": unknown study environment: " << simulatedDetector << "\n";
-      }
+    if (constructEnv_) {
+      constructEnv_->construct(boxInTheWorldVInfo,_config);
     }
+    else {
+      std::string simulatedDetector = _geom.simulatedDetector().get<std::string>("tool_type");
+      throw cet::exception("CONFIG") << __func__ << ": unknown study environment: " << simulatedDetector << "\n";
+    }
+
     if ( _verbosityLevel > 0) {
       cout << __func__ << " world half dimensions     : "
            << worldBoundaries[0] << ", "

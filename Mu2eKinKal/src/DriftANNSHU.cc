@@ -34,7 +34,7 @@ namespace mu2e {
 
   WireHitState DriftANNSHU::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate = input;
-    if(input.updateable(StrawHitUpdaters::DriftANN)){
+    if(whstate.updateable(StrawHitUpdaters::DriftANN) && whstate.active()){
       // infer the ANN values
       std::array<float,5> spars;
       std::array<float,4> cpars;
@@ -55,8 +55,8 @@ namespace mu2e {
       double plen = sqrt(std::max(0.25, 6.25-dinfo.rDrift_*dinfo.rDrift_))/sint;
       cpars[3] = chit.energyDep()/plen;
       auto clustermvaout = clustermva_->infer(cpars.data());
-      if(diag_ > 1)std::cout << std::setw(8) << std::setprecision(5)
-        << "ANN inputs: doca, cdrift, sigdoca, TOTdrift, EDep "
+      if(diag_ > 2)std::cout << std::setw(8) << std::setprecision(5)
+        << "Drift ANN inputs: doca, cdrift, sigdoca, TOTdrift, EDep "
           << spars[0] << " , "
           << spars[1] << " , "
           << spars[2] << " , "
@@ -100,6 +100,9 @@ namespace mu2e {
         whstate.state_ = WireHitState::null;
       }
       whstate.frozen_ = whstate.isIn(freeze_);
+      if (diag_ > 1)std::cout << "DriftANNSHU set hit " << whstate << std::endl;
+    } else if (diag_ > 1) {
+      std::cout << "DriftANNSHU skipping hit " << whstate << std::endl;
     }
     return whstate;
   }
