@@ -1,4 +1,4 @@
-TABLE CRVBadChan 1202
+TABLE CRVBadChan 1200-1204 1206-1299
 #A channel can have more than one status bit. Add all status bits for the complete status.
 #status 1 (bit 0): not connected
 #status 2 (bit 1): ignore channel in reconstruction
