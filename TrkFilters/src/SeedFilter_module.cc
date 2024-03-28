@@ -51,6 +51,7 @@ namespace mu2e
         fhicl::Atom<int>                debugLevel        {     Name("debugLevel"),             Comment("debugLevel        ") , 0};
         fhicl::Atom<int>                noFilter          {     Name("noFilter"),               Comment("Don't filter anything"),0 };
         fhicl::Atom<int>                minNTracks        {     Name("minNTracks"),             Comment("Min number of tracks"),1 };
+        fhicl::Atom<int>                checkZProp        {     Name("checkZProp"),             Comment("Check z properties"),1};
 
       };
 
@@ -76,6 +77,7 @@ namespace mu2e
       unsigned        _nevt, _npass;
     int             _noFilter;
     int             _minNTracks;
+    int             _checkZProp;
   };
 
   SeedFilter::SeedFilter(const Parameters& config):
@@ -100,7 +102,8 @@ namespace mu2e
     _nevt(0),
     _npass(0),
     _noFilter(config().noFilter()),
-    _minNTracks(config().minNTracks())
+    _minNTracks(config().minNTracks()),
+    _checkZProp(config().checkZProp())
     {
       produces<TriggerInfo>();
     }
@@ -121,7 +124,9 @@ namespace mu2e
       // get the first segment
       KalSegment const& fseg = ks.segments().front();
       //check particle type and fitdirection
-      if ( (ks.particle() != _tpart) || (fseg.momentum3().Z()*_fdir.dzdt() < 0))       continue;
+      //if ( (ks.particle() != _tpart) || (fseg.momentum3().Z()*_fdir.dzdt() < 0))       continue;
+      if ( ks.particle() != _tpart) continue;
+      if ( (fseg.momentum3().Z()*_fdir.dzdt() < 0) && _checkZProp) continue;
 
       // I should not be calculating NDOF here, this should be in an adapter, FIXME!!
       unsigned nactive(0);
