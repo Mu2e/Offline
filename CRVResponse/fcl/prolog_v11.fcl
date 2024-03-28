@@ -122,7 +122,7 @@ BEGIN_PROLOG
       ThermalRate                  : 3.0e-4     //ns^-1     0.3MHz for entire SiPM
       CrossTalkProb                : 0.04       //
 
-      useSipmStatusDB              : false      //all channels will be simulated. channels with status bit 1 can be ignored in reco.
+      useSipmStatusDB              : true       //channel with status bits 0 (not connected) and 2 (no data) will not be simulated. channels with status bit 1 can be ignored in reco.
     }
     CrvWaveforms:
     {

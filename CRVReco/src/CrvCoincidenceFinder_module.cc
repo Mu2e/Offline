@@ -320,9 +320,9 @@ namespace mu2e
       if(_usePulseOverlaps) PEs=crvRecoPulse->GetPEsNoFit();
 
       //compensate for dead or ignored channels
-      size_t channel = crvBarIndex.asUint()*CRVId::nChanPerBar + SiPM;
-      channel += (SiPM-2<0 ? 2 : -2);  //the other channel at the same side of the counter
-      std::bitset<16> status(sipmStatus.status(channel));
+      size_t currentChannel = crvBarIndex.asUint()*CRVId::nChanPerBar + SiPM;
+      size_t testChannel = currentChannel + (SiPM-2<0 ? 2 : -2);  //the other channel at the same side of the counter
+      std::bitset<16> status(sipmStatus.status(testChannel));
       bool compensate=false;
       for(size_t iChannelStatus=0; iChannelStatus<_compensateChannelStatus.size(); ++iChannelStatus)
       {
