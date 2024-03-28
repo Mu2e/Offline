@@ -82,6 +82,7 @@ namespace mu2e {
       using EXING = KinKal::ElementXing<KTRAJ>;
       using EXINGPTR = std::shared_ptr<EXING>;
       using EXINGCOL = std::vector<EXINGPTR>;
+      enum SaveTraj {none=0, full, t0seg};
       // construct from fit configuration objects
       explicit KKFit(KKFitConfig const& fitconfig);
       // helper functions used to create components of the fit
@@ -141,6 +142,8 @@ namespace mu2e {
       double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
+
+      SaveTraj savetraj_; // trajectory saving option
   };
 
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(KKFitConfig const& fitconfig) :
@@ -178,6 +181,14 @@ namespace mu2e {
     // geometry service eventually, TODO
     SurfaceMap smap;
     smap.surfaces(ssids,sample_);
+
+    if (fitconfig.saveTraj() == "T0") {
+        savetraj_ = t0seg;
+    } else if (fitconfig.saveTraj() == "Full") {
+        savetraj_ = full;
+    } else {
+        savetraj_ = none;
+    }
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
@@ -497,14 +508,15 @@ namespace mu2e {
     // loop over track components and store them
     fseed._hits.reserve(kktrk.strawHits().size());
     for(auto const& strawhit : kktrk.strawHits() ) {
-      Residual utres, udres;
+      Residual utres = strawhit->refResidual(Mu2eKinKal::tresid);
+      Residual udres = strawhit->refResidual(Mu2eKinKal::dresid);
       // compute unbiased residuals; this can fail if the track has marginal coverage
       if(kktrk.fitStatus().usable()) {
         try {
           udres = strawhit->residual(Mu2eKinKal::dresid);
           utres = strawhit->residual(Mu2eKinKal::tresid);
         } catch (std::exception const& error) {
-          std::cout << "Unbiased residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
+          std::cout << "Unbiased KKStrawHit residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
         }
       }
       fseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
@@ -526,7 +538,14 @@ namespace mu2e {
         hflag.merge(StrawHitFlag::doca);
       }
       // calculate the unbiased time residual
-      auto tres = (kktrk.fitStatus().usable()) ? calohit->residual(0) : calohit->refResidual(0);
+      Residual ctres = calohit->refResidual(0);
+      if(kktrk.fitStatus().usable()){
+        try {
+          ctres = calohit->residual(0);
+        } catch (std::exception const& error) {
+          std::cout << "Unbiased KKCaloHit residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
+        }
+      }
       // calculate the cluster depth = distance along the crystal axis from the POCA to the back face of this disk (where the SiPM sits)
       double backz = calo.geomUtil().mu2eToTracker(calo.disk(calohit->caloCluster()->diskID()).geomInfo().backFaceCenter()).z();
       // calculate the distance from POCA to the SiPM, along the crystal (Z) direction, and projected along the track
@@ -536,7 +555,7 @@ namespace mu2e {
           clen,trklen,
           ca.tpData(),
           calohit->unbiasedClosestApproach().tpData(),
-          tres,ca.particleTraj().momentum3(ca.particleToca()));
+          ctres,ca.particleTraj().momentum3(ca.particleToca()));
     }
     fseed._straws.reserve(kktrk.strawXings().size());
     for(auto const& sxing : kktrk.strawXings()) {
@@ -561,11 +580,15 @@ namespace mu2e {
           dm.R(),
           sxing->active() );
     }
-    // save the fit segments
-    fseed._segments.reserve(fittraj.pieces().size());
-    for (auto const& traj : fittraj.pieces() ){
-      // skip zero-range segments.  By convention, sample the state at the mid-time
-      if(traj->range().range() > 0.0) fseed._segments.emplace_back(*traj,traj->range().mid());
+    // save the fit segments as requested
+    if (savetraj_ == full){
+      fseed._segments.reserve(fittraj.pieces().size());
+      for (auto const& traj : fittraj.pieces() ){
+        // skip zero-range segments.  By convention, sample the state at the mid-time
+        if(traj->range().range() > 0.0) fseed._segments.emplace_back(*traj,traj->range().mid());
+      }
+    } else if (savetraj_ == t0seg ) {
+      fseed._segments.emplace_back(t0piece,t0val);
     }
     sampleFit(kktrk,fseed._inters);
     return fseed;

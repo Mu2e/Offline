@@ -39,6 +39,7 @@ Mu2eKinKal : {
     SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
+    SaveTrajectory : "Full" # save the entire fit result trajectory in the KalSeed
   }
 
    CHSEEDFIT: {
@@ -122,10 +123,8 @@ Mu2eKinKal : {
     DivergenceDeltaChisq : 10.0
     DivergenceDeltaParams : 1e6
     DivergenceGap : 10 # mm
-    BFieldCorrection : true
-#    BFieldCorrection : false
+    BFieldCorrection : false
     BCorrTolerance : 1e-2 # momemntum fraction
-#    ProcessEnds : true
     ProcessEnds : false
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
