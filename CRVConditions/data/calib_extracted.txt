@@ -1,4 +1,4 @@
-TABLE CRVTime
+TABLE CRVTime 1205
 #channel,timeOffset
 0,0.145
 1,-0.668
@@ -2048,7 +2048,7 @@ TABLE CRVTime
 2045,-1.379
 2046,-1.499
 2047,-1.379
-TABLE CRVSiPM
+TABLE CRVSiPM 1205
 #channel,pedestal,calibPulseHeight,calibPulseArea
 0,100.0,11.4,394.6
 1,100.0,11.4,394.6

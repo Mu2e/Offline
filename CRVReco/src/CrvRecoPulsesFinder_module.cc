@@ -64,6 +64,7 @@ namespace mu2e
       fhicl::Atom<float> timeOffsetScale{Name("timeOffsetScale"), Comment("scale factor for time offsets from database (use 1.0, if measured values)")}; //1.0
       fhicl::Atom<float> timeOffsetCutoffLow{Name("timeOffsetCutoffLow"), Comment("lower cutoff of time offsets (for random values - otherwise set to minimum value)")}; //-3.0ns
       fhicl::Atom<float> timeOffsetCutoffHigh{Name("timeOffsetCutoffHigh"), Comment("upper cutoff of time offsets (for random values - otherwise set to maximum value)")}; //+3.0ns
+      fhicl::Atom<bool> useTimeOffsetDB{Name("useTimeOffsetDB"), Comment("apply time offsets from the DB")}; //true
       fhicl::Atom<bool> ignoreChannels{Name("ignoreChannels"), Comment("ignore channels that have status 2 (bit 1) in CRVstatus DB")}; //true
     };
 
@@ -84,6 +85,7 @@ namespace mu2e
     float _timeOffsetScale;
     float _timeOffsetCutoffLow;
     float _timeOffsetCutoffHigh;
+    bool  _useTimeOffsetDB;
 
     bool  _ignoreChannels;
 
@@ -99,6 +101,7 @@ namespace mu2e
     _timeOffsetScale(conf().timeOffsetScale()),
     _timeOffsetCutoffLow(conf().timeOffsetCutoffLow()),
     _timeOffsetCutoffHigh(conf().timeOffsetCutoffHigh()),
+    _useTimeOffsetDB(conf().useTimeOffsetDB()),
     _ignoreChannels(conf().ignoreChannels())
   {
     produces<CrvRecoPulseCollection>();
@@ -177,10 +180,14 @@ namespace mu2e
       double pedestal = calib.pedestal(channel);
       double calibPulseArea = calib.pulseArea(channel);
       double calibPulseHeight = calib.pulseHeight(channel);
-      double timeOffset = calib.timeOffset(channel);
-      timeOffset*=_timeOffsetScale;   //random time offsets can be scaled to a wider or smaller spread
-      if(timeOffset<_timeOffsetCutoffLow)  timeOffset=_timeOffsetCutoffLow;  //random time offsets can be cutoff at some limit
-      if(timeOffset>_timeOffsetCutoffHigh) timeOffset=_timeOffsetCutoffHigh;
+      double timeOffset = 0.0;
+      if(_useTimeOffsetDB)
+      {
+        double timeOffset = calib.timeOffset(channel);
+        timeOffset*=_timeOffsetScale;   //random time offsets can be scaled to a wider or smaller spread
+        if(timeOffset<_timeOffsetCutoffLow)  timeOffset=_timeOffsetCutoffLow;  //random time offsets can be cutoff at some limit
+        if(timeOffset>_timeOffsetCutoffHigh) timeOffset=_timeOffsetCutoffHigh;
+      }
 
       _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, CRVDigitizationPeriod, pedestal, calibPulseArea, calibPulseHeight);
 
