@@ -55,8 +55,7 @@ physics :
       FillTriggerInfo : false
       branches :  [
         { input: "KK"
-#          branch : "trk"
-          branch : "dem"
+          branch : "trk"
           suffix : "DeM"
           options : { fillMC : true   genealogyDepth : -1 }
         }
