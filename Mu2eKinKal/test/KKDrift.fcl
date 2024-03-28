@@ -50,8 +50,6 @@ physics :
       FitType : LoopHelix
       diagLevel : 2
       FillMCInfo : true
-      FillCRVHits : true
-      FillTrkQualInfo : false
       FillTrkPIDInfo : false
       FillHitInfo : true
       FillTriggerInfo : false
