@@ -148,6 +148,7 @@ BEGIN_PROLOG
       timeOffsetCutoffLow          :-3.0    //the time offsets are cut off at -3ns
       timeOffsetCutoffHigh         : 3.0    //the time offsets are cut off at +3ns
                                             //note: if measured time offsets are used, the cutoffs should be set to the maximum values
+      useTimeOffsetDB              : false  //will be applied at reco
     }
     CrvDigi:
     {

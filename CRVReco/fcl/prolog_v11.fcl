@@ -49,6 +49,7 @@ BEGIN_PROLOG
       timeOffsetCutoffLow       :-3.0    //the time offsets are cut off at -3ns
       timeOffsetCutoffHigh      : 3.0    //the time offsets are cut off at +3ns
                                          //note: if measured time offsets are used, the cutoffs should be set to the maximum values
+      useTimeOffsetDB           : true   //applies time offsets from the DB
       ignoreChannels            : true   //ignore channels that have status 2 (bit 1) in CRVstatus DB
     }
 
@@ -398,6 +399,7 @@ BEGIN_PROLOG
       bigClusterThreshold              : 800
       fiberSignalSpeed                 : 140    //140 mm/ns  //FIXME: The correct value should be 175 mm/ns.
       timeOffset                       :  34.5  //34.5 ns
+      compensateChannelStatus          : [0,1,2] //not connected channels, ignored channels (in reco), channels that have no data
     }
 
 

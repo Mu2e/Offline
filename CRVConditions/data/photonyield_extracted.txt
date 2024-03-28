@@ -1,4 +1,4 @@
-TABLE CRVPhoton
+TABLE CRVPhoton 1205
 #channel,photonYieldDeviation
 0,1.978
 1,0.300

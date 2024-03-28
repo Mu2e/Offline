@@ -61,6 +61,7 @@ namespace mu2e
     double                              _timeOffsetScale;
     double                              _timeOffsetCutoffLow;
     double                              _timeOffsetCutoffHigh;
+    bool                                _useTimeOffsetDB;
     double                              _singlePEWaveformMaxTime;
 
     CLHEP::HepRandomEngine&             _engine;
@@ -96,6 +97,7 @@ namespace mu2e
     _timeOffsetScale(pset.get<double>("timeOffsetScale")),             //1.0 (scale factor applied to the database values)
     _timeOffsetCutoffLow(pset.get<double>("timeOffsetCutoffLow")),
     _timeOffsetCutoffHigh(pset.get<double>("timeOffsetCutoffHigh")),
+    _useTimeOffsetDB(pset.get<bool>("useTimeOffsetDB")),  //false, will be applied at reco
     _singlePEWaveformMaxTime(pset.get<double>("singlePEWaveformMaxTime")),        //100ns
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat{_engine},
@@ -168,13 +170,17 @@ namespace mu2e
       CRVROC   onlineChannel  = crvChannelMap.online(offlineChannel);
       uint16_t FEB            = onlineChannel.FEB();
 
-      //the FEBs will be synchronized to account for cable length differences etc.,
-      //but there may still be small time differences between the FEBs.
-      //get the numbers from the database (either measured values of random values)
-      double timeOffset = calib.timeOffset(barIndex.asUint()*CRVId::nChanPerBar + SiPM);
-      timeOffset*=_timeOffsetScale;   //random time offsets can be scaled to a wider or smaller spread
-      if(timeOffset<_timeOffsetCutoffLow)  timeOffset=_timeOffsetCutoffLow;  //random time offsets can be cutoff at some limit
-      if(timeOffset>_timeOffsetCutoffHigh) timeOffset=_timeOffsetCutoffHigh;
+      double timeOffset=0.0;
+      if(_useTimeOffsetDB)
+      {
+        //the FEBs will be synchronized to account for cable length differences etc.,
+        //but there may still be small time differences between the FEBs.
+        //get the numbers from the database (either measured values of random values)
+        timeOffset = calib.timeOffset(barIndex.asUint()*CRVId::nChanPerBar + SiPM);
+        timeOffset*=_timeOffsetScale;   //random time offsets can be scaled to a wider or smaller spread
+        if(timeOffset<_timeOffsetCutoffLow)  timeOffset=_timeOffsetCutoffLow;  //random time offsets can be cutoff at some limit
+        if(timeOffset>_timeOffsetCutoffHigh) timeOffset=_timeOffsetCutoffHigh;
+      }
 
       const std::vector<CrvSiPMCharges::SingleCharge> &timesAndCharges = iter->GetCharges();
       std::vector<ChargeCluster> chargeClusters;
