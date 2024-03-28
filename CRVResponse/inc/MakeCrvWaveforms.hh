@@ -26,10 +26,10 @@ class MakeCrvWaveforms
 
   private:
     std::vector<double> _singlePEWaveform;
-    double _singlePEWaveformPrecision;
-    double _singlePEWaveformMaxTime;
-    double _singlePEReferenceCharge;
-    double _singlePEMaxVoltage;
+    double _singlePEWaveformPrecision{0.0};
+    double _singlePEWaveformMaxTime{0.0};
+    double _singlePEReferenceCharge{0.0};
+    double _singlePEMaxVoltage{0.0};
 };
 
 }

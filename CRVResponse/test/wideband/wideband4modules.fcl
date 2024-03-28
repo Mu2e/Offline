@@ -107,7 +107,6 @@ physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0
                                                              "CRVConditions/v6_0/LookupTable_6000_0"]
 physics.producers.CrvSiPMCharges.CrossTalkProb            : 0.04
 physics.producers.CrvSiPMCharges.ThermalRate              : 0.0  #to speed up things
-physics.producers.CrvWaveforms.FEBtimeSpread              : 0.0
 physics.producers.CrvCoincidenceClusterFinder.verboseLevel: 0
 physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
       [

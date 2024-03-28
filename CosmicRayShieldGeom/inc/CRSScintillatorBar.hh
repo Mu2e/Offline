@@ -78,15 +78,15 @@ namespace mu2e
       return _detail->isInside(worldPosition,_position);
     }
 
-    bool operator==(const CRSScintillatorBar other) const
+    bool operator==(const CRSScintillatorBar &other) const
     {
       return _index == other.index();
     }
-    bool operator>(const CRSScintillatorBar other) const
+    bool operator>(const CRSScintillatorBar &other) const
     {
       return _index > other.index();
     }
-    bool operator<(const CRSScintillatorBar other) const
+    bool operator<(const CRSScintillatorBar &other) const
     {
       return _index < other.index();
     }

@@ -44,8 +44,10 @@ outputs:
   }
 }
 
-physics.producers.CrvRecoPulses.crvDigiModuleLabel        : "SelectRecoMC"
-physics.producers.CrvCoincidenceClusterMatchMC.crvWaveformsModuleLabel                : "compressRecoMCs"
+#physics.producers.CrvRecoPulses.crvDigiModuleLabel        : "SelectRecoMC"
+physics.producers.CrvRecoPulses.crvDigiModuleLabel        : "CrvDigi"
+#physics.producers.CrvCoincidenceClusterMatchMC.crvWaveformsModuleLabel                : "compressRecoMCs"
+physics.producers.CrvCoincidenceClusterMatchMC.crvWaveformsModuleLabel                : "compressDigiMCs"
 physics.producers.CrvCoincidenceClusterMatchMC.doNtuples  : true
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 services.SeedService.baseSeed         :  773651

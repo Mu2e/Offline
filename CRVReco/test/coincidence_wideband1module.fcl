@@ -49,7 +49,7 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
       [
         {
           CRVSector : "W1"
-          PEthreshold : 8
+          PEthreshold : 10
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
@@ -57,7 +57,7 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
           minSlope :-11
           maxSlope : 11
           maxSlopeDifference : 4
-          coincidenceLayers : 2 //3
+          coincidenceLayers : 3
           minClusterPEs : 0
         }
       ]

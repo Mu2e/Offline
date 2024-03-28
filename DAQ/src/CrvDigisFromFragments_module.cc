@@ -41,15 +41,12 @@ class art::CrvDigisFromFragments : public EDProducer
 
   // --- C'tor/d'tor:
   explicit CrvDigisFromFragments(const art::EDProducer::Table<Config>& config);
-  virtual ~CrvDigisFromFragments() {}
+  ~CrvDigisFromFragments() override {}
 
   // --- Production:
-  virtual void produce(Event&);
+  void produce(Event&) override;
 
   private:
-  //  int decompressCrvDigi(uint8_t adc);
-  int16_t decompressCrvDigi(int16_t adc);
-
   int                                      _diagLevel;
   art::InputTag                            _CRVDataDecodersTag;
   mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
@@ -66,12 +63,6 @@ CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config
 
 // ----------------------------------------------------------------------
 
-int16_t CrvDigisFromFragments::decompressCrvDigi(int16_t adc)
-{
-  // TODO: This is a temporary implementation.
-  return adc;
-}
-
 void CrvDigisFromFragments::produce(Event& event)
 {
   art::EventNumber_t eventNumber = event.event();
@@ -86,7 +77,7 @@ void CrvDigisFromFragments::produce(Event& event)
     std::cout << CRVDataDecoders->size() << " CRV fragments." << std::endl;
 
     size_t totalSize = 0;
-    for(auto frag : *CRVDataDecoders)
+    for(const auto &frag : *CRVDataDecoders)
     {
       for(size_t i = 0; i < frag.block_count(); ++i)
       {
@@ -113,21 +104,35 @@ void CrvDigisFromFragments::produce(Event& event)
       auto block = CRVDataDecoder.dataAtBlockIndex(iDataBlock);
       if(block == nullptr)
       {
-        std::cerr << "Unable to retrieve block " << iDataBlock << "!" << std::endl;
+        std::cerr << "Unable to retrieve block in ";
+        std::cerr << "fragment: " << idx << " data block: "<< iDataBlock << std::endl;
         continue;
       }
       auto header = block->GetHeader();
+/*
+//TODO: Enable once isValid function is available
+      if(!header->isValid())
+      {
+        std::cerr << "CRV packet is not valid in " << std::endl;
+        std::cerr << "fragment: " << idx << " data block: "<< iDataBlock << std::endl;
+        std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
+        continue;
+      }
+*/
       if(header->GetSubsystemID() != DTCLib::DTC_Subsystem::DTC_Subsystem_CRV)
       {
-        throw cet::exception("DATA") << " CRV packet does not have system ID 2";
+        std::cerr << "CRV packet does not have system ID 2 in " << std::endl;
+        std::cerr << "fragment: " << idx << " data block: "<< iDataBlock << std::endl;
+        std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
+        continue;
       }
-
       if(header->GetPacketCount() > 0)
       {
         auto crvRocHeader = CRVDataDecoder.GetCRVROCStatusPacket(iDataBlock);
         if(crvRocHeader == nullptr)
         {
-          std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock " << iDataBlock << std::endl;
+          std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock in " << iDataBlock << std::endl;
+          std::cerr << "fragment: " << idx << " data block: "<< iDataBlock << std::endl;
           continue;
         }
 
@@ -149,8 +154,8 @@ void CrvDigisFromFragments::produce(Event& event)
           for(size_t i = 0; i < crvHitInfo.NumSamples; i += mu2e::CrvDigi::NSamples)
           {
             std::array<int16_t, mu2e::CrvDigi::NSamples> adc = {0};
-            for(size_t j = i; j < i + mu2e::CrvDigi::NSamples && j < crvHitInfo.NumSamples; ++j)
-              adc[j] = decompressCrvDigi(waveform.at(j).ADC);
+            for(size_t j = 0; j < mu2e::CrvDigi::NSamples && i+j < crvHitInfo.NumSamples; ++j)
+              adc[j] = waveform.at(i+j).ADC;
 
             // CrvDigis use a constant array size of 8 samples
             // waveforms with more than 8 samples need to be written to multiple CrvDigis
@@ -200,10 +205,6 @@ void CrvDigisFromFragments::produce(Event& event)
             std::cout << "Waveform: {";
             for(size_t i = 0; i < crvHitInfo.NumSamples; i++)
               std::cout << "  " << waveform.at(i).ADC;
-            std::cout << "}" << std::endl;
-            std::cout << "Waveform decompressed: {";
-            for(size_t i = 0; i < crvHitInfo.NumSamples; i++)
-              std::cout << "  " << decompressCrvDigi(waveform.at(i).ADC);
             std::cout << "}" << std::endl;
             std::cout << std::endl;
           } // loop over hits

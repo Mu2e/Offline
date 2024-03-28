@@ -55,21 +55,21 @@ double LandauGaussFunction(double *x, double *par)
     //maximum is identical to the MP parameter.
 
     // Numeric constants
-    Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
-    Double_t mpshift  = -0.22278298;       // Landau maximum location
+    constexpr Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
+    constexpr Double_t mpshift  = -0.22278298;       // Landau maximum location
 
     // Control constants
-    Double_t np = 100.0;      // number of convolution steps
-    Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
+    constexpr Double_t np = 100.0;      // number of convolution steps
+    constexpr Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
 
     // Variables
-    Double_t xx;
-    Double_t mpc;
-    Double_t fland;
+    Double_t xx = 0.0;
+    Double_t mpc = 0.0;
+    Double_t fland = 0.0;
     Double_t sum = 0.0;
-    Double_t xlow,xupp;
-    Double_t step;
-    Double_t i;
+    Double_t xlow = 0.0, xupp = 0.0;
+    Double_t step = 0.0;
+    Int_t    i = 0.0;
 
     // MP shift correction
     mpc = par[1] - mpshift * par[0];
@@ -167,10 +167,10 @@ namespace mu2e
 
     using Parameters = art::EDAnalyzer::Table<Config>;
     explicit CrvWidebandTest(const Parameters& conf);
-    ~CrvWidebandTest();
-    void analyze(const art::Event& e);
-    void beginJob();
-    void endJob();
+    ~CrvWidebandTest() override;
+    void analyze(const art::Event& e) override;
+    void beginJob() override;
+    void endJob() override;
 
     private:
     std::string   _crvStepsModuleLabel;
@@ -180,14 +180,14 @@ namespace mu2e
     const float   _minTrackFitPEs{5};
     art::InputTag _protonBunchTimeTag;
 
-    int     _nFEBs;
-    int     _nSectorTypes;
+    int     _nFEBs{0};
+    int     _nSectorTypes{0};
 
-    int     _runNumber;
-    int     _subrunNumber;
+    int     _runNumber{0};
+    int     _subrunNumber{0};
     int     _spillNumber{1};  //to have the same variables as in the Wideband files
     int     _spillIndex{1};   //to have the same variables as in the Wideband files
-    int     _eventNumber;
+    int     _eventNumber{0};
 
     float  *_recoPEs{NULL};
     float  *_recoTime{NULL};
@@ -199,11 +199,11 @@ namespace mu2e
     float  *_coincidencePosY{NULL};
     float  *_coincidencePosZ{NULL};
 
-    float   _trackSlope;      //using slope=dx/dy to avoid inf for vertical tracks
-    float   _trackIntercept;  //x value, where y=0
-    int     _trackPoints;
-    float   _trackPEs;
-    float   _trackChi2;
+    float  *_trackSlope{NULL};      //using slope=dx/dy to avoid inf for vertical tracks
+    float  *_trackIntercept{NULL};  //x value, where y=0
+    int    *_trackPoints{NULL};
+    float  *_trackPEs{NULL};
+    float  *_trackChi2{NULL};
 
     int     _eventsRecorded{0};
     float  *_summaryPEs{NULL};
@@ -337,10 +337,16 @@ namespace mu2e
       _coincidencePosY  = new float[_nSectorTypes];
       _coincidencePosZ  = new float[_nSectorTypes];
 
+      _trackSlope       = new float[_nSectorTypes];
+      _trackIntercept   = new float[_nSectorTypes];
+      _trackPoints      = new int[_nSectorTypes];
+      _trackPEs         = new float[_nSectorTypes];
+      _trackChi2        = new float[_nSectorTypes];
+
       _tree->Branch("runNumber",&_runNumber,"runNumber/I");
       _tree->Branch("subrunNumber",&_subrunNumber,"subrunNumber/I");
       _tree->Branch("spillNumber",&_spillNumber,"spillNumber/I");
-      _tree->Branch("spillIndex",&_spillNumber,"spillIndex/I");
+      _tree->Branch("spillIndex",&_spillIndex,"spillIndex/I");
       _tree->Branch("eventNumber",&_eventNumber,"eventNumber/I");
       _tree->Branch("PEs",_recoPEs,Form("PEs[%i][%i]/F",_nFEBs,(unsigned int)CRVId::nChanPerFEB));
       _tree->Branch("time",_recoTime,Form("time[%i][%i]/F",_nFEBs,(unsigned int)CRVId::nChanPerFEB));
@@ -351,11 +357,11 @@ namespace mu2e
       _tree->Branch("coincidencePosX",_coincidencePosX,Form("coincidencePosX[%i]/F",_nSectorTypes));
       _tree->Branch("coincidencePosY",_coincidencePosY,Form("coincidencePosY[%i]/F",_nSectorTypes));
       _tree->Branch("coincidencePosZ",_coincidencePosZ,Form("coincidencePosZ[%i]/F",_nSectorTypes));
-      _tree->Branch("trackSlope", &_trackSlope, "trackSlope/F");
-      _tree->Branch("trackIntercept", &_trackIntercept, "trackIntercept/F");
-      _tree->Branch("trackPoints", &_trackPoints, "trackPoints/I");
-      _tree->Branch("trackPEs", &_trackPEs, "trackPEs/F");
-      _tree->Branch("trackChi2", &_trackChi2, "trackChi2/F");
+      _tree->Branch("trackSlope", _trackSlope, Form("trackSlope[%i]/F",_nSectorTypes));
+      _tree->Branch("trackIntercept", _trackIntercept, Form("trackIntercept[%i]/F",_nSectorTypes));
+      _tree->Branch("trackPoints", _trackPoints, Form("trackPoints[%i]/I",_nSectorTypes));
+      _tree->Branch("trackPEs", _trackPEs, Form("trackPEs[%i]/F",_nSectorTypes));
+      _tree->Branch("trackChi2", _trackChi2, Form("trackChi2[%i]/F",_nSectorTypes));
 
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir("plots");
@@ -369,149 +375,158 @@ namespace mu2e
                                            Form("PE Distribution FEB %i Channel %i;PE;Counts",iFEB,iChannel),
                                            75,0,150);
       }
-    }
+    }//setup at first event
 
-    //initialize track variables
-    float sumX     =0;
-    float sumY     =0;
-    float sumXY    =0;
-    float sumYY    =0;
-    _trackSlope    =0;
-    _trackIntercept=0;
-    _trackPEs      =0;
-    _trackPoints   =0;
-    _trackChi2     =-1;
-
-    int widthDirection = counters.at(0)->getBarDetail().getWidthDirection();  //assumes that all counters are oriented in the same way
-    int thicknessDirection = counters.at(0)->getBarDetail().getThicknessDirection();
-
-    //loop through all counters
-    for(iter=counters.begin(); iter!=counters.end(); iter++)
+    //fits for the entire stack of modules/sectors (sectorType=0) and for individual modules/sectors (sectorType=1,...)
+    for(int iSectorType=0; iSectorType<_nSectorTypes; ++iSectorType)
     {
-      //get counter properties
-      const CRSScintillatorBar &crvCounter = **iter;
-      const CRSScintillatorBarIndex &barIndex = crvCounter.index();
+     //initialize track variables
+     float sumX     =0;
+     float sumY     =0;
+     float sumXY    =0;
+     float sumYY    =0;
+     _trackSlope[iSectorType]    =0;
+     _trackIntercept[iSectorType]=0;
+     _trackPEs[iSectorType]      =0;
+     _trackPoints[iSectorType]   =0;
+     _trackChi2[iSectorType]     =-1;
 
-      CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
-      if(widthDirection!=crvCounter.getBarDetail().getWidthDirection() ||
-         thicknessDirection!=crvCounter.getBarDetail().getThicknessDirection())
-      throw std::logic_error("crv modules are oriented in different directions.");
+      int widthDirection = counters.at(0)->getBarDetail().getWidthDirection();  //assumes that all counters are oriented in the same way
+      int thicknessDirection = counters.at(0)->getBarDetail().getThicknessDirection();
 
-      double x=crvCounterPos[widthDirection];
-      double y=crvCounterPos[thicknessDirection];
-
-      //get visible deposited energy for each counter
-      double depositedEnergy=0;
-      if(crvStepsCollection.isValid())
+      //loop through all counters
+      for(iter=counters.begin(); iter!=counters.end(); iter++)
       {
-        for(size_t istep=0; istep<crvStepsCollection->size(); istep++)
-        {
-          CrvStep const& step(crvStepsCollection->at(istep));
-          if(step.barIndex()==barIndex) depositedEnergy+=step.visibleEDep();
-        }
-      }
+        //get counter properties
+        const CRSScintillatorBar &crvCounter = **iter;
+        const CRSScintillatorBarIndex &barIndex = crvCounter.index();
 
-      //get reco PEs of each SiPM of this counter
-      float counterPEs=0;
-      for(int SiPM=0; SiPM<4; SiPM++)
-      {
-        if(!(*iter)->getBarDetail().hasCMB(SiPM%CRVId::nSidesPerBar)) continue;  //don't check non-existing SiPMs
+        int sectorNumber = crvCounter.id().getShieldNumber();
+        int sectorType = CRS->getCRSScintillatorShields().at(sectorNumber).getSectorType();
+        if(iSectorType>0 && iSectorType!=sectorType) continue;
 
-        float recoPEs=0;
-        float recoTime=-1;
-        int   fitStatus=0;
-        for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++)
+
+        CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
+        if(widthDirection!=crvCounter.getBarDetail().getWidthDirection() ||
+           thicknessDirection!=crvCounter.getBarDetail().getThicknessDirection())
+        throw std::logic_error("crv modules are oriented in different directions.");
+
+        double x=crvCounterPos[widthDirection];
+        double y=crvCounterPos[thicknessDirection];
+
+        //get visible deposited energy for each counter
+        double depositedEnergy=0;
+        if(crvStepsCollection.isValid())
         {
-          const CrvRecoPulse &crvRecoPulse = crvRecoPulseCollection->at(recoPulseIndex);
-          if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==SiPM)
+          for(size_t istep=0; istep<crvStepsCollection->size(); istep++)
           {
-            if(recoPEs<crvRecoPulse.GetPEs())  //record the largest pulse to remove noise hits, after pulses, ...
-            {
-              recoPEs   = crvRecoPulse.GetPEs();
-              recoTime  = crvRecoPulse.GetPulseTime();
-              fitStatus = 1;
-              if(crvRecoPulse.GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::failedFit)) fitStatus=2;
-            }
+            CrvStep const& step(crvStepsCollection->at(istep));
+            if(step.barIndex()==barIndex) depositedEnergy+=step.visibleEDep();
           }
         }
 
-        uint16_t offlineChannel = barIndex.asUint()*4 + SiPM;
-        CRVROC   onlineChannel  = crvChannelMap.online(offlineChannel);
-        uint16_t feb            = onlineChannel.FEB();
-        uint16_t febChannel     = onlineChannel.FEBchannel();
-
-        int index=feb*CRVId::nChanPerFEB+febChannel;
-        _recoPEs[index]   = recoPEs;
-        _recoTime[index]  = recoTime;
-        _fitStatus[index] = fitStatus;
-        _depositedEnergy[index] = depositedEnergy;
-        _histPEs[index]->Fill(recoPEs);
-
-        counterPEs+=recoPEs;
-      }
-
-      //update track variables for track fit
-      if(counterPEs<_minTrackFitPEs) continue;
-
-      sumX +=x*counterPEs;
-      sumY +=y*counterPEs;
-      sumXY+=x*y*counterPEs;
-      sumYY+=y*y*counterPEs;
-      _trackPEs+=counterPEs;
-      ++_trackPoints;
-    }
-
-    //track fit
-    if(_trackPEs>=2*_minTrackFitPEs && _trackPoints>1)
-    {
-      if(_trackPEs*sumYY-sumY*sumY!=0)
-      {
-        _trackSlope=(_trackPEs*sumXY-sumX*sumY)/(_trackPEs*sumYY-sumY*sumY);
-        _trackIntercept=(sumX-_trackSlope*sumY)/_trackPEs;
-      }
-    }
-
-    //calculate chi2
-    for(iter=counters.begin(); iter!=counters.end(); iter++)
-    {
-      //get counter properties
-      const CRSScintillatorBar &crvCounter = **iter;
-      const CRSScintillatorBarIndex &barIndex = crvCounter.index();
-
-      CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
-      if(widthDirection!=crvCounter.getBarDetail().getWidthDirection() ||
-         thicknessDirection!=crvCounter.getBarDetail().getThicknessDirection())
-      throw std::logic_error("crv modules are oriented in different directions.");
-
-      double x=crvCounterPos[widthDirection];
-      double y=crvCounterPos[thicknessDirection];
-
-      //get reco PEs of each SiPM of this counter
-      float counterPEs=0;
-      for(int SiPM=0; SiPM<4; SiPM++)
-      {
-        if(!(*iter)->getBarDetail().hasCMB(SiPM%CRVId::nSidesPerBar)) continue;  //don't check non-existing SiPMs
-
-        float recoPEs=0;
-        for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++)
+        //get reco PEs of each SiPM of this counter
+        float counterPEs=0;
+        for(int SiPM=0; SiPM<4; SiPM++)
         {
-          const CrvRecoPulse &crvRecoPulse = crvRecoPulseCollection->at(recoPulseIndex);
-          if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==SiPM)
+          if(!(*iter)->getBarDetail().hasCMB(SiPM%CRVId::nSidesPerBar)) continue;  //don't check non-existing SiPMs
+
+          float recoPEs=0;
+          float recoTime=-1;
+          int   fitStatus=0;
+          for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++)
           {
-            if(recoPEs<crvRecoPulse.GetPEs())  //record the largest pulse to remove noise hits, after pulses, ...
+            const CrvRecoPulse &crvRecoPulse = crvRecoPulseCollection->at(recoPulseIndex);
+            if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==SiPM)
             {
-              recoPEs = crvRecoPulse.GetPEs();
+              if(recoPEs<crvRecoPulse.GetPEs())  //record the largest pulse to remove noise hits, after pulses, ...
+              {
+                recoPEs   = crvRecoPulse.GetPEs();
+                recoTime  = crvRecoPulse.GetPulseTime();
+                fitStatus = 1;
+                if(crvRecoPulse.GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::failedFit)) fitStatus=2;
+              }
             }
           }
-        }
-        counterPEs+=recoPEs;
-      }
-      if(counterPEs<_minTrackFitPEs) continue;
 
-      float xFit = _trackSlope*y + _trackIntercept;
-      _trackChi2+=(xFit-x)*(xFit-x)*counterPEs;  //PE-weighted chi2
-    }
-    _trackChi2/=_trackPEs;
+          uint16_t offlineChannel = barIndex.asUint()*4 + SiPM;
+          CRVROC   onlineChannel  = crvChannelMap.online(offlineChannel);
+          uint16_t feb            = onlineChannel.FEB();
+          uint16_t febChannel     = onlineChannel.FEBchannel();
+
+          int index=feb*CRVId::nChanPerFEB+febChannel;
+          _recoPEs[index]   = recoPEs;
+          _recoTime[index]  = recoTime;
+          _fitStatus[index] = fitStatus;
+          _depositedEnergy[index] = depositedEnergy;
+          _histPEs[index]->Fill(recoPEs);
+
+          counterPEs+=recoPEs;
+        }
+
+        //update track variables for track fit
+        if(counterPEs<_minTrackFitPEs) continue;
+
+        sumX +=x*counterPEs;
+        sumY +=y*counterPEs;
+        sumXY+=x*y*counterPEs;
+        sumYY+=y*y*counterPEs;
+        _trackPEs[iSectorType]+=counterPEs;
+        ++_trackPoints[iSectorType];
+      }
+
+      //track fit
+      if(_trackPEs[iSectorType]>=2*_minTrackFitPEs && _trackPoints[iSectorType]>1)
+      {
+        if(_trackPEs[iSectorType]*sumYY-sumY*sumY!=0)
+        {
+          _trackSlope[iSectorType]=(_trackPEs[iSectorType]*sumXY-sumX*sumY)/(_trackPEs[iSectorType]*sumYY-sumY*sumY);
+          _trackIntercept[iSectorType]=(sumX-_trackSlope[iSectorType]*sumY)/_trackPEs[iSectorType];
+        }
+      }
+
+      //calculate chi2
+      for(iter=counters.begin(); iter!=counters.end(); iter++)
+      {
+        //get counter properties
+        const CRSScintillatorBar &crvCounter = **iter;
+        const CRSScintillatorBarIndex &barIndex = crvCounter.index();
+
+        CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
+        if(widthDirection!=crvCounter.getBarDetail().getWidthDirection() ||
+           thicknessDirection!=crvCounter.getBarDetail().getThicknessDirection())
+        throw std::logic_error("crv modules are oriented in different directions.");
+
+        double x=crvCounterPos[widthDirection];
+        double y=crvCounterPos[thicknessDirection];
+
+        //get reco PEs of each SiPM of this counter
+        float counterPEs=0;
+        for(int SiPM=0; SiPM<4; SiPM++)
+        {
+          if(!(*iter)->getBarDetail().hasCMB(SiPM%CRVId::nSidesPerBar)) continue;  //don't check non-existing SiPMs
+
+          float recoPEs=0;
+          for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++)
+          {
+            const CrvRecoPulse &crvRecoPulse = crvRecoPulseCollection->at(recoPulseIndex);
+            if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==SiPM)
+            {
+              if(recoPEs<crvRecoPulse.GetPEs())  //record the largest pulse to remove noise hits, after pulses, ...
+              {
+                recoPEs = crvRecoPulse.GetPEs();
+              }
+            }
+          }
+          counterPEs+=recoPEs;
+        }
+        if(counterPEs<_minTrackFitPEs) continue;
+
+        float xFit = _trackSlope[iSectorType]*y + _trackIntercept[iSectorType];
+        _trackChi2[iSectorType]+=(xFit-x)*(xFit-x)*counterPEs;  //PE-weighted chi2
+      }
+      _trackChi2[iSectorType]/=_trackPEs[iSectorType];
+    }//track fits
 
     //get PDG ID of all sectors (if available)
     std::vector<float> totalEnergyDeposited(_nSectorTypes,0);

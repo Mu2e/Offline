@@ -32,6 +32,7 @@
 #include "CLHEP/Random/Randomize.h"
 
 #include <string>
+#include <bitset>
 
 #include <TMath.h>
 
@@ -57,6 +58,7 @@ namespace mu2e
     std::string _protonBunchTimeMCLabel;
 
     mu2e::ProditionsHandle<mu2e::CRVStatus> _sipmStatus;
+    bool                                    _useSipmStatusDB;
 
     mu2eCrv::MakeCrvSiPMCharges::ProbabilitiesStruct _probabilities;
     std::vector<std::pair<int,int> >   _inactivePixels;
@@ -84,6 +86,7 @@ namespace mu2e
     _digitizationStartMargin(pset.get<double>("digitizationStartMargin")),  //50ns
     _eventWindowMarkerLabel(pset.get<std::string>("eventWindowMarker","EWMProducer")),
     _protonBunchTimeMCLabel(pset.get<std::string>("protonBunchTimeMC","EWMProducer")),
+    _useSipmStatusDB(pset.get<bool>("useSipmStatusDB")),             //false (all channels will be simulated. channels with status bit 1 can be ignored in reco)
     _inactivePixels(pset.get<std::vector<std::pair<int,int> > >("inactivePixels")),      //{18,18},....,{21,21}
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat{_engine},
@@ -154,9 +157,12 @@ namespace mu2e
                                                                //0 ... negative side
                                                                //1 ... positive side
 
-        size_t channel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
-        int status = sipmStatus.status(channel);
-        if(status==1 || status==2) continue; //SiPM not connected or dead
+        if(_useSipmStatusDB)
+        {
+          size_t channel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
+          std::bitset<16> status(sipmStatus.status(channel));
+          if(status.test(CRVStatus::Flags::notConnected) || status.test(CRVStatus::Flags::noData)) continue; //SiPM not connected (bit 0) or no data (bit 2)
+        }
 
         //time wrapping happened in the photon generator
         std::vector<std::pair<double,size_t> > photonTimesNew;   //pair of photon time and index in the original photon vector
