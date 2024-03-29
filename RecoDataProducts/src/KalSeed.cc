@@ -44,6 +44,14 @@ namespace mu2e {
       return KLPTPtr();
   }
 
+  unsigned KalSeed::nHits(bool active) const {
+    if(!active) return _hits.size();
+    unsigned nactive(0);
+    for(auto const& hit : hits())
+      if(hit.flag().hasAllProperties(StrawHitFlag::active))++nactive;
+    return nactive;
+  }
+
   std::vector<KalIntersection>::const_iterator KalSeed::intersection(SurfaceId const& surfid) const{
     auto retval = _inters.end();
     for(auto iinter = _inters.begin(); iinter != _inters.end(); ++iinter) {

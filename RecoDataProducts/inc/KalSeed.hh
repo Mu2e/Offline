@@ -47,6 +47,7 @@ namespace mu2e {
     double t0Val() const;
     float chisquared() const { return _chisq; }
     int nDOF() const { return _ndof; }
+    unsigned nHits(bool active=true) const;
     float fitConsistency() const { return _fitcon; }
     UInt_t nTrajSegments() const { return _segments.size(); }
     KinKal::TimeRange timeRange() const { return KinKal::TimeRange(_segments.front()._tmin,_segments.back()._tmax); }
