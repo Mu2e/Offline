@@ -219,7 +219,7 @@ BEGIN_PROLOG
           minSlope :-4
           maxSlope : 3
           maxSlopeDifference : 4
-          coincidenceLayers : 2 //only 2 layers for CRV-T
+          coincidenceLayers : 3
           minClusterPEs : 0
         },
         {
@@ -232,7 +232,7 @@ BEGIN_PROLOG
           minSlope :-11
           maxSlope : 11
           maxSlopeDifference : 4
-          coincidenceLayers : 2 //only 2 layers for CRV-T
+          coincidenceLayers : 3
           minClusterPEs : 0
         },
         {
@@ -245,7 +245,7 @@ BEGIN_PROLOG
           minSlope :-11
           maxSlope : 11
           maxSlopeDifference : 4
-          coincidenceLayers : 2 //only 2 layers for CRV-T
+          coincidenceLayers : 3
           minClusterPEs : 0
         },
         {
