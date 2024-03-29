@@ -55,8 +55,7 @@ physics :
       FillTriggerInfo : false
       branches :  [
         { input: "KK"
-#          branch : "trk"
-          branch : "dem"
+          branch : "trk"
           suffix : "DeM"
           options : { fillMC : true   genealogyDepth : -1 }
         }
@@ -91,7 +90,7 @@ physics.producers.KKDeM.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKDeM.ModuleSettings.ComboHitCollection : "makeSH"
 physics.producers.KKDeM.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
 physics.producers.KKDeM.ModuleSettings.PrintLevel : 0
-physics.producers.KKDeM.ModuleSettings.SaveAllFits : true
+physics.producers.KKDeM.ModuleSettings.SaveAllFits : false
 physics.producers.KKDeM.FitSettings.PrintLevel : 0
 
 physics.analyzers.TrkAna.ExtraMCStepCollectionTags : [ "compressDigiMCs:protonabsorber", "compressDigiMCs:stoppingtarget" ]

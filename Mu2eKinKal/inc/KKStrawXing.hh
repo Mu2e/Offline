@@ -8,6 +8,7 @@
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
+#include "KinKal/Trajectory/SensorLine.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "cetlib_except/exception.h"
@@ -15,18 +16,17 @@ namespace mu2e {
   using KinKal::SVEC3;
   using KinKal::DVEC;
   using KinKal::CAHint;
-  using KinKal::TimeDir;
   using KinKal::DPDV;
   using KinKal::MomBasis;
   using KinKal::NParams;
-  using KinKal::Line;
+  using KinKal::SensorLine;
   template <class KTRAJ> class KKStrawXing : public KinKal::ElementXing<KTRAJ> {
     public:
       using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       using EXING = KinKal::ElementXing<KTRAJ>;
-      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
-      using CA = KinKal::ClosestApproach<KTRAJ,Line>;
+      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
+      using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
       // construct without an associated StrawHit
@@ -37,7 +37,7 @@ namespace mu2e {
       // ElementXing interface
       void updateReference(KTRAJPTR const& ktrajptr) override;
       void updateState(MetaIterConfig const& config,bool first) override;
-      Parameters parameters(TimeDir tdir) const override;
+      Parameters params() const override;
       std::vector<MaterialXing>const&  matXings() const override { return mxings_; }
       // offset time WRT TOCA to avoid exact overlapp with the wire hit.  Note: the offset must be POSITIVE to insure
       // Xing is updated after the associated hit
@@ -54,7 +54,7 @@ namespace mu2e {
     private:
       StrawId sid_; // StrawId
       KKSTRAWHITPTR shptr_; // reference to associated StrawHit
-      Line axis_; // straw axis, expressed as a timeline
+      SensorLine axis_; // straw axis, expressed as a timeline
       KKStrawMaterial const& smat_;
       CA ca_; // result of most recent TPOCA
       double toff_; // small time offset
@@ -93,11 +93,8 @@ namespace mu2e {
     }
  }
 
-  template <class KTRAJ> Parameters KKStrawXing<KTRAJ>::parameters(TimeDir tdir) const {
-    if(tdir == TimeDir::forwards)
-      return fparams_;
-    else
-      return Parameters(-fparams_.parameters(),fparams_.covariance());
+  template <class KTRAJ> Parameters KKStrawXing<KTRAJ>::params() const {
+    return fparams_;
   }
 
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
@@ -131,7 +128,7 @@ namespace mu2e {
     if(mxings_.size() > 0){
       // compute the parameter effect for forwards time
       std::array<double,3> dmom = {0.0,0.0,0.0}, momvar = {0.0,0.0,0.0};
-      this->materialEffects(TimeDir::forwards, dmom, momvar);
+      this->materialEffects(dmom, momvar);
       // get the parameter derivative WRT momentum
       DPDV dPdM = referenceTrajectory().dPardM(time());
       double mommag = referenceTrajectory().momentum(time());

@@ -4,12 +4,12 @@
 #include "Offline/TrackerGeom/inc/Straw.hh"
 namespace mu2e {
   namespace Mu2eKinKal {
-    KinKal::Line hitLine(ComboHit const& ch, Straw const& straw,StrawResponse const& strawresponse) {
+    KinKal::SensorLine hitLine(ComboHit const& ch, Straw const& straw,StrawResponse const& strawresponse) {
       double sprop = 2*strawresponse.halfPropV(ch.strawId(),1000.0*ch.energyDep()); // calibration uses EDep in KeV
       // construct a kinematic line trajectory from this straw. the measurement point is at the earlier signal
       KinKal::VEC3 vp0(straw.wireEnd(ch.earlyEnd()));
       KinKal::VEC3 vp1(straw.wireEnd(ch.lateEnd()));
-      return KinKal::Line(vp0,vp1,ch.time(),sprop);
+      return KinKal::SensorLine(vp0,vp1,ch.time(),sprop);
     }
     bool inDetector(KinKal::VEC3 const& point) {
       return point.Rho() < 900.0 && fabs(point.Z()) < 1800; // numbers should come from Tracker TODO

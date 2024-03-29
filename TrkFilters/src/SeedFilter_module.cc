@@ -112,37 +112,38 @@ namespace mu2e
     }
     for(auto iks = kscol->begin(); iks != kscol->end(); ++iks) {
       auto const& ks = *iks;
-      // get the first segment
-      KalSegment const& fseg = ks.segments().front();
-      //check particle type and fitdirection
-      if ( (ks.particle() != _tpart) || (fseg.momentum3().Z()*_fdir.dzdt() < 0))       continue;
-
-      // I should not be calculating NDOF here, this should be in an adapter, FIXME!!
-      unsigned nactive(0);
-      for(auto const& ish : ks.hits())
-        if(ish.flag().hasAllProperties(StrawHitFlag::active))++nactive;
-      float ndof = std::max(1.0,nactive - 5.0);
-      if(_debug > 2){
-        printf("[SeedFilter::filter] %4d %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n", nactive, fseg.mom(), fseg.momerr(),ks.chisquared()/ndof, ks.fitConsistency(), fseg.helix().tanDip(), fseg.helix().d0());
-
-      }
-      if( ks.status().hasAllProperties(_goods) &&
-          (!_hascc || ks.caloCluster().isNonnull()) &&
-          nactive >= _minnhits &&
-          fseg.mom() > _minmom && fseg.mom() < _maxmom && fseg.momerr() < _maxmomerr &&
-          ks.chisquared()/ndof < _maxchi2dof &&
-          ks.fitConsistency()  > _minfitcons &&
-          fseg.helix().tanDip() > _mintdip && fseg.helix().tanDip() < _maxtdip &&
-          fseg.helix().d0() > _minD0 && fseg.helix().d0() < _maxD0 ) {
-        retval = true;
-        ++_npass;
-        // Fill the trigger info object
-        // associate to the helix which triggers.  Note there may be other helices which also pass the filter
-        // but filtering is by event!
-        size_t index = std::distance(kscol->begin(),iks);
-        triginfo->_tracks.push_back(art::Ptr<KalSeed>(ksH,index));
-        if(_debug > 1){
-          std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
+      if( ks.status().hasAllProperties(_goods) && ks.intersections().size()>0){
+        // get the first intersection
+        auto const& kinter = ks.intersections().front();
+        // convert to LoopHeix; this is needed to get d0 cut (which shoudl be replaced FIXME)
+        KinKal::LoopHelix lh(kinter.pstate_, KinKal::VEC3(kinter.bnom_));
+        auto momvec = kinter.momentum3();
+        double td = 1.0/tan(momvec.Theta());
+        double mom = momvec.R();
+        double d0 = lh.minAxisDist();
+        //check particle type and fitdirection
+        if ( (ks.particle() != _tpart) || (momvec.Z()*_fdir.dzdt() < 0))       continue;
+        unsigned nactive = ks.nHits(true); //count active hits
+        if(_debug > 2){
+          printf("[SeedFilter::filter] %4d %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n", nactive, mom, kinter.momerr(),ks.chisquared()/ks.nDOF(), ks.fitConsistency(), td, d0);
+        }
+        if( (!_hascc || ks.caloCluster().isNonnull()) &&
+            nactive >= _minnhits &&
+            mom > _minmom && mom < _maxmom && kinter.momerr() < _maxmomerr &&
+            ks.chisquared()/ks.nDOF() < _maxchi2dof && // chisq/ndof isn't a statistically robust measure, this cut should be removed FIXME
+            ks.fitConsistency()  > _minfitcons &&
+            td > _mintdip && td < _maxtdip &&
+            d0 > _minD0 && d0 < _maxD0) { // d0 is not a global geometric parameter and signed cuts have particle-species dependence.   This should be replaced with a selection based on consistency with the stopping target FIXME
+          retval = true;
+          ++_npass;
+          // Fill the trigger info object
+          // associate to the helix which triggers.  Note there may be other helices which also pass the filter
+          // but filtering is by event!
+          size_t index = std::distance(kscol->begin(),iks);
+          triginfo->_tracks.push_back(art::Ptr<KalSeed>(ksH,index));
+          if(_debug > 1){
+            std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
+          }
         }
       }
     }
