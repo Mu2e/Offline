@@ -356,6 +356,7 @@ Mu2eKinKal : {
     ExtensionSettings : {
       @table::Mu2eKinKal.DRIFTEXT
       BFieldCorrection : false
+      ProcessEnds : false
       MetaIterationSettings : [
         # annealing temp, strawhit updater algorithms
         [ 2.0, "CADSHU" ],
