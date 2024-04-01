@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// HelixFinder
+// AgnosticHelixFinder
 // M. Stortini
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "Offline/CalPatRec/inc/HelixFinder_types.hh"
+#include "Offline/CalPatRec/inc/AgnosticHelixFinder_types.hh"
 
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "art/Framework/Core/EDProducer.h"
@@ -37,6 +37,8 @@
 #include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 
+#include "CLHEP/Units/PhysicalConstants.h"
+
 #include "TAxis.h"
 #include "TCanvas.h"
 #include "TEllipse.h"
@@ -53,9 +55,9 @@
 
 namespace mu2e {
 
-using namespace HelixFinderTypes;
+using namespace AgnosticHelixFinderTypes;
 
-class HelixFinder : public art::EDProducer {
+class AgnosticHelixFinder : public art::EDProducer {
 
 public:
   struct Config {
@@ -76,7 +78,6 @@ public:
                                         Comment("# of clusters threshold")};
     fhicl::Atom<int> intenseClusterThresh{Name("intenseClusterThresh"),
                                           Comment("# of combo hits threshold")};
-    fhicl::Atom<bool> doLineFlag{Name("doLineFlag"), Comment("only triplet hits on line")};
     fhicl::Atom<bool> doIsolationFlag{Name("doIsolationFlag"),
                                       Comment("to filter out isolated hits")};
     fhicl::Atom<float> isoRad{Name("isoRad"), Comment("for isolation cut")};
@@ -94,11 +95,12 @@ public:
                                              Comment("add hits to triplet circle")};
     fhicl::Atom<int> minSeedCircleHits{Name("minSeedCircleHits"),
                                        Comment("min hits to continue search")};
-    fhicl::Atom<float> maxDeltaPhi{Name("maxDeltaPhi"), Comment("used finding phi-z segment")};
+    fhicl::Atom<float> maxDphiDz{Name("maxDphiDz"), Comment("used finding phi-z segment")};
     fhicl::Atom<float> maxZWindow{Name("maxZWindow"), Comment("used finding phi-z segment")};
     fhicl::Atom<int> minLineSegmentHits{Name("minLineSegmentHits"),
                                         Comment("used in findSeedPhiLines()")};
     fhicl::Atom<float> segMultiplier{Name("segMultiplier"), Comment("used in findSeedPhiLines()")};
+    fhicl::Atom<float> maxSegmentChi2{Name("maxSegmentChi2"), Comment("used in findSeedPhiLines()")};
     fhicl::Atom<float> max2PiAmbigResidual{Name("max2PiAmbigResidual"),
                                            Comment("when 2pi resolving segment")};
     fhicl::Atom<float> maxPhiZResidual{Name("maxPhiZResidual"),
@@ -132,7 +134,7 @@ public:
                                           Comment("max dP for plot particle")};
     fhicl::Table<McUtilsToolBase::Config> mcUtils{Name("mcUtils"),
                                                   Comment("get MC info if debugging")};
-    fhicl::Table<HelixFinderTypes::Config> diagPlugin{Name("diagPlugin"), Comment("diag plugin")};
+    fhicl::Table<AgnosticHelixFinderTypes::Config> diagPlugin{Name("diagPlugin"), Comment("diag plugin")};
   };
 
   struct cHit {
@@ -152,7 +154,7 @@ public:
   };
 
   struct tripletPoint {
-    const XYZVectorF* pos;
+    XYZVectorF pos;
     int hitIndice;
   };
 
@@ -174,6 +176,17 @@ public:
     std::vector<cHit> tcHitsCopy;
     ::LsqSums4 circleFitterCopy;
     ::LsqSums2 lineFitterCopy;
+  };
+
+  enum LoopCondition {
+    CONTINUE,
+    BREAK,
+    GOOD
+  };
+
+  enum HitType {
+    CaloCluster = -1,
+    StoppingTarget = -2
   };
 
   // struct to hold info specifically for when debugging
@@ -227,7 +240,6 @@ private:
   bool _useStoppingTarget;
   int _intenseEventThresh;
   int _intenseClusterThresh;
-  bool _doLineFlag;
   bool _doIsolationFlag;
   float _isoRad;
   int _isoMinHitsNear;
@@ -240,10 +252,11 @@ private:
   float _minTripletArea;
   float _maxSeedCircleResidual;
   int _minSeedCircleHits;
-  float _maxDeltaPhi;
+  float _maxDphiDz;
   float _maxZWindow;
   int _minLineSegmentHits;
   float _segMultiplier;
+  float _maxSegmentChi2;
   float _max2PiAmbigResidual;
   float _maxPhiZResidual;
   int _minFinalSeedHits;
@@ -323,12 +336,17 @@ private:
   std::unique_ptr<ModuleHistToolBase> _hmanager;
 
   //-----------------------------------------------------------------------------
+  // constants
+  //-----------------------------------------------------------------------------
+  static const float mmTconversion{CLHEP::c_light/1000.0};
+
+  //-----------------------------------------------------------------------------
   // functions
   //-----------------------------------------------------------------------------
 
 public:
-  explicit HelixFinder(const art::EDProducer::Table<Config>& config);
-  virtual ~HelixFinder();
+  explicit AgnosticHelixFinder(const art::EDProducer::Table<Config>& config);
+  virtual ~AgnosticHelixFinder();
 
   virtual void beginJob();
   virtual void beginRun(art::Run&);
@@ -339,24 +357,22 @@ public:
   // helper functions
   //-----------------------------------------------------------------------------
   bool findData(const art::Event& e);
-  const XYZVectorF* getPos(size_t& tcHitsIndex);
-  float computeXYplaneDist2(const XYZVectorF& p1, const XYZVectorF& p2);
+  XYZVectorF getPos(size_t& tcHitsIndex);
   void computeCircleError2(size_t& tcHitsIndex, float& xC, float& yC);
   float computeCircleResidual2(size_t& tcHitsIndex, float& xC, float& yC, float& rC);
   void computeHelixPhi(size_t& tcHitsIndex, float& xC, float& yC);
   float computeHelixMomentum2(float& radius, float& dphidz);
-  float computeHelixPerpMomentum(float& radius, float& Bz);
-  unsigned long long nChooseK(int n, int k);
+  float computeHelixPerpMomentum(float& radius);
   void tcHitsFill(size_t tc);
   void setFlags();
   void resetFlags();
   void findHelix(size_t tc, bool& findAnotherHelix);
   bool passesFlags(size_t& tcHitsIndex);
-  void setTripletI(size_t& tcHitsIndex, triplet& trip, int& outcome);
-  void setTripletJ(size_t& tcHitsIndex, triplet& trip, int& outcome);
-  void setTripletK(size_t& tcHitsIndex, triplet& trip, int& outcome);
-  void initTriplet(triplet& trip, int& outcome);
-  void initSeedCircle(int& outcome);
+  void setTripletI(size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome);
+  void setTripletJ(size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome);
+  void setTripletK(size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome);
+  void initTriplet(triplet& trip, LoopCondition& outcome);
+  void initSeedCircle(LoopCondition& outcome);
   void initHelixPhi();
   void findSeedPhiLines();
   void resolve2PiAmbiguities();
@@ -381,23 +397,24 @@ public:
 //-----------------------------------------------------------------------------
 // module constructor
 //-----------------------------------------------------------------------------
-HelixFinder::HelixFinder(const art::EDProducer::Table<Config>& config) :
+AgnosticHelixFinder::AgnosticHelixFinder(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}, _diagLevel(config().diagLevel()), _debug(config().debug()),
     _runDisplay(config().runDisplay()), _chLabel(config().chCollLabel()),
     _tcLabel(config().tcCollLabel()), _ccLabel(config().ccCollLabel()),
     _findMultipleHelices(config().findMultipleHelices()),
     _useStoppingTarget(config().useStoppingTarget()),
     _intenseEventThresh(config().intenseEventThresh()),
-    _intenseClusterThresh(config().intenseClusterThresh()), _doLineFlag(config().doLineFlag()),
+    _intenseClusterThresh(config().intenseClusterThresh()),
     _doIsolationFlag(config().doIsolationFlag()), _isoRad(config().isoRad()),
     _isoMinHitsNear(config().isoMinHitsNear()), _doAverageFlag(config().doAverageFlag()),
     _minDistCut(config().minDistCut()), _minTripletSeedZ(config().minTripletSeedZ()),
     _minTripletDz(config().minTripletDz()), _maxTripletDz(config().maxTripletDz()),
     _minTripletDist(config().minTripletDist()), _minTripletArea(config().minTripletArea()),
     _maxSeedCircleResidual(config().maxSeedCircleResidual()),
-    _minSeedCircleHits(config().minSeedCircleHits()), _maxDeltaPhi(config().maxDeltaPhi()),
+    _minSeedCircleHits(config().minSeedCircleHits()), _maxDphiDz(config().maxDphiDz()),
     _maxZWindow(config().maxZWindow()), _minLineSegmentHits(config().minLineSegmentHits()),
-    _segMultiplier(config().segMultiplier()), _max2PiAmbigResidual(config().max2PiAmbigResidual()),
+    _segMultiplier(config().segMultiplier()), _maxSegmentChi2(config().maxSegmentChi2()),
+    _max2PiAmbigResidual(config().max2PiAmbigResidual()),
     _maxPhiZResidual(config().maxPhiZResidual()), _minFinalSeedHits(config().minFinalSeedHits()),
     _maxCircleRecoverSigma(config().maxCircleRecoverSigma()),
     _maxLineRecoverSigma(config().maxLineRecoverSigma()),
@@ -456,12 +473,12 @@ HelixFinder::HelixFinder(const art::EDProducer::Table<Config>& config) :
 //-----------------------------------------------------------------------------
 // destructor
 //-----------------------------------------------------------------------------
-HelixFinder::~HelixFinder() {}
+AgnosticHelixFinder::~AgnosticHelixFinder() {}
 
 //-----------------------------------------------------------------------------
 // beginJob
 //-----------------------------------------------------------------------------
-void HelixFinder::beginJob() {
+void AgnosticHelixFinder::beginJob() {
   if (_diagLevel == 1) {
     art::ServiceHandle<art::TFileService> tfs;
     _hmanager->bookHistograms(tfs);
@@ -471,7 +488,7 @@ void HelixFinder::beginJob() {
 //-----------------------------------------------------------------------------
 // beginRun
 //-----------------------------------------------------------------------------
-void HelixFinder::beginRun(art::Run&) {
+void AgnosticHelixFinder::beginRun(art::Run&) {
 
   GeomHandle<mu2e::Calorimeter> ch;
   _calorimeter = ch.get();
@@ -485,7 +502,7 @@ void HelixFinder::beginRun(art::Run&) {
 //-----------------------------------------------------------------------------
 // find input things
 //-----------------------------------------------------------------------------
-bool HelixFinder::findData(const art::Event& evt) {
+bool AgnosticHelixFinder::findData(const art::Event& evt) {
 
   auto chCollH = evt.getValidHandle<ComboHitCollection>(_chLabel);
   if (chCollH.product() != 0) {
@@ -513,7 +530,7 @@ bool HelixFinder::findData(const art::Event& evt) {
 //-----------------------------------------------------------------------------
 // event entry point
 //-----------------------------------------------------------------------------
-void HelixFinder::produce(art::Event& event) {
+void AgnosticHelixFinder::produce(art::Event& event) {
 
   // get time (needed for diagnostic tool)
   auto moduleStartTime = std::chrono::high_resolution_clock::now();
@@ -531,6 +548,7 @@ void HelixFinder::produce(art::Event& event) {
     _diagInfo.moduleTime = 0.0;
     _diagInfo.nHelices = 0;
     _diagInfo.timeClusterData.clear();
+    _diagInfo.lineSegmentData.clear();
   }
 
   // flag whether event is intense or not
@@ -612,51 +630,44 @@ void HelixFinder::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
 // endJob
 //-----------------------------------------------------------------------------
-void HelixFinder::endJob() {}
+void AgnosticHelixFinder::endJob() {}
 
 //-----------------------------------------------------------------------------
 // get pointer to position of hit given some index in _tcHits
 //-----------------------------------------------------------------------------
-const XYZVectorF* HelixFinder::getPos(size_t& tcHitsIndex) {
+XYZVectorF AgnosticHelixFinder::getPos(size_t& tcHitsIndex) {
 
   int hitIndice = _tcHits[tcHitsIndex].hitIndice;
 
   if (hitIndice >= 0) {
-    return &_chColl->at(hitIndice).pos();
+    return _chColl->at(hitIndice).pos();
   }
   if (hitIndice == -2) {
-    return &_stopTargPos;
+    return _stopTargPos;
   }
-  if (hitIndice == -1) {
-    return &_caloPos;
+  if (hitIndice == HitType::CaloCluster) {
+    return _caloPos;
   }
 
   else {
-    return nullptr;
+    XYZVectorF p(0.0,0.0,0.0);
+    return p;
   }
-}
-
-//-----------------------------------------------------------------------------
-// compute distance between two points in XY plane
-//-----------------------------------------------------------------------------
-float HelixFinder::computeXYplaneDist2(const XYZVectorF& p1, const XYZVectorF& p2) {
-
-  return (p1.x() - p2.x()) * (p1.x() - p2.x()) + (p1.y() - p2.y()) * (p1.y() - p2.y());
 }
 
 //-----------------------------------------------------------------------------
 // updates circleError of hit given some circle parameters
 //-----------------------------------------------------------------------------
-void HelixFinder::computeCircleError2(size_t& tcHitsIndex, float& xC, float& yC) {
+void AgnosticHelixFinder::computeCircleError2(size_t& tcHitsIndex, float& xC, float& yC) {
 
   int hitIndice = _tcHits[tcHitsIndex].hitIndice;
 
-  if (hitIndice == -1) {
+  if (hitIndice == HitType::CaloCluster) {
     _tcHits[tcHitsIndex].circleError2 = _caloClusterSigma * _caloClusterSigma;
   } else {
     float transVar = _chColl->at(hitIndice).transVar();
-    float x = getPos(tcHitsIndex)->x();
-    float y = getPos(tcHitsIndex)->y();
+    float x = getPos(tcHitsIndex).x();
+    float y = getPos(tcHitsIndex).y();
     float dx = x - xC;
     float dy = y - yC;
     float dxn = dx * _chColl->at(hitIndice).vDir().x() + dy * _chColl->at(hitIndice).vDir().y();
@@ -664,29 +675,16 @@ void HelixFinder::computeCircleError2(size_t& tcHitsIndex, float& xC, float& yC)
     float sinth2 = 1 - costh2;
     _tcHits[tcHitsIndex].circleError2 =
         _chColl->at(hitIndice).wireVar() * sinth2 + transVar * costh2;
-    // float xP = getPos(tcHitsIndex)->x();
-    // float yP = getPos(tcHitsIndex)->y();
-    // float radVecX = (xP-xC)/std::sqrt((xP-xC)*(xP-xC)+(yP-yC)*(yP-yC));
-    // float radVecY = (yP-yC)/std::sqrt((xP-xC)*(xP-xC)+(yP-yC)*(yP-yC));
-    // float wireErr = _chColl->at(hitIndice).wireRes();
-    // float wireVecX = _chColl->at(hitIndice).uDir().x();
-    // float wireVecY = _chColl->at(hitIndice).uDir().y();
-    // float projWireErr = wireErr*(wireVecX*radVecX + wireVecY*radVecY);
-    // float transErr = _chColl->at(hitIndice).transRes();
-    // float transVecX = _chColl->at(hitIndice).uDir().y();
-    // float transVecY = -_chColl->at(hitIndice).uDir().x();
-    // float projTransErr = transErr*(transVecX*radVecX + transVecY*radVecY);
-    // _tcHits[tcHitsIndex].circleError2 = projTransErr*projTransErr+projWireErr*projWireErr;
   }
 }
 
 //-----------------------------------------------------------------------------
 // compute residual between point an circle
 //-----------------------------------------------------------------------------
-float HelixFinder::computeCircleResidual2(size_t& tcHitsIndex, float& xC, float& yC, float& rC) {
+float AgnosticHelixFinder::computeCircleResidual2(size_t& tcHitsIndex, float& xC, float& yC, float& rC) {
 
-  float xP = getPos(tcHitsIndex)->x();
-  float yP = getPos(tcHitsIndex)->y();
+  float xP = getPos(tcHitsIndex).x();
+  float yP = getPos(tcHitsIndex).y();
   float deltaDistance = std::abs(rC - std::sqrt((xP - xC) * (xP - xC) + (yP - yC) * (yP - yC)));
   float circleSigma2 = _tcHits[tcHitsIndex].circleError2;
 
@@ -696,20 +694,20 @@ float HelixFinder::computeCircleResidual2(size_t& tcHitsIndex, float& xC, float&
 //-----------------------------------------------------------------------------
 // compute phi relative to helix center, and set helixPhiError
 //-----------------------------------------------------------------------------
-void HelixFinder::computeHelixPhi(size_t& tcHitsIndex, float& xC, float& yC) {
+void AgnosticHelixFinder::computeHelixPhi(size_t& tcHitsIndex, float& xC, float& yC) {
 
   int hitIndice = _tcHits[tcHitsIndex].hitIndice;
 
-  float X = getPos(tcHitsIndex)->x() - xC;
-  float Y = getPos(tcHitsIndex)->y() - yC;
+  float X = getPos(tcHitsIndex).x() - xC;
+  float Y = getPos(tcHitsIndex).y() - yC;
   _tcHits[tcHitsIndex].helixPhi = polyAtan2(Y, X);
   if (_tcHits[tcHitsIndex].helixPhi < 0) {
-    _tcHits[tcHitsIndex].helixPhi = _tcHits[tcHitsIndex].helixPhi + 2 * 3.14;
+    _tcHits[tcHitsIndex].helixPhi = _tcHits[tcHitsIndex].helixPhi + 2 * M_PI;
   }
   // find phi error and initialize it
   // find phi error by projecting errors onto vector tangent to circle
   float deltaS2(0);
-  if (hitIndice == -1) {
+  if (hitIndice == HitType::CaloCluster) {
     deltaS2 = _caloClusterSigma * _caloClusterSigma;
   } else {
     float tanVecX = Y / std::sqrt(X * X + Y * Y);
@@ -730,47 +728,25 @@ void HelixFinder::computeHelixPhi(size_t& tcHitsIndex, float& xC, float& yC) {
 //-----------------------------------------------------------------------------
 // function to compute helix momentum^2 given some circle radius and line slope
 //-----------------------------------------------------------------------------
-float HelixFinder::computeHelixMomentum2(float& radius, float& dphidz) {
+float AgnosticHelixFinder::computeHelixMomentum2(float& radius, float& dphidz) {
 
   float lambda = 1.0 / dphidz;
 
-  return (radius * radius + lambda * lambda) * (3.0 / 10) * (3.0 / 10) * _bz0 * _bz0;
+  return (radius * radius + lambda * lambda) * _bz0 * _bz0 * mmTconversion * mmTconversion;
 }
 
 //-----------------------------------------------------------------------------
 // function to compute helix transverse momentum given circle radius and b-field
 //-----------------------------------------------------------------------------
-float HelixFinder::computeHelixPerpMomentum(float& radius, float& Bz) {
+float AgnosticHelixFinder::computeHelixPerpMomentum(float& radius) {
 
-  return radius * Bz * 1.602e-19 / (1000 * 5.36e-22);
-}
-
-//-----------------------------------------------------------------------------
-// function to compute n choose k
-//-----------------------------------------------------------------------------
-unsigned long long HelixFinder::nChooseK(int n, int k) {
-
-  if (k > n) {
-    return 0.0;
-  }
-  if (k == n || k == 0) {
-    return 1.0;
-  }
-
-  // compute n choose k
-  unsigned long long result = 1;
-  for (int i = 1; i <= k; i++) {
-    result *= (n - i + 1);
-    result /= i;
-  }
-
-  return result;
+  return radius * _bz0 * mmTconversion;
 }
 
 //-----------------------------------------------------------------------------
 // fill vector with hits to search for helix
 //-----------------------------------------------------------------------------
-void HelixFinder::tcHitsFill(size_t tc) {
+void AgnosticHelixFinder::tcHitsFill(size_t tc) {
 
   size_t sortStartIndex = 0;
 
@@ -789,14 +765,14 @@ void HelixFinder::tcHitsFill(size_t tc) {
 
   // push back stopping target if it is to be used
   if (_useStoppingTarget == true) {
-    hit.hitIndice = -2;
+    hit.hitIndice = HitType::StoppingTarget;
     _tcHits.push_back(hit);
     sortStartIndex++;
   }
 
   // push back calo cluster if it exists in time cluster
   if (_tcColl->at(tc).hasCaloCluster()) {
-    hit.hitIndice = -1;
+    hit.hitIndice = HitType::CaloCluster;
     _tcHits.push_back(hit);
     const art::Ptr<CaloCluster> cl = _tcColl->at(tc).caloCluster();
     CLHEP::Hep3Vector gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(), cl->cog3Vector());
@@ -836,81 +812,7 @@ void HelixFinder::tcHitsFill(size_t tc) {
 //-----------------------------------------------------------------------------
 // logic for setting certain flags on hits
 //-----------------------------------------------------------------------------
-void HelixFinder::setFlags() {
-
-  // flag hits that are not on a line in phi vs. z space
-  if (_doLineFlag == true) {
-    float lastAddedNegativePhi = 0.0;
-    float lastAddedPositivePhi = 0.0;
-    std::vector<size_t> posLineIndices;
-    std::vector<size_t> negLineIndices;
-    // seed point
-    for (size_t i = 0; i < _tcHits.size() - 3; i++) {
-      if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) {
-        continue;
-      }
-      if (_tcHits[i].notOnLine == false) {
-        continue;
-      }
-      posLineIndices.clear();
-      negLineIndices.clear();
-      int seedIndice = _tcHits[i].hitIndice;
-      float seedPhi = (_chColl->at(seedIndice).phi() < 0)
-                          ? (_chColl->at(seedIndice).phi() + 2 * 3.14)
-                          : _chColl->at(seedIndice).phi();
-      // initialize line for both positive and negative slopes
-      posLineIndices.push_back(i);
-      negLineIndices.push_back(i);
-      // make clear phi for the most recently added point to fitter
-      lastAddedNegativePhi = seedPhi;
-      lastAddedPositivePhi = seedPhi;
-      // now loop over test point
-      for (size_t j = i + 1; j < _tcHits.size(); j++) {
-        if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice < 0) {
-          continue;
-        }
-        if (_tcHits[j].notOnLine == false) {
-          continue;
-        }
-        if (getPos(i)->z() == getPos(j)->z()) {
-          continue;
-        }
-        if (std::abs(getPos(i)->z() - getPos(j)->z()) > _maxZWindow) {
-          break;
-        }
-        int testIndice = _tcHits[j].hitIndice;
-        float testPhi = (_chColl->at(testIndice).phi() < 0)
-                            ? (_chColl->at(testIndice).phi() + 2 * 3.14)
-                            : _chColl->at(testIndice).phi();
-        if (lastAddedPositivePhi > testPhi) {
-          if (std::abs(lastAddedPositivePhi - testPhi) > _maxDeltaPhi) {
-            continue;
-          }
-          posLineIndices.push_back(j);
-          lastAddedPositivePhi = testPhi;
-        }
-        if (testPhi > lastAddedNegativePhi) {
-          if (std::abs(lastAddedNegativePhi - testPhi) > _maxDeltaPhi) {
-            continue;
-          }
-          negLineIndices.push_back(j);
-          lastAddedNegativePhi = testPhi;
-        }
-      }
-      if (posLineIndices.size() >= 3) {
-        for (size_t n = 0; n < posLineIndices.size(); n++) {
-          int tcHitsIndex = posLineIndices[n];
-          _tcHits[tcHitsIndex].notOnLine = false;
-        }
-      }
-      if (negLineIndices.size() >= 3) {
-        for (size_t n = 0; n < negLineIndices.size(); n++) {
-          int tcHitsIndex = negLineIndices[n];
-          _tcHits[tcHitsIndex].notOnLine = false;
-        }
-      }
-    }
-  }
+void AgnosticHelixFinder::setFlags() {
 
   // do isolation and average flagging
   if (_doIsolationFlag == true || _doAverageFlag == true) {
@@ -919,7 +821,7 @@ void HelixFinder::setFlags() {
         continue;
       }
       int nHitsNear = 0;
-      const XYZVectorF* seedPos = getPos(i);
+      XYZVectorF seedPos = getPos(i);
       for (size_t j = 0; j < _tcHits.size(); j++) {
         if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice < 0) {
           continue;
@@ -927,10 +829,10 @@ void HelixFinder::setFlags() {
         if (j == i) {
           continue;
         }
-        const XYZVectorF* testPos = getPos(j);
+        XYZVectorF testPos = getPos(j);
         // do isolation flagging
         if (_doIsolationFlag == true) {
-          if (computeXYplaneDist2(*seedPos, *testPos) < _isoRad * _isoRad) {
+          if ((seedPos-testPos).Perp2() < _isoRad * _isoRad) {
             nHitsNear++;
           }
           if (nHitsNear < _isoMinHitsNear) {
@@ -947,7 +849,7 @@ void HelixFinder::setFlags() {
           if (_tcHits[j].averagedOut == true) {
             continue;
           }
-          if (computeXYplaneDist2(*seedPos, *testPos) <= _minDistCut * _minDistCut) {
+          if ((seedPos-testPos).Perp2() <= _minDistCut * _minDistCut) {
             _tcHits[j].averagedOut = true;
           }
         }
@@ -959,11 +861,11 @@ void HelixFinder::setFlags() {
 //-----------------------------------------------------------------------------
 // logic for setting certain flags on hits
 //-----------------------------------------------------------------------------
-void HelixFinder::resetFlags() {
+void AgnosticHelixFinder::resetFlags() {
 
   // first flag hits that are isolated
   for (size_t i = 0; i < _tcHits.size(); i++) {
-    if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == -2) {
+    if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::StoppingTarget) {
       continue;
     }
     _tcHits[i].isolated = false;
@@ -976,7 +878,7 @@ void HelixFinder::resetFlags() {
 //-----------------------------------------------------------------------------
 // logic to find helix
 //-----------------------------------------------------------------------------
-void HelixFinder::findHelix(size_t tc, bool& findAnotherHelix) {
+void AgnosticHelixFinder::findHelix(size_t tc, bool& findAnotherHelix) {
 
   // if in runDisplay mode we store collections for plotting
   _circleFitter.clear();
@@ -992,7 +894,7 @@ void HelixFinder::findHelix(size_t tc, bool& findAnotherHelix) {
   findAnotherHelix = false;
 
   // set flags before starting search so that we know what hits to use for tripletting
-  if (_doIsolationFlag == true || _doAverageFlag == true || _doLineFlag == true) {
+  if (_doIsolationFlag == true || _doAverageFlag == true) {
     setFlags();
   }
 
@@ -1002,28 +904,28 @@ void HelixFinder::findHelix(size_t tc, bool& findAnotherHelix) {
   for (size_t i = 0; i < _tcHits.size() - 2; i++) {
     bool uselessSeed = true;
     triplet tripletInfo;
-    int loopCondition;
+    LoopCondition loopCondition;
     setTripletI(i, tripletInfo, loopCondition);
-    if (loopCondition == 0) {
+    if (loopCondition == CONTINUE) {
       continue;
     }
-    if (loopCondition == -1) {
+    if (loopCondition == BREAK) {
       break;
     }
     for (size_t j = i + 1; j < _tcHits.size() - 1; j++) {
       setTripletJ(j, tripletInfo, loopCondition);
-      if (loopCondition == 0) {
+      if (loopCondition == CONTINUE) {
         continue;
       }
-      if (loopCondition == -1) {
+      if (loopCondition == BREAK) {
         break;
       }
       for (size_t k = j + 1; k < _tcHits.size(); k++) {
         setTripletK(k, tripletInfo, loopCondition);
-        if (loopCondition == 0) {
+        if (loopCondition == CONTINUE) {
           continue;
         }
-        if (loopCondition == -1) {
+        if (loopCondition == BREAK) {
           break;
         }
         // clear fitters for new triplet then initialize triplet
@@ -1051,11 +953,11 @@ void HelixFinder::findHelix(size_t tc, bool& findAnotherHelix) {
           trackingInfo.lineFitter.push_back(_lineFitter);
         }
         // now initialize seed circle if triplet circle passed condition check
-        if (loopCondition == 0) {
+        if (loopCondition == CONTINUE) {
           continue;
         }
         initSeedCircle(loopCondition);
-        if (loopCondition == 0) {
+        if (loopCondition == CONTINUE) {
           if (_debug == 1 && _runDisplay == 1) { // stage 2 info (seed circle + helix phi)
             initHelixPhi();
             trackingInfo.tcHitsColl.push_back(_tcHits);
@@ -1137,7 +1039,7 @@ void HelixFinder::findHelix(size_t tc, bool& findAnotherHelix) {
         float radius = _circleFitter.radius();
         float slope = _lineFitter.dydx();
         float mom2 = computeHelixMomentum2(radius, slope);
-        float pt = computeHelixPerpMomentum(radius, _bz0);
+        float pt = computeHelixPerpMomentum(radius);
         if (mom2 < _minHelixMomentum * _minHelixMomentum ||
             mom2 > _maxHelixMomentum * _maxHelixMomentum || pt < _minHelixPerpMomentum ||
             pt > _maxHelixPerpMomentum) {
@@ -1185,7 +1087,7 @@ void HelixFinder::findHelix(size_t tc, bool& findAnotherHelix) {
             break;
           } else {
             findAnotherHelix = true;
-            if (_doIsolationFlag == true || _doAverageFlag == true || _doLineFlag == true) {
+            if (_doIsolationFlag == true || _doAverageFlag == true) {
               resetFlags();
             }
             i = _tcHits.size();
@@ -1208,7 +1110,7 @@ void HelixFinder::findHelix(size_t tc, bool& findAnotherHelix) {
 //-----------------------------------------------------------------------------
 // check flags to see if point is good for triplet-ing with
 //-----------------------------------------------------------------------------
-bool HelixFinder::passesFlags(size_t& tcHitsIndex) {
+bool AgnosticHelixFinder::passesFlags(size_t& tcHitsIndex) {
 
   if (_tcHits[tcHitsIndex].inHelix == true) {
     return false;
@@ -1222,9 +1124,6 @@ bool HelixFinder::passesFlags(size_t& tcHitsIndex) {
   if (_doAverageFlag == true && _tcHits[tcHitsIndex].averagedOut == true) {
     return false;
   }
-  if (_doLineFlag == true && _tcHits[tcHitsIndex].notOnLine == true) {
-    return false;
-  }
 
   return true;
 }
@@ -1232,115 +1131,115 @@ bool HelixFinder::passesFlags(size_t& tcHitsIndex) {
 //-----------------------------------------------------------------------------
 // set ith point of triplet, return outcome value which can be used to direct for loops
 //-----------------------------------------------------------------------------
-void HelixFinder::setTripletI(size_t& tcHitsIndex, triplet& trip, int& outcome) {
+void AgnosticHelixFinder::setTripletI(size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome) {
 
   // set info for point
   trip.i.pos = getPos(tcHitsIndex);
   trip.i.hitIndice = _tcHits[tcHitsIndex].hitIndice;
 
   // check if point should break for loop
-  if (trip.i.pos->z() < _minTripletSeedZ) {
-    outcome = -1;
+  if (trip.i.pos.z() < _minTripletSeedZ) {
+    outcome = BREAK;
     return;
   }
   if (_intenseEvent == true || _intenseCluster == true) {
     if (trip.i.hitIndice >= 0) {
-      outcome = -1;
+      outcome = BREAK;
       return;
     }
   }
 
   // check if point should be continued on
   if (!passesFlags(tcHitsIndex)) {
-    outcome = 0;
+    outcome = CONTINUE;
     return;
   }
 
-  outcome = 1;
+  outcome = GOOD;
 }
 
 //-----------------------------------------------------------------------------
 // set jth point of triplet, return outcome value which can be used to direct for loops
 //-----------------------------------------------------------------------------
-void HelixFinder::setTripletJ(size_t& tcHitsIndex, triplet& trip, int& outcome) {
+void AgnosticHelixFinder::setTripletJ(size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome) {
 
   // set info for point
   trip.j.pos = getPos(tcHitsIndex);
   trip.j.hitIndice = _tcHits[tcHitsIndex].hitIndice;
-  float dz12 = trip.i.pos->z() - trip.j.pos->z();
+  float dz12 = trip.i.pos.z() - trip.j.pos.z();
 
   // check if point should break for loop
   if (trip.i.hitIndice >= 0 && dz12 > _maxTripletDz) {
-    outcome = -1;
+    outcome = BREAK;
     return;
   }
   if (_intenseEvent == true || _intenseCluster == true) {
-    if (trip.i.hitIndice == -2 && trip.j.hitIndice >= 0) {
-      outcome = -1;
+    if (trip.i.hitIndice == HitType::StoppingTarget && trip.j.hitIndice >= 0) {
+      outcome = BREAK;
       return;
     }
   }
 
   // check if point should be continued on
   if (!passesFlags(tcHitsIndex) || dz12 < _minTripletDz ||
-      computeXYplaneDist2(*trip.i.pos, *trip.j.pos) < _minTripletDist * _minTripletDist) {
-    outcome = 0;
+      (trip.i.pos-trip.j.pos).Perp2() < _minTripletDist * _minTripletDist) {
+    outcome = CONTINUE;
     return;
   }
 
-  outcome = 1;
+  outcome = GOOD;
 }
 
 //-----------------------------------------------------------------------------
 // set kth point of triplet, return outcome value which can be used to direct for loops
 //-----------------------------------------------------------------------------
-void HelixFinder::setTripletK(size_t& tcHitsIndex, triplet& trip, int& outcome) {
+void AgnosticHelixFinder::setTripletK(size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome) {
 
   // set info for point
   trip.k.pos = getPos(tcHitsIndex);
   trip.k.hitIndice = _tcHits[tcHitsIndex].hitIndice;
-  float dz23 = trip.j.pos->z() - trip.k.pos->z();
+  float dz23 = trip.j.pos.z() - trip.k.pos.z();
 
   // check if point should break for loop
   if (trip.j.hitIndice >= 0 && dz23 > _maxTripletDz) {
-    outcome = -1;
+    outcome = BREAK;
     return;
   }
 
   // check if point should be continued on
   if (!passesFlags(tcHitsIndex) || dz23 < _minTripletDz ||
-      computeXYplaneDist2(*trip.i.pos, *trip.k.pos) < _minTripletDist * _minTripletDist ||
-      computeXYplaneDist2(*trip.j.pos, *trip.k.pos) < _minTripletDist * _minTripletDist) {
-    outcome = 0;
+      (trip.i.pos-trip.k.pos).Perp2() < _minTripletDist * _minTripletDist ||
+      (trip.j.pos-trip.k.pos).Perp2() < _minTripletDist * _minTripletDist) {
+    outcome = CONTINUE;
     return;
   }
 
-  outcome = 1;
+  outcome = GOOD;
 }
 
 //-----------------------------------------------------------------------------
 // finding circle from triplet
 //-----------------------------------------------------------------------------
-void HelixFinder::initTriplet(triplet& trip, int& outcome) {
+void AgnosticHelixFinder::initTriplet(triplet& trip, LoopCondition& outcome) {
 
-  _circleFitter.addPoint(trip.i.pos->x(), trip.i.pos->y());
-  _circleFitter.addPoint(trip.j.pos->x(), trip.j.pos->y());
-  _circleFitter.addPoint(trip.k.pos->x(), trip.k.pos->y());
+  _circleFitter.addPoint(trip.i.pos.x(), trip.i.pos.y());
+  _circleFitter.addPoint(trip.j.pos.x(), trip.j.pos.y());
+  _circleFitter.addPoint(trip.k.pos.x(), trip.k.pos.y());
 
   // check if circle is valid for search or if we should continue to next triplet
   float radius = _circleFitter.radius();
-  float pt = computeHelixPerpMomentum(radius, _bz0);
+  float pt = computeHelixPerpMomentum(radius);
   if (pt < _minHelixPerpMomentum || pt > _maxHelixPerpMomentum) {
-    outcome = 0;
+    outcome = CONTINUE;
   } else {
-    outcome = 1;
+    outcome = GOOD;
   }
 }
 
 //-----------------------------------------------------------------------------
 // start with initial seed circle
 //-----------------------------------------------------------------------------
-void HelixFinder::initSeedCircle(int& outcome) {
+void AgnosticHelixFinder::initSeedCircle(LoopCondition& outcome) {
 
   // get triplet circle parameters then clear fitter
   float xC = _circleFitter.x0();
@@ -1354,14 +1253,14 @@ void HelixFinder::initSeedCircle(int& outcome) {
     if (_tcHits[i].inHelix == true) {
       continue;
     }
-    if (_tcHits[i].hitIndice == -2) {
+    if (_tcHits[i].hitIndice == HitType::StoppingTarget) {
       _tcHits[i].used = false;
       continue;
     }
     computeCircleError2(i, xC, yC);
     if (computeCircleResidual2(i, xC, yC, rC) < _maxSeedCircleResidual * _maxSeedCircleResidual) {
       float wP = 1.0 / (_tcHits[i].circleError2);
-      _circleFitter.addPoint(getPos(i)->x(), getPos(i)->y(), wP);
+      _circleFitter.addPoint(getPos(i).x(), getPos(i).y(), wP);
       _tcHits[i].used = true;
     } else {
       _tcHits[i].used = false;
@@ -1370,22 +1269,22 @@ void HelixFinder::initSeedCircle(int& outcome) {
 
   // check if there are enough hits to continue with search
   if (_circleFitter.qn() < _minSeedCircleHits) {
-    outcome = 0;
+    outcome = CONTINUE;
   } else {
-    outcome = 1;
+    outcome = GOOD;
   }
 }
 
 //-----------------------------------------------------------------------------
 // function to initialize phi info relative to helix center in _tcHits
 //-----------------------------------------------------------------------------
-void HelixFinder::initHelixPhi() {
+void AgnosticHelixFinder::initHelixPhi() {
 
   float xC = _circleFitter.x0();
   float yC = _circleFitter.y0();
 
   for (size_t i = 0; i < _tcHits.size(); i++) {
-    if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == -2 || _tcHits[i].used == false) {
+    if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::StoppingTarget || _tcHits[i].used == false) {
       continue;
     }
     // initialize phi data member relative to circle center
@@ -1397,18 +1296,23 @@ void HelixFinder::initHelixPhi() {
 //-----------------------------------------------------------------------------
 // function to find seed phi lines
 //-----------------------------------------------------------------------------
-void HelixFinder::findSeedPhiLines() {
+void AgnosticHelixFinder::findSeedPhiLines() {
 
   _seedPhiLines.clear();
+  lineSegmentInfo lsInfo;
 
   float rC = _circleFitter.radius();
 
   float lastAddedNegativePhi = 0.0;
   float lastAddedNegativePhiError2 = 0.0;
+  float lastAddedNegativeZ = 0.0;
   float lastAddedPositivePhi = 0.0;
   float lastAddedPositivePhiError2 = 0.0;
+  float lastAddedPositiveZ = 0.0;
+  float maxHitGap = 0.0;
+
   // seed point
-  for (size_t i = 0; i < _tcHits.size() - 3; i++) {
+  for (size_t i = 0; i < _tcHits.size() - _minLineSegmentHits; i++) {
     if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) {
       continue;
     }
@@ -1418,7 +1322,7 @@ void HelixFinder::findSeedPhiLines() {
     if (_tcHits[i].notOnSegment == false) {
       continue;
     }
-    float seedZ = getPos(i)->z();
+    float seedZ = getPos(i).z();
     float seedPhi = _tcHits[i].helixPhi;
     float seedError2 = _tcHits[i].helixPhiError2;
     float seedWeight = 1.0 / (seedError2);
@@ -1436,8 +1340,10 @@ void HelixFinder::findSeedPhiLines() {
     // make clear phi for the most recently added point to fitter
     lastAddedNegativePhi = seedPhi;
     lastAddedNegativePhiError2 = seedError2;
+    lastAddedNegativeZ = seedZ;
     lastAddedPositivePhi = seedPhi;
     lastAddedPositivePhiError2 = seedError2;
+    lastAddedPositiveZ = seedZ;
     // now loop over test point
     for (size_t j = i + 1; j < _tcHits.size(); j++) {
       if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice < 0) {
@@ -1446,7 +1352,7 @@ void HelixFinder::findSeedPhiLines() {
       if (_tcHits[j].used == false) {
         continue;
       }
-      float testZ = getPos(j)->z();
+      float testZ = getPos(j).z();
       if (testZ == seedZ) {
         continue;
       }
@@ -1458,10 +1364,12 @@ void HelixFinder::findSeedPhiLines() {
       float testWeight = 1.0 / (testError2);
       float positiveDiff = std::abs(lastAddedPositivePhi - testPhi);
       float positiveDiffError = std::sqrt(lastAddedPositivePhiError2 + testError2);
+      float positiveDeltaZ = lastAddedPositiveZ - testZ;
       float negativeDiff = std::abs(lastAddedNegativePhi - testPhi);
       float negativeDiffError = std::sqrt(lastAddedNegativePhiError2 + testError2);
+      float negativeDeltaZ = lastAddedNegativeZ - testZ; 
       if (lastAddedPositivePhi > testPhi || positiveDiff < positiveDiffError) {
-        if (std::abs(lastAddedPositivePhi - testPhi) > _maxDeltaPhi) {
+        if (std::abs(lastAddedPositivePhi - testPhi)/positiveDeltaZ >= _maxDphiDz) {
           continue;
         }
         _positiveLine.tcHitsIndices.push_back(j);
@@ -1470,9 +1378,12 @@ void HelixFinder::findSeedPhiLines() {
         _positiveLine.fitter.addPoint(testZ, testPhi, testWeight);
         lastAddedPositivePhi = testPhi;
         lastAddedPositivePhiError2 = testError2;
+        if (positiveDeltaZ > maxHitGap) {
+          maxHitGap = positiveDeltaZ;
+        }
       }
       if (testPhi > lastAddedNegativePhi || negativeDiff < negativeDiffError) {
-        if (std::abs(lastAddedNegativePhi - testPhi) > _maxDeltaPhi) {
+        if (std::abs(lastAddedNegativePhi - testPhi)/negativeDeltaZ >= _maxDphiDz) {
           continue;
         }
         _negativeLine.tcHitsIndices.push_back(j);
@@ -1484,26 +1395,33 @@ void HelixFinder::findSeedPhiLines() {
       }
     }
 
-    if (_positiveLine.fitter.qn() >= _minLineSegmentHits) {
+    if (_positiveLine.fitter.qn() >= _minLineSegmentHits && _positiveLine.fitter.dydx() <= _maxDphiDz) {
       float dphidz = _positiveLine.fitter.dydx();
       float p2 = computeHelixMomentum2(rC, dphidz);
       if ((seedPhi - lastAddedPositivePhi) * (seedPhi - lastAddedPositivePhi) >
               _segMultiplier * _segMultiplier * seedError2 &&
           p2 > _minHelixMomentum * _minHelixMomentum &&
-          p2 < _maxHelixMomentum * _maxHelixMomentum) {
+          p2 < _maxHelixMomentum * _maxHelixMomentum &&
+          _positiveLine.fitter.chi2Dof() <= _maxSegmentChi2) {
         _seedPhiLines.push_back(_positiveLine);
+        if (_diagLevel == 1) {
+          lsInfo.chi2dof = _positiveLine.fitter.chi2Dof();
+          lsInfo.maxHitGap = maxHitGap;
+          _diagInfo.lineSegmentData.push_back(lsInfo);
+        }
         for (size_t n = 0; n < _positiveLine.tcHitsIndices.size(); n++) {
           _tcHits[_positiveLine.tcHitsIndices[n]].notOnSegment = false;
         }
       }
     }
-    if (_negativeLine.fitter.qn() >= _minLineSegmentHits) {
+    if (_negativeLine.fitter.qn() >= _minLineSegmentHits && std::abs(_negativeLine.fitter.dydx()) <= _maxDphiDz) {
       float dphidz = _negativeLine.fitter.dydx();
       float p2 = computeHelixMomentum2(rC, dphidz);
       if ((seedPhi - lastAddedNegativePhi) * (seedPhi - lastAddedNegativePhi) >
               _segMultiplier * _segMultiplier * seedError2 &&
           p2 > _minHelixMomentum * _minHelixMomentum &&
-          p2 < _maxHelixMomentum * _maxHelixMomentum) {
+          p2 < _maxHelixMomentum * _maxHelixMomentum &&
+          _negativeLine.fitter.chi2Dof() <= _maxSegmentChi2) {
         _seedPhiLines.push_back(_negativeLine);
         for (size_t n = 0; n < _negativeLine.tcHitsIndices.size(); n++) {
           _tcHits[_negativeLine.tcHitsIndices[n]].notOnSegment = false;
@@ -1516,7 +1434,7 @@ void HelixFinder::findSeedPhiLines() {
 //-----------------------------------------------------------------------------
 // function to resolve 2 Pi Ambiguities for each seed phi line found
 //-----------------------------------------------------------------------------
-void HelixFinder::resolve2PiAmbiguities() {
+void AgnosticHelixFinder::resolve2PiAmbiguities() {
 
   for (size_t i = 0; i < _seedPhiLines.size(); i++) {
     float lineSlope = _seedPhiLines[i].fitter.dydx();
@@ -1524,11 +1442,11 @@ void HelixFinder::resolve2PiAmbiguities() {
     float slopeError = _seedPhiLines[i].fitter.dydxErr();
     float interceptError = _seedPhiLines[i].fitter.y0Err();
     for (size_t j = 0; j < _tcHits.size(); j++) {
-      if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice == -2 || _tcHits[j].used == false) {
+      if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice == HitType::StoppingTarget || _tcHits[j].used == false) {
         continue;
       }
       bool alreadyInLine = false;
-      float testZ = getPos(j)->z();
+      float testZ = getPos(j).z();
       float testPhi = _tcHits[j].helixPhi;
       float testPhiError2 = _tcHits[j].helixPhiError2;
       float testWeight = 1.0 / (testPhiError2);
@@ -1543,8 +1461,8 @@ void HelixFinder::resolve2PiAmbiguities() {
       }
       // find integer needed for 2pi correction
       float deltaPhi = lineSlope * testZ + lineIntercept - testPhi;
-      int n = std::round(deltaPhi / (2 * 3.14));
-      testPhi = testPhi + 2 * 3.14 * n;
+      int n = std::round(deltaPhi / (2 * M_PI));
+      testPhi = testPhi + 2 * M_PI * n;
       // now see if 2pi corrected phi is consistent with line
       deltaPhi = std::abs(lineSlope * testZ + lineIntercept - testPhi);
       float error2 =
@@ -1567,7 +1485,7 @@ void HelixFinder::resolve2PiAmbiguities() {
 //-----------------------------------------------------------------------------
 // function for refining the phi line that was found
 //-----------------------------------------------------------------------------
-void HelixFinder::refinePhiLine(size_t lineIndex, bool& removals) {
+void AgnosticHelixFinder::refinePhiLine(size_t lineIndex, bool& removals) {
 
   float largestResidual2 = 0.0;
   size_t rmIndex = 0;
@@ -1575,8 +1493,8 @@ void HelixFinder::refinePhiLine(size_t lineIndex, bool& removals) {
   for (size_t i = 0; i < _seedPhiLines[lineIndex].tcHitsIndices.size(); i++) {
     size_t tcHitsIndex = _seedPhiLines[lineIndex].tcHitsIndices[i];
     float pointPhi =
-        _tcHits[tcHitsIndex].helixPhi + 2 * 3.14 * _seedPhiLines[lineIndex].helixPhiCorrections[i];
-    float pointZ = getPos(tcHitsIndex)->z();
+        _tcHits[tcHitsIndex].helixPhi + 2 * M_PI * _seedPhiLines[lineIndex].helixPhiCorrections[i];
+    float pointZ = getPos(tcHitsIndex).z();
     float linePhi =
         _seedPhiLines[lineIndex].fitter.dydx() * pointZ + _seedPhiLines[lineIndex].fitter.y0();
     float deltaPhi = std::abs(linePhi - pointPhi);
@@ -1590,9 +1508,9 @@ void HelixFinder::refinePhiLine(size_t lineIndex, bool& removals) {
 
   if (largestResidual2 > _maxPhiZResidual * _maxPhiZResidual) {
     size_t tcHitsIndex = _seedPhiLines[lineIndex].tcHitsIndices[rmIndex];
-    float z = getPos(tcHitsIndex)->z();
+    float z = getPos(tcHitsIndex).z();
     float phi = _tcHits[tcHitsIndex].helixPhi +
-                2 * 3.14 * _seedPhiLines[lineIndex].helixPhiCorrections[rmIndex];
+                2 * M_PI * _seedPhiLines[lineIndex].helixPhiCorrections[rmIndex];
     float weight = 1.0 / (_tcHits[tcHitsIndex].helixPhiError2);
     _seedPhiLines[lineIndex].fitter.removePoint(z, phi, weight);
     _seedPhiLines[lineIndex].tcHitsIndices.erase(_seedPhiLines[lineIndex].tcHitsIndices.begin() +
@@ -1608,7 +1526,7 @@ void HelixFinder::refinePhiLine(size_t lineIndex, bool& removals) {
 //-----------------------------------------------------------------------------
 // initialize final circle / line seed prior to hit recovery
 //-----------------------------------------------------------------------------
-void HelixFinder::initFinalSeed() {
+void AgnosticHelixFinder::initFinalSeed() {
 
   // first find best phi line
   size_t bestLineIndex = 0;
@@ -1641,7 +1559,7 @@ void HelixFinder::initFinalSeed() {
   _lineFitter.clear();
   _lineFitter = _seedPhiLines[bestLineIndex].fitter;
   for (size_t i = 0; i < _tcHits.size(); i++) {
-    if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == -2) {
+    if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::StoppingTarget) {
       continue;
     }
     _tcHits[i].used = false;
@@ -1649,8 +1567,8 @@ void HelixFinder::initFinalSeed() {
       if (_seedPhiLines[bestLineIndex].tcHitsIndices[j] == i) {
         _tcHits[i].used = true;
         _tcHits[i].helixPhiCorrection = _seedPhiLines[bestLineIndex].helixPhiCorrections[j];
-        float xP = getPos(i)->x();
-        float yP = getPos(i)->y();
+        float xP = getPos(i).x();
+        float yP = getPos(i).y();
         float wP = 1.0 / (_tcHits[i].circleError2);
         _circleFitter.addPoint(xP, yP, wP);
         break;
@@ -1662,7 +1580,7 @@ void HelixFinder::initFinalSeed() {
 //-----------------------------------------------------------------------------
 // recover points
 //-----------------------------------------------------------------------------
-void HelixFinder::recoverPoints(bool& recoveries) {
+void AgnosticHelixFinder::recoverPoints(bool& recoveries) {
 
   float xC = _circleFitter.x0();
   float yC = _circleFitter.y0();
@@ -1677,7 +1595,7 @@ void HelixFinder::recoverPoints(bool& recoveries) {
 
   // first check hits for best recovery
   for (size_t i = 0; i < _tcHits.size(); i++) {
-    if (_tcHits[i].used == true || _tcHits[i].inHelix == true || _tcHits[i].hitIndice == -2) {
+    if (_tcHits[i].used == true || _tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::StoppingTarget) {
       continue;
     }
     // compute circle residual
@@ -1688,12 +1606,12 @@ void HelixFinder::recoverPoints(bool& recoveries) {
     // compute phi residual
     computeHelixPhi(i, xC, yC);
     float phiP = _tcHits[i].helixPhi;
-    float zP = getPos(i)->z();
+    float zP = getPos(i).z();
     float phiSigma2 = _tcHits[i].helixPhiError2;
     float phiDistance = lineSlope * zP + lineIntercept - phiP;
-    int n = std::round(phiDistance / (2 * 3.14));
+    int n = std::round(phiDistance / (2 * M_PI));
     _tcHits[i].helixPhiCorrection = n;
-    phiP = phiP + 2 * 3.14 * n;
+    phiP = phiP + 2 * M_PI * n;
     phiDistance = std::abs(lineSlope * zP + lineIntercept - phiP);
     float phiResidual2 = phiDistance * phiDistance / phiSigma2;
     if (phiResidual2 > _maxLineRecoverSigma * _maxLineRecoverSigma) {
@@ -1715,34 +1633,34 @@ void HelixFinder::recoverPoints(bool& recoveries) {
   if (recoveries == true) {
     _tcHits[addIndex].used = true;
     float w = 1.0 / (_tcHits[addIndex].circleError2);
-    _circleFitter.addPoint(getPos(addIndex)->x(), getPos(addIndex)->y(), w);
+    _circleFitter.addPoint(getPos(addIndex).x(), getPos(addIndex).y(), w);
     xC = _circleFitter.x0();
     yC = _circleFitter.y0();
     rC = _circleFitter.radius();
     _circleFitter.clear();
     for (size_t i = 0; i < _tcHits.size(); i++) {
-      if (_tcHits[i].used == false || _tcHits[i].inHelix == true || _tcHits[i].hitIndice == -2) {
+      if (_tcHits[i].used == false || _tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::StoppingTarget) {
         continue;
       }
       computeCircleError2(i, xC, yC);
       float wP = 1.0 / (_tcHits[i].circleError2);
-      _circleFitter.addPoint(getPos(i)->x(), getPos(i)->y(), wP);
+      _circleFitter.addPoint(getPos(i).x(), getPos(i).y(), wP);
     }
     xC = _circleFitter.x0();
     yC = _circleFitter.y0();
     rC = _circleFitter.radius();
     _lineFitter.clear();
     for (size_t i = 0; i < _tcHits.size(); i++) {
-      if (_tcHits[i].used == false || _tcHits[i].inHelix == true || _tcHits[i].hitIndice == -2) {
+      if (_tcHits[i].used == false || _tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::StoppingTarget) {
         continue;
       }
-      float zP = getPos(i)->z();
+      float zP = getPos(i).z();
       computeHelixPhi(i, xC, yC);
       float phiWeight = 1.0 / (_tcHits[i].helixPhiError2);
       float phiP = _tcHits[i].helixPhi;
       float deltaPhi = lineSlope * zP + lineIntercept - phiP;
-      _tcHits[i].helixPhiCorrection = std::round(deltaPhi / (2 * 3.14));
-      phiP = phiP + _tcHits[i].helixPhiCorrection * 2 * 3.14;
+      _tcHits[i].helixPhiCorrection = std::round(deltaPhi / (2 * M_PI));
+      phiP = phiP + _tcHits[i].helixPhiCorrection * 2 * M_PI;
       _lineFitter.addPoint(zP, phiP, phiWeight);
     }
   }
@@ -1751,7 +1669,7 @@ void HelixFinder::recoverPoints(bool& recoveries) {
 //-----------------------------------------------------------------------------
 // function to make copies of relevant info for helix candidate
 //-----------------------------------------------------------------------------
-void HelixFinder::saveHelixCandidate() {
+void AgnosticHelixFinder::saveHelixCandidate() {
 
   helixCandidate hel;
   hel.tcHitsCopy = _tcHits;
@@ -1764,7 +1682,7 @@ void HelixFinder::saveHelixCandidate() {
 //-----------------------------------------------------------------------------
 // function to save helix
 //-----------------------------------------------------------------------------
-void HelixFinder::saveHelix(size_t tc, HelixSeedCollection& HSColl) {
+void AgnosticHelixFinder::saveHelix(size_t tc, HelixSeedCollection& HSColl) {
 
   size_t bestIndex = 0;
   _tcHits = _helixCandidates[bestIndex].tcHitsCopy;
@@ -1795,7 +1713,7 @@ void HelixFinder::saveHelix(size_t tc, HelixSeedCollection& HSColl) {
     const ComboHit* hit = &_chColl->at(hitIndice);
     fitter.addPoint(hit->pos().z(), hit->correctedTime(), 1 / (hit->timeRes() * hit->timeRes()));
     ComboHit hhit(*hit);
-    hhit._hphi = _tcHits[i].helixPhi + _tcHits[i].helixPhiCorrection * 2 * 3.14;
+    hhit._hphi = _tcHits[i].helixPhi + _tcHits[i].helixPhiCorrection * 2 * M_PI;
     hseed._hhits.push_back(hhit);
   }
 
@@ -1808,11 +1726,11 @@ void HelixFinder::saveHelix(size_t tc, HelixSeedCollection& HSColl) {
   float dfdz = _lineFitter.dydx();
 
   hseed._helix._fz0 = _lineFitter.y0();
-  if (hseed._helix._fz0 > 3.14) {
-    hseed._helix._fz0 = hseed._helix._fz0 - 2 * 3.14;
+  if (hseed._helix._fz0 > M_PI) {
+    hseed._helix._fz0 = hseed._helix._fz0 - 2 * M_PI;
   }
-  if (hseed._helix._fz0 < -3.14) {
-    hseed._helix._fz0 = hseed._helix._fz0 + 2 * 3.14;
+  if (hseed._helix._fz0 < -M_PI) {
+    hseed._helix._fz0 = hseed._helix._fz0 + 2 * M_PI;
   }
   hseed._helix._rcent = center.perp();
   hseed._helix._fcent = center.phi();
@@ -1833,7 +1751,7 @@ void HelixFinder::saveHelix(size_t tc, HelixSeedCollection& HSColl) {
 //-----------------------------------------------------------------------------
 // calling logic that needs to be called to run debug mode
 //-----------------------------------------------------------------------------
-void HelixFinder::initDebugMode() {
+void AgnosticHelixFinder::initDebugMode() {
 
   // first find the TC we want to focus on
   findBestTC();
@@ -1882,7 +1800,7 @@ void HelixFinder::initDebugMode() {
 //-----------------------------------------------------------------------------
 // function to find the best time cluster in debug mode given particle of interest (set in fcl)
 //-----------------------------------------------------------------------------
-void HelixFinder::findBestTC() {
+void AgnosticHelixFinder::findBestTC() {
 
   _simIDsPerTC.clear();
 
@@ -1986,7 +1904,7 @@ void HelixFinder::findBestTC() {
           float simYmomentum = simMomentum->y();
           float simPerpMomentum =
               std::sqrt(simXmomentum * simXmomentum + simYmomentum * simYmomentum);
-          _mcRadius = (simPerpMomentum * 1000 * 5.36e-22) / (_bz0 * 1.602e-19);
+          _mcRadius = (simPerpMomentum) / (_bz0 * mmTconversion);
           float hitX = simPosition->x();
           float hitY = simPosition->y();
           ;
@@ -2005,7 +1923,7 @@ void HelixFinder::findBestTC() {
 //-----------------------------------------------------------------------------
 // find the best index in _plottingData to plot (the search that went furthest)
 //-----------------------------------------------------------------------------
-void HelixFinder::findBestPlotIndex() {
+void AgnosticHelixFinder::findBestPlotIndex() {
 
   bool helixFound = false;
   int mostHits = 0;
@@ -2038,7 +1956,7 @@ void HelixFinder::findBestPlotIndex() {
 //-----------------------------------------------------------------------------
 // function to make all the plots in debug mode when runDisplay is on
 //-----------------------------------------------------------------------------
-void HelixFinder::doAllPlots() {
+void AgnosticHelixFinder::doAllPlots() {
 
   findBestPlotIndex();
   _xy0->Clear();
@@ -2078,7 +1996,7 @@ void HelixFinder::doAllPlots() {
 //-----------------------------------------------------------------------------
 // function to plot XY view at various stages of logic
 //-----------------------------------------------------------------------------
-void HelixFinder::plotXY(int stage) {
+void AgnosticHelixFinder::plotXY(int stage) {
 
   if (stage == 0) {
     _xy0->cd();
@@ -2161,12 +2079,12 @@ void HelixFinder::plotXY(int stage) {
         continue;
       }
     }
-    if (hits[i].hitIndice == -2) {
+    if (hits[i].hitIndice == HitType::StoppingTarget) {
       continue;
     }
-    if (hits[i].hitIndice == -1) {
+    if (hits[i].hitIndice == HitType::CaloCluster) {
       TEllipse* caloCluster =
-          new TEllipse(getPos(i)->x(), getPos(i)->y(), _caloClusterSigma, _caloClusterSigma);
+          new TEllipse(getPos(i).x(), getPos(i).y(), _caloClusterSigma, _caloClusterSigma);
       caloCluster->SetLineColor(807);
       caloCluster->SetFillColorAlpha(807, 0.0);
       caloCluster->Draw("same");
@@ -2218,8 +2136,8 @@ void HelixFinder::plotXY(int stage) {
     if (hits[i].hitIndice < 0) {
       continue;
     }
-    float xPos = getPos(i)->x();
-    float yPos = getPos(i)->y();
+    float xPos = getPos(i).x();
+    float yPos = getPos(i).y();
     // error bar along wire
     int hitIndice = hits[i].hitIndice;
     float wireDirX = _chColl->at(hitIndice).uDir().x();
@@ -2262,7 +2180,7 @@ void HelixFinder::plotXY(int stage) {
 //-----------------------------------------------------------------------------
 // function to plot phi-z view relative to circle center at various stages of logic
 //-----------------------------------------------------------------------------
-void HelixFinder::plotPhiZ(int stage) {
+void AgnosticHelixFinder::plotPhiZ(int stage) {
 
   if (stage == 2) {
     _phiz2->cd();
@@ -2284,9 +2202,9 @@ void HelixFinder::plotPhiZ(int stage) {
   float zMin = 0.0;
   int hitsConsidered = 0;
   for (size_t i = 0; i < hits.size(); i++) {
-    float phi = hits[i].helixPhi + 2 * 3.14 * hits[i].helixPhiCorrection;
-    float z = getPos(i)->z();
-    if (hits[i].hitIndice == -2) {
+    float phi = hits[i].helixPhi + 2 * M_PI * hits[i].helixPhiCorrection;
+    float z = getPos(i).z();
+    if (hits[i].hitIndice == HitType::StoppingTarget) {
       continue;
     }
     if (hits[i].used == false) {
@@ -2352,14 +2270,14 @@ void HelixFinder::plotPhiZ(int stage) {
     if (hits[i].used == false) {
       continue;
     }
-    if (hits[i].hitIndice == -2) {
+    if (hits[i].hitIndice == HitType::StoppingTarget) {
       continue;
     }
-    float phi = hits[i].helixPhi + 2 * 3.14 * hits[i].helixPhiCorrection;
+    float phi = hits[i].helixPhi + 2 * M_PI * hits[i].helixPhiCorrection;
     float helixPhiError = std::sqrt(hits[i].helixPhiError2);
-    float z = getPos(i)->z();
+    float z = getPos(i).z();
     float zError = 0.0;
-    if (hits[i].hitIndice == -1) {
+    if (hits[i].hitIndice == HitType::CaloCluster) {
       caloPhiPoints.push_back(phi);
       caloPhiErrors.push_back(helixPhiError);
       caloZPoints.push_back(z);
@@ -2439,7 +2357,7 @@ void HelixFinder::plotPhiZ(int stage) {
 //-----------------------------------------------------------------------------
 // function to plot phi-z segment that leads to best candidate line
 //-----------------------------------------------------------------------------
-void HelixFinder::plotSegment(int option) {
+void AgnosticHelixFinder::plotSegment(int option) {
 
   lineInfo line;
 
@@ -2467,9 +2385,9 @@ void HelixFinder::plotSegment(int option) {
   std::vector<float> bkgZErrors;
   for (size_t i = 0; i < line.tcHitsIndices.size(); i++) {
     size_t hitIndex = line.tcHitsIndices[i];
-    float phi = hits[hitIndex].helixPhi + 2 * 3.14 * line.helixPhiCorrections[i];
+    float phi = hits[hitIndex].helixPhi + 2 * M_PI * line.helixPhiCorrections[i];
     float helixPhiError = std::sqrt(hits[hitIndex].helixPhiError2);
-    float z = getPos(hitIndex)->z();
+    float z = getPos(hitIndex).z();
     float zError = 0.0;
     if (hits[hitIndex].debugParticle == true) {
       particlePhiPoints.push_back(phi);
@@ -2555,5 +2473,5 @@ void HelixFinder::plotSegment(int option) {
 
 } // namespace mu2e
 
-using mu2e::HelixFinder;
-DEFINE_ART_MODULE(HelixFinder)
+using mu2e::AgnosticHelixFinder;
+DEFINE_ART_MODULE(AgnosticHelixFinder)
