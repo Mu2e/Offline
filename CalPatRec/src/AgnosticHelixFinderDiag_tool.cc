@@ -1,7 +1,7 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-#include "Offline/CalPatRec/inc/HelixFinder_types.hh"
+#include "Offline/CalPatRec/inc/AgnosticHelixFinder_types.hh"
 
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 
@@ -14,12 +14,14 @@
 
 namespace mu2e {
 
-using namespace HelixFinderTypes;
+using namespace AgnosticHelixFinderTypes;
 
-class HelixFinderDiag : public mu2e::ModuleHistToolBase {
+class AgnosticHelixFinderDiag : public mu2e::ModuleHistToolBase {
 
 public:
-  enum { kNEventHistsSets = 1, kNTimeClusterHistsSets = 2 };
+  enum { kNEventHistsSets = 1, 
+         kNTimeClusterHistsSets = 2, 
+         kNLineSegmentHistsSets = 1};
 
   struct EventHists {
     TH1F* moduleTime;
@@ -36,9 +38,15 @@ public:
     TProfile* timePerTCVSnComboHitsPerTC;
   };
 
+  struct LineSegmentHists {
+    TH1F* chi2dof;
+    TH1F* maxHitGap;
+  };
+
   struct Hists {
     EventHists* _eventHists[kNEventHistsSets];
     TimeClusterHists* _timeClusterHists[kNTimeClusterHistsSets];
+    LineSegmentHists* _lineSegmentHists[kNLineSegmentHistsSets];
   };
 
 protected:
@@ -46,28 +54,30 @@ protected:
   diagInfo* _data;
 
 public:
-  HelixFinderDiag(const fhicl::Table<mu2e::HelixFinderTypes::Config>& config);
-  ~HelixFinderDiag();
+  AgnosticHelixFinderDiag(const fhicl::Table<mu2e::AgnosticHelixFinderTypes::Config>& config);
+  ~AgnosticHelixFinderDiag();
 
 private:
   int bookEventHistograms(EventHists* Hist, art::TFileDirectory* Dir);
   int bookTimeClusterHistograms(TimeClusterHists* Hist, art::TFileDirectory* Dir);
+  int bookLineSegmentHistograms(LineSegmentHists* Hist, art::TFileDirectory* Dir);
 
   int fillEventHistograms(EventHists* Hist, diagInfo* Data);
   int fillTimeClusterHistograms(TimeClusterHists* Hist, diagInfo* Data, int loopIndex);
+  int fillLineSegmentHistograms(LineSegmentHists* Hist, diagInfo* Data, int loopIndex);
 
   virtual int bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) override;
   virtual int fillHistograms(void* Data, int Mode = -1) override;
 };
 
 //-----------------------------------------------------------------------------
-HelixFinderDiag::HelixFinderDiag(const fhicl::Table<mu2e::HelixFinderTypes::Config>& config) {}
+AgnosticHelixFinderDiag::AgnosticHelixFinderDiag(const fhicl::Table<mu2e::AgnosticHelixFinderTypes::Config>& config) {}
 
 //-----------------------------------------------------------------------------
-HelixFinderDiag::~HelixFinderDiag() {}
+AgnosticHelixFinderDiag::~AgnosticHelixFinderDiag() {}
 
 //-----------------------------------------------------------------------------
-int HelixFinderDiag::bookEventHistograms(EventHists* Hist, art::TFileDirectory* Dir) {
+int AgnosticHelixFinderDiag::bookEventHistograms(EventHists* Hist, art::TFileDirectory* Dir) {
 
   Hist->moduleTime =
       Dir->make<TH1F>("moduleTime", "time (ms) per event spent at module", 10000, 0.0, 500.0);
@@ -81,7 +91,7 @@ int HelixFinderDiag::bookEventHistograms(EventHists* Hist, art::TFileDirectory* 
 }
 
 //-----------------------------------------------------------------------------
-int HelixFinderDiag::bookTimeClusterHistograms(TimeClusterHists* Hist, art::TFileDirectory* Dir) {
+int AgnosticHelixFinderDiag::bookTimeClusterHistograms(TimeClusterHists* Hist, art::TFileDirectory* Dir) {
 
   Hist->nHelicesPerTC =
       Dir->make<TH1F>("nHelicesPerTC", "number of helices found per TC", 30, 0, 30.0);
@@ -98,7 +108,16 @@ int HelixFinderDiag::bookTimeClusterHistograms(TimeClusterHists* Hist, art::TFil
 }
 
 //-----------------------------------------------------------------------------
-int HelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) {
+int AgnosticHelixFinderDiag::bookLineSegmentHistograms(LineSegmentHists* Hist, art::TFileDirectory* Dir) {
+
+  Hist->chi2dof = Dir->make<TH1F>("chi2dof", "chi2dof of line segments", 300, 0, 30.0);
+  Hist->maxHitGap = Dir->make<TH1F>("maxHitGap", "max dZ between adjacent points", 600, 0, 600.0);
+
+  return 0;
+}
+
+//-----------------------------------------------------------------------------
+int AgnosticHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) {
   char folder_name[20];
   TH1::AddDirectory(0);
 
@@ -122,11 +141,21 @@ int HelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) 
     bookTimeClusterHistograms(_hist._timeClusterHists[i], &tfdir);
   }
 
+  //-----------------------------------------------------------------------------
+  // book line segment histograms
+  //-----------------------------------------------------------------------------
+  for (int i = 0; i < kNLineSegmentHistsSets; i++) {
+    sprintf(folder_name, "ls_%i", i);
+    art::TFileDirectory tfdir = Tfs->mkdir(folder_name);
+    _hist._lineSegmentHists[i] = new LineSegmentHists;
+    bookLineSegmentHistograms(_hist._lineSegmentHists[i], &tfdir);
+  }
+
   return 0;
 }
 
 //-----------------------------------------------------------------------------
-int HelixFinderDiag::fillEventHistograms(EventHists* Hist, diagInfo* Data) {
+int AgnosticHelixFinderDiag::fillEventHistograms(EventHists* Hist, diagInfo* Data) {
 
   Hist->moduleTime->Fill(Data->moduleTime);
   Hist->nHelices->Fill(Data->nHelices);
@@ -137,7 +166,7 @@ int HelixFinderDiag::fillEventHistograms(EventHists* Hist, diagInfo* Data) {
 }
 
 //-----------------------------------------------------------------------------
-int HelixFinderDiag::fillTimeClusterHistograms(TimeClusterHists* Hist, diagInfo* Data,
+int AgnosticHelixFinderDiag::fillTimeClusterHistograms(TimeClusterHists* Hist, diagInfo* Data,
                                                int loopIndex) {
 
   // fill per tc info
@@ -152,9 +181,20 @@ int HelixFinderDiag::fillTimeClusterHistograms(TimeClusterHists* Hist, diagInfo*
 }
 
 //-----------------------------------------------------------------------------
+int AgnosticHelixFinderDiag::fillLineSegmentHistograms(LineSegmentHists* Hist, diagInfo* Data,
+                                               int loopIndex) {
+
+  // fill per line segment info
+  Hist->chi2dof->Fill(Data->lineSegmentData.at(loopIndex).chi2dof);
+  Hist->maxHitGap->Fill(Data->lineSegmentData.at(loopIndex).maxHitGap);
+
+  return 0;
+}
+
+//-----------------------------------------------------------------------------
 // Mode is not used here
 //-----------------------------------------------------------------------------
-int HelixFinderDiag::fillHistograms(void* Data, int Mode) {
+int AgnosticHelixFinderDiag::fillHistograms(void* Data, int Mode) {
 
   _data = (diagInfo*)Data;
 
@@ -175,9 +215,16 @@ int HelixFinderDiag::fillHistograms(void* Data, int Mode) {
     }
   }
 
+  //-----------------------------------------------------------------------------
+  // fill line segment histograms
+  //-----------------------------------------------------------------------------
+  for (int i = 0; i < (int)_data->lineSegmentData.size(); i++) {
+    fillLineSegmentHistograms(_hist._lineSegmentHists[0], _data, i);
+  }
+
   return 0;
 }
 
-DEFINE_ART_CLASS_TOOL(HelixFinderDiag)
+DEFINE_ART_CLASS_TOOL(AgnosticHelixFinderDiag)
 
 } // namespace mu2e

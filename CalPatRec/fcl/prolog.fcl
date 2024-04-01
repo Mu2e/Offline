@@ -639,19 +639,18 @@ CalPatRec : { @table::CalPatRec
             }
         }
 
-        HelixFinder : {
-            module_type : HelixFinder
+        AgnosticHelixFinder : {
+            module_type : AgnosticHelixFinder
             diagLevel               : 0
             debug                   : 0
             runDisplay              : 0
             chCollLabel             : "FlagBkgHits"
-            tcCollLabel             : "TimeClusterFinderDe"
+            tcCollLabel             : "TZClusterFinder"
             ccCollLabel             : "CaloClusterMaker"
             findMultipleHelices     : true # whether or not to allow more than 1 helix per tc
             useStoppingTarget       : true
             intenseEventThresh      : 30
             intenseClusterThresh    : 60
-            doLineFlag              : false
             doIsolationFlag         : true
             isoRad                  : 150.0
             isoMinHitsNear          : 2
@@ -664,10 +663,11 @@ CalPatRec : { @table::CalPatRec
             minTripletArea          : 1.0e4
             maxSeedCircleResidual   : 2.0
             minSeedCircleHits       : 7
-            maxDeltaPhi             : 2.0
-            maxZWindow              : 500.0
+            maxDphiDz               : 0.008
+            maxZWindow              : 700.0
             minLineSegmentHits      : 3
             segMultiplier           : 3.0
+            maxSegmentChi2          : 2.0
             max2PiAmbigResidual     : 2.0
             maxPhiZResidual         : 2.0
             minFinalSeedHits        : 7
