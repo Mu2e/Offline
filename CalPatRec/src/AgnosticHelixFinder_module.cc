@@ -185,8 +185,8 @@ public:
   };
 
   enum HitType {
-    CaloCluster = -1,
-    StoppingTarget = -2
+    CALOCLUSTER = -1,
+    STOPPINGTARGET = -2
   };
 
   // struct to hold info specifically for when debugging
@@ -338,7 +338,7 @@ private:
   //-----------------------------------------------------------------------------
   // constants
   //-----------------------------------------------------------------------------
-  static const float mmTconversion{CLHEP::c_light/1000.0};
+  static constexpr float mmTconversion = CLHEP::c_light/1000.0;
 
   //-----------------------------------------------------------------------------
   // functions
@@ -645,7 +645,7 @@ XYZVectorF AgnosticHelixFinder::getPos(size_t& tcHitsIndex) {
   if (hitIndice == -2) {
     return _stopTargPos;
   }
-  if (hitIndice == HitType::CaloCluster) {
+  if (hitIndice == HitType::CALOCLUSTER) {
     return _caloPos;
   }
 
@@ -662,7 +662,7 @@ void AgnosticHelixFinder::computeCircleError2(size_t& tcHitsIndex, float& xC, fl
 
   int hitIndice = _tcHits[tcHitsIndex].hitIndice;
 
-  if (hitIndice == HitType::CaloCluster) {
+  if (hitIndice == HitType::CALOCLUSTER) {
     _tcHits[tcHitsIndex].circleError2 = _caloClusterSigma * _caloClusterSigma;
   } else {
     float transVar = _chColl->at(hitIndice).transVar();
@@ -707,7 +707,7 @@ void AgnosticHelixFinder::computeHelixPhi(size_t& tcHitsIndex, float& xC, float&
   // find phi error and initialize it
   // find phi error by projecting errors onto vector tangent to circle
   float deltaS2(0);
-  if (hitIndice == HitType::CaloCluster) {
+  if (hitIndice == HitType::CALOCLUSTER) {
     deltaS2 = _caloClusterSigma * _caloClusterSigma;
   } else {
     float tanVecX = Y / std::sqrt(X * X + Y * Y);
@@ -765,14 +765,14 @@ void AgnosticHelixFinder::tcHitsFill(size_t tc) {
 
   // push back stopping target if it is to be used
   if (_useStoppingTarget == true) {
-    hit.hitIndice = HitType::StoppingTarget;
+    hit.hitIndice = HitType::STOPPINGTARGET;
     _tcHits.push_back(hit);
     sortStartIndex++;
   }
 
   // push back calo cluster if it exists in time cluster
   if (_tcColl->at(tc).hasCaloCluster()) {
-    hit.hitIndice = HitType::CaloCluster;
+    hit.hitIndice = HitType::CALOCLUSTER;
     _tcHits.push_back(hit);
     const art::Ptr<CaloCluster> cl = _tcColl->at(tc).caloCluster();
     CLHEP::Hep3Vector gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(), cl->cog3Vector());
@@ -865,7 +865,7 @@ void AgnosticHelixFinder::resetFlags() {
 
   // first flag hits that are isolated
   for (size_t i = 0; i < _tcHits.size(); i++) {
-    if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::StoppingTarget) {
+    if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::STOPPINGTARGET) {
       continue;
     }
     _tcHits[i].isolated = false;
@@ -1174,7 +1174,7 @@ void AgnosticHelixFinder::setTripletJ(size_t& tcHitsIndex, triplet& trip, LoopCo
     return;
   }
   if (_intenseEvent == true || _intenseCluster == true) {
-    if (trip.i.hitIndice == HitType::StoppingTarget && trip.j.hitIndice >= 0) {
+    if (trip.i.hitIndice == HitType::STOPPINGTARGET && trip.j.hitIndice >= 0) {
       outcome = BREAK;
       return;
     }
@@ -1253,7 +1253,7 @@ void AgnosticHelixFinder::initSeedCircle(LoopCondition& outcome) {
     if (_tcHits[i].inHelix == true) {
       continue;
     }
-    if (_tcHits[i].hitIndice == HitType::StoppingTarget) {
+    if (_tcHits[i].hitIndice == HitType::STOPPINGTARGET) {
       _tcHits[i].used = false;
       continue;
     }
@@ -1284,7 +1284,7 @@ void AgnosticHelixFinder::initHelixPhi() {
   float yC = _circleFitter.y0();
 
   for (size_t i = 0; i < _tcHits.size(); i++) {
-    if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::StoppingTarget || _tcHits[i].used == false) {
+    if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::STOPPINGTARGET || _tcHits[i].used == false) {
       continue;
     }
     // initialize phi data member relative to circle center
@@ -1442,7 +1442,7 @@ void AgnosticHelixFinder::resolve2PiAmbiguities() {
     float slopeError = _seedPhiLines[i].fitter.dydxErr();
     float interceptError = _seedPhiLines[i].fitter.y0Err();
     for (size_t j = 0; j < _tcHits.size(); j++) {
-      if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice == HitType::StoppingTarget || _tcHits[j].used == false) {
+      if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice == HitType::STOPPINGTARGET || _tcHits[j].used == false) {
         continue;
       }
       bool alreadyInLine = false;
@@ -1559,7 +1559,7 @@ void AgnosticHelixFinder::initFinalSeed() {
   _lineFitter.clear();
   _lineFitter = _seedPhiLines[bestLineIndex].fitter;
   for (size_t i = 0; i < _tcHits.size(); i++) {
-    if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::StoppingTarget) {
+    if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::STOPPINGTARGET) {
       continue;
     }
     _tcHits[i].used = false;
@@ -1595,7 +1595,7 @@ void AgnosticHelixFinder::recoverPoints(bool& recoveries) {
 
   // first check hits for best recovery
   for (size_t i = 0; i < _tcHits.size(); i++) {
-    if (_tcHits[i].used == true || _tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::StoppingTarget) {
+    if (_tcHits[i].used == true || _tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::STOPPINGTARGET) {
       continue;
     }
     // compute circle residual
@@ -1639,7 +1639,7 @@ void AgnosticHelixFinder::recoverPoints(bool& recoveries) {
     rC = _circleFitter.radius();
     _circleFitter.clear();
     for (size_t i = 0; i < _tcHits.size(); i++) {
-      if (_tcHits[i].used == false || _tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::StoppingTarget) {
+      if (_tcHits[i].used == false || _tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::STOPPINGTARGET) {
         continue;
       }
       computeCircleError2(i, xC, yC);
@@ -1651,7 +1651,7 @@ void AgnosticHelixFinder::recoverPoints(bool& recoveries) {
     rC = _circleFitter.radius();
     _lineFitter.clear();
     for (size_t i = 0; i < _tcHits.size(); i++) {
-      if (_tcHits[i].used == false || _tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::StoppingTarget) {
+      if (_tcHits[i].used == false || _tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::STOPPINGTARGET) {
         continue;
       }
       float zP = getPos(i).z();
@@ -2079,10 +2079,10 @@ void AgnosticHelixFinder::plotXY(int stage) {
         continue;
       }
     }
-    if (hits[i].hitIndice == HitType::StoppingTarget) {
+    if (hits[i].hitIndice == HitType::STOPPINGTARGET) {
       continue;
     }
-    if (hits[i].hitIndice == HitType::CaloCluster) {
+    if (hits[i].hitIndice == HitType::CALOCLUSTER) {
       TEllipse* caloCluster =
           new TEllipse(getPos(i).x(), getPos(i).y(), _caloClusterSigma, _caloClusterSigma);
       caloCluster->SetLineColor(807);
@@ -2204,7 +2204,7 @@ void AgnosticHelixFinder::plotPhiZ(int stage) {
   for (size_t i = 0; i < hits.size(); i++) {
     float phi = hits[i].helixPhi + 2 * M_PI * hits[i].helixPhiCorrection;
     float z = getPos(i).z();
-    if (hits[i].hitIndice == HitType::StoppingTarget) {
+    if (hits[i].hitIndice == HitType::STOPPINGTARGET) {
       continue;
     }
     if (hits[i].used == false) {
@@ -2270,14 +2270,14 @@ void AgnosticHelixFinder::plotPhiZ(int stage) {
     if (hits[i].used == false) {
       continue;
     }
-    if (hits[i].hitIndice == HitType::StoppingTarget) {
+    if (hits[i].hitIndice == HitType::STOPPINGTARGET) {
       continue;
     }
     float phi = hits[i].helixPhi + 2 * M_PI * hits[i].helixPhiCorrection;
     float helixPhiError = std::sqrt(hits[i].helixPhiError2);
     float z = getPos(i).z();
     float zError = 0.0;
-    if (hits[i].hitIndice == HitType::CaloCluster) {
+    if (hits[i].hitIndice == HitType::CALOCLUSTER) {
       caloPhiPoints.push_back(phi);
       caloPhiErrors.push_back(helixPhiError);
       caloZPoints.push_back(z);
