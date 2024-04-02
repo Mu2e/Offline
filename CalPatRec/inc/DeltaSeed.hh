@@ -8,7 +8,6 @@
 
 using ROOT::Math::XYZVectorF;
 
-// #include "Offline/CalPatRec/inc/CalPatRec_enums.hh"
 #include "Offline/CalPatRec/inc/DeltaFinder_structures.hh"
 
 namespace mu2e {
