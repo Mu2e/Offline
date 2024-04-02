@@ -30,7 +30,7 @@ namespace fhicl {
 #include "Offline/CalPatRec/inc/HitData_t.hh"
 
 using CalPatRec::Pzz_t;
-using CalPatRec::HitData_t;
+using mu2e::CalPatRec::HitData_t;
 
 namespace mu2e {
   class Panel;
