@@ -10,7 +10,6 @@
 
 namespace mu2e {
   class DeltaSeed;
-}
 
 namespace CalPatRec {
   struct HitData_t {
@@ -74,5 +73,6 @@ namespace CalPatRec {
       return panel_id;
     }
   };
+}
 }
 #endif

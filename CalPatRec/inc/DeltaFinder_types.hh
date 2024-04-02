@@ -35,7 +35,7 @@ namespace fhicl {
 #include "Offline/CalPatRec/inc/ProtonCandidate.hh"
 
 using CalPatRec::ChannelID;
-using CalPatRec::HitData_t;
+using mu2e::CalPatRec::HitData_t;
 using CalPatRec::Pzz_t;
 
 namespace mu2e {
