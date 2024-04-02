@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-// #include "canvas/Persistency/Provenance/ProductID.h"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
 namespace mu2e {
