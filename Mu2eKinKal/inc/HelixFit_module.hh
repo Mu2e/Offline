@@ -19,6 +19,8 @@
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/KinKalGeom/inc/SurfaceId.hh"
+#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
 // utiliites
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
@@ -39,6 +41,7 @@
 // KinKal
 #include "KinKal/Fit/Track.hh"
 #include "KinKal/Fit/Config.hh"
+#include "KinKal/Fit/ExtraConfig.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 // Mu2eKinKal
@@ -79,6 +82,8 @@ namespace mu2e {
   using KKFIT = KKFit<KTRAJ>;
   using KinKal::VEC3;
   using KinKal::DMAT;
+  using KinKal::TimeDir;
+  using KinKal::ExtraConfig;
   using HPtr = art::Ptr<HelixSeed>;
   using CCPtr = art::Ptr<CaloCluster>;
   using CCHandle = art::ValidHandle<CaloClusterCollection>;
@@ -98,7 +103,7 @@ namespace mu2e {
   fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
   };
 
-  struct GlobalConfig {
+  struct HelixFitConfig {
     fhicl::Table<KKHelixModuleConfig> modSettings { Name("ModuleSettings") };
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
@@ -109,9 +114,22 @@ namespace mu2e {
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
   };
 
+  // predicate for extrapolation to a given Z position in a given direction
+  template <class KTRAJ> struct ExtrapolateToZ {
+    using KKTRK = KKTrack<KTRAJ>;
+    ExtrapolateToZ(KKTRK const& kktrk, TimeDir tdir, double zval) : kktrk_(kktrk), tdir_(tdir), zval_(zval) {}
+    bool needsExtrapolation(double time) const {
+      double zend = kktrk_.fitTraj().position3(time).Z();
+      return tdir_ == TimeDir::forwards ? zend < zval_ : zend > zval_;
+    }
+    KKTRK const& kktrk_; // reference to track
+    TimeDir tdir_; // time direction
+    double zval_; // z value required
+  };
+
   class HelixFit : public art::EDProducer {
     public:
-      using Parameters = art::EDProducer::Table<GlobalConfig>;
+      using Parameters = art::EDProducer::Table<HelixFitConfig>;
       explicit HelixFit(const Parameters& settings,TrkFitFlag fitflag);
       virtual ~HelixFit() {}
       void beginRun(art::Run& run) override;
@@ -141,7 +159,9 @@ namespace mu2e {
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
       Config config_; // initial fit configuration object
       Config exconfig_; // extension configuration object
-      bool fixedfield_; //
+      KinKal::ExtraConfig xconfig_; // tolerance and maximum Dt when extrapolating
+      bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
+      SurfaceMap::SurfacePairCollection extrap_; // surfaces to extrapolate the fit to
     };
 
   HelixFit::HelixFit(const Parameters& settings,TrkFitFlag fitflag) : art::EDProducer{settings},
@@ -158,7 +178,7 @@ namespace mu2e {
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
-    fixedfield_(false)
+     fixedfield_(false)
     {
       // collection handling
       for(const auto& hseedtag : settings().modSettings().seedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
@@ -178,6 +198,16 @@ namespace mu2e {
         fixedfield_ = true;
         kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
       }
+      // configure extrapolation
+      SurfaceIdCollection esids;
+      for(auto const& sidname : settings().modSettings().extrapSurfs()) {
+        esids.push_back(SurfaceId(sidname,-1)); // match all elements
+      }
+      SurfaceMap smap;
+      smap.surfaces(esids,extrap_);
+      // configuration for extrapolation
+      xconfig_.tol_ = settings().modSettings().extrapTol();
+      xconfig_.maxdt_ = settings().modSettings().extrapMaxDt();
     }
 
   void HelixFit::beginRun(art::Run& run) {
@@ -259,7 +289,7 @@ namespace mu2e {
           // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO
           KKCALOHITCOL calohits;
           if (kkfit_.useCalo() && hseed.caloCluster().isNonnull())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
-          // extend the seed range given the hits and xings
+          // set the seed range given the hits and xings
           seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
           // create and fit the track
           auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
@@ -270,6 +300,30 @@ namespace mu2e {
             kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
             goodfit = goodFit(*kktrk);
           }
+// extrapolate as required
+          if(goodfit && extrap_.size()>0) {
+            // test the drection of this fit
+            auto const& ftraj = kktrk->fitTraj();
+            bool downstream = ftraj.momentum3(ftraj.range().mid()).Z() > 0.0; // replace with momentum at tracker middle TODO
+            const static VEC3 opos(0.0,0.0,0.0);
+            for(auto const& surf : extrap_){
+              // configure the extrapolation time direction according to the surface and the track momentum direction
+              if(surf.first.id() == SurfaceIdEnum::TT_Front){
+                xconfig_.xdir_ = downstream ? TimeDir::backwards : TimeDir::forwards;
+                double zpos = surf.second->tangentPlane(opos).center().Z(); // this is crude: I need an accessor that knows the TT_Front is a plane TODO
+                ExtrapolateToZ xtoz(*kktrk,xconfig_.xdir_,zpos);
+                kktrk->extrapolate(xconfig_,xtoz);
+              } else if(surf.first.id() == SurfaceIdEnum::TT_Back){
+                xconfig_.xdir_ = downstream ? TimeDir::forwards : TimeDir::backwards;
+                double zpos = surf.second->tangentPlane(opos).center().Z();
+                ExtrapolateToZ xtoz(*kktrk,xconfig_.xdir_,zpos);
+                kktrk->extrapolate(xconfig_,xtoz);
+              } else if(surf.first.id() == SurfaceIdEnum::TT_Outer){
+                // extrapolate in both time directions
+              }
+            }
+          }
+
           if(print_>0)kktrk->printFit(std::cout,print_);
           if(goodfit || saveall_){
             TrkFitFlag fitflag(hptr->status());

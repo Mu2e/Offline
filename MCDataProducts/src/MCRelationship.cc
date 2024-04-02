@@ -3,6 +3,9 @@
 // Dave Brown, LBNL, 20 Jun 2016
 //
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "canvas/Persistency/Common/Ptr.h"
 #include <vector>
 namespace mu2e
 {
