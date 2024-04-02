@@ -642,7 +642,7 @@ XYZVectorF AgnosticHelixFinder::getPos(size_t& tcHitsIndex) {
   if (hitIndice >= 0) {
     return _chColl->at(hitIndice).pos();
   }
-  if (hitIndice == -2) {
+  if (hitIndice == STOPPINGTARGET) {
     return _stopTargPos;
   }
   if (hitIndice == HitType::CALOCLUSTER) {
