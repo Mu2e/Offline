@@ -20,8 +20,6 @@ namespace mu2e {
     _minNSeeds             (config().minNSeeds()        ),
     _minDeltaNHits         (config().minDeltaNHits()    ),
     _maxEleHitEnergy       (config().maxEleHitEnergy()  ),
-    _minT                  (config().minimumTime()      ), // nsec
-    _maxT                  (config().maximumTime()      ), // nsec
     _maxHitSeedDt          (config().maxHitSeedDt()     ), // nsec
     _maxChi2Seed           (config().maxChi2Seed()      ),
   // _scaleTwo              (config().scaleTwo()         ),
