@@ -1,5 +1,3 @@
-physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
-physics.producers.CrvPhotons.crvStepProcessNames  : ["CrvStepsConverter"]
 physics.producers.CrvPhotons.CRVSectors           : ["EX","T1","T2"]
 physics.producers.CrvPhotons.reflectors           : [  0,   1,   0 ]
 physics.producers.CrvPhotons.scintillationYields  : [39794,28573,28573]   //assuming modules from CRV-T(1.8mm),CRV-DS,CRV-L

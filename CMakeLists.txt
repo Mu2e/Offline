@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
 find_package(cetmodules)
 
-project(Offline VERSION 11.00.00)
+project(Offline VERSION 11.01.00)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -157,7 +157,6 @@ add_subdirectory(TrkFilters)
 add_subdirectory(TrkHitReco)
 add_subdirectory(TrkPatRec)
 add_subdirectory(TrkReco)
-add_subdirectory(ups_install)
 add_subdirectory(UtilityModules)
 add_subdirectory(Validation)
 
