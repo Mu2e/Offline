@@ -76,14 +76,12 @@ BEGIN_PROLOG
       photonYieldScaleFactor                : 0.91  //scale factor applied to photon yields to mimic aging
                                                     //of 3 years with a rate 3% per year (from 12/2023 to 12/2026)
                                                     //used in SU2020
-      photonYieldVariationScale             : 0.05  //scale factor for the photon yield variation in the database
-                                                    //examples:
-                                                    //-if a database table of measured deviations from a nominal photon yield is used,
-                                                    // the scale factor should be set to 1.0 (i.e. no scaling)
-                                                    //-if a database table of a random gaussian distribution
-                                                    // with a sigma equal to 100% of the nominal photon yied is used
-                                                    // and one wants to run a simulation with a sigma of 5% of the nominal photon yield,
-                                                    // then the scale factor should be set to 0.05 (i.e. scaled to a sigma of 5%)
+      photonYieldVariationScale             : 1.0   //scale factor for the photon yield variation in the database
+                                                    //-should be kept at 1.0 (i.e. no scaling),
+                                                    // if a database table of measured deviations from a nominal photon yield is used,
+                                                    //-may be changed for testing purposes,
+                                                    // if a database table of a random gaussian distribution is used
+                                                    // (current random table uses a sigma equal to 5% of the nominal photon yied)
       photonYieldVariationCutoffLow         :-0.2   //the photon yield variation is cut off at 20% below the mean
       photonYieldVariationCutoffHigh        : 0.2   //the photon yield variation is cut off at 20% above the mean
                                                     //note: if measured deviations are used, the cutoffs should be set to the maximum values
