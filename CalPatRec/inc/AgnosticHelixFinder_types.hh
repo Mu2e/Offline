@@ -5,33 +5,32 @@
 
 namespace mu2e {
 
-namespace AgnosticHelixFinderTypes {
+  namespace AgnosticHelixFinderTypes {
 
-struct Config {
-  fhicl::Atom<std::string> tool_type{fhicl::Name("tool_type"),
-                                     fhicl::Comment("tool type: AgnosticHelixFinderDiag")};
-};
+    struct Config {
+      fhicl::Atom<std::string> tool_type{fhicl::Name("tool_type"), fhicl::Comment("tool type: AgnosticHelixFinderDiag")};
+    };
 
-struct tcInfo {
-  int nHelices;
-  int nComboHits;
-  int nStrawHits;
-  float time;
-};
+    struct tcInfo {
+      int     nHelices;
+      int     nComboHits;
+      int     nStrawHits;
+      float   time;
+    };
 
-struct lineSegmentInfo {
-  float chi2dof;
-  float maxHitGap;
-};
+    struct lineSegmentInfo {
+      float   chi2dof;
+      float   maxHitGap;
+    };
 
-struct diagInfo {
-  float moduleTime;
-  int nHelices;
-  int nTimeClusters;
-  std::vector<tcInfo> timeClusterData;
-  std::vector<lineSegmentInfo> lineSegmentData;
-};
+    struct diagInfo {
+      float                          moduleTime;
+      int                            nHelices;
+      int                            nTimeClusters;
+      std::vector<tcInfo>            timeClusterData;
+      std::vector<lineSegmentInfo>   lineSegmentData;
+    };
 
-} // namespace AgnosticHelixFinderTypes
+  } // namespace AgnosticHelixFinderTypes
 } // namespace mu2e
 #endif
