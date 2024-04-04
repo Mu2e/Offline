@@ -41,19 +41,10 @@ namespace mu2e {
       double hZpos;
       int    nStrawHits;
       int    hIsUsed;
-      bool   center;
-      double x;
-      double y;
-      double z;
-      double phi;
     };
 
     struct plnData {
       std::vector<cHit> plnHits;
-    };
-
-    struct stnData {
-      std::vector<cHit> stnHits;
     };
 
     struct chunkInfo {
@@ -78,9 +69,7 @@ namespace mu2e {
       const CaloClusterCollection*    _ccColl;
       TimeClusterCollection*          _tcColl; // 'tcColl': time cluster collection
       IntensityInfoTimeCluster*       _iiTC;
-      int                             _nChuncks;
       int                             _nTZClusters;
-      std::vector<size_t>             _nTCRef;
 
       // diagnostic data members used in TZ tool
       std::vector<double> lineSlope;
@@ -103,10 +92,9 @@ namespace mu2e {
     // create data structure for variables and objects that will facilitate cluster finding
     struct facilitateVars {
 
-      std::array<plnData, StrawId::_nplanes>   cHits;
-      std::array<stnData, StrawId::_nstations> chStn;
-      std::vector<chunkInfo>                   chunks;
-      std::vector<cPair>                       holdIndices;
+      std::array<plnData, StrawId::_nplanes> cHits;
+      std::vector<chunkInfo>                 chunks;
+      std::vector<cPair>                     holdIndices;
       chunkInfo   _chunkInfo;
       TimeCluster _clusterInfo;
       cPair       _indicePair;
@@ -131,7 +119,7 @@ namespace mu2e {
       void clear_clusterInfo() { _clusterInfo._strawHitIdxs.clear();                             }
       void clear_chunkInfo()   { _chunkInfo.hIndices.clear(); _chunkInfo.fitter.clear();         }
       void clear_chunks()      { chunks.clear();                                                 }
-      void clear_chStn()       { for(size_t i=0; i<chStn.size(); i++) chStn[i].stnHits.clear();  }
+
     };
 
     struct mcSimIDs {
