@@ -65,3 +65,18 @@ namespace mu2e {
 
     return res;
   }
+
+void MuplusMichelGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
+    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
+    const auto daughters = generate();
+    for(const auto& d: daughters) {
+      out->emplace_back(d.pdgId,
+                        GenId::MuplusMichelGenTool,
+                        pos,
+                        d.fourmom,
+                        stop.t);
+    }
+  }
+
+}
+DEFINE_ART_CLASS_TOOL(mu2e::MuplusMichelGenerator)
