@@ -1,13 +1,16 @@
 //-----------------------------------------------------------------------------
-// assume that class T has, say, Init method, which reinitialize an object
-// allocated before
-// in particular, that assumes that T owns all its pointers (if any) and Init
-// handles them correctly
-// T is supposed to have a constructor T(int N) , wher N is the element index in the list
-// a templated, light-weight, and "crippled" version of TClonesArray
+// P.Murat : a templated, light-weight, and "crippled" version of TClonesArray
+// assumptions:
+// - class T has an initialization method, say, T::Init, which properly reinitializes 
+//   an object allocated before
+// - an object of class T owns all its pointers (if any) and T::Init handles them correctly
+// - class T has a constructor T(int N), where N is the element index in the list
+// 
+// if those assumptions hold, a call to ManagedList::clear() 'empties' the list 
+// without reallocating the memory
 //-----------------------------------------------------------------------------
-#ifndef __CalPatRec_ManagedList_hh
-#define __CalPatRec_ManagedList_hh
+#ifndef __Mu2eUtilities_ManagedList_hh
+#define __Mu2eUtilities_ManagedList_hh
 
 namespace mu2e {
 

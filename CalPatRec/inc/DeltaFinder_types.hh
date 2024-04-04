@@ -25,7 +25,7 @@ namespace fhicl {
 
 #include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
 
-#include "Offline/CalPatRec/inc/ManagedList.hh"
+#include "Offline/Mu2eUtilities/inc/ManagedList.hh"
 #include "Offline/CalPatRec/inc/Pzz_t.hh"
 #include "Offline/CalPatRec/inc/ChannelID.hh"
 #include "Offline/CalPatRec/inc/HitData_t.hh"
