@@ -582,16 +582,7 @@ CalPatRec : { @table::CalPatRec
             minCaloEnergy              : 50.0
             caloDtMax                  : 30.0
             caloTimeOffset             : @local::TrackCaloMatching.DtOffset
-            doRefine                   : 0
-            minSHsInCluster            : 15
-            minCHsInCluster            : 10
-            nPairs                     : 1
-            minCHsInCubes              : 2
-            maxDeltaRInStn             : 100
-            maxDeltaRBtwStns           : 120
-            maxDeltaPhiInStn           : 0.4
-            maxDeltaPhiBtwStns         : 0.6
-            thirdStation               : true
+            doRefine                   : 1
 
             diagPlugin : { tool_type  : "TZClusterFinderDiag"
                  mcTruth       : 1
