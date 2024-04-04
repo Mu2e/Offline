@@ -582,7 +582,7 @@ CalPatRec : { @table::CalPatRec
             minCaloEnergy              : 50.0
             caloDtMax                  : 30.0
             caloTimeOffset             : @local::TrackCaloMatching.DtOffset
-            doRefine                   : 1
+            doRefine                   : 0
 
             diagPlugin : { tool_type  : "TZClusterFinderDiag"
                  mcTruth       : 1
@@ -639,7 +639,7 @@ CalPatRec : { @table::CalPatRec
             debugStrawHitThresh     : 12
             debugScatterThresh      : 3.0
             mcUtils                 : { @table::TrkReco.McUtils }
-            diagPlugin              : { tool_type : "HelixFinderDiag" }
+            diagPlugin              : { tool_type : "AgnosticHelixFinderDiag" }
         }
 
         PhiClusterFinder : { module_type : PhiClusterFinder

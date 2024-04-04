@@ -53,17 +53,17 @@ namespace mu2e {
       fhicl::Sequence<std::string>   hitBkgBits       {Name("hitBkgBits"       ), Comment("background bits"             ) };
       fhicl::Atom<int>               radSelect        {Name("radSelect"        ), Comment("whether or not to radial cut") };
       fhicl::Atom<int>               chunkSep         {Name("chunkSep"         ), Comment("max # of planes for chunk"   ) };
-      fhicl::Atom<double>            chunkWindow      {Name("chunkWindow"      ), Comment("time window in ns"           ) };
+      fhicl::Atom<float>             chunkWindow      {Name("chunkWindow"      ), Comment("time window in ns"           ) };
       fhicl::Atom<int>               chunkThresh      {Name("chunkThresh"      ), Comment("number of combo hits"        ) };
-      fhicl::Atom<double>            combineWindow    {Name("combineWindow"    ), Comment("time window in ns"           ) };
-      fhicl::Atom<double>            maxCombineSep    {Name("maxCombineSep"    ), Comment("z range in mm"               ) };
+      fhicl::Atom<float>             combineWindow    {Name("combineWindow"    ), Comment("time window in ns"           ) };
+      fhicl::Atom<float>             maxCombineSep    {Name("maxCombineSep"    ), Comment("z range in mm"               ) };
       fhicl::Atom<int>               chunkFitThresh   {Name("chunkFitThresh"   ), Comment("number of combo hits"        ) };
-      fhicl::Atom<double>            recoverWindow    {Name("recoverWindow"    ), Comment("time window in ns"           ) };
+      fhicl::Atom<float>             recoverWindow    {Name("recoverWindow"    ), Comment("time window in ns"           ) };
       fhicl::Atom<int>               clusterThresh    {Name("clusterThresh"    ), Comment("number of straw hits"        ) };
       fhicl::Atom<int>               minCaloSize      {Name("minCaloSize"      ), Comment("number of crystals"          ) };
-      fhicl::Atom<double>            minCaloEnergy    {Name("minCaloEnergy"    ), Comment("in MeV"                      ) };
-      fhicl::Atom<double>            caloDtMax        {Name("caloDtMax"        ), Comment("search time window (ns)"     ) };
-      fhicl::Atom<double>            caloTimeOffset   {Name("caloTimeOffset"   ), Comment("in ns"                       ) };
+      fhicl::Atom<float>             minCaloEnergy    {Name("minCaloEnergy"    ), Comment("in MeV"                      ) };
+      fhicl::Atom<float>             caloDtMax        {Name("caloDtMax"        ), Comment("search time window (ns)"     ) };
+      fhicl::Atom<float>             caloTimeOffset   {Name("caloTimeOffset"   ), Comment("in ns"                       ) };
       fhicl::Atom<int>               doRefine         {Name("doRefine"         ), Comment("filter out bad TCs at end"   ) };
 
       fhicl::Table<TZClusterFinderTypes::Config> diagPlugin{Name("diagPlugin"      ), Comment("Diag plugin") };
@@ -96,17 +96,17 @@ namespace mu2e {
     // cluster search parameters
     //-----------------------------------------------------------------------------
     int      _chunkSep; // number of planes we allow chunks to be combined in
-    double   _chunkWindow; // time window we allow hits to live within to be chunked together
+    float    _chunkWindow; // time window we allow hits to live within to be chunked together
     int      _chunkThresh; // how many hits need to be in a chunk to be saved
-    double   _combineWindow; // time window in which chunks combining may be considered
-    double   _maxCombineSep; // max z separation to consider combining chunks
+    float    _combineWindow; // time window in which chunks combining may be considered
+    float    _maxCombineSep; // max z separation to consider combining chunks
     int      _chunkFitThresh; // how many hits chunk must have to do fit to before recovering hits
-    double   _recoverWindow; // time hit must be within chunk fit to be added to chunk
+    float    _recoverWindow; // time hit must be within chunk fit to be added to chunk
     int      _clusterThresh; // number of combo hits needed to save cluster found
     int      _minCaloSize; // number of crystals for calo cluster to be considered
-    double   _minCaloEnergy; // minimum energy for calo cluster to be considered
-    double   _caloDtMax; // max time from time cluster for calo cluster to be associated with time cluster
-    double   _caloTimeOffset; // time offset for calo clusters
+    float    _minCaloEnergy; // minimum energy for calo cluster to be considered
+    float    _caloDtMax; // max time from time cluster for calo cluster to be associated with time cluster
+    float    _caloTimeOffset; // time offset for calo clusters
     int      _doRefine; // if set to 1 then some pattern recogntion is used to filter out bad TC candidates
 
     //-----------------------------------------------------------------------------
@@ -371,13 +371,13 @@ namespace mu2e {
       TF1* fit = new TF1("fit", "pol1");
       for (int i=0; i<_data._nTZClusters; i++) {
         int dcPoints = (int)_data._tcColl->at(i)._strawHitIdxs.size();
-        std::vector<double_t> zcPoints(dcPoints);
-        std::vector<double_t> tcPoints(dcPoints);
+        std::vector<float> zcPoints(dcPoints);
+        std::vector<float> tcPoints(dcPoints);
         for (int j=0; j<dcPoints; j++) {
           int index = (int)_data._tcColl->at(i)._strawHitIdxs[j];
           hit = &_data._chColl->at(index);
-          double_t zPosition = hit->pos().z();
-          double_t hitTime = hit->correctedTime();
+          float zPosition = hit->pos().z();
+          float hitTime = hit->correctedTime();
           zcPoints[j] = zPosition;
           tcPoints[j] = hitTime;
         }
@@ -561,7 +561,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void TZClusterFinder::combineChunks() {
 
-    double minValidDtFound    = 0.0;
+    float  minValidDtFound    = 0.0;
     size_t validCombinesFound = 0;
     size_t chunkOneIdx        = 0;
     size_t chunkTwoIdx        = 0;
@@ -574,7 +574,7 @@ namespace mu2e {
           && std::abs(_f.seedZpos-_f.testZpos) > _maxCombineSep) {continue;}
       _f.seedTime = _f.chunks[i].avgTime;
       _f.testTime = _f.chunks[i+1].avgTime;
-      double deltaTime = std::abs(_f.seedTime - _f.testTime);
+      float deltaTime = std::abs(_f.seedTime - _f.testTime);
       if (deltaTime > _combineWindow) {
         if (validCombinesFound != 0) {break;}
         else {continue;}
@@ -613,7 +613,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void TZClusterFinder::recoverHits() {
 
-    double minValidDtFound = 0.0;
+    float  minValidDtFound = 0.0;
     size_t validLinesFound = 0;
     size_t chunkIndex      = 0;
 
@@ -632,7 +632,7 @@ namespace mu2e {
         for (size_t k=0; k<_f.chunks.size(); k++) {
           if ((int)_f.chunks[k].hIndices.size() < _chunkFitThresh) {continue;}
           if (_f.testNRGselection != _f.chunks[k].nrgSelection) {continue;}
-          double deltaTtest = std::abs(_f.testTime - (_f.chunks[k].fitter.dydx()*_f.testZpos + _f.chunks[k].fitter.y0()));
+          float deltaTtest = std::abs(_f.testTime - (_f.chunks[k].fitter.dydx()*_f.testZpos + _f.chunks[k].fitter.y0()));
           if (deltaTtest > _recoverWindow) {continue;}
           validLinesFound++;
           if (validLinesFound == 1 || deltaTtest < minValidDtFound) {
@@ -675,7 +675,7 @@ namespace mu2e {
     const CaloCluster* cc;
     const ComboHit*    hit;
 
-    double ccTime    = 0.0;
+    float  ccTime    = 0.0;
     int    ncc       = _data._ccColl->size();
     int    nchunks   = _f.chunks.size();
     int    addedToTC = 0;
@@ -687,7 +687,7 @@ namespace mu2e {
       addedToTC = 0;
       for (int j=0; j<nchunks; j++) {
         if ((int)_f.chunks[j].hIndices.size() < _chunkFitThresh) {continue;}
-        double dT = std::abs((double)_f.chunks[j].fitter.y0() - ccTime);
+        float dT = std::abs((float)_f.chunks[j].fitter.y0() - ccTime);
         if (dT < _caloDtMax) {
           if (_f.chunks[j].caloIndex != -1) {
             _f._chunkInfo = _f.chunks[j];
@@ -738,9 +738,9 @@ namespace mu2e {
       if (_f.chunks[i].nrgSelection == 0) {continue;}
       if ((int)_f.chunks[i].nStrawHits < _clusterThresh) {continue;}
       for (size_t j=0; j<_f.chunks[i].hIndices.size(); j++) {
-        // ethan, put logic here
+        // needs development
       }
-      // ethan, set _f.chunks[i].goodCluster = false or true here based on result of logic you put above
+      //  set _f.chunks[i].goodCluster = false or true here based on result of logic you put above .. needs development
     }
 
   }

@@ -32,19 +32,19 @@ namespace mu2e {
     };
 
     struct EventHists {
-      TH1D*     nClusters;
-      TH1D*     nProtonsPred;
-      TH1D*     nProtonsMC;
-      TH1D*     nProtPredMinusMC;
+      TH1F*     nClusters;
+      TH1F*     nProtonsPred;
+      TH1F*     nProtonsMC;
+      TH1F*     nProtPredMinusMC;
       TProfile* nProtPredvsMC;
       TProfile* nProtMCvsPOT;
       TProfile* nProtPredvsPOT;
     };
 
     struct TimeClusterHists {
-      TH1D* clusterSlopes;
-      TH1D* cHitsInClusters;
-      TH1D* Chi2DOFHist;
+      TH1F* clusterSlopes;
+      TH1F* cHitsInClusters;
+      TH1F* Chi2DOFHist;
     };
 
     struct Hists {
@@ -60,7 +60,7 @@ namespace mu2e {
     int                              _simIDThresh;
     std::unique_ptr<McUtilsToolBase> _mcUtils;
     const mu2e::SimParticle*         _simParticle;
-    double                           _nPOT;
+    float                            _nPOT;
 
   public:
 
@@ -94,10 +94,10 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   int TZClusterFinderDiag::bookEventHistograms(EventHists* Hist, art::TFileDirectory* Dir) {
-    Hist->nClusters = Dir->make<TH1D>("nClusters" , "number of clusters", 50, 0.0, 50.0);
-    Hist->nProtonsPred = Dir->make<TH1D>("nProtonsPred" , "number of protons clusters counted (>= 15 straw hits)", 30, 0.0, 30.0 );
-    Hist->nProtonsMC = Dir->make<TH1D>("nProtonsMC" , "number of MC truth protons (>= 15 straw hits)", 30, 0.0, 30.0 );
-    Hist->nProtPredMinusMC = Dir->make<TH1D>("nProtPredMinusMC" , "number of protons predicted minus truth (>= 15 straw hits)", 20, -10.0, 10.0 );
+    Hist->nClusters = Dir->make<TH1F>("nClusters" , "number of clusters", 50, 0.0, 50.0);
+    Hist->nProtonsPred = Dir->make<TH1F>("nProtonsPred" , "number of protons clusters counted (>= 15 straw hits)", 30, 0.0, 30.0 );
+    Hist->nProtonsMC = Dir->make<TH1F>("nProtonsMC" , "number of MC truth protons (>= 15 straw hits)", 30, 0.0, 30.0 );
+    Hist->nProtPredMinusMC = Dir->make<TH1F>("nProtPredMinusMC" , "number of protons predicted minus truth (>= 15 straw hits)", 20, -10.0, 10.0 );
     Hist->nProtPredvsMC = Dir->make<TProfile>("nProtPredvsMC" , "profile number of protons predicted vs truth (>= 15 straw hits)", 30, 0, 30, 0, 30, "i" );
     Hist->nProtMCvsPOT = Dir->make<TProfile>("nProtMCvsPOT" , "profile MC number of protons vs nPOT", 15, 1e6, 120e6, 0, 30, "i" );
     Hist->nProtPredvsPOT = Dir->make<TProfile>("nProtPredvsPOT" , "profile number of protons predicted vs nPOT", 15, 1e6, 120e6, 0, 30, "i" );
@@ -107,9 +107,9 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   int TZClusterFinderDiag::bookTimeClusterHistograms(TimeClusterHists* Hist, art::TFileDirectory* Dir) {
-    Hist->clusterSlopes = Dir->make<TH1D>("clusterSlopes" , "cluster slopes", 100, -0.06, 0.06 );
-    Hist->cHitsInClusters = Dir->make<TH1D>("cHitsInClusters" , "number of combo hits in cluster", 100, 0., 100. );
-    Hist->Chi2DOFHist = Dir->make<TH1D>("Chi2DOFHist" , "line fit reduced chi-squared", 1000, -2.0, 50. );
+    Hist->clusterSlopes = Dir->make<TH1F>("clusterSlopes" , "cluster slopes", 100, -0.06, 0.06 );
+    Hist->cHitsInClusters = Dir->make<TH1F>("cHitsInClusters" , "number of combo hits in cluster", 100, 0., 100. );
+    Hist->Chi2DOFHist = Dir->make<TH1F>("Chi2DOFHist" , "line fit reduced chi-squared", 1000, -2.0, 50. );
     return 0;
   }
 
@@ -177,7 +177,7 @@ namespace mu2e {
   int TZClusterFinderDiag::fillTimeClusterHistograms(TimeClusterHists* Hist, Data_t* Data, int loopIndex) {
 
     // fill slopes of clusters
-    double slope = Data->lineSlope.at(loopIndex);
+    float slope = Data->lineSlope.at(loopIndex);
     Hist->clusterSlopes->Fill(slope);
 
     // fill number of combo hits in clusters
@@ -185,7 +185,7 @@ namespace mu2e {
     Hist->cHitsInClusters->Fill(numHits);
 
     // fill reduced chi-squared of lines fit to clusters
-    double reducedChiSquare = Data->chi2DOF.at(loopIndex);
+    float reducedChiSquare = Data->chi2DOF.at(loopIndex);
     Hist->Chi2DOFHist->Fill(reducedChiSquare);
 
     return 0;
@@ -202,7 +202,7 @@ namespace mu2e {
     art::Handle<ProtonBunchIntensity> evtWeightH;
     _data->_event->getByLabel("PBISim", evtWeightH);
     if (evtWeightH.isValid()){
-      _nPOT  = (double)evtWeightH->intensity();
+      _nPOT  = (float)evtWeightH->intensity();
     }
 
     // fill mcSimIDs data members simID, nHits, and pdgID
