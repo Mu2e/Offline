@@ -677,6 +677,25 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 # new modules
 #------------------------------------------------------------------------------
+
+        # TZClusterFilter module
+        TZClusterFilter : {
+            module_type         : TZClusterFilter
+            diagLevel           : 0
+            runDisplay          : 0
+            chCollLabel         : "FlagBkgHits"     # same as TZClusterFinder
+            tcCollLabel         : "TZClusterFinder"
+            minSHsInCluster     : 15
+            minCHsInCluster     : 10
+            nPairs              : 1
+            minCHsInCubes       : 2
+            maxDeltaRInStn      : 100
+            maxDeltaRBtwStns    : 120
+            maxDeltaPhiInStn    : 0.4
+            maxDeltaPhiBtwStns  : 0.6
+            thirdStation        : true
+        }
+
         CalTimePeakFinder          : { module_type:CalTimePeakFinder
             diagLevel                                   : 0
             debugLevel                                  : 0
