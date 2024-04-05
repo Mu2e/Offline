@@ -51,7 +51,6 @@ namespace mu2e {
       fhicl::Atom<int>             minNSeeds         {Name("minNSeeds"         ), Comment("min N seeds in a delta cand" ) };
       fhicl::Atom<int>             minDeltaNHits     {Name("minDeltaNHits"     ), Comment("min N combo  hits in a delta") };
       fhicl::Atom<float>           maxEleHitEnergy   {Name("maxEleHitEnergy"   ), Comment("max electron hit energy"     ) };
-      fhicl::Atom<float>           minimumTime       {Name("minimumTime"       ), Comment("minimum time"                ) };
       fhicl::Atom<float>           maximumTime       {Name("maximumTime"       ), Comment("maximum time"                ) };
       fhicl::Atom<float>           maxHitSeedDt      {Name("maxHitSeedDt"      ), Comment("max DT(hit-seed)"            ) };
       fhicl::Atom<float>           maxChi2Seed       {Name("maxChi2Seed"       ), Comment("max seed chi2 (stereo)"      ) };
