@@ -14,7 +14,7 @@ namespace mu2e {
     typedef art::Ptr<SimParticle> SPPtr;
     // values of relationship of 2 MC objects
     enum relation : int8_t {none=-1,same=0,daughter,mother,sibling,udaughter,umother,usibling};
-    relation relationship() const { return _rel; }
+    relation relationship() const { return (relation)_rel; }
     int8_t removal() const { return _rem; } // relationship generational distance
     // convenience operators
     bool operator ==(MCRelationship const& other ) const { return _rel == other._rel; }
@@ -41,7 +41,7 @@ namespace mu2e {
     // from the mixture
     MCRelationship(StrawDigiMC const& mcd, SPPtr const& spp);
     private:
-    relation _rel = none; // relationship
+    int8_t _rel = none; // relationship
     int8_t _rem = -1; // distance between relationship
   };
 }
