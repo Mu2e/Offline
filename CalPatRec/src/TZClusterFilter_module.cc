@@ -62,10 +62,7 @@ namespace mu2e {
             int plane;
             int face;
             int panel;
-            float x;
-            float y;
-            float z;
-            float phi;
+            XYZVectorF pos;
         };
 
         explicit TZClusterFilter(const art::EDFilter::Table<Config>& config);
@@ -262,17 +259,14 @@ namespace mu2e {
             cHit.plane = _chColl->at(hitIndex).strawId().plane();
             cHit.face = _chColl->at(hitIndex).strawId().face();
             cHit.panel = _chColl->at(hitIndex).strawId().panel();
-            cHit.x = _chColl->at(hitIndex).pos().x();
-            cHit.y = _chColl->at(hitIndex).pos().y();
-            cHit.z = _chColl->at(hitIndex).pos().z();
-            cHit.phi = _chColl->at(hitIndex).phi();
+            cHit.pos = _chColl->at(hitIndex).pos();
 
             _tcHits.push_back(cHit);
         }
 
         // sort the vector in ascending order of the z-coordinate or print an error message
         if(_tcHits.empty()) std::cout << ">>> ERROR in TZClusterFilter::fillTClusterHits: the vector _tcHits is empty." << std::endl;
-        else std::sort(_tcHits.begin(), _tcHits.end(), [](const comboHit& a, const comboHit& b) { return a.z < b.z; } );
+        else std::sort(_tcHits.begin(), _tcHits.end(), [](const comboHit& a, const comboHit& b) { return a.pos.z() < b.pos.z(); } );
 
         return (_tcHits.empty());
     }
@@ -443,8 +437,8 @@ namespace mu2e {
                     nCHs++;
                     continue;
                 }
-                double a[2] = {_chStn[stn].at(i).x, _chStn[stn].at(i).y};
-                double b[2] = {_chStn[stn].at(j).x, _chStn[stn].at(j).y};
+                double a[2] = {_chStn[stn].at(i).pos.x(), _chStn[stn].at(i).pos.y()};
+                double b[2] = {_chStn[stn].at(j).pos.x(), _chStn[stn].at(j).pos.y()};
                 double Ra = std::sqrt(a[0]*a[0]+a[1]*a[1]);
                 double Rb = std::sqrt(b[0]*b[0]+b[1]*b[1]);
                 double deltaR = std::abs(Rb - Ra);
@@ -481,8 +475,8 @@ namespace mu2e {
             if(_chStn[stn1].at(i).center == false) continue;
             for(size_t j=0; j<_chStn[stn2].size(); j++) {
                 if(_chStn[stn2].at(j).center == false) continue;
-                double a[2] = {_chStn[stn1].at(i).x, _chStn[stn1].at(i).y};
-                double b[2] = {_chStn[stn2].at(j).x, _chStn[stn2].at(j).y};
+                double a[2] = {_chStn[stn1].at(i).pos.x(), _chStn[stn1].at(i).pos.y()};
+                double b[2] = {_chStn[stn2].at(j).pos.x(), _chStn[stn2].at(j).pos.y()};
                 double Ra = std::sqrt(a[0]*a[0]+a[1]*a[1]);
                 double Rb = std::sqrt(b[0]*b[0]+b[1]*b[1]);
                 double deltaR = std::abs(Rb - Ra);
@@ -518,8 +512,8 @@ namespace mu2e {
             for(size_t i=0; i<_chStn[stn1].size(); i++) {
                 if(_chStn[stn1].at(i).center == false) continue;
                 for(size_t j=0; j<_chStn[stn1-1].size(); j++) {
-                    double a[2] = {_chStn[stn1].at(i).x, _chStn[stn1].at(i).y};
-                    double b[2] = {_chStn[stn1-1].at(j).x, _chStn[stn1-1].at(j).y};
+                    double a[2] = {_chStn[stn1].at(i).pos.x(), _chStn[stn1].at(i).pos.y()};
+                    double b[2] = {_chStn[stn1-1].at(j).pos.x(), _chStn[stn1-1].at(j).pos.y()};
                     double Ra = std::sqrt(a[0]*a[0]+a[1]*a[1]);
                     double Rb = std::sqrt(b[0]*b[0]+b[1]*b[1]);
                     double deltaR = std::abs(Rb - Ra);
@@ -543,8 +537,8 @@ namespace mu2e {
             for(size_t i=0; i<_chStn[stn2].size(); i++) {
                 if(_chStn[stn2].at(i).center == false) continue;
                 for(size_t j=0; j<_chStn[stn2+1].size(); j++) {
-                    double a[2] = {_chStn[stn2].at(i).x, _chStn[stn2].at(i).y};
-                    double b[2] = {_chStn[stn2+1].at(j).x, _chStn[stn2+1].at(j).y};
+                    double a[2] = {_chStn[stn2].at(i).pos.x(), _chStn[stn2].at(i).pos.y()};
+                    double b[2] = {_chStn[stn2+1].at(j).pos.x(), _chStn[stn2+1].at(j).pos.y()};
                     double Ra = std::sqrt(a[0]*a[0]+a[1]*a[1]);
                     double Rb = std::sqrt(b[0]*b[0]+b[1]*b[1]);
                     double deltaR = std::abs(Rb - Ra);
@@ -586,8 +580,8 @@ namespace mu2e {
             std::cout << "nStrawHits/station/plane/face/panel: " <<
                 _tcHits[i].nStrawHits << "/" << _tcHits[i].station << "/" << _tcHits[i].plane <<
                                         "/" << _tcHits[i].face << "/" << _tcHits[i].panel << std::endl;
-            std::cout << "x/y/z/phi: " << _tcHits[i].x << "/" << _tcHits[i].y <<
-                            "/" << _tcHits[i].z << "/" << _tcHits[i].phi << std::endl;
+            std::cout << "x/y/z/phi: " << _tcHits[i].pos.x() << "/" << _tcHits[i].pos.y() <<
+                            "/" << _tcHits[i].pos.z() << "/" << _tcHits[i].pos.phi() << std::endl;
         }
     }
 
