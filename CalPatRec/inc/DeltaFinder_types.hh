@@ -77,22 +77,23 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // data structures passed to the diagnostics plugin
 //-----------------------------------------------------------------------------
+    enum { kMaxNTimeBins = 3000 };                     // with a 40ns bin, covers up to 120 us
+
     struct FaceZ_t {
-      int                     fID;         // 3*face+panel, for pre-calculating overlaps
+      int                     fID;                     // 3*face+panel, for pre-calculating overlaps
 
       std::vector<HitData_t>  fHitData;
-      int                     fFirst[100];   // ** FIXME - need larger dimension for off-spill cosmics...
-      int                     fLast [100];
+      int                     fFirst [kMaxNTimeBins];   // ** FIXME - choose the USED max size based on the event type - on/off spill
+      int                     fLast  [kMaxNTimeBins];   //            a vector ? re-create/re-allocate if the event type is different ?
 
       std::vector<HitData_t*> fProtonHitData;
-      int                     fPFirst[100];  // ** FIXME - need larger dimension for off-spill cosmics...
-      int                     fPLast [100];
+      int                     fPFirst[kMaxNTimeBins];  // ** FIXME - it is a possibility
+      int                     fPLast [kMaxNTimeBins];  //
 
-      Pzz_t                   fPanel[3];
+      Pzz_t                   fPanel [3];
       double                  z;           //
 
-      Pzz_t*                  Panel(int I) { return &fPanel[I]; }
-
+      Pzz_t*                  Panel   (int I) { return &fPanel[I]; }
       int                     nHits        () { return fHitData.size(); }
       int                     nProtonHits  () { return fProtonHitData.size(); }
 
@@ -106,14 +107,10 @@ namespace mu2e {
       const DiskCalorimeter*        calorimeter;
 
       art::InputTag                 chCollTag;
-      // art::InputTag                 chfCollTag;
       art::InputTag                 sdmcCollTag;
 
       const ComboHitCollection*     chcol;
-      // const StrawHitFlagCollection* chfColl;                 // input  combohit flags
       ComboHitCollection*           outputChColl;
-
-      // const StrawHitFlagCollection* chfColl;                 // input  combohit flags
 
       DeltaFinderAlg*               _finder;
 
