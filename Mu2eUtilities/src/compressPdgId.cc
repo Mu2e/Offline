@@ -74,7 +74,7 @@ namespace mu2e {
     return code;
   }
 
-  TH1D* compressPDGCodeHisto(art::ServiceHandle<art::TFileService>& tfs,
+  TH1D* compressPDGCodeHisto(art::ServiceHandle<art::TFileService> tfs,
                              std::string name, std::string title) {
 
     float low = float(CompressedPDGCode::minBin) - 0.5;
