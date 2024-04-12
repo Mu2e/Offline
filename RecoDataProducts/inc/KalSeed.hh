@@ -94,5 +94,7 @@ namespace mu2e {
     float         _flt0 = 0.0; // flight distance where the track crosses the tracker midplane (z=0).  Redundant with t0 in KinKal fits, and in the wrong unit
   };
   typedef std::vector<mu2e::KalSeed> KalSeedCollection;
+  typedef art::Ptr<mu2e::KalSeed> KalSeedPtr;
+  typedef std::vector<mu2e::KalSeedPtr> KalSeedPtrCollection;
 }
 #endif
