@@ -3,8 +3,6 @@
 //  This module produces an indirect (Ptr) collection, not a deep copy, to keep from break provenance or MC truth associations
 //  Note that, when persisting merged collections created by this module, the KalSeed object collections merged here MUST ALSO BE PERSISTED in
 //  order for the references to not be broken.
-//  Note too that the MC truth association of these KalSeeds ARE NOT MERGED by this module.  This is to avoid making reco code depend on MC.
-//  There is a separate module which merges the Assns between the KalSeeds referenced by the output of this module and the associated KalSeedMCs.
 //  original author: D. Brown (LBNL) 2024
 //
 #include "fhiclcpp/types/Atom.h"
