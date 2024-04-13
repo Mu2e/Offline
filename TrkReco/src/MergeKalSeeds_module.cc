@@ -5,7 +5,7 @@
 //  order for the references to not be broken.
 //  Note too that the MC truth association of these KalSeeds ARE NOT MERGED by this module.  This is to avoid making reco code depend on MC.
 //  There is a separate module which merges the Assns between the KalSeeds referenced by the output of this module and the associated KalSeedMCs.
-//  original author: D. Brown (LBNL)
+//  original author: D. Brown (LBNL) 2024
 //
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -16,7 +16,6 @@
 #include "art/Framework/Principal/Handle.h"
 // mu2e data products
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
-#include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 // C++
 #include <vector>
 
