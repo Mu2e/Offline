@@ -2,6 +2,9 @@
 // P.M. : keep is simple - generic generator module which uses plugins
 //        to generate various signal processes
 //        probably could do for pions as well
+//        in the 'particle_gun' mode:
+//        - if _lifetime<0, generate uniform     timing distribution
+//        - if _lifetime>0, generate exponential timing distribution
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <string>
@@ -67,6 +70,7 @@ namespace mu2e {
     const art::InputTag                        _simpCollTag;
     art::RandomNumberGenerator::base_engine_t& _eng        ;
     std::unique_ptr<CLHEP::RandExponential>    _randExp    ;
+    std::unique_ptr<CLHEP::RandFlat>           _randFlat   ;
     std::unique_ptr<ParticleGeneratorTool>     _generator  ;
     int                                        _verbosityLevel;
   };
@@ -79,6 +83,7 @@ namespace mu2e {
     , _simpCollTag (conf().simpCollTag())
     , _eng         (createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , _randExp     (std::make_unique<CLHEP::RandExponential>(_eng))
+    , _randFlat    (std::make_unique<CLHEP::RandFlat>       (_eng))
     , _verbosityLevel(conf().verbosityLevel())
   {
     _stopPdgCode = static_cast<PDGCode::type>(conf().stopPdgCode());
@@ -177,6 +182,7 @@ namespace mu2e {
       art::Ptr<GenParticle>::key_type k9(1);
       art::Ptr<GenParticle> genpPtr = art::Ptr<GenParticle>(genpch,k9);
 
+      ProcessCode pcode = _generator->processCode();
       SimParticle simp(SimParticle::key_type(),
                        1,
                        art::Ptr<SimParticle>(), // stopped particle has no parent
@@ -188,9 +194,9 @@ namespace mu2e {
                        0,
                        0,
                        0,
-                       _generator->processCode());
+                       pcode);
 
-      simp.addEndInfo(pos,mom,tstop,0,0,0,_generator->processCode(),0.,0,0.);
+      simp.addEndInfo(pos,mom,tstop,0,0,0,pcode,0.,0,0.);
 
       cet::map_vector_key o_my_gosh{1};
       simp_collp->insert(std::make_pair(o_my_gosh,simp));
@@ -201,8 +207,25 @@ namespace mu2e {
       list.push_back(stop);
 
       for(const auto& stop: list) {
+//-----------------------------------------------------------------------------
+// if _tmax < _tmin, decay_time=_tmin
+//-----------------------------------------------------------------------------
         double decay_time = _tmin;
         if (_tmax > _tmin) {
+          if (_lifetime < 0) {
+//-----------------------------------------------------------------------------
+// _lifetime < 0: uniform distribution
+//-----------------------------------------------------------------------------
+            decay_time = _tmin + _randFlat->fire(0.,1.)*(_tmax - _tmin);
+          }
+          else {
+//-----------------------------------------------------------------------------
+// _lifetime >= 0: exponential distribution
+//-----------------------------------------------------------------------------
+            do {
+              decay_time = _tmin + _randExp->fire(_lifetime);
+            } while (decay_time > _tmax);
+          }
           do { decay_time = _tmin + _randExp->fire(_lifetime); } while (decay_time > _tmax);
         }
 //-----------------------------------------------------------------------------
