@@ -60,9 +60,9 @@ namespace mu2e {
   std::vector<ParticleGeneratorTool::Kinematic> StoppedPiEnuGenerator::generate() {
     std::vector<ParticleGeneratorTool::Kinematic>  res;
 
-    double energy  = _spectrum.sample(_randSpectrum->fire());
-    const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
-    CLHEP::HepLorentzVector fourmom(_randomUnitSphere->fire(p), energy);
+    double e = _spectrum.sample(_randSpectrum->fire());
+    double p = sqrt(e*e -_mass*_mass);
+    CLHEP::HepLorentzVector fourmom(_randomUnitSphere->fire(p),e);
 
     ParticleGeneratorTool::Kinematic k{_pdgCode, ProcessCode::mu2ePienu, fourmom};
     res.emplace_back(k);
