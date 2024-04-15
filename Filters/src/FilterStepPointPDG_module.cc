@@ -2,7 +2,7 @@
 // copy selected hits to output collections, preserving product
 // instance names.
 //
-// Andrei Gaponenko, 2013
+// Andrei Gaponenko, 2013, 2024
 
 #include <string>
 #include <vector>
@@ -11,7 +11,8 @@
 #include <algorithm>
 
 // art includes.
-#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
@@ -24,6 +25,37 @@ namespace mu2e {
 
   //================================================================
   class FilterStepPointPDG : public art::EDFilter {
+  public:
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Sequence<art::InputTag> inputs {
+        Name("inputs"),
+        Comment("A list of StepPointMCCollection-s to process")
+      };
+
+      fhicl::Sequence<int> pdgToDrop {
+        Name("pdgToDrop"),
+        Comment("A list of particle types to drop while keeping everything else.  Mutually exclusive with pdgToKeep."),
+        std::vector<int>()
+      };
+
+      fhicl::Sequence<int> pdgToKeep {
+        Name("pdgToKeep"),
+        Comment("A list of particle types to keep while dropping everything else.  Mutually exclusive with pdgToDrop."),
+        std::vector<int>()
+      };
+    };
+
+    using Parameters = art::EDFilter::Table<Config>;
+    explicit FilterStepPointPDG(const Parameters& conf);
+
+    virtual bool filter(art::Event& event) override;
+    virtual void endJob() override;
+
+  private:
+
     typedef std::vector<art::InputTag> InputTags;
     InputTags inputs_;
 
@@ -42,49 +74,42 @@ namespace mu2e {
 
     unsigned numInputEvents_;
     unsigned numPassedEvents_;
-
-  public:
-    explicit FilterStepPointPDG(const fhicl::ParameterSet& pset);
-    virtual bool filter(art::Event& event) override;
-    virtual void endJob() override;
   };
 
   //================================================================
-  FilterStepPointPDG::FilterStepPointPDG(const fhicl::ParameterSet& pset)
-    : art::EDFilter{pset}
+  FilterStepPointPDG::FilterStepPointPDG(const Parameters& conf)
+    : art::EDFilter{conf}
+    , inputs_{conf().inputs()}
     , numInputHits_()
     , numOutputHits_()
     , numInputEvents_()
     , numPassedEvents_()
   {
-    const auto tags(pset.get<std::vector<std::string> >("inputs"));
-    for(const auto& i : tags) {
-      inputs_.emplace_back(i);
+    for(const auto& i: inputs_) {
       // Coalesce same instance names from multiple input modules/processes.
-      outNames_.insert(inputs_.back().instance());
+      outNames_.insert(i.instance());
     }
+
     for(const auto& i : outNames_) {
       produces<StepPointMCCollection>(i);
     }
 
-    const auto drop(pset.get<std::vector<int> >("pdgToDrop", std::vector<int>()));
-    for(const auto i : drop) {
+    for(const auto i: conf().pdgToDrop()) {
       pdgToDrop_.emplace_back(PDGCode::type(i));
     }
 
-    const auto keep(pset.get<std::vector<int> >("pdgToKeep", std::vector<int>()));
-    for(const auto i : keep) {
+    for(const auto i: conf().pdgToKeep()) {
       pdgToKeep_.emplace_back(PDGCode::type(i));
     }
 
-    if(drop.empty() && keep.empty()) {
+    if(pdgToDrop_.empty() && pdgToKeep_.empty()) {
       throw cet::exception("BADCONFIG")
-        <<"FilterStepPointPDG: either pdgToDrop or pdgToKeep must be specified.\n";
+        <<"FilterStepPointPDG: either pdgToDrop or pdgToKeep must be specified, neither is given.\n";
     }
-    if(!drop.empty() && ! keep.empty()) {
+    if(!pdgToDrop_.empty() && ! pdgToKeep_.empty()) {
       throw cet::exception("BADCONFIG")
-        <<"FilterStepPointPDG: either pdgToDrop or pdgToKeep,"
-        <<" but not both, can be used at a time.\n";
+        <<"FilterStepPointPDG: pdgToDrop and pdgToKeep settings are mutually exclusive,"
+        " please specify only one of them.\n";
     }
   }
 
