@@ -27,7 +27,7 @@ AlignedTracker : {
 
 AlignedTrackerSim : {
   verbose : 0
-  useDb : false
+  useDb : true
   onlyWireOffsets : true
 }
 
