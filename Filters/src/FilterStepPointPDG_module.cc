@@ -37,14 +37,23 @@ namespace mu2e {
 
       fhicl::Sequence<int> pdgToDrop {
         Name("pdgToDrop"),
-        Comment("A list of particle types to drop while keeping everything else.  Mutually exclusive with pdgToKeep."),
+        Comment(
+                "A list of particle type names to drop while keeping everything else.\n"
+                "Accepted names, like e_minus, anti_proton, etc., can be found\n"
+                "in Offline/DataProducts/src/PDGCode.cc\n"
+                "Mutually exclusive with pdgToKeep."
+                ),
         std::vector<int>()
       };
 
-      fhicl::Sequence<int> pdgToKeep {
+      fhicl::Sequence<std::string> pdgToKeep {
         Name("pdgToKeep"),
-        Comment("A list of particle types to keep while dropping everything else.  Mutually exclusive with pdgToDrop."),
-        std::vector<int>()
+        Comment("A list of particle types to keep while dropping everything else.\n"
+                "Accepted names, like e_minus, anti_proton, etc., can be found\n"
+                "in Offline/DataProducts/src/PDGCode.cc\n"
+                "Mutually exclusive with pdgToDrop."
+                ),
+        std::vector<std::string>()
       };
     };
 
@@ -65,8 +74,8 @@ namespace mu2e {
 
     // Particle type lists are typically short, so a vector works
     // better than a set.
-    std::vector<PDGCode::type> pdgToDrop_;
-    std::vector<PDGCode::type> pdgToKeep_;
+    std::vector<PDGCode> pdgToDrop_;
+    std::vector<PDGCode> pdgToKeep_;
 
     // statistics
     unsigned numInputHits_;
@@ -96,12 +105,12 @@ namespace mu2e {
       produces<StepPointMCCollection>(i);
     }
 
-    for(const auto i: conf().pdgToDrop()) {
-      pdgToDrop_.emplace_back(PDGCode::type(i));
+    for(const auto& i: conf().pdgToDrop()) {
+      pdgToDrop_.emplace_back(PDGCode(i));
     }
 
-    for(const auto i: conf().pdgToKeep()) {
-      pdgToKeep_.emplace_back(PDGCode::type(i));
+    for(const auto& i: conf().pdgToKeep()) {
+      pdgToKeep_.emplace_back(PDGCode(i));
     }
 
     if(pdgToDrop_.empty() && pdgToKeep_.empty()) {
