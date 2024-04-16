@@ -13,7 +13,7 @@
 // art includes.
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
-#include "art/Framework/Core/EDFilter.h"
+#include "art/Framework/Core/SharedFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -24,7 +24,7 @@
 namespace mu2e {
 
   //================================================================
-  class FilterStepPointPDG : public art::EDFilter {
+  class FilterStepPointPDG : public art::SharedFilter {
   public:
     struct Config {
       using Name=fhicl::Name;
@@ -57,11 +57,10 @@ namespace mu2e {
       };
     };
 
-    using Parameters = art::EDFilter::Table<Config>;
-    explicit FilterStepPointPDG(const Parameters& conf);
+    using Parameters = art::SharedFilter::Table<Config>;
+    FilterStepPointPDG(const Parameters& conf, const art::ProcessingFrame&);
 
-    virtual bool filter(art::Event& event) override;
-    virtual void endJob() override;
+    virtual bool filter(art::Event& event, const art::ProcessingFrame&) override;
 
   private:
 
@@ -76,24 +75,15 @@ namespace mu2e {
     // better than a set.
     std::vector<PDGCode> pdgToDrop_;
     std::vector<PDGCode> pdgToKeep_;
-
-    // statistics
-    unsigned numInputHits_;
-    unsigned numOutputHits_;
-
-    unsigned numInputEvents_;
-    unsigned numPassedEvents_;
   };
 
   //================================================================
-  FilterStepPointPDG::FilterStepPointPDG(const Parameters& conf)
-    : art::EDFilter{conf}
+  FilterStepPointPDG::FilterStepPointPDG(const Parameters& conf, const art::ProcessingFrame&)
+    : art::SharedFilter{conf}
     , inputs_{conf().inputs()}
-    , numInputHits_()
-    , numOutputHits_()
-    , numInputEvents_()
-    , numPassedEvents_()
   {
+    async<art::InEvent>();
+
     for(const auto& i: inputs_) {
       consumes<StepPointMCCollection>(i);
 
@@ -125,7 +115,7 @@ namespace mu2e {
   }
 
   //================================================================
-  bool FilterStepPointPDG::filter(art::Event& event) {
+  bool FilterStepPointPDG::filter(art::Event& event, const art::ProcessingFrame&) {
     bool passed = false;
 
     typedef std::map<std::string, std::unique_ptr<StepPointMCCollection> > OutMap;
@@ -157,30 +147,13 @@ namespace mu2e {
             passed |= true;
           }
       }
-
-      numInputHits_ += ih->size();
-      numOutputHits_ += out.size();
     }
 
     for(const auto& i : outNames_) {
       event.put(std::move(outHits[i]), i);
     }
 
-    ++numInputEvents_;
-    if(passed) {
-      ++numPassedEvents_;
-    }
-
     return passed;
-  }
-
-  //================================================================
-  void FilterStepPointPDG::endJob() {
-    mf::LogInfo("Summary")<<"FilterStepPointPDG: passed "
-                          <<numOutputHits_ <<" / "<<numInputHits_
-                          <<" StepPointMCs, "
-                          <<numPassedEvents_<<" / "<<numInputEvents_
-                          <<" events\n";
   }
 
   //================================================================
