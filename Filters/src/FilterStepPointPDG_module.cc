@@ -86,6 +86,8 @@ namespace mu2e {
     , numPassedEvents_()
   {
     for(const auto& i: inputs_) {
+      consumes<StepPointMCCollection>(i);
+
       // Coalesce same instance names from multiple input modules/processes.
       outNames_.insert(i.instance());
     }
