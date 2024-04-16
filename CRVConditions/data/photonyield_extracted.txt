@@ -1,4 +1,4 @@
-TABLE CRVPhoton
+TABLE CRVPhoton 1205
 #2048 channels, sigma: 0.05, limitlow: -0.2, limithigh: 0.2
 #channel,photonYieldDeviation
 0,-0.009

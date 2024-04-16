@@ -1,4 +1,4 @@
-TABLE CRVTime
+TABLE CRVTime 1200-1204 1206-1299
 #22016 channels, sigma: 1.0, limitlow: -3.0, limithigh: 3.0
 #channel,timeOffset
 0,0.407
@@ -22017,7 +22017,7 @@ TABLE CRVTime
 22013,0.479
 22014,0.000
 22015,0.479
-TABLE CRVSiPM
+TABLE CRVSiPM 1200-1204 1206-1299
 #channel,pedestal,calibPulseHeight,calibPulseArea
 0,100.0,11.4,394.6
 1,100.0,11.4,394.6

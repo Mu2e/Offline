@@ -171,8 +171,7 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
         ++nFrags;
       }
 
-/*
-      //FIXME: Temporary implementation until the DTC header gets fixed.
+      //FIXME: Temporary implementation until the DTC header (source_dtc_id) gets fixed.
       //Currently, the DTC header uses the Subsystem ID for the tracker.
       //Checking the TDAQ header of the first data block instead.
       auto crvSEventsT = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker);
@@ -191,7 +190,6 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
           ++nFrags;
         }
       }
-*/
     }
   }
 

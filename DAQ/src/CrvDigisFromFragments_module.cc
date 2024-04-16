@@ -68,13 +68,13 @@ void CrvDigisFromFragments::produce(Event& event)
   art::EventNumber_t eventNumber = event.event();
 
   auto CRVDataDecoders = event.getValidHandle<std::vector<mu2e::CRVDataDecoder> >(_CRVDataDecodersTag);
-  size_t numCrvFrags = CRVDataDecoders->size();
+  size_t nSubEvents = CRVDataDecoders->size();
 
   if(_diagLevel>1)
   {
     std::cout << std::dec << "Producer: Run " << event.run() << ", subrun " << event.subRun()
               << ", event " << eventNumber << " has " << std::endl;
-    std::cout << CRVDataDecoders->size() << " CRV fragments." << std::endl;
+    std::cout << nSubEvents << " CRV SubEvents." << std::endl;
 
     size_t totalSize = 0;
     for(const auto &frag : *CRVDataDecoders)
@@ -89,50 +89,47 @@ void CrvDigisFromFragments::produce(Event& event)
     std::cout << "\tTotal Size: " << (int)totalSize << " bytes." << std::endl;
   }
 
-  // Collection of CaloDigis for the event
+  // Collection of CrvDigis for the event
   std::unique_ptr<mu2e::CrvDigiCollection> crv_digis(new mu2e::CrvDigiCollection);
   auto const& channelMap = _channelMap_h.get(event.id());
 
   // Loop over the CRV fragments
-  for(size_t idx = 0; idx < numCrvFrags; ++idx)
+  for(size_t iSubEvent = 0; iSubEvent < nSubEvents; ++iSubEvent)
   {
-    const mu2e::CRVDataDecoder& CRVDataDecoder((*CRVDataDecoders)[idx]);
+    const mu2e::CRVDataDecoder& CRVDataDecoder((*CRVDataDecoders)[iSubEvent]);
     CRVDataDecoder.setup_event();
 
     for(size_t iDataBlock = 0; iDataBlock < CRVDataDecoder.block_count(); ++iDataBlock)
     {
+      if(_diagLevel>0) std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+
       auto block = CRVDataDecoder.dataAtBlockIndex(iDataBlock);
       if(block == nullptr)
       {
-        std::cerr << "Unable to retrieve block in ";
-        std::cerr << "fragment: " << idx << " data block: "<< iDataBlock << std::endl;
+        std::cerr << "Unable to retrieve block in " << std::endl;
         continue;
       }
       auto header = block->GetHeader();
-/*
-//TODO: Enable once isValid function is available
       if(!header->isValid())
       {
-        std::cerr << "CRV packet is not valid in " << std::endl;
-        std::cerr << "fragment: " << idx << " data block: "<< iDataBlock << std::endl;
+        std::cerr << "CRV packet is not valid." << std::endl;
         std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
         continue;
       }
-*/
       if(header->GetSubsystemID() != DTCLib::DTC_Subsystem::DTC_Subsystem_CRV)
       {
-        std::cerr << "CRV packet does not have system ID 2 in " << std::endl;
-        std::cerr << "fragment: " << idx << " data block: "<< iDataBlock << std::endl;
+        std::cerr << "CRV packet does not have system ID 2." << std::endl;
         std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
         continue;
       }
+
+      if(_diagLevel>0) std::cout << "packet count: " << header->GetPacketCount() << std::endl;
       if(header->GetPacketCount() > 0)
       {
         auto crvRocHeader = CRVDataDecoder.GetCRVROCStatusPacket(iDataBlock);
         if(crvRocHeader == nullptr)
         {
           std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock in " << iDataBlock << std::endl;
-          std::cerr << "fragment: " << idx << " data block: "<< iDataBlock << std::endl;
           continue;
         }
 
@@ -164,26 +161,25 @@ void CrvDigisFromFragments::produce(Event& event)
           }
         } // loop over all crvHits
 
+        if(_diagLevel>1)
+        {
+          std::cout << "EventWindowTag (TDC header): "
+                    << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
+          std::cout << "SubsystemID: " << (uint16_t)header->GetSubsystemID() << std::endl;
+          std::cout << "DTCID: " << (uint16_t)header->GetID() << std::endl;
+          std::cout << "ROCID: " << (uint16_t)header->GetLinkID() << std::endl;
+          std::cout << "packetCount: " << header->GetPacketCount() << std::endl;
+          std::cout << "EVB mode: " << (uint16_t)header->GetEVBMode() << std::endl;
+          std::cout << "TriggerCount: " << crvRocHeader->TriggerCount << std::endl;
+          std::cout << "ActiveFEBFlags: " << crvRocHeader->GetActiveFEBFlags() << std::endl;
+          std::cout << "ROCID (ROC header): " << (uint16_t)crvRocHeader->ControllerID  << std::endl;
+          std::cout << "EventWindowTag (ROC header): " << crvRocHeader->GetEventWindowTag() << std::endl;
+        }
+
         if(_diagLevel>0)
         {
           for(auto const& crvHit : crvHits)
           {
-            std::cout << "iSubEvent/iDataBlock: " << idx << "/" << iDataBlock << std::endl;
-            if(_diagLevel>1)
-            {
-              std::cout << "EventWindowTag (TDC header): "
-                        << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
-              std::cout << "SubsystemID: " << (uint16_t)header->GetSubsystemID() << std::endl;
-              std::cout << "DTCID: " << (uint16_t)header->GetID() << std::endl;
-              std::cout << "ROCID: " << (uint16_t)header->GetLinkID() << std::endl;
-              std::cout << "packetCount: " << header->GetPacketCount() << std::endl;
-              std::cout << "EVB mode: " << header->GetEVBMode() << std::endl;
-              std::cout << "TriggerCount: " << crvRocHeader->TriggerCount << std::endl;
-              std::cout << "ActiveFEBFlags: " << crvRocHeader->GetActiveFEBFlags() << std::endl;
-              std::cout << "ROCID (ROC header): " << (uint16_t)crvRocHeader->ControllerID  << std::endl;
-              std::cout << "EventWindowTag (ROC header): " << crvRocHeader->GetEventWindowTag() << std::endl;
-            }
-
             const auto& crvHitInfo = crvHit.first;
             const auto& waveform = crvHit.second;
 
