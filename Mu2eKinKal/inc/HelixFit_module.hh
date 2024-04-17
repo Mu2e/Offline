@@ -290,11 +290,20 @@ namespace mu2e {
           KKCALOHITCOL calohits;
           if (kkfit_.useCalo() && hseed.caloCluster().isNonnull())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
           // set the seed range given the hits and xings
-          seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
+          bool goodfit(false);          // PM
+          unique_ptr<KKTRK>  kktrk;     // PM
+          try {                         // PM
+            seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
           // create and fit the track
-          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
+            kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
           // Check the fit
-          auto goodfit = goodFit(*kktrk);
+            goodfit = goodFit(*kktrk);
+          }                                                    // PM
+          catch (...) {                                        // PM
+            cout << ">>> ERROR 001 in HelixFit_module.hh : run:"                                // PM
+                 << event.run() << ":" << event.subRun() << ":" << event.event() << std::endl;  // PM
+            goodfit = false;                                   // PM
+          }                                                    // PM
           // if we have an extension schedule, extend.
           if(goodfit && exconfig_.schedule().size() > 0) {
             kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
