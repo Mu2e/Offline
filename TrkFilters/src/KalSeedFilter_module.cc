@@ -25,7 +25,7 @@
 
 namespace mu2e
 {
-  class SeedFilter : public art::EDFilter
+  class KalSeedFilter : public art::EDFilter
   {
     public:
 
@@ -55,7 +55,7 @@ namespace mu2e
 
       using Parameters = art::EDFilter::Table<Config>;
 
-      explicit     SeedFilter(const Parameters& config);
+      explicit     KalSeedFilter(const Parameters& config);
       virtual bool filter(art::Event& event) override;
       virtual bool endRun( art::Run& run ) override;
 
@@ -75,7 +75,7 @@ namespace mu2e
       unsigned        _nevt, _npass;
   };
 
-  SeedFilter::SeedFilter(const Parameters& config):
+  KalSeedFilter::KalSeedFilter(const Parameters& config):
     art::EDFilter{config},
     _ksTag     (config().kalSeedCollection()),
     _hascc     (config().requireCaloCluster()),
@@ -99,7 +99,7 @@ namespace mu2e
       produces<TriggerInfo>();
     }
 
-  bool SeedFilter::filter(art::Event& evt){
+  bool KalSeedFilter::filter(art::Event& evt){
     std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     bool retval(false); // preset to fail
@@ -108,7 +108,7 @@ namespace mu2e
     const KalSeedCollection* kscol = ksH.product();
     // loop over the collection: if any pass the selection, pass this event
     if(_debug > 2){
-      if (kscol->size()>0) printf("[SeedFilter::filter]   nhits     mom     momErr    chi2ndof     fitCon   tanDip    d0      \n");
+      if (kscol->size()>0) printf("[KalSeedFilter::filter]   nhits     mom     momErr    chi2ndof     fitCon   tanDip    d0      \n");
     }
     for(auto iks = kscol->begin(); iks != kscol->end(); ++iks) {
       auto const& ks = *iks;
@@ -125,7 +125,7 @@ namespace mu2e
         if ( (ks.particle() != _tpart) || (momvec.Z()*_fdir.dzdt() < 0))       continue;
         unsigned nactive = ks.nHits(true); //count active hits
         if(_debug > 2){
-          printf("[SeedFilter::filter] %4d %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n", nactive, mom, kinter.momerr(),ks.chisquared()/ks.nDOF(), ks.fitConsistency(), td, d0);
+          printf("[KalSeedFilter::filter] %4d %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n", nactive, mom, kinter.momerr(),ks.chisquared()/ks.nDOF(), ks.fitConsistency(), td, d0);
         }
         if( (!_hascc || ks.caloCluster().isNonnull()) &&
             nactive >= _minnhits &&
@@ -139,8 +139,7 @@ namespace mu2e
           // Fill the trigger info object
           // associate to the helix which triggers.  Note there may be other helices which also pass the filter
           // but filtering is by event!
-          size_t index = std::distance(kscol->begin(),iks);
-          triginfo->_tracks.push_back(art::Ptr<KalSeed>(ksH,index));
+          triginfo->_tracks.push_back(KalSeed(ks));
           if(_debug > 1){
             std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
           }
@@ -151,12 +150,12 @@ namespace mu2e
     return retval;
   }
 
-  bool SeedFilter::endRun( art::Run& run ) {
+  bool KalSeedFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
       std::cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }
 }
-using mu2e::SeedFilter;
-DEFINE_ART_MODULE(SeedFilter)
+using mu2e::KalSeedFilter;
+DEFINE_ART_MODULE(KalSeedFilter)
