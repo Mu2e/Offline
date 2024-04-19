@@ -111,6 +111,7 @@ namespace mu2e {
     ca_(pca.localTraj(),wire_,pca.precision(),pca.tpData(),pca.dDdP(),pca.dTdP()),
     chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse)
   {
+    if(!pca.usable())whstate_.state_ = WireHitState::unusable;
     // make sure this is a single-straw based ComboHit
     if(chit_.mask().level() != StrawIdMask::uniquestraw)
       throw cet::exception("RECO")<<"mu2e::KKStrawHit: ComboHit doesn't correspond to a unique straw"<< std::endl;
