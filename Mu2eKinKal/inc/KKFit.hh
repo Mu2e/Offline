@@ -86,7 +86,7 @@ namespace mu2e {
       // construct from fit configuration objects
       explicit KKFit(KKFitConfig const& fitconfig);
       // helper functions used to create components of the fit
-      void makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf, KKStrawMaterial const& smat,
+      bool makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf, KKStrawMaterial const& smat,
           PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
           KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
       SensorLine caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const; // should come from CaloCluster TODO
@@ -115,6 +115,7 @@ namespace mu2e {
       void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const; // sample fit at the surfaces specified in the config
       void extendFit(KKTRK& kktrk) const;
       int printLevel_;
+      unsigned minNStrawHits_;
       bool matcorr_, addhits_, addmat_, usecalo_; // flags
       KKSTRAWHITCLUSTERER shclusterer_; // functor to cluster KKStrawHits
       // CaloHit configuration
@@ -148,6 +149,7 @@ namespace mu2e {
 
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(KKFitConfig const& fitconfig) :
     printLevel_(fitconfig.printLevel()),
+    minNStrawHits_(fitconfig.minNStrawHits()),
     matcorr_(fitconfig.matCorr()),
     addhits_(fitconfig.addHits()),
     addmat_(fitconfig.addMaterial()),
@@ -191,9 +193,10 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ> void KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
+  template <class KTRAJ> bool KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
       PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
       KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const {
+    unsigned ngood(0);
     // loop over the individual straw combo hits
     for(auto strawidx : strawHitIdxs) {
       const ComboHit& combohit(chcol.at(strawidx));
@@ -213,11 +216,13 @@ namespace mu2e {
       CAHint hint(ptime,htime);
       // compute PCA between the seed trajectory and this straw
       PCA pca(ptraj, wline, hint, tprec_ );
-      // create the hit
+      // create the hit.  Note these may initially be unusable
       hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, pca, combohit, straw, strawidx, strawresponse));
       // create the material crossing, including this reference
       if(matcorr_) exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),smat));
+      if(hits.back()->hitState().usable())ngood++;
     }
+    return ngood >= minNStrawHits_;
   }
 
   template <class KTRAJ> SensorLine KKFit<KTRAJ>::caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const {
