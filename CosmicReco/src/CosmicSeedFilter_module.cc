@@ -73,8 +73,7 @@ namespace mu2e
 
         ++_npass;
         retval = true;
-        size_t index = std::distance(coscol->begin(),icos);
-        triginfo->_cosmics.push_back(art::Ptr<CosmicTrackSeed>(cosH,index));
+        triginfo->_cosmics.push_back(CosmicTrackSeed(cosmic));
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }

@@ -2,34 +2,34 @@
 #define RecoDataProducts_TriggerInfo_hh
 
 #include "canvas/Persistency/Common/Ptr.h"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/CaloTrigSeed.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include <string>
 #include <vector>
 
 namespace mu2e {
 
-  class CaloCluster;
-  class KalSeed;
-  class HelixSeed;
-  class TimeCluster;
-  class CaloTrigSeed;
-  class CosmicTrackSeed;
   struct TriggerInfo
   {
     //accessors
-    std::vector<art::Ptr<CaloCluster>>     const&  caloClusters()     const { return _caloClusters; }
-    std::vector<art::Ptr<KalSeed>>         const&  tracks()           const { return _tracks; }
-    std::vector<art::Ptr<HelixSeed>>       const&  helixes()          const { return _helixes; }
-    std::vector<art::Ptr<TimeCluster>>     const&  hitClusters()      const { return _hitClusters; }
-    std::vector<art::Ptr<CaloTrigSeed>>    const&  caloTrigSeeds()    const { return _caloTrigSeeds; }
-    std::vector<art::Ptr<CosmicTrackSeed>> const&  cosmics()          const { return _cosmics; }
+    CaloClusterCollection     const&  caloClusters()     const { return _caloClusters; }
+    KalSeedCollection         const&  tracks()           const { return _tracks; }
+    HelixSeedCollection       const&  helixes()          const { return _helixes; }
+    TimeClusterCollection     const&  hitClusters()      const { return _hitClusters; }
+    CaloTrigSeedCollection    const&  caloTrigSeeds()    const { return _caloTrigSeeds; }
+    CosmicTrackSeedCollection const&  cosmics()          const { return _cosmics; }
 
     //data members
-    std::vector<art::Ptr<CaloCluster>>     _caloClusters;
-    std::vector<art::Ptr<KalSeed>>         _tracks; // associated track
-    std::vector<art::Ptr<HelixSeed>>       _helixes; // associated helix
-    std::vector<art::Ptr<TimeCluster>>     _hitClusters; // associated time cluster
-    std::vector<art::Ptr<CaloTrigSeed>>    _caloTrigSeeds; //associated CaloTrigSeed
-    std::vector<art::Ptr<CosmicTrackSeed>> _cosmics; // associated CosmicTrackSeed
+    CaloClusterCollection     _caloClusters;
+    KalSeedCollection         _tracks;        // associated tracks
+    HelixSeedCollection       _helixes;       // associated helices
+    TimeClusterCollection     _hitClusters;   // associated time clusters
+    CaloTrigSeedCollection    _caloTrigSeeds; // associated CaloTrigSeeds
+    CosmicTrackSeedCollection _cosmics;       // associated CosmicTrackSeeds
   };
   typedef std::vector<mu2e::TriggerInfo> TriggerInfoCollection;
 }

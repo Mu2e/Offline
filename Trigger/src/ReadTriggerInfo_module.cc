@@ -516,7 +516,7 @@ namespace mu2e {
       Hist._hHelInfo[i][98] = helInfoDir.make<TH1F>(Form("hPiPlusGenR_%i" , i), "r origin;  r-origin [mm]", 500,   0,   5000);
       Hist._hHelInfo[i][99] = helInfoDir.make<TH1F>(Form("hPiPlusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
 
- Hist._hHelInfo[i][100] = helInfoDir.make<TH1F>(Form("hEMinusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][100] = helInfoDir.make<TH1F>(Form("hEMinusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
       Hist._hHelInfo[i][101] = helInfoDir.make<TH1F>(Form("hEMinusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 250);
       Hist._hHelInfo[i][102] = helInfoDir.make<TH1F>(Form("hEMinusD0_%i", i), "Helix impact parameter; d0 [mm]", 800, -800, 800);
       Hist._hHelInfo[i][103] = helInfoDir.make<TH1F>(Form("hEMinusDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
@@ -1098,14 +1098,12 @@ namespace mu2e {
             _trigHelix[index].counts = _trigHelix[index].counts + 1;
             passed = true;
             nTrigObj=0;
-            for (auto const hseed: trigInfo->helixes()){
-              if(hseed) {
-                ++nTrigObj;
-                fillHelixTrigInfo(index, hseed.get(), _helHist);
-                if (passed) {
-                  passed = false;
-                  fillOccupancyInfo(_nTrackTrig+index, sdCol, cdCol, _occupancyHist);
-                }
+            for (auto const& hseed: trigInfo->helixes()){
+              ++nTrigObj;
+              fillHelixTrigInfo(index, &hseed, _helHist);
+              if (passed) {
+                passed = false;
+                fillOccupancyInfo(_nTrackTrig+index, sdCol, cdCol, _occupancyHist);
               }
             }//end loop over the helix-collection
             _helHist._hHelInfo[i][120]->Fill(nTrigObj);
@@ -1116,14 +1114,12 @@ namespace mu2e {
             _trigTrack[index].counts = _trigTrack[index].counts + 1;
             passed = true;
             nTrigObj=0;
-            for (auto const kseed: trigInfo->tracks()){
-              if(kseed) {
-                ++nTrigObj;
-                fillTrackTrigInfo(index, kseed.get(), _trkHist);
-                if (passed) {
-                  passed = false;
-                  fillOccupancyInfo(index, sdCol, cdCol, _occupancyHist);
-                }
+            for (auto const& kseed: trigInfo->tracks()){
+              ++nTrigObj;
+              fillTrackTrigInfo(index, &kseed, _trkHist);
+              if (passed) {
+                passed = false;
+                fillOccupancyInfo(index, sdCol, cdCol, _occupancyHist);
               }
             }//end loop over the kaseed-collection
             _trkHist._hTrkInfo[i][40]->Fill(nTrigObj);
@@ -1139,11 +1135,9 @@ namespace mu2e {
             _trigCaloCalib[index].counts = _trigCaloCalib[index].counts + 1;
             passed = false;
             nTrigObj=0;
-            for (auto const cluster : trigInfo->caloClusters()){
-              if(cluster){
-                ++nTrigObj;
-                fillCaloCalibTrigInfo(index, cluster.get(), _caloCalibHist);
-              }
+            for (auto const &cluster : trigInfo->caloClusters()){
+              ++nTrigObj;
+              fillCaloCalibTrigInfo(index, &cluster, _caloCalibHist);
             }//end loop over the cluster-collection
             trigFlag_index.push_back(index_all);
           }else if ( ( moduleLabel.find("caloMVANNCEFilter") != std::string::npos) || ( moduleLabel.find("caloPhotonFilter") != std::string::npos)){ //( (moduleLabel.find("caloMVACEFilter") != std::string::npos) || (moduleLabel.find("caloLHCEFilter") != std::string::npos) ){
@@ -1152,14 +1146,12 @@ namespace mu2e {
             _trigCaloOnly[index].counts = _trigCaloOnly[index].counts + 1;
             passed = true;
             nTrigObj=0;
-            for (auto const clseed: trigInfo->caloClusters()){
+            for (auto const& clseed: trigInfo->caloClusters()){
               ++nTrigObj;
-              if(clseed) {
-                fillCaloCalibTrigInfo(index, clseed.get(), _caloTSeedHist);
-                if (passed) {
-                  passed = false;
-                  fillOccupancyInfo   (_nTrackTrig*2+index, sdCol, cdCol, _occupancyHist);
-                }
+              fillCaloCalibTrigInfo(index, &clseed, _caloTSeedHist);
+              if (passed) {
+                passed = false;
+                fillOccupancyInfo   (_nTrackTrig*2+index, sdCol, cdCol, _occupancyHist);
               }
             }//end loop
             //_caloTSeedHist._hCaloOnlyInfo[i][20]->Fill(nTrigObj);

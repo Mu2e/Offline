@@ -40,7 +40,6 @@ namespace mu2e {
 
     void   dirOfProp(float& slope, float& slopeErr, float& chi2ndof);
 
-
   private:
     const HelixSeed* _hel;
     int        _nMinHitsLoop;
