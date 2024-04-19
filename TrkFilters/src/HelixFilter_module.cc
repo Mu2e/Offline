@@ -5,6 +5,7 @@
 // framework
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/OptionalSequence.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
@@ -40,53 +41,55 @@ namespace mu2e
     struct HelixCutsConfig{
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<bool>               requireCaloCluster   {     Name("requireCaloCluster"),      Comment("requireCaloCluster") };
-      fhicl::Atom<bool>               doHelicityCheck      {     Name("doHelicityCheck"),         Comment("doHelicityCheck") };
-      fhicl::Atom<int>                minNStrawHits        {     Name("minNStrawHits"),           Comment("minNStrawHits  ") };
-      fhicl::Atom<double>             minHitRatio          {     Name("minHitRatio"),             Comment("minHitRatio    ") };
-      fhicl::Atom<double>             minMomentum          {     Name("minMomentum"),             Comment("minMomentum    ") };
-      fhicl::Atom<double>             maxMomentum          {     Name("maxMomentum"),             Comment("maxMomentum    ") };
-      fhicl::Atom<double>             minPt                {     Name("minPt"),                   Comment("minPt          ") };
-      fhicl::Atom<double>             maxChi2XY            {     Name("maxChi2XY"),               Comment("maxChi2XY      ") };
-      fhicl::Atom<double>             maxChi2PhiZ          {     Name("maxChi2PhiZ"),             Comment("maxChi2PhiZ    ") };
-      fhicl::Atom<double>             maxD0                {     Name("maxD0"),                   Comment("maxD0          ") };
-      fhicl::Atom<double>             minD0                {     Name("minD0"),                   Comment("minD0          ") };
-      fhicl::Atom<double>             maxAbsLambda         {     Name("maxAbsLambda"),            Comment("maxAbsLambda   ") };
-      fhicl::Atom<double>             minAbsLambda         {     Name("minAbsLambda"),            Comment("minAbsLambda   ") };
-      fhicl::Atom<double>             maxNLoops            {     Name("maxNLoops"),               Comment("maxNLoops      ") };
-      fhicl::Atom<double>             minNLoops            {     Name("minNLoops"),               Comment("minNLoops      ") };
+      fhicl::Atom<bool>                       configured           {     Name("configured"),              Comment("configured") };
+      fhicl::OptionalAtom<bool>               requireCaloCluster   {     Name("requireCaloCluster"),      Comment("requireCaloCluster") };
+      fhicl::OptionalAtom<bool>               doHelicityCheck      {     Name("doHelicityCheck"),         Comment("doHelicityCheck") };
+      fhicl::OptionalAtom<int>                minNStrawHits        {     Name("minNStrawHits"),           Comment("minNStrawHits  ") };
+      fhicl::OptionalAtom<double>             minHitRatio          {     Name("minHitRatio"),             Comment("minHitRatio    ") };
+      fhicl::OptionalAtom<double>             minMomentum          {     Name("minMomentum"),             Comment("minMomentum    ") };
+      fhicl::OptionalAtom<double>             maxMomentum          {     Name("maxMomentum"),             Comment("maxMomentum    ") };
+      fhicl::OptionalAtom<double>             minPt                {     Name("minPt"),                   Comment("minPt          ") };
+      fhicl::OptionalAtom<double>             maxChi2XY            {     Name("maxChi2XY"),               Comment("maxChi2XY      ") };
+      fhicl::OptionalAtom<double>             maxChi2PhiZ          {     Name("maxChi2PhiZ"),             Comment("maxChi2PhiZ    ") };
+      fhicl::OptionalAtom<double>             maxD0                {     Name("maxD0"),                   Comment("maxD0          ") };
+      fhicl::OptionalAtom<double>             minD0                {     Name("minD0"),                   Comment("minD0          ") };
+      fhicl::OptionalAtom<double>             maxAbsLambda         {     Name("maxAbsLambda"),            Comment("maxAbsLambda   ") };
+      fhicl::OptionalAtom<double>             minAbsLambda         {     Name("minAbsLambda"),            Comment("minAbsLambda   ") };
+      fhicl::OptionalAtom<double>             maxNLoops            {     Name("maxNLoops"),               Comment("maxNLoops      ") };
+      fhicl::OptionalAtom<double>             minNLoops            {     Name("minNLoops"),               Comment("minNLoops      ") };
       fhicl::Sequence<std::string>    helixFitFlag         {     Name("helixFitFlag"),            Comment("helixFitFlag   "), std::vector<std::string>{"HelixOK"} };
       fhicl::OptionalAtom<bool>       prescaleUsingD0Phi   {     Name("prescaleUsingD0Phi"),      Comment("prescaleUsingD0Phi") };
       fhicl::Table<PhiPrescalingParams::Config>             prescalerPar{     Name("prescalerPar"),      Comment("prescalerPar") };
     };
 
-    using HelixCutsToolParams = art::EDFilter::Table<HelixCutsConfig>;
-
     struct HelixCutsTool {
-      HelixCutsTool(int helicity, const HelixCutsToolParams& config):
-        _configured(true),
-        _hascc             (config().requireCaloCluster()),
-        _doHelicityCheck   (config().doHelicityCheck()),
-        _hel               (helicity),
-        _minnstrawhits     (config().minNStrawHits()),
-        _minHitRatio       (config().minHitRatio()),
-        _minmom            (config().minMomentum()),
-        _maxmom            (config().maxMomentum()),
-        _minpT             (config().minPt()),
-        _maxchi2XY         (config().maxChi2XY()),
-        _maxchi2PhiZ       (config().maxChi2PhiZ()),
-        _maxd0             (config().maxD0()),
-        _mind0             (config().minD0()),
-        _maxlambda         (config().maxAbsLambda()),
-        _minlambda         (config().minAbsLambda()),
-        _maxnloops         (config().maxNLoops()),
-        _minnloops         (config().minNLoops()),
-        _goodh             (config().helixFitFlag()){
+      HelixCutsTool(int helicity, const HelixCutsConfig& config):
+        _configured  (config.configured()),
+        _goodh       (config.helixFitFlag()){
+        if (_configured){
+          config.requireCaloCluster(_hascc);
+          config.doHelicityCheck(_doHelicityCheck);
+          _hel               = helicity;
+          config.minNStrawHits(_minnstrawhits);
+          config.minHitRatio(_minHitRatio);
+          config.minMomentum(_minmom     );
+          config.maxMomentum(_maxmom     );
+          config.minPt(_minpT);
+          config.maxChi2XY(_maxchi2XY);
+          config.maxChi2PhiZ(_maxchi2PhiZ);
+          config.maxD0(_maxd0);
+          config.minD0(_mind0);
+          config.maxAbsLambda(_maxlambda);
+          config.minAbsLambda(_minlambda);
+          config.maxNLoops(_maxnloops);
+          config.minNLoops(_minnloops);
+        }
+
         bool val;
-        if (config().prescaleUsingD0Phi(val)) {
+        if (config.prescaleUsingD0Phi(val)) {
           _prescaleUsingD0Phi = val;
           if (_prescaleUsingD0Phi){
-            _prescalerPar    = PhiPrescalingParams(config().prescalerPar());
+            _prescalerPar    = PhiPrescalingParams(config.prescalerPar());
           }
         }else {
           _prescaleUsingD0Phi = false;
@@ -149,6 +152,7 @@ namespace mu2e
         }
         return false;
       }
+      bool          _configured;
       bool          _hascc; // Calo Cluster
       bool          _doHelicityCheck;
       int           _hel;
@@ -175,8 +179,8 @@ namespace mu2e
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
       fhicl::Atom<art::InputTag>      helixSeedCollection  { Name("helixSeedCollection"),     Comment("helixSeedCollection") };
-      fhicl::Table<HelixCutsConfig>   posHelixitySelection { Name("posHelixitySelection"),    Comment("")};
-      fhicl::Table<HelixCutsConfig>   negHelicitySelection { Name("negHelicitySelection"),    Comment("") };
+      fhicl::Table<HelixCutsConfig>   posHelicitySelection { Name("posHelixitySelection"),    Comment("")};
+      fhicl::Table<HelixCutsConfig>   negHelicitySelection { Name("negHelicitySelection"),    Comment("")};
       fhicl::Atom<int>                debugLevel           { Name("debugLevel"),              Comment("debugLevel")     , 0 };
     };
 
@@ -204,6 +208,8 @@ namespace mu2e
   HelixFilter::HelixFilter(const Parameters& config):
     art::EDFilter{config},
     _hsTag             (config().helixSeedCollection()),
+    _posHelCuts        ( 1, config().posHelicitySelection()),
+    _negHelCuts        (-1, config().negHelicitySelection()),
     _debug             (config().debugLevel()),
     _nevt(0), _npass(0)
     {
@@ -219,6 +225,10 @@ namespace mu2e
 
     mu2e::GeomHandle<mu2e::Tracker> th;
     _tracker = th.get();
+
+    if ( (_posHelCuts._configured) && (_negHelCuts._configured)) {
+      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
+    }
     return true;
   }
 
