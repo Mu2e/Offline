@@ -117,6 +117,4 @@ namespace mu2e {
     Chi2ndof = fitDtDz.chi2Dof();
     SlopeErr = fitDtDz.dydxErr();
   }
-
-
 }

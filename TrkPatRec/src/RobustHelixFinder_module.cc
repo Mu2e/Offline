@@ -14,6 +14,7 @@
 #include "art_root_io/TFileService.h"
 #include "Offline/GeneralUtilities/inc/Angles.hh"
 #include "Offline/Mu2eUtilities/inc/MVATools.hh"
+#include "Offline/Mu2eUtilities/inc/HelixTool.hh"
 
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
@@ -522,6 +523,15 @@ namespace mu2e {
       helixData._diag.nLoops            = helTool.nLoops();
       helixData._diag.meanHitRadialDist = helTool.meanHitRadialDist();
     }
+    //now set the HelixRecoDir
+    HelixTool ht(&helixData._hseed, _tracker);
+    float slope(0), slopeErr(0), chi2ndof(0);
+    ht.dirOfProp(slope, slopeErr, chi2ndof);
+
+    helixData._hseed._recoDir._slope    = slope;
+    helixData._hseed._recoDir._slopeSig = slope/slopeErr;
+    helixData._hseed._recoDir._chi2ndof = chi2ndof;
+
   }
 
 

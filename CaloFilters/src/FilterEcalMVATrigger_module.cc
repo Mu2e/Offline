@@ -199,16 +199,15 @@ namespace mu2e {
         if (_rpeak>_MVArpivot[disk]){
           if (_MVA>_MVAlowcut[disk]) {
             retval = true;
-            size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
-            triginfo->_caloTrigSeeds.push_back(art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index));
+            triginfo->_caloTrigSeeds.push_back(CaloTrigSeed());
           }
         }
         else{
           MVAcut=_MVAcutA[disk]+_MVAcutB[disk]*_rpeak;
           if (_MVA>MVAcut) {
             retval = true;
-            size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
-            triginfo->_caloTrigSeeds.push_back(art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index));
+            auto const& cluster = *seedIt;
+            triginfo->_caloTrigSeeds.push_back(CaloTrigSeed(cluster));
           }
         }
       }

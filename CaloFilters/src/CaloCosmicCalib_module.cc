@@ -207,8 +207,7 @@ namespace mu2e
           // Fill the trigger info object
           // associate to the caloClusters which trigger
           //
-          size_t index = std::distance(clcol->begin(),icl);
-          triginfo->_caloClusters.push_back(art::Ptr<CaloCluster>(clH,index));
+          triginfo->_caloClusters.push_back(CaloCluster(cl));
 
           if(_debug > 1){
             std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;

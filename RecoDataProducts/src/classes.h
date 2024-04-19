@@ -34,6 +34,7 @@
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/HelixVal.hh"
 #include "Offline/RecoDataProducts/inc/RobustHelix.hh"
+#include "Offline/RecoDataProducts/inc/HelixRecoDir.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/BkgCluster.hh"
 #include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"

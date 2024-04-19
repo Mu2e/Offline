@@ -113,8 +113,8 @@ namespace mu2e {
           if (mvaout < minMVAScore_) continue;
 
           select = true;
-          size_t index = std::distance(caloClusters.begin(),clusterIt);
-          trigInfo._caloClusters.push_back(art::Ptr<CaloCluster>(caloClustersHandle,index));
+          auto const& cluster = *clusterIt;
+          trigInfo._caloClusters.push_back(CaloCluster(cluster));
      }
 
      return select;

@@ -142,6 +142,7 @@
  <class name="TrkT0"/>   <!-- BTrk -->
  <class name="mu2e::HitT0"/>
  <class name="mu2e::RobustHelix"/>
+ <class name="mu2e::HelixRecoDir"/>
  <class name="mu2e::HelixSeed"/>
  <class name="mu2e::HelixSeedCollection" />
  <class name="art::Ptr<mu2e::HelixSeed>"/>
