@@ -516,7 +516,7 @@ namespace mu2e {
     float     slope(0), slopeErr(0), chi2ndof(0);
     ht.dirOfProp(slope, slopeErr, chi2ndof);
     HelSeed._recoDir._slope    = slope;
-    HelSeed._recoDir._slopeSig = slope/slopeErr;
+    HelSeed._recoDir._slopeErr = slopeErr;
     HelSeed._recoDir._chi2ndof = chi2ndof;
   }
 
