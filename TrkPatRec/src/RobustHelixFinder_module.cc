@@ -529,7 +529,7 @@ namespace mu2e {
     ht.dirOfProp(slope, slopeErr, chi2ndof);
 
     helixData._hseed._recoDir._slope    = slope;
-    helixData._hseed._recoDir._slopeSig = slope/slopeErr;
+    helixData._hseed._recoDir._slopeErr = slopeErr;
     helixData._hseed._recoDir._chi2ndof = chi2ndof;
 
   }
