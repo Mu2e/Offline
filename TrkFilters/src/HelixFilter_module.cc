@@ -57,8 +57,8 @@ namespace mu2e
       fhicl::OptionalAtom<double>             minAbsLambda         {     Name("minAbsLambda"),            Comment("minAbsLambda   ") };
       fhicl::OptionalAtom<double>             maxNLoops            {     Name("maxNLoops"),               Comment("maxNLoops      ") };
       fhicl::OptionalAtom<double>             minNLoops            {     Name("minNLoops"),               Comment("minNLoops      ") };
-      fhicl::Sequence<std::string>    helixFitFlag         {     Name("helixFitFlag"),            Comment("helixFitFlag   "), std::vector<std::string>{"HelixOK"} };
-      fhicl::OptionalAtom<bool>       prescaleUsingD0Phi   {     Name("prescaleUsingD0Phi"),      Comment("prescaleUsingD0Phi") };
+      fhicl::Sequence<std::string>            helixFitFlag         {     Name("helixFitFlag"),            Comment("helixFitFlag   "), std::vector<std::string>{"HelixOK"} };
+      fhicl::OptionalAtom<bool>               prescaleUsingD0Phi   {     Name("prescaleUsingD0Phi"),      Comment("prescaleUsingD0Phi") };
       fhicl::Table<PhiPrescalingParams::Config>             prescalerPar{     Name("prescalerPar"),      Comment("prescalerPar") };
     };
 
