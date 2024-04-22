@@ -674,7 +674,7 @@ CalPatRec : { @table::CalPatRec
             minNHitsTimeCluster                         : @local::CalPatRec.minNStrawHits
             fitparticle                                 : @local::Particle.eminus
             fitdirection                                : @local::FitDir.downstream
-            doSingleOutput                              : true
+            doSingleOutput                              : false
 
             # HelixFinderAlg configuraton (pattern recognition)
             HelixFinderAlg                              : { @table::CalPatRec.HelixFinderAlg }
