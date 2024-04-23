@@ -22,9 +22,9 @@
 
 namespace mu2e {
 
-  HelixTool::HelixTool(const HelixSeed *Helix, const mu2e::Tracker*MyTracker) :
-    _tracker(MyTracker) {
-    _hel = Helix;
+  HelixTool::HelixTool(const HelixSeed *Helix, const mu2e::Tracker*MyTracker) {
+    _hel           = Helix;
+    _tracker       = MyTracker;
     _trackerRIn    = _tracker->g4Tracker()->getInnerTrackerEnvelopeParams().innerRadius();
     _trackerROut   = _tracker->g4Tracker()->getInnerTrackerEnvelopeParams().outerRadius();
 

@@ -225,9 +225,17 @@ namespace mu2e
 
     mu2e::GeomHandle<mu2e::Tracker> th;
     _tracker = th.get();
+    _posHelCuts.setTrackerGeomHandle(_tracker);
+    _negHelCuts.setTrackerGeomHandle(_tracker);
 
-    if ( (_posHelCuts._configured) && (_negHelCuts._configured)) {
+    if ( (!_posHelCuts._configured) && (!_negHelCuts._configured)) {
       std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
+    }
+    if ( (!_posHelCuts._configured)){
+      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH POSITIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
+    }
+    if ( (!_negHelCuts._configured)){
+      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH POSITIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
     }
     return true;
   }
@@ -251,6 +259,10 @@ namespace mu2e
     // find the collection
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     const HelixSeedCollection* hscol = hsH.product();
+
+    if(_debug > 1){
+      std::cout << moduleDescription().moduleLabel() << " Input from: " << _hsTag << " NHelices = "<< hscol->size() << std::endl;
+    }
     // loop over the collection: if any pass the selection, pass this event
     for(auto ihs = hscol->begin();ihs != hscol->end(); ++ihs) {
       auto const& hs = *ihs;
