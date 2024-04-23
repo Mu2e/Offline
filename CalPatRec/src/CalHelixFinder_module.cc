@@ -66,12 +66,14 @@ namespace mu2e {
       consumes<TimeClusterCollection>(_timeclLabel);
 
       std::vector<int> helvals = pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel});
+      for(auto hv : helvals) {
+          Helicity hel(hv);
+          _hels.push_back(hel);
+      }
       if (_doSingleOutput){
         produces<HelixSeedCollection>();
       } else {
-        for(auto hv : helvals) {
-          Helicity hel(hv);
-          _hels.push_back(hel);
+        for(auto hel : _hels) {
           produces<HelixSeedCollection>(Helicity::name(hel));
         }
       }
@@ -221,10 +223,15 @@ namespace mu2e {
 
     std::map<Helicity,std::unique_ptr<HelixSeedCollection>> helcols;
     int counter(0);
-    for( auto const& hel : _hels) {
-      helcols[hel] = std::unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
+    if (!_doSingleOutput)  {
+      for( auto const& hel : _hels) {
+        helcols[hel] = std::unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
+        _data.nseeds [counter] = 0;
+        ++counter;
+      }
+    }else {
+      helcols[0] = std::unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
       _data.nseeds [counter] = 0;
-      ++counter;
     }
     //    unique_ptr<HelixSeedCollection>    outseeds(new HelixSeedCollection);
 //-----------------------------------------------------------------------------
@@ -301,6 +308,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       if ( (index_best>=0) && (index_best < 2) ){
         Helicity              hel_best = helix_seed_vec[index_best]._helix._helicity;
+        if (_doSingleOutput) {
+          hel_best = 0;
+        }
         HelixSeedCollection*  hcol     = helcols[hel_best].get();
         helix_seed_vec[index_best]._status.merge(TrkFitFlag::helixOK);
         hcol->push_back(helix_seed_vec[index_best]);
@@ -309,6 +319,9 @@ namespace mu2e {
         for (unsigned k=0; k<_hels.size(); ++k){
           helix_seed_vec[k]._status.merge(TrkFitFlag::helixOK);
           Helicity              hel_best = helix_seed_vec[k]._helix._helicity;
+          if (_doSingleOutput) {
+            hel_best = 0;
+          }
           HelixSeedCollection*  hcol     = helcols[hel_best].get();
           hcol->push_back(helix_seed_vec[k]);
         }
@@ -413,15 +426,9 @@ namespace mu2e {
   END:;
     int    nseeds(0);
     if (_doSingleOutput) {
-      std::unique_ptr<HelixSeedCollection> helcol(new HelixSeedCollection);
-      for(auto const& hel : _hels ) {
-        nseeds += helcols[hel]->size();
-        for(auto & helix : *helcols[hel] ) {
-          helcol->push_back(helix);
-        }
-      }
-      event.put(std::move(helcol));
-    } else {
+      nseeds += helcols[0]->size();
+      event.put(std::move(helcols[0]));
+    }else    {
       for(auto const& hel : _hels ) {
         nseeds += helcols[hel]->size();
         event.put(std::move(helcols[hel]),Helicity::name(hel));

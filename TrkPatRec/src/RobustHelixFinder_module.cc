@@ -275,14 +275,17 @@ namespace mu2e {
     _outlier     (StrawHitFlag::outlier),
     _updateStereo(config().UpdateStereo())
     {
+      std::vector<int> helvals = config().Helicities();
+      for(auto hv : helvals) {
+        Helicity hel(hv);
+        _hels.push_back(hel);
+      }
 
       if (_doSingleOutput){
         produces<HelixSeedCollection>();
       }else {
         std::vector<int> helvals = config().Helicities();
-        for(auto hv : helvals) {
-          Helicity hel(hv);
-          _hels.push_back(hel);
+        for(auto hel : _hels) {
           produces<HelixSeedCollection>(Helicity::name(hel));
         }
       }
@@ -339,10 +342,15 @@ namespace mu2e {
    // create output: separate by helicity
     std::map<Helicity,unique_ptr<HelixSeedCollection>> helcols;
     int counter(0);
-    for( auto const& hel : _hels) {
-      helcols[hel] = unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
+    if (!_doSingleOutput)  {
+      for( auto const& hel : _hels) {
+        helcols[hel] = std::unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
+        _data.nseeds [counter] = 0;
+        ++counter;
+      }
+    }else {
+      helcols[0] = std::unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
       _data.nseeds [counter] = 0;
-      ++counter;
     }
 
     _data.event       = &event;
@@ -428,12 +436,18 @@ namespace mu2e {
 
         if ( (index_best>=0) && (index_best < 2) ){
           Helicity              hel_best = helix_seed_vec[index_best]._helix._helicity;
+          if (_doSingleOutput) {
+            hel_best = 0;
+          }
           HelixSeedCollection*  hcol     = helcols[hel_best].get();
           hcol->push_back(helix_seed_vec[index_best]);
         } else if (index_best == 2){//both helices need to be saved
 
           for (unsigned k=0; k<_hels.size(); ++k){
             Helicity              hel   = helix_seed_vec[k]._helix._helicity;
+            if (_doSingleOutput) {
+              hel = 0;
+            }
             HelixSeedCollection*  hcol  = helcols[hel].get();
             hcol->push_back(helix_seed_vec[k]);
           }
@@ -446,13 +460,7 @@ namespace mu2e {
     if (_diag > 0) _hmanager->fillHistograms(&_data);
 
     if (_doSingleOutput) {
-      std::unique_ptr<HelixSeedCollection> helcol(new HelixSeedCollection);
-      for(auto const& hel : _hels ) {
-        for(auto & helix : *helcols[hel] ) {
-          helcol->push_back(helix);
-        }
-      }
-      event.put(std::move(helcol));
+      event.put(std::move(helcols[0]));
     } else{
       for(auto const& hel : _hels ) {
         event.put(std::move(helcols[hel]),Helicity::name(hel));
