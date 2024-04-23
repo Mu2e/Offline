@@ -165,19 +165,6 @@ EventGenerator : {
     }
 }
 
-EventGeneratorMu : { module_type : EventGeneratorMu
-#------------------------------------------------------------------------------
-# generate e+ from one foil
-#------------------------------------------------------------------------------
-    simpCollTag     : ""                   ##  "" means "use particle gun"
-    stopPdgCode     : 13                   ##  mother is not used here
-    tmin            : 0
-    tmax            : 1700
-    lifetime        : 1.e10                ## stopped mu+ lifetime
-    verbosityLevel  : 0
-    generator       : { }                  ## to be defined
-}
-
 GenFilter : {
         module_type : GenFilter
         StageParticleCollection : "generate"
@@ -383,30 +370,6 @@ EventGenerator : { @table::EventGenerator
             module_type    : CaloTBGun
         }
 
-        positronGun : { @table::EventGeneratorMu
-#------------------------------------------------------------------------------
-# P.Murat: generate e+ from one foil
-#------------------------------------------------------------------------------
-            simpCollTag     : ""                   ##  "" means "use particle gun"
-            stopPdgCode     : 13                   ##  mother is not used here
-            tmin            : 0
-            tmax            : 1700
-            lifetime        : 1.e10                ## stopped mu+ lifetime
-            verbosityLevel  : 0
-
-            generator  : { tool_type: "ParticleGunMu"
-                nParticles      : 1
-                pdgCode         : -11                  ## positrons
-                shape           : "foil"
-                center          : [  -3904.,  0., 6249.  ]
-                dimensions      : [     20., 75.,    0.1 ]
-                czmin           : 0.1
-                czmax           : 0.11
-                pmin            : 70.
-                pmax            : 70.
-                mode            : "flat"
-            }
-        }
     }
 }
 
