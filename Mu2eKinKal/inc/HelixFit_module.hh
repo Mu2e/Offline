@@ -100,7 +100,7 @@ namespace mu2e {
   // extend the generic module configuration as needed
   struct KKHelixModuleConfig : KKModuleConfig {
     fhicl::Sequence<art::InputTag> seedCollections         {Name("HelixSeedCollections"),     Comment("Seed fit collections to be processed ") };
-  fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
+    fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
   };
 
   struct HelixFitConfig {
@@ -109,7 +109,7 @@ namespace mu2e {
     fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
-// helix module specific config
+    // helix module specific config
     fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream") };
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
   };
@@ -162,7 +162,7 @@ namespace mu2e {
       KinKal::ExtraConfig xconfig_; // tolerance and maximum Dt when extrapolating
       bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
       SurfaceMap::SurfacePairCollection extrap_; // surfaces to extrapolate the fit to
-    };
+  };
 
   HelixFit::HelixFit(const Parameters& settings,TrkFitFlag fitflag) : art::EDProducer{settings},
     fitflag_(fitflag),
@@ -178,7 +178,7 @@ namespace mu2e {
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
-     fixedfield_(false)
+    fixedfield_(false)
     {
       // collection handling
       for(const auto& hseedtag : settings().modSettings().seedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
@@ -187,7 +187,7 @@ namespace mu2e {
       produces<KalHelixAssns>();
       // build the initial seed covariance
       auto const& seederrors = settings().modSettings().seederrors();
- if(seederrors.size() != KinKal::NParams())
+      if(seederrors.size() != KinKal::NParams())
         throw cet::exception("RECO")<<"mu2e::HelixFit:Seed error configuration error"<< endl;
       for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
         seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
@@ -268,7 +268,7 @@ namespace mu2e {
             if(usePDGCharge_)throw cet::exception("RECO")<<"mu2e::HelixFit: inconsistent charge" << endl;
             fitpart = static_cast<PDGCode::type>(-1*fitpart); // reverse sign
           }
-           // time range of the hits
+          // time range of the hits
           auto trange = Mu2eKinKal::timeBounds(hseed.hits());
           // construt the seed trajectory
           KTRAJ seedtraj = makeSeedTraj(hseed,trange,bnom,charge);
@@ -284,70 +284,62 @@ namespace mu2e {
           strawhits.reserve(strawHitIdxs.size());
           KKSTRAWXINGCOL strawxings;
           strawxings.reserve(strawHitIdxs.size());
-          kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
-          // optionally (and if present) add the CaloCluster as a constraint
-          // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO
-          KKCALOHITCOL calohits;
-          if (kkfit_.useCalo() && hseed.caloCluster().isNonnull())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
-          // set the seed range given the hits and xings
-          bool goodfit(false);          // PM
-          unique_ptr<KKTRK>  kktrk;     // PM
-          try {                         // PM
+          if(kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings)){
+            // optionally (and if present) add the CaloCluster as a constraint
+            // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO
+            KKCALOHITCOL calohits;
+            if (kkfit_.useCalo() && hseed.caloCluster().isNonnull())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
+            // set the seed range given the hits and xings
             seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
-          // create and fit the track
-            kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
-          // Check the fit
-            goodfit = goodFit(*kktrk);
-          }                                                    // PM
-          catch (...) {                                        // PM
-            cout << ">>> ERROR 001 in HelixFit_module.hh : run:"                                // PM
-                 << event.run() << ":" << event.subRun() << ":" << event.event() << std::endl;  // PM
-            goodfit = false;                                   // PM
-          }                                                    // PM
-          // if we have an extension schedule, extend.
-          if(goodfit && exconfig_.schedule().size() > 0) {
-            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
-            goodfit = goodFit(*kktrk);
-          }
-// extrapolate as required
-          if(goodfit && extrap_.size()>0) {
-            // test the drection of this fit
-            auto const& ftraj = kktrk->fitTraj();
-            bool downstream = ftraj.momentum3(ftraj.range().mid()).Z() > 0.0; // replace with momentum at tracker middle TODO
-            const static VEC3 opos(0.0,0.0,0.0);
-            for(auto const& surf : extrap_){
-              // configure the extrapolation time direction according to the surface and the track momentum direction
-              if(surf.first.id() == SurfaceIdEnum::TT_Front){
-                xconfig_.xdir_ = downstream ? TimeDir::backwards : TimeDir::forwards;
-                double zpos = surf.second->tangentPlane(opos).center().Z(); // this is crude: I need an accessor that knows the TT_Front is a plane TODO
-                ExtrapolateToZ xtoz(*kktrk,xconfig_.xdir_,zpos);
-                kktrk->extrapolate(xconfig_,xtoz);
-              } else if(surf.first.id() == SurfaceIdEnum::TT_Back){
-                xconfig_.xdir_ = downstream ? TimeDir::forwards : TimeDir::backwards;
-                double zpos = surf.second->tangentPlane(opos).center().Z();
-                ExtrapolateToZ xtoz(*kktrk,xconfig_.xdir_,zpos);
-                kktrk->extrapolate(xconfig_,xtoz);
-              } else if(surf.first.id() == SurfaceIdEnum::TT_Outer){
-                // extrapolate in both time directions
+            // create and fit the track
+            auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
+            // Check the fit
+            auto goodfit = goodFit(*kktrk);
+            // if we have an extension schedule, extend.
+            if(goodfit && exconfig_.schedule().size() > 0) {
+              kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
+              goodfit = goodFit(*kktrk);
+            }
+            // extrapolate as required
+            if(goodfit && extrap_.size()>0) {
+              // test the drection of this fit
+              auto const& ftraj = kktrk->fitTraj();
+              bool downstream = ftraj.momentum3(ftraj.range().mid()).Z() > 0.0; // replace with momentum at tracker middle TODO
+              const static VEC3 opos(0.0,0.0,0.0);
+              for(auto const& surf : extrap_){
+                // configure the extrapolation time direction according to the surface and the track momentum direction
+                if(surf.first.id() == SurfaceIdEnum::TT_Front){
+                  xconfig_.xdir_ = downstream ? TimeDir::backwards : TimeDir::forwards;
+                  double zpos = surf.second->tangentPlane(opos).center().Z(); // this is crude: I need an accessor that knows the TT_Front is a plane TODO
+                  ExtrapolateToZ xtoz(*kktrk,xconfig_.xdir_,zpos);
+                  kktrk->extrapolate(xconfig_,xtoz);
+                } else if(surf.first.id() == SurfaceIdEnum::TT_Back){
+                  xconfig_.xdir_ = downstream ? TimeDir::forwards : TimeDir::backwards;
+                  double zpos = surf.second->tangentPlane(opos).center().Z();
+                  ExtrapolateToZ xtoz(*kktrk,xconfig_.xdir_,zpos);
+                  kktrk->extrapolate(xconfig_,xtoz);
+                } else if(surf.first.id() == SurfaceIdEnum::TT_Outer){
+                  // extrapolate in both time directions
+                }
               }
             }
-          }
 
-          if(print_>0)kktrk->printFit(std::cout,print_);
-          if(goodfit || saveall_){
-            TrkFitFlag fitflag(hptr->status());
-            fitflag.merge(fitflag_);
-            if(goodfit)
-              fitflag.merge(TrkFitFlag::FitOK);
-            else
-              fitflag.clear(TrkFitFlag::FitOK);
-            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h));
-            // fill assns with the helix seed
-            auto hptr = art::Ptr<HelixSeed>(hseedcol_h,iseed);
-            auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
-            kkseedassns->addSingle(kseedptr,hptr);
-            // save (unpersistable) KKTrk in the event
-            kktrkcol->push_back(kktrk.release());
+            if(print_>0)kktrk->printFit(std::cout,print_);
+            if(goodfit || saveall_){
+              TrkFitFlag fitflag(hptr->status());
+              fitflag.merge(fitflag_);
+              if(goodfit)
+                fitflag.merge(TrkFitFlag::FitOK);
+              else
+                fitflag.clear(TrkFitFlag::FitOK);
+              kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h));
+              // fill assns with the helix seed
+              auto hptr = art::Ptr<HelixSeed>(hseedcol_h,iseed);
+              auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
+              kkseedassns->addSingle(kseedptr,hptr);
+              // save (unpersistable) KKTrk in the event
+              kktrkcol->push_back(kktrk.release());
+            }
           }
         }
       }

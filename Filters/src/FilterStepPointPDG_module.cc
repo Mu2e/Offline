@@ -2,7 +2,7 @@
 // copy selected hits to output collections, preserving product
 // instance names.
 //
-// Andrei Gaponenko, 2013
+// Andrei Gaponenko, 2013, 2024
 
 #include <string>
 #include <vector>
@@ -11,8 +11,9 @@
 #include <algorithm>
 
 // art includes.
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Core/EDFilter.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "art/Framework/Core/SharedFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -23,7 +24,46 @@
 namespace mu2e {
 
   //================================================================
-  class FilterStepPointPDG : public art::EDFilter {
+  class FilterStepPointPDG : public art::SharedFilter {
+  public:
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Sequence<art::InputTag> inputs {
+        Name("inputs"),
+        Comment("A list of StepPointMCCollection-s to process")
+      };
+
+      fhicl::Sequence<int> pdgToDrop {
+        Name("pdgToDrop"),
+        Comment(
+                "A list of particle type names to drop while keeping everything else.\n"
+                "Accepted names, like e_minus, anti_proton, etc., can be found\n"
+                "in Offline/DataProducts/src/PDGCode.cc\n"
+                "Mutually exclusive with pdgToKeep."
+                ),
+        std::vector<int>()
+      };
+
+      fhicl::Sequence<std::string> pdgToKeep {
+        Name("pdgToKeep"),
+        Comment("A list of particle types to keep while dropping everything else.\n"
+                "Accepted names, like e_minus, anti_proton, etc., can be found\n"
+                "in Offline/DataProducts/src/PDGCode.cc\n"
+                "Mutually exclusive with pdgToDrop."
+                ),
+        std::vector<std::string>()
+      };
+    };
+
+    using Parameters = art::SharedFilter::Table<Config>;
+    FilterStepPointPDG(const Parameters& conf, const art::ProcessingFrame&);
+
+    virtual bool filter(art::Event& event, const art::ProcessingFrame&) override;
+
+  private:
+
     typedef std::vector<art::InputTag> InputTags;
     InputTags inputs_;
 
@@ -33,63 +73,49 @@ namespace mu2e {
 
     // Particle type lists are typically short, so a vector works
     // better than a set.
-    std::vector<PDGCode::type> pdgToDrop_;
-    std::vector<PDGCode::type> pdgToKeep_;
-
-    // statistics
-    unsigned numInputHits_;
-    unsigned numOutputHits_;
-
-    unsigned numInputEvents_;
-    unsigned numPassedEvents_;
-
-  public:
-    explicit FilterStepPointPDG(const fhicl::ParameterSet& pset);
-    virtual bool filter(art::Event& event) override;
-    virtual void endJob() override;
+    std::vector<PDGCode> pdgToDrop_;
+    std::vector<PDGCode> pdgToKeep_;
   };
 
   //================================================================
-  FilterStepPointPDG::FilterStepPointPDG(const fhicl::ParameterSet& pset)
-    : art::EDFilter{pset}
-    , numInputHits_()
-    , numOutputHits_()
-    , numInputEvents_()
-    , numPassedEvents_()
+  FilterStepPointPDG::FilterStepPointPDG(const Parameters& conf, const art::ProcessingFrame&)
+    : art::SharedFilter{conf}
+    , inputs_{conf().inputs()}
   {
-    const auto tags(pset.get<std::vector<std::string> >("inputs"));
-    for(const auto& i : tags) {
-      inputs_.emplace_back(i);
+    async<art::InEvent>();
+
+    for(const auto& i: inputs_) {
+      consumes<StepPointMCCollection>(i);
+
       // Coalesce same instance names from multiple input modules/processes.
-      outNames_.insert(inputs_.back().instance());
+      outNames_.insert(i.instance());
     }
+
     for(const auto& i : outNames_) {
       produces<StepPointMCCollection>(i);
     }
 
-    const auto drop(pset.get<std::vector<int> >("pdgToDrop", std::vector<int>()));
-    for(const auto i : drop) {
-      pdgToDrop_.emplace_back(PDGCode::type(i));
+    for(const auto& i: conf().pdgToDrop()) {
+      pdgToDrop_.emplace_back(PDGCode(i));
     }
 
-    const auto keep(pset.get<std::vector<int> >("pdgToKeep", std::vector<int>()));
-    for(const auto i : keep) {
-      pdgToKeep_.emplace_back(PDGCode::type(i));
+    for(const auto& i: conf().pdgToKeep()) {
+      pdgToKeep_.emplace_back(PDGCode(i));
     }
 
-    if(drop.empty() && keep.empty()) {
+    if(pdgToDrop_.empty() && pdgToKeep_.empty()) {
       throw cet::exception("BADCONFIG")
-        <<"FilterStepPointPDG: either pdgToDrop or pdgToKeep must be specified.\n";
+        <<"FilterStepPointPDG: either pdgToDrop or pdgToKeep must be specified, neither is given.\n";
     }
-    if(!drop.empty() && ! keep.empty()) {
+    if(!pdgToDrop_.empty() && ! pdgToKeep_.empty()) {
       throw cet::exception("BADCONFIG")
-        <<"FilterStepPointPDG: either pdgToDrop or pdgToKeep,"
-        <<" but not both, can be used at a time.\n";
+        <<"FilterStepPointPDG: pdgToDrop and pdgToKeep settings are mutually exclusive,"
+        " please specify only one of them.\n";
     }
   }
 
   //================================================================
-  bool FilterStepPointPDG::filter(art::Event& event) {
+  bool FilterStepPointPDG::filter(art::Event& event, const art::ProcessingFrame&) {
     bool passed = false;
 
     typedef std::map<std::string, std::unique_ptr<StepPointMCCollection> > OutMap;
@@ -121,30 +147,13 @@ namespace mu2e {
             passed |= true;
           }
       }
-
-      numInputHits_ += ih->size();
-      numOutputHits_ += out.size();
     }
 
     for(const auto& i : outNames_) {
       event.put(std::move(outHits[i]), i);
     }
 
-    ++numInputEvents_;
-    if(passed) {
-      ++numPassedEvents_;
-    }
-
     return passed;
-  }
-
-  //================================================================
-  void FilterStepPointPDG::endJob() {
-    mf::LogInfo("Summary")<<"FilterStepPointPDG: passed "
-                          <<numOutputHits_ <<" / "<<numInputHits_
-                          <<" StepPointMCs, "
-                          <<numPassedEvents_<<" / "<<numInputEvents_
-                          <<" events\n";
   }
 
   //================================================================
