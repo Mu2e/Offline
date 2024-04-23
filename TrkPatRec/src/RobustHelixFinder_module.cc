@@ -113,6 +113,7 @@ namespace mu2e {
         fhicl::Atom<int>                      diagLevel{            Name("DiagLevel"),            Comment("Diag"),0 };
         fhicl::Atom<int>                      debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
         fhicl::Atom<int>                      printFrequency{       Name("PrintFrequency"),       Comment("Print Frequency") };
+        fhicl::Atom<bool>                     doSingleOutput{       Name("doSingleOutput"),       Comment("Create a single ouputput with both helicities") };
         fhicl::Atom<bool>                     PrefilterHits{        Name("PrefilterHits"),        Comment("Produce prefiltered hit collections")  };
         fhicl::Atom<bool>                     UpdateStereoHits{     Name("UpdateStereoHits"),     Comment("Update stereo hits") };
         fhicl::Atom<int>                      minNStrawHits{        Name("MinNStrawHits"),        Comment("Minimum number of straw hits") };
@@ -160,6 +161,7 @@ namespace mu2e {
     private:
       int                                 _diag,_debug;
       int                                 _printfreq;
+      bool                                _doSingleOutput;
       bool        _prefilter; // prefilter hits based on sector
       bool        _updatestereo; // update the stereo hit positions each iteration
       int         _minnsh; // minimum # of strawHits to work with
@@ -236,6 +238,7 @@ namespace mu2e {
     _diag        (config().diagLevel()),
     _debug       (config().debugLevel()),
     _printfreq   (config().printFrequency()),
+    _doSingleOutput(config().doSingleOutput()),
     _prefilter   (config().PrefilterHits()),
     _updatestereo(config().UpdateStereoHits()),
     _minnsh      (config().minNStrawHits()),
@@ -272,11 +275,16 @@ namespace mu2e {
     _outlier     (StrawHitFlag::outlier),
     _updateStereo(config().UpdateStereo())
     {
-      std::vector<int> helvals = config().Helicities();
-      for(auto hv : helvals) {
-        Helicity hel(hv);
-        _hels.push_back(hel);
-        produces<HelixSeedCollection>(Helicity::name(hel));
+
+      if (_doSingleOutput){
+        produces<HelixSeedCollection>();
+      }else {
+        std::vector<int> helvals = config().Helicities();
+        for(auto hv : helvals) {
+          Helicity hel(hv);
+          _hels.push_back(hel);
+          produces<HelixSeedCollection>(Helicity::name(hel));
+        }
       }
 
       if (_diag != 0) _hmanager = art::make_tool<ModuleHistToolBase>(config().DiagPlugin," ");
@@ -437,8 +445,18 @@ namespace mu2e {
     // put final collections into event
     if (_diag > 0) _hmanager->fillHistograms(&_data);
 
-    for(auto const& hel : _hels ) {
-      event.put(std::move(helcols[hel]),Helicity::name(hel));
+    if (_doSingleOutput) {
+      std::unique_ptr<HelixSeedCollection> helcol(new HelixSeedCollection);
+      for(auto const& hel : _hels ) {
+        for(auto & helix : *helcols[hel] ) {
+          helcol->push_back(helix);
+        }
+      }
+      event.put(std::move(helcol));
+    } else{
+      for(auto const& hel : _hels ) {
+        event.put(std::move(helcols[hel]),Helicity::name(hel));
+      }
     }
   }
   //--------------------------------------------------------------------------------
