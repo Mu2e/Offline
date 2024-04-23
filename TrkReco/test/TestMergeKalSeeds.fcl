@@ -1,0 +1,35 @@
+#
+#Simple test of MergeKalSeeds.  run as;
+# mu2e -c Offline/TrkReco/test/TestMergeKalSeeds.fcl --source "mcs.yourfile.art" --nevts 100
+#
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Production/JobConfig/reco/prolog.fcl"
+#include "Offline/Mu2eKinKal/fcl/prolog.fcl"
+#include "TrkAna/fcl/prolog.fcl"
+
+process_name: MKS
+source : { module_type : RootInput }
+services : @local::Services.Reco
+physics :
+{
+  producers : {
+    MergeKalSeeds : {
+      module_type : MergeKalSeeds
+      debugLevel : 2
+      KalSeedCollections : ["KKDeM", "KKDeP", "KKUeM", "KKUeP", "KKDmuM", "KKDmuP", "KKUmuM", "KKUmuP" ]
+    }
+  }
+  TPath : [ MergeKalSeeds ]
+  EPath : [ MergedOutput ]
+}
+outputs : {
+  MergedOutput : {
+    module_type : RootOutput
+    SelectEvents : [ "TPath" ]
+    outputCommands : [ "keep *_*_*_*" ]
+    fileName : "mcs.owner.MergedKalSeeds.version.sequencer.art"
+  }
+}
+physics.trigger_paths : [ TPath ]
+physics.end_paths : [ EPath ]

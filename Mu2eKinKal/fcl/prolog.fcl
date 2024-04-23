@@ -14,6 +14,7 @@ Mu2eKinKal : {
   KKFIT: {
     PrintLevel : 0
     TPOCAPrecision : 1e-4 # mm
+    MinNStrawHits : 5
     UseCaloCluster : true
     MaterialCorrection : true
     AddHits : true

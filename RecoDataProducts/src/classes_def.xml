@@ -211,9 +211,10 @@
 
  <class name="mu2e::KalSeed"/>
  <class name="mu2e::KalSeedCollection"/>
- <class name="art::Ptr<mu2e::KalSeed>"/>
- <class name="std::vector<art::Ptr<mu2e::KalSeed> >"/>
+ <class name="mu2e::KalSeedPtr"/>
+ <class name="mu2e::KalSeedPtrCollection"/>
  <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
+ <class name="art::Wrapper<mu2e::KalSeedPtrCollection>"/>
 
  <class name="mu2e::KalHelixAssns" />
  <class name="art::Wrapper<mu2e::KalHelixAssns>"/>

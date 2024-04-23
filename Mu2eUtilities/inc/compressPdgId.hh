@@ -15,7 +15,7 @@ namespace mu2e {
   CompressedPDGCode::enum_type compressPDGCode(PDGCode::enum_type pdgId);
 
   // a histogram with text labels, ready for use with CompressedPDGCode
-  TH1D* compressPDGCodeHisto(art::ServiceHandle<art::TFileService>& tfs,
+  TH1D* compressPDGCodeHisto(art::ServiceHandle<art::TFileService> tfs,
                              std::string name="compPdgId",
                              std::string title="Compressed PDG ID");
 
