@@ -179,8 +179,8 @@ namespace mu2e
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
       fhicl::Atom<art::InputTag>      helixSeedCollection  { Name("helixSeedCollection"),     Comment("helixSeedCollection") };
-      fhicl::Table<HelixCutsConfig>   posHelicitySelection { Name("posHelixitySelection"),    Comment("")};
-      fhicl::Table<HelixCutsConfig>   negHelicitySelection { Name("negHelicitySelection"),    Comment("")};
+      fhicl::Table<HelixCutsConfig>   posHelicitySelection { Name("posHelicitySelection"),    Comment("cuts for the helices with positive helicity (like the conversion electron)")};
+      fhicl::Table<HelixCutsConfig>   negHelicitySelection { Name("negHelicitySelection"),    Comment("cuts for the helices with negative helicity (like the conversion positron)")};
       fhicl::Atom<int>                debugLevel           { Name("debugLevel"),              Comment("debugLevel")     , 0 };
     };
 
