@@ -235,7 +235,7 @@ namespace mu2e
       std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH POSITIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
     }
     if ( (!_negHelCuts._configured)){
-      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH POSITIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
+      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH NEGATIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
     }
     return true;
   }
