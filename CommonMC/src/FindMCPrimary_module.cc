@@ -96,15 +96,7 @@ namespace mu2e {
       }
     }
     // if no primary was found, throw
-    // if(sims.size() == 0)throw cet::exception("Simulation") << " No Primary particle found " << std::endl;
-    // P.Murat: if no primary was found, don't throw, but declare proton a primary
-    if(sims.size() == 0) {
-      // throw cet::exception("Simulation") << " No Primary particle found " << std::endl;
-      sims.emplace_back(spch,spch->begin()->first.asInt());
-      printf(" ERROR in run:subrun:event %6i:%8i:%10i : FindMCPrimary::produce No Primary particle found\n",
-             event.run(),event.subRun(),event.event());
-    }
-
+    if(sims.size() == 0)throw cet::exception("Simulation") << " No Primary particle found " << std::endl;
     // check these all have the same creation code
     if(sims.size() > 1){
       auto isim = sims.begin()++;
