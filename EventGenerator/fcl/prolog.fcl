@@ -369,7 +369,6 @@ EventGenerator : { @table::EventGenerator
         CaloTBGun : {
             module_type    : CaloTBGun
         }
-
     }
 }
 
