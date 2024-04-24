@@ -1,0 +1,16 @@
+#
+# MT version of g4study
+#
+#include "Offline/Mu2eG4/g4study/g4study.fcl"
+
+# Note that all parameters except the following should mostly be
+# set in the non MT file included above (which includes prolog files)
+
+physics.producers.g4run.module_type : "Mu2eG4MT"
+
+# this sets the number of threads used in MT mode
+# number and threads and number of schedules should
+# be the same
+
+services.scheduler.num_schedules  : 5
+services.scheduler.num_threads    : 5
