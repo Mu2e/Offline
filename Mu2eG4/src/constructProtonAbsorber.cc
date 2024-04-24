@@ -1378,11 +1378,6 @@ namespace mu2e {
                                           + 2.0*filterDims.at(2)
                                           + frameDims.at(2) );
 
-        if (verbosityLevel > 0) {
-          printf(">> degrader location in Mu2e: X,Y,Z= %10.3f %10.3f %10.3f\n",
-                 locationInMu2e.x(),locationInMu2e.y(),locationInMu2e.z());
-        }
-
         // Make mother volume for degrader
         std::string motherName("Degrader");
         VolumeInfo degraderMother ( motherName,
