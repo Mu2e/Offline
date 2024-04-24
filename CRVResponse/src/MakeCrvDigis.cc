@@ -13,7 +13,7 @@ void MakeCrvDigis::SetWaveform(const std::vector<double> &waveform, double ADCco
   }
 
   int TDCtmp=lrint(startTime/digitizationPrecision);
-  if(TDCtmp<0) throw std::logic_error("ERROR: found a waveform start time (relative to the event marker) < 0");
+  if(TDCtmp<0) throw std::logic_error("ERROR: found a waveform start time (relative to the event marker) < 0"); //this shouldn't happen
   _TDC=static_cast<uint16_t>(TDCtmp);
 }
 
