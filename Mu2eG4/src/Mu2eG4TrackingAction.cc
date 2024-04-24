@@ -243,7 +243,7 @@ namespace mu2e {
 
     if (_muonPreAssignedDecayProperTime>=0.0) {
       const G4DynamicParticle* dynPart = trk->GetDynamicParticle();
-      if (dynPart->GetPDGcode() == PDGCode::mu_minus) {
+      if ((dynPart->GetPDGcode() == PDGCode::mu_minus) or (dynPart->GetPDGcode() == PDGCode::mu_plus)) {
         // if track is a muon and preassigned proper time is set, assing it
         if (trackingVerbosityLevel>0) {
           G4cout << __func__
@@ -259,7 +259,7 @@ namespace mu2e {
     if ((_muonMaxPreAssignedDecayProperTime>=0.0) ||
         (_muonMinPreAssignedDecayProperTime>=0.0)) {
       const G4DynamicParticle* dynPart = trk->GetDynamicParticle();
-      if (dynPart->GetPDGcode() == PDGCode::mu_minus) {
+      if ((dynPart->GetPDGcode() == PDGCode::mu_minus) or (dynPart->GetPDGcode() == PDGCode::mu_plus)) {
         // if track is a muon and preassigned proper time is set, assing it
         if (trackingVerbosityLevel>0) {
           G4cout << __func__
