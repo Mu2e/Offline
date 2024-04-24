@@ -174,8 +174,6 @@ namespace mu2e {
     else {
       allMu2e = (new WorldMaker<Mu2eStudyWorld>(make_unique<Mu2eStudyWorld>(conf_, &sensitiveDetectorHelper_),
                                            make_unique<ConstructMaterials>(conf_)));
-    //   throw cet::exception("CONFIG")
-    //     << "Error: You are trying to run in MT mode without the Standard Mu2e Detector!\n";
     }
 
     preG4InitializeTasks(conf_);
