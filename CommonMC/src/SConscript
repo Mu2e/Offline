@@ -19,7 +19,7 @@ rootlibs = env['ROOTLIBS']
 mainlib = helper.make_mainlib ( [] )
 
 helper.make_plugins( [ mainlib,
-  'mu2e_TrkDiag',                     # P.Murat: can't comment it out
+  'mu2e_TrkDiag',
   'mu2e_Mu2eUtilities',
   'mu2e_ConditionsService',
   'mu2e_TrackerConditions',
