@@ -15,10 +15,12 @@ namespace mu2e
 {
    struct BkgCluster
    {
+       enum  distMethod {spatial,chi2};
+
        //Default hit count chosen for compuational efficiency
        BkgCluster() {_hits.reserve(16);}
-       BkgCluster(TwoDPoint point, float time) : _point(point), _time(time) {_hits.reserve(16);_cpoints.addPoint(_point,0);_pos = point.pos3();}
-       enum  distMethod {spatial,chi2};
+       BkgCluster(TwoDPoint point, distMethod method) : _point(point), _distMethod(method){_hits.reserve(16);_cpoints.addPoint(_point,0);_pos = point.pos3();}
+       BkgCluster(XYZVectorF const& pos, float time, distMethod method) : _pos(pos), _time(time), _distMethod(method) {_hits.reserve(16);}
 
        float                        getKerasQ() const {return _kerasQ; }
        auto const&                  getDistMethod() const {return _distMethod; }
@@ -30,21 +32,25 @@ namespace mu2e
        auto const&                  hits() const {return _hits; }
        auto &                       hits()       {return _hits; }
 
-       void pos(XYZVectorF const& pos)               {_pos = pos;}
-       void time(float time)                         {_time = time;}
-       void addHit(unsigned val)                     {_hits.emplace_back(val);}
-       void clearHits()                              {_hits.clear();}
-       void setKerasQ(float kerasQ)                  {_kerasQ = kerasQ;}
-       void setDistanceMethod(distMethod method)     {_distMethod = method;}
+       void pos(XYZVectorF const& pos)                                      {_pos = pos;}
+       void time(float time)                                                {_time = time;}
+       void clearHits()                                                     {_hits.clear();}
+       void setKerasQ(float kerasQ)                                         {_kerasQ = kerasQ;}
+       void addHit(unsigned val)                                            {_hits.emplace_back(val);}
+       void addHit(unsigned val, TwoDPoint point) {
+        _hits.push_back(val);
+        _cpoints.addPoint(point,_cpoints.nPoints());
+        _pos = _cpoints.point().pos3();
+       }
 
        XYZVectorF               _pos;// ideally should be a 2d vec - FIXME
        TwoDPoint                _point;//initial point
        CombineTwoDPoints        _cpoints;//combined points
-       float                    _time = 0.0;
+       float                    _time = 0.0;//cluster time
        std::vector<unsigned>    _hits;
        BkgClusterFlag           _flag = BkgClusterFlag(BkgClusterFlag::update);
        float                    _kerasQ = -0.5; //result of keras result for the cluster
-       distMethod               _distMethod;//which distMethod used in clusterer to create the cluster
+       distMethod               _distMethod;//which distMethod used to create the cluster
    };
 
    typedef std::vector<mu2e::BkgCluster> BkgClusterCollection;

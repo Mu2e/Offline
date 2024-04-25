@@ -1,10 +1,11 @@
 #ifndef Mu2e_KKCaloHit_hh
 #define Mu2e_KKCaloHit_hh
 //
-//  hit representing a time measurement from a calorimeter cluster
+//  hit representing a time measurement from a calorimeter cluster.  The geometric information is used to
+//  compute propagation time
 //
 #include "KinKal/Detector/ResidualHit.hh"
-#include "KinKal/Trajectory/Line.hh"
+#include "KinKal/Trajectory/SensorLine.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 // mu2e includes
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
@@ -12,7 +13,7 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "cetlib_except/exception.h"
 namespace mu2e {
-  using KinKal::Line;
+  using KinKal::SensorLine;
   using KinKal::MetaIterConfig;
   using KinKal::Residual;
   using KinKal::CAHint;
@@ -21,8 +22,8 @@ namespace mu2e {
   template <class KTRAJ> class KKCaloHit : public KinKal::ResidualHit<KTRAJ> {
     public:
       using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
-      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
-      using CA = KinKal::ClosestApproach<KTRAJ,Line>;
+      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
+      using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using HIT = KinKal::Hit<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       // Hit interface overrrides
@@ -48,7 +49,7 @@ namespace mu2e {
 
     private:
       CCPtr caloCluster_;  // associated calorimeter cluster
-      Line saxis_; // axis along the crystals, through the COG
+      SensorLine saxis_; // axis along the crystals, through the COG
       double tvar_; // variance in the time measurement: assumed independent of propagation distance/time
       double wvar_; // variance in transverse position of the sensor/measurement in mm.  Assumes cylindrical error, could be more general
       CA tpca_; // reference time and distance of closest approach to the axis
@@ -66,7 +67,7 @@ namespace mu2e {
 
   template <class KTRAJ> void KKCaloHit<KTRAJ>::updateReference(std::shared_ptr<KTRAJ> const& ktrajptr) {
     // compute PCA
-    CAHint tphint( saxis_.t0(), saxis_.t0());
+    CAHint tphint( saxis_.measurementTime(), saxis_.measurementTime());
     // don't update the hint: initial T0 values can be very poor, which can push the CA calculation onto the wrong helix loop,
     // from which it's impossible to ever get back to the correct one.  Active loop checking might be useful eventually too TODO
     //    if(tpca_.usable()) tphint = CAHint(tpca_.particleToca(),tpca_.sensorToca());
@@ -79,8 +80,8 @@ namespace mu2e {
     // early in the fit when t0 has very large errors.
     // If it is inconsistent with the crystal position try to adjust it back using a better hint.
     auto ppos = tpca_.particlePoca().Vect();
-    auto sstart = saxis_.startPosition();
-    auto send = saxis_.endPosition();
+    auto sstart = saxis_.start();
+    auto send = saxis_.end();
     // tolerance should come from the miconfig.  Should also test relative to the error. TODO
     double tol = 1.0*saxis_.length();
     double sdist = (ppos-sstart).Dot(saxis_.direction());
@@ -95,14 +96,21 @@ namespace mu2e {
     }
     if(tpca_.usable()){
       // residual is just delta-T at CA.
+      double totvar = tvar_;
       // the variance includes the intrinsic measurement variance and the tranvserse position resolution (which couples to the relative direction)
-      double speed = saxis_.speed(tpca_.sensorToca());
+      double speed = saxis_.speed(tpca_.sensorToca()); // signal propagation speed along the crystal
       double s2 = speed*speed;
       double cost = tpca_.dirDot();  // cosine of angle between track and crystal axis
-      double sint2 = std::max(1e-3,1.0-cost*cost);// protect against track co-linear with crystal
-      double ldt = saxis_.length()/speed; // time to go the full length of the crystal
-      double twvar = std::min(wvar_/(s2*sint2),ldt*ldt/12.0); // maximimum time uncertainty due to crystal size
-      double totvar = tvar_ + twvar;
+      double cost2 = cost*cost;
+      double sint2 = 1.0-cost2;
+      // protect against track co-linear with crystal
+      if(sint2 > 1e-2) {
+        totvar += cost2*wvar_/(s2*sint2);
+      } else {
+        double ldt = saxis_.length()/speed; // time to go the full length of the crystal
+        double invvar2 = std::max(s2*sint2/(cost2*wvar_), 12/(ldt*ldt));
+        totvar += 1.0/invvar2;
+      }
       rresid_ = Residual(tpca_.deltaT(),totvar,0.0,true,tpca_.dTdP());
     } else {
       rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,false,rresid_.dRdP());
@@ -111,7 +119,7 @@ namespace mu2e {
     this->updateWeight(miconfig);
   }
 
-  template <class KTRAJ> KinKal::ClosestApproach<KTRAJ,Line> KKCaloHit<KTRAJ>::unbiasedClosestApproach() const {
+  template <class KTRAJ> KinKal::ClosestApproach<KTRAJ,SensorLine> KKCaloHit<KTRAJ>::unbiasedClosestApproach() const {
     // compute the unbiased closest approach; this is brute force, but works
     auto const& ca = this->closestApproach();
     auto uparams = HIT::unbiasedParameters();

@@ -746,12 +746,15 @@ void DataInterface::resetBoundaryP(spaceminmax &m)
   m.maxz=NAN;
 }
 
-DataInterface::spaceminmax DataInterface::getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks, bool useCRV)
+DataInterface::spaceminmax DataInterface::getSpaceBoundary(bool useTracker, bool useTarget, bool useCalorimeter, bool useTracks, bool useCRV)
 {
   spaceminmax m;
   resetBoundaryP(m);
-  findBoundaryP(m, _trackerMinmax.minx, _trackerMinmax.miny, _trackerMinmax.minz);
-  findBoundaryP(m, _trackerMinmax.maxx, _trackerMinmax.maxy, _trackerMinmax.maxz);
+  if(useTracker)
+  {
+    findBoundaryP(m, _trackerMinmax.minx, _trackerMinmax.miny, _trackerMinmax.minz);
+    findBoundaryP(m, _trackerMinmax.maxx, _trackerMinmax.maxy, _trackerMinmax.maxz);
+  }
   if(useTarget)
   {
     findBoundaryP(m, _targetMinmax.minx, _targetMinmax.miny, _targetMinmax.minz);

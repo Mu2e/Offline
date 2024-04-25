@@ -19,6 +19,8 @@
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/KinKalGeom/inc/SurfaceId.hh"
+#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
 // utiliites
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
@@ -39,6 +41,7 @@
 // KinKal
 #include "KinKal/Fit/Track.hh"
 #include "KinKal/Fit/Config.hh"
+#include "KinKal/Fit/ExtraConfig.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 // Mu2eKinKal
@@ -79,6 +82,8 @@ namespace mu2e {
   using KKFIT = KKFit<KTRAJ>;
   using KinKal::VEC3;
   using KinKal::DMAT;
+  using KinKal::TimeDir;
+  using KinKal::ExtraConfig;
   using HPtr = art::Ptr<HelixSeed>;
   using CCPtr = art::Ptr<CaloCluster>;
   using CCHandle = art::ValidHandle<CaloClusterCollection>;
@@ -95,23 +100,36 @@ namespace mu2e {
   // extend the generic module configuration as needed
   struct KKHelixModuleConfig : KKModuleConfig {
     fhicl::Sequence<art::InputTag> seedCollections         {Name("HelixSeedCollections"),     Comment("Seed fit collections to be processed ") };
-  fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
+    fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
   };
 
-  struct GlobalConfig {
+  struct HelixFitConfig {
     fhicl::Table<KKHelixModuleConfig> modSettings { Name("ModuleSettings") };
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
-// helix module specific config
+    // helix module specific config
     fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream") };
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
   };
 
+  // predicate for extrapolation to a given Z position in a given direction
+  template <class KTRAJ> struct ExtrapolateToZ {
+    using KKTRK = KKTrack<KTRAJ>;
+    ExtrapolateToZ(KKTRK const& kktrk, TimeDir tdir, double zval) : kktrk_(kktrk), tdir_(tdir), zval_(zval) {}
+    bool needsExtrapolation(double time) const {
+      double zend = kktrk_.fitTraj().position3(time).Z();
+      return tdir_ == TimeDir::forwards ? zend < zval_ : zend > zval_;
+    }
+    KKTRK const& kktrk_; // reference to track
+    TimeDir tdir_; // time direction
+    double zval_; // z value required
+  };
+
   class HelixFit : public art::EDProducer {
     public:
-      using Parameters = art::EDProducer::Table<GlobalConfig>;
+      using Parameters = art::EDProducer::Table<HelixFitConfig>;
       explicit HelixFit(const Parameters& settings,TrkFitFlag fitflag);
       virtual ~HelixFit() {}
       void beginRun(art::Run& run) override;
@@ -141,8 +159,10 @@ namespace mu2e {
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
       Config config_; // initial fit configuration object
       Config exconfig_; // extension configuration object
-      bool fixedfield_; //
-    };
+      KinKal::ExtraConfig xconfig_; // tolerance and maximum Dt when extrapolating
+      bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
+      SurfaceMap::SurfacePairCollection extrap_; // surfaces to extrapolate the fit to
+  };
 
   HelixFit::HelixFit(const Parameters& settings,TrkFitFlag fitflag) : art::EDProducer{settings},
     fitflag_(fitflag),
@@ -167,7 +187,7 @@ namespace mu2e {
       produces<KalHelixAssns>();
       // build the initial seed covariance
       auto const& seederrors = settings().modSettings().seederrors();
- if(seederrors.size() != KinKal::NParams())
+      if(seederrors.size() != KinKal::NParams())
         throw cet::exception("RECO")<<"mu2e::HelixFit:Seed error configuration error"<< endl;
       for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
         seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
@@ -178,6 +198,16 @@ namespace mu2e {
         fixedfield_ = true;
         kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
       }
+      // configure extrapolation
+      SurfaceIdCollection esids;
+      for(auto const& sidname : settings().modSettings().extrapSurfs()) {
+        esids.push_back(SurfaceId(sidname,-1)); // match all elements
+      }
+      SurfaceMap smap;
+      smap.surfaces(esids,extrap_);
+      // configuration for extrapolation
+      xconfig_.tol_ = settings().modSettings().extrapTol();
+      xconfig_.maxdt_ = settings().modSettings().extrapMaxDt();
     }
 
   void HelixFit::beginRun(art::Run& run) {
@@ -238,7 +268,7 @@ namespace mu2e {
             if(usePDGCharge_)throw cet::exception("RECO")<<"mu2e::HelixFit: inconsistent charge" << endl;
             fitpart = static_cast<PDGCode::type>(-1*fitpart); // reverse sign
           }
-           // time range of the hits
+          // time range of the hits
           auto trange = Mu2eKinKal::timeBounds(hseed.hits());
           // construt the seed trajectory
           KTRAJ seedtraj = makeSeedTraj(hseed,trange,bnom,charge);
@@ -254,37 +284,62 @@ namespace mu2e {
           strawhits.reserve(strawHitIdxs.size());
           KKSTRAWXINGCOL strawxings;
           strawxings.reserve(strawHitIdxs.size());
-          kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
-          // optionally (and if present) add the CaloCluster as a constraint
-          // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO
-          KKCALOHITCOL calohits;
-          if (kkfit_.useCalo() && hseed.caloCluster().isNonnull())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
-          // extend the seed range given the hits and xings
-          seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
-          // create and fit the track
-          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
-          // Check the fit
-          auto goodfit = goodFit(*kktrk);
-          // if we have an extension schedule, extend.
-          if(goodfit && exconfig_.schedule().size() > 0) {
-            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
-            goodfit = goodFit(*kktrk);
-          }
-          if(print_>0)kktrk->printFit(std::cout,print_);
-          if(goodfit || saveall_){
-            TrkFitFlag fitflag(hptr->status());
-            fitflag.merge(fitflag_);
-            if(goodfit)
-              fitflag.merge(TrkFitFlag::FitOK);
-            else
-              fitflag.clear(TrkFitFlag::FitOK);
-            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h));
-            // fill assns with the helix seed
-            auto hptr = art::Ptr<HelixSeed>(hseedcol_h,iseed);
-            auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
-            kkseedassns->addSingle(kseedptr,hptr);
-            // save (unpersistable) KKTrk in the event
-            kktrkcol->push_back(kktrk.release());
+          if(kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings)){
+            // optionally (and if present) add the CaloCluster as a constraint
+            // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO
+            KKCALOHITCOL calohits;
+            if (kkfit_.useCalo() && hseed.caloCluster().isNonnull())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
+            // set the seed range given the hits and xings
+            seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
+            // create and fit the track
+            auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
+            // Check the fit
+            auto goodfit = goodFit(*kktrk);
+            // if we have an extension schedule, extend.
+            if(goodfit && exconfig_.schedule().size() > 0) {
+              kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
+              goodfit = goodFit(*kktrk);
+            }
+            // extrapolate as required
+            if(goodfit && extrap_.size()>0) {
+              // test the drection of this fit
+              auto const& ftraj = kktrk->fitTraj();
+              bool downstream = ftraj.momentum3(ftraj.range().mid()).Z() > 0.0; // replace with momentum at tracker middle TODO
+              const static VEC3 opos(0.0,0.0,0.0);
+              for(auto const& surf : extrap_){
+                // configure the extrapolation time direction according to the surface and the track momentum direction
+                if(surf.first.id() == SurfaceIdEnum::TT_Front){
+                  xconfig_.xdir_ = downstream ? TimeDir::backwards : TimeDir::forwards;
+                  double zpos = surf.second->tangentPlane(opos).center().Z(); // this is crude: I need an accessor that knows the TT_Front is a plane TODO
+                  ExtrapolateToZ xtoz(*kktrk,xconfig_.xdir_,zpos);
+                  kktrk->extrapolate(xconfig_,xtoz);
+                } else if(surf.first.id() == SurfaceIdEnum::TT_Back){
+                  xconfig_.xdir_ = downstream ? TimeDir::forwards : TimeDir::backwards;
+                  double zpos = surf.second->tangentPlane(opos).center().Z();
+                  ExtrapolateToZ xtoz(*kktrk,xconfig_.xdir_,zpos);
+                  kktrk->extrapolate(xconfig_,xtoz);
+                } else if(surf.first.id() == SurfaceIdEnum::TT_Outer){
+                  // extrapolate in both time directions
+                }
+              }
+            }
+
+            if(print_>0)kktrk->printFit(std::cout,print_);
+            if(goodfit || saveall_){
+              TrkFitFlag fitflag(hptr->status());
+              fitflag.merge(fitflag_);
+              if(goodfit)
+                fitflag.merge(TrkFitFlag::FitOK);
+              else
+                fitflag.clear(TrkFitFlag::FitOK);
+              kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h));
+              // fill assns with the helix seed
+              auto hptr = art::Ptr<HelixSeed>(hseedcol_h,iseed);
+              auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
+              kkseedassns->addSingle(kseedptr,hptr);
+              // save (unpersistable) KKTrk in the event
+              kktrkcol->push_back(kktrk.release());
+            }
           }
         }
       }

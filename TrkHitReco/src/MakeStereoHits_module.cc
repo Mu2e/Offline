@@ -61,6 +61,7 @@ namespace mu2e {
         fhicl::Atom<bool>                testflag { Name("TestFlag"),   Comment("Test input hit flags") };
         fhicl::Atom<bool>                filter   { Name("FilterHits"),            Comment("Filter hits (alternative is to just flag)") };
         fhicl::Atom<bool>                sline    { Name("StereoLine"),            Comment("Fit stereohit ComboHit daughters to a line") };
+        fhicl::Atom<unsigned>            slinendof{ Name("StereoLineNDOF"),            Comment("Minimum NDOF for stereo line fit to be used in output ComboHits") };
         fhicl::Atom<std::string>         smask    { Name("SelectionMask"),   Comment("define the mask to select hits") };
       };
 
@@ -89,6 +90,7 @@ namespace mu2e {
       bool          _testflag;   // test the flag or not
       bool          _filter;
       bool          _sline;      // fit to a line
+      unsigned      _slinendof;  // minimum NDOF to use the sline fit when producing output ComboHits
       StrawIdMask   _smask;      // mask for combining hits
 
       std::array<std::vector<StrawId>,StrawId::_nupanels > _panelOverlap;   // which panels overlap each other
@@ -117,6 +119,7 @@ namespace mu2e {
     _testflag(config().testflag()),
     _filter(config().filter()),
     _sline(config().sline()),
+    _slinendof(config().slinendof()),
     _smask(config().smask())
     {
       produces<ComboHitCollection>();
@@ -248,7 +251,8 @@ namespace mu2e {
     if(sth){
     // solve for the line
       StereoLine sline;
-      sth = cpts.stereoLine(sline);
+      sth = cpts.stereoLine(sline) && sline.ndof_ >= _slinendof;
+      // if the fit succeeded and has enough NDOF use it to fill the ComboHit
       if(sth){
         combohit._pos = sline.pos(sline.z0());
         // create a 2-D point from the upper component of this
@@ -270,11 +274,13 @@ namespace mu2e {
         combohit._hphivar = ROOT::Math::Similarity(dPhidR,dmat);
         // fit quality
         combohit._qual = TMath::Prob(sline.chisq(),sline.ndof());
+        // flag this hit as having stereo line information
+        combohit._flag.merge(StrawHitFlag::sline);
       }
     }
+    // otherwise, fall back to the 2D projection
+    // fill position and variance from combined info
     if(!sth){
-      // fall back to the 2D projection
-      // fill position and variance from combined info
       auto const& pt = cpts.point();
       combohit._pos = pt.pos3();
       combohit._udir = pt.udir();

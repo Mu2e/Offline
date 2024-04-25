@@ -29,14 +29,6 @@ physics : {
     # Run G4 and add its output to the event.
     g4run : @local::g4run
 
-    # Work needed to setup the digi makers.
-    @table::CommonMC.producers
-    @table::TrackerMC.producers
-
-    # Calorimeter sequence
-    @table::CaloMC.producers
-    @table::CaloReco.producers
-
     # Save state of the random number engines.
     randomsaver : @local::randomsaver
 
@@ -68,8 +60,7 @@ physics : {
 
   }
 
-  p1 : [generate , g4run, @sequence::CommonMC.DigiSim, @sequence::TrackerMC.StepAndDigiSim, @sequence::CaloMC.StepAndDigiSim, @sequence::CaloReco.Reco,randomsaver ]
-#  e1 : [readGens, checkhits, readvd, outfile, dump]
+  p1 : [generate , g4run, randomsaver ]
   e1 : [readGens, checkhits, readvd, outfile]
 
   trigger_paths  : [p1]
@@ -83,16 +74,8 @@ outputs:  {
     module_type   :   RootOutput
     fileName      :   "transportOnly.art"
   }
-  # Print info about all data products in the file.
-#  dump:
-#  {
-#    module_type   : DataProductDump
-#    # temporary patch for crash until art 2_10 or 2_11
-#    wantResolvedOnly: true
-#  }
 
 }
-physics.producers.EWMProducer.SpillType : 1
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :   8
@@ -104,19 +87,9 @@ services.TimeTracker.printSummary: true
 // Disable all physics except transport.
 physics.producers.g4run.physics.physicsListName: "Minimal"
 
-# physics.producers.g4run.SDConfig.enableAllSDs : true
 physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
-#physics.producers.g4run.SDConfig.enableSD     : @erase
 
 # mu stops
 physics.producers.generate.muonStops.inputFiles : @local::mergedMuon_tgtStops_mdc2018
 
-// Enable diagnsotic printout for pedagogical purposes.
-physics.producers.makeSH.diagLevel     : 0
-physics.producers.makeSH.maxFullPrint  : 5
-physics.producers.makeSH.minimumEnergy : 0
-
-#physics.producers.g4run.visualization.initMacro : "Mu2eG4/vis/vismqt.mac"
-#physics.producers.CaloShowerStepMaker.physVolInfoInput : "g4run"
 physics.producers.g4run.debug.diagLevel : 1
-#physics.producers.g4run.debug.worldVerbosityLevel : 1

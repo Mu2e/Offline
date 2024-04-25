@@ -46,6 +46,7 @@ namespace mu2e {
       bitnames[std::string("Dead")]                 = bit_to_mask(dead);
       bitnames[std::string("Noisy")]                = bit_to_mask(noisy);
       bitnames[std::string("NHitSelection")]        = bit_to_mask(nhitsel);
+      bitnames[std::string("StereoLineFit")]        = bit_to_mask(sline);
     }
     return bitnames;
   }

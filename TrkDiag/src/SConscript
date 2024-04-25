@@ -14,6 +14,7 @@ rootlibs  = env['ROOTLIBS']
 babarlibs = env['BABARLIBS']
 
 mainlib = helper.make_mainlib ( [
+  'openblas',
   'mu2e_TrkReco',
   'mu2e_ParticleID',
   'mu2e_BTrkData',
@@ -52,11 +53,14 @@ mainlib = helper.make_mainlib ( [
   'xerces-c',
   'boost_filesystem',
   'hep_concurrency',
+  'TMVA',
+  'ROOTTMVASofie'
   ] )
 
 # Fixme: split into link lists for each module.
 helper.make_plugins( [
   mainlib,
+  'openblas',
   'mu2e_TrkReco',
   'mu2e_ParticleID',
   'mu2e_BTrkData',
@@ -104,6 +108,8 @@ helper.make_plugins( [
   'xerces-c',
   'boost_filesystem',
   'hep_concurrency',
+  'TMVA',
+  'ROOTTMVASofie',
 'pthread'
     ] )
 
