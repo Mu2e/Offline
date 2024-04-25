@@ -1,23 +1,20 @@
 //
-// MC relationships of some objects.  Extracted from KalDiag
+// MC relationships of some objects
 // Dave Brown, LBNL, 20 Jun 2016
 //
 #ifndef MCRelationship_HH
 #define MCRelationship_HH
-// art
-#include "canvas/Persistency/Common/Ptr.h"
-// MC data
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-namespace mu2e
-{
- // some convenient typedefs
+#include <cstdint>
+namespace art { template <typename product> class Ptr; }
+namespace mu2e {
+  class SimParticle;
+  class StrawDigiMC;
   class MCRelationship {
     public:
     typedef art::Ptr<SimParticle> SPPtr;
     // values of relationship of 2 MC objects
-    enum relation {none=-1,same=0,daughter,mother,sibling,udaughter,umother,usibling};
-    relation relationship() const { return relation(_rel); }
+    enum relation : int8_t {none=-1,same=0,daughter,mother,sibling,udaughter,umother,usibling};
+    relation relationship() const { return (relation)_rel; }
     int8_t removal() const { return _rem; } // relationship generational distance
     // convenience operators
     bool operator ==(MCRelationship const& other ) const { return _rel == other._rel; }
@@ -44,8 +41,8 @@ namespace mu2e
     // from the mixture
     MCRelationship(StrawDigiMC const& mcd, SPPtr const& spp);
     private:
-    int8_t _rel; // relationship
-    int8_t _rem; // distance between relationship
+    int8_t _rel = none; // relationship
+    int8_t _rem = -1; // distance between relationship
   };
 }
 #endif

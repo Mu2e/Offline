@@ -1,2 +1,0 @@
-physics.filters.tprHelixUePEventPrescale.nPrescale    : 1
-physics.filters.tprHelixUePEventPrescale.triggerFlag  : ["PrescaleRandom"]

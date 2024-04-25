@@ -37,14 +37,6 @@ physics : {
     # Run G4 and add its output to the event.
     g4run : @local::g4run
 
-    # Work needed to setup the digi makers.
-    @table::CommonMC.producers
-    @table::TrackerMC.producers
-
-    # Calorimeter sequence
-    @table::CaloMC.producers
-    @table::CaloReco.producers
-
     # Save state of the random number engines.
     randomsaver : @local::randomsaver
 
@@ -68,8 +60,7 @@ physics : {
 
   }
 
-  p1 : [generate, g4run, @sequence::CommonMC.DigiSim, @sequence::TrackerMC.StepAndDigiSim, @sequence::CaloMC.StepAndDigiSim,
-         @sequence::CaloReco.Reco,randomsaver ]
+  p1 : [generate, g4run, randomsaver ]
   e1 : [readGens, checkhits, outfile]
 
   trigger_paths  : [p1]
@@ -94,20 +85,12 @@ services.SeedService.maxUniqueEngines :  20
 services.scheduler.wantSummary: true
 services.TimeTracker.printSummary: true
 
-# physics.producers.g4run.SDConfig.enableAllSDs : true
 physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
-# physics.producers.g4run.BirksConsts : { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV }
 
 # mu stops
 physics.producers.generate.muonStops.inputFiles : @local::mergedMuon_tgtStops_mdc2018
 
 // Enable diagnsotic printout for pedagogical purposes.
-physics.producers.makeSH.diagLevel : 0
-physics.producers.makeSH.maxFullPrint : 5
-#physics.producers.g4run.visualization.initMacro : "Mu2eG4/vis/vismqt.mac"
-physics.producers.CaloShowerStepMaker.physVolInfoInput : "g4run"
-#physics.producers.g4run.physics.turnOffRadioactiveDecay: true
-#physics.producers.g4run.physics.addProcesses : [ "GammaToMuPair", "AnnihiToMuPair", "ee2hadr" ]
 #physics.producers.g4run.debug.diagLevel : 1
-#physics.producers.g4run.physics.minRangeRegionCuts: {
-#   CalorimeterMother : 0.1 TrackerMother : 0.001 } // {RegionName : mm }
+// Demonstrate how to change the physics list
+// physics.producers.g4run.physics.physicsListName : "QGSP_BERT_HP"

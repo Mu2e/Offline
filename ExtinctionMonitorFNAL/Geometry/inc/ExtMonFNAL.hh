@@ -20,7 +20,6 @@
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlane.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
-#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMuonID.hh"
 
 namespace mu2e {
 
@@ -50,8 +49,6 @@ namespace mu2e {
 
 
       const ExtMonFNALMagnet& spectrometerMagnet() const { return spectrometerMagnet_; }
-
-      const ExtMonFNALMuonID& muonID() const { return muonID_; }
 
       // Location of the detector == that of the upstream stack.
       CLHEP::Hep3Vector detectorCenterInMu2e() const;
@@ -85,9 +82,6 @@ namespace mu2e {
       }
       CLHEP::Hep3Vector stackToExtMon_position(const CLHEP::Hep3Vector& pos) const {
         return (pos.z() < 0) ? dnStackToExtMon_position(pos) : upStackToExtMon_position(pos);
-      }
-      CLHEP::Hep3Vector muonIDToExtMon_position(const CLHEP::Hep3Vector& muonIDpos) const {
-        return dnToExtMonCoordinateRotation_ * muonIDpos;
       }
 
       //----------------------------------------------------------------
@@ -127,7 +121,6 @@ namespace mu2e {
       ExtMonFNALPlaneStack up_;
       ExtMonFNALPlaneStack dn_;
       ExtMonFNALMagnet spectrometerMagnet_;
-      ExtMonFNALMuonID muonID_;
       CLHEP::HepRotationX dnToExtMonCoordinateRotation_;
     };
 

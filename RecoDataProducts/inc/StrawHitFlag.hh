@@ -20,7 +20,7 @@ namespace mu2e {
     calosel=12, strawxtalk=13, elecxtalk=14, trksel=15,
     active=16,doca=17, resolvedphi=18,
     calopresel=19, intime=20, panelcombo=21, track=22,
-    dead=23, noisy=24, nhitsel=25};
+    dead=23, noisy=24, nhitsel=25, sline=26};
     // functions needed for the BitMap template
     static std::string const& typeName();
     static std::map<std::string,mask_type> const& bitNames();

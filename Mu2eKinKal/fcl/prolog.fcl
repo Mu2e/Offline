@@ -14,6 +14,7 @@ Mu2eKinKal : {
   KKFIT: {
     PrintLevel : 0
     TPOCAPrecision : 1e-4 # mm
+    MinNStrawHits : 5
     UseCaloCluster : true
     MaterialCorrection : true
     AddHits : true
@@ -35,7 +36,11 @@ Mu2eKinKal : {
     MaxDStraw : 2 # integer (straw)
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
-    SampleTimeBuffer : 10.0 # time buffer on trajectory ends for finding intersections with sample surfaces
+    SampleTimeBuffer : 0.1 # time buffer for intersections (ns)
+    SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
+    SampleInRange : true # require sample be in time range
+    SampleInBounds : false # require sample be in surface bounds
+    SaveTrajectory : "Full" # save the entire fit result trajectory in the KalSeed
   }
 
    CHSEEDFIT: {
@@ -109,8 +114,6 @@ Mu2eKinKal : {
       [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.2,"Inactive", 1]
     ]
   }
-
-
 
   SEEDFIT: {
     PrintLevel : 0
@@ -219,7 +222,7 @@ Mu2eKinKal : {
       [ 0.0, "CADSHU:DriftANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ],
-      [ 0.0, "CADSHU:DriftANNSHU:BkgANNSHU" ],
+      [ 0.0, "CADSHU:BkgANNSHU:DriftANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ]
     ]
     CADSHUSettings : [
@@ -236,8 +239,8 @@ Mu2eKinKal : {
     ]
 
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.1,"Inactive", 1],
-      [ "Offline/Mu2eKinKal/data/TrainBkgFinal.dat",0.1,"Inactive", 1]
+      [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.2,"Inactive", 1],
+      [ "Offline/Mu2eKinKal/data/TrainBkgFinal.dat",0.2,"Inactive", 1]
     ]
 
     DriftANNSHUSettings : [
@@ -272,6 +275,9 @@ Mu2eKinKal : {
   LOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     SeedFlags : [ "HelixOK" ]
+    ExtrapolateSurfaces : ["TT_Front","TT_Back"]
+    ExtrapolationTolerance : 1.0e-3
+    ExtrapolationMaxDt : 100.0 # (ns)
   }
 
   CENTRALHELIX : {
@@ -282,6 +288,9 @@ Mu2eKinKal : {
     SeedFlags : [ "HelixOK" ]
     TimeClusterCollection : "SimpleTimeCluster"
     PanelHitCollection : "makePH"
+    ExtrapolateSurfaces : ["TT_Front","TT_Back","TT_Outer"]
+    ExtrapolationTolerance : 1.0e-3
+    ExtrapolationMaxDt : 100.0
   }
 
   KINEMATICLINE : {
@@ -292,6 +301,9 @@ Mu2eKinKal : {
     ComboHitCollection : "makeSH"
     CaloClusterCollection : "CaloClusterMaker"
     SeedFlags : [ "HelixOK" ]
+    ExtrapolateSurfaces : ["TT_Front","TT_Back","TT_Outer"]
+    ExtrapolationTolerance : 1.0e-3
+    ExtrapolationMaxDt : 100.0
   }
 }
 
@@ -304,7 +316,6 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Front","TT_Mid","TT_Back"]
-      ExtendSurfaces : ["TT_Front","TT_Back"]
     }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
@@ -318,7 +329,6 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Front","TT_Mid","TT_Back"]
-      ExtendSurfaces : ["TT_Front","TT_Back"]
     }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
@@ -341,13 +351,13 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
-      ExtendSurfaces : ["TT_Front","TT_Back","TT_Outer"]
       SampleTimeBuffer : 100
     }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : {
       @table::Mu2eKinKal.DRIFTEXT
       BFieldCorrection : false
+      ProcessEnds : false
       MetaIterationSettings : [
         # annealing temp, strawhit updater algorithms
         [ 2.0, "CADSHU" ],
@@ -370,7 +380,6 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
-      ExtendSurfaces : ["TT_Front","TT_Back","TT_Outer"]
       SampleTimeBuffer : 100
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
@@ -384,7 +393,6 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
-      ExtendSurfaces : ["TT_Front","TT_Back","TT_Outer"]
       SampleTimeBuffer : 100
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT

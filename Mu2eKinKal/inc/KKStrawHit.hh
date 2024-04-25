@@ -10,7 +10,7 @@
 #include "KinKal/Detector/ResidualHit.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
-#include "KinKal/Trajectory/Line.hh"
+#include "KinKal/Trajectory/SensorLine.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 #include "KinKal/Trajectory/ClosestApproach.hh"
 #include "KinKal/General/BFieldMap.hh"
@@ -31,7 +31,7 @@
 #include <cmath>
 namespace mu2e {
   using KinKal::BFieldMap;
-  using KinKal::Line;
+  using KinKal::SensorLine;
   using KinKal::MetaIterConfig;
   using KinKal::POL2;
   using KinKal::Residual;
@@ -45,8 +45,8 @@ namespace mu2e {
       using HIT = KinKal::Hit<KTRAJ>;
       using RESIDHIT = KinKal::ResidualHit<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
-      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
-      using CA = KinKal::ClosestApproach<KTRAJ,Line>;
+      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
+      using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       KKStrawHit(BFieldMap const& bfield, PCA const& pca,
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
       // Hit interface implementations
@@ -82,7 +82,7 @@ namespace mu2e {
       WireHitState whstate_; // current state
       double dVar_; // drift distance variance value
       double dDdT_; // drift distance time derivative, crudely the drift velocity
-      Line wire_; // local linear approximation to the wire of this hit, encoding all (local) position and time information.
+      SensorLine wire_; // local linear approximation to the wire of this hit, encoding all (local) position and time information.
       // the start time is the measurement time, the direction is from
       // the physical source of the signal (particle) to the measurement recording location (electronics), the direction magnitude
       // is the effective signal propagation velocity along the wire, and the time range describes the active wire length
@@ -111,12 +111,13 @@ namespace mu2e {
     ca_(pca.localTraj(),wire_,pca.precision(),pca.tpData(),pca.dDdP(),pca.dTdP()),
     chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse)
   {
+    if(!pca.usable())whstate_.state_ = WireHitState::unusable;
     // make sure this is a single-straw based ComboHit
     if(chit_.mask().level() != StrawIdMask::uniquestraw)
       throw cet::exception("RECO")<<"mu2e::KKStrawHit: ComboHit doesn't correspond to a unique straw"<< std::endl;
   }
 
-  template <class KTRAJ> KinKal::ClosestApproach<KTRAJ,Line> KKStrawHit<KTRAJ>::unbiasedClosestApproach() const {
+  template <class KTRAJ> KinKal::ClosestApproach<KTRAJ,SensorLine> KKStrawHit<KTRAJ>::unbiasedClosestApproach() const {
     // compute the unbiased closest approach; this is brute force, but works
     auto const& ca = this->closestApproach();
     auto uparams = HIT::unbiasedParameters();
@@ -148,8 +149,8 @@ namespace mu2e {
     if(ca.usable()){
       auto dinfo = fillDriftInfo();
       // there can be multiple updaters: apply them all
-      if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
+      if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(driftshu)whstate_ = driftshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(whstate_.driftConstraint()){
         dVar_ = dinfo.driftHitVar();

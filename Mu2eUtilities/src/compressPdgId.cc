@@ -74,24 +74,24 @@ namespace mu2e {
     return code;
   }
 
-  TH1D compressPDGCodeHisto(std::string name, std::string title) {
+  TH1D* compressPDGCodeHisto(art::ServiceHandle<art::TFileService> tfs,
+                             std::string name, std::string title) {
 
     float low = float(CompressedPDGCode::minBin) - 0.5;
     float hgh = float(CompressedPDGCode::maxBin) + 0.5;
     int nbin = CompressedPDGCode::maxBin - CompressedPDGCode::minBin +1;
 
-    TH1D hh(name.c_str(),title.c_str(),nbin,low,hgh);
+    auto hp = tfs->make<TH1D>(name.c_str(),title.c_str(),nbin,low,hgh);
 
     int rootBin = 0;
     for(int ibin=CompressedPDGCode::minBin;
         ibin<=CompressedPDGCode::maxBin; ibin++) {
       rootBin++;
       std::string name = CompressedPDGCode(ibin,false).name();
-      std::cout << rootBin << " " << name << "\n";
-      hh.GetXaxis()->SetBinLabel(rootBin,name.c_str());
+      hp->GetXaxis()->SetBinLabel(rootBin,name.c_str());
     }
 
-    return hh;
+    return hp;
   }
 
 

@@ -33,15 +33,11 @@ namespace mu2e {
 
   class ConstructEnvNBoxes: public InitEnvToolBase {
   public:
-    ConstructEnvNBoxes(const fhicl::ParameterSet& PSet);
+    ConstructEnvNBoxes(const fhicl::ParameterSet& PSet) {}
     int construct(VolumeInfo const& ParentVInfo, SimpleConfig const& Config);
   };
 
 
-//-----------------------------------------------------------------------------
-  ConstructEnvNBoxes::ConstructEnvNBoxes(const fhicl::ParameterSet& PSet) {
-    _name = "NBoxes";
-  }
 //-----------------------------------------------------------------------------
   int ConstructEnvNBoxes::construct(VolumeInfo const& parentVInfo, SimpleConfig const& _config) {
 

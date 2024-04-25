@@ -92,15 +92,20 @@ struct LookupBin
 class MakeCrvPhotons
 {
   public:
+    static const int _nSiPMs=4;
 
     MakeCrvPhotons(CLHEP::RandFlat &randFlat, CLHEP::RandGaussQ &randGaussQ, CLHEP::RandPoissonQ &randPoissonQ) :
-                                                      _randFlat(randFlat), _randGaussQ(randGaussQ), _randPoissonQ(randPoissonQ) {}
+                                                      _randFlat(randFlat), _randGaussQ(randGaussQ), _randPoissonQ(randPoissonQ)
+    {
+      _scintillationYield=39400;
+      for(int i=0; i<_nSiPMs; ++i) _photonYieldDeviation[i]=1.0;
+    }
 
     ~MakeCrvPhotons();
 
     const std::string         &GetFileName() const {return _fileName;}
 
-  void                      LoadLookupTable(const std::string &filename, int debug);
+    void                      LoadLookupTable(const std::string &filename, int debug);
     void                      MakePhotons(const CLHEP::Hep3Vector &stepStart,   //they need to be points
                                       const CLHEP::Hep3Vector &stepEnd,         //local to the CRV bar
                                       double timeStart, double timeEnd,
@@ -111,14 +116,16 @@ class MakeCrvPhotons
     int                       GetNumberOfPhotons(int SiPM);
     const std::vector<double> &GetArrivalTimes(int SiPM);
     void                      SetScintillationYield(double yield) {_scintillationYield=yield;}
+    void                      SetPhotonYieldDeviation(double deviation, int SiPM) {_photonYieldDeviation[SiPM]=deviation;}
 
   private:
 
     std::string               _fileName;
     int                       _reflector;
 
-    std::vector<double>       _arrivalTimes[4];
+    std::vector<double>       _arrivalTimes[_nSiPMs];
     double                    _scintillationYield;
+    double                    _photonYieldDeviation[_nSiPMs];
 
     LookupConstants           _LC;
     LookupCerenkov            _LCerenkov;
