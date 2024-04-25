@@ -145,7 +145,8 @@ namespace mu2e
           // Fill the trigger info object
           // associate to the helix which triggers.  Note there may be other helices which also pass the filter
           // but filtering is by event!
-          triginfo->_tracks.push_back(KalSeed(ks));
+          size_t index = std::distance(kscol->begin(),iks);
+          triginfo->_tracks.push_back(art::Ptr<KalSeed>(ksH,index));
 
           if(_debug > 1){
             std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;

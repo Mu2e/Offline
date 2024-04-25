@@ -1098,12 +1098,14 @@ namespace mu2e {
             _trigHelix[index].counts = _trigHelix[index].counts + 1;
             passed = true;
             nTrigObj=0;
-            for (auto const& hseed: trigInfo->helixes()){
-              ++nTrigObj;
-              fillHelixTrigInfo(index, &hseed, _helHist);
-              if (passed) {
-                passed = false;
-                fillOccupancyInfo(_nTrackTrig+index, sdCol, cdCol, _occupancyHist);
+            for (auto const hseed: trigInfo->helixes()){
+              if(hseed){
+                ++nTrigObj;
+                fillHelixTrigInfo(index, hseed.get(), _helHist);
+                if (passed) {
+                  passed = false;
+                  fillOccupancyInfo(_nTrackTrig+index, sdCol, cdCol, _occupancyHist);
+                }
               }
             }//end loop over the helix-collection
             _helHist._hHelInfo[i][120]->Fill(nTrigObj);
@@ -1114,12 +1116,14 @@ namespace mu2e {
             _trigTrack[index].counts = _trigTrack[index].counts + 1;
             passed = true;
             nTrigObj=0;
-            for (auto const& kseed: trigInfo->tracks()){
-              ++nTrigObj;
-              fillTrackTrigInfo(index, &kseed, _trkHist);
-              if (passed) {
-                passed = false;
-                fillOccupancyInfo(index, sdCol, cdCol, _occupancyHist);
+            for (auto const kseed: trigInfo->tracks()){
+              if(kseed){
+                ++nTrigObj;
+                fillTrackTrigInfo(index, kseed.get(), _trkHist);
+                if (passed) {
+                  passed = false;
+                  fillOccupancyInfo(index, sdCol, cdCol, _occupancyHist);
+                }
               }
             }//end loop over the kaseed-collection
             _trkHist._hTrkInfo[i][40]->Fill(nTrigObj);
@@ -1135,9 +1139,11 @@ namespace mu2e {
             _trigCaloCalib[index].counts = _trigCaloCalib[index].counts + 1;
             passed = false;
             nTrigObj=0;
-            for (auto const &cluster : trigInfo->caloClusters()){
-              ++nTrigObj;
-              fillCaloCalibTrigInfo(index, &cluster, _caloCalibHist);
+            for (auto const cluster : trigInfo->caloClusters()){
+              if(cluster){
+                ++nTrigObj;
+                fillCaloCalibTrigInfo(index, cluster.get(), _caloCalibHist);
+              }
             }//end loop over the cluster-collection
             trigFlag_index.push_back(index_all);
           }else if ( ( moduleLabel.find("caloMVANNCEFilter") != std::string::npos) || ( moduleLabel.find("caloPhotonFilter") != std::string::npos)){ //( (moduleLabel.find("caloMVACEFilter") != std::string::npos) || (moduleLabel.find("caloLHCEFilter") != std::string::npos) ){
@@ -1146,12 +1152,14 @@ namespace mu2e {
             _trigCaloOnly[index].counts = _trigCaloOnly[index].counts + 1;
             passed = true;
             nTrigObj=0;
-            for (auto const& clseed: trigInfo->caloClusters()){
-              ++nTrigObj;
-              fillCaloCalibTrigInfo(index, &clseed, _caloTSeedHist);
-              if (passed) {
-                passed = false;
-                fillOccupancyInfo   (_nTrackTrig*2+index, sdCol, cdCol, _occupancyHist);
+            for (auto const clseed: trigInfo->caloClusters()){
+              if(clseed){
+                ++nTrigObj;
+                fillCaloCalibTrigInfo(index, clseed.get(), _caloTSeedHist);
+                if (passed) {
+                  passed = false;
+                  fillOccupancyInfo   (_nTrackTrig*2+index, sdCol, cdCol, _occupancyHist);
+                }
               }
             }//end loop
             //_caloTSeedHist._hCaloOnlyInfo[i][20]->Fill(nTrigObj);
