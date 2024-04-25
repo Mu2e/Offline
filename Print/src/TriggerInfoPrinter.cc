@@ -49,26 +49,32 @@ void mu2e::TriggerInfoPrinter::Print(const mu2e::TriggerInfo& obj, int ind,
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   std::string avail;
   avail = "";
-  if (obj.caloClusters().size() == 0) avail = ", some unavailable";
+  for (const auto& x : obj.caloClusters())
+    if (!x.isAvailable()) avail = ", some unavailable";
   os << std::setw(4) << obj.caloClusters().size() << " caloClusters" << avail
      << std::endl;
   avail = "";
-  if (obj.tracks().size() == 0) avail = ", some unavailable";
+  for (const auto& x : obj.tracks())
+    if (!x.isAvailable()) avail = ", some unavailable";
   os << std::setw(4) << obj.tracks().size() << " tracks" << avail << std::endl;
   avail = "";
-  if (obj.helixes().size() ==0) avail = ", some unavailable";
+  for (const auto& x : obj.helixes())
+    if (!x.isAvailable()) avail = ", some unavailable";
   os << std::setw(4) << obj.helixes().size() << " helixes" << avail
      << std::endl;
   avail = "";
-  if (obj.hitClusters().size() == 0) avail = ", some unavailable";
+  for (const auto& x : obj.hitClusters())
+    if (!x.isAvailable()) avail = ", some unavailable";
   os << std::setw(4) << obj.hitClusters().size() << " hitClusters" << avail
      << std::endl;
   avail = "";
-  if (obj.caloTrigSeeds().size() == 0) avail = ", some unavailable";
+  for (const auto& x : obj.caloTrigSeeds())
+    if (!x.isAvailable()) avail = ", some unavailable";
   os << std::setw(4) << obj.caloTrigSeeds().size() << " caloTrigSeeds" << avail
      << std::endl;
   avail = "";
-  if (obj.cosmics().size() == 0) avail = ", some unavailable";
+  for (const auto& x : obj.cosmics())
+    if (!x.isAvailable()) avail = ", some unavailable";
   os << std::setw(4) << obj.cosmics().size() << " cosmics" << avail
      << std::endl;
 }

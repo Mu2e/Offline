@@ -155,7 +155,8 @@ bool CaloClusterCounter::filter(art::Event& event) {
         (cluster.energyDep() >= _minClEnergy) && (cluster.energyDep() <= _maxClEnergy) &&
         (cluster.size() >= _minNCel) && (cluster.size() <= _maxNCel) &&
         (clRadius >= _minClRadius)) {
-      triginfo->_caloClusters.push_back(CaloCluster(cluster));
+      size_t index = std::distance(caloClusters->begin(), icl);
+      triginfo->_caloClusters.push_back(art::Ptr<CaloCluster>(clH, index));
 
       ++nClusterAboveThreshold;
     }

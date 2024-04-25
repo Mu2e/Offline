@@ -81,7 +81,9 @@ namespace mu2e
         // Fill the trigger info object
         // associate to the hit cluster which triggers.  Note there may be other hit clusters which also pass the filter
         // but filtering is by event!
-        triginfo->_hitClusters.push_back(TimeCluster(tc));
+        size_t index = std::distance(tccol->begin(),itc);
+        triginfo->_hitClusters.push_back(art::Ptr<TimeCluster>(tcH,index));
+
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }

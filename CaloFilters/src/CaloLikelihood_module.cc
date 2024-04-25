@@ -412,7 +412,9 @@ namespace mu2e {
         // Fill the trigger info object
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
-        triginfo->_caloClusters.push_back(CaloCluster(cluster));
+        size_t index = std::distance(caloClusters->begin(), icl);
+        triginfo->_caloClusters.push_back(art::Ptr<CaloCluster>(clH, index));
+
         if(_diagLevel > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << event.id() << std::endl;
         }

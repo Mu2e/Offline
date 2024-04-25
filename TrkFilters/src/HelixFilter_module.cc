@@ -273,7 +273,9 @@ namespace mu2e
         // Fill the trigger info object
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
-        triginfo->_helixes.push_back(HelixSeed(hs));
+        size_t index = std::distance(hscol->begin(),ihs);
+        triginfo->_helixes.push_back(art::Ptr<HelixSeed>(hsH,index));
+
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
