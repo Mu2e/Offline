@@ -32,15 +32,20 @@ namespace mu2e {
     typedef std::array<SGSP,StrawEnd::nends> SGSPA;
     typedef std::array<XYZVectorF,StrawEnd::nends> PA;
     typedef std::array<float,StrawEnd::nends> FA;
+    enum Validity {Valid, PartiallyValid, Invalid};
 
     StrawDigiMC();
     // construct from hitlets
-    StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs);
+    StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, Validity=Valid);
 
     // use compuater copy construcors
     StrawDigiMC(const StrawDigiMC& rhs, SGSPA sgsp ); // update the Ptrs
+    StrawDigiMC(const StrawDigiMC& rhs, Validity validity ); // update validity
+
     // Accessors
     StrawId strawId() const { return _strawid; }
+
+    Validity validity() const { return _validity; }
 
     SGSP const&  strawGasStep(StrawEnd strawend) const { return _sgspa[strawend]; }
     SGSPA const&  strawGasSteps() const { return _sgspa; }
@@ -68,6 +73,7 @@ namespace mu2e {
     FA _ctime; // times of the trigger clusters
     FA _wtime; // times at the wire ends of the signals which fired the TDC.
     SGSPA _sgspa; // StrawGasStep that triggered each end
+    Validity _validity; // level of association with any true MC events
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
