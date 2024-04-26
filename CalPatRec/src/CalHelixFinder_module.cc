@@ -35,12 +35,12 @@
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 #include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
+#include "Offline/Mu2eUtilities/inc/HelixTool.hh"
 
 #include "TVector2.h"
 #include "TSystem.h"
 #include "TInterpreter.h"
 
-using namespace std;
 using namespace boost::accumulators;
 using CLHEP::HepVector;
 using CLHEP::Hep3Vector;
@@ -55,21 +55,28 @@ namespace mu2e {
     _debugLevel         (pset.get<int>   ("debugLevel"                     )),
     _printfreq          (pset.get<int>   ("printFrequency"                 )),
     _useAsFilter        (pset.get<int>   ("useAsFilter"                    )),
-    _shLabel            (pset.get<string>("StrawHitCollectionLabel"        )),
-    _timeclLabel        (pset.get<string>("TimeClusterCollectionLabel"     )),
+    _shLabel            (pset.get<std::string>("StrawHitCollectionLabel"        )),
+    _timeclLabel        (pset.get<std::string>("TimeClusterCollectionLabel"     )),
     _minNHitsTimeCluster(pset.get<int>   ("minNHitsTimeCluster"            )),
     _tpart              ((TrkParticle::type)(pset.get<int>("fitparticle"))),
     _fdir               ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
+    _doSingleOutput     (pset.get<bool>  ("doSingleOutput")),
     _hfinder            (pset.get<fhicl::ParameterSet>("HelixFinderAlg",fhicl::ParameterSet())){
       consumes<ComboHitCollection>(_shLabel);
       consumes<TimeClusterCollection>(_timeclLabel);
 
-      std::vector<int> helvals = pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel}); //pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel});
+      std::vector<int> helvals = pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel});
       for(auto hv : helvals) {
-      Helicity hel(hv);
-      _hels.push_back(hel);
-      produces<HelixSeedCollection>(Helicity::name(hel));
-    }
+          Helicity hel(hv);
+          _hels.push_back(hel);
+      }
+      if (_doSingleOutput){
+        produces<HelixSeedCollection>();
+      } else {
+        for(auto hel : _hels) {
+          produces<HelixSeedCollection>(Helicity::name(hel));
+        }
+      }
 //-----------------------------------------------------------------------------
 // provide for interactive disanostics
 //-----------------------------------------------------------------------------
@@ -214,12 +221,17 @@ namespace mu2e {
 
     if ((_debugLevel > 0) && (_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 
-    std::map<Helicity,unique_ptr<HelixSeedCollection>> helcols;
+    std::map<Helicity,std::unique_ptr<HelixSeedCollection>> helcols;
     int counter(0);
-    for( auto const& hel : _hels) {
-      helcols[hel] = unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
+    if (!_doSingleOutput)  {
+      for( auto const& hel : _hels) {
+        helcols[hel] = std::unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
+        _data.nseeds [counter] = 0;
+        ++counter;
+      }
+    }else {
+      helcols[0] = std::unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
       _data.nseeds [counter] = 0;
-      ++counter;
     }
     //    unique_ptr<HelixSeedCollection>    outseeds(new HelixSeedCollection);
 //-----------------------------------------------------------------------------
@@ -296,6 +308,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       if ( (index_best>=0) && (index_best < 2) ){
         Helicity              hel_best = helix_seed_vec[index_best]._helix._helicity;
+        if (_doSingleOutput) {
+          hel_best = 0;
+        }
         HelixSeedCollection*  hcol     = helcols[hel_best].get();
         helix_seed_vec[index_best]._status.merge(TrkFitFlag::helixOK);
         hcol->push_back(helix_seed_vec[index_best]);
@@ -304,6 +319,9 @@ namespace mu2e {
         for (unsigned k=0; k<_hels.size(); ++k){
           helix_seed_vec[k]._status.merge(TrkFitFlag::helixOK);
           Helicity              hel_best = helix_seed_vec[k]._helix._helicity;
+          if (_doSingleOutput) {
+            hel_best = 0;
+          }
           HelixSeedCollection*  hcol     = helcols[hel_best].get();
           hcol->push_back(helix_seed_vec[k]);
         }
@@ -406,17 +424,16 @@ namespace mu2e {
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
   END:;
-    int    nseeds(0);// = outseeds->size();
-    for(auto const& hel : _hels ) {
-      nseeds += helcols[hel]->size();
-        // set the flag here: This should be set on initialization FIXME!
-      for(auto & helix : *helcols[hel] ) {
-        helix._status.merge(TrkFitFlag::CPRHelix);
+    int    nseeds(0);
+    if (_doSingleOutput) {
+      nseeds += helcols[0]->size();
+      event.put(std::move(helcols[0]));
+    }else    {
+      for(auto const& hel : _hels ) {
+        nseeds += helcols[hel]->size();
+        event.put(std::move(helcols[hel]),Helicity::name(hel));
       }
-
-      event.put(std::move(helcols[hel]),Helicity::name(hel));
     }
-    // event.put(std::move(outseeds));
 //-----------------------------------------------------------------------------
 // filtering
 //-----------------------------------------------------------------------------
@@ -460,7 +477,8 @@ namespace mu2e {
 
     HelSeed._helix._fz0      = phi0 - M_PI/2.*_hfinder._dfdzsign -z0*hel->omega()/hel->tanDip() ;
 
-    HelSeed._helix._helicity = HfResult._helicity;//_dfdzsign > 0 ? Helicity::poshel : Helicity::neghel;
+    HelSeed._helix._helicity = HfResult._helicity;
+    HelSeed._status.merge(TrkFitFlag::CPRHelix);
 
     //include also the values of the chi2d
     HelSeed._helix._chi2dXY   = HfResult._sxy.chi2DofCircle();
@@ -499,6 +517,14 @@ namespace mu2e {
 
       HelSeed._hhits.push_back(hhit);
     }
+
+    //now set the HelixRecoDir
+    HelixTool ht(&HelSeed, _tracker);
+    float     slope(0), slopeErr(0), chi2ndof(0);
+    ht.dirOfProp(slope, slopeErr, chi2ndof);
+    HelSeed._recoDir._slope    = slope;
+    HelSeed._recoDir._slopeErr = slopeErr;
+    HelSeed._recoDir._chi2ndof = chi2ndof;
   }
 
 //-----------------------------------------------------------------------------

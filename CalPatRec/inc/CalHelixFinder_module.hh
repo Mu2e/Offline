@@ -93,6 +93,7 @@ namespace mu2e {
 
     TrkParticle                           _tpart;                // particle type being searched for
     TrkFitDirection                       _fdir;                // fit direction in search
+    bool                                  _doSingleOutput;
 //-----------------------------------------------------------------------------
 // cache of event objects
 //-----------------------------------------------------------------------------

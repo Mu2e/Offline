@@ -11,6 +11,7 @@
 #include "Offline/RecoDataProducts/inc/RobustHelix.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/HelixRecoDir.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include <vector>
 
@@ -24,13 +25,15 @@ namespace mu2e {
     ComboHitCollection const& hits() const { return _hhits; }
     RobustHelix const& helix() const { return _helix; }
     TrkFitFlag const& status() const { return _status; }
+    HelixRecoDir const& recoDir() const { return _recoDir; }
     art::Ptr<CaloCluster> const& caloCluster() const { return _timeCluster->caloCluster(); }
     art::Ptr<TimeCluster> const& timeCluster() const { return _timeCluster; }
 
-    TrkT0                     _t0;              // t0 for this helix
-    ComboHitCollection       _hhits;              // hits potentially used for this helix
-    RobustHelix              _helix;             // robust helix created from these hits
-    TrkFitFlag                     _status;      // status of processes used to create this seed
+    TrkT0                    _t0;          // t0 for this helix
+    ComboHitCollection       _hhits;       // hits potentially used for this helix
+    RobustHelix              _helix;       // robust helix created from these hits
+    TrkFitFlag               _status;      // status of processes used to create this seed
+    HelixRecoDir             _recoDir;     // sign of the longitudinal velocity (z-axis) derived from a T vs Z linear fit
     art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
   };
    typedef std::vector<mu2e::HelixSeed> HelixSeedCollection;
