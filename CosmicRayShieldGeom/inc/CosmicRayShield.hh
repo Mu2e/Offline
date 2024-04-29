@@ -36,7 +36,7 @@ namespace mu2e
     public:
 
     CosmicRayShield() {}
-    ~CosmicRayShield() {}
+    ~CosmicRayShield() override {}
 
     // Get ScintillatorShield
     CRSScintillatorShield const & getCRSScintillatorShield(const CRSScintillatorShieldId& id) const

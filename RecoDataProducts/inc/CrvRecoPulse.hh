@@ -16,8 +16,7 @@ namespace mu2e
   {
     public:
 
-    CrvRecoPulse() : _PEs(0), _PEsPulseHeight(0), _pulseTime(0), _pulseHeight(0), _pulseBeta(0), _pulseFitChi2(0), _LEtime(0),
-                     _flags(0), _PEsNoFit(0), _pulseTimeNoFit(0), _pulseStart(0), _pulseEnd(0), _scintillatorBarIndex(0), _SiPMNumber(0) {}
+    CrvRecoPulse() {}
 
     CrvRecoPulse(float PEs, float PEsPulseHeight, double pulseTime, float pulseHeight, float pulseBeta, float pulseFitChi2, double LEtime,
                  const CrvRecoPulseFlags &flags,
@@ -61,23 +60,23 @@ namespace mu2e
 
     private:
 
-    float  _PEs;
-    float  _PEsPulseHeight;  //used for PEs which were calculated using the pulse height and the pulse height calibration factor
-    double _pulseTime;
-    float  _pulseHeight;
-    float  _pulseBeta;
-    float  _pulseFitChi2;
-    double _LEtime;
+    float  _PEs{0};
+    float  _PEsPulseHeight{0};  //used for PEs which were calculated using the pulse height and the pulse height calibration factor
+    double _pulseTime{0};
+    float  _pulseHeight{0};
+    float  _pulseBeta{0};
+    float  _pulseFitChi2{0};
+    double _LEtime{0};
     CrvRecoPulseFlags  _flags;
 
-    float   _PEsNoFit;        //based on the sum of the pedestal-subtracted ADC values of the pulse.
-    double  _pulseTimeNoFit;  //time of largest ADC value.
-    double  _pulseStart;      //based on the time when the pulse starts to be above a threshold (FWHM).
-    double  _pulseEnd;
+    float   _PEsNoFit{0};        //based on the sum of the pedestal-subtracted ADC values of the pulse.
+    double  _pulseTimeNoFit{0};  //time of largest ADC value.
+    double  _pulseStart{0};      //based on the time when the pulse starts to be above a threshold (FWHM).
+    double  _pulseEnd{0};
 
     std::vector<size_t>            _waveformIndices;  //indices in the vector of the CrvDigiCollection (which is the same as the index in the CrvDigiMCCollection)
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
-    int                            _SiPMNumber;
+    int                            _SiPMNumber{0};
   };
   typedef std::vector<mu2e::CrvRecoPulse> CrvRecoPulseCollection;
 }

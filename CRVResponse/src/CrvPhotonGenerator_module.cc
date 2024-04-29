@@ -324,7 +324,8 @@ namespace mu2e
           //e.g. due to scintillator variations or SiPM misalignments
           for(size_t SiPM=0; SiPM<CRVId::nChanPerBar; ++SiPM)
           {
-            float photonYieldDeviation = photonYieldVariationVector.photonYieldDeviation(step.barIndex().asUint()*CRVId::nChanPerBar+SiPM);
+            size_t channel = step.barIndex().asUint()*CRVId::nChanPerBar + SiPM;
+            float photonYieldDeviation = photonYieldVariationVector.photonYieldDeviation(channel);
             photonYieldDeviation *= _photonYieldVariationScale;  //scale factor for the variation
             if(photonYieldDeviation<_photonYieldVariationCutoffLow) photonYieldDeviation=_photonYieldVariationCutoffLow;
             if(photonYieldDeviation>_photonYieldVariationCutoffHigh) photonYieldDeviation=_photonYieldVariationCutoffHigh;

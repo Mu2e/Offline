@@ -7,12 +7,12 @@ CRVOrdinal : {
 }
 
 CRVPhotonYield : {
-   useDb : false  #false sets all photon yield deviations to 0
+   useDb : true  #false sets all photon yield deviations to 0
    verbose : 0
 }
 
 CRVStatus : {
-   useDb : false
+   useDb : true
    verbose : 0
 
    #example syntax list of [channel, flag ]: [ [22,2], [33,4] ]
@@ -20,7 +20,7 @@ CRVStatus : {
 }
 
 CRVCalib : {
-   useDb : false
+   useDb : true
    verbose : 0
 
    # these apply to all channels

@@ -4,10 +4,11 @@
 //
 // Original Author: Ralf Ehrlich
 
-#include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/CRVResponse/inc/MakeCrvWaveforms.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
+#include "Offline/CRVConditions/inc/CRVOrdinal.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
@@ -43,8 +44,8 @@ namespace mu2e
 
     public:
     explicit CrvWaveformsGenerator(fhicl::ParameterSet const& pset);
-    void produce(art::Event& e);
-    void beginRun(art::Run &run);
+    void produce(art::Event& e) override;
+    void beginRun(art::Run &run) override;
 
     private:
     std::string _crvSiPMChargesModuleLabel;
@@ -55,17 +56,23 @@ namespace mu2e
     boost::shared_ptr<mu2eCrv::MakeCrvWaveforms> _makeCrvWaveforms;
 
     double                              _digitizationStart, _digitizationEnd;
-    double                              _FEBtimeSpread;
     double                              _minVoltage;
     double                              _noise;
+    double                              _timeOffsetScale;
+    double                              _timeOffsetCutoffLow;
+    double                              _timeOffsetCutoffHigh;
+    bool                                _useTimeOffsetDB;
     double                              _singlePEWaveformMaxTime;
 
     CLHEP::HepRandomEngine&             _engine;
     CLHEP::RandFlat                     _randFlat;
     CLHEP::RandGaussQ                   _randGaussQ;
 
-    mu2e::ProditionsHandle<mu2e::CRVCalib> _calib;
-    std::vector<double> _digitizationPointShiftFEBsSide0, _digitizationPointShiftFEBsSide1;
+    ProditionsHandle<CRVCalib>         _calib;
+    ProditionsHandle<CRVOrdinal>       _crvChannelMap;
+    std::vector<double> _digitizationPointShiftFEBs;
+
+    static constexpr int nDigiPeriods = 4; //number of digitization periods to check for charges
 
     struct ChargeCluster
     {
@@ -73,8 +80,7 @@ namespace mu2e
     };
 
     void FindChargeClusters(const std::vector<CrvSiPMCharges::SingleCharge> &timesAndCharges,
-                            std::vector<ChargeCluster> &chargeClusters,
-                            double timeShiftFEB);
+                            std::vector<ChargeCluster> &chargeClusters, double timeOffset);
     bool SingleWaveformStart(std::vector<double> &fullWaveform, size_t i);
   };
 
@@ -86,10 +92,12 @@ namespace mu2e
     _protonBunchTimeMCLabel(pset.get<std::string>("protonBunchTimeMC","EWMProducer")),
     _digitizationStart(pset.get<double>("digitizationStart")),       //400ns
     _digitizationEnd(pset.get<double>("digitizationEnd")),           //1750ns
-    _FEBtimeSpread(pset.get<double>("FEBtimeSpread")),         //2.0 ns (due to cable lengths differences, etc.)
     _minVoltage(pset.get<double>("minVoltage")),               //0.022V (corresponds to 3.5PE)
     _noise(pset.get<double>("noise")),
-
+    _timeOffsetScale(pset.get<double>("timeOffsetScale")),             //1.0 (scale factor applied to the database values)
+    _timeOffsetCutoffLow(pset.get<double>("timeOffsetCutoffLow")),
+    _timeOffsetCutoffHigh(pset.get<double>("timeOffsetCutoffHigh")),
+    _useTimeOffsetDB(pset.get<bool>("useTimeOffsetDB")),  //false, will be applied at reco
     _singlePEWaveformMaxTime(pset.get<double>("singlePEWaveformMaxTime")),        //100ns
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat{_engine},
@@ -134,24 +142,21 @@ namespace mu2e
     }
 
     auto const& calib = _calib.get(event.id());
+    auto const& crvChannelMap = _crvChannelMap.get(event.id());
 
     std::unique_ptr<CrvDigiMCCollection> crvDigiMCCollection(new CrvDigiMCCollection);
 
     art::Handle<CrvSiPMChargesCollection> crvSiPMChargesCollection;
     event.getByLabel(_crvSiPMChargesModuleLabel,"",crvSiPMChargesCollection);
 
-    GeomHandle<CosmicRayShield> CRS;
-    _digitizationPointShiftFEBsSide0.clear();
-    _digitizationPointShiftFEBsSide1.clear();
-    unsigned int nCounters = CRS->getAllCRSScintillatorBars().size();
-    unsigned int nFEBs = rint(ceil(nCounters/32.0));
+    _digitizationPointShiftFEBs.clear();
+    unsigned int nFEBs = CRVId::nFEBPerROC*CRVId::nROC;  //a few more FEBs than we need
     for(unsigned int i=0; i<nFEBs; ++i)
     {
       //the closest digitization point with respect to a certain time
-      //can happen anywhere within the digitization period of 12.55ns.
+      //can happen anywhere within the digitization period of 12.5ns.
       //this time is different for each FEB.
-      _digitizationPointShiftFEBsSide0.emplace_back(_randFlat.fire()*CRVDigitizationPeriod);
-      _digitizationPointShiftFEBsSide1.emplace_back(_randFlat.fire()*CRVDigitizationPeriod);
+      _digitizationPointShiftFEBs.emplace_back(_randFlat.fire()*CRVDigitizationPeriod);
     }
 
     for(CrvSiPMChargesCollection::const_iterator iter=crvSiPMChargesCollection->begin();
@@ -159,22 +164,31 @@ namespace mu2e
     {
       int SiPM = iter->GetSiPMNumber();
       CRSScintillatorBarIndex barIndex = iter->GetScintillatorBarIndex();
-      unsigned int FEB=barIndex.asUint()/32.0; //assume that the counters are ordered in the correct way,
-                                               //i.e. that all counters beloning to the same FEB are grouped together
 
-      //the FEBs will be synchronized to account for cable length differences etc.,
-      //but there may still be small time differences between the FEBs.
-      double timeShiftFEB = calib.timeOffset(barIndex.asUint()*CRVId::nChanPerBar + SiPM);
+      //get FEB from database
+      uint16_t offlineChannel = barIndex.asUint()*4 + SiPM;
+      CRVROC   onlineChannel  = crvChannelMap.online(offlineChannel);
+      uint16_t FEB            = onlineChannel.FEB();
+
+      double timeOffset=0.0;
+      if(_useTimeOffsetDB)
+      {
+        //the FEBs will be synchronized to account for cable length differences etc.,
+        //but there may still be small time differences between the FEBs.
+        //get the numbers from the database (either measured values of random values)
+        timeOffset = calib.timeOffset(barIndex.asUint()*CRVId::nChanPerBar + SiPM);
+        timeOffset*=_timeOffsetScale;   //random time offsets can be scaled to a wider or smaller spread
+        if(timeOffset<_timeOffsetCutoffLow)  timeOffset=_timeOffsetCutoffLow;  //random time offsets can be cutoff at some limit
+        if(timeOffset>_timeOffsetCutoffHigh) timeOffset=_timeOffsetCutoffHigh;
+      }
 
       const std::vector<CrvSiPMCharges::SingleCharge> &timesAndCharges = iter->GetCharges();
       std::vector<ChargeCluster> chargeClusters;
-      FindChargeClusters(timesAndCharges, chargeClusters, timeShiftFEB);
+      FindChargeClusters(timesAndCharges, chargeClusters, timeOffset);
 
       //need to find where this FEB's TDC=0 is located with respect to the global time
       //can be anywhere within the digitization period
-      double digitizationPointShiftFEB=0;
-      if(SiPM%2==0 && FEB<_digitizationPointShiftFEBsSide0.size()) digitizationPointShiftFEB=_digitizationPointShiftFEBsSide0[FEB];
-      if(SiPM%2==1 && FEB<_digitizationPointShiftFEBsSide1.size()) digitizationPointShiftFEB=_digitizationPointShiftFEBsSide1[FEB];
+      double digitizationPointShiftFEB=_digitizationPointShiftFEBs[FEB];
       double TDC0timeAdjusted=TDC0time+digitizationPointShiftFEB;  //that's the time when TDC=0 for this FEB
 
       for(size_t iCluster=0; iCluster<chargeClusters.size(); ++iCluster)
@@ -206,10 +220,11 @@ namespace mu2e
 //            if(digiStartTime+(CrvDigiMC::NSamples-1)*CRVDigitizationPeriod>digitizationEnd) continue; //digis cannot end after the digitization interval
 
             //collect voltages
-            std::array<double,CrvDigiMC::NSamples> voltages;
+            std::array<double,CrvDigiMC::NSamples> voltages{0};
             for(size_t singleWaveformIndex=0; singleWaveformIndex<CrvDigiMC::NSamples; ++i, ++singleWaveformIndex)
             {
-              if(i<fullWaveform.size() && TDCstartTimeAdjusted+i*CRVDigitizationPeriod<=digitizationEnd) voltages[singleWaveformIndex]=fullWaveform[i];
+//              if(i<fullWaveform.size() && TDCstartTimeAdjusted+i*CRVDigitizationPeriod<=digitizationEnd) voltages[singleWaveformIndex]=fullWaveform[i];  //cuts off pulse in the middle of the hit
+              if(i<fullWaveform.size()) voltages[singleWaveformIndex]=fullWaveform[i];
               else voltages[singleWaveformIndex]=0.0;  //so that all unused single waveform samples are set to zero
             }
 
@@ -257,14 +272,13 @@ namespace mu2e
   } // end produce
 
   void CrvWaveformsGenerator::FindChargeClusters(const std::vector<CrvSiPMCharges::SingleCharge> &timesAndCharges,
-                                                   std::vector<ChargeCluster> &chargeClusters,
-                                                   double timeShiftFEB)
+                                                 std::vector<ChargeCluster> &chargeClusters, double timeOffset)
   {
     chargeClusters.reserve(timesAndCharges.size());
     for(size_t i=0; i<timesAndCharges.size(); ++i)
     {
       //No check whether times are within digitizationStart-_digitizationMargin and digitizationEnd
-      double timeTmp=timesAndCharges[i]._time+timeShiftFEB;  //apply timeShift to account for inaccuraries in the FEB time calibration
+      double timeTmp=timesAndCharges[i]._time+timeOffset;  //apply timeOffset to account for inaccuraries in the FEB time calibration
 
       if(chargeClusters.empty())
       {
@@ -273,7 +287,10 @@ namespace mu2e
       }
       else
       {
-        if(timeTmp-chargeClusters.back().timesAndCharges.back().first>_singlePEWaveformMaxTime+4.0*CRVDigitizationPeriod)
+        if(timeTmp-chargeClusters.back().timesAndCharges.back().first>_singlePEWaveformMaxTime+nDigiPeriods*CRVDigitizationPeriod)
+        //if the difference b/w the time of the next charge and the time of the last charge
+        //is greater than a full single PE waveform plus four additional digitization periods
+        //-->start a new charge cluster
         {
           chargeClusters.resize(chargeClusters.size()+1);
           chargeClusters.back().timesAndCharges.reserve(timesAndCharges.size());
