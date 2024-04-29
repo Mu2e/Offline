@@ -110,12 +110,15 @@ void CrvDigisFromFragments::produce(Event& event)
         continue;
       }
       auto header = block->GetHeader();
+/*
+FIXME: This function will be available in a new release of artdaq_core_mu2e
       if(!header->isValid())
       {
         std::cerr << "CRV packet is not valid." << std::endl;
         std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
         continue;
       }
+*/
       if(header->GetSubsystemID() != DTCLib::DTC_Subsystem::DTC_Subsystem_CRV)
       {
         std::cerr << "CRV packet does not have system ID 2." << std::endl;
