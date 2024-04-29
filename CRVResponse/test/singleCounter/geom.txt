@@ -1,5 +1,7 @@
 #include "Offline/Mu2eG4/geom/geom_common.txt"
 
+string crs.name = "singleCounter";
+
 bool hasSTM = false;
 
 // replace the CRV counter setup:
@@ -9,8 +11,8 @@ int   crs.nLayers  = 1;
 
 vector<string> crs.sectorNames = {"Test"};
 
-//double          crs.scintillatorBarLengthTest    =  3000;
-double          crs.scintillatorBarLengthTest    =  6000;
+double          crs.scintillatorBarLengthTest    =  3000;
+//double          crs.scintillatorBarLengthTest    =  6000;
 
 double          crs.scintillatorBarThickness     =  19.78; //mm
 double          crs.scintillatorBarWidth         =  51.34; //mm
