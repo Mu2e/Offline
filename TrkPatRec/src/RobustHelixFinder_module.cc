@@ -14,6 +14,7 @@
 #include "art_root_io/TFileService.h"
 #include "Offline/GeneralUtilities/inc/Angles.hh"
 #include "Offline/Mu2eUtilities/inc/MVATools.hh"
+#include "Offline/Mu2eUtilities/inc/HelixTool.hh"
 
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
@@ -112,6 +113,7 @@ namespace mu2e {
         fhicl::Atom<int>                      diagLevel{            Name("DiagLevel"),            Comment("Diag"),0 };
         fhicl::Atom<int>                      debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
         fhicl::Atom<int>                      printFrequency{       Name("PrintFrequency"),       Comment("Print Frequency") };
+        fhicl::Atom<bool>                     doSingleOutput{       Name("doSingleOutput"),       Comment("Create a single ouputput with both helicities") };
         fhicl::Atom<bool>                     PrefilterHits{        Name("PrefilterHits"),        Comment("Produce prefiltered hit collections")  };
         fhicl::Atom<bool>                     UpdateStereoHits{     Name("UpdateStereoHits"),     Comment("Update stereo hits") };
         fhicl::Atom<int>                      minNStrawHits{        Name("MinNStrawHits"),        Comment("Minimum number of straw hits") };
@@ -159,6 +161,7 @@ namespace mu2e {
     private:
       int                                 _diag,_debug;
       int                                 _printfreq;
+      bool                                _doSingleOutput;
       bool        _prefilter; // prefilter hits based on sector
       bool        _updatestereo; // update the stereo hit positions each iteration
       int         _minnsh; // minimum # of strawHits to work with
@@ -235,6 +238,7 @@ namespace mu2e {
     _diag        (config().diagLevel()),
     _debug       (config().debugLevel()),
     _printfreq   (config().printFrequency()),
+    _doSingleOutput(config().doSingleOutput()),
     _prefilter   (config().PrefilterHits()),
     _updatestereo(config().UpdateStereoHits()),
     _minnsh      (config().minNStrawHits()),
@@ -275,7 +279,15 @@ namespace mu2e {
       for(auto hv : helvals) {
         Helicity hel(hv);
         _hels.push_back(hel);
-        produces<HelixSeedCollection>(Helicity::name(hel));
+      }
+
+      if (_doSingleOutput){
+        produces<HelixSeedCollection>();
+      }else {
+        std::vector<int> helvals = config().Helicities();
+        for(auto hel : _hels) {
+          produces<HelixSeedCollection>(Helicity::name(hel));
+        }
       }
 
       if (_diag != 0) _hmanager = art::make_tool<ModuleHistToolBase>(config().DiagPlugin," ");
@@ -330,10 +342,15 @@ namespace mu2e {
    // create output: separate by helicity
     std::map<Helicity,unique_ptr<HelixSeedCollection>> helcols;
     int counter(0);
-    for( auto const& hel : _hels) {
-      helcols[hel] = unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
+    if (!_doSingleOutput)  {
+      for( auto const& hel : _hels) {
+        helcols[hel] = std::unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
+        _data.nseeds [counter] = 0;
+        ++counter;
+      }
+    }else {
+      helcols[0] = std::unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
       _data.nseeds [counter] = 0;
-      ++counter;
     }
 
     _data.event       = &event;
@@ -419,12 +436,18 @@ namespace mu2e {
 
         if ( (index_best>=0) && (index_best < 2) ){
           Helicity              hel_best = helix_seed_vec[index_best]._helix._helicity;
+          if (_doSingleOutput) {
+            hel_best = 0;
+          }
           HelixSeedCollection*  hcol     = helcols[hel_best].get();
           hcol->push_back(helix_seed_vec[index_best]);
         } else if (index_best == 2){//both helices need to be saved
 
           for (unsigned k=0; k<_hels.size(); ++k){
             Helicity              hel   = helix_seed_vec[k]._helix._helicity;
+            if (_doSingleOutput) {
+              hel = 0;
+            }
             HelixSeedCollection*  hcol  = helcols[hel].get();
             hcol->push_back(helix_seed_vec[k]);
           }
@@ -436,8 +459,12 @@ namespace mu2e {
     // put final collections into event
     if (_diag > 0) _hmanager->fillHistograms(&_data);
 
-    for(auto const& hel : _hels ) {
-      event.put(std::move(helcols[hel]),Helicity::name(hel));
+    if (_doSingleOutput) {
+      event.put(std::move(helcols[0]));
+    } else{
+      for(auto const& hel : _hels ) {
+        event.put(std::move(helcols[hel]),Helicity::name(hel));
+      }
     }
   }
   //--------------------------------------------------------------------------------
@@ -522,6 +549,15 @@ namespace mu2e {
       helixData._diag.nLoops            = helTool.nLoops();
       helixData._diag.meanHitRadialDist = helTool.meanHitRadialDist();
     }
+    //now set the HelixRecoDir
+    HelixTool ht(&helixData._hseed, _tracker);
+    float slope(0), slopeErr(0), chi2ndof(0);
+    ht.dirOfProp(slope, slopeErr, chi2ndof);
+
+    helixData._hseed._recoDir._slope    = slope;
+    helixData._hseed._recoDir._slopeErr = slopeErr;
+    helixData._hseed._recoDir._chi2ndof = chi2ndof;
+
   }
 
 
