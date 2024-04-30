@@ -37,6 +37,7 @@ namespace mu2e {
     _hpT = tfs.make<TH1D>("pT", "p TPR", 100, 0., 110.);
     _hpce = tfs.make<TH1D>("pce", "p CE", 100, 95.0, 110.);
     _hpcep = tfs.make<TH1D>("pcep", "p CE+", 100, 82.0, 97.);
+    _hsignedp = tfs.make<TH1D>("signedp", "signedp", 200, -110., 110.);
     _hpe = tfs.make<TH1D>("pe", "p error", 100, 0.0, 1.0);
     _hRho = tfs.make<TH1D>("rho", "Transverse radius", 100, 0.0, 800.);
     _hPhi = tfs.make<TH1D>("phi", "phi", 100, -M_PI, M_PI);
@@ -115,6 +116,7 @@ namespace mu2e {
       double p_mc = mcTrkP(event,vdid,p_pri);
       SurfaceId sid = _vdmap[vdid];
       auto ikinter = ks.intersection(sid);
+      double ksCharge = ks.intersections().front().pstate_.charge();
       if(ikinter != ks.intersections().end()){
         auto mom3 = ikinter->momentum3();
         double p = mom3.R();
@@ -124,6 +126,7 @@ namespace mu2e {
         if (isTPR) _hpT->Fill(p);
         _hpce->Fill(p);
         _hpcep->Fill(p);
+        _hsignedp->Fill(p*ksCharge);
         _hpe->Fill(ikinter->momerr());
         _hRho->Fill(ikinter->position3().Rho());
         _hPhi->Fill(mom3.Phi());
