@@ -86,6 +86,7 @@ namespace mu2e
         // but filtering is by event!
         size_t index = std::distance(tccol->begin(),itc);
         triginfo->_hitClusters.push_back(art::Ptr<TimeCluster>(tcH,index));
+
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }

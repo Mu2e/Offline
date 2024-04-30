@@ -22,6 +22,7 @@
 #include "Offline/GeometryService/inc/WorldG4.hh"
 #include "Offline/Mu2eG4/inc/WorldMaker.hh"
 #include "Offline/Mu2eG4/inc/Mu2eWorld.hh"
+#include "Offline/Mu2eG4/inc/Mu2eStudyWorld.hh"
 #include "Offline/Mu2eG4/inc/physicsListDecider.hh"
 #include "Offline/Mu2eG4/inc/preG4InitializeTasks.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
@@ -171,8 +172,8 @@ namespace mu2e {
                                            make_unique<ConstructMaterials>(conf_)));
     }
     else {
-      throw cet::exception("CONFIG")
-        << "Error: You are trying to run in MT mode without the Standard Mu2e Detector!\n";
+      allMu2e = (new WorldMaker<Mu2eStudyWorld>(make_unique<Mu2eStudyWorld>(conf_, &sensitiveDetectorHelper_),
+                                           make_unique<ConstructMaterials>(conf_)));
     }
 
     preG4InitializeTasks(conf_);

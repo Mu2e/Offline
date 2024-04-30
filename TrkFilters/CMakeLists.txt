@@ -10,8 +10,8 @@ cet_build_plugin(HelixFilter art::module
       Offline::TrackerGeom
 )
 
-cet_build_plugin(SeedFilter art::module
-    REG_SOURCE src/SeedFilter_module.cc
+cet_build_plugin(KalSeedFilter art::module
+    REG_SOURCE src/KalSeedFilter_module.cc
     LIBRARIES REG      
       Offline::RecoDataProducts
 )
