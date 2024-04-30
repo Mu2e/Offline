@@ -81,7 +81,7 @@ namespace mu2e {
       art::Event const& event) {
     // increment this by 1 any time the defnitions of the histograms or the
     // histogram contents change, and will not match previous versions
-    _hVer->Fill(8.0);
+    _hVer->Fill(9.0);
 
     _hN->Fill(coll.size());
     for (auto const& ks : coll) {
