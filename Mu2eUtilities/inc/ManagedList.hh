@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 // P.Murat : a templated, light-weight, and "crippled" version of TClonesArray
 // assumptions:
-// - class T has an initialization method, say, T::Init, which properly reinitializes 
+// - class T has an initialization method, say, T::Init, which properly reinitializes
 //   an object allocated before
 // - an object of class T owns all its pointers (if any) and T::Init handles them correctly
 // - class T has a constructor T(int N), where N is the element index in the list
-// 
-// if those assumptions hold, a call to ManagedList::clear() 'empties' the list 
+//
+// if those assumptions hold, a call to ManagedList::clear() 'empties' the list
 // without reallocating the memory
 //-----------------------------------------------------------------------------
 #ifndef __Mu2eUtilities_ManagedList_hh
