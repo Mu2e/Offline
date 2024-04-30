@@ -188,6 +188,7 @@ namespace mu2e
 
     explicit HelixFilter(const Parameters& conf);
     virtual bool filter(art::Event& event) override;
+    virtual void beginJob();
     virtual bool beginRun(art::Run&   run   );
     virtual bool endRun( art::Run& run ) override;
 
@@ -216,6 +217,18 @@ namespace mu2e
       produces<TriggerInfo>();
     }
 
+  void HelixFilter::beginJob() {
+    if ( (!_posHelCuts._configured) && (!_negHelCuts._configured)) {
+      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
+    }
+    if ( (!_posHelCuts._configured)){
+      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH POSITIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
+    }
+    if ( (!_negHelCuts._configured)){
+      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH NEGATIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
+    }
+  }
+
   bool HelixFilter::beginRun(art::Run & run){
     // get bfield
     GeomHandle<BFieldManager> bfmgr;
@@ -228,15 +241,6 @@ namespace mu2e
     _posHelCuts.setTrackerGeomHandle(_tracker);
     _negHelCuts.setTrackerGeomHandle(_tracker);
 
-    if ( (!_posHelCuts._configured) && (!_negHelCuts._configured)) {
-      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
-    }
-    if ( (!_posHelCuts._configured)){
-      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH POSITIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
-    }
-    if ( (!_negHelCuts._configured)){
-      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH NEGATIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
-    }
     return true;
   }
 
