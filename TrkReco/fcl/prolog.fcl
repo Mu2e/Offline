@@ -126,6 +126,8 @@ TrkReco: { @table::TrkReco
       deltanh                    : 5     # if the difference in the strawHit counts between the helices is less than deltanh, use the chisq of the helices to select the better helix
       scaleXY                    : 1.1   # scale the weight for having chi2XY/ndof distribution peaking at 1
       scaleZPhi                  : 0.75  # scale the weight for having chi2ZPhi/ndof distribution peaking at 1
+      MinHitOverlapFraction      : 0.5
+      MinNHitOverlap             : 10
     }
   }
 }

@@ -32,12 +32,13 @@ namespace mu2e {
     _hfitConC = tfs.make<TH1D>("FitConnC", "Fit CL CPR", 100, 0.0, 1.0);
     _hfitConT = tfs.make<TH1D>("FitConnT", "Fit CL TPR", 100, 0.0, 1.0);
     _hp = tfs.make<TH1D>("p", "p", 100, 0., 110.);
-    _hp2 = tfs.make<TH1D>("p2", "p", 100, 0., 300.);
+    _hp2 = tfs.make<TH1D>("p2", "p", 150, 0., 500.);
     _hpC = tfs.make<TH1D>("pC", "p CPR", 100, 0., 110.);
     _hpT = tfs.make<TH1D>("pT", "p TPR", 100, 0., 110.);
     _hpce = tfs.make<TH1D>("pce", "p CE", 100, 95.0, 110.);
     _hpcep = tfs.make<TH1D>("pcep", "p CE+", 100, 82.0, 97.);
     _hsignedp = tfs.make<TH1D>("signedp", "signedp", 200, -110., 110.);
+    _hsignedp2 = tfs.make<TH1D>("signedp", "signedp", 300, -500., 500.);
     _hpe = tfs.make<TH1D>("pe", "p error", 100, 0.0, 1.0);
     _hRho = tfs.make<TH1D>("rho", "Transverse radius", 100, 0.0, 800.);
     _hPhi = tfs.make<TH1D>("phi", "phi", 100, -M_PI, M_PI);
@@ -80,7 +81,7 @@ namespace mu2e {
       art::Event const& event) {
     // increment this by 1 any time the defnitions of the histograms or the
     // histogram contents change, and will not match previous versions
-    _hVer->Fill(8.0);
+    _hVer->Fill(9.0);
 
     _hN->Fill(coll.size());
     for (auto const& ks : coll) {
@@ -127,6 +128,7 @@ namespace mu2e {
         _hpce->Fill(p);
         _hpcep->Fill(p);
         _hsignedp->Fill(p*ksCharge);
+        _hsignedp2->Fill(p*ksCharge);
         _hpe->Fill(ikinter->momerr());
         _hRho->Fill(ikinter->position3().Rho());
         _hPhi->Fill(mom3.Phi());
