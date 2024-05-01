@@ -44,6 +44,7 @@ class ValKalSeed {
   TH1D* _hpce;
   TH1D* _hpcep;
   TH1D* _hsignedp;
+  TH1D* _hsignedp2;
   TH1D* _hpe;
   TH1D* _hRho;
   TH1D* _hPhi;
