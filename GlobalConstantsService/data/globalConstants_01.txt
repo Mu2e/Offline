@@ -19,6 +19,7 @@ double physicsParams.nominalDRPeriod = 1695.; // ns
 int    physicsParams.nominalDAQTicks = 68; // ticks of DAQ clock in DRPeriod
 int    physicsParams.nominalDAQOnSpillBins = 5; // how often to 68->67
 double physicsParams.nominalDAQFrequency = 40.; // MHz
+double physicsParams.nominalRF0ClockFrequency = 800.; // MHz. Frequency of the clock that measures RF0 offset.
 
 // charged pion and kaon
 vector<int> physicsParams.freeLifePDGId = { 211, 312 };
