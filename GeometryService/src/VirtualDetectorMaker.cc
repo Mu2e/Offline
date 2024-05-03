@@ -342,7 +342,7 @@ namespace mu2e {
 
       }
 
-      if(c.hasName("vd.ExtMonCommonPlane.z")) {
+      if(c.getBool("vd.ExtMonCommonPlane.enabled", false)) {
         // Position and half length of this detector are best computed
         // in one place.  Since the VirtualDetector data structure
         // does not store half size, we'll do the computations later.
