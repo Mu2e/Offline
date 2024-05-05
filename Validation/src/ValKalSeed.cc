@@ -4,6 +4,8 @@
 #include "Offline/MCDataProducts/inc/KalSeedMC.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include <cmath>
 
 namespace mu2e {
@@ -38,7 +40,7 @@ namespace mu2e {
     _hpce = tfs.make<TH1D>("pce", "p CE", 100, 95.0, 110.);
     _hpcep = tfs.make<TH1D>("pcep", "p CE+", 100, 82.0, 97.);
     _hsignedp = tfs.make<TH1D>("signedp", "signedp", 200, -110., 110.);
-    _hsignedp2 = tfs.make<TH1D>("signedp", "signedp", 300, -500., 500.);
+    _hsignedp2 = tfs.make<TH1D>("signedp2", "signedp2", 300, -500., 500.);
     _hpe = tfs.make<TH1D>("pe", "p error", 100, 0.0, 1.0);
     _hRho = tfs.make<TH1D>("rho", "Transverse radius", 100, 0.0, 800.);
     _hPhi = tfs.make<TH1D>("phi", "phi", 100, -M_PI, M_PI);
@@ -77,8 +79,8 @@ namespace mu2e {
     return 0;
   }
 
-  int ValKalSeed::fill(const KalSeedCollection& coll,
-      art::Event const& event) {
+  int ValKalSeed::fill(const KalSeedCollection& coll, art::Event const& event) {
+    auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
     // increment this by 1 any time the defnitions of the histograms or the
     // histogram contents change, and will not match previous versions
     _hVer->Fill(9.0);
@@ -117,7 +119,7 @@ namespace mu2e {
       double p_mc = mcTrkP(event,vdid,p_pri);
       SurfaceId sid = _vdmap[vdid];
       auto ikinter = ks.intersection(sid);
-      double ksCharge = ks.intersections().front().pstate_.charge();
+      double ksCharge = ptable->particle(ks.particle()).charge();
       if(ikinter != ks.intersections().end()){
         auto mom3 = ikinter->momentum3();
         double p = mom3.R();
