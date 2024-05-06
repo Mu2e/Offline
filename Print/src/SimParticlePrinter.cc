@@ -88,6 +88,7 @@ void mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind,
        << " " << std::setw(9)  << std::setprecision(1) << obj.startMomentum().vect().mag()
        << " " << std::setw(9)  << std::setprecision(1) << obj.startMomentum().vect().perp()
        << " " << std::setw(8)  << std::setprecision(1) << obj.startGlobalTime()
+       << " " << std::setw(8)  << std::setprecision(1) << obj.startProperTime()
        << "   "
        << " " << std::setw(8)  << std::setprecision(1) << obj.endPosition().x()
        << " " << std::setw(8)  << std::setprecision(1) << obj.endPosition().y()
@@ -95,6 +96,7 @@ void mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind,
        << " " << std::setw(9)  << std::setprecision(1) << obj.endMomentum().vect().mag()
        << " " << std::setw(9)  << std::setprecision(1) << obj.endMomentum().vect().perp()
        << " " << std::setw(8)  << std::setprecision(1) << obj.endGlobalTime()
+       << " " << std::setw(8)  << std::setprecision(1) << obj.endProperTime()
        << " " << std::setw(6)  << obj.endVolumeIndex()
        << "  "
        << " " << std::setiosflags(std::ios::left) << obj.stoppingCode().name()
@@ -153,5 +155,5 @@ void mu2e::SimParticlePrinter::PrintHeader(const std::string& tag,
 
 void mu2e::SimParticlePrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
-  os << "ind      key    parent    pdgId        Start  Position            P           pT    Time         End Position               P           pT    Time   vol   process\n";
+  os << "ind      key    parent    pdgId        Start  Position            P           pT    Time    ProperTime     End Position               P           pT    Time   ProperTime vol   process\n";
 }

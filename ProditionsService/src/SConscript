@@ -58,7 +58,7 @@ helper.make_plugins( [ mainlib,
                        'mu2e_RecoDataProducts',
                        'mu2e_GeneralUtilities',
                        'mu2e_Mu2eUtilities',
-                       'mu2e_TrkDiag',
+                       # 'mu2e_TrkDiag',                  # P.Murat: comment it out
                        'BTrk_DetectorModel',
                        'BTrk_MatEnv',
                        'CLHEP',

@@ -12,7 +12,7 @@ namespace mu2e {
     _mergePC               (config().mergePC       ()   ),
     _pickupProtonHits      (config().pickupProtonHits() ),
     _timeBin               (config().timeBin()          ),
-    _minHitTime            (config().minHitTime()       ),
+    // _minHitTime            (config().minHitTime()       ),
     _maxDeltaEDep          (config().maxDeltaEDep()     ),
     _maxSeedEDep           (config().maxSeedEDep()      ),
     _minProtonSeedEDep     (config().minProtonSeedEDep()),
@@ -20,7 +20,6 @@ namespace mu2e {
     _minNSeeds             (config().minNSeeds()        ),
     _minDeltaNHits         (config().minDeltaNHits()    ),
     _maxEleHitEnergy       (config().maxEleHitEnergy()  ),
-    _minT                  (config().minimumTime()      ), // nsec
     _maxT                  (config().maximumTime()      ), // nsec
     _maxHitSeedDt          (config().maxHitSeedDt()     ), // nsec
     _maxChi2Seed           (config().maxChi2Seed()      ),
@@ -659,7 +658,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // get Z-ordered location
 //-----------------------------------------------------------------------------
-      Data_t::orderID(&cx, &co);
+      ChannelID::orderID(&cx, &co);
 
       int os       = co.Station;
       int of       = co.Face;
@@ -680,10 +679,15 @@ namespace mu2e {
       int      loc = fz->fHitData.size();
 
       fz->fHitData.push_back(HitData_t(ch,of));
-      int time_bin = int (ch->time()/_timeBin) ;
+      int time_bin = int (ch->time()/_timeBin);
 
-      if (fz->fFirst[time_bin] < 0) fz->fFirst[time_bin] = loc;
-      fz->fLast[time_bin] = loc;
+      if (time_bin < kMaxNTimeBins) {
+        if (fz->fFirst[time_bin] < 0) fz->fFirst[time_bin] = loc;
+        fz->fLast[time_bin] = loc;
+      }
+      else {
+        printf("ERROR in DeltaFinderAlg::orderHits : hist time = %10.3f time_bin=%i TOO LARGE, ignored\n",ch->time(),time_bin);
+      }
     }
 
     return 0;
