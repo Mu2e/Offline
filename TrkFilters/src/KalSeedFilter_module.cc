@@ -92,6 +92,8 @@ namespace mu2e
       fhicl::Atom<art::InputTag>          kalSeedCollection { Name("kalSeedCollection"),      Comment("kalSeedCollection ") };
       fhicl::Sequence<fhicl::Table<KalSeedCutsConfig>>  KalSeedCuts       { Name("KalSeedCuts"),            Comment("Cuts applied to the KalSeeds")};
       fhicl::Atom<int>                    debugLevel        { Name("debugLevel"),             Comment("debugLevel        ") , 0};
+      fhicl::Atom<bool>                   noFilter          { Name("noFilter"),               Comment("don't apply any filter decision") , 0};
+      fhicl::Atom<unsigned>               minNTrks          { Name("minNTrks"),               Comment("minimum number of tracks passing the selection") , 1};
     };
 
     using Parameters = art::EDFilter::Table<Config>;
@@ -106,6 +108,8 @@ namespace mu2e
     std::vector<KalSeedCutsConfig> _ksCutsConfig;
     std::vector<KalSeedCutsTool>   _ksCuts;
     int             _debug;
+    bool            _noFilter;
+    unsigned        _minNTrks;
 
     // counters
     unsigned        _nevt, _npass;
@@ -116,6 +120,8 @@ namespace mu2e
     _ksTag       (config().kalSeedCollection()),
     _ksCutsConfig(config().KalSeedCuts()),
     _debug       (config().debugLevel()),
+    _noFilter    (config().noFilter()),
+    _minNTrks    (config().minNTrks()),
     _nevt(0), _npass(0)
     {
       for (auto const&cf: _ksCutsConfig){
@@ -127,7 +133,7 @@ namespace mu2e
   bool KalSeedFilter::filter(art::Event& evt){
     std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
-    bool retval(false); // preset to fail
+    unsigned nGoodTrks(0);
     // find the collection
     auto ksH = evt.getValidHandle<KalSeedCollection>(_ksTag);
     const KalSeedCollection* kscol = ksH.product();
@@ -140,7 +146,7 @@ namespace mu2e
 
       for (auto const&cuts : _ksCuts){
         if (checkKalSeed(ks, cuts)) {
-          retval = true;
+          ++nGoodTrks;
           ++_npass;
           // Fill the trigger info object
           // associate to the helix which triggers.  Note there may be other helices which also pass the filter
@@ -157,7 +163,12 @@ namespace mu2e
     }//end loop over the kalseeds
 
     evt.put(std::move(triginfo));
-    return retval;
+
+    if (!_noFilter){
+      return (nGoodTrks >= _minNTrks);
+    }else {
+      return true;
+    }
   }
 
   bool KalSeedFilter::checkKalSeed(const KalSeed&Ks, const KalSeedCutsTool&Cuts){

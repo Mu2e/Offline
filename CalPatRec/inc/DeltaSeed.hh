@@ -4,21 +4,18 @@
 #include "TObject.h"
 #include "TClonesArray.h"
 #include "Math/Vector3D.h"
-// #include "Math/Vector4D.h"
 
 using ROOT::Math::XYZVectorF;
 
-#include "Offline/CalPatRec/inc/DeltaFinder_enums.hh"
 #include "Offline/CalPatRec/inc/DeltaFinder_structures.hh"
 
 namespace mu2e {
 
   namespace DeltaFinderTypes {
-    struct HitData_t;
     struct McPart_t;
   }
 
-  using  DeltaFinderTypes::HitData_t;
+  using  CalPatRec::HitData_t;
   using  DeltaFinderTypes::McPart_t;
 
   class  Panel;
