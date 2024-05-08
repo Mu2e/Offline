@@ -182,6 +182,8 @@ namespace mu2e
       fhicl::Table<HelixCutsConfig>   posHelicitySelection { Name("posHelicitySelection"),    Comment("cuts for the helices with positive helicity (like the conversion electron)")};
       fhicl::Table<HelixCutsConfig>   negHelicitySelection { Name("negHelicitySelection"),    Comment("cuts for the helices with negative helicity (like the conversion positron)")};
       fhicl::Atom<int>                debugLevel           { Name("debugLevel"),              Comment("debugLevel")     , 0 };
+      fhicl::Atom<bool>               noFilter             { Name("noFilter"),                Comment("don't apply the filter decision"), false};
+      fhicl::Atom<unsigned>           minNHelices          { Name("minNHelices"),             Comment("minimum number of helices passing the cuts"), 1};
     };
 
     using Parameters = art::EDFilter::Table<Config>;
@@ -202,6 +204,8 @@ namespace mu2e
     int           _debug;
     // counters
     unsigned      _nevt, _npass;
+    bool          _noFilter;
+    unsigned      _minNHelices;
 
     bool  checkHelixFromHelicity(const HelixSeed&helix);
   };
@@ -212,7 +216,10 @@ namespace mu2e
     _posHelCuts        ( 1, config().posHelicitySelection()),
     _negHelCuts        (-1, config().negHelicitySelection()),
     _debug             (config().debugLevel()),
-    _nevt(0), _npass(0)
+    _nevt(0),
+    _npass(0),
+    _noFilter          (config().noFilter()),
+    _minNHelices       (config().minNHelices())
     {
       produces<TriggerInfo>();
     }
@@ -259,7 +266,6 @@ namespace mu2e
     // create output
     std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
-    bool retval(false); // preset to fail
     // find the collection
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     const HelixSeedCollection* hscol = hsH.product();
@@ -268,12 +274,13 @@ namespace mu2e
       std::cout << moduleDescription().moduleLabel() << " Input from: " << _hsTag << " NHelices = "<< hscol->size() << std::endl;
     }
     // loop over the collection: if any pass the selection, pass this event
+    unsigned nGoodHelices(0);
     for(auto ihs = hscol->begin();ihs != hscol->end(); ++ihs) {
       auto const& hs = *ihs;
 
       if( checkHelixFromHelicity(hs) ) {
-        retval = true;
         ++_npass;
+        ++nGoodHelices;
         // Fill the trigger info object
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
@@ -286,12 +293,15 @@ namespace mu2e
       }
     }
     evt.put(std::move(triginfo));
-    return retval;
+    if (!_noFilter){
+      return (nGoodHelices >= _minNHelices);
+    }else {
+      return true;
+    }
   }
 
   bool HelixFilter::endRun( art::Run& run ) {
-    if(_debug > 0 && _nevt > 0){
-      std::cout << moduleDescription().moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
+    if(_debug > 0 && _nevt > 0){      std::cout << moduleDescription().moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }
