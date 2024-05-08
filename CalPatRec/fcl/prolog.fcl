@@ -362,9 +362,7 @@ CalPatRec : { @table::CalPatRec
                 pickupProtonHits        : 1                     # the third step of proton finding
 
                 timeBin                 : 40                    # ns, prev: 50 (use 40 with makePH.maxDS=5)
-                minHitTime              : 350.                  # ns
-                minimumTime             : 400.                  # ns
-                maximumTime             : 1750.                 # ns
+                maximumTime             : 1750.                 # ns, used
                 maxDeltaEDep            : 0.004                 # max allowed delta eDep
                 maxSeedEDep             : 0.005                 # max allowed seed eDep
                 minProtonSeedEDep       : 0.003                 # min allowed proton seed eDep
@@ -564,7 +562,6 @@ CalPatRec : { @table::CalPatRec
             debugLevel                 : 0
             printFrequency             : 1000
             runDisplay                 : 0
-            saveProtCand               : 0
             useCCs                     : 1
             recoverCCs                 : 1
             chCollLabel                : "FlagBkgHits"
@@ -585,22 +582,64 @@ CalPatRec : { @table::CalPatRec
             minCaloEnergy              : 50.0
             caloDtMax                  : 30.0
             caloTimeOffset             : @local::TrackCaloMatching.DtOffset
-            doComptonClean             : 0
-            maxIntersectSig            : 5.0
-            maxApproachSigma           : 5.0
-            maxAppSigmaTrans           : 5.0
-            comptonThresh              : 8
-            doIsoClean                 : 0
-            isoRad                     : 100.0
-            doPhiClean                 : 0
-            phiCleanPhi                : 45.0
-            phiCleanThresh             : 5
+            doRefine                   : 0
 
             diagPlugin : { tool_type  : "TZClusterFinderDiag"
                  mcTruth       : 1
                  simIDThresh   : 15
                  mcUtils       : { @table::TrkReco.McUtils }
             }
+        }
+
+        AgnosticHelixFinder : {
+            module_type : AgnosticHelixFinder
+            diagLevel               : 0
+            debug                   : 0
+            runDisplay              : 0
+            chCollLabel             : "FlagBkgHits"
+            tcCollLabel             : "TZClusterFinder"
+            ccCollLabel             : "CaloClusterMaker"
+            findMultipleHelices     : true # whether or not to allow more than 1 helix per tc
+            useStoppingTarget       : true
+            intenseEventThresh      : 30
+            intenseClusterThresh    : 60
+            doIsolationFlag         : true
+            isoRad                  : 150.0
+            isoMinHitsNear          : 2
+            doAverageFlag           : true
+            minDistCut              : 20.0
+            minTripletSeedZ         : 0.0
+            minTripletDz            : 50.0
+            maxTripletDz            : 500.0
+            minTripletDist          : 50.0
+            minTripletArea          : 1.0e4
+            maxSeedCircleResidual   : 2.0
+            minSeedCircleHits       : 7
+            maxDphiDz               : 0.008
+            maxZWindow              : 700.0
+            minLineSegmentHits      : 3
+            segMultiplier           : 3.0
+            maxSegmentChi2          : 2.0
+            max2PiAmbigResidual     : 2.0
+            maxPhiZResidual         : 2.0
+            minFinalSeedHits        : 7
+            maxCircleRecoverSigma   : 3.0
+            maxLineRecoverSigma     : 3.0
+            caloClusterSigma        : 30.0
+            minNHelixComboHits      : 8
+            minNHelixStrawHits      : 12
+            minHelixPerpMomentum    : 40.0
+            maxHelixPerpMomentum    : 140.0
+            minHelixMomentum        : 60.0
+            maxHelixMomentum        : 400.0
+            chi2LineSaveThresh      : 5.0
+            debugPdgID              : 11
+            debugMomentum           : 100.0
+            debugDirection          : "down"
+            debugStrawHitThresh     : 12
+            debugScatterThresh      : 3.0
+            mcUtils                 : { @table::TrkReco.McUtils }
+            diagPlugin              : { tool_type : "AgnosticHelixFinderDiag" }
         }
 
         PhiClusterFinder : { module_type : PhiClusterFinder
@@ -637,6 +676,25 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 # new modules
 #------------------------------------------------------------------------------
+
+        # TZClusterFilter module
+        TZClusterFilter : {
+            module_type         : TZClusterFilter
+            diagLevel           : 0
+            runDisplay          : 0
+            chCollLabel         : "FlagBkgHits"     # same as TZClusterFinder
+            tcCollLabel         : "TZClusterFinder"
+            minSHsInCluster     : 15
+            minCHsInCluster     : 10
+            nPairs              : 1
+            minCHsInCubes       : 2
+            maxDeltaRInStn      : 100
+            maxDeltaRBtwStns    : 120
+            maxDeltaPhiInStn    : 0.4
+            maxDeltaPhiBtwStns  : 0.6
+            thirdStation        : true
+        }
+
         CalTimePeakFinder          : { module_type:CalTimePeakFinder
             diagLevel                                   : 0
             debugLevel                                  : 0
