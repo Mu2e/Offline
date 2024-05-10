@@ -127,6 +127,7 @@ namespace mu2e {
       bool    uselessTripletSeed;
       bool    notOnSegment;
       bool    debugParticle; // only filled in debug mode -- true if mc particle, false if background
+      float   z;
     };
 
     struct tripletPoint {
@@ -428,6 +429,8 @@ namespace mu2e {
       consumes<CaloClusterCollection>  (_ccLabel);
       produces<HelixSeedCollection>    ();
 
+      _tcHits.reserve(1000);
+
       if (_debug == 1) {
         _mcUtils = art::make_tool<McUtilsToolBase>(config().mcUtils, "mcUtils");
         if (_runDisplay == 1) {
@@ -447,7 +450,6 @@ namespace mu2e {
 
       if (_diagLevel == 1) _hmanager = art::make_tool<ModuleHistToolBase>(config().diagPlugin, "diagPlugin");
       else _hmanager = std::make_unique<ModuleHistToolBase>();
-
       if (_useStoppingTarget == true) { _stopTargPos.SetCoordinates(0.0, 0.0, std::numeric_limits<float>::max()); }
 
     }
@@ -645,7 +647,7 @@ namespace mu2e {
 
     if (hitIndice == HitType::CALOCLUSTER) {
       _tcHits[tcHitsIndex].circleError2 = _caloClusterSigma * _caloClusterSigma;
-    } else {
+    } else if (hitIndice >= 0){
       float transVar = _chColl->at(hitIndice).transVar();
       float x = getPos(tcHitsIndex).x();
       float y = getPos(tcHitsIndex).y();
@@ -654,8 +656,7 @@ namespace mu2e {
       float dxn = dx * _chColl->at(hitIndice).vDir().x() + dy * _chColl->at(hitIndice).vDir().y();
       float costh2 = dxn * dxn / (dx * dx + dy * dy);
       float sinth2 = 1 - costh2;
-      _tcHits[tcHitsIndex].circleError2 =
-        _chColl->at(hitIndice).wireVar() * sinth2 + transVar * costh2;
+      _tcHits[tcHitsIndex].circleError2 = _chColl->at(hitIndice).wireVar() * sinth2 + transVar * costh2;
     }
   }
 
@@ -729,8 +730,6 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::tcHitsFill(size_t tc) {
 
-    size_t sortStartIndex = 0;
-
     cHit hit;
     hit.circleError2 = 1.0;
     hit.helixPhi = 0.0;
@@ -743,33 +742,38 @@ namespace mu2e {
     hit.notOnLine = true;
     hit.uselessTripletSeed = false;
     hit.notOnSegment = true;
+    hit.z = 0.0;
 
     // push back stopping target if it is to be used
     if (_useStoppingTarget == true) {
       hit.hitIndice = HitType::STOPPINGTARGET;
+      hit.z = _stopTargPos.z();
       _tcHits.push_back(hit);
-      sortStartIndex++;
     }
 
     // push back calo cluster if it exists in time cluster
     if (_tcColl->at(tc).hasCaloCluster()) {
       hit.hitIndice = HitType::CALOCLUSTER;
-      _tcHits.push_back(hit);
       const art::Ptr<CaloCluster> cl = _tcColl->at(tc).caloCluster();
-      CLHEP::Hep3Vector gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(), cl->cog3Vector());
-      CLHEP::Hep3Vector tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
-      double offset = _calorimeter->caloInfo().getDouble("diskCaseZLength");
-      offset += _calorimeter->caloInfo().getDouble("BPPipeZOffset");
-      offset += _calorimeter->caloInfo().getDouble("BPHoleZLength");
-      offset += _calorimeter->caloInfo().getDouble("FEEZLength");
-      offset /= 2.0;
-      _caloPos.SetCoordinates(tpos.x(), tpos.y(), tpos.z() - offset);
-      sortStartIndex++;
+      const CaloCluster*cluster = cl.get();
+      if (cluster != nullptr){
+        CLHEP::Hep3Vector gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(), cl->cog3Vector());
+        CLHEP::Hep3Vector tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+        double offset = _calorimeter->caloInfo().getDouble("diskCaseZLength");
+        offset += _calorimeter->caloInfo().getDouble("BPPipeZOffset");
+        offset += _calorimeter->caloInfo().getDouble("BPHoleZLength");
+        offset += _calorimeter->caloInfo().getDouble("FEEZLength");
+        offset /= 2.0;
+        _caloPos.SetCoordinates(tpos.x(), tpos.y(), tpos.z() - offset);
+        hit.z = _caloPos.z();
+        _tcHits.push_back(hit);
+      }
     }
 
     // fill hits from time cluster
     for (size_t i = 0; i < _tcColl->at(tc)._strawHitIdxs.size(); i++) {
       hit.hitIndice = _tcColl->at(tc)._strawHitIdxs[i];
+      hit.z = _chColl->at(hit.hitIndice).pos().z();
       if (_debug == 1) {
         std::vector<StrawDigiIndex> shids;
         _chColl->fillStrawDigiIndices(hit.hitIndice, shids);
@@ -785,8 +789,8 @@ namespace mu2e {
 
     // order from largest z to smallest z (skip over stopping target and calo cluster since they
     // aren't in _chColl)
-    std::sort(_tcHits.begin() + sortStartIndex, _tcHits.end(), [&](const cHit& a, const cHit& b) {
-        return _chColl->at(a.hitIndice).pos().z() > _chColl->at(b.hitIndice).pos().z();
+    std::sort(_tcHits.begin(), _tcHits.end(), [&](const cHit& a, const cHit& b) {
+         return a.z > b.z;
       });
   }
 
