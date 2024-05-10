@@ -114,6 +114,25 @@ namespace mu2e {
     };
 
     struct cHit {
+
+      cHit(int  HitIndice=HitType::UNKNOWN, float CircleError2=1.0,         float HelixPhi=0.,      float HelixPhiError2=0.,
+           int  HelixPhiCorrection=0,      bool  InHelix=false,            bool Used=false,        bool Isolated=false,     bool AveragedOut=false,
+           bool NotOnLine=true,            bool  UselessTripletSeed=false, bool NotOnSegment=true, float Z=0.,              bool DebugParticle=false):
+        hitIndice(HitIndice),
+        circleError2(CircleError2),
+        helixPhi(HelixPhi),
+        helixPhiError2(HelixPhiError2),
+        helixPhiCorrection(HelixPhiCorrection),
+        inHelix(InHelix),
+        used(Used),
+        isolated(Isolated),
+        averagedOut(AveragedOut),
+        notOnLine(NotOnLine),
+        uselessTripletSeed(UselessTripletSeed),
+        notOnSegment(NotOnSegment),
+        z(Z),
+        debugParticle(DebugParticle){}
+
       int     hitIndice; // index of point in _chColl
       float   circleError2;
       float   helixPhi;
@@ -126,8 +145,8 @@ namespace mu2e {
       bool    notOnLine;
       bool    uselessTripletSeed;
       bool    notOnSegment;
-      bool    debugParticle; // only filled in debug mode -- true if mc particle, false if background
       float   z;
+      bool    debugParticle; // only filled in debug mode -- true if mc particle, false if background
     };
 
     struct tripletPoint {
@@ -163,7 +182,8 @@ namespace mu2e {
 
     enum HitType {
       CALOCLUSTER = -1,
-      STOPPINGTARGET = -2
+      STOPPINGTARGET = -2,
+      UNKNOWN = -10
     };
 
     // struct to hold info specifically for when debugging
@@ -731,18 +751,6 @@ namespace mu2e {
   void AgnosticHelixFinder::tcHitsFill(size_t tc) {
 
     cHit hit;
-    hit.circleError2 = 1.0;
-    hit.helixPhi = 0.0;
-    hit.helixPhiError2 = 0.0;
-    hit.helixPhiCorrection = 0;
-    hit.inHelix = false;
-    hit.used = false;
-    hit.isolated = false;
-    hit.averagedOut = false;
-    hit.notOnLine = true;
-    hit.uselessTripletSeed = false;
-    hit.notOnSegment = true;
-    hit.z = 0.0;
 
     // push back stopping target if it is to be used
     if (_useStoppingTarget == true) {
