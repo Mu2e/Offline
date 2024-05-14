@@ -252,8 +252,8 @@ namespace mu2e
     if(!findData(event))
       throw cet::exception("RECO")<<"mu2e::BkgDiag: data missing or incomplete"<< std::endl;
     if( !(_chcol->level() == expectedCHLevel_) ){
-      //throw cet::exception("RECO")<< "mu2e::BkgDiag: inconsistent outputlevel with input combo hits.\n"
-      //                            << "FlagBkgHits outputlevel must be "<< expectedCHLevelName_ <<" for training purposes."<< std::endl;
+      throw cet::exception("RECO")<< "mu2e::BkgDiag: inconsistent outputlevel with input combo hits.\n"
+                                  << "FlagBkgHits outputlevel must be "<< expectedCHLevelName_ <<" for training purposes."<< std::endl;
     }
     // loop over background clusters
 
