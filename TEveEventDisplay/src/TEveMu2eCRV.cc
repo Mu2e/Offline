@@ -1,4 +1,6 @@
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eCRV.h"
+#include "art/Framework/Principal/Run.h"
 
 using namespace mu2e;
 namespace mu2e{
