@@ -35,6 +35,8 @@ using namespace std;
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
 
+#include "fhiclcpp/ParameterSet.h"
+
 #include "TGGC.h"
 #include "TGFont.h"
 #include "TClass.h"

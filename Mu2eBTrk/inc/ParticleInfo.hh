@@ -8,8 +8,7 @@
 // This code looks after the translation and caches results.
 //
 
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleData.hh"
 
 #include "BTrk/BaBar/ParticleInfoInterface.hh"
 
@@ -17,6 +16,8 @@
 #include <map>
 
 namespace mu2e {
+
+  class ParticleDataList;
 
   class ParticleInfo : public ParticleInfoInterface {
 
@@ -41,9 +42,8 @@ namespace mu2e {
     //the following has to be mutable because BTrk holds this
     //with a const pointer
 
-    // Handle to the full particle data table.
     // Guaranteed valid throughout the job.
-    mutable GlobalConstantsHandle<ParticleDataList> pdt_;
+    ParticleDataList const& pdt_;
 
     // Local cache of the information for particles that we care about;
     // indexed by TrkParticle::type, not by PDG::id.
