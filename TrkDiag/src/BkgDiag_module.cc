@@ -103,6 +103,12 @@ namespace mu2e
       float _cchi2 = 0;
       float _ccons = 0;
       float _ctime = 0;
+      float _cpitch = 0;
+      float _cyaw = 0;
+      float _cqual = 0;
+      float _csthqual = 0;
+      float _ccomqual = 0;
+      float _cecc = 0;
       float _rmsctime = 0;
       float _avecedep = 0;
       float _mindt = 0;
@@ -112,7 +118,7 @@ namespace mu2e
       bool _isref = false;
       bool _isolated = false;
       bool _stereo = false;
-      int _cluIdx, _nactive, _nch, _nsh, _nsha, _nbkg;
+      int _cluIdx, _nactive, _nch, _nsh, _nsth, _nsha, _nbkg;
       int _cndof;
       float _crho;
       float _zmin;
@@ -168,6 +174,12 @@ namespace mu2e
     _bcdiag->Branch("rmscposx",&_rmscposx,"rmscposx/F");
     _bcdiag->Branch("rmscposy",&_rmscposy,"rmscposy/F");
     _bcdiag->Branch("rmscrho",&_rmscrho,"rmscrho/F");
+    _bcdiag->Branch("cpitch",&_cpitch,"cpitch/F");
+    _bcdiag->Branch("cyaw",&_cyaw,"cyaw/F");
+    _bcdiag->Branch("cqual",&_cqual,"cqual/F");
+    _bcdiag->Branch("csthqual",&_csthqual,"csthqual/F");
+    _bcdiag->Branch("ccomqual",&_ccomqual,"ccomqual/F");
+    _bcdiag->Branch("cecc",&_cecc,"cecc/F");
     _bcdiag->Branch("cchi2",&_cchi2,"cchi2/F");
     _bcdiag->Branch("ccons",&_ccons,"ccons/F");
     _bcdiag->Branch("ctime",&_ctime,"ctime/F");
@@ -182,6 +194,7 @@ namespace mu2e
     _bcdiag->Branch("mindrho",&_mindrho,"mindrho/F");
     _bcdiag->Branch("nch",&_nch,"nch/I");
     _bcdiag->Branch("nsh",&_nsh,"nsh/I");
+    _bcdiag->Branch("nsth",&_nsth,"nsth/I");
     _bcdiag->Branch("nactive",&_nactive,"nactive/I");
     _bcdiag->Branch("nsha",&_nsha,"nsha/I");
     _bcdiag->Branch("nbkg",&_nbkg,"nbkg/I");
@@ -337,11 +350,20 @@ namespace mu2e
       _bkghinfo.clear();
       _bkghinfo.reserve(cluster.hits().size());
       _nch = cluster.hits().size();
-      _nsh = _nactive = _nsha =_nbkg = _nrel = 0;
-      double sumEdep(0.);
-      double sqrSumDeltaTime(0.);
-      double sqrSumDeltaX(0.);
-      double sqrSumDeltaY(0.);
+      _nsh = _nsth = _nactive = _nsha = _nbkg = _nrel = 0;
+      float sumEdep(0.);
+      float sumEcc(0.);
+      float sqrSumDeltaTime(0.);
+      float sqrSumDeltaX(0.);
+      float sqrSumDeltaY(0.);
+      float sqrSumQual(0.);
+      float sumPitch(0.);
+      float sumYaw(0.);
+      float sumwPitch(0.);
+      float sumwYaw(0.);
+      float sumwEcc(0.);
+      std::vector<int> strawIds;
+      std::vector<int> panelIds;
       std::vector<float> hz;
       std::array<bool,StrawId::_nplanes> hp{false};
       for(auto const& ich : cluster.hits()){
@@ -353,11 +375,55 @@ namespace mu2e
         sqrSumDeltaX += std::pow(ch.pos().X() - _cpos.X(),2);
         sqrSumDeltaY += std::pow(ch.pos().Y() - _cpos.Y(),2);
         sqrSumDeltaTime += std::pow(ch.time() - _ctime,2);
+        auto hdir = ch.hDir();
+        auto wecc = ch.nStrawHits();
+        sumEcc += std::sqrt(1-(ch.vVar()/ch.uVar()))*wecc;
+        sumwEcc += wecc;
+        if(strawIds.size() == 0 && panelIds.size() == 0){
+          strawIds.push_back(ch.strawId().straw());
+          panelIds.push_back(ch.strawId().uniquePanel());
+        }
+        else{
+          int found = 0;
+          for(size_t i = 0;i<strawIds.size();i++){
+            if (strawIds.at(i) == ch.strawId().straw() && panelIds.at(i) == ch.strawId().uniquePanel()){
+              found = 1;
+            }
+          }
+          if(found == 0){
+            strawIds.push_back(ch.strawId().straw());
+            panelIds.push_back(ch.strawId().uniquePanel());
+          }
+        }
+        if(ch.flag().hasAllProperties(StrawHitFlag::sline)){
+          //quality of SLine fit
+          sqrSumQual += std::pow(ch.qual(),2);
+
+          //angle with Mu2e-Y
+          float varPitch = std::pow(TMath::ACos(std::sqrt(ch.hcostVar())),2);
+          float wPitch = 1/varPitch;
+          float signPitch = hdir.Y()/std::abs(hdir.Y());
+          sumPitch += signPitch*wPitch*hdir.theta();
+          sumwPitch += wPitch;
+
+          ROOT::Math::XYZVectorF z = {0,0,1};
+          ROOT::Math::XYZVectorF dxdz = {hdir.X(),0,hdir.Z()};
+          float magdxdz = std::sqrt(dxdz.Mag2());
+
+          // angle with Mu2e-Z
+          float varYaw = std::sqrt(ch.hphiVar() + varPitch);
+          float wYaw = 1/varYaw;
+          float signYaw = hdir.X()/std::abs(hdir.X());
+          sumYaw += signYaw*wYaw*TMath::ACos(dxdz.Dot(z)/magdxdz);
+          sumwYaw += wYaw;
+
+          // # of stereo hits with SLine
+          _nsth++;
+        }
         _nsh += ch.nStrawHits();
         StrawHitFlag const& shf = bhit.flag();
         if(shf.hasAllProperties(StrawHitFlag::active)){
           _nactive += ch.nStrawHits();
-          //if(shf.hasAllProperties(StrawHitFlag::stereo))_nsha+= ch.nStrawHits();//StrawHitFlag::stereo is redundant
           if(StrawIdMask::station == ch._mask) _nsha+= ch.nStrawHits();
         }
         if(shf.hasAllProperties(StrawHitFlag::bkg))_nbkg+= ch.nStrawHits();
@@ -390,10 +456,16 @@ namespace mu2e
         _bkghinfo.push_back(bkghinfo);
       }
       _avecedep = sumEdep/_nch;
+      _cecc = sumEcc/sumwEcc;
       _rmscposx = std::sqrt(sqrSumDeltaX/_nch);
       _rmscposy = std::sqrt(sqrSumDeltaY/_nch);
       _rmscrho = std::sqrt((sqrSumDeltaX+sqrSumDeltaY)/_nch);
       _rmsctime = std::sqrt(sqrSumDeltaTime/_nch);
+      _cpitch = _nsth > 0 ? sumPitch/sumwPitch : 0.;
+      _cyaw = _nsth > 0 ? sumYaw/sumwYaw : 0.;
+      _cqual = std::sqrt(sqrSumQual/_nch);//average SLine fit quality of the cluster
+      _csthqual = float(_nsth)/float(_nch);//SLine ratio the cluster
+      _ccomqual = _cqual + _csthqual;//combined quality metric
       std::sort(hz.begin(),hz.end());
       _zgap = 0.0;
       for (unsigned iz=1;iz<hz.size();++iz)_zgap=std::max(_zgap,hz[iz]-hz[iz-1]);
