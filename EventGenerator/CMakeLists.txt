@@ -131,6 +131,12 @@ cet_build_plugin(DecayInOrbitWeight art::module
       Offline::SeedService
 )
 
+cet_build_plugin(deltaFunctionGun art::module
+    REG_SOURCE src/deltaFunctionGun_module.cc
+    LIBRARIES REG
+        Offline::EventGenerator
+)
+
 cet_build_plugin(EplusFromStoppedPion art::module
     REG_SOURCE src/EplusFromStoppedPion_module.cc
     LIBRARIES REG
