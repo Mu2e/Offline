@@ -55,7 +55,6 @@ cet_make_library(
       src/generateFieldMap.cc
       src/getPhysicalVolumeOrThrow.cc
       src/HelicalProtonAbsorber.cc
-      src/InitEnvToolBase.cc
       src/MaterialFinder.cc
       src/MTMasterThread.cc
       src/Mu2eG4ActionInitialization.cc
@@ -156,6 +155,12 @@ cet_make_library(
       Geant4::G4physicslists
       Geant4::G4persistency
       Geant4::G4error_propagation
+)
+
+cet_build_plugin(ConstructEnvEmpty art::tool
+    REG_SOURCE src/ConstructEnvEmpty_tool.cc
+    LIBRARIES REG
+        Offline::Mu2eG4
 )
 
 cet_build_plugin(IonProducer art::module
