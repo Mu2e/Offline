@@ -58,6 +58,7 @@ class DbTool {
   int printList();
   int printSet();
   int printRun();
+  int printAdhoc();
 
   std::string getResult() { return _result; }
   int printCIDLine(int cid, int indent = 0);
@@ -76,6 +77,8 @@ class DbTool {
   int commitExtension(int& eid, std::string purpose = "",
                       std::string version = "",
                       std::vector<int> gids = std::vector<int>());
+  int commitAdhoc();
+  int commitAdhocTable(DbTable::cptr_t const& ptr, bool admin = false);
   int commitTable();
   int commitList();
   int commitPurpose();
