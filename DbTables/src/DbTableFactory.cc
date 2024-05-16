@@ -29,6 +29,7 @@
 #include "Offline/DbTables/inc/TstCalib1.hh"
 #include "Offline/DbTables/inc/TstCalib2.hh"
 #include "Offline/DbTables/inc/TstCalib3.hh"
+#include "Offline/DbTables/inc/TstAdhoc1.hh"
 #include "cetlib_except/exception.h"
 
 
@@ -39,6 +40,8 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TstCalib2());
   } else if (name == "TstCalib3") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TstCalib3());
+  } else if (name == "TstAdhoc1") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TstAdhoc1());
   } else if (name == "TrkDelayPanel") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkDelayPanel());
   } else if (name == "TrkDelayRStraw") {
