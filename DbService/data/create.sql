@@ -175,6 +175,15 @@ CREATE TABLE tst.calib2
 GRANT SELECT ON tst.calib2 TO PUBLIC;
 GRANT INSERT ON tst.calib2 TO val_role;
 
+-- example adhoc table
+
+CREATE TABLE tst.adhoc1
+  (exint INTEGER , exfloat NUMERIC, exstring TEXT, 
+  create_time TIMESTAMP WITH TIME ZONE NOT NULL, 
+  create_user TEXT NOT NULL );
+GRANT SELECT ON tst.adhoc1 TO PUBLIC;
+GRANT INSERT ON tst.adhoc1 TO val_role;
+
 --
 -- trk schema tables
 --
