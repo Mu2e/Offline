@@ -27,16 +27,19 @@ cet_make_library(
       ROOT::Physics
 )
 
-cet_build_plugin(AgnosticHelixFinderDiag art::tool
-    REG_SOURCE src/AgnosticHelixFinderDiag_tool.cc
-    LIBRARIES REG
-      Offline::CalPatRec
-)
-
 cet_build_plugin(AgnosticHelixFinder art::module
     REG_SOURCE src/AgnosticHelixFinder_module.cc
     LIBRARIES REG
         Offline::CalPatRec
+      
+      Offline::BFieldGeom
+      Offline::CalorimeterGeom
+      Offline::ConditionsService
+      Offline::ConfigTools
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(CalHelixFinder art::module
@@ -165,6 +168,16 @@ cet_build_plugin(CalHelixFinderDiag art::tool
       Offline::MCDataProducts
       Offline::Mu2eUtilities
 )
+
+cet_build_plugin(AgnosticHelixFinderDiag art::tool
+    REG_SOURCE src/AgnosticHelixFinderDiag_tool.cc
+    LIBRARIES REG
+      Offline::CalPatRec
+      
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+)
+
 
 cet_build_plugin(CalTimePeakFinderDiag art::tool
     REG_SOURCE src/CalTimePeakFinderDiag_tool.cc
