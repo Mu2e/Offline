@@ -37,11 +37,11 @@ namespace mu2e {
   MergeKalSeeds::MergeKalSeeds(const Parameters& config) : art::EDProducer{config}, debug_(config().debug())
     {
       for(auto const& seedcolltag :config().seedCollTags()){
-        consumes<KalSeedCollection>    (seedcolltag);
+        mayConsume<KalSeedCollection>    (seedcolltag);
         seedcolltags_.push_back(seedcolltag);
         if(debug_ > 0) std::cout << "Merging KalSeeds from " << seedcolltag << std::endl;
       }
-      produces<KalSeedPtrCollection>    ();
+      produces<KalSeedPtrCollection> ();
     }
 
   void MergeKalSeeds::produce(art::Event& event) {
@@ -49,10 +49,14 @@ namespace mu2e {
     std::unique_ptr<KalSeedPtrCollection> mkseeds(new KalSeedPtrCollection);
     // loop over input KalSeed collections
     for(auto const& seedcolltag : seedcolltags_) {
-      auto const& ksch = event.getValidHandle<KalSeedCollection>(seedcolltag);
-      auto const& ksc = *ksch;
-      if(debug_ > 2) std::cout << seedcolltag << " Has " << ksc.size() << " KalSeeds" << std::endl;
-      for(size_t ikseed = 0; ikseed <ksc.size(); ++ikseed){ mkseeds->emplace_back(ksch,ikseed); }
+      auto const& ksch = event.getHandle<KalSeedCollection>(seedcolltag);
+      if(ksch.isValid()){
+        auto const& ksc = *ksch;
+        if(debug_ > 2) std::cout << seedcolltag << " Has " << ksc.size() << " KalSeeds" << std::endl;
+        for(size_t ikseed = 0; ikseed <ksc.size(); ++ikseed){ mkseeds->emplace_back(ksch,ikseed); }
+      } else if (debug_ > 2){
+        std::cout << "No collection found for " << seedcolltag << std::endl;
+      }
     }
     if(debug_ > 1) std::cout << "Merged " << mkseeds->size() << " KalSeeds" << std::endl;
     event.put(std::move(mkseeds));
