@@ -18,7 +18,7 @@ namespace mu2e {
     enum bit_type {hitsOK=0,circleOK,phizOK,helixOK,seedOK,kalmanOK,circleInit,phizInit,
     circleConverged,phizConverged,helixConverged,seedConverged,kalmanConverged,
     MatCorr, BFCorr, FitOK,
-    KSF=16, KFF, TPRHelix, CPRHelix, Straight, KKLoopHelix,KKCentralHelix,KKLine, MCSeed=31};
+    KSF=16, KFF, TPRHelix, CPRHelix, Straight, KKLoopHelix,KKCentralHelix,KKLine, APRHelix, MPRHelix, MCSeed=31};
 
     // functions needed for the BitMap template
     static std::string const& typeName();

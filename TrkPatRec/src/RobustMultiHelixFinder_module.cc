@@ -357,7 +357,7 @@ chi2dXY = bestHelix.fita_zt_;
       hseed._helix._chi2dZPhi = chi2dZPhi;
       hseed._t0 = TrkT0(t0,t0err);
       for (const auto& ich : bestHelix.hitIndices_) hseed._hhits.emplace_back(chcol[ich]);
-      hseed._status.merge(TrkFitFlag::TPRHelix);
+      hseed._status.merge(TrkFitFlag::MPRHelix);
       hseed._status.merge(TrkFitFlag::helixOK);
       hseed._timeCluster = tcArtPtr;
 
