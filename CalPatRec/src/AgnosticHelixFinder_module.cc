@@ -25,6 +25,7 @@
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 
 #include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
@@ -207,7 +208,6 @@ namespace mu2e {
     const ComboHitCollection*      _chColl;
     const TimeClusterCollection*   _tcColl;
     const CaloClusterCollection*   _ccColl;
-    HelixSeedCollection*           _hsColl;
 
     //-----------------------------------------------------------------------------
     // helix search parameters
@@ -342,7 +342,7 @@ namespace mu2e {
     void         tcHitsFill                (size_t tc);
     void         setFlags                  ();
     void         resetFlags                ();
-    void         findHelix                 (size_t tc, bool& findAnotherHelix);
+    void         findHelix                 (size_t tc, HelixSeedCollection& HSColl, bool& findAnotherHelix);
     bool         passesFlags               (size_t& tcHitsIndex);
     void         setTripletI               (size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome);
     void         setTripletJ               (size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome);
@@ -520,7 +520,6 @@ namespace mu2e {
     // set the event and prepare hsColl
     _event = &event;
     std::unique_ptr<HelixSeedCollection> hsColl(new HelixSeedCollection);
-    _hsColl = hsColl.get();
 
     // get the necessary data to do helix search
     bool dataExists = findData(event);
@@ -576,7 +575,7 @@ namespace mu2e {
         tcHitsFill(i);
         continueSearch = true;
         while (continueSearch == true) {
-          findHelix(i, continueSearch);
+          findHelix(i, *hsColl, continueSearch);
           if (_findMultipleHelices == false) {
             continueSearch = false;
           } // want to halt search if not configured to find multiple helices per TC
@@ -859,7 +858,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // logic to find helix
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::findHelix(size_t tc, bool& findAnotherHelix) {
+  void AgnosticHelixFinder::findHelix(size_t tc, HelixSeedCollection& HSColl, bool& findAnotherHelix) {
 
     // if in runDisplay mode we store collections for plotting
     _circleFitter.clear();
@@ -1055,7 +1054,7 @@ namespace mu2e {
               _plottingData.push_back(trackingInfo);
             }
             saveHelixCandidate();
-            saveHelix(tc, *_hsColl);
+            saveHelix(tc, HSColl);
             if (_diagLevel == 1) {
               _diagInfo.nHelices++;
             }
@@ -1724,6 +1723,7 @@ namespace mu2e {
     hseed._helix._chi2dZPhi = _lineFitter.chi2Dof();
 
     hseed._status.merge(TrkFitFlag::helixOK);
+    hseed._status.merge(TrkFitFlag::APRHelix);
 
     // push back the helix seed to the helix seed collection
     HSColl.emplace_back(hseed);
