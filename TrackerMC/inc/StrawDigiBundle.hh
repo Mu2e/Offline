@@ -17,9 +17,9 @@ namespace mu2e{
       StrawDigiBundle(const StrawDigi digi, const StrawDigiADCWaveform adcs);
       StrawDigiBundle(const StrawDigiBundle& bundle);
 
-      const StrawDigi GetStrawDigi() const;
-      const StrawDigiADCWaveform GetStrawDigiADCWaveform() const;
-      const StrawDigiMC GetStrawDigiMC() const;
+      const StrawDigi& GetStrawDigi() const;
+      const StrawDigiADCWaveform& GetStrawDigiADCWaveform() const;
+      const StrawDigiMC& GetStrawDigiMC() const;
 
       // interface for sorting into buckets of overlapping digitization windows
       const double time() const;

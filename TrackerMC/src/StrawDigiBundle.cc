@@ -35,18 +35,18 @@ namespace mu2e{
     /**/
   }
 
-  const StrawDigi StrawDigiBundle::GetStrawDigi() const{
-    const StrawDigi rv = this->digi;
+  const StrawDigi& StrawDigiBundle::GetStrawDigi() const{
+    const StrawDigi& rv = this->digi;
     return rv;
   }
 
-  const StrawDigiADCWaveform StrawDigiBundle::GetStrawDigiADCWaveform() const{
-    const StrawDigiADCWaveform rv = this->adcs;
+  const StrawDigiADCWaveform& StrawDigiBundle::GetStrawDigiADCWaveform() const{
+    const StrawDigiADCWaveform& rv = this->adcs;
     return rv;
   }
 
-  const StrawDigiMC StrawDigiBundle::GetStrawDigiMC() const{
-    const StrawDigiMC rv = this->mc;
+  const StrawDigiMC& StrawDigiBundle::GetStrawDigiMC() const{
+    const StrawDigiMC& rv = this->mc;
     return rv;
   }
 
