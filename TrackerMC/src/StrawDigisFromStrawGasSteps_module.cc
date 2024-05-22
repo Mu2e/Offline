@@ -477,10 +477,10 @@ namespace mu2e {
         // bundle up preexisting digi products, optionally including DigiMCs
         if (!_mixDigiMCs){
           auto dgmcs_handle = event.getHandle<StrawDigiMCCollection>(_mixedDigisTag);
-          bundles.Append(digi_handle, adcs_handle, dgmcs_handle);
+          bundles.Append(*digi_handle, *adcs_handle, *dgmcs_handle);
         }
         else{
-          bundles.Append(digi_handle, adcs_handle);
+          bundles.Append(*digi_handle, *adcs_handle);
         }
       }
 
@@ -550,7 +550,7 @@ namespace mu2e {
         }
       }
       // bundle up new digis in global collection
-      bundles.Append(std::move(digis), std::move(digiadcs), std::move(mcdigis));
+      bundles.Append(*digis, *digiadcs, *mcdigis);
 
       // resolve collisions between any preexisting and new digis
       StrawDigiBundleCollection resolved = bundles.ResolveCollisions(strawele);

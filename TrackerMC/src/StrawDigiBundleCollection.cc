@@ -7,6 +7,33 @@
 #include <Offline/TrackerMC/inc/TimeBasedBucket.hh>
 
 namespace mu2e{
+  // forward size query to underlying container
+  size_t StrawDigiBundleCollection::size() const{
+    auto rv = this->bundles.size();
+    return rv;
+  }
+
+  // forward iterator access to underlying bundles
+  SDBC_iterator StrawDigiBundleCollection::begin(){
+    auto rv = this->bundles.begin();
+    return rv;
+  }
+
+  SDBC_const_iterator StrawDigiBundleCollection::begin() const{
+    auto rv = this->bundles.begin();
+    return rv;
+  }
+
+  SDBC_iterator StrawDigiBundleCollection::end(){
+    auto rv = this->bundles.end();
+    return rv;
+  }
+
+  SDBC_const_iterator StrawDigiBundleCollection::end() const{
+    auto rv = this->bundles.end();
+    return rv;
+  }
+
   // forward lookups to underlying container
   StrawDigiBundle& StrawDigiBundleCollection::operator[](size_t i){
     auto& rv = this->bundles[i];
@@ -16,6 +43,38 @@ namespace mu2e{
   const StrawDigiBundle& StrawDigiBundleCollection::operator[](size_t i) const{
     const auto& rv = this->bundles[i];
     return rv;
+  }
+
+  // convenience methods for accepting new StrawDigiBundles
+  // from different source situations
+  void StrawDigiBundleCollection::Append(const StrawDigiCollection& digis,
+                                         const StrawDigiADCWaveformCollection& adcss,
+                                         const StrawDigiMCCollection& mcs){
+      if ((digis.size() != adcss.size()) || (digis.size() != mcs.size())){
+        std::string msg = "Attempting to append unsynchronized StrawDigi triplets: lengths = " + std::to_string(digis.size()) + ", " + std::to_string(adcss.size()) + ", " + std::to_string(mcs.size());
+        throw cet::exception("TRIPLET SIZE MISMATCH") << msg << std::endl;
+      }
+      for (size_t i = 0 ; i < digis.size() ; i++){
+        auto digi = digis.at(i);
+        auto adcs = adcss.at(i);
+        auto mc   = mcs.at(i);
+        this->bundles.emplace_back(digi, adcs, mc);
+      }
+  }
+
+  void StrawDigiBundleCollection::Append(const StrawDigiCollection& digis,
+                                         const StrawDigiADCWaveformCollection& adcss){
+      if (digis.size() != adcss.size()){
+        std::string msg = "Attempting to append unsynchronized StrawDigi doublets: lengths = " + std::to_string(digis.size()) + ", " + std::to_string(adcss.size());
+        throw cet::exception("DOUBLET SIZE MISMATCH") << msg << std::endl;
+      }
+      for (size_t i = 0 ; i < digis.size() ; i++){
+        const auto& digi = digis.at(i);
+        const auto& adcs = adcss.at(i);
+        StrawDigiBundle bundle(digi, adcs);
+        this->bundles.emplace_back(digi, adcs);
+        continue;
+      }
   }
 
   // convenience methods for accepting new StrawDigiBundles
