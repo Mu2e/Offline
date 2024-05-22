@@ -56,14 +56,14 @@ namespace mu2e{
       /**/
 
     private:
-      Mu2eProductMixer mixer;
+      Mu2eProductMixer _mixer;
       art::EventIDSequence evids;
   };
 
   // implementation
   MixDigisDetail::MixDigisDetail(const Parameters& parameters,
                                          art::MixHelper& helper)
-      : mixer{parameters().mu2e().products(), helper}{
+      : _mixer{parameters().mu2e().products(), helper}{
     helper.produces<art::EventIDSequence>();
   }
 
@@ -80,23 +80,23 @@ namespace mu2e{
     if (seq.size() != 1){
       throw cet::exception("MIX") << "mu2e::DixDigisDetail: mixing more than one digi frame" << std::endl;
     }
-    mixer.processEventIDs(seq);
+    _mixer.processEventIDs(seq);
     evids = seq;
   }
 
   // forward beginSubRun
   void MixDigisDetail::beginSubRun(const art::SubRun& subrun){
-    mixer.beginSubRun(subrun);
+    _mixer.beginSubRun(subrun);
   }
 
   // forward endSubRun
   void MixDigisDetail::endSubRun(art::SubRun& subrun){
-    mixer.endSubRun(subrun);
+    _mixer.endSubRun(subrun);
   }
 
   // forward startEvent
   void MixDigisDetail::startEvent(const art::Event& event){
-    mixer.startEvent(event);
+    _mixer.startEvent(event);
   }
 
   void MixDigisDetail::finalizeEvent(art::Event& event){

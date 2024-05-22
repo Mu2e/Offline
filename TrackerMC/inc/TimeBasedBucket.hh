@@ -32,8 +32,8 @@ namespace mu2e{
       // insertion --- assumes that appends are pre-sorted
       void Append(T);
     protected:
-      std::vector<T> container;
-      double window;
+      std::vector<T> _container;
+      double _window;
     private:
       /**/
   };
@@ -61,46 +61,46 @@ namespace mu2e{
       // insertion
       void Insert(T);
     protected:
-      std::vector< TimeBasedBucket<T> > buckets;
-      double window;
+      std::vector< TimeBasedBucket<T> > _buckets;
+      double _window;
     private:
       /**/
   };
 
   template <typename T>
-  TimeBasedBucket<T>::TimeBasedBucket(double window): window(window){
+  TimeBasedBucket<T>::TimeBasedBucket(double window): _window(window){
     /**/
   }
 
   // forward size query to underlying container
   template <typename T>
   size_t TimeBasedBucket<T>::size() const{
-    auto rv = this->container.size();
+    auto rv = _container.size();
     return rv;
   }
 
   // forward iterator access to underlying container
   template <typename T>
   TBB_iterator<T> TimeBasedBucket<T>::begin(){
-    auto rv = this->container.begin();
+    auto rv = _container.begin();
     return rv;
   }
 
   template <typename T>
   TBB_const_iterator<T> TimeBasedBucket<T>::begin() const{
-    auto rv = this->container.begin();
+    auto rv = _container.begin();
     return rv;
   }
 
   template <typename T>
   TBB_iterator<T> TimeBasedBucket<T>::end(){
-    auto rv = this->container.end();
+    auto rv = _container.end();
     return rv;
   }
 
   template <typename T>
   TBB_const_iterator<T> TimeBasedBucket<T>::end() const{
-    auto rv = this->container.end();
+    auto rv = _container.end();
     return rv;
   }
 
@@ -113,8 +113,8 @@ namespace mu2e{
     }
 
     // otherwise, check between first/last times, accounting for windowing
-    double lower = this->container.front().time() - this->window;
-    double upper = this->container.back().time() + this->window;
+    double lower = _container.front().time() - _window;
+    double upper = _container.back().time() + _window;
     double now = candidate.time();
     bool rv = (lower <= now) && (now <= upper);
     return rv;
@@ -123,43 +123,43 @@ namespace mu2e{
   // insertion --- assumes that appends are pre-sorted
   template<typename T>
   void TimeBasedBucket<T>::Append(T candidate){
-    this->container.push_back(candidate);
+    _container.push_back(candidate);
   }
 
   template<typename T>
-  TimeBasedBuckets<T>::TimeBasedBuckets(double window): window(window){
+  TimeBasedBuckets<T>::TimeBasedBuckets(double window): _window(window){
     /**/
   }
 
   // forward size query to underlying container
   template <typename T>
   size_t TimeBasedBuckets<T>::size() const{
-    auto rv = this->buckets.size();
+    auto rv = _buckets.size();
     return rv;
   }
 
   // forward iterator access to underlying container
   template <typename T>
   TBBS_iterator<T> TimeBasedBuckets<T>::begin(){
-    auto rv = this->buckets.begin();
+    auto rv = _buckets.begin();
     return rv;
   }
 
   template <typename T>
   TBBS_const_iterator<T> TimeBasedBuckets<T>::begin() const{
-    auto rv = this->buckets.begin();
+    auto rv = _buckets.begin();
     return rv;
   }
 
   template <typename T>
   TBBS_iterator<T> TimeBasedBuckets<T>::end(){
-    auto rv = this->buckets.end();
+    auto rv = _buckets.end();
     return rv;
   }
 
   template <typename T>
   TBBS_const_iterator<T> TimeBasedBuckets<T>::end() const{
-    auto rv = this->buckets.end();
+    auto rv = _buckets.end();
     return rv;
   }
 
@@ -178,8 +178,8 @@ namespace mu2e{
 
     // otherwise, this item defines a new bucket
     if (!inserted){
-      TimeBasedBucket<T> bucket(window);
-      this->buckets.push_back(bucket);
+      TimeBasedBucket<T> bucket(_window);
+      _buckets.push_back(bucket);
       this->Insert(item);
     }
   }

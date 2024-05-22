@@ -9,39 +9,39 @@
 namespace mu2e{
   // forward size query to underlying container
   size_t StrawDigiBundleCollection::size() const{
-    auto rv = this->bundles.size();
+    auto rv = _bundles.size();
     return rv;
   }
 
   // forward iterator access to underlying bundles
   SDBC_iterator StrawDigiBundleCollection::begin(){
-    auto rv = this->bundles.begin();
+    auto rv = _bundles.begin();
     return rv;
   }
 
   SDBC_const_iterator StrawDigiBundleCollection::begin() const{
-    auto rv = this->bundles.begin();
+    auto rv = _bundles.begin();
     return rv;
   }
 
   SDBC_iterator StrawDigiBundleCollection::end(){
-    auto rv = this->bundles.end();
+    auto rv = _bundles.end();
     return rv;
   }
 
   SDBC_const_iterator StrawDigiBundleCollection::end() const{
-    auto rv = this->bundles.end();
+    auto rv = _bundles.end();
     return rv;
   }
 
   // forward lookups to underlying container
   StrawDigiBundle& StrawDigiBundleCollection::operator[](size_t i){
-    auto& rv = this->bundles[i];
+    auto& rv = _bundles[i];
     return rv;
   }
 
   const StrawDigiBundle& StrawDigiBundleCollection::operator[](size_t i) const{
-    const auto& rv = this->bundles[i];
+    const auto& rv = _bundles[i];
     return rv;
   }
 
@@ -58,7 +58,7 @@ namespace mu2e{
         auto digi = digis.at(i);
         auto adcs = adcss.at(i);
         auto mc   = mcs.at(i);
-        this->bundles.emplace_back(digi, adcs, mc);
+        _bundles.emplace_back(digi, adcs, mc);
       }
   }
 
@@ -72,7 +72,7 @@ namespace mu2e{
         const auto& digi = digis.at(i);
         const auto& adcs = adcss.at(i);
         StrawDigiBundle bundle(digi, adcs);
-        this->bundles.emplace_back(digi, adcs);
+        _bundles.emplace_back(digi, adcs);
         continue;
       }
   }
@@ -80,34 +80,34 @@ namespace mu2e{
   // convenience methods for accepting new StrawDigiBundles
   // from different source situations
   void StrawDigiBundleCollection::Append(const StrawDigiBundle bundle){
-    this->bundles.push_back(bundle);
+    _bundles.push_back(bundle);
   }
 
   // utility functions
   void StrawDigiBundleCollection::FillStrawDigis(StrawDigiCollection& rv){
     rv.resize(this->size());
     for (size_t i = 0 ; i < this->size() ; i++){
-      rv[i] = this->bundles.at(i).GetStrawDigi();
+      rv[i] = _bundles.at(i).GetStrawDigi();
     }
   }
 
   void StrawDigiBundleCollection::FillStrawDigiADCWaveforms(StrawDigiADCWaveformCollection& rv){
     rv.resize(this->size());
     for (size_t i = 0 ; i < this->size() ; i++){
-      rv[i] = this->bundles.at(i).GetStrawDigiADCWaveform();
+      rv[i] = _bundles.at(i).GetStrawDigiADCWaveform();
     }
   }
 
   void StrawDigiBundleCollection::FillStrawDigiMCs(StrawDigiMCCollection& rv){
     rv.resize(this->size());
     for (size_t i = 0 ; i < this->size() ; i++){
-      rv[i] = this->bundles.at(i).GetStrawDigiMC();
+      rv[i] = _bundles.at(i).GetStrawDigiMC();
     }
   }
 
   StrawDigiBundleCollection StrawDigiBundleCollection::operator+= (const StrawDigiBundleCollection& other){
     for (auto bundle: other){
-      this->bundles.push_back(bundle);
+      _bundles.push_back(bundle);
     }
     return (*this);
   }

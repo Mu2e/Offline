@@ -66,7 +66,7 @@ namespace mu2e{
       // reduce each such set to a single digi, representing their "sum"
       StrawDigiBundleCollection ResolveCollisions(const StrawElectronics& conditions);
     protected:
-      std::vector<StrawDigiBundle> bundles;
+      std::vector<StrawDigiBundle> _bundles;
       StrawDigiBundleCollection ResolveCollision(StrawDigiBundleCollection& collided);
     private:
       /**/
