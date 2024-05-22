@@ -7,37 +7,48 @@
 #include <Offline/TrackerMC/inc/TimeBasedBucket.hh>
 
 namespace mu2e{
+  // forward lookups to underlying container
+  StrawDigiBundle& StrawDigiBundleCollection::operator[](size_t i){
+    auto& rv = this->bundles[i];
+    return rv;
+  }
+
+  const StrawDigiBundle& StrawDigiBundleCollection::operator[](size_t i) const{
+    const auto& rv = this->bundles[i];
+    return rv;
+  }
+
   // convenience methods for accepting new StrawDigiBundles
   // from different source situations
   void StrawDigiBundleCollection::Append(const StrawDigiBundle bundle){
-    this->push_back(bundle);
+    this->bundles.push_back(bundle);
   }
 
   // utility functions
   void StrawDigiBundleCollection::FillStrawDigis(StrawDigiCollection& rv){
     rv.resize(this->size());
     for (size_t i = 0 ; i < this->size() ; i++){
-      rv[i] = this->at(i).GetStrawDigi();
+      rv[i] = this->bundles.at(i).GetStrawDigi();
     }
   }
 
   void StrawDigiBundleCollection::FillStrawDigiADCWaveforms(StrawDigiADCWaveformCollection& rv){
     rv.resize(this->size());
     for (size_t i = 0 ; i < this->size() ; i++){
-      rv[i] = this->at(i).GetStrawDigiADCWaveform();
+      rv[i] = this->bundles.at(i).GetStrawDigiADCWaveform();
     }
   }
 
   void StrawDigiBundleCollection::FillStrawDigiMCs(StrawDigiMCCollection& rv){
     rv.resize(this->size());
     for (size_t i = 0 ; i < this->size() ; i++){
-      rv[i] = this->at(i).GetStrawDigiMC();
+      rv[i] = this->bundles.at(i).GetStrawDigiMC();
     }
   }
 
   StrawDigiBundleCollection StrawDigiBundleCollection::operator+= (const StrawDigiBundleCollection& other){
     for (auto bundle: other){
-      this->push_back(bundle);
+      this->bundles.push_back(bundle);
     }
     return (*this);
   }
@@ -93,7 +104,7 @@ namespace mu2e{
     for (const auto& bundle: (*this)){
       const auto& digi = bundle.GetStrawDigi();
       StrawId id = digi.strawId();
-      unsorted_map[id].push_back(bundle);
+      unsorted_map[id].Append(bundle);
     }
 
     // next, (approximately) sort all subsets via time, to avoid
@@ -108,9 +119,9 @@ namespace mu2e{
         sortable[i] = const_cast<StrawDigiBundle*>(&bundles[i]);
       }
       std::sort(sortable.begin(), sortable.end(), compare_tdcs);
-      std::vector<StrawDigiBundle> sorted;
+      StrawDigiBundleCollection sorted;
       for (size_t i = 0 ; i < bundles.size() ; i++){
-        sorted.push_back(*sortable[i]);
+        sorted.Append(*sortable[i]);
       }
       bundles_map.emplace(id, sorted);
     }
@@ -152,7 +163,7 @@ namespace mu2e{
     // update StrawDigiMC component to reflect that the MC information may be tainted or incomplete
     auto mc = StrawDigiMC(first.GetStrawDigiMC(), StrawDigiMC::PartiallyValid);
     auto updated = StrawDigiBundle(first.GetStrawDigi(), first.GetStrawDigiADCWaveform(), mc);
-    rv.push_back(updated);
+    rv.Append(updated);
     return rv;
   }
 }
