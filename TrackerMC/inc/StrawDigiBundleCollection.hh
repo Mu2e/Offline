@@ -14,6 +14,9 @@
 // art
 #include <art/Framework/Principal/Handle.h>
 
+// cetlib_except
+#include <cetlib_except/exception.h>
+
 // mu2e
 #include <Offline/MCDataProducts/inc/StrawDigiMC.hh>
 #include <Offline/TrackerConditions/inc/StrawElectronics.hh>
@@ -64,8 +67,10 @@ namespace mu2e{
   void StrawDigiBundleCollection::Append(const Pointer<StrawDigiCollection>& digis,
                                          const Pointer<StrawDigiADCWaveformCollection>& adcss,
                                          const Pointer<StrawDigiMCCollection>& mcs){
-      assert(digis->size() == adcss->size());
-      assert(digis->size() == mcs->size());
+      if ((digis->size() != adcss->size()) || (digis->size() != mcs-size())){
+        std::string msg = "Attempting to append unsynchronized StrawDigi triplets: lengths = " << digis->size() << ", " << adcss->size << ", " << mcs->size();
+        throw cet::exception("TRIPLET SIZE MISMATCH") << msg << std::endl;
+      }
       for (size_t i = 0 ; i < digis->size() ; i++){
         auto digi = digis->at(i);
         auto adcs = adcss->at(i);
@@ -78,7 +83,10 @@ namespace mu2e{
   template<template<typename> class Pointer>
   void StrawDigiBundleCollection::Append(const Pointer<StrawDigiCollection>& digis,
                                          const Pointer<StrawDigiADCWaveformCollection>& adcss){
-      assert(digis->size() == adcss->size());
+      if (digis->size() != adcss->size()){
+        std::string msg = "Attempting to append unsynchronized StrawDigi doublets: lengths = " << digis->size() << ", " << adcss->size;
+        throw cet::exception("DOUBLET SIZE MISMATCH") << msg << std::endl;
+      }
       for (size_t i = 0 ; i < digis->size() ; i++){
         const auto& digi = digis->at(i);
         const auto& adcs = adcss->at(i);
