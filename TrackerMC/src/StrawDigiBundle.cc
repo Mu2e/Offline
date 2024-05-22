@@ -14,45 +14,45 @@ namespace mu2e{
   StrawDigiBundle::StrawDigiBundle(const StrawDigi digi,
                                    const StrawDigiADCWaveform adcs,
                                    const StrawDigiMC mc):
-                                    digi(digi),
-                                    adcs(adcs),
-                                      mc(mc){
+                                    _digi(digi),
+                                    _adcs(adcs),
+                                      _mc(mc){
     /**/
   }
 
   StrawDigiBundle::StrawDigiBundle(const StrawDigi digi,
                                    const StrawDigiADCWaveform adcs):
-                                    digi(digi),
-                                    adcs(adcs),
-                                      mc(empty_mc){
+                                    _digi(digi),
+                                    _adcs(adcs),
+                                      _mc(empty_mc){
     /**/
   }
 
   StrawDigiBundle::StrawDigiBundle(const StrawDigiBundle& bundle):
-                                    digi(bundle.GetStrawDigi()),
-                                    adcs(bundle.GetStrawDigiADCWaveform()),
-                                      mc(bundle.GetStrawDigiMC()){
+                                    _digi(bundle.GetStrawDigi()),
+                                    _adcs(bundle.GetStrawDigiADCWaveform()),
+                                      _mc(bundle.GetStrawDigiMC()){
     /**/
   }
 
   const StrawDigi& StrawDigiBundle::GetStrawDigi() const{
-    const StrawDigi& rv = this->digi;
+    const StrawDigi& rv = _digi;
     return rv;
   }
 
   const StrawDigiADCWaveform& StrawDigiBundle::GetStrawDigiADCWaveform() const{
-    const StrawDigiADCWaveform& rv = this->adcs;
+    const StrawDigiADCWaveform& rv = _adcs;
     return rv;
   }
 
   const StrawDigiMC& StrawDigiBundle::GetStrawDigiMC() const{
-    const StrawDigiMC& rv = this->mc;
+    const StrawDigiMC& rv = _mc;
     return rv;
   }
 
   // interface for sorting into buckets of overlapping digitization windows
   const double StrawDigiBundle::time() const{
-    const auto tdcs = this->digi.TDC();
+    const auto tdcs = _digi.TDC();
     const auto ptr = std::min_element(tdcs.begin(), tdcs.end());
     const auto first = *ptr;
     const double rv = static_cast<double>(first);

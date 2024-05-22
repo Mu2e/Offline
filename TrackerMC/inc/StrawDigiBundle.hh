@@ -24,9 +24,9 @@ namespace mu2e{
       // interface for sorting into buckets of overlapping digitization windows
       const double time() const;
     protected:
-      const StrawDigi digi;
-      const StrawDigiADCWaveform adcs;
-      const StrawDigiMC mc;
+      const StrawDigi _digi;
+      const StrawDigiADCWaveform _adcs;
+      const StrawDigiMC _mc;
     private:
       /**/
   };
