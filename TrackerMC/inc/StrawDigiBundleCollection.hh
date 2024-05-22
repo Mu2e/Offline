@@ -67,8 +67,8 @@ namespace mu2e{
   void StrawDigiBundleCollection::Append(const Pointer<StrawDigiCollection>& digis,
                                          const Pointer<StrawDigiADCWaveformCollection>& adcss,
                                          const Pointer<StrawDigiMCCollection>& mcs){
-      if ((digis->size() != adcss->size()) || (digis->size() != mcs-size())){
-        std::string msg = "Attempting to append unsynchronized StrawDigi triplets: lengths = " << digis->size() << ", " << adcss->size << ", " << mcs->size();
+      if ((digis->size() != adcss->size()) || (digis->size() != mcs->size())){
+        std::string msg = "Attempting to append unsynchronized StrawDigi triplets: lengths = " + std::to_string(digis->size()) + ", " + std::to_string(adcss->size()) + ", " + std::to_string(mcs->size());
         throw cet::exception("TRIPLET SIZE MISMATCH") << msg << std::endl;
       }
       for (size_t i = 0 ; i < digis->size() ; i++){
@@ -76,7 +76,7 @@ namespace mu2e{
         auto adcs = adcss->at(i);
         auto mc   = mcs->at(i);
         StrawDigiBundle bundle(digi, adcs, mc);
-        this->push_back(bundle);
+        this->emplace_back(digi, adcs, mc);
       }
   }
 
@@ -84,14 +84,14 @@ namespace mu2e{
   void StrawDigiBundleCollection::Append(const Pointer<StrawDigiCollection>& digis,
                                          const Pointer<StrawDigiADCWaveformCollection>& adcss){
       if (digis->size() != adcss->size()){
-        std::string msg = "Attempting to append unsynchronized StrawDigi doublets: lengths = " << digis->size() << ", " << adcss->size;
+        std::string msg = "Attempting to append unsynchronized StrawDigi doublets: lengths = " + std::to_string(digis->size()) + ", " + std::to_string(adcss->size());
         throw cet::exception("DOUBLET SIZE MISMATCH") << msg << std::endl;
       }
       for (size_t i = 0 ; i < digis->size() ; i++){
         const auto& digi = digis->at(i);
         const auto& adcs = adcss->at(i);
         StrawDigiBundle bundle(digi, adcs);
-        this->push_back(bundle);
+        this->emplace_back(digi, adcs);
         continue;
       }
   }
