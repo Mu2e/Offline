@@ -417,7 +417,7 @@ namespace mu2e {
           _sddiag->Branch("sdlen",&_sdlen,"sdlen/F");
           _sddiag->Branch("adc",&_adc);
           _sddiag->Branch("pmp",&_pmp);
-          _sddiag->Branch("mcprovenance",&_mcprovenance,"mcprovenance/I");
+          _sddiag->Branch("provenance",&_provenance,"provenance/I");
           _sddiag->Branch("mctime",&_mctime,"mctime/D");
           _sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
           _sddiag->Branch("mctrigenergy",&_mctrigenergy,"mctrigenergy/F");
@@ -875,7 +875,7 @@ namespace mu2e {
           }
           // subtract a small buffer
           ptime -= _adcbuffer;
-          mcdigis->push_back(StrawDigiMC(sid,cpos,ctime,wetime,sgspa));
+          mcdigis->push_back(StrawDigiMC(sid,cpos,ctime,wetime,sgspa,StrawDigiMC::Provenance::Simulation));
           if(_diag > 1){
             digiDiag(strawphys,wf,xpair,digis->back(),digiadcs->back(),mcdigis->back());
           }
