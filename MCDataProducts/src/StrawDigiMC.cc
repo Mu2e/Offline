@@ -15,23 +15,39 @@ using namespace std;
 
 namespace mu2e {
 
+  std::string const& StrawDigiMC::ProvenanceDetail::typeName(){
+    static const std::string rv = "Provenance";
+    return rv;
+  }
+
+  static const std::map<StrawDigiMC::ProvenanceDetail::enum_type, std::string> nam{
+    std::make_pair(StrawDigiMC::Provenance::unknown,    "unknown"),
+    std::make_pair(StrawDigiMC::Provenance::Simulation, "Simulation"),
+    std::make_pair(StrawDigiMC::Provenance::Mixed,      "Mixed"),
+    std::make_pair(StrawDigiMC::Provenance::External,   "External")
+  };
+
+  std::map<StrawDigiMC::Provenance::enum_type, std::string> const& StrawDigiMC::ProvenanceDetail::names(){
+    return nam;
+  }
+
   // Default constructor is required for persistable classes
   StrawDigiMC::StrawDigiMC()
     : _strawid(StrawId::_invalid)
-    , _validity(Invalid)
+    , _provenance(StrawDigiMC::Provenance::External)
   {}
 
-  StrawDigiMC::StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, Validity validity):
+  StrawDigiMC::StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, Provenance::enum_type provenance):
     _strawid(sid), _cpos(cpos), _ctime(ctime), _wtime(wetime), _sgspa(sgs)
-    , _validity(validity)
+    , _provenance(provenance)
   {}
 
   StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, SGSPA sgspa ) : StrawDigiMC(rhs)  {
     _sgspa = sgspa;
   }
 
-  StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, Validity validity): StrawDigiMC(rhs){
-    _validity = validity;
+  StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, Provenance::enum_type provenance): StrawDigiMC(rhs){
+    _provenance = provenance;
   }
 
   bool StrawDigiMC::isCrossTalk(StrawEnd strawend) const {

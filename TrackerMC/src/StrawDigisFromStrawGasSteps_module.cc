@@ -206,7 +206,7 @@ namespace mu2e {
         Float_t _xtime[2], _tctime[2], _charge[2], _acharge[2], _ddist[2], _dtime[2], _ptime[2];
         Float_t _wdist[2], _vstart[2], _vcross[2];
         Float_t _phi[2];
-        Int_t _mcvalidity;
+        Int_t _provenance;
         Float_t _mcenergy, _mctrigenergy, _mcthreshenergy;
         Double_t _mctime;
         Int_t _mcthreshpdg, _mcthreshproc, _mcnstep;
@@ -417,7 +417,7 @@ namespace mu2e {
           _sddiag->Branch("sdlen",&_sdlen,"sdlen/F");
           _sddiag->Branch("adc",&_adc);
           _sddiag->Branch("pmp",&_pmp);
-          _sddiag->Branch("mcvalidity",&_mcvalidity,"mcvalidity/I");
+          _sddiag->Branch("mcprovenance",&_mcprovenance,"mcprovenance/I");
           _sddiag->Branch("mctime",&_mctime,"mctime/D");
           _sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
           _sddiag->Branch("mctrigenergy",&_mctrigenergy,"mctrigenergy/F");
@@ -1236,8 +1236,8 @@ namespace mu2e {
         _adc.push_back(*iadc);
       }
       _pmp = digi.PMP();
+      _provenance = mcdigi.provenance();
       // mc truth information
-      _mcvalidity = mcdigi.validity();
       _dmcpdg = _dmcproc = _dmcgen = 0;
       _dmcmom = -1.0;
       _mctime = _mcenergy = _mctrigenergy = _mcthreshenergy = _mcdca = -1000.0;
