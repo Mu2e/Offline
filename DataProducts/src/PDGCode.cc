@@ -39,6 +39,7 @@ namespace mu2e {
   }
 
   static const std::map<PDGCodeDetail::enum_type,std::string> nam{
+    {PDGCodeDetail::geantino                             , "geantino" },
      {PDGCodeDetail::d                             , "d" },
       {PDGCodeDetail::anti_d                        , "anti_d" },
       {PDGCodeDetail::u                             , "u" },

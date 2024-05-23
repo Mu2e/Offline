@@ -256,6 +256,11 @@ namespace mu2e {
       }
 
     }
+    else if (pdgId == PDGCode::geantino) {
+      // AE: for some reason GetParticleTable()->FindParticle(0) does not find geantino
+      // but GetParticleTable()->FindParticle("geantino") does
+      pDef = G4ParticleTable::GetParticleTable()->FindParticle("geantino");
+    }
 
     // note that the particle definition not the pdg code is used for ions
     // Add the particle to the event.
