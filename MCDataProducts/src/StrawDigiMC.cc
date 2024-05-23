@@ -34,7 +34,7 @@ namespace mu2e {
   // Default constructor is required for persistable classes
   StrawDigiMC::StrawDigiMC()
     : _strawid(StrawId::_invalid)
-    , _provenance(StrawDigiProvenance::External)
+    , _provenance(StrawDigiProvenance::Simulation)
   {}
 
   StrawDigiMC::StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, StrawDigiProvenance::enum_type provenance):
