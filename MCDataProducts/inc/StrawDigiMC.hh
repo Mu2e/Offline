@@ -26,18 +26,18 @@
 #include <Offline/GeneralUtilities/inc/EnumToStringSparse.hh>
 
 namespace mu2e {
-
-  class StrawDigiMC{
-
-  public:
     // enum equipped with std::string descriptions
-    class ProvenanceDetail{
+    class StrawDigiProvenanceDetail{
       public:
         enum enum_type {unknown=0, Simulation, Mixed, External};
         static std::string const& typeName();
         static std::map<enum_type, std::string> const& names();
     };
-    typedef EnumToStringSparse<ProvenanceDetail> Provenance;
+    using StrawDigiProvenance = EnumToStringSparse<StrawDigiProvenanceDetail>;
+
+  class StrawDigiMC{
+
+  public:
 
     typedef art::Ptr<StrawGasStep> SGSP;
     typedef std::array<SGSP,StrawEnd::nends> SGSPA;
@@ -46,16 +46,16 @@ namespace mu2e {
 
     StrawDigiMC();
     // construct from hitlets
-    StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, Provenance::enum_type=Provenance::External);
+    StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, StrawDigiProvenance::enum_type=StrawDigiProvenance::Simulation);
 
     // use compuater copy construcors
     StrawDigiMC(const StrawDigiMC& rhs, SGSPA sgsp ); // update the Ptrs
-    StrawDigiMC(const StrawDigiMC& rhs, Provenance::enum_type provenance ); // update validity
+    StrawDigiMC(const StrawDigiMC& rhs, StrawDigiProvenance::enum_type provenance ); // update validity
 
     // Accessors
     StrawId strawId() const { return _strawid; }
 
-    Provenance provenance() const { return _provenance; }
+    StrawDigiProvenance provenance() const { return _provenance; }
 
     SGSP const&  strawGasStep(StrawEnd strawend) const { return _sgspa[strawend]; }
     SGSPA const&  strawGasSteps() const { return _sgspa; }
@@ -83,7 +83,7 @@ namespace mu2e {
     FA _ctime; // times of the trigger clusters
     FA _wtime; // times at the wire ends of the signals which fired the TDC.
     SGSPA _sgspa; // StrawGasStep that triggered each end
-    Provenance _provenance; // level of association with any true MC events
+    StrawDigiProvenance _provenance; // level of association with any true MC events
   };
 
   inline std::ostream& operator<<( std::ostream& ost,

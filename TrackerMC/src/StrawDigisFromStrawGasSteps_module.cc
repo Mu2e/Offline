@@ -875,7 +875,7 @@ namespace mu2e {
           }
           // subtract a small buffer
           ptime -= _adcbuffer;
-          mcdigis->push_back(StrawDigiMC(sid,cpos,ctime,wetime,sgspa,StrawDigiMC::Provenance::Simulation));
+          mcdigis->push_back(StrawDigiMC(sid,cpos,ctime,wetime,sgspa,StrawDigiProvenance::Simulation));
           if(_diag > 1){
             digiDiag(strawphys,wf,xpair,digis->back(),digiadcs->back(),mcdigis->back());
           }

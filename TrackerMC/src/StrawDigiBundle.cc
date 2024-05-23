@@ -8,7 +8,7 @@
 
 namespace mu2e{
   // dummy MC which signals that a given digi was not produced in simulation
-  auto empty_mc = StrawDigiMC(StrawDigiMC(), StrawDigiMC::Provenance::External);
+  auto empty_mc = StrawDigiMC(StrawDigiMC(), StrawDigiProvenance::External);
 }
 
 namespace mu2e{
