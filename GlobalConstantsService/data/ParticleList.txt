@@ -1,3 +1,4 @@
+	 0	         geantino		     same			     geantino       none          0            0            0
         -1           anti_d_quark                    same                              anti_d       dbar   0.333333          330            0
          1                d_quark                    same                                   d       none  -0.333333          330            0
         -2           anti_u_quark                    same                              anti_u       ubar  -0.666667          330            0
