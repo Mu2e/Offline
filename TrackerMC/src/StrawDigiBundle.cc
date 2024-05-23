@@ -7,7 +7,8 @@
 #include <Offline/TrackerMC/inc/StrawDigiBundle.hh>
 
 namespace mu2e{
-  StrawDigiMC empty_mc;
+  // dummy MC which signals that a given digi was not produced in simulation
+  auto empty_mc = StrawDigiMC(StrawDigiMC(), StrawDigiMC::Provenance::External);
 }
 
 namespace mu2e{

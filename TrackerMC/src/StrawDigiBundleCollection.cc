@@ -220,7 +220,7 @@ namespace mu2e{
     StrawDigiBundleCollection rv;
     auto first = collided[0];
     // update StrawDigiMC component to reflect that the MC information may be tainted or incomplete
-    auto mc = StrawDigiMC(first.GetStrawDigiMC(), StrawDigiMC::PartiallyValid);
+    auto mc = StrawDigiMC(first.GetStrawDigiMC(), first.GetStrawDigiMC().provenance());
     auto updated = StrawDigiBundle(first.GetStrawDigi(), first.GetStrawDigiADCWaveform(), mc);
     rv.Append(updated);
     return rv;
