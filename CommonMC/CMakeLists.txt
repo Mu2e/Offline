@@ -51,6 +51,15 @@ cet_build_plugin(ProtonTimeOffset art::module
       Offline::SeedService
 )
 
+
+cet_build_plugin(ProtonBunchTimeMCFromProtonBunchTime art::module
+    REG_SOURCE src/ProtonBunchTimeMCFromProtonBunchTime_module.cc
+    LIBRARIES REG
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      Offline::Mu2eUtilities
+)
+
 cet_build_plugin(SelectRecoMC art::module
     REG_SOURCE src/SelectRecoMC_module.cc
     LIBRARIES REG
