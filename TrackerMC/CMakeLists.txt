@@ -3,6 +3,8 @@ cet_make_library(
       src/StrawCluster.cc
       src/StrawClusterSequence.cc
       src/StrawClusterSequencePair.cc
+      src/StrawDigiBundle.cc
+      src/StrawDigiBundleCollection.cc
       src/StrawWaveform.cc
     LIBRARIES PUBLIC
       

@@ -20,6 +20,14 @@ cet_build_plugin(MixBackgroundFrames art::module
       Offline::SimulationConditions
 )
 
+cet_build_plugin(MixDigis art::module
+    REG_SOURCE src/MixDigis_module.cc
+    LIBRARIES REG
+      art::Framework_IO_ProductMix
+      art_root_io::art_root_io
+      Offline::EventMixing
+)
+
 cet_build_plugin(ProtonBunchIntensityFlat art::module
     REG_SOURCE src/ProtonBunchIntensityFlat_module.cc
     LIBRARIES REG
