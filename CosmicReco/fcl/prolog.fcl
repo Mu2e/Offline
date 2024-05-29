@@ -37,14 +37,14 @@ SimpleTimeCluster : {
     TestFlag : true
     HitSelectionBits  : ["EnergySelection"]
     HitBackgroundBits : ["Background","Noisy","Dead"]
-    debugLevel : 0,
+    debugLevel : 0
     minNStrawHits : 2
-    minNPanels : 1,
-    TimeWindow : 100,
-    useTimeWindow : false,
-    TimeStep : 20,
-    useTimeStep : true,
-    UseOnlyOnePanel : false,
+    minNPanels : 1
+    TimeWindow : 100
+    useTimeWindow : false
+    TimeStep : 20
+    useTimeStep : true
+    UseOnlyOnePanel : false
     UseOnlyOnePlane : false
 }
 
