@@ -33,6 +33,7 @@ namespace mu2e {
   public:
     enum enum_type
       {
+        geantino = 0 ,
         d = 1 ,
         anti_d = -1 ,
         u = 2 ,
@@ -459,7 +460,7 @@ namespace mu2e {
         He3 =      1000020030,
 
         // Needed for EnumToStringSparse
-        unknown = 0,
+        unknown = -999999999,
 
         // Codes above or equal to this value are defined by G4.
         G4Threshold = 999999999,
