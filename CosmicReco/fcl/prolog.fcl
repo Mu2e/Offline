@@ -37,7 +37,7 @@ SimpleTimeCluster : {
     TestFlag : true
     HitSelectionBits  : ["EnergySelection"]
     HitBackgroundBits : ["Background","Noisy","Dead"]
-    minNPanels : 3
+    minNPanels : 1
 }
 
 LineFinder : {

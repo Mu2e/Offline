@@ -41,7 +41,7 @@ public:
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
     fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"), 0};
-    fhicl::Atom<int> minnsh{Name("minNStrawHits"), Comment("minimum number of straw hits "), 5};
+    fhicl::Atom<int> minnsh{Name("minNStrawHits"), Comment("minimum number of straw hits "), 2};
     fhicl::Atom<int> minnpanels{Name("minNPanels"), Comment("minimum number of panels "), 0};
     fhicl::OptionalAtom<int> maxnsh{Name("maxNStrawHits"), Comment("maximum number of straw hits ")};
     fhicl::Atom<int> timewindow{Name("TimeWindow"), Comment("Width of time window in ns"), 100};
