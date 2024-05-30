@@ -80,7 +80,7 @@ outputs:
 
 
 physics.producers.generate : @local::Cosmic.generateCRY
-physics.producers.generate.inputFile : "Offline/CRVResponse/test/wideband/widebandCRYconfig.txt"
+physics.producers.generate.inputFile : "Offline/CRVResponse/test/wideband/widebandCRYconfig_v2.txt"
 physics.producers.cosmicTimeOffset.intervalEnd : 99000
 physics.producers.cosmicTimeOffset.cosmicModuleLabel : "generate"
 physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
@@ -97,10 +97,10 @@ physics.producers.CrvSteps.stepPointsModuleLabels   : ["g4run"]
 physics.producers.CrvPhotons.crvStepModuleLabels    : ["CrvSteps"]
 physics.producers.CrvPhotons.crvStepProcessNames    : ["CrvWideband4ModulesSim"]
 physics.producers.CrvPhotons.photonYieldVariationScale    : 0.02   //gaussian distribution with sigma equal to 2.0% of the nominal photon yield
-physics.producers.CrvPhotons.photonYieldScaleFactor       : 1.01   //1.0 works with cross talk of 0.05
+physics.producers.CrvPhotons.photonYieldScaleFactor       : 1.00
 physics.producers.CrvPhotons.CRVSectors                   : [ "W1", "W2", "W3", "W4"]
 physics.producers.CrvPhotons.reflectors                   : [    0,    0,    0,    0]
-physics.producers.CrvPhotons.scintillationYields          : [39400,39400,39400,39400]
+physics.producers.CrvPhotons.scintillationYields          : [39794,39794,39794,39794]
 physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0/LookupTable_6000_0",
                                                              "CRVConditions/v6_0/LookupTable_6000_0",
                                                              "CRVConditions/v6_0/LookupTable_6000_0",
@@ -166,9 +166,7 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
 
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband4modules_v2.txt"
 services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
-services.ProditionsService.crvPhotonYield.useDb : true
-services.ProditionsService.crvStatus.useDb: true
-services.DbService.textFile : ["Offline/CRVConditions/data/status_wideband4modules.txt","Offline/CRVConditions/data/photonyield_wideband4modules.txt"]
+services.DbService.textFile : ["Offline/CRVConditions/data/status_wideband4modules.txt","Offline/CRVConditions/data/photonyield_wideband4modules.txt", "Offline/CRVConditions/data/calib_wideband4modules.txt"]
 
 services.SeedService.baseSeed : @local::Common.BaseSeed
 services.TFileService.fileName : "nts.owner.CRV_wideband_cosmics-mc.configuration.sequencer.root"

@@ -1,5 +1,5 @@
 #
-# generate and simulate full CRV waveforms to find the pedestal
+# generate and simulate full CRV waveforms to reconstruct dark counts
 #
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/EventGenerator/fcl/prolog.fcl"
@@ -7,97 +7,69 @@
 #include "Production/JobConfig/primary/prolog.fcl"
 #include "Production/JobConfig/digitize/prolog.fcl"
 #include "Production/JobConfig/cosmic/prolog.fcl"
-#include "Production/JobConfig/reco/prolog.fcl"
 
-process_name : cosmicSimReco
+process_name : crvCalibSim
 
 source : {
   module_type :EmptyEvent
   firstRun: 1200
 }
-services : @local::Services.Sim
+services: @local::Services.SimAndReco
 
 physics: {
   producers : {
+    @table::CommonMC.producers
     @table::Common.producers
     @table::Primary.producers
-    @table::Digitize.producers
-    @table::Reconstruction.producers
     cosmicTimeOffset : @local::Cosmic.cosmicTimeOffset
-    generate : @local::Cosmic.generateCRY
+    @table::CrvDAQPackage.producers
     CrvRecoPulses: @local::CrvRecoPulses
   }
-  analyzers: {
-    CrvCalibration: @local::CrvCalibration
+  filters : {
+    @table::Common.filters
   }
 
-  TriggerPath : [
-    @sequence::Common.generateSequence,
-    cosmicTimeOffset,
-    g4run,
-    CrvSteps,
-    EWMProducer,
-    @sequence::CrvDAQPackage.CrvDAQSequence,
-    CrvRecoPulses
-  ]
-  EndPath : [ CrvCalibration ]
+  TriggerPath :  [ @sequence::Common.generateSequence, cosmicTimeOffset, @sequence::Common.g4Sequence, @sequence::CommonMC.DigiSim,
+                   CrvSteps, @sequence::CrvDAQPackage.CrvDAQSequence, CrvRecoPulses ]
+  out: [Output]
   trigger_paths : [ TriggerPath ]
-  end_paths : [ EndPath ]
+  end_paths : [ out ]
 }
 
-#include "Production/JobConfig/reco/epilog.fcl"
-physics.analyzers.digiCompressionCheck.SelectEvents : [ TriggerPath ]
-physics.producers.FindMCPrimary.PrimaryGenIds: ["CosmicCRY"]
+outputs:
+{
+  Output :
+  {
+    module_type : RootOutput
+    fileName    : "crv_calib.art"
+    outputCommands: ["keep *",
+                     "drop *SimParticle*_*_*_*",
+                     "drop *StepPointMC*_*_*_*",
+                     "drop *CrvStep*_*_*_*",
+                     "drop *CrvPhotons*_*_*_*",
+                     "drop *CrvSiPMCharges*_*_*_*",
+                     "drop *CrvDigiMC*_*_*_*"]
+  }
+}
 
-# set the event timing for OffSpill
-physics.producers.EWMProducer.SpillType : 0
-# override the Untriggered filter to just prescale
-# nofield geometry
-services.GeometryService.bFieldFile : "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
-# print summaries
-services.scheduler.wantSummary: true
-services.TimeTracker.printSummary: true
 
-# g4 config
-physics.producers.g4run.TrajectoryControl: @local::mu2eg4NoTrajectories
-physics.producers.g4run.inputs.primaryTag : cosmicTimeOffset
-physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicNoField
-physics.producers.g4run.physics.minRangeCut : 1.0 // mm
-# stop showers outside the detector
-physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicNoField
-
-# only simulate CRV
-#physics.producers.g4run.SDConfig.enableSD : [ CRV ]
+physics.producers.generate : @local::Cosmic.generateCRY
+physics.producers.EWMProducer.SpillType : 1
 
 physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
 physics.producers.CrvPhotons.crvStepProcessNames  : ["cosmicSimReco"]
 
-#record full waveforms
-physics.producers.CrvWaveforms.minVoltage : -100 //-100V --> records everthing
-physics.producers.CrvWaveforms.noise      : 8e-4 //0.8mV
-
-#higher dark rate
-physics.producers.CrvSiPMCharges.ThermalRate  : 1.0e-3     //ns^-1     1,0MHz for entire SiPM
-
-#lower reco threshold
+physics.producers.CrvSiPMCharges.ThermalRate  : 1.0e-3     //ns^-1     1.0MHz for entire SiPM
+#physics.producers.CrvWaveforms.minVoltage : -100   //-100V --> records everything
+physics.producers.CrvWaveforms.minVoltage : 0.0025 //2.5mV (corresponds to 0.5PE)
+physics.producers.CrvWaveforms.noise      : 8e-4   //0.8mV
 physics.producers.CrvRecoPulses.minADCdifference   : 5    //minimum ADC difference above pedestal to be considered for reconstruction
 
-# turn off very verbose
-physics.producers.CrvCoincidence.verboseLevel : 0
-physics.producers.CrvCoincidenceClusterFinder.verboseLevel : 0
+outputs.Output.fileName : "crv_calib.art"
 
-# print summaries
+source.maxEvents: 200
 services.scheduler.wantSummary: true
 services.TimeTracker.printSummary: true
-
-# histogram file
-services.TFileService.fileName : "nts.owner.val-cosmicSimReco.dsconf.seq.root"
-# art file
-outputs.Output.fileName : "mcs.owner.val-cosmicSimReco.dsconf.seq.art"
-
-# run 1h by default
-source.maxEvents: 50000
-
-# Initialze seeding of random engines
 services.SeedService.baseSeed         :  8
-#include "Production/Validation/database.fcl"
+services.TFileService.fileName : "crv_calib.root"
+#include "Offline/DbService/fcl/NominalDatabase.fcl"
