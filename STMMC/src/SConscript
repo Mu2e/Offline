@@ -40,9 +40,13 @@ helper.make_plugins( [ mainlib,
                        'fhiclcpp_types',
                        'cetlib',
                        'cetlib_except',
+                       'CLHEP',
                        'mu2e_Mu2eUtilities',
                        'mu2e_DataProducts',
                        'mu2e_DbTables',
+                       'mu2e_STMConditions',
+                       'mu2e_ProditionsService',
+                       'mu2e_RecoDataProducts',
                        rootlibs,
                        'boost_filesystem'
                      ] )

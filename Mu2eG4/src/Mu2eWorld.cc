@@ -1187,8 +1187,7 @@ namespace mu2e {
 
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
         G4String LVname = (*pos)->GetName();
-
-        if ( LVname == "stmDet1" || LVname == "stmDet2" ){
+        if ( LVname == "fLaBrPV" || LVname == "fHPGePV" ){
           (*pos)->SetSensitiveDetector(STMDetSD);
         }
       }//for
