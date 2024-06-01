@@ -74,6 +74,7 @@ namespace mu2e {
     }
     const CLHEP::Hep3Vector _magnetOffsetInMu2e  = _STMMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,magnetZOffset);
     const CLHEP::Hep3Vector _magnetHoleOffset  = CLHEP::Hep3Vector(_magnetHoleXOffset,_magnetHoleYOffset, 0.);
+
     //if (_magnetBuild){
       stm._pSTMMagnetParams = std::unique_ptr<PermanentMagnet>
         (new PermanentMagnet(_magnetBuild,
@@ -276,7 +277,7 @@ namespace mu2e {
                         _detector1OffsetInMu2e,
                         _detector1Rotation
                        ));
-    //}
+      //}
 
     const CLHEP::HepRotation _detector2Rotation = CLHEP::HepRotation::IDENTITY;
     const CLHEP::Hep3Vector  _detector2OffsetInMu2e  = _SSCollimatorOffsetInMu2e + CLHEP::Hep3Vector(_detector2xOffset, 0.0, _SSCollimatorHalfLength+_detector2CanUpStrSpace+_detector2CanHalfLength);
@@ -297,7 +298,7 @@ namespace mu2e {
                         _detector2OffsetInMu2e,
                         _detector2Rotation
                        ));
-    //}
+      //}
 
 
     const CLHEP::HepRotation _shieldRotation = CLHEP::HepRotation::IDENTITY;

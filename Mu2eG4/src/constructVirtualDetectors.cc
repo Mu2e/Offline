@@ -1516,8 +1516,7 @@ namespace mu2e {
     }
 
     vdId = VirtualDetectorId::STM_SpotSizeCollUpStr;
-    //if ( vdg->exist(vdId) ) {
-    if(0){
+    if ( vdg->exist(vdId) ) {
       //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
       const VolumeInfo& parent = _helper->locateVolInfo("stmDownstreamEnvelope");
       const double vdRIn  = 0.0;
@@ -1550,8 +1549,7 @@ namespace mu2e {
     }
 
     vdId = VirtualDetectorId::STM_CollDnStr;
-    //if ( vdg->exist(vdId) ) {
-    if(0){
+    if ( vdg->exist(vdId) ) {
       //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
       const VolumeInfo& parent = _helper->locateVolInfo("stmDownstreamEnvelope");
       const double vdRIn  = 0.0;
@@ -1585,8 +1583,7 @@ namespace mu2e {
 
 
     vdId = VirtualDetectorId::STM_Det1UpStr;
-    //if ( vdg->exist(vdId) ) {
-    if(0){
+    if ( vdg->exist(vdId) ) {
       //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
       const VolumeInfo& parent = _helper->locateVolInfo("stmDownstreamEnvelope");
       const double vdRIn  = 0.0;
@@ -1620,8 +1617,7 @@ namespace mu2e {
 
 
     vdId = VirtualDetectorId::STM_Det2UpStr;
-    //if ( vdg->exist(vdId) ) {
-    if(0){
+    if ( vdg->exist(vdId) ) {
       //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
       const VolumeInfo& parent = _helper->locateVolInfo("stmDownstreamEnvelope");
       const double vdRIn  = 0.0;
