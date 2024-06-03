@@ -25,7 +25,7 @@ database mu2e_conditions_dev
     nocache    https://dbdata0vm.fnal.gov:9443/QE/mu2e/dev/app/SQ/query?
 
 database mu2e_dqm_prd
-    host ifdb08
+    host ifdb11
     port 5459
     cache      https://dbdata0vm.fnal.gov:8444/QE/mu2e/prod/app/SQ/query?
     nocache    https://dbdata0vm.fnal.gov:9443/QE/mu2e/prod/app/SQ/query?
