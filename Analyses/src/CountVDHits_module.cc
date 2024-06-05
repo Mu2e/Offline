@@ -80,7 +80,7 @@ namespace mu2e {
     {
       //Find the index of the volume ID
       auto it = find(_enabledVDs.begin(), _enabledVDs.end(), StepPointMC.volumeId());
-      // If the volumeID is not in the list, skip to the next event
+      // If the volumeID is not in the list, skip to the next StepPointMC
       if (it == _enabledVDs.end()){continue;}
       // Increment the counter for the corresponding entry
       const int index = it - _enabledVDs.begin();
