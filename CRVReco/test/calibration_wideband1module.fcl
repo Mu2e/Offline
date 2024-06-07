@@ -34,7 +34,7 @@ physics: {
 
 physics.producers.EWMProducer.SpillType : 0
 physics.producers.CrvRecoPulses.minADCdifference   : 5    //minimum ADC difference above pedestal to be considered for reconstruction
-services.TFileService.fileName : "calibWideband.root"
+services.TFileService.fileName : "crvCalibWideband.root"
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband1module.txt"
 services.ProditionsService.crvStatus.useDb: false
 services.ProditionsService.crvStatus.verbose: 2
