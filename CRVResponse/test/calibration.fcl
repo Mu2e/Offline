@@ -8,11 +8,11 @@
 #include "Production/JobConfig/digitize/prolog.fcl"
 #include "Production/JobConfig/cosmic/prolog.fcl"
 
-process_name : crvCalibSim
+process_name : crvCalibSimReco
 
 source : {
   module_type :EmptyEvent
-  firstRun: 1200
+  firstRun: 1210
 }
 services: @local::Services.SimAndReco
 
@@ -42,7 +42,9 @@ outputs:
   {
     module_type : RootOutput
     fileName    : "crv_calib.art"
+    SelectEvents : [ TriggerPath ]
     outputCommands: ["keep *",
+                     "drop *GenParticle*_*_*_*",
                      "drop *SimParticle*_*_*_*",
                      "drop *StepPointMC*_*_*_*",
                      "drop *CrvStep*_*_*_*",
@@ -54,22 +56,21 @@ outputs:
 
 
 physics.producers.generate : @local::Cosmic.generateCRY
+physics.producers.g4run.TrajectoryControl: @local::mu2eg4NoTrajectories
 physics.producers.EWMProducer.SpillType : 1
 
 physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
 physics.producers.CrvPhotons.crvStepProcessNames  : ["cosmicSimReco"]
 
-physics.producers.CrvSiPMCharges.ThermalRate  : 1.0e-3     //ns^-1     1.0MHz for entire SiPM
 #physics.producers.CrvWaveforms.minVoltage : -100   //-100V --> records everything
 physics.producers.CrvWaveforms.minVoltage : 0.0025 //2.5mV (corresponds to 0.5PE)
-physics.producers.CrvWaveforms.noise      : 8e-4   //0.8mV
 physics.producers.CrvRecoPulses.minADCdifference   : 5    //minimum ADC difference above pedestal to be considered for reconstruction
 
-outputs.Output.fileName : "crv_calib.art"
+outputs.Output.fileName : "crvCalibSimReco.art"
 
 source.maxEvents: 200
 services.scheduler.wantSummary: true
 services.TimeTracker.printSummary: true
 services.SeedService.baseSeed         :  8
-services.TFileService.fileName : "crv_calib.root"
+services.TFileService.fileName : "crvCalibSimReco.root"
 #include "Offline/DbService/fcl/NominalDatabase.fcl"
