@@ -57,6 +57,8 @@ outputs:
 
 physics.producers.generate : @local::Cosmic.generateCRY
 physics.producers.g4run.TrajectoryControl: @local::mu2eg4NoTrajectories
+physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicNoField
+physics.producers.g4run.physics.minRangeCut : 1.0 // mm
 physics.producers.EWMProducer.SpillType : 1
 
 physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]

@@ -449,6 +449,8 @@ namespace mu2e
             }
           }
 
+          //for iSectorType==0, the tree and histogram are filled, and a track fit through the entire stack of modules/sectors is done
+          //for iSectorType>0, a track fit for individual modules/sectors (with sectorType 1,2,3,...) is done
           if(iSectorType==0)
           {
             uint16_t offlineChannel = barIndex.asUint()*4 + SiPM;
