@@ -72,7 +72,7 @@ namespace mu2e {
           } else if ( selector_->select(kseed)){
             if(!selbest_ || mkseeds->size() == 0)
               mkseeds->emplace_back(ksch,ikseed);
-            else if(selbest_ && selector_->isBetter(kseed,*mkseeds->back())){
+            else if(selbest_ && selector_->isBetter(*mkseeds->back(),kseed)){
               mkseeds->back() = art::Ptr<KalSeed>(ksch,ikseed);
             }
           }
