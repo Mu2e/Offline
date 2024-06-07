@@ -1,3 +1,7 @@
+string(REGEX REPLACE "^([0-9]+)\.([0-9]+)\.([0-9]+)$" "-DG4VERSION=4\\1\\2" G4VERSIONFLAG "${Geant4_VERSION}")
+message("---> Adding geant4 version compile flag ${G4VERSIONFLAG}")
+add_compile_options(${G4VERSIONFLAG})
+
 cet_make_library(
     SOURCE
       src/addStepLimiter.cc
