@@ -11,7 +11,6 @@
 #include <TEveManager.h>
 #include <TEveStraightLineSet.h>
 //Mu2e General:
-#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 //TEveMu2e
 #include "Offline/TEveEventDisplay/src/dict_classes/Collection_Filler.h"

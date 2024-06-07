@@ -33,6 +33,12 @@ cet_make_library(
       Offline::TrackerGeom
 )
 
+cet_build_plugin(MergeKalSeeds art::module
+    REG_SOURCE src/MergeKalSeeds_module.cc
+    LIBRARIES REG
+      Offline::TrkReco
+)
+
 cet_build_plugin(MergeHelices art::module
     REG_SOURCE src/MergeHelices_module.cc
     LIBRARIES REG

@@ -16,7 +16,6 @@
 #include "CLHEP/Random/RandFlat.h"
 // Mu2e includes
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
-#include "fhiclcpp/ParameterSet.h"
 
 #include "Offline/TrackerConditions/inc/StrawDrift.hh"
 

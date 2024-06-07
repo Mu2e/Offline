@@ -58,8 +58,6 @@ namespace mu2e {
     bool loopHelixFit() const { return _status.hasAllProperties(TrkFitFlag::KKLoopHelix); }
     bool centralHelixFit() const { return _status.hasAllProperties(TrkFitFlag::KKCentralHelix); }
     bool kinematicLineFit() const { return _status.hasAllProperties(TrkFitFlag::KKLine); }
-    bool seedBTrkFit() const { return _status.hasAllProperties(TrkFitFlag::KSF); }
-    bool finalBTrkFit() const { return _status.hasAllProperties(TrkFitFlag::KFF); }
     // reconstitute (as best as possible) the fit trajectory.  The ptr will be null if the fit wasn't based on the requested trajector type
     // Note these return by value
     // Note that the returned piecetraj may have large gaps, unless the full fit trajectory was stored in the seed.

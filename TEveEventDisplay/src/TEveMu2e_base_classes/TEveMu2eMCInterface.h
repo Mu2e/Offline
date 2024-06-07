@@ -11,7 +11,6 @@
 #include <TEveStraightLineSet.h>
 #include <TEveText.h>
 //Mu2e General:
-#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryPoint.hh"
 //TEveMu2e

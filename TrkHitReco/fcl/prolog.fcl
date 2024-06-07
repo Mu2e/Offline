@@ -113,8 +113,8 @@ TNTClusterer : {
 }
 
 Chi2Clusterer : {
-  HitDistance      : 2
-  SeedDistance     : 4
+  HitDistance      : 4
+  SeedDistance     : 8
   MinClusterHits   : 1
   MaxHitTimeDiff   : 30.0
   MaxCluIterations : 5
@@ -138,6 +138,7 @@ FlagBkgHits : {
   OutputLevel          : "uniquepanel"
   SaveBkgClusters      : false
   KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiagStationSpatial.dat"
+  UseSLine             : false
   KerasQuality         : 0.5
   DebugLevel           : 0
 }

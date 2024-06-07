@@ -1,6 +1,7 @@
 #include "Offline/TrkDiag/fcl/CHD.fcl"
-#include "Offline/TrkHitReco/fcl/epilog_panel.fcl"
-#include "Offline/TrkHitReco/fcl/epilog_FBH_panel.fcl"
+#include "Offline/TrkHitReco/fcl/epilog_plane.fcl"
+#include "Offline/TrkHitReco/fcl/epilog_FBH_plane.fcl"
 physics.producers.makePH.TestFlag : true
+physics.producers.makeSTH.TestFlag : true
 services.DbService.purpose: MDC2020_best
 services.DbService.version: v1_1

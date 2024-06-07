@@ -18,7 +18,6 @@
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
-#include "fhiclcpp/ParameterSet.h"
 
 namespace mu2e {
 
