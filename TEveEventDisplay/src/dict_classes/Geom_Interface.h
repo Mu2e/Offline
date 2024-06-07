@@ -27,7 +27,6 @@
 #include <TEveProjectionAxes.h>
 
 //Geom:
-#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/WorldG4.hh"
 #include "Offline/GeometryService/inc/WorldG4Maker.hh"

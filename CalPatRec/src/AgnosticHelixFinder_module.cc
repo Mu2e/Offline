@@ -25,6 +25,7 @@
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 
 #include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
@@ -114,19 +115,19 @@ namespace mu2e {
     };
 
     struct cHit {
-      int     hitIndice; // index of point in _chColl
-      float   circleError2;
-      float   helixPhi;
-      float   helixPhiError2;
-      int     helixPhiCorrection;
-      bool    inHelix;
-      bool    used; // whether or not hit is used in fits
-      bool    isolated;
-      bool    averagedOut;
-      bool    notOnLine;
-      bool    uselessTripletSeed;
-      bool    notOnSegment;
-      bool    debugParticle; // only filled in debug mode -- true if mc particle, false if background
+      int     hitIndice = 0; // index of point in _chColl
+      float   circleError2 = 1.0;
+      float   helixPhi = 0.0;
+      float   helixPhiError2 = 0.0;
+      int     helixPhiCorrection = 0;
+      bool    inHelix = false;
+      bool    used = false; // whether or not hit is used in fits
+      bool    isolated = false;
+      bool    averagedOut = false;
+      bool    notOnLine = true;
+      bool    uselessTripletSeed = false;
+      bool    notOnSegment = true;
+      bool    debugParticle = false; // only filled in debug mode -- true if mc particle, false if background
     };
 
     struct tripletPoint {
@@ -207,7 +208,6 @@ namespace mu2e {
     const ComboHitCollection*      _chColl;
     const TimeClusterCollection*   _tcColl;
     const CaloClusterCollection*   _ccColl;
-    HelixSeedCollection*           _hsColl;
 
     //-----------------------------------------------------------------------------
     // helix search parameters
@@ -342,7 +342,7 @@ namespace mu2e {
     void         tcHitsFill                (size_t tc);
     void         setFlags                  ();
     void         resetFlags                ();
-    void         findHelix                 (size_t tc, bool& findAnotherHelix);
+    void         findHelix                 (size_t tc, HelixSeedCollection& HSColl, bool& findAnotherHelix);
     bool         passesFlags               (size_t& tcHitsIndex);
     void         setTripletI               (size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome);
     void         setTripletJ               (size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome);
@@ -520,7 +520,6 @@ namespace mu2e {
     // set the event and prepare hsColl
     _event = &event;
     std::unique_ptr<HelixSeedCollection> hsColl(new HelixSeedCollection);
-    _hsColl = hsColl.get();
 
     // get the necessary data to do helix search
     bool dataExists = findData(event);
@@ -576,7 +575,7 @@ namespace mu2e {
         tcHitsFill(i);
         continueSearch = true;
         while (continueSearch == true) {
-          findHelix(i, continueSearch);
+          findHelix(i, *hsColl, continueSearch);
           if (_findMultipleHelices == false) {
             continueSearch = false;
           } // want to halt search if not configured to find multiple helices per TC
@@ -731,21 +730,9 @@ namespace mu2e {
 
     size_t sortStartIndex = 0;
 
-    cHit hit;
-    hit.circleError2 = 1.0;
-    hit.helixPhi = 0.0;
-    hit.helixPhiError2 = 0.0;
-    hit.helixPhiCorrection = 0;
-    hit.inHelix = false;
-    hit.used = false;
-    hit.isolated = false;
-    hit.averagedOut = false;
-    hit.notOnLine = true;
-    hit.uselessTripletSeed = false;
-    hit.notOnSegment = true;
-
     // push back stopping target if it is to be used
     if (_useStoppingTarget == true) {
+      cHit hit;
       hit.hitIndice = HitType::STOPPINGTARGET;
       _tcHits.push_back(hit);
       sortStartIndex++;
@@ -753,22 +740,27 @@ namespace mu2e {
 
     // push back calo cluster if it exists in time cluster
     if (_tcColl->at(tc).hasCaloCluster()) {
-      hit.hitIndice = HitType::CALOCLUSTER;
-      _tcHits.push_back(hit);
       const art::Ptr<CaloCluster> cl = _tcColl->at(tc).caloCluster();
-      CLHEP::Hep3Vector gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(), cl->cog3Vector());
-      CLHEP::Hep3Vector tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
-      double offset = _calorimeter->caloInfo().getDouble("diskCaseZLength");
-      offset += _calorimeter->caloInfo().getDouble("BPPipeZOffset");
-      offset += _calorimeter->caloInfo().getDouble("BPHoleZLength");
-      offset += _calorimeter->caloInfo().getDouble("FEEZLength");
-      offset /= 2.0;
-      _caloPos.SetCoordinates(tpos.x(), tpos.y(), tpos.z() - offset);
-      sortStartIndex++;
+      const CaloCluster*cluster = cl.get();
+      if (cluster != nullptr){
+        cHit hit;
+        hit.hitIndice = HitType::CALOCLUSTER;
+        CLHEP::Hep3Vector gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(), cl->cog3Vector());
+        CLHEP::Hep3Vector tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+        double offset = _calorimeter->caloInfo().getDouble("diskCaseZLength");
+        offset += _calorimeter->caloInfo().getDouble("BPPipeZOffset");
+        offset += _calorimeter->caloInfo().getDouble("BPHoleZLength");
+        offset += _calorimeter->caloInfo().getDouble("FEEZLength");
+        offset /= 2.0;
+        _caloPos.SetCoordinates(tpos.x(), tpos.y(), tpos.z() - offset);
+        _tcHits.push_back(hit);
+        sortStartIndex++;
+      }
     }
 
     // fill hits from time cluster
     for (size_t i = 0; i < _tcColl->at(tc)._strawHitIdxs.size(); i++) {
+      cHit hit;
       hit.hitIndice = _tcColl->at(tc)._strawHitIdxs[i];
       if (_debug == 1) {
         std::vector<StrawDigiIndex> shids;
@@ -788,6 +780,7 @@ namespace mu2e {
     std::sort(_tcHits.begin() + sortStartIndex, _tcHits.end(), [&](const cHit& a, const cHit& b) {
         return _chColl->at(a.hitIndice).pos().z() > _chColl->at(b.hitIndice).pos().z();
       });
+
   }
 
   //-----------------------------------------------------------------------------
@@ -859,7 +852,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // logic to find helix
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::findHelix(size_t tc, bool& findAnotherHelix) {
+  void AgnosticHelixFinder::findHelix(size_t tc, HelixSeedCollection& HSColl, bool& findAnotherHelix) {
 
     // if in runDisplay mode we store collections for plotting
     _circleFitter.clear();
@@ -1055,7 +1048,7 @@ namespace mu2e {
               _plottingData.push_back(trackingInfo);
             }
             saveHelixCandidate();
-            saveHelix(tc, *_hsColl);
+            saveHelix(tc, HSColl);
             if (_diagLevel == 1) {
               _diagInfo.nHelices++;
             }
@@ -1084,7 +1077,7 @@ namespace mu2e {
           }
         }
       }
-      _tcHits[i].uselessTripletSeed = uselessSeed;
+      if (i<_tcHits.size()) {_tcHits[i].uselessTripletSeed = uselessSeed;}
     }
   }
 
@@ -1724,6 +1717,7 @@ namespace mu2e {
     hseed._helix._chi2dZPhi = _lineFitter.chi2Dof();
 
     hseed._status.merge(TrkFitFlag::helixOK);
+    hseed._status.merge(TrkFitFlag::APRHelix);
 
     // push back the helix seed to the helix seed collection
     HSColl.emplace_back(hseed);
