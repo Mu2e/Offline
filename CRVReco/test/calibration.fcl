@@ -5,7 +5,7 @@
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/CRVResponse/fcl/prolog.fcl"
 
-process_name : calibrateWideband
+process_name : calibrate
 
 source :
 {
@@ -19,26 +19,24 @@ services :
 physics: {
   producers :
   {
-    CrvRecoPulses: @local::CrvRecoPulses
   }
   analyzers:
   {
     CrvCalibration: @local::CrvCalibration
   }
 
-  TriggerPath : [ CrvRecoPulses ]
+  TriggerPath : [ ]
   EndPath :     [ CrvCalibration ]
   trigger_paths : [ TriggerPath ]
   end_paths :     [ EndPath ]
 }
 
-physics.producers.EWMProducer.SpillType : 0
-physics.producers.CrvRecoPulses.minADCdifference   : 5    //minimum ADC difference above pedestal to be considered for reconstruction
-services.TFileService.fileName : "crvCalibWideband.root"
-services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband1module.txt"
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+services.TFileService.fileName : "crvCalib.root"
+#include "Offline/DbService/fcl/NominalDatabase.fcl"
+
 services.ProditionsService.crvStatus.useDb: false
 services.ProditionsService.crvStatus.verbose: 2
 services.ProditionsService.crvCalib.useDb: true
 services.ProditionsService.crvCalib.verbose: 2
-services.DbService.textFile : ["pedestalWideband_test.txt"]
-services.DbService.verbose: 2

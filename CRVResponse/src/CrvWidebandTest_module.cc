@@ -449,17 +449,22 @@ namespace mu2e
             }
           }
 
-          uint16_t offlineChannel = barIndex.asUint()*4 + SiPM;
-          CRVROC   onlineChannel  = crvChannelMap.online(offlineChannel);
-          uint16_t feb            = onlineChannel.FEB();
-          uint16_t febChannel     = onlineChannel.FEBchannel();
+          //for iSectorType==0, the tree and histogram are filled, and a track fit through the entire stack of modules/sectors is done
+          //for iSectorType>0, a track fit for individual modules/sectors (with sectorType 1,2,3,...) is done
+          if(iSectorType==0)
+          {
+            uint16_t offlineChannel = barIndex.asUint()*4 + SiPM;
+            CRVROC   onlineChannel  = crvChannelMap.online(offlineChannel);
+            uint16_t feb            = onlineChannel.FEB();
+            uint16_t febChannel     = onlineChannel.FEBchannel();
 
-          int index=feb*CRVId::nChanPerFEB+febChannel;
-          _recoPEs[index]   = recoPEs;
-          _recoTime[index]  = recoTime;
-          _fitStatus[index] = fitStatus;
-          _depositedEnergy[index] = depositedEnergy;
-          _histPEs[index]->Fill(recoPEs);
+            int index=feb*CRVId::nChanPerFEB+febChannel;
+            _recoPEs[index]   = recoPEs;
+            _recoTime[index]  = recoTime;
+            _fitStatus[index] = fitStatus;
+            _depositedEnergy[index] = depositedEnergy;
+            _histPEs[index]->Fill(recoPEs);
+          }
 
           counterPEs+=recoPEs;
         }
