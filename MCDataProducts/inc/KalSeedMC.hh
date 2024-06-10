@@ -10,6 +10,7 @@
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
+#include <Offline/GeneralUtilities/inc/EnumToStringSparse.hh>
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
@@ -69,6 +70,14 @@ namespace mu2e {
   };
 //
 // MC information for TrackStrawHits on this fit
+  // enum equipped with std::string descriptions
+  class TrkStrawHitProvenanceDetail{
+    public:
+      enum enum_type {unknown=0, Simulation, Mixed, External};
+      static std::string const& typeName();
+      static std::map<enum_type, std::string> const& names();
+  };
+  using TrkStrawHitProvenance = EnumToStringSparse<TrkStrawHitProvenanceDetail>;
   struct TrkStrawHitMC {
     StrawHitIndex strawDigiMCIndex() const { return _sdmcindex; }
     StrawHitIndex simPartStubIndex() const { return _spindex; }
@@ -95,6 +104,7 @@ namespace mu2e {
     float _wireTau; // threshold cluster distance to the wire along the perpedicular particle path
     float _strawDOCA; // signed doca to straw
     float _strawPhi; // cylindrical phi from -pi to pi with 0 in Z direction
+    TrkStrawHitProvenance _provenance; // TODO default read value == Sim?
   };
 
   struct KalSeedMC {

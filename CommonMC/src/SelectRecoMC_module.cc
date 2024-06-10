@@ -233,14 +233,17 @@ namespace mu2e {
       // find the referenced sim particle
       int spref(-1);
       auto const& sdmc = sdmcc.at(hit.index()); // bounds-check for security;
-      for(size_t isp=0;isp < spcc.size(); isp++){
-        auto const& spc = spcc[isp];
-        if(sdmc.earlyStrawGasStep()->simParticle() == spc._spp){
-          spref = isp;
-          break;
+      // if mc info is not meaningful, do not try to inspect any SimParticles
+      if (sdmc.provenance() != StrawDigiProvenance::External){
+        for(size_t isp=0;isp < spcc.size(); isp++){
+          auto const& spc = spcc[isp];
+          if(sdmc.earlyStrawGasStep()->simParticle() == spc._spp){
+            spref = isp;
+            break;
+          }
         }
+        if(spref < 0)throw cet::exception("Reco")<<"mu2e::SelectRecoMC: missing index"<< std::endl;
       }
-      if(spref < 0)throw cet::exception("Reco")<<"mu2e::SelectRecoMC: missing index"<< std::endl;
       TrkStrawHitMC tshmc;
       fillTSHMC(tshmc,hit.index(),spref,sdmc,tracker,srep);
       mcseed._tshmcs.push_back(tshmc);
@@ -251,11 +254,18 @@ namespace mu2e {
       Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep,
       KalSeedMC& mcseed) {
     // either keep hits only from the primary or from all contributing
-    size_t ispmax = _saveallunused? spcc.size() : 1;
+    size_t limit = 0;
+    if (0 < spcc.size()){
+      limit = 1;
+    }
+    size_t ispmax = _saveallunused? spcc.size() : limit;
     for(size_t isp=0; isp < ispmax; ++isp){
       auto const& spc = spcc[isp];
       for (size_t isdmc=0; isdmc < sdmcc.size(); isdmc++){
         auto const& sdmc = sdmcc[isdmc];
+        if (sdmc.provenance() == StrawDigiProvenance::External){
+          continue;
+        }
         auto const& sgs = *(sdmc.earlyStrawGasStep());
         if(sgs.simParticle() == spc._spp){
           // search to see if the associated digi is already on the track
@@ -278,7 +288,20 @@ namespace mu2e {
 
   void SelectRecoMC::fillTSHMC(TrkStrawHitMC& tshmc, size_t isdmc, size_t isp,StrawDigiMC const& sdmc,
       Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep ) {
+    // always record the index, to avoid downstream corruptions
     tshmc._sdmcindex = isdmc;
+    // propagate interpretability of StrawDigiMC to TrkStrawHitMC
+    if (sdmc.provenance() == StrawDigiProvenance::External){
+      tshmc._provenance = TrkStrawHitProvenance::External;
+      // if there is no MC information at all, leave TrkStrawHitMC empty
+      return;
+    }
+    else if (sdmc.provenance() == StrawDigiProvenance::Mixed){
+      tshmc._provenance = TrkStrawHitProvenance::Mixed;
+    }
+    else if (sdmc.provenance() == StrawDigiProvenance::Simulation){
+      tshmc._provenance = TrkStrawHitProvenance::Simulation;
+    }
     tshmc._spindex = isp;
     tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
     const auto& sgs = *(sdmc.earlyStrawGasStep());

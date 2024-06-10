@@ -85,6 +85,17 @@ namespace mu2e {
         // loop over the hits and find the associated steppoints
         bool isactive = tshs.flag().hasAllProperties(active);
         StrawDigiMC const& mcdigi = mcdigis.at(tshs.index());
+        // FIXME this is not great --- ideally, we would match entries
+        // in sct to entries in mcdigis, but the former will not exist
+        // for these events. the problem is that we cannot actually
+        // index into them because the key is the SimParticle,
+        // which for an external digi does not exist. so we need
+        // to redefine the container so as to support a non-SimParticle
+        // key... grrrrrrr.
+        // if mc info is not meaningful, skip this digi
+        if (mcdigi.provenance() == StrawDigiProvenance::External){
+          continue;
+        }
         art::Ptr<SimParticle> spp = mcdigi.earlyStrawGasStep()->simParticle();
         // see if this particle has already been found; if so, increment, if not, add it
         bool found(false);
