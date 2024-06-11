@@ -1,15 +1,21 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/OptionalAtom.h"
+
 #include "canvas/Utilities/InputTag.h"
+
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+
 #include "TNtuple.h"
+
 #include "art_root_io/TFileService.h"
 using namespace std;
 
@@ -30,9 +36,8 @@ namespace mu2e{
     void beginJob() override;
 
   private:
-    bool verbose;
-    double E = 0.0;
-    TNtuple* _nt;
+    bool verbose = false;
+    TNtuple* _nt = nullptr;
   };
   // ===================================================
   HPGeEfficiency::HPGeEfficiency(const Parameters& config):
@@ -52,7 +57,7 @@ namespace mu2e{
     art::Handle<StepPointMCCollection> _inputStepPointMCs;
     event.getByLabel("g4run:STMDet", _inputStepPointMCs);
 
-    E = 0.0;
+    double E = 0.0;
     for (const StepPointMC &step : *_inputStepPointMCs)
     {
       E += step.ionizingEdep();

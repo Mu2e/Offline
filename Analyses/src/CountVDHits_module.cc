@@ -20,6 +20,8 @@
 #include "canvas/Utilities/InputTag.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 namespace mu2e {
@@ -43,8 +45,8 @@ namespace mu2e {
   private:
     Config _conf;
     art::ProductToken<StepPointMCCollection> _stepPointMCsToken;
-    std::vector<int> _enabledVDs;
-    std::vector<int> _enabledVDStepPointMCsCount;
+    std::vector<int> _enabledVDs {};
+    std::vector<int> _enabledVDStepPointMCsCount {};
     bool _verbose = true;
   };
 
@@ -53,7 +55,8 @@ namespace mu2e {
     : art::EDAnalyzer(conf),
       _conf(conf()),
       _stepPointMCsToken(consumes<StepPointMCCollection>(conf().stepPointMCsTag())),
-      _enabledVDs(conf().enabledVDs())
+      _enabledVDs(conf().enabledVDs()),
+      _verbose(conf().verbose())
   {
     // Sort all elements to be in ascending order
     std::sort(_enabledVDs.begin(), _enabledVDs.end());
@@ -65,9 +68,10 @@ namespace mu2e {
     _enabledVDStepPointMCsCount.insert(_enabledVDStepPointMCsCount.end(), _enabledVDs.size(), 0);
 
     // If verbose has been provided, override the local variable
+    /*
     if (conf().verbose.hasValue()){
       _verbose = *std::move(conf().verbose());
-    };
+      };*/
   }
 
   //================================================================
@@ -93,12 +97,18 @@ namespace mu2e {
   void CountVDHits::endJob()
   {
     if (_verbose){
+      /*
       std::cout << "################### CountVDHits Summary ###################" << std::endl;
       for (uint i = 0; i < _enabledVDStepPointMCsCount.size(); i++)
       {
         std::cout << "VD" << _enabledVDs[i] << " - " << _enabledVDStepPointMCsCount[i] << " StepPointMCs" << std::endl;
       };
       std::cout << "###########################################################" << std::endl;
+      */
+      mf::LogInfo log("Virtual detector hits summary");
+      log << "\nEnd of Job info\n";
+      for (size_t i=0; i<_enabledVDs.size(); ++i ){log << "VD" << _enabledVDs[i] << ":" << _enabledVDStepPointMCsCount[i] << "\n";}
+      log << "\n";
     };
     return;
   }

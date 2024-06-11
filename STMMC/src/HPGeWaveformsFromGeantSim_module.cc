@@ -41,6 +41,9 @@
 #include "TH1.h"
 #include "TTree.h"
 
+// Exception handling
+#include "cetlib_except/exception.h"
+
 namespace mu2e {
   //================================================================
   class HPGeWaveformsFromGeantSim : public art::EDProducer {
@@ -49,7 +52,7 @@ namespace mu2e {
     using Comment=fhicl::Comment;
     struct Config {
       // art variable
-      fhicl::Atom<std::string> StepPointMCsTag{ Name("StepPointMCsTag"), Comment("InputTag for StepPointMCs")};
+      fhicl::Atom<art::InputTag> stepPointMCsTag{ Name("StepPointMCsTag"), Comment("InputTag for StepPointMCs")};
 
       //ADC variables
       fhicl::Atom<uint32_t> fADC{ Name("fADC"), Comment("ADC operating frequency [MHz}")};
@@ -65,7 +68,7 @@ namespace mu2e {
       fhicl::OptionalAtom<bool> verbose {Name("verbose"), Comment("Flag for printing output")};
     };
     using Parameters = art::EDProducer::Table<Config>;
-    explicit HPGeWaveformsFromGeantSim(const Parameters& config);
+    explicit HPGeWaveformsFromGeantSim(const Parameters& conf);
 
   private:
     void produce(art::Event& event) override;
@@ -76,14 +79,14 @@ namespace mu2e {
     void adcs();
 
     // fhicl variables must be declared first
-    std::string _stepPointMCsTag; // Tag of StepPointMCs in STMDet
-    uint32_t _fADC; // ADC sampling frequency [MHz]
-    double _tStep; // Time step used for simulating the ADC values [ns]
-    double _ADCToEnergy; // Calibration of bin width to energy [keV/bin]
-    uint16_t _ADCOffset; // Number of ADCs to insert before pulse
-    double _noiseSD; // Standard deviation of ADC noise [mV]
-    double _risingEdgeDecayConstant; // [us]
-    bool _verbose;
+    art::ProductToken<StepPointMCCollection> _stepPointMCsToken; // Tag of StepPointMCs in STMDet
+    uint32_t _fADC = 320; // ADC sampling frequency [MHz]
+    double _tStep = 0; // Time step used for simulating the ADC values [ns]
+    double _ADCToEnergy = 0; // Calibration of bin width to energy [keV/bin]
+    uint16_t _ADCOffset = 0; // Number of ADCs to insert before pulse
+    double _noiseSD = 0; // Standard deviation of ADC noise [mV]
+    double _risingEdgeDecayConstant = 0; // [us]
+    bool _verbose = false;
 
     // Define experiment specific constants
     const double _feedbackCapacitance = 1e-12; // [Farads]
@@ -95,8 +98,8 @@ namespace mu2e {
     const double _driftVelocity = 0.1; // Apprixmate charged particle drift velocity [mm/ns]
 
     // ADC variables
-    double _chargeToADC; // Conversion factor from charge built in capacitor to ADC determined voltage, multiply by this value to get from charge built to ADC voltage.
-    uint _nADCs; // Number of ADC values in an event
+    double _chargeToADC = 0; // Conversion factor from charge built in capacitor to ADC determined voltage, multiply by this value to get from charge built to ADC voltage.
+    uint _nADCs = 0; // Number of ADC values in an event
 
     // Define Ge crystal properties [mm]
     const double crystalL = 78.5; // Crystal length
@@ -141,30 +144,23 @@ namespace mu2e {
 
 
   //================================================================
-  HPGeWaveformsFromGeantSim::HPGeWaveformsFromGeantSim(const Parameters& config )
-    : art::EDProducer{config},
-    _stepPointMCsTag(config().StepPointMCsTag()),
-    _fADC(config().fADC()),
-    _ADCToEnergy(config().ADCToEnergy()),
-    _noiseSD(config().noiseSD()),
-    _risingEdgeDecayConstant(config().risingEdgeDecayConstant())
+  HPGeWaveformsFromGeantSim::HPGeWaveformsFromGeantSim(const Parameters& conf )
+    : art::EDProducer{conf},
+    _stepPointMCsToken(consumes<StepPointMCCollection>(conf().stepPointMCsTag())),
+    _fADC(conf().fADC()),
+    _ADCToEnergy(conf().ADCToEnergy()),
+    _noiseSD(conf().noiseSD()),
+    _risingEdgeDecayConstant(conf().risingEdgeDecayConstant()),
+    _verbose(conf().verbose())
   {
     produces<STMWaveformDigiCollection>();
     // Assign values to OptionalAtoms
-    // _tStep
-    if (config().tStep.hasValue()){
-      _tStep = *std::move(config().tStep());
-      if (_tStep == 0){std::cout << "Time step must be non-zero. Assigning value calculated with fADC." << std::endl;};
-    };
-    if (!(config().tStep.hasValue()) || (_tStep == 0)){_tStep = 1e3/_fADC;};// 1e3 converts [us] to [ns]
+    auto verbose = conf().verbose();
+    if(verbose)_verbose = *verbose;
+    auto ADCOffset = conf().ADCOffset();
+    if(ADCOffset)_ADCOffset = *ADCOffset;
 
-    // ADCOffset
-    if (config().ADCOffset.hasValue()){_ADCOffset = *std::move(config().ADCOffset());}
-    else{_ADCOffset = 0;};
-
-    // _verbose
-    if (config().verbose.hasValue()){_verbose = *std::move(config().verbose());}
-    else{_verbose = false;}
+    if (!(conf().tStep()) || (_tStep == 0)){_tStep = 1e3/_fADC;};// 1e3 converts [us] to [ns]
 
     // Define physics parameters to use with the model
     // 1e3 converts keV to eV, multiply by this value to get from charge in capacitor to ADC output voltage
@@ -192,7 +188,6 @@ namespace mu2e {
   //================================================================
   void HPGeWaveformsFromGeantSim::endJob()
   {
-    std::cout << "StepPointMCsTag " << _stepPointMCsTag << std::endl;
     std::cout << "fADC " << _fADC << std::endl;
     std::cout << "tStep " << _tStep << std::endl;
     std::cout << "ADCToEnergy " << _ADCToEnergy << std::endl;
@@ -214,19 +209,17 @@ namespace mu2e {
   //================================================================
   void HPGeWaveformsFromGeantSim::produce(art::Event& event) {
     // Get the hits in the detector
-    art::Handle<StepPointMCCollection> hits_STMDet;
-    event.getByLabel(_stepPointMCsTag, hits_STMDet);
-    if (!(hits_STMDet.isValid())){std::cout << "Invalid steps. Exiting." << std::endl; return;}
+    auto const& hits_STMDet = event.getProduct(_stepPointMCsToken);
 
     // Remove me
-    std::cout << "Found n steps " << hits_STMDet->size() << std::endl;
+    std::cout << "Found n steps " << hits_STMDet.size() << std::endl;
 
     // Clear previous buffer vectors
     std::fill(_chargeDecayed.begin(), _chargeDecayed.end(), 0);
     std::fill(_adcs.begin(), _adcs.end(), 0);
 
     // Add a collection of charge depositions to _charge
-    for(auto& hit : *hits_STMDet){
+    for(auto& hit : hits_STMDet){
       _ETot += hit.totalEDep();
       _EIon += hit.ionizingEdep();
       std::cout << "tot " << hit.totalEDep() << std::endl;
@@ -376,7 +369,7 @@ namespace mu2e {
       std::cout << "holeTravelDistance is " << holeTravelDistance << std::endl;
       std::cout << ", electronTravelDistance is " << electronTravelDistance << std::endl;
       std::cout << ". Both should be positive but one is not. Exiting." << std::endl;
-      exit(-1);
+      throw cet::exception("RANGE") << "Both hole and electron travelling distances are negative";
     }
 
     // Calculate the drift times
@@ -434,7 +427,7 @@ namespace mu2e {
     else
     {
       std::cout << "Logic error with generating the correct _charge vector. Exiting." << std::endl;
-      exit(-1);
+      throw cet::exception("RANGE") << "Error with the charged particle travel time.";
     };
 
     if(tIndexStart == 0)
