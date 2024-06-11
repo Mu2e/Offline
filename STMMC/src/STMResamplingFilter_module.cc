@@ -31,8 +31,7 @@ namespace mu2e{
 
     struct Config
     {
-      fhicl::Atom<std::string> stepsTag{Name("VD101StepPointMCsTag"), Comment("Input tag of StepPointMCs associated with VD101")};
-      fhicl::OptionalAtom<bool> verbose{Name("verbose"), Comment("Verbosity of output")};
+      fhicl::Atom<art::InputTag> stepPointMCsTag{Name("VD101StepPointMCsTag"), Comment("Input tag of StepPointMCs associated with VD101")};
     };
 
     using Parameters=art::EDFilter::Table<Config>;
@@ -41,29 +40,20 @@ namespace mu2e{
     virtual bool filter(art::Event& event) override;
 
   private:
-    art::InputTag _stepsTag;
+    art::ProductToken<StepPointMCCollection> _stepPointMCsToken;
   };
   // ===================================================
-  STMResamplingFilter::STMResamplingFilter(const Parameters& config) :
-    art::EDFilter{config},
-    _stepsTag(config().stepsTag())
+  STMResamplingFilter::STMResamplingFilter(const Parameters& conf) :
+    art::EDFilter{conf},
+    _stepPointMCsToken(consumes<StepPointMCCollection>(conf().stepPointMCsTag()))
     {};
   // ===================================================
   bool STMResamplingFilter::filter(art::Event& event)
   {
-    // Define a handle to the virtualdetector
-    art::Handle<StepPointMCCollection> _inputStepPointMCs;
-    event.getByLabel(_stepsTag, _inputStepPointMCs);
-
-    // Check if handle is valid
-    if (!(_inputStepPointMCs.isValid()))
-    {
-      std::cout << _stepsTag << " is an invalid StepPointMC tag, exiting." << std::endl;
-      exit(0);
-    }
+    auto const& StepPointMCs = event.getProduct(_stepPointMCsToken);
 
     // Only keep events that have non-zero size
-    if(_inputStepPointMCs->size() > 0){return true;}
+    if(StepPointMCs.size() > 0){return true;}
     else{return false;};
   };
   // ===================================================

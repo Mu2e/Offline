@@ -14,10 +14,8 @@ rootlibs  = env['ROOTLIBS']
 
 mainlib = helper.make_mainlib ( [ 'art_Persistency_Provenance',
                                   'art_Persistency_Common',
-                                  'art_root_io_TFileService',
                                   'art_Framework_Services_Registry',
                                   'art_root_io_tfile_support',
-                                  'art_root_io_TFileService',
                                   'art_Utilities',
                                   'canvas',
                                   'cetlib',
@@ -31,7 +29,6 @@ helper.make_plugins( [ mainlib,
                        'art_Framework_Principal',
                        'art_Framework_Services_Registry',
                        'art_root_io_tfile_support',
-                       'art_root_io_TFileService',
                        'art_Persistency_Common',
                        'art_Persistency_Provenance',
                        'art_Utilities',
@@ -47,8 +44,7 @@ helper.make_plugins( [ mainlib,
                        'mu2e_STMConditions',
                        'mu2e_ProditionsService',
                        'mu2e_RecoDataProducts',
-                       rootlibs,
-                       'boost_filesystem'
+                       rootlibs
                      ] )
 
 # This tells emacs to view this file in python mode.

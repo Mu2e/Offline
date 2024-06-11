@@ -31,7 +31,7 @@ namespace mu2e{
 
     struct Config
     {
-      fhicl::Atom<std::string> stepsTag{Name("VD101StepPointMCsTag"), Comment("Input tag of StepPointMCs associated with VD101")};
+      fhicl::Atom<std::string> stepPointMCsTag{Name("VD101StepPointMCsTag"), Comment("Input tag of StepPointMCs associated with VD101")};
       fhicl::OptionalAtom<bool> verbose{Name("verbose"), Comment("Verbosity of output")};
     };
 
@@ -39,44 +39,31 @@ namespace mu2e{
 
     explicit STMResamplingProducer(const Parameters& pset);
     virtual void produce(art::Event& event) override;
-    void beginJob() override;
-    void endJob() override;
-
   private:
-    art::InputTag _stepsTag;
+    art::ProductToken<StepPointMCCollection> _stepPointMCsToken;
     const uint16_t VirtualDetectorFilterID = 101; // Filter out all the StepPointMCs from VD101 for resampling
-    bool _verbose;
+    bool _verbose = false;
     uint _keptStepPointMCCounter = 0;
   };
   // ===================================================
-  STMResamplingProducer::STMResamplingProducer(const Parameters& config) :
-    art::EDProducer{config},
-    _stepsTag(config().stepsTag())
+  STMResamplingProducer::STMResamplingProducer(const Parameters& conf) :
+    art::EDProducer{conf},
+    _stepPointMCsToken(consumes<StepPointMCCollection>(conf().stepPointMCsTag()))
     {
       produces<StepPointMCCollection>();
-      if (config().verbose.hasValue()) {_verbose = *std::move(config().verbose());}
+      if (conf().verbose.hasValue()) {_verbose = *std::move(conf().verbose());}
       else {_verbose = false;}
     };
   // ===================================================
   void STMResamplingProducer::produce(art::Event& event)
   {
-    // Define a handle to the virtualdetector
-    art::Handle<StepPointMCCollection> _inputStepPointMCs;
-    event.getByLabel(_stepsTag, _inputStepPointMCs);
-
-    // Run check
-    if (!(_inputStepPointMCs.isValid()))
-      {
-      if(_verbose){std::cout << "STMResamplingProducer : Handle is not valid, exiting." << std::endl;}
-      exit(0);
-      }
-    if (_verbose){std::cout << "This event has " << _inputStepPointMCs->size() << " StepPointMCs with tag " << _stepsTag << std::endl;}
+    auto const& StepPointMCs = event.getProduct(_stepPointMCsToken);
 
     // Define the StepPointMCCollection to be added to the event
     std::unique_ptr<StepPointMCCollection> _outputStepPointMCs(new StepPointMCCollection);
 
     // Check if the event has a hit in VirtualDetectorFilterID. If so add it to the collection
-    for (const StepPointMC &step : *_inputStepPointMCs)
+    for (const StepPointMC& step : StepPointMCs)
       {
       if ( step.volumeId() == VirtualDetectorFilterID){_outputStepPointMCs->emplace_back(step);};
       }
@@ -84,18 +71,6 @@ namespace mu2e{
     _keptStepPointMCCounter += _outputStepPointMCs->size();
     event.put(std::move(_outputStepPointMCs));
 
-    // return;
-  };
-  // ===================================================
-  void STMResamplingProducer::beginJob()
-  {
-    if(_verbose){std::cout << "Looking for StepPointMCs with tag " << _stepsTag << std::endl;};
-    // return;
-  };
-  // ===================================================
-  void STMResamplingProducer::endJob()
-  {
-    if(_verbose){std::cout << "Number of kept StepPointMCs is " << _keptStepPointMCCounter << std::endl;};
     // return;
   };
 }
