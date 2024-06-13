@@ -439,8 +439,6 @@ namespace mu2e {
     //subtract a slice so VDDSNeutronShieldExit can fit through the pipe without overlap
     CLHEP::Hep3Vector vdDSNeutronShieldExitPositionWRTpipeGasUpStr = vdDSNeutronShieldExitPositionInMu2e - (stmMagnetPositionInMu2e+pipeGasUpStrOffset);
     CLHEP::Hep3Vector vdSTM_UpStrPositionWRTpipeGasUpStr = vdSTM_UpStrPositionInMu2e - (stmMagnetPositionInMu2e+pipeGasUpStrOffset);
-    //std::cout<<"vdDSNeutronShieldExitPositionWRTtube = "<<vdDSNeutronShieldExitPositionWRTpipeGasUpStr<<std::endl;
-    //std::cout<<"vdSTM_UpStrPositionWRTtube = "<<vdSTM_UpStrPositionWRTpipeGasUpStr<<std::endl;
     G4SubtractionSolid *pipeGasUpStrTubTemp1 = new G4SubtractionSolid("pipeGasUpStrTubTemp1",aPipeGasUpStrTub,     aDiskVDDSNeutronShieldExitTub, 0, vdDSNeutronShieldExitPositionWRTpipeGasUpStr);
     G4SubtractionSolid *pipeGasUpStrTubTemp2 = new G4SubtractionSolid("pipeGasUpStrTubTemp2",pipeGasUpStrTubTemp1, aDiskVDSTM_UpStrTub, 0, vdSTM_UpStrPositionWRTpipeGasUpStr);
     VolumeInfo pipeGasUpStrTubInfo;
@@ -1446,7 +1444,6 @@ namespace mu2e {
 
    const G4ThreeVector  STMShieldingRef =  pSTM_SSCParams.originInMu2e() - parentCenterInMu2e - CLHEP::Hep3Vector(0, 0, Wdepth_f/2);
 
-
    const double Aperture_HPGe1 = pSTM_SSCParams.Aperture_HPGe1();
    const double Aperture_HPGe2 = pSTM_SSCParams.Aperture_HPGe2();
    const double Aperture_LaBr1 = pSTM_SSCParams.Aperture_LaBr1();
@@ -1661,7 +1658,7 @@ namespace mu2e {
                       forceAuxEdgeVisible,
                       placePV,
                       doSurfaceCheck);
-  }
+   }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //   STM Shielding House
@@ -1906,7 +1903,6 @@ namespace mu2e {
      G4Box*  BP2FwallLayer  = new G4Box("BP2FwallLayer", Front_L/2, Front_H/2, FBPdepth/2);
      G4Tubs* Spot_FBP2_HPGe = new G4Tubs("Spot_FBP2_HPGe", 0, r_HPGe1+10, FBPdepth/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
      G4Tubs* Spot_FBP2_LaBr = new G4Tubs("Spot_FBP2_LaBr", 0, r_LaBr1+10, FBPdepth/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
-
      G4SubtractionSolid* BP2Fwall_1hole = new G4SubtractionSolid("BP2Fwall_1hole",BP2FwallLayer, Spot_FBP2_HPGe, 0, Pos_hole1);
      G4SubtractionSolid* BP2Fwall = new G4SubtractionSolid("BP2Fwall", BP2Fwall_1hole, Spot_FBP2_LaBr, 0, Pos_hole2);
 
@@ -2080,12 +2076,10 @@ namespace mu2e {
      G4Tubs* HPGe_Crystal = new G4Tubs("HPGe_Crystal", 0, CrystalR_HPGe, CrystalL_HPGe/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
      G4SubtractionSolid* HPGe_Detector = new G4SubtractionSolid("HPGe_Detector", HPGe_Crystal, HPGe_Hole, 0, G4ThreeVector(0, 0, (CrystalL_HPGe-HoleL_HPGe)/2));
 
-
      VolumeInfo fHPGePV;
      fHPGePV.name = "fHPGePV";
      fHPGePV.solid = HPGe_Detector;
      G4ThreeVector stmHPGeCrystalInParent = STMShieldingRef + G4ThreeVector(-offset_Spot + offset_HPGe - (WindowD_HPGe + AirD_HPGe + Capsule_Windowthick + CrystalL_HPGe/2)*sqrt(2)/2, 0., Front_T +  Z_HPGe + (WindowD_HPGe + AirD_HPGe + Capsule_Windowthick + CrystalL_HPGe/2)*sqrt(2)/2);
-
 
      if(pHPGeDetectorParams.build()){
                       finishNesting(fHPGePV,
@@ -2101,6 +2095,7 @@ namespace mu2e {
                       placePV,
                       doSurfaceCheck);
     }
+
 
      VolumeInfo HolePV;
      HolePV.name = "HolePV";
@@ -3438,7 +3433,6 @@ namespace mu2e {
       AbsorberPV.name = "AbsorberPV";
       AbsorberPV.solid = AbsorberS;
       G4ThreeVector stmAbsorberInParent = STMShieldingRef + G4ThreeVector(-offset_Spot, 0., -Absorber_GaptoSSC - Absorber_hT);
-
       finishNesting(AbsorberPV,
       PolyMaterial,
       0,

@@ -30,7 +30,7 @@ namespace mu2e{
     art::EDFilter{pset},
     _stepsTag(pset.get<string>("stepsTag")),
     _minStepPoints(pset.get<size_t>("minStepPoints",1)){
-  }
+    }
 
   bool STMStepPointFilter::filter(art::Event& event)  {
     auto steps = event.getValidHandle<StepPointMCCollection>(_stepsTag);

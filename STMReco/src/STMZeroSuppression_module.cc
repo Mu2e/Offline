@@ -124,6 +124,7 @@ namespace mu2e {
 
       calculateGradient(adcs);
       averageGradient();
+      if(_verbosityLevel){std::cout << _channel.name() << " " << _channel.id() << std::endl;}
       findPeaks(stmEnergyCalib); // pass it the prodition because it needs to get the sampling frequency
       chooseStartsAndEnds();
 

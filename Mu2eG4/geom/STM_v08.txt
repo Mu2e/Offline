@@ -5,6 +5,7 @@
 
 
 #include "Offline/Mu2eG4/geom/STM_v07.txt"
+double vd.STMCollDnStr.r = 57; // (STM_SSC.offset_Spot+2*Aperture2 radius + buffer) =~ 40.6+10sqrt(2)+2 =~57
 
 //Make Updates from STM_v07
 bool stm.downstream.build = true;
@@ -43,7 +44,7 @@ double stm.STM_SSC.FrontToWall     = 1049.2;  //41.3 in
 //Front Shielding of STM House
 bool   stm.FrontShielding.build    = true;
 double stm.FrontShielding.HeightofRoom   = 152.4;  //6 in
-double stm.FrontShielding.tungstenlength = 317.5; //12 in
+double stm.FrontShielding.tungstenlength = 317.5; //12.5 in
 double stm.FrontShielding.tungstendepth  = 101.6; //4 in
 double stm.FrontShielding.leaddepth1     = 25.4;
 double stm.FrontShielding.leaddepth2     = 50.8;

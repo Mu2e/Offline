@@ -1,0 +1,88 @@
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMReco/fcl/prolog.fcl"
+
+process_name: STMMixDigi
+source : { module_type : RootInput }
+services : @local::Services.SimAndReco # reco is needed for the trigger
+
+physics : {
+
+  producers : {
+    PBISim : { # gives the number of POT per event
+      module_type: ProtonBunchIntensityLogNormal
+      SDF: @nil # will be filled in at the end of the file
+      extendedMean: @nil
+      cutMax:@nil
+    }
+    HPGeDigi : {
+      module_type : HPGeWaveformsFromGeantSim
+      fADC : 320
+      EnergyPerADCBin : 0.5
+      noiseSD : 0.32
+      verbose : true
+    }
+    HPGeZS : {
+      module_type : STMZeroSuppression
+      stmWaveformDigisTag : "HPGeDigi"
+      tbefore : @local::STM.HPGe.tbefore
+      tafter : @local::STM.HPGe.tafter
+      threshold : @local::STM.HPGe.threshold
+      window : @local::STM.HPGe.window
+      naverage : @local::STM.HPGe.naverage
+      verbosityLevel : 1
+    }
+    HPGeMWD : {
+      module_type : STMMovingWindowDeconvolution
+      stmWaveformDigisTag : "HPGeZS"
+      verbosityLevel : 1
+      tau : @local::STM.HPGe.tau
+      M : @local::STM.HPGe.M
+      L : @local::STM.HPGe.L
+      nsigma_cut : @local::STM.HPGe.nsigma_cut
+      thesholdgrad : @local::STM.HPGe.thresholdgrad
+    }
+  }
+
+  filters : {
+    STMStepMixer: {
+      module_type         : MixBackgroundFrames
+      fileNames           : @nil
+      readMode            : sequential
+      wrapFiles           : true
+      mu2e: {
+      protonBunchIntensityTag: "PBISim"
+      simStageEfficiencyTags: @nil # this will not be filled in because otherwise it will try to access the database
+      meanEventsPerPOTFactors : []
+      writeEventIDs : false
+      MaxEventsToSkip: @nil
+      products: {
+      genParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
+      simParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
+      stepPointMCMixer: { mixingMap: [ [ "STMDetHits:STMDet", ":" ] ] }
+      }
+      }
+    }
+  }
+  ## Reintroduce the paths one at a time to make sure that they all work together -t here are lots of other bits like in ZS.
+  mixing_path : [ PBISim, STMStepMixer] #, HPGeDigi ] #, HPGeZS, HPGeMWD ]
+  output_path : [output]
+}
+
+outputs : {
+  output : {
+    module_type : RootOutput
+    fileName : "dig.mu2e.HPGeDigis.MDC2020ap.000001_00000000.art"
+    ### Make this the definition when the data object labels are known
+    #outputCommands : [
+    #  "drop *_*_*_*",
+    #  "keep mu2e::STMWaveformDigiCollection_HPGeDigi_*_*",
+    #  "keep mu2e::STMWaveformDigiCollection_HPGeZS_*_*",
+    #  "keep mu2e::STMMWDDigiCollection_HPGeMWD_*_*"
+    #]
+  }
+}
+
+physics.producers.PBISim.SDF: 0.6
+physics.producers.PBISim.extendedMean: 1.58e7 # mean of the uncut distribution
+physics.producers.PBISim.cutMax: 9.48e7  # truncate the tail at 6 times the mean
+physics.filters.STMStepMixer.mu2e.meanEventsPerPOTFactors : [  ] # fill in all the factors that go from a POT to an event, this will include your efficiencies but not the proton pulse intensity

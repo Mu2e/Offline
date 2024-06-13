@@ -336,6 +336,10 @@ namespace mu2e {
       addDetector(std::move(ptmon));
     }
 
+    if(_config->getBool("hasSTM",false)){
+      STMMaker stm( *_config, beamline.solenoidOffset() );
+      addDetector( stm.getSTMPtr() );
+    }
 
     if(_config->getBool("hasVirtualDetector",false)){
       addDetector(VirtualDetectorMaker::make(*_config));
@@ -355,10 +359,6 @@ namespace mu2e {
       addDetector( mecopam.getMECOStyleProtonAbsorberPtr() );
     }
 
-    if(_config->getBool("hasSTM",false)){
-      STMMaker stm( *_config, beamline.solenoidOffset() );
-      addDetector( stm.getSTMPtr() );
-    }
 
 
   } // preBeginRun()

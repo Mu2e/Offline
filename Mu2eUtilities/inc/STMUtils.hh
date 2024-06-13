@@ -14,6 +14,7 @@ namespace mu2e {
 
   namespace STMUtils {
     // Want to take an input tag and return an STMChannel
+    // TODO - this gets the channel from the last 4 characters of the module name, make this find the channel name by seaching the full str.
     STMChannel getChannel(art::InputTag const& tag);
 
     // To get the binning for a specific STMWaveformDigi
