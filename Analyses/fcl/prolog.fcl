@@ -89,5 +89,4 @@ ClusterCompareOld :
    }
    Analysis : [CaloClusterCompareOld]
 }
-
 END_PROLOG
