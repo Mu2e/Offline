@@ -97,14 +97,6 @@ namespace mu2e {
   void CountVDHits::endJob()
   {
     if (_verbose){
-      /*
-      std::cout << "################### CountVDHits Summary ###################" << std::endl;
-      for (uint i = 0; i < _enabledVDStepPointMCsCount.size(); i++)
-      {
-        std::cout << "VD" << _enabledVDs[i] << " - " << _enabledVDStepPointMCsCount[i] << " StepPointMCs" << std::endl;
-      };
-      std::cout << "###########################################################" << std::endl;
-      */
       mf::LogInfo log("Virtual detector hits summary");
       log << "\nEnd of Job info\n";
       for (size_t i=0; i<_enabledVDs.size(); ++i ){log << "VD" << _enabledVDs[i] << ":" << _enabledVDStepPointMCsCount[i] << "\n";}
