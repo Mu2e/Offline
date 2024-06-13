@@ -4,7 +4,6 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-//
 // Original author Rob Kutschke
 //
 // Notes:
@@ -25,12 +24,12 @@
 
 namespace mu2e {
 
-  class GenId {
+  class GenId {   
 
-  public:
+  public:   
 
     // Need to keep the enum and the _name member in sync.
-    enum enum_type {
+    enum enum_type {   
       unknown,       particleGun,       CeEndpoint,
       cosmicToy,     cosmicDYB,         cosmic,          obsolete1, //6
       dioTail,       obsolete2,         obsolete3,       obsolete4,           ExternalRPC, //11
