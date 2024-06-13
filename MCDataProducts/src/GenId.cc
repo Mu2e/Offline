@@ -1,6 +1,7 @@
 //
 // An enum-matched-to-names class for generator Id's.
 //
+// Add a line that says fixme in a file that will trigger clang tidy.
 //
 //
 // Original author Rob Kutschke
@@ -45,7 +46,7 @@ namespace mu2e {
       os << "GenId::findByName invalid enum name : " << name;
       throw std::out_of_range( os.str() );
     }
-    return GenId(unknown);
+    return GenId(unknown);  
   }
 
 }
