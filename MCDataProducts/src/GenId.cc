@@ -1,4 +1,4 @@
-a//
+//
 // An enum-matched-to-names class for generator Id's.
 //
 // Add a line that says fixme in a file that will trigger clang tidy.
