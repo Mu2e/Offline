@@ -22,7 +22,8 @@ cet_build_plugin(STMResamplingFilter art::module
 cet_build_plugin(HPGeEfficiency art::module
     REG_SOURCE src/HPGeEfficiency_module.cc
     LIBRARIES REG
-        Offline::MCDataProducts
+      art_root_io::TFileService_service
+      Offline::MCDataProducts
 )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/HPGeWaveformsFromGeantSim.fcl   ${CURRENT_BINARY_DIR} fcl/HPGeWaveformsFromGeantSim.fcl   COPYONLY)
