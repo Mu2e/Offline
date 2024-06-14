@@ -11,3 +11,4 @@ No it was not the last one.
 Inspect modified printout.
 Now seee what SL7 does.
 Check version of clang-tidy
+Final version of codetools in place, still with verbose diagnostics.
