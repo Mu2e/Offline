@@ -8,5 +8,4 @@ And one more line.
 And another line.
 Maybe this is the last one.
 No it was not the last one.
-
-
+Inspect modified printout.
