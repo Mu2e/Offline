@@ -7,28 +7,35 @@
 BEGIN_PROLOG
 
 CosmicReco : {
-    # time clustering is the 1st stage of track finding
-    TimeClusterFinder : {
-        module_type  : TimeClusterFinder
-        ClusterMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
-        ClusterCaloMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
-        ComboHitCollection : "makePH"
-        CaloClusterCollection : "CaloClusterMaker"
-        T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
-        UseCaloCluster : true
-        UseCaloClusterPosition : true
-        TestFlag : true
-    }
-
     #cosmics:
     TimeClusterFinderCosmics : {
-        @table::TimeClusterFinder
-        ComboHitCollection : "makePH"
-        T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
-        maxdPhi : 10.0
-        RefineClusters : false
-        PrefilterCluster : false
-        UseCaloCluster : false
+        module_type  : TimeClusterFinder
+        ClusterMVA             : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
+        ClusterCaloMVA         : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
+        ComboHitCollection     : "makePH"
+        CaloClusterCollection  : "notUsed"
+        T0Calculator           : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+        HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
+        HitBackgroundBits      : ["Background","Noisy","Dead"]
+        CaloClusterWeight      : 10.0
+        TestFlag               : true
+        CaloClusterMinE        : 50.0
+        CaloClusterWeight      : 10.0
+        DtMax                  : 25
+        MinNHits               : 10
+        MinKeepHitMVA          : 0.2
+        MinAddHitMVA           : 0.2
+        Tmin                   : 0.0
+        Tmax                   : 100000.0
+        Tbin                   : 15.0
+        AveragePitch           : 0.6
+        Ymin                   : 5.0
+        RecoverHits            : true
+        PeakWidth              : 1
+        maxdPhi                : 10.0
+        RefineClusters         : false
+        PrefilterCluster       : false
+        UseCaloCluster         : false
         UseCaloClusterPosition : false
     }
 
