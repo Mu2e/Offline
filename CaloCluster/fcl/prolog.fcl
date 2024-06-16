@@ -6,33 +6,33 @@
 
 BEGIN_PROLOG
 
-CaloProtoClusterMaker :
-{
-  module_type            : CaloProtoClusterMaker
-  caloHitCollection      : CaloHitMaker
-  EminSeed               : 10
-  ExpandCut              : 1.0
-  EnoiseCut              : 1.0
-  addSecondRing          : false
-  deltaTime              : 2
-  diagLevel              : 0
+CaloCluster : {
+   CaloProtoClusterMaker :
+   {
+      module_type            : CaloProtoClusterMaker
+      caloHitCollection      : CaloHitMaker
+      EminSeed               : 10
+      ExpandCut              : 1.0
+      EnoiseCut              : 1.0
+      addSecondRing          : false
+      deltaTime              : 2
+      diagLevel              : 0
+   }
+
+   CaloClusterMaker :
+   {
+      module_type                : CaloClusterMaker
+      caloClusterMainCollection  : "CaloProtoClusterMaker:main"
+      caloClusterSplitCollection : "CaloProtoClusterMaker:split"
+      deltaTime                  : 2
+      maxDistSplit               : 150
+      maxDistMain                : 150
+      strategy                   : 0
+      diagLevel                  : 0
+   }
 }
 
-CaloClusterMaker :
-{
-  module_type                : CaloClusterMaker
-  caloClusterMainCollection  : "CaloProtoClusterMaker:main"
-  caloClusterSplitCollection : "CaloProtoClusterMaker:split"
-  deltaTime                  : 2
-  maxDistSplit               : 150
-  maxDistMain                : 150
-  strategy                   : 0
-  diagLevel                  : 0
-}
-
-
-CaloCluster :
-{
+CaloCluster : { @table::CaloCluster
    producers : {
       CaloProtoClusterMaker  : @local::CaloProtoClusterMaker
       CaloClusterMaker       : @local::CaloClusterMaker

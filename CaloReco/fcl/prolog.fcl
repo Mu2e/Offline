@@ -1,65 +1,64 @@
-# -*- mode: tcl -*-
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
 
 BEGIN_PROLOG
 
-RawProcessor :
-{
-    windowPeak       : 3
-    minPeakAmplitude : 5
-    shiftTime        : 57.5
-    scaleFactor      : 0.0625
-    diagLevel        : 0
+CaloReco : {
+   RawProcessor :
+   {
+      windowPeak       : 3
+      minPeakAmplitude : 5
+      shiftTime        : 57.5
+      scaleFactor      : 0.0625
+      diagLevel        : 0
+   }
+
+   TemplateProcessor :
+   {
+      windowPeak         : 3
+      minPeakAmplitude   : 24
+      numNoiseBins       : 5
+      minDTPeaks         : 20
+      psdThreshold       : 0.1
+      chiThreshold       : 1.0
+      refitLeadingEdge   : false
+      digiSampling       : @local::HitMakerDigiSampling
+      fitPrintLevel      : -1
+      fitStrategy        : 1
+      diagLevel          : 0
+   }
+
+
+   CaloRecoDigiMaker :
+   {
+      module_type         : CaloRecoDigiMaker
+      caloDigiCollection  : CaloDigiMaker
+      RawProcessor        : { @table::RawProcessor }
+      TemplateProcessor   : { @table::TemplateProcessor }
+      processorStrategy   : "TemplateFit"
+      digiSampling        : @local::HitMakerDigiSampling
+      ProtonBunchTimeTag  : "EWMProducer"
+      maxChi2Cut          : 2.0
+      maxPlots            : 50
+      diagLevel           : 0
+   }
 }
-
-TemplateProcessor :
-{
-    windowPeak         : 3
-    minPeakAmplitude   : 24
-    numNoiseBins       : 5
-    minDTPeaks         : 20
-    psdThreshold       : 0.1
-    chiThreshold       : 1.0
-    refitLeadingEdge   : false
-    digiSampling       : @local::HitMakerDigiSampling
-    fitPrintLevel      : -1
-    fitStrategy        : 1
-    diagLevel          : 0
-}
-
-
-CaloRecoDigiMaker :
-{
-    module_type         : CaloRecoDigiMaker
-    caloDigiCollection  : CaloDigiMaker
-    RawProcessor        : { @table::RawProcessor }
-    TemplateProcessor   : { @table::TemplateProcessor }
-    processorStrategy   : "TemplateFit"
-    digiSampling        : @local::HitMakerDigiSampling
-    ProtonBunchTimeTag  : "EWMProducer"
-    maxChi2Cut          : 2.0
-    maxPlots            : 50
-    diagLevel           : 0
-}
-
 
 CaloHitMaker:
 {
-    module_type            : CaloHitMaker
-    caloRecoDigiCollection : CaloRecoDigiMaker
-    time4Merge             : 6.0   #ns
-    diagLevel              : 0
+   module_type            : CaloHitMaker
+   caloRecoDigiCollection : CaloRecoDigiMaker
+   time4Merge             : 6.0   #ns
+   diagLevel              : 0
 }
 
 
 
-CaloReco :
-{
+CaloReco : { @table::CaloReco
    producers : {
-     CaloRecoDigiMaker  : @local::CaloRecoDigiMaker
-     CaloHitMaker       : @local::CaloHitMaker
+      CaloRecoDigiMaker  : @local::CaloRecoDigiMaker
+      CaloHitMaker       : @local::CaloHitMaker
    }
    Reco : [ CaloRecoDigiMaker, CaloHitMaker ]
 }
