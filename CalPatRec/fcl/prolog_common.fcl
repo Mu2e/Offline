@@ -25,26 +25,26 @@ CommonTrk                : {
 #------------------------------------------------------------------------------
 # BTRK track fit, downstream electron hypothesis
 #------------------------------------------------------------------------------
-        KSFDeMH     : { @table::KSFDeM                            SeedCollection : MHFinderDe  CheckHelicity:false }
-        KFFDeMHPar  : { @table::KFFDeM                            SeedCollection : KSFDeMH  }
+        KSFDeMH     : { @table::TrkPatRec.producers.KSFDeM                            SeedCollection : MHFinderDe  CheckHelicity:false }
+        KFFDeMHPar  : { @table::TrkPatRec.producers.KFFDeM                            SeedCollection : KSFDeMH  }
         KFFDeMHDar  : { @table::CalPatRec.producers.CalTrkFitDem  SeedCollection : KSFDeMH  }
 #------------------------------------------------------------------------------
 # BTRK track fit, upstream electron hypothesis
 #------------------------------------------------------------------------------
-        KSFUeMH     : { @table::KSFUeM                            SeedCollection : MHFinderUe  CheckHelicity:false }
-        KFFUeMHPar  : { @table::KFFUeM                            SeedCollection : KSFUeMH  }
+        KSFUeMH     : { @table::TrkPatRec.producers.KSFUeM                            SeedCollection : MHFinderUe  CheckHelicity:false }
+        KFFUeMHPar  : { @table::TrkPatRec.producers.KFFUeM                            SeedCollection : KSFUeMH  }
         KFFUeMHDar  : { @table::CalPatRec.producers.CalTrkFitUem  SeedCollection : KSFUeMH  }
 #------------------------------------------------------------------------------
 # BTRK track fit, downstream muon hypothesis
 #------------------------------------------------------------------------------
-        KSFDmuMH    : { @table::KSFDmuM                           SeedCollection : MHFinderDmu CheckHelicity:false}
-        KFFDmuMHPar : { @table::KFFDmuM                           SeedCollection : KSFDmuMH }
+        KSFDmuMH    : { @table::TrkPatRec.producers.KSFDmuM                           SeedCollection : MHFinderDmu CheckHelicity:false}
+        KFFDmuMHPar : { @table::TrkPatRec.producers.KFFDmuM                           SeedCollection : KSFDmuMH }
         KFFDmuMHDar : { @table::CalPatRec.producers.CalTrkFitDmm  SeedCollection : KSFDmuMH }
 #------------------------------------------------------------------------------
 # BTRK track fit, upstream muon hypothesis
 #------------------------------------------------------------------------------
-        KSFUmuMH    : { @table::KSFUmuM                           SeedCollection : MHFinderUmu CheckHelicity:false }
-        KFFUmuMHPar : { @table::KFFUmuM                           SeedCollection : KSFUmuMH }
+        KSFUmuMH    : { @table::TrkPatRec.producers.KSFUmuM                           SeedCollection : MHFinderUmu CheckHelicity:false }
+        KFFUmuMHPar : { @table::TrkPatRec.producers.KFFUmuM                           SeedCollection : KSFUmuMH }
         KFFUmuMHDar : { @table::CalPatRec.producers.CalTrkFitUmm  SeedCollection : KSFUmuMH }
 #------------------------------------------------------------------------------
 # assume KinKal doesn't check the helicity, using that of the helix
