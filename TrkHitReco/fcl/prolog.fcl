@@ -3,7 +3,42 @@ BEGIN_PROLOG
 # Normal reco seqence module: this produces a hit for every digi, and uses
 # flags to keep track of which hits to use
 # Reconstruct hits: this produces StrawHits and ComboHits
-TrkHitReco : {
+TrkHitReco :{
+   # flag hits from low-energy electrons (Compton electrons, delta rays, ...)
+   # First, configure the clusters
+   TNTClusterer : {
+      HitDistance      : 5
+      SeedDistance     : 20
+      ClusterDiameter  : 5.0
+      ClusterTime      : 20.0
+      MinClusterHits   : 1
+      MaxHitTimeDiff   : 30.0
+      MaxSumDistance   : 100.0
+      MaxCluIterations : 10
+      MaxDistance      : 100.0
+      MinHitError      : 5.0
+      TimeRMS          : 2.0
+      MedianCentroid   : false
+      ComboInit        : true
+      TestFlag         : true
+      BackgroundMask   : []
+      SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+   }
+
+   Chi2Clusterer : {
+      HitDistance      : 4
+      SeedDistance     : 8
+      MinClusterHits   : 1
+      MaxHitTimeDiff   : 30.0
+      MaxCluIterations : 5
+      TestFlag         : true
+      BackgroundMask   : []
+      SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+      Diag             : 0
+   }
+}
+
+TrkHitReco : { @table::TrkHitReco
 
    PBTFSD : {
       module_type             : ProtonBunchTimeFromStrawDigis
@@ -93,45 +128,12 @@ TrkHitReco : {
       module_type : RecoNullProducer
    }
 
-   # flag hits from low-energy electrons (Compton electrons, delta rays, ...)
-   # First, configure the clusters
-   TNTClusterer : {
-      HitDistance      : 5
-      SeedDistance     : 20
-      ClusterDiameter  : 5.0
-      ClusterTime      : 20.0
-      MinClusterHits   : 1
-      MaxHitTimeDiff   : 30.0
-      MaxSumDistance   : 100.0
-      MaxCluIterations : 10
-      MaxDistance      : 100.0
-      MinHitError      : 5.0
-      TimeRMS          : 2.0
-      MedianCentroid   : false
-      ComboInit        : true
-      TestFlag         : true
-      BackgroundMask   : []
-      SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
-   }
-
-   Chi2Clusterer : {
-      HitDistance      : 4
-      SeedDistance     : 8
-      MinClusterHits   : 1
-      MaxHitTimeDiff   : 30.0
-      MaxCluIterations : 5
-      TestFlag         : true
-      BackgroundMask   : []
-      SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
-      Diag             : 0
-   }
-
    # Background hit flagging
    FlagBkgHits : {
       module_type          : FlagBkgHits
       ComboHitCollection   : "makeSTH"
       ClusterAlgorithm     : 1
-      TNTClustering        : {@table::TNTClusterer}
+      TNTClustering        : {@table::TrkHitReco.TNTClusterer}
       MinActiveHits        : 3
       MinNPlanes           : 2
       ClusterPositionError : 10

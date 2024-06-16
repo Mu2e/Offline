@@ -28,14 +28,16 @@ CaloReco : {
       fitStrategy        : 1
       diagLevel          : 0
    }
+}
 
+CaloReco : { @table::CaloReco
 
    CaloRecoDigiMaker :
    {
       module_type         : CaloRecoDigiMaker
       caloDigiCollection  : CaloDigiMaker
-      RawProcessor        : { @table::RawProcessor }
-      TemplateProcessor   : { @table::TemplateProcessor }
+      RawProcessor        : { @table::CaloReco.RawProcessor }
+      TemplateProcessor   : { @table::CaloReco.TemplateProcessor }
       processorStrategy   : "TemplateFit"
       digiSampling        : @local::HitMakerDigiSampling
       ProtonBunchTimeTag  : "EWMProducer"
@@ -43,22 +45,21 @@ CaloReco : {
       maxPlots            : 50
       diagLevel           : 0
    }
-}
 
-CaloHitMaker:
-{
-   module_type            : CaloHitMaker
-   caloRecoDigiCollection : CaloRecoDigiMaker
-   time4Merge             : 6.0   #ns
-   diagLevel              : 0
+   CaloHitMaker:
+   {
+      module_type            : CaloHitMaker
+      caloRecoDigiCollection : CaloRecoDigiMaker
+      time4Merge             : 6.0   #ns
+      diagLevel              : 0
+   }
 }
-
 
 
 CaloReco : { @table::CaloReco
    producers : {
-      CaloRecoDigiMaker  : @local::CaloRecoDigiMaker
-      CaloHitMaker       : @local::CaloHitMaker
+      CaloRecoDigiMaker  : { @table::CaloReco.CaloRecoDigiMaker}
+      CaloHitMaker       : { @table::CaloReco.CaloHitMaker}
    }
    Reco : [ CaloRecoDigiMaker, CaloHitMaker ]
 }

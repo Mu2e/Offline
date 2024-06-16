@@ -167,7 +167,7 @@ CalPatRec : { @table::CalPatRec
         caloHitError                    : 15.0 # mm
 
         DivergeFlt                        : 1000.            #  default: 1000.
-        T0Calculator : @local::TimeCalculator
+        T0Calculator : { @table::TrkPatRec.TimeCalculator}
 #------------------------------------------------------------------------------
 #  parameters of KalContext
 #------------------------------------------------------------------------------
@@ -215,7 +215,7 @@ CalPatRec : { @table::CalPatRec
         updateT0                                : [ false, true, true, true, true, true, true, true, true ]
         updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
         DivergeFlt                              : 1000.
-        T0Calculator : @local::TimeCalculator
+        T0Calculator                            : {@table::TrkPatRec.TimeCalculator}
 #------------------------------------------------------------------------------
 #  KalContext parameters  (there are more to define ! )
 #------------------------------------------------------------------------------

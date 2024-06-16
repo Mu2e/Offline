@@ -34,8 +34,8 @@ CaloCluster : {
 
 CaloCluster : { @table::CaloCluster
    producers : {
-      CaloProtoClusterMaker  : @local::CaloProtoClusterMaker
-      CaloClusterMaker       : @local::CaloClusterMaker
+      CaloProtoClusterMaker  : { @table::CaloCluster.CaloProtoClusterMaker }
+      CaloClusterMaker       : { @table::CaloCluster.CaloClusterMaker      }
    }
 
    Reco : [ CaloProtoClusterMaker, CaloClusterMaker ]
