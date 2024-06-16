@@ -6,209 +6,212 @@
 
 BEGIN_PROLOG
 
-# time clustering is the 1st stage of track finding
-TimeClusterFinder : {
-    module_type  : TimeClusterFinder
-    ClusterMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
-    ClusterCaloMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
-    ComboHitCollection : "makePH"
-    CaloClusterCollection : "CaloClusterMaker"
-    T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
-    UseCaloCluster : true
-    UseCaloClusterPosition : true
-    TestFlag : true
-}
+CosmicReco : {
+    # time clustering is the 1st stage of track finding
+    TimeClusterFinder : {
+        module_type  : TimeClusterFinder
+        ClusterMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
+        ClusterCaloMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
+        ComboHitCollection : "makePH"
+        CaloClusterCollection : "CaloClusterMaker"
+        T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+        UseCaloCluster : true
+        UseCaloClusterPosition : true
+        TestFlag : true
+    }
 
-#cosmics:
-TimeClusterFinderCosmics : {
-    @table::TimeClusterFinder
-    ComboHitCollection : "makePH"
-    T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
-    maxdPhi : 10.0
-    RefineClusters : false
-    PrefilterCluster : false
-    UseCaloCluster : false
-    UseCaloClusterPosition : false
-}
+    #cosmics:
+    TimeClusterFinderCosmics : {
+        @table::TimeClusterFinder
+        ComboHitCollection : "makePH"
+        T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+        maxdPhi : 10.0
+        RefineClusters : false
+        PrefilterCluster : false
+        UseCaloCluster : false
+        UseCaloClusterPosition : false
+    }
 
-SimpleTimeCluster : {
-    module_type : SimpleTimeCluster
-    ComboHitCollection : "makePH"
-    TestFlag : true
-    HitSelectionBits  : ["EnergySelection"]
-    HitBackgroundBits : ["Background","Noisy","Dead"]
-    debugLevel : 0
-    minNStrawHits : 2
-    minNPanels : 1
-    TimeWindow : 100
-    useTimeWindow : false
-    TimeStep : 20
-    useTimeStep : true
-    UseOnlyOnePanel : false
-    UseOnlyOnePlane : false
-}
+    SimpleTimeCluster : {
+        module_type : SimpleTimeCluster
+        ComboHitCollection : "makePH"
+        TestFlag : true
+        HitSelectionBits  : ["EnergySelection"]
+        HitBackgroundBits : ["Background","Noisy","Dead"]
+        debugLevel : 0
+        minNStrawHits : 2
+        minNPanels : 1
+        TimeWindow : 100
+        useTimeWindow : false
+        TimeStep : 20
+        useTimeStep : true
+        UseOnlyOnePanel : false
+        UseOnlyOnePlane : false
+    }
 
-LineFinder : {
-    module_type : LineFinder
-    ComboHitCollection : "makePH"
-    TimeClusterCollection : "SimpleTimeCluster"
-    NSteps: 0
-    NTSteps: 0
-    StepSize : 0.5
-    t0offset : 0
-    maxDOCA : 10
-    minPeak : 10
-}
+    LineFinder : {
+        module_type : LineFinder
+        ComboHitCollection : "makePH"
+        TimeClusterCollection : "SimpleTimeCluster"
+        NSteps: 0
+        NTSteps: 0
+        StepSize : 0.5
+        t0offset : 0
+        maxDOCA : 10
+        minPeak : 10
+    }
 
-CosmicDriftFit : {
-    module_type : CosmicDriftFit
-    ComboHitCollection : "makeSH"
-    LineSeedCollection : "LineFinder"
-}
+    CosmicDriftFit : {
+        module_type : CosmicDriftFit
+        ComboHitCollection : "makeSH"
+        LineSeedCollection : "LineFinder"
+    }
 
-CosmicTrackFit : {
-    NParameters : 4
-    DoNotUseFlag : "Outlier"
-    minNStrawHits : 2
-    minNComboHits : 8
-    Noutliers : 2
-    maxNiter : 1000
-    minNHitsTimeCluster : 0
-    MaxSeedChi2DOF : 2.5
-    MaxDeltaChi2 : 0.001
-    MaxPosDev : 200
-    MaxDOCA : 2.5
-    MaxLogL : 150
-    GaussianSeedTimeResolution : 24
-    MaxTimeResidual : 40
-    MaxTrackLength : 2000.
-    MaxHitPullForSeed : 100.
-    UseTSeedDirection : false
-}
+    CosmicTrackFit : {
+        NParameters : 4
+        DoNotUseFlag : "Outlier"
+        minNStrawHits : 2
+        minNComboHits : 8
+        Noutliers : 2
+        maxNiter : 1000
+        minNHitsTimeCluster : 0
+        MaxSeedChi2DOF : 2.5
+        MaxDeltaChi2 : 0.001
+        MaxPosDev : 200
+        MaxDOCA : 2.5
+        MaxLogL : 150
+        GaussianSeedTimeResolution : 24
+        MaxTimeResidual : 40
+        MaxTrackLength : 2000.
+        MaxHitPullForSeed : 100.
+        UseTSeedDirection : false
+    }
 
-CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
-    module_type                   : CosmicTrackFinder
-    ComboHitCollection     : "makePH"
-    TimeClusterCollection  : "SimpleTimeCluster"
-    LineFinderTag          : "LineFinder"
-    minNStrawHits          : 2
-    minNComboHits          : 8
-    minNHitsTimeCluster    : 0
-    UseLineFinder          : false
-    UseChiFit              : true
-    DoDrift                : true
-    UseTime                : false
-    DriftRes               : 10
-    MinuitTolerance        : 0.1
-    MinuitPrecision        : -1
-    CosmicTrackFit : @local::CosmicTrackFit
-}
+    CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
+        module_type                   : CosmicTrackFinder
+        ComboHitCollection     : "makePH"
+        TimeClusterCollection  : "SimpleTimeCluster"
+        LineFinderTag          : "LineFinder"
+        minNStrawHits          : 2
+        minNComboHits          : 8
+        minNHitsTimeCluster    : 0
+        UseLineFinder          : false
+        UseChiFit              : true
+        DoDrift                : true
+        UseTime                : false
+        DriftRes               : 10
+        MinuitTolerance        : 0.1
+        MinuitPrecision        : -1
+        CosmicTrackFit : @local::CosmicTrackFit
+    }
 
-CosmicTrackFinderLoose : {
-    @table::CosmicTrackFinder
-    DoDrift : true
-    UseTime : false
-    UseLineFinder : false
-    CosmicTrackFit :{
-    @table::CosmicTrackFit
-        minNComboHits : 4
-        MaxSeedChi2DOF : 10
-        MaxDeltaChi2 : 0.5
-        MaxPosDev : 20000
+    CosmicTrackFinderLoose : {
+        @table::CosmicTrackFinder
+        DoDrift : true
+        UseTime : false
+        UseLineFinder : false
+        CosmicTrackFit :{
+            @table::CosmicTrackFit
+            minNComboHits : 4
+            MaxSeedChi2DOF : 10
+            MaxDeltaChi2 : 0.5
+            MaxPosDev : 20000
+        }
+    }
+
+    CosmicTrackFinderTimeFit : {
+        @table::CosmicTrackFinder
+        DoDrift : true
+        UseTime : true
+        UseLineFinder : true
+        UseChiFit : false
+        minNStrawHits : 4
+        minNComboHits : 0
+        MinuitTolerance : 0.5
+    }
+
+
+
+    CosmicTrackDetails : {
+        module_type : CosmicTrackDetails
+        ComboHitCollection : "makePH"
+        TimeClusterCollection : SimpleTimeCluster
+        #TimeClusterCollection : TimeClusterFinderCosmics
+        CosmicTrackSeedCollection : CosmicTrackFinder
+        StrawDigiMCCollection : "compressDigiMCs"
+    }
+
+    CosmicMCRecoDiff  : {
+        module_type : CosmicMCRecoDiff
+        ComboHitCollection : "makePH"
+        TimeClusterCollection : SimpleTimeCluster
+        #TimeClusterCollection : TimeClusterFinderCosmics
+        CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
+        StrawDigiMCCollection : "compressDigiMCs"
+    }
+
+
+    CosmicAnalysis : {
+        module_type : CosmicAnalyzer
+        ComboHitCollection : "makePH"
+        TimeClusterCollection : SimpleTimeCluster
+        #TimeClusterCollection : TimeClusterFinderCosmics
+        CosmicTrackSeedCollection : CosmicTrackFinder
+        StrawDigiMCCollection : "compressDigiMCs"
+    }
+
+    CosmicFitDisplay : {
+        module_type : CosmicFitDisplay
+        ComboHitCollection : "makePH"
+        TimeClusterCollection : TimeClusterFinderCosmics
+        CosmicTrackSeedCollection : CosmicTrackFinder
+        doDisplay            : true
+        TimeClusterCollection : TimeClusterFinderCosmicsr
+        CosmicTrackSeedCollection : CosmicTrackFinder
+
+    }
+
+
+    CosmicTrackDiag : {
+        module_type : CosmicTrackDiag
+        StrawHitCollection : "makeSH"
+        ComboHitCollection : "makeSH"
+        PanelHitCollection : "makePH"
+        TimeClusterCollection : SimpleTimeCluster
+        StrawDigiMCCollection : "compressDigiMCs"
+        ProtonBunchTimeMC : "EWMProducer"
+        CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
+    }
+
+    CosmicShowerFilter : {
+        module_type : CosmicShowerFilter
+        maxCrossingGap : 2
+        maxSameGap : 1
+        maxTotalSameGap : 1
+        TimeClusterCollection : "SimpleTimeCluster"
+        ComboHitCollection : "makePH"
+    }
+
+    CosmicMuonInfo : {
+        module_type : CosmicMuonInfo
+        strawDigisTag   : "makeSD"
+        strawHitsTag    : "makeSH"
+        panelHitsTag    : "makePH"
+        strawDigiMCsTag : "compressDigiMCs"
+        caloDigisTag    : "CaloDigiMaker"
+        diagLevel       : 0
+        filterCuts      : {
+            pmin          : 200. # MeV/c set low
+            pmax          : 1000000. # MeV/c currnetly not using
+            minStrawDigis :    2  # Minimum number of digis made by the primary muon //10
+            minPlanes     :    2  # Minimum number of planes hit by the muon track//3
+            minBackground :    0  # Make > 0 to select events with background digis
+            maxBackground : 9999  # Make a small number to limit digis not from the muon
+        }
     }
 }
 
-CosmicTrackFinderTimeFit : {
-    @table::CosmicTrackFinder
-    DoDrift : true
-    UseTime : true
-    UseLineFinder : true
-    UseChiFit : false
-    minNStrawHits : 4
-    minNComboHits : 0
-    MinuitTolerance : 0.5
-}
-
-
-
-CosmicTrackDetails : {
-    module_type : CosmicTrackDetails
-    ComboHitCollection : "makePH"
-    TimeClusterCollection : SimpleTimeCluster
-    #TimeClusterCollection : TimeClusterFinderCosmics
-    CosmicTrackSeedCollection : CosmicTrackFinder
-    StrawDigiMCCollection : "compressDigiMCs"
-}
-
-CosmicMCRecoDiff  : {
-    module_type : CosmicMCRecoDiff
-    ComboHitCollection : "makePH"
-    TimeClusterCollection : SimpleTimeCluster
-    #TimeClusterCollection : TimeClusterFinderCosmics
-    CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
-    StrawDigiMCCollection : "compressDigiMCs"
-}
-
-
-CosmicAnalysis : {
-    module_type : CosmicAnalyzer
-    ComboHitCollection : "makePH"
-    TimeClusterCollection : SimpleTimeCluster
-    #TimeClusterCollection : TimeClusterFinderCosmics
-    CosmicTrackSeedCollection : CosmicTrackFinder
-    StrawDigiMCCollection : "compressDigiMCs"
-}
-
-CosmicFitDisplay : {
-    module_type : CosmicFitDisplay
-    ComboHitCollection : "makePH"
-    TimeClusterCollection : TimeClusterFinderCosmics
-    CosmicTrackSeedCollection : CosmicTrackFinder
-    doDisplay            : true
-    TimeClusterCollection : TimeClusterFinderCosmicsr
-    CosmicTrackSeedCollection : CosmicTrackFinder
-
-}
-
-
-CosmicTrackDiag : {
-    module_type : CosmicTrackDiag
-    StrawHitCollection : "makeSH"
-    ComboHitCollection : "makeSH"
-    PanelHitCollection : "makePH"
-    TimeClusterCollection : SimpleTimeCluster
-    StrawDigiMCCollection : "compressDigiMCs"
-    ProtonBunchTimeMC : "EWMProducer"
-    CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
-}
-
-CosmicShowerFilter : {
-    module_type : CosmicShowerFilter
-    maxCrossingGap : 2
-    maxSameGap : 1
-    maxTotalSameGap : 1
-    TimeClusterCollection : "SimpleTimeCluster"
-    ComboHitCollection : "makePH"
-}
-
-CosmicMuonInfo : {
-    module_type : CosmicMuonInfo
-    strawDigisTag   : "makeSD"
-    strawHitsTag    : "makeSH"
-    panelHitsTag    : "makePH"
-    strawDigiMCsTag : "compressDigiMCs"
-    caloDigisTag    : "CaloDigiMaker"
-    diagLevel       : 0
-    filterCuts      : {
-        pmin          : 200. # MeV/c set low
-        pmax          : 1000000. # MeV/c currnetly not using
-        minStrawDigis :    2  # Minimum number of digis made by the primary muon //10
-        minPlanes     :    2  # Minimum number of planes hit by the muon track//3
-        minBackground :    0  # Make > 0 to select events with background digis
-        maxBackground : 9999  # Make a small number to limit digis not from the muon
-    }
-}
-CosmicTracking : {
+CosmicReco : { @table::CosmicReco
     producers :{
         SimpleTimeCluster  : @local::SimpleTimeCluster
         CosmicShowerFilter : @local::CosmicShowerFilter
@@ -234,19 +237,19 @@ CosmicTracking : {
 #
 # define standard outputs
 Output : {
-  Digis : [ "keep mu2e::StrawDigis_*_*_*" ]
-  Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
-  "keep mu2e::ComboHitCollection_*_*_*",
-  "keep mu2e::StrawHits_*_*_*"        ]
+    Digis : [ "keep mu2e::StrawDigis_*_*_*" ]
+    Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
+             "keep mu2e::ComboHitCollection_*_*_*",
+             "keep mu2e::StrawHits_*_*_*"        ]
 
-  Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
-  "keep mu2e::ComboHitCollection_makePH_*_*",
-  "keep mu2e::TimeClusters_*_*_*" ]
-  MCTracks : ["keep mu2e::GenParticles_*_*_*",
-  "keep mu2e::SimParticles_*_*_*" ]
-  MCDigis : ["keep mu2e::StrawDigiMCs_*_*_*"]
-  MCHits : [ "keep mu2e::StepPointMCs_*_tracker_*",
-  "keep mu2e::StepPointMCs_*_virtualdetector_*"]
+    Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
+               "keep mu2e::ComboHitCollection_makePH_*_*",
+               "keep mu2e::TimeClusters_*_*_*" ]
+    MCTracks : ["keep mu2e::GenParticles_*_*_*",
+                "keep mu2e::SimParticles_*_*_*" ]
+    MCDigis : ["keep mu2e::StrawDigiMCs_*_*_*"]
+    MCHits : [ "keep mu2e::StepPointMCs_*_tracker_*",
+               "keep mu2e::StepPointMCs_*_virtualdetector_*"]
 
 }
 
