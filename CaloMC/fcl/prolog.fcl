@@ -5,11 +5,25 @@
 #include "Offline/CaloReco/fcl/common.fcl"
 #include "Offline/CommonMC/fcl/prolog.fcl"
 
-
-
 BEGIN_PROLOG
 
 CaloMC : {
+
+   #See doc-db 35519 for noise level discussion
+   NoiseGenerator :
+   {
+      noiseWFSize             : 10000
+      elecNphotPerNs          : 0.18
+      rinNphotPerNs           : 0.36
+      darkNphotPerNs          : 0.60
+      digiSampling            : @local::HitMakerDigiSampling
+      nMaxFragment            : 1000
+      minPeakADC              : @local::HitMakerMinPeakADC
+      diagLevel               : 0
+   }
+}
+
+CaloMC : { @table::CaloMC
    CaloShowerStepMaker  :
    {
       module_type             : CaloShowerStepMaker
@@ -41,19 +55,6 @@ CaloMC : {
       diagLevel                : 0
    }
 
-   #See doc-db 35519 for noise level discussion
-   NoiseGenerator :
-   {
-      noiseWFSize             : 10000
-      elecNphotPerNs          : 0.18
-      rinNphotPerNs           : 0.36
-      darkNphotPerNs          : 0.60
-      digiSampling            : @local::HitMakerDigiSampling
-      nMaxFragment            : 1000
-      minPeakADC              : @local::HitMakerMinPeakADC
-      diagLevel               : 0
-   }
-
    CaloDigiMaker :
    {
       module_type             : CaloDigiMaker
@@ -64,7 +65,7 @@ CaloMC : {
       digitizationEnd         : @local::HitMakerDigitizationEnd
       addNoise                : true
       addRandomNoise          : false
-      NoiseGenerator          : { @table::NoiseGenerator  }
+      NoiseGenerator          : { @table::CaloMC.NoiseGenerator  }
       digiSampling            : @local::HitMakerDigiSampling
       nBits                   : 12
       minPeakADC              : @local::HitMakerMinPeakADC
@@ -96,34 +97,17 @@ CaloMC : {
 
 
 CaloMC : { @table::CaloMC
-   StepProducers : {
-      CaloShowerStepMaker  : @local::CaloShowerStepMaker
+   producers : {
+      CaloShowerStepMaker   : { @table::CaloMC.CaloShowerStepMaker   }
+      CaloShowerROMaker     : { @table::CaloMC.CaloShowerROMaker     }
+      CaloDigiMaker         : { @table::CaloMC.CaloDigiMaker         }
+      CaloHitTruthMatch     : { @table::CaloMC.CaloHitTruthMatch     }
+      CaloClusterTruthMatch : { @table::CaloMC.CaloClusterTruthMatch }
    }
-   StepSim : [ CaloShowerStepMaker]
 
-   DigiProducers : {
-      CaloShowerROMaker    : @local::CaloShowerROMaker
-      CaloDigiMaker        : @local::CaloDigiMaker
-   }
-   DigiSim : [ CaloShowerROMaker, CaloDigiMaker]
-
-   TruthProducers : {
-      CaloHitTruthMatch : @local::CaloHitTruthMatch
-      CaloClusterTruthMatch : @local::CaloClusterTruthMatch
-   }
+   DigiSim    : [ CaloShowerROMaker, CaloDigiMaker]
+   StepSim    : [ CaloShowerStepMaker]
    TruthMatch : [ CaloHitTruthMatch, CaloClusterTruthMatch ]
-}
-
-CaloClusterMC :
-{
-   producers  : { CaloClusterTruthMatch : @local::CaloClusterTruthMatch }
-   TruthMatch : [ CaloClusterTruthMatch ]
-}
-
-# legacy
-CaloMC.producers : {
-   @table::CaloMC.StepProducers
-   @table::CaloMC.DigiProducers
 }
 
 CaloMC.StepAndDigiSim : [@sequence::CaloMC.StepSim, @sequence::CaloMC.DigiSim]
