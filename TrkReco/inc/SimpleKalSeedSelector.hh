@@ -13,9 +13,10 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<double> minmom{Name("MinimumMomentum"), Comment("Minimum fit momentum ")};
-      fhicl::Atom<double> maxmom{Name("MaximumMomentum"), Comment("Maximum fit momentum ")};
-      fhicl::Atom<double> minfcon{Name("MinimumFitConsistency"), Comment("Minimum fit consistency ")};
+      fhicl::Atom<double> minmom{Name("MinMomentum"), Comment("Minimum fit momentum ")};
+      fhicl::Atom<double> maxmom{Name("MaxMomentum"), Comment("Maximum fit momentum ")};
+      fhicl::Atom<double> minfcon{Name("MinFitConsistency"), Comment("Minimum fit consistency ")};
+      fhicl::Atom<unsigned> minnactive{Name("MinActiveHits"), Comment("Minimum # of active hits ")};
       fhicl::Atom<double> minsignhit{Name("MinDeltaNHitFraction"), Comment("Minimum difference in the fractional number of hits to consider significant")};
     };
     typedef art::ToolConfigTable<Config> Parameters;
@@ -23,6 +24,7 @@ namespace mu2e {
       minmom_(conf().minmom()),
       maxmom_(conf().maxmom()),
       minfcon_(conf().minfcon()),
+      minnactive_(conf().minnactive()),
       minsignhit_(conf().minsignhit())
     {}
 
@@ -32,6 +34,7 @@ namespace mu2e {
   private:
     double minmom_, maxmom_;
     double minfcon_;
+    unsigned minnactive_;
     double minsignhit_;
   };
 }
