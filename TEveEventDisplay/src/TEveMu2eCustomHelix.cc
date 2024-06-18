@@ -26,7 +26,7 @@ namespace mu2e{
     auto pos = fseg.position3();
     auto vel = fseg.velocity();
     double tz = fseg.tref() + (zpos-pos.Z())/vel.Z();
-    auto zseg = fKalSeed_.nearestSeg(tz);
+    auto zseg = fKalSeed_.nearestSegment(tz);
     pos = zseg->position3();
     vel = zseg->velocity();
     tz = zseg->tref() + (zpos-pos.Z())/vel.Z();
