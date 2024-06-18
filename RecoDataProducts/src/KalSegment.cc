@@ -12,6 +12,26 @@ namespace mu2e {
     }
   }
 
+  double KalSegment::t0Val(TrkFitFlag const& flag) const {
+    // convert to the appropriate parameterization.
+    if(flag.hasAllProperties(TrkFitFlag::KKLoopHelix)) {
+      auto lh = loopHelix();
+      return lh.paramVal(KinKal::LoopHelix::t0Index());
+    } else if(flag.hasAllProperties(TrkFitFlag::KKCentralHelix)) {
+      auto ch = loopHelix();
+      return ch.paramVal(KinKal::CentralHelix::t0Index());
+    } else if (flag.hasAllProperties(TrkFitFlag::KKLine)) {
+      auto kl = kinematicLine();
+      return kl.paramVal(KinKal::KinematicLine::t0Index());
+    }
+    //      throw cet::exception("RECO")<<"mu2e::KalSegment: no trajectory specified in flag" << std::endl;
+    // for now, revert to the legacy implementation.  Once BTrk is fully removed this should be removed
+    auto vel = _pstate.velocity();
+    return _pstate.time() - _pstate.position3().Z()/vel.Z();
+  }
+
+  // deprecated legacy functions, these should be removed FIXME
+
   HelixVal KalSegment::helix() const {
     // CentralHelix uses the same parameter convention as BTrk.  First,
     // convert the state estimate into a helix.
@@ -55,17 +75,5 @@ namespace mu2e {
   double KalSegment::timeToFlt(double time) const {
     auto vel = _pstate.velocity();
     return (time - t0Val())*vel.R();
-  }
-
-  double KalSegment::t0Val() const {
-    auto vel = _pstate.velocity();
-    return _pstate.time() - _pstate.position3().Z()/vel.Z();
-  }
-
-  HitT0 KalSegment::t0() const {
-    // convert to LoopHelix.  In that parameterization, t0 is defined WRT z=0
-    auto lhelix = loopHelix();
-    return HitT0(lhelix.params().parameters()(KinKal::LoopHelix::t0_),
-        sqrt(lhelix.params().covariance()(KinKal::LoopHelix::t0_,KinKal::LoopHelix::t0_)));
   }
 }
