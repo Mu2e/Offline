@@ -25,6 +25,13 @@ CommonMC: {
       RecoFromMCTruth : true
       RecoFromMCTruthErr : 0.5
     }
+    # Make an EventHeader object from the ProtonBunchTime and EventWindowMarker data products
+    makeEventHeaderFromLegacyMC : {
+      module_type          : MakeEventHeaderFromLegacyMC
+      protonBunchTimeMCTag : "EWMProducer"
+      eventWindowMarkerTag : "EWMProducer"
+      maxPrint             : 0
+    }
   }
   FindMCPrimary : {
     module_type : FindMCPrimary

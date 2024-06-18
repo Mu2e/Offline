@@ -38,6 +38,8 @@ namespace mu2e
 
     typedef std::string targetMat;
 
+    static constexpr double MHzPerGHz = 1000.;  // Number of one MHz in one GHz.
+
     // Proton parameters
     double   getProtonEnergy  () const { return _protonEnergy;   }
     double   getProtonKE      () const { return _protonKE;       }
@@ -47,7 +49,9 @@ namespace mu2e
     int      getNominalDAQTicks() const { return _nominalDAQTicks; } // counts, DAQ ticks per DRperiod
     int      getNominalDAQOnSpillBins() const { return _nominalDAQOnSpillBins; } // how often to 68->67
     double   getNominalDAQFrequency() const { return _nominalDAQFrequency; } // MHz
-    double   getNominalDAQClockTick() const { return 1000.0/_nominalDAQFrequency; } // ns
+    double   getNominalDAQClockTick() const { return MHzPerGHz/_nominalDAQFrequency; } // ns
+    double   getNominalRF0ClockFrequency() const { return _nominalRF0ClockFrequency; } // MHz
+    double   getNominalRF0ClockTick() const { return MHzPerGHz/_nominalRF0ClockFrequency; } // ns
 
     // Lifetimes of free (not stopped) particles.  We provide them
     // here because values coming from other sources are not accurate
@@ -169,10 +173,11 @@ namespace mu2e
     double _protonKE;
     double _protonMomentum;
 
-    double _nominalDRPeriod;
+    double _nominalDRPeriod;          // ns
     int    _nominalDAQTicks;
     int    _nominalDAQOnSpillBins;
-    double _nominalDAQFrequency;
+    double _nominalDAQFrequency;      // MHz
+    double _nominalRF0ClockFrequency; // MHz
 
     typedef std::map<PDGCode::type, double> FreeLifeMap;
     FreeLifeMap freeLifetime_;
