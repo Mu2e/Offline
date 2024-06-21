@@ -18,6 +18,11 @@ namespace mu2e {
       float   time;
     };
 
+    struct hsInfo {
+      float eDepAvg;
+      float nHitsRatio;
+    };
+
     struct lineSegmentInfo {
       float   chi2dof;
       float   maxHitGap;
@@ -28,6 +33,7 @@ namespace mu2e {
       int                            nHelices;
       int                            nTimeClusters;
       std::vector<tcInfo>            timeClusterData;
+      std::vector<hsInfo>            helixSeedData;
       std::vector<lineSegmentInfo>   lineSegmentData;
     };
 

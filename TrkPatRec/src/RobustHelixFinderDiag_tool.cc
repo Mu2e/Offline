@@ -89,6 +89,7 @@ namespace mu2e {
 
         TH1F*  nLoops  [2];
         TH1F*  nHitsLoopFailed[2];
+        TH1F*  eDepAvg[2];
         TH1F*  chRadialDist[2];
       };
 
@@ -116,12 +117,10 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   RobustHelixFinderDiag::RobustHelixFinderDiag(const Config& config) {
-    printf(" RobustHelixFinderDiag::RobustHelixFinderDiag : HOORAY! \n");
   }
 
   //-----------------------------------------------------------------------------
   RobustHelixFinderDiag::RobustHelixFinderDiag(const fhicl::ParameterSet& PSet) {
-    printf(" RobustHelixFinderDiag::RobustHelixFinderDiag : HOORAY! \n");
   }
 
   //-----------------------------------------------------------------------------
@@ -253,6 +252,9 @@ namespace mu2e {
     _hist.nHitsLoopFailed[0]     = Tfs->make<TH1F>("nHitsLoopFailed_Neg" , "helix  nHitsLoopFailed, Neg", 21,   -0.5, 20.5);
     _hist.nHitsLoopFailed[1]     = Tfs->make<TH1F>("nHitsLoopFailed_Pos" , "helix  nHitsLoopFailed, Pos", 21,   -0.5, 20.5);
 
+    _hist.eDepAvg[0]    = Tfs->make<TH1F>("eDepAvg_Neg" , "helix  eDepAvg, Neg", 1000,   0, 0.01);
+    _hist.eDepAvg[1]    = Tfs->make<TH1F>("eDepAvg_Pos" , "helix  eDepAvg, Pos", 1000,   0, 0.01);
+
     _hist.chRadialDist[0]     = Tfs->make<TH1F>("meanHitRadialDist_Neg" , "helix hit meanHitRadialDist, Neg"               , 60,   100, 700.);
     _hist.chRadialDist[1]     = Tfs->make<TH1F>("meanHitRadialDist_Pos" , "helix hit meanHitRadialDist, Pos"               , 60,   100, 700.);
 
@@ -353,6 +355,8 @@ namespace mu2e {
           _hist.nHitsLoopFailed       [k] ->Fill(_data->nHitsLoopFailed[k][i]);
           _hist.chRadialDist [k] ->Fill(_data->meanHitRadialDist[k][i]);
         }
+
+        _hist.eDepAvg      [k] ->Fill(_data->eDepAvg[k][i]);
 
       }
     }
