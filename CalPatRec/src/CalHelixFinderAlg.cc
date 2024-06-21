@@ -2083,6 +2083,7 @@ namespace mu2e {
     bool rc;
     int  rs, usePhiResid;
 
+    float circleHits(0.0), phiHits(0.0);
 
     if ((Helix._seedIndex.panel < 0) || (Helix._nXYSh < _minNHits) ) goto  PATTERN_RECOGNITION_END;
 
@@ -2092,8 +2093,14 @@ namespace mu2e {
       printInfo(Helix);
     }
 
+    circleHits = Helix._sxy.qn();
+
     rc = doLinearFitPhiZ(Helix, HitInfo_t(StrawId::_ntotalfaces-1,0,-1), useIntelligentWeight);
 
+    phiHits = Helix._szphi.qn();
+    if (_diag > 0) {
+      Helix._diag.nHitsRatio = circleHits/(phiHits + 1e-6);
+    }
     //2017-10-05 Gianipez added the following line to make some tests
     if (Helix._szphi.qn() == 0.)                                 goto  PATTERN_RECOGNITION_END;
 

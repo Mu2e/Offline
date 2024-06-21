@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // AgnosticHelixFinder
-// M. Stortini
+// M. Stortini & E. Martinez
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "Offline/CalPatRec/inc/AgnosticHelixFinder_types.hh"
@@ -87,6 +87,7 @@ namespace mu2e {
       fhicl::Atom<float>         maxSeedCircleResidual  {Name("maxSeedCircleResidual"), Comment("add hits to triplet circle"  )  };
       fhicl::Atom<int>           minSeedCircleHits      {Name("minSeedCircleHits"    ), Comment("min hits to continue search" )  };
       fhicl::Atom<float>         maxDphiDz              {Name("maxDphiDz"            ), Comment("used finding phi-z segment"  )  };
+      fhicl::Atom<float>         maxSeedLineGap         {Name("maxSeedLineGap"       ), Comment("used finding phi-z segment"  )  };
       fhicl::Atom<float>         maxZWindow             {Name("maxZWindow"           ), Comment("used finding phi-z segment"  )  };
       fhicl::Atom<int>           minLineSegmentHits     {Name("minLineSegmentHits"   ), Comment("used in findSeedPhiLines()"  )  };
       fhicl::Atom<float>         segMultiplier          {Name("segMultiplier"        ), Comment("used in findSeedPhiLines()"  )  };
@@ -104,6 +105,8 @@ namespace mu2e {
       fhicl::Atom<float>         minHelixMomentum       {Name("minHelixMomentum"     ), Comment("min momentum of helix"       )  };
       fhicl::Atom<float>         maxHelixMomentum       {Name("maxHelixMomentum"     ), Comment("max momentum of helix"       )  };
       fhicl::Atom<float>         chi2LineSaveThresh     {Name("chi2LineSaveThresh"   ), Comment("max chi2Dof for line"        )  };
+      fhicl::Atom<float>         maxEDepAvg             {Name("maxEDepAvg"           ), Comment("max avg edep of combohits"   )  };
+      fhicl::Atom<float>         maxNHitsRatio          {Name("maxNHitsRatio"        ), Comment("max ratio of seed hits"      )  };
       fhicl::Atom<int>           debugPdgID             {Name("debugPdgID"           ), Comment("pdgID of interest in display")  };
       fhicl::Atom<float>         debugMomentum          {Name("debugMomentum"        ), Comment("lower momentum of interest"  )  };
       fhicl::Atom<std::string>   debugDirection         {Name("debugDirection"       ), Comment("down or up"                  )  };
@@ -229,6 +232,7 @@ namespace mu2e {
     float    _maxSeedCircleResidual;
     int      _minSeedCircleHits;
     float    _maxDphiDz;
+    float    _maxSeedLineGap;
     float    _maxZWindow;
     int      _minLineSegmentHits;
     float    _segMultiplier;
@@ -246,6 +250,8 @@ namespace mu2e {
     float    _minHelixMomentum;
     float    _maxHelixMomentum;
     float    _chi2LineSaveThresh;
+    float    _maxEDepAvg;
+    float    _maxNHitsRatio;
 
     //-----------------------------------------------------------------------------
     // fcl params to choose what particle to plot when doing debugging
@@ -351,6 +357,7 @@ namespace mu2e {
     void         initSeedCircle            (LoopCondition& outcome);
     void         initHelixPhi              ();
     void         findSeedPhiLines          ();
+    float        underEstimateSlope        (float& phi1, float& phi1Err2, float& phi2, float& phi2Err2, float& dz);
     void         resolve2PiAmbiguities     ();
     void         refinePhiLine             (size_t lineIndex, bool& removals);
     void         initFinalSeed             ();
@@ -398,6 +405,7 @@ namespace mu2e {
     _maxSeedCircleResidual         (config().maxSeedCircleResidual()                 ),
     _minSeedCircleHits             (config().minSeedCircleHits()                     ),
     _maxDphiDz                     (config().maxDphiDz()                             ),
+    _maxSeedLineGap                (config().maxSeedLineGap()                        ),
     _maxZWindow                    (config().maxZWindow()                            ),
     _minLineSegmentHits            (config().minLineSegmentHits()                    ),
     _segMultiplier                 (config().segMultiplier()                         ),
@@ -415,6 +423,8 @@ namespace mu2e {
     _minHelixMomentum              (config().minHelixMomentum()                      ),
     _maxHelixMomentum              (config().maxHelixMomentum()                      ),
     _chi2LineSaveThresh            (config().chi2LineSaveThresh()                    ),
+    _maxEDepAvg                    (config().maxEDepAvg()                            ),
+    _maxNHitsRatio                 (config().maxNHitsRatio()                         ),
     _debugPdgID                    (config().debugPdgID()                            ),
     _debugMomentum                 (config().debugMomentum()                         ),
     _debugDirection                (config().debugDirection()                        ),
@@ -529,6 +539,7 @@ namespace mu2e {
       _diagInfo.moduleTime = 0.0;
       _diagInfo.nHelices = 0;
       _diagInfo.timeClusterData.clear();
+      _diagInfo.helixSeedData.clear();
       _diagInfo.lineSegmentData.clear();
     }
 
@@ -931,6 +942,7 @@ namespace mu2e {
             continue;
           }
           initSeedCircle(loopCondition);
+          float circleHits = _circleFitter.qn();
           if (loopCondition == CONTINUE) {
             if (_debug == 1 && _runDisplay == 1) { // stage 2 info (seed circle + helix phi)
               initHelixPhi();
@@ -976,8 +988,17 @@ namespace mu2e {
             while (foundPhiZRemoval == true) {
               refinePhiLine(i, foundPhiZRemoval);
             }
+
           }
+
           initFinalSeed();
+          float phiHits = _lineFitter.qn();
+          float nHitsRatio = circleHits/(phiHits + 1e-6);
+          if (_debug == 1) {
+            hsInfo helixSeedInfo;
+            helixSeedInfo.nHitsRatio = nHitsRatio;
+            _diagInfo.helixSeedData.push_back(helixSeedInfo);
+          }
           if (_debug == 1 && _runDisplay == 1) { // stage 3 info (final seed)
             trackingInfo.bestLineSegment = _bestLineSegment;
             trackingInfo.tcHitsColl.push_back(_tcHits);
@@ -990,6 +1011,9 @@ namespace mu2e {
               trackingInfo.becameHelix = false;
               _plottingData.push_back(trackingInfo);
             }
+            continue;
+          }
+          if (nHitsRatio > _maxNHitsRatio) {
             continue;
           }
           pointRecovered = true;
@@ -1333,18 +1357,23 @@ namespace mu2e {
         if (std::abs(seedZ - testZ) > _maxZWindow) {
           break;
         }
+        float positiveDeltaZ = lastAddedPositiveZ - testZ;
+        float negativeDeltaZ = lastAddedNegativeZ - testZ;
+        if (positiveDeltaZ > _maxSeedLineGap && negativeDeltaZ > _maxSeedLineGap) {
+          break;
+        }
         float testPhi = _tcHits[j].helixPhi;
         float testError2 = _tcHits[j].helixPhiError2;
         float testWeight = 1.0 / (testError2);
         float positiveDiff = std::abs(lastAddedPositivePhi - testPhi);
         float positiveDiffError = std::sqrt(lastAddedPositivePhiError2 + testError2);
-        float positiveDeltaZ = lastAddedPositiveZ - testZ;
         float negativeDiff = std::abs(lastAddedNegativePhi - testPhi);
         float negativeDiffError = std::sqrt(lastAddedNegativePhiError2 + testError2);
-        float negativeDeltaZ = lastAddedNegativeZ - testZ;
-        if (lastAddedPositivePhi > testPhi || positiveDiff < positiveDiffError) {
-          if (std::abs(lastAddedPositivePhi - testPhi)/positiveDeltaZ >= _maxDphiDz) {
-            continue;
+        if ((lastAddedPositivePhi > testPhi || positiveDiff < positiveDiffError) && positiveDeltaZ <= _maxSeedLineGap) {
+          if (positiveDiff >= positiveDiffError && std::abs((lastAddedPositivePhi-testPhi)/positiveDeltaZ) > _maxDphiDz) {
+            if (underEstimateSlope(lastAddedPositivePhi,lastAddedPositivePhiError2,testPhi,testError2,positiveDeltaZ) > _maxDphiDz) {
+              continue;
+            }
           }
           _positiveLine.tcHitsIndices.push_back(j);
           _positiveLine.helixPhiCorrections.push_back(0);
@@ -1356,9 +1385,11 @@ namespace mu2e {
             maxHitGap = positiveDeltaZ;
           }
         }
-        if (testPhi > lastAddedNegativePhi || negativeDiff < negativeDiffError) {
-          if (std::abs(lastAddedNegativePhi - testPhi)/negativeDeltaZ >= _maxDphiDz) {
-            continue;
+        if ((testPhi > lastAddedNegativePhi || negativeDiff < negativeDiffError) && negativeDeltaZ <= _maxSeedLineGap) {
+          if (negativeDiff >= negativeDiffError && std::abs((lastAddedNegativePhi-testPhi)/positiveDeltaZ) > _maxDphiDz) {
+            if (underEstimateSlope(lastAddedNegativePhi,lastAddedNegativePhiError2,testPhi,testError2,negativeDeltaZ) > _maxDphiDz) {
+              continue;
+            }
           }
           _negativeLine.tcHitsIndices.push_back(j);
           _negativeLine.helixPhiCorrections.push_back(0);
@@ -1403,6 +1434,22 @@ namespace mu2e {
         }
       }
     }
+  }
+
+  //-----------------------------------------------------------------------------
+  // function to find seed phi lines
+  //-----------------------------------------------------------------------------
+  float AgnosticHelixFinder::underEstimateSlope(float& phi1, float& phi1Err2, float& phi2, float& phi2Err2, float& dz) {
+
+    float slope = 0.0;
+    float phi1Err = std::sqrt(phi1Err2);
+    float phi2Err = std::sqrt(phi2Err2);
+
+    if (phi2 > phi1) { slope = std::abs(((phi2-phi2Err)-(phi1+phi1Err))/(dz)); }
+    if (phi2 < phi1) { slope = std::abs(((phi2+phi2Err)-(phi1-phi1Err))/(dz)); }
+
+    return slope;
+
   }
 
   //-----------------------------------------------------------------------------
@@ -1670,6 +1717,9 @@ namespace mu2e {
     hseed._timeCluster = art::Ptr<mu2e::TimeCluster>(_tcCollH, tc);
     hseed._hhits.setParent(_chColl->parent());
 
+    float eDepSum = 0.0;
+    size_t nComboHits = 0;
+
     // flag hits used in helix, and push to combo hit collection in helix seed
     // also add points to linear fitter to get t0
     ::LsqSums2 fitter;
@@ -1689,7 +1739,10 @@ namespace mu2e {
       ComboHit hhit(*hit);
       hhit._hphi = _tcHits[i].helixPhi + _tcHits[i].helixPhiCorrection * 2 * M_PI;
       hseed._hhits.push_back(hhit);
+      eDepSum = eDepSum + hhit.energyDep();
+      nComboHits++;
     }
+    float eDepAvg = eDepSum/nComboHits;
 
     hseed._t0 = TrkT0(fitter.y0(), fitter.y0Err());
 
@@ -1719,8 +1772,16 @@ namespace mu2e {
     hseed._status.merge(TrkFitFlag::helixOK);
     hseed._status.merge(TrkFitFlag::APRHelix);
 
+    // take care of plotting if _diagLevel = 1
+    if (_diagLevel == 1) {
+      _diagInfo.helixSeedData[bestIndex].eDepAvg = eDepAvg;
+    }
+
+    if (eDepAvg > _maxEDepAvg) return;
+
     // push back the helix seed to the helix seed collection
     HSColl.emplace_back(hseed);
+
   }
 
   //-----------------------------------------------------------------------------

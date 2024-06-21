@@ -35,6 +35,7 @@ namespace mu2e {
     TrkFitFlag               _status;      // status of processes used to create this seed
     HelixRecoDir             _recoDir;     // sign of the longitudinal velocity (z-axis) derived from a T vs Z linear fit
     art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
+    float                    _eDepAvg;     // average energy deposition from helix hits
   };
    typedef std::vector<mu2e::HelixSeed> HelixSeedCollection;
 } // namespace mu2e

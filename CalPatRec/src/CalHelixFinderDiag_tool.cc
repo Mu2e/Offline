@@ -90,6 +90,10 @@ int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tf
   _hist.npoints_loop1 = Tfs->make<TH1F>("npointsloop1", "XY npoints: loop 1; nhits"           , 101, -0.5, 100.5);
   _hist.loopId[0]     = Tfs->make<TH1F>("loopAll"   , "loopId; loopId"                           , 10, 0, 10);
   _hist.loopId[1]     = Tfs->make<TH1F>("loopGood"  , "loopId: nhits>15: loopId"                 , 10, 0, 10);
+  _hist.nHitsRatio[0] = Tfs->make<TH1F>("nHitsRatio0","circleHits/phiHits"                       ,1000,0, 5);
+  _hist.nHitsRatio[1] = Tfs->make<TH1F>("nHitsRatio1","circleHits/phiHits:nhits>15"              ,1000,0, 5);
+  _hist.eDepAvg[0]    = Tfs->make<TH1F>("eDepAvg0","avg comboHit eDep"                          ,1000,0,0.01);
+  _hist.eDepAvg[1]    = Tfs->make<TH1F>("eDepAvg1","avg comboHit eDep:nhits>15"                 ,1000,0,0.01);
   return 0;
 }
 
@@ -127,6 +131,8 @@ int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tf
       _hist.shmeanr[0]->Fill(_data->shmeanr[i]);
       _hist.chi2d_helix[0]->Fill(_data->chi2d_helix[i]);
       _hist.loopId     [0]->Fill(_data->loopId[i]);
+      _hist.nHitsRatio[0]->Fill(_data->nHitsRatio[i]);
+      _hist.eDepAvg[0]->Fill(_data->eDepAvg[i]);
       if (_data->loopId[i] == 1){
         _hist.chi2d_loop0 [0]->Fill(_data->chi2d_loop0[i]);
         _hist.chi2d_line_loop0 [0]->Fill(_data->chi2d_line_loop0[i]);
@@ -149,6 +155,8 @@ int CalHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tf
         _hist.dr      [1]->Fill(_data->dr[i]);
         _hist.shmeanr [1]->Fill(_data->shmeanr[i]);
         _hist.chi2d_helix[1]->Fill(_data->chi2d_helix[i]);
+        _hist.nHitsRatio[1]->Fill(_data->nHitsRatio[i]);
+        _hist.eDepAvg[1]->Fill(_data->eDepAvg[i]);
         if (_data->loopId[i] == 1) {
           _hist.chi2d_loop0   [1]->Fill(_data->chi2d_loop0[i]);
         }
