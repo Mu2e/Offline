@@ -61,6 +61,7 @@ namespace mu2e {
     _tpart              ((TrkParticle::type)(pset.get<int>("fitparticle"))),
     _fdir               ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
     _doSingleOutput     (pset.get<bool>  ("doSingleOutput")),
+    _maxEDepAvg            (pset.get<float>  ("maxEDepAvg")),
     _hfinder            (pset.get<fhicl::ParameterSet>("HelixFinderAlg",fhicl::ParameterSet())){
       consumes<ComboHitCollection>(_shLabel);
       consumes<TimeClusterCollection>(_timeclLabel);
@@ -276,6 +277,7 @@ namespace mu2e {
 // Step 1: now loop over the two possible helicities.
 //         Find initial helical approximation of a track for both hypothesis
 //-----------------------------------------------------------------------------
+      std::vector<float> nHitsRatio_vec;
       for (size_t i=0; i<_hels.size(); ++i){
 //-----------------------------------------------------------------------------
 // create track definitions for the helix fit from this initial information
@@ -292,6 +294,10 @@ namespace mu2e {
         HelixSeed     tmp_helix_seed;
 
         initHelixSeed(tmp_helix_seed, tmpResult);
+        if (_diagLevel > 0) {
+          nHitsRatio_vec.push_back(tmpResult._diag.nHitsRatio);
+        }
+        if (tmp_helix_seed._eDepAvg > _maxEDepAvg) continue;
         helix_seed_vec.push_back(tmp_helix_seed);
       }
 
@@ -350,6 +356,9 @@ namespace mu2e {
 
           _data.chi2XY[loc]   = _hfResult._sxy.chi2DofCircle();
           _data.chi2ZPhi[loc] = _hfResult._szphi.chi2DofLine();
+
+          _data.nHitsRatio[loc] = nHitsRatio_vec[index_best];
+          _data.eDepAvg[loc] = helix_seed_vec[index_best]._eDepAvg;
 
           _data.nseeds[0]++;
           _data.good[loc] = 0;
@@ -507,6 +516,10 @@ namespace mu2e {
 
     // double     z_start(0);
     HelSeed._hhits.setParent(_chcol->parent());
+
+    float eDepSum(0.0);
+    size_t nComboHits(0);
+
     for (int i=0; i<nhits; ++i){
       unsigned        hitId   = HfResult._goodhits[i];
       ComboHit*       hit     = &HfResult._chHitsToProcess[hitId];//panelz->_chHitsToProcess.at(hitInfo->panelHitIndex);
@@ -514,9 +527,11 @@ namespace mu2e {
       ComboHit                hhit(*hit);
       //      hhit._hphi = shphi;
       // hhit._flag.merge(StrawHitFlag::resolvedphi);
-
+      eDepSum = eDepSum + hhit.energyDep();
+      ++nComboHits;
       HelSeed._hhits.push_back(hhit);
     }
+    HelSeed._eDepAvg = eDepSum/(nComboHits+1e-6);
 
     //now set the HelixRecoDir
     HelixTool ht(&HelSeed, _tracker);
