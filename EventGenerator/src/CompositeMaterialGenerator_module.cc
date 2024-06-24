@@ -106,11 +106,7 @@ namespace mu2e{
       _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}{
     //_code = ProcessCode::findByName(config().process());
 
-    // first, instantiaate the position sampler
-    //auto position_config = config().position.get<fhicl::ParameterSet>();
-    //this->position_sampler = art::make_tool<PositionSamplerTool>(position_config);
-
-    // first, instantiate the elemental sampler
+    // first, instantiate the element sampler
     auto element_config = config().weighting.get<fhicl::ParameterSet>();
     _element_sampler = art::make_tool<ElementSamplerTool>(element_config);
 
@@ -147,8 +143,7 @@ namespace mu2e{
   void CompositeMaterialGenerator::verify_elements_match(){
     // finally, check that the elements configured with generators
     // are the same elements which comprise the composite material
-    // must call a sample here to fake the sampler into initializing
-    // TODO check that this call isn't optimized out of release builds
+    // must call a sample here to fake the sampler into post-initializing
     _element_sampler->Sample();
     auto sampled = _element_sampler->Elements();
     std::vector<std::string> defined;
