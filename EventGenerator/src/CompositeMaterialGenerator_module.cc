@@ -128,7 +128,7 @@ namespace mu2e{
       // would be better in a protected class, but eh
       if (_tools.count(name) == 0){
         _tools[name] = std::make_pair(std::move(position_tool),
-                                           std::move(generator_tool));
+                                      std::move(generator_tool));
       }
       else{
         std::string msg = "attempt to override ParticleGeneratorTool key: "
