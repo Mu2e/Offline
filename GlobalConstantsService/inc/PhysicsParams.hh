@@ -74,6 +74,11 @@ namespace mu2e
       return _atomicNumber.find(allowedMaterial)->second;
     }
 
+    double getAtomicRadius  (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _atomicRadius.find(allowedMaterial)->second;
+    }
+
     double   getApproxEb      (targetMat material = "") const {
       const std::string allowedMaterial = checkMaterial( material );
       return _approxBindingEnergy.find(allowedMaterial)->second;
@@ -181,6 +186,7 @@ namespace mu2e
     std::map<targetMat,double>   _decayFraction;
     std::map<targetMat,double>   _atomicMass;
     std::map<targetMat,unsigned> _atomicNumber;
+    std::map<targetMat,double>	 _atomicRadius;
     std::map<targetMat,double>   _approxBindingEnergy;
     std::map<targetMat,double>   _bindingEnergy;
     std::map<targetMat,double>   _muonEnergy;

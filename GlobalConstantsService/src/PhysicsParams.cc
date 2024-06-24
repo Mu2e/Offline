@@ -78,6 +78,7 @@ namespace mu2e {
       _atomicNumber[material]   = config.getInt   ("physicsParams."+material+".atomicNumber");
       _decayTime[material]      = config.getDouble("physicsParams."+material+".decayTime" );
       _decayFraction[material]  = config.getDouble("physicsParams."+material+".decayFraction" );
+      _atomicRadius[material]	= config.getDouble("physicsParams."+material+".atomicRadius");
 
       // Calculate approx. binding energy
       _approxBindingEnergy[material] = muonMass*cet::square(alpha*_atomicNumber[material])/2.;
