@@ -253,7 +253,8 @@ namespace mu2e {
   void SelectRecoMC::fillUnusedTSHMC( SPCC const& spcc, StrawDigiMCCollection const& sdmcc,
       Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep,
       KalSeedMC& mcseed) {
-    // either keep hits only from the primary or from all contributing
+    // either keep hits only from the primary or all contributing particles,
+    // assuming any exist. if they do not, then there is no primary.
     size_t limit = 0;
     if (0 < spcc.size()){
       limit = 1;
@@ -263,6 +264,7 @@ namespace mu2e {
       auto const& spc = spcc[isp];
       for (size_t isdmc=0; isdmc < sdmcc.size(); isdmc++){
         auto const& sdmc = sdmcc[isdmc];
+        // if this contains no MC information, then we cannot inspect it further
         if (sdmc.provenance() == StrawDigiProvenance::External){
           continue;
         }
