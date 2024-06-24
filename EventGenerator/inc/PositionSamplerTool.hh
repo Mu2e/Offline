@@ -1,4 +1,5 @@
 // art tool to sample starting positions/times, according to some rule
+// Ed Callaghan, 2024
 
 #ifndef EventGenerator_PositionSamplerTool_hh
 #define EventGenerator_PositionSamplerTool_hh

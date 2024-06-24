@@ -1,5 +1,6 @@
 // Sample from multiple event generators, distributed according to material
 // isotopic composition
+// Ed Callaghan, 2024
 
 // stl
 #include <iostream>

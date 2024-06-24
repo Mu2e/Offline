@@ -1,4 +1,5 @@
 // Sample positions / times of muon decays from presampled muon stops
+// Ed Callaghan, 2024
 
 // stl
 #include <iostream>
