@@ -111,7 +111,7 @@ namespace mu2e{
     _element_sampler = art::make_tool<ElementSamplerTool>(element_config);
 
     // then, construct mapping of element names -> ParticleGeneratorTools
-    // as well mapping of elemnts names -> PositionSamplerTools
+    // as well mapping of element names -> PositionSamplerTools
     //std::string material = element_config.material();
     auto elements = config().elements();
     for (const auto& element: elements){
