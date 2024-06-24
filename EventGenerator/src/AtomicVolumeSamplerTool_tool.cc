@@ -1,5 +1,6 @@
 // Sample elements from a material based on the relative volumes occupied
 // in the material
+// Ed Callaghan, 2024
 
 // stl
 #include <algorithm>

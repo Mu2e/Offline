@@ -1,4 +1,5 @@
 // art tool to sample different elements, according to some rule
+// Ed Callaghan, 2024
 
 #ifndef EventGenerator_ElementSamplerTool_hh
 #define EventGenerator_ElementSamplerTool_hh
