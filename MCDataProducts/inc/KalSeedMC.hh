@@ -79,6 +79,7 @@ namespace mu2e {
   };
   using TrkStrawHitProvenance = EnumToStringSparse<TrkStrawHitProvenanceDetail>;
   struct TrkStrawHitMC {
+    TrkStrawHitMC(): _provenance(TrkStrawHitProvenance::unknown) {}
     StrawHitIndex strawDigiMCIndex() const { return _sdmcindex; }
     StrawHitIndex simPartStubIndex() const { return _spindex; }
     StrawId const& strawid() const { return _strawId; }
@@ -104,7 +105,7 @@ namespace mu2e {
     float _wireTau; // threshold cluster distance to the wire along the perpedicular particle path
     float _strawDOCA; // signed doca to straw
     float _strawPhi; // cylindrical phi from -pi to pi with 0 in Z direction
-    TrkStrawHitProvenance _provenance; // TODO default read value == Sim?
+    TrkStrawHitProvenance _provenance; // origin/validity of MC info object
   };
 
   struct KalSeedMC {

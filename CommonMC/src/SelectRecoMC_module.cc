@@ -292,16 +292,10 @@ namespace mu2e {
     // always record the index, to avoid downstream corruptions
     tshmc._sdmcindex = isdmc;
     // propagate interpretability of StrawDigiMC to TrkStrawHitMC
-    if (sdmc.provenance() == StrawDigiProvenance::External){
-      tshmc._provenance = TrkStrawHitProvenance::External;
-      // if there is no MC information at all, leave TrkStrawHitMC empty
+    tshmc._provenance = static_cast<TrkStrawHitProvenance>(sdmc.provenance());
+    // if there is no MC information at all, leave TrkStrawHitMC empty
+    if (tshmc._provenance == TrkStrawHitProvenance::External){
       return;
-    }
-    else if (sdmc.provenance() == StrawDigiProvenance::Mixed){
-      tshmc._provenance = TrkStrawHitProvenance::Mixed;
-    }
-    else if (sdmc.provenance() == StrawDigiProvenance::Simulation){
-      tshmc._provenance = TrkStrawHitProvenance::Simulation;
     }
     tshmc._spindex = isp;
     tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
