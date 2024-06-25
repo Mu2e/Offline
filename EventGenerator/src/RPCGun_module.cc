@@ -83,10 +83,6 @@ namespace mu2e {
     RandomUnitSphere   randomUnitSphere_;
     CLHEP::RandGeneral randSpectrum_;
 
-    static constexpr double            czmin_ = -1;
-    static constexpr double            czmax_ = 1;
-    static constexpr double            phimin_ = 0;
-    static constexpr double            phimax_ = CLHEP::twopi;
     ProcessCode process_;
     PionCaptureSpectrum pionCaptureSpectrum_;
 
@@ -118,7 +114,7 @@ namespace mu2e {
     , spectrum_{BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())}
     , pionDecayOff_{conf().pionDecayOff()}
     , doHistograms_{conf().doHistograms()}
-    , randomUnitSphere_ {eng_, czmin_,czmax_,phimin_,phimax_}
+    , randomUnitSphere_ {eng_}
     , randSpectrum_       {eng_, spectrum_.getPDF(),static_cast<int>(spectrum_.getNbins())}
     , pionCaptureSpectrum_{&randomFlat_,&randomUnitSphere_}
   {
