@@ -26,6 +26,9 @@ namespace mu2e {
     //----------------------------------------------------------------
     class CollimatorExtMonFNAL {
       friend class ExtMonFNALBuildingMaker;
+      friend class ExtMonFNALBuilding;
+      // Private ctr: the class should be only obtained via the maker
+      CollimatorExtMonFNAL();
 
       std::string _name;
       double _horizontalLength;
