@@ -88,20 +88,19 @@ namespace mu2e {
         // if mc info is not meaningful, then skip this digi.
         // this looks sketchy, but nowhere is an implicit association
         // between the sct and mcdigis collection actually assumed
-        if (mcdigi.provenance() == StrawDigiProvenance::External){
-          continue;
-        }
-        art::Ptr<SimParticle> spp = mcdigi.earlyStrawGasStep()->simParticle();
-        // see if this particle has already been found; if so, increment, if not, add it
-        bool found(false);
-        for(auto& spc : sct ) {
-          if(spc._spp == spp ){
-            found = true;
-            spc.append(spp,isactive);
-            break;
+        if (mcdigi.provenance() != StrawDigiProvenance::External){
+          art::Ptr<SimParticle> spp = mcdigi.earlyStrawGasStep()->simParticle();
+          // see if this particle has already been found; if so, increment, if not, add it
+          bool found(false);
+          for(auto& spc : sct ) {
+            if(spc._spp == spp ){
+              found = true;
+              spc.append(spp,isactive);
+              break;
+            }
           }
+          if(!found)sct.push_back(spcount(spp,isactive));
         }
-        if(!found)sct.push_back(spcount(spp,isactive));
       }
       // sort by # of contributions
       sort(sct.begin(),sct.end(),spcountcomp());
