@@ -265,23 +265,22 @@ namespace mu2e {
       for (size_t isdmc=0; isdmc < sdmcc.size(); isdmc++){
         auto const& sdmc = sdmcc[isdmc];
         // if this contains no MC information, then we cannot inspect it further
-        if (sdmc.provenance() == StrawDigiProvenance::External){
-          continue;
-        }
-        auto const& sgs = *(sdmc.earlyStrawGasStep());
-        if(sgs.simParticle() == spc._spp){
-          // search to see if the associated digi is already on the track
-          bool used(false);
-          for(auto const& tshmc : mcseed._tshmcs ) {
-            if(isdmc == tshmc.strawDigiMCIndex()){
-              used = true;
-              break;
+        if (sdmc.provenance() != StrawDigiProvenance::External){
+          auto const& sgs = *(sdmc.earlyStrawGasStep());
+          if(sgs.simParticle() == spc._spp){
+            // search to see if the associated digi is already on the track
+            bool used(false);
+            for(auto const& tshmc : mcseed._tshmcs ) {
+              if(isdmc == tshmc.strawDigiMCIndex()){
+                used = true;
+                break;
+              }
             }
-          }
-          if(!used){
-            TrkStrawHitMC tshmc;
-            fillTSHMC(tshmc,isdmc,isp,sdmc,tracker,srep);
-            mcseed._tshmcs.push_back(tshmc);
+            if(!used){
+              TrkStrawHitMC tshmc;
+              fillTSHMC(tshmc,isdmc,isp,sdmc,tracker,srep);
+              mcseed._tshmcs.push_back(tshmc);
+            }
           }
         }
       }
