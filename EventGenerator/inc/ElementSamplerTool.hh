@@ -23,7 +23,7 @@ namespace mu2e{
         _name = name;
         _initialized = false;
       }
-     ~ElementSamplerTool(){ /**/ };
+      virtual ~ElementSamplerTool(){ /**/ };
 
       virtual std::string sample_element() = 0;
       std::string Sample(){

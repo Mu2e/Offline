@@ -30,7 +30,7 @@ namespace mu2e{
   class PositionSamplerTool{
     public:
       PositionSamplerTool(){ /**/ };
-     ~PositionSamplerTool(){ /**/ };
+      virtual ~PositionSamplerTool(){ /**/ };
 
       virtual ParticlePositionPair Sample(const SimParticlePtrVector&) = 0;
     protected:
