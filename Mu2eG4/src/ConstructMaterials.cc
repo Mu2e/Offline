@@ -1660,7 +1660,14 @@ namespace mu2e {
 
      BP -> AddElement(elB, 5*CLHEP::perCent);
      BP -> AddMaterial(Poly, 95*CLHEP::perCent);
+    }
 
+    mat = uniqueMaterialOrThrow( "SteelShot");
+    {
+      //7.85 g/cm3 is the density of steel and 63.5% is the densest packing of spheres
+      double density = 7.85 * .635;
+      G4Material* SteelShot = new G4Material(mat.name, density*CLHEP::g/CLHEP::cm3, 1);
+      SteelShot -> AddMaterial(findMaterialOrThrow("MildSteel"), 100*CLHEP::perCent);
     }
 
     // Add new materials before this line
