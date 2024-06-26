@@ -53,6 +53,7 @@
 #include <iostream>
 #include <set>
 #include <string>
+#include <algorithm>
 
 namespace mu2e {
   class SelectRecoMC : public art::EDProducer {
@@ -254,12 +255,8 @@ namespace mu2e {
       Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep,
       KalSeedMC& mcseed) {
     // either keep hits only from the primary or all contributing particles,
-    // assuming any exist. if they do not, then there is no primary.
-    size_t limit = 0;
-    if (0 < spcc.size()){
-      limit = 1;
-    }
-    size_t ispmax = _saveallunused? spcc.size() : limit;
+    // if any exist. if they do not, then there is no primary to default to.
+    size_t ispmax = _saveallunused? spcc.size() : std::min<int>(spcc.size(), 1);
     for(size_t isp=0; isp < ispmax; ++isp){
       auto const& spc = spcc[isp];
       for (size_t isdmc=0; isdmc < sdmcc.size(); isdmc++){
@@ -292,7 +289,7 @@ namespace mu2e {
     // always record the index, to avoid downstream corruptions
     tshmc._sdmcindex = isdmc;
     // propagate interpretability of StrawDigiMC to TrkStrawHitMC
-    tshmc._provenance = static_cast<TrkStrawHitProvenance>(sdmc.provenance());
+    tshmc._provenance = static_cast<TrkStrawHitProvenance>(sdmc.provenance(), true);
     // if there is no MC information at all, leave TrkStrawHitMC empty
     if (tshmc._provenance == TrkStrawHitProvenance::External){
       return;

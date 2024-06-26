@@ -79,7 +79,7 @@ namespace mu2e {
   };
   using TrkStrawHitProvenance = EnumToStringSparse<TrkStrawHitProvenanceDetail>;
   struct TrkStrawHitMC {
-    TrkStrawHitMC(): _provenance(TrkStrawHitProvenance::unknown) {}
+    TrkStrawHitMC(): _provenance(TrkStrawHitProvenance::Simulation) {}
     StrawHitIndex strawDigiMCIndex() const { return _sdmcindex; }
     StrawHitIndex simPartStubIndex() const { return _spindex; }
     StrawId const& strawid() const { return _strawId; }
