@@ -17,6 +17,7 @@
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
 #include "Offline/MCDataProducts/inc/CaloClusterMC.hh"
+#include "Offline/MCDataProducts/inc/DigiProvenance.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "cetlib/map_vector.h"
 #include <Rtypes.h>
@@ -70,16 +71,8 @@ namespace mu2e {
   };
 //
 // MC information for TrackStrawHits on this fit
-  // enum equipped with std::string descriptions
-  class TrkStrawHitProvenanceDetail{
-    public:
-      enum enum_type {unknown=0, Simulation, Mixed, External};
-      static std::string const& typeName();
-      static std::map<enum_type, std::string> const& names();
-  };
-  using TrkStrawHitProvenance = EnumToStringSparse<TrkStrawHitProvenanceDetail>;
   struct TrkStrawHitMC {
-    TrkStrawHitMC(): _provenance(TrkStrawHitProvenance::Simulation) {}
+    TrkStrawHitMC(): _provenance(DigiProvenance::Simulation) {}
     StrawHitIndex strawDigiMCIndex() const { return _sdmcindex; }
     StrawHitIndex simPartStubIndex() const { return _spindex; }
     StrawId const& strawid() const { return _strawId; }
@@ -105,7 +98,7 @@ namespace mu2e {
     float _wireTau; // threshold cluster distance to the wire along the perpedicular particle path
     float _strawDOCA; // signed doca to straw
     float _strawPhi; // cylindrical phi from -pi to pi with 0 in Z direction
-    TrkStrawHitProvenance _provenance; // origin/validity of MC info object
+    DigiProvenance _provenance; // origin/validity of MC info object
   };
 
   struct KalSeedMC {

@@ -15,29 +15,13 @@ using namespace std;
 
 namespace mu2e {
 
-  std::string const& StrawDigiProvenanceDetail::typeName(){
-    static const std::string rv = "Provenance";
-    return rv;
-  }
-
-  static const std::map<StrawDigiProvenanceDetail::enum_type, std::string> nam{
-    std::make_pair(StrawDigiProvenance::unknown,    "unknown"),
-    std::make_pair(StrawDigiProvenance::Simulation, "Simulation"),
-    std::make_pair(StrawDigiProvenance::Mixed,      "Mixed"),
-    std::make_pair(StrawDigiProvenance::External,   "External")
-  };
-
-  std::map<StrawDigiProvenance::enum_type, std::string> const& StrawDigiProvenanceDetail::names(){
-    return nam;
-  }
-
   // Default constructor is required for persistable classes
   StrawDigiMC::StrawDigiMC()
     : _strawid(StrawId::_invalid)
-    , _provenance(StrawDigiProvenance::Simulation)
+    , _provenance(DigiProvenance::Simulation)
   {}
 
-  StrawDigiMC::StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, StrawDigiProvenance::enum_type provenance):
+  StrawDigiMC::StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, DigiProvenance::enum_type provenance):
     _strawid(sid), _cpos(cpos), _ctime(ctime), _wtime(wetime), _sgspa(sgs)
     , _provenance(provenance)
   {}
@@ -46,7 +30,7 @@ namespace mu2e {
     _sgspa = sgspa;
   }
 
-  StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, StrawDigiProvenance::enum_type provenance): StrawDigiMC(rhs){
+  StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, DigiProvenance::enum_type provenance): StrawDigiMC(rhs){
     _provenance = provenance;
   }
 

@@ -23,18 +23,9 @@
 #include <string>
 
 // Mu2e includes
-#include <Offline/GeneralUtilities/inc/EnumToStringSparse.hh>
+#include <Offline/MCDataProducts/inc/DigiProvenance.hh>
 
 namespace mu2e {
-    // enum equipped with std::string descriptions
-    class StrawDigiProvenanceDetail{
-      public:
-        enum enum_type {unknown=0, Simulation, Mixed, External};
-        static std::string const& typeName();
-        static std::map<enum_type, std::string> const& names();
-    };
-    using StrawDigiProvenance = EnumToStringSparse<StrawDigiProvenanceDetail>;
-
   class StrawDigiMC{
 
   public:
@@ -46,16 +37,16 @@ namespace mu2e {
 
     StrawDigiMC();
     // construct from hitlets
-    StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, StrawDigiProvenance::enum_type=StrawDigiProvenance::Simulation);
+    StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, DigiProvenance::enum_type=DigiProvenance::Simulation);
 
     // use compuater copy construcors
     StrawDigiMC(const StrawDigiMC& rhs, SGSPA sgsp ); // update the Ptrs
-    StrawDigiMC(const StrawDigiMC& rhs, StrawDigiProvenance::enum_type provenance ); // update validity
+    StrawDigiMC(const StrawDigiMC& rhs, DigiProvenance::enum_type provenance ); // update validity
 
     // Accessors
     StrawId strawId() const { return _strawid; }
 
-    StrawDigiProvenance provenance() const { return _provenance; }
+    DigiProvenance provenance() const { return _provenance; }
 
     SGSP const&  strawGasStep(StrawEnd strawend) const { return _sgspa[strawend]; }
     SGSPA const&  strawGasSteps() const { return _sgspa; }
@@ -83,7 +74,7 @@ namespace mu2e {
     FA _ctime; // times of the trigger clusters
     FA _wtime; // times at the wire ends of the signals which fired the TDC.
     SGSPA _sgspa; // StrawGasStep that triggered each end
-    StrawDigiProvenance _provenance; // level of association with any true MC events
+    DigiProvenance _provenance; // level of association with any MC truth info
   };
 
   inline std::ostream& operator<<( std::ostream& ost,

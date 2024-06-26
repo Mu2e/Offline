@@ -235,7 +235,7 @@ namespace mu2e {
       int spref(-1);
       auto const& sdmc = sdmcc.at(hit.index()); // bounds-check for security;
       // if mc info is not meaningful, do not try to inspect any SimParticles
-      if (sdmc.provenance() != StrawDigiProvenance::External){
+      if (sdmc.provenance() != DigiProvenance::External){
         for(size_t isp=0;isp < spcc.size(); isp++){
           auto const& spc = spcc[isp];
           if(sdmc.earlyStrawGasStep()->simParticle() == spc._spp){
@@ -262,7 +262,7 @@ namespace mu2e {
       for (size_t isdmc=0; isdmc < sdmcc.size(); isdmc++){
         auto const& sdmc = sdmcc[isdmc];
         // if this contains no MC information, then we cannot inspect it further
-        if (sdmc.provenance() != StrawDigiProvenance::External){
+        if (sdmc.provenance() != DigiProvenance::External){
           auto const& sgs = *(sdmc.earlyStrawGasStep());
           if(sgs.simParticle() == spc._spp){
             // search to see if the associated digi is already on the track
@@ -289,9 +289,9 @@ namespace mu2e {
     // always record the index, to avoid downstream corruptions
     tshmc._sdmcindex = isdmc;
     // propagate interpretability of StrawDigiMC to TrkStrawHitMC
-    tshmc._provenance = static_cast<TrkStrawHitProvenance>(sdmc.provenance(), true);
+    tshmc._provenance = sdmc.provenance();
     // if there is no MC information at all, leave TrkStrawHitMC empty
-    if (tshmc._provenance == TrkStrawHitProvenance::External){
+    if (tshmc._provenance == DigiProvenance::External){
       return;
     }
     tshmc._spindex = isp;
