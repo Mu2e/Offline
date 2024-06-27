@@ -2,7 +2,7 @@
 // read from preexisting data, or a hybridization fo the two
 // Ed Callaghan, 2024
 
-#include <Offline/MCDataProducts/inc/DigiProvenance.hh>
+#include "Offline/MCDataProducts/inc/DigiProvenance.hh"
 
 namespace mu2e{
   std::string const& DigiProvenanceDetail::typeName(){

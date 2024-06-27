@@ -10,7 +10,7 @@
 #include <string>
 
 // mu2e
-#include <Offline/GeneralUtilities/inc/EnumToStringSparse.hh>
+#include "Offline/GeneralUtilities/inc/EnumToStringSparse.hh"
 
 namespace mu2e{
   // enum equipped with std::string descriptions
