@@ -235,7 +235,7 @@ namespace mu2e {
       int spref(-1);
       auto const& sdmc = sdmcc.at(hit.index()); // bounds-check for security;
       // if mc info is not meaningful, do not try to inspect any SimParticles
-      if (sdmc.provenance() != DigiProvenance::External){
+      if (sdmc.provenance().ContainsSimulation()){
         for(size_t isp=0;isp < spcc.size(); isp++){
           auto const& spc = spcc[isp];
           if(sdmc.earlyStrawGasStep()->simParticle() == spc._spp){
@@ -262,7 +262,7 @@ namespace mu2e {
       for (size_t isdmc=0; isdmc < sdmcc.size(); isdmc++){
         auto const& sdmc = sdmcc[isdmc];
         // if this contains no MC information, then we cannot inspect it further
-        if (sdmc.provenance() != DigiProvenance::External){
+        if (sdmc.provenance().ContainsSimulation()){
           auto const& sgs = *(sdmc.earlyStrawGasStep());
           if(sgs.simParticle() == spc._spp){
             // search to see if the associated digi is already on the track
@@ -291,80 +291,79 @@ namespace mu2e {
     // propagate interpretability of StrawDigiMC to TrkStrawHitMC
     tshmc._provenance = sdmc.provenance();
     // if there is no MC information at all, leave TrkStrawHitMC empty
-    if (tshmc._provenance == DigiProvenance::External){
-      return;
+    if (tshmc._provenance.ContainsSimulation()){
+      tshmc._spindex = isp;
+      tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
+      const auto& sgs = *(sdmc.earlyStrawGasStep());
+      tshmc._cpos = XYZVectorF(sdmc.clusterPosition(sdmc.earlyEnd()));
+      tshmc._mom = sgs.momentum();
+      tshmc._time = sgs.time();
+      if (_onSpill){
+        tshmc._time = fmod(tshmc._time,_mbtime);
+        // fix for DAQ wrapping
+        if(tshmc._time < -_pbtimemc)tshmc._time += _mbtime;
+      }
+      tshmc._strawId = sdmc.strawId();
+      tshmc._earlyend = sdmc.earlyEnd();
+      // compute the signal propagation time and drift time
+      double vprop = 2.0*srep->halfPropV(sdmc.strawId(),1000.0*tshmc._energySum);
+      auto const& straw = tracker.straw(sdmc.strawId());
+      auto wdir = XYZVectorF(straw.wireDirection());
+      auto tdir = sgs.momentum().Unit();
+      double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).dot(straw.wireDirection());
+      tshmc._tprop = fabs(pdist)/vprop;
+      tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4; // temporary kludge offset FIXME!
+      if (_onSpill)
+        tshmc._tdrift = fmod(tshmc._tdrift,_mbtime);
+      const static XYZVectorF bdir(0.0,0.0,1.0);
+
+      TwoLinePCA_XYZ wirepca( XYZVectorF(straw.wirePosition()), XYZVectorF(straw.wireDirection()),
+            tshmc._cpos, tdir );
+      TwoLinePCA_XYZ strawpca( XYZVectorF(straw.strawPosition()), XYZVectorF(straw.strawDirection()),
+            tshmc._cpos, tdir );
+
+      // vector from middle of wire to POCA
+      auto wireMid_to_POCA = wirepca.point2() - XYZVectorF(straw.wirePosition());
+      // longitudinal distance along wire to POCA
+      tshmc._wireLen = wireMid_to_POCA.Dot(wdir);
+      // perpedicular vector from wire to POCA
+      auto POCA_delta = wirepca.point2() - wirepca.point1();
+      // define DOCA to be negative in direction of track cross wire
+      auto doca_sign_dir = tdir.Cross(wdir).Unit();
+      tshmc._wireDOCA = -1*doca_sign_dir.Dot(POCA_delta);
+      // phi is defined by vector to POCA, with 0 in 'Bdir'
+      // and +pi/2 in V dir (radially out)
+      auto Vdir = wdir.Cross(bdir);
+      // ensure Vdir is pointing radially out
+      if (Vdir.Dot(XYZVectorF(straw.wirePosition())) < 0.0) Vdir *= -1.0;
+      tshmc._wirePhi = atan2(POCA_delta.Dot(Vdir),POCA_delta.Dot(bdir));
+      // rdrift is the expected T2D given tdrift and phi
+      tshmc._rdrift = srep->strawDrift().T2D(tshmc._tdrift,tshmc._wirePhi);
+      // wireDot is cos angle between track and wire
+      tshmc._wireDot = tdir.Dot(wdir);
+      // wireTau is delta distance perpedicular to the wire from POCA to trigger cluster
+      // first define unit vector perpendicular to particle track and wire direction
+      auto track_cross_wire = tdir.Cross(wdir).Unit();
+      // then this cross wdir is the vector perpendicular to the wire and the vector to POCA
+      auto wire_cross_delta = wdir.Cross(track_cross_wire);
+      // relative position of the trigger cluster
+      auto wireMid_to_cluster = tshmc._cpos-XYZVectorF(straw.wirePosition());
+      // wireTau is then the relative position of the trigger cluster in this direction
+      tshmc._wireTau = wireMid_to_cluster.Dot(wire_cross_delta);
+
+      auto sdir = XYZVectorF(straw.strawDirection());
+      // perpedicular vector from straw center to POCA
+      auto sPOCA_delta = strawpca.point2() - strawpca.point1();
+      // define DOCA to be negative in direction of track cross straw
+      auto sdoca_sign_dir = tdir.Cross(sdir).Unit();
+      tshmc._strawDOCA = -1*sdoca_sign_dir.Dot(sPOCA_delta);
+      // phi is defined by vector to POCA, with 0 in 'Bdir'
+      // and +pi/2 in V dir (radially out)
+      auto sVdir = sdir.Cross(bdir);
+      // ensure Vdir is pointing radially out
+      if (sVdir.Dot(XYZVectorF(straw.strawPosition())) < 0.0) sVdir *= -1.0;
+      tshmc._strawPhi = atan2(sPOCA_delta.Dot(sVdir),sPOCA_delta.Dot(bdir));
     }
-    tshmc._spindex = isp;
-    tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
-    const auto& sgs = *(sdmc.earlyStrawGasStep());
-    tshmc._cpos = XYZVectorF(sdmc.clusterPosition(sdmc.earlyEnd()));
-    tshmc._mom = sgs.momentum();
-    tshmc._time = sgs.time();
-    if (_onSpill){
-      tshmc._time = fmod(tshmc._time,_mbtime);
-      // fix for DAQ wrapping
-      if(tshmc._time < -_pbtimemc)tshmc._time += _mbtime;
-    }
-    tshmc._strawId = sdmc.strawId();
-    tshmc._earlyend = sdmc.earlyEnd();
-    // compute the signal propagation time and drift time
-    double vprop = 2.0*srep->halfPropV(sdmc.strawId(),1000.0*tshmc._energySum);
-    auto const& straw = tracker.straw(sdmc.strawId());
-    auto wdir = XYZVectorF(straw.wireDirection());
-    auto tdir = sgs.momentum().Unit();
-    double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).dot(straw.wireDirection());
-    tshmc._tprop = fabs(pdist)/vprop;
-    tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4; // temporary kludge offset FIXME!
-    if (_onSpill)
-      tshmc._tdrift = fmod(tshmc._tdrift,_mbtime);
-    const static XYZVectorF bdir(0.0,0.0,1.0);
-
-    TwoLinePCA_XYZ wirepca( XYZVectorF(straw.wirePosition()), XYZVectorF(straw.wireDirection()),
-          tshmc._cpos, tdir );
-    TwoLinePCA_XYZ strawpca( XYZVectorF(straw.strawPosition()), XYZVectorF(straw.strawDirection()),
-          tshmc._cpos, tdir );
-
-    // vector from middle of wire to POCA
-    auto wireMid_to_POCA = wirepca.point2() - XYZVectorF(straw.wirePosition());
-    // longitudinal distance along wire to POCA
-    tshmc._wireLen = wireMid_to_POCA.Dot(wdir);
-    // perpedicular vector from wire to POCA
-    auto POCA_delta = wirepca.point2() - wirepca.point1();
-    // define DOCA to be negative in direction of track cross wire
-    auto doca_sign_dir = tdir.Cross(wdir).Unit();
-    tshmc._wireDOCA = -1*doca_sign_dir.Dot(POCA_delta);
-    // phi is defined by vector to POCA, with 0 in 'Bdir'
-    // and +pi/2 in V dir (radially out)
-    auto Vdir = wdir.Cross(bdir);
-    // ensure Vdir is pointing radially out
-    if (Vdir.Dot(XYZVectorF(straw.wirePosition())) < 0.0) Vdir *= -1.0;
-    tshmc._wirePhi = atan2(POCA_delta.Dot(Vdir),POCA_delta.Dot(bdir));
-    // rdrift is the expected T2D given tdrift and phi
-    tshmc._rdrift = srep->strawDrift().T2D(tshmc._tdrift,tshmc._wirePhi);
-    // wireDot is cos angle between track and wire
-    tshmc._wireDot = tdir.Dot(wdir);
-    // wireTau is delta distance perpedicular to the wire from POCA to trigger cluster
-    // first define unit vector perpendicular to particle track and wire direction
-    auto track_cross_wire = tdir.Cross(wdir).Unit();
-    // then this cross wdir is the vector perpendicular to the wire and the vector to POCA
-    auto wire_cross_delta = wdir.Cross(track_cross_wire);
-    // relative position of the trigger cluster
-    auto wireMid_to_cluster = tshmc._cpos-XYZVectorF(straw.wirePosition());
-    // wireTau is then the relative position of the trigger cluster in this direction
-    tshmc._wireTau = wireMid_to_cluster.Dot(wire_cross_delta);
-
-    auto sdir = XYZVectorF(straw.strawDirection());
-    // perpedicular vector from straw center to POCA
-    auto sPOCA_delta = strawpca.point2() - strawpca.point1();
-    // define DOCA to be negative in direction of track cross straw
-    auto sdoca_sign_dir = tdir.Cross(sdir).Unit();
-    tshmc._strawDOCA = -1*sdoca_sign_dir.Dot(sPOCA_delta);
-    // phi is defined by vector to POCA, with 0 in 'Bdir'
-    // and +pi/2 in V dir (radially out)
-    auto sVdir = sdir.Cross(bdir);
-    // ensure Vdir is pointing radially out
-    if (sVdir.Dot(XYZVectorF(straw.strawPosition())) < 0.0) sVdir *= -1.0;
-    tshmc._strawPhi = atan2(sPOCA_delta.Dot(sVdir),sPOCA_delta.Dot(bdir));
   }
 
   void SelectRecoMC::fillSDMCI(KalSeedMC const& mcseed, SDIS& sdindices) {

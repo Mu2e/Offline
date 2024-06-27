@@ -20,4 +20,15 @@ namespace mu2e{
   std::map<DigiProvenance::enum_type, std::string> const& DigiProvenanceDetail::names(){
     return nam;
   }
+
+  DigiProvenance::DigiProvenance(StringedDigiProvenance provenance)
+      : StringedDigiProvenance(provenance){
+        /**/
+    }
+
+  bool DigiProvenance::ContainsSimulation(){
+    DigiProvenanceDetail::enum_type id = this->id();
+    bool rv = ((id == DigiProvenanceDetail::Simulation) || (id == DigiProvenanceDetail::Simulation));
+    return rv;
+  }
 }
