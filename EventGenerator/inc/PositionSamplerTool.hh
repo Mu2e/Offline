@@ -9,16 +9,16 @@
 #include <vector>
 
 // art
-#include <art/Framework/Principal/Event.h>
+#include "art/Framework/Principal/Event.h"
 
 // canvas
-#include <canvas/Persistency/Common/Ptr.h>
+#include "canvas/Persistency/Common/Ptr.h"
 
 // clhep
-#include <CLHEP/Vector/LorentzVector.h>
+#include "CLHEP/Vector/LorentzVector.h"
 
 // mu2e
-#include <Offline/MCDataProducts/inc/SimParticle.hh>
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 namespace mu2e{
   // in general, need to propagate SimParticles back to midstage generators

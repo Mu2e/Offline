@@ -9,32 +9,32 @@
 #include <utility>
 
 // art
-#include <art/Framework/Core/EDProducer.h>
-#include <art/Framework/Principal/Event.h>
-#include <art/Utilities/make_tool.h>
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Utilities/make_tool.h"
 
 // geant4
-#include <Geant4/G4Material.hh>
+#include "Geant4/G4Material.hh"
 
 // cetlib_except
-#include <cetlib_except/exception.h>
+#include "cetlib_except/exception.h"
 
 // fhiclcpp
-#include <fhiclcpp/ParameterSet.h>
-#include <fhiclcpp/types/Atom.h>
-#include <fhiclcpp/types/Comment.h>
-#include <fhiclcpp/types/DelegatedParameter.h>
-#include <fhiclcpp/types/Name.h>
-#include <fhiclcpp/types/Sequence.h>
-#include <fhiclcpp/types/Table.h>
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Comment.h"
+#include "fhiclcpp/types/DelegatedParameter.h"
+#include "fhiclcpp/types/Name.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/Table.h"
 
 // mu2e
-#include <Offline/EventGenerator/inc/ParticleGeneratorTool.hh>
-#include <Offline/EventGenerator/inc/ElementSamplerTool.hh>
-#include <Offline/EventGenerator/inc/PositionSamplerTool.hh>
-#include <Offline/MCDataProducts/inc/StageParticle.hh>
-#include <Offline/Mu2eUtilities/inc/simParticleList.hh>
-#include <Offline/SeedService/inc/SeedService.hh>
+#include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
+#include "Offline/EventGenerator/inc/ElementSamplerTool.hh"
+#include "Offline/EventGenerator/inc/PositionSamplerTool.hh"
+#include "Offline/MCDataProducts/inc/StageParticle.hh"
+#include "Offline/Mu2eUtilities/inc/simParticleList.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 namespace mu2e{
   class CompositeMaterialGenerator: public art::EDProducer{

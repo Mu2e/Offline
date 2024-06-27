@@ -8,21 +8,21 @@
 #include <string>
 
 // art
-#include <art/Utilities/ToolConfigTable.h>
-#include <art/Utilities/ToolMacros.h>
+#include "art/Utilities/ToolConfigTable.h"
+#include "art/Utilities/ToolMacros.h"
 
 // cetlib_except
-#include <cetlib_except/exception.h>
+#include "cetlib_except/exception.h"
 
 // fhiclcpp
-#include <fhiclcpp/types/Atom.h>
-#include <fhiclcpp/types/Comment.h>
-#include <fhiclcpp/types/Name.h>
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Comment.h"
+#include "fhiclcpp/types/Name.h"
 
 // mu2e
-#include <Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh>
-#include <Offline/EventGenerator/inc/ElementSamplerTool.hh>
-#include <Offline/GlobalConstantsService/inc/PhysicsParams.hh>
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/EventGenerator/inc/ElementSamplerTool.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 namespace mu2e{
   class AtomicVolumeSamplerTool:public ElementSamplerTool{
