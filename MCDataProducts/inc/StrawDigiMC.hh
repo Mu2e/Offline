@@ -9,6 +9,7 @@
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
+#include "Offline/MCDataProducts/inc/DigiProvenance.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 // CLHEP includes
@@ -21,9 +22,6 @@
 #include <vector>
 #include <array>
 #include <string>
-
-// Mu2e includes
-#include <Offline/MCDataProducts/inc/DigiProvenance.hh>
 
 namespace mu2e {
   class StrawDigiMC{

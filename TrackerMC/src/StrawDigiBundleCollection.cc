@@ -3,8 +3,8 @@
 //
 // Ed Callaghan, 2023
 
-#include <Offline/TrackerMC/inc/StrawDigiBundleCollection.hh>
-#include <Offline/TrackerMC/inc/TimeBasedBucket.hh>
+#include "Offline/TrackerMC/inc/StrawDigiBundleCollection.hh"
+#include "Offline/TrackerMC/inc/TimeBasedBucket.hh"
 
 namespace mu2e{
   // forward size query to underlying container

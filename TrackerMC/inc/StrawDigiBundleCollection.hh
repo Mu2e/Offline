@@ -12,15 +12,15 @@
 #include <vector>
 
 // art
-#include <art/Framework/Principal/Handle.h>
+#include "art/Framework/Principal/Handle.h"
 
 // cetlib_except
-#include <cetlib_except/exception.h>
+#include "cetlib_except/exception.h"
 
 // mu2e
-#include <Offline/MCDataProducts/inc/StrawDigiMC.hh>
-#include <Offline/TrackerConditions/inc/StrawElectronics.hh>
-#include <Offline/TrackerMC/inc/StrawDigiBundle.hh>
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/TrackerMC/inc/StrawDigiBundle.hh"
 
 namespace mu2e{
   using SDBC_iterator = std::vector<StrawDigiBundle>::iterator;
