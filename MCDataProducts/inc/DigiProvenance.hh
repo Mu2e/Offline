@@ -25,7 +25,7 @@ namespace mu2e{
   class DigiProvenance: public StringedDigiProvenance{
     public:
       DigiProvenance(StringedDigiProvenance);
-      bool ContainsSimulation();
+      bool ContainsSimulation() const;
   };
 }
 

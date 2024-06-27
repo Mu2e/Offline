@@ -26,7 +26,7 @@ namespace mu2e{
         /**/
     }
 
-  bool DigiProvenance::ContainsSimulation(){
+  bool DigiProvenance::ContainsSimulation() const{
     DigiProvenanceDetail::enum_type id = this->id();
     bool rv = ((id == DigiProvenanceDetail::Simulation) || (id == DigiProvenanceDetail::Simulation));
     return rv;
