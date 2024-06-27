@@ -62,6 +62,8 @@ namespace mu2e {
     float hphiRes() const { return sqrt(hphiVar()); }
     // other info
     float energyDep() const { return _edep; }
+    // return the sum energy of all referenced Straw hits
+    float strawEnergyDep() const { return _edep * _nsh; }
     float qual() const { return _qual; }
     StrawHitFlag const& flag() const { return _flag; }
     StrawId const& strawId() const { return _sid; }
