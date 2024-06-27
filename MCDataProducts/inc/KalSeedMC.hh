@@ -108,6 +108,7 @@ namespace mu2e {
     std::vector<VDStep> const& vdSteps() const { return _vdsteps; }
     TrkStrawHitMC const& trkStrawHitMC(size_t index) const { return _tshmcs.at(index); }
     SimPartStub const& simParticle(TrkStrawHitMC const& tshmc) const { return simParticle(tshmc.simPartStubIndex()); }
+    bool ContainsSimulation() const;
     // data products
     std::vector<SimPartStub> _simps; // associated sim particles, and their relationship
     std::vector<TrkStrawHitMC> _tshmcs;  // MC info for each TrkStrawHitSeed
