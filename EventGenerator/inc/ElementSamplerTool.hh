@@ -5,9 +5,9 @@
 #define EventGenerator_ElementSamplerTool_hh
 
 // stl
-#include "iostream"
-#include "string"
-#include "vector"
+#include <iostream>
+#include <string>
+#include <vector>
 
 // cetlib_except
 #include "cetlib_except/exception.h"
