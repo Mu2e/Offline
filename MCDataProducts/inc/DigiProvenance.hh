@@ -20,7 +20,13 @@ namespace mu2e{
       static std::string const& typeName();
       static std::map<enum_type, std::string> const& names();
   };
-  using DigiProvenance = EnumToStringSparse<DigiProvenanceDetail>;
+  using StringedDigiProvenance = EnumToStringSparse<DigiProvenanceDetail>;
+
+  class DigiProvenance: public StringedDigiProvenance{
+    public:
+      DigiProvenance(StringedDigiProvenance);
+      bool ContainsSimulation();
+  };
 }
 
 #endif

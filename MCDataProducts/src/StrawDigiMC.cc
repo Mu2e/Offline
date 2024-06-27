@@ -18,12 +18,12 @@ namespace mu2e {
   // Default constructor is required for persistable classes
   StrawDigiMC::StrawDigiMC()
     : _strawid(StrawId::_invalid)
-    , _provenance(DigiProvenance::Simulation)
+    , _provenance(static_cast<StringedDigiProvenance>(DigiProvenanceDetail::Simulation))
   {}
 
   StrawDigiMC::StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, DigiProvenance::enum_type provenance):
     _strawid(sid), _cpos(cpos), _ctime(ctime), _wtime(wetime), _sgspa(sgs)
-    , _provenance(provenance)
+    , _provenance(static_cast<StringedDigiProvenance>(provenance))
   {}
 
   StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, SGSPA sgspa ) : StrawDigiMC(rhs)  {
@@ -31,7 +31,7 @@ namespace mu2e {
   }
 
   StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, DigiProvenance::enum_type provenance): StrawDigiMC(rhs){
-    _provenance = provenance;
+    _provenance = DigiProvenance(static_cast<StringedDigiProvenance>(provenance));
   }
 
   bool StrawDigiMC::isCrossTalk(StrawEnd strawend) const {

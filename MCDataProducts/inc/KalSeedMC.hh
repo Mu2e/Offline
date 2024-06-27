@@ -72,7 +72,7 @@ namespace mu2e {
 //
 // MC information for TrackStrawHits on this fit
   struct TrkStrawHitMC {
-    TrkStrawHitMC(): _provenance(DigiProvenance::Simulation) {}
+    TrkStrawHitMC(): _provenance(static_cast<StringedDigiProvenance>(DigiProvenanceDetail::Simulation)) {}
     StrawHitIndex strawDigiMCIndex() const { return _sdmcindex; }
     StrawHitIndex simPartStubIndex() const { return _spindex; }
     StrawId const& strawid() const { return _strawId; }
