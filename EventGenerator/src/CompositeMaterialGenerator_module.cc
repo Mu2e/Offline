@@ -60,12 +60,12 @@ namespace mu2e{
       // element, as well the elemental weighting scheme and positon/time
       // sampler
       struct Config{
-        fhicl::Atom<art::InputTag> tag{
-          fhicl::Name("tag"),
+        fhicl::Atom<art::InputTag> spcTag{
+          fhicl::Name("SimParticleCollection"),
           fhicl::Comment("InputTag for muon stop SimParticleCollection")
         };
-        fhicl::Atom< std::string > process{
-          fhicl::Name("process"),
+        fhicl::Atom< std::string > processCode{
+          fhicl::Name("processCode"),
           fhicl::Comment("Mu2e process code to assign to StageParticle")
         };
         fhicl::DelegatedParameter weighting{
@@ -84,8 +84,8 @@ namespace mu2e{
       virtual void produce(art::Event&) override;
     protected:
       bool _verified_elements;
-      art::InputTag _tag;
-      ProcessCode _code;
+      art::InputTag _spcTag;
+      ProcessCode _processCode;
       art::RandomNumberGenerator::base_engine_t& _engine;
       using ESTPtr = std::unique_ptr<ElementSamplerTool>;
       ESTPtr _element_sampler;
@@ -101,10 +101,9 @@ namespace mu2e{
   CompositeMaterialGenerator::CompositeMaterialGenerator(const Parameters& config):
       art::EDProducer{config},
       _verified_elements(false),
-      _tag(config().tag()),
-      _code(ProcessCode::findByName(config().process())),
+      _spcTag(config().spcTag()),
+      _processCode(ProcessCode::findByName(config().processCode())),
       _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}{
-    //_code = ProcessCode::findByName(config().process());
 
     // first, instantiate the element sampler
     auto element_config = config().weighting.get<fhicl::ParameterSet>();
@@ -175,7 +174,7 @@ namespace mu2e{
     }
 
     // check that there are muons to sample from...
-    auto handle = event.getValidHandle<SimParticleCollection>(_tag);
+    auto handle = event.getValidHandle<SimParticleCollection>(_spcTag);
     if (handle->size() < 1){
       std::string msg = "no stopped muons (+/-) from input";
       throw cet::exception("MuStopDecayPositionSamplerTool")
@@ -211,7 +210,7 @@ namespace mu2e{
     auto position = fourpos.vect();
     auto time = fourpos.t();
     auto collection = std::make_unique<StageParticleCollection>();
-    collection->emplace_back(sim, _code, pdg, position, momentum, time);
+    collection->emplace_back(sim, _processCode, pdg, position, momentum, time);
     event.put(std::move(collection));
   }
 }; // namespace mu2e
