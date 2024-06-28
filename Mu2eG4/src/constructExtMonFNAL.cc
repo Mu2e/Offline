@@ -11,6 +11,8 @@
 #include "Geant4/G4LogicalVolume.hh"
 #include "Geant4/G4SDManager.hh"
 #include "Geant4/G4ExtrudedSolid.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4Tubs.hh"
 #include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
@@ -491,20 +493,52 @@ namespace mu2e {
     const CLHEP::Hep3Vector refPointInParent(parentRotationInMu2e.inverse()*(emfb->detectorRoomCenterInMu2e() - parent.centerInMu2e()));
 
     //----------------------------------------------------------------
-    VolumeInfo room = nestBox(detectorRoomName,
-                              emfb->detectorRoomHalfSize(),
-                              findMaterialOrThrow("G4_AIR"),
-                              rotationInParentInv,
-                              refPointInParent,
-                              parent,
-                              0, //copyNo
-                              isVisible,
-                              G4Colour::White(),
-                              isSolid,
-                              forceAuxEdgeVisible,
-                              placePV,
-                              doSurfaceCheck
-                              );
+
+    static CLHEP::HepRotation collimator2ParentRotationInMu2e = emfb->coll2ShieldingRotationInMu2e();
+
+    CLHEP::HepRotation *subCylinderRotation = reg.add(emfb->collimator2RotationInMu2e().inverse() * emfb->detectorRoomRotationInMu2e() );
+
+    CLHEP::Hep3Vector subCylOffsetInParent = emfb->detectorRoomRotationInMu2e().inverse() * (emfb->collimator2CenterInMu2e() - emfb->detectorRoomCenterInMu2e());
+
+    G4Tubs* subCylinder = new G4Tubs("detectorRoomSubtractionCylinder",
+                                     0.*CLHEP::mm,
+                                     emfb->collimator2().shotLinerOuterRadius(),
+                                     0.5*emfb->collimator2().length(),
+                                     0,
+                                     CLHEP::twopi
+                                     );
+
+    VolumeInfo room(detectorRoomName,
+                    refPointInParent,
+                    parent.centerInWorld
+                    );
+
+    G4Box* roomBox = new G4Box("roomBox",
+                               emfb->detectorRoomHalfSize()[0],
+                               emfb->detectorRoomHalfSize()[1],
+                               emfb->detectorRoomHalfSize()[2]
+                               );
+
+    room.solid = new G4SubtractionSolid(detectorRoomName,
+                                        roomBox,
+                                        subCylinder,
+                                        subCylinderRotation,
+                                        subCylOffsetInParent
+                                        );
+
+    finishNesting(room,
+                  findMaterialOrThrow("G4_AIR"),
+                  rotationInParentInv,
+                  refPointInParent,
+                  parent.logical,
+                  0,
+                  isVisible,
+                  G4Colour::White(),
+                  isSolid,
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
 
     return room;
   }

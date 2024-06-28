@@ -21,6 +21,8 @@ namespace mu2e {
   //================================================================
   ExtMonFNALBuilding::CollimatorExtMonFNAL::CollimatorExtMonFNAL()
     : _horizontalLength(0.)
+    , _shotLinerOuterRadius(0.)
+    , _shotLinerOuterThickness(0.)
     , _radiusTransitiondZ(0.)
     , _angleH(0.)
     , _angleV(0.)

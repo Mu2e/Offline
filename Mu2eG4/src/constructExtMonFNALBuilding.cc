@@ -18,6 +18,7 @@
 #include "Geant4/G4Polycone.hh"
 #include "Geant4/G4ExtrudedSolid.hh"
 #include "Geant4/G4IntersectionSolid.hh"
+#include "Geant4/G4SubtractionSolid.hh"
 #include "Geant4/G4TwoVector.hh"
 #include "Geant4/G4UniformMagField.hh"
 #include "Geant4/G4Mag_UsualEqRhs.hh"
@@ -51,12 +52,39 @@
 #include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Offline/Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Offline/Mu2eG4/inc/FieldMgr.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/GeomPrimitives/inc/PolyconsParams.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/nestPolycone.hh"
 
 // FIXME: should not need that
 #include "Offline/GeometryService/inc/WorldG4.hh"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)
+
+using namespace std;
+
+namespace {
+
+  double setDiameter(const vector<CLHEP::Hep2Vector>& v) {
+    double minX = 0;
+    double minY = 0;
+    double maxX = 0;
+    double maxY = 0;
+
+    for (const auto& elem : v) {
+        double currentX = elem.x();
+        double currentY = elem.y();
+        minX = (currentX <= minX) ? currentX : minX;
+        minY = (currentY <= minY) ? currentY : minY;
+        maxX = (currentX >= maxX) ? currentX : maxX;
+        maxY = (currentY >= maxY) ? currentY : maxY;
+    }
+
+    return sqrt(pow((maxX-minX),2) + pow((maxY-minY),2));
+  }
+}
 
 namespace mu2e {
 
@@ -68,169 +96,298 @@ namespace mu2e {
                                      const SimpleConfig& config
                                      )
   {
-    GeomHandle<ExtMonFNALBuilding> emfb;
-
     MaterialFinder materialFinder(config);
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );
-    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"alignmentHole", "extMonFNAL."+collimator.name()+".alignmentHole" );
-    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"alignmentPlug", "extMonFNAL."+collimator.name()+".alignmentPlug" );
-    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"channel",       "extMonFNAL."+collimator.name()+".channel" );
+    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"channel", "extMonFNAL."+collimator.name()+".channel" );
 
     const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL");
     const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL");
     const bool placePV              = geomOptions->placePV("extMonFNAL");
 
-
     // The G4 interface we use through finishNesting() applies
     // the backwards interpretation of rotations.  Be consistent
     // and use the "backwards" interface of boolean solids.
     CLHEP::HepRotation *colrot = reg.add(collimatorRotationInParent.inverse());
+    G4Material*  airMaterial = materialFinder.get("hall.insideMaterialName");
 
-    // Make sure the solids definining the collimator hole etc are sufficiently long to completely
-    // exit the concrete on both ends.
 
-    using std::abs;
-    const double boxdz = 0.5*collimator.horizontalLength();
-    const double dr =  *std::max_element(collimator.alignmentPlugRadius().begin(), collimator.alignmentPlugRadius().end());
-    const double cylHalfLength = std::sqrt(std::pow(boxdz, 2) +
-                                           std::pow(boxdz * abs(tan(collimator.angleV())/cos(collimator.angleH())) + dr/abs(cos(collimator.angleV())), 2) +
-                                           std::pow(boxdz * abs(tan(collimator.angleH())) + dr/abs(cos(collimator.angleH())), 2)
+    //--------------------------------------------------------------------
+    // Collimator Mother
+
+    TubsParams motherParams{ 0, collimator.shotLinerOuterRadius(), 0.5*collimator.length() };
+
+    VolumeInfo collimatorMother = nestTubs(collimator.name()+"Mother",
+                                           motherParams,
+                                           airMaterial,
+                                           colrot,
+                                           collimatorCenterInParent,
+                                           parent,
+                                           0,
+                                           geomOptions->isVisible(collimator.name()+"Mother"),
+                                           G4Colour::Red(),
+                                           geomOptions->isSolid(collimator.name()+"Mother"),
+                                           forceAuxEdgeVisible,
+                                           placePV,
+                                           doSurfaceCheck
                                            );
+
+    //--------------------------------------------------------------------
+    //parameters for nestPolycone
 
     // Fixme: protect against two planes at the same value of z.
     double const epsilon= ( collimator.radiusTransitiondZ() == 0. ) ? 0.1 : 0.;
 
-    double zPlane[] = {-cylHalfLength, -0.5*collimator.radiusTransitiondZ()-epsilon, +0.5*collimator.radiusTransitiondZ()+epsilon, +cylHalfLength };
-    double rzero[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-
-    //----------------------------------------------------------------
-    // Alignment hole
-
-    double rAlignmentHole[] = {
-      collimator.alignmentHoleRadius()[1],
-      collimator.alignmentHoleRadius()[1],
-      collimator.alignmentHoleRadius()[0],
-      collimator.alignmentHoleRadius()[0]
+    vector<double>zPlanes = {
+      -0.5*collimator.length(),
+      -0.5*collimator.radiusTransitiondZ()-epsilon,
+      +0.5*collimator.radiusTransitiondZ()+epsilon,
+      +0.5*collimator.length()
     };
 
-    G4Polycone *holeCylinder = new G4Polycone(collimator.name()+"holecomponent", 0, 2*M_PI,
-                                              sizeof(zPlane)/sizeof(zPlane[0]),
-                                              zPlane,
-                                              rzero,
-                                              rAlignmentHole);
+    vector<double>rInner (zPlanes.size(), 0. );
+
+    //--------------------------------------------------------------------
+    // Outer Shot Liner
+
+    TubsParams shotLinerOuterParams(collimator.shotLinerOuterRadius()
+                                    -collimator.shotLinerOuterThickness(),
+                                    collimator.shotLinerOuterRadius(),
+                                    0.5*collimator.length()
+                                    );
+
+    VolumeInfo shotLinerOuter = nestTubs(collimator.name()+"shotLinerOuter",
+                                         shotLinerOuterParams,
+                                         findMaterialOrThrow("MildSteel"),
+                                         0,
+                                         CLHEP::Hep3Vector(0,0,0),
+                                         collimatorMother,
+                                         0,
+                                         geomOptions->isVisible("extMonFNAL"+collimator.name()+"shotLinerOuter"),
+                                         G4Colour::Red(),
+                                         geomOptions->isSolid("extMonFNAL"+collimator.name()+"shotLinerOuter"),
+                                         forceAuxEdgeVisible,
+                                         placePV,
+                                         doSurfaceCheck
+                                         );
+
+    //--------------------------------------------------------------------
+    // Steel Shot
+
+    vector<double> rInnerSteelShot = {
+      collimator.shotLinerInnerRadius()[1] + collimator.shotLinerInnerThickness()[1],
+      collimator.shotLinerInnerRadius()[1] + collimator.shotLinerInnerThickness()[1],
+      collimator.shotLinerInnerRadius()[0] + collimator.shotLinerInnerThickness()[0],
+      collimator.shotLinerInnerRadius()[0] + collimator.shotLinerInnerThickness()[0]
+    };
+
+    vector<double>rOuterSteelShot (zPlanes.size(),
+                                   collimator.shotLinerOuterRadius()
+                                   -collimator.shotLinerOuterThickness()
+                                   );
+
+    assert( zPlanes.size() == rInnerSteelShot.size() );
+
+    PolyconsParams steelShotParams ( zPlanes, rInnerSteelShot, rOuterSteelShot );
+
+    VolumeInfo steelShot = nestPolycone(collimator.name()+"SteelShot",
+                                            steelShotParams,
+                                            materialFinder.get("extMonFNAL."+collimator.name()+".shot.materialName"),
+                                            0,
+                                            CLHEP::Hep3Vector(0,0,0),
+                                            collimatorMother,
+                                            0,
+                                            geomOptions->isVisible("extMonFNAL"+collimator.name()+"steelShot"),
+                                            G4Colour::Red(),
+                                            geomOptions->isSolid("extMonFNAL"+collimator.name()+"steelShot"),
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
+
+    //--------------------------------------------------------------------
+    // Inner Shot Liner
 
 
-    VolumeInfo alignmentHole(collimator.name()+"AlignmentHole",
-                             collimatorCenterInParent,
-                             parent.centerInWorld);
+    vector<double> rInnerInnerShotLinerRadius = {
+      collimator.shotLinerInnerRadius()[1],
+      collimator.shotLinerInnerRadius()[1],
+      collimator.shotLinerInnerRadius()[0],
+      collimator.shotLinerInnerRadius()[0]
+    };
 
-    alignmentHole.solid = new G4IntersectionSolid(alignmentHole.name,
-                                                  parent.solid,
-                                                  holeCylinder,
-                                                  colrot,
-                                                  alignmentHole.centerInParent
-                                                  );
+    vector<double> rOuterInnerShotLinerRadius = rInnerSteelShot;
 
-    finishNesting(alignmentHole,
-                  materialFinder.get("hall.insideMaterialName"),
-                  0,
-                  CLHEP::Hep3Vector(0,0,0),
-                  parent.logical,
-                  0,
-                  geomOptions->isVisible("extMonFNAL"+collimator.name()+"alignmentHole"),
-                  G4Colour::Red(),//                  G4Colour::Cyan(),
-                  geomOptions->isSolid("extMonFNAL"+collimator.name()+"alignmentHole"),
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
+    assert( zPlanes.size() == rOuterInnerShotLinerRadius.size() );
 
-    //----------------------------------------------------------------
-    // Alignment plug
+    PolyconsParams innerShotLinerParams ( zPlanes,
+                                          rInnerInnerShotLinerRadius,
+                                          rOuterInnerShotLinerRadius
+                                          );
 
-    double rAlignmentPlug[] = {
+    VolumeInfo innerShotLiner = nestPolycone(collimator.name()+"InnerShotLiner",
+                                             innerShotLinerParams,
+                                             findMaterialOrThrow("MildSteel"),
+                                             0,
+                                             CLHEP::Hep3Vector(0,0,0),
+                                             collimatorMother,
+                                             0,
+                                             geomOptions->isVisible("extMonFNAL"+collimator.name()+"innerShotLiner"),
+                                             G4Colour::Red(),
+                                             geomOptions->isSolid("extMonFNAL"+collimator.name()+"innerShotLiner"),
+                                             forceAuxEdgeVisible,
+                                             placePV,
+                                             doSurfaceCheck
+                                             );
+
+    //--------------------------------------------------------------------
+    // Alignment Plug Outer Shell
+
+    vector<double> rOuterAlignmentPlugOuterShell = {
       collimator.alignmentPlugRadius()[1],
       collimator.alignmentPlugRadius()[1],
       collimator.alignmentPlugRadius()[0],
       collimator.alignmentPlugRadius()[0]
     };
 
-    G4Polycone *plugCylinder = new G4Polycone(collimator.name()+"plugcomponent", 0, 2*M_PI,
-                                              sizeof(zPlane)/sizeof(zPlane[0]),
-                                              zPlane,
-                                              rzero,
-                                              rAlignmentPlug);
+    vector<double> rInnerAlignmentPlugOuterShell = {
+      collimator.alignmentPlugRadius()[1] - collimator.alignmentPlugOuterShellThickness()[1],
+      collimator.alignmentPlugRadius()[1] - collimator.alignmentPlugOuterShellThickness()[1],
+      collimator.alignmentPlugRadius()[0] - collimator.alignmentPlugOuterShellThickness()[0],
+      collimator.alignmentPlugRadius()[0] - collimator.alignmentPlugOuterShellThickness()[0]
+    };
 
-    VolumeInfo alignmentPlug(collimator.name()+"AlignmentPlug",
-                             CLHEP::Hep3Vector(0,0,0),
-                             alignmentHole.centerInWorld);
+    assert( zPlanes.size() == rOuterAlignmentPlugOuterShell.size() );
 
-    alignmentPlug.solid = new G4IntersectionSolid(alignmentPlug.name,
-                                                  parent.solid,
-                                                  plugCylinder,
-                                                  colrot,
-                                                  alignmentHole.centerInParent
-                                                  );
+    PolyconsParams alignmentPlugOuterShellParams ( zPlanes,
+                                                   rInnerAlignmentPlugOuterShell,
+                                                   rOuterAlignmentPlugOuterShell
+                                                   );
 
-    finishNesting(alignmentPlug,
-                  materialFinder.get("protonBeamDump.material.shielding"),
-                  0,
-                  CLHEP::Hep3Vector(0,0,0),
-                  alignmentHole.logical,
-                  0,
-                  geomOptions->isVisible("extMonFNAL"+collimator.name()+"alignmentPlug"),
-                  G4Colour(0.4, 0, 0), // G4Colour::Red(),
-                  geomOptions->isSolid("extMonFNAL"+collimator.name()+"alignmentPlug"),
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
+    VolumeInfo alignmentPlugOuterShell = nestPolycone(collimator.name()+"AlignmentPlugOuterShell",
+                                                      alignmentPlugOuterShellParams,
+                                                      findMaterialOrThrow("MildSteel"),
+                                                      0,
+                                                      CLHEP::Hep3Vector(0,0,0),
+                                                      collimatorMother,
+                                                      0,
+                                                      geomOptions->isVisible("extMonFNAL"+collimator.name()+"alignmentPlugOuterShell"),
+                                                      G4Colour::Red(),
+                                                      geomOptions->isSolid("extMonFNAL"+collimator.name()+"alignmentPlugOuterShell"),
+                                                      forceAuxEdgeVisible,
+                                                      placePV,
+                                                      doSurfaceCheck
+                                                      );
 
-    //----------------------------------------------------------------
-    // Collimator channel
+    //--------------------------------------------------------------------
+    // Alignment Plug Concrete
 
-    double rChannel[] = {
+    vector<double> rOuterAlignmentPlugConcrete = {
+      collimator.alignmentPlugRadius()[1] - collimator.alignmentPlugOuterShellThickness()[1],
+      collimator.alignmentPlugRadius()[1] - collimator.alignmentPlugOuterShellThickness()[1],
+      collimator.alignmentPlugRadius()[0] - collimator.alignmentPlugOuterShellThickness()[0],
+      collimator.alignmentPlugRadius()[0] - collimator.alignmentPlugOuterShellThickness()[0]
+    };
+
+
+    vector<double> rInnerAlignmentPlugConcrete = {
+      collimator.channelRadius()[1] + collimator.alignmentPlugInnerShellThickness()[1],
+      collimator.channelRadius()[1] + collimator.alignmentPlugInnerShellThickness()[1],
+      collimator.channelRadius()[0] + collimator.alignmentPlugInnerShellThickness()[0],
+      collimator.channelRadius()[0] + collimator.alignmentPlugInnerShellThickness()[0]
+    };
+
+    assert( zPlanes.size() == rOuterAlignmentPlugConcrete.size() );
+
+    PolyconsParams alignmentPlugConcreteParams ( zPlanes,
+                                                 rInnerAlignmentPlugConcrete,
+                                                 rOuterAlignmentPlugConcrete
+                                                 );
+
+    VolumeInfo alignmentPlugConcrete = nestPolycone(collimator.name()+"AlignmentPlugConcrete",
+                                                    alignmentPlugConcreteParams,
+                                                    materialFinder.get("protonBeamDump.material.shielding"),
+                                                    0,
+                                                    CLHEP::Hep3Vector(0,0,0),
+                                                    collimatorMother,
+                                                    0,
+                                                    geomOptions->isVisible("extMonFNAL"+collimator.name()+"alignmentPlugConcrete"),
+                                                    G4Colour::Red(),
+                                                    geomOptions->isSolid("extMonFNAL"+collimator.name()+"alignmentPlugConcrete"),
+                                                    forceAuxEdgeVisible,
+                                                    placePV,
+                                                    doSurfaceCheck
+                                                    );
+    //--------------------------------------------------------------------
+    // Alignment Plug Inner Shell
+
+    vector<double> rOuterAlignmentPlugInnerShell = {
+      collimator.channelRadius()[1] + collimator.alignmentPlugInnerShellThickness()[1],
+      collimator.channelRadius()[1] + collimator.alignmentPlugInnerShellThickness()[1],
+      collimator.channelRadius()[0] + collimator.alignmentPlugInnerShellThickness()[0],
+      collimator.channelRadius()[0] + collimator.alignmentPlugInnerShellThickness()[0]
+    };
+
+    vector<double> rInnerAlignmentPlugInnerShell = {
       collimator.channelRadius()[1],
       collimator.channelRadius()[1],
       collimator.channelRadius()[0],
       collimator.channelRadius()[0]
     };
 
-    G4Polycone *channelCylinder = new G4Polycone(collimator.name()+"channel", 0, 2*M_PI,
-                                                 sizeof(zPlane)/sizeof(zPlane[0]),
-                                                 zPlane,
-                                                 rzero,
-                                                 rChannel);
+    assert( zPlanes.size() == rOuterAlignmentPlugInnerShell.size() );
 
-    VolumeInfo channel(collimator.name()+"Channel",
-                       CLHEP::Hep3Vector(0,0,0),
-                       alignmentHole.centerInWorld);
+    PolyconsParams alignmentPlugInnerShellParams ( zPlanes,
+                                                   rInnerAlignmentPlugInnerShell,
+                                                   rOuterAlignmentPlugInnerShell
+                                                   );
+
+    VolumeInfo alignmentPlugInnerShell = nestPolycone(collimator.name()+"AlignmentPlugInnerShell",
+                                                      alignmentPlugInnerShellParams,
+                                                      findMaterialOrThrow("MildSteel"),
+                                                      0,
+                                                      CLHEP::Hep3Vector(0,0,0),
+                                                      collimatorMother,
+                                                      0,
+                                                      geomOptions->isVisible("extMonFNAL"+collimator.name()+"alignmentPlugInnerShell"),
+                                                      G4Colour::Red(),
+                                                      geomOptions->isSolid("extMonFNAL"+collimator.name()+"alignmentPlugInnerShell"),
+                                                      forceAuxEdgeVisible,
+                                                      placePV,
+                                                      doSurfaceCheck
+                                                      );
 
 
-    channel.solid = new G4IntersectionSolid(channel.name,
-                                            parent.solid,
-                                            channelCylinder,
-                                            colrot,
-                                            alignmentHole.centerInParent
-                                            );
+    //--------------------------------------------------------------------
+    // Collimator channel
 
-    finishNesting(channel,
-                  materialFinder.get("hall.insideMaterialName"),
-                  0,
-                  CLHEP::Hep3Vector(0,0,0),
-                  alignmentPlug.logical,
-                  0,
-                  geomOptions->isVisible("extMonFNAL"+collimator.name()+"channel"),
-                  G4Colour::Yellow(),
-                  geomOptions->isSolid("extMonFNAL"+collimator.name()+"channel"),
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
+    vector<double> rOuterChannel = {
+      collimator.channelRadius()[1],
+      collimator.channelRadius()[1],
+      collimator.channelRadius()[0],
+      collimator.channelRadius()[0]
+    };
 
+    assert( zPlanes.size() == rOuterChannel.size() );
+
+    PolyconsParams channelParams ( zPlanes, rInner, rOuterChannel );
+
+    VolumeInfo channel = nestPolycone(collimator.name()+"channel",
+                                      channelParams,
+                                      airMaterial,
+                                      0,
+                                      CLHEP::Hep3Vector(0,0,0),
+                                      collimatorMother,
+                                      0,
+                                      geomOptions->isVisible("extMonFNAL"+collimator.name()+"channel"),
+                                      G4Colour::Red(),
+                                      geomOptions->isSolid("extMonFNAL"+collimator.name()+"channel"),
+                                      forceAuxEdgeVisible,
+                                      placePV,
+                                      doSurfaceCheck
+                                      );
   }
 
   //================================================================
@@ -256,9 +413,7 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     // finishNesting() uses the backwards interpretation of rotations
-    CLHEP::HepRotation *magnetRotationInParentInv =
-      // (parentRotationInMu2e.inverse()*magnetRotationInMu2e).inverse()
-      reg.add(mag.magnetRotationInMu2e().inverse()*parentRotationInMu2e);
+    CLHEP::HepRotation *magnetRotationInParentInv = reg.add(mag.magnetRotationInMu2e().inverse()*parentRotationInMu2e);
 
     const CLHEP::Hep3Vector nx(1, 0, 0);
     const CLHEP::Hep3Vector ny(0, 1, 0);
@@ -411,7 +566,7 @@ namespace mu2e {
     const bool placePV              = geomOptions->placePV("extMonFNAL");
 
     MaterialFinder materialFinder(config);
-
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<ExtMonFNALBuilding> emfb;
 
@@ -460,18 +615,50 @@ namespace mu2e {
             G4Colour::Grey()
             );
 
-    //----------------------------------------------------------------
+    //--------------------------------------------------------------------
     // Collimator2 shielding
+
+    CLHEP::HepRotation *pshieldingRot = reg.add(new CLHEP::HepRotation());
+    CLHEP::HepRotation& shieldingRot = *pshieldingRot;
+    pshieldingRot->rotateX( 90*CLHEP::degree);
+    pshieldingRot->rotateZ( 90*CLHEP::degree);
+
+    double subCylinderLength = setDiameter(emfb->coll2ShieldingOutline());
+
+    CLHEP::Hep3Vector subCylOffsetInParent = shieldingRot *(emfb->collimator2CenterInMu2e() - emfb->coll2ShieldingCenterInMu2e());
 
     static CLHEP::HepRotation collimator2ParentRotationInMu2e = emfb->coll2ShieldingRotationInMu2e();
 
+    CLHEP::HepRotation *subCylinderRotation = reg.add(emfb->collimator2RotationInMu2e().inverse()*collimator2ParentRotationInMu2e.inverse());
+
+    G4Tubs* subCylinder = new G4Tubs("ExtMonFNALCollimator2Hole",
+                                     0.*CLHEP::mm,
+                                     emfb->collimator2().shotLinerOuterRadius(),
+                                     subCylinderLength,
+                                     0,
+                                     CLHEP::twopi
+                                     );
+
+    G4ExtrudedSolid* coll2ShieldingExtrusion = new G4ExtrudedSolid("ExtMonFNALCollimator2ShieldingExtrusion",
+                                                                   emfb->coll2ShieldingOutline(),
+                                                                   emfb->roomInsideFullHeight()/2.0,
+                                                                   G4TwoVector(0,0),
+                                                                   1.,
+                                                                   G4TwoVector(0,0), 1.
+                                                                   );
+
+
     VolumeInfo coll2Shielding("ExtMonFNALColl2Shielding",
                               emfb->coll2ShieldingCenterInMu2e() - mainParent.centerInMu2e(),
-                              mainParent.centerInWorld);
+                              mainParent.centerInWorld
+                              );
 
-    coll2Shielding.solid = new G4ExtrudedSolid(coll2Shielding.name, emfb->coll2ShieldingOutline(),
-                                               emfb->roomInsideFullHeight()/2.0,
-                                               G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+    coll2Shielding.solid = new G4SubtractionSolid(coll2Shielding.name,
+                                                  coll2ShieldingExtrusion,
+                                                  subCylinder,
+                                                  subCylinderRotation,
+                                                  subCylOffsetInParent
+                                                  );
 
     finishNesting(coll2Shielding,
                   materialFinder.get("extMonFNAL.room.wall.materialName"),
@@ -490,7 +677,6 @@ namespace mu2e {
 
     static const CLHEP::HepRotation HVACductRotInParent( collimator2ParentRotationInMu2e*emfb->shieldingRotationInMu2e().inverse() );
 
-    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     CLHEP::HepRotation *ductrot = reg.add(HVACductRotInParent.inverse());
 
     G4Tubs *holeCylinder = new G4Tubs( "holeCylinder", 0.0, emfb->HVACductRadius(), emfb->HVACductHalfLength(), 0.0, CLHEP::twopi );
@@ -520,24 +706,25 @@ namespace mu2e {
                   doSurfaceCheck
                   );
 
-    //----------------------------------------------------------------
+    //--------------------------------------------------------------------
     // The filter channel
 
     AGDEBUG("emfb->collimator1CenterInMu2e() = "<<emfb->collimator1CenterInMu2e());
-    AGDEBUG("collimator1Parent.centerInMu2e() = "<<collimator1Parent.centerInMu2e());
+    AGDEBUG("collimator1Parent.centerInMu2e() = "<<collimatomaterialFinder.getr1Parent.centerInMu2e());
+
 
     constructCollimatorExtMonFNAL(emfb->collimator1(),
-                                  collimator1Parent,
-                                  collimator1ParentRotationInMu2e*(emfb->collimator1CenterInMu2e()-collimator1Parent.centerInMu2e()),
-                                  collimator1ParentRotationInMu2e*emfb->collimator1RotationInMu2e(),
+                                  mainParent,
+                                  emfb->collimator1CenterInMu2e()-mainParent.centerInMu2e(),
+                                  emfb->collimator1RotationInMu2e(),
                                   config);
 
     constructExtMonFNALMagnet(emfb->filterMagnet(), mainParent, "filter", mainParentRotationInMu2e, config);
 
     constructCollimatorExtMonFNAL(emfb->collimator2(),
-                                  coll2Shielding,
-                                  collimator2ParentRotationInMu2e*(emfb->collimator2CenterInMu2e() - coll2Shielding.centerInMu2e()),
-                                  collimator2ParentRotationInMu2e*emfb->collimator2RotationInMu2e(),
+                                  mainParent,
+                                  emfb->collimator2CenterInMu2e() - mainParent.centerInMu2e(),
+                                  emfb->collimator2RotationInMu2e(),
                                   config);
 
     // Test
@@ -563,7 +750,7 @@ namespace mu2e {
 
     }
 
-    //----------------------------------------------------------------
+    //--------------------------------------------------------------------
 
   } // constructExtMonFNALBuilding()
 } // namespace mu2e

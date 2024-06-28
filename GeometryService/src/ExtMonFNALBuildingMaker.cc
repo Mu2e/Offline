@@ -51,12 +51,20 @@ namespace mu2e {
       col._alignmentPlugRadius = d2r(tmp);
     }
 
+    c.getVectorDouble("extMonFNAL."+name+".alignmentPlugInnerShellThickness", col._alignmentPlugInnerShellThickness, 2);
+    c.getVectorDouble("extMonFNAL."+name+".alignmentPlugOuterShellThickness", col._alignmentPlugOuterShellThickness, 2);
+
     {
       std::vector<double> tmp;
-      c.getVectorDouble("extMonFNAL."+name+".alignmentHoleDiameter", tmp, 2);
-      col._alignmentHoleRadius = d2r(tmp);
+      c.getVectorDouble("extMonFNAL."+name+".shotLinerInnerDiameter", tmp, 2);
+      col._shotLinerInnerRadius = d2r(tmp);
     }
 
+    c.getVectorDouble("extMonFNAL."+name+".shotLinerInnerThickness", col._shotLinerInnerThickness, 2);
+
+    col._shotLinerOuterRadius = c.getDouble("extMonFNAL."+name+".shotLinerOuterDiameter")/2;
+    col._shotLinerOuterThickness = c.getDouble("extMonFNAL."+name+".shotLinerOuterThickness");
+    col._length = c.getDouble("extMonFNAL."+name+".length");
     col._radiusTransitiondZ = c.getDouble("extMonFNAL."+name+".radiusTransitiondZ");
     col._angleH = angleH;
     col._angleV = angleV;
