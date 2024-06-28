@@ -45,6 +45,7 @@ namespace mu2e {
     StrawId strawId() const { return _strawid; }
 
     DigiProvenance provenance() const { return _provenance; }
+    bool containsSimulation() const;
 
     SGSP const&  strawGasStep(StrawEnd strawend) const { return _sgspa[strawend]; }
     SGSPA const&  strawGasSteps() const { return _sgspa; }

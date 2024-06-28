@@ -3,9 +3,14 @@
 #include "Offline/MCDataProducts/inc/KalSeedMC.hh"
 
 namespace mu2e{
-  bool KalSeedMC::ContainsSimulation() const{
+  bool TrkStrawHitMC::containsSimulation() const{
+    bool rv = mu2e::containsSimulation(_provenance);
+    return rv;
+  }
+
+  bool KalSeedMC::containsSimulation() const{
     for (auto const& tshmc: _tshmcs){
-      if (tshmc._provenance.ContainsSimulation()){
+      if (tshmc.containsSimulation()){
         return true;
       }
     }

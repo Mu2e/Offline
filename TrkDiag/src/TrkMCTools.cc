@@ -88,7 +88,7 @@ namespace mu2e {
         // if mc info is not meaningful, then skip this digi.
         // this looks sketchy, but nowhere is an implicit association
         // between the sct and mcdigis collection actually assumed
-        if (mcdigi.provenance().ContainsSimulation()){
+        if (mcdigi.containsSimulation()){
           art::Ptr<SimParticle> spp = mcdigi.earlyStrawGasStep()->simParticle();
           // see if this particle has already been found; if so, increment, if not, add it
           bool found(false);

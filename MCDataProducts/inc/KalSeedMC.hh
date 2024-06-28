@@ -72,7 +72,8 @@ namespace mu2e {
 //
 // MC information for TrackStrawHits on this fit
   struct TrkStrawHitMC {
-    TrkStrawHitMC(): _provenance(static_cast<StringedDigiProvenance>(DigiProvenanceDetail::Simulation)) {}
+    TrkStrawHitMC(): _provenance(DigiProvenance::Simulation) {}
+    bool containsSimulation() const;
     StrawHitIndex strawDigiMCIndex() const { return _sdmcindex; }
     StrawHitIndex simPartStubIndex() const { return _spindex; }
     StrawId const& strawid() const { return _strawId; }
@@ -102,6 +103,7 @@ namespace mu2e {
   };
 
   struct KalSeedMC {
+    bool containsSimulation() const;
     SimPartStub const& simParticle(size_t index=0) const { return _simps.at(index); }
     std::vector<SimPartStub> const& simParticles() const { return _simps; }
     std::vector<TrkStrawHitMC> const& trkStrawHitMCs() const { return _tshmcs; }

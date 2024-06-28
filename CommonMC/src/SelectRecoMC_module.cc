@@ -235,7 +235,7 @@ namespace mu2e {
       int spref(-1);
       auto const& sdmc = sdmcc.at(hit.index()); // bounds-check for security;
       // if mc info is not meaningful, do not try to inspect any SimParticles
-      if (sdmc.provenance().ContainsSimulation()){
+      if (sdmc.containsSimulation()){
         for(size_t isp=0;isp < spcc.size(); isp++){
           auto const& spc = spcc[isp];
           if(sdmc.earlyStrawGasStep()->simParticle() == spc._spp){
@@ -262,7 +262,7 @@ namespace mu2e {
       for (size_t isdmc=0; isdmc < sdmcc.size(); isdmc++){
         auto const& sdmc = sdmcc[isdmc];
         // if this contains no MC information, then we cannot inspect it further
-        if (sdmc.provenance().ContainsSimulation()){
+        if (sdmc.containsSimulation()){
           auto const& sgs = *(sdmc.earlyStrawGasStep());
           if(sgs.simParticle() == spc._spp){
             // search to see if the associated digi is already on the track
@@ -291,7 +291,7 @@ namespace mu2e {
     // propagate interpretability of StrawDigiMC to TrkStrawHitMC
     tshmc._provenance = sdmc.provenance();
     // if there is no MC information at all, leave TrkStrawHitMC empty
-    if (tshmc._provenance.ContainsSimulation()){
+    if (tshmc.containsSimulation()){
       tshmc._spindex = isp;
       tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
       const auto& sgs = *(sdmc.earlyStrawGasStep());
