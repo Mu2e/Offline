@@ -21,14 +21,9 @@ namespace mu2e{
     return nam;
   }
 
-  DigiProvenance::DigiProvenance(StringedDigiProvenance provenance)
-      : StringedDigiProvenance(provenance){
-        /**/
-    }
-
-  bool DigiProvenance::ContainsSimulation() const{
-    DigiProvenanceDetail::enum_type id = this->id();
-    bool rv = ((id == DigiProvenanceDetail::Simulation) || (id == DigiProvenanceDetail::Simulation));
+  bool containsSimulation(const DigiProvenance& provenance){
+    auto id = provenance.id();
+    bool rv = ((id == DigiProvenanceDetail::Simulation) || (id == DigiProvenanceDetail::Mixed));
     return rv;
   }
 }

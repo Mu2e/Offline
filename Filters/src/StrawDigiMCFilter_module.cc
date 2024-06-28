@@ -67,7 +67,7 @@ namespace mu2e {
     std::map<art::Ptr<SimParticle>,unsigned> pmap;
     for(auto const& mcdigi : *mcdigis) {
       // do not inspect truth info for digis not produced in simulation
-      if (mcdigi.provenance().ContainsSimulation()){
+      if (mcdigi.containsSimulation()){
         // look at the early end
         StrawEnd fend = mcdigi.earlyEnd();
         auto const& step =  mcdigi.strawGasStep(fend);
