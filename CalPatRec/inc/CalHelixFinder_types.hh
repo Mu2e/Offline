@@ -32,6 +32,7 @@ namespace mu2e {
       int     good     [kMaxSeeds];
       double  radius   [kMaxSeeds];
       double  chi2XY   [kMaxSeeds];
+
       double  chi2ZPhi [kMaxSeeds];
       double  pT       [kMaxSeeds];
       double  p        [kMaxSeeds];
@@ -47,6 +48,8 @@ namespace mu2e {
       double  chi2d_line_loop1[kMaxSeeds];
       int     loopId[kMaxSeeds];
       int maxSeeds() { return kMaxSeeds; }
+      float   nHitsRatio[kMaxSeeds];
+      float   eDepAvg[kMaxSeeds];
     };
 
     struct Hist_t {
@@ -73,6 +76,8 @@ namespace mu2e {
       TH1F*  chi2d_line_loop0[2];
       TH1F*  chi2d_line_loop1[2];
       TH1F*  loopId[2];
+      TH1F*  nHitsRatio[2];
+      TH1F*  eDepAvg[2];
     };
 
   }

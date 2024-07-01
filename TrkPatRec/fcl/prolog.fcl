@@ -162,6 +162,7 @@ TrkPatRec : { @table::TrkPatRec
       MinMVA : 0.1
       UseTripletArea : false
       UpdateStereo : false
+      maxEDepAvg : 1
       HitSelectionBits : ["TimeDivision"]
       HitBackgroundBits : [ @sequence::TrkPatRec.PatRecBackground ]
       Helicities : [-1,1]
@@ -565,10 +566,8 @@ TrkPatRec : { @table::TrkPatRec
       fitdirection        : @local::FitDir.upstream
    }
 }
-
 TrkPatRec : { @table::TrkPatRec
-   # Final fit of merged Helices : these depend on CalPatRec
-
+   # Final fit of merged Helices : these depend on TrkPatRec
    MHFinalFitDeM                : {
       @table::TrkPatRec.KFFDeM
       SeedCollection : MHSeedFitDem
