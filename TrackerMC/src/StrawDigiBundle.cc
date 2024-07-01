@@ -3,12 +3,13 @@
 //
 // Ed Callaghan, 2023
 
-#include <Offline/DataProducts/inc/TrkTypes.hh>
-#include <Offline/TrackerMC/inc/StrawDigiBundle.hh>
+#include "Offline/DataProducts/inc/TrkTypes.hh"
+#include "Offline/MCDataProducts/inc/DigiProvenance.hh"
+#include "Offline/TrackerMC/inc/StrawDigiBundle.hh"
 
 namespace mu2e{
   // dummy MC which signals that a given digi was not produced in simulation
-  auto empty_mc = StrawDigiMC(StrawDigiMC(), StrawDigiProvenance::External);
+  auto empty_mc = StrawDigiMC(StrawDigiMC(), DigiProvenance::External);
 }
 
 namespace mu2e{
