@@ -212,8 +212,8 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="mu2e::StrawDigiMC"/>
 <class name="mu2e::StrawDigiMCCollection"/>
 <class name="art::Wrapper<mu2e::StrawDigiMCCollection>"/>
-<class name="mu2e::StrawDigiProvenanceDetail"/>
-<class name="mu2e::StrawDigiProvenance"/>
+<class name="mu2e::DigiProvenanceDetail"/>
+<class name="mu2e::DigiProvenance"/>
 
 <!--  ********* tracking   ********* -->
 <class name="mu2e::TrackSummaryMatchInfo" />
