@@ -3,6 +3,7 @@
 
 // stl
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -20,14 +21,12 @@
 
 // clhep
 #include "CLHEP/Random/RandExponential.h"
+#include "CLHEP/Random/RandFlat.h"
 
 // fhiclcpp
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Comment.h"
 #include "fhiclcpp/types/Name.h"
-
-// geant4
-#include "Geant4/Randomize.hh"
 
 // mu2e
 #include "Offline/EventGenerator/inc/PositionSamplerTool.hh"
@@ -54,9 +53,14 @@ namespace mu2e{
         _lifetime = handle->getDecayTime(_atom);
       };
 
+      void UseRandomEngine(art::RandomNumberGenerator::base_engine_t& engine){
+        _uniform = std::make_unique<CLHEP::RandFlat>(engine);
+        _exponential = std::make_unique<CLHEP::RandExponential>(engine);
+      }
+
       ParticlePositionPair Sample(const SimParticlePtrVector& particles){
         // ...and then sample one...
-        size_t idx = static_cast<size_t>(G4UniformRand() * particles.size());
+        size_t idx = static_cast<size_t>(_uniform->fire() * particles.size());
         // this happens with probability 0, but still
         if (idx == particles.size()){
           idx--;
@@ -76,9 +80,11 @@ namespace mu2e{
     protected:
       std::string _atom;
       double _lifetime;
+      std::unique_ptr<CLHEP::RandFlat> _uniform;
+      std::unique_ptr<CLHEP::RandExponential> _exponential;
 
       double sample_decay_time(){
-        double rv = CLHEP::RandExponential::shoot(_lifetime);
+        double rv = _exponential->fire(_lifetime);
         return rv;
       };
     private:
