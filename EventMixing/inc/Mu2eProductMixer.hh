@@ -200,6 +200,9 @@ namespace mu2e {
     typedef GenParticleCollection::size_type GenOffset;
     std::vector<GenOffset> genOffsets_;
 
+    typedef StrawGasStepCollection::size_type SGSOffset;
+    std::vector<SGSOffset> sgsOffsets_;
+
     void updateSimParticle(SimParticle& particle, SPOffset offset, art::PtrRemapper const& remap);
 
     typedef std::map<cet::map_vector_key,PhysicalVolumeInfo> VolumeMap;
