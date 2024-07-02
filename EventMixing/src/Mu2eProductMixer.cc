@@ -366,11 +366,11 @@ namespace mu2e {
                                           StrawGasStepCollection& out,
                                           art::PtrRemapper const& remap)
   {
-    std::vector<StrawGasStepCollection::size_type> stepOffsets;
-    art::flattenCollections(in, out, stepOffsets);
+    //std::vector<StrawGasStepCollection::size_type> stepOffsets;
+    art::flattenCollections(in, out, sgsOffsets_);
 
     for(StrawGasStepCollection::size_type i=0; i<out.size(); ++i) {
-      auto ie = getInputEventIndex(i, stepOffsets);
+      auto ie = getInputEventIndex(i, sgsOffsets_);
       auto& step = out[i];
       step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
       if(applyTimeOffset_){
@@ -438,7 +438,20 @@ namespace mu2e {
                      StrawDigiMCCollection& out,
                      art::PtrRemapper const& remap)
   {
-    art::flattenCollections(in, out);
+    std::vector<StrawDigiMCCollection::size_type> sdmcOffsets;
+    art::flattenCollections(in, out, sdmcOffsets);
+
+    // update internal art::Ptr<StrawGasStep>s
+    for (StrawDigiMCCollection::size_type i=0; i < out.size(); ++i) {
+      auto& sdmc = out[i];
+      auto ie = getInputEventIndex(i, sdmcOffsets);
+      auto sgsOffset = sgsOffsets_[ie];
+
+      auto& steps = sdmc.strawGasSteps();
+      steps[StrawEnd::cal] = remap(steps[StrawEnd::cal], sgsOffset);
+      steps[StrawEnd::hv]  = remap(steps[StrawEnd::hv],  sgsOffset);
+    }
+
     return true;
   }
 

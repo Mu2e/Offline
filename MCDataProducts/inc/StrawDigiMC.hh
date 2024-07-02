@@ -49,6 +49,7 @@ namespace mu2e {
 
     SGSP const&  strawGasStep(StrawEnd strawend) const { return _sgspa[strawend]; }
     SGSPA const&  strawGasSteps() const { return _sgspa; }
+    SGSPA&        strawGasSteps()       { return _sgspa; }
     StrawEnd earlyEnd() const { return (_wtime[StrawEnd::cal] < _wtime[StrawEnd::hv]) ?  StrawEnd::cal : StrawEnd::hv; }
     SGSP const&  earlyStrawGasStep() const { return strawGasStep(earlyEnd()); }
     double energySum() const;// sum of all MC true energy deposited
