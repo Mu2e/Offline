@@ -9,12 +9,14 @@
 #include <string>
 #include <vector>
 
+// art
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+
 // cetlib_except
 #include "cetlib_except/exception.h"
 
 // geant4
 #include "Geant4/G4Material.hh"
-#include "Geant4/Randomize.hh"
 
 namespace mu2e{
   class ElementSamplerTool{
@@ -22,6 +24,7 @@ namespace mu2e{
       ElementSamplerTool(std::string name);
       virtual ~ElementSamplerTool();
 
+      virtual void UseRandomEngine(art::RandomNumberGenerator::base_engine_t&) = 0;
       virtual std::string sample_element() = 0;
       std::string Sample();
       std::vector<std::string>& Elements();

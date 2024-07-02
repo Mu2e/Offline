@@ -10,7 +10,10 @@
 
 // art
 #include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/detail/EngineCreator.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
 
 // geant4
@@ -108,6 +111,7 @@ namespace mu2e{
     // first, instantiate the element sampler
     auto element_config = config().weighting.get<fhicl::ParameterSet>();
     _element_sampler = art::make_tool<ElementSamplerTool>(element_config);
+    _element_sampler->UseRandomEngine(_engine);
 
     // then, construct mapping of element names -> ParticleGeneratorTools
     // as well mapping of element names -> PositionSamplerTools
@@ -117,6 +121,7 @@ namespace mu2e{
       std::string name = element.name();
       auto position_config = element.position_tool.get<fhicl::ParameterSet>();
       auto position_tool = art::make_tool<PositionSamplerTool>(position_config);
+      position_tool->UseRandomEngine(_engine);
 
       auto generator_config = element.generator_tool.get<fhicl::ParameterSet>();
       auto generator_tool = art::make_tool<ParticleGeneratorTool>(generator_config);

@@ -5,6 +5,7 @@
 // stl
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <string>
 
 // art
@@ -13,6 +14,9 @@
 
 // cetlib_except
 #include "cetlib_except/exception.h"
+
+// clhep
+#include "CLHEP/Random/RandFlat.h"
 
 // fhiclcpp
 #include "fhiclcpp/types/Atom.h"
@@ -37,9 +41,12 @@ namespace mu2e{
       using Parameters = art::ToolConfigTable<Config>;
       AtomicVolumeSamplerTool(const Parameters&);
      ~AtomicVolumeSamplerTool(){ /**/ };
+
+      virtual void UseRandomEngine(art::RandomNumberGenerator::base_engine_t&);
     protected:
       std::map<std::string, double> _weights;
       std::vector<double> _cumulative_weights;
+      std::unique_ptr<CLHEP::RandFlat> _uniform;
 
       void normalize_weights();
       void finish_initialize();
@@ -51,6 +58,10 @@ namespace mu2e{
   AtomicVolumeSamplerTool::AtomicVolumeSamplerTool(const Parameters& config):
       ElementSamplerTool(config().name()){
     /**/
+  }
+
+  void AtomicVolumeSamplerTool::UseRandomEngine(art::RandomNumberGenerator::base_engine_t& engine){
+    _uniform = std::make_unique<CLHEP::RandFlat>(engine);
   }
 
   void AtomicVolumeSamplerTool::finish_initialize(){
@@ -83,7 +94,7 @@ namespace mu2e{
     }
 
     // sample a uniform on (0,1)
-    double uniform = G4UniformRand();
+    double uniform = _uniform->fire();
 
     // and backtrack to which element this represents
     auto itr = std::upper_bound(_cumulative_weights.begin(),

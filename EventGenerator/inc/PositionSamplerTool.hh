@@ -10,6 +10,7 @@
 
 // art
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // canvas
 #include "canvas/Persistency/Common/Ptr.h"
@@ -32,6 +33,7 @@ namespace mu2e{
       PositionSamplerTool(){ /**/ };
       virtual ~PositionSamplerTool(){ /**/ };
 
+      virtual void UseRandomEngine(art::RandomNumberGenerator::base_engine_t&) = 0;
       virtual ParticlePositionPair Sample(const SimParticlePtrVector&) = 0;
     protected:
       /**/
