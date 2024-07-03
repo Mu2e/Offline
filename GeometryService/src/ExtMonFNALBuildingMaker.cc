@@ -10,6 +10,7 @@
 #include <iterator>
 #include <iostream>
 #include <cmath>
+#include <numeric>
 
 #include "cetlib_except/exception.h"
 
@@ -115,6 +116,15 @@ namespace mu2e {
                                               xfront+dxdL*(magnetRoomLength+col2zLength)+shieldwidth*dzdL);
     emfb->coll2ShieldingOutline_.emplace_back(zfront+dzdL*magnetRoomLength-shieldwidth*dxdL,
                                               xfront+dxdL*magnetRoomLength+shieldwidth*dzdL);
+
+    //----------------------------------------------------------------
+    static CLHEP::HepRotation shieldingRot(CLHEP::HepRotation::IDENTITY);
+    shieldingRot.rotateX( 90*CLHEP::degree);
+    shieldingRot.rotateZ( 90*CLHEP::degree);
+
+    emfb->coll2ShieldingRotationInMu2e_ = shieldingRot;
+    emfb->coll2ShieldingCenterInMu2e_ = CLHEP::Hep3Vector(0, (emfb->roomInsideYmin()+emfb->roomInsideYmax())/2.0, 0);
+    //----------------------------------------------------------------
 
     emfb->magnetRoomLength_ = magnetRoomLength;
 
@@ -228,11 +238,24 @@ namespace mu2e {
                                                   entranceAngleV - 2 * emfb->_filterMagnet.trackBendHalfAngle(pNominal),
                                                   c);
 
-    const double col2CenterZdump = dump.coreCenterDistanceToShieldingFace()
-      - 2*dump.frontShieldingHalfSize()[2]
-      - emfb->magnetRoomLength_
-      - 0.5*emfb->_collimator2.horizontalLength()
-      ;
+    // We want to position the collimator inside the concrete created from
+    // the "coll2ShieldingOutline_" above.    The outline vertices
+    // are coordinates in the Mu2e (z,x) plane.   Find their 2D geometric
+    // center, then bring it into 3D and convert from Mu2e to dump system coordinates.
+
+    const auto coll2cog2d = std::accumulate(emfb->coll2ShieldingOutline_.begin(),
+                                            emfb->coll2ShieldingOutline_.end(),
+                                            Hep2Vector(0,0))
+      / emfb->coll2ShieldingOutline_.size();
+
+    // point in Mu2e coordinates
+    const Hep3Vector coll2cog3d = Hep3Vector(coll2cog2d.y(), 0, coll2cog2d.x())
+      + emfb->coll2ShieldingCenterInMu2e_ ;
+
+    // point in dump coordinates
+    const auto coll2cogInDump = dump.mu2eToBeamDump_position(coll2cog3d);
+
+    const double col2CenterZdump = coll2cogInDump.z();
 
     const double col2CenterXdump = magnetRefInDump[0]
       +  (magnetRefInDump[2] - col2CenterZdump)*tan(emfb->filterAngleH());
@@ -270,14 +293,6 @@ namespace mu2e {
       std::cout<<"ExtMonFNALBuildingMaker"<<": ExtMonFNALBuilding::filterEntranceInMu2e() = "<<emfb->filterEntranceInMu2e()<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": ExtMonFNALBuilding::filterExitInMu2e() = "<<emfb->filterExitInMu2e()<<std::endl;
     }
-    //----------------------------------------------------------------
-
-    static CLHEP::HepRotation shieldingRot(CLHEP::HepRotation::IDENTITY);
-    shieldingRot.rotateX( 90*CLHEP::degree);
-    shieldingRot.rotateZ( 90*CLHEP::degree);
-
-    emfb->coll2ShieldingRotationInMu2e_ = shieldingRot;
-    emfb->coll2ShieldingCenterInMu2e_ = CLHEP::Hep3Vector(0, (emfb->roomInsideYmin()+emfb->roomInsideYmax())/2.0, 0);
 
     //----------------------------------------------------------------
     // Detector room box
