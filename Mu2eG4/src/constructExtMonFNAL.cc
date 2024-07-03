@@ -3,6 +3,7 @@
 // Andrei Gaponenko, 2011
 
 #include "Offline/Mu2eG4/inc/constructExtMonFNAL.hh"
+#include "Offline/Mu2eG4/inc/constructExtMonFNALInfrastructure.hh"
 
 #include <iostream>
 
@@ -562,6 +563,12 @@ namespace mu2e {
 
     GeomHandle<ExtMonFNAL::ExtMon> extmon;
     GeomHandle<ExtMonFNALBuilding> emfb;
+
+    constructExtMonFNALInfrastructure(detectorRoom,
+                                      emfb->detectorRoomRotationInMu2e(),
+                                      mainParent,
+                                      mainParentRotationInMu2e,
+                                      config);
 
     constructExtMonFNALPlaneStack(extmon->module(),
                                   extmon->dn(),
