@@ -1,6 +1,7 @@
 #ifndef DbTables_CalLaserTimeCalib_hh
 #define DbTables_CalLaserTimeCalib_hh
 
+// calorimater archive table for time study from a laser run
 
 #include <string>
 #include <iomanip>
@@ -16,24 +17,26 @@ namespace mu2e {
 
       class Row {
         public:
-        Row(CaloSiPMId  roid, double T0, double ErrT0, double chisq):
-        _roid(roid),_T0(T0),_ErrT0(ErrT0),_chisq(chisq) {}
+        Row(CaloSiPMId  roid, double T0, double ErrT0, double chisq, int nev):
+          _roid(roid),_T0(T0),_ErrT0(ErrT0),_chisq(chisq),_nev(nev) {}
         CaloSiPMId       roid()     const { return _roid;} // Offline ID
         float     T0()     const { return _T0; }
         float     ErrT0()  const { return _ErrT0; }
         float     chisq()     const { return _chisq; }
+        int       nev()     const { return _nev; }
 
       private:
         CaloSiPMId _roid;
         float _T0;
         float _ErrT0;
         float _chisq;
+        int   _nev;
     };
 
     constexpr static const char* cxname = "CalLaserTimeCalib";
 
     CalLaserTimeCalib():DbTable(cxname,"calolasertimecalib",
-    "roid,t0,errt0,chisq") {}
+    "roid,t0,errt0,chisq,nev") {}
 
     const Row& row(CaloSiPMId  roid) const {
                 return _rows.at(roid.id()); }
@@ -53,7 +56,8 @@ namespace mu2e {
       _rows.emplace_back(CaloSiPMId(index),
       std::stof(columns[1]),
       std::stof(columns[2]),
-      std::stof(columns[3]));
+      std::stof(columns[3]),
+      std::stoi(columns[4]));
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
@@ -62,7 +66,8 @@ namespace mu2e {
       sstream << r.roid()<<",";
       sstream << r.T0()<<",";
       sstream << r.ErrT0()<<",";
-      sstream << r.chisq();
+      sstream << r.chisq()<<",";
+      sstream << r.nev();
     }
 
     virtual void clear() override { baseClear(); _rows.clear();}
