@@ -41,7 +41,7 @@ double physicsParams.Se.decayTime      = 164.;
 double physicsParams.Sb.decayTime      =  92.;
 double physicsParams.Au.decayTime      =  73.;
 double physicsParams.IPA.decayTime     =  2050; //TODO Assumes Carbon for now
-double physicsParams.C.decayTime       =  2050;
+double physicsParams.C.decayTime       =  2026;
 double physicsParams.H.decayTime       =  2195;
 
 // Decay fractions
@@ -52,7 +52,7 @@ double physicsParams.Se.decayFraction  = 0.07;
 double physicsParams.Sb.decayFraction  = 0.04;
 double physicsParams.Au.decayFraction  = 0.03;
 double physicsParams.IPA.decayFraction  = 0.86; //TODO Assumes Carbon for now
-double physicsParams.C.decayFraction  = 0.933;
+double physicsParams.C.decayFraction  = 0.922;
 double physicsParams.H.decayFraction  = 0.999;
 
 // - Atomic numbers
