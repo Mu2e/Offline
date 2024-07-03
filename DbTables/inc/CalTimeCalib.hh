@@ -3,7 +3,7 @@
 
 
 /*
-per SiPM calibration constants reco table -
+per SiPM time calibration constants reco table -
 S Middleton 2023
 
 */
