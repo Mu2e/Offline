@@ -3,9 +3,7 @@
 // Ed Callaghan, 2024
 
 // stl
-#include <algorithm>
 #include <iostream>
-#include <memory>
 #include <string>
 
 // art
@@ -15,9 +13,6 @@
 // cetlib_except
 #include "cetlib_except/exception.h"
 
-// clhep
-#include "CLHEP/Random/RandFlat.h"
-
 // fhiclcpp
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Comment.h"
@@ -26,42 +21,12 @@
 // mu2e
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "Offline/Mu2eG4/inc/ElementSamplerTool.hh"
+#include "Offline/Mu2eG4/inc/AtomicVolumeSamplerTool.hh"
 
 namespace mu2e{
-  class AtomicVolumeSamplerTool:public ElementSamplerTool{
-    public:
-      struct Config{
-        fhicl::Atom<std::string> name{
-          fhicl::Name("material"),
-          fhicl::Comment("Material name")
-        };
-      };
-
-      using Parameters = art::ToolConfigTable<Config>;
-      AtomicVolumeSamplerTool(const Parameters&);
-     ~AtomicVolumeSamplerTool(){ /**/ };
-
-      virtual void UseRandomEngine(art::RandomNumberGenerator::base_engine_t&);
-    protected:
-      std::map<std::string, double> _weights;
-      std::vector<double> _cumulative_weights;
-      std::unique_ptr<CLHEP::RandFlat> _uniform;
-
-      void normalize_weights();
-      void finish_initialize();
-      std::string sample_element();
-    private:
-      /**/
-  };
-
   AtomicVolumeSamplerTool::AtomicVolumeSamplerTool(const Parameters& config):
-      ElementSamplerTool(config().name()){
+      WeightedElementSamplerTool(config().name()){
     /**/
-  }
-
-  void AtomicVolumeSamplerTool::UseRandomEngine(art::RandomNumberGenerator::base_engine_t& engine){
-    _uniform = std::make_unique<CLHEP::RandFlat>(engine);
   }
 
   void AtomicVolumeSamplerTool::finish_initialize(){
@@ -85,56 +50,6 @@ namespace mu2e{
     }
     this->normalize_weights();
     _initialized = true;
-  }
-
-  std::string AtomicVolumeSamplerTool::sample_element(){
-    // lazy initialization, to defer until after G4 has constructed materials
-    if (!_initialized){
-      this->initialize();
-    }
-
-    // sample a uniform on (0,1)
-    double uniform = _uniform->fire();
-
-    // and backtrack to which element this represents
-    auto itr = std::upper_bound(_cumulative_weights.begin(),
-                                _cumulative_weights.end(),
-                                uniform);
-
-    // sanity check
-    if (itr == _cumulative_weights.end()){
-      std::string msg = "random sample inconsistent with cumulative weights";
-      throw cet::exception("AtomicVolumeSamplerTool") << msg << std::endl;
-    }
-
-    // look up this element and return
-    size_t idx = std::distance(_cumulative_weights.begin(), itr);
-    auto rv = _elements[idx];
-    return rv;
-  };
-
-  // normalize elemental weights to sum to 1.0
-  void AtomicVolumeSamplerTool::normalize_weights(){
-    // first, compute the total weight...
-    double sum = 0.0;
-    for (const auto& pair: _weights){
-      sum += pair.second;
-    }
-
-    // ...then, scale everything accordingly
-    for (const auto& pair: _weights){
-      auto key = pair.first;
-      _weights[key] = pair.second / sum;
-    }
-
-    // compute cumulative weights, ordered as list of element names
-    _cumulative_weights.resize(_elements.size());
-    _cumulative_weights[0] = _weights[_elements[0]];
-    for (size_t i = 1 ; i < _elements.size() ; i++){
-      double last = _cumulative_weights[i-1];
-      double curr = _weights[_elements[i]];
-      _cumulative_weights[i] = last + curr;
-    }
   }
 }; // namespace mu2e
 
