@@ -58,3 +58,6 @@
 // STM
 #include "Offline/DataProducts/inc/STMChannel.hh"
 #include "Offline/DataProducts/inc/STMTestBeamEventInfo.hh"
+
+// General
+#include "Offline/DataProducts/inc/SurfaceId.hh"

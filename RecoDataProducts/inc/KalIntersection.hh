@@ -7,7 +7,7 @@
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "KinKal/General/ParticleStateEstimate.hh"
 #include "KinKal/Geometry/Intersection.hh"
-#include "Offline/KinKalGeom/inc/SurfaceId.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
 #include <vector>
 namespace mu2e {
   struct KalIntersection {

@@ -1,7 +1,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "Offline/KinKalGeom/inc/SurfaceId.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
 
 using namespace std;
 

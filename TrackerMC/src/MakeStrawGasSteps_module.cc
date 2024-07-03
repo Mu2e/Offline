@@ -25,7 +25,6 @@
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include <utility>
 // root
 #include "TH1F.h"

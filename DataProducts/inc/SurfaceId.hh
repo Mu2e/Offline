@@ -1,5 +1,5 @@
 //
-//  Define identifiers for the reconstruction surfaces
+//  Define identifiers for surfaces used in simulation and reconstruction. These can be virtual or physical
 //  original author: David Brown (LBNL) 2023
 //
 #ifndef KinKalGeom_SurfaceId_hh
@@ -16,7 +16,7 @@ namespace mu2e {
         unknown =-1,
         TT_Front=0, TT_Mid, TT_Back, TT_Inner, TT_Outer, // tracker VD equivalents
         DS_Front=80, DS_Back, DS_Inner, DS_Outer,
-        IPA, OPA, TSDA, // Absorbers in the DS.  These are the inner surfaces for the OPA and TSDA
+        IPA, OPA, TSDA, // Absorbers in the DS
         ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foils, // stopping target bounding surfaces and foils
         TCRV=200 // CRV test planes
       };
@@ -45,7 +45,7 @@ namespace mu2e {
       bool operator < (SurfaceId const& other ) const { return sid_ == other.sid_ ? indexCompare(other) : sid_ < other.sid_; }
     private:
       SurfaceIdEnum sid_;
-      int index_; // index.  Negative value is a wild card
+      int index_; // index.  Negative value is a wild card for matching
   };
   using SurfaceIdCollection = std::vector<SurfaceId>;
 }
