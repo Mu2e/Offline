@@ -25,8 +25,8 @@
 
 // mu2e
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/EventGenerator/inc/ElementSamplerTool.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/Mu2eG4/inc/ElementSamplerTool.hh"
 
 namespace mu2e{
   class AtomicVolumeSamplerTool:public ElementSamplerTool{

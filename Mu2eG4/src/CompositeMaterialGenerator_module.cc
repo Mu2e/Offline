@@ -16,9 +16,6 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
 
-// geant4
-#include "Geant4/G4Material.hh"
-
 // cetlib_except
 #include "cetlib_except/exception.h"
 
@@ -33,9 +30,9 @@
 
 // mu2e
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
-#include "Offline/EventGenerator/inc/ElementSamplerTool.hh"
 #include "Offline/EventGenerator/inc/PositionSamplerTool.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
+#include "Offline/Mu2eG4/inc/ElementSamplerTool.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 
@@ -115,7 +112,6 @@ namespace mu2e{
 
     // then, construct mapping of element names -> ParticleGeneratorTools
     // as well mapping of element names -> PositionSamplerTools
-    //std::string material = element_config.material();
     auto elements = config().elements();
     for (const auto& element: elements){
       std::string name = element.name();
@@ -161,14 +157,14 @@ namespace mu2e{
                       + " != "
                       + std::to_string(defined.size())
                       + ")";
-      throw cet::exception("AtomicVolumeSamplerTool") << msg << std::endl;
+      throw cet::exception("CompositeMaterialGenerator") << msg << std::endl;
     }
     std::sort(sampled.begin(), sampled.end());
     std::sort(defined.begin(), defined.end());
     auto pair = std::mismatch(sampled.begin(), sampled.end(), defined.begin());
     if (pair.first != sampled.end()){
       std::string msg = "mismatch between elements of G4Material and elements with defined generators";
-      throw cet::exception("AtomicVolumeSamplerTool") << msg << std::endl;
+      throw cet::exception("CompositeMaterialGenerator") << msg << std::endl;
     }
   }
 
@@ -182,7 +178,7 @@ namespace mu2e{
     auto handle = event.getValidHandle<SimParticleCollection>(_spcTag);
     if (handle->size() < 1){
       std::string msg = "no stopped muons (+/-) from input";
-      throw cet::exception("MuStopDecayPositionSamplerTool")
+      throw cet::exception("CompositeMaterialGenerator")
               << msg << std::endl;
     }
 
@@ -190,7 +186,7 @@ namespace mu2e{
     auto stopped = stoppedMuMinusList(handle);
     if (stopped.size() < 1){
       std::string msg = "no stopped muons (-) from input";
-      throw cet::exception("MuStopDecayPositionSamplerTool")
+      throw cet::exception("CompositeMaterialGenerator")
               << msg << std::endl;
     }
 

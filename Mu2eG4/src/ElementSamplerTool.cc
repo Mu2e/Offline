@@ -2,7 +2,7 @@
 // Ed Callaghan, 2024
 
 // mu2e
-#include "Offline/EventGenerator/inc/ElementSamplerTool.hh"
+#include "Offline/Mu2eG4/inc/ElementSamplerTool.hh"
 
 namespace mu2e{
   ElementSamplerTool::ElementSamplerTool(std::string name){
