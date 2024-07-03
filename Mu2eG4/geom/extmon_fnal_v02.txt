@@ -228,6 +228,34 @@ vector<double> extMonFNAL.dn.module_zoffset = { 1., -1., 1. }; // just determine
 vector<double> extMonFNAL.dn.module_rotation = { 0., 0., 180. };
 
 //----------------------------------------------------------------
+// The pixel chillers parameters'
+
+vector<double> extMonFNAL.pixelChiller.halfSize = { 50., 60., 70. };
+string         extMonFNAL.pixelChiller.materialName  = "MildSteel";
+
+int extMonFNAL.numChillersInRoom = 4;
+
+double extMonFNAL.room.chiller1.distanceToFloor = 0;
+string extMonFNAL.room.chiller1.referenceCorner = "NE";
+double extMonFNAL.room.chiller1.distanceToSideWall = 0;
+double extMonFNAL.room.chiller1.distanceToTranverseWall = 100;
+
+double extMonFNAL.room.chiller2.distanceToFloor = 0;
+string extMonFNAL.room.chiller2.referenceCorner = "SE";
+double extMonFNAL.room.chiller2.distanceToSideWall = 0;
+double extMonFNAL.room.chiller2.distanceToTranverseWall = 0;
+
+double extMonFNAL.room.chiller3.distanceToFloor = 1500;
+string extMonFNAL.room.chiller3.referenceCorner = "NE";
+double extMonFNAL.room.chiller3.distanceToSideWall = 0;
+double extMonFNAL.room.chiller3.distanceToTranverseWall = 0;
+
+double extMonFNAL.room.chiller4.distanceToFloor = 1500;
+string extMonFNAL.room.chiller4.referenceCorner = "SE";
+double extMonFNAL.room.chiller4.distanceToSideWall = 0;
+double extMonFNAL.room.chiller4.distanceToTranverseWall = 0;
+
+//----------------------------------------------------------------
 // These are detector VDs (not filter ones)
 //
 // Notes:
