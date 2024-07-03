@@ -52,7 +52,7 @@ double physicsParams.Se.decayFraction  = 0.07;
 double physicsParams.Sb.decayFraction  = 0.04;
 double physicsParams.Au.decayFraction  = 0.03;
 double physicsParams.IPA.decayFraction  = 0.86; //TODO Assumes Carbon for now
-double physicsParams.C.decayFraction  = 0.86;
+double physicsParams.C.decayFraction  = 0.933;
 double physicsParams.H.decayFraction  = 0.999;
 
 // - Atomic numbers
