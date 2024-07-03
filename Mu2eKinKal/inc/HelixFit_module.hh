@@ -19,7 +19,7 @@
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
-#include "Offline/KinKalGeom/inc/SurfaceId.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/KinKalGeom/inc/SurfaceMap.hh"
 // utiliites
 #include "Offline/GeometryService/inc/GeomHandle.hh"

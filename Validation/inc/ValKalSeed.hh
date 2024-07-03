@@ -3,7 +3,7 @@
 
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
-#include "Offline/KinKalGeom/inc/SurfaceId.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
 #include "TH1D.h"

@@ -8,7 +8,7 @@
 #include "Offline/KinKalGeom/inc/StoppingTarget.hh"
 #include "Offline/KinKalGeom/inc/DetectorSolenoid.hh"
 #include "Offline/KinKalGeom/inc/TestCRV.hh"
-#include "Offline/KinKalGeom/inc/SurfaceId.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "KinKal/Geometry/Surface.hh"
 #include <memory>
 #include <map>
