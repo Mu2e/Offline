@@ -13,8 +13,6 @@ helper=mu2e_helper(env);
 
 cryinc = os.environ['CRYHOME'] + '/src'
 crylib = os.environ['CRY_LIB']
-g4inc = os.environ['G4INCLUDE']
-g4lib = os.environ['G4LIB']
 
 rootlibs  = env['ROOTLIBS']
 
@@ -67,7 +65,7 @@ mainlib = helper.make_mainlib ( [
         rootlibs,
         'gsl',
         'G4materials',
-        ], [],['-I' + cryinc, '-I' + g4inc, '-L' + crylib, '-L' + g4lib]
+        ], [],['-I' + cryinc, '-L' + crylib]
         )
 
 helper.make_plugins( [ mainlib,
@@ -114,11 +112,10 @@ helper.make_plugins( [ mainlib,
                        'boost_filesystem',
                        'gsl',
                        'CRY',
-                       'G4materials',
                      ],
                     [],
-                    ['-I' + cryinc, '-I' + g4inc],
-                    ['-L' + crylib, '-L' + g4lib])
+                    ['-I' + cryinc],
+                    ['-L' + crylib])
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
