@@ -48,5 +48,8 @@ namespace mu2e {
       int index_; // index.  Negative value is a wild card for matching
   };
   using SurfaceIdCollection = std::vector<SurfaceId>;
+  // printout
+  std::ostream& operator<<(std::ostream& ost,
+                           const SurfaceId& s );
 }
 #endif

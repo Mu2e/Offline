@@ -59,6 +59,8 @@
  <class name="art::Wrapper<mu2e::STMTestBeamEventInfo>" />
 
  <!--  ********* general  ********* -->
+ <class name="mu2e::SurfaceIdDetail"/>
+ <class name="mu2e::SurfaceIdEnum"/>
  <class name="mu2e::SurfaceId"/>
 
 </lcgdict>
