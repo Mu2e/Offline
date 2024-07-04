@@ -38,4 +38,9 @@ namespace mu2e {
     return nam;
   }
 
+  std::ostream& operator<<(std::ostream& ost, const SurfaceId& s ) {
+    ost << s.name() << ":" << s.index();
+    return ost;
+  }
+
 }

@@ -1,0 +1,29 @@
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CommonMC/fcl/prolog.fcl"
+services.DbService.purpose: MDC2020_best
+services.DbService.version: v1_3
+
+process_name: TSS
+source : { module_type : RootInput }
+services : @local::Services.Reco
+physics :
+{
+  producers : {
+    MakeSS : @local::CommonMC.MakeSS
+  }
+  TrigPath : [MakeSS]
+  analyzers : {
+    printSSteps : {
+      module_type : PrintModule
+      surfaceStepPrinter : {
+        verbose : 1
+      }
+    }
+    SSDiag : @local::CommonMC.SSDiag
+  }
+  EndPath : [printSSteps, SSDiag]
+  end_paths : [EndPath]
+  trigger_paths : [TrigPath]
+}
+services.TimeTracker.printSummary: true
+services.TFileService.fileName: "nts.owner.SurfaceStepDiag.version.sequence.root"

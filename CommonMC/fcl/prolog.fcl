@@ -26,6 +26,21 @@ CommonMC: {
       RecoFromMCTruthErr : 0.5
     }
   }
+
+  MakeSS : {
+    module_type : MakeSurfaceSteps
+    debugLevel : 0
+    VDStepPointMCs : "compressDigiMCs:virtualdetector"
+    IPAStepPointMCs : "compressDigiMCs:protonabsorber"
+    TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
+    MaxDistGap : 0.1
+    MaxTimeGap : 0.01
+  }
+  SSDiag : {
+    module_type : SurfaceStepDiag
+    SurfaceStepCollection : "MakeSS"
+  }
+
   FindMCPrimary : {
     module_type : FindMCPrimary
     debugLevel : 0

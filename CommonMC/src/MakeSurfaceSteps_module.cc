@@ -1,4 +1,3 @@
-
 //
 //  This module creates SurfaceStep objects from G4 StepPointMCs
 //
@@ -83,63 +82,80 @@ namespace mu2e {
       auto isid = vdmap_.find(vdspmc.virtualDetectorId());
       if(isid != vdmap_.end())ssc->emplace_back(isid->second,vdspmc); // no aggregation of VD hits
     }
+    auto nvdsteps = ssc->size();
+    if(debug_ > 0)std::cout << "Added " << nvdsteps << " VD steps " << std::endl;
     // now IPA
     // colate adjacent IPA steppointMCs from the same particle. The following assumes the StepPointMCs from the same SimParticle are adjacent and (roughly) time-ordered. This is observationally true currently, but if G4 ever evolves so that its not, this code will need reworking
     auto const& ipaspmccol_h = event.getValidHandle<StepPointMCCollection>(ipastepmcs_);
     auto const& ipaspmccol = *ipaspmccol_h;
+    if(debug_ > 0)std::cout << "IPA StepPointMC collection has " << ipaspmccol.size() << " Entries" << std::endl;
     // match steps by their sim particle. There is only 1 volume for IPA
     SurfaceStep ipastep;
     for(auto const& spmc : ipaspmccol) {
+      bool added(false);
       // decide if this step is contiguous to existing steps already aggregated
       // first, test SimParticle (surface is defined by the collection)
-      bool contstep = ipastep.simParticle() == spmc.simParticle();
-      // then time;
-      if(contstep)contstep = fabs(ipastep.time()-spmc.time()) < maxtgap_;
-      // them space
-      if(contstep){
-        if(spmc.time() > ipastep.time())
-          contstep = (ipastep.endPosition() - XYZVectorF(spmc.position())).R() < maxdgap_;
-        else
-          contstep = (ipastep.startPosition() - XYZVectorF(spmc.postPosition())).R() < maxdgap_;
+      if(ipastep.simParticle() == spmc.simParticle()){
+        if(debug_ > 2) std::cout << "Same SimParticle" << std::endl;
+        // then time;
+        auto tgap = fabs(ipastep.time()-spmc.time());
+        auto dgap = (ipastep.endPosition() - XYZVectorF(spmc.position())).R();
+        if(spmc.time() < ipastep.time())throw cet::exception("Simulation") << " StepPointMC times out-of-order" << std::endl;
+        if(debug_ > 2) std::cout << "Time gap " << tgap << " Distance gap " << dgap << std::endl;
+        if(tgap < maxtgap_ && dgap < maxdgap_){
+          // accumulate this step into the existing surface step
+          if(debug_ > 1)std::cout <<"Added step" << std::endl;
+          ipastep.addStep(spmc,maxdgap_,maxtgap_);
+          added = true;
+        }
       }
-      if(contstep){
-        // accumulate this step into the existing surface step
-        ipastep.addStep(spmc,maxdgap_,maxtgap_);
-      } else {
+      if(!added){
         // if the existing step is valid, save it
         if(ipastep.surfaceId() != SurfaceIdDetail::unknown && ipastep.simParticle().isNonnull())ssc->push_back(ipastep);
         // start a new SurfaceStep for this step
         ipastep = SurfaceStep(SurfaceId(SurfaceIdDetail::IPA),spmc);
+        if(debug_ > 1)std::cout <<"New step" << std::endl;
       }
     }
+    // save last step
+    if(ipastep.surfaceId() != SurfaceIdDetail::unknown && ipastep.simParticle().isNonnull())ssc->push_back(ipastep);
+    auto nipasteps = ssc->size() - nvdsteps;
+    if(debug_ > 0)std::cout << "Added " << nipasteps << " IPA Steps "<< std::endl;
     // same for stopping target. Here, the foil number (= volumeid) matters
     auto const& stspmccol_h = event.getValidHandle<StepPointMCCollection>(ststepmcs_);
     auto const& stspmccol = *stspmccol_h;
+    if(debug_ > 0)std::cout << "Target StepPointMC collection has " << stspmccol.size() << " Entries" << std::endl;
     // match steps by their sim particle. There is only 1 volume for IPA
     SurfaceStep ststep;
     for(auto const& spmc : stspmccol) {
+      bool added(false);
       // decide if this step is contiguous to existing steps already aggregated
-      // first, test SimParticle and foil number
-      bool contstep = ststep.simParticle() == spmc.simParticle() && ststep.surfaceId().index() == (int)spmc.volumeId();
-      // then time;
-      if(contstep)contstep = fabs(ststep.time()-spmc.time()) < maxtgap_;
-      // them space
-      if(contstep){
-        if(spmc.time() > ststep.time())
-          contstep = (ststep.endPosition() - XYZVectorF(spmc.position())).R() < maxdgap_;
-        else
-          contstep = (ststep.startPosition() - XYZVectorF(spmc.postPosition())).R() < maxdgap_;
+      // first, test SimParticle (surface is defined by the collection)
+      if(ststep.simParticle() == spmc.simParticle()){
+        if(debug_ > 2) std::cout << "Same SimParticle" << std::endl;
+        // then time;
+        auto tgap = fabs(ststep.time()-spmc.time());
+        auto dgap = (ststep.endPosition() - XYZVectorF(spmc.position())).R();
+        if(spmc.time() < ststep.time())throw cet::exception("Simulation") << " StepPointMC times out-of-order" << std::endl;
+        if(debug_ > 2) std::cout << "Time gap " << tgap << " Distance gap " << dgap << std::endl;
+        if(tgap < maxtgap_ && dgap < maxdgap_){
+          // accumulate this step into the existing surface step
+          if(debug_ > 1)std::cout <<"Added step" << std::endl;
+          ststep.addStep(spmc,maxdgap_,maxtgap_);
+          added = true;
+        }
       }
-      if(contstep){
-        // accumulate this step into the existing surface step
-        ststep.addStep(spmc,maxdgap_,maxtgap_);
-      } else {
+      if(!added){
         // if the existing step is valid, save it
         if(ststep.surfaceId() != SurfaceIdDetail::unknown && ststep.simParticle().isNonnull())ssc->push_back(ststep);
         // start a new SurfaceStep for this step
         ststep = SurfaceStep(SurfaceId(SurfaceIdDetail::ST_Foils,spmc.volumeId()),spmc);
+        if(debug_ > 1)std::cout <<"New step" << std::endl;
       }
     }
+    if(ststep.surfaceId() != SurfaceIdDetail::unknown && ststep.simParticle().isNonnull())ssc->push_back(ststep);
+    auto nststeps = ssc->size() - nipasteps - nvdsteps;
+    if(debug_ > 0)std::cout << "Added " << nststeps << " stopping target Steps "<< std::endl;
     // finish
     event.put(move(ssc));
   }
