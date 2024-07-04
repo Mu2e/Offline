@@ -11,11 +11,8 @@
 
 #include "Offline/DbTables/inc/CalSourceEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalCosmicEnergyCalib.hh"
-#include "Offline/DbTables/inc/CalCosmicTimeCalib.hh"
 #include "Offline/DbTables/inc/CalLaserEnergyCalib.hh"
-#include "Offline/DbTables/inc/CalCosmicTimeCalib.hh"
 #include "Offline/DbTables/inc/CalLaserTimeCalib.hh"
-#include "Offline/DbTables/inc/CalLaserEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalTimeCalib.hh"
 #include "Offline/DbTables/inc/CalCosmicT0Align.hh"
@@ -94,8 +91,6 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVTime());
   }  else if (name=="CalSourceEnergyCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalSourceEnergyCalib());
-  }  else if (name=="CalCosmicTimeCalib") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalCosmicTimeCalib());
   } else if (name=="CalCosmicEnergyCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalCosmicEnergyCalib());
   } else if (name=="CalLaserEnergyCalib") {
