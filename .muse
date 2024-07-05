@@ -4,3 +4,5 @@ ENVSET p057
 PATH bin
 # recent commits can take enforce these flags
 CPPFLAGS -Wtype-limits -Wimplicit-fallthrough -Wunused-but-set-parameter
+# add lib to root path for dictionaries
+ROOT_LIBRARY_PATH
