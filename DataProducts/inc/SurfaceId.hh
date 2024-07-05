@@ -2,8 +2,8 @@
 //  Define identifiers for surfaces used in simulation and reconstruction. These can be virtual or physical
 //  original author: David Brown (LBNL) 2023
 //
-#ifndef KinKalGeom_SurfaceId_hh
-#define KinKalGeom_SurfaceId_hh
+#ifndef DataProducts_SurfaceId_hh
+#define DataProducts_SurfaceId_hh
 #include <map>
 #include <vector>
 #include <string>
@@ -17,7 +17,7 @@ namespace mu2e {
         TT_Front=0, TT_Mid, TT_Back, TT_Inner, TT_Outer, // tracker VD equivalents
         DS_Front=80, DS_Back, DS_Inner, DS_Outer,
         IPA, OPA, TSDA, // Absorbers in the DS
-        ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foils, // stopping target bounding surfaces and foils
+        ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foils, ST_Wires, // stopping target bounding surfaces and components
         TCRV=200 // CRV test planes
       };
 

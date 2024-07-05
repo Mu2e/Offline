@@ -34,7 +34,7 @@ CommonMC: {
     IPAStepPointMCs : "compressDigiMCs:protonabsorber"
     TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
     MaxDistGap : 0.1
-    MaxTimeGap : 0.01
+    MaxTimeGap : 0.1
   }
   SSDiag : {
     module_type : SurfaceStepDiag
