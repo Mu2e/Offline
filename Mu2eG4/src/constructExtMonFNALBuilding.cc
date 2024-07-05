@@ -36,6 +36,7 @@
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
 #include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
@@ -56,11 +57,14 @@
 #include "Offline/GeomPrimitives/inc/PolyconsParams.hh"
 #include "Offline/Mu2eG4/inc/nestTubs.hh"
 #include "Offline/Mu2eG4/inc/nestPolycone.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
+
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)
 
 using namespace std;
+using namespace mu2e;
 
 namespace {
 
@@ -81,6 +85,22 @@ namespace {
 
     return sqrt(pow((maxX-minX),2) + pow((maxY-minY),2));
   }
+
+  //================================================================
+  VirtualDetectorId::enum_type getEntranceVD(const ExtMonFNALCollimator& col) {
+    if(col.name() == "collimator1") return VirtualDetectorId::EMFC1Entrance;
+    if(col.name() == "collimator2") return VirtualDetectorId::EMFC2Entrance;
+    throw cet::exception("BADCONFIG")<<"ExtMonFNAL getEntranceVD(): unknown collimator name "<<col.name();
+  }
+
+  //================================================================
+  VirtualDetectorId::enum_type getExitVD(const ExtMonFNALCollimator& col) {
+    if(col.name() == "collimator1") return VirtualDetectorId::EMFC1Exit;
+    if(col.name() == "collimator2") return VirtualDetectorId::EMFC2Exit;
+    throw cet::exception("BADCONFIG")<<"ExtMonFNAL getExitVD(): unknown collimator name "<<col.name();
+  }
+
+  //================================================================
 }
 
 namespace mu2e {
@@ -385,6 +405,55 @@ namespace mu2e {
                                       placePV,
                                       doSurfaceCheck
                                       );
+
+    //--------------------------------------------------------------------
+    // Channel entrance and exit virtual detectors
+
+    GeomHandle<VirtualDetector> vdg;
+
+    VirtualDetectorId::enum_type vd_entrance = getEntranceVD(collimator);
+    if( vdg->exist(vd_entrance) ) {
+
+      TubsParams vdpars(0., collimator.channelRadius()[0], vdg->getHalfLength());
+
+      nestTubs(VirtualDetector::volumeName(vd_entrance),
+               vdpars,
+               airMaterial,
+               0, // rotation
+               CLHEP::Hep3Vector(0,0, *zPlanes.rbegin() - vdg->getHalfLength()), // position in parent
+               channel, // parent
+               vd_entrance,
+               geomOptions->isVisible(VirtualDetector::volumeName(vd_entrance)),
+               G4Colour::Magenta(),
+               geomOptions->isSolid(VirtualDetector::volumeName(vd_entrance)),
+               forceAuxEdgeVisible,
+               placePV,
+               doSurfaceCheck
+               );
+    }
+
+    VirtualDetectorId::enum_type vd_exit = getExitVD(collimator);
+    if( vdg->exist(vd_exit) ) {
+
+      TubsParams vdpars(0., collimator.channelRadius()[1], vdg->getHalfLength());
+
+      nestTubs(VirtualDetector::volumeName(vd_exit),
+               vdpars,
+               airMaterial,
+               0, // rotation
+               CLHEP::Hep3Vector(0,0, *zPlanes.begin() + vdg->getHalfLength()), // position in parent
+               channel, // parent
+               vd_exit,
+               geomOptions->isVisible(VirtualDetector::volumeName(vd_exit)),
+               G4Colour::Magenta(),
+               geomOptions->isSolid(VirtualDetector::volumeName(vd_exit)),
+               forceAuxEdgeVisible,
+               placePV,
+               doSurfaceCheck
+               );
+    }
+
+    //--------------------------------------------------------------------
   }
 
   //================================================================
