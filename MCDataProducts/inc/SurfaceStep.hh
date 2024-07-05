@@ -12,13 +12,15 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 namespace mu2e {
   class SurfaceStep {
     public:
       SurfaceStep(){};
       // create from a StepPointMC. Association to a SurfaceId must be done outside this class
-      SurfaceStep(SurfaceId sid, StepPointMC const& spmc);
+      SurfaceStep(SurfaceId sid, StepPointMC const& spmc, GeomHandle<DetectorSystem>const& det);
 // accessors
       float energyDeposit() const { return edep_; }
       double const& time() const { return time_; } // time of the earliest StepPointMC used in this step
@@ -31,12 +33,12 @@ namespace mu2e {
       double pathLength() const { return (endPosition()-startPosition()).R(); }
       // append a MCStep to this step. The step must have the same SimParticle and
       // be contiguous in time and space to previously added step
-      void addStep(StepPointMC const& spmc, double dtol, double ttol);
+      void addStep(StepPointMC const& spmc, GeomHandle<DetectorSystem>const& det, double dtol, double ttol);
     private:
       SurfaceId  sid_ = SurfaceIdDetail::unknown; // Identifier of the surface this step crosses
       float       edep_ = 0.0;  // energy deposited in this material in this step
       double      time_ = 0.0; // absolute time particle enters this material; must be double to allow for long-lived particles
-      XYZVectorF    startpos_, endpos_; //entrance and exit to the gas volume
+      XYZVectorF    startpos_, endpos_; //entrance and exit position in DETECTOR COORDINATES
       XYZVectorF    mom_; //momentum at the start of this step
       art::Ptr<SimParticle> simp_;  // simparticle creating this step
   };

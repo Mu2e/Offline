@@ -13,8 +13,8 @@
 #include "Offline/GlobalConstantsService/inc/ParticleData.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/MCDataProducts/inc/SurfaceStep.hh"
-#include <utility>
-#include <cmath>
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 namespace mu2e {
 
@@ -72,6 +72,7 @@ namespace mu2e {
     }
 
   void MakeSurfaceSteps::produce(art::Event& event) {
+    GeomHandle<DetectorSystem> det;
     // create output
     std::unique_ptr<SurfaceStepCollection> ssc(new SurfaceStepCollection);
     // start with virtual detectors; these are copied directly
@@ -80,7 +81,7 @@ namespace mu2e {
     for(auto const& vdspmc : vdspmccol) {
       // only some VDs are kept
       auto isid = vdmap_.find(vdspmc.virtualDetectorId());
-      if(isid != vdmap_.end())ssc->emplace_back(isid->second,vdspmc); // no aggregation of VD hits
+      if(isid != vdmap_.end())ssc->emplace_back(isid->second,vdspmc,det); // no aggregation of VD hits
     }
     auto nvdsteps = ssc->size();
     if(debug_ > 0)std::cout << "Added " << nvdsteps << " VD steps " << std::endl;
@@ -105,7 +106,7 @@ namespace mu2e {
         if(tgap < maxtgap_ && dgap < maxdgap_){
           // accumulate this step into the existing surface step
           if(debug_ > 1)std::cout <<"Added step" << std::endl;
-          ipastep.addStep(spmc,maxdgap_,maxtgap_);
+          ipastep.addStep(spmc,det,maxdgap_,maxtgap_);
           added = true;
         }
       }
@@ -113,7 +114,7 @@ namespace mu2e {
         // if the existing step is valid, save it
         if(ipastep.surfaceId() != SurfaceIdDetail::unknown && ipastep.simParticle().isNonnull())ssc->push_back(ipastep);
         // start a new SurfaceStep for this step
-        ipastep = SurfaceStep(SurfaceId(SurfaceIdDetail::IPA),spmc);
+        ipastep = SurfaceStep(SurfaceId(SurfaceIdDetail::IPA),spmc,det);
         if(debug_ > 1)std::cout <<"New step" << std::endl;
       }
     }
@@ -141,7 +142,7 @@ namespace mu2e {
         if(tgap < maxtgap_ && dgap < maxdgap_){
           // accumulate this step into the existing surface step
           if(debug_ > 1)std::cout <<"Added step" << std::endl;
-          ststep.addStep(spmc,maxdgap_,maxtgap_);
+          ststep.addStep(spmc,det,maxdgap_,maxtgap_);
           added = true;
         }
       }
@@ -149,7 +150,7 @@ namespace mu2e {
         // if the existing step is valid, save it
         if(ststep.surfaceId() != SurfaceIdDetail::unknown && ststep.simParticle().isNonnull())ssc->push_back(ststep);
         // start a new SurfaceStep for this step
-        ststep = SurfaceStep(SurfaceId(SurfaceIdDetail::ST_Foils,spmc.volumeId()),spmc);
+        ststep = SurfaceStep(SurfaceId(SurfaceIdDetail::ST_Foils,spmc.volumeId()),spmc,det);
         if(debug_ > 1)std::cout <<"New step" << std::endl;
       }
     }
