@@ -100,13 +100,13 @@ namespace mu2e {
         if(debug_ > 2) std::cout << "Same SimParticle" << std::endl;
         // then time;
         auto tgap = fabs(ipastep.time()-spmc.time());
-        auto dgap = (ipastep.endPosition() - XYZVectorF(spmc.position())).R();
+        auto dgap = (ipastep.endPosition() - XYZVectorF(det->toDetector(spmc.position()))).R();
         if(spmc.time() < ipastep.time())throw cet::exception("Simulation") << " StepPointMC times out-of-order" << std::endl;
         if(debug_ > 2) std::cout << "Time gap " << tgap << " Distance gap " << dgap << std::endl;
         if(tgap < maxtgap_ && dgap < maxdgap_){
           // accumulate this step into the existing surface step
           if(debug_ > 1)std::cout <<"Added step" << std::endl;
-          ipastep.addStep(spmc,det,maxdgap_,maxtgap_);
+          ipastep.addStep(spmc,det);
           added = true;
         }
       }
@@ -132,17 +132,17 @@ namespace mu2e {
       bool added(false);
       // decide if this step is contiguous to existing steps already aggregated
       // first, test SimParticle (surface is defined by the collection)
-      if(ststep.simParticle() == spmc.simParticle()){
+      if(ststep.simParticle() == spmc.simParticle() && ststep.surfaceId().index()== (int)spmc.volumeId()){
         if(debug_ > 2) std::cout << "Same SimParticle" << std::endl;
         // then time;
         auto tgap = fabs(ststep.time()-spmc.time());
-        auto dgap = (ststep.endPosition() - XYZVectorF(spmc.position())).R();
+        auto dgap = (ststep.endPosition() - XYZVectorF(det->toDetector(spmc.position()))).R();
         if(spmc.time() < ststep.time())throw cet::exception("Simulation") << " StepPointMC times out-of-order" << std::endl;
         if(debug_ > 2) std::cout << "Time gap " << tgap << " Distance gap " << dgap << std::endl;
         if(tgap < maxtgap_ && dgap < maxdgap_){
           // accumulate this step into the existing surface step
           if(debug_ > 1)std::cout <<"Added step" << std::endl;
-          ststep.addStep(spmc,det,maxdgap_,maxtgap_);
+          ststep.addStep(spmc,det);
           added = true;
         }
       }
@@ -150,7 +150,10 @@ namespace mu2e {
         // if the existing step is valid, save it
         if(ststep.surfaceId() != SurfaceIdDetail::unknown && ststep.simParticle().isNonnull())ssc->push_back(ststep);
         // start a new SurfaceStep for this step
-        ststep = SurfaceStep(SurfaceId(SurfaceIdDetail::ST_Foils,spmc.volumeId()),spmc,det);
+        // hack around the problem that the ST wires are mixed in with the ST foils
+        SurfaceId stid(SurfaceIdDetail::ST_Foils,spmc.volumeId());
+        if(det->toDetector(spmc.position()).rho() > 75.001)stid = SurfaceId(SurfaceIdDetail::ST_Wires,spmc.volumeId());
+        ststep = SurfaceStep(stid,spmc,det);
         if(debug_ > 1)std::cout <<"New step" << std::endl;
       }
     }
