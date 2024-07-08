@@ -374,7 +374,7 @@ namespace mu2e {
 
     PolyconsParams channelParams ( zPlanes, rInner, rOuterChannel );
 
-    VolumeInfo channel = nestPolycone(collimator.name()+"channel",
+    VolumeInfo channel = nestPolycone(collimator.name()+"Channel",
                                       channelParams,
                                       airMaterial,
                                       0,
