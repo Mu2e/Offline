@@ -33,12 +33,15 @@ CommonMC: {
     VDStepPointMCs : "compressDigiMCs:virtualdetector"
     IPAStepPointMCs : "compressDigiMCs:protonabsorber"
     TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
-    MaxDistGap : 0.1
-    MaxTimeGap : 0.1
+    MaxDistGap : 0.1 # mm
+    MaxTimeGap : 0.1 # ns
   }
   SSDiag : {
     module_type : SurfaceStepDiag
     SurfaceStepCollection : "MakeSS"
+    VDStepPointMCs : "compressDigiMCs:virtualdetector"
+    IPAStepPointMCs : "compressDigiMCs:protonabsorber"
+    TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
   }
 
   FindMCPrimary : {
