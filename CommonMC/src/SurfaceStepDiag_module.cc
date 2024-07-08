@@ -15,6 +15,7 @@
 #include "TH1F.h"
 // data
 #include "Offline/MCDataProducts/inc/SurfaceStep.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 namespace mu2e
 {
@@ -26,9 +27,9 @@ namespace mu2e
         using Name = fhicl::Name;
         using Comment = fhicl::Comment;
         fhicl::Atom<art::InputTag> SurfaceStepCollection{   Name("SurfaceStepCollection"),   Comment("SurfaceStep collection name") };
-        fhicl::OptionalAtom<art::InputTag> VDStepCollection{   Name("VDStepCollection"),   Comment("Virtual Detector StepPointMC collection name") };
-        fhicl::OptionalAtom<art::InputTag> IPAStepCollection{   Name("IPAStepCollection"),   Comment("IPA StepPointMC collection name") };
-        fhicl::OptionalAtom<art::InputTag> STStepCollection{   Name("STStepCollection"),   Comment("StoppingTarget StepPointMC collection name") };
+        fhicl::Atom<art::InputTag> vdstepmcs { Name("VDStepPointMCs"), Comment("Virtual Detector StepPointMC collection")};
+        fhicl::Atom<art::InputTag> ipastepmcs { Name("IPAStepPointMCs"), Comment("IPAStepPointMC collection")};
+        fhicl::Atom<art::InputTag> ststepmcs { Name("TargetStepPointMCs"), Comment("Stopping target StepPointMC collection")};
       };
 
       explicit SurfaceStepDiag(const art::EDAnalyzer::Table<Config>& config);
@@ -36,19 +37,23 @@ namespace mu2e
       virtual void beginJob();
       virtual void analyze(const art::Event& e);
     private:
-      art::ProductToken<SurfaceStepCollection> sstag_;
-      art::ProductToken<StepPointMCCollection> vdtag_, ipatag_, sttag_;
+      art::ProductToken<SurfaceStepCollection> surfsteps_;
+      art::ProductToken<StepPointMCCollection> vdstepmcs_, ipastepmcs_, ststepmcs_;
       TTree *ssdiag_;
       int evt_, subrun_, run_, sid_, sindex_;
       float edep_, path_, time_;
       XYZVectorF mom_, start_, mid_, end_;
+      TH1F *nvdspmc_, *nipaspmc_, *nstspmc_;
       TH1F *nvd_, *nipa_, *nstfoil_,* nstwire_;
   };
 
   SurfaceStepDiag::SurfaceStepDiag(const art::EDAnalyzer::Table<Config>& config) :
     art::EDAnalyzer(config),
-    sstag_{ consumes<SurfaceStepCollection>(config().SurfaceStepCollection() ) }
-  {}
+    surfsteps_{ consumes<SurfaceStepCollection>(config().SurfaceStepCollection() ) },
+    vdstepmcs_{ consumes<StepPointMCCollection>(config().vdstepmcs())},
+    ipastepmcs_{ consumes<StepPointMCCollection>(config().ipastepmcs())},
+    ststepmcs_{ consumes<StepPointMCCollection>(config().ststepmcs())}
+ {}
 
   SurfaceStepDiag::~SurfaceStepDiag(){}
 
@@ -69,18 +74,33 @@ namespace mu2e
     ssdiag_->Branch("start.",&start_);
     ssdiag_->Branch("mid.",&mid_);
     ssdiag_->Branch("end.",&end_);
+    nvdspmc_ = tfs->make<TH1F>("nvdspmc","N VD StepPointMCs",100,-0.5,99.5);
+    nipaspmc_ = tfs->make<TH1F>("nipaspmc","N IPA StepPointMCs",100,-0.5,99.5);
+    nstspmc_ = tfs->make<TH1F>("nstspmc","N ST StepPointMCs",100,-0.5,99.5);
     nvd_ = tfs->make<TH1F>("nvd","N VD SurfaceSteps",100,-0.5,99.5);
     nipa_ = tfs->make<TH1F>("nipa","N IPA SurfaceSteps",100,-0.5,99.5);
     nstfoil_ = tfs->make<TH1F>("nstfoil","N ST Foil SurfaceSteps",100,-0.5,99.5);
     nstwire_ = tfs->make<TH1F>("nstwire","N ST Wire SurfaceSteps",100,-0.5,99.5);
   }
 
-  void SurfaceStepDiag::analyze(const art::Event& evt ) {
-    auto sscolH = evt.getValidHandle(sstag_);
+  void SurfaceStepDiag::analyze(const art::Event& event ) {
+// first histogram StepPointMC precursor sizes
+    auto const& vdspmccol_h = event.getValidHandle<StepPointMCCollection>(vdstepmcs_);
+    auto const& vdspmccol = *vdspmccol_h;
+    nvdspmc_->Fill(vdspmccol.size());
+    auto const& ipaspmccol_h = event.getValidHandle<StepPointMCCollection>(ipastepmcs_);
+    auto const& ipaspmccol = *ipaspmccol_h;
+    nipaspmc_->Fill(ipaspmccol.size());
+    auto const& stspmccol_h = event.getValidHandle<StepPointMCCollection>(ststepmcs_);
+    auto const& stspmccol = *stspmccol_h;
+    nstspmc_->Fill(stspmccol.size());
+
+
+    auto sscolH = event.getValidHandle(surfsteps_);
     auto const& sscol = *sscolH.product();
-    evt_ = evt.id().event();
-    subrun_ = evt.id().subRun();
-    run_ = evt.id().run();
+    evt_ = event.id().event();
+    subrun_ = event.id().subRun();
+    run_ = event.id().run();
     unsigned nvd(0), nipa(0), nstfoil(0), nstwire(0);
     for(auto const& ss : sscol) {
       sid_ = ss.surfaceId().id();

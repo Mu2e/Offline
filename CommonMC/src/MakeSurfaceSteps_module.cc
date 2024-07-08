@@ -13,6 +13,7 @@
 #include "Offline/GlobalConstantsService/inc/ParticleData.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/MCDataProducts/inc/SurfaceStep.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 
@@ -32,22 +33,12 @@ namespace mu2e {
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit MakeSurfaceSteps(const Parameters& conf);
-
     private:
       void produce(art::Event& e) override;
-      using SSPair = std::pair<SurfaceId,cet::map_vector_key>; // key for pair of surfaceId, SimParticle
-      using SPMCP = art::Ptr<StepPointMC>;
-      using SPMCPV = std::vector<SPMCP>;
-      using SPSMap = std::map< SSPair , SPMCPV >; // steps by surface, SimParticle
-      using SPMCCH = art::Handle<StepPointMCCollection>;
-      using SPMCCHV = std::vector< SPMCCH >;
-      void fillMap(SPMCCH const& spmcch, SPSMap& spsmap);
-      void fillStep(SPMCPV const& spmcptrs,
-          ParticleData const& pdata, cet::map_vector_key pid, SurfaceStep& sgs);
       int debug_;
       double maxdgap_;
       double maxtgap_;
-      art::InputTag vdstepmcs_, ipastepmcs_, ststepmcs_;
+      art::ProductToken<StepPointMCCollection> vdstepmcs_, ipastepmcs_, ststepmcs_;
       std::map<VirtualDetectorId,SurfaceId> vdmap_; // map of VDIds to surfaceIds
   };
 
@@ -56,11 +47,10 @@ namespace mu2e {
     debug_(config().debug()),
     maxdgap_(config().maxdgap()),
     maxtgap_(config().maxtgap()),
-    vdstepmcs_(config().vdstepmcs()),
-    ipastepmcs_(config().ipastepmcs()),
-    ststepmcs_(config().ststepmcs())
+    vdstepmcs_{ consumes<StepPointMCCollection>(config().vdstepmcs())},
+    ipastepmcs_{ consumes<StepPointMCCollection>(config().ipastepmcs())},
+    ststepmcs_{ consumes<StepPointMCCollection>(config().ststepmcs())}
     {
-      consumesMany<StepPointMCCollection>();
       produces <SurfaceStepCollection>();
       // build the VDId -> SId map by hand. This should come from a service TODO
       vdmap_[VirtualDetectorId(VirtualDetectorId::TT_FrontHollow)] = SurfaceId("TT_Front");
