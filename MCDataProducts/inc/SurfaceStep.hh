@@ -47,11 +47,6 @@ namespace mu2e {
   typedef std::vector<SurfaceStep> SurfaceStepCollection;
   typedef art::Assns<SurfaceStep,StepPointMC> SurfaceStepAssns;
 
-  inline std::ostream& operator<<( std::ostream& ost, SurfaceStep const& ss){
-    ost << "SurfaceStep in surface " << ss.surfaceId().name()
-    << " Energy Loss " << ss.energyDeposit() << " path length " << ss.pathLength() << " time " << ss.time()
-    << " Particle momentum " << ss.momentum().R() << " PDG " << ss.simParticle()->pdgId();
-    return ost;
-  }
+  std::ostream& operator<<( std::ostream& ost, SurfaceStep const& ss);
 }
 #endif

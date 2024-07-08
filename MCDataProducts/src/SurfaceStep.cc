@@ -13,4 +13,12 @@ namespace mu2e {
     edep_ += spmc.totalEDep();
     endpos_ = XYZVectorF(det->toDetector(spmc.postPosition()));
   }
+
+  std::ostream& operator<<( std::ostream& ost, SurfaceStep const& ss){
+    ost << "SurfaceStep in surface " << ss.surfaceId().name()
+    << " Energy Loss " << ss.energyDeposit() << " path length " << ss.pathLength() << " time " << ss.time()
+    << " Particle momentum " << ss.momentum().R() << " PDG " << ss.simParticle()->pdgId();
+    return ost;
+  }
+
 }

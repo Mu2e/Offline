@@ -6,24 +6,25 @@ nonProtonGenIds : ["unknown", "particleGun", "cosmicToy", "cosmicDYB", "cosmic",
 muLifeGenIds : [ "StoppedParticleReactionGun", "dioTail", "ExternalRMC", "InternalRMC",
   "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", "MuCapPhotonGenTool", "MuCapGammaRayGenTool" ]
 CommonMC: {
-  producers: {
-    #
-    # time offset producers
-    protonTimeOffset : {
-        module_type: ProtonTimeOffset
-        randPDFparameters : {
-            pulseType : default
-            limitingHalfWidth : 125.0
-            potPulse  : "Offline/Mu2eUtilities/data/potTimingDistribution_20160511.txt"
-            acDipole  : "Offline/Mu2eUtilities/data/acDipoleTransmissionFunction_20160511.txt"
-        }
-    }
-    cosmicTimeOffset : { module_type: CosmicTimeOffset }
-    # Event window marker
+  #
+  # producers
+  #
+  # Event window marker
+  DigiProducers : {
     EWMProducer : {
       module_type : EventWindowMarkerProducer
       RecoFromMCTruth : true
       RecoFromMCTruthErr : 0.5
+    }
+  }
+
+  protonTimeOffset : {
+    module_type: ProtonTimeOffset
+    randPDFparameters : {
+      pulseType : default
+      limitingHalfWidth : 125.0
+      potPulse  : "Offline/Mu2eUtilities/data/potTimingDistribution_20160511.txt"
+      acDipole  : "Offline/Mu2eUtilities/data/acDipoleTransmissionFunction_20160511.txt"
     }
   }
 
@@ -35,13 +36,6 @@ CommonMC: {
     TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
     MaxDistGap : 0.1 # mm
     MaxTimeGap : 0.1 # ns
-  }
-  SSDiag : {
-    module_type : SurfaceStepDiag
-    SurfaceStepCollection : "MakeSS"
-    VDStepPointMCs : "compressDigiMCs:virtualdetector"
-    IPAStepPointMCs : "compressDigiMCs:protonabsorber"
-    TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
   }
 
   FindMCPrimary : {
@@ -61,6 +55,18 @@ CommonMC: {
     debugLevel : 0
   }
   DigiSim : [ EWMProducer  ]
+  #
+  # Analyzers
+  #
+  SSDiag : {
+    module_type : SurfaceStepDiag
+    SurfaceStepCollection : "MakeSS"
+    VDStepPointMCs : "compressDigiMCs:virtualdetector"
+    IPAStepPointMCs : "compressDigiMCs:protonabsorber"
+    TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
+  }
+
+
 }
 #------------------------------------------------------------------------------
 
