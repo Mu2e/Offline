@@ -49,7 +49,6 @@ namespace mu2e {
   };
   using SurfaceIdCollection = std::vector<SurfaceId>;
   // printout
-  std::ostream& operator<<(std::ostream& ost,
-                           const SurfaceId& s );
+  std::ostream& operator<<(std::ostream& ost, const SurfaceId& s );
 }
 #endif
