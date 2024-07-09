@@ -548,6 +548,9 @@ namespace mu2e {
                 "dsShielding"
                 );
 
+      if (verbosityLevel > 0) {
+        cout << __func__ << ": " << shield->getName() << " Params = " << shield->getTubsParams() << ", location = " << shield->originInMu2e() << endl;
+      }
     }
 
     // ************ End Shielding, begin Rails ************

@@ -250,6 +250,10 @@ namespace mu2e {
                G4Colour::Blue(),
                "dsShielding"
                );
+
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " IFB_Window_Poly   : Dimensions (rIn, rOut, halfZ) = (" << ifb_poly_params[0] << ", " << ifb_poly_params[1] << ", " << ifb_poly_params[2] << ")" << ", Location (mu2e coords [mm]) = " << ifb_poly_location << endl;
+      }
     }
 
     //absorber in the shielding block hole
@@ -273,6 +277,10 @@ namespace mu2e {
                G4Colour::Blue(),
                "dsShielding"
                );
+
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " STM_ShieldingHole_Poly   : Dimensions (rIn, rOut, halfZ) = (" << poly_params[0] << ", " << poly_params[1] << ", " << poly_params[2] << ")" << ", Location (mu2e coords [mm]) = " << poly_location << endl;
+      }
     }
 
     //===================== Transport Pipe ==========================
@@ -792,11 +800,12 @@ namespace mu2e {
                                         0.,
                                         CLHEP::twopi};
         const double FOVPlugZOffset = stmFOVCollHalfLength1 + _config.getDouble("stm.FOVcollimator.plug.offset") - FOVPlugParams[2];
+        const auto FOVPlugLocation =  G4ThreeVector(0., 0., FOVPlugZOffset) + stmFOVCollPositionInParent1;
         nestTubs("STM_FOVCollimatorPlug",
                  FOVPlugParams,
                  findMaterialOrThrow(_config.getString("stm.FOVcollimator.plug.material")),
                  0, //no rotation
-                 G4ThreeVector(0., 0., FOVPlugZOffset) + stmFOVCollPositionInParent1,
+                 FOVPlugLocation,
                  parentInfo.logical,
                  0,
                  STMisVisible,
@@ -805,15 +814,21 @@ namespace mu2e {
                  forceAuxEdgeVisible,
                  placePV,
                  doSurfaceCheck);
+
+        if ( verbosityLevel > 0) {
+          cout << __func__ << " STM_FOVCollimatorPlug   : Dimensions (rIn, rOut, halfZ) = (" << FOVPlugParams[0] << ", " << FOVPlugParams[1] << ", " << FOVPlugParams[2] << ")" << ", Location (mu2e coords [mm]) = " << FOVPlugLocation + parentInfo.centerInMu2e() << endl;
+        }
       }
     }
 
-    G4Tubs *tubFOVCollAbsorber = new G4Tubs("tubFOVCollAbsorber", 0.0, pSTMFOVCollimatorParams.hole1RadiusUpStr()-0.01, _config.getDouble("stm.FOVcollimator.absorber.halfLength"), 0.0, CLHEP::twopi );
-    VolumeInfo collimatorFOVAbsorber;
-    collimatorFOVAbsorber.name = "collimatorFOVAbsorber";
-    collimatorFOVAbsorber.solid = tubFOVCollAbsorber;
-    G4ThreeVector stmFOVCollAbsorberPositionInParent = stmFOVCollPositionInParent2 + G4ThreeVector(0.0,0.0, stmFOVCollHalfLength2-_config.getDouble("stm.FOVcollimator.absorber.halfLength"));
     if (_config.getBool("stm.FOVcollimator.absorber.build",false)){
+      G4Tubs *tubFOVCollAbsorber = new G4Tubs("tubFOVCollAbsorber", 0.0, pSTMFOVCollimatorParams.hole1RadiusUpStr()-0.01, _config.getDouble("stm.FOVcollimator.absorber.halfLength"), 0.0, CLHEP::twopi );
+      VolumeInfo collimatorFOVAbsorber;
+      collimatorFOVAbsorber.name = "collimatorFOVAbsorber";
+      collimatorFOVAbsorber.solid = tubFOVCollAbsorber;
+      G4ThreeVector stmFOVCollAbsorberPositionInParent = stmFOVCollPositionInParent2 + G4ThreeVector(0.0,0.0, stmFOVCollHalfLength2-_config.getDouble("stm.FOVcollimator.absorber.halfLength"));
+
+
              finishNesting(collimatorFOVAbsorber,
                     findMaterialOrThrow(_config.getString("stm.FOVcollimator.absorber.material")),
                     0,
@@ -826,20 +841,19 @@ namespace mu2e {
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck);
-    }
 
-    if (verbosityLevel>0){
-      std::cout<<__func__<<" STM FOV Coll (lead) z_center     = "<< stmFOVCollPositionInMu2e1.z() <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (lead) z_halflength = "<< stmFOVCollHalfLength1 <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (lead) z_min        = "<< stmFOVCollPositionInMu2e1.z()-stmFOVCollHalfLength1 <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (lead) z_max        = "<< stmFOVCollPositionInMu2e1.z()+stmFOVCollHalfLength1 <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) z_center     = "<< stmFOVCollPositionInMu2e2.z() <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) z_halflength = "<< stmFOVCollHalfLength2 <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) z_min        = "<< stmFOVCollPositionInMu2e2.z()-stmFOVCollHalfLength2 <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) z_max        = "<< stmFOVCollPositionInMu2e2.z()+stmFOVCollHalfLength2 <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) r_UpStr      = "<< pSTMFOVCollimatorParams.hole1RadiusUpStr() <<std::endl;
+             if (verbosityLevel>0){
+               std::cout<<__func__<<" STM FOV Coll (lead) z_center     = "<< stmFOVCollPositionInMu2e1.z() <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (lead) z_halflength = "<< stmFOVCollHalfLength1 <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (lead) z_min        = "<< stmFOVCollPositionInMu2e1.z()-stmFOVCollHalfLength1 <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (lead) z_max        = "<< stmFOVCollPositionInMu2e1.z()+stmFOVCollHalfLength1 <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (poly) z_center     = "<< stmFOVCollPositionInMu2e2.z() <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (poly) z_halflength = "<< stmFOVCollHalfLength2 <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (poly) z_min        = "<< stmFOVCollPositionInMu2e2.z()-stmFOVCollHalfLength2 <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (poly) z_max        = "<< stmFOVCollPositionInMu2e2.z()+stmFOVCollHalfLength2 <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (poly) r_UpStr      = "<< pSTMFOVCollimatorParams.hole1RadiusUpStr() <<std::endl;
+             }
     }
-
 
     //===================== Magnet and FOV Collimator Support Table ==========================
 
@@ -3445,6 +3459,10 @@ namespace mu2e {
       forceAuxEdgeVisible,
       placePV,
       doSurfaceCheck);
+
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " AbsorberPV   : Dimensions (halfX, halfY, halfZ) = (" << Absorber_hW << ", " << Absorber_hH << ", " << Absorber_hT << ")" << ", Location (mu2e coords [mm]) = " << stmAbsorberInParent + parentInfo.centerInMu2e() << endl;
+      }
 
    }
 
