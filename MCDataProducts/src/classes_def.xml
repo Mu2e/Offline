@@ -76,6 +76,10 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="mu2e::PtrStepPointMCVectorCollection"/>
 <class name="art::Wrapper<mu2e::PtrStepPointMCVectorCollection>"/>
 
+<class name="mu2e::SurfaceStep"/>
+<class name="mu2e::SurfaceStepCollection"/>
+<class name="art::Ptr<mu2e::SurfaceStep>"/>
+
 <class name="mu2e::MCTrajectoryPoint"/>
 <class name="std::vector<mu2e::MCTrajectoryPoint>"/>
 <class name="mu2e::MCTrajectory"/>

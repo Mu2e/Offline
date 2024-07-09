@@ -1,7 +1,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "Offline/KinKalGeom/inc/SurfaceId.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
 
 using namespace std;
 
@@ -36,6 +36,11 @@ namespace mu2e {
 
   std::map<SurfaceIdEnum::enum_type,std::string> const& SurfaceIdDetail::names(){
     return nam;
+  }
+
+  std::ostream& operator<<(std::ostream& ost, const SurfaceId& s ) {
+    ost << s.name() << ":" << s.index();
+    return ost;
   }
 
 }

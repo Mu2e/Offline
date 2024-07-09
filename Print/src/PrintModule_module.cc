@@ -43,6 +43,7 @@
 #include "Offline/Print/inc/StrawDigiMCPrinter.hh"
 #include "Offline/Print/inc/StrawDigiPrinter.hh"
 #include "Offline/Print/inc/StrawGasStepPrinter.hh"
+#include "Offline/Print/inc/SurfaceStepPrinter.hh"
 #include "Offline/Print/inc/StrawHitFlagPrinter.hh"
 #include "Offline/Print/inc/StrawHitPrinter.hh"
 #include "Offline/Print/inc/TimeClusterPrinter.hh"
@@ -113,6 +114,8 @@ class PrintModule : public art::EDAnalyzer {
         fhicl::Name("crvCoincidenceClusterPrinter")};
     fhicl::Table<ProductPrinter::Config> strawGasStepPrinter{
         fhicl::Name("strawGasStepPrinter")};
+    fhicl::Table<ProductPrinter::Config> surfaceStepPrinter{
+        fhicl::Name("surfaceStepPrinter")};
     fhicl::Table<ProductPrinter::Config> strawDigiPrinter{
         fhicl::Name("strawDigiPrinter")};
     fhicl::Table<ProductPrinter::Config> strawDigiADCWaveformPrinter{
@@ -218,6 +221,8 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
       conf().crvCoincidenceClusterPrinter()));
   _printers.push_back(
       make_unique<StrawGasStepPrinter>(conf().strawGasStepPrinter()));
+  _printers.push_back(
+      make_unique<SurfaceStepPrinter>(conf().surfaceStepPrinter()));
   _printers.push_back(make_unique<StrawDigiPrinter>(conf().strawDigiPrinter()));
   _printers.push_back(make_unique<StrawDigiADCWaveformPrinter>(
       conf().strawDigiADCWaveformPrinter()));
