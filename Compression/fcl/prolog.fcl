@@ -8,6 +8,7 @@ DetStepCompression : {
     strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
     caloShowerStepCompressionLevel : "noCompression"
     crvStepCompressionLevel : "noCompression"
+    surfaceStepCompressionLevel : "noCompression"
     simParticleCompressionLevel : "noCompression"
     stepPointMCCompressionLevel : "noCompression"
     keepNGenerations : -1
@@ -18,6 +19,7 @@ DetStepCompression : {
     strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
     caloShowerStepCompressionLevel : "noCompression"
     crvStepCompressionLevel : "noCompression"
+    surfaceStepCompressionLevel : "noCompression"
     simParticleCompressionLevel : "fullCompression" # only keep SimParticles related to other data products we are keeping
     stepPointMCCompressionLevel : "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
     keepNGenerations : -1
@@ -28,6 +30,7 @@ DetStepCompression : {
     strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
     caloShowerStepCompressionLevel : "noCompression"
     crvStepCompressionLevel : "noCompression"
+    surfaceStepCompressionLevel : "noCompression"
     simParticleCompressionLevel : "fullCompression" # only keep SimParticles related to other data products we are keeping
     stepPointMCCompressionLevel : "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
     keepNGenerations : 2
