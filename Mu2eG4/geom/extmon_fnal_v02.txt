@@ -227,11 +227,22 @@ vector<double> extMonFNAL.dn.module_yoffset = { 16.7, 0., -16.7 };
 vector<double> extMonFNAL.dn.module_zoffset = { 1., -1., 1. }; // just determines which side of the plane; all math is handed in constructExMonFNAL
 vector<double> extMonFNAL.dn.module_rotation = { 0., 0., 180. };
 
-//----------------------------------------------------------------
+//================================================================
 // The pixel chillers parameters'
 
-vector<double> extMonFNAL.pixelChiller.halfSize = { 50., 60., 70. };
-string         extMonFNAL.pixelChiller.materialName  = "MildSteel";
+vector<double> extMonFNAL.pixelChiller.halfSize = { 250.19, 379.73, 320.0 };
+string         extMonFNAL.pixelChiller.caseMaterialName  = "MildSteel";
+string         extMonFNAL.pixelChiller.PCBMaterialName = "Electronics";
+string         extMonFNAL.pixelChiller.freonMaterial = "R452A";
+string         extMonFNAL.pixelChiller.freonAltMaterial = "R449A";
+string         extMonFNAL.pixelChiller.C5CoolantMaterial = "C5Coolant";
+
+double extMonFNAL.pixelChillerCaseThickness = 1.5;
+double extMonFNAL.pixelChiller.PCBThickness = 2;
+double extMonFNAL.pixelChiller.PCBDistanceFromWall = 20;
+
+double extMonFNAL.pixelChiller.C5CoolantVolume = 1; //Unit is liters
+double extMonFNAL.pixelChiller.freonVolume = 1; //Unit is liters
 
 int extMonFNAL.numChillersInRoom = 4;
 

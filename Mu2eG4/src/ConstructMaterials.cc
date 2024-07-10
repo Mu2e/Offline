@@ -1669,7 +1669,60 @@ namespace mu2e {
       G4Material* ClosePackedExtMonSteelShot = new G4Material(mat.name, density*CLHEP::g/CLHEP::cm3, 1);
       ClosePackedExtMonSteelShot -> AddMaterial(findMaterialOrThrow("MildSteel"), 100*CLHEP::perCent);
     }
+/*
+    mat uniqueMaterialOrThrow("R-449A");
+    {
+      G4Material* = new G4Material(mat.name, 1.1488*CLHEP::g/CLHEP::cm3, 4);
+      G4Material* = new G4Material(
+    }
 
+*/
+    mat = uniqueMaterialOrThrow("R452A");
+    {
+     G4Material* R452A = new G4Material(mat.name, 1.1488*CLHEP::g/CLHEP::cm3, 3);
+
+     G4Element* eH  = getElementOrThrow("H");
+     G4Element* eC = getElementOrThrow("C");
+     G4Element* eF = getElementOrThrow("F");
+
+     //Add elements by mass fraction
+     R452A->AddElement( eH,   1.0709*CLHEP::perCent);
+     R452A->AddElement( eC,   23.178*CLHEP::perCent);
+     R452A->AddElement( eF,   75.7511*CLHEP::perCent);
+
+    }
+
+    mat = uniqueMaterialOrThrow("R449A");
+    {
+     G4Material* R452A = new G4Material(mat.name, 1.1141*CLHEP::g/CLHEP::cm3, 3);
+
+     G4Element* eH  = getElementOrThrow("H");
+     G4Element* eC  = getElementOrThrow("C");
+     G4Element* eF  = getElementOrThrow("F");
+
+     //Add elements by mass fraction
+     R452A->AddElement( eH,   1.191*CLHEP::perCent);
+     R452A->AddElement( eC,   22.232*CLHEP::perCent);
+     R452A->AddElement( eF,   76.577*CLHEP::perCent);
+
+    }
+
+    mat = uniqueMaterialOrThrow("C5Coolant");
+    {
+     G4Material* C5Coolant = new G4Material(mat.name, 0.965*CLHEP::g/CLHEP::cm3, 4);
+
+     G4Element* eH  = getElementOrThrow("H");
+     G4Element* eC  = getElementOrThrow("C");
+     G4Element* eSi = getElementOrThrow("Si");
+     G4Element* eO  = getElementOrThrow("O");
+
+     //Add elements by mass fraction
+     C5Coolant->AddElement( eH,   1.111*CLHEP::perCent);
+     C5Coolant->AddElement( eC,   44.444*CLHEP::perCent);
+     C5Coolant->AddElement( eSi,  34.567*CLHEP::perCent);
+     C5Coolant->AddElement( eO,   19.877*CLHEP::perCent);
+
+    }
     // Add new materials before this line
 
   }
