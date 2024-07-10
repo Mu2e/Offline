@@ -45,6 +45,7 @@
 #include "Offline/MCDataProducts/inc/CrvCoincidenceClusterMC.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "Offline/MCDataProducts/inc/SurfaceStep.hh"
 
 namespace mu2e {
   class CompressDigiMCs;
@@ -83,6 +84,7 @@ namespace mu2e {
   typedef std::map<art::Ptr<mu2e::StrawGasStep>, art::Ptr<mu2e::StrawGasStep> > StrawGasStepRemap;
   typedef std::map<art::Ptr<mu2e::CaloShowerStep>, art::Ptr<mu2e::CaloShowerStep> > CaloShowerStepRemap;
   typedef std::map<art::Ptr<mu2e::CrvStep>, art::Ptr<mu2e::CrvStep> > CrvStepRemap;
+  typedef std::map<art::Ptr<mu2e::SurfaceStep>, art::Ptr<mu2e::SurfaceStep> > SurfaceStepRemap;
 }
 
 
@@ -97,6 +99,7 @@ public:
     fhicl::Atom<art::InputTag> crvDigiMCTag{Name("crvDigiMCTag"), Comment("InputTag for the CrvDigiMCCollection")};
     fhicl::Sequence<art::InputTag> simParticleTags{Name("simParticleTags"), Comment("Sequence of InputTags to the SimParticleCollections")};
     fhicl::Sequence<art::InputTag> extraStepPointMCTags{Name("extraStepPointMCTags"), Comment("Sequence of InputTags for additional StepPointMCCollections that you want to keep the steps from")};
+    fhicl::Sequence<art::InputTag> surfaceStepTags{Name("surfaceStepTags"), Comment("InputTags for SurfaceSteps we want to keep")};
     fhicl::Sequence<art::InputTag> caloShowerStepTags{Name("caloShowerStepTags"), Comment("Sequence of InputTags for CaloShowerSteps")};
     fhicl::Atom<art::InputTag> caloShowerSimTag{Name("caloShowerSimTag"), Comment("InputTag for the CaloShowerSim")};
     fhicl::Atom<art::InputTag> caloShowerROTag{Name("caloShowerROTag"), Comment("InputTag for the CaloShowerRO")};
@@ -117,7 +120,7 @@ public:
 
     fhicl::Atom<bool> noCompression{Name("noCompression"), Comment("Set to true to turn off compression"), false};
 
-    // detector steps we may want to keep (for the moment, just CrvSteps)
+    // detector steps we may want to keep all of
     fhicl::Sequence<art::InputTag> crvStepsToKeep{Name("crvStepsToKeep"), Comment("InputTags for CrvSteps we want to keep")};
   };
   typedef art::EDProducer::Table<Config> Parameters;
@@ -135,6 +138,7 @@ public:
   art::Ptr<StepPointMC> copyStepPointMC(const mu2e::StepPointMC& old_step, const InstanceLabel& instance);
   art::Ptr<StrawGasStep> copyStrawGasStep(const mu2e::StrawGasStep& old_step);
   art::Ptr<CrvStep> copyCrvStep(const mu2e::CrvStep& old_step);
+  art::Ptr<SurfaceStep> copySurfaceStep(const mu2e::SurfaceStep& old_step);
   art::Ptr<mu2e::CaloShowerStep> copyCaloShowerStep(const mu2e::CaloShowerStep& old_calo_shower_step);
   void copyCaloShowerSim(const mu2e::CaloShowerSim& old_calo_shower_sim, const CaloShowerStepRemap& remap);
   void copyCaloShowerRO(const mu2e::CaloShowerRO& old_calo_shower_step_ro, const CaloShowerStepRemap& remap);
@@ -150,6 +154,7 @@ private:
   art::InputTag _crvDigiMCTag;
   std::vector<art::InputTag> _simParticleTags;
   std::vector<art::InputTag> _extraStepPointMCTags;
+  std::vector<art::InputTag> _surfaceStepTags;
   art::InputTag _caloClusterMCTag;
   std::vector<art::InputTag> _crvCoincClusterMCTags;
   art::InputTag _primaryParticleTag;
@@ -180,6 +185,7 @@ private:
   std::unique_ptr<CaloShowerStepCollection> _newCaloShowerSteps;
   std::unique_ptr<CaloShowerSimCollection> _newCaloShowerSims;
   std::unique_ptr<CaloShowerROCollection> _newCaloShowerROs;
+  std::unique_ptr<SurfaceStepCollection> _newSurfaceSteps;
 
   // for StepPointMCs, SimParticles and GenParticles we also need reference their new locations with art::Ptrs and so need their ProductIDs and Getters
   std::map<InstanceLabel, art::ProductID> _newStepPointMCsPID;
@@ -197,6 +203,8 @@ private:
   std::map<art::ProductID, const art::EDProductGetter*> _oldCaloShowerStepGetter;
   art::ProductID _newCaloHitMCsPID;
   const art::EDProductGetter* _newCaloHitMCGetter;
+  art::ProductID _newSurfaceStepsPID;
+  const art::EDProductGetter* _newSurfaceStepGetter;
 
   // record the SimParticles that we are keeping so we can use compressSimParticleCollection to do all the work for us
   std::map<art::ProductID, SimParticleSet> _simParticlesToKeep;
@@ -245,6 +253,7 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
     _crvDigiMCTag(conf().crvDigiMCTag()),
     _simParticleTags(conf().simParticleTags()),
     _extraStepPointMCTags(conf().extraStepPointMCTags()),
+    _surfaceStepTags(conf().surfaceStepTags()),
     _caloClusterMCTag(conf().caloClusterMCTag()),
     _crvCoincClusterMCTags(conf().crvCoincClusterMCTags()),
     _primaryParticleTag(conf().primaryParticleTag()),
@@ -256,8 +265,8 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
   _caloShowerSimTag(conf().caloShowerSimTag()),
   _caloShowerROTag(conf().caloShowerROTag()),
   _rekeySimParticleCollection(conf().rekeySimParticleCollection()),
-                                     _crvStepsToKeep(conf().crvStepsToKeep()),
-                                   _noCompression(conf().noCompression())
+    _crvStepsToKeep(conf().crvStepsToKeep()),
+    _noCompression(conf().noCompression())
 {
   // Call appropriate produces<>() functions here.
   produces<StrawDigiMCCollection>();
@@ -274,6 +283,7 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
   produces<CrvStepCollection>();
   produces<SimParticleCollection>();
   produces<GenParticleCollection>();
+  produces<SurfaceStepCollection>();
 
   // Two possible compressions for calorimeter
   if (_caloShowerStepTags.size() != 0) {
@@ -315,6 +325,10 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   _newCrvSteps = std::unique_ptr<CrvStepCollection>(new CrvStepCollection);
   _newCrvStepsPID = event.getProductID<CrvStepCollection>();
   _newCrvStepGetter = event.productGetter(_newCrvStepsPID);
+
+  _newSurfaceSteps = std::unique_ptr<SurfaceStepCollection>(new SurfaceStepCollection);
+  _newSurfaceStepsPID = event.getProductID<SurfaceStepCollection>();
+  _newSurfaceStepGetter = event.productGetter(_newSurfaceStepsPID);
 
   _newSimParticles = std::unique_ptr<SimParticleCollection>(new SimParticleCollection);
   _newSimParticlesPID = event.getProductID<SimParticleCollection>();
@@ -541,6 +555,30 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     }
   }
 
+  // Now compress the SurfaceSteps
+  for (const auto& surfaceStepsTag : _surfaceStepTags) {
+
+    const auto& oldSurfaceStepsHandle = event.getValidHandle<mu2e::SurfaceStepCollection>(surfaceStepsTag);
+    for (const auto& surfaceStep : *oldSurfaceStepsHandle) {
+      for (const auto& simPartsToKeep : _simParticlesToKeep) {
+        const art::ProductID& oldProdID = simPartsToKeep.first;
+        if (surfaceStep.simParticle().id() != oldProdID) {
+          continue;
+        }
+        if (!_noCompression) { // if we want to compress
+          const SimParticleSet& alreadyKeptSimParts = simPartsToKeep.second;
+          for (const auto& alreadyKeptSimPart : alreadyKeptSimParts) {
+            if (surfaceStep.simParticle() == alreadyKeptSimPart) {
+              copySurfaceStep(surfaceStep);
+            }
+          }
+        }
+        else { // if we don't want to compress
+          copySurfaceStep(surfaceStep);
+        }
+      }
+    }
+  }
   // Now compress the SimParticleCollections into their new collections
   KeyRemap keyRemap;
   SimParticleRemapping remap;
@@ -605,6 +643,12 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       art::Ptr<SimParticle> newSimPtr = safeRemapRef(remap,i_stepPointMC.simParticle(),__LINE__);
       i_stepPointMC.simParticle() = newSimPtr;
     }
+  }
+
+  // Update SurfaceSteps
+  for (auto& i_surfaceStep : *_newSurfaceSteps) {
+    art::Ptr<SimParticle> newSimPtr = safeRemapRef(remap,i_surfaceStep.simParticle(),__LINE__);
+    i_surfaceStep.simParticle() = newSimPtr;
   }
 
   // Update the StrawGasSteps
@@ -687,6 +731,7 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   for (const auto& i_instance : _newStepPointMCInstances) {
     event.put(std::move(_newStepPointMCs.at(i_instance)), i_instance);
   }
+  event.put(std::move(_newSurfaceSteps));
   event.put(std::move(_newStrawDigiMCs));
   event.put(std::move(_newStrawGasSteps));
   event.put(std::move(_newCrvSteps));
@@ -883,6 +928,16 @@ art::Ptr<mu2e::StepPointMC> mu2e::CompressDigiMCs::copyStepPointMC(const mu2e::S
   _newStepPointMCs.at(instance)->push_back(new_step);
 
   return art::Ptr<StepPointMC>(_newStepPointMCsPID.at(instance), _newStepPointMCs.at(instance)->size()-1, _newStepPointMCGetter.at(instance));
+}
+
+art::Ptr<mu2e::SurfaceStep> mu2e::CompressDigiMCs::copySurfaceStep(const mu2e::SurfaceStep& old_step) {
+
+  keepSimParticle(old_step.simParticle());
+
+  SurfaceStep new_step(old_step);
+  _newSurfaceSteps->push_back(new_step);
+
+  return art::Ptr<SurfaceStep>(_newSurfaceStepsPID, _newSurfaceSteps->size()-1, _newSurfaceStepGetter);
 }
 
 art::Ptr<mu2e::StrawGasStep> mu2e::CompressDigiMCs::copyStrawGasStep(const mu2e::StrawGasStep& old_step) {

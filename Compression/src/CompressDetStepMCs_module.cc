@@ -7,6 +7,7 @@
 // - StrawGasSteps : noCompression
 // - CaloShowerSteps : noCompression
 // - CrvSteps : noCompression
+// - SurfaceSteps : noCompression
 // - SimParticles : noCompression, fullCompression
 // - StepPointMCs : noCompression, simParticleCompression
 // - MCTrajectories : noCompression, simParticleCompression
@@ -35,6 +36,7 @@
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
+#include "Offline/MCDataProducts/inc/SurfaceStep.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
@@ -88,6 +90,7 @@ public:
     fhicl::Atom<std::string> strawGasStepCompressionLevel{Name("strawGasStepCompressionLevel"), Comment("Compression level for StrawGasSteps")};
     fhicl::Atom<std::string> caloShowerStepCompressionLevel{Name("caloShowerStepCompressionLevel"), Comment("Compression level for CaloShowerSteps")};
     fhicl::Atom<std::string> crvStepCompressionLevel{Name("crvStepCompressionLevel"), Comment("Compression level for CrvSteps")};
+    fhicl::Atom<std::string> surfaceStepCompressionLevel{Name("surfaceStepCompressionLevel"), Comment("Compression level for SurfaceSteps")};
     fhicl::Atom<std::string> simParticleCompressionLevel{Name("simParticleCompressionLevel"), Comment("Compression level for SimParticles")};
     fhicl::Atom<std::string> stepPointMCCompressionLevel{Name("stepPointMCCompressionLevel"), Comment("Compression level for StepPointMCs")};
     fhicl::Atom<int> keepNGenerations{Name("keepNGenerations"), Comment("Number of generations to keep in the genealogy")};
@@ -102,6 +105,7 @@ public:
     fhicl::Atom<art::InputTag> strawGasStepTag{Name("strawGasStepTag"), Comment("InputTag for the StrawGasSteps")};
     fhicl::Atom<art::InputTag> caloShowerStepTag{Name("caloShowerStepTag"), Comment("InputTag for CaloShowerSteps")};
     fhicl::Atom<art::InputTag> crvStepTag{Name("crvStepTag"), Comment("InputTag for CrvSteps")};
+    fhicl::Atom<art::InputTag> surfaceStepTag{Name("surfaceStepTag"), Comment("InputTag for SurfaceSteps")};
     fhicl::Sequence<art::InputTag> stepPointMCTags{Name("stepPointMCTags"), Comment("Sequence of InputTags for StepPointMCCollections (e.g. virtualdetector)")};
     fhicl::Sequence<art::InputTag> simParticleTags{Name("simParticleTags"), Comment("InputTags for the SimParticleCollections")};
     fhicl::Atom<art::InputTag> mcTrajectoryTag{Name("mcTrajectoryTag"), Comment("InputTag for the MCTrajectory")};
@@ -124,6 +128,8 @@ public:
   void updateCaloShowerSteps();
   void compressCrvSteps(const art::Event& event);
   void updateCrvSteps();
+  void compressSurfaceSteps(const art::Event& event);
+  void updateSurfaceSteps();
   void compressStepPointMCs(const art::Event& event);
   void updateStepPointMCs();
   void compressSimParticles(const art::Event& event);
@@ -138,6 +144,7 @@ private:
   art::InputTag _strawGasStepTag;
   art::InputTag _caloShowerStepTag;
   art::InputTag _crvStepTag;
+  art::InputTag _surfaceStepTag;
   std::vector<art::InputTag> _stepPointMCTags;
   std::vector<art::InputTag> _simParticleTags;
   art::InputTag _mcTrajectoryTag;
@@ -145,6 +152,7 @@ private:
   mu2e::CompressionLevel _strawGasStepCompressionLevel;
   mu2e::CompressionLevel _caloShowerStepCompressionLevel;
   mu2e::CompressionLevel _crvStepCompressionLevel;
+  mu2e::CompressionLevel _surfaceStepCompressionLevel;
   mu2e::CompressionLevel _simParticleCompressionLevel;
   mu2e::CompressionLevel _stepPointMCCompressionLevel;
   int _keepNGenerations;
@@ -154,12 +162,14 @@ private:
   art::ProductToken<mu2e::StrawGasStepCollection> _strawGasStepToken;
   art::ProductToken<mu2e::CaloShowerStepCollection> _caloShowerStepToken;
   art::ProductToken<mu2e::CrvStepCollection> _crvStepToken;
+  art::ProductToken<mu2e::SurfaceStepCollection> _surfaceStepToken;
   art::ProductToken<mu2e::MCTrajectoryCollection> _mcTrajectoryToken;
 
   // unique_ptrs to the new output collections
   std::unique_ptr<mu2e::StrawGasStepCollection> _newStrawGasSteps;
   std::unique_ptr<CaloShowerStepCollection> _newCaloShowerSteps;
   std::unique_ptr<CrvStepCollection> _newCrvSteps;
+  std::unique_ptr<SurfaceStepCollection> _newSurfaceSteps;
   std::map<InstanceLabel, std::unique_ptr<StepPointMCCollection> > _newStepPointMCs;
   std::unique_ptr<MCTrajectoryCollection> _newMCTrajectories;
   // temporary storage for MCTrajectories
@@ -198,12 +208,14 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
     _strawGasStepTag(conf().strawGasStepTag()),
     _caloShowerStepTag(conf().caloShowerStepTag()),
     _crvStepTag(conf().crvStepTag()),
+    _surfaceStepTag(conf().surfaceStepTag()),
     _stepPointMCTags(conf().stepPointMCTags()),
     _simParticleTags(conf().simParticleTags()),
     _mcTrajectoryTag(conf().mcTrajectoryTag()),
     _strawGasStepCompressionLevel(mu2e::CompressionLevel::findByName(conf().compressionOptions().strawGasStepCompressionLevel())),
     _caloShowerStepCompressionLevel(mu2e::CompressionLevel::findByName(conf().compressionOptions().caloShowerStepCompressionLevel())),
     _crvStepCompressionLevel(mu2e::CompressionLevel::findByName(conf().compressionOptions().crvStepCompressionLevel())),
+    _surfaceStepCompressionLevel(mu2e::CompressionLevel::findByName(conf().compressionOptions().surfaceStepCompressionLevel())),
     _simParticleCompressionLevel(mu2e::CompressionLevel::findByName(conf().compressionOptions().simParticleCompressionLevel())),
   _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(conf().compressionOptions().stepPointMCCompressionLevel())),
   _keepNGenerations(conf().compressionOptions().keepNGenerations()),
@@ -212,6 +224,7 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
   _strawGasStepToken{mayConsume<mu2e::StrawGasStepCollection>(conf().strawGasStepTag())},
   _caloShowerStepToken{mayConsume<mu2e::CaloShowerStepCollection>(conf().caloShowerStepTag())},
   _crvStepToken{mayConsume<mu2e::CrvStepCollection>(conf().crvStepTag())},
+  _surfaceStepToken{mayConsume<mu2e::SurfaceStepCollection>(conf().surfaceStepTag())},
   _mcTrajectoryToken{mayConsume<mu2e::MCTrajectoryCollection>(conf().mcTrajectoryTag())}
 {
   // Check that we have valid compression levels for this module
@@ -227,6 +240,7 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
   produces<StrawGasStepCollection>();
   produces<CaloShowerStepCollection>();
   produces<CrvStepCollection>();
+  produces<SurfaceStepCollection>();
 
   for (const auto& i_tag : _stepPointMCTags) {
     consumes<StepPointMCCollection>(i_tag);
@@ -240,6 +254,7 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   _newStrawGasSteps = std::unique_ptr<StrawGasStepCollection>(new StrawGasStepCollection);
   _newCaloShowerSteps = std::unique_ptr<CaloShowerStepCollection>(new CaloShowerStepCollection);
   _newCrvSteps = std::unique_ptr<CrvStepCollection>(new CrvStepCollection);
+  _newSurfaceSteps = std::unique_ptr<SurfaceStepCollection>(new SurfaceStepCollection);
 
   for (const auto& i_tag : _stepPointMCTags) {
     _newStepPointMCs[i_tag.instance()] = std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection);
@@ -263,6 +278,7 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   if (_strawGasStepTag != "") { compressStrawGasSteps(event); }
   if (_caloShowerStepTag != "") { compressCaloShowerSteps(event); }
   if (_crvStepTag != "") { compressCrvSteps(event); }
+  if (_surfaceStepTag != "") { compressSurfaceSteps(event); }
   if (_stepPointMCCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
     // if we are not compressing StepPointMCs, then
     // we want to make sure we record all their SimParticles
@@ -299,6 +315,7 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   if (_strawGasStepTag != "") { updateStrawGasSteps(); }
   if (_caloShowerStepTag != "") { updateCaloShowerSteps(); }
   if (_crvStepTag != "") { updateCrvSteps(); }
+  if (_surfaceStepTag != "") { updateSurfaceSteps(); }
   updateStepPointMCs();
   if (_mcTrajectoryTag != "") { updateMCTrajectories(); }
 
@@ -306,6 +323,7 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   event.put(std::move(_newStrawGasSteps));
   event.put(std::move(_newCaloShowerSteps));
   event.put(std::move(_newCrvSteps));
+  event.put(std::move(_newSurfaceSteps));
   for (const auto& i_tag : _stepPointMCTags) {
     event.put(std::move(_newStepPointMCs.at(i_tag.instance())), i_tag.instance());
   }
@@ -374,6 +392,26 @@ void mu2e::CompressDetStepMCs::compressCrvSteps(const art::Event& event) {
   }
 }
 
+void mu2e::CompressDetStepMCs::compressSurfaceSteps(const art::Event& event) {
+  const auto& surfaceStepsHandle = event.getValidHandle(_surfaceStepToken);
+  const auto& surfaceSteps = *surfaceStepsHandle;
+  if(_debugLevel>0 && surfaceSteps.size()>0) {
+    std::cout << "Compressing SurfaceSteps from " << _surfaceStepTag << std::endl;
+  }
+  for (const auto& i_surfaceStep : surfaceSteps) {
+    if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
+      recordSimParticle(i_surfaceStep.simParticle());
+    }
+    SurfaceStep newSurfaceStep(i_surfaceStep);
+    _newSurfaceSteps->push_back(newSurfaceStep);
+  }
+  if(_surfaceStepCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+    if (_newSurfaceSteps->size() != surfaceSteps.size()) {
+      throw cet::exception("CompressDetStepMCs") << "Number of SurfaceSteps in output collection (" << _newSurfaceSteps->size() << ") does not match the number of SurfaceSteps in the input collection (" << surfaceSteps.size() << ") even though no compression has been requested (surfaceStepCompressionLevel = \"" << _surfaceStepCompressionLevel.name() << "\")" << std::endl;
+    }
+  }
+}
+
 void mu2e::CompressDetStepMCs::updateStrawGasSteps() {
   for (auto& i_strawGasStep : *_newStrawGasSteps) {
     const auto& oldSimPtr = i_strawGasStep.simParticle();
@@ -407,6 +445,18 @@ void mu2e::CompressDetStepMCs::updateCrvSteps() {
     }
 
     i_crvStep.simParticle() = newSimPtr;
+  }
+}
+
+void mu2e::CompressDetStepMCs::updateSurfaceSteps() {
+  for (auto& i_surfaceStep : *_newSurfaceSteps) {
+    const auto& oldSimPtr = i_surfaceStep.simParticle();
+    art::Ptr<mu2e::SimParticle> newSimPtr = safeRemapRef( oldSimPtr, __LINE__);
+    if(_debugLevel>0) {
+      std::cout << "Updating SimParticlePtr in SurfaceStep from " << oldSimPtr << " to " << newSimPtr << std::endl;
+    }
+
+    i_surfaceStep.simParticle() = newSimPtr;
   }
 }
 
@@ -700,6 +750,10 @@ void mu2e::CompressDetStepMCs::checkCompressionLevels() {
 
   if (_crvStepCompressionLevel != mu2e::CompressionLevel::kNoCompression) {
     throw cet::exception("CompressDetStepMCs") << "This module does not allow CrvSteps to be compressed with compression level \"" << _crvStepCompressionLevel.name() <<"\"" << std::endl;
+  }
+
+  if (_surfaceStepCompressionLevel != mu2e::CompressionLevel::kNoCompression) {
+    throw cet::exception("CompressDetStepMCs") << "This module does not allow SurfaceSteps to be compressed with compression level \"" << _surfaceStepCompressionLevel.name() <<"\"" << std::endl;
   }
 
   if (_simParticleCompressionLevel != mu2e::CompressionLevel::kNoCompression &&
