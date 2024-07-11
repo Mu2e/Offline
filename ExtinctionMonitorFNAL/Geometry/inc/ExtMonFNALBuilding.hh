@@ -26,12 +26,21 @@ namespace mu2e {
     //----------------------------------------------------------------
     class CollimatorExtMonFNAL {
       friend class ExtMonFNALBuildingMaker;
+      friend class ExtMonFNALBuilding;
+      // Private ctr: the class should be only obtained via the maker
+      CollimatorExtMonFNAL();
 
       std::string _name;
       double _horizontalLength;
       std::vector<double> _channelRadius;
       std::vector<double> _alignmentPlugRadius;
-      std::vector<double> _alignmentHoleRadius;
+      std::vector<double> _alignmentPlugInnerShellThickness;
+      std::vector<double> _alignmentPlugOuterShellThickness;
+      std::vector<double> _shotLinerInnerRadius;
+      std::vector<double> _shotLinerInnerThickness;
+      double _shotLinerOuterRadius;
+      double _shotLinerOuterThickness;
+      double _length;
       double _radiusTransitiondZ;
       double _angleH;
       double _angleV;
@@ -45,8 +54,19 @@ namespace mu2e {
       double halfLength() const;
 
       const std::vector<double> &channelRadius() const { return _channelRadius; }
+
+      //alignment plug radius contains inner and outer shell thicknesses
+      //alignmentPlugInnerShellThickness corresponds to the collimator channel steel shell
+      //alignmentPlugOuterShellThickness corresopnds to the steel shell surrounding the concrete
       const std::vector<double> &alignmentPlugRadius() const { return _alignmentPlugRadius; }
-      const std::vector<double> &alignmentHoleRadius() const { return _alignmentHoleRadius; }
+      const std::vector<double> &alignmentPlugInnerShellThickness() const { return _alignmentPlugInnerShellThickness; }
+      const std::vector<double> &alignmentPlugOuterShellThickness() const { return _alignmentPlugOuterShellThickness; }
+
+      const std::vector<double> &shotLinerInnerRadius() const { return _shotLinerInnerRadius; }
+      const std::vector<double> &shotLinerInnerThickness() const { return _shotLinerInnerThickness; }
+      double shotLinerOuterRadius() const { return _shotLinerOuterRadius; }
+      double shotLinerOuterThickness() const { return _shotLinerOuterThickness; }
+      double length() const { return _length; }
 
       // 0 means sharp jumb between the radii, >0 is linear change from r1 at -dz to r2 at +dz
       double radiusTransitiondZ() const { return _radiusTransitiondZ; }
