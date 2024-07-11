@@ -26,7 +26,7 @@ vector<int> physicsParams.freeLifePDGId   = {  211   , 312   ,  13    };
 vector<double> physicsParams.freeLifetime =  { 26.033, 12.38 , 2196.98};
 
 // Available stopping target materials
-vector<string> physicsParams.stoppingTargets = {"Al","Ti","Cu","Se","Sb","Au","C","IPA"};
+vector<string> physicsParams.stoppingTargets = {"Al","Ti","Cu","Se","Sb","Au","C","IPA", "H"};
 
 // the first set of target material info is coded as required for each material
 
@@ -40,8 +40,9 @@ double physicsParams.Cu.decayTime      = 164.;
 double physicsParams.Se.decayTime      = 164.;
 double physicsParams.Sb.decayTime      =  92.;
 double physicsParams.Au.decayTime      =  73.;
-double physicsParams.C.decayTime       =  2050;
 double physicsParams.IPA.decayTime     =  2050; //TODO Assumes Carbon for now
+double physicsParams.C.decayTime       =  2026;
+double physicsParams.H.decayTime       =  2195;
 
 // Decay fractions
 double physicsParams.Al.decayFraction  = 0.39;
@@ -50,8 +51,9 @@ double physicsParams.Cu.decayFraction  = 0.07;
 double physicsParams.Se.decayFraction  = 0.07;
 double physicsParams.Sb.decayFraction  = 0.04;
 double physicsParams.Au.decayFraction  = 0.03;
-double physicsParams.C.decayFraction  = 0.86;
 double physicsParams.IPA.decayFraction  = 0.86; //TODO Assumes Carbon for now
+double physicsParams.C.decayFraction  = 0.922;
+double physicsParams.H.decayFraction  = 0.999;
 
 // - Atomic numbers
 int    physicsParams.Al.atomicNumber   = 13;
@@ -60,8 +62,9 @@ int    physicsParams.Cu.atomicNumber   = 29;
 int    physicsParams.Se.atomicNumber   = 34;
 int    physicsParams.Sb.atomicNumber   = 51;
 int    physicsParams.Au.atomicNumber   = 79;
-int    physicsParams.C.atomicNumber    = 6;
 int    physicsParams.IPA.atomicNumber  = 6; //TODO Assumes Carbon for now
+int    physicsParams.C.atomicNumber    = 6;
+int    physicsParams.H.atomicNumber    = 1;
 
 // - Standard atomic weights in amu
 double physicsParams.Al.atomicMass     = 26.981539; // NIST value as of 2013 July 10
@@ -70,8 +73,9 @@ double physicsParams.Cu.atomicMass     = 63.546   ; // NIST value as of ""
 double physicsParams.Se.atomicMass     = 78.96    ; // NIST value as of ""
 double physicsParams.Sb.atomicMass     = 126.9045 ; // NIST value as of ""
 double physicsParams.Au.atomicMass     = 196.96657; // NIST value as of ""
-double physicsParams.C.atomicMass      = 12.0107; // NIST value as of ""
 double physicsParams.IPA.atomicMass    = 12.0107; // NIST value as of ""
+double physicsParams.C.atomicMass      = 12.0107; // NIST value as of ""
+double physicsParams.H.atomicMass      = 1.007975; // NIST value as of 2024
 
 // Czarnecki coefficients - Phys. Rev. D 84, 013006 (2011)
 // - Poly. 5 approximation
@@ -81,8 +85,21 @@ double physicsParams.Cu.czarneckiCoefficient = 1.14e-15;
 double physicsParams.Se.czarneckiCoefficient = 1.62e-15;
 double physicsParams.Sb.czarneckiCoefficient = 3.57e-15;
 double physicsParams.Au.czarneckiCoefficient = 4.69e-15;
-double physicsParams.C.czarneckiCoefficient  =  3.55e-18; //From Julian Heeck et al
 double physicsParams.IPA.czarneckiCoefficient  =  3.55e-18;  //From Julian Heeck et al
+double physicsParams.C.czarneckiCoefficient  =  3.55e-18; //From Julian Heeck et al
+double physicsParams.H.czarneckiCoefficient  =  0.0; // TODO
+
+// single-bond atomic radii in mm
+// Pyykko P, Atsumi M., Molecular double-bond covalent radii for elements Li-E112. Chemistry. 2009 Nov 23;15(46):12770-9. doi: 10.1002/chem.200901472. PMID: 19856342.
+double physicsParams.Al.atomicRadius = 126.0e-9;
+double physicsParams.Ti.atomicRadius = 136.0e-9;
+double physicsParams.Cu.atomicRadius = 112.0e-9;
+double physicsParams.Se.atomicRadius = 116.0e-9;
+double physicsParams.Sb.atomicRadius = 140.0e-9;
+double physicsParams.Au.atomicRadius = 124.0e-9;
+double physicsParams.IPA.atomicRadius = 75.0e-9; // assuming carbon
+double physicsParams.C.atomicRadius = 75.0e-9;
+double physicsParams.H.atomicRadius = 32.0e-9;
 
 // the following target material info is coded as optional for a material
 
