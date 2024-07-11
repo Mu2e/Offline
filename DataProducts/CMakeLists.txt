@@ -12,6 +12,7 @@ cet_make_library(
       src/StrawId.cc
       src/StrawIdMask.cc
       src/StrawStatus.cc
+      src/SurfaceId.cc
       src/VirtualDetectorId.cc
     LIBRARIES PUBLIC
       ROOT::MathMore
