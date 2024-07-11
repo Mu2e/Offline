@@ -43,9 +43,7 @@ double extMonFNAL.collimator1.shotLinerOuterThickness = 9.7;
 double extMonFNAL.collimator1.length = 4203.7;
 
 // Steel Shot material
-// Density calcuated by multiplying the density of 'normal steel' (7.85g/cm^3)
-// by the densest packing of spheres (63.5%)
-string         extMonFNAL.collimator1.shot.materialName  = "SteelShot";
+string         extMonFNAL.collimator1.shot.materialName  = "ClosePackedExtMonSteelShot";
 
 // Transition between the two radii of the plug and hole happens over dz.
 double extMonFNAL.collimator1.radiusTransitiondZ = 0;
@@ -128,9 +126,7 @@ double extMonFNAL.collimator2.shotLinerOuterThickness = 9.7;
 double extMonFNAL.collimator2.length = 2298.7;
 
 // Steel Shot Material
-// Calcuated by multiplying the density of 'normal steel' (7.85g/cm^3)
-// by the densest packing of spheres (63.5%)
-string         extMonFNAL.collimator2.shot.materialName  = "SteelShot";
+string         extMonFNAL.collimator2.shot.materialName  = "ClosePackedExtMonSteelShot";
 
 
 
