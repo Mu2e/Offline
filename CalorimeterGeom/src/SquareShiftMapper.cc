@@ -4,33 +4,29 @@
 //
 //  original author : Bertrand Echenard (Caltech)
 //
-//
 // Use basis vector, l and k, defined as
 // l = up right
 // k = down right
 //
-/*
-
-       --------------------
-       |         |        |
-       |  0 -1   |   1 0  |
-       |         |        |
-       |         |        |
- ------------------------------
- |         |         |        |
- |  -1 -1  |   0 0   |  1 1   |   l,k coordinates
- |         |         |        |
- |         |         |        |
- ------------------------------
-       |         |        |
-       |  -1 0   |  0 1   |
-       |         |        |
-       |         |        |
-       --------------------
-
-  steps :  (1,1) (0,1) (-1,0) (-1,-1) (0,-1) (1,0) (clockwise from top left corner)
-
-*/
+//       --------------------
+//       |         |        |
+//       |  0 -1   |   1 0  |
+//       |         |        |
+//       |         |        |
+// ------------------------------
+// |         |         |        |
+// |  -1 -1  |   0 0   |  1 1   |   l,k coordinates
+// |         |         |        |
+// |         |         |        |
+// ------------------------------
+//       |         |        |
+//       |  -1 0   |  0 1   |
+//       |         |        |
+//       |         |        |
+//       --------------------
+//
+//  steps :  (1,1) (0,1) (-1,0) (-1,-1) (0,-1) (1,0) (clockwise from top left corner)
+//
 // Tesselation algorithm: tessalate in "rings" from the center
 //   for each ring, start at 0,-l (top left corner),
 //   then go n time each step to create the ring

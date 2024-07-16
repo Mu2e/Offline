@@ -7,10 +7,10 @@ double calorimeter.caloMotherZ0               = 11842;
 double calorimeter.caloMotherZ1               = 13220;
 double calorimeter.vdThickness                = 0.02;
 
-double calorimeter.diskInAlRingRIn            = 346;
-double calorimeter.diskInAlRingZLength        = 10;
-double calorimeter.diskInCFRingRIn            = 356.;
-double calorimeter.diskInCFRingROut           = 361.;
+double calorimeter.diskInAlRingRIn            = 336;
+double calorimeter.diskInAlRingZLength        = 14;
+double calorimeter.diskInCFRingRIn            = 356;
+double calorimeter.diskInCFRingROut           = 360.;
 double calorimeter.diskCrystalRIn             = 374.;
 double calorimeter.diskCrystalROut            = 660.;
 double calorimeter.diskCaseRingROut           = 672.;

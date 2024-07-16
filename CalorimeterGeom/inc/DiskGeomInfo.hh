@@ -28,8 +28,8 @@ namespace mu2e {
              backFaceCenter_       (CLHEP::Hep3Vector(0,0,0)),
              innerEnvelope_        (0),
              outerEnvelope_        (0),
-             FEBZOffset_         (0),
-             FEBZLength_         (0)
+             FEBZOffset_           (0),
+             FEBZLength_           (0)
            {}
 
            const CLHEP::Hep3Vector&  size()                  const {return size_; }

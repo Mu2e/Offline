@@ -76,8 +76,6 @@ namespace mu2e {
               crystalList_.push_back(Crystal(nCrystal, id_, pos, pos, size));
               ++nCrystal;
           }
-
-          fixCrystalPosition();
       }
 
       //-----------------------------------------------------------------------------
@@ -101,9 +99,6 @@ namespace mu2e {
               CLHEP::Hep3Vector pos   = posFF + crystalOriginInDisk;
               CLHEP::Hep3Vector size  = reader.size(i);
 
-              if (!isInsideDisk(pos.x(),pos.y(),size.x(),size.y()))
-                throw cet::exception("Disk") << " The crystal at position="<<posFF<<" does not fit inside the disk...\n";
-
               int mapIdx = crystalMap_->indexFromXY(pos.x()/nominalCellSize_,pos.y()/nominalCellSize_);
               CLHEP::Hep2Vector idealPosition = nominalCellSize_*crystalMap_->xyFromIndex(mapIdx);
 
@@ -116,8 +111,6 @@ namespace mu2e {
           fixCrystalPosition();
           */
       }
-
-
 
 
       //-----------------------------------------------------------------------------
@@ -148,7 +141,7 @@ namespace mu2e {
       }
 
       //-----------------------------------------------------------------------------
-      //check that the crystals fit. If not, reduce their size to make the mapping free of overlaps
+      //check crystal overlaps (row after row) and move crystal around to fix boundary crossings
       void Disk::fixCrystalPosition()
       {
           std::map<int,std::vector<int>> rowToCrystalId;
@@ -162,7 +155,8 @@ namespace mu2e {
             auto& cryList = kv.second;
 
             //order the crystal ids by increasing x coordinate in a given row
-            auto sortFunctor = [this](const int i, const int j){return crystalList_[i].localPosition().x() <crystalList_[j].localPosition().x();};
+            auto sortFunctor = [this](const int i, const int j)
+                                     {return crystalList_[i].localPosition().x()<crystalList_[j].localPosition().x();};
             std::sort(std::begin(cryList),std::end(cryList),sortFunctor);
 
             //check if the crystals overlap in Y with the row below and fix the position
@@ -177,7 +171,6 @@ namespace mu2e {
                ymax = std::max(ymax,crystalList_[cryIdx].localPosition().y()+crystalList_[cryIdx].size().y()/2.0);
             }
             ymaxPrevious = ymax;
-
 
             //check if the crystal overlap in X, and move them to the right if needed
             //double origXend = crystalList_[cryList.back()].localPosition().x();
@@ -202,6 +195,14 @@ namespace mu2e {
             //      crystalList_[cryIdx].setLocalPosition(newPosition);
             //   }
             //}
+
+            // check that all crystals are still in the disk enveloppe
+            for (const auto& cryIdx : cryList) {
+              auto position = crystalList_[cryIdx].localPosition();
+              auto size     = crystalList_[cryIdx].size();
+              if (!isInsideDisk(position.x(),position.y(),size.x(),size.y()))
+                throw cet::exception("Disk") << " The crystal at position="<<position<<" does not fit inside the disk...\n";
+            }
           }
       }
 

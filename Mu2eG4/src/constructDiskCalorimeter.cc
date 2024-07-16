@@ -516,6 +516,7 @@ namespace mu2e {
 
     VolumeInfo fullCase    ("CaloFullCase_"+std::to_string(idisk));
     VolumeInfo innerAlRingF("CaloInnerAlRingF_"+std::to_string(idisk));
+    VolumeInfo innerAlRingM("CaloInnerAlRingM_"+std::to_string(idisk));
     VolumeInfo innerAlRingB("CaloInnerAlRingB_"+std::to_string(idisk));
     VolumeInfo innerCFRing ("CaloInnerCFRing_"+std::to_string(idisk));
     VolumeInfo caseRing    ("CaloCaseRing_"+std::to_string(idisk));
@@ -524,6 +525,7 @@ namespace mu2e {
 
     fullCase.solid        = new G4Tubs(fullCase.name,     diskInAlRingRIn,  diskOutRailROut,  diskCaseDZ,     0, CLHEP::twopi);
     innerAlRingF.solid    = new G4Tubs(innerAlRingF.name, diskInAlRingRIn,  diskInCFRingRIn,  diskInAlRingDZ, 0, CLHEP::twopi);
+    innerAlRingM.solid    = new G4Tubs(innerAlRingM.name, diskInAlRingRIn,  diskInCFRingRIn,  diskInAlRingDZ, 0, CLHEP::twopi);
     innerAlRingB.solid    = new G4Tubs(innerAlRingB.name, diskInAlRingRIn,  diskInCFRingRIn,  diskInAlRingDZ, 0, CLHEP::twopi);
     innerCFRing.solid     = new G4Tubs(innerCFRing.name,  diskInCFRingRIn,  diskInCFRingROut, diskCaseDZ,     0, CLHEP::twopi);
     caseRing.solid        = new G4Tubs(caseRing.name,     diskInCFRingROut, diskCaseRingROut, diskCaseDZ,     0, CLHEP::twopi);
@@ -532,6 +534,7 @@ namespace mu2e {
 
     fullCase.logical      = caloLogical(fullCase,     vacuumMaterial,     0, G4Color::Black(), 0, 0);
     innerAlRingF.logical  = caloLogical(innerAlRingF, innerAlRingMaterial,isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);
+    innerAlRingM.logical  = caloLogical(innerAlRingM, innerAlRingMaterial,isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);
     innerAlRingB.logical  = caloLogical(innerAlRingB, innerAlRingMaterial,isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);
     innerCFRing.logical   = caloLogical(innerCFRing,  innerCFRingMaterial,isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);
     caseRing.logical      = caloLogical(caseRing,     shimMaterial,       isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);
@@ -539,14 +542,16 @@ namespace mu2e {
     outerRailB.logical    = caloLogical(outerRailB,   outerRingMaterial,  isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);
 
     innerAlRingF.physical = caloPlacement(innerAlRingF, fullCase, 0, G4ThreeVector(0,0, diskCaseDZ-diskInAlRingDZ), false, 0, config, doSurfaceCheck, verbosity);
+    innerAlRingM.physical = caloPlacement(innerAlRingM, fullCase, 0, G4ThreeVector(0,0,                         0), false, 0, config, doSurfaceCheck, verbosity);
     innerAlRingB.physical = caloPlacement(innerAlRingB, fullCase, 0, G4ThreeVector(0,0,-diskCaseDZ+diskInAlRingDZ), false, 0, config, doSurfaceCheck, verbosity);
     innerCFRing.physical  = caloPlacement(innerCFRing,  fullCase, 0, G4ThreeVector(0,0,0),                          false, 0, config, doSurfaceCheck, verbosity);
     caseRing.physical     = caloPlacement(caseRing,     fullCase, 0, G4ThreeVector(0,0,0),                          false, 0, config, doSurfaceCheck, verbosity);
     outerRailF.physical   = caloPlacement(outerRailF,   fullCase, 0, G4ThreeVector(0,0, diskCaseDZ-diskOutRailDZ),  false, 0, config, doSurfaceCheck, verbosity);
     outerRailB.physical   = caloPlacement(outerRailB,   fullCase, 0, G4ThreeVector(0,0,-diskCaseDZ+diskOutRailDZ),  false, 0, config, doSurfaceCheck, verbosity);
 
-    helper.addVolInfo(innerAlRingF);
     helper.addVolInfo(innerAlRingB);
+    helper.addVolInfo(innerAlRingM);
+    helper.addVolInfo(innerAlRingF);
     helper.addVolInfo(innerCFRing);
     helper.addVolInfo(caseRing);
     helper.addVolInfo(outerRailF);
