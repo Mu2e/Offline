@@ -27,7 +27,7 @@ namespace mu2e {
              return iter->second;
           };
 
-          void set(const std::string key, const T& value) {data_[key] = value;}
+          void set(const std::string& key, const T& value) {data_[key] = value;}
 
        private:
           std::map<std::string,T> data_;
@@ -38,7 +38,7 @@ namespace mu2e {
     class CaloInfo {
 
        public:
-           CaloInfo() : dataBool_(),dataInt_(),dataDouble_(),dataVInt_(),dataVDouble_() {}
+           CaloInfo() : dataBool_(), dataInt_(), dataDouble_(), dataVInt_(), dataVDouble_() {}
 
            void set(const std::string& key, bool value)                       {dataBool_.set(key,value);}
            void set(const std::string& key, int value)                        {dataInt_.set(key,value);}
