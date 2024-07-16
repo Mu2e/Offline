@@ -107,9 +107,4 @@ namespace mu2e {
         }
         return false;
     }
-
-
-
 }
-
-
