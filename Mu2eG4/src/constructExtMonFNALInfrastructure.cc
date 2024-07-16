@@ -4,13 +4,16 @@
 
 #include <vector>
 #include <numbers>
+#include <math.h>
 
 #include "Geant4/G4Color.hh"
 #include "Geant4/G4RotationMatrix.hh"
 #include "Geant4/G4LogicalVolume.hh"
 #include "Geant4/G4Tubs.hh"
 #include "Geant4/G4Box.hh"
+#include "Geant4/G4Orb.hh"
 #include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
@@ -21,11 +24,14 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
+#include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
+
 #include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/GeomPrimitives/inc/ExtrudedSolid.hh"
 #include "Offline/Mu2eG4/inc/nestTubs.hh"
 #include "Offline/Mu2eG4/inc/nestBox.hh"
 #include "Offline/Mu2eG4/inc/finishNesting.hh"
@@ -43,6 +49,7 @@ namespace mu2e {
                                        )
   {
     MaterialFinder materialFinder(config);
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );
@@ -54,6 +61,7 @@ namespace mu2e {
     //----------------------------------------------------------
     // Pixel Chiller Mother Volume
 
+    G4RotationMatrix* pixelChillerRotationInParentG4 = reg.add(G4RotationMatrix(pixelChillerRotationInParent));
     std::vector<double> extMonFNALPixelChillerHalfSize;
     config.getVectorDouble("extMonFNAL.pixelChiller.halfSize", extMonFNALPixelChillerHalfSize);
     const std::string pixelChillerNum = "pixelChiller"+std::to_string(chillerNum);
@@ -62,7 +70,7 @@ namespace mu2e {
       nestBox(pixelChillerNum,
               extMonFNALPixelChillerHalfSize,
               findMaterialOrThrow("G4_AIR"),
-              0,
+              pixelChillerRotationInParentG4,
               pixelChillerCenterInParent,
               parent.logical,
               0,
@@ -297,7 +305,6 @@ namespace mu2e {
                                               placePV,
                                               doSurfaceCheck
                                              );
-
   }
 
   void constructExtMonFNALInfrastructure(const VolumeInfo& pixelChillerParent,
@@ -307,7 +314,9 @@ namespace mu2e {
                                          const SimpleConfig& config)
   {
     MaterialFinder materialFinder(config);
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     GeomHandle<ExtMonFNALBuilding> emfb;
+    GeomHandle<Mu2eHall> hall;
 
     int numChillers = config.getInt("extMonFNAL.numChillersInRoom");
 
@@ -327,27 +336,27 @@ namespace mu2e {
       // third coord corresponds to the East/West axis
 
       if (cornerReference == "NE") {
-        chillerCenter += CLHEP::Hep3Vector(emfb->detectorRoomHalfSize()[0] - extMonFNALPixelChillerHalfSize[0]*1.01  - distanceToSideWall,
-                                           -emfb->detectorRoomHalfSize()[1] + extMonFNALPixelChillerHalfSize[1]*1.01 + distanceToFloor,
-                                           emfb->detectorRoomHalfSize()[2] - extMonFNALPixelChillerHalfSize[2]*1.01 - distanceToTranverseWall
+        chillerCenter += CLHEP::Hep3Vector(emfb->detectorRoomHalfSize()[0] - extMonFNALPixelChillerHalfSize[0]  - distanceToSideWall,
+                                           -emfb->detectorRoomHalfSize()[1] + extMonFNALPixelChillerHalfSize[1] + distanceToFloor,
+                                           emfb->detectorRoomHalfSize()[2] - extMonFNALPixelChillerHalfSize[2] - distanceToTranverseWall
                                           );
       } else if (cornerReference == "SE") {
-        chillerCenter += CLHEP::Hep3Vector( -emfb->detectorRoomHalfSize()[0] + extMonFNALPixelChillerHalfSize[0]*1.01 + distanceToSideWall,
-                                            -emfb->detectorRoomHalfSize()[1] + extMonFNALPixelChillerHalfSize[1]*1.01 + distanceToFloor,
-                                            emfb->detectorRoomHalfSize()[2] - extMonFNALPixelChillerHalfSize[2]*1.01 - distanceToTranverseWall
+        chillerCenter += CLHEP::Hep3Vector( -emfb->detectorRoomHalfSize()[0] + extMonFNALPixelChillerHalfSize[0] + distanceToSideWall,
+                                            -emfb->detectorRoomHalfSize()[1] + extMonFNALPixelChillerHalfSize[1] + distanceToFloor,
+                                            emfb->detectorRoomHalfSize()[2] - extMonFNALPixelChillerHalfSize[2] - distanceToTranverseWall
                                           );
       } else if (cornerReference == "SW") {
-        chillerCenter += CLHEP::Hep3Vector( -emfb->detectorRoomHalfSize()[0] + extMonFNALPixelChillerHalfSize[0]*1.01 + distanceToSideWall,
-                                            -emfb->detectorRoomHalfSize()[1] + extMonFNALPixelChillerHalfSize[1]*1.01 + distanceToFloor,
-                                            -emfb->detectorRoomHalfSize()[2] + extMonFNALPixelChillerHalfSize[2]*1.01 + distanceToTranverseWall
+        chillerCenter += CLHEP::Hep3Vector( -emfb->detectorRoomHalfSize()[0] + extMonFNALPixelChillerHalfSize[0] + distanceToSideWall,
+                                            -emfb->detectorRoomHalfSize()[1] + extMonFNALPixelChillerHalfSize[1] + distanceToFloor,
+                                            -emfb->detectorRoomHalfSize()[2] + extMonFNALPixelChillerHalfSize[2] + distanceToTranverseWall
                                           );
       } else if (cornerReference == "NW") {
-        chillerCenter += CLHEP::Hep3Vector( emfb->detectorRoomHalfSize()[0] - extMonFNALPixelChillerHalfSize[0]*1.01  - distanceToSideWall,
-                                            -emfb->detectorRoomHalfSize()[1] + extMonFNALPixelChillerHalfSize[1]*1.01 + distanceToFloor,
-                                            -emfb->detectorRoomHalfSize()[2] + extMonFNALPixelChillerHalfSize[2]*1.01 + distanceToTranverseWall
+        chillerCenter += CLHEP::Hep3Vector( emfb->detectorRoomHalfSize()[0] - extMonFNALPixelChillerHalfSize[0]  - distanceToSideWall,
+                                            -emfb->detectorRoomHalfSize()[1] + extMonFNALPixelChillerHalfSize[1] + distanceToFloor,
+                                            -emfb->detectorRoomHalfSize()[2] + extMonFNALPixelChillerHalfSize[2] + distanceToTranverseWall
                                           );
       } else {
-        throw cet::exception("CONFIG")<< "Error: constructExtMonFNALInfrastructure() cannot parse cornerReference = "<<cornerReference<<"\n";
+        throw cet::exception("CONFIG") << "Error: constructExtMonFNALInfrastructure() cannot parse cornerReference = " << cornerReference<<"\n";
       }
 
       constructPixelChillerExtMonFNAL(i,
@@ -357,6 +366,49 @@ namespace mu2e {
                                       config);
 
     }
+
+    const std::string wallName = config.getString("extMonFNAL.hall.chiller1.wallName");
+    std::vector<int> chillerRefVertices;
+    config.getVectorInt("extMonFNAL.hall.chiller1.refVertices", chillerRefVertices);
+    std::vector<double> extMonFNALPixelChillerHalfSize;
+    config.getVectorDouble("extMonFNAL.pixelChiller.halfSize", extMonFNALPixelChillerHalfSize);
+    const double distanceToFloor = config.getDouble("extMonFNAL.hall.chiller1.distanceToFloor");
+    const double distanceToWall  = config.getDouble("extMonFNAL.hall.chiller1.distanceToWall");
+    const double offsetAlongWall = config.getDouble("extMonFNAL.hall.chiller1.offsetAlongWall");
+    const ExtrudedSolid& extMonRoomWall = hall->getBldgSolid(wallName);
+    const auto& extMonRoomWallVerticies = extMonRoomWall.getVertices();
+    const double halfWallHeight = extMonRoomWall.getYhalfThickness();
+
+    using CLHEP::Hep2Vector;
+    Hep2Vector corner1 (extMonRoomWallVerticies[chillerRefVertices[0]].y(), extMonRoomWallVerticies[chillerRefVertices[0]].x());
+    Hep2Vector corner2 (extMonRoomWallVerticies[chillerRefVertices[1]].y(), extMonRoomWallVerticies[chillerRefVertices[1]].x());
+    Hep2Vector wallVector = corner2 - corner1;
+    Hep2Vector wallChillerXZ = corner1;
+    wallChillerXZ -= Hep2Vector(mainParent.centerInMu2e().x(), mainParent.centerInMu2e().z());
+    wallChillerXZ += Hep2Vector(extMonRoomWall.getOffsetFromMu2eOrigin().x(), extMonRoomWall.getOffsetFromMu2eOrigin().z());
+    Hep2Vector wallVectorUnit = wallVector.unit();
+    wallChillerXZ += offsetAlongWall * wallVectorUnit;
+    wallChillerXZ -= distanceToWall * wallVectorUnit.orthogonal();
+    wallChillerXZ -= extMonFNALPixelChillerHalfSize[2] * wallVectorUnit.orthogonal();
+    wallChillerXZ += extMonFNALPixelChillerHalfSize[0] * wallVectorUnit;
+    const double chillerYCoord = extMonRoomWall.getOffsetFromMu2eOrigin().y()
+                                 - mainParent.centerInMu2e().y()
+                                 - halfWallHeight + extMonFNALPixelChillerHalfSize[1] + distanceToFloor; //changes chiller's height off the floor
+
+    double wallVectorX = wallVector.y();
+    double wallVectorY = wallVector.x();
+    double rotAngle = -M_PI * 0.5 - std::atan2 ( wallVectorY, wallVectorX );
+    CLHEP::Hep3Vector chillerCoord ( wallChillerXZ.x(), chillerYCoord, wallChillerXZ.y());
+
+    CLHEP::HepRotation *psideChillerRot = reg.add(new CLHEP::HepRotation());
+    CLHEP::HepRotation& sideChillerRot = *psideChillerRot;
+    psideChillerRot->rotateY( rotAngle );
+
+    constructPixelChillerExtMonFNAL(5,
+                                    mainParent,
+                                    chillerCoord,
+                                    sideChillerRot,
+                                    config);
 
   } //constructExtMonFNALInfrastructure()
 } //namespace mu2e
