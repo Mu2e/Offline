@@ -291,6 +291,21 @@ double extMonFNAL.hall.chiller1.offsetAlongWall = 0; // mm
 double extMonFNAL.hall.chiller1.distanceToWall = 100; // mm
 double extMonFNAL.hall.chiller1.distanceToFloor = 1; // mm
 
+// Electronics Rack In Detector Room
+
+vector<double> extMonFNAL.electronicsRack.halfSize = { 250.19, 1000, 320.0 };
+string         extMonFNAL.electronicsRack.caseMaterialName  = "MildSteel";
+string         extMonFNAL.electronicsRack.PCBMaterialName = "Electronics";
+
+double extMonFNAL.electronicsRack.numLayers = 5;
+double extMonFNAL.electronicsRackCaseThickness = 1.5;
+double extMonFNAL.electronicsRack.PCBThickness = 2;
+double extMonFNAL.electronicsRack.PCBDistanceFromWall = 20;
+
+double extMonFNAL.room.electronicsRack.distanceToFloor = 1;
+double extMonFNAL.room.electronicsRack.distanceToSideWall = 1;
+double extMonFNAL.room.electronicsRack.distanceToTranverseWall = 100;
+
 //----------------------------------------------------------------
 // These are detector VDs (not filter ones)
 //
