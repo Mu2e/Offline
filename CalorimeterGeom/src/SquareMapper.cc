@@ -73,8 +73,8 @@ namespace mu2e {
 
       int SquareMapper::indexFromXY(double x0, double y0) const
       {
-          int l = int( std::abs(x0)+0.5);
-          int k = int( std::abs(y0)+0.5 );
+          int l = int(std::abs(x0)+0.5);
+          int k = int(std::abs(y0)+0.5);
           if (x0<0) l *= -1;
           if (y0<0) k *= -1;
 
@@ -114,7 +114,6 @@ namespace mu2e {
       std::vector<int> SquareMapper::neighbors(int thisIndex, int level)  const
       {
           std::vector<int> thisNeighbour;
-          thisNeighbour.reserve(12);
 
           SquLK init = lk(thisIndex);
           SquLK lk(init.l_ - level, init.k_ + level);

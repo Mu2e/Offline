@@ -249,9 +249,9 @@ namespace mu2e {
 
         // Create the disks
         for (int idisk=0; idisk<calo_->nDisks_; ++idisk) {
-           int crystalOffset = calo_->fullCrystalList_.size();
-           double separation = calo_->caloInfo_.getVDouble("diskZMotherShift").at(idisk);
-           double angleZ     = 0;
+           size_t crystalOffset = calo_->fullCrystalList_.size();
+           double separation    = calo_->caloInfo_.getVDouble("diskZMotherShift").at(idisk);
+           double angleZ        = 0;
 
            double dR1 = innerDiskRadius;
            double dR2 = diskOutRailROut;
@@ -303,7 +303,7 @@ namespace mu2e {
              thisDisk->boundingBoxes(i,par);
              if (par.empty()) continue;
 
-             float p0(par[0]),p1(par[1]);
+             double p0(par[0]),p1(par[1]);
              if (std::find(shimStepsOutRowId.begin(),shimStepsOutRowId.end(),i) != shimStepsOutRowId.end()){
                p0 -= crystalCellRadius;
                p1 += crystalCellRadius;
@@ -314,7 +314,7 @@ namespace mu2e {
              stepsOutY.push_back(par[3]);
 
              if (par.size()==6) {
-                float p4(par[4]),p5(par[5]);
+                double p4(par[4]),p5(par[5]);
                 if (std::find(shimStepsInRowId.begin(),shimStepsInRowId.end(),i) != shimStepsInRowId.end()){
                   p4 += crystalCellRadius;
                   p5 -= crystalCellRadius;

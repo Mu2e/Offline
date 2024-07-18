@@ -76,7 +76,7 @@ namespace mu2e {
 
       int SquareShiftMapper::indexFromXY(double x0, double y0) const
       {
-          int l,k;
+          int l(0),k(0);
           int ny = (y0>0) ? int(std::abs(y0)+0.5) : -int(std::abs(y0)+0.5);
 
           if (ny%2==0)
@@ -134,7 +134,6 @@ namespace mu2e {
       std::vector<int> SquareShiftMapper::neighbors(int thisIndex, int level)  const
       {
           std::vector<int> thisNeighbour;
-          thisNeighbour.reserve(12);
 
           SquShiftLK init = lk(thisIndex);
           SquShiftLK lk(init.l_, init.k_ - level);
