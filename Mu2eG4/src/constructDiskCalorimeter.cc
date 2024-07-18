@@ -31,7 +31,6 @@
 #include "Geant4/G4ExtrudedSolid.hh"
 #include "Geant4/G4SubtractionSolid.hh"
 #include "Geant4/G4UnionSolid.hh"
-#include "Geant4/G4IntersectionSolid.hh"
 #include "Geant4/G4LogicalVolume.hh"
 #include "Geant4/G4Material.hh"
 #include "Geant4/G4VisAttributes.hh"
@@ -92,26 +91,28 @@ namespace mu2e {
     G4ThreeVector posDiskMother      = G4ThreeVector(posDS3.x(), 0, mother_zCenter);
     G4ThreeVector posDiskMotherInDS  = posDiskMother - posDS3;
 
-    // Disk and FEB mother volumes
-    VolumeInfo caloDiskInfo("CaloDiskMother");
-    caloDiskInfo.solid         = new G4Tubs(caloDiskInfo.name, caloDiskRadiusIn, caloDiskRadiusOut, mother_zlength/2.0, 0.0, CLHEP::twopi);
-    caloDiskInfo.logical       = caloLogical(caloDiskInfo, vacuumMaterial, 0, G4Color::Black(), 0, 0);
-    caloDiskInfo.physical      = caloPlacement(caloDiskInfo, mother, 0, posDiskMotherInDS, false, 0, config, doSurfaceCheck, verbosity);
-    helper.addVolInfo(caloDiskInfo);
 
+    // Disk and FEB mother volumes
+    VolumeInfo caloMotherInfo("CalorimeterMother");
+    VolumeInfo caloDiskInfo("CaloDiskMother");
     VolumeInfo caloFEBInfo("CaloFEBMother");
-    caloFEBInfo.solid         = new G4Tubs(caloFEBInfo.name, caloDiskRadiusOut, caloFEBRadiusOut, mother_zlength/2.0, FEBPhiMinMax[0], FEBPhiMinMax[1]-FEBPhiMinMax[0]);
-    caloFEBInfo.logical       = caloLogical(caloFEBInfo, vacuumMaterial, 0, G4Color::Black(), 0, 0);
-    caloFEBInfo.physical      = caloPlacement(caloFEBInfo, mother, 0, posDiskMotherInDS, false, 0, config, doSurfaceCheck, verbosity);
+
+    caloDiskInfo.solid           = new G4Tubs(caloDiskInfo.name, caloDiskRadiusIn,  caloDiskRadiusOut, mother_zlength/2.0, 0.0, CLHEP::twopi);
+    caloFEBInfo.solid            = new G4Tubs(caloFEBInfo.name,  caloDiskRadiusOut, caloFEBRadiusOut,  mother_zlength/2.0, FEBPhiMinMax[0], FEBPhiMinMax[1]-FEBPhiMinMax[0]);
+    caloMotherInfo.solid         = new G4UnionSolid(caloMotherInfo.name, caloDiskInfo.solid, caloFEBInfo.solid);
+    caloMotherInfo.logical       = caloLogical(caloMotherInfo, vacuumMaterial, 0, G4Color::Black(), 0, 0);
+    caloMotherInfo.physical      = caloPlacement(caloMotherInfo, mother, 0, posDiskMotherInDS, false, 0, config, doSurfaceCheck, verbosity);
+
     helper.addVolInfo(caloFEBInfo);
+    helper.addVolInfo(caloDiskInfo);
+    helper.addVolInfo(caloMotherInfo);
 
     if ( verbosity > 0) {
-      double zhl = static_cast<G4Tubs*>(caloDiskInfo.solid)->GetZHalfLength();
-      double calorimeterOffsetInMu2eZ = caloDiskInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
-      G4cout << __func__ << " Calorimeter mother center in Mu2e   : " << caloDiskInfo.centerInMu2e() << G4endl;
+      double zhl = dynamic_cast<G4Tubs*>(caloMotherInfo.solid)->GetZHalfLength();
+      double calorimeterOffsetInMu2eZ = caloMotherInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
+      G4cout << __func__ << " Calorimeter mother center in Mu2e   : " << caloMotherInfo.centerInMu2e() << G4endl;
       G4cout << __func__ << " Calorimeter mother Z extent in Mu2e : " << calorimeterOffsetInMu2eZ - zhl << ", " << calorimeterOffsetInMu2eZ + zhl << G4endl;
     }
-
 
 
     // Disk and FEB volumes
@@ -119,36 +120,37 @@ namespace mu2e {
     for (size_t idisk=0;idisk<nDisks;++idisk) {
       G4ThreeVector posDisk           = cal.disk(idisk).geomInfo().origin() - posDiskMother;
       calorimeterDisk[idisk]          = caloBuildDisk(config,idisk);
-      auto rot                        = const_cast<G4RotationMatrix*>(&cal.disk(idisk).geomInfo().rotation());
-      calorimeterDisk[idisk].physical = caloPlacement(calorimeterDisk[idisk], caloDiskInfo, rot, posDisk, false, 0, config, doSurfaceCheck, verbosity);
+      auto rot                        = cal.disk(idisk).geomInfo().rotation(); //need a copy to avoid const_cast
+      calorimeterDisk[idisk].physical = caloPlacement(calorimeterDisk[idisk], caloMotherInfo, &rot, posDisk, false, 0, config, doSurfaceCheck, verbosity);
       helper.addVolInfo(calorimeterDisk[idisk]);
 
       if (hasCrates) {
         calorimeterFEB[idisk]          = caloBuildFEB(config,idisk);
-        G4Tubs*  FEB                   = static_cast<G4Tubs*>(calorimeterFEB[idisk].solid);
-        G4Tubs*  disk                  = static_cast<G4Tubs*>(calorimeterDisk[idisk].solid);
+        G4Tubs*  FEB                   = dynamic_cast<G4Tubs*>(calorimeterFEB[idisk].solid);
+        G4Tubs*  disk                  = dynamic_cast<G4Tubs*>(calorimeterDisk[idisk].solid);
         G4ThreeVector posFEB           = posDisk + G4ThreeVector(0,0,FEB->GetZHalfLength() - disk->GetZHalfLength() - FEBOffset);
-        calorimeterFEB[idisk].physical = caloPlacement(calorimeterFEB[idisk], caloFEBInfo, rot, posFEB, false, 0, config, doSurfaceCheck, verbosity);
+        calorimeterFEB[idisk].physical = caloPlacement(calorimeterFEB[idisk], caloMotherInfo, &rot, posFEB, false, 0, config, doSurfaceCheck, verbosity);
         helper.addVolInfo(calorimeterFEB[idisk]);
 
         if (hasCable) {
           VolumeInfo CableRun    = caloBuildCable(config, idisk, calorimeterFEB[idisk]);
-          G4Tubs*    Cable       = static_cast<G4Tubs*>(CableRun.solid);
+          G4Tubs*    Cable       = dynamic_cast<G4Tubs*>(CableRun.solid);
           G4ThreeVector posCable = posFEB + G4ThreeVector(0,0, FEB->GetZHalfLength() + Cable->GetZHalfLength());
-          CableRun.physical      = caloPlacement(CableRun, caloFEBInfo, rot, posCable, false, 0, config, doSurfaceCheck, verbosity);
+          CableRun.physical      = caloPlacement(CableRun, caloMotherInfo, &rot, posCable, false, 0, config, doSurfaceCheck, verbosity);
           helper.addVolInfo(CableRun);
         }
       }
 
-
       if (verbosity > 0) {
-        G4Tubs* disk      = static_cast<G4Tubs*>(caloDiskInfo.solid);
+        G4Tubs* disk      = dynamic_cast<G4Tubs*>(calorimeterDisk[idisk].solid);
         G4double zHalftot = disk->GetZHalfLength();
-        G4cout << __func__ << " CalorimeterDisk center in Mu2e    : " << caloDiskInfo.centerInMu2e() << G4endl;
-        G4cout << __func__ << " CalorimeterDisk Z extent in Mu2e  : " << caloDiskInfo.centerInMu2e()[CLHEP::Hep3Vector::Z] - zHalftot
+        G4cout << __func__ << " CalorimeterDisk center in Mu2e    : " << calorimeterDisk[idisk].centerInMu2e() << G4endl;
+        G4cout << __func__ << " CalorimeterDisk Z extent in Mu2e  : " << calorimeterDisk[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - zHalftot
                            << ", " << caloDiskInfo.centerInMu2e()[CLHEP::Hep3Vector::Z] + zHalftot << G4endl;
       }
     }
+
+
 
 
     //Fix the "world posiiton" of all wolumes
@@ -200,7 +202,7 @@ namespace mu2e {
     const int  verbosity       = config.getInt("calorimeter.verbosityLevel",1);
 
     const bool hasFrontPanel   = cal.caloInfo().getBool("hasFrontPanel");
-    const bool hasBackPanel    = cal.caloInfo().getBool("hasBackPanel");    //FIXME
+    const bool hasBackPanel    = cal.caloInfo().getBool("hasBackPanel");
     const double vdThickness   = cal.caloInfo().getDouble("vdThickness");
     const double R0disk        = cal.caloInfo().getDouble("caloDiskRadiusIn");
     const double R1disk        = cal.caloInfo().getDouble("caloDiskRadiusOut");
@@ -211,9 +213,9 @@ namespace mu2e {
     VolumeInfo frontPlate      = caloBuildFrontPlate(config,idisk);
     VolumeInfo backPlate       = caloBuildBackPlate(config,idisk);
 
-    G4double zHalfDisk         = static_cast<G4Tubs*>(crystalCase.solid)->GetZHalfLength();
-    G4double zHalfFP           = (hasFrontPanel) ? static_cast<G4Tubs*>(frontPlate.solid)->GetZHalfLength() : 0;
-    G4double zHalfBP           = (hasBackPanel)  ? static_cast<G4Tubs*>(backPlate.solid)->GetZHalfLength()  : 0;
+    G4double zHalfDisk         = dynamic_cast<G4Tubs*>(crystalCase.solid)->GetZHalfLength();
+    G4double zHalfFP           = (hasFrontPanel) ? dynamic_cast<G4Tubs*>(frontPlate.solid)->GetZHalfLength() : 0;
+    G4double zHalfBP           = (hasBackPanel)  ? dynamic_cast<G4Tubs*>(backPlate.solid)->GetZHalfLength()  : 0;
     G4double zHalftot          = zHalfFP + zHalfDisk + zHalfBP + vdThickness;
 
 
@@ -255,7 +257,7 @@ namespace mu2e {
         }
       }
     }
-    if (volumePtr) zTranslation -= static_cast<G4Box*>(volumePtr->GetSolid())->GetZHalfLength();
+    if (volumePtr) zTranslation -= dynamic_cast<G4Box*>(volumePtr->GetSolid())->GetZHalfLength();
 
     double delta1 = 2*zHalftot-cal.disk(idisk).geomInfo().size().z();
     double delta2 = zTranslation-cal.disk(idisk).geomInfo().originToCrystalOrigin().z();
@@ -936,7 +938,7 @@ namespace mu2e {
 
     // get me a lil' crate
     VolumeInfo crateBox = caloBuildCrate(config,idisk);
-    G4Box* crate = static_cast<G4Box*>(crateBox.solid);
+    G4Box* crate = dynamic_cast<G4Box*>(crateBox.solid);
 
     auto  FEBPhiMinMax             = calcFEBPhiRange(cal);
     G4double crateXHalfLength      = crate->GetXHalfLength();
@@ -990,13 +992,13 @@ namespace mu2e {
        }
      }
 
-     double delta = static_cast<G4Tubs*>(fullFEB.solid)->GetZHalfLength()*2 - cal.disk(idisk).geomInfo().FEBZLength();
+     double delta = dynamic_cast<G4Tubs*>(fullFEB.solid)->GetZHalfLength()*2 - cal.disk(idisk).geomInfo().FEBZLength();
 
      if (std::abs(delta) > 1e-3)  G4cout << __func__ <<"PANIC..... geometry description in Geant4 and DiskMaker do NOT match  - FEB size: "
-                                         <<static_cast<G4Tubs*>(fullFEB.solid)->GetZHalfLength()*2<<" vs "
+                                         <<dynamic_cast<G4Tubs*>(fullFEB.solid)->GetZHalfLength()*2<<" vs "
                                          <<cal.disk(idisk).geomInfo().FEBZLength()<<G4endl;
 
-     if (verbosity) G4cout << __func__ <<" Compare FEB size  Geant4 / CaloInfo "<<static_cast<G4Tubs*>(fullFEB.solid)->GetZHalfLength()*2
+     if (verbosity) G4cout << __func__ <<" Compare FEB size  Geant4 / CaloInfo "<<dynamic_cast<G4Tubs*>(fullFEB.solid)->GetZHalfLength()*2
                                 <<" / "<<cal.disk(idisk).geomInfo().FEBZLength()<<G4endl;
 
      return fullFEB;
@@ -1135,7 +1137,7 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------------------------------------------------------------
   // build calo cable run - some parameters are common with the detector solenoid and taken from the corresponding class
-  VolumeInfo caloBuildCable(const SimpleConfig& config, unsigned idisk, VolumeInfo FEBvol)
+  VolumeInfo caloBuildCable(const SimpleConfig& config, unsigned idisk, const VolumeInfo& FEBvol)
   {
     const auto geomOptions(art::ServiceHandle<GeometryService>()->geomOptions());
     geomOptions->loadEntry(config, "calorimeterCrate", "calorimeter.crate" );
@@ -1155,19 +1157,20 @@ namespace mu2e {
     G4Material* cableMaterial     = findMaterialOrThrow(ds.calCableRunMaterial());
     G4Material* cableCoreMaterial = findMaterialOrThrow(ds.materialCableRunCalCore());
 
+    const double mother_z0        = cal.caloInfo().getDouble("caloMotherZ0");
     const double mother_z1        = cal.caloInfo().getDouble("caloMotherZ1");
+    const double mother_zlength   = mother_z1-mother_z0;
     const double crRin            = ds.upRInCableRunCal();
     const double crRout           = ds.upROutCableRunCal();
     const double dPhi             = ds.dPhiCableRunCal()*CLHEP::degree;
     const double phi0             = CLHEP::pi/2-dPhi/2.0;
 
 
-    //length of the cable run = distance between FEBs = distance between disks
-    G4Tubs*  FEB             = static_cast<G4Tubs*>(FEBvol.solid);
+    //length of the cable run = distance between disk for first gaps, ditance betweenm end of feb and mother volume for last gap
+    G4Tubs*  FEB             = dynamic_cast<G4Tubs*>(FEBvol.solid);
     G4double distFEBtoNext   = (idisk+1 < cal.nDisk()) ? cal.disk(idisk+1).geomInfo().origin().z() - cal.disk(idisk).geomInfo().origin().z()
-                                                       : mother_z1 - cal.disk(idisk).geomInfo().origin().z();
-    G4double cableHalfLength = (idisk+1 < cal.nDisk()) ? 0.5*distFEBtoNext - FEB->GetZHalfLength() : 0.5*distFEBtoNext - 0.5*FEB->GetZHalfLength();
-
+                                                       : mother_zlength/2.0 - FEBvol.physical->GetTranslation().z()-FEB->GetZHalfLength();
+    G4double cableHalfLength = (idisk+1 < cal.nDisk()) ? 0.5*distFEBtoNext - FEB->GetZHalfLength() : 0.5*distFEBtoNext;
 
     VolumeInfo cableRunGap("CaloCableRunGap_"+std::to_string(idisk));
     cableRunGap.solid   = new G4Tubs(cableRunGap.name,crRin, crRout, cableHalfLength, phi0, dPhi);
@@ -1193,7 +1196,7 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------------------------------------------------------------
   // make logical volume and attach visible attribute to it
-  G4LogicalVolume* caloLogical(VolumeInfo volume, G4Material* mat, bool isVisible, const G4Color& color, bool isSolid, bool forceEdge)
+  G4LogicalVolume* caloLogical(const VolumeInfo& volume, G4Material* mat, bool isVisible, const G4Color& color, bool isSolid, bool forceEdge)
   {
      G4LogicalVolume* logical = new G4LogicalVolume(volume.solid, mat, volume.name);
 
@@ -1274,7 +1277,7 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------------------------------------------------------------
   // utility to traverse G4LogicalVolumes using recursion
-  const G4LogicalVolume* findCaloSolid(const G4LogicalVolume* volume, G4String objectName, std::vector<const G4LogicalVolume*>& nodes)
+  const G4LogicalVolume* findCaloSolid(const G4LogicalVolume* volume, const G4String& objectName, std::vector<const G4LogicalVolume*>& nodes)
   {
      if (volume->GetSolid()->GetName() == objectName) return volume;
 
@@ -1299,13 +1302,16 @@ namespace mu2e {
   {
 
      if (G4Box* obj = dynamic_cast<G4Box*>(volume->GetSolid()))
-        std::cout<<obj->GetName()<<",XXXX,G4Box,dX="<<2*obj->GetXHalfLength()<<",dY="<<2*obj->GetYHalfLength()<<",dZ="<<2*obj->GetZHalfLength()<<","<<volume->GetMaterial()->GetName()<<std::endl;
+        std::cout<<obj->GetName()<<",XXXX,G4Box,dX="<<2*obj->GetXHalfLength()<<",dY="<<2*obj->GetYHalfLength()
+                 <<",dZ="<<2*obj->GetZHalfLength()<<","<<volume->GetMaterial()->GetName()<<std::endl;
 
      else if (G4Tubs* obj = dynamic_cast<G4Tubs*>(volume->GetSolid()))
-        std::cout<<obj->GetName()<<",XXXX,G4Tubs,Rin="<<obj->GetInnerRadius()<<",Rout="<<obj->GetOuterRadius()<<",dZ="<<2*obj->GetZHalfLength()<<",dPhi="<<obj->GetDeltaPhiAngle()<<","<<volume->GetMaterial()->GetName()<<std::endl;
+        std::cout<<obj->GetName()<<",XXXX,G4Tubs,Rin="<<obj->GetInnerRadius()<<",Rout="<<obj->GetOuterRadius()
+                 <<",dZ="<<2*obj->GetZHalfLength()<<",dPhi="<<obj->GetDeltaPhiAngle()<<","<<volume->GetMaterial()->GetName()<<std::endl;
 
      else if (G4Torus* obj = dynamic_cast<G4Torus*>(volume->GetSolid()))
-        std::cout<<obj->GetName()<<",XXXX,G4Torus,Rmin="<<obj->GetRmin()<<",Rmax="<<obj->GetRmax()<<",Rtot="<<obj->GetRtor()<<",dPhi="<<obj->GetDPhi()<<","<<volume->GetMaterial()->GetName()<<std::endl;
+        std::cout<<obj->GetName()<<",XXXX,G4Torus,Rmin="<<obj->GetRmin()<<",Rmax="<<obj->GetRmax()<<",Rtot="
+                 <<obj->GetRtor()<<",dPhi="<<obj->GetDPhi()<<","<<volume->GetMaterial()->GetName()<<std::endl;
 
      else if (volume != nullptr && volume->GetSolid() != nullptr)
         std::cout<<volume->GetSolid()->GetName()<<",XXXX ,OTHER,"<<volume->GetMaterial()->GetName()<<std::endl;

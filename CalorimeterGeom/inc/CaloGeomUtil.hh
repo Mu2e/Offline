@@ -47,7 +47,7 @@ namespace mu2e {
           CLHEP::Hep3Vector trackerToMu2e(const CLHEP::Hep3Vector& pos)                const;
 
           bool isInsideCalorimeter       (const CLHEP::Hep3Vector& pos)                                  const;
-          bool isInsideSection           (int iDisk, const CLHEP::Hep3Vector& pos)                       const;
+          bool isInsideSection           (unsigned iDisk, const CLHEP::Hep3Vector& pos)                  const;
           bool isContainedSection        (const CLHEP::Hep3Vector& front, const CLHEP::Hep3Vector& back) const;
 
 

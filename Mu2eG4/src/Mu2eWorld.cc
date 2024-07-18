@@ -711,8 +711,7 @@ namespace mu2e {
     }
 
     //vector<G4LogicalVolume*> caloVacua;
-    //caloVacua.push_back(_helper->locateVolInfo("CaloDiskMother").logical);
-    //caloVacua.push_back(_helper->locateVolInfo("CaloFEBMother").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CalorimeterMother").logical);
     //caloVacua.push_back(_helper->locateVolInfo("CaloFullCase_0").logical);
     //caloVacua.push_back(_helper->locateVolInfo("CaloCaseRing_0").logical);
     //caloVacua.push_back(_helper->locateVolInfo("CaloFP_0").logical);
