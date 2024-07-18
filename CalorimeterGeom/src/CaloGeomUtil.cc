@@ -83,12 +83,13 @@ namespace mu2e {
        return false;
    }
 
-   bool CaloGeomUtil::isInsideSection(int idisk, const CLHEP::Hep3Vector& pos) const
+   bool CaloGeomUtil::isInsideSection(unsigned idisk, const CLHEP::Hep3Vector& pos) const
    {
         CLHEP::Hep3Vector posInSection = mu2eToDiskFF(idisk, pos);
         double posZ = posInSection.z();
 
-        if ( posZ < -1e-6 || posZ > crystalZLength_+1e-6 )                      return false;
+        const double tolerance(1e-6);
+        if ( posZ < -tolerance || posZ > crystalZLength_+tolerance )            return false;
         if ( disk(idisk).idxFromPosition(posInSection.x(),posInSection.y()) <0) return false;
 
         return true;
@@ -101,9 +102,8 @@ namespace mu2e {
         //return false;
 
         //this is a more efficient way of doing this in the case of two disks
-        for (size_t idisk=0;idisk<disks_.size();++idisk)
-        {
-          if ( abs(front.z()-back.z()) < (*disks_.at(idisk)).geomInfo().size().z() ) return true;
+        for (size_t idisk=0;idisk<disks_.size();++idisk) {
+          if ( std::abs(front.z()-back.z()) < (*disks_.at(idisk)).geomInfo().size().z() ) return true;
         }
         return false;
     }

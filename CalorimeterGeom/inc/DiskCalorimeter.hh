@@ -32,29 +32,29 @@ namespace mu2e {
             DiskCalorimeter();
 
             // calo section
-            virtual unsigned                  nDisk()     const override {return nDisks_;}
-            virtual const Disk&               disk(int i) const override {return *disks_.at(i);}
+            unsigned                  nDisk()     const override {return nDisks_;}
+            const Disk&               disk(int i) const override {return *disks_.at(i);}
 
 
-              // crystal section
-            virtual int                       nCrystal()     const override {return fullCrystalList_.size();}
-            virtual const Crystal&            crystal(int i) const override{ return *fullCrystalList_.at(i);}
+            // crystal section
+            int                       nCrystal()     const override {return fullCrystalList_.size();}
+            const Crystal&            crystal(int i) const override{ return *fullCrystalList_.at(i);}
 
 
             // calorimeter geometry information
-            virtual const CaloInfo&           caloInfo()     const override {return caloInfo_;}
-            virtual const CaloGeomUtil&       geomUtil()     const override {return geomUtil_;}
+            const CaloInfo&           caloInfo()     const override {return caloInfo_;}
+            const CaloGeomUtil&       geomUtil()     const override {return geomUtil_;}
 
 
             // neighbors, indexing
-            virtual const std::vector<int>&  neighbors(int crystalId, bool rawMap=false)             const override;
-            virtual const std::vector<int>&  nextNeighbors(int crystalId, bool rawMap=false)         const override;
-            virtual       std::vector<int>   neighborsByLevel(int crystalId, int level, bool rawMap) const override;
-            virtual int                      crystalIdxFromPosition(const CLHEP::Hep3Vector& pos)    const override;
-            virtual int                      nearestIdxFromPosition(const CLHEP::Hep3Vector& pos)    const override;
+            const std::vector<int>&  neighbors(int crystalId, bool rawMap=false)             const override;
+            const std::vector<int>&  nextNeighbors(int crystalId, bool rawMap=false)         const override;
+                  std::vector<int>   neighborsByLevel(int crystalId, int level, bool rawMap) const override;
+            int                      crystalIdxFromPosition(const CLHEP::Hep3Vector& pos)    const override;
+            int                      nearestIdxFromPosition(const CLHEP::Hep3Vector& pos)    const override;
 
             // get to know me!
-            virtual void                     print(std::ostream &os = std::cout) const override;
+            void                     print(std::ostream &os = std::cout) const override;
 
 
         private:
@@ -64,8 +64,6 @@ namespace mu2e {
             double deltaPerp(int ic,                      const CLHEP::Hep3Vector& pos) const;
 
             int                           nDisks_;
-            int                           nCrates_;
-            int                           nBoards_;
             std::vector<DiskPtr>          disks_;
             std::vector<const Crystal*>   fullCrystalList_; //non-owning crystal pointers
             CaloInfo                      caloInfo_;

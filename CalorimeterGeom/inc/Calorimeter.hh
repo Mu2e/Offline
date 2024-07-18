@@ -37,8 +37,8 @@ namespace mu2e {
 
 
            // calorimeter geometry information
-           virtual const CaloInfo&               caloInfo()     const = 0;
-           virtual const CaloGeomUtil&           geomUtil()     const = 0;
+           virtual const CaloInfo&               caloInfo() const = 0;
+           virtual const CaloGeomUtil&           geomUtil() const = 0;
 
 
            // neighbors, indexing

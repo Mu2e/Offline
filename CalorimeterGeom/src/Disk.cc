@@ -150,7 +150,7 @@ namespace mu2e {
              rowToCrystalId[irow].push_back(cryId);
           }
 
-          float ymaxPrevious(-1e6);
+          double ymaxPrevious(-1e6);
           for (auto& kv : rowToCrystalId){
             auto& cryList = kv.second;
 
@@ -162,8 +162,8 @@ namespace mu2e {
             //check if the crystals overlap in Y with the row below and fix the position
             double ymax(-1e6);
             for (const auto& cryIdx : cryList) {
-               float crYmin    = crystalList_[cryIdx].localPosition().y()-crystalList_[cryIdx].size().y()/2.0;
-               float tolerance = crYmin - ymaxPrevious;
+               double crYmin    = crystalList_[cryIdx].localPosition().y()-crystalList_[cryIdx].size().y()/2.0;
+               double tolerance = crYmin - ymaxPrevious;
                if (tolerance < 0) {
                   auto newPosition = crystalList_[cryIdx].localPosition() - CLHEP::Hep3Vector(0,tolerance,0);
                   crystalList_[cryIdx].setLocalPosition(newPosition);
@@ -177,9 +177,9 @@ namespace mu2e {
             for (size_t i=1;i<cryList.size();++i) {
                size_t idx0 = cryList[i-1];
                size_t idx1 = cryList[i];
-               float crXmax0 = crystalList_[idx0].localPosition().x()+crystalList_[idx0].size().x()/2.0;
-               float crXmin1 = crystalList_[idx1].localPosition().x()-crystalList_[idx1].size().x()/2.0;
-               float tolerance = crXmin1 - crXmax0;
+               double crXmax0 = crystalList_[idx0].localPosition().x()+crystalList_[idx0].size().x()/2.0;
+               double crXmin1 = crystalList_[idx1].localPosition().x()-crystalList_[idx1].size().x()/2.0;
+               double tolerance = crXmin1 - crXmax0;
                if (tolerance < 0) {
                   auto newPosition = crystalList_[idx1].localPosition() - CLHEP::Hep3Vector(tolerance,0,0);
                   crystalList_[idx1].setLocalPosition(newPosition);
