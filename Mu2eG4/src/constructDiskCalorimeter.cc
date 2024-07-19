@@ -50,6 +50,8 @@
 
 namespace mu2e {
 
+
+
   VolumeInfo constructDiskCalorimeter(const VolumeInfo& mother, const SimpleConfig& config)
   {
     const auto geomOptions(art::ServiceHandle<GeometryService>()->geomOptions());
@@ -57,6 +59,7 @@ namespace mu2e {
     MaterialFinder materialFinder(config);
 
     Mu2eG4Helper& helper            = *(art::ServiceHandle<Mu2eG4Helper>());
+     AntiLeakRegistry& reg          = (art::ServiceHandle<Mu2eG4Helper>())->antiLeakRegistry();
     const DiskCalorimeter& cal      = *(GeomHandle<DiskCalorimeter>());
     const DetectorSolenoid& ds      = *(GeomHandle<DetectorSolenoid>());
 
@@ -120,8 +123,10 @@ namespace mu2e {
     for (size_t idisk=0;idisk<nDisks;++idisk) {
       G4ThreeVector posDisk           = cal.disk(idisk).geomInfo().origin() - posDiskMother;
       calorimeterDisk[idisk]          = caloBuildDisk(config,idisk);
-      auto rot                        = cal.disk(idisk).geomInfo().rotation(); //need a copy to avoid const_cast
-      calorimeterDisk[idisk].physical = caloPlacement(calorimeterDisk[idisk], caloMotherInfo, &rot, posDisk, false, 0, config, doSurfaceCheck, verbosity);
+
+      G4RotationMatrix* rot           = reg.add(new G4RotationMatrix(cal.disk(idisk).geomInfo().rotation()));
+      //auto rot                        = const_cast<G4RotationMatrix*>(&cal.disk(idisk).geomInfo().rotation());
+      calorimeterDisk[idisk].physical = caloPlacement(calorimeterDisk[idisk], caloMotherInfo, rot, posDisk, false, 0, config, doSurfaceCheck, verbosity);
       helper.addVolInfo(calorimeterDisk[idisk]);
 
       if (hasCrates) {
@@ -129,14 +134,14 @@ namespace mu2e {
         G4Tubs*  FEB                   = dynamic_cast<G4Tubs*>(calorimeterFEB[idisk].solid);
         G4Tubs*  disk                  = dynamic_cast<G4Tubs*>(calorimeterDisk[idisk].solid);
         G4ThreeVector posFEB           = posDisk + G4ThreeVector(0,0,FEB->GetZHalfLength() - disk->GetZHalfLength() - FEBOffset);
-        calorimeterFEB[idisk].physical = caloPlacement(calorimeterFEB[idisk], caloMotherInfo, &rot, posFEB, false, 0, config, doSurfaceCheck, verbosity);
+        calorimeterFEB[idisk].physical = caloPlacement(calorimeterFEB[idisk], caloMotherInfo, rot, posFEB, false, 0, config, doSurfaceCheck, verbosity);
         helper.addVolInfo(calorimeterFEB[idisk]);
 
         if (hasCable) {
           VolumeInfo CableRun    = caloBuildCable(config, idisk, calorimeterFEB[idisk]);
           G4Tubs*    Cable       = dynamic_cast<G4Tubs*>(CableRun.solid);
           G4ThreeVector posCable = posFEB + G4ThreeVector(0,0, FEB->GetZHalfLength() + Cable->GetZHalfLength());
-          CableRun.physical      = caloPlacement(CableRun, caloMotherInfo, &rot, posCable, false, 0, config, doSurfaceCheck, verbosity);
+          CableRun.physical      = caloPlacement(CableRun, caloMotherInfo, rot, posCable, false, 0, config, doSurfaceCheck, verbosity);
           helper.addVolInfo(CableRun);
         }
       }
@@ -149,8 +154,6 @@ namespace mu2e {
                            << ", " << caloDiskInfo.centerInMu2e()[CLHEP::Hep3Vector::Z] + zHalftot << G4endl;
       }
     }
-
-
 
 
     //Fix the "world posiiton" of all wolumes
@@ -182,8 +185,138 @@ namespace mu2e {
     return caloDiskInfo;
   }
 
+/*
+
+  VolumeInfo constructDiskCalorimeter(const VolumeInfo& mother, const SimpleConfig& config)
+  {
+    const auto geomOptions(art::ServiceHandle<GeometryService>()->geomOptions());
+    geomOptions->loadEntry( config, "calorimeterEnvelope", "calorimeter.envelope");
+    MaterialFinder materialFinder(config);
+
+    Mu2eG4Helper& helper            = *(art::ServiceHandle<Mu2eG4Helper>());
+    const DiskCalorimeter& cal      = *(GeomHandle<DiskCalorimeter>());
+    const DetectorSolenoid& ds      = *(GeomHandle<DetectorSolenoid>());
+
+    G4Material* vacuumMaterial      = materialFinder.get("calorimeter.vacuumMaterial");
+
+    const bool doSurfaceCheck       = 1;//geomOptions->doSurfaceCheck("calorimeterEnvelope");
+    const int  verbosity            = config.getInt("calorimeter.verbosityLevel",1);
+
+    const unsigned nDisks           = cal.nDisk();
+    const double caloDiskRadiusIn   = cal.caloInfo().getDouble("caloDiskRadiusIn");
+    const double caloDiskRadiusOut  = cal.caloInfo().getDouble("caloDiskRadiusOut");
+    const double caloFEBRadiusOut   = cal.caloInfo().getDouble("caloFEBRadiusOut");
+    const double mother_z0          = cal.caloInfo().getDouble("caloMotherZ0");
+    const double mother_z1          = cal.caloInfo().getDouble("caloMotherZ1");
+    const double mother_zlength     = mother_z1-mother_z0;
+    const double mother_zCenter     = (mother_z1+mother_z0)/2.0;
+    const auto   diskZMotherShift   = cal.caloInfo().getVDouble("diskZMotherShift");
+    const double FEBOffset          = cal.caloInfo().getDouble("FEBToDiskZOffset");
+    const auto   FEBPhiMinMax       = calcFEBPhiRange(cal);
+    const bool   hasCrates          = cal.caloInfo().getBool("hasCrates");
+    const bool   hasCable           = ds.hasCableRunCal() && hasCrates;
 
 
+
+    //--------------------------------------
+    // Construct calorimeter disks mother volume
+    //
+    caloVolInfG4.clear();
+
+    const auto& posDS3InWorld        = mother.centerInWorld;
+    const auto& posDS3               = mother.centerInMu2e();
+    G4ThreeVector posDiskMother      = G4ThreeVector(posDS3.x(), 0, mother_zCenter);
+    G4ThreeVector posDiskMotherInDS  = posDiskMother - posDS3;
+
+    // Disk and FEB mother volumes
+    VolumeInfo caloDiskInfo("CaloDiskMother");
+    caloDiskInfo.solid         = new G4Tubs(caloDiskInfo.name, caloDiskRadiusIn, caloDiskRadiusOut, mother_zlength/2.0, 0.0, CLHEP::twopi);
+    caloDiskInfo.logical       = caloLogical(caloDiskInfo, vacuumMaterial, 0, G4Color::Black(), 0, 0);
+    caloDiskInfo.physical      = caloPlacement(caloDiskInfo, mother, 0, posDiskMotherInDS, false, 0, config, doSurfaceCheck, verbosity);
+    helper.addVolInfo(caloDiskInfo);
+
+    VolumeInfo caloFEBInfo("CaloFEBMother");
+    caloFEBInfo.solid         = new G4Tubs(caloFEBInfo.name, caloDiskRadiusOut, caloFEBRadiusOut, mother_zlength/2.0, FEBPhiMinMax[0], FEBPhiMinMax[1]-FEBPhiMinMax[0]);
+    caloFEBInfo.logical       = caloLogical(caloFEBInfo, vacuumMaterial, 0, G4Color::Black(), 0, 0);
+    caloFEBInfo.physical      = caloPlacement(caloFEBInfo, mother, 0, posDiskMotherInDS, false, 0, config, doSurfaceCheck, verbosity);
+    helper.addVolInfo(caloFEBInfo);
+
+    if ( verbosity > 0) {
+      double zhl = dynamic_cast<G4Tubs*>(caloDiskInfo.solid)->GetZHalfLength();
+      double calorimeterOffsetInMu2eZ = caloDiskInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
+      G4cout << __func__ << " Calorimeter mother center in Mu2e   : " << caloDiskInfo.centerInMu2e() << G4endl;
+      G4cout << __func__ << " Calorimeter mother Z extent in Mu2e : " << calorimeterOffsetInMu2eZ - zhl << ", " << calorimeterOffsetInMu2eZ + zhl << G4endl;
+    }
+
+
+
+    // Disk and FEB volumes
+    std::vector<VolumeInfo> calorimeterDisk(nDisks), calorimeterFEB(nDisks);
+    for (size_t idisk=0;idisk<nDisks;++idisk) {
+      G4ThreeVector posDisk           = cal.disk(idisk).geomInfo().origin() - posDiskMother;
+      calorimeterDisk[idisk]          = caloBuildDisk(config,idisk);
+      auto rot                        = const_cast<G4RotationMatrix*>(&cal.disk(idisk).geomInfo().rotation());
+      calorimeterDisk[idisk].physical = caloPlacement(calorimeterDisk[idisk], caloDiskInfo, rot, posDisk, false, 0, config, doSurfaceCheck, verbosity);
+      helper.addVolInfo(calorimeterDisk[idisk]);
+
+      if (hasCrates) {
+        calorimeterFEB[idisk]          = caloBuildFEB(config,idisk);
+        G4Tubs*  FEB                   = dynamic_cast<G4Tubs*>(calorimeterFEB[idisk].solid);
+        G4Tubs*  disk                  = dynamic_cast<G4Tubs*>(calorimeterDisk[idisk].solid);
+        G4ThreeVector posFEB           = posDisk + G4ThreeVector(0,0,FEB->GetZHalfLength() - disk->GetZHalfLength() - FEBOffset);
+        calorimeterFEB[idisk].physical = caloPlacement(calorimeterFEB[idisk], caloFEBInfo, rot, posFEB, false, 0, config, doSurfaceCheck, verbosity);
+        helper.addVolInfo(calorimeterFEB[idisk]);
+
+        if (hasCable) {
+          VolumeInfo CableRun    = caloBuildCable(config, idisk, calorimeterFEB[idisk]);
+          G4Tubs*    Cable       = dynamic_cast<G4Tubs*>(CableRun.solid);
+          G4ThreeVector posCable = posFEB + G4ThreeVector(0,0, FEB->GetZHalfLength() + Cable->GetZHalfLength());
+          CableRun.physical      = caloPlacement(CableRun, caloFEBInfo, rot, posCable, false, 0, config, doSurfaceCheck, verbosity);
+          helper.addVolInfo(CableRun);
+        }
+      }
+
+
+      if (verbosity > 0) {
+        G4Tubs* disk      = static_cast<G4Tubs*>(caloDiskInfo.solid);
+        G4double zHalftot = disk->GetZHalfLength();
+        G4cout << __func__ << " CalorimeterDisk center in Mu2e    : " << caloDiskInfo.centerInMu2e() << G4endl;
+        G4cout << __func__ << " CalorimeterDisk Z extent in Mu2e  : " << caloDiskInfo.centerInMu2e()[CLHEP::Hep3Vector::Z] - zHalftot
+                           << ", " << caloDiskInfo.centerInMu2e()[CLHEP::Hep3Vector::Z] + zHalftot << G4endl;
+      }
+    }
+
+
+    //Fix the "world posiiton" of all wolumes
+    for (auto& kv : caloVolInfG4) {
+      CLHEP::Hep3Vector posWorld(0,0,0);
+      std::string mother(kv.first);
+      while (caloVolInfG4.find(mother) != caloVolInfG4.end()) {
+        posWorld += helper.locateVolInfo(mother).centerInParent;
+        mother = caloVolInfG4.find(mother)->second;
+      }
+      helper.locateVolInfo(kv.first).centerInWorld = posWorld + posDS3InWorld;
+    }
+
+    if (verbosity >1) {
+      if (verbosity==99) {
+        std::cout<<"List of all volumes in the calorimeter and FEB"<<std::endl;
+        browseCaloSolids(caloDiskInfo.logical);
+        browseCaloSolids(caloFEBInfo.logical);
+      }
+
+      for (auto& kv : caloVolInfG4){
+         const auto& vol = helper.locateVolInfo(kv.first);
+         std::cout<<vol.name<<"   posInWorld="<<vol.centerInWorld<<"    posInMu2e="<<vol.centerInMu2e()<<std::endl;
+      }
+    }
+
+    if (verbosity > 0) G4cout << __func__ << " Calorimeter constructed "<< G4endl;
+
+    return caloDiskInfo;
+  }
+
+*/
 
 
   //--------------------------------------------------------------------------------------------------------------------------------
