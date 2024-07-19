@@ -210,7 +210,7 @@ namespace mu2e
   void KalFit::setCaloGeom(){
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
 
-    _nCaloDisks = ch->nDisk();
+    _nCaloDisks = ch->nDisks();
     double      crystalLength = ch->caloInfo().getDouble("crystalZLength");
     for (unsigned i=0; i<_nCaloDisks; ++i){
       CLHEP::Hep3Vector pos(ch->disk(i).geomInfo().frontFaceCenter());

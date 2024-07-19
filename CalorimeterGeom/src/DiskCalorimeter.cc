@@ -12,7 +12,6 @@ namespace mu2e {
 
 
     DiskCalorimeter::DiskCalorimeter() :
-      nDisks_(0),
       disks_(),
       fullCrystalList_(),
       caloInfo_(),

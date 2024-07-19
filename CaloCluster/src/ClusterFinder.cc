@@ -11,7 +11,7 @@
 namespace mu2e {
 
         ClusterFinder::ClusterFinder(const Calorimeter& cal, const CaloHit* crystalSeed, double deltaTime, double ExpandCut, bool addSecondRing) :
-          cal_(&cal), crystalSeed_(crystalSeed), seedTime_(crystalSeed->time()), clusterList_(), crystalToVisit_(), isVisited_(cal.nCrystal()),
+          cal_(&cal), crystalSeed_(crystalSeed), seedTime_(crystalSeed->time()), clusterList_(), crystalToVisit_(), isVisited_(cal.nCrystals()),
           deltaTime_(deltaTime), ExpandCut_(ExpandCut), addSecondRing_(addSecondRing)
         {}
 
