@@ -1,4 +1,6 @@
 // Crystal calorimeter - all length in mm, angles in degres
+// The number of disks, SiPMs / crystal, Caphri crystals ids are stored in DataProduct/inc/CaloConst.hh (needed by online)
+//
 
 double calorimeter.caloDiskRadiusIn           = 335;
 double calorimeter.caloDiskRadiusOut          = 719;
@@ -45,14 +47,13 @@ double calorimeter.pipeInitSeparation         = 25.4;
 vector<double> calorimeter.largeTorPhi        = {161.34, 149.50, 139.50, 132.07, 125.39}; //full angle of large torus
 vector<double> calorimeter.smallTorPhi        = {84.63, 85.28, 85.79, 86.20, 86.53};      // full angle of small torus
 vector<double> calorimeter.straightEndPhi     = {3.96, 10.53, 15.80, 20.16, 23.84};       // angle of the ending poing of the straight pipe
-vector<double> calorimeter.yposition          = {432.2, 480.5, 524.3, 564.7, 602.5};     // start y position of the strait pipe
+vector<double> calorimeter.yposition          = {432.2, 480.5, 524.3, 564.7, 602.5};      // start y position of the strait pipe
 double calorimeter.radSmTor                   = 41.0;
 double calorimeter.xsmall                     = 71.0;
 double calorimeter.xdistance                  = 60.0;
 double calorimeter.rInnerManifold             = 681.6;
 
 bool   calorimeter.hasBackPanel               = true;
-int    calorimeter.readoutPerCrystal          = 2;
 double calorimeter.readoutXLength             = 12;
 double calorimeter.readoutYLength             = 18;
 double calorimeter.readoutZLength             = 2;

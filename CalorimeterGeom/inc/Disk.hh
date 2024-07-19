@@ -71,6 +71,8 @@ namespace mu2e {
 
    };
 
+   using DiskPtr  = std::shared_ptr<Disk>;
+   using DiskPtrs = std::vector<DiskPtr>;
 }
 
 #endif

@@ -114,7 +114,7 @@ namespace mu2e {
 
           //start the clustering algorithm for the hits between iStart and iStop
           std::queue<int> crystalToVisit;
-          std::vector<bool> isVisited(cal.nCrystal());
+          std::vector<bool> isVisited(cal.nCrystals());
 
           //put the first hit in the cluster list
           std::vector<size_t> clusterList{*iterSeed};
