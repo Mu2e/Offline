@@ -5,6 +5,9 @@
 #ifndef CalHelixFinderAlg_HH
 #define CalHelixFinderAlg_HH
 
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+
 // data
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
@@ -23,10 +26,6 @@
 
 class TH1F;
 
-namespace fhicl {
-  class ParameterSet;
-}
-
 namespace mu2e {
   class Calorimeter;
   class Tracker;
@@ -37,6 +36,49 @@ namespace mu2e {
   public:
     enum { kMaxNHits = 10000 } ;
 
+    struct Config {
+      fhicl::Atom<int>            diag{                fhicl::Name("diagLevel"),                    fhicl::Comment("Diag"),0 };
+      fhicl::Atom<int>            debug{               fhicl::Name("debugLevel"),                   fhicl::Comment("Debug"),0 };
+      fhicl::Atom<int>            debug2{              fhicl::Name("debugLevel2"),                  fhicl::Comment("Debug2"),0 };
+      fhicl::Sequence<std::string> hsel{               fhicl::Name("HelixFitSelectionBits"),                    fhicl::Comment("Good Hit Selection") };
+      fhicl::Sequence<std::string> bkgsel{             fhicl::Name("BackgroundSelectionBits"),                  fhicl::Comment("Background Hit Selection") };
+      fhicl::Atom<float>          maxHitEnergy{        fhicl::Name("maxElectronHitEnergy"),            fhicl::Comment("MaxElectronHitEnergy") };
+      fhicl::Atom<int>            minNHits{            fhicl::Name("minNHit"),                fhicl::Comment("Min NHits") };
+      fhicl::Atom<float>          absMpDfDz{           fhicl::Name("mostProbableDfDz"),               fhicl::Comment("Most Probable DfDz") };
+      fhicl::Atom<int>            initDfDz{            fhicl::Name("initDfDz"),                fhicl::Comment("Initial DfDz") };
+      fhicl::Atom<float>            dzOverHelPitchCut{   fhicl::Name("dzOverHelPitchCut"),       fhicl::Comment("Cut on Ratio Between Dz and HelPitch") };
+      fhicl::Atom<float>          maxDfDz{             fhicl::Name("maxDfDz"),                 fhicl::Comment("Max DfDz") };
+      fhicl::Atom<float>          minDfDz{             fhicl::Name("minDfDz"),                 fhicl::Comment("Min DfDz") };
+      fhicl::Atom<float>          sigmaPhi{            fhicl::Name("sigmaPhi"),                fhicl::Comment("Sigma Phi") };
+      fhicl::Atom<float>          weightXY{            fhicl::Name("weightXY"),                fhicl::Comment("Weight XY") };
+      fhicl::Atom<int>            targetcon{           fhicl::Name("targetconsistent"),               fhicl::Comment("Target Consistent") };
+      fhicl::Atom<float>          weightZPhi{          fhicl::Name("weightZPhi"),              fhicl::Comment("Weight ZPhi") };
+      fhicl::Atom<float>          weight3D{            fhicl::Name("weight3D"),                fhicl::Comment("Weight 3D") };
+      fhicl::Atom<float>          maxXDPhi{            fhicl::Name("maxXDPhi"),                fhicl::Comment("MaxXDPhi") };
+      fhicl::Atom<float>          maxPanelToHelixDPhi{ fhicl::Name("maxPanelToHelixDPhi"),     fhicl::Comment("Max Panel to Helix DPhi") };
+      fhicl::Atom<float>          distPatRec{          fhicl::Name("distPatRec"),              fhicl::Comment("Dist Pat Rec") };
+      fhicl::Atom<float>          minDeltaNShPatRec{   fhicl::Name("minDeltaNShPatRec"),       fhicl::Comment("Min Delta NSh Pat Rec") };
+      fhicl::Atom<float>          mindist{             fhicl::Name("mindist"),                 fhicl::Comment("Min Dist") };
+      fhicl::Atom<float>          pmin{                fhicl::Name("minP"),                    fhicl::Comment("P Min") };
+      fhicl::Atom<float>          pmax{                fhicl::Name("maxP"),                    fhicl::Comment("P Max") };
+      fhicl::Atom<float>          tdmin{               fhicl::Name("minAbsTanDip"),                   fhicl::Comment("Min Abs TanDip") };
+      fhicl::Atom<float>          tdmax{               fhicl::Name("maxAbsTanDip"),                   fhicl::Comment("Max Abs TanDip") };
+      fhicl::Atom<bool>           xyweights{           fhicl::Name("xyWeights"),               fhicl::Comment("XY Weights") };
+      fhicl::Atom<bool>           zweights{            fhicl::Name("zWeights"),                fhicl::Comment("Z Weights") };
+      fhicl::Atom<bool>           filter{              fhicl::Name("filter"),                  fhicl::Comment("Filter") };
+      fhicl::Atom<bool>           plotall{             fhicl::Name("plotall"),                 fhicl::Comment("Plot All") };
+      fhicl::Atom<bool>           usetarget{           fhicl::Name("usetarget"),               fhicl::Comment("Use Target") };
+      fhicl::Atom<float>          maxZTripletSearch{   fhicl::Name("maxZTripletSearch"),       fhicl::Comment("Max Z Triplet Search") };
+      fhicl::Atom<float>          bz{                  fhicl::Name("bz"),                      fhicl::Comment("Value of field z component")};
+      fhicl::Atom<int>            nHitsMaxPerPanel{    fhicl::Name("nHitsMaxPerPanel"),        fhicl::Comment("Max NHits Per Panel") };
+      fhicl::Atom<float>          hitChi2Max{          fhicl::Name("hitChi2Max"),              fhicl::Comment("Hit Chi2 Max") };
+      fhicl::Atom<float>          chi2xyMax{           fhicl::Name("chi2xyMax"),               fhicl::Comment("Chi2XY Max") };
+      fhicl::Atom<float>          chi2zphiMax{         fhicl::Name("chi2zphiMax"),             fhicl::Comment("Chi2ZPhi Max") };
+      fhicl::Atom<float>          chi2hel3DMax{        fhicl::Name("chi2hel3DMax"),            fhicl::Comment("Chi2 Hel3D Max") };
+      fhicl::Atom<float>          dfdzErr{             fhicl::Name("dfdzErr"),                 fhicl::Comment("DfDz Error") };
+      fhicl::Atom<float>          maxNHitsRatio{       fhicl::Name("maxNHitsRatio"),           fhicl::Comment("Max NHits Ratio") };
+      fhicl::Atom<float>          minArea{             fhicl::Name("minArea"),                 fhicl::Comment("Minimum triplet area") };
+    };
 //-----------------------------------------------------------------------------
 // data members
 //-----------------------------------------------------------------------------
@@ -153,6 +195,7 @@ namespace mu2e {
     int       _phiCorrectedDefined;
 
     float    _dfdzErr;                 // error on dfdz by ::findDfDz
+    float    _maxNHitsRatio;
     float    _minarea2;
 //-----------------------------------------------------------------------------
 // checkpoints, used for debugging
@@ -163,7 +206,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   public:
                                         // parameter set should be passed in on construction
-    explicit CalHelixFinderAlg(fhicl::ParameterSet const&);
+    //explicit CalHelixFinderAlg(fhicl::ParameterSet const&);
+    explicit CalHelixFinderAlg(const Config& config);
     virtual ~CalHelixFinderAlg();
                                         // cached bfield accessor
     float bz() const;

@@ -221,6 +221,19 @@ namespace mu2e {
     return retval;
   }
 
+  float ComboHitCollection::eDepAvg(ComboHitCollection const& ccol) {
+    float eDepSum(0.0);
+    size_t nStrawHits(0);
+    for (size_t i=0; i<ccol.size(); i++){
+      eDepSum += ccol.at(i).energyDep()*ccol.at(i).nStrawHits();
+      nStrawHits += ccol.at(i).nStrawHits();
+    }
+    return eDepSum/(nStrawHits + 1e-10);
+  }
+
+
+
+
   void ComboHit::print( std::ostream& ost, bool doEndl) const {
     ost << " ComboHit:"
         << " id "      << _sid
