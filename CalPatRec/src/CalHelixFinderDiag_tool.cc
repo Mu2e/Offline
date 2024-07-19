@@ -17,6 +17,7 @@
 namespace mu2e {
 
   using namespace CalHelixFinderTypes;
+  //using CalHelixFinderTypes::Config;
 
   class CalHelixFinderDiag : public mu2e::ModuleHistToolBase {
 
@@ -27,7 +28,8 @@ namespace mu2e {
 
   public:
 
-    CalHelixFinderDiag(const fhicl::ParameterSet& PSet);
+    CalHelixFinderDiag(const fhicl::Table<mu2e::CalHelixFinderTypes::Config>& config);
+    //CalHelixFinderDiag(const fhicl::ParameterSet& PSet);
     ~CalHelixFinderDiag();
 
   private:
@@ -39,9 +41,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-CalHelixFinderDiag::CalHelixFinderDiag(const fhicl::ParameterSet& PSet) {
-  _event_number = -1;
+  CalHelixFinderDiag::CalHelixFinderDiag(const fhicl::Table<mu2e::CalHelixFinderTypes::Config>& config) {
 }
+
+// CalHelixFinderDiag::CalHelixFinderDiag(const fhicl::ParameterSet& PSet) {
+//   _event_number = -1;
+// }
 
 CalHelixFinderDiag::~CalHelixFinderDiag() {
 }

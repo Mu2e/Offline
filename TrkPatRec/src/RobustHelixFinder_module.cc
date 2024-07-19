@@ -542,7 +542,7 @@ namespace mu2e {
     ComboHit*     hit(0);
     unsigned      nhits = helixData._chHitsToProcess.size();
     float eDepSum(0.0);
-    size_t nComboHits(0);
+    size_t nStrawHits(0);
 
     for (unsigned f=0; f<nhits; ++f){
       hit = &helixData._chHitsToProcess[f];
@@ -550,15 +550,15 @@ namespace mu2e {
 
       ComboHit                hhit(*hit);
       helixData._hseed._hhits.push_back(hhit);
-      eDepSum = eDepSum + hhit.energyDep();
-      ++nComboHits;
+      eDepSum += hhit.energyDep()*hhit.nStrawHits();
+      nStrawHits += hhit.nStrawHits();
     }
+    helixData._hseed._eDepAvg = eDepSum/(nStrawHits + 1e-10);
 
     if (_diag){
       HelixTool helTool(&helixData._hseed, _tracker);//_trackerRIn, _trackerROut, _trackerLength);
       helixData._diag.nLoops            = helTool.nLoops();
       helixData._diag.meanHitRadialDist = helTool.meanHitRadialDist();
-      helixData._hseed._eDepAvg = eDepSum/(nComboHits + 1e-6);
     }
     //now set the HelixRecoDir
     HelixTool ht(&helixData._hseed, _tracker);

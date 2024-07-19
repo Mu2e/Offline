@@ -21,11 +21,12 @@ namespace mu2e {
 
   struct HelixSeed {
 
-    TrkT0 const& t0() const { return _t0; }
-    ComboHitCollection const& hits() const { return _hhits; }
-    RobustHelix const& helix() const { return _helix; }
-    TrkFitFlag const& status() const { return _status; }
-    HelixRecoDir const& recoDir() const { return _recoDir; }
+    TrkT0                 const& t0()          const { return _t0; }
+    ComboHitCollection    const& hits()        const { return _hhits; }
+    RobustHelix           const& helix()       const { return _helix; }
+    TrkFitFlag            const& status()      const { return _status; }
+    HelixRecoDir          const& recoDir()     const { return _recoDir; }
+    float                 const& eDepAvg()     const { return _eDepAvg; }
     art::Ptr<CaloCluster> const& caloCluster() const { return _timeCluster->caloCluster(); }
     art::Ptr<TimeCluster> const& timeCluster() const { return _timeCluster; }
 
@@ -35,7 +36,7 @@ namespace mu2e {
     TrkFitFlag               _status;      // status of processes used to create this seed
     HelixRecoDir             _recoDir;     // sign of the longitudinal velocity (z-axis) derived from a T vs Z linear fit
     art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
-    float                    _eDepAvg;     // average energy deposition from helix hits
+    float                    _eDepAvg =0;  // average energy deposition from helix hits
   };
    typedef std::vector<mu2e::HelixSeed> HelixSeedCollection;
 } // namespace mu2e
