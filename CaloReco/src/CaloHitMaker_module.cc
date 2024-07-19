@@ -113,7 +113,7 @@ namespace mu2e {
 
 
     // fill the map that associate for each crystal the corresponding CaloRecoDigi indexes
-    int nSiPM = cal.nCrystal()*cal.caloInfo().getInt("nSiPMPerCrystal");
+    int nSiPM = cal.nCrystals()*cal.caloInfo().getInt("nSiPMPerCrystal");
     std::vector<std::vector<const CaloRecoDigi*>> hitMap(nSiPM,std::vector<const CaloRecoDigi*>());
 
     for (unsigned i=0; i< recoCaloDigis.size(); ++i)

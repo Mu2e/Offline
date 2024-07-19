@@ -1282,7 +1282,7 @@ namespace mu2e {
         double vdgThick            = 2.0*vdg->getHalfLength();
         DiskCalorimeter const& cal = *(GeomHandle<DiskCalorimeter>());
 
-        for (size_t id = 0; id < cal.nDisk(); id++){
+        for (size_t id = 0; id < cal.nDisks(); id++){
 
             std::ostringstream diskname; diskname<<"CaloDisk_" <<id;
             const VolumeInfo& caloDisk = _helper->locateVolInfo(diskname.str());

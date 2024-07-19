@@ -266,15 +266,15 @@ namespace mu2e {
 
   void DiskCal00::printCalInfo(){
     DiskCalorimeter const& cal(*GeomHandle<DiskCalorimeter>());
-    int nSiPM = cal.nCrystal()*cal.caloInfo().getInt("nSiPMPerCrystal");
+    int nSiPM = cal.nCrystals()*cal.caloInfo().getInt("nSiPMPerCrystal");
     cout << "Information about the disk Calorimeter: "  << endl;
-    cout << "Number of disks:    " << cal.nDisk()      << endl;
+    cout << "Number of disks:    " << cal.nDisks()      << endl;
     cout << "Number of Readouts: " << nSiPM << " "  << CaloConst::_nSiPMPerCrystal << " " << nSiPM/CaloConst::_nSiPMPerCrystal << endl;
     cout << "Hex side size:      " << 2.0*cal.caloInfo().getDouble("crystalXYLength") << endl;
 
     cout << "Depth:              " << cal.caloInfo().getDouble("crystalZLength")   << endl;
     cout << "Origin:             " << cal.geomUtil().origin()      << endl;
-    for (unsigned i=0; i<cal.nDisk(); ++i){
+    for (unsigned i=0; i<cal.nDisks(); ++i){
       Disk const& disk = cal.disk(i);
       cout << "Disk: " << i << " " << "origin: " << disk.geomInfo().origin() << endl;
     }

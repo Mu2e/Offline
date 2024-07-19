@@ -62,6 +62,8 @@ namespace mu2e {
              std::vector<int>  nextNeighborsGlobalRaw_;
      };
 
+     using Crystals    = std::vector<const Crystal>;
+     using CrystalPtrs = std::vector<const Crystal*>;
 }
 
 

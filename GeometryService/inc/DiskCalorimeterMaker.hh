@@ -23,11 +23,14 @@ namespace mu2e{
         // Accessor and unique_ptr to calorimeter needed by GeometryService.
         std::unique_ptr<DiskCalorimeter> calorimeterPtr() { return std::move(calo_); }
 
-      private:
-        void   checkIt();
-        void   makeIt();
 
-        int    verbosityLevel_;
+      private:
+        void                checkIt   ();
+        void                makeIt    ();
+        std::vector<double> getVDouble(const SimpleConfig& config, const std::string& key, int size=0);
+        std::vector<int>    getVInt   (const SimpleConfig& config, const std::string& key, int size=0);
+
+        int verbosityLevel_;
         std::unique_ptr<DiskCalorimeter> calo_;
     };
 
