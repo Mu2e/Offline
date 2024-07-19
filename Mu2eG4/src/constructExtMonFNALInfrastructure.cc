@@ -5,6 +5,7 @@
 #include <vector>
 #include <numbers>
 #include <math.h>
+#include <typeinfo>
 
 #include "Geant4/G4Color.hh"
 #include "Geant4/G4RotationMatrix.hh"
@@ -309,7 +310,6 @@ namespace mu2e {
 
 //================================================================
 void constructElectronicsRackExtMonFNAL( const VolumeInfo& parent,
-                                         const CLHEP::Hep3Vector& eRackCenterInParent,
                                          const CLHEP::HepRotation& eRackRotationInParent,
                                          const SimpleConfig& config
                                        )
@@ -319,24 +319,33 @@ void constructElectronicsRackExtMonFNAL( const VolumeInfo& parent,
 
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );
+    GeomHandle<ExtMonFNALBuilding> emfb;
 
     const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL");
     const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL");
     const bool placePV              = geomOptions->placePV("extMonFNAL");
 
+    double eRackDistanceToFloor = config.getDouble("extMonFNAL.room.electronicsRack.distanceToFloor");
+    double eRackDistanceToSideWall = config.getDouble("extMonFNAL.room.electronicsRack.distanceToSideWall");
+    double eRackDistanceToTranverseWall = config.getDouble("extMonFNAL.room.electronicsRack.distanceToTranverseWall");
+    std::vector<double> extMonFNALElectronicsRackHalfSize;
+    config.getVectorDouble("extMonFNAL.electronicsRack.halfSize", extMonFNALElectronicsRackHalfSize);
+
+    CLHEP::Hep3Vector eRackCenter ( -emfb->detectorRoomHalfSize()[0] + extMonFNALElectronicsRackHalfSize[0] + eRackDistanceToSideWall,
+                                    -emfb->detectorRoomHalfSize()[1] + extMonFNALElectronicsRackHalfSize[1] + eRackDistanceToFloor,
+                                    -emfb->detectorRoomHalfSize()[2] + extMonFNALElectronicsRackHalfSize[2] + eRackDistanceToTranverseWall);
+
     //----------------------------------------------------------
     // Electronics Rack Mother Volume
 
     G4RotationMatrix* eRackRotationInParentG4 = reg.add(G4RotationMatrix(eRackRotationInParent));
-    std::vector<double> extMonFNALElectronicsRackHalfSize;
-    config.getVectorDouble("extMonFNAL.electronicsRack.halfSize", extMonFNALElectronicsRackHalfSize);
 
       const VolumeInfo electronicsRackMother =
         nestBox( "ExtMonFNALElectronicsRackMother",
                  extMonFNALElectronicsRackHalfSize,
                  findMaterialOrThrow("G4_AIR"),
                  eRackRotationInParentG4,
-                 eRackCenterInParent,
+                 eRackCenter,
                  parent, 0,
                  geomOptions->isVisible("ExtMonFNALElectronicsRack"),
                  G4Colour::Magenta(),
@@ -555,22 +564,19 @@ void constructElectronicsRackExtMonFNAL( const VolumeInfo& parent,
     }
   }
 
-  //================================================================
-  void constructExtMonFNALInfrastructure(const VolumeInfo& pixelChillerParent,
+  //=============================================================
+  int constructExtMonFNALChillersInRoom( const VolumeInfo& pixelChillerParent,
                                          const CLHEP::HepRotation& pixelChillerParentRotationInMu2e,
                                          const VolumeInfo& mainParent,
                                          const CLHEP::HepRotation& mainParentRotationInMu2e,
-                                         const SimpleConfig& config)
+                                         const SimpleConfig& config )
   {
+
     MaterialFinder materialFinder(config);
-    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );
     GeomHandle<ExtMonFNALBuilding> emfb;
     GeomHandle<Mu2eHall> hall;
-
-    //----------------------------------------------------------
-    // Construct Pixel Chillers in Detector Room
 
     int numChillers = config.getInt("extMonFNAL.numChillersInRoom");
 
@@ -619,101 +625,107 @@ void constructElectronicsRackExtMonFNAL( const VolumeInfo& parent,
                                       CLHEP::HepRotation::IDENTITY,
                                       config);
     }
+    return numChillers;
+  }
 
-    //----------------------------------------------------------
-    // Construct Electronics Rack
+  //================================================================
+  namespace {
 
-    double eRackDistanceToFloor = config.getDouble("extMonFNAL.room.electronicsRack.distanceToFloor");
-    double eRackDistanceToSideWall = config.getDouble("extMonFNAL.room.electronicsRack.distanceToSideWall");
-    double eRackDistanceToTranverseWall = config.getDouble("extMonFNAL.room.electronicsRack.distanceToTranverseWall");
-    std::vector<double> extMonFNALElectronicsRackHalfSize;
-    config.getVectorDouble("extMonFNAL.electronicsRack.halfSize", extMonFNALElectronicsRackHalfSize);
+    ExtrudedSolid getExtMonWall(const std::string& wallName) {
 
-    CLHEP::Hep3Vector eRackCenter ( -emfb->detectorRoomHalfSize()[0] + extMonFNALElectronicsRackHalfSize[0] + eRackDistanceToSideWall,
-                                    -emfb->detectorRoomHalfSize()[1] + extMonFNALElectronicsRackHalfSize[1] + eRackDistanceToFloor,
-                                    -emfb->detectorRoomHalfSize()[2] + extMonFNALElectronicsRackHalfSize[2] + eRackDistanceToTranverseWall);
+      ExtrudedSolid res;
 
-    constructElectronicsRackExtMonFNAL( pixelChillerParent,
-                                        eRackCenter,
-                                        CLHEP::HepRotation::IDENTITY,
-                                        config);
+      if(wallName == "theInsideWall") {
+        GeomHandle<ExtMonFNALBuilding> emfb;
+        res = ExtrudedSolid( wallName,
+                             "dumnmy",
+                             emfb->coll2ShieldingCenterInMu2e(),
+                             emfb->roomInsideFullHeight()/2.0,
+                             emfb->coll2ShieldingOutline()
+                           );
+      } else {
+        GeomHandle<Mu2eHall> hall;
+        res = hall->getBldgSolid(wallName);
+      }
 
-    //----------------------------------------------------------
-    // Construct Pixel Chiller Along ExtMon Room Wall
+      return res;
+    }
+  }
 
-    const std::string wallName = config.getString("extMonFNAL.hall.chiller1.wallName");
-    std::vector<int> chillerRefVertices;
-    config.getVectorInt("extMonFNAL.hall.chiller1.refVertices", chillerRefVertices);
-    std::vector<double> extMonFNALPixelChillerHalfSize;
-    config.getVectorDouble("extMonFNAL.pixelChiller.halfSize", extMonFNALPixelChillerHalfSize);
-    const double distanceToFloor = config.getDouble("extMonFNAL.hall.chiller1.distanceToFloor");
-    const double distanceToWall  = config.getDouble("extMonFNAL.hall.chiller1.distanceToWall");
-    const double offsetAlongWall = config.getDouble("extMonFNAL.hall.chiller1.offsetAlongWall");
-    const ExtrudedSolid& extMonRoomWall = hall->getBldgSolid(wallName);
-    const auto& extMonRoomWallVerticies = extMonRoomWall.getVertices();
-    const double halfWallHeight = extMonRoomWall.getYhalfThickness();
+  //================================================================
+  void constructExtMonFNALChillersInHall ( int numChillersInRoom,
+                                           const VolumeInfo& mainParent,
+                                           const CLHEP::Hep3Vector& pixelChillerCenterInParent,
+                                           const SimpleConfig& config
+                                         )
+  {
+    MaterialFinder materialFinder(config);
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );
+    GeomHandle<ExtMonFNALBuilding> emfb;
 
+    int numChillersInHall = config.getInt("extMonFNAL.numChillersInHall");
     using CLHEP::Hep2Vector;
-    Hep2Vector corner1 (extMonRoomWallVerticies[chillerRefVertices[0]].y(), extMonRoomWallVerticies[chillerRefVertices[0]].x());
-    Hep2Vector corner2 (extMonRoomWallVerticies[chillerRefVertices[1]].y(), extMonRoomWallVerticies[chillerRefVertices[1]].x());
-    Hep2Vector wallVector = corner2 - corner1;
-    Hep2Vector wallChillerXZ = corner1;
-    wallChillerXZ -= Hep2Vector(mainParent.centerInMu2e().x(), mainParent.centerInMu2e().z());
-    wallChillerXZ += Hep2Vector(extMonRoomWall.getOffsetFromMu2eOrigin().x(), extMonRoomWall.getOffsetFromMu2eOrigin().z());
-    Hep2Vector wallVectorUnit = wallVector.unit();
-    wallChillerXZ += offsetAlongWall * wallVectorUnit;
-    wallChillerXZ -= distanceToWall * wallVectorUnit.orthogonal();
-    wallChillerXZ -= extMonFNALPixelChillerHalfSize[2] * wallVectorUnit.orthogonal();
-    wallChillerXZ += extMonFNALPixelChillerHalfSize[0] * wallVectorUnit;
-    const double chillerYCoord = extMonRoomWall.getOffsetFromMu2eOrigin().y()
-                                 - mainParent.centerInMu2e().y()
-                                 - halfWallHeight + extMonFNALPixelChillerHalfSize[1] + distanceToFloor; //changes chiller's height off the floor
+    for(int i = 1; i <= numChillersInHall; i++) {
+      const std::string wallName = config.getString("extMonFNAL.hall.chiller"+std::to_string(i)+".wallName");
+      const ExtrudedSolid& extMonRoomWall = getExtMonWall(wallName);
 
-    double wallVectorX = wallVector.y();
-    double wallVectorY = wallVector.x();
-    double rotAngle = -M_PI * 0.5 - std::atan2 ( wallVectorY, wallVectorX );
-    CLHEP::Hep3Vector chillerCoord ( wallChillerXZ.x(), chillerYCoord, wallChillerXZ.y());
+      std::vector<int> chillerRefVertices;
+      config.getVectorInt("extMonFNAL.hall.chiller"+std::to_string(i)+".refVertices", chillerRefVertices);
+      std::vector<double> extMonFNALPixelChillerHalfSize;
+      config.getVectorDouble("extMonFNAL.pixelChiller.halfSize", extMonFNALPixelChillerHalfSize);
+      const double distanceToFloor = config.getDouble("extMonFNAL.hall.chiller"+std::to_string(i)+".distanceToFloor");
+      const double distanceToWall  = config.getDouble("extMonFNAL.hall.chiller"+std::to_string(i)+".distanceToWall");
+      const double offsetAlongWall = config.getDouble("extMonFNAL.hall.chiller"+std::to_string(i)+".offsetAlongWall");
+      const auto& extMonRoomWallVerticies = extMonRoomWall.getVertices();
+      const double halfWallHeight = extMonRoomWall.getYhalfThickness();
 
-    CLHEP::HepRotation *psideChillerRot = reg.add(new CLHEP::HepRotation());
-    CLHEP::HepRotation& sideChillerRot = *psideChillerRot;
-    psideChillerRot->rotateY( rotAngle );
+      Hep2Vector corner1 (extMonRoomWallVerticies[chillerRefVertices[0]].y(), extMonRoomWallVerticies[chillerRefVertices[0]].x());
+      Hep2Vector corner2 (extMonRoomWallVerticies[chillerRefVertices[1]].y(), extMonRoomWallVerticies[chillerRefVertices[1]].x());
+      Hep2Vector wallVector = corner2 - corner1;
+      Hep2Vector wallChillerXZ = corner1;
+      wallChillerXZ -= Hep2Vector(mainParent.centerInMu2e().x(), mainParent.centerInMu2e().z());
+      wallChillerXZ += Hep2Vector(extMonRoomWall.getOffsetFromMu2eOrigin().x(), extMonRoomWall.getOffsetFromMu2eOrigin().z());
+      Hep2Vector wallVectorUnit = wallVector.unit();
+      wallChillerXZ += offsetAlongWall * wallVectorUnit;
+      wallChillerXZ -= distanceToWall * wallVectorUnit.orthogonal();
+      wallChillerXZ -= extMonFNALPixelChillerHalfSize[2] * wallVectorUnit.orthogonal();
+      wallChillerXZ += extMonFNALPixelChillerHalfSize[0] * wallVectorUnit;
+      const double chillerYCoord = extMonRoomWall.getOffsetFromMu2eOrigin().y()
+                                  - mainParent.centerInMu2e().y()
+                                  - halfWallHeight + extMonFNALPixelChillerHalfSize[1] + distanceToFloor; //changes chiller's height off the floor
 
-    constructPixelChillerExtMonFNAL(5,
-                                    mainParent,
-                                    chillerCoord,
-                                    sideChillerRot,
-                                    config);
+      double wallVectorX = wallVector.y();
+      double wallVectorY = wallVector.x();
+      double rotAngle = -M_PI * 0.5 - std::atan2 ( wallVectorY, wallVectorX );
+      CLHEP::Hep3Vector chillerCoord ( wallChillerXZ.x(), chillerYCoord, wallChillerXZ.y());
 
-    //----------------------------------------------------------
-    // Construct Pixel Chiller Along Coll2Shielding Wall
+      CLHEP::HepRotation *psideChillerRot = reg.add(new CLHEP::HepRotation());
+      CLHEP::HepRotation& sideChillerRot = *psideChillerRot;
+      psideChillerRot->rotateY( rotAngle );
 
-    Hep2Vector coll2WallCorner1 (emfb->coll2ShieldingOutline()[2].y(), emfb->coll2ShieldingOutline()[2].x());
-    Hep2Vector coll2WallCorner2 (emfb->coll2ShieldingOutline()[3].y(), emfb->coll2ShieldingOutline()[3].x());
-    Hep2Vector coll2WallVector = coll2WallCorner2 - coll2WallCorner1;
-    Hep2Vector coll2WallChillerXZ = coll2WallCorner1;
-    coll2WallChillerXZ -= Hep2Vector(mainParent.centerInMu2e().x(), mainParent.centerInMu2e().z());
-    coll2WallChillerXZ += Hep2Vector(emfb->coll2ShieldingCenterInMu2e().x(), emfb->coll2ShieldingCenterInMu2e().z());
-    Hep2Vector coll2WallVectorUnit = coll2WallVector.unit();
-    coll2WallChillerXZ += offsetAlongWall * coll2WallVectorUnit;
-    coll2WallChillerXZ -= distanceToWall * coll2WallVectorUnit.orthogonal();
-    coll2WallChillerXZ -= extMonFNALPixelChillerHalfSize[2] * coll2WallVectorUnit.orthogonal();
-    coll2WallChillerXZ += extMonFNALPixelChillerHalfSize[0] * coll2WallVectorUnit;
-    const double coll2WallChillerYCoord = emfb->coll2ShieldingCenterInMu2e().y()
-                                 - mainParent.centerInMu2e().y()
-                                 - halfWallHeight + extMonFNALPixelChillerHalfSize[1] + distanceToFloor; //changes chiller's height off the floor
+      constructPixelChillerExtMonFNAL(numChillersInRoom+i,
+                                      mainParent,
+                                      chillerCoord,
+                                      sideChillerRot,
+                                      config);
+    }
+  }
 
-    CLHEP::Hep3Vector coll2WallChillerCoord ( coll2WallChillerXZ.x(), coll2WallChillerYCoord, coll2WallChillerXZ.y());
-    double coll2WallVectorUnitX = coll2WallVectorUnit.y();
-    double coll2WallVectorUnitY = coll2WallVectorUnit.x();
-    double coll2WallRotAngle = -M_PI * 0.5 - std::atan2 ( coll2WallVectorUnitY, coll2WallVectorUnitX );
+  //================================================================
+  void constructExtMonFNALInfrastructure(const VolumeInfo& pixelChillerParent,
+                                         const CLHEP::HepRotation& pixelChillerParentRotationInMu2e,
+                                         const VolumeInfo& mainParent,
+                                         const CLHEP::HepRotation& mainParentRotationInMu2e,
+                                         const SimpleConfig& config)
+  {
 
-    CLHEP::HepRotation *psideColl2WallChillerRot = reg.add(new CLHEP::HepRotation());
-    CLHEP::HepRotation& sideColl2WallChillerRot = *psideColl2WallChillerRot;
-    psideColl2WallChillerRot->rotateY( coll2WallRotAngle );
-    constructPixelChillerExtMonFNAL(6,
-                                    mainParent,
-                                    coll2WallChillerCoord,
-                                    sideColl2WallChillerRot,
-                                    config);
+    int numChillersInRoom = constructExtMonFNALChillersInRoom(pixelChillerParent, pixelChillerParentRotationInMu2e, mainParent, mainParentRotationInMu2e, config);
+
+    constructElectronicsRackExtMonFNAL( pixelChillerParent, CLHEP::HepRotation::IDENTITY, config);
+
+    constructExtMonFNALChillersInHall( numChillersInRoom, mainParent, CLHEP::Hep3Vector(0,0,0), config);
+
   } //constructExtMonFNALInfrastructure()
 } //namespace mu2e

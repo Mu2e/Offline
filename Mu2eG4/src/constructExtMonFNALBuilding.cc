@@ -639,14 +639,13 @@ namespace mu2e {
                                      CLHEP::twopi
                                      );
 
-    G4ExtrudedSolid* coll2ShieldingExtrusion = new G4ExtrudedSolid("ExtMonFNALCollimator2ShieldingExtrusion",
+    G4ExtrudedSolid* coll2ShieldingExtrusion= new G4ExtrudedSolid( "ExtMonFNALCollimator2ShieldingExtrusion",
                                                                    emfb->coll2ShieldingOutline(),
                                                                    emfb->roomInsideFullHeight()/2.0,
                                                                    G4TwoVector(0,0),
                                                                    1.,
                                                                    G4TwoVector(0,0), 1.
-                                                                   );
-
+                                                                 );
 
     VolumeInfo coll2Shielding("ExtMonFNALColl2Shielding",
                               emfb->coll2ShieldingCenterInMu2e() - mainParent.centerInMu2e(),
