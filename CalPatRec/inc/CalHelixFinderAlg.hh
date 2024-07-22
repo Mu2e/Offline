@@ -69,7 +69,6 @@ namespace mu2e {
       fhicl::Atom<bool>           plotall{             fhicl::Name("plotall"),                 fhicl::Comment("Plot All") };
       fhicl::Atom<bool>           usetarget{           fhicl::Name("usetarget"),               fhicl::Comment("Use Target") };
       fhicl::Atom<float>          maxZTripletSearch{   fhicl::Name("maxZTripletSearch"),       fhicl::Comment("Max Z Triplet Search") };
-      fhicl::Atom<float>          bz{                  fhicl::Name("bz"),                      fhicl::Comment("Value of field z component")};
       fhicl::Atom<int>            nHitsMaxPerPanel{    fhicl::Name("nHitsMaxPerPanel"),        fhicl::Comment("Max NHits Per Panel") };
       fhicl::Atom<float>          hitChi2Max{          fhicl::Name("hitChi2Max"),              fhicl::Comment("Hit Chi2 Max") };
       fhicl::Atom<float>          chi2xyMax{           fhicl::Name("chi2xyMax"),               fhicl::Comment("Chi2XY Max") };

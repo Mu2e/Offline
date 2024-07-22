@@ -173,7 +173,6 @@ namespace mu2e {
     _plotall(config.plotall()),
     _usetarget(config.usetarget()),
     _maxZTripletSearch(config.maxZTripletSearch()),
-    _bz(config.bz()),
     _nHitsMaxPerPanel(config.nHitsMaxPerPanel()),
     _hitChi2Max(config.hitChi2Max()),
     _chi2xyMax(config.chi2xyMax()),
