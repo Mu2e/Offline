@@ -931,7 +931,7 @@ namespace mu2e {
 
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
           G4String LVname = (*pos)->GetName();
-          if (LVname.find("CaloCrystal_CsI") != std::string::npos || LVname.find("CaloCrystal_LYSO") != std::string::npos)
+          if (LVname.find("CaloCrystalCsI") != std::string::npos || LVname.find("CaloCrystalLYSO") != std::string::npos)
             (*pos)->SetSensitiveDetector(ccSD);
         }
       }
