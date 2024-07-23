@@ -86,7 +86,7 @@ namespace mu2e {
        calo_->caloInfo_.set("readoutYLength",         config.getDouble("calorimeter.readoutYLength") );
        calo_->caloInfo_.set("readoutZLength",         config.getDouble("calorimeter.readoutZLength") );
        calo_->caloInfo_.set("shimStepsInRowId",       getVInt(config,"shimStepsInRowId") );
-       calo_->caloInfo_.set("shimStepsOutRowId",      getVInt(config,"shimStepsInRowId") );
+       calo_->caloInfo_.set("shimStepsOutRowId",      getVInt(config,"shimStepsOutRowId") );
        std::vector<int> tempInt;
        for (uint16_t i=0;i<CaloConst::_nCaphriCrystal;++i) tempInt.push_back(CaloConst::_caphriId[i]);
        calo_->caloInfo_.set("caphriCrystalId",tempInt);
