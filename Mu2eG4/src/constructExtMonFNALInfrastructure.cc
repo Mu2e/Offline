@@ -294,7 +294,7 @@ namespace mu2e {
 
     VolumeInfo pixelChillerCoolant = nestTubs(pixelChillerNum+"Coolant",
                                               pixelChillerC5CoolantParams,
-                                              materialFinder.get("extMonFNAL.pixelChiller.C5CoolantMaterial"),
+                                              materialFinder.get("extMonFNAL.pixelChiller.coolantMaterial"),
                                               0,
                                               CoolantVolCenter,
                                               pixelChillerMother,
