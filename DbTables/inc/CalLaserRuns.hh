@@ -3,7 +3,6 @@
 
 //
 // Ad-hoc table (for record-keeping, not calibration itself)
-// to record info about a cal laser run
 //
 
 #include "Offline/DbTables/inc/DbTable.hh"
@@ -19,23 +18,23 @@ class CalLaserRuns : public DbTable {
  public:
   class Row {
    public:
-    Row(int run, int timeCid, int energyCid, std::string comment) :
-      _run(run), _timeCid(timeCid), _energyCid(energyCid), _comment(comment) {}
-    int run() const { return _run; }
-    int timeCid() const { return _timeCid; }
-    int energyCid() const { return _energyCid; }
+    Row(int t0alignRunNumber, int timeCidLaser, std::string comment) :
+      _t0alignRunNumber(t0alignRunNumber), _timeCidLaser(timeCidLaser),
+      _comment(comment) {}
+    int t0alignRunNumber() const { return _t0alignRunNumber; }
+    int timeCidLaser() const { return _timeCidLaser; }
     std::string comment() const { return _comment; }
 
    private:
-    int _run; // the laser run number
-    int _timeCid; // CID of laser run archive table CalLaserTimeCalib
-    int _energyCid; // CID of laser run archive table CalLaserEnergyCalib
+    int _t0alignRunNumber;
+    int _timeCidLaser;
     std::string _comment;
   };
 
   constexpr static const char* cxname = "CalLaserRuns";
 
-  CalLaserRuns() : DbTable(cxname, "cal.laserruns", "run,timecid,energycid,comment") {}
+  CalLaserRuns() : DbTable(cxname, "cal.laserruns",
+                           "t0alignrunnumber,timecidlaser,comment") {}
   const Row& rowAt(const std::size_t index) const { return _rows.at(index); }
   std::vector<Row> const& rows() const { return _rows; }
   std::size_t nrow() const override { return _rows.size(); };
@@ -46,14 +45,13 @@ class CalLaserRuns : public DbTable {
 
   void addRow(const std::vector<std::string>& columns) override {
     _rows.emplace_back(std::stoi(columns[0]), std::stoi(columns[1]),
-                       std::stoi(columns[2]), columns[3] );
+                       columns[2] );
   }
 
   void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
     Row const& r = _rows.at(irow);
-    sstream << r.run() << ",";
-    sstream << r.timeCid() << ",";
-    sstream << r.energyCid() << ",";
+    sstream << r.t0alignRunNumber() << ",";
+    sstream << r.timeCidLaser() << ",";
     sstream << r.comment();
   }
 
