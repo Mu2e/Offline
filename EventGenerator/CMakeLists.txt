@@ -572,6 +572,16 @@ cet_build_plugin(MuCapProtonGenerator art::tool
       Offline::Mu2eUtilities
 )
 
+cet_build_plugin(MuStopDecayPositionSamplerTool art::tool
+    REG_SOURCE src/MuStopDecayPositionSamplerTool_tool.cc
+    LIBRARIES REG
+      Offline::EventGenerator      
+
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+)
+
 cet_build_plugin(MuplusMichelGenerator art::tool
     REG_SOURCE src/MuplusMichelGenerator_tool.cc
     LIBRARIES REG

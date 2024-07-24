@@ -1660,9 +1660,116 @@ namespace mu2e {
 
      BP -> AddElement(elB, 5*CLHEP::perCent);
      BP -> AddMaterial(Poly, 95*CLHEP::perCent);
+    }
+
+    mat = uniqueMaterialOrThrow( "ClosePackedExtMonSteelShot");
+    {
+      //7.85 g/cm3 is the density of steel and 63.5% is the densest packing of spheres
+      constexpr double density = 7.85 * .635;
+      G4Material* ClosePackedExtMonSteelShot = new G4Material(mat.name, density*CLHEP::g/CLHEP::cm3, 1);
+      ClosePackedExtMonSteelShot -> AddMaterial(findMaterialOrThrow("MildSteel"), 100*CLHEP::perCent);
+    }
+
+    //Information from https://en.wikipedia.org/wiki/Difluoromethane
+    mat = uniqueMaterialOrThrow("R32");
+    {
+     G4Material* R32 = new G4Material(mat.name, 1.1*CLHEP::g/CLHEP::cm3, 3);
+
+     G4Element* eC = getElementOrThrow("C");
+     G4Element* eH  = getElementOrThrow("H");
+     G4Element* eF = getElementOrThrow("F");
+
+     R32->AddElement( eC,   1);
+     R32->AddElement( eH,   2);
+     R32->AddElement( eF,   2);
 
     }
 
+    //Information from https://en.wikipedia.org/wiki/Pentafluoroethane
+    mat = uniqueMaterialOrThrow("R125");
+    {
+     G4Material* R125 = new G4Material(mat.name, 1.53*CLHEP::g/CLHEP::cm3, 3);
+
+     G4Element* eC = getElementOrThrow("C");
+     G4Element* eH  = getElementOrThrow("H");
+     G4Element* eF = getElementOrThrow("F");
+
+     R125->AddElement( eC,   2);
+     R125->AddElement( eH,   1);
+     R125->AddElement( eF,   5);
+
+    }
+
+    //Information from https://en.wikipedia.org/wiki/2,3,3,3-Tetrafluoropropene
+    mat = uniqueMaterialOrThrow("R1234yf");
+    {
+     G4Material* R1234yf = new G4Material(mat.name, 1.1*CLHEP::g/CLHEP::cm3, 3);
+
+     G4Element* eC = getElementOrThrow("C");
+     G4Element* eH  = getElementOrThrow("H");
+     G4Element* eF = getElementOrThrow("F");
+
+     R1234yf->AddElement( eC,   3);
+     R1234yf->AddElement( eH,   2);
+     R1234yf->AddElement( eF,   4);
+
+    }
+
+    //Information from https://en.wikipedia.org/wiki/1,1,1,2-Tetrafluoroethane
+    mat = uniqueMaterialOrThrow("R134a");
+    {
+     G4Material* R134a = new G4Material(mat.name, 1.206*CLHEP::g/CLHEP::cm3, 3);
+
+     G4Element* eC = getElementOrThrow("C");
+     G4Element* eH  = getElementOrThrow("H");
+     G4Element* eF = getElementOrThrow("F");
+
+     R134a->AddElement( eC,   2);
+     R134a->AddElement( eH,   2);
+     R134a->AddElement( eF,   4);
+
+    }
+
+    //Information from https://www.honeywell-refrigerants.com/europe/wp-content/uploads/2017/10/FPR-029-2017-09_Solstice_452A_A4_2892017.pdf
+    mat = uniqueMaterialOrThrow("R452A");
+    {
+     G4Material* R452A = new G4Material(mat.name, 1.1488*CLHEP::g/CLHEP::cm3, 3);
+
+     R452A->AddMaterial( findMaterialOrThrow("R1234yf"), 30.0*CLHEP::perCent);
+     R452A->AddMaterial( findMaterialOrThrow("R32"),     11.0*CLHEP::perCent);
+     R452A->AddMaterial( findMaterialOrThrow("R125"),    59.0*CLHEP::perCent);
+
+    }
+
+    //information from https://www.opteon.com/en/-/media/files/opteon/opteon-xp40-prodinfo.pdf?la=en&rev=f82b8f89deec4f19bdbc7c17a04fe314
+    mat = uniqueMaterialOrThrow("R449A");
+    {
+     G4Material* R449A = new G4Material(mat.name, 1.1141*CLHEP::g/CLHEP::cm3, 4);
+
+     R449A->AddMaterial( findMaterialOrThrow("R32"),     24.3*CLHEP::perCent);
+     R449A->AddMaterial( findMaterialOrThrow("R125"),    24.7*CLHEP::perCent);
+     R449A->AddMaterial( findMaterialOrThrow("R1234yf"), 25.3*CLHEP::perCent);
+     R449A->AddMaterial( findMaterialOrThrow("R134a"),   25.7*CLHEP::perCent);
+    }
+
+    //Information from https://julabo.us/wp-content/uploads/2023/03/Julabo-USA-SDS-Thermal-C5-1-1.pdf
+    // and https://en.wikipedia.org/wiki/Polydimethylsiloxane
+    // Assuming n = 1 for molecular formula
+    mat = uniqueMaterialOrThrow("C5Coolant");
+    {
+     G4Material* C5Coolant = new G4Material(mat.name, 0.965*CLHEP::g/CLHEP::cm3, 4);
+
+     G4Element* eH  = getElementOrThrow("H");
+     G4Element* eC  = getElementOrThrow("C");
+     G4Element* eSi = getElementOrThrow("Si");
+     G4Element* eO  = getElementOrThrow("O");
+
+     C5Coolant->AddElement( eH,   18);
+     C5Coolant->AddElement( eC,   6);
+     C5Coolant->AddElement( eSi,  2);
+     C5Coolant->AddElement( eO,   1);
+
+    }
     // Add new materials before this line
 
   }

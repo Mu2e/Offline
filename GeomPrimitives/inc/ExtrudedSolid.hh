@@ -14,7 +14,7 @@ namespace mu2e {
 
     ExtrudedSolid( const std::string& name,
                    const std::string& mat,
-                   CLHEP::Hep3Vector& offset,
+                   const CLHEP::Hep3Vector& offset,
                    double yht,
                    const std::vector<CLHEP::Hep2Vector>& v )
       : name_(name)
