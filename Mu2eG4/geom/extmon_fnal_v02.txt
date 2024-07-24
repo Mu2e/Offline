@@ -188,10 +188,10 @@ bool extMonFNAL.stackMotherSolid = true;
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
 vector<double> extMonFNAL.up.motherTransverseHalfSize = { 70, 70 }; // x, y
-double extMonFNAL.up.motherStartZ = 295.;
-double extMonFNAL.up.motherEndZ = 605.;
+double extMonFNAL.up.motherStartZ = 286.;
+double extMonFNAL.up.motherEndZ = 646.;
 
-vector<double> extMonFNAL.up.plane_zoffset = { +300., +400., +500., +600.};
+vector<double> extMonFNAL.up.plane_zoffset = { +326., +426., +526., +626.};
 vector<double> extMonFNAL.up.plane_xoffset = { 0.,    0.,    0.,    0. };
 vector<double> extMonFNAL.up.plane_yoffset = { 0.,    0.,    0.,    0. };
 
@@ -214,10 +214,10 @@ vector<double> extMonFNAL.up.module_rotation = { 0., 0. };
 // The coordinates are relative to the detector box volume.
 
 vector<double> extMonFNAL.dn.motherTransverseHalfSize = { 70, 70 }; // x, y
-double extMonFNAL.dn.motherStartZ = -605.;
-double extMonFNAL.dn.motherEndZ = -295.;
+double extMonFNAL.dn.motherStartZ = -646.;
+double extMonFNAL.dn.motherEndZ = -286.;
 
-vector<double> extMonFNAL.dn.plane_zoffset = {-600., -500.,  -400., -300.};
+vector<double> extMonFNAL.dn.plane_zoffset = {-626., -526.,  -426., -326.};
 vector<double> extMonFNAL.dn.plane_xoffset = { 0., 0., 0., 0. };
 vector<double> extMonFNAL.dn.plane_yoffset = { 0., 0., 0., 0. };
 
