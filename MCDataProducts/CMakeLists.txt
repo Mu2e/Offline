@@ -21,6 +21,7 @@ cet_make_library(
       src/StepInstanceName.cc
       src/StepPointMC.cc
       src/StrawDigiMC.cc
+      src/SurfaceStep.cc
       src/TrackSummaryTruthAssns.cc
     LIBRARIES PUBLIC
       
