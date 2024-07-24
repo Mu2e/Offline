@@ -176,6 +176,15 @@ bool extMonFNAL.stackMotherVisible = true;
 bool extMonFNAL.stackMotherSolid = true;
 
 //================================================================
+// Scintillator parameters
+
+vector<double> extMonFNAL.scintHalfSize = { 54.0 , 42.0, 3.0 };
+string         extMonFNAL.scintMaterial = "G4_C";
+double         extMonFNAL.scintOffset = 29.0;
+double         extMonFNAL.scintInnerOffset = 33;
+double         extMonFNAL.scintGap = 5.3;
+
+//================================================================
 // The upstream stack of the sensors.
 //
 // Location in room: the center is on the continuation of
