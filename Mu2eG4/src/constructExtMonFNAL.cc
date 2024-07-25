@@ -131,7 +131,7 @@ namespace mu2e {
     //----------------------------------------------------------------
     // detector VD block
 
-    if(true) {
+    if(false) {
 
       const int verbosityLevel = config.getInt("vd.verbosityLevel");
       const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
