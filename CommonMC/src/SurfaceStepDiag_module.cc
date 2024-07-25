@@ -9,7 +9,6 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/OptionalAtom.h"
 #include "art_root_io/TFileService.h"
 #include "TTree.h"
 #include "TH1F.h"
