@@ -196,7 +196,7 @@ double         extMonFNAL.scintGap = 5.3;
 // Details of the detector.  All of these vectors should be
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
-vector<double> extMonFNAL.up.motherTransverseHalfSize = { 70, 70 }; // x, y
+vector<double> extMonFNAL.up.motherTransverseHalfSize = { 115, 115 }; // x, y
 double extMonFNAL.up.motherStartZ = 276.;
 double extMonFNAL.up.motherEndZ = 676.;
 
@@ -222,7 +222,7 @@ vector<double> extMonFNAL.up.module_rotation = { 0., 0. };
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
 
-vector<double> extMonFNAL.dn.motherTransverseHalfSize = { 70, 70 }; // x, y
+vector<double> extMonFNAL.dn.motherTransverseHalfSize = { 115, 115 }; // x, y
 double extMonFNAL.dn.motherStartZ = -676.;
 double extMonFNAL.dn.motherEndZ = -276.;
 
