@@ -1717,9 +1717,6 @@ namespace mu2e {
     hseed._timeCluster = art::Ptr<mu2e::TimeCluster>(_tcCollH, tc);
     hseed._hhits.setParent(_chColl->parent());
 
-    float eDepSum(0.0);
-    size_t nStrawHits(0);
-
     // flag hits used in helix, and push to combo hit collection in helix seed
     // also add points to linear fitter to get t0
     ::LsqSums2 fitter;
@@ -1739,10 +1736,8 @@ namespace mu2e {
       ComboHit hhit(*hit);
       hhit._hphi = _tcHits[i].helixPhi + _tcHits[i].helixPhiCorrection * 2 * M_PI;
       hseed._hhits.push_back(hhit);
-      eDepSum += hhit.energyDep()*hhit.nStrawHits();
-      nStrawHits += hhit.nStrawHits();
     }
-    float eDepAvg = eDepSum/(nStrawHits + 1e-10);
+    float eDepAvg = hseed._hhits.eDepAvg(hseed._hhits);
 
     hseed._t0 = TrkT0(fitter.y0(), fitter.y0Err());
 

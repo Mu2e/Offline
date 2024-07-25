@@ -520,9 +520,6 @@ namespace mu2e {
     // double     z_start(0);
     HelSeed._hhits.setParent(_chcol->parent());
 
-    float eDepSum(0.0);
-    size_t nStrawHits(0);
-
     for (int i=0; i<nhits; ++i){
       unsigned        hitId   = HfResult._goodhits[i];
       ComboHit*       hit     = &HfResult._chHitsToProcess[hitId];//panelz->_chHitsToProcess.at(hitInfo->panelHitIndex);
@@ -530,11 +527,9 @@ namespace mu2e {
       ComboHit                hhit(*hit);
       //      hhit._hphi = shphi;
       // hhit._flag.merge(StrawHitFlag::resolvedphi);
-      eDepSum += hhit.energyDep()*hhit.nStrawHits();
-      nStrawHits += hhit.nStrawHits();
       HelSeed._hhits.push_back(hhit);
     }
-    HelSeed._eDepAvg = eDepSum/(nStrawHits + 1e-10);
+    HelSeed._eDepAvg = HelSeed._hhits.eDepAvg(HelSeed._hhits);
 
 
     //now set the HelixRecoDir
