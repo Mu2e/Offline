@@ -22,6 +22,16 @@
 #include <vector>
 
 namespace mu2e {
+  // sorting function
+  class SortKalSeeds    {
+    public:
+      SortKalSeeds(KalSeedSelector const& sel): sel_(sel) {}
+      bool operator()(KalSeedPtr const& a, KalSeedPtr const& b) const { return sel_.isBetter(*b,*a); }
+    private:
+      KalSeedSelector const& sel_;
+  };
+
+
   class MergeKalSeeds : public art::EDProducer {
     public:
       using Name=fhicl::Name;
@@ -67,7 +77,7 @@ namespace mu2e {
         if(debug_ > 2) std::cout << seedcolltag << " Has " << ksc.size() << " KalSeeds" << std::endl;
         for(size_t ikseed = 0; ikseed <ksc.size(); ++ikseed){
           auto const& kseed = ksc[ikseed];
-          if( (!selector_) ) {
+          if( !selector_ ) {
             mkseeds->emplace_back(ksch,ikseed);
           } else if ( selector_->select(kseed)){
             if(!selbest_ || mkseeds->size() == 0)
@@ -80,6 +90,11 @@ namespace mu2e {
       } else if (debug_ > 2){
         std::cout << "No collection found for " << seedcolltag << std::endl;
       }
+    }
+    // if we aren't selecting the best but a selector was provided, sort the ptrs
+    if(selector_ && !selbest_){
+      SortKalSeeds sortks(*selector_);
+      std::sort(mkseeds->begin(),mkseeds->end(),sortks);
     }
     if(debug_ > 1) std::cout << "Merged " << mkseeds->size() << " KalSeeds" << std::endl;
     event.put(std::move(mkseeds));
