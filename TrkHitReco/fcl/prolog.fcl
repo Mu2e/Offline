@@ -147,6 +147,14 @@ TrkHitReco : { @table::TrkHitReco
       DebugLevel           : 0
    }
 }
+
+TrkHitReco : { @table::TrkHitReco
+  # Shared helix reco cuts
+  HelixFinderParams : {
+    maxEDepAvg : 1
+  }
+}
+
 # combine together
 TrkHitReco : { @table::TrkHitReco
    producers : {
