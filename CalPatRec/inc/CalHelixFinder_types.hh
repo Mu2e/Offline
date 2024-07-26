@@ -40,7 +40,6 @@ namespace mu2e {
     struct Data_t {
       const art::Event*    event;
       std::string          shLabel;
-      //fhicl::ParameterSet* timeOffsets;
 
       enum  { kMaxSeeds = 100, kMaxHits = 200 };
 

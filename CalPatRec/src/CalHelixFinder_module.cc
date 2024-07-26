@@ -85,10 +85,8 @@ namespace mu2e {
 // provide for interactive disanostics
 //-----------------------------------------------------------------------------
       _helTraj          = 0;
-      //_timeOffsets      = new fhicl::ParameterSet(pset.get<fhicl::ParameterSet>("TimeOffsets",fhicl::ParameterSet()));
 
       _data.shLabel     = _shLabel;
-      //_data.timeOffsets = _timeOffsets;
 
       if (_debugLevel != 0) _printfreq = 1;
 
@@ -101,7 +99,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   CalHelixFinder::~CalHelixFinder() {
     if (_helTraj) delete _helTraj;
-    //delete _timeOffsets;
   }
 
 //-----------------------------------------------------------------------------
@@ -529,7 +526,7 @@ namespace mu2e {
       // hhit._flag.merge(StrawHitFlag::resolvedphi);
       HelSeed._hhits.push_back(hhit);
     }
-    HelSeed._eDepAvg = HelSeed._hhits.eDepAvg(HelSeed._hhits);
+    HelSeed._eDepAvg = HelSeed._hhits.eDepAvg();
 
 
     //now set the HelixRecoDir
