@@ -2107,7 +2107,6 @@ namespace mu2e {
     }
 
     if (nHitsRatio > _maxNHitsRatio) goto PATTERN_RECOGNITION_END;
-    //2017-10-05 Gianipez added the following line to make some tests
     if (Helix._szphi.qn() == 0.)                                 goto  PATTERN_RECOGNITION_END;
 
     rescueHitsBeforeSeed(Helix);

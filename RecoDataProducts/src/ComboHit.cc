@@ -221,13 +221,14 @@ namespace mu2e {
     return retval;
   }
 
-  float ComboHitCollection::eDepAvg(ComboHitCollection const& ccol) {
+  float ComboHitCollection::eDepAvg() const {
     float eDepSum(0.0);
     size_t nStrawHits(0);
-    for (size_t i=0; i<ccol.size(); i++){
-      eDepSum += ccol.at(i).energyDep()*ccol.at(i).nStrawHits();
-      nStrawHits += ccol.at(i).nStrawHits();
+    for (auto const& ch : *this) {
+      eDepSum += ch.energyDep()*ch.nStrawHits();
+      nStrawHits += ch.nStrawHits();
     }
+
     return eDepSum/(nStrawHits + 1e-10);
   }
 

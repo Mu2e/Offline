@@ -1737,7 +1737,7 @@ namespace mu2e {
       hhit._hphi = _tcHits[i].helixPhi + _tcHits[i].helixPhiCorrection * 2 * M_PI;
       hseed._hhits.push_back(hhit);
     }
-    float eDepAvg = hseed._hhits.eDepAvg(hseed._hhits);
+    float eDepAvg = hseed._hhits.eDepAvg();
 
     hseed._t0 = TrkT0(fitter.y0(), fitter.y0Err());
 

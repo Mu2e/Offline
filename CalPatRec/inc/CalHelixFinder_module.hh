@@ -30,7 +30,6 @@
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
-// #include "BTrk/TrkBase/TrkParticle.hh"
 
 #include "Offline/BFieldGeom/inc/BFieldConfig.hh"
 
@@ -151,7 +150,6 @@ namespace mu2e {
 
     enum fitType {helixFit=0,seedFit,kalFit};
 
-    //explicit CalHelixFinder(const fhicl::ParameterSet& PSet);
     explicit CalHelixFinder(const art::EDFilter::Table<Config>& config);
     virtual ~CalHelixFinder();
 

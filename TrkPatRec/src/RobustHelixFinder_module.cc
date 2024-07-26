@@ -549,7 +549,7 @@ namespace mu2e {
       ComboHit                hhit(*hit);
       helixData._hseed._hhits.push_back(hhit);
     }
-    helixData._hseed._eDepAvg = helixData._hseed._hhits.eDepAvg(helixData._hseed._hhits);
+    helixData._hseed._eDepAvg = helixData._hseed._hhits.eDepAvg();
 
     if (_diag){
       HelixTool helTool(&helixData._hseed, _tracker);//_trackerRIn, _trackerROut, _trackerLength);

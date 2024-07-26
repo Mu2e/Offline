@@ -362,7 +362,7 @@ chi2dXY = bestHelix.fita_zt_;
       hseed._status.merge(TrkFitFlag::MPRHelix);
       hseed._status.merge(TrkFitFlag::helixOK);
       hseed._timeCluster = tcArtPtr;
-      hseed._eDepAvg = hseed._hhits.eDepAvg(hseed._hhits);
+      hseed._eDepAvg = hseed._hhits.eDepAvg();
       if (hseed._eDepAvg > maxEDepAvg_) continue;
 
 

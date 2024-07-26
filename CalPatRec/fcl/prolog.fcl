@@ -6,7 +6,6 @@
 # DoubletAmbigResolver is defined in TrkReco/fcl/prolog.fcl
 #------------------------------------------------------------------------------
 #include "Offline/fcl/TrkCaloDt.fcl"
-#include "Offline/TrkHitReco/fcl/prolog.fcl"
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # there seems to be a circular dependence between MakeStrawHitPositions and
@@ -636,7 +635,7 @@ CalPatRec : { @table::CalPatRec
             minHelixMomentum        : 60.0
             maxHelixMomentum        : 400.0
             chi2LineSaveThresh      : 5.0
-            maxEDepAvg              : @local::TrkHitReco.HelixFinderParams.maxEDepAvg
+            maxEDepAvg              : @local::TrkReco.HelixFinderParams.maxEDepAvg
             maxNHitsRatio           : 500
             debugPdgID              : 11
             debugMomentum           : 100.0
@@ -738,7 +737,7 @@ CalPatRec : { @table::CalPatRec
             fitparticle                                 : @local::Particle.eminus
             fitdirection                                : @local::FitDir.downstream
             doSingleOutput                              : false
-            maxEDepAvg                                  : @local::TrkHitReco.HelixFinderParams.maxEDepAvg
+            maxEDepAvg                                  : @local::TrkReco.HelixFinderParams.maxEDepAvg
 
             # HelixFinderAlg configuraton (pattern recognition)
             HelixFinderAlg                              : { @table::CalPatRec.HelixFinderAlg }

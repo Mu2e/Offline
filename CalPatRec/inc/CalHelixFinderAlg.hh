@@ -205,7 +205,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   public:
                                         // parameter set should be passed in on construction
-    //explicit CalHelixFinderAlg(fhicl::ParameterSet const&);
     explicit CalHelixFinderAlg(const Config& config);
     virtual ~CalHelixFinderAlg();
                                         // cached bfield accessor

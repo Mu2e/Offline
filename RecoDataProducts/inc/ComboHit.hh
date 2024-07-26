@@ -177,7 +177,7 @@ namespace mu2e {
       StrawIdMask::Level level() const;
       auto sort() const { return _sort; }
       unsigned nStrawHits() const;
-      float eDepAvg(ComboHitCollection const& ccol);
+      float eDepAvg() const;
     private:
       // reference back to the input ComboHit collection this one references
       CHCPTR _parent; // pointer to the parent object
