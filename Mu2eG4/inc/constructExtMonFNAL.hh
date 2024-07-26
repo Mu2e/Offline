@@ -60,7 +60,6 @@ namespace mu2e {
                                   );
 
   void constructExtMonFNALScintillators(const VolumeInfo& mother,
-                                        const ExtMonFNALModule& module,
                                         const ExtMonFNALPlaneStack& stack,
                                         const std::string& volNameSuffix,
                                         const SimpleConfig& config,

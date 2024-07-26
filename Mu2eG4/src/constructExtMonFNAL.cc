@@ -66,17 +66,13 @@ namespace mu2e {
     MaterialFinder materialFinder(config);
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
-
     //----------------------------------------------------------------
-
     CLHEP::HepRotation *stackRotationInRoomInv =
       reg.add(stack.rotationInMu2e().inverse() * parentRotationInMu2e);
 
     const CLHEP::HepRotation stackRotationInRoom(stackRotationInRoomInv->inverse());
 
     const CLHEP::Hep3Vector stackRefPointInRoom(parentRotationInMu2e.inverse()*(stack.refPointInMu2e() - parent.centerInMu2e()));
-
-
 
     //----------------------------------------------------------------
     // Mother volume for planeStack
@@ -107,6 +103,7 @@ namespace mu2e {
                                 placePV,
                                 doSurfaceCheck
                                 );
+    //----------------------------------------------------------------
 
     constructExtMonFNALPlanes(mother,
                               module,
@@ -119,7 +116,6 @@ namespace mu2e {
                               );
 
     constructExtMonFNALScintillators(mother,
-                                     module,
                                      stack,
                                      volNameSuffix,
                                      config,
@@ -366,10 +362,9 @@ namespace mu2e {
     }// for
   }// constructExtMonFNALModules
 
-//==============================================================================
+  //==============================================================================
   // scintillators in mother volume
   void constructExtMonFNALScintillators(const VolumeInfo& mother,
-                                        const ExtMonFNALModule& module,
                                         const ExtMonFNALPlaneStack& stack,
                                         const std::string& volNameSuffix,
                                         const SimpleConfig& config,
@@ -389,7 +384,7 @@ namespace mu2e {
                                      std::end(stack.plane_zoffset()));
     auto planeMin = std::min_element(std::begin(stack.plane_zoffset()),
                                      std::end(stack.plane_zoffset()));
-    double planeZero = (*planeMin - *planeMax)/2.;
+    double planeZero = (*planeMin - *planeMax) / 2.;
 
     std::vector<double> hs;
     config.getVectorDouble("extMonFNAL.scintHalfSize", hs);
