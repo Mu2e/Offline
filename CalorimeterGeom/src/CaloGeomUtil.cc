@@ -83,7 +83,7 @@ namespace mu2e {
        return false;
    }
 
-   bool CaloGeomUtil::isInsideSection(unsigned idisk, const CLHEP::Hep3Vector& pos) const
+   bool CaloGeomUtil::isInsideSection(int idisk, const CLHEP::Hep3Vector& pos) const
    {
         CLHEP::Hep3Vector posInSection = mu2eToDiskFF(idisk, pos);
         double posZ = posInSection.z();

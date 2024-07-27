@@ -38,7 +38,7 @@ namespace mu2e {
                                                    const CLHEP::Hep3Vector& pos,
                                                    const CLHEP::Hep3Vector& size) const override;
 
-             int                   numNeighbors(int level)                         const override;
+            int                   numNeighbors(int level)                         const override;
             std::vector<int>      neighbors   (int thisIndex, int level=1)        const override;
 
             const std::vector<double>& apexX() const override {return apexX_;}
@@ -47,8 +47,8 @@ namespace mu2e {
 
         private:
             SquLK    lk(int index)          const;
-            int      index(const SquLK &lk) const;
-            int      ring(const  SquLK &lk) const;
+            int      index(const SquLK& lk) const;
+            int      ring(const  SquLK& lk) const;
 
             std::vector<SquLK>   step_;
             std::vector<double>  apexX_;
