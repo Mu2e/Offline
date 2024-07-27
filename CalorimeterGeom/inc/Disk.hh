@@ -52,13 +52,11 @@ namespace mu2e {
        private:
            void                            fillCrystalsIdeal (const CLHEP::Hep3Vector &crystalOriginInDisk);
            void                            fillCrystals      (const CLHEP::Hep3Vector &crystalOriginInDisk);
+           void                            fixCrystalPosition();
            bool                            isInsideDisk      (double x, double y, double widthX, double widthY) const;
            bool                            isInsideCrystal   (int icry, double x, double y) const;
-           void                            fixCrystalPosition();
            const bool                      isCrystalIdxValid (int i) const;
            const bool                      isMapIdxValid     (int i) const;
-
-
 
            int                             id_;
            std::vector<Crystal>            crystalList_;

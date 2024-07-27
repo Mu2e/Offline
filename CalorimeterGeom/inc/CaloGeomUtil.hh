@@ -30,10 +30,10 @@ namespace mu2e {
           void trackerCenter (const CLHEP::Hep3Vector& vec) {trackerCenter_ = vec;}
           void crystalZLength(double value)                 {crystalZLength_ = value;}
 
-          const CLHEP::Hep3Vector& origin()          const {return origin_;}
-          const CLHEP::Hep3Vector& trackerCenter()   const {return trackerCenter_;}
-          const double             crystalZLength()  const {return crystalZLength_;}
-          const Disk&              disk(int i)       const {return *disks_.at(i);}
+          const CLHEP::Hep3Vector& origin()         const {return origin_;}
+          const CLHEP::Hep3Vector& trackerCenter()  const {return trackerCenter_;}
+          const double             crystalZLength() const {return crystalZLength_;}
+          const Disk&              disk(int i)      const {return *disks_.at(i);}
 
 
           CLHEP::Hep3Vector mu2eToCrystal(int crystalId, const CLHEP::Hep3Vector& pos) const;
@@ -47,7 +47,7 @@ namespace mu2e {
           CLHEP::Hep3Vector trackerToMu2e(const CLHEP::Hep3Vector& pos)                const;
 
           bool isInsideCalorimeter       (const CLHEP::Hep3Vector& pos)                                  const;
-          bool isInsideSection           (unsigned iDisk, const CLHEP::Hep3Vector& pos)                  const;
+          bool isInsideSection           (int iDisk, const CLHEP::Hep3Vector& pos)                       const;
           bool isContainedSection        (const CLHEP::Hep3Vector& front, const CLHEP::Hep3Vector& back) const;
 
 
