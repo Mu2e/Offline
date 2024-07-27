@@ -1,7 +1,7 @@
 //
 // Create a disk and fills it with crystals.
 // We assume that the real crystal position is close to the ideal one (at most a few mm differences).
-// If not, the crystal navigation needs to be rewritten
+// If not, the crystal navigation needs to be rewritten.
 //
 // Original author B Echenard
 //
@@ -35,13 +35,14 @@ namespace mu2e {
         nominalCellSize_(nominalCellSize),
         globalCrystalOffset_(offset),
         mapToCrystal_(),
-        crystalToMap_()
+        crystalToMap_(),
+        rowMax_(0)
       {
            geomInfo_.originToCrystalOrigin(diskOriginToCrystalOrigin);
            crystalMap_ = std::shared_ptr<CrystalMapper>(new SquareShiftMapper());
 
            fillCrystalsIdeal(diskOriginToCrystalOrigin); //See note in DiskCalorimeterMaker
-           //fillCrystals(diskOriginToCrystalOrigin); //See note in DiskCalorimeterMaker
+           //fillCrystals(diskOriginToCrystalOrigin);    //See note in DiskCalorimeterMaker
       }
 
 
@@ -54,11 +55,11 @@ namespace mu2e {
           int nRingsMax   = int(1.5*radiusOutCrystal_/nominalCellSize_);
           int nCrystalMap = crystalMap_->nCrystalMax(nRingsMax);
 
-          mapToCrystal_.insert(mapToCrystal_.begin(), nCrystalMap, -1);
+          mapToCrystal_.insert(mapToCrystal_.begin(), nCrystalMap, invalidID_);
 
-          for (int i=0;i<nCrystalMap;++i)
+          for (int mapIdx=0;mapIdx<nCrystalMap;++mapIdx)
           {
-              CLHEP::Hep2Vector xy  = nominalCellSize_*crystalMap_->xyFromIndex(i);
+              CLHEP::Hep2Vector xy  = nominalCellSize_*crystalMap_->xyFromIndex(mapIdx);
               if (!isInsideDisk(xy.x(),xy.y(),nominalCellSize_,nominalCellSize_))  continue;
 
               //these crystals have been manually removed from the map by hand....
@@ -71,9 +72,12 @@ namespace mu2e {
               CLHEP::Hep3Vector posFF(xy.x(),xy.y(),0);
               CLHEP::Hep3Vector pos = posFF + crystalOriginInDisk;
 
-              mapToCrystal_[i] = nCrystal;
-              crystalToMap_.push_back(i);
+              rowMax_ = std::max(rowMax_,std::abs(crystalMap_->rowFromIndex(mapIdx)));
+
+              mapToCrystal_[mapIdx] = nCrystal;
+              crystalToMap_.push_back(mapIdx);
               crystalList_.push_back(Crystal(nCrystal, id_, pos, pos, size));
+
               ++nCrystal;
           }
       }
@@ -83,16 +87,14 @@ namespace mu2e {
       void Disk::fillCrystals(const CLHEP::Hep3Vector& crystalOriginInDisk)
       {
           /*
-          int nCrystal(0);
           int nRingsMax   = int(1.5*radiusOutCrystal_/nominalCellSize_);
           int nCrystalMap = crystalMap_->nCrystalMax(nRingsMax);
-
-          mapToCrystal_.insert(mapToCrystal_.begin(), nCrystalMap, -1);
+          mapToCrystal_.insert(mapToCrystal_.begin(), nCrystalMap, invalidID_);
 
           //yes, this will be correctly done later
           WhateverDatabaseReader reader; // <-- this is the link to the database
 
-          for (int i=0;i<nCrystalMap;++i)
+          for (int i=0;i<reader.getNCrystals();++i)
           {
               // get position and width here
               CLHEP::Hep3Vector posFF = reader.position(i);
@@ -102,10 +104,9 @@ namespace mu2e {
               int mapIdx = crystalMap_->indexFromXY(pos.x()/nominalCellSize_,pos.y()/nominalCellSize_);
               CLHEP::Hep2Vector idealPosition = nominalCellSize_*crystalMap_->xyFromIndex(mapIdx);
 
-              mapToCrystal_[mapIdx] = nCrystal;
+              mapToCrystal_[mapIdx] = i;
               crystalToMap_.push_back(mapIdx);
               crystalList_.push_back( Crystal(nCrystal, id_, pos, idealPosition, size) );
-              ++nCrystal;
           }
 
           fixCrystalPosition();
@@ -144,7 +145,7 @@ namespace mu2e {
       //check crystal overlaps (row after row) and move crystal around to fix boundary crossings
       void Disk::fixCrystalPosition()
       {
-          std::map<int,std::vector<int>> rowToCrystalId;
+          std::map<int,std::vector<size_t>> rowToCrystalId;
           for (size_t cryId=0;cryId<crystalList_.size();++cryId){
              int irow = crystalMap_->rowFromIndex(crystalToMap_[cryId]);
              rowToCrystalId[irow].push_back(cryId);
@@ -155,7 +156,7 @@ namespace mu2e {
             auto& cryList = kv.second;
 
             //order the crystal ids by increasing x coordinate in a given row
-            auto sortFunctor = [this](const int i, const int j)
+            auto sortFunctor = [this](const auto i, const auto j)
                                      {return crystalList_[i].localPosition().x()<crystalList_[j].localPosition().x();};
             std::sort(std::begin(cryList),std::end(cryList),sortFunctor);
 
@@ -212,61 +213,57 @@ namespace mu2e {
       //calculate the bounding box surrounding a row of crystals
       void Disk::boundingBoxes(int thisRow, std::vector<double>& params)
       {
-        params.clear();
+         params.clear();
 
-        std::vector<int> cryList;
-        for (size_t i=0;i<crystalList_.size();++i){
-           int irow = crystalMap_->rowFromIndex(crystalToMap_[i]);
-           if (irow == thisRow) cryList.push_back(i);
-        }
-        auto sortFunctor = [this](const int i, const int j){return crystalList_[i].localPosition().x() <crystalList_[j].localPosition().x();};
-        std::sort(std::begin(cryList),std::end(cryList),sortFunctor);
+         std::vector<size_t> cryList;
+         for (size_t i=0;i<crystalList_.size();++i){
+            int irow = crystalMap_->rowFromIndex(crystalToMap_[i]);
+            if (irow == thisRow) cryList.push_back(i);
+         }
+         if (cryList.empty()) return;
 
-        if (cryList.empty()) return;
+         auto sortFunctor = [this](const auto i, const auto j){return crystalList_[i].localPosition().x() <crystalList_[j].localPosition().x();};
+         std::sort(std::begin(cryList),std::end(cryList),sortFunctor);
 
-        double ymin(1e6),ymax(-1e6),xInmin(-1e6),xImax(1e6);
-        for (size_t i=0;i<cryList.size();++i) {
-           ymin = std::min(ymin,crystalList_[cryList[i]].localPosition().y()-crystalList_[cryList[i]].size().y()/2.0);
-           ymax = std::max(ymax,crystalList_[cryList[i]].localPosition().y()+crystalList_[cryList[i]].size().y()/2.0);
-           if (i==0) continue;
-           double x0 = crystalList_[cryList[i-1]].localPosition().x()+crystalList_[cryList[i-1]].size().x()/2.0;
-           double x1 = crystalList_[cryList[i]].localPosition().x()  -crystalList_[cryList[i]].size().x()/2.0;
-           if (x1-x0 > 2*crystalList_[cryList[i]].size().x()){xInmin = x0; xImax=x1;}
-        }
+         double ymin(1e6),ymax(-1e6),xInmin(-1e6),xImax(1e6);
+         for (size_t i=0;i<cryList.size();++i) {
+            ymin = std::min(ymin,crystalList_[cryList[i]].localPosition().y()-crystalList_[cryList[i]].size().y()/2.0);
+            ymax = std::max(ymax,crystalList_[cryList[i]].localPosition().y()+crystalList_[cryList[i]].size().y()/2.0);
+            if (i==0) continue;
+            double x0 = crystalList_[cryList[i-1]].localPosition().x()+crystalList_[cryList[i-1]].size().x()/2.0;
+            double x1 = crystalList_[cryList[i]].localPosition().x()  -crystalList_[cryList[i]].size().x()/2.0;
+            if (x1-x0 > 2*crystalList_[cryList[i]].size().x()){xInmin = x0; xImax=x1;}
+         }
 
-        double xOutmin = crystalList_[cryList.front()].localPosition().x()-crystalList_[cryList.front()].size().x()/2.0;
-        double xOutmax = crystalList_[cryList.back()].localPosition().x() +crystalList_[cryList.back()].size().x()/2.0;
-        params.push_back(xOutmin);
-        params.push_back(xOutmax);
-        params.push_back(ymin);
-        params.push_back(ymax);
-        if (xInmin>-1e5) {params.push_back(xInmin);params.push_back(xImax);}
-      }
+         double xOutmin = crystalList_[cryList.front()].localPosition().x()-crystalList_[cryList.front()].size().x()/2.0;
+         double xOutmax = crystalList_[cryList.back()].localPosition().x() +crystalList_[cryList.back()].size().x()/2.0;
+         params.push_back(xOutmin);
+         params.push_back(xOutmax);
+         params.push_back(ymin);
+         params.push_back(ymax);
+         if (xInmin>-1e5) {params.push_back(xInmin);params.push_back(xImax);}
+       }
 
 
       //-----------------------------------------------------------------------------
       int Disk::idMinCrystalInside(int row)
       {
+          if (std::abs(row) > rowMax_) return invalidID_;
+
           int idx(0);
-          while (mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)]<0) ++idx;
+          while (mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)] == invalidID_) ++idx;
           return mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)];
       }
 
       int Disk::idMaxCrystalInside(int row)
       {
+          if (std::abs(row) > rowMax_) return invalidID_;
+
           int idx = int(radiusOutCrystal_/nominalCellSize_)+2;
-          while (crystalMap_->indexFromRowCol(row,idx) > int(mapToCrystal_.size())) --idx;
-          while (mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)]<0 && idx>0) --idx;
+          while ( !isMapIdxValid(crystalMap_->indexFromRowCol(row,idx)) ) --idx;
+          while ( mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)]==invalidID_ && idx>0) --idx;
           return mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)];
       }
-
-
-
-
-
-
-
-
 
 
 
@@ -274,77 +271,78 @@ namespace mu2e {
       int Disk::idxFromPosition(double x, double y) const
       {
           // this only works for ideal crystal placement
-           //unsigned int mapIdx = crystalMap_->indexFromXY(x/nominalCellSize_,y/nominalCellSize_);
+          //int mapIdx = crystalMap_->indexFromXY(x/nominalCellSize_,y/nominalCellSize_);
           //if (mapIdx < mapToCrystal_.size() ) return mapToCrystal_.at(mapIdx);
-          // return -1;
+          //return invalidID_;
 
-          unsigned int mapIdx = crystalMap_->indexFromXY(x/nominalCellSize_,y/nominalCellSize_);
-          if (mapIdx >= mapToCrystal_.size()) return -1;
+          int mapIdx = crystalMap_->indexFromXY(x/nominalCellSize_,y/nominalCellSize_);
 
-          int crystalId = mapToCrystal_.at(mapIdx);
-          if (isInsideCrystal(crystalId,x,y)) return crystalId;
+          if (isCrystalIdxValid(mapIdx) && isInsideCrystal(mapToCrystal_[mapIdx],x,y)) return mapToCrystal_[mapIdx];
 
-          std::vector<int> neighbors;
-          if (crystalId > -1) neighbors = crystalList_[crystalId].neighbors();
-          else {
-             std::vector<int> temp(crystalMap_->neighbors(mapIdx,1));
-             for (const auto& val : temp) if (mapToCrystal_.at(val) >-1) neighbors.push_back(mapToCrystal_.at(val));
+          const int level(1);
+          const auto neighbors(crystalMap_->neighbors(mapIdx,level));
+          for (const auto& idx : neighbors) {
+             if (isCrystalIdxValid(idx) && isInsideCrystal(mapToCrystal_[idx],x,y)) return mapToCrystal_[idx];
           }
 
-          for (unsigned it : neighbors)
-             if (it < mapToCrystal_.size() && isInsideCrystal(mapToCrystal_[it],x,y)) return mapToCrystal_[it];
-
-          return -1;
+          return invalidID_;
       }
+
+
+
 
       bool Disk::isInsideCrystal(int icry, double x, double y) const
       {
-          if (icry <0) return false;
+          if (icry >= static_cast<int>(crystalList_.size())) return false;
           return crystalMap_->isInsideCrystal(x, y, crystalList_[icry].localPosition(), crystalList_[icry].size());
       }
 
 
-
-
-
       //-----------------------------------------------------------------------------
       //find the local indexes of the crystal neighbors for a given level (level = number of rings away)
-      std::vector<int> Disk::findLocalNeighbors(int crystalId, int level, bool raw) const
+      std::vector<int> Disk::findLocalNeighbors(int crystalId, int level) const
       {
            std::vector<int> list;
            std::vector<int> temp(crystalMap_->neighbors(crystalToMap_.at(crystalId),level));
 
-           for (size_t i=0;i<temp.size();++i)
+           for (const auto& mapIdx : temp)
            {
-              if (raw) list.push_back(mapToCrystal_.at(temp[i]));
-              else
-                {if (mapToCrystal_.at(temp[i]) >-1) list.push_back(mapToCrystal_.at(temp[i]));}
+              if (isCrystalIdxValid(mapIdx)) list.push_back(mapToCrystal_.at(mapIdx));
            }
-
            return list;
       }
 
 
       //-----------------------------------------------------------------------------
       //find the nearest crystals from the position based on ideal mapping
-      std::vector<int> Disk::nearestIdxFromPosition(double x, double y) const
+      std::vector<int> Disk::nearestNeighborsFromPos(double x, double y) const
       {
-           int level(1);
-           std::vector<int> list;
+         int level(1);
+         std::vector<int> list;
 
-           unsigned mapIdx = crystalMap_->indexFromXY(x/nominalCellSize_,y/nominalCellSize_);
-           if (mapIdx < mapToCrystal_.size() && mapToCrystal_.at(mapIdx)>-1) list.push_back( mapToCrystal_.at(mapIdx) );
+         auto mapIdx = crystalMap_->indexFromXY(x/nominalCellSize_,y/nominalCellSize_);
+         if (isCrystalIdxValid(mapIdx)) list.push_back(mapToCrystal_.at(mapIdx));
 
-           while (list.size()<2)
-           {
-              std::vector<int> temp(crystalMap_->neighbors(mapIdx,level));
-              for (unsigned it : temp)
-                 if (it < mapToCrystal_.size() && mapToCrystal_.at(it)>-1) list.push_back(mapToCrystal_.at(it));
-              ++level;
-           }
-
-           return list;
+         while (list.empty()) {
+            for (auto mapIdx : crystalMap_->neighbors(mapIdx,level)) {
+              if (isCrystalIdxValid(mapIdx)) list.push_back(mapToCrystal_[mapIdx]);
+            }
+            ++level;
+         }
+         return list;
       }
+
+
+
+     //-----------------------------------------------------------------------------
+     const bool Disk::isCrystalIdxValid(int i) const {
+       return i < static_cast<int>(mapToCrystal_.size()) && mapToCrystal_[i]!=invalidID_;
+     }
+
+     //-----------------------------------------------------------------------------
+     const bool Disk::isMapIdxValid(int i) const {
+       return i < static_cast<int>(mapToCrystal_.size());
+     }
 
 
      //-----------------------------------------------------------------------------
