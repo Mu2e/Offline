@@ -28,24 +28,27 @@ namespace mu2e {
         public:
             SquareMapper();
 
-            int               nCrystalMax    (int maxRing)          const override;
-            CLHEP::Hep2Vector xyFromIndex    (int thisIndex)        const override;
-            int               indexFromXY    (double x, double y)   const override;
-            int               indexFromRowCol(int nRow, int nCol)   const override;
-            int               rowFromIndex   (int thisIndex)        const override;
-            int               colFromIndex   (int thisIndex)        const override;
-            bool              isInsideCrystal(double x, double y, const CLHEP::Hep3Vector& pos,
-                                              const CLHEP::Hep3Vector& size) const override;
+            int                    nCrystalMax    (int maxRing)                   const override;
+            CLHEP::Hep2Vector      xyFromIndex    (int thisIndex)                 const override;
+            int                    indexFromXY    (double x, double y)            const override;
+            int                    indexFromRowCol(int nRow, int nCol)            const override;
+            int                    rowFromIndex   (int thisIndex)                 const override;
+            int                    colFromIndex   (int thisIndex)                 const override;
+            bool                   isInsideCrystal(double x, double y,
+                                                   const CLHEP::Hep3Vector& pos,
+                                                   const CLHEP::Hep3Vector& size) const override;
 
-            std::vector<int>  neighbors(int thisIndex, int level=1) const override;
-            const std::vector<double>& apexX() const override {return apexY_;}
+             int                   numNeighbors(int level)                         const override;
+            std::vector<int>      neighbors   (int thisIndex, int level=1)        const override;
+
+            const std::vector<double>& apexX() const override {return apexX_;}
             const std::vector<double>& apexY() const override {return apexY_;}
 
 
         private:
-            SquLK lk(int index)        const;
-            int index(const SquLK &lk) const;
-            int ring(const  SquLK &lk) const;
+            SquLK    lk(int index)          const;
+            int      index(const SquLK &lk) const;
+            int      ring(const  SquLK &lk) const;
 
             std::vector<SquLK>   step_;
             std::vector<double>  apexX_;

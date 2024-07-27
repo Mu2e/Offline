@@ -113,6 +113,8 @@ namespace mu2e {
       //--------------------------------------------------------------------------------
       std::vector<int> SquareMapper::neighbors(int thisIndex, int level)  const
       {
+          if (level<1) return std::vector<int>{};
+
           std::vector<int> thisNeighbour;
 
           SquLK init = lk(thisIndex);
@@ -160,7 +162,6 @@ namespace mu2e {
           if ( thisLK.l_ ==  nRing && thisLK.k_ > -nRing)  pos += 2*nRing + nRing - thisLK.k_;
           if ( thisLK.k_ == -nRing && thisLK.l_ > -nRing)  pos += 4*nRing + nRing - thisLK.l_;
           if ( thisLK.l_ == -nRing && thisLK.k_ < nRing)   pos += 6*nRing + nRing + thisLK.k_;
-
           return pos;
       }
 
@@ -168,6 +169,12 @@ namespace mu2e {
       int SquareMapper::ring(const SquLK &thisLK) const
       {
           return std::max(std::abs(thisLK.l_),std::abs(thisLK.k_));
+      }
+
+      //--------------------------------------------------------------------------------
+      int SquareMapper::numNeighbors(int level) const
+      {
+          return 2*level*step_.size();
       }
 
 }

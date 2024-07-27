@@ -59,7 +59,7 @@ namespace mu2e {
     MaterialFinder materialFinder(config);
 
     Mu2eG4Helper& helper            = *(art::ServiceHandle<Mu2eG4Helper>());
-     AntiLeakRegistry& reg          = (art::ServiceHandle<Mu2eG4Helper>())->antiLeakRegistry();
+    AntiLeakRegistry& reg          = (art::ServiceHandle<Mu2eG4Helper>())->antiLeakRegistry();
     const DiskCalorimeter& cal      = *(GeomHandle<DiskCalorimeter>());
     const DetectorSolenoid& ds      = *(GeomHandle<DetectorSolenoid>());
 
