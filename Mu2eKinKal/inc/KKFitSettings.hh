@@ -53,6 +53,12 @@ namespace mu2e {
     // function to convert fhicl configuration to KinKal Config object
     KinKal::Config makeConfig(KinKalConfig const& fconfig);
 
+    // struct for final fit configuration. This just changes convergence parameters
+    struct KKFinalConfig {
+      fhicl::Atom<int> maxniter { Name("MaxNIter"), Comment("Maximum number of algebraic iteration steps in each fit meta-iteration") };
+      fhicl::Atom<float> convdchisq { Name("ConvergenceDeltaChisq"), Comment("Maximum Chisq/DOF change between iterations to define convergence") };
+    };
+
     // struct for configuring KKFit object
     struct KKFitConfig {
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level") };

@@ -7,6 +7,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/OptionalTable.h"
 #include "fhiclcpp/types/Tuple.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -90,8 +91,16 @@ namespace mu2e {
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
 
   using KKConfig = Mu2eKinKal::KinKalConfig;
+  using Mu2eKinKal::KKFinalConfig;
   using KKFitConfig = Mu2eKinKal::KKFitConfig;
   using KKModuleConfig = Mu2eKinKal::KKModuleConfig;
+
+  using MEAS = KinKal::Hit<KTRAJ>;
+  using MEASPTR = std::shared_ptr<MEAS>;
+  using MEASCOL = std::vector<MEASPTR>;
+  using EXING = KinKal::ElementXing<KTRAJ>;
+  using EXINGPTR = std::shared_ptr<EXING>;
+  using EXINGCOL = std::vector<EXINGPTR>;
 
   using KKMaterialConfig = KKMaterial::Config;
   using Name    = fhicl::Name;
@@ -108,6 +117,7 @@ namespace mu2e {
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
+    fhicl::OptionalTable<KKFinalConfig> finalSettings { Name("FinalSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
     // helix module specific config
     fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream") };
@@ -159,6 +169,7 @@ namespace mu2e {
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
       Config config_; // initial fit configuration object
       Config exconfig_; // extension configuration object
+      Config fconfig_; // final final configuration object
       KinKal::ExtraConfig xconfig_; // tolerance and maximum Dt when extrapolating
       bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
       SurfaceMap::SurfacePairCollection extrap_; // surfaces to extrapolate the fit to
@@ -178,8 +189,7 @@ namespace mu2e {
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
-    fixedfield_(false)
-    {
+    fixedfield_(false) {
       // collection handling
       for(const auto& hseedtag : settings().modSettings().seedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
       produces<KKTRKCOL>();
@@ -208,6 +218,17 @@ namespace mu2e {
       // configuration for extrapolation
       xconfig_.tol_ = settings().modSettings().extrapTol();
       xconfig_.maxdt_ = settings().modSettings().extrapMaxDt();
+      // setup optional fit finalization
+      if(settings().finalSettings()){
+        if(exconfig_.schedule_.size() > 0)
+          fconfig_ = exconfig_;
+        else
+          fconfig_ = config_;
+        fconfig_.schedule_.clear();
+        fconfig_.schedule_.push_back(KinKal::MetaIterConfig()); // 1 stage, 0 temperature
+        fconfig_.convdchisq_ = settings().finalSettings()->convdchisq();
+        fconfig_.maxniter_ =  settings().finalSettings()->maxniter();
+      }
     }
 
   void HelixFit::beginRun(art::Run& run) {
@@ -225,6 +246,10 @@ namespace mu2e {
   }
 
   void HelixFit::produce(art::Event& event ) {
+    // empty collections
+    static MEASCOL nohits; // empty
+    static EXINGCOL noexings; // empty
+    // calo geom
     GeomHandle<Calorimeter> calo_h;
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
@@ -299,6 +324,11 @@ namespace mu2e {
             if(goodfit && exconfig_.schedule().size() > 0) {
               kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
               goodfit = goodFit(*kktrk);
+              // if finaling, apply that now.
+              if(goodfit && fconfig_.schedule().size() > 0){
+                kktrk->extend(fconfig_,nohits,noexings);
+                goodfit = goodFit(*kktrk);
+              }
             }
             // extrapolate as required
             if(goodfit && extrap_.size()>0) {
