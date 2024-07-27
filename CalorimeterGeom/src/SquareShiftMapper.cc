@@ -204,7 +204,7 @@ namespace mu2e {
       //--------------------------------------------------------------------------------
       int SquareShiftMapper::numNeighbors(int level) const
       {
-          return level*step_.size();
+          return level*static_cast<int>(step_.size());
       }
 
 }
