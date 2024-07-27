@@ -174,7 +174,7 @@ namespace mu2e {
       //--------------------------------------------------------------------------------
       int SquareMapper::numNeighbors(int level) const
       {
-          return 2*level*step_.size();
+          return 2*level*static_cast<int>(step_.size());
       }
 
 }
