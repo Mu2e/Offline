@@ -33,20 +33,20 @@ namespace mu2e {
              {}
 
 
-             int                      localID      ()               const        {return localID_;}
-             int                      diskID       ()               const        {return diskID_;}
-             const CLHEP::Hep3Vector& size         ()               const        {return size_;}
-             const CLHEP::Hep3Vector& localPosition()               const        {return localPosition_;}
-             const CLHEP::Hep3Vector& idealLocalPosition()          const        {return localPosition_;}
-             const CLHEP::Hep3Vector& position     ()               const        {return position_;}
-             const std::vector<int>&  neighbors    (bool raw=false) const        {return raw ? neighborsGlobalRaw_    : neighborsGlobal_;}
-             const std::vector<int>&  nextNeighbors(bool raw=false) const        {return raw ? nextNeighborsGlobalRaw_: nextNeighborsGlobal_;}
+             int                      localID      ()       const {return localID_;}
+             int                      diskID       ()       const {return diskID_;}
+             const CLHEP::Hep3Vector& size         ()       const {return size_;}
+             const CLHEP::Hep3Vector& localPosition()       const {return localPosition_;}
+             const CLHEP::Hep3Vector& idealLocalPosition()  const {return localPosition_;}
+             const CLHEP::Hep3Vector& position     ()       const {return position_;}
+             const std::vector<int>&  neighbors    ()       const {return neighborsGlobal_;}
+             const std::vector<int>&  nextNeighbors()       const {return nextNeighborsGlobal_;}
 
-             void setSize         (const CLHEP::Hep3Vector& size)                {size_ = size;}
-             void setLocalPosition(const CLHEP::Hep3Vector& pos)                 {localPosition_ = pos;}
-             void setPosition     (const CLHEP::Hep3Vector& pos)                 {position_ = pos;}
-             void setNeighbors    (const std::vector<int>& list, bool raw=false) {raw ? neighborsGlobalRaw_=list     : neighborsGlobal_=list;}
-             void setNextNeighbors(const std::vector<int>& list, bool raw=false) {raw ? nextNeighborsGlobalRaw_=list : nextNeighborsGlobal_=list;}
+             void setSize         (const CLHEP::Hep3Vector& size) {size_ = size;}
+             void setLocalPosition(const CLHEP::Hep3Vector& pos)  {localPosition_ = pos;}
+             void setPosition     (const CLHEP::Hep3Vector& pos)  {position_ = pos;}
+             void setNeighbors    (const std::vector<int>& list)  {neighborsGlobal_=list;}
+             void setNextNeighbors(const std::vector<int>& list)  {nextNeighborsGlobal_=list;}
 
 
          private:

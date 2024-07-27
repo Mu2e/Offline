@@ -50,8 +50,8 @@ namespace mu2e {
 
       SquareShiftMapper::SquareShiftMapper() :
         step_(),
-        apexX_({-0.5,0.5,0.5,-0.5,-0.5}),
-        apexY_({-0.5,-0.5,0.5,0.5,-0.5})
+        apexX_({-0.5, 0.5,0.5,-0.5,-0.5}),
+        apexY_({-0.5,-0.5,0.5, 0.5,-0.5})
       {
           step_.push_back( SquShiftLK(  1,  1) ); //right
           step_.push_back( SquShiftLK(  0 , 1) ); //down right
@@ -131,8 +131,10 @@ namespace mu2e {
 
 
       //--------------------------------------------------------------------------------
-      std::vector<int> SquareShiftMapper::neighbors(int thisIndex, int level)  const
+      std::vector<int> SquareShiftMapper::neighbors(int thisIndex, int level) const
       {
+          if (level<1) return std::vector<int>{};
+
           std::vector<int> thisNeighbour;
 
           SquShiftLK init = lk(thisIndex);
@@ -143,7 +145,7 @@ namespace mu2e {
               for (int iseg=0;iseg<level;++iseg)
               {
                  lk.add(step_[i]);
-                 thisNeighbour.push_back( index(lk) );
+                 thisNeighbour.push_back(index(lk));
               }
           }
           return thisNeighbour;
@@ -153,12 +155,13 @@ namespace mu2e {
       //--------------------------------------------------------------------------------
       SquShiftLK SquareShiftMapper::lk(int thisIndex) const
       {
-         if (thisIndex==0) return SquShiftLK(0,0);
+         if (thisIndex<1) return SquShiftLK(0,0);
 
-         int nRing = int(0.5+sqrt(0.25+float(thisIndex-1)/3.0));
+         int nRing = int(0.5+sqrt(0.25+static_cast<float>(thisIndex-1)/3.0));
          int nSeg  = (thisIndex - 3*nRing*(nRing-1)-1) / nRing;
          int nPos  = (thisIndex - 3*nRing*(nRing-1)-1) % nRing;
 
+         if (nSeg<0) return SquShiftLK(0,0);
          int l =          nPos*step_[nSeg].l_;
          int k = -nRing + nPos*step_[nSeg].k_;
 
@@ -175,7 +178,7 @@ namespace mu2e {
       //--------------------------------------------------------------------------------
       int SquareShiftMapper::index(const SquShiftLK& thisLK) const
       {
-         if (thisLK.l_==0 && thisLK.k_==0) return 0;
+         if (thisLK.l_==0 && thisLK.k_==0) return 0u;
 
          int nRing = ring(thisLK);
          int pos   = 3*nRing*(nRing-1)+1;
@@ -187,7 +190,7 @@ namespace mu2e {
          if (thisLK.k_ ==  nRing)                 return pos + 3*nRing - thisLK.l_;
          if (thisLK.k_ == -nRing)                 return pos + 6*nRing - std::abs(thisLK.l_);
          if (thisLK.l_ > thisLK.k_)               return pos + thisLK.l_;
-         return pos + 3*nRing +std::abs(thisLK.l_);
+         return                                          pos + 3*nRing +std::abs(thisLK.l_);
       }
 
 
@@ -196,6 +199,12 @@ namespace mu2e {
       {
           if (thisLK.l_*thisLK.k_>0) return std::max(std::abs(thisLK.l_),std::abs(thisLK.k_));
           return std::abs(thisLK.l_-thisLK.k_);
+      }
+
+      //--------------------------------------------------------------------------------
+      int SquareShiftMapper::numNeighbors(int level) const
+      {
+          return level*step_.size();
       }
 
 }

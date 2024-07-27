@@ -39,12 +39,12 @@ namespace mu2e {
            double                          innerRadius()     const {return radiusIn_;}
            double                          outerRadius()     const {return radiusOut_;}
 
-           int                             idxFromPosition       (double x, double y) const;
-           std::vector<int>                findLocalNeighbors    (int crystalId, int level, bool raw=false) const;
-           std::vector<int>                nearestIdxFromPosition(double x, double y) const;
-           int                             idMinCrystalInside    (int row);
-           int                             idMaxCrystalInside    (int row);
-           void                            boundingBoxes         (int thisRow,std::vector<double>& params);
+           int                             idxFromPosition        (double x, double y) const;
+           std::vector<int>                findLocalNeighbors     (int crystalId, int level) const;
+           std::vector<int>                nearestNeighborsFromPos(double x, double y) const;
+           int                             idMinCrystalInside     (int row);
+           int                             idMaxCrystalInside     (int row);
+           void                            boundingBoxes          (int thisRow,std::vector<double>& params);
 
            void                            print(std::ostream& os = std::cout) const;
 
@@ -55,6 +55,10 @@ namespace mu2e {
            bool                            isInsideDisk      (double x, double y, double widthX, double widthY) const;
            bool                            isInsideCrystal   (int icry, double x, double y) const;
            void                            fixCrystalPosition();
+           const bool                      isCrystalIdxValid (int i) const;
+           const bool                      isMapIdxValid     (int i) const;
+
+
 
            int                             id_;
            std::vector<Crystal>            crystalList_;
@@ -68,7 +72,9 @@ namespace mu2e {
            std::shared_ptr<CrystalMapper>  crystalMap_;
            std::vector<int>                mapToCrystal_;
            std::vector<int>                crystalToMap_;
+           int                             rowMax_;
 
+           static constexpr int            invalidID_ = -1;
    };
 
    using DiskPtr  = std::shared_ptr<Disk>;
