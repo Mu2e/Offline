@@ -148,6 +148,7 @@ namespace mu2e {
       // This function is called recursively, so the the vector must be empty on the top-most call
 #ifndef __ROOTCLING__
       // find the parent at a given level
+      // if parent and grandparent are the same level, will select the grandparent unless stopatfirst set
       CHCPTR parent(StrawIdMask::Level level, bool stopatfirst=false) const;
       void fillStrawDigiIndices( size_t chindex, SHIV& shids, bool stopatfirst=false) const;
       // Fill indices to the specified level.  Return value is the collection to whic
@@ -174,6 +175,9 @@ namespace mu2e {
       void setAsSubset(CHCPTR const& other);
       void setAsSubset(art::Handle<ComboHitCollection> const& ohandle);
       void setAsSubset(art::ValidHandle<ComboHitCollection> const& ohandle);
+      // optionally specify what level to make as parent
+      // if parent and grandparent are the same level, will select the grandparent unless stopatfirst set
+      void setAsSubset(CHCPTR const& optr, StrawIdMask::Level level, bool stopatfirst=false);
       void setAsSubset(art::Handle<ComboHitCollection> const& ohandle, StrawIdMask::Level level, bool stopatfirst=false);
       void setAsSubset(art::ValidHandle<ComboHitCollection> const& ohandle, StrawIdMask::Level level, bool stopatfirst=false);
 #endif

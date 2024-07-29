@@ -65,20 +65,14 @@ namespace mu2e {
   void ComboHitCollection::setAsSubset(art::Handle<ComboHitCollection> const& ohandle){
     if (ohandle.isValid()){
       auto optr = CHCPTR(ohandle);
-      _parent = optr->parent();
-      if (_parent.refCore().isNull()){
-        _parent = optr;
-      }
+      setAsSubset(optr);
     } else {
       throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid handle" << std::endl;
     }
   }
   void ComboHitCollection::setAsSubset(art::ValidHandle<ComboHitCollection> const& ohandle){
     auto optr = CHCPTR(ohandle);
-    _parent = optr->parent();
-    if (_parent.refCore().isNull()){
-      _parent = optr;
-    }
+    setAsSubset(optr);
   }
   void ComboHitCollection::setAsSubset(CHCPTR const& other){
     _parent = other->parent();
@@ -90,19 +84,16 @@ namespace mu2e {
   void ComboHitCollection::setAsSubset(art::ValidHandle<ComboHitCollection> const& ohandle, StrawIdMask::Level level, bool stopatfirst){
     if (ohandle.isValid()){
       auto optr = CHCPTR(ohandle);
-      if (optr->level() == level && (stopatfirst || optr->parent().refCore().isNull() || optr->parent()->level() != level)){
-        _parent = optr;
-      }else{
-        _parent = optr->parent(level,stopatfirst);
-      }
+      setAsSubset(optr,level,stopatfirst);
     } else {
       throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid handle" << std::endl;
     }
   }
-
-
   void ComboHitCollection::setAsSubset(art::Handle<ComboHitCollection> const& ohandle, StrawIdMask::Level level, bool stopatfirst){
     auto optr = CHCPTR(ohandle);
+    setAsSubset(optr,level,stopatfirst);
+  }
+  void ComboHitCollection::setAsSubset(CHCPTR const& optr, StrawIdMask::Level level, bool stopatfirst){
     if (optr->level() == level && (stopatfirst || optr->parent().refCore().isNull() || optr->parent()->level() != level)){
       _parent = optr;
     }else{
