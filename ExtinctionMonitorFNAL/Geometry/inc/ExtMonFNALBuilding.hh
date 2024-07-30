@@ -31,7 +31,6 @@ namespace mu2e {
       CollimatorExtMonFNAL();
 
       std::string _name;
-      double _horizontalLength;
       std::vector<double> _channelRadius;
       std::vector<double> _alignmentPlugRadius;
       std::vector<double> _alignmentPlugInnerShellThickness;
@@ -47,11 +46,6 @@ namespace mu2e {
 
     public:
       std::string name() const { return _name; }
-      // NB: "horizontal" is historic name, this is actually the length of projection on dump Z axis.
-      double horizontalLength() const { return _horizontalLength; }
-
-      // Half length along axis
-      double halfLength() const;
 
       const std::vector<double> &channelRadius() const { return _channelRadius; }
 

@@ -16,7 +16,6 @@ namespace mu2e {
   class ExtMonFNALBuildingMaker {
 
     static ExtMonFNALBuilding::CollimatorExtMonFNAL readCollimatorExtMonFNAL(const std::string& name,
-                                                                             double zLength, // along dump Z
                                                                              double angleH,
                                                                              double angleV,
                                                                              const SimpleConfig& c);

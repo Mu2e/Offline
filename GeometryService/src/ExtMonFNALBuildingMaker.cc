@@ -30,7 +30,6 @@ namespace mu2e {
   //================================================================
   ExtMonFNALBuilding::CollimatorExtMonFNAL
   ExtMonFNALBuildingMaker::readCollimatorExtMonFNAL(const std::string& name,
-                                                    double zLength,
                                                     double angleH,
                                                     double angleV,
                                                     const SimpleConfig& c) {
@@ -38,7 +37,6 @@ namespace mu2e {
     ExtMonFNALBuilding::CollimatorExtMonFNAL col;
 
     col._name = name;
-    col._horizontalLength = zLength;
 
     {
       std::vector<double> tmp;
@@ -179,7 +177,7 @@ namespace mu2e {
     const double entranceAngleV = emfb->_filterEntranceAngleV =  c.getDouble("extMonFNAL.entranceAngleV") * CLHEP::radian;
 
     const double col1zLength = 2*dump.frontShieldingHalfSize()[2];
-    emfb->_collimator1 = readCollimatorExtMonFNAL("collimator1", col1zLength, angleH, entranceAngleV, c);
+    emfb->_collimator1 = readCollimatorExtMonFNAL("collimator1", angleH, entranceAngleV, c);
 
     //----------------------------------------------------------------
     // collimator1
@@ -235,7 +233,6 @@ namespace mu2e {
     // collimator2
 
     emfb->_collimator2 = readCollimatorExtMonFNAL("collimator2",
-                                                  col2zLength,
                                                   angleH,
                                                   entranceAngleV - 2 * emfb->_filterMagnet.trackBendHalfAngle(pNominal),
                                                   c);
@@ -279,7 +276,6 @@ namespace mu2e {
                <<", c1.angleV  = "<<emfb->collimator1().angleV()
                <<", c2.angleV() = "<<emfb->collimator2().angleV()<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": collimator1CenterInMu2e = "<<emfb->_collimator1CenterInMu2e<<std::endl;
-      std::cout<<"ExtMonFNALBuildingMaker"<<": collimator1.horizontalLength = "<<emfb->_collimator1._horizontalLength<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": collimator1 exit in Mu2e = "<< dump.beamDumpToMu2e_position(collimator1ExitInDump)<<std::endl;
 
       std::cout<<"ExtMonFNALBuildingMaker"<<": ref traj entrace to filter magnet in Mu2e = "<< dump.beamDumpToMu2e_position(refTrajFMEntranceInDump)<<std::endl;
@@ -290,7 +286,6 @@ namespace mu2e {
       std::cout<<"ExtMonFNALBuildingMaker"<<": filterMagnet().magnetRotationInMu2e() = "<<emfb->_filterMagnet.magnetRotationInMu2e()<<std::endl;
 
       std::cout<<"ExtMonFNALBuildingMaker"<<": collimator2CenterInMu2e = "<<emfb->_collimator2CenterInMu2e<<std::endl;
-      std::cout<<"ExtMonFNALBuildingMaker"<<": collimator2.horizontalLength = "<<emfb->_collimator2._horizontalLength<<std::endl;
 
       std::cout<<"ExtMonFNALBuildingMaker"<<": ExtMonFNALBuilding::filterEntranceInMu2e() = "<<emfb->filterEntranceInMu2e()<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": ExtMonFNALBuilding::filterExitInMu2e() = "<<emfb->filterExitInMu2e()<<std::endl;
