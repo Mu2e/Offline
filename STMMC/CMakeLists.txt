@@ -25,6 +25,12 @@ cet_build_plugin(HPGeEfficiency art::module
       art_root_io::TFileService_service
       Offline::MCDataProducts
 )
+cet_build_plugin(MakeTree art::module
+    REG_SOURCE src/MakeTree_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::MCDataProducts
+)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/HPGeWaveformsFromGeantSim.fcl   ${CURRENT_BINARY_DIR} fcl/HPGeWaveformsFromGeantSim.fcl   COPYONLY)
 
