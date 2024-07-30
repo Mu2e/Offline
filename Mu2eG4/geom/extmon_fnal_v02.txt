@@ -24,10 +24,6 @@ string extMonFNAL.concreteMaterial = "ShieldingConcrete";
 //----------------------------------------------------------------
 // The extinction monitor filter channel
 
-// The first collimator is embedded in frontShielding of ProtonBeamDump
-// and this determines its length.
-//
-
 // Channel aperture (vector since upstream and downstream halves
 // may be different):  {upstream size, downstream size}
 vector<double> extMonFNAL.collimator1.channelDiameter  = {50., 50.};
