@@ -172,8 +172,8 @@ namespace mu2e {
     emfb->HVACductCenterInMu2e_[2] = zfront + dzdL*(magnetRoomLength+shieldwidth/2) - dxdL*emfb->_HVACductRadius;
 
     //----------------------------------------------------------------
-    emfb->_filterEntranceOffsetX = c.getDouble("extMonFNAL.entranceOffsetX") * CLHEP::mm;
-    emfb->_filterEntranceOffsetY = c.getDouble("extMonFNAL.entranceOffsetY") * CLHEP::mm;
+    const double filterEntranceOffsetX = c.getDouble("extMonFNAL.entranceOffsetX") * CLHEP::mm;
+    const double filterEntranceOffsetY = c.getDouble("extMonFNAL.entranceOffsetY") * CLHEP::mm;
 
     const double angleH = emfb->_filterAngleH =  c.getDouble("extMonFNAL.angleH") * CLHEP::radian;
     const double entranceAngleV = emfb->_filterEntranceAngleV =  c.getDouble("extMonFNAL.entranceAngleV") * CLHEP::radian;
@@ -185,10 +185,10 @@ namespace mu2e {
     // collimator1
     const double referenceLength = dump.coreCenterDistanceToReferencePlane()    - dump.coreCenterDistanceToShieldingFace()
       + dump.frontShieldingHalfSize()[2];
-    const Hep3Vector collimator1CenterInDump(emfb->filterEntranceOffsetX()
+    const Hep3Vector collimator1CenterInDump(filterEntranceOffsetX
                                              + referenceLength*tan(emfb->collimator1().angleH()),
 
-                                             emfb->filterEntranceOffsetY()
+                                             filterEntranceOffsetY
                                              + referenceLength*tan(emfb->collimator1().angleV())/cos(emfb->filterAngleH()),
 
                                              dump.coreCenterDistanceToShieldingFace() - dump.frontShieldingHalfSize()[2]
@@ -202,10 +202,10 @@ namespace mu2e {
       emfb->_collimator1RotationInMu2e = dump.coreRotationInMu2e() * tmp;
     }
 
-    const Hep3Vector collimator1ExitInDump(emfb->filterEntranceOffsetX()
+    const Hep3Vector collimator1ExitInDump(filterEntranceOffsetX
                                            + 1.*col1zLength*tan(emfb->collimator1().angleH()),
 
-                                           emfb->filterEntranceOffsetY()
+                                           filterEntranceOffsetY
                                            + 1.*col1zLength*tan(emfb->collimator1().angleV())/cos(emfb->filterAngleH()),
 
                                            dump.coreCenterDistanceToShieldingFace() - col1zLength
@@ -270,7 +270,7 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     if(verbose) {
-      std::cout<<"ExtMonFNALBuildingMaker"<<": Filter entrance offsets  = ("<<emfb->_filterEntranceOffsetX<<", "<<emfb->_filterEntranceOffsetY<<")"<<std::endl;
+      std::cout<<"ExtMonFNALBuildingMaker"<<": Filter entrance offsets  = ("<<filterEntranceOffsetX<<", "<<filterEntranceOffsetY<<")"<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": filter nominal momentum = "<<emfb->filterMagnet().nominalMomentum()/CLHEP::GeV<<" GeV/c"<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": filterAngleH = "<<emfb->filterAngleH()<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": filterAngleH in Mu2e, degrees= "<<(dump.coreRotY() - emfb->filterAngleH())/CLHEP::degree<<std::endl;

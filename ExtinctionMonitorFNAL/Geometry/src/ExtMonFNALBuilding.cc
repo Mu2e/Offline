@@ -6,9 +6,7 @@
 
 namespace mu2e {
   ExtMonFNALBuilding::ExtMonFNALBuilding()
-    : _filterEntranceOffsetX(0.)
-    , _filterEntranceOffsetY(0.)
-    , _filterAngleH(0.)
+    : _filterAngleH(0.)
     , _filterEntranceAngleV(0.)
     , roomInsideFullHeight_(0.)
     , magnetRoomLength_(0.)

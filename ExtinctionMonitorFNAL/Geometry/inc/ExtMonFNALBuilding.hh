@@ -77,11 +77,6 @@ namespace mu2e {
       double angleV() const { return _angleV; }
     };
 
-    // The offsets are w.r.t. the dump core center, in the plane of the
-    // dump shielding face.
-    double filterEntranceOffsetX() const { return _filterEntranceOffsetX; }
-    double filterEntranceOffsetY() const { return _filterEntranceOffsetY; }
-
     double filterAngleH() const { return _filterAngleH; }
     double filterEntranceAngleV() const { return _filterEntranceAngleV; }
 
@@ -147,8 +142,6 @@ namespace mu2e {
     // Or read back from persistent storage
     template<class T> friend class art::Wrapper;
 
-    double _filterEntranceOffsetX;
-    double _filterEntranceOffsetY;
     double _filterAngleH;
     double _filterEntranceAngleV;
 
