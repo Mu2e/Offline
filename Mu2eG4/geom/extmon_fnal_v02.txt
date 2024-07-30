@@ -4,6 +4,8 @@
 
 bool           hasExtMonFNAL = true;
 
+#include "Offline/Mu2eG4/geom/extmon_filter_relative.txt"
+
 //----------------------------------------------------------------
 // ExtMonFNAL enclosure walls are no longer part of this module.
 // However, the shielding between the two rooms (collimator2.shielding) is.
@@ -44,20 +46,6 @@ string         extMonFNAL.collimator1.shot.materialName  = "G4_AIR";
 
 // Transition between the two radii of the plug and hole happens over dz.
 double extMonFNAL.collimator1.radiusTransitiondZ = 0;
-
-// The entrance point on the face of the beam dump enclosure,
-// transverse to the beam coordinates (horiz, vertical).  The offsets
-// are w.r.t to the core center position (== the nominal beam entrance
-// point).
-double         extMonFNAL.entranceOffsetX = 315;
-double         extMonFNAL.entranceOffsetY = 1250;
-
-// Filter channel orientation: angles in horizontal and vertical
-// planes w.r.t dump core. Note that angleH is the same for all filter
-// elements, while angleV is different.  We specify angleV at the
-// filter entrance.
-double         extMonFNAL.angleH = 0.0302; //radians
-double         extMonFNAL.entranceAngleV = 0.1653; //radians
 
 bool extMonFNAL.collimator1.alignmentHole.visible = true;
 bool extMonFNAL.collimator1.alignmentHole.issolid = false;
