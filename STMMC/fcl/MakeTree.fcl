@@ -1,0 +1,24 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: SinglePhotonProgression
+
+source : {
+  module_type : RootInput
+  fileName : @nil
+}
+
+physics: {
+  analyzers : {
+    Tree : {
+      module_type : MakeTree
+    }
+  }
+
+  o1 : [ Tree ]
+
+  end_paths: [o1]
+}
+
+services.TFileService.fileName : "VD101Ele.root"
