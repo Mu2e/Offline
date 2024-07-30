@@ -77,7 +77,11 @@ namespace mu2e {
       double angleV() const { return _angleV; }
     };
 
+    // The axes of the entrance and exit collimator lie in a vertical plane.
+    // This is the angle between that plane and the "z-axis" of the beam dump.
     double filterAngleH() const { return _filterAngleH; }
+
+    // The angle between the collimator axis and the horizontal plane
     double filterEntranceAngleV() const { return _filterEntranceAngleV; }
 
     const ExtMonFNALMagnet& filterMagnet() const { return _filterMagnet; }
