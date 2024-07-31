@@ -176,6 +176,14 @@ bool extMonFNAL.stackMotherVisible = true;
 bool extMonFNAL.stackMotherSolid = true;
 
 //================================================================
+// Scintillator parameters
+
+vector<double> extMonFNAL.scintHalfSize = { 54.0 , 42.0, 3.0 };
+string         extMonFNAL.scintMaterial = "Scintillator";
+double         extMonFNAL.scintOffset = 29.0; // Distance from pixel plane center to center of scintillator closest to the pixels on outer ends of detector table
+double         extMonFNAL.scintInnerOffset = 33; // Distance from pixel plane center to center of scintillator on the magnet side
+double         extMonFNAL.scintGap = 5.3; // Distance between the surfaces of the two adjacent scintillators
+
 // The upstream stack of the sensors.
 //
 // Location in room: the center is on the continuation of
@@ -187,11 +195,11 @@ bool extMonFNAL.stackMotherSolid = true;
 // Details of the detector.  All of these vectors should be
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
-vector<double> extMonFNAL.up.motherTransverseHalfSize = { 70, 70 }; // x, y
-double extMonFNAL.up.motherStartZ = 295.;
-double extMonFNAL.up.motherEndZ = 605.;
+vector<double> extMonFNAL.up.motherTransverseHalfSize = { 115, 115 }; // x, y
+double extMonFNAL.up.motherStartZ = 276.;
+double extMonFNAL.up.motherEndZ = 676.;
 
-vector<double> extMonFNAL.up.plane_zoffset = { +300., +400., +500., +600.};
+vector<double> extMonFNAL.up.plane_zoffset = { +326., +426., +526., +626.};
 vector<double> extMonFNAL.up.plane_xoffset = { 0.,    0.,    0.,    0. };
 vector<double> extMonFNAL.up.plane_yoffset = { 0.,    0.,    0.,    0. };
 
@@ -213,11 +221,11 @@ vector<double> extMonFNAL.up.module_rotation = { 0., 0. };
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
 
-vector<double> extMonFNAL.dn.motherTransverseHalfSize = { 70, 70 }; // x, y
-double extMonFNAL.dn.motherStartZ = -605.;
-double extMonFNAL.dn.motherEndZ = -295.;
+vector<double> extMonFNAL.dn.motherTransverseHalfSize = { 115, 115 }; // x, y
+double extMonFNAL.dn.motherStartZ = -676.;
+double extMonFNAL.dn.motherEndZ = -276.;
 
-vector<double> extMonFNAL.dn.plane_zoffset = {-600., -500.,  -400., -300.};
+vector<double> extMonFNAL.dn.plane_zoffset = {-626., -526.,  -426., -326.};
 vector<double> extMonFNAL.dn.plane_xoffset = { 0., 0., 0., 0. };
 vector<double> extMonFNAL.dn.plane_yoffset = { 0., 0., 0., 0. };
 
