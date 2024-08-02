@@ -211,29 +211,22 @@ void CosmicCRY::generate(GenParticleCollection& genParts) {
                          _targetBoxZmax);
 
         if (_targetBoxIntersections.size() > 0) {
-          // if (_targetBoxIntersections.size() == 0) {
           _worldIntersections.clear();
           calIntersections(position, mom4.vect(), _worldIntersections, _worldXmin, _worldXmax,
                            _worldYmin, _worldYmax, _worldZmin, _worldZmax);
-
-          if (_worldIntersections.size() > 0) {
-            int idx = 0;
-            double closestDistance = distance(_worldIntersections.at(0), position);
-            for (unsigned i = 0; i < _worldIntersections.size(); ++i) {
-              if (distance(_worldIntersections.at(i), position) < closestDistance) {
-                idx = i;
-                closestDistance = _targetBoxIntersections.at(idx).y();
-              }
-            }
-
-            Hep3Vector projectedPos = _worldIntersections.at(idx);
-            // genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
-            //                                      GenId::cosmicCRY, position, mom4,
-            //                                      secondary->t() - _cryGen->timeSimulated()));
-            genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
-                                           GenId::cosmicCRY, projectedPos, mom4,
-                                           secondary->t() - _cryGen->timeSimulated()));
-          }
+          if(_worldIntersections.size()==0)
+            throw cet::exception("Rethrow") << "No intersection with the world. Can't happen. Abort.\n";
+          //Find the iterator that has the highest intersaction with the world
+          //Very rare cases of bottom intersections are below the projection and unphysical
+          auto highest_worldIntersection = std::max_element(_worldIntersections.begin(), _worldIntersections.end(),
+                                        [](const CLHEP::Hep3Vector& a, const CLHEP::Hep3Vector& b) {
+                                          return a.y() < b.y();
+                                        });
+          //Dereference the iterator to find the projected Hep3Vector position from the world
+          Hep3Vector projectedPos = *highest_worldIntersection;
+          genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
+                                         GenId::cosmicCRY, projectedPos, mom4,
+                                         secondary->t() - _cryGen->timeSimulated()));
         }
       } else
         genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
