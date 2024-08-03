@@ -223,7 +223,7 @@ void CosmicCRY::generate(GenParticleCollection& genParts) {
                                           return a.y() < b.y();
                                         });
           //Dereference the iterator to find the projected Hep3Vector position from the world
-          Hep3Vector projectedPos = *highest_worldIntersection;
+          Hep3Vector const& projectedPos = *highest_worldIntersection;
           genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
                                          GenId::cosmicCRY, projectedPos, mom4,
                                          secondary->t() - _cryGen->timeSimulated()));
