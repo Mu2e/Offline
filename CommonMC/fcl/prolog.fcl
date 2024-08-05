@@ -58,9 +58,6 @@ CommonMC: {
   SSDiag : {
     module_type : SurfaceStepDiag
     SurfaceStepCollection : "MakeSS"
-    VDStepPointMCs : "compressDigiMCs:virtualdetector"
-    IPAStepPointMCs : "compressDigiMCs:protonabsorber"
-    TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
   }
 
 
