@@ -147,6 +147,7 @@ TrkHitReco : { @table::TrkHitReco
       DebugLevel           : 0
    }
 }
+
 # combine together
 TrkHitReco : { @table::TrkHitReco
    producers : {
