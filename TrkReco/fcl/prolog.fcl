@@ -120,6 +120,11 @@ TrkReco: { @table::TrkReco
     useMeanResidual                     : 0     # default: dont use
     maxMeanResidual                     : 0.8
   }
+
+  HelixFinderParams : {
+    maxEDepAvg : 1
+  }
+
   producers : {
     MergeHelices : { module_type : MergeHelices
       debugLevel                 : 0
