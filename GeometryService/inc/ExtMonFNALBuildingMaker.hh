@@ -15,10 +15,10 @@ namespace mu2e {
 
   class ExtMonFNALBuildingMaker {
 
-    static ExtMonFNALBuilding::CollimatorExtMonFNAL readCollimatorExtMonFNAL(const std::string& name,
-                                                                             double angleH,
-                                                                             double angleV,
-                                                                             const SimpleConfig& c);
+    static ExtMonFNALCollimator readCollimatorExtMonFNAL(const std::string& name,
+                                                         double angleH,
+                                                         double angleV,
+                                                         const SimpleConfig& c);
 
   public:
     static std::unique_ptr<ExtMonFNALBuilding> make(const SimpleConfig& config,

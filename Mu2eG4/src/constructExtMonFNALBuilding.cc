@@ -89,7 +89,7 @@ namespace {
 namespace mu2e {
 
   //================================================================
-  void constructCollimatorExtMonFNAL(const ExtMonFNALBuilding::CollimatorExtMonFNAL& collimator,
+  void constructExtMonFNALCollimator(const ExtMonFNALCollimator& collimator,
                                      const VolumeInfo& parent,
                                      const CLHEP::Hep3Vector& collimatorCenterInParent,
                                      const CLHEP::HepRotation& collimatorRotationInParent,
@@ -625,15 +625,15 @@ namespace mu2e {
 
     double subCylinderLength = setDiameter(emfb->coll2ShieldingOutline());
 
-    CLHEP::Hep3Vector subCylOffsetInParent = shieldingRot *(emfb->collimator2CenterInMu2e() - emfb->coll2ShieldingCenterInMu2e());
+    CLHEP::Hep3Vector subCylOffsetInParent = shieldingRot *(emfb->filter().collimator2().centerInMu2e() - emfb->coll2ShieldingCenterInMu2e());
 
     static CLHEP::HepRotation collimator2ParentRotationInMu2e = emfb->coll2ShieldingRotationInMu2e();
 
-    CLHEP::HepRotation *subCylinderRotation = reg.add(emfb->collimator2RotationInMu2e().inverse()*collimator2ParentRotationInMu2e.inverse());
+    CLHEP::HepRotation *subCylinderRotation = reg.add(emfb->filter().collimator2().rotationInMu2e().inverse()*collimator2ParentRotationInMu2e.inverse());
 
     G4Tubs* subCylinder = new G4Tubs("ExtMonFNALCollimator2Hole",
                                      0.*CLHEP::mm,
-                                     emfb->collimator2().shotLinerOuterRadius(),
+                                     emfb->filter().collimator2().shotLinerOuterRadius(),
                                      subCylinderLength,
                                      0,
                                      CLHEP::twopi
@@ -708,22 +708,18 @@ namespace mu2e {
     //--------------------------------------------------------------------
     // The filter channel
 
-    AGDEBUG("emfb->collimator1CenterInMu2e() = "<<emfb->collimator1CenterInMu2e());
-    //AGDEBUG("collimator1Parent.centerInMu2e() = "<<collimatomaterialFinder.getr1Parent.centerInMu2e());
-
-
-    constructCollimatorExtMonFNAL(emfb->collimator1(),
+    constructExtMonFNALCollimator(emfb->filter().collimator1(),
                                   mainParent,
-                                  emfb->collimator1CenterInMu2e()-mainParent.centerInMu2e(),
-                                  emfb->collimator1RotationInMu2e(),
+                                  emfb->filter().collimator1().centerInMu2e()-mainParent.centerInMu2e(),
+                                  emfb->filter().collimator1().rotationInMu2e(),
                                   config);
 
-    constructExtMonFNALMagnet(emfb->filterMagnet(), mainParent, "filter", mainParentRotationInMu2e, config);
+    constructExtMonFNALMagnet(emfb->filter().magnet(), mainParent, "filter", mainParentRotationInMu2e, config);
 
-    constructCollimatorExtMonFNAL(emfb->collimator2(),
+    constructExtMonFNALCollimator(emfb->filter().collimator2(),
                                   mainParent,
-                                  emfb->collimator2CenterInMu2e() - mainParent.centerInMu2e(),
-                                  emfb->collimator2RotationInMu2e(),
+                                  emfb->filter().collimator2().centerInMu2e() - mainParent.centerInMu2e(),
+                                  emfb->filter().collimator2().rotationInMu2e(),
                                   config);
 
 
@@ -732,7 +728,7 @@ namespace mu2e {
     if (false) {
       Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
       const VolumeInfo& hall = _helper->locateVolInfo("HallAir");
-      VolumeInfo test("emfMagnettest", emfb->filterMagnet().geometricCenterInMu2e() - hall.centerInMu2e(), hall.centerInWorld);
+      VolumeInfo test("emfMagnettest", emfb->filter().magnet().geometricCenterInMu2e() - hall.centerInMu2e(), hall.centerInWorld);
       test.solid = new G4Orb(test.name, 500.);
 
       finishNesting(test,

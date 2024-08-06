@@ -86,19 +86,19 @@ namespace mu2e {
     //--------------------------------------------------------------------
     // Subtraction Cylinder
 
-    CLHEP::Hep3Vector subCylOffsetInParent = shieldingRot *(emfb->collimator1CenterInMu2e()
+    CLHEP::Hep3Vector subCylOffsetInParent = shieldingRot *(emfb->filter().collimator1().centerInMu2e()
                                                             - CLHEP::Hep3Vector(0, dump->frontShieldingCenterInMu2e()[1], 0));
 
     //Create a Rotation Matrix
     CLHEP::HepRotation *subCylinderRotation = reg.add(new CLHEP::HepRotation());
     subCylinderRotation->rotateY(90*CLHEP::degree);
-    subCylinderRotation->rotateX(emfb->filterAngleH()-dump->coreRotY());
-    subCylinderRotation->rotateY(-emfb->filterEntranceAngleV());
+    subCylinderRotation->rotateX(emfb->filter().collimator1().angleH_inBeamDump()-dump->coreRotY());
+    subCylinderRotation->rotateY(-emfb->filter().collimator1().angleV());
 
     G4Tubs* subCylinder = new G4Tubs("ExtMonFNALCollimator1Hole",
                                       0.*CLHEP::mm,
-                                      emfb->collimator1().shotLinerOuterRadius(),
-                                      1.2*0.5*emfb->collimator1().length(),//1.2 factor to ensure hole exceeds dump dimensions
+                                      emfb->filter().collimator1().shotLinerOuterRadius(),
+                                     1.2*0.5*emfb->filter().collimator1().length(),//1.2 factor to ensure hole exceeds dump dimensions
                                       0,
                                       CLHEP::twopi);
 

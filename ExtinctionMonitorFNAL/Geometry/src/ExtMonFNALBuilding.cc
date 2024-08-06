@@ -6,9 +6,7 @@
 
 namespace mu2e {
   ExtMonFNALBuilding::ExtMonFNALBuilding()
-    : _filterAngleH(0.)
-    , _filterEntranceAngleV(0.)
-    , roomInsideFullHeight_(0.)
+    : roomInsideFullHeight_(0.)
     , magnetRoomLength_(0.)
     , roomInsideYmin_(0.)
     , roomInsideYmax_(0.)
@@ -17,26 +15,4 @@ namespace mu2e {
   {}
 
   //================================================================
-  ExtMonFNALBuilding::CollimatorExtMonFNAL::CollimatorExtMonFNAL()
-    : _shotLinerOuterRadius(0.)
-    , _shotLinerOuterThickness(0.)
-    , _radiusTransitiondZ(0.)
-    , _angleH(0.)
-    , _angleV(0.)
-  {}
-
-  //================================================================
-  CLHEP::Hep3Vector ExtMonFNALBuilding::filterEntranceInMu2e() const {
-    return _collimator1CenterInMu2e +
-      _collimator1RotationInMu2e * CLHEP::Hep3Vector(0,0, + 0.5*_collimator1._length);
-  }
-
-  //================================================================
-  CLHEP::Hep3Vector ExtMonFNALBuilding::filterExitInMu2e() const {
-    return _collimator2CenterInMu2e +
-      _collimator2RotationInMu2e * CLHEP::Hep3Vector(0,0, -0.5*_collimator2._length);
-  }
-
-  //================================================================
-
 }
