@@ -116,6 +116,8 @@ TrkPatRec : { @table::TrkPatRec
          MCDiag                : true
          StrawDigiMCCollection : "compressDigiMCs"
       }
+
+      maxEDepAvg              : @local::TrkReco.HelixFinderParams.maxEDepAvg
    }
 
    # helix finding.  Search for both helicities
@@ -162,6 +164,7 @@ TrkPatRec : { @table::TrkPatRec
       MinMVA : 0.1
       UseTripletArea : false
       UpdateStereo : false
+      maxEDepAvg : @local::TrkReco.HelixFinderParams.maxEDepAvg
       HitSelectionBits : ["TimeDivision"]
       HitBackgroundBits : [ @sequence::TrkPatRec.PatRecBackground ]
       Helicities : [-1,1]
@@ -565,10 +568,8 @@ TrkPatRec : { @table::TrkPatRec
       fitdirection        : @local::FitDir.upstream
    }
 }
-
 TrkPatRec : { @table::TrkPatRec
-   # Final fit of merged Helices : these depend on CalPatRec
-
+   # Final fit of merged Helices : these depend on TrkPatRec
    MHFinalFitDeM                : {
       @table::TrkPatRec.KFFDeM
       SeedCollection : MHSeedFitDem

@@ -147,6 +147,7 @@ namespace mu2e {
     void chunkHits              ();
     void combineChunks          ();
     void recoverHits            ();
+    void combineLines           ();
     void countProtons           (IntensityInfoTimeCluster& outIITC);
     void checkCaloClusters      ();
     void refineChunks           ();
@@ -428,6 +429,8 @@ namespace mu2e {
     _f.nStrawHitsInChunk =  _f.cHits[seedPln].plnHits[seedPlnHit].nStrawHits;
     _f.totalTime = _f.seedTime;
     _f.totalZpos = _f.seedZpos;
+    _f.zMin = _f.seedZpos;
+    _f.zMax = _f.seedZpos;
 
   }
 
@@ -475,6 +478,8 @@ namespace mu2e {
       _f.nStrawHitsInChunk = _f.nStrawHitsInChunk + _f.cHits[testPln].plnHits[testPlnHit].nStrawHits;
       _f.totalTime += _f.testTime;
       _f.totalZpos += _f.testZpos;
+      if (_f.testZpos < _f.zMin) {_f.zMin = _f.testZpos;}
+      if (_f.testZpos > _f.zMax) {_f.zMax = _f.testZpos;}
     }
 
   }
@@ -523,6 +528,8 @@ namespace mu2e {
           _f._chunkInfo.avgZpos = _f.totalZpos/_f.nHitsInChunk;
           _f._chunkInfo.nHits = _f.nHitsInChunk;
           _f._chunkInfo.nStrawHits = _f.nStrawHitsInChunk;
+          _f._chunkInfo.zMin = _f.zMin;
+          _f._chunkInfo.zMax = _f.zMax;
           _f._chunkInfo.nrgSelection = _f.seedNRGselection;
           _f._chunkInfo.nCombines = 0;
           _f._chunkInfo.caloIndex = -1;
@@ -600,6 +607,8 @@ namespace mu2e {
       _f.chunks[chunkOneIdx].avgZpos /= _f.chunks[chunkOneIdx].nHits + _f.chunks[chunkTwoIdx].nHits;
       _f.chunks[chunkOneIdx].nHits = _f.chunks[chunkOneIdx].nHits + _f.chunks[chunkTwoIdx].nHits;
       _f.chunks[chunkOneIdx].nStrawHits = _f.chunks[chunkOneIdx].nStrawHits + _f.chunks[chunkTwoIdx].nStrawHits;
+      _f.chunks[chunkOneIdx].zMin = std::min(_f.chunks[chunkOneIdx].zMin,_f.chunks[chunkTwoIdx].zMin);
+      _f.chunks[chunkOneIdx].zMax = std::max(_f.chunks[chunkOneIdx].zMax,_f.chunks[chunkTwoIdx].zMax);
       _f.chunks[chunkOneIdx].nCombines++;
       _f.chunks.erase(_f.chunks.begin()+chunkTwoIdx);
     }
@@ -643,6 +652,8 @@ namespace mu2e {
         if (validLinesFound != 0) {
           _f.chunks[chunkIndex].hIndices.push_back(_f.testIndice);
           _f.chunks[chunkIndex].nStrawHits = _f.chunks[chunkIndex].nStrawHits + _f.cHits[i].plnHits[j].nStrawHits;
+          _f.chunks[chunkIndex].zMin = std::min(_f.chunks[chunkIndex].zMin, _f.testZpos);
+          _f.chunks[chunkIndex].zMax = std::max(_f.chunks[chunkIndex].zMax, _f.testZpos);
           _f.chunks[chunkIndex].nHits++;
           _f.chunks[chunkIndex].fitter.addPoint(_f.testZpos, _f.testTime, _f.testWeight);
         }
@@ -650,6 +661,54 @@ namespace mu2e {
     }
 
   }
+
+  //-----------------------------------------------------------------------------
+  // combine lines (chunks that could be considered clusters but are separated)
+  //-----------------------------------------------------------------------------
+  void TZClusterFinder::combineLines() {
+
+    _f.moreCombines = false;
+
+    // check if two clusters that should be joined are separated
+    for (size_t i=0; i<_f.chunks.size()-1; i++) {
+      // only check chunks that could be clusters already
+      if ((int)_f.chunks[i].nStrawHits < _clusterThresh) {continue;}
+      for (size_t j=i+1; j<_f.chunks.size(); j++) {
+        if ((int)_f.chunks[j].nStrawHits < _clusterThresh) {continue;}
+        // only combine CEs with CEs and protons with protons
+        if (_f.chunks[i].nrgSelection != _f.chunks[j].nrgSelection) {continue;}
+        if (_f.chunks[i].zMax < _f.chunks[j].zMin || _f.chunks[i].zMin > _f.chunks[j].zMax) {
+          float seedChi2 = _f.chunks[i].fitter.chi2Dof();
+          float testChi2 = _f.chunks[j].fitter.chi2Dof();
+          ::LsqSums2 fit = _f.chunks[i].fitter;
+          fit.addSum(_f.chunks[j].fitter);
+          float combineChi2 = fit.chi2Dof();
+          if (combineChi2 < testChi2 || combineChi2 < seedChi2) {
+            for (size_t k=0; k<_f.chunks[j].hIndices.size(); k++) {
+              _f.chunks[i].hIndices.push_back(_f.chunks[j].hIndices[k]);
+            }
+            _f.chunks[i].fitter = fit;
+            _f.chunks[i].avgTime = _f.chunks[i].avgTime * _f.chunks[i].nHits;
+            _f.chunks[i].avgTime += _f.chunks[j].avgTime * _f.chunks[j].nHits;
+            _f.chunks[i].avgTime /= _f.chunks[i].nHits + _f.chunks[j].nHits;
+            _f.chunks[i].avgZpos = _f.chunks[i].avgZpos * _f.chunks[i].nHits;
+            _f.chunks[i].avgZpos += _f.chunks[j].avgZpos * _f.chunks[j].nHits;
+            _f.chunks[i].avgZpos /= _f.chunks[i].nHits + _f.chunks[j].nHits;
+            _f.chunks[i].nHits = _f.chunks[i].nHits + _f.chunks[j].nHits;
+            _f.chunks[i].nStrawHits = _f.chunks[i].nStrawHits + _f.chunks[j].nStrawHits;
+            _f.chunks[i].zMin = std::min(_f.chunks[i].zMin,_f.chunks[j].zMin);
+            _f.chunks[i].zMax = std::max(_f.chunks[i].zMax,_f.chunks[j].zMax);
+            _f.chunks[i].nCombines++;
+            _f.chunks.erase(_f.chunks.begin()+j);
+            _f.moreCombines = true;
+            return;
+          }
+        }
+      }
+    }
+
+  }
+
 
   //-----------------------------------------------------------------------------
   // function for counting protons (prediction not truth)
@@ -772,6 +831,14 @@ namespace mu2e {
 
     // recover hits that were missed
     recoverHits();
+
+    // combine lines (chunks that could be considered clusters but are separated)
+    if (_f.chunks.size() != 0) {
+      _f.moreCombines = true;
+      while(_f.moreCombines) {
+        combineLines();
+      }
+    }
 
     // count number of protons
     countProtons(*_data._iiTC);

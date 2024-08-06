@@ -49,23 +49,24 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
   //-----------------------------------------------------------------------------
-  CalHelixFinder::CalHelixFinder(fhicl::ParameterSet const& pset) :
-    art::EDFilter{pset},
-    _diagLevel          (pset.get<int>   ("diagLevel"                      )),
-    _debugLevel         (pset.get<int>   ("debugLevel"                     )),
-    _printfreq          (pset.get<int>   ("printFrequency"                 )),
-    _useAsFilter        (pset.get<int>   ("useAsFilter"                    )),
-    _shLabel            (pset.get<std::string>("StrawHitCollectionLabel"        )),
-    _timeclLabel        (pset.get<std::string>("TimeClusterCollectionLabel"     )),
-    _minNHitsTimeCluster(pset.get<int>   ("minNHitsTimeCluster"            )),
-    _tpart              ((TrkParticle::type)(pset.get<int>("fitparticle"))),
-    _fdir               ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
-    _doSingleOutput     (pset.get<bool>  ("doSingleOutput")),
-    _hfinder            (pset.get<fhicl::ParameterSet>("HelixFinderAlg",fhicl::ParameterSet())){
+  CalHelixFinder::CalHelixFinder(const art::EDFilter::Table<Config>& config) :
+    art::EDFilter{config},
+    _diagLevel(config().diagLevel()),
+    _debugLevel(config().debugLevel()),
+    _printfreq(config().printfreq()),
+    _useAsFilter(config().useAsFilter()),
+    _shLabel(config().shLabel()),
+    _timeclLabel(config().timeclLabel()),
+    _minNHitsTimeCluster(config().minNHitsTimeCluster()),
+    _fitparticle(config().fitparticle()),
+    _fitdirection(config().fitdirection()),
+    _doSingleOutput(config().doSingleOutput()),
+    _maxEDepAvg(config().maxEDepAvg()),
+    _hfinder(config().hfinder()){
       consumes<ComboHitCollection>(_shLabel);
       consumes<TimeClusterCollection>(_timeclLabel);
 
-      std::vector<int> helvals = pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel});
+      std::vector<int> helvals = config().Helicities();
       for(auto hv : helvals) {
           Helicity hel(hv);
           _hels.push_back(hel);
@@ -77,18 +78,19 @@ namespace mu2e {
           produces<HelixSeedCollection>(Helicity::name(hel));
         }
       }
+
+      _tpart = (TrkParticle::type)_fitparticle;
+      _fdir = (TrkFitDirection::FitDirection)_fitdirection;
 //-----------------------------------------------------------------------------
 // provide for interactive disanostics
 //-----------------------------------------------------------------------------
       _helTraj          = 0;
-      _timeOffsets      = new fhicl::ParameterSet(pset.get<fhicl::ParameterSet>("TimeOffsets",fhicl::ParameterSet()));
 
       _data.shLabel     = _shLabel;
-      _data.timeOffsets = _timeOffsets;
 
       if (_debugLevel != 0) _printfreq = 1;
 
-      if (_diagLevel != 0) _hmanager = art::make_tool  <ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
+      if (_diagLevel != 0) _hmanager = art::make_tool<ModuleHistToolBase>(config().diagPlugin,"diagPlugin");
       else                 _hmanager = std::make_unique<ModuleHistToolBase>();
     }
 
@@ -97,7 +99,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   CalHelixFinder::~CalHelixFinder() {
     if (_helTraj) delete _helTraj;
-    delete _timeOffsets;
   }
 
 //-----------------------------------------------------------------------------
@@ -276,6 +277,7 @@ namespace mu2e {
 // Step 1: now loop over the two possible helicities.
 //         Find initial helical approximation of a track for both hypothesis
 //-----------------------------------------------------------------------------
+      std::vector<float> nHitsRatio_vec;
       for (size_t i=0; i<_hels.size(); ++i){
 //-----------------------------------------------------------------------------
 // create track definitions for the helix fit from this initial information
@@ -292,6 +294,10 @@ namespace mu2e {
         HelixSeed     tmp_helix_seed;
 
         initHelixSeed(tmp_helix_seed, tmpResult);
+        if (_diagLevel > 0) {
+          nHitsRatio_vec.push_back(tmpResult._diag.nHitsRatio);
+        }
+        if (tmp_helix_seed._eDepAvg > _maxEDepAvg) continue;
         helix_seed_vec.push_back(tmp_helix_seed);
       }
 
@@ -350,6 +356,9 @@ namespace mu2e {
 
           _data.chi2XY[loc]   = _hfResult._sxy.chi2DofCircle();
           _data.chi2ZPhi[loc] = _hfResult._szphi.chi2DofLine();
+
+          _data.nHitsRatio[loc] = nHitsRatio_vec[index_best];
+          _data.eDepAvg[loc] = helix_seed_vec[index_best]._eDepAvg;
 
           _data.nseeds[0]++;
           _data.good[loc] = 0;
@@ -507,6 +516,7 @@ namespace mu2e {
 
     // double     z_start(0);
     HelSeed._hhits.setParent(_chcol->parent());
+
     for (int i=0; i<nhits; ++i){
       unsigned        hitId   = HfResult._goodhits[i];
       ComboHit*       hit     = &HfResult._chHitsToProcess[hitId];//panelz->_chHitsToProcess.at(hitInfo->panelHitIndex);
@@ -514,9 +524,10 @@ namespace mu2e {
       ComboHit                hhit(*hit);
       //      hhit._hphi = shphi;
       // hhit._flag.merge(StrawHitFlag::resolvedphi);
-
       HelSeed._hhits.push_back(hhit);
     }
+    HelSeed._eDepAvg = HelSeed._hhits.eDepAvg();
+
 
     //now set the HelixRecoDir
     HelixTool ht(&HelSeed, _tracker);
