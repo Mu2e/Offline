@@ -28,4 +28,10 @@ namespace mu2e {
   }
 
   //================================================================
+  CLHEP::Hep2Vector ExtMonFNALCollimator::dxdzdydz() const {
+    const auto v = _rotationInMu2e * CLHEP::Hep3Vector(0,0, -1);
+    return CLHEP::Hep2Vector( v.x()/v.z(), v.y()/v.z());
+  }
+
+  //================================================================
 }

@@ -184,6 +184,8 @@ namespace mu2e {
     //----------------------------------------------------------------
     int verbose = c.getInt("extMonFNAL.verbosityLevel");
     if(verbose) {
+
+      //----------------
       std::cout<<"ExtMonFNALFilterMaker"<<": collimator1 angleH_inBeamDump= "<<filter.collimator1().angleH_inBeamDump()
                <<" ("  << filter.collimator1().angleH_inBeamDump() / CLHEP::degree <<" degree)"<<std::endl;
 
@@ -194,19 +196,39 @@ namespace mu2e {
       std::cout<<"ExtMonFNALFilterMaker"<<": collimator1 angleV= "<<filter.collimator1().angleV()
                <<" ("  << filter.collimator1().angleV() / CLHEP::degree <<" degree)"<<std::endl;
 
-      //std::cout<<"ExtMonFNALFilterMaker"<<": collimator1 (dx/dz, dy/dz) = "<<filter.collimator1().dxdzdydz()<<std::endl;
+      std::cout<<"ExtMonFNALFilterMaker"<<": collimator1 (dx/dz, dy/dz) = "<<filter.collimator1().dxdzdydz()<<std::endl;
 
       std::cout<<"ExtMonFNALFilterMaker"<<": collimator1 entranceInMu2e = "<<filter.collimator1().entranceInMu2e()<<std::endl;
       std::cout<<"ExtMonFNALFilterMaker"<<": collimator1 centerInMu2e = "<<filter.collimator1().centerInMu2e()<<std::endl;
       std::cout<<"ExtMonFNALFilterMaker"<<": collimator1 exitInMu2e = "<<filter.collimator1().exitInMu2e()<<std::endl;
 
+      //----------------
       std::cout<<"ExtMonFNALFilterMaker"<<": ref traj entrace to filter magnet in Mu2e = "<< refTrajectoryEntranceInMu2e<<std::endl;
       std::cout<<"ExtMonFNALFilterMaker"<<": filter nominal momentum = "<<filter.nominalMomentum()/CLHEP::GeV<<" GeV/c"<<std::endl;
       std::cout<<"ExtMonFNALFilterMaker"<<": filter half bend angle  = "<<filter.magnet().trackBendHalfAngle(filter.magnet().nominalMomentum())<<std::endl;
       std::cout<<"ExtMonFNALFilterMaker"<<": filterMagnet().refPointInMu2e() = "<<filter.magnet().refPointInMu2e()<<std::endl;
       std::cout<<"ExtMonFNALFilterMaker"<<": filterMagnet().geometricCenterInMu2e() = "<<filter.magnet().geometricCenterInMu2e()<<std::endl;
       std::cout<<"ExtMonFNALFilterMaker"<<": filterMagnet().magnetRotationInMu2e() = "<<filter.magnet().magnetRotationInMu2e()<<std::endl;
+      std::cout<<"ExtMonFNALFilterMaker"<<": filterMagnet().dxdzdydz() = "<<filter.magnet().dxdzdydz()<<std::endl;
 
+      //----------------
+      std::cout<<"ExtMonFNALFilterMaker"<<": collimator2 angleH_inBeamDump= "<<filter.collimator2().angleH_inBeamDump()
+               <<" ("  << filter.collimator2().angleH_inBeamDump() / CLHEP::degree <<" degree)"<<std::endl;
+
+      std::cout<<"ExtMonFNALFilterMaker"<<": collimator2 angleH in Mu2e= "
+               <<(dump.coreRotY() - filter.collimator2().angleH_inBeamDump())
+               <<" ("  << (dump.coreRotY() - filter.collimator2().angleH_inBeamDump())/CLHEP::degree <<" degree)"<<std::endl;
+
+      std::cout<<"ExtMonFNALFilterMaker"<<": collimator2 angleV= "<<filter.collimator2().angleV()
+               <<" ("  << filter.collimator2().angleV() / CLHEP::degree <<" degree)"<<std::endl;
+
+      std::cout<<"ExtMonFNALFilterMaker"<<": collimator2 (dx/dz, dy/dz) = "<<filter.collimator2().dxdzdydz()<<std::endl;
+
+      std::cout<<"ExtMonFNALFilterMaker"<<": collimator2 entranceInMu2e = "<<filter.collimator2().entranceInMu2e()<<std::endl;
+      std::cout<<"ExtMonFNALFilterMaker"<<": collimator2 centerInMu2e = "<<filter.collimator2().centerInMu2e()<<std::endl;
+      std::cout<<"ExtMonFNALFilterMaker"<<": collimator2 exitInMu2e = "<<filter.collimator2().exitInMu2e()<<std::endl;
+
+      //----------------
       std::cout<<"ExtMonFNALFilterMaker"<<": filterEntranceInMu2e() = "<<filter.entranceInMu2e()<<std::endl;
       std::cout<<"ExtMonFNALFilterMaker"<<": filterExitInMu2e() = "<<filter.exitInMu2e()<<std::endl;
     }

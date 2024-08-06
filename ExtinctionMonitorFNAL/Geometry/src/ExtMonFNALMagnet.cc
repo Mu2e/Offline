@@ -45,3 +45,9 @@ double mu2e::ExtMonFNALMagnet::trackBendHalfAngle(double momentum) const {
 }
 
 //================================================================
+CLHEP::Hep2Vector mu2e::ExtMonFNALMagnet::dxdzdydz() const {
+  const auto v = magnetRotationInMu2e_ * CLHEP::Hep3Vector(0,0, -1);
+  return CLHEP::Hep2Vector( v.x()/v.z(), v.y()/v.z());
+}
+
+//================================================================

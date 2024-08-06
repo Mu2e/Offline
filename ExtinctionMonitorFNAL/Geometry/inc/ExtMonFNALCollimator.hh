@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 
@@ -63,6 +64,8 @@ namespace mu2e {
 
     double angleH_inBeamDump() const { return _angleH_inBeamDump; }
     double angleV() const { return _angleV; }
+
+    CLHEP::Hep2Vector dxdzdydz() const;
 
     //----------------------------------------------------------------
     const std::vector<double> &channelRadius() const { return _channelRadius; }

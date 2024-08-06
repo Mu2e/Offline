@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 
@@ -60,6 +61,9 @@ namespace mu2e {
     const CLHEP::HepRotation& magnetRotationInMu2e() const { return magnetRotationInMu2e_; }
 
     const CLHEP::Hep3Vector&  geometricCenterInMu2e() const { return geometricCenterInMu2e_; }
+
+    // another way to look at rotation
+    CLHEP::Hep2Vector dxdzdydz() const;
   };
 
 }// namespace mu2e
