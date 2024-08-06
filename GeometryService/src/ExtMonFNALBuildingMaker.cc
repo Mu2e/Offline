@@ -5,6 +5,7 @@
 #include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
 #include "Offline/GeometryService/inc/ExtMonFNALMagnetMaker.hh"
+#include "Offline/GeometryService/inc/ExtMonFNALFilterMaker.hh"
 
 #include <algorithm>
 #include <iterator>
@@ -17,6 +18,9 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
+
+#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
+//#define AGDEBUG(stuff)
 
 namespace mu2e {
 
@@ -183,6 +187,12 @@ namespace mu2e {
     // collimator1
     const double referenceLength = dump.coreCenterDistanceToReferencePlane()    - dump.coreCenterDistanceToShieldingFace()
       + dump.frontShieldingHalfSize()[2];
+
+    std::cout<<"referenceLength = "<<referenceLength<<std::endl;
+    std::cout<<"dump.coreCenterDistanceToReferencePlane() = "<<dump.coreCenterDistanceToReferencePlane()<<std::endl;
+    std::cout<<"dump.coreCenterDistanceToShieldingFace() = "<<dump.coreCenterDistanceToShieldingFace()<<std::endl;
+    std::cout<<"dump.frontShieldingHalfSize()[2] = "<<dump.frontShieldingHalfSize()[2]<<std::endl;
+
     const Hep3Vector collimator1CenterInDump(filterEntranceOffsetX
                                              + referenceLength*tan(angleH),
 
@@ -204,6 +214,9 @@ namespace mu2e {
                                            dump.coreCenterDistanceToShieldingFace() - col1zLength
                                            );
 
+    AGDEBUG("collimator1ExitInDump = "<<collimator1ExitInDump);
+    AGDEBUG("collimator1Exit mu2e  = "<<dump.beamDumpToMu2e_position(collimator1ExitInDump));
+
     //----------------------------------------------------------------
     // Filter magnet positioning
 
@@ -215,6 +228,8 @@ namespace mu2e {
     // The point where the reference trajectory crosses the magnet face, in the dump coordinates
     const CLHEP::Hep3Vector refTrajFMEntranceInDump = collimator1ExitInDump +
       Hep3Vector(0,0, -filterMagToColl).rotateX(entranceAngleV).rotateY(-angleH);
+
+    AGDEBUG("refTrajFMEntranceInDump in mu2e = "<<dump.beamDumpToMu2e_position(refTrajFMEntranceInDump));
 
     const double pNominal = c.getDouble("extMonFNAL.filter.nominalMomentum") * CLHEP::MeV;
     emfb->filter_.nominalMomentum_ = pNominal;
@@ -322,6 +337,9 @@ namespace mu2e {
     emfb->detectorRoomCenterInMu2e_ = Hep3Vector(detectorRoomCenter[1] , (emfb->roomInsideYmin()+emfb->roomInsideYmax())/2, detectorRoomCenter[0]);
 
     emfb->detectorRoomRotationInMu2e_.rotateY(asin( (corner1[1]-corner2[1])/(corner1-corner2).mag() ));
+
+    //----------------------------------------------------------------
+    emfb->filter_ = ExtMonFNALFilterMaker::read(c, *emfb, dump);
 
     //----------------------------------------------------------------
     return emfb;
