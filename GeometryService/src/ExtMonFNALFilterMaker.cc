@@ -139,31 +139,27 @@ namespace mu2e {
 
     filter.collimator1_._centerInMu2e = col1CenterInMu2e;
 
-//tmp:    //----------------------------------------------------------------
-//tmp:    // Filter magnet
-//tmp:
-//tmp:    // the distance between the exit point of the reference trajectory from the upstream wall
-//tmp:    // and its entrance to the magnet, on the magnet physical face.
-//tmp:    const double filterMagToColl = c.getDouble("extMonFNAL.filter.magnet.distanceToUpstreamWall")
-//tmp:      / (cos(angleH) * cos(entranceAngleV));
-//tmp:
-//tmp:    AGDEBUG("filterMagToColl computed = "<<filterMagToColl);
-//tmp:    AGDEBUG("collimator1 exit in mu2e = "<<filter.collimator1().exitInMu2e());
-//tmp:
-//tmp:    const auto refTrajectoryEntranceInMu2e =
-//tmp:      filter.collimator1().trajectoryPointInMu2e(
-//tmp:                                                 -(filterMagToColl
-//tmp:                                                   + 0.5*filter.collimator1().length())
-//tmp:                                                 );
-//tmp:
-//tmp:    AGDEBUG("refTrajectoryEntranceInMu2e = "<<refTrajectoryEntranceInMu2e);
-//tmp:
-//tmp:    filter.magnet_ = ExtMonFNALMagnetMaker::read(c,
-//tmp:                                                 "extMonFNAL.filter.magnet",
-//tmp:                                                 filter.collimator1().rotationInMu2e(),
-//tmp:                                                 refTrajectoryEntranceInMu2e,
-//tmp:                                                 pNominal);
-//tmp:
+    //----------------------------------------------------------------
+    // Filter magnet
+
+    // the distance between the exit point of the reference trajectory from entrance collimator
+    // and its entrance point to the magnet, on the magnet physical face.
+    const double filterMagToColl = c.getDouble("extMonFNAL.filter.magnet.distanceToEntranceCollimator");
+
+    const auto refTrajectoryEntranceInMu2e =
+      filter.collimator1().trajectoryPointInMu2e(
+                                                 -(filterMagToColl
+                                                   + 0.5*filter.collimator1().length())
+                                                 );
+
+    AGDEBUG("refTrajectoryEntranceInMu2e = "<<refTrajectoryEntranceInMu2e);
+
+    filter.magnet_ = ExtMonFNALMagnetMaker::read(c,
+                                                 "extMonFNAL.filter.magnet",
+                                                 filter.collimator1().rotationInMu2e(),
+                                                 refTrajectoryEntranceInMu2e,
+                                                 pNominal);
+
 //tmp:    //----------------------------------------------------------------
 //tmp:    // Exit collimator
 //tmp:
