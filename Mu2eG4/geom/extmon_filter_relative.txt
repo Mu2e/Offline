@@ -14,6 +14,14 @@
 double         extMonFNAL.entranceOffsetX = 315;
 double         extMonFNAL.entranceOffsetY = 1250;
 
+// The offsets above are defined on the "reference plane" parallel to
+// the beam dump face.  The next parameter positions the collimator
+// along the beam dump axis.  The half thickness of the beam dump
+// front shielding used to be 2 m, and the collimator length was defined
+// by the shielding.  Now (2024) the collimator is a standalone object,
+// but we position its center at the same depth.
+double extMonFNAL.collimator1CenterDistanceToReferencePlane = 2000.; // mm
+
 // Filter channel orientation: angles in horizontal and vertical
 // planes w.r.t dump core. Note that angleH is the same for all filter
 // elements, while angleV is different.  We specify angleV at the

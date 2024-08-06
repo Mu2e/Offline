@@ -112,9 +112,7 @@ namespace mu2e {
     // the "reference plane".  (The length of the collimator used to be defined
     // by a 4.0 m thick concrete of the beam dump front.)
 
-    const double referenceLength = dump.coreCenterDistanceToReferencePlane()
-      - dump.coreCenterDistanceToShieldingFace()
-      + dump.frontShieldingHalfSize()[2]; // FIXME: simplify - introduce a referenceLength parameter
+    const double referenceLength = c.getDouble("extMonFNAL.collimator1CenterDistanceToReferencePlane");
 
     const auto col1DirInMu2e = filter.collimator1_.rotationInMu2e() * Hep3Vector(0,0,-1);
     const auto dumpDirInMu2e = dump.beamDumpToMu2e_momentum(Hep3Vector(0,0,-1));
