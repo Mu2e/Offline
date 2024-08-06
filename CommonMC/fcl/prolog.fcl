@@ -62,9 +62,20 @@ CommonMC: {
     IPAStepPointMCs : "compressDigiMCs:protonabsorber"
     TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
   }
-
-
 }
+CommonMC.MakeSSDigi : {# make SurfaceSteps from digitization output
+  @table::CommonMC.MakeSS
+    VDStepPointMCs : "compressDigiMCs:virtualdetector"
+    IPAStepPointMCs : "compressDigiMCs:protonabsorber"
+    TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
+}
+CommonMC.MakeSSReco : {# make SurfaceSteps from reconstruction output
+  @table::CommonMC.MakeSS
+    VDStepPointMCs : "compressRecoMCs:virtualdetector"
+    IPAStepPointMCs : "compressRecoMCs:protonabsorber"
+    TargetStepPointMCs : "compressRecoMCs:stoppingtarget"
+}
+
 #------------------------------------------------------------------------------
 
 END_PROLOG
