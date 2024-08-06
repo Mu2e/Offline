@@ -31,7 +31,6 @@ namespace mu2e {
     CLHEP::Hep3Vector exitInMu2e() const { return collimator2_.exitInMu2e(); }
 
   private:
-    friend class ExtMonFNALBuildingMaker; // FIXME: tmp
     friend class ExtMonFNALFilterMaker;
     // Private ctr: the class should be only obtained via the maker
     ExtMonFNALFilter() : nominalMomentum_{0.} {}

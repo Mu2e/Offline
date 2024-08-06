@@ -20,7 +20,6 @@ namespace mu2e {
 
   //----------------------------------------------------------------
   class ExtMonFNALCollimator {
-    friend class ExtMonFNALBuildingMaker; // FIXME: tmp
     friend class ExtMonFNALFilterMaker;
     // Private ctr: the class should be only obtained via the maker
     ExtMonFNALCollimator();

@@ -57,10 +57,7 @@
 #include "Offline/Mu2eG4/inc/nestTubs.hh"
 #include "Offline/Mu2eG4/inc/nestPolycone.hh"
 
-// FIXME: should not need that
-#include "Offline/GeometryService/inc/WorldG4.hh"
-
-// #define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
+//#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)
 
 using namespace std;
