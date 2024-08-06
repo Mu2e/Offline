@@ -134,6 +134,7 @@ namespace mu2e {
         float     meanHitRadialDist;
         int       nHitsLoopFailed;
 
+
       };
 
       const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices

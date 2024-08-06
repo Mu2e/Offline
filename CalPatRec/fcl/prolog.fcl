@@ -43,7 +43,6 @@ CalPatRec : { @table::CalPatRec
     HelixFinderAlg : {
         debugLevel                              : 0
         debugLevel2                             : 0
-        smartTag                                : 1
         diagLevel                               : 0
         HelixFitSelectionBits                   : []
         BackgroundSelectionBits                 : ["Background","Noisy","Dead"]
@@ -81,6 +80,7 @@ CalPatRec : { @table::CalPatRec
         chi2zphiMax                             : 5.0
         chi2hel3DMax                            : @local::CalPatRec.chi2hel3DMax
         dfdzErr                                 : 0.1
+        maxNHitsRatio                           : 500
         minArea                                 : 5000.
     }
 #------------------------------------------------------------------------------
@@ -616,6 +616,7 @@ CalPatRec : { @table::CalPatRec
             maxSeedCircleResidual   : 2.0
             minSeedCircleHits       : 7
             maxDphiDz               : 0.008
+            maxSeedLineGap          : 250.0
             maxZWindow              : 700.0
             minLineSegmentHits      : 3
             segMultiplier           : 3.0
@@ -626,13 +627,15 @@ CalPatRec : { @table::CalPatRec
             maxCircleRecoverSigma   : 3.0
             maxLineRecoverSigma     : 3.0
             caloClusterSigma        : 30.0
-            minNHelixComboHits      : 8
+            minNHelixComboHits      : 10
             minNHelixStrawHits      : 12
             minHelixPerpMomentum    : 40.0
             maxHelixPerpMomentum    : 140.0
             minHelixMomentum        : 60.0
             maxHelixMomentum        : 400.0
             chi2LineSaveThresh      : 5.0
+            maxEDepAvg              : @local::TrkReco.HelixFinderParams.maxEDepAvg
+            maxNHitsRatio           : 500
             debugPdgID              : 11
             debugMomentum           : 100.0
             debugDirection          : "down"
@@ -701,7 +704,6 @@ CalPatRec : { @table::CalPatRec
             printFrequency                              : 100
             useAsFilter                                 : 0
             StrawHitCollectionLabel                     : makePH            # CalTimePeakFinder uses ComboHits
-            StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
             caloClusterModuleLabel                      : CaloClusterMaker
 #            HitSelectionBits                            : []
 #            BackgroundSelectionBits                     : ["Noisy","Dead"]
@@ -727,12 +729,12 @@ CalPatRec : { @table::CalPatRec
             printFrequency                              : 100
             useAsFilter                                 : 0
             StrawHitCollectionLabel                     : makePH
-            StrawHitFlagCollectionLabel                 : "DeltaFinder:ComboHits"
             TimeClusterCollectionLabel                  : CalTimePeakFinder
             minNHitsTimeCluster                         : @local::CalPatRec.minNStrawHits
             fitparticle                                 : @local::Particle.eminus
             fitdirection                                : @local::FitDir.downstream
             doSingleOutput                              : false
+            maxEDepAvg                                  : @local::TrkReco.HelixFinderParams.maxEDepAvg
 
             # HelixFinderAlg configuraton (pattern recognition)
             HelixFinderAlg                              : { @table::CalPatRec.HelixFinderAlg }
@@ -740,8 +742,13 @@ CalPatRec : { @table::CalPatRec
                 mcTruth                                 : 0
                 mcUtils                                 : { tool_type : "TrkPatRecMcUtils"
                     strawDigiMCCollTag : "compressDigiMCs"
+                    comboHitCollTag: "makeSH"
                 }
             }
+            Helicities: [
+              -1,
+              1
+            ]
         }
     }
 }
@@ -836,12 +843,10 @@ CalPatRec: { @table::CalPatRec
         CalHelixFinderDe               : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eminus  }
         CalHelixFinderUe               : { @table::CalPatRec.filters.CalHelixFinder
             fitparticle                : @local::Particle.eminus
-            StrawHitFlagCollectionLabel: "DeltaFinderUe:ComboHits"
             TimeClusterCollectionLabel : CalTimePeakFinderUe
         }
         CalHelixFinderDmu              : { @table::CalPatRec.filters.CalHelixFinder
             fitparticle                   : @local::Particle.muminus
-            StrawHitFlagCollectionLabel   : "DeltaFinderMu:ComboHits"
             TimeClusterCollectionLabel    : CalTimePeakFinderMu
         }
         # CalHelixFinderDeP              : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eplus   }
