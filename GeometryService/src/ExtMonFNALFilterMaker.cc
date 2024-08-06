@@ -160,44 +160,48 @@ namespace mu2e {
                                                  refTrajectoryEntranceInMu2e,
                                                  pNominal);
 
-//tmp:    //----------------------------------------------------------------
-//tmp:    // Exit collimator
-//tmp:
-//tmp:    filter.collimator2_ = readExtMonFNALCollimator("collimator2", c);
-//tmp:
-//tmp:    // set the angles
-//tmp:    filter.collimator2_.setFromDumpAngles(angleH,
-//tmp:                                          entranceAngleV - 2 * filter.magnet_.trackBendHalfAngle(pNominal),
-//tmp:                                          dump);
-//tmp:
-//tmp:    // Set the position.  We put the center at the point where the
-//tmp:    // straight line of the nominal trajectory from the filter magnet
-//tmp:    // exit crosses the plane that is parallel to the collimator2
-//tmp:    // shielding wall and passes through the center of the wall.
-//tmp:
-//tmp:    // unit vector along the nominal trajectory
-//tmp:    const CLHEP::Hep3Vector magDir = filter.magnet_.outRotationInMu2e()*CLHEP::Hep3Vector(0,0,-1);
-//tmp:    // point defining the nominal trajectory line
-//tmp:    const CLHEP::Hep3Vector magPoint = filter.magnet_.refPointInMu2e();
-//tmp:
-//tmp:    // unit vector normal to the wall
-//tmp:    const CLHEP::Hep3Vector wallDir = dump.beamDumpToMu2e_momentum(CLHEP::Hep3Vector(0,0,-1));
-//tmp:
-//tmp:    // Find a point with the Mu2e (x,z) coordinates in the middle of
-//tmp:    // the wall; the vertical (Mu2e Y) does not matter.
-//tmp:
-//tmp:    // Find the 2D geometric center of the wall outline
-//tmp:    const auto coll2cog2d = std::accumulate(emfb.coll2ShieldingOutline().begin(),
-//tmp:                                            emfb.coll2ShieldingOutline().end(),
-//tmp:                                            Hep2Vector(0,0))
-//tmp:      / emfb.coll2ShieldingOutline().size();
-//tmp:
-//tmp:    // Make it 3D by assigning Y=0, then shift to Mu2e
-//tmp:    const Hep3Vector wallPoint = Hep3Vector(coll2cog2d.y(), 0, coll2cog2d.x())
-//tmp:      + emfb.coll2ShieldingCenterInMu2e() ;
-//tmp:
-//tmp:    filter.collimator2_._centerInMu2e  = magPoint + magDir*(wallDir.dot(wallPoint - magPoint)/wallDir.dot(magDir));
-//tmp:
+    //----------------------------------------------------------------
+    // Exit collimator
+
+    filter.collimator2_ = readExtMonFNALCollimator("collimator2", c);
+
+    // set the angles
+    filter.collimator2_.setFromDumpAngles(angleH,
+                                          entranceAngleV - 2 * filter.magnet().trackBendHalfAngle(pNominal),
+                                          dump);
+
+    // Set the position.  We put the center at the point where the
+    // straight line of the nominal trajectory from the filter magnet
+    // exit crosses the plane that is parallel to the collimator2
+    // shielding wall and passes through the center of the wall.
+
+    // unit vector along the nominal trajectory
+    const CLHEP::Hep3Vector magDir = filter.magnet_.outRotationInMu2e()*CLHEP::Hep3Vector(0,0,-1);
+    // point defining the nominal trajectory line
+    const CLHEP::Hep3Vector magPoint = filter.magnet_.refPointInMu2e();
+
+    // unit vector normal to the wall
+    const CLHEP::Hep3Vector wallDir = dump.beamDumpToMu2e_momentum(CLHEP::Hep3Vector(0,0,-1));
+
+    // Find a point with the Mu2e (x,z) coordinates in the middle of
+    // the wall; the vertical (Mu2e Y) does not matter.
+
+    // Find the 2D geometric center of the wall outline
+    const auto coll2cog2d = std::accumulate(emfb.coll2ShieldingOutline().begin(),
+                                            emfb.coll2ShieldingOutline().end(),
+                                            Hep2Vector(0,0))
+      / emfb.coll2ShieldingOutline().size();
+
+    // Make it 3D by assigning Y=0, then shift to Mu2e
+    const Hep3Vector wallPoint = Hep3Vector(coll2cog2d.y(), 0, coll2cog2d.x())
+      + emfb.coll2ShieldingCenterInMu2e() ;
+
+    AGDEBUG("ORIG col2 centerInMu2e() = "<<emfb.filter().collimator2().centerInMu2e() );
+
+    filter.collimator2_._centerInMu2e  = magPoint + magDir*(wallDir.dot(wallPoint - magPoint)/wallDir.dot(magDir));
+
+    AGDEBUG("NEW  col2 centerInMu2e() = "<<filter.collimator2_.centerInMu2e() );
+
 //tmp://    //----------------------------------------------------------------
 //tmp://    int verbose = c.getInt("extMonFNAL.verbosityLevel");
 //tmp://    if(verbose) {
