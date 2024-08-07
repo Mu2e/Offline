@@ -4,33 +4,29 @@
 //
 //  original author : Bertrand Echenard (Caltech)
 //
-//
 // Use basis vector, l and k, defined as
 // l = up right
 // k = down right
 //
-/*
-
-       --------------------
-       |         |        |
-       |  0 -1   |   1 0  |
-       |         |        |
-       |         |        |
- ------------------------------
- |         |         |        |
- |  -1 -1  |   0 0   |  1 1   |   l,k coordinates
- |         |         |        |
- |         |         |        |
- ------------------------------
-       |         |        |
-       |  -1 0   |  0 1   |
-       |         |        |
-       |         |        |
-       --------------------
-
-  steps :  (1,1) (0,1) (-1,0) (-1,-1) (0,-1) (1,0) (clockwise from top left corner)
-
-*/
+//       --------------------
+//       |         |        |
+//       |  0 -1   |   1 0  |
+//       |         |        |
+//       |         |        |
+// ------------------------------
+// |         |         |        |
+// |  -1 -1  |   0 0   |  1 1   |   l,k coordinates
+// |         |         |        |
+// |         |         |        |
+// ------------------------------
+//       |         |        |
+//       |  -1 0   |  0 1   |
+//       |         |        |
+//       |         |        |
+//       --------------------
+//
+//  steps :  (1,1) (0,1) (-1,0) (-1,-1) (0,-1) (1,0) (clockwise from top left corner)
+//
 // Tesselation algorithm: tessalate in "rings" from the center
 //   for each ring, start at 0,-l (top left corner),
 //   then go n time each step to create the ring
@@ -54,8 +50,8 @@ namespace mu2e {
 
       SquareShiftMapper::SquareShiftMapper() :
         step_(),
-        apexX_({-0.5,0.5,0.5,-0.5,-0.5}),
-        apexY_({-0.5,-0.5,0.5,0.5,-0.5})
+        apexX_({-0.5, 0.5,0.5,-0.5,-0.5}),
+        apexY_({-0.5,-0.5,0.5, 0.5,-0.5})
       {
           step_.push_back( SquShiftLK(  1,  1) ); //right
           step_.push_back( SquShiftLK(  0 , 1) ); //down right
@@ -66,6 +62,8 @@ namespace mu2e {
       }
 
 
+      //--------------------------------------------------------------------------------
+      int SquareShiftMapper::nCrystalMax(int maxRing) const {return 3*maxRing*(maxRing+1)+1;}
 
 
 
@@ -78,7 +76,7 @@ namespace mu2e {
 
       int SquareShiftMapper::indexFromXY(double x0, double y0) const
       {
-          int l,k;
+          int l(0),k(0);
           int ny = (y0>0) ? int(std::abs(y0)+0.5) : -int(std::abs(y0)+0.5);
 
           if (ny%2==0)
@@ -102,10 +100,24 @@ namespace mu2e {
       int SquareShiftMapper::indexFromRowCol(int nRow, int nCol) const
       {
           int k = nRow/2-nRow + nCol;
-          int l = nRow/2 + nCol;
+          int l = nRow/2      + nCol;
 
           SquShiftLK lk(l,k);
           return index(lk);
+      }
+
+      int SquareShiftMapper::rowFromIndex(int thisIndex) const
+      {
+          SquShiftLK thisLK = lk(thisIndex);
+          return thisLK.l_ - thisLK.k_;
+      }
+
+      int SquareShiftMapper::colFromIndex(int thisIndex) const
+      {
+          SquShiftLK thisLK = lk(thisIndex);
+          if ((thisLK.l_+thisLK.k_)%2) return (thisLK.l_+thisLK.k_)/2;
+          else if (thisLK.l_!=0)       return (thisLK.l_+thisLK.k_-abs(thisLK.l_)/thisLK.l_)/2+abs(thisLK.l_)/thisLK.l_;
+          else                         return thisLK.k_/2+abs(thisLK.k_)/thisLK.k_;
       }
 
 
@@ -119,10 +131,11 @@ namespace mu2e {
 
 
       //--------------------------------------------------------------------------------
-      std::vector<int> SquareShiftMapper::neighbors(int thisIndex, int level)  const
+      std::vector<int> SquareShiftMapper::neighbors(int thisIndex, int level) const
       {
+          if (level<1) return std::vector<int>{};
+
           std::vector<int> thisNeighbour;
-          thisNeighbour.reserve(12);
 
           SquShiftLK init = lk(thisIndex);
           SquShiftLK lk(init.l_, init.k_ - level);
@@ -132,7 +145,7 @@ namespace mu2e {
               for (int iseg=0;iseg<level;++iseg)
               {
                  lk.add(step_[i]);
-                 thisNeighbour.push_back( index(lk) );
+                 thisNeighbour.push_back(index(lk));
               }
           }
           return thisNeighbour;
@@ -142,12 +155,13 @@ namespace mu2e {
       //--------------------------------------------------------------------------------
       SquShiftLK SquareShiftMapper::lk(int thisIndex) const
       {
-         if (thisIndex==0) return SquShiftLK(0,0);
+         if (thisIndex<1) return SquShiftLK(0,0);
 
-         int nRing = int(0.5+sqrt(0.25+float(thisIndex-1)/3.0));
+         int nRing = int(0.5+sqrt(0.25+static_cast<float>(thisIndex-1)/3.0));
          int nSeg  = (thisIndex - 3*nRing*(nRing-1)-1) / nRing;
          int nPos  = (thisIndex - 3*nRing*(nRing-1)-1) % nRing;
 
+         if (nSeg<0) return SquShiftLK(0,0);
          int l =          nPos*step_[nSeg].l_;
          int k = -nRing + nPos*step_[nSeg].k_;
 
@@ -164,7 +178,7 @@ namespace mu2e {
       //--------------------------------------------------------------------------------
       int SquareShiftMapper::index(const SquShiftLK& thisLK) const
       {
-         if (thisLK.l_==0 && thisLK.k_==0) return 0;
+         if (thisLK.l_==0 && thisLK.k_==0) return 0u;
 
          int nRing = ring(thisLK);
          int pos   = 3*nRing*(nRing-1)+1;
@@ -176,7 +190,7 @@ namespace mu2e {
          if (thisLK.k_ ==  nRing)                 return pos + 3*nRing - thisLK.l_;
          if (thisLK.k_ == -nRing)                 return pos + 6*nRing - std::abs(thisLK.l_);
          if (thisLK.l_ > thisLK.k_)               return pos + thisLK.l_;
-         return pos + 3*nRing +std::abs(thisLK.l_);
+         return                                          pos + 3*nRing +std::abs(thisLK.l_);
       }
 
 
@@ -185,6 +199,12 @@ namespace mu2e {
       {
           if (thisLK.l_*thisLK.k_>0) return std::max(std::abs(thisLK.l_),std::abs(thisLK.k_));
           return std::abs(thisLK.l_-thisLK.k_);
+      }
+
+      //--------------------------------------------------------------------------------
+      int SquareShiftMapper::numNeighbors(int level) const
+      {
+          return level*static_cast<int>(step_.size());
       }
 
 }

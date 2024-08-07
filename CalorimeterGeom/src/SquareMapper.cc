@@ -59,8 +59,8 @@ namespace mu2e {
           step_.push_back( SquLK( 0, 1) );  //up
       }
 
-
-
+      //--------------------------------------------------------------------------------
+      int SquareMapper::nCrystalMax(int maxRing) const {return (2*maxRing+1)*(2*maxRing+1);}
 
 
       //--------------------------------------------------------------------------------
@@ -73,8 +73,8 @@ namespace mu2e {
 
       int SquareMapper::indexFromXY(double x0, double y0) const
       {
-          int l = int( std::abs(x0)+0.5);
-          int k = int( std::abs(y0)+0.5 );
+          int l = int(std::abs(x0)+0.5);
+          int k = int(std::abs(y0)+0.5);
           if (x0<0) l *= -1;
           if (y0<0) k *= -1;
 
@@ -90,6 +90,18 @@ namespace mu2e {
           return index(lk);
       }
 
+      int SquareMapper::rowFromIndex(int thisIndex) const
+      {
+          SquLK thisLK = lk(thisIndex);
+          return thisLK.k_;
+      }
+
+      int SquareMapper::colFromIndex(int thisIndex) const
+      {
+          SquLK thisLK = lk(thisIndex);
+          return thisLK.l_;
+      }
+
 
       //--------------------------------------------------------------------------------
       bool SquareMapper::isInsideCrystal(double x, double y, const CLHEP::Hep3Vector& pos,
@@ -101,8 +113,9 @@ namespace mu2e {
       //--------------------------------------------------------------------------------
       std::vector<int> SquareMapper::neighbors(int thisIndex, int level)  const
       {
+          if (level<1) return std::vector<int>{};
+
           std::vector<int> thisNeighbour;
-          thisNeighbour.reserve(12);
 
           SquLK init = lk(thisIndex);
           SquLK lk(init.l_ - level, init.k_ + level);
@@ -149,7 +162,6 @@ namespace mu2e {
           if ( thisLK.l_ ==  nRing && thisLK.k_ > -nRing)  pos += 2*nRing + nRing - thisLK.k_;
           if ( thisLK.k_ == -nRing && thisLK.l_ > -nRing)  pos += 4*nRing + nRing - thisLK.l_;
           if ( thisLK.l_ == -nRing && thisLK.k_ < nRing)   pos += 6*nRing + nRing + thisLK.k_;
-
           return pos;
       }
 
@@ -157,6 +169,12 @@ namespace mu2e {
       int SquareMapper::ring(const SquLK &thisLK) const
       {
           return std::max(std::abs(thisLK.l_),std::abs(thisLK.k_));
+      }
+
+      //--------------------------------------------------------------------------------
+      int SquareMapper::numNeighbors(int level) const
+      {
+          return 2*level*static_cast<int>(step_.size());
       }
 
 }

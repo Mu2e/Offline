@@ -179,7 +179,7 @@ namespace mu2e {
        float _genmomX[16384],_genmomY[16384],_genmomZ[16384],_genStartX[16384],_genStartY[16384],_genStartZ[16384],_genStartT[16384];
 
        int   _nHits,_cryId[163840],_crySectionId[163840],_crySimIdx[163840],_crySimLen[163840];
-       float _cryEtot,_cryTime[163840],_cryEdep[163840],_cryDose[163840],_cryPosX[163840],_cryPosY[163840],_cryPosZ[163840],_cryLeak[163840];
+       float _cryEtot,_cryTime[163840],_cryEdep[163840],_cryPosX[163840],_cryPosY[163840],_cryPosZ[163840],_cryLeak[163840];
 
        int   _nSim,_motId[500000],_motPdgId[500000],_motcrCode[500000],_motGenIdx[500000];
        float _motmom[500000],_motStartX[500000],_motStartY[500000],_motStartZ[500000],_motStartT[500000];
@@ -299,7 +299,6 @@ namespace mu2e {
        _Ntup->Branch("cryPosZ",      &_cryPosZ ,     "cryPosZ[nCry]/F");
        _Ntup->Branch("cryEdep",      &_cryEdep ,     "cryEdep[nCry]/F");
        _Ntup->Branch("cryTime",      &_cryTime ,     "cryTime[nCry]/F");
-       _Ntup->Branch("cryDose",      &_cryDose ,     "cryDose[nCry]/F");
        _Ntup->Branch("crySimIdx",    &_crySimIdx ,   "crySimIdx[nCry]/I");
        _Ntup->Branch("crySimLen",    &_crySimLen ,   "crySimLen[nCry]/I");
 
@@ -485,9 +484,6 @@ namespace mu2e {
       art::Handle<TrackClusterMatchCollection>  trackClusterMatchHandle;
       event.getByLabel(_trackClusterMatchModuleLabel, trackClusterMatchHandle);
       TrackClusterMatchCollection const& trackClusterMatches(*trackClusterMatchHandle);
-
-      const double CrDensity = 4.9*(CLHEP::g/CLHEP::cm3);
-      const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
 
 
       std::map<art::Ptr<SimParticle>, const StepPointMC*> vdMap;
@@ -694,7 +690,6 @@ namespace mu2e {
            _cryEtot             += hit.energyDep();
            _cryTime[_nHits]      = hit.time();
            _cryEdep[_nHits]      = hit.energyDep();
-           _cryDose[_nHits]      = hit.energyDep() / CrMass / (CLHEP::joule/CLHEP::kg); //dose
            _cryPosX[_nHits]      = crystalPos.x();
            _cryPosY[_nHits]      = crystalPos.y();
            _cryPosZ[_nHits]      = crystalPos.z();

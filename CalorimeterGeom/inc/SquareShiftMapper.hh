@@ -13,7 +13,6 @@ namespace mu2e {
     class SquShiftLK {
 
          public:
-
             SquShiftLK()             : l_(0),k_(0) {}
             SquShiftLK(int l, int k) : l_(l),k_(k) {}
 
@@ -27,28 +26,29 @@ namespace mu2e {
     class SquareShiftMapper : public CrystalMapper {
 
         public:
-
             SquareShiftMapper();
-            virtual ~SquareShiftMapper() {};
 
-            virtual int               nCrystalMax(int maxRing)            const {return 3*maxRing*(maxRing+1)+1;}
-            virtual CLHEP::Hep2Vector xyFromIndex(int thisIndex)          const;
-            virtual int               indexFromXY(double x, double y)     const;
-            virtual int               indexFromRowCol(int nRow, int nCol) const;
-            virtual bool              isInsideCrystal(double x, double y,
-                                                      const CLHEP::Hep3Vector& pos,
-                                                      const CLHEP::Hep3Vector& size) const;
+            int                    nCrystalMax    (int maxRing)                   const override;
+            CLHEP::Hep2Vector      xyFromIndex    (int thisIndex)                 const override;
+            int                    indexFromXY    (double x, double y)            const override;
+            int                    indexFromRowCol(int nRow, int nCol)            const override;
+            int                    rowFromIndex   (int thisIndex)                 const override;
+            int                    colFromIndex   (int thisIndex)                 const override;
+            bool                   isInsideCrystal(double x, double y,
+                                                   const CLHEP::Hep3Vector& pos,
+                                                   const CLHEP::Hep3Vector& size) const override;
 
-            virtual std::vector<int>  neighbors(int thisIndex, int level=1) const;
-            virtual const std::vector<double>& apexX() const {return apexX_;}
-            virtual const std::vector<double>& apexY() const {return apexY_;}
+            int                   numNeighbors(int level)                         const override;
+            std::vector<int>      neighbors   (int thisIndex, int level=1)        const override;
+
+            const std::vector<double>& apexX() const override {return apexX_;}
+            const std::vector<double>& apexY() const override {return apexY_;}
 
 
         private:
-
-            SquShiftLK lk(int index)        const;
-            int index(const SquShiftLK& lk) const;
-            int ring(const SquShiftLK&lk)   const;
+            SquShiftLK lk(int index)               const;
+            int        index(const SquShiftLK& lk) const;
+            int        ring(const SquShiftLK& lk)  const;
 
             std::vector<SquShiftLK> step_;
             std::vector<double>     apexX_;
@@ -57,4 +57,3 @@ namespace mu2e {
 }
 
 #endif
-

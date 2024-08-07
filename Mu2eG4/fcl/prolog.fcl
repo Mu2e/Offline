@@ -16,7 +16,7 @@ mu2eg4DefaultPhysics: {
     minRangeCut: 0.010 // mm
 
     // uncomment to activate the cuts per region; works for Geant4 "root" volumes
-    // minRangeRegionCuts: { CalorimeterMother : 0.1 TrackerMother : 0.001 } // {RegionName : mm }
+    // minRangeRegionCuts: { CaloDiskMother : 0.1 TrackerMother : 0.001 } // {RegionName : mm }
 
     protonProductionCut: 0.0 // mm
     physicsListName:  "ShieldingM"
