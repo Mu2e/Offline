@@ -15,7 +15,6 @@ namespace mu2e {
       int     nHelices;
       int     nComboHits;
       int     nStrawHits;
-      float   time;
     };
 
     struct hsInfo {
@@ -32,7 +31,6 @@ namespace mu2e {
     };
 
     struct diagInfo {
-      float                          moduleTime;
       int                            nHelices;
       int                            nTimeClusters;
       std::vector<tcInfo>            timeClusterData;

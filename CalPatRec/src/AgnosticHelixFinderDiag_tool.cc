@@ -19,24 +19,20 @@ namespace mu2e {
 
   public:
     enum { kNEventHistsSets = 1,
-           kNTimeClusterHistsSets = 2,
+           kNTimeClusterHistsSets = 1,
            kNHelixSeedHistsSets = 1,
            kNLineInfoHistsSets = 1,
            kNLineSegmentHistsSets = 1 };
 
     struct EventHists {
-      TH1F* moduleTime;
       TH1F* nHelices;
       TH1F* nTimeClusters;
-      TProfile* moduleTimeVSnTimeClusters;
     };
 
     struct TimeClusterHists {
       TH1F* nHelicesPerTC;
       TH1F* nComboHitsPerTC;
       TH1F* nStrawHitsPerTC;
-      TH1F* timePerTC;
-      TProfile* timePerTCVSnComboHitsPerTC;
     };
 
     struct HelixSeedHists {
@@ -94,13 +90,9 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   int AgnosticHelixFinderDiag::bookEventHistograms(EventHists* Hist, art::TFileDirectory* Dir) {
 
-    Hist->moduleTime =
-      Dir->make<TH1F>("moduleTime", "time (ms) per event spent at module", 10000, 0.0, 500.0);
     Hist->nHelices = Dir->make<TH1F>("nHelices", "number of helices found per event", 30, 0.0, 30.0);
     Hist->nTimeClusters =
       Dir->make<TH1F>("nTimeClusters", "number of time clusters per event", 100, 0.0, 100.0);
-    Hist->moduleTimeVSnTimeClusters = Dir->make<TProfile>(
-                                                          "moduleTimeVSnTimeClusters", "moduleTimeVSnTimeClusters", 100, 0.0, 100.0, 0.0, 500.0, "i");
 
     return 0;
   }
@@ -114,10 +106,6 @@ namespace mu2e {
       Dir->make<TH1F>("nComboHitsPerTC", "number of combo hits per TC", 200, 0, 200.0);
     Hist->nStrawHitsPerTC =
       Dir->make<TH1F>("nStrawHitsPerTC", "number of straw hits per TC", 300, 0, 300.0);
-    Hist->timePerTC =
-      Dir->make<TH1F>("timePerTC", "time (ms) searching for helix per TC", 50000, 0.0, 25.0);
-    Hist->timePerTCVSnComboHitsPerTC = Dir->make<TProfile>(
-                                                           "timePerTCVSnComboHitsPerTC", "timePerTCVSnComboHitsPerTC", 200, 0.0, 200.0, 0.0, 25.0, "i");
 
     return 0;
   }
@@ -210,10 +198,8 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   int AgnosticHelixFinderDiag::fillEventHistograms(EventHists* Hist, diagInfo* Data) {
 
-    Hist->moduleTime->Fill(Data->moduleTime);
     Hist->nHelices->Fill(Data->nHelices);
     Hist->nTimeClusters->Fill(Data->nTimeClusters);
-    Hist->moduleTimeVSnTimeClusters->Fill(Data->nTimeClusters, Data->moduleTime, 1);
 
     return 0;
   }
@@ -226,9 +212,6 @@ namespace mu2e {
     Hist->nHelicesPerTC->Fill(Data->timeClusterData.at(loopIndex).nHelices);
     Hist->nComboHitsPerTC->Fill(Data->timeClusterData.at(loopIndex).nComboHits);
     Hist->nStrawHitsPerTC->Fill(Data->timeClusterData.at(loopIndex).nStrawHits);
-    Hist->timePerTC->Fill(Data->timeClusterData.at(loopIndex).time);
-    Hist->timePerTCVSnComboHitsPerTC->Fill(Data->timeClusterData.at(loopIndex).nComboHits,
-                                           Data->timeClusterData.at(loopIndex).time, 1);
 
     return 0;
   }
@@ -280,12 +263,7 @@ namespace mu2e {
     // fill time cluster histograms
     //-----------------------------------------------------------------------------
     for (int i = 0; i < (int)_data->timeClusterData.size(); i++) {
-      // fill folder 0 always
       fillTimeClusterHistograms(_hist._timeClusterHists[0], _data, i);
-      // fill folder 1 only if TC takes more than 3.0 ms to process
-      if (_data->timeClusterData.at(i).time > 3.0) {
-        fillTimeClusterHistograms(_hist._timeClusterHists[1], _data, i);
-      }
     }
 
     //-----------------------------------------------------------------------------

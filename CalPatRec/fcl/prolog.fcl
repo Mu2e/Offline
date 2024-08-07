@@ -594,8 +594,6 @@ CalPatRec : { @table::CalPatRec
         AgnosticHelixFinder : {
             module_type : AgnosticHelixFinder
             diagLevel               : 0
-            debug                   : 0
-            runDisplay              : 0
             chCollLabel             : "FlagBkgHits"
             tcCollLabel             : "TZClusterFinder"
             ccCollLabel             : "CaloClusterMaker"
@@ -636,12 +634,6 @@ CalPatRec : { @table::CalPatRec
             chi2LineSaveThresh      : 5.0
             maxEDepAvg              : @local::TrkReco.HelixFinderParams.maxEDepAvg
             maxNHitsRatio           : 500
-            debugPdgID              : 11
-            debugMomentum           : 100.0
-            debugDirection          : "down"
-            debugStrawHitThresh     : 12
-            debugScatterThresh      : 3.0
-            mcUtils                 : { @table::TrkReco.McUtils }
             diagPlugin              : { tool_type : "AgnosticHelixFinderDiag" }
         }
 
