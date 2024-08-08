@@ -146,7 +146,7 @@ namespace mu2e {
     // the "reference plane".  (The length of the collimator used to be defined
     // by a 4.0 m thick concrete of the beam dump front.)
 
-    const double referenceLength = c.getDouble("extMonFNAL.collimator1CenterDistanceToReferencePlane");
+    const double referenceLength = c.getDouble("extMonFNAL.collimator1.centerDistanceToReferencePlane");
 
     const auto col1DirInMu2e = col->rotationInMu2e() * Hep3Vector(0,0,-1);
     const auto dumpDirInMu2e = dump.beamDumpToMu2e_momentum(Hep3Vector(0,0,-1));
@@ -277,6 +277,7 @@ namespace mu2e {
                         std::array{
                           "extMonFNAL.entranceOffsetX",
                           "extMonFNAL.entranceOffsetY",
+                          "extMonFNAL.collimator1.centerDistanceToReferencePlane"
                           "extMonFNAL.angleH",
                           "extMonFNAL.entranceAngleV"
                         });
