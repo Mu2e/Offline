@@ -30,7 +30,35 @@ namespace mu2e {
       _pdgId(PDGCode::e_minus),
       _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgId).mass()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
-    {}
+    {
+      // compute normalization
+      double integral(0.0);
+      for(size_t ibin=0;ibin < _spectrum.getNbins();++ibin){
+        integral += _spectrum.getPDF(ibin);
+      }
+
+      auto fullconfig = conf().spectrum.get<fhicl::ParameterSet>();
+      fullconfig.erase(std::string("elow"));
+      fullconfig.erase(std::string("ehi"));
+      fullconfig.put(std::string("elow"),double(0.0));
+      fullconfig.put(std::string("ehi"),double(0.0));
+      BinnedSpectrum fullspect(fullconfig);
+      double fullintegral(0.0);
+      for(size_t ibin=0;ibin < fullspect.getNbins();++ibin){
+        fullintegral += fullspect.getPDF(ibin);
+      }
+      // correct for the missing prediction near threshold, assuming the rate falls to 0 linearly.
+      double pmin = _spectrum.getAbscissa(0);
+      double pdfmin = _spectrum.getPDF(0);
+      double binsize = _spectrum.getBinWidth();
+      fullintegral += 0.5*pdfmin*pmin/binsize;
+      std::cout << "Restricted Spectrum min " << _spectrum.getAbscissa(0) << " max " << _spectrum.getAbscissa(_spectrum.getNbins()-1) << std::endl;
+      std::cout << "Full Spectrum min " << fullspect.getAbscissa(0) << " max " << fullspect.getAbscissa(fullspect.getNbins()-1) << std::endl;
+      std::cout << "Restricted Spectrum integral " << integral << std::endl;
+      std::cout << "Full Spectrum integral " << fullintegral << std::endl;
+      std::cout << "Sampled spectrum fraction " << integral/fullintegral << std::endl;
+
+    }
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
