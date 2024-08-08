@@ -98,7 +98,9 @@ namespace mu2e {
     G4Tubs* subCylinder = new G4Tubs("ExtMonFNALCollimator1Hole",
                                       0.*CLHEP::mm,
                                       emfb->filter().collimator1().shotLinerOuterRadius(),
-                                     1.2*0.5*emfb->filter().collimator1().length(),//1.2 factor to ensure hole exceeds dump dimensions
+                                     // factor of 2 to help the hole completely pierce the dump
+                                     // even when the collimator center is off
+                                     2. * 0.5*emfb->filter().collimator1().length(),
                                       0,
                                       CLHEP::twopi);
 
