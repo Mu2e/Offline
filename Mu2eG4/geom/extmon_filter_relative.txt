@@ -7,6 +7,9 @@
 //
 // Andrei Gaponenko, 2024
 
+
+string extMonFNAL.filter.positioning = "Relative"; // w.r.t the beam dump
+
 // The entrance point on the face of the beam dump enclosure,
 // transverse to the beam coordinates (horiz, vertical).  The offsets
 // are w.r.t to the core center position (== the nominal beam entrance

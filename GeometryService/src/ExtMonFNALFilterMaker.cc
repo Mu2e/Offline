@@ -23,12 +23,33 @@
 
 namespace mu2e {
 
+  //================================================================
   namespace {
+
+    //----------------------------------------------------------------
+    template<class KeyList>
+    void checkConfigRelics(const SimpleConfig& c,
+                           const std::string& msg,
+                           const KeyList& blacklist)
+    {
+      std::string buf;
+      for(const auto& k: blacklist) {
+        if(c.hasName(k)) {
+          buf += std::string("\t") + k + "\n";
+        }
+      }
+      if(!buf.empty()) {
+        throw cet::exception("CONFIG")<<msg<<buf;
+      }
+    }
+
+    //----------------------------------------------------------------
     std::vector<double> d2r(std::vector<double> v) {
       for(auto& x : v) { x/=2; }
       return v;
     }
-  }
+
+  } // namespace
 
   //================================================================
   ExtMonFNALCollimator
@@ -71,24 +92,37 @@ namespace mu2e {
   }
 
   //================================================================
-  ExtMonFNALFilter ExtMonFNALFilterMaker::read(const SimpleConfig& c,
-                                               const ExtMonFNALBuilding& emfb,
-                                               const ProtonBeamDump& dump)
+  void ExtMonFNALFilterMaker::
+  positionCollimatorAbsolute(ExtMonFNALFilter *filter,
+                             const std::string& prefix,
+                             const ProtonBeamDump& dump,
+                             const SimpleConfig& c)
+  {
+    const double dxdz = c.getDouble("extMonFNAL.filter."+prefix+".dxdz");
+    const double dydz = c.getDouble("extMonFNAL.filter."+prefix+".dydz");
+
+    ExtMonFNALCollimator *col = (prefix == "collimator1")?
+      &filter->collimator1_ : &filter->collimator2_;
+
+    col->setFromMu2eSlopes(dxdz, dydz, dump);
+    col->_centerInMu2e = c.getHep3Vector("extMonFNAL.filter."+prefix+".centerInMu2e");
+  }
+
+  //================================================================
+  void ExtMonFNALFilterMaker::
+  positionEntranceCollimatorRelative(ExtMonFNALCollimator *col,
+                                     const ProtonBeamDump& dump,
+                                     const SimpleConfig& c)
   {
     using CLHEP::Hep3Vector;
-    using CLHEP::Hep2Vector;
-
-    ExtMonFNALFilter filter;
-
-    const double pNominal = c.getDouble("extMonFNAL.filter.nominalMomentum") * CLHEP::MeV;
-    filter.nominalMomentum_ = pNominal;
 
     //----------------------------------------------------------------
+    // Orient the entrance collimator
+
     const double angleH = c.getDouble("extMonFNAL.angleH") * CLHEP::radian;
     const double entranceAngleV = c.getDouble("extMonFNAL.entranceAngleV") * CLHEP::radian;
 
-    filter.collimator1_ = readExtMonFNALCollimator("collimator1", c);
-    filter.collimator1_.setFromDumpAngles(angleH, entranceAngleV, dump);
+    col->setFromDumpAngles(angleH, entranceAngleV, dump);
 
     //----------------------------------------------------------------
     // Position the entrance collimator
@@ -114,13 +148,26 @@ namespace mu2e {
 
     const double referenceLength = c.getDouble("extMonFNAL.collimator1CenterDistanceToReferencePlane");
 
-    const auto col1DirInMu2e = filter.collimator1_.rotationInMu2e() * Hep3Vector(0,0,-1);
+    const auto col1DirInMu2e = col->rotationInMu2e() * Hep3Vector(0,0,-1);
     const auto dumpDirInMu2e = dump.beamDumpToMu2e_momentum(Hep3Vector(0,0,-1));
 
     const double centerPar = referenceLength / dumpDirInMu2e.dot(col1DirInMu2e);
     const auto col1CenterInMu2e = col1ReferenceInMu2e + centerPar * col1DirInMu2e;
 
-    filter.collimator1_._centerInMu2e = col1CenterInMu2e;
+    col->_centerInMu2e = col1CenterInMu2e;
+  }
+
+  //================================================================
+  void ExtMonFNALFilterMaker::
+  computeChannelTail(ExtMonFNALFilter* filter,
+                     const ExtMonFNALBuilding& emfb,
+                     const ProtonBeamDump& dump,
+                     const SimpleConfig& c)
+  {
+    using CLHEP::Hep3Vector;
+    using CLHEP::Hep2Vector;
+
+    const double pNominal = filter->nominalMomentum();
 
     //----------------------------------------------------------------
     // Filter magnet
@@ -130,26 +177,26 @@ namespace mu2e {
     const double filterMagToColl = c.getDouble("extMonFNAL.filter.magnet.distanceToEntranceCollimator");
 
     const auto refTrajectoryEntranceInMu2e =
-      filter.collimator1().trajectoryPointInMu2e(
-                                                 -(filterMagToColl
-                                                   + 0.5*filter.collimator1().length())
-                                                 );
+      filter->collimator1().trajectoryPointInMu2e(
+                                                  -(filterMagToColl
+                                                    + 0.5*filter->collimator1().length())
+                                                  );
 
-    filter.magnet_ = ExtMonFNALMagnetMaker::read(c,
-                                                 "extMonFNAL.filter.magnet",
-                                                 filter.collimator1().rotationInMu2e(),
-                                                 refTrajectoryEntranceInMu2e,
-                                                 pNominal);
+    filter->magnet_ = ExtMonFNALMagnetMaker::read(c,
+                                                  "extMonFNAL.filter.magnet",
+                                                  filter->collimator1().rotationInMu2e(),
+                                                  refTrajectoryEntranceInMu2e,
+                                                  pNominal);
 
     //----------------------------------------------------------------
     // Exit collimator
 
-    filter.collimator2_ = readExtMonFNALCollimator("collimator2", c);
 
     // set the angles
-    filter.collimator2_.setFromDumpAngles(angleH,
-                                          entranceAngleV - 2 * filter.magnet().trackBendHalfAngle(pNominal),
-                                          dump);
+    filter->collimator2_.setFromDumpAngles(filter->collimator1().angleH_inBeamDump(),
+                                           filter->collimator1().angleV()
+                                           - 2 * filter->magnet().trackBendHalfAngle(pNominal),
+                                           dump);
 
     // Set the position.  We put the center at the point where the
     // straight line of the nominal trajectory from the filter magnet
@@ -157,9 +204,9 @@ namespace mu2e {
     // shielding wall and passes through the center of the wall.
 
     // unit vector along the nominal trajectory
-    const CLHEP::Hep3Vector magDir = filter.magnet_.outRotationInMu2e()*CLHEP::Hep3Vector(0,0,-1);
+    const CLHEP::Hep3Vector magDir = filter->magnet_.outRotationInMu2e()*CLHEP::Hep3Vector(0,0,-1);
     // point defining the nominal trajectory line
-    const CLHEP::Hep3Vector magPoint = filter.magnet_.refPointInMu2e();
+    const CLHEP::Hep3Vector magPoint = filter->magnet_.refPointInMu2e();
 
     // unit vector normal to the wall
     const CLHEP::Hep3Vector wallDir = dump.beamDumpToMu2e_momentum(CLHEP::Hep3Vector(0,0,-1));
@@ -177,13 +224,78 @@ namespace mu2e {
     const Hep3Vector wallPoint = Hep3Vector(coll2cog2d.y(), 0, coll2cog2d.x())
       + emfb.coll2ShieldingCenterInMu2e() ;
 
-    filter.collimator2_._centerInMu2e  = magPoint + magDir*(wallDir.dot(wallPoint - magPoint)/wallDir.dot(magDir));
+    filter->collimator2_._centerInMu2e  = magPoint + magDir*(wallDir.dot(wallPoint - magPoint)/wallDir.dot(magDir));
+  }
+
+  //================================================================
+  ExtMonFNALFilter ExtMonFNALFilterMaker::read(const SimpleConfig& c,
+                                               const ExtMonFNALBuilding& emfb,
+                                               const ProtonBeamDump& dump)
+  {
+    using CLHEP::Hep3Vector;
+    using CLHEP::Hep2Vector;
+
+    ExtMonFNALFilter filter;
+
+    const double pNominal = c.getDouble("extMonFNAL.filter.nominalMomentum") * CLHEP::MeV;
+    filter.nominalMomentum_ = pNominal;
+
+    //----------------------------------------------------------------
+    // Read the intrinsic parameters for all the objects
+    filter.collimator1_ = readExtMonFNALCollimator("collimator1", c);
+    filter.magnet_ = ExtMonFNALMagnetMaker::readIntrinsicParameters(c, "extMonFNAL.filter.magnet");
+    filter.collimator2_ = readExtMonFNALCollimator("collimator2", c);
+
+    //----------------------------------------------------------------
+    // Entrance collimator
+
+    const auto mode = c.getString("extMonFNAL.filter.positioning");
+    if(mode == "Relative") {
+
+      positionEntranceCollimatorRelative(&filter.collimator1_, dump, c);
+      computeChannelTail(&filter, emfb, dump, c);
+
+      checkConfigRelics(c,
+                        "With extMonFNAL.filter.positioning="+mode+
+                        " the following parameters are not allowed:\n",
+                        std::array{
+                          "extMonFNAL.filter.entranceCollimator.centerInMu2e",
+                          "extMonFNAL.filter.entranceCollimator.dxdz",
+                          "extMonFNAL.filter.entranceCollimator.dydz"
+                        });
+
+
+    }
+    else if(mode == "HybridFromEntrance") {
+
+      positionCollimatorAbsolute(&filter, "collimator1", dump, c);
+      computeChannelTail(&filter, emfb, dump, c);
+
+      checkConfigRelics(c,
+                        "With extMonFNAL.filter.positioning="+mode+
+                        " the following parameters are not allowed:\n",
+                        std::array{
+                          "extMonFNAL.entranceOffsetX",
+                          "extMonFNAL.entranceOffsetY",
+                          "extMonFNAL.angleH",
+                          "extMonFNAL.entranceAngleV"
+                        });
+
+
+    }
+    else {
+      throw cet::exception("CONFIG")<<"ExtMonFNALFilterMaker: unknown extMonFNAL.filter.positioning mode \""
+                                    <<mode<<"\"\n";
+    }
 
     //----------------------------------------------------------------
     int verbose = c.getInt("extMonFNAL.verbosityLevel");
     if(verbose) {
 
       //----------------
+      std::cout<<"ExtMonFNALFilterMaker"<<": absolutePosition = "
+               <<c.getBool("extMonFNAL.filter.absolutePosition", false) <<std::endl;
+
       std::cout<<"ExtMonFNALFilterMaker"<<": collimator1 angleH_inBeamDump= "<<filter.collimator1().angleH_inBeamDump()
                <<" ("  << filter.collimator1().angleH_inBeamDump() / CLHEP::degree <<" degree)"<<std::endl;
 
@@ -201,7 +313,6 @@ namespace mu2e {
       std::cout<<"ExtMonFNALFilterMaker"<<": collimator1 exitInMu2e = "<<filter.collimator1().exitInMu2e()<<std::endl;
 
       //----------------
-      std::cout<<"ExtMonFNALFilterMaker"<<": ref traj entrace to filter magnet in Mu2e = "<< refTrajectoryEntranceInMu2e<<std::endl;
       std::cout<<"ExtMonFNALFilterMaker"<<": filter nominal momentum = "<<filter.nominalMomentum()/CLHEP::GeV<<" GeV/c"<<std::endl;
       std::cout<<"ExtMonFNALFilterMaker"<<": filter half bend angle  = "<<filter.magnet().trackBendHalfAngle(filter.magnet().nominalMomentum())<<std::endl;
       std::cout<<"ExtMonFNALFilterMaker"<<": filterMagnet().refPointInMu2e() = "<<filter.magnet().refPointInMu2e()<<std::endl;

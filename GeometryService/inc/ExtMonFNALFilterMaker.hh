@@ -13,8 +13,24 @@ namespace mu2e {
   class ExtMonFNALBuilding;
 
   class ExtMonFNALFilterMaker {
+
     static ExtMonFNALCollimator readExtMonFNALCollimator(const std::string& name,
                                                          const SimpleConfig& c);
+
+    static void positionCollimatorAbsolute(ExtMonFNALFilter *filter,
+                                           const std::string& prefix,
+                                           const ProtonBeamDump& dump,
+                                           const SimpleConfig& c);
+
+    static void positionEntranceCollimatorRelative(ExtMonFNALCollimator *col,
+                                                   const ProtonBeamDump& dump,
+                                                   const SimpleConfig& c);
+
+    static void computeChannelTail(ExtMonFNALFilter *filter,
+                                   const ExtMonFNALBuilding& emfb,
+                                   const ProtonBeamDump& dump,
+                                   const SimpleConfig& c);
+
   public:
     static ExtMonFNALFilter read(const SimpleConfig& c,
                                  const ExtMonFNALBuilding& emfb,

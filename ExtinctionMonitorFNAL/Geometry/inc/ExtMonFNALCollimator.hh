@@ -45,6 +45,7 @@ namespace mu2e {
     double _angleV;
 
     void setFromDumpAngles(double angleH_inBeamDump, double angleV, const ProtonBeamDump& dump);
+    void setFromMu2eSlopes(double dxdz, double dydz, const ProtonBeamDump& dump);
 
   public:
     std::string name() const { return _name; }

@@ -23,6 +23,20 @@ namespace mu2e {
   }
 
   //================================================================
+  void ExtMonFNALCollimator::setFromMu2eSlopes(double dxdz, double dydz, const ProtonBeamDump& dump) {
+
+    const double angleH_inMu2e = atan(dxdz);
+    const double angleV = atan2( -dydz, sqrt(1. + dxdz*dxdz));
+
+    _angleH_inBeamDump = dump.coreRotY() - angleH_inMu2e;
+    _angleV = angleV;
+
+    CLHEP::HepRotation tmp(CLHEP::HepRotation::IDENTITY);
+    tmp.rotateX(angleV).rotateY(angleH_inMu2e);
+    _rotationInMu2e = tmp;
+  }
+
+  //================================================================
   CLHEP::Hep3Vector ExtMonFNALCollimator::trajectoryPointInMu2e(double pos) const {
     return _centerInMu2e + _rotationInMu2e * CLHEP::Hep3Vector(0,0, pos);
   }

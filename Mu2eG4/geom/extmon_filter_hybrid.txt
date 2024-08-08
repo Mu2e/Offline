@@ -1,0 +1,29 @@
+// This file specifies position of the the extinction monitor filter channel.
+//
+// As a workaround for the unexplicable beam dump move by commit
+// e8c06f49b0857265ebaa4d31f23252c35d55c0fd we specify extmon filter
+// position in a "absolute" way in the Mu2e coordinate system, without
+// tying it to the beam dump position.
+//
+// Andrei Gaponenko, 2024
+
+// Position the entrance collimabor in Mu2e coordinates,
+// then compute the rest of the channel in a self-consistent way.
+string extMonFNAL.filter.positioning = "HybridFromEntrance";
+
+// Start of upstream collimator in docdb-5197-v2
+// vector<double> extMonFNAL.filter.entranceInMu2e = { 1679.44, 1777.40, -16588.51 };
+
+//vector<double> extMonFNAL.filter.collimator1.centerInMu2e = { 1267.36, 2108.325, -18528.93 }; // 0.5*start+0.5*end, using docdb-5197-v2
+vector<double> extMonFNAL.filter.collimator1.centerInMu2e = { 1349.776, 2042.14, -18140.846 }; // 0.6*start+0.4*end, using docdb-5197-v2
+//vector<double> extMonFNAL.filter.collimator1.centerInMu2e = { 1432.192, 1975.955, -17752.762 }; // 0.7*start+0.3*end, using docdb-5197-v2
+
+// The following two values are computed using the start and end of
+// the upstream collimator given in docdb-5197-v2.
+double         extMonFNAL.filter.collimator1.dxdz = 0.21236639;
+double         extMonFNAL.filter.collimator1.dydz = -0.17054298;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
