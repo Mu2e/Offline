@@ -284,6 +284,27 @@ namespace mu2e {
 
 
     }
+    else if(mode == "Absolute") {
+
+      positionCollimatorAbsolute(&filter, "collimator1", dump, c);
+      ExtMonFNALMagnetMaker::positionMagnetAbsolute(&filter.magnet_, c, "filter", pNominal);
+      positionCollimatorAbsolute(&filter, "collimator2", dump, c);
+
+      checkConfigRelics(c,
+                        "With extMonFNAL.filter.positioning="+mode+
+                        " the following parameters are not allowed:\n",
+                        std::array{
+                          "extMonFNAL.entranceOffsetX",
+                          "extMonFNAL.entranceOffsetY",
+                          "extMonFNAL.collimator1.centerDistanceToReferencePlane"
+                          "extMonFNAL.angleH",
+                          "extMonFNAL.entranceAngleV",
+                          "extMonFNAL.filter.magnet.distanceToEntranceCollimator",
+                        });
+
+
+
+    }
     else {
       throw cet::exception("CONFIG")<<"ExtMonFNALFilterMaker: unknown extMonFNAL.filter.positioning mode \""
                                     <<mode<<"\"\n";

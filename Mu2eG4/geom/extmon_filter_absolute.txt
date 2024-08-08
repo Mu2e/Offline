@@ -7,18 +7,27 @@
 //
 // Andrei Gaponenko, 2024
 
-bool extMonFNAL.filter.absolutePosition = true;
-
-// Start of upstream collimator in docdb-5197-v2
-// vector<double> extMonFNAL.filter.entranceInMu2e = { 1679.44, 1777.40, -16588.51 };
-
-// Upstream collimator (start+end)/2 per docdb-5197-v2
-vector<double> extMonFNAL.filter.entranceCollimator.centerInMu2e = { 1267.36, 2108.325, -18528.93 };
+// Specify all elements in Mu2e coordinates
+string extMonFNAL.filter.positioning = "Absolute";
 
 // The following two values are computed using the start and end of
 // the upstream collimator given in docdb-5197-v2.
-double         extMonFNAL.filter.entranceCollimator.dxdz = 0.21236639;
-double         extMonFNAL.filter.entranceCollimator.dydz = -0.17054298;
+double         extMonFNAL.filter.collimator1.dxdz = 0.21236639;
+double         extMonFNAL.filter.collimator1.dydz = -0.17054298;
+vector<double> extMonFNAL.filter.collimator1.centerInMu2e = { 1267.36, 2108.325, -18528.93 }; // 0.5*start+0.5*end, using docdb-5197-v2
+
+// The following two values are computed using the start and end of
+// the filter magnet given in docdb-5197-v2.
+double         extMonFNAL.filter.magnet.dxdz = 0.21236843;
+double         extMonFNAL.filter.magnet.dydz = -0.13985785;
+vector<double> extMonFNAL.filter.magnet.centerInMu2e = { 404.995, 2746.085, -22589.625 }; // 0.5*start+0.5*end, using docdb-5197-v2
+
+// The following two values are computed using the start and end of
+// the downstream collimator given in docdb-5197-v2.
+double         extMonFNAL.filter.collimator2.dxdz = 0.21236782;
+double         extMonFNAL.filter.collimator2.dydz = -0.10942018;
+vector<double> extMonFNAL.filter.collimator2.centerInMu2e = { -234.155, 3129.715, -25599.26 }; // 0.5*start+0.5*end, using docdb-5197-v2
+
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

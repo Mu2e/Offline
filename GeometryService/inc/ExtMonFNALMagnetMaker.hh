@@ -20,7 +20,7 @@ namespace mu2e {
     static ExtMonFNALMagnet readIntrinsicParameters(const SimpleConfig& c,
                                                     const std::string& prefix);
     // Initialize position and rotation
-    static void positionMagnetRelative(ExtMonFNALMagnet& magnet,
+    static void positionMagnetRelative(ExtMonFNALMagnet *magnet,
                                        const CLHEP::HepRotation& magnetInRotationInMu2e, // of the input arm of ref trajectory
                                        const CLHEP::Hep3Vector& refTrajMagnetEntranceInMu2e,
                                        double nominalMomentum);
@@ -31,6 +31,15 @@ namespace mu2e {
                                  const CLHEP::HepRotation& magnetInRotationInMu2e, // of the input arm of ref trajectory
                                  const CLHEP::Hep3Vector& refTrajMagnetEntranceInMu2e,
                                  double nominalMomentum);
+
+
+    // Initialize position and rotation
+    static void positionMagnetAbsolute(ExtMonFNALMagnet *magnet,
+                                       const SimpleConfig& c,
+                                       const std::string& prefix,
+                                       double nominalMomentum);
+
+
   };
 }
 

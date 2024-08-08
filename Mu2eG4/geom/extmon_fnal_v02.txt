@@ -72,10 +72,6 @@ bool extMonFNAL.filter.magnet.iron.solid = false;
 bool extMonFNAL.filter.magnet.aperture.visible = true;
 bool extMonFNAL.filter.magnet.aperture.solid = false;
 
-// Distance from the point where the reference trajectory
-// crosses the (physical) magnet face to where it exits collimator1.
-double extMonFNAL.filter.magnet.distanceToEntranceCollimator = 291; // mm
-
 // The magnet is placed in such a way that a positive particle with
 // the nominal momentum given below, travelling along the axis of
 // collimator1 will enter the magnet aperture at the above distance
