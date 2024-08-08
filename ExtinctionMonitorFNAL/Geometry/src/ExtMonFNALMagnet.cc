@@ -9,6 +9,7 @@ mu2e::ExtMonFNALMagnet::ExtMonFNALMagnet()
   : outerHalfSize_()
   , apertureWidth_()
   , apertureHeight_()
+  , fieldIntegral_()
   , magneticLength_()
   , nominalMomentum_()
 {}

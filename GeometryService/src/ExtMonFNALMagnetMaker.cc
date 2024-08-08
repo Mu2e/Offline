@@ -20,23 +20,33 @@
 
 namespace mu2e {
 
+  //================================================================
   ExtMonFNALMagnet
-  ExtMonFNALMagnetMaker::read(const SimpleConfig& c, const std::string& prefix,
-                              const CLHEP::HepRotation& magnetInRotationInMu2e, // of the input arm of ref trajectory
-                              const CLHEP::Hep3Vector& refTrajMagnetEntranceInMu2e,
-                              double nominalMomentum)
+  ExtMonFNALMagnetMaker::readIntrinsicParameters(const SimpleConfig& c,
+                                                 const std::string& prefix)
   {
     ExtMonFNALMagnet mag;
-    mag.inRotationInMu2e_ = magnetInRotationInMu2e;
-    mag.nominalMomentum_ = nominalMomentum;
 
     c.getVectorDouble(prefix + ".outerHalfSize", mag.outerHalfSize_, 3);
     mag.apertureWidth_ = c.getDouble(prefix + ".apertureWidth") * CLHEP::mm;
     mag.apertureHeight_ = c.getDouble(prefix + ".apertureHeight") * CLHEP::mm;
-
-    const double fieldIntegral = c.getDouble(prefix + ".BdL") * CLHEP::tesla * CLHEP::mm;
+    mag.fieldIntegral_ = c.getDouble(prefix + ".BdL") * CLHEP::tesla * CLHEP::mm;
     mag.magneticLength_ = c.getDouble(prefix + ".magneticLength") * CLHEP::mm;
-    const double fieldStrength = fieldIntegral / mag.magneticLength_;
+
+    return mag;
+  }
+
+  //================================================================
+  void ExtMonFNALMagnetMaker::
+  positionMagnetRelative(ExtMonFNALMagnet& mag,
+                         const CLHEP::HepRotation& magnetInRotationInMu2e, // of the input arm of ref trajectory
+                         const CLHEP::Hep3Vector& refTrajMagnetEntranceInMu2e,
+                         double nominalMomentum)
+  {
+    mag.nominalMomentum_ = nominalMomentum;
+    mag.inRotationInMu2e_ = magnetInRotationInMu2e;
+
+    const double fieldStrength = mag.fieldIntegral_ / mag.magneticLength_;
     mag.bfield_ = mag.inRotationInMu2e_ * CLHEP::Hep3Vector(fieldStrength, 0, 0);
 
     const double trackBendHalfAngle = mag.trackBendHalfAngle(nominalMomentum);
@@ -60,15 +70,26 @@ namespace mu2e {
     const double bendToCenterDistance = refCenterDistanceKinked + 0.5 * refCenterDistanceToTrajectory;
 
     mag.geometricCenterInMu2e_ = mag.refPointInMu2e_ + mag.magnetRotationInMu2e_ * CLHEP::Hep3Vector(0, -bendToCenterDistance, 0);
+  }
+
+  //================================================================
+  ExtMonFNALMagnet
+  ExtMonFNALMagnetMaker::read(const SimpleConfig& c, const std::string& prefix,
+                              const CLHEP::HepRotation& magnetInRotationInMu2e, // of the input arm of ref trajectory
+                              const CLHEP::Hep3Vector& refTrajMagnetEntranceInMu2e,
+                              double nominalMomentum)
+  {
+    ExtMonFNALMagnet mag = readIntrinsicParameters(c, prefix);
+    positionMagnetRelative(mag, magnetInRotationInMu2e, refTrajMagnetEntranceInMu2e, nominalMomentum);
 
     if(c.getInt("extMonFNAL.verbosityLevel") > 0) {
-      std::cout<<"ExtMonFNALMagnet "<<prefix<<": trackBendHalfAngle = "<<trackBendHalfAngle<<", magnetEntranceToBendPointDistance = "<<magnetEntranceToBendPointDistance<<std::endl;
-      std::cout<<"ExtMonFNALMagnet "<<prefix<<": refTrajMagnetEntranceInMu2e = "<< refTrajMagnetEntranceInMu2e<<std::endl;
       std::cout<<"ExtMonFNALMagnet "<<prefix<<": refPointInMu2e = "<<mag.refPointInMu2e_<<std::endl;
       std::cout<<"ExtMonFNALMagnet "<<prefix<<": geometricCenterInMu2e = "<<mag.geometricCenterInMu2e_<<std::endl;
     }
 
     return mag;
   }
+
+  //================================================================
 
 } // namespace mu2e

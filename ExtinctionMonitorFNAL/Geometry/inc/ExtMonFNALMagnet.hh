@@ -20,6 +20,7 @@ namespace mu2e {
     double apertureWidth_;
     double apertureHeight_;
 
+    double fieldIntegral_; // stash value from config file for staged construction
     CLHEP::Hep3Vector bfield_;
     double magneticLength_;
 
