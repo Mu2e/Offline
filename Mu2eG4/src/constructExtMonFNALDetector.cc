@@ -91,6 +91,16 @@ namespace mu2e {
                               placePV
                               );
 
+    constructExtMonFNALScintillators(parent,
+                                     stack,
+                                     volNameSuffix,
+                                     config,
+                                     forceAuxEdgeVisible,
+                                     doSurfaceCheck,
+                                     placePV
+                                    );
+
+
     //----------------------------------------------------------------
     // detector VD block
 
@@ -444,6 +454,119 @@ namespace mu2e {
 
     }// for
   }// constructExtMonFNALModules
+
+
+  //==============================================================================
+  // scintillators in mother volume
+  void constructExtMonFNALScintillators(const VolumeInfo& mother,
+                                        const ExtMonFNALPlaneStack& stack,
+                                        const std::string& volNameSuffix,
+                                        const SimpleConfig& config,
+                                        bool const forceAuxEdgeVisible,
+                                        bool const doSurfaceCheck,
+                                        bool const placePV
+                                        )
+  {
+
+    GeomHandle<ExtMonFNAL::ExtMon> extmon;
+    GeomHandle<ExtMonFNALBuilding> emfb;
+
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "extMonFNALSensorPlane", "extMonFNAL.sensorPlane" );
+    bool const isSensorPlaneVisible = geomOptions->isVisible("extMonFNALSensorPlane");
+    bool const isSensorPlaneSolid   = geomOptions->isSolid("extMonFNALSensorPlane");
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
+
+//from planes
+    CLHEP::HepRotation motherRotationInMu2e = extmon->spectrometerMagnet().magnetRotationInMu2e();
+    CLHEP::HepRotation *stackRotationInMotherInv =
+    reg.add(stack.rotationInMu2e().inverse() * motherRotationInMu2e);
+    CLHEP::HepRotation stackRotationInMother (stackRotationInMotherInv->inverse());
+
+    CLHEP::Hep3Vector stackRefPointInMother (motherRotationInMu2e.inverse()*(stack.refPointInMu2e() - mother.centerInMu2e()));
+
+    std::vector<double> hs;
+    config.getVectorDouble("extMonFNAL."+volNameSuffix+".scintFullSize", hs);
+    for(auto &a:hs) { a/=2.; }
+    double scintOffset = config.getDouble("extMonFNAL.scintOffset");
+    double scintInnerOffset = config.getDouble("extMonFNAL.scintInnerOffset");
+    double scintGap = config.getDouble("extMonFNAL.scintGap");
+    std::ostringstream osp;
+    osp<<"Scintillator"<<volNameSuffix;
+
+    CLHEP::Hep3Vector offset1;
+    CLHEP::Hep3Vector offset2;
+    CLHEP::Hep3Vector offset3;
+
+    if(volNameSuffix == "Dn") {
+      CLHEP::Hep3Vector offset (stack.plane_xoffset()[0], stack.plane_yoffset()[0], stack.plane_zoffset()[0]);
+      CLHEP::Hep3Vector stackOffset = stackRefPointInMother + stackRotationInMother * offset;
+      offset1 = stackOffset - CLHEP::Hep3Vector(0, 0, scintOffset);
+      offset2 = stackOffset - CLHEP::Hep3Vector(0, 0, scintOffset + scintGap + 2 * hs[2]);
+      offset = CLHEP::Hep3Vector(stack.plane_xoffset()[3], stack.plane_yoffset()[3], stack.plane_zoffset()[3]);
+      stackOffset = stackRefPointInMother + stackRotationInMother * offset;
+      offset3 = stackOffset + CLHEP::Hep3Vector(0, 0, scintInnerOffset);
+    }
+
+    if(volNameSuffix == "Up") {
+      CLHEP::Hep3Vector offset (stack.plane_xoffset()[3], stack.plane_yoffset()[3], stack.plane_zoffset()[3]);
+      CLHEP::Hep3Vector stackOffset = stackRefPointInMother + stackRotationInMother * offset;
+      offset1 = stackOffset + CLHEP::Hep3Vector(0, 0, scintOffset);
+      offset2 = stackOffset + CLHEP::Hep3Vector(0, 0, scintOffset + scintGap + 2 * hs[2]);
+      offset = CLHEP::Hep3Vector(stack.plane_xoffset()[0], stack.plane_yoffset()[0], stack.plane_zoffset()[0]);
+      stackOffset = stackRefPointInMother + stackRotationInMother * offset;
+      offset3 = stackOffset - CLHEP::Hep3Vector(0, 0, scintInnerOffset);
+    }
+
+    // nest scintillators
+    VolumeInfo scintillator1 = nestBox(osp.str()+"1",
+                                       hs,
+                                       findMaterialOrThrow("Scintillator"),
+                                       NULL,
+                                       offset1,
+                                       mother,
+                                       0,
+                                       isSensorPlaneVisible,
+                                       G4Colour::Magenta(),
+                                       isSensorPlaneSolid,
+                                       forceAuxEdgeVisible,
+                                       placePV,
+                                       doSurfaceCheck
+                                      );
+
+    VolumeInfo scintillator2 = nestBox(osp.str()+"2",
+                                    hs,
+                                    findMaterialOrThrow("Scintillator"),
+                                    NULL,
+                                    offset2,
+                                    mother,
+                                    1,
+                                    isSensorPlaneVisible,
+                                    G4Colour::Magenta(),
+                                    isSensorPlaneSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    doSurfaceCheck
+                                  );
+
+    VolumeInfo scintillator3 = nestBox(osp.str()+"3",
+                                    hs,
+                                    findMaterialOrThrow("Scintillator"),
+                                    NULL,
+                                    offset3,
+                                    mother,
+                                    2,
+                                    isSensorPlaneVisible,
+                                    G4Colour::Magenta(),
+                                    isSensorPlaneSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    doSurfaceCheck
+                                  );
+
+
+  }// constructExtMonFNALScintillators
+
 
 
   //================================================================
