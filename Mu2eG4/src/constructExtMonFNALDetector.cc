@@ -14,6 +14,8 @@
 #include "Geant4/G4Box.hh"
 #include "Geant4/G4ExtrudedSolid.hh"
 #include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4Torus.hh"
+#include "Geant4/G4UnionSolid.hh"
 #include "Geant4/G4Tubs.hh"
 #include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 
@@ -26,6 +28,7 @@
 #include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
 #include "Offline/Mu2eG4/inc/nestExtrudedSolid.hh"
 #include "Offline/Mu2eG4/inc/finishNesting.hh"
 #include "Offline/Mu2eG4/inc/MaterialFinder.hh"
@@ -53,7 +56,6 @@ namespace mu2e {
                                      const std::string& volNameSuffix,
                                      VirtualDetectorId::enum_type entranceVD,
                                      const VolumeInfo& parent,
-                                     const CLHEP::Hep3Vector parentCenter,
                                      const CLHEP::HepRotation& parentRotationInMu2e,
                                      const SimpleConfig& config
                                      )
@@ -69,7 +71,7 @@ namespace mu2e {
 
     MaterialFinder materialFinder(config);
 
-    //---------------------
+    //--------------------------------------------------------------
 
     CLHEP::HepRotation *stackRotationInRoomInv =
       reg.add(stack.rotationInMu2e().inverse() * parentRotationInMu2e);
@@ -183,15 +185,6 @@ namespace mu2e {
     bool const isSensorPlaneVisible = geomOptions->isVisible("extMonFNALSensorPlane");
     bool const isSensorPlaneSolid   = geomOptions->isSolid("extMonFNALSensorPlane");
 
-    // Define local offsets for planes (for G4Box)
-    auto planeMax = std::max_element(std::begin(stack.plane_zoffset()),
-                                     std::end(stack.plane_zoffset()));
-    auto planeMin = std::min_element(std::begin(stack.plane_zoffset()),
-                                     std::end(stack.plane_zoffset()));
-    double planeZero = (*planeMin - *planeMax)/2.;
-
-    double zOffset = planeZero;
-
     CLHEP::HepRotation motherRotationInMu2e = extmon->spectrometerMagnet().magnetRotationInMu2e();
     CLHEP::HepRotation *stackRotationInMotherInv =
     reg.add(stack.rotationInMu2e().inverse() * motherRotationInMu2e);
@@ -206,15 +199,9 @@ namespace mu2e {
       std::ostringstream osp;
       osp<<"EMFPlane"<<volNameSuffix<<iplane;
 
-      if (iplane > 0) {
-        double planeSpacing = stack.plane_zoffset()[iplane] - stack.plane_zoffset()[iplane-1];
-        zOffset += planeSpacing;
-      }
-
       AGDEBUG("Constucting "<<osp.str()<<", plane number "<<iplane + stack.planeNumberOffset());
-      CLHEP::Hep3Vector offset (stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], zOffset);
-      double stackMotherZCoord = (stack.plane_zoffset()[0] + stack.plane_zoffset()[3])/2.0;
-      CLHEP::Hep3Vector stackOffset = stackRefPointInMother + stackRotationInMother * CLHEP::Hep3Vector(0, 0, stackMotherZCoord) + offset;
+      CLHEP::Hep3Vector offset (stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], stack.plane_zoffset()[iplane]);
+      CLHEP::Hep3Vector stackOffset = stackRefPointInMother + stackRotationInMother * offset;
 
       // nest individual planes
       VolumeInfo vplane = nestBox(osp.str(),
@@ -231,6 +218,125 @@ namespace mu2e {
                                   placePV,
                                   doSurfaceCheck
                                   );
+
+      //----------------------------------------------------------------
+      // Cooling Tubes
+
+      double coolingTubeInRad = config.getDouble("extMonFNAL.coolingTubeInRad");
+      double coolingTubeOutRad = config.getDouble("extMonFNAL.coolingTubeOutRad");
+      double coolingTubeLen = config.getDouble("extMonFNAL.coolingTubeLen");
+      double coolingTubeTopLen = config.getDouble("extMonFNAL.coolingTubeTopLen");
+      double coolingTubeTsSweptRad = config.getDouble("extMonFNAL.coolingTubeTsSweptRad");
+      double coolingTubePlaneOffset = config.getDouble("extMonFNAL.coolingTubePlaneOffset");
+
+      CLHEP::Hep3Vector tubePiece1Offset = CLHEP::Hep3Vector( 0, -coolingTubeLen - coolingTubeTsSweptRad, - coolingTubeTsSweptRad - coolingTubeTopLen );
+
+      CLHEP::Hep3Vector tubePiece2Offset = CLHEP::Hep3Vector( 0, -coolingTubeLen - coolingTubeTsSweptRad, coolingTubeTsSweptRad + coolingTubeTopLen );
+
+      CLHEP::HepRotation *pcoolingTubeRot = reg.add(new CLHEP::HepRotation());
+      CLHEP::HepRotation& coolingTubesRot2 = *pcoolingTubeRot;
+      pcoolingTubeRot->rotateZ( 90.*CLHEP::degree );
+      pcoolingTubeRot->rotateY( 90.*CLHEP::degree );
+
+      CLHEP::HepRotation pcoolingTubeRotInv = pcoolingTubeRot->inverse();
+      pcoolingTubeRotInv.rotateZ( 90.*CLHEP::degree );
+
+      CLHEP::HepRotation pcoolingTubePieceRot = pcoolingTubeRotInv;
+      pcoolingTubePieceRot.rotateZ( 90.*CLHEP::degree );
+      pcoolingTubePieceRot.rotateY( 90.*CLHEP::degree );
+
+      CLHEP::Hep3Vector tubeCenterPieceOffset = stackOffset + CLHEP::Hep3Vector( 0.5 * coolingTubeLen, 0, - coolingTubePlaneOffset);
+      CLHEP::Hep3Vector torusPiece1Offset = CLHEP::Hep3Vector( 0, - coolingTubeTsSweptRad, coolingTubeTopLen);
+      CLHEP::Hep3Vector torusPiece2Offset = CLHEP::Hep3Vector( 0, - coolingTubeTsSweptRad, -  coolingTubeTopLen);
+
+    VolumeInfo coolingTube(osp.str() + "ExtMonFNALCoolingTube",
+                           stackOffset,
+                           mother.centerInWorld
+                          );
+
+      G4Tubs* coolingTubePiece1 = new G4Tubs(osp.str() + "coolingTubePiece1",
+                                             coolingTubeInRad,
+                                             coolingTubeOutRad,
+                                             coolingTubeLen,
+                                             0,
+                                             2. * M_PI
+                                            );
+
+      G4Tubs* coolingTubePiece2 = new G4Tubs(osp.str() + "coolingTubePiece2",
+                                             coolingTubeInRad,
+                                             coolingTubeOutRad,
+                                             coolingTubeLen,
+                                             0,
+                                             2. * M_PI
+                                            );
+
+      G4Tubs* coolingTubeCenterPiece = new G4Tubs(osp.str() + "coolingTubeCenterPiece",
+                                             coolingTubeInRad,
+                                             coolingTubeOutRad,
+                                             coolingTubeTopLen,
+                                             0,
+                                             2. * M_PI
+                                            );
+
+      G4Torus* coolingTubTorus1 = new G4Torus(osp.str() + "torus1",
+                                              coolingTubeInRad,
+                                              coolingTubeOutRad,
+                                              coolingTubeTsSweptRad,
+                                              90*CLHEP::degree,
+                                              90*CLHEP::degree
+                                              );
+
+      G4Torus* coolingTubeTorus2 = new G4Torus(osp.str() + "torus2",
+                                              coolingTubeInRad,
+                                              coolingTubeOutRad,
+                                              coolingTubeTsSweptRad,
+                                              0,
+                                              90*CLHEP::degree
+                                              );
+
+      G4UnionSolid* union1 = new G4UnionSolid("coolingTubePiece1+coolingTubTorus1",
+                                              coolingTubeCenterPiece,
+                                              coolingTubTorus1,
+                                              &pcoolingTubeRotInv,
+                                              torusPiece1Offset
+                                             );
+
+      G4UnionSolid* union2 = new G4UnionSolid("coolingTubePiece1+coolingTubTorus1",
+                                              union1,
+                                              coolingTubeTorus2,
+                                              &pcoolingTubeRotInv,
+                                              torusPiece2Offset
+                                             );
+
+      G4UnionSolid* union3 = new G4UnionSolid("coolingTubePiece1+coolingTubTorus1",
+                                              union2,
+                                              coolingTubePiece1,
+                                              &pcoolingTubePieceRot,
+                                              tubePiece1Offset
+                                             );
+
+      G4UnionSolid* union4 = new G4UnionSolid("coolingTubePiece1+coolingTubTorus1",
+                                              union3,
+                                              coolingTubePiece2,
+                                              &pcoolingTubePieceRot,
+                                              tubePiece2Offset
+                                             );
+
+      coolingTube.solid = union4;
+
+      finishNesting(coolingTube,
+                  findMaterialOrThrow("MildSteel"),
+                  &coolingTubesRot2,
+                  tubeCenterPieceOffset,
+                  mother.logical,
+                  0,
+                  isSensorPlaneVisible,
+                  G4Colour::Red(),
+                  isSensorPlaneSolid,
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
 
       constructExtMonFNALModules(mother,
                                  stackOffset,
@@ -279,8 +385,6 @@ namespace mu2e {
       if( stack.planes()[iplane].module_zoffset()[imodule] < 0.0 ) {
         mRotInPlane->rotateY(180*CLHEP::degree);
       }
-
-      // CLHEP::HepRotation mRot = (*mRotInPlane) * planeRotation;
 
       GeomHandle<ExtMonFNAL::ExtMon> extmon;
       ExtMonFNALModuleIdConverter con(*extmon);
@@ -478,21 +582,18 @@ namespace mu2e {
 
     //finishNesting uses backards interpretation of rotations
     const CLHEP::HepRotation *motherRotInv = reg.add(extmon->spectrometerMagnet().magnetRotationInMu2e().inverse()*mainParentRotationInMu2e);
-    std::vector<double> motherHS;
-    config.getVectorDouble("extMonFNAL.motherHalfSize", motherHS);
 
-    double px = motherHS[0];
-    double py = motherHS[1];
-
-    double motherDistToMagnet = config.getDouble("extMonFNAL.motherDistToMagnet");
+    double detectorMotherDistToMagnet = config.getDouble("extMonFNAL.detectorMotherDistToMagnet");
 
     // Construct ExtMonStackMother* as nestedBox
-    double detectorMotherZCoord = motherHS[1] - motherDistToMagnet - extmon->spectrometerMagnet().outerHalfSize()[1];
+    double detectorMotherZCoord = extmon->detectorMotherHS()[1] - detectorMotherDistToMagnet - extmon->spectrometerMagnet().outerHalfSize()[1];
     CLHEP::Hep3Vector detectorMotherZVec = extmon->spectrometerMagnet().magnetRotationInMu2e()*Hep3Vector(0, detectorMotherZCoord, 0);
     CLHEP::Hep3Vector motherCenterInMu2e = extmon->spectrometerMagnet().geometricCenterInMu2e() + detectorMotherZVec;
     CLHEP::Hep3Vector detectorMotherOffset = mainParentRotationInMu2e.inverse() * (motherCenterInMu2e - mainParent.centerInMu2e());
 
-    double pz = motherHS[2];
+    double px = extmon->detectorMotherHS()[0];
+    double py = extmon->detectorMotherHS()[1];
+    double pz = extmon->detectorMotherHS()[2];
     double const halfDims[3] = {px, py, pz};
 
     VolumeInfo detectorMother = nestBox("ExtMonDetectorMother",
@@ -518,7 +619,6 @@ namespace mu2e {
                                   "Dn",
                                   VirtualDetectorId::EMFDetectorDnEntrance,
                                   detectorMother,
-                                  detectorMotherOffset,
                                   *motherRotInv,
                                   config);
 
@@ -527,7 +627,6 @@ namespace mu2e {
                                   "Up",
                                   VirtualDetectorId::EMFDetectorUpEntrance,
                                   detectorMother,
-                                  detectorMotherOffset,
                                   *motherRotInv,
                                   config);
 

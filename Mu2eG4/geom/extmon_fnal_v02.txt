@@ -187,9 +187,19 @@ double         extMonFNAL.scintGap = 5.3; // Distance between the surfaces of th
 //================================================================
 // The Ext Mon detector mother
 
-vector<double> extMonFNAL.motherHalfSize = { 150, 200, 650 };
-double extMonFNAL.motherDistToMagnet = 1;
+vector<double> extMonFNAL.detectorMotherHS = { 150, 200, 650 };
+double extMonFNAL.detectorMotherDistToMagnet = 1;
 bool extMonFNAL.stackRotation = false;
+
+//================================================================
+// The pixel cooling tube parameters
+
+double extMonFNAL.coolingTubeInRad = 1.5542;
+double extMonFNAL.coolingTubeOutRad = 1.8542;
+double extMonFNAL.coolingTubeLen = 52.685;
+double extMonFNAL.coolingTubeTopLen = 34.57;
+double extMonFNAL.coolingTubeTsSweptRad = 3.969;
+double extMonFNAL.coolingTubePlaneOffset = 3.5;
 
 //================================================================
 // The upstream stack of the sensors.
@@ -225,8 +235,6 @@ vector<double> extMonFNAL.up.module_rotation = { 0., 0. };
 // Details of the detector.  All of these vectors should be
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
-
-vector<double> extMonFNAL.dn.motherTransverseHalfSize = { 115, 115 }; // x, y
 
 vector<double> extMonFNAL.dn.plane_zoffset = {-626., -526.,  -426., -326.};
 vector<double> extMonFNAL.dn.plane_xoffset = { 0., 0., 0., 0. };
