@@ -30,6 +30,9 @@ namespace mu2e {
     class ExtMonMaker;
 
     class ExtMon : virtual public Detector {
+
+      std::vector<double> detectorMotherHS_;
+
     public:
 
       // all modules are the same
@@ -53,6 +56,8 @@ namespace mu2e {
       // Location of the detector == that of the upstream stack.
       CLHEP::Hep3Vector detectorCenterInMu2e() const;
       const CLHEP::HepRotation& detectorRotationInMu2e() const;
+
+      const std::vector<double>& detectorMotherHS() const { return detectorMotherHS_; }
 
       // Coordinate conversion to/from the Mu2e frame
       // The ExtMonFNAL frame is defined in the following way:
