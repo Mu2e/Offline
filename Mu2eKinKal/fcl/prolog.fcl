@@ -352,6 +352,11 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
       SampleTimeBuffer : 100
+      # DNB I don't know where this time offset difference WRT helical fits comes from. If it's physical, we will need a better
+      # mechanism to deal with it in real data
+      CaloTrackerTimeOffset: -2.43
+      # Additional width is needed here as straight tracks have worse time resolution
+      MaxCaloClusterDt: 8
     }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : {
