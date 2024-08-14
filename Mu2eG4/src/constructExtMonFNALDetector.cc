@@ -477,7 +477,6 @@ namespace mu2e {
     bool const isSensorPlaneSolid   = geomOptions->isSolid("extMonFNALSensorPlane");
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
-//from planes
     CLHEP::HepRotation motherRotationInMu2e = extmon->spectrometerMagnet().magnetRotationInMu2e();
     CLHEP::HepRotation *stackRotationInMotherInv =
     reg.add(stack.rotationInMu2e().inverse() * motherRotationInMu2e);
@@ -488,44 +487,45 @@ namespace mu2e {
     std::vector<double> hs;
     config.getVectorDouble("extMonFNAL."+volNameSuffix+".scintFullSize", hs);
     for(auto &a:hs) { a/=2.; }
-    double scintOffset = config.getDouble("extMonFNAL.scintOffset");
+    double scintPlaneOffset = config.getDouble("extMonFNAL.scintPlaneOffset");
     double scintInnerOffset = config.getDouble("extMonFNAL.scintInnerOffset");
     double scintGap = config.getDouble("extMonFNAL.scintGap");
     std::ostringstream osp;
     osp<<"Scintillator"<<volNameSuffix;
 
-    CLHEP::Hep3Vector offset1;
-    CLHEP::Hep3Vector offset2;
-    CLHEP::Hep3Vector offset3;
+    int scintNum = 3;
+    int dir = +1;
+    int iplane = 3;
+    int j = 0;
 
-    if(volNameSuffix == "Dn") {
-      CLHEP::Hep3Vector offset (stack.plane_xoffset()[0], stack.plane_yoffset()[0], stack.plane_zoffset()[0]);
-      CLHEP::Hep3Vector stackOffset = stackRefPointInMother + stackRotationInMother * offset;
-      offset1 = stackOffset - CLHEP::Hep3Vector(0, 0, scintOffset);
-      offset2 = stackOffset - CLHEP::Hep3Vector(0, 0, scintOffset + scintGap + 2 * hs[2]);
-      offset = CLHEP::Hep3Vector(stack.plane_xoffset()[3], stack.plane_yoffset()[3], stack.plane_zoffset()[3]);
-      stackOffset = stackRefPointInMother + stackRotationInMother * offset;
-      offset3 = stackOffset + CLHEP::Hep3Vector(0, 0, scintInnerOffset);
+    if(volNameSuffix == "Dn" ) {
+      scintNum = 6;
+      dir = -1;
+      iplane = 0;
+      j = 3;
     }
 
-    if(volNameSuffix == "Up") {
-      CLHEP::Hep3Vector offset (stack.plane_xoffset()[3], stack.plane_yoffset()[3], stack.plane_zoffset()[3]);
-      CLHEP::Hep3Vector stackOffset = stackRefPointInMother + stackRotationInMother * offset;
-      offset1 = stackOffset + CLHEP::Hep3Vector(0, 0, scintOffset);
-      offset2 = stackOffset + CLHEP::Hep3Vector(0, 0, scintOffset + scintGap + 2 * hs[2]);
-      offset = CLHEP::Hep3Vector(stack.plane_xoffset()[0], stack.plane_yoffset()[0], stack.plane_zoffset()[0]);
-      stackOffset = stackRefPointInMother + stackRotationInMother * offset;
-      offset3 = stackOffset - CLHEP::Hep3Vector(0, 0, scintInnerOffset);
-    }
+    for(int i = j; i < scintNum; i++) {
 
-    // nest scintillators
-    VolumeInfo scintillator1 = nestBox(osp.str()+"1",
+      double scintOffset = i + 2 == scintNum ? scintPlaneOffset : scintPlaneOffset + scintGap + 2 * hs[2];
+
+      if (i + 1 == scintNum) {
+        scintOffset = scintInnerOffset;
+        iplane = dir == 1 ? 0 : 3;
+      }
+
+      CLHEP::Hep3Vector offset (stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], stack.plane_zoffset()[iplane]);
+      CLHEP::Hep3Vector stackOffset = stackRefPointInMother + stackRotationInMother * offset;
+      CLHEP::Hep3Vector scintCenter = stackOffset + CLHEP::Hep3Vector(0, 0, dir * scintOffset);
+      int counter = dir  == 1 ? i : 8 - i;
+
+      VolumeInfo scintillator = nestBox(osp.str()+std::to_string(counter),
                                        hs,
                                        findMaterialOrThrow("Scintillator"),
                                        NULL,
-                                       offset1,
+                                       scintCenter,
                                        mother,
-                                       0,
+                                       counter,
                                        isSensorPlaneVisible,
                                        G4Colour::Magenta(),
                                        isSensorPlaneSolid,
@@ -533,38 +533,7 @@ namespace mu2e {
                                        placePV,
                                        doSurfaceCheck
                                       );
-
-    VolumeInfo scintillator2 = nestBox(osp.str()+"2",
-                                    hs,
-                                    findMaterialOrThrow("Scintillator"),
-                                    NULL,
-                                    offset2,
-                                    mother,
-                                    1,
-                                    isSensorPlaneVisible,
-                                    G4Colour::Magenta(),
-                                    isSensorPlaneSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    doSurfaceCheck
-                                  );
-
-    VolumeInfo scintillator3 = nestBox(osp.str()+"3",
-                                    hs,
-                                    findMaterialOrThrow("Scintillator"),
-                                    NULL,
-                                    offset3,
-                                    mother,
-                                    2,
-                                    isSensorPlaneVisible,
-                                    G4Colour::Magenta(),
-                                    isSensorPlaneSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    doSurfaceCheck
-                                  );
-
-
+    }
   }// constructExtMonFNALScintillators
 
 
