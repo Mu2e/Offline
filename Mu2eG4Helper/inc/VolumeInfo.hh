@@ -35,6 +35,8 @@ namespace mu2e {
       centerInParent(),
       centerInWorld(){}
 
+    VolumeInfo( const std::string& pName);
+
     VolumeInfo( const std::string&       pName,
                 const CLHEP::Hep3Vector& inParent,
                 const CLHEP::Hep3Vector& parentInWorld);

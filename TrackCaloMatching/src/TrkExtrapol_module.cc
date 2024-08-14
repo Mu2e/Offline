@@ -269,7 +269,7 @@ namespace mu2e {
     if(fdir.dzdt() == -1.0) startLowrange = highrange;
     circleRadius = fabs(1.0/trkHel.omega());
 
-    int nSections = cg->nDisk();
+    int nSections = cg->nDisks();
 
     double *entr   = new double[nSections];
     double *ex     = new double[nSections];
