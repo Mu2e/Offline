@@ -181,8 +181,8 @@ bool extMonFNAL.stackMotherSolid = true;
 vector<double> extMonFNAL.Dn.scintFullSize = { 45.0 , 54.0, 3 };
 vector<double> extMonFNAL.Up.scintFullSize = { 45 , 37, 3 };
 string         extMonFNAL.scintMaterial = "Scintillator";
-double         extMonFNAL.scintOffset = 29.0; // Distance from pixel plane center to center of scintillator closest to the pixels on outer ends of detector table
-double         extMonFNAL.scintInnerOffset = 33; // Distance from pixel plane center to center of scintillator on the magnet side
+double         extMonFNAL.scintPlaneOffset = 29.0; // Distance from pixel plane center to center of scintillator closest to the pixels on outer ends of detector table
+double         extMonFNAL.scintInnerOffset = -33; // Distance from pixel plane center to center of scintillator on the magnet side
 double         extMonFNAL.scintGap = 5.3; // Distance between the surfaces of the two adjacent scintillators
 
 //================================================================
