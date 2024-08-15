@@ -57,6 +57,7 @@
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKConstantBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
+#include "Offline/Mu2eKinKal/inc/ExtrapolateToZ.hh"
 // root
 #include "TH1F.h"
 #include "TTree.h"
@@ -109,6 +110,10 @@ namespace mu2e {
   // extend the generic module configuration as needed
   struct KKHelixModuleConfig : KKModuleConfig {
     fhicl::Sequence<art::InputTag> seedCollections         {Name("HelixSeedCollections"),     Comment("Seed fit collections to be processed ") };
+      fhicl::OptionalAtom<std::string> extrapDown { Name("ExtrapolateDownstreamSurface"), Comment("Extrapolate successful fits Downstream to this surface") };
+      fhicl::OptionalAtom<std::string> extrapUp { Name("ExtrapolateUpstreamSurface"), Comment("Extrapolate successful fits Upstream to this surface") };
+      fhicl::OptionalAtom<float> extrapTol { Name("ExtrapolationTolerance"), Comment("Tolerance on fractional momemtum precision when extrapolating fits") };
+      fhicl::OptionalAtom<float> extrapMaxDt { Name("ExtrapolationMaxDt"), Comment("Maximum time to extrapolate a fit") };
     fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
   };
 
@@ -122,19 +127,6 @@ namespace mu2e {
     // helix module specific config
     fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream") };
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
-  };
-
-  // predicate for extrapolation to a given Z position in a given direction
-  template <class KTRAJ> struct ExtrapolateToZ {
-    using KKTRK = KKTrack<KTRAJ>;
-    ExtrapolateToZ(KKTRK const& kktrk, TimeDir tdir, double zval) : kktrk_(kktrk), tdir_(tdir), zval_(zval) {}
-    bool needsExtrapolation(double time) const {
-      double zend = kktrk_.fitTraj().position3(time).Z();
-      return tdir_ == TimeDir::forwards ? zend < zval_ : zend > zval_;
-    }
-    KKTRK const& kktrk_; // reference to track
-    TimeDir tdir_; // time direction
-    double zval_; // z value required
   };
 
   class HelixFit : public art::EDProducer {
@@ -170,9 +162,8 @@ namespace mu2e {
       Config config_; // initial fit configuration object
       Config exconfig_; // extension configuration object
       Config fconfig_; // final final configuration object
-      KinKal::ExtraConfig xconfig_; // tolerance and maximum Dt when extrapolating
       bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
-      SurfaceMap::SurfacePairCollection extrap_; // surfaces to extrapolate the fit to
+      ExtrapolateToZ extrap_; // extrapolation predicate based on Z values. Eventually this could be a more sophisticated test TODO
   };
 
   HelixFit::HelixFit(const Parameters& settings,TrkFitFlag fitflag) : art::EDProducer{settings},
@@ -209,15 +200,20 @@ namespace mu2e {
         kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
       }
       // configure extrapolation
-      SurfaceIdCollection esids;
-      for(auto const& sidname : settings().modSettings().extrapSurfs()) {
-        esids.push_back(SurfaceId(sidname,-1)); // match all elements
+      std::string upsurf,downsur;
+      if(settings().modSettings().extrapDown(downsurf) &&
+          settings().modSettings().extrapUp(upsurf)){
+        SurfaceMap smap;
+        auto downsurf = std::dynamic_pointer_cast<KinKal::Plane>(smap.surface(downsurf));
+        auto upsurf = std::dynamic_pointer_cast<KinKal::Plane>(smap.surface(upsurf));
+        if((!downsurf) || (!upsurf) ||
+            fabs(1.0 - downsurf->normal().Z()) > 1e-8 ||
+            fabs(1.0 - upsurf->normal().Z()) > 1e-8 )
+          throw cet::exception("RECO")<<"mu2e::HelixFit: invalid extrapolation surface ;must be planes orthogonal to z)" << endl;
+        extrap_ = ExtrapolateToZ(settings().modSettings().extrapMaxDt(),
+            settings().modSettings().extrapTol(),
+            upsurf->center().Z(), downsurf->center().Z());
       }
-      SurfaceMap smap;
-      smap.surfaces(esids,extrap_);
-      // configuration for extrapolation
-      xconfig_.tol_ = settings().modSettings().extrapTol();
-      xconfig_.maxdt_ = settings().modSettings().extrapMaxDt();
       // setup optional fit finalization
       if(settings().finalSettings()){
         if(exconfig_.schedule_.size() > 0)
