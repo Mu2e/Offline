@@ -327,27 +327,9 @@ namespace mu2e {
               }
             }
             // extrapolate as required
-            if(goodfit && extrap_.size()>0) {
-              // test the drection of this fit
-              auto const& ftraj = kktrk->fitTraj();
-              bool downstream = ftraj.momentum3(ftraj.range().mid()).Z() > 0.0; // replace with momentum at tracker middle TODO
-              const static VEC3 opos(0.0,0.0,0.0);
-              for(auto const& surf : extrap_){
-                // configure the extrapolation time direction according to the surface and the track momentum direction
-                if(surf.first.id() == SurfaceIdEnum::TT_Front){
-                  xconfig_.xdir_ = downstream ? TimeDir::backwards : TimeDir::forwards;
-                  double zpos = surf.second->tangentPlane(opos).center().Z(); // this is crude: I need an accessor that knows the TT_Front is a plane TODO
-                  ExtrapolateToZ xtoz(*kktrk,xconfig_.xdir_,zpos);
-                  kktrk->extrapolate(xconfig_,xtoz);
-                } else if(surf.first.id() == SurfaceIdEnum::TT_Back){
-                  xconfig_.xdir_ = downstream ? TimeDir::forwards : TimeDir::backwards;
-                  double zpos = surf.second->tangentPlane(opos).center().Z();
-                  ExtrapolateToZ xtoz(*kktrk,xconfig_.xdir_,zpos);
-                  kktrk->extrapolate(xconfig_,xtoz);
-                } else if(surf.first.id() == SurfaceIdEnum::TT_Outer){
-                  // extrapolate in both time directions
-                }
-              }
+            if(goodfit && extrap_.maxDt()()>0) {
+              kktrk->extrapolate(TimeDir::forwards,extrap_);
+              kktrk->extrapolate(TimeDir::backwards,extrap_);
             }
 
             if(print_>0)kktrk->printFit(std::cout,print_);

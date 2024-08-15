@@ -8,10 +8,9 @@
 namespace mu2e {
   class ExtrapolateToZ {
     public:
-      ExtrapolateToZ() : maxDt_(0.1), tol_(1e-3),
+      ExtrapolateToZ() : maxDt_(-1.0), tol_(1e10),
       zmin_(std::numeric_limits<double>::max()),
       zmax_(-std::numeric_limits<double>::max()){}
-
       ExtrapolateToZ(double maxdt, double tol, double zmin, double zmax) :
         maxDt_(maxdt), tol_(tol), zmin_(zmin), zmax_(zmax) {
         if(zmin >= zmax) throw cet::exception("RECO")<<"Mu2eKinKal::ExtrapolateToZ: range configuration error"<< endl;
@@ -31,6 +30,8 @@ namespace mu2e {
   template <class KTRAJ> bool ExtrapolateToZ::needsExtrapolation(KinKal::Track<KTRAJ> const& kktrk, double time) const {
     double zval = kktrk.fitTraj().position3(time).Z();
     double zdir = kktrk.fitTraj().direction(time).Z();
+    double zdir0 = kktrk.fitTraj().direction(kktrk.fitTraj().t0()).Z();
+    if(zdir*zdir0<0.0)return false; // if the track has reversed no need to extrapolate
     if(zdir > 0){ // downstream
       return tdir == TimeDir::forwards ? zval < zmax_ : zval > zmin_;
     } else { // upstream
