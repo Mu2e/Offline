@@ -675,13 +675,13 @@ namespace mu2e {
     //finishNesting uses backards interpretation of rotations
     const CLHEP::HepRotation *motherRotInv = reg.add(extmon->spectrometerMagnet().magnetRotationInMu2e().inverse()*mainParentRotationInMu2e);
 
-    double detectorMotherDistToMagnet = config.getDouble("extMonFNAL.detectorMotherDistToMagnet");
+    // double detectorMotherDistToMagnet = config.getDouble("extMonFNAL.detectorMotherDistToMagnet");
 
     // Construct ExtMonStackMother* as nestedBox
-    double detectorMotherZCoord = extmon->detectorMotherHS()[1] - detectorMotherDistToMagnet - extmon->spectrometerMagnet().outerHalfSize()[1];
-    CLHEP::Hep3Vector detectorMotherZVec = extmon->spectrometerMagnet().magnetRotationInMu2e()*Hep3Vector(0, detectorMotherZCoord, 0);
-    CLHEP::Hep3Vector motherCenterInMu2e = extmon->spectrometerMagnet().geometricCenterInMu2e() + detectorMotherZVec;
-    CLHEP::Hep3Vector detectorMotherOffset = mainParentRotationInMu2e.inverse() * (motherCenterInMu2e - mainParent.centerInMu2e());
+    // double detectorMotherZCoord = extmon->detectorMotherHS()[1] - detectorMotherDistToMagnet - extmon->spectrometerMagnet().outerHalfSize()[1];
+    // CLHEP::Hep3Vector detectorMotherZVec = extmon->spectrometerMagnet().magnetRotationInMu2e()*Hep3Vector(0, detectorMotherZCoord, 0);
+    // CLHEP::Hep3Vector motherCenterInMu2e = extmon->spectrometerMagnet().geometricCenterInMu2e() + detectorMotherZVec;
+    CLHEP::Hep3Vector detectorMotherOffset = mainParentRotationInMu2e.inverse() * (extmon->detectorMotherCenterInMu2e() - mainParent.centerInMu2e());
 
     double px = extmon->detectorMotherHS()[0];
     double py = extmon->detectorMotherHS()[1];
@@ -703,7 +703,7 @@ namespace mu2e {
                                 doSurfaceCheck
                                 );
 
-    detectorMother.centerInWorld = motherCenterInMu2e + (GeomHandle<WorldG4>())->mu2eOriginInWorld();
+    detectorMother.centerInWorld = extmon->detectorMotherCenterInMu2e() + (GeomHandle<WorldG4>())->mu2eOriginInWorld();
 
 
     constructExtMonFNALPlaneStack(extmon->module(),
