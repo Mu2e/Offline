@@ -1,5 +1,5 @@
-#ifndef Mu2e_KKCaloHit_hh
-#define Mu2e_KKCaloHit_hh
+#ifndef Mu2eKinKal_KKCaloHit_hh
+#define Mu2eKinKal_KKCaloHit_hh
 //
 //  hit representing a time measurement from a calorimeter cluster.  The geometric information is used to
 //  compute propagation time
