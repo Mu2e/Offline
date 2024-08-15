@@ -31,8 +31,6 @@ namespace mu2e {
 
     class ExtMon : virtual public Detector {
 
-      std::vector<double> detectorMotherHS_;
-
     public:
 
       // all modules are the same
@@ -58,6 +56,8 @@ namespace mu2e {
       const CLHEP::HepRotation& detectorRotationInMu2e() const;
 
       const std::vector<double>& detectorMotherHS() const { return detectorMotherHS_; }
+      const CLHEP::Hep3Vector detectorMotherCenterInMu2e() const { return detectorMotherCenterInMu2e_; }
+      const CLHEP::HepRotation& detectorMotherRotationInMu2e() const { return spectrometerMagnet().magnetRotationInMu2e(); }
 
       // Coordinate conversion to/from the Mu2e frame
       // The ExtMonFNAL frame is defined in the following way:
@@ -127,6 +127,8 @@ namespace mu2e {
       ExtMonFNALPlaneStack dn_;
       ExtMonFNALMagnet spectrometerMagnet_;
       CLHEP::HepRotationX dnToExtMonCoordinateRotation_;
+      std::vector<double> detectorMotherHS_;
+      CLHEP::Hep3Vector detectorMotherCenterInMu2e_;
     };
 
     //================================================================

@@ -66,10 +66,6 @@ namespace mu2e {
       std::unique_ptr<ExtMon> det(new ExtMon());
 
       //----------------------------------------------------------------
-      // Detector Mother
-      config.getVectorDouble("extMonFNAL.detectorMotherHS", det->detectorMotherHS_, -1);
-
-      //----------------------------------------------------------------
       // Spectrometer magnet
 
       const double magnetToCollimatorDistance = config.getDouble("extMonFNAL.spectrometer.magnet.distanceToUpstreamWall")
@@ -88,6 +84,16 @@ namespace mu2e {
 
       det->dnToExtMonCoordinateRotation_ =
         CLHEP::HepRotationX( -2 * det->spectrometerMagnet_.nominalBendHalfAngle());
+
+      //----------------------------------------------------------------
+      // Detector Mother
+      config.getVectorDouble("extMonFNAL.detectorMotherHS", det->detectorMotherHS_, -1);
+
+      double detectorMotherDistToMagnet = config.getDouble("extMonFNAL.detectorMotherDistToMagnet");
+      double detectorMotherZCoord = det->detectorMotherHS()[1] - detectorMotherDistToMagnet - det->spectrometerMagnet().outerHalfSize()[1];
+      CLHEP::Hep3Vector detectorMotherZVec = det->spectrometerMagnet().magnetRotationInMu2e()*CLHEP::Hep3Vector(0, detectorMotherZCoord, 0);
+      det->detectorMotherCenterInMu2e_ = det->spectrometerMagnet().geometricCenterInMu2e() + detectorMotherZVec;
+
 
       //----------------
 
