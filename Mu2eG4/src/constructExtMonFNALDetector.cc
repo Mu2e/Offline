@@ -195,12 +195,11 @@ namespace mu2e {
     bool const isSensorPlaneVisible = geomOptions->isVisible("extMonFNALSensorPlane");
     bool const isSensorPlaneSolid   = geomOptions->isSolid("extMonFNALSensorPlane");
 
-    CLHEP::HepRotation motherRotationInMu2e = extmon->spectrometerMagnet().magnetRotationInMu2e();
     CLHEP::HepRotation *stackRotationInMotherInv =
-    reg.add(stack.rotationInMu2e().inverse() * motherRotationInMu2e);
-    CLHEP::HepRotation stackRotationInMother (stackRotationInMotherInv->inverse());
+    reg.add(stack.rotationInMu2e().inverse() * extmon->detectorMotherRotationInMu2e());
+    CLHEP::HepRotation* stackRotationInMother = reg.add(stackRotationInMotherInv->inverse());
 
-    CLHEP::Hep3Vector stackRefPointInMother (motherRotationInMu2e.inverse()*(stack.refPointInMu2e() - mother.centerInMu2e()));
+    CLHEP::Hep3Vector stackRefPointInMother (extmon->detectorMotherRotationInMu2e().inverse()*(stack.refPointInMu2e() - mother.centerInMu2e()));
 
     for(unsigned iplane = 0; iplane < stack.nplanes(); ++iplane) {
       std::vector<double> hs;
@@ -211,13 +210,16 @@ namespace mu2e {
 
       AGDEBUG("Constucting "<<osp.str()<<", plane number "<<iplane + stack.planeNumberOffset());
       CLHEP::Hep3Vector offset (stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], stack.plane_zoffset()[iplane]);
-      CLHEP::Hep3Vector stackOffset = stackRefPointInMother + stackRotationInMother * offset;
+      CLHEP::Hep3Vector stackOffset = stackRefPointInMother + *stackRotationInMother * offset;
+
+      bool stackRotation = config.getBool("extMonFNAL.stackRotation");
+      CLHEP::HepRotation* planeRot = stackRotation ? stackRotationInMother : reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 
       // nest individual planes
       VolumeInfo vplane = nestBox(osp.str(),
                                   plane.halfSize(),
                                   findMaterialOrThrow("G4_C"),
-                                  NULL,
+                                  planeRot,
                                   stackOffset,
                                   mother,
                                   iplane + stack.planeNumberOffset(),
@@ -244,7 +246,7 @@ namespace mu2e {
       CLHEP::Hep3Vector tubePiece2Offset = CLHEP::Hep3Vector( 0, -coolingTubeLen - coolingTubeTsSweptRad, coolingTubeTsSweptRad + coolingTubeTopLen );
 
       CLHEP::HepRotation *pcoolingTubeRot = reg.add(new CLHEP::HepRotation());
-      CLHEP::HepRotation& coolingTubesRot2 = *pcoolingTubeRot;
+      CLHEP::HepRotation& coolingTubesRot = *pcoolingTubeRot;
       pcoolingTubeRot->rotateZ( 90.*CLHEP::degree );
       pcoolingTubeRot->rotateY( 90.*CLHEP::degree );
 
@@ -311,7 +313,7 @@ namespace mu2e {
                                               torusPiece1Offset
                                              );
 
-      G4UnionSolid* union2 = new G4UnionSolid("coolingTubePiece1+coolingTubTorus1",
+      G4UnionSolid* union2 = new G4UnionSolid("coolingTubePiece1+coolingTubTorus2",
                                               union1,
                                               coolingTubeTorus2,
                                               &pcoolingTubeRotInv,
@@ -335,18 +337,18 @@ namespace mu2e {
       coolingTube.solid = union4;
 
       finishNesting(coolingTube,
-                  findMaterialOrThrow("MildSteel"),
-                  &coolingTubesRot2,
-                  tubeCenterPieceOffset,
-                  mother.logical,
-                  0,
-                  isSensorPlaneVisible,
-                  G4Colour::Red(),
-                  isSensorPlaneSolid,
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
+                    findMaterialOrThrow("MildSteel"),
+                    &coolingTubesRot,
+                    tubeCenterPieceOffset,
+                    mother.logical,
+                    0,
+                    isSensorPlaneVisible,
+                    G4Colour::Red(),
+                    isSensorPlaneSolid,
+                    forceAuxEdgeVisible,
+                    placePV,
+                    doSurfaceCheck
+                   );
 
       constructExtMonFNALModules(mother,
                                  stackOffset,
@@ -358,6 +360,7 @@ namespace mu2e {
                                  forceAuxEdgeVisible,
                                  doSurfaceCheck,
                                  placePV);
+
     }
   }
 
@@ -374,6 +377,8 @@ namespace mu2e {
                                   bool const placePV
                                   )
   {
+
+    GeomHandle<ExtMonFNAL::ExtMon> extmon;
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "extMonFNALModule", "extMonFNAL.module" );
     bool const isModuleVisible = geomOptions->isVisible("extMonFNALModule");
@@ -390,20 +395,23 @@ namespace mu2e {
                                stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2]*2 + stack.planes()[iplane].halfSize()[2]+ module.sensorHalfSize()[2]) + offset[2]};
 
       AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
-      G4RotationMatrix* mRotInPlane = reg.add(new G4RotationMatrix);
-      mRotInPlane->rotateZ(stack.planes()[iplane].module_rotation()[imodule]);
+      CLHEP::HepRotation* stackRotationInMotherInv = reg.add(stack.rotationInMu2e().inverse() * extmon->detectorMotherRotationInMu2e());
+      CLHEP::HepRotation* stackRotationInMother = reg.add(stackRotationInMotherInv->inverse());
+      bool stackRotation = config.getBool("extMonFNAL.stackRotation");
+      G4RotationMatrix* mRot = stackRotation ? stackRotationInMother : reg.add(new G4RotationMatrix);
+
+      mRot->rotateZ(stack.planes()[iplane].module_rotation()[imodule]);
       if( stack.planes()[iplane].module_zoffset()[imodule] < 0.0 ) {
-        mRotInPlane->rotateY(180*CLHEP::degree);
+        mRot->rotateY(180*CLHEP::degree);
       }
 
-      GeomHandle<ExtMonFNAL::ExtMon> extmon;
       ExtMonFNALModuleIdConverter con(*extmon);
       int copyno = con.getModuleDenseId(iplane + stack.planeNumberOffset(),imodule).number();
 
       VolumeInfo vsensor = nestBox(osm.str(),
                                    module.sensorHalfSize(),
                                    findMaterialOrThrow("G4_Si"),
-                                   mRotInPlane,
+                                   mRot,
                                    soffset,
                                    mother,
                                    copyno,
@@ -419,10 +427,12 @@ namespace mu2e {
                                 stack.planes()[iplane].module_yoffset()[imodule] + offset[1] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835),
                                 stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2]) + offset[2]};
 
+      CLHEP::HepRotation* pRot = stackRotation ? stackRotationInMother : reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
+
       VolumeInfo vchip0 = nestBox(osm.str() + "chip0",
                                   module.chipHalfSize(),
                                   findMaterialOrThrow("G4_Si"),
-                                  NULL,
+                                  pRot,
                                   coffset0,
                                   mother,
                                   (iplane*nmodules + imodule + stack.planeNumberOffset()),
@@ -440,7 +450,7 @@ namespace mu2e {
       VolumeInfo vchip1 = nestBox(osm.str() + "chip1",
                                   module.chipHalfSize(),
                                   findMaterialOrThrow("G4_Si"),
-                                  NULL,
+                                  pRot,
                                   coffset1,
                                   mother,
                                   (iplane*nmodules + imodule + stack.planeNumberOffset()),
@@ -451,6 +461,7 @@ namespace mu2e {
                                   placePV,
                                   doSurfaceCheck
                                   );
+
 
     }// for
   }// constructExtMonFNALModules
@@ -477,12 +488,10 @@ namespace mu2e {
     bool const isSensorPlaneSolid   = geomOptions->isSolid("extMonFNALSensorPlane");
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
-    CLHEP::HepRotation motherRotationInMu2e = extmon->spectrometerMagnet().magnetRotationInMu2e();
-    CLHEP::HepRotation *stackRotationInMotherInv =
-    reg.add(stack.rotationInMu2e().inverse() * motherRotationInMu2e);
-    CLHEP::HepRotation stackRotationInMother (stackRotationInMotherInv->inverse());
+    CLHEP::HepRotation *stackRotationInMotherInv = reg.add(stack.rotationInMu2e().inverse() * extmon->detectorMotherRotationInMu2e());
+    CLHEP::HepRotation* stackRotationInMother = reg.add(stackRotationInMotherInv->inverse());
 
-    CLHEP::Hep3Vector stackRefPointInMother (motherRotationInMu2e.inverse()*(stack.refPointInMu2e() - mother.centerInMu2e()));
+    CLHEP::Hep3Vector stackRefPointInMother (extmon->detectorMotherRotationInMu2e().inverse()*(stack.refPointInMu2e() - mother.centerInMu2e()));
 
     std::vector<double> hs;
     config.getVectorDouble("extMonFNAL."+volNameSuffix+".scintFullSize", hs);
@@ -505,6 +514,9 @@ namespace mu2e {
       j = 3;
     }
 
+    bool stackRotation = config.getBool("extMonFNAL.stackRotation");
+    CLHEP::HepRotation *pRot = stackRotation ? stackRotationInMother : reg.add(CLHEP::HepRotation::IDENTITY);
+
     for(int i = j; i < scintNum; i++) {
 
       double scintOffset = i + 2 == scintNum ? scintPlaneOffset : scintPlaneOffset + scintGap + 2 * hs[2];
@@ -515,24 +527,24 @@ namespace mu2e {
       }
 
       CLHEP::Hep3Vector offset (stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], stack.plane_zoffset()[iplane]);
-      CLHEP::Hep3Vector stackOffset = stackRefPointInMother + stackRotationInMother * offset;
+      CLHEP::Hep3Vector stackOffset = stackRefPointInMother + *stackRotationInMother * offset;
       CLHEP::Hep3Vector scintCenter = stackOffset + CLHEP::Hep3Vector(0, 0, dir * scintOffset);
       int counter = dir  == 1 ? i : 8 - i;
 
       VolumeInfo scintillator = nestBox(osp.str()+std::to_string(counter),
-                                       hs,
-                                       findMaterialOrThrow("Scintillator"),
-                                       NULL,
-                                       scintCenter,
-                                       mother,
-                                       counter,
-                                       isSensorPlaneVisible,
-                                       G4Colour::Magenta(),
-                                       isSensorPlaneSolid,
-                                       forceAuxEdgeVisible,
-                                       placePV,
-                                       doSurfaceCheck
-                                      );
+                                        hs,
+                                        findMaterialOrThrow("Scintillator"),
+                                        pRot,
+                                        scintCenter,
+                                        mother,
+                                        counter,
+                                        isSensorPlaneVisible,
+                                        G4Colour::Magenta(),
+                                        isSensorPlaneSolid,
+                                        forceAuxEdgeVisible,
+                                        placePV,
+                                        doSurfaceCheck
+                                       );
     }
   }// constructExtMonFNALScintillators
 
@@ -675,12 +687,7 @@ namespace mu2e {
     //finishNesting uses backards interpretation of rotations
     const CLHEP::HepRotation *motherRotInv = reg.add(extmon->spectrometerMagnet().magnetRotationInMu2e().inverse()*mainParentRotationInMu2e);
 
-    // double detectorMotherDistToMagnet = config.getDouble("extMonFNAL.detectorMotherDistToMagnet");
-
     // Construct ExtMonStackMother* as nestedBox
-    // double detectorMotherZCoord = extmon->detectorMotherHS()[1] - detectorMotherDistToMagnet - extmon->spectrometerMagnet().outerHalfSize()[1];
-    // CLHEP::Hep3Vector detectorMotherZVec = extmon->spectrometerMagnet().magnetRotationInMu2e()*Hep3Vector(0, detectorMotherZCoord, 0);
-    // CLHEP::Hep3Vector motherCenterInMu2e = extmon->spectrometerMagnet().geometricCenterInMu2e() + detectorMotherZVec;
     CLHEP::Hep3Vector detectorMotherOffset = mainParentRotationInMu2e.inverse() * (extmon->detectorMotherCenterInMu2e() - mainParent.centerInMu2e());
 
     double px = extmon->detectorMotherHS()[0];
