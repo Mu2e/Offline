@@ -190,7 +190,7 @@ double         extMonFNAL.scintGap = 5.3; // Distance between the surfaces of th
 
 vector<double> extMonFNAL.detectorMotherHS = { 150, 200, 750 };
 double extMonFNAL.detectorMotherDistToMagnet = 1;
-bool extMonFNAL.stackRotation = false;
+bool extMonFNAL.stackRotation = true;
 
 //================================================================
 // The pixel cooling tube parameters
