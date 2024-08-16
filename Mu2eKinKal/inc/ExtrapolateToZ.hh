@@ -13,7 +13,7 @@ namespace mu2e {
       zmax_(-std::numeric_limits<double>::max()){}
       ExtrapolateToZ(double maxdt, double tol, double zmin, double zmax) :
         maxDt_(maxdt), tol_(tol), zmin_(zmin), zmax_(zmax) {
-        if(zmin >= zmax) throw cet::exception("RECO")<<"Mu2eKinKal::ExtrapolateToZ: range configuration error"<< endl;
+        if(zmin >= zmax) throw cet::exception("RECO")<<"Mu2eKinKal::ExtrapolateToZ: range configuration error, zmin "<< zmin << " zmax " << zmax <<endl;
         }
       // interface for extrapolation
       double maxDt() const { return maxDt_; } // maximum time to extend the track, WRT the time of the first(last) measurement
