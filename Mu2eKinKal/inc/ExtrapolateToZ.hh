@@ -27,15 +27,15 @@ namespace mu2e {
       double zmax_; // maximum z value required
   };
 
-  template <class KTRAJ> bool ExtrapolateToZ::needsExtrapolation(KinKal::Track<KTRAJ> const& kktrk, double time) const {
+  template <class KTRAJ> bool ExtrapolateToZ::needsExtrapolation(KinKal::Track<KTRAJ> const& kktrk, KinKal::TimeDir tdir, double time) const {
     double zval = kktrk.fitTraj().position3(time).Z();
     double zdir = kktrk.fitTraj().direction(time).Z();
     double zdir0 = kktrk.fitTraj().direction(kktrk.fitTraj().t0()).Z();
     if(zdir*zdir0<0.0)return false; // if the track has reversed no need to extrapolate
     if(zdir > 0){ // downstream
-      return tdir == TimeDir::forwards ? zval < zmax_ : zval > zmin_;
+      return tdir == KinKal::TimeDir::forwards ? zval < zmax_ : zval > zmin_;
     } else { // upstream
-      return tdir == TimeDir::forwards ? zval > zmin_ : zval < zmax_;
+      return tdir == KinKal::TimeDir::forwards ? zval > zmin_ : zval < zmax_;
     }
   }
 }

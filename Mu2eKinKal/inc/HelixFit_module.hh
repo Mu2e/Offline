@@ -42,7 +42,6 @@
 // KinKal
 #include "KinKal/Fit/Track.hh"
 #include "KinKal/Fit/Config.hh"
-#include "KinKal/Fit/ExtraConfig.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 // Mu2eKinKal
@@ -85,7 +84,6 @@ namespace mu2e {
   using KinKal::VEC3;
   using KinKal::DMAT;
   using KinKal::TimeDir;
-  using KinKal::ExtraConfig;
   using HPtr = art::Ptr<HelixSeed>;
   using CCPtr = art::Ptr<CaloCluster>;
   using CCHandle = art::ValidHandle<CaloClusterCollection>;
@@ -200,18 +198,20 @@ namespace mu2e {
         kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
       }
       // configure extrapolation
-      std::string upsurf,downsur;
-      if(settings().modSettings().extrapDown(downsurf) &&
-          settings().modSettings().extrapUp(upsurf)){
+      std::string upextrap,downextrap;
+      if(settings().modSettings().extrapDown(downextrap) &&
+          settings().modSettings().extrapUp(upextrap)){
         SurfaceMap smap;
-        auto downsurf = std::dynamic_pointer_cast<KinKal::Plane>(smap.surface(downsurf));
-        auto upsurf = std::dynamic_pointer_cast<KinKal::Plane>(smap.surface(upsurf));
+        auto downsurf = std::dynamic_pointer_cast<KinKal::Plane>(smap.surface(downextrap)->second);
+        auto upsurf = std::dynamic_pointer_cast<KinKal::Plane>(smap.surface(upextrap)->second);
         if((!downsurf) || (!upsurf) ||
             fabs(1.0 - downsurf->normal().Z()) > 1e-8 ||
             fabs(1.0 - upsurf->normal().Z()) > 1e-8 )
           throw cet::exception("RECO")<<"mu2e::HelixFit: invalid extrapolation surface ;must be planes orthogonal to z)" << endl;
-        extrap_ = ExtrapolateToZ(settings().modSettings().extrapMaxDt(),
-            settings().modSettings().extrapTol(),
+        float maxdt, tol;
+        settings().modSettings().extrapMaxDt(maxdt);
+        settings().modSettings().extrapTol(tol);
+        extrap_ = ExtrapolateToZ(maxdt,tol,
             upsurf->center().Z(), downsurf->center().Z());
       }
       // setup optional fit finalization
@@ -327,7 +327,7 @@ namespace mu2e {
               }
             }
             // extrapolate as required
-            if(goodfit && extrap_.maxDt()()>0) {
+            if(goodfit && extrap_.maxDt()>0) {
               kktrk->extrapolate(TimeDir::forwards,extrap_);
               kktrk->extrapolate(TimeDir::backwards,extrap_);
             }
