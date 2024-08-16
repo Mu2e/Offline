@@ -275,8 +275,8 @@ Mu2eKinKal : {
   LOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     SeedFlags : [ "HelixOK" ]
-    ExtrapolateDownstreamSurface : "TT_Front"
-    ExtrapolateUpstreamSurface : "TT_Back"
+    ExtrapolateDownstreamSurface : "TT_Back"
+    ExtrapolateUpstreamSurface : "TT_Front"
     ExtrapolationTolerance : 1.0e-3
     ExtrapolationMaxDt : 100.0 # (ns)
   }
