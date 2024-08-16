@@ -244,7 +244,7 @@ vector<double> extMonFNAL.dn.plane_yoffset = { 0., 0., 0., 0. };
 // Assumes all planes in the stack have same module layout (these offsets are used to mount modules on all planes)
 vector<double> extMonFNAL.dn.module_xoffset = { 0., 0., 0. };
 vector<double> extMonFNAL.dn.module_yoffset = { 16.7, 0., -16.7 };
-vector<double> extMonFNAL.dn.module_zoffset = { 1., -1., 1. }; // just determines which side of the plane; all math is handed in constructExMonFNAL
+vector<double> extMonFNAL.dn.module_zoffset = { 1., -1., 1. }; // just determines which side of the plane; all math is handed in constructExMonFNALDetector
 vector<double> extMonFNAL.dn.module_rotation = { 0., 0., 180. };
 
 //================================================================
