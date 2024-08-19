@@ -6,13 +6,14 @@
 #include "Offline/GeometryService/inc/DUSAFMu2eConverter.hh"
 
 namespace mu2e {
-
   DUSAFMu2eConverter::DUSAFMu2eConverter():
+    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
     _tieIn_inDUSAF_usft( 99242.290578, 99026.647809, 729.758494 ),   // From Table 4
     _tieIn_inMu2e_mm(5794.738, 345.131, 1600.553 ),                  // From Table 4
     _toDUSAF(CLHEP::HepRotation().setRows( {0.54671783, -0.00003629,  0.83731691},    // From equation 11
                                            {0.83731691, -0.00004662, -0.54671784},
                                            {0.00005887,  1.00000000,  0.00000490} )),
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
     _toMu2e(_toDUSAF.inverse())
   {
   }
