@@ -108,10 +108,11 @@ namespace mu2e {
   // extend the generic module configuration as needed
   struct KKHelixModuleConfig : KKModuleConfig {
     fhicl::Sequence<art::InputTag> seedCollections         {Name("HelixSeedCollections"),     Comment("Seed fit collections to be processed ") };
-      fhicl::OptionalAtom<std::string> extrapDown { Name("ExtrapolateDownstreamSurface"), Comment("Extrapolate successful fits Downstream to this surface") };
-      fhicl::OptionalAtom<std::string> extrapUp { Name("ExtrapolateUpstreamSurface"), Comment("Extrapolate successful fits Upstream to this surface") };
-      fhicl::OptionalAtom<float> extrapTol { Name("ExtrapolationTolerance"), Comment("Tolerance on fractional momemtum precision when extrapolating fits") };
-      fhicl::OptionalAtom<float> extrapMaxDt { Name("ExtrapolationMaxDt"), Comment("Maximum time to extrapolate a fit") };
+    fhicl::OptionalAtom<std::string> extrapDown { Name("ExtrapolateDownstreamSurface"), Comment("Extrapolate successful fits Downstream to this surface") };
+    fhicl::OptionalAtom<std::string> extrapUp { Name("ExtrapolateUpstreamSurface"), Comment("Extrapolate successful fits Upstream to this surface") };
+    fhicl::OptionalAtom<float> extrapTol { Name("ExtrapolationTolerance"), Comment("Tolerance on fractional momemtum precision when extrapolating fits") };
+    fhicl::OptionalAtom<float> extrapMaxDt { Name("ExtrapolationMaxDt"), Comment("Maximum time to extrapolate a fit") };
+    fhicl::OptionalAtom<float> extrapMinCosT { Name("ExtrapolationMinCosTheta"), Comment("Minimum abs(Cos(theta)) to continue extrapolatng") };
     fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
   };
 
@@ -208,11 +209,11 @@ namespace mu2e {
             fabs(1.0 - downsurf->normal().Z()) > 1e-8 ||
             fabs(1.0 - upsurf->normal().Z()) > 1e-8 )
           throw cet::exception("RECO")<<"mu2e::HelixFit: invalid extrapolation surface ;must be planes orthogonal to z)" << endl;
-        float maxdt, tol;
+        float maxdt, tol, mincost;
         settings().modSettings().extrapMaxDt(maxdt);
         settings().modSettings().extrapTol(tol);
-        extrap_ = ExtrapolateToZ(maxdt,tol,
-            upsurf->center().Z(), downsurf->center().Z());
+        settings().modSettings().extrapMinCosT(mincost);
+        extrap_ = ExtrapolateToZ(maxdt,tol,mincost,upsurf->center().Z(), downsurf->center().Z());
       }
       // setup optional fit finalization
       if(settings().finalSettings()){

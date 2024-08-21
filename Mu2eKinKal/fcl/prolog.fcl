@@ -279,6 +279,7 @@ Mu2eKinKal : {
     ExtrapolateUpstreamSurface : "TT_Front"
     ExtrapolationTolerance : 1.0e-3
     ExtrapolationMaxDt : 100.0 # (ns)
+    ExtrapolationMinCosTheta : 0.001
   }
 
   CENTRALHELIX : {
