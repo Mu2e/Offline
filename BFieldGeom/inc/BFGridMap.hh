@@ -32,7 +32,7 @@ namespace mu2e {
             GridPoint(unsigned a, unsigned b, unsigned c) : ix(a), iy(b), iz(c) {}
         };
 
-        BFGridMap(std::string filename,
+        BFGridMap(std::string const& filename,
                   int nx,
                   double xmin,
                   double dx,
@@ -67,19 +67,17 @@ namespace mu2e {
               _allDefined(false),
               _interpStyle(style){};
 
-        ~BFGridMap(){};
-
-        virtual bool getBFieldWithStatus(const CLHEP::Hep3Vector&, CLHEP::Hep3Vector&) const;
+        bool getBFieldWithStatus(const CLHEP::Hep3Vector&, CLHEP::Hep3Vector&) const override;
 
         // Validity checker
-        virtual bool isValid(const CLHEP::Hep3Vector& point) const;
+        bool isValid(const CLHEP::Hep3Vector& point) const override;
         bool isValid(const GridPoint& ipoint) const {
             return _field.isValid(ipoint.ix, ipoint.iy, ipoint.iz);
         }
 
-        int nx() const { return _nx; }
-        int ny() const { return _ny; }
-        int nz() const { return _nz; }
+        unsigned int nx() const { return _nx; }
+        unsigned int ny() const { return _ny; }
+        unsigned int nz() const { return _nz; }
 
         double dx() const { return _dx; };
         double dy() const { return _dy; };
@@ -99,7 +97,7 @@ namespace mu2e {
                                 CLHEP::Hep3Vector neighborPoints[3],
                                 CLHEP::Hep3Vector neighborBF[3][3][3]) const;
 
-        virtual void print(std::ostream& os) const;
+        void print(std::ostream& os) const override;
 
        private:
         // Grid dimensions
@@ -134,11 +132,11 @@ namespace mu2e {
         double gmcpoly2(double const f1d[3], double const& x) const;
 
         // Compute grid indices for a given point.
-        std::size_t iX(double x) const { return static_cast<int>((x - _xmin) / _dx + 0.5); }
+        std::size_t iX(double x) const { return static_cast<std::size_t>(lround((x - _xmin) / _dx)); }
 
-        std::size_t iY(double y) const { return static_cast<int>((y - _ymin) / _dy + 0.5); }
+        std::size_t iY(double y) const { return static_cast<std::size_t>(lround((y - _ymin) / _dy)); }
 
-        std::size_t iZ(double z) const { return static_cast<int>((z - _zmin) / _dz + 0.5); }
+        std::size_t iZ(double z) const { return static_cast<std::size_t>(lround((z - _zmin) / _dz)); }
 
         bool interpolateTriLinear(const CLHEP::Hep3Vector&, CLHEP::Hep3Vector&) const;
 

@@ -21,7 +21,9 @@ namespace mu2e {
         public:
 
            //no constructor for this interface
-           virtual ~CrystalMapper() {};
+           // Fixme: clang-tidy finds a rule of 5 violation.
+           //        The obvious fix create errors compiling derived classes due to missing default c'tor
+           virtual ~CrystalMapper() {}
 
            virtual int                nCrystalMax(int maxRing)                         const = 0;
 
