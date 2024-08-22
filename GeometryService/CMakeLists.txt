@@ -4,6 +4,7 @@ cet_make_library(
       src/BFieldConfigMaker.cc
       src/BFieldManagerMaker.cc
       src/CosmicRayShieldMaker.cc
+      src/DUSAFMu2eConverter.cc
       src/DetectorSolenoidMaker.cc
       src/DetectorSolenoidShieldingMaker.cc
       src/DetectorSystemMaker.cc
