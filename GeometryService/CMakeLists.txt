@@ -8,6 +8,7 @@ cet_make_library(
       src/DetectorSolenoidShieldingMaker.cc
       src/DetectorSystemMaker.cc
       src/DiskCalorimeterMaker.cc
+      src/DUSAFMu2eConverter.cc
       src/ElectronicRackMaker.cc
       src/ExtMonFNALBuildingMaker.cc
       src/ExtMonFNALMagnetMaker.cc
