@@ -18,6 +18,11 @@ namespace mu2e
   public:
     Detector() {}
     virtual ~Detector() = default;
+    Detector( Detector const&  ) = default;
+    Detector( Detector&&       ) = default;
+    Detector& operator=(Detector const&  ) = default;
+    Detector& operator=(Detector &&      ) = default;
+
   };
 }
 

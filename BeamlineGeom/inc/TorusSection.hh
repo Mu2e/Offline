@@ -20,6 +20,9 @@ namespace mu2e {
   friend class BeamlineMaker;
 
   public:
+
+    constexpr static std::size_t _npar_data{5};
+
     // fixme: improve  _materialName initialization
     TorusSection() :
       _rTorus(0.),_rIn(0.),_rOut(0.),
@@ -51,8 +54,6 @@ namespace mu2e {
       fillData();
     }
 
-    ~TorusSection(){}
-
     void set(double rTorus, double rIn, double rOut, double phi0, double dPhi,
              CLHEP::Hep3Vector  const & origin,
              CLHEP::HepRotation  const & rotation = CLHEP::HepRotation(),
@@ -73,7 +74,7 @@ namespace mu2e {
     double rOut()        const {return _rOut;  }
     double phiStart()    const {return _phiBegin; }
     double deltaPhi()    const {return _deltaPhi; }
-    const std::array<double,5>& getParameters() const { return _data; }
+    const std::array<double,_npar_data>& getParameters() const { return _data; }
 
   private:
 
@@ -85,7 +86,7 @@ namespace mu2e {
     double _phiBegin;
     double _deltaPhi;
 
-    std::array<double,5> _data;
+    std::array<double,_npar_data> _data;
 
     void fillData() {
       _data[0] = _rIn;
