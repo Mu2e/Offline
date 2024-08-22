@@ -12,16 +12,20 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
+#ifndef __ROOTCLING__
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
+#endif
 
 namespace mu2e {
   class SurfaceStep {
     public:
-      SurfaceStep(){};
+    SurfaceStep(){};
+#ifndef __ROOTCLING__
       // create from a StepPointMC. Association to a SurfaceId must be done outside this class
-      SurfaceStep(SurfaceId sid, StepPointMC const& spmc, GeomHandle<DetectorSystem>const& det);
-// accessors
+    SurfaceStep(SurfaceId sid, StepPointMC const& spmc, GeomHandle<DetectorSystem> const& det);
+#endif
+    // accessors
       float energyDeposit() const { return edep_; }
       double const& time() const { return time_; } // time of the earliest StepPointMC used in this step
       XYZVectorF const& startPosition() const { return startpos_; }
@@ -31,10 +35,12 @@ namespace mu2e {
       art::Ptr<SimParticle> const& simParticle() const { return simp_; }
       art::Ptr<SimParticle>& simParticle() { return simp_; } // used for compression
       auto const& surfaceId() const& { return sid_; }
-      double pathLength() const { return (endPosition()-startPosition()).R(); }
+      double pathLength() const { return (endPosition() - startPosition()).R(); }
+#ifndef __ROOTCLING__
       // append a MCStep to this step. The step must have the same SimParticle.  Caller is responsible
       // to insure this step is subsequent in time to the previous step
-      void addStep(StepPointMC const& spmc, GeomHandle<DetectorSystem>const& det);
+      void addStep(StepPointMC const& spmc, GeomHandle<DetectorSystem> const& det);
+#endif
     private:
       SurfaceId  sid_ = SurfaceIdDetail::unknown; // Identifier of the surface this step crosses
       float       edep_ = 0.0;  // energy deposited in this material in this step
