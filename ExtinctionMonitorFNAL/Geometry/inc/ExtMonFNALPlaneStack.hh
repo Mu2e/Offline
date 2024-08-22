@@ -25,7 +25,7 @@ namespace mu2e {
     unsigned nmodules() const { return (this->nplanes() * this->nModulesPerPlane()); }
 
     const std::vector<ExtMonFNALPlane>& planes() const { return planes_; }
-    const int size() const { return planes_.size(); }
+    const int size() const { return int(planes_.size()); }
 
     const std::vector<double>& plane_zoffset() const { return m_plane_zoffset; }
     const std::vector<double>& plane_xoffset() const { return m_plane_xoffset; }

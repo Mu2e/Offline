@@ -14,15 +14,15 @@ namespace mu2e {
 
   public:
 
-    Coil() : _rIn(0.), _rOut(0.), _halfZ(0.) {}
+    Coil() : _rIn(0.), _rOut(0.), _halfZ(0.), _origin(), _rotation() {}
 
     Coil( double x, double y, double z,
           double rIn, double rOut, double halfZ,
-          CLHEP::HepRotation rotation = CLHEP::HepRotation() ) :
-      _rIn( rIn ), _rOut( rOut ) , _halfZ( halfZ )
+          CLHEP::HepRotation const& rotation = CLHEP::HepRotation() ) :
+      _rIn( rIn ), _rOut( rOut ) , _halfZ( halfZ ),
+      _origin( x, y, z ),
+      _rotation(rotation)
     {
-      _origin = CLHEP::Hep3Vector( x, y, z );
-      _rotation = rotation;
     }
 
     double rIn()        const { return _rIn;   }
@@ -31,7 +31,7 @@ namespace mu2e {
     CLHEP::Hep3Vector  const & getGlobal()   const { return _origin; }
     CLHEP::HepRotation const * getRotation() const { return &_rotation; }
 
-    void  setRotation( CLHEP::HepRotation rotation ) { _rotation = rotation; }
+    void  setRotation( CLHEP::HepRotation const& rotation ) { _rotation = rotation; }
 
     void setOrigin  ( const double x, const double y, const double z ) {
       _origin = CLHEP::Hep3Vector( x, y, z );

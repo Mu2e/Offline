@@ -248,11 +248,6 @@ namespace mu2e {
          MakeIt();
     }
 
-
-    DiskCalorimeterMaker::~DiskCalorimeterMaker() {}
-
-
-
     void DiskCalorimeterMaker::MakeIt(void)
     {
 

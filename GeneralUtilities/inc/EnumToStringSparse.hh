@@ -163,10 +163,11 @@ namespace mu2e {
     static map_type const& names() { return Detail::names(); }
 
     static void printAll( std::ostream& ost ){
+      constexpr unsigned fieldWidth{10};
       ost << "Defined enum values for " << Detail::typeName() << std::endl;
       for ( typename map_type::const_iterator i=names().begin(), e=names().end();
             i != e; ++i ){
-        ost << std::setw(10) << i->first << " " << i->second << std::endl;
+        ost << std::setw(fieldWidth) << i->first << " " << i->second << std::endl;
       }
     }
 
