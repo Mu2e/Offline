@@ -26,6 +26,6 @@ function check_directory() {
     fi
 }
 
-for dir in */;do
+for dir in $PWD/*;do
          check_directory ${dir%/}
 done
