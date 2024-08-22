@@ -34,8 +34,6 @@ namespace mu2e {
              crateDeltaZ_(0)
            {}
 
-           ~DiskGeomInfo() {}
-
            const CLHEP::Hep3Vector&  size()                    const {return size_; }
            const CLHEP::Hep3Vector&  origin()                  const {return origin_;}
            const CLHEP::Hep3Vector&  originLocal()             const {return originLocal_; }

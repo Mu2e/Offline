@@ -27,6 +27,13 @@ namespace mu2e {
 
     MBSMaker( SimpleConfig const & config,
               double solenoidOffset);
+    ~MBSMaker() = default;
+
+    // delete automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
+    MBSMaker( MBSMaker const & ) = delete;
+    MBSMaker( MBSMaker&&       ) = delete;
+    MBSMaker& operator=( MBSMaker const & ) = delete;
+    MBSMaker& operator=( MBSMaker&&       )  = delete;
 
     void parseConfig( SimpleConfig const & _config );
 
@@ -38,10 +45,6 @@ namespace mu2e {
     std::unique_ptr<MBS> getMBSPtr() { return std::move(_mbs); }
 
   private:
-
-    // hide automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
-    MBSMaker( MBSMaker const & );
-    MBSMaker const & operator= ( MBSMaker const & );
 
     std::unique_ptr<MBS> _mbs;
 

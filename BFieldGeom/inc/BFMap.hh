@@ -23,7 +23,7 @@ namespace mu2e {
        public:
         friend class BFieldManagerMaker;
 
-        BFMap(std::string filename,
+        BFMap(std::string const& filename,
               double xmin,
               double xmax,
               double ymin,
@@ -44,7 +44,11 @@ namespace mu2e {
               _type(atype),
               _scaleFactor(scale){};
 
-        virtual ~BFMap(){};
+        virtual ~BFMap() = default;
+        BFMap( BFMap const&  ) = default;
+        BFMap( BFMap&&       ) = default;
+        BFMap& operator=(BFMap const&  ) = default;
+        BFMap& operator=(BFMap&&       ) = default;
 
         // Accessors
         virtual bool getBFieldWithStatus(const CLHEP::Hep3Vector&, CLHEP::Hep3Vector&) const = 0;
