@@ -1,5 +1,5 @@
-BEGIN_PROLOG
-Mu2eKinKal : {
+BEGIN_PROLG
+Mu2eKinKl : {
   # general configuration
   #
   MAT: {
@@ -278,11 +278,11 @@ Mu2eKinKal : {
   }
 
   LOOPEXTRAPOLATION : {
-    ExtrapolateDownstreamSurface : "TT_Back"
-    ExtrapolateUpstreamSurface : "TT_Front"
-    ExtrapolationTolerance : 1.0e-3
-    ExtrapolationMaxDt : 100.0 # (ns)
-    ExtrapolationMinCosTheta : -1.0
+    DownstreamSurface : "TT_Back"
+    UpstreamSurface : "TSDA"
+    Tolerance : 1.0e-3
+    MaxDt : 100.0 # (ns)
+    MinCosTheta : -1.0
   }
 
   CENTRALHELIX : {
