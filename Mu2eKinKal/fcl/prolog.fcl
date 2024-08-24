@@ -275,11 +275,14 @@ Mu2eKinKal : {
   LOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     SeedFlags : [ "HelixOK" ]
+  }
+
+  LOOPEXTRAPOLATION : {
     ExtrapolateDownstreamSurface : "TT_Back"
     ExtrapolateUpstreamSurface : "TT_Front"
     ExtrapolationTolerance : 1.0e-3
     ExtrapolationMaxDt : 100.0 # (ns)
-    ExtrapolationMinCosTheta : 0.001
+    ExtrapolationMinCosTheta : -1.0
   }
 
   CENTRALHELIX : {
@@ -428,7 +431,10 @@ Mu2eKinKal : {
     KKLine: @local::Mu2eKinKal.KKLine
     KKOffSpill: @local::Mu2eKinKal.KKOffSpill
     KKDeP: @local::Mu2eKinKal.KK
-    KKDeM: @local::Mu2eKinKal.KK
+    KKDeM: {
+      @table::Mu2eKinKal.KK
+      Extrapolation : @local::Mu2eKinKal.LOOPEXTRAPOLATION
+    }
     KKUeP: @local::Mu2eKinKal.KK
     KKUeM: @local::Mu2eKinKal.KK
     KKDmuP: @local::Mu2eKinKal.KK

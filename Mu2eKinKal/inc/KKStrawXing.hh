@@ -35,7 +35,7 @@ namespace mu2e {
       KKStrawXing(KKSTRAWHITPTR const& strawhit, KKStrawMaterial const& smat);
       virtual ~KKStrawXing() {}
       // ElementXing interface
-      void updateReference(KTRAJPTR const& ktrajptr) override;
+      void updateReference(PTRAJ const& ptraj) override;
       void updateState(MetaIterConfig const& config,bool first) override;
       Parameters params() const override;
       std::vector<MaterialXing>const&  matXings() const override { return mxings_; }
@@ -82,11 +82,12 @@ namespace mu2e {
     toff_(smat.wireRadius()/strawhit->closestApproach().particleTraj().speed(strawhit->closestApproach().particleToca()))
   {}
 
-  template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(KTRAJPTR const& ktrajptr) {
+  template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(PTRAJ const& ptraj) {
     if(shptr_){
       ca_ = shptr_->closestApproach();
     } else {
       CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(axis_.timeAtMidpoint(),axis_.timeAtMidpoint());
+      auto ktrajptr = ptraj.nearestTraj(time()); // replace with piecewise TPCA TODO
       ca_ = CA(ktrajptr,axis_,tphint,precision());
       if(!ca_.usable())
         sxconfig_.hitstate_ = WireHitState::inactive;

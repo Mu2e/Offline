@@ -21,7 +21,7 @@ namespace mu2e {
   using CCPtr = art::Ptr<CaloCluster>;
   template <class KTRAJ> class KKCaloHit : public KinKal::ResidualHit<KTRAJ> {
     public:
-      using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
+      using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
       using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using HIT = KinKal::Hit<KTRAJ>;
@@ -30,7 +30,7 @@ namespace mu2e {
       unsigned nResid() const override { return 1; } // 1 time residual
       Residual const& refResidual(unsigned ires=0) const override;
       double time() const override { return tpca_.particleToca(); }
-      void updateReference(KTRAJPTR const& ktrajptr) override;
+      void updateReference(PTRAJ const& ptraj) override;
       void updateState(MetaIterConfig const& config,bool first) override;
       KTRAJPTR const& refTrajPtr() const override { return tpca_.particleTrajPtr(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
@@ -65,12 +65,13 @@ namespace mu2e {
     return rresid_;
   }
 
-  template <class KTRAJ> void KKCaloHit<KTRAJ>::updateReference(std::shared_ptr<KTRAJ> const& ktrajptr) {
+  template <class KTRAJ> void KKCaloHit<KTRAJ>::updateReference(PTRAJ const& ptraj) {
     // compute PCA
     CAHint tphint( saxis_.measurementTime(), saxis_.measurementTime());
     // don't update the hint: initial T0 values can be very poor, which can push the CA calculation onto the wrong helix loop,
     // from which it's impossible to ever get back to the correct one.  Active loop checking might be useful eventually too TODO
     //    if(tpca_.usable()) tphint = CAHint(tpca_.particleToca(),tpca_.sensorToca());
+    auto ktrajptr = ptraj.nearestTraj(time());
     tpca_ = CA(ktrajptr,saxis_,tphint,tpca_.precision());
     if(!tpca_.usable())rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,false,rresid_.dRdP());
   }
