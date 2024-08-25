@@ -53,6 +53,7 @@ cet_build_plugin(SimpleKalSeedSelector art::tool
     LIBRARIES REG
       Offline::TrkReco
       
+      Offline::Mu2eKinKal
 )
 
 cet_build_plugin(TrkRecoMcUtils art::tool
