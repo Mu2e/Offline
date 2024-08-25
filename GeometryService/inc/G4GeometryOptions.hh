@@ -146,11 +146,13 @@ namespace mu2e {
     public:
 
       G4GeometryOptions( const SimpleConfig& config );
+      ~G4GeometryOptions() = default;
 
       // Disable copy c'tor and copy assignment
       G4GeometryOptions           (const G4GeometryOptions&) = delete;
       G4GeometryOptions& operator=(const G4GeometryOptions&) = delete;
-
+      G4GeometryOptions           (G4GeometryOptions&&)      = delete;
+      G4GeometryOptions& operator=(G4GeometryOptions&&)      = delete;
 
       void loadEntry( const SimpleConfig& config, const std::string& volName, const std::string& prefix );
 
