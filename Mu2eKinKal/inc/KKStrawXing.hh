@@ -132,13 +132,12 @@ namespace mu2e {
       this->materialEffects(dmom, momvar);
       // get the parameter derivative WRT momentum
       DPDV dPdM = referenceTrajectory().dPardM(time());
-      double mommag = referenceTrajectory().momentum(time());
       // loop over the momentum change basis directions, adding up the effects on parameters from each
       for(int idir=0;idir<MomBasis::ndir; idir++) {
         auto mdir = static_cast<MomBasis::Direction>(idir);
         auto dir = referenceTrajectory().direction(time(),mdir);
         // project the momentum derivatives onto this direction
-        DVEC pder = mommag*(dPdM*SVEC3(dir.X(), dir.Y(), dir.Z()));
+        DVEC pder = dPdM*SVEC3(dir.X(), dir.Y(), dir.Z());
         // convert derivative vector to a Nx1 matrix
         ROOT::Math::SMatrix<double,NParams(),1> dPdm;
         dPdm.Place_in_col(pder,0,0);
