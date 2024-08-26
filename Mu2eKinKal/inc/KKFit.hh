@@ -565,16 +565,14 @@ namespace mu2e {
     }
     fseed._straws.reserve(kktrk.strawXings().size());
     for(auto const& sxing : kktrk.strawXings()) {
-      std::array<double,3> dmom = {0.0,0.0,0.0}, momvar = {0.0,0.0,0.0};
       // compute energy loss
-      sxing->materialEffects(dmom, momvar);
-      VEC3 dm(dmom[0],dmom[1],dmom[2]);
-      // find material crossing properties
+      double dm, paramomvar, perpmomvar;
+      sxing->materialEffects(dm, paramomvar,perpmomvar);
+      double radfrac = sxing->radiationFraction();
+      // find the gas path
       double gaspath(0.0);
-      double radfrac(0.0);
       for(auto const& matxing : sxing->matXings()){
         if(matxing.dmat_.name().compare(5,3,"gas",3)==0)gaspath = matxing.plen_;
-        radfrac += matxing.dmat_.radiationFraction(matxing.plen_);
       }
       auto const& tpocad = sxing->closestApproach();
       fseed._straws.emplace_back(sxing->strawId(),
@@ -583,7 +581,7 @@ namespace mu2e {
           tpocad.sensorToca(),
           gaspath,
           radfrac,
-          dm.R(),
+          dm,
           sxing->active() );
     }
     // save the fit segments as requested

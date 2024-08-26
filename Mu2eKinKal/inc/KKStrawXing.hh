@@ -15,6 +15,8 @@
 namespace mu2e {
   using KinKal::SVEC3;
   using KinKal::DVEC;
+  using KinKal::SMAT;
+  using KinKal::SSMAT;
   using KinKal::CAHint;
   using KinKal::DPDV;
   using KinKal::MomBasis;
@@ -87,12 +89,11 @@ namespace mu2e {
       ca_ = shptr_->closestApproach();
     } else {
       CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(axis_.timeAtMidpoint(),axis_.timeAtMidpoint());
-      auto ktrajptr = ptraj.nearestTraj(time()); // replace with piecewise TPCA TODO
-      ca_ = CA(ktrajptr,axis_,tphint,precision());
-      if(!ca_.usable())
-        sxconfig_.hitstate_ = WireHitState::inactive;
+      PCA pca(ptraj,axis_,tphint,precision());
+      if(!pca.usable()) sxconfig_.hitstate_ = WireHitState::inactive;
+      ca_ = pca.localClosestApproach();
     }
- }
+  }
 
   template <class KTRAJ> Parameters KKStrawXing<KTRAJ>::params() const {
     return fparams_;
@@ -124,30 +125,11 @@ namespace mu2e {
       }
       smat_.findXings(cad,sxconfig_,mxings_);
     }
-    // reset
-    fparams_ = Parameters();
     if(mxings_.size() > 0){
-      // compute the parameter effect for forwards time
-      std::array<double,3> dmom = {0.0,0.0,0.0}, momvar = {0.0,0.0,0.0};
-      this->materialEffects(dmom, momvar);
-      // get the parameter derivative WRT momentum
-      DPDV dPdM = referenceTrajectory().dPardM(time());
-      // loop over the momentum change basis directions, adding up the effects on parameters from each
-      for(int idir=0;idir<MomBasis::ndir; idir++) {
-        auto mdir = static_cast<MomBasis::Direction>(idir);
-        auto dir = referenceTrajectory().direction(time(),mdir);
-        // project the momentum derivatives onto this direction
-        DVEC pder = dPdM*SVEC3(dir.X(), dir.Y(), dir.Z());
-        // convert derivative vector to a Nx1 matrix
-        ROOT::Math::SMatrix<double,NParams(),1> dPdm;
-        dPdm.Place_in_col(pder,0,0);
-        // update the transport for this effect; Forward time propagation corresponds to energy loss
-        fparams_.parameters() += pder*dmom[idir];
-        // now the variance: this doesn't depend on time direction
-        ROOT::Math::SMatrix<double, 1,1, ROOT::Math::MatRepSym<double,1>> MVar;
-        MVar(0,0) = momvar[idir]*varscale_;
-        fparams_.covariance() += ROOT::Math::Similarity(dPdm,MVar);
-      }
+      fparams_ = this->parameterChange(varscale_);
+    } else {
+      // reset
+      fparams_ = Parameters();
     }
   }
 

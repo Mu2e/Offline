@@ -130,16 +130,17 @@ namespace mu2e {
     // if we already computed PCA in the previous iteration, use that to set the hint.  This speeds convergence
     // otherwise use the time at the center of the wire, corrected for drift
     CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(wire_.timeAtMidpoint()-chit_.driftTime(),wire_.timeAtMidpoint());
-    auto ktrajptr = ptraj.nearestTraj(time()); // replace with piecewise CA TODO
-    ca_ = CA(ktrajptr,wire_,tphint,precision());
+    PCA pca(ptraj,wire_,tphint,precision());
     // check that we're on the right branch: we can move off if t0 changes a lot between iterations
     double dz = straw().origin().z() - ca_.particlePoca().Z();
-    if((!ca_.usable()) || fabs(dz) >  100) { // need a better absolute scale; should come from KTRAJ FIXME
-      tphint = CAHint(Mu2eKinKal::zTime(*ktrajptr,straw().origin().z(),wire_.timeAtMidpoint()), wire_.timeAtMidpoint());
-      ca_ = CA(ktrajptr,wire_,tphint,precision());
-      dz = straw().origin().z() - ca_.particlePoca().Z();
-      if((!ca_.usable()) || fabs(dz) >  100) whstate_.state_ = WireHitState::unusable;// give up on 2nd try
+    double maxdz(100.0);// need a better absolute scale; should come from KTRAJ FIXME
+    if((!pca.usable()) || fabs(dz) >  maxdz) {
+      tphint = CAHint(Mu2eKinKal::zTime(ptraj,straw().origin().z(),wire_.timeAtMidpoint()), wire_.timeAtMidpoint());
+      pca = PCA(ptraj,wire_,tphint,precision());
+      dz = straw().origin().z() - pca.particlePoca().Z();
+      if((!pca.usable()) || fabs(dz) >  maxdz) whstate_.state_ = WireHitState::unusable;// give up on 2nd try
     }
+    ca_ = pca.localClosestApproach();
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
