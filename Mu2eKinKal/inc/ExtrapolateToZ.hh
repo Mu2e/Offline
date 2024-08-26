@@ -11,9 +11,9 @@ namespace mu2e {
       ExtrapolateToZ() : maxDt_(-1.0), tol_(1e10), mincost_(1e-3),
       zmin_(std::numeric_limits<double>::max()),
       zmax_(-std::numeric_limits<double>::max()){}
-      ExtrapolateToZ(double maxdt, double tol,double mincost, double zmin, double zmax) :
-        maxDt_(maxdt), tol_(tol), mincost_(mincost), zmin_(zmin), zmax_(zmax) {
-        if(zmin >= zmax) throw cet::exception("RECO")<<"Mu2eKinKal::ExtrapolateToZ: range configuration error, zmin "<< zmin << " zmax " << zmax <<endl;
+      ExtrapolateToZ(double maxdt, double tol,double mincost, double zmin, double zmax,bool reflect=true) :
+        maxDt_(maxdt), tol_(tol), mincost_(mincost), zmin_(zmin), zmax_(zmax),reflect_(reflect) {
+          if(zmin >= zmax) throw cet::exception("RECO")<<"Mu2eKinKal::ExtrapolateToZ: range configuration error, zmin "<< zmin << " zmax " << zmax <<endl;
         }
       // interface for extrapolation
       double maxDt() const { return maxDt_; } // maximum time to extend the track, WRT the time of the first(last) measurement
@@ -26,12 +26,21 @@ namespace mu2e {
       double mincost_; // minimum absolute cos(theta)
       double zmin_; // minimum z value required
       double zmax_; // maximum z value required
+      bool reflect_; // allow reflection (or not
   };
 
   template <class KTRAJ> bool ExtrapolateToZ::needsExtrapolation(KinKal::Track<KTRAJ> const& kktrk, KinKal::TimeDir tdir, double time) const {
-    double zval = kktrk.fitTraj().position3(time).Z();
-    double cost = kktrk.fitTraj().direction(time).Z();
+    auto pos = kktrk.fitTraj().position3(time);
+    auto dir = kktrk.fitTraj().direction(time);
+    double zval = pos.Z();
+    double cost = dir.Z();
     if(fabs(cost) < mincost_)return false; // track is close to circular
+    // check for a direction change
+    if(!reflect_){
+      auto odir = kktrk.fitTraj().direction(kktrk.fitTraj().t0());
+      if(odir.Z() * cost <= 0.0) return false;
+    }
+    // otherwise, just check the z limits
     if(cost > 0){ // downstream
       return tdir == KinKal::TimeDir::forwards ? zval < zmax_ : zval > zmin_;
     } else { // upstream

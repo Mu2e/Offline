@@ -123,6 +123,7 @@ namespace mu2e {
     fhicl::Atom<float> Tol { Name("Tolerance"), Comment("Tolerance on fractional momemtum precision when extrapolating fits") };
     fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit") };
     fhicl::Atom<float> MinCosT { Name("MinCosTheta"), Comment("Minimum abs(Cos(theta)) to continue extrapolatng") };
+    fhicl::Atom<bool> Reflect { Name("Reflect"), Comment("Continue extrapolatng after reflection") };
   };
   struct LoopHelixFitConfig {
     fhicl::Table<KKLHModuleConfig> modSettings { Name("ModuleSettings") };
@@ -234,7 +235,8 @@ namespace mu2e {
       float maxdt = settings().Extrapolation()->MaxDt();
       float tol =  settings().Extrapolation()->Tol();
       float mincost = settings().Extrapolation()->MinCosT();
-      extrap_ = ExtrapolateToZ(maxdt,tol,mincost,upsurf->center().Z(), downsurf->center().Z());
+      bool reflect = settings().Extrapolation()->Reflect();
+      extrap_ = ExtrapolateToZ(maxdt,tol,mincost,upsurf->center().Z(), downsurf->center().Z(),reflect);
     }
   }
 
