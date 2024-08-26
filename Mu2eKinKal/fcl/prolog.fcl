@@ -283,6 +283,7 @@ Mu2eKinKal : {
     Tolerance : 1.0e-3
     MaxDt : 100.0 # (ns)
     MinCosTheta : -1.0
+    Reflect : true
   }
 
   CENTRALHELIX : {
