@@ -120,8 +120,6 @@ namespace mu2e {
   struct KKExtrapConfig {
     fhicl::Atom<float> Tol { Name("Tolerance"), Comment("Tolerance on fractional momemtum precision when extrapolating fits") };
     fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit") };
-    fhicl::Atom<float> MinCosT { Name("MinCosTheta"), Comment("Minimum abs(Cos(theta)) to continue extrapolatng") };
-    fhicl::Atom<bool> Reflect { Name("Reflect"), Comment("Continue extrapolatng after reflection") };
   };
   struct LoopHelixFitConfig {
     fhicl::Table<KKLHModuleConfig> modSettings { Name("ModuleSettings") };
@@ -171,7 +169,7 @@ namespace mu2e {
       Config fconfig_; // final final configuration object
       bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
       SurfaceMap smap_;
-      ExtrapolateToZ extrapIPA_, extrapTSDA_, extrapST_; // extrapolation predicate based on Z values.
+      ExtrapolateToZ toIPA_, toTSDA_, toST_; // extrapolation predicate based on Z values
   };
 
   LoopHelixFit::LoopHelixFit(const Parameters& settings) :  art::EDProducer{settings},
@@ -221,19 +219,26 @@ namespace mu2e {
     }
     // configure extrapolation
     if(settings().Extrapolation()){
-      auto IPA = smap_.DS().innerProtonAbsorber();
-      auto ipafront = IPA.frontDisk();
-      auto ipaback = IPA.backDisk();
-      auto TSDA = smap_.DS().upstreamAbsorber();
-      auto ST_front = smap_.ST().front();
-      auto ST_back = smap_.ST().back();
-      float maxdt = settings().Extrapolation()->MaxDt();
-      float tol =  settings().Extrapolation()->Tol();
-      float mincost = settings().Extrapolation()->MinCosT();
-//      bool reflect = settings().Extrapolation()->Reflect();
-      extrapIPA_ = ExtrapolateToZ(maxdt,tol,mincost,ipaback.center().Z(),ipafront.center().Z(),true);
-      extrapTSDA_ = ExtrapolateToZ(maxdt,tol,mincost,TSDA.center().Z(),ST_front.center().Z(),true);
-      extrapST_ = ExtrapolateToZ(maxdt,tol,mincost,ST_back.center().Z(),ST_front.center().Z(),true);
+      // find relevant z positions
+      auto const& trkr = smap_.tracker();
+      double trkzmin = trkr.front().center().Z();
+//      double trkzmax = trkr.back().center().Z();
+      auto const& IPA = smap_.DS().innerProtonAbsorber();
+      double ipazmin = IPA.frontDisk().center().Z();
+      double ipazmax = IPA.backDisk().center().Z();
+      auto const& st = smap_.ST();
+      double stzmin = st.front().center().Z();
+      double stzmax = st.back().center().Z();
+      double tsdaz = smap_.DS().upstreamAbsorber().center().Z();
+      // global configs
+      double maxdt = settings().Extrapolation()->MaxDt();
+      double tol =  settings().Extrapolation()->Tol();
+      // extrapolate to the IPA
+      toIPA_ = ExtrapolateToZ(maxdt,tol,ipazmax,trkzmin);
+      // extrapolate to the stopping target
+      toST_ = ExtrapolateToZ(maxdt,tol,stzmax,ipazmin);
+      // extrapolate to the back of the detector solenoid
+      toTSDA_ = ExtrapolateToZ(maxdt,tol,tsdaz,stzmin);
     }
   }
 
@@ -413,14 +418,17 @@ namespace mu2e {
   }
 
   void LoopHelixFit::extrapolate(KKTRK& ktrk) const {
+    // first extrapolate downstream. Sign the extrapolation direction by the track direction at t0
+    auto dir0 = ktrk.fitTraj().direction(ktrk.fitTraj().t0());
+    TimeDir trkdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
     // first, extrapolate to the back of the IPA
-    ktrk.extrapolate(TimeDir::forwards,extrapIPA_);
+    ktrk.extrapolate(trkdir,toIPA_);
     // then intersect with the IPA itself, and add those as ShellXings TODO
     // then extrapolate to the back of the target
-    ktrk.extrapolate(TimeDir::forwards,extrapST_);
+//    ktrk.extrapolate(trkdir,toST_);
     // intersect with the foils and add those as ShellXings TODO
     // extrapolate to the TSDA
-    ktrk.extrapolate(TimeDir::forwards,extrapTSDA_);
+//    ktrk.extrapolate(trkdir,toTSDA_);
     // if the track reflected, find the foil intersections and add those TODO
     // finally extrapolate back to the tracker entrance TODO
   }
