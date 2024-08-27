@@ -278,8 +278,6 @@ Mu2eKinKal : {
   }
 
   LOOPEXTRAPOLATION : {
-    DownstreamSurface : "TT_Back"
-    UpstreamSurface : "TSDA"
     Tolerance : 1.0e-3
     MaxDt : 100.0 # (ns)
     MinCosTheta : -1.0

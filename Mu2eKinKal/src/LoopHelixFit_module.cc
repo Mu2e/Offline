@@ -118,8 +118,6 @@ namespace mu2e {
   };
 // Extrapolation configuration
   struct KKExtrapConfig {
-    fhicl::Atom<std::string> DownSurf { Name("DownstreamSurface"), Comment("Extrapolate successful fits Downstream to this surface") };
-    fhicl::Atom<std::string> UpSurf { Name("UpstreamSurface"), Comment("Extrapolate successful fits Upstream to this surface") };
     fhicl::Atom<float> Tol { Name("Tolerance"), Comment("Tolerance on fractional momemtum precision when extrapolating fits") };
     fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit") };
     fhicl::Atom<float> MinCosT { Name("MinCosTheta"), Comment("Minimum abs(Cos(theta)) to continue extrapolatng") };
@@ -172,8 +170,8 @@ namespace mu2e {
       Config exconfig_; // extension configuration object
       Config fconfig_; // final final configuration object
       bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
-
-      ExtrapolateToZ extrap_; // extrapolation predicate based on Z values. Eventually this could be a more sophisticated test TODO
+      SurfaceMap smap_;
+      ExtrapolateToZ extrapIPA_, extrapTSDA_, extrapST_; // extrapolation predicate based on Z values.
   };
 
   LoopHelixFit::LoopHelixFit(const Parameters& settings) :  art::EDProducer{settings},
@@ -223,20 +221,19 @@ namespace mu2e {
     }
     // configure extrapolation
     if(settings().Extrapolation()){
-      std::string down = settings().Extrapolation()->DownSurf();
-      std::string up = settings().Extrapolation()->UpSurf();
-      SurfaceMap smap;
-      auto downsurf = std::dynamic_pointer_cast<KinKal::Plane>(smap.surface(down)->second);
-      auto upsurf = std::dynamic_pointer_cast<KinKal::Plane>(smap.surface(up)->second);
-      if((!downsurf) || (!upsurf) ||
-          fabs(1.0 - downsurf->normal().Z()) > 1e-8 ||
-          fabs(1.0 - upsurf->normal().Z()) > 1e-8 )
-        throw cet::exception("RECO")<<"mu2e::HelixFit: invalid olation surface ;must be planes orthogonal to z)" << endl;
+      auto IPA = smap_.DS().innerProtonAbsorber();
+      auto ipafront = IPA.frontDisk();
+      auto ipaback = IPA.backDisk();
+      auto TSDA = smap_.DS().upstreamAbsorber();
+      auto ST_front = smap_.ST().front();
+      auto ST_back = smap_.ST().back();
       float maxdt = settings().Extrapolation()->MaxDt();
       float tol =  settings().Extrapolation()->Tol();
       float mincost = settings().Extrapolation()->MinCosT();
-      bool reflect = settings().Extrapolation()->Reflect();
-      extrap_ = ExtrapolateToZ(maxdt,tol,mincost,upsurf->center().Z(), downsurf->center().Z(),reflect);
+//      bool reflect = settings().Extrapolation()->Reflect();
+      extrapIPA_ = ExtrapolateToZ(maxdt,tol,mincost,ipaback.center().Z(),ipafront.center().Z(),true);
+      extrapTSDA_ = ExtrapolateToZ(maxdt,tol,mincost,TSDA.center().Z(),ST_front.center().Z(),true);
+      extrapST_ = ExtrapolateToZ(maxdt,tol,mincost,ST_back.center().Z(),ST_front.center().Z(),true);
     }
   }
 
@@ -416,8 +413,16 @@ namespace mu2e {
   }
 
   void LoopHelixFit::extrapolate(KKTRK& ktrk) const {
-    ktrk.extrapolate(TimeDir::forwards,extrap_);
-    ktrk.extrapolate(TimeDir::backwards,extrap_);
+    // first, extrapolate to the back of the IPA
+    ktrk.extrapolate(TimeDir::forwards,extrapIPA_);
+    // then intersect with the IPA itself, and add those as ShellXings TODO
+    // then extrapolate to the back of the target
+    ktrk.extrapolate(TimeDir::forwards,extrapST_);
+    // intersect with the foils and add those as ShellXings TODO
+    // extrapolate to the TSDA
+    ktrk.extrapolate(TimeDir::forwards,extrapTSDA_);
+    // if the track reflected, find the foil intersections and add those TODO
+    // finally extrapolate back to the tracker entrance TODO
   }
 
 }
