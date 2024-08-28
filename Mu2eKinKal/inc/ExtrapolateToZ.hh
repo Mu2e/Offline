@@ -7,6 +7,7 @@
 #include <limits>
 #include "cetlib_except/exception.h"
 namespace mu2e {
+  using KinKal::TimeDir;
   class ExtrapolateToZ {
     public:
       ExtrapolateToZ() : maxDt_(-1.0), tol_(1e10),
@@ -19,8 +20,10 @@ namespace mu2e {
       // interface for extrapolation
       double maxDt() const { return maxDt_; } // maximum time to extend the track, WRT the time of the first(last) measurement
       double tolerance() const { return tol_; } // tolerance on fractional momentum change
+      double zMax() const { return zmax_; }
+      double zMin() const { return zmin_; }
       // extrapolation predicate: the track will be extrapolated until this predicate returns false, subject to the maximum time
-      template <class KTRAJ> bool needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, KinKal::TimeDir tdir, double time) const;
+      template <class KTRAJ> bool needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const;
     private:
       double maxDt_; // maximum extrapolation time
       double tol_; // momentum tolerance in BField domain
@@ -28,17 +31,19 @@ namespace mu2e {
       double zmax_; // maximum z value required
   };
 
-  template <class KTRAJ> bool ExtrapolateToZ::needsExtrapolation(KinKal::Track<KTRAJ> const& kktrk, KinKal::TimeDir tdir, double time) const {
-    auto pos = kktrk.fitTraj().position3(time);
-    auto dir = kktrk.fitTraj().direction(time);
+  template <class KTRAJ> bool ExtrapolateToZ::needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, KinKal::TimeDir tdir, double time) const {
+    std::cout <<"Extrapolating " << tdir << std::endl;
+    auto pos = ktrk.fitTraj().position3(time);
+    auto dir = ktrk.fitTraj().direction(time);
     double zval = pos.Z();
+    std::cout << "Start Z " << zval << std::endl;
     // sign the z velocity by the extrapolation direction
     double extrapdir = tdir == KinKal::TimeDir::forwards ? dir.Z() : -dir.Z();
     // stop when we get outside the range. This works with reflections
     if(extrapdir < 0){ // backwards extrapolation of downstream-going track, or forwards extrapolation of upstream-going track
-      return zval > zmin_;
-    } else {
       return zval > zmax_;
+    } else {
+      return zval < zmin_;
     }
   }
 }

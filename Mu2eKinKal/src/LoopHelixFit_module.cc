@@ -60,6 +60,7 @@
 #include "Offline/Mu2eKinKal/inc/KKConstantBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateToZ.hh"
+#include "Offline/Mu2eKinKal/inc/ExtrapolateIPA.hh"
 // C++
 #include <iostream>
 #include <string>
@@ -170,6 +171,7 @@ namespace mu2e {
       bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
       SurfaceMap smap_;
       ExtrapolateToZ toIPA_, toTSDA_, toST_; // extrapolation predicate based on Z values
+      ExtrapolateIPA extrapIPA_; // extrapolation to intersections with the IPA
   };
 
   LoopHelixFit::LoopHelixFit(const Parameters& settings) :  art::EDProducer{settings},
@@ -223,9 +225,9 @@ namespace mu2e {
       auto const& trkr = smap_.tracker();
       double trkzmin = trkr.front().center().Z();
 //      double trkzmax = trkr.back().center().Z();
-      auto const& IPA = smap_.DS().innerProtonAbsorber();
-      double ipazmin = IPA.frontDisk().center().Z();
-      double ipazmax = IPA.backDisk().center().Z();
+      auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
+      double ipazmin = IPA->frontDisk().center().Z();
+      double ipazmax = IPA->backDisk().center().Z();
       auto const& st = smap_.ST();
       double stzmin = st.front().center().Z();
       double stzmax = st.back().center().Z();
@@ -235,10 +237,13 @@ namespace mu2e {
       double tol =  settings().Extrapolation()->Tol();
       // extrapolate to the IPA
       toIPA_ = ExtrapolateToZ(maxdt,tol,ipazmax,trkzmin);
+      std::cout << "IPA Extrapolation zMin " << toIPA_.zMin() << " zMax " << toIPA_.zMax() << std::endl;
       // extrapolate to the stopping target
       toST_ = ExtrapolateToZ(maxdt,tol,stzmax,ipazmin);
       // extrapolate to the back of the detector solenoid
       toTSDA_ = ExtrapolateToZ(maxdt,tol,tsdaz,stzmin);
+      // extrapolate inside the IPA
+      extrapIPA_ = ExtrapolateIPA(maxdt,tol,IPA);
     }
   }
 
@@ -418,12 +423,25 @@ namespace mu2e {
   }
 
   void LoopHelixFit::extrapolate(KKTRK& ktrk) const {
-    // first extrapolate downstream. Sign the extrapolation direction by the track direction at t0
+    // To extrapolate upstream, sign the extrapolation direction by the track direction at t0
     auto dir0 = ktrk.fitTraj().direction(ktrk.fitTraj().t0());
     TimeDir trkdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
-    // first, extrapolate to the back of the IPA
+    // extrapolate to the back of the IPA
     ktrk.extrapolate(trkdir,toIPA_);
-    // then intersect with the IPA itself, and add those as ShellXings TODO
+    // then intersect with the IPA itself, and add those as ShellXings
+    std::cout << "Extrapolated to IPA, Z = ";
+    if(trkdir == TimeDir::backwards)
+      std::cout << ktrk.fitTraj().position3(ktrk.fitTraj().range().begin()).Z();
+    else
+      std::cout << ktrk.fitTraj().position3(ktrk.fitTraj().range().end()).Z();
+    std::cout << std::endl;
+    ktrk.extrapolate(trkdir,extrapIPA_);
+    while(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_){
+      // convert intersection into a ShellXing and add to the track TODO
+      // extrapolate accross this Xing; this applies the effect of energy loss in the material TODO
+      // re-intersect if possible
+      ktrk.extrapolate(trkdir,extrapIPA_);
+    }
     // then extrapolate to the back of the target
 //    ktrk.extrapolate(trkdir,toST_);
     // intersect with the foils and add those as ShellXings TODO
