@@ -37,6 +37,7 @@
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 // KinKal
 #include "KinKal/Fit/Track.hh"
 #include "KinKal/Fit/Config.hh"
@@ -104,10 +105,8 @@ namespace mu2e {
 
   // extend the generic module configuration as needed
   struct KKHelixModuleConfig : KKModuleConfig {
-    fhicl::Atom<art::InputTag> timeClusterCollection         {Name("TimeClusterCollection"),     Comment("Seed fit collections to be processed ") };
-    fhicl::Atom<art::InputTag> panelHitCollection         {Name("PanelHitCollection"),     Comment("Seed fit collections to be processed ") };
+    fhicl::Atom<art::InputTag> csCollection {Name("CosmicTrackSeedCollection"), Comment("Seed collection")};
     fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
-    fhicl::Atom<double> hitSep { Name("HitSeparation"), Comment("Seed with hits this far apart") };
     fhicl::Atom<double> seedMom { Name("SeedMomentum"), Comment("Seed momentum") };
     fhicl::Atom<int> seedCharge { Name("SeedCharge"), Comment("Seed charge") };
   };
@@ -133,10 +132,9 @@ namespace mu2e {
       TrkFitFlag fitflag_;
       // parameter-specific functions that need to be overridden in subclasses
       // data payload
-      art::ProductToken<TimeClusterCollection> tccol_T_;
       art::ProductToken<ComboHitCollection> chcol_T_;
-      art::ProductToken<ComboHitCollection> phcol_T_;
       art::ProductToken<CaloClusterCollection> cccol_T_;
+      art::ProductToken<CosmicTrackSeedCollection> cscol_T_;
       TrkFitFlag goodseed_;
       bool saveall_;
       ProditionsHandle<StrawResponse> strawResponse_h_;
@@ -151,17 +149,15 @@ namespace mu2e {
       Config config_; // initial fit configuration object
       Config exconfig_; // extension configuration object
       bool fixedfield_; //
-      double hitSep_;
       double seedMom_;
       int seedCharge_;
     };
 
   CentralHelixFit::CentralHelixFit(const Parameters& settings) : art::EDProducer{settings},
     fitflag_(TrkFitFlag::KKCentralHelix),
-    tccol_T_(consumes<TimeClusterCollection>(settings().modSettings().timeClusterCollection())),
     chcol_T_(consumes<ComboHitCollection>(settings().modSettings().comboHitCollection())),
-    phcol_T_(consumes<ComboHitCollection>(settings().modSettings().panelHitCollection())),
     cccol_T_(mayConsume<CaloClusterCollection>(settings().modSettings().caloClusterCollection())),
+    cscol_T_(consumes<CosmicTrackSeedCollection>(settings().modSettings().csCollection())),
     goodseed_(settings().modSettings().seedFlags()),
     saveall_(settings().modSettings().saveAll()),
     print_(settings().modSettings().printLevel()),
@@ -171,17 +167,16 @@ namespace mu2e {
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
     fixedfield_(false),
-    hitSep_(settings().modSettings().hitSep()),
     seedMom_(settings().modSettings().seedMom()),
     seedCharge_(settings().modSettings().seedCharge())
     {
       // collection handling
       produces<KKTRKCOL>();
       produces<KalSeedCollection>();
-//      produces<KalHelixAssns>();
+      //      produces<KalHelixAssns>();
       // build the initial seed covariance
       auto const& seederrors = settings().modSettings().seederrors();
- if(seederrors.size() != KinKal::NParams())
+      if(seederrors.size() != KinKal::NParams())
         throw cet::exception("RECO")<<"mu2e::CentralHelixFit:Seed error configuration error"<< endl;
       for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
         seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
@@ -214,74 +209,44 @@ namespace mu2e {
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
-    auto ph_H = event.getValidHandle<ComboHitCollection>(phcol_T_);
     auto cc_H = event.getValidHandle<CaloClusterCollection>(cccol_T_);
+    auto cs_H = event.getValidHandle<CosmicTrackSeedCollection>(cscol_T_);
     auto const& chcol = *ch_H;
-    auto const& phcol = *ph_H;
+    auto const& cscol = *cs_H;
     // create output
     unique_ptr<KKTRKCOL> kktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
-//    unique_ptr<KalHelixAssns> kkseedassns(new KalHelixAssns());
-    //auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
-    //auto KalSeedCollectionGetter = event.productGetter(KalSeedCollectionPID);
 
-    auto  const& tcH = event.getValidHandle<TimeClusterCollection>(tccol_T_);
-    const TimeClusterCollection& tccol(*tcH);
 
-    for (size_t index=0;index<tccol.size();++index){
-      const auto& tclust = tccol[index];
-      ComboHitCollection combohits;
-      combohits.setParent(phcol.parent());
-      for (size_t i=0;i<tclust.hits().size();i++){
-        combohits.push_back(phcol[tclust.hits()[i]]);
-      }
-
-      auto zcent = Mu2eKinKal::zMid(combohits);
+    for (size_t index=0;index<cscol.size();++index){
+      const auto& cseed = cscol[index];
+      auto zcent = Mu2eKinKal::zMid(cseed.hits());
       // take the magnetic field at the helix center as nominal
       auto bnom = kkbf_->fieldVect(VEC3(0,0,zcent));
 
       double bz = bnom.Z();
-      auto trange = Mu2eKinKal::timeBounds(combohits);
+      auto trange = Mu2eKinKal::timeBounds(cseed.hits());
       auto fitpart = fpart_;
 
 
-      XYZVectorF best_seedpos, best_seeddir;
-      double best_chi2 = 9e9;
-      for (size_t i=0;i<combohits.size();i++){
-        auto seedpos = combohits[i].pos();
-        for (size_t j=i+1;j<combohits.size();j++){
-          if ((combohits[j].pos()-combohits[i].pos()).Mag2() < hitSep_)
-            continue;
-          auto seeddir = (combohits[j].pos()-combohits[i].pos()).Unit();
-          double chi2 = 0;
-          for (size_t k=0;k<combohits.size();k++){
-            if (k == i || k == j)
-              continue;
-            auto tohit = combohits[k].pos()-seedpos;
-            auto poca = seedpos + seeddir*tohit.Dot(seeddir);
-            auto delta = combohits[k].pos()-poca;
-            double delta2 = delta.Mag2();
-            delta = delta.Unit();
-
-            double error2 = pow(delta.Dot(combohits[j].uDir())*combohits[j].uRes(),2)+pow(delta.Dot(combohits[j].vDir())*combohits[j].vRes(),2)+pow(delta.Dot(combohits[j].wDir())*combohits[j].wRes(),2);
-            chi2 += delta2/error2;
-          }
-          if (chi2 < best_chi2){
-            best_chi2 = chi2;
-            best_seedpos = seedpos;
-            best_seeddir = seeddir;
-          }
-        }
+      float midy = 0;
+      for (size_t i=0;i<cseed.hits().size();i++){
+        auto hiti = cseed.hits()[i];
+        midy += hiti.pos().y();
       }
+      midy /= cseed.hits().size();
 
-      if (best_seeddir.Y() > 0)
-        best_seeddir *= -1;
+      XYZVectorF trackpos = cseed.track().FitEquation.Pos;
+      XYZVectorF trackdir = cseed.track().FitEquation.Dir.Unit();
+      if (trackdir.y() > 0)
+        trackdir *= -1;
 
-      double t0 = tclust._t0.t0();
-      auto trackpos = best_seedpos;
-      auto trackmom = best_seeddir * seedMom_;
+      // put direction as tangent to circle at mid y position
+      trackpos += (midy - trackpos.y())/trackdir.y() * trackdir;
 
-      auto temptraj = KTRAJ(KinKal::VEC4(trackpos.x(),trackpos.y(),trackpos.z(),t0),KinKal::MOM4(trackmom.x(),trackmom.y(),trackmom.z(),mass_), seedCharge_, bz);
+      XYZVectorF trackmom = trackdir * seedMom_;
+
+      auto temptraj = KTRAJ(KinKal::VEC4(trackpos.x(),trackpos.y(),trackpos.z(),cseed.t0().t0()),KinKal::MOM4(trackmom.x(),trackmom.y(),trackmom.z(),mass_), seedCharge_, bz);
       KinKal::Parameters kkpars(temptraj.params().parameters(),seedcov_);
       auto seedtraj = KTRAJ(kkpars,mass_,seedCharge_,bz,trange);
 
@@ -290,7 +255,7 @@ namespace mu2e {
 
       // first, we need to unwind the combohits.  We use this also to find the time range
       StrawHitIndexCollection strawHitIdxs;
-      auto chcolptr = combohits.fillStrawHitIndices(strawHitIdxs, StrawIdMask::uniquestraw);
+      auto chcolptr = cseed.hits().fillStrawHitIndices(strawHitIdxs, StrawIdMask::uniquestraw);
       if(chcolptr != &chcol)
         throw cet::exception("RECO")<<"mu2e::KKCentralHelixFit: inconsistent ComboHitCollection" << std::endl;
       // next, build straw hits and materials from these
@@ -337,7 +302,7 @@ namespace mu2e {
       }
     }
     // put the output products into the event
-    if(print_ > 0) std::cout << "Fitted " << kktrkcol->size() << " tracks from " << tccol.size() << " Seeds" << std::endl;
+    if(print_ > 0) std::cout << "Fitted " << kktrkcol->size() << " tracks from " << cscol.size() << " Seeds" << std::endl;
     event.put(move(kktrkcol));
     event.put(move(kkseedcol));
   }
