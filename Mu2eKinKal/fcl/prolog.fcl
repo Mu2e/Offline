@@ -283,11 +283,8 @@ Mu2eKinKal : {
   CENTRALHELIX : {
     SeedMomentum : 10000.0
     SeedCharge : 1
-    HitSeparation : 100.0
     SeedErrors : [5.0, 0.05, 5.0, 5.0, 0.1, 5.0] # d0, phi0, omega, z0, tandip, t0
     SeedFlags : [ "HelixOK" ]
-    TimeClusterCollection : "SimpleTimeCluster"
-    PanelHitCollection : "makePH"
     ExtrapolateSurfaces : ["TT_Front","TT_Back","TT_Outer"]
     ExtrapolationTolerance : 1.0e-3
     ExtrapolationMaxDt : 100.0
