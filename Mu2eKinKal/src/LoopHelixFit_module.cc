@@ -224,8 +224,8 @@ namespace mu2e {
     if(settings().Extrapolation()){
       extrapolate_ = true;
       // find relevant z positions
-      auto const& trkr = smap_.tracker();
-      double trkzmin = trkr.front().center().Z();
+//      auto const& trkr = smap_.tracker();
+//      double trkzmin = trkr.front().center().Z();
 //      double trkzmax = trkr.back().center().Z();
       auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
       double ipazmax = IPA->backDisk().center().Z();
@@ -422,7 +422,8 @@ namespace mu2e {
 
   void LoopHelixFit::extrapolate(KKTRK& ktrk) const {
     // To extrapolate upstream, sign the extrapolation direction by the track direction at t0
-    auto dir0 = ktrk.fitTraj().direction(ktrk.fitTraj().t0());
+    auto const& ftraj = ktrk.fitTraj();
+    auto dir0 = ftraj.direction(ftraj.t0());
     TimeDir trkdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
     // extrapolate to the back of the IPA
     ktrk.extrapolate(trkdir,toIPA_);
@@ -430,9 +431,9 @@ namespace mu2e {
     // then intersect with the IPA itself, and add those as ShellXings
     std::cout << "Extrapolated " << trkdir << " to IPA, target z = " << toIPA_.zVal() << " extrap Z = ";
     if(trkdir == TimeDir::backwards)
-      std::cout << ktrk.fitTraj().position3(ktrk.fitTraj().range().begin()).Z();
+      std::cout << ftraj.position3(ftraj.range().begin()).Z() << " time " << ftraj.range().begin();
     else
-      std::cout << ktrk.fitTraj().position3(ktrk.fitTraj().range().end()).Z();
+      std::cout << ftraj.position3(ftraj.range().end()).Z()<< " time " << ftraj.range().end();
     std::cout << std::endl;
     ktrk.extrapolate(trkdir,extrapIPA_);
     while(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_){

@@ -41,7 +41,7 @@ namespace mu2e {
     double tz = 1.0/std::max(fabs(ktrk.fitTraj().velocity(time).Z())/(2*halflen),1.0/maxDt_); // protect against reflection (zero z speed)
     TimeRange trange = tdir == TimeDir::forwards ? TimeRange(time,time+tz) : TimeRange(time-tz,time);
     // update intersection
-    std::cout << "IPA intersection range " << trange << std::endl;
+    std::cout << "IPA intersection " << trange << std::endl;
     inter_ = KinKal::intersect(ktrk.fitTraj(),*ipa_,trange,tol_,tdir);
     std::cout << "IPA extrap start time " << time << " " << inter_.time_ << " " << inter_.onsurface_ << " " << inter_.inbounds_ << std::endl;
     return inter_.onsurface_ && inter_.inbounds_ && inter_.time_ < time;
