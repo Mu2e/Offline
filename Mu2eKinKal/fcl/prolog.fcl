@@ -278,7 +278,7 @@ Mu2eKinKal : {
   }
 
   LOOPEXTRAPOLATION : {
-    Tolerance : 1.0e-3
+    Tolerance : 1.0e-2 # (mm)
     MaxDt : 100.0 # (ns)
   }
 
