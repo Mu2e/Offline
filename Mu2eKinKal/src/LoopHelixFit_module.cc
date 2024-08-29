@@ -170,6 +170,7 @@ namespace mu2e {
       Config fconfig_; // final final configuration object
       bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
       SurfaceMap smap_;
+      bool extrapolate_;
       ExtrapolateToZ toIPA_, toTSDA_, toST_; // extrapolation predicate based on Z values
       ExtrapolateIPA extrapIPA_; // extrapolation to intersections with the IPA
   };
@@ -188,7 +189,7 @@ namespace mu2e {
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
-    fixedfield_(false)
+    fixedfield_(false),extrapolate_(false)
   {
     // collection handling
     for(const auto& hseedtag : settings().modSettings().seedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
@@ -221,27 +222,25 @@ namespace mu2e {
     }
     // configure extrapolation
     if(settings().Extrapolation()){
+      extrapolate_ = true;
       // find relevant z positions
       auto const& trkr = smap_.tracker();
       double trkzmin = trkr.front().center().Z();
 //      double trkzmax = trkr.back().center().Z();
       auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
-      double ipazmin = IPA->frontDisk().center().Z();
       double ipazmax = IPA->backDisk().center().Z();
       auto const& st = smap_.ST();
-      double stzmin = st.front().center().Z();
       double stzmax = st.back().center().Z();
       double tsdaz = smap_.DS().upstreamAbsorber().center().Z();
       // global configs
       double maxdt = settings().Extrapolation()->MaxDt();
       double tol =  settings().Extrapolation()->Tol();
-      // extrapolate to the IPA
-      toIPA_ = ExtrapolateToZ(maxdt,tol,ipazmax,trkzmin);
-      std::cout << "IPA Extrapolation zMin " << toIPA_.zMin() << " zMax " << toIPA_.zMax() << std::endl;
+      // extrapolate to the IPA downstream edge
+      toIPA_ = ExtrapolateToZ(maxdt,tol,ipazmax);
       // extrapolate to the stopping target
-      toST_ = ExtrapolateToZ(maxdt,tol,stzmax,ipazmin);
+      toST_ = ExtrapolateToZ(maxdt,tol,stzmax);
       // extrapolate to the back of the detector solenoid
-      toTSDA_ = ExtrapolateToZ(maxdt,tol,tsdaz,stzmin);
+      toTSDA_ = ExtrapolateToZ(maxdt,tol,tsdaz);
       // extrapolate inside the IPA
       extrapIPA_ = ExtrapolateIPA(maxdt,tol,IPA);
     }
@@ -347,8 +346,7 @@ namespace mu2e {
               }
             }
             // extrapolate as required
-            if(goodfit)extrapolate(*kktrk);
-
+            if(extrapolate_ && goodfit)extrapolate(*kktrk);
             if(print_>0)kktrk->printFit(std::cout,print_);
             if(goodfit || saveall_){
               TrkFitFlag fitflag(hptr->status());
@@ -428,8 +426,9 @@ namespace mu2e {
     TimeDir trkdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
     // extrapolate to the back of the IPA
     ktrk.extrapolate(trkdir,toIPA_);
+    // check that the track hasn't reflected TODO
     // then intersect with the IPA itself, and add those as ShellXings
-    std::cout << "Extrapolated to IPA, Z = ";
+    std::cout << "Extrapolated " << trkdir << " to IPA, target z = " << toIPA_.zVal() << " extrap Z = ";
     if(trkdir == TimeDir::backwards)
       std::cout << ktrk.fitTraj().position3(ktrk.fitTraj().range().begin()).Z();
     else
