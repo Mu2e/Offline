@@ -63,7 +63,7 @@ namespace mu2e {
     // if we get to here we need to test for an intersection with the actual cylinder
     // first, estimate the time range based on local piece Z speed transit time
     // Buffer by the range of the last piece to avoid missed edges.
-    auto const& ktraj = tdir == TimeDir::forwards ? ktrk.fitTraj().front() : ktrk.fitTraj().back();
+    auto const& ktraj = tdir == TimeDir::forwards ? ktrk.fitTraj().back() : ktrk.fitTraj().front();
     double dt = ktraj.range().range();
     double halflen = ipa_->halfLength();
     double tz = 1.0/std::max(fabs(zvel)/(2*halflen),1.0/maxDt_); // protect against reflection (zero z speed)
