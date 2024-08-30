@@ -121,6 +121,7 @@ namespace mu2e {
   struct KKExtrapConfig {
     fhicl::Atom<float> Tol { Name("Tolerance"), Comment("Tolerance on fractional momemtum precision when extrapolating fits") };
     fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit") };
+    fhicl::Atom<int> Debug { Name("Debug"), Comment("Debug level"), 0 };
   };
   struct LoopHelixFitConfig {
     fhicl::Table<KKLHModuleConfig> modSettings { Name("ModuleSettings") };
@@ -235,6 +236,7 @@ namespace mu2e {
       // global configs
       double maxdt = settings().Extrapolation()->MaxDt();
       double tol =  settings().Extrapolation()->Tol();
+      int debug =  settings().Extrapolation()->Debug();
       // extrapolate to the IPA downstream edge
       toIPA_ = ExtrapolateToZ(maxdt,tol,ipazmax);
       // extrapolate to the stopping target
@@ -242,7 +244,7 @@ namespace mu2e {
       // extrapolate to the back of the detector solenoid
       toTSDA_ = ExtrapolateToZ(maxdt,tol,tsdaz);
       // extrapolate inside the IPA
-      extrapIPA_ = ExtrapolateIPA(maxdt,tol,IPA);
+      extrapIPA_ = ExtrapolateIPA(maxdt,tol,IPA,debug);
     }
   }
 
@@ -421,6 +423,7 @@ namespace mu2e {
   }
 
   void LoopHelixFit::extrapolate(KKTRK& ktrk) const {
+    extrapIPA_.reset();
     // To extrapolate upstream, sign the extrapolation direction by the track direction at t0
     auto const& ftraj = ktrk.fitTraj();
     auto dir0 = ftraj.direction(ftraj.t0());
@@ -435,13 +438,16 @@ namespace mu2e {
     else
       std::cout << ftraj.position3(ftraj.range().end()).Z()<< " time " << ftraj.range().end();
     std::cout << std::endl;
-    ktrk.extrapolate(trkdir,extrapIPA_);
-    while(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_){
-      // convert intersection into a ShellXing and add to the track TODO
-      // extrapolate accross this Xing; this applies the effect of energy loss in the material TODO
-      // re-intersect if possible
+    do {
       ktrk.extrapolate(trkdir,extrapIPA_);
-    }
+      if(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_){
+        double time = extrapIPA_.intersection().time_;
+        auto pos = ftraj.position3(time);
+        std::cout << "Found IPA intersection time " << time << " z position " << pos.Z() << " rho " << pos.Rho() << std::endl;
+      } else {
+        std::cout << "No More IPA intersections" << std::endl;
+      }
+    } while(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_);
     // then extrapolate to the back of the target
 //    ktrk.extrapolate(trkdir,toST_);
     // intersect with the foils and add those as ShellXings TODO

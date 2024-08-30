@@ -62,6 +62,9 @@ namespace mu2e {
     mxings_.clear();
     // check if we are on the surface
     if(inter_.onsurface_ && inter_.inbounds_){
+      // compute the path length
+      double pathlen = thick_/(inter_.norm_.Dot(inter_.pdir_);
+
     }
   }
 
