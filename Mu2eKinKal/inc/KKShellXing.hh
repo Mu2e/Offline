@@ -8,6 +8,7 @@
 #include "KinKal/Geometry/Surface.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 #include "KinKal/MatEnv/DetMaterial.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
 
 namespace mu2e {
   template <class KTRAJ,class SURF> class KKShellXing : public KinKal::ElementXing<KTRAJ> {
@@ -19,7 +20,7 @@ namespace mu2e {
       using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using SURFPTR = std::shared_ptr<SURF>;
       // construct from a surface, material, intersection, and transverse thickness
-      KKShellXing(SURFPTR surface, MatEnv::DetMaterial const& mat, KinKal::Intersection inter, KTRAJPTR reftraj, double thickness, double tol);
+      KKShellXing(SURFPTR surface, SurfaceId const& sid, MatEnv::DetMaterial const& mat, KinKal::Intersection inter, KTRAJPTR reftraj, double thickness, double tol);
       virtual ~KKShellXing() {}
       // ElementXing interface
       void updateReference(PTRAJ const& ptraj) override;
@@ -33,8 +34,10 @@ namespace mu2e {
       // specific accessors
       auto const& intersection() const { return inter_; }
       auto const& material() const { return mat_; }
+      auto const& surfaceId() const { return sid_; }
     private:
       SURFPTR surf_; // surface
+      SurfaceId sid_; // surface Id
       MatEnv::DetMaterial const& mat_;
       KinKal::Intersection inter_; // most recent intersection
       KTRAJPTR reftrajptr_; // reference trajectory
@@ -45,9 +48,9 @@ namespace mu2e {
       KinKal::Parameters fparams_; // 1st-order parameter change for forwards time
   };
 
-  template <class KTRAJ,class SURF> KKShellXing<KTRAJ,SURF>::KKShellXing(SURFPTR surface, MatEnv::DetMaterial const& mat, KinKal::Intersection inter,
+  template <class KTRAJ,class SURF> KKShellXing<KTRAJ,SURF>::KKShellXing(SURFPTR surface, SurfaceId const& sid, MatEnv::DetMaterial const& mat, KinKal::Intersection inter,
       std::shared_ptr<KTRAJ> reftrajptr, double thickness, double tol) :
-    surf_(surface), mat_(mat), inter_(inter), reftrajptr_(reftrajptr), thick_(thickness),tol_(tol),
+    surf_(surface), sid_(sid), mat_(mat), inter_(inter), reftrajptr_(reftrajptr), thick_(thickness),tol_(tol),
     varscale_(1.0)
   {
     if(inter_.onsurface_ && inter_.inbounds_){
@@ -61,8 +64,8 @@ namespace mu2e {
     // re-intersect with the surface, taking the current time as start and range from the current piece (symmetrized)
     // This is rather crude, might need expanded based on trajector change, etc. TODO
     double delta = 0.5*reftrajptr_->range().range();
-    TimeRange irange(inter_.time_-delta, inter_.time_+delta);
-    inter_ = intersect(ptraj, *surf_, irange, tol_);
+    KinKal::TimeRange range(inter_.time_-delta, inter_.time_+delta);
+    inter_ = KinKal::intersect(ptraj, *surf_, range, tol_);
     reftrajptr_ = ptraj.nearestTraj(inter_.time_);
   }
 
