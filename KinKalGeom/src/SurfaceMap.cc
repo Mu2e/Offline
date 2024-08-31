@@ -15,6 +15,8 @@ namespace mu2e {
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::DS_Inner),std::static_pointer_cast<Surface>(ds_.innerPtr())));
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::DS_Outer),std::static_pointer_cast<Surface>(ds_.outerPtr())));
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::IPA),std::static_pointer_cast<Surface>(ds_.innerProtonAbsorberPtr())));
+    map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::IPA_Front),std::static_pointer_cast<Surface>(ds_.innerProtonAbsorberFrontPtr())));
+    map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::IPA_Back),std::static_pointer_cast<Surface>(ds_.innerProtonAbsorberBackPtr())));
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::OPA),std::static_pointer_cast<Surface>(ds_.outerProtonAbsorberPtr())));
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TSDA),std::static_pointer_cast<Surface>(ds_.upstreamAbsorberPtr())));
     // target
