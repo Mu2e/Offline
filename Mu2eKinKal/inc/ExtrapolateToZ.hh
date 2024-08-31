@@ -25,16 +25,14 @@ namespace mu2e {
   };
 
   template <class KTRAJ> bool ExtrapolateToZ::needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, KinKal::TimeDir tdir, double time) const {
-    auto dir = ktrk.fitTraj().direction(time);
-    auto dir0 = ktrk.fitTraj().direction(ktrk.fitTraj().t0());
-    // check for reflection
-    if(dir0.Z()*dir.Z() < 0.0) return false;
+    auto vel = ktrk.fitTraj().velocity(time);
     auto pos = ktrk.fitTraj().position3(time);
+    double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
     double zval = pos.Z();
-    // sign the z velocity by the extrapolation direction
-    double extrapdir = tdir == KinKal::TimeDir::forwards ? dir.Z() : -dir.Z();
+    // stop if we're heading away from the target z
+    if( (zvel > 0 && zval > zval_ ) || (zvel < 0 && zval < zval_))return false;
     // stop when we get beyond the target value in Z
-    if(extrapdir < 0){ // backwards extrapolation of downstream-going track, or forwards extrapolation of upstream-going track
+    if(zvel< 0){ // backwards extrapolation of downstream-going track, or forwards extrapolation of upstream-going track
       return zval > zval_;
     } else { // opposite
       return zval < zval_;
