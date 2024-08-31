@@ -180,7 +180,6 @@ namespace mu2e {
       bool extrapolate_;
       ExtrapolateToZ toIPA_, toTSDA_, toST_; // extrapolation predicate based on Z values
       ExtrapolateIPA extrapIPA_; // extrapolation to intersections with the IPA
-      const DetMaterial *ipamat_, *stmat_;
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
   };
 
@@ -198,7 +197,7 @@ namespace mu2e {
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
-    fixedfield_(false),extrapolate_(false),ipamat_(0), stmat_(0)
+    fixedfield_(false),extrapolate_(false)
   {
     // collection handling
     for(const auto& hseedtag : settings().modSettings().seedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
@@ -233,21 +232,12 @@ namespace mu2e {
     if(settings().Extrapolation()){
       extrapolate_ = true;
       auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
-//      double ipazmax = IPA->backDisk().center().Z();
-//      auto const& st = smap_.ST();
       // global configs
       double maxdt = settings().Extrapolation()->MaxDt();
       double tol =  settings().Extrapolation()->Tol();
       int debug =  settings().Extrapolation()->Debug();
       // extrapolate through IPA
       extrapIPA_ = ExtrapolateIPA(maxdt,tol,IPA,debug);
-      // IPA material
-      ipamat_ = kkmat_.IPAMaterial();
-      if(!ipamat_)throw cet::exception("RECO")<<"IPA material not found"<< endl;
-      // extrapolate to the ST
-      // ST material
-      stmat_ = kkmat_.STMaterial();
-      if(!stmat_)throw cet::exception("RECO")<<"Stopping Target material not found"<< endl;
       // extrapolate to the back of the detector solenoid
       double tsdaz = smap_.DS().upstreamAbsorber().center().Z();
       toTSDA_ = ExtrapolateToZ(maxdt,tol,tsdaz);
@@ -442,7 +432,16 @@ namespace mu2e {
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = trkdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
-        KKSHELLXING sx(IPA,*ipamat_,extrapIPA_.intersection(),reftrajptr,ipathick_,extrapIPA_.tolerance());
+        KKSHELLXINGPTR sxptr = std::make_shared<KKSHELLXING>(IPA,*kkmat_.IPAMaterial(),extrapIPA_.intersection(),reftrajptr,ipathick_,extrapIPA_.tolerance());
+        double dmom, paramomvar, perpmomvar;
+        sxptr->materialEffects(dmom,paramomvar,perpmomvar);
+        std::cout << "IPA Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
+        // append this material to the track
+        std::cout << " before append mom = " << reftrajptr->momentum() << std::endl;
+        std::shared_ptr<KinKal::ElementXing<KTRAJ>> exptr = std::static_pointer_cast<KinKal::ElementXing<KTRAJ>>(sxptr);
+        ktrk.addEXing(exptr,trkdir);
+        auto const& newtrajptr = trkdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
+        std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
       }
     } while(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_);
     // then extrapolate to the back of the target
