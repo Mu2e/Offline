@@ -44,6 +44,7 @@
 #include "KinKal/Fit/Config.hh"
 #include "KinKal/General/Parameters.hh"
 #include "KinKal/General/Vectors.hh"
+#include "KinKal/Geometry/Cylinder.hh"
 #include "KinKal/Trajectory/LoopHelix.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
@@ -61,6 +62,7 @@
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateToZ.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateIPA.hh"
+#include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 // C++
 #include <iostream>
 #include <string>
@@ -81,6 +83,9 @@ namespace mu2e {
   using KKSTRAWXING = KKStrawXing<KTRAJ>;
   using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
   using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
+  using KKSHELLXING = KKShellXing<KTRAJ,KinKal::Cylinder>;
+  using KKSHELLXINGPTR = std::shared_ptr<KKSHELLXING>;
+  using KKSHELLXINGCOL = std::vector<KKSHELLXINGPTR>;
   using KKCALOHIT = KKCaloHit<KTRAJ>;
   using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
   using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
@@ -111,6 +116,7 @@ namespace mu2e {
 
   using KinKal::DVEC;
   using KinKal::VEC3;
+  using MatEnv::DetMaterial;
 
   // extend the generic module configuration as needed
   struct KKLHModuleConfig : KKModuleConfig {
@@ -174,6 +180,8 @@ namespace mu2e {
       bool extrapolate_;
       ExtrapolateToZ toIPA_, toTSDA_, toST_; // extrapolation predicate based on Z values
       ExtrapolateIPA extrapIPA_; // extrapolation to intersections with the IPA
+      const DetMaterial *ipamat_, *stmat_;
+      double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
   };
 
   LoopHelixFit::LoopHelixFit(const Parameters& settings) :  art::EDProducer{settings},
@@ -190,7 +198,7 @@ namespace mu2e {
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
-    fixedfield_(false),extrapolate_(false)
+    fixedfield_(false),extrapolate_(false),ipamat_(0), stmat_(0)
   {
     // collection handling
     for(const auto& hseedtag : settings().modSettings().seedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
@@ -210,7 +218,7 @@ namespace mu2e {
       fixedfield_ = true;
       kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
     }
-    // setup optional fit finalization
+    // setup optional fit finalization; this just updates the internals, not the fit result itself
     if(settings().finalSettings()){
       if(exconfig_.schedule_.size() > 0)
         fconfig_ = exconfig_;
@@ -224,27 +232,25 @@ namespace mu2e {
     // configure extrapolation
     if(settings().Extrapolation()){
       extrapolate_ = true;
-      // find relevant z positions
-//      auto const& trkr = smap_.tracker();
-//      double trkzmin = trkr.front().center().Z();
-//      double trkzmax = trkr.back().center().Z();
       auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
-      double ipazmax = IPA->backDisk().center().Z();
-      auto const& st = smap_.ST();
-      double stzmax = st.back().center().Z();
-      double tsdaz = smap_.DS().upstreamAbsorber().center().Z();
+//      double ipazmax = IPA->backDisk().center().Z();
+//      auto const& st = smap_.ST();
       // global configs
       double maxdt = settings().Extrapolation()->MaxDt();
       double tol =  settings().Extrapolation()->Tol();
       int debug =  settings().Extrapolation()->Debug();
-      // extrapolate to the IPA downstream edge
-      toIPA_ = ExtrapolateToZ(maxdt,tol,ipazmax);
-      // extrapolate to the stopping target
-      toST_ = ExtrapolateToZ(maxdt,tol,stzmax);
-      // extrapolate to the back of the detector solenoid
-      toTSDA_ = ExtrapolateToZ(maxdt,tol,tsdaz);
-      // extrapolate inside the IPA
+      // extrapolate through IPA
       extrapIPA_ = ExtrapolateIPA(maxdt,tol,IPA,debug);
+      // IPA material
+      ipamat_ = kkmat_.IPAMaterial();
+      if(!ipamat_)throw cet::exception("RECO")<<"IPA material not found"<< endl;
+      // extrapolate to the ST
+      // ST material
+      stmat_ = kkmat_.STMaterial();
+      if(!stmat_)throw cet::exception("RECO")<<"Stopping Target material not found"<< endl;
+      // extrapolate to the back of the detector solenoid
+      double tsdaz = smap_.DS().upstreamAbsorber().center().Z();
+      toTSDA_ = ExtrapolateToZ(maxdt,tol,tsdaz);
     }
   }
 
@@ -423,29 +429,20 @@ namespace mu2e {
   }
 
   void LoopHelixFit::extrapolate(KKTRK& ktrk) const {
-    extrapIPA_.reset();
-    // To extrapolate upstream, sign the extrapolation direction by the track direction at t0
     auto const& ftraj = ktrk.fitTraj();
     auto dir0 = ftraj.direction(ftraj.t0());
     TimeDir trkdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
     // extrapolate to the back of the IPA
     ktrk.extrapolate(trkdir,toIPA_);
-    // check that the track hasn't reflected TODO
-    // then intersect with the IPA itself, and add those as ShellXings
-    std::cout << "Extrapolated " << trkdir << " to IPA, target z = " << toIPA_.zVal() << " extrap Z = ";
-    if(trkdir == TimeDir::backwards)
-      std::cout << ftraj.position3(ftraj.range().begin()).Z() << " time " << ftraj.range().begin();
-    else
-      std::cout << ftraj.position3(ftraj.range().end()).Z()<< " time " << ftraj.range().end();
-    std::cout << std::endl;
+    // extraplate the fit to the intersection points with the IPA
+    extrapIPA_.reset();
     do {
       ktrk.extrapolate(trkdir,extrapIPA_);
       if(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_){
-        double time = extrapIPA_.intersection().time_;
-        auto pos = ftraj.position3(time);
-        std::cout << "Found IPA intersection time " << time << " z position " << pos.Z() << " rho " << pos.Rho() << std::endl;
-      } else {
-        std::cout << "No More IPA intersections" << std::endl;
+        // we have a good intersection. Use this to create a Shell material Xing
+        auto const& reftrajptr = trkdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
+        auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
+        KKSHELLXING sx(IPA,*ipamat_,extrapIPA_.intersection(),reftrajptr,ipathick_,extrapIPA_.tolerance());
       }
     } while(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_);
     // then extrapolate to the back of the target

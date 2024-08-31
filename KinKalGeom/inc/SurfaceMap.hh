@@ -28,9 +28,9 @@ namespace mu2e {
       auto surface(SurfaceId const& sid) const { return map_.find(sid); }
       // fill a vector of surfaces given a vector of Ids.  This will throw if the id doesn't match
       void surfaces(std::vector<SurfaceId> const& ids, std::vector<SurfacePair>& surfs) const;
-      auto const& DS() {return ds_; }
-      auto const& ST() {return st_; }
-      auto const& tracker() {return tracker_; }
+      auto const& DS() const {return ds_; }
+      auto const& ST() const {return st_; }
+      auto const& tracker() const {return tracker_; }
     private:
       // local copy of detector objects; these hold the actual (typed) surface objects
       KinKalGeom::Tracker tracker_;
