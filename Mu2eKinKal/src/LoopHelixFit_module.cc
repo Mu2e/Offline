@@ -83,9 +83,9 @@ namespace mu2e {
   using KKSTRAWXING = KKStrawXing<KTRAJ>;
   using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
   using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
-  using KKSHELLXING = KKShellXing<KTRAJ,KinKal::Cylinder>;
-  using KKSHELLXINGPTR = std::shared_ptr<KKSHELLXING>;
-  using KKSHELLXINGCOL = std::vector<KKSHELLXINGPTR>;
+  using KKIPAXING = KKShellXing<KTRAJ,KinKal::Cylinder>;
+  using KKIPAXINGPTR = std::shared_ptr<KKIPAXING>;
+  using KKIPAXINGCOL = std::vector<KKIPAXINGPTR>;
   using KKCALOHIT = KKCaloHit<KTRAJ>;
   using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
   using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
@@ -426,22 +426,25 @@ namespace mu2e {
     ktrk.extrapolate(trkdir,toIPA_);
     // extraplate the fit to the intersection points with the IPA
     extrapIPA_.reset();
+    static const SurfaceId IPASID("IPA");
     do {
       ktrk.extrapolate(trkdir,extrapIPA_);
       if(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_){
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = trkdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
-        KKSHELLXINGPTR sxptr = std::make_shared<KKSHELLXING>(IPA,*kkmat_.IPAMaterial(),extrapIPA_.intersection(),reftrajptr,ipathick_,extrapIPA_.tolerance());
-        double dmom, paramomvar, perpmomvar;
-        sxptr->materialEffects(dmom,paramomvar,perpmomvar);
-        std::cout << "IPA Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
-        // append this material to the track
-        std::cout << " before append mom = " << reftrajptr->momentum() << std::endl;
-        std::shared_ptr<KinKal::ElementXing<KTRAJ>> exptr = std::static_pointer_cast<KinKal::ElementXing<KTRAJ>>(sxptr);
-        ktrk.addEXing(exptr,trkdir);
-        auto const& newtrajptr = trkdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
+        KKIPAXINGPTR ipaxingptr = std::make_shared<KKIPAXING>(IPA,IPASID,*kkmat_.IPAMaterial(),extrapIPA_.intersection(),reftrajptr,ipathick_,extrapIPA_.tolerance());
+        if(extrapIPA_.debug() > 1){
+          double dmom, paramomvar, perpmomvar;
+          ipaxingptr->materialEffects(dmom,paramomvar,perpmomvar);
+          std::cout << "IPA Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
+          std::cout << " before append mom = " << reftrajptr->momentum() << std::endl;
+        }
+        ktrk.addIPAXing(ipaxingptr,trkdir);
+        if(extrapIPA_.debug() > 1){
+          auto const& newtrajptr = trkdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
+          std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
+        }
       }
     } while(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_);
     // then extrapolate to the back of the target

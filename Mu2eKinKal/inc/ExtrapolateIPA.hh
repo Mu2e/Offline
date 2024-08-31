@@ -28,6 +28,7 @@ namespace mu2e {
       double tolerance() const { return tol_; } // intersection tolerance
       CylPtr const& IPACylinder() const { return ipa_; }
       auto const& intersection() const { return inter_; }
+      int debug() const { return debug_; }
       // extrapolation predicate: the track will be extrapolated until this predicate returns false, subject to the maximum time
       template <class KTRAJ> bool needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const;
       // reset between tracks
@@ -64,7 +65,8 @@ namespace mu2e {
     // first, estimate the time range based on local piece Z speed transit time
     // Buffer by the range of the last piece to avoid missed edges.
     auto const& ktraj = tdir == TimeDir::forwards ? ktrk.fitTraj().back() : ktrk.fitTraj().front();
-    double dt = ktraj.range().range();
+    static const double epsilon(1e-8);
+    double dt = ktraj.range().range() - epsilon; // small difference to avoid re-intersecting
     double halflen = ipa_->halfLength();
     double tz = 1.0/std::max(fabs(zvel)/(2*halflen),1.0/maxDt_); // protect against reflection (zero z speed)
     TimeRange trange = tdir == TimeDir::forwards ? TimeRange(time-dt,time+tz) : TimeRange(time-tz,time+dt);
