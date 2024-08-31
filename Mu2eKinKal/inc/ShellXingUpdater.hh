@@ -9,7 +9,7 @@ namespace mu2e {
     bool scalevar_ =false; // scale variance or not
     int diag_ =0; // diag print level
     // default constructor is functional but will always use the impact-parameter averaged material
-    StrawXingUpdater(SXUConfig const& sxusetting);
+    ShellXingUpdater(SXUConfig const& sxusetting);
   };
 }
 #endif
