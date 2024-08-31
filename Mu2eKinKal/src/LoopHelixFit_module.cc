@@ -238,6 +238,9 @@ namespace mu2e {
       int debug =  settings().Extrapolation()->Debug();
       // extrapolate through IPA
       extrapIPA_ = ExtrapolateIPA(maxdt,tol,IPA,debug);
+      // extrapolate to the back of the target
+      double stz = smap_.ST().back().center().Z();
+      toST_ = ExtrapolateToZ(maxdt,tol,stz);
       // extrapolate to the back of the detector solenoid
       double tsdaz = smap_.DS().upstreamAbsorber().center().Z();
       toTSDA_ = ExtrapolateToZ(maxdt,tol,tsdaz);
@@ -448,7 +451,7 @@ namespace mu2e {
       }
     } while(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_);
     // then extrapolate to the back of the target
-//    ktrk.extrapolate(trkdir,toST_);
+    ktrk.extrapolate(trkdir,toST_);
     // intersect with the foils and add those as ShellXings TODO
     // extrapolate to the TSDA
 //    ktrk.extrapolate(trkdir,toTSDA_);
