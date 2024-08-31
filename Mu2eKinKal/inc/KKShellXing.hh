@@ -26,12 +26,13 @@ namespace mu2e {
       void updateState(MetaIterConfig const& config,bool first) override;
       Parameters params() const override;
       double time() const override { return inter_.time_; }
-      double transittime() const override;
-
+      double transitTime() const override;
       KTRAJ const& referenceTrajectory() const override { return *reftrajptr_; }
       std::vector<MaterialXing>const&  matXings() const override { return mxings_; }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
-      // accessors
+      // specific accessors
+      auto const& intersection() const { return inter_; }
+      auto const& material() const { return mat_; }
     private:
       SURFPTR surf_; // surface
       MatEnv::DetMaterial const& mat_;
@@ -48,8 +49,13 @@ namespace mu2e {
       std::shared_ptr<KTRAJ> reftrajptr, double thickness, double tol) :
     surf_(surface), mat_(mat), inter_(inter), reftrajptr_(reftrajptr), thick_(thickness),tol_(tol),
     varscale_(1.0)
-  {}
-
+  {
+    if(inter_.onsurface_ && inter_.inbounds_){
+      // compute the path length
+      double pathlen = thick_/(inter_.norm_.Dot(inter_.pdir_));
+      mxings_.emplace_back(mat_,pathlen);
+    }
+  }
 
   template <class KTRAJ,class SURF> void KKShellXing<KTRAJ,SURF>::updateReference(KinKal::ParticleTrajectory<KTRAJ> const& ptraj) {
     // re-intersect with the surface, taking the current time as start and range from the current piece (symmetrized)
