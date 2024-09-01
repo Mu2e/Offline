@@ -65,7 +65,7 @@ namespace mu2e {
     // first, estimate the time range based on local piece Z speed transit time
     // Buffer by the range of the last piece to avoid missed edges.
     auto const& ktraj = tdir == TimeDir::forwards ? ktrk.fitTraj().back() : ktrk.fitTraj().front();
-    static const double epsilon(1e-8);
+    static const double epsilon(1e-2);
     double dt = ktraj.range().range() - epsilon; // small difference to avoid re-intersecting
     double halflen = ipa_->halfLength();
     double tz = 1.0/std::max(fabs(zvel)/(2*halflen),1.0/maxDt_); // protect against reflection (zero z speed)
