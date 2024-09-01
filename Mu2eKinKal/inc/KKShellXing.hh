@@ -61,12 +61,14 @@ namespace mu2e {
   }
 
   template <class KTRAJ,class SURF> void KKShellXing<KTRAJ,SURF>::updateReference(KinKal::ParticleTrajectory<KTRAJ> const& ptraj) {
-    // re-intersect with the surface, taking the current time as start and range from the current piece (symmetrized)
-    // This is rather crude, might need expanded based on trajector change, etc. TODO
-    double delta = 0.5*reftrajptr_->range().range();
-    KinKal::TimeRange range(inter_.time_-delta, inter_.time_+delta);
-    inter_ = KinKal::intersect(ptraj, *surf_, range, tol_);
-    reftrajptr_ = ptraj.nearestTraj(inter_.time_);
+    auto const& neartrajptr = ptraj.nearestTraj(inter_.time_);
+    if(neartrajptr != reftrajptr_){
+      // traj has changed; try intersecting with this piece
+      reftrajptr_ = neartrajptr;
+      inter_ = KinKal::intersect(*reftrajptr_,*surf_, reftrajptr_->range(),tol_);
+      // I should test if this is in range, but there's a missing piece in the ptraj intersection here that I don't know what direction,
+      // to go, and there can be multiple intersections. Not clear if there's a good answer here TODO
+    }
   }
 
   template <class KTRAJ,class SURF> void KKShellXing<KTRAJ,SURF>::updateState(KinKal::MetaIterConfig const& miconfig,bool first) {
