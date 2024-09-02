@@ -430,10 +430,7 @@ Mu2eKinKal : {
     KKLine: @local::Mu2eKinKal.KKLine
     KKOffSpill: @local::Mu2eKinKal.KKOffSpill
     KKDeP: @local::Mu2eKinKal.KK
-    KKDeM: {
-      @table::Mu2eKinKal.KK
-      Extrapolation : @local::Mu2eKinKal.LOOPEXTRAPOLATION
-    }
+    KKDeM: @local::Mu2eKinKal.KK
     KKUeP: @local::Mu2eKinKal.KK
     KKUeM: @local::Mu2eKinKal.KK
     KKDmuP: @local::Mu2eKinKal.KK

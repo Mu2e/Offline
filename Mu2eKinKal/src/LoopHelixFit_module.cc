@@ -451,11 +451,10 @@ namespace mu2e {
       }
     } while(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_);
     // then extrapolate to the back of the target
-    ktrk.extrapolate(trkdir,toST_);
+    // ktrk.extrapolate(trkdir,toST_);
     // intersect with the foils and add those as ShellXings TODO
-    // extrapolate to the TSDA
-//    ktrk.extrapolate(trkdir,toTSDA_);
-    // if the track reflected, find the foil intersections and add those TODO
+    // extrapolate to the TSDA TODO
+    // if the track reflected, find the foil  and IPA intersections and add those TODO
     // finally extrapolate back to the tracker entrance TODO
   }
 
