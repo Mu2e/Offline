@@ -452,21 +452,16 @@ namespace mu2e {
       if(stdir.Z() * dir0.Z() > 0.0){
         // extrapolate to the back of the DS
         ktrk.extrapolate(tdir,toTSDA_);
-        // if we hit the TSDA we are done. Otherwise if we reflected, go back through the ST and IPA
+        // if we hit the TSDA we are done. Otherwise if we reflected, go back through the ST
         double endtime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
         auto tsdadir = ftraj.direction(endtime);
         if(tsdadir.Z() * dir0.Z() < 0.0){
+          // reflection: go back through the target, then done
           extrapolateST(ktrk,tdir);
-          extrapolateIPA(ktrk,tdir);
-          ktrk.extrapolate(tdir,toTracker_);
         }
-      } else {
-        // reflection: extrapolate back through the IPA, then back to the tracker
-        extrapolateIPA(ktrk,tdir);
-        ktrk.extrapolate(tdir,toTracker_);
       }
     } else {
-      // reflection: extrapolate back to the tracker entrance
+      // reflection inside IPA: extrapolate back to the tracker entrance
       ktrk.extrapolate(tdir,toTracker_);
     }
   }

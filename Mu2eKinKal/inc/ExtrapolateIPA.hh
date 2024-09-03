@@ -60,7 +60,7 @@ namespace mu2e {
     // if the particle is going in the right direction but hasn't yet reached the IPA just keep going
     if( (zvel > 0 && zpos < zmin_) || (zvel < 0 && zpos > zmax_) ){
       reset();
-      if(debug_ > 1)std::cout << "Heading towards IPA, z " << zpos<< std::endl;
+      if(debug_ > 2)std::cout << "Heading towards IPA, z " << zpos<< std::endl;
       return true;
     }
     // if we get to here we need to test for an intersection with the actual cylinder
@@ -73,16 +73,16 @@ namespace mu2e {
     double tz = 1.0/std::max(fabs(zvel)/(2*halflen),1.0/maxDt_); // protect against reflection (zero z speed)
     TimeRange trange = tdir == TimeDir::forwards ? TimeRange(time-dt,time+tz) : TimeRange(time-tz,time+dt);
     // update intersection
-    if(debug_ > 1)std::cout << "IPA intersection " << trange << std::endl;
+    if(debug_ > 2)std::cout << "IPA intersection " << trange << std::endl;
     auto newinter = KinKal::intersect(ktrk.fitTraj(),*ipa_,trange,tol_,tdir);
-    if(debug_ > 1)std::cout << "IPA extrap inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << std::endl;
+    if(debug_ > 2)std::cout << "IPA extrap inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << std::endl;
     bool goodextrap = newinter.onsurface_ && newinter.inbounds_;
     if(goodextrap){
       // if the cached intersection is valid, test this intersection time against it, and
       // if the new intersection time is the same as the last, keep extrapolating
       if(inter_.onsurface_ && inter_.inbounds_ && ( (tdir == TimeDir::forwards && newinter.time_ <= inter_.time_) ||
           (tdir == TimeDir::backwards && newinter.time_ >= inter_.time_) ) ) {
-        if(debug_ > 1)std::cout << "Skipping duplicate intersection " << std::endl;
+        if(debug_ > 2)std::cout << "Skipping duplicate intersection " << std::endl;
         return true;
       }
       // otherwise test if the trajectory extends to the intersection time yet or not. If so we are done
