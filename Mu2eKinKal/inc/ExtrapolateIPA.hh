@@ -17,17 +17,19 @@ namespace mu2e {
     public:
       using CylPtr = std::shared_ptr<KinKal::Cylinder>;
       ExtrapolateIPA() : maxDt_(-1.0), tol_(1e10),
-      ipazmin_(std::numeric_limits<float>::max()),
-      ipazmax_(-std::numeric_limits<float>::max()),debug_(0) {}
+      zmin_(std::numeric_limits<float>::max()),
+      zmax_(-std::numeric_limits<float>::max()),debug_(0) {}
 
       ExtrapolateIPA(double maxdt, double tol,CylPtr const& ipa, int debug=0) : maxDt_(maxdt), tol_(tol), ipa_(ipa),
-        ipazmin_( (ipa_->center() - ipa_->axis()*ipa_->halfLength()).Z()),
-        ipazmax_( (ipa_->center() + ipa_->axis()*ipa_->halfLength()).Z()), debug_(debug) {}
+        zmin_( (ipa_->center() - ipa_->axis()*ipa_->halfLength()).Z()),
+        zmax_( (ipa_->center() + ipa_->axis()*ipa_->halfLength()).Z()), debug_(debug) {}
       // interface for extrapolation
       double maxDt() const { return maxDt_; } // maximum time to extend the track
       double tolerance() const { return tol_; } // intersection tolerance
       CylPtr const& IPACylinder() const { return ipa_; }
       auto const& intersection() const { return inter_; }
+      double zmin() const { return zmin_; }
+      double zmax() const { return zmax_; }
       int debug() const { return debug_; }
       // extrapolation predicate: the track will be extrapolated until this predicate returns false, subject to the maximum time
       template <class KTRAJ> bool needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const;
@@ -39,7 +41,7 @@ namespace mu2e {
       CylPtr ipa_; // IPA cylinder
       mutable Intersection inter_; // cache of most recent intersection
       // cache of IPA front and back Z positions
-      double ipazmin_, ipazmax_;
+      double zmin_, zmax_;
       int debug_; // debug level
   };
 
@@ -49,14 +51,14 @@ namespace mu2e {
     auto pos = ktrk.fitTraj().position3(time);
     double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
     double zpos = pos.Z();
-    // stop if we're heading away from the IPA
-    if( (zvel > 0 && zpos > ipazmax_ ) || (zvel < 0 && zpos < ipazmin_)){
+    // stop if the particle is heading away from the IPA
+    if( (zvel > 0 && zpos > zmax_ ) || (zvel < 0 && zpos < zmin_)){
       reset(); // clear any cache
       if(debug_ > 1)std::cout << "Heading away from IPA: done" << std::endl;
       return false;
     }
-    // if we're going in the right direction but haven't yet reached the IPA just keep going
-    if( (zvel > 0 && zpos < ipazmin_) || (zvel < 0 && zpos > ipazmax_) ){
+    // if the particle is going in the right direction but hasn't yet reached the IPA just keep going
+    if( (zvel > 0 && zpos < zmin_) || (zvel < 0 && zpos > zmax_) ){
       reset();
       if(debug_ > 1)std::cout << "Heading towards IPA, z " << zpos<< std::endl;
       return true;
@@ -97,9 +99,9 @@ namespace mu2e {
       reset();
       if(debug_ > 1)std::cout << "Extrapolating to IPA edge, z " << zpos << std::endl;
       if(zvel > 0.0)
-        return zpos < ipazmax_;
+        return zpos < zmax_;
       else
-        return zpos > ipazmin_;
+        return zpos > zmin_;
     }
   }
 }

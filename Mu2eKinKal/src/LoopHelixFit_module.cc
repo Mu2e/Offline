@@ -62,6 +62,7 @@
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateToZ.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateIPA.hh"
+#include "Offline/Mu2eKinKal/inc/ExtrapolateST.hh"
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 // C++
 #include <iostream>
@@ -86,6 +87,9 @@ namespace mu2e {
   using KKIPAXING = KKShellXing<KTRAJ,KinKal::Cylinder>;
   using KKIPAXINGPTR = std::shared_ptr<KKIPAXING>;
   using KKIPAXINGCOL = std::vector<KKIPAXINGPTR>;
+  using KKSTXING = KKShellXing<KTRAJ,KinKal::Annulus>;
+  using KKSTXINGPTR = std::shared_ptr<KKSTXING>;
+  using KKSTXINGCOL = std::vector<KKSTXINGPTR>;
   using KKCALOHIT = KKCaloHit<KTRAJ>;
   using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
   using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
@@ -153,7 +157,10 @@ namespace mu2e {
       // parameter-specific functions that need to be overridden in subclasses
       KTRAJ makeSeedTraj(HelixSeed const& hseed,TimeRange const& trange,VEC3 const& bnom, int charge) const;
       bool goodFit(KKTRK const& ktrk) const;
+      // extrapolation functions
       void extrapolate(KKTRK& ktrk) const;
+      void extrapolateIPA(KKTRK& ktrk,TimeDir trkdir) const;
+      void extrapolateST(KKTRK& ktrk,TimeDir trkdir) const;
       // data payload
       std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
       art::ProductToken<ComboHitCollection> chcol_T_;
@@ -178,9 +185,11 @@ namespace mu2e {
       bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
       SurfaceMap smap_;
       bool extrapolate_;
-      ExtrapolateToZ toIPA_, toTSDA_, toST_; // extrapolation predicate based on Z values
+      ExtrapolateToZ toTSDA_, toTracker_; // extrapolation predicate based on Z values
       ExtrapolateIPA extrapIPA_; // extrapolation to intersections with the IPA
+      ExtrapolateST extrapST_; // extrapolation to intersections with the ST
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
+      double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
   };
 
   LoopHelixFit::LoopHelixFit(const Parameters& settings) :  art::EDProducer{settings},
@@ -236,14 +245,17 @@ namespace mu2e {
       double maxdt = settings().Extrapolation()->MaxDt();
       double tol =  settings().Extrapolation()->Tol();
       int debug =  settings().Extrapolation()->Debug();
-      // extrapolate through IPA
+      // predicate to extrapolate through IPA
       extrapIPA_ = ExtrapolateIPA(maxdt,tol,IPA,debug);
-      // extrapolate to the back of the target
-      double stz = smap_.ST().back().center().Z();
-      toST_ = ExtrapolateToZ(maxdt,tol,stz);
+      // predicate to extrapolate through ST
+      std::cout << "IPA limits z " << extrapIPA_.zmin() << " " << extrapIPA_.zmax() << std::endl;
+      extrapST_ = ExtrapolateST(maxdt,tol,smap_.ST(),debug);
+      // temporary
+      std::cout << "ST limits z " << extrapST_.zmin() << " " << extrapST_.zmax() << " r " << extrapST_.rmin() << " " << extrapST_.rmax() << std::endl;
+      // extrapolate to the back of the tracker
+      toTracker_ = ExtrapolateToZ(maxdt,tol,smap_.tracker().back().center().Z());
       // extrapolate to the back of the detector solenoid
-      double tsdaz = smap_.DS().upstreamAbsorber().center().Z();
-      toTSDA_ = ExtrapolateToZ(maxdt,tol,tsdaz);
+      toTSDA_ = ExtrapolateToZ(maxdt,tol,smap_.DS().upstreamAbsorber().center().Z());
     }
   }
 
@@ -422,40 +434,95 @@ namespace mu2e {
   }
 
   void LoopHelixFit::extrapolate(KKTRK& ktrk) const {
+    // define the time direction according to the fit direction inside the tracker
     auto const& ftraj = ktrk.fitTraj();
     auto dir0 = ftraj.direction(ftraj.t0());
-    TimeDir trkdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
-    // extrapolate to the back of the IPA
-    ktrk.extrapolate(trkdir,toIPA_);
-    // extraplate the fit to the intersection points with the IPA
+    TimeDir tdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
+    // extrapolate through the IPA in this direction
+    extrapolateIPA(ktrk,tdir);
+    // check if the particle has reflected
+    double endtime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
+    auto ipadir = ftraj.direction(endtime);
+    if(ipadir.Z() * dir0.Z() > 0.0){
+      // then extrapolate through the target
+      extrapolateST(ktrk,tdir);
+      // check if the particle has reflected
+      double endtime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
+      auto stdir = ftraj.direction(endtime);
+      if(stdir.Z() * dir0.Z() > 0.0){
+        // extrapolate to the back of the DS
+        ktrk.extrapolate(tdir,toTSDA_);
+        // if we hit the TSDA we are done. Otherwise if we reflected, go back through the ST and IPA
+        double endtime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
+        auto tsdadir = ftraj.direction(endtime);
+        if(tsdadir.Z() * dir0.Z() < 0.0){
+          extrapolateST(ktrk,tdir);
+          extrapolateIPA(ktrk,tdir);
+          ktrk.extrapolate(tdir,toTracker_);
+        }
+      } else {
+        // reflection: extrapolate back through the IPA, then back to the tracker
+        extrapolateIPA(ktrk,tdir);
+        ktrk.extrapolate(tdir,toTracker_);
+      }
+    } else {
+      // reflection: extrapolate back to the tracker entrance
+      ktrk.extrapolate(tdir,toTracker_);
+    }
+  }
+
+  void LoopHelixFit::extrapolateIPA(KKTRK& ktrk,TimeDir tdir) const {
+    // extraplate the fit through the IPA. This will add material effects for each intersection. It will continue till the
+    // track exits the IPA
     extrapIPA_.reset();
+    auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId IPASID("IPA");
     do {
-      ktrk.extrapolate(trkdir,extrapIPA_);
+      ktrk.extrapolate(tdir,extrapIPA_);
       if(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_){
         // we have a good intersection. Use this to create a Shell material Xing
-        auto const& reftrajptr = trkdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
+        auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
         KKIPAXINGPTR ipaxingptr = std::make_shared<KKIPAXING>(IPA,IPASID,*kkmat_.IPAMaterial(),extrapIPA_.intersection(),reftrajptr,ipathick_,extrapIPA_.tolerance());
-        if(extrapIPA_.debug() > 1){
+        if(extrapIPA_.debug() > 0){
           double dmom, paramomvar, perpmomvar;
           ipaxingptr->materialEffects(dmom,paramomvar,perpmomvar);
           std::cout << "IPA Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
           std::cout << " before append mom = " << reftrajptr->momentum() << std::endl;
         }
-        ktrk.addIPAXing(ipaxingptr,trkdir);
-        if(extrapIPA_.debug() > 1){
-          auto const& newtrajptr = trkdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
+        ktrk.addIPAXing(ipaxingptr,tdir);
+        if(extrapIPA_.debug() > 0){
+          auto const& newtrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
           std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
         }
       }
     } while(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_);
-    // then extrapolate to the back of the target
-    // ktrk.extrapolate(trkdir,toST_);
-    // intersect with the foils and add those as ShellXings TODO
-    // extrapolate to the TSDA TODO
-    // if the track reflected, find the foil  and IPA intersections and add those TODO
-    // finally extrapolate back to the tracker entrance TODO
+  }
+
+  void LoopHelixFit::extrapolateST(KKTRK& ktrk,TimeDir tdir) const {
+    // extraplate the fit through the ST. This will add material effects for each foil intersection. It will continue till the
+    // track exits the ST in Z
+    extrapST_.reset();
+    auto const& ftraj = ktrk.fitTraj();
+    do {
+      ktrk.extrapolate(tdir,extrapST_);
+      if(extrapST_.intersection().onsurface_ && extrapST_.intersection().inbounds_){
+        // we have a good intersection. Use this to create a Shell material Xing
+        auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
+        KKSTXINGPTR stxingptr = std::make_shared<KKSTXING>(extrapST_.foil(),extrapST_.foilId(),*kkmat_.STMaterial(),extrapST_.intersection(),reftrajptr,stthick_,extrapST_.tolerance());
+        if(extrapST_.debug() > 0){
+          double dmom, paramomvar, perpmomvar;
+          stxingptr->materialEffects(dmom,paramomvar,perpmomvar);
+          std::cout << "ST Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
+          std::cout << " before append mom = " << reftrajptr->momentum() << std::endl;
+        }
+        ktrk.addSTXing(stxingptr,tdir);
+        if(extrapST_.debug() > 0){
+          auto const& newtrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
+          std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
+        }
+      }
+    } while(extrapST_.intersection().onsurface_ && extrapST_.intersection().inbounds_);
   }
 
 }
