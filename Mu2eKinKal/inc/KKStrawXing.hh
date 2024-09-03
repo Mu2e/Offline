@@ -15,8 +15,6 @@
 namespace mu2e {
   using KinKal::SVEC3;
   using KinKal::DVEC;
-  using KinKal::SMAT;
-  using KinKal::SSMAT;
   using KinKal::CAHint;
   using KinKal::DPDV;
   using KinKal::MomBasis;

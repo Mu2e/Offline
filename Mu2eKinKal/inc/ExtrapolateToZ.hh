@@ -8,6 +8,7 @@
 #include "cetlib_except/exception.h"
 namespace mu2e {
   using KinKal::TimeDir;
+  using KinKal::timeDirSign;
   class ExtrapolateToZ {
     public:
       ExtrapolateToZ() : maxDt_(-1.0), tol_(1e10), zval_(0.0) {}
