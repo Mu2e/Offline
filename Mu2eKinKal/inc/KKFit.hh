@@ -594,6 +594,7 @@ namespace mu2e {
     } else if (savetraj_ == t0seg ) {
       fseed._segments.emplace_back(t0piece,t0val);
     }
+    // sample the fit at the locations provided
     sampleFit(kktrk,fseed._inters);
     return fseed;
   }
@@ -617,6 +618,19 @@ namespace mu2e {
         }
       }
     }
+    // add IPA and ST Xings. Sample just before the transit to include the effect of the material
+    static const double epsilon(1e-3);
+    for(auto const& ipaxing : kktrk.IPAXings()){
+      double stime = ipaxing->time() - epsilon;
+      auto const& ktraj = ftraj.nearestPiece(stime);
+      inters.emplace_back(ktraj.stateEstimate(ipaxing->time()),XYZVectorF(ktraj.bnom()),ipaxing->surfaceId(),ipaxing->intersection());
+    }
+    for(auto const& stxing : kktrk.STXings()){
+      double stime = stxing->time() - epsilon;
+      auto const& ktraj = ftraj.nearestPiece(stime);
+      inters.emplace_back(ktraj.stateEstimate(stxing->time()),XYZVectorF(ktraj.bnom()),stxing->surfaceId(),stxing->intersection());
+    }
+    // sort this by time TODO
   }
 }
 #endif

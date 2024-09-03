@@ -64,7 +64,7 @@ namespace mu2e {
       KKSTRAWHITCLUSTERCOL const& strawHitClusters() const { return strawhitclusters_; }
       KKSTRAWXINGCOL const& strawXings() const { return strawxings_; }
       KKIPAXINGCOL const& IPAXings() const { return ipaxings_; }
-      KKSTXINGCOL const& STXings() const { return ipaxings_; }
+      KKSTXINGCOL const& STXings() const { return stxings_; }
       KKCALOHITCOL const& caloHits() const { return calohits_; }
       void printFit(std::ostream& ost=std::cout,int detail=0) const;
     private:
