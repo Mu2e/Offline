@@ -71,7 +71,7 @@ namespace mu2e {
     double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
     double zpos = pos.Z();
     double rho = pos.Rho();
-    if(debug_ > 1)std::cout << "ST extrap start time " << time << " z " << zpos << " zvel " << zvel << " rho " << rho << std::endl;
+    if(debug_ > 2)std::cout << "ST extrap start time " << time << " z " << zpos << " zvel " << zvel << " rho " << rho << std::endl;
     // stop if the particle is heading away from the ST
     if( (zvel > 0 && zpos > zmax_ ) || (zvel < 0 && zpos < zmin_)){
       reset(); // clear any cache
@@ -81,7 +81,7 @@ namespace mu2e {
     // if the particle is going in the right direction but haven't yet reached the ST in Z just keep going
     if( (zvel > 0 && zpos < zmin_) || (zvel < 0 && zpos > zmax_) ){
       reset();
-      if(debug_ > 1)std::cout << "Heading towards ST, z " << zpos<< std::endl;
+      if(debug_ > 2)std::cout << "Heading towards ST, z " << zpos<< std::endl;
       return true;
     }
     // if we get to here we are in the correct Z range
@@ -97,23 +97,23 @@ namespace mu2e {
     double tstart = tdir == TimeDir::forwards ? trange.begin() : trange.end();
     auto fpos = ktrk.fitTraj().position3(tstart);
     int ifoil = nearestFoil(fpos.Z(),zvel);
-    if(debug_ > 1)std::cout << "ST volume rho " << fpos.Rho() <<  " z " << fpos.Z() << " first ST foil " << ifoil << std::endl;
+    if(debug_ > 2)std::cout << "ST volume rho " << fpos.Rho() <<  " z " << fpos.Z() << " first ST foil " << ifoil << std::endl;
     if(ifoil >= foils_.size())return true;
-    if(debug_ > 1)std::cout << "Looping on foils " << std::endl;
+    if(debug_ > 2)std::cout << "Looping on foils " << std::endl;
     int dfoil = zvel > 0.0 ? 1 : -1; // iteration direction
     // loop over foils
     while(ifoil > 0 && ifoil < foils_.size() && (foils_[ifoil]->center().Z() - zpos)*dfoil < 0.0){
       auto foilptr = foils_[ifoil];
-      if(debug_ > 1)std::cout << "foil " << ifoil << " z " << foilptr->center().Z() << std::endl;
+      if(debug_ > 2)std::cout << "foil " << ifoil << " z " << foilptr->center().Z() << std::endl;
       auto newinter = KinKal::intersect(ktrk.fitTraj(),*foilptr,trange,tol_,tdir);
-      if(debug_ > 1)std::cout << "ST inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << std::endl;
+      if(debug_ > 2)std::cout << "ST inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << std::endl;
       bool goodextrap = newinter.onsurface_ && newinter.inbounds_;
       if(goodextrap){
         // if the cached intersection is valid, test this intersection time against it, and
         // if the new intersection time is the same as the last, keep looping on foils
         if(inter_.onsurface_ && inter_.inbounds_ && ( (tdir == TimeDir::forwards && newinter.time_ <= inter_.time_) ||
               (tdir == TimeDir::backwards && newinter.time_ >= inter_.time_) ) ) {
-          if(debug_ > 1)std::cout << "ST Skipping duplicate intersection " << std::endl;
+          if(debug_ > 2)std::cout << "ST Skipping duplicate intersection " << std::endl;
           ifoil += dfoil;
           continue;
         }
