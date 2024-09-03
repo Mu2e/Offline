@@ -102,7 +102,7 @@ namespace mu2e {
     if(debug_ > 2)std::cout << "Looping on foils " << std::endl;
     int dfoil = zvel > 0.0 ? 1 : -1; // iteration direction
     // loop over foils
-    while(ifoil > 0 && ifoil < foils_.size() && (foils_[ifoil]->center().Z() - zpos)*dfoil < 0.0){
+    while(ifoil > 0 && ifoil < (int)foils_.size() && (foils_[ifoil]->center().Z() - zpos)*dfoil < 0.0){
       auto foilptr = foils_[ifoil];
       if(debug_ > 2)std::cout << "foil " << ifoil << " z " << foilptr->center().Z() << std::endl;
       auto newinter = KinKal::intersect(ktrk.fitTraj(),*foilptr,trange,tol_,tdir);
