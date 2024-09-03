@@ -105,7 +105,7 @@ namespace mu2e {
 
   // extend the generic module configuration as needed
   struct KKHelixModuleConfig : KKModuleConfig {
-    fhicl::Atom<art::InputTag> csCollection {Name("CosmicTrackSeedCollection"), Comment("Seed collection")};
+    fhicl::Sequence<art::InputTag> seedCollections         {Name("CosmicTrackSeedCollections"),     Comment("Seed fit collections to be processed ") };
     fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
     fhicl::Atom<double> seedMom { Name("SeedMomentum"), Comment("Seed momentum") };
     fhicl::Atom<int> seedCharge { Name("SeedCharge"), Comment("Seed charge") };
@@ -134,7 +134,7 @@ namespace mu2e {
       // data payload
       art::ProductToken<ComboHitCollection> chcol_T_;
       art::ProductToken<CaloClusterCollection> cccol_T_;
-      art::ProductToken<CosmicTrackSeedCollection> cscol_T_;
+      std::vector<art::ProductToken<CosmicTrackSeedCollection>> cseedCols_;
       TrkFitFlag goodseed_;
       bool saveall_;
       ProditionsHandle<StrawResponse> strawResponse_h_;
@@ -157,7 +157,6 @@ namespace mu2e {
     fitflag_(TrkFitFlag::KKCentralHelix),
     chcol_T_(consumes<ComboHitCollection>(settings().modSettings().comboHitCollection())),
     cccol_T_(mayConsume<CaloClusterCollection>(settings().modSettings().caloClusterCollection())),
-    cscol_T_(consumes<CosmicTrackSeedCollection>(settings().modSettings().csCollection())),
     goodseed_(settings().modSettings().seedFlags()),
     saveall_(settings().modSettings().saveAll()),
     print_(settings().modSettings().printLevel()),
@@ -171,6 +170,7 @@ namespace mu2e {
     seedCharge_(settings().modSettings().seedCharge())
     {
       // collection handling
+      for(const auto& cseedtag : settings().modSettings().seedCollections()) { cseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(cseedtag)); }
       produces<KKTRKCOL>();
       produces<KalSeedCollection>();
       //      produces<KalHelixAssns>();
@@ -210,99 +210,103 @@ namespace mu2e {
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
     auto cc_H = event.getValidHandle<CaloClusterCollection>(cccol_T_);
-    auto cs_H = event.getValidHandle<CosmicTrackSeedCollection>(cscol_T_);
     auto const& chcol = *ch_H;
-    auto const& cscol = *cs_H;
     // create output
     unique_ptr<KKTRKCOL> kktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
 
+    unsigned nseed(0);
+    for (auto const& cseedtag : cseedCols_) {
+      auto const& cseedcol_h = event.getValidHandle<CosmicTrackSeedCollection>(cseedtag);
+      auto const& cseedcol = *cseedcol_h;
+      nseed += cseedcol.size();
 
-    for (size_t index=0;index<cscol.size();++index){
-      const auto& cseed = cscol[index];
-      auto zcent = Mu2eKinKal::zMid(cseed.hits());
-      // take the magnetic field at the helix center as nominal
-      auto bnom = kkbf_->fieldVect(VEC3(0,0,zcent));
+      for (size_t index=0;index<cseedcol.size();++index){
+        const auto& cseed = cseedcol[index];
+        auto zcent = Mu2eKinKal::zMid(cseed.hits());
+        // take the magnetic field at the helix center as nominal
+        auto bnom = kkbf_->fieldVect(VEC3(0,0,zcent));
 
-      double bz = bnom.Z();
-      auto trange = Mu2eKinKal::timeBounds(cseed.hits());
-      auto fitpart = fpart_;
+        double bz = bnom.Z();
+        auto trange = Mu2eKinKal::timeBounds(cseed.hits());
+        auto fitpart = fpart_;
 
 
-      float midy = 0;
-      for (size_t i=0;i<cseed.hits().size();i++){
-        auto hiti = cseed.hits()[i];
-        midy += hiti.pos().y();
-      }
-      midy /= cseed.hits().size();
-
-      XYZVectorF trackpos = cseed.track().FitEquation.Pos;
-      XYZVectorF trackdir = cseed.track().FitEquation.Dir.Unit();
-      if (trackdir.y() > 0)
-        trackdir *= -1;
-
-      // put direction as tangent to circle at mid y position
-      trackpos += (midy - trackpos.y())/trackdir.y() * trackdir;
-
-      XYZVectorF trackmom = trackdir * seedMom_;
-
-      auto temptraj = KTRAJ(KinKal::VEC4(trackpos.x(),trackpos.y(),trackpos.z(),cseed.t0().t0()),KinKal::MOM4(trackmom.x(),trackmom.y(),trackmom.z(),mass_), seedCharge_, bz);
-      KinKal::Parameters kkpars(temptraj.params().parameters(),seedcov_);
-      auto seedtraj = KTRAJ(kkpars,mass_,seedCharge_,bz,trange);
-
-      // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
-      PKTRAJ pseedtraj(seedtraj);
-
-      // first, we need to unwind the combohits.  We use this also to find the time range
-      StrawHitIndexCollection strawHitIdxs;
-      auto chcolptr = cseed.hits().fillStrawHitIndices(strawHitIdxs, StrawIdMask::uniquestraw);
-      if(chcolptr != &chcol)
-        throw cet::exception("RECO")<<"mu2e::KKCentralHelixFit: inconsistent ComboHitCollection" << std::endl;
-      // next, build straw hits and materials from these
-      KKSTRAWHITCOL strawhits;
-      strawhits.reserve(strawHitIdxs.size());
-      KKSTRAWXINGCOL strawxings;
-      strawxings.reserve(strawHitIdxs.size());
-      kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
-      // optionally (and if present) add the CaloCluster as a constraint
-      // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO
-      KKCALOHITCOL calohits;
-      //FIXME    if (kkfit_.useCalo() && hseed.caloCluster().isNonnull())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
-      // extend the seed range given the hits and xings
-
-      try {
-
-        seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
-
-        // create and fit the track
-        auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
-        // Check the fit
-        auto goodfit = goodFit(*kktrk);
-        // if we have an extension schedule, extend.
-        if(goodfit && exconfig_.schedule().size() > 0) {
-          //  std::cout << "EXTENDING TRACK " << event.id() << " " << index << std::endl;
-          kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
-          goodfit = goodFit(*kktrk);
+        float midy = 0;
+        for (size_t i=0;i<cseed.hits().size();i++){
+          auto hiti = cseed.hits()[i];
+          midy += hiti.pos().y();
         }
+        midy /= cseed.hits().size();
 
-        if(print_>1)kktrk->printFit(std::cout,print_);
-        if(goodfit || saveall_){
-          TrkFitFlag fitflag;//(hptr->status());
-          fitflag.merge(fitflag_);
-          if(goodfit)
-            fitflag.merge(TrkFitFlag::FitOK);
-          else
-            fitflag.clear(TrkFitFlag::FitOK);
-          kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h));
-          // save (unpersistable) KKTrk in the event
-          kktrkcol->push_back(kktrk.release());
+        XYZVectorF trackpos = cseed.track().FitEquation.Pos;
+        XYZVectorF trackdir = cseed.track().FitEquation.Dir.Unit();
+        if (trackdir.y() > 0)
+          trackdir *= -1;
+
+        // put direction as tangent to circle at mid y position
+        trackpos += (midy - trackpos.y())/trackdir.y() * trackdir;
+
+        XYZVectorF trackmom = trackdir * seedMom_;
+
+        auto temptraj = KTRAJ(KinKal::VEC4(trackpos.x(),trackpos.y(),trackpos.z(),cseed.t0().t0()),KinKal::MOM4(trackmom.x(),trackmom.y(),trackmom.z(),mass_), seedCharge_, bz);
+        KinKal::Parameters kkpars(temptraj.params().parameters(),seedcov_);
+        auto seedtraj = KTRAJ(kkpars,mass_,seedCharge_,bz,trange);
+
+        // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
+        PKTRAJ pseedtraj(seedtraj);
+
+        // first, we need to unwind the combohits.  We use this also to find the time range
+        StrawHitIndexCollection strawHitIdxs;
+        auto chcolptr = cseed.hits().fillStrawHitIndices(strawHitIdxs, StrawIdMask::uniquestraw);
+        if(chcolptr != &chcol)
+          throw cet::exception("RECO")<<"mu2e::KKCentralHelixFit: inconsistent ComboHitCollection" << std::endl;
+        // next, build straw hits and materials from these
+        KKSTRAWHITCOL strawhits;
+        strawhits.reserve(strawHitIdxs.size());
+        KKSTRAWXINGCOL strawxings;
+        strawxings.reserve(strawHitIdxs.size());
+        kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
+        // optionally (and if present) add the CaloCluster as a constraint
+        // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO
+        KKCALOHITCOL calohits;
+        //FIXME    if (kkfit_.useCalo() && hseed.caloCluster().isNonnull())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
+        // extend the seed range given the hits and xings
+
+        try {
+          seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
+
+          // create and fit the track
+          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
+          // Check the fit
+          auto goodfit = goodFit(*kktrk);
+          // if we have an extension schedule, extend.
+          if(goodfit && exconfig_.schedule().size() > 0) {
+            //  std::cout << "EXTENDING TRACK " << event.id() << " " << index << std::endl;
+            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
+            goodfit = goodFit(*kktrk);
+          }
+
+          if(print_>1)kktrk->printFit(std::cout,print_);
+          if(goodfit || saveall_){
+            TrkFitFlag fitflag;//(hptr->status());
+            fitflag.merge(fitflag_);
+            if(goodfit)
+              fitflag.merge(TrkFitFlag::FitOK);
+            else
+              fitflag.clear(TrkFitFlag::FitOK);
+            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h));
+            // save (unpersistable) KKTrk in the event
+            kktrkcol->push_back(kktrk.release());
+          }
+
+        } catch (std::exception const& error) {
+          if(print_ > 0) std::cout << "CentralHelixFit Error " << error.what() << std::endl;
         }
-
-      } catch (std::exception const& error) {
       }
     }
     // put the output products into the event
-    if(print_ > 0) std::cout << "Fitted " << kktrkcol->size() << " tracks from " << cscol.size() << " Seeds" << std::endl;
+    if(print_ > 0) std::cout << "Fitted " << kktrkcol->size() << " tracks from " << nseed << " Seeds" << std::endl;
     event.put(move(kktrkcol));
     event.put(move(kkseedcol));
   }
