@@ -98,7 +98,7 @@ namespace mu2e {
     auto fpos = ktrk.fitTraj().position3(tstart);
     int ifoil = nearestFoil(fpos.Z(),zvel);
     if(debug_ > 2)std::cout << "ST volume rho " << fpos.Rho() <<  " z " << fpos.Z() << " first ST foil " << ifoil << std::endl;
-    if(ifoil >= foils_.size())return true;
+    if(ifoil >= (int)foils_.size())return true;
     if(debug_ > 2)std::cout << "Looping on foils " << std::endl;
     int dfoil = zvel > 0.0 ? 1 : -1; // iteration direction
     // loop over foils
