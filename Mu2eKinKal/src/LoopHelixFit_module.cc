@@ -252,8 +252,8 @@ namespace mu2e {
       extrapST_ = ExtrapolateST(maxdt,tol,smap_.ST(),debug);
       // temporary
       std::cout << "ST limits z " << extrapST_.zmin() << " " << extrapST_.zmax() << " r " << extrapST_.rmin() << " " << extrapST_.rmax() << std::endl;
-      // extrapolate to the back of the tracker
-      toTracker_ = ExtrapolateToZ(maxdt,tol,smap_.tracker().back().center().Z());
+      // extrapolate to the front of the tracker
+      toTracker_ = ExtrapolateToZ(maxdt,tol,smap_.tracker().front().center().Z());
       // extrapolate to the back of the detector solenoid
       toTSDA_ = ExtrapolateToZ(maxdt,tol,smap_.DS().upstreamAbsorber().center().Z());
     }
