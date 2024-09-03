@@ -483,7 +483,7 @@ namespace mu2e {
           double dmom, paramomvar, perpmomvar;
           ipaxingptr->materialEffects(dmom,paramomvar,perpmomvar);
           std::cout << "IPA Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
-          std::cout << " before append mom = " << reftrajptr->momentum() << std::endl;
+          std::cout << " before append mom = " << reftrajptr->momentum();
         }
         ktrk.addIPAXing(ipaxingptr,tdir);
         if(extrapIPA_.debug() > 0){
@@ -509,7 +509,7 @@ namespace mu2e {
           double dmom, paramomvar, perpmomvar;
           stxingptr->materialEffects(dmom,paramomvar,perpmomvar);
           std::cout << "ST Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
-          std::cout << " before append mom = " << reftrajptr->momentum() << std::endl;
+          std::cout << " before append mom = " << reftrajptr->momentum();
         }
         ktrk.addSTXing(stxingptr,tdir);
         if(extrapST_.debug() > 0){

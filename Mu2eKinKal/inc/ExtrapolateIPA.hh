@@ -90,7 +90,7 @@ namespace mu2e {
           (tdir == TimeDir::backwards && newinter.time_ > time ) ) {
         // update the cache
         inter_ = newinter;
-        if(debug_ > 0)std::cout << "Good intersection found in range, time " << inter_.time_ << " z  " << inter_.pos_.Z() << std::endl;
+        if(debug_ > 0)std::cout << "Good IPA intersection found in range, time " << inter_.time_ << " z  " << inter_.pos_.Z() << std::endl;
         return false;
       }
       return true; // otherwise continue extrapolating
