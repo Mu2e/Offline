@@ -11,27 +11,35 @@ namespace mu2e {
   using KinKal::timeDirSign;
   class ExtrapolateToZ {
     public:
-      ExtrapolateToZ() : maxDt_(-1.0), tol_(1e10), zval_(0.0) {}
-      ExtrapolateToZ(double maxdt, double tol, double zval) : maxDt_(maxdt), tol_(tol), zval_(zval) {}
+      ExtrapolateToZ() : maxDt_(-1.0), tol_(1e10), zval_(0.0), debug_(0) {}
+      ExtrapolateToZ(double maxdt, double tol, double zval,int debug) : maxDt_(maxdt), tol_(tol), zval_(zval), debug_(debug) {}
       // interface for extrapolation
       double maxDt() const { return maxDt_; } // maximum time to extend the track, WRT the time of the first(last) measurement
       double tolerance() const { return tol_; } // tolerance on fractional momentum change
       double zVal() const { return zval_; }
+      int debug() const { return debug_; }
       // extrapolation predicate: the track will be extrapolated until this predicate returns false, subject to the maximum time
       template <class KTRAJ> bool needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const;
     private:
       double maxDt_; // maximum extrapolation time
       double tol_; // momentum tolerance in BField domain
       double zval_; // z value targeted
+      int debug_; // debug level
   };
 
   template <class KTRAJ> bool ExtrapolateToZ::needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, KinKal::TimeDir tdir, double time) const {
-    auto vel = ktrk.fitTraj().velocity(time);
-    auto pos = ktrk.fitTraj().position3(time);
+    auto const& fittraj = ktrk.fitTraj();
+    auto vel = fittraj.velocity(time);
+    auto pos = fittraj.position3(time);
     double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
     double zval = pos.Z();
+    auto const& bnom = fittraj.bnom(time);
+    double zref = vel.R()*fabs(sin(bnom.Theta()));
+    if(debug_ > 2)std::cout << "Z extrap start time " << time << " z " << zval << " zvel " << zvel << " zref " <<  zref << std::endl;
+    // if z velocity is unreliable, continue
+    if(fabs(zvel) < zref) return true;
     // stop if we're heading away from the target z
-    if( (zvel > 0 && zval > zval_ ) || (zvel < 0 && zval < zval_))return false;
+    if((zvel > 0 && zval > zval_ ) || (zvel < 0 && zval < zval_))return false;
     // stop when we get beyond the target value in Z
     if(zvel< 0){ // backwards extrapolation of downstream-going track, or forwards extrapolation of upstream-going track
       return zval > zval_;
