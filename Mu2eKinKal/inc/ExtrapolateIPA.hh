@@ -46,11 +46,16 @@ namespace mu2e {
   };
 
   template <class KTRAJ> bool ExtrapolateIPA::needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const {
-    if(debug_ > 1)std::cout << "IPA extrap start time " << time << std::endl;
-    auto vel = ktrk.fitTraj().velocity(time);
-    auto pos = ktrk.fitTraj().position3(time);
+    auto const& fittraj = ktrk.fitTraj();
+    auto vel = fittraj.velocity(time);
+    auto pos = fittraj.position3(time);
     double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
     double zpos = pos.Z();
+    auto const& bnom = fittraj.bnom(time);
+    double zref = vel.R()*fabs(sin(bnom.Theta()));
+    if(debug_ > 2)std::cout << "IPA extrap start time " << time << " z " << zpos << " zvel " << zvel << " zref " << zref << std::endl;
+    // if z velocity is unreliable, continue
+    if(fabs(zvel) < zref) return true;
     // stop if the particle is heading away from the IPA
     if( (zvel > 0 && zpos > zmax_ ) || (zvel < 0 && zpos < zmin_)){
       reset(); // clear any cache
@@ -66,7 +71,7 @@ namespace mu2e {
     // if we get to here we need to test for an intersection with the actual cylinder
     // first, estimate the time range based on local piece Z speed transit time
     // Buffer by the range of the last piece to avoid missed edges.
-    auto const& ktraj = tdir == TimeDir::forwards ? ktrk.fitTraj().back() : ktrk.fitTraj().front();
+    auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
     static const double epsilon(1e-2);
     double dt = ktraj.range().range() - epsilon; // small difference to avoid re-intersecting
     double halflen = ipa_->halfLength();
@@ -74,7 +79,7 @@ namespace mu2e {
     TimeRange trange = tdir == TimeDir::forwards ? TimeRange(time-dt,time+tz) : TimeRange(time-tz,time+dt);
     // update intersection
     if(debug_ > 2)std::cout << "IPA intersection " << trange << std::endl;
-    auto newinter = KinKal::intersect(ktrk.fitTraj(),*ipa_,trange,tol_,tdir);
+    auto newinter = KinKal::intersect(fittraj,*ipa_,trange,tol_,tdir);
     if(debug_ > 2)std::cout << "IPA extrap inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << std::endl;
     bool goodextrap = newinter.onsurface_ && newinter.inbounds_;
     if(goodextrap){

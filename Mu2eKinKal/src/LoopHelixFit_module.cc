@@ -269,9 +269,9 @@ namespace mu2e {
       // temporary
       std::cout << "ST limits z " << extrapST_.zmin() << " " << extrapST_.zmax() << " r " << extrapST_.rmin() << " " << extrapST_.rmax() << std::endl;
       // extrapolate to the front of the tracker
-      toTracker_ = ExtrapolateToZ(maxdt,tol,smap_.tracker().front().center().Z());
+      toTracker_ = ExtrapolateToZ(maxdt,tol,smap_.tracker().front().center().Z(),debug);
       // extrapolate to the back of the detector solenoid
-      toTSDA_ = ExtrapolateToZ(maxdt,tol,smap_.DS().upstreamAbsorber().center().Z());
+      toTSDA_ = ExtrapolateToZ(maxdt,tol,smap_.DS().upstreamAbsorber().center().Z(),debug);
       tsdaptr_ = smap_.DS().upstreamAbsorberPtr();
       trkfrontptr_ = smap_.tracker().frontPtr();
       opaptr_ = smap_.DS().outerProtonAbsorberPtr();
@@ -486,6 +486,7 @@ namespace mu2e {
   }
 
   bool LoopHelixFit::extrapolateIPA(KKTRK& ktrk,TimeDir tdir) const {
+    if(extrapIPA_.debug() > 0)std::cout << "extrapolating to IPA " << std::endl;
     // extraplate the fit through the IPA. This will add material effects for each intersection. It will continue till the
     // track exits the IPA
     extrapIPA_.reset();
@@ -529,6 +530,7 @@ namespace mu2e {
     auto const& ftraj = ktrk.fitTraj();
     double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     auto startdir = ftraj.direction(starttime);
+    if(extrapST_.debug() > 0)std::cout << "extrapolating to ST " << std::endl;
     do {
       ktrk.extrapolate(tdir,extrapST_);
       if(extrapST_.intersection().onsurface_ && extrapST_.intersection().inbounds_){
@@ -558,6 +560,7 @@ namespace mu2e {
   }
 
   bool LoopHelixFit::extrapolateTracker(KKTRK& ktrk,TimeDir tdir) const {
+    if(toTracker_.debug() > 0)std::cout << "extrapolating to Tracker " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId TrackerSID("TT_Front");
     ktrk.extrapolate(tdir,toTracker_);
@@ -572,16 +575,20 @@ namespace mu2e {
   }
 
   bool LoopHelixFit::extrapolateTSDA(KKTRK& ktrk,TimeDir tdir) const {
+    if(toTSDA_.debug() > 0)std::cout << "extrapolating to TSDA " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId TSDASID("TSDA");
     ktrk.extrapolate(tdir,toTSDA_);
-    auto const& ktraj = tdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-    auto tsdainter = KinKal::intersect(ftraj,*tsdaptr_,ktraj.range(),toTSDA_.tolerance(),tdir);
-    if(tsdainter.onsurface_){ // dont worry about bounds here
-      ktrk.addIntersection(TSDASID,tsdainter);
-      return true;
+    // if we reflected we're done. Otherwize, save the TSDA intersection
+    double tend = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
+    auto epos = ftraj.position3(tend);
+    bool retval = epos.Z() < toTSDA_.zVal();
+    if(retval){
+      auto const& ktraj = tdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
+      auto tsdainter = KinKal::intersect(ftraj,*tsdaptr_,ktraj.range(),toTSDA_.tolerance(),tdir);
+      if(tsdainter.onsurface_)ktrk.addIntersection(TSDASID,tsdainter);
     }
-    return false;
+    return retval;
   }
 
   void LoopHelixFit::intersectOPA(KKTRK& ktrk, double tstart, TimeDir tdir) const {

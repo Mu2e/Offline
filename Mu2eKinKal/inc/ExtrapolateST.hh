@@ -66,14 +66,19 @@ namespace mu2e {
   };
 
   template <class KTRAJ> bool ExtrapolateST::needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const {
-    auto vel = ktrk.fitTraj().velocity(time);
-    auto pos = ktrk.fitTraj().position3(time);
+    auto const& fittraj = ktrk.fitTraj();
+    auto vel = fittraj.velocity(time);
+    auto pos = fittraj.position3(time);
     double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
     double zpos = pos.Z();
     double rho = pos.Rho();
-    if(debug_ > 2)std::cout << "ST extrap start time " << time << " z " << zpos << " zvel " << zvel << " rho " << rho << std::endl;
+    auto const& bnom = fittraj.bnom(time);
+    double zref = vel.R()*fabs(sin(bnom.Theta()));
+    if(debug_ > 2)std::cout << "ST extrap start time " << time << " z " << zpos << " zvel " << zvel << " zref " << zref << " rho " << rho << std::endl;
+    // if z velocity is unreliable, continue
+    if(fabs(zvel) < zref) return true;
     // stop if the particle is heading away from the ST
-    if( (zvel > 0 && zpos > zmax_ ) || (zvel < 0 && zpos < zmin_)){
+    if( fabs(zvel) > vel.R()*fabs(sin(bnom.Theta())) && (zvel > 0 && zpos > zmax_ ) || (zvel < 0 && zpos < zmin_)){
       reset(); // clear any cache
       if(debug_ > 1)std::cout << "Heading away from ST: done" << std::endl;
       return false;
@@ -88,14 +93,14 @@ namespace mu2e {
     // check if we are inside the ST volume
     if(rho < rmin_ || rho > rmax_) return true; // keep going
     // we are in the correct radial range too.  Look for an intersection with the foils
-    auto const& ktraj = tdir == TimeDir::forwards ? ktrk.fitTraj().back() : ktrk.fitTraj().front();
+    auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
     static const double epsilon(1e-2); // small difference to avoid re-intersecting
     double dt = ktraj.range().range() - epsilon; // small difference to avoid re-intersecting
     double tz = 1.0/std::max(fabs(zvel)/(zmax_-zmin_),1.0/maxDt_); // time to cross the ST: protect against reflection (zero z speed)
     TimeRange trange = tdir == TimeDir::forwards ? TimeRange(time-dt,time+tz) : TimeRange(time-tz,time+dt);
     // Use z to determine which foil might be the next hit
     double tstart = tdir == TimeDir::forwards ? trange.begin() : trange.end();
-    auto fpos = ktrk.fitTraj().position3(tstart);
+    auto fpos = fittraj.position3(tstart);
     int ifoil = nearestFoil(fpos.Z(),zvel);
     if(debug_ > 2)std::cout << "ST volume rho " << fpos.Rho() <<  " z " << fpos.Z() << " first ST foil " << ifoil << std::endl;
     if(ifoil >= (int)foils_.size())return true;
@@ -105,7 +110,7 @@ namespace mu2e {
     while(ifoil > 0 && ifoil < (int)foils_.size() && (foils_[ifoil]->center().Z() - zpos)*dfoil < 0.0){
       auto foilptr = foils_[ifoil];
       if(debug_ > 2)std::cout << "foil " << ifoil << " z " << foilptr->center().Z() << std::endl;
-      auto newinter = KinKal::intersect(ktrk.fitTraj(),*foilptr,trange,tol_,tdir);
+      auto newinter = KinKal::intersect(fittraj,*foilptr,trange,tol_,tdir);
       if(debug_ > 2)std::cout << "ST inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << std::endl;
       bool goodextrap = newinter.onsurface_ && newinter.inbounds_;
       if(goodextrap){
