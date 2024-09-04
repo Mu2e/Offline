@@ -11,11 +11,15 @@
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
+#include "KinKal/Geometry/Intersection.hh"
+#include <tuple>
 namespace mu2e {
 
   using KinKal::Config;
   using KinKal::BFieldMap;
   using KinKal::TimeDir;
+  using KinKal::Intersection;
 
   template <class KTRAJ> class KKTrack : public KinKal::Track<KTRAJ> {
     public:
@@ -44,6 +48,8 @@ namespace mu2e {
       using KKSTXING = KKShellXing<KTRAJ,KinKal::Annulus>;
       using KKSTXINGPTR = std::shared_ptr<KKSTXING>;
       using KKSTXINGCOL = std::vector<KKSTXINGPTR>;
+      using KKINTER = std::tuple<SurfaceId,KinKal::Intersection>;
+      using KKINTERCOL = std::vector<KKINTER>;
       using TRACK = KinKal::Track<KTRAJ>;
       // construct from configuration, fit environment, and hits and materials
       KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart, KKSTRAWHITCLUSTERER const& shclusterer,
@@ -57,6 +63,8 @@ namespace mu2e {
       void addIPAXing(KKIPAXINGPTR const& ipaxing,TimeDir const& tdir);
       // add ST Xing
       void addSTXing(KKSTXINGPTR const& stxing,TimeDir const& tdir);
+      // add intersections
+      void addIntersection(SurfaceId const& sid, Intersection const& inter) { inters_.emplace_back(sid,inter); }
 
       // accessors
       PDGCode::type fitParticle() const { return tpart_;}
@@ -65,6 +73,7 @@ namespace mu2e {
       KKSTRAWXINGCOL const& strawXings() const { return strawxings_; }
       KKIPAXINGCOL const& IPAXings() const { return ipaxings_; }
       KKSTXINGCOL const& STXings() const { return stxings_; }
+      KKINTERCOL const& intersections() const { return inters_; }
       KKCALOHITCOL const& caloHits() const { return calohits_; }
       void printFit(std::ostream& ost=std::cout,int detail=0) const;
     private:
@@ -75,6 +84,7 @@ namespace mu2e {
       KKSTRAWXINGCOL strawxings_;  // straw material crossings used in this fit
       KKIPAXINGCOL ipaxings_;  // ipa material crossings used in extrapolation
       KKSTXINGCOL stxings_;  // stopping target material crossings used in extrapolation
+      KKINTERCOL inters_; // other recorded intersections
       KKSTRAWHITCLUSTERCOL strawhitclusters_;  // straw hit clusters used in this fit
       KKCALOHITCOL calohits_;  // calo hits used in this fit
       // utility function to convert to generic types

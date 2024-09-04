@@ -29,7 +29,7 @@ namespace mu2e {
         auto const& innerProtonAbsorber() const { return *ipa_; }
         auto const& innerProtonAbsorberFront() const { return *ipa_front_; }
         auto const& innerProtonAbsorberBack() const { return *ipa_back_; }
-        auto const& outerProtonAbsorber() const { return *ipa_; }
+        auto const& outerProtonAbsorber() const { return *opa_; }
         auto const& upstreamAbsorber() const { return *tsda_; }
         // return by ptr
         auto const& outerPtr() const { return outer_; }
@@ -39,7 +39,7 @@ namespace mu2e {
         auto const& innerProtonAbsorberPtr() const { return ipa_; }
         auto const& innerProtonAbsorberFrontPtr() const { return ipa_front_; }
         auto const& innerProtonAbsorberBackPtr() const { return ipa_back_; }
-        auto const& outerProtonAbsorberPtr() const { return ipa_; }
+        auto const& outerProtonAbsorberPtr() const { return opa_; }
         auto const& upstreamAbsorberPtr() const { return tsda_; }
       private:
         CylPtr outer_; // outer cryostat cylinder

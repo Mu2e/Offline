@@ -27,6 +27,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
+#include "Offline/RecoDataProducts/inc/KalIntersection.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/KinKalGeom/inc/SurfaceMap.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
@@ -630,7 +631,14 @@ namespace mu2e {
       auto const& ktraj = ftraj.nearestPiece(stime);
       inters.emplace_back(ktraj.stateEstimate(stxing->time()),XYZVectorF(ktraj.bnom()),stxing->surfaceId(),stxing->intersection());
     }
-    // sort this by time TODO
+    // record other intersections saved in the track
+    for(auto const& interpair : kktrk.intersections()) {
+      auto const& sid = std::get<0>(interpair);
+      auto const& inter = std::get<1>(interpair);
+      auto const& ktraj = ftraj.nearestPiece(inter.time_);
+      inters.emplace_back(ktraj.stateEstimate(inter.time_),XYZVectorF(ktraj.bnom()),sid,inter);
+    }
+    // sort by time TODO
   }
 }
 #endif
