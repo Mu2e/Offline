@@ -113,7 +113,7 @@ namespace mu2e {
           KKTRK const& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& hits) const;
       void addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK const& kktrk, KKSTRAWHITCOL const& addhits, KKSTRAWXINGCOL& addexings) const;
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
-      void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const; // sample fit at the surfaces specified in the config
+      void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters, TrkFitFlag const& seedflag) const; // sample fit at the surfaces specified in the config
       void extendFit(KKTRK& kktrk) const;
       int printLevel_;
       unsigned minNStrawHits_;
@@ -596,14 +596,28 @@ namespace mu2e {
       fseed._segments.emplace_back(t0piece,t0val);
     }
     // sample the fit at the locations provided
-    sampleFit(kktrk,fseed._inters);
+    sampleFit(kktrk,fseed._inters,seedflag);
     return fseed;
   }
 
-  template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
+  template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters, TrkFitFlag const& seedflag) const {
     auto const& ftraj = kktrk.fitTraj();
+    double tbeg = ftraj.range().begin();
+// if this helix can reflect, only look for intersections with the downstream branch. This is only relevant for LoopHelix
+    if(seedflag.hasAnyProperty(TrkFitFlag::KKLoopHelix)){
+      // loop over the traj pieces till we find the first one going (significantly) downstream
+      for(auto const& ktraj : ftraj.pieces()){
+        auto vel = ktraj->velocity(tbeg);
+        double zvel = vel.Z();
+        auto const& bnom = ktraj->bnom(tbeg);
+        double zref = vel.R()*fabs(sin(bnom.Theta()));
+        if(zvel > 0.0 && fabs(zvel) > zref)break;
+        tbeg = ktraj->range().end();
+      }
+    }
     for(auto const& surf : sample_){
-      double tstart = ftraj.range().begin() - sampletbuff_;
+      // search for intersections with each surface from the begining
+      double tstart = tbeg - sampletbuff_;
       bool hasinter(true);
       // loop to find multiple intersections
       while(hasinter) {
