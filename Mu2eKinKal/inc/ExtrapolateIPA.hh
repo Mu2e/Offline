@@ -47,15 +47,12 @@ namespace mu2e {
 
   template <class KTRAJ> bool ExtrapolateIPA::needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const {
     auto const& fittraj = ktrk.fitTraj();
-    auto vel = fittraj.velocity(time);
-    auto pos = fittraj.position3(time);
+    auto const& ktraj = fittraj.nearestPiece(time);
+    auto vel = ktraj.speed(time)*ktraj.axis(time).direction();// use helix axis to define the velocity
+    auto pos = ktraj.position3(time);
     double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
     double zpos = pos.Z();
-    auto const& bnom = fittraj.bnom(time);
-    double zref = vel.R()*fabs(sin(bnom.Theta()));
-    if(debug_ > 2)std::cout << "IPA extrap start time " << time << " z " << zpos << " zvel " << zvel << " zref " << zref << std::endl;
-    // if z velocity is unreliable, continue
-    if(fabs(zvel) < zref) return true;
+    if(debug_ > 2)std::cout << "IPA extrap start time " << time << " z " << zpos << " zvel " << zvel << std::endl;
     // stop if the particle is heading away from the IPA
     if( (zvel > 0 && zpos > zmax_ ) || (zvel < 0 && zpos < zmin_)){
       reset(); // clear any cache
@@ -71,7 +68,6 @@ namespace mu2e {
     // if we get to here we need to test for an intersection with the actual cylinder
     // first, estimate the time range based on local piece Z speed transit time
     // Buffer by the range of the last piece to avoid missed edges.
-    auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
     static const double epsilon(1e-2);
     double dt = ktraj.range().range() - epsilon; // small difference to avoid re-intersecting
     double halflen = ipa_->halfLength();

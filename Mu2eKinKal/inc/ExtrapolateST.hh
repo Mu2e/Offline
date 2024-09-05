@@ -67,16 +67,14 @@ namespace mu2e {
 
   template <class KTRAJ> bool ExtrapolateST::needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const {
     auto const& fittraj = ktrk.fitTraj();
-    auto vel = fittraj.velocity(time);
-    auto pos = fittraj.position3(time);
+    auto const& ktraj = fittraj.nearestPiece(time);
+    auto vel = ktraj.speed(time)*ktraj.axis(time).direction();// use helix axis to define the velocity
+    auto pos = ktraj.position3(time);
     double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
     double zpos = pos.Z();
     double rho = pos.Rho();
     auto const& bnom = fittraj.bnom(time);
-    double zref = vel.R()*fabs(sin(bnom.Theta()));
-    if(debug_ > 2)std::cout << "ST extrap start time " << time << " z " << zpos << " zvel " << zvel << " zref " << zref << " rho " << rho << std::endl;
-    // if z velocity is unreliable, continue
-    if(fabs(zvel) < zref) return true;
+    if(debug_ > 2)std::cout << "ST extrap start time " << time << " z " << zpos << " zvel " << zvel << " rho " << rho << std::endl;
     // stop if the particle is heading away from the ST
     if( (zvel > 0 && zpos > zmax_ ) || (zvel < 0 && zpos < zmin_)){
       reset(); // clear any cache
@@ -93,7 +91,6 @@ namespace mu2e {
     // check if we are inside the ST volume
     if(rho < rmin_ || rho > rmax_) return true; // keep going
     // we are in the correct radial range too.  Look for an intersection with the foils
-    auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
     static const double epsilon(1e-2); // small difference to avoid re-intersecting
     double dt = ktraj.range().range() - epsilon; // small difference to avoid re-intersecting
     double tz = 1.0/std::max(fabs(zvel)/(zmax_-zmin_),1.0/maxDt_); // time to cross the ST: protect against reflection (zero z speed)
