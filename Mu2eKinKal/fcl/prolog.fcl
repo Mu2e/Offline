@@ -38,7 +38,7 @@ Mu2eKinKal : {
     MaxDStraw : 2 # integer (straw)
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
-    SampleTimeBuffer : 0.1 # time buffer for intersections (ns)
+    SampleTimeBuffer : 0.0 # sample time buffer (ns)
     SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
