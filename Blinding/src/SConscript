@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+import os, re
+
+Import('env')
+Import('mu2e_helper')
+
+helper = mu2e_helper(env)
+
+mainlib = helper.make_mainlib([
+])
+
+helper.make_plugins([
+    mainlib,
+    'art_Framework_Core',
+    'art_Framework_Services_Registry',
+    'art_Framework_Principal',
+    'art_Persistency_Provenance',
+    'art_Utilities',
+    'canvas',
+    'cetlib',
+    'cetlib_except',
+    'fhiclcpp',
+    'fhiclcpp_types',
+    'mu2e_DataProducts',
+    'mu2e_DbTables',
+    'mu2e_TrackerConditions',
+    'mu2e_TrackerMC',
+    'mu2e_RecoDataProducts',
+    'mu2e_TrackerConditions',
+    'mu2e_ProditionsService',
+])
