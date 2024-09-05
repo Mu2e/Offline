@@ -624,12 +624,16 @@ namespace mu2e {
     for(auto const& ipaxing : kktrk.IPAXings()){
       double stime = ipaxing->time() - epsilon;
       auto const& ktraj = ftraj.nearestPiece(stime);
-      inters.emplace_back(ktraj.stateEstimate(ipaxing->time()),XYZVectorF(ktraj.bnom()),ipaxing->surfaceId(),ipaxing->intersection());
+      double dmom,paramomvar,perpmomvar;
+      ipaxing->materialEffects(dmom,paramomvar,perpmomvar);
+      inters.emplace_back(ktraj.stateEstimate(ipaxing->time()),XYZVectorF(ktraj.bnom()),ipaxing->surfaceId(),ipaxing->intersection(),dmom);
     }
     for(auto const& stxing : kktrk.STXings()){
       double stime = stxing->time() - epsilon;
       auto const& ktraj = ftraj.nearestPiece(stime);
-      inters.emplace_back(ktraj.stateEstimate(stxing->time()),XYZVectorF(ktraj.bnom()),stxing->surfaceId(),stxing->intersection());
+      double dmom,paramomvar,perpmomvar;
+      stxing->materialEffects(dmom,paramomvar,perpmomvar);
+      inters.emplace_back(ktraj.stateEstimate(stxing->time()),XYZVectorF(ktraj.bnom()),stxing->surfaceId(),stxing->intersection(),dmom);
     }
     // record other intersections saved in the track
     for(auto const& interpair : kktrk.intersections()) {
