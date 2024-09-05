@@ -603,16 +603,14 @@ namespace mu2e {
   template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters, TrkFitFlag const& seedflag) const {
     auto const& ftraj = kktrk.fitTraj();
     double tbeg = ftraj.range().begin();
+    static const double epsilon(1.0e-3);
 // if this helix can reflect, only look for intersections with the downstream branch. This is only relevant for LoopHelix
     if(seedflag.hasAnyProperty(TrkFitFlag::KKLoopHelix)){
       // loop over the traj pieces till we find the first one going (significantly) downstream
       for(auto const& ktraj : ftraj.pieces()){
-        auto vel = ktraj->velocity(tbeg);
-        double zvel = vel.Z();
-        auto const& bnom = ktraj->bnom(tbeg);
-        double zref = vel.R()*fabs(sin(bnom.Theta()));
-        if(zvel > 0.0 && fabs(zvel) > zref)break;
-        tbeg = ktraj->range().end();
+        auto axis = ktraj->axis(tbeg);
+        if(axis.direction().Z() > 0.0 )break; // helix axis headed downstream
+        tbeg = ktraj->range().end() + epsilon; // force onto next piece
       }
     }
     for(auto const& surf : sample_){
@@ -629,12 +627,11 @@ namespace mu2e {
           auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
           inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
           // update for the next intersection
-          tstart = surfinter.time_ + 1e-8;// move psst existing intersection to avoid repeating
+          tstart = surfinter.time_ + epsilon;// move psst existing intersection to avoid repeating
         }
       }
     }
     // add IPA and ST Xings. Sample just before the transit to include the effect of the material
-    static const double epsilon(1e-3);
     for(auto const& ipaxing : kktrk.IPAXings()){
       double stime = ipaxing->time() - epsilon;
       auto const& ktraj = ftraj.nearestPiece(stime);
