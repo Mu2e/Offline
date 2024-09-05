@@ -159,6 +159,7 @@ namespace mu2e{
     double shifted = time - _offspill_min;
     double window_length = _offspill_max - _offspill_min;
     double rv = - _onspill_lifetime * log(shifted / window_length);
+    rv += _onspill_min;
     return rv;
   }
 
