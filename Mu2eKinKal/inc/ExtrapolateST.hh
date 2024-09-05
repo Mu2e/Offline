@@ -78,7 +78,7 @@ namespace mu2e {
     // if z velocity is unreliable, continue
     if(fabs(zvel) < zref) return true;
     // stop if the particle is heading away from the ST
-    if( fabs(zvel) > vel.R()*fabs(sin(bnom.Theta())) && (zvel > 0 && zpos > zmax_ ) || (zvel < 0 && zpos < zmin_)){
+    if( (zvel > 0 && zpos > zmax_ ) || (zvel < 0 && zpos < zmin_)){
       reset(); // clear any cache
       if(debug_ > 1)std::cout << "Heading away from ST: done" << std::endl;
       return false;
