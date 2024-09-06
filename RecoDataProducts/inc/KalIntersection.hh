@@ -23,6 +23,7 @@ namespace mu2e {
     double time() const { return pstate_.time(); }
     double mom() const { return pstate_.momentum(); }
     double momerr() const { return sqrt(pstate_.momentumVariance()); }
+    double dMom() const { return dP_; }
     KinKal::VEC3 momentum3() const { return pstate_.momentum3(); }
     KinKal::VEC3 velocity() const { return pstate_.velocity(); }
     KinKal::VEC3 position3() const { return pstate_.position3(); }
