@@ -73,7 +73,6 @@ namespace mu2e {
     double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
     double zpos = pos.Z();
     double rho = pos.Rho();
-    auto const& bnom = fittraj.bnom(time);
     if(debug_ > 2)std::cout << "ST extrap start time " << time << " z " << zpos << " zvel " << zvel << " rho " << rho << std::endl;
     // stop if the particle is heading away from the ST
     if( (zvel > 0 && zpos > zmax_ ) || (zvel < 0 && zpos < zmin_)){
