@@ -33,6 +33,8 @@ namespace mu2e {
     using LHPTPtr = std::unique_ptr<LHPT>;
     using CHPTPtr = std::unique_ptr<CHPT>;
     using KLPTPtr = std::unique_ptr<KLPT>;
+    using InterIter = std::vector<KalIntersection>::const_iterator;
+    using InterIterCol = std::vector<InterIter>;
     KalSeed() {}
     KalSeed(PDGCode::type tpart, TrkFitFlag const& status, double flt0=0.0 ) :
       _tpart(tpart), _status(status), _flt0(static_cast<float>(flt0)){}
@@ -55,7 +57,7 @@ namespace mu2e {
     art::Ptr<CaloCluster> const& caloCluster() const { return _chit.caloCluster(); }
     std::vector<KalSegment>::const_iterator nearestSegment(double time)  const;
     std::vector<KalSegment>::const_iterator t0Segment(double& t0) const; // return the segment associated with the t0 value, or the closest to it.  Also return the t0 value
-    std::vector<KalIntersection>::const_iterator intersection(SurfaceId const& id)  const;
+    InterIterCol intersections(SurfaceId const& id)  const; // all intersections with this SurfaceId
     bool loopHelixFit() const { return _status.hasAllProperties(TrkFitFlag::KKLoopHelix); }
     bool centralHelixFit() const { return _status.hasAllProperties(TrkFitFlag::KKCentralHelix); }
     bool kinematicLineFit() const { return _status.hasAllProperties(TrkFitFlag::KKLine); }
