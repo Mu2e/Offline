@@ -137,6 +137,10 @@ void mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind,
         PrintMatrix(c, os, 1);
       }
     }
+    os << " intersections: \n";
+    for (auto const& inter : obj.intersections()) {
+      os << " sid " << inter.surfaceId() << " P " << inter.mom() << " dP " << inter.dMom() << "\n";
+    }
   }
 }
 
