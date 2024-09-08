@@ -111,7 +111,7 @@ void CrvDigisFromFragments::produce(Event& event)
       }
       auto header = block->GetHeader();
 /*
-FIXME: This function will be available in a new release of artdaq_core_mu2e
+//FIXME: This function will be available in a new release of artdaq_core_mu2e
       if(!header->isValid())
       {
         std::cerr << "CRV packet is not valid." << std::endl;
