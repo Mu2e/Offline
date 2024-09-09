@@ -44,6 +44,10 @@ helper.make_plugins( [ mainlib,
                        'mu2e_STMConditions',
                        'mu2e_ProditionsService',
                        'mu2e_RecoDataProducts',
+                       'mu2e_MCDataProducts',
+                       'mu2e_GlobalConstantsService',
+                       'mu2e_ConditionsService',
+                       'mu2e_GeometryService',
                        rootlibs
                      ] )
 

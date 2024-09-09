@@ -1,38 +1,94 @@
 #
-# prolog.fcl for fcl paramaters that will be used in STM modules
+# prolog.fcl for fcl paramaters that will be used in STM simulation modules
 #
 BEGIN_PROLOG
 
-STM : {
+DevPhotonGun : {
+  x : -3935
+  y : 0
+  z : 40660
+  E : 1.809 # 0.347
+  px : -0.245
+  py : 0
+}
 
+Efficiency : {
   HPGe : {
-    # zero-suppression parameters
-    tbefore : 2000 # ns
-    tafter : 10000 # ns
-    threshold : -100
-    window : 100
-    naverage : 5
-    # MWD parameters
-    tau : 50000
-    M : 400
-    L : 200
-    nsigma_cut : 9
-    thresholdgrad : -0.3
+    x : -3944.6 # mm for HPGe - aperture centre
+    y : 0.416 # mm for HPGe
   }
   LaBr : {
-    # zero-suppression parameters
-    tbefore : 2000 # ns
-    tafter : 10000 # ns
-    threshold : -100
-    window : 100
-    naverage : 5
-    # MWD parameters
-    tau : 35 # LaBr is much faster than HPGe
-    M : 60
-    L : 45
-    nsigma_cut : 9
-    thresholdgrad : -0.3
+    x : -3863.4 # mm for LaBr - aperture centre
+    y : 0.416 # mm for LaBr
   }
+  NPhotons : 10
+  PhotonEnergy : 1.809 # MeV
+  OutputFilename : "Efficiency.root"
+}
+
+SimplifyStage1Data : {
+  StepPointMCsTag : "compressDetStepMCsSTM:virtualdetector"
+  SimParticlemvTag : "compressDetStepMCsSTM:"
+  VD_ID : 101
+  GenerateTTree : true
+  GenerateDataSummary : true
+}
+SimplifyStage2Data : {
+  StepPointMCsTag : "compressSTMDet:STMDet"
+  SimParticlemvTag : "compressSTMDet:"
+  VD_ID : {
+    HPGe : 90
+    LaBr : 89
+  }
+  GenerateTTree : true
+  GenerateDataSummary : true
+}
+
+HPGeDigitization : {
+  EnergyPerADCBin : 0.5 # keV/bin
+  PreamplifierNoiseSD : 0.32 # mV
+  DecayConstant : 50 # us
+}
+
+HPGeCrystalEndcapCentre : {
+  x : -3946.06
+  y : 0
+  z : 40671.3
+}
+
+ShiftVD101Steps : {
+  StepPointMCsTag : "compressDetStepMCsSTM:virtualdetector"
+  VirtualDetectorID : 101
+  InputRadius : 200 # VD101 aperture radius
+  OutputRadius : 3.98942280401 # SSC aperture radius
+  STMStudy : true
+  verbose : true
+  VD101 : { # Centre of VD101
+    X : -3904.0
+    Y : 0.0
+    Z : 40301.0
+  }
+  HPGeUpStr : { # Position just upstream of absorber centered on the HPGe SSC aperture
+    X : -3944.6
+    Y : 0.0
+    Z : 39906.0
+  }
+  LaBrUpStr : { # Position just upstream of SSC centered on the Labr SSC aperture
+    X : -3863.4
+    Y : 0.0
+    Z : 40300.9
+  }
+}
+
+ResamplingProducer : {
+  StepPointMCsTag : "g4run:virtualdetector"
+  VirtualDetectorID : 101
+  verbose : true
+}
+
+ResamplingFilter : {
+  StepPointMCsTag : "compressDetStepMCsSTM"
+  verbose : true
 }
 
 END_PROLOG

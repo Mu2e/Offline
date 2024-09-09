@@ -1,4 +1,4 @@
-// Filters out the VD101 StepPointMCs ready for resampling
+// Removes empty StepPointMC collections with the associated tag
 //
 // Pawel Plesniak
 
@@ -31,32 +31,53 @@ namespace mu2e{
 
     struct Config
     {
-      fhicl::Atom<art::InputTag> stepPointMCsTag{Name("VD101StepPointMCsTag"), Comment("Input tag of StepPointMCs associated with VD101")};
+      fhicl::Atom<art::InputTag> StepPointMCsTag{Name("StepPointMCsTag"), Comment("Input tag of StepPointMCs")};
+      fhicl::OptionalAtom<bool> verbose{Name("verbose"), Comment("Prints summary")};
     };
 
     using Parameters=art::EDFilter::Table<Config>;
 
     explicit STMResamplingFilter(const Parameters& pset);
     virtual bool filter(art::Event& event) override;
-
+    virtual void endJob() override;
   private:
-    art::ProductToken<StepPointMCCollection> _stepPointMCsToken;
+    art::ProductToken<StepPointMCCollection> StepPointMCsToken;
+    bool verbose = false;
+    uint keptEvents = 0;
+    uint discardedEvents = 0;
   };
   // ===================================================
   STMResamplingFilter::STMResamplingFilter(const Parameters& conf) :
     art::EDFilter{conf},
-    _stepPointMCsToken(consumes<StepPointMCCollection>(conf().stepPointMCsTag()))
-    {};
+    StepPointMCsToken(consumes<StepPointMCCollection>(conf().StepPointMCsTag()))
+    {
+      auto _verbose = conf().verbose();
+      if(_verbose)verbose = *_verbose;
+    };
   // ===================================================
   bool STMResamplingFilter::filter(art::Event& event)
   {
-    auto const& StepPointMCs = event.getProduct(_stepPointMCsToken);
+    auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
 
     // Only keep events that have non-zero size
-    if(StepPointMCs.size() > 0){return true;}
-    else{return false;};
+    if(StepPointMCs.size() > 0){
+      keptEvents++;
+      return true;
+    }
+    else{
+      discardedEvents++;
+      return false;
+    };
   };
   // ===================================================
+  void STMResamplingFilter::endJob()
+  {
+    if (verbose == true)
+      {
+        std::cout << "Number of kept events: " << keptEvents << std::endl;
+        std::cout << "Number of discarded events: " << discardedEvents << std::endl;
+      };
+  };
 }
 
 DEFINE_ART_MODULE(mu2e::STMResamplingFilter)

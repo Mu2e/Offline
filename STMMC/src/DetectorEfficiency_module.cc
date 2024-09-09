@@ -20,7 +20,7 @@
 using namespace std;
 
 namespace mu2e{
-  class HPGeEfficiency : public art::EDAnalyzer
+  class DetectorEfficiency : public art::EDAnalyzer
   {
   public:
     using Name=fhicl::Name;
@@ -31,7 +31,7 @@ namespace mu2e{
     };
     using Parameters=art::EDAnalyzer::Table<Config>;
 
-    explicit HPGeEfficiency(const Parameters& pset);
+    explicit DetectorEfficiency(const Parameters& pset);
     void analyze(art::Event const& event) override;
     void beginJob() override;
 
@@ -40,19 +40,19 @@ namespace mu2e{
     TNtuple* _nt = nullptr;
   };
   // ===================================================
-  HPGeEfficiency::HPGeEfficiency(const Parameters& config):
+  DetectorEfficiency::DetectorEfficiency(const Parameters& config):
     art::EDAnalyzer{config},
     verbose(config().v())
     {};
   // ===================================================
-  void HPGeEfficiency::beginJob()
+  void DetectorEfficiency::beginJob()
   {
     art::ServiceHandle<art::TFileService> tfs;
     _nt = tfs->make<TNtuple>("nt", "Energy Deposit", "E");
     return;
   };
   // ===================================================
-  void HPGeEfficiency::analyze(art::Event const& event)
+  void DetectorEfficiency::analyze(art::Event const& event)
   {
     art::Handle<StepPointMCCollection> _inputStepPointMCs;
     event.getByLabel("g4run:STMDet", _inputStepPointMCs);
@@ -67,4 +67,4 @@ namespace mu2e{
   };
 }
 
-DEFINE_ART_MODULE(mu2e::HPGeEfficiency)
+DEFINE_ART_MODULE(mu2e::DetectorEfficiency)

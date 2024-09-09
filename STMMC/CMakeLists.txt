@@ -19,7 +19,7 @@ cet_build_plugin(STMResamplingFilter art::module
     LIBRARIES REG
         Offline::MCDataProducts
 )
-cet_build_plugin(HPGeEfficiency art::module
+cet_build_plugin(DetectorEfficiency art::module
     REG_SOURCE src/HPGeEfficiency_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
@@ -30,6 +30,17 @@ cet_build_plugin(MakeTree art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::MCDataProducts
+      Offline::GlobalConstantsService
+      Offline::ConditionsService
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+)
+cet_build_plugin(ShiftVirtualDetectorStepPointMCs art::module
+    REG_SOURCE src/ShiftVirtualDetectorStepPointMCs_module.cc
+    LIBRARIES REG
+      Offline::MCDataProducts
+      Offline::GeometryService
+      Offline::Mu2eUtilities
 )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/HPGeWaveformsFromGeantSim.fcl   ${CURRENT_BINARY_DIR} fcl/HPGeWaveformsFromGeantSim.fcl   COPYONLY)
