@@ -1,0 +1,47 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMMC/fcl/prolog.fcl"
+# This module simulates a photon being fired at the STM detector of choice, and generates a tree with the energy deposited in the detector.
+# Original author : Pawel Plesniak
+# Note - edit the parameters in this prolog.fcl, aside from which detector is being used which is stored in the generate module
+process_name: SinglePhotonProgression
+
+source : {
+  module_type : EmptyEvent
+  maxEvents : @local::Efficiency.NPhotons
+}
+
+services : @local::Services.Sim
+
+physics: {
+  producers : {
+    generate : {
+      module_type : PhotonGun
+      xpos : @local::Efficiency.HPGe.x
+      ypos : @local::Efficiency.HPGe.y
+      zpos : 40404
+      energy : @local::Efficiency.PhotonEnergy
+      mean : 0
+      sigma0 : 0
+      doTree : false
+    }
+    g4run : @local::g4run
+  }
+
+  analyzers : {
+    EDep : {
+      module_type : DetectorEfficiency
+      v : true
+    }
+  }
+
+  p1 : [ generate, g4run ]
+  trigger_paths : [p1]
+}
+
+physics.producers.g4run.physics.physicsListName: "QGSP_BERT_EMZ"
+physics.producers.g4run.SDConfig.enableSD: [STMDet]
+services.SeedService.baseSeed         :  8
+services.SeedService.maxUniqueEngines :  20
+services.TFileService.fileName : @local::Efficiency.OutputFilename

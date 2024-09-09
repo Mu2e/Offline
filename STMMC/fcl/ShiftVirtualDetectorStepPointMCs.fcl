@@ -1,0 +1,54 @@
+#include "Offline/STMMC/fcl/prolog.fcl"
+
+process_name: ShiftVirtualDetectorStepPointMCs
+
+source : {
+  module_type : RootInput
+}
+
+physics: {
+  producers : {
+    ShiftStepsHPGe : {
+      module_type : ShiftVirtualDetectorStepPointMCs
+      StepPointMCsTag : @local::ShiftVD101Steps.StepPointMCsTag
+      VirtualDetectorID : @local::ShiftVD101Steps.VirtualDetectorID
+      InputRadius : @local::ShiftVD101Steps.InputRadius
+      OutputRadius : @local::ShiftVD101Steps.OutputRadius
+      STMStudy : @local::ShiftVD101Steps.STMStudy
+      verbose : @local::ShiftVD101Steps.verbose
+      InputX : @local::ShiftVD101Steps.VD101.X
+      InputY : @local::ShiftVD101Steps.VD101.Y
+      InputZ : @local::ShiftVD101Steps.VD101.Z
+      OutputX : @local::ShiftVD101Steps.HPGeUpStr.X
+      OutputY : @local::ShiftVD101Steps.HPGeUpStr.Y
+      OutputZ : @local::ShiftVD101Steps.HPGeUpStr.Z
+    }
+    ShiftStepsLaBr : {
+      module_type : ShiftVirtualDetectorStepPointMCs
+      StepPointMCsTag : @local::ShiftVD101Steps.StepPointMCsTag
+      VirtualDetectorID : @local::ShiftVD101Steps.VirtualDetectorID
+      InputRadius : @local::ShiftVD101Steps.InputRadius
+      OutputRadius : @local::ShiftVD101Steps.OutputRadius
+      STMStudy : @local::ShiftVD101Steps.STMStudy
+      verbose : @local::ShiftVD101Steps.verbose
+      InputX : @local::ShiftVD101Steps.VD101.X
+      InputY : @local::ShiftVD101Steps.VD101.Y
+      InputZ : @local::ShiftVD101Steps.VD101.Z
+      OutputX : @local::ShiftVD101Steps.LaBrUpStr.X
+      OutputY : @local::ShiftVD101Steps.LaBrUpStr.Y
+      OutputZ : @local::ShiftVD101Steps.LaBrUpStr.Z
+    }
+  }
+
+  o1 : [ ShiftStepsHPGe, ShiftStepsLaBr ]
+  trigger_paths : [ o1 ]
+  e1 : [ ShiftDump ]
+  end_paths : [ e1 ]
+}
+
+outputs : {
+  ShiftDump : {
+    module_type : RootOutput
+    fileName : "testStepMove.art"
+  }
+}

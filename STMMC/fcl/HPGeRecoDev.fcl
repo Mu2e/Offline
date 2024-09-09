@@ -2,6 +2,7 @@
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/STMReco/fcl/prolog.fcl"
+#include "Offline/STMMC/fcl/prolog.fcl"
 
 process_name: TestHPGeWaveformsFromGeantSim
 
@@ -28,13 +29,10 @@ physics : {
     DigiHPGe : {
       module_type : HPGeWaveformsFromGeantSim
       StepPointMCsTag : "g4run:STMDet"
-      fADC : 320 # MHz
-      # tStep : 0 # ns
-      # ADCOffset : 9600 # Plot 5us noise before pulse, for demonstrating the decay of 2MeV photon.
-      EnergyPerADCBin : 0.5 # keV
-      NoiseSD : 0.32 # milliVolt
-      verbose : true
-      risingEdgeDecayConstant : 50
+      fADC : @local::services.ProditionsService.stmEnergyCalib.samplingFrequencies[0][1] # MHz # If this wants to be changed it needs to come from Offline/STMConditions/fcl/prolog.fcl as it is used in ZS
+      EnergyPerADCBin : @local::HPGeDigitization.EnergyPerADCBin # keV/bin
+      NoiseSD : @local::HPGeDigitization.PreamplifierNoiseSD # mV
+      risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant # us
       verbose : true
     }
     ZSHPGe : {
@@ -58,7 +56,8 @@ physics : {
       verbosityLevel: 1
     }
   }
-  o1 : [generate, g4run, DigiHPGe, ZSHPGe, MWDHPGe]
+  o1 : [generate, g4run, DigiHPGe]
+  # o1 : [generate, g4run, DigiHPGe, ZSHPGe, MWDHPGe]
   trigger_paths : [o1]
   e1 : [WaveformDigiDump]
   end_paths : [e1]
@@ -80,4 +79,4 @@ physics.producers.g4run.physics.physicsListName: "QGSP_BERT_EMZ"
 physics.producers.g4run.SDConfig.enableSD: [STMDet]
 services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
-services.TFileService.fileName : "test.root"
+#services.ProditionsService.stmEnergyCalib.samplingFrequencies :[ ["HPGe",320.0], ["LaBr",370.370370370] ] # Note - I changed this in the proditions service itself.

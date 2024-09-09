@@ -1,24 +1,36 @@
-#include "Offline/fcl/minimalMessageService.fcl"
-#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/STMMC/fcl/prolog.fcl"
 #include "Offline/fcl/standardServices.fcl"
 
 process_name: SinglePhotonProgression
 
 source : {
   module_type : RootInput
-  fileName : @nil
 }
-
+services : {
+  message : @local::default_message
+  GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
+}
 physics: {
   analyzers : {
-    Tree : {
+    Stage1Tree : {
       module_type : MakeTree
+      vdStepPointMCsTag : @local::SimplifyStage1Data.vdStepPointMCsTag
+      SimParticlemvTag : @local::SimplifyStage1Data.SimParticlemvTag
+      GenerateTTree : @local::SimplifyStage1Data.GenerateTTree
+      GenerateDataSummary : @local::SimplifyStage1Data.GenerateDataSummary
+      VD_ID : @local::SimplifyStage1Data.VD_ID
+    }
+    Stage2Tree : {
+      module_type : MakeTree
+      StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTag
+      SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
+      GenerateTTree : @local::SimplifyStage2Data.GenerateTTree
+      GenerateDataSummary : @local::SimplifyStage2Data.GenerateDataSummary
+      VD_ID : @local::SimplifyStage2Data.VD_ID.HPGe
     }
   }
-
-  o1 : [ Tree ]
-
-  end_paths: [o1]
+  o1 : [ Stage2Tree ] # Stage1Tree
+  end_paths: [ o1 ]
 }
 
-services.TFileService.fileName : "VD101Ele.root"
+services.TFileService.fileName : @nil
