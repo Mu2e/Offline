@@ -20,6 +20,8 @@ namespace mu2e {
 
   public:
 
+    constexpr static std::size_t _npar_data = 7;
+
     // fixme: improve  _materialName initialization
     ConeSection() : TSSection(),
                     _rIn1(0.), _rOut1(0.),  _rIn2(0.), _rOut2(0.), _halfZ(0.),
@@ -53,8 +55,6 @@ namespace mu2e {
       fillData();
     }
 
-    ~ConeSection(){}
-
     void set(double rIn1, double rOut1, double rIn2, double rOut2, double halfZ,
              double phi0, double deltaPhi,
              CLHEP::Hep3Vector const & origin, CLHEP::HepRotation const & rotation=CLHEP::HepRotation(),
@@ -79,7 +79,7 @@ namespace mu2e {
     double getHalfLength() const { return _halfZ; }
     double phiStart()    const {return _phi0; }
     double deltaPhi()    const {return _deltaPhi; }
-    const std::array<double,7>& getParameters() const { return _data; }
+    const std::array<double,_npar_data>& getParameters() const { return _data; }
 
   private:
 
@@ -91,7 +91,7 @@ namespace mu2e {
     double _phi0;
     double _deltaPhi;
 
-    std::array<double,7> _data;
+    std::array<double,_npar_data> _data;
 
     void fillData() {
       _data[0] = _rIn1;
