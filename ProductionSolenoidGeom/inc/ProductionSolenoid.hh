@@ -20,6 +20,13 @@ namespace mu2e {
   class ProductionSolenoid : virtual public Detector {
 
   public:
+    ~ProductionSolenoid() override = default;
+
+    // delete  automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
+    ProductionSolenoid( ProductionSolenoid const & ) = delete;
+    ProductionSolenoid( ProductionSolenoid&&       ) = delete;
+    ProductionSolenoid& operator=( ProductionSolenoid const & ) = delete;
+    ProductionSolenoid& operator=( ProductionSolenoid&&       ) = delete;
 
     // do we need more than that? does the Tube have all the accessors?
 
@@ -47,10 +54,6 @@ namespace mu2e {
 
     // The class should only be constructed via ProductionSolenoid::ProductionSolenoidMaker.
     ProductionSolenoid(){};
-
-    // hide automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
-    ProductionSolenoid( ProductionSolenoid const & );
-    ProductionSolenoid const & operator= ( ProductionSolenoid const & );
 
     // it has several components
 

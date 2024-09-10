@@ -289,8 +289,8 @@ Mu2eKinKal : {
   CENTRALHELIX : {
     SeedMomentum : 10000.0
     SeedCharge : 1
-    HitSeparation : 100.0
     SeedErrors : [5.0, 0.05, 5.0, 5.0, 0.1, 5.0] # d0, phi0, omega, z0, tandip, t0
+    CosmicTrackSeedCollections : ["LineFinder"]
     SeedFlags : [ "HelixOK" ]
     TimeClusterCollection : "SimpleTimeCluster"
     PanelHitCollection : "makePH"
