@@ -45,14 +45,6 @@ cet_build_plugin(CentralHelixFit art::module
       Offline::TrkReco
 )
 
-cet_build_plugin(CosmicTrackSeedFilter art::module
-    REG_SOURCE src/CosmicTrackSeedFilter_module.cc
-    LIBRARIES REG
-      Offline::Mu2eKinKal
-      
-      Offline::RecoDataProducts
-)
-
 cet_build_plugin(KinematicLineFit art::module
     REG_SOURCE src/KinematicLineFit_module.cc
     LIBRARIES REG
