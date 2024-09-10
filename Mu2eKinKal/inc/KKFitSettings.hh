@@ -102,9 +102,6 @@ namespace mu2e {
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level"), 0 };
       fhicl::Sequence<float> seederrors { Name("SeedErrors"), Comment("Initial value of seed parameter errors (rms, various units)") };
       fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
-      fhicl::Sequence<std::string> extrapSurfs { Name("ExtrapolateSurfaces"), Comment("Extrapolate successful fits to these surfaces") };
-      fhicl::Atom<float> extrapTol { Name("ExtrapolationTolerance"), Comment("Tolerance on fractional momemtum precision when extrapolating fits") };
-      fhicl::Atom<float> extrapMaxDt { Name("ExtrapolationMaxDt"), Comment("Maximum time to extrapolate a fit") };
     };
   }
 }

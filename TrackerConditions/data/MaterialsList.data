@@ -4,16 +4,17 @@
 # Do not remove the following line it's a tag !
 #Materials_list
 # generic materials ------------------------------------------------------------------------------------------------
-air     0.001290    0.    0.    +2      73.7e-2    Nitrogen   0   26.3e-2    Oxygen   0    36.66000   90.0000   -30    0.0   1.0   gas  
+air     0.001290    0.    0.    +2      73.7e-2    Nitrogen   0   26.3e-2    Oxygen   0    36.66000   90.0000   -30    0.0   1.0   gas
 vacuum          1.0e-25     1.    1.01   0     -10    -20    -30    -270.42    2.961e-23    gas
 Target     2.700000    0.   0.   +1    100.0e-2    Aluminum   0   24.01000   106.40000    -30     20.0    1.0    solid
-Lexan        1.20        0.   0.   -3      5         Hydrogen   0    5         Carbon      0    2    Oxygen    0    41.46    84.7    -30    20.0   1.0   solid 
-CFiber       1.605       0.   0.   +2     53.7e-2    Carbon     0   46.3e-2    Lexan   1    -10    -20    -30    20.0   1.0   solid 
-RPCgas       0.00166     0.   0.   +1    100.0e-2    Argon      0   19.55      117.2        -30     20.0    1.0    gas   
-CsI          4.530000    0.   0.   -2      1         Cesium     0    1         Iodine      0   8.39000    167.00000   -30   20.0  1.0  solid 
+Lexan        1.20        0.   0.   -3      5         Hydrogen   0    5         Carbon      0    2    Oxygen    0    41.46    84.7    -30    20.0   1.0   solid
+CFiber       1.605       0.   0.   +2     53.7e-2    Carbon     0   46.3e-2    Lexan   1    -10    -20    -30    20.0   1.0   solid
+RPCgas       0.00166     0.   0.   +1    100.0e-2    Argon      0   19.55      117.2        -30     20.0    1.0    gas
+CsI          4.530000    0.   0.   -2      1         Cesium     0    1         Iodine      0   8.39000    167.00000   -30   20.0  1.0  solid
 LSO          7.400000    0.   0.   -3      2         Lutetium   0    1         Silicon     0    5    Oxygen    0    8.4400   155.000   -30   20.0   1.0   solid
 LYSO         7.400000    0.   0.   -4      9       Lutetium   0    1       Yttrium     0     5         Silicon     0    25    Oxygen    0    8.4400   155.000   -30   20.0   1.0   solid
 CO2  0.001842 0. 0. -2 1 Carbon 0 2 Oxygen 0 -10 -20 -30 20.0 1.0 gas
+HDPE      0.96        0.   0.   -2      4  Hydrogen 0    2 Carbon 0    -10 -20 -30    20.0   1.0   solid
 # 90:10 by volume
 HeCF4  0.0005331 0. 0. 2 0.334 Helium 0 0.666 CF4 1 -10 -20 -30 20.0 1.0 gas
 Kapton       1.4300    0.   0.   -4    37    Carbon     0 6 Oxygen 0 2 Nitrogen 0 6 Hydrogen 0    -10     -20     -30     20.0    1.0    solid
@@ -28,34 +29,4 @@ cathode       5.2 0.   0.   +2    86.4e-2    Copper 0 13.6e-2 straw-wall 1   -10
 # effective straw wall + gas material, assuming uniform mass distribution
 straw_15um 1.927e-2 0.0 0.0 +2 91.3e-2 straw-wall 1 8.7e-2 straw-gas 1 -10 -20 -30 20.0 1.0 solid
 straw_25um 3.068e-2 0.0 0.0 +2 94.6e-2 straw-wall 1 5.4e-2 straw-gas 1 -10 -20 -30 20.0 1.0 solid
-#ITracker materials
-#CF4          0.003780  0.  0.  -2  1  Carbon  0  4  Fluorine  0  -10  -20  -30  20.0  1.0  gas
-Iso          0.00249   0.  0.  -2  4  Carbon  0  10  Hydrogen  0  -10  -20  -30  20.0  1.0  gas
-CF4          0.00249  0.  0.  -2  1  Carbon  0  4  Fluorine  0  -10  -20  -30  20.0  1.0  gas
-#IT-gas1      0.0005274  0.  0.  +2  0.29045  Helium  0.70955  CF4  1  -10  -20  -30  20.0  1.0  gas 
-#IT-gas1      0.000428  0.  0.  +2  0.9  Helium  0 0.1  Iso  1  -10  -20  -30  20.0  1.0  gas 
-# 90 he + 10 iso
-IT-gas        0.000398  0.  0.  +2  0.3826  Helium  0 0.6174 Iso  1  -10  -20  -30  20.0  1.0  gas 
-# 90 he + 10 cf4
-#IT-gas        0.000398  0.  0.  +3  0.2905 Helium 0 0.6127 Fluorine 0 0.0968 Carbon 0  -10  -20  -30  20.0  1.0  gas 
-#IT-gas1       0.001416  0.  0.  +3  0.2812 IT-gas 1 0.6044 Aluminum 0 0.1144 Molybdenum 0 -10  -20  -30  20.0  1.0  gas 
-IT-gas1       0.000652  0.  0.  +3  0.6100 IT-gas 1 0.3279 Aluminum 0 0.0621 Molybdenum 0 -10  -20  -30  20.0  1.0  gas 
-#IT-gas1      0.0004284  6.67636  13.9662  0  41.747  -20  -30  20.0  1.0  gas 
-IT-Swire    10.737810  0.  0.  +2  0.893774  Molybdenum  0  0.106226  Gold  0  -10  -20  -30  20.0  1.0  solid
-IT-Fwire     2.932245  0.  0.  +2  0.893379  Aluminum  0  0.106621  Silver  0  -10  -20  -30  20.0  1.0  solid
-IT-Aluminum  2.700000  0.  0.  +1  100.0e-2  Aluminum  0  24.01000  106.40000  -30  20.0  1.0  solid
-IT-Graphite  2.230000  0.  0.  +1  100.0e-2  Carbon  0  42.70000  86.30000  -30  20.0  1.0  solid
-IT-CFoam     0.030000  0.  0.  +1  100.0e-2  Carbon  0  42.70000  86.30000  -30  20.0  1.0  solid
-#IT-InRad     0.194000  0.  0.  +1  100.0e-2  Carbon  0  42.70000  86.30000  -30  20.0  1.0  solid
-#thicker version
-IT-InRad     0.124708  0.  0.  +1  100.0e-2  Carbon  0  42.70000  86.30000  -30  20.0  1.0  solid
-#IT-InRad     0.0001  0.  0.  +1  100.0e-2  Carbon  0  42.70000  86.30000  -30  20.0  1.0  solid
-IT-Copper    8.960000  0.  0.  +1  100.0e-2  Copper  0  12.86000  134.90000  -30  20.0  1.0  solid
-#IT-Tin       7.310000  0.  0.  +1  100.0e-2  Tin  0  8.82000  166.70000  -30  20.0  1.0  solid 
-IT-Solderer  8.846200  0.  0.  +3  62.0e-2 Tin 0 2.0e-2  Silver  0  36.0e-2 Lead  0  -10  -20  -30  20.0  1.0  solid
-IT-G10-FR4   1.800000  9.432800  18.941500  0  30.169500  -20  -30  20.0  1.0  solid
 
-#expoxy definition by SuperB
-IT-Resin     1.160000  6.0  13.06  0  36.65000  74.08000  -30  20.0  1.0  solid
-IT-Hardner   1.010000  6.0  13.06  0  42.36000  85.62000  -30  20.0  1.0  solid
-IT-Epoxy     1.110000  0.  0.  +2  70.0e-2  IT-Resin  1  30.0e-2  IT-Hardner  1  -10  -20  -30  20.0  1.0  solid

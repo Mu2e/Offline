@@ -62,7 +62,7 @@ using namespace std;
 //using namespace KinKal;
 namespace mu2e {
   using KTRAJ= KinKal::KinematicLine;
-  using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
+  using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
   using KKTRK = KKTrack<KTRAJ>;
   using KKTRKCOL = OwningPointerCollection<KKTRK>;
   using KKSTRAWHIT = KKStrawHit<KTRAJ>;
@@ -230,7 +230,7 @@ namespace mu2e {
           // construt the seed trajectory
           KTRAJ seedtraj = makeSeedTraj(hseed);
           // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
-          PKTRAJ pseedtraj(seedtraj);
+          PTRAJ pseedtraj(seedtraj);
           // first, we need to unwind the combohits.  We use this also to find the time range
           StrawHitIndexCollection strawHitIdxs;
           auto chcolptr = hseed.hits().fillStrawHitIndices(strawHitIdxs, StrawIdMask::uniquestraw);

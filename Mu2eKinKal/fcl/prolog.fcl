@@ -9,6 +9,8 @@ Mu2eKinKal : {
     strawGasMaterialName  : "straw-gas"
     strawWallMaterialName : "straw-wall"
     strawWireMaterialName : "straw-wire"
+    IPAMaterialName : "HDPE"
+    STMaterialName : "Target"
     dahlLynchScatteringFraction : 0.995
   }
   KKFIT: {
@@ -36,7 +38,7 @@ Mu2eKinKal : {
     MaxDStraw : 2 # integer (straw)
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
-    SampleTimeBuffer : 0.1 # time buffer for intersections (ns)
+    SampleTimeBuffer : 0.0 # sample time buffer (ns)
     SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
@@ -227,29 +229,29 @@ Mu2eKinKal : {
     ]
     CADSHUSettings : [
       # maxdoca, maxderr, minrdrift, maxrdrift, flag, allow, freeze, diag
-      [ 10.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 1 ],
-      [ 10.0, 20.0, 5.0, 4.0, "TOT", "Null:Inactive", "", 1 ],
-      [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
-      [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
-      [ 6.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
-      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
-      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
-      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
-      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ]
+      [ 10.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 10.0, 20.0, 5.0, 4.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 0 ],
+      [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 0 ],
+      [ 6.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 0 ],
+      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 0 ],
+      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 0 ],
+      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 0 ],
+      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 0 ]
     ]
 
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.2,"Inactive", 1],
-      [ "Offline/Mu2eKinKal/data/TrainBkgFinal.dat",0.2,"Inactive", 1]
+      [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.2,"Inactive", 0 ],
+      [ "Offline/Mu2eKinKal/data/TrainBkgFinal.dat",0.2,"Inactive", 0 ]
     ]
 
     DriftANNSHUSettings : [
       # sign ANN weights, cut, cluster ANN weights, cut, dt cut, freeze, flag, diag
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage0.dat",0.5, "Offline/Mu2eKinKal/data/TrainCluster_Stage0.dat",0.5, 1.1, "", "TOT:NullDriftVar", 1],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.4, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.4, 1.1, "", "TOT:NullDriftVar", 1],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.3, 1.1, "", "TOT:NullDriftVar", 1],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.2, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, 1.1, "", "TOT:NullDriftVar", 1],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.1, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.1, 1.1, "", "TOT:NullDriftVar", 1]
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage0.dat",0.5, "Offline/Mu2eKinKal/data/TrainCluster_Stage0.dat",0.5, 1.1, "", "TOT:NullDriftVar", 0 ],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.4, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.4, 1.1, "", "TOT:NullDriftVar", 0 ],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.3, 1.1, "", "TOT:NullDriftVar", 0 ],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.2, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, 1.1, "", "TOT:NullDriftVar", 0 ],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.1, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.1, 1.1, "", "TOT:NullDriftVar", 0 ]
     ]
     Chi2SHUSettings : [
     ]
@@ -275,9 +277,13 @@ Mu2eKinKal : {
   LOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     SeedFlags : [ "HelixOK" ]
-    ExtrapolateSurfaces : ["TT_Front","TT_Back"]
-    ExtrapolationTolerance : 1.0e-3
-    ExtrapolationMaxDt : 100.0 # (ns)
+  }
+
+  LOOPEXTRAPOLATION : {
+    Tolerance : 1.0e-2 # (mm)
+    MaxDt : 100.0 # (ns)
+    ToTracker : false
+    ToOPA : true
   }
 
   CENTRALHELIX : {
@@ -286,9 +292,8 @@ Mu2eKinKal : {
     SeedErrors : [5.0, 0.05, 5.0, 5.0, 0.1, 5.0] # d0, phi0, omega, z0, tandip, t0
     CosmicTrackSeedCollections : ["LineFinder"]
     SeedFlags : [ "HelixOK" ]
-    ExtrapolateSurfaces : ["TT_Front","TT_Back","TT_Outer"]
-    ExtrapolationTolerance : 1.0e-3
-    ExtrapolationMaxDt : 100.0
+    TimeClusterCollection : "SimpleTimeCluster"
+    PanelHitCollection : "makePH"
   }
 
   KINEMATICLINE : {
@@ -299,9 +304,6 @@ Mu2eKinKal : {
     ComboHitCollection : "makeSH"
     CaloClusterCollection : "CaloClusterMaker"
     SeedFlags : [ "HelixOK" ]
-    ExtrapolateSurfaces : ["TT_Front","TT_Back","TT_Outer"]
-    ExtrapolationTolerance : 1.0e-3
-    ExtrapolationMaxDt : 100.0
   }
 }
 
