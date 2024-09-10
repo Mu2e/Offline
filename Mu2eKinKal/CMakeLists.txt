@@ -18,11 +18,12 @@ cet_make_library(
       src/WireHitState.cc
     LIBRARIES PUBLIC
       BLAS::BLAS
-      KinKal_Detector
-      KinKal_Fit
       KinKal_General
       KinKal_MatEnv
+      KinKal_Geometry
+      KinKal_Detector
       KinKal_Trajectory
+      KinKal_Fit
       Offline::BFieldGeom
       Offline::CalorimeterGeom
       Offline::ConfigTools
@@ -40,7 +41,7 @@ cet_build_plugin(CentralHelixFit art::module
     REG_SOURCE src/CentralHelixFit_module.cc
     LIBRARIES REG
       Offline::Mu2eKinKal
-      
+
       Offline::GeneralUtilities
       Offline::TrkReco
 )
@@ -49,7 +50,7 @@ cet_build_plugin(KinematicLineFit art::module
     REG_SOURCE src/KinematicLineFit_module.cc
     LIBRARIES REG
       Offline::Mu2eKinKal
-      
+
       Offline::BFieldGeom
       Offline::CalorimeterGeom
       Offline::DataProducts
@@ -69,7 +70,7 @@ cet_build_plugin(LoopHelixFit art::module
     LIBRARIES REG
       Offline::Mu2eKinKal
       Offline::TrkReco
-      
+
 )
 
 

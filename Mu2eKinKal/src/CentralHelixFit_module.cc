@@ -74,7 +74,7 @@ using KTRAJ= KinKal::CentralHelix; // this must come before HelixFit
 #include "Offline/GeneralUtilities/inc/Angles.hh"
 
 namespace mu2e {
-  using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
+  using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
   using KKTRK = KKTrack<KTRAJ>;
   using KKTRKCOL = OwningPointerCollection<KKTRK>;
   using KKSTRAWHIT = KKStrawHit<KTRAJ>;
@@ -104,7 +104,7 @@ namespace mu2e {
   using KinKal::DVEC;
 
   // extend the generic module configuration as needed
-  struct KKHelixModuleConfig : KKModuleConfig {
+  struct KKCHModuleConfig : KKModuleConfig {
     fhicl::Sequence<art::InputTag> seedCollections         {Name("CosmicTrackSeedCollections"),     Comment("Seed fit collections to be processed ") };
     fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
     fhicl::Atom<double> seedMom { Name("SeedMomentum"), Comment("Seed momentum") };
@@ -112,7 +112,7 @@ namespace mu2e {
   };
 
   struct GlobalConfig {
-    fhicl::Table<KKHelixModuleConfig> modSettings { Name("ModuleSettings") };
+    fhicl::Table<KKCHModuleConfig> modSettings { Name("ModuleSettings") };
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
@@ -254,7 +254,7 @@ namespace mu2e {
         auto seedtraj = KTRAJ(kkpars,mass_,seedCharge_,bz,trange);
 
         // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
-        PKTRAJ pseedtraj(seedtraj);
+        PTRAJ pseedtraj(seedtraj);
 
         // first, we need to unwind the combohits.  We use this also to find the time range
         StrawHitIndexCollection strawHitIdxs;
