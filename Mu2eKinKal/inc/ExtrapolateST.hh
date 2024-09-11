@@ -108,30 +108,15 @@ namespace mu2e {
       if(debug_ > 2)std::cout << "ST foil inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << " rho " << newinter.pos_.Rho() << std::endl;
       bool goodextrap = newinter.onsurface_ && newinter.inbounds_;
       if(goodextrap){
-        // if the cached intersection is valid, test this intersection time against it, and
-        // if the new intersection time is the same as the last, keep looping on foils
-        if(inter_.onsurface_ && inter_.inbounds_ && ( (tdir == TimeDir::forwards && newinter.time_ <= inter_.time_) ||
-              (tdir == TimeDir::backwards && newinter.time_ >= inter_.time_) ) ) {
-          if(debug_ > 2)std::cout << "ST Skipping duplicate intersection " << std::endl;
-          ifoil += dfoil;
-          continue;
-        }
-        // otherwise test if the trajectory extends to the intersection time yet or not. If so we are done
-        if ( (tdir == TimeDir::forwards && newinter.time_ < etime) ||
-            (tdir == TimeDir::backwards && newinter.time_ > etime ) ) {
-          // update the cache
-          inter_ = newinter;
-          ann_ = foils_[ifoil];
-          sid_ = SurfaceId(SurfaceIdEnum::ST_Foils,ifoil);
-          if(debug_ > 0)std::cout << "Good ST foil intersection found in range, time " << inter_.time_ << " Z " << inter_.pos_.Z()
-            << " sid " << sid_ << std::endl;
-          return false;
-        }
-        ifoil += dfoil; // otherwise continue loopin on foils
-      } else {
-        // move to next foil
-        ifoil += dfoil;
+        // update the cache
+        inter_ = newinter;
+        ann_ = foils_[ifoil];
+        sid_ = SurfaceId(SurfaceIdEnum::ST_Foils,ifoil);
+        if(debug_ > 0)std::cout << "Good ST foil intersection found in range, time " << inter_.time_ << " Z " << inter_.pos_.Z()
+          << " sid " << sid_ << std::endl;
+        return false;
       }
+      ifoil += dfoil; // otherwise continue loopin on foils
     }
     // no more intersections: keep extending in Z till we clear the ST
     reset();

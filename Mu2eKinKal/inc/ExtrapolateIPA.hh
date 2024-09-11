@@ -46,63 +46,49 @@ namespace mu2e {
   };
 
   template <class KTRAJ> bool ExtrapolateIPA::needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const {
+    // we are answering the question: did the segment last added to this extrapolated track hit the IPA or not?
+    // if so, stop extrapolating (for now). If not, and if we're still inside or heading towards the IPA, keep going.
     auto const& fittraj = ktrk.fitTraj();
-    auto const& ktraj = fittraj.nearestPiece(time);
-    auto vel = ktraj.speed(time)*ktraj.axis(time).direction();// use helix axis to define the velocity
-    auto pos = ktraj.position3(time);
+    auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
+    // add a small buffer to the test range to prevent re-intersection with the same piece
+    static const double epsilon(1e-6); // small difference to avoid re-intersecting
+    auto stime = tdir == TimeDir::forwards ? ktraj.range().begin()+epsilon : ktraj.range().end()-epsilon;
+    auto etime = tdir == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
+    auto trange = tdir == TimeDir::forwards ? TimeRange(stime,ktraj.range().end()) : TimeRange(ktraj.range().begin(),stime);
+    auto vel = ktraj.speed(stime)*ktraj.axis(stime).direction();// use helix axis to define the velocity
+    auto spos = ktraj.position3(stime);
+    auto epos = ktraj.position3(etime);
     double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
-    double zpos = pos.Z();
-    if(debug_ > 2)std::cout << "IPA extrap start time " << time << " z " << zpos << " zvel " << zvel << std::endl;
+    if(debug_ > 2)std::cout << "IPA extrap start time " << stime << " start z " << spos.Z() << " end z " << epos.Z() << " zvel " << zvel << std::endl;
     // stop if the particle is heading away from the IPA
-    if( (zvel > 0 && zpos > zmax_ ) || (zvel < 0 && zpos < zmin_)){
+    if( (zvel > 0 && spos.Z() > zmax_ ) || (zvel < 0 && spos.Z() < zmin_)){
       reset(); // clear any cache
       if(debug_ > 1)std::cout << "Heading away from IPA: done" << std::endl;
       return false;
     }
     // if the particle is going in the right direction but hasn't yet reached the IPA just keep going
-    if( (zvel > 0 && zpos < zmin_) || (zvel < 0 && zpos > zmax_) ){
+    if( (zvel > 0 && epos.Z() < zmin_) || (zvel < 0 && epos.Z() > zmax_) ){
       reset();
-      if(debug_ > 2)std::cout << "Heading towards IPA, z " << zpos<< std::endl;
+      if(debug_ > 2)std::cout << "Heading towards IPA, z " << spos.Z()<< std::endl;
       return true;
     }
     // if we get to here we need to test for an intersection with the actual cylinder
-    // first, estimate the time range based on local piece Z speed transit time
-    // Buffer by the range of the last piece to avoid missed edges.
-    static const double epsilon(1e-2);
-    double dt = ktraj.range().range() - epsilon; // small difference to avoid re-intersecting
-    double halflen = ipa_->halfLength();
-    double tz = 1.0/std::max(fabs(zvel)/(2*halflen),1.0/maxDt_); // protect against reflection (zero z speed)
-    TimeRange trange = tdir == TimeDir::forwards ? TimeRange(time-dt,time+tz) : TimeRange(time-tz,time+dt);
-    // update intersection
-    if(debug_ > 2)std::cout << "IPA intersection " << trange << std::endl;
     auto newinter = KinKal::intersect(fittraj,*ipa_,trange,tol_,tdir);
     if(debug_ > 2)std::cout << "IPA extrap inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << std::endl;
     bool goodextrap = newinter.onsurface_ && newinter.inbounds_;
     if(goodextrap){
-      // if the cached intersection is valid, test this intersection time against it, and
-      // if the new intersection time is the same as the last, keep extrapolating
-      if(inter_.onsurface_ && inter_.inbounds_ && ( (tdir == TimeDir::forwards && newinter.time_ <= inter_.time_) ||
-          (tdir == TimeDir::backwards && newinter.time_ >= inter_.time_) ) ) {
-        if(debug_ > 2)std::cout << "Skipping duplicate intersection " << std::endl;
-        return true;
-      }
-      // otherwise test if the trajectory extends to the intersection time yet or not. If so we are done
-      if ( (tdir == TimeDir::forwards && newinter.time_ < time) ||
-          (tdir == TimeDir::backwards && newinter.time_ > time ) ) {
-        // update the cache
-        inter_ = newinter;
-        if(debug_ > 0)std::cout << "Good IPA intersection found in range, time " << inter_.time_ << " z  " << inter_.pos_.Z() << std::endl;
-        return false;
-      }
-      return true; // otherwise continue extrapolating
+      // update the cache
+      inter_ = newinter;
+      if(debug_ > 0)std::cout << "Good IPA intersection found in range, time " << inter_.time_ << " z  " << inter_.pos_.Z() << std::endl;
+      return false;
     } else {
       // no more intersections: keep extending in Z till we clear the IPA
       reset();
-      if(debug_ > 1)std::cout << "Extrapolating to IPA edge, z " << zpos << std::endl;
+      if(debug_ > 1)std::cout << "Extrapolating to IPA edge, z " << spos.Z() << std::endl;
       if(zvel > 0.0)
-        return zpos < zmax_;
+        return spos.Z() < zmax_;
       else
-        return zpos > zmin_;
+        return spos.Z() > zmin_;
     }
   }
 }
