@@ -95,39 +95,16 @@ namespace mu2e {
       if(debug_ > 2)std::cout << "Heading towards ST, z " << spos.Z()<< std::endl;
       return true;
     }
-    // if we get to here we are in the correct Z range. Step until we cross into the volume during this step
-    auto ointer = KinKal::intersect(fittraj,*outer_,trange,tol_,tdir);
-    auto iinter = KinKal::intersect(fittraj,*inner_,trange,tol_,tdir);
-    bool goodouter = ointer.onsurface_ && ointer.inbounds_ && trange.inRange(ointer.time_) // on the pysical surface and in time
-      && ointer.norm_.Dot(ointer.pdir_)*timeDirSign(tdir) < 0.0 // moving into the ST volume from outside
-      && (ointer.pos_.Z()-spos.Z())*timeDirSign(tdir) < 0.0; // intersection z is before the end of this valid range
-    bool goodinner = iinter.onsurface_ && iinter.inbounds_ && trange.inRange(iinter.time_)
-      && iinter.norm_.Dot(iinter.pdir_)*timeDirSign(tdir) > 0.0 // moving into the ST volume from inside the hole
-      && (iinter.pos_.Z()-spos.Z())*timeDirSign(tdir) < 0.0; // intersection z is before the end of this valid range
-
-    if(debug_ > 2)std::cout << "outer cyl inter " << goodouter << " inner cyl inter " << goodinner << std::endl;
-    double ctime;
-    if(goodouter && goodinner)
-      ctime = tdir == TimeDir::forwards ? std::min(ointer.time_,iinter.time_) : std::max(ointer.time_,iinter.time_);
-    else if(goodouter)
-      ctime = ointer.time_;
-    else if(goodinner)
-      ctime = iinter.time_;
-    else
-      return true; // keep going
-    // we are in the correct radial range too.  Look for an intersection with the foils
-    // Use z to determine which foil might be the next hit
-    auto fpos = fittraj.position3(ctime);
-    int ifoil = nearestFoil(fpos.Z(),zvel);
-    if(debug_ > 2)std::cout << "Entering ST volume time " << ctime << " rho " << fpos.Rho() <<  " z " << fpos.Z() << " first ST foil " << ifoil << std::endl;
+    // if we get to here we are in the correct Z range. Test foils.
+    int ifoil = nearestFoil(spos.Z(),zvel);
     if(ifoil >= (int)foils_.size())return true;
     if(debug_ > 2)std::cout << "Looping on foils " << std::endl;
     int dfoil = zvel > 0.0 ? 1 : -1; // iteration direction
-    // loop over foils
+    // loop over foils in the z range of this piece
     while(ifoil >= 0 && ifoil < (int)foils_.size() && (foils_[ifoil]->center().Z() - epos.Z())*dfoil < 0.0){
       auto foilptr = foils_[ifoil];
       if(debug_ > 2)std::cout << "foil " << ifoil << " z " << foilptr->center().Z() << std::endl;
-      auto newinter = KinKal::intersect(fittraj,*foilptr,trange,tol_,tdir);
+      auto newinter = KinKal::intersect(ktraj,*foilptr,trange,tol_,tdir);
       if(debug_ > 2)std::cout << "ST foil inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << " rho " << newinter.pos_.Rho() << std::endl;
       bool goodextrap = newinter.onsurface_ && newinter.inbounds_;
       if(goodextrap){
