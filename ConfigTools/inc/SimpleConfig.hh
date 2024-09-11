@@ -68,14 +68,14 @@ namespace mu2e {
                   bool allowReplacement       = true,
                   bool messageOnReplacement   = false,
                   bool messageOnDefault       = false );
+    ~SimpleConfig() = default;
 
-    ~SimpleConfig(){}
+    // This class is not copyable. See note 3.
+    SimpleConfig( const SimpleConfig& ) = delete;
+    SimpleConfig( SimpleConfig&& )      = delete;
+    SimpleConfig& operator=(SimpleConfig const&) = delete;
+    SimpleConfig& operator=(SimpleConfig&&     ) = delete;
 
-  private:
-
-    // This class is not copyable.  These methods are private and unimplemented.  See note 3.
-    SimpleConfig( const SimpleConfig& );
-    SimpleConfig& operator=(const SimpleConfig&);
 
   public:
 

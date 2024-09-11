@@ -67,6 +67,7 @@ CosmicReco : { @table::CosmicReco
       t0offset : 0
       maxDOCA : 10
       minPeak : 10
+      MaxPairs : 500
    }
 
    CosmicDriftFit : {

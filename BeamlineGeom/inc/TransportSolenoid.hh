@@ -34,7 +34,7 @@ namespace mu2e {
     {
       // Reserve number of coils
       for ( unsigned iTS = TSRegion::TS1 ; iTS <= TSRegion::TS5 ; ++iTS )
-        _coilMap[ (TSRegion)iTS ].reserve( getNCoils( (TSRegion)iTS ) );
+        _coilMap[ static_cast<TSRegion::enum_type>(iTS) ].reserve( getNCoils( static_cast<TSRegion::enum_type>(iTS) ) );
     }
 
     // use compiler-generated copy c'tor, copy assignment, and d'tor

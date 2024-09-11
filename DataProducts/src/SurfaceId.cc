@@ -24,6 +24,8 @@ namespace mu2e {
     std::make_pair(SurfaceIdEnum::DS_Inner, "DS_Inner"),
     std::make_pair(SurfaceIdEnum::DS_Outer, "DS_Outer"),
     std::make_pair(SurfaceIdEnum::IPA, "IPA"),
+    std::make_pair(SurfaceIdEnum::IPA_Front, "IPA_Front"),
+    std::make_pair(SurfaceIdEnum::IPA_Back, "IPA_Back"),
     std::make_pair(SurfaceIdEnum::OPA, "OPA"),
     std::make_pair(SurfaceIdEnum::TSDA, "TSDA"),
     std::make_pair(SurfaceIdEnum::ST_Front, "ST_Front"),
