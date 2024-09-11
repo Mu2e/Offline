@@ -20,6 +20,7 @@ namespace mu2e {
   using KinKal::Annulus;
   using AnnPtr = std::shared_ptr<KinKal::Annulus>;
   using FoilCol = std::vector<AnnPtr>;
+  using CylPtr = std::shared_ptr<KinKal::Cylinder>;
   class ExtrapolateST {
     public:
       ExtrapolateST() : maxDt_(-1.0), tol_(1e10),
@@ -33,7 +34,7 @@ namespace mu2e {
       zmin_( (stoptarg.outer().center() - stoptarg.outer().axis()*stoptarg.outer().halfLength()).Z()),
       zmax_( (stoptarg.outer().center() + stoptarg.outer().axis()*stoptarg.outer().halfLength()).Z()),
       rmin_( stoptarg.inner().radius()), rmax_(stoptarg.outer().radius()),
-        foils_(stoptarg.foils()),debug_(debug) {}
+        foils_(stoptarg.foils()),outer_(stoptarg.outerPtr()), inner_(stoptarg.innerPtr()),debug_(debug) {}
       // interface for extrapolation
       double maxDt() const { return maxDt_; } // maximum time to extend the track
       double tolerance() const { return tol_; } // intersection tolerance
@@ -62,6 +63,7 @@ namespace mu2e {
       double zmin_, zmax_; // z range of ST volume
       double rmin_, rmax_; // inner and outer radii of the anuli
       FoilCol foils_; // foils
+      CylPtr outer_, inner_; // boundaries
       int debug_; // debug level
   };
 
@@ -86,17 +88,28 @@ namespace mu2e {
       if(debug_ > 2)std::cout << "Heading towards ST, z " << zpos<< std::endl;
       return true;
     }
-    // if we get to here we are in the correct Z range
-    // check if we are inside the ST volume
-    if(rho < rmin_ || rho > rmax_) return true; // keep going
+    // if we get to here we are in the correct Z range. Step until we cross into the volume during this step
+    auto trange = tdir == TimeDir::forwards ? fittraj.back().range() : fittraj.front().range();
+    auto ointer = KinKal::intersect(fittraj,*outer_,trange,tol_,tdir);
+    auto iinter = KinKal::intersect(fittraj,*inner_,trange,tol_,tdir);
+    bool goodouter = ointer.onsurface_ && ointer.inbounds_ && trange.inRange(ointer.time_) && ointer.norm_.Dot(ointer.pdir_)*timeDirSign(tdir) < 0.0; // moving into the ST volume from outside
+    bool goodinner = iinter.onsurface_ && iinter.inbounds_ && trange.inRange(iinter.time_) && iinter.norm_.Dot(iinter.pdir_)*timeDirSign(tdir) > 0.0; // moving into the ST volume from inside
+    if(debug_ > 2)std::cout << "outer cyl inter " << goodouter << " inner cyl inter " << goodinner << std::endl;
+    double ctime;
+    if(goodouter && goodinner)
+      ctime = tdir == TimeDir::forwards ? std::min(ointer.time_,iinter.time_) : std::max(ointer.time_,iinter.time_);
+    else if(goodouter)
+      ctime = ointer.time_;
+    else if(goodinner)
+      ctime = iinter.time_;
+    else
+      return true; // keep going
     // we are in the correct radial range too.  Look for an intersection with the foils
     static const double epsilon(1e-2); // small difference to avoid re-intersecting
-    double dt = ktraj.range().range() - epsilon; // small difference to avoid re-intersecting
     double tz = 1.0/std::max(fabs(zvel)/(zmax_-zmin_),1.0/maxDt_); // time to cross the ST: protect against reflection (zero z speed)
-    TimeRange trange = tdir == TimeDir::forwards ? TimeRange(time-dt,time+tz) : TimeRange(time-tz,time+dt);
+    trange = tdir == TimeDir::forwards ? TimeRange(ctime-epsilon,ctime+tz) : TimeRange(ctime-tz,ctime+epsilon);
     // Use z to determine which foil might be the next hit
-    double tstart = tdir == TimeDir::forwards ? trange.begin() : trange.end();
-    auto fpos = fittraj.position3(tstart);
+    auto fpos = fittraj.position3(ctime);
     int ifoil = nearestFoil(fpos.Z(),zvel);
     if(debug_ > 2)std::cout << "ST volume rho " << fpos.Rho() <<  " z " << fpos.Z() << " first ST foil " << ifoil << std::endl;
     if(ifoil >= (int)foils_.size())return true;
