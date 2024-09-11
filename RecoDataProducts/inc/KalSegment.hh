@@ -12,7 +12,7 @@
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/RecoDataProducts/inc/HitT0.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
-#include "KinKal/General/ParticleState.hh"
+#include "KinKal/General/ParticleStateEstimate.hh"
 #include "KinKal/Trajectory/KinematicLine.hh"
 #include "KinKal/Trajectory/CentralHelix.hh"
 #include "KinKal/Trajectory/LoopHelix.hh"

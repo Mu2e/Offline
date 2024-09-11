@@ -52,13 +52,10 @@ namespace mu2e {
     return nactive;
   }
 
-  std::vector<KalIntersection>::const_iterator KalSeed::intersection(SurfaceId const& surfid) const{
-    auto retval = _inters.end();
+  KalSeed::InterIterCol KalSeed::intersections(SurfaceId const& surfid) const{
+    KalSeed::InterIterCol retval;
     for(auto iinter = _inters.begin(); iinter != _inters.end(); ++iinter) {
-      if(iinter->surfid_ == surfid){
-        retval = iinter;
-        break;
-      }
+      if(iinter->surfid_ == surfid) retval.push_back(iinter);
     }
     return retval;
   }

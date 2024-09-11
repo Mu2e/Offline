@@ -27,7 +27,6 @@ namespace mu2e {
 
   public:
     VirtualDetector();
-    ~VirtualDetector(){;}
 
     double getHalfLength() const { return _halfLength; }
 
