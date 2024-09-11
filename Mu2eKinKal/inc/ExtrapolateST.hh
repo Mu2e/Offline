@@ -68,32 +68,43 @@ namespace mu2e {
   };
 
   template <class KTRAJ> bool ExtrapolateST::needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const {
+    // we are answering the question: did the segment last added to this extrapolated track hit a foil or not? If so we are done
+    // extrapolating (for now) and we want to find all the intersections in that piece. If not, and if we're still inside or heading towards the
+    // ST, keep going.
     auto const& fittraj = ktrk.fitTraj();
-    auto const& ktraj = fittraj.nearestPiece(time);
-    auto vel = ktraj.speed(time)*ktraj.axis(time).direction();// use helix axis to define the velocity
-    auto pos = ktraj.position3(time);
+    auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
+    // add a small buffer to the test range to prevent re-intersection with the same piece
+    static const double epsilon(1e-6); // small difference to avoid re-intersecting
+    auto stime = tdir == TimeDir::forwards ? ktraj.range().begin()+epsilon : ktraj.range().end()-epsilon;
+    auto etime = tdir == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
+    auto trange = tdir == TimeDir::forwards ? TimeRange(stime,ktraj.range().end()) : TimeRange(ktraj.range().begin(),stime);
+    auto vel = ktraj.speed(stime)*ktraj.axis(stime).direction();// use helix axis to define the velocity
+    auto spos = ktraj.position3(stime);
+    auto epos = ktraj.position3(etime);
     double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
-    double zpos = pos.Z();
-    double rho = pos.Rho();
-    if(debug_ > 2)std::cout << "ST extrap start time " << time << " z " << zpos << " zvel " << zvel << " rho " << rho << std::endl;
+    if(debug_ > 2)std::cout << "ST extrap tdir " << tdir << " " << trange << " start z " << spos.Z() << " end z " << epos.Z() << " zvel " << zvel << " rho " << spos.Rho() << std::endl;
     // stop if the particle is heading away from the ST
-    if( (zvel > 0 && zpos > zmax_ ) || (zvel < 0 && zpos < zmin_)){
+    if( (zvel > 0 && spos.Z() > zmax_ ) || (zvel < 0 && spos.Z() < zmin_)){
       reset(); // clear any cache
       if(debug_ > 1)std::cout << "Heading away from ST: done" << std::endl;
       return false;
     }
     // if the particle is going in the right direction but haven't yet reached the ST in Z just keep going
-    if( (zvel > 0 && zpos < zmin_) || (zvel < 0 && zpos > zmax_) ){
+    if( (zvel > 0 && epos.Z() < zmin_) || (zvel < 0 && epos.Z() > zmax_) ){
       reset();
-      if(debug_ > 2)std::cout << "Heading towards ST, z " << zpos<< std::endl;
+      if(debug_ > 2)std::cout << "Heading towards ST, z " << spos.Z()<< std::endl;
       return true;
     }
     // if we get to here we are in the correct Z range. Step until we cross into the volume during this step
-    auto trange = tdir == TimeDir::forwards ? fittraj.back().range() : fittraj.front().range();
     auto ointer = KinKal::intersect(fittraj,*outer_,trange,tol_,tdir);
     auto iinter = KinKal::intersect(fittraj,*inner_,trange,tol_,tdir);
-    bool goodouter = ointer.onsurface_ && ointer.inbounds_ && trange.inRange(ointer.time_) && ointer.norm_.Dot(ointer.pdir_)*timeDirSign(tdir) < 0.0; // moving into the ST volume from outside
-    bool goodinner = iinter.onsurface_ && iinter.inbounds_ && trange.inRange(iinter.time_) && iinter.norm_.Dot(iinter.pdir_)*timeDirSign(tdir) > 0.0; // moving into the ST volume from inside
+    bool goodouter = ointer.onsurface_ && ointer.inbounds_ && trange.inRange(ointer.time_) // on the pysical surface and in time
+      && ointer.norm_.Dot(ointer.pdir_)*timeDirSign(tdir) < 0.0 // moving into the ST volume from outside
+      && (ointer.pos_.Z()-spos.Z())*timeDirSign(tdir) < 0.0; // intersection z is before the end of this valid range
+    bool goodinner = iinter.onsurface_ && iinter.inbounds_ && trange.inRange(iinter.time_)
+      && iinter.norm_.Dot(iinter.pdir_)*timeDirSign(tdir) > 0.0 // moving into the ST volume from inside the hole
+      && (iinter.pos_.Z()-spos.Z())*timeDirSign(tdir) < 0.0; // intersection z is before the end of this valid range
+
     if(debug_ > 2)std::cout << "outer cyl inter " << goodouter << " inner cyl inter " << goodinner << std::endl;
     double ctime;
     if(goodouter && goodinner)
@@ -105,22 +116,19 @@ namespace mu2e {
     else
       return true; // keep going
     // we are in the correct radial range too.  Look for an intersection with the foils
-    static const double epsilon(1e-2); // small difference to avoid re-intersecting
-    double tz = 1.0/std::max(fabs(zvel)/(zmax_-zmin_),1.0/maxDt_); // time to cross the ST: protect against reflection (zero z speed)
-    trange = tdir == TimeDir::forwards ? TimeRange(ctime-epsilon,ctime+tz) : TimeRange(ctime-tz,ctime+epsilon);
     // Use z to determine which foil might be the next hit
     auto fpos = fittraj.position3(ctime);
     int ifoil = nearestFoil(fpos.Z(),zvel);
-    if(debug_ > 2)std::cout << "ST volume rho " << fpos.Rho() <<  " z " << fpos.Z() << " first ST foil " << ifoil << std::endl;
+    if(debug_ > 2)std::cout << "Entering ST volume time " << ctime << " rho " << fpos.Rho() <<  " z " << fpos.Z() << " first ST foil " << ifoil << std::endl;
     if(ifoil >= (int)foils_.size())return true;
     if(debug_ > 2)std::cout << "Looping on foils " << std::endl;
     int dfoil = zvel > 0.0 ? 1 : -1; // iteration direction
     // loop over foils
-    while(ifoil > 0 && ifoil < (int)foils_.size() && (foils_[ifoil]->center().Z() - zpos)*dfoil < 0.0){
+    while(ifoil >= 0 && ifoil < (int)foils_.size() && (foils_[ifoil]->center().Z() - epos.Z())*dfoil < 0.0){
       auto foilptr = foils_[ifoil];
       if(debug_ > 2)std::cout << "foil " << ifoil << " z " << foilptr->center().Z() << std::endl;
       auto newinter = KinKal::intersect(fittraj,*foilptr,trange,tol_,tdir);
-      if(debug_ > 2)std::cout << "ST inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << std::endl;
+      if(debug_ > 2)std::cout << "ST foil inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << " rho " << newinter.pos_.Rho() << std::endl;
       bool goodextrap = newinter.onsurface_ && newinter.inbounds_;
       if(goodextrap){
         // if the cached intersection is valid, test this intersection time against it, and
@@ -132,13 +140,13 @@ namespace mu2e {
           continue;
         }
         // otherwise test if the trajectory extends to the intersection time yet or not. If so we are done
-        if ( (tdir == TimeDir::forwards && newinter.time_ < time) ||
-            (tdir == TimeDir::backwards && newinter.time_ > time ) ) {
+        if ( (tdir == TimeDir::forwards && newinter.time_ < etime) ||
+            (tdir == TimeDir::backwards && newinter.time_ > etime ) ) {
           // update the cache
           inter_ = newinter;
           ann_ = foils_[ifoil];
           sid_ = SurfaceId(SurfaceIdEnum::ST_Foils,ifoil);
-          if(debug_ > 0)std::cout << "Good ST intersection found in range, time " << inter_.time_ << " Z " << inter_.pos_.Z()
+          if(debug_ > 0)std::cout << "Good ST foil intersection found in range, time " << inter_.time_ << " Z " << inter_.pos_.Z()
             << " sid " << sid_ << std::endl;
           return false;
         }
@@ -150,11 +158,11 @@ namespace mu2e {
     }
     // no more intersections: keep extending in Z till we clear the ST
     reset();
-    if(debug_ > 1)std::cout << "Extrapolating to ST edge, z " << zpos << std::endl;
+    if(debug_ > 1)std::cout << "Extrapolating to ST edge, z " << spos.Z() << std::endl;
     if(zvel > 0.0)
-      return zpos < zmax_;
+      return spos.Z() < zmax_;
     else
-      return zpos > zmin_;
+      return spos.Z() > zmin_;
   }
 
   size_t ExtrapolateST::nearestFoil(double zpos, double zvel) const {
