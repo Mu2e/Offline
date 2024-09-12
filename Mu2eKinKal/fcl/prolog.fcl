@@ -282,8 +282,10 @@ Mu2eKinKal : {
   LOOPEXTRAPOLATION : {
     Tolerance : 1.0e-2 # (mm)
     MaxDt : 100.0 # (ns)
-    ToTracker : false
-    ToOPA : true
+    ToTrackerEnds : true
+    Upstream : false
+    BackToTracker : false
+    ToOPA : false
   }
 
   CENTRALHELIX : {
@@ -333,6 +335,7 @@ Mu2eKinKal : {
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
     ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
+    Extrapolation : @local::Mu2eKinKal.LOOPEXTRAPOLATION
     UsePDGCharge: true
   }
 

@@ -523,7 +523,7 @@ namespace mu2e {
           udres = strawhit->residual(Mu2eKinKal::dresid);
           utres = strawhit->residual(Mu2eKinKal::tresid);
         } catch (std::exception const& error) {
-          std::cout << "Unbiased KKStrawHit residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
+         // std::cout << "Unbiased KKStrawHit residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
         }
       }
       fseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
@@ -550,7 +550,7 @@ namespace mu2e {
         try {
           ctres = calohit->residual(0);
         } catch (std::exception const& error) {
-          std::cout << "Unbiased KKCaloHit residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
+          // std::cout << "Unbiased KKCaloHit residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
         }
       }
       // calculate the cluster depth = distance along the crystal axis from the POCA to the back face of this disk (where the SiPM sits)
