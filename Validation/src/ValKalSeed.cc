@@ -120,7 +120,8 @@ namespace mu2e {
       SurfaceId sid = _vdmap[vdid];
       auto kintercol = ks.intersections(sid);
       double ksCharge = ptable->particle(ks.particle()).charge();
-      for(auto ikinter : kintercol) {
+      if(kintercol.size() > 0){
+        auto ikinter = kintercol.front(); // just sample the 1st intersection if there are >1
         auto mom3 = ikinter->momentum3();
         double p = mom3.R();
         _hp->Fill(p);
