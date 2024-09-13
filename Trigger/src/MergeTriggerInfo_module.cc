@@ -29,7 +29,7 @@ namespace mu2e {
     using  Comment = fhicl::Comment;
     struct Config {
       fhicl::Atom<int> debug   { Name("debugLevel"), Comment("Debug Level"), 0};
-      fhicl::Atom<int> ntupMode{ Name("ntupMode")  , Comment("Ntupleing mode"), 0};
+      fhicl::Atom<int> doDeepCopy{ Name("doDeepCopy")  , Comment("Ntupleing mode"), 0};
     };
 
     using        Parameters = art::EDProducer::Table<Config>;
@@ -37,16 +37,16 @@ namespace mu2e {
     void         produce(art::Event& evt) override;
   private:
     int          _debug;
-    int          _ntupMode;
+    int          _doDeepCopy;
   };
 
   MergeTriggerInfo::MergeTriggerInfo(const Parameters& config) :
     art::EDProducer{config},
     _debug   (config().debug()),
-    _ntupMode(config().ntupMode())
+    _doDeepCopy(config().doDeepCopy())
   {
     produces<TriggerInfoCollection>    ();
-    if (_ntupMode == 1){
+    if (_doDeepCopy == 1){
       produces<KalSeedCollection>();
       produces<HelixSeedCollection>();
       produces<TimeClusterCollection>();
@@ -70,7 +70,7 @@ namespace mu2e {
       if(_debug > 0){
         std::cout << "["<<moduleDescription().moduleLabel() << "] helices, tracks: "<< trigInfo.tracks().size() << " " << trigInfo.helixes().size() << std::endl;
       }
-      if (_ntupMode == 1){
+      if (_doDeepCopy == 1){
         for (auto trkPtr: trigInfo.tracks()){
           KalSeed trk(*trkPtr.get());
           ksCol->push_back(trk);
@@ -88,7 +88,7 @@ namespace mu2e {
     }
 
     event.put(std::move(tiCol));
-    if (_ntupMode == 1){
+    if (_doDeepCopy == 1){
       event.put(std::move(ksCol));
       event.put(std::move(hsCol));
       event.put(std::move(tcCol));
