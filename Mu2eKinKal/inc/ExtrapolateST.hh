@@ -48,7 +48,7 @@ namespace mu2e {
       auto const& foilId() const { return sid_; }
       int debug() const { return debug_; }
       // extrapolation predicate: the track will be extrapolated until this predicate returns false, subject to the maximum time
-      template <class KTRAJ> bool needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const;
+      template <class KTRAJ> bool needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const;
       // reset between tracks
       void reset() const { inter_ = Intersection(); sid_ = SurfaceId(); ann_ = AnnPtr();}
       // find the nearest foil to a z positionin a given z direction
@@ -67,11 +67,10 @@ namespace mu2e {
       int debug_; // debug level
   };
 
-  template <class KTRAJ> bool ExtrapolateST::needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const {
+  template <class KTRAJ> bool ExtrapolateST::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const {
     // we are answering the question: did the segment last added to this extrapolated track hit a foil or not? If so we are done
     // extrapolating (for now) and we want to find all the intersections in that piece. If not, and if we're still inside or heading towards the
     // ST, keep going.
-    auto const& fittraj = ktrk.fitTraj();
     auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
     // add a small buffer to the test range to prevent re-intersection with the same piece
     static const double epsilon(1e-6); // small difference to avoid re-intersecting
