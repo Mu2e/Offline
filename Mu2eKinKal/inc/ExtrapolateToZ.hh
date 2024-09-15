@@ -2,7 +2,7 @@
 // track changes direction.
 #ifndef Mu2eKinKal_ExtrapolateToZ_hh
 #define Mu2eKinKal_ExtrapolateToZ_hh
-#include "Offline/Mu2eKinKal/inc/KKTrack.hh"
+#include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/General/TimeDir.hh"
 #include <limits>
 #include "cetlib_except/exception.h"
@@ -19,7 +19,7 @@ namespace mu2e {
       double zVal() const { return zval_; }
       int debug() const { return debug_; }
       // extrapolation predicate: the track will be extrapolated until this predicate returns false, subject to the maximum time
-      template <class KTRAJ> bool needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const;
+      template <class KTRAJ> bool needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const;
     private:
       double maxDt_; // maximum extrapolation time
       double tol_; // momentum tolerance in BField domain
@@ -27,13 +27,14 @@ namespace mu2e {
       int debug_; // debug level
   };
 
-  template <class KTRAJ> bool ExtrapolateToZ::needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, KinKal::TimeDir tdir, double time) const {
-    auto const& fittraj = ktrk.fitTraj();
-    auto vel = fittraj.velocity(time);
-    auto pos = fittraj.position3(time);
+  template <class KTRAJ> bool ExtrapolateToZ::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, KinKal::TimeDir tdir) const {
+    auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
+    auto time = tdir == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
+    auto vel = ktraj.velocity(time);
+    auto pos = ktraj.position3(time);
     double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
     double zval = pos.Z();
-    auto const& bnom = fittraj.bnom(time);
+    auto const& bnom = ktraj.bnom(time);
     double zref = vel.R()*fabs(sin(bnom.Theta()));
     if(debug_ > 2)std::cout << "Z extrap start time " << time << " z " << zval << " zvel " << zvel << " zref " <<  zref << std::endl;
     // if z velocity is unreliable, continue

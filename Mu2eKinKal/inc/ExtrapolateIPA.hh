@@ -2,7 +2,7 @@
 // track changes direction.
 #ifndef Mu2eKinKal_ExtrapolateIPA_hh
 #define Mu2eKinKal_ExtrapolateIPA_hh
-#include "Offline/Mu2eKinKal/inc/KKTrack.hh"
+#include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/General/TimeDir.hh"
 #include "KinKal/General/TimeRange.hh"
 #include "KinKal/Geometry/Intersection.hh"
@@ -32,7 +32,7 @@ namespace mu2e {
       double zmax() const { return zmax_; }
       int debug() const { return debug_; }
       // extrapolation predicate: the track will be extrapolated until this predicate returns false, subject to the maximum time
-      template <class KTRAJ> bool needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const;
+      template <class KTRAJ> bool needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const;
       // reset between tracks
       void reset() const { inter_ = Intersection(); }
     private:
@@ -45,10 +45,9 @@ namespace mu2e {
       int debug_; // debug level
   };
 
-  template <class KTRAJ> bool ExtrapolateIPA::needsExtrapolation(KinKal::Track<KTRAJ> const& ktrk, TimeDir tdir, double time) const {
+  template <class KTRAJ> bool ExtrapolateIPA::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const {
     // we are answering the question: did the segment last added to this extrapolated track hit the IPA or not?
     // if so, stop extrapolating (for now). If not, and if we're still inside or heading towards the IPA, keep going.
-    auto const& fittraj = ktrk.fitTraj();
     auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
     // add a small buffer to the test range to prevent re-intersection with the same piece
     static const double epsilon(1e-6); // small difference to avoid re-intersecting
