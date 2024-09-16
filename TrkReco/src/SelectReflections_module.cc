@@ -82,12 +82,13 @@ namespace mu2e {
       for(size_t iup = 0; iup <upksc.size(); ++iup){
         auto const& upks = upksc[iup];
         if(selector_->select(upks)){
+          std::cout << "Selected upstream track " << std::endl;
           // find the appropriate intersection for comparison
           auto uptrkiinter = upks.intersections().end();
           for(auto upiinter = upks.intersections().begin(); upiinter != upks.intersections().end(); ++upiinter){
             auto const& upinter = *upiinter;
             if(upinter.surfaceId() == trkfront && upinter.momentum3().Z() > 0.0){ // correct surface and direction
-              if(debug_ > 1) std::cout << "Found upstream intersection mom " << upinter.mom() << " time " << upinter.time() << std::endl;
+              if(debug_ > 1) std::cout << "Found upstream intersection mom " << upinter.momentum3() << " time " << upinter.time() << std::endl;
               uptrkiinter = upiinter;
               break;
             }
@@ -98,12 +99,13 @@ namespace mu2e {
           for(size_t idown = 0; idown <downksc.size(); ++idown){
             auto const& downks = downksc[idown];
             if(selector_->select(downks)){
+              std::cout << "Selected downstream track " << std::endl;
               // find the appropriate intersection for comparison
               auto downtrkiinter = downks.intersections().end();
               for(auto downiinter = downks.intersections().begin(); downiinter != downks.intersections().end(); ++downiinter){
                 auto const& downinter = *downiinter;
-                if(downinter.surfaceId() == trkfront && downinter.momentum3().Z() < 0.0){ // correct surface and direction
-                  if(debug_ > 1) std::cout << "Found downstream intersection mom " << downinter.mom() << " time " << downinter.time() << std::endl;
+                if(downinter.surfaceId() == trkfront && downinter.momentum3().Z() > 0.0){ // correct surface and direction
+                  if(debug_ > 1) std::cout << "Found downstream intersection mom " << downinter.momentum3() << " time " << downinter.time() << std::endl;
                   downtrkiinter = downiinter;
                   break;
                 }
@@ -143,7 +145,7 @@ namespace mu2e {
           }
         }
       }
-      if(ibest > 0){
+      if(ibest > -1){
         if(debug_ > 0) std::cout << "Found Reflecting particle candidate, downstream momentum " << std::get<2>(matches[ibest])
           << " delta t " << std::get<3>(matches[ibest])
             << " delta P " << std::get<4>(matches[ibest]) << std::endl;
