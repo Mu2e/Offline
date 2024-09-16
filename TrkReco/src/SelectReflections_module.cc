@@ -10,7 +10,7 @@
 #include "art/Utilities/make_tool.h"
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Persistency/Common/Ptr.h"
-#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/TrkReco/inc/KalSeedSelector.hh"
@@ -32,7 +32,7 @@ namespace mu2e {
   };
 
 
-  class SelectReflections : public art::EDProducer {
+  class SelectReflections : public art::EDFilter {
     public:
       enum bestpair {mom=0, deltat,deltap}; // selection options for defining the best pair
       using Name=fhicl::Name;
@@ -46,9 +46,9 @@ namespace mu2e {
         fhicl::DelegatedParameter selector{ Name("Selector"), Comment("Selector parameters")};
         fhicl::Atom<int> selectbest{ Name("SelectBestPair"), Comment("Method to select the best pair if multiple pairs are found ")};
       };
-      using Parameters = art::EDProducer::Table<Config>;
+      using Parameters = art::EDFilter::Table<Config>;
       explicit SelectReflections(const Parameters& config);
-      void produce(art::Event& evt) override;
+      bool filter(art::Event& evt) override;
     private:
       int debug_;
       double maxdt_, maxdp_;
@@ -57,7 +57,7 @@ namespace mu2e {
       bestpair selbest_;
   };
 
-  SelectReflections::SelectReflections(const Parameters& config) : art::EDProducer{config},
+  SelectReflections::SelectReflections(const Parameters& config) : art::EDFilter{config},
     debug_(config().debug()),
     maxdt_(config().maxdt()),
     maxdp_(config().maxdp()),
@@ -68,7 +68,7 @@ namespace mu2e {
       produces<KalSeedPtrCollection> ();
     }
 
-  void SelectReflections::produce(art::Event& event) {
+  bool SelectReflections::filter(art::Event& event) {
     static const SurfaceId trkfront (SurfaceIdDetail::TT_Front);
     // create output
     std::unique_ptr<KalSeedPtrCollection> mkseeds(new KalSeedPtrCollection);
@@ -76,13 +76,14 @@ namespace mu2e {
     auto const& upksc = *upksch;
     auto const& downksch = event.getValidHandle<KalSeedCollection>(downstreamtoken_);
     auto const& downksc = *downksch;
-    if(debug_ > 0) std::cout << "Upstream " << upksc.size() << " , Downstream " << downksc.size() << " KalSeeds" << std::endl;
+    if(debug_ > 1) std::cout << "Upstream " << upksc.size() << " , Downstream " << downksc.size() << " KalSeeds" << std::endl;
+    bool keep(false);
     if(upksc.size() > 0 && downksc.size() > 0){
       std::vector<std::tuple<size_t, size_t,double, double, double>> matches; // matched up and downstream track, with (downstream) mom, dt and dmom
       for(size_t iup = 0; iup <upksc.size(); ++iup){
         auto const& upks = upksc[iup];
         if(selector_->select(upks)){
-          std::cout << "Selected upstream track " << std::endl;
+          if(debug_ > 2)std::cout << "Selected upstream track " << std::endl;
           // find the appropriate intersection for comparison
           auto uptrkiinter = upks.intersections().end();
           for(auto upiinter = upks.intersections().begin(); upiinter != upks.intersections().end(); ++upiinter){
@@ -99,7 +100,7 @@ namespace mu2e {
           for(size_t idown = 0; idown <downksc.size(); ++idown){
             auto const& downks = downksc[idown];
             if(selector_->select(downks)){
-              std::cout << "Selected downstream track " << std::endl;
+              if(debug_ > 2)std::cout << "Selected downstream track " << std::endl;
               // find the appropriate intersection for comparison
               auto downtrkiinter = downks.intersections().end();
               for(auto downiinter = downks.intersections().begin(); downiinter != downks.intersections().end(); ++downiinter){
@@ -151,10 +152,11 @@ namespace mu2e {
             << " delta P " << std::get<4>(matches[ibest]) << std::endl;
         mkseeds->emplace_back(upksch,std::get<0>(matches[ibest])); // store the upstream track first by convention
         mkseeds->emplace_back(downksch,std::get<1>(matches[ibest]));
+        keep = true;
       }
-
     }
     event.put(std::move(mkseeds));
+    return keep;
   }
 }
 DEFINE_ART_MODULE(mu2e::SelectReflections)
