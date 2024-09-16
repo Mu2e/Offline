@@ -416,7 +416,7 @@ namespace mu2e {
     DVEC pars;
     double psign = copysign(1.0,-charge*bnom.Z());
     pars[KTRAJ::rad_] = helix.radius()*psign;
-    pars[KTRAJ::lam_] = helix.lambda()*fdir_.dzdt();
+    pars[KTRAJ::lam_] = helix.lambda();
     pars[KTRAJ::cx_] = helix.centerx();
     pars[KTRAJ::cy_] = helix.centery();
     pars[KTRAJ::phi0_] = helix.fz0()+psign*M_PI_2;
@@ -424,7 +424,16 @@ namespace mu2e {
     // create the initial trajectory
     KinKal::Parameters kkpars(pars,seedcov_);
     //  construct the seed trajectory (infinite initial time range)
-    return KTRAJ(kkpars, mass_, charge, bnom, trange);
+    KTRAJ ktraj(kkpars, mass_, charge, bnom, trange);
+    // test position and direction and z=0
+    auto hdir = helix.direction(0.0);
+    auto hpos = helix.position(0.0);
+    auto kdir = ktraj.direction(ktraj.t0());
+    auto kpos = ktraj.position3(ktraj.t0());
+    double dirdot = hdir.Dot(kdir);
+    double dpos = (hpos-kpos).R();
+    if(1.0- dirdot > 1e-3 || dpos > 10)throw cet::exception("RECO")<<"mu2e::LoopHelixFit:Seed helix translation error"<< endl;
+    return ktraj;
   }
 
   bool LoopHelixFit::goodFit(KKTRK const& ktrk) const {
