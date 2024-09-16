@@ -432,7 +432,9 @@ namespace mu2e {
     auto kpos = ktraj.position3(ktraj.t0());
     double dirdot = hdir.Dot(kdir);
     double dpos = (hpos-kpos).R();
-    if(1.0- dirdot > 1e-3 || dpos > 10)throw cet::exception("RECO")<<"mu2e::LoopHelixFit:Seed helix translation error"<< endl;
+    // the original helix doesn't have a time direction (geometric helix) so allow both interpretations
+    // the tolerance in the test allows for a difference between global and local parameters (B not along Z axis)
+    if(1.0- fabs(dirdot) > 1e-3 || dpos > 10)throw cet::exception("RECO")<<"mu2e::LoopHelixFit:Seed helix translation error"<< endl;
     return ktraj;
   }
 
