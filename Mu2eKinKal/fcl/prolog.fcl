@@ -280,10 +280,10 @@ Mu2eKinKal : {
   }
 
   LOOPEXTRAPOLATION : {
-    Tolerance : 1.0e-2 # (mm)
-    MaxDt : 100.0 # (ns)
+    Tolerance : 1.0e-4 # fractional momentum change
+    MaxDt : 200.0 # (ns)
     ToTrackerEnds : true
-    Upstream : false
+    Upstream : true
     BackToTracker : false
     ToOPA : false
   }
@@ -325,12 +325,12 @@ Mu2eKinKal : {
     UsePDGCharge: true
   }
 
-  KK : {
+  KKLoopFit : {
     module_type : LoopHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
-      SampleSurfaces : ["TT_Front","TT_Mid","TT_Back"]
+      SampleSurfaces : ["TT_Front","TT_Mid","TT_Back","ST_Outer","ST_Back","OPA","TSDA"]
     }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
@@ -434,17 +434,21 @@ Mu2eKinKal : {
     # drift fits, with BField corrections
     KKLine: @local::Mu2eKinKal.KKLine
     KKOffSpill: @local::Mu2eKinKal.KKOffSpill
-    KKDeP: @local::Mu2eKinKal.KK
-    KKDeM: @local::Mu2eKinKal.KK
-    KKUeP: @local::Mu2eKinKal.KK
-    KKUeM: @local::Mu2eKinKal.KK
-    KKDmuP: @local::Mu2eKinKal.KK
-    KKDmuM: @local::Mu2eKinKal.KK
-    KKUmuP: @local::Mu2eKinKal.KK
-    KKUmuM: @local::Mu2eKinKal.KK
-
+    KKDeP: @local::Mu2eKinKal.KKLoopFit
+    KKDeM: @local::Mu2eKinKal.KKLoopFit
+    KKDmuP: @local::Mu2eKinKal.KKLoopFit
+    KKDmuM: @local::Mu2eKinKal.KKLoopFit
+    KKUeP: @local::Mu2eKinKal.KKLoopFit
+    KKUeM: @local::Mu2eKinKal.KKLoopFit
+    KKUmuP: @local::Mu2eKinKal.KKLoopFit
+    KKUmuM: @local::Mu2eKinKal.KKLoopFit
   }
 }
+# Extrapolate upstream fits back to the tracker entrance
+Mu2eKinKal.producers.KKUeP.Extrapolation.BackToTracker : true
+Mu2eKinKal.producers.KKUeM.Extrapolation.BackToTracker : true
+Mu2eKinKal.producers.KKUmuP.Extrapolation.BackToTracker : true
+Mu2eKinKal.producers.KKUmuM.Extrapolation.BackToTracker : true
 
 Mu2eKinKal.producers.KKOffSpillSeedFit.ModuleSettings.FitParticle : 13
 Mu2eKinKal.producers.KKOffSpill.ModuleSettings.FitParticle : 13
