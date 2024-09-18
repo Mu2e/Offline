@@ -73,15 +73,15 @@ namespace mu2e {
     // ST, keep going.
     auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
     // add a small buffer to the test range to prevent re-intersection with the same piece
-    static const double epsilon(1e-6); // small difference to avoid re-intersecting
+    static const double epsilon(1e-7); // small difference to avoid re-intersecting
+    if(ktraj.range().range() <= epsilon) return true; // keep going if the step is very small
     auto stime = tdir == TimeDir::forwards ? ktraj.range().begin()+epsilon : ktraj.range().end()-epsilon;
     auto etime = tdir == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
-    auto trange = tdir == TimeDir::forwards ? TimeRange(stime,ktraj.range().end()) : TimeRange(ktraj.range().begin(),stime);
     auto vel = ktraj.speed(stime)*ktraj.axis(stime).direction();// use helix axis to define the velocity
     auto spos = ktraj.position3(stime);
     auto epos = ktraj.position3(etime);
     double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
-    if(debug_ > 2)std::cout << "ST extrap tdir " << tdir << " " << trange << " start z " << spos.Z() << " end z " << epos.Z() << " zvel " << zvel << " rho " << spos.Rho() << std::endl;
+    if(debug_ > 2)std::cout << "ST extrap tdir " << tdir << " start z " << spos.Z() << " end z " << epos.Z() << " zvel " << zvel << " rho " << spos.Rho() << std::endl;
     // stop if the particle is heading away from the ST
     if( (zvel > 0 && spos.Z() > zmax_ ) || (zvel < 0 && spos.Z() < zmin_)){
       reset(); // clear any cache
@@ -99,6 +99,7 @@ namespace mu2e {
     if(ifoil >= (int)foils_.size())return true;
     if(debug_ > 2)std::cout << "Looping on foils " << std::endl;
     int dfoil = zvel > 0.0 ? 1 : -1; // iteration direction
+    auto trange = tdir == TimeDir::forwards ? TimeRange(stime,ktraj.range().end()) : TimeRange(ktraj.range().begin(),stime);
     // loop over foils in the z range of this piece
     while(ifoil >= 0 && ifoil < (int)foils_.size() && (foils_[ifoil]->center().Z() - epos.Z())*dfoil < 0.0){
       auto foilptr = foils_[ifoil];
