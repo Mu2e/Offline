@@ -84,6 +84,8 @@ namespace mu2e {
     // match steps by their sim particle. There is only 1 volume for IPA
     SurfaceStep absorberstep;
     for(auto const& spmc : absspmccol) {
+      // convert to detector coordinates
+      auto spmcpos = XYZVectorF(det->toDetector(spmc.position()));
       bool added(false);
       // decide if this step is contiguous to existing steps already aggregated
       // first, test SimParticle (surface is defined by the collection)
@@ -91,7 +93,7 @@ namespace mu2e {
         if(debug_ > 2) std::cout << "Same SimParticle" << std::endl;
         // then time;
         auto tgap = fabs(absorberstep.time()-spmc.time());
-        auto dgap = (absorberstep.endPosition() - XYZVectorF(det->toDetector(spmc.position()))).R();
+        auto dgap = (absorberstep.endPosition() - spmcpos).R();
         if(spmc.time() < absorberstep.time())throw cet::exception("Simulation") << " StepPointMC times out-of-order" << std::endl;
         if(debug_ > 2) std::cout << "Time gap " << tgap << " Distance gap " << dgap << std::endl;
         if(tgap < maxtgap_ && dgap < maxdgap_){
@@ -107,9 +109,9 @@ namespace mu2e {
         // start a new SurfaceStep for this step
         // hack around the fact that the IPA, OPA, and TSDA are all in the same collection ('absorber')
         SurfaceId sid;
-        if(spmc.position().Z < -5960) // TSDA
-          sid = SurfaceId(SurfaceIdDetail::IPA);
-        else if(spmc.position().rho() > 310) // OPA
+        if(spmcpos.Z() < -5960) // TSDA
+          sid = SurfaceId(SurfaceIdDetail::TSDA);
+        else if(spmcpos.Rho() > 400) // OPA
           sid = SurfaceId(SurfaceIdDetail::OPA);
         else
           sid = SurfaceId(SurfaceIdDetail::IPA);
@@ -128,6 +130,8 @@ namespace mu2e {
     // match steps by their sim particle. There is only 1 volume for IPA
     SurfaceStep ststep;
     for(auto const& spmc : stspmccol) {
+      // convert to detector coordinates
+      auto spmcpos = XYZVectorF(det->toDetector(spmc.position()));
       bool added(false);
       // decide if this step is contiguous to existing steps already aggregated
       // first, test SimParticle (surface is defined by the collection)
@@ -135,11 +139,11 @@ namespace mu2e {
         if(debug_ > 2) std::cout << "Same SimParticle" << std::endl;
         // then time;
         auto tgap = fabs(ststep.time()-spmc.time());
-        auto dgap = (ststep.endPosition() - XYZVectorF(det->toDetector(spmc.position()))).R();
+        auto dgap = (ststep.endPosition() - spmcpos).R();
         if(spmc.time() < ststep.time())throw cet::exception("Simulation") << " StepPointMC times out-of-order" << std::endl;
         if(debug_ > 2) std::cout << "Time gap " << tgap << " Distance gap " << dgap << std::endl;
         if(tgap < maxtgap_ && dgap < maxdgap_){
-          // accumulate this step into the existing surface step
+          // accumulate this step into the existing e step
           if(debug_ > 1)std::cout <<"Added step" << std::endl;
           ststep.addStep(spmc,det);
           added = true;
@@ -151,7 +155,7 @@ namespace mu2e {
         // start a new SurfaceStep for this step
         // hack around the problem that the ST wires are mixed in with the ST foils
         SurfaceId stid(SurfaceIdDetail::ST_Foils,spmc.volumeId());
-        if(det->toDetector(spmc.position()).rho() > 75.001)stid = SurfaceId(SurfaceIdDetail::ST_Wires,spmc.volumeId());
+        if(spmcpos.Rho() > 75.001)stid = SurfaceId(SurfaceIdDetail::ST_Wires,spmc.volumeId());
         ststep = SurfaceStep(stid,spmc,det);
         if(debug_ > 1)std::cout <<"New step" << std::endl;
       }
