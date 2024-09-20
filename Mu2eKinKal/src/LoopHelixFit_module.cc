@@ -268,10 +268,10 @@ namespace mu2e {
         // predicate to extrapolate through IPA
         extrapIPA_ = ExtrapolateIPA(maxdt,tol,IPA,debug);
         // predicate to extrapolate through ST
-        std::cout << "IPA limits z " << extrapIPA_.zmin() << " " << extrapIPA_.zmax() << std::endl;
+        if(debug > 0)std::cout << "IPA limits z " << extrapIPA_.zmin() << " " << extrapIPA_.zmax() << std::endl;
         extrapST_ = ExtrapolateST(maxdt,tol,smap_.ST(),debug);
         // temporary
-        std::cout << "ST limits z " << extrapST_.zmin() << " " << extrapST_.zmax() << " r " << extrapST_.rmin() << " " << extrapST_.rmax() << std::endl;
+        if(debug > 0)std::cout << "ST limits z " << extrapST_.zmin() << " " << extrapST_.zmax() << " r " << extrapST_.rmin() << " " << extrapST_.rmax() << std::endl;
         // extrapolate to the front of the tracker
         trackerFront_ = ExtrapolateToZ(maxdt,tol,smap_.tracker().front().center().Z(),debug);
         trackerBack_ = ExtrapolateToZ(maxdt,tol,smap_.tracker().back().center().Z(),debug);
@@ -416,7 +416,7 @@ namespace mu2e {
     DVEC pars;
     double psign = copysign(1.0,-charge*bnom.Z());
     pars[KTRAJ::rad_] = helix.radius()*psign;
-    pars[KTRAJ::lam_] = helix.lambda()*fdir_.dzdt();
+    pars[KTRAJ::lam_] = helix.lambda();
     pars[KTRAJ::cx_] = helix.centerx();
     pars[KTRAJ::cy_] = helix.centery();
     pars[KTRAJ::phi0_] = helix.fz0()+psign*M_PI_2;
@@ -424,7 +424,15 @@ namespace mu2e {
     // create the initial trajectory
     KinKal::Parameters kkpars(pars,seedcov_);
     //  construct the seed trajectory (infinite initial time range)
-    return KTRAJ(kkpars, mass_, charge, bnom, trange);
+    KTRAJ ktraj(kkpars, mass_, charge, bnom, trange);
+    // test position and direction and z=0
+    auto hdir = helix.direction(0.0);
+    auto kdir = ktraj.direction(ktraj.t0());
+    double dirdot = hdir.Dot(kdir);
+    // the original helix doesn't have a time direction (geometric helix) so allow both interpretations
+    // the tolerance in the test allows for a difference between global and local parameters (B not along Z axis)
+    if(1.0- fabs(dirdot) > 1e-3)throw cet::exception("RECO")<<"mu2e::LoopHelixFit:Seed helix translation error"<< endl;
+    return ktraj;
   }
 
   bool LoopHelixFit::goodFit(KKTRK const& ktrk) const {

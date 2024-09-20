@@ -50,10 +50,10 @@ namespace mu2e {
     // if so, stop extrapolating (for now). If not, and if we're still inside or heading towards the IPA, keep going.
     auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
     // add a small buffer to the test range to prevent re-intersection with the same piece
-    static const double epsilon(1e-6); // small difference to avoid re-intersecting
+    static const double epsilon(1e-7); // small step to avoid re-intersecting
+    if(ktraj.range().range() <= epsilon) return true; // keep going if the step is very small
     auto stime = tdir == TimeDir::forwards ? ktraj.range().begin()+epsilon : ktraj.range().end()-epsilon;
     auto etime = tdir == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
-    auto trange = tdir == TimeDir::forwards ? TimeRange(stime,ktraj.range().end()) : TimeRange(ktraj.range().begin(),stime);
     auto vel = ktraj.speed(stime)*ktraj.axis(stime).direction();// use helix axis to define the velocity
     auto spos = ktraj.position3(stime);
     auto epos = ktraj.position3(etime);
@@ -71,7 +71,8 @@ namespace mu2e {
       if(debug_ > 2)std::cout << "Heading towards IPA, z " << spos.Z()<< std::endl;
       return true;
     }
-    // if we get to here we need to test for an intersection with the actual cylinder
+    // if we get to here we need to test for an intersection with the actual cylinder. Make sure the range is positive definite
+    auto trange = tdir == TimeDir::forwards ? TimeRange(stime,etime) : TimeRange(etime,stime);
     auto newinter = KinKal::intersect(fittraj,*ipa_,trange,tol_,tdir);
     if(debug_ > 2)std::cout << "IPA extrap inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << std::endl;
     bool goodextrap = newinter.onsurface_ && newinter.inbounds_;
