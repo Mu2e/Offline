@@ -156,7 +156,7 @@ namespace mu2e {
       double tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
       while(part->parent().isNonnull()) { //while particle has a parent which is not null
         part = part->parent();
-        if ( abs(part->pdgId()) == 211 ) { //if pion
+        if ( abs(part->pdgId()) == PDGCode::pi_plus ) { //if pion
             tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
           }
       }
