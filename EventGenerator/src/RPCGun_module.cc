@@ -169,7 +169,6 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     const auto pis = stoppedPiMinusList(simh);
-    std::cout<<"event: "<<event.id().event()<<std::endl;
     if(pis.empty()) {
       throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";

@@ -18,7 +18,6 @@
 #include <iostream>
 #include <string>
 
-#include "TTree.h"
 using namespace std;
 namespace mu2e {
 
@@ -27,8 +26,7 @@ namespace mu2e {
       struct Config {
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
-        fhicl::Atom<art::InputTag> SimToken{Name("SimParticleCollection"),Comment("")};
-        fhicl::Atom<art::InputTag>SimTag{Name("SimParticleCollection"),Comment("SimTag")};
+        fhicl::Atom<int> diagLevel{Name("diagLevel"),0};
         fhicl::Atom<double> tmin{Name("tmin"),0};
         fhicl::Atom<double> tmax{Name("tmax"),1e6};
         fhicl::Atom<bool> isNull{Name("isNull"),true};
@@ -37,33 +35,22 @@ namespace mu2e {
       virtual bool filter(art::Event& event) override;
 
     private:
-      art::InputTag _SimToken;
-      const SimParticleCollection* _SimCol;
+      const SimParticleCollection* SimCol_;
+      int diagLevel_;
       double tmin_;
       double tmax_;
       bool isNull_;
-      TTree* genTree;
-      Float_t _endglobaltime;
-      Float_t _startglobaltime;
-      Float_t _endpropertime;
-      Float_t _startpropertime;
       double totalweight = 0;
       double selectedweight = 0;
   };
 
   PionFilter::PionFilter(const art::EDFilter::Table<Config>& config) :
      EDFilter{config}
-    , _SimToken(config().SimToken())
+    , diagLevel_{config().diagLevel()}
     , tmin_{config().tmin()}
     , tmax_{config().tmax()}
     , isNull_{config().isNull()}
   {
-      art::ServiceHandle<art::TFileService> tfs;
-      genTree  = tfs->make<TTree>("GenAna", "GenAna");
-      genTree->Branch("endglobaltime", &_endglobaltime, "endglobaltime/F");
-      genTree->Branch("startglobaltime", &_startglobaltime, "startglobaltime/F");
-      genTree->Branch("endpropertime", &_endpropertime, "endpropertime/F");
-      genTree->Branch("startpropertime", &_startpropertime, "startpropertime/F");
   }
 
   bool PionFilter::filter(art::Event& evt) {
@@ -73,10 +60,7 @@ namespace mu2e {
       for (auto const& ah : vah) { //always one collection
         for(const auto& aParticle : *ah){
           art::Ptr<SimParticle> pp(ah, aParticle.first.asUint());
-          _endglobaltime = pp->endGlobalTime();
-          _startglobaltime = pp->startGlobalTime();
-          _endpropertime = pp->endProperTime();
-          _startpropertime = pp->startProperTime();
+          float _endglobaltime = pp->endGlobalTime();
           if( pp->stoppingCode() == ProcessCode::mu2eKillerVolume and abs(pp->pdgId())  == 211){
             const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
             totalweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
@@ -85,12 +69,13 @@ namespace mu2e {
             passed = true;
             const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
             selectedweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
-            genTree->Fill();
           }
         }
       }
-    //std::cout<<"Total weight for all stops "<<totalweight<<std::endl;
-    //std::cout<<"Selected weight for chosen stops "<<selectedweight<<std::endl;
+    if(diagLevel_ > 0 ){
+      std::cout<<"Total weight for all stops "<<totalweight<<std::endl;
+      std::cout<<"Selected weight for chosen stops "<<selectedweight<<std::endl;
+    }
     return passed;
   }
 }
