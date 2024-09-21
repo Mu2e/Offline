@@ -61,11 +61,11 @@ namespace mu2e {
         for(const auto& aParticle : *ah){
           art::Ptr<SimParticle> pp(ah, aParticle.first.asUint());
           float _endglobaltime = pp->endGlobalTime();
-          if( pp->stoppingCode() == ProcessCode::mu2eKillerVolume and std::abs(part->pdgId()) == PDGCode::pi_plus){
+          if( pp->stoppingCode() == ProcessCode::mu2eKillerVolume and std::abs(pp->pdgId()) == PDGCode::pi_plus){
             const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
             totalweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
           }
-          if( pp->stoppingCode() == ProcessCode::mu2eKillerVolume and (std::abs(part->pdgId()) == PDGCode::pi_plus and _endglobaltime > tmin_ and _endglobaltime < tmax_ )){
+          if( pp->stoppingCode() == ProcessCode::mu2eKillerVolume and (std::abs(pp->pdgId()) == PDGCode::pi_plus and _endglobaltime > tmin_ and _endglobaltime < tmax_ )){
             passed = true;
             const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
             selectedweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
