@@ -362,8 +362,6 @@ Mu2eKinKal : {
     ParameterConstraints : [0.0,0.0,0.0,0.0,0.0,0]
     CosmicTrackSeedCollections : ["LineFinder"]
     SeedFlags : [ "HelixOK" ]
-    TimeClusterCollection : "SimpleTimeCluster"
-    PanelHitCollection : "makePH"
   }
 
   KINEMATICLINE : {
