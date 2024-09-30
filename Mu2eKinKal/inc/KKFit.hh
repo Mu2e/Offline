@@ -49,7 +49,6 @@ namespace mu2e {
   using KinKal::TimeRange;
   using KinKal::Status;
   using KinKal::BFieldMap;
-  using RESIDCOL = std::array<KinKal::Residual,2>;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
   using Mu2eKinKal::KKFitConfig;
   using CCHandle = art::ValidHandle<CaloClusterCollection>;
@@ -617,8 +616,15 @@ namespace mu2e {
       // search for intersections with each surface from the begining
       double tstart = tbeg - sampletbuff_;
       bool hasinter(true);
+      size_t max_iter = 1000;
+      size_t cur_iter = 0;
+
       // loop to find multiple intersections
       while(hasinter) {
+        if (cur_iter > max_iter)
+          break;
+        cur_iter += 1;
+
         TimeRange irange(tstart,std::max(ftraj.range().end(),tstart)+sampletbuff_);
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
         hasinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
