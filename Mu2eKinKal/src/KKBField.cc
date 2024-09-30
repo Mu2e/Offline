@@ -17,8 +17,11 @@ namespace mu2e {
     if(bfmgr_.getInnerMaps().size() == 0){
       static const VEC3 nullfield(0.0,0.0,0.0);
       return nullfield;
-    } else
-      throw cet::exception("RECO")<<"mu2e::KKBfield: out-of-range access point "<< vpoint_mu2e << endl;
+    } else {
+    //  throw cet::exception("RECO")<<"mu2e::KKBfield: out-of-range access point "<< vpoint_mu2e << endl;
+      static const VEC3 nullfield(0.0,0.0,0.0);
+      return nullfield;
+    }
   }
 
   Grad KKBField::fieldGrad(VEC3 const& position) const {
