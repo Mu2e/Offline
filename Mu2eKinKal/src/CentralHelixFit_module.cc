@@ -229,7 +229,6 @@ namespace mu2e {
 
       for (size_t index=0;index<cseedcol.size();++index){
         const auto& cseed = cseedcol[index];
-        auto zcent = Mu2eKinKal::zMid(cseed.hits());
 
         auto trange = Mu2eKinKal::timeBounds(cseed.hits());
         auto fitpart = fpart_;
