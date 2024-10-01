@@ -42,7 +42,7 @@ CosmicReco : { @table::CosmicReco
 
    SimpleTimeCluster : {
       module_type : SimpleTimeCluster
-      ComboHitCollection : "makePH"
+      ComboHitCollection : "makeSH"
       TestFlag : true
       HitSelectionBits  : ["EnergySelection"]
       HitBackgroundBits : ["Background","Noisy","Dead"]
@@ -59,7 +59,7 @@ CosmicReco : { @table::CosmicReco
 
    LineFinder : {
       module_type : LineFinder
-      ComboHitCollection : "makePH"
+      ComboHitCollection : "makeSH"
       TimeClusterCollection : "SimpleTimeCluster"
       NSteps: 0
       NTSteps: 0
@@ -78,7 +78,7 @@ CosmicReco : { @table::CosmicReco
 
    CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
       module_type                   : CosmicTrackFinder
-      ComboHitCollection     : "makePH"
+      ComboHitCollection     : "makeSH"
       TimeClusterCollection  : "SimpleTimeCluster"
       LineFinderTag          : "LineFinder"
       minNStrawHits          : 2
@@ -167,7 +167,7 @@ CosmicReco : { @table::CosmicReco
       module_type : CosmicTrackDiag
       StrawHitCollection : "makeSH"
       ComboHitCollection : "makeSH"
-      PanelHitCollection : "makePH"
+      PanelHitCollection : "makeSH"
       TimeClusterCollection : SimpleTimeCluster
       StrawDigiMCCollection : "compressDigiMCs"
       ProtonBunchTimeMC : "EWMProducer"
