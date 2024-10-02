@@ -234,12 +234,12 @@ namespace mu2e {
         auto fitpart = fpart_;
 
 
-        float midy = 0;
+        XYZVectorF trackmid(0,0,0);
         for (size_t i=0;i<cseed.hits().size();i++){
           auto hiti = cseed.hits()[i];
-          midy += hiti.pos().y();
+          trackmid += hiti.pos();
         }
-        midy /= cseed.hits().size();
+        trackmid /= cseed.hits().size();
 
         XYZVectorF trackpos = cseed.track().FitEquation.Pos;
         XYZVectorF trackdir = cseed.track().FitEquation.Dir.Unit();
@@ -247,14 +247,20 @@ namespace mu2e {
           trackdir *= -1;
 
         // put direction as tangent to circle at mid y position
-        trackpos += (midy - trackpos.y())/trackdir.y() * trackdir;
+        double dist = 0;
+        if (fabs(trackdir.y()) > 0.01)
+          dist = (trackmid.y() - trackpos.y())/trackdir.y();
+        else if (fabs(trackdir.x()) > 0.01)
+          dist = (trackmid.x() - trackpos.x())/trackdir.x();
+        trackpos += dist * trackdir;
+        double t0 = cseed.t0().t0() + dist/299.9;
         
         // take the magnetic field at track center as nominal
         auto bnom = kkbf_->fieldVect(VEC3(trackpos.x(),trackpos.y(),trackpos.z()));
 
         XYZVectorF trackmom = trackdir * seedMom_;
 
-        auto temptraj = KTRAJ(KinKal::VEC4(trackpos.x(),trackpos.y(),trackpos.z(),cseed.t0().t0()),KinKal::MOM4(trackmom.x(),trackmom.y(),trackmom.z(),mass_), seedCharge_, bnom.Z());
+        auto temptraj = KTRAJ(KinKal::VEC4(trackpos.x(),trackpos.y(),trackpos.z(),t0),KinKal::MOM4(trackmom.x(),trackmom.y(),trackmom.z(),mass_), seedCharge_, bnom.Z());
         KinKal::Parameters kkpars(temptraj.params().parameters(),seedcov_);
         auto seedtraj = KTRAJ(kkpars,mass_,seedCharge_,bnom.Z(),trange);
 
