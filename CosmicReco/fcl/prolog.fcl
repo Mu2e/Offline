@@ -93,6 +93,13 @@ CosmicReco : { @table::CosmicReco
       MinuitPrecision        : -1
       CosmicTrackFit         : { @table::CosmicReco.CosmicTrackFit }
    }
+
+   dummyMakePH : { 
+      module_type : RecoNullProducer
+   }
+   dummyMakeSTH : { 
+      module_type : RecoNullProducer
+   }
 }
 
 CosmicReco : { @table::CosmicReco
