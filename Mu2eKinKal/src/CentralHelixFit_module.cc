@@ -260,8 +260,14 @@ namespace mu2e {
 
         XYZVectorF trackmom = trackdir * seedMom_;
 
-        auto temptraj = KTRAJ(KinKal::VEC4(trackpos.x(),trackpos.y(),trackpos.z(),t0),KinKal::MOM4(trackmom.x(),trackmom.y(),trackmom.z(),mass_), seedCharge_, bnom.Z());
-        KinKal::Parameters kkpars(temptraj.params().parameters(),seedcov_);
+        KinKal::Parameters kkpars;
+        try {
+          auto temptraj = KTRAJ(KinKal::VEC4(trackpos.x(),trackpos.y(),trackpos.z(),t0),KinKal::MOM4(trackmom.x(),trackmom.y(),trackmom.z(),mass_), seedCharge_, bnom.Z());
+          kkpars = KinKal::Parameters(temptraj.params().parameters(),seedcov_);
+        } catch (std::invalid_argument const& error) {
+          if(print_ > 0) std::cout << "CentralHelixFit Seed Error " << error.what() << std::endl;
+          continue;
+        }
         auto seedtraj = KTRAJ(kkpars,mass_,seedCharge_,bnom.Z(),trange);
 
         // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
@@ -311,7 +317,7 @@ namespace mu2e {
             kktrkcol->push_back(kktrk.release());
           }
 
-        } catch (std::exception const& error) {
+        } catch (std::invalid_argument const& error) {
           if(print_ > 0) std::cout << "CentralHelixFit Error " << error.what() << std::endl;
         }
       }
