@@ -109,6 +109,7 @@ namespace mu2e {
     fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
     fhicl::Atom<double> seedMom { Name("SeedMomentum"), Comment("Seed momentum") };
     fhicl::Atom<int> seedCharge { Name("SeedCharge"), Comment("Seed charge") };
+    fhicl::Sequence<float> parconst { Name("ParameterConstraints"), Comment("External constraint on parameters to seed values (rms, various units)") };
   };
 
   struct GlobalConfig {
@@ -151,6 +152,7 @@ namespace mu2e {
       bool fixedfield_; //
       double seedMom_;
       int seedCharge_;
+      std::array<double,KinKal::NParams()> paramconstraints_;
     };
 
   CentralHelixFit::CentralHelixFit(const Parameters& settings) : art::EDProducer{settings},
@@ -181,6 +183,10 @@ namespace mu2e {
       for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
         seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
       }
+      auto const& parerrors = settings().modSettings().parconst();
+      for (size_t ipar=0;ipar<KinKal::NParams();ipar++)
+        paramconstraints_[ipar] = parerrors[ipar]; 
+
       if(print_ > 0) std::cout << "Fit " << config_ << "Extension " << exconfig_;
       double bz(0.0);
       if(settings().modSettings().fixedBField(bz)){
@@ -223,21 +229,17 @@ namespace mu2e {
 
       for (size_t index=0;index<cseedcol.size();++index){
         const auto& cseed = cseedcol[index];
-        auto zcent = Mu2eKinKal::zMid(cseed.hits());
-        // take the magnetic field at the helix center as nominal
-        auto bnom = kkbf_->fieldVect(VEC3(0,0,zcent));
 
-        double bz = bnom.Z();
         auto trange = Mu2eKinKal::timeBounds(cseed.hits());
         auto fitpart = fpart_;
 
 
-        float midy = 0;
+        XYZVectorF trackmid(0,0,0);
         for (size_t i=0;i<cseed.hits().size();i++){
           auto hiti = cseed.hits()[i];
-          midy += hiti.pos().y();
+          trackmid += hiti.pos();
         }
-        midy /= cseed.hits().size();
+        trackmid /= cseed.hits().size();
 
         XYZVectorF trackpos = cseed.track().FitEquation.Pos;
         XYZVectorF trackdir = cseed.track().FitEquation.Dir.Unit();
@@ -245,13 +247,28 @@ namespace mu2e {
           trackdir *= -1;
 
         // put direction as tangent to circle at mid y position
-        trackpos += (midy - trackpos.y())/trackdir.y() * trackdir;
+        double dist = 0;
+        if (fabs(trackdir.y()) > 0.01)
+          dist = (trackmid.y() - trackpos.y())/trackdir.y();
+        else if (fabs(trackdir.x()) > 0.01)
+          dist = (trackmid.x() - trackpos.x())/trackdir.x();
+        trackpos += dist * trackdir;
+        double t0 = cseed.t0().t0() + dist/299.9;
+        
+        // take the magnetic field at track center as nominal
+        auto bnom = kkbf_->fieldVect(VEC3(trackpos.x(),trackpos.y(),trackpos.z()));
 
         XYZVectorF trackmom = trackdir * seedMom_;
 
-        auto temptraj = KTRAJ(KinKal::VEC4(trackpos.x(),trackpos.y(),trackpos.z(),cseed.t0().t0()),KinKal::MOM4(trackmom.x(),trackmom.y(),trackmom.z(),mass_), seedCharge_, bz);
-        KinKal::Parameters kkpars(temptraj.params().parameters(),seedcov_);
-        auto seedtraj = KTRAJ(kkpars,mass_,seedCharge_,bz,trange);
+        KinKal::Parameters kkpars;
+        try {
+          auto temptraj = KTRAJ(KinKal::VEC4(trackpos.x(),trackpos.y(),trackpos.z(),t0),KinKal::MOM4(trackmom.x(),trackmom.y(),trackmom.z(),mass_), seedCharge_, bnom.Z());
+          kkpars = KinKal::Parameters(temptraj.params().parameters(),seedcov_);
+        } catch (std::invalid_argument const& error) {
+          if(print_ > 0) std::cout << "CentralHelixFit Seed Error " << error.what() << std::endl;
+          continue;
+        }
+        auto seedtraj = KTRAJ(kkpars,mass_,seedCharge_,bnom.Z(),trange);
 
         // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
         PTRAJ pseedtraj(seedtraj);
@@ -277,7 +294,7 @@ namespace mu2e {
           seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
 
           // create and fit the track
-          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
+          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
           // Check the fit
           auto goodfit = goodFit(*kktrk);
           // if we have an extension schedule, extend.
@@ -300,7 +317,7 @@ namespace mu2e {
             kktrkcol->push_back(kktrk.release());
           }
 
-        } catch (std::exception const& error) {
+        } catch (std::invalid_argument const& error) {
           if(print_ > 0) std::cout << "CentralHelixFit Error " << error.what() << std::endl;
         }
       }

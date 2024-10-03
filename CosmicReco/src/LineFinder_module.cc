@@ -163,7 +163,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
     if (found_all)
       break;
     Straw const& strawi = tracker->getStraw(shC[iloc].strawId());
-    for (size_t j=i+1;j<shiv.size();j++){
+    for (size_t j=shiv.size()-1;j>i;j--){
       size_t jloc = shiv[j];
       if (found_all)
         break;
@@ -211,7 +211,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
         }
       }
       if (n > _nmax){
-        i = shiv.size();j = shiv.size();
+        i = shiv.size();j = 1;
       }
     }
   }
