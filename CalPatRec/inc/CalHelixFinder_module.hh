@@ -4,7 +4,7 @@
 #ifndef CalPatRec_CalHelixFinder_module
 #define CalPatRec_CalHelixFinder_module
 
-#include "art/Framework/Core/EDFilter.h"
+#include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileService.h"
 
@@ -71,7 +71,7 @@ namespace mu2e {
   class Tracker;
   class ModuleHistToolBase;
 
-  class CalHelixFinder : public art::EDFilter {
+  class CalHelixFinder : public art::EDProducer {
   protected:
 //-----------------------------------------------------------------------------
 // data members
@@ -81,7 +81,6 @@ namespace mu2e {
     int                                   _diagLevel;
     int                                   _debugLevel;
     int                                   _printfreq;
-    int                                   _useAsFilter; //allows to use the module as a produer or as a filter
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
@@ -135,7 +134,6 @@ namespace mu2e {
       fhicl::Atom<int>                           diagLevel{            Name("diagLevel"),                  Comment("Diag"),0 };
       fhicl::Atom<int>                           debugLevel{           Name("debugLevel"),                 Comment("Debug"),0 };
       fhicl::Atom<int>                           printfreq{            Name("printFrequency"),                  Comment("Print Frequency") };
-      fhicl::Atom<int>                           useAsFilter{          Name("useAsFilter"),                Comment("Use As Filter") };
       fhicl::Atom<std::string>                   shLabel{              Name("StrawHitCollectionLabel"),                    Comment("StrawHit Collection Label") };
       fhicl::Atom<std::string>                   timeclLabel{          Name("TimeClusterCollectionLabel"),                Comment("TimeCluster Collection Label") };
       fhicl::Atom<int>                           minNHitsTimeCluster{  Name("minNHitsTimeCluster"),        Comment("Min NHits in TimeCluster") };
@@ -150,12 +148,12 @@ namespace mu2e {
 
     enum fitType {helixFit=0,seedFit,kalFit};
 
-    explicit CalHelixFinder(const art::EDFilter::Table<Config>& config);
+    explicit CalHelixFinder(const art::EDProducer::Table<Config>& config);
     virtual ~CalHelixFinder();
 
     virtual void beginJob();
-    virtual bool beginRun(art::Run&   run   );
-    virtual bool filter  (art::Event& event );
+    virtual void beginRun(art::Run&   run   );
+    virtual void produce (art::Event& event );
     virtual void endJob();
 //-----------------------------------------------------------------------------
 // helper functions

@@ -40,11 +40,10 @@ namespace mu2e {
 // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
 //-----------------------------------------------------------------------------
   CalTimePeakFinder::CalTimePeakFinder(fhicl::ParameterSet const& pset) :
-    art::EDFilter{pset},
+    art::EDProducer{pset},
     _diagLevel       (pset.get<int>            ("diagLevel"                      )),
     _debugLevel      (pset.get<int>            ("debugLevel"                     )),
     _printfreq       (pset.get<int>            ("printFrequency"                 )),
-    _useAsFilter     (pset.get<int>            ("useAsFilter"                    )),
     _shLabel         (pset.get<string>         ("StrawHitCollectionLabel"        )),
     _ccmLabel        (pset.get<string>         ("caloClusterModuleLabel"         )),
     //    _hsel            (pset.get<vector<string> >("HitSelectionBits"               )),
@@ -89,14 +88,12 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  bool CalTimePeakFinder::beginRun(art::Run& ) {
+  void CalTimePeakFinder::beginRun(art::Run& ) {
     mu2e::GeomHandle<mu2e::Tracker> th;
     _tracker = th.get();
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     _calorimeter = ch.get();
-
-    return true;
   }
 
 //-----------------------------------------------------------------------------
@@ -129,8 +126,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // event entry point
 //-----------------------------------------------------------------------------
-  bool CalTimePeakFinder::filter(art::Event& event) {
-    const char*               oname = "CalTimePeakFinder::filter";
+  void CalTimePeakFinder::produce(art::Event& event) {
+    const char*               oname = "CalTimePeakFinder::produce";
 
                                         // event printout
     _iev     = event.id().event();
@@ -147,8 +144,6 @@ namespace mu2e {
     if (ok) findTimePeaks(*_data._tcColl);
     else    printf("%s ERROR: No straw hits found in event %i\n",oname,_iev);
 
-    int ntc = tcColl->size();
-
     if (_diagLevel > 0) {
 //-----------------------------------------------------------------------------
 // diagnostics followed by memory cleanup
@@ -160,12 +155,6 @@ namespace mu2e {
 // put reconstructed time peaks into the event record
 //-----------------------------------------------------------------------------
     event.put(std::move(tcColl));
-//-----------------------------------------------------------------------------
-// filtering, if requested
-//-----------------------------------------------------------------------------
-    if (_useAsFilter == 0) return true;
-
-    return (ntc > 0) ;
   }
 //-----------------------------------------------------------------------------
 //
