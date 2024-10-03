@@ -12,13 +12,10 @@ namespace mu2e {
     //    = bfmgr_.getBField(vpoint_mu2e);
     if(bfmgr_.getBFieldWithStatus(vpoint_mu2e,field))
       return VEC3(field);
-    else
 // see if there's no maps; that says this is the no-field case
-    if(bfmgr_.getInnerMaps().size() == 0){
-      static const VEC3 nullfield(0.0,0.0,0.0);
-      return nullfield;
-    } else
-      throw cet::exception("RECO")<<"mu2e::KKBfield: out-of-range access point "<< vpoint_mu2e << endl;
+// FIXME need to deal with case when outside all maps
+    static const VEC3 nullfield(0.0,0.0,0.0);
+    return nullfield;
   }
 
   Grad KKBField::fieldGrad(VEC3 const& position) const {
