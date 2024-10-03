@@ -6,13 +6,12 @@
 
 #ifdef __GCCXML__A
 namespace art {
-  //  class EDProducer;
-  class EDFilter;
+  class EDProducer;
   class Run;
   class Event;
 };
 #else
-#  include "art/Framework/Core/EDFilter.h"
+#  include "art/Framework/Core/EDProducer.h"
 #  include "art/Framework/Principal/Event.h"
 #endif
 
@@ -72,7 +71,7 @@ namespace mu2e {
   class Tracker;
   class ModuleHistToolBase;
 
-  class CalTimePeakFinder: public art::EDFilter {
+  class CalTimePeakFinder: public art::EDProducer {
   protected:
 //-----------------------------------------------------------------------------
 // data members
@@ -82,7 +81,6 @@ namespace mu2e {
     int              _diagLevel;
     int              _debugLevel;
     int              _printfreq;
-    int              _useAsFilter;      // allows to use the module as a produer or as a filter
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
@@ -135,8 +133,8 @@ namespace mu2e {
     virtual ~CalTimePeakFinder();
 
     virtual void beginJob ();
-    virtual bool beginRun (art::Run&);
-    virtual bool filter   (art::Event& e);
+    virtual void beginRun (art::Run&);
+    virtual void produce  (art::Event& e);
     virtual void endJob   ();
 //-----------------------------------------------------------------------------
 // helper functions
