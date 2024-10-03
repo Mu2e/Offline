@@ -67,6 +67,12 @@ public:
     GeometryService(const Parameters&, art::ActivityRegistry&);
     ~GeometryService();
 
+    // This is not copyable or assignable.
+    GeometryService(GeometryService const& ) = delete;
+    GeometryService(GeometryService&&      ) = delete;
+    GeometryService& operator=(GeometryService const& ) = delete;
+    GeometryService& operator=(GeometryService&&      ) = delete;
+
     // Functions registered for callbacks.
     void preBeginRun( art::Run const &run);
     void postEndJob();
@@ -172,10 +178,6 @@ private:
 
     // Keep a count of how many runs we have seen.
     int _run_count = 0;
-
-    // This is not copyable or assignable - private and unimplemented.
-    GeometryService const& operator=(GeometryService const& rhs);
-    GeometryService(GeometryService const& rhs);
 
     // Don't need to expose definition of private template in header
     template <typename DET> void addDetector(std::unique_ptr<DET> d);

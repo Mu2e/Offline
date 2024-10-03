@@ -38,6 +38,15 @@ namespace mu2e {
 
   public:
 
+    ~STM() override = default;
+
+    // delete automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
+    STM( STM const& ) = delete;
+    STM( STM const&& ) = delete;
+    STM& operator= ( STM const& ) = delete;
+    STM& operator= ( STM&&      ) = delete;
+
+
     STMDownstreamEnvelope  const * getSTMDnStrEnvPtr()       const { return _pSTMDnStrEnvParams.get(); }
     PermanentMagnet  const * getSTMMagnetPtr()               const { return _pSTMMagnetParams.get(); }
     TransportPipe    const * getSTMTransportPipePtr()        const { return _pSTMTransportPipeParams.get(); }
@@ -73,10 +82,6 @@ namespace mu2e {
 
     // The class should only be constructed via STM::STMMaker.
     STM(){};
-
-    // hide automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
-    STM( STM const & );
-    STM const & operator= ( STM const & );
 
     std::unique_ptr<STMDownstreamEnvelope>  _pSTMDnStrEnvParams;
     std::unique_ptr<PermanentMagnet>  _pSTMMagnetParams;

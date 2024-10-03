@@ -25,6 +25,14 @@ namespace mu2e {
 
   public:
 
+    ~MBS() override = default;
+
+    // hide automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
+    MBS( MBS const& ) = delete;
+    MBS( MBS&&      ) = delete;
+    MBS& operator=( MBS const& ) = delete;
+    MBS& operator=( MBS&&      ) = delete;
+
     // Volume names a per figure 8.29 in the CDR <== somewhat outdated now
     // MBSM is mother volume
     // BSTS is stainless steel pipe in three sections
@@ -45,7 +53,7 @@ namespace mu2e {
     Polycone const * getCLV2Ptr()     const { return _pCLV2Params.get();     }
     Tube     const * getCLV2ABSPtr()  const { return _pCLV2ABSParams.get();  }
     Tube     const * getCalRingShieldPtr()  const { return _pCalShieldRingParams.get();  }
-    int      const   getVersion()     const { return _Version;               }
+    int      const   getVersion()     const { return _version;               }
 
     CLHEP::Hep3Vector const & originInMu2e() const { return _originInMu2e; };
 
@@ -79,10 +87,6 @@ namespace mu2e {
     // The class should only be constructed via MBS::MBSMaker.
     MBS(){};
 
-    // hide automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
-    MBS( MBS const & );
-    MBS const & operator= ( MBS const & );
-
     // several concentric components
 
     std::unique_ptr<Polycone> _pMBSMParams; // mother envelope
@@ -98,26 +102,26 @@ namespace mu2e {
     std::unique_ptr<Tube>     _pCLV2ABSParams;
     std::unique_ptr<Tube>     _pCalShieldRingParams; //Shield to protect the calorimeter
 
-    double _rMax;
-    double _rMin;
-    double _zMax;
-    double _totLength;
+    double _rMax = 0;
+    double _rMin = 0;
+    double _zMax = 0;
+    double _totLength = 0;
 
     CLHEP::Hep3Vector   _originInMu2e;
 
-    int    _Version;  // added DNo Brown
+    int    _version = 0;
     std::vector<CLHEP::Hep3Vector> _holeCentersInSteel;
     std::vector<CLHEP::Hep3Vector> _holeCentersInUpstreamPoly;
     std::vector<CLHEP::Hep3Vector> _holeCentersInDownstreamPoly;
-    double _holeXDimInSteel;
-    double _holeYDimInSteel;
-    double _holeZDimInSteel;
-    double _holeXDimInUpPoly;
-    double _holeYDimInUpPoly;
-    double _holeZDimInUpPoly;
-    double _holeXDimInDownPoly;
-    double _holeYDimInDownPoly;
-    double _holeZDimInDownPoly;
+    double _holeXDimInSteel = 0.;
+    double _holeYDimInSteel = 0.;
+    double _holeZDimInSteel = 0.;
+    double _holeXDimInUpPoly = 0.;
+    double _holeYDimInUpPoly = 0.;
+    double _holeZDimInUpPoly = 0.;
+    double _holeXDimInDownPoly = 0.;
+    double _holeYDimInDownPoly = 0.;
+    double _holeZDimInDownPoly = 0.;
 
   };
 
