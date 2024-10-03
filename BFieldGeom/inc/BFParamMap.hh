@@ -28,7 +28,7 @@ namespace mu2e {
        public:
         friend class BFieldManagerMaker;
 
-        BFParamMap(std::string filename,
+        BFParamMap(std::string const& filename,
                    double xmin,
                    double xmax,
                    double ymin,
@@ -40,19 +40,17 @@ namespace mu2e {
                    bool warnIfOutside = false)
             : BFMap(filename, xmin, xmax, ymin, ymax, zmin, zmax, atype, scale, warnIfOutside){};
 
-        ~BFParamMap(){};
+        bool getBFieldWithStatus(const CLHEP::Hep3Vector&, CLHEP::Hep3Vector&) const override;
 
-        virtual bool getBFieldWithStatus(const CLHEP::Hep3Vector&, CLHEP::Hep3Vector&) const;
+        bool isValid(const CLHEP::Hep3Vector& point) const override;
 
-        virtual bool isValid(const CLHEP::Hep3Vector& point) const;
-
-        virtual void print(std::ostream& os) const;
+        void print(std::ostream& os) const override;
 
        private:
         // objects used to store the fit parameters
-        int _ns;
-        int _ms;
-        double _Reff;
+        int _ns = 0;
+        int _ms = 0;
+        double _Reff =0.;
         vector<vector<double> > _As;
         vector<vector<double> > _Bs;
         vector<double> _Ds;

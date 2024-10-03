@@ -15,7 +15,7 @@ cet_build_plugin(STMResamplingProducer art::module
         Offline::MCDataProducts
 )
 cet_build_plugin(STMResamplingFilter art::module
-    REG_SOURCE src/STMResamplingProducer_module.cc
+    REG_SOURCE src/STMResamplingFilter_module.cc
     LIBRARIES REG
         Offline::MCDataProducts
 )

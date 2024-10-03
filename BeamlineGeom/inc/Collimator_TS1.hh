@@ -20,7 +20,7 @@ namespace mu2e {
     CollimatorTS1() : Collimator() {}
 
     // use compiler-generated copy c'tor, copy assignment, and d'tor
-    CollimatorTS1(double halfZ, CLHEP::Hep3Vector origin) :
+    CollimatorTS1(double halfZ, CLHEP::Hep3Vector const& origin) :
       Collimator( halfZ, origin) {}
 
     double rIn1() const { return _rIn1; }

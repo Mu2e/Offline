@@ -27,7 +27,6 @@ namespace mu2e {
 
            Disk(int id, double rin, double rout, double rCrystalIn, double rCrystalOut, double nominalCellSize,
                 int offset, const CLHEP::Hep3Vector& diskOriginToCrystalOrigin);
-           ~Disk(){};
 
            int                             id()                     const {return id_;}
 

@@ -31,37 +31,35 @@ namespace mu2e {
         public:
 
             DiskCalorimeter();
-            virtual ~DiskCalorimeter() {}
-
 
             // calo section
-            virtual unsigned                  nDisk()     const  {return nDisks_;}
-            virtual const Disk&               disk(int i) const  {return *disks_.at(i);}
+            unsigned                  nDisk()     const  override {return nDisks_;}
+            const Disk&               disk(int i) const  override {return *disks_.at(i);}
 
 
               // crystal section
-            virtual int                       nCrystal()     const  {return fullCrystalList_.size();}
-            virtual const Crystal&            crystal(int i) const  {return *fullCrystalList_.at(i);}
+            int                       nCrystal()     const override {return int(fullCrystalList_.size());}
+            const Crystal&            crystal(int i) const override {return *fullCrystalList_.at(i);}
 
 
             // calorimeter geometry information
-            virtual const CaloInfo&           caloInfo()     const  {return caloInfo_;}
-            virtual const CaloGeomUtil&       geomUtil()     const  {return geomUtil_;}
-                          CaloInfo&           caloInfo()            {return caloInfo_;}
-                          CaloGeomUtil&       geomUtil()            {return geomUtil_;}
+            const CaloInfo&           caloInfo()     const override {return caloInfo_;}
+            const CaloGeomUtil&       geomUtil()     const override {return geomUtil_;}
+                  CaloInfo&           caloInfo()                    {return caloInfo_;}
+                  CaloGeomUtil&       geomUtil()                    {return geomUtil_;}
 
 
 
               // neighbors, indexing
-            virtual const std::vector<int>&  neighbors(int crystalId, bool rawMap)     const  {return fullCrystalList_.at(crystalId)->neighbors(rawMap);}
-            virtual const std::vector<int>&  nextNeighbors(int crystalId, bool rawMap) const  {return fullCrystalList_.at(crystalId)->nextNeighbors(rawMap);}
-            virtual       std::vector<int>   neighborsByLevel(int crystalId, int level, bool rawMap) const;
-            virtual int                      crystalIdxFromPosition(const CLHEP::Hep3Vector& pos) const;
-            virtual int                      nearestIdxFromPosition(const CLHEP::Hep3Vector& pos) const;
+            const std::vector<int>&  neighbors(int crystalId, bool rawMap)     const override {return fullCrystalList_.at(crystalId)->neighbors(rawMap);}
+            const std::vector<int>&  nextNeighbors(int crystalId, bool rawMap) const override {return fullCrystalList_.at(crystalId)->nextNeighbors(rawMap);}
+            std::vector<int>   neighborsByLevel(int crystalId, int level, bool rawMap) const override;
+            int                      crystalIdxFromPosition(const CLHEP::Hep3Vector& pos) const override;
+            int                      nearestIdxFromPosition(const CLHEP::Hep3Vector& pos) const override;
 
 
             // get to know me!
-            virtual void                     print(std::ostream &os = std::cout) const;
+            void                     print(std::ostream &os = std::cout) const override;
 
 
         private:

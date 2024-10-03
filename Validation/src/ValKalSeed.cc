@@ -118,9 +118,10 @@ namespace mu2e {
       double p_pri(0.0);
       double p_mc = mcTrkP(event,vdid,p_pri);
       SurfaceId sid = _vdmap[vdid];
-      auto ikinter = ks.intersection(sid);
+      auto kintercol = ks.intersections(sid);
       double ksCharge = ptable->particle(ks.particle()).charge();
-      if(ikinter != ks.intersections().end()){
+      if(kintercol.size() > 0){
+        auto ikinter = kintercol.front(); // just sample the 1st intersection if there are >1
         auto mom3 = ikinter->momentum3();
         double p = mom3.R();
         _hp->Fill(p);
