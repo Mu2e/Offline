@@ -38,7 +38,6 @@ Mu2eKinKal : {
     MaxDStraw : 2 # integer (straw)
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
-    SampleTimeBuffer : 0.0 # sample time buffer (ns)
     SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
@@ -285,7 +284,7 @@ Mu2eKinKal : {
     ToTrackerEnds : true
     Upstream : true
     BackToTracker : false
-    ToOPA : false
+    ToOPA : true
   }
 
   CENTRALHELIX : {
@@ -330,7 +329,7 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
-      SampleSurfaces : ["TT_Front","TT_Mid","TT_Back","ST_Outer","ST_Back","OPA","TSDA"]
+      SampleSurfaces : ["ST_Outer","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
     }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
@@ -354,7 +353,6 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
-      SampleTimeBuffer : 100
       # DNB I don't know where this time offset difference WRT helical fits comes from. If it's physical, we will need a better
       # mechanism to deal with it in real data
       CaloTrackerTimeOffset: -2.43
@@ -388,7 +386,6 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
-      SampleTimeBuffer : 100
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHSEEDEXT
@@ -401,7 +398,6 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
-      SampleTimeBuffer : 100
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : {
@@ -478,5 +474,9 @@ Mu2eKinKal.producers.KKUmuM.ModuleSettings.FitParticle : 13
 Mu2eKinKal.producers.KKUmuM.FitDirection : 1
 Mu2eKinKal.producers.KKUmuP.ModuleSettings.FitParticle : -13
 Mu2eKinKal.producers.KKUmuP.FitDirection : 1
-
+# extrapolate upstream fits back to the tracker
+physics.producers.KKUmuM.Extrapolation.BackToTracker : true
+physics.producers.KKUmuP.Extrapolation.BackToTracker : true
+physics.producers.KKUeM.Extrapolation.BackToTracker : true
+physics.producers.KKUeP.Extrapolation.BackToTracker : true
 END_PROLOG
