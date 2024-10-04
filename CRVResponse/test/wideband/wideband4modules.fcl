@@ -9,7 +9,7 @@ services: @local::Services.SimAndReco
 
 physics: {
   producers : {
-    @table::CommonMC.producers
+    @table::CommonMC.DigiProducers
     @table::Common.producers
     @table::Primary.producers
     cosmicTimeOffset : @local::Cosmic.cosmicTimeOffset
@@ -45,6 +45,7 @@ physics: {
       crvCoincidenceClusterModuleLabel   : "CrvCoincidenceClusterFinder"
       crvCoincidenceClusterMCModuleLabel : "CrvCoincidenceClusterMatchMC"
       minTrackFitPEs                     : 5 # PEs
+      triggerSectorTypes                 : [5,6]
     }
   }
 
@@ -80,11 +81,12 @@ outputs:
 
 
 physics.producers.generate : @local::Cosmic.generateCRY
-physics.producers.generate.inputFile : "Offline/CRVResponse/test/wideband/widebandCRYconfig_v2.txt"
+physics.producers.generate.inputFile : "Offline/CRVResponse/test/wideband/widebandCRYconfig_v1.txt"
 physics.producers.cosmicTimeOffset.intervalEnd : 99000
 physics.producers.cosmicTimeOffset.cosmicModuleLabel : "generate"
 physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
 physics.producers.g4run.inputs.primaryTag : cosmicTimeOffset
+#physics.producers.g4run.debug.writeGDML: true
 #physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicNoField
 physics.producers.g4run.Mu2eG4CommonCut:
                  {
@@ -98,13 +100,15 @@ physics.producers.CrvPhotons.crvStepModuleLabels    : ["CrvSteps"]
 physics.producers.CrvPhotons.crvStepProcessNames    : ["CrvWideband4ModulesSim"]
 physics.producers.CrvPhotons.photonYieldVariationScale    : 0.02   //gaussian distribution with sigma equal to 2.0% of the nominal photon yield
 physics.producers.CrvPhotons.photonYieldScaleFactor       : 1.00
-physics.producers.CrvPhotons.CRVSectors                   : [ "W1", "W2", "W3", "W4"]
-physics.producers.CrvPhotons.reflectors                   : [    0,    0,    0,    0]
-physics.producers.CrvPhotons.scintillationYields          : [39794,39794,39794,39794]
+physics.producers.CrvPhotons.CRVSectors                   : [ "W1", "W2", "W3", "W4", "T1", "T2"]
+physics.producers.CrvPhotons.reflectors                   : [   0,    0,    0,    0,    1,    1 ]
+physics.producers.CrvPhotons.scintillationYields          : [39794,39794,39794,39794,39794,39794]
 physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0/LookupTable_6000_0",
                                                              "CRVConditions/v6_0/LookupTable_6000_0",
                                                              "CRVConditions/v6_0/LookupTable_6000_0",
-                                                             "CRVConditions/v6_0/LookupTable_6000_0"]
+                                                             "CRVConditions/v6_0/LookupTable_6000_0",
+                                                             "CRVConditions/v6_0/LookupTable_2370_1",
+                                                             "CRVConditions/v6_0/LookupTable_2370_1"]
 physics.producers.CrvSiPMCharges.CrossTalkProb            : 0.04
 physics.producers.CrvSiPMCharges.ThermalRate              : 0.0  #to speed up things
 physics.producers.CrvCoincidenceClusterFinder.verboseLevel: 0
@@ -161,12 +165,38 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
           maxSlopeDifference : 4
           coincidenceLayers : 3
           minClusterPEs : 0
+        },
+        {  #irrelevant, but coincidence finder requires some numbers
+          CRVSector : "T1"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          minOverlapTimeAdjacentPulses : 30
+          minOverlapTime : 30
+          minSlope :-11
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+          minClusterPEs : 0
+        },
+        {  #irrelevant, but coincidence finder requires some numbers
+          CRVSector : "T2"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          minOverlapTimeAdjacentPulses : 30
+          minOverlapTime : 30
+          minSlope :-11
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+          minClusterPEs : 0
         }
       ]
 
-services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband4modules_v2.txt"
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband4modules2sides2triggers_v20.txt"
 services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
-services.DbService.textFile : ["Offline/CRVConditions/data/status_wideband4modules.txt","Offline/CRVConditions/data/photonyield_wideband4modules.txt", "Offline/CRVConditions/data/calib_wideband4modules.txt"]
+services.DbService.textFile : ["Offline/CRVConditions/data/status_wideband4modules.txt","Offline/CRVConditions/data/photonyield_wideband4modules2sides2triggers.txt", "Offline/CRVConditions/data/calib_wideband4modules2sides2triggers.txt"]
 
 services.SeedService.baseSeed : @local::Common.BaseSeed
 services.TFileService.fileName : "nts.owner.CRV_wideband_cosmics-mc.configuration.sequencer.root"
