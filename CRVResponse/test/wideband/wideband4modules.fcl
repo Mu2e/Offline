@@ -81,7 +81,7 @@ outputs:
 
 
 physics.producers.generate : @local::Cosmic.generateCRY
-physics.producers.generate.inputFile : "Offline/CRVResponse/test/wideband/widebandCRYconfig_v1.txt"
+physics.producers.generate.inputFile : "Offline/CRVResponse/test/wideband/widebandCRYconfig_v5.txt"
 physics.producers.cosmicTimeOffset.intervalEnd : 99000
 physics.producers.cosmicTimeOffset.cosmicModuleLabel : "generate"
 physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
@@ -107,8 +107,8 @@ physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0
                                                              "CRVConditions/v6_0/LookupTable_6000_0",
                                                              "CRVConditions/v6_0/LookupTable_6000_0",
                                                              "CRVConditions/v6_0/LookupTable_6000_0",
-                                                             "CRVConditions/v6_0/LookupTable_2370_1",
-                                                             "CRVConditions/v6_0/LookupTable_2370_1"]
+                                                             "CRVConditions/v6_0/LookupTable_1045_1",
+                                                             "CRVConditions/v6_0/LookupTable_1045_1"]
 physics.producers.CrvSiPMCharges.CrossTalkProb            : 0.04
 physics.producers.CrvSiPMCharges.ThermalRate              : 0.0  #to speed up things
 physics.producers.CrvCoincidenceClusterFinder.verboseLevel: 0
@@ -194,7 +194,7 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
         }
       ]
 
-services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband4modules2sides2triggers_v20.txt"
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband4modules_v18.txt"
 services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
 services.DbService.textFile : ["Offline/CRVConditions/data/status_wideband4modules.txt","Offline/CRVConditions/data/photonyield_wideband4modules2sides2triggers.txt", "Offline/CRVConditions/data/calib_wideband4modules2sides2triggers.txt"]
 

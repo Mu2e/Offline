@@ -1,14 +1,14 @@
-// Use with Offline/CRVResponse/test/wideband/widebandCRYconfig_v1.txt
+// Use with Offline/CRVResponse/test/wideband/widebandCRYconfig_v5.txt
 #include "Offline/Mu2eG4/geom/geom_common.txt"
 
 bool hasSTM = false; //to prevent errors from the Offline environment
 
-string crs.name = "wideband4modules2sides2triggers"; // same as channelMap name
+string crs.name = "wideband4modules"; // same as channelMap name
 
-int   crs.nSectors = 6;
+int   crs.nSectors = 4;
 int   crs.nLayers  = 4;
 
-vector<string>  crs.sectorNames = {"W1","W2","W3","W4","T1","T2"};
+vector<string>  crs.sectorNames = {"W1","W2","W3","W4"};
 
 
 double          crs.scintillatorBarThickness     =  19.78; //mm
@@ -25,95 +25,66 @@ double          crs.scintillatorBarLengthW1      =  6000;
 double          crs.scintillatorBarLengthW2      =  6000;
 double          crs.scintillatorBarLengthW3      =  6000;
 double          crs.scintillatorBarLengthW4      =  6000;
-double          crs.scintillatorBarLengthT1      =  2370;
-double          crs.scintillatorBarLengthT2      =  2370;
 
 int             crs.nModulesW1                   =   1;
 int             crs.nModulesW2                   =   1;
 int             crs.nModulesW3                   =   1;
 int             crs.nModulesW4                   =   1;
-int             crs.nModulesT1                   =   1;
-int             crs.nModulesT2                   =   1;
-
-int             crs.nLayersT1                    =   1;
-int             crs.nLayersT2                    =   1;
 
 int             crs.nCountersPerModuleW1         =   16;  //per layer
 int             crs.nCountersPerModuleW2         =   16;
 int             crs.nCountersPerModuleW3         =   16;
 int             crs.nCountersPerModuleW4         =   16;
-int             crs.nCountersPerModuleT1         =    1;
-int             crs.nCountersPerModuleT2         =    1;
 
-vector<double>  crs.firstCounterW1               =  {-3904.0,     0.0, 20000.0};
-vector<double>  crs.firstCounterW2               =  {-3904.0, -225.25, 20000.0};
-vector<double>  crs.firstCounterW3               =  {-3904.0, -450.50, 20000.0};
-vector<double>  crs.firstCounterW4               =  {-3904.0, -675.75, 20000.0};
-vector<double>  crs.firstCounterT1               =  {-5904.0,  110.87, 20400.0};
-vector<double>  crs.firstCounterT2               =  {-5904.0, -564.88, 20400.0};
+vector<double>  crs.firstCounterW1               =  {-3904.0,     -1500.00, 39000.0};
+vector<double>  crs.firstCounterW2               =  {-3904.0, -1725.25, 39000.0};
+vector<double>  crs.firstCounterW3               =  {-3904.0, -1950.50, 39000.0};
+vector<double>  crs.firstCounterW4               =  {-3904.0, -2175.75, 39000.0};
 
 vector<double>  crs.layerDirectionW1             =  {0, 1, 0};
 vector<double>  crs.layerDirectionW2             =  {0, 1, 0};
 vector<double>  crs.layerDirectionW3             =  {0, 1, 0};
 vector<double>  crs.layerDirectionW4             =  {0, 1, 0};
-vector<double>  crs.layerDirectionT1             =  {0, 1, 0};
-vector<double>  crs.layerDirectionT2             =  {0, 1, 0};
 
 vector<double>  crs.offsetDirectionW1            =  {0, 0, 1};
 vector<double>  crs.offsetDirectionW2            =  {0, 0, 1};
 vector<double>  crs.offsetDirectionW3            =  {0, 0, 1};
 vector<double>  crs.offsetDirectionW4            =  {0, 0, 1};
-vector<double>  crs.offsetDirectionT1            =  {1, 0, 0};
-vector<double>  crs.offsetDirectionT2            =  {1, 0, 0};
 
 vector<double>  crs.gapDirectionW1               =  {0, 0, 1};
 vector<double>  crs.gapDirectionW2               =  {0, 0, 1};
 vector<double>  crs.gapDirectionW3               =  {0, 0, 1};
 vector<double>  crs.gapDirectionW4               =  {0, 0, 1};
-vector<double>  crs.gapDirectionT1               =  {1, 0, 0};
-vector<double>  crs.gapDirectionT2               =  {1, 0, 0};
 
 int crs.precedingSectorForW1  = -1;   //no preceding sector
 int crs.precedingSectorForW2  = -1;
 int crs.precedingSectorForW3  = -1;
 int crs.precedingSectorForW4  = -1;
-int crs.precedingSectorForT1  = -1;
-int crs.precedingSectorForT2  = -1;
 
 int crs.sectorTypeW1  = 1;
 int crs.sectorTypeW2  = 2;
 int crs.sectorTypeW3  = 3;
 int crs.sectorTypeW4  = 4;
-int crs.sectorTypeT1  = 5;
-int crs.sectorTypeT2  = 6;
 
 bool crs.sipmsAtSide0W1 = true;
 bool crs.sipmsAtSide0W2 = true;
 bool crs.sipmsAtSide0W3 = true;
 bool crs.sipmsAtSide0W4 = true;
-bool crs.sipmsAtSide0T1 = true;
-bool crs.sipmsAtSide0T2 = true;
 
-bool crs.sipmsAtSide1W1 = true;
-bool crs.sipmsAtSide1W2 = true;
-bool crs.sipmsAtSide1W3 = true;
-bool crs.sipmsAtSide1W4 = true;
-bool crs.sipmsAtSide1T1 = true;
-bool crs.sipmsAtSide1T2 = true;
+bool crs.sipmsAtSide1W1 = false;
+bool crs.sipmsAtSide1W2 = false;
+bool crs.sipmsAtSide1W3 = false;
+bool crs.sipmsAtSide1W4 = false;
 
 int crs.FEBBoxesAtSide0W1  = 0;
 int crs.FEBBoxesAtSide0W2  = 0;
 int crs.FEBBoxesAtSide0W3  = 0;
 int crs.FEBBoxesAtSide0W4  = 0;
-int crs.FEBBoxesAtSide0T1  = 0;
-int crs.FEBBoxesAtSide0T2  = 0;
 
 int crs.FEBBoxesAtSide1W1  = 0;
 int crs.FEBBoxesAtSide1W2  = 0;
 int crs.FEBBoxesAtSide1W3  = 0;
 int crs.FEBBoxesAtSide1W4  = 0;
-int crs.FEBBoxesAtSide1T1  = 0;
-int crs.FEBBoxesAtSide1T2  = 0;
 
 //bool g4.doSurfaceCheck    = true;
 int  g4.nSurfaceCheckPointsPercmsq =   1;
