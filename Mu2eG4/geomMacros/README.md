@@ -1,6 +1,6 @@
 # Geometry Macros
 
-This directory contains two useful ROOT macros that can be useful for inspecting the geometry
+This directory contains some scripts that are useful for inspecting the geometry.
 
 ## ```where_is_volume.C```
 This macro takes a string and will print all volumes that have that string in the name. It can take three arguments:
@@ -33,5 +33,12 @@ root -l -b -q find_volume_at_point.C\(-3904,0,4000,\"mu2e.gdml\"\)
 The other can be called from another macro so that you can ask for multiple points without having to reload the GDML each time. This takes the following arguments:
 * ```x, y, z``` is the position (required)
 * ```geom``` is the ```TGeoManager``` (required)
+* ```output_csv``` is a boolean for if you want the output printined in csv format (optional, default = ```false```)
+* ```out``` is an ```std::ostream``` if you want to redirect the output to a file (optional, default = ```std::cout```)x
 
-Example: see ```find_stm_beamline_volumes.C```
+Example: see ```find_stm_beamline_volumes.C``` and ```write_stm_beamline_volumes_to_csv.C```
+
+## ```write_geom_diff_to_csv.py```
+This python script takes two csv files created by ```find_volume_at_point```, merges them, and then writes the rows where there are differences in the volume name, material, or path to an new csv file.
+
+Note: this requires you are in a python environment with the ```pandas``` package
