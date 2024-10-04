@@ -115,6 +115,13 @@ int crs.FEBBoxesAtSide1W4  = 0;
 int crs.FEBBoxesAtSide1T1  = 0;
 int crs.FEBBoxesAtSide1T2  = 0;
 
+//support structure volumes used as lead brick
+int crs.nSupportStructures = 1;
+vector<string> crs.supportStructureNames = {"WidebandLeadBrick"};
+vector<double> crs.supportStructurePosition_WidebandLeadBrick  = {-5904.0, -1824.12, 39449.45};
+vector<double> crs.supportStructureHalfLengths_WidebandLeadBrick  = {101.6, 25.4, 508.0};  //10 lead bricks of 8" x 2" x 4"
+string         crs.supportStructureMaterialName = "G4_Pb";
+
 //bool g4.doSurfaceCheck    = true;
 int  g4.nSurfaceCheckPointsPercmsq =   1;
 int  g4.minSurfaceCheckPoints      = 100; // per volume
