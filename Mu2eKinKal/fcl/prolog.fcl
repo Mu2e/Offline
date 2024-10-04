@@ -427,7 +427,7 @@ Mu2eKinKal : {
       # Additional width is needed here as straight tracks have worse time resolution
       MaxCaloClusterDt: 8
     }
-    FitSettings : @local::Mu2eKinKal.SEEDFIT
+    FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
     ModuleSettings : @local::Mu2eKinKal.KINEMATICLINE
   }
