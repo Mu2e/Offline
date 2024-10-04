@@ -56,6 +56,11 @@ namespace mu2e
     public:
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
+    struct DigitizationRangeStruct
+    {
+      fhicl::Atom<double> digitizationStart{ Name("digitizationStart"), Comment("start of digitization after EWM")};
+      fhicl::Atom<double> digitizationEnd{ Name("digitizationEnd"), Comment("end of digitization after EWM")};
+    };
     struct Config
     {
       fhicl::Atom<int> debug{ Name("debugLevel"),Comment("Debug Level"), 0};
@@ -69,8 +74,7 @@ namespace mu2e
       fhicl::Atom<double> photonYieldVariationScale{ Name("photonYieldVariationScale"),Comment("scale factor of the photon yield variation")};
       fhicl::Atom<double> photonYieldVariationCutoffLow{ Name("photonYieldVariationCutoffLow"),Comment("lower cutoff at photon yield variation")};
       fhicl::Atom<double> photonYieldVariationCutoffHigh{ Name("photonYieldVariationCutoffHigh"),Comment("upper cutoff at photon yield variation")};
-      fhicl::Atom<double> digitizationStart{ Name("digitizationStart"), Comment("start of digitization")};
-      fhicl::Atom<double> digitizationEnd{ Name("digitizationEnd"), Comment("end of digitization")};
+      fhicl::Table<DigitizationRangeStruct> digitizationRange{ Name("digitizationRange"), Comment("start/end of digitization after EWM")};
       fhicl::Atom<double> digitizationStartMargin{ Name("digitizationStartMargin"),
                                Comment("time window before digitization starts to account for photon travel time and electronics response.")};
       fhicl::Atom<art::InputTag> eventWindowMarkerTag{ Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
@@ -82,7 +86,6 @@ namespace mu2e
     void beginRun(art::Run& r);
 
     private:
-
     int _debug;
     std::vector<std::string> _moduleLabels;
     std::vector<std::string> _processNames;
@@ -102,39 +105,36 @@ namespace mu2e
     double                                       _photonYieldVariationCutoffHigh;
 
     //On-spill
+    //-Event length: 1695ns (microbunch period)
     //-Digitization window
-    //---needs to start about 100ns before the tracker digitization
-    //   to catch cosmic ray muons which may cause signals in the tracker.
-    //---nominal: 400ns ... 1750ns (in proton time frame)
-    //---gets adjusted for jitter
+    //---EWM arrives between 200ns and 225ns after protons
+    //   (200ns after first clock tick after arrival of protons on target)
+    //   (25ns jitter due to DAQ clock period)
+    //   event window length varies between 1675ns and 1700ns
+    //---start recording at 400ns (--> 400ns-225ns=175ns after EWM)
+    //---end recording at the next microbunch at 1695ns (--> 1695ns-200ns=1495ns after EWM)
     //-CrvSteps
-    //---start recording CrvSteps 50ns before digitzation window (i.e. at 350ns)
+    //---start recording CrvSteps 50ns before digitzation window (--> 125ns after EWM)
     //   to account for photon travel time and electroncs response time.
-    //---stop recording CrvSteps at end of digitization window (i.e. at 1750ns).
-    //---these digitization windows are repeated with the microbunch period (1695ns).
-    //---therefore, the times when CrvSteps should be recorded are
-    //   350ns+n*1695ns ... 1750ns+i*1695ns with i being an integer.
-    //---this gives blind times of 1750ns+(i-1)*1695 ... 350ns+i*1695ns
-    //   where CrvSteps should not be recorded.
-    //---for simplicity only apply one blind time for i=0: 55ns ... 350ns.
+    //---stop recording CrvSteps at end of digitization window (--> 1495ns after EWM)
+    //---events are repeated with the microbunch period of 1695ns, but for simplicity,
+    //   CrvSteps outside the digitization window are removed only in the first event
     //-CrvPhotons
     //---photons get time wrapped modulus microbunch period (1695ns).
-    //---photons before the blind time (digitization end - microbunch period = 55ns)
-    //   get move the to the time interval between the end of the microbunch
-    //   period (1695ns) and the end the of the digitization period (1750ns).
-    //---all other photons before digitization start will be removed.
+    //---no further consideration of the digitization window for the photons;
+    //   this will be done at the digitization step.
     //
     //Off-spill
+    //-Event length: 100000ns
+    //-Digitization window
+    //---full event length
     //-CrvSteps
-    //---start recording CrvSteps 50ns before event window start
-    //   to account for photon travel time.
-    //---stop recording CrvSteps at event window end.
+    //---record all CrvSteps within event window
     //-CrvPhotons
     //---no time wrapping
-    //---photons outside the event window will be removed.
 
-    double      _digitizationStart; //400ns
-    double      _digitizationEnd;   //1750ns
+    double      _digitizationStart; //175ns after EWM
+    double      _digitizationEnd;   //1495ns after EWM
     double      _digitizationStartMargin;  //50ns (used to account for photon travel time and electronics response time)
     art::InputTag _eventWindowMarkerTag;
     art::InputTag _protonBunchTimeMCTag;
@@ -159,8 +159,8 @@ namespace mu2e
     _photonYieldVariationScale(conf().photonYieldVariationScale()),
     _photonYieldVariationCutoffLow(conf().photonYieldVariationCutoffLow()),
     _photonYieldVariationCutoffHigh(conf().photonYieldVariationCutoffHigh()),
-    _digitizationStart(conf().digitizationStart()),
-    _digitizationEnd(conf().digitizationEnd()),
+    _digitizationStart(conf().digitizationRange().digitizationStart()),
+    _digitizationEnd(conf().digitizationRange().digitizationEnd()),
     _digitizationStartMargin(conf().digitizationStartMargin()),
     _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeMCTag(conf().protonBunchTimeMCTag()),
@@ -256,19 +256,25 @@ namespace mu2e
     art::Handle<EventWindowMarker> eventWindowMarker;
     event.getByLabel(_eventWindowMarkerTag,eventWindowMarker);
     EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
-    double eventWindowLength = eventWindowMarker->eventLength();
+    //double eventWindowLength = eventWindowMarker->eventLength(); //onspill: 1675ns/1700ns, offspill: 100000ns
 
     art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
     event.getByLabel(_protonBunchTimeMCTag, protonBunchTimeMC);
-    double eventWindowStart = -protonBunchTimeMC->pbtime_;
-    double eventWindowEnd = eventWindowStart + eventWindowLength;
+    double EWMarrival = -protonBunchTimeMC->pbtime_; //between 200ns and 225ns (only for onspill)
 
     ProditionsHandle<EventTiming> eventTimingHandle;
-    const EventTiming &eventTiming = eventTimingHandle.get(event.id());
-    double jitter = eventWindowStart - eventTiming.timeFromProtonsToDRMarker();
+    double earliestEWMarrival = eventTimingHandle.get(event.id()).timeFromProtonsToDRMarker(); //always 200ns (only for onspill)
 
-    double digitizationStart=_digitizationStart+jitter;
-    double digitizationEnd=_digitizationEnd+jitter;
+    //offspill
+    double startTime=0;
+    //double endTime=eventWindowLength;
+
+    //onspill
+    if(spillType==EventWindowMarker::SpillType::onspill)
+    {
+      startTime=EWMarrival+_digitizationStart-_digitizationStartMargin; //325ns...350ns
+      //endTime=EWMarrival+_digitizationEnd; //1695ns...1720ns
+    }
 
     for(size_t j=0; j<_selectors.size(); ++j)
     {
@@ -284,18 +290,8 @@ namespace mu2e
           double t2 = step.endTime();
           if(isnan(t1) || isnan(t2)) continue;  //This situation was observed once. Not sure how it happened.
 
-          //see explanation above
-          //On-spill: Ignore CrvSteps between digitizationEnd-microBunchPeriod (i.e. 1750ns-1695ns=55ns)
-          //          and digitizationStart-digitizationStartMargin (i.e. 400ns-50ns=350ns).
-          //Off-spill: Ignore CrvSteps outside of eventwindowStart-digitizationStartMargin and eventWindowEnd.
-          if(spillType==EventWindowMarker::SpillType::onspill)
-          {
-            if(t1>digitizationEnd-_microBunchPeriod && t2<digitizationStart-_digitizationStartMargin) continue;
-          }
-          else
-          {
-            if(t2<eventWindowStart-_digitizationStartMargin || t1>eventWindowEnd) continue;
-          }
+          if(t2<startTime) continue;
+          //for simplicity (due to time wrapping) no other crvSteps will be removed
 
           CLHEP::Hep3Vector pos1 = step.startPosition();  //TODO: Need to convert everything into XYZVec, so that const references can be used
           CLHEP::Hep3Vector pos2 = step.endPosition();
@@ -351,18 +347,7 @@ namespace mu2e
               double timeTmp=times[itime];
               if(spillType==EventWindowMarker::SpillType::onspill)
               {
-                timeTmp = fmod(timeTmp,_microBunchPeriod);
-                //photons before the digitization start get removed except photons
-                //in the first 55ns (digitization end - microbunch period) which get
-                //moved to the interval between the end of the microbunch period and
-                //the end of the digitization window.
-                if(timeTmp<digitizationEnd-_microBunchPeriod) timeTmp+=_microBunchPeriod;
-                if(timeTmp<digitizationStart-_digitizationStartMargin) continue;
-              }
-              else
-              {
-                //photons outside the eventWindow get removed
-                if(timeTmp<eventWindowStart-_digitizationStartMargin || timeTmp>eventWindowEnd) continue;
+                timeTmp = fmod(timeTmp-earliestEWMarrival,_microBunchPeriod)+earliestEWMarrival;  //time wrap around earliest EWM arrival time
               }
               photons.emplace_back(timeTmp,crvStepPtr);
             }
