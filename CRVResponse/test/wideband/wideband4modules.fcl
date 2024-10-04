@@ -9,7 +9,7 @@ services: @local::Services.SimAndReco
 
 physics: {
   producers : {
-    @table::CommonMC.producers
+    @table::CommonMC.DigiProducers
     @table::Common.producers
     @table::Primary.producers
     cosmicTimeOffset : @local::Cosmic.cosmicTimeOffset
