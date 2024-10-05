@@ -9,7 +9,7 @@
 #include "Offline/CommonMC/fcl/prolog.fcl"
 BEGIN_PROLOG
 
-    DigitizationStart: 400.0 //ns after event window start (i.e. 400ns after first clock tick after DR marker) --> 400ns...425ns after DR marker
+    DigitizationStart: 400.0 //ns after event window start (i.e. 400ns after first clock tick after POT) --> 400ns...425ns after POT
     CrvSteps:
     {
       module_type               : CrvStepsFromStepPointMCs

@@ -102,12 +102,12 @@ namespace mu2e
     //On-spill
     //-Event length: 1695ns (microbunch period)
     //-Digitization window
-    //---first DAQ clock tick after DR marker occurs between 0ns and 25ns after protons.
+    //---first DAQ clock tick after POT occurs between 0ns and 25ns after protons.
     //   25ns jitter is due to the microbunch period not being an integer multiple of the DAQ clock period.
     //---these first DAQ clock ticks define the event window.
     //   due to the above variations, the event window length varies between 1675ns and 1700ns.
-    //---digitization start: 400ns after event window start (--> 400ns...425ns after DR marker)
-    //---digitization end: at the end of the event window (i.e. first DAQ clock after the next DR marker),
+    //---digitization start: 400ns after event window start (--> 400ns...425ns after POT)
+    //---digitization end: at the end of the event window (i.e. first DAQ clock after the next POT),
     //   which is 1675ns or 1700ns after the event window start
     //-CrvSteps
     //---start recording CrvSteps 50ns before digitzation window (=350ns after event window start)
@@ -130,7 +130,7 @@ namespace mu2e
     //-CrvPhotons
     //---no time wrapping
 
-    double      _digitizationStart; //400ns after event window start (400ns...425ns after DR marker)
+    double      _digitizationStart; //400ns after event window start (400ns...425ns after POT)
     double      _digitizationStartMargin;  //50ns (used to account for photon travel time and electronics response time)
     art::InputTag _eventWindowMarkerTag;
     art::InputTag _protonBunchTimeMCTag;

@@ -49,7 +49,7 @@ namespace mu2e
     {
       fhicl::Atom<std::string> crvSiPMChargesModuleLabel{Name("crvSiPMChargesModuleLabel")};
       fhicl::Atom<std::string> singlePEWaveformFileName{Name("singlePEWaveformFileName")};
-      fhicl::Atom<double> digitizationStart{Name("digitizationStart"), Comment("start of digitization after DAQ event window start")}; //400ns (400ns...425ns after DR marker)
+      fhicl::Atom<double> digitizationStart{Name("digitizationStart"), Comment("start of digitization after DAQ event window start")}; //400ns (400ns...425ns after POT)
       fhicl::Atom<art::InputTag> eventWindowMarkerTag{Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
       fhicl::Atom<art::InputTag> protonBunchTimeMCTag{Name("protonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
       fhicl::Atom<double> minVoltage{Name("minVoltage")};                       //0.022V (corresponds to 3.5PE)
@@ -210,7 +210,7 @@ namespace mu2e
       std::vector<ChargeCluster> chargeClusters;
       FindChargeClusters(timesAndCharges, chargeClusters, timeOffset);
 
-      //need to find where this FEB's TDC=0 (first point after the event window start, i.e. first clock tick after DR marker) is located with respect to the global time
+      //need to find where this FEB's TDC=0 (first point after the event window start, i.e. first clock tick after POT) is located with respect to the global time
       //can be anywhere within the digitization period
       double digitizationPointShiftFEB=_digitizationPointShiftFEBs[FEB];
       double TDC0time=eventWindowStart+digitizationPointShiftFEB;  //that's the time when TDC=0 for this FEB
