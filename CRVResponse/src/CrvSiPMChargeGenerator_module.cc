@@ -53,7 +53,7 @@ namespace mu2e
       fhicl::Atom<double> capacitance{Name("capacitance")};                   //8.84e-14F (per pixel)
       fhicl::Atom<double> digitizationStart{Name("digitizationStart"),
                                             Comment("start of digitization after DAQ event window start")};
-                                            //400ns (400ns...425ns after DR marker)
+                                            //400ns (400ns...425ns after POT)
       fhicl::Atom<double> digitizationStartMargin{Name("digitizationStartMargin"),
                                                   Comment("time window before digitization starts to account for photon travel time and electronics response.")};
                                                   //50.0ns  start recording earlier to account for electronics response times
