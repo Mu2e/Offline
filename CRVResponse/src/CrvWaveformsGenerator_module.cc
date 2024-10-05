@@ -9,6 +9,7 @@
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/CRVConditions/inc/CRVOrdinal.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
@@ -44,20 +45,15 @@ namespace mu2e
     public:
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
-    struct DigitizationRangeStruct
-    {
-      fhicl::Atom<double> digitizationStart{Name("digitizationStart"), Comment("start of digitization after EWM")}; //175.0ns after EWM (375ns...400ns after POT)
-      fhicl::Atom<double> digitizationEnd{Name("digitizationEnd"), Comment("end of digitization after EWM")};       //1495.0ns after EWM (1695ns...1720ns after POT)
-    };
     struct Config
     {
       fhicl::Atom<std::string> crvSiPMChargesModuleLabel{Name("crvSiPMChargesModuleLabel")};
       fhicl::Atom<std::string> singlePEWaveformFileName{Name("singlePEWaveformFileName")};
-      fhicl::Table<DigitizationRangeStruct> digitizationRange{Name("digitizationRange"), Comment("start/end of digitization after EWM")};
+      fhicl::Atom<double> digitizationStart{Name("digitizationStart"), Comment("start of digitization after DAQ event window start")}; //400ns (400ns...425ns after DR marker)
       fhicl::Atom<art::InputTag> eventWindowMarkerTag{Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
       fhicl::Atom<art::InputTag> protonBunchTimeMCTag{Name("protonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
-      fhicl::Atom<double> minVoltage{Name("minVoltage")};               //0.022V (corresponds to 3.5PE)
-      fhicl::Atom<double> noise{Name("noise")};
+      fhicl::Atom<double> minVoltage{Name("minVoltage")};                       //0.022V (corresponds to 3.5PE)
+      fhicl::Atom<double> noise{Name("noise")};                                 //4.0e-4V
       fhicl::Atom<double> timeOffsetScale{Name("timeOffsetScale")};             // 1.0ns (scale factor applied to the database values)
       fhicl::Atom<double> timeOffsetCutoffLow{Name("timeOffsetCutoffLow")};     //-3.0ns
       fhicl::Atom<double> timeOffsetCutoffHigh{Name("timeOffsetCutoffHigh")};   // 3.0ns
@@ -82,7 +78,7 @@ namespace mu2e
 
     boost::shared_ptr<mu2eCrv::MakeCrvWaveforms> _makeCrvWaveforms;
 
-    double                              _digitizationStart, _digitizationEnd;
+    double                              _digitizationStart;
     double                              _minVoltage;
     double                              _noise;
     double                              _timeOffsetScale;
@@ -117,8 +113,7 @@ namespace mu2e
     _singlePEWaveformFileName(conf().singlePEWaveformFileName()),
     _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeMCTag(conf().protonBunchTimeMCTag()),
-    _digitizationStart(conf().digitizationRange().digitizationStart()),
-    _digitizationEnd(conf().digitizationRange().digitizationEnd()),
+    _digitizationStart(conf().digitizationStart()),
     _minVoltage(conf().minVoltage()),
     _noise(conf().noise()),
     _timeOffsetScale(conf().timeOffsetScale()),
@@ -152,19 +147,22 @@ namespace mu2e
     EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
     double eventWindowLength = eventWindowMarker->eventLength(); //onspill: 1675ns/1700ns, offspill: 100000ns
 
-    art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
-    event.getByLabel(_protonBunchTimeMCTag, protonBunchTimeMC);
-    double EWMarrival = -protonBunchTimeMC->pbtime_; //between 200ns and 225ns (only for onspill)
-
     //offspill
+    double eventWindowStart=0;
     double digitizationStart=0;
     double digitizationEnd=eventWindowLength;
 
     //onspill
     if(spillType==EventWindowMarker::SpillType::onspill)
     {
-      digitizationStart=EWMarrival+_digitizationStart; //375ns...400ns
-      digitizationEnd=EWMarrival+_digitizationEnd; //1695ns...1720ns
+      art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
+      event.getByLabel(_protonBunchTimeMCTag, protonBunchTimeMC);
+      ProditionsHandle<EventTiming> eventTimingHandle;
+      const EventTiming &eventTiming = eventTimingHandle.get(event.id());
+      eventWindowStart = -protonBunchTimeMC->pbtime_ - eventTiming.timeFromProtonsToDRMarker(); //0ns...25ns (only for onspill)
+
+      digitizationStart=eventWindowStart+_digitizationStart; //400ns...425ns
+      digitizationEnd=eventWindowStart+eventWindowLength; //up to ~1720ns
     }
 
     auto const& calib = _calib.get(event.id());
@@ -212,10 +210,10 @@ namespace mu2e
       std::vector<ChargeCluster> chargeClusters;
       FindChargeClusters(timesAndCharges, chargeClusters, timeOffset);
 
-      //need to find where this FEB's TDC=0 (first point after the EWM arrival) is located with respect to the global time
+      //need to find where this FEB's TDC=0 (first point after the event window start, i.e. first clock tick after DR marker) is located with respect to the global time
       //can be anywhere within the digitization period
       double digitizationPointShiftFEB=_digitizationPointShiftFEBs[FEB];
-      double TDC0time=EWMarrival+digitizationPointShiftFEB;  //that's the time when TDC=0 for this FEB
+      double TDC0time=eventWindowStart+digitizationPointShiftFEB;  //that's the time when TDC=0 for this FEB
 
       for(size_t iCluster=0; iCluster<chargeClusters.size(); ++iCluster)
       {

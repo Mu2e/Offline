@@ -7,6 +7,7 @@
 #include "Offline/CRVConditions/inc/CRVStatus.hh"
 #include "Offline/CRVResponse/inc/MakeCrvSiPMCharges.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
@@ -42,11 +43,6 @@ namespace mu2e
     public:
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
-    struct DigitizationRangeStruct
-    {
-      fhicl::Atom<double> digitizationStart{Name("digitizationStart"), Comment("start of digitization after EWM")}; //175.0ns after EWM (375ns...400ns after POT)
-      fhicl::Atom<double> digitizationEnd{Name("digitizationEnd"), Comment("end of digitization after EWM")};       //1495.0ns after EWM (1695ns...1720ns after POT)
-    };
     struct Config
     {
       fhicl::Atom<std::string> crvPhotonsModuleLabel{Name("crvPhotonsModuleLabel")};
@@ -55,7 +51,9 @@ namespace mu2e
       fhicl::Atom<double> overvoltage{Name("overvoltage")};                   //3.0V
       fhicl::Atom<double> timeConstant{Name("timeConstant")};                 //12.0ns
       fhicl::Atom<double> capacitance{Name("capacitance")};                   //8.84e-14F (per pixel)
-      fhicl::Table<DigitizationRangeStruct> digitizationRange{Name("digitizationRange"), Comment("start/end of digitization after EWM")};
+      fhicl::Atom<double> digitizationStart{Name("digitizationStart"),
+                                            Comment("start of digitization after DAQ event window start")};
+                                            //400ns (400ns...425ns after DR marker)
       fhicl::Atom<double> digitizationStartMargin{Name("digitizationStartMargin"),
                                                   Comment("time window before digitization starts to account for photon travel time and electronics response.")};
                                                   //50.0ns  start recording earlier to account for electronics response times
@@ -85,7 +83,7 @@ namespace mu2e
     double      _overvoltage;
     double      _timeConstant;
     double      _capacitance;
-    double      _digitizationStart, _digitizationEnd, _digitizationStartMargin;
+    double      _digitizationStart, _digitizationStartMargin;
     art::InputTag _eventWindowMarkerTag;
     art::InputTag _protonBunchTimeMCTag;
 
@@ -113,8 +111,7 @@ namespace mu2e
     _overvoltage(conf().overvoltage()),
     _timeConstant(conf().timeConstant()),
     _capacitance(conf().capacitance()),
-    _digitizationStart(conf().digitizationRange().digitizationStart()),
-    _digitizationEnd(conf().digitizationRange().digitizationEnd()),
+    _digitizationStart(conf().digitizationStart()),
     _digitizationStartMargin(conf().digitizationStartMargin()),
     _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeMCTag(conf().protonBunchTimeMCTag()),
@@ -161,19 +158,22 @@ namespace mu2e
     EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
     double eventWindowLength = eventWindowMarker->eventLength(); //onspill: 1675ns/1700ns, offspill: 100000ns
 
-    art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
-    event.getByLabel(_protonBunchTimeMCTag,protonBunchTimeMC);
-    double EWMarrival = -protonBunchTimeMC->pbtime_; //between 200ns and 225ns (only for onspill)
-
     //offspill
+    double eventWindowStart=0;
     double startTime=0;
     double endTime=eventWindowLength;
 
     //onspill
     if(spillType==EventWindowMarker::SpillType::onspill)
     {
-      startTime=EWMarrival+_digitizationStart-_digitizationStartMargin; //325ns...350ns
-      endTime=EWMarrival+_digitizationEnd; //1695ns...1720ns
+      art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
+      event.getByLabel(_protonBunchTimeMCTag, protonBunchTimeMC);
+      ProditionsHandle<EventTiming> eventTimingHandle;
+      const EventTiming &eventTiming = eventTimingHandle.get(event.id());
+      eventWindowStart = -protonBunchTimeMC->pbtime_ - eventTiming.timeFromProtonsToDRMarker(); //0ns...25ns (only for onspill)
+
+      startTime=eventWindowStart+_digitizationStart-_digitizationStartMargin; //350ns...375ns
+      endTime=eventWindowStart+eventWindowLength; //up to ~1720ns
     }
 
     auto const& sipmStatus = _sipmStatus.get(event.id());
