@@ -185,7 +185,7 @@ namespace mu2e {
       }
       auto const& parerrors = settings().modSettings().parconst();
       for (size_t ipar=0;ipar<KinKal::NParams();ipar++)
-        paramconstraints_[ipar] = parerrors[ipar]; 
+        paramconstraints_[ipar] = parerrors[ipar];
 
       if(print_ > 0) std::cout << "Fit " << config_ << "Extension " << exconfig_;
       double bz(0.0);
@@ -254,7 +254,7 @@ namespace mu2e {
           dist = (trackmid.x() - trackpos.x())/trackdir.x();
         trackpos += dist * trackdir;
         double t0 = cseed.t0().t0() + dist/299.9;
-        
+
         // take the magnetic field at track center as nominal
         auto bnom = kkbf_->fieldVect(VEC3(trackpos.x(),trackpos.y(),trackpos.z()));
 

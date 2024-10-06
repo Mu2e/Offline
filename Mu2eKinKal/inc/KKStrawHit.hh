@@ -219,7 +219,7 @@ namespace mu2e {
           resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,ca_.dTdP());
         }
       }
-      
+
       if (whstate.constrainLong()){
         VEC3 udir(chit_.uDir().x(),chit_.uDir().y(),chit_.uDir().z());
 
@@ -244,7 +244,7 @@ namespace mu2e {
         dLdP *= -1;
         resids[Mu2eKinKal::lresid] = Residual(lresidval,lresidvar,0.0,true,dLdP);
       }
-      
+
     }
   }
 

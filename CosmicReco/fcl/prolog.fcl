@@ -94,10 +94,10 @@ CosmicReco : { @table::CosmicReco
       CosmicTrackFit         : { @table::CosmicReco.CosmicTrackFit }
    }
 
-   dummyMakePH : { 
+   dummyMakePH : {
       module_type : RecoNullProducer
    }
-   dummyMakeSTH : { 
+   dummyMakeSTH : {
       module_type : RecoNullProducer
    }
 }

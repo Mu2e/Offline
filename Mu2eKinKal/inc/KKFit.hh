@@ -140,7 +140,6 @@ namespace mu2e {
       mutable bool needstrackerinfo_ = true;
 
       double sampletol_; // surface intersection tolerance (mm)
-      double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
 
@@ -171,7 +170,6 @@ namespace mu2e {
     maxStrawDocaCon_(fitconfig.maxStrawDOCAConsistency()),
     maxDStraw_(fitconfig.maxDStraw()),
     sampletol_(fitconfig.sampleTol()),
-    sampletbuff_(fitconfig.sampleTBuff()),
     sampleinrange_(fitconfig.sampleInRange()),
     sampleinbounds_(fitconfig.sampleInBounds())
   {
@@ -602,30 +600,37 @@ namespace mu2e {
   template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters, TrkFitFlag const& seedflag) const {
     auto const& ftraj = kktrk.fitTraj();
     double tbeg = ftraj.range().begin();
-    static const double epsilon(1.0e-3);
-// if this helix can reflect, only look for intersections with the downstream branch. This is only relevant for LoopHelix
+    double tend = ftraj.range().end();
+    static const double epsilon(1.0e-6);
+// if this helix has reflected, limit the search
     if(seedflag.hasAnyProperty(TrkFitFlag::KKLoopHelix)){
-      // loop over the traj pieces till we find the first one going (significantly) downstream
-      for(auto const& ktraj : ftraj.pieces()){
-        auto axis = ktraj->axis(tbeg);
-        if(axis.direction().Z() > 0.0 )break; // helix axis headed downstream
-        tbeg = ktraj->range().end() + epsilon; // force onto next piece
+      auto mom0 = ftraj.momentum3(ftraj.t0());
+      if(mom0.Z() >0){ // downstream fit: skip any upstream-going segments
+        for(auto const& ktraj : ftraj.pieces()){
+          auto axis = ktraj->axis(ktraj->range().mid());
+          if(axis.direction().Z() > 0.0 )break; // helix headed downstream
+          tbeg = ktraj->range().end(); // force onto next piece
+        }
+      } else { // upstream fit: stop when the track reflects back downstream
+        for(auto const& ktraj : ftraj.pieces()){
+          auto axis = ktraj->axis(ktraj->range().mid());
+          if(axis.direction().Z() > 0.0 )break; // helix no longer heading upstream
+          tend = ktraj->range().begin();
+        }
       }
     }
     for(auto const& surf : sample_){
-      // search for intersections with each surface from the begining
-      double tstart = tbeg - sampletbuff_;
+      // search for intersections with each surface within the specified time range, going forwards in time
       bool hasinter(true);
       size_t max_iter = 1000;
       size_t cur_iter = 0;
 
       // loop to find multiple intersections
-      while(hasinter) {
+      while(hasinter && tbeg < tend) {
+        TimeRange irange(tbeg,tend);
         if (cur_iter > max_iter)
           break;
         cur_iter += 1;
-
-        TimeRange irange(tstart,std::max(ftraj.range().end(),tstart)+sampletbuff_);
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
         hasinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
         if(hasinter) {
@@ -633,7 +638,7 @@ namespace mu2e {
           auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
           inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
           // update for the next intersection
-          tstart = surfinter.time_ + epsilon;// move psst existing intersection to avoid repeating
+          tbeg = surfinter.time_ + epsilon;// move psst existing intersection to avoid repeating
         }
       }
     }

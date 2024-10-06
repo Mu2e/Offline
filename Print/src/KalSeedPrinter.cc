@@ -94,7 +94,7 @@ void mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind,
       << "  calo: " << (obj.caloCluster().isNull() ? "no" : "yes") << "\n";
     os << " intersections: \n";
     for (auto const& inter : obj.intersections()) {
-      os << " sid " << inter.surfaceId() << " P " << inter.mom() << " dP " << inter.dMom() << "\n";
+      os << " sid " << inter.surfaceId() << " time " << inter.time() << " P " << inter.mom() << " dP " << inter.dMom() << "\n";
     }
     if (verbose() >= 3) {
       os << " segments: \n";
