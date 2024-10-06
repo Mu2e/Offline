@@ -33,6 +33,14 @@ physics: {
       MinimumTrkSteps : 0
       MinimumSumCaloStepE : 0.0
     }
+    CrvWidebandTriggerFilter :
+    {
+      module_type               : CrvWidebandTriggerFilter
+      crvRecoPulsesModuleLabel  : "CrvRecoPulses"
+      triggerSectorTypes        : [5,6]
+      PEthreshold               : 10.0 //PEs
+      maxTimeDifference         : 20.0 //ns
+    }
   }
 
   analyzers:
@@ -50,7 +58,7 @@ physics: {
   }
 
   TriggerPath :  [ @sequence::Common.generateSequence, cosmicTimeOffset, @sequence::Common.g4Sequence, @sequence::CommonMC.DigiSim,
-                   CrvSteps, CosmicFilter, @sequence::CrvResponsePackage.CrvResponseSequence]
+                   CrvSteps, CosmicFilter, @sequence::CrvResponsePackage.CrvResponseSequence, CrvWidebandTriggerFilter]
   EndPath : [ CrvWidebandTest, Output ]
   trigger_paths : [ TriggerPath ]
   end_paths : [ EndPath ]
@@ -81,7 +89,7 @@ outputs:
 
 
 physics.producers.generate : @local::Cosmic.generateCRY
-physics.producers.generate.inputFile : "Offline/CRVResponse/test/wideband/widebandCRYconfig_v5.txt"
+physics.producers.generate.inputFile : "Offline/CRVResponse/test/wideband/widebandCRYconfig_v6.txt"
 physics.producers.cosmicTimeOffset.intervalEnd : 99000
 physics.producers.cosmicTimeOffset.cosmicModuleLabel : "generate"
 physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
