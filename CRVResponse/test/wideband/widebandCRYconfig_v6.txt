@@ -7,8 +7,8 @@ double cosmicCRY.refZ0 = 39450;
 
 bool cosmicCRY.projectToTargetBox = true;
 
-double cosmicCRY.targetBoxXmin = -5954;  //1.0m away from readout at negative x-side, no width (in x direction) to increase simulation efficiency
-double cosmicCRY.targetBoxXmax = -5804;
+double cosmicCRY.targetBoxXmin = -5954;  //1m away from readout at negative x-side, 10cm width of dicounter
+double cosmicCRY.targetBoxXmax = -5854;
 
 double cosmicCRY.targetBoxYmin =   -2075;  //just the scintillator above the bottom module
 double cosmicCRY.targetBoxYmax =   -2055;
