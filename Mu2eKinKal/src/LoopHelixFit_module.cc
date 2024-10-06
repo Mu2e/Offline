@@ -98,7 +98,9 @@ namespace mu2e {
   using KKFIT = KKFit<KTRAJ>;
   using KinKal::VEC3;
   using KinKal::DMAT;
+  using KinKal::DVEC;
   using KinKal::TimeDir;
+  using MatEnv::DetMaterial;
   using HPtr = art::Ptr<HelixSeed>;
   using CCPtr = art::Ptr<CaloCluster>;
   using CCHandle = art::ValidHandle<CaloClusterCollection>;
@@ -119,10 +121,6 @@ namespace mu2e {
   using KKMaterialConfig = KKMaterial::Config;
   using Name    = fhicl::Name;
   using Comment = fhicl::Comment;
-
-  using KinKal::DVEC;
-  using KinKal::VEC3;
-  using MatEnv::DetMaterial;
 
   using DiskPtr = std::shared_ptr<KinKal::Disk>;
   using AnnPtr = std::shared_ptr<KinKal::Annulus>;
@@ -169,6 +167,7 @@ namespace mu2e {
       bool goodFit(KKTRK const& ktrk) const;
       // extrapolation functions
       void extrapolate(KKTRK& ktrk) const;
+      void toTrackerEnds(KKTRK& ktrk,VEC3 const& dir0) const;
       bool extrapolateIPA(KKTRK& ktrk,TimeDir trkdir) const;
       bool extrapolateST(KKTRK& ktrk,TimeDir trkdir) const;
       bool extrapolateTracker(KKTRK& ktrk,TimeDir tdir) const;
@@ -198,7 +197,7 @@ namespace mu2e {
       bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
       SurfaceMap smap_;
       AnnPtr tsdaptr_;
-      DiskPtr trkfrontptr_;
+      DiskPtr trkfrontptr_, trkmidptr_, trkbackptr_;
       FruPtr opaptr_;
       bool extrapolate_, backToTracker_, toOPA_, toTrackerEnds_, upstream_;
       ExtrapolateToZ TSDA_, trackerFront_, trackerBack_; // extrapolation predicate based on Z values
@@ -279,6 +278,8 @@ namespace mu2e {
         TSDA_ = ExtrapolateToZ(maxdt,tol,smap_.DS().upstreamAbsorber().center().Z(),debug);
         tsdaptr_ = smap_.DS().upstreamAbsorberPtr();
         trkfrontptr_ = smap_.tracker().frontPtr();
+        trkmidptr_ = smap_.tracker().middlePtr();
+        trkbackptr_ = smap_.tracker().backPtr();
         opaptr_ = smap_.DS().outerProtonAbsorberPtr();
       }
     }
@@ -469,12 +470,7 @@ namespace mu2e {
     // define the time direction according to the fit direction inside the tracker
     auto const& ftraj = ktrk.fitTraj();
     auto dir0 = ftraj.direction(ftraj.t0());
-    if(toTrackerEnds_){
-      TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
-      TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
-      ktrk.extrapolate(fronttdir,trackerFront_);
-      ktrk.extrapolate(backtdir,trackerBack_);
-    }
+    if(toTrackerEnds_)toTrackerEnds(ktrk,dir0);
     if(upstream_){
       TimeDir tdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
       double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
@@ -504,6 +500,27 @@ namespace mu2e {
       // optionally test for intersection with the OPA
       if(toOPA_)toOPA(ktrk,starttime,tdir);
     }
+  }
+
+  void LoopHelixFit::toTrackerEnds(KKTRK& ktrk,VEC3 const& dir0) const {
+    TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
+    TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
+    ktrk.extrapolate(fronttdir,trackerFront_);
+    ktrk.extrapolate(backtdir,trackerBack_);
+    // record the standard tracker intersections
+    auto const& ftraj = ktrk.fitTraj();
+    TimeRange frange = ftraj.range();
+    double tol = trackerFront_.tolerance();
+    static const SurfaceId tt_front("TT_Front");
+    static const SurfaceId tt_mid("TT_Mid");
+    static const SurfaceId tt_back("TT_Back");
+
+    auto frontinter = KinKal::intersect(ftraj,*trkfrontptr_,frange,tol);
+    if(frontinter.onsurface_)ktrk.addIntersection(tt_front,frontinter);
+    auto midinter = KinKal::intersect(ftraj,*trkmidptr_,frange,tol);
+    if(midinter.onsurface_)ktrk.addIntersection(tt_mid,midinter);
+    auto backinter = KinKal::intersect(ftraj,*trkbackptr_,frange,tol);
+    if(backinter.onsurface_)ktrk.addIntersection(tt_back,backinter);
   }
 
   bool LoopHelixFit::extrapolateIPA(KKTRK& ktrk,TimeDir tdir) const {
