@@ -13,10 +13,15 @@ void mu2e::CosmicLivetimePrinter::PrintSubRun(art::SubRun const& subrun,
     for (auto const& ah : vah) Print(ah);
   } else {
     // print requested instances
+    unsigned ncosmic(0);
     for (const auto& tag : tags()) {
       auto ih = subrun.getValidHandle<CosmicLivetime>(tag);
       Print(ih);
+      ++ncosmic;
+      nPrimaries_ += ih->primaries();
+      livetime_ += ih->liveTime();
     }
+    if(ncosmic> 1) throw cet::exception(">1 Cosmic Livetime!") << std::endl;
   }
 }
 
@@ -73,4 +78,8 @@ void mu2e::CosmicLivetimePrinter::PrintHeader(const std::string& tag,
                                               std::ostream& os) {
   if (verbose() < 1) return;
   os << "\nProductPrint " << tag << "\n";
+}
+
+void mu2e::CosmicLivetimePrinter::PrintEndJob(std::ostream& os) {
+
 }
