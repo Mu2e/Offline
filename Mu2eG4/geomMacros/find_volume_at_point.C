@@ -1,5 +1,6 @@
 //
 // Useful functions to find a volume at a specific point
+// see www.github.com/Mu2e/Offline/blob/main/Mu2eG4/geomMacros/README.md for important details
 //
 
 #include "clean_volume_names.C"
