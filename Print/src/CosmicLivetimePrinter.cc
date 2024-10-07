@@ -64,6 +64,9 @@ void mu2e::CosmicLivetimePrinter::Print(
 
 void mu2e::CosmicLivetimePrinter::Print(const mu2e::CosmicLivetime& obj,
                                         int ind, std::ostream& os) {
+  ++nsub_;
+  nPrimaries_ += obj.primaries();
+  livetime_ += obj.liveTime();
   if (verbose() < 1) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
@@ -81,5 +84,5 @@ void mu2e::CosmicLivetimePrinter::PrintHeader(const std::string& tag,
 }
 
 void mu2e::CosmicLivetimePrinter::PrintEndJob(std::ostream& os) {
-
+  os << "Processed " << nsub_ << " Subruns for a total of " << std::setprecision(0) << nPrimaries_ << " primaries and " << livetime_ << " seconds total livetime" << std::endl;
 }

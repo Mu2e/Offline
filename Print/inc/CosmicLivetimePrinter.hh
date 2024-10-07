@@ -16,8 +16,8 @@ namespace mu2e {
 
 class CosmicLivetimePrinter : public ProductPrinter {
  public:
-  CosmicLivetimePrinter(): nPrimaries_(0), livetime_(0) {}
-  CosmicLivetimePrinter(const Config& conf) : ProductPrinter(conf) : nPrimaries_(0), livetime_(0) {}
+  CosmicLivetimePrinter(): nPrimaries_(0), livetime_(0), nsub_(0) {}
+  CosmicLivetimePrinter(const Config& conf) : ProductPrinter(conf),  nPrimaries_(0), livetime_(0), nsub_(0) {}
 
   // all the ways to request a printout
   void PrintSubRun(art::SubRun const& subrun,
@@ -34,7 +34,8 @@ class CosmicLivetimePrinter : public ProductPrinter {
   void PrintHeader(const std::string& tag, std::ostream& os = std::cout);
  private:
   double nPrimaries_;
-  double livetime_
+  double livetime_;
+  unsigned nsub_;
 };
 
 }  // namespace mu2e
