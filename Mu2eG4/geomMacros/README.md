@@ -26,7 +26,8 @@ There are two functions defined in this macro. One can be used on the command li
 * ```x, y, z``` is the position (required)
 * ```gdmlname``` is the name of the GDML file you want to inspect (optional, default = ```mu2e.gdml```)
 * ```output_csv``` is a boolean for if you want the output printined in csv format (optional, default = ```false```)
-* ```out``` is an ```std::ostream``` if you want to redirect the output to a file (optional, default = ```std::cout```)x
+   * note that this removes the memory addresses from the names of the volumes, which are used to distinguish different volumes that have the same name
+* ```out``` is an ```std::ostream``` if you want to redirect the output to a file (optional, default = ```std::cout```)
 
 Examples:
 ```
