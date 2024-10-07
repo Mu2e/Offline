@@ -361,6 +361,11 @@ Mu2eKinKal : {
     ParameterConstraints : [0.0,0.0,0.0,0.0,0.0,0]
     CosmicTrackSeedCollections : ["LineFinder"]
     SeedFlags : [ "HelixOK" ]
+    SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
+    SampleTimeBuffer : 100 # time buffer for intersections (ns)
+    SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
+    SampleInRange : true # require sample be in time range
+    SampleInBounds : false # require sample be in surface bounds
   }
 
   KINEMATICLINE : {
@@ -371,6 +376,11 @@ Mu2eKinKal : {
     ComboHitCollection : "makeSH"
     CaloClusterCollection : "CaloClusterMaker"
     SeedFlags : [ "HelixOK" ]
+    SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
+    SampleTimeBuffer : 100 # time buffer for intersections (ns)
+    SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
+    SampleInRange : true # require sample be in time range
+    SampleInBounds : false # require sample be in surface bounds
   }
 }
 
@@ -418,7 +428,7 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
-      SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
+      SampleSurfaces : []
       # DNB I don't know where this time offset difference WRT helical fits comes from. If it's physical, we will need a better
       # mechanism to deal with it in real data
       CaloTrackerTimeOffset: -2.43
