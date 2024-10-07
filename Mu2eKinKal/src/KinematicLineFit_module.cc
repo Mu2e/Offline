@@ -34,6 +34,8 @@
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KKLine.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
+#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
 // KinKal
 #include "KinKal/Fit/Track.hh"
 #include "KinKal/Fit/Config.hh"
@@ -105,6 +107,11 @@ namespace mu2e {
       fhicl::Sequence<art::InputTag> seedCollections         {Name("CosmicTrackSeedCollections"),     Comment("Seed fit collections to be processed ") };
       fhicl::Atom<float> seedmom { Name("SeedMomentum"), Comment("Initial momentum value")};
       fhicl::Sequence<float> paramconstraints { Name("ParameterConstraints"), Comment("Sigma of direct gaussian constraints on each parameter (0=no constraint)")};
+      fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
+      fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
+      fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
+      fhicl::Atom<float> sampleTol { Name("SampleTolerance"), Comment("Tolerance for sample surface intersections (mm)") };
+      fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Time buffer for sample intersections (nsec)") };
     };
 
     struct GlobalConfig {
@@ -125,6 +132,7 @@ namespace mu2e {
     // utility functions
     KTRAJ makeSeedTraj(CosmicTrackSeed const& hseed) const;
     bool goodFit(KKTRK const& ktrk) const;
+    void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const;
     // data payload
     std::vector<art::ProductToken<CosmicTrackSeedCollection>> seedCols_;
     art::ProductToken<ComboHitCollection> chcol_T_;
@@ -143,6 +151,10 @@ namespace mu2e {
     double mass_; // particle mass
     int charge_; // particle charge
     std::unique_ptr<KKBField> kkbf_;
+    double sampletol_; // surface intersection tolerance (mm)
+    double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
+    bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
+    SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
     Config config_; // initial fit configuration object
     Config exconfig_; // extension configuration object
   };
@@ -157,6 +169,10 @@ namespace mu2e {
     fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
     kkfit_(settings().mu2eSettings()),
     kkmat_(settings().matSettings()),
+    sampletol_(settings().modSettings().sampleTol()),
+    sampletbuff_(settings().modSettings().sampleTBuff()),
+    sampleinrange_(settings().modSettings().sampleInRange()),
+    sampleinbounds_(settings().modSettings().sampleInBounds()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings()))
     {
@@ -182,6 +198,20 @@ namespace mu2e {
       }else{
         throw cet::exception("RECO")<<"mu2e::KinematicLineFit: Parameter constraint configuration error"<< endl;
       }
+      SurfaceIdCollection ssids;
+      for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
+        ssids.push_back(SurfaceId(sidname,-1)); // match all elements
+      }
+      // translate the sample and extend surface names to actual surfaces using the SurfaceMap.  This should come from the
+      // geometry service eventually, TODO
+      SurfaceMap smap;
+      smap.surfaces(ssids,sample_);
+      int surfacecount = 0;
+      for(auto const& surf : sample_){
+        surfacecount += 1;
+      }
+      std::cout << "HOW MANY SURFACES " << surfacecount << std::endl;
+
       if(print_ > 0) std::cout << config_;
 
 
@@ -268,7 +298,9 @@ namespace mu2e {
           if(save || saveall_){
             TrkFitFlag fitflag(hptr->status());
             fitflag.merge(TrkFitFlag::KKLine);
-            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h));
+            auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h);
+            sampleFit(*kktrk,kkseed._inters);
+            kkseedcol->push_back(kkseed);
             kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
             // fill assns with the cosmic seed
             auto hptr = art::Ptr<CosmicTrackSeed>(hseedcol_h,iseed);
@@ -302,6 +334,45 @@ namespace mu2e {
   bool KinematicLineFit::goodFit(KKTRK const& ktrk) const {
     // require physical consistency: fit can succeed but the result can have changed charge or helicity
     return ktrk.fitStatus().usable();
+  }
+
+void KinematicLineFit::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
+    auto const& ftraj = kktrk.fitTraj();
+    double tbeg = ftraj.range().begin();
+    static const double epsilon(1.0e-3);
+    for(auto const& surf : sample_){
+      // search for intersections with each surface from the begining
+      double tstart = tbeg - sampletbuff_;
+      bool hasinter(true);
+      size_t max_iter = 1000;
+      size_t cur_iter = 0;
+
+      // loop to find multiple intersections
+      while(hasinter) {
+        if (cur_iter > max_iter)
+          break;
+        cur_iter += 1;
+
+        TimeRange irange(tstart,std::max(ftraj.range().end(),tstart)+sampletbuff_);
+        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
+        hasinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
+        if(hasinter) {
+          // save the intersection information
+          auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
+          inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
+          // update for the next intersection
+          tstart = surfinter.time_ + epsilon;// move psst existing intersection to avoid repeating
+        }
+      }
+    }
+    // record other intersections saved in the track
+    for(auto const& interpair : kktrk.intersections()) {
+      auto const& sid = std::get<0>(interpair);
+      auto const& inter = std::get<1>(interpair);
+      auto const& ktraj = ftraj.nearestPiece(inter.time_);
+      inters.emplace_back(ktraj.stateEstimate(inter.time_),XYZVectorF(ktraj.bnom()),sid,inter);
+    }
+    // sort by time TODO
   }
 
 }
