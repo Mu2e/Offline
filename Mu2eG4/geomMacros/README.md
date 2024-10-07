@@ -10,9 +10,9 @@ This macro takes a string and will print all volumes that have that string in th
 
 Examples:
 ```
-root -l -b -q where_is_volume.C\(\"VirtualDetector\"\)
-root -l -b -q where_is_volume.C\(\"VirtualDetector\"\,\"mu2e.gdml\")
-root -l -b -q where_is_volume.C\(\"VirtualDetector\"\,\"mu2e.gdml\",true)
+root -l -b -q 'where_is_volume.C("VirtualDetector")'
+root -l -b -q 'where_is_volume.C("VirtualDetector","mu2e.gdml")'
+root -l -b -q 'where_is_volume.C("VirtualDetector","mu2e.gdml",true)'
 ```
 
 ## ```find_volume_at_point.C```
@@ -28,8 +28,8 @@ There are two functions defined in this macro. One can be used on the command li
 
 Examples:
 ```
-root -l -b -q find_volume_at_point.C\(-3904,0,4000\)
-root -l -b -q find_volume_at_point.C\(-3904,0,4000,\"mu2e.gdml\"\)
+root -l -b -q 'find_volume_at_point.C(-3904,0,4000)'
+root -l -b -q 'find_volume_at_point.C(-3904,0,4000,"mu2e.gdml")'
 ````
 
 The other can be called from another macro so that you can ask for multiple points without having to reload the GDML each time. This takes the following arguments:
