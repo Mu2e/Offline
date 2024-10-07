@@ -9,7 +9,7 @@ void find_volume_at_point(double x, double y, double z, TGeoManager* geom, bool 
   if (!node) out << "The position (" << x << ", " << y << ", " << z << ") is outside the world\n";
   else {
     if (output_csv) {
-      out << x << "," << y << "," << z << "," << clean_volume_names(std::string(node->GetName())) << "," << node->GetVolume()->GetMaterial()->GetName() << "," << clean_volume_names(std::string(geom->GetPath())) << "\n";
+      out << x << "," << y << "," << z << "," << clean_volume_names(std::string(node->GetName())) << "," << node->GetVolume()->GetMaterial()->GetName() << "," << clean_path_names(std::string(geom->GetPath())) << "\n";
     }
     else {
       out << "The volume at position (" << x << ", " << y << ", " << z << ") is " << node->GetName() << "  (material = " << node->GetVolume()->GetMaterial()->GetName() << ", geometry path: " << geom->GetPath() << ")\n";
@@ -17,12 +17,12 @@ void find_volume_at_point(double x, double y, double z, TGeoManager* geom, bool 
   }
 }
 
-void find_volume_at_point(double x, double y, double z, TString gdmlname = "mu2e.gdml") {
+void find_volume_at_point(double x, double y, double z, TString gdmlname = "mu2e.gdml", bool output_csv = false, std::ostream& out = std::cout) {
 
   TGeoManager::SetDefaultUnits(TGeoManager::kG4Units); // default is kRootUnits which is cm, s, GeV; kG4Units are mm, ns, MeV
   TGeoManager* geom = TGeoManager::Import(gdmlname);
 
-  find_volume_at_point(x, y, z, geom);
+  find_volume_at_point(x, y, z, geom, output_csv, out);
 }
 
 void find_volume_at_point_csv_header(std::ostream& out = std::cout) {

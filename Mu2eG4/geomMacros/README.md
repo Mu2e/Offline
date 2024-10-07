@@ -25,6 +25,8 @@ This macro takes an x, y, z position (in Mu2e global coordinates) and prints inf
 There are two functions defined in this macro. One can be used on the command line and takes the following arguments:
 * ```x, y, z``` is the position (required)
 * ```gdmlname``` is the name of the GDML file you want to inspect (optional, default = ```mu2e.gdml```)
+* ```output_csv``` is a boolean for if you want the output printined in csv format (optional, default = ```false```)
+* ```out``` is an ```std::ostream``` if you want to redirect the output to a file (optional, default = ```std::cout```)x
 
 Examples:
 ```
