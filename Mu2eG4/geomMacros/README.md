@@ -17,8 +17,10 @@ root -l -b -q where_is_volume.C\(\"VirtualDetector\"\,\"mu2e.gdml\",true)
 
 ## ```find_volume_at_point.C```
 This macro takes an x, y, z position (in Mu2e global coordinates) and prints information for the volume at that position. Some warnings:
-* this will return the deepest volume in the hierarchy, and
-* if two volumes are touching at that point, the volume returned is ambiguous
+* this will return the deepest volume in the hierarchy
+* if two volumes are touching at the given position, the volume returned is seemingly random
+   * e.g. if volume A is fully contained within volume B, and you ask for a point on the boundary of volume A, round-off errors could give you volume B instead of the expected volume A
+* ```StepPointMCs``` have positions on volume boundary
 
 There are two functions defined in this macro. One can be used on the command line and takes the following arguments:
 * ```x, y, z``` is the position (required)
