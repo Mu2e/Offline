@@ -170,26 +170,6 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
         crvFragColl->emplace_back(cf);
         ++nFrags;
       }
-
-      //FIXME: Temporary implementation until the DTC header (source_dtc_id) gets fixed.
-      //Currently, the DTC header uses the Subsystem ID for the tracker.
-      //Checking the TDAQ header of the first data block instead.
-      auto crvSEventsT = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker);
-      for(auto& subevent : crvSEventsT)
-      {
-        mu2e::CRVDataDecoder cf(subevent);
-        cf.setup_event();
-        if(cf.block_count()>0)
-        {
-          auto block = cf.dataAtBlockIndex(0);
-          if(block == nullptr) continue;
-          auto header = block->GetHeader();
-          if(header->GetSubsystemID() != DTCLib::DTC_Subsystem::DTC_Subsystem_CRV) continue;
-
-          crvFragColl->emplace_back(cf);
-          ++nFrags;
-        }
-      }
     }
   }
 
