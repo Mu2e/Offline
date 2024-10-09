@@ -31,10 +31,6 @@ namespace mu2e {
     const std::vector<double>& plane_xoffset() const { return m_plane_xoffset; }
     const std::vector<double>& plane_yoffset() const { return m_plane_yoffset; }
 
-    const std::vector<double>& motherTransverseHalfSize() const { return m_motherTransverseHalfSize; }
-    const double motherStartZ() const { return m_motherStartZ; }
-    const double motherEndZ() const { return m_motherEndZ; }
-
     // offset of plane center wrt the ref point
     CLHEP::Hep3Vector   planeOffsetInStack(unsigned iplane) const;
 
