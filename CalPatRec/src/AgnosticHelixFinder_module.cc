@@ -1408,9 +1408,9 @@ namespace mu2e {
     helTool.dirOfProp(tzSlope, tzSlopeErr, tzSlopeChi2);
     HelixRecoDir helDir(tzSlope, tzSlopeErr, tzSlopeChi2);
     hseed._recoDir = helDir;
-    HelixRecoDir::propDirection _direction = helDir.computeDirection(_tzSlopeSigThresh);
+    hseed._propDir = helDir.computeDirection(_tzSlopeSigThresh);
 
-    if (_saveUpstreamHelices == false && _direction == HelixRecoDir::upstream) return;
+    if (_saveUpstreamHelices == false && hseed._propDir == HelixRecoDir::upstream) return;
 
     // push back the helix seed to the helix seed collection
     HSColl.emplace_back(hseed);

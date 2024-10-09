@@ -19,14 +19,14 @@ namespace mu2e {
     float chi2ndof() const { return _chi2ndof; }
 
     // Enum declaration for direction
-    enum propDirection {
+    enum PropDir {
       upstream,
       downstream,
       ambiguous
     };
 
     // Method to compute direction based on slope and slopeSig
-    propDirection computeDirection(float sigThreshold) const {
+    PropDir computeDirection(float sigThreshold) const {
       float sig = slopeSig(); // Compute the slope significance
 
       if (sig < sigThreshold) {
