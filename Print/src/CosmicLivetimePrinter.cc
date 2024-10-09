@@ -21,7 +21,7 @@ void mu2e::CosmicLivetimePrinter::PrintSubRun(art::SubRun const& subrun,
       nPrimaries_ += ih->primaries();
       livetime_ += ih->liveTime();
     }
-    if(ncosmic> 1) throw cet::exception(">1 Cosmic Livetime!") << std::endl;
+    if(ncosmic> 1) std::cout << ">1 Cosmic Livetime!" << std::endl;
   }
 }
 
