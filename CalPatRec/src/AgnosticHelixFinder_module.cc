@@ -26,10 +26,12 @@
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/HelixRecoDir.hh"
 
 #include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 #include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
+#include "Offline/Mu2eUtilities/inc/HelixTool.hh"
 
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 
@@ -74,10 +76,11 @@ namespace mu2e {
       fhicl::Atom<float>         max2PiAmbigResidual    {Name("max2PiAmbigResidual"  ), Comment("when 2pi resolving segment"  )  };
       fhicl::Atom<float>         maxPhiZResidual        {Name("maxPhiZResidual"      ), Comment("when refining phi-z line"    )  };
       fhicl::Atom<int>           minFinalSeedHits       {Name("minFinalSeedHits"     ), Comment("halt search if below thresh" )  };
+      fhicl::Atom<float>         maxNHitsRatio          {Name("maxNHitsRatio"        ), Comment("max ratio of seed hits"      )  };
       fhicl::Atom<float>         maxCircleRecoverSigma  {Name("maxCircleRecoverSigma"), Comment("when doing final recovery"   )  };
       fhicl::Atom<float>         maxLineRecoverSigma    {Name("maxLineRecoverSigma"  ), Comment("when doing final recovery"   )  };
       fhicl::Atom<float>         caloClusterSigma       {Name("caloClusterSigma"     ), Comment("error assigned to calo clust")  };
-      fhicl::Atom<int>           minNHelixStrawHits     {Name("minNHelixStrawHits"   ),Comment("straw hit save threshold"     )  };
+      fhicl::Atom<int>           minNHelixStrawHits     {Name("minNHelixStrawHits"   ), Comment("straw hit save threshold"    )  };
       fhicl::Atom<int>           minNHelixComboHits     {Name("minNHelixComboHits"   ), Comment("combo hit save threshold"    )  };
       fhicl::Atom<float>         minHelixPerpMomentum   {Name("minHelixPerpMomentum" ), Comment("min pt of helix"             )  };
       fhicl::Atom<float>         maxHelixPerpMomentum   {Name("maxHelixPerpMomentum" ), Comment("max pt of helix"             )  };
@@ -85,7 +88,8 @@ namespace mu2e {
       fhicl::Atom<float>         maxHelixMomentum       {Name("maxHelixMomentum"     ), Comment("max momentum of helix"       )  };
       fhicl::Atom<float>         chi2LineSaveThresh     {Name("chi2LineSaveThresh"   ), Comment("max chi2Dof for line"        )  };
       fhicl::Atom<float>         maxEDepAvg             {Name("maxEDepAvg"           ), Comment("max avg edep of combohits"   )  };
-      fhicl::Atom<float>         maxNHitsRatio          {Name("maxNHitsRatio"        ), Comment("max ratio of seed hits"      )  };
+      fhicl::Atom<float>         tzSlopeSigThresh       {Name("tzSlopeSigThresh"     ), Comment("direction ambiguous if below")  };
+      fhicl::Atom<bool>          saveUpstreamHelices    {Name("saveUpstreamHelices"  ), Comment("option to filter upstrm out" )  };
 
       fhicl::Table<AgnosticHelixFinderTypes::Config> diagPlugin  {Name("diagPlugin"), Comment("diag plugin"                   )  };
     };
@@ -183,6 +187,7 @@ namespace mu2e {
     float    _max2PiAmbigResidual;
     float    _maxPhiZResidual;
     int      _minFinalSeedHits;
+    float    _maxNHitsRatio;
     float    _maxCircleRecoverSigma;
     float    _maxLineRecoverSigma;
     float    _caloClusterSigma;
@@ -194,13 +199,15 @@ namespace mu2e {
     float    _maxHelixMomentum;
     float    _chi2LineSaveThresh;
     float    _maxEDepAvg;
-    float    _maxNHitsRatio;
+    float    _tzSlopeSigThresh;
+    bool     _saveUpstreamHelices;
 
     //-----------------------------------------------------------------------------
     // diagnostics
     //-----------------------------------------------------------------------------
     art::Handle<CaloClusterCollection>   _ccHandle;
     const mu2e::Calorimeter*             _calorimeter;
+    const mu2e::Tracker*                 _tracker;
     art::Event*                          _event;
 
     //-----------------------------------------------------------------------------
@@ -306,6 +313,7 @@ namespace mu2e {
     _max2PiAmbigResidual           (config().max2PiAmbigResidual()                   ),
     _maxPhiZResidual               (config().maxPhiZResidual()                       ),
     _minFinalSeedHits              (config().minFinalSeedHits()                      ),
+    _maxNHitsRatio                 (config().maxNHitsRatio()                         ),
     _maxCircleRecoverSigma         (config().maxCircleRecoverSigma()                 ),
     _maxLineRecoverSigma           (config().maxLineRecoverSigma()                   ),
     _caloClusterSigma              (config().caloClusterSigma()                      ),
@@ -317,7 +325,8 @@ namespace mu2e {
     _maxHelixMomentum              (config().maxHelixMomentum()                      ),
     _chi2LineSaveThresh            (config().chi2LineSaveThresh()                    ),
     _maxEDepAvg                    (config().maxEDepAvg()                            ),
-    _maxNHitsRatio                 (config().maxNHitsRatio()                         )
+    _tzSlopeSigThresh              (config().tzSlopeSigThresh()                      ),
+    _saveUpstreamHelices           (config().saveUpstreamHelices()                   )
 
     {
 
@@ -355,6 +364,9 @@ namespace mu2e {
 
     GeomHandle<mu2e::Calorimeter> ch;
     _calorimeter = ch.get();
+
+    GeomHandle<mu2e::Tracker> th;
+    _tracker = th.get();
 
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
@@ -1387,6 +1399,18 @@ namespace mu2e {
     }
 
     if (eDepAvg > _maxEDepAvg) return;
+
+    // compute direction of propagation
+    HelixTool helTool(&hseed,_tracker);
+    float tzSlope = 0.0;
+    float tzSlopeErr = 0.0;
+    float tzSlopeChi2 = 0.0;
+    helTool.dirOfProp(tzSlope, tzSlopeErr, tzSlopeChi2);
+    HelixRecoDir helDir(tzSlope, tzSlopeErr, tzSlopeChi2);
+    hseed._recoDir = helDir;
+    HelixRecoDir::propDirection _direction = helDir.computeDirection(_tzSlopeSigThresh);
+
+    if (_saveUpstreamHelices == false && _direction == HelixRecoDir::upstream) return;
 
     // push back the helix seed to the helix seed collection
     HSColl.emplace_back(hseed);
