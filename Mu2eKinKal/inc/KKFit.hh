@@ -28,9 +28,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
 #include "Offline/RecoDataProducts/inc/KalIntersection.hh"
-#include "Offline/DataProducts/inc/SurfaceId.hh"
-#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
-#include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 // geometry
 #include "Offline/KinKalGeom/inc/Tracker.hh"
 // KinKal includes
@@ -112,7 +109,7 @@ namespace mu2e {
           KKTRK const& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& hits) const;
       void addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK const& kktrk, KKSTRAWHITCOL const& addhits, KKSTRAWXINGCOL& addexings) const;
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
-      void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters, TrkFitFlag const& seedflag) const; // sample fit at the surfaces specified in the config
+      void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const; // sample fit at the surfaces specified in the config
       void extendFit(KKTRK& kktrk) const;
       int printLevel_;
       unsigned minNStrawHits_;
@@ -139,10 +136,6 @@ namespace mu2e {
       mutable double spitch_;
       mutable bool needstrackerinfo_ = true;
 
-      double sampletol_; // surface intersection tolerance (mm)
-      bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
-      SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
-
       SaveTraj savetraj_; // trajectory saving option
   };
 
@@ -168,20 +161,8 @@ namespace mu2e {
     maxStrawHitDt_(fitconfig.maxStrawHitDt()),
     maxStrawDoca_(fitconfig.maxStrawDOCA()),
     maxStrawDocaCon_(fitconfig.maxStrawDOCAConsistency()),
-    maxDStraw_(fitconfig.maxDStraw()),
-    sampletol_(fitconfig.sampleTol()),
-    sampleinrange_(fitconfig.sampleInRange()),
-    sampleinbounds_(fitconfig.sampleInBounds())
+    maxDStraw_(fitconfig.maxDStraw())
   {
-    SurfaceIdCollection ssids;
-    for(auto const& sidname : fitconfig.sampleSurfaces()) {
-      ssids.push_back(SurfaceId(sidname,-1)); // match all elements
-    }
-    // translate the sample and extend surface names to actual surfaces using the SurfaceMap.  This should come from the
-    // geometry service eventually, TODO
-    SurfaceMap smap;
-    smap.surfaces(ssids,sample_);
-
     if (fitconfig.saveTraj() == "T0") {
         savetraj_ = t0seg;
     } else if (fitconfig.saveTraj() == "Full") {
@@ -593,56 +574,14 @@ namespace mu2e {
       fseed._segments.emplace_back(t0piece,t0val);
     }
     // sample the fit at the locations provided
-    sampleFit(kktrk,fseed._inters,seedflag);
+    sampleFit(kktrk,fseed._inters);
     return fseed;
   }
 
-  template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters, TrkFitFlag const& seedflag) const {
-    auto const& ftraj = kktrk.fitTraj();
-    double tbeg = ftraj.range().begin();
-    double tend = ftraj.range().end();
-    static const double epsilon(1.0e-6);
-// if this helix has reflected, limit the search
-    if(seedflag.hasAnyProperty(TrkFitFlag::KKLoopHelix)){
-      auto mom0 = ftraj.momentum3(ftraj.t0());
-      if(mom0.Z() >0){ // downstream fit: skip any upstream-going segments
-        for(auto const& ktraj : ftraj.pieces()){
-          auto axis = ktraj->axis(ktraj->range().mid());
-          if(axis.direction().Z() > 0.0 )break; // helix headed downstream
-          tbeg = ktraj->range().end(); // force onto next piece
-        }
-      } else { // upstream fit: stop when the track reflects back downstream
-        for(auto const& ktraj : ftraj.pieces()){
-          auto axis = ktraj->axis(ktraj->range().mid());
-          if(axis.direction().Z() > 0.0 )break; // helix no longer heading upstream
-          tend = ktraj->range().begin();
-        }
-      }
-    }
-    for(auto const& surf : sample_){
-      // search for intersections with each surface within the specified time range, going forwards in time
-      bool hasinter(true);
-      size_t max_iter = 1000;
-      size_t cur_iter = 0;
-
-      // loop to find multiple intersections
-      while(hasinter && tbeg < tend) {
-        TimeRange irange(tbeg,tend);
-        if (cur_iter > max_iter)
-          break;
-        cur_iter += 1;
-        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
-        hasinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
-        if(hasinter) {
-          // save the intersection information
-          auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
-          inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
-          // update for the next intersection
-          tbeg = surfinter.time_ + epsilon;// move psst existing intersection to avoid repeating
-        }
-      }
-    }
+  template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
     // add IPA and ST Xings. Sample just before the transit to include the effect of the material
+    static const double epsilon(1.0e-6);
+    auto const& ftraj = kktrk.fitTraj();
     for(auto const& ipaxing : kktrk.IPAXings()){
       double stime = ipaxing->time() - epsilon;
       auto const& ktraj = ftraj.nearestPiece(stime);
