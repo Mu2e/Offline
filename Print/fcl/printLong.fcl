@@ -18,6 +18,9 @@ physics :{
     printModule : {
       module_type : PrintModule
 
+      EventHeaderPrinter : {
+        verbose : 1
+      }
       statusG4Printer : {
         verbose : 0
       }
