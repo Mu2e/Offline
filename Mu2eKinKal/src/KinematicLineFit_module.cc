@@ -206,11 +206,7 @@ namespace mu2e {
       // geometry service eventually, TODO
       SurfaceMap smap;
       smap.surfaces(ssids,sample_);
-      int surfacecount = 0;
-      for(auto const& surf : sample_){
-        surfacecount += 1;
-      }
-      std::cout << "HOW MANY SURFACES " << surfacecount << std::endl;
+      std::cout << "HOW MANY SURFACES " << sample_.size() << std::endl;
 
       if(print_ > 0) std::cout << config_;
 
@@ -336,7 +332,7 @@ namespace mu2e {
     return ktrk.fitStatus().usable();
   }
 
-void KinematicLineFit::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
+  void KinematicLineFit::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
     auto const& ftraj = kktrk.fitTraj();
     double tbeg = ftraj.range().begin();
     static const double epsilon(1.0e-3);
