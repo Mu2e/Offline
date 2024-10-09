@@ -7,7 +7,9 @@
 #include "Offline/CRVReco/inc/MakeCrvRecoPulses.hh"
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
@@ -60,7 +62,8 @@ namespace mu2e
       fhicl::Atom<float> pulseThreshold{Name("pulseThreshold"), Comment("fraction of ADC peak used as threshold to determine the pulse time interval for the no-fit option")}; //0.5
       fhicl::Atom<float> pulseAreaThreshold{Name("pulseAreaThreshold"), Comment("threshold to determine the pulse area for the the no-fit option")}; //5
       fhicl::Atom<float> doublePulseSeparation{Name("doublePulseSeparation"), Comment("fraction of both peaks at which double pulses can be separated in the no-fit option")}; //0.25
-      fhicl::Atom<art::InputTag> protonBunchTimeTag{ Name("protonBunchTimeTag"), Comment("ProtonBunchTime producer"),"EWMProducer" };
+      fhicl::Atom<art::InputTag> eventWindowMarkerTag{Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer"};
+      fhicl::Atom<art::InputTag> protonBunchTimeTag{Name("protonBunchTimeTag"), Comment("ProtonBunchTime producer"),"EWMProducer"};
       fhicl::Atom<float> timeOffsetScale{Name("timeOffsetScale"), Comment("scale factor for time offsets from database (use 1.0, if measured values)")}; //1.0
       fhicl::Atom<float> timeOffsetCutoffLow{Name("timeOffsetCutoffLow"), Comment("lower cutoff of time offsets (for random values - otherwise set to minimum value)")}; //-3.0ns
       fhicl::Atom<float> timeOffsetCutoffHigh{Name("timeOffsetCutoffHigh"), Comment("upper cutoff of time offsets (for random values - otherwise set to maximum value)")}; //+3.0ns
@@ -80,6 +83,7 @@ namespace mu2e
     boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> _makeCrvRecoPulses;
 
     std::string _crvDigiModuleLabel;
+    art::InputTag _eventWindowMarkerTag;
     art::InputTag _protonBunchTimeTag;
 
     float _timeOffsetScale;
@@ -97,6 +101,7 @@ namespace mu2e
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(const Parameters& conf) :
     art::EDProducer(conf),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
+    _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeTag(conf().protonBunchTimeTag()),
     _timeOffsetScale(conf().timeOffsetScale()),
     _timeOffsetCutoffLow(conf().timeOffsetCutoffLow()),
@@ -135,9 +140,21 @@ namespace mu2e
     std::unique_ptr<CrvRecoPulseCollection> crvRecoPulseCollection(new CrvRecoPulseCollection);
 
     double TDC0time = 0;
-    art::Handle<ProtonBunchTime> protonBunchTime;
-    event.getByLabel(_protonBunchTimeTag, protonBunchTime);
-    if(protonBunchTime.isValid()) TDC0time = -protonBunchTime->pbtime_;
+
+    art::Handle<EventWindowMarker> eventWindowMarker;
+    event.getByLabel(_eventWindowMarkerTag,eventWindowMarker);
+    EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
+    if(spillType==EventWindowMarker::SpillType::onspill)
+    {
+      art::Handle<ProtonBunchTime> protonBunchTime;
+      event.getByLabel(_protonBunchTimeTag, protonBunchTime);
+      if(protonBunchTime.isValid())
+      {
+        ProditionsHandle<EventTiming> eventTimingHandle;
+        const EventTiming &eventTiming = eventTimingHandle.get(event.id());
+        TDC0time = -protonBunchTime->pbtime_ - eventTiming.timeFromProtonsToDRMarker(); //0ns...25ns (only for onspill)
+      }
+    }
 
     art::Handle<CrvDigiCollection> crvDigiCollection;
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
