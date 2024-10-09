@@ -166,6 +166,7 @@ class PrintModule : public art::EDAnalyzer {
   explicit PrintModule(const Parameters& conf);
   void analyze(art::Event const& event) override;
   void beginSubRun(art::SubRun const& subrun) override;
+  void endJob() override;
 
  private:
   bool _printevent, _printsubrun;
@@ -281,6 +282,11 @@ void mu2e::PrintModule::beginSubRun(art::SubRun const& subrun) {
 
     cout << endl;
   }
+}
+
+void mu2e::PrintModule::endJob() {
+  for (auto& prod_printer : _printers) prod_printer->PrintEndJob();
+  cout << endl;
 }
 
 DEFINE_ART_MODULE(mu2e::PrintModule)
