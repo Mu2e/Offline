@@ -6,24 +6,16 @@ process_name : rse
 
 physics :{
   analyzers: {
-    res : {
-      module_type : RunSubrunEvent
-    }
-    genCountPrint: {
-      module_type: GenEventCountReader
-      makeHistograms: false
-    }
-    printModule : {
-      module_type : PrintModule
-      PrintEvent : false
-      PrintSubRun : true
-      CosmicLivetimePrinter : {
-        verbose : 1
+      res : {
+         module_type : RunSubrunEvent
       }
-    } # printModule
-  }
+      genCountPrint: {
+         module_type: GenEventCountReader
+         makeHistograms: false
+      }
+   }
 
-  e1        : [ res , genCountPrint, printModule ]
-  end_paths : [ e1 ]
+   e1        : [ res , genCountPrint ]
+   end_paths : [ e1 ]
 
 }
