@@ -206,7 +206,6 @@ namespace mu2e {
       // geometry service eventually, TODO
       SurfaceMap smap;
       smap.surfaces(ssids,sample_);
-      std::cout << "HOW MANY SURFACES " << sample_.size() << std::endl;
 
       if(print_ > 0) std::cout << config_;
 
