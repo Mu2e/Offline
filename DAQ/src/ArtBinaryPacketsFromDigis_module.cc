@@ -34,51 +34,55 @@
 #include "artdaq-core-mu2e/Data/TrackerDataDecoder.hh"
 
 // pci_linux_kernel_module includes
-#include "artdaq-core-mu2e/Overlays/DTC_Packets.h"
+#include "artdaq-core-mu2e/Overlays/DTC_Packets/DTC_Event.h"
 
 // Mu2e includes.
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-//#include "Offline/DAQDataProducts/inc/DataBlockCollection.hh"
-#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
-#include "Offline/CaloConditions/inc/CaloDAQMap.hh"
+// #include "Offline/DAQDataProducts/inc/DataBlockCollection.hh"
 #include "Offline/CRVConditions/inc/CRVOrdinal.hh"
+#include "Offline/CaloConditions/inc/CaloDAQMap.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 #include "Offline/SeedService/inc/SeedService.hh"
+
+#include "TRACE/tracemf.h"
 
 #include <fstream>
 #include <stdexcept>
 
 // Typedefs needed for compatibility with HLS codeblock
 using timestamp = uint64_t;
-struct DataBlockHeader // From mu2e_pcie_utils mu2e_mmap_ioctl.h TODO: Use DTC_DataHeaderPacket instead!
+struct DataBlockHeader // From mu2e_pcie_utils mu2e_mmap_ioctl.h TODO: Use DTC_DataHeaderPacket
+                       // instead!
 {
-        uint16_t TransferByteCount;  ///< Block Byte count
+  uint16_t TransferByteCount; ///< Block Byte count
 
-        uint16_t Resv1 : 4;        ///< Reserved
-        uint16_t PacketType : 4;   ///< Type of packet
-        uint16_t LinkID : 4;       ///< Link ID of packet
-        uint16_t SubsystemID : 3;  ///< Subsystem ID
-        uint16_t Valid : 1;        ///< Is the packet valid?
+  uint16_t Resv1 : 4;      ///< Reserved
+  uint16_t PacketType : 4; ///< Type of packet
+  uint16_t LinkID : 3;     ///< Link ID of packet
+  uint16_t DTCErrors : 4;  ///< Subsystem ID
+  uint16_t Valid : 1;      ///< Is the packet valid?
 
-        uint16_t PacketCount : 11;     ///< Packet count requested
-        uint16_t Resv2 : 5;            ///< Reserved
-        uint16_t ts10;                 ///< Timestamp bytes 1 and 2 (Least significant)
-        uint16_t ts32;                 ///< Timestamp bytes 3 and 4
-        uint16_t ts54;                 ///< Timestamp bytes 5 and 6 (Most significant)
-        uint16_t Status : 8;           ///< Status word
-        uint16_t Version : 8;          ///< Data packet format version
-        uint16_t DTCID : 8;            ///< ID of receiving DTC
-        uint16_t EventWindowMode : 8;  ///< Window mode byte from CFO
+  uint16_t PacketCount : 11;    ///< Packet count requested
+  uint16_t Resv2 : 2;           ///< Reserved
+  uint16_t SubsystemID : 3;     ///< Subsystem of Data Block
+  uint16_t ts10;                ///< Timestamp bytes 1 and 2 (Least significant)
+  uint16_t ts32;                ///< Timestamp bytes 3 and 4
+  uint16_t ts54;                ///< Timestamp bytes 5 and 6 (Most significant)
+  uint16_t Status : 8;          ///< Status word
+  uint16_t Version : 8;         ///< Data packet format version
+  uint16_t DTCID : 8;           ///< ID of receiving DTC
+  uint16_t EventWindowMode : 8; ///< Window mode byte from CFO
 };
 
 using TrackerDataPacket = mu2e::TrackerDataDecoder::TrackerDataPacket;
 using TrackerADCPacket = mu2e::TrackerDataDecoder::TrackerADCPacket;
 using adc_t = uint16_t;
 
-//adding in new calorimter packet
+// adding in new calorimter packet
 using CalorimeterHitDataPacket = mu2e::CalorimeterDataDecoder::CalorimeterHitDataPacket;
 using CalorimeterFooterPacket = mu2e::CalorimeterDataDecoder::CalorimeterFooterPacket;
 using CRVROCStatusPacket = mu2e::CRVDataDecoder::CRVROCStatusPacket;
@@ -147,7 +151,7 @@ public:
     fhicl::Atom<int> generateBinaryFile{Name("generateBinaryFile"), Comment("generate BinaryFile")};
     fhicl::Atom<std::string> outputFile{Name("outputFile"), Comment("output File name")};
     fhicl::Atom<int> generateTextFile{Name("generateTextFile"), Comment("generate Text File")};
-    fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("diagnostic Level")};
+    fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("diagLevel")};
     fhicl::Atom<int> maxFullPrint{Name("maxFullPrint"), Comment("maxFullPrint")};
     fhicl::Atom<art::InputTag> sdtoken{Name("strawDigiCollection"),
                                        Comment("Straw digi collection name")};
@@ -174,18 +178,18 @@ private:
   std::vector<std::pair<timestamp, timestamp>> tsTable;
 
   size_t _timestampOffset;
-  int    _includeTracker;
-  int    _includeCalorimeter;
-  int    _includeCrv;
-  int    _includeDMAHeaders;
+  int _includeTracker;
+  int _includeCalorimeter;
+  int _includeCrv;
+  int _includeDMAHeaders;
 
   // -- include proditions handling
   ProditionsHandle<CaloDAQMap> _calodaqconds_h;
   ProditionsHandle<CRVOrdinal> _crvChannelMap_h;
   // Set to 1 to save packet data to a binary file
-  int    _generateBinaryFile;
+  int _generateBinaryFile;
 
-  std::string   _outputFile;
+  std::string _outputFile;
   std::ofstream outputStream;
 
   //--------------------------------------------------------------------------------
@@ -208,8 +212,8 @@ private:
   //--------------------------------------------------------------------------------
   // 6 rocs per DTC => 23 DTCs
   // 136 rocs * 10 crystals per roc => 1348
-  const size_t number_of_calo_rocs         = 136;
-  const size_t number_of_crystals_per_roc  = 10;
+  const size_t number_of_calo_rocs = 136;
+  const size_t number_of_crystals_per_roc = 10;
   const size_t number_of_calo_rocs_per_dtc = 6;
 
   //--------------------------------------------------------------------------------
@@ -221,12 +225,6 @@ private:
   //--------------------------------------------------------------------------------
 
   int _generateTextFile;
-
-  // Diagnostics level.
-  int _diagLevel;
-
-  // Limit on number of events for which there will be full printout.
-  int _maxFullPrint;
 
   // Label of the module that made the hits.
   art::ProductToken<StrawDigiCollection> const _sdtoken;
@@ -278,13 +276,13 @@ private:
   //--------------------------------------------------------------------------------
   //  methods used to handle the calorimeter data
   //--------------------------------------------------------------------------------
-  void   fillCalorimeterDataPacket(CaloDAQMap const& calodaqconds,
-                                   const CaloDigi& SD, CaloDataPacket& caloData);
+  void fillCalorimeterDataPacket(CaloDAQMap const& calodaqconds, const CaloDigi& SD,
+                                 CaloDataPacket& caloData);
 
   void addCaloHitToCaloPacket(calo_data_block_t& dataBlock, CaloDataPacket& caloData);
 
-  void   fillCalorimeterHeaderDataPacket(CaloDAQMap const& calodaqconds,
-                                         const CaloDigi& SD, DataBlockHeader& HeaderData, uint64_t& EventNum);
+  void fillCalorimeterHeaderDataPacket(CaloDAQMap const& calodaqconds, const CaloDigi& SD,
+                                       DataBlockHeader& HeaderData, uint64_t& EventNum);
 
   void fillHeaderByteAndPacketCounts(calo_data_block_t& caloData);
 
@@ -304,10 +302,12 @@ private:
   //--------------------------------------------------------------------------------
 
   void processCrvData(art::Event& evt, uint64_t& eventNum, crv_data_block_list_t& crvDataBlocks);
-//  uint8_t compressCrvDigi(int adc);
+  //  uint8_t compressCrvDigi(int adc);
   int16_t compressCrvDigi(int16_t adc);
-  void fillCrvDataPacket(const CRVOrdinal& crvChannelMap, const CrvDigi& digi, CRVHit& hit, int& rocID);
-  void fillCrvHeaderPacket(const CRVOrdinal& crvChannelMap, CrvDataPacket& crvData, uint8_t rocID, uint64_t eventNum);
+  void fillCrvDataPacket(const CRVOrdinal& crvChannelMap, const CrvDigi& digi, CRVHit& hit,
+                         int& rocID);
+  void fillCrvHeaderPacket(const CRVOrdinal& crvChannelMap, CrvDataPacket& crvData, uint8_t rocID,
+                           uint64_t eventNum);
   void fillCrvDMABlocks(DTCLib::DTC_Event& currentEvent, const crv_data_block_list_t& crvData);
   void fillCrvDataStream(DTCLib::DTC_Event& currentEvent, const CrvDataPacket& crvData);
   void printCrvData(const CrvDataPacket& curDataBlock);
@@ -332,105 +332,76 @@ const size_t ArtBinaryPacketsFromDigis::waveformMaximumIndex(std::vector<adc_t> 
 }
 
 void ArtBinaryPacketsFromDigis::printHeader(DataBlockHeader const& headerDataBlock) {
-  printf("[ArtBinaryPacketsFromDigis::printHeader] START header print  \n");
-  printf("[ArtBinaryPacketsFromDigis::printHeader] ByteCount      : %i \n",
-         headerDataBlock.TransferByteCount);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] Resv1       : %i \n", headerDataBlock.Resv1);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] PacketType     : %i \n",
-         headerDataBlock.PacketType);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] ROCID            : %i \n", headerDataBlock.LinkID);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] SubsystemID    : %i \n",
-         headerDataBlock.SubsystemID);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] Valid            : %i \n", headerDataBlock.Valid);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] PacketCount    : %i \n",
-         headerDataBlock.PacketCount);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] Resv2        : %i \n", headerDataBlock.Resv2);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] ts10   : %i \n", headerDataBlock.ts10);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] ts32   : %i \n", headerDataBlock.ts32);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] ts54  : %i \n", headerDataBlock.ts54);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] Status           : %i \n", headerDataBlock.Status);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] FormatVersion  : %i \n",
-         headerDataBlock.Version);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] DTCID           : %i \n", headerDataBlock.DTCID);
-  printf("[ArtBinaryPacketsFromDigis::printHeader] EVBMode        : %i \n",
-         headerDataBlock.EventWindowMode);
+  TLOG(TLVL_DEBUG + 12) << "START header print";
+  TLOG(TLVL_DEBUG + 12) << "ByteCount     : " << headerDataBlock.TransferByteCount;
+  TLOG(TLVL_DEBUG + 12) << "Resv1         : " << headerDataBlock.Resv1;
+  TLOG(TLVL_DEBUG + 12) << "PacketType    : " << headerDataBlock.PacketType;
+  TLOG(TLVL_DEBUG + 12) << "ROCID         : " << headerDataBlock.LinkID;
+  TLOG(TLVL_DEBUG + 12) << "SubsystemID   : " << headerDataBlock.SubsystemID;
+  TLOG(TLVL_DEBUG + 12) << "Valid         : " << headerDataBlock.Valid;
+  TLOG(TLVL_DEBUG + 12) << "PacketCount   : " << headerDataBlock.PacketCount;
+  TLOG(TLVL_DEBUG + 12) << "Resv2         : " << headerDataBlock.Resv2;
+  TLOG(TLVL_DEBUG + 12) << "ts10          : " << headerDataBlock.ts10;
+  TLOG(TLVL_DEBUG + 12) << "ts32          : " << headerDataBlock.ts32;
+  TLOG(TLVL_DEBUG + 12) << "ts54          : " << headerDataBlock.ts54;
+  TLOG(TLVL_DEBUG + 12) << "Status        : " << headerDataBlock.Status;
+  TLOG(TLVL_DEBUG + 12) << "FormatVersion : " << headerDataBlock.Version;
+  TLOG(TLVL_DEBUG + 12) << "DTCID         : " << headerDataBlock.DTCID;
+  TLOG(TLVL_DEBUG + 12) << "EVBMode       : " << headerDataBlock.EventWindowMode;
 }
 
 void ArtBinaryPacketsFromDigis::printTrackerData(std::vector<TrackerFullHitFormat> const& trkData) {
-  printf("[ArtBinaryPacketsFromDigis::printTrackerData] START tracker-data print \n");
+  TLOG(TLVL_DEBUG + 13) << "START tracker-data print";
   for (size_t i = 0; i < trkData.size(); i++) {
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] StrawIndex    : %i \n",
-           (int)trkData[i].mainPacket.StrawIndex);
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] TDC0                : %i \n",
-           (int)trkData[i].mainPacket.TDC0());
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] TDC1                : %i \n",
-           (int)trkData[i].mainPacket.TDC1());
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] TOT0                : %i \n",
-           (int)trkData[i].mainPacket.TOT0);
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] TOT1                : %i \n",
-           (int)trkData[i].mainPacket.TOT1);
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] PMP             : %i \n",
-           (int)trkData[i].mainPacket.PMP);
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] ADC00         : %i \n",
-           (int)trkData[i].mainPacket.ADC00);
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] ADC01          : %i \n",
-           (int)trkData[i].mainPacket.ADC01());
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] ADC02          : %i \n",
-           (int)trkData[i].mainPacket.ADC02);
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] ErrorFlags : %i \n",
-           (int)trkData[i].mainPacket.ErrorFlags);
+    TLOG(TLVL_DEBUG + 13) << "StrawIndex : " << (int)trkData[i].mainPacket.StrawIndex;
+    TLOG(TLVL_DEBUG + 13) << "TDC0       : " << (int)trkData[i].mainPacket.TDC0();
+    TLOG(TLVL_DEBUG + 13) << "TDC1       : " << (int)trkData[i].mainPacket.TDC1();
+    TLOG(TLVL_DEBUG + 13) << "TOT0       : " << (int)trkData[i].mainPacket.TOT0;
+    TLOG(TLVL_DEBUG + 13) << "TOT1       : " << (int)trkData[i].mainPacket.TOT1;
+    TLOG(TLVL_DEBUG + 13) << "PMP        : " << (int)trkData[i].mainPacket.PMP;
+    TLOG(TLVL_DEBUG + 13) << "ADC00      : " << (int)trkData[i].mainPacket.ADC00;
+    TLOG(TLVL_DEBUG + 13) << "ADC01      : " << (int)trkData[i].mainPacket.ADC01();
+    TLOG(TLVL_DEBUG + 13) << "ADC02      : " << (int)trkData[i].mainPacket.ADC02;
+    TLOG(TLVL_DEBUG + 13) << "ErrorFlags : " << (int)trkData[i].mainPacket.ErrorFlags;
   }
 }
 
 void ArtBinaryPacketsFromDigis::printCalorimeterData(CaloDataPacket const& caloData) {
-  //CalorimeterHitDataPacket packet = caloData.dataPacket;
+  // CalorimeterHitDataPacket packet = caloData.dataPacket;
   CalorimeterFooterPacket footerpacket = caloData.dataFooterPacket;
   size_t nHits = caloData.hitPacketVec.size();
-  printf("[ArtBinaryPacketsFromDigis::printCaloData] START calorimeter-data print \n");
-  printf("[ArtBinaryPacketsFromDigis::printCaloData] NumberofHits        : %i \n",
-         (int)nHits);
-  printf("[ArtBinaryPacketsFromDigis::printCaloData] BoardID             : %i \n",
-         (int)footerpacket.BoardID);
-  printf("[ArtBinaryPacketsFromDigis::printCaloData] ChannelStatusFlagsA : %i \n",
-         (int)footerpacket.ChannelStatusFlagA);
-  printf("[ArtBinaryPacketsFromDigis::printCaloData] ChannelStatusFlagsB : %i \n",
-         (int)footerpacket.ChannelStatusFlagC);
-  printf("[ArtBinaryPacketsFromDigis::printCaloData] unused              : %i \n",
-         (int)footerpacket.unused);
+  TLOG(TLVL_DEBUG + 14) << "START calorimeter-data print";
+  TLOG(TLVL_DEBUG + 14) << "NumberofHits        : " << (int)nHits;
+  TLOG(TLVL_DEBUG + 14) << "BoardID             : " << (int)footerpacket.BoardID;
+  TLOG(TLVL_DEBUG + 14) << "ChannelStatusFlagsA : " << (int)footerpacket.ChannelStatusFlagA;
+  TLOG(TLVL_DEBUG + 14) << "ChannelStatusFlagsB : " << (int)footerpacket.ChannelStatusFlagC;
+  TLOG(TLVL_DEBUG + 14) << "unused              : " << (int)footerpacket.unused;
 
   for (size_t i = 0; i < nHits; ++i) {
     CalorimeterHitDataPacket const& hit = caloData.hitPacketVec[i];
-    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t hit : %i \n", (int)i);
-    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t ChannelNumber : %i \n",
-           (int)hit.ChannelNumber);
-    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t DIRACA        : %i \n", (int)hit.DIRACA);
-    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t DIRACB        : %i \n", (int)hit.DIRACB);
-    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t ErrorFlags    : %i \n", (int)hit.ErrorFlags);
-    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t Time          : %i \n", (int)hit.Time);
-    //printf("[ArtBinaryPacketsFromDigis::printCaloData]\t NumberOfSamples : %i \n",
-     //      (int)hit.NumberOfSamples); TODO
-    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t IndexOfMaxDigitizerSample : %i \n",
-           (int)hit.IndexOfMaxDigitizerSample);
+    TLOG(TLVL_DEBUG + 14) << "hit           : " << (int)i;
+    TLOG(TLVL_DEBUG + 14) << "ChannelNumber : " << (int)hit.ChannelNumber;
+    TLOG(TLVL_DEBUG + 14) << "DIRACA        : " << (int)hit.DIRACA;
+    TLOG(TLVL_DEBUG + 14) << "DIRACB        : " << (int)hit.DIRACB;
+    TLOG(TLVL_DEBUG + 14) << "ErrorFlags    : " << (int)hit.ErrorFlags;
+    TLOG(TLVL_DEBUG + 14) << "Time          : " << (int)hit.Time;
+    // TLOG(TLVL_DEBUG + 14) << "NumberOfSamples : " << (int)hit.NumberOfSamples;// TODO
+    TLOG(TLVL_DEBUG + 14) << "IndexOfMaxDigitizerSample : " << (int)hit.IndexOfMaxDigitizerSample;
   }
 }
 
 void ArtBinaryPacketsFromDigis::printCrvData(CrvDataPacket const& crvData) {
   size_t nHits = crvData.hits.size();
-  printf("[ArtBinaryPacketsFromDigis::printCrvData] START crv-data print \n");
-  printf("[ArtBinaryPacketsFromDigis::printCrvData] ROC controller ID   : %i \n",
-         (int)crvData.rocStatus.ControllerID);
-  printf("[ArtBinaryPacketsFromDigis::printCrvData] NHits               : %i \n", (int)nHits);
+  TLOG(TLVL_DEBUG + 5) << "START crv-data print";
+  TLOG(TLVL_DEBUG + 5) << "ROC controller ID   : " << (int)crvData.rocStatus.ControllerID;
+  TLOG(TLVL_DEBUG + 5) << "NHits               : " << (int)nHits;
 
   for (size_t i = 0; i < nHits; ++i) {
-    printf("[ArtBinaryPacketsFromDigis::printCrvData] hit : %i \n", (int)i);
-    printf("[ArtBinaryPacketsFromDigis::printCrvData] Channel       : %i \n",
-           (int)crvData.hits[i].first.febChannel);
-    printf("[ArtBinaryPacketsFromDigis::printCrvData] FEB           : %i \n",
-           (int)crvData.hits[i].first.portNumber);
-    printf("[ArtBinaryPacketsFromDigis::printCrvData] Time          : %i \n",
-           (int)crvData.hits[i].first.HitTime);
-    printf("[ArtBinaryPacketsFromDigis::printCrvData] NumOfSamples  : %i \n",
-           (int)crvData.hits[i].first.NumSamples);
+    TLOG(TLVL_DEBUG + 5) << "hit           : " << (int)i;
+    TLOG(TLVL_DEBUG + 5) << "Channel       : " << (int)crvData.hits[i].first.febChannel;
+    TLOG(TLVL_DEBUG + 5) << "FEB           : " << (int)crvData.hits[i].first.portNumber;
+    TLOG(TLVL_DEBUG + 5) << "Time          : " << (int)crvData.hits[i].first.HitTime;
+    TLOG(TLVL_DEBUG + 5) << "NumOfSamples  : " << (int)crvData.hits[i].first.NumSamples;
   }
 }
 
@@ -460,8 +431,7 @@ void ArtBinaryPacketsFromDigis::fillTrackerDataStream(DTCLib::DTC_Event& current
     if (sizeof(TrackerDataPacket) % 16 !=
         0) { // Make sure that TrackerDataPacket is an even number of DataPackets!
       throw cet::exception("Online-RECO") << "ArtBinaryPacketsFromDigis::fillTrackerDataStream : "
-                                             "sizeof(TrackerDataPacket) % 16 == 0"
-                                          << std::endl;
+                                             "sizeof(TrackerDataPacket) % 16 == 0";
     }
     for (size_t ipkt = 0; ipkt < trackerData.second.size(); ipkt++) {
       auto ptr = &(trackerData.second[ipkt]);
@@ -474,8 +444,8 @@ void ArtBinaryPacketsFromDigis::fillTrackerDataStream(DTCLib::DTC_Event& current
         pos += sizeof(TrackerADCPacket) * num_packets;
       }
     }
-    putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_Tracker, thisBlock);
   }
+  putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_Tracker, thisBlock);
 }
 
 void ArtBinaryPacketsFromDigis::fillTrackerDMABlocks(DTCLib::DTC_Event& currentEvent,
@@ -483,29 +453,22 @@ void ArtBinaryPacketsFromDigis::fillTrackerDMABlocks(DTCLib::DTC_Event& currentE
 
   auto curDTCID = trkData.front().first.DTCID;
   bool first = true;
-  if (_diagLevel > 1) {
-    std::cout << "[ArtBinaryPacketsFromDigis::fillTrackerDMABlocks] trkData.size() = "
-              << trkData.size() << std::endl;
-  }
+
+  TLOG(TLVL_DEBUG + 1) << "trkData.size() = " << trkData.size();
+
   for (auto& dataBlock : trkData) {
 
     fillTrackerDataStream(currentEvent, dataBlock);
 
-    if (_diagLevel > 1) {
-      if (dataBlock.first.DTCID != curDTCID || first) {
-        std::cout << "================================================" << std::endl;
-        // std::cout << "\t\tTimestamp: " << ts << std::endl;
-        std::cout << "\t\tDTCID: " << (int)dataBlock.first.DTCID << std::endl;
-        std::cout << "\t\tSYSID: " << (int)dataBlock.first.SubsystemID << std::endl;
-        curDTCID = dataBlock.first.DTCID;
-        first = false;
-      }
-      if (dataBlock.first.PacketCount > 0) {
-        printHeader(dataBlock.first);
-        if (_diagLevel > 2) {
-          printTrackerData(dataBlock.second);
-        }
-      }
+    if (dataBlock.first.DTCID != curDTCID || first) {
+      TLOG(TLVL_DEBUG + 1) << "\t\tDTCID: " << (int)dataBlock.first.DTCID;
+      TLOG(TLVL_DEBUG + 1) << "\t\tSYSID: " << (int)dataBlock.first.SubsystemID;
+      curDTCID = dataBlock.first.DTCID;
+      first = false;
+    }
+    if (dataBlock.first.PacketCount > 0) {
+      printHeader(dataBlock.first);
+      printTrackerData(dataBlock.second);
     }
 
   } // End loop over DataBlocks
@@ -591,9 +554,8 @@ ArtBinaryPacketsFromDigis::ArtBinaryPacketsFromDigis(const art::EDProducer::Tabl
     _includeTracker(config().includeTracker()), _includeCalorimeter(config().includeCalorimeter()),
     _includeCrv(config().includeCrv()), _includeDMAHeaders(config().includeDMAHeaders()),
     _generateBinaryFile(config().generateBinaryFile()), _outputFile(config().outputFile()),
-    _generateTextFile(config().generateTextFile()), _diagLevel(config().diagLevel()),
-    _maxFullPrint(config().maxFullPrint()), _sdtoken{consumes<mu2e::StrawDigiCollection>(
-                                                config().sdtoken())},
+    _generateTextFile(config().generateTextFile()),
+    _sdtoken{consumes<mu2e::StrawDigiCollection>(config().sdtoken())},
     _sdadctoken{consumes<mu2e::StrawDigiADCWaveformCollection>(config().sdtoken())},
     _cdtoken{consumes<mu2e::CaloDigiCollection>(config().cdtoken())},
     _crvtoken{consumes<mu2e::CrvDigiCollection>(config().crvtoken())}, _numWordsWritten(0),
@@ -606,13 +568,7 @@ ArtBinaryPacketsFromDigis::ArtBinaryPacketsFromDigis(const art::EDProducer::Tabl
   }
 }
 
-void ArtBinaryPacketsFromDigis::beginJob() {
-
-  if (_diagLevel > 0) {
-    std::cout << "ArtBinaryPacketsFromDigis Diaglevel: " << _diagLevel << " " << _maxFullPrint
-              << std::endl;
-  }
-}
+void ArtBinaryPacketsFromDigis::beginJob() {}
 
 void ArtBinaryPacketsFromDigis::beginRun(art::Run&) {
   mu2e::GeomHandle<mu2e::Calorimeter> ch;
@@ -631,20 +587,16 @@ void ArtBinaryPacketsFromDigis::endJob() {
       tsTableStream.write(reinterpret_cast<const char*>(&(tsTable[idx].first)), sizeof(timestamp));
       tsTableStream.write(reinterpret_cast<const char*>(&(tsTable[idx].second)), sizeof(timestamp));
 
-      if (_diagLevel > 3) {
-        std::cout << "TIMESTAMP_MAPPING: timestamp: " << tsTable[idx].first
-                  << " uniqueid: " << tsTable[idx].second << std::endl;
-      }
+      TLOG(TLVL_DEBUG + 3) << "TIMESTAMP_MAPPING: timestamp: " << tsTable[idx].first
+                           << " uniqueid: " << tsTable[idx].second;
     }
     tsTableStream << std::flush;
     tsTableStream.close();
   }
 
-  if (_diagLevel > 0) {
-    std::cout << "BinaryPacketsFromDataBlocks: "
-              << "Finished writing " << _numWordsWritten << " words from " << _numEventsProcessed
-              << " events to " << _outputFile << std::endl;
-  }
+  TLOG(TLVL_DEBUG + 0) << "BinaryPacketsFromDataBlocks: "
+                       << "Finished writing " << _numWordsWritten << " words from "
+                       << _numEventsProcessed << " events to " << _outputFile;
 }
 
 void ArtBinaryPacketsFromDigis::produce(art::Event& evt) {
@@ -654,9 +606,7 @@ void ArtBinaryPacketsFromDigis::produce(art::Event& evt) {
   uint64_t eventNum = evt.id().event(); // is not unique! internal counter???//FIXME!
   uint64_t ts = _numEventsProcessed + _timestampOffset;
 
-  if (_diagLevel > 2) {
-    std::cout << "ArtBinaryPacketsFromDigis: eventNum: " << eventNum << std::endl;
-  }
+  TLOG(TLVL_DEBUG + 2) << "ArtBinaryPacketsFromDigis: eventNum: " << eventNum;
 
   tracker_data_block_list_t trackerData;
   calo_data_block_list_t caloData;
@@ -715,24 +665,23 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
   calo_data_block_list_t tmpCaloDataBlockList;
 
   for (size_t i = 0; i < hits_CD.size(); ++i) {
-    CaloDigi   const& CD = hits_CD.at(i);
+    CaloDigi const& CD = hits_CD.at(i);
     // Fill struct with info for current hit
     DataBlockHeader headerData;
     fillCalorimeterHeaderDataPacket(calodaqconds, CD, headerData, eventNum);
     CaloDataPacket caloData;
     fillCalorimeterDataPacket(calodaqconds, CD, caloData);
-    if (_diagLevel > 1) {
-      printCalorimeterData(caloData);
-    }
+
+    printCalorimeterData(caloData);
+
     tmpCaloDataBlockList.push_back(
         std::pair<DataBlockHeader, CaloDataPacket>(headerData, caloData));
   }
 
-  if (_diagLevel > 1) {
-    std::cout << "[ArtBinaryPacketsFromDigis::processCalorimeterData ] Total number of calorimeter "
-                 "non-empty DataBlocks = "
-              << tmpCaloDataBlockList.size() << std::endl;
-  }
+  TLOG(TLVL_DEBUG + 1)
+      << "[ArtBinaryPacketsFromDigis::processCalorimeterData ] Total number of calorimeter "
+         "non-empty DataBlocks = "
+      << tmpCaloDataBlockList.size();
 
   uint8_t max_dtc_id = number_of_calo_rocs / number_of_calo_rocs_per_dtc;
   if (number_of_calo_rocs % number_of_calo_rocs_per_dtc > 0) {
@@ -749,11 +698,10 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
         if (tmpCaloDataBlockList[curHitIdx].first.DTCID == dtcID &&
             tmpCaloDataBlockList[curHitIdx].first.LinkID == rocID) {
 
-          if (_diagLevel > 1) {
-            std::cout << "[ArtBinaryPacketsFromDigis::processCalorimeterData ] filling Hit from DTCID = "<< (int)dtcID
-                      << " ROCID = " << (int)rocID
-                      << std::endl;
-          }
+          TLOG(TLVL_DEBUG + 1)
+              << "[ArtBinaryPacketsFromDigis::processCalorimeterData ] filling Hit from DTCID = "
+              << (int)dtcID << " ROCID = " << (int)rocID;
+
           if (is_first) {
             is_first = false;
             caloDataBlocks.push_back(tmpCaloDataBlockList[curHitIdx]);
@@ -785,9 +733,9 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
 //--------------------------------------------------------------------------------
 
 void ArtBinaryPacketsFromDigis::fillHeaderByteAndPacketCounts(calo_data_block_t& caloData) {
-  caloData.first.TransferByteCount = 16 /*header packet*/ + sizeof(uint16_t) /* num hits */ +
-                                       (sizeof(uint16_t) + sizeof(CalorimeterHitDataPacket)) *
-                                           caloData.second.hitPacketVec.size();
+  caloData.first.TransferByteCount =
+      16 /*header packet*/ + sizeof(uint16_t) /* num hits */ +
+      (sizeof(uint16_t) + sizeof(CalorimeterHitDataPacket)) * caloData.second.hitPacketVec.size();
 
   auto idxPos = sizeof(uint16_t) + sizeof(uint16_t) * caloData.second.hitPacketVec.size();
   for (auto& vec : caloData.second.waveformVec) {
@@ -807,42 +755,44 @@ void ArtBinaryPacketsFromDigis::fillHeaderByteAndPacketCounts(calo_data_block_t&
 // crate a caloPacket from the digi
 //--------------------------------------------------------------------------------
 void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(CaloDAQMap const& calodaqconds,
-                                                          const CaloDigi& CD, CaloDataPacket&  CaloData) {
-  //CaloData.dataPacket.NumberOfHits = 1;
+                                                          const CaloDigi& CD,
+                                                          CaloDataPacket& CaloData) {
+  // CaloData.dataPacket.NumberOfHits = 1;
 
-  //CalorimeterBoardID ccBoardID;
+  // CalorimeterBoardID ccBoardID;
 
   CaloSiPMId offId(CD.SiPMID());
   //  uint16_t roId      = CD.SiPMID();
   uint16_t crystalId = offId.crystal().id();
-  if( _diagLevel==1) printf( "...FromDigis: cryId %d roId %d \n",crystalId,offId.id());
+  TLOG(TLVL_DEBUG + 1) << "...FromDigis: cryId " << crystalId << " roId " << offId.id();
 
-  CaloRawSiPMId rawId   = calodaqconds.rawId(offId);
-  uint16_t globalROCID  = rawId.dirac();
+  CaloRawSiPMId rawId = calodaqconds.rawId(offId);
+  uint16_t globalROCID = rawId.dirac();
   uint16_t DiracChannel = rawId.ROCchannel();
-  uint16_t DetType      = offId.detType();
-  uint16_t packetId     = globalROCID | (DiracChannel << 8) | (DetType<< 13);
+  uint16_t DetType = offId.detType();
+  uint16_t packetId = globalROCID | (DiracChannel << 8) | (DetType << 13);
 
-  if( _diagLevel==1) printf( "..FromDigis: DTYPE %d ROCID %d CHAN %d \n",DetType,globalROCID,DiracChannel);
-  if( _diagLevel==1 && DetType==1) printf("Caphri \n");
+  TLOG(TLVL_DEBUG + 1) << "..FromDigis: DTYPE " << DetType << " ROCID  " << globalROCID << " CHAN "
+                       << DiracChannel << (DetType == 1 ? " Caphri" : "");
 
-  CaloData.dataFooterPacket.BoardID             = globalROCID % number_of_calo_rocs_per_dtc;
+  CaloData.dataFooterPacket.BoardID = globalROCID % number_of_calo_rocs_per_dtc;
   CaloData.dataFooterPacket.ChannelStatusFlagA = 0;
   CaloData.dataFooterPacket.ChannelStatusFlagC = 0;
-  CaloData.dataFooterPacket.unused              = 0;
+  CaloData.dataFooterPacket.unused = 0;
 
-  CaloData.dataPacket.ChannelNumber = DiracChannel;  // modified as it should be in the packet
-  CaloData.dataPacket.DIRACA        = packetId; //Change-5
-  CaloData.dataPacket.DIRACB        = (((CD.SiPMID() % 2) << 12) | (crystalId)); // this is useless for the moment .. can be a test
-  CaloData.dataPacket.ErrorFlags    = 0;
-  CaloData.dataPacket.Time          = CD.t0();
+  CaloData.dataPacket.ChannelNumber = DiracChannel; // modified as it should be in the packet
+  CaloData.dataPacket.DIRACA = packetId;            // Change-5
+  CaloData.dataPacket.DIRACB =
+      (((CD.SiPMID() % 2) << 12) | (crystalId)); // this is useless for the moment .. can be a test
+  CaloData.dataPacket.ErrorFlags = 0;
+  CaloData.dataPacket.Time = CD.t0();
   std::vector<adc_t> theWaveform;
   for (size_t i = 0; i < CD.waveform().size(); ++i) {
     theWaveform.push_back((adc_t)CD.waveform().at(i));
   }
-  CaloData.dataPacket.NumberOfSamples           = theWaveform.size();
+  CaloData.dataPacket.NumberOfSamples = theWaveform.size();
   CaloData.dataPacket.IndexOfMaxDigitizerSample = waveformMaximumIndex(theWaveform);
-  CaloData.hitPacketVec.push_back(CaloData.dataPacket); //TODO - where from????
+  CaloData.hitPacketVec.push_back(CaloData.dataPacket); // TODO - where from????
 
   CaloData.waveformVec.push_back(theWaveform);
 }
@@ -852,7 +802,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(CaloDAQMap const& calo
 //--------------------------------------------------------------------------------
 void ArtBinaryPacketsFromDigis::addCaloHitToCaloPacket(calo_data_block_t& caloDataBlock,
                                                        CaloDataPacket& caloHit) {
-  //caloDataBlock.second.dataPacket.NumberOfHits += 1;
+  // caloDataBlock.second.dataPacket.NumberOfHits += 1;
 
   caloDataBlock.second.hitPacketVec.push_back(caloHit.hitPacketVec[0]); // hitPacket);
   caloDataBlock.second.waveformVec.push_back(caloHit.waveformVec[0]);
@@ -861,8 +811,7 @@ void ArtBinaryPacketsFromDigis::addCaloHitToCaloPacket(calo_data_block_t& caloDa
   caloDataBlock.first.TransferByteCount +=
       sizeof(uint16_t) * (caloHit.hitPacketVec[0].NumberOfSamples + 1) +
       sizeof(CalorimeterHitDataPacket);
-  caloDataBlock.first.PacketCount =
-      std::ceil((caloDataBlock.first.TransferByteCount - 16) / 16);
+  caloDataBlock.first.PacketCount = std::ceil((caloDataBlock.first.TransferByteCount - 16) / 16);
 }
 
 //--------------------------------------------------------------------------------
@@ -880,22 +829,16 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDMABlocks(DTCLib::DTC_Event& curr
 
     fillCalorimeterDataStream(currentEvent, caloData[dataBlockIdx]);
 
-    if (_diagLevel > 1) {
-      if (first || curDTCID != caloData[dataBlockIdx].first.DTCID) {
-        std::cout << "================================================" << std::endl;
-        // std::cout << "\t\tTimestamp: " << ts << std::endl;
-        std::cout << "\t\tDTCID: " << (int)caloData[dataBlockIdx].first.DTCID << std::endl;
-        std::cout << "\t\tSYSID: " << (int)caloData[dataBlockIdx].first.SubsystemID << std::endl;
-        first = false;
-        curDTCID = caloData[dataBlockIdx].first.DTCID;
-      }
-      if (caloData[dataBlockIdx].first.PacketCount > 0) {
-        printHeader(caloData[dataBlockIdx].first);
-        if (_diagLevel > 2) {
+    if (first || curDTCID != caloData[dataBlockIdx].first.DTCID) {
+      TLOG(TLVL_DEBUG + 1) << "\t\tDTCID: " << (int)caloData[dataBlockIdx].first.DTCID;
+      TLOG(TLVL_DEBUG + 1) << "\t\tSYSID: " << (int)caloData[dataBlockIdx].first.SubsystemID;
+      first = false;
+      curDTCID = caloData[dataBlockIdx].first.DTCID;
+    }
+    if (caloData[dataBlockIdx].first.PacketCount > 0) {
+      printHeader(caloData[dataBlockIdx].first);
 
-          printCalorimeterData(caloData[dataBlockIdx].second);
-        }
-      }
+      printCalorimeterData(caloData[dataBlockIdx].second);
     }
 
   } // End loop over DataBlocks
@@ -919,15 +862,13 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(DTCLib::DTC_Event& cur
   while (sz % 16 != 0)
     sz++;
 
-  if (sz >= 0x10000) {  // Maximum transfer size from driver
+  if (sz >= 0x10000) { // Maximum transfer size from driver
     throw cet::exception("Online-RECO")
-        << "ArtBinaryPacketsFromDigis::fillCalorimeterDataStream : sz < sizeof(mu2e_databuff_t)"
-        << std::endl;
+        << "ArtBinaryPacketsFromDigis::fillCalorimeterDataStream : sz < sizeof(mu2e_databuff_t)";
   }
   if (sz != caloData.first.TransferByteCount) {
     throw cet::exception("Online-RECO")
-        << "ArtBinaryPacketsFromDigis::fillCalorimeterDataStream : sz == caloData.first.ByteCount"
-        << std::endl;
+        << "ArtBinaryPacketsFromDigis::fillCalorimeterDataStream : sz == caloData.first.ByteCount";
   }
 
   uint8_t dtcID = caloData.first.DTCID;
@@ -940,7 +881,8 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(DTCLib::DTC_Event& cur
 
   auto pos = 0;
   memcpy(thisBlock.allocBytes->data(), &caloData.first, sizeof(DataBlockHeader));
-  //Copies the values of num bytes from the location pointed to by source directly to the memory block pointed to by destination (destination, source, bytes)
+  // Copies the values of num bytes from the location pointed to by source directly to the memory
+  // block pointed to by destination (destination, source, bytes)
 
   pos += sizeof(DataBlockHeader);
 
@@ -954,7 +896,6 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(DTCLib::DTC_Event& cur
            sizeof(uint16_t) * caloData.second.hitIndex.size());
     pos += sizeof(uint16_t) * caloData.second.hitIndex.size();
 
-
     for (size_t i = 0; i < caloData.second.hitPacketVec.size(); ++i) {
 
       memcpy(thisBlock.allocBytes->data() + pos, &(caloData.second.hitPacketVec[i]),
@@ -966,8 +907,8 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(DTCLib::DTC_Event& cur
              waveform_size);
       pos += waveform_size;
     } // end loop over the CalorimeterHitDataPacketVector
-    putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_Calorimeter, thisBlock);
   }
+    putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_Calorimeter, thisBlock);
 }
 
 //--------------------------------------------------------------------------------
@@ -980,7 +921,9 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(CaloDAQMap const
   bzero(&HeaderData, sizeof(DataBlockHeader));
   // Word 0
   adc_t nBytes =
-      sizeof(DataBlockHeader) + sizeof(CalorimeterHitDataPacket) ; // this needs to be increased every time a new hit is addeded!
+      sizeof(DataBlockHeader) +
+      sizeof(
+          CalorimeterHitDataPacket); // this needs to be increased every time a new hit is addeded!
   HeaderData.TransferByteCount = nBytes;
   // Word 1
   HeaderData.PacketType = 5; // PacketType::Dataheader;
@@ -988,15 +931,16 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(CaloDAQMap const
   // get only Dirac# and DetType from roID and DMAP ....
   // ---------------------------------------------------------------
   CaloSiPMId offId = CaloSiPMId(CD.SiPMID());
-  CaloRawSiPMId rawId     = calodaqconds.rawId(offId);
-  uint16_t globalROCID  = rawId.dirac();
-  uint16_t DetType      = offId.detType();
+  CaloRawSiPMId rawId = calodaqconds.rawId(offId);
+  uint16_t globalROCID = rawId.dirac();
+  uint16_t DetType = offId.detType();
   // ----------------------------------------------------------------
-  if( _diagLevel==1 && DetType == 1) printf(" CAPHRI !!! \n");
+  if (DetType == 1)
+    TLOG(TLVL_DEBUG + 2) << " CAPHRI !!!";
 
-  HeaderData.LinkID      = globalROCID % number_of_calo_rocs_per_dtc;// from ROCID call it now LinkID
+  HeaderData.LinkID = globalROCID % number_of_calo_rocs_per_dtc; // from ROCID call it now LinkID
   HeaderData.SubsystemID = DTCLib::DTC_Subsystem_Calorimeter;
-  HeaderData.Valid       = 1;
+  HeaderData.Valid = 1;
   // Word 2
   HeaderData.PacketCount = 1; // NEEDS TO BE INCREASED EVERY TIME A NEW HIT IS ADDED!
   // Word 3
@@ -1013,8 +957,8 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(CaloDAQMap const
   HeaderData.DTCID = static_cast<uint8_t>(globalROCID / number_of_calo_rocs_per_dtc);
   uint8_t evbMode = 0; // ask Eric
   HeaderData.EventWindowMode = evbMode;
-  if( _diagLevel==1) printf(" >>FromDigi-Header: Dtyp Dirac# Link-DTC DTC %d %d %d %d \n",
-                            DetType,globalROCID,HeaderData.LinkID,HeaderData.DTCID);
+  TLOG(TLVL_DEBUG + 2) << " >>FromDigi-Header: Dtyp " << DetType << " Dirac# " << globalROCID
+                       << " Link-DTC " << HeaderData.LinkID << " DTC " << HeaderData.DTCID;
 }
 
 //--------------------------------------------------------------------------------
@@ -1054,7 +998,8 @@ void ArtBinaryPacketsFromDigis::processTrackerData(art::Event& evt, uint64_t& ev
 
         // ROC ID, counting from 0 across all DTCs (for the tracker)
         //    uint8_t localROCID = panel;
-        uint8_t globalROCID = (plane * 6) + panel;// strawId().uniquePanel() would provide the ROCID
+        uint8_t globalROCID =
+            (plane * 6) + panel; // strawId().uniquePanel() would provide the ROCID
         uint8_t thisDTCID = static_cast<uint8_t>(globalROCID / number_of_rocs_per_dtc);
         if (panel == rocID && thisDTCID == dtcID) {
           trackerData.back().second.emplace_back();
@@ -1086,10 +1031,7 @@ void ArtBinaryPacketsFromDigis::processCrvData(art::Event& evt, uint64_t& eventN
     crvDataBlocks[rocID].hits.push_back(hit);
   }
 
-  if (_diagLevel > 1) {
-    std::cout << "[ArtBinaryPacketsFromDigis::processCrvData ] Total number of CRV digis = "
-              << digis.size() << std::endl;
-  }
+  TLOG(TLVL_DEBUG + 1) << "Total number of CRV digis = " << digis.size();
 
   // Loop over all ROCs, fill headers for each ROC - even for ROCs without hits
   for (uint8_t rocID = 1; rocID <= number_of_crv_rocs; ++rocID) {
@@ -1101,47 +1043,53 @@ void ArtBinaryPacketsFromDigis::processCrvData(art::Event& evt, uint64_t& eventN
 //--------------------------------------------------------------------------------
 // crate a crvPacket from the digi
 //--------------------------------------------------------------------------------
-int16_t ArtBinaryPacketsFromDigis::compressCrvDigi(int16_t adc)
-{
+int16_t ArtBinaryPacketsFromDigis::compressCrvDigi(int16_t adc) {
   // TODO: Temporary implementation until we have the real compression used at the FEBs
   // FEBs use only 12 bits out of the 16 bits
-  if(adc>2047) adc=2047;
-  if(adc<-2048) adc=-2048;
+  if (adc > 2047)
+    adc = 2047;
+  if (adc < -2048)
+    adc = -2048;
   return adc;
 }
 
-void ArtBinaryPacketsFromDigis::fillCrvDataPacket(const CRVOrdinal& crvChannelMap, const CrvDigi& digi, CRVHit& hit, int& rocID) {
+void ArtBinaryPacketsFromDigis::fillCrvDataPacket(const CRVOrdinal& crvChannelMap,
+                                                  const CrvDigi& digi, CRVHit& hit, int& rocID) {
   int crvSiPMNumber = digi.GetSiPMNumber();
   uint16_t crvBarIndex = digi.GetScintillatorBarIndex().asUint();
-  uint16_t offlineChannel = crvBarIndex*4 + crvSiPMNumber;
+  uint16_t offlineChannel = crvBarIndex * 4 + crvSiPMNumber;
 
   CRVROC onlineChannel = crvChannelMap.online(offlineChannel);
-  rocID                = onlineChannel.ROC();
-  uint16_t rocPort     = onlineChannel.FEB();
-  uint16_t febChannel  = onlineChannel.FEBchannel();
+  rocID = onlineChannel.ROC();
+  uint16_t rocPort = onlineChannel.FEB();
+  uint16_t febChannel = onlineChannel.FEBchannel();
 
   hit.first.febChannel = febChannel;
   hit.first.portNumber = rocPort;
   hit.first.controllerNumber = rocID;
-  hit.first.HitTime    = digi.GetStartTDC();
+  hit.first.HitTime = digi.GetStartTDC();
   hit.first.NumSamples = CrvDigi::NSamples;
   hit.second.resize(CrvDigi::NSamples);
-  for(size_t i=0; i<CrvDigi::NSamples; ++i) hit.second.at(i).ADC=compressCrvDigi(digi.GetADCs().at(i));
+  for (size_t i = 0; i < CrvDigi::NSamples; ++i)
+    hit.second.at(i).ADC = compressCrvDigi(digi.GetADCs().at(i));
 }
 
 //--------------------------------------------------------------------------------
 // create the header for the crvPacket
 //--------------------------------------------------------------------------------
-void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(const CRVOrdinal& crvChannelMap, CrvDataPacket& crvData, uint8_t rocID, uint64_t eventNum) {
+void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(const CRVOrdinal& crvChannelMap,
+                                                    CrvDataPacket& crvData, uint8_t rocID,
+                                                    uint64_t eventNum) {
   size_t nHits = crvData.hits.size();
 
   //----------------------------------------------
   // DataBlockHeader //TODO: This may have changed
   //----------------------------------------------
   // Word 0
-  adc_t nBytes =
-      sizeof(DataBlockHeader) + sizeof(CRVROCStatusPacket) + (sizeof(CRVHitInfo) + sizeof(CRVHitWaveformSample)*CrvDigi::NSamples) * nHits;
-  while (nBytes % 16 != 0) nBytes++;
+  adc_t nBytes = sizeof(DataBlockHeader) + sizeof(CRVROCStatusPacket) +
+                 (sizeof(CRVHitInfo) + sizeof(CRVHitWaveformSample) * CrvDigi::NSamples) * nHits;
+  while (nBytes % 16 != 0)
+    nBytes++;
   crvData.header.TransferByteCount = nBytes;
   // Word 1
   crvData.header.PacketType = DTCLib::DTC_PacketType_DataHeader;
@@ -1154,7 +1102,8 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(const CRVOrdinal& crvChannel
   // interpretes it, but it seems redundant
   crvData.header.PacketCount = (crvData.header.TransferByteCount - 16) / 16;
   // Word 3
-  uint64_t timestamp = eventNum; // TODO: seems to be identical to the microbunch number and EventWindowTag
+  uint64_t timestamp =
+      eventNum; // TODO: seems to be identical to the microbunch number and EventWindowTag
   crvData.header.ts10 = static_cast<adc_t>(timestamp & 0xFFFF);
   // Word 4
   crvData.header.ts32 = static_cast<adc_t>((timestamp >> 16) & 0xFFFF);
@@ -1164,8 +1113,8 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(const CRVOrdinal& crvChannel
   crvData.header.Status = 0; // 0 corresponds to "TimeStamp had valid data"
   crvData.header.Version = format_version;
   // Word 7
-  crvData.header.DTCID = (rocID-1) / 9;  //DTC0: ROCs 1...9, DTC1: ROCs 10...17
-  uint8_t evbMode = 0; // ask Eric
+  crvData.header.DTCID = (rocID - 1) / 9; // DTC0: ROCs 1...9, DTC1: ROCs 10...17
+  uint8_t evbMode = 0;                    // ask Eric
   crvData.header.EventWindowMode = evbMode;
 
   //------------------
@@ -1176,8 +1125,10 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(const CRVOrdinal& crvChannel
   crvData.rocStatus.PacketType = 0x06;
   crvData.rocStatus.ControllerID = rocID;
   // Word 1
-  crvData.rocStatus.ControllerEventWordCount = (sizeof(CRVROCStatusPacket) +
-      (sizeof(CRVHitInfo) + sizeof(CRVHitWaveformSample)*CrvDigi::NSamples) * nHits) / 2;
+  crvData.rocStatus.ControllerEventWordCount =
+      (sizeof(CRVROCStatusPacket) +
+       (sizeof(CRVHitInfo) + sizeof(CRVHitWaveformSample) * CrvDigi::NSamples) * nHits) /
+      2;
   // Word 2
   crvData.rocStatus.ActiveFEBFlags2 = 0xFF;
   crvData.rocStatus.unused2 = 0;
@@ -1185,12 +1136,12 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(const CRVOrdinal& crvChannel
   crvData.rocStatus.ActiveFEBFlags0 = 0xFF;
   crvData.rocStatus.ActiveFEBFlags1 = 0xFF;
   // Word 4
-  static uint16_t triggerCount=0;
+  static uint16_t triggerCount = 0;
   crvData.rocStatus.TriggerCount = ++triggerCount; // TODO: This seems to be a running number
   // Word 5
   crvData.rocStatus.MicroBunchStatus = 0x0FFF;
   // Word 6
-  crvData.rocStatus.EventWindowTag1 = (eventNum>>16);
+  crvData.rocStatus.EventWindowTag1 = (eventNum >> 16);
   // Word 7
   crvData.rocStatus.EventWindowTag0 = eventNum;
 }
@@ -1208,18 +1159,14 @@ void ArtBinaryPacketsFromDigis::fillCrvDMABlocks(DTCLib::DTC_Event& currentEvent
     const CrvDataPacket& crvData = crvDataBlocks.at(rocID);
     fillCrvDataStream(currentEvent, crvData);
 
-    if (_diagLevel > 1) {
-      if (rocID == 1 || currentDTCID != crvData.header.DTCID) {
-        std::cout << "================================================" << std::endl;
-        // std::cout << "\t\tTimestamp: " << ts << std::endl;
-        std::cout << "\t\tDTCID: " << (int)crvData.header.DTCID << std::endl;
-        std::cout << "\t\tSYSID: " << (int)crvData.header.SubsystemID << std::endl;
-        currentDTCID = crvData.header.DTCID;
-      }
-      if (crvData.header.PacketCount > 0) {
-        printHeader(crvData.header);
-        printCrvData(crvData);
-      }
+    if (rocID == 1 || currentDTCID != crvData.header.DTCID) {
+      TLOG(TLVL_DEBUG + 1) << "\t\tDTCID: " << (int)crvData.header.DTCID;
+      TLOG(TLVL_DEBUG + 1) << "\t\tSYSID: " << (int)crvData.header.SubsystemID;
+      currentDTCID = crvData.header.DTCID;
+    }
+    if (crvData.header.PacketCount > 0) {
+      printHeader(crvData.header);
+      printCrvData(crvData);
     }
 
   } // End loop over DataBlocks
@@ -1252,13 +1199,13 @@ void ArtBinaryPacketsFromDigis::fillCrvDataStream(DTCLib::DTC_Event& currentEven
   for (size_t i = 0; i < hitCount; i++) {
     memcpy(thisBlock.allocBytes->data() + pos, &crvData.hits[i].first, sizeof(CRVHitInfo));
     pos += sizeof(CRVHitInfo);
-    memcpy(thisBlock.allocBytes->data() + pos, &crvData.hits[i].second[0], sizeof(CRVHitWaveformSample)*CrvDigi::NSamples);
-    pos += sizeof(CRVHitWaveformSample)*CrvDigi::NSamples;
+    memcpy(thisBlock.allocBytes->data() + pos, &crvData.hits[i].second[0],
+           sizeof(CRVHitWaveformSample) * CrvDigi::NSamples);
+    pos += sizeof(CRVHitWaveformSample) * CrvDigi::NSamples;
   }
 
-  if (hitCount > 0) {
     putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_CRV, thisBlock);
-  }
+
 }
 
 } // namespace mu2e
