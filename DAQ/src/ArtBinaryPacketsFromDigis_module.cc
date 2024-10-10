@@ -1205,7 +1205,7 @@ void ArtBinaryPacketsFromDigis::fillCrvDataStream(DTCLib::DTC_Event& currentEven
   }
 
     putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_CRV, thisBlock);
- 
+
 }
 
 } // namespace mu2e
