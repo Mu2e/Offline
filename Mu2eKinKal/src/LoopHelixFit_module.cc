@@ -50,6 +50,7 @@
 #include "KinKal/Trajectory/LoopHelix.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
+#include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 // Mu2eKinKal
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
@@ -130,6 +131,10 @@ namespace mu2e {
   struct KKLHModuleConfig : KKModuleConfig {
     fhicl::Sequence<art::InputTag> seedCollections {Name("HelixSeedCollections"),     Comment("Seed fit collections to be processed ") };
     fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
+    fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
+    fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
+    fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
+    fhicl::Atom<float> sampleTol { Name("SampleTolerance"), Comment("Tolerance for sample surface intersections (mm)") };
   };
   // Extrapolation configuration
   struct KKExtrapConfig {
@@ -173,6 +178,7 @@ namespace mu2e {
       bool extrapolateTracker(KKTRK& ktrk,TimeDir tdir) const;
       bool extrapolateTSDA(KKTRK& ktrk,TimeDir tdir) const;
       void toOPA(KKTRK& ktrk, double tstart, TimeDir tdir) const;
+      void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const;
       // data payload
       std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
       art::ProductToken<ComboHitCollection> chcol_T_;
@@ -194,6 +200,8 @@ namespace mu2e {
       Config config_; // initial fit configuration object
       Config exconfig_; // extension configuration object
       Config fconfig_; // final final configuration object
+      double sampletol_; // surface intersection tolerance (mm)
+      bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
       SurfaceMap smap_;
       AnnPtr tsdaptr_;
@@ -205,6 +213,7 @@ namespace mu2e {
       ExtrapolateST extrapST_; // extrapolation to intersections with the ST
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
+      SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
   };
 
   LoopHelixFit::LoopHelixFit(const Parameters& settings) :  art::EDProducer{settings},
@@ -221,6 +230,9 @@ namespace mu2e {
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
+    sampletol_(settings().modSettings().sampleTol()),
+    sampleinrange_(settings().modSettings().sampleInRange()),
+    sampleinbounds_(settings().modSettings().sampleInBounds()),
     fixedfield_(false), extrapolate_(false), backToTracker_(false), toOPA_(false)
     {
       // collection handling
@@ -282,6 +294,16 @@ namespace mu2e {
         trkbackptr_ = smap_.tracker().backPtr();
         opaptr_ = smap_.DS().outerProtonAbsorberPtr();
       }
+
+      // additional surfaces to sample: these should be replaced by extrapolation TODO
+      SurfaceIdCollection ssids;
+      for(auto const& sidname : settings().modSettings().sampleSurfaces()){
+        ssids.push_back(SurfaceId(sidname,-1)); // match all elements
+      }
+      // translate the sample and extend surface names to actual surfaces using the SurfaceMap.  This should come from the
+      // geometry service eventually, TODO
+      SurfaceMap smap;
+      smap.surfaces(ssids,sample_);
     }
 
   void LoopHelixFit::beginRun(art::Run& run) {
@@ -393,7 +415,9 @@ namespace mu2e {
                 fitflag.merge(TrkFitFlag::FitOK);
               else
                 fitflag.clear(TrkFitFlag::FitOK);
-              kkseedcol->push_back(kkfit_.createSeed(*ktrk,fitflag,*calo_h));
+              auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h);
+              sampleFit(*ktrk,kkseed._inters);
+              kkseedcol->push_back(kkseed);
               // fill assns with the helix seed
               auto hptr = art::Ptr<HelixSeed>(hseedcol_h,iseed);
               auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
@@ -639,5 +663,48 @@ namespace mu2e {
     }
   }
 
+  void LoopHelixFit::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
+    auto const& ftraj = kktrk.fitTraj();
+    double tbeg = ftraj.range().begin();
+    double tend = ftraj.range().end();
+    static const double epsilon(1.0e-6);
+    // if this helix has reflected, limit the search
+    auto mom0 = ftraj.momentum3(ftraj.t0());
+    if(mom0.Z() >0){ // downstream fit: skip any upstream-going segments
+      for(auto const& ktraj : ftraj.pieces()){
+        auto axis = ktraj->axis(ktraj->range().mid());
+        if(axis.direction().Z() > 0.0 )break; // helix headed downstream
+        tbeg = ktraj->range().end(); // force onto next piece
+      }
+    } else { // upstream fit: stop when the track reflects back downstream
+      for(auto const& ktraj : ftraj.pieces()){
+        auto axis = ktraj->axis(ktraj->range().mid());
+        if(axis.direction().Z() > 0.0 )break; // helix no longer heading upstream
+        tend = ktraj->range().begin();
+      }
+    }
+    for(auto const& surf : sample_){
+      // search for intersections with each surface within the specified time range, going forwards in time
+      bool hasinter(true);
+      size_t max_iter = 1000;
+      size_t cur_iter = 0;
+      // loop to find multiple intersections
+      while(hasinter && tbeg < tend) {
+        TimeRange irange(tbeg,tend);
+        if (cur_iter > max_iter)
+          break;
+        cur_iter += 1;
+        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
+        hasinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
+        if(hasinter) {
+          // save the intersection information
+          auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
+          inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
+          // update for the next intersection
+          tbeg = surfinter.time_ + epsilon;// move psst existing intersection to avoid repeating
+        }
+      }
+    }
+  }
 }
 DEFINE_ART_MODULE(mu2e::LoopHelixFit)

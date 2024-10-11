@@ -38,9 +38,6 @@ Mu2eKinKal : {
     MaxDStraw : 2 # integer (straw)
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
-    SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
-    SampleInRange : true # require sample be in time range
-    SampleInBounds : false # require sample be in surface bounds
     SaveTrajectory : "Full" # save the entire fit result trajectory in the KalSeed
   }
 
@@ -343,6 +340,9 @@ Mu2eKinKal : {
   LOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     SeedFlags : [ "HelixOK" ]
+    SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
+    SampleInRange : true # require sample be in time range
+    SampleInBounds : false # require sample be in surface bounds
   }
 
   LOOPEXTRAPOLATION : {
@@ -361,6 +361,11 @@ Mu2eKinKal : {
     ParameterConstraints : [0.0,0.0,0.0,0.0,0.0,0]
     CosmicTrackSeedCollections : ["LineFinder"]
     SeedFlags : [ "HelixOK" ]
+    SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
+    SampleTimeBuffer : 100 # time buffer for intersections (ns)
+    SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
+    SampleInRange : true # require sample be in time range
+    SampleInBounds : false # require sample be in surface bounds
   }
 
   KINEMATICLINE : {
@@ -371,6 +376,11 @@ Mu2eKinKal : {
     ComboHitCollection : "makeSH"
     CaloClusterCollection : "CaloClusterMaker"
     SeedFlags : [ "HelixOK" ]
+    SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
+    SampleTimeBuffer : 100 # time buffer for intersections (ns)
+    SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
+    SampleInRange : true # require sample be in time range
+    SampleInBounds : false # require sample be in surface bounds
   }
 }
 
@@ -380,26 +390,26 @@ Mu2eKinKal : {
   KKSeedFit : {
     module_type : LoopHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
-    KKFitSettings: {
-      @table::Mu2eKinKal.KKFIT
-      SampleSurfaces : ["TT_Front","TT_Mid","TT_Back"]
-    }
+    KKFitSettings: @local::Mu2eKinKal.KKFIT
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
-    ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
+    ModuleSettings : {
+      @table::Mu2eKinKal.LOOPHELIX
+      SampleSurfaces : ["TT_Mid"]
+    }
     UsePDGCharge: true
   }
 
   KKLoopFit : {
     module_type : LoopHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
-    KKFitSettings: {
-      @table::Mu2eKinKal.KKFIT
-      SampleSurfaces : ["ST_Outer","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
-    }
+    KKFitSettings : @local::Mu2eKinKal.KKFIT
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
-    ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
+    ModuleSettings : {
+      @table::Mu2eKinKal.LOOPHELIX
+      SampleSurfaces : ["ST_Outer","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
+    }
     Extrapolation : @local::Mu2eKinKal.LOOPEXTRAPOLATION
     UsePDGCharge: true
   }
@@ -418,7 +428,6 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
-      SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
       # DNB I don't know where this time offset difference WRT helical fits comes from. If it's physical, we will need a better
       # mechanism to deal with it in real data
       CaloTrackerTimeOffset: -2.43
@@ -435,7 +444,6 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
-      SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHSEEDEXT
@@ -447,7 +455,6 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
-      SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
