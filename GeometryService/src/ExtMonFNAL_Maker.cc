@@ -34,9 +34,6 @@ namespace mu2e {
       config.getVectorDouble(prefix+".plane_zoffset", pt.m_plane_zoffset, -1);
       config.getVectorDouble(prefix+".plane_xoffset", pt.m_plane_xoffset, -1);
       config.getVectorDouble(prefix+".plane_yoffset", pt.m_plane_yoffset, -1);
-      config.getVectorDouble(prefix+".motherTransverseHalfSize", pt.m_motherTransverseHalfSize, -1);
-      pt.m_motherStartZ = config.getDouble(prefix+".motherStartZ");
-      pt.m_motherEndZ = config.getDouble(prefix+".motherEndZ");
 
       if(!boost::is_sorted(pt.m_plane_zoffset)) {
         throw cet::exception("GEOM")<<"ExtMonFNAL_Maker: ERROR: "
@@ -87,6 +84,16 @@ namespace mu2e {
 
       det->dnToExtMonCoordinateRotation_ =
         CLHEP::HepRotationX( -2 * det->spectrometerMagnet_.nominalBendHalfAngle());
+
+      //----------------------------------------------------------------
+      // Detector Mother
+      config.getVectorDouble("extMonFNAL.detectorMotherHS", det->detectorMotherHS_, -1);
+
+      double detectorMotherDistToMagnet = config.getDouble("extMonFNAL.detectorMotherDistToMagnet");
+      double detectorMotherZCoord = det->detectorMotherHS()[1] - detectorMotherDistToMagnet - det->spectrometerMagnet().outerHalfSize()[1];
+      CLHEP::Hep3Vector detectorMotherZVec = det->spectrometerMagnet().magnetRotationInMu2e()*CLHEP::Hep3Vector(0, detectorMotherZCoord, 0);
+      det->detectorMotherCenterInMu2e_ = det->spectrometerMagnet().geometricCenterInMu2e() + detectorMotherZVec;
+
 
       //----------------
 

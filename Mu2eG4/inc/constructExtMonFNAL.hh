@@ -30,34 +30,9 @@ namespace mu2e {
 
   void constructExtMonFNALDetector(const VolumeInfo& room, const SimpleConfig& config);
 
-  void constructExtMonFNALMagnet(const ExtMonFNALMagnet& mag,
-                                 const VolumeInfo& parent,
-                                 const std::string& volNameSuffix,
-                                 const CLHEP::HepRotation& parentRotationInMu2e,
-                                 const SimpleConfig& config
-                                 );
-
-  void constructExtMonFNALPlanes(const VolumeInfo& mother,
-                                 const ExtMonFNALModule& module,
-                                 const ExtMonFNALPlaneStack& stack,
-                                 const std::string& volNameSuffix,
-                                 const SimpleConfig& config,
-                                 bool const forceAuxEdgeVisible,
-                                 bool const doSurfaceCheck,
-                                 bool const placePV
-                                 );
-
-  void constructExtMonFNALModules(const VolumeInfo& mother,
-                                  const G4ThreeVector& offset,
-                                  unsigned iplane,
-                                  const ExtMonFNALModule& module,
-                                  const ExtMonFNALPlaneStack& stack,
-                                  const std::string& volNameSuffix,
-                                  const SimpleConfig& config,
-                                  bool const forceAuxEdgeVisible,
-                                  bool const doSurfaceCheck,
-                                  bool const placePV
-                                  );
+  void constructExtMonFNALDetector(const VolumeInfo& mainParent,
+                                   const CLHEP::HepRotation& mainParentRotationInMu2e,
+                                   const SimpleConfig& config);
 
   void constructExtMonFNALScintillators(const VolumeInfo& mother,
                                         const ExtMonFNALPlaneStack& stack,

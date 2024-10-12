@@ -60,7 +60,7 @@
 // FIXME: should not need that
 #include "Offline/GeometryService/inc/WorldG4.hh"
 
-//#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
+// #define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)
 
 using namespace std;
@@ -709,7 +709,7 @@ namespace mu2e {
     // The filter channel
 
     AGDEBUG("emfb->collimator1CenterInMu2e() = "<<emfb->collimator1CenterInMu2e());
-    AGDEBUG("collimator1Parent.centerInMu2e() = "<<collimatomaterialFinder.getr1Parent.centerInMu2e());
+    //AGDEBUG("collimator1Parent.centerInMu2e() = "<<collimatomaterialFinder.getr1Parent.centerInMu2e());
 
 
     constructCollimatorExtMonFNAL(emfb->collimator1(),
