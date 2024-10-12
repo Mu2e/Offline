@@ -34,6 +34,7 @@ namespace mu2e {
   // numerical derivatives for now: TODO!
   VEC3 KKBField::fieldDeriv(VEC3 const& position, VEC3 const& velocity) const {
     static double dt(0.1); // 100 psec, ~3cm.  this is arbitrary and should be set according to the field sampling TODO
+    if(!inRange(position))throw std::runtime_error("position out or range");
     VEC3 start = fieldVect(position);
     VEC3 end = fieldVect(position + velocity*dt);
     return (end-start)/dt;
