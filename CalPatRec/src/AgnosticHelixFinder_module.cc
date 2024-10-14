@@ -90,7 +90,7 @@ namespace mu2e {
       fhicl::Atom<float>           chi2LineSaveThresh     {Name("chi2LineSaveThresh"   ), Comment("max chi2Dof for line"        )  };
       fhicl::Atom<float>           maxEDepAvg             {Name("maxEDepAvg"           ), Comment("max avg edep of combohits"   )  };
       fhicl::Atom<float>           tzSlopeSigThresh       {Name("tzSlopeSigThresh"     ), Comment("direction ambiguous if below")  };
-      fhicl::Sequence<std::string> validHelixDirections   {Name("validHelixDirections" ), Comment("only save desired directions")  };
+      fhicl::Sequence<int>         validHelixDirections   {Name("validHelixDirections" ), Comment("only save desired directions")  };
 
       fhicl::Table<AgnosticHelixFinderTypes::Config> diagPlugin  {Name("diagPlugin"), Comment("diag plugin"                   )  };
     };
@@ -201,7 +201,7 @@ namespace mu2e {
     float    _chi2LineSaveThresh;
     float    _maxEDepAvg;
     float    _tzSlopeSigThresh;
-    std::vector<std::string> _validHelixDirections;
+    std::vector<int> _validHelixDirections;
 
     //-----------------------------------------------------------------------------
     // diagnostics
@@ -1410,7 +1410,7 @@ namespace mu2e {
     helTool.dirOfProp(tzSlope, tzSlopeErr, tzSlopeChi2);
     HelixRecoDir helDir(tzSlope, tzSlopeErr, tzSlopeChi2);
     hseed._recoDir = helDir;
-    hseed._propDir = helDir.computeDirection(_tzSlopeSigThresh);
+    hseed._propDir = helDir.predictDirection(_tzSlopeSigThresh);
     if (!validHelixDirection(hseed._propDir)) return;
 
     // push back the helix seed to the helix seed collection
@@ -1423,14 +1423,8 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   bool AgnosticHelixFinder::validHelixDirection(HelixRecoDir::PropDir direction) {
 
-    std::string hDir;
-
-    if (direction == HelixRecoDir::downstream) hDir = "downstream";
-    if (direction == HelixRecoDir::upstream) hDir = "upstream";
-    if (direction == HelixRecoDir::ambiguous) hDir = "ambiguous";
-
     for (size_t i=0; i<_validHelixDirections.size(); i++) {
-      if (_validHelixDirections.at(i) == hDir) return true;
+      if (_validHelixDirections.at(i) == direction) return true;
     }
 
     return false;

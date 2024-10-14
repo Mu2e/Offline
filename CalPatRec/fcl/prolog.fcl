@@ -685,7 +685,7 @@ CalPatRec : { @table::CalPatRec
             chi2LineSaveThresh      : 5.0
             maxEDepAvg              : @local::TrkReco.HelixFinderParams.maxEDepAvg
             tzSlopeSigThresh        : 5.0
-            validHelixDirections    : ["downstream", "upstream", "ambiguous"]
+            validHelixDirections    : [-1, 0, 1]
             diagPlugin              : { tool_type : "AgnosticHelixFinderDiag" }
         }
 

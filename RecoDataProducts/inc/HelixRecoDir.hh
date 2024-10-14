@@ -20,13 +20,13 @@ namespace mu2e {
 
     // Enum declaration for direction
     enum PropDir {
-      upstream,
-      downstream,
-      ambiguous
+      upstream = -1,
+      ambiguous = 0,
+      downstream = 1
     };
 
-    // Method to compute direction based on slope and slopeSig
-    PropDir computeDirection(float sigThreshold) const {
+    // Method to predict direction based on slope and slopeSig
+    PropDir predictDirection(float sigThreshold) const {
       float sig = slopeSig(); // Compute the slope significance
 
       if (sig < sigThreshold) {
