@@ -9,6 +9,7 @@
 #include "Offline/CommonMC/fcl/prolog.fcl"
 BEGIN_PROLOG
 
+    DigitizationStart: 400.0 //ns after event window start (i.e. 400ns after first clock tick after POT) --> 400ns...425ns after POT
     CrvSteps:
     {
       module_type               : CrvStepsFromStepPointMCs
@@ -85,17 +86,15 @@ BEGIN_PROLOG
       photonYieldVariationCutoffLow         :-0.2   //the photon yield variation is cut off at 20% below the mean
       photonYieldVariationCutoffHigh        : 0.2   //the photon yield variation is cut off at 20% above the mean
                                                     //note: if measured deviations are used, the cutoffs should be set to the maximum values
-      digitizationStart                     :  400.0    //400ns
-      digitizationEnd                       : 1750.0    //1750ns
-      digitizationStartMargin               :   50.0    //50ns
+      digitizationStart                     : @local::DigitizationStart
+      digitizationStartMargin               :   50.0    //ns  start recording earlier to account for photon travel times and electronics response times
     }
     CrvSiPMCharges:
     {
       module_type                  : CrvSiPMChargeGenerator
       crvPhotonsModuleLabel        : "CrvPhotons"
-      digitizationStart            :  400.0    //400ns
-      digitizationEnd              : 1750.0    //1750ns
-      digitizationStartMargin      :   50.0    //50ns
+      digitizationStart            : @local::DigitizationStart
+      digitizationStartMargin      :   50.0    //ns  start recording earlier to account for electronics response times
 
       nPixelsX                     : 40
       nPixelsY                     : 40
@@ -126,8 +125,7 @@ BEGIN_PROLOG
     {
       module_type                  : CrvWaveformsGenerator
       crvSiPMChargesModuleLabel    : "CrvSiPMCharges"
-      digitizationStart            :  400.0    //400ns
-      digitizationEnd              : 1750.0    //1750ns
+      digitizationStart            : @local::DigitizationStart
       singlePEWaveformFileName     : "Offline/CRVResponse/data/singlePEWaveform_v3.txt"
       singlePEWaveformPrecision    : 0.5    //0.5 ns
       singlePEWaveformStretchFactor: 1.047  //1.047 for singlePEWaveform_v3.txt //from comparison with testbeam data
