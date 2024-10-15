@@ -672,6 +672,7 @@ CalPatRec : { @table::CalPatRec
             max2PiAmbigResidual     : 2.0
             maxPhiZResidual         : 2.0
             minFinalSeedHits        : 7
+            maxNHitsRatio           : 500
             maxCircleRecoverSigma   : 3.0
             maxLineRecoverSigma     : 3.0
             caloClusterSigma        : 30.0
@@ -683,7 +684,8 @@ CalPatRec : { @table::CalPatRec
             maxHelixMomentum        : 400.0
             chi2LineSaveThresh      : 5.0
             maxEDepAvg              : @local::TrkReco.HelixFinderParams.maxEDepAvg
-            maxNHitsRatio           : 500
+            tzSlopeSigThresh        : 5.0
+            validHelixDirections    : [-1, 0, 1]
             diagPlugin              : { tool_type : "AgnosticHelixFinderDiag" }
         }
 
