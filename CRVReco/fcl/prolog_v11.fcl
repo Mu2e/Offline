@@ -396,7 +396,7 @@ BEGIN_PROLOG
       usePulseOverlaps                 : true   //automatically uses noFitReco option
       useNoFitReco                     : true
       usePEsPulseHeight                : false  //using the PEs that were calculated using the pulse height instead of pulse area
-      bigClusterThreshold              : 800
+      bigClusterThreshold              : 500
       fiberSignalSpeed                 : 140    //140 mm/ns  //FIXME: The correct value should be 175 mm/ns.
       timeOffset                       :  34.5  //34.5 ns
       compensateChannelStatus          : [0,1,2] //not connected channels (bit 0), ignored channels in reco (bit 1), channels that have no data (bit 2)
