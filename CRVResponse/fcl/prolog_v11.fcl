@@ -87,14 +87,14 @@ BEGIN_PROLOG
       photonYieldVariationCutoffHigh        : 0.2   //the photon yield variation is cut off at 20% above the mean
                                                     //note: if measured deviations are used, the cutoffs should be set to the maximum values
       digitizationStart                     : @local::DigitizationStart
-      digitizationStartMargin               :   50.0    //ns  start recording earlier to account for photon travel times and electronics response times
+      digitizationStartMargin               : 100.0 //ns  start recording earlier to account for photon travel times and electronics response times
     }
     CrvSiPMCharges:
     {
       module_type                  : CrvSiPMChargeGenerator
       crvPhotonsModuleLabel        : "CrvPhotons"
       digitizationStart            : @local::DigitizationStart
-      digitizationStartMargin      :   50.0    //ns  start recording earlier to account for electronics response times
+      digitizationStartMargin      : 100.0      //ns  start recording earlier to account for electronics response times
 
       nPixelsX                     : 40
       nPixelsY                     : 40

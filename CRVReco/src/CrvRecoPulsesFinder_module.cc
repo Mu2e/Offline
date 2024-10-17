@@ -69,6 +69,7 @@ namespace mu2e
       fhicl::Atom<float> timeOffsetCutoffHigh{Name("timeOffsetCutoffHigh"), Comment("upper cutoff of time offsets (for random values - otherwise set to maximum value)")}; //+3.0ns
       fhicl::Atom<bool> useTimeOffsetDB{Name("useTimeOffsetDB"), Comment("apply time offsets from the DB")}; //true
       fhicl::Atom<bool> ignoreChannels{Name("ignoreChannels"), Comment("ignore channels that have status 2 (bit 1) in CRVstatus DB")}; //true
+      fhicl::Atom<bool> oldDigis{Name("oldDigis"), Comment("older digis, that used a different time reference")}; //false
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -92,6 +93,7 @@ namespace mu2e
     bool  _useTimeOffsetDB;
 
     bool  _ignoreChannels;
+    bool  _oldDigis;
 
     ProditionsHandle<CRVCalib>  _calib;
     ProditionsHandle<CRVStatus> _sipmStatus;
@@ -107,7 +109,8 @@ namespace mu2e
     _timeOffsetCutoffLow(conf().timeOffsetCutoffLow()),
     _timeOffsetCutoffHigh(conf().timeOffsetCutoffHigh()),
     _useTimeOffsetDB(conf().useTimeOffsetDB()),
-    _ignoreChannels(conf().ignoreChannels())
+    _ignoreChannels(conf().ignoreChannels()),
+    _oldDigis(conf().oldDigis())
   {
     produces<CrvRecoPulseCollection>();
     _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(conf().minADCdifference(),
@@ -153,6 +156,9 @@ namespace mu2e
         ProditionsHandle<EventTiming> eventTimingHandle;
         const EventTiming &eventTiming = eventTimingHandle.get(event.id());
         TDC0time = -protonBunchTime->pbtime_ - eventTiming.timeFromProtonsToDRMarker(); //0ns...25ns (only for onspill)
+
+        if(_oldDigis) TDC0time+=eventTiming.timeFromProtonsToDRMarker();  //old digis were produced relative to -protonBunchTime
+                                                                          //new digis are produced relative to -protonBunchTime-eventTiming.timeFromProtonsToDRMarker
       }
     }
 
