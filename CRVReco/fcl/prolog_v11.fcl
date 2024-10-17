@@ -51,7 +51,6 @@ BEGIN_PROLOG
                                          //note: if measured time offsets are used, the cutoffs should be set to the maximum values
       useTimeOffsetDB           : true   //applies time offsets from the DB
       ignoreChannels            : true   //ignore channels that have status bit 1 ("ignore channels") in CRVstatus DB
-      oldDigis                  : false  //older digis used a different reference time, which is off by 200ns
     }
 
     CrvCoincidenceClusterFinder:
