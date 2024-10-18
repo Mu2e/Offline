@@ -9,7 +9,9 @@
 #include "Offline/CommonMC/fcl/prolog.fcl"
 BEGIN_PROLOG
 
-    DigitizationStart: 400.0 //ns after event window start (i.e. 400ns after first clock tick after POT) --> 400ns...425ns after POT
+    DigitizationStart :  200.0 //ns after event window start (400ns...425ns after POT)
+    DigitizationEnd   : 1500.0 //ns after event window start (1700ns...1725ns after POT)
+                               //event window starts 200ns after first clock tick after POT (200ns...225ns after POT)
     CrvSteps:
     {
       module_type               : CrvStepsFromStepPointMCs
@@ -87,6 +89,7 @@ BEGIN_PROLOG
       photonYieldVariationCutoffHigh        : 0.2   //the photon yield variation is cut off at 20% above the mean
                                                     //note: if measured deviations are used, the cutoffs should be set to the maximum values
       digitizationStart                     : @local::DigitizationStart
+      digitizationEnd                       : @local::DigitizationEnd
       digitizationStartMargin               : 100.0 //ns  start recording earlier to account for photon travel times and electronics response times
     }
     CrvSiPMCharges:
@@ -94,6 +97,7 @@ BEGIN_PROLOG
       module_type                  : CrvSiPMChargeGenerator
       crvPhotonsModuleLabel        : "CrvPhotons"
       digitizationStart            : @local::DigitizationStart
+      digitizationEnd              : @local::DigitizationEnd
       digitizationStartMargin      : 100.0      //ns  start recording earlier to account for electronics response times
 
       nPixelsX                     : 40
