@@ -53,7 +53,10 @@ namespace mu2e
       fhicl::Atom<double> capacitance{Name("capacitance")};                   //8.84e-14F (per pixel)
       fhicl::Atom<double> digitizationStart{Name("digitizationStart"),
                                             Comment("start of digitization after DAQ event window start")};
-                                            //400ns (400ns...425ns after POT)
+                                            //200ns (400ns...425ns after POT)
+      fhicl::Atom<double> digitizationEnd{Name("digitizationEnd"),
+                                          Comment("end of digitization after DAQ event window start")};
+                                            //1500ns (700ns...1725ns after POT)
       fhicl::Atom<double> digitizationStartMargin{Name("digitizationStartMargin"),
                                                   Comment("time window before digitization starts to account for photon travel time and electronics response.")};
                                                   //50.0ns  start recording earlier to account for electronics response times
@@ -83,7 +86,7 @@ namespace mu2e
     double      _overvoltage;
     double      _timeConstant;
     double      _capacitance;
-    double      _digitizationStart, _digitizationStartMargin;
+    double      _digitizationStart, _digitizationEnd, _digitizationStartMargin;
     art::InputTag _eventWindowMarkerTag;
     art::InputTag _protonBunchTimeMCTag;
 
@@ -112,6 +115,7 @@ namespace mu2e
     _timeConstant(conf().timeConstant()),
     _capacitance(conf().capacitance()),
     _digitizationStart(conf().digitizationStart()),
+    _digitizationEnd(conf().digitizationEnd()),
     _digitizationStartMargin(conf().digitizationStartMargin()),
     _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeMCTag(conf().protonBunchTimeMCTag()),
@@ -168,12 +172,10 @@ namespace mu2e
     {
       art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
       event.getByLabel(_protonBunchTimeMCTag, protonBunchTimeMC);
-      ProditionsHandle<EventTiming> eventTimingHandle;
-      const EventTiming &eventTiming = eventTimingHandle.get(event.id());
-      eventWindowStart = -protonBunchTimeMC->pbtime_ - eventTiming.timeFromProtonsToDRMarker(); //0ns...25ns (only for onspill)
+      eventWindowStart = -protonBunchTimeMC->pbtime_; //200ns...225ns
 
-      startTime=eventWindowStart+_digitizationStart-_digitizationStartMargin; //350ns...375ns
-      endTime=eventWindowStart+eventWindowLength; //up to ~1720ns
+      startTime=eventWindowStart+_digitizationStart-_digitizationStartMargin; //300ns...325ns
+      endTime=eventWindowStart+_digitizationEnd; //1700ns...1725ns
     }
 
     auto const& sipmStatus = _sipmStatus.get(event.id());

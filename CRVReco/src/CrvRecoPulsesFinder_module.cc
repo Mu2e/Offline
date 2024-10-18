@@ -150,9 +150,7 @@ namespace mu2e
       event.getByLabel(_protonBunchTimeTag, protonBunchTime);
       if(protonBunchTime.isValid())
       {
-        ProditionsHandle<EventTiming> eventTimingHandle;
-        const EventTiming &eventTiming = eventTimingHandle.get(event.id());
-        TDC0time = -protonBunchTime->pbtime_ - eventTiming.timeFromProtonsToDRMarker(); //0ns...25ns (only for onspill)
+        TDC0time = -protonBunchTime->pbtime_; //200ns...225ns (only for onspill)
       }
     }
 
