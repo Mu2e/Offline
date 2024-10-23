@@ -49,7 +49,8 @@ namespace mu2e
     {
       fhicl::Atom<std::string> crvSiPMChargesModuleLabel{Name("crvSiPMChargesModuleLabel")};
       fhicl::Atom<std::string> singlePEWaveformFileName{Name("singlePEWaveformFileName")};
-      fhicl::Atom<double> digitizationStart{Name("digitizationStart"), Comment("start of digitization after DAQ event window start")}; //400ns (400ns...425ns after POT)
+      fhicl::Atom<double> digitizationStart{Name("digitizationStart"), Comment("start of digitization after DAQ event window start")}; //200ns (400ns...425ns after POT)
+      fhicl::Atom<double> digitizationEnd{Name("digitizationEnd"), Comment("end of digitization after DAQ event window start")}; //1500ns (1700ns...1725ns after POT)
       fhicl::Atom<art::InputTag> eventWindowMarkerTag{Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
       fhicl::Atom<art::InputTag> protonBunchTimeMCTag{Name("protonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
       fhicl::Atom<double> minVoltage{Name("minVoltage")};                       //0.022V (corresponds to 3.5PE)
@@ -79,6 +80,7 @@ namespace mu2e
     boost::shared_ptr<mu2eCrv::MakeCrvWaveforms> _makeCrvWaveforms;
 
     double                              _digitizationStart;
+    double                              _digitizationEnd;
     double                              _minVoltage;
     double                              _noise;
     double                              _timeOffsetScale;
@@ -114,6 +116,7 @@ namespace mu2e
     _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeMCTag(conf().protonBunchTimeMCTag()),
     _digitizationStart(conf().digitizationStart()),
+    _digitizationEnd(conf().digitizationEnd()),
     _minVoltage(conf().minVoltage()),
     _noise(conf().noise()),
     _timeOffsetScale(conf().timeOffsetScale()),
@@ -157,12 +160,10 @@ namespace mu2e
     {
       art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
       event.getByLabel(_protonBunchTimeMCTag, protonBunchTimeMC);
-      ProditionsHandle<EventTiming> eventTimingHandle;
-      const EventTiming &eventTiming = eventTimingHandle.get(event.id());
-      eventWindowStart = -protonBunchTimeMC->pbtime_ - eventTiming.timeFromProtonsToDRMarker(); //0ns...25ns (only for onspill)
+      eventWindowStart = -protonBunchTimeMC->pbtime_; //200ns...225ns
 
       digitizationStart=eventWindowStart+_digitizationStart; //400ns...425ns
-      digitizationEnd=eventWindowStart+eventWindowLength; //up to ~1720ns
+      digitizationEnd=eventWindowStart+_digitizationEnd; //1700ns...1725ns
     }
 
     auto const& calib = _calib.get(event.id());
