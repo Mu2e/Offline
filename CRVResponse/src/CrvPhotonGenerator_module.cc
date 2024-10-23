@@ -70,6 +70,7 @@ namespace mu2e
       fhicl::Atom<double> photonYieldVariationCutoffLow{ Name("photonYieldVariationCutoffLow"),Comment("lower cutoff at photon yield variation")};
       fhicl::Atom<double> photonYieldVariationCutoffHigh{ Name("photonYieldVariationCutoffHigh"),Comment("upper cutoff at photon yield variation")};
       fhicl::Atom<double> digitizationStart{ Name("digitizationStart"), Comment("start of digitization after DAQ event window start")};
+      fhicl::Atom<double> digitizationEnd{ Name("digitizationEnd"), Comment("end of digitization after DAQ event window start")};
       fhicl::Atom<double> digitizationStartMargin{ Name("digitizationStartMargin"),
                                Comment("time window before digitization starts to account for photon travel time and electronics response.")};
       fhicl::Atom<art::InputTag> eventWindowMarkerTag{ Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
@@ -104,16 +105,17 @@ namespace mu2e
     //-Digitization window
     //---first DAQ clock tick after POT occurs between 0ns and 25ns after protons.
     //   25ns jitter is due to the microbunch period not being an integer multiple of the DAQ clock period.
-    //---these first DAQ clock ticks define the event window.
-    //   due to the above variations, the event window length varies between 1675ns and 1700ns.
-    //---digitization start: 400ns after event window start (--> 400ns...425ns after POT)
-    //---digitization end: at the end of the event window (i.e. first DAQ clock after the next POT),
-    //   which is 1675ns or 1700ns after the event window start
+    //---event window starts 200ns after these first DAQ clock ticks (--> 200ns...225ns after POT).
+    //---due to the above variations, the event window length varies between 1675ns and 1700ns.
+    //---digitization start: 200ns after event window start (--> 400ns...425ns after POT)
+    //---digitization end: 1500ns after event window start (--> 1700ns...1725ns after POT),
+    //   which is 1300ns after digitization start
     //-CrvSteps
-    //---start recording CrvSteps 50ns before digitzation window (=350ns after event window start)
-    //   to account for photon travel time and electroncs response time.
+    //---start recording CrvSteps 100ns before digitzation window
+    //   (--> 100ns after event window start, 300ns...325ns after POT)
+    //   to account for photon travel time and electronics response time.
     //---stop recording CrvSteps at end of digitization window.
-    //---CrvSteps before 50ns before the digitization window are removed (dead time).
+    //---CrvSteps before 100ns before the digitization window are removed (dead time).
     //---CrvSteps after the end of the event window belong to the next event(s).
     //   for simplicity, no time wrapping and removal of CrvSteps that occur in the dead time will be done.
     //-CrvPhotons
@@ -130,8 +132,9 @@ namespace mu2e
     //-CrvPhotons
     //---no time wrapping
 
-    double      _digitizationStart; //400ns after event window start (400ns...425ns after POT)
-    double      _digitizationStartMargin;  //50ns (used to account for photon travel time and electronics response time)
+    double      _digitizationStart; //200ns after event window start (400ns...425ns after POT)
+    double      _digitizationEnd;   //1500ns after event window start (1700ns...1725ns after POT)
+    double      _digitizationStartMargin;  //100ns (used to account for photon travel time and electronics response time)
     art::InputTag _eventWindowMarkerTag;
     art::InputTag _protonBunchTimeMCTag;
     double      _microBunchPeriod;
@@ -156,6 +159,7 @@ namespace mu2e
     _photonYieldVariationCutoffLow(conf().photonYieldVariationCutoffLow()),
     _photonYieldVariationCutoffHigh(conf().photonYieldVariationCutoffHigh()),
     _digitizationStart(conf().digitizationStart()),
+    _digitizationEnd(conf().digitizationEnd()),
     _digitizationStartMargin(conf().digitizationStartMargin()),
     _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeMCTag(conf().protonBunchTimeMCTag()),
@@ -263,12 +267,10 @@ namespace mu2e
     {
       art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
       event.getByLabel(_protonBunchTimeMCTag, protonBunchTimeMC);
-      ProditionsHandle<EventTiming> eventTimingHandle;
-      const EventTiming &eventTiming = eventTimingHandle.get(event.id());
-      eventWindowStart = -protonBunchTimeMC->pbtime_ - eventTiming.timeFromProtonsToDRMarker(); //0ns...25ns (only for onspill)
+      eventWindowStart = -protonBunchTimeMC->pbtime_; //200ns...225ns
 
-      startTime=eventWindowStart+_digitizationStart-_digitizationStartMargin; //350ns...375ns
-      endTime=eventWindowStart+eventWindowLength; //up to ~1720ns
+      startTime=eventWindowStart+_digitizationStart-_digitizationStartMargin; //300ns...325ns
+      endTime=eventWindowStart+_digitizationEnd; //1700ns...1725ns
     }
 
     for(size_t j=0; j<_selectors.size(); ++j)
