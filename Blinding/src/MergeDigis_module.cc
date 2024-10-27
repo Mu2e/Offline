@@ -73,7 +73,8 @@ namespace mu2e{
       bundles.Append(*digi_handle, *adcs_handle);
     }
     const auto& electronics = _tracker_conditions_handle.get(event.id());
-    StrawDigiBundleCollection resolved = bundles.ResolveCollisions(electronics);
+    StrawDigiBundleCollection resolved;
+    bundles.ResolveCollisions(electronics, resolved);
     auto digis = resolved.GetStrawDigiPtrs();
     auto adcs = resolved.GetStrawDigiADCWaveformPtrs();
     event.put(std::move(digis));

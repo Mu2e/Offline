@@ -64,10 +64,10 @@ namespace mu2e{
 
       // identify sets of  digis with overlapping digitization windows, and
       // reduce each such set to a single digi, representing their "sum"
-      StrawDigiBundleCollection ResolveCollisions(const StrawElectronics& conditions);
+      void ResolveCollisions(const StrawElectronics& conditions, StrawDigiBundleCollection& rv);
     protected:
       std::vector<StrawDigiBundle> _bundles;
-      StrawDigiBundleCollection ResolveCollision(StrawDigiBundleCollection& collided);
+      void ResolveCollision(StrawDigiBundleCollection& collided, StrawDigiBundleCollection& rv);
     private:
       /**/
   };
