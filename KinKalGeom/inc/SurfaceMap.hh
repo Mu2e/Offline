@@ -31,6 +31,7 @@ namespace mu2e {
       auto const& DS() const {return ds_; }
       auto const& ST() const {return st_; }
       auto const& tracker() const {return tracker_; }
+      auto const& TCRV() const {return tcrv_; }
     private:
       // local copy of detector objects; these hold the actual (typed) surface objects
       KinKalGeom::Tracker tracker_;
