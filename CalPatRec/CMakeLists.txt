@@ -2,6 +2,7 @@ cet_make_library(
     SOURCE
       src/CalHelixFinderAlg.cc
       src/CalHelixFinderData.cc
+      src/ChannelID.cc
       src/DeltaCandidate.cc
       src/DeltaFinderAlg.cc
       src/DeltaFinderAlg_findProtons.cc
@@ -24,6 +25,21 @@ cet_make_library(
       Offline::TrackerGeom
       Offline::TrkReco
       ROOT::Physics
+)
+
+cet_build_plugin(AgnosticHelixFinder art::module
+    REG_SOURCE src/AgnosticHelixFinder_module.cc
+    LIBRARIES REG
+        Offline::CalPatRec
+      
+      Offline::BFieldGeom
+      Offline::CalorimeterGeom
+      Offline::ConditionsService
+      Offline::ConfigTools
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
 )
 
 cet_build_plugin(CalHelixFinder art::module
@@ -153,6 +169,16 @@ cet_build_plugin(CalHelixFinderDiag art::tool
       Offline::Mu2eUtilities
 )
 
+cet_build_plugin(AgnosticHelixFinderDiag art::tool
+    REG_SOURCE src/AgnosticHelixFinderDiag_tool.cc
+    LIBRARIES REG
+      Offline::CalPatRec
+      
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+)
+
+
 cet_build_plugin(CalTimePeakFinderDiag art::tool
     REG_SOURCE src/CalTimePeakFinderDiag_tool.cc
     LIBRARIES REG
@@ -190,6 +216,12 @@ cet_build_plugin(PhiClusterFinderDiag art::tool
       Offline::MCDataProducts
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
+)
+
+cet_build_plugin(TZClusterFilter art::module
+    REG_SOURCE src/TZClusterFilter_module.cc
+    LIBRARIES REG
+        Offline::CalPatRec
 )
 
 cet_build_plugin(TZClusterFinderDiag art::tool

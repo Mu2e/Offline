@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iterator>
 #include <iostream>
+#include <string>
 
 #include "cetlib_except/exception.h"
 
@@ -94,6 +95,26 @@ namespace mu2e {
     for(const auto& e: conf.eventIDMixer().mixingMap()) {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixEventIDs, *this);
+    }
+
+    for(const auto& e: conf.strawDigiMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixStrawDigis, *this);
+    }
+
+    for(const auto& e: conf.strawDigiADCWaveformMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixStrawDigiADCWaveforms, *this);
+    }
+
+    for(const auto& e: conf.strawDigiMCMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixStrawDigiMCs, *this);
+    }
+
+    for(const auto& e: conf.eventWindowMarkerMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixEventWindowMarkers, *this);
     }
 
     //----------------------------------------------------------------
@@ -345,11 +366,11 @@ namespace mu2e {
                                           StrawGasStepCollection& out,
                                           art::PtrRemapper const& remap)
   {
-    std::vector<StrawGasStepCollection::size_type> stepOffsets;
-    art::flattenCollections(in, out, stepOffsets);
+    //std::vector<StrawGasStepCollection::size_type> stepOffsets;
+    art::flattenCollections(in, out, sgsOffsets_);
 
     for(StrawGasStepCollection::size_type i=0; i<out.size(); ++i) {
-      auto ie = getInputEventIndex(i, stepOffsets);
+      auto ie = getInputEventIndex(i, sgsOffsets_);
       auto& step = out[i];
       step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
       if(applyTimeOffset_){
@@ -394,6 +415,56 @@ namespace mu2e {
       step.setSimParticle( remap(step.simParticle(), simOffsets_[ie]) );
     }
 
+    return true;
+  }
+
+  bool Mu2eProductMixer::mixStrawDigis(std::vector<StrawDigiCollection const*> const& in,
+                     StrawDigiCollection& out,
+                     art::PtrRemapper const& remap)
+  {
+    art::flattenCollections(in, out);
+    return true;
+  }
+
+  bool Mu2eProductMixer::mixStrawDigiADCWaveforms(std::vector<StrawDigiADCWaveformCollection const*> const& in,
+                     StrawDigiADCWaveformCollection& out,
+                     art::PtrRemapper const& remap)
+  {
+    art::flattenCollections(in, out);
+    return true;
+  }
+
+  bool Mu2eProductMixer::mixStrawDigiMCs(std::vector<StrawDigiMCCollection const*> const& in,
+                     StrawDigiMCCollection& out,
+                     art::PtrRemapper const& remap)
+  {
+    std::vector<StrawDigiMCCollection::size_type> sdmcOffsets;
+    art::flattenCollections(in, out, sdmcOffsets);
+
+    // update internal art::Ptr<StrawGasStep>s
+    for (StrawDigiMCCollection::size_type i=0; i < out.size(); ++i) {
+      auto& sdmc = out[i];
+      auto ie = getInputEventIndex(i, sdmcOffsets);
+      auto sgsOffset = sgsOffsets_[ie];
+
+      auto& steps = sdmc.strawGasSteps();
+      steps[StrawEnd::cal] = remap(steps[StrawEnd::cal], sgsOffset);
+      steps[StrawEnd::hv]  = remap(steps[StrawEnd::hv],  sgsOffset);
+    }
+
+    return true;
+  }
+
+  bool Mu2eProductMixer::mixEventWindowMarkers(std::vector<EventWindowMarker const*> const& in,
+                     EventWindowMarker& out,
+                     art::PtrRemapper const& remap){
+    // assert that only one EventWindowMarker be present
+    if (in.size() != 1){
+      std::string msg = "attempting to mix more than 1 EventWindowMarker: ";
+      msg += std::to_string(in.size()) + " present";
+      throw cet::exception("BADINPUT") << msg << std::endl;
+    }
+    out = *in[0];
     return true;
   }
 

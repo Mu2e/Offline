@@ -13,10 +13,11 @@ double particleGun.tmin  =  800.0;
 double particleGun.tmax  =  800.0;
 
 // position
+vector<double> particleGun.point = {-4904., 2673.11, 10200.0}; //x=500 ,l=3000
 //vector<double> particleGun.point = {-4404., 2673.11, 10200.0}; //x=1000 ,l=3000
 //vector<double> particleGun.point = {-6404., 2673.10, 10200.0}; //x=500 ,l=6000
 //vector<double> particleGun.point = {-5904., 2673.10, 10200.0}; //x=1000 ,l=6000
-vector<double> particleGun.point = {-4904., 2673.10, 10200.0}; //x=2000 ,l=6000
+//vector<double> particleGun.point = {-4904., 2673.10, 10200.0}; //x=2000 ,l=6000
 //vector<double> particleGun.point = {-3904., 2673.10, 10200.0}; //x=3000 ,l=6000
 
 // half length

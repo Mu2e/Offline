@@ -31,6 +31,7 @@
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/PTMGeom/inc/PTM.hh"
+#include "Offline/STMGeom/inc/STM.hh"
 
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 
@@ -342,7 +343,7 @@ namespace mu2e {
 
       }
 
-      if(c.hasName("vd.ExtMonCommonPlane.z")) {
+      if(c.getBool("vd.ExtMonCommonPlane.enabled", false)) {
         // Position and half length of this detector are best computed
         // in one place.  Since the VirtualDetector data structure
         // does not store half size, we'll do the computations later.
@@ -519,254 +520,227 @@ namespace mu2e {
 
       }
 
-      if ( c.getBool("hasSTM",false) ) {
-        // temporary arrangements until MSTM is in GeometryService
-        //const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
-        //CLHEP::Hep3Vector parentPositionInMu2e = parent.centerInMu2e();
-        GeomHandle<Mu2eEnvelope> env;
-        const CLHEP::Hep3Vector parentPositionInMu2e(
-                                                     (env->xmax() + env->xmin())/2.,
-                                                     (env->ymax() + env->ymin())/2.,
-                                                     (env->zmax() + env->zmin())/2.
-                                                    );
+      if ( c.getBool("hasSTM",false) )
+      {
+      STM const & stmgh = *(GeomHandle<STM>());
 
-        GeomHandle<DetectorSolenoid> ds;
-        CLHEP::Hep3Vector const & dsP ( ds->position() );
+      GeomHandle<Mu2eEnvelope> env;
+      const CLHEP::Hep3Vector parentPositionInMu2e((env->xmax() + env->xmin())/2.,(env->ymax() + env->ymin())/2.,(env->zmax() + env->zmin())/2.);
+      GeomHandle<DetectorSolenoid> ds;
+      CLHEP::Hep3Vector const & dsP ( ds->position() );
+      const CLHEP::Hep3Vector zeroVector(0.,0.,0.);
 
-        const CLHEP::Hep3Vector zeroVector(0.,0.,0.);
+      GeomHandle<CosmicRayShield> CRS;
+      const double z_crv_max = CRS->getSectorPosition("D").z() + (CRS->getSectorHalfLengths("D"))[2];
 
-        GeomHandle<CosmicRayShield> CRS;
-        const double z_crv_max = CRS->getSectorPosition("D").z() + (CRS->getSectorHalfLengths("D"))[2];
+      // Create a reference position (most things in the STM geometry will be defined w.r.t. this position)
+      // Our reference z is the downstream edge of the CRV
+      const CLHEP::Hep3Vector mstmReferencePositionInMu2e(dsP.x(), 0.0, z_crv_max);
+      const CLHEP::Hep3Vector mstmReferencePositionInParent = mstmReferencePositionInMu2e - parentPositionInMu2e;
 
-        //Create a reference position (most things in the STM geometry will be defined w.r.t. this position)
-        // Our reference z is the downstream edge of the CRV
-        const CLHEP::Hep3Vector mstmReferencePositionInMu2e(dsP.x(),
-                                              0.0,
-                                              z_crv_max );
-        const CLHEP::Hep3Vector mstmReferencePositionInParent = mstmReferencePositionInMu2e - parentPositionInMu2e;
+      //WARNING: This must be the same as in constructMSTM.cc for now.
+      GeomHandle<Mu2eHall> hall;
+      const double z_hall_inside_max = hall->getWallExtentz("dsArea",1)/CLHEP::mm;//the integer allows you to specify which side of which wall you want the z for: 1 = west side of east wall (i.e. the z of the inside surface of the east wall)
+      const double mstmMotherHalfLength = (z_hall_inside_max - z_crv_max)/2.0;
 
+      // Create a reference position for the downstream area
+      const CLHEP::Hep3Vector BeamAxisAtEastWallInMu2e(dsP.x(), 0.0, z_hall_inside_max );
+      const double yExtentLow = std::abs(c.getDouble("yOfFloorSurface.below.mu2eOrigin") ); //defines vertical position of hall air volume. 2312mm
+      const CLHEP::Hep3Vector FloorAtEastWallInMu2e = BeamAxisAtEastWallInMu2e - CLHEP::Hep3Vector(0.0, yExtentLow, 0.0);
 
-        //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
-        //CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
-        //WARNING: This must be the same as in constructMSTM.cc for now.
-        GeomHandle<Mu2eHall> hall;
-        const double z_hall_inside_max = hall->getWallExtentz("dsArea",1)/CLHEP::mm;//the integer allows you to specify which side of which wall you want the z for: 1 = west side of east wall (i.e. the z of the inside surface of the east wall)
+      STMDownstreamEnvelope const & pSTMDnStrEnvParams = *stmgh.getSTMDnStrEnvPtr();
+      double stmDnStrEnvHalfLength  = pSTMDnStrEnvParams.zHalfLength();
+      double stmDnStrEnvHalfHeight  = pSTMDnStrEnvParams.yHalfLength();
+      const CLHEP::Hep3Vector stmDnStrEnvPositionInMu2e = FloorAtEastWallInMu2e + CLHEP::Hep3Vector(0.0, +stmDnStrEnvHalfHeight, -stmDnStrEnvHalfLength);
 
-        const double mstmMotherHalfLength = (z_hall_inside_max - z_crv_max)/2.0;
+      // Define the z offset from stmDnStrEnvPositionInMu2e to the dnstr plate of the SSC (copper)
+      STM_SSC const & pSTM_SSCParams = *stmgh.getSTM_SSCPtr();
+      FrontShielding const & pFrontShieldingParams = *stmgh.getFrontShieldingPtr();
+      const double stmDnStrEnvToSSCBack = -stmDnStrEnvPositionInMu2e.z() + pSTM_SSCParams.originInMu2e().z() - (pSTM_SSCParams.Wdepth_f()/2) + pFrontShieldingParams.Front_Thickness();
 
-        // Create a reference position for the downstream area
-        const CLHEP::Hep3Vector BeamAxisAtEastWallInMu2e(dsP.x(), 0.0, z_hall_inside_max );
-        const double yExtentLow = std::abs(c.getDouble("yOfFloorSurface.below.mu2eOrigin") );
-        const CLHEP::Hep3Vector FloorAtEastWallInMu2e = BeamAxisAtEastWallInMu2e - CLHEP::Hep3Vector(0.0, yExtentLow, 0.0);
+      if ( c.getBool("vd.STMUpStr.build", false) ) {//VD86, xy plane size of CRV 1mm downstream from CRS
+      CLHEP::Hep3Vector vdPositionWRTparent(0.0, 0.0, 1.0-vd->_halfLength);
+      vd->addVirtualDetector(VirtualDetectorId::STM_UpStr, mstmReferencePositionInMu2e, 0x0, vdPositionWRTparent);
+      //(ID, parentPositionInMu2e (reference position), rotation, placement w.r.t. reference)
 
-        double stmDnStrEnvHalfLength  = c.getDouble("stm.downstream.halfLength");
-        double stmDnStrEnvHalfHeight  = c.getDouble("stm.downstream.halfHeight");
-        const CLHEP::Hep3Vector stmDnStrEnvPositionInMu2e = FloorAtEastWallInMu2e + CLHEP::Hep3Vector(0.0, +stmDnStrEnvHalfHeight, -stmDnStrEnvHalfLength);
-
-        if ( c.getBool("vd.STMUpStr.build", false) ) {
-          //place this VD 1 cm downstream of the CRS (Cosmic Ray Shield)
-          const double y_vd_center = 0.0;
-
-          CLHEP::Hep3Vector vdPositionWRTparent     = mstmReferencePositionInParent + CLHEP::Hep3Vector(0.0,y_vd_center, 1.0*mm-vd->_halfLength);
-
-          vd->addVirtualDetector(VirtualDetectorId::STM_UpStr, //ID
-                                 parentPositionInMu2e,         //reference position
-                                 0x0,                          //rotation
-                                 vdPositionWRTparent);         //placement w.r.t. reference
+      if ( verbosityLevel > 0) {
+      cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_UpStr) << endl;
+      cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_UpStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_UpStr) <<endl;
+      }
+      }
 
 
-           if ( verbosityLevel > 0) {
-              cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_UpStr) << endl;
-              cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_UpStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_UpStr) <<endl;
-           }
+      if ( c.getBool("vd.STMUpStrHole.build", false) ) {//VD115, which is the VD86 hole filler, defined in x,y,z as VD86, defined relative to the CRS end.
+      //const double y_vd_center = 0.0;
+      //CLHEP::Hep3Vector vdPositionWRTparent     = mstmReferencePositionInParent + CLHEP::Hep3Vector(0.0,y_vd_center, 1.0*mm-vd->_halfLength);
+
+      CLHEP::Hep3Vector vdPositionWRTparent(0.0, 0.0, 1-vd->_halfLength);
+      vd->addVirtualDetector(VirtualDetectorId::STM_UpStrHole, mstmReferencePositionInMu2e, 0x0, vdPositionWRTparent);
+
+      if ( verbosityLevel > 0) {
+        cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_UpStrHole) << endl;
+        cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_UpStrHole) << " global="<< vd->getGlobal(VirtualDetectorId::STM_UpStrHole) <<endl;
+      }
+      }
+
+
+      if ( c.getBool("vd.STMFieldOfViewCollDnStr.build", false) ) {//VD100, 100mm downstream from sweeper magnet location, defined relative to the sweeper magnet location.
+        STMCollimator const & pSTMFOVCollimatorParams = *stmgh.getSTMFOVCollimatorPtr();
+        double CollimatorVD100Offset = 100.0;
+        //Define space from end of CRS to VD100
+        double z_offset = pSTMFOVCollimatorParams.originInMu2e().z() //Position of midpoint of FOVCollimator
+          + pSTMFOVCollimatorParams.halfLength() // Half width of FOV collimator
+          + CollimatorVD100Offset //Offset from Collimator frrom VD100
+          - vd->_halfLength
+          - mstmReferencePositionInMu2e.z();
+
+        TransportPipe const & pSTMTransportPipeParams = *stmgh.getSTMTransportPipePtr();
+        //if (c.getBool("stm.pipe.build", false)){
+        if (pSTMTransportPipeParams.build()){
+          //z_offset +=  2.0*c.getDouble("stm.pipe.DnStrHalfLength");
+          z_offset += 2.0*pSTMTransportPipeParams.dnStrHalflength();
         }
 
-        //VD 86 Hole filler
-        if ( c.getBool("vd.STMUpStrHole.build", false) ) {
-          //place this VD 1 cm downstream of the CRS (Cosmic Ray Shield)
-          const double y_vd_center = 0.0;
-
-          CLHEP::Hep3Vector vdPositionWRTparent     = mstmReferencePositionInParent + CLHEP::Hep3Vector(0.0,y_vd_center, 1.0*mm-vd->_halfLength);
-
-          vd->addVirtualDetector(VirtualDetectorId::STM_UpStrHole, //ID
-                                 parentPositionInMu2e,         //reference position
-                                 0x0,                          //rotation
-                                 vdPositionWRTparent);         //placement w.r.t. reference
+        CLHEP::Hep3Vector vdPositionWRTparent = mstmReferencePositionInParent + CLHEP::Hep3Vector(0.0,0.0,z_offset);
+        vd->addVirtualDetector(VirtualDetectorId::STM_FieldOfViewCollDnStr, //ID
+                               parentPositionInMu2e,    //reference position
+                               0x0,                     //rotation
+                               vdPositionWRTparent);    //placement w.r.t. reference
 
 
-          if ( verbosityLevel > 0) {
-            cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_UpStrHole) << endl;
-            cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_UpStrHole) << " global="<< vd->getGlobal(VirtualDetectorId::STM_UpStrHole) <<endl;
-          }
+        if ( verbosityLevel > 0) {
+          cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_FieldOfViewCollDnStr) << endl;
+          cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_FieldOfViewCollDnStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_FieldOfViewCollDnStr) <<endl;
         }
+      }
 
 
-        if ( c.getBool("vd.STMFieldOfViewCollDnStr.build", false) ) {
-          //place this VD just downstream of the STM Field-Of-View Collimator
-          const double y_vd_center = 0.0;
-
-          double z_offset =   c.getDouble("stm.magnet.UpStrSpace")
-                                  + 2.0*c.getDouble("stm.magnet.halfLength")
-                                  + c.getDouble("stm.FOVcollimator.UpStrSpace")
-                                  + 2.0*c.getDouble("stm.FOVcollimator.halfLength")
-                                  + 100.0*mm   // a 10cm gap
-                                  - vd->_halfLength;
-          if (c.getBool("stm.pipe.build", false)){
-             z_offset +=  2.0*c.getDouble("stm.pipe.DnStrHalfLength");
-          }
-          CLHEP::Hep3Vector vdPositionWRTparent = mstmReferencePositionInParent + CLHEP::Hep3Vector(0.0,y_vd_center, z_offset);
-
-          vd->addVirtualDetector(VirtualDetectorId::STM_FieldOfViewCollDnStr, //ID
-                                 parentPositionInMu2e,    //reference position
-                                 0x0,                     //rotation
-                                 vdPositionWRTparent);    //placement w.r.t. reference
-
-
-           if ( verbosityLevel > 0) {
-              cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_FieldOfViewCollDnStr) << endl;
-              cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_FieldOfViewCollDnStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_FieldOfViewCollDnStr) <<endl;
-           }
+      if ( c.getBool("vd.STMMagDnStr.build", false) ) {//VD87 - in front of magnet before FOV collimator
+        PermanentMagnet const & pSTMMagnetParams = *stmgh.getSTMMagnetPtr();
+        double z_offset = pSTMMagnetParams.zEnd()+vd->_halfLength-z_crv_max;
+        TransportPipe const & pSTMTransportPipeParams = *stmgh.getSTMTransportPipePtr();
+        if (pSTMTransportPipeParams.build()){
+          z_offset += 2.0*pSTMTransportPipeParams.dnStrHalflength();//c.getDouble("stm.pipe.DnStrHalfLength");
         }
-
-        if ( c.getBool("vd.STMMagDnStr.build", false) ) {
-          //place this VD downstream of the magnet
-          const double y_vd_center = 0.0;
-
-          double z_offset =   c.getDouble("stm.magnet.UpStrSpace")
-                            + 2.0*c.getDouble("stm.magnet.halfLength")
-                            + vd->_halfLength;
-          if (c.getBool("stm.pipe.build", false)){
-             z_offset +=  2.0*c.getDouble("stm.pipe.DnStrHalfLength");
-          }
-          if (c.getBool("stm.FOVcollimator.build", false)){
-             z_offset +=  0.5*c.getDouble("stm.FOVcollimator.UpStrSpace");
-          }
-
-          // if things are defined with the pipe as the origin, change the z_offset
-          // (copied from STMMaker.cc)
-          if(c.getBool("stm.magnet.usePipeAsOrigin", false)) {
-            z_offset = 2.0*c.getDouble("stm.magnet.halfLength") + c.getDouble("stm.shield.DnStrWall.gap") + 2.*c.getDouble("stm.shield.pipe.halfLength") + c.getDouble("stm.shield.UpStrWall.gap") +  0.5*c.getDouble("stm.FOVcollimator.UpStrSpace");
-            if(! c.getBool ("stm.shield.matchPipeBlock", false)) z_offset += 2.*c.getDouble("stm.shield.DnStrWall.halfLength");
-          }
-
-
-          CLHEP::Hep3Vector vdPositionWRTparent     = mstmReferencePositionInParent +  CLHEP::Hep3Vector(0.0,y_vd_center, z_offset );
-
-          vd->addVirtualDetector(VirtualDetectorId::STM_MagDnStr, //ID
-                                 parentPositionInMu2e,
-                                 0x0,                 //rotation
-                                 vdPositionWRTparent);
-
-
-          if ( verbosityLevel > 0) {
-            cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_MagDnStr) << endl;
-            cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_MagDnStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_MagDnStr) <<endl;
-          }
+        STMCollimator const & pSTMFOVCollimatorParams = *stmgh.getSTMFOVCollimatorPtr();
+        if (pSTMFOVCollimatorParams.build()){
+          z_offset += 0.5*(pSTMFOVCollimatorParams.originInMu2e().z()-pSTMFOVCollimatorParams.halfLength()-pSTMMagnetParams.originInMu2e().z()-pSTMMagnetParams.zHalfLength());
         }
-
-        if ( c.getBool("vd.STMSSCollUpStr.build", false) ) {
-          const double mstmZAllowed =  c.getDouble("stm.z.allowed");
-          const double mstmCollHalfLength =  c.getDouble("stm.SScollimator.halfLength");
-          CLHEP::Hep3Vector mstmCollPositionInMu2e = BeamAxisAtEastWallInMu2e + CLHEP::Hep3Vector(0.0,0.,-mstmZAllowed+mstmCollHalfLength);
-          CLHEP::Hep3Vector mstmCollPositionInParent = mstmCollPositionInMu2e - stmDnStrEnvPositionInMu2e;
-          CLHEP::Hep3Vector vdPositionWRTparent     = mstmCollPositionInParent + CLHEP::Hep3Vector(0.0,0.0,-mstmCollHalfLength-10.0);
-
-          vd->addVirtualDetector(VirtualDetectorId::STM_SpotSizeCollUpStr, //ID
-                                 parentPositionInMu2e, //reference position
-                                 0x0,                  //rotation
-                                 vdPositionWRTparent); //placement w.r.t. reference
+        CLHEP::Hep3Vector vdPositionWRTparent     = mstmReferencePositionInParent +  CLHEP::Hep3Vector(0.0, 0.0, z_offset );
+        vd->addVirtualDetector(VirtualDetectorId::STM_MagDnStr, //ID
+                               parentPositionInMu2e,
+                               0x0,                 //rotation
+                               vdPositionWRTparent);
 
 
-           if ( verbosityLevel > 0) {
-              cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_SpotSizeCollUpStr) << endl;
-              cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_SpotSizeCollUpStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_SpotSizeCollUpStr) <<endl;
-           }
+        if ( verbosityLevel > 0) {
+          cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_MagDnStr) << endl;
+          cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_MagDnStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_MagDnStr) <<endl;
         }
-
-        if ( c.getBool("vd.STMCollDnStr.build", false) ) {
-          const double mstmZAllowed =  c.getDouble("stm.z.allowed");
-          const double mstmCollHalfLength =  c.getDouble("stm.SScollimator.halfLength");
-          CLHEP::Hep3Vector mstmCollPositionInMu2e = BeamAxisAtEastWallInMu2e + - CLHEP::Hep3Vector(0.0,0.0,mstmZAllowed) + CLHEP::Hep3Vector(0.0,0.0,mstmCollHalfLength);
-          CLHEP::Hep3Vector mstmCollPositionInParent = mstmCollPositionInMu2e - stmDnStrEnvPositionInMu2e;
-          const double mstmCanUpStrSpace             = c.getDouble("stm.det1.can.UpStrSpace");
-
-          CLHEP::Hep3Vector vdPositionWRTparent     = mstmCollPositionInParent + CLHEP::Hep3Vector(0.0,0.0,mstmCollHalfLength+0.5*mstmCanUpStrSpace+vd->_halfLength);
-
-          vd->addVirtualDetector(VirtualDetectorId::STM_CollDnStr, //ID
-                                 parentPositionInMu2e, //reference position
-                                 0x0,                  //rotation
-                                 vdPositionWRTparent); //placement w.r.t. reference
+      }
 
 
-           if ( verbosityLevel > 0) {
-              cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_CollDnStr) << endl;
-              cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_CollDnStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_CollDnStr) <<endl;
-           }
+      if ( c.getBool("vd.STMSSCollUpStr.build", false) ) {//VD101, just upstream of Spot Size Collimator
+        double VD101_offset = 1.0; //No offset as there is no more space between the front of the SSC and the end of the volume stmDnStr
+        double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
+          - pFrontShieldingParams.Front_Thickness() // Get to front of SSC
+          - VD101_offset // Avoid the overlap
+          - vd->_halfLength; // position of the VD
+        CLHEP::Hep3Vector vdPositionWRTparent(0.0, 0.0, zOffset);
+        vd->addVirtualDetector(VirtualDetectorId::STM_SpotSizeCollUpStr, //ID
+                               stmDnStrEnvPositionInMu2e, //parentPositionInMu2e, //reference position
+                               0x0,                  //rotation
+                               vdPositionWRTparent); //placement w.r.t. reference
+
+        if ( verbosityLevel > 0) {
+          cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_SpotSizeCollUpStr) << endl;
+          cout << "  at local=" << vd->getLocal(VirtualDetectorId::STM_SpotSizeCollUpStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_SpotSizeCollUpStr) <<endl;
         }
-
-        if ( c.getBool("vd.STMDet1UpStr.build", false) ) {
-          const double mstmZAllowed =  c.getDouble("stm.z.allowed");
-          const double mstmCollHalfLength =  c.getDouble("stm.SScollimator.halfLength");
-          CLHEP::Hep3Vector mstmCollPositionInMu2e = BeamAxisAtEastWallInMu2e - CLHEP::Hep3Vector(0.0,0.0,mstmZAllowed) + CLHEP::Hep3Vector(0.0,0.0,mstmCollHalfLength);
-          CLHEP::Hep3Vector mstmCollPositionInParent = mstmCollPositionInMu2e - stmDnStrEnvPositionInMu2e;
-          const double mstmCanUpStrSpace            =  c.getDouble("stm.det1.can.UpStrSpace");
-          const double mstmCanUpStrWindowHalfLength =  c.getDouble("stm.det1.can.UpStrWindowHalfLength");
-
-          CLHEP::Hep3Vector vdPositionWRTparent     = mstmCollPositionInParent + CLHEP::Hep3Vector(c.getDouble("stm.det1.xoffset"),0.0,mstmCollHalfLength+mstmCanUpStrSpace+2.0*mstmCanUpStrWindowHalfLength+vd->_halfLength);
-
-          vd->addVirtualDetector(VirtualDetectorId::STM_Det1UpStr,   //ID
-                                 parentPositionInMu2e, //reference position
-                                 0x0,                  //rotation
-                                 vdPositionWRTparent); //placement w.r.t. reference
+      }
 
 
-           if ( verbosityLevel > 0) {
-             cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_Det1UpStr) << endl;
-             cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_Det1UpStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_Det1UpStr) <<endl;
-           }
+      if ( c.getBool("vd.STMCollDnStr.build", false) ) { // VD88, just downstream of Spot Size Collimator
+        double VD88_offset = 0.25; // Smaller overlap than usual to get most information - VD89 and VD90 shortly behind these two
+        double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
+          + VD88_offset // Avoid the overlap
+          + vd->_halfLength;  // Position the VD
+        CLHEP::Hep3Vector vdPositionWRTparent(0.0, 0.0, zOffset);
+        vd->addVirtualDetector(VirtualDetectorId::STM_CollDnStr, //ID
+                               stmDnStrEnvPositionInMu2e, //parentPositionInMu2e, //reference position
+                               0x0,                  //rotation
+                               vdPositionWRTparent); //placement w.r.t. reference
+
+
+        if ( verbosityLevel > 0) {
+          cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_CollDnStr) << endl;
+          cout << " at local=" << vd->getLocal(VirtualDetectorId::STM_CollDnStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_CollDnStr) <<endl;
         }
+      }
 
-        if ( c.getBool("vd.STMDet2UpStr.build", false) ) {
-          const double mstmZAllowed =  c.getDouble("stm.z.allowed");
-          const double mstmCollHalfLength =  c.getDouble("stm.SScollimator.halfLength");
-          CLHEP::Hep3Vector mstmCollPositionInMu2e = BeamAxisAtEastWallInMu2e - CLHEP::Hep3Vector(0.0,0.0,mstmZAllowed) + CLHEP::Hep3Vector(0.0,0.0,mstmCollHalfLength);
-          CLHEP::Hep3Vector mstmCollPositionInParent = mstmCollPositionInMu2e - stmDnStrEnvPositionInMu2e;
-          const double mstmCanUpStrSpace            =  c.getDouble("stm.det2.can.UpStrSpace");
-          const double mstmCanUpStrWindowHalfLength =  c.getDouble("stm.det2.can.UpStrWindowHalfLength");
+      if ( c.getBool("vd.STMDet1UpStr.build", false) ) { // VD89, just upstream of LaBr
+        LaBrDetector const & pLaBrDetectorParams = *stmgh.getLaBrDetectorPtr();
+        double VD89_offset = 1.0;
+        double xOffset = pLaBrDetectorParams.originInMu2e().x()-stmDnStrEnvPositionInMu2e.x(); // Add collimator hole and offset shifts
+        double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
+          + pLaBrDetectorParams.Z_LaBr() // Get to the front of the detector endcap
+          - VD89_offset // Avoid the overlap
+          + vd->_halfLength; // Position the VD
+        CLHEP::Hep3Vector vdPositionWRTparent(xOffset, 0.0, zOffset);
+        vd->addVirtualDetector(VirtualDetectorId::STM_Det1UpStr,   //ID
+                               stmDnStrEnvPositionInMu2e, //parentPositionInMu2e, //reference position
+                               0x0,                  //rotation
+                               vdPositionWRTparent); //placement w.r.t. reference
 
-          CLHEP::Hep3Vector vdPositionWRTparent     = mstmCollPositionInParent + CLHEP::Hep3Vector(c.getDouble("stm.det2.xoffset"),0.0,mstmCollHalfLength+mstmCanUpStrSpace+2.0*mstmCanUpStrWindowHalfLength+vd->_halfLength);
 
-          vd->addVirtualDetector(VirtualDetectorId::STM_Det2UpStr,   //ID
-                                 parentPositionInMu2e, //reference position
-                                 0x0,                  //rotation
-                                 vdPositionWRTparent); //placement w.r.t. reference
-
-
-          if ( verbosityLevel > 0) {
-            cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_Det2UpStr) << endl;
-            cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_Det2UpStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_Det2UpStr) <<endl;
-          }
+        if ( verbosityLevel > 0) {
+          cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_Det1UpStr) << endl;
+          cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_Det1UpStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_Det1UpStr) <<endl;
         }
+      }
 
-        if ( c.getBool("vd.STMFin.build", false) ) {
-          const double mstmZAllowed =  c.getDouble("stm.z.allowed");
-          const double mstmCollHalfLength =  c.getDouble("stm.SScollimator.halfLength");
-          double vdxshift=c.getDouble("vd.STMFin.xshift",0.0);
-          double vdyshift=c.getDouble("vd.STMFin.yshift",0.0);
-          double vdzshift=c.getDouble("vd.STMFin.zshift",-2100.0);
-          CLHEP::Hep3Vector mstmCollPositionInParent = mstmReferencePositionInParent +
-            CLHEP::Hep3Vector(0.0,0.0,2.0*mstmMotherHalfLength) - CLHEP::Hep3Vector(0.0,0.0,mstmZAllowed) + CLHEP::Hep3Vector(0.0,0.0,mstmCollHalfLength);
-          CLHEP::Hep3Vector vdPositionWRTparent     = mstmCollPositionInParent +
-            CLHEP::Hep3Vector(vdxshift,vdyshift,-mstmCollHalfLength+vdzshift);//2.1m upstream of spot-size collimator//wyq
-          vd->addVirtualDetector(VirtualDetectorId::STM_Final, //ID
-                                 parentPositionInMu2e, //reference positin
-                                 0x0,                  //rotation
-                                 vdPositionWRTparent); //placement w.r.t. reference
-          if ( verbosityLevel > 0) {
-            cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_Final) << endl;
-            cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_Final) << " global="<< vd->getGlobal(VirtualDetectorId::STM_Final) <<endl;
-          }
+      if ( c.getBool("vd.STMDet2UpStr.build", false) ) {//VD90, just upstream of HPGe
+        HPGeDetector const & pHPGeDetectorParams = *stmgh.getHPGeDetectorPtr();
+        double VD90_offset = 1.0;
+        double HPGeToCenterLength = pHPGeDetectorParams.WindowD() + pHPGeDetectorParams.AirD() + pHPGeDetectorParams.Capsule_Windowthick() + pHPGeDetectorParams.CrystalL()/2;
+        double xOffset = pHPGeDetectorParams.originInMu2e().x() - stmDnStrEnvPositionInMu2e.x() // Get to the center of the front endcap
+          - (sqrt(2)/2)*HPGeToCenterLength; // Position VD on crystal center
+        double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
+          + pHPGeDetectorParams.Z_HPGe() // Get to the front of the detector endcap
+          - ((sqrt(2)/2)*pHPGeDetectorParams.EndcapR()) // Get to the corner of the endcap. Sqrt(2)/2 is cos(45).
+          - VD90_offset // Avoid the overlap
+          - vd->_halfLength; // Position the VD
+        CLHEP::Hep3Vector vdPositionWRTparent(xOffset, 0.0, zOffset);
+
+        vd->addVirtualDetector(VirtualDetectorId::STM_Det2UpStr,   //ID
+                               stmDnStrEnvPositionInMu2e, //parentPositionInMu2e, //reference position
+                               0x0,                  //rotation
+                               vdPositionWRTparent); //placement w.r.t. reference
+
+
+        if ( verbosityLevel > 0) {
+          cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_Det2UpStr) << endl;
+          cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_Det2UpStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_Det2UpStr) <<endl;
         }
+      }
+
+      if ( c.getBool("vd.STMFin.build", false) ) {
+      const double mstmZAllowed =  c.getDouble("stm.z.allowed");
+      STMCollimator const & pSTMSSCollimatorParams = *stmgh.getSTMSSCollimatorPtr();
+      const double mstmCollHalfLength = pSTMSSCollimatorParams.halfLength();// c.getDouble("stm.SScollimator.halfLength");
+      double vdxshift=c.getDouble("vd.STMFin.xshift",0.0);
+      double vdyshift=c.getDouble("vd.STMFin.yshift",0.0);
+      double vdzshift=c.getDouble("vd.STMFin.zshift",-2100.0);
+      CLHEP::Hep3Vector mstmCollPositionInParent = mstmReferencePositionInParent + CLHEP::Hep3Vector(0.0,0.0,2.0*mstmMotherHalfLength) - CLHEP::Hep3Vector(0.0,0.0,mstmZAllowed) + CLHEP::Hep3Vector(0.0,0.0,mstmCollHalfLength);
+      CLHEP::Hep3Vector vdPositionWRTparent     = mstmCollPositionInParent + CLHEP::Hep3Vector(vdxshift,vdyshift,-mstmCollHalfLength+vdzshift);//2.1m upstream of spot-size collimator
+      vd->addVirtualDetector(VirtualDetectorId::STM_Final, //ID
+                             parentPositionInMu2e, //reference positin
+                             0x0,                  //rotation
+                             vdPositionWRTparent); //placement w.r.t. reference
+      if ( verbosityLevel > 0) {
+          cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_Final) << endl;
+          cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_Final) << " global="<< vd->getGlobal(VirtualDetectorId::STM_Final) <<endl;
+      }
+      }
       }
 
       if ( c.getBool("pbar.coll1In.build", false) ) {

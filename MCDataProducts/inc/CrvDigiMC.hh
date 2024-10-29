@@ -43,14 +43,14 @@ namespace mu2e
 
     private:
 
-    std::array<double,NSamples>         _voltages;
-    std::vector<art::Ptr<CrvStep> >     _steps;        //crv steps responsible for this waveform
-    art::Ptr<SimParticle>               _simParticle;  //most likely sim particle responsible for this waveform
-    double                              _startTime;
-    double                              _TDC0Time;
+    std::array<double,NSamples>         _voltages{0};
+    std::vector<art::Ptr<CrvStep> >     _steps  ;        //crv steps responsible for this waveform
+    art::Ptr<SimParticle>               _simParticle;    //most likely sim particle responsible for this waveform
+    double                              _startTime{0};
+    double                              _TDC0Time{0};
 
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
-    int                            _SiPMNumber;
+    int                            _SiPMNumber{0};
   };
   typedef std::vector<mu2e::CrvDigiMC> CrvDigiMCCollection;
 }

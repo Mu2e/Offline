@@ -142,6 +142,15 @@ cet_build_plugin(CountPionDecays art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(CountVDHits art::module
+    REG_SOURCE src/CountVDHits_module.cc
+    LIBRARIES REG
+      
+      
+      Offline::DataProducts
+      Offline::MCDataProducts
+)
+
 cet_build_plugin(CRYGenPlots art::module
     REG_SOURCE src/CRYGenPlots_module.cc
     LIBRARIES REG

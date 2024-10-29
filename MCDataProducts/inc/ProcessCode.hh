@@ -86,7 +86,7 @@ namespace mu2e {
       mu2eCeMinusLeadingLog,   mu2eCePlusEndpoint,  mu2eDIOLeadingLog, mu2eInternalRMC,  // 171
       mu2eExternalRMC,         mu2eFlateMinus,      mu2eFlatePlus, mu2eFlatPhoton, // 175
       mu2eCePlusLeadingLog, mu2ePionCaptureAtRest, mu2eExternalRPC, mu2eInternalRPC, // 179
-      mu2eCaloCalib, mu2eunused6, mu2eunused7, mu2eunused8, // 183
+      mu2eCaloCalib, mu2ePienu, mu2eunused7, mu2eunused8, // 183
       uninitialized, NoProcess, GammaGeneralProc, // 186
       mu2eGammaConversion, Radioactivation, nCaptureHP, nFissionHP, // 190
       lastEnum,
@@ -143,7 +143,7 @@ namespace mu2e {
     "mu2eCeMinusLeadingLog", "mu2eCePlusEndpoint",  "mu2eDIOLeadingLog", "mu2eInternalRMC", \
     "mu2eExternalRMC",  "mu2eFlateMinus",      "mu2eFlatePlus", "mu2eFlatPhoton", \
   "mu2eCePlusLeadingLog", "mu2ePionCaptureAtRest", "mu2eExternalRPC", "mu2eInternalRPC", \
-    "mu2eCaloCalib", "mu2eunused6", "mu2eunused7", "mu2eunused8", \
+    "mu2eCaloCalib", "mu2ePienu", "mu2eunused7", "mu2eunused8", \
       "uninitialized", "NoProcess", "GammaGeneralProc", \
       "mu2eGammaConversion","Radioactivation", "nCaptureHP", "nFissionHP"
 #endif

@@ -43,7 +43,6 @@ CalPatRec : { @table::CalPatRec
     HelixFinderAlg : {
         debugLevel                              : 0
         debugLevel2                             : 0
-        smartTag                                : 1
         diagLevel                               : 0
         HelixFitSelectionBits                   : []
         BackgroundSelectionBits                 : ["Background","Noisy","Dead"]
@@ -81,6 +80,7 @@ CalPatRec : { @table::CalPatRec
         chi2zphiMax                             : 5.0
         chi2hel3DMax                            : @local::CalPatRec.chi2hel3DMax
         dfdzErr                                 : 0.1
+        maxNHitsRatio                           : 500
         minArea                                 : 5000.
     }
 #------------------------------------------------------------------------------
@@ -167,7 +167,7 @@ CalPatRec : { @table::CalPatRec
         caloHitError                    : 15.0 # mm
 
         DivergeFlt                        : 1000.            #  default: 1000.
-        T0Calculator : @local::TimeCalculator
+        T0Calculator : { @table::TrkPatRec.TimeCalculator}
 #------------------------------------------------------------------------------
 #  parameters of KalContext
 #------------------------------------------------------------------------------
@@ -215,7 +215,7 @@ CalPatRec : { @table::CalPatRec
         updateT0                                : [ false, true, true, true, true, true, true, true, true ]
         updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
         DivergeFlt                              : 1000.
-        T0Calculator : @local::TimeCalculator
+        T0Calculator                            : {@table::TrkPatRec.TimeCalculator}
 #------------------------------------------------------------------------------
 #  KalContext parameters  (there are more to define ! )
 #------------------------------------------------------------------------------
@@ -299,6 +299,56 @@ CalPatRec : { @table::CalPatRec
 CalPatRec : { @table::CalPatRec
 
     producers : {
+        CalTimePeakFinder          : { module_type:CalTimePeakFinder
+            diagLevel                                   : 0
+            debugLevel                                  : 0
+            printFrequency                              : 100
+            StrawHitCollectionLabel                     : makePH            # CalTimePeakFinder uses ComboHits
+            caloClusterModuleLabel                      : CaloClusterMaker
+#            HitSelectionBits                            : []
+#            BackgroundSelectionBits                     : ["Noisy","Dead"]
+            MinNHits                                    : @local::CalPatRec.minNStrawHits
+            DtMin                                       : -20.   # value before 2022-02-14 was -30. ns
+            DtMax                                       :  20.   # value before 2022-02-14 was 30. ns
+            minClusterEnergy                            : 50.    # MeV
+            minClusterSize                              : 2      # number of crystals
+            pitchAngle                                  : 0.67   # mean pitch for CE
+            beta                                        : 1.0    # for muon reco needs to be changed
+            dtOffset                                    : @local::TrackCaloMatching.DtOffset
+            diagPlugin : { tool_type                    : "CalTimePeakFinderDiag"
+                mcTruth                                 : 0
+                mcUtils                                 : { tool_type : "TrkPatRecMcUtils"
+                    strawDigiMCCollTag : "compressDigiMCs"
+                }
+            }
+        }
+
+        CalHelixFinder          : { module_type:CalHelixFinder
+            diagLevel                                   : 0
+            debugLevel                                  : 0
+            printFrequency                              : 100
+            StrawHitCollectionLabel                     : makePH
+            TimeClusterCollectionLabel                  : CalTimePeakFinder
+            minNHitsTimeCluster                         : @local::CalPatRec.minNStrawHits
+            fitparticle                                 : @local::Particle.eminus
+            fitdirection                                : @local::FitDir.downstream
+            doSingleOutput                              : false
+            maxEDepAvg                                  : @local::TrkReco.HelixFinderParams.maxEDepAvg
+
+            # HelixFinderAlg configuraton (pattern recognition)
+            HelixFinderAlg                              : { @table::CalPatRec.HelixFinderAlg }
+            diagPlugin : { tool_type                    : "CalHelixFinderDiag"
+                mcTruth                                 : 0
+                mcUtils                                 : { tool_type : "TrkPatRecMcUtils"
+                    strawDigiMCCollTag : "compressDigiMCs"
+                    comboHitCollTag: "makeSH"
+                }
+            }
+            Helicities: [
+              -1,
+              1
+            ]
+        }
 
         CalTrkFit          : {   module_type : KalFinalFit
             diagLevel                                   : 0
@@ -362,9 +412,7 @@ CalPatRec : { @table::CalPatRec
                 pickupProtonHits        : 1                     # the third step of proton finding
 
                 timeBin                 : 40                    # ns, prev: 50 (use 40 with makePH.maxDS=5)
-                minHitTime              : 350.                  # ns
-                minimumTime             : 400.                  # ns
-                maximumTime             : 1750.                 # ns
+                maximumTime             : 1750.                 # ns, used
                 maxDeltaEDep            : 0.004                 # max allowed delta eDep
                 maxSeedEDep             : 0.005                 # max allowed seed eDep
                 minProtonSeedEDep       : 0.003                 # min allowed proton seed eDep
@@ -564,7 +612,6 @@ CalPatRec : { @table::CalPatRec
             debugLevel                 : 0
             printFrequency             : 1000
             runDisplay                 : 0
-            saveProtCand               : 0
             useCCs                     : 1
             recoverCCs                 : 1
             chCollLabel                : "FlagBkgHits"
@@ -585,22 +632,61 @@ CalPatRec : { @table::CalPatRec
             minCaloEnergy              : 50.0
             caloDtMax                  : 30.0
             caloTimeOffset             : @local::TrackCaloMatching.DtOffset
-            doComptonClean             : 0
-            maxIntersectSig            : 5.0
-            maxApproachSigma           : 5.0
-            maxAppSigmaTrans           : 5.0
-            comptonThresh              : 8
-            doIsoClean                 : 0
-            isoRad                     : 100.0
-            doPhiClean                 : 0
-            phiCleanPhi                : 45.0
-            phiCleanThresh             : 5
+            doRefine                   : 0
 
             diagPlugin : { tool_type  : "TZClusterFinderDiag"
                  mcTruth       : 1
                  simIDThresh   : 15
                  mcUtils       : { @table::TrkReco.McUtils }
             }
+        }
+
+        AgnosticHelixFinder : {
+            module_type : AgnosticHelixFinder
+            diagLevel               : 0
+            chCollLabel             : "FlagBkgHits"
+            tcCollLabel             : "TZClusterFinder"
+            ccCollLabel             : "CaloClusterMaker"
+            findMultipleHelices     : true # whether or not to allow more than 1 helix per tc
+            useStoppingTarget       : true
+            intenseEventThresh      : 30
+            intenseClusterThresh    : 60
+            doIsolationFlag         : true
+            isoRad                  : 150.0
+            isoMinHitsNear          : 2
+            doAverageFlag           : true
+            minDistCut              : 20.0
+            minTripletSeedZ         : 0.0
+            minTripletDz            : 50.0
+            maxTripletDz            : 500.0
+            minTripletDist          : 50.0
+            minTripletArea          : 1.0e4
+            maxSeedCircleResidual   : 2.0
+            minSeedCircleHits       : 7
+            maxDphiDz               : 0.008
+            maxSeedLineGap          : 250.0
+            maxZWindow              : 700.0
+            minLineSegmentHits      : 3
+            segMultiplier           : 3.0
+            maxSegmentChi2          : 2.0
+            max2PiAmbigResidual     : 2.0
+            maxPhiZResidual         : 2.0
+            minFinalSeedHits        : 7
+            maxNHitsRatio           : 500
+            maxCircleRecoverSigma   : 3.0
+            maxLineRecoverSigma     : 3.0
+            caloClusterSigma        : 30.0
+            minNHelixComboHits      : 10
+            minNHelixStrawHits      : 12
+            minHelixPerpMomentum    : 40.0
+            maxHelixPerpMomentum    : 140.0
+            minHelixMomentum        : 60.0
+            maxHelixMomentum        : 400.0
+            chi2LineSaveThresh      : 5.0
+            maxEDepAvg              : @local::TrkReco.HelixFinderParams.maxEDepAvg
+            tzSlopeSigThresh        : 5.0
+            validHelixDirections    : [-1, 0, 1]
+            diagPlugin              : { tool_type : "AgnosticHelixFinderDiag" }
         }
 
         PhiClusterFinder : { module_type : PhiClusterFinder
@@ -637,53 +723,25 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 # new modules
 #------------------------------------------------------------------------------
-        CalTimePeakFinder          : { module_type:CalTimePeakFinder
-            diagLevel                                   : 0
-            debugLevel                                  : 0
-            printFrequency                              : 100
-            useAsFilter                                 : 0
-            StrawHitCollectionLabel                     : makePH            # CalTimePeakFinder uses ComboHits
-            StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
-            caloClusterModuleLabel                      : CaloClusterMaker
-#            HitSelectionBits                            : []
-#            BackgroundSelectionBits                     : ["Noisy","Dead"]
-            MinNHits                                    : @local::CalPatRec.minNStrawHits
-            DtMin                                       : -20.   # value before 2022-02-14 was -30. ns
-            DtMax                                       :  20.   # value before 2022-02-14 was 30. ns
-            minClusterEnergy                            : 50.    # MeV
-            minClusterSize                              : 2      # number of crystals
-            pitchAngle                                  : 0.67   # mean pitch for CE
-            beta                                        : 1.0    # for muon reco needs to be changed
-            dtOffset                                    : @local::TrackCaloMatching.DtOffset
-            diagPlugin : { tool_type                    : "CalTimePeakFinderDiag"
-                mcTruth                                 : 0
-                mcUtils                                 : { tool_type : "TrkPatRecMcUtils"
-                    strawDigiMCCollTag : "compressDigiMCs"
-                }
-            }
+
+        # TZClusterFilter module
+        TZClusterFilter : {
+            module_type         : TZClusterFilter
+            diagLevel           : 0
+            runDisplay          : 0
+            chCollLabel         : "FlagBkgHits"     # same as TZClusterFinder
+            tcCollLabel         : "TZClusterFinder"
+            minSHsInCluster     : 15
+            minCHsInCluster     : 10
+            nPairs              : 1
+            minCHsInCubes       : 2
+            maxDeltaRInStn      : 100
+            maxDeltaRBtwStns    : 120
+            maxDeltaPhiInStn    : 0.4
+            maxDeltaPhiBtwStns  : 0.6
+            thirdStation        : true
         }
 
-        CalHelixFinder          : { module_type:CalHelixFinder
-            diagLevel                                   : 0
-            debugLevel                                  : 0
-            printFrequency                              : 100
-            useAsFilter                                 : 0
-            StrawHitCollectionLabel                     : makePH
-            StrawHitFlagCollectionLabel                 : "DeltaFinder:ComboHits"
-            TimeClusterCollectionLabel                  : CalTimePeakFinder
-            minNHitsTimeCluster                         : @local::CalPatRec.minNStrawHits
-            fitparticle                                 : @local::Particle.eminus
-            fitdirection                                : @local::FitDir.downstream
-
-            # HelixFinderAlg configuraton (pattern recognition)
-            HelixFinderAlg                              : { @table::CalPatRec.HelixFinderAlg }
-            diagPlugin : { tool_type                    : "CalHelixFinderDiag"
-                mcTruth                                 : 0
-                mcUtils                                 : { tool_type : "TrkPatRecMcUtils"
-                    strawDigiMCCollTag : "compressDigiMCs"
-                }
-            }
-        }
     }
 }
 
@@ -692,6 +750,17 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 CalPatRec: { @table::CalPatRec
     producers : { @table::CalPatRec.producers
+        CalTimePeakFinderUe            : { @table::CalPatRec.producers.CalTimePeakFinder   pitchAngle: -0.67                }
+        CalTimePeakFinderMu            : { @table::CalPatRec.producers.CalTimePeakFinder   beta: 0.7                        }
+        CalHelixFinderDe               : { @table::CalPatRec.producers.CalHelixFinder fitparticle: @local::Particle.eminus  }
+        CalHelixFinderUe               : { @table::CalPatRec.producers.CalHelixFinder
+            fitparticle                : @local::Particle.eminus
+            TimeClusterCollectionLabel : CalTimePeakFinderUe
+        }
+        CalHelixFinderDmu              : { @table::CalPatRec.producers.CalHelixFinder
+            fitparticle                   : @local::Particle.muminus
+            TimeClusterCollectionLabel    : CalTimePeakFinderMu
+        }
 
         DeltaFinderUe : { @table::CalPatRec.producers.DeltaFinder
             timePeakCollectionTag         : CalTimePeakFinderUe
@@ -772,19 +841,6 @@ CalPatRec: { @table::CalPatRec
     }
 #------------------------------------------------------------------------------
     filters : { @table::CalPatRec.filters
-        CalTimePeakFinderUe            : { @table::CalPatRec.filters.CalTimePeakFinder   pitchAngle: -0.67                }
-        CalTimePeakFinderMu            : { @table::CalPatRec.filters.CalTimePeakFinder   beta: 0.7                        }
-        CalHelixFinderDe               : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eminus  }
-        CalHelixFinderUe               : { @table::CalPatRec.filters.CalHelixFinder
-            fitparticle                : @local::Particle.eminus
-            StrawHitFlagCollectionLabel: "DeltaFinderUe:ComboHits"
-            TimeClusterCollectionLabel : CalTimePeakFinderUe
-        }
-        CalHelixFinderDmu              : { @table::CalPatRec.filters.CalHelixFinder
-            fitparticle                   : @local::Particle.muminus
-            StrawHitFlagCollectionLabel   : "DeltaFinderMu:ComboHits"
-            TimeClusterCollectionLabel    : CalTimePeakFinderMu
-        }
         # CalHelixFinderDeP              : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eplus   }
         # CalHelixFinderDmuP             : { @table::CalPatRec.filters.CalHelixFinder
         #     fitparticle                   : @local::Particle.muplus

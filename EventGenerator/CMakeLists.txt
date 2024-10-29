@@ -131,6 +131,12 @@ cet_build_plugin(DecayInOrbitWeight art::module
       Offline::SeedService
 )
 
+cet_build_plugin(deltaFunctionGun art::module
+    REG_SOURCE src/deltaFunctionGun_module.cc
+    LIBRARIES REG
+        Offline::EventGenerator
+)
+
 cet_build_plugin(EplusFromStoppedPion art::module
     REG_SOURCE src/EplusFromStoppedPion_module.cc
     LIBRARIES REG
@@ -561,6 +567,16 @@ cet_build_plugin(MuCapProtonGenerator art::tool
       Offline::EventGenerator
       
       Offline::DataProducts
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+)
+
+cet_build_plugin(MuStopDecayPositionSamplerTool art::tool
+    REG_SOURCE src/MuStopDecayPositionSamplerTool_tool.cc
+    LIBRARIES REG
+      Offline::EventGenerator      
+
       Offline::GlobalConstantsService
       Offline::MCDataProducts
       Offline::Mu2eUtilities

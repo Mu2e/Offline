@@ -13,6 +13,7 @@ class DbTable {
  public:
   typedef std::shared_ptr<mu2e::DbTable> ptr_t;
   typedef std::shared_ptr<const mu2e::DbTable> cptr_t;
+  enum tableType {Calibration=0,Validity=1,Adhoc=2};
 
   DbTable(const char* name = "DbTable", const char* dbname = "dne.dbtable",
           const char* query = "noquery") :
@@ -38,6 +39,7 @@ class DbTable {
   std::size_t baseSize() const { return _csv.capacity(); }
   // if table needs to be sorted
   virtual const std::string orderBy() const { return std::string(); }
+  virtual tableType type() const { return Calibration; }
 
   // take the cvs text from a query and build out the table contents
   int fill(const std::string& csv, bool saveCsv = true);

@@ -115,8 +115,7 @@ namespace mu2e {
           select = true;
           size_t index = std::distance(caloClusters.begin(),clusterIt);
           trigInfo._caloClusters.push_back(art::Ptr<CaloCluster>(caloClustersHandle,index));
-     }
-
+       }
      return select;
   }
 

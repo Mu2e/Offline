@@ -16,6 +16,9 @@ GRANT USAGE ON SCHEMA trk TO PUBLIC;
 CREATE SCHEMA sim;
 GRANT USAGE ON SCHEMA sim TO PUBLIC;
 
+CREATE SCHEMA crv;
+GRANT USAGE ON SCHEMA crv TO PUBLIC;
+
 -- rows are calibration tables
 CREATE TABLE val.tables 
   (tid SERIAL, 
@@ -172,6 +175,15 @@ CREATE TABLE tst.calib2
 GRANT SELECT ON tst.calib2 TO PUBLIC;
 GRANT INSERT ON tst.calib2 TO val_role;
 
+-- example adhoc table
+
+CREATE TABLE tst.adhoc1
+  (exint INTEGER , exfloat NUMERIC, exstring TEXT, 
+  create_time TIMESTAMP WITH TIME ZONE NOT NULL, 
+  create_user TEXT NOT NULL );
+GRANT SELECT ON tst.adhoc1 TO PUBLIC;
+GRANT INSERT ON tst.adhoc1 TO val_role;
+
 --
 -- trk schema tables
 --
@@ -245,6 +257,42 @@ CREATE TABLE trk.alignstraw
 GRANT SELECT ON trk.alignstraw TO PUBLIC;
 GRANT INSERT ON trk.alignstraw TO trk_role;
 
+-- tracker sim alignment
+
+CREATE TABLE trk.aligntrackersim
+  (cid INTEGER, index INTEGER, strawid TEXT, 
+   dx NUMERIC, dy NUMERIC, dz NUMERIC, 
+   rx NUMERIC, ry NUMERIC, rz NUMERIC, 
+   CONSTRAINT trk_aligntrackersim_pk PRIMARY KEY (cid,index) );
+GRANT SELECT ON trk.aligntrackersim TO PUBLIC;
+GRANT INSERT ON trk.aligntrackersim TO trk_role;
+
+CREATE TABLE trk.alignplanesim
+  (cid INTEGER, index INTEGER, strawid TEXT, 
+   dx NUMERIC, dy NUMERIC, dz NUMERIC, 
+   rx NUMERIC, ry NUMERIC, rz NUMERIC, 
+   CONSTRAINT trk_alignplanesim_pk PRIMARY KEY (cid,index) );
+GRANT SELECT ON trk.alignplanesim TO PUBLIC;
+GRANT INSERT ON trk.alignplanesim TO trk_role;
+
+CREATE TABLE trk.alignpanelsim
+  (cid INTEGER, index INTEGER, strawid TEXT, 
+   dx NUMERIC, dy NUMERIC, dz NUMERIC, 
+   rx NUMERIC, ry NUMERIC, rz NUMERIC, 
+   CONSTRAINT trk_alignpanelsim_pk PRIMARY KEY (cid,index) );
+GRANT SELECT ON trk.alignpanelsim TO PUBLIC;
+GRANT INSERT ON trk.alignpanelsim TO trk_role;
+
+CREATE TABLE trk.alignstrawsim
+  (cid INTEGER, index INTEGER, StrawId TEXT, 
+   wire_cal_dV NUMERIC, wire_cal_dW NUMERIC,
+   wire_hv_dV NUMERIC, wire_hv_dW NUMERIC,
+   straw_cal_dV NUMERIC, straw_cal_dW NUMERIC,
+   straw_hv_dV NUMERIC, straw_hv_dW NUMERIC,
+   CONSTRAINT trk_alignstrawsim_pk PRIMARY KEY (cid,index) );
+GRANT SELECT ON trk.alignstrawsim TO PUBLIC;
+GRANT INSERT ON trk.alignstrawsim TO trk_role;
+
 -- tracker component status
 
 CREATE TABLE trk.panelstatus
@@ -299,3 +347,40 @@ CREATE TABLE sim.efficiencies2
    CONSTRAINT sim_efficiencies2_pk PRIMARY KEY (cid,tag) );
 GRANT SELECT ON sim.efficiencies2 TO PUBLIC;
 GRANT INSERT ON sim.efficiencies2 TO sim_role;
+
+--
+-- crv schema tables
+--
+
+
+-- crv calibration table added 3/2024
+
+CREATE TABLE crv.badchan
+  (cid INTEGER, 
+   channel INTEGER,  status INTEGER,   
+   CONSTRAINT crv_badchan_pk PRIMARY KEY (cid,channel) );
+GRANT SELECT ON crv.badchan TO PUBLIC;
+GRANT INSERT ON crv.badchan TO crv_role;
+
+CREATE TABLE crv.sipm
+  (cid INTEGER, 
+   channel INTEGER,  
+   pedestal NUMERIC, pulseheight NUMERIC, pulsearea NUMERIC,
+   CONSTRAINT crv_sipm_pk PRIMARY KEY (cid,channel) );
+GRANT SELECT ON crv.sipm TO PUBLIC;
+GRANT INSERT ON crv.sipm TO crv_role;
+
+CREATE TABLE crv.photon
+  (cid INTEGER, 
+   channel INTEGER,  photonyielddeviation NUMERIC,
+   CONSTRAINT crv_photon_pk PRIMARY KEY (cid,channel) );
+GRANT SELECT ON crv.photon TO PUBLIC;
+GRANT INSERT ON crv.photon TO crv_role;
+
+CREATE TABLE crv.time
+  (cid INTEGER, 
+   channel INTEGER,  timeoffset NUMERIC,  
+   CONSTRAINT crv_time_pk PRIMARY KEY (cid,channel) );
+GRANT SELECT ON crv.time TO PUBLIC;
+GRANT INSERT ON crv.time TO crv_role;
+

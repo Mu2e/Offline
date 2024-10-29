@@ -32,6 +32,7 @@ cet_make_library(
       ROOT::MathMore
       ROOT::GenVector
       Boost::headers
+      Boost::filesystem
       cetlib_except::cetlib_except
       CLHEP::CLHEP
       fhiclcpp::fhiclcpp

@@ -161,6 +161,7 @@ namespace mu2e {
       isUsed[ich] = true;
 
       const ComboHit& hit1 = chcOrig[ich];
+      if ( _testflag && hit1.flag().hasAnyProperty(StrawHitFlag::dead)) continue;
       if ( testflag && (!hit1.flag().hasAllProperties(_shsel) || hit1.flag().hasAnyProperty(_shmask))) continue;
       ComboHit combohit;
       combohit.init(hit1,ich);
@@ -172,6 +173,7 @@ namespace mu2e {
 
         if (hit2.strawId().uniquePanel() != panel1) break;
         if (abs(hit2.strawId().straw()-hit1.strawId().straw())> _maxds ) continue; // hits are not sorted by straw number
+        if ( _testflag && hit2.flag().hasAnyProperty(StrawHitFlag::dead)) continue;
         if ( testflag && (!hit2.flag().hasAllProperties(_shsel) || hit2.flag().hasAnyProperty(_shmask)) ) continue;
 
         float dt = _useTOT ? fabs(hit1.correctedTime() - hit2.correctedTime()) : fabs(hit1.time() - hit2.time());

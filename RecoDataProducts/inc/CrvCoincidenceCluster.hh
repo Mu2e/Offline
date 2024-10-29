@@ -50,21 +50,21 @@ namespace mu2e
 
     private:
 
-    int                                  _crvSectorType;
-    double                               _startTime;
-    double                               _endTime;
-    float                                _PEs;
+    int                                  _crvSectorType{0};
+    double                               _startTime{0};
+    double                               _endTime{0};
+    float                                _PEs{0};
     std::vector<art::Ptr<CrvRecoPulse> > _crvRecoPulses;
-    float                                _slope;
+    float                                _slope{0};
     std::vector<int>                     _layers;
 
-    std::array<size_t, CRVId::nSidesPerBar>  _sideHits;  //number of hits on both readout sides of the modules of this cluster
-    std::array<float, CRVId::nSidesPerBar>   _sidePEs;   //number of PEs on both readout sides
-    std::array<double, CRVId::nSidesPerBar>  _sideTimes; //average pulse times on both readout sides //entries are only valid, if the corresponding entries in sidePEs > 0;
-    bool                                     _twoReadoutSides;  //indicates, if the average hit time and hit position are based on both readout sides
-                                                                //if not, the center of counters is used for the longitudinal position
-    double                                   _avgHitTime;       //average hit time (based on the times of both readout sides, if available)
-    CLHEP::Hep3Vector                        _avgHitPos;        //average hit position (based on the times of both readout sides, if available)
+    std::array<size_t, CRVId::nSidesPerBar>  _sideHits{0};  //number of hits on both readout sides of the modules of this cluster
+    std::array<float, CRVId::nSidesPerBar>   _sidePEs{0};   //number of PEs on both readout sides
+    std::array<double, CRVId::nSidesPerBar>  _sideTimes{0}; //average pulse times on both readout sides //entries are only valid, if the corresponding entries in sidePEs > 0;
+    bool                                     _twoReadoutSides{false};  //indicates, if the average hit time and hit position are based on both readout sides
+                                                                       //if not, the center of counters is used for the longitudinal position
+    double                                   _avgHitTime{0};       //average hit time (based on the times of both readout sides, if available)
+    CLHEP::Hep3Vector                        _avgHitPos;           //average hit position (based on the times of both readout sides, if available)
   };
   typedef std::vector<mu2e::CrvCoincidenceCluster> CrvCoincidenceClusterCollection;
 }

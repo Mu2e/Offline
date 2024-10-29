@@ -5,7 +5,7 @@
 #
 # Contact person G. Pezzullo, R. Ehrlich
 
-#include "Offline/DAQ/fcl/prolog_trigger.fcl"
+#include "mu2e_trig_config/core/trigProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
 
 process_name : FragmentToDigi
@@ -38,8 +38,9 @@ physics :
     }
     CrvDigi :
     {
-      @table::DAQ.producers.CrvDigi
-      diagLevel : 2
+      module_type : CrvDigisFromFragments
+      crvTag      : "genFrags"
+      diagLevel   : 2
     }
   }
 

@@ -83,16 +83,19 @@ namespace mu2e {
     RandomUnitSphere   randomUnitSphere_;
     CLHEP::RandGeneral randSpectrum_;
 
-    const double            czmin_ = -1;
-    const double            czmax_ = 1;
-    const double            phimin_ = 0;
-    const double            phimax_ = CLHEP::twopi;
     ProcessCode process_;
     PionCaptureSpectrum pionCaptureSpectrum_;
 
     TH1F* _hmomentum;
     TH1F* _hElecMom {nullptr};
+    TH1F* _hElecPx {nullptr};
+    TH1F* _hElecPy {nullptr};
+    TH1F* _hElecPz {nullptr};
     TH1F* _hPosiMom {nullptr};
+    TH1F* _hPosiPx {nullptr};
+    TH1F* _hPosiPy {nullptr};
+    TH1F* _hPosiPz {nullptr};
+    TH1F* _hTime {nullptr};
     TH1F* _hMee;
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
@@ -112,7 +115,7 @@ namespace mu2e {
     , spectrum_{BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())}
     , pionDecayOff_{conf().pionDecayOff()}
     , doHistograms_{conf().doHistograms()}
-    , randomUnitSphere_ {eng_, czmin_,czmax_,phimin_,phimax_}
+    , randomUnitSphere_ {eng_}
     , randSpectrum_       {eng_, spectrum_.getPDF(),static_cast<int>(spectrum_.getNbins())}
     , pionCaptureSpectrum_{&randomFlat_,&randomUnitSphere_}
   {
@@ -131,7 +134,14 @@ namespace mu2e {
         _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 100,  40.,  140.  );
         if(RPCType_ == "mu2eInternalRPC"){
           _hElecMom  = tfdir.make<TH1F>("hElecMom" , "Produced electron momentum", 140,  0. , 140.);
+          _hElecPx  = tfdir.make<TH1F>("hElecPx" , "Produced electron momentum Px", 140,  -140. , 140.);
+          _hElecPy  = tfdir.make<TH1F>("hElecPy" , "Produced electron momentum Py", 140,  -140. , 140.);
+          _hElecPz  = tfdir.make<TH1F>("hElecPz" , "Produced electron momentum Py", 140,  -140. , 140.);
           _hPosiMom  = tfdir.make<TH1F>("hPosiMom" , "Produced positron momentum", 140,  0. , 140.);
+          _hPosiPx  = tfdir.make<TH1F>("hPosiPx" , "Produced positron momentum Px", 140,  -140. , 140.);
+          _hPosiPy  = tfdir.make<TH1F>("hPosiPy" , "Produced positron momentum Py", 140,  -140. , 140.);
+          _hPosiPz  = tfdir.make<TH1F>("hPosiPz" , "Produced positron momentum Pz", 140,  -140. , 140.);
+          _hTime    = tfdir.make<TH1F>("hTime" , "pion time",100,0,1700);
           _hMee      = tfdir.make<TH1F>("hMee"     , "M(e+e-) "           , 200,0.,200.);
           _hMeeVsE   = tfdir.make<TH2F>("hMeeVsE"  , "M(e+e-) vs E"       , 200,0.,200.,200,0,200);
           _hMeeOverE = tfdir.make<TH1F>("hMeeOverE", "M(e+e-)/E "         , 200, 0.,1);
@@ -144,14 +154,12 @@ namespace mu2e {
       const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
       double weight = 0.;
       double tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-
       while(part->parent().isNonnull()) { //while particle has a parent which is not null
         part = part->parent();
-        if ( abs(part->pdgId()) == PDGCode::pi_plus ) { //if pion
+        if ( std::abs(part->pdgId()) == PDGCode::pi_plus ) { //if pion
             tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
           }
       }
-
     weight = exp(-tau);
     return weight;
   }
@@ -161,12 +169,10 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     const auto pis = stoppedPiMinusList(simh);
-
     if(pis.empty()) {
       throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
     }
-
     unsigned int randIn = randomFlat_.fireInt(pis.size());
     double time_weight = 1.0;
     if(pionDecayOff_) time_weight = MakeEventWeight(pis[randIn]);
@@ -174,7 +180,6 @@ namespace mu2e {
     event.put(std::move(pw));
     addParticles(output.get(), pis[randIn]);
     event.put(std::move(output));
-
   }
 
   void RPCGun::addParticles(StageParticleCollection* output,
@@ -215,8 +220,14 @@ namespace mu2e {
 
         if(doHistograms_){
           _hElecMom ->Fill(mome.vect().mag());
+          _hElecPx ->Fill(mome.vect().x());
+          _hElecPy ->Fill(mome.vect().y());
+          _hElecPz ->Fill(mome.vect().z());
           _hPosiMom ->Fill(momp.vect().mag());
-
+          _hPosiPx ->Fill(momp.vect().x());
+          _hPosiPy ->Fill(momp.vect().y());
+          _hPosiPz ->Fill(momp.vect().z());
+          _hTime->Fill(pistop->endGlobalTime());
           double mee = (mome+momp).m();
           _hMee->Fill(mee);
           _hMeeVsE->Fill(energy,mee);

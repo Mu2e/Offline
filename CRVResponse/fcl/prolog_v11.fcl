@@ -9,6 +9,9 @@
 #include "Offline/CommonMC/fcl/prolog.fcl"
 BEGIN_PROLOG
 
+    DigitizationStart :  200.0 //ns after event window start (400ns...425ns after POT)
+    DigitizationEnd   : 1500.0 //ns after event window start (1700ns...1725ns after POT)
+                               //event window starts 200ns after first clock tick after POT (200ns...225ns after POT)
     CrvSteps:
     {
       module_type               : CrvStepsFromStepPointMCs
@@ -76,27 +79,26 @@ BEGIN_PROLOG
       photonYieldScaleFactor                : 0.91  //scale factor applied to photon yields to mimic aging
                                                     //of 3 years with a rate 3% per year (from 12/2023 to 12/2026)
                                                     //used in SU2020
-      photonYieldVariationScale             : 0.05  //scale factor for the photon yield variation
-                                                    //examples:
-                                                    //-if a database table of measured deviations from a nominal photon yield is used,
-                                                    // the scale factor should be set to 1.0 (i.e. no scaling)
-                                                    //-if a database table of a random gaussian distribution
-                                                    // with a sigma equal to 100% of the nominal photon yied is used
-                                                    // and one wants to run a simulation with a sigma of 5% of the nominal photon yield,
-                                                    // then the scale factor should be set to 0.05 (i.e. scaled to a sigma of 5%)
+      photonYieldVariationScale             : 1.0   //scale factor for the photon yield variation in the database
+                                                    //-should be kept at 1.0 (i.e. no scaling),
+                                                    // if a database table of measured deviations from a nominal photon yield is used,
+                                                    //-may be changed for testing purposes,
+                                                    // if a database table of a random gaussian distribution is used
+                                                    // (current random table uses a sigma equal to 5% of the nominal photon yied)
       photonYieldVariationCutoffLow         :-0.2   //the photon yield variation is cut off at 20% below the mean
       photonYieldVariationCutoffHigh        : 0.2   //the photon yield variation is cut off at 20% above the mean
-      digitizationStart                     :  400.0    //400ns
-      digitizationEnd                       : 1750.0    //1750ns
-      digitizationStartMargin               :   50.0    //50ns
+                                                    //note: if measured deviations are used, the cutoffs should be set to the maximum values
+      digitizationStart                     : @local::DigitizationStart
+      digitizationEnd                       : @local::DigitizationEnd
+      digitizationStartMargin               : 100.0 //ns  start recording earlier to account for photon travel times and electronics response times
     }
     CrvSiPMCharges:
     {
       module_type                  : CrvSiPMChargeGenerator
       crvPhotonsModuleLabel        : "CrvPhotons"
-      digitizationStart            :  400.0    //400ns
-      digitizationEnd              : 1750.0    //1750ns
-      digitizationStartMargin      :   50.0    //50ns
+      digitizationStart            : @local::DigitizationStart
+      digitizationEnd              : @local::DigitizationEnd
+      digitizationStartMargin      : 100.0      //ns  start recording earlier to account for electronics response times
 
       nPixelsX                     : 40
       nPixelsY                     : 40
@@ -120,22 +122,34 @@ BEGIN_PROLOG
 
       ThermalRate                  : 3.0e-4     //ns^-1     0.3MHz for entire SiPM
       CrossTalkProb                : 0.04       //
+
+      useSipmStatusDB              : true       //channel with status bits 0 (not connected) and 2 (no data) will not be simulated. channels with status bit 1 can be ignored in reco.
     }
     CrvWaveforms:
     {
       module_type                  : CrvWaveformsGenerator
       crvSiPMChargesModuleLabel    : "CrvSiPMCharges"
-      digitizationStart            :  400.0    //400ns
-      digitizationEnd              : 1750.0    //1750ns
-      singlePEWaveformFileName     : "Offline/CRVResponse/fcl/singlePEWaveform_v3.txt"
+      digitizationStart            : @local::DigitizationStart
+      digitizationEnd              : @local::DigitizationEnd
+      singlePEWaveformFileName     : "Offline/CRVResponse/data/singlePEWaveform_v3.txt"
       singlePEWaveformPrecision    : 0.5    //0.5 ns
       singlePEWaveformStretchFactor: 1.047  //1.047 for singlePEWaveform_v3.txt //from comparison with testbeam data
       singlePEWaveformMaxTime      : 100    //100 ns
       singlePEReferenceCharge      : 2.652e-13  //2.652e-13 C charge which was used to generate the above 1PE waveform
                                                 //capacitance of one pixel (8.84e-14C) * overvoltage (3.0V)
-      FEBtimeSpread                : 2.0    //2.0 ns
-      minVoltage                   : 0.0275  //27.5mV (corresponds to 5.5PE)
+      minVoltage                   : 0.0275 //27.5mV (corresponds to 5.5PE)
       noise                        : 4.0e-4 //0.4mV
+      timeOffsetScale              : 1.0    //scale factor for the time offsets from the database
+                                            //examples:
+                                            //-if a database table of measured time offset is used,
+                                            // the scale factor should be set to 1.0 (i.e. no scaling)
+                                            //-if a database table of a random gaussian distribution of time offsets
+                                            // with a sigma equal to 1ns is used and one wants to run a simulation with a sigma of 0.5ns,
+                                            // then the scale factor should be set to 0.5 (i.e. scaled to a sigma of 50%)
+      timeOffsetCutoffLow          :-3.0    //the time offsets are cut off at -3ns
+      timeOffsetCutoffHigh         : 3.0    //the time offsets are cut off at +3ns
+                                            //note: if measured time offsets are used, the cutoffs should be set to the maximum values
+      useTimeOffsetDB              : false  //will be applied at reco
     }
     CrvDigi:
     {

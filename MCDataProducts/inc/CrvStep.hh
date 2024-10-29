@@ -20,7 +20,7 @@ namespace mu2e
   {
     public:
 
-      CrvStep() : _visibleEDep(0.0), _startTime(0.0), _endTime(0.0), _pathLength(0.0) {}
+      CrvStep() {}
       CrvStep(CRSScintillatorBarIndex barIndex, float visibleEDep, double startTime, double endTime,
               const XYZVectorF &startPos, const XYZVectorF &endPos, const XYZVectorF &startMom, float endMom,
               float pathLength, art::Ptr<SimParticle> const& simParticle) :
@@ -52,12 +52,12 @@ namespace mu2e
 
     private:
       CRSScintillatorBarIndex _barIndex;
-      float                   _visibleEDep;
-      double                  _startTime, _endTime; //must be double to allow for long-lived particles
-      XYZVectorF                  _startPos,  _endPos;
-      XYZVectorF                  _startMom;
-      float                   _endMom;              //direction of end momentum is not known
-      float                   _pathLength;          //the actual step length, which may be longer
+      float                   _visibleEDep{0};
+      double                  _startTime{0}, _endTime{0}; //must be double to allow for long-lived particles
+      XYZVectorF              _startPos,  _endPos;
+      XYZVectorF              _startMom;
+      float                   _endMom{0};              //direction of end momentum is not known
+      float                   _pathLength{0};          //the actual step length, which may be longer
                                                     //than the differences between endPos and startPos
       art::Ptr<SimParticle>   _simParticle;
   };

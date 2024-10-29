@@ -102,6 +102,7 @@ namespace mu2e {
         fhicl::Atom<unsigned>      nMaxTrkIter           {Name("NMaxTrkIter"),            Comment("Number of track finding iterations ") };
         fhicl::Atom<int>           diagLevel             {Name("DiagLevel"),              Comment("Diag level"), 0 };
         fhicl::Table<Config_types> diagPlugin            {Name("DiagPlugin"),             Comment("Diag Plugin config")};
+        fhicl::Atom<float>         maxEDepAvg            {Name("maxEDepAvg"),             Comment("Maximum EDep average")};
       };
       explicit RobustMultiHelixFinder(const art::EDProducer::Table<Config>& config);
       virtual void produce(art::Event& event);
@@ -136,6 +137,7 @@ namespace mu2e {
       int                                            iev_;
       int                                            diag_;
       std::unique_ptr<ModuleHistToolBase>            diagTool_;
+      float                                          maxEDepAvg_;
       Data_types                                     data_;
       std::vector<Helicity>                          hels_;
 
@@ -194,6 +196,7 @@ namespace mu2e {
     iev_              (0),
     diag_             (config().diagLevel()),
     diagTool_(),
+    maxEDepAvg_       (config().maxEDepAvg()),
     data_()
   {
     std::vector<int> helvals = config().helicities();
@@ -326,7 +329,6 @@ namespace mu2e {
       for (const auto& ich : bestHelix.hitIndices_) usedHits.push_back(ich);
       if (bestHelix.nStrawHits_ < minStrawHits_) continue;
 
-
       // other criteria to reject fake helices
       float deltaZ = chcol[bestHelix.hitIndices_.back()].pos().z() - chcol[bestHelix.hitIndices_.front()].pos().z();
       if (deltaZ < minDZTrk_)  continue;
@@ -357,9 +359,13 @@ chi2dXY = bestHelix.fita_zt_;
       hseed._helix._chi2dZPhi = chi2dZPhi;
       hseed._t0 = TrkT0(t0,t0err);
       for (const auto& ich : bestHelix.hitIndices_) hseed._hhits.emplace_back(chcol[ich]);
-      hseed._status.merge(TrkFitFlag::TPRHelix);
+      hseed._status.merge(TrkFitFlag::MPRHelix);
       hseed._status.merge(TrkFitFlag::helixOK);
       hseed._timeCluster = tcArtPtr;
+      hseed._eDepAvg = hseed._hhits.eDepAvg();
+      if (hseed._eDepAvg > maxEDepAvg_) continue;
+
+
 
       helcols[bestHelicity]->push_back(std::move(hseed));
     }

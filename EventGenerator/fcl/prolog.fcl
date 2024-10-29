@@ -171,13 +171,20 @@ GenFilter : {
         isNull : true
 }
 
+PionFilter : {
+        module_type : PionFilter
+        tmin : 350
+        tmax : 1e8
+        isNull : false
+}
+
 genFilters : # in case we want to add more here
 {
    filters : {
         GenFilter: @local::GenFilter
+        PionFilter: @local::PionFilter
    }
 }
-
 
 EventGenerator : { @table::EventGenerator
     producers : {

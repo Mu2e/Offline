@@ -53,6 +53,12 @@ namespace mu2e {
     // function to convert fhicl configuration to KinKal Config object
     KinKal::Config makeConfig(KinKalConfig const& fconfig);
 
+    // struct for final fit configuration. This just changes convergence parameters
+    struct KKFinalConfig {
+      fhicl::Atom<int> maxniter { Name("MaxNIter"), Comment("Maximum number of algebraic iteration steps in each fit meta-iteration") };
+      fhicl::Atom<float> convdchisq { Name("ConvergenceDeltaChisq"), Comment("Maximum Chisq/DOF change between iterations to define convergence") };
+    };
+
     // struct for configuring KKFit object
     struct KKFitConfig {
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level") };
@@ -61,6 +67,7 @@ namespace mu2e {
       fhicl::Atom<bool> addHits { Name("AddHits"), Comment("Add hits to the fit") };
       fhicl::Atom<bool> addMaterial { Name("AddMaterial"), Comment("Add materials to the fit") };
       fhicl::Atom<bool> useCaloCluster { Name("UseCaloCluster"), Comment("Use CaloCluster in the fit") };
+      fhicl::Atom<unsigned> minNStrawHits { Name("MinNStrawHits"), Comment("Minimum number of straw hits to attempt a fit") };
       fhicl::Atom<size_t> strawHitClusterDeltaStraw { Name("StrawHitClusterDeltaStraw"), Comment("Maximum straw index difference between StrawHits in StrawHitClusters") };
       fhicl::Atom<float> strawHitClusterDeltaT { Name("StrawHitClusterDeltaT"), Comment("Maximum time difference between StrawHits in StrawHitClusters") };
       fhicl::Atom<std::string> strawHitClusterLevel { Name("StrawHitClusterLevel"), Comment("Level for selecting StrawHitClusters (see StrawIdMask for details") };
@@ -73,14 +80,13 @@ namespace mu2e {
       fhicl::Atom<float> maxCaloDoca { Name("MaxCaloClusterDOCA"), Comment("Max DOCA to add a CaloCluster (mm)") };
       fhicl::Sequence<std::string> addHitSelect { Name("AddHitSelect"), Comment("Flags required to be present to add a hit") };
       fhicl::Sequence<std::string> addHitReject { Name("AddHitReject"), Comment("Flags required not to be present to add a hit") };
-      fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
-      fhicl::Sequence<std::string> extendSurfaces { Name("ExtendSurfaces"), Comment("Extend the fit to reach these surfaces") };
       fhicl::Atom<float> maxStrawHitDOCA { Name("MaxStrawHitDOCA"), Comment("Max DOCA to add a hit (mm)") };
       fhicl::Atom<float> maxStrawHitDt { Name("MaxStrawHitDt"), Comment("Max Detla time to add a hit (ns)") };
       fhicl::Atom<int> maxDStraw { Name("MaxDStraw"), Comment("Maximum (integer) straw separation when adding straw hits") };
       fhicl::Atom<float> maxStrawDOCA { Name("MaxStrawDOCA"), Comment("Max DOCA to add straw material (mm)") };
       fhicl::Atom<float> maxStrawDOCAConsistency { Name("MaxStrawDOCAConsistency"), Comment("Max DOCA chi-consistency to add straw material") };
-      fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Buffer to add to the trajectory when sampling the fit (mm)") };
+      // extension and sampling
+      fhicl::Atom<std::string> saveTraj { Name("SaveTrajectory"), Comment("How to save the trajectory in the KalSeed: None, Full, or T0 (just the t0 segment)") };
     };
     // struct for configuring a KinKal fit module
     struct KKModuleConfig {

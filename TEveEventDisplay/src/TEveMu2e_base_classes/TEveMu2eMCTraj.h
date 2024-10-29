@@ -9,7 +9,6 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/TEveEventDisplay/src/dict_classes/GeomUtils.h"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 namespace mu2e {
   class TEveMu2eMCTraj : public TEvePointSet{

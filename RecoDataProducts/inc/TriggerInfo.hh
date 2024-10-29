@@ -25,11 +25,11 @@ namespace mu2e {
 
     //data members
     std::vector<art::Ptr<CaloCluster>>     _caloClusters;
-    std::vector<art::Ptr<KalSeed>>         _tracks; // associated track
-    std::vector<art::Ptr<HelixSeed>>       _helixes; // associated helix
-    std::vector<art::Ptr<TimeCluster>>     _hitClusters; // associated time cluster
-    std::vector<art::Ptr<CaloTrigSeed>>    _caloTrigSeeds; //associated CaloTrigSeed
-    std::vector<art::Ptr<CosmicTrackSeed>> _cosmics; // associated CosmicTrackSeed
+    std::vector<art::Ptr<KalSeed>>         _tracks;        // associated tracks
+    std::vector<art::Ptr<HelixSeed>>       _helixes;       // associated helices
+    std::vector<art::Ptr<TimeCluster>>     _hitClusters;   // associated timeClusters
+    std::vector<art::Ptr<CaloTrigSeed>>    _caloTrigSeeds; // associated CaloTrigSeeds
+    std::vector<art::Ptr<CosmicTrackSeed>> _cosmics;       // associated CosmicTrackSeeds
   };
   typedef std::vector<mu2e::TriggerInfo> TriggerInfoCollection;
 }

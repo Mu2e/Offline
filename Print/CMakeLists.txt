@@ -39,6 +39,7 @@ cet_make_library(
       src/StrawGasStepPrinter.cc
       src/StrawHitFlagPrinter.cc
       src/StrawHitPrinter.cc
+      src/SurfaceStepPrinter.cc
       src/TimeClusterPrinter.cc
       src/TrackClusterMatchPrinter.cc
       src/TrackSummaryPrinter.cc

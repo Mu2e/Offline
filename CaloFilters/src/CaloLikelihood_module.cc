@@ -414,6 +414,7 @@ namespace mu2e {
         // but filtering is by event!
         size_t index = std::distance(caloClusters->begin(), icl);
         triginfo->_caloClusters.push_back(art::Ptr<CaloCluster>(clH, index));
+
         if(_diagLevel > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << event.id() << std::endl;
         }

@@ -38,22 +38,28 @@ physics :
     @sequence::Reconstruction.TrkReco,
     @sequence::Reconstruction.CrvReco,
     TimeClusterFinderDe, HelixFinderDe,
-    TimeClusterFinderUe, HelixFinderUe,
-    TimeClusterFinderDmu, HelixFinderDmu,
     CalTimePeakFinder, CalHelixFinderDe,
     CalTimePeakFinderMu, CalHelixFinderDmu,
     MHDeM,
-    MHUeP,
-    MHDmuM,
     KKDeM,
-    KKUeP,
-    KKDmuM,
     @sequence::Reconstruction.MCReco
   ]
   analyzers : {
-    TAKK : {
-      @table::TrkAnaReco.analyzers.TrkAnaNeg
+    TrkAna : {
+      @table::TrkAnaTreeMaker
       FitType : LoopHelix
+      diagLevel : 2
+      FillMCInfo : true
+      FillTrkPIDInfo : false
+      FillHitInfo : true
+      FillTriggerInfo : false
+      branches :  [
+        { input: "KK"
+          branch : "trk"
+          suffix : "DeM"
+          options : { fillMC : true   genealogyDepth : -1 }
+        }
+      ]
     }
     evtprint : {
       module_type : RunSubrunEvent
@@ -63,7 +69,7 @@ physics :
       printEvent  : true
     }
   }
-  EndPath : [TAKK]
+  EndPath : [TrkAna]
 }
 outputs : {
   Output : {
@@ -76,7 +82,7 @@ outputs : {
 
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
-physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDeM", "KKDmuM", "KKUeP"]
+physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDeM"]
 physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM"]
 physics.producers.SelectRecoMC.debugLevel : 0
 
@@ -84,36 +90,10 @@ physics.producers.KKDeM.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKDeM.ModuleSettings.ComboHitCollection : "makeSH"
 physics.producers.KKDeM.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
 physics.producers.KKDeM.ModuleSettings.PrintLevel : 0
-physics.producers.KKDeM.ModuleSettings.SaveAllFits : true
+physics.producers.KKDeM.ModuleSettings.SaveAllFits : false
 physics.producers.KKDeM.FitSettings.PrintLevel : 0
 
-physics.producers.KKUeP.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
-physics.producers.KKUeP.ModuleSettings.ComboHitCollection : "makeSH"
-physics.producers.KKUeP.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
-physics.producers.KKUeP.ModuleSettings.PrintLevel : 0
-physics.producers.KKUeP.ModuleSettings.SaveAllFits : true
-physics.producers.KKUeP.FitSettings.PrintLevel : 0
-
-physics.producers.KKDmuM.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
-physics.producers.KKDmuM.ModuleSettings.ComboHitCollection : "makeSH"
-physics.producers.KKDmuM.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
-physics.producers.KKDmuM.ModuleSettings.PrintLevel : 0
-physics.producers.KKDmuM.ModuleSettings.SaveAllFits : true
-physics.producers.KKDmuM.FitSettings.PrintLevel : 0
-
-physics.analyzers.TAKK.candidate.options : @local::AllOpt
-physics.analyzers.TAKK.diagLevel : 2
-physics.analyzers.TAKK.FillMCInfo : true
-physics.analyzers.TAKK.FillCRVHits : true
-physics.analyzers.TAKK.FillTrkPIDInfo : false
-physics.analyzers.TAKK.FillHitInfo : true
-physics.analyzers.TAKK.FillTriggerInfo : false
-physics.analyzers.TAKK.candidate.input : "KK"
-physics.analyzers.TAKK.candidate.suffix : "DeM"
-physics.analyzers.TAKK.candidate.options.fillHits : true
-physics.analyzers.TAKK.supplements : [@local::UeP, @local::DmuM]
-physics.analyzers.TAKK.ExtraMCStepCollectionTags : [ "compressDigiMCs:protonabsorber", "compressDigiMCs:stoppingtarget" ]
-
+physics.analyzers.TrkAna.ExtraMCStepCollectionTags : [ "compressDigiMCs:protonabsorber", "compressDigiMCs:stoppingtarget" ]
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 services.TimeTracker.printSummary: true
 services.TFileService.fileName: "nts.owner.KKDrift.version.sequence.root"

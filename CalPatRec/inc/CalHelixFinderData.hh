@@ -50,9 +50,9 @@ namespace mu2e {
     //   // kNPanelsPerFace =  3
     // };
 
-    enum { kMaxResidIndex = 500 };
+    enum { kMaxResidIndex = 5000 };
 
-    constexpr static uint16_t        kNMaxChHits = 500;
+    constexpr static uint16_t        kNMaxChHits = 5000;
 
     struct Diag_t {
       int       loopId_4;    // fData[4]
@@ -95,6 +95,9 @@ namespace mu2e {
 
       int      nLoops;
       float    meanHitRadialDist;
+
+      float    nHitsRatio;
+      float    eDepAvg;
     };
 
     const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices

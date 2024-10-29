@@ -33,13 +33,13 @@ namespace mu2e{
     public:
 
        DiskCalorimeterMaker(SimpleConfig const& config, double solenoidOffset);
-      ~DiskCalorimeterMaker();
 
-      // Accessor and unique_ptr to calorimeter needed by GeometryService.
-      std::unique_ptr<DiskCalorimeter> calo_;
       std::unique_ptr<DiskCalorimeter> calorimeterPtr() { return std::move(calo_); }
 
     private:
+
+      // unique_ptr to calorimeter needed by GeometryService.
+      std::unique_ptr<DiskCalorimeter> calo_;
 
       void CheckIt(void);
       void MakeIt(void);

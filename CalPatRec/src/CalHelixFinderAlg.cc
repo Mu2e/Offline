@@ -139,48 +139,50 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  CalHelixFinderAlg::CalHelixFinderAlg(fhicl::ParameterSet const& pset) :
-    _diag               (pset.get<int>           ("diagLevel"              )),
-    _debug              (pset.get<int>           ("debugLevel"             )),
-    _debug2             (pset.get<int>           ("debugLevel2"            )),
-    _hsel               (pset.get<vector<string>>("HelixFitSelectionBits"  )),
-    _bkgsel             (pset.get<vector<string>>("BackgroundSelectionBits")),
-    _maxHitEnergy       (pset.get<float>         ("maxElectronHitEnergy"   )),
-    _minNHits           (pset.get<int>           ("minNHit"                )),
-    _absMpDfDz          (pset.get<float>         ("mostProbableDfDz"       )),
-    _initDfDz           (pset.get<int>           ("initDfDz"               )),
-    _dzOverHelPitchCut  (pset.get<float>         ("dzOverHelPitchCut"      )),
-    _maxDfDz            (pset.get<float>         ("maxDfDz"                )), //0.01)),2018-10-11 gianipez test
-    _minDfDz            (pset.get<float>         ("minDfDz"                )),
-    _sigmaPhi           (pset.get<float>         ("sigmaPhi"               )),
-    _weightXY           (pset.get<float>         ("weightXY"               )),
-    _targetcon          (pset.get<int>           ("targetconsistent"       )),
-    _weightZPhi         (pset.get<float>         ("weightZPhi"             )),
-    _weight3D           (pset.get<float>         ("weight3D"               )),
-    _maxXDPhi           (pset.get<float>         ("maxXDPhi"               )),
-    _maxPanelToHelixDPhi(pset.get<float>         ("maxPanelToHelixDPhi"    )), // 75 degrees
-    _distPatRec         (pset.get<float>         ("distPatRec"             )),
-    _minDeltaNShPatRec  (pset.get<float>         ("minDeltaNShPatRec"      )),
-    _mindist            (pset.get<float>         ("mindist"                )),
-    _pmin               (pset.get<float>         ("minP"                   )),
-    _pmax               (pset.get<float>         ("maxP"                   )),
-    _tdmin              (pset.get<float>         ("minAbsTanDip"           )),
-    _tdmax              (pset.get<float>         ("maxAbsTanDip"           )),
-    _xyweights          (pset.get<bool>          ("xyWeights"              )),
-    _zweights           (pset.get<bool>          ("zWeights"               )),
-    _filter             (pset.get<bool>          ("filter"                 )),
-    _plotall            (pset.get<bool>          ("plotall"                )),
-    _usetarget          (pset.get<bool>          ("usetarget"              )),
-    _maxZTripletSearch  (pset.get<float>         ("maxZTripletSearch"      )),
-    _bz                 (0.0),
-    _nHitsMaxPerPanel   (pset.get<int>           ("nHitsMaxPerPanel"       )),
-    _hitChi2Max         (pset.get<float>        ("hitChi2Max"             )),
-    _chi2xyMax          (pset.get<float>        ("chi2xyMax"              )),
-    _chi2zphiMax        (pset.get<float>        ("chi2zphiMax"            )),
-    _chi2hel3DMax       (pset.get<float>        ("chi2hel3DMax"           )),
-    _dfdzErr            (pset.get<float>        ("dfdzErr"                )){
 
-    float minarea(pset.get<float>("minArea"));
+  CalHelixFinderAlg::CalHelixFinderAlg(const Config& config) :
+    _diag(config.diag()),
+    _debug(config.debug()),
+    _debug2(config.debug2()),
+    _hsel(config.hsel()),
+    _bkgsel(config.bkgsel()),
+    _maxHitEnergy(config.maxHitEnergy()),
+    _minNHits(config.minNHits()),
+    _absMpDfDz(config.absMpDfDz()),
+    _initDfDz(config.initDfDz()),
+    _dzOverHelPitchCut(config.dzOverHelPitchCut()),
+    _maxDfDz(config.maxDfDz()),
+    _minDfDz(config.minDfDz()),
+    _sigmaPhi(config.sigmaPhi()),
+    _weightXY(config.weightXY()),
+    _targetcon(config.targetcon()),
+    _weightZPhi(config.weightZPhi()),
+    _weight3D(config.weight3D()),
+    _maxXDPhi(config.maxXDPhi()),
+    _maxPanelToHelixDPhi(config.maxPanelToHelixDPhi()),
+    _distPatRec(config.distPatRec()),
+    _minDeltaNShPatRec(config.minDeltaNShPatRec()),
+    _mindist(config.mindist()),
+    _pmin(config.pmin()),
+    _pmax(config.pmax()),
+    _tdmin(config.tdmin()),
+    _tdmax(config.tdmax()),
+    _xyweights(config.xyweights()),
+    _zweights(config.zweights()),
+    _filter(config.filter()),
+    _plotall(config.plotall()),
+    _usetarget(config.usetarget()),
+    _maxZTripletSearch(config.maxZTripletSearch()),
+    _bz(0.),
+    _nHitsMaxPerPanel(config.nHitsMaxPerPanel()),
+    _hitChi2Max(config.hitChi2Max()),
+    _chi2xyMax(config.chi2xyMax()),
+    _chi2zphiMax(config.chi2zphiMax()),
+    _chi2hel3DMax(config.chi2hel3DMax()),
+    _dfdzErr(config.dfdzErr()),
+    _maxNHitsRatio(config.maxNHitsRatio()){
+
+    float minarea(config.minArea());
     _minarea2    = minarea*minarea;
 
     std::vector<std::string> bitnames;
@@ -2083,6 +2085,7 @@ namespace mu2e {
     bool rc;
     int  rs, usePhiResid;
 
+    float circleHits(0.0), phiHits(0.0), nHitsRatio(0.0);
 
     if ((Helix._seedIndex.panel < 0) || (Helix._nXYSh < _minNHits) ) goto  PATTERN_RECOGNITION_END;
 
@@ -2092,9 +2095,19 @@ namespace mu2e {
       printInfo(Helix);
     }
 
+    circleHits = Helix._sxy.qn();
+
     rc = doLinearFitPhiZ(Helix, HitInfo_t(StrawId::_ntotalfaces-1,0,-1), useIntelligentWeight);
 
-    //2017-10-05 Gianipez added the following line to make some tests
+    phiHits = Helix._szphi.qn();
+
+    nHitsRatio = circleHits/(phiHits + 1e-6);
+
+    if (_diag > 0) {
+      Helix._diag.nHitsRatio = nHitsRatio;
+    }
+
+    if (nHitsRatio > _maxNHitsRatio) goto PATTERN_RECOGNITION_END;
     if (Helix._szphi.qn() == 0.)                                 goto  PATTERN_RECOGNITION_END;
 
     rescueHitsBeforeSeed(Helix);

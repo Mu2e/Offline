@@ -59,6 +59,15 @@ namespace mu2e {
                                   bool const placePV
                                   );
 
+  void constructExtMonFNALScintillators(const VolumeInfo& mother,
+                                        const ExtMonFNALPlaneStack& stack,
+                                        const std::string& volNameSuffix,
+                                        const SimpleConfig& config,
+                                        bool const forceAuxEdgeVisible,
+                                        bool const doSurfaceCheck,
+                                        bool const placePV
+                                        );
+
 }
 
 #endif /* CONSTRUCTEXTMONFNAL_HH */

@@ -14,6 +14,18 @@ namespace mu2e {
     , magnetRoomLength_(0.)
     , roomInsideYmin_(0.)
     , roomInsideYmax_(0.)
+    , _HVACductRadius(0.)
+    , _HVACductHalfLength(0.)
+  {}
+
+  //================================================================
+  ExtMonFNALBuilding::CollimatorExtMonFNAL::CollimatorExtMonFNAL()
+    : _horizontalLength(0.)
+    , _shotLinerOuterRadius(0.)
+    , _shotLinerOuterThickness(0.)
+    , _radiusTransitiondZ(0.)
+    , _angleH(0.)
+    , _angleV(0.)
   {}
 
   //================================================================

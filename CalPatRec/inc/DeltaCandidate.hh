@@ -20,8 +20,6 @@ namespace mu2e {
       int                   fFirstStation;
       int                   fLastStation;
       DeltaSeed*            fSeed   [kNStations];
-      // float                 fT0Min [kNStations];   // acceptable hit times (no need to account for the drift time!)
-      // float                 fT0Max [kNStations];
       XYZVectorF            CofM;
       float                 fNx;                   //
       float                 fNy;                   //
@@ -58,17 +56,12 @@ namespace mu2e {
       int        Mask                 () const { return fMask  ; }
       int        NSeeds               () const { return fNSeeds; }
       int        nHits                () const { return fNHits; }
-      // int        NHitsMcP             () const { return fNHitsMcP; }
       int        nStrawHits           () const { return fNStrawHits; }
       DeltaSeed* Seed            (int I) const { return fSeed[I]; }
       bool       StationUsed     (int I) const { return (fSeed[I] != NULL); }
-      // float      T0Min           (int I) const { return fT0Min[I]; }
-      // float      T0Max           (int I) const { return fT0Max[I]; }
-      // float      Time            (int I) const { return (fT0Max[I]+fT0Min[I])/2.; }
       int        LastStation          () const { return fLastStation ; }
       int        FirstStation         () const { return fFirstStation; }
       float      EDep                 () const { return fSumEDep/fNStrawHits; }
-      // float      FBest                () const { return float(fNHitsMcP)/fNHits; }
       double     Xc                   () const { return CofM.x(); }
       double     Yc                   () const { return CofM.y(); }
       double     Rho                  () const { return CofM.Rho(); }

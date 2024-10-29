@@ -8,6 +8,7 @@
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
+#include "KinKal/Trajectory/SensorLine.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "cetlib_except/exception.h"
@@ -15,18 +16,17 @@ namespace mu2e {
   using KinKal::SVEC3;
   using KinKal::DVEC;
   using KinKal::CAHint;
-  using KinKal::TimeDir;
   using KinKal::DPDV;
   using KinKal::MomBasis;
   using KinKal::NParams;
-  using KinKal::Line;
+  using KinKal::SensorLine;
   template <class KTRAJ> class KKStrawXing : public KinKal::ElementXing<KTRAJ> {
     public:
       using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       using EXING = KinKal::ElementXing<KTRAJ>;
-      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
-      using CA = KinKal::ClosestApproach<KTRAJ,Line>;
+      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
+      using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
       // construct without an associated StrawHit
@@ -35,9 +35,9 @@ namespace mu2e {
       KKStrawXing(KKSTRAWHITPTR const& strawhit, KKStrawMaterial const& smat);
       virtual ~KKStrawXing() {}
       // ElementXing interface
-      void updateReference(KTRAJPTR const& ktrajptr) override;
+      void updateReference(PTRAJ const& ptraj) override;
       void updateState(MetaIterConfig const& config,bool first) override;
-      Parameters parameters(TimeDir tdir) const override;
+      Parameters params() const override;
       std::vector<MaterialXing>const&  matXings() const override { return mxings_; }
       // offset time WRT TOCA to avoid exact overlapp with the wire hit.  Note: the offset must be POSITIVE to insure
       // Xing is updated after the associated hit
@@ -54,7 +54,7 @@ namespace mu2e {
     private:
       StrawId sid_; // StrawId
       KKSTRAWHITPTR shptr_; // reference to associated StrawHit
-      Line axis_; // straw axis, expressed as a timeline
+      SensorLine axis_; // straw axis, expressed as a timeline
       KKStrawMaterial const& smat_;
       CA ca_; // result of most recent TPOCA
       double toff_; // small time offset
@@ -82,22 +82,19 @@ namespace mu2e {
     toff_(smat.wireRadius()/strawhit->closestApproach().particleTraj().speed(strawhit->closestApproach().particleToca()))
   {}
 
-  template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(KTRAJPTR const& ktrajptr) {
+  template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(PTRAJ const& ptraj) {
     if(shptr_){
       ca_ = shptr_->closestApproach();
     } else {
       CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(axis_.timeAtMidpoint(),axis_.timeAtMidpoint());
-      ca_ = CA(ktrajptr,axis_,tphint,precision());
-      if(!ca_.usable())
-        sxconfig_.hitstate_ = WireHitState::inactive;
+      PCA pca(ptraj,axis_,tphint,precision());
+      if(!pca.usable()) sxconfig_.hitstate_ = WireHitState::inactive;
+      ca_ = pca.localClosestApproach();
     }
- }
+  }
 
-  template <class KTRAJ> Parameters KKStrawXing<KTRAJ>::parameters(TimeDir tdir) const {
-    if(tdir == TimeDir::forwards)
-      return fparams_;
-    else
-      return Parameters(-fparams_.parameters(),fparams_.covariance());
+  template <class KTRAJ> Parameters KKStrawXing<KTRAJ>::params() const {
+    return fparams_;
   }
 
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
@@ -126,31 +123,11 @@ namespace mu2e {
       }
       smat_.findXings(cad,sxconfig_,mxings_);
     }
-    // reset
-    fparams_ = Parameters();
     if(mxings_.size() > 0){
-      // compute the parameter effect for forwards time
-      std::array<double,3> dmom = {0.0,0.0,0.0}, momvar = {0.0,0.0,0.0};
-      this->materialEffects(TimeDir::forwards, dmom, momvar);
-      // get the parameter derivative WRT momentum
-      DPDV dPdM = referenceTrajectory().dPardM(time());
-      double mommag = referenceTrajectory().momentum(time());
-      // loop over the momentum change basis directions, adding up the effects on parameters from each
-      for(int idir=0;idir<MomBasis::ndir; idir++) {
-        auto mdir = static_cast<MomBasis::Direction>(idir);
-        auto dir = referenceTrajectory().direction(time(),mdir);
-        // project the momentum derivatives onto this direction
-        DVEC pder = mommag*(dPdM*SVEC3(dir.X(), dir.Y(), dir.Z()));
-        // convert derivative vector to a Nx1 matrix
-        ROOT::Math::SMatrix<double,NParams(),1> dPdm;
-        dPdm.Place_in_col(pder,0,0);
-        // update the transport for this effect; Forward time propagation corresponds to energy loss
-        fparams_.parameters() += pder*dmom[idir];
-        // now the variance: this doesn't depend on time direction
-        ROOT::Math::SMatrix<double, 1,1, ROOT::Math::MatRepSym<double,1>> MVar;
-        MVar(0,0) = momvar[idir]*varscale_;
-        fparams_.covariance() += ROOT::Math::Similarity(dPdm,MVar);
-      }
+      fparams_ = this->parameterChange(varscale_);
+    } else {
+      // reset
+      fparams_ = Parameters();
     }
   }
 

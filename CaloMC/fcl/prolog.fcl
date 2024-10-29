@@ -5,125 +5,109 @@
 #include "Offline/CaloReco/fcl/common.fcl"
 #include "Offline/CommonMC/fcl/prolog.fcl"
 
-
-
 BEGIN_PROLOG
 
-CaloShowerStepMaker  :
-{
-    module_type             : CaloShowerStepMaker
-    numZSlices              : 20
-    deltaTime               : 0.2
-    caloStepPointCollection : ["g4run:calorimeter"]
-    usePhysVolInfo          : false
-    physVolInfoInput        : "g4run"
-    caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092","CarbonFiber"]
-    compressData            : true
-    eDepThreshold           : 0
-    diagLevel               : 0
-}
+CaloMC : {
 
-
-CaloShowerROMaker :
-{
-    module_type              : CaloShowerROMaker
-    caloShowerStepCollection : ["CaloShowerStepMaker"]
-    eventWindowMarker        : EWMProducer
-    protonBunchTimeMC        : EWMProducer
-    digitizationStart        : @local::HitMakerDigitizationStart
-    digitizationEnd          : @local::HitMakerDigitizationEnd
-    digitizationBuffer       : 10
-    LRUCorrection            : true
-    BirksCorrection          : true
-    PEStatCorrection         : true
-    addTravelTime            : true
-    diagLevel                : 0
-}
-
-#See doc-db 35519 for noise level discussion
-NoiseGenerator :
-{
-    noiseWFSize             : 10000
-    elecNphotPerNs          : 0.18
-    rinNphotPerNs           : 0.36
-    darkNphotPerNs          : 0.60
-    digiSampling            : @local::HitMakerDigiSampling
-    nMaxFragment            : 1000
-    minPeakADC              : @local::HitMakerMinPeakADC
-    diagLevel               : 0
-}
-
-CaloDigiMaker :
-{
-    module_type             : CaloDigiMaker
-    caloShowerROCollection  : CaloShowerROMaker
-    eventWindowMarker       : EWMProducer
-    protonBunchTimeMC       : EWMProducer
-    digitizationStart       : @local::HitMakerDigitizationStart
-    digitizationEnd         : @local::HitMakerDigitizationEnd
-    addNoise                : true
-    addRandomNoise          : false
-    NoiseGenerator          : { @table::NoiseGenerator  }
-    digiSampling            : @local::HitMakerDigiSampling
-    nBits                   : 12
-    minPeakADC              : @local::HitMakerMinPeakADC
-    nBinsPeak               : 2
-    bufferDigi              : 16
-    diagLevel               : 0
-}
-
-CaloHitTruthMatch:
-{
-    module_type               : CaloHitTruthMatch
-    caloShowerSimCollection   : CaloShowerROMaker
-    caloHitCollection         : CaloHitMaker
-    primaryParticle           : FindMCPrimary
-    digiSampling              : @local::HitMakerDigiSampling
-    minAmplitude              : 32
-    fillDetailedMC            : false
-    diagLevel                 : 0
-}
-
-CaloClusterTruthMatch:
-{
-    module_type           : CaloClusterTruthMatch
-    caloClusterCollection : CaloClusterMaker
-    caloHitMCTruthAssn    : CaloHitTruthMatch
-    diagLevel             : 0
-}
-
-
-
-CaloMC :
-{
-   StepProducers : {
-     CaloShowerStepMaker  : @local::CaloShowerStepMaker
+   #See doc-db 35519 for noise level discussion
+   NoiseGenerator :
+   {
+      noiseWFSize             : 10000
+      elecNphotPerNs          : 0.18
+      rinNphotPerNs           : 0.36
+      darkNphotPerNs          : 0.60
+      digiSampling            : @local::HitMakerDigiSampling
+      nMaxFragment            : 1000
+      minPeakADC              : @local::HitMakerMinPeakADC
+      diagLevel               : 0
    }
-   StepSim : [ CaloShowerStepMaker]
+}
 
-   DigiProducers : {
-     CaloShowerROMaker    : @local::CaloShowerROMaker
-     CaloDigiMaker        : @local::CaloDigiMaker
+CaloMC : { @table::CaloMC
+   CaloShowerStepMaker  :
+   {
+      module_type             : CaloShowerStepMaker
+      numZSlices              : 20
+      deltaTime               : 0.2
+      caloStepPointCollection : ["g4run:calorimeter"]
+      usePhysVolInfo          : false
+      physVolInfoInput        : "g4run"
+      caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092","CarbonFiber"]
+      compressData            : true
+      eDepThreshold           : 0
+      diagLevel               : 0
    }
-   DigiSim : [ CaloShowerROMaker, CaloDigiMaker]
 
-   TruthProducers : {
-     CaloHitTruthMatch : @local::CaloHitTruthMatch
-     CaloClusterTruthMatch : @local::CaloClusterTruthMatch
+
+   CaloShowerROMaker :
+   {
+      module_type              : CaloShowerROMaker
+      caloShowerStepCollection : ["CaloShowerStepMaker"]
+      eventWindowMarker        : EWMProducer
+      protonBunchTimeMC        : EWMProducer
+      digitizationStart        : @local::HitMakerDigitizationStart
+      digitizationEnd          : @local::HitMakerDigitizationEnd
+      digitizationBuffer       : 10
+      LRUCorrection            : true
+      BirksCorrection          : true
+      PEStatCorrection         : true
+      addTravelTime            : true
+      diagLevel                : 0
    }
+
+   CaloDigiMaker :
+   {
+      module_type             : CaloDigiMaker
+      caloShowerROCollection  : CaloShowerROMaker
+      eventWindowMarker       : EWMProducer
+      protonBunchTimeMC       : EWMProducer
+      digitizationStart       : @local::HitMakerDigitizationStart
+      digitizationEnd         : @local::HitMakerDigitizationEnd
+      addNoise                : true
+      addRandomNoise          : false
+      NoiseGenerator          : { @table::CaloMC.NoiseGenerator  }
+      digiSampling            : @local::HitMakerDigiSampling
+      nBits                   : 12
+      minPeakADC              : @local::HitMakerMinPeakADC
+      nBinsPeak               : 2
+      bufferDigi              : 16
+      diagLevel               : 0
+   }
+
+   CaloHitTruthMatch:
+   {
+      module_type               : CaloHitTruthMatch
+      caloShowerSimCollection   : CaloShowerROMaker
+      caloHitCollection         : CaloHitMaker
+      primaryParticle           : FindMCPrimary
+      digiSampling              : @local::HitMakerDigiSampling
+      minAmplitude              : 32
+      fillDetailedMC            : false
+      diagLevel                 : 0
+   }
+
+   CaloClusterTruthMatch:
+   {
+      module_type           : CaloClusterTruthMatch
+      caloClusterCollection : CaloClusterMaker
+      caloHitMCTruthAssn    : CaloHitTruthMatch
+      diagLevel             : 0
+   }
+}
+
+
+CaloMC : { @table::CaloMC
+   producers : {
+      CaloShowerStepMaker   : { @table::CaloMC.CaloShowerStepMaker   }
+      CaloShowerROMaker     : { @table::CaloMC.CaloShowerROMaker     }
+      CaloDigiMaker         : { @table::CaloMC.CaloDigiMaker         }
+      CaloHitTruthMatch     : { @table::CaloMC.CaloHitTruthMatch     }
+      CaloClusterTruthMatch : { @table::CaloMC.CaloClusterTruthMatch }
+   }
+
+   DigiSim    : [ CaloShowerROMaker, CaloDigiMaker]
+   StepSim    : [ CaloShowerStepMaker]
    TruthMatch : [ CaloHitTruthMatch, CaloClusterTruthMatch ]
-}
-
-CaloClusterMC :
-{
-   producers  : { CaloClusterTruthMatch : @local::CaloClusterTruthMatch }
-   TruthMatch : [ CaloClusterTruthMatch ]
-}
-
-# legacy
-CaloMC.producers : {
-  @table::CaloMC.StepProducers
-  @table::CaloMC.DigiProducers
 }
 
 CaloMC.StepAndDigiSim : [@sequence::CaloMC.StepSim, @sequence::CaloMC.DigiSim]

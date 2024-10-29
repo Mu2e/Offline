@@ -1,5 +1,6 @@
-#include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
 Int_t transpOpt = 100;
 using namespace mu2e;
 namespace mu2e{

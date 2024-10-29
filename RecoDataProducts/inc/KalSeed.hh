@@ -1,5 +1,5 @@
 //
-//  Persistent representation of the BTrk Kalman filter fit (KalRep)
+//  Persistent representation of the Kalman filter fit
 //  Original author: Dave Brown (LBNL) 31 Aug 2016
 //
 #ifndef RecoDataProducts_KalSeed_HH
@@ -33,6 +33,8 @@ namespace mu2e {
     using LHPTPtr = std::unique_ptr<LHPT>;
     using CHPTPtr = std::unique_ptr<CHPT>;
     using KLPTPtr = std::unique_ptr<KLPT>;
+    using InterIter = std::vector<KalIntersection>::const_iterator;
+    using InterIterCol = std::vector<InterIter>;
     KalSeed() {}
     KalSeed(PDGCode::type tpart, TrkFitFlag const& status, double flt0=0.0 ) :
       _tpart(tpart), _status(status), _flt0(static_cast<float>(flt0)){}
@@ -47,18 +49,18 @@ namespace mu2e {
     double t0Val() const;
     float chisquared() const { return _chisq; }
     int nDOF() const { return _ndof; }
+    unsigned nHits(bool active=true) const;
     float fitConsistency() const { return _fitcon; }
     UInt_t nTrajSegments() const { return _segments.size(); }
     KinKal::TimeRange timeRange() const { return KinKal::TimeRange(_segments.front()._tmin,_segments.back()._tmax); }
     bool hasCaloCluster() const { return _chit.caloCluster().isNonnull(); }
     art::Ptr<CaloCluster> const& caloCluster() const { return _chit.caloCluster(); }
-    std::vector<KalSegment>::const_iterator nearestSeg(double time)  const;
-    std::vector<KalIntersection>::const_iterator intersection(SurfaceId const& id)  const;
+    std::vector<KalSegment>::const_iterator nearestSegment(double time)  const;
+    std::vector<KalSegment>::const_iterator t0Segment(double& t0) const; // return the segment associated with the t0 value, or the closest to it.  Also return the t0 value
+    InterIterCol intersections(SurfaceId const& id)  const; // all intersections with this SurfaceId
     bool loopHelixFit() const { return _status.hasAllProperties(TrkFitFlag::KKLoopHelix); }
     bool centralHelixFit() const { return _status.hasAllProperties(TrkFitFlag::KKCentralHelix); }
     bool kinematicLineFit() const { return _status.hasAllProperties(TrkFitFlag::KKLine); }
-    bool seedBTrkFit() const { return _status.hasAllProperties(TrkFitFlag::KSF); }
-    bool finalBTrkFit() const { return _status.hasAllProperties(TrkFitFlag::KFF); }
     // reconstitute (as best as possible) the fit trajectory.  The ptr will be null if the fit wasn't based on the requested trajector type
     // Note these return by value
     // Note that the returned piecetraj may have large gaps, unless the full fit trajectory was stored in the seed.
@@ -82,7 +84,6 @@ namespace mu2e {
     std::vector<TrkStrawHitSeed>    _hits; // hit seeds for all the hits used in this fit
     std::vector<TrkStraw>     _straws; // straws interesected by this fit
     TrkCaloHitSeed        _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
-    std::vector<KalSegment>::const_iterator nearestSegment(float time)  const;
     //
     // deprecated BTrk legacy content, DO NOT write any new code which depends on these functions
     // find the nearest segment to a given the time
@@ -93,5 +94,7 @@ namespace mu2e {
     float         _flt0 = 0.0; // flight distance where the track crosses the tracker midplane (z=0).  Redundant with t0 in KinKal fits, and in the wrong unit
   };
   typedef std::vector<mu2e::KalSeed> KalSeedCollection;
+  typedef art::Ptr<mu2e::KalSeed> KalSeedPtr;
+  typedef std::vector<mu2e::KalSeedPtr> KalSeedPtrCollection;
 }
 #endif

@@ -3,7 +3,7 @@
 //
 //  untemplated utiltity classes and functions
 //
-#include "KinKal/Trajectory/Line.hh"
+#include "KinKal/Trajectory/SensorLine.hh"
 #include "KinKal/General/Vectors.hh"
 #include "KinKal/General/TimeRange.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
@@ -15,9 +15,9 @@ namespace mu2e {
   class Straw;
   class StrawResponse;
   namespace Mu2eKinKal{
-    enum Dimension { dresid=0, tresid=1};  // residual dimensions
-    // function to turn a StrawHit into a Line object
-    KinKal::Line hitLine(ComboHit const& ch, Straw const& straw,StrawResponse const& strawresponse);
+    enum Dimension { dresid=0, tresid=1, lresid=2};  // residual dimensions
+    // function to turn a StrawHit into a SensorLine object
+    KinKal::SensorLine hitLine(ComboHit const& ch, Straw const& straw,StrawResponse const& strawresponse);
     // test whether a point is inside the detector
     bool inDetector(KinKal::VEC3 const& point);
     // returns phi angle from 0 to pi/2, where 0 is in B field direction

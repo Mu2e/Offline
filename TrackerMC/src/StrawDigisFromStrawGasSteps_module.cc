@@ -44,6 +44,8 @@
 #include "Offline/TrackerMC/inc/StrawWaveform.hh"
 #include "Offline/TrackerMC/inc/IonCluster.hh"
 #include "Offline/TrackerMC/inc/StrawPosition.hh"
+#include <Offline/TrackerMC/inc/StrawDigiBundle.hh>
+#include <Offline/TrackerMC/inc/StrawDigiBundleCollection.hh>
 //CLHEP
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandFlat.h"
@@ -65,6 +67,8 @@
 #include <limits>
 using namespace std;
 using CLHEP::Hep3Vector;
+using EventIDCollection = std::vector<art::EventID>;
+
 namespace mu2e {
   namespace TrackerMC {
     using namespace TrkTypes;
@@ -115,7 +119,9 @@ namespace mu2e {
           fhicl::Atom<string> spinstance { Name("StrawGasStepInstance"), Comment("StrawGasStep Instance name"),""};
           fhicl::Atom<string> spmodule { Name("StrawGasStepModule"), Comment("StrawGasStep Module name"),""};
           fhicl::Atom<bool> usestatus { Name("UseStatus"), Comment("Use TrackerStatus when making digis"), false};
-
+          fhicl::Atom<art::InputTag> mixedDigisTag { Name("MixedDigisTag"), Comment("Source of digis to overlay event onto"), ""};
+          fhicl::Atom<bool> mixDigiMCs { Name("MixDigiMCs"), Comment("Propagate mixed StrawDigiMCs through module"), false};
+          fhicl::Atom<bool> allowEmptySteps { Name("AllowEmptyStrawGasSteps"), Comment("Allow digitization to proceed even without any valid straw gas step collections"), false};
         };
 
         typedef art::Ptr<StrawGasStep> SGSPtr;
@@ -172,6 +178,10 @@ namespace mu2e {
         const string _messageCategory;
         // Give some informationation messages only on the first event.
         bool _firstEvent;
+        // digi mixing
+        const art::InputTag _mixedDigisTag;
+        const bool _mixDigiMCs;
+        const bool _allowEmptySteps;
         // Proditions
         ProditionsHandle<StrawPhysics> _strawphys_h;
         ProditionsHandle<StrawElectronics> _strawele_h;
@@ -196,6 +206,7 @@ namespace mu2e {
         Float_t _xtime[2], _tctime[2], _charge[2], _acharge[2], _ddist[2], _dtime[2], _ptime[2];
         Float_t _wdist[2], _vstart[2], _vcross[2];
         Float_t _phi[2];
+        Int_t _provenance;
         Float_t _mcenergy, _mctrigenergy, _mcthreshenergy;
         Double_t _mctime;
         Int_t _mcthreshpdg, _mcthreshproc, _mcnstep;
@@ -306,6 +317,9 @@ namespace mu2e {
       _randP( _engine),
       _messageCategory("HITS"),
       _firstEvent(true),      // Control some information messages.
+      _mixedDigisTag(config().mixedDigisTag()),
+      _mixDigiMCs(config().mixDigiMCs()),
+      _allowEmptySteps(config().allowEmptySteps()),
       // This selector will select only data products with the given instance name.
       _selector{ art::ProductInstanceNameSelector(config().spinstance())}
       {
@@ -403,6 +417,7 @@ namespace mu2e {
           _sddiag->Branch("sdlen",&_sdlen,"sdlen/F");
           _sddiag->Branch("adc",&_adc);
           _sddiag->Branch("pmp",&_pmp);
+          _sddiag->Branch("provenance",&_provenance,"provenance/I");
           _sddiag->Branch("mctime",&_mctime,"mctime/D");
           _sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
           _sddiag->Branch("mctrigenergy",&_mctrigenergy,"mctrigenergy/F");
@@ -439,9 +454,39 @@ namespace mu2e {
       if ( _printLevel > 1 ) cout << "StrawDigisFromStrawGasSteps: produce() begin; event " << event.id().event() << endl;
       static int ncalls(0);
       ++ncalls;
+
+      // initialize "global" collection of digis
+      StrawDigiBundleCollection bundles;
+
+      // by default, fetch conditions of simulated run
+      art::EventID proditions_key = event.id();
+
+      // (optionally) fetch preexisting digis, onto which the current event
+      // will be laid; in this case, want to query conditions associated with
+      // the preexisting event
+      if (!_mixedDigisTag.empty()){
+        auto evid_handle = event.getHandle<EventIDCollection>(_mixedDigisTag);
+        if (evid_handle->size() != 1){
+          std::string msg = "# of mixed EventIDs != 1: ";
+          msg += std::to_string(evid_handle->size()) + " of them";
+          throw cet::exception("SIM") << msg << endl;
+        }
+        proditions_key = evid_handle->at(0);
+        auto digi_handle = event.getHandle<StrawDigiCollection>(_mixedDigisTag);
+        auto adcs_handle = event.getHandle<StrawDigiADCWaveformCollection>(_mixedDigisTag);
+        // bundle up preexisting digi products, optionally including DigiMCs
+        if (!_mixDigiMCs){
+          bundles.Append(*digi_handle, *adcs_handle);
+        }
+        else{
+          auto dgmcs_handle = event.getHandle<StrawDigiMCCollection>(_mixedDigisTag);
+          bundles.Append(*digi_handle, *adcs_handle, *dgmcs_handle);
+        }
+      }
+
       // update conditions caches, etc
-      StrawPhysics const& strawphys = _strawphys_h.get(event.id());
-      StrawElectronics const& strawele = _strawele_h.get(event.id());
+      StrawPhysics const& strawphys = _strawphys_h.get(proditions_key);
+      StrawElectronics const& strawele = _strawele_h.get(proditions_key);
       _tracker = _alignedTrackerSim_h.getPtr(event.id()).get();
       _mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
       art::Handle<EventWindowMarker> ewMarkerHandle;
@@ -504,6 +549,15 @@ namespace mu2e {
           }
         }
       }
+      // bundle up new digis in global collection
+      bundles.Append(*digis, *digiadcs, *mcdigis);
+
+      // resolve collisions between any preexisting and new digis
+      StrawDigiBundleCollection resolved = bundles.ResolveCollisions(strawele);
+      digis = resolved.GetStrawDigiPtrs();
+      digiadcs = resolved.GetStrawDigiADCWaveformPtrs();
+      mcdigis = resolved.GetStrawDigiMCPtrs();
+
       // store the digis in the event
       event.put(move(digis));
       event.put(move(digiadcs));
@@ -555,7 +609,7 @@ namespace mu2e {
           log  << "   " << prov.branchName() << "\n";
         }
       }
-      if(stepsHandles.empty()){
+      if(stepsHandles.empty() && (!_allowEmptySteps)){
         throw cet::exception("SIM")<<"mu2e::StrawDigisFromStrawGasSteps: No StrawGasStep collections found for tracker" << endl;
       }
 
@@ -821,7 +875,7 @@ namespace mu2e {
           }
           // subtract a small buffer
           ptime -= _adcbuffer;
-          mcdigis->push_back(StrawDigiMC(sid,cpos,ctime,wetime,sgspa));
+          mcdigis->push_back(StrawDigiMC(sid,cpos,ctime,wetime,sgspa,DigiProvenance::Simulation));
           if(_diag > 1){
             digiDiag(strawphys,wf,xpair,digis->back(),digiadcs->back(),mcdigis->back());
           }
@@ -1182,6 +1236,7 @@ namespace mu2e {
         _adc.push_back(*iadc);
       }
       _pmp = digi.PMP();
+      _provenance = mcdigi.provenance();
       // mc truth information
       _dmcpdg = _dmcproc = _dmcgen = 0;
       _dmcmom = -1.0;

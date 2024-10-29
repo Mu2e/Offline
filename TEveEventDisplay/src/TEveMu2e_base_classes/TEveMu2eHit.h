@@ -10,8 +10,6 @@
 #include <TMath.h>
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 //Mu2e General:
-#include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/TEveEventDisplay/src/dict_classes/GeomUtils.h"
 #include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
 #include "Offline/TrackerGeom/inc/Tracker.hh"

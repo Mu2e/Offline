@@ -49,16 +49,58 @@ namespace mu2e {
 
 #ifndef __ROOTCLING__
 
-  ComboHitCollection::CHCPTR ComboHitCollection::parent(StrawIdMask::Level level) const {
+  ComboHitCollection::CHCPTR ComboHitCollection::parent(StrawIdMask::Level level, bool stopatfirst) const {
     auto retval = _parent;
-    if(_parent.refCore().isNull() || level == this->level()){
+    if(_parent.refCore().isNull()){
       throw cet::exception("RECO")<<"mu2e::ComboHitCollection: no such parent" << std::endl;
     } else {
       // recursive call
-      if(retval->level() != level) retval = _parent->parent(level);
+      if (retval->level() != level || (!stopatfirst && retval->parent().refCore().isNonnull() && retval->parent()->level() == level)){
+        retval = _parent->parent(level);
+      }
     }
     return retval;
   }
+
+  void ComboHitCollection::setAsSubset(art::Handle<ComboHitCollection> const& ohandle){
+    if (ohandle.isValid()){
+      auto optr = CHCPTR(ohandle);
+      setAsSubset(optr);
+    } else {
+      throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid handle" << std::endl;
+    }
+  }
+  void ComboHitCollection::setAsSubset(art::ValidHandle<ComboHitCollection> const& ohandle){
+    auto optr = CHCPTR(ohandle);
+    setAsSubset(optr);
+  }
+  void ComboHitCollection::setAsSubset(CHCPTR const& other){
+    _parent = other->parent();
+    if (_parent.refCore().isNull()){
+      _parent = other;
+    }
+  }
+
+  void ComboHitCollection::setAsSubset(art::ValidHandle<ComboHitCollection> const& ohandle, StrawIdMask::Level level, bool stopatfirst){
+    if (ohandle.isValid()){
+      auto optr = CHCPTR(ohandle);
+      setAsSubset(optr,level,stopatfirst);
+    } else {
+      throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid handle" << std::endl;
+    }
+  }
+  void ComboHitCollection::setAsSubset(art::Handle<ComboHitCollection> const& ohandle, StrawIdMask::Level level, bool stopatfirst){
+    auto optr = CHCPTR(ohandle);
+    setAsSubset(optr,level,stopatfirst);
+  }
+  void ComboHitCollection::setAsSubset(CHCPTR const& optr, StrawIdMask::Level level, bool stopatfirst){
+    if (optr->level() == level && (stopatfirst || optr->parent().refCore().isNull() || optr->parent()->level() != level)){
+      _parent = optr;
+    }else{
+      _parent = optr->parent(level,stopatfirst);
+    }
+  }
+
 
   void ComboHitCollection::setSameParent(ComboHitCollection const& other) { _parent = other.parent(); }
   void ComboHitCollection::setParent(CHCPTR const& parent) { _parent = parent; }
@@ -75,10 +117,10 @@ namespace mu2e {
     _parent = CHCPTR(phandle);
   }
 
-  void ComboHitCollection::fillStrawDigiIndices(size_t chindex, vector<StrawDigiIndex>& shiv) const {
+  void ComboHitCollection::fillStrawDigiIndices(size_t chindex, vector<StrawDigiIndex>& shiv, bool stopatfirst) const {
     // if this is a straw-level ComboHit, get the digi index
     ComboHit const& ch = this->at(chindex);
-    if(level() == StrawIdMask::uniquestraw) {
+    if(level() == StrawIdMask::uniquestraw && (stopatfirst || _parent.refCore().isNull() || _parent->level() != StrawIdMask::uniquestraw)){
       shiv.push_back(ch.index(0));
       // if this collection references a sub-collection, go down recursively
     } else if(_parent.refCore().isNonnull()){
@@ -90,9 +132,9 @@ namespace mu2e {
     }
   }
 
-  ComboHitCollection const* ComboHitCollection::fillStrawHitIndices( size_t chindex, SHIV& shiv, StrawIdMask::Level clevel) const {
+  ComboHitCollection const* ComboHitCollection::fillStrawHitIndices( size_t chindex, SHIV& shiv, StrawIdMask::Level clevel, bool stopatfirst) const {
     ComboHitCollection const* retval = this;
-    if(level() == clevel){
+    if(level() == clevel && (stopatfirst || _parent.refCore().isNull() || _parent->level() != clevel)){
       shiv.push_back(chindex);
       // if this collection references other collections, go down recursively
     } else if(_parent.refCore().isNonnull()){
@@ -117,9 +159,9 @@ namespace mu2e {
     return retval;
   }
 
-  ComboHitCollection const* ComboHitCollection::fillStrawHitIndices(SHIV const& inshiv, SHIV& outshiv, StrawIdMask::Level clevel) const {
+  ComboHitCollection const* ComboHitCollection::fillStrawHitIndices(SHIV const& inshiv, SHIV& outshiv, StrawIdMask::Level clevel, bool stopatfirst) const {
     ComboHitCollection const* retval = this;
-    if(level() == clevel){
+    if(level() == clevel && (stopatfirst || _parent.refCore().isNull() || _parent->level() != clevel)){
       outshiv = inshiv;
     } else if(_parent.refCore().isNonnull()){
       if(_parent->level() == clevel){
@@ -149,10 +191,10 @@ namespace mu2e {
     return retval;
   }
 
-  ComboHitCollection const* ComboHitCollection::fillStrawHitIndices( SHIV& shiv, StrawIdMask::Level clevel) const {
+  ComboHitCollection const* ComboHitCollection::fillStrawHitIndices( SHIV& shiv, StrawIdMask::Level clevel, bool stopatfirst) const {
     shiv.clear();
     const ComboHitCollection* retval = this;
-    if(level() == clevel){
+    if(level() == clevel && (stopatfirst || _parent.refCore().isNull() || _parent->level() != clevel)){
       shiv.reserve(this->size());
       for(size_t iind = 0;iind < this->size(); ++iind)shiv.push_back(iind);
       // if this collection references other collections, go down recursively
@@ -220,6 +262,20 @@ namespace mu2e {
       retval += ch.nStrawHits();
     return retval;
   }
+
+  float ComboHitCollection::eDepAvg() const {
+    float eDepSum(0.0);
+    size_t nStrawHits(0);
+    for (auto const& ch : *this) {
+      eDepSum += ch.energyDep()*ch.nStrawHits();
+      nStrawHits += ch.nStrawHits();
+    }
+
+    return eDepSum/(nStrawHits + 1e-10);
+  }
+
+
+
 
   void ComboHit::print( std::ostream& ost, bool doEndl) const {
     ost << " ComboHit:"
