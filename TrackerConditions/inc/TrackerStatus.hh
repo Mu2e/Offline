@@ -47,6 +47,7 @@ namespace mu2e {
       StrawStatus panelStatus(StrawId const& sid) const;
       StrawStatus planeStatus(StrawId const& sid) const;
     private:
+      std::array<StrawStatus,StrawId::_nustraws> _fullstatus;
       estat_t _status;
   };
 

@@ -14,12 +14,16 @@
 // Mu2e includes.
 #include "Offline/Mu2eG4/inc/constructVirtualDetectors.hh"
 
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/checkForStale.hh"
+
 #include "Offline/BeamlineGeom/inc/Beamline.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 #include "Offline/GeomPrimitives/inc/Tube.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
@@ -67,6 +71,7 @@ namespace mu2e {
     const bool placePV              = geomOptions->placePV("vd");
     int static const verbosityLevel = _config.getInt("vd.verbosityLevel",0);
 
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()<=0 ) return;
@@ -1125,10 +1130,59 @@ namespace mu2e {
         }
     }
 
-    // An XY plane between the PS and anything ExtMon
+    // A plane in front of the beam dump and ExtMon collimator entrance
     vdId = VirtualDetectorId::ExtMonCommonPlane;
     if( vdg->exist(vdId) ) {
-      // Not currently supported
+
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+      }
+
+      checkForStale( "vd.ExtMonCommonPlane.z", _config);
+
+      const double dz = _config.getDouble("vd.ExtMonCommonPlane.beamDumpFaceDistance");
+      const double dxmin = _config.getDouble("vd.ExtMonCommonPlane.dxmin");
+      const double dxmax = _config.getDouble("vd.ExtMonCommonPlane.dxmax");
+      const double dymin = _config.getDouble("vd.ExtMonCommonPlane.dymin");
+      const double dymax = _config.getDouble("vd.ExtMonCommonPlane.dymax");
+
+      VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
+
+      const double halfThick = vdg->getHalfLength();
+
+      GeomHandle<ProtonBeamDump> dump;
+      CLHEP::Hep3Vector vdCenterInMu2e =
+        dump->mouthCenterInMu2e()
+        + dump->coreRotationInMu2e()
+        * CLHEP::Hep3Vector((dxmax+dxmin)/2,
+                            (dymax+dymin)/2,
+                            dump->mouthHalfSize()[2]+dz+halfThick
+                            );
+
+      CLHEP::Hep3Vector vdCenterInParent = vdCenterInMu2e - parent.centerInMu2e();
+
+
+      std::vector<double> hlen(3);
+      hlen[0] = (dxmax - dxmin)/2;
+      hlen[1] = (dymax - dymin)/2;
+      hlen[2] = halfThick;
+
+      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+                                  hlen,
+                                  upstreamVacuumMaterial,
+                                  reg.add(dump->coreRotationInMu2e().inverse()),
+                                  vdCenterInParent,
+                                  parent,
+                                  vdId,
+                                  vdIsVisible,
+                                  G4Color::Red(),
+                                  vdIsSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  false
+                                  );
+
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
     }
 
     // placing virtual detector at the dump core face
@@ -1516,8 +1570,7 @@ namespace mu2e {
     }
 
     vdId = VirtualDetectorId::STM_SpotSizeCollUpStr;
-    //if ( vdg->exist(vdId) ) {
-    if(0){
+    if ( vdg->exist(vdId) ) {
       //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
       const VolumeInfo& parent = _helper->locateVolInfo("stmDownstreamEnvelope");
       const double vdRIn  = 0.0;
@@ -1550,8 +1603,7 @@ namespace mu2e {
     }
 
     vdId = VirtualDetectorId::STM_CollDnStr;
-    //if ( vdg->exist(vdId) ) {
-    if(0){
+    if ( vdg->exist(vdId) ) {
       //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
       const VolumeInfo& parent = _helper->locateVolInfo("stmDownstreamEnvelope");
       const double vdRIn  = 0.0;
@@ -1585,8 +1637,7 @@ namespace mu2e {
 
 
     vdId = VirtualDetectorId::STM_Det1UpStr;
-    //if ( vdg->exist(vdId) ) {
-    if(0){
+    if ( vdg->exist(vdId) ) {
       //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
       const VolumeInfo& parent = _helper->locateVolInfo("stmDownstreamEnvelope");
       const double vdRIn  = 0.0;
@@ -1620,8 +1671,7 @@ namespace mu2e {
 
 
     vdId = VirtualDetectorId::STM_Det2UpStr;
-    //if ( vdg->exist(vdId) ) {
-    if(0){
+    if ( vdg->exist(vdId) ) {
       //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
       const VolumeInfo& parent = _helper->locateVolInfo("stmDownstreamEnvelope");
       const double vdRIn  = 0.0;

@@ -64,6 +64,7 @@ mainlib = helper.make_mainlib ( [
         'CLHEP',
         rootlibs,
         'gsl',
+        'G4materials',
         ], [],['-I' + cryinc, '-L' + crylib]
         )
 
@@ -112,7 +113,9 @@ helper.make_plugins( [ mainlib,
                        'gsl',
                        'CRY',
                      ],
-                    [], ['-I' + cryinc], ['-L' + crylib])
+                    [],
+                    ['-I' + cryinc],
+                    ['-L' + crylib])
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

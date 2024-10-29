@@ -27,11 +27,13 @@ int mu2e::DbTool::run() {
   if (_action == "print-list") return printList();
   if (_action == "print-set") return printSet();
   if (_action == "print-run") return printRun();
+  if (_action == "print-adhoc") return printAdhoc();
 
   int iid, gid, eid;
   if (_action == "commit-calibration") return commitCalibration();
   if (_action == "commit-iov") return commitIov(iid);
   if (_action == "commit-group") return commitGroup(gid);
+  if (_action == "commit-adhoc") return commitAdhoc();
   if (_action == "commit-extension") return commitExtension(eid);
   if (_action == "commit-table") return commitTable();
   if (_action == "commit-list") return commitList();
@@ -697,6 +699,62 @@ int mu2e::DbTool::printRun() {
   return 0;
 }
 
+// ****************************************  printAdhoc
+
+int mu2e::DbTool::printAdhoc() {
+  int rc = 0;
+
+  map_ss args;
+  args["name"] = "";
+  args["full"] = "";
+  if ((rc = getArgs(args))) return rc;
+  std::string name = args["name"];
+
+  if ( name.empty() ) {
+    std::cout << "ERROR - print-adhoc missing table name " << std::endl;
+    return 1;
+  }
+  bool full = ! args["full"].empty();
+
+  if (_verbose > 1)
+    std::cout << "print-adhoc: printing " << name << std::endl;
+
+  auto ptr = mu2e::DbTableFactory::newTable(name);
+
+  if(ptr->type() != DbTable::Adhoc) {
+    std::cout << "ERROR - print-adhoc table was not ad-hoc type" << std::endl;
+    return 1;
+  }
+
+  std::string csv;
+  std::string select(ptr->query());
+  if (full) {
+    select = select + ",create_user,create_time";
+  }
+  std::string table(ptr->dbname());
+  DbReader::StringVec where;
+  std::string order("create_time");
+
+  rc = _reader.query(csv, select, table, where, order);
+  if (rc !=0) {
+    std::cout << "ERROR - print-adhoc query failed " << std::endl;
+    return 1;
+  }
+
+  _result = _result + "TABLE " + name + "\n";
+  if (_pretty) {
+    std::string title = "# " + select;
+    prettyTable(title, csv);
+  } else {
+    _result = _result + "# " + select + "\n";
+    _result = _result + csv;
+  }
+
+  return 0;
+}
+
+
+
 // ****************************************  printCIDLine
 int mu2e::DbTool::printCIDLine(int cid, int indent) {
   auto const& cids = _valcache.valCalibrations();
@@ -1284,6 +1342,143 @@ int mu2e::DbTool::commitGroup(int& gid, std::vector<int> iids) {
 
   return rc;
 }
+
+
+// ****************************************  commitAdhoc
+
+int mu2e::DbTool::commitAdhoc() {
+
+  int rc = 0;
+
+  map_ss args;
+  args["file"] = "";
+  if ((rc = getArgs(args))) return rc;
+
+  if (args["file"].empty()) {
+    std::cout << "commit-adhoc: --file FILE is required " << std::endl;
+    return 1;
+  }
+
+  DbTableCollection coll = DbUtil::readFile(args["file"]);
+  if (_verbose > 0)
+    std::cout << "commit-adhoc: read " << coll.size() << " tables "
+              << " from " << args["file"] << std::endl;
+  if (_verbose > 2) {
+    for (auto lt : coll) {
+      std::cout << "commit-adhoc: read contents for table "
+                << lt.table().name() << std::endl;
+      if (_verbose > 5) std::cout << lt.table().csv();
+    }
+  }
+
+  if (coll.size() <= 0) {
+    std::cout << "commit-adhoc: no table found in file " << args["file"]
+              << std::endl;
+    return 2;
+  }
+
+  for (auto lt : coll) {
+    auto ptr = lt.ptr();
+    rc = commitAdhocTable(ptr,_admin);
+  } // end loop over tables in file
+
+  return rc;
+
+}
+
+// ****************************************  commitAdhocTable
+
+int mu2e::DbTool::commitAdhocTable(DbTable::cptr_t const& ptr, bool admin) {
+
+  int rc;
+
+  if(ptr->type() != DbTable::Adhoc) {
+    std::cout << "ERROR - print-adhoc table was not ad-hoc type" << std::endl;
+    return 1;
+  }
+
+  rc = _sql.connect();
+  if (rc) {
+    std::cout << "commit-adhoc: SQL failed to connect " << std::endl;
+    return 3;
+  }
+
+  std::string command, result;
+  command = "BEGIN";
+  rc = _sql.execute(command, result);
+  if (rc != 0) return rc;
+
+  command = "SET ROLE val_role;";
+  rc = _sql.execute(command, result);
+  if (rc != 0) return rc;
+
+  // devine the schema name from the first dot field of the dbname
+  std::string dbname = ptr->dbname();
+  size_t dpos = dbname.find(".");
+  if (dpos == std::string::npos) {
+    std::cout << "DbTool::commitAdhocTable could not decode schema from "
+              << dbname << std::endl;
+    return 1;
+  }
+  std::string schema = dbname.substr(0, dpos);
+
+  // inserting into a detector schema is done by the detector role
+  // or overridden by admin
+  if (admin) {
+    command = "SET ROLE admin_role;";
+  } else {
+    // the tst schema is written by val role, just to remove one more role
+    // with a duplicate membership
+    if (schema == "tst") {
+      command = "SET ROLE val_role;";
+    } else {
+      command = "SET ROLE " + schema + "_role;";
+    }
+  }
+  rc = _sql.execute(command, result);
+  if (rc != 0) return rc;
+
+  // insert table values
+  std::string csv = ptr->csv();
+  std::vector<std::string> lines = DbUtil::splitCsvLines(csv);
+  for (auto line : lines) {
+    std::string cline = DbUtil::sqlLine(line);
+    command = "INSERT INTO " + ptr->dbname() + "( " + ptr->query() +
+      ",create_time,create_user) VALUES (" + cline +
+      ",CURRENT_TIMESTAMP,SESSION_USER);";
+    rc = _sql.execute(command, result);
+    if (_verbose > 9) {
+      std::cout << command << std::endl;
+      std::cout << result << std::endl;
+    }
+    if (rc != 0) return rc;
+  }
+
+  std::stringstream ss;
+  if (_dryrun) {
+    ss << "would insert " << ptr->nrow() << " new rows to "
+       << ptr->name() << std::endl;
+  } else {
+    ss << "inserts for " << ptr->name() << " with " << ptr->nrow()
+       << " rows" << std::endl;
+  }
+  _result.append(ss.str());
+
+  if (_dryrun) {
+    command = "ROLLBACK;";
+  } else {
+    command = "COMMIT;";
+  }
+  rc = _sql.execute(command, result);
+  if (rc != 0) return rc;
+
+  rc = _sql.disconnect();
+  if (rc != 0) return rc;
+
+  return rc;
+}
+
+
 
 // ****************************************  commmitExtension
 int mu2e::DbTool::commitExtension(int& eid, std::string purpose,
@@ -2482,6 +2677,7 @@ int mu2e::DbTool::help() {
            "set\n"
            "    print-set : print all the data in a calibration set\n"
            "    print-run : print data for given run in a calibration set\n"
+           "    print-adhoc : print data for an ad-hoc table\n"
            "    \n"
            "    the following are for a calibration maintainer (subdetector "
            "roles)...\n"
@@ -2489,6 +2685,7 @@ int mu2e::DbTool::help() {
            "    commit-iov : declare new interval of validity for calibration "
            "table\n"
            "    commit-group : declare a set of IOV's to be a group \n"
+           "    commit-adhoc : commit data to an adhoc table\n"
            "    \n"
            "    the following are for a database manager (manager_role)...\n"
            "    commit-extension : add to a calibration set (purpose/version)\n"
@@ -2665,6 +2862,18 @@ int mu2e::DbTool::help() {
                  "    --table TABLENAME : only print for this table\n"
                  "    --content : print table content (requires --table)\n"
               << std::endl;
+  } else if (_action == "print-adhoc") {
+    std::cout
+        << " \n"
+           " dbTool print-adhoc [OPTIONS]\n"
+           " \n"
+           " Print ad-hoc table contents.\n"
+           " \n"
+           " [OPTIONS]\n"
+           "    --name NAME : name of the table\n"
+           "    --full : include commit user and time for each row\n"
+           " \n"
+        << std::endl;
   } else if (_action == "commit-calibration") {
     std::cout << " \n"
                  " dbTool commit-calibration --file FILE\n"
@@ -2710,6 +2919,17 @@ int mu2e::DbTool::help() {
            "int\n"
            "    --dry-run : don't do final commit\n"
         << std::endl;
+  } else if (_action == "commit-adhoc") {
+    std::cout << " \n"
+                 " dbTool commit-adhoc --file FILE\n"
+                 " \n"
+                 " Add the rows in FILE to the repective tables.  Text must\n"
+                 " be in the canonical format - see wiki docs\n"
+                 " \n"
+                 " [OPTIONS]\n"
+                 "    --file FILE : data to commit (required)\n"
+                 "    --dry-run : do everything except final database commit\n"
+              << std::endl;
   } else if (_action == "commit-table") {
     std::cout
         << " \n"

@@ -142,6 +142,7 @@
  <class name="TrkT0"/>   <!-- BTrk -->
  <class name="mu2e::HitT0"/>
  <class name="mu2e::RobustHelix"/>
+ <class name="mu2e::HelixRecoDir"/>
  <class name="mu2e::HelixSeed"/>
  <class name="mu2e::HelixSeedCollection" />
  <class name="art::Ptr<mu2e::HelixSeed>"/>
@@ -203,17 +204,15 @@
  <class name="std::vector<mu2e::KalSegment>"/>
  <class name="KinKal::IntersectFlag"/>
  <class name="KinKal::Intersection"/>
- <class name="mu2e::SurfaceIdDetail"/>
- <class name="mu2e::SurfaceIdEnum"/>
- <class name="mu2e::SurfaceId"/>
  <class name="mu2e::KalIntersection"/>
  <class name="mu2e::KalIntersectionCollection"/>
 
  <class name="mu2e::KalSeed"/>
  <class name="mu2e::KalSeedCollection"/>
- <class name="art::Ptr<mu2e::KalSeed>"/>
- <class name="std::vector<art::Ptr<mu2e::KalSeed> >"/>
+ <class name="mu2e::KalSeedPtr"/>
+ <class name="mu2e::KalSeedPtrCollection"/>
  <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
+ <class name="art::Wrapper<mu2e::KalSeedPtrCollection>"/>
 
  <class name="mu2e::KalHelixAssns" />
  <class name="art::Wrapper<mu2e::KalHelixAssns>"/>

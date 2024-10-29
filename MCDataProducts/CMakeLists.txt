@@ -4,9 +4,11 @@ cet_make_library(
       src/CaloHitMC.cc
       src/CosmicLivetime.cc
       src/CrvDigiMC.cc
+      src/DigiProvenance.cc
       src/ExtMonFNALSimHit.cc
       src/G4BeamlineInfo.cc
       src/GenId.cc
+      src/KalSeedMC.cc
       src/MARSInfo.cc
       src/MCRelationship.cc
       src/PhysicalVolumeInfo.cc
@@ -19,6 +21,7 @@ cet_make_library(
       src/StepInstanceName.cc
       src/StepPointMC.cc
       src/StrawDigiMC.cc
+      src/SurfaceStep.cc
       src/TrackSummaryTruthAssns.cc
     LIBRARIES PUBLIC
       

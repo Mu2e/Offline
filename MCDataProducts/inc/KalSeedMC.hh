@@ -10,12 +10,14 @@
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
+#include <Offline/GeneralUtilities/inc/EnumToStringSparse.hh>
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
 #include "Offline/MCDataProducts/inc/CaloClusterMC.hh"
+#include "Offline/MCDataProducts/inc/DigiProvenance.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "cetlib/map_vector.h"
 #include <Rtypes.h>
@@ -70,6 +72,8 @@ namespace mu2e {
 //
 // MC information for TrackStrawHits on this fit
   struct TrkStrawHitMC {
+    TrkStrawHitMC(): _provenance(DigiProvenance::Simulation) {}
+    bool containsSimulation() const;
     StrawHitIndex strawDigiMCIndex() const { return _sdmcindex; }
     StrawHitIndex simPartStubIndex() const { return _spindex; }
     StrawId const& strawid() const { return _strawId; }
@@ -95,15 +99,18 @@ namespace mu2e {
     float _wireTau; // threshold cluster distance to the wire along the perpedicular particle path
     float _strawDOCA; // signed doca to straw
     float _strawPhi; // cylindrical phi from -pi to pi with 0 in Z direction
+    DigiProvenance _provenance; // origin/validity of MC info object
   };
 
   struct KalSeedMC {
+    bool containsSimulation() const;
     SimPartStub const& simParticle(size_t index=0) const { return _simps.at(index); }
     std::vector<SimPartStub> const& simParticles() const { return _simps; }
     std::vector<TrkStrawHitMC> const& trkStrawHitMCs() const { return _tshmcs; }
     std::vector<VDStep> const& vdSteps() const { return _vdsteps; }
     TrkStrawHitMC const& trkStrawHitMC(size_t index) const { return _tshmcs.at(index); }
     SimPartStub const& simParticle(TrkStrawHitMC const& tshmc) const { return simParticle(tshmc.simPartStubIndex()); }
+    bool ContainsSimulation() const;
     // data products
     std::vector<SimPartStub> _simps; // associated sim particles, and their relationship
     std::vector<TrkStrawHitMC> _tshmcs;  // MC info for each TrkStrawHitSeed

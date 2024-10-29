@@ -1,7 +1,7 @@
 #ifndef MCDataProducts_StrawDigiMC_hh
 #define MCDataProducts_StrawDigiMC_hh
 //
-//  Summary of MC information used to create a StrawDigi.  Everything is referenced by the thresold digitization end
+//  Summary of MC information used to create a StrawDigi.  Everything is referenced by the threshold digitization end
 //
 // Original author David Brown, LBNL
 //
@@ -9,6 +9,7 @@
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
+#include "Offline/MCDataProducts/inc/DigiProvenance.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 // CLHEP includes
@@ -20,14 +21,13 @@
 #include <iostream>
 #include <vector>
 #include <array>
-
-// Mu2e includes
+#include <string>
 
 namespace mu2e {
-
   class StrawDigiMC{
 
   public:
+
     typedef art::Ptr<StrawGasStep> SGSP;
     typedef std::array<SGSP,StrawEnd::nends> SGSPA;
     typedef std::array<XYZVectorF,StrawEnd::nends> PA;
@@ -35,15 +35,21 @@ namespace mu2e {
 
     StrawDigiMC();
     // construct from hitlets
-    StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs);
+    StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, DigiProvenance::enum_type=DigiProvenance::Simulation);
 
     // use compuater copy construcors
     StrawDigiMC(const StrawDigiMC& rhs, SGSPA sgsp ); // update the Ptrs
+    StrawDigiMC(const StrawDigiMC& rhs, DigiProvenance::enum_type provenance ); // update validity
+
     // Accessors
     StrawId strawId() const { return _strawid; }
 
+    DigiProvenance provenance() const { return _provenance; }
+    bool containsSimulation() const;
+
     SGSP const&  strawGasStep(StrawEnd strawend) const { return _sgspa[strawend]; }
     SGSPA const&  strawGasSteps() const { return _sgspa; }
+    SGSPA&        strawGasSteps()       { return _sgspa; }
     StrawEnd earlyEnd() const { return (_wtime[StrawEnd::cal] < _wtime[StrawEnd::hv]) ?  StrawEnd::cal : StrawEnd::hv; }
     SGSP const&  earlyStrawGasStep() const { return strawGasStep(earlyEnd()); }
     double energySum() const;// sum of all MC true energy deposited
@@ -68,6 +74,7 @@ namespace mu2e {
     FA _ctime; // times of the trigger clusters
     FA _wtime; // times at the wire ends of the signals which fired the TDC.
     SGSPA _sgspa; // StrawGasStep that triggered each end
+    DigiProvenance _provenance; // level of association with any MC truth info
   };
 
   inline std::ostream& operator<<( std::ostream& ost,

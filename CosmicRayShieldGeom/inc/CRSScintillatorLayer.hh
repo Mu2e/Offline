@@ -34,7 +34,7 @@ namespace mu2e
 
     CRSScintillatorLayerId const & id() const { return _id;}
 
-    int nBars() const { return _bars.size(); }
+    int nBars() const { return int(_bars.size()); }
 
     CRSScintillatorBar const & getBar( int n ) const
     {
@@ -48,7 +48,8 @@ namespace mu2e
 
     const std::vector<std::shared_ptr<CRSScintillatorBar> >& getBars() const { return _bars; }
 
-    const CLHEP::Hep3Vector &getPosition() const {return _position;}
+    const CLHEP::Hep3Vector &getPosition() const
+    {return _position;}
 
     const std::vector<double> &getHalfLengths() const {return _halfLengths;}
     double getHalfThickness() const { return _halfLengths[_localToWorld[0]];}

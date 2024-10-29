@@ -4,12 +4,12 @@
 //
 // construct a CalEnergyCalib conditions entity
 // from fcl or database
-// FIXME - currently a place holder
 // author: S. Middleton 2022
 //
 #include "Offline/CaloConditions/inc/CalCalib.hh"
 #include "Offline/CaloConfig/inc/CalCalibConfig.hh"
 #include "Offline/DbTables/inc/CalEnergyCalib.hh"
+#include "Offline/DbTables/inc/CalTimeCalib.hh"
 
 namespace mu2e {
 
@@ -17,9 +17,10 @@ namespace mu2e {
     typedef std::shared_ptr<CalCalib> ptr_t;
 
     public:
-      CalCalibMaker(CalCalibConfig const& config):_config(config) {};
-      ptr_t fromFcl();
-      ptr_t fromDb(CalEnergyCalib::cptr_t ecalib0);//TODO CalTimeCalib::cptr_t tcalib0
+    CalCalibMaker(CalCalibConfig const& config):_config(config) {};
+    ptr_t fromFcl();
+    ptr_t fromDb(const CalEnergyCalib& ecalib,
+                 const CalTimeCalib& tcalib);
 
     private:
 

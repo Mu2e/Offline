@@ -11,7 +11,8 @@
 #include "Offline/RecoDataProducts/inc/HelixVal.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/RecoDataProducts/inc/HitT0.hh"
-#include "KinKal/General/ParticleState.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
+#include "KinKal/General/ParticleStateEstimate.hh"
 #include "KinKal/Trajectory/KinematicLine.hh"
 #include "KinKal/Trajectory/CentralHelix.hh"
 #include "KinKal/Trajectory/LoopHelix.hh"
@@ -43,21 +44,19 @@ namespace mu2e {
     Float_t tmin() const { return _tmin; }
     Float_t tmax() const { return _tmax; }
     KinKal::TimeRange timeRange() const;
-    auto tref() const { return _pstate.time(); }
+    auto tref() const { return _pstate.time(); }// note this is NOT t0; it is the reference time at which the trajectory was sampled
+    double t0Val(TrkFitFlag const& flag = TrkFitFlag(TrkFitFlag::KKLoopHelix)) const;// this will give the local segment's t0, interpreted for the given trajectory type,  which is not necessarily the same as the track t0
     XYZVectorF const& bnom() const { return _bnom; }
     KinKal::VEC3 KKbnom() const { return KinKal::VEC3(_bnom); }
-// convenience function
-    double t0Val() const;
-
     Float_t _tmin, _tmax; // time range
 // main payload is the particle state estimate.  this includes all the kinematic information to
 // interpret as anything else.  BField is needed to interpret geometrically
     XYZVectorF _bnom; // Bfield associated with this segment, needed to reconstitute helix
     KinKal::ParticleStateEstimate _pstate; // particle state at this sample
- // the following are deprecated legacy functions specific to the BTrk fit and will go away once we migrate to KinKal
+ // the following are deprecated legacy functions specific to the BTrk, these should be removed FIXME
+    HitT0 t0() const;
     HelixVal helix() const;
     HelixCov covar() const;
-    HitT0 t0() const;
     void mom(double flt, XYZVectorF& momvec) const;
     double fmin() const { return timeToFlt(_tmin); } // local 3D flight range
     double fmax() const { return timeToFlt(_tmax); }

@@ -1,3 +1,4 @@
+	 0	         geantino		     same			     geantino       none          0            0            0
         -1           anti_d_quark                    same                              anti_d       dbar   0.333333          330            0
          1                d_quark                    same                                   d       none  -0.333333          330            0
         -2           anti_u_quark                    same                              anti_u       ubar  -0.666667          330            0
@@ -73,8 +74,8 @@
        113                   rho0                    same                                rho0       none          0       775.49   4.4057e-24
        115              a2(1320)0                    same                                a_20       none          0       1318.3  6.15151e-24
        130                 kaon0L                    same                                K_L0       none          0      497.614  5.08272e-08
-      -211                    pi-                    same                            pi_minus       none         -1    139.57018  2.58609e-08
-       211                    pi+                    same                             pi_plus       none          1    139.57018  2.58609e-08
+      -211                    pi-                    same                            pi_minus       none         -1    139.57018   2.6033e-08
+       211                    pi+                    same                             pi_plus       none          1    139.57018   2.6033e-08
       -213                   rho-                    same                           rho_minus       none         -1       775.49   4.4057e-24
        213                   rho+                    same                            rho_plus       none          1       775.49   4.4057e-24
       -215              a2(1320)-                    same                           a_2_minus       none         -1       1318.3  6.15151e-24

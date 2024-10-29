@@ -73,7 +73,7 @@ BEGIN_PROLOG
     {
       module_type                  : CrvWaveformsGenerator
       crvSiPMChargesModuleLabel    : "CrvSiPMCharges"
-      singlePEWaveformFileName     : "Offline/CRVResponse/fcl/singlePEWaveform_v3.txt"
+      singlePEWaveformFileName     : "Offline/CRVResponse/data/singlePEWaveform_v3.txt"
       singlePEWaveformPrecision    : 0.5    //0.5 ns
       singlePEWaveformStretchFactor: 1.047  //1.047 for singlePEWaveform_v3.txt //from comparison with testbeam data
       singlePEWaveformMaxTime      : 100    //100 ns

@@ -3,13 +3,14 @@
 //
 // Original Author: Ralf Ehrlich
 
+#include "Offline/CRVConditions/inc/CRVStatus.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/CRVReco/inc/CrvHelper.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "Offline/DataProducts/inc/CRVId.hh"
-
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 
@@ -66,6 +67,7 @@ namespace mu2e
       fhicl::Atom<int> bigClusterThreshold{Name("bigClusterThreshold"), Comment("no coincidence check for clusters with a number of hits above this threshold")};
       fhicl::Atom<double> fiberSignalSpeed{Name("fiberSignalSpeed"), Comment("effective speed of signals inside the CRV fibers in mm/ns")};
       fhicl::Atom<double> timeOffset{Name("timeOffset"), Comment("additional time delay caused by electronics response and physical processes in ns")};
+      fhicl::Sequence<int> compensateChannelStatus{Name("compensateChannelStatus"), Comment("compensate missinge pulses for channels with the following channel statuses")};
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -94,6 +96,9 @@ namespace mu2e
     size_t      _bigClusterThreshold;
     double      _fiberSignalSpeed;
     double      _timeOffset;
+
+    mu2e::ProditionsHandle<mu2e::CRVStatus> _sipmStatus;
+    std::vector<int>                        _compensateChannelStatus;
 
     int         _totalEvents;
     int         _totalEventsCoincidence;
@@ -183,6 +188,7 @@ namespace mu2e
     _bigClusterThreshold(conf().bigClusterThreshold()),
     _fiberSignalSpeed(conf().fiberSignalSpeed()),
     _timeOffset(conf().timeOffset()),
+    _compensateChannelStatus(conf().compensateChannelStatus()),
     _totalEvents(0),
     _totalEventsCoincidence(0)
   {
@@ -273,6 +279,8 @@ namespace mu2e
 
     if(crvRecoPulseCollection.product()==NULL) return;
 
+    auto const& sipmStatus = _sipmStatus.get(event.id());
+
     //loop through all reco pulses
     //distribute them into the crv sector types
     std::map<int, std::vector<CrvHit> > sectorTypeMap;
@@ -302,11 +310,6 @@ namespace mu2e
       //get the reco pulses information
       int SiPM = crvRecoPulse->GetSiPMNumber();
 
-      //ignore SiPMs on counter sides which don't have SiPMs according to the geometry file
-      int counterSide=SiPM%CRVId::nSidesPerBar;
-      if(counterSide==0 && !sector.sipmsAtSide0) continue;
-      if(counterSide==1 && !sector.sipmsAtSide1) continue;
-
       double time=crvRecoPulse->GetPulseTime();
       double timePulseStart=crvRecoPulse->GetPulseStart();
       double timePulseEnd=crvRecoPulse->GetPulseEnd();
@@ -315,6 +318,17 @@ namespace mu2e
       if(_useNoFitReco) PEs=crvRecoPulse->GetPEsNoFit();
       if(_useNoFitReco) time=crvRecoPulse->GetPulseTimeNoFit();
       if(_usePulseOverlaps) PEs=crvRecoPulse->GetPEsNoFit();
+
+      //compensate for dead or ignored channels
+      size_t currentChannel = crvBarIndex.asUint()*CRVId::nChanPerBar + SiPM;
+      size_t testChannel = currentChannel + (SiPM-2<0 ? 2 : -2);  //the other channel at the same side of the counter
+      std::bitset<16> status(sipmStatus.status(testChannel));
+      bool compensate=false;
+      for(size_t iChannelStatus=0; iChannelStatus<_compensateChannelStatus.size(); ++iChannelStatus)
+      {
+        if(status.test(_compensateChannelStatus.at(iChannelStatus))) compensate=true;  //test only channel status bits that are mentioned in the fcl file.
+      }
+      if(compensate) PEs *= 2.0; //double the PE value of this channel to compensate for the dead or ignored neighbor channel
 
       //don't split counter sides for the purpose of finding clusters
       sectorTypeMap[sector.sectorType].emplace_back(crvRecoPulse, crvCounterPos,
@@ -443,7 +457,7 @@ namespace mu2e
         if(minClusterPEs>hit->_minClusterPEs) minClusterPEs=hit->_minClusterPEs;
 
         //collect hits of individual counters
-        recoTimes[hit->_counter].push_back(hit);
+        recoTimes[hit->_crvRecoPulse->GetScintillatorBarIndex().asInt()].push_back(hit);
       } //loop over hits of the cluster
 
       assert(PEs>0);
@@ -555,12 +569,12 @@ namespace mu2e
         if(sidePEs[0]>0)
         {
           avgHalfLength/=sidePEs[0];
-          avgHitTime=sideTimes[0]-avgHalfLength*_fiberSignalSpeed;
+          avgHitTime=sideTimes[0]-avgHalfLength/_fiberSignalSpeed;
         }
         else if(sidePEs[1]>0)
         {
           avgHalfLength/=sidePEs[1];
-          avgHitTime=sideTimes[1]-avgHalfLength*_fiberSignalSpeed;
+          avgHitTime=sideTimes[1]-avgHalfLength/_fiberSignalSpeed;
         }
       }
       avgHitTime-=_timeOffset;  //remove additional time due to electronics response and processes such as scintillation/WLS decay times

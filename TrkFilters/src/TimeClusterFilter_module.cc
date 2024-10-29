@@ -30,6 +30,7 @@ namespace mu2e
         fhicl::Atom<bool>               requireCaloCluster   {    Name("requireCaloCluster"),         Comment("Require caloCluster") };
         fhicl::Atom<unsigned>           minNStrawHits        {    Name("minNStrawHits"),                   Comment("minNStrawHits")};
         fhicl::Atom<int>                debugLevel           {    Name("debugLevel"),                 Comment("Debug"),0 };
+        fhicl::Atom<int>                noFilter             {    Name("noFilter"),                 Comment("Don't filter anything"),0 };
       };
 
       using Parameters = art::EDFilter::Table<Config>;
@@ -46,6 +47,7 @@ namespace mu2e
       int           _debug;
       // counters
       unsigned      _nevt, _npass;
+      int           _noFilter;
   };
 
   TimeClusterFilter::TimeClusterFilter(const Parameters& conf)
@@ -55,7 +57,8 @@ namespace mu2e
     _minnhits(conf().minNStrawHits()),
     _debug   (conf().debugLevel()),
     _nevt    (0),
-    _npass   (0)
+    _npass   (0),
+    _noFilter(conf().noFilter())
     {
       produces<TriggerInfo>();
     }
@@ -83,13 +86,18 @@ namespace mu2e
         // but filtering is by event!
         size_t index = std::distance(tccol->begin(),itc);
         triginfo->_hitClusters.push_back(art::Ptr<TimeCluster>(tcH,index));
+
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
       }
     }
     evt.put(std::move(triginfo));
-    return retval;
+    if (_noFilter != 1){
+      return retval;
+    }else {
+      return true;
+    }
   }
 
   bool TimeClusterFilter::endRun( art::Run& run ) {

@@ -250,6 +250,10 @@ namespace mu2e {
                G4Colour::Blue(),
                "dsShielding"
                );
+
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " IFB_Window_Poly   : Dimensions (rIn, rOut, halfZ) = (" << ifb_poly_params[0] << ", " << ifb_poly_params[1] << ", " << ifb_poly_params[2] << ")" << ", Location (mu2e coords [mm]) = " << ifb_poly_location << endl;
+      }
     }
 
     //absorber in the shielding block hole
@@ -273,6 +277,10 @@ namespace mu2e {
                G4Colour::Blue(),
                "dsShielding"
                );
+
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " STM_ShieldingHole_Poly   : Dimensions (rIn, rOut, halfZ) = (" << poly_params[0] << ", " << poly_params[1] << ", " << poly_params[2] << ")" << ", Location (mu2e coords [mm]) = " << poly_location << endl;
+      }
     }
 
     //===================== Transport Pipe ==========================
@@ -439,8 +447,6 @@ namespace mu2e {
     //subtract a slice so VDDSNeutronShieldExit can fit through the pipe without overlap
     CLHEP::Hep3Vector vdDSNeutronShieldExitPositionWRTpipeGasUpStr = vdDSNeutronShieldExitPositionInMu2e - (stmMagnetPositionInMu2e+pipeGasUpStrOffset);
     CLHEP::Hep3Vector vdSTM_UpStrPositionWRTpipeGasUpStr = vdSTM_UpStrPositionInMu2e - (stmMagnetPositionInMu2e+pipeGasUpStrOffset);
-    //std::cout<<"vdDSNeutronShieldExitPositionWRTtube = "<<vdDSNeutronShieldExitPositionWRTpipeGasUpStr<<std::endl;
-    //std::cout<<"vdSTM_UpStrPositionWRTtube = "<<vdSTM_UpStrPositionWRTpipeGasUpStr<<std::endl;
     G4SubtractionSolid *pipeGasUpStrTubTemp1 = new G4SubtractionSolid("pipeGasUpStrTubTemp1",aPipeGasUpStrTub,     aDiskVDDSNeutronShieldExitTub, 0, vdDSNeutronShieldExitPositionWRTpipeGasUpStr);
     G4SubtractionSolid *pipeGasUpStrTubTemp2 = new G4SubtractionSolid("pipeGasUpStrTubTemp2",pipeGasUpStrTubTemp1, aDiskVDSTM_UpStrTub, 0, vdSTM_UpStrPositionWRTpipeGasUpStr);
     VolumeInfo pipeGasUpStrTubInfo;
@@ -794,11 +800,12 @@ namespace mu2e {
                                         0.,
                                         CLHEP::twopi};
         const double FOVPlugZOffset = stmFOVCollHalfLength1 + _config.getDouble("stm.FOVcollimator.plug.offset") - FOVPlugParams[2];
+        const auto FOVPlugLocation =  G4ThreeVector(0., 0., FOVPlugZOffset) + stmFOVCollPositionInParent1;
         nestTubs("STM_FOVCollimatorPlug",
                  FOVPlugParams,
                  findMaterialOrThrow(_config.getString("stm.FOVcollimator.plug.material")),
                  0, //no rotation
-                 G4ThreeVector(0., 0., FOVPlugZOffset) + stmFOVCollPositionInParent1,
+                 FOVPlugLocation,
                  parentInfo.logical,
                  0,
                  STMisVisible,
@@ -807,15 +814,21 @@ namespace mu2e {
                  forceAuxEdgeVisible,
                  placePV,
                  doSurfaceCheck);
+
+        if ( verbosityLevel > 0) {
+          cout << __func__ << " STM_FOVCollimatorPlug   : Dimensions (rIn, rOut, halfZ) = (" << FOVPlugParams[0] << ", " << FOVPlugParams[1] << ", " << FOVPlugParams[2] << ")" << ", Location (mu2e coords [mm]) = " << FOVPlugLocation + parentInfo.centerInMu2e() << endl;
+        }
       }
     }
 
-    G4Tubs *tubFOVCollAbsorber = new G4Tubs("tubFOVCollAbsorber", 0.0, pSTMFOVCollimatorParams.hole1RadiusUpStr()-0.01, _config.getDouble("stm.FOVcollimator.absorber.halfLength"), 0.0, CLHEP::twopi );
-    VolumeInfo collimatorFOVAbsorber;
-    collimatorFOVAbsorber.name = "collimatorFOVAbsorber";
-    collimatorFOVAbsorber.solid = tubFOVCollAbsorber;
-    G4ThreeVector stmFOVCollAbsorberPositionInParent = stmFOVCollPositionInParent2 + G4ThreeVector(0.0,0.0, stmFOVCollHalfLength2-_config.getDouble("stm.FOVcollimator.absorber.halfLength"));
     if (_config.getBool("stm.FOVcollimator.absorber.build",false)){
+      G4Tubs *tubFOVCollAbsorber = new G4Tubs("tubFOVCollAbsorber", 0.0, pSTMFOVCollimatorParams.hole1RadiusUpStr()-0.01, _config.getDouble("stm.FOVcollimator.absorber.halfLength"), 0.0, CLHEP::twopi );
+      VolumeInfo collimatorFOVAbsorber;
+      collimatorFOVAbsorber.name = "collimatorFOVAbsorber";
+      collimatorFOVAbsorber.solid = tubFOVCollAbsorber;
+      G4ThreeVector stmFOVCollAbsorberPositionInParent = stmFOVCollPositionInParent2 + G4ThreeVector(0.0,0.0, stmFOVCollHalfLength2-_config.getDouble("stm.FOVcollimator.absorber.halfLength"));
+
+
              finishNesting(collimatorFOVAbsorber,
                     findMaterialOrThrow(_config.getString("stm.FOVcollimator.absorber.material")),
                     0,
@@ -828,20 +841,19 @@ namespace mu2e {
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck);
-    }
 
-    if (verbosityLevel>0){
-      std::cout<<__func__<<" STM FOV Coll (lead) z_center     = "<< stmFOVCollPositionInMu2e1.z() <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (lead) z_halflength = "<< stmFOVCollHalfLength1 <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (lead) z_min        = "<< stmFOVCollPositionInMu2e1.z()-stmFOVCollHalfLength1 <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (lead) z_max        = "<< stmFOVCollPositionInMu2e1.z()+stmFOVCollHalfLength1 <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) z_center     = "<< stmFOVCollPositionInMu2e2.z() <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) z_halflength = "<< stmFOVCollHalfLength2 <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) z_min        = "<< stmFOVCollPositionInMu2e2.z()-stmFOVCollHalfLength2 <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) z_max        = "<< stmFOVCollPositionInMu2e2.z()+stmFOVCollHalfLength2 <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) r_UpStr      = "<< pSTMFOVCollimatorParams.hole1RadiusUpStr() <<std::endl;
+             if (verbosityLevel>0){
+               std::cout<<__func__<<" STM FOV Coll (lead) z_center     = "<< stmFOVCollPositionInMu2e1.z() <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (lead) z_halflength = "<< stmFOVCollHalfLength1 <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (lead) z_min        = "<< stmFOVCollPositionInMu2e1.z()-stmFOVCollHalfLength1 <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (lead) z_max        = "<< stmFOVCollPositionInMu2e1.z()+stmFOVCollHalfLength1 <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (poly) z_center     = "<< stmFOVCollPositionInMu2e2.z() <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (poly) z_halflength = "<< stmFOVCollHalfLength2 <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (poly) z_min        = "<< stmFOVCollPositionInMu2e2.z()-stmFOVCollHalfLength2 <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (poly) z_max        = "<< stmFOVCollPositionInMu2e2.z()+stmFOVCollHalfLength2 <<std::endl;
+               std::cout<<__func__<<" STM FOV Coll (poly) r_UpStr      = "<< pSTMFOVCollimatorParams.hole1RadiusUpStr() <<std::endl;
+             }
     }
-
 
     //===================== Magnet and FOV Collimator Support Table ==========================
 
@@ -1446,7 +1458,6 @@ namespace mu2e {
 
    const G4ThreeVector  STMShieldingRef =  pSTM_SSCParams.originInMu2e() - parentCenterInMu2e - CLHEP::Hep3Vector(0, 0, Wdepth_f/2);
 
-
    const double Aperture_HPGe1 = pSTM_SSCParams.Aperture_HPGe1();
    const double Aperture_HPGe2 = pSTM_SSCParams.Aperture_HPGe2();
    const double Aperture_LaBr1 = pSTM_SSCParams.Aperture_LaBr1();
@@ -1661,7 +1672,7 @@ namespace mu2e {
                       forceAuxEdgeVisible,
                       placePV,
                       doSurfaceCheck);
-  }
+   }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //   STM Shielding House
@@ -1906,7 +1917,6 @@ namespace mu2e {
      G4Box*  BP2FwallLayer  = new G4Box("BP2FwallLayer", Front_L/2, Front_H/2, FBPdepth/2);
      G4Tubs* Spot_FBP2_HPGe = new G4Tubs("Spot_FBP2_HPGe", 0, r_HPGe1+10, FBPdepth/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
      G4Tubs* Spot_FBP2_LaBr = new G4Tubs("Spot_FBP2_LaBr", 0, r_LaBr1+10, FBPdepth/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
-
      G4SubtractionSolid* BP2Fwall_1hole = new G4SubtractionSolid("BP2Fwall_1hole",BP2FwallLayer, Spot_FBP2_HPGe, 0, Pos_hole1);
      G4SubtractionSolid* BP2Fwall = new G4SubtractionSolid("BP2Fwall", BP2Fwall_1hole, Spot_FBP2_LaBr, 0, Pos_hole2);
 
@@ -2080,12 +2090,10 @@ namespace mu2e {
      G4Tubs* HPGe_Crystal = new G4Tubs("HPGe_Crystal", 0, CrystalR_HPGe, CrystalL_HPGe/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
      G4SubtractionSolid* HPGe_Detector = new G4SubtractionSolid("HPGe_Detector", HPGe_Crystal, HPGe_Hole, 0, G4ThreeVector(0, 0, (CrystalL_HPGe-HoleL_HPGe)/2));
 
-
      VolumeInfo fHPGePV;
      fHPGePV.name = "fHPGePV";
      fHPGePV.solid = HPGe_Detector;
      G4ThreeVector stmHPGeCrystalInParent = STMShieldingRef + G4ThreeVector(-offset_Spot + offset_HPGe - (WindowD_HPGe + AirD_HPGe + Capsule_Windowthick + CrystalL_HPGe/2)*sqrt(2)/2, 0., Front_T +  Z_HPGe + (WindowD_HPGe + AirD_HPGe + Capsule_Windowthick + CrystalL_HPGe/2)*sqrt(2)/2);
-
 
      if(pHPGeDetectorParams.build()){
                       finishNesting(fHPGePV,
@@ -2101,6 +2109,7 @@ namespace mu2e {
                       placePV,
                       doSurfaceCheck);
     }
+
 
      VolumeInfo HolePV;
      HolePV.name = "HolePV";
@@ -3438,7 +3447,6 @@ namespace mu2e {
       AbsorberPV.name = "AbsorberPV";
       AbsorberPV.solid = AbsorberS;
       G4ThreeVector stmAbsorberInParent = STMShieldingRef + G4ThreeVector(-offset_Spot, 0., -Absorber_GaptoSSC - Absorber_hT);
-
       finishNesting(AbsorberPV,
       PolyMaterial,
       0,
@@ -3451,6 +3459,10 @@ namespace mu2e {
       forceAuxEdgeVisible,
       placePV,
       doSurfaceCheck);
+
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " AbsorberPV   : Dimensions (halfX, halfY, halfZ) = (" << Absorber_hW << ", " << Absorber_hH << ", " << Absorber_hT << ")" << ", Location (mu2e coords [mm]) = " << stmAbsorberInParent + parentInfo.centerInMu2e() << endl;
+      }
 
    }
 

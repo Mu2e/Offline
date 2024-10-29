@@ -30,16 +30,16 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"), 0};
-        fhicl::Atom<unsigned> deltanh{ Name("deltanh"), Comment("difference in the active StrawHit counts")};
-        fhicl::Atom<float> scaleXY{ Name("scaleXY"), Comment("scaling factor to get chi2XY/ndof distribution peak at 1")};
-        fhicl::Atom<float> scaleZPhi{ Name("scaleZPhi"), Comment("scaling factor to get chi2ZPhi/ndof distribution peak at 1")};
-        fhicl::Atom<bool> selectbest{ Name("SelectBest"), Comment("Select best overlapping helices for output"), true};
-        fhicl::Atom<bool> usecalo{ Name("UseCalo"), Comment("Use CaloCluster info in comparison"), true};
-        fhicl::Atom<unsigned> minnover{ Name("MinNHitOverlap"), Comment("Minimum number of common hits to consider helices to be 'the same'"), 10};
-        fhicl::Atom<float> minoverfrac{ Name("MinHitOverlapFraction"), Comment("Minimum fraction of common hits to consider helices to be 'the same'"), 0.5};
-        fhicl::Sequence<std::string> BadHitFlags { Name("BadHitFlags"), Comment("HelixHit flag bits to exclude from counting"),std::vector<std::string>{"Outlier"}};
-        fhicl::Sequence<std::string> HelixFinders { Name("HelixFinders"), Comment("HelixSeed producers to merge")};
+        fhicl::Atom<int>             debug        { Name("debugLevel"),            Comment("Debug Level"), 0};
+        fhicl::Atom<unsigned>        deltanh      { Name("deltanh"),               Comment("difference in the active StrawHit counts")};
+        fhicl::Atom<float>           scaleXY      { Name("scaleXY"),               Comment("scaling factor to get chi2XY/ndof distribution peak at 1")};
+        fhicl::Atom<float>           scaleZPhi    { Name("scaleZPhi"),             Comment("scaling factor to get chi2ZPhi/ndof distribution peak at 1")};
+        fhicl::Atom<bool>            selectbest   { Name("SelectBest"),            Comment("Select best overlapping helices for output"), true};
+        fhicl::Atom<bool>            usecalo      { Name("UseCalo"),               Comment("Use CaloCluster info in comparison"), true};
+        fhicl::Atom<unsigned>        minnover     { Name("MinNHitOverlap"),        Comment("Minimum number of common hits to consider helices to be 'the same'")};
+        fhicl::Atom<float>           minoverfrac  { Name("MinHitOverlapFraction"), Comment("Minimum fraction of common hits to consider helices to be 'the same'")};
+        fhicl::Sequence<std::string> BadHitFlags  { Name("BadHitFlags"),           Comment("HelixHit flag bits to exclude from counting"),std::vector<std::string>{"Outlier"}};
+        fhicl::Sequence<std::string> HelixFinders { Name("HelixFinders"),          Comment("HelixSeed producers to merge")};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit MergeHelices(const Parameters& conf);

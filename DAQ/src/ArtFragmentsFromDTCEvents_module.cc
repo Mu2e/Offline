@@ -40,24 +40,24 @@ class art::ArtFragmentsFromDTCEvents : public EDProducer {
 public:
   struct Config {
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level")};
-    fhicl::Atom<float> makeCaloFrag{fhicl::Name("makeCaloFrag"),
-                                    fhicl::Comment("Create ArtCaloFragmets")};
-    fhicl::Atom<float> makeTrkFrag{fhicl::Name("makeTrkFrag"),
+    fhicl::Atom<int> makeCaloFrag{fhicl::Name("makeCaloFrag"),
+                                   fhicl::Comment("Create ArtCaloFragmets")};
+    fhicl::Atom<int> makeTrkFrag{fhicl::Name("makeTrkFrag"),
                                    fhicl::Comment("Create ArtTrkFragmets")};
-    fhicl::Atom<float> makeCRVFrag{fhicl::Name("makeCRVFrag"),
+    fhicl::Atom<int> makeCRVFrag{fhicl::Name("makeCRVFrag"),
                                    fhicl::Comment("Create ArtCRVFragmets")};
-    fhicl::Atom<float> makeSTMFrag{fhicl::Name("makeSTMFrag"),
+    fhicl::Atom<int> makeSTMFrag{fhicl::Name("makeSTMFrag"),
                                    fhicl::Comment("Create ArtSTMFragmets")};
   };
 
   // --- C'tor/d'tor:
   explicit ArtFragmentsFromDTCEvents(const art::EDProducer::Table<Config>& config);
-  virtual ~ArtFragmentsFromDTCEvents() {}
+  ~ArtFragmentsFromDTCEvents() override {}
 
-  virtual void beginRun(art::Run&) override;
+  void beginRun(art::Run&) override;
 
   // --- Production:
-  virtual void produce(Event&);
+  void produce(Event&) override;
 
 private:
   int diagLevel_;
@@ -169,26 +169,6 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
         mu2e::CRVDataDecoder cf(subevent);
         crvFragColl->emplace_back(cf);
         ++nFrags;
-      }
-
-      //FIXME: Temporary implementation until the DTC header gets fixed.
-      //Currently, the DTC header uses the Subsystem ID for the tracker.
-      //Checking the TDAQ header of the first data block instead.
-      auto crvSEventsT = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker);
-      for(auto& subevent : crvSEventsT)
-      {
-        mu2e::CRVDataDecoder cf(subevent);
-        cf.setup_event();
-        if(cf.block_count()>0)
-        {
-          auto block = cf.dataAtBlockIndex(0);
-          if(block == nullptr) continue;
-          auto header = block->GetHeader();
-          if(header->GetSubsystemID() != DTCLib::DTC_Subsystem::DTC_Subsystem_CRV) continue;
-
-          crvFragColl->emplace_back(cf);
-          ++nFrags;
-        }
       }
     }
   }

@@ -36,9 +36,9 @@ namespace mu2e {
 
     struct cHit {
       int    hIndex;
-      double hTime;
-      double hWeight;
-      double hZpos;
+      float  hTime;
+      float  hWeight;
+      float  hZpos;
       int    nStrawHits;
       int    hIsUsed;
     };
@@ -50,13 +50,16 @@ namespace mu2e {
     struct chunkInfo {
       std::vector<int> hIndices;
       ::LsqSums2       fitter;
-      double           avgTime;
-      double           avgZpos;
+      float            avgTime;
+      float            avgZpos;
       int              nHits; // combo hits
       int              nStrawHits;
+      float            zMin;
+      float            zMax;
       int              nrgSelection; // 1 if passes energy selection (CE), 0 if not (protons)
       int              nCombines;
       int              caloIndex;
+      bool             goodCluster;
     };
 
     struct Data_t {
@@ -71,9 +74,9 @@ namespace mu2e {
       int                             _nTZClusters;
 
       // diagnostic data members used in TZ tool
-      std::vector<double> lineSlope;
-      std::vector<double> lineIntercept;
-      std::vector<double> chi2DOF;
+      std::vector<float> lineSlope;
+      std::vector<float> lineIntercept;
+      std::vector<float> chi2DOF;
 
       // clear diagnostic information used in TZ tool
       void clearDiagInfo() {
@@ -98,20 +101,22 @@ namespace mu2e {
       TimeCluster _clusterInfo;
       cPair       _indicePair;
       int         seedIndice;
-      double      seedTime;
-      double      seedWeight;
-      double      seedZpos;
+      float       seedTime;
+      float       seedWeight;
+      float       seedZpos;
+      float       zMin;
+      float       zMax;
       int         seedNRGselection;
       int         startIndex;
       int         testIndice;
-      double      testTime;
-      double      testWeight;
-      double      testZpos;
+      float       testTime;
+      float       testWeight;
+      float       testZpos;
       int         testNRGselection;
       int         nHitsInChunk;
       int         nStrawHitsInChunk;
-      double      totalTime;
-      double      totalZpos;
+      float       totalTime;
+      float       totalZpos;
       bool        moreCombines;
 
       void clear_cHits()       { for (size_t i=0; i<cHits.size(); i++) cHits[i].plnHits.clear(); }

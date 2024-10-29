@@ -39,10 +39,6 @@ namespace mu2e {
         return _cvec.at(roid).timeOffset();
       }
 
-      float ECombAlgID(std::uint16_t roid) const {
-        return _cvec.at(roid).ECombAlgID();
-      }
-
       void print( std::ostream& ) const;
 
   private:

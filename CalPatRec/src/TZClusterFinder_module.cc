@@ -44,38 +44,27 @@ namespace mu2e {
       fhicl::Atom<int>               debugLevel       {Name("debugLevel"       ), Comment("turn on/off debug"           ) };
       fhicl::Atom<int>               printFrequency   {Name("printFrequency"   ), Comment("print frequency"             ) };
       fhicl::Atom<int>               runDisplay       {Name("runDisplay"       ), Comment("will plot t vs z"            ) };
-      fhicl::Atom<int>               saveProtCand     {Name("saveProtCand"     ), Comment("save proton candidate TCs"   ) };
       fhicl::Atom<int>               useCCs           {Name("useCCs"           ), Comment("add CCs to TCs"              ) };
       fhicl::Atom<int>               recoverCCs       {Name("recoverCCs"       ), Comment("recover TCs using CCs"       ) };
       fhicl::Atom<art::InputTag>     chCollLabel      {Name("chCollLabel"      ), Comment("combo hit collection label"  ) };
       fhicl::Atom<art::InputTag>     chCollLabel2     {Name("chCollLabel2"     ), Comment("for MC tool"                 ) };
       fhicl::Atom<art::InputTag>     tcCollLabel      {Name("tcCollLabel"      ), Comment("time cluster coll label"     ) };
-      // fhicl::Atom<art::InputTag>     shfCollLabel     {Name("shfCollLabel"     ), Comment("straw hit flag coll label"   ) };
       fhicl::Atom<art::InputTag>     ccCollLabel      {Name("ccCollLabel"      ), Comment("Calo Cluster coll label"     ) };
       fhicl::Sequence<std::string>   hitBkgBits       {Name("hitBkgBits"       ), Comment("background bits"             ) };
       fhicl::Atom<int>               radSelect        {Name("radSelect"        ), Comment("whether or not to radial cut") };
       fhicl::Atom<int>               chunkSep         {Name("chunkSep"         ), Comment("max # of planes for chunk"   ) };
-      fhicl::Atom<double>            chunkWindow      {Name("chunkWindow"      ), Comment("time window in ns"           ) };
+      fhicl::Atom<float>             chunkWindow      {Name("chunkWindow"      ), Comment("time window in ns"           ) };
       fhicl::Atom<int>               chunkThresh      {Name("chunkThresh"      ), Comment("number of combo hits"        ) };
-      fhicl::Atom<double>            combineWindow    {Name("combineWindow"    ), Comment("time window in ns"           ) };
-      fhicl::Atom<double>            maxCombineSep    {Name("maxCombineSep"    ), Comment("z range in mm"               ) };
+      fhicl::Atom<float>             combineWindow    {Name("combineWindow"    ), Comment("time window in ns"           ) };
+      fhicl::Atom<float>             maxCombineSep    {Name("maxCombineSep"    ), Comment("z range in mm"               ) };
       fhicl::Atom<int>               chunkFitThresh   {Name("chunkFitThresh"   ), Comment("number of combo hits"        ) };
-      fhicl::Atom<double>            recoverWindow    {Name("recoverWindow"    ), Comment("time window in ns"           ) };
+      fhicl::Atom<float>             recoverWindow    {Name("recoverWindow"    ), Comment("time window in ns"           ) };
       fhicl::Atom<int>               clusterThresh    {Name("clusterThresh"    ), Comment("number of straw hits"        ) };
       fhicl::Atom<int>               minCaloSize      {Name("minCaloSize"      ), Comment("number of crystals"          ) };
-      fhicl::Atom<double>            minCaloEnergy    {Name("minCaloEnergy"    ), Comment("in MeV"                      ) };
-      fhicl::Atom<double>            caloDtMax        {Name("caloDtMax"        ), Comment("search time window (ns)"     ) };
-      fhicl::Atom<double>            caloTimeOffset   {Name("caloTimeOffset"   ), Comment("in ns"                       ) };
-      fhicl::Atom<int>               doComptonClean   {Name("doComptonClean"   ), Comment("whether or not to do clean"  ) };
-      fhicl::Atom<double>            maxIntersectSig  {Name("maxIntersectSig"  ), Comment("for compton clean"           ) };
-      fhicl::Atom<double>            maxApproachSigma {Name("maxApproachSigma" ), Comment("for compton clean"           ) };
-      fhicl::Atom<double>            maxAppSigmaTrans {Name("maxAppSigmaTrans" ), Comment("for compton clean"           ) };
-      fhicl::Atom<int>               comptonThresh    {Name("comptonThresh"    ), Comment("number of combo hits"        ) };
-      fhicl::Atom<int>               doIsoClean       {Name("doIsoClean"       ), Comment("whether or not to do clean"  ) };
-      fhicl::Atom<double>            isoRad           {Name("isoRad"           ), Comment("radial search distance (mm)" ) };
-      fhicl::Atom<int>               doPhiClean       {Name("doPhiClean"       ), Comment("whether or not to do clean"  ) };
-      fhicl::Atom<double>            phiCleanPhi      {Name("phiCleanPhi"      ), Comment("in degrees"                  ) };
-      fhicl::Atom<int>               phiCleanThresh   {Name("phiCleanThresh"   ), Comment("number of combo hits"        ) };
+      fhicl::Atom<float>             minCaloEnergy    {Name("minCaloEnergy"    ), Comment("in MeV"                      ) };
+      fhicl::Atom<float>             caloDtMax        {Name("caloDtMax"        ), Comment("search time window (ns)"     ) };
+      fhicl::Atom<float>             caloTimeOffset   {Name("caloTimeOffset"   ), Comment("in ns"                       ) };
+      fhicl::Atom<int>               doRefine         {Name("doRefine"         ), Comment("filter out bad TCs at end"   ) };
 
       fhicl::Table<TZClusterFinderTypes::Config> diagPlugin{Name("diagPlugin"      ), Comment("Diag plugin") };
     };
@@ -90,7 +79,6 @@ namespace mu2e {
     int              _debugLevel;
     int              _printfreq;
     int              _runDisplay;
-    int              _saveProtCand;
     int              _useCaloClusters;
     int              _recoverCaloClusters;
 
@@ -100,7 +88,6 @@ namespace mu2e {
     art::InputTag   _chLabel ;
     art::InputTag   _chLabel2;
     art::InputTag   _tcLabel ;
-    //art::InputTag   _shfLabel;
     art::InputTag   _ccLabel;
     StrawHitFlag    _hbkg;
     int             _radSelect;
@@ -109,27 +96,18 @@ namespace mu2e {
     // cluster search parameters
     //-----------------------------------------------------------------------------
     int      _chunkSep; // number of planes we allow chunks to be combined in
-    double   _chunkWindow; // time window we allow hits to live within to be chunked together
+    float    _chunkWindow; // time window we allow hits to live within to be chunked together
     int      _chunkThresh; // how many hits need to be in a chunk to be saved
-    double   _combineWindow; // time window in which chunks combining may be considered
-    double   _maxCombineSep; // max z separation to consider combining chunks
+    float    _combineWindow; // time window in which chunks combining may be considered
+    float    _maxCombineSep; // max z separation to consider combining chunks
     int      _chunkFitThresh; // how many hits chunk must have to do fit to before recovering hits
-    double   _recoverWindow; // time hit must be within chunk fit to be added to chunk
+    float    _recoverWindow; // time hit must be within chunk fit to be added to chunk
     int      _clusterThresh; // number of combo hits needed to save cluster found
     int      _minCaloSize; // number of crystals for calo cluster to be considered
-    double   _minCaloEnergy; // minimum energy for calo cluster to be considered
-    double   _caloDtMax; // max time from time cluster for calo cluster to be associated with time cluster
-    double   _caloTimeOffset; // time offset for calo clusters
-    int      _doComptonClean; // whether or not to clean up cluster with compton search
-    double   _maxIntersectSigma; // max allowable distance from hit centers to intersection point for seed pair in compton clean
-    double   _maxApproachSigma; // max allowable distance from hit center to closest approach to seed intersection in compton clean
-    double   _maxApproachSigmaTrans; // like _maxApproachSigma but transverse direction
-    int      _comptonThresh; // how many hits need to be consistent with a compton to clean up cluster
-    int      _doIsoClean; // whether or not to clean up cluster by removing hits that are too isolated
-    double   _isoRad; // size of circle around test hit that must have no other hits in it for test hit to be considered isolated
-    int      _doPhiClean; // whether or not to do phi clean up to chunks
-    double   _phiCleanPhi; // phi value to use during phi clean up
-    int      _phiCleanThresh; // number of hits below which hit is considered too isolated in phi
+    float    _minCaloEnergy; // minimum energy for calo cluster to be considered
+    float    _caloDtMax; // max time from time cluster for calo cluster to be associated with time cluster
+    float    _caloTimeOffset; // time offset for calo clusters
+    int      _doRefine; // if set to 1 then some pattern recogntion is used to filter out bad TC candidates
 
     //-----------------------------------------------------------------------------
     // diagnostics
@@ -169,11 +147,10 @@ namespace mu2e {
     void chunkHits              ();
     void combineChunks          ();
     void recoverHits            ();
+    void combineLines           ();
     void countProtons           (IntensityInfoTimeCluster& outIITC);
-    void cleanCompton           ();
-    void isoClean               ();
-    void phiClean               ();
     void checkCaloClusters      ();
+    void refineChunks           ();
     void findClusters           (TimeClusterCollection& OutSeeds);
   };
 
@@ -186,13 +163,11 @@ namespace mu2e {
     _debugLevel             (config().debugLevel()                              ),
     _printfreq              (config().printFrequency()                          ),
     _runDisplay             (config().runDisplay()                              ),
-    _saveProtCand           (config().saveProtCand()                            ),
     _useCaloClusters        (config().useCCs()                                  ),
     _recoverCaloClusters    (config().recoverCCs()                              ),
     _chLabel                (config().chCollLabel()                             ),
     _chLabel2               (config().chCollLabel2()                            ),
     _tcLabel                (config().tcCollLabel()                             ),
-    // _shfLabel               (config().shfCollLabel()                            ),
     _ccLabel                (config().ccCollLabel()                             ),
     _hbkg                   (config().hitBkgBits()                              ),
     _radSelect              (config().radSelect()                               ),
@@ -208,16 +183,7 @@ namespace mu2e {
     _minCaloEnergy          (config().minCaloEnergy()                           ),
     _caloDtMax              (config().caloDtMax()                               ),
     _caloTimeOffset         (config().caloTimeOffset()                          ),
-    _doComptonClean         (config().doComptonClean()                          ),
-    _maxIntersectSigma      (config().maxIntersectSig()                         ),
-    _maxApproachSigma       (config().maxApproachSigma()                        ),
-    _maxApproachSigmaTrans  (config().maxAppSigmaTrans()                        ),
-    _comptonThresh          (config().comptonThresh()                           ),
-    _doIsoClean             (config().doIsoClean()                              ),
-    _isoRad                 (config().isoRad()                                  ),
-    _doPhiClean             (config().doPhiClean()                              ),
-    _phiCleanPhi            (config().phiCleanPhi()                             ),
-    _phiCleanThresh         (config().phiCleanThresh()                          )
+    _doRefine               (config().doRefine()                                )
     {
 
       consumes<ComboHitCollection>(_chLabel);
@@ -339,7 +305,6 @@ namespace mu2e {
     const mu2e::ComboHit* hit;
     // fill cHits indexed by pln, each column being a vector housing cHit info
     for (size_t i=0; i<_data._chColl->size(); i++) {
-      // if ((*_data._shfColl)[i].hasAnyProperty(StrawHitFlag::energysel)) { if (bkgHit((*_data._shfColl)[i])) {continue;} }
       const StrawHitFlag flag = _data._chColl->at(i).flag();
       if (!flag.hasAnyProperty(StrawHitFlag::radsel) && _radSelect == 1) {continue;}
       if (flag.hasAnyProperty(StrawHitFlag::energysel)) { if (bkgHit(flag)) {continue;} }
@@ -407,13 +372,13 @@ namespace mu2e {
       TF1* fit = new TF1("fit", "pol1");
       for (int i=0; i<_data._nTZClusters; i++) {
         int dcPoints = (int)_data._tcColl->at(i)._strawHitIdxs.size();
-        std::vector<double_t> zcPoints(dcPoints);
-        std::vector<double_t> tcPoints(dcPoints);
+        std::vector<float> zcPoints(dcPoints);
+        std::vector<float> tcPoints(dcPoints);
         for (int j=0; j<dcPoints; j++) {
           int index = (int)_data._tcColl->at(i)._strawHitIdxs[j];
           hit = &_data._chColl->at(index);
-          double_t zPosition = hit->pos().z();
-          double_t hitTime = hit->correctedTime();
+          float zPosition = hit->pos().z();
+          float hitTime = hit->correctedTime();
           zcPoints[j] = zPosition;
           tcPoints[j] = hitTime;
         }
@@ -452,7 +417,6 @@ namespace mu2e {
     _f.seedTime = _f.cHits[seedPln].plnHits[seedPlnHit].hTime;
     _f.seedWeight = _f.cHits[seedPln].plnHits[seedPlnHit].hWeight;
     _f.seedZpos = _f.cHits[seedPln].plnHits[seedPlnHit].hZpos;
-    //if ((*_data._shfColl)[_f.seedIndice].hasAnyProperty(StrawHitFlag::energysel)) { _f.seedNRGselection = 1; }
     const StrawHitFlag flag = _data._chColl->at(_f.seedIndice).flag();
     if (flag.hasAnyProperty(StrawHitFlag::energysel)) { _f.seedNRGselection = 1; }
     else { _f.seedNRGselection = 0; }
@@ -465,6 +429,8 @@ namespace mu2e {
     _f.nStrawHitsInChunk =  _f.cHits[seedPln].plnHits[seedPlnHit].nStrawHits;
     _f.totalTime = _f.seedTime;
     _f.totalZpos = _f.seedZpos;
+    _f.zMin = _f.seedZpos;
+    _f.zMax = _f.seedZpos;
 
   }
 
@@ -490,8 +456,6 @@ namespace mu2e {
     _f.testIndice = _f.cHits[testPln].plnHits[testPlnHit].hIndex;
     _f.testTime = _f.cHits[testPln].plnHits[testPlnHit].hTime;
     _f.testWeight = _f.cHits[testPln].plnHits[testPlnHit].hWeight;
-    //_f.testZpos = _f.cHits[testPln].plnHits[testPlnHit].hZpos;;
-    //if ((*_data._shfColl)[_f.testIndice].hasAnyProperty(StrawHitFlag::energysel)) { _f.testNRGselection = 1; }
     _f.testZpos = _f.cHits[testPln].plnHits[testPlnHit].hZpos;
     const StrawHitFlag flag = _data._chColl->at(_f.testIndice).flag();
     if (flag.hasAnyProperty(StrawHitFlag::energysel)) { _f.testNRGselection = 1; }
@@ -514,6 +478,8 @@ namespace mu2e {
       _f.nStrawHitsInChunk = _f.nStrawHitsInChunk + _f.cHits[testPln].plnHits[testPlnHit].nStrawHits;
       _f.totalTime += _f.testTime;
       _f.totalZpos += _f.testZpos;
+      if (_f.testZpos < _f.zMin) {_f.zMin = _f.testZpos;}
+      if (_f.testZpos > _f.zMax) {_f.zMax = _f.testZpos;}
     }
 
   }
@@ -562,9 +528,12 @@ namespace mu2e {
           _f._chunkInfo.avgZpos = _f.totalZpos/_f.nHitsInChunk;
           _f._chunkInfo.nHits = _f.nHitsInChunk;
           _f._chunkInfo.nStrawHits = _f.nStrawHitsInChunk;
+          _f._chunkInfo.zMin = _f.zMin;
+          _f._chunkInfo.zMax = _f.zMax;
           _f._chunkInfo.nrgSelection = _f.seedNRGselection;
           _f._chunkInfo.nCombines = 0;
           _f._chunkInfo.caloIndex = -1;
+          _f._chunkInfo.goodCluster = true;
           _f.chunks.push_back(_f._chunkInfo);
           if (_f._chunkInfo.nrgSelection == 0) { nProtonChunks++;}
           else { nCeLikeChunks++; }
@@ -599,7 +568,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void TZClusterFinder::combineChunks() {
 
-    double minValidDtFound    = 0.0;
+    float  minValidDtFound    = 0.0;
     size_t validCombinesFound = 0;
     size_t chunkOneIdx        = 0;
     size_t chunkTwoIdx        = 0;
@@ -612,7 +581,7 @@ namespace mu2e {
           && std::abs(_f.seedZpos-_f.testZpos) > _maxCombineSep) {continue;}
       _f.seedTime = _f.chunks[i].avgTime;
       _f.testTime = _f.chunks[i+1].avgTime;
-      double deltaTime = std::abs(_f.seedTime - _f.testTime);
+      float deltaTime = std::abs(_f.seedTime - _f.testTime);
       if (deltaTime > _combineWindow) {
         if (validCombinesFound != 0) {break;}
         else {continue;}
@@ -638,6 +607,8 @@ namespace mu2e {
       _f.chunks[chunkOneIdx].avgZpos /= _f.chunks[chunkOneIdx].nHits + _f.chunks[chunkTwoIdx].nHits;
       _f.chunks[chunkOneIdx].nHits = _f.chunks[chunkOneIdx].nHits + _f.chunks[chunkTwoIdx].nHits;
       _f.chunks[chunkOneIdx].nStrawHits = _f.chunks[chunkOneIdx].nStrawHits + _f.chunks[chunkTwoIdx].nStrawHits;
+      _f.chunks[chunkOneIdx].zMin = std::min(_f.chunks[chunkOneIdx].zMin,_f.chunks[chunkTwoIdx].zMin);
+      _f.chunks[chunkOneIdx].zMax = std::max(_f.chunks[chunkOneIdx].zMax,_f.chunks[chunkTwoIdx].zMax);
       _f.chunks[chunkOneIdx].nCombines++;
       _f.chunks.erase(_f.chunks.begin()+chunkTwoIdx);
     }
@@ -651,7 +622,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void TZClusterFinder::recoverHits() {
 
-    double minValidDtFound = 0.0;
+    float  minValidDtFound = 0.0;
     size_t validLinesFound = 0;
     size_t chunkIndex      = 0;
 
@@ -662,7 +633,6 @@ namespace mu2e {
         _f.testWeight = _f.cHits[i].plnHits[j].hWeight;
         _f.testZpos = _f.cHits[i].plnHits[j].hZpos;
         _f.testIndice = _f.cHits[i].plnHits[j].hIndex;
-        //if ((*_data._shfColl)[_f.testIndice].hasAnyProperty(StrawHitFlag::energysel)) { _f.testNRGselection = 1; }
         const StrawHitFlag flag = _data._chColl->at(_f.testIndice).flag();
         if (flag.hasAnyProperty(StrawHitFlag::energysel)) { _f.testNRGselection = 1; }
         else { _f.testNRGselection = 0; }
@@ -671,7 +641,7 @@ namespace mu2e {
         for (size_t k=0; k<_f.chunks.size(); k++) {
           if ((int)_f.chunks[k].hIndices.size() < _chunkFitThresh) {continue;}
           if (_f.testNRGselection != _f.chunks[k].nrgSelection) {continue;}
-          double deltaTtest = std::abs(_f.testTime - (_f.chunks[k].fitter.dydx()*_f.testZpos + _f.chunks[k].fitter.y0()));
+          float deltaTtest = std::abs(_f.testTime - (_f.chunks[k].fitter.dydx()*_f.testZpos + _f.chunks[k].fitter.y0()));
           if (deltaTtest > _recoverWindow) {continue;}
           validLinesFound++;
           if (validLinesFound == 1 || deltaTtest < minValidDtFound) {
@@ -682,6 +652,8 @@ namespace mu2e {
         if (validLinesFound != 0) {
           _f.chunks[chunkIndex].hIndices.push_back(_f.testIndice);
           _f.chunks[chunkIndex].nStrawHits = _f.chunks[chunkIndex].nStrawHits + _f.cHits[i].plnHits[j].nStrawHits;
+          _f.chunks[chunkIndex].zMin = std::min(_f.chunks[chunkIndex].zMin, _f.testZpos);
+          _f.chunks[chunkIndex].zMax = std::max(_f.chunks[chunkIndex].zMax, _f.testZpos);
           _f.chunks[chunkIndex].nHits++;
           _f.chunks[chunkIndex].fitter.addPoint(_f.testZpos, _f.testTime, _f.testWeight);
         }
@@ -689,6 +661,54 @@ namespace mu2e {
     }
 
   }
+
+  //-----------------------------------------------------------------------------
+  // combine lines (chunks that could be considered clusters but are separated)
+  //-----------------------------------------------------------------------------
+  void TZClusterFinder::combineLines() {
+
+    _f.moreCombines = false;
+
+    // check if two clusters that should be joined are separated
+    for (size_t i=0; i<_f.chunks.size()-1; i++) {
+      // only check chunks that could be clusters already
+      if ((int)_f.chunks[i].nStrawHits < _clusterThresh) {continue;}
+      for (size_t j=i+1; j<_f.chunks.size(); j++) {
+        if ((int)_f.chunks[j].nStrawHits < _clusterThresh) {continue;}
+        // only combine CEs with CEs and protons with protons
+        if (_f.chunks[i].nrgSelection != _f.chunks[j].nrgSelection) {continue;}
+        if (_f.chunks[i].zMax < _f.chunks[j].zMin || _f.chunks[i].zMin > _f.chunks[j].zMax) {
+          float seedChi2 = _f.chunks[i].fitter.chi2Dof();
+          float testChi2 = _f.chunks[j].fitter.chi2Dof();
+          ::LsqSums2 fit = _f.chunks[i].fitter;
+          fit.addSum(_f.chunks[j].fitter);
+          float combineChi2 = fit.chi2Dof();
+          if (combineChi2 < testChi2 || combineChi2 < seedChi2) {
+            for (size_t k=0; k<_f.chunks[j].hIndices.size(); k++) {
+              _f.chunks[i].hIndices.push_back(_f.chunks[j].hIndices[k]);
+            }
+            _f.chunks[i].fitter = fit;
+            _f.chunks[i].avgTime = _f.chunks[i].avgTime * _f.chunks[i].nHits;
+            _f.chunks[i].avgTime += _f.chunks[j].avgTime * _f.chunks[j].nHits;
+            _f.chunks[i].avgTime /= _f.chunks[i].nHits + _f.chunks[j].nHits;
+            _f.chunks[i].avgZpos = _f.chunks[i].avgZpos * _f.chunks[i].nHits;
+            _f.chunks[i].avgZpos += _f.chunks[j].avgZpos * _f.chunks[j].nHits;
+            _f.chunks[i].avgZpos /= _f.chunks[i].nHits + _f.chunks[j].nHits;
+            _f.chunks[i].nHits = _f.chunks[i].nHits + _f.chunks[j].nHits;
+            _f.chunks[i].nStrawHits = _f.chunks[i].nStrawHits + _f.chunks[j].nStrawHits;
+            _f.chunks[i].zMin = std::min(_f.chunks[i].zMin,_f.chunks[j].zMin);
+            _f.chunks[i].zMax = std::max(_f.chunks[i].zMax,_f.chunks[j].zMax);
+            _f.chunks[i].nCombines++;
+            _f.chunks.erase(_f.chunks.begin()+j);
+            _f.moreCombines = true;
+            return;
+          }
+        }
+      }
+    }
+
+  }
+
 
   //-----------------------------------------------------------------------------
   // function for counting protons (prediction not truth)
@@ -707,187 +727,6 @@ namespace mu2e {
 
   }
 
-  //-----------------------------------------------------------------------------
-  // function for removing compton consistent hits from CE-like chunks
-  //-----------------------------------------------------------------------------
-  void TZClusterFinder::cleanCompton() {
-
-    // vectors to specify indices of the chunk vector
-    std::vector<int> tempIndices;
-    std::vector<int> comptonIndices;
-
-    // combo hit pointer
-    const mu2e::ComboHit* hit;
-
-    for (size_t i=0; i<_f.chunks.size(); i++) { // clean comptons in each chunk
-      comptonIndices.clear();
-      tempIndices.clear();
-      if (_f.chunks[i].nrgSelection == 0 || _f.chunks[i].nStrawHits < _clusterThresh) {continue;}
-      for (size_t j=0; j<_f.chunks[i].hIndices.size(); j++) { // set first point for seed pair
-        hit = &_data._chColl->at(_f.chunks[i].hIndices[j]);
-        XYZVectorF h1pos = hit->pos(); // hit position
-        XYZVectorF h1wdir = hit->uDir(); // wire direction of hit
-        float h1wsig = hit->wireRes(); // hit resolution along wire
-        //float h1wtsig = hit->transRes(); // hit resolution transverse to wire
-        // now set up linear line equation for wire
-        float m1 = h1wdir.y()/h1wdir.x();
-        float b1 = h1pos.y() - m1*h1pos.x();
-        for (size_t k=0; k<_f.chunks[i].hIndices.size(); k++) { // set second point for seed pair
-          if (k==j) {continue;}
-          tempIndices.clear();
-          hit = &_data._chColl->at(_f.chunks[i].hIndices[k]);
-          XYZVectorF h2pos = hit->pos();
-          XYZVectorF h2wdir = hit->uDir();
-          float h2wsig = hit->wireRes();
-          //float h2wtsig = hit->transRes();
-          float m2 = h2wdir.y()/h2wdir.x();
-          float b2 = h2pos.y() - m2*h2pos.x();
-          if (std::fabs(m1-m2)/m1 < 0.01) {continue;} // dont consider hits whose wires are parallel
-          // find where wire error bars intersect
-          float xInt = (b2-b1)/(m1-m2);
-          float yInt = m1*xInt+b1;
-          // continue to new point if intersection is too far from pair points
-          float dh1 = std::sqrt((h1pos.x()-xInt)*(h1pos.x()-xInt)+(h1pos.y()-yInt)*(h1pos.y()-yInt))/h1wsig;
-          float dh2 = std::sqrt((h2pos.x()-xInt)*(h2pos.x()-xInt)+(h2pos.y()-yInt)*(h2pos.y()-yInt))/h2wsig;
-          if (dh1 > _maxIntersectSigma || dh2 > _maxIntersectSigma) {continue;}
-          tempIndices.push_back(j);
-          tempIndices.push_back(k);
-          for (size_t q=0; q<_f.chunks[i].hIndices.size(); q++) { // test points with intersection found
-            if (q==j || q==k) {continue;}
-            hit = &_data._chColl->at(_f.chunks[i].hIndices[q]);
-            XYZVectorF h3pos = hit->pos();
-            XYZVectorF h3wdir = hit->uDir();
-            float h3wsig = hit->wireRes();
-            float h3wtsig = hit->transRes();
-            float m3 = h3wdir.y()/h3wdir.x();
-            float b3 = h3pos.y() - m3*h3pos.x();
-            // find closest approach
-            float m = -1.0/m3;
-            float b = yInt - m*xInt;
-            float xClosest = (b-b3)/(m3-m);
-            float yClosest = m*xClosest+b;
-            float dApproach = std::sqrt((xClosest-xInt)*(xClosest-xInt)+(yClosest-yInt)*(yClosest-yInt))/h3wtsig;
-            if (dApproach > _maxApproachSigmaTrans) {continue;}
-            float dh3 = std::sqrt((h3pos.x()-xClosest)*(h3pos.x()-xClosest)+(h3pos.y()-yClosest)*(h3pos.y()-yClosest))/h3wsig;
-            if (dh3 > _maxApproachSigma) {continue;}
-            tempIndices.push_back(q);
-          }
-          if (tempIndices.size() > comptonIndices.size()) {
-            comptonIndices.clear();
-            for (size_t n=0; n<tempIndices.size(); n++) {
-              comptonIndices.push_back(tempIndices[n]);
-            }
-          }
-        }
-      }
-      if ((int)comptonIndices.size() > _comptonThresh) {
-        for (size_t m=0; m<comptonIndices.size(); m++) {
-          int chunkIndex = comptonIndices[m];
-          hit = &_data._chColl->at(_f.chunks[i].hIndices[chunkIndex]);
-          _f.chunks[i].nStrawHits = _f.chunks[i].nStrawHits - hit->nStrawHits();
-          _f.chunks[i].nHits = _f.chunks[i].nHits - 1;
-          _f.chunks[i].hIndices[chunkIndex] = -1;
-        }
-        _f.chunks[i].hIndices.erase(std::remove(_f.chunks[i].hIndices.begin(), _f.chunks[i].hIndices.end(), -1), _f.chunks[i].hIndices.end());
-      }
-    }
-
-  }
-
-  //-----------------------------------------------------------------------------
-  // logic to do isolated hits clean up
-  //-----------------------------------------------------------------------------
-  void TZClusterFinder::isoClean() {
-
-    // combo hit pointers
-    const mu2e::ComboHit* hit;
-    const mu2e::ComboHit* test;
-
-    // hit position variables
-    double hitX       = 0.0;
-    double hitY       = 0.0;
-    double testX      = 0.0;
-    double testY      = 0.0;
-    double separation = 0.0;
-    int    isolated   = 1;
-
-
-    for (size_t i=0; i<_f.chunks.size(); i++) { // loop over chunks
-      if (_f.chunks[i].nrgSelection == 0 || _f.chunks[i].nStrawHits < _clusterThresh) {continue;}
-      for (size_t j=0; j<_f.chunks[i].hIndices.size(); j++) { // set hit to check if isolated
-        hit = &_data._chColl->at(_f.chunks[i].hIndices[j]);
-        hitX = hit->pos().x();
-        hitY = hit->pos().y();
-        isolated = 1;
-        for (size_t k=0; k<_f.chunks[i].hIndices.size(); k++) { // look for hits near hit being tested
-          if (k==j || _f.chunks[i].hIndices[k] == -1 ) {continue;}
-          test =  &_data._chColl->at(_f.chunks[i].hIndices[k]);
-          testX = test->pos().x();
-          testY = test->pos().y();
-          separation = std::sqrt((hitX-testX)*(hitX-testX)+(hitY-testY)*(hitY-testY));
-          if (separation <= _isoRad) {
-            isolated = 0;
-            break;
-          }
-        }
-        if (isolated == 1) {
-          _f.chunks[i].hIndices[j] = -1;
-          _f.chunks[i].nHits = _f.chunks[i].nHits - 1;
-          _f.chunks[i].nStrawHits = _f.chunks[i].nStrawHits - hit->nStrawHits();
-
-        }
-      }
-      _f.chunks[i].hIndices.erase(std::remove(_f.chunks[i].hIndices.begin(), _f.chunks[i].hIndices.end(), -1), _f.chunks[i].hIndices.end());
-    }
-
-  }
-
-  //-----------------------------------------------------------------------------
-  // logic to do phi clean up
-  //-----------------------------------------------------------------------------
-  void TZClusterFinder::phiClean() {
-
-    // combo hit pointers
-    const mu2e::ComboHit* hit;
-    const mu2e::ComboHit* test;
-
-    // hit position variables
-    double hitPhi   = 0.0;
-    double testPhi  = 0.0;
-    double deltaPhi = 0.0;
-
-    for (size_t i=0; i<_f.chunks.size(); i++) { // loop over chunks
-      if (_f.chunks[i].nrgSelection == 0 || _f.chunks[i].nStrawHits < _clusterThresh) {continue;}
-      for (size_t j=0; j<_f.chunks[i].hIndices.size(); j++) { // set hit to check
-        hit = &_data._chColl->at(_f.chunks[i].hIndices[j]);
-        hitPhi = hit->phi();
-        int hitsInRange = 1;
-        for (size_t k=0; k<_f.chunks[i].hIndices.size(); k++) { // test other hits
-          if (k==j || _f.chunks[i].hIndices[k] == -1) {continue;}
-          test =  &_data._chColl->at(_f.chunks[i].hIndices[k]);
-          testPhi = test->phi();
-          deltaPhi = std::fmod(testPhi-hitPhi, CLHEP::twopi);
-          if (deltaPhi>CLHEP::pi) deltaPhi -= CLHEP::twopi;
-          if (deltaPhi<-CLHEP::pi) deltaPhi += CLHEP::twopi;
-          deltaPhi = std::abs(deltaPhi)*180.0/CLHEP::pi;
-          if (deltaPhi <= _phiCleanPhi) {
-            hitsInRange++;
-          }
-          if (hitsInRange >= _phiCleanThresh) {break;}
-        }
-        if (hitsInRange < _phiCleanThresh) {
-          _f.chunks[i].hIndices[j] = -1;
-          _f.chunks[i].nHits = _f.chunks[i].nHits - 1;
-          _f.chunks[i].nStrawHits = _f.chunks[i].nStrawHits - hit->nStrawHits();
-        }
-      }
-      _f.chunks[i].hIndices.erase(std::remove(_f.chunks[i].hIndices.begin(), _f.chunks[i].hIndices.end(), -1), _f.chunks[i].hIndices.end());
-    }
-
-  }
-
-
-  //-----------------------------------------------------------------------------
   // logic to use calo clusters
   //-----------------------------------------------------------------------------
   void TZClusterFinder::checkCaloClusters() {
@@ -895,7 +734,7 @@ namespace mu2e {
     const CaloCluster* cc;
     const ComboHit*    hit;
 
-    double ccTime    = 0.0;
+    float  ccTime    = 0.0;
     int    ncc       = _data._ccColl->size();
     int    nchunks   = _f.chunks.size();
     int    addedToTC = 0;
@@ -907,7 +746,7 @@ namespace mu2e {
       addedToTC = 0;
       for (int j=0; j<nchunks; j++) {
         if ((int)_f.chunks[j].hIndices.size() < _chunkFitThresh) {continue;}
-        double dT = std::abs((double)_f.chunks[j].fitter.y0() - ccTime);
+        float dT = std::abs((float)_f.chunks[j].fitter.y0() - ccTime);
         if (dT < _caloDtMax) {
           if (_f.chunks[j].caloIndex != -1) {
             _f._chunkInfo = _f.chunks[j];
@@ -927,8 +766,6 @@ namespace mu2e {
           _f._chunkInfo.nStrawHits = 0;
           _f._chunkInfo.caloIndex = i;
           for (size_t k=0; k<_data._chColl->size(); k++) {
-            //if (bkgHit((*_data._shfColl)[k])) {continue;}
-            //if (!(*_data._shfColl)[k].hasAnyProperty(StrawHitFlag::energysel)) {continue;}
             const StrawHitFlag flag = _data._chColl->at(k).flag();
             if (!flag.hasAnyProperty(StrawHitFlag::radsel) && _radSelect == 1) {continue;}
             if (bkgHit(flag)) {continue;}
@@ -946,6 +783,23 @@ namespace mu2e {
           }
         }
       }
+    }
+
+  }
+
+  //-----------------------------------------------------------------------------
+  // logic to flag bad TC candidates
+  //-----------------------------------------------------------------------------
+  void TZClusterFinder::refineChunks() {
+
+    for (size_t i=0; i<_f.chunks.size(); i++) {
+      // first continue on chunks that are already not saved
+      if (_f.chunks[i].nrgSelection == 0) {continue;}
+      if ((int)_f.chunks[i].nStrawHits < _clusterThresh) {continue;}
+      for (size_t j=0; j<_f.chunks[i].hIndices.size(); j++) {
+        // needs development
+      }
+      //  set _f.chunks[i].goodCluster = false or true here based on result of logic you put above .. needs development
     }
 
   }
@@ -978,21 +832,28 @@ namespace mu2e {
     // recover hits that were missed
     recoverHits();
 
+    // combine lines (chunks that could be considered clusters but are separated)
+    if (_f.chunks.size() != 0) {
+      _f.moreCombines = true;
+      while(_f.moreCombines) {
+        combineLines();
+      }
+    }
+
     // count number of protons
     countProtons(*_data._iiTC);
 
     // use calo clusters
     if (_useCaloClusters == 1) { checkCaloClusters(); }
 
-    // do clean ups
-    if (_doComptonClean == 1) { cleanCompton(); }
-    if (_doIsoClean == 1)     { isoClean();     }
-    if (_doPhiClean == 1)     { phiClean();     }
+    // flag bad clusters
+    if (_doRefine == 1) { refineChunks(); }
 
     // fill TimeClusterColl and perform final fit to save
     for (size_t i=0; i<_f.chunks.size(); i++) {
-      if ((int)_f.chunks[i].nStrawHits < _clusterThresh) {continue;}
-      if (_saveProtCand != 1 && _f.chunks[i].nrgSelection == 0) {continue;}
+      if (_f.chunks[i].nrgSelection == 0) {continue;} // don't save proton clusters
+      if ((int)_f.chunks[i].nStrawHits < _clusterThresh) {continue;} // only save chunks with enough straw hits
+      if (_doRefine == 1 && _f.chunks[i].goodCluster == false) {continue;} // filter out bad TCs if requested
       _f.clear_clusterInfo();
       for (size_t j=0; j<_f.chunks[i].hIndices.size(); j++) {
         _f._clusterInfo._strawHitIdxs.push_back(StrawHitIndex(_f.chunks[i].hIndices[j]));

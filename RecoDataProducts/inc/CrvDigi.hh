@@ -31,11 +31,11 @@ namespace mu2e
 
     private:
 
-    std::array<int16_t, NSamples>  _ADCs;
-    uint16_t                       _startTDC;
+    std::array<int16_t, NSamples>  _ADCs{0};
+    uint16_t                       _startTDC{0};
 
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
-    uint8_t                        _SiPMNumber;
+    uint8_t                        _SiPMNumber{0};
   };
   typedef std::vector<mu2e::CrvDigi> CrvDigiCollection;
 }

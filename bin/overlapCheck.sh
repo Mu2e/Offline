@@ -86,7 +86,7 @@ if [ $NERROR -ne 0 ]; then
     echo "ERROR - error messages from root"
     RC=1
 fi
-if [ $NLINES -ne $NEXPECTED ]; then
+if [[ $NLINES -ne $NEXPECTED && $NILLEGAL -eq 0 ]]; then
     echo "ERROR - unexpected number of lines in root response: $NLINES"
     RC=1
 fi

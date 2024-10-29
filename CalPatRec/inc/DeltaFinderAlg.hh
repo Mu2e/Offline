@@ -43,7 +43,6 @@ namespace mu2e {
       fhicl::Atom<int>             mergePC           {Name("mergePC"           ), Comment("1: merge proton candidates"  ) };
       fhicl::Atom<int>             pickupProtonHits  {Name("pickupProtonHits"  ), Comment("1: pickup single proton hits") };
       fhicl::Atom<float>           timeBin           {Name("timeBin"           ), Comment("time bin for storing hits"   ) };
-      fhicl::Atom<float>           minHitTime        {Name("minHitTime"        ), Comment("min hit time"                ) };
       fhicl::Atom<float>           maxDeltaEDep      {Name("maxDeltaEDep"      ), Comment("max delta candidate  eDep"   ) };
       fhicl::Atom<float>           maxSeedEDep       {Name("maxSeedEDep"       ), Comment("max seed eDep"               ) };
       fhicl::Atom<float>           minProtonSeedEDep {Name("minProtonSeedEDep" ), Comment("min proton seed eDep"        ) };
@@ -51,7 +50,6 @@ namespace mu2e {
       fhicl::Atom<int>             minNSeeds         {Name("minNSeeds"         ), Comment("min N seeds in a delta cand" ) };
       fhicl::Atom<int>             minDeltaNHits     {Name("minDeltaNHits"     ), Comment("min N combo  hits in a delta") };
       fhicl::Atom<float>           maxEleHitEnergy   {Name("maxEleHitEnergy"   ), Comment("max electron hit energy"     ) };
-      fhicl::Atom<float>           minimumTime       {Name("minimumTime"       ), Comment("minimum time"                ) };
       fhicl::Atom<float>           maximumTime       {Name("maximumTime"       ), Comment("maximum time"                ) };
       fhicl::Atom<float>           maxHitSeedDt      {Name("maxHitSeedDt"      ), Comment("max DT(hit-seed)"            ) };
       fhicl::Atom<float>           maxChi2Seed       {Name("maxChi2Seed"       ), Comment("max seed chi2 (stereo)"      ) };
@@ -92,7 +90,7 @@ namespace mu2e {
     int             _minNSeeds;            // min number of seeds in the delta electron cluster
     int             _minDeltaNHits;        // min number of hits of a delta candidate
     float           _maxEleHitEnergy;      //
-    float           _minT;
+    // float           _minT;
     float           _maxT;
     float           _maxHitSeedDt;         //
     float           _maxChi2Seed;          //

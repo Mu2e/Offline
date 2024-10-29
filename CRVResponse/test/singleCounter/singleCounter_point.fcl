@@ -68,6 +68,7 @@ physics :
     {
       module_type                 : CRVTest
       crvStepsModuleLabel         : "g4run"
+      crvPhotonsModuleLabel       : "CrvPhotons"
       crvSiPMChargesModuleLabel   : "CrvSiPMCharges"
       crvDigiModuleLabel          : "CrvDigi"
       crvRecoPulsesModuleLabel    : "CrvRecoPulses"
@@ -97,13 +98,12 @@ physics.producers.CrvSteps.stepPointsModuleLabels   : ["g4run"]
 physics.producers.CrvPhotons.crvStepModuleLabels    : ["CrvSteps"]
 physics.producers.CrvPhotons.crvStepProcessNames    : ["CRVEfficiency"]
 physics.producers.CrvPhotons.scintillationYields    : [39400]
-physics.producers.CrvPhotons.scintillationYieldVariation  : 0.0
 physics.producers.CrvPhotons.CRVSectors                   : ["Test"]
-#physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0/LookupTable_3000_0"]
-#physics.producers.CrvPhotons.reflectors                   : [0]
+physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0/LookupTable_3000_0"]
+physics.producers.CrvPhotons.reflectors                   : [0]
 #physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0/LookupTable_6000_1"]
 #physics.producers.CrvPhotons.reflectors                   : [1]
-physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0/LookupTable_6000_0"]
+#physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0/LookupTable_6000_0"]
 physics.producers.CrvPhotons.reflectors                   : [0]
 physics.producers.CrvSiPMCharges.deadSiPMProbability      : 0.0
 #physics.producers.CrvSiPMCharges.CrossTalkProb            : 0.09
@@ -114,6 +114,9 @@ services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 services.GeometryService.inputFile  : "Offline/CRVResponse/test/singleCounter/geom.txt"
+services.ProditionsService.crvPhotonYield.useDb : false
+services.ProditionsService.crvStatus.useDb: false
+services.ProditionsService.crvCalib.useDb: false
 
 physics.producers.g4run.Mu2eG4CommonCut: @local::Mu2eG4CommonCut
 

@@ -1,0 +1,8 @@
+#
+# Nominal Database configuration for code testing.
+# this will be kept up-to-date with minimal code requirements
+# but will not necessarily be correct for a given use case
+#
+services.DbService.purpose: MDC2020_best
+services.DbService.version: v1_3
+services.DbService.verbose : 2

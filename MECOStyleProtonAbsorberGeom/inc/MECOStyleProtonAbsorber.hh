@@ -52,7 +52,6 @@ namespace mu2e {
 
     InnerProtonAbsSupport( std::size_t nSets, std::size_t nWiresPerSet )
       : _nSets ( nSets ) , _nWiresPerSet ( nWiresPerSet ) {}
-    ~InnerProtonAbsSupport(){}
 
     void setWireAngleOffset(double offset) { _wireAngleOffset = offset; }
     const Tube& getWire( std::size_t iSet, std::size_t iWire ) const { return _supportWireMap.at(iSet).at(iWire); }
@@ -65,9 +64,9 @@ namespace mu2e {
   private:
     std::size_t _nSets;
     std::size_t _nWiresPerSet;
-    double      _wireAngleOffset;
+    double      _wireAngleOffset = 0;
     std::vector<std::vector<Tube>> _supportWireMap;
-    std::size_t _nEndRings;
+    std::size_t _nEndRings = 0;
     std::vector<Tube> _endRingMap;
   };
 

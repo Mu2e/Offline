@@ -1,0 +1,42 @@
+#
+# calibrates CRV channels
+#
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CRVResponse/fcl/prolog.fcl"
+
+process_name : calibrate
+
+source :
+{
+  module_type : RootInput
+}
+services :
+{
+  @table::Services.Reco
+}
+
+physics: {
+  producers :
+  {
+  }
+  analyzers:
+  {
+    CrvCalibration: @local::CrvCalibration
+  }
+
+  TriggerPath : [ ]
+  EndPath :     [ CrvCalibration ]
+  trigger_paths : [ TriggerPath ]
+  end_paths :     [ EndPath ]
+}
+
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+services.TFileService.fileName : "crvCalib.root"
+#include "Offline/DbService/fcl/NominalDatabase.fcl"
+
+services.ProditionsService.crvStatus.useDb: false
+services.ProditionsService.crvStatus.verbose: 2
+services.ProditionsService.crvCalib.useDb: true
+services.ProditionsService.crvCalib.verbose: 2

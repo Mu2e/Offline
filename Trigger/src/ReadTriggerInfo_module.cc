@@ -516,7 +516,7 @@ namespace mu2e {
       Hist._hHelInfo[i][98] = helInfoDir.make<TH1F>(Form("hPiPlusGenR_%i" , i), "r origin;  r-origin [mm]", 500,   0,   5000);
       Hist._hHelInfo[i][99] = helInfoDir.make<TH1F>(Form("hPiPlusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
 
- Hist._hHelInfo[i][100] = helInfoDir.make<TH1F>(Form("hEMinusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][100] = helInfoDir.make<TH1F>(Form("hEMinusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
       Hist._hHelInfo[i][101] = helInfoDir.make<TH1F>(Form("hEMinusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 250);
       Hist._hHelInfo[i][102] = helInfoDir.make<TH1F>(Form("hEMinusD0_%i", i), "Helix impact parameter; d0 [mm]", 800, -800, 800);
       Hist._hHelInfo[i][103] = helInfoDir.make<TH1F>(Form("hEMinusDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
@@ -1099,7 +1099,7 @@ namespace mu2e {
             passed = true;
             nTrigObj=0;
             for (auto const hseed: trigInfo->helixes()){
-              if(hseed) {
+              if(hseed){
                 ++nTrigObj;
                 fillHelixTrigInfo(index, hseed.get(), _helHist);
                 if (passed) {
@@ -1110,14 +1110,14 @@ namespace mu2e {
             }//end loop over the helix-collection
             _helHist._hHelInfo[i][120]->Fill(nTrigObj);
 
-          }else if ( moduleLabel.find("TSFilter") != std::string::npos){
+          }else if ( moduleLabel.find("KSFilter") != std::string::npos){
             //            findTrigIndex(_trigTrack, moduleLabel, index);
             _trigTrack[index].label  = moduleLabel;
             _trigTrack[index].counts = _trigTrack[index].counts + 1;
             passed = true;
             nTrigObj=0;
             for (auto const kseed: trigInfo->tracks()){
-              if(kseed) {
+              if(kseed){
                 ++nTrigObj;
                 fillTrackTrigInfo(index, kseed.get(), _trkHist);
                 if (passed) {
@@ -1153,8 +1153,8 @@ namespace mu2e {
             passed = true;
             nTrigObj=0;
             for (auto const clseed: trigInfo->caloClusters()){
-              ++nTrigObj;
-              if(clseed) {
+              if(clseed){
+                ++nTrigObj;
                 fillCaloCalibTrigInfo(index, clseed.get(), _caloTSeedHist);
                 if (passed) {
                   passed = false;
@@ -1247,6 +1247,10 @@ namespace mu2e {
         hit            = &_chcol->at(hitIndex);
         loc            = hit - hit_0;
         const mu2e::StrawGasStep* step(0);
+        if (loc > (int)_mcdigis->size()) {
+          printf("[READTRIGGERINFO::fillTrackTrigInfo] loc = %d but MCDgis_size = %ld\n", loc, _mcdigis->size());
+          continue;
+        }
         const mu2e::StrawDigiMC* sdmc = &_mcdigis->at(loc);
         if (sdmc->wireEndTime(mu2e::StrawEnd::cal) < sdmc->wireEndTime(mu2e::StrawEnd::hv)) {
           step = sdmc->strawGasStep(mu2e::StrawEnd::cal).get();
@@ -1374,7 +1378,7 @@ namespace mu2e {
     if (_mcdigis) {
       //      const mu2e::ComboHit*    hit(0);
       std::vector<int>         hits_simp_id, hits_simp_index, hits_simp_z;
-
+      float   minP(30.);
       for (int j=0; j<nch; ++j){
         std::vector<StrawDigiIndex> shids;
         HSeed->hits().fillStrawDigiIndices(j,shids);
@@ -1386,12 +1390,16 @@ namespace mu2e {
             art::Ptr<mu2e::SimParticle> const& simptr = spmcp->simParticle();
             int sim_id        = simptr->id().asInt();
             float   dz        = spmcp->position().z();// - trackerZ0;
+            float   pMC       = std::sqrt(spmcp->momentum().mag2());
+            if (pMC<minP)     continue;
             hits_simp_id.push_back   (sim_id);
             hits_simp_index.push_back(shids[k]);
             hits_simp_z.push_back(dz);
             break;
         }
       }//end loop over the hits
+
+      if (hits_simp_id.size() == 0) return;
 
       int     max(0), mostvalueindex(-1);//, mostvalue= hits_simp_id[0];
       float   dz_most(1e4);

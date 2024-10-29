@@ -1,0 +1,10 @@
+TABLE CRVBadChan
+#2048 channels, probability: 0.0
+#A channel can have more than one status bit. Add all status bits for the complete status.
+#status 1 (bit 0): not connected
+#status 2 (bit 1): ignore channel in reconstruction
+#status 4 (bit 2): no data
+#status 8 (bit 3): no pedestal
+#status 16 (bit 4): no calibration constant
+#status 32 (bit 5): noisy
+#channel,status

@@ -9,36 +9,35 @@
 bool particleGun.do = true;
 
 // Limits on cos(polar angle):
-double particleGun.czmin =  -1;
-double particleGun.czmax =   1;
+double particleGun.czmin =  1.0;//0.9999999; //-1
+double particleGun.czmax =  1.0000000; //1
 
 // Limits on phi angle:
-double particleGun.phimin = 0.0;
+double particleGun.phimin = 0.0000000;//0.0;
 double particleGun.phimax = 6.283185307179586;
 
 // Time limits in ns, relative to protons on target.
-double particleGun.tmin  =  0.0;
-double particleGun.tmax  =  0.0;
+double particleGun.tmin  =  100.0;
+double particleGun.tmax  =  200.0;
 
 // position
 // The middle of the production target; in Mu2e coordinates in mm.
-vector<double> particleGun.point = {-3904., 0., 5900};   //{-3904., 0., 10200.} tracker center
+vector<double> particleGun.point = {-3946.06,0.0,40666.3}; //{-3904., 0., 5900};   //{-3904., 0., 10200.} tracker center
 
 vector<double> particleGun.halfLength = { 0., 0., 0. };
 
 // Limits on momentum:
-double particleGun.pmin = 100.;
-double particleGun.pmax = 100.5;
+double particleGun.pmin = 2.0;
+double particleGun.pmax = 2.00000001;
 
 // Particle Id
-int particleGun.id = 11;
+int particleGun.id = 22;
 
 // Mean particle.
 double particleGun.mean =  -1;
 
 // Control of histograms.
 bool particleGun.doHistograms = false;
-
 bool particleGun.verbose = false;
 
 

@@ -13,7 +13,7 @@ namespace mu2e {
   if (_config.verbose()) {
     std::cout << "CalCalibMaker::fromFcl making nominal CalCalib\n";
   }
-  CalCalibPar nominal(_config.ADC2MeV(), _config.ECombAlgID(), _config.timeoffset());
+  CalCalibPar nominal(_config.ADC2MeV(), _config.timeoffset());
 
   size_t nChan = CaloConst::_nChannel;
 
@@ -21,7 +21,6 @@ namespace mu2e {
     std::cout << "CalCalibMaker::fromFcl filling " << nChan << " channels\n";
     std::cout << "CalCalibMaker::fromFcl nominal " << fixed << setprecision(3)
          << setw(10) << nominal.ADC2MeV() << setprecision(3) << setw(10)
-         << nominal.ECombAlgID() << setprecision(3) << setw(10)
          << nominal.timeOffset() << setprecision(3) << setw(10) << "\n";
   }
 
@@ -35,7 +34,8 @@ namespace mu2e {
 
 /*******************************************************************/
 
-  ptr_t CalCalibMaker::fromDb(CalEnergyCalib::cptr_t ecalib) { //TODO - input from time table too
+  ptr_t CalCalibMaker::fromDb(const CalEnergyCalib& ecalib,
+                              const CalTimeCalib& tcalib) {
     // initially fill from fcl to get all the constants
     if (_config.verbose()) {
       cout << "CalCalibMaker::fromDb making CalCalib\n";
@@ -47,23 +47,25 @@ namespace mu2e {
       cout << "CalCalibMaker::fromDb checking for " << nChan << " channels\n";
     }
 
-  // require the db tables are the same length as geometry
-  if (ecalib->nrow() != nChan ) {
-    throw cet::exception("CALCALIBMAKE_BAD_N_CHANNEL")
-        << "CalCalibMaker::fromDb bad channel counts: "
-        << "  geometry: " << nChan << "  CalSiPM: " << ecalib->nrow()<< "\n";
-  }
+    // require the db tables are the same length as geometry
+    if (ecalib.nrow() != nChan || tcalib.nrow() != nChan) {
+      throw cet::exception("CALCALIBMAKE_BAD_N_CHANNEL")
+      << "CalCalibMaker::fromDb bad channel counts: "
+      << "  geometry: " << nChan
+      << "  Nenergy: " << ecalib.nrow()
+      << "  Ntime: " << ecalib.nrow()
+      << "\n";
+    }
 
-  CalCalib::CalibVec cvec(nChan, CalCalibPar(0.0, 0.0, 0.0));
+    CalCalib::CalibVec cvec;
 
-  for (auto const& row : ecalib->rows()) {
-    cvec[row.roid().id()] = CalCalibPar(row.ADC2MeV(), row.algID(),0); //TODO - time offset needs setting from time table
-  }
+    for (CaloConst::CaloSiPMId_type ind=0; ind<nChan; ind++) {
+      auto roid = CaloSiPMId(ind);
+      cvec.emplace_back(ecalib.row(roid).ADC2MeV(), tcalib.row(roid).tcorr());
+    }
 
-  auto ptr = make_shared<CalCalib>(cvec);
-  return ptr;
-    //auto ptr = fromFcl();
-    //return ptr;
+    auto ptr = make_shared<CalCalib>(cvec);
+    return ptr;
 
   } // end fromDb
 /*******************************************************************/

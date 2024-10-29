@@ -120,13 +120,38 @@ TrkReco: { @table::TrkReco
     useMeanResidual                     : 0     # default: dont use
     maxMeanResidual                     : 0.8
   }
+
+  HelixFinderParams : {
+    maxEDepAvg : 1
+  }
+
   producers : {
     MergeHelices : { module_type : MergeHelices
       debugLevel                 : 0
       deltanh                    : 5     # if the difference in the strawHit counts between the helices is less than deltanh, use the chisq of the helices to select the better helix
       scaleXY                    : 1.1   # scale the weight for having chi2XY/ndof distribution peaking at 1
       scaleZPhi                  : 0.75  # scale the weight for having chi2ZPhi/ndof distribution peaking at 1
+      MinHitOverlapFraction      : 0.5
+      MinNHitOverlap             : 10
     }
+  }
+# standard config for reflection selection
+  SelectReflections: {
+    module_type : SelectReflections
+    MaxDeltaT : 20 # ns
+    MaxDeltaP : 10 # MeV
+    # optionally only merge selected candidates
+    # a simple selector is used here, but any selector implemented as a tool can be used
+    Selector : {
+      tool_type : SimpleKalSeedSelector
+      MinMomentum : 40.0 # MeV/c
+      MaxMomentum : 300.0 #MeV/c
+      MinFitConsistency : 1e-6
+      MinDeltaNHitFraction : 0.0
+      MinActiveHits : 0
+    }
+    SelectBestPair : 0 # select highest-momentum match
+    debugLevel : 0
   }
 }
 END_PROLOG

@@ -7,10 +7,13 @@
 #include "Offline/CRVReco/inc/MakeCrvRecoPulses.hh"
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
+#include "Offline/CRVConditions/inc/CRVStatus.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
@@ -59,31 +62,52 @@ namespace mu2e
       fhicl::Atom<float> pulseThreshold{Name("pulseThreshold"), Comment("fraction of ADC peak used as threshold to determine the pulse time interval for the no-fit option")}; //0.5
       fhicl::Atom<float> pulseAreaThreshold{Name("pulseAreaThreshold"), Comment("threshold to determine the pulse area for the the no-fit option")}; //5
       fhicl::Atom<float> doublePulseSeparation{Name("doublePulseSeparation"), Comment("fraction of both peaks at which double pulses can be separated in the no-fit option")}; //0.25
-      fhicl::Atom<art::InputTag> protonBunchTimeTag{ Name("protonBunchTimeTag"), Comment("ProtonBunchTime producer"),"EWMProducer" };
+      fhicl::Atom<art::InputTag> eventWindowMarkerTag{Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer"};
+      fhicl::Atom<art::InputTag> protonBunchTimeTag{Name("protonBunchTimeTag"), Comment("ProtonBunchTime producer"),"EWMProducer"};
+      fhicl::Atom<float> timeOffsetScale{Name("timeOffsetScale"), Comment("scale factor for time offsets from database (use 1.0, if measured values)")}; //1.0
+      fhicl::Atom<float> timeOffsetCutoffLow{Name("timeOffsetCutoffLow"), Comment("lower cutoff of time offsets (for random values - otherwise set to minimum value)")}; //-3.0ns
+      fhicl::Atom<float> timeOffsetCutoffHigh{Name("timeOffsetCutoffHigh"), Comment("upper cutoff of time offsets (for random values - otherwise set to maximum value)")}; //+3.0ns
+      fhicl::Atom<bool> useTimeOffsetDB{Name("useTimeOffsetDB"), Comment("apply time offsets from the DB")}; //true
+      fhicl::Atom<bool> ignoreChannels{Name("ignoreChannels"), Comment("ignore channels that have status 2 (bit 1) in CRVstatus DB")}; //true
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
 
     explicit CrvRecoPulsesFinder(const Parameters& config);
-    void produce(art::Event& e);
-    void beginJob();
-    void beginRun(art::Run &run);
-    void endJob();
+    void produce(art::Event& e) override;
+    void beginJob() override;
+    void beginRun(art::Run &run) override;
+    void endJob() override;
 
     private:
     boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> _makeCrvRecoPulses;
 
     std::string _crvDigiModuleLabel;
+    art::InputTag _eventWindowMarkerTag;
     art::InputTag _protonBunchTimeTag;
 
-    ProditionsHandle<CRVCalib> _calib_h;
+    float _timeOffsetScale;
+    float _timeOffsetCutoffLow;
+    float _timeOffsetCutoffHigh;
+    bool  _useTimeOffsetDB;
+
+    bool  _ignoreChannels;
+
+    ProditionsHandle<CRVCalib>  _calib;
+    ProditionsHandle<CRVStatus> _sipmStatus;
   };
 
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(const Parameters& conf) :
     art::EDProducer(conf),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
-    _protonBunchTimeTag(conf().protonBunchTimeTag())
+    _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
+    _protonBunchTimeTag(conf().protonBunchTimeTag()),
+    _timeOffsetScale(conf().timeOffsetScale()),
+    _timeOffsetCutoffLow(conf().timeOffsetCutoffLow()),
+    _timeOffsetCutoffHigh(conf().timeOffsetCutoffHigh()),
+    _useTimeOffsetDB(conf().useTimeOffsetDB()),
+    _ignoreChannels(conf().ignoreChannels())
   {
     produces<CrvRecoPulseCollection>();
     _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(conf().minADCdifference(),
@@ -116,14 +140,25 @@ namespace mu2e
     std::unique_ptr<CrvRecoPulseCollection> crvRecoPulseCollection(new CrvRecoPulseCollection);
 
     double TDC0time = 0;
-    art::Handle<ProtonBunchTime> protonBunchTime;
-    event.getByLabel(_protonBunchTimeTag, protonBunchTime);
-    if(protonBunchTime.isValid()) TDC0time = -protonBunchTime->pbtime_;
+
+    art::Handle<EventWindowMarker> eventWindowMarker;
+    event.getByLabel(_eventWindowMarkerTag,eventWindowMarker);
+    EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
+    if(spillType==EventWindowMarker::SpillType::onspill)
+    {
+      art::Handle<ProtonBunchTime> protonBunchTime;
+      event.getByLabel(_protonBunchTimeTag, protonBunchTime);
+      if(protonBunchTime.isValid())
+      {
+        TDC0time = -protonBunchTime->pbtime_; //200ns...225ns (only for onspill)
+      }
+    }
 
     art::Handle<CrvDigiCollection> crvDigiCollection;
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
 
-    auto const& calib = _calib_h.get(event.id());
+    auto const& calib = _calib.get(event.id());
+    auto const& sipmStatus = _sipmStatus.get(event.id());
 
     size_t waveformIndex = 0;
     while(waveformIndex<crvDigiCollection->size())
@@ -149,11 +184,25 @@ namespace mu2e
         waveformIndices.push_back(waveformIndex);
       }
 
-      size_t channel = barIndex.asUint()*4 + SiPM;
+      size_t channel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
+
+      if(_ignoreChannels)
+      {
+        std::bitset<16> status(sipmStatus.status(channel));
+        if(status.test(CRVStatus::Flags::ignoreChannel)) continue; //ignore this channel (bit 1)
+      }
+
       double pedestal = calib.pedestal(channel);
       double calibPulseArea = calib.pulseArea(channel);
       double calibPulseHeight = calib.pulseHeight(channel);
-      double timeOffset = calib.timeOffset(channel);
+      double timeOffset = 0.0;
+      if(_useTimeOffsetDB)
+      {
+        double timeOffset = calib.timeOffset(channel);
+        timeOffset*=_timeOffsetScale;   //random time offsets can be scaled to a wider or smaller spread
+        if(timeOffset<_timeOffsetCutoffLow)  timeOffset=_timeOffsetCutoffLow;  //random time offsets can be cutoff at some limit
+        if(timeOffset>_timeOffsetCutoffHigh) timeOffset=_timeOffsetCutoffHigh;
+      }
 
       _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, CRVDigitizationPeriod, pedestal, calibPulseArea, calibPulseHeight);
 

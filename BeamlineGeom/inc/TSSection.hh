@@ -16,21 +16,25 @@ namespace mu2e {
   public:
 
     virtual ~TSSection(){}
+    TSSection( TSSection const&  ) = default;
+    TSSection( TSSection&&       ) = default;
+    TSSection& operator=(TSSection const&  ) = default;
+    TSSection& operator=(TSSection &&      ) = default;
 
     TSSection() :
       _origin(CLHEP::Hep3Vector()), _rotation(CLHEP::HepRotation()), _materialName("")
     {}
 
-    explicit TSSection(CLHEP::Hep3Vector origin,
-                       CLHEP::HepRotation rotation = CLHEP::HepRotation(),
-                       std::string materialName="") :
+    explicit TSSection(CLHEP::Hep3Vector const& origin,
+                       CLHEP::HepRotation const& rotation = CLHEP::HepRotation(),
+                       std::string const& materialName="") :
       _origin(origin),  _rotation(rotation),  _materialName(materialName)
     {}
 
     CLHEP::Hep3Vector  const & getGlobal()   const { return _origin; }
     CLHEP::HepRotation const * getRotation() const { return &_rotation; }
     std::string const & getMaterial() const { return _materialName; }
-    void setMaterial( std::string material ) { _materialName = material; }
+    void setMaterial( std::string const&  material ) { _materialName = material; }
 
   protected:
 

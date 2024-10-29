@@ -33,6 +33,12 @@ cet_make_library(
       Offline::TrackerGeom
 )
 
+cet_build_plugin(MergeKalSeeds art::module
+    REG_SOURCE src/MergeKalSeeds_module.cc
+    LIBRARIES REG
+      Offline::TrkReco
+)
+
 cet_build_plugin(MergeHelices art::module
     REG_SOURCE src/MergeHelices_module.cc
     LIBRARIES REG
@@ -40,6 +46,14 @@ cet_build_plugin(MergeHelices art::module
       
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
+)
+
+cet_build_plugin(SimpleKalSeedSelector art::tool
+    REG_SOURCE src/SimpleKalSeedSelector_tool.cc
+    LIBRARIES REG
+      Offline::TrkReco
+      
+      Offline::Mu2eKinKal
 )
 
 cet_build_plugin(TrkRecoMcUtils art::tool

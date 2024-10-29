@@ -20,9 +20,6 @@
 //Art/FCL:
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/Sequence.h"
-#include "fhiclcpp/types/Table.h"
 
 #include <TObject.h>
 #include <TROOT.h>

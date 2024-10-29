@@ -6,26 +6,35 @@ nonProtonGenIds : ["unknown", "particleGun", "cosmicToy", "cosmicDYB", "cosmic",
 muLifeGenIds : [ "StoppedParticleReactionGun", "dioTail", "ExternalRMC", "InternalRMC",
   "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", "MuCapPhotonGenTool", "MuCapGammaRayGenTool" ]
 CommonMC: {
-  producers: {
-    #
-    # time offset producers
-    protonTimeOffset : {
-        module_type: ProtonTimeOffset
-        randPDFparameters : {
-            pulseType : default
-            limitingHalfWidth : 125.0
-            potPulse  : "Offline/Mu2eUtilities/data/potTimingDistribution_20160511.txt"
-            acDipole  : "Offline/Mu2eUtilities/data/acDipoleTransmissionFunction_20160511.txt"
-        }
-    }
-    cosmicTimeOffset : { module_type: CosmicTimeOffset }
-    # Event window marker
+  #
+  # producers
+  #
+  # Event window marker
+  DigiProducers : {
     EWMProducer : {
       module_type : EventWindowMarkerProducer
       RecoFromMCTruth : true
       RecoFromMCTruthErr : 0.5
     }
   }
+
+  protonTimeOffset : {
+    module_type: ProtonTimeOffset
+    randPDFparameters : {
+      pulseType : default
+      limitingHalfWidth : 125.0
+      potPulse  : "Offline/Mu2eUtilities/data/potTimingDistribution_20160511.txt"
+      acDipole  : "Offline/Mu2eUtilities/data/acDipoleTransmissionFunction_20160511.txt"
+    }
+  }
+
+  MakeSS : {
+    module_type : MakeSurfaceSteps
+    debugLevel : 0
+    MaxDistGap : 0.1 # mm
+    MaxTimeGap : 0.1 # ns
+  }
+
   FindMCPrimary : {
     module_type : FindMCPrimary
     debugLevel : 0
@@ -43,7 +52,27 @@ CommonMC: {
     debugLevel : 0
   }
   DigiSim : [ EWMProducer  ]
+  #
+  # Analyzers
+  #
+  SSDiag : {
+    module_type : SurfaceStepDiag
+    SurfaceStepCollection : "MakeSS"
+  }
 }
+CommonMC.MakeSSDigi : {# make SurfaceSteps from digitization output
+  @table::CommonMC.MakeSS
+    VDStepPointMCs : "compressDigiMCs:virtualdetector"
+    AbsorberStepPointMCs : "compressDigiMCs:protonabsorber"
+    TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
+}
+CommonMC.MakeSSReco : {# make SurfaceSteps from reconstruction output
+  @table::CommonMC.MakeSS
+    VDStepPointMCs : "compressRecoMCs:virtualdetector"
+    AbsorberStepPointMCs : "compressRecoMCs:protonabsorber"
+    TargetStepPointMCs : "compressRecoMCs:stoppingtarget"
+}
+
 #------------------------------------------------------------------------------
 
 END_PROLOG

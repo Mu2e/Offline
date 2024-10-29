@@ -99,6 +99,8 @@ namespace mu2e {
 
       int     nHitsLoopFailed [kMaxHelicities][kMaxSeeds];
 
+      float   eDepAvg[kMaxHelicities][kMaxSeeds];
+
       int maxSeeds() { return kMaxSeeds; }
 
     };

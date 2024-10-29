@@ -96,7 +96,7 @@ namespace mu2e
       int _nsh, _nch; // number of associated straw hits
       int _strawid, _straw, _panel, _plane, _level; // strawid info
       int _eend;
-      int _esel,_rsel, _tsel, _nsel,  _bkgclust, _bkg, _sth, _ph, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel, _sline;
+      int _esel,_rsel, _tsel, _nsel,  _bkgclust, _bkg, _sth, _dead, _ph, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel, _sline;
       // mc diag
       XYZVectorF _mcpos, _mcmom;
       float _mctime, _mcwdist;
@@ -167,6 +167,7 @@ namespace mu2e
     _chdiag->Branch("bkgclust",&_bkgclust,"bkgclust/I");
     _chdiag->Branch("bkg",&_bkg,"bkg/I");
     _chdiag->Branch("sth",&_sth,"sth/I");
+    _chdiag->Branch("dead",&_dead,"dead/I");
     _chdiag->Branch("ph",&_ph,"ph/I");
     _chdiag->Branch("tdiv",&_tdiv,"tdiv/I");
     _chdiag->Branch("strawxtalk",&_strawxtalk,"strawxtalk/I");
@@ -246,6 +247,7 @@ namespace mu2e
       _qual = ch.qual();
       auto const& flag = ch.flag();
       _sth = flag.hasAllProperties(StrawHitFlag::stereo);
+      _dead = flag.hasAllProperties(StrawHitFlag::dead);
       _ph = flag.hasAllProperties(StrawHitFlag::panelcombo);
       _tdiv = flag.hasAllProperties(StrawHitFlag::tdiv);
       _esel = flag.hasAllProperties(StrawHitFlag::energysel);

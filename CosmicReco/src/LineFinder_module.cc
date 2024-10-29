@@ -53,6 +53,7 @@ namespace mu2e{
         fhicl::Atom<int> nsteps{Name("NSteps"), Comment("Number of steps per straw")};
         fhicl::Atom<int> ntsteps{Name("NTSteps"), Comment("Number of transverse steps per straw")};
         fhicl::Atom<float> stepsize{Name("StepSize"), Comment("Size of each step in fraction of res")};
+        fhicl::Atom<unsigned> nmax{Name("MaxPairs"), Comment("Max pairs to try")};
         fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for straw hit collection")};
         fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
       };
@@ -72,12 +73,13 @@ namespace mu2e{
       float _t0offset;
       int _Nsteps, _Ntsteps;
       float _stepSize;
+      unsigned _nmax;
       art::InputTag  _chToken;
       art::InputTag  _tcToken;
 
       ProditionsHandle<Tracker> _alignedTracker_h;
 
-      int findLine(const ComboHitCollection& shC, art::Event const& event, CosmicTrackSeed &tseed);
+      int findLine(const ComboHitCollection& shC, std::vector<StrawHitIndex> const& shiv, art::Event const& event, CosmicTrackSeed& tseed);
   };
 
 
@@ -90,6 +92,7 @@ namespace mu2e{
         _Nsteps (conf().nsteps()),
         _Ntsteps (conf().ntsteps()),
         _stepSize (conf().stepsize()),
+        _nmax (conf().nmax()),
             _chToken (conf().chToken()),
         _tcToken (conf().tcToken())
 {
@@ -112,24 +115,18 @@ void LineFinder::produce(art::Event& event ) {
 
   for (size_t index=0;index< tccol.size();++index) {
     const auto& tclust = tccol[index];
+    std::vector<StrawHitIndex> shiv;
+    // get collection at straw level
+    auto chcp = chcol.fillStrawHitIndices(tclust.hits(),shiv,StrawIdMask::uniquestraw);
+    auto chc = *chcp;
 
-    // convert (presumably) panel hits in time clusterto straw hits
     CosmicTrackSeed tseed;
-    ComboHitCollection tchits;
-    tchits.reserve(tclust.hits().size()*2); // guess 2 straw hits/panel hit
-
-    int nhits = 0;
-    ComboHitCollection::CHCIter chids;
-    chcol.fillComboHits( tclust.hits(), chids);
-    for (auto const& it : chids){
-      tchits.push_back(*it);
-      nhits += it->nStrawHits();
-    }
+    tseed._straw_chits.setAsSubset(chH,StrawIdMask::uniquestraw);
 
     tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
     tseed._track.converged = true;
 
-    int seedSize = findLine(tchits, event, tseed);
+    int seedSize = findLine(chc, shiv, event, tseed);
     if (_diag > 1)
       std::cout << "LineFinder: seedSize = " << seedSize << std::endl;
 
@@ -148,7 +145,7 @@ void LineFinder::produce(art::Event& event ) {
   event.put(std::move(seed_col));
 }
 
-int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event, CosmicTrackSeed& tseed){
+int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitIndex> const& shiv, art::Event const& event, CosmicTrackSeed& tseed){
 
   //mu2e::GeomHandle<mu2e::Tracker> th;
   auto tracker = _alignedTracker_h.getPtr(event.id());//th.get();
@@ -159,19 +156,23 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
   CLHEP::Hep3Vector seedInt(0,0,0);
 
   bool found_all = false;
+  unsigned n = 0;
   // lets get the best pairwise vector
-  for (size_t i=0;i<shC.size();i++){
+  for (size_t i=0;i<shiv.size();i++){
+    size_t iloc = shiv[i];
     if (found_all)
       break;
-    Straw const& strawi = tracker->getStraw(shC[i].strawId());
-    for (size_t j=i+1;j<shC.size();j++){
+    Straw const& strawi = tracker->getStraw(shC[iloc].strawId());
+    for (size_t j=shiv.size()-1;j>i;j--){
+      size_t jloc = shiv[j];
       if (found_all)
         break;
-      Straw const& strawj = tracker->getStraw(shC[j].strawId());
+      n += 1;
+      Straw const& strawj = tracker->getStraw(shC[jloc].strawId());
       for (int is=-1*_Nsteps;is<_Nsteps+1;is++){
-        CLHEP::Hep3Vector ipos = shC[i].posCLHEP() + strawi.getDirection()*shC[i].wireRes()*_stepSize*is;
+        CLHEP::Hep3Vector ipos = shC[iloc].posCLHEP() + strawi.getDirection()*shC[iloc].wireRes()*_stepSize*is;
         for (int js=-1*_Nsteps;js<_Nsteps+1;js++){
-          CLHEP::Hep3Vector jpos = shC[j].posCLHEP() + strawj.getDirection()*shC[j].wireRes()*_stepSize*js;
+          CLHEP::Hep3Vector jpos = shC[jloc].posCLHEP() + strawj.getDirection()*shC[jloc].wireRes()*_stepSize*js;
 
           CLHEP::Hep3Vector newdir = (jpos-ipos).unit();
           CLHEP::Hep3Vector icross = (jpos-ipos).cross(strawi.getDirection()).unit();
@@ -184,17 +185,18 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
               // now loop over all hits and see how many are in this track
               int count = 0;
               double ll = 0;
-              for (size_t k=0;k<shC.size();k++){
-                Straw const& strawk = tracker->getStraw(shC[k].strawId());
+              for (size_t k=0;k<shiv.size();k++){
+                size_t kloc = shiv[k];
+                Straw const& strawk = tracker->getStraw(shC[kloc].strawId());
                 TwoLinePCA pca( strawk.getMidPoint(), strawk.getDirection(),
                     ipos, newdir);
                 double dist = (pca.point1()-strawk.getMidPoint()).mag();
                 if (pca.dca() < _maxDOCA && dist < strawk.halfLength()){
                   count += 1;
-                  ll += pow(dist-shC[k].wireDist(),2)/shC[k].wireVar();
+                  ll += pow(dist-shC[kloc].wireDist(),2)/shC[kloc].wireVar();
                 }
               }
-              if (count == (int) shC.size())
+              if (count == (int) shiv.size())
                 found_all = true;
               if (count > bestcount || (count == bestcount && ll < bestll)){
                 bestcount = count;
@@ -208,6 +210,9 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
           }
         }
       }
+      if (n > _nmax){
+        i = shiv.size();j = 1;
+      }
     }
   }
 
@@ -219,17 +224,20 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
 
   double avg_t0 = 0;
   int good_hits = 0;
-  for (size_t k=0;k<shC.size();k++){
-    Straw const& strawk = tracker->getStraw(shC[k].strawId());
+  for (size_t k=0;k<shiv.size();k++){
+    size_t kloc = shiv[k];
+    Straw const& strawk = tracker->getStraw(shC[kloc].strawId());
     TwoLinePCA pca( strawk.getMidPoint(), strawk.getDirection(),
         seedInt, seedDir);
     double dist = (pca.point1()-strawk.getMidPoint()).dot(strawk.getDirection());
     if (pca.dca() < _maxDOCA && fabs(dist) < strawk.halfLength()){
       double traj_time = ((pca.point2() - seedInt).dot(seedDir))/299.9;
-      double hit_t0 = shC[k].time() - shC[k].driftTime() - shC[k].propTime() - traj_time;
+      double hit_t0 = shC[kloc].time() - shC[kloc].driftTime() - shC[kloc].propTime() - traj_time;
       avg_t0 += hit_t0;
       good_hits++;
-      tseed._straw_chits.push_back(shC[k]);
+      ComboHit combohit;
+      combohit.init(shC[kloc],kloc);
+      tseed._straw_chits.push_back(std::move(combohit));
     }
   }
   avg_t0 /= good_hits;
@@ -257,22 +265,6 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
   TrackEquation XYZTrack(xyzint,xyzdir);
   tseed._track.SetFitEquation(XYZTrack);
   tseed._track.SetMinuitEquation(XYZTrack);
-
-  // For compatibility FIXME
-  for(size_t ich= 0; ich<tseed._straw_chits.size(); ich++){
-    std::vector<StrawHitIndex> shitids;
-    tseed._straw_chits.fillStrawHitIndices(ich, shitids);
-
-    /*
-    for(auto const& ids : shitids){
-      size_t    istraw   = (ids);
-      TrkStrawHitSeed tshs;
-      tshs._index  = istraw;
-      tshs._t0 = tseed._t0;
-      tseed._trkstrawhits.push_back(tshs);
-    }
-    */
-  }
 
   return good_hits;
 }

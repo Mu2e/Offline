@@ -24,6 +24,8 @@ namespace mu2e {
         public:
 
            //no constructor for this interface
+           // Fixme: clang-tidy finds a rule of 5 violation.
+           //        The obvious fix create errors compiling derived classes due to missing default c
            virtual ~Calorimeter(){};
 
 
