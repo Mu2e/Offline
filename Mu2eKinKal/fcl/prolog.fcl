@@ -382,6 +382,13 @@ Mu2eKinKal : {
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
   }
+
+  LINEEXTRAPOLATION : {
+    Tolerance : 1.0e-4 # fractional momentum change
+    MaxDt : 200.0 # (ns)
+    MinV : 1e-5
+    ToCRV : true
+  }
 }
 
 Mu2eKinKal : {
@@ -437,6 +444,7 @@ Mu2eKinKal : {
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
     ModuleSettings : @local::Mu2eKinKal.KINEMATICLINE
+    Extrapolation : @local::Mu2eKinKal.LINEEXTRAPOLATION
   }
 
   KKOffSpillSeedFit : {
