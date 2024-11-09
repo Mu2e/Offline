@@ -117,7 +117,7 @@ namespace mu2e {
           fhicl::Sequence<uint16_t> allPlanes{ Name("AllHitsPlanes"), Comment("planes to read all hits"), std::vector<uint16_t>{} };
           fhicl::Atom<int> diagpath{ Name("DiagPath"), Comment("Digitization Path for waveform diagnostics") ,0 };
           fhicl::Atom<string> spinstance { Name("StrawGasStepInstance"), Comment("StrawGasStep Instance name"),""};
-          fhicl::Atom<string> spmodule { Name("StrawGasStepModule"), Comment("StrawGasStep Module name"),""};
+          fhicl::Sequence<art::InputTag> spmodules { Name("StrawGasStepModules"), Comment("StrawGasStep Module names")};
           fhicl::Atom<bool> usestatus { Name("UseStatus"), Comment("Use TrackerStatus when making digis"), false};
           fhicl::Atom<art::InputTag> mixedDigisTag { Name("MixedDigisTag"), Comment("Source of digis to overlay event onto"), ""};
           fhicl::Atom<bool> mixDigiMCs { Name("MixDigiMCs"), Comment("Propagate mixed StrawDigiMCs through module"), false};
@@ -323,11 +323,14 @@ namespace mu2e {
       // This selector will select only data products with the given instance name.
       _selector{ art::ProductInstanceNameSelector(config().spinstance())}
       {
-        if (config().spmodule() != ""){
-          _selector = art::Selector(_selector && art::ModuleLabelSelector(config().spmodule()));
+        vector<art::InputTag> tags = config().spmodules();
+        if (0 < tags.size()){
+          _selector = art::Selector(_selector && art::InputTagListSelector(tags.begin(), tags.end(), ""));
         }
         // Tell the framework what we consume.
-        consumesMany<StrawGasStepCollection>();
+        for (const auto& tag: tags){
+          consumes<StrawGasStepCollection>(tag);
+        }
         consumes<EventWindowMarker>(_ewMarkerTag);
         consumes<ProtonBunchTimeMC>(_pbtmcTag);
         // Tell the framework what we make.
