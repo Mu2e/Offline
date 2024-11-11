@@ -65,6 +65,11 @@ namespace mu2e
       fhicl::Atom<double> singlePEWaveformPrecision{Name("singlePEWaveformPrecision")};    //1.0 ns
       fhicl::Atom<double> singlePEWaveformStretchFactor{Name("singlePEWaveformStretchFactor")};    //1.047
       fhicl::Atom<double> singlePEReferenceCharge{Name("singlePEReferenceCharge")}; //2.652e-13 C (the charge which was used to generate the above 1PE waveform)
+
+      fhicl::Atom<int> numberSamplesZS{Name("numberSamplesZS")}; //12
+      fhicl::Atom<int> numberSamplesNZS{Name("numberSamplesNZS")}; //134
+      fhicl::Atom<bool> simulateNZS{Name("simulateNZS")}; //false
+      fhicl::Atom<int> prescalingFactorNZS{Name("prescalingFactorNZS")}; //10
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit CrvWaveformsGenerator(const Parameters& conf);
@@ -88,6 +93,11 @@ namespace mu2e
     double                              _timeOffsetCutoffHigh;
     bool                                _useTimeOffsetDB;
     double                              _singlePEWaveformMaxTime;
+
+    int                                 _numberSamplesZS;
+    int                                 _numberSamplesNZS;
+    bool                                _simulateNZS;
+    int                                 _prescalingFactorNZS;
 
     CLHEP::HepRandomEngine&             _engine;
     CLHEP::RandFlat                     _randFlat;
@@ -124,6 +134,10 @@ namespace mu2e
     _timeOffsetCutoffHigh(conf().timeOffsetCutoffHigh()),
     _useTimeOffsetDB(conf().useTimeOffsetDB()),
     _singlePEWaveformMaxTime(conf().singlePEWaveformMaxTime()),
+    _numberSamplesZS(conf().numberSamplesZS()),
+    _numberSamplesNZS(conf().numberSamplesNZS()),
+    _simulateNZS(conf().simulateNZS()),
+    _prescalingFactorNZS(conf().prescalingFactorNZS()),
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat{_engine},
     _randGaussQ{_engine}
@@ -137,6 +151,7 @@ namespace mu2e
     _makeCrvWaveforms->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformPrecision, singlePEWaveformStretchFactor,
                                             _singlePEWaveformMaxTime, singlePEReferenceCharge);
     produces<CrvDigiMCCollection>();
+    if(_simulateNZS) produces<CrvDigiMCCollection>("NZS");
   }
 
   void CrvWaveformsGenerator::beginRun(art::Run &run)
@@ -162,6 +177,7 @@ namespace mu2e
       event.getByLabel(_protonBunchTimeMCTag, protonBunchTimeMC);
       eventWindowStart = -protonBunchTimeMC->pbtime_; //200ns...225ns
 
+      //for ZS data
       digitizationStart=eventWindowStart+_digitizationStart; //400ns...425ns
       digitizationEnd=eventWindowStart+_digitizationEnd; //1700ns...1725ns
     }
@@ -170,6 +186,7 @@ namespace mu2e
     auto const& crvChannelMap = _crvChannelMap.get(event.id());
 
     std::unique_ptr<CrvDigiMCCollection> crvDigiMCCollection(new CrvDigiMCCollection);
+    std::unique_ptr<CrvDigiMCCollection> crvDigiMCCollectionNZS(new CrvDigiMCCollection);
 
     art::Handle<CrvSiPMChargesCollection> crvSiPMChargesCollection;
     event.getByLabel(_crvSiPMChargesModuleLabel,"",crvSiPMChargesCollection);
@@ -194,6 +211,7 @@ namespace mu2e
       uint16_t offlineChannel = barIndex.asUint()*4 + SiPM;
       CRVROC   onlineChannel  = crvChannelMap.online(offlineChannel);
       uint16_t FEB            = onlineChannel.FEB();
+      uint16_t FEBchannel     = onlineChannel.FEBchannel();  //will be used for the NZS data below
 
       double timeOffset=0.0;
       if(_useTimeOffsetDB)
@@ -207,14 +225,17 @@ namespace mu2e
         if(timeOffset>_timeOffsetCutoffHigh) timeOffset=_timeOffsetCutoffHigh;
       }
 
-      const std::vector<CrvSiPMCharges::SingleCharge> &timesAndCharges = iter->GetCharges();
-      std::vector<ChargeCluster> chargeClusters;
-      FindChargeClusters(timesAndCharges, chargeClusters, timeOffset);
-
       //need to find where this FEB's TDC=0 (first point after the event window start, i.e. first clock tick after POT) is located with respect to the global time
       //can be anywhere within the digitization period
       double digitizationPointShiftFEB=_digitizationPointShiftFEBs[FEB];
       double TDC0time=eventWindowStart+digitizationPointShiftFEB;  //that's the time when TDC=0 for this FEB
+
+      //charges and times
+      const std::vector<CrvSiPMCharges::SingleCharge> &timesAndCharges = iter->GetCharges();
+
+      //zero suppressed data
+      std::vector<ChargeCluster> chargeClusters;
+      FindChargeClusters(timesAndCharges, chargeClusters, timeOffset);
 
       for(size_t iCluster=0; iCluster<chargeClusters.size(); ++iCluster)
       {
@@ -232,7 +253,7 @@ namespace mu2e
                                         fullWaveform, TDCstartTime, CRVDigitizationPeriod);
         _makeCrvWaveforms->AddElectronicNoise(fullWaveform, _noise, _randGaussQ);
 
-        //break the waveform apart into short pieces (CrvDigiMC::NSamples) and apply the zero suppression
+        //break the waveform apart into short pieces (_numberSampleZS) and apply the zero suppression
         //don't digitize outside of digitizationStart and digitizationEnd
         for(size_t i=0; i<fullWaveform.size(); ++i)
         {
@@ -242,11 +263,12 @@ namespace mu2e
             double digiStartTime=TDCstartTime+i*CRVDigitizationPeriod;
             if(digiStartTime<digitizationStart) continue; //digis cannot start before the digitization interval
             if(digiStartTime>digitizationEnd) continue; //digis cannot start after the digitization interval
-//            if(digiStartTime+(CrvDigiMC::NSamples-1)*CRVDigitizationPeriod>digitizationEnd) continue; //digis cannot end after the digitization interval
+//            if(digiStartTime+(_numberSamplesZS-1)*CRVDigitizationPeriod>digitizationEnd) continue; //digis cannot end after the digitization interval
 
             //collect voltages
-            std::array<double,CrvDigiMC::NSamples> voltages{0};
-            for(size_t singleWaveformIndex=0; singleWaveformIndex<CrvDigiMC::NSamples; ++i, ++singleWaveformIndex)
+            std::vector<double> voltages;
+            voltages.resize(_numberSamplesZS);
+            for(int singleWaveformIndex=0; singleWaveformIndex<_numberSamplesZS; ++i, ++singleWaveformIndex)
             {
 //              if(i<fullWaveform.size() && TDCstartTime+i*CRVDigitizationPeriod<=digitizationEnd) voltages[singleWaveformIndex]=fullWaveform[i];  //cuts off pulse in the middle of the hit
               if(i<fullWaveform.size()) voltages[singleWaveformIndex]=fullWaveform[i];
@@ -259,7 +281,7 @@ namespace mu2e
             for(size_t j=0; j<timesAndCharges.size(); ++j)
             {
               if(timesAndCharges[j]._time>=digiStartTime-_singlePEWaveformMaxTime &&
-                 timesAndCharges[j]._time<=digiStartTime+CrvDigiMC::NSamples*CRVDigitizationPeriod)
+                 timesAndCharges[j]._time<=digiStartTime+_numberSamplesZS*CRVDigitizationPeriod)
               {
                 steps.insert(timesAndCharges[j]._step);
                 if(timesAndCharges[j]._step.isNonnull()) simparticles[timesAndCharges[j]._step->simParticle()]++;
@@ -287,13 +309,45 @@ namespace mu2e
             }
 
             --i;
-            crvDigiMCCollection->emplace_back(voltages, stepVector, simParticle, digiStartTime, TDC0time, barIndex, SiPM);
+            crvDigiMCCollection->emplace_back(voltages, stepVector, simParticle, digiStartTime, TDC0time, false, barIndex, SiPM);
+          }
+        } //waveform
+      } //charge cluster for zero suppressed data
+
+      if(_simulateNZS &&
+         event.event()%CRVId::nChanPerFPGA==FEBchannel%CRVId::nChanPerFPGA &&  //only one of the 16 channels of an FPGA of an FEB will record the NZS data
+         event.event()%_prescalingFactorNZS==0) //a pre-scaling of the NZS data will be applied
+      {
+        //non-zero suppressed data
+        //use only charges for the first 134 samples (_numberSamplesNZS)
+        std::vector<std::pair<double,double> > timesAndChargesNZS;
+        for(size_t iCharge=0; iCharge<timesAndCharges.size(); ++iCharge)
+        {
+          if(timesAndCharges[iCharge]._time>=TDC0time-_singlePEWaveformMaxTime &&
+             timesAndCharges[iCharge]._time<=TDC0time+CRVDigitizationPeriod*_numberSamplesNZS)
+          {
+            timesAndChargesNZS.emplace_back(timesAndCharges[iCharge]._time,timesAndCharges[iCharge]._charge);
           }
         }
-      }
-    }
+
+        //create NZS waveform
+        std::vector<double> fullWaveformNZS;
+        _makeCrvWaveforms->MakeWaveform(timesAndChargesNZS, fullWaveformNZS, TDC0time, CRVDigitizationPeriod);
+        //record first 134 samples (_numberSamplesNZS)
+        //assumed to be always within eventWindowStart and eventWindowEnd
+        fullWaveformNZS.resize(_numberSamplesNZS);
+        _makeCrvWaveforms->AddElectronicNoise(fullWaveformNZS, _noise, _randGaussQ);
+
+        //use empty step vector and empty simParticle for NZS
+        std::vector<art::Ptr<CrvStep> > stepVectorNZS;
+        art::Ptr<SimParticle> simParticleNZS;  //will be set to Null automatically
+
+        crvDigiMCCollectionNZS->emplace_back(fullWaveformNZS, stepVectorNZS, simParticleNZS, TDC0time, TDC0time, true, barIndex, SiPM);
+      } //NZS
+    } //SiPMCharges of one channel
 
     event.put(std::move(crvDigiMCCollection));
+    if(_simulateNZS) event.put(std::move(crvDigiMCCollectionNZS),"NZS");
   } // end produce
 
   void CrvWaveformsGenerator::FindChargeClusters(const std::vector<CrvSiPMCharges::SingleCharge> &timesAndCharges,
