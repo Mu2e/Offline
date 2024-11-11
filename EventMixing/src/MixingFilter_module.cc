@@ -3,6 +3,7 @@
 // October 2024
 
 // stl
+#include <iterator>
 #include <memory>
 #include <vector>
 
@@ -118,9 +119,8 @@ namespace mu2e{
       return rv;
     };
     out.reserve(in.size());
-    auto it = std::copy_if(in.begin(), in.end(), out.begin(), selection);
-    size_t size = std::distance(out.begin(), it);
-    out.resize(size);
+    auto insert = std::back_inserter(out);
+    std::copy_if(in.begin(), in.end(), insert, selection);
   }
 } // namespace mu2e
 
