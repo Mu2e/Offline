@@ -30,11 +30,15 @@ namespace mu2e{
       struct Config{
         fhicl::Atom<std::string> process{
           fhicl::Name("process"),
-          fhicl::Comment("Process name to remove")
+          fhicl::Comment("Steps of particles descendent from this process are removed")
         };
         fhicl::Atom<std::string> volume{
           fhicl::Name("volume"),
-          fhicl::Comment("Volume name to remove")
+          fhicl::Comment("Steps of particles descendent from process in this volume are removed")
+        };
+        fhicl::Atom<double> momentum_threshold{
+          fhicl::Name("momentum_threshold"),
+          fhicl::Comment("Steps of particles descendent from a particle of below this momentum are removed")
         };
       };
 
@@ -49,6 +53,7 @@ namespace mu2e{
     protected:
       ProcessCode _processCode;
       std::string _volume;
+      double _momentum_threshold;
       // this will be obviated by direct queries via PhysicalVolumeMultiHelper
       std::unique_ptr<InnerProtonAbsorberPseudoVolumeLookupTool> _lookup;
 
