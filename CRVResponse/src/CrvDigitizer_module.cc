@@ -38,11 +38,18 @@ namespace mu2e
   {
 
     public:
-    explicit CrvDigitizer(fhicl::ParameterSet const& pset);
+    using Name=fhicl::Name;
+    using Comment=fhicl::Comment;
+    struct Config
+    {
+      fhicl::Atom<std::string> crvWaveformsModuleLabel{Name("crvWaveformsModuleLabel")};
+      fhicl::Atom<double>      ADCconversionFactor{Name("ADCconversionFactor")};
+      fhicl::Atom<int>         pedestal{Name("pedestal")};
+      fhicl::Atom<bool>        simulateNZS{Name("simulateNZS")};
+    };
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit CrvDigitizer(const Parameters& conf);
     void produce(art::Event& e);
-    void beginJob();
-    void beginRun(art::Run &run);
-    void endJob();
 
     private:
     boost::shared_ptr<mu2eCrv::MakeCrvDigis> _makeCrvDigis;
@@ -50,66 +57,55 @@ namespace mu2e
     std::string _crvWaveformsModuleLabel;
     double      _ADCconversionFactor;
     int         _pedestal;
+    bool        _simulateNZS;
   };
 
-  CrvDigitizer::CrvDigitizer(fhicl::ParameterSet const& pset) :
-    art::EDProducer{pset},
-    _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
-    _ADCconversionFactor(pset.get<double>("ADCconversionFactor")),
-    _pedestal(pset.get<int>("pedestal"))
+  CrvDigitizer::CrvDigitizer(const Parameters& conf) :
+    art::EDProducer{conf},
+    _crvWaveformsModuleLabel(conf().crvWaveformsModuleLabel()),
+    _ADCconversionFactor(conf().ADCconversionFactor()),
+    _pedestal(conf().pedestal()),
+    _simulateNZS(conf().simulateNZS())
   {
     produces<CrvDigiCollection>();
+    if(_simulateNZS) produces<CrvDigiCollection>("NZS");
     _makeCrvDigis = boost::shared_ptr<mu2eCrv::MakeCrvDigis>(new mu2eCrv::MakeCrvDigis());
-  }
-
-  void CrvDigitizer::beginJob()
-  {
-  }
-
-  void CrvDigitizer::endJob()
-  {
-  }
-
-  void CrvDigitizer::beginRun(art::Run &run)
-  {
   }
 
   void CrvDigitizer::produce(art::Event& event)
   {
-    std::unique_ptr<CrvDigiCollection> crvDigiCollection(new CrvDigiCollection);
+    std::array<std::unique_ptr<CrvDigiCollection>,2> crvDigiCollection = {std::unique_ptr<CrvDigiCollection>(new CrvDigiCollection),   //ZS
+                                                                          std::unique_ptr<CrvDigiCollection>(new CrvDigiCollection)};  //NZS
+    std::array<art::Handle<CrvDigiMCCollection>,2> crvDigiMCCollection;
+    event.getByLabel(_crvWaveformsModuleLabel,"",crvDigiMCCollection[0]);
+    if(_simulateNZS) event.getByLabel(_crvWaveformsModuleLabel,"NZS",crvDigiMCCollection[1]);
 
-    art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
-    event.getByLabel(_crvWaveformsModuleLabel,"",crvDigiMCCollection);
-
-    for(CrvDigiMCCollection::const_iterator iter=crvDigiMCCollection->begin();
-        iter!=crvDigiMCCollection->end(); iter++)
+    for(int i=0; i<(_simulateNZS?2:1); ++i)
     {
-      const CrvDigiMC &crvDigiMC = *iter;
-      const CRSScintillatorBarIndex &barIndex = crvDigiMC.GetScintillatorBarIndex();
-      const int SiPM = crvDigiMC.GetSiPMNumber();
-      const std::array<double,CrvDigiMC::NSamples> &voltages = crvDigiMC.GetVoltages();
-      double startTime = crvDigiMC.GetStartTime();
-      double TDC0time = crvDigiMC.GetTDC0Time();
+      for(CrvDigiMCCollection::const_iterator iter=crvDigiMCCollection[i]->begin(); iter!=crvDigiMCCollection[i]->end(); iter++)
+      {
+        const CrvDigiMC &crvDigiMC = *iter;
+        const CRSScintillatorBarIndex &barIndex = crvDigiMC.GetScintillatorBarIndex();
+        const int SiPM = crvDigiMC.GetSiPMNumber();
+        const std::vector<double> &voltages = crvDigiMC.GetVoltages();
+        double startTime = crvDigiMC.GetStartTime();
+        double TDC0time = crvDigiMC.GetTDC0Time();
+        double NZS = crvDigiMC.IsNZS();
 
-      //start time gets measured with respect to FEB's TDC near the event window start.
-      //that's the TDC that gets set to TDC=0 and can be anywhere within: event window start <= t < event window start + digitization period
-      //the waveform generator makes sure that the start time - TDC0time is a multiple of the digitization period
-      startTime-=TDC0time;
+        //start time gets measured with respect to FEB's TDC near the event window start.
+        //that's the TDC that gets set to TDC=0 and can be anywhere within: event window start <= t < event window start + digitization period
+        //the waveform generator makes sure that the start time - TDC0time is a multiple of the digitization period
+        startTime-=TDC0time;
 
-      std::vector<double> voltageVector;
-      for(size_t i=0; i<voltages.size(); i++) voltageVector.push_back(voltages[i]);
+        _makeCrvDigis->SetWaveform(voltages,_ADCconversionFactor,_pedestal, startTime, CRVDigitizationPeriod);
+        const std::vector<int16_t> &ADCs = _makeCrvDigis->GetADCs();
+        uint16_t startTDC = _makeCrvDigis->GetTDC();
 
-      _makeCrvDigis->SetWaveform(voltageVector,_ADCconversionFactor,_pedestal, startTime, CRVDigitizationPeriod);
-      const std::vector<int16_t> &ADCs = _makeCrvDigis->GetADCs();
-      uint16_t startTDC = _makeCrvDigis->GetTDC();
+        crvDigiCollection[i]->emplace_back(ADCs, startTDC, NZS, barIndex, SiPM);
+      }
 
-      std::array<int16_t, CrvDigi::NSamples> ADCArray={};
-      for(size_t i=0; i<ADCs.size() && i<CrvDigi::NSamples; i++) ADCArray[i]=ADCs[i];
-
-      crvDigiCollection->emplace_back(ADCArray, startTDC, barIndex, SiPM);
+      event.put(std::move(crvDigiCollection[i]),(i==1?"NZS":""));
     }
-
-    event.put(std::move(crvDigiCollection));
   } // end produce
 
 } // end namespace mu2e

@@ -19,17 +19,21 @@ services :
 physics: {
   producers :
   {
+    CrvRecoPulses: @local::CrvRecoPulses
   }
   analyzers:
   {
     CrvCalibration: @local::CrvCalibration
   }
 
-  TriggerPath : [ ]
+  TriggerPath : [ CrvRecoPulses ]
   EndPath :     [ CrvCalibration ]
   trigger_paths : [ TriggerPath ]
   end_paths :     [ EndPath ]
 }
+
+physics.producers.CrvRecoPulses.NZSdata : true
+physics.producers.CrvRecoPulses.minADCdifference   : 5    //minimum ADC difference above pedestal to be considered for reconstruction
 
 services.scheduler.wantSummary: true
 services.TimeTracker.printSummary: true

@@ -15,25 +15,25 @@ namespace mu2e
   {
     public:
 
-    static constexpr size_t NSamples = 8; //FIXME: this is also a parameter in CrvDigi
-
     CrvDigiMC() {}
-    CrvDigiMC(const std::array<double,NSamples> &voltages, const std::vector<art::Ptr<CrvStep> > &steps,
-              art::Ptr<SimParticle> simParticle, double startTime, double TDC0Time,
+    CrvDigiMC(const std::vector<double> &voltages, const std::vector<art::Ptr<CrvStep> > &steps,
+              art::Ptr<SimParticle> simParticle, double startTime, double TDC0Time, bool NZS,
               mu2e::CRSScintillatorBarIndex scintillatorBarIndex, int SiPMNumber) :
                           _voltages(voltages),
                           _steps(steps),
                           _simParticle(simParticle),
                           _startTime(startTime),
                           _TDC0Time(TDC0Time),
+                          _NZS(NZS),
                           _scintillatorBarIndex(scintillatorBarIndex),
                           _SiPMNumber(SiPMNumber) {}
 
-    const std::array<double,NSamples>         &GetVoltages() const        {return _voltages;}
+    const std::vector<double>                 &GetVoltages() const        {return _voltages;}
     const std::vector<art::Ptr<CrvStep> >     &GetCrvSteps() const        {return _steps;}
     const art::Ptr<SimParticle>               &GetSimParticle() const     {return _simParticle;}
-    const double                              &GetStartTime() const       {return _startTime;}
-    const double                              &GetTDC0Time() const        {return _TDC0Time;}
+    double                                     GetStartTime() const       {return _startTime;}
+    double                                     GetTDC0Time() const        {return _TDC0Time;}
+    bool                                       IsNZS() const              {return _NZS;}
 
     mu2e::CRSScintillatorBarIndex GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
     int                           GetSiPMNumber() const           {return _SiPMNumber;}
@@ -43,11 +43,12 @@ namespace mu2e
 
     private:
 
-    std::array<double,NSamples>         _voltages{0};
-    std::vector<art::Ptr<CrvStep> >     _steps  ;        //crv steps responsible for this waveform
+    std::vector<double>                 _voltages;
+    std::vector<art::Ptr<CrvStep> >     _steps;          //crv steps responsible for this waveform
     art::Ptr<SimParticle>               _simParticle;    //most likely sim particle responsible for this waveform
     double                              _startTime{0};
     double                              _TDC0Time{0};
+    bool                                _NZS{false};     //non-zero suppressed
 
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
     int                            _SiPMNumber{0};
