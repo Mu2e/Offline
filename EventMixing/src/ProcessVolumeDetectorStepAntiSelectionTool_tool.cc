@@ -7,7 +7,8 @@
 namespace mu2e{
   ProcessVolumeDetectorStepAntiSelectionTool::ProcessVolumeDetectorStepAntiSelectionTool(const Parameters& config):
       _processCode(ProcessCode::findByName(config().process())),
-      _volume(config().volume()){
+      _volume(config().volume()),
+      _momentum_threshold(config().momentum_threshold()){
     //
     fhicl::ParameterSet subconfig;
     subconfig.put("tool_type", "InnerProtonAbsorberPseudoVolumeLookupTool");
@@ -39,9 +40,13 @@ namespace mu2e{
     bool rv = false;
     bool process_matched = (particle.creationCode() == this->_processCode);
     if (process_matched){
-      bool volume_matched = (_lookup->StartVolume(particle) == this->_volume);
-      if (volume_matched){
-        rv = true;
+      double momentum = particle.startMomentum().vect().mag();
+      bool momentum_passed = (_momentum_threshold < momentum);
+      if (momentum_passed){
+        bool volume_matched = (_lookup->StartVolume(particle) == this->_volume);
+        if (volume_matched){
+          rv = true;
+        }
       }
     }
     return rv;
