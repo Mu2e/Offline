@@ -569,42 +569,46 @@ namespace mu2e {
           sxing->active() );
     }
     // save the fit segments as requested
-    if (savetraj_ == full){
-      fseed._segments.reserve(fittraj.pieces().size());
-      for (auto const& traj : fittraj.pieces() ){
-        // skip zero-range segments.  By convention, sample the state at the mid-time
-        if(traj->range().range() > 0.0) fseed._segments.emplace_back(*traj,traj->range().mid());
-      }
-    } else if (savetraj_ == detector ) {
-      // only save segments inside the tracker volume. First, find the time limits for that
-      double tmin = std::numeric_limits<float>::max();
-      double tmax = -tmin;
-      static const SurfaceId tt_front("TT_Front");
-      static const SurfaceId tt_back("TT_Back");
-      for(auto const& interpair : kktrk.intersections()) {
-        auto const& sid = std::get<0>(interpair);
-        if(sid == tt_front || sid == tt_back){
-          auto const& inter = std::get<1>(interpair);
-          tmin = std::min(tmin,inter.time_);
-          tmax = std::max(tmax,inter.time_);
+    if(kktrk.fitStatus().usable()){
+      if (savetraj_ == full){
+        fseed._segments.reserve(fittraj.pieces().size());
+        for (auto const& traj : fittraj.pieces() ){
+          // skip zero-range segments.  By convention, sample the state at the mid-time
+          if(traj->range().range() > 0.0) fseed._segments.emplace_back(*traj,traj->range().mid());
         }
-      }
-      // extend as needed to the calohit. Eventually we should also extend to the calorimeter, but that needs to be an extrapolation
-      if(kktrk.caloHits().size() > 0){
-        auto const& calohit = kktrk.caloHits().front();
-        if(calohit->active()){
-          tmin = std::min(tmin,calohit->time());
-          tmax = std::max(tmax,calohit->time());
+      } else if (savetraj_ == detector ) {
+        // only save segments inside the tracker volume. First, find the time limits for that
+        double tmin = std::numeric_limits<float>::max();
+        double tmax = -tmin;
+        static const SurfaceId tt_front("TT_Front");
+        static const SurfaceId tt_back("TT_Back");
+        for(auto const& interpair : kktrk.intersections()) {
+          auto const& sid = std::get<0>(interpair);
+          if(sid == tt_front || sid == tt_back){
+            auto const& inter = std::get<1>(interpair);
+            tmin = std::min(tmin,inter.time_);
+            tmax = std::max(tmax,inter.time_);
+          }
         }
+        // extend as needed to the calohit. Eventually we should also extend to the calorimeter, but that needs to be an extrapolation
+        if(kktrk.caloHits().size() > 0){
+          auto const& calohit = kktrk.caloHits().front();
+          if(calohit->active()){
+            tmin = std::min(tmin,calohit->time());
+            tmax = std::max(tmax,calohit->time());
+          }
+        }
+        if(tmin > tmax)throw cet::exception("RECO")<<"mu2e::KKFit: tracker intersections missing"<< endl;
+        fseed._segments.reserve(fittraj.pieces().size());// this will be oversized
+        for (auto const& traj : fittraj.pieces() ){
+          // skip segments outside the tracker volume range
+          if(traj->range().range() > 0.0 && (traj->range().inRange(tmin) || traj->range().inRange(tmax) || (traj->range().begin() > tmin && traj->range().end() < tmax)) ) fseed._segments.emplace_back(*traj,traj->range().mid());
+        }
+      } else if (savetraj_ == t0seg ) {
+        fseed._segments.emplace_back(t0piece,t0val);
       }
-      if(tmin > tmax)throw cet::exception("RECO")<<"mu2e::KKFit: tracker intersections missing"<< endl;
-      fseed._segments.reserve(fittraj.pieces().size());// this will be oversized
-      for (auto const& traj : fittraj.pieces() ){
-        // skip segments outside the tracker volume range
-        if(traj->range().range() > 0.0 && (traj->range().inRange(tmin) || traj->range().inRange(tmax) || (traj->range().begin() > tmin && traj->range().end() < tmax)) ) fseed._segments.emplace_back(*traj,traj->range().mid());
-      }
-    } else if (savetraj_ == t0seg ) {
-      fseed._segments.emplace_back(t0piece,t0val);
+    } else {
+      fseed._segments.emplace_back(t0piece,t0val); // save the t0 piece even for failed fits
     }
     // sample the fit at the locations provided
     sampleFit(kktrk,fseed._inters);
