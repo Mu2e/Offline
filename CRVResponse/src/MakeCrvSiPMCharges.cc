@@ -235,7 +235,7 @@ int main()
   probabilities._trapType1Prob = 0.0;
   probabilities._trapType0Lifetime = 5;
   probabilities._trapType1Lifetime = 50;
-  probabilities._thermalRate = 3.0e-4;
+  probabilities._thermalRate = 1.0e-4;
   probabilities._crossTalkProb = 0.05;
 
   std::vector<std::pair<int,int> > inactivePixels = { {18,18}, {18,19}, {18,20}, {18,21},

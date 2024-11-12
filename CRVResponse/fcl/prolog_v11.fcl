@@ -124,7 +124,7 @@ BEGIN_PROLOG
       TrapType0Lifetime            : 5.0        //ns  ????
       TrapType1Lifetime            : 50.0       //ns  ????
 
-      ThermalRate                  : 3.0e-4     //ns^-1     0.3MHz for entire SiPM
+      ThermalRate                  : 1.0e-4     //ns^-1     0.1MHz for entire SiPM
       CrossTalkProb                : 0.04       //
 
       useSipmStatusDB              : true       //channel with status bits 0 (not connected) and 2 (no data) will not be simulated. channels with status bit 1 can be ignored in reco.

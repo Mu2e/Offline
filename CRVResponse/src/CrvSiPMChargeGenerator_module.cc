@@ -74,7 +74,7 @@ namespace mu2e
       fhicl::Atom<double> trapType1Prob{Name("TrapType1Prob")};              //0
       fhicl::Atom<double> trapType0Lifetime{Name("TrapType0Lifetime")};      //5ns
       fhicl::Atom<double> trapType1Lifetime{Name("TrapType1Lifetime")};      //50ns
-      fhicl::Atom<double> thermalRate{Name("ThermalRate")};                  //3.0e-4 ns^-1   300MHz for entire SiPM
+      fhicl::Atom<double> thermalRate{Name("ThermalRate")};                  //1.0e-4 ns^-1   100kHz for entire SiPM
       fhicl::Atom<double> crossTalkProb{Name("CrossTalkProb")};              //0.04
     };
     using Parameters = art::EDProducer::Table<Config>;
@@ -145,7 +145,7 @@ namespace mu2e
     _probabilities._trapType1Prob=conf().trapType1Prob();              //0
     _probabilities._trapType0Lifetime=conf().trapType0Lifetime();      //5.0ns
     _probabilities._trapType1Lifetime=conf().trapType1Lifetime();      //50.0ns
-    _probabilities._thermalRate=conf().thermalRate();                  //3.0e-4 ns^-1   300MHz for entire SiPM
+    _probabilities._thermalRate=conf().thermalRate();                  //1.0e-4 ns^-1   100kHz for entire SiPM
     _probabilities._crossTalkProb=conf().crossTalkProb();              //0.05
 
     std::string fullPhotonMapFileName(_resolveFullPath(_photonMapFileName));
