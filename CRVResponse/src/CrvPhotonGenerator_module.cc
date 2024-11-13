@@ -308,6 +308,9 @@ namespace mu2e
             //time wrap around eventWindowStart which is far away from any steps that need to be used
             double t1Tmp = fmod(t1-eventWindowStart,_microBunchPeriod)+eventWindowStart;
             double t2Tmp = fmod(t2-eventWindowStart,_microBunchPeriod)+eventWindowStart;
+            //fmod of a negative number returns a negative number
+            if(t1Tmp<eventWindowStart) t1Tmp+=_microBunchPeriod;
+            if(t2Tmp<eventWindowStart) t2Tmp+=_microBunchPeriod;
             //remove steps that are not needed to speed up the simulation
             if(t1Tmp<startTime) continue;
             if(t2Tmp>endTime) continue;
@@ -369,6 +372,8 @@ namespace mu2e
               {
                 //time wrap around eventWindowStart which is far away from the (ZS) digi window to avoid breaking (ZS) pulses apart
                 timeTmp = fmod(timeTmp-eventWindowStart,_microBunchPeriod)+eventWindowStart;
+                //fmod of a negative number returns a negative number
+                if(timeTmp<eventWindowStart) timeTmp+=_microBunchPeriod;
               }
               photons.emplace_back(timeTmp,crvStepPtr);
             }
