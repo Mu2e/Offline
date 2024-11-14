@@ -114,7 +114,7 @@ namespace mu2e{
 
   template<typename T>
   void MixingFilter::filter_into_steplike(const T& in, T& out){
-    auto selection = [this] (const T::value_type& step) {
+    auto selection = [this] (const typename T::value_type& step) {
       bool rv = _selection->Select(step);
       return rv;
     };
