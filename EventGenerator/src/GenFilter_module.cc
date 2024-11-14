@@ -137,7 +137,6 @@ namespace mu2e {
           GeomHandle<BFieldManager> bfmgr;
           mu2e::GeomHandle<mu2e::Tracker> tracker;
           auto tracker_origin = det->toMu2e(tracker->origin());
-          //XYZVectorF pos3Vec = XYZVectorF(aParticle.position().x(),aParticle.position().y(),aParticle.position().z());
           ROOT::Math::XYZVector bnom(bfmgr->getBField(tracker_origin));
 
           // make the loophelix

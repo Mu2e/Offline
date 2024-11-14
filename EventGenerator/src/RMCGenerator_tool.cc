@@ -23,7 +23,6 @@
 #include "fhiclcpp/types/DelegatedParameter.h"
 
 // ROOT includes
-#include "TTree.h"
 #include "TFile.h"
 #include "TH1.h"
 #include "TH2.h"
