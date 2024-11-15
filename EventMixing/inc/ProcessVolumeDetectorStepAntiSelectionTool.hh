@@ -17,7 +17,7 @@
 
 // mu2e
 #include "Offline/EventMixing/inc/DetectorStepSelectionTool.hh"
-#include "Offline/EventMixing/inc/InnerProtonAbsorberPseudoVolumeLookupTool.hh"
+#include "Offline/EventMixing/inc/PseudoCylindricalVolumeLookupTool.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
@@ -55,7 +55,7 @@ namespace mu2e{
       std::string _volume;
       double _momentum_threshold;
       // this will be obviated by direct queries via PhysicalVolumeMultiHelper
-      std::unique_ptr<InnerProtonAbsorberPseudoVolumeLookupTool> _lookup;
+      std::unique_ptr<PseudoCylindricalVolumeLookupTool> _lookup;
 
       // templated to reduce code surface
       template<typename T>

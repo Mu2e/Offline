@@ -11,11 +11,12 @@ namespace mu2e{
       _momentum_threshold(config().momentum_threshold()){
     //
     fhicl::ParameterSet subconfig;
-    subconfig.put("tool_type", "InnerProtonAbsorberPseudoVolumeLookupTool");
+    subconfig.put("tool_type", "PseudoCylindricalVolumeLookupTool");
     subconfig.put("IPA", "protonabs1");
+    subconfig.put("ST", "Foil_00");
     // beginning of sha512(protonabs1), to not clobber any reasonable use-case
     subconfig.put("Other", "e536f774a6");
-    _lookup = art::make_tool<InnerProtonAbsorberPseudoVolumeLookupTool>(subconfig);
+    _lookup = art::make_tool<PseudoCylindricalVolumeLookupTool>(subconfig);
   }
 
   bool ProcessVolumeDetectorStepAntiSelectionTool::Select(const CaloShowerStep& step){

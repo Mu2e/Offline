@@ -2,8 +2,8 @@
 // Stop-gap tool to fake a volume lookup, only valid for protonabs1 (IPA)
 // November 2024
 
-#ifndef EventMixing_InnerProtonAbsorberPseudoVolumeLookupTool_hh
-#define EventMixing_InnerProtonAbsorberPseudoVolumeLookupTool_hh
+#ifndef EventMixing_PseudoCylindricalVolumeLookupTool_hh
+#define EventMixing_PseudoCylindricalVolumeLookupTool_hh
 
 // stl
 #include <string>
@@ -25,14 +25,20 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "Offline/StoppingTargetGeom/inc/TargetFoil.hh"
 
 namespace mu2e{
-  class InnerProtonAbsorberPseudoVolumeLookupTool{
+  class PseudoCylindricalVolumeLookupTool{
     public:
       struct Config{
         fhicl::Atom<std::string> ipa_name{
           fhicl::Name("IPA"),
           fhicl::Comment("Volume pseudoname to assign to ipa coordinates")
+        };
+        fhicl::Atom<std::string> st_name{
+          fhicl::Name("ST"),
+          fhicl::Comment("Volume pseudoname to assign to s.t. coordinates")
         };
         fhicl::Atom<std::string> other_name{
           fhicl::Name("Other"),
@@ -41,8 +47,8 @@ namespace mu2e{
       };
 
       using Parameters = art::ToolConfigTable<Config>;
-      InnerProtonAbsorberPseudoVolumeLookupTool(const Parameters&);
-      virtual ~InnerProtonAbsorberPseudoVolumeLookupTool();
+      PseudoCylindricalVolumeLookupTool(const Parameters&);
+      virtual ~PseudoCylindricalVolumeLookupTool();
 
       // volume pseudo-lookup
       virtual std::string Volume(const CLHEP::Hep3Vector&);
@@ -50,13 +56,19 @@ namespace mu2e{
 
     protected:
       std::string _ipa_name;
+      std::string _st_name;
       std::string _other_name;
       std::unique_ptr< GeomHandle<DetectorSystem> > _frame;
       std::unique_ptr< GeomHandle<MECOStyleProtonAbsorber> > _ipa;
+      std::unique_ptr< GeomHandle<StoppingTarget> > _st;
 
       // deferred initialization is necessary to make use of GeometryService
       bool _initialized;
       void initialize();
+
+      bool in_cylindrical_shell(const CLHEP::Hep3Vector&,
+                                double, double,
+                                double, double);
 
     private:
       /**/
