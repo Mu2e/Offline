@@ -341,6 +341,7 @@
  <class name="mu2e::CrvCoincidenceClusterCollection" />
  <class name="art::Wrapper<mu2e::CrvCoincidenceClusterCollection>" />
 
+<!--  checksum from file->ShowStreamerInfo() -->
 <ioread sourceClass="mu2e::CrvDigi"
         source="std::array<int16_t,8> _ADCs"
         checksum="[3596926525]"

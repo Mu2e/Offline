@@ -178,7 +178,7 @@ namespace mu2e
     _randGaussQ(_engine),
     _randPoissonQ(_engine)
   {
-    if(_moduleLabels.size()==0) throw std::logic_error("ERROR: a list of crvSteps module labels needs to be provided");
+    //if(_moduleLabels.size()==0) throw std::logic_error("ERROR: a list of crvSteps module labels needs to be provided");
     if(_moduleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (crvStepModuleLabels/crvStepProcessNames)");
     for(size_t i=0; i<_moduleLabels.size(); ++i)
     {
