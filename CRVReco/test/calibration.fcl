@@ -32,6 +32,7 @@ physics: {
   end_paths :     [ EndPath ]
 }
 
+physics.producers.CrvRecoPulses.defaultBeta : 12.6       //ns
 physics.producers.CrvRecoPulses.NZSdata : true
 physics.producers.CrvRecoPulses.minADCdifference  : 5    //minimum ADC difference above pedestal to be considered for reconstruction
 physics.producers.CrvRecoPulses.ignoreChannels : false   //do not ignore channels that have status bit 1 ("ignore channels") in CRVstatus DB
