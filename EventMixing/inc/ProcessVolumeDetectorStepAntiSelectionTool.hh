@@ -5,6 +5,9 @@
 #ifndef EventMixing_ProcessVolumeDetectorStepAntiSelectionTool_hh
 #define EventMixing_ProcessVolumeDetectorStepAntiSelectionTool_hh
 
+// stl
+#include <unordered_set>
+
 // art
 #include "art/Utilities/ToolConfigTable.h"
 #include "art/Utilities/ToolMacros.h"
@@ -14,6 +17,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Comment.h"
 #include "fhiclcpp/types/Name.h"
+#include "fhiclcpp/types/Sequence.h"
 
 // mu2e
 #include "Offline/EventMixing/inc/DetectorStepSelectionTool.hh"
@@ -28,13 +32,13 @@ namespace mu2e{
   class ProcessVolumeDetectorStepAntiSelectionTool: public DetectorStepSelectionTool{
     public:
       struct Config{
-        fhicl::Atom<std::string> process{
-          fhicl::Name("process"),
-          fhicl::Comment("Steps of particles descendent from this process are removed")
+        fhicl::Sequence<std::string> processes{
+          fhicl::Name("processes"),
+          fhicl::Comment("Steps of particles descendent from these processes are removed")
         };
-        fhicl::Atom<std::string> volume{
-          fhicl::Name("volume"),
-          fhicl::Comment("Steps of particles descendent from process in this volume are removed")
+        fhicl::Sequence<std::string> volumes{
+          fhicl::Name("volumes"),
+          fhicl::Comment("Steps of particles descendent from processes in these volumes are removed")
         };
         fhicl::Atom<double> momentum_threshold{
           fhicl::Name("momentum_threshold"),
@@ -51,8 +55,8 @@ namespace mu2e{
       virtual bool Select(const StrawGasStep&)   override final;
 
     protected:
-      ProcessCode _processCode;
-      std::string _volume;
+      std::unordered_set<ProcessCode::enum_type> _processCodes;
+      std::unordered_set<std::string> _volumes;
       double _momentum_threshold;
       // this will be obviated by direct queries via PhysicalVolumeMultiHelper
       std::unique_ptr<PseudoCylindricalVolumeLookupTool> _lookup;
