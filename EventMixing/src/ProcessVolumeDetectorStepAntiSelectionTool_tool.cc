@@ -6,10 +6,15 @@
 
 namespace mu2e{
   ProcessVolumeDetectorStepAntiSelectionTool::ProcessVolumeDetectorStepAntiSelectionTool(const Parameters& config):
-      _processCode(ProcessCode::findByName(config().process())),
-      _volume(config().volume()),
       _momentum_threshold(config().momentum_threshold()){
-    //
+    for (const auto& processCode: config().processes()){
+      _processCodes.insert(ProcessCode::findByName(processCode).id());
+    }
+    for (const auto& volume: config().volumes()){
+      _volumes.insert(volume);
+    }
+
+    // internally-managed hard config for temporary functionality
     fhicl::ParameterSet subconfig;
     subconfig.put("tool_type", "PseudoCylindricalVolumeLookupTool");
     subconfig.put("IPA", "protonabs1");
@@ -39,12 +44,14 @@ namespace mu2e{
   // manipulations
   bool ProcessVolumeDetectorStepAntiSelectionTool::particle_match(const SimParticle& particle){
     bool rv = false;
-    bool process_matched = (particle.creationCode() == this->_processCode);
+    const auto& processCode = particle.creationCode();
+    bool process_matched = (0 < _processCodes.count(processCode.id()));
     if (process_matched){
       double momentum = particle.startMomentum().vect().mag();
       bool momentum_passed = (_momentum_threshold < momentum);
       if (momentum_passed){
-        bool volume_matched = (_lookup->StartVolume(particle) == this->_volume);
+        const auto volume = _lookup->StartVolume(particle);
+        bool volume_matched = (0 < _volumes.count(volume));
         if (volume_matched){
           rv = true;
         }
