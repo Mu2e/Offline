@@ -6,6 +6,7 @@
 #define EventMixing_ProcessVolumeDetectorStepAntiSelectionTool_hh
 
 // stl
+#include <optional>
 #include <unordered_set>
 
 // art
@@ -14,9 +15,9 @@
 #include "art/Utilities/make_tool.h"
 
 // fhiclcpp
-#include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Comment.h"
 #include "fhiclcpp/types/Name.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 
 // mu2e
@@ -40,9 +41,13 @@ namespace mu2e{
           fhicl::Name("volumes"),
           fhicl::Comment("Steps of particles descendent from processes in these volumes are removed")
         };
-        fhicl::Atom<double> momentum_threshold{
-          fhicl::Name("momentum_threshold"),
-          fhicl::Comment("Steps of particles descendent from a particle of below this momentum are removed")
+        fhicl::OptionalAtom<double> energy_lo{
+          fhicl::Name("minimum_energy"),
+          fhicl::Comment("Steps of particles descendent from a particle of below this energy are removed")
+        };
+        fhicl::OptionalAtom<double> energy_hi{
+          fhicl::Name("maximum_energy"),
+          fhicl::Comment("Steps of particles descendent from a particle of above this energy are removed")
         };
       };
 
@@ -57,7 +62,8 @@ namespace mu2e{
     protected:
       std::unordered_set<ProcessCode::enum_type> _processCodes;
       std::unordered_set<std::string> _volumes;
-      double _momentum_threshold;
+      std::optional<double> _energy_lo;
+      std::optional<double> _energy_hi;
       // this will be obviated by direct queries via PhysicalVolumeMultiHelper
       std::unique_ptr<PseudoCylindricalVolumeLookupTool> _lookup;
 

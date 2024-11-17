@@ -6,7 +6,8 @@
 
 namespace mu2e{
   ProcessVolumeDetectorStepAntiSelectionTool::ProcessVolumeDetectorStepAntiSelectionTool(const Parameters& config):
-      _momentum_threshold(config().momentum_threshold()){
+      _energy_lo(config().energy_lo()),
+      _energy_hi(config().energy_hi()){
     for (const auto& processCode: config().processes()){
       _processCodes.insert(ProcessCode::findByName(processCode).id());
     }
@@ -47,9 +48,15 @@ namespace mu2e{
     const auto& processCode = particle.creationCode();
     bool process_matched = (0 < _processCodes.count(processCode.id()));
     if (process_matched){
-      double momentum = particle.startMomentum().vect().mag();
-      bool momentum_passed = (_momentum_threshold < momentum);
-      if (momentum_passed){
+      double energy = particle.startMomentum().e();
+      bool energy_passed = true;
+      if (_energy_lo.has_value()){
+        energy_passed = energy_passed && (_energy_lo.value() < energy);
+      }
+      if (_energy_hi.has_value()){
+        energy_passed = energy_passed && (energy < _energy_hi.value());
+      }
+      if (energy_passed){
         const auto volume = _lookup->StartVolume(particle);
         bool volume_matched = (0 < _volumes.count(volume));
         if (volume_matched){
