@@ -142,7 +142,7 @@ namespace mu2e {
           // make the loophelix
           KinKal::LoopHelix lh(pos0, mom0, charge, bnom);
           // calculate rmax and add maxr to siminfo
-          _maxr = sqrt(lh.cx()*lh.cx()+lh.cy()*lh.cy())+fabs(lh.rad());
+          _maxr = lh.maxAxisDist();
           pass_maxr_cut |= _maxr < maxr_max_ && _maxr > maxr_min_;
         } else {  //not defined for neutral particles
           pass_maxr_cut = true; //default to passing for neutral particles
