@@ -487,7 +487,7 @@ vector<string> bldg.prefix.list = {
 //   "building.beamline.upper.N",
 
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamline_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_v03.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_v03.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingW.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlabE.txt"
@@ -577,9 +577,9 @@ vector<string> bldg.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtWallFill1.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtWallFill2.txt"
 
+//  "dirt.beamline.berm",
 vector<string> dirt.prefix.list = {
   "dirt.beamline",
-  "dirt.beamline.berm",
   "dirt.beamline.ceiling.E",
   "dirt.beamline.ceiling.W",
   "dirt.beamline.slab.E",
@@ -663,14 +663,13 @@ vector<string> dirt.prefix.list = {
 
 //#include "Offline/Mu2eG4/geom/bldg/dirtRetainingWallBermEast.txt"
 //#include "Offline/Mu2eG4/geom/bldg/dirtRetainingWallBermWest.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBermWest.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBermSW.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBermWest.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBermSW.txt"
 //  "dirt.retaining.Wall.berm.east",
 //  "dirt.retaining.Wall.berm.west",
-vector<string> dirt.trap.prefix.list = {
-  "dirt.beamline.berm.west",
-  "dirt.beamline.berm.sw"
-};
+//  "dirt.beamline.berm.west",
+//  "dirt.beamline.berm.sw"
+vector<string> dirt.trap.prefix.list = {}; // All the dirt trap geometries are removed. The function makeTrapDirt can be found in Mu2eHallMaker.cc
 
 
 
