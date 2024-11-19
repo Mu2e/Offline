@@ -39,6 +39,7 @@ class art::CaloRecoFromFragments : public EDProducer {
 
 public:
   struct Config {
+    fhicl::Atom<int> data_type {fhicl::Name("dataType" ) , fhicl::Comment("Data type (0:standard, 1:debug, 2:counters)"), 0};
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level")};
     fhicl::Atom<art::InputTag> caloTag{fhicl::Name("caloTag"), fhicl::Comment("caloTag")};
   };
@@ -57,6 +58,7 @@ private:
                             const mu2e::CalorimeterDataDecoder& cc,
                             std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis);
 
+  int data_type_;
   int diagLevel_;
 
   art::InputTag caloFragmentsTag_;
@@ -67,7 +69,9 @@ private:
 }; // CaloRecoFromFragments
 // ======================================================================
 art::CaloRecoFromFragments::CaloRecoFromFragments(const art::EDProducer::Table<Config>& config) :
-    art::EDProducer{config}, diagLevel_(config().diagLevel()),
+    art::EDProducer{config}, 
+    data_type_(config().data_type()),
+    diagLevel_(config().diagLevel()),
     caloFragmentsTag_(config().caloTag()), caloDAQUtil_("CaloRecoFromFragments") {
   produces<mu2e::CaloDigiCollection>();
 }
@@ -182,89 +186,175 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
 
     if (hdr->GetPacketCount() > 0) { // Parse phyiscs information from CAL packets
 
-      auto calHitDataVec = cc.GetCalorimeterHitData(curBlockIdx);
-      if (calHitDataVec == nullptr) {
-        mf::LogError("CaloRecoFromFragments")
-            << "Error retrieving Calorimeter data from block " << curBlockIdx
-            << "! Aborting processing of this block!";
-        continue;
-      }
+      if (data_type_ == 0){ //Standard calo data
 
-      bool err = false;
-      for (unsigned int hitIdx = 0; hitIdx < calHitDataVec->size(); hitIdx++) {
-        std::pair<mu2e::CalorimeterDataDecoder::CalorimeterHitDataPacket, std::vector<uint16_t>>  calData = calHitDataVec->at(hitIdx);
-          // Fill the CaloDigiCollection
-
-          if (diagLevel_ > 0) {
-            std::cout << "[CaloRecoFromFragments] calo hit " << hitIdx << std::endl;
-            std::cout << "[CaloRecoFromFragments] \tChNumber   "
-                      << (int)calHitDataVec->at(hitIdx).first.ChannelNumber << std::endl;
-            std::cout << "[CaloRecoFromFragments] \tDIRACA     " << (int)calHitDataVec->at(hitIdx).first.DIRACA
-                      << std::endl;
-            std::cout << "[CaloRecoFromFragments] \tDIRACB     " << (int)calHitDataVec->at(hitIdx).first.DIRACB
-                      << std::endl;
-            std::cout << "[CaloRecoFromFragments] \tErrorFlags " << (int)calHitDataVec->at(hitIdx).first.ErrorFlags
-                      << std::endl;
-            std::cout << "[CaloRecoFromFragments] \tTime              "
-                      << (int)calHitDataVec->at(hitIdx).first.Time << std::endl;
-            std::cout << "[CaloRecoFromFragments] \tNSamples   "
-                      << (int)calHitDataVec->at(hitIdx).first.NumberOfSamples << std::endl;
-            std::cout << "[CaloRecoFromFragments] \tIndexMax   "
-                      << (int)calHitDataVec->at(hitIdx).first.IndexOfMaxDigitizerSample << std::endl;
-          }
-
-          uint16_t packetid = calHitDataVec->at(hitIdx).first.DIRACA;
-          uint16_t dirac = packetid & 0xFF;
-          uint16_t diracChannel = (packetid >>8) & 0x1F;
-          mu2e::CaloRawSiPMId rawId(dirac,diracChannel);
-          uint16_t roID = calodaqconds.offlineId(rawId).id();
-          // uint16_t dettype = (packetId & 0x7000) >> 13;
-
-          // FIXME: Can we match vector types here?
-          std::vector<int> caloHits;
-          caloHits.reserve(calHitDataVec->at(hitIdx).second.size());
-          std::copy(calHitDataVec->at(hitIdx).second.begin(), calHitDataVec->at(hitIdx).second.end(),
-                    std::back_inserter(caloHits));
-
-          calo_digis->emplace_back(roID, calHitDataVec->at(hitIdx).first.Time, caloHits,
-                                   calHitDataVec->at(hitIdx).first.IndexOfMaxDigitizerSample);
-
-          if (diagLevel_ > 1) {
-            // Until we have the final mapping, the BoardID is just a placeholder
-            // adc_t BoardId    = cc.DBC_BoardID(pos,channelIdx);
-            uint16_t crystalID = roID / 2;
-            std::cout << "Crystal ID: " << (int)crystalID << std::endl;
-            std::cout << "SiPM ID: " << (int)roID << std::endl;
-            std::cout << "Time: " << (int)calHitDataVec->at(hitIdx).first.Time << std::endl;
-            std::cout << "NumSamples: " << (int)calHitDataVec->at(hitIdx).first.NumberOfSamples << std::endl;
-            std::cout << "Waveform: {";
-            for (size_t i = 0; i < calHitDataVec->at(hitIdx).second.size(); i++) {
-              std::cout << calHitDataVec->at(hitIdx).second[i];
-              if (i < calHitDataVec->at(hitIdx).second.size() - 1) {
-                std::cout << ",";
-              }
-            }
-            std::cout << "}" << std::endl;
-
-            // Text format: timestamp crystalID roID time nsamples samples...
-            // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
-            std::cout << "GREPMECAL: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " ";
-            std::cout << crystalID << " ";
-            std::cout << roID << " ";
-            std::cout << calHitDataVec->at(hitIdx).first.Time << " ";
-            std::cout << calHitDataVec->at(hitIdx).second.size() << " ";
-            for (size_t i = 0; i < calHitDataVec->at(hitIdx).second.size(); i++) {
-              std::cout << calHitDataVec->at(hitIdx).second[i];
-              if (i < calHitDataVec->at(hitIdx).second.size() - 1) {
-                std::cout << " ";
-              }
-            }
-            std::cout << std::endl;
-          } // End debug output
-
-        //} // End loop over readout channels in DataBlock
-        if (err)
+        auto calHitDataVec = cc.GetCalorimeterHitData(curBlockIdx);
+        if (calHitDataVec == nullptr) {
+          mf::LogError("CaloRecoFromFragments")
+              << "Error retrieving Calorimeter data from block " << curBlockIdx
+              << "! Aborting processing of this block!";
           continue;
+        }
+  
+        bool err = false;
+        for (unsigned int hitIdx = 0; hitIdx < calHitDataVec->size(); hitIdx++) {
+          std::pair<mu2e::CalorimeterDataDecoder::CalorimeterHitDataPacket, std::vector<uint16_t>>  calData = calHitDataVec->at(hitIdx);
+            // Fill the CaloDigiCollection
+  
+            if (diagLevel_ > 0) {
+              std::cout << "[CaloRecoFromFragments] calo hit " << hitIdx << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tChNumber   "
+                        << (int)calHitDataVec->at(hitIdx).first.ChannelNumber << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tDIRACA     " << (int)calHitDataVec->at(hitIdx).first.DIRACA
+                        << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tDIRACB     " << (int)calHitDataVec->at(hitIdx).first.DIRACB
+                        << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tErrorFlags " << (int)calHitDataVec->at(hitIdx).first.ErrorFlags
+                        << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tTime              "
+                        << (int)calHitDataVec->at(hitIdx).first.Time << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tNSamples   "
+                        << (int)calHitDataVec->at(hitIdx).first.NumberOfSamples << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tIndexMax   "
+                        << (int)calHitDataVec->at(hitIdx).first.IndexOfMaxDigitizerSample << std::endl;
+            }
+  
+            uint16_t packetid = calHitDataVec->at(hitIdx).first.DIRACA;
+            uint16_t dirac = packetid & 0xFF;
+            uint16_t diracChannel = (packetid >>8) & 0x1F;
+            mu2e::CaloRawSiPMId rawId(dirac,diracChannel);
+            uint16_t roID = calodaqconds.offlineId(rawId).id();
+            // uint16_t dettype = (packetId & 0x7000) >> 13;
+  
+            // FIXME: Can we match vector types here?
+            std::vector<int> caloHits;
+            caloHits.reserve(calHitDataVec->at(hitIdx).second.size());
+            std::copy(calHitDataVec->at(hitIdx).second.begin(), calHitDataVec->at(hitIdx).second.end(),
+                      std::back_inserter(caloHits));
+  
+            calo_digis->emplace_back(roID, calHitDataVec->at(hitIdx).first.Time, caloHits,
+                                     calHitDataVec->at(hitIdx).first.IndexOfMaxDigitizerSample);
+  
+            if (diagLevel_ > 1) {
+              // Until we have the final mapping, the BoardID is just a placeholder
+              // adc_t BoardId    = cc.DBC_BoardID(pos,channelIdx);
+              uint16_t crystalID = roID / 2;
+              std::cout << "Crystal ID: " << (int)crystalID << std::endl;
+              std::cout << "SiPM ID: " << (int)roID << std::endl;
+              std::cout << "Time: " << (int)calHitDataVec->at(hitIdx).first.Time << std::endl;
+              std::cout << "NumSamples: " << (int)calHitDataVec->at(hitIdx).first.NumberOfSamples << std::endl;
+              std::cout << "Waveform: {";
+              for (size_t i = 0; i < calHitDataVec->at(hitIdx).second.size(); i++) {
+                std::cout << calHitDataVec->at(hitIdx).second[i];
+                if (i < calHitDataVec->at(hitIdx).second.size() - 1) {
+                  std::cout << ",";
+                }
+              }
+              std::cout << "}" << std::endl;
+  
+              // Text format: timestamp crystalID roID time nsamples samples...
+              // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
+              std::cout << "GREPMECAL: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " ";
+              std::cout << crystalID << " ";
+              std::cout << roID << " ";
+              std::cout << calHitDataVec->at(hitIdx).first.Time << " ";
+              std::cout << calHitDataVec->at(hitIdx).second.size() << " ";
+              for (size_t i = 0; i < calHitDataVec->at(hitIdx).second.size(); i++) {
+                std::cout << calHitDataVec->at(hitIdx).second[i];
+                if (i < calHitDataVec->at(hitIdx).second.size() - 1) {
+                  std::cout << " ";
+                }
+              }
+              std::cout << std::endl;
+            } // End debug output
+  
+          //} // End loop over readout channels in DataBlock
+          if (err)
+            continue;
+        }
+      } else if (data_type_ == 0){ //debug calo data
+
+        auto calHitTestDataVec = cc.GetCalorimeterHitTestData(curBlockIdx);
+        if (calHitTestDataVec == nullptr) {
+          mf::LogError("CaloRecoFromFragments")
+              << "Error retrieving Calorimeter test data from block " << curBlockIdx
+              << "! Aborting processing of this block!";
+          continue;
+        }
+  
+        bool err = false;
+        for (unsigned int hitIdx = 0; hitIdx < calHitTestDataVec->size(); hitIdx++) {
+          std::pair<mu2e::CalorimeterDataDecoder::CalorimeterHitTestDataPacket, std::vector<uint16_t>>  calData = calHitTestDataVec->at(hitIdx);
+            // Fill the CaloDigiCollection
+  
+            if (diagLevel_ > 0) {
+              std::cout << "[CaloRecoFromFragments] calo hit " << hitIdx << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tChNumber   "
+                        << (int)calHitTestDataVec->at(hitIdx).first.ChannelID << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tErrorFlags " << (int)calHitTestDataVec->at(hitIdx).first.ErrorFlags
+                        << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tTime              "
+                        << (int)calHitTestDataVec->at(hitIdx).first.Time << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tNSamples   "
+                        << (int)calHitTestDataVec->at(hitIdx).first.NumberOfSamples << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tIndexMax   "
+                        << (int)calHitTestDataVec->at(hitIdx).first.IndexOfMaxDigitizerSample << std::endl;
+            }
+  
+            uint16_t packetid = 0; //calHitTestDataVec->at(hitIdx).first.DIRACA;
+            uint16_t dirac = packetid & 0xFF;
+            uint16_t diracChannel = (packetid >>8) & 0x1F;
+            mu2e::CaloRawSiPMId rawId(dirac,diracChannel);
+            uint16_t roID = calodaqconds.offlineId(rawId).id();
+            // uint16_t dettype = (packetId & 0x7000) >> 13;
+  
+            std::vector<int> caloHits;
+            caloHits.reserve(calHitTestDataVec->at(hitIdx).second.size());
+            std::copy(calHitTestDataVec->at(hitIdx).second.begin(), calHitTestDataVec->at(hitIdx).second.end(),
+                      std::back_inserter(caloHits));
+  
+            calo_digis->emplace_back(roID, uint(calHitTestDataVec->at(hitIdx).first.Time), caloHits,
+                                     uint(calHitTestDataVec->at(hitIdx).first.IndexOfMaxDigitizerSample));
+  
+            if (diagLevel_ > 1) {
+              // Until we have the final mapping, the BoardID is just a placeholder
+              // adc_t BoardId    = cc.DBC_BoardID(pos,channelIdx);
+              uint16_t crystalID = roID / 2;
+              std::cout << "Crystal ID: " << (int)crystalID << std::endl;
+              std::cout << "SiPM ID: " << (int)roID << std::endl;
+              std::cout << "Time: " << (int)calHitTestDataVec->at(hitIdx).first.Time << std::endl;
+              std::cout << "NumSamples: " << (int)calHitTestDataVec->at(hitIdx).first.NumberOfSamples << std::endl;
+              std::cout << "Waveform: {";
+              for (size_t i = 0; i < calHitTestDataVec->at(hitIdx).second.size(); i++) {
+                std::cout << calHitTestDataVec->at(hitIdx).second[i];
+                if (i < calHitTestDataVec->at(hitIdx).second.size() - 1) {
+                  std::cout << ",";
+                }
+              }
+              std::cout << "}" << std::endl;
+  
+              // Text format: timestamp crystalID roID time nsamples samples...
+              // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
+              std::cout << "GREPMECAL: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " ";
+              std::cout << crystalID << " ";
+              std::cout << roID << " ";
+              std::cout << calHitTestDataVec->at(hitIdx).first.Time << " ";
+              std::cout << calHitTestDataVec->at(hitIdx).second.size() << " ";
+              for (size_t i = 0; i < calHitTestDataVec->at(hitIdx).second.size(); i++) {
+                std::cout << calHitTestDataVec->at(hitIdx).second[i];
+                if (i < calHitTestDataVec->at(hitIdx).second.size() - 1) {
+                  std::cout << " ";
+                }
+              }
+              std::cout << std::endl;
+            } // End debug output
+  
+          //} // End loop over readout channels in DataBlock
+          if (err)
+            continue;
+        }
+
+      
       }
     } // End Cal Mode
   }
