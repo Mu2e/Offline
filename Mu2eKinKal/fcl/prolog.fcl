@@ -439,6 +439,8 @@ Mu2eKinKal : {
       CaloTrackerTimeOffset: -2.43
       # Additional width is needed here as straight tracks have worse time resolution
       MaxCaloClusterDt: 8
+      # save the full trajectory
+       SaveTrajectory: Full
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
