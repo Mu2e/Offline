@@ -488,6 +488,10 @@ vector<string> bldg.prefix.list = {
 
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamline_v02.txt"
 //#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_v03.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer746a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer746b.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer747a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer747b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingW.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlabE.txt"
@@ -577,9 +581,13 @@ vector<string> bldg.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtWallFill1.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtWallFill2.txt"
 
-//  "dirt.beamline.berm",
+
 vector<string> dirt.prefix.list = {
   "dirt.beamline",
+  "dirt.beamline.berm.l746a",
+  "dirt.beamline.berm.l746b",
+  "dirt.beamline.berm.l747a",
+  "dirt.beamline.berm.l747b",
   "dirt.beamline.ceiling.E",
   "dirt.beamline.ceiling.W",
   "dirt.beamline.slab.E",
