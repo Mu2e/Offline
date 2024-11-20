@@ -272,7 +272,7 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
           if (err)
             continue;
         }
-      } else if (data_type_ == 0){ //debug calo data
+      } else if (data_type_ == 1){ //debug calo data
 
         auto calHitTestDataVec = cc.GetCalorimeterHitTestData(curBlockIdx);
         if (calHitTestDataVec == nullptr) {
