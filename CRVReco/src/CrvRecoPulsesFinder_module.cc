@@ -51,6 +51,7 @@ namespace mu2e
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("module label for CrvDigis")};
+      fhicl::Atom<bool> NZSdata{Name("NZSdata"), Comment("use digis with the NZS instance label")};  //false
       fhicl::Atom<float> minADCdifference{Name("minADCdifference"), Comment("minimum ADC difference above pedestal to be considered for reconstruction")};  //40
       fhicl::Atom<float> defaultBeta{Name("defaultBeta"), Comment("initialization value for fit and default value for invalid fits (regular pulses: 19.0ns, dark counts for calibration: 12.0ns)")};
       fhicl::Atom<float> minBeta{Name("minBeta"), Comment("smallest accepted beta for valid fit [ns]")};  //5.0ns
@@ -83,6 +84,7 @@ namespace mu2e
     boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> _makeCrvRecoPulses;
 
     std::string _crvDigiModuleLabel;
+    bool        _NZSdata;
     art::InputTag _eventWindowMarkerTag;
     art::InputTag _protonBunchTimeTag;
 
@@ -101,6 +103,7 @@ namespace mu2e
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(const Parameters& conf) :
     art::EDProducer(conf),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
+    _NZSdata(conf().NZSdata()),
     _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeTag(conf().protonBunchTimeTag()),
     _timeOffsetScale(conf().timeOffsetScale()),
@@ -109,7 +112,7 @@ namespace mu2e
     _useTimeOffsetDB(conf().useTimeOffsetDB()),
     _ignoreChannels(conf().ignoreChannels())
   {
-    produces<CrvRecoPulseCollection>();
+    produces<CrvRecoPulseCollection>(_NZSdata?"NZS":"");
     _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(conf().minADCdifference(),
                                                                                                     conf().defaultBeta(),
                                                                                                     conf().minBeta(),
@@ -155,7 +158,7 @@ namespace mu2e
     }
 
     art::Handle<CrvDigiCollection> crvDigiCollection;
-    event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
+    event.getByLabel(_crvDigiModuleLabel,(_NZSdata?"NZS":""),crvDigiCollection);
 
     auto const& calib = _calib.get(event.id());
     auto const& sipmStatus = _sipmStatus.get(event.id());
@@ -167,9 +170,8 @@ namespace mu2e
       const CRSScintillatorBarIndex &barIndex = digi.GetScintillatorBarIndex();
       int SiPM = digi.GetSiPMNumber();
       uint16_t startTDC = digi.GetStartTDC();
-      std::vector<int16_t> ADCs;
+      std::vector<int16_t> ADCs=digi.GetADCs();
       std::vector<size_t> waveformIndices;
-      for(size_t i=0; i<CrvDigi::NSamples; ++i) ADCs.push_back(digi.GetADCs()[i]);
       waveformIndices.push_back(waveformIndex);
 
       //checking following digis whether they are a continuation of the current digis
@@ -180,7 +182,7 @@ namespace mu2e
         if(barIndex!=nextDigi.GetScintillatorBarIndex()) break;
         if(SiPM!=nextDigi.GetSiPMNumber()) break;
         if(startTDC+ADCs.size()!=nextDigi.GetStartTDC()) break;
-        for(size_t i=0; i<CrvDigi::NSamples; ++i) ADCs.push_back(nextDigi.GetADCs()[i]);
+        for(size_t i=0; i<nextDigi.GetADCs().size(); ++i) ADCs.push_back(nextDigi.GetADCs()[i]);
         waveformIndices.push_back(waveformIndex);
       }
 
@@ -244,7 +246,7 @@ namespace mu2e
 
     }
 
-    event.put(std::move(crvRecoPulseCollection));
+    event.put(std::move(crvRecoPulseCollection),(_NZSdata?"NZS":""));
   } // end produce
 
 } // end namespace mu2e

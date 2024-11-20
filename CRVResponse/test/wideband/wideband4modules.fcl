@@ -48,6 +48,7 @@ physics: {
     CrvWidebandTest :
     {
       module_type                        : CrvWidebandTest
+      SelectEvents                       : [ TriggerPath ]
       crvStepModuleLabel                 : "CrvSteps"
       crvRecoPulseModuleLabel            : "CrvRecoPulses"
       crvCoincidenceClusterModuleLabel   : "CrvCoincidenceClusterFinder"

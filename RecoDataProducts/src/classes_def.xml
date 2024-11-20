@@ -341,6 +341,20 @@
  <class name="mu2e::CrvCoincidenceClusterCollection" />
  <class name="art::Wrapper<mu2e::CrvCoincidenceClusterCollection>" />
 
+<!--  checksum from file->ShowStreamerInfo() -->
+<ioread sourceClass="mu2e::CrvDigi"
+        source="std::array<int16_t,8> _ADCs"
+        checksum="[3596926525]"
+        targetClass="mu2e::CrvDigi"
+        target="_ADCs, _NZS"
+        include="array, vector">
+<![CDATA[
+  _ADCs.resize(onfile._ADCs.size());
+  for(size_t i=0; i<onfile._ADCs.size(); ++i) _ADCs[i]=onfile._ADCs[i];
+  _NZS=false;
+]]>
+</ioread>
+
 <!--  ********* ExtMon  ********* -->
  <class name="mu2e::ExtMonFNALRawHit" />
  <class name="std::vector<mu2e::ExtMonFNALRawHit>" />
