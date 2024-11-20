@@ -22,14 +22,12 @@ vector<double> dirt.beamline.berm.l748b.xPositions = {
   -20558.74,   // S3
   -31750.5,  // S4 (corner)
   -31750.5, // S5
-  -23605.3, //  -28172.7, // S6
-  -21670.8, //-26238.2, // S7
+  -23605.3, // S6
+  -21670.8,  // S7
   -20527.2,
   -20527.2  //S11
 };
-//  -23855.3, // S9
-//  -20527.1, //S10
-//  -19289.7, //-23857.1, // S8
+
 vector<double> dirt.beamline.berm.l748b.yPositions = {
   -8302.78,  //S1
   -8825.22,  // S12
@@ -42,9 +40,6 @@ vector<double> dirt.beamline.berm.l748b.yPositions = {
   6533.04,
   -8308.31   //S11
 };
-//   7384.59,  //S8
-//  9511.61,  //S9
-//  8866.56,  // S10
 // Local Variables:
 // mode:c++
 // End:

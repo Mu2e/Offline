@@ -58,7 +58,7 @@ vector<double> dirt.beamline.berm.l748a.xPositions = {
   16455.8, //AP1
   17204.7, //SW corner of escapehatchN
   17288.5,  // SW corner escapehatchS
-  20744.5,  // SE corner escape hatch   19356.8,  // NE corner escape hatch
+  20744.5,  // SE corner escape hatch
   19913.0,
   22552.6,  //C21
   24372.0,  //C22
@@ -77,7 +77,6 @@ vector<double> dirt.beamline.berm.l748a.xPositions = {
   43314.39
 };
 
-//vector<int>    dirt.beamline.berm.l2.yreplace   = {49};
 vector<double> dirt.beamline.berm.l748a.yPositions = {
   2438.4,   // b
   6858,   // P0
@@ -121,7 +120,7 @@ vector<double> dirt.beamline.berm.l748a.yPositions = {
   21392.8,
   18302.6,   // SW corner of escapehatchN
   17957.0,     // SW corner escape hatch
-  18794.4,     // SE corner escape hatch   24521.6,   // NE corner escape hatch
+  18794.4,     // SE corner escape hatch
   22231.3,
   26784.0,  //C21
   27237.5,  //C22
@@ -132,8 +131,8 @@ vector<double> dirt.beamline.berm.l748a.yPositions = {
   24287.8,  //C27
   23372.6,  //C28
   23633.7,  //C29
-  28082.98,   // NEcorner 50000
-  6967.91,  //2438.4   // a_to_E
+  28082.98,   // NEcorner
+  6967.91, // a_to_E
   5600.65,
   4606.18,
   3395.12,

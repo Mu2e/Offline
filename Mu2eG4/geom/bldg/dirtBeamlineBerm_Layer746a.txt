@@ -99,9 +99,9 @@ vector<double> dirt.beamline.berm.l746a.yPositions = {
   16459.2,  // NE corner rem hatch
   16459.2,  // NW corner rem hatch
   10312.5,  // back to wall
-  10312.5,   // C12 13 11255.2
-  19809.6,   // C13 14   20028.7
-  21531.7,   // C15 16   22680.3
+  10312.5,   // C12
+  19809.6,   // C13
+  21531.7,   // C15
   23213.7,
   23964.3,
   25008.9,
@@ -117,8 +117,8 @@ vector<double> dirt.beamline.berm.l746a.yPositions = {
   28686.8,   // C33
   28961.6,   // C34
   30840,     // C35
-  30840.0,   // NEcorner 50000
-  5102.08,   //2438.4   // a_to_E
+  30840.0,   // NEcorner
+  5102.08,   // a_to_E
   3895.39,
   2498.53,
   2438.4
