@@ -17,7 +17,7 @@ class CRVCalib : virtual public ProditionsEntity {
  public:
   typedef std::shared_ptr<CRVCalib> ptr_t;
   typedef std::shared_ptr<const CRVCalib> cptr_t;
-  constexpr static const std::string cxname = {"CRVCalib"};
+  constexpr static const char* cxname = {"CRVCalib"};
 
   typedef std::vector<CRVCalibPar> CalibVec;
 

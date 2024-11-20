@@ -18,7 +18,7 @@ class CRVStatus : virtual public ProditionsEntity {
 
   typedef std::shared_ptr<CRVStatus> ptr_t;
   typedef std::shared_ptr<const CRVStatus> cptr_t;
-  constexpr static const std::string cxname = {"CRVStatus"};
+  constexpr static const char* cxname = {"CRVStatus"};
 
   typedef std::map<std::uint16_t, int> StatusMap;
 
