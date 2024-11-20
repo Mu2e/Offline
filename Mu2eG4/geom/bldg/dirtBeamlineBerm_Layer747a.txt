@@ -59,7 +59,7 @@ vector<double> dirt.beamline.berm.l747a.xPositions = {
   16176.3, //AP
   17204.7, //SW corner of escapehatchN
   17288.5, // SW corner escapehatchS
-  20744.5, // SE corner escape hatch   22766.4, // 19356.8,  // NE corner escape hatch
+  20744.5, // SE corner escape hatch
   19635.2, //AP2
   22343.8,
   24987.0,
@@ -118,7 +118,7 @@ vector<double> dirt.beamline.berm.l747a.yPositions = {
   22547.1,  //AP
   18302.6,  // SW corner of escapehatchN
   17957.0,  // SW corner escape hatch
-  18794.4,  // SE corner escape hatch   25894.4, //  24521.6,   // NE corner escape hatch
+  18794.4,  // SE corner escape hatch
   23376.5,  //AP2
   27667.8,
   28247.0,
@@ -127,8 +127,8 @@ vector<double> dirt.beamline.berm.l747a.yPositions = {
   26636.3,
   24448.7,
   25015.7,
-  28980.59,   // NEcorner 50000
-  6039.03,   //2438.4   // a_to_E
+  28980.59,   // NEcorner
+  6039.03,   // a_to_E
   5034.46,
   4387.59,
   2438.4
