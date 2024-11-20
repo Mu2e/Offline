@@ -45,6 +45,7 @@ namespace mu2e {
       _czmin(conf().spectrum.get<fhicl::ParameterSet>().get<double>("czmin", -1.)),
       _czmax(conf().spectrum.get<fhicl::ParameterSet>().get<double>("czmax",  1.)),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
+      _useRate(conf().spectrum.get<fhicl::ParameterSet>().get<bool>("useRate",  false)),
       _makeHistograms(conf().spectrum.get<fhicl::ParameterSet>().get<bool>("makeHistograms",  false))
     {
       if(_makeHistograms) {
@@ -87,12 +88,13 @@ namespace mu2e {
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
-    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&) override {
+    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material) override {
       _randomUnitSphereExternal = new RandomUnitSphere(eng, _czmin, _czmax);
       _randomUnitSphereInternal = new RandomUnitSphere(eng);
       _randFlat = new CLHEP::RandFlat(eng);
       _randSpectrum = new CLHEP::RandGeneral(eng, _spectrum.getPDF(), _spectrum.getNbins());
       _muonCaptureSpectrum = new MuonCaptureSpectrum(_randFlat, _randomUnitSphereInternal);
+      _randomPoissonQ = new CLHEP::RandPoissonQ(eng, GlobalConstantsHandle<PhysicsParams>()->getCaptureRMCRate(material));
     }
 
   private:
@@ -104,6 +106,7 @@ namespace mu2e {
     const double _czmax;
     BinnedSpectrum _spectrum; //RMC photon spectrum
     MuonCaptureSpectrum*  _muonCaptureSpectrum; // internal conversion spectrum
+    const bool _useRate; //use the RMC rate to produce N events
 
     const bool _makeHistograms;
 
@@ -111,6 +114,7 @@ namespace mu2e {
     RandomUnitSphere*   _randomUnitSphereInternal;
     CLHEP::RandFlat*    _randFlat;
     CLHEP::RandGeneral* _randSpectrum;
+    CLHEP::RandPoissonQ* _randomPoissonQ;
 
     TH1* _hmomentum;
     TH1* _hCosz;
@@ -126,38 +130,40 @@ namespace mu2e {
   std::vector<ParticleGeneratorTool::Kinematic> RMCGenerator::generate() {
     std::vector<ParticleGeneratorTool::Kinematic>  res;
 
-    // real or virtual photon energy
-    const double energy = _spectrum.sample(_randSpectrum->fire());
-    if(_makeHistograms) _hmomentum->Fill(energy);
+    const int n_gen = (_useRate) ? _randomPoissonQ->fire() : 1;
+    for(int i_gen = 0; i_gen < n_gen; ++i_gen) {
+      // real or virtual photon energy
+      const double energy = _spectrum.sample(_randSpectrum->fire());
+      if(_makeHistograms) _hmomentum->Fill(energy);
+      if(_external) { //real photon spectrum
+        const CLHEP::Hep3Vector p3 = _randomUnitSphereExternal->fire(energy);
+        const CLHEP::HepLorentzVector fourmom(p3, energy);
 
-    if(_external) { //real photon spectrum
-      const CLHEP::Hep3Vector p3 = _randomUnitSphereExternal->fire(energy);
-      const CLHEP::HepLorentzVector fourmom(p3, energy);
+        ParticleGeneratorTool::Kinematic k{PDGCode::gamma, ProcessCode::mu2eExternalRMC, fourmom};
+        res.emplace_back(k);
+        if(_makeHistograms) _hCosz->Fill(fourmom.cosTheta());
+      } else { //virtual photon conversion spectrum
+        CLHEP::HepLorentzVector p_em, p_ep;
+        _muonCaptureSpectrum->getElecPosiVectors(energy, p_em, p_ep);
 
-      ParticleGeneratorTool::Kinematic k{PDGCode::gamma, ProcessCode::mu2eExternalRMC, fourmom};
-      res.emplace_back(k);
-      if(_makeHistograms) _hCosz->Fill(fourmom.cosTheta());
-    } else { //virtual photon conversion spectrum
-      CLHEP::HepLorentzVector p_em, p_ep;
-      _muonCaptureSpectrum->getElecPosiVectors(energy, p_em, p_ep);
+        ParticleGeneratorTool::Kinematic k_em{PDGCode::e_minus, ProcessCode::mu2eInternalRMC, p_em};
+        res.emplace_back(k_em);
+        ParticleGeneratorTool::Kinematic k_ep{PDGCode::e_plus , ProcessCode::mu2eInternalRMC, p_ep};
+        res.emplace_back(k_ep);
+        if(_makeHistograms) { //store virtual kinematics if requested
+          _hCosz->Fill((p_em+p_ep).cosTheta());
+          _hEnergyElectron->Fill(p_em.e());
+          _hEnergyPositron->Fill(p_ep.e());
 
-      ParticleGeneratorTool::Kinematic k_em{PDGCode::e_minus, ProcessCode::mu2eInternalRMC, p_em};
-      res.emplace_back(k_em);
-      ParticleGeneratorTool::Kinematic k_ep{PDGCode::e_plus , ProcessCode::mu2eInternalRMC, p_ep};
-      res.emplace_back(k_ep);
-      if(_makeHistograms) { //store virtual kinematics if requested
-        _hCosz->Fill((p_em+p_ep).cosTheta());
-        _hEnergyElectron->Fill(p_em.e());
-        _hEnergyPositron->Fill(p_ep.e());
+          const double mass = (p_em+p_ep).m();
+          _hMass->Fill(mass);
+          _hMassVsE->Fill(energy,mass);
+          _hMassOverE->Fill(mass/energy);
 
-        const double mass = (p_em+p_ep).m();
-        _hMass->Fill(mass);
-        _hMassVsE->Fill(energy,mass);
-        _hMassOverE->Fill(mass/energy);
-
-        const CLHEP::Hep3Vector p = p_em.vect()+p_ep.vect();
-        const double y = (p_em.e()-p_ep.e())/p.mag();
-        _hy->Fill(y);
+          const CLHEP::Hep3Vector p = p_em.vect()+p_ep.vect();
+          const double y = (p_em.e()-p_ep.e())/p.mag();
+          _hy->Fill(y);
+        }
       }
     }
 
