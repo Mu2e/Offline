@@ -4,6 +4,7 @@
 //
 // Original Author: Ralf Ehrlich
 
+#include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/CRVConditions/inc/CRVStatus.hh"
 #include "Offline/CRVResponse/inc/MakeCrvSiPMCharges.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -60,6 +61,8 @@ namespace mu2e
       fhicl::Atom<double> digitizationStartMargin{Name("digitizationStartMargin"),
                                                   Comment("time window before digitization starts to account for photon travel time and electronics response.")};
                                                   //50.0ns  start recording earlier to account for electronics response times
+      fhicl::Atom<int> numberSamplesNZS{Name("numberSamplesNZS")};           //134
+      fhicl::Atom<bool> simulateNZS{Name("simulateNZS")};                    //false
       fhicl::Atom<art::InputTag> eventWindowMarkerTag{Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
       fhicl::Atom<art::InputTag> protonBunchTimeMCTag{Name("protonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
       fhicl::Atom<bool> useSipmStatusDB{Name("useSipmStatusDB")};             //false (all channels will be simulated. channels with status bit 1 can be ignored in reco)
@@ -71,7 +74,7 @@ namespace mu2e
       fhicl::Atom<double> trapType1Prob{Name("TrapType1Prob")};              //0
       fhicl::Atom<double> trapType0Lifetime{Name("TrapType0Lifetime")};      //5ns
       fhicl::Atom<double> trapType1Lifetime{Name("TrapType1Lifetime")};      //50ns
-      fhicl::Atom<double> thermalRate{Name("ThermalRate")};                  //3.0e-4 ns^-1   300MHz for entire SiPM
+      fhicl::Atom<double> thermalRate{Name("ThermalRate")};                  //1.0e-4 ns^-1   100kHz for entire SiPM
       fhicl::Atom<double> crossTalkProb{Name("CrossTalkProb")};              //0.04
     };
     using Parameters = art::EDProducer::Table<Config>;
@@ -87,6 +90,8 @@ namespace mu2e
     double      _timeConstant;
     double      _capacitance;
     double      _digitizationStart, _digitizationEnd, _digitizationStartMargin;
+    int         _numberSamplesNZS;
+    bool        _simulateNZS;
     art::InputTag _eventWindowMarkerTag;
     art::InputTag _protonBunchTimeMCTag;
 
@@ -117,6 +122,8 @@ namespace mu2e
     _digitizationStart(conf().digitizationStart()),
     _digitizationEnd(conf().digitizationEnd()),
     _digitizationStartMargin(conf().digitizationStartMargin()),
+    _numberSamplesNZS(conf().numberSamplesNZS()),
+    _simulateNZS(conf().simulateNZS()),
     _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeMCTag(conf().protonBunchTimeMCTag()),
     _useSipmStatusDB(conf().useSipmStatusDB()),
@@ -138,7 +145,7 @@ namespace mu2e
     _probabilities._trapType1Prob=conf().trapType1Prob();              //0
     _probabilities._trapType0Lifetime=conf().trapType0Lifetime();      //5.0ns
     _probabilities._trapType1Lifetime=conf().trapType1Lifetime();      //50.0ns
-    _probabilities._thermalRate=conf().thermalRate();                  //3.0e-4 ns^-1   300MHz for entire SiPM
+    _probabilities._thermalRate=conf().thermalRate();                  //1.0e-4 ns^-1   100kHz for entire SiPM
     _probabilities._crossTalkProb=conf().crossTalkProb();              //0.05
 
     std::string fullPhotonMapFileName(_resolveFullPath(_photonMapFileName));
@@ -176,6 +183,12 @@ namespace mu2e
 
       startTime=eventWindowStart+_digitizationStart-_digitizationStartMargin; //300ns...325ns
       endTime=eventWindowStart+_digitizationEnd; //1700ns...1725ns
+
+      if(_simulateNZS)
+      {
+        startTime=eventWindowStart-_digitizationStartMargin; //100ns...125ns
+        endTime=eventWindowStart+_numberSamplesNZS*CRVDigitizationPeriod; //1875ns...1900s
+      }
     }
 
     auto const& sipmStatus = _sipmStatus.get(event.id());

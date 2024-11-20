@@ -1068,9 +1068,9 @@ void ArtBinaryPacketsFromDigis::fillCrvDataPacket(const CRVOrdinal& crvChannelMa
   hit.first.portNumber = rocPort;
   hit.first.controllerNumber = rocID;
   hit.first.HitTime = digi.GetStartTDC();
-  hit.first.NumSamples = CrvDigi::NSamples;
-  hit.second.resize(CrvDigi::NSamples);
-  for (size_t i = 0; i < CrvDigi::NSamples; ++i)
+  hit.first.NumSamples = digi.GetADCs().size();
+  hit.second.resize(digi.GetADCs().size());
+  for (size_t i = 0; i < digi.GetADCs().size(); ++i)
     hit.second.at(i).ADC = compressCrvDigi(digi.GetADCs().at(i));
 }
 
@@ -1081,13 +1081,15 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(const CRVOrdinal& crvChannel
                                                     CrvDataPacket& crvData, uint8_t rocID,
                                                     uint64_t eventNum) {
   size_t nHits = crvData.hits.size();
+  size_t nSamples = 12;
+  if(crvData.hits.size()>0) nSamples=crvData.hits.at(0).second.size();
 
   //----------------------------------------------
   // DataBlockHeader //TODO: This may have changed
   //----------------------------------------------
   // Word 0
   adc_t nBytes = sizeof(DataBlockHeader) + sizeof(CRVROCStatusPacket) +
-                 (sizeof(CRVHitInfo) + sizeof(CRVHitWaveformSample) * CrvDigi::NSamples) * nHits;
+                 (sizeof(CRVHitInfo) + sizeof(CRVHitWaveformSample) * nSamples) * nHits;
   while (nBytes % 16 != 0)
     nBytes++;
   crvData.header.TransferByteCount = nBytes;
@@ -1127,7 +1129,7 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(const CRVOrdinal& crvChannel
   // Word 1
   crvData.rocStatus.ControllerEventWordCount =
       (sizeof(CRVROCStatusPacket) +
-       (sizeof(CRVHitInfo) + sizeof(CRVHitWaveformSample) * CrvDigi::NSamples) * nHits) /
+       (sizeof(CRVHitInfo) + sizeof(CRVHitWaveformSample) * nSamples) * nHits) /
       2;
   // Word 2
   crvData.rocStatus.ActiveFEBFlags2 = 0xFF;
@@ -1200,8 +1202,8 @@ void ArtBinaryPacketsFromDigis::fillCrvDataStream(DTCLib::DTC_Event& currentEven
     memcpy(thisBlock.allocBytes->data() + pos, &crvData.hits[i].first, sizeof(CRVHitInfo));
     pos += sizeof(CRVHitInfo);
     memcpy(thisBlock.allocBytes->data() + pos, &crvData.hits[i].second[0],
-           sizeof(CRVHitWaveformSample) * CrvDigi::NSamples);
-    pos += sizeof(CRVHitWaveformSample) * CrvDigi::NSamples;
+           sizeof(CRVHitWaveformSample) * crvData.hits[i].second.size());
+    pos += sizeof(CRVHitWaveformSample) * crvData.hits[i].second.size();
   }
 
     putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_CRV, thisBlock);
