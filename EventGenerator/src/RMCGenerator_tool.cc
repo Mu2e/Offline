@@ -46,6 +46,7 @@ namespace mu2e {
       _czmax(conf().spectrum.get<fhicl::ParameterSet>().get<double>("czmax",  1.)),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
       _useRate(conf().spectrum.get<fhicl::ParameterSet>().get<bool>("useRate",  false)),
+      _internalRate((_external) ? 0. : 1.),
       _makeHistograms(conf().spectrum.get<fhicl::ParameterSet>().get<bool>("makeHistograms",  false))
     {
       if(_makeHistograms) {
@@ -53,7 +54,7 @@ namespace mu2e {
         art::TFileDirectory tfdir = tfs->mkdir( "RMCGenerator" );
         _hmomentum = tfdir.make<TH1F>("hmomentum", "Produced photon momentum", 60,  0.,  120.  );
         _hCosz     = tfdir.make<TH1F>("hCosz", "Produced photon cos(#theta_{z})", 200,  -1.,  1.  );
-        if(!_external) { //virtual conversion distributions
+        if(!_external || _useRate) { //virtual conversion distributions
           _hEnergyElectron = tfdir.make<TH1F>("hEnergyElectron", "Produced internal conversion electron energy", 60,  0.,  120.  );
           _hEnergyPositron = tfdir.make<TH1F>("hEnergyPositron", "Produced internal conversion positron energy", 60,  0.,  120.  );
           _hMass           = tfdir.make<TH1F>("hMass"          , "M(e+e-) "           , 120,0.,120.);
@@ -94,7 +95,10 @@ namespace mu2e {
       _randFlat = new CLHEP::RandFlat(eng);
       _randSpectrum = new CLHEP::RandGeneral(eng, _spectrum.getPDF(), _spectrum.getNbins());
       _muonCaptureSpectrum = new MuonCaptureSpectrum(_randFlat, _randomUnitSphereInternal);
-      _randomPoissonQ = new CLHEP::RandPoissonQ(eng, GlobalConstantsHandle<PhysicsParams>()->getCaptureRMCRate(material));
+      if(_useRate) {
+        _randomPoissonQ = new CLHEP::RandPoissonQ(eng, GlobalConstantsHandle<PhysicsParams>()->getCaptureRMCRate(material));
+        _internalRate = GlobalConstantsHandle<PhysicsParams>()->getCaptureRMCInternalRate(material);
+      }
     }
 
   private:
@@ -107,6 +111,7 @@ namespace mu2e {
     BinnedSpectrum _spectrum; //RMC photon spectrum
     MuonCaptureSpectrum*  _muonCaptureSpectrum; // internal conversion spectrum
     const bool _useRate; //use the RMC rate to produce N events
+    double _internalRate;
 
     const bool _makeHistograms;
 
@@ -135,7 +140,9 @@ namespace mu2e {
       // real or virtual photon energy
       const double energy = _spectrum.sample(_randSpectrum->fire());
       if(_makeHistograms) _hmomentum->Fill(energy);
-      if(_external) { //real photon spectrum
+      //determine it's real or virtual conversion
+      const bool external = (_useRate) ? _randFlat->fire() > _internalRate : _external;
+      if(external) { //real photon spectrum
         const CLHEP::Hep3Vector p3 = _randomUnitSphereExternal->fire(energy);
         const CLHEP::HepLorentzVector fourmom(p3, energy);
 
@@ -176,7 +183,7 @@ namespace mu2e {
     const auto daughters = generate();
     for(const auto& d: daughters) {
       out->emplace_back(d.pdgId,
-                        (_external) ? GenId::ExternalRMC : GenId::InternalRMC,
+                        (d.pdgId == PDGCode::gamma) ? GenId::ExternalRMC : GenId::InternalRMC,
                         pos,
                         d.fourmom,
                         stop.t);

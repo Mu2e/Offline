@@ -126,6 +126,7 @@ double physicsParams.Al.capture.deuteronRate = 0.025;
 double physicsParams.Al.capture.neutronRate = 1.2;
 double physicsParams.Al.capture.photonRate = 2.0;
 double physicsParams.Al.capture.RMCRate = 9.460e-5;
+double physicsParams.Al.capture.RMCInternalRate = 0.0069;
 double physicsParams.Al.capture.photon.1809keV.energy = 1.809;
 double physicsParams.Al.capture.photon.1809keV.intensity = 0.51;
 

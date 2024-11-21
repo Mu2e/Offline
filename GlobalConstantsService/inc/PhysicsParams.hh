@@ -135,8 +135,11 @@ namespace mu2e
     double   getCapturePhotonRate     (targetMat material = "") const {
       return doubleOrThrow(_capturePhotonRate,material,"capturePhotonRate");
     }
-    double   getCaptureRMCRate     (targetMat material = "") const {
+    double   getCaptureRMCRate(targetMat material = "") const {
       return doubleOrThrow(_captureRMCRate,material,"captureRMCRate");
+    }
+    double   getCaptureRMCInternalRate(targetMat material = "") const {
+      return doubleOrThrow(_captureRMCInternalRate,material,"captureRMCInternalRate");
     }
 
     double   get1809keVGammaEnergy     (targetMat material = "") const {
@@ -209,6 +212,7 @@ namespace mu2e
     std::map<targetMat, double> _captureNeutronRate;
     std::map<targetMat, double> _capturePhotonRate;
     std::map<targetMat, double> _captureRMCRate;
+    std::map<targetMat, double> _captureRMCInternalRate;
 
     std::map<targetMat, double> _1809keVGammaEnergy;
     std::map<targetMat, double> _1809keVGammaIntensity;
