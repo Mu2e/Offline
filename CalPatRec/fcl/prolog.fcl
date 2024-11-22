@@ -300,26 +300,24 @@ CalPatRec : { @table::CalPatRec
 
     producers : {
         CalTimePeakFinder          : { module_type:CalTimePeakFinder
-            diagLevel                                   : 0
-            debugLevel                                  : 0
-            printFrequency                              : 100
+            DiagLevel                                   : 0
+            DebugLevel                                  : 0
+            PrintFrequency                              : 100
             StrawHitCollectionLabel                     : makePH            # CalTimePeakFinder uses ComboHits
-            caloClusterModuleLabel                      : CaloClusterMaker
-#            HitSelectionBits                            : []
-#            BackgroundSelectionBits                     : ["Noisy","Dead"]
+            CaloClusterModuleLabel                      : CaloClusterMaker
+            HitSelBits                                  : ["TimeSelection"]
+            BkgSelBits                                  : ["Noisy","Dead"]
             MinNHits                                    : @local::CalPatRec.minNStrawHits
             DtMin                                       : -20.   # value before 2022-02-14 was -30. ns
             DtMax                                       :  20.   # value before 2022-02-14 was 30. ns
-            minClusterEnergy                            : 50.    # MeV
-            minClusterSize                              : 2      # number of crystals
-            pitchAngle                                  : 0.67   # mean pitch for CE
-            beta                                        : 1.0    # for muon reco needs to be changed
-            dtOffset                                    : @local::TrackCaloMatching.DtOffset
-            diagPlugin : { tool_type                    : "CalTimePeakFinderDiag"
-                mcTruth                                 : 0
-                mcUtils                                 : { tool_type : "TrkPatRecMcUtils"
-                    strawDigiMCCollTag : "compressDigiMCs"
-                }
+            MinClusterEnergy                            : 50.    # MeV
+            MinClusterSize                              : 2      # number of crystals
+            PitchAngle                                  : 0.67   # mean pitch for CE
+            Beta                                        : 1.0    # for muon reco needs to be changed
+            DtOffset                                    : @local::TrackCaloMatching.DtOffset
+            DiagPlugin : { tool_type                    : "CalTimePeakFinderDiag"
+                mcTruth   : 0
+                diagLevel : 0
             }
         }
 
