@@ -20,6 +20,7 @@
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
+#include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/DelegatedParameter.h"
 
 // ROOT includes
@@ -35,19 +36,25 @@ namespace mu2e {
       using Comment=fhicl::Comment;
 
       fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
+      fhicl::Atom<bool> useRate{Name("useRate"), Comment("Generate real and virtual photons at the expected rate per muon capture"), false};
+      fhicl::Atom<bool> external{Name("external"), Comment("Generate real photons (true) or internal conversions (false)"),
+        [this](){ return !useRate(); }};
+      fhicl::Atom<double> czmin{Name("czmin"), Comment("Restrict cos(theta_z) minimum"), -1.};
+      fhicl::Atom<double> czmax{Name("czmax"), Comment("Restrict cos(theta_z) maximum"),  1.};
+      fhicl::Atom<bool> makeHistograms{Name("makeHistograms"), Comment("Make histograms of event kinematics"),  false};
     };
     typedef art::ToolConfigTable<PhysConfig> Parameters;
 
     explicit RMCGenerator(Parameters const& conf) :
       _emass(GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::e_minus).mass()),
       _mumass(GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::mu_minus).mass()),
-      _external(conf().spectrum.get<fhicl::ParameterSet>().get<bool>("external")),
-      _czmin(conf().spectrum.get<fhicl::ParameterSet>().get<double>("czmin", -1.)),
-      _czmax(conf().spectrum.get<fhicl::ParameterSet>().get<double>("czmax",  1.)),
+      _useRate(conf().useRate()),
+      _external(_useRate || conf().external()),
+      _czmin(conf().czmin()),
+      _czmax(conf().czmax()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
-      _useRate(conf().spectrum.get<fhicl::ParameterSet>().get<bool>("useRate",  false)),
       _internalRate((_external) ? 0. : 1.),
-      _makeHistograms(conf().spectrum.get<fhicl::ParameterSet>().get<bool>("makeHistograms",  false))
+      _makeHistograms(conf().makeHistograms())
     {
       if(_makeHistograms) {
         art::ServiceHandle<art::TFileService> tfs;
@@ -105,12 +112,12 @@ namespace mu2e {
     const double _emass;
     const double _mumass;
 
-    const bool _external; //real or virtual photons
+    const bool _useRate; //use the RMC rate to produce N events
+    const bool _external; //real or virtual photons if not physical rates
     const double _czmin; //range of cos(theta_z) generated
     const double _czmax;
     BinnedSpectrum _spectrum; //RMC photon spectrum
     MuonCaptureSpectrum*  _muonCaptureSpectrum; // internal conversion spectrum
-    const bool _useRate; //use the RMC rate to produce N events
     double _internalRate;
 
     const bool _makeHistograms;
