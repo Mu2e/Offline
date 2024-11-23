@@ -748,8 +748,8 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 CalPatRec: { @table::CalPatRec
     producers : { @table::CalPatRec.producers
-        CalTimePeakFinderUe            : { @table::CalPatRec.producers.CalTimePeakFinder   pitchAngle: -0.67                }
-        CalTimePeakFinderMu            : { @table::CalPatRec.producers.CalTimePeakFinder   beta: 0.7                        }
+        CalTimePeakFinderUe            : { @table::CalPatRec.producers.CalTimePeakFinder   PitchAngle: -0.67                }
+        CalTimePeakFinderMu            : { @table::CalPatRec.producers.CalTimePeakFinder   Beta: 0.7                        }
         CalHelixFinderDe               : { @table::CalPatRec.producers.CalHelixFinder fitparticle: @local::Particle.eminus  }
         CalHelixFinderUe               : { @table::CalPatRec.producers.CalHelixFinder
             fitparticle                : @local::Particle.eminus
