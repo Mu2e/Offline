@@ -1,0 +1,128 @@
+// SimpleConfig geometry file automatically produced for original file:
+//
+//   geom/geom_beamline_dirtBerm.ccl
+// Nov 2024
+// dirtbeamline removed, several layers of berms added; ref: docdb:49557
+// layer-753' NE side
+
+string dirt.beamline.berm.l753a.name     = "dirtBeamlineBerml753a";
+
+string dirt.beamline.berm.l753a.material = "MBOverburden";
+
+double dirt.beamline.berm.l753a.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.beamline.berm.l753a.offsetFromFloorSurface.y = 12344.48;
+double dirt.beamline.berm.l753a.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.beamline.berm.l753a.yHalfThickness           = 304.80061; //1 US foot to mm
+
+vector<double> dirt.beamline.berm.l753a.xPositions = {
+  -4140.2,    // b
+  -4140.2,    // P0
+  -4749.8,    // P1
+  -4749.8,    // P2
+  -11709.4,   // P3
+  -11709.4,   // P3a
+  -12319,     // P3b
+  -12319,     // P3c
+  -12318.9,   // P3d
+  -12343.4,   // P3e
+  -12319.3,   // P3f
+  -13690.2,
+  -13690.2,   // P4 from WextWall
+  -12319,   // P5    from WextWall
+  -12319,   // from NRetWall
+  3708.4,   // from NRetWall
+  3708.4,   // from NRetWall
+  3403.6,   // even with wall of remote hatch
+  3403.6,   // rem hatch corner SW
+  9550.5,   // SE corner rem hatch
+  9550.5,   // NE corner rem hatch
+  3403.6,   // NW corner rem hatch
+  3403.5,   // Back against wall
+  2007.75,  // C12
+  2014.03,  // C13
+  2092.91,  // C14
+  2245.63,  // C15
+  2623.25,  // C16
+  2891.84,  // C17
+  3519.11,  // C18
+  13212.5,  // C19
+  14387.0,  // cs1
+  16480.6,  // cs2
+  16628.1,  // cs3
+  22074.3,  // cs4
+  21902.5,  // cs5
+  23637.9,
+  25706.9,
+  26345.8,
+  26639.4,
+  26898.6,
+  27214.3,
+  28194.0,
+  50000.0,
+  50000.0,   // a_to_E
+  44352.9,
+  43298.3,
+  36174.7,
+  15229.9,
+  20145.4,
+  24165.18
+};
+
+vector<double> dirt.beamline.berm.l753a.yPositions = {
+  2438.4,   // b
+  6858,   // P0
+  6858,   // P1
+  6502.4,   // P2
+  6502.4,   // P3
+  6858,     // P3a
+  6858,     // P3b
+  6502.4,   // P3c
+  -2091.9,  // P3d
+  -2096.1,  // P3e
+  -2194.8,  // P3f
+  -2561.0,
+  9956.8,   // P4  from WextWall
+  9956.8,   // P5   from WextWall
+  9702.8,   // from NRetWall
+  9702.8,   // from NRetWall
+  10312.4,  // from NRetWall
+  10312.4,  // same
+  13055.6,  // SW corner rem hatch
+  13055.6,  // SE corner rem hatch
+  16459.2,  // NE corner rem hatch
+  16459.2,  // NW corner rem hatch
+  10312.5,  // back to wall
+  10312.5,  // C12
+  18965.5,  // C13
+  19261.3,  // C14
+  19495.7,  // C15
+  19742.3,  // C16
+  19793.9,  // C17
+  19792.1,  // C19
+  19787.3,  //
+  20337.2,  // cs1
+  17695.2,  // cs2
+  17141.3,  // cs3
+  18348.4,  // cs4
+  19559.6,  // cs5
+  22346.4,
+  22812.7,
+  22709.4,
+  22555.2,
+  22342.4,
+  21853.1,
+  17855.2,
+  23079.8,
+  11501.4,  // a to E
+  10328.7,
+  10109.7,
+  9473.58,
+  4610.77,
+  3415.7,
+  2438.4
+};
+
+// Local Variables:
+// mode:c++
+// End:
