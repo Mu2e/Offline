@@ -128,8 +128,30 @@ namespace mu2e {
 // functions
 //-----------------------------------------------------------------------------
   public:
+    struct Config{
+      using Name    = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<int>                DiagLevel               { Name("DiagLevel"),                  Comment("diagLevel")          , 0 };
+      fhicl::Atom<int>                DebugLevel              { Name("DebugLevel"),                 Comment("debugLevel")         , 0 };
+      fhicl::Atom<int>                Printfreq               { Name("PrintFrequency"),             Comment("Print frequency")    , 1 };
+      fhicl::Atom<std::string>        StrawHitCollectionLabel { Name("StrawHitCollectionLabel"),    Comment("strawHitCollectionLabel")};
+      fhicl::Atom<std::string>        CaloClusterModuleLabel  { Name("CaloClusterModuleLabel" ),    Comment("caloClusterModuleLabel" )};
+      fhicl::Sequence<std::string>    HitSelBits              { Name("HitSelBits"             ),    Comment("hitSelBits"             )};
+      fhicl::Sequence<std::string>    BkgSelBits              { Name("BkgSelBits"             ),    Comment("bkgSelBits"             )};
+      fhicl::Atom<double>             DtMin                   { Name("DtMin"                  ),    Comment("dtMin"                  )};
+      fhicl::Atom<double>             DtMax                   { Name("DtMax"                  ),    Comment("dtMax"                  )};
+      fhicl::Atom<int>                MinNHits                { Name("MinNHits"               ),    Comment("minNHits"               )};
+      fhicl::Atom<double>             MinClusterEnergy        { Name("MinClusterEnergy"       ),    Comment("minClusterEnergy"       )};
+      fhicl::Atom<int>                MinClusterSize          { Name("MinClusterSize"         ),    Comment("minClusterSize"         )};
+      fhicl::Atom<double>             PitchAngle              { Name("PitchAngle"             ),    Comment("pitchAngle"             )};
+      fhicl::Atom<double>             Beta                    { Name("Beta"                   ),    Comment("beta"                   )};
+      fhicl::Atom<double>             DtOffset                { Name("DtOffset"               ),    Comment("dtOffset"               )};
+      fhicl::Table<CalTimePeakFinderTypes::Config>DiagPlugin  { Name("DiagPlugin"),                 Comment("Diag plugin"            )};
+    };
 
-    explicit CalTimePeakFinder(const fhicl::ParameterSet& PSet);
+    using Parameters = art::EDProducer::Table<Config>;
+
+    explicit CalTimePeakFinder(const Parameters& Conf);
     virtual ~CalTimePeakFinder();
 
     virtual void beginJob ();
