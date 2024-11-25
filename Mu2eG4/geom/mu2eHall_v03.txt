@@ -691,14 +691,6 @@ vector<string> dirt.prefix.list = {
   "dirt.escape.stair.11"
 };
 
-//#include "Offline/Mu2eG4/geom/bldg/dirtRetainingWallBermEast.txt"
-//#include "Offline/Mu2eG4/geom/bldg/dirtRetainingWallBermWest.txt"
-//#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBermWest.txt"
-//#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBermSW.txt"
-//  "dirt.retaining.Wall.berm.east",
-//  "dirt.retaining.Wall.berm.west",
-//  "dirt.beamline.berm.west",
-//  "dirt.beamline.berm.sw"
 vector<string> dirt.trap.prefix.list = {}; // All the dirt trap geometries are removed. The function makeTrapDirt can be found in Mu2eHallMaker.cc
 
 
