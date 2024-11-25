@@ -693,9 +693,6 @@ vector<string> dirt.prefix.list = {
 
 vector<string> dirt.trap.prefix.list = {}; // All the dirt trap geometries are removed. The function makeTrapDirt can be found in Mu2eHallMaker.cc
 
-
-
-
 // Local Variables:
 // mode:c++
 // End:
