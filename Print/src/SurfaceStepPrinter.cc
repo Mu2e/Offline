@@ -75,11 +75,11 @@ void mu2e::SurfaceStepPrinter::Print(const mu2e::SurfaceStep& obj, int ind,
      << std::setw(5) << std::setprecision(3)     << obj.pathLength() << " "
      << std::setw(5) << std::setprecision(2)     << obj.time() << " "
      << std::setw(7) << std::setprecision(2)     << fmod(obj.time(),mbtime) << " "
-     << std::setw(5)  << std::setprecision(1) << obj.startPosition().x()
-     << std::setw(5)  << std::setprecision(1) << obj.startPosition().y()
+     << std::setw(5)  << std::setprecision(1) << obj.startPosition().x() << ","
+     << std::setw(5)  << std::setprecision(1) << obj.startPosition().y() << ","
      << std::setw(5)  << std::setprecision(1) << obj.startPosition().z() << " "
-     << std::setw(5)  << std::setprecision(1) << obj.momentum().x()
-     << std::setw(5)  << std::setprecision(1) << obj.momentum().y()
+     << std::setw(5)  << std::setprecision(1) << obj.momentum().x() << ","
+     << std::setw(5)  << std::setprecision(1) << obj.momentum().y() << ","
      << std::setw(5)  << std::setprecision(1) << obj.momentum().z()
      << std::endl;
 }
@@ -92,5 +92,5 @@ void mu2e::SurfaceStepPrinter::PrintHeader(const std::string& tag,
 
 void mu2e::SurfaceStepPrinter::PrintListHeader(std::ostream& os) {
   if (verbose() < 1) return;
-  os << " ind SimPart SurfaceId    eDep     length    time time%mb pos  X    Y    Z mom  X     Y     Z\n";
+  os << " ind      SimPart        SurfaceId    eDep     length    time time%mb pos  X    Y    Z   mom  X     Y     Z\n";
 }
