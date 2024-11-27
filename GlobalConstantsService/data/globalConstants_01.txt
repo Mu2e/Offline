@@ -125,8 +125,8 @@ double physicsParams.Al.capture.protonRate = 0.05;
 double physicsParams.Al.capture.deuteronRate = 0.025;
 double physicsParams.Al.capture.neutronRate = 1.2;
 double physicsParams.Al.capture.photonRate = 2.0;
-double physicsParams.Al.capture.RMCRate = 9.460e-5;
-double physicsParams.Al.capture.RMCInternalRate = 0.0069;
+double physicsParams.Al.capture.RMCRate = 9.460e-5; //TRIUMF measured 1.41e-5 for E > 57, full rate taken by dividing by closure fraction above 57 MeV for kmax = 90.1
+double physicsParams.Al.capture.RMCInternalRate = 0.0069; //measurement of internal conversion rate for RPC on hydrogen
 double physicsParams.Al.capture.photon.1809keV.energy = 1.809;
 double physicsParams.Al.capture.photon.1809keV.intensity = 0.51;
 

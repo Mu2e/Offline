@@ -387,7 +387,7 @@ EventGenerator : { @table::EventGenerator
                     ehi               : 90.1
                     kMaxUserSet       : true
                     kMaxUser          : 90.1
-                    external          : true
+                    mode              : "external" #Options are "external" "internal" or "physical"
                     spectrumShape     : "RMC"
                     spectrumResolution: 0.1
                 }
