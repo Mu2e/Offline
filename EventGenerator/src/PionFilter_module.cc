@@ -6,6 +6,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art_root_io/TFileService.h"
 
 // Mu2e includes.
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
@@ -17,7 +18,8 @@
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include <iostream>
 #include <string>
-
+#include "TH1F.h"
+#include "TTree.h"
 using namespace std;
 namespace mu2e {
 
@@ -26,13 +28,14 @@ namespace mu2e {
       struct Config {
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
-        fhicl::Atom<int> diagLevel{Name("diagLevel"),0};
+        fhicl::Atom<int> diagLevel{Name("diagLevel"),1};
         fhicl::Atom<double> tmin{Name("tmin"),0};
         fhicl::Atom<double> tmax{Name("tmax"),1e6};
         fhicl::Atom<bool> isNull{Name("isNull"),true};
       };
       explicit PionFilter(const art::EDFilter::Table<Config>& config);
       virtual bool filter(art::Event& event) override;
+      virtual void endJob() override;
 
     private:
       const SimParticleCollection* SimCol_;
@@ -40,8 +43,10 @@ namespace mu2e {
       double tmin_;
       double tmax_;
       bool isNull_;
-      double totalweight = 0;
-      double selectedweight = 0;
+      float _totalweight = 0;
+      float _selectedweight = 0;
+      int _ntot = 0;
+      int _nsel = 0;
   };
 
   PionFilter::PionFilter(const art::EDFilter::Table<Config>& config) :
@@ -63,20 +68,27 @@ namespace mu2e {
           float _endglobaltime = pp->endGlobalTime();
           if( pp->stoppingCode() == ProcessCode::mu2eKillerVolume and std::abs(pp->pdgId()) == PDGCode::pi_plus){
             const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
-            totalweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
+            _totalweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
+            _ntot += 1;
           }
           if( pp->stoppingCode() == ProcessCode::mu2eKillerVolume and (std::abs(pp->pdgId()) == PDGCode::pi_plus and _endglobaltime > tmin_ and _endglobaltime < tmax_ )){
             passed = true;
             const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
-            selectedweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
+            _selectedweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
+            _nsel += 1;
           }
         }
       }
-    if(diagLevel_ > 0 ){
-      std::cout<<"Total weight for all stops "<<totalweight<<std::endl;
-      std::cout<<"Selected weight for chosen stops "<<selectedweight<<std::endl;
-    }
     return passed;
+  }
+
+  void PionFilter::endJob(){
+     if(diagLevel_ > 0 ){
+      std::cout<<"Total weight for all stops "<<_totalweight<<std::endl;
+      std::cout<<"Total stops "<<_ntot<<std::endl;
+      std::cout<<"Selected weight for chosen stops "<<_selectedweight<<std::endl;
+      std::cout<<"Selected stops "<<_nsel<<std::endl;
+    }
   }
 }
 
