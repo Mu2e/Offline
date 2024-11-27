@@ -11,16 +11,16 @@ CommonTrk                : {
 # into one collection
 #------------------------------------------------------------------------------
         MHFinderDe : { @table::TrkReco.producers.MergeHelices
-            HelixFinders : [ "HelixFinderDe:Positive" , "CalHelixFinderDe:Positive" , "HelixFinderDe:Negative" , "CalHelixFinderDe:Negative" ]
+            HelixFinders : [ "HelixFinderDe" , "CalHelixFinderDe" ]
         }
         MHFinderDmu : { @table::TrkReco.producers.MergeHelices
-            HelixFinders : [ "HelixFinderDmu:Positive", "CalHelixFinderDmu:Positive", "HelixFinderDmu:Negative", "CalHelixFinderDmu:Negative"]
+            HelixFinders : [ "HelixFinderDmu", "CalHelixFinderDmu"]
         }
         MHFinderUe : { @table::TrkReco.producers.MergeHelices
-            HelixFinders : [ "HelixFinderUe:Positive" , "CalHelixFinderUe:Positive" , "HelixFinderUe:Negative" , "CalHelixFinderUe:Negative" ]
+            HelixFinders : [ "HelixFinderUe" , "CalHelixFinderUe" ]
         }
         MHFinderUmu : { @table::TrkReco.producers.MergeHelices
-            HelixFinders : [ "HelixFinderUmu:Positive", "CalHelixFinderUmu:Positive", "HelixFinderUmu:Negative", "CalHelixFinderUmu:Negative"]
+            HelixFinders : [ "HelixFinderUmu", "CalHelixFinderUmu"]
         }
 #------------------------------------------------------------------------------
 # BTRK track fit, downstream electron hypothesis
@@ -50,8 +50,8 @@ CommonTrk                : {
 # assume KinKal doesn't check the helicity, using that of the helix
 # KinKal track fit, downstream electron hypothesis
 #------------------------------------------------------------------------------
-        KKDeMHPar   : { @table::Mu2eKinKal.producers.KKDeM
-            ModuleSettings : { @table::Mu2eKinKal.producers.KKDeM.ModuleSettings
+        KKDeHPar   : { @table::Mu2eKinKal.producers.KKDe
+            ModuleSettings : { @table::Mu2eKinKal.producers.KKDe.ModuleSettings
                 @table::Mu2eKinKal.KKPrecursors
                 HelixSeedCollections : [ "MHFinderDe"  ]
             }
@@ -60,8 +60,8 @@ CommonTrk                : {
 #------------------------------------------------------------------------------
 # KinKal track fit, downstream muon hypothesis
 #------------------------------------------------------------------------------
-        KKDmuMHPar  : { @table::Mu2eKinKal.producers.KKDmuM
-            ModuleSettings : { @table::Mu2eKinKal.producers.KKDmuM.ModuleSettings
+        KKDmuHPar  : { @table::Mu2eKinKal.producers.KKDmu
+            ModuleSettings : { @table::Mu2eKinKal.producers.KKDmu.ModuleSettings
                 @table::Mu2eKinKal.KKPrecursors
                 HelixSeedCollections  : [ "MHFinderDmu" ]
             }
@@ -70,8 +70,8 @@ CommonTrk                : {
 #------------------------------------------------------------------------------
 # KinKal track fit, upstream electron hypothesis
 #------------------------------------------------------------------------------
-        KKUeMHPar   : { @table::Mu2eKinKal.producers.KKUeM
-            ModuleSettings : { @table::Mu2eKinKal.producers.KKUeM.ModuleSettings
+        KKUeHPar   : { @table::Mu2eKinKal.producers.KKUe
+            ModuleSettings : { @table::Mu2eKinKal.producers.KKUe.ModuleSettings
                 @table::Mu2eKinKal.KKPrecursors
                 HelixSeedCollections : [ "MHFinderUe"  ]
             }
@@ -79,8 +79,8 @@ CommonTrk                : {
 #------------------------------------------------------------------------------
 # KinKal track fit, upstream muon hypothesis
 #------------------------------------------------------------------------------
-        KKUmuMHPar  : { @table::Mu2eKinKal.producers.KKUmuM
-            ModuleSettings : { @table::Mu2eKinKal.producers.KKUmuM.ModuleSettings
+        KKUmuHPar  : { @table::Mu2eKinKal.producers.KKUmu
+            ModuleSettings : { @table::Mu2eKinKal.producers.KKUmu.ModuleSettings
                 @table::Mu2eKinKal.KKPrecursors
                 HelixSeedCollections : [ "MHFinderUmu" ]
             }
@@ -109,20 +109,20 @@ CommonTrk.helix_reco_Umu  : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinder
 # by default, write out two lists of tracks corresponding to two different
 # ambiguity resolvers
 #------------------------------------------------------------------------------
-CommonTrk.reco_DeMHPar   : [ @sequence::CommonTrk.helix_reco_De , KSFDeMH , KFFDeMHPar  ]
-CommonTrk.reco_DeMHDar   : [ @sequence::CommonTrk.helix_reco_De , KSFDeMH , KFFDeMHDar  ]
-CommonTrk.reco_DeMH      : [ @sequence::CommonTrk.helix_reco_De , KSFDeMH , KFFDeMHPar,  KFFDeMHDar  ]
+CommonTrk.reco_DeHPar   : [ @sequence::CommonTrk.helix_reco_De , KSFDeH , KFFDeHPar  ]
+CommonTrk.reco_DeHDar   : [ @sequence::CommonTrk.helix_reco_De , KSFDeH , KFFDeHDar  ]
+CommonTrk.reco_DeH      : [ @sequence::CommonTrk.helix_reco_De , KSFDeH , KFFDeHPar,  KFFDeHDar  ]
 
-CommonTrk.reco_UeMHPar   : [ @sequence::CommonTrk.helix_reco_Ue , KSFUeMH , KFFUeMHPar  ]
-CommonTrk.reco_UeMHDar   : [ @sequence::CommonTrk.helix_reco_Ue , KSFUeMH , KFFUeMHDar  ]
-CommonTrk.reco_UeMH      : [ @sequence::CommonTrk.helix_reco_Ue , KSFUeMH , KFFUeMHPar,  KFFUeMHDar  ]
+CommonTrk.reco_UeHPar   : [ @sequence::CommonTrk.helix_reco_Ue , KSFUeH , KFFUeHPar  ]
+CommonTrk.reco_UeHDar   : [ @sequence::CommonTrk.helix_reco_Ue , KSFUeH , KFFUeHDar  ]
+CommonTrk.reco_UeH      : [ @sequence::CommonTrk.helix_reco_Ue , KSFUeH , KFFUeHPar,  KFFUeHDar  ]
 
-CommonTrk.reco_DmuMHPar  : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuMH, KFFDmuMHPar ]
-CommonTrk.reco_DmuMHDar  : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuMH, KFFDmuMHDar ]
-CommonTrk.reco_DmuMH     : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuMH, KFFDmuMHPar, KFFDmuMHDar ]
+CommonTrk.reco_DmuHPar  : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuH, KFFDmuHPar ]
+CommonTrk.reco_DmuHDar  : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuH, KFFDmuHDar ]
+CommonTrk.reco_DmuH     : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuH, KFFDmuHPar, KFFDmuHDar ]
 
-CommonTrk.reco_UmuMHPar  : [ @sequence::CommonTrk.helix_reco_Umu, KSFUmuMH, KFFUmuMHPar ]
-CommonTrk.reco_UmuMHDar  : [ @sequence::CommonTrk.helix_reco_Umu, KSFUmuMH, KFFUmuMHDar ]
-CommonTrk.reco_UmuMH     : [ @sequence::CommonTrk.helix_reco_Umu, KSFUmuMH, KFFUmuMHPar, KFFUmuMHDar ]
+CommonTrk.reco_UmuHPar  : [ @sequence::CommonTrk.helix_reco_Umu, KSFUmuH, KFFUmuHPar ]
+CommonTrk.reco_UmuHDar  : [ @sequence::CommonTrk.helix_reco_Umu, KSFUmuH, KFFUmuHDar ]
+CommonTrk.reco_UmuH     : [ @sequence::CommonTrk.helix_reco_Umu, KSFUmuH, KFFUmuHPar, KFFUmuHDar ]
 
 END_PROLOG
