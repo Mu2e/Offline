@@ -5,7 +5,7 @@
 # services.DbService.version: v1_0
 #
 # To convert the fit to use CentralHelix instead of LoopHelix, add the following line to the stub:
-# physics.producers.KKDeM.module_type : CentralHelixFit
+# physics.producers.KKDe.module_type : CentralHelixFit
 
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"
@@ -40,8 +40,8 @@ physics :
     TimeClusterFinderDe, HelixFinderDe,
     CalTimePeakFinder, CalHelixFinderDe,
     CalTimePeakFinderMu, CalHelixFinderDmu,
-    MHDeM,
-    KKDeM,
+    MHDe,
+    KKDe,
     @sequence::Reconstruction.MCReco
   ]
   analyzers : {
@@ -56,7 +56,7 @@ physics :
       branches :  [
         { input: "KK"
           branch : "trk"
-          suffix : "DeM"
+          suffix : "De"
           options : { fillMC : true   genealogyDepth : -1 }
         }
       ]
@@ -82,16 +82,16 @@ outputs : {
 
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
-physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDeM"]
-physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM"]
+physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDe"]
+physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDe"]
 physics.producers.SelectRecoMC.debugLevel : 0
 
-physics.producers.KKDeM.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
-physics.producers.KKDeM.ModuleSettings.ComboHitCollection : "makeSH"
-physics.producers.KKDeM.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
-physics.producers.KKDeM.ModuleSettings.PrintLevel : 0
-physics.producers.KKDeM.ModuleSettings.SaveAllFits : false
-physics.producers.KKDeM.FitSettings.PrintLevel : 0
+physics.producers.KKDe.ModuleSettings.HelixSeedCollections : [ "MHDe" ]
+physics.producers.KKDe.ModuleSettings.ComboHitCollection : "makeSH"
+physics.producers.KKDe.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
+physics.producers.KKDe.ModuleSettings.PrintLevel : 0
+physics.producers.KKDe.ModuleSettings.SaveAllFits : false
+physics.producers.KKDe.FitSettings.PrintLevel : 0
 
 physics.analyzers.TrkAna.ExtraMCStepCollectionTags : [ "compressDigiMCs:protonabsorber", "compressDigiMCs:stoppingtarget" ]
 physics.end_paths : [ EndPath ] # needed for generate_fcl
