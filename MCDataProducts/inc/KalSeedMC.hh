@@ -10,7 +10,6 @@
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
-#include <Offline/GeneralUtilities/inc/EnumToStringSparse.hh>
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"

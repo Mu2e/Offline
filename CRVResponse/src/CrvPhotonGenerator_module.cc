@@ -4,6 +4,7 @@
 //
 // Original Author: Ralf Ehrlich
 
+#include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/CRVConditions/inc/CRVPhotonYield.hh"
 #include "Offline/CRVResponse/inc/MakeCrvPhotons.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -73,6 +74,8 @@ namespace mu2e
       fhicl::Atom<double> digitizationEnd{ Name("digitizationEnd"), Comment("end of digitization after DAQ event window start")};
       fhicl::Atom<double> digitizationStartMargin{ Name("digitizationStartMargin"),
                                Comment("time window before digitization starts to account for photon travel time and electronics response.")};
+      fhicl::Atom<int> numberSamplesNZS{Name("numberSamplesNZS")}; //134
+      fhicl::Atom<bool> simulateNZS{Name("simulateNZS")}; //false
       fhicl::Atom<art::InputTag> eventWindowMarkerTag{ Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
       fhicl::Atom<art::InputTag> protonBunchTimeMCTag{ Name("protonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
     };
@@ -106,22 +109,25 @@ namespace mu2e
     //---first DAQ clock tick after POT occurs between 0ns and 25ns after protons.
     //   25ns jitter is due to the microbunch period not being an integer multiple of the DAQ clock period.
     //---event window starts 200ns after these first DAQ clock ticks (--> 200ns...225ns after POT).
+    //   (this delay is the same the tracker is using)
     //---due to the above variations, the event window length varies between 1675ns and 1700ns.
     //---digitization start: 200ns after event window start (--> 400ns...425ns after POT)
     //---digitization end: 1500ns after event window start (--> 1700ns...1725ns after POT),
     //   which is 1300ns after digitization start
     //-CrvSteps
-    //---start recording CrvSteps 100ns before digitzation window
-    //   (--> 100ns after event window start, 300ns...325ns after POT)
-    //   to account for photon travel time and electronics response time.
-    //---stop recording CrvSteps at end of digitization window.
-    //---CrvSteps before 100ns before the digitization window are removed (dead time).
-    //---CrvSteps after the end of the event window belong to the next event(s).
-    //   for simplicity, no time wrapping and removal of CrvSteps that occur in the dead time will be done.
+    //---to speed up the simulation for ZS data:
+    //------CrvSteps before 100ns before the digitization window are removed.
+    //      (--> 100ns after event window start, 300ns...325ns after POT)
+    //      to account for photon travel time and electronics response time.
+    //------CrvSteps after the digitization window are removed.
+    //------only for the removal decision: apply a time wrapping (modulus microbunch period of 1695ns)
+    //      at the event window starts, to avoid breaking up hits,
+    //      because these CrvSteps are far away from the digitization window.
+    //      this time wrapping will not be applied to the photon generation,
+    //      where the un-wrapped time will be used.
     //-CrvPhotons
-    //---photons get time wrapped modulus microbunch period (1695ns).
-    //---no further consideration of the digitization window for the photons;
-    //   this will be done at the digitization step.
+    //---apply a time wrapping (modulus microbunch period of 1695ns) at the event window starts,
+    //   to avoid breaking up pulses, because these photons are far away from the digitization window
     //
     //Off-spill
     //-Event length: 100000ns
@@ -135,6 +141,8 @@ namespace mu2e
     double      _digitizationStart; //200ns after event window start (400ns...425ns after POT)
     double      _digitizationEnd;   //1500ns after event window start (1700ns...1725ns after POT)
     double      _digitizationStartMargin;  //100ns (used to account for photon travel time and electronics response time)
+    int         _numberSamplesNZS;  //134
+    bool        _simulateNZS;       //false
     art::InputTag _eventWindowMarkerTag;
     art::InputTag _protonBunchTimeMCTag;
     double      _microBunchPeriod;
@@ -161,6 +169,8 @@ namespace mu2e
     _digitizationStart(conf().digitizationStart()),
     _digitizationEnd(conf().digitizationEnd()),
     _digitizationStartMargin(conf().digitizationStartMargin()),
+    _numberSamplesNZS(conf().numberSamplesNZS()),
+    _simulateNZS(conf().simulateNZS()),
     _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeMCTag(conf().protonBunchTimeMCTag()),
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
@@ -168,7 +178,7 @@ namespace mu2e
     _randGaussQ(_engine),
     _randPoissonQ(_engine)
   {
-    if(_moduleLabels.size()==0) throw std::logic_error("ERROR: a list of crvSteps module labels needs to be provided");
+    //if(_moduleLabels.size()==0) throw std::logic_error("ERROR: a list of crvSteps module labels needs to be provided");
     if(_moduleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (crvStepModuleLabels/crvStepProcessNames)");
     for(size_t i=0; i<_moduleLabels.size(); ++i)
     {
@@ -271,6 +281,12 @@ namespace mu2e
 
       startTime=eventWindowStart+_digitizationStart-_digitizationStartMargin; //300ns...325ns
       endTime=eventWindowStart+_digitizationEnd; //1700ns...1725ns
+
+      if(_simulateNZS)
+      {
+        startTime=eventWindowStart-_digitizationStartMargin; //100ns...125ns
+        endTime=eventWindowStart+_numberSamplesNZS*CRVDigitizationPeriod; //1875ns...1900s
+      }
     }
 
     for(size_t j=0; j<_selectors.size(); ++j)
@@ -287,8 +303,18 @@ namespace mu2e
           double t2 = step.endTime();
           if(isnan(t1) || isnan(t2)) continue;  //This situation was observed once. Not sure how it happened.
 
-          if(t2<startTime) continue;
-          //for simplicity (due to time wrapping) no other crvSteps will be removed
+          if(!_simulateNZS)  //no steps will be removed for NZS
+          {
+            //time wrap around eventWindowStart which is far away from any steps that need to be used
+            double t1Tmp = fmod(t1-eventWindowStart,_microBunchPeriod)+eventWindowStart;
+            double t2Tmp = fmod(t2-eventWindowStart,_microBunchPeriod)+eventWindowStart;
+            //fmod of a negative number returns a negative number
+            if(t1Tmp<eventWindowStart) t1Tmp+=_microBunchPeriod;
+            if(t2Tmp<eventWindowStart) t2Tmp+=_microBunchPeriod;
+            //remove steps that are not needed to speed up the simulation
+            if(t1Tmp<startTime) continue;
+            if(t2Tmp>endTime) continue;
+          }
 
           CLHEP::Hep3Vector pos1 = step.startPosition();  //TODO: Need to convert everything into XYZVec, so that const references can be used
           CLHEP::Hep3Vector pos2 = step.endPosition();
@@ -344,8 +370,10 @@ namespace mu2e
               double timeTmp=times[itime];
               if(spillType==EventWindowMarker::SpillType::onspill)
               {
-                //time wrap around endTime to avoid breaking pulses apart inside the digi window
-                timeTmp = fmod(timeTmp-(endTime-_microBunchPeriod),_microBunchPeriod)+(endTime-_microBunchPeriod);
+                //time wrap around eventWindowStart which is far away from the (ZS) digi window to avoid breaking (ZS) pulses apart
+                timeTmp = fmod(timeTmp-eventWindowStart,_microBunchPeriod)+eventWindowStart;
+                //fmod of a negative number returns a negative number
+                if(timeTmp<eventWindowStart) timeTmp+=_microBunchPeriod;
               }
               photons.emplace_back(timeTmp,crvStepPtr);
             }

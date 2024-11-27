@@ -38,7 +38,6 @@ Mu2eKinKal : {
     MaxDStraw : 2 # integer (straw)
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
-    SaveTrajectory : "Full" # save the entire fit result trajectory in the KalSeed
   }
 
    CHSEEDFIT: {
@@ -440,6 +439,8 @@ Mu2eKinKal : {
       CaloTrackerTimeOffset: -2.43
       # Additional width is needed here as straight tracks have worse time resolution
       MaxCaloClusterDt: 8
+      # save the full trajectory
+       SaveTrajectory: Full
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
@@ -452,6 +453,7 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
+      SaveTrajectory : T0
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHSEEDEXT
@@ -463,6 +465,7 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
+      SaveTrajectory : Full
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
@@ -478,9 +481,10 @@ Mu2eKinKal : {
     KKDeMSeedFit: @local::Mu2eKinKal.KKSeedFit
     KKLineSeedFit: @local::Mu2eKinKal.KKLineSeedFit
     KKOffSpillSeedFit: @local::Mu2eKinKal.KKOffSpillSeedFit
-    # drift fits, with BField corrections
+    # drift fits
     KKLine: @local::Mu2eKinKal.KKLine
     KKOffSpill: @local::Mu2eKinKal.KKOffSpill
+    # LoopHelix drift fits
     KKDeP: @local::Mu2eKinKal.KKLoopFit
     KKDeM: @local::Mu2eKinKal.KKLoopFit
     KKDmuP: @local::Mu2eKinKal.KKLoopFit
@@ -509,22 +513,31 @@ Mu2eKinKal.producers.KKDeMSeedFit.FitDirection : 0
 Mu2eKinKal.producers.KKDePSeedFit.ModuleSettings.FitParticle : -11
 Mu2eKinKal.producers.KKDePSeedFit.FitDirection : 0
 
+# save trajectories in the Detector region for downstream fits, just the T0 segment for the rest
 Mu2eKinKal.producers.KKDeM.ModuleSettings.FitParticle : 11
 Mu2eKinKal.producers.KKDeM.FitDirection : 0
+Mu2eKinKal.producers.KKDeM.KKFitSettings.SaveTrajectory : "Detector"
 Mu2eKinKal.producers.KKDeP.ModuleSettings.FitParticle : -11
 Mu2eKinKal.producers.KKDeP.FitDirection : 0
-Mu2eKinKal.producers.KKUeM.ModuleSettings.FitParticle : 11
-Mu2eKinKal.producers.KKUeM.FitDirection : 1
-Mu2eKinKal.producers.KKUeP.ModuleSettings.FitParticle : -11
-Mu2eKinKal.producers.KKUeP.FitDirection : 1
+Mu2eKinKal.producers.KKDeP.KKFitSettings.SaveTrajectory : "Detector"
 Mu2eKinKal.producers.KKDmuM.ModuleSettings.FitParticle : 13
 Mu2eKinKal.producers.KKDmuM.FitDirection : 0
+Mu2eKinKal.producers.KKDmuM.KKFitSettings.SaveTrajectory : "Detector"
 Mu2eKinKal.producers.KKDmuP.ModuleSettings.FitParticle : -13
 Mu2eKinKal.producers.KKDmuP.FitDirection : 0
+Mu2eKinKal.producers.KKDmuP.KKFitSettings.SaveTrajectory : "Detector"
+Mu2eKinKal.producers.KKUeM.ModuleSettings.FitParticle : 11
+Mu2eKinKal.producers.KKUeM.FitDirection : 1
+Mu2eKinKal.producers.KKUeM.KKFitSettings.SaveTrajectory : "T0"
+Mu2eKinKal.producers.KKUeP.ModuleSettings.FitParticle : -11
+Mu2eKinKal.producers.KKUeP.FitDirection : 1
+Mu2eKinKal.producers.KKUeP.KKFitSettings.SaveTrajectory : "T0"
 Mu2eKinKal.producers.KKUmuM.ModuleSettings.FitParticle : 13
 Mu2eKinKal.producers.KKUmuM.FitDirection : 1
+Mu2eKinKal.producers.KKUmuM.KKFitSettings.SaveTrajectory : "T0"
 Mu2eKinKal.producers.KKUmuP.ModuleSettings.FitParticle : -13
 Mu2eKinKal.producers.KKUmuP.FitDirection : 1
+Mu2eKinKal.producers.KKUmuP.KKFitSettings.SaveTrajectory : "T0"
 # extrapolate upstream fits back to the tracker
 physics.producers.KKUmuM.Extrapolation.BackToTracker : true
 physics.producers.KKUmuP.Extrapolation.BackToTracker : true

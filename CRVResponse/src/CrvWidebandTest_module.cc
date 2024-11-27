@@ -142,7 +142,10 @@ void LandauGauss(TH1F &h, float &mpv, float &fwhm, float &signals, float &chi2)
     float leftX = fit.GetX(halfMaximum,0.0,mpv);
     float rightX = fit.GetX(halfMaximum,mpv,10.0*mpv);
     fwhm = rightX-leftX;
-    signals = fit.Integral(0,150);
+
+    signals = fit.Integral(0,150,1e-3)/h.GetBinWidth(1);  //need to divide by bin width.
+                                                          //if the bin width is 2 and one has e.g. 20 events for 50PEs and 20 events for 51PEs,
+                                                          //the combined bin of x=50/51 gets 40 entries and the integral assumes that there are 40 entries for x=50 and x=51.
 }
 
 } //end anonymous namespace for LandauGauss function
