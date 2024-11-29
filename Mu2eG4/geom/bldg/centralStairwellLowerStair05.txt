@@ -1,0 +1,28 @@
+
+string building.central.stairwell.lower.stair.05.name     = "CentralStairwellLowerStair05";
+
+string building.central.stairwell.lower.stair.05.material = "CONCRETE_MARS";
+
+double building.central.stairwell.lower.stair.05.offsetFromMu2eOrigin.x   = 947.4;
+double building.central.stairwell.lower.stair.05.offsetFromFloorSurface.y = 794.385;
+double building.central.stairwell.lower.stair.05.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.central.stairwell.lower.stair.05.yHalfThickness           = 88.265;
+
+vector<double> building.central.stairwell.lower.stair.05.xPositions = {
+  7391.4,   // h
+  7391.4,   // h0
+  10464.8,  // h1
+  10464.8  // h2
+};
+
+vector<double> building.central.stairwell.lower.stair.05.yPositions = {
+  -12369.8,    // h
+  -13658.85,   // h0
+  -13658.85,   // h1
+  -12369.8    // h2
+};
+
+// Local Variables:
+// mode:c++
+// End:
