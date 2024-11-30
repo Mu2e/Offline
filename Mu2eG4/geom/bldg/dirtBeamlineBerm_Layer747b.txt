@@ -10,7 +10,7 @@ string dirt.beamline.berm.l747b.name     = "dirtBeamlineBerml747b";
 string dirt.beamline.berm.l747b.material = "MBOverburden";
 
 double dirt.beamline.berm.l747b.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.berm.l747b.offsetFromFloorSurface.y = 8686.82;
+double dirt.beamline.berm.l747b.offsetFromFloorSurface.y = 8229.6009;
 double dirt.beamline.berm.l747b.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.beamline.berm.l747b.yHalfThickness           = 304.80061; //1 US foot to mm
