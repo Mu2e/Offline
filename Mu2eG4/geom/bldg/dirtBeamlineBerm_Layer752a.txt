@@ -10,10 +10,10 @@ string dirt.beamline.berm.l752a.name     = "dirtBeamlineBerml752a";
 string dirt.beamline.berm.l752a.material = "MBOverburden";
 
 double dirt.beamline.berm.l752a.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.berm.l752a.offsetFromFloorSurface.y = 9753.6040;
+double dirt.beamline.berm.l752a.offsetFromFloorSurface.y = 9753.6039;
 double dirt.beamline.berm.l752a.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.beamline.berm.l752a.yHalfThickness           = 304.80061; //1 US foot to mm
+double dirt.beamline.berm.l752a.yHalfThickness           = 152.4003; //0.5 US foot to mm
 
 vector<double> dirt.beamline.berm.l752a.xPositions = {
   -4140.2,    // b
@@ -81,7 +81,7 @@ vector<double> dirt.beamline.berm.l752a.yPositions = {
   -2091.9,  // P3d
   -2096.1,  // P3e
   -2194.8,  // P3f
-  -2832.62,
+  -2720.5,
   9956.8,   // P4  from WextWall
   9956.8,   // P5   from WextWall
   9702.8,   // from NRetWall
