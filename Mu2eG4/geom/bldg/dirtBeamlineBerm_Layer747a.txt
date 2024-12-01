@@ -13,7 +13,7 @@ double dirt.beamline.berm.l747a.offsetFromMu2eOrigin.x   = 947.4;
 double dirt.beamline.berm.l747a.offsetFromFloorSurface.y = 8229.6009;
 double dirt.beamline.berm.l747a.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.beamline.berm.l747a.yHalfThickness           = 304.80061; //1 US foot to mm
+double dirt.beamline.berm.l747a.yHalfThickness           = 152.4003; //0.5 US foot to mm
 
 vector<double> dirt.beamline.berm.l747a.xPositions = {
   -4140.2,    // b
