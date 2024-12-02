@@ -12,8 +12,8 @@ double building.central.stairwell.lower.stair.13.yHalfThickness           = 88.2
 vector<double> building.central.stairwell.lower.stair.13.xPositions = {
   9118.6,   // h
   9118.6,   // h0
-  10464.8,  // h1
-  10464.8  // h2
+  9956.8,  // h1
+  9956.8  // h2
 };
 
 vector<double> building.central.stairwell.lower.stair.13.yPositions = {

@@ -86,6 +86,7 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerStair14.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerStair15.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallN.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallN2.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallS.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallW.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperLanding.txt"
@@ -387,6 +388,7 @@ vector<string> bldg.prefix.list = {
    "building.central.stairwell.lower.stair.14",
    "building.central.stairwell.lower.stair.15",
    "building.central.stairwell.lower.wall.n",
+   "building.central.stairwell.lower.wall.n2",
    "building.central.stairwell.lower.wall.s",
    "building.central.stairwell.lower.wall.w",
    "building.central.stairwell.upper.landing",
