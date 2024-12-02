@@ -68,6 +68,7 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper2.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W2.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W2Upper.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerCeiling.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerLanding.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerStair01.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerStair02.txt"
@@ -84,6 +85,9 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerStair13.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerStair14.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerStair15.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallN.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallS.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallW.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperLanding.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair01.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair02.txt"
@@ -112,6 +116,11 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair25.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair26.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair27.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallE.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallE2.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallN.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallW.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallW2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsArea.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaAlcove1Ceiling.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaAlcove2Ceiling.txt"
@@ -360,6 +369,7 @@ vector<string> bldg.prefix.list = {
    "building.backfill.TSarea-W.1UpperNotchUpper2",
    "building.backfill.TSarea-W.2",
    "building.backfill.TSarea-W.2Upper",
+   "building.central.stairwell.lower.ceiling",
    "building.central.stairwell.lower.landing",
    "building.central.stairwell.lower.stair.01",
    "building.central.stairwell.lower.stair.02",
@@ -376,6 +386,9 @@ vector<string> bldg.prefix.list = {
    "building.central.stairwell.lower.stair.13",
    "building.central.stairwell.lower.stair.14",
    "building.central.stairwell.lower.stair.15",
+   "building.central.stairwell.lower.wall.n",
+   "building.central.stairwell.lower.wall.s",
+   "building.central.stairwell.lower.wall.w",
    "building.central.stairwell.upper.landing",
    "building.central.stairwell.upper.stair.01",
    "building.central.stairwell.upper.stair.02",
@@ -404,6 +417,11 @@ vector<string> bldg.prefix.list = {
    "building.central.stairwell.upper.stair.25",
    "building.central.stairwell.upper.stair.26",
    "building.central.stairwell.upper.stair.27",
+   "building.central.stairwell.upper.wall.e",
+   "building.central.stairwell.upper.wall.e2",
+   "building.central.stairwell.upper.wall.n",
+   "building.central.stairwell.upper.wall.w",
+   "building.central.stairwell.upper.wall.w2",
    "building.dsArea",
    "building.dsArea.alcove1.ceiling",
    "building.dsArea.alcove2.ceiling",
