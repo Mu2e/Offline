@@ -10,16 +10,16 @@ double building.central.stairwell.lower.stair.13.offsetFromMu2eOrigin.z   = -358
 double building.central.stairwell.lower.stair.13.yHalfThickness           = 88.265;
 
 vector<double> building.central.stairwell.lower.stair.13.xPositions = {
-  9626.6,   // h
-  9626.6,   // h0
+  9118.6,   // h
+  9118.6,   // h0
   10464.8,  // h1
   10464.8  // h2
 };
 
 vector<double> building.central.stairwell.lower.stair.13.yPositions = {
   -12369.8,    // h
-  -13658.85,   // h0
-  -13658.85,   // h1
+  -13589,     // h0
+  -13589,     // h1
   -12369.8    // h2
 };
 

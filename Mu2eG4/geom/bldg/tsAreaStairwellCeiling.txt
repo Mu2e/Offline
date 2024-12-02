@@ -22,8 +22,8 @@ vector<double> building.tsArea.stairwell.ceiling.xPositions = {
 vector<double> building.tsArea.stairwell.ceiling.yPositions = {
   -8661.4,   // h
   -8661.4,   // h0
-  -13658.85, // h1
-  -13658.85  // h2
+  -13589,    // h1
+  -13589     // h2
 };
 
 // Local Variables:
