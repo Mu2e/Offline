@@ -56,8 +56,6 @@ vector<double> building.dsArea.xPositions = {
   13233.4,   // h0
   6121.4,   // h1
   6121.4,   // h2
-  11366.5,  // h3
-  11366.5,  // h4
   5308.6    // h5
 };
 
@@ -105,9 +103,7 @@ vector<double> building.dsArea.yPositions = {
   -9550.4,   // h0
   -9550.4,   // h1
   -12014.2,  // h2
-  -12014.2,  // h3
-  -12369.8,  // h4
-  -12369.8   // h5
+  -12014.2   // h5
 };
 
 // Local Variables:
