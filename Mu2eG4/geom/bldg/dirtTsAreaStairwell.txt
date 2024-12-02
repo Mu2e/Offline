@@ -21,8 +21,8 @@ vector<double> dirt.tsArea.stairwell.xPositions = {
 
 vector<int>    dirt.tsArea.stairwell.yreplace   = { 2, 3 };
 vector<double> dirt.tsArea.stairwell.yPositions = {
-  -11734.8,   // s4
-  -11734.8,   // s5
+  -13944.6,   // s4
+  -13944.6,   // s5
   -50000,   // s5_to_S
   -50000   // s4_to_S
 };
