@@ -605,11 +605,15 @@ vector<string> bldg.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlab2NC.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlab2NE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineUpper_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellLower.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellMiddle.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtEscapeCeiling.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsArea.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaAlcove1.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaAlcove2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaAlcove3.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtDsAreaAlcoveStairwell.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaDownstreamCeilingVslab1.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaDownstreamCeilingVslab2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaDownstreamCeilingVslab3.txt"
@@ -697,11 +701,15 @@ vector<string> dirt.prefix.list = {
   "dirt.beamline.slab2.NE",
   "dirt.beamline.slab2.NW",
   "dirt.beamline.upper",
+  "dirt.central.stairwell.lower",
+  "dirt.central.stairwell.middle",
+  "dirt.central.stairwell.upper",
   "dirt.escape.ceiling",
   "dirt.dsArea",
   "dirt.dsArea.alcove1",
   "dirt.dsArea.alcove2",
   "dirt.dsArea.alcove3",
+  "dirt.dsArea.alcove.stairwell",
   "dirt.dsArea.downstreamCeiling.vslab1",
   "dirt.dsArea.downstreamCeiling.vslab2",
   "dirt.dsArea.downstreamCeiling.vslab3",
