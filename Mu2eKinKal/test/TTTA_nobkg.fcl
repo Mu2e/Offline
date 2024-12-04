@@ -3,13 +3,13 @@ services.DbService.purpose: MDC2020_best
 services.DbService.version: v1_1
 services.DbService.verbose : 2
 
-physics.producers.TTKSFDeM.ExtensionSettings.BkgANNSHUSettings: []
-physics.producers.TTKSFDeM.ExtensionSettings.MetaIterationSettings: [
+physics.producers.TTKSFDe.ExtensionSettings.BkgANNSHUSettings: []
+physics.producers.TTKSFDe.ExtensionSettings.MetaIterationSettings: [
   [ 2, "CADSHU" ],
   [ 1, "CADSHU" ]
 ]
-physics.producers.TTCalSeedFitDem.ExtensionSettings.BkgANNSHUSettings: []
-physics.producers.TTCalSeedFitDem.ExtensionSettings.MetaIterationSettings: [
+physics.producers.TTCalSeedFitDe.ExtensionSettings.BkgANNSHUSettings: []
+physics.producers.TTCalSeedFitDe.ExtensionSettings.MetaIterationSettings: [
   [ 2, "CADSHU" ],
   [ 1, "CADSHU" ]
 ]
