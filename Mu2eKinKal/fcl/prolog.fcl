@@ -421,7 +421,7 @@ Mu2eKinKal : {
       SampleSurfaces : ["ST_Outer","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
     }
     Extrapolation : @local::Mu2eKinKal.LOOPEXTRAPOLATION
-   UsePDGCharge: false
+    UsePDGCharge: false
   }
 
   KKLineSeedFit : {
@@ -487,7 +487,6 @@ Mu2eKinKal : {
     # drift fits
     KKLine: @local::Mu2eKinKal.KKLine
     KKCentralHelix: @local::Mu2eKinKal.KKCentralHelix
-    # LoopHelix drift fits
     KKDe: @local::Mu2eKinKal.KKLoopFit
     KKDmu: @local::Mu2eKinKal.KKLoopFit
     KKUe: @local::Mu2eKinKal.KKLoopFit
@@ -508,15 +507,19 @@ Mu2eKinKal.producers.KKLine.ModuleSettings.FitParticle : 13
 Mu2eKinKal.producers.KKDeSeedFit.ModuleSettings.FitParticle : 11
 Mu2eKinKal.producers.KKDeSeedFit.FitDirection : 0
 
-# specific instances
+# save trajectories in the Detector region for downstream fits, just the T0 segment for the rest
 Mu2eKinKal.producers.KKDe.ModuleSettings.FitParticle : 11
 Mu2eKinKal.producers.KKDe.FitDirection : 0
+Mu2eKinKal.producers.KKDe.KKFitSettings.SaveTrajectory : "Detector"
 Mu2eKinKal.producers.KKDmu.ModuleSettings.FitParticle : 13
 Mu2eKinKal.producers.KKDmu.FitDirection : 0
+Mu2eKinKal.producers.KKDmu.KKFitSettings.SaveTrajectory : "Detector"
 Mu2eKinKal.producers.KKUe.ModuleSettings.FitParticle : 11
 Mu2eKinKal.producers.KKUe.FitDirection : 1
+Mu2eKinKal.producers.KKUe.KKFitSettings.SaveTrajectory : "T0"
 Mu2eKinKal.producers.KKUmu.ModuleSettings.FitParticle : 13
 Mu2eKinKal.producers.KKUmu.FitDirection : 1
+Mu2eKinKal.producers.KKUmu.KKFitSettings.SaveTrajectory : "T0"
 # extrapolate upstream fits back to the tracker
 physics.producers.KKUmu.Extrapolation.BackToTracker : true
 physics.producers.KKUe.Extrapolation.BackToTracker  : true
