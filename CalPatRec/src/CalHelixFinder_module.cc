@@ -49,12 +49,11 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
   //-----------------------------------------------------------------------------
-  CalHelixFinder::CalHelixFinder(const art::EDFilter::Table<Config>& config) :
-    art::EDFilter{config},
+  CalHelixFinder::CalHelixFinder(const art::EDProducer::Table<Config>& config) :
+    art::EDProducer{config},
     _diagLevel(config().diagLevel()),
     _debugLevel(config().debugLevel()),
     _printfreq(config().printfreq()),
-    _useAsFilter(config().useAsFilter()),
     _shLabel(config().shLabel()),
     _timeclLabel(config().timeclLabel()),
     _minNHitsTimeCluster(config().minNHitsTimeCluster()),
@@ -108,7 +107,7 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  bool CalHelixFinder::beginRun(art::Run& ) {
+  void CalHelixFinder::beginRun(art::Run& ) {
     mu2e::GeomHandle<mu2e::BFieldManager> bfmgr;
     mu2e::GeomHandle<mu2e::DetectorSystem> det;
     Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
@@ -168,7 +167,6 @@ namespace mu2e {
 
     }
 
-    return true;
   }
 
 //-----------------------------------------------------------------------------
@@ -212,7 +210,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // event entry point
 //-----------------------------------------------------------------------------
-  bool CalHelixFinder::filter(art::Event& event ) {
+  void CalHelixFinder::produce(art::Event& event ) {
     const char*             oname = "CalHelixFinder::filter";
 
                                         // diagnostic info
@@ -443,11 +441,6 @@ namespace mu2e {
         event.put(std::move(helcols[hel]),Helicity::name(hel));
       }
     }
-//-----------------------------------------------------------------------------
-// filtering
-//-----------------------------------------------------------------------------
-    if (_useAsFilter == 0) return true;
-    else                   return (nseeds >  0);
  }
 
 //-----------------------------------------------------------------------------
