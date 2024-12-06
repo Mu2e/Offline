@@ -111,7 +111,7 @@ void CrvDigisFromFragments::produce(Event& event)
       }
       auto header = block->GetHeader();
 /*
-FIXME: This function will be available in a new release of artdaq_core_mu2e
+//FIXME: This function will be available in a new release of artdaq_core_mu2e
       if(!header->isValid())
       {
         std::cerr << "CRV packet is not valid." << std::endl;
@@ -151,16 +151,12 @@ FIXME: This function will be available in a new release of artdaq_core_mu2e
           int crvBarIndex = offlineChannel / 4;
           int SiPMNumber = offlineChannel % 4;
 
-          for(size_t i = 0; i < crvHitInfo.NumSamples; i += mu2e::CrvDigi::NSamples)
+          std::vector<int16_t> adc;
+          adc.resize(waveform.size());
+          for(size_t i=0; i<waveform.size(); ++i)
           {
-            std::array<int16_t, mu2e::CrvDigi::NSamples> adc = {0};
-            for(size_t j = 0; j < mu2e::CrvDigi::NSamples && i+j < crvHitInfo.NumSamples; ++j)
-              adc[j] = waveform.at(i+j).ADC;
-
-            // CrvDigis use a constant array size of 8 samples
-            // waveforms with more than 8 samples need to be written to multiple CrvDigis
-            // the TDC increases by 8 for every subsequent CrvDigi
-            crv_digis->emplace_back(adc, crvHitInfo.HitTime + i, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
+            adc[i] = waveform.at(i).ADC;
+            crv_digis->emplace_back(adc, crvHitInfo.HitTime + i, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
           }
         } // loop over all crvHits
 

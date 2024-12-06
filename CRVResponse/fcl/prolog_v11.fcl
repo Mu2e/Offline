@@ -9,6 +9,11 @@
 #include "Offline/CommonMC/fcl/prolog.fcl"
 BEGIN_PROLOG
 
+    NumberSamplesNZS  :    134 //first 134 ADC samples of a on/off spill event will be recorded
+    SimulateNZS       :  false //if NZS data is simulated, no dead time for the photon generator and SiPM charge generator is used
+    DigitizationStart :  200.0 //ns after event window start (400ns...425ns after POT)
+    DigitizationEnd   : 1500.0 //ns after event window start (1700ns...1725ns after POT)
+                               //event window starts 200ns after first clock tick after POT (200ns...225ns after POT)
     CrvSteps:
     {
       module_type               : CrvStepsFromStepPointMCs
@@ -85,17 +90,19 @@ BEGIN_PROLOG
       photonYieldVariationCutoffLow         :-0.2   //the photon yield variation is cut off at 20% below the mean
       photonYieldVariationCutoffHigh        : 0.2   //the photon yield variation is cut off at 20% above the mean
                                                     //note: if measured deviations are used, the cutoffs should be set to the maximum values
-      digitizationStart                     :  400.0    //400ns
-      digitizationEnd                       : 1750.0    //1750ns
-      digitizationStartMargin               :   50.0    //50ns
+      digitizationStart                     : @local::DigitizationStart
+      digitizationEnd                       : @local::DigitizationEnd
+      digitizationStartMargin               : 100.0 //ns  start recording earlier to account for photon travel times and electronics response times
+      numberSamplesNZS                      : @local::NumberSamplesNZS
+      simulateNZS                           : @local::SimulateNZS
     }
     CrvSiPMCharges:
     {
       module_type                  : CrvSiPMChargeGenerator
       crvPhotonsModuleLabel        : "CrvPhotons"
-      digitizationStart            :  400.0    //400ns
-      digitizationEnd              : 1750.0    //1750ns
-      digitizationStartMargin      :   50.0    //50ns
+      digitizationStart            : @local::DigitizationStart
+      digitizationEnd              : @local::DigitizationEnd
+      digitizationStartMargin      : 100.0      //ns  start recording earlier to account for electronics response times
 
       nPixelsX                     : 40
       nPixelsY                     : 40
@@ -117,17 +124,20 @@ BEGIN_PROLOG
       TrapType0Lifetime            : 5.0        //ns  ????
       TrapType1Lifetime            : 50.0       //ns  ????
 
-      ThermalRate                  : 3.0e-4     //ns^-1     0.3MHz for entire SiPM
+      ThermalRate                  : 1.0e-4     //ns^-1     0.1MHz for entire SiPM
       CrossTalkProb                : 0.04       //
 
       useSipmStatusDB              : true       //channel with status bits 0 (not connected) and 2 (no data) will not be simulated. channels with status bit 1 can be ignored in reco.
+
+      numberSamplesNZS             : @local::NumberSamplesNZS
+      simulateNZS                  : @local::SimulateNZS
     }
     CrvWaveforms:
     {
       module_type                  : CrvWaveformsGenerator
       crvSiPMChargesModuleLabel    : "CrvSiPMCharges"
-      digitizationStart            :  400.0    //400ns
-      digitizationEnd              : 1750.0    //1750ns
+      digitizationStart            : @local::DigitizationStart
+      digitizationEnd              : @local::DigitizationEnd
       singlePEWaveformFileName     : "Offline/CRVResponse/data/singlePEWaveform_v3.txt"
       singlePEWaveformPrecision    : 0.5    //0.5 ns
       singlePEWaveformStretchFactor: 1.047  //1.047 for singlePEWaveform_v3.txt //from comparison with testbeam data
@@ -147,6 +157,10 @@ BEGIN_PROLOG
       timeOffsetCutoffHigh         : 3.0    //the time offsets are cut off at +3ns
                                             //note: if measured time offsets are used, the cutoffs should be set to the maximum values
       useTimeOffsetDB              : false  //will be applied at reco
+      numberSamplesZS              : 12
+      numberSamplesNZS             : @local::NumberSamplesNZS
+      simulateNZS                  : @local::SimulateNZS
+      prescalingFactorNZS          : 10
     }
     CrvDigi:
     {
@@ -154,6 +168,7 @@ BEGIN_PROLOG
       crvWaveformsModuleLabel      : "CrvWaveforms"
       ADCconversionFactor          : 2300      //2300 ADC/V
       pedestal                     : 100       //ADC
+      simulateNZS                  : @local::SimulateNZS
     }
     CrvCoincidenceClusterMatchMC:
     {

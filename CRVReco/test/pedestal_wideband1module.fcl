@@ -31,6 +31,5 @@ physics: {
   end_paths :     [ EndPath ]
 }
 
-physics.producers.EWMProducer.SpillType : 0
 services.TFileService.fileName : "pedestalWideband.root"
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband1module.txt"

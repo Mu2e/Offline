@@ -5,7 +5,7 @@
 # services.DbService.version: v1_0
 #
 # To convert the fit to use CentralHelix instead of LoopHelix, add the following line to the stub:
-# physics.producers.KKDeMDriftFit.module_type : CentralHelixFit
+# physics.producers.KKDeDriftFit.module_type : CentralHelixFit
 
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"
@@ -39,8 +39,8 @@ physics :
     @sequence::Reconstruction.CrvReco,
     TimeClusterFinderDe, HelixFinderDe,
     CalTimePeakFinder, CalHelixFinderDe,
-    MHDeM,
-    KKDeMSeedFit,
+    MHDe,
+    KKDeSeedFit,
     @sequence::Reconstruction.MCReco
   ]
   analyzers : {
@@ -68,15 +68,15 @@ outputs : {
 #include "Production/JobConfig/reco/epilog.fcl"
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
-physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDeMSeedFit"]
-physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM"]
+physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDeSeedFit"]
+physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDe"]
 physics.producers.SelectRecoMC.debugLevel : 0
 
-physics.producers.KKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
-physics.producers.KKDeMSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
-physics.producers.KKDeMSeedFit.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
-physics.producers.KKDeMSeedFit.ModuleSettings.PrintLevel : 0
-physics.producers.KKDeMSeedFit.ModuleSettings.SaveAllFits : true
+physics.producers.KKDeSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDe" ]
+physics.producers.KKDeSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
+physics.producers.KKDeSeedFit.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
+physics.producers.KKDeSeedFit.ModuleSettings.PrintLevel : 0
+physics.producers.KKDeSeedFit.ModuleSettings.SaveAllFits : true
 
 physics.analyzers.TAKK.candidate.options : @local::AllOpt
 physics.analyzers.TAKK.diagLevel : 2
@@ -87,7 +87,7 @@ physics.analyzers.TAKK.FillTrkPIDInfo : false
 physics.analyzers.TAKK.FillHitInfo : true
 physics.analyzers.TAKK.FillTriggerInfo : false
 physics.analyzers.TAKK.candidate.input : "KK"
-physics.analyzers.TAKK.candidate.suffix : "DeMSeedFit"
+physics.analyzers.TAKK.candidate.suffix : "DeSeedFit"
 physics.analyzers.TAKK.candidate.options.fillHits : true
 physics.analyzers.TAKK.supplements : []
 

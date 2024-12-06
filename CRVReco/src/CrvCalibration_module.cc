@@ -86,7 +86,7 @@ namespace mu2e
   void CrvCalibration::analyze(const art::Event& event)
   {
     art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
-    if(!event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection)) return;
+    if(!event.getByLabel(_crvRecoPulsesModuleLabel,"NZS",crvRecoPulseCollection)) return;
 
     //add pedestal to histogram title
     static bool first=true;
