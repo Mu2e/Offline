@@ -15,8 +15,8 @@ namespace mu2e{
   }
 
   double QuasiImpactParameterLookupKalSeedPrescaleTool::calculate_observable(const KalSeed& kalseed){
-    KinKal::LoopHelix helix;
     // search for downward-going KalIntersection with a matching surface
+    KinKal::LoopHelix helix;
     auto sit = _surface_ids.begin();
     bool adequate = false;
     while ((!adequate) && (sit != _surface_ids.end())){
