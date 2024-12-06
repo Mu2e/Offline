@@ -15,15 +15,20 @@ namespace mu2e{
   }
 
   double MomentumLookupKalSeedPrescaleTool::calculate_observable(const KalSeed& kalseed){
+    // search for downward-going KalIntersection with a matching surface
     KalIntersection intersection;
-    const auto& end = kalseed.intersections().end();
     auto sit = _surface_ids.begin();
     bool adequate = false;
     while ((!adequate) && (sit != _surface_ids.end())){
-      auto const& iit = kalseed.intersection(*sit);
-      if (iit != end){
-        intersection = *iit;
-        adequate = true;
+      const auto& iits = kalseed.intersections(*sit);
+      // there are at most 2 valid intersections (upgoing / downgoing)
+      // so selecting on which one is downgoing is sufficient
+      for (const auto& iit: iits){
+        auto direction = iit->momentum3().Unit().Z();
+        if (0 < direction){
+          intersection = *iit;
+          adequate = true;
+        }
       }
       sit++;
     }

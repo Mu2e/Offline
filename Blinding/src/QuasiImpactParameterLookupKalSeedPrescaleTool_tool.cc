@@ -16,14 +16,19 @@ namespace mu2e{
 
   double QuasiImpactParameterLookupKalSeedPrescaleTool::calculate_observable(const KalSeed& kalseed){
     KinKal::LoopHelix helix;
-    const auto& end = kalseed.intersections().end();
+    // search for downward-going KalIntersection with a matching surface
     auto sit = _surface_ids.begin();
     bool adequate = false;
     while ((!adequate) && (sit != _surface_ids.end())){
-      auto const& iit = kalseed.intersection(*sit);
-      if (iit != end){
-        helix = iit->loopHelix();
-        adequate = true;
+      const auto& iits = kalseed.intersections(*sit);
+      // there are at most 2 valid intersections (upgoing / downgoing)
+      // so selecting on which one is downgoing is sufficient
+      for (const auto& iit: iits){
+        auto direction = iit->momentum3().Unit().Z();
+        if (0 < direction){
+          helix = iit->loopHelix();
+          adequate = true;
+        }
       }
       sit++;
     }
