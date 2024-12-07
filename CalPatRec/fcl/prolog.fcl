@@ -771,15 +771,6 @@ CalPatRec: { @table::CalPatRec
             fitparticle                : @local::Particle.muminus
             TimeClusterCollectionLabel : CalTimePeakFinderUmu
         }
-
-        DeltaFinderUe : { @table::CalPatRec.producers.DeltaFinder
-            timePeakCollectionTag         : CalTimePeakFinderUe
-
-        }
-
-        DeltaFinderMu                  : { @table::CalPatRec.producers.DeltaFinder
-            timePeakCollectionTag      : CalTimePeakFinderMu
-        }
         CalSeedFitDe                   : { @table::CalPatRec.producers.CalSeedFit
             SeedCollection             : "CalHelixFinderDe"
         }
@@ -832,8 +823,8 @@ CalPatRec: { @table::CalPatRec
     }
 }
 
-CalPatRec.reco    : [ CalTimePeakFinder  , DeltaFinder  , CalHelixFinder   , CalSeedFit  , CalTrkFit   ]
-CalPatRec.de_reco : [ CalTimePeakFinder  , DeltaFinder  , CalHelixFinderDe , CalSeedFitDe, CalTrkFitDe ]
-CalPatRec.dm_reco : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmu, CalSeedFitDm, CalTrkFitDm ]
+CalPatRec.reco    : [ CalTimePeakFinder  , CalHelixFinder   , CalSeedFit  , CalTrkFit   ]
+CalPatRec.de_reco : [ CalTimePeakFinderDe, CalHelixFinderDe , CalSeedFitDe, CalTrkFitDe ]
+CalPatRec.dm_reco : [ CalTimePeakFinderMu, CalHelixFinderDmu, CalSeedFitDm, CalTrkFitDm ]
 
 END_PROLOG
