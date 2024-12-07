@@ -581,10 +581,11 @@ namespace mu2e {
         double tmin = std::numeric_limits<float>::max();
         double tmax = -tmin;
         static const SurfaceId tt_front("TT_Front");
+        static const SurfaceId tt_mid("TT_Mid");
         static const SurfaceId tt_back("TT_Back");
         for(auto const& interpair : kktrk.intersections()) {
           auto const& sid = std::get<0>(interpair);
-          if(sid == tt_front || sid == tt_back){
+          if(sid == tt_front || sid == tt_mid || sid == tt_back){
             auto const& inter = std::get<1>(interpair);
             tmin = std::min(tmin,inter.time_);
             tmax = std::max(tmax,inter.time_);
@@ -598,7 +599,11 @@ namespace mu2e {
             tmax = std::max(tmax,calohit->time());
           }
         }
-        if(tmin > tmax)throw cet::exception("RECO")<<"mu2e::KKFit: tracker intersections missing"<< endl;
+        if(tmin > tmax){
+          std::cout << "mu2e::KKFit: tracker intersections missing"<< std::endl;
+          tmin = fittraj.range().begin();
+          tmax = fittraj.range().end();
+        }
         fseed._segments.reserve(fittraj.pieces().size());// this will be oversized
         for (auto const& traj : fittraj.pieces() ){
           // skip segments outside the tracker volume range
@@ -610,8 +615,10 @@ namespace mu2e {
     } else {
       fseed._segments.emplace_back(t0piece,t0val); // save the t0 piece even for failed fits
     }
-    // sample the fit at the locations provided
+    // sample the fit at the locations provided. This is a deprecated function, to be replaced by extrapolation
     sampleFit(kktrk,fseed._inters);
+    // remove unused storage
+    fseed._segments.shrink_to_fit();
     return fseed;
   }
 
