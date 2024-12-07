@@ -755,14 +755,17 @@ CalPatRec: { @table::CalPatRec
             Beta      : 0.7
         }
         CalTimePeakFinderDmu           : { @table::CalPatRec.producers.CalTimePeakFinder   Beta: 0.7                        }
-        CalHelixFinderDe               : { @table::CalPatRec.producers.CalHelixFinder fitparticle: @local::Particle.eminus  }
+        CalHelixFinderDe               : { @table::CalPatRec.producers.CalHelixFinder
+            fitparticle: @local::Particle.eminus
+            TimeClusterCollectionLabel : CalTimePeakFinderDe
+        }
         CalHelixFinderUe               : { @table::CalPatRec.producers.CalHelixFinder
             fitparticle                : @local::Particle.eminus
             TimeClusterCollectionLabel : CalTimePeakFinderUe
         }
         CalHelixFinderDmu              : { @table::CalPatRec.producers.CalHelixFinder
             fitparticle                   : @local::Particle.muminus
-            TimeClusterCollectionLabel    : CalTimePeakFinderMu
+            TimeClusterCollectionLabel    : CalTimePeakFinderDmu
         }
         CalHelixFinderUmu               : { @table::CalPatRec.producers.CalHelixFinder
             fitparticle                : @local::Particle.muminus
