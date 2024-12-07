@@ -549,7 +549,7 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
         ComboHitFilter : { module_type : ComboHitFilter
             chCollTag                                   : "makePH"
-            chfCollTag                                  : "FlagBkgHits:ComboHits"
+            chfCollTag                                  : "DeltaFinder:ComboHits"
             sdmcCollTag                                 : "compressDigiMCs"
             simID                                       : -1                ##
             debugLevel                                  : 0
@@ -612,7 +612,7 @@ CalPatRec : { @table::CalPatRec
             runDisplay                 : 0
             useCCs                     : 1
             recoverCCs                 : 1
-            chCollLabel                : "FlagBkgHits"
+            chCollLabel                : "DeltaFinder"
             chCollLabel2               : "makeSH"
             tcCollLabel                : "TimeClusterFinderDe"
             ccCollLabel                : "CaloClusterMaker"
@@ -642,7 +642,7 @@ CalPatRec : { @table::CalPatRec
         AgnosticHelixFinder : {
             module_type : AgnosticHelixFinder
             diagLevel               : 0
-            chCollLabel             : "FlagBkgHits"
+            chCollLabel             : "DeltaFinder"
             tcCollLabel             : "TZClusterFinder"
             ccCollLabel             : "CaloClusterMaker"
             findMultipleHelices     : true # whether or not to allow more than 1 helix per tc
@@ -727,7 +727,7 @@ CalPatRec : { @table::CalPatRec
             module_type         : TZClusterFilter
             diagLevel           : 0
             runDisplay          : 0
-            chCollLabel         : "FlagBkgHits"     # same as TZClusterFinder
+            chCollLabel         : "DeltaFinder"     # same as TZClusterFinder
             tcCollLabel         : "TZClusterFinder"
             minSHsInCluster     : 15
             minCHsInCluster     : 10
@@ -749,6 +749,10 @@ CalPatRec : { @table::CalPatRec
 CalPatRec: { @table::CalPatRec
     producers : { @table::CalPatRec.producers
         CalTimePeakFinderUe            : { @table::CalPatRec.producers.CalTimePeakFinder   PitchAngle: -0.67                }
+        CalTimePeakFinderUmu           : { @table::CalPatRec.producers.CalTimePeakFinder
+            PitchAngle: -0.67
+            Beta      : 0.7
+        }
         CalTimePeakFinderMu            : { @table::CalPatRec.producers.CalTimePeakFinder   Beta: 0.7                        }
         CalHelixFinderDe               : { @table::CalPatRec.producers.CalHelixFinder fitparticle: @local::Particle.eminus  }
         CalHelixFinderUe               : { @table::CalPatRec.producers.CalHelixFinder
@@ -758,6 +762,10 @@ CalPatRec: { @table::CalPatRec
         CalHelixFinderDmu              : { @table::CalPatRec.producers.CalHelixFinder
             fitparticle                   : @local::Particle.muminus
             TimeClusterCollectionLabel    : CalTimePeakFinderMu
+        }
+        CalHelixFinderUmu               : { @table::CalPatRec.producers.CalHelixFinder
+            fitparticle                : @local::Particle.muminus
+            TimeClusterCollectionLabel : CalTimePeakFinderUmu
         }
 
         DeltaFinderUe : { @table::CalPatRec.producers.DeltaFinder
