@@ -30,7 +30,7 @@ namespace mu2e
         fhicl::Atom<bool>               requireCaloCluster   {    Name("requireCaloCluster"),         Comment("Require caloCluster") };
         fhicl::Atom<unsigned>           minNStrawHits        {    Name("minNStrawHits"),                   Comment("minNStrawHits")};
         fhicl::Atom<int>                debugLevel           {    Name("debugLevel"),                 Comment("Debug"),0 };
-        fhicl::Atom<int>                noFilter             {    Name("noFilter"),                 Comment("Don't filter anything"),0 };
+        fhicl::Atom<bool>               noFilter             {    Name("noFilter"),                 Comment("Don't filter anything"),0 };
       };
 
       using Parameters = art::EDFilter::Table<Config>;
@@ -47,7 +47,7 @@ namespace mu2e
       int           _debug;
       // counters
       unsigned      _nevt, _npass;
-      int           _noFilter;
+      bool          _noFilter;
   };
 
   TimeClusterFilter::TimeClusterFilter(const Parameters& conf)
@@ -93,7 +93,7 @@ namespace mu2e
       }
     }
     evt.put(std::move(triginfo));
-    if (_noFilter != 1){
+    if (!_noFilter){
       return retval;
     }else {
       return true;

@@ -43,6 +43,8 @@ namespace mu2e {
       using Comment=fhicl::Comment;
       fhicl::Atom<double> startMom{Name("startMom"),0};
       fhicl::Atom<double> endMom{Name("endMom"),105};
+      fhicl::Atom<double> czMin{Name("czMin"), Comment("Minimum cos(theta_z) to generate in"), -1.};
+      fhicl::Atom<double> czMax{Name("czMax"), Comment("Maximum cos(theta_z) to generate in"),  1.};
       fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
       fhicl::Atom<std::string> stoppingTargetMaterial{Name("stoppingTargetMaterial"),Comment("material")};
       fhicl::Atom<unsigned> verbosity{Name("verbosity")};
@@ -87,7 +89,7 @@ namespace mu2e {
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randFlat_{eng_}
     , randExp_{eng_}
-    , randomUnitSphere_{eng_}
+    , randomUnitSphere_{eng_, conf().czMin(), conf().czMax()}
     , pdgId_(conf().pdgId())
 
   {

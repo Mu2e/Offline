@@ -16,6 +16,7 @@ namespace mu2e {
         using CylPtr = std::shared_ptr<KinKal::Cylinder>;
         using DiskPtr = std::shared_ptr<KinKal::Disk>;
         using AnnPtr = std::shared_ptr<KinKal::Annulus>;
+        using FoilCol = std::vector<AnnPtr>;
         // default constructor with nominal geometry
         StoppingTarget();
         // accessors
@@ -35,7 +36,7 @@ namespace mu2e {
       private:
         CylPtr outer_, inner_; // boundaries
         DiskPtr front_, back_;
-        std::vector<AnnPtr> foils_; // target foils
+        FoilCol foils_; // target foils
     };
   }
 }
