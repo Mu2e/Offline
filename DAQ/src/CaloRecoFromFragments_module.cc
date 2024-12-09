@@ -289,8 +289,13 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
   
             if (diagLevel_ > 0) {
               std::cout << "[CaloRecoFromFragments] calo hit " << hitIdx << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tBoardID   "
+                        << (int)calHitTestDataVec->at(hitIdx).first.BoardID << std::endl;
               std::cout << "[CaloRecoFromFragments] \tChNumber   "
                         << (int)calHitTestDataVec->at(hitIdx).first.ChannelID << std::endl;
+              std::cout << "[CaloRecoFromFragments] \tInPayloadEventWindowTag   "
+                        << (int)calHitTestDataVec->at(hitIdx).first.InPayloadEventWindowTag << std::endl;
+
               std::cout << "[CaloRecoFromFragments] \tErrorFlags " << (int)calHitTestDataVec->at(hitIdx).first.ErrorFlags
                         << std::endl;
               std::cout << "[CaloRecoFromFragments] \tTime              "
