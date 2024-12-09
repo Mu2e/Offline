@@ -135,5 +135,23 @@ TrkReco: { @table::TrkReco
       MinNHitOverlap             : 10
     }
   }
+# standard config for reflection selection
+  SelectReflections: {
+    module_type : SelectReflections
+    MaxDeltaT : 20 # ns
+    MaxDeltaP : 10 # MeV
+    # optionally only merge selected candidates
+    # a simple selector is used here, but any selector implemented as a tool can be used
+    Selector : {
+      tool_type : SimpleKalSeedSelector
+      MinMomentum : 40.0 # MeV/c
+      MaxMomentum : 300.0 #MeV/c
+      MinFitConsistency : 1e-6
+      MinDeltaNHitFraction : 0.0
+      MinActiveHits : 0
+    }
+    SelectBestPair : 0 # select highest-momentum match
+    debugLevel : 0
+  }
 }
 END_PROLOG

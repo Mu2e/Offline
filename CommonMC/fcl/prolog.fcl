@@ -63,13 +63,13 @@ CommonMC: {
 CommonMC.MakeSSDigi : {# make SurfaceSteps from digitization output
   @table::CommonMC.MakeSS
     VDStepPointMCs : "compressDigiMCs:virtualdetector"
-    IPAStepPointMCs : "compressDigiMCs:protonabsorber"
+    AbsorberStepPointMCs : "compressDigiMCs:protonabsorber"
     TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
 }
 CommonMC.MakeSSReco : {# make SurfaceSteps from reconstruction output
   @table::CommonMC.MakeSS
     VDStepPointMCs : "compressRecoMCs:virtualdetector"
-    IPAStepPointMCs : "compressRecoMCs:protonabsorber"
+    AbsorberStepPointMCs : "compressRecoMCs:protonabsorber"
     TargetStepPointMCs : "compressRecoMCs:stoppingtarget"
 }
 
