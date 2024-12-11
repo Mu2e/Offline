@@ -7,6 +7,7 @@
 // Dave Brown confirmed this is the case
 
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
 #include "canvas/Persistency/Common/Ptr.h"
@@ -49,8 +50,10 @@ namespace mu2e {
         fhicl::Atom<float>            maxE    { Name("MaximumEnergy"),         Comment("Maximum straw energy deposit (MeV)")};
         fhicl::Atom<float>            minR    { Name("MinimumRadius"),         Comment("Minimum transverse radius (mm)")};
         fhicl::Atom<float>            maxR    { Name("MaximumRadius"),         Comment("Maximum transverse radius (mm)")};
-        fhicl::Atom<float>            minT    { Name("MinimumTime"),           Comment("Earliest StrawDigi time to process (nsec)")};
-        fhicl::Atom<float>            maxT    { Name("MaximumTime"),           Comment("Latest StrawDigi time to process (nsec)")};
+        fhicl::Atom<float>            minT { Name("MinimumTime"),           Comment("Earliest StrawDigi time to process (nsec)")};
+        fhicl::Atom<float>            maxT { Name("MaximumTime"),           Comment("Latest StrawDigi time to process (nsec)")};
+        fhicl::OptionalAtom<float>    minTOff  { Name("MinimumTimeOffSpill"),           Comment("Earliest StrawDigi time to process (nsec)")};
+        fhicl::OptionalAtom<float>    maxTOff  { Name("MaximumTimeOffSpill"),           Comment("Latest StrawDigi time to process (nsec)")};
         fhicl::Atom<bool>             checkWres{ Name("CheckWres"),            Comment("Check Wres for consistency") };
       };
 
@@ -72,7 +75,8 @@ namespace mu2e {
       float         _maxwdchi;
       float         _uvar;
       float         _minR2,_maxR2;
-      float         _minT, _maxT;
+      float         _minT, _maxT, _minTOff, _maxTOff;
+      bool _overrideminTOff, _overridemaxTOff;
       float         _minE, _maxE;
       int           _minN, _maxN;
       int           _maxds;
@@ -98,6 +102,8 @@ namespace mu2e {
     _maxR2(     config().maxR()*config().maxR()),
     _minT(      config().minT()),
     _maxT(      config().maxT()),
+    _overrideminTOff(      config().minTOff(_minTOff)),
+    _overridemaxTOff(      config().maxTOff(_maxTOff)),
     _minE(      config().minE()),
     _maxE(      config().maxE()),
     _minN(      config().minN()),
@@ -151,9 +157,12 @@ namespace mu2e {
   void CombineStrawHits::combine(EventWindowMarker const& ewm, ComboHitCollection const& chcOrig, ComboHitCollection& chcol)
   {
 
-    // don't filter OffSpill
-    bool filter = _filter && ewm.spillType() == EventWindowMarker::onspill;
-    bool testflag = _testflag && ewm.spillType() == EventWindowMarker::onspill;
+    float minT = _minT;
+    float maxT = _maxT;
+    if (ewm.spillType() == EventWindowMarker::offspill && _overrideminTOff)
+      minT = _minTOff;
+    if (ewm.spillType() == EventWindowMarker::offspill && _overridemaxTOff)
+      maxT = _maxTOff;
 
     std::vector<bool> isUsed(chcOrig.size(),false);
     for (size_t ich=0;ich<chcOrig.size();++ich) {
@@ -162,7 +171,7 @@ namespace mu2e {
 
       const ComboHit& hit1 = chcOrig[ich];
       if ( _testflag && hit1.flag().hasAnyProperty(StrawHitFlag::dead)) continue;
-      if ( testflag && (!hit1.flag().hasAllProperties(_shsel) || hit1.flag().hasAnyProperty(_shmask))) continue;
+      if ( _testflag && (!hit1.flag().hasAllProperties(_shsel) || hit1.flag().hasAnyProperty(_shmask))) continue;
       ComboHit combohit;
       combohit.init(hit1,ich);
       int panel1 = hit1.strawId().uniquePanel();
@@ -174,7 +183,7 @@ namespace mu2e {
         if (hit2.strawId().uniquePanel() != panel1) break;
         if (abs(hit2.strawId().straw()-hit1.strawId().straw())> _maxds ) continue; // hits are not sorted by straw number
         if ( _testflag && hit2.flag().hasAnyProperty(StrawHitFlag::dead)) continue;
-        if ( testflag && (!hit2.flag().hasAllProperties(_shsel) || hit2.flag().hasAnyProperty(_shmask)) ) continue;
+        if ( _testflag && (!hit2.flag().hasAllProperties(_shsel) || hit2.flag().hasAnyProperty(_shmask)) ) continue;
 
         float dt = _useTOT ? fabs(hit1.correctedTime() - hit2.correctedTime()) : fabs(hit1.time() - hit2.time());
         if (dt > _maxdt) continue;
@@ -195,27 +204,27 @@ namespace mu2e {
       combohit._flag = initialFlag;
       int nch = combohit.nCombo();
       if(nch  < _minN || nch > _maxN){
-        if(filter)break;
+        if(_filter)break;
       } else
         combohit._flag.merge(StrawHitFlag::nhitsel);
       // actually combine the hits if necessar, and make the cuts
       if (nch > 1) combineHits(chcOrig, combohit);
 
       auto time = _useTOT ? combohit.correctedTime() : combohit.time();
-      if (time < _minT || time > _maxT ){
-        if(filter)break;
+      if (time < minT || time > maxT ){
+        if(_filter)break;
       } else
         combohit._flag.merge(StrawHitFlag::timesel);
 
       auto energy = combohit.energyDep();
       if( energy > _maxE || energy < _minE ) {
-        if(filter)break;
+        if(_filter)break;
       } else
         combohit._flag.merge(StrawHitFlag::energysel);
 
       auto r2 = combohit.pos().Perp2();
       if( r2 < _minR2 || r2 > _maxR2 ) {
-        if(filter)break;
+        if(_filter)break;
       } else
         combohit._flag.merge(StrawHitFlag::radsel);
       combohit._mask = _mask;
