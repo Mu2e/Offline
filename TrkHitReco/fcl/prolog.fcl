@@ -161,7 +161,7 @@ TrkHitReco : { @table::TrkHitReco
 
    # SEQUENCES
    # production sequence to prepare hits for tracking
-   PrepareHits  : [ PBTFSD, makeSH, makePH, makeSTH, FlagBkgHits ]
+   PrepareHits  : [ PBTFSD, makeSH, makePH, DeltaFinder ]
 }
 
 END_PROLOG
