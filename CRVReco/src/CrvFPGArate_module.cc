@@ -132,7 +132,7 @@ namespace mu2e
       eventFPGAmap[FPGAIndex]++;
 
       //check for pulses with multiple hits
-      if(previousBarIndex==barIndex && previousSiPM==SiPM && previousTDC+CrvDigi::NSamples==TDC)
+      if(previousBarIndex==barIndex && previousSiPM==SiPM && previousTDC+iter->GetADCs().size()==TDC)
         eventHitMultiplicityMap[FPGAIndex].back()++;
       else
         eventHitMultiplicityMap[FPGAIndex].push_back(1);

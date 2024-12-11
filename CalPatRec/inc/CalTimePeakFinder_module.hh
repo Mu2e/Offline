@@ -6,13 +6,12 @@
 
 #ifdef __GCCXML__A
 namespace art {
-  //  class EDProducer;
-  class EDFilter;
+  class EDProducer;
   class Run;
   class Event;
 };
 #else
-#  include "art/Framework/Core/EDFilter.h"
+#  include "art/Framework/Core/EDProducer.h"
 #  include "art/Framework/Principal/Event.h"
 #endif
 
@@ -72,7 +71,7 @@ namespace mu2e {
   class Tracker;
   class ModuleHistToolBase;
 
-  class CalTimePeakFinder: public art::EDFilter {
+  class CalTimePeakFinder: public art::EDProducer {
   protected:
 //-----------------------------------------------------------------------------
 // data members
@@ -82,7 +81,6 @@ namespace mu2e {
     int              _diagLevel;
     int              _debugLevel;
     int              _printfreq;
-    int              _useAsFilter;      // allows to use the module as a produer or as a filter
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
@@ -130,13 +128,35 @@ namespace mu2e {
 // functions
 //-----------------------------------------------------------------------------
   public:
+    struct Config{
+      using Name    = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<int>                DiagLevel               { Name("DiagLevel"),                  Comment("diagLevel")          , 0 };
+      fhicl::Atom<int>                DebugLevel              { Name("DebugLevel"),                 Comment("debugLevel")         , 0 };
+      fhicl::Atom<int>                Printfreq               { Name("PrintFrequency"),             Comment("Print frequency")    , 1 };
+      fhicl::Atom<std::string>        StrawHitCollectionLabel { Name("StrawHitCollectionLabel"),    Comment("strawHitCollectionLabel")};
+      fhicl::Atom<std::string>        CaloClusterModuleLabel  { Name("CaloClusterModuleLabel" ),    Comment("caloClusterModuleLabel" )};
+      fhicl::Sequence<std::string>    HitSelBits              { Name("HitSelBits"             ),    Comment("hitSelBits"             )};
+      fhicl::Sequence<std::string>    BkgSelBits              { Name("BkgSelBits"             ),    Comment("bkgSelBits"             )};
+      fhicl::Atom<double>             DtMin                   { Name("DtMin"                  ),    Comment("dtMin"                  )};
+      fhicl::Atom<double>             DtMax                   { Name("DtMax"                  ),    Comment("dtMax"                  )};
+      fhicl::Atom<int>                MinNHits                { Name("MinNHits"               ),    Comment("minNHits"               )};
+      fhicl::Atom<double>             MinClusterEnergy        { Name("MinClusterEnergy"       ),    Comment("minClusterEnergy"       )};
+      fhicl::Atom<int>                MinClusterSize          { Name("MinClusterSize"         ),    Comment("minClusterSize"         )};
+      fhicl::Atom<double>             PitchAngle              { Name("PitchAngle"             ),    Comment("pitchAngle"             )};
+      fhicl::Atom<double>             Beta                    { Name("Beta"                   ),    Comment("beta"                   )};
+      fhicl::Atom<double>             DtOffset                { Name("DtOffset"               ),    Comment("dtOffset"               )};
+      fhicl::Table<CalTimePeakFinderTypes::Config>DiagPlugin  { Name("DiagPlugin"),                 Comment("Diag plugin"            )};
+    };
 
-    explicit CalTimePeakFinder(const fhicl::ParameterSet& PSet);
+    using Parameters = art::EDProducer::Table<Config>;
+
+    explicit CalTimePeakFinder(const Parameters& Conf);
     virtual ~CalTimePeakFinder();
 
     virtual void beginJob ();
-    virtual bool beginRun (art::Run&);
-    virtual bool filter   (art::Event& e);
+    virtual void beginRun (art::Run&);
+    virtual void produce  (art::Event& e);
     virtual void endJob   ();
 //-----------------------------------------------------------------------------
 // helper functions

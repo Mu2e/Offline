@@ -46,7 +46,7 @@ namespace mu2e
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
 
-        fhicl::Atom<art::InputTag> kalSeedTag{Name("KalSeedCollection"), Comment("Input tag for KalSeedCollection")};
+        fhicl::Atom<art::InputTag> kalSeedPtrTag{Name("KalSeedPtrCollection"), Comment("Input tag for KalSeedPtrCollection")};
         fhicl::Atom<bool> printMVA{Name("PrintMVA"), Comment("Print the MVA used"), false};
         fhicl::Atom<std::string> datFilename{Name("datFilename"), Comment("Filename for the .dat file to use")};
       };
@@ -58,7 +58,7 @@ namespace mu2e
       void produce(art::Event& event) override;
       void initializeMVA(std::string xmlfilename);
 
-      art::InputTag _kalSeedTag;
+      art::InputTag _kalSeedPtrTag;
       bool _printMVA;
 
     std::shared_ptr<TMVA_SOFIE_TrkQual_ANN1::Session> mva_;
@@ -67,7 +67,7 @@ namespace mu2e
 
   TrackQuality::TrackQuality(const Parameters& conf) :
     art::EDProducer{conf},
-    _kalSeedTag(conf().kalSeedTag()),
+    _kalSeedPtrTag(conf().kalSeedPtrTag()),
     _printMVA(conf().printMVA())
     {
       produces<MVAResultCollection>();
@@ -80,13 +80,14 @@ namespace mu2e
     // create output
     unique_ptr<MVAResultCollection> mvacol(new MVAResultCollection());
 
-    // get the KalSeeds
-    art::Handle<KalSeedCollection> kalSeedHandle;
-    event.getByLabel(_kalSeedTag, kalSeedHandle);
-    const auto& kalSeeds = *kalSeedHandle;
+    // get the KalSeedPtrs
+    art::Handle<KalSeedPtrCollection> kalSeedPtrHandle;
+    event.getByLabel(_kalSeedPtrTag, kalSeedPtrHandle);
+    const auto& kalSeedPtrs = *kalSeedPtrHandle;
 
     // Go through the tracks and calculate their track qualities
-    for (const auto& kalSeed : kalSeeds) {
+    for (const auto& kalSeedPtr : kalSeedPtrs) {
+      const auto& kalSeed = *kalSeedPtr;
       std::array<float,7> features; // the features we trained on
 
       // fill the hit count variables
@@ -143,8 +144,8 @@ namespace mu2e
       mvacol->push_back(MVAResult(mvaout[0]));
     }
 
-    if ( (mvacol->size() != kalSeeds.size()) ) {
-      throw cet::exception("TrackQuality") << "KalSeed and MVAResult sizes are inconsistent (" << kalSeeds.size() << ", " << mvacol->size();
+    if ( (mvacol->size() != kalSeedPtrs.size()) ) {
+      throw cet::exception("TrackQuality") << "KalSeedPtr and MVAResult sizes are inconsistent (" << kalSeedPtrs.size() << ", " << mvacol->size();
     }
 
 
