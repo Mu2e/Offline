@@ -409,7 +409,11 @@ Mu2eKinKal : {
   KKLoopFit : {
     module_type : LoopHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
-    KKFitSettings : @local::Mu2eKinKal.KKFIT
+    KKFitSettings : {
+      @table::Mu2eKinKal.KKFIT
+      # save trajectories in the Detector region
+     SaveTrajectory : Detector
+    }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
     ModuleSettings : {
@@ -448,7 +452,7 @@ Mu2eKinKal : {
     Extrapolation : @local::Mu2eKinKal.LINEEXTRAPOLATION
   }
 
-  KKOffSpillSeedFit : {
+  KKCentralHelixSeedFit : {
     module_type : CentralHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
@@ -460,7 +464,7 @@ Mu2eKinKal : {
     ModuleSettings : @local::Mu2eKinKal.CENTRALHELIX
   }
 
-  KKOffSpill : {
+  KKCentralHelix : {
     module_type : CentralHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
@@ -479,10 +483,10 @@ Mu2eKinKal : {
     # seed fits: these don't use drift information or BField corrections
     KKDeSeedFit: @local::Mu2eKinKal.KKSeedFit
     KKLineSeedFit: @local::Mu2eKinKal.KKLineSeedFit
-    KKOffSpillSeedFit: @local::Mu2eKinKal.KKOffSpillSeedFit
+    KKCentralHelixSeedFit: @local::Mu2eKinKal.KKCentralHelixSeedFit
     # drift fits
     KKLine: @local::Mu2eKinKal.KKLine
-    KKOffSpill: @local::Mu2eKinKal.KKOffSpill
+    KKCentralHelix: @local::Mu2eKinKal.KKCentralHelix
     KKDe: @local::Mu2eKinKal.KKLoopFit
     KKDmu: @local::Mu2eKinKal.KKLoopFit
     KKUe: @local::Mu2eKinKal.KKLoopFit
@@ -493,8 +497,8 @@ Mu2eKinKal : {
 Mu2eKinKal.producers.KKUe.Extrapolation.BackToTracker : true
 Mu2eKinKal.producers.KKUmu.Extrapolation.BackToTracker : true
 
-Mu2eKinKal.producers.KKOffSpillSeedFit.ModuleSettings.FitParticle : 13
-Mu2eKinKal.producers.KKOffSpill.ModuleSettings.FitParticle : 13
+Mu2eKinKal.producers.KKCentralHelixSeedFit.ModuleSettings.FitParticle : 13
+Mu2eKinKal.producers.KKCentralHelix.ModuleSettings.FitParticle : 13
 
 Mu2eKinKal.producers.KKLineSeedFit.ExtensionSettings.BFieldCorrection : false
 Mu2eKinKal.producers.KKLineSeedFit.ModuleSettings.FitParticle : 13
