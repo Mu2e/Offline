@@ -19,13 +19,16 @@ helper.make_plugins([
     'art_Framework_Principal',
     'art_Persistency_Provenance',
     'art_Utilities',
+    'boost_math_tr1',
     'canvas',
     'cetlib',
     'cetlib_except',
+    'CLHEP',
     'fhiclcpp',
     'fhiclcpp_types',
     'gmp',
     'gmpxx',
+    'KinKal_Trajectory',
     'mu2e_DataProducts',
     'mu2e_DbTables',
     'mu2e_ProditionsService',
@@ -33,6 +36,7 @@ helper.make_plugins([
     'mu2e_SeedService',
     'mu2e_TrackerConditions',
     'mu2e_TrackerMC',
+    'mu2e_ProditionsService',
 ])
 
 helper.make_dict_and_map([
