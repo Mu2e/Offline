@@ -60,6 +60,8 @@ namespace mu2e {
         fhicl::Atom<float>maxR{ Name("MaximumRadius"), Comment("Maximum transverse radius (mm)")};
         fhicl::Atom<float>minT{ Name("MinimumTime"), Comment("Earliest StrawDigi time to process (nsec)")};
         fhicl::Atom<float>maxT{ Name("MaximumTime"), Comment("Latest StrawDigi time to process (nsec)")};
+        fhicl::OptionalAtom<float>minTOff{ Name("MinimumTimeOffSpill"), Comment("Earliest StrawDigi time to process (nsec)")};
+        fhicl::OptionalAtom<float>maxTOff{ Name("MaximumTimeOffSpill"), Comment("Latest StrawDigi time to process (nsec)")};
         fhicl::Atom<float>ctE{ Name("crossTalkEnergy"), Comment("Energy to filter cross-talk in adajcent straws (MeV)")};
         fhicl::Atom<float>ctMinT{ Name("crossTalkMinimumTime"), Comment("Earliest time for cross-talk filter (nsec)")};
         fhicl::Atom<float>ctMaxT{ Name("crossTalkMaximumTime"), Comment("Latest time for cross-talk filter (nsec)")};
@@ -79,6 +81,9 @@ namespace mu2e {
       void beginJob() override;
 
     private:
+      bool _overrideminTOff;
+      bool _overridemaxTOff;
+      float _minTOff, _maxTOff;
       StrawHitRecoUtils _shrUtils;
       bool  _writesh;                // write straw hits or not
       bool  _flagXT; // flag cross-talk
@@ -103,12 +108,18 @@ namespace mu2e {
 
   StrawHitReco::StrawHitReco(Parameters const& config) :
     art::EDProducer{config},
+    _overrideminTOff(config().minTOff(_minTOff)),
+    _overridemaxTOff(config().maxTOff(_maxTOff)),
     _shrUtils ((TrkHitReco::FitType) config().fittype(),
         config().diag(),
         StrawIdMask::uniquestraw, // this module produces individual straw ComboHits
         config().writesh(),
         config().minT(),
         config().maxT(),
+        _overrideminTOff,
+        _minTOff,
+        _overridemaxTOff,
+        _maxTOff,
         config().minE(),
         config().maxE(),
         config().minR(),

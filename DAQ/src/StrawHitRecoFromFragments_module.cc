@@ -66,6 +66,10 @@ public:
                               Comment("Earliest time for cross-talk filter (nsec)")};
     fhicl::Atom<float> ctMaxT{Name("crossTalkMaximumTime"),
                               Comment("Latest time for cross-talk filter (nsec)")};
+    fhicl::OptionalAtom<float> minTOff{Name("minimumTimeOffSpill"),
+                            Comment("Earliest StrawDigi time to process (nsec)")};
+    fhicl::OptionalAtom<float> maxTOff{Name("maximumTimeOffSpill"),
+                            Comment("Latest StrawDigi time to process (nsec)")};
     fhicl::Atom<float> minT{Name("minimumTime"),
                             Comment("Earliest StrawDigi time to process (nsec)")};
     fhicl::Atom<float> maxT{Name("maximumTime"),
@@ -88,6 +92,10 @@ public:
   void beginJob() override;
 
 private:
+  bool _overrideminTOff;
+  float _minTOff;
+  bool _overridemaxTOff;
+  float _maxTOff;
   mu2e::StrawHitRecoUtils _shrUtils;
   bool _writesh; // write straw hits or not
   bool _flagXT;  // flag cross-talk
@@ -116,9 +124,12 @@ private:
 
 art::StrawHitRecoFromFragments::StrawHitRecoFromFragments(Parameters const& config) :
     art::EDProducer{config},
+    _overrideminTOff(config().minTOff(_minTOff)),
+    _overridemaxTOff(config().maxTOff(_maxTOff)),
     _shrUtils((mu2e::TrkHitReco::FitType)config().fittype(), config().diag(),
               mu2e::StrawIdMask::uniquestraw, // this module produces individual straw ComboHits
-              config().writesh(), config().minT(), config().maxT(), config().minE(),
+              config().writesh(), config().minT(), config().maxT(),
+              _overrideminTOff, _minTOff, _overridemaxTOff, _maxTOff, config().minE(),
               config().maxE(), config().minR(), config().maxR(), config().filter(), config().ctE(),
               config().ctMinT(), config().ctMaxT(), config().usecc(), config().clusterDt()),
     _writesh(config().writesh()), _flagXT(config().flagXT()), _usecc(config().usecc()),
