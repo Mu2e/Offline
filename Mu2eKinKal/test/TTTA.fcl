@@ -26,25 +26,15 @@ physics : {
       CaloDigiMaker : { module_type : NullProducer }
       makeSD : { module_type : NullProducer }
       @table::TrigProducers.producers
-      SelectRecoMCDeMcpr : {
+      SelectRecoMCDeCpr : {
          @table::CommonMCTrigger.TTSelectRecoMC
-         KalSeedCollections  : [ "TTCalSeedFitDem" ]
-         HelixSeedCollections  : ["TTCalHelixMergerDeM" ]
+         KalSeedCollections  : [ "TTCalSeedFitDe" ]
+         HelixSeedCollections  : ["TTCalHelixMergerDe" ]
       }
-      SelectRecoMCDeMtpr : {
+      SelectRecoMCDeTpr : {
          @table::CommonMCTrigger.TTSelectRecoMC
-         KalSeedCollections  : [ "TTKSFDeM" ]
-         HelixSeedCollections  : ["TTHelixMergerDeM" ]
-      }
-      SelectRecoMCDePcpr : {
-         @table::CommonMCTrigger.TTSelectRecoMC
-         KalSeedCollections  : [ "TTCalSeedFitDep" ]
-         HelixSeedCollections  : ["TTCalHelixMergerDeP" ]
-      }
-      SelectRecoMCDePtpr : {
-         @table::CommonMCTrigger.TTSelectRecoMC
-         KalSeedCollections  : [ "TTKSFDeP" ]
-         HelixSeedCollections  : ["TTHelixMergerDeP" ]
+         KalSeedCollections  : [ "TTKSFDe" ]
+         HelixSeedCollections  : ["TTHelixMergerDe" ]
       }
    }
    filters :  {
@@ -52,27 +42,19 @@ physics : {
       @table::Trig_physMenuPSConfig
    }
    analyzers : {
-      TADeMtpr : {
-         @table::TrkAnaTrigger.TrkAnaDeMTT
+      TADeTpr : {
+         @table::TrkAnaTrigger.TrkAnaDeTT
          FitType : LoopHelix
       }
 
-      TADeMcpr : {
-         @table::TrkAnaTrigger.TrkAnaDeMTT
-         FitType : LoopHelix
-      }
-      TADePtpr : {
-         @table::TrkAnaTrigger.TrkAnaDePTT
-         FitType : LoopHelix
-      }
-      TADePcpr : {
-         @table::TrkAnaTrigger.TrkAnaDePTT
+      TADeCpr : {
+         @table::TrkAnaTrigger.TrkAnaDeTT
          FitType : LoopHelix
       }
    }
    @table::TrigRecoSequences
    @table::TrigSequences
-   EndPath : [TADeMtpr, TADeMcpr, TADePtpr, TADePcpr]
+   EndPath : [TADeTpr, TADeCpr, TADePtpr, TADePcpr]
 }
 physics.trigger_paths : [@sequence::Trig_physMenu.trigger_paths]
 #include "mu2e_trig_config/core/trigDigiInputsEpilog.fcl"
@@ -81,30 +63,18 @@ physics.trigger_paths : [@sequence::Trig_physMenu.trigger_paths]
 #include "Production/JobConfig/reco/drop_trigger.fcl"
 physics.end_paths : [ EndPath ]
 # add MC truth matching to the relevant paths
-physics.tprDeM_highP_stopTarg           : [ @sequence::physics.tprDeM_highP_stopTarg, SelectRecoMCDeMtpr]
-physics.cprDeM_highP_stopTarg           : [ @sequence::physics.cprDeM_highP_stopTarg, SelectRecoMCDeMcpr]
-physics.tprDeP_highP_stopTarg           : [ @sequence::physics.tprDeP_highP_stopTarg, SelectRecoMCDePtpr]
-physics.cprDeP_highP_stopTarg           : [ @sequence::physics.cprDeP_highP_stopTarg, SelectRecoMCDePcpr]
+physics.tprDe_highP_stopTarg           : [ @sequence::physics.tprDe_highP_stopTarg, SelectRecoMCDeTpr]
+physics.cprDe_highP_stopTarg           : [ @sequence::physics.cprDe_highP_stopTarg, SelectRecoMCDeCpr]
 
-physics.analyzers.TADeMtpr.SelectEvents : [  tprDeM_highP_stopTarg  ]
-physics.analyzers.TADeMtpr.candidate.input : "TTKSF"
-physics.analyzers.TADeMtpr.candidate.suffix : "DeM"
-physics.analyzers.TADeMtpr.KalSeedMCAssns: "SelectRecoMCDeMtpr"
+physics.analyzers.TADeTpr.SelectEvents : [  tprDe_highP_stopTarg  ]
+physics.analyzers.TADeTpr.candidate.input : "TTKSF"
+physics.analyzers.TADeTpr.candidate.suffix : "De"
+physics.analyzers.TADeTpr.KalSeedMCAssns: "SelectRecoMCDeTpr"
 
-physics.analyzers.TADeMcpr.SelectEvents : [  cprDeM_highP_stopTarg  ]
-physics.analyzers.TADeMcpr.candidate.input : "TTCalSeedFit"
-physics.analyzers.TADeMcpr.candidate.suffix : "Dem"
-physics.analyzers.TADeMcpr.KalSeedMCAssns: "SelectRecoMCDeMcpr"
-
-physics.analyzers.TADePtpr.SelectEvents : [  tprDeP_highP_stopTarg  ]
-physics.analyzers.TADePtpr.candidate.input : "TTKSF"
-physics.analyzers.TADePtpr.candidate.suffix : "DeP"
-physics.analyzers.TADePtpr.KalSeedMCAssns: "SelectRecoMCDePtpr"
-
-physics.analyzers.TADePcpr.SelectEvents : [  cprDeP_highP_stopTarg  ]
-physics.analyzers.TADePcpr.candidate.input : "TTCalSeedFit"
-physics.analyzers.TADePcpr.candidate.suffix : "Dep"
-physics.analyzers.TADePcpr.KalSeedMCAssns: "SelectRecoMCDePcpr"
+physics.analyzers.TADeCpr.SelectEvents : [  cprDe_highP_stopTarg  ]
+physics.analyzers.TADeCpr.candidate.input : "TTCalSeedFit"
+physics.analyzers.TADeCpr.candidate.suffix : "De"
+physics.analyzers.TADeCpr.KalSeedMCAssns: "SelectRecoMCDeCpr"
 
 # this next is currently needed to get correct hit-level MC truth matching.  It needs to be fixed at the
 # ComboHitCollection.  This setting works, but will slow down the trigger: don't use this script for timing studies

@@ -7,6 +7,7 @@
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
+#include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
@@ -206,12 +207,12 @@ namespace mu2e
           if(crvDigi.GetScintillatorBarIndex()==barIndex && crvDigi.GetSiPMNumber()==SiPM)
           {
             uint16_t startTDC=crvDigi.GetStartTDC();
-            const std::array<int16_t, CrvDigi::NSamples> &adcs = crvDigi.GetADCs();
-            for(size_t ii=0; ii<CrvDigi::NSamples; ii++)
+            const std::vector<int16_t> &adcs = crvDigi.GetADCs();
+            for(size_t ii=0; ii<adcs.size(); ++ii)
             {
               int16_t  adc=adcs.at(ii);
-              if(SiPM==0 || SiPM==2) _adcs0->Fill(TDC0time+(startTDC+ii)*12.55,adc);
-              if(SiPM==1 || SiPM==3) _adcs1->Fill(TDC0time+(startTDC+ii)*12.55,adc);
+              if(SiPM==0 || SiPM==2) _adcs0->Fill(TDC0time+(startTDC+ii)*CRVDigitizationPeriod,adc);
+              if(SiPM==1 || SiPM==3) _adcs1->Fill(TDC0time+(startTDC+ii)*CRVDigitizationPeriod,adc);
             }
           }
         }
