@@ -2,6 +2,24 @@
 // A collection of routines using gmp functions and types
 // August 2024
 
+// these functions implement probabilistic encryption and decryption
+// of a single bit of information (encapsulated below in an
+// unsigned int, ``set''). a fully technical description of the
+// scheme is given in Goldwasser & Micali, "Probabilistic encryption,"
+// Journal of Computer and System Sciences, 28 (2): 270–299, 1984.
+// doi:10.1016/0022-0000(84)90070-9. in particular, the mathematical
+// manipulations implemented here are contextualized in Section 6.
+//
+// That being said, the following wikipedia pages offer an easier
+// introduction for non-experts:
+// - https://en.wikipedia.org/wiki/Goldwasser%E2%80%93Micali_cryptosystem
+// - https://en.wikipedia.org/wiki/Quadratic_residuosity_problem
+//
+// this implementation operates on arbitrary-sized integers within
+// the context of the GNU MultiPrecision system, which also
+// contains the number-theoretic functions on which the cryposysytem
+// is designed.
+
 #ifndef GMPRoutines_hh
 #define GMPRoutines_hh
 
