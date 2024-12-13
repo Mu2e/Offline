@@ -20,7 +20,9 @@ namespace mu2e {
       using ADCWFIter = TrkTypes::ADCWaveform::const_iterator;
       StrawHitRecoUtils(TrkHitReco::FitType fittype, int diagLevel,
           StrawIdMask mask, bool writesh,
-          float minT, float maxT, float minE, float maxE, float minR, float maxR,
+          float minT, float maxT,
+          bool overrideminTOff, float minTOff, bool overridemaxTOff, float maxTOff,
+          float minE, float maxE, float minR, float maxR,
           bool filter,
           float ctE, float ctMinT, float ctMaxT, bool usecc, float clusterDt);
 
@@ -44,7 +46,12 @@ namespace mu2e {
       StrawIdMask _mask;
       bool _writesh;
       // flag/filter parameters
-      float _minT, _maxT, _minE, _maxE, _minR, _maxR;
+      float _minT, _maxT;
+      bool _overrideminTOff;
+      float _minTOff;
+      bool _overridemaxTOff;
+      float _maxTOff;
+      float _minE, _maxE, _minR, _maxR;
       bool _filter;
       // cross-talk parameters
       float _ctE, _ctMinT, _ctMaxT;
