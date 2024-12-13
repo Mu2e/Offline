@@ -18,11 +18,10 @@ physics :{
 
     printModule : {
       module_type : PrintModule
-      PrintEvent : false
+      PrintEvent : true
       verbose : 0
-      PrintSubRun : true
-      CosmicLivetimePrinter : {
-        verbose : 1
+      ProtonBunchIntensityPrinter : {
+        verbose : 0
       }
     } # printModule
 
