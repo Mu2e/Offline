@@ -108,7 +108,7 @@ physics.producers.CrvSteps.stepPointsModuleLabels   : ["g4run"]
 physics.producers.CrvPhotons.crvStepModuleLabels    : ["CrvSteps"]
 physics.producers.CrvPhotons.crvStepProcessNames    : ["CrvWideband4ModulesSim"]
 physics.producers.CrvPhotons.photonYieldVariationScale    : 0.02   //gaussian distribution with sigma equal to 2.0% of the nominal photon yield
-physics.producers.CrvPhotons.photonYieldScaleFactor       : 1.00
+physics.producers.CrvPhotons.photonYieldScaleFactor       : 0.92   //0.92 seems to give the best match with Wideband data
 physics.producers.CrvPhotons.CRVSectors                   : [ "W1", "W2", "W3", "W4", "T1", "T2"]
 physics.producers.CrvPhotons.reflectors                   : [   0,    0,    0,    0,    1,    1 ]
 physics.producers.CrvPhotons.scintillationYields          : [39794,39794,39794,39794,39794,39794]
@@ -203,7 +203,7 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
         }
       ]
 
-services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband4modules_v18.txt"
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband4modules_v19.txt"
 services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
 services.DbService.textFile : ["Offline/CRVConditions/data/status_wideband4modules.txt","Offline/CRVConditions/data/photonyield_wideband4modules2sides2triggers.txt", "Offline/CRVConditions/data/calib_wideband4modules2sides2triggers.txt"]
 #services.ProditionsService.crvPhotonYield.useDb : false
