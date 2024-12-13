@@ -312,8 +312,9 @@ namespace mu2e
             if(t1Tmp<eventWindowStart) t1Tmp+=_microBunchPeriod;
             if(t2Tmp<eventWindowStart) t2Tmp+=_microBunchPeriod;
             //remove steps that are not needed to speed up the simulation
-            if(t1Tmp<startTime) continue;
-            if(t2Tmp>endTime) continue;
+            if(t1Tmp<startTime && t2Tmp<startTime) continue;
+            if(t1Tmp>endTime && t2Tmp>endTime) continue;
+            if(t1Tmp>endTime && t2Tmp<startTime) continue;  //if the step's t1Tmp/t2Tmp times are just before/after the eventWindowStart and get time-wrapped in a weird way
           }
 
           CLHEP::Hep3Vector pos1 = step.startPosition();  //TODO: Need to convert everything into XYZVec, so that const references can be used
