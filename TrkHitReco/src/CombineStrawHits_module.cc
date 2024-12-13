@@ -102,6 +102,8 @@ namespace mu2e {
     _maxR2(     config().maxR()*config().maxR()),
     _minT(      config().minT()),
     _maxT(      config().maxT()),
+    _minTOff (_minT),
+    _maxTOff (_maxT),
     _overrideminTOff(      config().minTOff(_minTOff)),
     _overridemaxTOff(      config().maxTOff(_maxTOff)),
     _minE(      config().minE()),

@@ -81,9 +81,9 @@ namespace mu2e {
       void beginJob() override;
 
     private:
+      float _minTOff, _maxTOff;
       bool _overrideminTOff;
       bool _overridemaxTOff;
-      float _minTOff, _maxTOff;
       StrawHitRecoUtils _shrUtils;
       bool  _writesh;                // write straw hits or not
       bool  _flagXT; // flag cross-talk
@@ -108,6 +108,8 @@ namespace mu2e {
 
   StrawHitReco::StrawHitReco(Parameters const& config) :
     art::EDProducer{config},
+    _minTOff(config().minT()),
+    _maxTOff(config().maxT()),
     _overrideminTOff(config().minTOff(_minTOff)),
     _overridemaxTOff(config().maxTOff(_maxTOff)),
     _shrUtils ((TrkHitReco::FitType) config().fittype(),
