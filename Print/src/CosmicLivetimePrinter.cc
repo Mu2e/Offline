@@ -3,6 +3,8 @@
 #include <iomanip>
 #include <string>
 
+void mu2e::CosmicLivetimePrinter::Print(art::Event const& event, std::ostream& os) {}
+
 void mu2e::CosmicLivetimePrinter::PrintSubRun(art::SubRun const& subrun,
                                               std::ostream& os) {
   if (verbose() < 1) return;
@@ -22,23 +24,6 @@ void mu2e::CosmicLivetimePrinter::PrintSubRun(art::SubRun const& subrun,
       livetime_ += ih->liveTime();
     }
     if(ncosmic> 1) std::cout << ">1 Cosmic Livetime!" << std::endl;
-  }
-}
-
-void mu2e::CosmicLivetimePrinter::Print(art::Event const& event,
-                                        std::ostream& os) {
-  if (verbose() < 1) return;
-  if (tags().empty()) {
-    // if a list of instances not specified, print all instances
-    std::vector<art::Handle<CosmicLivetime> > vah =
-        event.getMany<CosmicLivetime>();
-    for (auto const& ah : vah) Print(ah);
-  } else {
-    // print requested instances
-    for (const auto& tag : tags()) {
-      auto ih = event.getValidHandle<CosmicLivetime>(tag);
-      Print(ih);
-    }
   }
 }
 
@@ -84,5 +69,7 @@ void mu2e::CosmicLivetimePrinter::PrintHeader(const std::string& tag,
 }
 
 void mu2e::CosmicLivetimePrinter::PrintEndJob(std::ostream& os) {
-  os << "Processed " << nsub_ << " Subruns for a total of " << std::setprecision(0) << nPrimaries_ << " primaries and " << livetime_ << " seconds total livetime" << std::endl;
+  if(nsub_ > 0){
+    os << "Processed " << nsub_ << " Subruns for a total of " << std::setprecision(0) << nPrimaries_ << " primaries and " << livetime_ << " seconds total livetime" << std::endl;
+  }
 }
