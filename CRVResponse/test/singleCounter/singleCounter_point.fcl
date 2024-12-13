@@ -51,7 +51,7 @@ physics :
        inputfile            : "Offline/CRVResponse/test/singleCounter/genconfig_point.txt"
     }
     @table::Common.producers
-    @table::CommonMC.producers
+    @table::CommonMC.DigiProducers
     @table::CrvResponsePackage.producers
     CrvSteps       : @local::CrvSteps
     CrvRecoPulses  : @local::CrvRecoPulses
@@ -104,11 +104,9 @@ physics.producers.CrvPhotons.reflectors                   : [0]
 #physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0/LookupTable_6000_1"]
 #physics.producers.CrvPhotons.reflectors                   : [1]
 #physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0/LookupTable_6000_0"]
-physics.producers.CrvPhotons.reflectors                   : [0]
-physics.producers.CrvSiPMCharges.deadSiPMProbability      : 0.0
+#physics.producers.CrvPhotons.reflectors                   : [0]
 #physics.producers.CrvSiPMCharges.CrossTalkProb            : 0.09
 physics.producers.CrvSiPMCharges.ThermalRate              : 0.0
-physics.producers.CrvWaveforms.FEBtimeSpread              : 0.0
 
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
