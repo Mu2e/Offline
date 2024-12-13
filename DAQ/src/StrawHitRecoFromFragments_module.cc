@@ -92,10 +92,8 @@ public:
   void beginJob() override;
 
 private:
-  bool _overrideminTOff;
-  float _minTOff;
-  bool _overridemaxTOff;
-  float _maxTOff;
+  float _minTOff, _maxTOff;
+  bool _overrideminTOff, _overridemaxTOff;
   mu2e::StrawHitRecoUtils _shrUtils;
   bool _writesh; // write straw hits or not
   bool _flagXT;  // flag cross-talk
@@ -124,6 +122,8 @@ private:
 
 art::StrawHitRecoFromFragments::StrawHitRecoFromFragments(Parameters const& config) :
     art::EDProducer{config},
+    _minTOff(config().minT()),
+    _maxTOff(config().maxT()),
     _overrideminTOff(config().minTOff(_minTOff)),
     _overridemaxTOff(config().maxTOff(_maxTOff)),
     _shrUtils((mu2e::TrkHitReco::FitType)config().fittype(), config().diag(),
