@@ -404,6 +404,10 @@ EventGenerator : { @table::EventGenerator
         CaloTBGun : {
             module_type    : CaloTBGun
         }
+
+        SimpleAntiprotonGun : {
+            module_type : SimpleAntiprotonGun
+        }
     }
 }
 
