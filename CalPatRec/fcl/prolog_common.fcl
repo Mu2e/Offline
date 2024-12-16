@@ -11,16 +11,16 @@ CommonTrk                : {
 # into one collection
 #------------------------------------------------------------------------------
         MHFinderDe : { @table::TrkReco.producers.MergeHelices
-            HelixFinders : [ "HelixFinderDe" , "CalHelixFinderDe" ]
+            HelixFinders : [ "AgnosticHelixFinder" , "CalHelixFinderDe" ]
         }
         MHFinderDmu : { @table::TrkReco.producers.MergeHelices
-            HelixFinders : [ "HelixFinderDmu", "CalHelixFinderDmu"]
+            HelixFinders : [ "AgnosticHelixFinder", "CalHelixFinderDmu"]
         }
         MHFinderUe : { @table::TrkReco.producers.MergeHelices
-            HelixFinders : [ "HelixFinderUe" , "CalHelixFinderUe" ]
+            HelixFinders : [ "AgnosticHelixFinder" , "CalHelixFinderUe" ]
         }
         MHFinderUmu : { @table::TrkReco.producers.MergeHelices
-            HelixFinders : [ "HelixFinderUmu", "CalHelixFinderUmu"]
+            HelixFinders : [ "AgnosticHelixFinder", "CalHelixFinderUmu"]
         }
 #------------------------------------------------------------------------------
 # BTRK track fit, downstream electron hypothesis
@@ -90,20 +90,22 @@ CommonTrk                : {
 #------------------------------------------------------------------------------
 # helix reconstruction: put downstream electron and positron helices together
 #------------------------------------------------------------------------------
-CommonTrk.helix_reco_De   : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDe, MHFinderCprDe,
-                              TimeClusterFinderDe, HelixFinderDe, MHFinderTprDe    ,
+CommonTrk.helix_reco_De   : [ CalTimePeakFinderDe, CalHelixFinderDe, MHFinderCprDe,
+                              TZClusterFinder, AgnosticHelixFinder,MHFinderTprDe    ,
                               MHFinderDe ]
 
-CommonTrk.helix_reco_Ue   : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderUe,
-                              TimeClusterFinderUe, HelixFinderUe,
+CommonTrk.helix_reco_Ue   : [ CalTimePeakFinderUe, CalHelixFinderUe,
+                              TZClusterFinder, AgnosticHelixFinder,
                               MHFinderUe ]
 
-CommonTrk.helix_reco_Dmu  : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmu, MHFinderCprDmu,
-                              TimeClusterFinderDmu, HelixFinderDmu, MHFinderTprDmu    ,
+CommonTrk.helix_reco_Dmu  : [ CalTimePeakFinderDmu, CalHelixFinderDmu, MHFinderCprDmu,
+                              TZClusterFinder, AgnosticHelixFinder,
+                              MHFinderTprDmu    ,
                               MHFinderDmu ]
 
-CommonTrk.helix_reco_Umu  : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderUmu, MHFinderCprUmu,
-                              TimeClusterFinderUmu, HelixFinderUmu, MHFinderTprUmu    ,
+CommonTrk.helix_reco_Umu  : [ CalTimePeakFinderUmu, CalHelixFinderUmu, MHFinderCprUmu,
+                              TZClusterFinder, AgnosticHelixFinder,
+                              MHFinderTprUmu    ,
                               MHFinderUmu ]
 #------------------------------------------------------------------------------
 # by default, write out two lists of tracks corresponding to two different
