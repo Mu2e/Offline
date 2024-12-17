@@ -45,7 +45,7 @@ namespace mu2e {
       MuCapProtonGenTool, MuCapDeuteronGenTool, DIOGenTool, MuCapNeutronGenTool, // 48
       MuCapPhotonGenTool, MuCapGammaRayGenTool, CeLeadingLogGenTool, MuplusMichelGenTool,// 52
       gammaPairProduction, //53
-      lastEnum //55
+      lastEnum //54
     };
 
 #ifndef SWIG
