@@ -3,6 +3,7 @@
 
 
 #include <iostream>
+#include <string>
 #include <cmath>
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -25,8 +26,9 @@
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
-#include "Offline/MCDataProducts/inc/GenId.hh"
-#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "Offline/StoppingTargetGeom/inc/TargetFoil.hh"
@@ -43,6 +45,8 @@ namespace mu2e {
       fhicl::Atom<double> foilSurvivalRate{Name("foilSurvivalRate"), Comment("Rate of antiprotons surviving each foil"), 0.01};
       fhicl::Atom<double> timeArrivalRate{Name("timeArrivalRate"), Comment("Exponential rate for antiproton arrival"), 130.};
       fhicl::Atom<double> t0{Name("t0"), Comment("Start time for the antiproton distribution"), 600.}; //time distribution falls again below 600 ns
+      fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"), Comment("Input sim particle collection")};
+      fhicl::Atom<bool> ignoreInput{Name("ignoreInput"), Comment("Ignore the input sim particle information, using random stops"), false};
       fhicl::Atom<int> verbosity{Name("verbosity"), Comment("Verbosity level"), 0};
       fhicl::Atom<bool> makeHistograms{Name("makeHistograms"), Comment("Make histograms of the conversion kinematics"), false};
     };
@@ -51,18 +55,22 @@ namespace mu2e {
       float y;
       float z;
       float t;
+      Stop_t(): x(0.), y(0.), z(0.), t(0.) {}
+      Stop_t(float x_in, float y_in, float z_in, float t_in) : x(x_in), y(y_in), z(z_in), t(t_in) {}
     };
 
 
     PDGCode::type       pdgId_;
-    GenId               genId_;
+    ProcessCode         processCode_;
     double              mass_;
 
     double              foilSurvivalRate_;
     double              timeArrivalRate_;
     double              t0_;
+    art::ProductToken<SimParticleCollection> const simsToken_;
+    bool                ignoreInput_;
 
-    int               verbosity_;
+    int                 verbosity_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandExponential randExp_;
@@ -99,23 +107,23 @@ namespace mu2e {
   SimpleAntiprotonGun::SimpleAntiprotonGun(const Parameters& conf)
     : EDProducer{conf}
     , pdgId_(PDGCodeDetail::anti_proton)
-    , genId_(GenId::antiproton)
+    , processCode_(ProcessCode::mu2eAntiproton)
     , mass_(GlobalConstantsHandle<ParticleDataList>()->particle(pdgId_).mass())
     , foilSurvivalRate_(conf().foilSurvivalRate())
     , timeArrivalRate_(conf().timeArrivalRate())
     , t0_(conf().t0())
+    , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
+    , ignoreInput_{conf().ignoreInput()}
     , verbosity_(conf().verbosity())
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
     , randFlat_{eng_}
     , makeHistograms_(conf().makeHistograms())
   {
-    produces<mu2e::GenParticleCollection>();
+    produces<mu2e::StageParticleCollection>();
 
     if(verbosity_ > 0) {
-      std::cout<<"SimpleAntiprotonGun: using GenId = " << genId_ << std::endl;
-
-      std::cout<<"SimpleAntiprotonGun: producing particle "<< pdgId_ << ", mass = "<< mass_ << std::endl;
+      std::cout<<"SimpleAntiprotonGun: using process code " << processCode_ << std::endl;
     }
 
 
@@ -168,9 +176,21 @@ namespace mu2e {
 
   //================================================================
   void SimpleAntiprotonGun::produce(art::Event& event) {
-    std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
+    auto output{std::make_unique<StageParticleCollection>()};
 
-    const auto& stop = generateStop();
+    // Input sim particle collection
+    const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
+    const auto& sims = *simh;
+
+    if(sims.begin() == sims.end())
+      throw cet::exception("BADINPUT") << "SimpleAntiprotonGun::" << __func__ << ": No input sim particles found\n";
+
+    // Only take the first sim particle (only one per event is expected)
+    const art::Ptr<SimParticle> sim(simh, sims.begin()->first.asInt());
+
+    // Either use the input antiproton event or ignore it and create an independent stop position
+    const auto stop = (ignoreInput_) ? generateStop() : Stop_t(sim->endPosition().x(), sim->endPosition().y(),
+                                                               sim->endPosition().z(), sim->endGlobalTime());
 
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
@@ -178,13 +198,15 @@ namespace mu2e {
     const double energy = mass_;
     CLHEP::Hep3Vector p3(0., 0., 0.);
     CLHEP::HepLorentzVector fourmom(p3, energy);
-    output->emplace_back(pdgId_,
-                         genId_,
+    output->emplace_back(sim,
+                         processCode_,
+                         pdgId_,
                          pos,
                          fourmom,
                          stop.t);
 
     event.put(std::move(output));
+
     //-----------------------------------------------------------------------------
     // if requested, fill histograms
     //-----------------------------------------------------------------------------
