@@ -9,7 +9,6 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandomEngine.h"
-#include "CLHEP/Random/RandExponential.h"
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
@@ -41,9 +40,9 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<double> timeArrivalRate{Name("timeArrivalRate"), Comment("Exponential rate for antiproton arrival"), 130.};
-      fhicl::Atom<double> t0{Name("t0"), Comment("Start time for the antiproton distribution"), 600.}; //time distribution falls again below 600 ns
-      fhicl::Atom<double> pzmax{Name("pzmax"), Comment("Antiproton maximum generated z momentum (flat spectrum)"), 100.};
+      fhicl::Atom<double> t0{Name("t0"), Comment("Start time for the antiproton distribution"), 400.}; //flat time spectrum
+      fhicl::Atom<double> tmax{Name("tmax"), Comment("Maximum time for the antiproton distribution"), 2000.};
+      fhicl::Atom<double> pzmax{Name("pzmax"), Comment("Antiproton maximum generated z momentum (flat spectrum)"), 100.}; //flat momentum spectrum
       fhicl::Atom<int> verbosity{Name("verbosity"), Comment("Verbosity level"), 0};
       fhicl::Atom<bool> makeHistograms{Name("makeHistograms"), Comment("Make histograms of the conversion kinematics"), false};
     };
@@ -60,14 +59,13 @@ namespace mu2e {
     GenId               genId_;
     double              mass_;
 
-    double              timeArrivalRate_;
     double              t0_;
+    double              tmax_;
     double              pzmax_;
 
     int                 verbosity_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
-    CLHEP::RandExponential randExp_;
     CLHEP::RandFlat randFlat_;
 
     double _foilY; //foil origin
@@ -104,12 +102,11 @@ namespace mu2e {
     , pdgId_(PDGCodeDetail::anti_proton)
     , genId_(GenId::antiproton)
     , mass_(GlobalConstantsHandle<ParticleDataList>()->particle(pdgId_).mass())
-    , timeArrivalRate_(conf().timeArrivalRate())
     , t0_(conf().t0())
+    , tmax_(conf().tmax())
     , pzmax_(conf().pzmax())
     , verbosity_(conf().verbosity())
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
-    , randExp_{eng_}
     , randFlat_{eng_}
     , makeHistograms_(conf().makeHistograms())
   {
@@ -119,6 +116,12 @@ namespace mu2e {
       std::cout<<"SimpleAntiprotonGun: using gen ID " << genId_ << std::endl;
     }
 
+    if(t0_ > tmax_) {
+      throw cet::exception("BADCONFIG") << "Time range is unphysical: t0 = " << t0_ << " tmax = " << tmax_ << "\n";
+    }
+    if(pzmax_ < 0.) {
+      throw cet::exception("BADCONFIG") << "Momentum range is unphysical: pz_max = " << pzmax_ << "\n";
+    }
 
     if(makeHistograms_) {
       art::ServiceHandle<art::TFileService> tfs;
@@ -126,7 +129,7 @@ namespace mu2e {
       _hY      = tfs->make<TH1F>("hY"     , "Y"           ,  100,     0.,  100.);
       _hZ      = tfs->make<TH1F>("hZ"     , "Z"           ,  500,  5400., 6400.);
       _hR      = tfs->make<TH1F>("hR"     , "R"           ,  100,     0.,  100.);
-      _hTime   = tfs->make<TH1F>("hTime"  , "Time"        ,  400,     0., 2000.);
+      _hTime   = tfs->make<TH1F>("hTime"  , "Time"        ,  400,     0., std::max(tmax_, 2000.));
       _hPz     = tfs->make<TH1F>("hPz"    , "Pz"          ,  100,     0.,  std::max(pzmax_, 100.));
     }
   }
@@ -164,7 +167,7 @@ namespace mu2e {
     stop.y = r*std::sin(phi) + _foilY;
 
     //assume an exponential decay in time
-    stop.t = t0_ + randExp_.fire(timeArrivalRate_);
+    stop.t = t0_ + (tmax_ - t0_)*randFlat_.fire();
 
     return stop;
   }
