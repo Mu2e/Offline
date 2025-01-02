@@ -8,20 +8,29 @@
 
 // art
 #include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/detail/EngineCreator.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // cetlib_except
 #include "cetlib_except/exception.h"
 
+// clhep
+#include "CLHEP/Random/RandGeneral.h"
+
 // fhiclcpp
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Comment.h"
+#include "fhiclcpp/types/DelegatedParameter.h"
 #include "fhiclcpp/types/Name.h"
 #include "fhiclcpp/types/Sequence.h"
 
 // mu2e
+#include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
 #include "Offline/TrackerMC/inc/StrawDigiBundle.hh"
 #include "Offline/TrackerMC/inc/StrawDigiBundleCollection.hh"
@@ -34,25 +43,9 @@ namespace mu2e{
           fhicl::Name("StrawDigiCollection"),
           fhicl::Comment("art::InputTag of digis to displace")
         };
-        fhicl::Atom<double> offspill_min{
-          fhicl::Name("OffSpillTimeMin"),
-          fhicl::Comment("Smallest accepted OffSpill time")
-        };
-        fhicl::Atom<double> offspill_max{
-          fhicl::Name("OffSpillTimeMax"),
-          fhicl::Comment("Largest accepted OffSpill time")
-        };
-        fhicl::Atom<double> onspill_min{
-          fhicl::Name("OnSpillTimeMin"),
-          fhicl::Comment("Smallest mapped OnSpill time")
-        };
-        fhicl::Atom<double> onspill_max{
-          fhicl::Name("OnSpillTimeMax"),
-          fhicl::Comment("Largest mapped OnSpill time")
-        };
-        fhicl::Atom<double> onspill_lifetime{
-          fhicl::Name("OnSpillLifetime"),
-          fhicl::Comment("Decay time of mapped OnSpill times")
+        fhicl::DelegatedParameter target_distribution{
+          fhicl::Name("path"),
+          fhicl::Comment("Path to target timing distribution tabulation")
         };
       };
 
@@ -64,12 +57,10 @@ namespace mu2e{
     protected:
       art::InputTag _tracker_digi_tag;
       ProditionsHandle<StrawElectronics> _tracker_conditions_handle;
-      double _offspill_min;
-      double _offspill_max;
-      double _onspill_min;
-      double _onspill_max;
-      double _onspill_lifetime;
-      double displaced_time(double);
+      art::RandomNumberGenerator::base_engine_t& _engine;
+      BinnedSpectrum _target_distribution;
+      std::unique_ptr<CLHEP::RandGeneral> _target_sampler;
+      double sample_target_time();
 
       TrkTypes::TDCValue straw_analog_to_digital(double, const StrawElectronics&);
       double straw_digital_to_analog(TrkTypes::TDCValue, const StrawElectronics&);
@@ -81,11 +72,14 @@ namespace mu2e{
   DisplaceDigiTimes::DisplaceDigiTimes(const Parameters& config):
       art::EDProducer(config),
       _tracker_digi_tag(config().tracker_digi_tag()),
-      _offspill_min(config().offspill_min()),
-      _offspill_max(config().offspill_max()),
-      _onspill_min(config().onspill_min()),
-      _onspill_max(config().onspill_max()),
-      _onspill_lifetime(config().onspill_lifetime()){
+      _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}{
+    // initialize target distribution
+    const auto pset = config().target_distribution.get<fhicl::ParameterSet>();
+    _target_distribution = BinnedSpectrum(pset);
+    _target_sampler = std::make_unique<CLHEP::RandGeneral>(_engine,
+                                               _target_distribution.getPDF(),
+                                               _target_distribution.getNbins());
+
     // tracker
     this->consumes<StrawDigiCollection>(_tracker_digi_tag);
     this->consumes<StrawDigiADCWaveformCollection>(_tracker_digi_tag);
@@ -120,7 +114,7 @@ namespace mu2e{
       auto minit = std::min_element(first.begin(), first.end());
       auto earliest_tdc = static_cast<TrkTypes::TDCValue>(*minit);
       double reference_time = this->straw_digital_to_analog(earliest_tdc, electronics);
-      double target_time = this->displaced_time(reference_time);
+      double target_time = this->sample_target_time();
       shift = target_time - reference_time;
     }
 
@@ -155,11 +149,9 @@ namespace mu2e{
     // calorimeter...
   }
 
-  double DisplaceDigiTimes::displaced_time(double time){
-    double shifted = time - _offspill_min;
-    double window_length = _offspill_max - _offspill_min;
-    double rv = - _onspill_lifetime * log(shifted / window_length);
-    rv += _onspill_min;
+  double DisplaceDigiTimes::sample_target_time(){
+    const double scaled = _target_sampler->fire();
+    const double rv = _target_distribution.sample(scaled);
     return rv;
   }
 
