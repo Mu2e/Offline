@@ -6,8 +6,11 @@ Import('env')
 Import('mu2e_helper')
 
 helper = mu2e_helper(env)
+rootlibs = env['ROOTLIBS']
 
 mainlib = helper.make_mainlib([
+    'gmp',
+    'gmpxx',
 ])
 
 helper.make_plugins([
@@ -17,16 +20,37 @@ helper.make_plugins([
     'art_Framework_Principal',
     'art_Persistency_Provenance',
     'art_Utilities',
+    'boost_math_tr1',
     'canvas',
     'cetlib',
     'cetlib_except',
+    'CLHEP',
     'fhiclcpp',
     'fhiclcpp_types',
+    'gmp',
+    'gmpxx',
+    'KinKal_Trajectory',
     'mu2e_DataProducts',
     'mu2e_DbTables',
+    'mu2e_ProditionsService',
+    'mu2e_RecoDataProducts',
+    'mu2e_SeedService',
     'mu2e_TrackerConditions',
     'mu2e_TrackerMC',
-    'mu2e_RecoDataProducts',
-    'mu2e_TrackerConditions',
+])
+
+helper.make_dict_and_map([
+    mainlib,
+    rootlibs,
+    'art_Persistency_Common',
+    'canvas',
+    'cetlib',
+    'cetlib_except',
+    'mu2e_DataProducts',
+    'mu2e_DbTables',
     'mu2e_ProditionsService',
+    'mu2e_RecoDataProducts',
+    'mu2e_SeedService',
+    'mu2e_TrackerConditions',
+    'mu2e_TrackerMC',
 ])

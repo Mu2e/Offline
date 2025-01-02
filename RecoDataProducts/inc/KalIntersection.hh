@@ -15,13 +15,15 @@ namespace mu2e {
     XYZVectorF bnom_; // Bfield at this intersection, needed to reconstitute trajectory
     SurfaceId surfid_; // which surface in the reco geometry was interestected
     KinKal::Intersection kkinter_; // kinkal intersection
+    double dP_ = 0.0; // estimated scalar momentum change in this intersection
     KalIntersection(){}
-    KalIntersection(KinKal::ParticleStateEstimate const& pstate, XYZVectorF const& bnom, SurfaceId const& surfid, KinKal::Intersection const& kkinter) : pstate_(pstate), bnom_(bnom), surfid_(surfid), kkinter_(kkinter) {}
+    KalIntersection(KinKal::ParticleStateEstimate const& pstate, XYZVectorF const& bnom, SurfaceId const& surfid, KinKal::Intersection const& kkinter,double dP=0.0) : pstate_(pstate), bnom_(bnom), surfid_(surfid), kkinter_(kkinter) ,dP_(dP){}
 // simple accessors
     auto const& surfaceId() const { return surfid_; }
     double time() const { return pstate_.time(); }
     double mom() const { return pstate_.momentum(); }
     double momerr() const { return sqrt(pstate_.momentumVariance()); }
+    double dMom() const { return dP_; }
     KinKal::VEC3 momentum3() const { return pstate_.momentum3(); }
     KinKal::VEC3 velocity() const { return pstate_.velocity(); }
     KinKal::VEC3 position3() const { return pstate_.position3(); }
