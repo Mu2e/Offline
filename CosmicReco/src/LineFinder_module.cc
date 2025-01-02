@@ -53,6 +53,7 @@ namespace mu2e{
         fhicl::Atom<int> nsteps{Name("NSteps"), Comment("Number of steps per straw")};
         fhicl::Atom<int> ntsteps{Name("NTSteps"), Comment("Number of transverse steps per straw")};
         fhicl::Atom<float> stepsize{Name("StepSize"), Comment("Size of each step in fraction of res")};
+        fhicl::Atom<unsigned> nmax{Name("MaxPairs"), Comment("Max pairs to try")};
         fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for straw hit collection")};
         fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
       };
@@ -72,6 +73,7 @@ namespace mu2e{
       float _t0offset;
       int _Nsteps, _Ntsteps;
       float _stepSize;
+      unsigned _nmax;
       art::InputTag  _chToken;
       art::InputTag  _tcToken;
 
@@ -90,6 +92,7 @@ namespace mu2e{
         _Nsteps (conf().nsteps()),
         _Ntsteps (conf().ntsteps()),
         _stepSize (conf().stepsize()),
+        _nmax (conf().nmax()),
             _chToken (conf().chToken()),
         _tcToken (conf().tcToken())
 {
@@ -153,16 +156,18 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
   CLHEP::Hep3Vector seedInt(0,0,0);
 
   bool found_all = false;
+  unsigned n = 0;
   // lets get the best pairwise vector
   for (size_t i=0;i<shiv.size();i++){
     size_t iloc = shiv[i];
     if (found_all)
       break;
     Straw const& strawi = tracker->getStraw(shC[iloc].strawId());
-    for (size_t j=i+1;j<shiv.size();j++){
+    for (size_t j=shiv.size()-1;j>i;j--){
       size_t jloc = shiv[j];
       if (found_all)
         break;
+      n += 1;
       Straw const& strawj = tracker->getStraw(shC[jloc].strawId());
       for (int is=-1*_Nsteps;is<_Nsteps+1;is++){
         CLHEP::Hep3Vector ipos = shC[iloc].posCLHEP() + strawi.getDirection()*shC[iloc].wireRes()*_stepSize*is;
@@ -204,6 +209,9 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
             }
           }
         }
+      }
+      if (n > _nmax){
+        i = shiv.size();j = 1;
       }
     }
   }

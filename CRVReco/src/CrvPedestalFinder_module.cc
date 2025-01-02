@@ -71,7 +71,7 @@ namespace mu2e
         size_t channelIndex=barIndex*4 + SiPM;
         _pedestalHists.emplace_back(tfs->make<TH1F>(Form("crvPedestalHist_%lu",channelIndex),
                                                     Form("crvPedestalHist_%lu",channelIndex),
-                                                    2000,-50,150));   //TODO: needs to be only between -50 and +50, but Offline currently sets the pedestal at +100
+                                                    200,-50,150));   //TODO: needs to be only between -50 and +50, but Offline currently sets the pedestal at +100
       }
     }
   }
@@ -79,7 +79,7 @@ namespace mu2e
   void CrvPedestalFinder::analyze(const art::Event& event)
   {
     art::Handle<CrvDigiCollection> crvDigiCollection;
-    if(!event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection)) return;
+    if(!event.getByLabel(_crvDigiModuleLabel,"NZS",crvDigiCollection)) return;
 
     art::ServiceHandle<art::TFileService> tfs;
     for(auto iter=crvDigiCollection->begin(); iter!=crvDigiCollection->end(); ++iter)
@@ -93,7 +93,7 @@ namespace mu2e
       int channelIndex=barIndex*4+SiPM;
       auto hist = _pedestalHists.at(channelIndex);
 
-      for(size_t i=0; i<CrvDigi::NSamples; ++i)
+      for(size_t i=0; i<iter->GetADCs().size(); ++i)
       {
         hist->Fill(iter->GetADCs()[i]);
       }
