@@ -181,8 +181,6 @@ namespace mu2e{
         digis->emplace_back(sid, tdc, tot, pmp);
       }
 
-      // TODO indexes should be adjusted here, so that the waveforms
-      // exist at the times corresponding to the tdc values
       for (const auto& old: *adcs_handle){
         adcss->push_back(old);
       }
