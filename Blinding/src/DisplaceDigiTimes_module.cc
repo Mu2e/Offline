@@ -1,5 +1,5 @@
 // Ed Callaghan
-// Deterministically shift times of all digis s.t. uniformly distributed start times are exponentially distributed
+// Coherently shift times of all digis s.t. event timing follows a tabulated distribution
 // August 2024
 
 // stl
@@ -27,7 +27,10 @@
 #include "fhiclcpp/types/Sequence.h"
 
 // mu2e
+#include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
+#include "Offline/RecoDataProducts/inc/KalIntersection.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
@@ -43,9 +46,17 @@ namespace mu2e{
           fhicl::Name("StrawDigiCollection"),
           fhicl::Comment("art::InputTag of digis to displace")
         };
+        fhicl::Atom<art::InputTag> kalseed_tag{
+          fhicl::Name("KalSeedCollection"),
+          fhicl::Comment("art::InputTag of KalSeedCollection to prescale")
+        };
         fhicl::DelegatedParameter target_distribution{
           fhicl::Name("path"),
           fhicl::Comment("Path to target timing distribution tabulation")
+        };
+        fhicl::Sequence<std::string> surface_ids{
+          fhicl::Name("SurfaceIds"),
+          fhicl::Comment("Prioritized sequence of mu2e::SurfaceIds at which tracks may be sampled for reference timing")
         };
       };
 
@@ -56,6 +67,8 @@ namespace mu2e{
 
     protected:
       art::InputTag _tracker_digi_tag;
+      art::InputTag _kalseed_tag;
+      SurfaceIdCollection _surface_ids;
       ProditionsHandle<StrawElectronics> _tracker_conditions_handle;
       art::RandomNumberGenerator::base_engine_t& _engine;
       BinnedSpectrum _target_distribution;
@@ -72,6 +85,7 @@ namespace mu2e{
   DisplaceDigiTimes::DisplaceDigiTimes(const Parameters& config):
       art::EDProducer(config),
       _tracker_digi_tag(config().tracker_digi_tag()),
+      _kalseed_tag(config().kalseed_tag()),
       _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}{
     // initialize target distribution
     const auto pset = config().target_distribution.get<fhicl::ParameterSet>();
@@ -79,6 +93,14 @@ namespace mu2e{
     _target_sampler = std::make_unique<CLHEP::RandGeneral>(_engine,
                                                _target_distribution.getPDF(),
                                                _target_distribution.getNbins());
+
+    // surfaces at which timing may be referenced
+    for (const auto& name: config().surface_ids()){
+      _surface_ids.emplace_back(name);
+    }
+
+    // reco
+    this->consumes<KalSeed>(_kalseed_tag);
 
     // tracker
     this->consumes<StrawDigiCollection>(_tracker_digi_tag);
@@ -100,25 +122,47 @@ namespace mu2e{
       throw cet::exception("DisplaceDigiTimes") << msg << std::endl;
     }
 
-    // TODO currently taking first straw digi time as reference
-    // this should be improved (hell, this isn't even correct!)
-    // to the time of the muon decay, i.e. the time of the intersection
-    // of the track with the stopping target
+    // first, check that there is only a single KalSeed associated with
+    // these digis
+    auto kalseeds_handle = event.getValidHandle<KalSeedCollection>(_kalseed_tag);
+    if (kalseeds_handle->size() != 1){
+      std::string msg = "ambiguous KalSeedCollection (length " + std::to_string(kalseeds_handle->size()) + "), cannot assign reference time";
+      throw cet::exception("DisplaceDigiTimes") << msg << std::endl;
+    }
+    auto kalseed = (*kalseeds_handle)[0];
+
+    // search for downward-going KalIntersection with a matching surface
+    KalIntersection intersection;
+    auto sit = _surface_ids.begin();
+    bool adequate = false;
+    while ((!adequate) && (sit != _surface_ids.end())){
+      const auto& iits = kalseed.intersections(*sit);
+      // there are at most 2 valid intersections (upgoing / downgoing)
+      // so selecting on which one is downgoing is sufficient
+      for (const auto& iit: iits){
+        auto direction = iit->momentum3().Unit().Z();
+        if (0 < direction){
+          intersection = *iit;
+          adequate = true;
+        }
+      }
+      sit++;
+    }
+
+    // if no valid intersection found, then we cannot use this event
+    if (!adequate){
+      std::string msg = "no valid KalIntersection found";
+      throw cet::exception("DisplaceDigiTimes") << msg << std::endl;
+    }
+    // otherwise, take the time of the intersection as the reference time
+    double reference_time = intersection.time();
+    double target_time = this->sample_target_time();
+    double shift = target_time - reference_time;
+
+    // apply the shift to tracker digis
     const auto& electronics = _tracker_conditions_handle.get(event.id());
     auto digis = std::make_unique<StrawDigiCollection>();
     auto adcss = std::make_unique<StrawDigiADCWaveformCollection>();
-
-    double shift = 0.0;
-    if (0 < digi_handle->size()){
-      auto first = digi_handle->at(0).TDC();
-      auto minit = std::min_element(first.begin(), first.end());
-      auto earliest_tdc = static_cast<TrkTypes::TDCValue>(*minit);
-      double reference_time = this->straw_digital_to_analog(earliest_tdc, electronics);
-      double target_time = this->sample_target_time();
-      shift = target_time - reference_time;
-    }
-
-    // tracker
     if (0 < digi_handle->size()){
       for (const auto& old: *digi_handle){
         auto sid = old.strawId();
