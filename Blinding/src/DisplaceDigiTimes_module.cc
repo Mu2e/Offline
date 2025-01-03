@@ -51,8 +51,8 @@ namespace mu2e{
           fhicl::Comment("art::InputTag of KalSeedCollection to prescale")
         };
         fhicl::DelegatedParameter target_distribution{
-          fhicl::Name("path"),
-          fhicl::Comment("Path to target timing distribution tabulation")
+          fhicl::Name("target_distribution"),
+          fhicl::Comment("BinnedSpectrum configuration")
         };
         fhicl::Sequence<std::string> surface_ids{
           fhicl::Name("SurfaceIds"),
