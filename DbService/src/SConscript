@@ -53,6 +53,7 @@ BINLIBS   = [ mainlib, 'mu2e_DbTables', 'mu2e_GeneralUtilities',
               'boost_program_options', 'cetlib', 'cetlib_except', "pq" ]
 helper.make_bin("dbTool",BINLIBS,[])
 helper.make_bin("epicsTool",BINLIBS,[])
+helper.make_bin("runTool",BINLIBS,[])
 
 # turn pywrap.i into a python interface
 helper.make_pywrap (['mu2e_DbTables'])
