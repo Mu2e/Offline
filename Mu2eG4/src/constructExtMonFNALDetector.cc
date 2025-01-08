@@ -396,7 +396,7 @@ namespace mu2e {
       reg.add(stack.rotationInMu2e().inverse() * extmon->detectorMotherRotationInMu2e());
       CLHEP::HepRotation* stackRotationInMother = reg.add(stackRotationInMotherInv->inverse());
 
-      CLHEP::Hep3Vector soffset = *stackRotationInMother * CLHEP::Hep3Vector(
+      CLHEP::Hep3Vector soffset = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
                                   stack.planes()[iplane].module_xoffset()[imodule],
                                   stack.planes()[iplane].module_yoffset()[imodule],
                                   stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2]*2 + stack.planes()[iplane].halfSize()[2]+ module.sensorHalfSize()[2])
@@ -406,13 +406,13 @@ namespace mu2e {
       bool stackRotation = config.getBool("extMonFNAL.stackRotation");
       CLHEP::HepRotation* mRotInPlane = reg.add(new G4RotationMatrix);
 
-      mRotInPlane->rotateZ(stack.planes()[iplane].module_rotation()[imodule]);
+      mRotInPlane->rotateZ(stack.planes()[iplane].module_rotation()[imodule]*CLHEP::degree);
 
       if( stack.planes()[iplane].module_zoffset()[imodule] < 0.0 ) {
         mRotInPlane->rotateY(180*CLHEP::degree);
       }
 
-      CLHEP::HepRotation* mRot = stackRotation ? reg.add(*stackRotationInMother * *mRotInPlane) : mRotInPlane;
+      CLHEP::HepRotation* mRot = stackRotation ? reg.add(*mRotInPlane * *stackRotationInMother) : mRotInPlane;
 
       ExtMonFNALModuleIdConverter con(*extmon);
       int copyno = con.getModuleDenseId(iplane + stack.planeNumberOffset(),imodule).number();
@@ -432,7 +432,7 @@ namespace mu2e {
                                    doSurfaceCheck
                                    );
 
-      CLHEP::Hep3Vector coffset0 = *stackRotationInMother * CLHEP::Hep3Vector(
+      CLHEP::Hep3Vector coffset0 = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
                                     stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + .065, // +/- .065 to achieve the designed .13mm gap
                                     stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835),
                                     stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
@@ -457,7 +457,7 @@ namespace mu2e {
                                   doSurfaceCheck
                                   );
 
-      CLHEP::Hep3Vector coffset1 = *stackRotationInMother * CLHEP::Hep3Vector(
+      CLHEP::Hep3Vector coffset1 = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
                                     stack.planes()[iplane].module_xoffset()[imodule] - module.chipHalfSize()[0] - .065,
                                     stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835),
                                     stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
