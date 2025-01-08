@@ -40,7 +40,7 @@ namespace mu2e {
       fhicl::Atom<std::string> g4ModuleLabel{Name("g4ModuleLabel"), Comment("Geant module label")};
       fhicl::Atom<std::string> simCollectionLabel{Name("simCollectionLabel"), Comment("Sim particle collection module label ("" to use geant label)"),""};
       fhicl::Atom<bool> doFilter{Name("doFilter"), Comment("Whether or not to filter passing events (true/false)"), true};
-      fhicl::Atom<ProcessCode> processCode{Name("processCode"), Comment("Photon creation code of interest"),  ProcessCode::mu2eExternalRMC};
+      fhicl::Atom<std::string> processCode{Name("processCode"), Comment("Photon creation code of interest"),  "mu2eExternalRMC"};
       fhicl::Atom<int> verbosity{Name("verbosity"), Comment("Verbose level"),  0};
       fhicl::Atom<double> rMin{Name("rMin"), Comment("Stop minimum radius in the DS (mm)"), -1.};
       fhicl::Atom<double> rMax{Name("rMax"), Comment("Stop maximum radius in the DS (mm)"),  1.e9};
@@ -103,7 +103,7 @@ namespace mu2e {
     art::EDFilter{pset},
     g4ModuleLabel_(pset().g4ModuleLabel()),
     simCollectionLabel_(pset().simCollectionLabel()),
-    process_(pset().processCode()),
+    process_(ProcessCode::findByName(pset().processCode())),
     doFilter_(pset().doFilter()),
     verbosity_(pset().verbosity()),
     rMin_(pset().rMin()),
