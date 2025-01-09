@@ -42,6 +42,7 @@
 //#include "CLHEP/Vector/TwoVector.h"
 
 #include "Offline/GeomPrimitives/inc/ExtrudedSolid.hh"
+#include "Offline/GeomPrimitives/inc/RotExtrudedSolid.hh"
 #include "Offline/GeomPrimitives/inc/GenericTrap.hh"
 #include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
@@ -56,6 +57,7 @@ namespace mu2e {
 
     const std::map<std::string,ExtrudedSolid>& getBldgSolids()      const { return bldgSolids_; }
     const std::map<std::string,ExtrudedSolid>& getDirtSolids()      const { return dirtSolids_; }
+    const std::map<std::string,RotExtrudedSolid>& getRotSolids()      const { return rotatedSolids_; }
     const std::map<std::string,GenericTrap>&   getDirtTrapSolids()  const { return dirtTrapSolids_; }
 
     const ExtrudedSolid&
@@ -63,6 +65,9 @@ namespace mu2e {
 
     const ExtrudedSolid&
     getDirtSolid( const std::string& str ) const;
+
+    const RotExtrudedSolid&
+    getRotSolid( const std::string& str ) const;
 
     const GenericTrap&
     getDirtTrapSolid( const std::string& str ) const;
@@ -81,6 +86,7 @@ namespace mu2e {
 
     std::map<std::string,ExtrudedSolid> bldgSolids_;
     std::map<std::string,ExtrudedSolid> dirtSolids_;
+    std::map<std::string,RotExtrudedSolid> rotatedSolids_;
     std::map<std::string,GenericTrap>   dirtTrapSolids_;
 
   };
