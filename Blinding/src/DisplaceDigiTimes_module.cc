@@ -75,9 +75,6 @@ namespace mu2e{
       std::unique_ptr<CLHEP::RandGeneral> _target_sampler;
       double sample_target_time();
 
-      TrkTypes::TDCValue straw_analog_to_digital(double, const StrawElectronics&);
-      double straw_digital_to_analog(TrkTypes::TDCValue, const StrawElectronics&);
-
     private:
       /**/
   };
@@ -172,9 +169,9 @@ namespace mu2e{
 
         // displace tdc times
         for (size_t i = 0 ; i < TrkTypes::NENDS ; i++){
-          auto analog = this->straw_digital_to_analog(tdc[i], electronics);
+          auto analog = electronics.timeDigitalToAnalog(tdc[i], sid);
           auto shifted = analog + shift;
-          tdc[i] = this->straw_analog_to_digital(shifted, electronics);
+          tdc[i] = electronics.timeAnalogToDigital(shifted, sid);
         }
 
         // new digi is identical to input digi, with displaced tdc
@@ -194,16 +191,6 @@ namespace mu2e{
   double DisplaceDigiTimes::sample_target_time(){
     const double scaled = _target_sampler->fire();
     const double rv = _target_distribution.sample(scaled);
-    return rv;
-  }
-
-  TrkTypes::TDCValue DisplaceDigiTimes::straw_analog_to_digital(double time, const StrawElectronics& electronics){
-    auto rv = electronics.tdcResponse(time);
-    return rv;
-  }
-
-  double DisplaceDigiTimes::straw_digital_to_analog(TrkTypes::TDCValue time, const StrawElectronics& electronics){
-    auto rv = static_cast<double>(time) * electronics.tdcLSB();
     return rv;
   }
 } // namespace mu2e
