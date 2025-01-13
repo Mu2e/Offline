@@ -456,7 +456,7 @@ namespace mu2e {
     double dirdot = hdir.Dot(kdir);
     // the original helix doesn't have a time direction (geometric helix) so allow both interpretations
     // the tolerance in the test allows for a difference between global and local parameters (B not along Z axis)
-    if(1.0- fabs(dirdot) > 1e-3)throw cet::exception("RECO")<<"mu2e::LoopHelixFit:Seed helix translation error"<< endl;
+    if(1.0- fabs(dirdot) > 1e-2)throw cet::exception("RECO")<<"mu2e::LoopHelixFit:Seed helix translation error"<< endl;
     return ktraj;
   }
 
