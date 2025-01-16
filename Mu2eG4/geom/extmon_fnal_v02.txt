@@ -175,6 +175,9 @@ string         extMonFNAL.planeMaterial = "G4_C";
 bool extMonFNAL.stackMotherVisible = true;
 bool extMonFNAL.stackMotherSolid = true;
 
+double extMonFNAL.chipGapX = 0.13;
+double extMonFNAL.chipOffsetY = 0.835;
+
 //================================================================
 // Scintillator parameters
 
@@ -357,6 +360,7 @@ bool   extMonFNAL.filter.vd.enabled = true;
 bool   extMonFNAL.detector.vd.enabled = true;
 double extMonFNAL.detector.vd.halfdx = 100; // transverse size
 double extMonFNAL.detector.vd.halfdy = 100; // transverse size
+double extMonFNAL.detector.vd.Gapz = 10;
 
 // A set of 6 planar VDs that enclose ExtMonFNAL.
 // The "box" is rotated to be parallel to the ExtMon system axes.

@@ -80,9 +80,9 @@ namespace mu2e {
     CLHEP::Hep3Vector subCylOffsetInParent = emfb->detectorRoomRotationInMu2e().inverse() * (emfb->collimator2CenterInMu2e() - emfb->detectorRoomCenterInMu2e());
 
     G4Tubs* subCylinder = new G4Tubs("detectorRoomSubtractionCylinder",
-                                     0.*CLHEP::mm,
+                                     0*CLHEP::mm,
                                      emfb->collimator2().shotLinerOuterRadius(),
-                                     0.5*emfb->collimator2().length(),
+                                     emfb->collimator2().length()/2,
                                      0,
                                      CLHEP::twopi
                                      );

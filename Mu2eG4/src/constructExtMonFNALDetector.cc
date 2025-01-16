@@ -60,7 +60,6 @@ namespace mu2e {
                                      const SimpleConfig& config
                                      )
   {
-    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "extMonFNAL",            "extMonFNAL" );
     geomOptions->loadEntry( config, "extMonFNALStackMother", "extMonFNAL.stackMother" );
@@ -73,18 +72,12 @@ namespace mu2e {
 
     //--------------------------------------------------------------
 
-    CLHEP::HepRotation *stackRotationInRoomInv =
-      reg.add(stack.rotationInMu2e().inverse() * parentRotationInMu2e);
-
-    const CLHEP::HepRotation stackRotationInRoom(stackRotationInRoomInv->inverse());
-
-    const CLHEP::Hep3Vector stackRefPointInRoom(parentRotationInMu2e.inverse()*(stack.refPointInMu2e() - parent.centerInMu2e()));
-
 
     constructExtMonFNALPlanes(parent,
                               module,
                               stack,
                               volNameSuffix,
+                              entranceVD,
                               config,
                               forceAuxEdgeVisible,
                               doSurfaceCheck,
@@ -101,76 +94,6 @@ namespace mu2e {
                                     );
 
 
-    //----------------------------------------------------------------
-    // detector VD block
-
-    if(false) {
-
-      const int verbosityLevel = config.getInt("vd.verbosityLevel");
-      const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-      geomOptions->loadEntry( config, "vd", "vd");
-
-      const bool vdIsVisible = geomOptions->isVisible("vd");
-      const bool vdIsSolid   = geomOptions->isSolid("vd");
-
-
-      MaterialFinder materialFinder(config);
-      GeomHandle<DetectorSolenoid> ds;
-      G4Material* vacuumMaterial     = findMaterialOrThrow(ds->insideMaterial());
-
-      GeomHandle<VirtualDetector> vdg;
-
-      for(int vdId = entranceVD; vdId <= 1 + entranceVD; ++vdId) {
-        if( vdg->exist(vdId) ) {
-          if ( verbosityLevel > 0) {
-            std::cout<<__func__<<" constructing "<<VirtualDetector::volumeName(vdId)<<std::endl;
-          }
-
-          std::vector<double> hlen(3);
-          hlen[0] = config.getDouble("extMonFNAL.detector.vd.halfdx");
-          hlen[1] = config.getDouble("extMonFNAL.detector.vd.halfdy");
-          hlen[2] = vdg->getHalfLength();
-
-          CLHEP::Hep3Vector centerInRoom = stackRefPointInRoom
-            + stackRotationInRoom
-            * CLHEP::Hep3Vector(0,
-                                0,
-                                (vdId == entranceVD ?
-                                 (stack.plane_zoffset().back()
-                                  + 2* (module.sensorHalfSize()[2]+module.chipHalfSize()[2])
-                                  + vdg->getHalfLength() + 5
-                                  ) :
-                                 (
-                                  stack.plane_zoffset().front()
-                                  - 2*(module.sensorHalfSize()[2] + module.chipHalfSize()[2])
-                                  - vdg->getHalfLength() -5
-                                  )
-                                 )
-                                );
-
-          VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-                                      hlen,
-                                      vacuumMaterial,
-                                      stackRotationInRoomInv,
-                                      centerInRoom,
-                                      parent,
-                                      vdId,
-                                      vdIsVisible,
-                                      G4Color::Cyan(),
-                                      vdIsSolid,
-                                      forceAuxEdgeVisible,
-                                      placePV,
-                                      false
-                                      );
-
-          // vd are very thin, a more thorough check is needed
-          if (doSurfaceCheck) {
-            checkForOverlaps( vdInfo.physical, config, verbosityLevel>0);
-          }
-        }
-      } // for(vdId-1)
-    } // detector VD block
-
   }
 
   //==============================================================================
@@ -179,6 +102,7 @@ namespace mu2e {
                                  const ExtMonFNALModule& module,
                                  const ExtMonFNALPlaneStack& stack,
                                  const std::string& volNameSuffix,
+                                 VirtualDetectorId::enum_type entranceVD,
                                  const SimpleConfig& config,
                                  bool const forceAuxEdgeVisible,
                                  bool const doSurfaceCheck,
@@ -200,6 +124,8 @@ namespace mu2e {
     CLHEP::HepRotation* stackRotationInMother = reg.add(stackRotationInMotherInv->inverse());
 
     CLHEP::Hep3Vector stackRefPointInMother (extmon->detectorMotherRotationInMu2e().inverse()*(stack.refPointInMu2e() - mother.centerInMu2e()));
+    bool stackRotation = config.getBool("extMonFNAL.stackRotation");
+    CLHEP::HepRotation* planeRot = stackRotation ? stackRotationInMother : reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 
     for(unsigned iplane = 0; iplane < stack.nplanes(); ++iplane) {
       std::vector<double> hs;
@@ -212,10 +138,6 @@ namespace mu2e {
       CLHEP::Hep3Vector offset (stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], stack.plane_zoffset()[iplane]);
       CLHEP::Hep3Vector stackOffset = stackRefPointInMother + *stackRotationInMother * offset;
 
-      bool stackRotation = config.getBool("extMonFNAL.stackRotation");
-      CLHEP::HepRotation* planeRot = stackRotation ? stackRotationInMother : reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
-
-      // nest individual planes
       VolumeInfo vplane = nestBox(osp.str(),
                                   plane.halfSize(),
                                   findMaterialOrThrow("G4_C"),
@@ -247,17 +169,17 @@ namespace mu2e {
 
       CLHEP::HepRotation *pcoolingTubeRot = reg.add(new CLHEP::HepRotation());
       CLHEP::HepRotation& coolingTubesRot = *pcoolingTubeRot;
-      pcoolingTubeRot->rotateZ( 90.*CLHEP::degree );
-      pcoolingTubeRot->rotateY( 90.*CLHEP::degree );
+      pcoolingTubeRot->rotateZ(M_PI/2);
+      pcoolingTubeRot->rotateY(M_PI/2);
 
       CLHEP::HepRotation pcoolingTubeRotInv = pcoolingTubeRot->inverse();
-      pcoolingTubeRotInv.rotateZ( 90.*CLHEP::degree );
+      pcoolingTubeRotInv.rotateZ(M_PI/2);
 
       CLHEP::HepRotation pcoolingTubePieceRot = pcoolingTubeRotInv;
-      pcoolingTubePieceRot.rotateZ( 90.*CLHEP::degree );
-      pcoolingTubePieceRot.rotateY( 90.*CLHEP::degree );
+      pcoolingTubePieceRot.rotateZ(M_PI/2);
+      pcoolingTubePieceRot.rotateY(M_PI/2);
 
-      CLHEP::Hep3Vector tubeCenterPieceOffset = stackOffset + CLHEP::Hep3Vector( 0.5 * coolingTubeLen, 0, - coolingTubePlaneOffset);
+      CLHEP::Hep3Vector tubeCenterPieceOffset = stackOffset + CLHEP::Hep3Vector( coolingTubeLen/2, 0, - coolingTubePlaneOffset);
       CLHEP::Hep3Vector torusPiece1Offset = CLHEP::Hep3Vector( 0, - coolingTubeTsSweptRad, coolingTubeTopLen);
       CLHEP::Hep3Vector torusPiece2Offset = CLHEP::Hep3Vector( 0, - coolingTubeTsSweptRad, -  coolingTubeTopLen);
 
@@ -271,7 +193,7 @@ namespace mu2e {
                                              coolingTubeOutRad,
                                              coolingTubeLen,
                                              0,
-                                             2. * M_PI
+                                             M_PI*2
                                             );
 
       G4Tubs* coolingTubePiece2 = new G4Tubs(osp.str() + "coolingTubePiece2",
@@ -279,7 +201,7 @@ namespace mu2e {
                                              coolingTubeOutRad,
                                              coolingTubeLen,
                                              0,
-                                             2. * M_PI
+                                             M_PI*2
                                             );
 
       G4Tubs* coolingTubeCenterPiece = new G4Tubs(osp.str() + "coolingTubeCenterPiece",
@@ -287,15 +209,15 @@ namespace mu2e {
                                              coolingTubeOutRad,
                                              coolingTubeTopLen,
                                              0,
-                                             2. * M_PI
+                                             M_PI*2
                                             );
 
       G4Torus* coolingTubTorus1 = new G4Torus(osp.str() + "torus1",
                                               coolingTubeInRad,
                                               coolingTubeOutRad,
                                               coolingTubeTsSweptRad,
-                                              90*CLHEP::degree,
-                                              90*CLHEP::degree
+                                              M_PI/2,
+                                              M_PI/2
                                               );
 
       G4Torus* coolingTubeTorus2 = new G4Torus(osp.str() + "torus2",
@@ -303,7 +225,7 @@ namespace mu2e {
                                               coolingTubeOutRad,
                                               coolingTubeTsSweptRad,
                                               0,
-                                              90*CLHEP::degree
+                                              M_PI/2
                                               );
 
       G4UnionSolid* union1 = new G4UnionSolid("coolingTubePiece1+coolingTubTorus1",
@@ -362,6 +284,85 @@ namespace mu2e {
                                  placePV);
 
     }
+
+
+
+    //------
+    // detector VD block
+
+    bool ExtDetectorVD = config.getBool("extMonFNAL.detector.vd.enabled");
+
+    if(ExtDetectorVD) {
+
+      const int verbosityLevel = config.getInt("vd.verbosityLevel");
+      const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+      geomOptions->loadEntry( config, "vd", "vd");
+
+      const bool vdIsVisible = geomOptions->isVisible("vd");
+      const bool vdIsSolid   = geomOptions->isSolid("vd");
+
+
+      MaterialFinder materialFinder(config);
+      GeomHandle<DetectorSolenoid> ds;
+      G4Material* vacuumMaterial     = findMaterialOrThrow(ds->insideMaterial());
+
+      GeomHandle<VirtualDetector> vdg;
+
+      for(int vdId = entranceVD; vdId <= 1 + entranceVD; ++vdId) {
+        if( vdg->exist(vdId) ) {
+          if ( verbosityLevel > 0) {
+            std::cout<<__func__<<" constructing "<<VirtualDetector::volumeName(vdId)<<std::endl;
+          }
+
+          std::vector<double> hlen(3);
+          hlen[0] = config.getDouble("extMonFNAL.detector.vd.halfdx");
+          hlen[1] = config.getDouble("extMonFNAL.detector.vd.halfdy");
+          hlen[2] = vdg->getHalfLength();
+
+
+      // nest individual planes
+
+          const double PlaneToVDGap = config.getDouble("extMonFNAL.detector.vd.Gapz");
+
+          CLHEP::Hep3Vector centerInRoom = stackRefPointInMother + *planeRot
+            * CLHEP::Hep3Vector(0,
+                                0,
+                                (vdId == entranceVD ?
+                                 (stack.plane_zoffset().back()
+                                  + 2*(module.sensorHalfSize()[2] + module.chipHalfSize()[2])
+                                  + vdg->getHalfLength() + PlaneToVDGap
+                                  ) :
+                                 (stack.plane_zoffset().front()
+                                  - 2*(module.sensorHalfSize()[2] + module.chipHalfSize()[2])
+                                  - vdg->getHalfLength() - PlaneToVDGap
+                                  )
+                                 )
+                                );
+
+
+          VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+                                      hlen,
+                                      vacuumMaterial,
+                                      planeRot,
+                                      centerInRoom,
+                                      mother,
+                                      vdId,
+                                      vdIsVisible,
+                                      G4Color::Cyan(),
+                                      vdIsSolid,
+                                      forceAuxEdgeVisible,
+                                      placePV,
+                                      doSurfaceCheck
+                                      );
+
+          // vd are very thin, a more thorough check is needed
+          if (doSurfaceCheck) {
+            checkForOverlaps( vdInfo.physical, config, verbosityLevel>0);
+          }
+        }
+      } // for(vdId-1)
+    } // detector VD block
+
   }
 
   //================================================================
@@ -409,7 +410,7 @@ namespace mu2e {
       mRotInPlane->rotateZ(stack.planes()[iplane].module_rotation()[imodule]*CLHEP::degree);
 
       if( stack.planes()[iplane].module_zoffset()[imodule] < 0.0 ) {
-        mRotInPlane->rotateY(180*CLHEP::degree);
+        mRotInPlane->rotateY(M_PI);
       }
 
       CLHEP::HepRotation* mRot = stackRotation ? reg.add(*mRotInPlane * *stackRotationInMother) : mRotInPlane;
@@ -432,9 +433,14 @@ namespace mu2e {
                                    doSurfaceCheck
                                    );
 
+
+      double ExtchipGapX = config.getDouble("extMonFNAL.chipGapX");
+      double ExtchipOffsetY = config.getDouble("extMonFNAL.chipOffsetY");
+
+
       CLHEP::Hep3Vector coffset0 = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
-                                    stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + .065, // +/- .065 to achieve the designed .13mm gap
-                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835),
+                                    stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + ExtchipGapX/2,
+                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*ExtchipOffsetY),
                                     stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
                                   );
 
@@ -458,8 +464,8 @@ namespace mu2e {
                                   );
 
       CLHEP::Hep3Vector coffset1 = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
-                                    stack.planes()[iplane].module_xoffset()[imodule] - module.chipHalfSize()[0] - .065,
-                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835),
+                                    stack.planes()[iplane].module_xoffset()[imodule] - module.chipHalfSize()[0] - ExtchipGapX/2,
+                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*ExtchipOffsetY),
                                     stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
                                   );
 
@@ -512,7 +518,7 @@ namespace mu2e {
 
     std::vector<double> hs;
     config.getVectorDouble("extMonFNAL."+volNameSuffix+".scintFullSize", hs);
-    for(auto &a:hs) { a/=2.; }
+    for(auto &a:hs) { a/=2; }
     double scintPlaneOffset = config.getDouble("extMonFNAL.scintPlaneOffset");
     double scintInnerOffset = config.getDouble("extMonFNAL.scintInnerOffset");
     double scintGap = config.getDouble("extMonFNAL.scintGap");

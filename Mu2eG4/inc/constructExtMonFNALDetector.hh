@@ -7,6 +7,7 @@
 
 #include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Geant4/G4ThreeVector.hh"
 
 namespace CLHEP { class HepRotation; }
@@ -32,6 +33,7 @@ namespace mu2e {
                                  const ExtMonFNALModule& module,
                                  const ExtMonFNALPlaneStack& stack,
                                  const std::string& volNameSuffix,
+                                 VirtualDetectorId::enum_type entranceVD,
                                  const SimpleConfig& config,
                                  bool const forceAuxEdgeVisible,
                                  bool const doSurfaceCheck,
