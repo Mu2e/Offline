@@ -87,12 +87,12 @@ CommonMC.TTSelectRecoMC : {
     ComboHitCollection : "TTflagPH"
     CaloDigiCollection : "CaloDigiMaker"
     CaloClusterCollection : "CaloClusterFast"
-#    StrawDigiMCCollection : "compressDetStepMCs"
     StrawDigiMCCollection : "makeSD"
     CrvDigiCollection : ""
     CrvDigiMCCollection : ""
     CrvCoincidenceClusterCollections : [  ]
     VDSPCollection : "compressDigiMCs:virtualdetector"
+    HelixSeedCollections  : [ ]
 }
 
 #------------------------------------------------------------------------------
