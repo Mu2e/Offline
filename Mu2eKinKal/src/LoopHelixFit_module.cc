@@ -156,9 +156,11 @@ namespace mu2e {
     fhicl::OptionalTable<KKFinalConfig> finalSettings { Name("FinalSettings") };
     fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") };
     // LoopHelix module specific config
-    fhicl::Atom<bool> useHelixSlope{ Name("UseHelixSlope"), Comment("Use the helix slope to decide the particle fit direction (upstream or downstream)"), false };
-    fhicl::Atom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Helix slope significance threshold to assume the direction"), [this](){ return useHelixSlope(); }};
-    fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream"), [this](){ return !useHelixSlope(); }};
+    // fhicl::Atom<bool> useHelixSlope{ Name("UseHelixSlope"), Comment("Use the helix slope to decide the particle fit direction (upstream or downstream)"), false };
+    // fhicl::Atom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Helix slope significance threshold to assume the direction"), [this](){ return useHelixSlope(); }};
+    fhicl::OptionalAtom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Helix slope significance threshold to assume the direction")};
+    fhicl::OptionalAtom<double> slopeSigCut{ Name("SlopeSigCut"), Comment("Helix slope significance cut when assuming a fit direction")};
+    fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream"), [this](){ return !slopeSigThreshold(); }};
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
   };
 
@@ -193,8 +195,10 @@ namespace mu2e {
       ProditionsHandle<Tracker> alignedTracker_h_;
       int print_;
       PDGCode::type fpart_;
-      bool useHelixSlope_; //use the helix slope estimate to decide the fit direction
       double slopeSigThreshold_; //helix slope significance threshold to assume the direction
+      bool useHelixSlope_; //use the helix slope estimate to decide the fit direction
+      double slopeSigCut_; //helix slope significance to cut on when assuming a fit direction
+      bool useSlopeSigCut_; //apply a helix slope significance cut
       TrkFitDirection fdir_;
       bool usePDGCharge_; // use the pdg particle charge: otherwise use the helicity and direction to determine the charge
       KKFIT kkfit_; // fit helper
@@ -234,8 +238,10 @@ namespace mu2e {
     saveall_(settings().modSettings().saveAll()),
     print_(settings().modSettings().printLevel()),
     fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
-    useHelixSlope_(settings().useHelixSlope()),
-    slopeSigThreshold_((useHelixSlope_) ? settings().slopeSigThreshold() : 0.),
+    // useHelixSlope_(settings().useHelixSlope()),
+    // slopeSigThreshold_((useHelixSlope_) ? settings().slopeSigThreshold() : 0.),
+    useHelixSlope_(settings().slopeSigThreshold(slopeSigThreshold_)),
+    useSlopeSigCut_(settings().slopeSigCut(slopeSigCut_)),
     fdir_(static_cast<TrkFitDirection::FitDirection>((useHelixSlope_) ? 0 : settings().fitDirection())),
     usePDGCharge_(settings().pdgCharge()),
     kkfit_(settings().kkfitSettings()),
@@ -265,6 +271,8 @@ namespace mu2e {
         fixedfield_ = true;
         kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
       }
+      if(useSlopeSigCut_ && useHelixSlope_) //can only cut on significance if using a fixed fit direction hypothesis
+        throw cet::exception("RECO")<<"mu2e::LoopHelixFit: Configuration error. Using helix slope for fit direction and cutting on the slope!"<< endl;
       // setup optional fit finalization; this just updates the internals, not the fit result itself
       if(settings().finalSettings()){
         if(exconfig_.schedule_.size() > 0)
@@ -368,6 +376,16 @@ namespace mu2e {
           auto const& helix = hseed.helix();
           if(helix.radius() == 0.0 || helix.lambda() == 0.0 )
             throw cet::exception("RECO")<<"mu2e::HelixFit: degenerate seed parameters" << endl;
+          // test the helix slope significance if requested
+          if(useSlopeSigCut_) {
+            const float slope    = hseed.recoDir().slope();
+            const float slopeErr = std::fabs(hseed.recoDir().slopeErr());
+            const float slopeSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f;
+            if(slopeSig*fdir_.dzdt() < slopeSigCut_) { //slope is below the given threshold relative to the given direction
+              if(print_ > 0) std::cout << "[LoopHelixFit::" << __func__ << "] Skipping helix seed with slope significance " << slopeSig << std::endl;
+              continue;
+            }
+          }
           auto zcent = Mu2eKinKal::zMid(hseed.hits());
           // take the magnetic field at the helix center as nominal. Restrict this to the DS volume
           VEC3 center(helix.centerx(), helix.centery(),zcent);
@@ -381,7 +399,7 @@ namespace mu2e {
           const int helix_dir = (useHelixSlope_) ? hseed.recoDir().predictDirection(slopeSigThreshold_) : int(fdir_.dzdt());
           const bool undefined_dir = helix_dir == HelixRecoDir::PropDir::ambiguous; //check if no direction is significantly preferred
           if(undefined_dir) ++nAmbiguous_;
-          double chi2_vals[] = {-1., -1.};
+          double pchi2_vals[] = {-1., -1.};
           std::vector<std::unique_ptr<KKTRK>> ktrks;
           const int nloops = (undefined_dir) ? 2 : 1;
           for(int iloop = 0; iloop < nloops; ++iloop) {  //if an undefined direction, check both directions, pick the best fit result
@@ -417,23 +435,23 @@ namespace mu2e {
               // create and fit the track
               if(print_>0 && undefined_dir) std::cout << "[LoopHelixFit::" << __func__ << "] Creating track fit direction hypothesis " << iloop << std::endl;
               ktrks.push_back(make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits));
-              if(goodFit(*ktrks[iloop])) chi2_vals[iloop] = ktrks[iloop]->fitStatus().chisq_.chisqPerNDOF();
+              if(goodFit(*ktrks[iloop])) pchi2_vals[iloop] = ktrks[iloop]->fitStatus().chisq_.probability();
               if(print_>0 && undefined_dir) std::cout << "[LoopHelixFit::" << __func__ << "] --> Status = " << ktrks[iloop]->fitStatus().status_
-                                                       << " chi^2/N(DOF) = " << ktrks[iloop]->fitStatus().chisq_.chisqPerNDOF()
+                                                       << " p(chi^2,N(DOF)) = " << ktrks[iloop]->fitStatus().chisq_.probability()
                                                        << " goodFit = " << goodFit(*ktrks[iloop]) << "\n";
             } else {
               ktrks.push_back(nullptr);
             }
           }
           //determine the best fit if needed
-          const int index = (undefined_dir) ? (chi2_vals[1] < 0. || chi2_vals[0] <= chi2_vals[1]) ? 0 : 1 : 0;
-          if(chi2_vals[index] >= 0.) { // if < 0, failed earlier tests
+          const int index = (undefined_dir) ? (pchi2_vals[1] < 0. || pchi2_vals[0] >= pchi2_vals[1]) ? 0 : 1 : 0;
+          if(pchi2_vals[index] >= 0.) { // if < 0, failed earlier tests
 
             if(print_ > 0 && undefined_dir) {
-              printf("[LoopHelixFit::%s]: Fit both direction options, slope = %9.2e, sig = %.2f, status down = %i, status up = %i, chi^2 down = %.3f, chi^2 up = %.3f, chose %s\n",
+              printf("[LoopHelixFit::%s]: Fit both direction options, slope = %9.2e, sig = %.2f, status down = %i, status up = %i, p(chi^2) down = %.3f, p(chi^2) up = %.3f, chose %s\n",
                      __func__, hseed.recoDir().slope(), hseed.recoDir().slopeSig(),
                      ktrks[0] && goodFit(*ktrks[0]), ktrks[1] && goodFit(*ktrks[1]),
-                     chi2_vals[0], chi2_vals[1], (index == 0) ? "downstream" : "upstream");
+                     pchi2_vals[0], pchi2_vals[1], (index == 0) ? "downstream" : "upstream");
             }
 
             if(!ktrks[index]) //ensure that the track was properly created
