@@ -82,12 +82,12 @@ CommonMC.TTSelectRecoMC : {
     SaveEnergySteps : false
     SaveUnusedDigiMCs : false
     SaveAllUnusedDigiMCs : false
-    PrimaryParticle : "FindMCPrimary"
+    PrimaryParticle : "compressDigiMCs"
     StrawDigiCollection : "makeSD"
     ComboHitCollection : "TTflagPH"
     CaloDigiCollection : "CaloDigiMaker"
     CaloClusterCollection : "CaloClusterFast"
-    StrawDigiMCCollection : "makeSD"
+    StrawDigiMCCollection : "compressDigiMCs"
     CrvDigiCollection : ""
     CrvDigiMCCollection : ""
     CrvCoincidenceClusterCollections : [  ]
