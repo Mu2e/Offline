@@ -136,16 +136,25 @@ namespace mu2e
       features[6] = (double)nmatactive / nactive;
 
       // Now get the features that are for the entrance of the trackre
+      bool entrance_found = false;
       for(size_t ikinter = 0; ikinter < kalSeed.intersections().size(); ++ikinter){
         auto const& kinter = kalSeed.intersections()[ikinter];
         if (kinter.surfaceId() == SurfaceIdDetail::TT_Front) { // we only want the tracker entrance (sid=0)
           features[2] = sqrt(kinter.loopHelix().paramVar(KinKal::LoopHelix::t0_));
           features[5] = kinter.momerr();
+          entrance_found = true;
           break;
         }
       }
+      if (!entrance_found) {
+        features[2] = -9999;
+        features[5] = -9999;
+      }
 
       auto mvaout = mva_->infer(features.data());
+      if (!entrance_found) {
+        mvaout[0] = 0; // this is not a good track
+      }
 
       if(_debug > 0) {
         printf("[TrackQuality::%s::%s] Inputs = %.0f, %.4f, %.4f, %.4f, %.4f, %.4f %.4f --> output = %.4f\n",
