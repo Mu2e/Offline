@@ -49,6 +49,7 @@ namespace mu2e
         fhicl::Atom<art::InputTag> kalSeedPtrTag{Name("KalSeedPtrCollection"), Comment("Input tag for KalSeedPtrCollection")};
         fhicl::Atom<bool> printMVA{Name("PrintMVA"), Comment("Print the MVA used"), false};
         fhicl::Atom<std::string> datFilename{Name("datFilename"), Comment("Filename for the .dat file to use")};
+        fhicl::Atom<int> debug{Name("debugLevel"), Comment("Debug printout level"), 0};
       };
 
       using Parameters = art::EDProducer::Table<Config>;
@@ -60,6 +61,7 @@ namespace mu2e
 
       art::InputTag _kalSeedPtrTag;
       bool _printMVA;
+      int _debug;
 
     std::shared_ptr<TMVA_SOFIE_TrkQual_ANN1::Session> mva_;
 
@@ -68,7 +70,8 @@ namespace mu2e
   TrackQuality::TrackQuality(const Parameters& conf) :
     art::EDProducer{conf},
     _kalSeedPtrTag(conf().kalSeedPtrTag()),
-    _printMVA(conf().printMVA())
+    _printMVA(conf().printMVA()),
+    _debug(conf().debug())
     {
       produces<MVAResultCollection>();
 
@@ -93,6 +96,7 @@ namespace mu2e
       // fill the hit count variables
       int nhits = 0; int nactive = 0; int ndouble = 0; int ndactive = 0; int nnullambig = 0;
       static StrawHitFlag active(StrawHitFlag::active);
+        if(_debug > 1) printf("[TrackQuality::%s::%s] Printing track hit information\n", __func__, moduleDescription().moduleLabel().c_str());
       for (auto ihit = kalSeed.hits().begin(); ihit != kalSeed.hits().end(); ++ihit) {
         ++nhits;
         if (ihit->flag().hasAllProperties(active)) {
@@ -101,6 +105,8 @@ namespace mu2e
             ++nnullambig;
           }
         }
+        if(_debug > 1) printf(" Hit %2i: active = %o, null = %o\n",
+                              nhits, ihit->flag().hasAllProperties(active), ihit->flag().hasAllProperties(active) && ihit->ambig()==0);
         auto jhit = ihit; jhit++;
         if(jhit != kalSeed.hits().end() && ihit->strawId().uniquePanel() ==
            jhit->strawId().uniquePanel()){
@@ -140,6 +146,12 @@ namespace mu2e
       }
 
       auto mvaout = mva_->infer(features.data());
+
+      if(_debug > 0) {
+        printf("[TrackQuality::%s::%s] Inputs = %.0f, %.4f, %.4f, %.4f, %.4f, %.4f %.4f --> output = %.4f\n",
+               __func__, moduleDescription().moduleLabel().c_str(),
+               features[0], features[1], features[2], features[3], features[4], features[5], features[6], mvaout[0]);
+      }
 
       mvacol->push_back(MVAResult(mvaout[0]));
     }
