@@ -156,8 +156,6 @@ namespace mu2e {
     fhicl::OptionalTable<KKFinalConfig> finalSettings { Name("FinalSettings") };
     fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") };
     // LoopHelix module specific config
-    // fhicl::Atom<bool> useHelixSlope{ Name("UseHelixSlope"), Comment("Use the helix slope to decide the particle fit direction (upstream or downstream)"), false };
-    // fhicl::Atom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Helix slope significance threshold to assume the direction"), [this](){ return useHelixSlope(); }};
     fhicl::OptionalAtom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Helix slope significance threshold to assume the direction")};
     fhicl::OptionalAtom<double> slopeSigCut{ Name("SlopeSigCut"), Comment("Helix slope significance cut when assuming a fit direction")};
     fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream"), [this](){ return !slopeSigThreshold(); }};
@@ -186,14 +184,6 @@ namespace mu2e {
       void toOPA(KKTRK& ktrk, double tstart, TimeDir tdir) const;
       void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const;
 
-      // FIXME: Remove debug function
-      unsigned activeHits(KKTRK& ktrk) const {
-        unsigned nactive(0);
-        for(auto const& hit : ktrk.strawHits()) {
-          if(hit->hit().flag().hasAllProperties(StrawHitFlag::active)) ++nactive;
-        }
-        return nactive;
-      }
       // data payload
       std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
       art::ProductToken<ComboHitCollection> chcol_T_;
@@ -347,10 +337,10 @@ namespace mu2e {
     if(print_ > 0) kkbf_->print(std::cout);
 
     // Print the fit direction configuration
-    printf("[LoopHelixFit::%s::%s] Fit dz/dt direction = %.0f, PDG = %i, use helix slope = %o with threshold %.1f, use helix slope cut = %o with theshold %.1f\n",
-           __func__, moduleDescription().moduleLabel().c_str(), fdir_.dzdt(), (int) fpart_,
-           useHelixSlope_, (useHelixSlope_) ? slopeSigThreshold_ : -1.f,
-           useSlopeSigCut_, (useSlopeSigCut_) ? slopeSigCut_ : -999.f);
+    if(print_ > -1) printf("[LoopHelixFit::%s::%s] Fit dz/dt direction = %.0f, PDG = %i, use helix slope = %o with threshold %.1f, use helix slope cut = %o with theshold %.1f\n",
+                           __func__, moduleDescription().moduleLabel().c_str(), fdir_.dzdt(), (int) fpart_,
+                           useHelixSlope_, (useHelixSlope_) ? slopeSigThreshold_ : -1.f,
+                           useSlopeSigCut_, (useSlopeSigCut_) ? slopeSigCut_ : -999.f);
   }
 
   void LoopHelixFit::produce(art::Event& event ) {
@@ -831,8 +821,8 @@ namespace mu2e {
   }
 
   void LoopHelixFit::endJob() {
-    if(/*useHelixSlope_ &&*/ print_ > -1) printf("[LoopHelixFit::%s] Saw %i helix seeds, %i had ambiguous dz/dt slopes, accepted %i downstream and %i upstream fits\n",
-                                             __func__, nSeen_, nAmbiguous_, nDownstream_, nUpstream_);
+    if(print_ > -1) printf("[LoopHelixFit::%s] Saw %i helix seeds, %i had ambiguous dz/dt slopes, accepted %i downstream and %i upstream fits\n",
+                           __func__, nSeen_, nAmbiguous_, nDownstream_, nUpstream_);
   }
 }
 
