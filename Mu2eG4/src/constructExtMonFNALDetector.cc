@@ -401,7 +401,7 @@ namespace mu2e {
       bool stackRotation = config.getBool("extMonFNAL.stackRotation");
       CLHEP::HepRotation* mRotInPlane = reg.add(new G4RotationMatrix);
 
-      mRotInPlane->rotateZ(stack.planes()[iplane].module_rotation()[imodule]*CLHEP::degree);
+      mRotInPlane->rotateZ(stack.planes()[iplane].module_rotation()[imodule]);
 
       if( stack.planes()[iplane].module_zoffset()[imodule] < 0.0 ) {
         mRotInPlane->rotateY(M_PI);
