@@ -397,12 +397,6 @@ namespace mu2e {
       reg.add(stack.rotationInMu2e().inverse() * extmon->detectorMotherRotationInMu2e());
       CLHEP::HepRotation* stackRotationInMother = reg.add(stackRotationInMotherInv->inverse());
 
-      CLHEP::Hep3Vector soffset = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
-                                  stack.planes()[iplane].module_xoffset()[imodule],
-                                  stack.planes()[iplane].module_yoffset()[imodule],
-                                  stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2]*2 + stack.planes()[iplane].halfSize()[2]+ module.sensorHalfSize()[2])
-                                );
-      soffset += offset;
 
       bool stackRotation = config.getBool("extMonFNAL.stackRotation");
       CLHEP::HepRotation* mRotInPlane = reg.add(new G4RotationMatrix);
@@ -413,7 +407,33 @@ namespace mu2e {
         mRotInPlane->rotateY(M_PI);
       }
 
-      CLHEP::HepRotation* mRot = stackRotation ? reg.add(*mRotInPlane * *stackRotationInMother) : mRotInPlane;
+      CLHEP::Hep3Vector soffset;
+      CLHEP::HepRotation* mRot;
+
+      if(stackRotation)
+     {
+        soffset = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
+                                  stack.planes()[iplane].module_xoffset()[imodule],
+                                  stack.planes()[iplane].module_yoffset()[imodule],
+                                  stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2]*2 + stack.planes()[iplane].halfSize()[2]+ module.sensorHalfSize()[2])
+                                );
+        soffset += offset;
+
+        mRot = reg.add(*mRotInPlane * *stackRotationInMother);
+     }
+
+      else
+     {
+        soffset = CLHEP::Hep3Vector(
+                                  stack.planes()[iplane].module_xoffset()[imodule],
+                                  stack.planes()[iplane].module_yoffset()[imodule],
+                                  stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2]*2 + stack.planes()[iplane].halfSize()[2]+ module.sensorHalfSize()[2])
+                                );
+        soffset += offset;
+        mRot = mRotInPlane;
+
+     }
+
 
       ExtMonFNALModuleIdConverter con(*extmon);
       int copyno = con.getModuleDenseId(iplane + stack.planeNumberOffset(),imodule).number();
@@ -437,16 +457,51 @@ namespace mu2e {
       double ExtchipGapX = config.getDouble("extMonFNAL.chipGapX");
       double ExtchipOffsetY = config.getDouble("extMonFNAL.chipOffsetY");
 
+      CLHEP::Hep3Vector coffset0;
+      CLHEP::Hep3Vector coffset1;
+      CLHEP::HepRotation* pRot;
 
-      CLHEP::Hep3Vector coffset0 = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
+
+      if(stackRotation)
+     {
+
+      coffset0 = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
                                     stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + ExtchipGapX/2,
                                     stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*ExtchipOffsetY),
                                     stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
                                   );
-
       coffset0 += offset;
 
-      CLHEP::HepRotation* pRot = stackRotation ? reg.add(*stackRotationInMother) : reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
+      coffset1 = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
+                                    stack.planes()[iplane].module_xoffset()[imodule] - module.chipHalfSize()[0] - ExtchipGapX/2,
+                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*ExtchipOffsetY),
+                                    stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
+                                  );
+
+      coffset1 += offset;
+
+      pRot = reg.add(*stackRotationInMother);
+     }
+
+      else
+     {
+      coffset0 = CLHEP::Hep3Vector(
+                                    stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + ExtchipGapX/2,
+                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*ExtchipOffsetY),
+                                    stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
+                                  );
+      coffset0 += offset;
+
+      coffset1 = CLHEP::Hep3Vector(
+                                    stack.planes()[iplane].module_xoffset()[imodule] - module.chipHalfSize()[0] - ExtchipGapX/2,
+                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*ExtchipOffsetY),
+                                    stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
+                                  );
+      coffset1 += offset;
+
+      pRot =  reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
+     }
+
 
       VolumeInfo vchip0 = nestBox(osm.str() + "chip0",
                                   module.chipHalfSize(),
@@ -463,13 +518,6 @@ namespace mu2e {
                                   doSurfaceCheck
                                   );
 
-      CLHEP::Hep3Vector coffset1 = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
-                                    stack.planes()[iplane].module_xoffset()[imodule] - module.chipHalfSize()[0] - ExtchipGapX/2,
-                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*ExtchipOffsetY),
-                                    stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
-                                  );
-
-      coffset1 += offset;
 
       VolumeInfo vchip1 = nestBox(osm.str() + "chip1",
                                   module.chipHalfSize(),
