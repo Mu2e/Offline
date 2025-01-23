@@ -20,6 +20,8 @@ namespace mu2e {
 
     std::vector<double> sensorHalfSize() const { return sensorHalfSize_; }
     std::vector<double> chipHalfSize() const { return chipHalfSize_; }
+    double chipGapX() const { return chipGapX_; }
+    double chipOffsetY() const { return chipOffsetY_; }
 
     // Returns default-constructed ExtMonFNALPixelId for out of range (x,y) inputs.
     ExtMonFNALPixelId findPixel(ExtMonFNALModuleId mid, double xModule, double yModule) const;
@@ -31,8 +33,8 @@ namespace mu2e {
     unsigned int nxChips() const;
     unsigned int nyChips() const;
 
-    ExtMonFNALModule(const ExtMonFNALPixelChip& chip, const std::vector<double>& hs)
-      : chip_(chip), sensorHalfSize_(hs)
+    ExtMonFNALModule(const ExtMonFNALPixelChip& chip, const std::vector<double>& hs, const double& gapX, const double& offsetY)
+      : chip_(chip), sensorHalfSize_(hs), chipGapX_(gapX), chipOffsetY_(offsetY)
     {}
     // Required by genreflex persistency
     ExtMonFNALModule() {}
@@ -42,6 +44,9 @@ namespace mu2e {
     ExtMonFNALPixelChip chip_;
     std::vector<double> chipHalfSize_;
     std::vector<double> sensorHalfSize_;
+    double chipGapX_;
+    double chipOffsetY_;
+
 
     template<class T> friend class art::Wrapper;
 
