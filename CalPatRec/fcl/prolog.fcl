@@ -612,7 +612,7 @@ CalPatRec : { @table::CalPatRec
             runDisplay                 : 0
             useCCs                     : 1
             recoverCCs                 : 1
-            chCollLabel                : "DeltaFinder"
+            chCollLabel                : "flagPH"
             chCollLabel2               : "makeSH"
             tcCollLabel                : "TimeClusterFinderDe"
             ccCollLabel                : "CaloClusterMaker"
@@ -642,7 +642,7 @@ CalPatRec : { @table::CalPatRec
         AgnosticHelixFinder : {
             module_type : AgnosticHelixFinder
             diagLevel               : 0
-            chCollLabel             : "DeltaFinder"
+            chCollLabel             : "flagPH"
             tcCollLabel             : "TZClusterFinder"
             ccCollLabel             : "CaloClusterMaker"
             findMultipleHelices     : true # whether or not to allow more than 1 helix per tc
@@ -727,7 +727,7 @@ CalPatRec : { @table::CalPatRec
             module_type         : TZClusterFilter
             diagLevel           : 0
             runDisplay          : 0
-            chCollLabel         : "DeltaFinder"     # same as TZClusterFinder
+            chCollLabel         : "flagPH"     # same as TZClusterFinder
             tcCollLabel         : "TZClusterFinder"
             minSHsInCluster     : 15
             minCHsInCluster     : 10

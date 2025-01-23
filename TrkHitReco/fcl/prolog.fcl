@@ -76,7 +76,7 @@ TrkHitReco : { @table::TrkHitReco
       ComboHitCollection    : makeSH
       EventWindowMarker     : EWMProducer
       StrawHitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
-      StrawHitMask          : ["Dead","Noisy"]
+      StrawHitMask          : ["Dead"]
       MaxDt                 : 45 # ns
       UseTOT                : true
       MaxWireDistDiffPull   : 5.0
@@ -160,7 +160,7 @@ TrkHitReco : { @table::TrkHitReco
 
    # SEQUENCES
    # production sequence to prepare hits for tracking
-   PrepareHits  : [ PBTFSD, makeSH, makePH, DeltaFinder ]
+   PrepareHits  : [ PBTFSD, makeSH, makePH, flagPH ]
 }
 
 END_PROLOG

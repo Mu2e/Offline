@@ -539,11 +539,11 @@ namespace mu2e {
     static const SurfaceId tt_mid("TT_Mid");
     static const SurfaceId tt_back("TT_Back");
 
-    auto frontinter = KinKal::intersect(ftraj,*trkfrontptr_,frange,tol);
+    auto frontinter = KinKal::intersect(ftraj,*trkfrontptr_,frange,tol,fronttdir);
     if(frontinter.onsurface_)ktrk.addIntersection(tt_front,frontinter);
     auto midinter = KinKal::intersect(ftraj,*trkmidptr_,frange,tol);
     if(midinter.onsurface_)ktrk.addIntersection(tt_mid,midinter);
-    auto backinter = KinKal::intersect(ftraj,*trkbackptr_,frange,tol);
+    auto backinter = KinKal::intersect(ftraj,*trkbackptr_,frange,tol,backtdir);
     if(backinter.onsurface_)ktrk.addIntersection(tt_back,backinter);
   }
 
