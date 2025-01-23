@@ -454,8 +454,6 @@ namespace mu2e {
                                    );
 
 
-      double ExtchipGapX = config.getDouble("extMonFNAL.chipGapX");
-      double ExtchipOffsetY = config.getDouble("extMonFNAL.chipOffsetY");
 
       CLHEP::Hep3Vector coffset0;
       CLHEP::Hep3Vector coffset1;
@@ -466,15 +464,15 @@ namespace mu2e {
      {
 
       coffset0 = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
-                                    stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + ExtchipGapX/2,
-                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*ExtchipOffsetY),
+                                    stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + module.chipGapX()/2,
+                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*module.chipOffsetY()),
                                     stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
                                   );
       coffset0 += offset;
 
       coffset1 = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
-                                    stack.planes()[iplane].module_xoffset()[imodule] - module.chipHalfSize()[0] - ExtchipGapX/2,
-                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*ExtchipOffsetY),
+                                    stack.planes()[iplane].module_xoffset()[imodule] - module.chipHalfSize()[0] - module.chipGapX()/2,
+                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*module.chipOffsetY()),
                                     stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
                                   );
 
@@ -486,15 +484,15 @@ namespace mu2e {
       else
      {
       coffset0 = CLHEP::Hep3Vector(
-                                    stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + ExtchipGapX/2,
-                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*ExtchipOffsetY),
+                                    stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + module.chipGapX()/2,
+                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*module.chipOffsetY()),
                                     stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
                                   );
       coffset0 += offset;
 
       coffset1 = CLHEP::Hep3Vector(
-                                    stack.planes()[iplane].module_xoffset()[imodule] - module.chipHalfSize()[0] - ExtchipGapX/2,
-                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*ExtchipOffsetY),
+                                    stack.planes()[iplane].module_xoffset()[imodule] - module.chipHalfSize()[0] - module.chipGapX()/2,
+                                    stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*module.chipOffsetY()),
                                     stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
                                   );
       coffset1 += offset;

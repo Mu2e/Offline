@@ -43,6 +43,9 @@ namespace mu2e {
 
       std::vector<double> hs;
       config.getVectorDouble("extMonFNAL.planeHalfSize",  hs, 3);
+
+
+
       for(unsigned iplane = 0; iplane < pt.m_plane_zoffset.size(); ++iplane)
         {
           pt.planes_.emplace_back(module, hs);
@@ -99,6 +102,8 @@ namespace mu2e {
 
       config.getVectorDouble("extMonFNAL.sensorHalfSize", det->module_.sensorHalfSize_, -1);
       config.getVectorDouble("extMonFNAL.chipHalfSize", det->module_.chipHalfSize_, -1);
+      det->module_.chipGapX_ = config.getDouble("extMonFNAL.chipGapX");
+      det->module_.chipOffsetY_ = config.getDouble("extMonFNAL.chipOffsetY");
       //----------------------------------------------------------------
       // The upstream stack
 
