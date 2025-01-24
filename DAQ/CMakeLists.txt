@@ -103,6 +103,14 @@ cet_build_plugin(StrawRecoFromFragments art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(StrawRecoFromArtdaqFragments art::module
+  REG_SOURCE src/StrawRecoFromArtdaqFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::DataProducts
+  Offline::RecoDataProducts
+)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/DAQ/fcl)

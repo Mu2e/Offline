@@ -1,0 +1,11 @@
+# -*- mode:tcl -*-
+
+DAQ : {
+    producers : {
+        StrawRecoFromArtdaqFragments: { module_type: StrawRecoFromArtdaqFragments
+            nADCPackets   : 1
+            saveWaveforms : 0
+            diagLevel     : 0  # not used yet
+        }
+    }
+}
