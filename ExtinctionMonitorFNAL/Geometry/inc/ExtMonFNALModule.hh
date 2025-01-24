@@ -37,7 +37,7 @@ namespace mu2e {
       : chip_(chip), sensorHalfSize_(hs), chipGapX_(gapX), chipOffsetY_(offsetY)
     {}
     // Required by genreflex persistency
-    ExtMonFNALModule() {}
+    ExtMonFNALModule() : chipGapX_(0.), chipOffsetY_(0.){}
 
     //----------------------------------------------------------------
   private:
