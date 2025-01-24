@@ -431,7 +431,6 @@ namespace mu2e {
                                 );
         soffset += offset;
         mRot = mRotInPlane;
-
      }
 
 
@@ -454,15 +453,12 @@ namespace mu2e {
                                    );
 
 
-
       CLHEP::Hep3Vector coffset0;
       CLHEP::Hep3Vector coffset1;
       CLHEP::HepRotation* pRot;
 
-
       if(stackRotation)
      {
-
       coffset0 = (*stackRotationInMother).inverse() * CLHEP::Hep3Vector(
                                     stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + module.chipGapX()/2,
                                     stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*module.chipOffsetY()),
@@ -475,7 +471,6 @@ namespace mu2e {
                                     stack.planes()[iplane].module_yoffset()[imodule] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*module.chipOffsetY()),
                                     stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2])
                                   );
-
       coffset1 += offset;
 
       pRot = reg.add(*stackRotationInMother);
