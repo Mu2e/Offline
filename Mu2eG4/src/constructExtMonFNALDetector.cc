@@ -408,7 +408,7 @@ namespace mu2e {
       }
 
       CLHEP::Hep3Vector soffset;
-      CLHEP::HepRotation* mRot;
+      CLHEP::HepRotation* mRot=nullptr;
 
       if(stackRotation)
      {
@@ -455,7 +455,7 @@ namespace mu2e {
 
       CLHEP::Hep3Vector coffset0;
       CLHEP::Hep3Vector coffset1;
-      CLHEP::HepRotation* pRot;
+      CLHEP::HepRotation* pRot=nullptr;
 
       if(stackRotation)
      {
