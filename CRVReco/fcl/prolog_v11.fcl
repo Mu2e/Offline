@@ -5,12 +5,14 @@ BEGIN_PROLOG
       module_type               : CrvPedestalFinder
       crvDigiModuleLabel        : "CrvDigi"
       maxADCspread              : 5
+      tmpDBfileName             : "pedestals.txt"
     }
 
     CrvCalibration:
     {
       module_type               : CrvCalibration
       crvRecoPulsesModuleLabel  : "CrvRecoPulses"
+      tmpDBfileName             : "calibration.txt"
     }
 
     CrvRecoPulses:

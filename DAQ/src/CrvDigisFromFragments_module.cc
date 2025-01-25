@@ -110,15 +110,14 @@ void CrvDigisFromFragments::produce(Event& event)
         continue;
       }
       auto header = block->GetHeader();
-/*
-//FIXME: This function will be available in a new release of artdaq_core_mu2e
+
       if(!header->isValid())
       {
         std::cerr << "CRV packet is not valid." << std::endl;
         std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
         continue;
       }
-*/
+
       if(header->GetSubsystemID() != DTCLib::DTC_Subsystem::DTC_Subsystem_CRV)
       {
         std::cerr << "CRV packet does not have system ID 2." << std::endl;
@@ -153,11 +152,9 @@ void CrvDigisFromFragments::produce(Event& event)
 
           std::vector<int16_t> adc;
           adc.resize(waveform.size());
-          for(size_t i=0; i<waveform.size(); ++i)
-          {
-            adc[i] = waveform.at(i).ADC;
-            crv_digis->emplace_back(adc, crvHitInfo.HitTime + i, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
-          }
+          for(size_t i=0; i<waveform.size(); ++i) adc[i]=waveform.at(i).ADC;
+          for(size_t i=0; i<waveform.size(); ++i) {if((adc[i] & 0x800) == 0x800) adc[i]=(int16_t)(adc[i] | 0xF000);}  //to handle negative numbers stored in 12bit ADC samples
+          crv_digis->emplace_back(adc, crvHitInfo.HitTime, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
         } // loop over all crvHits
 
         if(_diagLevel>1)
