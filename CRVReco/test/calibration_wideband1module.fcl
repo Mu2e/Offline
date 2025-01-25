@@ -40,5 +40,5 @@ services.ProditionsService.crvStatus.useDb: false
 services.ProditionsService.crvStatus.verbose: 2
 services.ProditionsService.crvCalib.useDb: true
 services.ProditionsService.crvCalib.verbose: 2
-services.DbService.textFile : ["pedestalWideband_test.txt"]
+services.DbService.textFile : ["pedestals.txt"]
 services.DbService.verbose: 2
