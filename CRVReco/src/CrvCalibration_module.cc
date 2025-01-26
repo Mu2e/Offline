@@ -110,7 +110,7 @@ namespace mu2e
       double calibValue[2];
       for(int i=0; i<2; ++i) //loop over hisograms with pulse areas and pulse heights
       {
-        if(i==0) hist=_calibHistsPulseArea.at(channel);
+        if(i==1) hist=_calibHistsPulseArea.at(channel);
         else hist=_calibHistsPulseHeight.at(channel);
 
         if(hist->GetEntries()<100) //not enough data
