@@ -174,6 +174,10 @@ namespace mu2e {
       // parameter-specific functions that need to be overridden in subclasses
       KTRAJ makeSeedTraj(HelixSeed const& hseed,TimeRange const& trange,VEC3 const& bnom, int charge) const;
       bool goodFit(KKTRK const& ktrk) const;
+      bool goodHelix(HelixSeed const& hseed) const;
+      HelixRecoDir::PropDir chooseHelixDir(HelixSeed const& hseed) const;
+      bool compare_tracks(KKTRK const& ktrk_1, KKTRK const& ktrk_2) const;
+      std::unique_ptr<KKTRK> fitTrack(art::Event& event, HelixSeed const& hseed, const float dir, const PDGCode::type fitpart);
       // extrapolation functions
       void extrapolate(KKTRK& ktrk) const;
       void toTrackerEnds(KKTRK& ktrk,VEC3 const& dir0) const;
@@ -343,10 +347,35 @@ namespace mu2e {
                            useSlopeSigCut_, (useSlopeSigCut_) ? slopeSigCut_ : -999.f);
   }
 
-  void LoopHelixFit::produce(art::Event& event ) {
-    // empty collections
-    static MEASCOL nohits; // empty
-    static EXINGCOL noexings; // empty
+  HelixRecoDir::PropDir LoopHelixFit::chooseHelixDir(HelixSeed const& hseed) const {
+    if(useHelixSlope_) return hseed.recoDir().predictDirection(slopeSigThreshold_);
+    if(fdir_.fitDirection() == TrkFitDirection::FitDirection::upstream  ) return HelixRecoDir::PropDir::upstream;
+    if(fdir_.fitDirection() == TrkFitDirection::FitDirection::downstream) return HelixRecoDir::PropDir::downstream;
+    return HelixRecoDir::PropDir::ambiguous;
+  }
+
+  bool LoopHelixFit::compare_tracks(KKTRK const& ktrk_1, KKTRK const& ktrk_2) const {
+    // return true to select the first track, false to select the second
+
+    const bool goodfit_1(goodFit(ktrk_1)), goodfit_2(goodFit(ktrk_2));
+    if(print_>1) printf(" [LoopHelixFit::%s]: status 1 = %o, status 2 = %o\n", __func__, goodfit_1, goodfit_2);
+
+    if(!goodfit_2) return true; //if the second is bad or if both are bad, default to the first
+    if(!goodfit_1) return false; //if only the first is bad, accept the second
+
+    const auto p_1(ktrk_1.fitStatus().chisq_.probability());
+    const auto p_2(ktrk_2.fitStatus().chisq_.probability());
+    const auto n_calo_1(ktrk_1.caloHits().size());
+    const auto n_calo_2(ktrk_2.caloHits().size());
+    if(print_>1) printf(" [LoopHelixFit::%s]: p 1 = %.4f, n(calo-hits) 1 = %lu, p 2 = %.4f, n(calo-hits) 2 = %lu\n",
+                        __func__, p_1, n_calo_1, p_2, n_calo_2);
+
+    if(n_calo_1 == n_calo_2) return p_1 >= p_2; //if they both have the same number of calo-hits, use p(chi^2)
+    return n_calo_1 > n_calo_2; //if one has dropped clusters, assume this is a bad sign and pick the other
+  }
+
+  std::unique_ptr<KKTRK> LoopHelixFit::fitTrack(art::Event& event, HelixSeed const& hseed, const float dir, PDGCode::type fitpart) {
+    // Retrieve event information
     // calo geom
     GeomHandle<Calorimeter> calo_h;
     // find current proditions
@@ -356,6 +385,82 @@ namespace mu2e {
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
     auto cc_H = event.getValidHandle<CaloClusterCollection>(cccol_T_);
     auto const& chcol = *ch_H;
+    // empty collections
+    static MEASCOL nohits; // empty
+    static EXINGCOL noexings; // empty
+
+    // Initialize helix-specific information
+    auto const& helix = hseed.helix();
+    auto zcent = Mu2eKinKal::zMid(hseed.hits());
+    // take the magnetic field at the helix center as nominal
+    VEC3 center(helix.centerx(), helix.centery(),zcent);
+    auto bnom = kkbf_->fieldVect(center);
+    // compute the charge from the helicity, fit direction, and BField direction
+    double bz = bnom.Z();
+    const int charge = static_cast<int>(copysign(PDGcharge_,(-1)*helix.helicity().value()*dir*bz));
+    // test consistency.  Modify this later when the HelixSeed knows which direction it's going TODO
+    if(charge*PDGcharge_ < 0){
+      if(usePDGCharge_)throw cet::exception("RECO")<<"mu2e::HelixFit: inconsistent charge" << endl;
+      fitpart = static_cast<PDGCode::type>(-1*fitpart); // reverse sign
+    }
+    // time range of the hits
+    auto trange = Mu2eKinKal::timeBounds(hseed.hits());
+
+    // Begin constructing the track fit
+    // construct the seed trajectory
+    KTRAJ seedtraj = makeSeedTraj(hseed,trange,bnom,charge);
+    // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
+    PTRAJ pseedtraj(seedtraj);
+    // first, we need to unwind the combohits.  We use this also to find the time range
+    StrawHitIndexCollection strawHitIdxs;
+    auto chcolptr = hseed.hits().fillStrawHitIndices(strawHitIdxs, StrawIdMask::uniquestraw);
+    if(chcolptr != &chcol)
+      throw cet::exception("RECO")<<"mu2e::KKHelixFit: inconsistent ComboHitCollection" << std::endl;
+    // next, build straw hits and materials from these
+    KKSTRAWHITCOL strawhits;
+    strawhits.reserve(strawHitIdxs.size());
+    KKSTRAWXINGCOL strawxings;
+    strawxings.reserve(strawHitIdxs.size());
+    if(!kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings)) {
+      if(print_>0) printf("[LoopHelixFit::%s] Failed to create a track\n", __func__);
+      return nullptr;
+    }
+    // optionally (and if present) add the CaloCluster as a constraint
+    // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO
+    KKCALOHITCOL calohits;
+    if (kkfit_.useCalo() && hseed.caloCluster().isNonnull()) {
+      kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
+    }
+    // set the seed range given the hits and xings
+    seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
+    // create and fit the track
+    auto ktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
+    if(!ktrk) // check that the track exists
+      throw cet::exception("RECO")<<"mu2e::LoopHelixFit: Track fit was performed but no track is found\n";
+
+    auto goodfit = goodFit(*ktrk);
+    if(print_>0) printf("[LoopHelixFit::%s] Before extending the fit: goodFit = %o, fitcon = %.4f, nHits = %2lu, %lu calo-hits\n",
+                        __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
+    // if we have an extension schedule, extend.
+    if(goodfit && exconfig_.schedule().size() > 0) {
+      kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *ktrk );
+      goodfit = goodFit(*ktrk);
+      // if finaling, apply that now.
+      if(goodfit && fconfig_.schedule().size() > 0){
+        ktrk->extend(fconfig_,nohits,noexings);
+        goodfit = goodFit(*ktrk);
+      }
+    }
+
+    //store the fit quality result if it's a good fit
+    if(print_>0) printf("[LoopHelixFit::%s] After extending the fit : goodFit = %o, fitcon = %.4f, nHits = %2lu, %lu calo-hits\n",
+                        __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
+    return ktrk;
+  }
+
+  void LoopHelixFit::produce(art::Event& event ) {
+    // calo geom
+    GeomHandle<Calorimeter> calo_h;
     // create output
     unique_ptr<KKTRKCOL> ktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
@@ -372,128 +477,34 @@ namespace mu2e {
       for(size_t iseed=0; iseed < hseedcol.size(); ++iseed) {
         ++nSeen_;
         auto const& hseed = hseedcol[iseed];
+        if(!goodHelix(hseed)) continue; //determine if this seed should be fit
         auto hptr = HPtr(hseedcol_h,iseed);
-        // check helicity.  The test on the charge and helicity
-        if(!hseed.status().hasAllProperties(goodseed_)) continue;
-        // test helix
-        auto const& helix = hseed.helix();
-        if(helix.radius() == 0.0 || helix.lambda() == 0.0)
-          throw cet::exception("RECO")<<"mu2e::HelixFit: degenerate seed parameters" << endl;
-        // test the helix slope significance if requested
-        if(useSlopeSigCut_) {
-          const float slope    = hseed.recoDir().slope();
-          const float slopeErr = std::fabs(hseed.recoDir().slopeErr());
-          const float slopeSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f;
-          if(slopeSig*fdir_.dzdt() < slopeSigCut_) { //slope is below the given threshold relative to the given direction
-            if(print_ > 0) printf("[LoopHelixFit::%s] Skipping helix seed with slope significance %.1f\n", __func__, slopeSig);
-            continue;
-          }
-        }
-        auto zcent = Mu2eKinKal::zMid(hseed.hits());
-        // take the magnetic field at the helix center as nominal
-        VEC3 center(helix.centerx(), helix.centery(),zcent);
-        static const double rhomax = 700.0; // this should come from conditions
-        if(center.Rho() > rhomax) center = VEC3(rhomax*cos(center.Phi()),rhomax*sin(center.Phi()),center.Z());
-        auto bnom = kkbf_->fieldVect(center);
-        // compute the charge from the helicity, fit direction, and BField direction
-        double bz = bnom.Z();
-        const int helix_dir = (useHelixSlope_) ? hseed.recoDir().predictDirection(slopeSigThreshold_) : int(fdir_.dzdt());
+
+        // determine the fit direction hypothesis
+        auto helix_dir = chooseHelixDir(hseed);
         const bool undefined_dir = helix_dir == HelixRecoDir::PropDir::ambiguous; //check if no direction is significantly preferred
-        if(undefined_dir) ++nAmbiguous_;
-        double pchi2_seed [] = {-1., -1.}; //p(chi^2,N(dof)) for {downstream, upstream} hypothesis at the seed fit stage
-        double pchi2_drift[] = {-1., -1.}; // at the drift fit stage
-        std::vector<std::unique_ptr<KKTRK>> ktrks;
-        const int nloops = (undefined_dir) ? 2 : 1;
-        for(int iloop = 0; iloop < nloops; ++iloop) {  //if an undefined direction, check both directions, pick the best fit result
-          const float dir = (undefined_dir) ? -2.f*iloop + 1.f : 1.f*helix_dir;
-          const int charge = static_cast<int>(copysign(PDGcharge_,(-1)*helix.helicity().value()*dir*bz));
-          // test consistency.  Modify this later when the HelixSeed knows which direction it's going TODO
-          auto fitpart = fpart_;
-          if(charge*PDGcharge_ < 0){
-            if(usePDGCharge_)throw cet::exception("RECO")<<"mu2e::HelixFit: inconsistent charge" << endl;
-            fitpart = static_cast<PDGCode::type>(-1*fitpart); // reverse sign
-          }
-          // time range of the hits
-          auto trange = Mu2eKinKal::timeBounds(hseed.hits());
-          // construct the seed trajectory
-          KTRAJ seedtraj = makeSeedTraj(hseed,trange,bnom,charge);
-          // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
-          PTRAJ pseedtraj(seedtraj);
-          // first, we need to unwind the combohits.  We use this also to find the time range
-          StrawHitIndexCollection strawHitIdxs;
-          auto chcolptr = hseed.hits().fillStrawHitIndices(strawHitIdxs, StrawIdMask::uniquestraw);
-          if(chcolptr != &chcol)
-            throw cet::exception("RECO")<<"mu2e::KKHelixFit: inconsistent ComboHitCollection" << std::endl;
-          // next, build straw hits and materials from these
-          KKSTRAWHITCOL strawhits;
-          strawhits.reserve(strawHitIdxs.size());
-          KKSTRAWXINGCOL strawxings;
-          strawxings.reserve(strawHitIdxs.size());
-          if(kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings)){
-            // optionally (and if present) add the CaloCluster as a constraint
-            // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO
-            KKCALOHITCOL calohits;
-            if (kkfit_.useCalo() && hseed.caloCluster().isNonnull()) {
-              kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
-            }
-            // set the seed range given the hits and xings
-            seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
-            // create and fit the track
-            if(print_>0 && undefined_dir) printf("[LoopHelixFit::%s] Creating track fit direction hypothesis %i\n", __func__, iloop);
-            ktrks.push_back(make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits));
-            auto& ktrk = ktrks[iloop];
-            auto goodfit = goodFit(*ktrk);
-            if(goodfit) pchi2_seed[iloop] = ktrk->fitStatus().chisq_.probability(); //store the chi^2 before extending the fit
-            if(print_>0) printf("[LoopHelixFit::%s] Before extending the fit: fitcon = %.4f, nHits = %2lu, %lu calo-hits\n",
-                                __func__, pchi2_seed[iloop], ktrk->strawHits().size(), ktrk->caloHits().size());
-            // if we have an extension schedule, extend.
-            if(goodfit && exconfig_.schedule().size() > 0) {
-              kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *ktrk );
-              goodfit = goodFit(*ktrk);
-              // if finaling, apply that now.
-              if(goodfit && fconfig_.schedule().size() > 0){
-                ktrk->extend(fconfig_,nohits,noexings);
-                goodfit = goodFit(*ktrk);
-              }
-            }
 
-            //store the fit quality result if it's a good fit
-            if(goodfit) pchi2_drift[iloop] = ktrk->fitStatus().chisq_.probability();
-            if(print_>0) printf("[LoopHelixFit::%s] After extending the fit : fitcon = %.4f, nHits = %2lu, %lu calo-hits\n",
-                                __func__, pchi2_drift[iloop], ktrk->strawHits().size(), ktrk->caloHits().size());
-            if(print_>0 && undefined_dir)
-              printf("[LoopHelixFit::%s] Track fit hypothesis %i results: Status = %i, p(chi^2) = %.4f (%.4f at seed fit), N(hits) = %2lu, N(calo hits) = %lu, goodFit = %o\n",
-                     __func__, iloop, ktrk->fitStatus().status_, pchi2_drift[iloop], pchi2_seed[iloop],
-                     ktrk->strawHits().size(), ktrk->caloHits().size(), goodfit);
-          } else {
-            ktrks.push_back(nullptr);
-          }
-        }
-        //determine the best fit if needed
-        int index = 0;
+        // fit the track hypothesis (hypotheses)
+        std::unique_ptr<KKTRK> ktrk = nullptr;
         if(undefined_dir) {
-          //if only one fit result is undefined, use the other fit (if both are undefined it doesn't matter which we pick)
-          if(!ktrks[0] || pchi2_drift[0] < 0.) index = 1;
-          else if(!ktrks[1] || pchi2_drift[1] < 0.) index = 0;
-          //check if a calo-cluster was dropped for only one of the fits, use the seed fit instead as dropping the cluster is a bad sign
-          else if(ktrks[0]->caloHits().size() != ktrks[1]->caloHits().size()) {
-            //pick the fit that included the cluster in the result
-            index = (ktrks[0]->caloHits().size() > ktrks[1]->caloHits().size()) ? 0 : 1;
-          } else index = (pchi2_drift[0] >= pchi2_drift[1]) ? 0 : 1; //default to using the full fit p(chi^2) results
+          ++nAmbiguous_;
+          auto ktrk_down = fitTrack(event, hseed,  1.f, fpart_);
+          auto ktrk_up   = fitTrack(event, hseed, -1.f, fpart_);
+          const bool use_downstream = !ktrk_up || (ktrk_down && compare_tracks(*ktrk_down, *ktrk_up)); //if one is null, default to the other (use down if both are null, doesn't matter)
+          if(print_ > 0)
+            printf("[LoopHelixFit::%s]: Fit both direction options, slope = %9.2e, sig = %.2f, status down = %i, status up = %i, p(chi^2) down = %.4f, p(chi^2) up = %.4f: chose %s\n",
+                   __func__, hseed.recoDir().slope(), hseed.recoDir().slopeSig(),
+                   ktrk_down && goodFit(*ktrk_down), ktrk_up && goodFit(*ktrk_up),
+                   (ktrk_down) ? ktrk_down->fitStatus().chisq_.probability() : -1.,
+                   (ktrk_up  ) ? ktrk_up  ->fitStatus().chisq_.probability() : -1.,
+                   (use_downstream) ? "downstream" : "upstream");
+          ktrk = (use_downstream) ? std::move(ktrk_down) : std::move(ktrk_up);
+          helix_dir = (use_downstream) ? HelixRecoDir::PropDir::downstream : HelixRecoDir::PropDir::upstream; //record which direction was chosen
+        } else {
+          ktrk = fitTrack(event, hseed, helix_dir, fpart_);
         }
 
-        if(pchi2_drift[index] < 0.) continue; //failed earlier tests
-
-        if(print_ > 0 && undefined_dir)
-          printf("[LoopHelixFit::%s]: Fit both direction options, slope = %9.2e, sig = %.2f, status down = %i, status up = %i, p(chi^2) down = %.4f, p(chi^2) up = %.4f: chose %s\n",
-                 __func__, hseed.recoDir().slope(), hseed.recoDir().slopeSig(),
-                 ktrks[0] && goodFit(*ktrks[0]), ktrks[1] && goodFit(*ktrks[1]),
-                 pchi2_drift[0], pchi2_drift[1], (index == 0) ? "downstream" : "upstream");
-
-        if(!ktrks[index]) //ensure that the track was properly created
-          throw cet::exception("RECO")<<"mu2e::LoopHelixFit: Track fit was performed but no track is found\n";
-
-        auto& ktrk = ktrks[index];
+        if(!ktrk) continue; //ensure that the track exists
 
         // Check the fit
         auto goodfit = goodFit(*ktrk);
@@ -501,6 +512,8 @@ namespace mu2e {
         // extrapolate as required
         if(goodfit && extrapolate_) extrapolate(*ktrk);
         if(print_>1) ktrk->printFit(std::cout,print_-1);
+
+        // save the fit result
         if(goodfit || saveall_){
           TrkFitFlag fitflag(hptr->status());
           fitflag.merge(fitflag_);
@@ -524,7 +537,7 @@ namespace mu2e {
             printf("[LoopHelixFit::%s] KalSeed has %lu intersections\n", __func__, kkseed.intersections().size());
             for(size_t ikinter = 0; ikinter < kkseed.intersections().size(); ++ikinter){
               auto const& kinter = kkseed.intersections()[ikinter];
-              printf("[LoopHelixFit::%s] Seed %10s intersection: t0 = %.1f, t0Err = %.4f, mom = %.2f, momErr = %.4f\n",
+              printf("[LoopHelixFit::%s] Seed %10s intersection: t0 = %6.1f, t0Err = %6.4f, mom = %6.2f, momErr = %6.4f\n",
                      __func__, kinter.surfaceId().name().c_str(), kinter.time(), std::sqrt(kinter.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
                      kinter.mom(), kinter.momerr());
             }
@@ -537,8 +550,8 @@ namespace mu2e {
           // save (unpersistable) KKTrk in the event
           ktrkcol->push_back(ktrk.release());
           //increment the counts
-          if(helix_dir > 0 || (undefined_dir && index == 0)) ++nDownstream_;
-          if(helix_dir < 0 || (undefined_dir && index == 1)) ++nUpstream_;
+          if(helix_dir > 0) ++nDownstream_;
+          if(helix_dir < 0) ++nUpstream_;
         }
       } //end helix seed loop
     } //end helix colllection loop
@@ -601,6 +614,26 @@ namespace mu2e {
       }
     }
     return retval;
+  }
+
+  bool LoopHelixFit::goodHelix(HelixSeed const& hseed) const {
+    // check helicity.  The test on the charge and helicity
+    if(!hseed.status().hasAllProperties(goodseed_)) return false;
+    // test helix
+    auto const& helix = hseed.helix();
+    if(helix.radius() == 0.0 || helix.lambda() == 0.0)
+      throw cet::exception("RECO")<<"mu2e::HelixFit: degenerate seed parameters" << endl;
+    // test the helix slope significance if requested
+    if(useSlopeSigCut_) {
+      const float slope    = hseed.recoDir().slope();
+      const float slopeErr = std::fabs(hseed.recoDir().slopeErr());
+      const float slopeSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f;
+      if(slopeSig*fdir_.dzdt() < slopeSigCut_) { //slope is below the given threshold relative to the given direction
+        if(print_ > 0) printf("[LoopHelixFit::%s] Skipping helix seed with slope significance %.1f\n", __func__, slopeSig);
+        return false;
+      }
+    }
+    return true;
   }
 
   void LoopHelixFit::extrapolate(KKTRK& ktrk) const {
