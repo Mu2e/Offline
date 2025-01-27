@@ -325,10 +325,10 @@ namespace mu2e
     evt.put(std::move(triginfo));
     if (!_noFilter){
       if( _minNHelices > 1){
-        return ((nGoodHelices >= _minNHelices) && (dt_range = true));
+        return ((nGoodHelices >= _minNHelices) && (dt_range == true));
       }
       else {
-        return (nGoodHelices > 0);
+        return (nGoodHelices >= _minNHelices);
       }
 
     }else {
