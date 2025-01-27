@@ -306,11 +306,17 @@ namespace mu2e
         auto const&  hel0 = ihs;
         float  hel0_t0 =  hel0->t0()._t0;
 
-        for(auto ihs = hscol->begin();ihs != hscol->end(); ++ihs) {
-          auto const&  hel1 =  ihs;
+        for(auto jhs = std::next(ihs); jhs != hscol->end(); ++jhs) {
+          auto const&  hel1 =  jhs;
           float hel1_t0 = hel1->t0()._t0;
           float dt      = hel1_t0 - hel0_t0;
-          if (dt < _maxDt0 && dt > -_maxDt0) {dt_range = true; }
+          if (dt < _maxDt0 && dt > -_maxDt0) {
+            dt_range = true; 
+            break;
+          }
+        }
+        if (dt_range) {
+          break; // Break out of the outer loop
         }
       }
     }
