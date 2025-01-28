@@ -18,6 +18,7 @@ cet_make_library(
       src/constructDummyStoppingTarget.cc
       src/constructExternalShielding.cc
       src/constructExtMonFNALBuilding.cc
+      src/constructExtMonFNALDetector.cc
       src/constructExtMonFNALInfrastructure.cc
       src/constructExtMonFNAL.cc
       src/constructHall.cc

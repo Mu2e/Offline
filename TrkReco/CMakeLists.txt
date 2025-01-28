@@ -48,6 +48,13 @@ cet_build_plugin(MergeHelices art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(SelectReflections art::module
+    REG_SOURCE src/SelectReflections_module.cc
+    LIBRARIES REG
+      Offline::TrkReco
+)
+
+
 cet_build_plugin(SimpleKalSeedSelector art::tool
     REG_SOURCE src/SimpleKalSeedSelector_tool.cc
     LIBRARIES REG
