@@ -41,3 +41,4 @@ services.scheduler.wantSummary: true
 services.TimeTracker.printSummary: true
 services.TFileService.fileName : "crvCalib.root"
 #include "Offline/DbService/fcl/NominalDatabase.fcl"
+services.DbService.textFile : ["pedestals.txt"]

@@ -58,6 +58,9 @@ namespace mu2e
 
     std::vector<double> _pedestals;
     std::vector<double> _timeOffsets;
+
+    std::pair<int,int>  _firstRunSubrun;
+    std::pair<int,int>  _lastRunSubrun;
   };
 
 
@@ -101,7 +104,7 @@ namespace mu2e
 
     std::ofstream outputFile;
     outputFile.open(_tmpDBfileName);
-    outputFile<<"TABLE CRVSiPM"<<std::endl;
+    outputFile<<"TABLE CRVSiPM "<<_firstRunSubrun.first<<":"<<_firstRunSubrun.second<<"-"<<_lastRunSubrun.first<<":"<<_lastRunSubrun.second<<std::endl;
     outputFile<<"#channel, pedestal, calibPulseHeight, calibPulseArea"<<std::endl;
 
     for(size_t channel=0; channel<_pedestals.size(); ++channel)
@@ -129,9 +132,9 @@ namespace mu2e
 
         int maxbinCalib = hist->GetMaximumBin();
         double peakCalib = hist->GetBinCenter(maxbinCalib);
-        funcCalib.SetRange(peakCalib-4,peakCalib+4);
+        funcCalib.SetRange(peakCalib*0.8,peakCalib*1.2);
         funcCalib.SetParameter(1,peakCalib);
-        hist->Fit(&funcCalib, "NQR");
+        hist->Fit(&funcCalib, "0QR");
         calibValue[i]=funcCalib.GetParameter(1);
       }
 
@@ -168,7 +171,10 @@ namespace mu2e
         _pedestals[channelIndex] = calib.pedestal(channelIndex);
         _timeOffsets[channelIndex] = calib.timeOffset(channelIndex);
       }
+
+      _firstRunSubrun=std::pair<int,int>(event.run(),event.subRun());
     }
+    _lastRunSubrun=std::pair<int,int>(event.run(),event.subRun());
 
     for(auto iter=crvRecoPulseCollection->begin(); iter!=crvRecoPulseCollection->end(); ++iter)
     {
