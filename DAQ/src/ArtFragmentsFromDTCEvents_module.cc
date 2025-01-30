@@ -164,9 +164,14 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
     }
 
     if (makeCRVFrag_ > 0) { // CRV
-//      auto crvSEvents = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_CRV);
-      auto crvSEvents = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker);  //currently wrongly encoded in the DTC Subevent header
+      auto crvSEvents = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_CRV);
       for (auto& subevent : crvSEvents) {
+        mu2e::CRVDataDecoder cf(subevent);
+        crvFragColl->emplace_back(cf);
+        ++nFrags;
+      }
+      auto crvSEventsTmp = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker);  //currently wrongly encoded in the DTC Subevent header
+      for (auto& subevent : crvSEventsTmp) {
         mu2e::CRVDataDecoder cf(subevent);
         crvFragColl->emplace_back(cf);
         ++nFrags;
