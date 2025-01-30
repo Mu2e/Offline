@@ -30,6 +30,10 @@ class ProtonBunchIntensityPrinter : public ProductPrinter {
   void Print(const mu2e::ProtonBunchIntensity& obj, int ind = -1,
              std::ostream& os = std::cout);
   void PrintHeader(const std::string& tag, std::ostream& os = std::cout);
+  void PrintEndJob(std::ostream& os = std::cout) override;
+ private:
+  double nevts_ = 0; // number of events processed
+  double nPOT_ = 0; // total number of POT for these events
 };
 
 }  // namespace mu2e

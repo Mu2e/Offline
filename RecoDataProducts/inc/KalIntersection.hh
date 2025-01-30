@@ -7,6 +7,9 @@
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "KinKal/General/ParticleStateEstimate.hh"
 #include "KinKal/Geometry/Intersection.hh"
+#include "KinKal/Trajectory/CentralHelix.hh"
+#include "KinKal/Trajectory/KinematicLine.hh"
+#include "KinKal/Trajectory/LoopHelix.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include <vector>
 namespace mu2e {
