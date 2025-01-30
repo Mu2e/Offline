@@ -8,6 +8,7 @@
 namespace mu2e {
 
   class ExtrudedSolid;
+  class RotExtrudedSolid;
   class GenericTrap;
   class SimpleConfig;
   class Mu2eEnvelope;
@@ -25,6 +26,11 @@ namespace mu2e {
               const SimpleConfig& config,
               const Mu2eEnvelope& mu2eEnv );
     static void
+    makeRotated( Mu2eHall& mh,
+              G4GeometryOptions& geomOptions,
+              const SimpleConfig& config,
+              const Mu2eEnvelope& mu2eEnv );
+    static void
     makeTrapDirt( Mu2eHall& mh,
                   G4GeometryOptions& geomOptions,
                   const SimpleConfig& config,
@@ -32,6 +38,11 @@ namespace mu2e {
 
     static void
     loadSolids( std::map<std::string,ExtrudedSolid>& solidMap,
+                G4GeometryOptions& geomOptions,
+                const SimpleConfig& config,
+                const std::string& varPrefixStr );
+    static void
+    loadRotSolids( std::map<std::string,RotExtrudedSolid>& solidMap,
                 G4GeometryOptions& geomOptions,
                 const SimpleConfig& config,
                 const std::string& varPrefixStr );
@@ -52,7 +63,6 @@ namespace mu2e {
                            const std::string& varPrefixStr,
                            const std::string& dim,
                            const double min, const double max );
-
     static void
     replaceBoundaryValues( std::map<std::string,GenericTrap>& solidMap,
                            const SimpleConfig& config,

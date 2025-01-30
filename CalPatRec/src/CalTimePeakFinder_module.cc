@@ -6,6 +6,8 @@
 // try to order routines alphabetically
 // *FIXME* : need to use the assumed particle velocity instead of the speed of light
 ///////////////////////////////////////////////////////////////////////////////
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
@@ -29,8 +31,6 @@
 
 #include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 
-using namespace std;
-
 using CLHEP::HepVector;
 using CLHEP::HepSymMatrix;
 using CLHEP::Hep3Vector;
@@ -39,32 +39,31 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
 //-----------------------------------------------------------------------------
-  CalTimePeakFinder::CalTimePeakFinder(fhicl::ParameterSet const& pset) :
-    art::EDProducer{pset},
-    _diagLevel       (pset.get<int>            ("diagLevel"                      )),
-    _debugLevel      (pset.get<int>            ("debugLevel"                     )),
-    _printfreq       (pset.get<int>            ("printFrequency"                 )),
-    _shLabel         (pset.get<string>         ("StrawHitCollectionLabel"        )),
-    _ccmLabel        (pset.get<string>         ("caloClusterModuleLabel"         )),
-    //    _hsel            (pset.get<vector<string> >("HitSelectionBits"               )),
-    //    _bkgsel          (pset.get<vector<string> >("BackgroundSelectionBits"        )),
-    _mindt           (pset.get<double>         ("DtMin"                          )),
-    _maxdt           (pset.get<double>         ("DtMax"                          )),
-    _minNHits        (pset.get<int>            ("MinNHits"                       )),
-    _minClusterEnergy(pset.get<double>         ("minClusterEnergy"               )),
-    _minClusterSize  (pset.get<int>            ("minClusterSize"                 )),
-    _pitchAngle      (pset.get<double>         ("pitchAngle"                     )),
-    _beta            (pset.get<double>         ("beta"                           )),
-    _dtoffset        (pset.get<double>         ("dtOffset"                       ))
+  CalTimePeakFinder::CalTimePeakFinder(const  art::EDProducer::Table<Config>&  Conf) :
+    art::EDProducer{Conf},
+    _diagLevel       (Conf().DiagLevel()),
+    _debugLevel      (Conf().DebugLevel()),
+    _printfreq       (Conf().Printfreq()),
+    _shLabel         (Conf().StrawHitCollectionLabel()),
+    _ccmLabel        (Conf().CaloClusterModuleLabel ()),
+    _hsel            (Conf().HitSelBits()),
+    _bkgsel          (Conf().BkgSelBits()),
+    _mindt           (Conf().DtMin()),
+    _maxdt           (Conf().DtMax()),
+    _minNHits        (Conf().MinNHits()),
+    _minClusterEnergy(Conf().MinClusterEnergy()),
+    _minClusterSize  (Conf().MinClusterSize  ()),
+    _pitchAngle      (Conf().PitchAngle()),
+    _beta            (Conf().Beta()),
+    _dtoffset        (Conf().DtOffset())
   {
     consumes<ComboHitCollection>(_shLabel);
     consumes<CaloClusterCollection>(_ccmLabel);
     produces<TimeClusterCollection>();
-    // produces<CalTimePeakCollection>();
 
     if (_debugLevel != 0) _printfreq = 1;
 
-    if (_diagLevel  != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
+    if (_diagLevel  != 0) _hmanager = art::make_tool<ModuleHistToolBase>(Conf().DiagPlugin,"diagPlugin");
     else                  _hmanager = std::make_unique<ModuleHistToolBase>();
 
     _sinPitch              = sin(_pitchAngle);
@@ -222,6 +221,11 @@ namespace mu2e {
           for(int istr=0; istr<nch;++istr) {
 
             hit    = &_data.chcol->at(istr);
+//--------------------------------------------------------------------------------
+// check if the hit has the necessary flags
+//--------------------------------------------------------------------------------
+            if (!(hit->flag().hasAnyProperty(_hsel)) || hit->flag().hasAnyProperty(_bkgsel) )  continue;
+
             time   = hit->correctedTime();
             zstraw = hit->pos().z();
 //-----------------------------------------------------------------------------
