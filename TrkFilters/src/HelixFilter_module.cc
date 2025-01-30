@@ -323,18 +323,17 @@ namespace mu2e
 
 
     evt.put(std::move(triginfo));
-    if (!_noFilter){
-      if( _minNHelices > 1){
-        return ((nGoodHelices >= _minNHelices) && (dt_range == true));
+    if(_minNHelices < 2 && _maxDt0 >= 0.) throw cet::exception("BADCONFIG") << "Requested a timing difference cut of " << _maxDt0 << " ns between helices but only " << _minNHelices << " helices required";
+      
+    if( _minNHelices > 1){
+      return (_noFilter || ((nGoodHelices >= _minNHelices) && dt_range);
       }
-      else {
+    else {
         return (nGoodHelices >= _minNHelices);
       }
 
-    }else {
-      return true;
-    }
-  }
+    
+  
 
   bool HelixFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){      std::cout << moduleDescription().moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
