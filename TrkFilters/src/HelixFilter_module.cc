@@ -312,7 +312,7 @@ namespace mu2e
           float hel1_t0 = hel1->t0()._t0;
           float dt      = hel1_t0 - hel0_t0;
           if (dt < _maxDt0 && dt > -_maxDt0) {
-            dt_range = true; 
+            dt_range = true;
             break;
           }
         }
@@ -323,14 +323,14 @@ namespace mu2e
     }
 
 
-  evt.put(std::move(triginfo));
-    
-    
-  if(!_noFilter) {return (nGoodHelices >= _minNHelices) && dt_range;}
+    evt.put(std::move(triginfo));
+
+
+    if(!_noFilter) {return (nGoodHelices >= _minNHelices) && dt_range;}
     else {return true;} //filtering is turned off
 
-    
-  
+  }
+
 
   bool HelixFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){      std::cout << moduleDescription().moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
