@@ -158,6 +158,7 @@ namespace mu2e {
     // LoopHelix module specific config
     fhicl::OptionalAtom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Input helix seed slope significance threshold to assume the direction")};
     fhicl::OptionalAtom<double> slopeSigCut{ Name("SlopeSigVetoCut"), Comment("Input helix seed slope significance selection to veto helix seeds (when assuming a fixed fit direction)")};
+    fhicl::Atom<bool> prioritizeCaloHits{ Name("PrioritizeCaloHits"), Comment("Prioritize tracks with calo-hits when determining the best fit direction"), true};
     fhicl::OptionalAtom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream")};
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
   };
@@ -176,7 +177,7 @@ namespace mu2e {
       bool goodFit(KKTRK const& ktrk) const;
       bool goodHelix(HelixSeed const& hseed) const;
       HelixRecoDir::PropDir chooseHelixDir(HelixSeed const& hseed) const;
-      bool compare_tracks(KKTRK const& ktrk_1, KKTRK const& ktrk_2) const;
+      int compare_tracks(const std::unique_ptr<KKTRK>& ktrk_1, const std::unique_ptr<KKTRK>& ktrk_2) const;
       std::unique_ptr<KKTRK> fitTrack(art::Event& event, HelixSeed const& hseed, const float dir, const PDGCode::type fitpart);
       // extrapolation functions
       void extrapolate(KKTRK& ktrk) const;
@@ -202,6 +203,7 @@ namespace mu2e {
       bool useHelixSlope_; //use the helix slope estimate to decide the fit direction
       double slopeSigCut_; //helix slope significance to cut on when assuming a fit direction
       bool useSlopeSigCut_; //apply a helix slope significance cut
+      bool prioritizeCaloHits_; //prioritize tracks with a calo-hit when deciding the track direction
       bool useFitDir_; //flag to use forced fit direction
       TrkFitDirection fdir_;
       bool usePDGCharge_; // use the pdg particle charge: otherwise use the helicity and direction to determine the charge
@@ -244,6 +246,7 @@ namespace mu2e {
     fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
     useHelixSlope_(settings().slopeSigThreshold(slopeSigThreshold_)),
     useSlopeSigCut_(settings().slopeSigCut(slopeSigCut_)),
+    prioritizeCaloHits_(settings().prioritizeCaloHits()),
     useFitDir_(settings().fitDirection()),
     fdir_(static_cast<TrkFitDirection::FitDirection>((useFitDir_) ? *(settings().fitDirection()) : 0)),
     usePDGCharge_(settings().pdgCharge()),
@@ -360,23 +363,24 @@ namespace mu2e {
     return HelixRecoDir::PropDir::ambiguous;
   }
 
-  bool LoopHelixFit::compare_tracks(KKTRK const& ktrk_1, KKTRK const& ktrk_2) const {
-    // return true to select the first track, false to select the second
+  int LoopHelixFit::compare_tracks(const std::unique_ptr<KKTRK>& ktrk_1, const std::unique_ptr<KKTRK>& ktrk_2) const {
+    // return 1 to select the first track, 0 to select the second, -1 to indicate both are bad tracks
 
-    const bool goodfit_1(goodFit(ktrk_1)), goodfit_2(goodFit(ktrk_2));
+    const bool goodfit_1(ktrk_1 && goodFit(*ktrk_1)), goodfit_2(ktrk_2 && goodFit(*ktrk_2));
     if(print_>1) printf(" [LoopHelixFit::%s]: status 1 = %o, status 2 = %o\n", __func__, goodfit_1, goodfit_2);
 
-    if(!goodfit_2) return true; //if the second is bad or if both are bad, default to the first
-    if(!goodfit_1) return false; //if only the first is bad, accept the second
+    if(!goodfit_1 && !goodfit_2) return -1;
+    if(!goodfit_2) return 1; //if only the second is bad, accept the first
+    if(!goodfit_1) return 0; //if only the first is bad, accept the second
 
-    const auto p_1(ktrk_1.fitStatus().chisq_.probability());
-    const auto p_2(ktrk_2.fitStatus().chisq_.probability());
-    const auto n_calo_1(ktrk_1.caloHits().size());
-    const auto n_calo_2(ktrk_2.caloHits().size());
+    const auto p_1(ktrk_1->fitStatus().chisq_.probability());
+    const auto p_2(ktrk_2->fitStatus().chisq_.probability());
+    const auto n_calo_1(ktrk_1->caloHits().size());
+    const auto n_calo_2(ktrk_2->caloHits().size());
     if(print_>1) printf(" [LoopHelixFit::%s]: p 1 = %.4f, n(calo-hits) 1 = %lu, p 2 = %.4f, n(calo-hits) 2 = %lu\n",
                         __func__, p_1, n_calo_1, p_2, n_calo_2);
 
-    if(n_calo_1 == n_calo_2) return p_1 >= p_2; //if they both have the same number of calo-hits, use p(chi^2)
+    if(!prioritizeCaloHits_ || n_calo_1 == n_calo_2) return p_1 >= p_2; //if they both have the same number of calo-hits or ignoring these hits, use p(chi^2)
     return n_calo_1 > n_calo_2; //if one has dropped clusters, assume this is a bad sign and pick the other
   }
 
@@ -496,7 +500,7 @@ namespace mu2e {
           ++nAmbiguous_;
           auto ktrk_down = fitTrack(event, hseed,  1.f, fpart_);
           auto ktrk_up   = fitTrack(event, hseed, -1.f, fpart_);
-          const bool use_downstream = !ktrk_up || (ktrk_down && compare_tracks(*ktrk_down, *ktrk_up)); //if one is null, default to the other (use down if both are null, doesn't matter)
+          const bool use_downstream = compare_tracks(ktrk_down, ktrk_up) != 0; //determine the best fit, defaulting to the downstream if both are bad
           if(print_ > 0)
             printf("[LoopHelixFit::%s::%s]: Fit both direction options, slope = %9.2e, sig = %.2f, status down = %i, status up = %i, p(chi^2) down = %.4f, p(chi^2) up = %.4f: chose %s\n",
                    __func__, moduleDescription().moduleLabel().c_str(),
@@ -540,7 +544,7 @@ namespace mu2e {
               printf("  [LoopHelixFit::%s::%s] Seed straw flags : %s", __func__, moduleDescription().moduleLabel().c_str(), hit.flag().hex().c_str());
           }
           sampleFit(*ktrk,kkseed._inters);
-          if(print_>0) {
+          if(print_>1) {
             printf("[LoopHelixFit::%s::%s] KalSeed has %lu intersections\n", __func__, moduleDescription().moduleLabel().c_str(), kkseed.intersections().size());
             for(size_t ikinter = 0; ikinter < kkseed.intersections().size(); ++ikinter){
               auto const& kinter = kkseed.intersections()[ikinter];
