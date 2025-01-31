@@ -156,9 +156,9 @@ namespace mu2e {
     fhicl::OptionalTable<KKFinalConfig> finalSettings { Name("FinalSettings") };
     fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") };
     // LoopHelix module specific config
-    fhicl::OptionalAtom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Helix slope significance threshold to assume the direction")};
-    fhicl::OptionalAtom<double> slopeSigCut{ Name("SlopeSigCut"), Comment("Helix slope significance cut when assuming a fit direction")};
-    fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream"), [this](){ return !slopeSigThreshold(); }};
+    fhicl::OptionalAtom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Input helix seed slope significance threshold to assume the direction")};
+    fhicl::OptionalAtom<double> slopeSigCut{ Name("SlopeSigVetoCut"), Comment("Input helix seed slope significance selection to veto helix seeds (when assuming a fixed fit direction)")};
+    fhicl::OptionalAtom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream")};
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
   };
 
@@ -202,6 +202,7 @@ namespace mu2e {
       bool useHelixSlope_; //use the helix slope estimate to decide the fit direction
       double slopeSigCut_; //helix slope significance to cut on when assuming a fit direction
       bool useSlopeSigCut_; //apply a helix slope significance cut
+      bool useFitDir_; //flag to use forced fit direction
       TrkFitDirection fdir_;
       bool usePDGCharge_; // use the pdg particle charge: otherwise use the helicity and direction to determine the charge
       KKFIT kkfit_; // fit helper
@@ -243,7 +244,8 @@ namespace mu2e {
     fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
     useHelixSlope_(settings().slopeSigThreshold(slopeSigThreshold_)),
     useSlopeSigCut_(settings().slopeSigCut(slopeSigCut_)),
-    fdir_(static_cast<TrkFitDirection::FitDirection>((useHelixSlope_) ? 0 : settings().fitDirection())),
+    useFitDir_(settings().fitDirection()),
+    fdir_(static_cast<TrkFitDirection::FitDirection>((useFitDir_) ? *(settings().fitDirection()) : 0)),
     usePDGCharge_(settings().pdgCharge()),
     kkfit_(settings().kkfitSettings()),
     kkmat_(settings().matSettings()),
@@ -272,8 +274,12 @@ namespace mu2e {
         fixedfield_ = true;
         kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
       }
+
       if(useSlopeSigCut_ && useHelixSlope_) //can only cut on significance if using a fixed fit direction hypothesis
         throw cet::exception("RECO")<<"mu2e::LoopHelixFit: Configuration error. Using helix slope for fit direction and cutting on the slope!"<< endl;
+      if(useFitDir_ && useHelixSlope_) //can either force the direction or determine it from the helix slope
+        throw cet::exception("RECO")<<"mu2e::LoopHelixFit: Configuration error. Configured to use the helix slope for track direction and to force a specific direction!"<< endl;
+
       // setup optional fit finalization; this just updates the internals, not the fit result itself
       if(settings().finalSettings()){
         if(exconfig_.schedule_.size() > 0)
@@ -341,10 +347,10 @@ namespace mu2e {
     if(print_ > 0) kkbf_->print(std::cout);
 
     // Print the fit direction configuration
-    if(print_ > -1) printf("[LoopHelixFit::%s::%s] Fit dz/dt direction = %.0f, PDG = %i, use helix slope = %o with threshold %.1f, use helix slope cut = %o with theshold %.1f\n",
-                           __func__, moduleDescription().moduleLabel().c_str(), fdir_.dzdt(), (int) fpart_,
-                           useHelixSlope_, (useHelixSlope_) ? slopeSigThreshold_ : -1.f,
-                           useSlopeSigCut_, (useSlopeSigCut_) ? slopeSigCut_ : -999.f);
+    if(print_ > 0) printf("[LoopHelixFit::%s::%s] Fit dz/dt direction = %.0f, PDG = %i, use helix slope = %o with threshold %.1f, use helix slope cut = %o with theshold %.1f\n",
+                          __func__, moduleDescription().moduleLabel().c_str(), fdir_.dzdt(), (int) fpart_,
+                          useHelixSlope_, (useHelixSlope_) ? slopeSigThreshold_ : -1.f,
+                          useSlopeSigCut_, (useSlopeSigCut_) ? slopeSigCut_ : -999.f);
   }
 
   HelixRecoDir::PropDir LoopHelixFit::chooseHelixDir(HelixSeed const& hseed) const {
@@ -492,8 +498,9 @@ namespace mu2e {
           auto ktrk_up   = fitTrack(event, hseed, -1.f, fpart_);
           const bool use_downstream = !ktrk_up || (ktrk_down && compare_tracks(*ktrk_down, *ktrk_up)); //if one is null, default to the other (use down if both are null, doesn't matter)
           if(print_ > 0)
-            printf("[LoopHelixFit::%s]: Fit both direction options, slope = %9.2e, sig = %.2f, status down = %i, status up = %i, p(chi^2) down = %.4f, p(chi^2) up = %.4f: chose %s\n",
-                   __func__, hseed.recoDir().slope(), hseed.recoDir().slopeSig(),
+            printf("[LoopHelixFit::%s::%s]: Fit both direction options, slope = %9.2e, sig = %.2f, status down = %i, status up = %i, p(chi^2) down = %.4f, p(chi^2) up = %.4f: chose %s\n",
+                   __func__, moduleDescription().moduleLabel().c_str(),
+                   hseed.recoDir().slope(), hseed.recoDir().slopeSig(),
                    ktrk_down && goodFit(*ktrk_down), ktrk_up && goodFit(*ktrk_up),
                    (ktrk_down) ? ktrk_down->fitStatus().chisq_.probability() : -1.,
                    (ktrk_up  ) ? ktrk_up  ->fitStatus().chisq_.probability() : -1.,
@@ -523,23 +530,30 @@ namespace mu2e {
             fitflag.clear(TrkFitFlag::FitOK);
           if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
           auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h);
-          if(print_>0) printf("[LoopHelixFit::%s] Create seed             : fitcon = %.4f, nHits = %2lu, seedActiveHits = %2u, %lu calo-hits\n",
-                              __func__, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(),
+          if(print_>0) printf("[LoopHelixFit::%s::%s] Create seed             : fitcon = %.4f, nHits = %2lu, seedActiveHits = %2u, %lu calo-hits\n",
+                              __func__, moduleDescription().moduleLabel().c_str(), ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(),
                               kkseed.nHits(), ktrk->caloHits().size());
           if(print_>1) { //print the hit flags for the track and the KalSeed
             for(auto const& hit : ktrk->strawHits())
-              printf("  [LoopHelixFit::%s] KKTRK straw flags: %s", __func__, hit->hit().flag().hex().c_str());
+              printf("  [LoopHelixFit::%s::%s] KKTRK straw flags: %s", __func__, moduleDescription().moduleLabel().c_str(), hit->hit().flag().hex().c_str());
             for(auto const& hit : kkseed.hits())
-              printf("  [LoopHelixFit::%s] Seed straw flags : %s", __func__, hit.flag().hex().c_str());
+              printf("  [LoopHelixFit::%s::%s] Seed straw flags : %s", __func__, moduleDescription().moduleLabel().c_str(), hit.flag().hex().c_str());
           }
           sampleFit(*ktrk,kkseed._inters);
           if(print_>0) {
-            printf("[LoopHelixFit::%s] KalSeed has %lu intersections\n", __func__, kkseed.intersections().size());
+            printf("[LoopHelixFit::%s::%s] KalSeed has %lu intersections\n", __func__, moduleDescription().moduleLabel().c_str(), kkseed.intersections().size());
             for(size_t ikinter = 0; ikinter < kkseed.intersections().size(); ++ikinter){
               auto const& kinter = kkseed.intersections()[ikinter];
-              printf("[LoopHelixFit::%s] Seed %10s intersection: t0 = %6.1f, t0Err = %6.4f, mom = %6.2f, momErr = %6.4f\n",
-                     __func__, kinter.surfaceId().name().c_str(), kinter.time(), std::sqrt(kinter.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
+              printf("[LoopHelixFit::%s::%s]   Seed %10s intersection: t0 = %6.1f, t0Err = %6.4f, mom = %6.2f, momErr = %6.4f\n",
+                     __func__, moduleDescription().moduleLabel().c_str(), kinter.surfaceId().name().c_str(), kinter.time(), std::sqrt(kinter.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
                      kinter.mom(), kinter.momerr());
+            }
+            printf("[LoopHelixFit::%s::%s] KalSeed has %lu segments\n", __func__, moduleDescription().moduleLabel().c_str(), kkseed.segments().size());
+            for(size_t ikseg = 0; ikseg < kkseed.segments().size(); ++ikseg){
+              auto const& kseg = kkseed.segments()[ikseg];
+              printf("[LoopHelixFit::%s::%s]   Seed segment %lu: tmin = %6.1f, terr = %6.4f, mom = %6.2f, momErr = %6.4f\n",
+                     __func__, moduleDescription().moduleLabel().c_str(), ikseg, kseg.tmin(), std::sqrt(kseg.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
+                     kseg.mom(), kseg.momerr());
             }
           }
           kkseedcol->push_back(kkseed);
@@ -629,7 +643,7 @@ namespace mu2e {
       const float slopeErr = std::fabs(hseed.recoDir().slopeErr());
       const float slopeSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f;
       if(slopeSig*fdir_.dzdt() < slopeSigCut_) { //slope is below the given threshold relative to the given direction
-        if(print_ > 0) printf("[LoopHelixFit::%s] Skipping helix seed with slope significance %.1f\n", __func__, slopeSig);
+        if(print_ > 0) printf("[LoopHelixFit::%s::%s] Skipping helix seed with slope significance %.1f\n", __func__, moduleDescription().moduleLabel().c_str(), slopeSig);
         return false;
       }
     }
@@ -847,15 +861,17 @@ namespace mu2e {
           auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
           inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
           // update for the next intersection
-          tbeg = surfinter.time_ + epsilon;// move psst existing intersection to avoid repeating
+          tbeg = surfinter.time_ + epsilon;// move past existing intersection to avoid repeating
+          if(print_>0) printf(" [LoopHelixFit::%s::%s] Found intersection with surface %15s\n",
+                              __func__, moduleDescription().moduleLabel().c_str(), surf.first.name().c_str());
         }
       }
     }
   }
 
   void LoopHelixFit::endJob() {
-    if(print_ > -1) printf("[LoopHelixFit::%s] Saw %i helix seeds, %i had ambiguous dz/dt slopes, accepted %i downstream and %i upstream fits\n",
-                           __func__, nSeen_, nAmbiguous_, nDownstream_, nUpstream_);
+    if(print_ > 0) printf("[LoopHelixFit::%s::%s] Saw %i helix seeds, %i had ambiguous dz/dt slopes, accepted %i downstream and %i upstream fits\n",
+                          __func__, moduleDescription().moduleLabel().c_str(), nSeen_, nAmbiguous_, nDownstream_, nUpstream_);
   }
 }
 
