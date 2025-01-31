@@ -226,8 +226,8 @@ namespace mu2e
     _maxDt0            (config().maxDt0())
     {
       produces<TriggerInfo>();
+      if(_minNHelices < 2 && _maxDt0 >= 0.) throw cet::exception("BADCONFIG") << "Requested a timing difference cut of " << _maxDt0 << " ns between helices but only " << _minNHelices << " helices required";
     }
-  if(_minNHelices < 2 && _maxDt0 >= 0.) throw cet::exception("BADCONFIG") << "Requested a timing difference cut of " << _maxDt0 << " ns between helices but only " << _minNHelices << " helices required";
 
   void HelixFilter::beginJob() {
     if ( (!_posHelCuts._configured) && (!_negHelCuts._configured)) {
@@ -326,8 +326,8 @@ namespace mu2e
   evt.put(std::move(triginfo));
     
     
-  if(!_noFilter) {return (nGoodHelices >= _minNHelices) && dt_range};
-    else {return true}; //filtering is turned off
+  if(!_noFilter) {return (nGoodHelices >= _minNHelices) && dt_range;}
+    else {return true;} //filtering is turned off
 
     
   
