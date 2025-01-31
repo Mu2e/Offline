@@ -1,0 +1,77 @@
+
+string building.central.stairwell.upper.stairs.1.name     = "CentralStairwellUpperStairs1";
+
+string building.central.stairwell.upper.stairs.1.material = "CONCRETE_MARS";
+
+double building.central.stairwell.upper.stairs.1.offsetFromMu2eOrigin.x   = 947.4;
+double building.central.stairwell.upper.stairs.1.offsetFromFloorSurface.y = 2825.75;
+double building.central.stairwell.upper.stairs.1.offsetFromMu2eOrigin.z   = 9042.4;
+
+double building.central.stairwell.upper.stairs.1.yHalfThickness           = 609.6;
+vector<double> building.central.stairwell.upper.stairs.1.angles           = {1.5708, 0., 0.};
+
+vector<double> building.central.stairwell.upper.stairs.1.xPositions = {
+ 0,        // h
+ 176.53,   // h
+ 176.53,   // h
+ 353.06,     // h1
+ 353.06,     // h1
+ 529.59,     // h1
+ 529.59,     // h1
+ 706.12,     // h1
+ 706.12,     // h1
+ 882.65,     // h1
+ 882.65,     // h1
+ 1059.18,     // h1
+ 1059.18,     // h1
+ 1235.71,     // h1
+ 1235.71,     // h1
+ 1412.24,     // h1
+ 1412.24,     // h1
+ 1588.77,     // h1
+ 1588.77,     // h1
+ 1765.3,     // h1
+ 1765.3,     // h1
+ 1941.83,     // h1
+ 1943.83,     // h1
+ 2118.36,     // h1
+ 2118.36,     // h1
+ 2294.89,     // h1
+ 2294.89,     // h1
+ 0    // h2
+};
+
+vector<double> building.central.stairwell.upper.stairs.1.yPositions = {
+  -14892.65,  // h
+  -14892.65,  // h
+  -15172.05,  // h
+  -15172.05,  // h
+  -15451.45,  // h
+  -15451.45,  // h
+  -15730.85,  // h
+  -15730.85,  // h
+  -16010.25,  // h
+  -16010.25,  // h
+  -16289.65,  // h
+  -16289.65,  // h
+  -16569.05,  // h
+  -16569.05,  // h
+  -16848.45,  // h
+  -16848.45,  // h
+  -17127.85,  // h
+  -17127.85,  // h
+  -17407.25,  // h
+  -17407.25,  // h
+  -17686.65,  // h
+  -17686.65,  // h
+  -17966.05,  // h
+  -17966.05,  // h
+  -18245.45,  // h
+  -18245.45,  // h
+  -18524.85,  // h
+  -18524.85   // h
+};
+
+// Local Variables:
+// mode:c++
+// End:
