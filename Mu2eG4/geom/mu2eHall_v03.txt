@@ -76,33 +76,9 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallS.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallW.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperLanding.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair01.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair02.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair03.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair04.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair05.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair06.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair07.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair08.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair09.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair10.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair11.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair12.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair13.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair14.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair15.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair16.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair17.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair18.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair19.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair20.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair21.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair22.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair23.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair24.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair25.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair26.txt"
-#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStair27.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperPlatform.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStairs1.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStairs2.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallE.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallE2.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallN.txt"
@@ -363,33 +339,7 @@ vector<string> bldg.prefix.list = {
    "building.central.stairwell.lower.wall.s",
    "building.central.stairwell.lower.wall.w",
    "building.central.stairwell.upper.landing",
-   "building.central.stairwell.upper.stair.01",
-   "building.central.stairwell.upper.stair.02",
-   "building.central.stairwell.upper.stair.03",
-   "building.central.stairwell.upper.stair.04",
-   "building.central.stairwell.upper.stair.05",
-   "building.central.stairwell.upper.stair.06",
-   "building.central.stairwell.upper.stair.07",
-   "building.central.stairwell.upper.stair.08",
-   "building.central.stairwell.upper.stair.09",
-   "building.central.stairwell.upper.stair.10",
-   "building.central.stairwell.upper.stair.11",
-   "building.central.stairwell.upper.stair.12",
-   "building.central.stairwell.upper.stair.13",
-   "building.central.stairwell.upper.stair.14",
-   "building.central.stairwell.upper.stair.15",
-   "building.central.stairwell.upper.stair.16",
-   "building.central.stairwell.upper.stair.17",
-   "building.central.stairwell.upper.stair.18",
-   "building.central.stairwell.upper.stair.19",
-   "building.central.stairwell.upper.stair.20",
-   "building.central.stairwell.upper.stair.21",
-   "building.central.stairwell.upper.stair.22",
-   "building.central.stairwell.upper.stair.23",
-   "building.central.stairwell.upper.stair.24",
-   "building.central.stairwell.upper.stair.25",
-   "building.central.stairwell.upper.stair.26",
-   "building.central.stairwell.upper.stair.27",
+   "building.central.stairwell.upper.platform",
    "building.central.stairwell.upper.wall.e",
    "building.central.stairwell.upper.wall.e2",
    "building.central.stairwell.upper.wall.n",
@@ -587,7 +537,9 @@ vector<string> bldg.prefix.list = {
 };
 
 vector<string> rotated.prefix.list = {
-   "building.central.stairwell.lower.stairs"
+   "building.central.stairwell.lower.stairs",
+   "building.central.stairwell.upper.stairs.1",
+   "building.central.stairwell.upper.stairs.2"
 };
 
 //   "building.tempDirt.backfill.psArea.baselevel",
