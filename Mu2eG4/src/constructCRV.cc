@@ -252,6 +252,12 @@ namespace mu2e
                                                             false);
       if(doSurfaceCheck) checkForOverlaps(motherPhysical, _config, verbosityLevel>0);
 
+      VolumeInfo info(motherSolid->GetName(),motherAirOffset,parent.centerInWorld);
+      info.solid  = motherSolid;
+      info.logical  = motherLogical;
+      info.physical  =  motherPhysical;
+      _helper.addVolInfo(info);
+
       /************************************************************************************/
       /**** mother solid for individual scintillator/aluminum layers of the CRV sector ****/
       /************************************************************************************/

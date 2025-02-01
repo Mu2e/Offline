@@ -83,7 +83,7 @@ namespace mu2e
         size_t channelIndex=barIndex*4 + SiPM;
         _pedestalHists.emplace_back(tfs->make<TH1F>(Form("crvPedestalHist_%lu",channelIndex),
                                                     Form("crvPedestalHist_%lu",channelIndex),
-                                                    200,-50,150));   //TODO: needs to be only between -50 and +50, but Offline currently sets the pedestal at +100
+                                                    201,-50.5,150.5));   //TODO: needs to be only between -50 and +50, but Offline currently sets the pedestal at +100
         _timeOffsets[channelIndex]=0;
       }
     }
