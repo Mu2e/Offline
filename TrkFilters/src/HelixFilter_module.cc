@@ -57,6 +57,8 @@ namespace mu2e
       fhicl::OptionalAtom<double>             minAbsLambda         {     Name("minAbsLambda"),            Comment("minAbsLambda   ") };
       fhicl::OptionalAtom<double>             maxNLoops            {     Name("maxNLoops"),               Comment("maxNLoops      ") };
       fhicl::OptionalAtom<double>             minNLoops            {     Name("minNLoops"),               Comment("minNLoops      ") };
+      fhicl::OptionalAtom<double>             slopeSigMin          {     Name("slopeSigMin"),             Comment("Minimum helix seed slope significance selection")};
+      fhicl::OptionalAtom<double>             slopeSigMax          {     Name("slopeSigMax"),             Comment("Maximum helix seed slope significance selection")};
       fhicl::Sequence<std::string>            helixFitFlag         {     Name("helixFitFlag"),            Comment("helixFitFlag   "), std::vector<std::string>{"HelixOK"} };
       fhicl::OptionalAtom<bool>               prescaleUsingD0Phi   {     Name("prescaleUsingD0Phi"),      Comment("prescaleUsingD0Phi") };
       fhicl::Table<PhiPrescalingParams::Config>             prescalerPar{     Name("prescalerPar"),      Comment("prescalerPar") };
@@ -83,6 +85,8 @@ namespace mu2e
           config.minAbsLambda(_minlambda);
           config.maxNLoops(_maxnloops);
           config.minNLoops(_minnloops);
+          _useSlopeSigMin = config.slopeSigMin(_slopeSigMin);
+          _useSlopeSigMax = config.slopeSigMax(_slopeSigMax);
         }
 
         bool val;
@@ -122,6 +126,9 @@ namespace mu2e
         float lambda     = std::fabs(Helix.helix().lambda());
         float nLoops     = helTool.nLoops();
         float hRatio     = helTool.hitRatio();
+        const float slope    = Helix.recoDir().slope();
+        const float slopeErr = std::fabs(Helix.recoDir().slopeErr());
+        const float slopeSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f;
 
         if(Debug > 2){
           std::cout << "[HelixFilter] : status = " << Helix.status() << " nhits = " << nstrawhits << " mom = " << hmom << std::endl;
@@ -141,6 +148,8 @@ namespace mu2e
             nLoops     >= _minnloops     &&
             hmom       >= _minmom        &&
             hmom       <= _maxmom        &&
+            (!_useSlopeSigMin || slopeSig > _slopeSigMin) &&
+            (!_useSlopeSigMax || slopeSig < _slopeSigMax) &&
             hRatio     >= _minHitRatio ) {
           //now check if we want to prescake or not
           if (_prescaleUsingD0Phi) {
@@ -169,6 +178,10 @@ namespace mu2e
       double        _minlambda;
       double        _maxnloops;
       double        _minnloops;
+      bool          _useSlopeSigMin;
+      double        _slopeSigMin;
+      bool          _useSlopeSigMax;
+      double        _slopeSigMax;
       TrkFitFlag    _goodh; // helix fit flag
       bool          _prescaleUsingD0Phi;
       PhiPrescalingParams     _prescalerPar;
