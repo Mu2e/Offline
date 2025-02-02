@@ -1,6 +1,6 @@
 // Simulate the electronics response of the HPGe detector. Simulates the pulse height, decay tail, and ADC digitization. Generate one STMWaveformDigi per micropulse.
 // Based heavily on example provided in docDb43617 (C. Alvarez-Garcia)
-// Pawel Plesniak, 2024
+// Original author: Pawel Plesniak
 
 // stdlib includes
 #include <string>
@@ -160,7 +160,7 @@ namespace mu2e {
     chargeToADC = epsilonGe / (ADCToEnergy * 1e3);
 
     // Define the decay amount with each step. 1e3 converts [us] to [ns]
-    decayExp = exp(-tStep/(risingEdgeDecayConstant*1e3)); // DELETEME - WAS 1
+    decayExp = exp(-tStep/(risingEdgeDecayConstant*1e3));
 
     // Convert noise SD from [mV] to [C]
     noiseSD = noiseSD * 1e-3 * feedbackCapacitance/_e;
@@ -218,7 +218,6 @@ namespace mu2e {
 
     // Create the STMWaveformDigi and insert all the relevant attributes
     eventTime = ( event.id().event() * micropulseTime + 200) / 25; // 25ns is 40MHz system clock period.
-    eventTime = eventTime + tStep*20; // DEUBGGING
     STMWaveformDigi _waveformDigi(eventTime, _adcs);
     std::unique_ptr<STMWaveformDigiCollection> outputDigis(new STMWaveformDigiCollection);
     outputDigis->emplace_back(_waveformDigi);
@@ -353,7 +352,7 @@ namespace mu2e {
       std::cout << i << ", ";
     std::cout << std::endl;
 
-    // The charge collected is at the start of this event - DELETEME review this
+    // The charge collected is at the start of this event
     if(tIndexStart == 0)
     {
       _chargeCollected[tIndexStart] += _charge[tIndexStart];
@@ -396,7 +395,7 @@ namespace mu2e {
     return;
   };
   // ==============================================
-  void HPGeWaveformsFromGeantSim::addNoise()
+  void HPGeWaveformsFromGeantSim::digitize()
   {
     // Convert the charge deposition to ADC voltage output.
     for (uint i = 0; i < nADCs; i++)

@@ -123,7 +123,15 @@ namespace mu2e {
       _peaks.reserve(_nadc-_window);
 
       calculateGradient(adcs);
+      std::cout << "ZS: Gradient" << std::endl;
+      for (auto i : _gradient)
+        std::cout << i << std::endl;
+
       averageGradient();
+      std::cout << "ZS: Avg Gradient" << std::endl;
+      for (auto i : _avgradient)
+        std::cout << i << std::endl;
+
       if(_verbosityLevel){std::cout << _channel.name() << " " << _channel.id() << std::endl;}
       findPeaks(stmEnergyCalib); // pass it the prodition because it needs to get the sampling frequency
       chooseStartsAndEnds();
@@ -133,6 +141,9 @@ namespace mu2e {
         const auto& i_start = _finalstarts.at(i_zp_waveform);
         const auto& i_end = _finalends.at(i_zp_waveform);
         std::vector<int16_t> zp_adcs(waveform.adcs().begin()+i_start, waveform.adcs().begin()+i_end);
+        std::cout << "Counstructing the ZPADCs" << std::endl;
+        for (auto i : zp_adcs)
+          std::cout << i << std::endl;
         STMWaveformDigi stm_waveform(waveform.trigTimeOffset()+i_start, zp_adcs);
         outputSTMWaveformDigis->push_back(stm_waveform);
       }
@@ -183,6 +194,9 @@ namespace mu2e {
     _ends.clear();
     unsigned int nadcBefore = STMUtils::convertToClockTicks(_tbefore, _channel, stmEnergyCalib); // number of samples before peak
     unsigned int nadcAfter = STMUtils::convertToClockTicks(_tafter, _channel, stmEnergyCalib); // number of samples after peak
+    std::cout << "ZS findPeaks" << std::endl;
+    std::cout << "nadcBefore " << nadcBefore << std::endl;
+    std::cout << "nadcAfter " << nadcAfter << std::endl;
     //Store positions in clock ticks for the peaks found, fill _peaks[]
     for(unsigned long int i=0;i<n_avgradient_points;i++){
 

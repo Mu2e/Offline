@@ -1,6 +1,5 @@
 // Used with STMResamplingFilter. Adds empty StepPointMC collections with the associated tag so the filter doesn't crash.
-//
-// Pawel Plesniak
+// Orginal author: Pawel Plesniak
 
 // stdlib includes
 #include <iostream>
@@ -11,91 +10,73 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
+// exception handling
+#include "cetlib_except/exception.h"
+
 // fhicl includes
-#include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/Sequence.h"
-#include "fhiclcpp/types/OptionalAtom.h"
 #include "canvas/Utilities/InputTag.h"
+#include "fhiclcpp/types/Atom.h"
+
+// message handling
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Offline includes
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
-using namespace std;
 
-namespace mu2e{
-  class STMResamplingProducer : public art::EDProducer
-  {
-  public:
-    using Name=fhicl::Name;
-    using Comment=fhicl::Comment;
+namespace mu2e {
+  class STMResamplingProducer : public art::EDProducer {
+    public:
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      struct Config {
+        fhicl::Atom<art::InputTag> stepPointMCsTag{Name("StepPointMCsTag"), Comment("Input tag of StepPointMCs")};
+        fhicl::Atom<unsigned long> virtualDetectorID{Name("VirtualDetectorID"), Comment("Virtual detector ID to generate a separate StepPointMC collection from")};
+      };
+      using Parameters=art::EDProducer::Table<Config>;
+      explicit STMResamplingProducer(const Parameters& pset);
+      virtual void produce(art::Event& event) override;
+      virtual void endJob() override;
 
-    struct Config
-    {
-      fhicl::Atom<std::string> StepPointMCsTag{Name("StepPointMCsTag"), Comment("Input tag of StepPointMCs")};
-      fhicl::Atom<uint> VirtualDetectorID{Name("VirtualDetectorID"), Comment("Virtual detector ID to filter events from")};
-      fhicl::OptionalAtom<bool> verbose{Name("verbose"), Comment("Prints summary")};
-    };
-    using Parameters=art::EDProducer::Table<Config>;
-
-    explicit STMResamplingProducer(const Parameters& pset);
-    virtual void produce(art::Event& event) override;
-    virtual void endJob() override;
-  private:
-    art::ProductToken<StepPointMCCollection> StepPointMCsToken;
-    uint VD_ID = 0, eventsWithVD_IDStep = 0, eventsWithoutVD_IDStep = 0, keptStepPointMCsCount = 0;
-    bool verbose = false, eventHasVD_IDSteps = false;
+    private:
+      art::ProductToken<StepPointMCCollection> StepPointMCsToken;
+      unsigned long virtualDetectorID = 0, includedStepPointMCs = 0;
   };
-  // ===================================================
+
   STMResamplingProducer::STMResamplingProducer(const Parameters& conf) :
     art::EDProducer{conf},
-    StepPointMCsToken(consumes<StepPointMCCollection>(conf().StepPointMCsTag())),
-    VD_ID(conf().VirtualDetectorID())
-    {
+    StepPointMCsToken(consumes<StepPointMCCollection>(conf().stepPointMCsTag())),
+    virtualDetectorID(conf().virtualDetectorID()) {
       produces<StepPointMCCollection>();
-      auto _verbose = conf().verbose();
-      if(_verbose)verbose = *_verbose;
     };
-  // ===================================================
-  void STMResamplingProducer::produce(art::Event& event)
-  {
+
+  void STMResamplingProducer::produce(art::Event& event) {
+    // Get the data product
     auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
-    eventHasVD_IDSteps = false;
+    if (StepPointMCs.size() == 0)
+      throw cet::exception("DataError") << "Requested data not found";
+
     // Define the StepPointMCCollection to be added to the event
-    std::unique_ptr<StepPointMCCollection> _outputStepPointMCs(new StepPointMCCollection);
+    std::unique_ptr<StepPointMCCollection> outputStepPointMCs(new StepPointMCCollection);
 
-    // Check if the event has a required data product. If so add it to the collection
-    for (const StepPointMC& step : StepPointMCs)
-      {
-        if ( step.volumeId() == VD_ID){ // This can be a VirutalDetectorID.
-          eventHasVD_IDSteps = true;
-          keptStepPointMCsCount++;
-          _outputStepPointMCs->emplace_back(step);
-        };
-      };
+    // Collect valid data products
+    for (const StepPointMC& step : StepPointMCs) {
+      if (step.volumeId() == virtualDetectorID)
+        outputStepPointMCs->emplace_back(step);
+    };
 
-    if (eventHasVD_IDSteps == true)
-      {
-        eventsWithVD_IDStep++;
-      }
-    else
-      {
-        eventsWithoutVD_IDStep++;
-      };
-
-    event.put(std::move(_outputStepPointMCs));
+    // Update counter
+    includedStepPointMCs += outputStepPointMCs->size();
+    // Add the new data products to the event
+    event.put(std::move(outputStepPointMCs));
     return;
   };
-// ===================================================
-  void STMResamplingProducer::endJob()
-  {
-    if (verbose)
-      {
-        std::cout << "Events with steps in VD"         << VD_ID << ": " << eventsWithVD_IDStep    << std::endl;
-        std::cout << "Number of kept StepPointMCs in " << VD_ID << ": " << keptStepPointMCsCount  << std::endl;
-        std::cout << "Events without steps in VD"      << VD_ID << ": " << eventsWithoutVD_IDStep << std::endl;
-      };
+
+  void STMResamplingProducer::endJob() {
+    mf::LogInfo log("STMResamplingProducer summary");
+    log << "No. kept StepPointMCs: " << includedStepPointMCs  << "\n";
     return;
   };
-};
+}; // namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::STMResamplingProducer)

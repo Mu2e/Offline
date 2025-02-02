@@ -1,36 +1,45 @@
+# Extracts data from STM propagation scripts into ROOT TTrees
+# Edit services.TFileService.fileName before running!
+# Run as: $ mu2e -c MakeTree.fcl -S FileWithListOfDataFiles.txt
+#
+# Original author: Pawel Plesniak
+
 #include "Offline/STMMC/fcl/prolog.fcl"
 #include "Offline/fcl/standardServices.fcl"
 
-process_name: SinglePhotonProgression
+process_name: MakeTree
 
 source : {
   module_type : RootInput
+  fileNames: @nil
 }
 services : {
   message : @local::default_message
-  GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
+  GlobalConstantsService : {
+    inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt"
+  }
 }
 physics: {
   analyzers : {
-    Stage1Tree : {
-      module_type : MakeTree
-      vdStepPointMCsTag : @local::SimplifyStage1Data.vdStepPointMCsTag
+    Stage1virtualdetector : {
+      module_type : MakeVirtualDetectorTree
+      StepPointMCsTag : @local::SimplifyStage1Data.StepPointMCsTag
       SimParticlemvTag : @local::SimplifyStage1Data.SimParticlemvTag
-      GenerateTTree : @local::SimplifyStage1Data.GenerateTTree
-      GenerateDataSummary : @local::SimplifyStage1Data.GenerateDataSummary
-      VD_ID : @local::SimplifyStage1Data.VD_ID
     }
-    Stage2Tree : {
-      module_type : MakeTree
-      StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTag
+    Stage2virtualdetector : {
+      module_type : MakeVirtualDetectorTree
+      StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagVirtualdetector
       SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
-      GenerateTTree : @local::SimplifyStage2Data.GenerateTTree
-      GenerateDataSummary : @local::SimplifyStage2Data.GenerateDataSummary
-      VD_ID : @local::SimplifyStage2Data.VD_ID.HPGe
+    }
+    Stage2detector : {
+      module_type : EDepFromShower
+      Detector: "HPGe"
+      StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagSTMDet
+      SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
     }
   }
-  o1 : [ Stage2Tree ] # Stage1Tree
+  o1 : [ Stage2virtualdetector ]
   end_paths: [ o1 ]
 }
 
-services.TFileService.fileName : @nil
+services.TFileService.fileName : "renameMe.root"

@@ -17,13 +17,12 @@ physics : {
   producers : {
     generate : {
       module_type : PhotonGun
-      xpos : -3946
-      ypos : 0
-      zpos : 40404
-      energy: 1.809
-      mean : 0
-      sigma0 : 0
-      doTree : false
+      x : @local::DevPhotonGun.x
+      y : @local::DevPhotonGun.y
+      z : @local::DevPhotonGun.z
+      px : @local::DevPhotonGun.px
+      py : @local::DevPhotonGun.py
+      E : @local::DevPhotonGun.E
     }
     g4run : @local::g4run
     DigiHPGe : {
@@ -34,6 +33,9 @@ physics : {
       NoiseSD : @local::HPGeDigitization.PreamplifierNoiseSD # mV
       risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant # us
       verbose : true
+      HPGeCrystalEndcapCentreX : @local::HPGeCrystalEndcapCentre.x
+      HPGeCrystalEndcapCentreY : @local::HPGeCrystalEndcapCentre.y
+      HPGeCrystalEndcapCentreZ : @local::HPGeCrystalEndcapCentre.z
     }
     ZSHPGe : {
       module_type : STMZeroSuppression
@@ -56,11 +58,11 @@ physics : {
       verbosityLevel: 1
     }
   }
-  o1 : [generate, g4run, DigiHPGe]
-  # o1 : [generate, g4run, DigiHPGe, ZSHPGe, MWDHPGe]
+  o1 : [ generate, g4run, DigiHPGe ]
+  # o1 : [ generate, g4run, DigiHPGe, ZSHPGe, MWDHPGe ]
   trigger_paths : [o1]
-  e1 : [WaveformDigiDump]
-  end_paths : [e1]
+  # e1 : [WaveformDigiDump]
+  # end_paths : [e1]
 }
 
 outputs: {
@@ -74,6 +76,13 @@ outputs: {
      #]
   }
 }
+# Point Mu2eG4 to the pre-simulated data
+physics.producers.g4run.inputs: {
+  primaryType: "GenParticles"
+  primaryTag: "generate:"
+}
+physics.producers.g4run.debug.trackingVerbosityLevel : 1
+physics.producers.g4run.debug.steppingVerbosityLevel : 1
 
 physics.producers.g4run.physics.physicsListName: "QGSP_BERT_EMZ"
 physics.producers.g4run.SDConfig.enableSD: [STMDet]

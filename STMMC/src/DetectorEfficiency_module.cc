@@ -1,70 +1,87 @@
+// Sums the energy associated with a simulated POT in VD01
+// Original author: Pawel Plesniak
+
+// stdlib
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <stdio.h>
 
+// art
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
-#include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/Sequence.h"
-#include "fhiclcpp/types/OptionalAtom.h"
+// exception handling
+#include "cetlib_except/exception.h"
 
+// fhicl
 #include "canvas/Utilities/InputTag.h"
 
+// message handling
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
+// Offline
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
+// ROOT
+#include "art_root_io/TFileService.h"
 #include "TNtuple.h"
 
-#include "art_root_io/TFileService.h"
-using namespace std;
 
 namespace mu2e{
-  class DetectorEfficiency : public art::EDAnalyzer
-  {
-  public:
-    using Name=fhicl::Name;
-    using Comment=fhicl::Comment;
-    struct Config
-    {
-      fhicl::Atom<bool> v{Name("v"), Comment("verbose")};
+    class DetectorEfficiency : public art::EDAnalyzer {
+      public:
+          using Name=fhicl::Name;
+          using Comment=fhicl::Comment;
+          struct Config {};
+          using Parameters=art::EDAnalyzer::Table<Config>;
+
+          explicit DetectorEfficiency(const Parameters& pset);
+          void analyze(art::Event const& event);
+          void endJob();
+      private:
+          bool verbose = false;
+          TNtuple* _nt = nullptr;
+          double E = 0.0;
+          int acceptedSteps = 0, rejectedSteps = 0, countedEvents = 0;
+          const unsigned long virtualdetectorId = 101;
     };
-    using Parameters=art::EDAnalyzer::Table<Config>;
 
-    explicit DetectorEfficiency(const Parameters& pset);
-    void analyze(art::Event const& event) override;
-    void beginJob() override;
+    DetectorEfficiency::DetectorEfficiency(const Parameters& config):
+        art::EDAnalyzer{config} {
+            art::ServiceHandle<art::TFileService> tfs;
+            _nt = tfs->make<TNtuple>("nt", "Energy Deposit", "E");
+            std::cout << "Initializing DetectorEfficiency TTree" << std::endl;
+        };
 
-  private:
-    bool verbose = false;
-    TNtuple* _nt = nullptr;
-  };
-  // ===================================================
-  DetectorEfficiency::DetectorEfficiency(const Parameters& config):
-    art::EDAnalyzer{config},
-    verbose(config().v())
-    {};
-  // ===================================================
-  void DetectorEfficiency::beginJob()
-  {
-    art::ServiceHandle<art::TFileService> tfs;
-    _nt = tfs->make<TNtuple>("nt", "Energy Deposit", "E");
-    return;
-  };
-  // ===================================================
-  void DetectorEfficiency::analyze(art::Event const& event)
-  {
-    art::Handle<StepPointMCCollection> _inputStepPointMCs;
-    event.getByLabel("g4run:STMDet", _inputStepPointMCs);
+    void DetectorEfficiency::analyze(art::Event const& event) {
+        countedEvents++;
+        art::Handle<StepPointMCCollection> StepPointMCs;
+        event.getByLabel("g4run:virtualdetector", StepPointMCs);
+        if (StepPointMCs.size() == 0)
+            throw cet::exception("DataError") << "Requested data not found";
 
-    double E = 0.0;
-    for (const StepPointMC &step : *_inputStepPointMCs)
-    {
-      E += step.ionizingEdep();
+        // Collect the associated StepPointMC energy
+        E = 0.0;
+        for (const StepPointMC &step : *StepPointMCs) {
+            if (step.virtualDetectorId() == virtualdetectorId) {
+                E += step.ionizingEdep();
+            acceptedSteps++;
+        }
+        else
+            rejectedSteps++;
+        };
+        _nt->Fill(E);
+        return;
     };
-    _nt->Fill(E);
-    return;
-  };
-}
+
+    void DetectorEfficiency::endJob() {
+        mf::LogInfo log("Unfiltered virtual detector hits summary");
+        log << "Accepted steps: " << acceptedSteps << "\n";
+        log << "Rejected steps: " << rejectedSteps << "\n";
+        log << "Counted events: " << countedEvents << "\n";
+    };
+};
 
 DEFINE_ART_MODULE(mu2e::DetectorEfficiency)
