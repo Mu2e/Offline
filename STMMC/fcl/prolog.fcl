@@ -1,94 +1,101 @@
 #
 # prolog.fcl for fcl paramaters that will be used in STM simulation modules
 #
+
 BEGIN_PROLOG
 
-DevPhotonGun : {
-  x : -3935
-  y : 0
-  z : 40660
-  E : 1.809 # 0.347
-  px : -0.245
-  py : 0
+# Geometry, all in mm
+ComponentPositions : {
+    HPGe : { # aperture centre
+        x : -3944.6
+        y : 0.416
+        z : 40404
+    }
+    HPGeCrystalEndcapCentre : {
+        x : -3946.06
+        y : 0
+        z : 40671.3
+    }
+    LaBr : { # aperture centre
+        x : -3863.4
+        y : 0.416
+    }
+    Absorber : { # 50mm x 50mm x 390mm
+        x : -3944.6
+        y : -24.9
+        z : 39900
+    }
+    VD101 : { # Centre
+        x : -3904.0
+        y : 0.0
+        z : 40301.0
+    }
 }
 
-Efficiency : {
-  HPGe : {
-    x : -3944.6 # mm for HPGe - aperture centre
-    y : 0.416 # mm for HPGe
-  }
-  LaBr : {
-    x : -3863.4 # mm for LaBr - aperture centre
-    y : 0.416 # mm for LaBr
-  }
-  NPhotons : 10
-  PhotonEnergy : 1.809 # MeV
-  OutputFilename : "Efficiency.root"
+# Stage 1 propagation parameters
+ResamplingProducer : {
+    StepPointMCsTag : "g4run:virtualdetector"
+    VirtualDetectorID : 101
+}
+ResamplingFilter : {
+    StepPointMCsTag : "compressDetStepMCsSTM"
+}
+VirtualDetectorCounter : {
+    StepPointMCsTag : "g4run:virtualdetector"
+    virtualDetectorIDs : [88, 89, 90, 100, 101]
 }
 
+# ShiftVirtualDetectorStepPointMCs_module.cc parameters
+ShiftVD101Steps : {
+    StepPointMCsTag : "compressDetStepMCsSTM:virtualdetector"
+    VirtualDetectorID : 101
+    InputRadius : 200 # VD101 aperture radius
+    OutputRadius : 3.98942280401 # SSC aperture radius
+    STMStudy : true
+    verbose : true
+    HPGeUpStr : { # Position just upstream of absorber centered on the HPGe SSC aperture
+        x : -3944.6
+        y : 0.0
+        z : 39906.0
+    }
+    LaBrUpStr : { # Position just upstream of SSC centered on the Labr SSC aperture
+        x : -3863.4
+        y : 0.0
+        z : 40300.9
+    }
+    pdgID : 22
+}
+
+# MakeTree_module.cc parameters
 SimplifyStage1Data : {
-  StepPointMCsTag : "compressDetStepMCsSTM:virtualdetector"
-  SimParticlemvTag : "compressDetStepMCsSTM:"
-  VD_ID : 101
-  GenerateTTree : true
-  GenerateDataSummary : true
+    StepPointMCsTag : "compressDetStepMCsSTM:virtualdetector"
+    StepPointMCsTag1809 : "compressDetStepMCsSTM:"
+    SimParticlemvTag : "compressDetStepMCsSTM:"
+    VirtualDetectorID : 101
 }
 SimplifyStage2Data : {
-  StepPointMCsTag : "compressSTMDet:STMDet"
-  SimParticlemvTag : "compressSTMDet:"
-  VD_ID : {
-    HPGe : 90
-    LaBr : 89
-  }
-  GenerateTTree : true
-  GenerateDataSummary : true
+    StepPointMCsTagSTMDet : "compressSTMDet:STMDet"
+    StepPointMCsTagVirtualdetector : "compressSTMDet:virtualdetector"
+    SimParticlemvTag : "compressSTMDet:"
+    VirtualDetectorID : {
+        HPGe : 90
+        LaBr : 89
+    }
 }
 
+# DAQ parameters
 HPGeDigitization : {
-  EnergyPerADCBin : 0.5 # keV/bin
-  PreamplifierNoiseSD : 0.32 # mV
-  DecayConstant : 50 # us
+    EnergyPerADCBin : 0.5 # keV/bin
+    PreamplifierNoiseSD : 0.32 # mV
+    DecayConstant : 50 # us
 }
 
-HPGeCrystalEndcapCentre : {
-  x : -3946.06
-  y : 0
-  z : 40671.3
-}
-
-ShiftVD101Steps : {
-  StepPointMCsTag : "compressDetStepMCsSTM:virtualdetector"
-  VirtualDetectorID : 101
-  InputRadius : 200 # VD101 aperture radius
-  OutputRadius : 3.98942280401 # SSC aperture radius
-  STMStudy : true
-  verbose : true
-  VD101 : { # Centre of VD101
-    X : -3904.0
-    Y : 0.0
-    Z : 40301.0
-  }
-  HPGeUpStr : { # Position just upstream of absorber centered on the HPGe SSC aperture
-    X : -3944.6
-    Y : 0.0
-    Z : 39906.0
-  }
-  LaBrUpStr : { # Position just upstream of SSC centered on the Labr SSC aperture
-    X : -3863.4
-    Y : 0.0
-    Z : 40300.9
-  }
-}
-
-ResamplingProducer : {
-  StepPointMCsTag : "g4run:virtualdetector"
-  VirtualDetectorID : 101
-  verbose : true
-}
-
-ResamplingFilter : {
-  StepPointMCsTag : "compressDetStepMCsSTM"
-  verbose : true
+# Normalization parameter determination studies
+# Detector efficiency simulation
+Efficiency : {
+    NPhotons : 1e7
+    PhotonEnergy : 1.809 # MeV
+    OutputFilename : "Efficiency.root"
 }
 
 END_PROLOG

@@ -1,9 +1,15 @@
 #include "Offline/STMMC/fcl/prolog.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 process_name: ShiftVirtualDetectorStepPointMCs
 
 source : {
   module_type : RootInput
+}
+
+services : {
+  message : @local::default_message
+  GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 }
 
 physics: {
@@ -22,6 +28,7 @@ physics: {
       OutputX : @local::ShiftVD101Steps.HPGeUpStr.X
       OutputY : @local::ShiftVD101Steps.HPGeUpStr.Y
       OutputZ : @local::ShiftVD101Steps.HPGeUpStr.Z
+      pdgID : @local::ShiftVD101Steps.pdgID
     }
     ShiftStepsLaBr : {
       module_type : ShiftVirtualDetectorStepPointMCs
@@ -37,18 +44,30 @@ physics: {
       OutputX : @local::ShiftVD101Steps.LaBrUpStr.X
       OutputY : @local::ShiftVD101Steps.LaBrUpStr.Y
       OutputZ : @local::ShiftVD101Steps.LaBrUpStr.Z
+      pdgID : @local::ShiftVD101Steps.pdgID
     }
   }
-
-  o1 : [ ShiftStepsHPGe, ShiftStepsLaBr ]
+  analyzers : {
+    StageShiftTree : {
+      module_type : MakeTree
+      StepPointMCsTag : "ShiftStepsHPGe:"
+      SimParticlemvTag : "compressDetStepMCsSTM:"
+      GenerateTTree : true
+      GenerateDataSummary : true
+      VirtualDetectorID : 0
+    }
+  }
+  o1 : [ ShiftStepsHPGe ]
   trigger_paths : [ o1 ]
-  e1 : [ ShiftDump ]
-  end_paths : [ e1 ]
+#  e1 : [ StageShiftTree ] # ShiftDump
+#  end_paths : [ e1 ]
 }
 
 outputs : {
   ShiftDump : {
     module_type : RootOutput
-    fileName : "testStepMove.art"
+    fileName : "Stage1Shift.art"
   }
 }
+
+services.TFileService.fileName : "EShiftTest.root"

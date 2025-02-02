@@ -7,8 +7,8 @@ STM : {
 
   HPGe : {
     # zero-suppression parameters
-    tbefore : 2000 # ns
-    tafter : 10000 # ns
+    tbefore : 20 #2000 # ns
+    tafter : 100 # 10000 # ns
     threshold : -100
     window : 100
     naverage : 5

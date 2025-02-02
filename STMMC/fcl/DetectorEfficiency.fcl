@@ -1,11 +1,13 @@
+# This module simulates a photon being fired at the STM detector of choice, and generates a tree with the energy deposited in the detector.
+# Original author : Pawel Plesniak
+# Note - edit the parameters in this prolog.fcl, aside from which detector is being used which is stored in the generate module
+
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/STMMC/fcl/prolog.fcl"
-# This module simulates a photon being fired at the STM detector of choice, and generates a tree with the energy deposited in the detector.
-# Original author : Pawel Plesniak
-# Note - edit the parameters in this prolog.fcl, aside from which detector is being used which is stored in the generate module
-process_name: SinglePhotonProgression
+
+process_name: DetetorEfficiency
 
 source : {
   module_type : EmptyEvent
@@ -20,7 +22,7 @@ physics: {
       module_type : PhotonGun
       xpos : @local::Efficiency.HPGe.x
       ypos : @local::Efficiency.HPGe.y
-      zpos : 40404
+      zpos : @local::Efficiency.DetectorZ
       energy : @local::Efficiency.PhotonEnergy
       mean : 0
       sigma0 : 0

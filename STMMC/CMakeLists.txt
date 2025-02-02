@@ -25,21 +25,35 @@ cet_build_plugin(DetectorEfficiency art::module
       art_root_io::TFileService_service
       Offline::MCDataProducts
 )
-cet_build_plugin(MakeTree art::module
-    REG_SOURCE src/MakeTree_module.cc
+cet_build_plugin(EDepFromShower_module art::module
+    REG_SOURCE src/EDepFromShower_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      Offline::MCDataProducts
-      Offline::GlobalConstantsService
       Offline::ConditionsService
+      Offline::DataProducts
       Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+)
+cet_build_plugin(VirtualDetectorTree_module art::module
+    REG_SOURCE src/VirtualDetectorTree_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
       Offline::Mu2eUtilities
 )
 cet_build_plugin(ShiftVirtualDetectorStepPointMCs art::module
     REG_SOURCE src/ShiftVirtualDetectorStepPointMCs_module.cc
     LIBRARIES REG
-      Offline::MCDataProducts
+      Offline::ConditionsService
       Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
       Offline::Mu2eUtilities
 )
 
