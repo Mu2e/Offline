@@ -10,9 +10,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
-// exception handling
-#include "cetlib_except/exception.h"
-
 // fhicl includes
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
@@ -53,8 +50,6 @@ namespace mu2e {
   void STMResamplingProducer::produce(art::Event& event) {
     // Get the data product
     auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
-    if (StepPointMCs.size() == 0)
-      throw cet::exception("DataError") << "Requested data not found";
 
     // Define the StepPointMCCollection to be added to the event
     std::unique_ptr<StepPointMCCollection> outputStepPointMCs(new StepPointMCCollection);

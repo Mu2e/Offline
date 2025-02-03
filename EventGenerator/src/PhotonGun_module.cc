@@ -34,11 +34,7 @@
 using namespace std;
 namespace mu2e {
 
-  //================================================================
   class PhotonGun : public art::EDProducer {
-    double x = 0.0, y = 0.0, z = 0.0;
-    double px = 0.0, py = 0.0, pz = 0.0;
-    double E = 0.0;
   public:
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
@@ -53,27 +49,26 @@ namespace mu2e {
     using Parameters = art::EDProducer::Table<Config>;
     explicit PhotonGun(const Parameters& conf);
     virtual void produce(art::Event& event);
+  private:
+    double x = 0.0, y = 0.0, z = 0.0;
+    double px = 0.0, py = 0.0, pz = 0.0;
+    double E = 0.0;
   };
 
-  //================================================================
   PhotonGun::PhotonGun(const Parameters& conf):
     art::EDProducer(conf),
     x(conf().x()),
     y(conf().y()),
     z(conf().z()),
-    E(conf().E())
-  {
-    produces<GenParticleCollection>();
-    auto _px = conf().px();
-    if(_px)px=*_px;
-    auto _py = conf().py();
-    if(_py)py=*_py;
-    if ((px*px + py*py) > (E*E))
-      throw cet::exception("RANGE") << "magnitude of px and py is greater than E, exiting.";
-    pz = sqrt(E*E - px*px - py*py);
-  }
+    E(conf().E()) {
+      produces<GenParticleCollection>();
+      px = conf().px() ? *conf().px() : 0;
+      px = conf().py() ? *conf().py() : 0;
+      if ((px*px + py*py) > (E*E))
+        throw cet::exception("RANGE") << "magnitude of px and py is greater than E, exiting.";
+      pz = sqrt(E*E - px*px - py*py);
+    };
 
-  //================================================================
   void PhotonGun::produce(art::Event& event) {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     const CLHEP::Hep3Vector pos(x, y, z);
@@ -81,7 +76,7 @@ namespace mu2e {
     CLHEP::HepLorentzVector mom(p, E);
     output->push_back(GenParticle(PDGCode::gamma, GenId::particleGun, pos, mom, 0.));
     event.put(std::move(output));
-  }
-}
+  };
+}; // end namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::PhotonGun)

@@ -88,6 +88,12 @@ SimplifyStage2Data : {
 }
 
 # DAQ parameters
+STMDAQParameters : {
+    samplingFrequencies : {
+        HPGe : 320 # MSPS
+        LaBr : 370.370370370 # MSPS - copied from Offline/STMConditions/fcl/prolog.fcl
+    }
+}
 HPGeDigitization : {
     EnergyPerADCBin : 0.5 # keV/bin
     PreamplifierNoiseSD : 0.32 # mV
