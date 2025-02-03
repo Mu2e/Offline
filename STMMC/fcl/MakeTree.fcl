@@ -22,24 +22,29 @@ services : {
 physics: {
   analyzers : {
     Stage1virtualdetector : {
-      module_type : MakeVirtualDetectorTree
+      module_type : VirtualDetectorTree
       StepPointMCsTag : @local::SimplifyStage1Data.StepPointMCsTag
       SimParticlemvTag : @local::SimplifyStage1Data.SimParticlemvTag
     }
+    Stage1virtualdetector1809 : {
+      module_type : VirtualDetectorTree
+      StepPointMCsTag : @local::SimplifyStage1Data.StepPointMCsTag1809
+      SimParticlemvTag : @local::SimplifyStage1Data.SimParticlemvTag
+    }
     Stage2virtualdetector : {
-      module_type : MakeVirtualDetectorTree
+      module_type : VirtualDetectorTree
       StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagVirtualdetector
       SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
     }
     Stage2detector : {
-      module_type : EDepFromShower
-      Detector: "HPGe"
+      module_type : DetectorTree
+      Detector: @local::SimplifyStage2Data.Detector
       StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagSTMDet
       SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
     }
   }
-  o1 : [ Stage2virtualdetector ]
-  end_paths: [ o1 ]
+  o1 : @nil
+  end_paths: [o1]
 }
 
-services.TFileService.fileName : "renameMe.root"
+services.TFileService.fileName : @nil

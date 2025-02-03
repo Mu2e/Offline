@@ -1,50 +1,60 @@
-// Simulate the electronics response of the HPGe detector. Simulates the pulse height, decay tail, and ADC digitization. Generate one STMWaveformDigi per micropulse.
-// Based heavily on example provided in docDb43617 (C. Alvarez-Garcia)
+// Simulates the electronics response of the HPGe detector. Simulates the pulse height, decay tail, and ADC digitization. Generates one STMWaveformDigi per micropulse.
+// Model based heavily on example provided in docDb 43617
+// See docDb 51487 for full documentation
+// Input parameters
+//   - StepPointMCsTag - StepPointMCs in the HPGe detector
+//   - fADC - ADC sampling frequency, in MHz
+//   - ADCToEnergy - ADC energy calibration, in keV/bin
+//   - noiseSD - Standard deviation of the electronics noise, in keV
+//   - risingEdgeDecayConstant - rising edge decay time constant, in us
+//   - HPGeCrystalEndcapCentreX - x of the HPGe crystal endcap centre
+//   - HPGeCrystalEndcapCentreY - y of the HPGe crystal endcap centre
+//   - HPGeCrystalEndcapCentreZ - z of the HPGe crystal endcap centre
 // Original author: Pawel Plesniak
 
 // stdlib includes
-#include <string>
-#include <iostream>
-#include <bits/stdc++.h>
-#include <random>
-#include <utility>
 #include <algorithm>
+#include <bits/stdc++.h>
+#include <iostream>
+#include <limits>
+#include <random>
+#include <string>
+#include <utility>
 
 // art includes
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "art_root_io/TFileService.h"
-
-// fhicl includes
-#include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/Sequence.h"
-#include "fhiclcpp/types/OptionalAtom.h"
-#include "canvas/Utilities/InputTag.h"
-
-// Offline includes
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
-#include "Offline/Mu2eUtilities/inc/STMUtils.hh"
-#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
-#include "Offline/STMConditions/inc/STMEnergyCalib.hh"
-#include "Offline/DataProducts/inc/STMChannel.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
-// ROOT includes
-#include "TH1.h"
-#include "TTree.h"
-
-// Exception handling
+// exception handling
 #include "cetlib_except/exception.h"
 
+// fhicl includes
+#include "canvas/Utilities/InputTag.h"
+#include "fhiclcpp/types/Atom.h"
+
+// message handling
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
+// Offline includes
+#include "Offline/DataProducts/inc/STMChannel.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/Mu2eUtilities/inc/STMUtils.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
+#include "Offline/STMConditions/inc/STMEnergyCalib.hh"
+
+// ROOT includes
+#include "art_root_io/TFileService.h"
+#include "TTree.h"
+
+
 namespace mu2e {
-  //================================================================
   class HPGeWaveformsFromGeantSim : public art::EDProducer {
   public:
     using Name=fhicl::Name;
@@ -58,11 +68,9 @@ namespace mu2e {
       fhicl::Atom<double> HPGeCrystalEndcapCentreX{ Name("HPGeCrystalEndcapCentreX"), Comment("HPGe endcap centre x")};
       fhicl::Atom<double> HPGeCrystalEndcapCentreY{ Name("HPGeCrystalEndcapCentreY"), Comment("HPGe endcap centre y")};
       fhicl::Atom<double> HPGeCrystalEndcapCentreZ{ Name("HPGeCrystalEndcapCentreZ"), Comment("HPGe endcap centre z")};
-      fhicl::OptionalAtom<bool> verbose {Name("verbose"), Comment("Flag for printing output")};
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit HPGeWaveformsFromGeantSim(const Parameters& conf);
-
   private:
     void produce(art::Event& event) override;
     void depositCharge(const StepPointMC& step);
@@ -70,7 +78,6 @@ namespace mu2e {
     void addNoise();
     void digitize();
 
-    // fhicl variables must be declared first
     art::ProductToken<StepPointMCCollection> StepPointMCsToken; // Token of StepPointMCs in STMDet
     uint32_t fADC = 0; // ADC sampling frequency [MHz]
     double tStep = 0; // Time step used for simulating the ADC values [ns]
@@ -78,7 +85,6 @@ namespace mu2e {
     double noiseSD = 0; // Standard deviation of ADC noise [mV]
     double risingEdgeDecayConstant = 0; // [us]
     double HPGeCrystalEndcapCentreX = 0.0, HPGeCrystalEndcapCentreY = 0.0, HPGeCrystalEndcapCentreZ = 0.0; // Endcap centre variables
-    bool verbose = false;
 
     // Define experiment specific constants
     const double feedbackCapacitance = 1e-12; // [Farads]
@@ -93,6 +99,7 @@ namespace mu2e {
     // ADC variables
     double chargeToADC = 0; // Conversion factor from charge built in capacitor to ADC determined voltage, multiply by this value to get from charge built to ADC voltage.
     uint nADCs = 0; // Number of ADC values in an event
+    double masterClockTickPeriod = 25.0; //ns
 
     // Define Ge crystal properties [mm]
     const double crystalL = 78.5; // Crystal length
@@ -109,22 +116,22 @@ namespace mu2e {
     const double R1 = crystalHoleR; // Distance travelled by electrons [mm]
     double R2 = 0; // Distance travelled by holes [mm]
 
-    double electronTravelDistance = 0, holeTravelDistance = 0; // Drift distances [mm]
-    double electronTravelTime = 0, holeTravelTime = 0; // Drift times [ns]
     double trigFactor = 0; // Dimensionless constant used for caluclating distance
-    double decayExp = 0; // Amount of decay with each tStep
-    double lastEventEndDecayedCharge = 0;
-
-    uint32_t electronTravelTimeSteps = 0, holeTravelTimeSteps = 0; // Drift times [steps]
     int32_t N_ehPairs = 0; // Number of electron hole pairs
     uint32_t eventTime = 0; // Time stamp to add to STMWaveformDigi
+
+    double electronTravelDistance = 0, holeTravelDistance = 0; // Drift distances [mm]
+    double electronTravelTime = 0, holeTravelTime = 0; // Drift times [ns]
+    uint32_t electronTravelTimeSteps = 0, holeTravelTimeSteps = 0; // Drift times [steps]
+    double decayExp = 0; // Amount of decay with each tStep
 
     CLHEP::Hep3Vector hitPosition; // hit position
     std::vector<double> _charge; // Buffer to store charge collected from STMDet StepPointMCs
     std::vector<double> _chargeCollected; // Buffer to store charge collected from STMDet StepPointMCs in the given time step
-    std::vector<double> _tmp; // Temporary buffer that will store _chargeCollected over the course of the next event
+    std::vector<double> _chargeCarryOver; // Temporary buffer that will store _chargeCollected over the course of the next event
     std::vector<double> _chargeDecayed; // Buffer to store charge collected that decays over time
     std::vector<int16_t> _adcs; // Buffer for storing the ADC values to put into the STMWaveformDigi
+    double lastEventEndDecayedCharge = 0; // Carry over for starting new microspill waveforms
 
     // Offline utilities
     mu2e::STMChannel::enum_type _HPGeChannel = static_cast<mu2e::STMChannel::enum_type>(1);
@@ -134,8 +141,6 @@ namespace mu2e {
     // TODO - want to initialize hpgeEndcapCenterPosition and holeHemisphereCenter as consts here, but errors thrown
   };
 
-
-  //================================================================
   HPGeWaveformsFromGeantSim::HPGeWaveformsFromGeantSim(const Parameters& conf )
     : art::EDProducer{conf},
       StepPointMCsToken(consumes<StepPointMCCollection>(conf().StepPointMCsTag())),
@@ -145,39 +150,31 @@ namespace mu2e {
       risingEdgeDecayConstant(conf().risingEdgeDecayConstant()),
       HPGeCrystalEndcapCentreX(conf().HPGeCrystalEndcapCentreX()),
       HPGeCrystalEndcapCentreY(conf().HPGeCrystalEndcapCentreY()),
-      HPGeCrystalEndcapCentreZ(conf().HPGeCrystalEndcapCentreZ())
-  {
-    produces<STMWaveformDigiCollection>();
-    // Assign values to OptionalAtoms
-    auto _verbose = conf().verbose();
-    if(_verbose)verbose = *_verbose;
+      HPGeCrystalEndcapCentreZ(conf().HPGeCrystalEndcapCentreZ()) {
+        produces<STMWaveformDigiCollection>();
+        tStep = 1e3/fADC; // 1e3 converts [us] to [ns] as fADC is in [MHz]
 
-    tStep = 1e3/fADC; // 1e3 converts [us] to [ns]
+        // Determine the number of ADC values in each STMWaveformDigi. Increase the number by one due to truncation. At 320MHz, this will be 543 ADC values per microbunch
+        double _nADCs = (micropulseTime/tStep) + 1;
+        nADCs = (int) _nADCs;
+        _charge.resize(nADCs*2, 0.);
+        _chargeCarryOver.resize(nADCs, 0.);
+        _chargeDecayed.resize(nADCs, 0.);
+        _chargeCollected.resize(nADCs*2, 0.);
+        _adcs.resize(nADCs, 0);
 
-    // Define physics parameters to use with the model
-    // 1e3 converts keV to eV, multiply by this value to get from charge in capacitor to ADC output voltage
-    // Chosen to work in units of fundamental charge _e to avoid requiring larger variables to store parameters
-    chargeToADC = epsilonGe / (ADCToEnergy * 1e3);
+        // Define physics parameters to use with the model
+        // Define the decay amount with each step. 1e3 converts [us] to [ns]
+        decayExp = exp(-tStep/(risingEdgeDecayConstant*1e3));
 
-    // Define the decay amount with each step. 1e3 converts [us] to [ns]
-    decayExp = exp(-tStep/(risingEdgeDecayConstant*1e3));
+        // Convert noise SD from [mV] to [C], division by _e to work in units of charge
+        noiseSD *= 1e-3 * feedbackCapacitance/_e;
 
-    // Convert noise SD from [mV] to [C]
-    noiseSD = noiseSD * 1e-3 * feedbackCapacitance/_e;
+        // 1e3 converts keV to eV, multiply by this value to get from charge in capacitor to ADC output voltage
+        // Chosen to work in units of fundamental charge _e to avoid storing very small double values
+        chargeToADC = epsilonGe / (ADCToEnergy * 1e3);
+      };
 
-    // Determine the number of ADC values in each STMWaveformDigi. Increase the number by one due to truncation. At 320MHz, this will be 543 ADC values per microbunch
-    float _nADCs = (micropulseTime/tStep) + 1;
-    nADCs = (int) _nADCs;
-    _adcs.resize(nADCs, 0);
-    _chargeDecayed.resize(nADCs, 0.);
-    _tmp.resize(nADCs, 0.);
-
-    // Double the size to store all of the charge collections. Expect this to only require a small number of points, factor of 2 chosen for simplicity
-    _charge.resize(nADCs*2, 0.);
-    _chargeCollected.resize(nADCs*2, 0.);
-  };
-
-  //================================================================
   void HPGeWaveformsFromGeantSim::produce(art::Event& event) {
     // Get the hits in the detector
     auto const& hits_STMDet = event.getProduct(StepPointMCsToken);
@@ -202,10 +199,10 @@ namespace mu2e {
 
     // Update the parameters to carry over to the next event
     lastEventEndDecayedCharge = _chargeDecayed[nADCs];
-    _tmp.clear();
-    _tmp.assign(_chargeCollected.begin()+nADCs, _chargeCollected.end());
+    _chargeCarryOver.clear();
+    _chargeCarryOver.assign(_chargeCollected.begin()+nADCs, _chargeCollected.end());
     _chargeCollected.clear();
-    _chargeCollected.assign(_tmp.begin(), _tmp.end());
+    _chargeCollected.assign(_chargeCarryOver.begin(), _chargeCarryOver.end());
     _chargeCollected.insert(_chargeCollected.end(), nADCs, 0.);
 
     // Define the time from POT to EWM. Remove the 200ns from eventTime definition.
@@ -217,7 +214,7 @@ namespace mu2e {
     */
 
     // Create the STMWaveformDigi and insert all the relevant attributes
-    eventTime = ( event.id().event() * micropulseTime + 200) / 25; // 25ns is 40MHz system clock period.
+    eventTime = (event.id().event() * micropulseTime + 200.0) / masterClockTickPeriod;
     STMWaveformDigi _waveformDigi(eventTime, _adcs);
     std::unique_ptr<STMWaveformDigiCollection> outputDigis(new STMWaveformDigiCollection);
     outputDigis->emplace_back(_waveformDigi);
@@ -227,16 +224,14 @@ namespace mu2e {
     return;
   };
 
-  //==============================================
-  void HPGeWaveformsFromGeantSim::depositCharge(const StepPointMC& step)
-  {
+  void HPGeWaveformsFromGeantSim::depositCharge(const StepPointMC& step) {
     // Define variables that couldn't be constructed in the class constructor
     const CLHEP::Hep3Vector hpgeEndcapCenterPosition(HPGeCrystalEndcapCentreX, HPGeCrystalEndcapCentreY, HPGeCrystalEndcapCentreZ); // Crystal position in Mu2e co-ordinate system, defined as the correct quantity
     const CLHEP::Hep3Vector holeHemisphereCenter(0.0, 0.0, crystalHoleZStart); // Crystal hole position in local crystal co-ordinates
 
     hitPosition = step.position();
     // Only take the StepPoinMCs in the HPGe detector. STMDet is both sensitive volume of both the HPGe and LaBr.
-    if (hitPosition.x() > -3904){
+    if (hitPosition.x() > -3904) {
       return;
     }
 
@@ -251,11 +246,10 @@ namespace mu2e {
 
     // Run checks
     if ((hitZ < 0) || (hitZ > crystalL) || (hitR < 0) || (hitR > crystalR))
-      throw cet::exception("RANGE") << "Step not inside HPGe detector, exiting.\n";
+      throw cet::exception("LogicError") << "Step not inside HPGe detector, exiting.\n";
 
     // Both electrons and holes will travel radially in all cases, but the model volume topology is different depending on the step point position
-    if(hitZ > crystalHoleZStart)
-    { // Volume is a cylinder
+    if (hitZ > crystalHoleZStart) { // Volume is a cylinder
       electronTravelDistance = hitR - crystalHoleR; // Electrons travel to the center
       // Holes travel to the curved surface
       holeTravelDistance = crystalR - hitR;
@@ -275,133 +269,104 @@ namespace mu2e {
       R0 = hitPosition.mag();
 
       // Hole motion is dependent on the position - either travelling to the curved crystal surface or the front of the crystal
-      if (hitZ > (crystalDirectionGradientCutoff*hitR)){
-      // Holes travel to the curved surface
-        trigFactor = hitR / R0; // trigFactor has the positive solution by construction
+      // Note - hole motion is modelled to always be radial. Required as field here is effectively radial.
+      if (hitZ > (crystalDirectionGradientCutoff * hitR)) { // Holes travel to the curved surface
+        trigFactor = hitR / R0; // trigFactor is positive solution by construction
         holeTravelDistance = (crystalR / trigFactor) - R0;
       }
-      else
-      {
-      // Holes travel to the front
-        trigFactor = -hitZ / R0; // trigFactor has the positive solution by construction
+      else { // Holes travel to the front
+        trigFactor = -hitZ / R0; // trigFactor is positive solution by construction
         holeTravelDistance = (crystalHoleZStart / trigFactor) - R0;
-      }
+      };
       R2 = electronTravelDistance + holeTravelDistance + crystalHoleR;
-    }
+    };
 
-    if ((holeTravelDistance < 0)  || (electronTravelDistance < 0))
-    {
-      throw cet::exception("RANGE") << "Electron (" << electronTravelDistance << ") and hole (" << holeTravelDistance << ") travelling distances should both be positve.\nPosition found at " << step.position() << "(" << hitPosition << ")" ;
-    }
+    if (holeTravelDistance < 0 || electronTravelDistance < 0)
+      throw cet::exception("LogicError") << "Electron (" << electronTravelDistance << ") and hole (" << holeTravelDistance << ") travelling distances should both be positve.\nPosition found at " << step.position() << "(" << hitPosition << ")" ;
 
     // Calculate the drift times
     electronTravelTime = electronTravelDistance / electronDriftVelocity;
     holeTravelTime = holeTravelDistance / holeDriftVelocity;
 
     // Calcuate the number of eh pairs from the ionizing energy deposition.
-    N_ehPairs = -1.0*step.ionizingEdep()*1e6/epsilonGe; // 1e6 converts MeV to eV. -1.0 used as every quantity is later scaled by -1.0.
+    N_ehPairs = -1.0 * step.ionizingEdep() * 1e6 / epsilonGe; // 1e6 converts MeV to eV. -1.0 as this is a decreasing peak
 
     // Define parameters required for charge deposition. Constants A and B are defined here for code brevity
-    uint tIndex = (step.time()/tStep) + 25; // REMOVETHEPLUS25
-    uint tIndexStart = tIndex;
-
-    //const double A = N_ehPairs/log(R1/R2); // Should be R2/R1, but multipling this number by -1 caused computational issues. This gets the same correct number.
-    const double A = N_ehPairs/(log(R2/R1)); // Should be R2/R1, but multipling this number by -1 caused computational issues. This gets the same correct number.
-    const double Be = electronDriftVelocity/R0;
-    const double Bh = holeDriftVelocity/R0;
+    uint tIndex = step.time() / tStep, tIndexStart = tIndex;
+    const double A = N_ehPairs / log(R2/R1);
+    const double Be = electronDriftVelocity / R0;
+    const double Bh = holeDriftVelocity / R0;
 
     // Scale and shift the charge particle travel time
     electronTravelTimeSteps = tIndex + electronTravelTime/tStep;
     holeTravelTimeSteps = tIndex + holeTravelTime/tStep;
 
     // Calculate charge collection when both particles are moving
-    while ((tIndex < electronTravelTimeSteps) && (tIndex < holeTravelTimeSteps))
-    {
-      _charge[tIndex] = A*log((1+Bh*(tIndex-tIndexStart)*tStep)/(1-Be*(tIndex-tIndexStart)*tStep));
+    while (tIndex < electronTravelTimeSteps && tIndex < holeTravelTimeSteps) {
+      _charge[tIndex] = A*log((1 + Bh * (tIndex - tIndexStart) * tStep) / (1 - Be * (tIndex - tIndexStart) * tStep));
       tIndex++;
     };
 
     // Calculate charge build up when only the holes are moving
-    if ((tIndex >= electronTravelTimeSteps) && (tIndex < holeTravelTimeSteps))
-    {
-      while(tIndex <= holeTravelTimeSteps)
-      {
-        _charge[tIndex] = A * log( (1+Bh*(tIndex-tIndexStart)*tStep ) / ( R1/R0 ) );
+    if (tIndex >= electronTravelTimeSteps && tIndex < holeTravelTimeSteps) {
+      while(tIndex <= holeTravelTimeSteps) {
+        _charge[tIndex] = A * log((1 + Bh * (tIndex - tIndexStart) * tStep ) / (R1 / R0));
         tIndex++;
       };
     }
     // Calculate charge build up when only the electrons are moving
-    else if ((tIndex < electronTravelTimeSteps) && (tIndex >= holeTravelTimeSteps))
-    {
-      while(tIndex <= electronTravelTimeSteps)
-      {
-        _charge[tIndex] = A * log( ( R2/R0 ) / (1-Be*(tIndex-tIndexStart)*tStep) );
+    else if (tIndex < electronTravelTimeSteps && tIndex >= holeTravelTimeSteps) {
+      while(tIndex <= electronTravelTimeSteps) {
+        _charge[tIndex] = A * log((R2 / R0) / (1 - Be * (tIndex - tIndexStart) * tStep));
         tIndex++;
       };
     }
     else
-    {
-      throw cet::exception("RANGE") << "Error with the charged particle travel time.";
-    };
+      throw cet::exception("LogicError") << "Error with the charged particle travel time.";
 
     // Allocate the rest of the charge accumulated over the interaction vertex
     for (uint i = tIndex; i < (2*nADCs); i++)
       _charge[i] = N_ehPairs;
 
-    for (auto i : _charge)
-      std::cout << i << ", ";
-    std::cout << std::endl;
-
-    // The charge collected is at the start of this event
-    if(tIndexStart == 0)
-    {
+    // Update _chargeCollected. First case is treated separately as there is no charge deposited in the previous step
+    if(tIndexStart == 0) {
       _chargeCollected[tIndexStart] += _charge[tIndexStart];
       tIndexStart++;
-    }
-
+    };
     for (uint i = tIndexStart; i < tIndex; i++)
       _chargeCollected[i] += (_charge[i] - _charge[i-1]);
 
     // Clear the charge vector
     std::fill(_charge.begin(), _charge.end(), 0);
-
     return;
   };
 
-  //==============================================
-  void HPGeWaveformsFromGeantSim::decayCharge()
-  {
+  void HPGeWaveformsFromGeantSim::decayCharge() {
     _chargeDecayed[0] = lastEventEndDecayedCharge * decayExp + _chargeCollected[0];
     for (uint t = 1; t < nADCs; t++)
-    {
       _chargeDecayed[t] = _chargeDecayed[t-1] * decayExp + _chargeCollected[t];
-    };
     return;
   };
 
-  // ==============================================
-  void HPGeWaveformsFromGeantSim::addNoise()
-  {
-    if (noiseSD == 0.)
-    {
+  void HPGeWaveformsFromGeantSim::addNoise() {
+    // If the noise SD is zero, do nothing
+    if (noiseSD < std::numeric_limits<double>::epsilon())
       return;
-    }
+
+    // Add the noise in multiples of the fundamental charge
     std::default_random_engine _randomGen;
     std::normal_distribution<double> _noiseDistribution(0.0, noiseSD);
     for (size_t _i = 0; _i < nADCs; _i++)
-    {
       _chargeDecayed[_i] += _noiseDistribution(_randomGen);
-    };
     return;
   };
-  // ==============================================
-  void HPGeWaveformsFromGeantSim::digitize()
-  {
+
+  void HPGeWaveformsFromGeantSim::digitize() {
     // Convert the charge deposition to ADC voltage output.
     for (uint i = 0; i < nADCs; i++)
       _adcs[i] = (int16_t) std::round(_chargeDecayed[i]*chargeToADC);
     return;
   };
-} // namespace mu2e
+}; // namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::HPGeWaveformsFromGeantSim)

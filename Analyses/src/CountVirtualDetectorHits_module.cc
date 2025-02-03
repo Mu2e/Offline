@@ -85,10 +85,11 @@ namespace mu2e {
 
   void CountVirtualDetectorHits::endJob() {
     mf::LogInfo log("Unfiltered virtual detector hits summary");
+    log << "==========Data summary==========\n";
     log << "\nNumber of hits in sim by virtual detector ID\n";
     for (int i = 0; i < nVDs; i++)
       log << "VD" << enabledVDs[i] << ": " << counter[i] << "\n";
-    log << "\n";
+    log << "================================\n";
     return;
   };
 }; // namespace mu2e
