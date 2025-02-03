@@ -26,11 +26,6 @@ physics: {
       StepPointMCsTag : @local::SimplifyStage1Data.StepPointMCsTag
       SimParticlemvTag : @local::SimplifyStage1Data.SimParticlemvTag
     }
-    Stage1virtualdetector1809 : {
-      module_type : VirtualDetectorTree
-      StepPointMCsTag : @local::SimplifyStage1Data.StepPointMCsTag1809
-      SimParticlemvTag : @local::SimplifyStage1Data.SimParticlemvTag
-    }
     Stage2virtualdetector : {
       module_type : VirtualDetectorTree
       StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagVirtualdetector
@@ -38,9 +33,9 @@ physics: {
     }
     Stage2detector : {
       module_type : DetectorTree
-      Detector: @local::SimplifyStage2Data.Detector
       StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagSTMDet
       SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
+      Detector: @local::SimplifyStage2Data.Detector
     }
   }
   o1 : @nil

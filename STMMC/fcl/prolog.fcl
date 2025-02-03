@@ -72,8 +72,7 @@ ShiftVD101Steps : {
 
 # MakeTree_module.cc parameters
 SimplifyStage1Data : {
-    StepPointMCsTag : "compressDetStepMCsSTM:virtualdetector"
-    StepPointMCsTag1809 : "compressDetStepMCsSTM:"
+    StepPointMCsTag : "compressDetStepMCsSTM:"
     SimParticlemvTag : "compressDetStepMCsSTM:"
     VirtualDetectorID : 101
 }
