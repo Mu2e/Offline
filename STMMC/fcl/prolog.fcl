@@ -5,10 +5,24 @@
 BEGIN_PROLOG
 
 # Geometry, all in mm
-ComponentPositions : {
+ComponentPositions : { # In beam order
+    Beam : {
+        x : -3904.0
+        y : 0.0
+    }
+    Absorber : { # 50mm x 50mm x 390mm
+        x : -3944.6
+        y : -24.9 # TODO - why is this not 0.0?
+        z : 39900
+    }
+    VD101 : { # Centre
+        x : -3904.0
+        y : 0.0
+        z : 40301.0
+    }
     HPGe : { # aperture centre
         x : -3944.6
-        y : 0.416
+        y : 0.0
         z : 40404
     }
     HPGeCrystalEndcapCentre : {
@@ -18,17 +32,7 @@ ComponentPositions : {
     }
     LaBr : { # aperture centre
         x : -3863.4
-        y : 0.416
-    }
-    Absorber : { # 50mm x 50mm x 390mm
-        x : -3944.6
-        y : -24.9
-        z : 39900
-    }
-    VD101 : { # Centre
-        x : -3904.0
         y : 0.0
-        z : 40301.0
     }
 }
 
@@ -81,6 +85,7 @@ SimplifyStage2Data : {
         HPGe : 90
         LaBr : 89
     }
+    Detector : "HPGe"
 }
 
 # DAQ parameters
