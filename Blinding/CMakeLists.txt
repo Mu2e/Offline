@@ -10,6 +10,15 @@ find_library(GMP_LIBRARY NAMES gmp libgmp-10 gmp-10 mpir gmpxx
     )
 find_package_handle_standard_args(GMP DEFAULT_MSG GMP_LIBRARY GMP_INCLUDE_DIR)
 
+if(${GMP_FOUND} AND NOT TARGET GMP::GMP)
+    add_library(GMP::GMP UNKNOWN IMPORTED)
+    set_target_properties(GMP::GMP PROPERTIES
+        IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+        IMPORTED_LOCATION "${GMP_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${GMP_INCLUDE_DIR}"
+    )
+endif()
+
 if (NOT ${GMP_FOUND}) 
 message("NOT building Blinding library because gmp-devel is not installed on this system!")
 else()
@@ -23,8 +32,7 @@ cet_make_library(
       src/UnivariateLookupKalSeedPrescaleTool.cc
     LIBRARIES PUBLIC
       Offline::RecoDataProducts
-      ${GMP_LIBRARY}
-      
+      GMP::GMP 
 )
 
 cet_build_plugin(BigNumberChecker art::module
