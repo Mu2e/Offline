@@ -1,6 +1,5 @@
 // Shifts and scales the StepPointMCs associated with a circular virtual detector and moves them to a new location
 // The new location is defined as (OutputX, OutputY, OutputZ) and has radius OutputRadius
-// STMStudy is a parameter for the STM rate investigation. It removes the effect of the HPGe absorber
 //
 // Original author: Pawel Plesniak
 
@@ -13,6 +12,12 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
+// CLHEP includes
+#include "CLHEP/Vector/ThreeVector.h"
+
+// exception handling
+#include "cetlib_except/exception.h"
+
 // fhicl includes
 #include "fhiclcpp/types/Atom.h"
 #include "canvas/Utilities/InputTag.h"
@@ -23,12 +28,6 @@
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-
-// CLHEP includes
-#include "CLHEP/Vector/ThreeVector.h"
-
-// Exception handling
-#include "cetlib_except/exception.h"
 
 
 typedef unsigned long VolumeId_type;
@@ -50,63 +49,55 @@ namespace mu2e {
         fhicl::Atom<float> OutputZ{Name("OutputZ"), Comment("Target z location of the StepPointMC distribution")};
         fhicl::Atom<float> InputRadius{Name("InputRadius"), Comment("Initial radius of the virutal detector")};
         fhicl::Atom<float> OutputRadius{Name("OutputRadius"), Comment("Target virtual detector radius")};
-        fhicl::Atom<bool> STMStudy{Name("STMStudy"), Comment("If this is true, will reflect the StepPointMCs associated with the upstream of LaBr to mitigate the effect of the HPGe absorber")};
         fhicl::Atom<int> pdgID{Name("pdgID"), Comment("pdgID. If set to 0, includes all particles")};
       };
       using Parameters=art::EDProducer::Table<Config>;
       explicit ShiftVirtualDetectorStepPointMCs(const Parameters& pset);
       virtual void produce(art::Event& event) override;
-      virtual void beginJob() override;
       void makeNewStepPointMC(const StepPointMC &step, art::Ptr<SimParticle> const &particle, StepPointMC &newStepPointer, CLHEP::Hep3Vector newPosition, CLHEP::Hep3Vector newPostPosition, CLHEP::Hep3Vector newMomentum, CLHEP::Hep3Vector newPostMomentum);
-
     private:
       art::ProductToken<StepPointMCCollection> StepPointMCsToken;
       VolumeId_type VirtualDetectorID = 0; // Filter out all the StepPointMCs from VD101 for resampling
-      const float xHPGeAbsorber = -3944.6, HPGeAbsorberHalfWidth = 25, SSCApertureSpacing = 81.2;
-      float InputX = 0.0, InputY = 0.0, InputZ = 0.0; // Old position coordinates
-      float OutputX = 0.0, OutputY = 0.0, OutputZ = 0.0; // New position coordinates
-      float x = 0.0, y = 0.0, z = 0.0; // Buffer variables
-      float mass = 0.0, preE = 0.0, preE2 = 0.0, postE = 0.0, postE2 = 0.0, newPrePz = 0.0, newPrePz2 = 0.0, newPostPz = 0.0, newPostPz2 = 0.0;
-      float InputRadius = 0.0, OutputRadius = 0.0; // Radii of VD101 and SSC apertures
-      float scale_factor = 0.0; // Scale the distance from the centre of VD101 to the hit position by this factor, ratio of VD101 to SSCAperture radii.
-      bool STMStudy = true;
+      const double xHPGeAbsorber = -3944.6, HPGeAbsorberHalfWidth = 25, SSCApertureSpacing = 81.2;
+      double inputX = 0.0,  inputY = 0.0,  inputZ = 0.0; // Old position coordinates
+      double outputX = 0.0, outputY = 0.0, outputZ = 0.0; // New position coordinates
+      double x = 0.0, y = 0.0, z = 0.0; // Buffer variables
+      double mass = 0.0, preE = 0.0, preE2 = 0.0, postE = 0.0, postE2 = 0.0, newPrePz = 0.0, newPrePz2 = 0.0, newPostPz = 0.0, newPostPz2 = 0.0;
+      double inputRadius = 0.0, outputRadius = 0.0; // Radii of VD101 and SSC apertures
+      double scaleFactor = 0.0; // Scale the distance from the centre of VD101 to the hit position by this factor, ratio of VD101 to SSCAperture radii.
       int pdgID = 0;
       CLHEP::Hep3Vector oldPosition, oldPostPosition, oldMomentum, oldPostMomentum, newPosition, newPostPosition, newMomentum, newPostMomentum, oldCentre, distanceFromOldCentre, newCentre, distanceFromNewCentre;
       StepPointMC newStep;
+      GlobalConstantsHandle<ParticleDataList> pdt;
   };
-  // ===================================================
+
   ShiftVirtualDetectorStepPointMCs::ShiftVirtualDetectorStepPointMCs(const Parameters& conf) :
     art::EDProducer{conf},
     StepPointMCsToken(consumes<StepPointMCCollection>(conf().StepPointMCsTag())),
     VirtualDetectorID(conf().VirtualDetectorID()),
-    InputX(conf().InputX()),
-    InputY(conf().InputY()),
-    InputZ(conf().InputZ()),
-    OutputX(conf().OutputX()),
-    OutputY(conf().OutputY()),
-    OutputZ(conf().OutputZ()),
-    InputRadius(conf().InputRadius()),
-    OutputRadius(conf().OutputRadius()),
-    STMStudy(conf().STMStudy()),
-    pdgID(conf().pdgID())
-    {
+    inputX(conf().InputX()),
+    inputY(conf().InputY()),
+    inputZ(conf().InputZ()),
+    outputX(conf().OutputX()),
+    outputY(conf().OutputY()),
+    outputZ(conf().OutputZ()),
+    inputRadius(conf().InputRadius()),
+    outputRadius(conf().OutputRadius()),
+    pdgID(conf().pdgID()) {
       produces<StepPointMCCollection>();
-      scale_factor = OutputRadius/InputRadius;
-      oldCentre.setX(InputX);
-      oldCentre.setY(InputY);
-      oldCentre.setZ(InputZ);
-      newCentre.setX(OutputX);
-      newCentre.setY(OutputY);
-      newCentre.setZ(OutputZ);
+      scaleFactor = outputRadius/inputRadius;
+      oldCentre.setX(inputX);
+      oldCentre.setY(inputY);
+      oldCentre.setZ(inputZ);
+      newCentre.setX(outputX);
+      newCentre.setY(outputY);
+      newCentre.setZ(outputZ);
     };
-
-  void ShiftVirtualDetectorStepPointMCs::beginJob() {
-      std::cout << "Moving StepPointMCs in VD" << VirtualDetectorID << " from " << oldCentre << " to " << newCentre << std::endl;
-  };
 
   void ShiftVirtualDetectorStepPointMCs::produce(art::Event& event) {
     auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
-    GlobalConstantsHandle<ParticleDataList> pdt;
+    if (StepPointMCs.empty())
+      throw cet::exception("DataError", "Requested data product not found\n");
 
     // Define the StepPointMCCollection to be added to the event
     std::unique_ptr<StepPointMCCollection> _outputStepPointMCs(new StepPointMCCollection);
@@ -115,82 +106,73 @@ namespace mu2e {
     for (const StepPointMC& step : StepPointMCs) {
       if (step.volumeId() != VirtualDetectorID)
         continue;
-    art::Ptr<SimParticle> const &particle = step.simParticle();
-    if ((particle->pdgId() != pdgID) && (pdgID != 0))
-      continue;
-    oldPosition = step.position();
-    oldPostPosition = step.postPosition();
-    oldMomentum = step.momentum();
-    oldPostMomentum = step.postMomentum();
+      art::Ptr<SimParticle> const &particle = step.simParticle();
+      if ((particle->pdgId() != pdgID) && (pdgID != 0))
+        continue;
 
-    // If the step is in the area of the HPGe absorber, skip these particles to avoid double counting the absorber particles and replace them with those symmetrically across in front of the LaBr aperture
-    if (STMStudy && (std::abs(oldPosition.x()-xHPGeAbsorber) < HPGeAbsorberHalfWidth) && (std::abs(oldPosition.y()) < HPGeAbsorberHalfWidth))
-      continue;
-    distanceFromOldCentre = oldPosition - oldCentre; // Calculate the vector from the hit position to the center of VD101
-    distanceFromNewCentre = distanceFromOldCentre * scale_factor; // Scale it to determine the new offset vector
-    newPosition = newCentre + distanceFromNewCentre; // Calculate the effective same position in the new distribution
-    newPosition.setZ(newCentre.z());
+      mass = pdt->particle(particle->pdgId()).mass();
+      oldPosition = step.position();
+      oldPostPosition = step.postPosition();
+      oldMomentum = step.momentum();
+      oldPostMomentum = step.postMomentum();
 
-    newPostPosition = newPosition + (oldPostPosition-oldPosition)*scale_factor;
-    newPostPosition.setZ(newCentre.z()+(oldPostPosition-oldPosition).z());
+      // If the step is in the area of the HPGe absorber, skip these particles to avoid double counting the absorber particles and replace them with those symmetrically across in front of the LaBr aperture
+      if (std::abs(oldPosition.x()-xHPGeAbsorber) < HPGeAbsorberHalfWidth && std::abs(oldPosition.y()) < HPGeAbsorberHalfWidth)
+        continue;
 
-    mass = pdt->particle(particle->pdgId()).mass();
-    preE2 = oldMomentum.mag2()+mass*mass;
-    if (preE2 < 0)
-      throw cet::exception("RANGE") << "Energy squared (E2 = " << preE2 <<") is negative, exiting";
-    preE = std::sqrt(preE2);
+      distanceFromOldCentre = oldPosition - oldCentre; // Calculate the vector from the hit position to the center of VD101
+      distanceFromNewCentre = distanceFromOldCentre * scaleFactor; // Scale it to determine the new offset vector
+      newPosition = newCentre + distanceFromNewCentre; // Calculate the effective same position in the new distribution
+      newPosition.setZ(newCentre.z());
 
-    newPrePz2 = preE2-mass*mass-oldMomentum.perp2()*scale_factor*scale_factor;
-    if ((newPrePz2 < 0) && (std::abs(newPrePz2) > 1e-7))
-      throw cet::exception("RANGE") << "Transverse momentum squared (prePz2 = " << newPrePz2 << ") is negative, exiting.";
-    newPrePz = std::sqrt(newPrePz2);
-    newMomentum.setX(scale_factor*oldMomentum.x());
-    newMomentum.setY(scale_factor*oldMomentum.y());
-    newMomentum.setZ(newPrePz);
+      newPostPosition = newPosition + (oldPostPosition - oldPosition) * scaleFactor;
+      newPostPosition.setZ(newCentre.z() + (oldPostPosition - oldPosition).z());
 
+      preE = std::sqrt(oldMomentum.mag2() + mass * mass);
+      newMomentum.setX(oldMomentum.x() * scaleFactor);
+      newMomentum.setY(oldMomentum.y() * scaleFactor);
+      newMomentum.setZ(preE - oldMomentum.perp() * scaleFactor);
+      if (newMomentum.mag() - oldMomentum.mag() > std::numeric_limits<double>::epsilon())
+        throw cet::exception("LogicError", "Difference in momentum magnitude is large");
 
-    postE2 = oldPostMomentum.mag2()+mass*mass;
-    if (postE2 < 0)
-      throw cet::exception("RANGE") << "Energy squared (E2 = " << postE2 <<") is negative, exiting";
-    postE = std::sqrt(postE2);
-    newPostPz2 = postE2-mass*mass-oldPostMomentum.perp2()*scale_factor*scale_factor;
-    if ((newPostPz2 < 0) && (std::abs(newPostPz2) > 1e-7))
-      throw cet::exception("RANGE") << "Transverse momentum squared (postPz2 = " << newPostPz2 << ") is negative, exiting.";
-    newPostPz = std::sqrt(newPostPz2);
-    newPostMomentum.setX(scale_factor*oldPostMomentum.x());
-    newPostMomentum.setY(scale_factor*oldPostMomentum.y());
-    newPostMomentum.setZ(newPostPz);
+      postE = std::sqrt(oldPostMomentum.mag2()+mass*mass);
+      newPostMomentum.setX(oldPostMomentum.x() * scaleFactor);
+      newPostMomentum.setY(oldPostMomentum.y() * scaleFactor);
+      newPostMomentum.setZ(postE - oldPostMomentum.perp() * scaleFactor);
+      if (newPostMomentum.mag() - oldPostMomentum.mag() > std::numeric_limits<double>::epsilon())
+        throw cet::exception("LogicError", "Difference in momentum magnitude is large");
 
-    makeNewStepPointMC(step, particle, newStep, newPosition, newPostPosition, newMomentum, newPostMomentum); // Convert it into a StepPointMC
-    _outputStepPointMCs->emplace_back(newStep); // Add it to the collection
+      makeNewStepPointMC(step, particle, newStep, newPosition, newPostPosition, newMomentum, newPostMomentum); // Convert it into a StepPointMC
+      _outputStepPointMCs->emplace_back(newStep); // Add it to the collection
 
-    // If the step is in the area of the HPGe absorber but placed symmetrically across in the equivalent space upstream of the LaBr detector, double count it to simulate the effect of removing the absorber
-    // First move the point and shift its momentum
-    if (STMStudy && (std::abs(oldPosition.x()-xHPGeAbsorber-SSCApertureSpacing) < HPGeAbsorberHalfWidth) && (std::abs(oldPosition.y()) < HPGeAbsorberHalfWidth))
-      {
-        oldPosition.setX(oldCentre.x()*2-oldPosition.x());
-        oldPostPosition.setX(oldCentre.x()*2-oldPostPosition.x());
+      // If the step is in the area of the HPGe absorber but placed symmetrically across in the equivalent space upstream of the LaBr detector, double count it to simulate the effect of removing the absorber
+      // First move the point and shift its momentum
+      if (std::abs(oldPosition.x() - xHPGeAbsorber - SSCApertureSpacing) < HPGeAbsorberHalfWidth && std::abs(oldPosition.y()) < HPGeAbsorberHalfWidth)
+        {
+          oldPosition.setX(oldCentre.x()*2-oldPosition.x());
+          oldPostPosition.setX(oldCentre.x()*2-oldPostPosition.x());
 
-        distanceFromOldCentre = oldPosition - oldCentre; // Calculate the vector from the hit position to the center of VD101
-        distanceFromNewCentre = distanceFromOldCentre * scale_factor; // Scale it to determine the new offset vector
-        newPosition = newCentre + distanceFromNewCentre; // Calculate the effective same position in the new distribution
-        newPosition.setZ(newCentre.z());
+          distanceFromOldCentre = oldPosition - oldCentre; // Calculate the vector from the hit position to the center of VD101
+          distanceFromNewCentre = distanceFromOldCentre * scaleFactor; // Scale it to determine the new offset vector
+          newPosition = newCentre + distanceFromNewCentre; // Calculate the effective same position in the new distribution
+          newPosition.setZ(newCentre.z());
 
-        newPostPosition = newPosition + (oldPostPosition-oldPosition)*scale_factor;
-        newPostPosition.setZ(newCentre.z()+(oldPostPosition-oldPosition).z());
+          newPostPosition = newPosition + (oldPostPosition-oldPosition)*scaleFactor;
+          newPostPosition.setZ(newCentre.z()+(oldPostPosition-oldPosition).z());
 
-        newMomentum.setX(-1*scale_factor*oldMomentum.x());
-        newMomentum.setY(scale_factor*oldMomentum.y());
-        newMomentum.setZ(newPrePz);
+          newMomentum.setX(-1*scaleFactor*oldMomentum.x());
+          newMomentum.setY(scaleFactor*oldMomentum.y());
+          newMomentum.setZ(newPrePz);
 
-        newPostMomentum.setX(-1*scale_factor*oldPostMomentum.x());
-        newPostMomentum.setY(scale_factor*oldPostMomentum.y());
-        newPostMomentum.setZ(newPostPz);
+          newPostMomentum.setX(-1*scaleFactor*oldPostMomentum.x());
+          newPostMomentum.setY(scaleFactor*oldPostMomentum.y());
+          newPostMomentum.setZ(newPostPz);
 
-        makeNewStepPointMC(step, particle, newStep, newPosition, newPostPosition, newMomentum, newPostMomentum); // Convert it into a StepPointMC
-        _outputStepPointMCs->emplace_back(newStep); // Add it to the collection
-      }; // end if position is in the absorber shadow
+          makeNewStepPointMC(step, particle, newStep, newPosition, newPostPosition, newMomentum, newPostMomentum); // Convert it into a StepPointMC
+          _outputStepPointMCs->emplace_back(newStep); // Add it to the collection
+        }; // end if position is in the absorber shadow
       }; // end for step : StepPointMCs
+
     event.put(std::move(_outputStepPointMCs));
     return;
   };
