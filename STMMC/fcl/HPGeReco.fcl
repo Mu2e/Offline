@@ -1,25 +1,27 @@
 #include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMConditions/fcl/prolog.fcl"
 #include "Offline/STMReco/fcl/prolog.fcl"
 
-process_name: STMMixDigi
-source : { module_type : RootInput }
-services : @local::Services.SimAndReco # reco is needed for the trigger
+process_name: HPGeReco
+source : {
+  module_type : RootInput
+  maxEvents : @nil
+}
+services : @local::Services.SimAndReco
 
 physics : {
-
   producers : {
     PBISim : { # gives the number of POT per event
       module_type: ProtonBunchIntensityLogNormal
-      SDF: @nil # will be filled in at the end of the file
-      extendedMean: @nil
-      cutMax:@nil
+      SDF: 0.6
+      extendedMean: 3.93e7 # Copied from Production/JobConfig/mixing/TwoBB.fcl
+      cutMax: 2.36e8 # Copied from Production/JobConfig/mixing/TwoBB.fcl
     }
     HPGeDigi : {
       module_type : HPGeWaveformsFromGeantSim
-      fADC : 320
-      EnergyPerADCBin : 0.5
-      noiseSD : 0.32
-      verbose : true
+      fADC : @local::STMDAQParameters.samplingFrequencies.HPGe
+      EnergyPerADCBin : @local::HPGeDigitization.EnergyPerADCBin
+      noiseSD : @local::HPGeDigitization.PreamplifierNoiseSD
     }
     HPGeZS : {
       module_type : STMZeroSuppression
@@ -42,7 +44,6 @@ physics : {
       thesholdgrad : @local::STM.HPGe.thresholdgrad
     }
   }
-
   filters : {
     STMStepMixer: {
       module_type         : MixBackgroundFrames
@@ -50,21 +51,20 @@ physics : {
       readMode            : sequential
       wrapFiles           : true
       mu2e: {
-      protonBunchIntensityTag: "PBISim"
-      simStageEfficiencyTags: @nil # this will not be filled in because otherwise it will try to access the database
-      meanEventsPerPOTFactors : []
-      writeEventIDs : false
-      MaxEventsToSkip: @nil
-      products: {
-      genParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
-      simParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
-      stepPointMCMixer: { mixingMap: [ [ "STMDetHits:STMDet", ":" ] ] }
-      }
+        protonBunchIntensityTag: "PBISim"
+        simStageEfficiencyTags: @nil # this will not be filled in because otherwise it will try to access the database
+        meanEventsPerPOTFactors : []
+        writeEventIDs : false
+        MaxEventsToSkip: @nil
+        products: {
+          genParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
+          simParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
+          stepPointMCMixer: { mixingMap: [ [ "STMDetHits:STMDet", ":" ] ] }
+        }
       }
     }
   }
-  ## Reintroduce the paths one at a time to make sure that they all work together -t here are lots of other bits like in ZS.
-  mixing_path : [ PBISim, STMStepMixer] #, HPGeDigi ] #, HPGeZS, HPGeMWD ]
+  mixing_path : [PBISim, STMStepMixer] #, HPGeDigi ] #, HPGeZS, HPGeMWD ]
   output_path : [output]
 }
 
@@ -82,7 +82,6 @@ outputs : {
   }
 }
 
-physics.producers.PBISim.SDF: 0.6
-physics.producers.PBISim.extendedMean: 1.58e7 # mean of the uncut distribution
-physics.producers.PBISim.cutMax: 9.48e7  # truncate the tail at 6 times the mean
-physics.filters.STMStepMixer.mu2e.meanEventsPerPOTFactors : [  ] # fill in all the factors that go from a POT to an event, this will include your efficiencies but not the proton pulse intensity
+services.SeedService.baseSeed : 1
+
+physics.filters.STMStepMixer.mu2e.meanEventsPerPOTFactors : [6.75675676e-9]
