@@ -55,8 +55,6 @@ ShiftVD101Steps : {
     VirtualDetectorID : 101
     InputRadius : 200 # VD101 aperture radius
     OutputRadius : 3.98942280401 # SSC aperture radius
-    STMStudy : true
-    verbose : true
     HPGeUpStr : { # Position just upstream of absorber centered on the HPGe SSC aperture
         x : -3944.6
         y : 0.0
@@ -67,7 +65,7 @@ ShiftVD101Steps : {
         y : 0.0
         z : 40300.9
     }
-    pdgID : 22
+    pdgID : 0
 }
 
 # MakeTree_module.cc parameters
