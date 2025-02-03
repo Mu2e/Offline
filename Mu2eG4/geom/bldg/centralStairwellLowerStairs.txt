@@ -7,8 +7,8 @@ double building.central.stairwell.lower.stairs.offsetFromMu2eOrigin.x   = -12032
 double building.central.stairwell.lower.stairs.offsetFromFloorSurface.y = 0;
 double building.central.stairwell.lower.stairs.offsetFromMu2eOrigin.z   = -3581.4;
 
-double building.central.stairwell.lower.stairs.yHalfThickness           = 609.6;
-vector<double> building.central.stairwell.lower.stairs.angles           = {0., 0., -1.5708};
+double building.central.stairwell.lower.stairs.yHalfThickness           = 609.599;  // remove 1 um to prevent conflict as the rotation angle is not exactly pi/2
+vector<double> building.central.stairwell.lower.stairs.angles           = {0., 0., -1.5707963268};
 
 vector<double> building.central.stairwell.lower.stairs.xPositions = {
   5765.8,   // h
@@ -46,7 +46,7 @@ vector<double> building.central.stairwell.lower.stairs.xPositions = {
 };
 
 vector<double> building.central.stairwell.lower.stairs.yPositions = {
-  0,        // h
+  0.001,        // h
   176.53,   // h
   176.53,   // h
   353.06,     // h1
@@ -77,7 +77,7 @@ vector<double> building.central.stairwell.lower.stairs.yPositions = {
   2471.42,     // h1
   2647.95,     // h1
   2647.95,     // h1
-  0    // h2
+  0.001    // h2
 };
 
 // Local Variables:

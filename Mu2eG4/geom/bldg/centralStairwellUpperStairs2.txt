@@ -7,8 +7,8 @@ double building.central.stairwell.upper.stairs.2.offsetFromMu2eOrigin.x   = 947.
 double building.central.stairwell.upper.stairs.2.offsetFromFloorSurface.y = 5297.17;
 double building.central.stairwell.upper.stairs.2.offsetFromMu2eOrigin.z   = 9042.4;
 
-double building.central.stairwell.upper.stairs.2.yHalfThickness           = 609.6;
-vector<double> building.central.stairwell.upper.stairs.2.angles           = {1.5708, 0., 0.};
+double building.central.stairwell.upper.stairs.2.yHalfThickness           = 609.599;    // remove 1 um to prevent conflict as the rotation angle is not exactly pi/2
+vector<double> building.central.stairwell.upper.stairs.2.angles           = {1.5707963268, 0., 0.};
 
 vector<double> building.central.stairwell.upper.stairs.2.xPositions = {
  0,        // h
