@@ -31,11 +31,17 @@ physics: {
       StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagVirtualdetector
       SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
     }
-    Stage2detector : {
-      module_type : DetectorTree
+    Stage2HPGe : {
+      module_type : HPGeTree
       StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagSTMDet
       SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
-      Detector: @local::SimplifyStage2Data.Detector
+      Detector: @local::SimplifyStage2Data.DetectorName.HPGe
+    }
+    Stage2LaBr : {
+      module_type : HPGeTree
+      StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagSTMDet
+      SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
+      Detector: @local::SimplifyStage2Data.DetectorName.LaBr
     }
   }
   o1 : @nil

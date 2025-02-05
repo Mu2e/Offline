@@ -71,6 +71,7 @@ ShiftVD101Steps : {
 # MakeTree_module.cc parameters
 SimplifyStage1Data : {
     StepPointMCsTag : "compressDetStepMCsSTM:"
+    StepPointMCsTag1809 : "compressDetStepMCsSTM:virtualdetector"
     SimParticlemvTag : "compressDetStepMCsSTM:"
     VirtualDetectorID : 101
 }
@@ -82,7 +83,10 @@ SimplifyStage2Data : {
         HPGe : 90
         LaBr : 89
     }
-    Detector : "HPGe"
+    DetectorName : {
+        HPGe : "HPGe"
+        LaBr : "LaBr"
+    }
 }
 
 # DAQ parameters
