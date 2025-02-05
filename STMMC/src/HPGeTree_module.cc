@@ -50,7 +50,7 @@ typedef cet::map_vector_key key_type;
 typedef unsigned long VolumeId_type;
 
 namespace mu2e {
-  class DetectorTree : public art::EDAnalyzer {
+  class HPGeTree : public art::EDAnalyzer {
     public:
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
@@ -60,7 +60,7 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> simParticlemvTag{ Name("SimParticlemvTag"), Comment("Tag identifying the SimParticlemv")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
-      explicit DetectorTree(const Parameters& conf);
+      explicit HPGeTree(const Parameters& conf);
       std::tuple<key_type, int> topParent(std::set<key_type>& SimParticleIDs, const SimParticle particle);
       double parentTime(const art::Event& event, key_type parentId);
       void analyze(const art::Event& event);
@@ -91,7 +91,7 @@ namespace mu2e {
       art::Ptr<SimParticle> parent;
   };
 
-  DetectorTree::DetectorTree(const Parameters& conf) :
+  HPGeTree::HPGeTree(const Parameters& conf) :
     art::EDAnalyzer(conf),
     detector(conf().detector()),
     StepPointMCsToken(consumes<StepPointMCCollection>(conf().stepPointMCsTag())),
@@ -110,7 +110,7 @@ namespace mu2e {
       ttree->Branch("time", &time, "time/D");
   };
 
-  std::tuple<key_type, int> DetectorTree::topParent(std::set<key_type>& SimParticleIds, const SimParticle particle) {
+  std::tuple<key_type, int> HPGeTree::topParent(std::set<key_type>& SimParticleIds, const SimParticle particle) {
     // Get the particle parent
     parent = particle.parent();
 
@@ -126,7 +126,7 @@ namespace mu2e {
     return std::make_tuple(parent->id(), parent->pdgId());
   };
 
-  double DetectorTree::parentTime(const art::Event& event, key_type parentId) {
+  double HPGeTree::parentTime(const art::Event& event, key_type parentId) {
     // Get the data products from the event
     auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
     auto const& SimParticles = event.getProduct(SimParticlemvToken);
@@ -149,7 +149,7 @@ namespace mu2e {
     return time;
   };
 
-  void DetectorTree::analyze(const art::Event& event) {
+  void HPGeTree::analyze(const art::Event& event) {
     // Get the data products from the event
     auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
     auto const& SimParticles = event.getProduct(SimParticlemvToken);
@@ -218,7 +218,7 @@ namespace mu2e {
     return;
   }; // end analyze
 
-  void DetectorTree::endJob() {
+  void HPGeTree::endJob() {
     mf::LogInfo log("Detector tree");
     log << "==========Data summary==========\n";
     for (auto part : pdgIds)
@@ -227,4 +227,4 @@ namespace mu2e {
   };
 }; // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::DetectorTree)
+DEFINE_ART_MODULE(mu2e::HPGeTree)

@@ -125,6 +125,7 @@ namespace mu2e {
     uint32_t electronTravelTimeSteps = 0, holeTravelTimeSteps = 0; // Drift times [steps]
     double decayExp = 0; // Amount of decay with each tStep
 
+    // TODO - want to initialize hpgeEndcapCenterPosition and holeHemisphereCenter as consts here, but errors thrown
     CLHEP::Hep3Vector hitPosition; // hit position
     std::vector<double> _charge; // Buffer to store charge collected from STMDet StepPointMCs
     std::vector<double> _chargeCollected; // Buffer to store charge collected from STMDet StepPointMCs in the given time step
@@ -138,7 +139,6 @@ namespace mu2e {
     STMChannel* _channel = new STMChannel(_HPGeChannel);
     ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
 
-    // TODO - want to initialize hpgeEndcapCenterPosition and holeHemisphereCenter as consts here, but errors thrown
   };
 
   HPGeWaveformsFromGeantSim::HPGeWaveformsFromGeantSim(const Parameters& conf )
