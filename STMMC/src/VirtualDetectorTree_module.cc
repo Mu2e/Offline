@@ -98,7 +98,7 @@ namespace mu2e {
       y = step.position().y();
       z = step.position().z();
       mass = pdt->particle(pdgId).mass();
-      E = (mass > 1e-6) ? step.momentum().mag2()/(2 * mass) : step.momentum().mag();
+      E = std::sqrt(step.momentum().mag2()+mass*mass)-mass; // Subtract the rest mass
       if (E < 0)
         throw cet::exception("LogicError", "Energy is negative");
       ttree->Fill();

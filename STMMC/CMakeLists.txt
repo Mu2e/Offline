@@ -12,8 +12,8 @@ cet_build_plugin(HPGeTree_module art::module
       Offline::MCDataProducts
 )
 
-cet_build_plugin(HPGeWaveformsFromGeantSim art::module
-    REG_SOURCE src/HPGeWaveformsFromGeantSim_module.cc
+cet_build_plugin(HPGeWaveformsFromStepPointMCs art::module
+    REG_SOURCE src/HPGeWaveformsFromStepPointMCs_module.cc
     LIBRARIES REG
       Offline::DataProducts
       Offline::MCDataProducts
@@ -51,7 +51,7 @@ cet_build_plugin(VirtualDetectorTree_module art::module
       Offline::MCDataProducts
 )
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/HPGeWaveformsFromGeantSim.fcl   ${CURRENT_BINARY_DIR} fcl/HPGeWaveformsFromGeantSim.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/HPGeWaveformsFromStepPointMCs.fcl   ${CURRENT_BINARY_DIR} fcl/HPGeWaveformsFromStepPointMCs.fcl   COPYONLY)
 
 
 install_source(SUBDIRS src)

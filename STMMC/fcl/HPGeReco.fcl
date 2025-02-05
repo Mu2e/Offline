@@ -45,7 +45,43 @@ physics : {
     }
   }
   filters : {
-    STMStepMixer: {
+    STMStepMixerEle: {
+      module_type         : MixBackgroundFrames
+      fileNames           : @nil
+      readMode            : sequential
+      wrapFiles           : true
+      mu2e: {
+        protonBunchIntensityTag: "PBISim"
+        simStageEfficiencyTags: @nil # this will not be filled in because otherwise it will try to access the database
+        meanEventsPerPOTFactors : []
+        writeEventIDs : false
+        MaxEventsToSkip: @nil
+        products: {
+          genParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
+          simParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
+          stepPointMCMixer: { mixingMap: [ [ "STMDetHits:STMDet", ":" ] ] }
+        }
+      }
+    }
+    STMStepMixerMu: {
+      module_type         : MixBackgroundFrames
+      fileNames           : @nil
+      readMode            : sequential
+      wrapFiles           : true
+      mu2e: {
+        protonBunchIntensityTag: "PBISim"
+        simStageEfficiencyTags: @nil # this will not be filled in because otherwise it will try to access the database
+        meanEventsPerPOTFactors : []
+        writeEventIDs : false
+        MaxEventsToSkip: @nil
+        products: {
+          genParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
+          simParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
+          stepPointMCMixer: { mixingMap: [ [ "STMDetHits:STMDet", ":" ] ] }
+        }
+      }
+    }
+    STMStepMixer1809: {
       module_type         : MixBackgroundFrames
       fileNames           : @nil
       readMode            : sequential
