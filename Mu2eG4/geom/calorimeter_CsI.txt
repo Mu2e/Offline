@@ -5,7 +5,7 @@
 double calorimeter.caloDiskRadiusIn           = 335;
 double calorimeter.caloDiskRadiusOut          = 719;
 double calorimeter.caloFEBRadiusOut           = 935;
-double calorimeter.caloMotherZ0               = 11842;
+double calorimeter.caloMotherZ0               = 11842;  //use 11819 for MDC2020 compatibility
 double calorimeter.caloMotherZ1               = 13220;
 double calorimeter.vdThickness                = 0.02;
 
@@ -21,7 +21,6 @@ double calorimeter.diskOutRailROut            = 719.;
 double calorimeter.diskStepThickness          = 3.;
 vector<double> calorimeter.diskZMotherShift   = {0.0,700.0};
 
-bool   calorimeter.crystalShift               = true;
 double calorimeter.crystalXYLength            = 34.0;
 double calorimeter.crystalZLength             = 200.0;
 double calorimeter.crystalCapZLength          = 2.0;

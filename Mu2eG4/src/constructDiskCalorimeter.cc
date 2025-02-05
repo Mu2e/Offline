@@ -59,7 +59,7 @@ namespace mu2e {
     MaterialFinder materialFinder(config);
 
     Mu2eG4Helper& helper            = *(art::ServiceHandle<Mu2eG4Helper>());
-    AntiLeakRegistry& reg          = (art::ServiceHandle<Mu2eG4Helper>())->antiLeakRegistry();
+    AntiLeakRegistry& reg           = (art::ServiceHandle<Mu2eG4Helper>())->antiLeakRegistry();
     const DiskCalorimeter& cal      = *(GeomHandle<DiskCalorimeter>());
     const DetectorSolenoid& ds      = *(GeomHandle<DetectorSolenoid>());
 
@@ -76,7 +76,6 @@ namespace mu2e {
     const double mother_z1          = cal.caloInfo().getDouble("caloMotherZ1");
     const double mother_zlength     = mother_z1-mother_z0;
     const double mother_zCenter     = (mother_z1+mother_z0)/2.0;
-    const auto   diskZMotherShift   = cal.caloInfo().getVDouble("diskZMotherShift");
     const double FEBOffset          = cal.caloInfo().getDouble("FEBToDiskZOffset");
     const auto   FEBPhiMinMax       = calcFEBPhiRange(cal);
     const bool   hasCrates          = cal.caloInfo().getBool("hasCrates");
