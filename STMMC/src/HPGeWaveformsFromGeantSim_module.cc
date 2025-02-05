@@ -55,7 +55,7 @@
 
 
 namespace mu2e {
-  class HPGeWaveformsFromGeantSim : public art::EDProducer {
+  class HPGeWaveformsFromStepPointMCs : public art::EDProducer {
   public:
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
@@ -70,7 +70,7 @@ namespace mu2e {
       fhicl::Atom<double> HPGeCrystalEndcapCentreZ{ Name("HPGeCrystalEndcapCentreZ"), Comment("HPGe endcap centre z")};
     };
     using Parameters = art::EDProducer::Table<Config>;
-    explicit HPGeWaveformsFromGeantSim(const Parameters& conf);
+    explicit HPGeWaveformsFromStepPointMCs(const Parameters& conf);
   private:
     void produce(art::Event& event) override;
     void depositCharge(const StepPointMC& step);
@@ -141,7 +141,7 @@ namespace mu2e {
 
   };
 
-  HPGeWaveformsFromGeantSim::HPGeWaveformsFromGeantSim(const Parameters& conf )
+  HPGeWaveformsFromStepPointMCs::HPGeWaveformsFromStepPointMCs(const Parameters& conf )
     : art::EDProducer{conf},
       StepPointMCsToken(consumes<StepPointMCCollection>(conf().StepPointMCsTag())),
       fADC(conf().fADC()),
@@ -175,7 +175,7 @@ namespace mu2e {
         chargeToADC = epsilonGe / (ADCToEnergy * 1e3);
       };
 
-  void HPGeWaveformsFromGeantSim::produce(art::Event& event) {
+  void HPGeWaveformsFromStepPointMCs::produce(art::Event& event) {
     // Get the hits in the detector
     auto const& hits_STMDet = event.getProduct(StepPointMCsToken);
     // Clear previous buffer vectors
@@ -224,7 +224,7 @@ namespace mu2e {
     return;
   };
 
-  void HPGeWaveformsFromGeantSim::depositCharge(const StepPointMC& step) {
+  void HPGeWaveformsFromStepPointMCs::depositCharge(const StepPointMC& step) {
     // Define variables that couldn't be constructed in the class constructor
     const CLHEP::Hep3Vector hpgeEndcapCenterPosition(HPGeCrystalEndcapCentreX, HPGeCrystalEndcapCentreY, HPGeCrystalEndcapCentreZ); // Crystal position in Mu2e co-ordinate system, defined as the correct quantity
     const CLHEP::Hep3Vector holeHemisphereCenter(0.0, 0.0, crystalHoleZStart); // Crystal hole position in local crystal co-ordinates
@@ -341,14 +341,14 @@ namespace mu2e {
     return;
   };
 
-  void HPGeWaveformsFromGeantSim::decayCharge() {
+  void HPGeWaveformsFromStepPointMCs::decayCharge() {
     _chargeDecayed[0] = lastEventEndDecayedCharge * decayExp + _chargeCollected[0];
     for (uint t = 1; t < nADCs; t++)
       _chargeDecayed[t] = _chargeDecayed[t-1] * decayExp + _chargeCollected[t];
     return;
   };
 
-  void HPGeWaveformsFromGeantSim::addNoise() {
+  void HPGeWaveformsFromStepPointMCs::addNoise() {
     // If the noise SD is zero, do nothing
     if (noiseSD < std::numeric_limits<double>::epsilon())
       return;
@@ -361,7 +361,7 @@ namespace mu2e {
     return;
   };
 
-  void HPGeWaveformsFromGeantSim::digitize() {
+  void HPGeWaveformsFromStepPointMCs::digitize() {
     // Convert the charge deposition to ADC voltage output.
     for (uint i = 0; i < nADCs; i++)
       _adcs[i] = (int16_t) std::round(_chargeDecayed[i]*chargeToADC);
@@ -369,4 +369,4 @@ namespace mu2e {
   };
 }; // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::HPGeWaveformsFromGeantSim)
+DEFINE_ART_MODULE(mu2e::HPGeWaveformsFromStepPointMCs)
