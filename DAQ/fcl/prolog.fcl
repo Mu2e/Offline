@@ -2,8 +2,7 @@
 
 DAQ : {
     producers : {
-        StrawRecoFromArtdaqFragments: { module_type: StrawRecoFromArtdaqFragments
-            nADCPackets   : 1
+        StrawDigisFromArtdaqFragments: { module_type: StrawDigisFromArtdaqFragments
             saveWaveforms : 0
             diagLevel     : 0  # not used yet
         }

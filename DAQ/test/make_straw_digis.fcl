@@ -36,7 +36,7 @@ physics: {
         @table::DAQ.producers
     }
 
-    p1: [ StrawRecoFromArtdaqFragments ]
+    p1: [ StrawDigisFromArtdaqFragments ]
     e1: [ Output ]
 
     trigger_paths: [ p1 ]
@@ -46,10 +46,10 @@ physics: {
 outputs: {
     Output: { module_type: RootOutput
         outputCommands: [ "keep *_*_*_*" ]
-        fileName      : "dig.mu2e.trkvst.tstation.%06r_%08s.art"
+        fileName      : "dig.mu2e.trkvst.tstation.%06r_%06s.art"
     }
 }
 
-# physics.producers.StrawRecoFromArtdaqFragments.nADCPackets   : 1
-# physics.producers.StrawRecoFromArtdaqFragments.saveWaveforms : 0
-# physics.producers.StrawRecoFromArtdaqFragments.diagLevel     : 0  # 2:print waveforms
+physics.producers.StrawDigisFromArtdaqFragments.saveWaveforms : 1
+physics.producers.StrawDigisFromArtdaqFragments.diagLevel     : 3  # 3:print waveforms
+source.maxEvents : 1
