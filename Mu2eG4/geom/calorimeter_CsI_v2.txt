@@ -5,7 +5,7 @@
 double calorimeter.caloDiskRadiusIn           = 335;
 double calorimeter.caloDiskRadiusOut          = 719;
 double calorimeter.caloFEBRadiusOut           = 935;
-double calorimeter.caloMotherZ0               = 11842;  //use 11819 for MDC2020 compatibility
+double calorimeter.caloMotherZ0               = 11842;
 double calorimeter.caloMotherZ1               = 13220;
 double calorimeter.vdThickness                = 0.02;
 
