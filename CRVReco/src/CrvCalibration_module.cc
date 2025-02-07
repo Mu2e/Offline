@@ -46,7 +46,7 @@ namespace mu2e
     explicit CrvCalibration(const Parameters& config);
     void analyze(const art::Event& e);
     void beginRun(const art::Run&);
-    void endRun(const art::Run&);
+    void endJob();
 
     private:
     std::string        _crvRecoPulsesModuleLabel;
@@ -72,6 +72,8 @@ namespace mu2e
 
   void CrvCalibration::beginRun(const art::Run&)
   {
+    if(_calibHistsPulseArea.size()>0) return;  //don't initialize again for additional runs
+
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
     _calibHistsPulseArea.reserve(counters.size()*CRVId::nChanPerBar);
@@ -98,7 +100,7 @@ namespace mu2e
     }
   }
 
-  void CrvCalibration::endRun(const art::Run&)
+  void CrvCalibration::endJob()
   {
     TF1 funcCalib("f0", "gaus");
 
@@ -122,6 +124,7 @@ namespace mu2e
           continue;
         }
 
+/*
         int n=hist->GetNbinsX();
         double overflow=hist->GetBinContent(0)+hist->GetBinContent(n+1);
         if(overflow/((double)hist->GetEntries())>0.1) //too much underflow/overflow. something may be wrong.
@@ -129,12 +132,13 @@ namespace mu2e
           calibValue[i]=-1;
           continue;
         }
+*/
 
         int maxbinCalib = hist->GetMaximumBin();
         double peakCalib = hist->GetBinCenter(maxbinCalib);
         funcCalib.SetRange(peakCalib*0.8,peakCalib*1.2);
         funcCalib.SetParameter(1,peakCalib);
-        hist->Fit(&funcCalib, "0QR");
+        hist->Fit(&funcCalib, "QR");
         calibValue[i]=funcCalib.GetParameter(1);
       }
 

@@ -103,11 +103,10 @@ void CrvDigisFromFragments::produce(Event& event)
 
     for(size_t iDataBlock = 0; iDataBlock < CRVDataDecoder.block_count(); ++iDataBlock)
     {
-      if(_diagLevel>0) std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-
       auto block = CRVDataDecoder.dataAtBlockIndex(iDataBlock);
       if(block == nullptr)
       {
+        std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
         std::cerr << "Unable to retrieve block in " << std::endl;
         continue;
       }
@@ -115,24 +114,37 @@ void CrvDigisFromFragments::produce(Event& event)
 
       if(!header->isValid())
       {
-        std::cerr << "CRV packet is not valid." << std::endl;
-        std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
+        if(_diagLevel>0)
+        {
+          std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+          std::cerr << "CRV packet is not valid." << std::endl;
+          std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
+        }
         continue;
       }
 
       if(header->GetSubsystemID() != DTCLib::DTC_Subsystem::DTC_Subsystem_CRV)
       {
-        std::cerr << "CRV packet does not have system ID 2." << std::endl;
-        std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
+        if(_diagLevel>0)
+        {
+          std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+          std::cerr << "CRV packet does not have system ID 2." << std::endl;
+          std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
+        }
         continue;
       }
 
-      if(_diagLevel>0) std::cout << "packet count: " << header->GetPacketCount() << std::endl;
+      if(_diagLevel>1)
+      {
+        std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+        std::cout << "packet count: " << header->GetPacketCount() << std::endl;
+      }
       if(header->GetPacketCount() > 0)
       {
         auto crvRocHeader = CRVDataDecoder.GetCRVROCStatusPacket(iDataBlock);
         if(crvRocHeader == nullptr)
         {
+          std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
           std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock in " << iDataBlock << std::endl;
           continue;
         }
@@ -160,7 +172,7 @@ void CrvDigisFromFragments::produce(Event& event)
           crv_digis_NZS->emplace_back(adc, crvHitInfo.HitTime, true, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);  //temporary solution until we get the FEB-II
         } // loop over all crvHits
 
-        if(_diagLevel>1)
+        if(_diagLevel>2)
         {
           std::cout << "EventWindowTag (TDC header): "
                     << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
@@ -175,7 +187,7 @@ void CrvDigisFromFragments::produce(Event& event)
           std::cout << "EventWindowTag (ROC header): " << crvRocHeader->GetEventWindowTag() << std::endl;
         }
 
-        if(_diagLevel>0)
+        if(_diagLevel>3)
         {
           for(auto const& crvHit : crvHits)
           {
