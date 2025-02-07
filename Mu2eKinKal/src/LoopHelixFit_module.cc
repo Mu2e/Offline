@@ -170,14 +170,16 @@ namespace mu2e {
       void produce(art::Event& event) override;
       void endJob() override;
     private:
+      enum {kFirstPass = 0, kSecondPass = 1, kBothFail = 2}; // track comparison result options
+
       TrkFitFlag fitflag_;
       // parameter-specific functions that need to be overridden in subclasses
       KTRAJ makeSeedTraj(HelixSeed const& hseed,TimeRange const& trange,VEC3 const& bnom, int charge) const;
       bool goodFit(KKTRK const& ktrk) const;
       bool goodHelix(HelixSeed const& hseed) const;
       std::vector<HelixRecoDir::PropDir> chooseHelixDir(HelixSeed const& hseed) const;
-      int compare_tracks(const std::unique_ptr<KKTRK>& ktrk_1, const std::unique_ptr<KKTRK>& ktrk_2) const;
-      std::unique_ptr<KKTRK> fitTrack(art::Event& event, HelixSeed const& hseed, const float dir, const PDGCode::type fitpart);
+      int compare_tracks(const std::array<std::unique_ptr<KKTRK>,2>& ktrks) const;
+      std::unique_ptr<KKTRK> fitTrack(art::Event& event, HelixSeed const& hseed, const int dir, const PDGCode::type fitpart);
       // extrapolation functions
       void extrapolate(KKTRK& ktrk) const;
       void toTrackerEnds(KKTRK& ktrk,VEC3 const& dir0) const;
@@ -187,6 +189,7 @@ namespace mu2e {
       bool extrapolateTSDA(KKTRK& ktrk,TimeDir tdir) const;
       void toOPA(KKTRK& ktrk, double tstart, TimeDir tdir) const;
       void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const;
+      void print_track_info(const KalSeed& kkseed, const KKTRK& ktrk) const;
 
       // data payload
       std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
@@ -366,15 +369,22 @@ namespace mu2e {
     return {HelixRecoDir::PropDir::downstream, HelixRecoDir::PropDir::upstream};
   }
 
-  int LoopHelixFit::compare_tracks(const std::unique_ptr<KKTRK>& ktrk_1, const std::unique_ptr<KKTRK>& ktrk_2) const {
-    // return 1 to select the first track, 0 to select the second, -1 to indicate both are bad tracks
+  int LoopHelixFit::compare_tracks(const std::array<std::unique_ptr<KKTRK>,2>& ktrks) const {
+    // return FirstPass to select the first track, SecondPass to select the second, BothFail to indicate both are bad tracks
+    if(ktrks.empty()) throw cet::exception("RECO") << "mu2e::LoopHelixFit::" << __func__ << ": Compare tracks called with an empty array";
+    if(ktrks.size() == 1) return kFirstPass; //default to the first if it's the only track
+    if(ktrks.size() > 2) throw cet::exception("RECO") << "mu2e::LoopHelixFit::" << __func__ << ": Compare tracks called with too many tracks: " << ktrks.size();
+
+    // retrieve the tracks
+    const auto& ktrk_1 = ktrks[0];
+    const auto& ktrk_2 = ktrks[1];
 
     const bool goodfit_1(ktrk_1 && goodFit(*ktrk_1)), goodfit_2(ktrk_2 && goodFit(*ktrk_2));
     if(print_>1) printf(" [LoopHelixFit::%s]: status 1 = %o, status 2 = %o\n", __func__, goodfit_1, goodfit_2);
 
-    if(!goodfit_1 && !goodfit_2) return -1;
-    if(!goodfit_2) return 1; //if only the second is bad, accept the first
-    if(!goodfit_1) return 0; //if only the first is bad, accept the second
+    if(!goodfit_1 && !goodfit_2) return kBothFail;
+    if(!goodfit_2) return kFirstPass; //if only the second is bad, accept the first
+    if(!goodfit_1) return kSecondPass; //if only the first is bad, accept the second
 
     const auto p_1(ktrk_1->fitStatus().chisq_.probability());
     const auto p_2(ktrk_2->fitStatus().chisq_.probability());
@@ -383,11 +393,15 @@ namespace mu2e {
     if(print_>1) printf(" [LoopHelixFit::%s]: p 1 = %.4f, n(calo-hits) 1 = %lu, p 2 = %.4f, n(calo-hits) 2 = %lu\n",
                         __func__, p_1, n_calo_1, p_2, n_calo_2);
 
-    if(!prioritizeCaloHits_ || n_calo_1 == n_calo_2) return p_1 >= p_2; //if they both have the same number of calo-hits or ignoring these hits, use p(chi^2)
-    return n_calo_1 > n_calo_2; //if one has dropped clusters, assume this is a bad sign and pick the other
+    if(!prioritizeCaloHits_ || n_calo_1 == n_calo_2) return (p_1 >= p_2) ? kFirstPass : kSecondPass; //if they both have the same number of calo-hits or ignoring these hits, use p(chi^2)
+    return (n_calo_1 > n_calo_2) ? kFirstPass : kSecondPass; //if one has dropped clusters, assume this is a bad sign and pick the other
   }
 
-  std::unique_ptr<KKTRK> LoopHelixFit::fitTrack(art::Event& event, HelixSeed const& hseed, const float dir, PDGCode::type fitpart) {
+  std::unique_ptr<KKTRK> LoopHelixFit::fitTrack(art::Event& event, HelixSeed const& hseed, const int dir, PDGCode::type fitpart) {
+    // check the input
+    if(dir != HelixRecoDir::PropDir::downstream && dir != HelixRecoDir::PropDir::upstream)
+      throw cet::exception("RECO") << "mu2e::LoopHelixFit: Unknown helix propagation direction " << dir;
+
     // Retrieve event information
     // calo geom
     GeomHandle<Calorimeter> calo_h;
@@ -410,7 +424,7 @@ namespace mu2e {
     auto bnom = kkbf_->fieldVect(center);
     // compute the charge from the helicity, fit direction, and BField direction
     double bz = bnom.Z();
-    const int charge = static_cast<int>(copysign(PDGcharge_,(-1)*helix.helicity().value()*dir*bz));
+    const int charge = static_cast<int>(copysign(PDGcharge_,(-1)*helix.helicity().value()*bz*((dir == HelixRecoDir::PropDir::downstream) ? 1. : -1.)));
     // test consistency.  Modify this later when the HelixSeed knows which direction it's going TODO
     if(charge*PDGcharge_ < 0){
       if(usePDGCharge_)throw cet::exception("RECO")<<"mu2e::HelixFit: inconsistent charge" << endl;
@@ -494,38 +508,20 @@ namespace mu2e {
         // determine the fit direction hypothesis (or hypotheses)
         auto helix_dirs = chooseHelixDir(hseed);
         if(helix_dirs.empty()) continue; //bad helix, no fits to perform
-        const bool undefined_dir = helix_dirs.size() > 1; //fitting multiple hypotheses to determine the best fit
+        const unsigned dirs_size = helix_dirs.size();
+        const bool undefined_dir = dirs_size > 1; //fitting multiple hypotheses to determine the best fit
         if(undefined_dir) ++nAmbiguous_;
 
         // fit the track hypothesis (hypotheses)
-        std::unique_ptr<KKTRK> ktrk = nullptr;
-        float helix_dir(0.f); //selected track propagation direction
-        for(auto helix_dir_i : helix_dirs) {
-          const float dir = (helix_dir_i == HelixRecoDir::PropDir::downstream) ? 1.f : -1.f;
-          // Fit the track
-          auto ktrk_i = fitTrack(event, hseed,  dir, fpart_);
-          // check if a track is returned
-          if(ktrk_i) {
-            // if no track is selected yet, accept it, otherwise compare it to the current best fit
-            if(!ktrk) {
-              ktrk = std::move(ktrk_i);
-              helix_dir = dir;
-            } else {
-              const bool accept = compare_tracks(ktrk, ktrk_i) == 0;
-              // Print out verbose info if requested
-              if(print_ > 0)
-                printf("[LoopHelixFit::%s::%s]: Fit both direction options, slope = %8.1e, sig = %5.2f, status current = %i, status new = %i, p(chi^2) current = %.4f, p(chi^2) new = %.4f: accept new track = %o\n",
-                       __func__, moduleDescription().moduleLabel().c_str(), hseed.recoDir().slope(), hseed.recoDir().slopeSig(),
-                       ktrk && goodFit(*ktrk), ktrk_i && goodFit(*ktrk_i),
-                       (ktrk  ) ? ktrk  ->fitStatus().chisq_.probability() : -1.,
-                       (ktrk_i) ? ktrk_i->fitStatus().chisq_.probability() : -1., accept);
-              if(accept) {
-                ktrk = std::move(ktrk_i);
-                helix_dir = dir; // store the propagation direction
-              }
-            }
-          }
+        std::array<std::unique_ptr<KKTRK>, 2> ktrks;
+        for(unsigned index = 0; index < dirs_size; ++index) {
+          const auto helix_dir_i = helix_dirs.at(index);
+          ktrks[index] = fitTrack(event, hseed,  helix_dir_i, fpart_);
         }
+        // determine the fit to use
+        const int index = (compare_tracks(ktrks) == kSecondPass) ? 1 : 0;
+        auto& ktrk = ktrks[index];
+        const auto helix_dir = helix_dirs.at(index);
 
         if(!ktrk) continue; //ensure that the track exists
 
@@ -547,32 +543,8 @@ namespace mu2e {
             fitflag.clear(TrkFitFlag::FitOK);
           if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
           auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h);
-          if(print_>0) printf("[LoopHelixFit::%s::%s] Create seed             : fitcon = %.4f, nHits = %2lu, seedActiveHits = %2u, %lu calo-hits\n",
-                              __func__, moduleDescription().moduleLabel().c_str(), ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(),
-                              kkseed.nHits(), ktrk->caloHits().size());
-          if(print_>1) { //print the hit flags for the track and the KalSeed
-            for(auto const& hit : ktrk->strawHits())
-              printf("  [LoopHelixFit::%s::%s] KKTRK straw flags: %s", __func__, moduleDescription().moduleLabel().c_str(), hit->hit().flag().hex().c_str());
-            for(auto const& hit : kkseed.hits())
-              printf("  [LoopHelixFit::%s::%s] Seed straw flags : %s", __func__, moduleDescription().moduleLabel().c_str(), hit.flag().hex().c_str());
-          }
           sampleFit(*ktrk,kkseed._inters);
-          if(print_>1) {
-            printf("[LoopHelixFit::%s::%s] KalSeed has %lu intersections\n", __func__, moduleDescription().moduleLabel().c_str(), kkseed.intersections().size());
-            for(size_t ikinter = 0; ikinter < kkseed.intersections().size(); ++ikinter){
-              auto const& kinter = kkseed.intersections()[ikinter];
-              printf("[LoopHelixFit::%s::%s]   Seed %10s intersection: t0 = %6.1f, t0Err = %6.4f, mom = %6.2f, momErr = %6.4f\n",
-                     __func__, moduleDescription().moduleLabel().c_str(), kinter.surfaceId().name().c_str(), kinter.time(), std::sqrt(kinter.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
-                     kinter.mom(), kinter.momerr());
-            }
-            printf("[LoopHelixFit::%s::%s] KalSeed has %lu segments\n", __func__, moduleDescription().moduleLabel().c_str(), kkseed.segments().size());
-            for(size_t ikseg = 0; ikseg < kkseed.segments().size(); ++ikseg){
-              auto const& kseg = kkseed.segments()[ikseg];
-              printf("[LoopHelixFit::%s::%s]   Seed segment %lu: tmin = %6.1f, terr = %6.4f, mom = %6.2f, momErr = %6.4f\n",
-                     __func__, moduleDescription().moduleLabel().c_str(), ikseg, kseg.tmin(), std::sqrt(kseg.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
-                     kseg.mom(), kseg.momerr());
-            }
-          }
+          if(print_>0) print_track_info(kkseed, *ktrk);
           kkseedcol->push_back(kkseed);
           // fill assns with the helix seed
           auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
@@ -580,8 +552,8 @@ namespace mu2e {
           // save (unpersistable) KKTrk in the event
           ktrkcol->push_back(ktrk.release());
           //increment the counts
-          if(helix_dir > 0.f) ++nDownstream_;
-          if(helix_dir < 0.f) ++nUpstream_;
+          if(helix_dir == HelixRecoDir::PropDir::downstream) ++nDownstream_;
+          if(helix_dir == HelixRecoDir::PropDir::upstream  ) ++nUpstream_;
         }
       } //end helix seed loop
     } //end helix colllection loop
@@ -873,6 +845,33 @@ namespace mu2e {
         }
       }
     }
+  }
+
+  void LoopHelixFit::print_track_info(const KalSeed& kkseed, const KKTRK& ktrk) const {
+    if(print_>0) printf("[LoopHelixFit::%s::%s] Create seed             : fitcon = %.4f, nHits = %2lu, seedActiveHits = %2u, %lu calo-hits\n",
+                        __func__, moduleDescription().moduleLabel().c_str(), ktrk.fitStatus().chisq_.probability(), ktrk.strawHits().size(),
+                        kkseed.nHits(), ktrk.caloHits().size());
+    if(print_>1) { //print the hit flags for the track and the KalSeed as well as the KalSegments and intersections
+      for(auto const& hit : ktrk.strawHits())
+        printf("  [LoopHelixFit::%s::%s] KKTRK straw flags: %s", __func__, moduleDescription().moduleLabel().c_str(), hit->hit().flag().hex().c_str());
+      for(auto const& hit : kkseed.hits())
+        printf("  [LoopHelixFit::%s::%s] Seed straw flags : %s", __func__, moduleDescription().moduleLabel().c_str(), hit.flag().hex().c_str());
+      printf("[LoopHelixFit::%s::%s] KalSeed has %lu intersections\n", __func__, moduleDescription().moduleLabel().c_str(), kkseed.intersections().size());
+      for(size_t ikinter = 0; ikinter < kkseed.intersections().size(); ++ikinter){
+        auto const& kinter = kkseed.intersections()[ikinter];
+        printf("[LoopHelixFit::%s::%s]   Seed %10s intersection: t0 = %6.1f, t0Err = %6.4f, mom = %6.2f, momErr = %6.4f\n",
+               __func__, moduleDescription().moduleLabel().c_str(), kinter.surfaceId().name().c_str(), kinter.time(), std::sqrt(kinter.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
+               kinter.mom(), kinter.momerr());
+      }
+      printf("[LoopHelixFit::%s::%s] KalSeed has %lu segments\n", __func__, moduleDescription().moduleLabel().c_str(), kkseed.segments().size());
+      for(size_t ikseg = 0; ikseg < kkseed.segments().size(); ++ikseg){
+        auto const& kseg = kkseed.segments()[ikseg];
+        printf("[LoopHelixFit::%s::%s]   Seed segment %lu: tmin = %6.1f, terr = %6.4f, mom = %6.2f, momErr = %6.4f\n",
+               __func__, moduleDescription().moduleLabel().c_str(), ikseg, kseg.tmin(), std::sqrt(kseg.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
+               kseg.mom(), kseg.momerr());
+      }
+    }
+
   }
 
   void LoopHelixFit::endJob() {
