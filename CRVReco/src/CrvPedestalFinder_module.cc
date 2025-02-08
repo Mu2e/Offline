@@ -123,7 +123,7 @@ namespace mu2e
       double peakPedestal = hist->GetBinCenter(maxbinPedestal);
       funcPedestal.SetRange(peakPedestal-4,peakPedestal+4);
       funcPedestal.SetParameter(1,peakPedestal);
-      hist->Fit(&funcPedestal, "QR");
+      hist->Fit(&funcPedestal, "0QR");
       outputFile<<channel<<","<<funcPedestal.GetParameter(1)<<",-1,-1"<<std::endl;  //only print out pedestal values
     }
 

@@ -149,18 +149,19 @@ void CrvDigisFromFragments::produce(Event& event)
           continue;
         }
 
+//old code before artdaq_core_mu2e gets updated
+        auto crvHits = CRVDataDecoder.GetCRVHits(iDataBlock);
+/*
+//new code after artdaq_core_mu2e gets updated
         std::vector<mu2e::CRVDataDecoder::CRVHit> crvHits;
-        try
+        if(!CRVDataDecoder.GetCRVHits(iDataBlock, crvHits))
         {
-          crvHits = CRVDataDecoder.GetCRVHits(iDataBlock);
-        }
-        catch(const std::exception& e)
-        {
-          std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-          std::cerr << "Exception ("<<e.what()<<") during unpacking of CRV Hits" << std::endl;
+          std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+          std::cerr << "Error unpacking of CRV Hits" << std::endl;
           //TODO: This error needs to be written to an Offline data product
           break;
         }
+*/
         for(auto const& crvHit : crvHits)
         {
           const auto& crvHitInfo = crvHit.first;
