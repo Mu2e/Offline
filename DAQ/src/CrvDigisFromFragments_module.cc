@@ -106,20 +106,19 @@ void CrvDigisFromFragments::produce(Event& event)
       auto block = CRVDataDecoder.dataAtBlockIndex(iDataBlock);
       if(block == nullptr)
       {
-        std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+        std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
         std::cerr << "Unable to retrieve block in " << std::endl;
+        //TODO: This error needs to be written to an Offline data product
         continue;
       }
       auto header = block->GetHeader();
 
       if(!header->isValid())
       {
-        if(_diagLevel>0)
-        {
-          std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-          std::cerr << "CRV packet is not valid." << std::endl;
-          std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
-        }
+        std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+        std::cerr << "CRV packet is not valid." << std::endl;
+        std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
+        //TODO: This error needs to be written to an Offline data product
         continue;
       }
 
@@ -128,8 +127,8 @@ void CrvDigisFromFragments::produce(Event& event)
         if(_diagLevel>0)
         {
           std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-          std::cerr << "CRV packet does not have system ID 2." << std::endl;
-          std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
+          std::cout << "CRV packet does not have system ID 2." << std::endl;
+          std::cout << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
         }
         continue;
       }
@@ -144,12 +143,24 @@ void CrvDigisFromFragments::produce(Event& event)
         auto crvRocHeader = CRVDataDecoder.GetCRVROCStatusPacket(iDataBlock);
         if(crvRocHeader == nullptr)
         {
-          std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-          std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock in " << iDataBlock << std::endl;
+          std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+          std::cerr << "Error retrieving CRV ROC Status Packet" << std::endl;
+          //TODO: This error needs to be written to an Offline data product
           continue;
         }
 
-        auto crvHits = CRVDataDecoder.GetCRVHits(iDataBlock);
+        std::vector<mu2e::CRVDataDecoder::CRVHit> crvHits;
+        try
+        {
+          crvHits = CRVDataDecoder.GetCRVHits(iDataBlock);
+        }
+        catch(const std::exception& e)
+        {
+          std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+          std::cerr << "Exception ("<<e.what()<<") during unpacking of CRV Hits" << std::endl;
+          //TODO: This error needs to be written to an Offline data product
+          break;
+        }
         for(auto const& crvHit : crvHits)
         {
           const auto& crvHitInfo = crvHit.first;
