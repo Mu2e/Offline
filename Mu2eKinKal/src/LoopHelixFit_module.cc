@@ -277,9 +277,6 @@ namespace mu2e {
         kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
       }
 
-      if(useFitDir_ && useHelixSlope_) //can either force the direction or determine it from the helix slope
-        throw cet::exception("RECO")<<"mu2e::LoopHelixFit: Configuration error. Configured to use the helix slope for track direction and to force a specific direction!"<< endl;
-
       // setup optional fit finalization; this just updates the internals, not the fit result itself
       if(settings().finalSettings()){
         if(exconfig_.schedule_.size() > 0)
@@ -516,6 +513,9 @@ namespace mu2e {
         std::array<std::unique_ptr<KKTRK>, 2> ktrks;
         for(unsigned index = 0; index < dirs_size; ++index) {
           const auto helix_dir_i = helix_dirs.at(index);
+          // if using a fixed direction, only fit helices in this direction
+          if(useFitDir_ && !((fdir_ == TrkFitDirection::downstream && helix_dir_i == HelixRecoDir::PropDir::downstream) ||
+                             (fdir_ == TrkFitDirection::upstream && helix_dir_i == HelixRecoDir::PropDir::upstream))) continue;
           ktrks[index] = fitTrack(event, hseed,  helix_dir_i, fpart_);
         }
         // determine the fit to use
