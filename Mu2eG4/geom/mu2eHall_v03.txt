@@ -68,6 +68,22 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper2.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W2.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W2Upper.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerCeiling.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerLanding.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerStairs.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallN.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallN2.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallS.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallW.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperLanding.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperPlatform.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStairs1.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStairs2.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallE.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallE2.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallN.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallW.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallW2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsArea.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaAlcove1Ceiling.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaAlcove2Ceiling.txt"
@@ -316,6 +332,19 @@ vector<string> bldg.prefix.list = {
    "building.backfill.TSarea-W.1UpperNotchUpper2",
    "building.backfill.TSarea-W.2",
    "building.backfill.TSarea-W.2Upper",
+   "building.central.stairwell.lower.ceiling",
+   "building.central.stairwell.lower.landing",
+   "building.central.stairwell.lower.wall.n",
+   "building.central.stairwell.lower.wall.n2",
+   "building.central.stairwell.lower.wall.s",
+   "building.central.stairwell.lower.wall.w",
+   "building.central.stairwell.upper.landing",
+   "building.central.stairwell.upper.platform",
+   "building.central.stairwell.upper.wall.e",
+   "building.central.stairwell.upper.wall.e2",
+   "building.central.stairwell.upper.wall.n",
+   "building.central.stairwell.upper.wall.w",
+   "building.central.stairwell.upper.wall.w2",
    "building.dsArea",
    "building.dsArea.alcove1.ceiling",
    "building.dsArea.alcove2.ceiling",
@@ -507,6 +536,12 @@ vector<string> bldg.prefix.list = {
    "building.S.retaining.Wall.Foot"
 };
 
+vector<string> rotated.prefix.list = {
+   "building.central.stairwell.lower.stairs",
+   "building.central.stairwell.upper.stairs.1",
+   "building.central.stairwell.upper.stairs.2"
+};
+
 //   "building.tempDirt.backfill.psArea.baselevel",
 //   "building.tempDirt.backfill.psArea.Inter",
 //   "building.tempDirt.backfill.psArea.Lower",
@@ -540,11 +575,15 @@ vector<string> bldg.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlab2NC.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlab2NE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineUpper_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellLower.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellMiddle.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtEscapeCeiling.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsArea.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaAlcove1.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaAlcove2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaAlcove3.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtDsAreaAlcoveStairwell.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaDownstreamCeilingVslab1.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaDownstreamCeilingVslab2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaDownstreamCeilingVslab3.txt"
@@ -647,11 +686,15 @@ vector<string> dirt.prefix.list = {
   "dirt.beamline.slab2.NE",
   "dirt.beamline.slab2.NW",
   "dirt.beamline.upper",
+  "dirt.central.stairwell.lower",
+  "dirt.central.stairwell.middle",
+  "dirt.central.stairwell.upper",
   "dirt.escape.ceiling",
   "dirt.dsArea",
   "dirt.dsArea.alcove1",
   "dirt.dsArea.alcove2",
   "dirt.dsArea.alcove3",
+  "dirt.dsArea.alcove.stairwell",
   "dirt.dsArea.downstreamCeiling.vslab1",
   "dirt.dsArea.downstreamCeiling.vslab2",
   "dirt.dsArea.downstreamCeiling.vslab3",
