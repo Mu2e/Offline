@@ -12,6 +12,7 @@
 #include "Offline/CRVConditions/inc/CRVOrdinal.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Data/CRVDataDecoder.hh"
 #include <artdaq-core/Data/Fragment.hh>
@@ -60,6 +61,7 @@ CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config
 {
   produces<mu2e::CrvDigiCollection>();
   produces<mu2e::CrvDigiCollection>("NZS");
+  produces<mu2e::CrvDAQerrorCollection>();
 }
 
 // ----------------------------------------------------------------------
@@ -93,6 +95,7 @@ void CrvDigisFromFragments::produce(Event& event)
   // Collection of CrvDigis for the event
   std::unique_ptr<mu2e::CrvDigiCollection> crv_digis(new mu2e::CrvDigiCollection);
   std::unique_ptr<mu2e::CrvDigiCollection> crv_digis_NZS(new mu2e::CrvDigiCollection);
+  std::unique_ptr<mu2e::CrvDAQerrorCollection> crv_daq_errors(new mu2e::CrvDAQerrorCollection);
   auto const& channelMap = _channelMap_h.get(event.id());
 
   // Loop over the CRV fragments
@@ -107,8 +110,8 @@ void CrvDigisFromFragments::produce(Event& event)
       if(block == nullptr)
       {
         std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-        std::cerr << "Unable to retrieve block in " << std::endl;
-        //TODO: This error needs to be written to an Offline data product
+        std::cerr << "Unable to retrieve data block." << std::endl;
+        crv_daq_errors->emplace_back(mu2e::CrvDAQerror::errorCode::unableToGetDataBlock,iSubEvent,iDataBlock,0);
         continue;
       }
       auto header = block->GetHeader();
@@ -118,7 +121,7 @@ void CrvDigisFromFragments::produce(Event& event)
         std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
         std::cerr << "CRV packet is not valid." << std::endl;
         std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
-        //TODO: This error needs to be written to an Offline data product
+        crv_daq_errors->emplace_back(mu2e::CrvDAQerror::errorCode::invalidPacket,iSubEvent,iDataBlock,header->GetPacketCount());
         continue;
       }
 
@@ -127,9 +130,10 @@ void CrvDigisFromFragments::produce(Event& event)
         if(_diagLevel>0)
         {
           std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-          std::cout << "CRV packet does not have system ID 2." << std::endl;
+          std::cout << "CRV packet does not have subsystem ID 2." << std::endl;
           std::cout << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
         }
+        crv_daq_errors->emplace_back(mu2e::CrvDAQerror::errorCode::wrongSubsystemID,iSubEvent,iDataBlock,header->GetPacketCount());
         continue;
       }
 
@@ -145,20 +149,20 @@ void CrvDigisFromFragments::produce(Event& event)
         {
           std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
           std::cerr << "Error retrieving CRV ROC Status Packet" << std::endl;
-          //TODO: This error needs to be written to an Offline data product
+          crv_daq_errors->emplace_back(mu2e::CrvDAQerror::errorCode::errorUnpackingStatusPacket,iSubEvent,iDataBlock,header->GetPacketCount());
           continue;
         }
 
-//old code before artdaq_core_mu2e gets updated
+//FIXME: old code before artdaq_core_mu2e gets updated
         auto crvHits = CRVDataDecoder.GetCRVHits(iDataBlock);
 /*
-//new code after artdaq_core_mu2e gets updated
+//FIXME: new code after artdaq_core_mu2e gets updated
         std::vector<mu2e::CRVDataDecoder::CRVHit> crvHits;
         if(!CRVDataDecoder.GetCRVHits(iDataBlock, crvHits))
         {
           std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
           std::cerr << "Error unpacking of CRV Hits" << std::endl;
-          //TODO: This error needs to be written to an Offline data product
+          crv_daq_errors->emplace_back(mu2e::CrvDAQerrorCode::errorCode::errorUnpackingCrvHits,iDataBlock,header->GetPacketCount());
           break;
         }
 */
@@ -235,6 +239,7 @@ void CrvDigisFromFragments::produce(Event& event)
   // Store the crv digis in the event
   event.put(std::move(crv_digis));
   event.put(std::move(crv_digis_NZS),"NZS");
+  event.put(std::move(crv_daq_errors));
 
 } // produce()
 
