@@ -277,7 +277,7 @@ namespace mu2e {
     void         recoverPoints             (bool& recoveries);
     void         checkHelixViability       (LoopCondition& outcome);
     void         saveHelix                 (size_t tc, HelixSeedCollection& HSColl);
-    bool         validHelixDirection       (HelixRecoDir::PropDir direction);
+    bool         validHelixDirection       (TrkFitDirection::FitDirection direction);
 
   };
 
@@ -1421,7 +1421,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // check if the propagation direction is among the desired save directions
   //-----------------------------------------------------------------------------
-  bool AgnosticHelixFinder::validHelixDirection(HelixRecoDir::PropDir direction) {
+  bool AgnosticHelixFinder::validHelixDirection(TrkFitDirection::FitDirection direction) {
 
     for (size_t i=0; i<_validHelixDirections.size(); i++) {
       if (_validHelixDirections.at(i) == direction) return true;

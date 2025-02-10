@@ -177,9 +177,8 @@ namespace mu2e {
       KTRAJ makeSeedTraj(HelixSeed const& hseed,TimeRange const& trange,VEC3 const& bnom, int charge) const;
       bool goodFit(KKTRK const& ktrk) const;
       bool goodHelix(HelixSeed const& hseed) const;
-      std::vector<HelixRecoDir::PropDir> chooseHelixDir(HelixSeed const& hseed) const;
-      int compare_tracks(const std::array<std::unique_ptr<KKTRK>,2>& ktrks) const;
-      std::unique_ptr<KKTRK> fitTrack(art::Event& event, HelixSeed const& hseed, const int dir, const PDGCode::type fitpart);
+      std::vector<TrkFitDirection::FitDirection> chooseHelixDir(HelixSeed const& hseed) const;
+      std::unique_ptr<KKTRK> fitTrack(art::Event& event, HelixSeed const& hseed, const TrkFitDirection fdir, const PDGCode::type fitpart);
       // extrapolation functions
       void extrapolate(KKTRK& ktrk) const;
       void toTrackerEnds(KKTRK& ktrk,VEC3 const& dir0) const;
@@ -349,55 +348,31 @@ namespace mu2e {
                           useHelixSlope_, (useHelixSlope_) ? slopeSigThreshold_ : -1.f);
   }
 
-  std::vector<HelixRecoDir::PropDir> LoopHelixFit::chooseHelixDir(HelixSeed const& hseed) const {
+  std::vector<TrkFitDirection::FitDirection> LoopHelixFit::chooseHelixDir(HelixSeed const& hseed) const {
     if(!goodHelix(hseed)) return {}; //determine if this seed should be fit
 
+    std::vector<TrkFitDirection::FitDirection> initial_list, final_list; //reasonable fit directions and the final ones to return
     // if using the helix slope to decide the fit direction, check its significance
     if(useHelixSlope_) {
       auto predicted_dir = hseed.recoDir().predictDirection(slopeSigThreshold_);
-      if(predicted_dir == HelixRecoDir::PropDir::ambiguous)
-        return {HelixRecoDir::PropDir::downstream, HelixRecoDir::PropDir::upstream};
-      else return {predicted_dir};
+      if(predicted_dir == TrkFitDirection::FitDirection::unknown)
+        initial_list = {TrkFitDirection::FitDirection::downstream, TrkFitDirection::FitDirection::upstream};
+      else initial_list = {predicted_dir};
+    } else {
+      // using a forced fit direction
+      return {fdir_.fitDirection()};
     }
-    // using a forced fit direction
-    if(fdir_.fitDirection() == TrkFitDirection::FitDirection::upstream  ) return {HelixRecoDir::PropDir::upstream  };
-    if(fdir_.fitDirection() == TrkFitDirection::FitDirection::downstream) return {HelixRecoDir::PropDir::downstream};
-    // shouldn't reach this line
-    return {HelixRecoDir::PropDir::downstream, HelixRecoDir::PropDir::upstream};
+    if(useFitDir_) { //mask the reasonable directions with the allowed fit direction
+      TrkFitDirection::FitDirection fixed_dir(fdir_.fitDirection());
+      if(std::find(initial_list.begin(), initial_list.end(), fixed_dir) == initial_list.end()) final_list = {fixed_dir};
+    } else final_list = initial_list;
+    return final_list;
   }
 
-  int LoopHelixFit::compare_tracks(const std::array<std::unique_ptr<KKTRK>,2>& ktrks) const {
-    // return FirstPass to select the first track, SecondPass to select the second, BothFail to indicate both are bad tracks
-    if(ktrks.empty()) throw cet::exception("RECO") << "mu2e::LoopHelixFit::" << __func__ << ": Compare tracks called with an empty array";
-    if(ktrks.size() == 1) return kFirstPass; //default to the first if it's the only track
-    if(ktrks.size() > 2) throw cet::exception("RECO") << "mu2e::LoopHelixFit::" << __func__ << ": Compare tracks called with too many tracks: " << ktrks.size();
-
-    // retrieve the tracks
-    const auto& ktrk_1 = ktrks[0];
-    const auto& ktrk_2 = ktrks[1];
-
-    const bool goodfit_1(ktrk_1 && goodFit(*ktrk_1)), goodfit_2(ktrk_2 && goodFit(*ktrk_2));
-    if(print_>1) printf(" [LoopHelixFit::%s]: status 1 = %o, status 2 = %o\n", __func__, goodfit_1, goodfit_2);
-
-    if(!goodfit_1 && !goodfit_2) return kBothFail;
-    if(!goodfit_2) return kFirstPass; //if only the second is bad, accept the first
-    if(!goodfit_1) return kSecondPass; //if only the first is bad, accept the second
-
-    const auto p_1(ktrk_1->fitStatus().chisq_.probability());
-    const auto p_2(ktrk_2->fitStatus().chisq_.probability());
-    const auto n_calo_1(ktrk_1->caloHits().size());
-    const auto n_calo_2(ktrk_2->caloHits().size());
-    if(print_>1) printf(" [LoopHelixFit::%s]: p 1 = %.4f, n(calo-hits) 1 = %lu, p 2 = %.4f, n(calo-hits) 2 = %lu\n",
-                        __func__, p_1, n_calo_1, p_2, n_calo_2);
-
-    if(!prioritizeCaloHits_ || n_calo_1 == n_calo_2) return (p_1 >= p_2) ? kFirstPass : kSecondPass; //if they both have the same number of calo-hits or ignoring these hits, use p(chi^2)
-    return (n_calo_1 > n_calo_2) ? kFirstPass : kSecondPass; //if one has dropped clusters, assume this is a bad sign and pick the other
-  }
-
-  std::unique_ptr<KKTRK> LoopHelixFit::fitTrack(art::Event& event, HelixSeed const& hseed, const int dir, PDGCode::type fitpart) {
+  std::unique_ptr<KKTRK> LoopHelixFit::fitTrack(art::Event& event, HelixSeed const& hseed, const TrkFitDirection fdir, PDGCode::type fitpart) {
     // check the input
-    if(dir != HelixRecoDir::PropDir::downstream && dir != HelixRecoDir::PropDir::upstream)
-      throw cet::exception("RECO") << "mu2e::LoopHelixFit: Unknown helix propagation direction " << dir;
+    if(fdir.fitDirection() != TrkFitDirection::FitDirection::downstream && fdir.fitDirection() != TrkFitDirection::FitDirection::upstream)
+      throw cet::exception("RECO") << "mu2e::LoopHelixFit: Unknown helix propagation direction " << fdir.name();
 
     // Retrieve event information
     // calo geom
@@ -421,7 +396,7 @@ namespace mu2e {
     auto bnom = kkbf_->fieldVect(center);
     // compute the charge from the helicity, fit direction, and BField direction
     double bz = bnom.Z();
-    const int charge = static_cast<int>(copysign(PDGcharge_,(-1)*helix.helicity().value()*bz*((dir == HelixRecoDir::PropDir::downstream) ? 1. : -1.)));
+    const int charge = static_cast<int>(copysign(PDGcharge_,(-1)*helix.helicity().value()*bz*fdir.dzdt()));
     // test consistency.  Modify this later when the HelixSeed knows which direction it's going TODO
     if(charge*PDGcharge_ < 0){
       if(usePDGCharge_)throw cet::exception("RECO")<<"mu2e::HelixFit: inconsistent charge" << endl;
@@ -510,53 +485,44 @@ namespace mu2e {
         if(undefined_dir) ++nAmbiguous_;
 
         // fit the track hypothesis (hypotheses)
-        std::array<std::unique_ptr<KKTRK>, 2> ktrks;
-        for(unsigned index = 0; index < dirs_size; ++index) {
-          const auto helix_dir_i = helix_dirs.at(index);
-          // if using a fixed direction, only fit helices in this direction
-          if(useFitDir_ && !((fdir_ == TrkFitDirection::downstream && helix_dir_i == HelixRecoDir::PropDir::downstream) ||
-                             (fdir_ == TrkFitDirection::upstream && helix_dir_i == HelixRecoDir::PropDir::upstream))) continue;
-          ktrks[index] = fitTrack(event, hseed,  helix_dir_i, fpart_);
-        }
-        // determine the fit to use
-        const int index = (compare_tracks(ktrks) == kSecondPass) ? 1 : 0;
-        auto& ktrk = ktrks[index];
-        const auto helix_dir = helix_dirs.at(index);
+        for(auto helix_dir : helix_dirs) {
+          auto ktrk = fitTrack(event, hseed,  TrkFitDirection(helix_dir), fpart_);
 
-        if(!ktrk) continue; //ensure that the track exists
+          if(!ktrk) continue; //ensure that the track exists
 
-        // Check the fit
-        auto goodfit = goodFit(*ktrk);
+          // Check the fit
+          auto goodfit = goodFit(*ktrk);
 
-        // extrapolate as required
-        if(goodfit && extrapolate_) extrapolate(*ktrk);
-        if(print_>1) ktrk->printFit(std::cout,print_-1);
+          // extrapolate as required
+          if(goodfit && extrapolate_) extrapolate(*ktrk);
+          if(print_>1) ktrk->printFit(std::cout,print_-1);
 
-        // save the fit result
-        if(goodfit || saveall_){
-          auto hptr = HPtr(hseedcol_h,iseed);
-          TrkFitFlag fitflag(hptr->status());
-          fitflag.merge(fitflag_);
-          if(goodfit)
-            fitflag.merge(TrkFitFlag::FitOK);
-          else
-            fitflag.clear(TrkFitFlag::FitOK);
-          if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
-          auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h);
-          sampleFit(*ktrk,kkseed._inters);
-          if(print_>0) print_track_info(kkseed, *ktrk);
-          kkseedcol->push_back(kkseed);
-          // fill assns with the helix seed
-          auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
-          kkseedassns->addSingle(kseedptr,hptr);
-          // save (unpersistable) KKTrk in the event
-          ktrkcol->push_back(ktrk.release());
-          //increment the counts
-          if(helix_dir == HelixRecoDir::PropDir::downstream) ++nDownstream_;
-          if(helix_dir == HelixRecoDir::PropDir::upstream  ) ++nUpstream_;
-        }
+          // save the fit result
+          if(goodfit || saveall_){
+            auto hptr = HPtr(hseedcol_h,iseed);
+            TrkFitFlag fitflag(hptr->status());
+            fitflag.merge(fitflag_);
+            if(goodfit) fitflag.merge(TrkFitFlag::FitOK);
+            else        fitflag.clear(TrkFitFlag::FitOK);
+            if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
+
+            auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h);
+            sampleFit(*ktrk,kkseed._inters);
+            if(print_>0) print_track_info(kkseed, *ktrk);
+            kkseedcol->push_back(kkseed);
+            // fill assns with the helix seed
+            auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
+            kkseedassns->addSingle(kseedptr,hptr);
+            // save (unpersistable) KKTrk in the event
+            ktrkcol->push_back(ktrk.release());
+            //increment the counts
+            if(helix_dir == TrkFitDirection::FitDirection::downstream) ++nDownstream_;
+            if(helix_dir == TrkFitDirection::FitDirection::upstream  ) ++nUpstream_;
+          }
+        } //end track fit result loop
       } //end helix seed loop
     } //end helix colllection loop
+
     // put the output products into the event
     if(print_ > 0) std::cout << "Fitted " << ktrkcol->size() << " tracks from " << nseed << " Seeds" << std::endl;
     event.put(move(ktrkcol));
@@ -623,8 +589,10 @@ namespace mu2e {
     if(!hseed.status().hasAllProperties(goodseed_)) return false;
     // test helix
     auto const& helix = hseed.helix();
-    if(helix.radius() == 0.0 || helix.lambda() == 0.0)
-      throw cet::exception("RECO")<<"mu2e::HelixFit: degenerate seed parameters" << endl;
+    if(helix.radius() == 0.0 || helix.lambda() == 0.0) {
+      if(print_>0) printf("LoopHelixFit::%s::%s: Degenerate helix seed parameters, skipping helix\n", __func__, moduleDescription().moduleLabel().c_str());
+      return false;
+    }
     return true;
   }
 
