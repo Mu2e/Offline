@@ -126,13 +126,14 @@ namespace mu2e
         float lambda     = std::fabs(Helix.helix().lambda());
         float nLoops     = helTool.nLoops();
         float hRatio     = helTool.hitRatio();
-        const float slope    = Helix.recoDir().slope();
-        const float slopeErr = std::fabs(Helix.recoDir().slopeErr());
-        const float slopeSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f;
+        const float slope          = Helix.recoDir().slope();
+        const float slopeErr       = std::fabs(Helix.recoDir().slopeErr());
+        const float slopeSignedSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f; //signifance from 0 signed by the slope direction
 
         if(Debug > 2){
-          std::cout << "[HelixFilter] : status = " << Helix.status() << " nhits = " << nstrawhits << " mom = " << hmom << std::endl;
-          std::cout << "[HelixFilter] : chi2XY = " << chi2XY << " chi2ZPHI = " << chi2PhiZ << " d0 = " << d0 << " lambda = "<< lambda << " nLoops = " << nLoops << " hRatio = "<< hRatio << std::endl;
+          std::cout << "[HelixFilter] : status = " << Helix.status() << " nhits = " << nstrawhits << " mom = " << hmom << std::endl
+                    << "[HelixFilter] : chi2XY = " << chi2XY << " chi2ZPHI = " << chi2PhiZ << " d0 = " << d0 << " lambda = "<< lambda
+                    << " nLoops = " << nLoops << " hRatio = "<< hRatio << " slopeSignedSig = " << slopeSignedSig << std::endl;
         }
         if( Helix.status().hasAllProperties(_goodh)      &&
             (!_hascc || Helix.caloCluster().isNonnull()) &&
@@ -148,8 +149,8 @@ namespace mu2e
             nLoops     >= _minnloops     &&
             hmom       >= _minmom        &&
             hmom       <= _maxmom        &&
-            (!_useSlopeSigMin || slopeSig > _slopeSigMin) &&
-            (!_useSlopeSigMax || slopeSig < _slopeSigMax) &&
+            (!_useSlopeSigMin || slopeSignedSig > _slopeSigMin) &&
+            (!_useSlopeSigMax || slopeSignedSig < _slopeSigMax) &&
             hRatio     >= _minHitRatio ) {
           //now check if we want to prescake or not
           if (_prescaleUsingD0Phi) {

@@ -18,7 +18,7 @@
 namespace mu2e {
   class CaloCluster;
   class TimeCluster;
-
+  using FitDir = TrkFitDirection::FitDirection;
   struct HelixSeed {
 
     TrkT0                 const& t0()          const { return _t0; }
@@ -26,7 +26,7 @@ namespace mu2e {
     RobustHelix           const& helix()       const { return _helix; }
     TrkFitFlag            const& status()      const { return _status; }
     HelixRecoDir          const& recoDir()     const { return _recoDir; }
-    HelixRecoDir::PropDir const& propDir()     const { return _propDir; }
+    FitDir                const& propDir()     const { return _propDir; }
     float                 const& eDepAvg()     const { return _eDepAvg; }
     art::Ptr<CaloCluster> const& caloCluster() const { return _timeCluster->caloCluster(); }
     art::Ptr<TimeCluster> const& timeCluster() const { return _timeCluster; }
@@ -36,7 +36,7 @@ namespace mu2e {
     RobustHelix              _helix;       // robust helix created from these hits
     TrkFitFlag               _status;      // status of processes used to create this seed
     HelixRecoDir             _recoDir;     // sign of the longitudinal velocity (z-axis) derived from a T vs Z linear fit
-    HelixRecoDir::PropDir    _propDir = HelixRecoDir::ambiguous; // direction of propagation (upstream, downstream, or ambiguous)
+    FitDir                    _propDir = TrkFitDirection::unknown; // direction of propagation (upstream, downstream, or ambiguous)
     art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
     float                    _eDepAvg =0;  // average energy deposition from helix hits
   };
