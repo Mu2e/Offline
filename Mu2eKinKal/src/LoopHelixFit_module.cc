@@ -170,8 +170,6 @@ namespace mu2e {
       void produce(art::Event& event) override;
       void endJob() override;
     private:
-      enum {kFirstPass = 0, kSecondPass = 1, kBothFail = 2}; // track comparison result options
-
       TrkFitFlag fitflag_;
       // parameter-specific functions that need to be overridden in subclasses
       KTRAJ makeSeedTraj(HelixSeed const& hseed,TimeRange const& trange,VEC3 const& bnom, int charge) const;
@@ -393,6 +391,8 @@ namespace mu2e {
     auto zcent = Mu2eKinKal::zMid(hseed.hits());
     // take the magnetic field at the helix center as nominal
     VEC3 center(helix.centerx(), helix.centery(),zcent);
+    static const double rhomax = 700.0; // this should come from conditions
+    if(center.Rho() > rhomax) center = VEC3(rhomax*cos(center.Phi()),rhomax*sin(center.Phi()),center.Z());
     auto bnom = kkbf_->fieldVect(center);
     // compute the charge from the helicity, fit direction, and BField direction
     double bz = bnom.Z();
@@ -477,14 +477,14 @@ namespace mu2e {
         ++nSeen_;
         auto const& hseed = hseedcol[iseed];
 
-        // determine the fit direction hypothesis (or hypotheses)
+        // determine the fit direction hypotheses
         auto helix_dirs = chooseHelixDir(hseed);
         if(helix_dirs.empty()) continue; //bad helix, no fits to perform
         const unsigned dirs_size = helix_dirs.size();
         const bool undefined_dir = dirs_size > 1; //fitting multiple hypotheses to determine the best fit
         if(undefined_dir) ++nAmbiguous_;
 
-        // fit the track hypothesis (hypotheses)
+        // fit each track hypothesis
         for(auto helix_dir : helix_dirs) {
           auto ktrk = fitTrack(event, hseed,  TrkFitDirection(helix_dir), fpart_);
 
