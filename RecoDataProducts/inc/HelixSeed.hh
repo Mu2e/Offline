@@ -36,7 +36,7 @@ namespace mu2e {
     RobustHelix              _helix;       // robust helix created from these hits
     TrkFitFlag               _status;      // status of processes used to create this seed
     HelixRecoDir             _recoDir;     // sign of the longitudinal velocity (z-axis) derived from a T vs Z linear fit
-    FitDir                    _propDir = TrkFitDirection::unknown; // direction of propagation (upstream, downstream, or ambiguous)
+    FitDir                    _propDir = FitDir::unknown; // direction of propagation (upstream, downstream, or ambiguous)
     art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
     float                    _eDepAvg =0;  // average energy deposition from helix hits
   };
