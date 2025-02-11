@@ -158,7 +158,7 @@ namespace mu2e {
     // LoopHelix module specific config
     fhicl::OptionalAtom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Input helix seed slope significance threshold to assume the direction")};
     fhicl::Atom<bool> prioritizeCaloHits{ Name("PrioritizeCaloHits"), Comment("Prioritize tracks with calo-hits when determining the best fit direction"), true};
-    fhicl::OptionalAtom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream")};
+    fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
   };
 
@@ -244,7 +244,7 @@ namespace mu2e {
     useHelixSlope_(settings().slopeSigThreshold(slopeSigThreshold_)),
     prioritizeCaloHits_(settings().prioritizeCaloHits()),
     useFitDir_(settings().fitDirection()),
-    fdir_(static_cast<TrkFitDirection::FitDirection>((useFitDir_) ? *(settings().fitDirection()) : 0)),
+    fdir_(useFitDir_ ? *settings().fitDirection() : "downstream"),
     usePDGCharge_(settings().pdgCharge()),
     kkfit_(settings().kkfitSettings()),
     kkmat_(settings().matSettings()),

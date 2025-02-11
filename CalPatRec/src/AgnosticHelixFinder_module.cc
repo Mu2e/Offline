@@ -90,7 +90,7 @@ namespace mu2e {
       fhicl::Atom<float>           chi2LineSaveThresh     {Name("chi2LineSaveThresh"   ), Comment("max chi2Dof for line"        )  };
       fhicl::Atom<float>           maxEDepAvg             {Name("maxEDepAvg"           ), Comment("max avg edep of combohits"   )  };
       fhicl::Atom<float>           tzSlopeSigThresh       {Name("tzSlopeSigThresh"     ), Comment("direction ambiguous if below")  };
-      fhicl::Sequence<int>         validHelixDirections   {Name("validHelixDirections" ), Comment("only save desired directions")  };
+      fhicl::Sequence<std::string> validHelixDirections   {Name("validHelixDirections" ), Comment("only save desired directions")  };
 
       fhicl::Table<AgnosticHelixFinderTypes::Config> diagPlugin  {Name("diagPlugin"), Comment("diag plugin"                   )  };
     };
@@ -201,7 +201,7 @@ namespace mu2e {
     float    _chi2LineSaveThresh;
     float    _maxEDepAvg;
     float    _tzSlopeSigThresh;
-    std::vector<int> _validHelixDirections;
+    std::vector<TrkFitDirection::FitDirection> _validHelixDirections;
 
     //-----------------------------------------------------------------------------
     // diagnostics
@@ -327,11 +327,13 @@ namespace mu2e {
     _maxHelixMomentum              (config().maxHelixMomentum()                      ),
     _chi2LineSaveThresh            (config().chi2LineSaveThresh()                    ),
     _maxEDepAvg                    (config().maxEDepAvg()                            ),
-    _tzSlopeSigThresh              (config().tzSlopeSigThresh()                      ),
-    _validHelixDirections          (config().validHelixDirections()                  )
-
+    _tzSlopeSigThresh              (config().tzSlopeSigThresh()                      )
     {
 
+      // convert the helix direction names into enums
+      for(auto helix_dir : config().validHelixDirections()) {
+        _validHelixDirections.push_back(TrkFitDirection::fitDirectionFromName(helix_dir));
+      }
       consumes<ComboHitCollection>     (_chLabel);
       consumes<TimeClusterCollection>  (_tcLabel);
       consumes<CaloClusterCollection>  (_ccLabel);
@@ -621,6 +623,7 @@ namespace mu2e {
         return _chColl->at(a.hitIndice).pos().z() > _chColl->at(b.hitIndice).pos().z();
       });
 
+    }
   }
 
   //-----------------------------------------------------------------------------
@@ -1346,7 +1349,6 @@ namespace mu2e {
   // function to save helix
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::saveHelix(size_t tc, HelixSeedCollection& HSColl) {
-
     HelixSeed hseed;
     hseed._t0 = _tcColl->at(tc)._t0;
     auto _tcCollH = _event->getValidHandle<TimeClusterCollection>(_tcLabel);
