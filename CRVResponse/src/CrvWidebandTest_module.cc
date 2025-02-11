@@ -383,6 +383,16 @@ namespace mu2e
       }
     }//setup at first event
 
+    for(int iFEB=0; iFEB<_nFEBs; ++iFEB)
+    for(int iChannel=0; iChannel<(int)CRVId::nChanPerFEB; ++iChannel)
+    {
+      int index=iFEB*CRVId::nChanPerFEB+iChannel;
+      _recoPEs[index]        =0;
+      _recoTime[index]       =0;
+      _fitStatus[index]      =0;
+      _depositedEnergy[index]=0;
+    }
+
     //fits for the entire stack of modules/sectors (sectorType=0) and for individual modules/sectors (sectorType=1,...)
     for(int iSectorType=0; iSectorType<_nSectorTypes; ++iSectorType)
     {

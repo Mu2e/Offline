@@ -21,7 +21,7 @@ TrkPatRec : { @table::TrkPatRec
    TimeClusterFinder : {
       module_type            : TimeClusterFinder
 
-      ComboHitCollection     : "FlagBkgHits"
+      ComboHitCollection     : "flagPH"
       CaloClusterCollection  : "CaloClusterMaker"
       ClusterMVA             : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
       ClusterCaloMVA         : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
@@ -53,7 +53,7 @@ TrkPatRec : { @table::TrkPatRec
    # time clustering is the 1st stage of track finding
    TimeAndPhiClusterFinder : {
       module_type             : TimeAndPhiClusterFinder
-      ComboHitCollection     : "makePH"
+      ComboHitCollection     : "flagPH"
       CaloClusterCollection  : "CaloClusterMaker"
       HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
       HitBackgroundBits      : [ @sequence::TrkPatRec.PatRecBackground ]
@@ -84,14 +84,13 @@ TrkPatRec : { @table::TrkPatRec
 
    RobustMultiHelixFinder : {
       module_type   : RobustMultiHelixFinder
-      ComboHitCollection      : "makePH"
+      ComboHitCollection      : "flagPH"
       TimeClusterCollection   : "TimeClusterFinderDe"
       Helicities              : [-1,1]
       MinDRCircle             : 40
       MinRadCircle            : 150
       MaxRadCircle            : 350
       MinDXY2Circle           : 1600
-      MaxDXY2Circle           : 1.6e6
       ClusteringPhiBin        : 0.1
       ClusteringMinBin        : 30
       TargetCon               : false
@@ -106,7 +105,7 @@ TrkPatRec : { @table::TrkPatRec
       CaloClusterWeight       : 5
       MaxChi2Hit              : 50
       MinDZTrk                : 1500
-      FitCircleAlgorithm      : 1
+      FitCircleStrategy       : "ChiSquared"
       MinStrawHits            : 10
       NMaxTrkIter             : 3
       DiagLevel               : 0
@@ -123,8 +122,8 @@ TrkPatRec : { @table::TrkPatRec
    # helix finding.  Search for both helicities
    RobustHelixFinder : {
       module_type   : RobustHelixFinder
-      doSingleOutput         : false
-      ComboHitCollection     : "FlagBkgHits"
+      doSingleOutput         : true
+      ComboHitCollection     : "flagPH"
       HelixStereoHitMVA      : { MVAWeights : "Offline/TrkPatRec/data/HelixStereoHitMVA.weights.xml" }
       HelixNonStereoHitMVA   : { MVAWeights : "Offline/TrkPatRec/data/HelixNonStereoHitMVA.weights.xml" }
       DiagPlugin : {
@@ -228,7 +227,7 @@ TrkPatRec : { @table::TrkPatRec
       }
    }
 
-
+# TPR
    RobustHelixFinderDe : {
       @table::TrkPatRec.RobustHelixFinder
       TimeClusterCollection  : "TimeClusterFinderDe"
@@ -251,6 +250,31 @@ TrkPatRec : { @table::TrkPatRec
    }
    RobustHelixFinderUpi : {
       @table::TrkPatRec.RobustHelixFinder
+      TimeClusterCollection  : "TimeClusterFinderUpi"
+   }
+#  MPR
+   MultiHelixFinderDe : {
+      @table::TrkPatRec.RobustMultiHelixFinder
+      TimeClusterCollection  : "TimeClusterFinderDe"
+   }
+   MultiHelixFinderUe : {
+      @table::TrkPatRec.RobustMultiHelixFinder
+      TimeClusterCollection  : "TimeClusterFinderUe"
+   }
+   MultiHelixFinderDmu : {
+      @table::TrkPatRec.RobustMultiHelixFinder
+      TimeClusterCollection  : "TimeClusterFinderDmu"
+   }
+   MultiHelixFinderUmu : {
+      @table::TrkPatRec.RobustMultiHelixFinder
+      TimeClusterCollection  : "TimeClusterFinderUmu"
+   }
+   MultiHelixFinderDpi : {
+      @table::TrkPatRec.RobustMultiHelixFinder
+      TimeClusterCollection  : "TimeClusterFinderDpi"
+   }
+   MultiHelixFinderUpi : {
+      @table::TrkPatRec.RobustMultiHelixFinder
       TimeClusterCollection  : "TimeClusterFinderUpi"
    }
 
@@ -595,18 +619,28 @@ TrkPatRec : { @table::TrkPatRec
 # Declare a table with all the modules needed for track reconstruction
 TrkPatRec : { @table::TrkPatRec
    producers : {
+# TPR
       TimeClusterFinderDe   : { @table::TrkPatRec.TimeClusterFinderDe}
-      HelixFinderDe         : { @table::TrkPatRec.RobustHelixFinderDe}
       TimeClusterFinderDmu  : { @table::TrkPatRec.TimeClusterFinderDmu}
-      HelixFinderDmu        : { @table::TrkPatRec.RobustHelixFinderDmu}
       TimeClusterFinderDpi  : { @table::TrkPatRec.TimeClusterFinderDpi}
-      HelixFinderDpi        : { @table::TrkPatRec.RobustHelixFinderDpi}
       TimeClusterFinderUe   : { @table::TrkPatRec.TimeClusterFinderUe}
-      HelixFinderUe         : { @table::TrkPatRec.RobustHelixFinderUe}
       TimeClusterFinderUmu  : { @table::TrkPatRec.TimeClusterFinderUmu}
-      HelixFinderUmu        : { @table::TrkPatRec.RobustHelixFinderUmu}
       TimeClusterFinderUpi  : { @table::TrkPatRec.TimeClusterFinderUpi}
+      HelixFinderDe         : { @table::TrkPatRec.RobustHelixFinderDe}
+      HelixFinderDmu        : { @table::TrkPatRec.RobustHelixFinderDmu}
+      HelixFinderDpi        : { @table::TrkPatRec.RobustHelixFinderDpi}
+      HelixFinderUe         : { @table::TrkPatRec.RobustHelixFinderUe}
+      HelixFinderUmu        : { @table::TrkPatRec.RobustHelixFinderUmu}
       HelixFinderUpi        : { @table::TrkPatRec.RobustHelixFinderUpi}
+# MPR
+      MultiHelixFinderDe         : { @table::TrkPatRec.MultiHelixFinderDe}
+      MultiHelixFinderDmu        : { @table::TrkPatRec.MultiHelixFinderDmu}
+      MultiHelixFinderDpi        : { @table::TrkPatRec.MultiHelixFinderDpi}
+      MultiHelixFinderUe         : { @table::TrkPatRec.MultiHelixFinderUe}
+      MultiHelixFinderUmu        : { @table::TrkPatRec.MultiHelixFinderUmu}
+      MultiHelixFinderUpi        : { @table::TrkPatRec.MultiHelixFinderUpi}
+
+
       # should add proton FIXME!
       # now all the different track fits based on these inputs
       # First, seed fits
@@ -646,11 +680,11 @@ TrkPatRec : { @table::TrkPatRec
    # define standard outputs
    Output : {
       Digis : [ "keep mu2e::StrawDigis_*_*_*" ]
-      Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
+      Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_flagPH_*_*",
          "keep mu2e::ComboHitCollection_*_*_*",
          "keep mu2e::StrawHits_*_*_*"  ]
 
-      Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
+      Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_flagPH_StrawHits_*",
          "keep mu2e::ComboHitCollection_makePH_*_*",
          "keep mu2e::KalSeeds_*_*_*",
          "keep mu2e::KalSeeds_*_*_*",

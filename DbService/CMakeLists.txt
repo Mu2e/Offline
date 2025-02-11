@@ -8,6 +8,8 @@ cet_make_library(
       src/DbTool.cc
       src/DbValTool.cc
       src/EpicsTool.cc
+      src/RunInfo.cc
+      src/RunTool.cc
     LIBRARIES PUBLIC
       PostgreSQL::PostgreSQL
       CURL::libcurl
@@ -30,6 +32,13 @@ cet_make_exec(NAME epicsTool
       Boost::program_options
       Offline::DbService
       
+)
+
+cet_make_exec(NAME runTool
+    SOURCE src/runTool_main.cc
+    LIBRARIES
+      Boost::program_options
+      Offline::DbService      
 )
 
 cet_build_plugin(DbService art::service

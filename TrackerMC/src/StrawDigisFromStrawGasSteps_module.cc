@@ -556,7 +556,8 @@ namespace mu2e {
       bundles.Append(*digis, *digiadcs, *mcdigis);
 
       // resolve collisions between any preexisting and new digis
-      StrawDigiBundleCollection resolved = bundles.ResolveCollisions(strawele);
+      StrawDigiBundleCollection resolved;
+      bundles.ResolveCollisions(strawele, resolved);
       digis = resolved.GetStrawDigiPtrs();
       digiadcs = resolved.GetStrawDigiADCWaveformPtrs();
       mcdigis = resolved.GetStrawDigiMCPtrs();

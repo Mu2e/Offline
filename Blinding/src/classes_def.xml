@@ -1,0 +1,13 @@
+<!--  -->
+<!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
+<!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
+<!--  for all objects inside of those objects.                                        -->
+<!--  -->
+
+<lcgdict>
+
+ <class name="std::string"/>
+ <class name="mu2e::BigNumber"/>
+ <class name="art::Wrapper<mu2e::BigNumber>"/>
+
+</lcgdict>

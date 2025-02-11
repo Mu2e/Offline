@@ -356,8 +356,10 @@ namespace mu2e {
           if(helix.radius() == 0.0 || helix.lambda() == 0.0 )
             throw cet::exception("RECO")<<"mu2e::HelixFit: degenerate seed parameters" << endl;
           auto zcent = Mu2eKinKal::zMid(hseed.hits());
-          // take the magnetic field at the helix center as nominal
+          // take the magnetic field at the helix center as nominal. Restrict this to the DS volume
           VEC3 center(helix.centerx(), helix.centery(),zcent);
+          static const double rhomax = 700.0; // this should come from conditions
+          if(center.Rho() > rhomax) center = VEC3(rhomax*cos(center.Phi()),rhomax*sin(center.Phi()),center.Z());
           auto bnom = kkbf_->fieldVect(center);
           // compute the charge from the helicity, fit direction, and BField direction
           double bz = bnom.Z();
@@ -456,7 +458,7 @@ namespace mu2e {
     double dirdot = hdir.Dot(kdir);
     // the original helix doesn't have a time direction (geometric helix) so allow both interpretations
     // the tolerance in the test allows for a difference between global and local parameters (B not along Z axis)
-    if(1.0- fabs(dirdot) > 1e-3)throw cet::exception("RECO")<<"mu2e::LoopHelixFit:Seed helix translation error"<< endl;
+    if(1.0- fabs(dirdot) > 1e-2)throw cet::exception("RECO")<<"mu2e::LoopHelixFit:Seed helix translation error, dirdot = " << dirdot << endl;
     return ktraj;
   }
 
@@ -539,11 +541,11 @@ namespace mu2e {
     static const SurfaceId tt_mid("TT_Mid");
     static const SurfaceId tt_back("TT_Back");
 
-    auto frontinter = KinKal::intersect(ftraj,*trkfrontptr_,frange,tol);
+    auto frontinter = KinKal::intersect(ftraj,*trkfrontptr_,frange,tol,fronttdir);
     if(frontinter.onsurface_)ktrk.addIntersection(tt_front,frontinter);
     auto midinter = KinKal::intersect(ftraj,*trkmidptr_,frange,tol);
     if(midinter.onsurface_)ktrk.addIntersection(tt_mid,midinter);
-    auto backinter = KinKal::intersect(ftraj,*trkbackptr_,frange,tol);
+    auto backinter = KinKal::intersect(ftraj,*trkbackptr_,frange,tol,backtdir);
     if(backinter.onsurface_)ktrk.addIntersection(tt_back,backinter);
   }
 

@@ -7,10 +7,10 @@ string building.firstFloor.wall.extension.name     = "firstFloorWallExtension";
 string building.firstFloor.wall.extension.material = "CONCRETE_MARS";
 
 double building.firstFloor.wall.extension.offsetFromMu2eOrigin.x   = 947.4;
-double building.firstFloor.wall.extension.offsetFromFloorSurface.y = 9601.2;
+double building.firstFloor.wall.extension.offsetFromFloorSurface.y = 9144.0027;//9601.2;
 double building.firstFloor.wall.extension.offsetFromMu2eOrigin.z   = -3581.4;
 
-double building.firstFloor.wall.extension.yHalfThickness           = 1828.8;
+double building.firstFloor.wall.extension.yHalfThickness           = 1371.6027;//1828.8;
 
 vector<double> building.firstFloor.wall.extension.xPositions = {
   -2921,   // P0

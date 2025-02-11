@@ -1,0 +1,85 @@
+
+string building.central.stairwell.lower.stairs.name     = "CentralStairwellLowerStairs";
+
+string building.central.stairwell.lower.stairs.material = "CONCRETE_MARS";
+
+double building.central.stairwell.lower.stairs.offsetFromMu2eOrigin.x   = -12032;
+double building.central.stairwell.lower.stairs.offsetFromFloorSurface.y = 0;
+double building.central.stairwell.lower.stairs.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.central.stairwell.lower.stairs.yHalfThickness           = 609.599;  // remove 1 um to prevent conflict as the rotation angle is not exactly pi/2
+vector<double> building.central.stairwell.lower.stairs.angles           = {0., 0., -1.5707963268};
+
+vector<double> building.central.stairwell.lower.stairs.xPositions = {
+  5765.8,   // h
+  5765.8,   // h
+  6045.2,   // h
+  6045.2,   // h
+  6324.6,   // h
+  6324.6,   // h
+  6604.0,   // h
+  6604.0,   // h
+  6883.4,   // h
+  6883.4,   // h
+  7162.8,   // h
+  7162.8,   // h
+  7442.2,   // h
+  7442.2,   // h
+  7721.6,   // h
+  7721.6,   // h
+  8001.0,   // h
+  8001.0,   // h
+  8280.4,   // h
+  8280.4,   // h
+  8559.8,   // h
+  8559.8,   // h
+  8839.2,   // h
+  8839.2,   // h
+  9118.6,   // h
+  9118.6,   // h
+  9398.0,   // h
+  9398.0,   // h
+  9677.4,   // h
+  9677.4,   // h
+  9956.8,  // h1
+  9956.8  // h2
+};
+
+vector<double> building.central.stairwell.lower.stairs.yPositions = {
+  0.001,        // h
+  176.53,   // h
+  176.53,   // h
+  353.06,     // h1
+  353.06,     // h1
+  529.59,     // h1
+  529.59,     // h1
+  706.12,     // h1
+  706.12,     // h1
+  882.65,     // h1
+  882.65,     // h1
+  1059.18,     // h1
+  1059.18,     // h1
+  1235.71,     // h1
+  1235.71,     // h1
+  1412.24,     // h1
+  1412.24,     // h1
+  1588.77,     // h1
+  1588.77,     // h1
+  1765.3,     // h1
+  1765.3,     // h1
+  1941.83,     // h1
+  1943.83,     // h1
+  2118.36,     // h1
+  2118.36,     // h1
+  2294.89,     // h1
+  2294.89,     // h1
+  2471.42,     // h1
+  2471.42,     // h1
+  2647.95,     // h1
+  2647.95,     // h1
+  0.001    // h2
+};
+
+// Local Variables:
+// mode:c++
+// End:
