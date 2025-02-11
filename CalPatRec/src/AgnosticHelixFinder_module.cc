@@ -26,6 +26,7 @@
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "Offline/RecoDataProducts/inc/HelixRecoDir.hh"
 
@@ -328,23 +329,23 @@ namespace mu2e {
     _chi2LineSaveThresh            (config().chi2LineSaveThresh()                    ),
     _maxEDepAvg                    (config().maxEDepAvg()                            ),
     _tzSlopeSigThresh              (config().tzSlopeSigThresh()                      )
-    {
+  {
 
-      // convert the helix direction names into enums
-      for(auto helix_dir : config().validHelixDirections()) {
-        _validHelixDirections.push_back(TrkFitDirection::fitDirectionFromName(helix_dir));
-      }
-      consumes<ComboHitCollection>     (_chLabel);
-      consumes<TimeClusterCollection>  (_tcLabel);
-      consumes<CaloClusterCollection>  (_ccLabel);
-      produces<HelixSeedCollection>    ();
-
-      if (_diagLevel == 1) _hmanager = art::make_tool<ModuleHistToolBase>(config().diagPlugin, "diagPlugin");
-      else _hmanager = std::make_unique<ModuleHistToolBase>();
-
-      if (_useStoppingTarget == true) { _stopTargPos.SetCoordinates(0.0, 0.0, std::numeric_limits<float>::max()); }
-
+    // convert the helix direction names into enums
+    for(auto helix_dir : config().validHelixDirections()) {
+      _validHelixDirections.push_back(TrkFitDirection::fitDirectionFromName(helix_dir));
     }
+    consumes<ComboHitCollection>     (_chLabel);
+    consumes<TimeClusterCollection>  (_tcLabel);
+    consumes<CaloClusterCollection>  (_ccLabel);
+    produces<HelixSeedCollection>    ();
+
+    if (_diagLevel == 1) _hmanager = art::make_tool<ModuleHistToolBase>(config().diagPlugin, "diagPlugin");
+    else _hmanager = std::make_unique<ModuleHistToolBase>();
+
+    if (_useStoppingTarget == true) { _stopTargPos.SetCoordinates(0.0, 0.0, std::numeric_limits<float>::max()); }
+
+  }
 
   //-----------------------------------------------------------------------------
   // destructor
@@ -620,10 +621,8 @@ namespace mu2e {
     // order from largest z to smallest z (skip over stopping target and calo cluster since they
     // aren't in _chColl)
     std::sort(_tcHits.begin() + sortStartIndex, _tcHits.end(), [&](const cHit& a, const cHit& b) {
-        return _chColl->at(a.hitIndice).pos().z() > _chColl->at(b.hitIndice).pos().z();
-      });
-
-    }
+      return _chColl->at(a.hitIndice).pos().z() > _chColl->at(b.hitIndice).pos().z();
+    });
   }
 
   //-----------------------------------------------------------------------------
