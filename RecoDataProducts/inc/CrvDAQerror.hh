@@ -25,7 +25,7 @@ namespace mu2e
     public:
 
     CrvDAQerror() :
-               _errorCode(), _subEvent(0), _dataBlock(0), _packetCount() {}
+               _errorCode(), _subEvent(0), _dataBlock(0), _packetCount(0) {}
 
     CrvDAQerror(CrvDAQerrorCode::type errorCode, int subEvent, int dataBlock, int packetCount) :
                _errorCode(errorCode), _subEvent(subEvent), _dataBlock(dataBlock), _packetCount(packetCount) {}
