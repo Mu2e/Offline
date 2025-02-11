@@ -5,32 +5,42 @@
 // Contact person Ralf Ehrlich
 //
 
+#include "Offline/GeneralUtilities/inc/EnumToStringSparse.hh"
 #include <vector>
 
 namespace mu2e
 {
+  class CrvDAQerrorCodeDetail
+  {
+    public:
+
+    enum enum_type{unknown=0, unableToGetDataBlock=1, invalidPacket=2, wrongSubsystemID=3, errorUnpackingStatusPacket=4, errorUnpackingCrvHits=5};
+    static std::string const& typeName();
+    static std::map<enum_type,std::string> const& names();
+  };
+  typedef EnumToStringSparse<CrvDAQerrorCodeDetail> CrvDAQerrorCode;
+
   class CrvDAQerror
   {
     public:
 
-    enum errorCode{unableToGetDataBlock=0, invalidPacket=1, wrongSubsystemID=2, errorUnpackingStatusPacket=3, errorUnpackingCrvHits=4};
+    CrvDAQerror() :
+               _errorCode(), _subEvent(0), _dataBlock(0), _packetCount() {}
 
-    CrvDAQerror() {}
-
-    CrvDAQerror(int errorCode, int subEvent, int dataBlock, int packetCount) :
+    CrvDAQerror(CrvDAQerrorCode::type errorCode, int subEvent, int dataBlock, int packetCount) :
                _errorCode(errorCode), _subEvent(subEvent), _dataBlock(dataBlock), _packetCount(packetCount) {}
 
-    int  GetErrorCode() const     {return _errorCode;}
-    int  GetSubEvent() const      {return _subEvent;}
-    int  GetDataBlock() const     {return _dataBlock;}
-    int  GetPacketCount() const   {return _packetCount;}
+    CrvDAQerrorCode::type GetErrorCode() const     {return _errorCode;}
+    int                   GetSubEvent() const      {return _subEvent;}
+    int                   GetDataBlock() const     {return _dataBlock;}
+    int                   GetPacketCount() const   {return _packetCount;}
 
     private:
 
-    int    _errorCode{0};
-    int    _subEvent{0};
-    int    _dataBlock{0};
-    int    _packetCount{0};
+    CrvDAQerrorCode::type _errorCode;
+    int                   _subEvent;
+    int                   _dataBlock;
+    int                   _packetCount;
   };
   typedef std::vector<mu2e::CrvDAQerror> CrvDAQerrorCollection;
 }
