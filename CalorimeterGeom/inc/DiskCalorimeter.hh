@@ -26,56 +26,45 @@ namespace mu2e {
 
     class DiskCalorimeter: public Calorimeter {
 
+        using DiskPtr     = std::shared_ptr<Disk>;
+        using DiskPtrs    = std::vector<DiskPtr>;
+        using Crystals    = std::vector<const Crystal>;
+        using CrystalPtrs = std::vector<const Crystal*>;
+
         friend class DiskCalorimeterMaker;
 
+
         public:
+          DiskCalorimeter();
 
-            DiskCalorimeter();
+          size_t                   nDisks()          const override {return disks_.size();}
+          const Disk&              disk(size_t i)    const override {return *disks_.at(i);}
+          const DiskPtrs&          diskPtrs()        const override {return disks_;}
 
-            // calo section
-            unsigned                  nDisk()     const  override {return nDisks_;}
-            const Disk&               disk(int i) const  override {return *disks_.at(i);}
+          size_t                   nCrystals()       const override {return fullCrystalList_.size();}
+          const Crystal&           crystal(size_t i) const override {return *fullCrystalList_.at(i);}
+          const CrystalPtrs&       crystalPtrs()     const override {return fullCrystalList_;}
 
+          const CaloInfo&          caloInfo()        const override {return caloInfo_;}
+          const CaloGeomUtil&      geomUtil()        const override {return geomUtil_;}
 
-              // crystal section
-            int                       nCrystal()     const override {return int(fullCrystalList_.size());}
-            const Crystal&            crystal(int i) const override {return *fullCrystalList_.at(i);}
+          const std::vector<int>&  neighbors(int crystalId)                              const override;
+          const std::vector<int>&  nextNeighbors(int crystalId)                          const override;
+                std::vector<int>   neighborsByLevel(int crystalId, int level)            const override;
+          int                      crystalIdxFromPosition(const CLHEP::Hep3Vector& pos)  const override;
+          int                      nearestIdxFromPosition(const CLHEP::Hep3Vector& pos)  const override;
 
-
-            // calorimeter geometry information
-            const CaloInfo&           caloInfo()     const override {return caloInfo_;}
-            const CaloGeomUtil&       geomUtil()     const override {return geomUtil_;}
-                  CaloInfo&           caloInfo()                    {return caloInfo_;}
-                  CaloGeomUtil&       geomUtil()                    {return geomUtil_;}
-
-
-
-              // neighbors, indexing
-            const std::vector<int>&  neighbors(int crystalId, bool rawMap)     const override {return fullCrystalList_.at(crystalId)->neighbors(rawMap);}
-            const std::vector<int>&  nextNeighbors(int crystalId, bool rawMap) const override {return fullCrystalList_.at(crystalId)->nextNeighbors(rawMap);}
-            std::vector<int>   neighborsByLevel(int crystalId, int level, bool rawMap) const override;
-            int                      crystalIdxFromPosition(const CLHEP::Hep3Vector& pos) const override;
-            int                      nearestIdxFromPosition(const CLHEP::Hep3Vector& pos) const override;
-
-
-            // get to know me!
-            void                     print(std::ostream &os = std::cout) const override;
+          void                     print(std::ostream &os = std::cout)                   const override;
 
 
         private:
-            using  DiskPtr = std::shared_ptr<Disk>;
+          double deltaZ    (const CLHEP::Hep3Vector& p1, const CLHEP::Hep3Vector& p2)  const;
+          double deltaPerp (int ic, const CLHEP::Hep3Vector& pos)                      const;
 
-            double deltaZ(const CLHEP::Hep3Vector& p1, const CLHEP::Hep3Vector& p2) const;
-            double deltaPerp(int ic, const CLHEP::Hep3Vector& pos) const;
-
-            int                           nDisks_;
-            int                           nCrates_;
-            int                           nBoards_;
-            std::vector<DiskPtr>          disks_;
-
-            std::vector<const Crystal*>   fullCrystalList_; //non-owning crystal pointers
-            CaloInfo                      caloInfo_;
-            CaloGeomUtil                  geomUtil_;
+          std::vector<DiskPtr>          disks_;
+          std::vector<const Crystal*>   fullCrystalList_; //non-owning crystal pointers
+          CaloInfo                      caloInfo_;
+          CaloGeomUtil                  geomUtil_;
      };
 
 }
