@@ -7,6 +7,8 @@
 #include <map>
 
 #include "canvas/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Sampled.h"
+#include "canvas/Persistency/Provenance/SubRunID.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/RNGsnapshot.h"
