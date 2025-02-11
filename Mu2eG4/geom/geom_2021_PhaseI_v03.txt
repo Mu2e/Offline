@@ -75,7 +75,7 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Offline/Mu2eG4/geom/tracker_v6.txt"
 
 // Crystal calorimeter
-#include "Offline/Mu2eG4/geom/calorimeter_CsI_v2.txt"
+#include "Offline/Mu2eG4/geom/calorimeter_CsI_v1.txt"
 
 //CRV counters
 #include "Offline/Mu2eG4/geom/crv_counters_v09.txt"
