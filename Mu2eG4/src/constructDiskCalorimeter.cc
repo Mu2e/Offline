@@ -110,10 +110,8 @@ namespace mu2e {
     helper.addVolInfo(caloMotherInfo);
 
     if ( verbosity > 0) {
-      double zhl = dynamic_cast<G4Tubs*>(caloMotherInfo.solid)->GetZHalfLength();
-      double calorimeterOffsetInMu2eZ = caloMotherInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
-      G4cout << __func__ << " Calorimeter mother center in Mu2e   : " << caloMotherInfo.centerInMu2e() << G4endl;
-      G4cout << __func__ << " Calorimeter mother Z extent in Mu2e : " << calorimeterOffsetInMu2eZ - zhl << ", " << calorimeterOffsetInMu2eZ + zhl << G4endl;
+      G4cout << __func__ << " Calorimeter mother center in Mu2e   : " << posDiskMother << G4endl;
+      G4cout << __func__ << " Calorimeter mother Z extent in Mu2e : " << posDiskMother.z() - mother_zlength/2.0 << ", " << posDiskMother.z() + mother_zlength/2.0 << G4endl;
     }
 
 
@@ -155,7 +153,7 @@ namespace mu2e {
     }
 
 
-    //Fix the "world posiiton" of all wolumes
+    //Fix the "world position" of all wolumes
     for (auto& kv : caloVolInfG4) {
       CLHEP::Hep3Vector posWorld(0,0,0);
       std::string mother(kv.first);
