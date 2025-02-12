@@ -103,31 +103,22 @@ namespace mu2e
   void CrvDQMcollector::endJob()
   {
     GeomHandle<CosmicRayShield> CRS;
-    for(size_t channel=0; channel<_nDigis.size(); ++channel)
+    auto &crvCounters = CRS->getAllCRSScintillatorBars();
+    for(size_t channel=0; channel<crvCounters.size()*CRVId::nChanPerBar; ++channel)
     {
       if(_notConnected.at(channel)) continue;
 
       CRSScintillatorBarIndex barIndex(channel/CRVId::nChanPerBar);
       int sectorNumber = CRS->getBar(barIndex).id().getShieldNumber();
+
       _histDigisPerChannelAndEvent.at(sectorNumber)->Fill((float)(_nDigis.at(channel))/_totalEvents);
-    }
-    for(size_t channel=0; channel<_nDigisNZS.size(); ++channel)
-    {
-      if(_notConnected.at(channel)) continue;
-
-      CRSScintillatorBarIndex barIndex(channel/CRVId::nChanPerBar);
-      int sectorNumber = CRS->getBar(barIndex).id().getShieldNumber();
       _histDigisPerChannelAndEventNZS.at(sectorNumber)->Fill((float)(_nDigisNZS.at(channel))/_totalEvents);
-    }
-    for(size_t channel=0; channel<_histPEs.size(); ++channel)
-    {
-      if(_notConnected.at(channel)) continue;
 
-      CRSScintillatorBarIndex barIndex(channel/CRVId::nChanPerBar);
-      int sectorNumber = CRS->getBar(barIndex).id().getShieldNumber();
       float PEsMPV = _histPEs.at(channel)->GetMean();  //FIXME: replace by MPV from Gauss-Landau fit
       _histPEsMPV.at(sectorNumber)->Fill(PEsMPV);
     }
+
+    _treeMetaData->Fill();
   }
 
   void CrvDQMcollector::beginRun(const art::Run &run)
