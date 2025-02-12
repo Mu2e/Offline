@@ -57,6 +57,7 @@ namespace mu2e {
 //
 //-----------------------------------------------------------------------------
       ProtonCandidate(int Index);
+      ProtonCandidate() : ProtonCandidate(0) {}
 
       void       init                 ();
 
