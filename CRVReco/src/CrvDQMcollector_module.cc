@@ -157,10 +157,10 @@ namespace mu2e
                                             150,0,3000));
       _histDigisPerChannelAndEvent.emplace_back(tfs->make<TH1F>(Form("crvDigisPerChannelAndEvent_sector%s",crvSectors.at(i).name("CRV_").c_str()),
                                             Form("crvDigisPerChannelAndEvent_sector%s",crvSectors.at(i).name("CRV_").c_str()),
-                                            100,0.0,0.1));
+                                            200,0.0,0.2));
       _histDigisPerChannelAndEventNZS.emplace_back(tfs->make<TH1F>(Form("crvDigisPerChannelAndEventNZS_sector%s",crvSectors.at(i).name("CRV_").c_str()),
                                             Form("crvDigisPerChannelAndEventNZS_sector%s",crvSectors.at(i).name("CRV_").c_str()),
-                                            100,0.0,0.1));
+                                            200,0.0,0.2));
     }
     _histCoincidenceClusters=tfs->make<TH1I>("crvCoincidencesClusters","crvCoincidenceClusters",10,0,10);
 
