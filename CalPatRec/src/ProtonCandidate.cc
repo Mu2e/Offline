@@ -12,21 +12,31 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void ProtonCandidate::init() {
-
+    fMask              = 0;
     fFirstStation      = 999;
     fLastStation       =  -1;
     fNStationsWithHits = 0;
     fNHitsTot          = 0;
     fNStrawHitsTot     = 0;
-    fSumEDep           = 0;
-    fTMid              = 0;
+    fSumEDep           = 0.;
+    fTMid              = 0.;
+
+    fT0                = 0.f;
+    fDtDz              = 0.f;
+    fSigT0             = 0.f;
 
     fMcPart            = nullptr;
+    fNHitsMcP          = 0;
     fNHitsCE           = 0;
+    fTimeIndex         = 0;
 
     for (int is=0; is<kNStations; is++) {
+      fNHitsStation[is] = 0;
+      fMinHitTime  [is] = 0;
+      fMaxHitTime  [is] = 0;
       fSumX        [is] = 0.;
       fSumY        [is] = 0.;
+      fPhi         [is] = 0.;
       fNHitsStation[is] = 0.;
       for (int face=0; face<kNFaces; face++) {
         fHitData[is][face].clear();
@@ -34,11 +44,11 @@ namespace mu2e {
       }
     }
 
-    fSt  = 0;
-    fSz  = 0;
-    fSt2 = 0;
-    fStz = 0;
-    fSz2 = 0;
+    fSt  = 0.;
+    fSz  = 0.;
+    fSt2 = 0.;
+    fStz = 0.;
+    fSz2 = 0.;
   }
 //-----------------------------------------------------------------------------
 // first added seed has at least one stereo, so the COG calculation COG is safe

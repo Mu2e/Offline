@@ -13,25 +13,25 @@ namespace mu2e {
 
 namespace CalPatRec {
   struct HitData_t {
-    const mu2e::ComboHit*   fHit;
-    mu2e::DeltaSeed*        fSeed;           // nullptr if not associated...
-    int                     fUsed;           // TBD
-    int                     fZFace;          // z-ordered face (for printing)
-    int                     fDeltaIndex;     // is it really needed? - yes!
-    int                     fProtonIndex;    //
-    float                   fChi2Min;
-    float                   fSigW2;          // cached resolution^2 along the wire
-    float                   fCorrTime;       // cached hit corrected time
-    float                   fX;
-    float                   fY;
-    float                   fWx;
-    float                   fWy;
-    float                   fNr;
-    float                   fNx2;
-    float                   fNxy;
-    float                   fNy2;
-    float                   fNxr;
-    float                   fNyr;
+    const mu2e::ComboHit*   fHit = nullptr;
+    mu2e::DeltaSeed*        fSeed = nullptr; // nullptr if not associated...
+    int                     fUsed = 0;       // TBD
+    int                     fZFace = 0;      // z-ordered face (for printing)
+    int                     fDeltaIndex = 0; // is it really needed? - yes!
+    int                     fProtonIndex = 0;//
+    float                   fChi2Min = 0.f;
+    float                   fSigW2 = 0.f;    // cached resolution^2 along the wire
+    float                   fCorrTime = 0.f; // cached hit corrected time
+    float                   fX = 0.f;
+    float                   fY = 0.f;
+    float                   fWx = 0.f;
+    float                   fWy = 0.f;
+    float                   fNr = 0.f;
+    float                   fNx2 = 0.f;
+    float                   fNxy = 0.f;
+    float                   fNy2 = 0.f;
+    float                   fNxr = 0.f;
+    float                   fNyr = 0.f;
 
 
     HitData_t(const mu2e::ComboHit* Hit,int ZFace) {
