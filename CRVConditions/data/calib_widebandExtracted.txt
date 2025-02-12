@@ -1,4 +1,4 @@
-TABLE CRVSiPM 28:1-39:1
+TABLE CRVSiPM
 #channel, pedestal, calibPulseHeight, calibPulseArea
 0,0,-1,-1
 1,0,-1,-1
