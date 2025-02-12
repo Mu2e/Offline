@@ -153,20 +153,16 @@ void CrvDigisFromFragments::produce(Event& event)
           continue;
         }
 
-//FIXME: old code before artdaq_core_mu2e gets updated
-        auto crvHits = CRVDataDecoder.GetCRVHits(iDataBlock);
-/*
-//FIXME: new code after artdaq_core_mu2e gets updated
         std::vector<mu2e::CRVDataDecoder::CRVHit> crvHits;
         if(!CRVDataDecoder.GetCRVHits(iDataBlock, crvHits))
         {
           std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
           std::cerr << "Error unpacking of CRV Hits" << std::endl;
-          crv_daq_errors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingCrvHits,iDataBlock,header->GetPacketCount());
+          crv_daq_errors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingCrvHits,iSubEvent, iDataBlock,header->GetPacketCount());
           break;
         }
-*/
-        for(auto const& crvHit : crvHits)
+        
+	for(auto const& crvHit : crvHits)
         {
           const auto& crvHitInfo = crvHit.first;
           const auto& waveform = crvHit.second;
