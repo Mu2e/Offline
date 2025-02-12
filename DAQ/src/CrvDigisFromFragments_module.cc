@@ -162,7 +162,7 @@ void CrvDigisFromFragments::produce(Event& event)
         {
           std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
           std::cerr << "Error unpacking of CRV Hits" << std::endl;
-          crv_daq_errors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingCrvHits,iDataBlock,header->GetPacketCount());
+          crv_daq_errors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingCrvHits,iSubEvent,iDataBlock,header->GetPacketCount());
           break;
         }
 */
