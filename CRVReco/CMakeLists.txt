@@ -57,6 +57,20 @@ cet_build_plugin(CrvRecoPulsesFinder art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(CrvDQMcollector art::module
+    REG_SOURCE src/CrvDQMcollector_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::CRVReco
+
+      Offline::CosmicRayShieldGeom
+      Offline::CRVConditions
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+)
+
 cet_build_plugin(CrvWidebandTriggerFilter art::module
     REG_SOURCE src/CrvWidebandTriggerFilter_module.cc
     LIBRARIES REG
