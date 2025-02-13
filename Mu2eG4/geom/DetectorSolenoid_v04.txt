@@ -178,11 +178,10 @@ bool      ds.hasCableRunCal        = true;
 bool      ds.hasCableRunTrk        = true;
 int       ds.CableRun.version      = 3;
 bool      ds.CableRun.sensitive    = true;
+
 double    ds.CableRunCal.UpRin     = 721.0; //mm top of Cal
 double    ds.CableRunCal.UpRout    = 821.0; //mm
-double    ds.CableRunCal.UpHL1     = 137.0; //mm
 double    ds.CableRunCal.UpHL2     = 119.0; //mm
-double    ds.CableRunCal.UpZC1     = 12439.0; // mm
 double    ds.CableRunCal.UpZC2     = 13116.0; // mm
 double    ds.CableRunCal.length    = 1725.0; //1650 + 150/2 mm - actually halflength
 double    ds.CableRunCal.Rin       = 544.0; // 720.2;  // top of MBS now
@@ -198,11 +197,11 @@ double    ds.CableRunCalCore.dRadiusFraction = 0.0117; //set so the cross sectio
 double    ds.CableRunCalCore.dPhiFraction    = 0.0117;
 string    ds.CableRunCalCore.material        = "CalCableRunFiber";//"G4_SILICON_DIOXIDE";
 
-double    ds.CableRunTrk.length    = 1933; // actually halflength
+double    ds.CableRunTrk.length    = 2632; // actually halflength
 double    ds.CableRunTrk.Rin       = 820.0;
 double    ds.CableRunTrk.Rout      = 850.0;
 double    ds.CableRunTrk.dPhi      = 20.;//20.7; // degrees
-double    ds.CableRunTrk.zC        = 15174.0;
+double    ds.CableRunTrk.zC        = 14474.0;
 double    ds.CableRunTrk.phi0      = 195.; //194.5; // degrees
 string    ds.CableRunTrk.material  = "TrkCableRunOuter"; //"Electronics";
 

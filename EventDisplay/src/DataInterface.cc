@@ -393,7 +393,7 @@ void DataInterface::fillGeometry()
     double crystalDiskLogOffset = frontPanelHalfThick - zHalfBP;
 
     int icrystal=0;
-    for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++)
+    for(unsigned int idisk=0; idisk<calo->nDisks(); idisk++)
     {
       CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
       diskPos += CLHEP::Hep3Vector(0.0, 0.0, crystalDiskLogOffset);
