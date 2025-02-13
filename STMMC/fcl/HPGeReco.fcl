@@ -1,22 +1,19 @@
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/STMConditions/fcl/prolog.fcl"
 #include "Offline/STMReco/fcl/prolog.fcl"
+#include "Offline/STMMC/fcl/prolog.fcl"
 
 process_name: HPGeReco
-source : {
-  module_type : RootInput
-  maxEvents : @nil
-}
+
+# source : {
+#   module_type : RootInput
+#   # maxEvents : @nil
+# }
+
 services : @local::Services.SimAndReco
 
 physics : {
   producers : {
-    PBISim : { # gives the number of POT per event
-      module_type: ProtonBunchIntensityLogNormal
-      SDF: 0.6
-      extendedMean: 3.93e7 # Copied from Production/JobConfig/mixing/TwoBB.fcl
-      cutMax: 2.36e8 # Copied from Production/JobConfig/mixing/TwoBB.fcl
-    }
     HPGeDigi : {
       module_type : HPGeWaveformsFromGeantSim
       fADC : @local::STMDAQParameters.samplingFrequencies.HPGe
@@ -44,80 +41,20 @@ physics : {
       thesholdgrad : @local::STM.HPGe.thresholdgrad
     }
   }
-  filters : {
-    STMStepMixerEle: {
-      module_type         : MixBackgroundFrames
-      fileNames           : @nil
-      readMode            : sequential
-      wrapFiles           : true
-      mu2e: {
-        protonBunchIntensityTag: "PBISim"
-        simStageEfficiencyTags: @nil # this will not be filled in because otherwise it will try to access the database
-        meanEventsPerPOTFactors : []
-        writeEventIDs : false
-        MaxEventsToSkip: @nil
-        products: {
-          genParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
-          simParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
-          stepPointMCMixer: { mixingMap: [ [ "STMDetHits:STMDet", ":" ] ] }
-        }
-      }
-    }
-    STMStepMixerMu: {
-      module_type         : MixBackgroundFrames
-      fileNames           : @nil
-      readMode            : sequential
-      wrapFiles           : true
-      mu2e: {
-        protonBunchIntensityTag: "PBISim"
-        simStageEfficiencyTags: @nil # this will not be filled in because otherwise it will try to access the database
-        meanEventsPerPOTFactors : []
-        writeEventIDs : false
-        MaxEventsToSkip: @nil
-        products: {
-          genParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
-          simParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
-          stepPointMCMixer: { mixingMap: [ [ "STMDetHits:STMDet", ":" ] ] }
-        }
-      }
-    }
-    STMStepMixer1809: {
-      module_type         : MixBackgroundFrames
-      fileNames           : @nil
-      readMode            : sequential
-      wrapFiles           : true
-      mu2e: {
-        protonBunchIntensityTag: "PBISim"
-        simStageEfficiencyTags: @nil # this will not be filled in because otherwise it will try to access the database
-        meanEventsPerPOTFactors : []
-        writeEventIDs : false
-        MaxEventsToSkip: @nil
-        products: {
-          genParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
-          simParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
-          stepPointMCMixer: { mixingMap: [ [ "STMDetHits:STMDet", ":" ] ] }
-        }
-      }
-    }
-  }
-  mixing_path : [PBISim, STMStepMixer] #, HPGeDigi ] #, HPGeZS, HPGeMWD ]
-  output_path : [output]
+  # filter844 : []
+  # digitization_path : [HPGeDigi ] #, HPGeZS, HPGeMWD ]
+  trigger_paths : [digitization_path]
+  output_path : [compressedOutput]
+  end_paths : [output_path]
 }
 
 outputs : {
-  output : {
+  compressedOutput : {
     module_type : RootOutput
     fileName : "dig.mu2e.HPGeDigis.MDC2020ap.000001_00000000.art"
-    ### Make this the definition when the data object labels are known
     #outputCommands : [
-    #  "drop *_*_*_*",
-    #  "keep mu2e::STMWaveformDigiCollection_HPGeDigi_*_*",
-    #  "keep mu2e::STMWaveformDigiCollection_HPGeZS_*_*",
-    #  "keep mu2e::STMMWDDigiCollection_HPGeMWD_*_*"
     #]
   }
 }
 
 services.SeedService.baseSeed : 1
-
-physics.filters.STMStepMixer.mu2e.meanEventsPerPOTFactors : [6.75675676e-9]

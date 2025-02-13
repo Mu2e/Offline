@@ -1,0 +1,99 @@
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMMC/fcl/prolog.fcl"
+
+process_name: STMMix
+
+source : {
+  module_type : RootInput
+  fileNames : @nil
+}
+source.fileNames : [
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000000.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000001.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000002.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000003.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000009.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000011.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000012.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000013.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000014.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000015.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000017.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000018.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000020.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000021.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000023.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000024.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000025.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000029.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000030.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000031.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000032.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000035.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000037.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000039.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000040.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000041.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000043.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000046.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000048.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000050.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000051.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000052.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000055.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000057.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000059.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000060.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000061.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000062.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000063.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000064.art",
+    "/pnfs/mu2e/resilient/users/plesniak/Stage2/1809KnownStats/dts.plesniak.STMDet.STMResampler.001207_00000066.art"
+]
+
+services : @local::Services.SimAndReco
+
+physics : {
+  producers : {
+    PBISim : { # gives the number of POT per microspill
+      module_type: ProtonBunchIntensityLogNormal
+      SDF: @local::MixSTMEvents.SDF
+      extendedMean: @local::MixSTMEvents.extendedMean2BB
+      cutMax: @local::MixSTMEvents.cutMax2BB
+    }
+  }
+  filters : {
+    STMStepMixer1809: {
+      module_type         : MixBackgroundFrames
+      fileNames           : @local::source.fileNames # @nil # Needs to be appended at the end of the file
+      readMode            : sequential
+      wrapFiles           : true
+      mu2e: {
+        protonBunchIntensityTag: "PBISim:"
+        simStageEfficiencyTags: [] # this will not be filled in because otherwise it will try to access the database
+        meanEventsPerPOTFactors : [@local::MixSTMEvents.meanEventsPerPOTFactors.TargetStopsCat1809]
+        writeEventIDs : false
+        MaxEventsToSkip: 0
+        debugLevel : 0
+        products: {
+          simParticleMixer: { mixingMap: [ [ "compressSTMDet", ":" ] ] }
+          stepPointMCMixer: { mixingMap: [ [ "compressSTMDet:STMDet", ":" ] ] }
+        }
+      }
+    }
+  }
+  mix_path : [PBISim, STMStepMixer1809] # @nil
+  trigger_paths : [mix_path]
+  output_path : [compressedOutput]
+  end_paths : [output_path]
+}
+
+outputs : {
+  compressedOutput : {
+    module_type : RootOutput
+    fileName : "dig.mu2e.HPGeDigis.MDC2020ap.000001_00000000.art"
+    # outputCommands : []
+  }
+}
+
+services.SeedService.baseSeed : 1

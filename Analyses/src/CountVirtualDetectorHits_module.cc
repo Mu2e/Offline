@@ -14,9 +14,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
-// exception handling
-#include "cetlib_except/exception.h"
-
 // fhicl includes
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
@@ -35,7 +32,7 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     struct Config {
-      fhicl::Atom<art::InputTag> stepPointMCsTag{Name("StepPointMCsTag"), Comment("Name of StepPointMCs to search, likely to be g4run:virtualdetector")};
+      fhicl::Atom<art::InputTag> stepPointMCsTag{Name("stepPointMCsTag"), Comment("Name of StepPointMCs to search, likely to be g4run:virtualdetector")};
       fhicl::Sequence<int> enabledVDs{Name("virtualDetectorIDs"), Comment("Vector of which virtual detectors to counnt hits for by number.")};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -69,7 +66,7 @@ namespace mu2e {
     // Get the hits corresponding to the StepPointMCCollection of interest
     auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
     if (StepPointMCs.size() == 0)
-      throw cet::exception("DataError") << "Requested data not found";
+      return;
 
     // Loop over all the StepPointMCs to find which ones cross the VDs of interest. If a StepPointMC does not correspond to a volume ID, it is ignored.
     for (auto const &StepPointMC : StepPointMCs) {

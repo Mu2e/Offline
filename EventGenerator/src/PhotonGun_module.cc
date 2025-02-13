@@ -4,24 +4,20 @@
 
 // stdlib includes
 #include <cmath>
-#include <algorithm>
-#include <iostream>
-
-// exception handling
-#include "cetlib_except/exception.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // art includes
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
+
+// exception handling
+#include "cetlib_except/exception.h"
 
 // fhicl includes
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
-#include "fhiclcpp/ParameterSet.h"
+
+// message handling
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Offline includes
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
@@ -31,9 +27,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
 
-using namespace std;
 namespace mu2e {
-
   class PhotonGun : public art::EDProducer {
   public:
     using Name=fhicl::Name;
@@ -66,7 +60,7 @@ namespace mu2e {
       px = conf().py() ? *conf().py() : 0;
       if ((px*px + py*py) > (E*E))
         throw cet::exception("RANGE") << "magnitude of px and py is greater than E, exiting.";
-      pz = sqrt(E*E - px*px - py*py);
+      pz = std::sqrt(E*E - px*px - py*py);
     };
 
   void PhotonGun::produce(art::Event& event) {

@@ -80,10 +80,10 @@ namespace mu2e {
     // Get the data products from the event
     auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
     if (StepPointMCs.empty())
-      throw cet::exception("DataError", "Requested data product not found");
+      return;
     auto const& SimParticles = event.getProduct(SimParticlemvToken);
     if (SimParticles.empty())
-      throw cet::exception("DataError", "Requested data product not found");
+      return;
 
     // Loop over all VD hits
     for (const StepPointMC& step : StepPointMCs) {
