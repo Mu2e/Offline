@@ -3,7 +3,7 @@
 //
 // Ed Callaghan, 2023
 
-#include "Offline/TrackerMC/inc/StrawDigiBundleCollection.hh"
+#include "Offline/Mu2eUtilities/inc/StrawDigiBundleCollection.hh"
 #include "Offline/TrackerMC/inc/TimeBasedBucket.hh"
 
 namespace mu2e{

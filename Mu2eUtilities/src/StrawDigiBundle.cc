@@ -5,7 +5,7 @@
 
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "Offline/MCDataProducts/inc/DigiProvenance.hh"
-#include "Offline/TrackerMC/inc/StrawDigiBundle.hh"
+#include "Offline/Mu2eUtilities/inc/StrawDigiBundle.hh"
 
 namespace mu2e{
   // dummy MC which signals that a given digi was not produced in simulation
