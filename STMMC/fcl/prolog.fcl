@@ -68,6 +68,20 @@ ShiftVD101Steps : {
     pdgID : 0
 }
 
+# Mixing parameters
+MixSTMEvents : {
+    extendedMean2BB : 3.93e7 # Copied from Production/JobConfig/mixing/TwoBB.fcl
+    cutMax2BB : 2.36e8 # Copied from Production/JobConfig/mixing/TwoBB.fcl
+    extendedMean1BB : 1.58e7 # Copied from Production/JobConfig/mixing/OneBB.fcl
+    cutMax1BB : 9.48e7 # Copied from Production/JobConfig/mixing/OneBB.fcl
+    SDF : 0.6
+    meanEventsPerPOTFactors : {
+        EleBeamCat : 2.5950416e-10
+        MuBeamCat : 3.8108578e-12
+        TargetStopsCat1809 : 1.5230356e-15
+    }
+}
+
 # MakeTree_module.cc parameters
 SimplifyStage1Data : {
     StepPointMCsTag : "compressDetStepMCsSTM:"

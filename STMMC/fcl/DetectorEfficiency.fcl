@@ -1,7 +1,7 @@
 # This module simulates a photon being fired at the STM detector of choice, and generates a tree with the energy deposited in the detector
 # Used to investigate the full energy deposition of the STM detectors
 # Original author : Pawel Plesniak
-# Note - edit the parameters in this prolog.fcl, aside from which detector is being used which is stored in the generate module
+# Note - edit the parameters in this prolog.fcl, aside from the @nil parmaeters
 
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
@@ -21,10 +21,10 @@ physics: {
   producers : {
     generate : {
       module_type : PhotonGun
-      x : @nil
-      y : @nil
-      z : @nil
-      E : @nil
+      x : @local::ComponentPositions.HPGe.x
+      y : @local::ComponentPositions.HPGe.y
+      z : @local::ComponentPositions.HPGe.z
+      E : @local::Efficiency.PhotonEnergy
     }
     g4run : @local::g4run
   }
@@ -42,6 +42,6 @@ physics: {
 physics.producers.g4run.physics.physicsListName: "QGSP_BERT_EMZ"
 physics.producers.g4run.SDConfig.enableSD: [STMDet]
 
-services.SeedService.baseSeed         :  @nil
-services.SeedService.maxUniqueEngines :  @nil
-services.TFileService.fileName        : @nil
+services.SeedService.baseSeed         : @nil
+services.SeedService.maxUniqueEngines : @nil
+services.TFileService.fileName        : @local::Efficiency.OutputFilename
