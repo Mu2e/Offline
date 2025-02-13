@@ -44,8 +44,8 @@
 #include "Offline/TrackerMC/inc/StrawWaveform.hh"
 #include "Offline/TrackerMC/inc/IonCluster.hh"
 #include "Offline/TrackerMC/inc/StrawPosition.hh"
-#include <Offline/TrackerMC/inc/StrawDigiBundle.hh>
-#include <Offline/TrackerMC/inc/StrawDigiBundleCollection.hh>
+#include <Offline/Mu2eUtilities/inc/StrawDigiBundle.hh>
+#include <Offline/Mu2eUtilities/inc/StrawDigiBundleCollection.hh>
 //CLHEP
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandFlat.h"

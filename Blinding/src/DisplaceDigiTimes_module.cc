@@ -29,14 +29,14 @@
 // mu2e
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/StrawDigiBundle.hh"
+#include "Offline/Mu2eUtilities/inc/StrawDigiBundleCollection.hh"
 #include "Offline/RecoDataProducts/inc/KalIntersection.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
-#include "Offline/TrackerMC/inc/StrawDigiBundle.hh"
-#include "Offline/TrackerMC/inc/StrawDigiBundleCollection.hh"
 
 namespace mu2e{
   class DisplaceDigiTimes: public art::EDProducer{
