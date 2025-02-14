@@ -164,6 +164,9 @@ namespace mu2e {
     fNHitsTot      += 1;
     fNStrawHitsTot += Hd->fHit->nStrawHits();
     fSumEDep       += Hd->fHit->energyDep()*Hd->fHit->nStrawHits();
+    fSumX[Station] += Hd->fX;
+    fSumY[Station] += Hd->fY;
+    fPhi[Station]   = atan2(fSumY[Station],fSumX[Station]);
 //-----------------------------------------------------------------------------
 // time: the sums need to be updated always
 //-----------------------------------------------------------------------------
