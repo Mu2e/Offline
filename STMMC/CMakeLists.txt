@@ -1,3 +1,9 @@
+cet_build_plugin(CountMixedEvents art::module
+    REG_SOURCE src/CountMixedEvents_module.cc
+    LIBRARIES REG
+      Offline::MCDataProducts
+)
+
 cet_build_plugin(DetectorEfficiency art::module
     REG_SOURCE src/HPGeEfficiency_module.cc
     LIBRARIES REG

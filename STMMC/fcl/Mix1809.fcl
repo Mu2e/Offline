@@ -35,14 +35,14 @@ physics : {
         MaxEventsToSkip: 0
         debugLevel : 10
         products: {
-          stepPointMCMixer: { mixingMap: [ [ "compressSTMDet:STMDet", ":" ] ] }
+          stepPointMCMixer: { mixingMap: [ [ "compressSTMDet:STMDet", "STMDet" ] ] }
         }
       }
     }
   }
   analyzers : {
     CountMixed : {
-        module_type : CountMixedEvents
+        module_type : "CountMixedEvents"
         stepPointMCsTag : "STMStepMixer:STMDet"
     }
   }

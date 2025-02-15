@@ -37,6 +37,7 @@
 // fhicl includes
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 
 // message handling
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -68,6 +69,7 @@ namespace mu2e {
       fhicl::Atom<double> HPGeCrystalEndcapCentreX{ Name("HPGeCrystalEndcapCentreX"), Comment("HPGe endcap centre x")};
       fhicl::Atom<double> HPGeCrystalEndcapCentreY{ Name("HPGeCrystalEndcapCentreY"), Comment("HPGe endcap centre y")};
       fhicl::Atom<double> HPGeCrystalEndcapCentreZ{ Name("HPGeCrystalEndcapCentreZ"), Comment("HPGe endcap centre z")};
+      fhicl::Atom<int> microspillBufferLengthCount{ Name("microspillBufferLengthCount"), Comment("Number of microspills to buffer ahead for")};
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit HPGeWaveformsFromStepPointMCs(const Parameters& conf);
@@ -132,6 +134,8 @@ namespace mu2e {
     std::vector<double> _chargeCarryOver; // Temporary buffer that will store _chargeCollected over the course of the next event
     std::vector<double> _chargeDecayed; // Buffer to store charge collected that decays over time
     std::vector<int16_t> _adcs; // Buffer for storing the ADC values to put into the STMWaveformDigi
+    int microspillBufferLengthCount;
+    const int defaultMicrospillBufferLengthCount = 2;
     double lastEventEndDecayedCharge = 0; // Carry over for starting new microspill waveforms
 
     // Offline utilities
@@ -157,10 +161,10 @@ namespace mu2e {
         // Determine the number of ADC values in each STMWaveformDigi. Increase the number by one due to truncation. At 320MHz, this will be 543 ADC values per microbunch
         double _nADCs = (micropulseTime/tStep) + 1;
         nADCs = (int) _nADCs;
-        _charge.resize(nADCs*2, 0.);
-        _chargeCarryOver.resize(nADCs, 0.);
+        _charge.resize(nADCs * microspillBufferLengthCount, 0.);
+        _chargeCollected.resize(nADCs * microspillBufferLengthCount, 0.);
+        _chargeCarryOver.resize(nADCs * (microspillBufferLengthCount - 1), 0.);
         _chargeDecayed.resize(nADCs, 0.);
-        _chargeCollected.resize(nADCs*2, 0.);
         _adcs.resize(nADCs, 0);
 
         // Define physics parameters to use with the model
@@ -173,6 +177,9 @@ namespace mu2e {
         // 1e3 converts keV to eV, multiply by this value to get from charge in capacitor to ADC output voltage
         // Chosen to work in units of fundamental charge _e to avoid storing very small double values
         chargeToADC = epsilonGe / (ADCToEnergy * 1e3);
+
+        // Assign microspillBufferLengthCount
+        microspillBufferLengthCount = conf().microspillBufferLengthCount() ? conf().microspillBufferLengthCount() : defaultMicrospillBufferLengthCount;
       };
 
   void HPGeWaveformsFromStepPointMCs::produce(art::Event& event) {
@@ -200,10 +207,10 @@ namespace mu2e {
     // Update the parameters to carry over to the next event
     lastEventEndDecayedCharge = _chargeDecayed[nADCs];
     _chargeCarryOver.clear();
-    _chargeCarryOver.assign(_chargeCollected.begin()+nADCs, _chargeCollected.end());
+    _chargeCarryOver.assign(_chargeCollected.begin() + nADCs, _chargeCollected.end());
     _chargeCollected.clear();
-    _chargeCollected.assign(_chargeCarryOver.begin(), _chargeCarryOver.end());
-    _chargeCollected.insert(_chargeCollected.end(), nADCs, 0.);
+    _chargeCollected.assign(_chargeCarryOver.begin(), _chargeCarryOver.begin() + nADCs);
+    _chargeCollected.insert(_chargeCollected.end(), nADCs * (microspillBufferLengthCount - 1), 0.);
 
     // Define the time from POT to EWM. Remove the 200ns from eventTime definition.
     /*
@@ -325,7 +332,7 @@ namespace mu2e {
       throw cet::exception("LogicError") << "Error with the charged particle travel time.";
 
     // Allocate the rest of the charge accumulated over the interaction vertex
-    for (uint i = tIndex; i < (2*nADCs); i++)
+    for (uint i = tIndex; i < _charge.size(); i++)
       _charge[i] = N_ehPairs;
 
     // Update _chargeCollected. First case is treated separately as there is no charge deposited in the previous step
@@ -333,7 +340,7 @@ namespace mu2e {
       _chargeCollected[tIndexStart] += _charge[tIndexStart];
       tIndexStart++;
     };
-    for (uint i = tIndexStart; i < tIndex; i++)
+    for (uint i = tIndexStart; i < _charge.size(); i++)
       _chargeCollected[i] += (_charge[i] - _charge[i-1]);
 
     // Clear the charge vector
