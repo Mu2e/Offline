@@ -29,7 +29,6 @@
 // fhicl includes
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/ParameterSet.h"
 
 // message handling

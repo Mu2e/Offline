@@ -75,10 +75,12 @@ MixSTMEvents : {
     extendedMean1BB : 1.58e7 # Copied from Production/JobConfig/mixing/OneBB.fcl
     cutMax1BB : 9.48e7 # Copied from Production/JobConfig/mixing/OneBB.fcl
     SDF : 0.6
+    nPOTs : 26919873604557116
+    nMicroSpills : 690253169
     meanEventsPerPOTFactors : {
         EleBeamCat : 2.5950416e-10
         MuBeamCat : 3.8108578e-12
-        TargetStopsCat1809 : 1.5230356e-15
+        TargetStopsCat1809 : 1e-10 # 1.5230356e-15
     }
 }
 
