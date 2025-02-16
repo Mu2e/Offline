@@ -25,11 +25,42 @@ namespace mu2e {
       return (crystalID * 2 + sipmID);
     }
 
+    enum CaloHitError {
+      Good = 0,
+      BeginMarker = 1,
+      LastSampleMarker = 2,
+      WaveformSize = 3,
+      NumberOfSamples = 4,
+      MaxSampleIndex = 5
+    };
+
+    std::string getCaloHitErrorName(CaloHitError error) {
+      switch (error) {
+        case Good: return "Good";
+        case BeginMarker: return "BeginMarker";
+        case LastSampleMarker: return "LastSampleMarker";
+        case WaveformSize: return "WaveformSize";
+        case NumberOfSamples: return "NumberOfSamples";
+        case MaxSampleIndex: return "MaxSampleIndex";
+        default: return "Unknown";
+      }
+    }
+
+    CaloHitError isHitGood(std::pair<CalorimeterDataDecoder::CalorimeterHitTestDataPacket, std::vector<uint16_t>> const& Hit){
+      if (Hit.first.BeginMarker != 0xAAA) return CaloHitError::BeginMarker;
+      if (Hit.first.LastSampleMarker == 0) return CaloHitError::LastSampleMarker;
+      if (Hit.second.size() == 0) return CaloHitError::WaveformSize;
+      if (Hit.first.NumberOfSamples != Hit.second.size()) return CaloHitError::NumberOfSamples;
+      if (Hit.first.IndexOfMaxDigitizerSample >= Hit.second.size()) return CaloHitError::NumberOfSamples;
+      return CaloHitError::Good;
+    }
+
     void   printCaloFragmentInfo(CalorimeterDataDecoder const& Frag);
 
     void   printCaloFragmentHeader(std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header);
 
     void   printCaloPulse(CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit);
+    void   printCaloPulse(CalorimeterDataDecoder::CalorimeterHitTestDataPacket const& Hit);
 
     void   printWaveform(std::vector<uint16_t> const& Pulse);
 

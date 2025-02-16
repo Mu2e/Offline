@@ -63,6 +63,16 @@ namespace mu2e {
 
   }
 
+  void CaloDAQUtilities::printCaloPulse(CalorimeterDataDecoder::CalorimeterHitTestDataPacket const& Hit){
+    std::cout << "[CaloDigiFromFragments] \tBoardID      " << (int)Hit.BoardID                    << std::endl;
+    std::cout << "[CaloDigiFromFragments] \tChNumber     " << (int)Hit.ChannelID                  << std::endl;
+    std::cout << "[CaloDigiFromFragments] \tEWT          " << (int)Hit.InPayloadEventWindowTag    << std::endl;
+    std::cout << "[CaloDigiFromFragments] \tErrorFlags   " << (int)Hit.ErrorFlags                 << std::endl;
+    std::cout << "[CaloDigiFromFragments] \tTime         " << (int)Hit.Time                       << std::endl;
+    std::cout << "[CaloDigiFromFragments] \tNSamples     " << (int)Hit.NumberOfSamples            << std::endl;
+    std::cout << "[CaloDigiFromFragments] \tIndexMax     " << (int)Hit.IndexOfMaxDigitizerSample  << std::endl;
+  }
+
   void CaloDAQUtilities::printWaveform(std::vector<uint16_t> const& Pulse){
     std::cout << "Waveform: {";
     for (size_t i = 0; i < Pulse.size(); i++) {
