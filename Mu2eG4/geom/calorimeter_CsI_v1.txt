@@ -5,7 +5,7 @@
 double calorimeter.caloDiskRadiusIn           = 335;
 double calorimeter.caloDiskRadiusOut          = 719;
 double calorimeter.caloFEBRadiusOut           = 935;
-double calorimeter.caloMotherZ0               = 11812;
+double calorimeter.caloMotherZ0               = 11842;
 double calorimeter.caloMotherZ1               = 13220;
 double calorimeter.vdThickness                = 0.02;
 
@@ -83,7 +83,7 @@ double calorimeter.crateTThickness            = 5;     // top panel thickness
 double calorimeter.crateSThickness            = 8;     // side panel thickness
 double calorimeter.crateFShieldYLength        = 160;
 double calorimeter.crateFShieldDeltaZ         = 102;
-double calorimeter.FEBToDiskZOffset           = 31.98; // distance to front shield to front disk panel
+double calorimeter.FEBToDiskZOffset           = 1.98; // distance to front shield to front disk panel
 double calorimeter.cratephi0                  = 30;
 double calorimeter.crateDeltaPhi              = 16;
 double calorimeter.radiatorThickness          = 3.0;

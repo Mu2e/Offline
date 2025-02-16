@@ -50,8 +50,6 @@
 
 namespace mu2e {
 
-
-
   VolumeInfo constructDiskCalorimeter(const VolumeInfo& mother, const SimpleConfig& config)
   {
     const auto geomOptions(art::ServiceHandle<GeometryService>()->geomOptions());
@@ -80,7 +78,6 @@ namespace mu2e {
     const auto   FEBPhiMinMax       = calcFEBPhiRange(cal);
     const bool   hasCrates          = cal.caloInfo().getBool("hasCrates");
     const bool   hasCable           = ds.hasCableRunCal() && hasCrates;
-
 
 
     //--------------------------------------
@@ -122,7 +119,6 @@ namespace mu2e {
       calorimeterDisk[idisk]          = caloBuildDisk(config,idisk);
 
       G4RotationMatrix* rot           = reg.add(new G4RotationMatrix(cal.disk(idisk).geomInfo().rotation()));
-      //auto rot                        = const_cast<G4RotationMatrix*>(&cal.disk(idisk).geomInfo().rotation());
       calorimeterDisk[idisk].physical = caloPlacement(calorimeterDisk[idisk], caloMotherInfo, rot, posDisk, false, 0, config, doSurfaceCheck, verbosity);
       helper.addVolInfo(calorimeterDisk[idisk]);
 
@@ -173,7 +169,7 @@ namespace mu2e {
 
       for (auto& kv : caloVolInfG4){
          const auto& vol = helper.locateVolInfo(kv.first);
-         std::cout<<vol.name<<"   posInWorld="<<vol.centerInWorld<<"    posInMu2e="<<vol.centerInMu2e()<<std::endl;
+         std::cout<<vol.name<<"   posInMu2e="<<vol.centerInMu2e()<<std::endl;
       }
     }
 
@@ -239,7 +235,7 @@ namespace mu2e {
 
 
     //------------------------------------------------------------
-    // Perform a few cross-checks to make sure the geometry description matches with DiskCAlorimeterMaker
+    // Perform a few cross-checks to make sure the geometry description matches that coded in DiskCalorimeterMaker
     //
     std::vector<const G4LogicalVolume*> volumeNodes;
     auto volumePtr = findCaloSolid(fullDisk.logical,"CaloCrystalCsI_"+std::to_string(idisk), volumeNodes);
@@ -620,10 +616,10 @@ namespace mu2e {
     //
     VolumeInfo crystalCsI  ("CaloCrystalCsI_"+std::to_string(idisk));
     VolumeInfo crystalLYSO ("CaloCrystalLYSO_"+std::to_string(idisk));
-    VolumeInfo wrapperCsI  ("CaloWrapperCsI"+std::to_string(idisk));
-    VolumeInfo wrapperLYSO ("CaloWrapperLYSO"+std::to_string(idisk));
-    VolumeInfo frontCapCsI ("CaloFrontCapCsI"+std::to_string(idisk));
-    VolumeInfo frontCapLYSO("CaloFrontCapLYSO"+std::to_string(idisk));
+    VolumeInfo wrapperCsI  ("CaloWrapperCsI_"+std::to_string(idisk));
+    VolumeInfo wrapperLYSO ("CaloWrapperLYSO_"+std::to_string(idisk));
+    VolumeInfo frontCapCsI ("CaloFrontCapCsI_"+std::to_string(idisk));
+    VolumeInfo frontCapLYSO("CaloFrontCapLYSO_"+std::to_string(idisk));
 
     crystalCsI.solid      = new G4Box(crystalCsI.name,  crystalDXY, crystalDXY, crystalDZ);
     crystalLYSO.solid     = new G4Box(crystalLYSO.name, crystalDXY, crystalDXY, crystalDZ);
@@ -1220,10 +1216,9 @@ namespace mu2e {
      G4PVPlacement* physical = new G4PVPlacement(rot, position, volume.logical, volume.name, parent.logical, pMany, copyNo, false);
      doSurfaceCheck && checkForOverlaps(physical, config, verbosity>0);
 
-     if (!pMany){
+     if (caloVolInfG4.find(volume.name) == caloVolInfG4.end()){
        volume.centerInParent = position;
        caloVolInfG4[volume.name] = parent.name;
-       //volume.centerInWorld  = parent.centerInWorld + position;
      }
      return physical;
   }
@@ -1300,19 +1295,19 @@ namespace mu2e {
   {
 
      if (G4Box* obj = dynamic_cast<G4Box*>(volume->GetSolid()))
-        std::cout<<obj->GetName()<<",XXXX,G4Box,dX="<<2*obj->GetXHalfLength()<<",dY="<<2*obj->GetYHalfLength()
+        std::cout<<obj->GetName()<<",G4Box,dX="<<2*obj->GetXHalfLength()<<",dY="<<2*obj->GetYHalfLength()
                  <<",dZ="<<2*obj->GetZHalfLength()<<","<<volume->GetMaterial()->GetName()<<std::endl;
 
      else if (G4Tubs* obj = dynamic_cast<G4Tubs*>(volume->GetSolid()))
-        std::cout<<obj->GetName()<<",XXXX,G4Tubs,Rin="<<obj->GetInnerRadius()<<",Rout="<<obj->GetOuterRadius()
+        std::cout<<obj->GetName()<<",G4Tubs,Rin="<<obj->GetInnerRadius()<<",Rout="<<obj->GetOuterRadius()
                  <<",dZ="<<2*obj->GetZHalfLength()<<",dPhi="<<obj->GetDeltaPhiAngle()<<","<<volume->GetMaterial()->GetName()<<std::endl;
 
      else if (G4Torus* obj = dynamic_cast<G4Torus*>(volume->GetSolid()))
-        std::cout<<obj->GetName()<<",XXXX,G4Torus,Rmin="<<obj->GetRmin()<<",Rmax="<<obj->GetRmax()<<",Rtot="
+        std::cout<<obj->GetName()<<",G4Torus,Rmin="<<obj->GetRmin()<<",Rmax="<<obj->GetRmax()<<",Rtot="
                  <<obj->GetRtor()<<",dPhi="<<obj->GetDPhi()<<","<<volume->GetMaterial()->GetName()<<std::endl;
 
      else if (volume != nullptr && volume->GetSolid() != nullptr)
-        std::cout<<volume->GetSolid()->GetName()<<",XXXX ,OTHER,"<<volume->GetMaterial()->GetName()<<std::endl;
+        std::cout<<volume->GetSolid()->GetName()<<",OTHER,"<<volume->GetMaterial()->GetName()<<std::endl;
 
      std::queue<G4LogicalVolume*> toProcess;
      for (size_t i=0;i<volume->GetNoDaughters();++i){
