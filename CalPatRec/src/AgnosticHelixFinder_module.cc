@@ -26,6 +26,7 @@
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "Offline/RecoDataProducts/inc/HelixRecoDir.hh"
 
@@ -90,7 +91,7 @@ namespace mu2e {
       fhicl::Atom<float>           chi2LineSaveThresh     {Name("chi2LineSaveThresh"   ), Comment("max chi2Dof for line"        )  };
       fhicl::Atom<float>           maxEDepAvg             {Name("maxEDepAvg"           ), Comment("max avg edep of combohits"   )  };
       fhicl::Atom<float>           tzSlopeSigThresh       {Name("tzSlopeSigThresh"     ), Comment("direction ambiguous if below")  };
-      fhicl::Sequence<int>         validHelixDirections   {Name("validHelixDirections" ), Comment("only save desired directions")  };
+      fhicl::Sequence<std::string> validHelixDirections   {Name("validHelixDirections" ), Comment("only save desired directions")  };
 
       fhicl::Table<AgnosticHelixFinderTypes::Config> diagPlugin  {Name("diagPlugin"), Comment("diag plugin"                   )  };
     };
@@ -201,7 +202,7 @@ namespace mu2e {
     float    _chi2LineSaveThresh;
     float    _maxEDepAvg;
     float    _tzSlopeSigThresh;
-    std::vector<int> _validHelixDirections;
+    std::vector<TrkFitDirection::FitDirection> _validHelixDirections;
 
     //-----------------------------------------------------------------------------
     // diagnostics
@@ -277,7 +278,7 @@ namespace mu2e {
     void         recoverPoints             (bool& recoveries);
     void         checkHelixViability       (LoopCondition& outcome);
     void         saveHelix                 (size_t tc, HelixSeedCollection& HSColl);
-    bool         validHelixDirection       (HelixRecoDir::PropDir direction);
+    bool         validHelixDirection       (TrkFitDirection::FitDirection direction);
 
   };
 
@@ -327,22 +328,24 @@ namespace mu2e {
     _maxHelixMomentum              (config().maxHelixMomentum()                      ),
     _chi2LineSaveThresh            (config().chi2LineSaveThresh()                    ),
     _maxEDepAvg                    (config().maxEDepAvg()                            ),
-    _tzSlopeSigThresh              (config().tzSlopeSigThresh()                      ),
-    _validHelixDirections          (config().validHelixDirections()                  )
+    _tzSlopeSigThresh              (config().tzSlopeSigThresh()                      )
+  {
 
-    {
-
-      consumes<ComboHitCollection>     (_chLabel);
-      consumes<TimeClusterCollection>  (_tcLabel);
-      consumes<CaloClusterCollection>  (_ccLabel);
-      produces<HelixSeedCollection>    ();
-
-      if (_diagLevel == 1) _hmanager = art::make_tool<ModuleHistToolBase>(config().diagPlugin, "diagPlugin");
-      else _hmanager = std::make_unique<ModuleHistToolBase>();
-
-      if (_useStoppingTarget == true) { _stopTargPos.SetCoordinates(0.0, 0.0, std::numeric_limits<float>::max()); }
-
+    // convert the helix direction names into enums
+    for(auto helix_dir : config().validHelixDirections()) {
+      _validHelixDirections.push_back(TrkFitDirection::fitDirectionFromName(helix_dir));
     }
+    consumes<ComboHitCollection>     (_chLabel);
+    consumes<TimeClusterCollection>  (_tcLabel);
+    consumes<CaloClusterCollection>  (_ccLabel);
+    produces<HelixSeedCollection>    ();
+
+    if (_diagLevel == 1) _hmanager = art::make_tool<ModuleHistToolBase>(config().diagPlugin, "diagPlugin");
+    else _hmanager = std::make_unique<ModuleHistToolBase>();
+
+    if (_useStoppingTarget == true) { _stopTargPos.SetCoordinates(0.0, 0.0, std::numeric_limits<float>::max()); }
+
+  }
 
   //-----------------------------------------------------------------------------
   // destructor
@@ -618,9 +621,8 @@ namespace mu2e {
     // order from largest z to smallest z (skip over stopping target and calo cluster since they
     // aren't in _chColl)
     std::sort(_tcHits.begin() + sortStartIndex, _tcHits.end(), [&](const cHit& a, const cHit& b) {
-        return _chColl->at(a.hitIndice).pos().z() > _chColl->at(b.hitIndice).pos().z();
-      });
-
+      return _chColl->at(a.hitIndice).pos().z() > _chColl->at(b.hitIndice).pos().z();
+    });
   }
 
   //-----------------------------------------------------------------------------
@@ -1346,7 +1348,6 @@ namespace mu2e {
   // function to save helix
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::saveHelix(size_t tc, HelixSeedCollection& HSColl) {
-
     HelixSeed hseed;
     hseed._t0 = _tcColl->at(tc)._t0;
     auto _tcCollH = _event->getValidHandle<TimeClusterCollection>(_tcLabel);
@@ -1421,7 +1422,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // check if the propagation direction is among the desired save directions
   //-----------------------------------------------------------------------------
-  bool AgnosticHelixFinder::validHelixDirection(HelixRecoDir::PropDir direction) {
+  bool AgnosticHelixFinder::validHelixDirection(TrkFitDirection::FitDirection direction) {
 
     for (size_t i=0; i<_validHelixDirections.size(); i++) {
       if (_validHelixDirections.at(i) == direction) return true;
