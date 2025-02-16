@@ -198,7 +198,7 @@ namespace mu2e {
 
         // First, calculate the total z length of the disk and the feb since we are not allowed
         // to get this from constructDiskCalorimeter.cc (no dependency on MC simulation)
-        // Make sure  this matches the geometry implemented in constructDiskCalorimeter !!!
+        // Make sure this matches the geometry implemented in constructDiskCalorimeter !!!
         //
         double FPHalfZLength     = (FPCarbonThick + FPFoamThick - FPpipeRadius + FPCoolPipeRadius)/2.0;
         double BPHalfZLength     = BPHoleHalfZ + FEEBoxHalfZ + 2.0*FEEBoxThick + BPPipeHalfZOffset + BPPipeRadiusHigh;
@@ -209,7 +209,6 @@ namespace mu2e {
         double crateToDiskDeltaZ = FEBToDiskZOffset + vdThickness;
 
         // Offsets between the disk and crystal cordinate systems, i.e. distance between center of disk and front face crystals
-        // look at crystalposition
         double disp = -diskHalfZLength + vdThickness + 2*FPHalfZLength + diskCaseHalfZLength - crystalHalfZLength + crystalCapHalfZLength;
         auto   diskOriginToCrystalOrigin = CLHEP::Hep3Vector(0,0,disp);
 
@@ -228,7 +227,7 @@ namespace mu2e {
            CLHEP::Hep3Vector originLocal(0, 0, -motherHalfZ + diskHalfZLength + separation + crateToDiskDeltaZ);
 
            CLHEP::Hep3Vector frontFaceCenter = calo_->geomUtil_.origin() + originLocal + diskOriginToCrystalOrigin;
-           CLHEP::Hep3Vector backFaceCenter  = frontFaceCenter + CLHEP::Hep3Vector(0,0,2.0*diskCaseHalfZLength);
+           CLHEP::Hep3Vector backFaceCenter  = frontFaceCenter + CLHEP::Hep3Vector(0,0,2.0*crystalHalfZLength);
            CLHEP::HepRotation diskRotation   = CLHEP::HepRotation::IDENTITY*CLHEP::HepRotationZ(angleZ);
 
            auto thisDisk = std::make_shared<Disk>(idisk,innerCrysRadius,outerCrysRadius, 2.0*crystalCellRadius,
