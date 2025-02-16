@@ -16,14 +16,20 @@ source : {
 physics : {
   producers : {
     HPGeDigi : {
-      module_type : HPGeWaveformsFromGeantSim
+      module_type : HPGeWaveformsFromStepPointMCs
+      StepPointMCsTag : "STMStepMixer:STMDet"
       fADC : @local::STMDAQParameters.samplingFrequencies.HPGe
       EnergyPerADCBin : @local::HPGeDigitization.EnergyPerADCBin
-      noiseSD : @local::HPGeDigitization.PreamplifierNoiseSD
+      NoiseSD : @local::HPGeDigitization.PreamplifierNoiseSD
+      risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant
+      HPGeCrystalEndcapCentreX : @local::ComponentPositions.HPGeCrystalEndcapCentre.x
+      HPGeCrystalEndcapCentreY : @local::ComponentPositions.HPGeCrystalEndcapCentre.y
+      HPGeCrystalEndcapCentreZ : @local::ComponentPositions.HPGeCrystalEndcapCentre.z
+      makeTTree : true
     }
     HPGeZS : {
       module_type : STMZeroSuppression
-      stmWaveformDigisTag : "HPGeDigi"
+      stmWaveformDigisTag : "HPGeDigi:"
       tbefore : @local::STM.HPGe.tbefore
       tafter : @local::STM.HPGe.tafter
       threshold : @local::STM.HPGe.threshold
@@ -33,7 +39,7 @@ physics : {
     }
     HPGeMWD : {
       module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : "HPGeZS"
+      stmWaveformDigisTag : "HPGeZS:"
       verbosityLevel : 1
       tau : @local::STM.HPGe.tau
       M : @local::STM.HPGe.M
@@ -43,7 +49,7 @@ physics : {
     }
   }
   # filter844 : []
-  # digitization_path : [HPGeDigi ] #, HPGeZS, HPGeMWD ]
+  digitization_path : [HPGeDigi] # , HPGeZS, HPGeMWD
   trigger_paths : [test_path]
   output_path : [compressedOutput]
   end_paths : [output_path]
@@ -52,8 +58,9 @@ physics : {
 outputs : {
   compressedOutput : {
     module_type : RootOutput
-    fileName : "1809.art" # @nil
+    fileName : @nil
   }
 }
 
 services.SeedService.baseSeed : 1
+services.TFileService.fileName        : @local::Efficiency.OutputFilename

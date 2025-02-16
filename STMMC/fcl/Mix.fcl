@@ -24,16 +24,16 @@ physics : {
   filters : {
     STMStepMixer: {
       module_type         : MixBackgroundFrames
-      fileNames           : ["/pnfs/mu2e/resilient/users/plesniak/Analysis/1809Cat.art"]
+      fileNames           : []
       readMode            : sequential
       wrapFiles           : true
       mu2e: {
         protonBunchIntensityTag: "PBISim:"
         simStageEfficiencyTags: [] # this will not be filled in because otherwise it will try to access the database
-        meanEventsPerPOTFactors : [@local::MixSTMEvents.meanEventsPerPOTFactors.TargetStopsCat1809]
+        meanEventsPerPOTFactors : [] # Number of POTs per event in STMDet
         writeEventIDs : false
         MaxEventsToSkip: 0
-        debugLevel : 10
+        debugLevel : 0
         products: {
           stepPointMCMixer: { mixingMap: [ [ "compressSTMDet:STMDet", ":" ] ] }
         }
@@ -55,7 +55,7 @@ physics : {
 outputs : {
   compressedOutput : {
     module_type : RootOutput
-    fileName : "1809Mix.art"
+    fileName : @nil
   }
 }
 
