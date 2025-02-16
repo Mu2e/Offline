@@ -22,71 +22,40 @@ physics : {
     }
   }
   filters : {
-    STMStepMixerEle: {
+    STMStepMixer: {
       module_type         : MixBackgroundFrames
-      fileNames           : ["/pnfs/mu2e/resilient/users/plesniak/Analysis/EleCat.art"] # @nil
+      fileNames           : ["/pnfs/mu2e/resilient/users/plesniak/Analysis/EleCat.art"]
       readMode            : sequential
       wrapFiles           : true
       mu2e: {
         protonBunchIntensityTag: "PBISim:"
         simStageEfficiencyTags: [] # this will not be filled in because otherwise it will try to access the database
-        meanEventsPerPOTFactors : [@local::MixSTMEvents.meanEventsPerPOTFactors.EleBeamCat]
+        meanEventsPerPOTFactors : [@local::MixSTMEvents.meanEventsPerPOTFactors.EleBeamCat] # Number of POTs per event in STMDet
         writeEventIDs : false
         MaxEventsToSkip: 0
-        debugLevel : 0
+        debugLevel : 10
         products: {
-          simParticleMixer: { mixingMap: [ [ "compressSTMDet", ":" ] ] }
-          stepPointMCMixer: { mixingMap: [ [ "compressSTMDet:STMDet", ":" ] ] }
-        }
-      }
-    }
-    STMStepMixerMu: {
-      module_type         : MixBackgroundFrames
-      fileNames           : ["/pnfs/mu2e/resilient/users/plesniak/Analysis/MuCat.art"] # @nil
-      readMode            : sequential
-      wrapFiles           : true
-      mu2e: {
-        protonBunchIntensityTag: "PBISim:"
-        simStageEfficiencyTags: [] # this will not be filled in because otherwise it will try to access the database
-        meanEventsPerPOTFactors : [@local::MixSTMEvents.meanEventsPerPOTFactors.MuBeamCat]
-        writeEventIDs : false
-        MaxEventsToSkip: 0
-        debugLevel : 0
-        products: {
-          simParticleMixer: { mixingMap: [ [ "compressSTMDet", ":" ] ] }
-          stepPointMCMixer: { mixingMap: [ [ "compressSTMDet:STMDet", ":" ] ] }
-        }
-      }
-    }
-    STMStepMixer1809: {
-      module_type         : MixBackgroundFrames
-      fileNames           : ["/pnfs/mu2e/resilient/users/plesniak/Analysis/1809Cat.art"]
-      readMode            : sequential
-      wrapFiles           : true
-      mu2e: {
-        protonBunchIntensityTag: "PBISim:"
-        simStageEfficiencyTags: [] # this will not be filled in because otherwise it will try to access the database
-        meanEventsPerPOTFactors : [@local::MixSTMEvents.meanEventsPerPOTFactors.TargetStopsCat1809]
-        writeEventIDs : false
-        MaxEventsToSkip: 0
-        debugLevel : 0
-        products: {
-          simParticleMixer: { mixingMap: [ [ "compressSTMDet", ":" ] ] }
           stepPointMCMixer: { mixingMap: [ [ "compressSTMDet:STMDet", ":" ] ] }
         }
       }
     }
   }
-  mix_path : [PBISim, STMStepMixer1809] # @nil
+  analyzers : {
+    CountMixed : {
+        module_type : CountMixedEvents
+        stepPointMCsTag : "STMStepMixer:STMDet"
+    }
+  }
+  mix_path : [PBISim, STMStepMixer]
   trigger_paths : [mix_path]
-  output_path : [compressedOutput]
+  output_path : [CountMixed, compressedOutput]
   end_paths : [output_path]
 }
 
 outputs : {
   compressedOutput : {
     module_type : RootOutput
-    fileName : "1809Mix.art"
+    fileName : "/pnfs/mu2e/resilient/users/plesniak/Analysis/EleMix.art" #@nil
   }
 }
 

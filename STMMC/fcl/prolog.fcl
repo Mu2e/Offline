@@ -26,9 +26,9 @@ ComponentPositions : { # In beam order
         z : 40404
     }
     HPGeCrystalEndcapCentre : {
-        x : -3946.06
+        x : -3942.15
         y : 0
-        z : 40671.3
+        z : 40677.44
     }
     LaBr : { # aperture centre
         x : -3863.4
@@ -80,7 +80,8 @@ MixSTMEvents : {
     meanEventsPerPOTFactors : {
         EleBeamCat : 2.5950416e-10
         MuBeamCat : 3.8108578e-12
-        TargetStopsCat1809 : 1e-10 # 1.5230356e-15
+        TargetStopsCat1809 : 1.5230356e-15
+        test : 1e-10
     }
 }
 

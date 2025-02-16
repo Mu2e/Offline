@@ -21,6 +21,7 @@ cet_build_plugin(HPGeTree_module art::module
 cet_build_plugin(HPGeWaveformsFromStepPointMCs art::module
     REG_SOURCE src/HPGeWaveformsFromStepPointMCs_module.cc
     LIBRARIES REG
+      art_root_io::TFileService_service
       Offline::DataProducts
       Offline::MCDataProducts
       Offline::Mu2eUtilities
