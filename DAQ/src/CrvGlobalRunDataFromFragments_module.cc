@@ -31,7 +31,7 @@ class CrvGlobalRunDataFromFragments : public art::EDAnalyzer
   {
     fhicl::Atom<int>           diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
     fhicl::Atom<art::InputTag> CRVDataDecodersTag{fhicl::Name("crvTag"), fhicl::Comment("crv Fragments Tag")};
-    fhicl::Atom<std::string>   cvsFileName{fhicl::Name("cvsFileName"), fhicl::Comment("cvs file name")};
+    fhicl::Atom<std::string>   csvFileName{fhicl::Name("csvFileName"), fhicl::Comment("csv file name")};
   };
 
   explicit CrvGlobalRunDataFromFragments(const art::EDAnalyzer::Table<Config>& config);
@@ -41,8 +41,8 @@ class CrvGlobalRunDataFromFragments : public art::EDAnalyzer
   private:
   int                                      _diagLevel;
   art::InputTag                            _CRVDataDecodersTag;
-  std::string                              _cvsFileName;
-  std::ofstream                            _cvsFile;
+  std::string                              _csvFileName;
+  std::ofstream                            _csvFile;
 
 };
 
@@ -50,7 +50,7 @@ CrvGlobalRunDataFromFragments::CrvGlobalRunDataFromFragments(const art::EDAnalyz
     art::EDAnalyzer{config},
     _diagLevel(config().diagLevel()),
     _CRVDataDecodersTag(config().CRVDataDecodersTag()),
-    _cvsFileName(config().cvsFileName())
+    _csvFileName(config().csvFileName())
 {
   time_t rawtime;
   time(&rawtime);
@@ -60,19 +60,19 @@ CrvGlobalRunDataFromFragments::CrvGlobalRunDataFromFragments(const art::EDAnalyz
   char buffer[80];
   strftime(buffer,80,"%Y%m%d%H%M%S",timeinfo);
 
-  std::filesystem::path path(_cvsFileName);
-  _cvsFile.open(path.stem().string()+"_"+std::string(buffer)+path.extension().string());
+  std::filesystem::path path(_csvFileName);
+  _csvFile.open(path.stem().string()+"_"+std::string(buffer)+path.extension().string());
 
-  _cvsFile << "event#,subEvent#,dataBlock#,";
-  _cvsFile << "EWT(subEventHeader),packetCount,byteCount,";
-  _cvsFile << "ROCID,wordCount,triggerCount,EWT(ROCstatus),";
-  _cvsFile << "#EWTs,#markers,lastEWTs,CRC,PLL,lock,injectionTime,injectionWindow";
-  _cvsFile << std::endl;
+  _csvFile << "event#,subEvent#,dataBlock#,";
+  _csvFile << "EWT(subEventHeader),packetCount,byteCount,";
+  _csvFile << "ROCID,wordCount,triggerCount,EWT(ROCstatus),";
+  _csvFile << "#EWTs,#markers,lastEWTs,CRC,PLL,lock,injectionTime,injectionWindow";
+  _csvFile << std::endl;
 }
 
 CrvGlobalRunDataFromFragments::~CrvGlobalRunDataFromFragments()
 {
-  _cvsFile.close();
+  _csvFile.close();
 }
 
 void CrvGlobalRunDataFromFragments::analyze(const art::Event& event)
@@ -119,33 +119,33 @@ void CrvGlobalRunDataFromFragments::analyze(const art::Event& event)
 
       if(header->GetPacketCount() > 1)
       {
-        _cvsFile << event.event() << "," << iSubEvent << "," << iDataBlock << ",";   //event number, sub event, data block
+        _csvFile << event.event() << "," << iSubEvent << "," << iDataBlock << ",";   //event number, sub event, data block
 
         //from subEvent header
-        _cvsFile << header->GetEventWindowTag().GetEventWindowTag(true) << ",";      //EWT
-        _cvsFile << header->GetPacketCount() << ",";                                 //packet count
-        _cvsFile << header->GetByteCount() << ",";                                   //byte count
+        _csvFile << header->GetEventWindowTag().GetEventWindowTag(true) << ",";      //EWT
+        _csvFile << header->GetPacketCount() << ",";                                 //packet count
+        _csvFile << header->GetByteCount() << ",";                                   //byte count
 
         //from ROC status header
         const uint16_t *dataPtr=reinterpret_cast<const uint16_t*>(block->GetData());
-        _cvsFile << ((*(dataPtr+0)) & 0xF) << ",";                                   //ROC ID
-        _cvsFile << (*(dataPtr+1)) << ",";                                           //word count
-        //_cvsFile << std::bitset<24>( (*(dataPtr+2)) + ((*(dataPtr+3))<<16) ) << ","; //active FEB flags
-        //_cvsFile << std::bitset<24>( (*(dataPtr+2)<<16) + (*(dataPtr+3)) ) << ",";   //active FEB flags
-        _cvsFile << (*(dataPtr+4)) << ",";                                           //trigger count
-        _cvsFile << ((uint64_t)(*(dataPtr+5))) + ((uint64_t)(*(dataPtr+6))<<16) + ((uint64_t)(*(dataPtr+7))<<32) << ",";  //EWT
+        _csvFile << ((*(dataPtr+0)) & 0xF) << ",";                                   //ROC ID
+        _csvFile << (*(dataPtr+1)) << ",";                                           //word count
+        //_csvFile << std::bitset<24>( (*(dataPtr+2)) + ((*(dataPtr+3))<<16) ) << ","; //active FEB flags
+        //_csvFile << std::bitset<24>( (*(dataPtr+2)<<16) + (*(dataPtr+3)) ) << ",";   //active FEB flags
+        _csvFile << (*(dataPtr+4)) << ",";                                           //trigger count
+        _csvFile << ((uint64_t)(*(dataPtr+5))) + ((uint64_t)(*(dataPtr+6))<<16) + ((uint64_t)(*(dataPtr+7))<<32) << ",";  //EWT
 
         //from Global Run Info packet
-        _cvsFile << (*(dataPtr+8+1)) << ",";               //#EWTs
-        _cvsFile << (*(dataPtr+8+2)) << ",";               //#markers
-        _cvsFile << (*(dataPtr+8+3)) << ",";               //last EWTs
-        _cvsFile << (((*(dataPtr+8+4))>>8)&0xFF) << ",";   //CRC
-        _cvsFile << (((*(dataPtr+8+4))>>4)&0xF) << ",";    //PLL
-        _cvsFile << ((*(dataPtr+8+4))&0x1) << ",";         //lock
-        _cvsFile << (*(dataPtr+8+5)) << ",";               //injection time
-        _cvsFile << (*(dataPtr+8+6));                      //injection window
+        _csvFile << (*(dataPtr+8+1)) << ",";               //#EWTs
+        _csvFile << (*(dataPtr+8+2)) << ",";               //#markers
+        _csvFile << (*(dataPtr+8+3)) << ",";               //last EWTs
+        _csvFile << (((*(dataPtr+8+4))>>8)&0xFF) << ",";   //CRC
+        _csvFile << (((*(dataPtr+8+4))>>4)&0xF) << ",";    //PLL
+        _csvFile << ((*(dataPtr+8+4))&0x1) << ",";         //lock
+        _csvFile << (*(dataPtr+8+5)) << ",";               //injection time
+        _csvFile << (*(dataPtr+8+6));                      //injection window
 
-        _cvsFile << std::endl;
+        _csvFile << std::endl;
       }
     }
   }
