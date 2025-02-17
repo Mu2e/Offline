@@ -1,0 +1,40 @@
+// SimpleConfig geometry file automatically produced for original file:
+//
+//   geom/geom_DSarea.ccl
+
+string dirt.central.stairwell.upper.name     = "dirtCentralStairwellUpper";
+
+string dirt.central.stairwell.upper.material = "MBOverburden";
+
+double dirt.central.stairwell.upper.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.central.stairwell.upper.offsetFromFloorSurface.y = 6578.6;
+double dirt.central.stairwell.upper.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.central.stairwell.upper.yHalfThickness           = 787.4;
+
+vector<double> dirt.central.stairwell.upper.xPositions = {
+  5308.6,   // g1
+  13630.275,   // g2
+  13630.275,   // g3
+  11617.325,   // g4
+  11617.325,    // g5
+  13630.275,    // g6
+  13630.275,    // g7
+  5308.6   // g8
+};
+
+vector<int> dirt.central.stairwell.upper.yreplace = { 6, 7 };
+vector<double> dirt.central.stairwell.upper.yPositions = {
+  -12014.2,   // g1
+  -12014.2,   // g2
+  -14740.25,   // g3
+  -14740.25,   // g4
+  -25908,   // g5
+  -25908,   // g6
+  -50000,   // g7
+  -50000   // g8
+};
+
+// Local Variables:
+// mode:c++
+// End:

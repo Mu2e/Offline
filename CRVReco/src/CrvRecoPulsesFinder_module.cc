@@ -145,15 +145,17 @@ namespace mu2e
     double TDC0time = 0;
 
     art::Handle<EventWindowMarker> eventWindowMarker;
-    event.getByLabel(_eventWindowMarkerTag,eventWindowMarker);
-    EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
-    if(spillType==EventWindowMarker::SpillType::onspill)
+    if(event.getByLabel(_eventWindowMarkerTag,eventWindowMarker))
     {
-      art::Handle<ProtonBunchTime> protonBunchTime;
-      event.getByLabel(_protonBunchTimeTag, protonBunchTime);
-      if(protonBunchTime.isValid())
+      EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
+      if(spillType==EventWindowMarker::SpillType::onspill)
       {
-        TDC0time = -protonBunchTime->pbtime_; //200ns...225ns (only for onspill)
+        art::Handle<ProtonBunchTime> protonBunchTime;
+        event.getByLabel(_protonBunchTimeTag, protonBunchTime);
+        if(protonBunchTime.isValid())
+        {
+          TDC0time = -protonBunchTime->pbtime_; //200ns...225ns (only for onspill)
+        }
       }
     }
 

@@ -12,6 +12,7 @@
 #include "Offline/CRVConditions/inc/CRVOrdinal.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Data/CRVDataDecoder.hh"
 #include <artdaq-core/Data/Fragment.hh>
@@ -59,6 +60,8 @@ CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config
     art::EDProducer{config}, _diagLevel(config().diagLevel()), _CRVDataDecodersTag(config().CRVDataDecodersTag())
 {
   produces<mu2e::CrvDigiCollection>();
+  produces<mu2e::CrvDigiCollection>("NZS");
+  produces<mu2e::CrvDAQerrorCollection>();
 }
 
 // ----------------------------------------------------------------------
@@ -91,6 +94,8 @@ void CrvDigisFromFragments::produce(Event& event)
 
   // Collection of CrvDigis for the event
   std::unique_ptr<mu2e::CrvDigiCollection> crv_digis(new mu2e::CrvDigiCollection);
+  std::unique_ptr<mu2e::CrvDigiCollection> crv_digis_NZS(new mu2e::CrvDigiCollection);
+  std::unique_ptr<mu2e::CrvDAQerrorCollection> crv_daq_errors(new mu2e::CrvDAQerrorCollection);
   auto const& channelMap = _channelMap_h.get(event.id());
 
   // Loop over the CRV fragments
@@ -101,42 +106,66 @@ void CrvDigisFromFragments::produce(Event& event)
 
     for(size_t iDataBlock = 0; iDataBlock < CRVDataDecoder.block_count(); ++iDataBlock)
     {
-      if(_diagLevel>0) std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-
       auto block = CRVDataDecoder.dataAtBlockIndex(iDataBlock);
       if(block == nullptr)
       {
-        std::cerr << "Unable to retrieve block in " << std::endl;
+        std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+        std::cerr << "Unable to retrieve data block." << std::endl;
+        crv_daq_errors->emplace_back(mu2e::CrvDAQerrorCode::unableToGetDataBlock,iSubEvent,iDataBlock,0);
         continue;
       }
       auto header = block->GetHeader();
-/*
-//FIXME: This function will be available in a new release of artdaq_core_mu2e
+
       if(!header->isValid())
       {
+        std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
         std::cerr << "CRV packet is not valid." << std::endl;
         std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
-        continue;
-      }
-*/
-      if(header->GetSubsystemID() != DTCLib::DTC_Subsystem::DTC_Subsystem_CRV)
-      {
-        std::cerr << "CRV packet does not have system ID 2." << std::endl;
-        std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
+        crv_daq_errors->emplace_back(mu2e::CrvDAQerrorCode::invalidPacket,iSubEvent,iDataBlock,header->GetPacketCount());
         continue;
       }
 
-      if(_diagLevel>0) std::cout << "packet count: " << header->GetPacketCount() << std::endl;
+      if(header->GetSubsystemID() != DTCLib::DTC_Subsystem::DTC_Subsystem_CRV)
+      {
+        if(_diagLevel>0)
+        {
+          std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+          std::cout << "CRV packet does not have subsystem ID 2." << std::endl;
+          std::cout << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
+        }
+        crv_daq_errors->emplace_back(mu2e::CrvDAQerrorCode::wrongSubsystemID,iSubEvent,iDataBlock,header->GetPacketCount());
+        continue;
+      }
+
+      if(_diagLevel>1)
+      {
+        std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+        std::cout << "packet count: " << header->GetPacketCount() << std::endl;
+      }
       if(header->GetPacketCount() > 0)
       {
         auto crvRocHeader = CRVDataDecoder.GetCRVROCStatusPacket(iDataBlock);
         if(crvRocHeader == nullptr)
         {
-          std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock in " << iDataBlock << std::endl;
+          std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+          std::cerr << "Error retrieving CRV ROC Status Packet" << std::endl;
+          crv_daq_errors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingStatusPacket,iSubEvent,iDataBlock,header->GetPacketCount());
           continue;
         }
 
+/*
+//FIXME: old code before artdaq_core_mu2e gets updated
         auto crvHits = CRVDataDecoder.GetCRVHits(iDataBlock);
+*/
+//FIXME: new code after artdaq_core_mu2e gets updated
+        std::vector<mu2e::CRVDataDecoder::CRVHit> crvHits;
+        if(!CRVDataDecoder.GetCRVHits(iDataBlock, crvHits))
+        {
+          std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+          std::cerr << "Error unpacking of CRV Hits" << std::endl;
+          crv_daq_errors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingCrvHits,iSubEvent,iDataBlock,header->GetPacketCount());
+          break;
+        }
         for(auto const& crvHit : crvHits)
         {
           const auto& crvHitInfo = crvHit.first;
@@ -153,14 +182,13 @@ void CrvDigisFromFragments::produce(Event& event)
 
           std::vector<int16_t> adc;
           adc.resize(waveform.size());
-          for(size_t i=0; i<waveform.size(); ++i)
-          {
-            adc[i] = waveform.at(i).ADC;
-            crv_digis->emplace_back(adc, crvHitInfo.HitTime + i, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
-          }
+          for(size_t i=0; i<waveform.size(); ++i) adc[i]=waveform.at(i).ADC;
+          for(size_t i=0; i<waveform.size(); ++i) {if((adc[i] & 0x800) == 0x800) adc[i]=(int16_t)(adc[i] | 0xF000);}  //to handle negative numbers stored in 12bit ADC samples
+          crv_digis->emplace_back(adc, crvHitInfo.HitTime, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
+          crv_digis_NZS->emplace_back(adc, crvHitInfo.HitTime, true, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);  //temporary solution until we get the FEB-II
         } // loop over all crvHits
 
-        if(_diagLevel>1)
+        if(_diagLevel>2)
         {
           std::cout << "EventWindowTag (TDC header): "
                     << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
@@ -175,7 +203,7 @@ void CrvDigisFromFragments::produce(Event& event)
           std::cout << "EventWindowTag (ROC header): " << crvRocHeader->GetEventWindowTag() << std::endl;
         }
 
-        if(_diagLevel>0)
+        if(_diagLevel>3)
         {
           for(auto const& crvHit : crvHits)
           {
@@ -208,8 +236,10 @@ void CrvDigisFromFragments::produce(Event& event)
     }       // loop over DataBlocks within CRVDataDecoders
   }         // Close loop over fragments
 
-  // Store the straw digis and calo digis in the event
+  // Store the crv digis in the event
   event.put(std::move(crv_digis));
+  event.put(std::move(crv_digis_NZS),"NZS");
+  event.put(std::move(crv_daq_errors));
 
 } // produce()
 

@@ -25,6 +25,16 @@ namespace mu2e {
     centerInWorld = centerInParent + parentInWorld;
   }
 
+  VolumeInfo::VolumeInfo(const std::string&  pName):
+    name(pName),
+    solid(0),
+    logical(0),
+    physical(0),
+    centerInParent(),
+    centerInWorld() {
+  }
+
+
   const CLHEP::Hep3Vector& VolumeInfo::mu2eOriginInWorld() {
     // AG: Hiding this static in the function ensures that its
     // initialization happes on the first access (after geometry svc

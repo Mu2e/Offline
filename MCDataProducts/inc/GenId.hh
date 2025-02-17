@@ -110,7 +110,7 @@ namespace mu2e {
     }
 
     bool isCosmic() const {
-      return (_id == cosmicToy || _id == cosmicDYB || _id == cosmic);
+      return (_id == cosmicToy || _id == cosmicDYB || _id == cosmic || _id == cosmicCRY || _id == cosmicCORSIKA);
     }
 
     bool isConversion() const {
