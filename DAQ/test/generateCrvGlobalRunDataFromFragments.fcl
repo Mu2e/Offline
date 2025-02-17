@@ -1,0 +1,55 @@
+# Reads CRV Global Run Info
+# Contact person R. Ehrlich
+
+#include "mu2e_trig_config/core/trigProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : CrvGlobalRunInfo
+
+services :
+{
+  @table::Services.Core
+}
+
+source :
+{
+  module_type : RootInput
+  fileNames   : @nil
+  maxEvents   : -1
+}
+
+physics :
+{
+  producers :
+  {
+    genFrags :
+    {
+       module_type  : ArtFragmentsFromDTCEvents
+       diagLevel    : 0
+       makeCaloFrag : 0
+       makeTrkFrag  : 0
+       makeCRVFrag  : 1
+       makeSTMFrag  : 0
+
+    }
+  }
+  analyzers:
+  {
+    CrvGlobalRunData :
+    {
+      module_type : CrvGlobalRunDataFromFragments
+      crvTag      : "genFrags"
+      diagLevel   : 0
+      cvsFileName : "crvGlobalRunInfo.txt"
+    }
+  }
+
+  t1 : [ genFrags ]
+  e1 : [ CrvGlobalRunData ]
+
+  trigger_paths  : [t1]
+  end_paths      : [e1]
+
+}
+
+services.message.destinations.log.categories.ArtReport.limit : 0
