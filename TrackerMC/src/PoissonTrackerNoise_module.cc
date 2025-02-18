@@ -197,7 +197,7 @@ namespace mu2e{
               adcss->emplace_back(samplesDigital);
               // TODO must flag this digi as noise
               //      probably, these defining StrawDigiMC::isNoise or the like
-              //dgmcs->emplace_back(...);
+              dgmcs->emplace_back(sid, true);
             }
           }
         }
