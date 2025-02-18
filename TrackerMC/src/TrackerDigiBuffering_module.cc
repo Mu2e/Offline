@@ -13,6 +13,11 @@
 // cetlib_except
 #include "cetlib_except/exception.h"
 
+// fhiclcpp
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Comment.h"
+#include "fhiclcpp/types/Name.h"
+
 // mu2e
 #include "Offline/Mu2eUtilities/inc/StrawDigiBundle.hh"
 #include "Offline/Mu2eUtilities/inc/StrawDigiBundleCollection.hh"
