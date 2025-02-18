@@ -10,6 +10,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Utilities/make_tool.h"
 
 // canvas
 #include "canvas/Utilities/InputTag.h"
@@ -24,6 +25,7 @@
 // fhiclcpp
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Comment.h"
+#include "fhiclcpp/types/DelegatedParameter.h"
 #include "fhiclcpp/types/Name.h"
 
 // mu2e
@@ -37,6 +39,7 @@
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/TrackerMC/inc/AnalogWireSignal.hh"
+#include "Offline/TrackerMC/inc/AnalogWireSignalTool.hh"
 #include "Offline/TrackerMC/inc/SinusoidalWireSignal.hh"
 #include "Offline/TrackerMC/inc/SummedWireSignal.hh"
 
@@ -52,6 +55,10 @@ namespace mu2e{
       struct Config{
         fhicl::Atom<double> rate{
           fhicl::Name("rate"),
+          fhicl::Comment("Per-straw rate (in GHz) of pulses")
+        };
+        fhicl::DelegatedParameter signal{
+          fhicl::Name("signal"),
           fhicl::Comment("Per-straw rate (in GHz) of pulses")
         };
         fhicl::Atom<art::InputTag> ewm_tag{
@@ -75,6 +82,7 @@ namespace mu2e{
       art::RandomNumberGenerator::base_engine_t& _engine;
       std::unique_ptr<CLHEP::RandPoisson> _poisson;       // for normalization
       std::unique_ptr<CLHEP::RandFlat> _uniform;          // for timing
+      std::unique_ptr<AnalogWireSignalTool> _signal;      // signal shape
 
     private:
       /**/
@@ -89,6 +97,10 @@ namespace mu2e{
     // rng initializations
     _uniform = std::make_unique<CLHEP::RandFlat>(_engine);
     _poisson = std::make_unique<CLHEP::RandPoisson>(_engine);
+
+    // signal-shape sampler
+    auto signal_config = config().signal.get<fhicl::ParameterSet>();
+    _signal = art::make_tool<AnalogWireSignalTool>(signal_config);
 
     // framework hooks
     this->produces<StrawDigiCollection>();
@@ -174,7 +186,7 @@ namespace mu2e{
             //  - second, find the threshold-crossing time
             if (in_window){
               // TODO factor out into tool...
-              std::shared_ptr<AnalogWireSignal> signal = make_sinusoid();
+              auto signal = _signal->Sample();
 
               //    i) fill two-sided waveforms from analog signal
               //       TODO: delay and transfer function from transmission
@@ -195,8 +207,6 @@ namespace mu2e{
               //    v) emplace new digi, waveform, and mc truth
               digis->emplace_back(sid, crTimesDigital, atTimesDigital, pmp);
               adcss->emplace_back(samplesDigital);
-              // TODO must flag this digi as noise
-              //      probably, these defining StrawDigiMC::isNoise or the like
               dgmcs->emplace_back(sid, true);
             }
           }

@@ -5,6 +5,9 @@
 #ifndef TrackerMC_AnalogWireSignal_hh
 #define TrackerMC_AnalogWireSignal_hh
 
+// stl
+#include <memory>
+
 // boost
 #include "boost/math/tools/roots.hpp"
 
@@ -41,6 +44,8 @@ namespace mu2e{
     private:
       /**/
   };
+
+  typedef std::shared_ptr<AnalogWireSignal> AnalogWireSignalPtr;
 } // namespace mu2e
 
 #endif

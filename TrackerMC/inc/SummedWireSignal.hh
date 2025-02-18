@@ -20,11 +20,10 @@ namespace mu2e{
 
       double Evaluate(double) override;
 
-      using SigPtr = std::shared_ptr<AnalogWireSignal>;
-      SummedWireSignal operator+ (const SigPtr&);
+      SummedWireSignal operator+ (const AnalogWireSignalPtr&);
 
     protected:
-      std::vector<SigPtr> _components;
+      std::vector<AnalogWireSignalPtr> _components;
 
     private:
       /**/
