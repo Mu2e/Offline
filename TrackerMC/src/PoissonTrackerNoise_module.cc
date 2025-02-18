@@ -42,8 +42,9 @@
 
 namespace mu2e{
 
-  void make_sinusoid(std::shared_ptr<AnalogWireSignal>& out){
-    out = std::make_shared<SinusoidalWireSignal>(0.0, 1700.0, 1.0, 1.0, 0.0);
+  std::shared_ptr<AnalogWireSignal> make_sinusoid(){
+    auto rv = std::make_shared<SinusoidalWireSignal>(20.0, 1e-3, 0.0, 0.0, 1700.0);
+    return rv;
   }
 
   class PoissonTrackerNoise: public art::EDProducer{
@@ -173,8 +174,7 @@ namespace mu2e{
             //  - second, find the threshold-crossing time
             if (in_window){
               // TODO factor out into tool...
-              std::shared_ptr<AnalogWireSignal> signal;
-              make_sinusoid(signal);
+              std::shared_ptr<AnalogWireSignal> signal = make_sinusoid();
 
               //    i) fill two-sided waveforms from analog signal
               //       TODO: delay and transfer function from transmission
