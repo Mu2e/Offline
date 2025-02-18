@@ -17,9 +17,8 @@ namespace mu2e{
     return rv;
   }
 
-  SummedWireSignal SummedWireSignal::operator+ (const SummedWireSignal::SigPtr& rhs){
+  SummedWireSignal SummedWireSignal::operator+ (const AnalogWireSignalPtr& rhs){
     this->_components.push_back(rhs);
     return *this;
   }
-
 } // namespace mu2e
