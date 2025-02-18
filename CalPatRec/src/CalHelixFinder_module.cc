@@ -58,7 +58,7 @@ namespace mu2e {
     _timeclLabel(config().timeclLabel()),
     _minNHitsTimeCluster(config().minNHitsTimeCluster()),
     _fitparticle(config().fitparticle()),
-    _fitdirection(config().fitdirection()),
+    _fdir(config().fitdirection()),
     _doSingleOutput(config().doSingleOutput()),
     _maxEDepAvg(config().maxEDepAvg()),
     _hfinder(config().hfinder()){
@@ -79,7 +79,6 @@ namespace mu2e {
       }
 
       _tpart = (TrkParticle::type)_fitparticle;
-      _fdir = (TrkFitDirection::FitDirection)_fitdirection;
 //-----------------------------------------------------------------------------
 // provide for interactive disanostics
 //-----------------------------------------------------------------------------
