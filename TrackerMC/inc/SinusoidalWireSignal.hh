@@ -26,8 +26,6 @@ namespace mu2e{
       double _amplitude;
       double _frequency;
       double _phase;
-      double _time_lo;
-      double _time_hi;
 
     private:
       /**/
