@@ -1,0 +1,85 @@
+// SimpleConfig geometry file automatically produced for original file:
+//
+//   geom/geom_upToGradeLevel_W.ccl
+
+string dirt.upToGradeLevel.W2.name     = "dirtUpToGradeLevelW2";
+
+string dirt.upToGradeLevel.W2.material = "MBOverburden";
+
+double dirt.upToGradeLevel.W2.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.upToGradeLevel.W2.offsetFromFloorSurface.y = 7562.8506;//7531.1;
+double dirt.upToGradeLevel.W2.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.upToGradeLevel.W2.yHalfThickness           = 107.95;//241.3;
+
+vector<int>    dirt.upToGradeLevel.W2.xreplace   = { 19, 20 };
+vector<double> dirt.upToGradeLevel.W2.xPositions = {
+  -2921,   // p0
+  -4140.2,   // P1
+  -4140.2,    // P0
+  -4749.8,    // P1
+  -4749.8,    // P2
+  -11709.4,   // P3
+  -11709.4,   // P3a
+  -12319,     // P3b //   -12319,     // P3c
+  -12319,     // S1
+  -13843,     //-12750.8,   // S2
+  -13843,     //-12750.8,   // S3
+  -12319,     // S4
+  -12318.9,   // P3d
+  -12343.4,   // P3e
+  -12319.3,   // P3f
+  -16841.4,   // P3g
+  -16817.3,   // P3h
+  -17853.7,   // p5
+  -17853.7,   // p5_to_S
+  -50000,   // SWcorner
+  -50000,   // NWcorner
+  -2921,   // p0_to_N
+  -2921,   // To NRetWall
+  -14605,  // elbow WextWall
+  -20527.1, // NW corner WextWall
+  -20442.7, // SW corner WextWall
+  -14706.6, // elbow WextWall
+  -12319,   // SE WextWall
+  -12319,   // SW NRetWall
+  -2921     // along NRetWall S face
+};
+
+vector<int>    dirt.upToGradeLevel.W2.yreplace   = { 18, 19, 20, 21 };
+vector<double> dirt.upToGradeLevel.W2.yPositions = {
+  2438.4,   // p0
+  2438.4,   // P1
+  6858,   // P0
+  6858,   // P1
+  6502.4,   // P2
+  6502.4,   // P3
+  6858,     // P3a
+  6858,     // P3b
+  5359.3,   // S1
+  5359.3,   // S2
+  -254.1,   // S3
+  -254.1,   // S4 //  6502.4,   // P3c
+  -2091.9,  // P3d
+  -2096.1,  // P3e
+  -2194.8,  // P3f
+  -3297.85, // P3g
+  -3396.55, // P3h
+  -3649.57,   // p5
+  -50000,   // p5_to_S
+  -50000,   // SWcorner
+  50000,   // NWcorner
+  50000,   // p0_to_N
+  10312.41, // To NRetWall
+  10312.4, // Elbow WextWall
+  8866.57,  // NW corner WextWall
+  8521.11,  // SW corner WextWall
+  9956.79,  // elbow WextWall
+  9956.79,  // SE corner WextWall
+  9702.79,  // SW corner NRetWall
+  9702.79   // last point on NRetWall S face
+};
+
+// Local Variables:
+// mode:c++
+// End:

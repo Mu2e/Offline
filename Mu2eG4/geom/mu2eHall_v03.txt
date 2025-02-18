@@ -649,7 +649,10 @@ vector<string> rotated.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtWTSareaCF2notch.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtWTSareaCFbeam.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtTsDsAreaFirstFloorEdgeN_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtUpToGradeLevelW_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtUpToGradeLevelW1.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtUpToGradeLevelW2.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtUpToGradeLevelW_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtUpToGradeLevelW3.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaBaselevel_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaInter_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaLower_v02.txt"
@@ -748,7 +751,9 @@ vector<string> dirt.prefix.list = {
   "dirt.W.TSareaCF2notch",
   "dirt.W.TSareaCFbeam",
   "dirt.tsDsArea.firstFloorEdge.N",
-  "dirt.upToGradeLevel.W",
+  "dirt.upToGradeLevel.W1",
+  "dirt.upToGradeLevel.W2",
+  "dirt.upToGradeLevel.W3",
   "dirt.tempDirt.backfill.psArea.baselevel",
   "dirt.tempDirt.backfill.psArea.Inter",
   "dirt.tempDirt.backfill.psArea.Lower",
