@@ -15,16 +15,13 @@ source : {
 
 physics : {
   producers : {
-    HPGeDigi : {
+    HPGeDigi : { # generates mu2e::STMWaveformDigis_HPGeDigi__HPGeReco
       module_type : HPGeWaveformsFromStepPointMCs
-      StepPointMCsTag : "STMStepMixer:STMDet"
+      StepPointMCsTag : "g4run:STMDet"
       fADC : @local::STMDAQParameters.samplingFrequencies.HPGe
       EnergyPerADCBin : @local::HPGeDigitization.EnergyPerADCBin
       NoiseSD : @local::HPGeDigitization.PreamplifierNoiseSD
       risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant
-      HPGeCrystalEndcapCentreX : @local::ComponentPositions.HPGeCrystalEndcapCentre.x
-      HPGeCrystalEndcapCentreY : @local::ComponentPositions.HPGeCrystalEndcapCentre.y
-      HPGeCrystalEndcapCentreZ : @local::ComponentPositions.HPGeCrystalEndcapCentre.z
       makeTTree : true
     }
     HPGeZS : {
