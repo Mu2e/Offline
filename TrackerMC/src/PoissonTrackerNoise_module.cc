@@ -1,5 +1,5 @@
 // Ed Callaghan
-// Generate uncorrelated tracker digis assuming a poisson rate of MIP pulses
+// Generate uncorrelated tracker digis assuming a poisson rate of analog pulses
 // February 2025
 
 // stl
@@ -51,7 +51,7 @@ namespace mu2e{
         };
         fhicl::DelegatedParameter signal{
           fhicl::Name("signal"),
-          fhicl::Comment("Tool configuration to produce primary signal shapes");
+          fhicl::Comment("Tool configuration to produce primary signal shapes")
         };
         fhicl::Atom<art::InputTag> ewm_tag{
           fhicl::Name("EventWindowMarker"),
