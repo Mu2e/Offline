@@ -7,7 +7,6 @@
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/STMMC/fcl/prolog.fcl"
-#include "Offline/STMReco/fcl/prolog.fcl"
 
 process_name: DetetorEfficiency
 
@@ -36,31 +35,41 @@ physics: {
       NoiseSD : @local::HPGeDigitization.PreamplifierNoiseSD
       risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant
       makeTTree : true
+      timeOffset : 100
     }
     ZSHPGe : {
       module_type : STMZeroSuppression
-      stmWaveformDigisTag : "DigiHPGe:"
-      tbefore : @local::STM.HPGe.tbefore
-      tafter : @local::STM.HPGe.tafter
-      threshold : @local::STM.HPGe.threshold
-      window : @local::STM.HPGe.window
-      naverage : @local::STM.HPGe.naverage
-      verbose : true
+      stmWaveformDigisTag : @local::STMMCAnalysis.ZeroSuppression.HPGe.stmWaveformDigisTag
+      tbefore : @local::STMMCAnalysis.ZeroSuppression.HPGe.tbefore
+      tafter : @local::STMMCAnalysis.ZeroSuppression.HPGe.tafter
+      threshold : @local::STMMCAnalysis.ZeroSuppression.HPGe.threshold
+      window : @local::STMMCAnalysis.ZeroSuppression.HPGe.window
+      naverage : @local::STMMCAnalysis.ZeroSuppression.HPGe.naverage
+      verbosityLevel : 10
     }
-    MWDHPGe : {
-      module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : "ZSHPGe:"
-      verbosityLevel : 1
-      tau : @local::STM.HPGe.tau
-      M : @local::STM.HPGe.M
-      L : @local::STM.HPGe.L
-      nsigma_cut : @local::STM.HPGe.nsigma_cut
-      thresholdgrad : @local::STM.HPGe.thresholdgrad
-    }
+    # MWDHPGe : {
+    #   module_type : STMMovingWindowDeconvolution
+    #   stmWaveformDigisTag : "ZSHPGe:"
+    #   verbosityLevel : 1
+    #   tau : @local::STM.HPGe.tau
+    #   M : @local::STM.HPGe.M
+    #   L : @local::STM.HPGe.L
+    #   nsigma_cut : @local::STM.HPGe.nsigma_cut
+    #   thresholdgrad : @local::STM.HPGe.thresholdgrad
+    # }
   }
 
   p1 : [generate, g4run, DigiHPGe, ZSHPGe] #, MWDHPGe
   trigger_paths : [p1]
+  output_path : [compressedOutput]
+  end_paths : [output_path]
+}
+
+outputs : {
+  compressedOutput : {
+    module_type : RootOutput
+    fileName : "test.art" #@nil
+  }
 }
 
 physics.producers.g4run.physics.physicsListName: "QGSP_BERT_EMZ"
