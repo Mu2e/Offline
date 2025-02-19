@@ -66,6 +66,28 @@ namespace mu2e{
     return rv;
   }
 
+  bool AnalogWireSignal::TranslateToThresholdCrossingTime(double threshold,
+                                                          double time,
+                                                          double time_lo,
+                                                          double time_hi,
+                                                          double coarse_spacing,
+                                                          double tolerance){
+    double crTime;
+    bool crossed = this->CoarseThresholdCrossingTime(threshold,
+                                                     time_lo,
+                                                     time_hi,
+                                                     coarse_spacing,
+                                                     crTime);
+    if (crossed){
+      crTime = this->ThresholdCrossingTime(threshold,
+                                           crTime - coarse_spacing,
+                                           crTime + coarse_spacing,
+                                           tolerance);
+      this->AddDelay(time - crTime);
+    }
+    return crossed;
+  }
+
   void AnalogWireSignal::DigitalTimeOverThreshold(
                                           const StrawElectronics& electronics,
                                           const double threshold,

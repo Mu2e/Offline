@@ -151,57 +151,69 @@ namespace mu2e{
             double lht = nominal_time +           position /propagation_speed;
             double rht = nominal_time + (length - position)/propagation_speed;
 
-            // forward-declare downstream digital vessels
-            TrkTypes::TDCTimes crTimesPhysical;     // threshold-crossing times
-            TrkTypes::TDCValues crTimesDigital;     // ...after digitizing
-          //TrkTypes::TOTTimes atTimesPhysical;     // times over threshold
-            TrkTypes::TOTValues atTimesDigital;     // ...after digitizing
-            TrkTypes::ADCTimes wfTimes;             // times of wf samples
-          //TrkTypes::ADCVoltages samplesPhysical;  // analog sample values
-            TrkTypes::ADCWaveform samplesDigital;   // digital sample values
-            TrkTypes::ADCValue pmp;                 // digital amplitude
+            // sample signal shape
+            auto shape = _signal->Sample();
+            auto signal = AnalogWireSignal(shape);
 
-            // absolute times must be uncalibrated and then fed through tdcs
-            bool isOnSpill = (ewm_h->spillType() == EventWindowMarker::onspill);
-            crTimesPhysical[StrawEnd::cal] = lht;
-            crTimesPhysical[StrawEnd::hv]  = rht;
-            electronics.uncalibrateTimes(crTimesPhysical, sid);
-            bool in_window = electronics.digitizeTimes(crTimesPhysical,
-                                                       crTimesDigital,
-                                                       isOnSpill,
-                                                       maxTDC);
-            // if both tdcs are within the digitization window,
-            // then sum waveforms and create a digi
-            // TODO the logic should be reversed:
-            //  - first, construct analog signals and test if over-threshold
-            //  - second, find the threshold-crossing time
-            if (in_window){
-              // TODO factor out into tool...
-              auto shape = _signal->Sample();
-              auto signal = AnalogWireSignal(shape);
+            //    i) fill two-sided waveforms from analog signal
+            //       TODO: transfer function from transmission
+            //       TODO: high-frequency noise
+            double spacing = 10.0;
+            double tolerance = 1.0;
+            auto lhs = signal;
+            threshold = electronics.threshold(sid, StrawEnd::cal);
+            bool lct = lhs.TranslateToThresholdCrossingTime(threshold, lht,
+                                                            0.0, window,
+                                                            spacing, tolerance);
+            auto rhs = signal;
+            threshold = electronics.threshold(sid, StrawEnd::hv);
+            bool rct = rhs.TranslateToThresholdCrossingTime(threshold, rht,
+                                                            0.0, window,
+                                                            spacing, tolerance);
 
-              //    i) fill two-sided waveforms from analog signal
-              //       TODO: transfer function from transmission
-              //       TODO: delay should be shape-local xtime - sampled
-              //       TODO: why is _summands[0].Evaluate(x) == 0
-              auto lhs = signal; lhs.AddDelay(lht);
-              auto rhs = signal; rhs.AddDelay(rht);
-              //   ii) calculate double-sided tots
-              threshold = electronics.threshold(sid, StrawEnd::cal);
-              lhs.DigitalTimeOverThreshold(electronics, threshold, lht,
-                                           atTimesDigital[StrawEnd::cal]);
-              threshold = electronics.threshold(sid, StrawEnd::hv);
-              rhs.DigitalTimeOverThreshold(electronics, threshold, rht,
-                                           atTimesDigital[StrawEnd::hv]);
-              //  iii) sum waveforms
-              auto summed = lhs + rhs;
-              //   iv) apply final digitization
-              summed.Digitize(electronics, sid, crTimesPhysical[0],
-                              wfTimes, samplesDigital, pmp);
-              //    v) emplace new digi, waveform, and mc truth
-              digis->emplace_back(sid, crTimesDigital, atTimesDigital, pmp);
-              adcss->emplace_back(samplesDigital);
-              dgmcs->emplace_back(sid, true);
+            // if both sides are above threshold
+            bool two_sided = lct && rct;
+            if (two_sided){
+              // forward-declare downstream digital vessels
+              TrkTypes::TDCTimes crTimesPhysical;     // threshold-crossing times
+              TrkTypes::TDCValues crTimesDigital;     // ...after digitizing
+            //TrkTypes::TOTTimes atTimesPhysical;     // times over threshold
+              TrkTypes::TOTValues atTimesDigital;     // ...after digitizing
+              TrkTypes::ADCTimes wfTimes;             // times of wf samples
+            //TrkTypes::ADCVoltages samplesPhysical;  // analog sample values
+              TrkTypes::ADCWaveform samplesDigital;   // digital sample values
+              TrkTypes::ADCValue pmp;                 // digital amplitude
+
+              // absolute times must be uncalibrated and then fed through tdcs
+              bool isOnSpill = (ewm_h->spillType() == EventWindowMarker::onspill);
+              // by definition, from the above
+              crTimesPhysical[StrawEnd::cal] = lht;
+              crTimesPhysical[StrawEnd::hv]  = rht;
+              electronics.uncalibrateTimes(crTimesPhysical, sid);
+              bool in_window = electronics.digitizeTimes(crTimesPhysical,
+                                                         crTimesDigital,
+                                                         isOnSpill,
+                                                         maxTDC);
+              // if both tdcs are within the digitization window,
+              // then sum waveforms and create a digi
+              if (in_window){
+                //   ii) calculate double-sided tots
+                threshold = electronics.threshold(sid, StrawEnd::cal);
+                lhs.DigitalTimeOverThreshold(electronics, threshold, lht,
+                                             atTimesDigital[StrawEnd::cal]);
+                threshold = electronics.threshold(sid, StrawEnd::hv);
+                rhs.DigitalTimeOverThreshold(electronics, threshold, rht,
+                                             atTimesDigital[StrawEnd::hv]);
+                //  iii) sum waveforms
+                auto summed = lhs + rhs;
+                //   iv) apply final digitization
+                summed.Digitize(electronics, sid, crTimesPhysical[0],
+                                wfTimes, samplesDigital, pmp);
+                //    v) emplace new digi, waveform, and mc truth
+                digis->emplace_back(sid, crTimesDigital, atTimesDigital, pmp);
+                adcss->emplace_back(samplesDigital);
+                dgmcs->emplace_back(sid, true);
+              }
             }
           }
         }
