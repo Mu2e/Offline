@@ -22,7 +22,7 @@ namespace mu2e{
       AnalogWireSignal(double, double);
       ~AnalogWireSignal() = default;
 
-      virtual double Evaluate(double) = 0;
+      double Evaluate(double);
       virtual bool CrossesThreshold(double, double);
       virtual bool CoarseThresholdCrossingTime(double, double, double&);
       virtual double ThresholdCrossingTime(double, double, double, double);
@@ -39,8 +39,10 @@ namespace mu2e{
                     TrkTypes::ADCValue&);
 
     protected:
-      double _time_lo; // lower window bound
-      double _time_hi; // upper window bound
+      double _time_lo; // lower window bound for signal shape
+      double _time_hi; // upper window bound for signal shape
+
+      virtual double evaluate_shape(double) = 0;
     private:
       /**/
   };

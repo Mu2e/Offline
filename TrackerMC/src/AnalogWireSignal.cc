@@ -12,6 +12,11 @@ namespace mu2e{
     /**/
   }
 
+  double AnalogWireSignal::Evaluate(double time){
+    double rv = this->evaluate_shape(time);
+    return rv;
+  }
+
   bool AnalogWireSignal::CrossesThreshold(double threshold, double spacing){
     double tmp;
     bool rv = this->CoarseThresholdCrossingTime(threshold, spacing, tmp);
