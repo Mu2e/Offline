@@ -2,8 +2,11 @@
 // Interface to produce analog signals
 // February 2025
 
-#ifndef TrackerMC_AnalogWireSignalTool_hh
-#define TrackerMC_AnalogWireSignalTool_hh
+#ifndef TrackerMC_AnalogSignalShapeTool_hh
+#define TrackerMC_AnalogSignalShapeTool_hh
+
+// stl
+#include <memory>
 
 // art
 #include "art/Utilities/ToolConfigTable.h"
@@ -15,15 +18,17 @@
 #include "fhiclcpp/types/Name.h"
 
 // mu2e
-#include "Offline/TrackerMC/inc/AnalogWireSignal.hh"
+#include "Offline/GeneralUtilities/inc/UnaryFunction.hh"
 
 namespace mu2e{
-  class AnalogWireSignalTool{
-    public:
-      AnalogWireSignalTool() = default;
-     ~AnalogWireSignalTool() = default;
+  using UnaryFunctionPtr = std::shared_ptr<UnaryFunction>;
 
-      virtual AnalogWireSignalPtr Sample() = 0;
+  class AnalogSignalShapeTool{
+    public:
+      AnalogSignalShapeTool() = default;
+     ~AnalogSignalShapeTool() = default;
+
+      virtual UnaryFunctionPtr Sample() = 0;
 
     protected:
       /**/
