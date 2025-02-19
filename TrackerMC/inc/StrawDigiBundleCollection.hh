@@ -19,8 +19,8 @@
 
 // mu2e
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/Mu2eUtilities/inc/StrawDigiBundle.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/TrackerMC/inc/StrawDigiBundle.hh"
 
 namespace mu2e{
   using SDBC_iterator = std::vector<StrawDigiBundle>::iterator;
@@ -71,9 +71,6 @@ namespace mu2e{
     private:
       /**/
   };
-
-  // auxiliary comparison to facilitate time-sorting
-  // bool compare_tdcs(const StrawDigiBundle*, const StrawDigiBundle*);
 }
 
 #endif

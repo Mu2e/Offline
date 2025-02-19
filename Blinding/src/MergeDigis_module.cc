@@ -17,11 +17,11 @@
 #include "fhiclcpp/types/Sequence.h"
 
 // mu2e
-#include "Offline/Mu2eUtilities/inc/StrawDigiBundle.hh"
-#include "Offline/Mu2eUtilities/inc/StrawDigiBundleCollection.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/TrackerMC/inc/StrawDigiBundle.hh"
+#include "Offline/TrackerMC/inc/StrawDigiBundleCollection.hh"
 
 namespace mu2e{
   class MergeDigis: public art::EDProducer{

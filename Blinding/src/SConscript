@@ -32,7 +32,6 @@ helper.make_plugins([
     'KinKal_Trajectory',
     'mu2e_DataProducts',
     'mu2e_DbTables',
-    'mu2e_MCDataProducts',
     'mu2e_Mu2eUtilities',
     'mu2e_ProditionsService',
     'mu2e_RecoDataProducts',
