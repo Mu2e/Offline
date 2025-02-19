@@ -18,12 +18,12 @@ namespace mu2e{
       SummedWireSignal();
      ~SummedWireSignal() = default;
 
-      double Evaluate(double) override;
-
       SummedWireSignal operator+ (const AnalogWireSignalPtr&);
 
     protected:
       std::vector<AnalogWireSignalPtr> _components;
+
+      double evaluate_shape(double) override;
 
     private:
       /**/

@@ -18,7 +18,7 @@ namespace mu2e{
     /**/
   }
 
-  double SinusoidalWireSignal::Evaluate(double t){
+  double SinusoidalWireSignal::evaluate_shape(double t){
     double rv = 0.0;
     if ((_time_lo < t) && (t < _time_hi)){
       double phase = CLHEP::twopi * t * _frequency;

@@ -41,6 +41,7 @@
 #include "Offline/TrackerMC/inc/AnalogWireSignal.hh"
 #include "Offline/TrackerMC/inc/AnalogWireSignalTool.hh"
 #include "Offline/TrackerMC/inc/SinusoidalWireSignal.hh"
+#include "Offline/TrackerMC/inc/DelayedWireSignal.hh"
 #include "Offline/TrackerMC/inc/SummedWireSignal.hh"
 
 namespace mu2e{
@@ -190,14 +191,15 @@ namespace mu2e{
 
               //    i) fill two-sided waveforms from analog signal
               //       TODO: delay and transfer function from transmission
-              auto lhs = signal;
-              auto rhs = signal;
+              //       TODO: delay should be shape-local xtime - sampled
+              auto lhs = std::make_shared<DelayedWireSignal>(signal, lht);
+              auto rhs = std::make_shared<DelayedWireSignal>(signal, rht);
               //   ii) calculate double-sided tots
               threshold = electronics.threshold(sid, StrawEnd::cal);
               lhs->DigitalTimeOverThreshold(electronics, threshold, lht,
                                             atTimesDigital[StrawEnd::cal]);
               threshold = electronics.threshold(sid, StrawEnd::hv);
-              rhs->DigitalTimeOverThreshold(electronics, threshold, lht,
+              rhs->DigitalTimeOverThreshold(electronics, threshold, rht,
                                             atTimesDigital[StrawEnd::hv]);
               //  iii) sum waveforms
               auto summed = SummedWireSignal() + lhs + rhs;

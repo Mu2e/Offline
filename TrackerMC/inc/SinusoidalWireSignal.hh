@@ -20,12 +20,12 @@ namespace mu2e{
       SinusoidalWireSignal(double, double, double, double, double);
      ~SinusoidalWireSignal() = default;
 
-      double Evaluate(double) override;
-
     protected:
       double _amplitude;
       double _frequency;
       double _phase;
+
+      double evaluate_shape(double) override;
 
     private:
       /**/
