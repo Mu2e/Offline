@@ -51,11 +51,19 @@ namespace mu2e{
         };
         fhicl::DelegatedParameter signal{
           fhicl::Name("signal"),
-          fhicl::Comment("Per-straw rate (in GHz) of pulses")
+          fhicl::Comment("Tool configuration to produce primary signal shapes");
         };
         fhicl::Atom<art::InputTag> ewm_tag{
           fhicl::Name("EventWindowMarker"),
           fhicl::Comment("art::InputTag of EventWindowMarker for event")
+        };
+        fhicl::Atom<double> crtime_spacing{
+          fhicl::Name("threshold_crossing_coarse_sampling"),
+          fhicl::Comment("Resolution of coarse linear scan for threshold crossing")
+        };
+        fhicl::Atom<double> crtime_tolerance{
+          fhicl::Name("threshold_crossing_tolerance"),
+          fhicl::Comment("Tolerance on exact threshold-crossing time")
         };
       };
 
@@ -68,13 +76,15 @@ namespace mu2e{
     protected:
       double _rate;
       art::InputTag _ewm_tag;
+      double _crtime_spacing;
+      double _crtime_tolerance;
       ProditionsHandle<StrawElectronics> _electronics_h;
       ProditionsHandle<StrawResponse> _response_h;
       ProditionsHandle<Tracker> _tracker_h;
       art::RandomNumberGenerator::base_engine_t& _engine;
       std::unique_ptr<CLHEP::RandPoisson> _poisson;       // for normalization
       std::unique_ptr<CLHEP::RandFlat> _uniform;          // for timing
-      std::unique_ptr<AnalogSignalShapeTool> _signal;     // signal shape
+      std::unique_ptr<AnalogSignalShapeTool> _shape;      // signal shape
 
     private:
       /**/
@@ -84,6 +94,8 @@ namespace mu2e{
       art::EDProducer(config),
       _rate(config().rate()),
       _ewm_tag(config().ewm_tag()),
+      _crtime_spacing(config().crtime_spacing()),
+      _crtime_tolerance(config().crtime_tolerance()),
       _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}{
 
     // rng initializations
@@ -92,7 +104,7 @@ namespace mu2e{
 
     // signal-shape sampler
     auto signal_config = config().signal.get<fhicl::ParameterSet>();
-    _signal = art::make_tool<AnalogSignalShapeTool>(signal_config);
+    _shape = art::make_tool<AnalogSignalShapeTool>(signal_config);
 
     // framework hooks
     this->produces<StrawDigiCollection>();
@@ -101,13 +113,13 @@ namespace mu2e{
   }
 
   void PoissonTrackerNoise::produce(art::Event& event){
-    // fetch tracker response
+    // fetch straw conditions
+    const Tracker& tracker = _tracker_h.get(event.id());
     const StrawResponse& response = _response_h.get(event.id());
     const StrawElectronics& electronics = _electronics_h.get(event.id());
     const auto internal_delay = electronics.electronicsTimeDelay();
 
-    const Tracker& tracker = _tracker_h.get(event.id());
-
+    // define analog event window, beginning at time == 0
     auto ewm_h = event.getValidHandle<EventWindowMarker>(_ewm_tag);
     double window = ewm_h->eventLength();
     TrkTypes::TDCValue maxTDC = electronics.tdcResponse(window - internal_delay);
@@ -115,7 +127,7 @@ namespace mu2e{
     // used downstream
     double threshold;
 
-    // containers
+    // containers for payload
     auto digis = std::make_unique<StrawDigiCollection>();
     auto adcss = std::make_unique<StrawDigiADCWaveformCollection>();
     auto dgmcs = std::make_unique<StrawDigiMCCollection>();
@@ -128,14 +140,12 @@ namespace mu2e{
           auto sid = StrawId(iplane, ipanel, istraw);
           const Straw& straw = tracker.getStraw(sid);
 
+          // sample number of pulses that this straw will see
           double mean = _rate * window;
           size_t count = static_cast<size_t>(_poisson->fire(mean));
 
-          // loop over all "hits"
+          // loop over all pulses
           for (size_t i = 0 ; i < count ; i++){
-            // ejc: can defer predigitization to a tool which
-            // maps StrawId -> (time, position, AnalogSignal) triplets
-
             // first, assign time that signal is induced on wire
             double nominal_time = _uniform->fire(0.0, window);
 
@@ -152,26 +162,26 @@ namespace mu2e{
             double rht = nominal_time + (length - position)/propagation_speed;
 
             // sample signal shape
-            auto shape = _signal->Sample();
+            auto shape = _shape->Sample();
             auto signal = AnalogWireSignal(shape);
 
-            //    i) fill two-sided waveforms from analog signal
-            //       TODO: transfer function from transmission
-            //       TODO: high-frequency noise
-            double spacing = 10.0;
-            double tolerance = 1.0;
+            // fill two-sided waveforms with delayed analog signal
+            // TODO: transfer function to affect asymmetric transmission
+            // TODO: high-frequency noise
             auto lhs = signal;
             threshold = electronics.threshold(sid, StrawEnd::cal);
             bool lct = lhs.TranslateToThresholdCrossingTime(threshold, lht,
                                                             0.0, window,
-                                                            spacing, tolerance);
+                                                            _crtime_spacing,
+                                                            _crtime_tolerance);
             auto rhs = signal;
             threshold = electronics.threshold(sid, StrawEnd::hv);
             bool rct = rhs.TranslateToThresholdCrossingTime(threshold, rht,
                                                             0.0, window,
-                                                            spacing, tolerance);
+                                                            _crtime_spacing,
+                                                            _crtime_tolerance);
 
-            // if both sides are above threshold
+            // if both sides are above threshold, try to digitize
             bool two_sided = lct && rct;
             if (two_sided){
               // forward-declare downstream digital vessels
@@ -197,19 +207,19 @@ namespace mu2e{
               // if both tdcs are within the digitization window,
               // then sum waveforms and create a digi
               if (in_window){
-                //   ii) calculate double-sided tots
+                // calculate double-sided tots
                 threshold = electronics.threshold(sid, StrawEnd::cal);
                 lhs.DigitalTimeOverThreshold(electronics, threshold, lht,
                                              atTimesDigital[StrawEnd::cal]);
                 threshold = electronics.threshold(sid, StrawEnd::hv);
                 rhs.DigitalTimeOverThreshold(electronics, threshold, rht,
                                              atTimesDigital[StrawEnd::hv]);
-                //  iii) sum waveforms
+                // sum analog signals
                 auto summed = lhs + rhs;
-                //   iv) apply final digitization
+                // sample digital waveform and compute amplitude
                 summed.Digitize(electronics, sid, crTimesPhysical[0],
                                 wfTimes, samplesDigital, pmp);
-                //    v) emplace new digi, waveform, and mc truth
+                // emplace new digi, waveform, and mc truth
                 digis->emplace_back(sid, crTimesDigital, atTimesDigital, pmp);
                 adcss->emplace_back(samplesDigital);
                 dgmcs->emplace_back(sid, true);

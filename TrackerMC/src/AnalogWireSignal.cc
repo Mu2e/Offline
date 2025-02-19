@@ -9,6 +9,7 @@ namespace mu2e{
   AnalogWireSignal::AnalogWireSignal(UnaryFunctionPtr shape): _shape(shape){
   }
 
+  // evaluate the signal by shifting the primary shape, and adding the rest
   double AnalogWireSignal::Evaluate(double time){
     double rv = _shape->Evaluate(time - _delay);
     for (auto summand: _summands){
@@ -26,6 +27,7 @@ namespace mu2e{
     return *this;
   }
 
+  // convenience wrapper
   bool AnalogWireSignal::CrossesThreshold(double threshold,
                                           double time_lo,
                                           double time_hi,
@@ -35,6 +37,7 @@ namespace mu2e{
     return rv;
   }
 
+  // default coarse approach to find threshold-crossing via linear scan
   bool AnalogWireSignal::CoarseThresholdCrossingTime(double threshold,
                                                      double time_lo,
                                                      double time_hi,
@@ -49,6 +52,10 @@ namespace mu2e{
     return false;
   }
 
+  // default fine approach to determine threshold-crossing via bisection method
+  // the boost-backed implementation brackets the crossing, assuming it exists,
+  // to within some gross time margin. the root is approximated as the midpoint
+  // of this bracket
   double AnalogWireSignal::ThresholdCrossingTime(double threshold,
                                                  double lhs,
                                                  double rhs,
@@ -66,6 +73,8 @@ namespace mu2e{
     return rv;
   }
 
+  // determine if a threshold-crossing exists and, if so, delay the primary
+  // signal s.t. the crossing occurs at a predetermined time
   bool AnalogWireSignal::TranslateToThresholdCrossingTime(double threshold,
                                                           double time,
                                                           double time_lo,
@@ -88,6 +97,7 @@ namespace mu2e{
     return crossed;
   }
 
+  // compute digital TOT value
   void AnalogWireSignal::DigitalTimeOverThreshold(
                                           const StrawElectronics& electronics,
                                           const double threshold,
@@ -108,6 +118,7 @@ namespace mu2e{
     }
   }
 
+  // compute digital waveform and amplitude around an assumed threshold-crossing
   void AnalogWireSignal::Digitize(const StrawElectronics& electronics,
                                   const StrawId& sid,
                                   const double crTime,
@@ -117,7 +128,7 @@ namespace mu2e{
     // calculate sample times
     electronics.adcTimes(crTime, sample_times);
 
-    // calculate saturated analog signal
+    // compute saturated analog signal
     TrkTypes::ADCVoltages voltages(sample_times.size());
     for (size_t i = 0 ; i < sample_times.size() ; i++){
       double voltage = this->Evaluate(sample_times[i]);

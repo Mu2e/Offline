@@ -22,8 +22,8 @@ namespace mu2e{
   double TruncatedSinusoid::Evaluate(double t){
     double rv = 0.0;
     if ((_time_lo < t) && (t < _time_hi)){
-      double phase = CLHEP::twopi * t * _frequency;
-      rv = _amplitude * sin(phase - _phase);
+      double phase = CLHEP::twopi * (t * _frequency - _phase);
+      rv = _amplitude * sin(phase);
     }
     return rv;
   }
