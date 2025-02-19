@@ -6,7 +6,7 @@
 #define TrackerMC_AnalogWireSignal_hh
 
 // stl
-#include <memory>
+#include <vector>
 
 // boost
 #include "boost/math/tools/roots.hpp"
@@ -14,23 +14,30 @@
 // mu2e
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/TrkTypes.hh"
+#include "Offline/GeneralUtilities/inc/UnaryFunction.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
 
 namespace mu2e{
+  using UnaryFunctionPtr = std::shared_ptr<UnaryFunction>;
+
   class AnalogWireSignal{
     public:
-      AnalogWireSignal(double, double);
+      AnalogWireSignal(UnaryFunctionPtr);
       ~AnalogWireSignal() = default;
 
       double Evaluate(double);
-      virtual bool CrossesThreshold(double, double);
-      virtual bool CoarseThresholdCrossingTime(double, double, double&);
+      void AddDelay(double);
+      AnalogWireSignal operator+ (const AnalogWireSignal&);
+
+      virtual bool CrossesThreshold(double, double, double, double);
+      virtual bool CoarseThresholdCrossingTime(double, double, double,
+                                               double, double&);
       virtual double ThresholdCrossingTime(double, double, double, double);
 
       void DigitalTimeOverThreshold(const StrawElectronics&,
-                                      const double,
-                                      const double,
-                                      TrkTypes::TOTValue&);
+                                    const double,
+                                    const double,
+                                    TrkTypes::TOTValue&);
       void Digitize(const StrawElectronics&,
                     const StrawId&,
                     const double,
@@ -39,15 +46,13 @@ namespace mu2e{
                     TrkTypes::ADCValue&);
 
     protected:
-      double _time_lo; // lower window bound for signal shape
-      double _time_hi; // upper window bound for signal shape
+      double _delay;
+      UnaryFunctionPtr _shape;
+      std::vector<AnalogWireSignal> _summands;
 
-      virtual double evaluate_shape(double) = 0;
     private:
       /**/
   };
-
-  typedef std::shared_ptr<AnalogWireSignal> AnalogWireSignalPtr;
 } // namespace mu2e
 
 #endif

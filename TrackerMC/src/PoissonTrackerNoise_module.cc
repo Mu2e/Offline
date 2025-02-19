@@ -39,18 +39,9 @@
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/TrackerMC/inc/AnalogWireSignal.hh"
-#include "Offline/TrackerMC/inc/AnalogWireSignalTool.hh"
-#include "Offline/TrackerMC/inc/SinusoidalWireSignal.hh"
-#include "Offline/TrackerMC/inc/DelayedWireSignal.hh"
-#include "Offline/TrackerMC/inc/SummedWireSignal.hh"
+#include "Offline/TrackerMC/inc/AnalogSignalShapeTool.hh"
 
 namespace mu2e{
-
-  std::shared_ptr<AnalogWireSignal> make_sinusoid(){
-    auto rv = std::make_shared<SinusoidalWireSignal>(20.0, 1e-3, 0.0, 0.0, 1700.0);
-    return rv;
-  }
-
   class PoissonTrackerNoise: public art::EDProducer{
     public:
       struct Config{
@@ -83,7 +74,7 @@ namespace mu2e{
       art::RandomNumberGenerator::base_engine_t& _engine;
       std::unique_ptr<CLHEP::RandPoisson> _poisson;       // for normalization
       std::unique_ptr<CLHEP::RandFlat> _uniform;          // for timing
-      std::unique_ptr<AnalogWireSignalTool> _signal;      // signal shape
+      std::unique_ptr<AnalogSignalShapeTool> _signal;     // signal shape
 
     private:
       /**/
@@ -101,7 +92,7 @@ namespace mu2e{
 
     // signal-shape sampler
     auto signal_config = config().signal.get<fhicl::ParameterSet>();
-    _signal = art::make_tool<AnalogWireSignalTool>(signal_config);
+    _signal = art::make_tool<AnalogSignalShapeTool>(signal_config);
 
     // framework hooks
     this->produces<StrawDigiCollection>();
@@ -123,7 +114,6 @@ namespace mu2e{
 
     // used downstream
     double threshold;
-
 
     // containers
     auto digis = std::make_unique<StrawDigiCollection>();
@@ -187,22 +177,24 @@ namespace mu2e{
             //  - second, find the threshold-crossing time
             if (in_window){
               // TODO factor out into tool...
-              auto signal = _signal->Sample();
+              auto shape = _signal->Sample();
+              auto signal = AnalogWireSignal(shape);
 
               //    i) fill two-sided waveforms from analog signal
-              //       TODO: delay and transfer function from transmission
+              //       TODO: transfer function from transmission
               //       TODO: delay should be shape-local xtime - sampled
-              auto lhs = std::make_shared<DelayedWireSignal>(signal, lht);
-              auto rhs = std::make_shared<DelayedWireSignal>(signal, rht);
+              //       TODO: why is _summands[0].Evaluate(x) == 0
+              auto lhs = signal; lhs.AddDelay(lht);
+              auto rhs = signal; rhs.AddDelay(rht);
               //   ii) calculate double-sided tots
               threshold = electronics.threshold(sid, StrawEnd::cal);
-              lhs->DigitalTimeOverThreshold(electronics, threshold, lht,
-                                            atTimesDigital[StrawEnd::cal]);
+              lhs.DigitalTimeOverThreshold(electronics, threshold, lht,
+                                           atTimesDigital[StrawEnd::cal]);
               threshold = electronics.threshold(sid, StrawEnd::hv);
-              rhs->DigitalTimeOverThreshold(electronics, threshold, rht,
-                                            atTimesDigital[StrawEnd::hv]);
+              rhs.DigitalTimeOverThreshold(electronics, threshold, rht,
+                                           atTimesDigital[StrawEnd::hv]);
               //  iii) sum waveforms
-              auto summed = SummedWireSignal() + lhs + rhs;
+              auto summed = lhs + rhs;
               //   iv) apply final digitization
               summed.Digitize(electronics, sid, crTimesPhysical[0],
                               wfTimes, samplesDigital, pmp);

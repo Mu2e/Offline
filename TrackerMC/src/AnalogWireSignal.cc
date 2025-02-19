@@ -6,27 +6,41 @@
 #include "Offline/TrackerMC/inc/AnalogWireSignal.hh"
 
 namespace mu2e{
-  AnalogWireSignal::AnalogWireSignal(double time_lo, double time_hi):
-      _time_lo(time_lo),
-      _time_hi(time_hi){
-    /**/
+  AnalogWireSignal::AnalogWireSignal(UnaryFunctionPtr shape): _shape(shape){
   }
 
   double AnalogWireSignal::Evaluate(double time){
-    double rv = this->evaluate_shape(time);
+    double rv = _shape->Evaluate(time - _delay);
+    for (auto summand: _summands){
+      rv += summand.Evaluate(time);
+    }
     return rv;
   }
 
-  bool AnalogWireSignal::CrossesThreshold(double threshold, double spacing){
+  void AnalogWireSignal::AddDelay(double delay){
+    _delay += delay;
+  }
+
+  AnalogWireSignal AnalogWireSignal::operator+ (const AnalogWireSignal& rhs){
+    _summands.push_back(rhs);
+    return *this;
+  }
+
+  bool AnalogWireSignal::CrossesThreshold(double threshold,
+                                          double time_lo,
+                                          double time_hi,
+                                          double spacing){
     double tmp;
-    bool rv = this->CoarseThresholdCrossingTime(threshold, spacing, tmp);
+    bool rv = this->CoarseThresholdCrossingTime(threshold, time_lo, time_hi, spacing, tmp);
     return rv;
   }
 
   bool AnalogWireSignal::CoarseThresholdCrossingTime(double threshold,
+                                                     double time_lo,
+                                                     double time_hi,
                                                      double spacing,
                                                      double& out){
-    for (double time = _time_lo ; time < _time_hi ; time += spacing){
+    for (double time = time_lo ; time < time_hi ; time += spacing){
       if (threshold < this->Evaluate(time)){
         out = time;
         return true;

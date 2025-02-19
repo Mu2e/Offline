@@ -2,14 +2,14 @@
 // Produce sinusoidal waves
 // February 2025
 
-#ifndef TrackerMC_SinusoidalWireSignalTool_hh
-#define TrackerMC_SinusoidalWireSignalTool_hh
+#ifndef TrackerMC_TruncatedSinusoidTool_hh
+#define TrackerMC_TruncatedSinusoidTool_hh
 
-#include "Offline/TrackerMC/inc/AnalogWireSignalTool.hh"
-#include "Offline/TrackerMC/inc/SinusoidalWireSignal.hh"
+#include "Offline/TrackerMC/inc/AnalogSignalShapeTool.hh"
+#include "Offline/TrackerMC/inc/TruncatedSinusoid.hh"
 
 namespace mu2e{
-  class SinusoidalWireSignalTool: public AnalogWireSignalTool{
+  class TruncatedSinusoidTool: public AnalogSignalShapeTool{
     public:
       // note that we do not choose the phase
       // if this wave triggers, then the phase is fixed by the crossing-time
@@ -22,6 +22,10 @@ namespace mu2e{
           fhicl::Name("frequency"),
           fhicl::Comment("Wave frequency in gigahertz")
         };
+        fhicl::Atom<double> phase{
+          fhicl::Name("phase"),
+          fhicl::Comment("Wave phase in nanoseconds")
+        };
         fhicl::Atom<double> time_lo{
           fhicl::Name("time_lo"),
           fhicl::Comment("Start time of signal in nanoseconds")
@@ -33,14 +37,15 @@ namespace mu2e{
       };
 
       using Parameters = art::ToolConfigTable<Config>;
-      SinusoidalWireSignalTool(const Parameters&);
-     ~SinusoidalWireSignalTool() = default;
+      TruncatedSinusoidTool(const Parameters&);
+     ~TruncatedSinusoidTool() = default;
 
-      virtual AnalogWireSignalPtr Sample() override;
+      virtual UnaryFunctionPtr Sample() override;
 
     protected:
       double _amplitude;
       double _frequency;
+      double _phase;
       double _time_lo;
       double _time_hi;
 
