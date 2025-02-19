@@ -2,6 +2,7 @@
 # prolog.fcl for fcl paramaters that will be used in STM simulation modules
 #
 
+#include "Offline/STMReco/fcl/prolog.fcl"
 BEGIN_PROLOG
 
 # Geometry, all in mm
@@ -82,6 +83,27 @@ MixSTMEvents : {
         MuBeamCat : 3.8108578e-12
         TargetStopsCat1809 : 1.5230356e-15
         test : 1e-10
+    }
+}
+
+STMMCAnalysis : {
+    ZeroSuppression : {
+        HPGe : {
+            stmWaveformDigisTag : "DigiHPGe:"
+            tbefore : 20 #ns
+            tafter : 100 #ns
+            threshold : @local::STM.HPGe.threshold
+            window : 5
+            naverage : @local::STM.HPGe.naverage
+        }
+        LaBr : {
+            stmWaveformDigisTag : "DigiLaBr:"
+            tbefore : @local::STM.LaBr.tbefore
+            tafter : @local::STM.LaBr.tafter
+            threshold : @local::STM.HPGe.threshold
+            window : @local::STM.HPGe.window
+            naverage : @local::STM.HPGe.naverage
+        }
     }
 }
 

@@ -66,6 +66,7 @@ namespace mu2e {
       fhicl::Atom<double> risingEdgeDecayConstant{ Name("risingEdgeDecayConstant"), Comment("Rising edge decay time [us]")};
       fhicl::OptionalAtom<int> microspillBufferLengthCount{ Name("microspillBufferLengthCount"), Comment("Number of microspills to buffer ahead for, in number of microspills")};
       fhicl::OptionalAtom<bool> makeTTree{ Name("makeTTree"), Comment("Controls whether to make the TTree with branches charge, chargeCollected, chargeDecayed, ADC")};
+      fhicl::OptionalAtom<double> timeOffset{ Name("timeOffset"), Comment("For debugging, adds the named time offset in [ns], used for testing analysis algorithms")};
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit HPGeWaveformsFromStepPointMCs(const Parameters& conf);
@@ -76,78 +77,80 @@ namespace mu2e {
     void addNoise();
     void digitize();
 
+    // fhicl variables
     art::ProductToken<StepPointMCCollection> StepPointMCsToken; // Token of StepPointMCs in STMDet
-    uint32_t fADC = 0; // ADC sampling frequency [MHz]
-    double tStep = 0; // Time step used for simulating the ADC values [ns]
-    double ADCToEnergy = 0; // Calibration of bin width to energy [keV/bin]
-    double noiseSD = 0; // Standard deviation of ADC noise [mV]
-    double risingEdgeDecayConstant = 0; // [us]
-    double HPGeCrystalEndcapCentreX = 0.0, HPGeCrystalEndcapCentreY = 0.0, HPGeCrystalEndcapCentreZ = 0.0; // Endcap centre variables
+    uint32_t fADC = 0;                                          // ADC sampling frequency [MHz]
+    double ADCToEnergy = 0;                                     // Calibration of bin width to energy [keV/bin]
+    double noiseSD = 0;                                         // Standard deviation of ADC noise [mV]
+    double risingEdgeDecayConstant = 0;                         // [us]
+    bool makeTTree = false;
+    double timeOffset = 0.0;
 
     // Define experiment specific constants
     const double feedbackCapacitance = 1e-12; // [Farads]
-    const double epsilonGe = 2.96; // Energy required to generate an eh pair in Ge at 77K [eV]
-    const double micropulseTime = 1695.0; // [ns]
+    const double epsilonGe = 2.96;            // Energy required to generate an eh pair in Ge at 77K [eV]
+    const double micropulseTime = 1695.0;     // [ns]
 
     // Define physics constants
-    const double _e = 1.602176634e-19; // Electric charge constant [Coulombs]
-    const double electronDriftVelocity = 0.08; // Apprixmate charged particle drift velocity [mm/ns]
-    const double holeDriftVelocity = 0.06; // Apprixmate charged particle drift velocity [mm/ns]
+    const double _e = 1.602176634e-19;          // Electric charge constant [Coulombs]
+    const double electronDriftVelocity = 0.08;  // Apprixmate charged particle drift velocity [mm/ns]
+    const double holeDriftVelocity = 0.06;      // Apprixmate charged particle drift velocity [mm/ns]
 
     // ADC variables
-    double chargeToADC = 0; // Conversion factor from charge built in capacitor to ADC determined voltage, multiply by this value to get from charge built to ADC voltage.
-    uint nADCs = 0; // Number of ADC values in an event
-    const int16_t ADCMax = (int16_t) std::pow(2, 16) - 1;
-    int16_t ADC = 0;
-    double masterClockTickPeriod = 25.0; //ns
+    double chargeToADC = 0;                               // Conversion factor from charge built in capacitor to ADC determined voltage, multiply by this value to get from charge built to ADC voltage.
+    uint nADCs = 0;                                       // Number of ADC values in an event
+    const int16_t ADCMax = (int16_t) std::pow(2, 16) - 1; // Maximum ADC value
+    int16_t ADC = 0;                                      // iterator variable
+    double masterClockTickPeriod = 25.0;                  // Master clock time perion [ns]
 
     // Define Ge crystal properties [mm]
     const double crystalCentreX = -3973.81;
     const double crystalCentreY = 0;
     const double crystalCentreZ = 40699.1;
-    CLHEP::Hep3Vector crystalCentrePosition; // crystal position
-    const double crystalL = 78.5; // Crystal length
-    const double crystalR = 36.05; // Crystal radius
-    const double crystalHoleL = 64.7; // Crystal hole length not including the hemisphere
-    const double crystalHoleR = 5.25; // Crystal hole radius
-    const double crystalHoleZStart = crystalL - crystalHoleL; // Starting z position of the crystal hole not including the hemisphere
-    const double crystalDirectionGradientCutoff = -crystalHoleZStart/crystalR; // Defines a cone under which points travel to the endcap and not the curved cylinder surface
+    CLHEP::Hep3Vector crystalCentrePosition;
+    // TODO - want to initialize hpgeEndcapCenterPosition and holeHemisphereCenter as consts here, but errors thrown
+    CLHEP::Hep3Vector hitPosition;
+    const double crystalL = 78.5;                                               // Crystal length
+    const double crystalR = 36.05;                                              // Crystal radius
+    const double crystalHoleL = 64.7;                                           // Crystal hole length not including the hemisphere
+    const double crystalHoleR = 5.25;                                           // Crystal hole radius
+    const double crystalHoleZStart = crystalL - crystalHoleL;                   // Starting z position of the crystal hole not including the hemisphere
+    const double crystalDirectionGradientCutoff = -crystalHoleZStart/crystalR;  // Defines a cone under which points travel to the endcap and not the curved cylinder surface
+    const double stepPositionTolerance = 0.1;                                   // adjusts for resolution of applying rotation
+    const double maxR = crystalR + stepPositionTolerance;
+    const double maxZ = crystalL + stepPositionTolerance;
 
     // Modelling variables
-    double hitR = 0; // Hit radial distance [mm]
-    double hitZ = 0; // Hit axial distance [mm]
-    double R0 = 0; // Hit radial position [mm]
+    double hitR = 0;                // Hit radial distance [mm]
+    double hitZ = 0;                // Hit axial distance [mm]
+    double R0 = 0;                  // Hit radial position [mm]
     const double R1 = crystalHoleR; // Distance travelled by electrons [mm]
-    double R2 = 0; // Distance travelled by holes [mm]
+    double R2 = 0;                  // Distance travelled by holes [mm]
 
-    double trigFactor = 0; // Dimensionless constant used for caluclating distance
-    int32_t N_ehPairs = 0; // Number of electron hole pairs
+    double trigFactor = 0;  // Dimensionless constant used for caluclating distance
+    int32_t N_ehPairs = 0;  // Number of electron hole pairs
     uint32_t eventTime = 0; // Time stamp to add to STMWaveformDigi
 
-    double electronTravelDistance = 0, holeTravelDistance = 0; // Drift distances [mm]
-    double electronTravelTime = 0, holeTravelTime = 0; // Drift times [ns]
-    uint32_t electronTravelTimeSteps = 0, holeTravelTimeSteps = 0; // Drift times [steps]
-    double decayExp = 0; // Amount of decay with each tStep
+    double tStep = 0;                                               // Time step used for simulating the ADC values [ns]
+    double electronTravelDistance = 0, holeTravelDistance = 0;      // Drift distances [mm]
+    double electronTravelTime = 0, holeTravelTime = 0;              // Drift times [ns]
+    uint32_t electronTravelTimeSteps = 0, holeTravelTimeSteps = 0;  // Drift times [steps]
+    double decayExp = 0;                                            // Amount of decay with each tStep
+    double lastEventEndDecayedCharge = 0;                           // Carry over for starting new microspill waveforms
+    const int defaultMicrospillBufferLengthCount = 2;
+    int microspillBufferLengthCount = 0;
 
-    // TTree variables
+    // TTree and storage variables
     TTree* ttree;
     double chargeCollected = 0, chargeDecayed = 0;
     uint eventId = 0;
-    bool makeTTree = false;
 
-    // TODO - want to initialize hpgeEndcapCenterPosition and holeHemisphereCenter as consts here, but errors thrown
-    CLHEP::Hep3Vector hitPosition; // hit position
-    const double stepPositionTolerance = 0.1; // adjusts for resolution of applying rotation
-    const double maxR = crystalR + stepPositionTolerance;
-    const double maxZ = crystalL + stepPositionTolerance;
+    // Data storage vectors
     std::vector<double> _charge; // Buffer to store charge collected from STMDet StepPointMCs
     std::vector<double> _chargeCollected; // Buffer to store charge collected from STMDet StepPointMCs in the given time step
     std::vector<double> _chargeDecayed; // Buffer to store charge collected that decays over time
     std::vector<double> _chargeCarryOver; // Temporary buffer that will store _chargeCollected over the course of the next event
     std::vector<int16_t> _adcs; // Buffer for storing the ADC values to put into the STMWaveformDigi
-    int microspillBufferLengthCount;
-    const int defaultMicrospillBufferLengthCount = 2;
-    double lastEventEndDecayedCharge = 0; // Carry over for starting new microspill waveforms
 
     // Offline utilities
     mu2e::STMChannel::enum_type _HPGeChannel = static_cast<mu2e::STMChannel::enum_type>(1);
@@ -192,6 +195,9 @@ namespace mu2e {
         // Chosen to work in units of fundamental charge _e to avoid storing very small double values
         chargeToADC = epsilonGe / (ADCToEnergy * 1e3);
 
+        // Assign the approrpiate time offset
+        timeOffset = conf().timeOffset() ? *(conf().timeOffset()) : 0.0;
+
         // Assign TTrees
         makeTTree = conf().makeTTree() ? *(conf().makeTTree()) : false;
         if (makeTTree) {
@@ -234,6 +240,13 @@ namespace mu2e {
       };
     };
 
+    // Simulation takes the POT time as t = 0, and has sequential microspills (events). The trigger time offset is not used here, left as a TODO
+    // Create the STMWaveformDigi and insert all the relevant attributes
+    eventTime = (uint32_t) (event.id().event() * micropulseTime + timeOffset) / masterClockTickPeriod;
+    STMWaveformDigi _waveformDigi(eventTime, _adcs);
+    std::unique_ptr<STMWaveformDigiCollection> outputDigis(new STMWaveformDigiCollection);
+    outputDigis->emplace_back(_waveformDigi);
+
     // Update the parameters to carry over to the next event
     lastEventEndDecayedCharge = _chargeDecayed[nADCs];
     _chargeCarryOver.clear();
@@ -246,13 +259,6 @@ namespace mu2e {
     _chargeDecayed.assign(nADCs, 0);
     _adcs.clear();
     _adcs.assign(nADCs, 0);
-
-    // Simulation takes the POT time as t = 0, and has sequential microspills (events). The trigger time offset is not used here, left as a TODO
-    // Create the STMWaveformDigi and insert all the relevant attributes
-    eventTime = (uint32_t) (event.id().event() * micropulseTime) / masterClockTickPeriod;
-    STMWaveformDigi _waveformDigi(eventTime, _adcs);
-    std::unique_ptr<STMWaveformDigiCollection> outputDigis(new STMWaveformDigiCollection);
-    outputDigis->emplace_back(_waveformDigi);
 
     // Add the STMWaveformDigi to the event
     event.put(std::move(outputDigis));
@@ -332,7 +338,7 @@ namespace mu2e {
     N_ehPairs = -1.0 * step.ionizingEdep() * 1e6 / epsilonGe; // 1e6 converts MeV to eV. -1.0 as this is a decreasing peak
 
     // Define parameters required for charge deposition. Constants A and B are defined here for code brevity
-    uint tIndex = step.time() / tStep, tIndexStart = tIndex;
+    uint tIndex = (step.time() + timeOffset) / tStep, tIndexStart = tIndex;
     const double A = N_ehPairs / log(R2/R1);
     const double Be = electronDriftVelocity / R0;
     const double Bh = holeDriftVelocity / R0;
