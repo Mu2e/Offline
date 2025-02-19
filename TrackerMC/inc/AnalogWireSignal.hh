@@ -34,6 +34,10 @@ namespace mu2e{
                                                double, double&);
       virtual double ThresholdCrossingTime(double, double, double, double);
 
+      bool TranslateToThresholdCrossingTime(double, double,
+                                            double, double,
+                                            double, double);
+
       void DigitalTimeOverThreshold(const StrawElectronics&,
                                     const double,
                                     const double,
