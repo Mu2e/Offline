@@ -4,7 +4,6 @@
 BEGIN_PROLOG
 
 STM : {
-
   HPGe : {
     # zero-suppression parameters
     tbefore : 20 #2000 # ns

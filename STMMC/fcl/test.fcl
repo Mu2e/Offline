@@ -7,6 +7,7 @@
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/STMMC/fcl/prolog.fcl"
+#include "Offline/STMReco/fcl/prolog.fcl"
 
 process_name: DetetorEfficiency
 
@@ -27,7 +28,7 @@ physics: {
       E : 1.809
     }
     g4run : @local::g4run
-    digitize : {
+    DigiHPGe : {
       module_type : HPGeWaveformsFromStepPointMCs
       StepPointMCsTag : "g4run:STMDet"
       fADC : @local::STMDAQParameters.samplingFrequencies.HPGe
@@ -36,9 +37,29 @@ physics: {
       risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant
       makeTTree : true
     }
+    ZSHPGe : {
+      module_type : STMZeroSuppression
+      stmWaveformDigisTag : "DigiHPGe:"
+      tbefore : @local::STM.HPGe.tbefore
+      tafter : @local::STM.HPGe.tafter
+      threshold : @local::STM.HPGe.threshold
+      window : @local::STM.HPGe.window
+      naverage : @local::STM.HPGe.naverage
+      verbose : true
+    }
+    MWDHPGe : {
+      module_type : STMMovingWindowDeconvolution
+      stmWaveformDigisTag : "ZSHPGe:"
+      verbosityLevel : 1
+      tau : @local::STM.HPGe.tau
+      M : @local::STM.HPGe.M
+      L : @local::STM.HPGe.L
+      nsigma_cut : @local::STM.HPGe.nsigma_cut
+      thresholdgrad : @local::STM.HPGe.thresholdgrad
+    }
   }
 
-  p1 : [generate, g4run, digitize]
+  p1 : [generate, g4run, DigiHPGe, ZSHPGe] #, MWDHPGe
   trigger_paths : [p1]
 }
 
