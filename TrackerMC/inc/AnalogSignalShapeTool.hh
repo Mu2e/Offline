@@ -28,6 +28,7 @@ namespace mu2e{
       AnalogSignalShapeTool() = default;
      ~AnalogSignalShapeTool() = default;
 
+      // produce a signal shape, which need not be constant
       virtual UnaryFunctionPtr Sample() = 0;
 
     protected:

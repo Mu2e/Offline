@@ -29,15 +29,21 @@ namespace mu2e{
       void AddDelay(double);
       AnalogWireSignal operator+ (const AnalogWireSignal&);
 
+      // default interface for identifying threshold-crossings
+      // virtual in foresight of potential integration with
+      // physics-aware StrawWaveforms
       virtual bool CrossesThreshold(double, double, double, double);
       virtual bool CoarseThresholdCrossingTime(double, double, double,
                                                double, double&);
       virtual double ThresholdCrossingTime(double, double, double, double);
 
+      // translate signal s.t. the first threshold-crossing, it exists,
+      // occurs at a predetermined time
       bool TranslateToThresholdCrossingTime(double, double,
                                             double, double,
                                             double, double);
 
+      // interfaces with existing tracker electronics
       void DigitalTimeOverThreshold(const StrawElectronics&,
                                     const double,
                                     const double,
@@ -50,9 +56,9 @@ namespace mu2e{
                     TrkTypes::ADCValue&);
 
     protected:
-      double _delay;
-      UnaryFunctionPtr _shape;
-      std::vector<AnalogWireSignal> _summands;
+      double _delay;                            // external delays to signal
+      UnaryFunctionPtr _shape;                  // primary underlying signal
+      std::vector<AnalogWireSignal> _summands;  // add'l signals summed in
 
     private:
       /**/

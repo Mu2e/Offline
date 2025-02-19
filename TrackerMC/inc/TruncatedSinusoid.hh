@@ -23,11 +23,11 @@ namespace mu2e{
       double Evaluate(double) override;
 
     protected:
-      double _amplitude;
+      double _amplitude;    // baseline-to-peak amplitude
       double _frequency;
       double _phase;
-      double _time_lo;
-      double _time_hi;
+      double _time_lo;      // lower bound of non-zero signal
+      double _time_hi;      // upper bound of non-zero signal
 
     private:
       /**/

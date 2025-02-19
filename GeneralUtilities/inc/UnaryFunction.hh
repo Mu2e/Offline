@@ -11,6 +11,7 @@ namespace mu2e{
       UnaryFunction() = default;
      ~UnaryFunction() = default;
 
+      // concrete implementations should override
       virtual double Evaluate(double) = 0;
       double operator() (double x){
         double rv = this->Evaluate(x);

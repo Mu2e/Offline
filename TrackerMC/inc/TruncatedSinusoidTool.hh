@@ -1,5 +1,5 @@
 // Ed Callaghan
-// Produce sinusoidal waves
+// Produce sinusoidal wavelets
 // February 2025
 
 #ifndef TrackerMC_TruncatedSinusoidTool_hh
@@ -11,8 +11,6 @@
 namespace mu2e{
   class TruncatedSinusoidTool: public AnalogSignalShapeTool{
     public:
-      // note that we do not choose the phase
-      // if this wave triggers, then the phase is fixed by the crossing-time
       struct Config{
         fhicl::Atom<double> amplitude{
           fhicl::Name("amplitude"),
