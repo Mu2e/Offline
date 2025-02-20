@@ -40,7 +40,7 @@ physics :
     {
       module_type : CrvDigisFromFragments
       crvTag      : "genFrags"
-      diagLevel   : 2
+      diagLevel   : 10
     }
   }
 
