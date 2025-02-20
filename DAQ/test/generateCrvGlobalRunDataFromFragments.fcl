@@ -4,7 +4,7 @@
 #include "mu2e_trig_config/core/trigProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
 
-process_name : CrvGlobalRunInfo
+process_name : CrvGlobalRun
 
 services :
 {
@@ -32,24 +32,29 @@ physics :
        makeSTMFrag  : 0
 
     }
-  }
-  analyzers:
-  {
     CrvGlobalRunData :
     {
       module_type : CrvGlobalRunDataFromFragments
       crvTag      : "genFrags"
-      diagLevel   : 0
-      csvFileName : "crvGlobalRunInfo.txt"
+      diagLevel   : 10
     }
   }
 
-  t1 : [ genFrags ]
-  e1 : [ CrvGlobalRunData ]
+  t1 : [ genFrags, CrvGlobalRunData ]
+  e1 : [ outfile ]
 
   trigger_paths  : [t1]
   end_paths      : [e1]
 
+}
+
+outputs:
+{
+  outfile :
+  {
+    module_type   :   RootOutput
+    fileName      :   "crvGlobalRun.art"
+  }
 }
 
 services.message.destinations.log.categories.ArtReport.limit : 0
