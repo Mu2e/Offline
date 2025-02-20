@@ -68,7 +68,7 @@ namespace mu2e {
 
       // fhicl variables
       art::ProductToken<STMWaveformDigiCollection> stmWaveformDigisToken;
-      STMChannel stmChannel;
+      STMChannel channel;
       double tBefore = 0.0;
       double tAfter = 0.0;
       double threshold = 0.0;
@@ -123,7 +123,7 @@ namespace mu2e {
   STMZeroSuppression::STMZeroSuppression(const Parameters& conf):
     art::EDProducer{conf},
     stmWaveformDigisToken(consumes<STMWaveformDigiCollection>(conf().stmWaveformDigisTag())),
-    stmChannel(STMUtils::getChannel(conf().stmWaveformDigisTag())),
+    channel(STMUtils::getChannel(conf().stmWaveformDigisTag())),
     tBefore(conf().tbefore()),
     tAfter(conf().tafter()),
     threshold(conf().threshold()),
@@ -159,8 +159,8 @@ namespace mu2e {
       std::cout << std::left << "\t" << std::setw(15) << "threshold" << threshold << std::endl;
       std::cout << std::endl; // buffer line
       std::cout << "STM Channel" << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "Name" << stmChannel.name()                  << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "ID"   << static_cast<int>(stmChannel.id())  << std::endl;
+      std::cout << std::left << "\t" << std::setw(15) << "Name" << channel.name()                  << std::endl;
+      std::cout << std::left << "\t" << std::setw(15) << "ID"   << static_cast<int>(channel.id())  << std::endl;
       std::cout << std::endl; // buffer line
     };
     return;
@@ -172,8 +172,8 @@ namespace mu2e {
     std::unique_ptr<STMWaveformDigiCollection> outputSTMWaveformDigis(new STMWaveformDigiCollection());
     // Get the prodition
     const STMEnergyCalib& stmEnergyCalib = stmEnergyCalibHandle.get(event.id());
-    nADCBefore = STMUtils::convertToClockTicks(tBefore, stmChannel, stmEnergyCalib);
-    nADCAfter = STMUtils::convertToClockTicks(tAfter, stmChannel, stmEnergyCalib);
+    nADCBefore = STMUtils::convertToClockTicks(tBefore, channel, stmEnergyCalib);
+    nADCAfter = STMUtils::convertToClockTicks(tAfter, channel, stmEnergyCalib);
     timeStep = tBefore/nADCBefore;
     if (verbosityLevel > 9) {
       std::cout << "ZS findPeaks fitting parameters" << std::endl;
@@ -205,6 +205,7 @@ namespace mu2e {
       findPeaks();
       // Remove overlapping peaks
       chooseStartsAndEnds();
+
       // Generate the output waveforms
       nZSwaveforms = finalPeakStartTimes.size();
       for (k = 0; k < nZSwaveforms; ++k) {
@@ -221,6 +222,7 @@ namespace mu2e {
         STMWaveformDigi stm_waveform(waveform.trigTimeOffset() + peakStartTime, ZSADCs);
         outputSTMWaveformDigis->push_back(stm_waveform);
       };
+
       // Save data to TTree
       if (makeTTreeGradients) {
         for (i = 0; i < nADCs; i++) {
@@ -241,7 +243,7 @@ namespace mu2e {
       };
     };
     if (verbosityLevel)
-      std::cout << stmChannel.name() << ": " << outputSTMWaveformDigis->size() << " waveforms found" << std::endl;
+      std::cout << channel.name() << ": " << outputSTMWaveformDigis->size() << " waveforms found" << std::endl;
     event.put(std::move(outputSTMWaveformDigis));
     return;
   };
