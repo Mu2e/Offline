@@ -221,6 +221,8 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/psAreaHatchLower.txt"
 #include "Offline/Mu2eG4/geom/bldg/psAreaHatchUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/psAreaShieldingBlock_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/psAreaSteelShieldingSlab_1.txt"
+#include "Offline/Mu2eG4/geom/bldg/psAreaSteelShieldingSlab_2.txt"
 #include "Offline/Mu2eG4/geom/bldg/psAreaUpperN_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/psAreaUpperS_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/psWallUpper_v02.txt"
@@ -482,6 +484,7 @@ vector<string> bldg.prefix.list = {
    "building.psArea.hatch.lower",
    "building.psArea.hatch.upper",
    "building.psArea.ShieldingBlock",
+   "building.psArea.SteelShieldingSlab.2",
    "building.psArea.upper.N",
    "building.psArea.upper.S",
    "building.psWall.upper",
@@ -539,7 +542,8 @@ vector<string> bldg.prefix.list = {
 vector<string> rotated.prefix.list = {
    "building.central.stairwell.lower.stairs",
    "building.central.stairwell.upper.stairs.1",
-   "building.central.stairwell.upper.stairs.2"
+   "building.central.stairwell.upper.stairs.2",
+   "building.psArea.SteelShieldingSlab.1"
 };
 
 //   "building.tempDirt.backfill.psArea.baselevel",
@@ -559,7 +563,8 @@ vector<string> rotated.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer748b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer749a.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer749b.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer750a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer750a1.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer750a2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer750b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer751a.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer751b.txt"
@@ -624,10 +629,13 @@ vector<string> rotated.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtIslandUpper_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtPassageE.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsArea.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2N_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlabN1.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlabN2.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2N1.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2N2.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2N3.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2NBeyond.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2S.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlabN_v02.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlabS.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtPsAreaUpper2N_v02.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaUpper2SliverN_v02.txt"
@@ -649,10 +657,7 @@ vector<string> rotated.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtWTSareaCF2notch.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtWTSareaCFbeam.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtTsDsAreaFirstFloorEdgeN_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtUpToGradeLevelW1.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtUpToGradeLevelW2.txt"
-//#include "Offline/Mu2eG4/geom/bldg/dirtUpToGradeLevelW_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtUpToGradeLevelW3.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtUpToGradeLevelW_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaBaselevel_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaInter_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaLower_v02.txt"
@@ -673,7 +678,8 @@ vector<string> dirt.prefix.list = {
   "dirt.beamline.berm.l748b",
   "dirt.beamline.berm.l749a",
   "dirt.beamline.berm.l749b",
-  "dirt.beamline.berm.l750a",
+  "dirt.beamline.berm.l750a1",
+  "dirt.beamline.berm.l750a2",
   "dirt.beamline.berm.l750b",
   "dirt.beamline.berm.l751a",
   "dirt.beamline.berm.l751b",
@@ -735,8 +741,11 @@ vector<string> dirt.prefix.list = {
   "dirt.passage.E",
   "dirt.psArea.W",
   "dirt.psArea.WLower",
-  "dirt.psArea.dirtSlab.N",
-  "dirt.psArea.dirtSlab2.N",
+  "dirt.psArea.dirtSlab.N1",
+  "dirt.psArea.dirtSlab.N2",
+  "dirt.psArea.dirtSlab2.N1",
+  "dirt.psArea.dirtSlab2.N2",
+  "dirt.psArea.dirtSlab2.N3",
   "dirt.psArea.dirtSlab2.N.Beyond",
   "dirt.psArea.upper.N",
   "dirt.psArea.upper2.N",
@@ -751,9 +760,7 @@ vector<string> dirt.prefix.list = {
   "dirt.W.TSareaCF2notch",
   "dirt.W.TSareaCFbeam",
   "dirt.tsDsArea.firstFloorEdge.N",
-  "dirt.upToGradeLevel.W1",
-  "dirt.upToGradeLevel.W2",
-  "dirt.upToGradeLevel.W3",
+  "dirt.upToGradeLevel.W",
   "dirt.tempDirt.backfill.psArea.baselevel",
   "dirt.tempDirt.backfill.psArea.Inter",
   "dirt.tempDirt.backfill.psArea.Lower",
