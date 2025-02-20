@@ -235,7 +235,6 @@ namespace mu2e {
       std::cout << ">>> ERROR in TZClusterFinder::findData: ComboHitCollection not found." << std::endl;
     }
 
-
     if (_diagLevel  != 0) {
       auto chcolH2 = evt.getValidHandle<ComboHitCollection>(_chLabel2);
       if (chcolH2.product() != 0){

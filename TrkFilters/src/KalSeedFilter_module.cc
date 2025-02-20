@@ -36,7 +36,7 @@ namespace mu2e
       fhicl::Atom<bool>               doParticleTypeCheck {     Name("doParticleTypeCheck"),     Comment("doParticleTypeCheck")};
       fhicl::Atom<int>                fitparticle         {     Name("fitparticle"),             Comment("fitparticle       ") };
       fhicl::Atom<bool>               doZPropDirCheck     {     Name("doZPropDirCheck"),         Comment("doZPropDirCheck   ") };
-      fhicl::Atom<int>                fitdirection        {     Name("fitdirection"),            Comment("fitdirection      ") };
+      fhicl::Atom<std::string>        fitdirection        {     Name("fitdirection"),            Comment("fitdirection (\"downstream\" or \"upstream\")") };
       fhicl::Atom<double>             minFitCons          {     Name("minFitCons"),              Comment("minFitCons        ") };
       fhicl::Atom<double>             minNHits            {     Name("minNStrawHits"),           Comment("minNStrawHits     ") };
       fhicl::Atom<double>             minMomentum         {     Name("minMomentum"),             Comment("minMomentum       ") };
@@ -55,7 +55,7 @@ namespace mu2e
       KalSeedCutsTool(const KalSeedCutsConfig& config):
         _hascc     (config.requireCaloCluster()),
         _tpart     ((PDGCode::type)config.fitparticle()),
-        _fdir      ((TrkFitDirection::FitDirection)config.fitdirection()),
+        _fdir      (TrkFitDirection::fitDirectionFromName(config.fitdirection())),
         _minfitcons(config.minFitCons()),
         _minnhits  (config.minNHits()),
         _minmom    (config.minMomentum()),

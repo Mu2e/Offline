@@ -1,6 +1,7 @@
 #ifndef RecoDataProducts_HelixRecoDir_hh
 #define RecoDataProducts_HelixRecoDir_hh
 
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 namespace mu2e {
 
@@ -18,26 +19,19 @@ namespace mu2e {
     float slopeSig() const { return std::fabs(_slope/_slopeErr); }
     float chi2ndof() const { return _chi2ndof; }
 
-    // Enum declaration for direction
-    enum PropDir {
-      upstream = -1,
-      ambiguous = 0,
-      downstream = 1
-    };
-
     // Method to predict direction based on slope and slopeSig
-    PropDir predictDirection(float sigThreshold) const {
-      float sig = slopeSig(); // Compute the slope significance
+    TrkFitDirection::FitDirection predictDirection(float sigThreshold) const {
+      const float sig = slopeSig(); // Compute the slope significance
 
       if (sig < sigThreshold) {
-        return ambiguous; // Ambiguous if below the threshold
-      } else if (_slope > 0) {
-        return downstream; // Downstream if slope > 0
-      } else if (_slope < 0) {
-        return upstream; // Upstream if slope < 0
+        return TrkFitDirection::FitDirection::unknown; // Ambiguous if below the threshold
+      } else if (_slope > 0.f) {
+        return TrkFitDirection::FitDirection::downstream; // Downstream if slope > 0
+      } else if (_slope < 0.f) {
+        return TrkFitDirection::FitDirection::upstream; // Upstream if slope < 0
       }
 
-      return ambiguous; // Default to ambiguous if slope is 0 or other cases
+      return TrkFitDirection::FitDirection::unknown; // Default to ambiguous if slope is exactly 0 or other cases
     }
 
     //data members
