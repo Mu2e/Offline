@@ -21,7 +21,7 @@ vector<double> dirt.beamline.berm.l749a.xPositions = {
   -4749.8,    // P2
   -11709.4,   // P3
   -11709.4,   // P3a
-  -12319,     // P3b //.  -12319,     // P3c
+  -12319,     // P3b
   -12319,     // S1
   -12750.8,   // S2
   -12750.8,   // S3
@@ -87,7 +87,7 @@ vector<double> dirt.beamline.berm.l749a.yPositions = {
   6502.4,   // P2
   6502.4,   // P3
   6858,     // P3a
-  6858,     // P3b //   6502.4,   // P3c
+  6858,     // P3b
   5279.3,   // S1
   5279.3,   // S2
   -354.1,   // S3
