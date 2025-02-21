@@ -41,36 +41,36 @@ namespace mu2e {
   }
 
   void CaloDAQUtilities::printCaloPulse(CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit){
-    std::cout << "[CaloHitsFromFragments] \tChNumber   "
+    std::cout << "[CaloDAQUtilities] \tChNumber   "
               << (int)Hit.ChannelNumber
               << std::endl;
-    std::cout << "[CaloHitsFromFragments] \tDIRACA     "
+    std::cout << "[CaloDAQUtilities] \tDIRACA     "
               << (int)Hit.DIRACA
               << std::endl;
-    std::cout << "[CaloHitsFromFragments] \tDIRACB     "
+    std::cout << "[CaloDAQUtilities] \tDIRACB     "
               << (int)Hit.DIRACB
               << std::endl;
-    std::cout << "[CaloHitsFromFragments] \tErrorFlags "
+    std::cout << "[CaloDAQUtilities] \tErrorFlags "
               << (int)Hit.ErrorFlags
               << std::endl;
-    std::cout << "[CaloHitsFromFragments] \tTime              "
+    std::cout << "[CaloDAQUtilities] \tTime              "
               << (int)Hit.Time
               << std::endl;
-    std::cout << "[CaloHitsFromFragments] \tNSamples   "
+    std::cout << "[CaloDAQUtilities] \tNSamples   "
               << (int)Hit.NumberOfSamples << std::endl;
-    std::cout << "[CaloHitsFromFragments] \tIndexMax   "
+    std::cout << "[CaloDAQUtilities] \tIndexMax   "
               << (int)Hit.IndexOfMaxDigitizerSample << std::endl;
 
   }
 
   void CaloDAQUtilities::printCaloPulse(CalorimeterDataDecoder::CalorimeterHitTestDataPacket const& Hit){
-    std::cout << "[CaloDigiFromFragments] \tBoardID      " << (int)Hit.BoardID                    << std::endl;
-    std::cout << "[CaloDigiFromFragments] \tChNumber     " << (int)Hit.ChannelID                  << std::endl;
-    std::cout << "[CaloDigiFromFragments] \tEWT          " << (int)Hit.InPayloadEventWindowTag    << std::endl;
-    std::cout << "[CaloDigiFromFragments] \tErrorFlags   " << (int)Hit.ErrorFlags                 << std::endl;
-    std::cout << "[CaloDigiFromFragments] \tTime         " << (int)Hit.Time                       << std::endl;
-    std::cout << "[CaloDigiFromFragments] \tNSamples     " << (int)Hit.NumberOfSamples            << std::endl;
-    std::cout << "[CaloDigiFromFragments] \tIndexMax     " << (int)Hit.IndexOfMaxDigitizerSample  << std::endl;
+    std::cout << "[CaloDAQUtilities] \tBoardID      " << (int)Hit.BoardID                    << std::endl;
+    std::cout << "[CaloDAQUtilities] \tChNumber     " << (int)Hit.ChannelID                  << std::endl;
+    std::cout << "[CaloDAQUtilities] \tEWT          " << (int)Hit.InPayloadEventWindowTag    << std::endl;
+    std::cout << "[CaloDAQUtilities] \tErrorFlags   " << (int)Hit.ErrorFlags                 << std::endl;
+    std::cout << "[CaloDAQUtilities] \tTime         " << (int)Hit.Time                       << std::endl;
+    std::cout << "[CaloDAQUtilities] \tNSamples     " << (int)Hit.NumberOfSamples            << std::endl;
+    std::cout << "[CaloDAQUtilities] \tIndexMax     " << (int)Hit.IndexOfMaxDigitizerSample  << std::endl;
   }
 
   void CaloDAQUtilities::printWaveform(std::vector<uint16_t> const& Pulse){
