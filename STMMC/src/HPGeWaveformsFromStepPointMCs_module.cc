@@ -41,12 +41,12 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Offline includes
-#include "Offline/DataProducts/inc/STMChannel.hh"
+// #include "Offline/DataProducts/inc/STMChannel.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/Mu2eUtilities/inc/STMUtils.hh"
-#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+// #include "Offline/Mu2eUtilities/inc/STMUtils.hh"
+// #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
-#include "Offline/STMConditions/inc/STMEnergyCalib.hh"
+// #include "Offline/STMConditions/inc/STMEnergyCalib.hh"
 
 // ROOT includes
 #include "art_root_io/TFileService.h"
@@ -60,12 +60,12 @@ namespace mu2e {
     using Comment=fhicl::Comment;
     struct Config {
       fhicl::Atom<art::InputTag> StepPointMCsTag{ Name("StepPointMCsTag"), Comment("InputTag for StepPointMCs")};
-      fhicl::Atom<uint32_t> fADC{ Name("fADC"), Comment("ADC operating frequency [MHz}")};
+      fhicl::Atom<double> fADC{ Name("fADC"), Comment("ADC operating frequency [MHz}")};
       fhicl::Atom<double> ADCToEnergy {Name("EnergyPerADCBin"), Comment("ADC energy calibration [keV/bin]")};
       fhicl::Atom<double> noiseSD {Name("NoiseSD"), Comment("Standard deviation of ADC noise [mV]. Set this to 0.0 for the ideal case.")};
       fhicl::Atom<double> risingEdgeDecayConstant{ Name("risingEdgeDecayConstant"), Comment("Rising edge decay time [us]")};
       fhicl::OptionalAtom<int> microspillBufferLengthCount{ Name("microspillBufferLengthCount"), Comment("Number of microspills to buffer ahead for, in number of microspills")};
-      fhicl::OptionalAtom<bool> makeTTree{ Name("makeTTree"), Comment("Controls whether to make the TTree with branches charge, chargeCollected, chargeDecayed, ADC")};
+      fhicl::OptionalAtom<bool> makeTTree{ Name("makeTTree"), Comment("Controls whether to make the TTree with branches chargeCollected, chargeDecayed, ADC, eventId")};
       fhicl::OptionalAtom<double> timeOffset{ Name("timeOffset"), Comment("For debugging, adds the named time offset in [ns], used for testing analysis algorithms")};
     };
     using Parameters = art::EDProducer::Table<Config>;
@@ -79,7 +79,7 @@ namespace mu2e {
 
     // fhicl variables
     art::ProductToken<StepPointMCCollection> StepPointMCsToken; // Token of StepPointMCs in STMDet
-    uint32_t fADC = 0;                                          // ADC sampling frequency [MHz]
+    double fADC = 0;                                            // ADC sampling frequency [MHz]
     double ADCToEnergy = 0;                                     // Calibration of bin width to energy [keV/bin]
     double noiseSD = 0;                                         // Standard deviation of ADC noise [mV]
     double risingEdgeDecayConstant = 0;                         // [us]
@@ -153,9 +153,10 @@ namespace mu2e {
     std::vector<int16_t> _adcs; // Buffer for storing the ADC values to put into the STMWaveformDigi
 
     // Offline utilities
-    mu2e::STMChannel::enum_type _HPGeChannel = static_cast<mu2e::STMChannel::enum_type>(1);
-    STMChannel* _channel = new STMChannel(_HPGeChannel);
-    ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
+    // TODO: include the prodition to get the sampling frequency
+    // mu2e::STMChannel::enum_type _HPGeChannel = static_cast<mu2e::STMChannel::enum_type>(1);
+    // STMChannel* _channel = new STMChannel(_HPGeChannel);
+    // ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
   };
 
   HPGeWaveformsFromStepPointMCs::HPGeWaveformsFromStepPointMCs(const Parameters& conf)

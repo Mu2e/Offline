@@ -1,0 +1,70 @@
+# This module simulates a photon being fired at the STM detector of choice, and applies the full digitization stack
+# Original author : Pawel Plesniak
+# Note - edit the parameters in this prolog.fcl, aside from the @nil parmaeters
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMMC/fcl/prolog.fcl"
+
+process_name: TestFullDigitizationStackFromInputZS
+
+source : {
+  module_type : RootInput
+  fileNames : ["digitized.art"]
+}
+
+services : @local::Services.Sim
+physics: {
+  producers : {
+    DigiHPGe : {
+      module_type : HPGeWaveformsFromStepPointMCs
+      StepPointMCsTag : "g4run:STMDet"
+      fADC : @local::STMDAQParameters.samplingFrequencies.HPGe
+      EnergyPerADCBin : @local::HPGeDigitization.EnergyPerADCBin
+      NoiseSD : @local::HPGeDigitization.PreamplifierNoiseSD
+      risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant
+      makeTTree : true
+      timeOffset : 100
+    }
+    ZSHPGe : {
+      module_type : STMZeroSuppression
+      stmWaveformDigisTag : @local::STMMCAnalysis.ZS.HPGe.stmWaveformDigisTag
+      tbefore : @local::STMMCAnalysis.ZS.HPGe.tbefore
+      tafter : @local::STMMCAnalysis.ZS.HPGe.tafter
+      threshold : @local::STMMCAnalysis.ZS.HPGe.threshold
+      window : @local::STMMCAnalysis.ZS.HPGe.window
+      naverage : @local::STMMCAnalysis.ZS.HPGe.naverage
+      makeTTreeWaveforms: true
+      verbosityLevel : 3
+    }
+    MWDHPGe : {
+      module_type : STMMovingWindowDeconvolution
+      stmWaveformDigisTag : @local::STMMCAnalysis.MWD.HPGe.stmWaveformDigisTag
+      tau : @local::STMMCAnalysis.MWD.HPGe.tau
+      M : @local::STMMCAnalysis.MWD.HPGe.M
+      L : @local::STMMCAnalysis.MWD.HPGe.L
+      nsigma_cut : @local::STMMCAnalysis.MWD.HPGe.nsigma_cut
+      thresholdgrad : @local::STMMCAnalysis.MWD.HPGe.thresholdgrad
+      verbosityLevel : 3
+    }
+  }
+  p1 : [ZSHPGe] #DigiHPGe, ZSHPGe, MWDHPGe
+  trigger_paths : [p1]
+  output_path : [compressedOutput]
+  end_paths : [output_path]
+}
+
+outputs : {
+  compressedOutput : {
+    module_type : RootOutput
+    fileName : "ZS.art" #@nil
+  }
+}
+
+physics.producers.g4run.physics.physicsListName: "QGSP_BERT_EMZ"
+physics.producers.g4run.SDConfig.enableSD: [STMDet]
+
+services.TFileService.fileName        : "ZS.root"
+services.SeedService.baseSeed         : 1323454667 #@nil
+services.SeedService.maxUniqueEngines : 1 #@nil

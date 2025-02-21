@@ -53,8 +53,8 @@ namespace mu2e {
         fhicl::Atom<unsigned long int> window{ Name("window"), Comment("Calculate the gradient between ADC values this number of elements away from each other")};
         fhicl::Atom<unsigned long int> naverage{ Name("naverage"), Comment("Number of ADC values to average the gradient over")};
         fhicl::OptionalAtom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity level")};
-        fhicl::OptionalAtom<bool> makeTTreeGradients{ Name("makeTTreeGradients"), Comment("Controls whether to make the TTree with branches ADC, gradient, averagedGradient")};
-        fhicl::OptionalAtom<bool> makeTTreeWaveforms{ Name("makeTTreeWaveforms"), Comment("Controls whether to make the TTree with branches time, ADC")};
+        fhicl::OptionalAtom<bool> makeTTreeGradients{ Name("makeTTreeGradients"), Comment("Controls whether to make the TTree with branches event, ADC, gradient, averagedGradient")};
+        fhicl::OptionalAtom<bool> makeTTreeWaveforms{ Name("makeTTreeWaveforms"), Comment("Controls whether to make the TTree with branches event, time, ADC")};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit STMZeroSuppression(const Parameters& conf);
@@ -110,12 +110,14 @@ namespace mu2e {
       size_t nZSwaveforms = 0;                  // number of peaks to include in output product
       std::vector<int16_t> ZSADCs;              // zero suppressed waveform
       size_t k = 0;                             // iterator
+      double masterClockTickPeriod = 25.0;      // Master clock time perion [ns]
 
       // Proditions service
       ProditionsHandle<STMEnergyCalib> stmEnergyCalibHandle;
 
       // TTree variables
       TTree* ttree;
+      uint eventId = 0;
       int16_t ADC = 0, gradient = 0, averagedGradient = 0;
       uint32_t time = 0, timeStep = 0;
   };
@@ -139,6 +141,7 @@ namespace mu2e {
       if (makeTTreeGradients) {
         art::ServiceHandle<art::TFileService> tfs;
         ttree = tfs->make<TTree>("ttree", "STMZeroSuppression gradients ttree");
+        ttree->Branch("eventId", &eventId, "eventId/i");
         ttree->Branch("ADC", &ADC, "ADC/S");
         ttree->Branch("gradient", &gradient, "gradient/S");
         ttree->Branch("averagedGradient", &averagedGradient, "averagedGradient/S");
@@ -146,6 +149,7 @@ namespace mu2e {
       if (makeTTreeWaveforms) {
         art::ServiceHandle<art::TFileService> tfs;
         ttree = tfs->make<TTree>("ttree", "STMZeroSuppression waveforms ttree");
+        ttree->Branch("eventId", &eventId, "eventId/i");
         ttree->Branch("time", &time, "time/I");
         ttree->Branch("ADC", &ADC, "ADC/S");
       };
@@ -153,14 +157,15 @@ namespace mu2e {
 
   void STMZeroSuppression::beginJob() {
     if (verbosityLevel) {
-      std::cout << "STM Zero-Suppression Algorithm Parameters:" << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "tbefore"   << tBefore   << " ns" << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "tafter"    << tAfter    << " ns" << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "threshold" << threshold << std::endl;
+      std::cout << "STM Zero Suppression" << std::endl;
+      std::cout << "\tAlgorithm parameters" << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "tbefore"   << tBefore   << " ns" << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "tafter"    << tAfter    << " ns" << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "threshold" << threshold << std::endl;
       std::cout << std::endl; // buffer line
-      std::cout << "STM Channel" << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "Name" << channel.name()                  << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "ID"   << static_cast<int>(channel.id())  << std::endl;
+      std::cout << "\tChannel" << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "Name" << channel.name()                  << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "ID"   << static_cast<int>(channel.id())  << std::endl;
       std::cout << std::endl; // buffer line
     };
     return;
@@ -175,7 +180,7 @@ namespace mu2e {
     nADCBefore = STMUtils::convertToClockTicks(tBefore, channel, stmEnergyCalib);
     nADCAfter = STMUtils::convertToClockTicks(tAfter, channel, stmEnergyCalib);
     timeStep = tBefore/nADCBefore;
-    if (verbosityLevel > 9) {
+    if (verbosityLevel > 2) {
       std::cout << "ZS findPeaks fitting parameters" << std::endl;
       std::cout << std::left << std::setw(15) << "nADCBefore" << nADCBefore << std::endl;
       std::cout << std::left << std::setw(15) << "nADCAfter"  << nADCAfter  << std::endl;
@@ -213,17 +218,18 @@ namespace mu2e {
         peakEndTime = finalPeakEndTimes[k];
         ZSADCs.clear();
         ZSADCs.assign(waveform.adcs().begin() + peakStartTime, waveform.adcs().begin() + peakEndTime);
-        if (verbosityLevel > 5) {
-          std::cout << "ZSADCs: ";
+        if (verbosityLevel > 2) {
+          std::cout << "ZSADCs (" << ZSADCs.size() << "entries): ";
           for (auto i : ZSADCs)
             std::cout << i << ", ";
           std::cout << "\n" << std::endl;
         };
-        STMWaveformDigi stm_waveform(waveform.trigTimeOffset() + peakStartTime, ZSADCs);
+        STMWaveformDigi stm_waveform(waveform.trigTimeOffset() + (peakStartTime / masterClockTickPeriod), ZSADCs);
         outputSTMWaveformDigis->push_back(stm_waveform);
       };
 
       // Save data to TTree
+      eventId = event.id().event();
       if (makeTTreeGradients) {
         for (i = 0; i < nADCs; i++) {
           ADC = ADCs[i];
@@ -243,15 +249,15 @@ namespace mu2e {
       };
     };
     if (verbosityLevel)
-      std::cout << channel.name() << ": " << outputSTMWaveformDigis->size() << " waveforms found" << std::endl;
+      std::cout << "ZS: " << channel.name() << ": " << outputSTMWaveformDigis->size() << " waveforms found" << std::endl;
     event.put(std::move(outputSTMWaveformDigis));
     return;
   };
 
   void STMZeroSuppression::calculateGradient() {
     // Print
-    if (verbosityLevel > 9) {
-      std::cout << "ZS: ADCs (" << ADCs.size() << " entries): ";
+    if (verbosityLevel > 2) {
+      std::cout << "ZS: input ADCs (" << ADCs.size() << " entries): ";
       for (int16_t ADC : ADCs)
         std::cout << ADC << ", ";
       std::cout << "\n" << std::endl;
@@ -260,7 +266,7 @@ namespace mu2e {
     for(i = 0; i < nGradients; i++)
       gradients.push_back(ADCs[i + window] - ADCs[i]);
     // Print gradients
-    if (verbosityLevel > 9) {
+    if (verbosityLevel > 2) {
       std::cout << "ZS: Gradient (" << gradients.size() << " entries): ";
       for (int16_t gradient : gradients)
         std::cout << gradient << ", ";
@@ -286,7 +292,7 @@ namespace mu2e {
       av_gradient = 0;
     };
     // Print
-    if (verbosityLevel > 9) {
+    if (verbosityLevel > 2) {
       std::cout << "ZS: Avg Gradient (" << avGradients.size() << " entries): ";
       for (int16_t grad : avGradients)
         std::cout << grad << ", ";
