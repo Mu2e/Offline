@@ -80,18 +80,18 @@ MixSTMEvents : {
     nMicroSpills : 690253169
     meanEventsPerPOTFactors : {
         EleBeamCat : 2.5950416e-10
-        MuBeamCat : 3.8108578e-12
-        TargetStopsCat1809 : 1.5230356e-15
+        MuBeamCat : 7.887481312841522e-13
+        TargetStopsCat1809 : 1.114418308224206e-16
         test : 1e-10
     }
 }
 
 STMMCAnalysis : {
-    ZeroSuppression : {
+    ZS : {
         HPGe : {
             stmWaveformDigisTag : "DigiHPGe:"
             tbefore : 20 #ns
-            tafter : 100 #ns
+            tafter : 300 #ns
             threshold : @local::STM.HPGe.threshold
             window : 5
             naverage : @local::STM.HPGe.naverage
@@ -103,6 +103,24 @@ STMMCAnalysis : {
             threshold : @local::STM.HPGe.threshold
             window : @local::STM.HPGe.window
             naverage : @local::STM.HPGe.naverage
+        }
+    }
+    MWD : {
+        HPGe : {
+            stmWaveformDigisTag : "ZSHPGe:"
+            tau : @local::STM.HPGe.tau
+            M : 10 # @local::STM.HPGe.M
+            L : 5 # @local::STM.HPGe.L
+            nsigma_cut : @local::STM.HPGe.nsigma_cut
+            thresholdgrad : @local::STM.HPGe.thresholdgrad
+        }
+        LaBr : {
+            stmWaveformDigisTag : "ZSLaBr:"
+            tau : @local::STM.HPGe.tau
+            M : @local::STM.HPGe.M
+            L : @local::STM.HPGe.L
+            nsigma_cut : @local::STM.HPGe.nsigma_cut
+            thresholdgrad : @local::STM.HPGe.thresholdgrad
         }
     }
 }

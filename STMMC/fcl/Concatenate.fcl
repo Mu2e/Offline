@@ -15,11 +15,20 @@ services: {
 }
 
 physics: {
-    e1: [out]
-    end_paths: [e1]
+    filters : {
+        removeEmptyEvents : {
+            # Stage 2 output contains events that only have StepPointMCs for virtualdetectors, we want to remove the events that only have StepPointMCs in virtualdetector and not STMDet
+            module_type : STMResamplingFilter
+            StepPointMCsTag : "compressSTMDet:STMDet"
+        }
+    }
+    STMCompressedPath: [removeEmptyEvents]
+    trigger_paths: [STMCompressedPath]
+    outPathCompressed: [compressedOutput]
+    end_paths: [outPathCompressed]
 }
 outputs: {
-    out: {
+    compressedOutput: {
         module_type: RootOutput
         fileName: @nil
         outputCommands: [

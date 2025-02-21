@@ -95,10 +95,9 @@ namespace mu2e {
     ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
 
     // MWD analysis variables
-    size_t i = 0;                             // iterator
     std::vector<int16_t> ADCs;                // input waveform ADCs
     unsigned long int nADCs = 0;              // size of input data
-    unsigned long int j = 0;                  // iterator
+    unsigned long int i = 0;                  // iterator
     std::vector<double> deconvolved_data;
     float pedestal = 0.0;                     // ADC pedestal
     float nsPerCt = 0.0;                      // ADC time step
@@ -134,7 +133,11 @@ namespace mu2e {
     nsigma_cut(conf().nsigma_cut()),
     thresholdgrad(conf().thresholdgrad()) {
       produces<STMMWDDigiCollection>();
+      if (L > M)
+        throw cet::exception("Configuration", "Requirement: M >= L\n");
       verbosityLevel = conf().verbosityLevel() ? *(conf().verbosityLevel()) : 0;
+      if (verbosityLevel > 10)
+        verbosityLevel = 10;
       _xAxis = conf().xAxis() ? *(conf().xAxis()) : "";
       makeTTreeMWD = conf().makeTTreeMWD() ? *(conf().makeTTreeMWD()) : false;
       makeTTreeEnergies = conf().makeTTreeEnergies() ? *(conf().makeTTreeEnergies()) : false;
@@ -152,7 +155,6 @@ namespace mu2e {
         ttree->Branch("time", &time, "time/I");
         ttree->Branch("E", &E, "E/S");
       };
-
       if (_xAxis != "") {
         if (verbosityLevel >= 5) {
           throw cet::exception("STMMovingWindowDecomposition") << "No xAxis scale defined despite requesting verbosity level >= 5" << std::endl;
@@ -162,16 +164,16 @@ namespace mu2e {
 
   void STMMovingWindowDeconvolution::beginJob() {
     if (verbosityLevel) {
-      std::cout << "STM Moving-Window-Deconvolution Algorithm Parameters:" << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "tau"            << tau           << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "M"              << M             << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "L"              << L             << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "nsigma_cut"     << nsigma_cut    << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "thresholdgrad"  << thresholdgrad << std::endl;
-      std::cout << std::endl; // buffer line
-      std::cout << "STM channel: " << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "Name" << channel.name()                  << std::endl;
-      std::cout << std::left << "\t" << std::setw(15) << "ID"   << static_cast<int>(channel.id())  << std::endl;
+      std::cout << "STM Moving Window Deconvolution" << std::endl;
+      std::cout << "\tAlgorithm parameters" << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "tau"            << tau           << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "M"              << M             << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "L"              << L             << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "nsigma_cut"     << nsigma_cut    << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "thresholdgrad"  << thresholdgrad << std::endl;
+      std::cout << "\tChannel: " << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "Name" << channel.name()                  << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "ID"   << static_cast<int>(channel.id())  << std::endl;
       std::cout << std::endl; // buffer line
     };
   };
@@ -196,6 +198,11 @@ namespace mu2e {
       ADCs = waveform.adcs();
       nADCs = ADCs.size();
 
+      if (M > nADCs)
+        throw cet::exception("Configuration", "M is greater than the number of ADCs present, reconfigure\n");
+      if (L > nADCs)
+        throw cet::exception("Configuration", "M is greater than the number of ADCs present, reconfigure\n");
+
       deconvolve();
       differentiate();
       average();
@@ -210,11 +217,11 @@ namespace mu2e {
 
       // Save data to TTree
       if (makeTTreeMWD) {
-        for (j = 0; j < nADCs; j++) {
-          ADC = ADCs[j];
-          deconvoluted =  deconvolved_data[j];
-          differentiated = differentiated_data[j];
-          averaged = averaged_data[j];
+        for (i = 0; i < nADCs; i++) {
+          ADC = ADCs[i];
+          deconvoluted =  deconvolved_data[i];
+          differentiated = differentiated_data[i];
+          averaged = averaged_data[i];
           ttree->Fill();
         };
       };
@@ -228,25 +235,30 @@ namespace mu2e {
 
       if (verbosityLevel >= 5)
         make_debug_histogram(event, count, waveform, stmEnergyCalib, deconvolved_data, differentiated_data, averaged_data, baseline_mean, baseline_stddev, peak_heights, peak_times);
-
       ++count;
     };
 
     if (verbosityLevel)
-      std::cout << channel.name() << ": " << outputMWDDigis->size() << " MWD digis found" << std::endl;
+      std::cout << "MWD: " << channel.name() << ": " << outputMWDDigis->size() << " MWD digis found" << std::endl;
     event.put(std::move(outputMWDDigis));
   };
 
   void STMMovingWindowDeconvolution::deconvolve() {
+    if (verbosityLevel > 2) {
+      std::cout << "MWD: input ADCs (" << ADCs.size() << "): ";
+      for (int16_t data : ADCs)
+        std::cout << data << ", ";
+      std::cout << "\n" << std::endl;
+    };
     deconvolved_data.push_back(ADCs[0] - pedestal);
     timeFactor = 1 - (nsPerCt / tau);
     for(i = 1; i < nADCs; i++)
       deconvolved_data.push_back((ADCs[i] - pedestal) - timeFactor * (ADCs[i - 1] - pedestal) + deconvolved_data[i - 1]);
-    if (verbosityLevel > 5) {
+    if (verbosityLevel > 2) {
       std::cout << "MWD: deconvoluted data (" << deconvolved_data.size() << "): ";
       for (double data : deconvolved_data)
         std::cout << data << ", ";
-      std::cout << std::endl;
+      std::cout << "\n" << std::endl;
     };
   };
 
@@ -255,11 +267,11 @@ namespace mu2e {
       differentiated_data.push_back(deconvolved_data[i]);
     for (i = M; i < nADCs; i++)
       differentiated_data.push_back(deconvolved_data[i] - deconvolved_data[i - M]);
-    if (verbosityLevel > 5) {
+    if (verbosityLevel > 2) {
       std::cout << "MWD: differentiated data (" << differentiated_data.size() << "): ";
       for (double data : differentiated_data)
         std::cout << data << ", ";
-      std::cout << std::endl;
+      std::cout << "\n" << std::endl;
     };
   };
 
@@ -267,39 +279,37 @@ namespace mu2e {
     // sum the first L-1 elements of differentiated data
     // and set the first L-1 elements of averaged data
     sum = 0.0;
-    std::cout << "average: "; //RETURNTOME
-    for (i = 0; i < L - 1; ++i) {
+    for (i = 0; i < L - 1; i++) {
       std::cout << i << ", ";
       sum += differentiated_data[i];
       averaged_data.push_back(differentiated_data[i]);
     };
-    std::cout << std::endl;
     sum += differentiated_data[L - 1];
     averaged_data.push_back(sum/L);
     for (i = L; i < nADCs; ++i) {
       sum += differentiated_data[i] - differentiated_data[i - L]; // move the sum across one sample
       averaged_data.push_back(sum/L);
     };
-    if (verbosityLevel > 5) {
+    if (verbosityLevel > 2) {
       std::cout << "MWD: averaged data (" << averaged_data.size() << "): ";
       for (double data : averaged_data)
         std::cout << data << ", ";
-      std::cout << std::endl;
+      std::cout << "\n" << std::endl;
     };
   };
 
   void STMMovingWindowDeconvolution::calculate_baseline() {
-    j = M;
+    i = M;
     using namespace boost::accumulators;
     accumulator_set<double, stats<tag::mean, tag::variance> > acc_data_without_peaks;
     // Remove peaks so that we can calculate the baseline of the averaged data
-    while (j < nADCs){
-      gradient = averaged_data[j + 1] - averaged_data[j];
+    while (i < nADCs){
+      gradient = averaged_data[i + 1] - averaged_data[i];
       if(gradient < thresholdgrad) // if the gradient is too sharp (i.e. we have hit a peak)
-        j += (M + 2 * L); // jump ahead a little bit
+        i += (M + 2 * L); // jump ahead a little bit
       else {
-        acc_data_without_peaks(averaged_data[j]);
-        j++;
+        acc_data_without_peaks(averaged_data[i]);
+        i++;
       };
     };
     baseline_mean = extract_result<tag::mean>(acc_data_without_peaks);
@@ -311,10 +321,10 @@ namespace mu2e {
     double lowest_height = 0;
     int lowest_height_time = -1; // in clock ticks
 
-    for(j = M; j < nADCs; j++){
-      if (averaged_data[j] < threshold_cut) { // the waveforms are negative so if we go below this threshold we have seen a peak
-        if (averaged_data[j] < averaged_data[j - 1] && averaged_data[j] < lowest_height){ // if the current value is lower than the previous value and lower than the lowest value we've seen so far
-          lowest_height = averaged_data[j]; // record the lowest height
+    for(i = M; i < nADCs; i++){
+      if (averaged_data[i] < threshold_cut) { // the waveforms are negative so if we go below this threshold we have seen a peak
+        if (averaged_data[i] < averaged_data[i - 1] && averaged_data[i] < lowest_height){ // if the current value is lower than the previous value and lower than the lowest value we've seen so far
+          lowest_height = averaged_data[i]; // record the lowest height
           if (lowest_height_time == -1)
             lowest_height_time = i; // record the time we cross the threshold
         }
