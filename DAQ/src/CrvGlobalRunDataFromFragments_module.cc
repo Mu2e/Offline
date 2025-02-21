@@ -22,26 +22,53 @@ class CrvGlobalRunDataFromFragments : public art::EDProducer
   public:
   struct Config
   {
-    fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
+    fhicl::Atom<int>           diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
     fhicl::Atom<art::InputTag> CRVDataDecodersTag{fhicl::Name("crvTag"), fhicl::Comment("crv Fragments Tag")};
+    fhicl::Atom<std::string>   csvFileName{fhicl::Name("csvFileName"), fhicl::Comment("csv file name")};
+    fhicl::Atom<bool>          writeCsvFile{fhicl::Name("writeCsvFile"), fhicl::Comment("write csv file")};
   };
 
   explicit CrvGlobalRunDataFromFragments(const art::EDProducer::Table<Config>& config);
-  ~CrvGlobalRunDataFromFragments() override {}
-
+  ~CrvGlobalRunDataFromFragments() override;
   void produce(art::Event&) override;
 
   private:
   int                                      _diagLevel;
   art::InputTag                            _CRVDataDecodersTag;
+  std::string                              _csvFileName;
+  bool                                     _writeCsvFile;
+  std::ofstream                            _csvFile;
 
 };
 
-CrvGlobalRunDataFromFragments::CrvGlobalRunDataFromFragments(const art::EDProducer::Table<Config>& config) :
-    art::EDProducer{config}, _diagLevel(config().diagLevel()), _CRVDataDecodersTag(config().CRVDataDecodersTag())
+CrvGlobalRunDataFromFragments::CrvGlobalRunDataFromFragments(const art::EDProducer::Table<Config>& config) : 
+	                                                     art::EDProducer{config}, 
+							      _diagLevel(config().diagLevel()),
+							     _CRVDataDecodersTag(config().CRVDataDecodersTag()),
+							     _csvFileName(config().csvFileName()),
+							     _writeCsvFile(config().writeCsvFile())
 {
   produces<mu2e::CRVDataDecoder::CRVGlobalRunDataCollection>();
   produces<mu2e::CrvDAQerrorCollection>();
+
+  if(_writeCsvFile)
+  {
+    _csvFile.open(_csvFileName);
+
+    _csvFile << "event#,subEvent#,dataBlock#,";
+    _csvFile << "EWT(subEventHeader),packetCount,byteCount(subEventHeader),";
+    _csvFile << "ROCID,wordCount(ROCstatus),triggerCount,EWT(ROCstatus),";
+    _csvFile << "#EWTs,#markers,lastEWTs,CRC,PLL,lock,injectionTime,injectionWindow";
+    _csvFile << std::endl;
+  }
+}
+
+CrvGlobalRunDataFromFragments::~CrvGlobalRunDataFromFragments()
+{
+  if(_writeCsvFile)
+  {
+    _csvFile.close();
+  }
 }
 
 void CrvGlobalRunDataFromFragments::produce(art::Event& event)
@@ -122,7 +149,7 @@ void CrvGlobalRunDataFromFragments::produce(art::Event& event)
 
       if(header->GetPacketCount() > 0)
       {
-        if(_diagLevel>0)
+	if(_diagLevel>0)
         {
           std::cout << "********** DTC Data Header **************" << std::endl;
           std::cout << "ValidFlag: " << (uint16_t)header->isValid() << std::endl;
@@ -149,10 +176,11 @@ void CrvGlobalRunDataFromFragments::produce(art::Event& event)
           crv_daq_errors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingStatusPacket,iSubEvent,iDataBlock,header->GetPacketCount());
           continue;
         }
+
         if(crvRocHeader!=nullptr && _diagLevel>0)
         {
           std::cout << "**** PACKET 0 **** ROC Status Header ****" << std::endl;
-          std::cout << "ROCID (ROC Status): "<< crvRocHeader->ControllerID << std::endl;
+          std::cout << "ROCID (ROC Status): "<< (uint16_t)crvRocHeader->ControllerID << std::endl;
           std::cout << "WordCount: "<< crvRocHeader->ControllerEventWordCount << std::endl;
           std::cout << "ActiveFEBFlags: " << crvRocHeader->GetActiveFEBFlags() << std::endl;
           std::cout << "TriggerCount: " << crvRocHeader->TriggerCount << std::endl;
@@ -189,6 +217,34 @@ void CrvGlobalRunDataFromFragments::produce(art::Event& event)
         }
 
         crv_globalRun->emplace_back(*crvRocHeader,globalRunInfo,globalRunPayload);
+
+        if(_writeCsvFile)
+	{
+          _csvFile << event.event() << "," << iSubEvent << "," << iDataBlock << ","; //event number, sub event, data block
+
+          //from subEvent header
+          _csvFile << header->GetEventWindowTag().GetEventWindowTag(true) << ",";    //EWT
+          _csvFile << header->GetPacketCount() << ",";                               //packet count
+          _csvFile << header->GetByteCount() << ",";                                 //byte count
+
+          //from ROC status header
+          _csvFile << (uint16_t)crvRocHeader->ControllerID << ",";                   //ROC ID
+          _csvFile << crvRocHeader->ControllerEventWordCount << ",";                 //word count
+          _csvFile << crvRocHeader->TriggerCount << ",";                             //trigger count
+          _csvFile << crvRocHeader->GetEventWindowTagGlobalRun() << ",";             //EWT
+
+          //from Global Run Info packet
+          _csvFile << globalRunInfo.EWTCount << ",";                                 //#EWTs
+          _csvFile << globalRunInfo.markerCount << ",";                              //#markers
+          _csvFile << globalRunInfo.lastEWT << ",";                                  //last EWTs
+          _csvFile << globalRunInfo.CRC << ",";                                      //CRC
+          _csvFile << globalRunInfo.PLL << ",";                                      //PLL
+          _csvFile << globalRunInfo.lock << ",";                                     //lock
+          _csvFile << globalRunInfo.injectionTime << ",";                            //injection time
+          _csvFile << globalRunInfo.injectionWindow;                                 //injection window
+
+          _csvFile << std::endl;
+	}   // write CSV file
 
       }     // end parsing CRV DataBlocks
     }       // loop over DataBlocks within CRVDataDecoders

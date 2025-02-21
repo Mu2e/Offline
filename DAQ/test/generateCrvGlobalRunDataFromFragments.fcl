@@ -37,6 +37,8 @@ physics :
       module_type : CrvGlobalRunDataFromFragments
       crvTag      : "genFrags"
       diagLevel   : 10
+      csvFileName : "crvGlobalRun.txt"
+      writeCsvFile: true
     }
   }
 
