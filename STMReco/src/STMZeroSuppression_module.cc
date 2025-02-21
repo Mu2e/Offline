@@ -110,7 +110,6 @@ namespace mu2e {
       size_t nZSwaveforms = 0;                  // number of peaks to include in output product
       std::vector<int16_t> ZSADCs;              // zero suppressed waveform
       size_t k = 0;                             // iterator
-      double masterClockTickPeriod = 25.0;      // Master clock time perion [ns]
 
       // Proditions service
       ProditionsHandle<STMEnergyCalib> stmEnergyCalibHandle;
@@ -119,7 +118,7 @@ namespace mu2e {
       TTree* ttree;
       uint eventId = 0;
       int16_t ADC = 0, gradient = 0, averagedGradient = 0;
-      uint32_t time = 0, timeStep = 0;
+      uint32_t time = 0, tADC = 0;
   };
 
   STMZeroSuppression::STMZeroSuppression(const Parameters& conf):
@@ -150,7 +149,7 @@ namespace mu2e {
         art::ServiceHandle<art::TFileService> tfs;
         ttree = tfs->make<TTree>("ttree", "STMZeroSuppression waveforms ttree");
         ttree->Branch("eventId", &eventId, "eventId/i");
-        ttree->Branch("time", &time, "time/I");
+        ttree->Branch("time", &time, "time/i");
         ttree->Branch("ADC", &ADC, "ADC/S");
       };
     };
@@ -179,7 +178,7 @@ namespace mu2e {
     const STMEnergyCalib& stmEnergyCalib = stmEnergyCalibHandle.get(event.id());
     nADCBefore = STMUtils::convertToClockTicks(tBefore, channel, stmEnergyCalib);
     nADCAfter = STMUtils::convertToClockTicks(tAfter, channel, stmEnergyCalib);
-    timeStep = tBefore/nADCBefore;
+    tADC = tBefore/nADCBefore;
     if (verbosityLevel > 2) {
       std::cout << "ZS findPeaks fitting parameters" << std::endl;
       std::cout << std::left << std::setw(15) << "nADCBefore" << nADCBefore << std::endl;
@@ -219,12 +218,13 @@ namespace mu2e {
         ZSADCs.clear();
         ZSADCs.assign(waveform.adcs().begin() + peakStartTime, waveform.adcs().begin() + peakEndTime);
         if (verbosityLevel > 2) {
+          std::cout << "ZSTime: " << waveform.trigTimeOffset() + (peakStartTime / tADC) << std::endl;
           std::cout << "ZSADCs (" << ZSADCs.size() << "entries): ";
           for (auto i : ZSADCs)
             std::cout << i << ", ";
           std::cout << "\n" << std::endl;
         };
-        STMWaveformDigi stm_waveform(waveform.trigTimeOffset() + (peakStartTime / masterClockTickPeriod), ZSADCs);
+        STMWaveformDigi stm_waveform(waveform.trigTimeOffset() + (peakStartTime / tADC), ZSADCs);
         outputSTMWaveformDigis->push_back(stm_waveform);
       };
 
@@ -240,10 +240,10 @@ namespace mu2e {
         };
       };
       if (makeTTreeWaveforms) {
-        time = (uint32_t) waveform.trigTimeOffset() + peakStartTime - timeStep;
+        time = (uint32_t) waveform.trigTimeOffset() + peakStartTime - tADC;
         for (i = 0; i < nADCs; i++) {
           ADC = ADCs[i];
-          time += timeStep;
+          time += tADC;
           ttree->Fill();
         };
       };

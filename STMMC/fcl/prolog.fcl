@@ -82,7 +82,6 @@ MixSTMEvents : {
         EleBeamCat : 2.5950416e-10
         MuBeamCat : 7.887481312841522e-13
         TargetStopsCat1809 : 1.114418308224206e-16
-        test : 1e-10
     }
 }
 
