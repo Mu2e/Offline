@@ -35,6 +35,7 @@ physics : {
         MaxEventsToSkip: 0
         debugLevel : 10
         products: {
+          simParticleMixer: { mixingMap: [ [ "compressSTMDet", "" ] ] }
           stepPointMCMixer: { mixingMap: [ [ "compressSTMDet:STMDet", ":" ] ] }
         }
       }

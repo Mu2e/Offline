@@ -30,7 +30,7 @@ physics: {
 outputs: {
     compressedOutput: {
         module_type: RootOutput
-        fileName: @nil
+        fileName: "/pnfs/mu2e/resilient/users/plesniak/Analysis/EleCat.art"
         SelectEvents: ["STMCompressedPath"]
         outputCommands: [
             "drop *_*_*_*",

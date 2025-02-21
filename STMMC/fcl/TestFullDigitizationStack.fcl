@@ -68,3 +68,4 @@ physics.producers.g4run.SDConfig.enableSD: [STMDet]
 services.TFileService.fileName        : "ZS.root"
 services.SeedService.baseSeed         : 1323454667 #@nil
 services.SeedService.maxUniqueEngines : 1 #@nil
+services.scheduler.wantSummary: true

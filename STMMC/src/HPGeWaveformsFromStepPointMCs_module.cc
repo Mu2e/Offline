@@ -131,11 +131,11 @@ namespace mu2e {
     int32_t N_ehPairs = 0;  // Number of electron hole pairs
     uint32_t eventTime = 0; // Time stamp to add to STMWaveformDigi
 
-    double tStep = 0;                                               // Time step used for simulating the ADC values [ns]
+    double tADC = 0;                                                // Time step used for simulating the ADC values [ns]
     double electronTravelDistance = 0, holeTravelDistance = 0;      // Drift distances [mm]
     double electronTravelTime = 0, holeTravelTime = 0;              // Drift times [ns]
     uint32_t electronTravelTimeSteps = 0, holeTravelTimeSteps = 0;  // Drift times [steps]
-    double decayExp = 0;                                            // Amount of decay with each tStep
+    double decayExp = 0;                                            // Amount of decay with each tADC
     double lastEventEndDecayedCharge = 0;                           // Carry over for starting new microspill waveforms
     const int defaultMicrospillBufferLengthCount = 2;
     int microspillBufferLengthCount = 0;
@@ -171,13 +171,13 @@ namespace mu2e {
           throw cet::exception("RANGE", "defaultMicrospillBufferLengthCount has to be more than 1\n");
 
         crystalCentrePosition.set(crystalCentreX, crystalCentreY, crystalCentreZ);
-        tStep = 1e3/fADC; // 1e3 converts [us] to [ns] as fADC is in [MHz]
+        tADC = 1e3/fADC; // 1e3 converts [us] to [ns] as fADC is in [MHz]
 
         // Assign microspillBufferLengthCount
         microspillBufferLengthCount = conf().microspillBufferLengthCount() ? *(conf().microspillBufferLengthCount()) : defaultMicrospillBufferLengthCount;
 
         // Determine the number of ADC values in each STMWaveformDigi. Increase the number by one due to truncation. At 320MHz, this will be 543 ADC values per microbunch
-        double _nADCs = (micropulseTime/tStep) + 1;
+        double _nADCs = (micropulseTime/tADC) + 1;
         nADCs = (int) _nADCs;
         _charge.insert(_charge.begin(), nADCs * microspillBufferLengthCount, 0.);
         _chargeCollected.insert(_chargeCollected.begin(), nADCs * microspillBufferLengthCount, 0.);
@@ -187,7 +187,7 @@ namespace mu2e {
 
         // Define physics parameters to use with the model
         // Define the decay amount with each step. 1e3 converts [us] to [ns]
-        decayExp = exp(-tStep/(risingEdgeDecayConstant*1e3));
+        decayExp = exp(-tADC/(risingEdgeDecayConstant*1e3));
 
         // Convert noise SD from [mV] to [C], division by _e to work in units of charge
         noiseSD *= 1e-3 * feedbackCapacitance/_e;
@@ -243,7 +243,7 @@ namespace mu2e {
 
     // Simulation takes the POT time as t = 0, and has sequential microspills (events). The trigger time offset is not used here, left as a TODO
     // Create the STMWaveformDigi and insert all the relevant attributes
-    eventTime = (uint32_t) (event.id().event() * micropulseTime + timeOffset) / masterClockTickPeriod;
+    eventTime = (uint32_t) (event.id().event() * micropulseTime + timeOffset) / tADC;
     STMWaveformDigi _waveformDigi(eventTime, _adcs);
     std::unique_ptr<STMWaveformDigiCollection> outputDigis(new STMWaveformDigiCollection);
     outputDigis->emplace_back(_waveformDigi);
@@ -339,32 +339,32 @@ namespace mu2e {
     N_ehPairs = -1.0 * step.ionizingEdep() * 1e6 / epsilonGe; // 1e6 converts MeV to eV. -1.0 as this is a decreasing peak
 
     // Define parameters required for charge deposition. Constants A and B are defined here for code brevity
-    uint tIndex = (step.time() + timeOffset) / tStep, tIndexStart = tIndex;
+    uint tIndex = (step.time() + timeOffset) / tADC, tIndexStart = tIndex;
     const double A = N_ehPairs / log(R2/R1);
     const double Be = electronDriftVelocity / R0;
     const double Bh = holeDriftVelocity / R0;
 
     // Scale and shift the charge particle travel time
-    electronTravelTimeSteps = tIndex + electronTravelTime/tStep;
-    holeTravelTimeSteps = tIndex + holeTravelTime/tStep;
+    electronTravelTimeSteps = tIndex + electronTravelTime/tADC;
+    holeTravelTimeSteps = tIndex + holeTravelTime/tADC;
 
     // Calculate charge collection when both particles are moving
     while (tIndex <= electronTravelTimeSteps && tIndex <= holeTravelTimeSteps) {
-      _charge[tIndex] = A*log((1 + Bh * (tIndex - tIndexStart) * tStep) / (1 - Be * (tIndex - tIndexStart) * tStep));
+      _charge[tIndex] = A*log((1 + Bh * (tIndex - tIndexStart) * tADC) / (1 - Be * (tIndex - tIndexStart) * tADC));
       tIndex++;
     };
 
     // Calculate charge build up when only the holes are moving
     if (tIndex >= electronTravelTimeSteps && tIndex < holeTravelTimeSteps) {
       while(tIndex < holeTravelTimeSteps) {
-        _charge[tIndex] = A * log((1 + Bh * (tIndex - tIndexStart) * tStep ) / (R1 / R0));
+        _charge[tIndex] = A * log((1 + Bh * (tIndex - tIndexStart) * tADC ) / (R1 / R0));
         tIndex++;
       };
     }
     // Calculate charge build up when only the electrons are moving
     else if (tIndex < electronTravelTimeSteps && tIndex >= holeTravelTimeSteps) {
       while(tIndex < electronTravelTimeSteps) {
-        _charge[tIndex] = A * log((R2 / R0) / (1 - Be * (tIndex - tIndexStart) * tStep));
+        _charge[tIndex] = A * log((R2 / R0) / (1 - Be * (tIndex - tIndexStart) * tADC));
         tIndex++;
       };
     };
