@@ -33,9 +33,7 @@ class art::STMWaveformDigisFromFragments : public EDProducer
   public:
   struct Config
   {
-    // fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
-    // fhicl::Atom<art::InputTag> CRVDataDecodersTag{fhicl::Name("crvTag"),
-    //                                            fhicl::Comment("crv Fragments Tag")};
+    fhicl::Atom<art::InputTag> stmTag {fhicl::Name("stmTag"), fhicl::Comment("Input module")};
   };
 
   // --- C'tor/d'tor:
@@ -46,12 +44,17 @@ class art::STMWaveformDigisFromFragments : public EDProducer
 
   private:
 
+  int eventCounter = 0;
+  
+  art::InputTag _stmFragmentsTag;
+  
 }; // STMWaveformDigisFromFragments
 
 // ======================================================================
 
 STMWaveformDigisFromFragments::STMWaveformDigisFromFragments(const art::EDProducer::Table<Config>& config) :
-    art::EDProducer{config}
+  art::EDProducer{config},
+  _stmFragmentsTag(config().stmTag())
 {
   produces<mu2e::STMWaveformDigiCollection>();
 }
@@ -61,15 +64,25 @@ STMWaveformDigisFromFragments::STMWaveformDigisFromFragments(const art::EDProduc
 
 void STMWaveformDigisFromFragments::produce(Event& event)
 {
-
-  auto STMFragments = event.getValidHandle<artdaq::Fragments>("daq:STM");
+  eventCounter++;
   std::unique_ptr<mu2e::STMWaveformDigiCollection> stm_waveform_digis(new mu2e::STMWaveformDigiCollection);
+  
+  //auto STMFragments = event.getValidHandle<artdaq::Fragments>("daq:STM");
+  art::Handle<artdaq::Fragments> STMFragmentsH;
+  if(!event.getByLabel(_stmFragmentsTag, STMFragmentsH)) {
+    event.put(std::move(stm_waveform_digis));
+    return;
+  }
+  const auto STMFragments = STMFragmentsH.product();
 
+  int16_t detID = 0;
   for (const auto& frag : *STMFragments) {
     const auto& stm_frag = static_cast<mu2e::STMFragment>(frag);
-    int16_t event_number = *(stm_frag.EvNum());
-    int16_t event_len = *(stm_frag.EvLen());
-    std::cout << "In event: " << event_number << " | Length of event: " << event_len << "\n";
+    //int16_t event_number = *(stm_frag.EvNum());
+    int16_t event_len = *(stm_frag.EvLen());    
+    detID = *(stm_frag.detID()) & 0xFF;
+    //std::cout << "DetID: " << *(stm_frag.detID()) << "  |   " << detID << "\n";
+    //std::cout << "In event: " << event_number << " | Length of event: " << event_len << "\n";
     std::vector<int16_t> adcs;
     adcs.reserve(event_len);
     for (unsigned long int i_adc_sample = 0; i_adc_sample < event_len; ++i_adc_sample) {
@@ -78,7 +91,7 @@ void STMWaveformDigisFromFragments::produce(Event& event)
 
     // Create the STMWaveformDigi and put it in the event
     uint32_t trig_time_offset = 0;
-    mu2e::STMWaveformDigi stm_waveform(trig_time_offset, adcs);
+    mu2e::STMWaveformDigi stm_waveform(detID, trig_time_offset, adcs);
     stm_waveform_digis->push_back(stm_waveform);
   }
 
