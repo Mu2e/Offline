@@ -20,11 +20,17 @@ physics : {
    producers : {
       makeSTMDigisHPGe : {
          module_type : STMWaveformDigisFromFragments
-      }
+	 stmTag : "daq:STM"
+	 }
    }
 
    analyzers  : {
 
+   frag:
+      {	
+	module_type : FragmentWatcher
+	mode_bitmask : 7
+	}	     
       #stm :
       #{
       #   module_type : STMPrintFragments
@@ -34,7 +40,7 @@ physics : {
 
    t1 : [ makeSTMDigisHPGe ]
    # e1 : [ stm, stmOutput ]
-   e1 : [ stmOutput ]  
+   e1 : [ frag, stmOutput ]  
 
    trigger_paths  : [t1]
    end_paths      : [e1]
