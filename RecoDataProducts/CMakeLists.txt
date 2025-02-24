@@ -5,6 +5,7 @@ cet_make_library(
       src/BkgQual.cc
       src/ComboHit.cc
       src/CosmicTrack.cc
+      src/CrvDAQerror.cc
       src/CrvDigi.cc
       src/CrvRecoPulse.cc
       src/ExtMonFNALRawCluster.cc
