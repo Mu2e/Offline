@@ -1,0 +1,28 @@
+// SimpleConfig geometry file for Steel slabs no. 3
+// doc db: 11669
+
+string building.psArea.SteelShieldingSlab.2.name     = "psAreaSteelShieldingSlab2";
+string building.psArea.SteelShieldingSlab.2.material = "MildSteel";
+
+double building.psArea.SteelShieldingSlab.2.offsetFromMu2eOrigin.x   = 947.4;
+double building.psArea.SteelShieldingSlab.2.offsetFromFloorSurface.y = 6743.9006;//6312.1006;//7023.1006;//7239.0006;
+double building.psArea.SteelShieldingSlab.2.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.psArea.SteelShieldingSlab.2.yHalfThickness           = 215.9;
+
+vector<double> building.psArea.SteelShieldingSlab.2.xPositions = {
+  -15367.0,   // P1'
+  -13843.0,   // c
+  -13843.0,   // P6
+  -15367.0    // P4
+};
+vector<double> building.psArea.SteelShieldingSlab.2.yPositions = {
+  2947.9,     // P1'
+  2947.9,     // c
+  -354.1,     // P6
+  -354.1      // P4
+};
+
+// Local Variables:
+// mode:c++
+// End:

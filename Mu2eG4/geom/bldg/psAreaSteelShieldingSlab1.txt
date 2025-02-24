@@ -1,0 +1,30 @@
+// Manually added according to doc db: 11669, 49557
+// Steel shielding slab adjacent to psSheildingBlock
+
+string building.psArea.SteelShieldingSlab1.name     = "psAreaSteelShieldingSlab1";
+
+string building.psArea.SteelShieldingSlab1.material = "G4_STAINLESS-STEEL";
+
+double building.psArea.SteelShieldingSlab1.offsetFromMu2eOrigin.x   = 947.4;
+double building.psArea.SteelShieldingSlab1.offsetFromFloorSurface.y = 7029.4506;//7721.5979;//4521.2;
+double building.psArea.SteelShieldingSlab1.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.psArea.SteelShieldingSlab1.yHalfThickness           = 425.45;//101.6;
+
+vector<double> building.psArea.SteelShieldingSlab1.xPositions = {
+  -15367.0,   // P1
+  -12319.0,   // P2
+  -12319.0,   // P3
+  -15367.0    // P4
+};
+
+vector<double> building.psArea.SteelShieldingSlab1.yPositions = {
+  5359.3,     // P1
+  5359.3,     // P2
+  -254.1,     // P3
+  -254.1      // P4
+};
+
+// Local Variables:
+// mode:c++
+// End:

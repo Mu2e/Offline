@@ -624,7 +624,6 @@ namespace mu2e {
 
     G4LogicalVolume* tracker        = _helper->locateVolInfo("TrackerMother").logical;
     G4LogicalVolume* trackerPanel   = _helper->locateVolInfo("StrawPanelEnvelope").logical;
-    G4LogicalVolume* caloMother     = _helper->locateVolInfo("CalorimeterMother").logical;
     G4LogicalVolume* stoppingTarget = _helper->locateVolInfo("StoppingTargetMother").logical;
     G4LogicalVolume* productionTarget = _helper->locateVolInfo("ProductionTargetMother").logical;
 
@@ -662,22 +661,6 @@ namespace mu2e {
 
     // hallAir->SetUserLimits( stepLimit ); // not a vacuum per se; CPU costly
 
-    // calorimeter does not use the nest functions; fixme
-    // so we need to use the geant4's functions
-    // in addition, some of its logical volumes are duplicated; fixme
-
-    G4LogicalVolumeStore* lvs = G4LogicalVolumeStore::GetInstance();
-    setStepLimitToAllSuchVolumes("caloBackPlateFEELog",    stepLimit,lvs,_g4VerbosityLevel);
-    setStepLimitToAllSuchVolumes("caloCrystalFrameInLog",  stepLimit,lvs,_g4VerbosityLevel);
-    setStepLimitToAllSuchVolumes("caloFEBLog",             stepLimit,lvs,_g4VerbosityLevel);
-    setStepLimitToAllSuchVolumes("caloFEEBoxInLog",        stepLimit,lvs,_g4VerbosityLevel);
-    setStepLimitToAllSuchVolumes("caloFrontPlateLog",      stepLimit,lvs,_g4VerbosityLevel);
-    setStepLimitToAllSuchVolumes("caloFullBackPlateLog",   stepLimit,lvs,_g4VerbosityLevel);
-    setStepLimitToAllSuchVolumes("caloHoleBackLog",        stepLimit,lvs,_g4VerbosityLevel);
-    setStepLimitToAllSuchVolumes("calofullCrystalDiskLog", stepLimit,lvs,_g4VerbosityLevel);
-    setStepLimitToAllSuchVolumes("ccrateBoxInLog",         stepLimit,lvs,_g4VerbosityLevel);
-    setStepLimitToAllSuchVolumes("ccrateFullBoxLog",       stepLimit,lvs,_g4VerbosityLevel);
-
     ds1Vacuum->SetUserLimits( stepLimit );
     ds2Vacuum->SetUserLimits( stepLimit );
     ds3Vacuum->SetUserLimits( stepLimit );
@@ -686,7 +669,6 @@ namespace mu2e {
     tracker->SetUserLimits( stepLimit );
     trackerPanel->SetUserLimits( stepLimit );
 
-    caloMother->SetUserLimits( stepLimit );
     stoppingTarget->SetUserLimits( stepLimit );
     productionTarget->SetUserLimits( stepLimit );
 
@@ -719,23 +701,37 @@ namespace mu2e {
     }
 
     // and the calorimeter elements
+    // all vacuum volumes in the calorimeter have the same DSVacuum material, so this does them all in one go
+    G4LogicalVolumeStore* lvs = G4LogicalVolumeStore::GetInstance();
+    for (auto lvi = lvs->begin(); lvi != lvs->end(); ++lvi) {
+      if ((*lvi)->GetName().find("Calo")!=std::string::npos &&
+          (*lvi)->GetMaterial()->GetName().find("Vacuum") != std::string::npos) {
+          (*lvi)->SetUserLimits( stepLimit );
+      }
+    }
 
-    stepLimiterHelper("^caloDisk_.*$", stepLimit );
-    stepLimiterHelper("^caloFEB_.*$", stepLimit );
+    //vector<G4LogicalVolume*> caloVacua;
+    //caloVacua.push_back(_helper->locateVolInfo("CalorimeterMother").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloFullCase_0").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloCaseRing_0").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloFP_0").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloFullBackPlate_0").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloBackPlateFEE_0").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloHoleBack_0").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloFEEBoxIn_0").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloDisk_0").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloFEB_0").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloFullCase_1").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloCaseRing_1").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloFP_1").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloFullBackPlate_1").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloBackPlateFEE_1").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloHoleBack_1").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloFEEBoxIn_1").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloDisk_1").logical);
+    //caloVacua.push_back(_helper->locateVolInfo("CaloFEB_1").logical);
+    //for ( auto lv : caloVacua ) lv->SetUserLimits( stepLimit);
 
-    // calorimeter does not use Mu2e nest functions for those; see above; fixme
-    // stepLimiterHelper("^caloFEBLog*$", stepLimit );
-
-    // stepLimiterHelper("^ccrateFullBoxLog*$", stepLimit );
-    // stepLimiterHelper("^ccrateBoxInLog*$", stepLimit );
-    // stepLimiterHelper("^ccrateBoardLog*$", stepLimit );
-
-    // stepLimiterHelper("^caloFrontPlateLog*$", stepLimit );
-    // stepLimiterHelper("^caloCrystalFrameInLog*$", stepLimit );
-    // stepLimiterHelper("^caloHoleBackLog*$", stepLimit );
-    // stepLimiterHelper("^caloFEEBoxInLog*$", stepLimit );
-    // stepLimiterHelper("^caloBackPlateFEELog*$", stepLimit );
-    // stepLimiterHelper("^caloFullBackPlateLog*$", stepLimit );
 
 
     // An option to limit the step size in these non-vaccum volumes to
@@ -930,62 +926,46 @@ namespace mu2e {
     if ( const_cast<GeometryService&>(_geom).hasElement<Calorimeter>() ) {
 
       if(sdHelper_->enabled(StepInstanceName::calorimeter)) {
-        CaloCrystalSD* ccSD =
-          new CaloCrystalSD( SensitiveDetectorName::CaloCrystal(), _config );
+        CaloCrystalSD* ccSD = new CaloCrystalSD( SensitiveDetectorName::CaloCrystal(), _config );
         SDman->AddNewDetector(ccSD);
 
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
           G4String LVname = (*pos)->GetName();
-
-          if (LVname.find("CrystalLog") != std::string::npos) {
+          if (LVname.find("CaloCrystalCsI") != std::string::npos || LVname.find("CaloCrystalLYSO") != std::string::npos)
             (*pos)->SetSensitiveDetector(ccSD);
-          }
-        }//for
-      }//if calorimeter
+        }
+      }
 
       if(sdHelper_->enabled(StepInstanceName::calorimeterRO)) {
-        CaloReadoutSD* crSD =
-          new CaloReadoutSD( SensitiveDetectorName::CaloReadout(), _config );
+        CaloReadoutSD* crSD = new CaloReadoutSD( SensitiveDetectorName::CaloReadout(), _config );
         SDman->AddNewDetector(crSD);
 
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
           G4String LVname = (*pos)->GetName();
-
-          if (LVname.find("CrystalROLog") != std::string::npos) {
-            (*pos)->SetSensitiveDetector(crSD);
-          }
-        }//for
-      }//if calorimeterRO
+          if (LVname.find("CaloCrystalRO") != std::string::npos) (*pos)->SetSensitiveDetector(crSD);
+        }
+      }
 
       if(sdHelper_->enabled(StepInstanceName::calorimeterROCard)) {
-        CaloReadoutCardSD* crCardSD =
-          new CaloReadoutCardSD( SensitiveDetectorName::CaloReadoutCard(), _config );
+        CaloReadoutCardSD* crCardSD = new CaloReadoutCardSD( SensitiveDetectorName::CaloReadoutCard(), _config );
         SDman->AddNewDetector(crCardSD);
 
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
           G4String LVname = (*pos)->GetName();
-
-          if (LVname.find("caloFEECardROLog") != std::string::npos) {
-            (*pos)->SetSensitiveDetector(crCardSD);
-          }
-        }//for
-      }//if calorimeterROCard
+          if (LVname.find("CaloFEECard") != std::string::npos)(*pos)->SetSensitiveDetector(crCardSD);
+        }
+      }
 
       if(sdHelper_->enabled(StepInstanceName::calorimeterCrate)) {
-        CaloCrateSD* cCrateSD =
-          new CaloCrateSD( SensitiveDetectorName::CaloCrate(), _config );
+        CaloCrateSD* cCrateSD = new CaloCrateSD( SensitiveDetectorName::CaloCrate(), _config );
         SDman->AddNewDetector(cCrateSD);
-
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
           G4String LVname = (*pos)->GetName();
+          if (LVname.find("ccrateActiveStrip") != std::string::npos) (*pos)->SetSensitiveDetector(cCrateSD);
+        }
+      }
 
-          if (LVname.find("ccrateActiveStripLog") != std::string::npos) {
-            (*pos)->SetSensitiveDetector(cCrateSD);
-          }
-        }//for
-      }//if calorimeterCrate
-
-    }//if calorimeter
+    } //if calorimeter
 
 
     /************************** ExtMonFNALPixelSD **************************/

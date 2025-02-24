@@ -15,6 +15,16 @@ BEGIN_PROLOG
       tmpDBfileName             : "calibration.txt"
     }
 
+    CrvDQMcollector:
+    {
+      module_type                            : CrvDQMcollector
+      useDQMcollector                        : true
+      crvDigiModuleLabel                     : "CrvDigi"
+      crvDigiModuleLabelNZS                  : "CrvDigi"
+      crvRecoPulsesModuleLabel               : "CrvRecoPulses"
+      crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
+    }
+
     CrvRecoPulses:
     {
       module_type               : CrvRecoPulsesFinder

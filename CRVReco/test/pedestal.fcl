@@ -1,0 +1,37 @@
+#
+# finds the pedestal of CRV channels
+#
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CRVResponse/fcl/prolog.fcl"
+
+process_name : pedestalFinderWideband
+
+source :
+{
+  module_type : RootInput
+}
+services :
+{
+  @table::Services.Reco
+}
+
+physics: {
+  producers :
+  {
+  }
+  analyzers:
+  {
+    CrvPedestalFinder: @local::CrvPedestalFinder
+  }
+
+  TriggerPath : [ ]
+  EndPath :     [ CrvPedestalFinder ]
+  trigger_paths : [ TriggerPath ]
+  end_paths :     [ EndPath ]
+}
+
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+services.TFileService.fileName : "crvPedestal.root"
+#include "Offline/DbService/fcl/NominalDatabase.fcl"

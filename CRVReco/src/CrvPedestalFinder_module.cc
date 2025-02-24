@@ -47,7 +47,7 @@ namespace mu2e
     explicit CrvPedestalFinder(const Parameters& config);
     void analyze(const art::Event& e);
     void beginRun(const art::Run&);
-    void endRun(const art::Run&);
+    void endJob();
 
     private:
     std::string        _crvDigiModuleLabel;
@@ -69,6 +69,8 @@ namespace mu2e
 
   void CrvPedestalFinder::beginRun(const art::Run&)
   {
+    if(_pedestalHists.size()>0) return;  //don't initialize again for additional runs
+
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
     _pedestalHists.reserve(counters.size()*CRVId::nChanPerBar);
@@ -89,7 +91,7 @@ namespace mu2e
     }
   }
 
-  void CrvPedestalFinder::endRun(const art::Run&)
+  void CrvPedestalFinder::endJob()
   {
     TF1 funcPedestal("f0", "gaus");
 
@@ -107,6 +109,7 @@ namespace mu2e
         continue;
       }
 
+/*
       int n=hist->GetNbinsX();
       double overflow=hist->GetBinContent(0)+hist->GetBinContent(n+1);
       if(overflow/((double)hist->GetEntries())>0.1) //too much underflow/overflow. something may be wrong.
@@ -114,6 +117,7 @@ namespace mu2e
         outputFile<<channel<<","<<0<<",-1,-1"<<std::endl;
         continue;
       }
+*/
 
       int maxbinPedestal = hist->GetMaximumBin();
       double peakPedestal = hist->GetBinCenter(maxbinPedestal);
