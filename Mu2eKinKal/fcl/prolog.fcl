@@ -1,3 +1,4 @@
+#include "Offline/TrkPatRec/fcl/Particle.fcl"
 BEGIN_PROLOG
 Mu2eKinKal : {
   # general configuration
@@ -393,7 +394,7 @@ Mu2eKinKal : {
 Mu2eKinKal : {
   @table::Mu2eKinKal
 
-  KKSeedFit : {
+  LHSeedFit : {
     module_type : LoopHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: @local::Mu2eKinKal.KKFIT
@@ -401,12 +402,13 @@ Mu2eKinKal : {
     ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
     ModuleSettings : {
       @table::Mu2eKinKal.LOOPHELIX
+      @table::Mu2eKinKal.KKPrecursors
       SampleSurfaces : ["TT_Mid"]
     }
     UsePDGCharge: false
   }
 
-  KKLoopFit : {
+  LHDriftFit : {
     module_type : LoopHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings : {
@@ -418,22 +420,26 @@ Mu2eKinKal : {
     ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
     ModuleSettings : {
       @table::Mu2eKinKal.LOOPHELIX
+      @table::Mu2eKinKal.KKPrecursors
       SampleSurfaces : ["ST_Outer","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
     }
     Extrapolation : @local::Mu2eKinKal.LOOPEXTRAPOLATION
     UsePDGCharge: false
   }
 
-  KKLineSeedFit : {
+  KLSeedFit : {
     module_type : KinematicLineFit
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: @local::Mu2eKinKal.KKFIT
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHSEEDEXT
-    ModuleSettings : @local::Mu2eKinKal.KINEMATICLINE
+    ModuleSettings : {
+      @table::Mu2eKinKal.KINEMATICLINE
+      @table::Mu2eKinKal.KKPrecursors
+    }
   }
 
-  KKLine : {
+  KLDriftFit : {
     module_type : KinematicLineFit
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
@@ -448,11 +454,14 @@ Mu2eKinKal : {
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
-    ModuleSettings : @local::Mu2eKinKal.KINEMATICLINE
+    ModuleSettings : {
+      @table::Mu2eKinKal.KINEMATICLINE
+      @table::Mu2eKinKal.KKPrecursors
+    }
     Extrapolation : @local::Mu2eKinKal.LINEEXTRAPOLATION
   }
 
-  KKCentralHelixSeedFit : {
+  CHSeedFit : {
     module_type : CentralHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
@@ -461,10 +470,13 @@ Mu2eKinKal : {
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHSEEDEXT
-    ModuleSettings : @local::Mu2eKinKal.CENTRALHELIX
+    ModuleSettings : {
+      @table::Mu2eKinKal.CENTRALHELIX
+      @table::Mu2eKinKal.KKPrecursors
+    }
   }
 
-  KKCentralHelix : {
+  CHDriftFit : {
     module_type : CentralHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
@@ -473,7 +485,10 @@ Mu2eKinKal : {
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
-    ModuleSettings : @local::Mu2eKinKal.CENTRALHELIX
+    ModuleSettings : {
+      @table::Mu2eKinKal.CENTRALHELIX
+      @table::Mu2eKinKal.KKPrecursors
+    }
   }
 }
 
@@ -481,45 +496,48 @@ Mu2eKinKal : {
   @table::Mu2eKinKal
   producers : {
     # seed fits: these don't use drift information or BField corrections
-    KKDeSeedFit: @local::Mu2eKinKal.KKSeedFit
-    KKLineSeedFit: @local::Mu2eKinKal.KKLineSeedFit
-    KKCentralHelixSeedFit: @local::Mu2eKinKal.KKCentralHelixSeedFit
-    # drift fits
-    KKLine: @local::Mu2eKinKal.KKLine
-    KKCentralHelix: @local::Mu2eKinKal.KKCentralHelix
-    KKDe: @local::Mu2eKinKal.KKLoopFit
-    KKDmu: @local::Mu2eKinKal.KKLoopFit
-    KKUe: @local::Mu2eKinKal.KKLoopFit
-    KKUmu: @local::Mu2eKinKal.KKLoopFit
+    KLSeedFit: @local::Mu2eKinKal.KLSeedFit
+    KKCHSeedFitmuM: @local::Mu2eKinKal.CHSeedFit
+    KKCHSeedFitmuP: @local::Mu2eKinKal.CHSeedFit
+    # drift fits: these depend on particle type and direction
+    KKLine: @local::Mu2eKinKal.KLDriftFit
+    KKCHmuM: @local::Mu2eKinKal.CHDriftFit
+    KKCHmuP: @local::Mu2eKinKal.CHDriftFit
+    KKDe: @local::Mu2eKinKal.LHDriftFit
+    KKDmu: @local::Mu2eKinKal.LHDriftFit
+    KKUe: @local::Mu2eKinKal.LHDriftFit
+    KKUmu: @local::Mu2eKinKal.LHDriftFit
   }
 }
 # Extrapolate upstream fits back to the tracker entrance
 Mu2eKinKal.producers.KKUe.Extrapolation.BackToTracker : true
 Mu2eKinKal.producers.KKUmu.Extrapolation.BackToTracker : true
 
-Mu2eKinKal.producers.KKCentralHelixSeedFit.ModuleSettings.FitParticle : 13
-Mu2eKinKal.producers.KKCentralHelix.ModuleSettings.FitParticle : 13
+Mu2eKinKal.producers.KKCHSeedFitmuM.ModuleSettings.FitParticle : @local::Particle.muminus
+Mu2eKinKal.producers.KKCHSeedFitmuP.ModuleSettings.FitParticle : @local::Particle.muplus
+Mu2eKinKal.producers.KKCHmuM.ModuleSettings.FitParticle : @local::Particle.muminus
+Mu2eKinKal.producers.KKCHmuP.ModuleSettings.FitParticle : @local::Particle.muplus
 
-Mu2eKinKal.producers.KKLineSeedFit.ExtensionSettings.BFieldCorrection : false
-Mu2eKinKal.producers.KKLineSeedFit.ModuleSettings.FitParticle : 13
-Mu2eKinKal.producers.KKLine.ModuleSettings.FitParticle : 13
+Mu2eKinKal.producers.KLSeedFit.ExtensionSettings.BFieldCorrection : false
+Mu2eKinKal.producers.KLSeedFit.ModuleSettings.FitParticle : @local::Particle.muminus
+Mu2eKinKal.producers.KKLine.ModuleSettings.FitParticle : @local::Particle.muminus
 
-Mu2eKinKal.producers.KKDeSeedFit.ModuleSettings.FitParticle : 11
-Mu2eKinKal.producers.KKDeSeedFit.FitDirection : 0
+Mu2eKinKal.producers.KKDeSeedFit.ModuleSettings.FitParticle : @local::Particle.eminus
+Mu2eKinKal.producers.KKDeSeedFit.FitDirection : @local::FitDir.downstream
 
 # save trajectories in the Detector region for downstream fits, just the T0 segment for the rest
-Mu2eKinKal.producers.KKDe.ModuleSettings.FitParticle : 11
-Mu2eKinKal.producers.KKDe.FitDirection : 0
+Mu2eKinKal.producers.KKDe.ModuleSettings.FitParticle : @local::Particle.eminus
+Mu2eKinKal.producers.KKDe.FitDirection : @local::FitDir.downstream
 Mu2eKinKal.producers.KKDe.KKFitSettings.SaveTrajectory : "Detector"
-Mu2eKinKal.producers.KKDmu.ModuleSettings.FitParticle : 13
-Mu2eKinKal.producers.KKDmu.FitDirection : 0
+Mu2eKinKal.producers.KKDmu.ModuleSettings.FitParticle : @local::Particle.muminus
+Mu2eKinKal.producers.KKDmu.FitDirection : @local::FitDir.downstream
 Mu2eKinKal.producers.KKDmu.KKFitSettings.SaveTrajectory : "Detector"
-Mu2eKinKal.producers.KKUe.ModuleSettings.FitParticle : 11
-Mu2eKinKal.producers.KKUe.FitDirection : 1
-Mu2eKinKal.producers.KKUe.KKFitSettings.SaveTrajectory : "T0"
-Mu2eKinKal.producers.KKUmu.ModuleSettings.FitParticle : 13
-Mu2eKinKal.producers.KKUmu.FitDirection : 1
-Mu2eKinKal.producers.KKUmu.KKFitSettings.SaveTrajectory : "T0"
+Mu2eKinKal.producers.KKUe.ModuleSettings.FitParticle : @local::Particle.eminus
+Mu2eKinKal.producers.KKUe.FitDirection : @local::FitDir.upstream
+Mu2eKinKal.producers.KKUe.KKFitSettings.SaveTrajectory : "Detector"
+Mu2eKinKal.producers.KKUmu.ModuleSettings.FitParticle : @local::Particle.muminus
+Mu2eKinKal.producers.KKUmu.FitDirection : @local::FitDir.upstream
+Mu2eKinKal.producers.KKUmu.KKFitSettings.SaveTrajectory : "Detector"
 # extrapolate upstream fits back to the tracker
 physics.producers.KKUmu.Extrapolation.BackToTracker : true
 physics.producers.KKUe.Extrapolation.BackToTracker  : true
