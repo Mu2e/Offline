@@ -111,7 +111,7 @@ namespace mu2e {
 
 
       //declare and fill the hash map crystal_id -> list of CaloHits
-      std::vector<CaloCrystalList> mainClusterList, splitClusterList, caloIdHitMap(cal.nCrystal());
+      std::vector<CaloCrystalList> mainClusterList, splitClusterList, caloIdHitMap(cal.nCrystals());
       std::set<const CaloHit*> seedList;
       std::vector<double>      clusterTime;
 

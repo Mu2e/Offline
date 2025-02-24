@@ -1,9 +1,11 @@
 #!/bin/bash
 
-function check_directory() {
-    dir=$1
+bad=0
 
-    if [ -d $dir/src ]; then
+function check_directory() {
+  dir=$1
+
+  if [ -d $dir/src ]; then
     pushd $dir >/dev/null 2>&1
 
     #echo "Checking directory $dir"
@@ -15,17 +17,21 @@ function check_directory() {
     badcmakes=(`echo ${goodfiles[@]} ${cmakes[@]} | tr ' ' '\n' | sort | uniq -u`)
 
     for item in ${badfiles[@]}; do
-        echo "File $dir/$item is not defined in CMakeLists.txt!"
+      echo "File $dir/$item is not defined in CMakeLists.txt!"
+      bad=1
     done
 
     for item in ${badcmakes[@]};do
-        echo "File $dir/$item defined in CMakeLists.txt but not found in directory!"
+      echo "File $dir/$item defined in CMakeLists.txt but not found in directory!"
+      bad=1
     done
 
     popd >/dev/null 2>&1
-    fi
+  fi
 }
 
 for dir in $PWD/*;do
-         check_directory ${dir%/}
+  check_directory ${dir%/}
 done
+
+exit $bad

@@ -38,14 +38,15 @@ cet_build_plugin(CaloHitsFromFragments art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(CaloRecoFromFragments art::module
-    REG_SOURCE src/CaloRecoFromFragments_module.cc
+cet_build_plugin(CaloDigiFromFragments art::module
+    REG_SOURCE src/CaloDigiFromFragments_module.cc
     LIBRARIES REG
       Offline::DAQ
-      
       Offline::CaloConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
+      artdaq_core_mu2e::artdaq-core-mu2e_Data
+      artdaq_core_mu2e::artdaq-core-mu2e_Data_dict
 )
 
 cet_build_plugin(CrvDigisFromFragments art::module
