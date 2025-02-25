@@ -5,6 +5,7 @@
 
 // stdlib includes
 #include <algorithm>
+#include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <utility>
@@ -53,8 +54,8 @@ namespace mu2e {
         fhicl::Atom<unsigned long int> window{ Name("window"), Comment("Calculate the gradient between ADC values this number of elements away from each other")};
         fhicl::Atom<unsigned long int> naverage{ Name("naverage"), Comment("Number of ADC values to average the gradient over")};
         fhicl::OptionalAtom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity level")};
-        fhicl::OptionalAtom<bool> makeTTreeGradients{ Name("makeTTreeGradients"), Comment("Controls whether to make the TTree with branches event, ADC, gradient, averagedGradient")};
-        fhicl::OptionalAtom<bool> makeTTreeWaveforms{ Name("makeTTreeWaveforms"), Comment("Controls whether to make the TTree with branches event, time, ADC")};
+        fhicl::OptionalAtom<bool> makeTTreeGradients{ Name("makeTTreeGradients"), Comment("Controls whether to make the TTree with branches eventId, ADC, gradient, averagedGradient, time")};
+        fhicl::OptionalAtom<bool> makeTTreeWaveforms{ Name("makeTTreeWaveforms"), Comment("Controls whether to make the TTree with branches eventId, time, ADC")};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit STMZeroSuppression(const Parameters& conf);
@@ -86,11 +87,9 @@ namespace mu2e {
       // Averaging variables
       std::vector<int16_t> ADCs;        // ADC values
       unsigned long int nADCs = 0;      // number of ADC values in unsuppressed waveform
-      std::vector<int16_t> zeros;       // For checking if any data is present
       std::vector<int16_t> gradients;   // ADC gradient (difference between consecutive ADC values)
       unsigned long int nGradients = 0; // number of ADC values in unsuppressed waveform minus the window length
       std::vector<double> avGradients;  // ADC averaged averaged gradient
-      std::vector<double> avPeakTimes;  // times at averaged gradient points, as multiplier of clock ticks
 
       // Peak finding variables
       bool found_peak = false;                  // controls whether a peak has been found (i.e. if recording)
@@ -117,8 +116,9 @@ namespace mu2e {
       // TTree variables
       TTree* ttree;
       uint eventId = 0;
-      int16_t ADC = 0, gradient = 0, averagedGradient = 0;
-      uint32_t time = 0, tADC = 0;
+      int16_t ADC = 0, gradient = 0;
+      double averagedGradient = 0;
+      uint32_t time = 0;
   };
 
   STMZeroSuppression::STMZeroSuppression(const Parameters& conf):
@@ -143,7 +143,8 @@ namespace mu2e {
         ttree->Branch("eventId", &eventId, "eventId/i");
         ttree->Branch("ADC", &ADC, "ADC/S");
         ttree->Branch("gradient", &gradient, "gradient/S");
-        ttree->Branch("averagedGradient", &averagedGradient, "averagedGradient/S");
+        ttree->Branch("averagedGradient", &averagedGradient, "averagedGradient/D");
+        ttree->Branch("time", &time, "time/i");
       };
       if (makeTTreeWaveforms) {
         art::ServiceHandle<art::TFileService> tfs;
@@ -161,6 +162,8 @@ namespace mu2e {
       std::cout << std::left << "\t\t" << std::setw(15) << "tbefore"   << tBefore   << " ns" << std::endl;
       std::cout << std::left << "\t\t" << std::setw(15) << "tafter"    << tAfter    << " ns" << std::endl;
       std::cout << std::left << "\t\t" << std::setw(15) << "threshold" << threshold << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "window"    << window    << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(15) << "nAverage"  << nAverage  << std::endl;
       std::cout << std::endl; // buffer line
       std::cout << "\tChannel" << std::endl;
       std::cout << std::left << "\t\t" << std::setw(15) << "Name" << channel.name()                  << std::endl;
@@ -178,7 +181,6 @@ namespace mu2e {
     const STMEnergyCalib& stmEnergyCalib = stmEnergyCalibHandle.get(event.id());
     nADCBefore = STMUtils::convertToClockTicks(tBefore, channel, stmEnergyCalib);
     nADCAfter = STMUtils::convertToClockTicks(tAfter, channel, stmEnergyCalib);
-    tADC = tBefore/nADCBefore;
     if (verbosityLevel > 2) {
       std::cout << "ZS findPeaks fitting parameters" << std::endl;
       std::cout << std::left << std::setw(15) << "nADCBefore" << nADCBefore << std::endl;
@@ -189,16 +191,12 @@ namespace mu2e {
     for (const auto& waveform : *waveformsHandle) {
       // Get the data product
       ADCs = waveform.adcs();
+      time = waveform.trigTimeOffset();
       // Assign the correct amount of space to all the data vectors
       nADCs = ADCs.size();
-      zeros.clear();
-      zeros.assign(nADCs, 0);
-      if (ADCs == zeros) // Needed for simulation work
-        continue;
       nGradients = nADCs - window;
       gradients.clear();
       avGradients.clear();
-      avPeakTimes.clear();
       peakTimes.clear();
 
       // Calculate the ADC gradients
@@ -211,25 +209,36 @@ namespace mu2e {
       chooseStartsAndEnds();
 
       // Generate the output waveforms
+      eventId = event.id().event();
       nZSwaveforms = finalPeakStartTimes.size();
       for (k = 0; k < nZSwaveforms; ++k) {
         peakStartTime = finalPeakStartTimes[k];
         peakEndTime = finalPeakEndTimes[k];
         ZSADCs.clear();
         ZSADCs.assign(waveform.adcs().begin() + peakStartTime, waveform.adcs().begin() + peakEndTime);
+        std::cout << "ZS results: " << peakStartTime << ", " << peakEndTime << ", " << peakEndTime - peakStartTime << std::endl;
+        time = waveform.trigTimeOffset() + peakStartTime;
+        STMWaveformDigi ZSWaveform(time, ZSADCs);
         if (verbosityLevel > 2) {
-          std::cout << "ZSTime: " << waveform.trigTimeOffset() + (peakStartTime / tADC) << std::endl;
-          std::cout << "ZSADCs (" << ZSADCs.size() << "entries): ";
+          std::cout << "ZS: waveform time: " << ZSWaveform.trigTimeOffset() << std::endl;
+          std::cout << "ZS: output ADCs: ";
           for (auto i : ZSADCs)
             std::cout << i << ", ";
           std::cout << "\n" << std::endl;
         };
-        STMWaveformDigi stm_waveform(waveform.trigTimeOffset() + (peakStartTime / tADC), ZSADCs);
-        outputSTMWaveformDigis->push_back(stm_waveform);
+        if (makeTTreeWaveforms) {
+          nADCs = ZSADCs.size();
+          for (i = 0; i < nADCs; i++) {
+            ADC = ZSADCs[i];
+            ttree->Fill();
+            time++;
+          };
+        };
+        outputSTMWaveformDigis->push_back(ZSWaveform);
       };
 
       // Save data to TTree
-      eventId = event.id().event();
+      time = waveform.trigTimeOffset();
       if (makeTTreeGradients) {
         for (i = 0; i < nADCs; i++) {
           ADC = ADCs[i];
@@ -237,14 +246,7 @@ namespace mu2e {
           gradient = gradients[j];
           averagedGradient = avGradients[j];
           ttree->Fill();
-        };
-      };
-      if (makeTTreeWaveforms) {
-        time = (uint32_t) waveform.trigTimeOffset() + peakStartTime - tADC;
-        for (i = 0; i < nADCs; i++) {
-          ADC = ADCs[i];
-          time += tADC;
-          ttree->Fill();
+          time++;
         };
       };
     };
@@ -287,7 +289,6 @@ namespace mu2e {
         av_gradient = av_gradient + gradients[i + j];
       // Save the results
       avGradients.push_back(av_gradient / nAverage);
-      avPeakTimes.push_back(i);
       // Reset for next loop
       av_gradient = 0;
     };
@@ -319,11 +320,11 @@ namespace mu2e {
       // If there is no data above threshold yet
       if (avGradients[i] < threshold && !found_peak) {
         found_peak = true;
-        peakTime = avPeakTimes[i];
+        peakTime = i;
         peakTimes.push_back(peakTime);
         // Assign the appropriate peak start and end time
         peakStartTimes.push_back(peakTime < nADCBefore ? 0 : peakTime - nADCBefore);
-        peakEndTimes.push_back(peakTime > (nADCs - nADCAfter) ? nADCs : peakTime + nADCAfter);
+        peakEndTimes.push_back((peakTime + nADCAfter) > nADCs ? nADCs : peakTime + nADCAfter);
       };
     };
     return;

@@ -1,3 +1,16 @@
+cet_build_plugin(ConcatenateOutputWaveforms art::module
+    REG_SOURCE src/ConcatenateOutputWaveforms_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::RecoDataProducts
+)
+
+cet_build_plugin(ConcatenationFilter art::module
+    REG_SOURCE src/ConcatenationFilter.cc
+    LIBRARIES REG
+    Offline::RecoDataProducts
+)
+
 cet_build_plugin(CountMixedEvents art::module
     REG_SOURCE src/CountMixedEvents_module.cc
     LIBRARIES REG

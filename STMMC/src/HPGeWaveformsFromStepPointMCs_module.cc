@@ -65,8 +65,9 @@ namespace mu2e {
       fhicl::Atom<double> noiseSD {Name("NoiseSD"), Comment("Standard deviation of ADC noise [mV]. Set this to 0.0 for the ideal case.")};
       fhicl::Atom<double> risingEdgeDecayConstant{ Name("risingEdgeDecayConstant"), Comment("Rising edge decay time [us]")};
       fhicl::OptionalAtom<int> microspillBufferLengthCount{ Name("microspillBufferLengthCount"), Comment("Number of microspills to buffer ahead for, in number of microspills")};
-      fhicl::OptionalAtom<bool> makeTTree{ Name("makeTTree"), Comment("Controls whether to make the TTree with branches chargeCollected, chargeDecayed, ADC, eventId")};
+      fhicl::OptionalAtom<bool> makeTTree{ Name("makeTTree"), Comment("Controls whether to make the TTree with branches chargeCollected, chargeDecayed, ADC, eventId, time")};
       fhicl::OptionalAtom<double> timeOffset{ Name("timeOffset"), Comment("For debugging, adds the named time offset in [ns], used for testing analysis algorithms")};
+      fhicl::OptionalAtom<uint> resetEventNumber{ Name("resetEventNumber"), Comment("Simulates the off-spill period by resetting the inter-event last decayed charge to zero")};
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit HPGeWaveformsFromStepPointMCs(const Parameters& conf);
@@ -85,6 +86,7 @@ namespace mu2e {
     double risingEdgeDecayConstant = 0;                         // [us]
     bool makeTTree = false;
     double timeOffset = 0.0;
+    uint resetEventNumber = 0;
 
     // Define experiment specific constants
     const double feedbackCapacitance = 1e-12; // [Farads]
@@ -101,7 +103,7 @@ namespace mu2e {
     uint nADCs = 0;                                       // Number of ADC values in an event
     const int16_t ADCMax = (int16_t) std::pow(2, 16) - 1; // Maximum ADC value
     int16_t ADC = 0;                                      // iterator variable
-    double masterClockTickPeriod = 25.0;                  // Master clock time perion [ns]
+    uint32_t eventTimeBuffer = 0;
 
     // Define Ge crystal properties [mm]
     const double crystalCentreX = -3973.81;
@@ -144,6 +146,7 @@ namespace mu2e {
     TTree* ttree;
     double chargeCollected = 0, chargeDecayed = 0;
     uint eventId = 0;
+    uint32_t time = 0;
 
     // Data storage vectors
     std::vector<double> _charge; // Buffer to store charge collected from STMDet StepPointMCs
@@ -208,7 +211,10 @@ namespace mu2e {
           ttree->Branch("chargeDecayed", &chargeDecayed, "chargeDecayed/D");
           ttree->Branch("ADC", &ADC, "ADC/S");
           ttree->Branch("eventId", &eventId, "eventId/i");
+          ttree->Branch("time", &time, "time/i");
         };
+
+        resetEventNumber = conf().resetEventNumber() ? *(conf().resetEventNumber()) : 0;
       };
 
   void HPGeWaveformsFromStepPointMCs::produce(art::Event& event) {
@@ -230,36 +236,43 @@ namespace mu2e {
     // Digitize the waveform
     digitize();
 
-    // Make the ttree if appropriate
-    if (makeTTree) {
-      eventId = event.id().event();
-      for (uint i = 0; i < nADCs; i++) {
-        chargeCollected = _chargeCollected[i];
-        chargeDecayed = _chargeDecayed[i];
-        ADC = _adcs[i];
-        ttree->Fill();
-      };
-    };
-
     // Simulation takes the POT time as t = 0, and has sequential microspills (events). The trigger time offset is not used here, left as a TODO
     // Create the STMWaveformDigi and insert all the relevant attributes
-    eventTime = (uint32_t) (event.id().event() * micropulseTime + timeOffset) / tADC;
+    // TODO - this only keeps accurate time if the sampling is 320MHz. Needs to be rewritten to work for other times
+    eventTimeBuffer = event.id().event() % 5;
+    if (eventTimeBuffer == 0 || (eventTimeBuffer % 3) == 0)
+      eventTime += nADCs + 1;
+    else
+      eventTime += nADCs;
     STMWaveformDigi _waveformDigi(eventTime, _adcs);
     std::unique_ptr<STMWaveformDigiCollection> outputDigis(new STMWaveformDigiCollection);
     outputDigis->emplace_back(_waveformDigi);
 
+    // Make the ttree if appropriate
+    if (makeTTree) {
+      eventId = event.id().event();
+      time = _waveformDigi.trigTimeOffset() - 1;
+      for (uint i = 0; i < nADCs; i++) {
+        chargeCollected = _chargeCollected[i];
+        chargeDecayed = _chargeDecayed[i];
+        ADC = _adcs[i];
+        time++;
+        ttree->Fill();
+      };
+    };
+
     // Update the parameters to carry over to the next event
-    lastEventEndDecayedCharge = _chargeDecayed[nADCs];
+    if (resetEventNumber != 0 && event.id().event() == resetEventNumber)
+      lastEventEndDecayedCharge = 0;
+    lastEventEndDecayedCharge = _chargeDecayed.back();
     _chargeCarryOver.clear();
     _chargeCarryOver.assign(_chargeCollected.begin() + nADCs, _chargeCollected.end());
     _chargeCollected.clear();
     _chargeCollected.assign(_chargeCarryOver.begin(), _chargeCarryOver.end());
     _chargeCollected.insert(_chargeCollected.end(), nADCs, 0);
     // Clear previous buffer vectors
-    _chargeDecayed.clear();
-    _chargeDecayed.assign(nADCs, 0);
-    _adcs.clear();
-    _adcs.assign(nADCs, 0);
+    std::fill(_chargeDecayed.begin(), _chargeDecayed.end(), 0);
+    std::fill(_adcs.begin(), _adcs.end(), 0);
 
     // Add the STMWaveformDigi to the event
     event.put(std::move(outputDigis));
@@ -388,7 +401,7 @@ namespace mu2e {
 
   void HPGeWaveformsFromStepPointMCs::decayCharge() {
     _chargeDecayed[0] = lastEventEndDecayedCharge * decayExp + _chargeCollected[0];
-    for (uint t = 1; t < _chargeDecayed.size(); t++)
+    for (uint t = 1; t < nADCs; t++)
       _chargeDecayed[t] = _chargeDecayed[t-1] * decayExp + _chargeCollected[t];
     return;
   };
