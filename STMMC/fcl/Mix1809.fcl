@@ -24,7 +24,7 @@ physics : {
   filters : {
     STMStepMixer: {
       module_type         : MixBackgroundFrames
-      fileNames           : ["/pnfs/mu2e/resilient/users/plesniak/Analysis/1809Cat.art"]
+      fileNames           : ["/pnfs/mu2e/resilient/users/plesniak/catStage2/1809Cat.art"]
       readMode            : sequential
       wrapFiles           : true
       mu2e: {
