@@ -361,11 +361,12 @@ Mu2eKinKal : {
     ParameterConstraints : [0.0,0.0,0.0,0.0,0.0,0]
     CosmicTrackSeedCollections : ["LineFinder"]
     SeedFlags : [ "HelixOK" ]
-    SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
+    SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
     SampleTimeBuffer : 100 # time buffer for intersections (ns)
     SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
+    UseFitCharge : true # Allow the PDG code to follow the fit
   }
 
   KINEMATICLINE : {
@@ -376,7 +377,7 @@ Mu2eKinKal : {
     ComboHitCollection : "makeSH"
     CaloClusterCollection : "CaloClusterMaker"
     SeedFlags : [ "HelixOK" ]
-    SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","TCRV"]
+    SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
     SampleTimeBuffer : 100 # time buffer for intersections (ns)
     SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
     SampleInRange : true # require sample be in time range
@@ -497,12 +498,10 @@ Mu2eKinKal : {
   producers : {
     # seed fits: these don't use drift information or BField corrections
     KLSeedFit: @local::Mu2eKinKal.KLSeedFit
-    KKCHSeedFitmuM: @local::Mu2eKinKal.CHSeedFit
-    KKCHSeedFitmuP: @local::Mu2eKinKal.CHSeedFit
+    KKCHSeedFitmu: @local::Mu2eKinKal.CHSeedFit
     # drift fits: these depend on particle type and direction
     KKLine: @local::Mu2eKinKal.KLDriftFit
-    KKCHmuM: @local::Mu2eKinKal.CHDriftFit
-    KKCHmuP: @local::Mu2eKinKal.CHDriftFit
+    KKCHmu: @local::Mu2eKinKal.CHDriftFit
     KKDe: @local::Mu2eKinKal.LHDriftFit
     KKDmu: @local::Mu2eKinKal.LHDriftFit
     KKUe: @local::Mu2eKinKal.LHDriftFit
@@ -515,8 +514,7 @@ Mu2eKinKal.producers.KKUmu.Extrapolation.BackToTracker : true
 
 Mu2eKinKal.producers.KKCHSeedFitmuM.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKCHSeedFitmuP.ModuleSettings.FitParticle : @local::Particle.muplus
-Mu2eKinKal.producers.KKCHmuM.ModuleSettings.FitParticle : @local::Particle.muminus
-Mu2eKinKal.producers.KKCHmuP.ModuleSettings.FitParticle : @local::Particle.muplus
+Mu2eKinKal.producers.KKCHmu.ModuleSettings.FitParticle : @local::Particle.muminus # charge floats in the fit, this just determines the mass
 
 Mu2eKinKal.producers.KLSeedFit.ExtensionSettings.BFieldCorrection : false
 Mu2eKinKal.producers.KLSeedFit.ModuleSettings.FitParticle : @local::Particle.muminus
