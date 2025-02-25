@@ -1,0 +1,55 @@
+# -*- mode:tcl -*-
+#------------------------------------------------------------------------------
+# make digis from artdaq fragments - default
+#------------------------------------------------------------------------------
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/DAQ/fcl/prolog.fcl"
+
+process_name: digifiy
+
+services: {
+  @table::Services.Reco
+    TimeTracker : {
+        printSummary : true
+        dbOutput : {
+            filename  : ""
+            overwrite : false
+        }
+    }
+#    message : @local::mf_debugging
+    message: @local::default_message
+}
+
+services.scheduler.wantSummary        : true
+# Limit the amount of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit       : 1000
+services.message.destinations.log.categories.ArtReport.timespan    : 300
+services.message.destinations.log.outputStatistics                 : true
+# services.message.destinations.log.filename                         : "/dev/stdout"
+
+source.module_type : RootInput
+
+physics: {
+    producers: {
+        @table::DAQ.producers
+    }
+
+    p1: [ StrawRecoFromArtdaqFragments ]
+    e1: [ Output ]
+
+    trigger_paths: [ p1 ]
+    end_paths    : [ e1 ]
+}
+
+outputs: {
+    Output: { module_type: RootOutput
+        outputCommands: [ "keep *_*_*_*" ]
+        fileName      : "dig.mu2e.trkvst.tstation.%06r_%08s.art"
+    }
+}
+
+# physics.producers.StrawRecoFromArtdaqFragments.nADCPackets   : 1
+# physics.producers.StrawRecoFromArtdaqFragments.saveWaveforms : 0
+# physics.producers.StrawRecoFromArtdaqFragments.diagLevel     : 0  # 2:print waveforms
