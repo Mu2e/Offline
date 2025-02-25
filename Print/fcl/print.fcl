@@ -17,6 +17,10 @@ physics :{
 
     printModule : {
       module_type : PrintModule
+      EventHeaderPrinter : {
+        verbose : 1
+      }
+
       genParticlePrinter : {
         verbose : 1
       }
