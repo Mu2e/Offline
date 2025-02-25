@@ -173,14 +173,31 @@ namespace mu2e
 
   bool KalSeedFilter::checkKalSeed(const KalSeed&Ks, const KalSeedCutsTool&Cuts){
     if( Ks.status().hasAllProperties(Cuts._goods) && Ks.intersections().size()>0){
-      // get the first intersection
-      auto const& kinter = Ks.intersections().front();
-      // convert to LoopHeix; this is needed to get d0 cut (which shoudl be replaced FIXME)
-      KinKal::LoopHelix lh(kinter.pstate_, KinKal::VEC3(kinter.bnom_));
-      auto   momvec = kinter.momentum3();
+
+      // extract test quantities from the fit segment at t0
+      double t0;
+      auto t0seg = Ks.t0Segment(t0);
+      if(t0seg == Ks.segments().end()) return false;
+      auto momvec = t0seg->momentum3();
+      auto posvec = t0seg->position3();
+
       double td     = 1.0/tan(momvec.Theta());
       double mom    = momvec.R();
-      double d0     = lh.minAxisDist();
+      double d0(0.0);
+      if(Ks.loopHelixFit()){
+        auto lhtraj = t0seg->loopHelix();
+        d0 = std::copysign(lhtraj.minAxisDist(),posvec.Cross(momvec).Z());
+      } else if (Ks.centralHelixFit()) {
+        auto chtraj = t0seg->centralHelix();
+        d0 = chtraj.d0();
+      } else if (Ks.kinematicLineFit()){
+        auto kltraj = t0seg->kinematicLine();
+        d0 = kltraj.d0();
+      } else {
+        return false;
+      }
+
+
       //check particle type and fitdirection
       if ( Cuts._doParticleTypeCheck){
         if (Ks.particle() != Cuts._tpart)  {
