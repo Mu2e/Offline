@@ -45,12 +45,12 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<art::InputTag> stmWaveformDigisTag{ Name("stmWaveformDigisTag"), Comment("InputTag for STMWaveformDigiCollection")};
         fhicl::Atom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity level")};
-        fhicl::Atom<double> tau{Name("tau"), Comment("Decay constant of the waveform (used in the deconvolution step) [ns]")};
+        fhicl::Atom<double> tau{Name("tau"), Comment("Decay constant of the adcs (used in the deconvolution step) [ns]")};
         fhicl::Atom<double> M{Name("M"), Comment("M parameter (number of samples to differentiate between)")};
         fhicl::Atom<double> L{Name("L"), Comment("L parameter (number of samples to average over)")};
         fhicl::Atom<double> nsigma_cut{Name("nsigma_cut"), Comment("Number of sigma away from baseline_mean to cut (for finding peaks)")};
         fhicl::Atom<double> thresholdgrad{Name("thresholdgrad"), Comment("Threshold on gradient to cut out peaks when calculating baseline")};
-        fhicl::OptionalAtom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit for histograms if verbosity level >= 5: \"sample_number\", \"waveform_time\", or \"event_time\"") };
+        fhicl::OptionalAtom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit for histograms if verbosity level >= 5: \"sample_number\", \"adcs_time\", or \"event_time\"") };
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit STMMovingWindowDeconvolution(const Parameters& conf);
@@ -59,20 +59,20 @@ namespace mu2e {
     void beginJob() override;
     void produce(art::Event& e) override;
 
-    void deconvolve(const STMWaveformDigi& waveform, std::vector<double>& deconvolved_data, const STMEnergyCalib& stmEnergyCalib);
+    void deconvolve(const STMWaveformDigi& adcs, std::vector<double>& deconvolved_data, const STMEnergyCalib& stmEnergyCalib);
     void differentiate(const std::vector<double>& deconvolved_data, std::vector<double>& differentiated_data);
     void average(const std::vector<double>& differentiated_data, std::vector<double>& averaged_data);
     void calculate_baseline(const std::vector<double>& averaged_data, double& mean, double& stddev);
     void find_peaks(const std::vector<double>& averaged_data, std::vector<double>& peak_heights, std::vector<double>& peak_times, const double baseline_mean, const double baseline_stddev);
 
-    void make_debug_histogram(const art::Event& event, int count, const STMWaveformDigi& waveform, const STMEnergyCalib& stmEnergyCalib, const std::vector<double>& deconvolved_data, const std::vector<double>& differentiated_data, const std::vector<double>& averaged_data, const double baseline_mean, const double baseline_stddev, const std::vector<double>& peak_heights, const std::vector<double>& peak_times);
+    void make_debug_histogram(const art::Event& event, int count, const STMWaveformDigi& adcs, const STMEnergyCalib& stmEnergyCalib, const std::vector<double>& deconvolved_data, const std::vector<double>& differentiated_data, const std::vector<double>& averaged_data, const double baseline_mean, const double baseline_stddev, const std::vector<double>& peak_heights, const std::vector<double>& peak_times);
 
     int _verbosityLevel;
     art::ProductToken<STMWaveformDigiCollection> _stmWaveformDigisToken;
     STMChannel _channel;
     ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
 
-    double _tau; // decay time of waveform [ns] (used in deconvolution step)
+    double _tau; // decay time of adcs [ns] (used in deconvolution step)
     double _M; // M-parameter (used in differentiation step)
     double _L; // L-parameter (used in averaging step)
     double _nsigma_cut; // number of sigma away from baseline mean to cut (used in find_peaks)
@@ -107,7 +107,7 @@ namespace mu2e {
   void STMMovingWindowDeconvolution::produce(art::Event& event) {
     // create output
     unique_ptr<STMMWDDigiCollection> outputMWDDigis(new STMMWDDigiCollection);
-    auto waveformDigisHandle = event.getValidHandle(_stmWaveformDigisToken);
+    auto adcsDigisHandle = event.getValidHandle(_stmWaveformDigisToken);
 
     STMEnergyCalib const& stmEnergyCalib = _stmEnergyCalib_h.get(event.id()); // get prodition
 
@@ -115,17 +115,17 @@ namespace mu2e {
     std::vector<double> differentiated_data;
     std::vector<double> averaged_data;
     int count = 0;
-    for (const auto& waveform : *waveformDigisHandle) {
+    for (const auto& adcs : *adcsDigisHandle) {
 
-      // clear out data from previous waveform
+      // clear out data from previous adcs
       deconvolved_data.clear();
-      deconvolved_data.reserve(waveform.adcs().size());
+      deconvolved_data.reserve(adcs.adcs().size());
       differentiated_data.clear();
-      differentiated_data.reserve(waveform.adcs().size());
+      differentiated_data.reserve(adcs.adcs().size());
       averaged_data.clear();
-      averaged_data.reserve(waveform.adcs().size());
+      averaged_data.reserve(adcs.adcs().size());
 
-      deconvolve(waveform, deconvolved_data, stmEnergyCalib);
+      deconvolve(adcs, deconvolved_data, stmEnergyCalib);
       differentiate(deconvolved_data, differentiated_data);
       average(differentiated_data, averaged_data);
 
@@ -142,7 +142,7 @@ namespace mu2e {
       }
 
       if (_verbosityLevel >= 5) {
-        make_debug_histogram(event, count, waveform, stmEnergyCalib, deconvolved_data, differentiated_data, averaged_data, baseline_mean, baseline_stddev, peak_heights, peak_times);
+        make_debug_histogram(event, count, adcs, stmEnergyCalib, deconvolved_data, differentiated_data, averaged_data, baseline_mean, baseline_stddev, peak_heights, peak_times);
       }
 
       ++count;
@@ -153,10 +153,10 @@ namespace mu2e {
     event.put(std::move(outputMWDDigis));
   }
 
-  void STMMovingWindowDeconvolution::deconvolve(const STMWaveformDigi& waveform, std::vector<double>& deconvolved_data, const STMEnergyCalib& stmEnergyCalib) {
+  void STMMovingWindowDeconvolution::deconvolve(const STMWaveformDigi& adcs, std::vector<double>& deconvolved_data, const STMEnergyCalib& stmEnergyCalib) {
     const auto pedestal = stmEnergyCalib.pedestal(_channel);
     const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
-    const auto& input_data = waveform.adcs();
+    const auto& input_data = adcs.adcs();
     deconvolved_data.push_back(input_data[0] - pedestal);
     for(size_t i=1; i<input_data.size(); i++){
       deconvolved_data.push_back((input_data[i]-pedestal)-(1-(nsPerCt/_tau))*(input_data[i-1]-pedestal) + deconvolved_data[i-1]);
@@ -258,7 +258,7 @@ namespace mu2e {
     }
   }
 
-  void STMMovingWindowDeconvolution::make_debug_histogram(const art::Event& event, int count, const STMWaveformDigi& waveform, const STMEnergyCalib& stmEnergyCalib, const std::vector<double>& deconvolved_data, const std::vector<double>& differentiated_data, const std::vector<double>& averaged_data, const double baseline_mean, const double baseline_stddev, const std::vector<double>& peak_heights, const std::vector<double>& peak_times) {
+  void STMMovingWindowDeconvolution::make_debug_histogram(const art::Event& event, int count, const STMWaveformDigi& adcs, const STMEnergyCalib& stmEnergyCalib, const std::vector<double>& deconvolved_data, const std::vector<double>& differentiated_data, const std::vector<double>& averaged_data, const double baseline_mean, const double baseline_stddev, const std::vector<double>& peak_heights, const std::vector<double>& peak_times) {
     art::ServiceHandle<art::TFileService> tfs;
     std::stringstream histsuffix;
     histsuffix.str("");
@@ -266,8 +266,8 @@ namespace mu2e {
 
     const auto pedestal = stmEnergyCalib.pedestal(_channel);
     const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
-    Binning binning = STMUtils::getBinning(waveform, _xAxis, nsPerCt);
-    TH1D* h_waveform = tfs->make<TH1D>(("h_waveform"+histsuffix.str()).c_str(), "Waveform", binning.nbins(),binning.low(),binning.high());
+    Binning binning = STMUtils::getBinning(adcs, _xAxis, nsPerCt);
+    TH1D* h_adcs = tfs->make<TH1D>(("h_adcs"+histsuffix.str()).c_str(), "Waveform", binning.nbins(),binning.low(),binning.high());
     TH1D* h_deconvolved = tfs->make<TH1D>(("h_deconvolved"+histsuffix.str()).c_str(), "Deconvolution", binning.nbins(),binning.low(),binning.high());
     TH1D* h_differentiated = tfs->make<TH1D>(("h_differentiated"+histsuffix.str()).c_str(), "Differentiated", binning.nbins(),binning.low(),binning.high());
     TH1D* h_averaged = tfs->make<TH1D>(("h_averaged"+histsuffix.str()).c_str(), "Averaged", binning.nbins(),binning.low(),binning.high());
@@ -277,7 +277,7 @@ namespace mu2e {
     TH1D* h_peak_threshold = tfs->make<TH1D>(("h_peak_threshold"+histsuffix.str()).c_str(), "Threshold", binning.nbins(),binning.low(),binning.high());
 
     for (size_t i = 0; i < deconvolved_data.size(); ++i) {
-      h_waveform->SetBinContent(i+1, waveform.adcs()[i] - pedestal); // remove the pedestal
+      h_adcs->SetBinContent(i+1, adcs.adcs()[i] - pedestal); // remove the pedestal
       h_deconvolved->SetBinContent(i+1, deconvolved_data[i]);
       h_differentiated->SetBinContent(i+1, differentiated_data[i]);
       h_averaged->SetBinContent(i+1, averaged_data[i]);
