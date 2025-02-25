@@ -157,6 +157,7 @@ STMDAQParameters : {
     }
 }
 HPGeDigitization : {
+    StepPointMCsTag: "compressSTMDet:STMDet"
     EnergyPerADCBin : 0.5 # keV/bin
     PreamplifierNoiseSD : 0.32 # mV
     DecayConstant : 50 # us
