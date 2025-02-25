@@ -7,11 +7,11 @@
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/STMMC/fcl/prolog.fcl"
 
-process_name: TestFullDigitizationStackFromInputZS
+process_name: TestFullDigitizationStackDigi
 
 source : {
   module_type : RootInput
-  fileNames : ["digitized.art"]
+  fileNames : ["testInput.art"] # ["digitized.art"]
 }
 
 services : @local::Services.Sim
@@ -24,19 +24,26 @@ physics: {
       EnergyPerADCBin : @local::HPGeDigitization.EnergyPerADCBin
       NoiseSD : @local::HPGeDigitization.PreamplifierNoiseSD
       risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant
-      makeTTree : true
+      # makeTTree : true
       timeOffset : 100
+    }
+    concatenateWaveformsHPGe : {
+      module_type : ConcatenateDigitizedWaveforms
+      STMWaveformDigisTag : "DigiHPGe:"
+      nMerge : 10
+      # makeTTree : true
     }
     ZSHPGe : {
       module_type : STMZeroSuppression
-      stmWaveformDigisTag : @local::STMMCAnalysis.ZS.HPGe.stmWaveformDigisTag
+      stmWaveformDigisTag : "concatenateWaveformsHPGe:" # @local::STMMCAnalysis.ZS.HPGe.stmWaveformDigisTag # "concatenateWaveformsHPGe:"
       tbefore : @local::STMMCAnalysis.ZS.HPGe.tbefore
       tafter : @local::STMMCAnalysis.ZS.HPGe.tafter
       threshold : @local::STMMCAnalysis.ZS.HPGe.threshold
       window : @local::STMMCAnalysis.ZS.HPGe.window
       naverage : @local::STMMCAnalysis.ZS.HPGe.naverage
-      makeTTreeWaveforms: true
-      verbosityLevel : 3
+      makeTTreeGradients: true
+      # makeTTreeWaveforms: true
+      # verbosityLevel : 3
     }
     MWDHPGe : {
       module_type : STMMovingWindowDeconvolution
@@ -46,10 +53,21 @@ physics: {
       L : @local::STMMCAnalysis.MWD.HPGe.L
       nsigma_cut : @local::STMMCAnalysis.MWD.HPGe.nsigma_cut
       thresholdgrad : @local::STMMCAnalysis.MWD.HPGe.thresholdgrad
+      defaultBaselineMean : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineMean
+      defaultBaselineSD : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineSD
+      makeTTreeMWD: false
+      makeTTreeEnergies: true
       verbosityLevel : 3
     }
   }
-  p1 : [ZSHPGe] #DigiHPGe, ZSHPGe, MWDHPGe
+  filters : {
+      removeEmptyEvents : {
+          # Stage 2 output contains events that only have StepPointMCs for virtualdetectors, we want to remove the events that only have StepPointMCs in virtualdetector and not STMDet
+          module_type : ConcatenationFilter
+          STMWaveformDigisTag : "concatenateWaveformsHPGe:"
+      }
+  }
+  p1 : [DigiHPGe, concatenateWaveformsHPGe, removeEmptyEvents, ZSHPGe, MWDHPGe] # DigiHPGe, ZSHPGe, MWDHPGe, concatenateWaveformsHPGe, removeEmptyEvents
   trigger_paths : [p1]
   output_path : [compressedOutput]
   end_paths : [output_path]
@@ -58,14 +76,15 @@ physics: {
 outputs : {
   compressedOutput : {
     module_type : RootOutput
-    fileName : "ZS.art" #@nil
+    fileName : "MWD.art" #@nil
+    SelectEvents: ["p1"]
   }
 }
 
 physics.producers.g4run.physics.physicsListName: "QGSP_BERT_EMZ"
 physics.producers.g4run.SDConfig.enableSD: [STMDet]
 
-services.TFileService.fileName        : "ZS.root"
+services.TFileService.fileName        : "MWD.root"
 services.SeedService.baseSeed         : 1323454667 #@nil
 services.SeedService.maxUniqueEngines : 1 #@nil
 services.scheduler.wantSummary: true

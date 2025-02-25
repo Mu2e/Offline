@@ -89,10 +89,10 @@ STMMCAnalysis : {
     ZS : {
         HPGe : {
             stmWaveformDigisTag : "DigiHPGe:"
-            tbefore : 20 #ns
-            tafter : 300 #ns
+            tbefore : @local::STM.HPGe.tbefore # 20 #ns
+            tafter : @local::STM.HPGe.tafter #500 #ns
             threshold : @local::STM.HPGe.threshold
-            window : 5
+            window : @local::STM.HPGe.window # 10
             naverage : @local::STM.HPGe.naverage
         }
         LaBr : {
@@ -108,10 +108,12 @@ STMMCAnalysis : {
         HPGe : {
             stmWaveformDigisTag : "ZSHPGe:"
             tau : @local::STM.HPGe.tau
-            M : 10 # @local::STM.HPGe.M
-            L : 5 # @local::STM.HPGe.L
+            M : @local::STM.HPGe.M # 100 # @local::STM.HPGe.M
+            L : @local::STM.HPGe.L # 50 # @local::STM.HPGe.L
             nsigma_cut : @local::STM.HPGe.nsigma_cut
             thresholdgrad : @local::STM.HPGe.thresholdgrad
+            defaultBaselineMean : @local::STM.HPGe.defaultBaselineMean
+            defaultBaselineSD : @local::STM.HPGe.defaultBaselineSD
         }
         LaBr : {
             stmWaveformDigisTag : "ZSLaBr:"
@@ -120,6 +122,8 @@ STMMCAnalysis : {
             L : @local::STM.HPGe.L
             nsigma_cut : @local::STM.HPGe.nsigma_cut
             thresholdgrad : @local::STM.HPGe.thresholdgrad
+            defaultBaselineMean : @local::STM.HPGe.defaultBaselineMean
+            defaultBaselineSD : @local::STM.HPGe.defaultBaselineSD
         }
     }
 }
