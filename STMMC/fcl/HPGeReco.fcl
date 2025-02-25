@@ -15,37 +15,49 @@ source : {
 
 physics : {
   producers : {
-    HPGeDigi : { # generates mu2e::STMWaveformDigis_HPGeDigi__HPGeReco
+    DigiHPGe : {
       module_type : HPGeWaveformsFromStepPointMCs
-      StepPointMCsTag : "g4run:STMDet"
+      StepPointMCsTag : @local::HPGeDigitization.StepPointMCsTag
       fADC : @local::STMDAQParameters.samplingFrequencies.HPGe
       EnergyPerADCBin : @local::HPGeDigitization.EnergyPerADCBin
       NoiseSD : @local::HPGeDigitization.PreamplifierNoiseSD
       risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant
-      makeTTree : true
+      # makeTTree : true
+      timeOffset : 100
     }
-    HPGeZS : {
+    concatenateWaveformsHPGe : {
+      module_type : ConcatenateDigitizedWaveforms
+      STMWaveformDigisTag : "DigiHPGe:"
+      nMerge : 10
+      # makeTTree : true
+    }
+    ZSHPGe : {
       module_type : STMZeroSuppression
-      stmWaveformDigisTag : "HPGeDigi:"
-      tbefore : @local::STM.HPGe.tbefore
-      tafter : @local::STM.HPGe.tafter
-      threshold : @local::STM.HPGe.threshold
-      window : @local::STM.HPGe.window
-      naverage : @local::STM.HPGe.naverage
-      verbosityLevel : 1
+      stmWaveformDigisTag : "concatenateWaveformsHPGe:"
+      tbefore : @local::STMMCAnalysis.ZS.HPGe.tbefore
+      tafter : @local::STMMCAnalysis.ZS.HPGe.tafter
+      threshold : @local::STMMCAnalysis.ZS.HPGe.threshold
+      window : @local::STMMCAnalysis.ZS.HPGe.window
+      naverage : @local::STMMCAnalysis.ZS.HPGe.naverage
+      makeTTreeGradients: true
+      # makeTTreeWaveforms: true
+      # verbosityLevel : 3
     }
-    HPGeMWD : {
+    MWDHPGe : {
       module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : "HPGeZS:"
-      verbosityLevel : 1
-      tau : @local::STM.HPGe.tau
-      M : @local::STM.HPGe.M
-      L : @local::STM.HPGe.L
-      nsigma_cut : @local::STM.HPGe.nsigma_cut
-      thesholdgrad : @local::STM.HPGe.thresholdgrad
+      stmWaveformDigisTag : @local::STMMCAnalysis.MWD.HPGe.stmWaveformDigisTag
+      tau : @local::STMMCAnalysis.MWD.HPGe.tau
+      M : @local::STMMCAnalysis.MWD.HPGe.M
+      L : @local::STMMCAnalysis.MWD.HPGe.L
+      nsigma_cut : @local::STMMCAnalysis.MWD.HPGe.nsigma_cut
+      thresholdgrad : @local::STMMCAnalysis.MWD.HPGe.thresholdgrad
+      defaultBaselineMean : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineMean
+      defaultBaselineSD : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineSD
+      makeTTreeMWD: false
+      makeTTreeEnergies: true
+      verbosityLevel : 3
     }
   }
-  # filter844 : []
   digitization_path : [HPGeDigi] # , HPGeZS, HPGeMWD
   trigger_paths : [test_path]
   output_path : [compressedOutput]
