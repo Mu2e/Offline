@@ -110,13 +110,14 @@ namespace mu2e {
     fhicl::Sequence<art::InputTag> seedCollections         {Name("CosmicTrackSeedCollections"),     Comment("Seed fit collections to be processed ") };
     fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
     fhicl::Atom<double> seedMom { Name("SeedMomentum"), Comment("Seed momentum") };
-    fhicl::Atom<int> seedCharge { Name("SeedCharge"), Comment("Seed charge") };
+    fhicl::Atom<int> seedCharge { Name("SeedCharge"), Comment("Seed charge MAGNITUDE, in electron charge units") };
     fhicl::Sequence<float> parconst { Name("ParameterConstraints"), Comment("External constraint on parameters to seed values (rms, various units)") };
     fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
     fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
     fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
     fhicl::Atom<float> sampleTol { Name("SampleTolerance"), Comment("Tolerance for sample surface intersections (mm)") };
     fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Time buffer for sample intersections (nsec)") };
+    fhicl::Atom<bool> useFitCharge { Name("UseFitCharge"), Comment("Set the PDG particle according to the fit charge; otherwise reject fits that don't agree with the PDG particle charge") };
   };
 
   struct GlobalConfig {
@@ -154,6 +155,7 @@ namespace mu2e {
       KKMaterial kkmat_; // material helper
       DMAT seedcov_; // seed covariance matrix
       double mass_; // particle mass
+      int PDGcharge_; // PDG particle charge
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
       Config config_; // initial fit configuration object
       Config exconfig_; // extension configuration object
@@ -162,6 +164,7 @@ namespace mu2e {
       int seedCharge_;
       double sampletol_; // surface intersection tolerance (mm)
       double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
+      bool useFitCharge_; // Set the PDG particle to agree with the fit charge
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
       std::array<double,KinKal::NParams()> paramconstraints_;
@@ -184,6 +187,7 @@ namespace mu2e {
     seedCharge_(settings().modSettings().seedCharge()),
     sampletol_(settings().modSettings().sampleTol()),
     sampletbuff_(settings().modSettings().sampleTBuff()),
+    useFitCharge_(settings().modSettings().useFitCharge()),
     sampleinrange_(settings().modSettings().sampleInRange()),
     sampleinbounds_(settings().modSettings().sampleInBounds())
     {
@@ -223,6 +227,7 @@ namespace mu2e {
     // setup things that rely on data related to beginRun
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
     mass_ = ptable->particle(fpart_).mass();
+    PDGcharge_ = static_cast<int>(ptable->particle(fpart_).charge());
     // create KKBField
     if(!fixedfield_){
       GeomHandle<BFieldManager> bfmgr;
@@ -336,11 +341,18 @@ namespace mu2e {
               fitflag.merge(TrkFitFlag::FitOK);
             else
               fitflag.clear(TrkFitFlag::FitOK);
-            auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h);
-            sampleFit(*kktrk,kkseed._inters);
-            kkseedcol->push_back(kkseed);
-            // save (unpersistable) KKTrk in the event
-            kktrkcol->push_back(kktrk.release());
+            // compare charge after the fit; either adjust or skip
+            auto const& t0seg = kktrk->fitTraj().nearestPiece(kktrk->fitTraj().t0());
+            double t0charge = t0seg.charge();
+            if(t0charge*PDGcharge_> 0 || useFitCharge_){
+              // flip the PDG particle assignment charge if required
+              if(t0charge*PDGcharge_ < 0)kktrk->reverseCharge();
+              auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h);
+              sampleFit(*kktrk,kkseed._inters);
+              kkseedcol->push_back(kkseed);
+              // save (unpersistable) KKTrk in the event
+              kktrkcol->push_back(kktrk.release());
+            }
           }
 
         } catch (std::invalid_argument const& error) {
@@ -366,7 +378,6 @@ namespace mu2e {
         }
       }
     }
-    // test that the spatial parameter covariances and values aren't crazy TODO
     return retval;
   }
 
