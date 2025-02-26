@@ -46,7 +46,6 @@ namespace mu2e
       fhicl::Atom<double>             maxMomErr           {     Name("maxMomErr"),               Comment("maxMomErr         ") };
       fhicl::Atom<double>             minD0               {     Name("minD0"),                   Comment("minD0             ") };
       fhicl::Atom<double>             maxD0               {     Name("maxD0"),                   Comment("maxD0             ") };
-      fhicl::Atom<double>             minT0               {     Name("minT0"),                   Comment("minT0             ") };
       fhicl::Atom<unsigned>           minNStereo          {     Name("minNStereo"),              Comment("Min number of 12 possible panel orientations on track"),0};
       fhicl::Atom<unsigned>           minNPlanes          {     Name("minNPlanes"),              Comment("Min number of planes hit "),0};
       fhicl::Sequence<std::string>    seedFitFlag         {     Name("seedFitFlag"),             Comment("seedFitFlag       ") , std::vector<std::string>{"SeedOK"}};
@@ -65,7 +64,6 @@ namespace mu2e
         _maxmomerr (config.maxMomErr()),
         _minD0     (config.minD0()),
         _maxD0     (config.maxD0()),
-        _minT0     (config.minT0()),
         _minnstereo(config.minNStereo()),
         _minnplanes(config.minNPlanes()),
         _goods     (config.seedFitFlag())
@@ -87,7 +85,6 @@ namespace mu2e
       unsigned        _minnhits;
       double          _minmom, _maxmom, _mintdip, _maxtdip, _maxchi2dof, _maxmomerr;
       double          _minD0, _maxD0; // impact parameter limits
-      double          _minT0;
       unsigned        _minnstereo, _minnplanes;
       TrkFitFlag      _goods; // helix fit flag
       bool            _doParticleTypeCheck;
