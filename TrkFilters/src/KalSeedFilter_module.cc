@@ -4,6 +4,7 @@
 //
 // framework
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
@@ -33,10 +34,8 @@ namespace mu2e
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
       fhicl::Atom<bool>               requireCaloCluster  {     Name("requireCaloCluster"),      Comment("requireCaloCluster ")};
-      fhicl::Atom<bool>               doParticleTypeCheck {     Name("doParticleTypeCheck"),     Comment("doParticleTypeCheck")};
-      fhicl::Atom<int>                fitparticle         {     Name("fitparticle"),             Comment("fitparticle       ") };
-      fhicl::Atom<bool>               doZPropDirCheck     {     Name("doZPropDirCheck"),         Comment("doZPropDirCheck   ") };
-      fhicl::Atom<std::string>        fitdirection        {     Name("fitdirection"),            Comment("fitdirection (\"downstream\" or \"upstream\")") };
+      fhicl::OptionalAtom<int>                fitparticle         {     Name("fitparticle"),             Comment("fitparticle       ") };
+      fhicl::OptionalAtom<std::string>        fitdirection        {     Name("fitdirection"),            Comment("fitdirection (\"downstream\" or \"upstream\")") };
       fhicl::Atom<double>             minFitCons          {     Name("minFitCons"),              Comment("minFitCons        ") };
       fhicl::Atom<double>             minNHits            {     Name("minNStrawHits"),           Comment("minNStrawHits     ") };
       fhicl::Atom<double>             minMomentum         {     Name("minMomentum"),             Comment("minMomentum       ") };
@@ -48,14 +47,14 @@ namespace mu2e
       fhicl::Atom<double>             minD0               {     Name("minD0"),                   Comment("minD0             ") };
       fhicl::Atom<double>             maxD0               {     Name("maxD0"),                   Comment("maxD0             ") };
       fhicl::Atom<double>             minT0               {     Name("minT0"),                   Comment("minT0             ") };
+      fhicl::Atom<unsigned>           minNStereo          {     Name("minNStereo"),              Comment("Min number of 12 possible panel orientations on track"),0};
+      fhicl::Atom<unsigned>           minNPlanes          {     Name("minNPlanes"),              Comment("Min number of planes hit "),0};
       fhicl::Sequence<std::string>    seedFitFlag         {     Name("seedFitFlag"),             Comment("seedFitFlag       ") , std::vector<std::string>{"SeedOK"}};
     };
 
     struct KalSeedCutsTool {
       KalSeedCutsTool(const KalSeedCutsConfig& config):
         _hascc     (config.requireCaloCluster()),
-        _tpart     ((PDGCode::type)config.fitparticle()),
-        _fdir      (TrkFitDirection::fitDirectionFromName(config.fitdirection())),
         _minfitcons(config.minFitCons()),
         _minnhits  (config.minNHits()),
         _minmom    (config.minMomentum()),
@@ -67,9 +66,17 @@ namespace mu2e
         _minD0     (config.minD0()),
         _maxD0     (config.maxD0()),
         _minT0     (config.minT0()),
-        _goods     (config.seedFitFlag()),
-        _doParticleTypeCheck(config.doParticleTypeCheck()),
-        _doZPropDirCheck    (config.doZPropDirCheck()) {}
+        _minnstereo(config.minNStereo()),
+        _minnplanes(config.minNPlanes()),
+        _goods     (config.seedFitFlag())
+      {
+        int tpart;
+        _doParticleTypeCheck =config.fitparticle(tpart);
+        if(_doParticleTypeCheck)_tpart = (PDGCode::type)tpart;
+        std::string fdir;
+        _doZPropDirCheck = config.fitdirection(fdir);
+        if(_doZPropDirCheck)_fdir = TrkFitDirection::fitDirectionFromName(fdir);
+      }
 
       KalSeedCutsTool() {}
 
@@ -81,6 +88,7 @@ namespace mu2e
       double          _minmom, _maxmom, _mintdip, _maxtdip, _maxchi2dof, _maxmomerr;
       double          _minD0, _maxD0; // impact parameter limits
       double          _minT0;
+      unsigned        _minnstereo, _minnplanes;
       TrkFitFlag      _goods; // helix fit flag
       bool            _doParticleTypeCheck;
       bool            _doZPropDirCheck;
@@ -89,10 +97,11 @@ namespace mu2e
     struct Config{
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<art::InputTag>          kalSeedCollection { Name("kalSeedCollection"),      Comment("kalSeedCollection ") };
+      fhicl::Sequence<art::InputTag>          kalSeedCollections { Name("kalSeedCollections"),      Comment("kalSeedCollections ") };
       fhicl::Sequence<fhicl::Table<KalSeedCutsConfig>>  KalSeedCuts       { Name("KalSeedCuts"),            Comment("Cuts applied to the KalSeeds")};
       fhicl::Atom<int>                    debugLevel        { Name("debugLevel"),             Comment("debugLevel        ") , 0};
-      fhicl::Atom<bool>                   noFilter          { Name("noFilter"),               Comment("don't apply any filter decision") , 0};
+      fhicl::Atom<bool>                   noFilter          { Name("noFilter"),               Comment("don't apply any filter decision") , false};
+      fhicl::Atom<bool>                   noInfo            { Name("noInfo"),                 Comment("don't create TriggerInfo object") , false};
       fhicl::Atom<unsigned>               minNTrks          { Name("minNTrks"),               Comment("minimum number of tracks passing the selection") , 1};
     };
 
@@ -104,11 +113,11 @@ namespace mu2e
     bool   checkKalSeed(const KalSeed&Ks, const KalSeedCutsTool&Cuts);
 
   private:
-    art::InputTag   _ksTag;
+    std::vector<art::InputTag>   _ksTags;
     std::vector<KalSeedCutsConfig> _ksCutsConfig;
     std::vector<KalSeedCutsTool>   _ksCuts;
     int             _debug;
-    bool            _noFilter;
+    bool            _noFilter, _noInfo;
     unsigned        _minNTrks;
 
     // counters
@@ -117,52 +126,55 @@ namespace mu2e
 
   KalSeedFilter::KalSeedFilter(const Parameters& config):
     art::EDFilter{config},
-    _ksTag       (config().kalSeedCollection()),
+    _ksTags      (config().kalSeedCollections()),
     _ksCutsConfig(config().KalSeedCuts()),
     _debug       (config().debugLevel()),
     _noFilter    (config().noFilter()),
+    _noInfo      (config().noInfo()),
     _minNTrks    (config().minNTrks()),
     _nevt(0), _npass(0)
     {
       for (auto const&cf: _ksCutsConfig){
         _ksCuts.push_back(KalSeedCutsTool(cf));
       }
-      produces<TriggerInfo>();
+      if(!_noInfo)produces<TriggerInfo>();
     }
 
   bool KalSeedFilter::filter(art::Event& evt){
     std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     unsigned nGoodTrks(0);
-    // find the collection
-    auto ksH = evt.getValidHandle<KalSeedCollection>(_ksTag);
-    const KalSeedCollection* kscol = ksH.product();
-    // loop over the collection: if any pass the selection, pass this event
-    if(_debug > 2){
-      if (kscol->size()>0) printf("[KalSeedFilter::filter]   nhits     mom     momErr    chi2ndof     fitCon   tanDip    d0      \n");
-    }
-    for(auto iks = kscol->begin(); iks != kscol->end(); ++iks) {
-      auto const& ks = *iks;
+    // Loop over the collection
+    for( auto kstag : _ksTags) {
+      auto ksH = evt.getValidHandle<KalSeedCollection>(kstag);
+      const KalSeedCollection* kscol = ksH.product();
+      // loop over the collection: if any pass the selection, pass this event
+      if(_debug > 2){
+        if (kscol->size()>0) printf("[KalSeedFilter::filter]   nhits nst npl    mom     momErr    chi2ndof     fitCon   tanDip    d0      \n");
+      }
+      for(auto iks = kscol->begin(); iks != kscol->end(); ++iks) {
+        auto const& ks = *iks;
 
-      for (auto const&cuts : _ksCuts){
-        if (checkKalSeed(ks, cuts)) {
-          ++nGoodTrks;
-          ++_npass;
-          // Fill the trigger info object
-          // associate to the helix which triggers.  Note there may be other helices which also pass the filter
-          // but filtering is by event!
-          size_t index = std::distance(kscol->begin(),iks);
-          triginfo->_tracks.push_back(art::Ptr<KalSeed>(ksH,index));
+        for (auto const&cuts : _ksCuts){
+          if (checkKalSeed(ks, cuts)) {
+            ++nGoodTrks;
+            ++_npass;
+            // Fill the trigger info object
+            // associate to the helix which triggers.  Note there may be other helices which also pass the filter
+            // but filtering is by event!
+            size_t index = std::distance(kscol->begin(),iks);
+            if(!_noInfo)triginfo->_tracks.push_back(art::Ptr<KalSeed>(ksH,index));
 
-          if(_debug > 1){
-            std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
+            if(_debug > 1){
+              std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
+            }
+            break;//no need to check the other ksCuts entries
           }
-          break;//no need to check the other ksCuts entries
-        }
-      }//end loop over the ksCuts
-    }//end loop over the kalseeds
+        }//end loop over the ksCuts
+      }//end loop over the kalseeds
+    }// end loop over KalSeed collections
 
-    evt.put(std::move(triginfo));
+    if(!_noInfo)evt.put(std::move(triginfo));
 
     if (!_noFilter){
       return (nGoodTrks >= _minNTrks);
@@ -210,18 +222,31 @@ namespace mu2e
         }
       }
       unsigned nactive = Ks.nHits(true); //count active hits
+
+      // compute number of planes and unique stereo orientations
+      std::set<unsigned> stcount;
+      std::set<unsigned> pcount;
+      for ( auto const& hit : Ks.hits()){
+        if(hit._flag.hasAllProperties(StrawHitFlag::active)){
+          stcount.insert(hit._sid.stereoPanel());
+          pcount.insert(hit._sid.plane());
+        }
+      }
+
       if(_debug > 2){
-        printf("[KalSeedFilter::filter] %4d %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n",
-               nactive, mom, kinter.momerr(),Ks.chisquared()/Ks.nDOF(), Ks.fitConsistency(), td, d0);
+        printf("[KalSeedFilter::filter] %4d %4lu %4lu %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n",
+               nactive, stcount.size(), pcount.size(), mom, t0seg->momerr(),Ks.chisquared()/Ks.nDOF(), Ks.fitConsistency(), td, d0);
       }
       if( (!Cuts._hascc || Ks.caloCluster().isNonnull()) &&
           nactive >= Cuts._minnhits &&
-          mom > Cuts._minmom && mom < Cuts._maxmom && kinter.momerr() < Cuts._maxmomerr &&
+          stcount.size() >= Cuts._minnstereo &&
+          pcount.size() >= Cuts._minnplanes &&
+          mom > Cuts._minmom && mom < Cuts._maxmom && t0seg->momerr() < Cuts._maxmomerr &&
           Ks.chisquared()/Ks.nDOF() < Cuts._maxchi2dof && // chisq/ndof isn't a statistically robust measure, this cut should be removed FIXME
           Ks.fitConsistency()       > Cuts._minfitcons &&
           td > Cuts._mintdip && td < Cuts._maxtdip &&
-          d0 > Cuts._minD0   && d0 < Cuts._maxD0) { // d0 is not a global geometric parameter and signed cuts have particle-species dependence.   This should be replaced with a selection based on consistency with the stopping target FIXME
-
+          d0 > Cuts._minD0   && d0 < Cuts._maxD0) {
+        if(_debug > 1) std::cout << "Selected track " << std::endl;
         return true;
       }
     }
