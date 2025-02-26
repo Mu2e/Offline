@@ -7,9 +7,9 @@
 namespace mu2e {
 
   KKStrawMaterial::KKStrawMaterial(StrawProperties const& sprops,
-      const MatEnv::DetMaterial *wallmat,
-      const MatEnv::DetMaterial *gasmat,
-      const MatEnv::DetMaterial *wiremat) :
+      const std::shared_ptr<DetMaterial> wallmat,
+      const std::shared_ptr<DetMaterial>gasmat,
+      const std::shared_ptr<DetMaterial> wiremat) :
     sprops_(sprops),
     wallmat_(wallmat), gasmat_(gasmat), wiremat_(wiremat) {
       // compute some caches
@@ -18,7 +18,7 @@ namespace mu2e {
     }
 
   KKStrawMaterial::KKStrawMaterial(MatEnv::MatDBInfo const& matdbinfo,StrawProperties const& sprops,
-      const char* wallmat, const char* gasmat, const char* wiremat) :
+      const std::string& wallmat, const std::string& gasmat, const const std::string& wiremat) :
     KKStrawMaterial(sprops,
         matdbinfo.findDetMaterial(wallmat),
         matdbinfo.findDetMaterial(gasmat),
