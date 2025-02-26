@@ -18,9 +18,9 @@ namespace mu2e {
     public:
       // construct from geometry and explicit materials
       KKStrawMaterial(StrawProperties const& sprops,
-          const std::shared_ptr<DetMaterial> wallmat,
-          const std::shared_ptr<DetMaterial> gasmat,
-          const std::shared_ptr<DetMaterial> wiremat);
+          const std::shared_ptr<MatEnv::DetMaterial> wallmat_,
+          const std::shared_ptr<MatEnv::DetMaterial> gasmat_,
+          const std::shared_ptr<MatEnv::DetMaterial> wiremat_);
       // construct using materials by name
       KKStrawMaterial(MatEnv::MatDBInfo const& matdbinfo,StrawProperties const& sprops,
         const std::string& wallmat="straw-wall", const std::string& gasmat="straw-gas", const std::string& wiremat="straw-wire");
@@ -41,9 +41,9 @@ namespace mu2e {
       StrawProperties const& sprops_;
       double srad2_; // average outer transverse radius of the straw squared
       double grad2_; // effective gas volume radius squared
-      const std::shared_ptr<DetMaterial> wallmat_; // material of the straw wall
-      const std::shared_ptr<DetMaterial> gasmat_; // material of the straw gas
-      const std::shared_ptr<DetMaterial> wiremat_; // material of the wire
+      const std::shared_ptr<MatEnv::DetMaterial> wallmat_; // material of the straw wall
+      const std::shared_ptr<MatEnv::DetMaterial> gasmat_; // material of the straw gas
+      const std::shared_ptr<MatEnv::DetMaterial> wiremat_; // material of the wire
       // utility to calculate material factor given the cosine of the angle of the particle WRT the straw
       double angleFactor(double dirdot) const;
       // maximum DOCA given straw irregularities
