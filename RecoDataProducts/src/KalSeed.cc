@@ -115,7 +115,7 @@ namespace mu2e {
     t0 = timeRange().mid();
     auto iseg = nearestSegment(t0);
     auto oldseg = segments().end();
-    unsigned ntest;
+    unsigned ntest(0);
     while((!iseg->timeRange().inRange(t0)) && iseg != oldseg && ntest < segments().size()){
       oldseg = iseg;
       t0 = iseg->t0Val(_status);
