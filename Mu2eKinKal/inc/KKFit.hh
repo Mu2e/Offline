@@ -479,9 +479,8 @@ namespace mu2e {
     if(kktrk.config().bfcorr_ )fflag.merge(TrkFitFlag::BFCorr);
     // explicit T0 is needed for backwards-compatibility; sample from the appropriate trajectory piece
     auto const& fittraj = kktrk.fitTraj();
-    double tz0 = Mu2eKinKal::zTime(fittraj,0.0,fittraj.range().begin());
-    auto const& t0piece = fittraj.nearestPiece(tz0);
-    double t0val = t0piece.paramVal(KTRAJ::t0_);
+    double t0val = fittraj.t0();
+    auto const& t0piece = fittraj.nearestPiece(t0val);
     double t0sig = sqrt(t0piece.params().covariance()(KTRAJ::t0_,KTRAJ::t0_));
     HitT0 t0(t0val,t0sig);
     // create the shell for the output

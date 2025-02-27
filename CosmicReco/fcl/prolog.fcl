@@ -44,7 +44,7 @@ CosmicReco : { @table::CosmicReco
       module_type : SimpleTimeCluster
       ComboHitCollection : "makeSH"
       TestFlag : true
-      HitSelectionBits  : ["EnergySelection"]
+      HitSelectionBits  : [] # Energy cut could bias against muons
       HitBackgroundBits : ["Background","Noisy","Dead"]
       debugLevel : 0
       minNStrawHits : 2

@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
-#include "Offline/TrkPatRec/fcl/Particle.fcl"
+#include "Offline/TrkReco/fcl/Particle.fcl"
 #include "Offline/TrkPatRec/fcl/PanelAmbigResolver.fcl"
 #include "Offline/fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG

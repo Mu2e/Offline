@@ -201,7 +201,6 @@ namespace mu2e {
       double slopeSigThreshold_; //helix slope significance threshold to assume the direction
       bool useHelixSlope_; //use the helix slope estimate to decide the fit direction
       bool prioritizeCaloHits_; //prioritize tracks with a calo-hit when deciding the track direction
-      bool useFitDir_; //flag to use forced fit direction
       TrkFitDirection fdir_;
       bool usePDGCharge_; // use the pdg particle charge: otherwise use the helicity and direction to determine the charge
       KKFIT kkfit_; // fit helper
@@ -243,8 +242,6 @@ namespace mu2e {
     fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
     useHelixSlope_(settings().slopeSigThreshold(slopeSigThreshold_)),
     prioritizeCaloHits_(settings().prioritizeCaloHits()),
-    useFitDir_(settings().fitDirection()),
-    fdir_(useFitDir_ ? *settings().fitDirection() : "downstream"),
     usePDGCharge_(settings().pdgCharge()),
     kkfit_(settings().kkfitSettings()),
     kkmat_(settings().matSettings()),
@@ -255,6 +252,8 @@ namespace mu2e {
     sampleinbounds_(settings().modSettings().sampleInBounds()),
     fixedfield_(false), extrapolate_(false), backToTracker_(false), toOPA_(false)
     {
+      std::string fdir;
+      if(settings().fitDirection(fdir))fdir_ = fdir;
       // collection handling
       for(const auto& hseedtag : settings().modSettings().seedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
       produces<KKTRKCOL>();
@@ -347,24 +346,24 @@ namespace mu2e {
   }
 
   std::vector<TrkFitDirection::FitDirection> LoopHelixFit::chooseHelixDir(HelixSeed const& hseed) const {
-    if(!goodHelix(hseed)) return {}; //determine if this seed should be fit
-
-    std::vector<TrkFitDirection::FitDirection> initial_list, final_list; //reasonable fit directions and the final ones to return
-    // if using the helix slope to decide the fit direction, check its significance
-    if(useHelixSlope_) {
-      auto predicted_dir = hseed.recoDir().predictDirection(slopeSigThreshold_);
-      if(predicted_dir == TrkFitDirection::FitDirection::unknown)
-        initial_list = {TrkFitDirection::FitDirection::downstream, TrkFitDirection::FitDirection::upstream};
-      else initial_list = {predicted_dir};
-    } else {
-      // using a forced fit direction
-      return {fdir_.fitDirection()};
+    std::vector<TrkFitDirection::FitDirection> fitdirs {};
+    if(goodHelix(hseed)){
+      if(fdir_ == TrkFitDirection::FitDirection::unknown)
+        fitdirs = {TrkFitDirection::FitDirection::downstream, TrkFitDirection::FitDirection::upstream};
+      else
+        fitdirs = {fdir_.fitDirection()};
+      // if using the helix slope to decide the fit direction, check its significance, and refine the list as needed
+      if(useHelixSlope_) {
+        auto predicted_dir = hseed.recoDir().predictDirection(slopeSigThreshold_);
+        if(predicted_dir != TrkFitDirection::FitDirection::unknown){
+          if(std::find(fitdirs.begin(), fitdirs.end(), predicted_dir) != fitdirs.end())
+            fitdirs = {predicted_dir};
+          else
+            fitdirs.clear();
+        }
+      }
     }
-    if(useFitDir_) { //mask the reasonable directions with the allowed fit direction
-      TrkFitDirection::FitDirection fixed_dir(fdir_.fitDirection());
-      if(std::find(initial_list.begin(), initial_list.end(), fixed_dir) == initial_list.end()) final_list = {fixed_dir};
-    } else final_list = initial_list;
-    return final_list;
+    return fitdirs;
   }
 
   std::unique_ptr<KKTRK> LoopHelixFit::fitTrack(art::Event& event, HelixSeed const& hseed, const TrkFitDirection fdir, PDGCode::type fitpart) {

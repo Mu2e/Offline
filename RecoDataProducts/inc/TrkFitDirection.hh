@@ -15,7 +15,7 @@ namespace mu2e
     public:
 // define the fit direction as downstream (towards positive Z) or upstream (towards negative Z).
       enum FitDirection {downstream=0,upstream,unknown};
-      TrkFitDirection(FitDirection fdir=downstream);
+      TrkFitDirection(FitDirection fdir=unknown);
       TrkFitDirection(std::string name) : TrkFitDirection(fitDirectionFromName(name)) {}
       //accessors
       FitDirection fitDirection() const { return _fdir; }
