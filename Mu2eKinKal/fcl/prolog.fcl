@@ -1,4 +1,4 @@
-#include "Offline/TrkPatRec/fcl/Particle.fcl"
+#include "Offline/TrkReco/fcl/Particle.fcl"
 BEGIN_PROLOG
 Mu2eKinKal : {
   # general configuration
