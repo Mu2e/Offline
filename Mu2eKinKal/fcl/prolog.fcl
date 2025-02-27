@@ -367,6 +367,7 @@ Mu2eKinKal : {
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
     UseFitCharge : true # Allow the PDG code to follow the fit
+    MinCenterRho : 5 # Consider fits with axes < 10 mm from the Z axis degenerate
   }
 
   KINEMATICLINE : {

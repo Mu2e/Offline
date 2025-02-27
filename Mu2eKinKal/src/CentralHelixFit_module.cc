@@ -63,6 +63,7 @@
 // root
 #include "TH1F.h"
 #include "TTree.h"
+#include "Math/AxisAngle.h"
 // C++
 #include <iostream>
 #include <fstream>
@@ -72,6 +73,7 @@
 #include <memory>
 
 using KTRAJ= KinKal::CentralHelix; // this must come before HelixFit
+using namespace ROOT::Math;
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
 #include "Offline/GeneralUtilities/inc/Angles.hh"
 
@@ -118,7 +120,8 @@ namespace mu2e {
     fhicl::Atom<float> sampleTol { Name("SampleTolerance"), Comment("Tolerance for sample surface intersections (mm)") };
     fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Time buffer for sample intersections (nsec)") };
     fhicl::Atom<bool> useFitCharge { Name("UseFitCharge"), Comment("Set the PDG particle according to the fit charge; otherwise reject fits that don't agree with the PDG particle charge") };
-  };
+    fhicl::Atom<float> minCenterRho { Name("MinCenterRho"), Comment("Minimum transverse distance from the helix axis to the Z axis to consider the fit non-degenerate (mm)") };
+};
 
   struct GlobalConfig {
     fhicl::Table<KKCHModuleConfig> modSettings { Name("ModuleSettings") };
@@ -165,6 +168,7 @@ namespace mu2e {
       double sampletol_; // surface intersection tolerance (mm)
       double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
       bool useFitCharge_; // Set the PDG particle to agree with the fit charge
+      double minCenterRho_; // min center distance to z axis
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
       std::array<double,KinKal::NParams()> paramconstraints_;
@@ -188,6 +192,7 @@ namespace mu2e {
     sampletol_(settings().modSettings().sampleTol()),
     sampletbuff_(settings().modSettings().sampleTBuff()),
     useFitCharge_(settings().modSettings().useFitCharge()),
+    minCenterRho_(settings().modSettings().minCenterRho()),
     sampleinrange_(settings().modSettings().sampleInRange()),
     sampleinbounds_(settings().modSettings().sampleInBounds())
     {
@@ -343,15 +348,21 @@ namespace mu2e {
               fitflag.clear(TrkFitFlag::FitOK);
             // compare charge after the fit; either adjust or skip
             auto const& t0seg = kktrk->fitTraj().nearestPiece(kktrk->fitTraj().t0());
-            double t0charge = t0seg.charge();
-            if(t0charge*PDGcharge_> 0 || useFitCharge_){
-              // flip the PDG particle assignment charge if required
-              if(t0charge*PDGcharge_ < 0)kktrk->reverseCharge();
-              auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h);
-              sampleFit(*kktrk,kkseed._inters);
-              kkseedcol->push_back(kkseed);
-              // save (unpersistable) KKTrk in the event
-              kktrkcol->push_back(kktrk.release());
+            // check that the t0 segment is non-degenerate; skip tracks that are. This must be done in helix-local coordinates
+            auto g2l = Rotation3D(AxisAngle(VEC3(sin(t0seg.bnom().Phi()),-cos(t0seg.bnom().Phi()),0.0),t0seg.bnom().Theta()));
+            auto cpos = g2l(t0seg.center(t0seg.range().mid()));
+            auto cdist = cpos.Rho();
+            if( cdist > minCenterRho_){
+              double t0charge = t0seg.charge();
+              if(t0charge*PDGcharge_> 0 || useFitCharge_){
+                // flip the PDG particle assignment charge if required
+                if(t0charge*PDGcharge_ < 0)kktrk->reverseCharge();
+                auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h);
+                sampleFit(*kktrk,kkseed._inters);
+                kkseedcol->push_back(kkseed);
+                // save (unpersistable) KKTrk in the event
+                kktrkcol->push_back(kktrk.release());
+              }
             }
           }
 
