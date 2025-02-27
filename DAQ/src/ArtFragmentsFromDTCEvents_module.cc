@@ -19,6 +19,8 @@
 #include <artdaq-core/Data/ContainerFragment.hh>
 #include <artdaq-core/Data/Fragment.hh>
 
+#include "Offline/RecoDataProducts/inc/DAQerror.hh"
+
 #include <iostream>
 
 #include <string>
@@ -85,6 +87,8 @@ art::ArtFragmentsFromDTCEvents::ArtFragmentsFromDTCEvents(
     produces<std::vector<mu2e::CRVDataDecoder>>();
   }
   // if (config().makeSTMFrag() > 0) { produces<std::vector<mu2e::STMFragment>>();}
+
+  produces<mu2e::DAQerrorCollection>();
 }
 
 // ----------------------------------------------------------------------
@@ -102,6 +106,8 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
 
   // std::unique_ptr<std::vector<mu2e::STMFragment>>         stm_frags(new
   // std::vector<mu2e::STMFragment>); if (makeSTMFrag_ > 0) {
+
+  std::unique_ptr<mu2e::DAQerrorCollection> daqErrors(new mu2e::DAQerrorCollection);
 
   artdaq::Fragments fragments;
   artdaq::FragmentPtrs containerFragments;
@@ -142,7 +148,7 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
 
   size_t nFrags(0);
 
-  for (const auto& frag : fragments) {
+  for (size_t fragIdx=0; const auto& frag : fragments) {
     mu2e::DTCEventFragment bb(frag);
 
     if (makeTrkFrag_ > 0) { // TRACKER
@@ -177,6 +183,21 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
         ++nFrags;
       }
     }
+
+    const DTCLib::DTC_Event &dtcEvent =  bb.getData();
+    const std::vector<DTCLib::DTC_SubEvent> &dtcSubEvents = dtcEvent.GetSubEvents();
+    size_t expectedSize = dtcEvent.GetEventByteCount();
+    size_t actualSize = sizeof(DTCLib::DTC_EventHeader);
+    for(size_t iSubEvent=0; iSubEvent<dtcSubEvents.size(); ++iSubEvent) actualSize+=dtcSubEvents.at(iSubEvent).GetSubEventByteCount();
+    if(diagLevel_ > 0)
+    {
+      std::cout << "[ArtFragmentsFromDTCEvents::produce] expected event size: " << expectedSize << ", actual event size: " << actualSize << std::endl;
+    }
+    if(expectedSize!=actualSize)
+    {
+      std::cerr << "[ArtFragmentsFromDTCEvents::produce] mismatch between expected event size and actual event size!" << std::endl;
+      daqErrors->emplace_back(mu2e::DAQerrorCode::byteCountMismatch,fragIdx);
+    }
   }
 
   if ( (diagLevel_ > 0) && (nFrags == 0)) {
@@ -184,7 +205,7 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
   }
 
   if (diagLevel_ > 0) {
-    std::cout << "mu2e::ArtFragmentsFromDTCEvents::produce exiting eventNumber="
+    std::cout << "[ArtFragmentsFromDTCEvents::produce] exiting eventNumber="
               << (int)(event.event()) << " / timestamp=" << (int)eventNumber << std::endl;
   }
 
@@ -199,6 +220,7 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
   }
   //  if (makeSTMFrag_ > 0)  {event.put(std::move(stmFragColl));}
 
+  event.put(std::move(daqErrors));
 } // produce()
 
 // ======================================================================
