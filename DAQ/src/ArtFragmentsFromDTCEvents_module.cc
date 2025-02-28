@@ -154,8 +154,7 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
     if (makeTrkFrag_ > 0) { // TRACKER
       auto trkSEvents = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker);
       for (auto const& subevent : trkSEvents) {
-        mu2e::TrackerDataDecoder tf(subevent);
-        trkFragColl->emplace_back(tf);
+        trkFragColl->emplace_back(subevent);
         ++nFrags;
       }
     }
@@ -163,8 +162,7 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
     if (makeCaloFrag_ > 0) { // CALORIMETER
       auto caloSEvents = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Calorimeter);
       for (auto& subevent : caloSEvents) {
-        mu2e::CalorimeterDataDecoder cf(subevent);
-        caloFragColl->emplace_back(cf);
+        caloFragColl->emplace_back(subevent);
         ++nFrags;
       }
     }
@@ -172,14 +170,12 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
     if (makeCRVFrag_ > 0) { // CRV
       auto crvSEvents = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_CRV);
       for (auto& subevent : crvSEvents) {
-        mu2e::CRVDataDecoder cf(subevent);
-        crvFragColl->emplace_back(cf);
+        crvFragColl->emplace_back(subevent);
         ++nFrags;
       }
       auto crvSEventsTmp = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker);  //currently wrongly encoded in the DTC Subevent header
       for (auto& subevent : crvSEventsTmp) {
-        mu2e::CRVDataDecoder cf(subevent);
-        crvFragColl->emplace_back(cf);
+        crvFragColl->emplace_back(subevent);
         ++nFrags;
       }
     }

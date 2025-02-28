@@ -1,6 +1,8 @@
 // SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_upToGradeLevel_W.ccl
+// Feb 2025
+// modify to accommodate PSH Steel Shielding
 
 string dirt.upToGradeLevel.W.name     = "dirtUpToGradeLevelW";
 
@@ -12,7 +14,7 @@ double dirt.upToGradeLevel.W.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.upToGradeLevel.W.yHalfThickness           = 241.3;
 
-vector<int>    dirt.upToGradeLevel.W.xreplace   = { 16, 17 };
+vector<int>    dirt.upToGradeLevel.W.xreplace   = { 19, 20 };
 vector<double> dirt.upToGradeLevel.W.xPositions = {
   -2921,   // p0
   -4140.2,   // P1
@@ -22,7 +24,10 @@ vector<double> dirt.upToGradeLevel.W.xPositions = {
   -11709.4,   // P3
   -11709.4,   // P3a
   -12319,     // P3b
-  -12319,     // P3c
+  -12319,     // S1
+  -12750.8,   // S2
+  -12750.8,   // S3
+  -12319,     // S4
   -12318.9,   // P3d
   -12343.4,   // P3e
   -12319.3,   // P3f
@@ -43,7 +48,7 @@ vector<double> dirt.upToGradeLevel.W.xPositions = {
   -2921     // along NRetWall S face
 };
 
-vector<int>    dirt.upToGradeLevel.W.yreplace   = { 15, 16, 17, 18 };
+vector<int>    dirt.upToGradeLevel.W.yreplace   = { 18, 19, 20, 21 };
 vector<double> dirt.upToGradeLevel.W.yPositions = {
   2438.4,   // p0
   2438.4,   // P1
@@ -53,7 +58,10 @@ vector<double> dirt.upToGradeLevel.W.yPositions = {
   6502.4,   // P3
   6858,     // P3a
   6858,     // P3b
-  6502.4,   // P3c
+  5279.3,   // S1
+  5279.3,   // S2
+  -354.1,   // S3
+  -354.1,   // S4
   -2091.9,  // P3d
   -2096.1,  // P3e
   -2194.8,  // P3f
