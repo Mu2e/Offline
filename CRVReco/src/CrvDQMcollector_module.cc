@@ -15,6 +15,8 @@
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
+#include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
+#include "Offline/RecoDataProducts/inc/DAQerror.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art_root_io/TFileDirectory.h"
@@ -50,6 +52,8 @@ namespace mu2e
       fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("label of CrvReco module")};
       fhicl::Atom<std::string> crvCoincidenceClusterFinderModuleLabel{Name("crvCoincidenceClusterFinderModuleLabel"),
                                                                       Comment("label of CoincidenceClusterFinder module")};
+      fhicl::Atom<std::string> crvDaqErrorModuleLabel{Name("crvDaqErrorModuleLabel"), Comment("label of module that found the CRV-DAQ errors")};
+      fhicl::Atom<std::string> daqErrorModuleLabel{Name("daqErrorModuleLabel"), Comment("label of module that found the DAQ errors")};
     };
 
     typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -63,11 +67,14 @@ namespace mu2e
     bool        _useDQMcollector;
     std::string _crvDigiModuleLabel;
     std::string _crvDigiModuleLabelNZS;
-    std::string _crvRecoPulsesModuleLabel;
+    //std::string _crvRecoPulsesModuleLabel;
     std::string _crvCoincidenceClusterFinderModuleLabel;
+    std::string _crvDaqErrorModuleLabel;
+    std::string _daqErrorModuleLabel;
 
     int                _totalEvents;
     int                _totalEventsWithCoincidenceClusters;
+    int                _totalEventsWithDAQerrors;
     std::pair<int,int> _firstRunSubrun;
     std::pair<int,int> _lastRunSubrun;
 
@@ -93,10 +100,13 @@ namespace mu2e
     _useDQMcollector(conf().useDQMcollector()),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
     _crvDigiModuleLabelNZS(conf().crvDigiModuleLabelNZS()),
-    _crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
+    //_crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
     _crvCoincidenceClusterFinderModuleLabel(conf().crvCoincidenceClusterFinderModuleLabel()),
+    _crvDaqErrorModuleLabel(conf().crvDaqErrorModuleLabel()),
+    _daqErrorModuleLabel(conf().daqErrorModuleLabel()),
     _totalEvents(0),
-    _totalEventsWithCoincidenceClusters(0)
+    _totalEventsWithCoincidenceClusters(0),
+    _totalEventsWithDAQerrors(0)
   {
   }
 
@@ -171,6 +181,7 @@ namespace mu2e
     _treeMetaData->Branch("subrunNumberEnd",&_lastRunSubrun.second);
     _treeMetaData->Branch("nEvents",&_totalEvents);
     _treeMetaData->Branch("nEventsWithCoincidenceClusters",&_totalEventsWithCoincidenceClusters);
+    _treeMetaData->Branch("nEventsWithDAQerrors",&_totalEventsWithDAQerrors);
   }
 
   void CrvDQMcollector::analyze(const art::Event& event)
@@ -181,13 +192,17 @@ namespace mu2e
 
     art::Handle<CrvDigiCollection> crvDigiCollection;
     art::Handle<CrvDigiCollection> crvDigiCollectionNZS;
-    art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
+    //art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
     art::Handle<CrvCoincidenceClusterCollection> crvCoincidenceClusterCollection;
+    art::Handle<CrvDAQerrorCollection> crvDaqErrorCollection;
+    art::Handle<DAQerrorCollection> daqErrorCollection;
 
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
     event.getByLabel(_crvDigiModuleLabelNZS,"NZS",crvDigiCollectionNZS);
-    event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
+    //event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
     event.getByLabel(_crvCoincidenceClusterFinderModuleLabel,"",crvCoincidenceClusterCollection);
+    event.getByLabel(_crvDaqErrorModuleLabel,"",crvDaqErrorCollection);
+    event.getByLabel(_daqErrorModuleLabel,"",daqErrorCollection);
 
     auto const& calib = _calib.get(event.id());
     auto const& sipmStatus = _sipmStatus.get(event.id());
@@ -208,19 +223,6 @@ namespace mu2e
       int SiPM = digi.GetSiPMNumber();
       size_t channel = barIndex*CRVId::nChanPerBar + SiPM;
       ++_nDigisNZS.at(channel);
-    }
-
-    for(size_t i=0; i<crvRecoPulseCollection->size(); ++i)
-    {
-      const CrvRecoPulse &recoPulse = crvRecoPulseCollection->at(i);
-      int barIndex = recoPulse.GetScintillatorBarIndex().asUint();
-      int SiPM = recoPulse.GetSiPMNumber();
-      size_t channel = barIndex*CRVId::nChanPerBar + SiPM;
-      float PEs =recoPulse.GetPEs();
-
-      if(crvCoincidenceClusterCollection->size()==0) continue;  //TODO: should we do it like this to remove most of the dark counts?
-
-      _histPEs.at(channel)->Fill(PEs);
     }
 
     static bool first=true;
@@ -254,8 +256,31 @@ namespace mu2e
     {
       int sectorType = crvCoincidenceClusterCollection->at(i).GetCrvSectorType();
       _histCoincidenceClusters->Fill(sectorType);
+
+      const std::vector<art::Ptr<CrvRecoPulse> > &recoPulses = crvCoincidenceClusterCollection->at(i).GetCrvRecoPulses();
+      for(const auto recoPulse: recoPulses)
+      {
+        int barIndex = recoPulse->GetScintillatorBarIndex().asUint();
+        int SiPM = recoPulse->GetSiPMNumber();
+        size_t channel = barIndex*CRVId::nChanPerBar + SiPM;
+        float PEs =recoPulse->GetPEs();
+        _histPEs.at(channel)->Fill(PEs);
+      }
     }
     if(crvCoincidenceClusterCollection->size()>0) ++_totalEventsWithCoincidenceClusters;
+
+    if(daqErrorCollection->size()>0) ++_totalEventsWithDAQerrors;
+    else
+    {
+      for(size_t i=0; i<crvDaqErrorCollection->size()>0; ++i)
+      {
+        if(crvDaqErrorCollection->at(i).GetErrorCode()!=mu2e::CrvDAQerrorCode::wrongSubsystemID)  //don't count this error
+        {
+          ++_totalEventsWithDAQerrors;
+          break;
+        }
+      }
+    }
   }
 
 } // end namespace mu2e
