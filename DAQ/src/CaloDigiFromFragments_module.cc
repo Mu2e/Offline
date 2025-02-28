@@ -73,6 +73,8 @@ private:
 
   long int total_events;
   long int total_hits;
+  long int total_hits_good;
+  long int total_hits_bad;
   std::map<mu2e::CaloDAQUtilities::CaloHitError, uint> failure_counter;
 
 }; // CaloDigiFromFragments
@@ -88,6 +90,8 @@ art::CaloDigiFromFragments::CaloDigiFromFragments(const art::EDProducer::Table<C
   produces<mu2e::CaloDigiCollection>();
   total_events = 0;
   total_hits = 0;
+  total_hits_good = 0;
+  total_hits_bad = 0;
 }
 // ----------------------------------------------------------------------
 void art::CaloDigiFromFragments::produce(Event& event) {
@@ -101,8 +105,7 @@ void art::CaloDigiFromFragments::produce(Event& event) {
 
   size_t totalSize = 0;
   size_t numCalDecoders = 0;
-  auto decoderColl =
-      event.getValidHandle<std::vector<mu2e::CalorimeterDataDecoder> >(caloFragmentsTag_);
+  auto decoderColl = event.getValidHandle<std::vector<mu2e::CalorimeterDataDecoder> >(caloFragmentsTag_);
 
   for (auto decoder : *decoderColl) {
     analyze_calorimeter_(calodaqconds, decoder, calo_digis);
@@ -220,6 +223,7 @@ void art::CaloDigiFromFragments::analyze_calorimeter_(
         auto errorCode = caloDAQUtil_.isHitGood(calHitTestDataVec->at(hitIdx));
         if (errorCode){
           failure_counter[errorCode]++;
+          total_hits_bad++;
           if (diagLevel_ > 0){
             std::cout << "[CaloDigiFromFragments] BAD calo hit! DTC: " << dtcID << ", ROC: " << iROC << ", hit number: " << hitIdx << " [failure code: " << errorCode << "]" << std::endl;
             caloDAQUtil_.printCaloPulse(thisHitPacket);
@@ -236,8 +240,9 @@ void art::CaloDigiFromFragments::analyze_calorimeter_(
         // Fill the CaloDigiCollection
         mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID,thisHitPacket.ChannelID);
         uint16_t SiPMID = ( useOfflineID_ ? calodaqconds.offlineId(rawId).id() : rawId.id() );
-        if (useDTCROCID_) SiPMID = dtcID*120 + (iROC-1)*20 + thisHitPacket.ChannelID;
+        if (useDTCROCID_) SiPMID = dtcID*120 + iROC*20 + thisHitPacket.ChannelID;
         //Constructor: CaloDigi(int SiPMID, int t0, const std::vector<int>& waveform, size_t peakpos)
+        total_hits_good++;
         calo_digis->emplace_back(SiPMID, int(thisHitPacket.Time), std::vector<int>(thisHitWaveform.begin(), thisHitWaveform.end()),
                                  uint(thisHitPacket.IndexOfMaxDigitizerSample));
         if (diagLevel_ > 1) {
@@ -264,6 +269,8 @@ void art::CaloDigiFromFragments::endJob(){
   std::cout << "\n ----- [CaloDigiFromFragments] Decoding errors summary ----- " << std::endl;
   std::cout << "Total events: " << total_events << std::endl;
   std::cout << "Total hits: " << total_hits << std::endl;
+  std::cout << "Total good hits: " << total_hits_good << std::endl;
+  std::cout << "Total bad hits: " << total_hits_bad << std::endl;
   for (auto fail : failure_counter){
     std::cout << "Failure mode " << fail.first
       << " [bad " << caloDAQUtil_.getCaloHitErrorName(fail.first)
