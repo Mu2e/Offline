@@ -45,6 +45,7 @@
 #include <TBufferJSON.h>
 #include <TLine.h>
 #include <TGraph.h>
+#include <TSpline.h>
 
 namespace art
 {
@@ -89,6 +90,7 @@ class art::STMAnalyzeDigis : public EDAnalyzer
   TH1F* DeltaT;
   TGraph* fEvent;
   TGraph* fitFirstPulse;
+  TGraph* splinePulse;
   
   const  art::ProductToken<mu2e::STMWaveformDigiCollection> _stmDigisToken;
   // Fhicl params
@@ -147,6 +149,7 @@ void STMAnalyzeDigis::book_histograms(art::ServiceHandle<art::TFileService> tfs)
   DeltaT = tfs->make<TH1F>("delta_t","Time between 1st and 2nd pulse per event",100,10009,10011);
   fEvent = tfs->makeAndRegister<TGraph>("fEvent","First event; time [us]; ADC");
   fitFirstPulse = tfs->makeAndRegister<TGraph>("fitFirstPulse","First fitted pulse; time [us]; ADC");
+  splinePulse = tfs->makeAndRegister<TGraph>("splinePulse","TSpline3 of first fitted pulse; time [us]; ADC");
   c_stm = tfs->makeAndRegister<TCanvas>("c_stm", "c_stm");
 
 }
@@ -171,7 +174,7 @@ double STMAnalyzeDigis::osc_rising_edge(double* t, double* p){
   double t0 = p[3];
   double w = p[4];
   double phi = p[5];
-  return offset + (amplitude * (exp(-(t[0] - t0))) + (exp(-(t[0] - t0) / rise_time))*cos(w*t[0] - phi)) * (t[0] >= t0);
+  return offset + amplitude * (exp(-(t[0] - t0) / rise_time))*cos(w*t[0] - phi) * (t[0] >= t0);
 
 }
 
@@ -183,8 +186,6 @@ double STMAnalyzeDigis::fit_rising_edge(std::vector<double> x, std::vector<doubl
   double amp_guess = *std::max_element(y.begin(),y.end()); // amplitude
   double center_guess = pulse_time; // pulse centre
   double t0_guess = center_guess - _width_guess / 2; // rising edge t0
-  double w_guess = 1;
-  double phi_guess = 1;
   
   // Find the middle of the pulse (same as middle of data)
   int middle = (x.size() / 2);
@@ -200,25 +201,50 @@ double STMAnalyzeDigis::fit_rising_edge(std::vector<double> x, std::vector<doubl
   // Fit first pulse
   int vsize = fit_x.size();
   fitFirstPulse->Set(fit_x.size());
-
-  
   
   if(firstPulse){
+    std::vector<double> xi;	  
+    for(int i=0; i < vsize; i++){
+      if(fit_y[i] > 15000) xi.push_back(fit_x[i]);
+      fitFirstPulse->SetPoint(i, fit_x[i], fit_y[i]);
+    }    
+    // Get reduced start point
+    double startx = xi.front();
+    // Get reduced end point
+    double endx = xi.back();
+    TSpline3* interpPulse = new TSpline3("interpPulse", fitFirstPulse);
+    int nPoints = xi.size() * 100;
+    std::vector<double> xx(nPoints);
+    std::vector<double> yy;	  
+    // Find linspace in pulse region
+    xx = linspace(startx, endx, nPoints); 
+    splinePulse->Set(nPoints);
+    for(int ii=0; ii < nPoints; ii++){
+      double v = interpPulse->Eval(xx[ii]);
+      yy.push_back(v);
+      splinePulse->SetPoint(ii, xx[ii], v);
+      std::cout << xx[ii] << ", " << v << "\n";
+    }
+
     // Create function
-    TF1* fnx = new TF1("fnx", osc_rising_edge, start, end, 6);
+    TF1* fnx = new TF1("fnx", osc_rising_edge, startx, endx, 6);
+    double offset_guessx = *std::min_element(yy.begin(),yy.end()); // offset
+    double amp_guessx = *std::max_element(yy.begin(),yy.end()); // amplitude
+    double center_guessx = pulse_time; // pulse centre
+    double t0_guessx = center_guessx - _width_guess / 2; // rising edge t0
+    double w_guessx = 1;
+    double phi_guessx = 1;    
     // Initial guesses for the parameters
-    fnx->SetParameters(offset_guess, amp_guess, _rise_time_guess, t0_guess, w_guess, phi_guess);
+    fnx->SetParameters(offset_guessx, amp_guessx, _rise_time_guess, t0_guessx, w_guessx, phi_guessx);
     fnx->SetNpx(1E5);
     fnx->SetParNames("Offset","A","#tau","t_{0}", "#omega", "#phi");
     fnx->SetLineColor(kRed);
     fnx->SetLineWidth(3);
-    for(int i=0; i < vsize; i++){
-      std::cout << fit_x[i] << "," << fit_y[i] << "\n";
-      fitFirstPulse->SetPoint(i, fit_x[i], fit_y[i]);
-    }    
-    fitFirstPulse->Draw("A*");
-    fitFirstPulse->SetLineWidth(3);
-    fitFirstPulse->Fit("fnx","EM");
+
+    fitFirstPulse->Draw("A");
+    splinePulse->Draw("SAME");
+    splinePulse->SetLineWidth(3);
+    splinePulse->Fit("fnx","EM");
     firstPulse = false;
   }
   

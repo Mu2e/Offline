@@ -83,6 +83,25 @@ void STMWaveformDigisFromFragments::produce(Event& event)
     detID = *(stm_frag.detID()) & 0xFF;
     //std::cout << "DetID: " << *(stm_frag.detID()) << "  |   " << detID << "\n";
     //std::cout << "In event: " << event_number << " | Length of event: " << event_len << "\n";
+
+    // Get 40MHz DTC clock time
+    uint16_t DTC0 =  static_cast<uint16_t>((*(stm_frag.GetTHdr() + 28) >> 8) & 0xF) & 0xFFFF;
+    uint16_t DTC1 =  static_cast<uint16_t>(*(stm_frag.GetTHdr() + 29)) & 0xFFFF;
+    uint16_t DTC2 =  static_cast<uint16_t>(*(stm_frag.GetTHdr() + 30)) & 0xFFFF;
+    uint16_t DTC3 =  static_cast<uint16_t>(*(stm_frag.GetTHdr() + 31)) & 0xFFFF;
+    uint64_t DTC = static_cast<uint64_t>(DTC3) << 40 | static_cast<uint64_t>(DTC2) << 24 | static_cast<uint64_t>(DTC1) << 8 | static_cast<uint64_t>(DTC0);
+    //std::cout << "DTCs: " << std::hex << DTC0 << " " << DTC1 << " " << DTC2 << " " << DTC3 << " --> " << DTC << std::dec << std::endl;
+    //std::cout << "DTC time = " << DTC << " = " << (DTC/40e6) << "\n";
+
+    // Get 75MHz ADC clock time
+    uint16_t ADC0 =  static_cast<uint16_t>(*(stm_frag.GetTHdr() + 4)) & 0xFFFF;
+    uint16_t ADC1 =  static_cast<uint16_t>(*(stm_frag.GetTHdr() + 5)) & 0xFFFF;
+    uint16_t ADC2 =  static_cast<uint16_t>(*(stm_frag.GetTHdr() + 6)) & 0xFFFF;
+    uint16_t ADC3 =  static_cast<uint16_t>(*(stm_frag.GetTHdr() + 7)) & 0xFFFF;
+    uint64_t ADC = static_cast<uint64_t>(ADC3) << 48 | static_cast<uint64_t>(ADC2) << 32 | static_cast<uint64_t>(ADC1) << 16 | static_cast<uint64_t>(ADC0);
+    //std::cout << "ADCs: " << std::hex << ADC0 << " " << ADC1 << " " << ADC2 << " " << ADC3 << " --> " << ADC << std::dec << std::endl;
+    //std::cout << "ADC time = " << ADC << " = " << (ADC/75e6) << "\n";
+    
     std::vector<int16_t> adcs;
     adcs.reserve(event_len);
     for (unsigned long int i_adc_sample = 0; i_adc_sample < event_len; ++i_adc_sample) {
@@ -91,7 +110,7 @@ void STMWaveformDigisFromFragments::produce(Event& event)
 
     // Create the STMWaveformDigi and put it in the event
     uint32_t trig_time_offset = 0;
-    mu2e::STMWaveformDigi stm_waveform(detID, trig_time_offset, adcs);
+    mu2e::STMWaveformDigi stm_waveform(detID, DTC, ADC, trig_time_offset, adcs);
     stm_waveform_digis->push_back(stm_waveform);
   }
 
