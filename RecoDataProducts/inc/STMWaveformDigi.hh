@@ -20,17 +20,21 @@ namespace mu2e {
 
     STMWaveformDigi() : _DetID(-1), _trigTimeOffset(0), _adcs(std::vector<int16_t>()), _peakpos(0){};
 
-    STMWaveformDigi(int16_t DetID, uint32_t trigTimeOffset, std::vector<int16_t> adcs, int peakpos) : _DetID(DetID), _trigTimeOffset(trigTimeOffset), _adcs(adcs), _peakpos(peakpos) {};
-    STMWaveformDigi(int16_t DetID, uint32_t trigTimeOffset, std::vector<int16_t> adcs) : _DetID(DetID), _trigTimeOffset(trigTimeOffset), _adcs(adcs), _peakpos(0) {};
+    STMWaveformDigi(int16_t DetID, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, std::vector<int16_t> adcs, int peakpos) : _DetID(DetID), _DTCtime(DTCtime), _trigTimeOffset(trigTimeOffset), _adcs(adcs), _peakpos(peakpos) {};
+    STMWaveformDigi(int16_t DetID, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, std::vector<int16_t> adcs) : _DetID(DetID), _DTCtime(DTCtime), _trigTimeOffset(trigTimeOffset), _adcs(adcs), _peakpos(0) {};
     STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> adcs) : _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
 
     int16_t                     DetID()   const {return _DetID;}
+    uint64_t DTCtime() const { return _DTCtime; }
+    uint64_t ADCtime() const { return _ADCtime; }
     uint32_t trigTimeOffset() const { return _trigTimeOffset; }
     const std::vector<int16_t>& adcs() const { return _adcs; }
     int                     peakpos()  const {return _peakpos;}
 
   private:
     int16_t _DetID;
+    uint64_t _DTCtime;
+    uint64_t _ADCtime;
     uint32_t _trigTimeOffset; // time offset from EWT? to first ADC value [ct]
     std::vector<int16_t> _adcs; // vector of ADC values for the waveform
     int _peakpos;
