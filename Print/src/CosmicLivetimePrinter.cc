@@ -1,5 +1,7 @@
 #include "Offline/Print/inc/CosmicLivetimePrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
+#include "canvas/Persistency/Common/Sampled.h"
+#include "canvas/Persistency/Provenance/SampledInfo.h"
 #include <iomanip>
 #include <string>
 
@@ -10,9 +12,31 @@ void mu2e::CosmicLivetimePrinter::PrintSubRun(art::SubRun const& subrun,
   if (verbose() < 1) return;
   if (tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector<art::Handle<CosmicLivetime> > vah =
+    std::vector<art::Handle<CosmicLivetime> > vcl =
         subrun.getMany<CosmicLivetime>();
-    for (auto const& ah : vah) Print(ah);
+    for (auto const& cl : vcl) Print(cl);
+    // also look for sampled instances
+    auto vscl = subrun.getMany<art::Sampled<CosmicLivetime>>();
+    if(vscl.size() > 0){
+      for (auto const& scl : vscl){
+        std::cout << "SampledCosmicLivetime with tag " << scl->originalInputTag() << std::endl;
+        auto sinfomh = subrun.getHandle<art::SampledSubRunInfo>("SamplingInput");
+        if(sinfomh.isValid()){
+          auto const& sinfom = *sinfomh;
+          for(auto sinfoit = sinfom.begin(); sinfoit != sinfom.end(); ++sinfoit) {
+            if(sinfoit->first.find("Cosmic") != std::string::npos){
+              std::cout << "With SampledSubRunInfo entry for dataset " << sinfoit->first << " Has the following CosmicLivetimes: " << std::endl;
+              for(auto const& sr : sinfoit->second.ids){
+                std::cout << sr << " : ";
+                auto sclp = scl->get(sinfoit->first,sr);
+                if(!sclp.empty()) Print(*sclp);
+              }
+            }
+          }
+        }
+      }
+    }
+
   } else {
     // print requested instances
     unsigned ncosmic(0);

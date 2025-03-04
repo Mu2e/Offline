@@ -82,7 +82,7 @@ namespace mu2e {
     int             _mergePC;              //
     int             _pickupProtonHits;     //
     float           _timeBin;              // binning
-    float           _minHitTime;           // min hit time
+    // float           _minHitTime;           // min hit time
     float           _maxDeltaEDep;         //
     float           _maxSeedEDep;          //
     float           _minProtonSeedEDep;    //
@@ -95,7 +95,7 @@ namespace mu2e {
     float           _maxHitSeedDt;         //
     float           _maxChi2Seed;          //
     // float           _scaleTwo;
-    float           _maxChi2Neighbor;      //
+    // float           _maxChi2Neighbor;      //
     float           _maxChi2Par;           //
     float           _maxChi2Perp;          //
     // float           _maxChi2All;           // max chi2/N of a seed
@@ -111,8 +111,8 @@ namespace mu2e {
     float           _maxDtDs;              // low-P electron travel time between two stations
     float           _maxDtDc;              // max deltaT between two delta candiates
 
-    int             _writeComboHits;       // write (filtered ?) combo hits
-    int             _writeStrawHitFlags;
+    // int             _writeComboHits;       // write (filtered ?) combo hits
+    // int             _writeStrawHitFlags;
 
     int             _debugLevel;
     int             _diagLevel;
