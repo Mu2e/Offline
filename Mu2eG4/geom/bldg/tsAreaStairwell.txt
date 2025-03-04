@@ -16,18 +16,18 @@ vector<double> building.tsArea.stairwell.xPositions = {
   3784.6,   // S0
   4089.4,   // S1
   4089.4,   // S2
-  5308.6,   // S3
-  5308.6,   // s4
+  11366.5,   // S3
+  11366.5,   // s4
   3784.6   // s5
 };
 
 vector<double> building.tsArea.stairwell.yPositions = {
   -8661.4,   // S0
   -8661.4,   // S1
-  -11277.6,   // S2
-  -11277.6,   // S3
-  -11734.8,   // s4
-  -11734.8   // s5
+  -13589,   // S2
+  -13589,   // S3
+  -13944.6,   // s4
+  -13944.6   // s5
 };
 
 // Local Variables:

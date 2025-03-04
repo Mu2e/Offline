@@ -505,20 +505,20 @@ Mu2eKinKal.producers.KKLineSeedFit.ModuleSettings.FitParticle : 13
 Mu2eKinKal.producers.KKLine.ModuleSettings.FitParticle : 13
 
 Mu2eKinKal.producers.KKDeSeedFit.ModuleSettings.FitParticle : 11
-Mu2eKinKal.producers.KKDeSeedFit.FitDirection : 0
+Mu2eKinKal.producers.KKDeSeedFit.FitDirection : @local::FitDir.downstream
 
 # save trajectories in the Detector region for downstream fits, just the T0 segment for the rest
 Mu2eKinKal.producers.KKDe.ModuleSettings.FitParticle : 11
-Mu2eKinKal.producers.KKDe.FitDirection : 0
+Mu2eKinKal.producers.KKDe.FitDirection : @local::FitDir.downstream
 Mu2eKinKal.producers.KKDe.KKFitSettings.SaveTrajectory : "Detector"
 Mu2eKinKal.producers.KKDmu.ModuleSettings.FitParticle : 13
-Mu2eKinKal.producers.KKDmu.FitDirection : 0
+Mu2eKinKal.producers.KKDmu.FitDirection : @local::FitDir.downstream
 Mu2eKinKal.producers.KKDmu.KKFitSettings.SaveTrajectory : "Detector"
 Mu2eKinKal.producers.KKUe.ModuleSettings.FitParticle : 11
-Mu2eKinKal.producers.KKUe.FitDirection : 1
+Mu2eKinKal.producers.KKUe.FitDirection : @local::FitDir.upstream
 Mu2eKinKal.producers.KKUe.KKFitSettings.SaveTrajectory : "T0"
 Mu2eKinKal.producers.KKUmu.ModuleSettings.FitParticle : 13
-Mu2eKinKal.producers.KKUmu.FitDirection : 1
+Mu2eKinKal.producers.KKUmu.FitDirection : @local::FitDir.upstream
 Mu2eKinKal.producers.KKUmu.KKFitSettings.SaveTrajectory : "T0"
 # extrapolate upstream fits back to the tracker
 physics.producers.KKUmu.Extrapolation.BackToTracker : true

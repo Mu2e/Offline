@@ -2,8 +2,8 @@ BEGIN_PROLOG
 
 # fit directions
 FitDir : {
-  downstream : 0
-  upstream : 1
+  downstream : "downstream"
+  upstream : "upstream"
 }
 
 #NB: fcl doesn't allow underscores in parameter names

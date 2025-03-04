@@ -471,7 +471,7 @@ namespace mu2e {
           float xc       = (snyr*snx2-snxr*snxy)/d;
           float yc       = (snyr*snxy-snxr*sny2)/d;
 
-          float chi2_par, chi2_perp;
+          float chi2_par(0.f), chi2_perp(0.f);
 
           seedChi2(seed,xc,yc,chi2_par,chi2_perp);
 
@@ -890,7 +890,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       if (fabs(tdelta-seed->TMean()) > dt)                            continue;
 
-      float  chi2_par, chi2_perp;
+      float  chi2_par(0.f), chi2_perp(0.f);
 
       seedChi2(seed,xc,yc,chi2_par,chi2_perp);
 
@@ -1237,7 +1237,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // split chi^2 into parallel and perpendicular to the wire components
 //-----------------------------------------------------------------------------
-        float chi2_par, chi2_perp;
+        float chi2_par(0.f), chi2_perp(0.f);
         hitChi2(hd,Xc,Yc,chi2_par,chi2_perp);
         // float dx        = hd->fX-Xc;
         // float dy        = hd->fY-Yc;
@@ -1270,7 +1270,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // split chi^2 into parallel and perpendicular to the wire components
 //-----------------------------------------------------------------------------
-          float chi2_par, chi2_perp;
+          float chi2_par(0.f), chi2_perp(0.f);
           hitChi2(hd,Xc,Yc,chi2_par,chi2_perp);
 
           // float dx        = hd->fX-Xc;

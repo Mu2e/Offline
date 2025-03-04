@@ -9,11 +9,12 @@ include(CetCMakeEnv)
 cet_cmake_env()
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+# ELF, 2025-Jan-28: Adding -Wno-stringop-overflow due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106199
 cet_set_compiler_flags(DIAGS VIGILANT
  WERROR
  NO_UNDEFINED
  EXTRA_FLAGS -pedantic #-Wno-error=unused-parameter -Wno-error=type-limits -Wno-error=ignored-qualifiers -Wno-error=unused-but-set-parameter -Wno-error=extra -Wno-error=non-virtual-dtor -Wno-error=implicit-fallthrough -Wno-error=deprecated-copy
- -Wno-unused-parameter -Wno-type-limits -Wno-ignored-qualifiers -Wno-unused-but-set-parameter -Wno-extra -Wno-non-virtual-dtor -Wno-implicit-fallthrough -Wno-deprecated-copy
+ -Wno-unused-parameter -Wno-type-limits -Wno-ignored-qualifiers -Wno-unused-but-set-parameter -Wno-extra -Wno-non-virtual-dtor -Wno-implicit-fallthrough -Wno-deprecated-copy -Wno-stringop-overflow
 )
 
 if(DEFINED Offline_UPS_QUALIFIER_STRING)
@@ -65,6 +66,7 @@ add_subdirectory(AnalysisUtilities)
 add_subdirectory(BeamlineGeom)
 add_subdirectory(BFieldGeom)
 add_subdirectory(BFieldTest)
+add_subdirectory(Blinding)
 add_subdirectory(bin)
 add_subdirectory(boost_fix)
 add_subdirectory(BTrkData)

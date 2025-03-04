@@ -145,6 +145,7 @@ namespace mu2e {
     if(gamma_index >= gammas.size()) {
       if(verbosity_ > 0) printf("GammaConversion::%s: No suitable photon found to convert, passing an empty event\n", __func__);
       event.put(std::move(output));
+      return;
     }
 
     // Process the photon conversion

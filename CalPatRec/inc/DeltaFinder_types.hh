@@ -80,7 +80,7 @@ namespace mu2e {
     enum { kMaxNTimeBins = 3000 };                     // with a 40ns bin, covers up to 120 us
 
     struct FaceZ_t {
-      int                     fID;                     // 3*face+panel, for pre-calculating overlaps
+      int                     fID = 0;                     // 3*face+panel, for pre-calculating overlaps
 
       std::vector<HitData_t>  fHitData;
       int                     fFirst [kMaxNTimeBins];   // ** FIXME - choose the USED max size based on the event type - on/off spill
@@ -91,7 +91,9 @@ namespace mu2e {
       int                     fPLast [kMaxNTimeBins];  //
 
       Pzz_t                   fPanel [3];
-      double                  z;           //
+      double                  z = 0.;           //
+
+      FaceZ_t();
 
       Pzz_t*                  Panel   (int I) { return &fPanel[I]; }
       int                     nHits        () { return fHitData.size(); }
@@ -102,22 +104,22 @@ namespace mu2e {
     };
 
     struct Data_t {
-      const art::Event*             event;
-      const Tracker*                tracker;
-      const DiskCalorimeter*        calorimeter;
+      const art::Event*             event = nullptr;
+      const Tracker*                tracker = nullptr;
+      const DiskCalorimeter*        calorimeter = nullptr;
 
       art::InputTag                 chCollTag;
       art::InputTag                 sdmcCollTag;
 
-      const ComboHitCollection*     chcol;
-      ComboHitCollection*           outputChColl;
+      const ComboHitCollection*     chcol = nullptr;
+      ComboHitCollection*           outputChColl = nullptr;
 
-      DeltaFinderAlg*               _finder;
+      DeltaFinderAlg*               _finder = nullptr;
 
-      int                           debugLevel;              // printout level
+      int                           debugLevel = 0;              // printout level
 
-      int                           _nComboHits;
-      int                           _nStrawHits;
+      int                           _nComboHits = 0;
+      int                           _nStrawHits = 0;
       std::vector<const ComboHit*>  _v;                      // sorted
 
       ManagedList<DeltaSeed>        fListOfSeeds       [kNStations];

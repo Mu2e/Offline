@@ -1,0 +1,28 @@
+
+string building.central.stairwell.upper.wall.w2.name     = "CentralStairwellUpperWallW2";
+
+string building.central.stairwell.upper.wall.w2.material = "CONCRETE_MARS";
+
+double building.central.stairwell.upper.wall.w2.offsetFromMu2eOrigin.x   = 947.4;
+double building.central.stairwell.upper.wall.w2.offsetFromFloorSurface.y = 6578.6;
+double building.central.stairwell.upper.wall.w2.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.central.stairwell.upper.wall.w2.yHalfThickness           = 787.4;
+
+vector<double> building.central.stairwell.upper.wall.w2.xPositions = {
+  11617.325,  // h
+  11617.325, // h0
+  12014.2,   // h1
+  12014.2    // h2
+};
+
+vector<double> building.central.stairwell.upper.wall.w2.yPositions = {
+  -14740.25,    // h
+  -25908,       // h0
+  -25908,       // h1
+  -14740.25     // h2
+};
+
+// Local Variables:
+// mode:c++
+// End:
