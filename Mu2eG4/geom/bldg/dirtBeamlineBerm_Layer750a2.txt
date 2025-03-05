@@ -1,29 +1,31 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_beamline_dirtBerm.ccl
 // Nov 2024
 // dirtbeamline removed, several layers of berms added; ref: docdb:49557
 // layer-750' NE side
+// Feb 2025
+// modify to accommodate PSH Steel Shielding
 
-string dirt.beamline.berm.l750a.name     = "dirtBeamlineBerml750a";
+string dirt.beamline.berm.l750a2.name     = "dirtBeamlineBerml750a2";
 
-string dirt.beamline.berm.l750a.material = "MBOverburden";
+string dirt.beamline.berm.l750a2.material = "MBOverburden";
 
-double dirt.beamline.berm.l750a.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.berm.l750a.offsetFromFloorSurface.y = 9144.0027;
-double dirt.beamline.berm.l750a.offsetFromMu2eOrigin.z   = -3581.4;
+double dirt.beamline.berm.l750a2.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.beamline.berm.l750a2.offsetFromFloorSurface.y = 9086.9515;
+double dirt.beamline.berm.l750a2.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.beamline.berm.l750a.yHalfThickness           = 152.4003; //0.5 US foot to mm
+double dirt.beamline.berm.l750a2.yHalfThickness           = 95.3491; //0.5 US foot to mm
 
-vector<double> dirt.beamline.berm.l750a.xPositions = {
+vector<double> dirt.beamline.berm.l750a2.xPositions = {
   -4140.2,    // b
   -4140.2,    // P0
   -4749.8,    // P1
   -4749.8,    // P2
   -11709.4,   // P3
   -11709.4,   // P3a
-  -12319,     // P3b
-  -12319,     // P3c
+  -12319,     // P3b //  -12319,     // P3c
+  -12319,     // S1
+  -12750.8,   // S2
+  -12750.8,   // S3
+  -12319,     // S4
   -12318.9,   // P3d
   -12343.4,   // P3e
   -12319.3,   // P3f
@@ -76,15 +78,18 @@ vector<double> dirt.beamline.berm.l750a.xPositions = {
   31698.7,
   35729.1
 };
-vector<double> dirt.beamline.berm.l750a.yPositions = {
+vector<double> dirt.beamline.berm.l750a2.yPositions = {
   2438.4,   // b
   6858,   // P0
   6858,   // P1
   6502.4,   // P2
   6502.4,   // P3
   6858,     // P3a
-  6858,     // P3b
-  6502.4,   // P3c
+  6858,     // P3b //   6502.4,   // P3c
+  5279.3,   // S1
+  5279.3,   // S2
+  -354.1,   // S3
+  -354.1,   // S4
   -2091.9,  // P3d
   -2096.1,  // P3e
   -2194.8,  // P3f
