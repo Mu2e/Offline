@@ -45,8 +45,8 @@ cet_build_plugin(CaloDigiFromFragments art::module
       Offline::CaloConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
-      artdaq_core_mu2e::artdaq-core-mu2e_Data
-      artdaq_core_mu2e::artdaq-core-mu2e_Data_dict
+      artdaq-core-mu2e::Data
+      artdaq-core-mu2e::Data_dict
 )
 
 cet_build_plugin(CrvDigisFromFragments art::module
