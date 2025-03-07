@@ -153,11 +153,6 @@ void CrvDigisFromFragments::produce(Event& event)
           continue;
         }
 
-/*
-//FIXME: old code before artdaq_core_mu2e gets updated
-        auto crvHits = CRVDataDecoder.GetCRVHits(iDataBlock);
-*/
-//FIXME: new code after artdaq_core_mu2e gets updated
         std::vector<mu2e::CRVDataDecoder::CRVHit> crvHits;
         if(!CRVDataDecoder.GetCRVHits(iDataBlock, crvHits))
         {
