@@ -30,69 +30,69 @@
 #include <memory>
 
 namespace art {
-class CaloDigiFromFragments;
+  class CaloDigiFromFragments;
 }
 
 // ======================================================================
 
 class art::CaloDigiFromFragments : public EDProducer {
 
-public:
-  struct Config {
-    fhicl::Atom<int> data_type {fhicl::Name("dataType" ) , fhicl::Comment("Data type (0:standard, 1:debug, 2:counters)"), 0};
-    fhicl::Atom<int> diagLevel {fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level"), 0};
-    fhicl::Atom<art::InputTag> caloTag {fhicl::Name("caloTag"), fhicl::Comment("Input module")};
-    fhicl::Atom<bool> useOfflineID {fhicl::Name("useOfflineID"), fhicl::Comment("Use calo disk mapping for SiPM IDs (Default: true)"), true};
-    fhicl::Atom<bool> useDTCROCID {fhicl::Name("useDTCROCID"), fhicl::Comment("Use DTC and ROC numbers instead of boardID for SiPM IDs (Default: false)"), false};
-  };
+  public:
+    struct Config {
+      fhicl::Atom<int> data_type {fhicl::Name("dataType" ) , fhicl::Comment("Data type (0:standard, 1:debug, 2:counters)"), 0};
+      fhicl::Atom<int> diagLevel {fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level"), 0};
+      fhicl::Atom<art::InputTag> caloTag {fhicl::Name("caloTag"), fhicl::Comment("Input module")};
+      fhicl::Atom<bool> useOfflineID {fhicl::Name("useOfflineID"), fhicl::Comment("Use calo disk mapping for SiPM IDs (Default: true)"), true};
+      fhicl::Atom<bool> useDTCROCID {fhicl::Name("useDTCROCID"), fhicl::Comment("Use DTC and ROC numbers instead of boardID for SiPM IDs (Default: false)"), false};
+    };
 
-  // --- C'tor/d'tor:
-  explicit CaloDigiFromFragments(const art::EDProducer::Table<Config>& config);
-  virtual ~CaloDigiFromFragments() {}
+    // --- C'tor/d'tor:
+    explicit CaloDigiFromFragments(const art::EDProducer::Table<Config>& config);
+    virtual ~CaloDigiFromFragments() {}
 
-  // --- Production:
-  virtual void produce(Event&);
-  virtual void endJob();
+    // --- Production:
+    virtual void produce(Event&);
+    virtual void endJob();
 
-private:
-  mu2e::ProditionsHandle<mu2e::CaloDAQMap> _calodaqconds_h;
+  private:
+    mu2e::ProditionsHandle<mu2e::CaloDAQMap> _calodaqconds_h;
 
-  void analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
-                            const mu2e::CalorimeterDataDecoder& cc,
-                            std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis);
+    void analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
+        const mu2e::CalorimeterDataDecoder& cc,
+        std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis);
 
-  int data_type_;
-  int diagLevel_;
+    int data_type_;
+    int diagLevel_;
 
-  art::InputTag caloFragmentsTag_;
-  mu2e::CaloDAQUtilities caloDAQUtil_;
-  bool useOfflineID_;
-  bool useDTCROCID_;
+    art::InputTag caloFragmentsTag_;
+    mu2e::CaloDAQUtilities caloDAQUtil_;
+    bool useOfflineID_;
+    bool useDTCROCID_;
 
-  const int hexShiftPrint = 7;
+    const int hexShiftPrint = 7;
 
-  long int total_events;
-  long int total_hits;
-  long int total_hits_good;
-  long int total_hits_bad;
-  std::map<mu2e::CaloDAQUtilities::CaloHitError, uint> failure_counter;
+    long int total_events;
+    long int total_hits;
+    long int total_hits_good;
+    long int total_hits_bad;
+    std::map<mu2e::CaloDAQUtilities::CaloHitError, uint> failure_counter;
 
 }; // CaloDigiFromFragments
 // ======================================================================
 art::CaloDigiFromFragments::CaloDigiFromFragments(const art::EDProducer::Table<Config>& config) :
-    art::EDProducer{config}, 
-    data_type_(config().data_type()),
-    diagLevel_(config().diagLevel()),
-    caloFragmentsTag_(config().caloTag()),
-    caloDAQUtil_("CaloDigiFromFragments"),
-    useOfflineID_(config().useOfflineID()),
-    useDTCROCID_(config().useDTCROCID()) {
-  produces<mu2e::CaloDigiCollection>();
-  total_events = 0;
-  total_hits = 0;
-  total_hits_good = 0;
-  total_hits_bad = 0;
-}
+  art::EDProducer{config},
+  data_type_(config().data_type()),
+  diagLevel_(config().diagLevel()),
+  caloFragmentsTag_(config().caloTag()),
+  caloDAQUtil_("CaloDigiFromFragments"),
+  useOfflineID_(config().useOfflineID()),
+  useDTCROCID_(config().useDTCROCID()) {
+    produces<mu2e::CaloDigiCollection>();
+    total_events = 0;
+    total_hits = 0;
+    total_hits_good = 0;
+    total_hits_bad = 0;
+  }
 // ----------------------------------------------------------------------
 void art::CaloDigiFromFragments::produce(Event& event) {
   art::EventNumber_t eventNumber = event.event();
@@ -123,7 +123,7 @@ void art::CaloDigiFromFragments::produce(Event& event) {
 
   if (diagLevel_ > 1) {
     std::cout << std::dec << "[CaloDigiFromFragments::produce] Run " << event.run() << ", subrun " << event.subRun()
-              << ", event " << eventNumber << " has " << numCalDecoders << " CALO decoders." << std::endl;
+      << ", event " << eventNumber << " has " << numCalDecoders << " CALO decoders." << std::endl;
     std::cout << "Total Size: " << (int)totalSize << " bytes." << std::endl;
   }
 
@@ -146,11 +146,11 @@ void art::CaloDigiFromFragments::analyze_calorimeter_(
       auto calHitDataVec = cc.GetCalorimeterHitData(iROC);
       if (calHitDataVec == nullptr) {
         mf::LogError("CaloDigiFromFragments")
-            << "Error retrieving Calorimeter data from ROC " << iROC
-            << "! Aborting processing of this ROC!";
+          << "Error retrieving Calorimeter data from ROC " << iROC
+          << "! Aborting processing of this ROC!";
         continue;
       }
-  
+
       //Loop through the hits of this ROC
       for (unsigned int hitIdx = 0; hitIdx < calHitDataVec->size(); hitIdx++) {
         mu2e::CalorimeterDataDecoder::CalorimeterHitDataPacket& thisHitPacket = calHitDataVec->at(hitIdx).first;
@@ -161,19 +161,19 @@ void art::CaloDigiFromFragments::analyze_calorimeter_(
         if (diagLevel_ > 1) {
           std::cout << "[CaloDigiFromFragments] calo hit " << hitIdx << std::endl;
           std::cout << "[CaloDigiFromFragments] \tChNumber   "
-                    << (int)thisHitPacket.ChannelNumber << std::endl;
+            << (int)thisHitPacket.ChannelNumber << std::endl;
           std::cout << "[CaloDigiFromFragments] \tDIRACA     " << (int)thisHitPacket.DIRACA
-                    << std::endl;
+            << std::endl;
           std::cout << "[CaloDigiFromFragments] \tDIRACB     " << (int)thisHitPacket.DIRACB
-                    << std::endl;
+            << std::endl;
           std::cout << "[CaloDigiFromFragments] \tErrorFlags " << (int)thisHitPacket.ErrorFlags
-                    << std::endl;
+            << std::endl;
           std::cout << "[CaloDigiFromFragments] \tTime              "
-                    << (int)thisHitPacket.Time << std::endl;
+            << (int)thisHitPacket.Time << std::endl;
           std::cout << "[CaloDigiFromFragments] \tNSamples   "
-                    << (int)thisHitPacket.NumberOfSamples << std::endl;
+            << (int)thisHitPacket.NumberOfSamples << std::endl;
           std::cout << "[CaloDigiFromFragments] \tIndexMax   "
-                    << (int)thisHitPacket.IndexOfMaxDigitizerSample << std::endl;
+            << (int)thisHitPacket.IndexOfMaxDigitizerSample << std::endl;
         }
 
         uint16_t packetid = thisHitPacket.DIRACA;
@@ -182,9 +182,9 @@ void art::CaloDigiFromFragments::analyze_calorimeter_(
         mu2e::CaloRawSiPMId rawId(dirac,diracChannel);
         uint16_t roID = calodaqconds.offlineId(rawId).id();
         // uint16_t dettype = (packetId & 0x7000) >> 13;
-  
+
         calo_digis->emplace_back(roID, thisHitPacket.Time, std::vector<int>(thisHitWaveform.begin(), thisHitWaveform.end()),
-                                   thisHitPacket.IndexOfMaxDigitizerSample);
+            thisHitPacket.IndexOfMaxDigitizerSample);
 
         if (diagLevel_ > 1) {
           // Until we have the final mapping, the BoardID is just a placeholder
@@ -207,8 +207,8 @@ void art::CaloDigiFromFragments::analyze_calorimeter_(
       auto calHitTestDataVec = cc.GetCalorimeterHitTestData(iROC);
       if (calHitTestDataVec == nullptr) {
         mf::LogError("CaloDigiFromFragments")
-            << "Error retrieving Calorimeter test data from block " << iROC
-            << "! Aborting processing of this block!";
+          << "Error retrieving Calorimeter test data from block " << iROC
+          << "! Aborting processing of this block!";
         continue;
       }
 
@@ -236,7 +236,7 @@ void art::CaloDigiFromFragments::analyze_calorimeter_(
           std::cout << "[CaloDigiFromFragments] calo hit " << hitIdx << std::endl;
           caloDAQUtil_.printCaloPulse(thisHitPacket);
         }
-        
+
         // Fill the CaloDigiCollection
         mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID,thisHitPacket.ChannelID);
         uint16_t SiPMID = ( useOfflineID_ ? calodaqconds.offlineId(rawId).id() : rawId.id() );
@@ -244,7 +244,7 @@ void art::CaloDigiFromFragments::analyze_calorimeter_(
         //Constructor: CaloDigi(int SiPMID, int t0, const std::vector<int>& waveform, size_t peakpos)
         total_hits_good++;
         calo_digis->emplace_back(SiPMID, int(thisHitPacket.Time), std::vector<int>(thisHitWaveform.begin(), thisHitWaveform.end()),
-                                 uint(thisHitPacket.IndexOfMaxDigitizerSample));
+            uint(thisHitPacket.IndexOfMaxDigitizerSample));
         if (diagLevel_ > 1) {
           uint16_t crystalID = SiPMID / 2;
           std::cout << "Crystal ID: " << (int)crystalID << std::endl;
@@ -284,4 +284,4 @@ void art::CaloDigiFromFragments::endJob(){
 
 DEFINE_ART_MODULE(art::CaloDigiFromFragments)
 
-// ======================================================================
+  // ======================================================================
