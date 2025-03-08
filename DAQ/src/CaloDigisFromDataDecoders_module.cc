@@ -30,12 +30,12 @@
 #include <memory>
 
 namespace art {
-  class CaloDigiFromFragments;
+  class CaloDigisFromDataDecoders;
 }
 
 // ======================================================================
 
-class art::CaloDigiFromFragments : public EDProducer {
+class art::CaloDigisFromDataDecoders : public EDProducer {
 
   public:
     struct Config {
@@ -47,8 +47,8 @@ class art::CaloDigiFromFragments : public EDProducer {
     };
 
     // --- C'tor/d'tor:
-    explicit CaloDigiFromFragments(const art::EDProducer::Table<Config>& config);
-    virtual ~CaloDigiFromFragments() {}
+    explicit CaloDigisFromDataDecoders(const art::EDProducer::Table<Config>& config);
+    virtual ~CaloDigisFromDataDecoders() {}
 
     // --- Production:
     virtual void produce(Event&);
@@ -77,14 +77,14 @@ class art::CaloDigiFromFragments : public EDProducer {
     long int total_hits_bad;
     std::map<mu2e::CaloDAQUtilities::CaloHitError, uint> failure_counter;
 
-}; // CaloDigiFromFragments
+}; // CaloDigisFromDataDecoders
 // ======================================================================
-art::CaloDigiFromFragments::CaloDigiFromFragments(const art::EDProducer::Table<Config>& config) :
+art::CaloDigisFromDataDecoders::CaloDigisFromDataDecoders(const art::EDProducer::Table<Config>& config) :
   art::EDProducer{config},
   data_type_(config().data_type()),
   diagLevel_(config().diagLevel()),
   caloFragmentsTag_(config().caloTag()),
-  caloDAQUtil_("CaloDigiFromFragments"),
+  caloDAQUtil_("CaloDigisFromDataDecoders"),
   useOfflineID_(config().useOfflineID()),
   useDTCROCID_(config().useDTCROCID()) {
     produces<mu2e::CaloDigiCollection>();
@@ -94,7 +94,7 @@ art::CaloDigiFromFragments::CaloDigiFromFragments(const art::EDProducer::Table<C
     total_hits_bad = 0;
   }
 // ----------------------------------------------------------------------
-void art::CaloDigiFromFragments::produce(Event& event) {
+void art::CaloDigisFromDataDecoders::produce(Event& event) {
   art::EventNumber_t eventNumber = event.event();
   total_events++;
 
@@ -116,13 +116,13 @@ void art::CaloDigiFromFragments::produce(Event& event) {
   }
 
   if (numCalDecoders == 0) {
-    std::cout << "[CaloDigiFromFragments::produce] found no Calorimeter decoders!" << std::endl;
+    std::cout << "[CaloDigisFromDataDecoders::produce] found no Calorimeter decoders!" << std::endl;
     event.put(std::move(calo_digis));
     return;
   }
 
   if (diagLevel_ > 1) {
-    std::cout << std::dec << "[CaloDigiFromFragments::produce] Run " << event.run() << ", subrun " << event.subRun()
+    std::cout << std::dec << "[CaloDigisFromDataDecoders::produce] Run " << event.run() << ", subrun " << event.subRun()
       << ", event " << eventNumber << " has " << numCalDecoders << " CALO decoders." << std::endl;
     std::cout << "Total Size: " << (int)totalSize << " bytes." << std::endl;
   }
@@ -132,7 +132,7 @@ void art::CaloDigiFromFragments::produce(Event& event) {
 
 } // produce()
 
-void art::CaloDigiFromFragments::analyze_calorimeter_(
+void art::CaloDigisFromDataDecoders::analyze_calorimeter_(
     mu2e::CaloDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,
     std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis) {
 
@@ -145,7 +145,7 @@ void art::CaloDigiFromFragments::analyze_calorimeter_(
 
       auto calHitDataVec = cc.GetCalorimeterHitData(iROC);
       if (calHitDataVec == nullptr) {
-        mf::LogError("CaloDigiFromFragments")
+        mf::LogError("CaloDigisFromDataDecoders")
           << "Error retrieving Calorimeter data from ROC " << iROC
           << "! Aborting processing of this ROC!";
         continue;
@@ -159,20 +159,20 @@ void art::CaloDigiFromFragments::analyze_calorimeter_(
         // Fill the CaloDigiCollection
 
         if (diagLevel_ > 1) {
-          std::cout << "[CaloDigiFromFragments] calo hit " << hitIdx << std::endl;
-          std::cout << "[CaloDigiFromFragments] \tChNumber   "
+          std::cout << "[CaloDigisFromDataDecoders] calo hit " << hitIdx << std::endl;
+          std::cout << "[CaloDigisFromDataDecoders] \tChNumber   "
             << (int)thisHitPacket.ChannelNumber << std::endl;
-          std::cout << "[CaloDigiFromFragments] \tDIRACA     " << (int)thisHitPacket.DIRACA
+          std::cout << "[CaloDigisFromDataDecoders] \tDIRACA     " << (int)thisHitPacket.DIRACA
             << std::endl;
-          std::cout << "[CaloDigiFromFragments] \tDIRACB     " << (int)thisHitPacket.DIRACB
+          std::cout << "[CaloDigisFromDataDecoders] \tDIRACB     " << (int)thisHitPacket.DIRACB
             << std::endl;
-          std::cout << "[CaloDigiFromFragments] \tErrorFlags " << (int)thisHitPacket.ErrorFlags
+          std::cout << "[CaloDigisFromDataDecoders] \tErrorFlags " << (int)thisHitPacket.ErrorFlags
             << std::endl;
-          std::cout << "[CaloDigiFromFragments] \tTime              "
+          std::cout << "[CaloDigisFromDataDecoders] \tTime              "
             << (int)thisHitPacket.Time << std::endl;
-          std::cout << "[CaloDigiFromFragments] \tNSamples   "
+          std::cout << "[CaloDigisFromDataDecoders] \tNSamples   "
             << (int)thisHitPacket.NumberOfSamples << std::endl;
-          std::cout << "[CaloDigiFromFragments] \tIndexMax   "
+          std::cout << "[CaloDigisFromDataDecoders] \tIndexMax   "
             << (int)thisHitPacket.IndexOfMaxDigitizerSample << std::endl;
         }
 
@@ -206,7 +206,7 @@ void art::CaloDigiFromFragments::analyze_calorimeter_(
 
       auto calHitTestDataVec = cc.GetCalorimeterHitTestData(iROC);
       if (calHitTestDataVec == nullptr) {
-        mf::LogError("CaloDigiFromFragments")
+        mf::LogError("CaloDigisFromDataDecoders")
           << "Error retrieving Calorimeter test data from block " << iROC
           << "! Aborting processing of this block!";
         continue;
@@ -225,15 +225,15 @@ void art::CaloDigiFromFragments::analyze_calorimeter_(
           failure_counter[errorCode]++;
           total_hits_bad++;
           if (diagLevel_ > 0){
-            std::cout << "[CaloDigiFromFragments] BAD calo hit! DTC: " << dtcID << ", ROC: " << iROC << ", hit number: " << hitIdx << " [failure code: " << errorCode << "]" << std::endl;
+            std::cout << "[CaloDigisFromDataDecoders] BAD calo hit! DTC: " << dtcID << ", ROC: " << iROC << ", hit number: " << hitIdx << " [failure code: " << errorCode << "]" << std::endl;
             caloDAQUtil_.printCaloPulse(thisHitPacket);
-            std::cout << "[CaloDigiFromFragments] \twaveform size \t" << thisHitWaveform.size() << std::endl;
+            std::cout << "[CaloDigisFromDataDecoders] \twaveform size \t" << thisHitWaveform.size() << std::endl;
           }
           continue;
         }
 
         if (diagLevel_ > 1) {
-          std::cout << "[CaloDigiFromFragments] calo hit " << hitIdx << std::endl;
+          std::cout << "[CaloDigisFromDataDecoders] calo hit " << hitIdx << std::endl;
           caloDAQUtil_.printCaloPulse(thisHitPacket);
         }
 
@@ -264,9 +264,9 @@ void art::CaloDigiFromFragments::analyze_calorimeter_(
 }
 
 
-void art::CaloDigiFromFragments::endJob(){
+void art::CaloDigisFromDataDecoders::endJob(){
 
-  std::cout << "\n ----- [CaloDigiFromFragments] Decoding errors summary ----- " << std::endl;
+  std::cout << "\n ----- [CaloDigisFromDataDecoders] Decoding errors summary ----- " << std::endl;
   std::cout << "Total events: " << total_events << std::endl;
   std::cout << "Total hits: " << total_hits << std::endl;
   std::cout << "Total good hits: " << total_hits_good << std::endl;
@@ -282,6 +282,6 @@ void art::CaloDigiFromFragments::endJob(){
 
 // ======================================================================
 
-DEFINE_ART_MODULE(art::CaloDigiFromFragments)
+DEFINE_ART_MODULE(art::CaloDigisFromDataDecoders)
 
   // ======================================================================
