@@ -28,7 +28,9 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     struct Config {
-      fhicl::Atom<art::InputTag> stepPointMCsTag{Name("stepPointMCsTag"), Comment("Name of StepPointMCs to search")};
+      fhicl::Atom<art::InputTag> stepPointMCsTagEleBeamCat{Name("stepPointMCsTagEleBeamCat"), Comment("Name of EleBeamCat events to search for")};
+      fhicl::Atom<art::InputTag> stepPointMCsTagMuBeamCat{Name("stepPointMCsTagMuBeamCat"), Comment("Name of MuBeamCat events to search for")};
+      fhicl::Atom<art::InputTag> stepPointMCsTagTargetStopsCat{Name("stepPointMCsTagTargetStopsCat"), Comment("Name of TargetStopsCat events to search for")};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
     explicit CountMixedEvents(const Parameters& conf);
@@ -37,27 +39,37 @@ namespace mu2e {
 
   private:
     Config _conf;
-    art::ProductToken<StepPointMCCollection> StepPointMCsToken;
-    int count = 0;
+    art::ProductToken<StepPointMCCollection> StepPointMCsTokenEleBeamCat, StepPointMCsTokenMuBeamCat, StepPointMCsTokenTargetStopsCat;
+    int countEleBeamCat = 0, countMuBeamCat = 0, countTargetStopsCat = 0;
   };
 
   CountMixedEvents::CountMixedEvents(const Parameters& conf)
     : art::EDAnalyzer(conf),
-      StepPointMCsToken(consumes<StepPointMCCollection>(conf().stepPointMCsTag())) {};
+    StepPointMCsTokenEleBeamCat(consumes<StepPointMCCollection>(conf().stepPointMCsTagEleBeamCat())),
+    StepPointMCsTokenMuBeamCat(consumes<StepPointMCCollection>(conf().stepPointMCsTagMuBeamCat())),
+    StepPointMCsTokenTargetStopsCat(consumes<StepPointMCCollection>(conf().stepPointMCsTagTargetStopsCat())) {};
 
   void CountMixedEvents::analyze(const art::Event& event) {
     // Get the hits corresponding to the StepPointMCCollection of interest
-    auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
-    for (auto step : StepPointMCs)
-      count++;
+    auto const& StepPointMCsEleBeamCat = event.getProduct(StepPointMCsTokenEleBeamCat);
+    auto const& StepPointMCsMuBeamCat = event.getProduct(StepPointMCsTokenMuBeamCat);
+    auto const& StepPointMCsTargetStopsCat = event.getProduct(StepPointMCsTokenTargetStopsCat);
+    if (!StepPointMCsEleBeamCat.empty())
+      countEleBeamCat++;
+    if (!StepPointMCsMuBeamCat.empty())
+      countMuBeamCat++;
+    if (!StepPointMCsTargetStopsCat.empty())
+      countTargetStopsCat++;
     return;
   };
 
   void CountMixedEvents::endJob() {
     mf::LogInfo log("CountMixedEvents");
-    log << "\n==========Data summary==========\n";
-    log << "\nNumber of kept events: " << count;
-    log << "\n================================\n";
+    log << "\n====Number of events kept by input dataset====\n";
+    log << "EleBeamCat: " << countEleBeamCat << "\n";
+    log << "MuBeamCat: " << countMuBeamCat << "\n";
+    log << "TargetStopsCat: " << countTargetStopsCat << "\n";
+    log << "\n==============================================\n";
     return;
   };
 }; // namespace mu2e

@@ -79,13 +79,17 @@ MixSTMEvents : {
     nPOTs : 26919873604557116
     nMicroSpills : 690253169
     meanEventsPerPOTFactors : {
-        EleBeamCat : 2.5950416e-10
+        EleBeamCat : 5.465876332164181e-11
         MuBeamCat : 7.887481312841522e-13
         TargetStopsCat1809 : 1.114418308224206e-16
     }
 }
-
 STMMCAnalysis : {
+    MixedEventsTags : {
+        StepPointMCsTagEleBeamCat : "STMStepMixerEle:STMDet"
+        StepPointMCsTagMuBeamCat : "STMStepMixerMu:STMDet"
+        StepPointMCsTag1809 : "STMStepMixer1809:STMDet"
+    }
     ZS : {
         HPGe : {
             stmWaveformDigisTag : "DigiHPGe:"
@@ -157,7 +161,9 @@ STMDAQParameters : {
     }
 }
 HPGeDigitization : {
-    StepPointMCsTag: "compressSTMDet:STMDet"
+    StepPointMCsTagEle: "STMStepMixerEle:STMDet"
+    StepPointMCsTagMu: "compressSTMDetMu:STMDet"
+    StepPointMCsTag1809: "compressSTMDet1809:STMDet"
     EnergyPerADCBin : 0.5 # keV/bin
     PreamplifierNoiseSD : 0.32 # mV
     DecayConstant : 50 # us

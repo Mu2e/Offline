@@ -30,7 +30,7 @@ physics: {
 outputs: {
     compressedOutput: {
         module_type: RootOutput
-        fileName: @nil
+        fileName: "dts.owner.STMCat.version.sequencer.art"
         SelectEvents: ["STMCompressedPath"]
         outputCommands: [
             "drop *_*_*_*",
