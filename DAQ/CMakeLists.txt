@@ -98,19 +98,6 @@ cet_build_plugin(ComboHitsFromDataDecoders art::module
 cet_build_plugin(StrawDigisFromDataDecoders art::module
     REG_SOURCE src/StrawDigisFromDataDecoders_module.cc
     LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::DAQ
-      
-      Offline::ConditionsBase
-      Offline::ConditionsService
-      Offline::ConfigTools
-      Offline::DataProducts
-      Offline::RecoDataProducts
-)
-
-cet_build_plugin( art::module
-    REG_SOURCE src/_module.cc
-    LIBRARIES REG
       Offline::DAQ
       
       Offline::DataProducts
