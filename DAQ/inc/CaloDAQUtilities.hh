@@ -31,7 +31,9 @@ namespace mu2e {
       LastSampleMarker = 2,
       WaveformSize = 3,
       NumberOfSamples = 4,
-      MaxSampleIndex = 5
+      MaxSampleIndex = 5,
+      BoardID = 6,
+      ChannelID = 7
     };
 
     std::string getCaloHitErrorName(CaloHitError error) {
@@ -42,6 +44,8 @@ namespace mu2e {
         case WaveformSize: return "WaveformSize";
         case NumberOfSamples: return "NumberOfSamples";
         case MaxSampleIndex: return "MaxSampleIndex";
+        case BoardID: return "BoardID";
+        case ChannelID: return "ChannelID";
         default: return "Unknown";
       }
     }
@@ -52,6 +56,8 @@ namespace mu2e {
       if (Hit.second.size() == 0) return CaloHitError::WaveformSize;
       if (Hit.first.NumberOfSamples != Hit.second.size()) return CaloHitError::NumberOfSamples;
       if (Hit.first.IndexOfMaxDigitizerSample >= Hit.second.size()) return CaloHitError::NumberOfSamples;
+      if (Hit.first.BoardID < 0 || Hit.first.BoardID >= 160) return CaloHitError::BoardID;
+      if (Hit.first.ChannelID < 0 || Hit.first.ChannelID >= 20) return CaloHitError::ChannelID;
       return CaloHitError::Good;
     }
 
