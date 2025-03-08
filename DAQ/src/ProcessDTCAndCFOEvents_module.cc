@@ -1,6 +1,7 @@
 // ======================================================================
 //
-// ArtFragmentsFromDTCEvents_plugin:  Add cal data products to the event
+// Add data-decoders and EventHeader to the event from DTC_Events
+// and CFO_Events
 //
 // ======================================================================
 
@@ -18,6 +19,7 @@
 
 #include <artdaq-core/Data/ContainerFragment.hh>
 #include <artdaq-core/Data/Fragment.hh>
+#include <artdaq-core/Data/EventHeader.hh>
 
 #include <iostream>
 
@@ -30,29 +32,27 @@
 #include <vector>
 
 namespace art {
-class ArtFragmentsFromDTCEvents;
+class ProcessDTCAndCFOEvents;
 }
 
 // ======================================================================
 
-class art::ArtFragmentsFromDTCEvents : public EDProducer {
+class art::ProcessDTCAndCFOEvents : public EDProducer {
 
 public:
   struct Config {
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level")};
     fhicl::Atom<int> makeCaloFrag{fhicl::Name("makeCaloFrag"),
-                                   fhicl::Comment("Create ArtCaloFragmets")};
+                                   fhicl::Comment("Create CaloDataDecoders")};
     fhicl::Atom<int> makeTrkFrag{fhicl::Name("makeTrkFrag"),
-                                   fhicl::Comment("Create ArtTrkFragmets")};
+                                   fhicl::Comment("Create TrackerDataDecoders")};
     fhicl::Atom<int> makeCRVFrag{fhicl::Name("makeCRVFrag"),
-                                   fhicl::Comment("Create ArtCRVFragmets")};
-    fhicl::Atom<int> makeSTMFrag{fhicl::Name("makeSTMFrag"),
-                                   fhicl::Comment("Create ArtSTMFragmets")};
+                                   fhicl::Comment("Create CRVDataDecoders")};
   };
 
   // --- C'tor/d'tor:
-  explicit ArtFragmentsFromDTCEvents(const art::EDProducer::Table<Config>& config);
-  ~ArtFragmentsFromDTCEvents() override {}
+  explicit ProcessDTCAndCFOEvents(const art::EDProducer::Table<Config>& config);
+  ~ProcessDTCAndCFOEvents() override {}
 
   void beginRun(art::Run&) override;
 
@@ -61,19 +61,18 @@ public:
 
 private:
   int diagLevel_;
-  int makeCaloFrag_, makeTrkFrag_, makeCRVFrag_, makeSTMFrag_;
+  int makeCaloFrag_, makeTrkFrag_, makeCRVFrag_;
 };
 
 // ======================================================================
 
-void art::ArtFragmentsFromDTCEvents::beginRun(art::Run& Run) {}
+void art::ProcessDTCAndCFOEvents::beginRun(art::Run& Run) {}
 
-art::ArtFragmentsFromDTCEvents::ArtFragmentsFromDTCEvents(
+art::ProcessDTCAndCFOEvents::ProcessDTCAndCFOEvents(
     const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config},
     diagLevel_(config().diagLevel()), makeCaloFrag_(config().makeCaloFrag()),
-    makeTrkFrag_(config().makeTrkFrag()), makeCRVFrag_(config().makeCRVFrag()),
-    makeSTMFrag_(config().makeSTMFrag()) {
+    makeTrkFrag_(config().makeTrkFrag()), makeCRVFrag_(config().makeCRVFrag()) {
 
   if (config().makeCaloFrag() > 0) {
     produces<std::vector<mu2e::CalorimeterDataDecoder>>();
@@ -84,12 +83,12 @@ art::ArtFragmentsFromDTCEvents::ArtFragmentsFromDTCEvents(
   if (config().makeCRVFrag() > 0) {
     produces<std::vector<mu2e::CRVDataDecoder>>();
   }
-  // if (config().makeSTMFrag() > 0) { produces<std::vector<mu2e::STMFragment>>();}
+  produces<mu2e::EventHeader>();
 }
 
 // ----------------------------------------------------------------------
 
-void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
+void art::ProcessDTCAndCFOEvents::produce(Event& event) {
 
   art::EventNumber_t eventNumber = event.event();
 
@@ -99,9 +98,7 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
   std::unique_ptr<std::vector<mu2e::TrackerDataDecoder>> trkFragColl(
       new std::vector<mu2e::TrackerDataDecoder>);
   std::unique_ptr<std::vector<mu2e::CRVDataDecoder>> crvFragColl(new std::vector<mu2e::CRVDataDecoder>);
-
-  // std::unique_ptr<std::vector<mu2e::STMFragment>>         stm_frags(new
-  // std::vector<mu2e::STMFragment>); if (makeSTMFrag_ > 0) {
+  std::unique_ptr<mu2e::EventHeader> evtHdr(new mu2e::EventHeader);
 
   artdaq::Fragments fragments;
   artdaq::FragmentPtrs containerFragments;
@@ -136,7 +133,7 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
   }
 
   if (diagLevel_ > 0) {
-    std::cout << "[ArtFragmentsFromDTCEvents::produce] Found nHandlesnFragments  "
+    std::cout << "[ProcessDTCAndCFOEvents::produce] Found nHandlesnFragments  "
               << fragments.size() << std::endl;
   }
 
@@ -176,11 +173,11 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
   }
 
   if ( (diagLevel_ > 0) && (nFrags == 0)) {
-    std::cout << "[ArtFragmentsFromDTCEvents::produce] found no fragments!" << std::endl;
+    std::cout << "[ProcessDTCAndCFOEvents::produce] found no fragments!" << std::endl;
   }
 
   if (diagLevel_ > 0) {
-    std::cout << "mu2e::ArtFragmentsFromDTCEvents::produce exiting eventNumber="
+    std::cout << "mu2e::ProcessDTCAndCFOEvents::produce exiting eventNumber="
               << (int)(event.event()) << " / timestamp=" << (int)eventNumber << std::endl;
   }
 
@@ -193,12 +190,13 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
   if (makeCRVFrag_ > 0) {
     event.put(std::move(crvFragColl));
   }
-  //  if (makeSTMFrag_ > 0)  {event.put(std::move(stmFragColl));}
+  event.put(std::move(evtHdr));
+
 
 } // produce()
 
 // ======================================================================
 
-DEFINE_ART_MODULE(art::ArtFragmentsFromDTCEvents)
+DEFINE_ART_MODULE(art::ProcessDTCAndCFOEvents)
 
 // ======================================================================
