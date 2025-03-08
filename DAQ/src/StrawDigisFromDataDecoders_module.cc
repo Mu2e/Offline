@@ -27,12 +27,12 @@
 #include <memory>
 
 namespace art {
-class StrawRecoFromFragments;
+class StrawDigisFromDataDecoders;
 }
 
 // ======================================================================
 
-class art::StrawRecoFromFragments : public EDProducer {
+class art::StrawDigisFromDataDecoders : public EDProducer {
 
 public:
   struct Config {
@@ -43,8 +43,8 @@ public:
   };
 
   // --- C'tor/d'tor:
-  explicit StrawRecoFromFragments(const art::EDProducer::Table<Config>& config);
-  virtual ~StrawRecoFromFragments() {}
+  explicit StrawDigisFromDataDecoders(const art::EDProducer::Table<Config>& config);
+  virtual ~StrawDigisFromDataDecoders() {}
 
   // --- Production:
   virtual void produce(Event&);
@@ -61,11 +61,11 @@ private:
 
   const int hexShiftPrint = 7;
 
-}; // StrawRecoFromFragments
+}; // StrawDigisFromDataDecoders
 
 // ======================================================================
 
-art::StrawRecoFromFragments::StrawRecoFromFragments(const art::EDProducer::Table<Config>& config) :
+art::StrawDigisFromDataDecoders::StrawDigisFromDataDecoders(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}, diagLevel_(config().diagLevel()), useTrkADC_(config().useTrkADC()),
     trkFragmentsTag_(config().trkTag()) {
   produces<mu2e::StrawDigiCollection>();
@@ -79,7 +79,7 @@ art::StrawRecoFromFragments::StrawRecoFromFragments(const art::EDProducer::Table
 
 // ----------------------------------------------------------------------
 
-void art::StrawRecoFromFragments::produce(Event& event) {
+void art::StrawDigisFromDataDecoders::produce(Event& event) {
   art::EventNumber_t eventNumber = event.event();
 
   // Collection of StrawDigis for the event
@@ -108,7 +108,7 @@ void art::StrawRecoFromFragments::produce(Event& event) {
   }
 
   if (numTrkFrags == 0) {
-    std::cout << "[StrawRecoFromFragments::produce] found no Tracker fragments!" << std::endl;
+    std::cout << "[StrawDigisFromDataDecoders::produce] found no Tracker fragments!" << std::endl;
   }
 
   if (diagLevel_ > 1) {
@@ -120,7 +120,7 @@ void art::StrawRecoFromFragments::produce(Event& event) {
   }
 
   if (diagLevel_ > 0) {
-    std::cout << "mu2e::StrawRecoFromFragments::produce exiting eventNumber="
+    std::cout << "mu2e::StrawDigisFromDataDecoders::produce exiting eventNumber="
               << (int)(event.event()) << " / timestamp=" << (int)eventNumber << std::endl;
   }
 
@@ -134,7 +134,7 @@ void art::StrawRecoFromFragments::produce(Event& event) {
 
 } // produce()
 
-void art::StrawRecoFromFragments::analyze_tracker_(
+void art::StrawDigisFromDataDecoders::analyze_tracker_(
     const mu2e::TrackerDataDecoder& cc, std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
     std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> const& straw_digi_adcs) {
 
@@ -177,7 +177,7 @@ void art::StrawRecoFromFragments::analyze_tracker_(
 
     auto block = cc.dataAtBlockIndex(curBlockIdx);
     if (block == nullptr) {
-      mf::LogError("StrawRecoFromFragments")
+      mf::LogError("StrawDigisFromDataDecoders")
           << "Unable to retrieve block " << curBlockIdx << "!" << std::endl;
       continue;
     }
@@ -202,7 +202,7 @@ void art::StrawRecoFromFragments::analyze_tracker_(
       // Create the StrawDigi data products
       auto trkDataVec = cc.GetTrackerData(curBlockIdx, useTrkADC_);
       if (trkDataVec.empty()) {
-        mf::LogError("StrawRecoFromFragments")
+        mf::LogError("StrawDigisFromDataDecoders")
             << "Error retrieving Tracker data from DataBlock " << curBlockIdx
             << "! Aborting processing of this block!";
         continue;
@@ -290,6 +290,6 @@ void art::StrawRecoFromFragments::analyze_tracker_(
 
 // ======================================================================
 
-DEFINE_ART_MODULE(art::StrawRecoFromFragments)
+DEFINE_ART_MODULE(art::StrawDigisFromDataDecoders)
 
 // ======================================================================

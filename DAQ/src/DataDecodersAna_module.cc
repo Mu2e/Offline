@@ -32,7 +32,7 @@
 // ======================================================================
 namespace mu2e {
 
-class FragmentAna : public art::EDAnalyzer {
+class DataDecodersAna : public art::EDAnalyzer {
 
 public:
   struct Config {
@@ -43,8 +43,8 @@ public:
     fhicl::Atom<art::InputTag> trkTag{fhicl::Name("trkTag"), fhicl::Comment("trkTag")};
   };
 
-  explicit FragmentAna(const art::EDAnalyzer::Table<Config>& config);
-  virtual ~FragmentAna() {}
+  explicit DataDecodersAna(const art::EDAnalyzer::Table<Config>& config);
+  virtual ~DataDecodersAna() {}
 
   virtual void beginJob() override;
   virtual void endJob() override;
@@ -81,7 +81,7 @@ private:
 
 // ======================================================================
 
-FragmentAna::FragmentAna(const art::EDAnalyzer::Table<Config>& config) :
+DataDecodersAna::DataDecodersAna(const art::EDAnalyzer::Table<Config>& config) :
     art::EDAnalyzer{config}, diagLevel_(config().diagLevel()), parseCAL_(config().parseCAL()),
     parseTRK_(config().parseTRK()), trkFragmentsTag_(config().trkTag()),
     caloFragmentsTag_(config().caloTag()) {}
@@ -89,7 +89,7 @@ FragmentAna::FragmentAna(const art::EDAnalyzer::Table<Config>& config) :
 //--------------------------------------------------------------------------------
 // create the histograms
 //--------------------------------------------------------------------------------
-void FragmentAna::beginJob() {
+void DataDecodersAna::beginJob() {
   art::ServiceHandle<art::TFileService> tfs;
 
   art::TFileDirectory calDir = tfs->mkdir("calorimeter");
@@ -124,10 +124,10 @@ void FragmentAna::beginJob() {
                                   100, 0., 100.);
 }
 
-void FragmentAna::endJob() {}
+void DataDecodersAna::endJob() {}
 
 //--------------------------------------------------------------------------------
-void FragmentAna::analyze(const art::Event& event) {
+void DataDecodersAna::analyze(const art::Event& event) {
   art::EventNumber_t eventNumber = event.event();
 
   size_t totalSize = 0;
@@ -170,12 +170,12 @@ void FragmentAna::analyze(const art::Event& event) {
   }
 
   if (diagLevel_ > 0) {
-    std::cout << "mu2e::FragmentAna::produce exiting eventNumber=" << (int)(event.event())
+    std::cout << "mu2e::DataDecodersAna::produce exiting eventNumber=" << (int)(event.event())
               << " / timestamp=" << (int)eventNumber << std::endl;
   }
 }
 
-void FragmentAna::analyze_tracker_(const mu2e::TrackerDataDecoder& cc) {
+void DataDecodersAna::analyze_tracker_(const mu2e::TrackerDataDecoder& cc) {
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
@@ -197,7 +197,7 @@ void FragmentAna::analyze_tracker_(const mu2e::TrackerDataDecoder& cc) {
 
     auto block = cc.dataAtBlockIndex(curBlockIdx);
     if (block == nullptr) {
-      mf::LogError("FragmentAna") << "Unable to retrieve header from block " << curBlockIdx << "!"
+      mf::LogError("DataDecodersAna") << "Unable to retrieve header from block " << curBlockIdx << "!"
                                   << std::endl;
       continue;
     }
@@ -209,7 +209,7 @@ void FragmentAna::analyze_tracker_(const mu2e::TrackerDataDecoder& cc) {
       // Create the StrawDigi data products
       auto trkDataVec = cc.GetTrackerData(curBlockIdx);
       if (trkDataVec.empty()) {
-        mf::LogError("FragmentAna") << "Error retrieving Tracker data from DataBlock "
+        mf::LogError("DataDecodersAna") << "Error retrieving Tracker data from DataBlock "
                                     << curBlockIdx << "! Aborting processing of this block!";
         continue;
       }
@@ -244,7 +244,7 @@ void FragmentAna::analyze_tracker_(const mu2e::TrackerDataDecoder& cc) {
   // cc.ClearUpgradedPackets();
 }
 
-void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterDataDecoder& cc) {
+void DataDecodersAna::analyze_calorimeter_(const mu2e::CalorimeterDataDecoder& cc) {
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
@@ -266,7 +266,7 @@ void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterDataDecoder& cc) {
 
     auto block = cc.dataAtBlockIndex(curBlockIdx);
     if (block == nullptr) {
-      mf::LogError("FragmentAna") << "Unable to retrieve header from block " << curBlockIdx << "!"
+      mf::LogError("DataDecodersAna") << "Unable to retrieve header from block " << curBlockIdx << "!"
                                   << std::endl;
       continue;
     }
@@ -276,7 +276,7 @@ void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterDataDecoder& cc) {
 
       auto calHitDataVec = cc.GetCalorimeterHitData(curBlockIdx);
       if (calHitDataVec== nullptr) {
-        mf::LogError("FragmentAna") << "Error retrieving Calorimeter data from block "
+        mf::LogError("DataDecodersAna") << "Error retrieving Calorimeter data from block "
                                     << curBlockIdx << "! Aborting processing of this block!";
         continue;
       }
@@ -307,4 +307,4 @@ void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterDataDecoder& cc) {
 
 } // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FragmentAna)
+DEFINE_ART_MODULE(mu2e::DataDecodersAna)

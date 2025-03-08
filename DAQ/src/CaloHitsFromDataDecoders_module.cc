@@ -1,6 +1,6 @@
 // ======================================================================
 //
-// CaloHitsFromFragments_plugin:  Add cal data products to the event
+// Make CaloHits directly from CaloDataDecoders
 //
 // ======================================================================
 
@@ -33,12 +33,12 @@
 #include <vector>
 
 namespace art {
-class CaloHitsFromFragments;
+class CaloHitsFromDataDecoders;
 }
 
 // ======================================================================
 
-class art::CaloHitsFromFragments : public EDProducer {
+class art::CaloHitsFromDataDecoders : public EDProducer {
 
   struct CrystalInfo {
     CrystalInfo(int crID, int a, float& b, float& c) :
@@ -77,8 +77,8 @@ public:
   };
 
   // --- C'tor/d'tor:
-  explicit CaloHitsFromFragments(const art::EDProducer::Table<Config>& config);
-  virtual ~CaloHitsFromFragments() {}
+  explicit CaloHitsFromDataDecoders(const art::EDProducer::Table<Config>& config);
+  virtual ~CaloHitsFromDataDecoders() {}
 
   virtual void beginRun(art::Run&) override;
 
@@ -118,7 +118,7 @@ private:
 
 // ======================================================================
 
-void art::CaloHitsFromFragments::beginRun(art::Run& Run) {
+void art::CaloHitsFromDataDecoders::beginRun(art::Run& Run) {
 
   // FIX ME!
   // here we need to load the prodition-service with the calibrations
@@ -132,7 +132,7 @@ void art::CaloHitsFromFragments::beginRun(art::Run& Run) {
 
 }
 
-void art::CaloHitsFromFragments::addPulse(
+void art::CaloHitsFromDataDecoders::addPulse(
     uint16_t& crystalID, float& time, float& eDep,
     std::unique_ptr<mu2e::CaloHitCollection> const& hits_calo,
     std::unique_ptr<mu2e::CaloHitCollection> const& hits_caphri) {
@@ -174,14 +174,14 @@ void art::CaloHitsFromFragments::addPulse(
   }
 }
 
-art::CaloHitsFromFragments::CaloHitsFromFragments(const art::EDProducer::Table<Config>& config) :
+art::CaloHitsFromDataDecoders::CaloHitsFromDataDecoders(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}, diagLevel_(config().diagLevel()),
     caloFragmentsTag_(config().caloTag()), digiSampling_(config().digiSampling()),
     deltaTPulses_(config().deltaTPulses()), hitEDepMax_(config().hitEDepMax()),
     hitEDepMin_(config().hitEDepMin()), caphriEDepMax_(config().caphriEDepMax()),
     caphriEDepMin_(config().caphriEDepMin()), nPEperMeV_(config().nPEperMeV()),
     noise2_(config().noiseLevelMeV() * config().noiseLevelMeV()),
-    nSigmaNoise_(config().nSigmaNoise()), caloDAQUtil_("CaloHitsFromFragments") {
+    nSigmaNoise_(config().nSigmaNoise()), caloDAQUtil_("CaloHitsFromDataDecoders") {
   pulseMap_.reserve(4000);
   produces<mu2e::CaloHitCollection>("calo");
   produces<mu2e::CaloHitCollection>("caphri");
@@ -190,7 +190,7 @@ art::CaloHitsFromFragments::CaloHitsFromFragments(const art::EDProducer::Table<C
 
 // ----------------------------------------------------------------------
 
-void art::CaloHitsFromFragments::produce(Event& event) {
+void art::CaloHitsFromDataDecoders::produce(Event& event) {
   pulseMap_.clear();
 
   art::EventNumber_t eventNumber = event.event();
@@ -219,7 +219,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
   }
 
   if (numCalFrags == 0) {
-    std::cout << "[CaloHitsFromFragments::produce] found no Calorimeter fragments!" << std::endl;
+    std::cout << "[CaloHitsFromDataDecoders::produce] found no Calorimeter fragments!" << std::endl;
   }
 
   if (diagLevel_ > 1) {
@@ -231,7 +231,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
   }
 
   if (diagLevel_ > 0) {
-    std::cout << "mu2e::CaloHitsFromFragments::produce exiting eventNumber=" << (int)(event.event())
+    std::cout << "mu2e::CaloHitsFromDataDecoders::produce exiting eventNumber=" << (int)(event.event())
               << " / timestamp=" << (int)eventNumber << std::endl;
   }
 
@@ -245,7 +245,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
 
 } // produce()
 
-void art::CaloHitsFromFragments::analyze_calorimeter_(
+void art::CaloHitsFromDataDecoders::analyze_calorimeter_(
     mu2e::CaloDAQMap const& calodaqconds,
     const mu2e::CalorimeterDataDecoder& cc, std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
     std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits, unsigned short& evtEnergy) {
@@ -278,7 +278,7 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
 
     auto block = cc.dataAtBlockIndex(curBlockIdx);
     if (block == nullptr) {
-      mf::LogError("CaloHitsFromFragments")
+      mf::LogError("CaloHitsFromDataDecoders")
           << "Unable to retrieve block " << curBlockIdx << "!" << std::endl;
       continue;
     }
@@ -293,7 +293,7 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
 
     auto calData = cc.GetCalorimeterHitData(curBlockIdx);
     if (calData == nullptr) {
-      mf::LogError("CaloHitsFromFragments")
+      mf::LogError("CaloHitsFromDataDecoders")
           << "Error retrieving Calorimeter data from block " << curBlockIdx
           << "! Aborting processing of this block!";
       continue;
@@ -305,7 +305,7 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
 
       // Fill the CaloDigiCollection
       if (hitIdx > hits.size()) {
-        mf::LogError("CaloHitsFromFragments")
+        mf::LogError("CaloHitsFromDataDecoders")
             << "Error retrieving Calorimeter data from block " << curBlockIdx << " for hit "
             << hitIdx << "! Aborting processing of this block!";
         err = true;
@@ -313,7 +313,7 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
       }
 
       if (diagLevel_ > 0) {
-        std::cout << "[CaloHitsFromFragments] calo hit " << hitIdx << std::endl;
+        std::cout << "[CaloHitsFromDataDecoders] calo hit " << hitIdx << std::endl;
         caloDAQUtil_.printCaloPulse(hits[hitIdx].first);
       }
 
@@ -357,6 +357,6 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
 }
 // ======================================================================
 
-DEFINE_ART_MODULE(art::CaloHitsFromFragments)
+DEFINE_ART_MODULE(art::CaloHitsFromDataDecoders)
 
 // ======================================================================

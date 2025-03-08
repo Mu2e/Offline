@@ -1,9 +1,8 @@
+//------------------------------------------------------------
+// Make ComboHits from TrackerDataDecoders
 //
-// This module transforms StrawDigi objects into StrawHit objects
-//
-// Original author David Brown, LBNL
-// Merged with flag and position creation B. Echenard, CalTech
-//
+//------------------------------------------------------------
+
 // framework
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -42,10 +41,10 @@
 #include <memory>
 
 namespace art {
-class StrawHitRecoFromFragments;
+class ComboHitsFromDataDecoders;
 }
 
-class art::StrawHitRecoFromFragments : public art::EDProducer {
+class art::ComboHitsFromDataDecoders : public art::EDProducer {
 public:
   using Name = fhicl::Name;
   using Comment = fhicl::Comment;
@@ -87,7 +86,7 @@ public:
   };
 
   using Parameters = art::EDProducer::Table<Config>;
-  explicit StrawHitRecoFromFragments(Parameters const& config);
+  explicit ComboHitsFromDataDecoders(Parameters const& config);
   void produce(art::Event& e) override;
   void beginJob() override;
 
@@ -120,7 +119,7 @@ private:
   mu2e::ProditionsHandle<mu2e::Tracker> _alignedTracker_h;
 };
 
-art::StrawHitRecoFromFragments::StrawHitRecoFromFragments(Parameters const& config) :
+art::ComboHitsFromDataDecoders::ComboHitsFromDataDecoders(Parameters const& config) :
     art::EDProducer{config},
     _minTOff(config().minT()),
     _maxTOff(config().maxT()),
@@ -142,16 +141,16 @@ art::StrawHitRecoFromFragments::StrawHitRecoFromFragments(Parameters const& conf
   if (_writesh)
     produces<mu2e::StrawHitCollection>();
   if (_printLevel > 0)
-    std::cout << "In StrawHitRecoFromFragments constructor " << std::endl;
+    std::cout << "In ComboHitsFromDataDecoders constructor " << std::endl;
 }
 
 //------------------------------------------------------------------------------------------
-void art::StrawHitRecoFromFragments::beginJob() {}
+void art::ComboHitsFromDataDecoders::beginJob() {}
 
 //------------------------------------------------------------------------------------------
-void art::StrawHitRecoFromFragments::produce(art::Event& event) {
+void art::ComboHitsFromDataDecoders::produce(art::Event& event) {
   if (_printLevel > 0)
-    std::cout << "In StrawHitRecoFromFragments produce " << std::endl;
+    std::cout << "In ComboHitsFromDataDecoders produce " << std::endl;
   const mu2e::Tracker& tt = _alignedTracker_h.get(event.id());
   auto const& srep = _strawResponse_h.get(event.id());
   //_tfTag = art::InputTag("test");
@@ -204,7 +203,7 @@ void art::StrawHitRecoFromFragments::produce(art::Event& event) {
   event.put(std::move(chCol));
 }
 
-void art::StrawHitRecoFromFragments::analyze_tracker_(
+void art::ComboHitsFromDataDecoders::analyze_tracker_(
     const mu2e::TrackerDataDecoder& cc, std::unique_ptr<mu2e::StrawHitCollection> const& shCol,
     std::unique_ptr<mu2e::ComboHitCollection> const& chCol, double pbtOffset,
     mu2e::TrackerStatus const& trackerStatus, mu2e::StrawResponse const& srep,
@@ -287,4 +286,4 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
   // cc.ClearUpgradedPackets();
 }
 
-DEFINE_ART_MODULE(art::StrawHitRecoFromFragments)
+DEFINE_ART_MODULE(art::ComboHitsFromDataDecoders)
