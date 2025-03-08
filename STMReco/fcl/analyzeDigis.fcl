@@ -1,0 +1,46 @@
+#
+# Plot STMAnalyzeDigis
+#
+
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMReco/fcl/prolog.fcl"
+#include "Offline/STMReco/fcl/prolog_testbeam.fcl"
+
+process_name: STMAnalyzeDigis
+
+source : {
+  module_type : RootInput
+}
+
+services : {
+  @table::Services.Core
+  TFileService : { fileName : "/scratch/mu2e/mu2eshift_dqmstm__gr3/OutputData/WaveformPlots/ntd.mu2e.analyzer.stm_gr4.%06r_%06s.root" }
+}
+
+physics: {
+  producers : {
+      makeSTMDigisHPGe : {
+         module_type : STMWaveformDigisFromFragments
+	 stmTag : "daq:STM"
+      }
+  }
+  filters : {  }
+  analyzers : {
+    plotSTMAnalyzeDigis : {
+      module_type : STMAnalyzeDigis
+      stmDigiCollection : makeSTMDigisHPGe
+      width_guess       : 150e-9
+      rise_time_guess   : 6e-9
+      threshold         : 12000
+      samp_freq         : 300e6
+      pulse_region      : 51
+      pulses_per_event  : 2
+    }
+  }
+  # setup paths
+  p1: [makeSTMDigisHPGe]
+  trigger_paths: [ p1 ]
+  anaPath : [ plotSTMAnalyzeDigis ]
+  end_paths: [anaPath]
+}
+

@@ -64,17 +64,17 @@ namespace mu2e {
     double _tafter; // time after the peak [ns]
     double _threshold; // threshold
 
-    unsigned long int _nadc; // number of ADC values in unsuppressed waveform
+    unsigned long int _nadc; // number of ADC values in unsuppressed adcs
     unsigned long int _window; // distance between two ADC values to calculate the gradient for
     int _naverage; // number of ADC values to average the gradient over
     std::vector<int16_t> _gradient; // vector to store gradient (difference between consecutive ADC values)
     std::vector<double> _avgradient; // vector to store averaged gradient
     std::vector<double> _avtime; // vector to store times at averaged gradient points
     std::vector<unsigned long int> _peaks; // vector with each peak time in clock ticks
-    std::vector<size_t> _starts; // start positions of each zero-suppressed waveform
-    std::vector<size_t> _ends; // end positions of each zero-suppressed waveform
-    std::vector<size_t> _finalstarts; // start positions of each zero-suppressed waveform after taking into account overlapping data
-    std::vector<size_t> _finalends; // end positions of each zero-suppressed waveform after taking into account overlapping data
+    std::vector<size_t> _starts; // start positions of each zero-suppressed adcs
+    std::vector<size_t> _ends; // end positions of each zero-suppressed adcs
+    std::vector<size_t> _finalstarts; // start positions of each zero-suppressed adcs after taking into account overlapping data
+    std::vector<size_t> _finalends; // end positions of each zero-suppressed adcs after taking into account overlapping data
   };
 
   STMZeroSuppression::STMZeroSuppression(const Parameters& config )  :
@@ -129,9 +129,9 @@ namespace mu2e {
       chooseStartsAndEnds();
 
       const auto& n_zp_waveforms = _finalstarts.size();
-      for (size_t i_zp_waveform = 0; i_zp_waveform < n_zp_waveforms; ++i_zp_waveform) {
-        const auto& i_start = _finalstarts.at(i_zp_waveform);
-        const auto& i_end = _finalends.at(i_zp_waveform);
+      for (size_t i_zp_adcs = 0; i_zp_adcs < n_zp_waveforms; ++i_zp_adcs) {
+        const auto& i_start = _finalstarts.at(i_zp_adcs);
+        const auto& i_end = _finalends.at(i_zp_adcs);
         std::vector<int16_t> zp_adcs(waveform.adcs().begin()+i_start, waveform.adcs().begin()+i_end);
         STMWaveformDigi stm_waveform(waveform.trigTimeOffset()+i_start, zp_adcs);
         outputSTMWaveformDigis->push_back(stm_waveform);
@@ -200,13 +200,13 @@ namespace mu2e {
         peak=_avtime[i];
         _peaks[peakcounter]=peak;
         if (peak<nadcBefore) {
-          _starts.push_back(0); // too close to the start of the waveform so can't go tbefore back
+          _starts.push_back(0); // too close to the start of the adcs so can't go tbefore back
         }
         else {
           _starts.push_back(peak - nadcBefore);
         }
         if (peak>_nadc-nadcAfter) {
-          _ends.push_back(_nadc); // too close to the end of the waveform so can't go tafter forwaed
+          _ends.push_back(_nadc); // too close to the end of the adcs so can't go tafter forwaed
         }
         else {
           _ends.push_back(peak + nadcAfter);
