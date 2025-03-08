@@ -22,15 +22,15 @@ physics : {
     }
   }
   filters : {
-    STMStepMixer: {
+    STMStepMixerEle: {
       module_type         : MixBackgroundFrames
-      fileNames           : [@nil]
+      fileNames           : @nil #["/exp/mu2e/data/users/plesniak/data/catStage2/EleCat.art"]
       readMode            : sequential
       wrapFiles           : true
       mu2e: {
         protonBunchIntensityTag: "PBISim:"
         simStageEfficiencyTags: [] # this will not be filled in because otherwise it will try to access the database
-        meanEventsPerPOTFactors : [@nil] # Number of POTs per event in STMDet
+        meanEventsPerPOTFactors : [@local::MixSTMEvents.meanEventsPerPOTFactors.EleBeamCat] # Number of POTs per event in STMDet
         writeEventIDs : false
         MaxEventsToSkip: 0
         debugLevel : 0
@@ -40,18 +40,59 @@ physics : {
         }
       }
     }
-    removeEmptyEvents: {
-        module_type : STMResamplingFilter
-        StepPointMCsTag : "STMStepMixer:STMDet"
+    STMStepMixerMu: {
+      module_type         : MixBackgroundFrames
+      fileNames           : @nil #["/exp/mu2e/data/users/plesniak/data/catStage2/MuCat.art"]
+      readMode            : sequential
+      wrapFiles           : true
+      mu2e: {
+        protonBunchIntensityTag: "PBISim:"
+        simStageEfficiencyTags: [] # this will not be filled in because otherwise it will try to access the database
+        meanEventsPerPOTFactors : [@local::MixSTMEvents.meanEventsPerPOTFactors.MuBeamCat] # Number of POTs per event in STMDet
+        writeEventIDs : false
+        MaxEventsToSkip: 0
+        debugLevel : 0
+        products: {
+          simParticleMixer: { mixingMap: [ [ "compressSTMDet", "" ] ] }
+          stepPointMCMixer: { mixingMap: [ [ "compressSTMDet:STMDet", ":" ] ] }
+        }
+      }
+    }
+    STMStepMixer1809: {
+      module_type         : MixBackgroundFrames
+      fileNames           : @nil #["/exp/mu2e/data/users/plesniak/data/catStage2/1809Cat.art"]
+      readMode            : sequential
+      wrapFiles           : true
+      mu2e: {
+        protonBunchIntensityTag: "PBISim:"
+        simStageEfficiencyTags: [] # this will not be filled in because otherwise it will try to access the database
+        meanEventsPerPOTFactors : [@local::MixSTMEvents.meanEventsPerPOTFactors.TargetStopsCat1809] # Number of POTs per event in STMDet
+        writeEventIDs : false
+        MaxEventsToSkip: 0
+        debugLevel : 0
+        products: {
+          simParticleMixer: { mixingMap: [ [ "compressSTMDet", "" ] ] }
+          stepPointMCMixer: { mixingMap: [ [ "compressSTMDet:STMDet", ":" ] ] }
+        }
+      }
+    }
+    removeEmptyEvents : {
+        # Stage 2 output contains events that only have StepPointMCs for virtualdetectors, we want to remove the events that only have StepPointMCs in virtualdetector and not STMDet
+        module_type : FilterMixedEvents
+        stepPointMCsTagEleBeamCat : "STMStepMixerEle:STMDet"
+        stepPointMCsTagMuBeamCat : "STMStepMixerMu:STMDet"
+        stepPointMCsTagTargetStopsCat : "STMStepMixer1809:STMDet"
     }
   }
   analyzers : {
     CountMixed : {
         module_type : CountMixedEvents
-        stepPointMCsTag : "STMStepMixer:STMDet"
+        stepPointMCsTagEleBeamCat : "STMStepMixerEle:STMDet"
+        stepPointMCsTagMuBeamCat : "STMStepMixerMu:STMDet"
+        stepPointMCsTagTargetStopsCat : "STMStepMixer1809:STMDet"
     }
   }
-  mix_path : [PBISim, STMStepMixer, removeEmptyEvents]
+  mix_path : [PBISim, STMStepMixerEle, STMStepMixerMu, STMStepMixer1809, removeEmptyEvents]
   trigger_paths : [mix_path]
   output_path : [CountMixed, compressedOutput]
   end_paths : [output_path]
@@ -60,9 +101,16 @@ physics : {
 outputs : {
   compressedOutput : {
     module_type : RootOutput
-    fileName : @nil
+    fileName : "dts.owner.STMMix.version.sequencer.art" # @nil
     SelectEvents: [mix_path]
+    outputCommands: [
+        "drop *_*_*_*",
+        "keep mu2e::StepPointMCs_STMStepMixer*_STMDet_STMMix",
+        "keep mu2e::SimParticlemv_STMStepMixer*__STMMix",
+        "keep mu2e::SimTimeOffset_protonTimeOffset_*_STMResampler",
+        "keep mu2e::GenEventCount_genCounter__STMResampler",
+        "keep art::EventIDs_stmResampler__STMResampler",
+        "keep mu2e::ProtonBunchIntensity_PBISim__STMMix"
+    ]
   }
 }
-
-services.SeedService.baseSeed : 1

@@ -10,20 +10,23 @@
 process_name: HPGeReco
 
 source : {
-  module_type : EmptyEvent
+  module_type : RootInput
 }
 
+services : @local::Services.Sim
 physics : {
   producers : {
     DigiHPGe : {
       module_type : HPGeWaveformsFromStepPointMCs
-      StepPointMCsTag : @local::HPGeDigitization.StepPointMCsTag
+      StepPointMCsTagEle : @local::HPGeDigitization.StepPointMCsTagEle
+      StepPointMCsTagMu : @local::HPGeDigitization.StepPointMCsTagMu
+      StepPointMCsTag1809 : @local::HPGeDigitization.StepPointMCsTag1809
       fADC : @local::STMDAQParameters.samplingFrequencies.HPGe
       EnergyPerADCBin : @local::HPGeDigitization.EnergyPerADCBin
       NoiseSD : @local::HPGeDigitization.PreamplifierNoiseSD
       risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant
-      # makeTTree : true
-      timeOffset : 100
+      resetEventNumer : true
+      makeTTree : true
     }
     concatenateWaveformsHPGe : {
       module_type : ConcatenateDigitizedWaveforms
@@ -58,16 +61,16 @@ physics : {
       verbosityLevel : 3
     }
   }
-  digitization_path : [HPGeDigi] # , HPGeZS, HPGeMWD
-  trigger_paths : [test_path]
+  digitization_path : [DigiHPGe] # concatenateWaveformsHPGe, ZSHPGe, MWDHPGe
+  trigger_paths : [digitization_path]
   output_path : [compressedOutput]
-  end_paths : [output_path]
+  # end_paths : [output_path]
 }
 
 outputs : {
   compressedOutput : {
     module_type : RootOutput
-    fileName : @nil
+    fileName : "dts.owner.HPGeReco.version.sequencer.art"
   }
 }
 
