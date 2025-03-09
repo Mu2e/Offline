@@ -364,9 +364,12 @@ void DataInterface::fillGeometry()
     mu2e::GeomHandle<mu2e::DiskCalorimeter> calo;
 
     double diskCaseDZLength      = calo->caloInfo().getDouble("diskCaseZLength")/2.0;
-    double diskInnerRingIn       = calo->caloInfo().getDouble("diskInnerRingIn");
-    double diskOuterRingOut      = calo->caloInfo().getDouble("diskOuterRingOut");
-    double diskOuterRailOut      = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
+//    double diskInnerRingIn       = calo->caloInfo().getDouble("diskInnerRingIn");
+    double diskInnerRingIn       = calo->caloInfo().getDouble("diskInCFRingRIn");
+//    double diskOuterRingOut      = calo->caloInfo().getDouble("diskOuterRingOut");
+    double diskOuterRingOut      = calo->caloInfo().getDouble("diskInCFRingROut");
+//    double diskOuterRailOut      = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
+    double diskOuterRailOut      = diskOuterRingOut;
 
     double FPCarbonDZ               = calo->caloInfo().getDouble("FPCarbonZLength")/2.0;
     double FPFoamDZ                 = calo->caloInfo().getDouble("FPFoamZLength")/2.0;
@@ -376,7 +379,8 @@ void DataInterface::fillGeometry()
 
     double crystalDXY            = calo->caloInfo().getDouble("crystalXYLength")/2.0;
     double crystalDZ             = calo->caloInfo().getDouble("crystalZLength")/2.0;
-    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalFrameZLength")/2.0;
+//    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalFrameZLength")/2.0;
+    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalCapZLength")/2.0;
     double wrapperHalfThick      = calo->caloInfo().getDouble("wrapperThickness")/2.0;
     double wrapperDXY            = crystalDXY + 2.0*wrapperHalfThick;
     double wrapperDZ             = crystalDZ + 2.0*crystalFrameDZ;
