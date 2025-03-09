@@ -1,0 +1,35 @@
+// SimpleConfig geometry file for Steel slabs 1 through 6 (excluding 3).
+// It's a rotated extruded solid.
+// doc db: 11669
+
+string building.psArea.SteelShieldingSlab.1.name     = "psAreaSteelShieldingSlab1";
+string building.psArea.SteelShieldingSlab.1.material = "MildSteel";
+double building.psArea.SteelShieldingSlab.1.offsetFromMu2eOrigin.x   = 3408.03;
+double building.psArea.SteelShieldingSlab.1.offsetFromFloorSurface.y = 7632.70;
+double building.psArea.SteelShieldingSlab.1.offsetFromMu2eOrigin.z   = -17424.30;
+double building.psArea.SteelShieldingSlab.1.yHalfThickness           = 2806.70;
+vector<double> building.psArea.SteelShieldingSlab.1.angles = {0.,0.,-1.5708};
+vector<double> building.psArea.SteelShieldingSlab.1.xPositions = {
+1523.90, // 0
+1523.90, // 1
+1092.10, // 2
+1092.10, // 3
+-0.10, // 4
+-0.10, // 5
+-1524.10, // 6
+-1524.10 // 7
+};
+vector<double> building.psArea.SteelShieldingSlab.1.yPositions = {
+-1536.60, // 0
+1536.80, // 1
+1536.80, // 2
+-469.80, // 3
+-469.80, // 4
+-1117.50, // 5
+-1117.50, // 6
+-1536.60 // 7
+};
+
+// Local Variables:
+// mode:c++
+// End:
