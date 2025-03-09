@@ -46,6 +46,8 @@ cet_build_plugin(CaloDigiFromFragments art::module
       Offline::CaloConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
+      artdaq_core_mu2e::artdaq-core-mu2e_Data
+      artdaq_core_mu2e::artdaq-core-mu2e_Data_dict
 )
 
 cet_build_plugin(CrvDigisFromFragments art::module
@@ -56,6 +58,8 @@ cet_build_plugin(CrvDigisFromFragments art::module
       Offline::CRVConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
+      artdaq_core_mu2e::artdaq-core-mu2e_Data
+      artdaq_core_mu2e::artdaq-core-mu2e_Data_dict
 )
 
 cet_build_plugin(CrvGlobalRunDataFromFragments art::module
@@ -66,6 +70,8 @@ cet_build_plugin(CrvGlobalRunDataFromFragments art::module
       Offline::CRVConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
+      artdaq_core_mu2e::artdaq-core-mu2e_Data
+      artdaq_core_mu2e::artdaq-core-mu2e_Data_dict
 )
 
 cet_build_plugin(FragmentAna art::module
