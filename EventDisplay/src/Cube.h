@@ -81,7 +81,7 @@ class Cube: public VirtualShape
 
     _volume = new EventDisplayGeoVolumeBox(dx, dy, dz, mainframe, _info);
     _volume->SetVisibility(0);
-    _volume->SetLineWidth(1);
+    _volume->SetLineWidth(2);
     _rotation = new TGeoRotation("",phi*180.0/TMath::Pi(),theta*180.0/TMath::Pi(),psi*180.0/TMath::Pi());
     _translation = new TGeoCombiTrans(x,y,z,_rotation);
     int i=0;
@@ -109,7 +109,7 @@ class Cube: public VirtualShape
     for(int i=0; i<4; i++)
     {
       newline.line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
-      newline.line->SetLineWidth(1);
+      newline.line->SetLineWidth(2);
       newline.line->SetPoint(0,p[i].x,p[i].y,p[i].z);
       newline.line->SetPoint(1,p[i+4].x,p[i+4].y,p[i+4].z);
       _lines.push_back(newline);
@@ -117,7 +117,7 @@ class Cube: public VirtualShape
     for(int i=0; i<4; i++)
     {
       newline.line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
-      newline.line->SetLineWidth(1);
+      newline.line->SetLineWidth(2);
       newline.line->SetPoint(0,p[i].x,p[i].y,p[i].z);
       if(i<3) newline.line->SetPoint(1,p[i+1].x,p[i+1].y,p[i+1].z);
       else newline.line->SetPoint(1,p[0].x,p[0].y,p[0].z);
@@ -126,7 +126,7 @@ class Cube: public VirtualShape
     for(int i=4; i<8; i++)
     {
       newline.line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
-      newline.line->SetLineWidth(1);
+      newline.line->SetLineWidth(2);
       newline.line->SetPoint(0,p[i].x,p[i].y,p[i].z);
       if(i<7) newline.line->SetPoint(1,p[i+1].x,p[i+1].y,p[i+1].z);
       else newline.line->SetPoint(1,p[4].x,p[4].y,p[4].z);
