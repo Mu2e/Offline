@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <fstream>
 #include <list>
 #include <numeric>
 #include <random>
@@ -46,6 +47,7 @@
 #include <TLine.h>
 #include <TGraph.h>
 #include <TSpline.h>
+#include <TVirtualFFT.h>
 
 namespace art
 {
@@ -69,6 +71,8 @@ class art::STMAnalyzeDigis : public EDAnalyzer
     fhicl::Atom<double> samp_freq{ Name("samp_freq"), Comment("Sampling frequency of ADC (default = 300e6)")};
     fhicl::Atom<int> pulse_region{ Name("pulse_region"), Comment("Number of ADC values to fit around pulse (default 51)")};
     fhicl::Atom<int> pulses_per_event{Name("pulses_per_event"), Comment("Number of pulses per event to find Delta t (default = 2)")};
+    fhicl::Atom<std::string> output_file{Name("output_file"), Comment("Output file for cross-analysis | EWT | t0 | ...")};
+    fhicl::Atom<bool> printout{Name("printout"), Comment("Boolean to enable or disable printout")};
   };
   using Parameters = art::EDAnalyzer::Table<Config>;
 
@@ -90,7 +94,10 @@ class art::STMAnalyzeDigis : public EDAnalyzer
   TH1F* DeltaT;
   TGraph* fEvent;
   TGraph* fitFirstPulse;
+  TGraph* divFirstPulse;
   TGraph* splinePulse;
+  TGraph* divSplinePulse;
+  TGraph* fftGraph;
   
   const  art::ProductToken<mu2e::STMWaveformDigiCollection> _stmDigisToken;
   // Fhicl params
@@ -100,7 +107,9 @@ class art::STMAnalyzeDigis : public EDAnalyzer
   double _samp_freq;
   int _pulse_region;
   int _pulses_per_event;
-
+  std::string _output_file; 
+  bool _printout;
+  
   // Averaging params
   // Pulse time average num
   double avg_num = 0;
@@ -113,7 +122,11 @@ class art::STMAnalyzeDigis : public EDAnalyzer
   bool firstPulse = true;
   // Params to store end of last event
   int lastEventLength = 0;
+  uint64_t lastEWT = 0;
   std::vector<double> prevEvent;
+  
+  // File to write data to;
+  std::ofstream o_file;
   
   // Define functions
   void book_histograms(art::ServiceHandle<art::TFileService> tfs);
@@ -135,11 +148,17 @@ STMAnalyzeDigis::STMAnalyzeDigis(const Parameters& config) :
     ,_samp_freq(config().samp_freq())
     ,_pulse_region(config().pulse_region())
     ,_pulses_per_event(config().pulses_per_event())
+    ,_output_file(config().output_file())
+    ,_printout(config().printout())
 {
   // Book the histograms
   book_histograms(tfs);
   // Set the size of the vector
   prevEvent.resize(_pulse_region);
+  // Initialise output file
+  o_file.open(_output_file);
+  // Write headers
+  o_file << "EWT,DTCtimestamp(40MHz),ADCtimestamp(75MHz),t0,t1,pulse_sep" << "\n";
 }
 
 // ----------------------------------------------------------------------
@@ -147,9 +166,12 @@ STMAnalyzeDigis::STMAnalyzeDigis(const Parameters& config) :
 void STMAnalyzeDigis::book_histograms(art::ServiceHandle<art::TFileService> tfs) {
     
   DeltaT = tfs->make<TH1F>("delta_t","Time between 1st and 2nd pulse per event",100,10009,10011);
-  fEvent = tfs->makeAndRegister<TGraph>("fEvent","First event; time [us]; ADC");
-  fitFirstPulse = tfs->makeAndRegister<TGraph>("fitFirstPulse","First fitted pulse; time [us]; ADC");
-  splinePulse = tfs->makeAndRegister<TGraph>("splinePulse","TSpline3 of first fitted pulse; time [us]; ADC");
+  fEvent = tfs->makeAndRegister<TGraph>("fEvent","First event; time [#mus]; ADC");
+  fitFirstPulse = tfs->makeAndRegister<TGraph>("fitFirstPulse","First fitted pulse; time [#mus]; ADC");
+  divFirstPulse = tfs->makeAndRegister<TGraph>("divFirstPulse","; time [#mus], ADC"); 
+  splinePulse = tfs->makeAndRegister<TGraph>("splinePulse","TSpline3 of first fitted pulse; time [#mus]; ADC");
+  divSplinePulse = tfs->makeAndRegister<TGraph>("divSplinePulse","; time [#mus], ADC"); 
+  fftGraph = tfs->makeAndRegister<TGraph>("fftGraph","; Frequency, Magnitude"); 
   c_stm = tfs->makeAndRegister<TCanvas>("c_stm", "c_stm");
 
 }
@@ -205,14 +227,15 @@ double STMAnalyzeDigis::fit_rising_edge(std::vector<double> x, std::vector<doubl
   if(firstPulse){
     std::vector<double> xi;	  
     for(int i=0; i < vsize; i++){
-      if(fit_y[i] > 15000) xi.push_back(fit_x[i]);
+      if(fit_y[i] > _threshold) xi.push_back(fit_x[i]);
       fitFirstPulse->SetPoint(i, fit_x[i], fit_y[i]);
     }    
     // Get reduced start point
     double startx = xi.front();
     // Get reduced end point
     double endx = xi.back();
-    TSpline3* interpPulse = new TSpline3("interpPulse", fitFirstPulse);
+    TGraph* gClone = (TGraph*)fitFirstPulse->Clone("gClone");
+    TSpline3* interpPulse = new TSpline3("interpPulse", gClone);
     int nPoints = xi.size() * 100;
     std::vector<double> xx(nPoints);
     std::vector<double> yy;	  
@@ -223,7 +246,6 @@ double STMAnalyzeDigis::fit_rising_edge(std::vector<double> x, std::vector<doubl
       double v = interpPulse->Eval(xx[ii]);
       yy.push_back(v);
       splinePulse->SetPoint(ii, xx[ii], v);
-      std::cout << xx[ii] << ", " << v << "\n";
     }
 
     // Create function
@@ -241,12 +263,25 @@ double STMAnalyzeDigis::fit_rising_edge(std::vector<double> x, std::vector<doubl
     fnx->SetLineColor(kRed);
     fnx->SetLineWidth(3);
 
-    fitFirstPulse->Draw("A");
-    splinePulse->Draw("SAME");
+    TF1* fnz = new TF1("fnz", rising_edge, start, end, 4);
+    // Initial guesses for the parameters
+    fnz->SetParameters(offset_guess, amp_guess, _rise_time_guess, t0_guess);
+    fnz->SetParNames("Offset","A","#tau","t_{0}");
+    fnz->SetLineWidth(3);   
+    fitFirstPulse->Draw("AC*");
+    fitFirstPulse->Fit("fnz","EMQ");    
+    for(int i=0; i < vsize; i++){
+      divFirstPulse->SetPoint(i, fit_x[i], fit_y[i]/fnz->Eval(fit_x[i]));
+    }    
+    divFirstPulse->Draw("AC*");
+    
+    splinePulse->Draw("AC*");
     splinePulse->SetLineWidth(3);
-    splinePulse->Fit("fnx","EM");
+    splinePulse->Fit("fnx","EMQ");
+
     firstPulse = false;
-  }
+    
+  } // End first pulse
   
   // Fit all pulses
   TF1* fn = new TF1("fn", rising_edge, start, end, 4);
@@ -263,7 +298,6 @@ double STMAnalyzeDigis::fit_rising_edge(std::vector<double> x, std::vector<doubl
   double t0 = fn->GetParameter(3);
   // Calculate rising edge
   double rising_edge_fit = t0 + rise_time;
-  
   // Return rising edge
   return rising_edge_fit;
 }
@@ -297,7 +331,6 @@ std::vector<double> STMAnalyzeDigis::linspace(double start_in, double end_in, in
 
 void STMAnalyzeDigis::analyze(const Event& event)
 {
-  //art::EventNumber_t eventNumber = event.event();
   
   // Pulse time average num
   //double avg_num = 0;
@@ -327,10 +360,19 @@ void STMAnalyzeDigis::analyze(const Event& event)
     std::vector<double> adc_vec;
     
     int Digi_counter = 0;
+
+    uint64_t EWT = 0;
+    uint64_t DTCtime = 0;
+    uint64_t ADCtime = 0;
+    
     // Loop over the Digis
     for (auto& Digi : *stmDigis) {
       auto stm_Digi = static_cast<mu2e::STMWaveformDigi>(Digi);
       std::vector<int16_t> adcs = stm_Digi.adcs();
+      // Get EWT and DTC time from the digi
+      EWT = stm_Digi.EWT();
+      DTCtime = stm_Digi.DTCtime();
+      ADCtime = stm_Digi.ADCtime();
       // Plot the first waveform
       if(firstEvent){
 	fEvent->Set(adcs.size());
@@ -344,12 +386,10 @@ void STMAnalyzeDigis::analyze(const Event& event)
       for(int i=0; i < adcs.size(); i++){
 	// If the data is above the pulse threshold
 	if (adcs[i] > _threshold) {
-	  //std::cout << "Index: " << i << "  |  ADCs: " << adcs[i] << "  |  ADCs[i+1]: " << adcs[i+1] << "\n"; 
 	  // If the pulse started in the previous event
 	  if (avg_den > 0 && i == 0) {
 	    // Reset the average number...
 	    avg_num = 0;
-	    //std::cout << "Pulse in last event!: " << i << "   " << avg_den << "\n";
 	    // Sum negative value from the previous event
 	    for (int k = -avg_den; k < 0; ++k) {
 	      avg_num += k;
@@ -361,7 +401,7 @@ void STMAnalyzeDigis::analyze(const Event& event)
 	  avg_den += 1;
 	} else {
 	  // Else if not in a pulse region
-	  if (avg_num != 0) {
+	  if (avg_num != 0) {	    
 	    // Calculate the pulse time average
 	    int avg_time = static_cast<int>(avg_num / avg_den);
 	    // Store current pulse location
@@ -375,7 +415,6 @@ void STMAnalyzeDigis::analyze(const Event& event)
 	    // x values to fit
 	    double p_min = pulse_min / _samp_freq;
 	    double p_max = pulse_max / _samp_freq;
-	    //std::cout << "Pulse info :  pulse_num: " << pulse_num << "  | index: " << i << "  | loc:  " << pulse_loc << "  | min: " << pulse_min << "  | max: " << pulse_max << std::endl;
 	    std::vector<double> x(_pulse_region);	  
 	    // Find linspace in pulse region
 	    x = linspace(p_min, p_max, _pulse_region); 
@@ -386,7 +425,6 @@ void STMAnalyzeDigis::analyze(const Event& event)
 	    }
 	    // If the minimum pulse fit region is in the previous event
 	    if (pulse_min < 0) {
-	      //std::cout << "Pulse min in last event: " << pulse_min << "\n";
 	      // get start value in last event to copy
 	      int del = pulse_min + _pulse_region; 
 	      // Store the y data that is in the previous event
@@ -399,15 +437,8 @@ void STMAnalyzeDigis::analyze(const Event& event)
 	    }
 	    // Fit rising edge
 	    double rising_edge_fit = fit_rising_edge(x, y, pulse_loc / _samp_freq);	  
-	    //std::cout << "Rising edge fit: " << rising_edge_fit << "\n";
-	    if(rising_edge_fit < 0){
-	      // rising edge is in last event
-	      double rise = rising_edge_fit;
-	      rising_edge_fit = lastEventLength - rise;
-	      // Save pulse time and fit vals in this event
-	      pulse_locs.push_back(pulse_loc);
-	      fit_vals.push_back(rising_edge_fit);	      
-	    } else {
+	    if(rising_edge_fit > 0){
+	      // rising edge is not in last event
 	      // Save pulse time and fit vals in this event
 	      pulse_locs.push_back(pulse_loc);
 	      fit_vals.push_back(rising_edge_fit);
@@ -425,23 +456,41 @@ void STMAnalyzeDigis::analyze(const Event& event)
 	  avg_den = 0;
 	}
       }
+      // Make sure variables are reset if events are not consecutive
+      if(EWT != lastEWT+1){
+	avg_num = 0;
+	avg_den = 0;
+      }
       event_count++; 
       ++Digi_counter;
-    }    
-    //std::cout << "Pulse locs: " << pulse_locs.size() << "\n";
-    // Find separation of first two consecutive pulses
+    }
+    
+    // Find separation of first two consecutive pulses    
     if(pulse_locs.size()>2){
       //double EWT = eventNumber;
       double pulse_0 = fit_vals[0];
       double pulse_1 = fit_vals[1];
       double pulse_sep = (pulse_1 - pulse_0)*1e9;
       DeltaT->Fill(pulse_sep);
-      //std::cout << "Pulse sep: " << pulse_sep << "  |  EWT: " << EWT << "\n";
+      double DTCt = DTCtime / 40e6;
+      double ADCt = ADCtime / 75e6;
+      if(_printout && pulse_sep < 10010){
+	std::cout << "EWT : " << EWT << "   |   DTC timestamp: " << DTCt << "  |  ADC timestamp: " << ADCt <<
+	  "   |   Pulse one: " << pulse_0 << "   |   Pulse two: " << pulse_1 <<
+	  "   |   Pulse sep: " << pulse_sep << "\n";
+      }
+      // Write to file
+      o_file << EWT << "," << DTCt << "," << ADCt << "," << pulse_0 << "," << pulse_1 << "," << pulse_sep << "\n";
+      
     }
-    
+
+    // Store EWT
+    lastEWT = EWT;
+
     event_counter++;
-    
-  }      
+        
+  }  
+
 } // analyze()
 
 // ======================================================================

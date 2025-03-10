@@ -59,8 +59,8 @@ cet_build_plugin(STMAnalyzeDigis art::module
     REG_SOURCE src/STMAnalyzeDigis_module.cc
     LIBRARIES REG
     art_root_io::TFileService_service
-    artdaq_core_mu2e::artdaq-core-mu2e_Data
-    otsdaq_mu2e::otsdaq-mu2e_ArtModules
+    artdaq-core-mu2e::Data
+    otsdaq-mu2e::ArtModules
     Offline::Mu2eUtilities
     Offline::ProditionsService
     Offline::DataProducts
