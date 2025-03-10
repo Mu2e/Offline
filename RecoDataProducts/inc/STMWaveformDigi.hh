@@ -18,24 +18,32 @@ namespace mu2e {
   class STMWaveformDigi {
   public:
 
-    STMWaveformDigi() : _DetID(-1), _trigTimeOffset(0), _adcs(std::vector<int16_t>()), _peakpos(0){};
+    STMWaveformDigi() : _DetID(-1), _trigTimeOffset(0), _adcs(std::vector<int16_t>()), _peakpos(0) {};
+    STMWaveformDigi(int16_t DetID, uint64_t EWT, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, std::vector<int16_t> adcs, int peakpos) : _DetID(DetID), _EWT(EWT), _DTCtime(DTCtime), _ADCtime(ADCtime), _trigTimeOffset(trigTimeOffset), _adcs(adcs), _peakpos(peakpos) {};
 
-    STMWaveformDigi(int16_t DetID, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, std::vector<int16_t> adcs, int peakpos) : _DetID(DetID), _DTCtime(DTCtime), _trigTimeOffset(trigTimeOffset), _adcs(adcs), _peakpos(peakpos) {};
-    STMWaveformDigi(int16_t DetID, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, std::vector<int16_t> adcs) : _DetID(DetID), _DTCtime(DTCtime), _trigTimeOffset(trigTimeOffset), _adcs(adcs), _peakpos(0) {};
+    STMWaveformDigi(int16_t DetID, uint64_t EWT, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, double peak_fitTime1, double peak_fitTime2, double peak_sep, std::vector<int16_t> adcs) : _DetID(DetID), _EWT(EWT), _DTCtime(DTCtime), _ADCtime(ADCtime), _trigTimeOffset(trigTimeOffset), _peak_fitTime1(peak_fitTime1), _peak_fitTime2(peak_fitTime2), _peak_sep(peak_sep), _adcs(adcs) {};
     STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> adcs) : _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
 
     int16_t                     DetID()   const {return _DetID;}
-    uint64_t DTCtime() const { return _DTCtime; }
-    uint64_t ADCtime() const { return _ADCtime; }
-    uint32_t trigTimeOffset() const { return _trigTimeOffset; }
+    uint64_t                    EWT() const { return _EWT; }
+    uint64_t                    DTCtime() const { return _DTCtime; }
+    uint64_t                    ADCtime() const { return _ADCtime; }
+    uint32_t                    trigTimeOffset() const { return _trigTimeOffset; }
+    double                      peak_fitTime1() const { return _peak_fitTime1; }
+    double                      peak_fitTime2() const { return _peak_fitTime2; }
+    double                      peak_sep() const { return _peak_sep; }
     const std::vector<int16_t>& adcs() const { return _adcs; }
-    int                     peakpos()  const {return _peakpos;}
-
+    int                         peakpos() const { return _peakpos; } 
+    
   private:
     int16_t _DetID;
+    uint64_t _EWT;
     uint64_t _DTCtime;
     uint64_t _ADCtime;
     uint32_t _trigTimeOffset; // time offset from EWT? to first ADC value [ct]
+    double _peak_fitTime1; // fit time of first rising edge (ns)
+    double _peak_fitTime2; // fit time of second rising edge (ns)
+    double _peak_sep; // separation time (ns)
     std::vector<int16_t> _adcs; // vector of ADC values for the waveform
     int _peakpos;
   };
