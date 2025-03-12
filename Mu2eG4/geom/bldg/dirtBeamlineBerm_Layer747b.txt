@@ -1,47 +1,38 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_beamline_dirtBerm.ccl
-// Nov 2024
-// dirtbeamline removed, several layers of berms added; ref: docdb:49557
-// layer-747' West side
-
 string dirt.beamline.berm.l747b.name     = "dirtBeamlineBerml747b";
-
 string dirt.beamline.berm.l747b.material = "MBOverburden";
-
-double dirt.beamline.berm.l747b.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.berm.l747b.offsetFromFloorSurface.y = 8229.6009;
-double dirt.beamline.berm.l747b.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.beamline.berm.l747b.yHalfThickness           = 152.4003; //0.5 US foot to mm
-
+double dirt.beamline.berm.l747b.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.beamline.berm.l747b.offsetFromFloorSurface.y = 8229.60;
+double dirt.beamline.berm.l747b.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.beamline.berm.l747b.xreplace ={4 ,5 };
+vector<int> dirt.beamline.berm.l747b.yreplace ={3 ,4 };
+double dirt.beamline.berm.l747b.yHalfThickness           = 152.30;
 vector<double> dirt.beamline.berm.l747b.xPositions = {
-  -15583.5, // S1
-  -16332.6, // S2
-  -17105.2,   // S3
-  -23152,  // S4
-  -19965.89, // S5
-  -31750.5, // S6
-  -31750.5, // S7
-  -23076.5, //
-  -21586.8, //
-  -20527.2,  //
-  -20527.2  // S11
+-16555.69, // 0
+-17105.20, // 1
+-23152.00, // 2
+-19965.89, // 3
+-60000.00, // 4
+-60000.00, // 5
+-23076.50, // 6
+-21586.80, // 7
+-20527.30, // 8
+-20527.30, // 9
+-20953.28, // 10
+-19488.92, // 11
+-19421.57 // 12
 };
 vector<double> dirt.beamline.berm.l747b.yPositions = {
-  -8308.31,  //S1
-  -9285.2,   //S2
-  -9807.9, //S3
-  -11357.2, //S4
-  -25857.2, //S5
-  -25857.2, //S6
-  23809.74,  //S7
-  7001.47,  //S8
-  7362.58, // S81
-  8096.74,
-  -8308.31   //S11
+-9436.20, // 0
+-9807.90, // 1
+-11357.20, // 2
+-60000.00, // 3
+-60000.00, // 4
+23809.74, // 5
+7001.47, // 6
+7362.58, // 7
+8096.74, // 8
+-4381.00, // 9
+-8251.16, // 10
+-8412.31, // 11
+-9436.20 // 12
 };
-
-// Local Variables:
-// mode:c++
-// End:
