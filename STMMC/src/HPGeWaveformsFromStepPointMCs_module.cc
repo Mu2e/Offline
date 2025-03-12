@@ -75,17 +75,18 @@ namespace mu2e {
     explicit HPGeWaveformsFromStepPointMCs(const Parameters& conf);
   private:
     void produce(art::Event& event) override;
+    void beginJob();
     void depositCharge(const StepPointMC& step);
     void decayCharge();
     void addNoise();
     void digitize();
 
     // fhicl variables
-    art::ProductToken<StepPointMCCollection> StepPointMCsToken; // Token of StepPointMCs in STMDet
-    double fADC = 0;                                            // ADC sampling frequency [MHz]
-    double ADCToEnergy = 0;                                     // Calibration of bin width to energy [keV/bin]
-    double noiseSD = 0;                                         // Standard deviation of ADC noise [mV]
-    double risingEdgeDecayConstant = 0;                         // [us]
+    art::ProductToken<StepPointMCCollection> StepPointMCsTokenEle, StepPointMCsTokenMu, StepPointMCsToken1809;  // Token of StepPointMCs in STMDet
+    double fADC = 0;                                                                                            // ADC sampling frequency [MHz]
+    double ADCToEnergy = 0;                                                                                     // Calibration of bin width to energy [keV/bin]
+    double noiseSD = 0;                                                                                         // Standard deviation of ADC noise [mV]
+    double risingEdgeDecayConstant = 0;                                                                         // [us]
     bool makeTTree = false;
     double timeOffset = 0.0;
     uint resetEventNumber = 0;
@@ -101,10 +102,10 @@ namespace mu2e {
     const double holeDriftVelocity = 0.06;      // Apprixmate charged particle drift velocity [mm/ns]
 
     // ADC variables
-    double chargeToADC = 0;                               // Conversion factor from charge built in capacitor to ADC determined voltage, multiply by this value to get from charge built to ADC voltage.
-    uint nADCs = 0;                                       // Number of ADC values in an event
-    const int16_t ADCMax = (int16_t) std::pow(2, 16) - 1; // Maximum ADC value
-    int16_t ADC = 0;                                      // iterator variable
+    double chargeToADC = 0;                                             // Conversion factor from charge built in capacitor to ADC determined voltage, multiply by this value to get from charge built to ADC voltage.
+    uint nADCs = 0;                                                     // Number of ADC values in an event
+    const int16_t ADCMax = static_cast<int16_t>((-1 * std::pow(2, 16)) + 1);  // Maximum ADC value
+    double ADC = 0;                                                     // iterator variable
     uint32_t eventTimeBuffer = 0;
 
     // Define Ge crystal properties [mm]
@@ -141,21 +142,23 @@ namespace mu2e {
     uint32_t electronTravelTimeSteps = 0, holeTravelTimeSteps = 0;  // Drift times [steps]
     double decayExp = 0;                                            // Amount of decay with each tADC
     double lastEventEndDecayedCharge = 0;                           // Carry over for starting new microspill waveforms
-    const int defaultMicrospillBufferLengthCount = 2;
-    int microspillBufferLengthCount = 0;
+    int microspillBufferLengthCount = 0;                            // Buffer to store the charge deposits that are allocated to this event but happen after the microspill ends e.g. 844keV
+    const int defaultMicrospillBufferLengthCount = 2;               // Default value for the microspill buffer length
+    long int eventCount = 0;                                        // Counter for the event number
 
     // TTree and storage variables
-    TTree* ttree;
-    double chargeCollected = 0, chargeDecayed = 0;
-    uint eventId = 0;
-    uint32_t time = 0;
+    TTree* ttree;                                   // ttree variable
+    double chargeCollected = 0, chargeDecayed = 0;  // used to fill the ttree
+    uint eventId = 0;                               // used to fill the ttree
+    uint32_t time = 0;                              // used to fill the ttree
+    int16_t ttreeADC = 0;                           // used to fill the ttree
 
     // Data storage vectors
-    std::vector<double> _charge; // Buffer to store charge collected from STMDet StepPointMCs
+    std::vector<double> _charge;          // Buffer to store charge collected from STMDet StepPointMCs
     std::vector<double> _chargeCollected; // Buffer to store charge collected from STMDet StepPointMCs in the given time step
-    std::vector<double> _chargeDecayed; // Buffer to store charge collected that decays over time
+    std::vector<double> _chargeDecayed;   // Buffer to store charge collected that decays over time
     std::vector<double> _chargeCarryOver; // Temporary buffer that will store _chargeCollected over the course of the next event
-    std::vector<int16_t> _adcs; // Buffer for storing the ADC values to put into the STMWaveformDigi
+    std::vector<int16_t> _adcs;           // Buffer for storing the ADC values to put into the STMWaveformDigi
 
     // Offline utilities
     // TODO: include the prodition to get the sampling frequency
@@ -166,7 +169,9 @@ namespace mu2e {
 
   HPGeWaveformsFromStepPointMCs::HPGeWaveformsFromStepPointMCs(const Parameters& conf)
     : art::EDProducer{conf},
-      StepPointMCsToken(consumes<StepPointMCCollection>(conf().StepPointMCsTag())),
+      StepPointMCsTokenEle(consumes<StepPointMCCollection>(conf().StepPointMCsTagEle())),
+      StepPointMCsTokenMu(consumes<StepPointMCCollection>(conf().StepPointMCsTagMu())),
+      StepPointMCsToken1809(consumes<StepPointMCCollection>(conf().StepPointMCsTag1809())),
       fADC(conf().fADC()),
       ADCToEnergy(conf().ADCToEnergy()),
       noiseSD(conf().noiseSD()),
@@ -195,7 +200,7 @@ namespace mu2e {
         decayExp = exp(-tADC/(risingEdgeDecayConstant*1e3));
 
         // Convert noise SD from [mV] to [C], division by _e to work in units of charge
-        noiseSD *= 1e-3 * feedbackCapacitance/_e;
+        noiseSD *= (1e-3 * feedbackCapacitance/_e);
 
         // 1e3 converts keV to eV, multiply by this value to get from charge in capacitor to ADC output voltage
         // Chosen to work in units of fundamental charge _e to avoid storing very small double values
@@ -211,7 +216,7 @@ namespace mu2e {
           ttree = tfs->make<TTree>("ttree", "MakeHPGeWaveformsFromStepPointMCs ttree");
           ttree->Branch("chargeCollected", &chargeCollected, "chargeCollected/D");
           ttree->Branch("chargeDecayed", &chargeDecayed, "chargeDecayed/D");
-          ttree->Branch("ADC", &ADC, "ADC/S");
+          ttree->Branch("ADC", &ttreeADC, "ADC/S");
           ttree->Branch("eventId", &eventId, "eventId/i");
           ttree->Branch("time", &time, "time/i");
         };
@@ -219,18 +224,61 @@ namespace mu2e {
         resetEventNumber = conf().resetEventNumber() ? *(conf().resetEventNumber()) : 0;
       };
 
+  void HPGeWaveformsFromStepPointMCs::beginJob() {
+    std::cout << "STM HPGe digitization parameters" << std::endl;
+    std::cout << "\tInput parameters" << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "fAD [MHz]"                            << fADC                                     << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "EnergyPerADCBin [keV/bin]"            << ADCToEnergy                              << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "NoiseSD [mV]"                         << noiseSD /(1e-3 * feedbackCapacitance/_e) << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "risingEdgeDecayConstant [us]"         << risingEdgeDecayConstant                  << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "microspillBufferLengthCount"          << microspillBufferLengthCount              << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "makeTTree"                            << makeTTree                                << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "timeOffset [ns]"                      << timeOffset                               << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "resetEventNumber"                     << resetEventNumber                         << std::endl;
+    std::cout << "\tDerived parameters: " << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "tADC [ns]"                            << tADC                                     << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "nADCs"                                << nADCs                                    << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "NoiseSD [charge carriers]"            << noiseSD                                  << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "chargeToADC [bin/charge carrier]"     << chargeToADC                              << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range [V]"                    << "[+1, -1]"                               << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [V]"               << "[0, -1]"                                << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [bins]"            << "[0, " << ADCMax << "]"                  << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [charge carriers]" << "[0, " << ADCMax/chargeToADC << "]"      << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [C]"               << "[0, " << ADCMax * _e/chargeToADC << "]" << std::endl;
+    std::cout << std::left << "\t\t" << std::setw(60) << "Energy range [keV]"                   << "[0, " << -1*ADCMax * ADCToEnergy << "]" << std::endl;
+    std::cout << std::endl; // buffer line
+  };
+
   void HPGeWaveformsFromStepPointMCs::produce(art::Event& event) {
+    eventCount++;
+
     // Get the hits in the detector
-    auto const& hits_STMDet = event.getProduct(StepPointMCsToken);
+    std::vector<StepPointMC> StepsEle = event.getProduct(StepPointMCsTokenEle);
+    std::vector<StepPointMC> StepsMu = event.getProduct(StepPointMCsTokenMu);
+    std::vector<StepPointMC> Steps1809 = event.getProduct(StepPointMCsToken1809);
 
     // Add a collection of charge depositions to _charge
-    for(auto& hit : hits_STMDet){
-      if (hit.ionizingEdep() != 0)
-          depositCharge(hit);
+    for(const StepPointMC& step : StepsEle){
+      if (step.ionizingEdep() != 0)
+          depositCharge(step);
+    };
+    for(const StepPointMC& step : StepsMu){
+      if (step.ionizingEdep() != 0)
+          depositCharge(step);
+    };
+    for(const StepPointMC& step : Steps1809){
+      if (step.ionizingEdep() != 0)
+          depositCharge(step);
     };
 
     // Decay all of the collected charges
     decayCharge();
+
+    // Update the last event decayed charge before the noise so the noise isn't added twice
+    if (resetEventNumber != 0 && eventCount == resetEventNumber)
+      lastEventEndDecayedCharge = 0;
+    else
+      lastEventEndDecayedCharge = _chargeDecayed.back();
 
     // Add preamplifier electronics noise with SD defined in noiseSD
     addNoise();
@@ -241,8 +289,8 @@ namespace mu2e {
     // Simulation takes the POT time as t = 0, and has sequential microspills (events). The trigger time offset is not used here, left as a TODO
     // Create the STMWaveformDigi and insert all the relevant attributes
     // TODO - this only keeps accurate time if the sampling is 320MHz. Needs to be rewritten to work for other times
-    eventTimeBuffer = event.id().event() % 5;
-    if (eventTimeBuffer == 0 || (eventTimeBuffer % 3) == 0)
+    eventTimeBuffer = eventCount % 5;
+    if (eventTimeBuffer == 0 || (eventCount % 3) == 0)
       eventTime += nADCs + 1;
     else
       eventTime += nADCs;
@@ -252,21 +300,18 @@ namespace mu2e {
 
     // Make the ttree if appropriate
     if (makeTTree) {
-      eventId = event.id().event();
+      eventId = eventCount;
       time = _waveformDigi.trigTimeOffset() - 1;
       for (uint i = 0; i < nADCs; i++) {
         chargeCollected = _chargeCollected[i];
         chargeDecayed = _chargeDecayed[i];
-        ADC = _adcs[i];
+        ttreeADC = _adcs[i];
         time++;
         ttree->Fill();
       };
     };
 
     // Update the parameters to carry over to the next event
-    if (resetEventNumber != 0 && event.id().event() == resetEventNumber)
-      lastEventEndDecayedCharge = 0;
-    lastEventEndDecayedCharge = _chargeDecayed.back();
     _chargeCarryOver.clear();
     _chargeCarryOver.assign(_chargeCollected.begin() + nADCs, _chargeCollected.end());
     _chargeCollected.clear();
@@ -287,9 +332,11 @@ namespace mu2e {
 
     hitPosition = step.position();
     // Only take the StepPoinMCs in the HPGe detector. STMDet is both sensitive volume of both the HPGe and LaBr.
-    if (hitPosition.x() > -3904) {
+    if (hitPosition.x() > -3904)
       return;
-    }
+    // If the time is outside the buffer time, skip it
+    if (step.time() > (microspillBufferLengthCount * micropulseTime))
+      return;
 
     // Tranform the co-ordinate system to be a cylinder in the +z direction
     // Shift the position to a local cylindrical co-ordinate system with the center of the crystal at the origin
@@ -424,9 +471,8 @@ namespace mu2e {
   void HPGeWaveformsFromStepPointMCs::digitize() {
     // Convert the charge deposition to ADC voltage output.
     for (uint i = 0; i < nADCs; i++) {
-      ADC = (int16_t) std::round(_chargeDecayed[i]*chargeToADC);
-      ADC = ADC > ADCMax ? ADCMax : ADC;
-      _adcs[i] = ADC;
+      ADC = _chargeDecayed[i] * chargeToADC;
+      _adcs[i] = ADC > ADCMax ? static_cast<int16_t>(std::round(ADC)) : ADCMax;
     };
     return;
   };

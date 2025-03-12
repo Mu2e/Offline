@@ -81,13 +81,13 @@ MixSTMEvents : {
     meanEventsPerPOTFactors : {
         EleBeamCat : 5.465876332164181e-11
         MuBeamCat : 7.887481312841522e-13
-        TargetStopsCat1809 : 1.114418308224206e-16
+        TargetStopsCat1809 : 3.114418308224206e-16
     }
 }
 STMMCAnalysis : {
     MixedEventsTags : {
-        StepPointMCsTagEleBeamCat : "STMStepMixerEle:STMDet"
-        StepPointMCsTagMuBeamCat : "STMStepMixerMu:STMDet"
+        StepPointMCsTagEle : "STMStepMixerEle:STMDet"
+        StepPointMCsTagMu : "STMStepMixerMu:STMDet"
         StepPointMCsTag1809 : "STMStepMixer1809:STMDet"
     }
     ZS : {
@@ -156,17 +156,16 @@ SimplifyStage2Data : {
 # DAQ parameters
 STMDAQParameters : {
     samplingFrequencies : {
-        HPGe : 320 # MSPS
+        HPGe : 320 # MSPS - copied from Offline/STMConditions/fcl/prolog.fcl
         LaBr : 370.370370370 # MSPS - copied from Offline/STMConditions/fcl/prolog.fcl
     }
 }
 HPGeDigitization : {
-    StepPointMCsTagEle: "STMStepMixerEle:STMDet"
-    StepPointMCsTagMu: "compressSTMDetMu:STMDet"
-    StepPointMCsTag1809: "compressSTMDet1809:STMDet"
-    EnergyPerADCBin : 0.5 # keV/bin
+    EnergyPerADCBin : 5 # keV/bin
     PreamplifierNoiseSD : 0.32 # mV
     DecayConstant : 50 # us
+    resetEventNumber : 31858
+    microspillBufferLengthCount : 10
 }
 
 # Normalization parameter determination studies

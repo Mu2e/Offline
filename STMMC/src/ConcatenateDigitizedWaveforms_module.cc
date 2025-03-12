@@ -87,10 +87,10 @@ namespace mu2e {
     std::vector<STMWaveformDigi> waveforms = event.getProduct(STMWaveformDigisToken);
     inputEvents++;
     std::unique_ptr<STMWaveformDigiCollection> outputDigis(new STMWaveformDigiCollection);
-    if ((event.id().event() % nMerge) == 1)
+    if ((inputEvents % nMerge) == 1)
         outputTime = waveforms[0].trigTimeOffset();
     outputADCs.insert(outputADCs.end(), waveforms[0].adcs().begin(), waveforms[0].adcs().end());
-    if ((event.id().event() % nMerge) == 0) {
+    if ((inputEvents % nMerge) == 0) {
         STMWaveformDigi waveformDigi(outputTime, outputADCs);
         outputDigis->emplace_back(waveformDigi);
         outputEvents++;

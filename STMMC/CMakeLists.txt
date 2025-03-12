@@ -24,13 +24,6 @@ cet_build_plugin(DetectorEfficiency art::module
       Offline::MCDataProducts
 )
 
-cet_build_plugin(FilterMixedEvents art::module
-    REG_SOURCE src/FilterMixedEvents_module.cc
-    LIBRARIES REG
-      Offline::MCDataProducts
-)
-
-
 cet_build_plugin(HPGeTree art::module
     REG_SOURCE src/HPGeTree_module.cc
     LIBRARIES REG
@@ -70,7 +63,13 @@ cet_build_plugin(STMResamplingProducer art::module
         Offline::MCDataProducts
 )
 
-cet_build_plugin(VirtualDetectorTree_module art::module
+cet_build_plugin(ValidateConsecutiveEventIDs art::module
+    REG_SOURCE src/ValidateConsecutiveEventIDs_module.cc
+    LIBRARIES REG
+      Offline::MCDataProducts
+)
+
+cet_build_plugin(VirtualDetectorTree art::module
     REG_SOURCE src/VirtualDetectorTree_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
