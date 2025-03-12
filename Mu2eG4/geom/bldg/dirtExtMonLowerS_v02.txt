@@ -1,0 +1,19 @@
+string dirt.extMon.lower.S.name     = "dirtExtMonLowerS";
+string dirt.extMon.lower.S.material = "MBOverburden";
+double dirt.extMon.lower.S.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.extMon.lower.S.offsetFromFloorSurface.y = 1816.20;
+double dirt.extMon.lower.S.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.extMon.lower.S.yreplace ={2 ,3 };
+double dirt.extMon.lower.S.yHalfThickness           = 1968.40;
+vector<double> dirt.extMon.lower.S.xPositions = {
+-2921.00, // 0
+-19065.78, // 1
+-19065.78, // 2
+-2921.00 // 3
+};
+vector<double> dirt.extMon.lower.S.yPositions = {
+-7505.80, // 0
+-7505.80, // 1
+-50000.00, // 2
+-50000.00 // 3
+};
