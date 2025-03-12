@@ -19,13 +19,13 @@ physics: {
     analyzers : {
         CountMixedEvents : {
             module_type : CountMixedEvents
-            stepPointMCsTagEleBeamCat : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTagEleBeamCat
-            stepPointMCsTagMuBeamCat : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTagMuBeamCat
-            stepPointMCsTagTargetStopsCat : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTagTargetStopsCat
+            stepPointMCsTagEleBeamCat : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTagEle
+            stepPointMCsTagMuBeamCat : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTagMu
+            stepPointMCsTagTargetStopsCat : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTag1809
         }
     }
-    tp: [CountMixedEvents]
-    trigger_paths: [tp]
+    ep: [CountMixedEvents]
+    end_paths: [ep]
 }
 
 services.scheduler.wantSummary: true

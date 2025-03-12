@@ -1,0 +1,18 @@
+# Original author: Pawel Plesniak
+
+process_name: Validate
+
+source : {
+  module_type : RootInput
+}
+
+physics : {
+  analyzers : {
+    check : {
+        module_type : ValidateConsecutiveEventIDs
+        stepPointMCsTagEleBeamCat : "STMStepMixerEle:STMDet"
+    }
+  }
+  ep : [check]
+  end_paths : [ep]
+}
