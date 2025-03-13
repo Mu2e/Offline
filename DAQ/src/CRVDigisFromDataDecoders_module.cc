@@ -1,6 +1,6 @@
 // ======================================================================
 //
-// CrvDigisFromFragments_plugin:  Add CRV data products to the event
+// Make CRVDigis from CRVDataDecoders
 //
 // ======================================================================
 
@@ -23,14 +23,14 @@
 
 namespace art
 {
-  class CrvDigisFromFragments;
+  class CRVDigisFromDataDecoders;
 }
 
-using art::CrvDigisFromFragments;
+using art::CRVDigisFromDataDecoders;
 
 // ======================================================================
 
-class art::CrvDigisFromFragments : public EDProducer
+class art::CRVDigisFromDataDecoders : public EDProducer
 {
   public:
   struct Config
@@ -41,8 +41,8 @@ class art::CrvDigisFromFragments : public EDProducer
   };
 
   // --- C'tor/d'tor:
-  explicit CrvDigisFromFragments(const art::EDProducer::Table<Config>& config);
-  ~CrvDigisFromFragments() override {}
+  explicit CRVDigisFromDataDecoders(const art::EDProducer::Table<Config>& config);
+  ~CRVDigisFromDataDecoders() override {}
 
   // --- Production:
   void produce(Event&) override;
@@ -52,11 +52,11 @@ class art::CrvDigisFromFragments : public EDProducer
   art::InputTag                            _CRVDataDecodersTag;
   mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
 
-}; // CrvDigisFromFragments
+}; // CRVDigisFromDataDecoders
 
 // ======================================================================
 
-CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config>& config) :
+CRVDigisFromDataDecoders::CRVDigisFromDataDecoders(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}, _diagLevel(config().diagLevel()), _CRVDataDecodersTag(config().CRVDataDecodersTag())
 {
   produces<mu2e::CrvDigiCollection>();
@@ -66,7 +66,7 @@ CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config
 
 // ----------------------------------------------------------------------
 
-void CrvDigisFromFragments::produce(Event& event)
+void CRVDigisFromDataDecoders::produce(Event& event)
 {
   art::EventNumber_t eventNumber = event.event();
 
@@ -240,4 +240,4 @@ void CrvDigisFromFragments::produce(Event& event)
 
 // ======================================================================
 
-DEFINE_ART_MODULE(CrvDigisFromFragments)
+DEFINE_ART_MODULE(CRVDigisFromDataDecoders)
