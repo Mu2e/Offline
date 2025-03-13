@@ -56,6 +56,8 @@ namespace mu2e {
         std::cout << id << ", " << event.id().event() << std::endl;
         throw cet::exception("consecutive", "event ID is not consecutive\n");
     };
+    if (event.id().event() != (id + 1))
+      std::cout << "Not consecutive event IDs: " << event.id().event() << ", " << id << std::endl;
     id = event.id().event();
     return;
   };

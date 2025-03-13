@@ -1,12 +1,6 @@
 // Simulates the electronics response of the HPGe detector. Simulates the pulse height, decay tail, and ADC digitization. Generates one STMWaveformDigi per micropulse.
 // Model based heavily on example provided in docDb 43617
 // See docDb 51487 for full documentation
-// Input parameters
-//   - StepPointMCsTag - StepPointMCs in the HPGe detector
-//   - fADC - ADC sampling frequency, in MHz
-//   - ADCToEnergy - ADC energy calibration, in keV/bin
-//   - noiseSD - Standard deviation of the electronics noise, in keV
-//   - risingEdgeDecayConstant - rising edge decay time constant, in us
 // Original author: Pawel Plesniak
 
 // stdlib includes
@@ -70,6 +64,7 @@ namespace mu2e {
       fhicl::OptionalAtom<bool> makeTTree{ Name("makeTTree"), Comment("Controls whether to make the TTree with branches chargeCollected, chargeDecayed, ADC, eventId, time")};
       fhicl::OptionalAtom<double> timeOffset{ Name("timeOffset"), Comment("For debugging, adds the named time offset in [ns], used for testing analysis algorithms")};
       fhicl::OptionalAtom<uint> resetEventNumber{ Name("resetEventNumber"), Comment("Simulates the off-spill period by resetting the inter-event last decayed charge to zero")};
+      fhicl::OptionalAtom<uint> verbosityLevel{ Name("verbosityLevel"), Comment("Controls verbosity")};
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit HPGeWaveformsFromStepPointMCs(const Parameters& conf);
@@ -90,6 +85,7 @@ namespace mu2e {
     bool makeTTree = false;
     double timeOffset = 0.0;
     uint resetEventNumber = 0;
+    int verbosityLevel = 0;
 
     // Define experiment specific constants
     const double feedbackCapacitance = 1e-12; // [Farads]
@@ -144,7 +140,6 @@ namespace mu2e {
     double lastEventEndDecayedCharge = 0;                           // Carry over for starting new microspill waveforms
     int microspillBufferLengthCount = 0;                            // Buffer to store the charge deposits that are allocated to this event but happen after the microspill ends e.g. 844keV
     const int defaultMicrospillBufferLengthCount = 2;               // Default value for the microspill buffer length
-    long int eventCount = 0;                                        // Counter for the event number
 
     // TTree and storage variables
     TTree* ttree;                                   // ttree variable
@@ -183,8 +178,9 @@ namespace mu2e {
         crystalCentrePosition.set(crystalCentreX, crystalCentreY, crystalCentreZ);
         tADC = 1e3/fADC; // 1e3 converts [us] to [ns] as fADC is in [MHz]
 
-        // Assign microspillBufferLengthCount
+        // Assign optional variables
         microspillBufferLengthCount = conf().microspillBufferLengthCount() ? *(conf().microspillBufferLengthCount()) : defaultMicrospillBufferLengthCount;
+        verbosityLevel = conf().verbosityLevel() ? *(conf().verbosityLevel()) : 0;
 
         // Determine the number of ADC values in each STMWaveformDigi. Increase the number by one due to truncation. At 320MHz, this will be 543 ADC values per microbunch
         double _nADCs = (micropulseTime/tADC) + 1;
@@ -225,33 +221,34 @@ namespace mu2e {
       };
 
   void HPGeWaveformsFromStepPointMCs::beginJob() {
-    std::cout << "STM HPGe digitization parameters" << std::endl;
-    std::cout << "\tInput parameters" << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "fAD [MHz]"                            << fADC                                     << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "EnergyPerADCBin [keV/bin]"            << ADCToEnergy                              << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "NoiseSD [mV]"                         << noiseSD /(1e-3 * feedbackCapacitance/_e) << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "risingEdgeDecayConstant [us]"         << risingEdgeDecayConstant                  << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "microspillBufferLengthCount"          << microspillBufferLengthCount              << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "makeTTree"                            << makeTTree                                << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "timeOffset [ns]"                      << timeOffset                               << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "resetEventNumber"                     << resetEventNumber                         << std::endl;
-    std::cout << "\tDerived parameters: " << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "tADC [ns]"                            << tADC                                     << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "nADCs"                                << nADCs                                    << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "NoiseSD [charge carriers]"            << noiseSD                                  << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "chargeToADC [bin/charge carrier]"     << chargeToADC                              << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range [V]"                    << "[+1, -1]"                               << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [V]"               << "[0, -1]"                                << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [bins]"            << "[0, " << ADCMax << "]"                  << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [charge carriers]" << "[0, " << ADCMax/chargeToADC << "]"      << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [C]"               << "[0, " << ADCMax * _e/chargeToADC << "]" << std::endl;
-    std::cout << std::left << "\t\t" << std::setw(60) << "Energy range [keV]"                   << "[0, " << -1*ADCMax * ADCToEnergy << "]" << std::endl;
-    std::cout << std::endl; // buffer line
+    if (verbosityLevel) {
+      std::cout << "STM HPGe digitization parameters" << std::endl;
+      std::cout << "\tInput parameters" << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "fAD [MHz]"                            << fADC                                     << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "EnergyPerADCBin [keV/bin]"            << ADCToEnergy                              << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "NoiseSD [mV]"                         << noiseSD /(1e-3 * feedbackCapacitance/_e) << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "risingEdgeDecayConstant [us]"         << risingEdgeDecayConstant                  << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "microspillBufferLengthCount"          << microspillBufferLengthCount              << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "makeTTree"                            << makeTTree                                << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "timeOffset [ns]"                      << timeOffset                               << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "resetEventNumber"                     << resetEventNumber                         << std::endl;
+      std::cout << "\tDerived parameters: " << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "tADC [ns]"                            << tADC                                     << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "nADCs"                                << nADCs                                    << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "NoiseSD [charge carriers]"            << noiseSD                                  << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "chargeToADC [bin/charge carrier]"     << chargeToADC                              << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range [V]"                    << "[+1, -1]"                               << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [V]"               << "[0, -1]"                                << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [bins]"            << "[0, " << ADCMax << "]"                  << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [charge carriers]" << "[0, " << ADCMax/chargeToADC << "]"      << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [C]"               << "[0, " << ADCMax * _e/chargeToADC << "]" << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "Energy range [keV]"                   << "[0, " << -1*ADCMax * ADCToEnergy << "]" << std::endl;
+      std::cout << std::endl; // buffer line
+    };
   };
 
   void HPGeWaveformsFromStepPointMCs::produce(art::Event& event) {
-    eventCount++;
-
+    eventId = event.id().event();
     // Get the hits in the detector
     std::vector<StepPointMC> StepsEle = event.getProduct(StepPointMCsTokenEle);
     std::vector<StepPointMC> StepsMu = event.getProduct(StepPointMCsTokenMu);
@@ -275,7 +272,7 @@ namespace mu2e {
     decayCharge();
 
     // Update the last event decayed charge before the noise so the noise isn't added twice
-    if (resetEventNumber != 0 && eventCount == resetEventNumber)
+    if (resetEventNumber != 0 && eventId == resetEventNumber)
       lastEventEndDecayedCharge = 0;
     else
       lastEventEndDecayedCharge = _chargeDecayed.back();
@@ -289,8 +286,8 @@ namespace mu2e {
     // Simulation takes the POT time as t = 0, and has sequential microspills (events). The trigger time offset is not used here, left as a TODO
     // Create the STMWaveformDigi and insert all the relevant attributes
     // TODO - this only keeps accurate time if the sampling is 320MHz. Needs to be rewritten to work for other times
-    eventTimeBuffer = eventCount % 5;
-    if (eventTimeBuffer == 0 || (eventCount % 3) == 0)
+    eventTimeBuffer = eventId % 5;
+    if (eventTimeBuffer == 0 || (eventId % 3) == 0)
       eventTime += nADCs + 1;
     else
       eventTime += nADCs;
@@ -300,7 +297,6 @@ namespace mu2e {
 
     // Make the ttree if appropriate
     if (makeTTree) {
-      eventId = eventCount;
       time = _waveformDigi.trigTimeOffset() - 1;
       for (uint i = 0; i < nADCs; i++) {
         chargeCollected = _chargeCollected[i];

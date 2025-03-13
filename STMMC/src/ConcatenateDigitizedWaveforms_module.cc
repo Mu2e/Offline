@@ -1,3 +1,5 @@
+// Concatenates STMWaveformDigis generated with HPGeWaveformsFromStepPointMCs
+// Generates a summary of the number of generated concatenated waveforms and the number discarded
 // Original author: Pawel Plesniak
 
 // stdlib includes
@@ -105,15 +107,16 @@ namespace mu2e {
         };
         outputADCs.clear();
     };
-
     event.put(std::move(outputDigis));
     return;
   };
 
   void ConcatenateDigitizedWaveforms::endJob() {
-    mf::LogInfo log("STMResamplingFilter summary");
-    log << "No. input events:  " << inputEvents  << "\n";
-    log << "No. output events: " << outputEvents << "\n";
+    mf::LogInfo log("ConcatenateDigitizedWaveforms summary");
+    log << "=====ConcatenateDigitizedWaveforms summary=====\n";
+    log << std::left << std::setw(25) << "No. input events:  " << inputEvents  << "\n";
+    log << std::left << std::setw(25) << "No. output events: " << outputEvents << "\n";
+    log << "===============================================\n";
   };
 }; // namespace mu2e
 

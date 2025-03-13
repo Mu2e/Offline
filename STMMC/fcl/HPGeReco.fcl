@@ -21,31 +21,32 @@ physics : {
       StepPointMCsTagEle : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTagEle
       StepPointMCsTagMu : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTagMu
       StepPointMCsTag1809 : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTag1809
-      fADC : @local::STMDAQParameters.samplingFrequencies.HPGe
+      fADC : @local::STMDAQParameters.samplingFrequencies.HPGe #TODO - make this work with multiple frequencies
       EnergyPerADCBin : @local::HPGeDigitization.EnergyPerADCBin
       NoiseSD : @local::HPGeDigitization.PreamplifierNoiseSD
       risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant
       microspillBufferLengthCount : @local::HPGeDigitization.microspillBufferLengthCount
+      makeTTree : false
+      timeOffset : 0
       resetEventNumber : @local::HPGeDigitization.resetEventNumber
-      # makeTTree : true
+      verbosityLevel : 0
     }
     concatenateWaveformsHPGe : {
       module_type : ConcatenateDigitizedWaveforms
-      STMWaveformDigisTag : "DigiHPGe:"
-      nMerge : 1000 #@local::HPGeDigitization.microspillBufferLengthCount
-      # makeTTree : true
+      STMWaveformDigisTag : @local::HPGeDigitization.concatenation.STMWaveformDigisTag
+      nMerge : @local::HPGeDigitization.concatenation.nMerge
     }
     ZSHPGe : {
       module_type : STMZeroSuppression
-      stmWaveformDigisTag : "concatenateWaveformsHPGe:"
+      stmWaveformDigisTag : @local::STMMCAnalysis.ZS.HPGe.stmWaveformDigisTag.concatenated
       tbefore : @local::STMMCAnalysis.ZS.HPGe.tbefore
       tafter : @local::STMMCAnalysis.ZS.HPGe.tafter
       threshold : @local::STMMCAnalysis.ZS.HPGe.threshold
       window : @local::STMMCAnalysis.ZS.HPGe.window
       naverage : @local::STMMCAnalysis.ZS.HPGe.naverage
-      # makeTTreeGradients: true
-      makeTTreeWaveforms: true
-      # verbosityLevel : 3
+      verbosityLevel : 0
+      makeTTreeGradients: false
+      makeTTreeWaveforms: false
     }
     MWDHPGe : {
       module_type : STMMovingWindowDeconvolution
@@ -59,12 +60,20 @@ physics : {
       defaultBaselineSD : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineSD
       makeTTreeMWD: false
       makeTTreeEnergies: true
-      verbosityLevel : 3
+      TTreeEnergyCalib : @local::HPGeDigitization.EnergyPerADCBin
+      verbosityLevel : 0
+      xAxis : ""
     }
   }
-  digitization_path : [DigiHPGe, concatenateWaveformsHPGe, ZSHPGe] # concatenateWaveformsHPGe, ZSHPGe, MWDHPGe
+  filters : {
+    concatenationFilterHPGe : {
+      module_type : ConcatenationFilter
+      STMWaveformDigisTag : "concatenateWaveformsHPGe:"
+    }
+  }
+  digitization_path : [DigiHPGe, concatenateWaveformsHPGe, concatenationFilterHPGe, ZSHPGe, MWDHPGe]
   trigger_paths : [digitization_path]
-  output_path : [compressedOutput]
+  # output_path : [compressedOutput]
   # end_paths : [output_path]
 }
 
@@ -72,6 +81,7 @@ outputs : {
   compressedOutput : {
     module_type : RootOutput
     fileName : "dts.owner.HPGeReco.version.sequencer.art"
+    SelectEvents: ["digitization_path"]
   }
 }
 

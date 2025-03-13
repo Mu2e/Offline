@@ -181,7 +181,7 @@ namespace mu2e {
     const STMEnergyCalib& stmEnergyCalib = stmEnergyCalibHandle.get(event.id());
     nADCBefore = STMUtils::convertToClockTicks(tBefore, channel, stmEnergyCalib);
     nADCAfter = STMUtils::convertToClockTicks(tAfter, channel, stmEnergyCalib);
-    if (verbosityLevel > 2) {
+    if (verbosityLevel > 9) {
       std::cout << "ZS findPeaks fitting parameters" << std::endl;
       std::cout << std::left << std::setw(15) << "nADCBefore" << nADCBefore << std::endl;
       std::cout << std::left << std::setw(15) << "nADCAfter"  << nADCAfter  << std::endl;
@@ -211,15 +211,22 @@ namespace mu2e {
       // Generate the output waveforms
       eventId = event.id().event();
       nZSwaveforms = finalPeakStartTimes.size();
+      if (verbosityLevel > 3) {
+        std::cout << "ZS: peak times: ";
+        for (uint i = 0; i < nZSwaveforms; i++)
+          std::cout << "[" << finalPeakStartTimes[i] << ", " << finalPeakEndTimes[i] << "], ";
+        std::cout << std::endl;
+      };
       for (k = 0; k < nZSwaveforms; ++k) {
         peakStartTime = finalPeakStartTimes[k];
         peakEndTime = finalPeakEndTimes[k];
         ZSADCs.clear();
         ZSADCs.assign(waveform.adcs().begin() + peakStartTime, waveform.adcs().begin() + peakEndTime);
-        std::cout << "ZS results: " << peakStartTime << ", " << peakEndTime << ", " << peakEndTime - peakStartTime << std::endl;
+        if (verbosityLevel > 4)
+          std::cout << "ZS start time: " << peakStartTime << ", end time: " << peakEndTime << ", length: " << peakEndTime - peakStartTime << ", start ADC: " << waveform.adcs()[peakStartTime] << ", end ADC: " << waveform.adcs()[peakEndTime] << std::endl;
         time = waveform.trigTimeOffset() + peakStartTime;
         STMWaveformDigi ZSWaveform(time, ZSADCs);
-        if (verbosityLevel > 2) {
+        if (verbosityLevel > 5) {
           std::cout << "ZS: waveform time: " << ZSWaveform.trigTimeOffset() << std::endl;
           std::cout << "ZS: output ADCs: ";
           for (auto i : ZSADCs)
@@ -258,7 +265,7 @@ namespace mu2e {
 
   void STMZeroSuppression::calculateGradient() {
     // Print
-    if (verbosityLevel > 2) {
+    if (verbosityLevel > 5) {
       std::cout << "ZS: input ADCs (" << ADCs.size() << " entries): ";
       for (int16_t ADC : ADCs)
         std::cout << ADC << ", ";
@@ -268,7 +275,7 @@ namespace mu2e {
     for(i = 0; i < nGradients; i++)
       gradients.push_back(ADCs[i + window] - ADCs[i]);
     // Print gradients
-    if (verbosityLevel > 2) {
+    if (verbosityLevel > 5) {
       std::cout << "ZS: Gradient (" << gradients.size() << " entries): ";
       for (int16_t gradient : gradients)
         std::cout << gradient << ", ";
@@ -293,7 +300,7 @@ namespace mu2e {
       av_gradient = 0;
     };
     // Print
-    if (verbosityLevel > 2) {
+    if (verbosityLevel > 5) {
       std::cout << "ZS: Avg Gradient (" << avGradients.size() << " entries): ";
       for (int16_t grad : avGradients)
         std::cout << grad << ", ";
