@@ -69,7 +69,7 @@ cet_build_plugin(ValidateConsecutiveEventIDs art::module
       Offline::MCDataProducts
 )
 
-cet_build_plugin(VirtualDetectorTree art::module
+cet_build_plugin(VirtualDete removectorTree art::module
     REG_SOURCE src/VirtualDetectorTree_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service

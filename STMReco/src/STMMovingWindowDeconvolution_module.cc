@@ -6,6 +6,7 @@
 // stdlib includes
 #include <algorithm>
 #include <utility>
+#include <limits>
 
 // art includes
 #include "art/Framework/Principal/Event.h"
@@ -61,10 +62,11 @@ namespace mu2e {
         fhicl::Atom<double> thresholdgrad{Name("thresholdgrad"), Comment("Threshold on gradient to cut out peaks when calculating baseline")};
         fhicl::Atom<double> defaultBaselineMean{Name("defaultBaselineMean"), Comment("Default mean to use for baseline when ZS removes all baseline data, in ADC values")};
         fhicl::Atom<double> defaultBaselineSD{Name("defaultBaselineSD"), Comment("Default standard deviation to use for baseline when ZS removes all baseline data, in ADC values")};
-        fhicl::OptionalAtom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity level")};
-        fhicl::OptionalAtom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit for histograms if verbosity level >= 5: \"sample_number\", \"waveform_time\", or \"event_time\"") };
         fhicl::OptionalAtom<bool> makeTTreeMWD{ Name("makeTTreeMWD"), Comment("Controls whether to make the TTree with branches ADC, deconvoluted, differentiated, averaged")};
         fhicl::OptionalAtom<bool> makeTTreeEnergies{ Name("makeTTreeEnergies"), Comment("Controls whether to make the TTree with branches time, E")};
+        fhicl::OptionalAtom<double> TTreeEnergyCalib{ Name("TTreeEnergyCalib"), Comment("Controls whether to make the energy TTrees with units of energy or in ADC values. If 0, will leave as ADC value, otherwise will multiply by this calibration to generate the energy.")};
+        fhicl::OptionalAtom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity level")};
+        fhicl::OptionalAtom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit for histograms if verbosity level >= 5: \"sample_number\", \"waveform_time\", or \"event_time\"") };
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit STMMovingWindowDeconvolution(const Parameters& conf);
@@ -90,10 +92,10 @@ namespace mu2e {
     double thresholdgrad = 0.0;                                           // threshold on gradient
     double defaultBaselineMean = 0.0;
     double defaultBaselineSD = 0.0;
-    int verbosityLevel = 0;                                               // std cout verbosity level
-    std::string _xAxis = "";                                              // optional parameter for x-axis unit if plotting histograms
     bool makeTTreeMWD = false;                                            // controls whether to make MWD process TTree
     bool makeTTreeEnergies = false;                                       // controls whether to make results TTree
+    int verbosityLevel = 0;                                               // std cout verbosity level
+    std::string _xAxis = "";                                              // optional parameter for x-axis unit if plotting histograms
 
     // Proditions service
     ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
@@ -125,7 +127,9 @@ namespace mu2e {
 
     // TTree variables
     TTree* ttree;
-    int16_t ADC = 0, E = 0;
+    double TTreeEnergyCalib = 0.0;
+    int16_t ADC = 0;
+    double E = 0;
     uint32_t time = 0;
     double deconvoluted = 0.0, differentiated = 0.0, averaged = 0.0;
     uint eventId = 0;
@@ -149,6 +153,7 @@ namespace mu2e {
       _xAxis = conf().xAxis() ? *(conf().xAxis()) : "";
       makeTTreeMWD = conf().makeTTreeMWD() ? *(conf().makeTTreeMWD()) : false;
       makeTTreeEnergies = conf().makeTTreeEnergies() ? *(conf().makeTTreeEnergies()) : false;
+      TTreeEnergyCalib = conf().TTreeEnergyCalib() ? *(conf().TTreeEnergyCalib()) : 1.0;
       if (makeTTreeMWD) {
         art::ServiceHandle<art::TFileService> tfs;
         ttree = tfs->make<TTree>("ttree", "STMMovingWindowDeconvolution pulse finding ttree");
@@ -163,9 +168,8 @@ namespace mu2e {
         art::ServiceHandle<art::TFileService> tfs;
         ttree = tfs->make<TTree>("ttree", "STMMovingWindowDeconvolution pulse height ttree");
         ttree->Branch("time", &time, "time/I");
-        ttree->Branch("E", &E, "E/S");
         ttree->Branch("eventId", &eventId, "eventId/i");
-        ttree->Branch("time", &time, "time/i");
+        ttree->Branch("E", &E, "E/D");
       };
       if (_xAxis != "") {
         if (verbosityLevel >= 5) {
@@ -226,16 +230,17 @@ namespace mu2e {
       find_peaks();
 
       nPeaks = peak_heights.size();
-      std::cout << "nPeaks: " << nPeaks << std::endl;
+      if (nPeaks) // TODO - change to verbosityLevel
+        std::cout << "MWD: found " << nPeaks << " peaks in event " << event.id() << std::endl;
       for (i = 0; i < nPeaks; ++i) {
         STMMWDDigi mwd_digi(peak_times[i], -1 * peak_heights[i]); // peak_heights are negative, make them positive here
         outputMWDDigis->push_back(mwd_digi);
         if (makeTTreeEnergies) {
           time = mwd_digi.time();
-          E = mwd_digi.energy();
+          E = mwd_digi.energy() * TTreeEnergyCalib;
           ttree->Fill();
         };
-        if (verbosityLevel > 2)
+        if (verbosityLevel > 3)
           std::cout << "energy: " << mwd_digi.energy() << std::endl;
       };
 
@@ -263,7 +268,7 @@ namespace mu2e {
   };
 
   void STMMovingWindowDeconvolution::deconvolve() {
-    if (verbosityLevel > 2) {
+    if (verbosityLevel > 4) {
       std::cout << "MWD: input ADCs (" << ADCs.size() << "): ";
       for (int16_t data : ADCs)
         std::cout << data << ", ";
@@ -272,7 +277,7 @@ namespace mu2e {
     deconvolved_data.push_back(ADCs[0] - pedestal);
     for(i = 1; i < nADCs; i++)
       deconvolved_data.push_back((ADCs[i] - pedestal) - timeFactor * (ADCs[i - 1] - pedestal) + deconvolved_data[i - 1]);
-    if (verbosityLevel > 2) {
+    if (verbosityLevel > 4) {
       std::cout << "MWD: deconvoluted data (" << deconvolved_data.size() << "): ";
       for (double data : deconvolved_data)
         std::cout << data << ", ";
@@ -285,7 +290,7 @@ namespace mu2e {
       differentiated_data.push_back(deconvolved_data[i]);
     for (i = M; i < nADCs; i++)
       differentiated_data.push_back(deconvolved_data[i] - deconvolved_data[i - M]);
-    if (verbosityLevel > 2) {
+    if (verbosityLevel > 4) {
       std::cout << "MWD: differentiated data (" << differentiated_data.size() << "): ";
       for (double data : differentiated_data)
         std::cout << data << ", ";
@@ -307,7 +312,7 @@ namespace mu2e {
       sum += differentiated_data[i] - differentiated_data[i - L]; // move the sum across one sample
       averaged_data.push_back(sum/L);
     };
-    if (verbosityLevel > 2) {
+    if (verbosityLevel > 4) {
       std::cout << "MWD: averaged data (" << averaged_data.size() << "): ";
       for (double data : averaged_data)
         std::cout << data << ", ";
@@ -337,9 +342,6 @@ namespace mu2e {
 
   void STMMovingWindowDeconvolution::find_peaks() {
     threshold_cut = baseline_mean - nsigma_cut * baseline_stddev;
-    std::cout << "Threshold cut: " << threshold_cut << std::endl;
-    std::cout << "M: " << M << std::endl;
-    std::cout << "nADCs: " << nADCs << std::endl;
     lowest_height = 0;
     lowest_height_time = -1; // in clock ticks
 

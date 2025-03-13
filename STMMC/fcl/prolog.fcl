@@ -92,11 +92,14 @@ STMMCAnalysis : {
     }
     ZS : {
         HPGe : {
-            stmWaveformDigisTag : "DigiHPGe:"
-            tbefore : @local::STM.HPGe.tbefore # 20 #ns
-            tafter : @local::STM.HPGe.tafter #500 #ns
+            stmWaveformDigisTag : {
+                concatenated : "concatenateWaveformsHPGe:"
+                uSpill : "DigiHPGe:"
+            }
+            tbefore : @local::STM.HPGe.tbefore
+            tafter : @local::STM.HPGe.tafter
             threshold : @local::STM.HPGe.threshold
-            window : @local::STM.HPGe.window # 10
+            window : @local::STM.HPGe.window
             naverage : @local::STM.HPGe.naverage
         }
         LaBr : {
@@ -161,11 +164,15 @@ STMDAQParameters : {
     }
 }
 HPGeDigitization : {
-    EnergyPerADCBin : 5 # keV/bin
+    EnergyPerADCBin : 0.5 # keV/bin
     PreamplifierNoiseSD : 0.32 # mV
     DecayConstant : 50 # us
     resetEventNumber : 31858
     microspillBufferLengthCount : 10
+    concatenation : {
+        STMWaveformDigisTag : "DigiHPGe:"
+        nMerge : 31858
+    }
 }
 
 # Normalization parameter determination studies
