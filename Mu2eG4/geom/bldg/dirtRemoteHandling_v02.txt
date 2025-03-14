@@ -1,11 +1,11 @@
 string dirt.remote.handling.name     = "dirtRemoteHandling";
 string dirt.remote.handling.material = "MBOverburden";
 double dirt.remote.handling.offsetFromMu2eOrigin.x   = 947.40;
-double dirt.remote.handling.offsetFromFloorSurface.y = 2120.85;
+double dirt.remote.handling.offsetFromFloorSurface.y = 2133.6;
 double dirt.remote.handling.offsetFromMu2eOrigin.z   = -3581.40;
 vector<int> dirt.remote.handling.xreplace ={9 ,10 };
 vector<int> dirt.remote.handling.yreplace ={8 ,9 };
-double dirt.remote.handling.yHalfThickness           = 2273.25;
+double dirt.remote.handling.yHalfThickness           = 2286;
 vector<double> dirt.remote.handling.xPositions = {
 -19681.30, // 0
 -18644.80, // 1
