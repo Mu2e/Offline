@@ -1,0 +1,25 @@
+string dirt.psArea.baselevel.name     = "dirtPsAreaBaselevel";
+string dirt.psArea.baselevel.material = "MBOverburden";
+double dirt.psArea.baselevel.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.psArea.baselevel.offsetFromFloorSurface.y = -685.70;
+double dirt.psArea.baselevel.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.psArea.baselevel.yreplace ={5 ,6 };
+double dirt.psArea.baselevel.yHalfThickness           = 533.30;
+vector<double> dirt.psArea.baselevel.xPositions = {
+-3022.70, // 0
+-6041.92, // 1
+-12022.20, // 2
+-12393.10, // 3
+-17853.60, // 4
+-17853.60, // 5
+-3022.70 // 6
+};
+vector<double> dirt.psArea.baselevel.yPositions = {
+-2387.70, // 0
+-2387.70, // 1
+-3836.65, // 2
+-2306.14, // 3
+-3649.67, // 4
+-60000.00, // 5
+-60000.00 // 6
+};
