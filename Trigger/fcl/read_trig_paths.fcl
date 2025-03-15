@@ -1,0 +1,24 @@
+# Read trigger paths and produce histograms of the cut-flow
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : readTriggerPaths
+
+services : @local::Services.Reco
+services.GeometryService.bFieldFile : "Offline/Mu2eG4/geom/bfgeom_reco_v01.txt"
+source: { module_type: RootInput }
+services.TFileService.fileName : "nts.user.read_trig_paths.sequencer.root"
+
+physics : {
+    analyzers : {
+        ReadTrigPath : {
+            module_type : ReadTriggerPath
+        }
+    }
+    e1            : [ ReadTrigPath ]
+    end_paths     : [      e1      ]
+    trigger_paths : [              ]
+}
+
+#include "Production/Validation/database.fcl"
