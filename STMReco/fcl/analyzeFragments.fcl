@@ -1,0 +1,41 @@
+#
+# Plot STMAnalyzeFragments
+#
+
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMReco/fcl/prolog.fcl"
+#include "Offline/STMReco/fcl/prolog_testbeam.fcl"
+
+process_name: STMAnalyzeFragments
+
+source : {
+  module_type : RootInput
+}
+
+services : {
+  @table::Services.Core
+  TFileService : { fileName : "stmAnalyzeFragments.root" }
+}
+
+physics: {
+  producers : {  }
+  filters : {  }
+  analyzers : {
+    plotSTMAnalyzeFragments : {
+      module_type : STMAnalyzeFragments
+      width_guess      : 150e-9
+      rise_time_guess  : 6e-9
+      threshold        : 20000
+      samp_freq        : 300e6
+      pulse_region     : 51
+      pulses_per_event : 2
+      analysis_dir     : "/home/mu2estm/sweetmor/pulses/)"
+      data_file        : "STM"
+    }
+  }
+  # setup paths
+  trigger_paths: [  ]
+  anaPath : [ plotSTMAnalyzeFragments ]
+  end_paths: [anaPath]
+}
+

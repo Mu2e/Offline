@@ -1,0 +1,56 @@
+# Run StrawAndCaloDigisFromFragments module to convert artdaq::Fragment collections
+# into TRK and CAL digi collections.
+# Usage: mu2e -c DAQ/test/generateDigiFromFragment.fcl -s <input art files> -n '-1'
+#
+#
+# Contact person G. Pezzullo
+process_name : STMDigiFromFragment
+
+source : {
+   module_type : RootInput
+   fileNames   : @nil
+
+   # firstEvent  : 500
+   maxEvents   : -1
+}
+
+
+physics : {
+
+   producers : {
+      makeSTMDigisHPGe : {
+         module_type : STMWaveformDigisFromFragments
+	 stmTag : "daq:STM"
+	 }
+   }
+
+   analyzers  : {
+
+   frag:
+      {	
+	module_type : FragmentWatcher
+	mode_bitmask : 7
+	}	     
+      #stm :
+      #{
+      #   module_type : STMPrintFragments
+      #}
+
+   }
+
+   t1 : [ makeSTMDigisHPGe ]
+   # e1 : [ stm, stmOutput ]
+   e1 : [ frag, stmOutput ]  
+
+   trigger_paths  : [t1]
+   end_paths      : [e1]
+
+}
+
+outputs : {
+   stmOutput : {
+      module_type : RootOutput
+      fileName : "dig.stm.art"
+      outputCommands : [ "drop *_*_*_*", "keep mu2e::STMWaveformDigis_*_*_*" ]
+   }
+}
