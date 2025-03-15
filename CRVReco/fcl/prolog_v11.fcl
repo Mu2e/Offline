@@ -21,8 +21,10 @@ BEGIN_PROLOG
       useDQMcollector                        : true
       crvDigiModuleLabel                     : "CrvDigi"
       crvDigiModuleLabelNZS                  : "CrvDigi"
-      crvRecoPulsesModuleLabel               : "CrvRecoPulses"
+      #crvRecoPulsesModuleLabel               : "CrvRecoPulses"
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
+      crvDaqErrorModuleLabel                 : "CrvDigi"
+      daqErrorModuleLabel                    : "genFrags"
     }
 
     CrvRecoPulses:

@@ -21,6 +21,8 @@
 #include <artdaq-core/Data/ContainerFragment.hh>
 #include <artdaq-core/Data/Fragment.hh>
 
+#include "Offline/RecoDataProducts/inc/DAQerror.hh"
+
 #include <iostream>
 
 #include <string>
@@ -83,7 +85,9 @@ art::ProcessDTCAndCFOEvents::ProcessDTCAndCFOEvents(
   if (config().makeCRVFrag() > 0) {
     produces<std::vector<mu2e::CRVDataDecoder>>();
   }
+
   produces<mu2e::EventHeader>();
+  produces<mu2e::DAQerrorCollection>();
 }
 
 // ----------------------------------------------------------------------
@@ -99,6 +103,7 @@ void art::ProcessDTCAndCFOEvents::produce(Event& event) {
       new std::vector<mu2e::TrackerDataDecoder>);
   std::unique_ptr<std::vector<mu2e::CRVDataDecoder>> crvFragColl(new std::vector<mu2e::CRVDataDecoder>);
   std::unique_ptr<mu2e::EventHeader> evtHdr(new mu2e::EventHeader);
+  std::unique_ptr<mu2e::DAQerrorCollection> daqErrors(new mu2e::DAQerrorCollection);
 
   artdaq::Fragments fragments;
   artdaq::FragmentPtrs containerFragments;
@@ -139,7 +144,7 @@ void art::ProcessDTCAndCFOEvents::produce(Event& event) {
 
   size_t nFrags(0);
 
-  for (const auto& frag : fragments) {
+  for (size_t fragIdx=0; const auto& frag : fragments) {
     mu2e::DTCEventFragment bb(frag);
 
     if (makeTrkFrag_ > 0) { // TRACKER
@@ -170,6 +175,21 @@ void art::ProcessDTCAndCFOEvents::produce(Event& event) {
         ++nFrags;
       }
     }
+
+    const DTCLib::DTC_Event &dtcEvent =  bb.getData();
+    const std::vector<DTCLib::DTC_SubEvent> &dtcSubEvents = dtcEvent.GetSubEvents();
+    size_t expectedSize = dtcEvent.GetEventByteCount();
+    size_t actualSize = sizeof(DTCLib::DTC_EventHeader);
+    for(size_t iSubEvent=0; iSubEvent<dtcSubEvents.size(); ++iSubEvent) actualSize+=dtcSubEvents.at(iSubEvent).GetSubEventByteCount();
+    if(diagLevel_ > 0)
+    {
+      std::cout << "[ProcessDTCAndCFOEvents::produce] expected event size: " << expectedSize << ", actual event size: " << actualSize << std::endl;
+    }
+    if(expectedSize!=actualSize)
+    {
+      std::cerr << "[ProcessDTCAndCFOEvents::produce] mismatch between expected event size and actual event size!" << std::endl;
+      daqErrors->emplace_back(mu2e::DAQerrorCode::byteCountMismatch,fragIdx);
+    }
   }
 
   if ( (diagLevel_ > 0) && (nFrags == 0)) {
@@ -191,8 +211,7 @@ void art::ProcessDTCAndCFOEvents::produce(Event& event) {
     event.put(std::move(crvFragColl));
   }
   event.put(std::move(evtHdr));
-
-
+  event.put(std::move(daqErrors));
 } // produce()
 
 // ======================================================================

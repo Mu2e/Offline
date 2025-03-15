@@ -28,33 +28,26 @@ namespace art
 
 using art::CRVDigisFromDataDecoders;
 
-// ======================================================================
-
 class art::CRVDigisFromDataDecoders : public EDProducer
 {
   public:
   struct Config
   {
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
-    fhicl::Atom<art::InputTag> CRVDataDecodersTag{fhicl::Name("crvTag"),
-                                               fhicl::Comment("crv Fragments Tag")};
+    fhicl::Atom<art::InputTag> CRVDataDecodersTag{fhicl::Name("crvTag"), fhicl::Comment("crv Fragments Tag")};
   };
 
-  // --- C'tor/d'tor:
   explicit CRVDigisFromDataDecoders(const art::EDProducer::Table<Config>& config);
   ~CRVDigisFromDataDecoders() override {}
 
-  // --- Production:
-  void produce(Event&) override;
+  void produce(art::Event&) override;
 
   private:
   int                                      _diagLevel;
   art::InputTag                            _CRVDataDecodersTag;
   mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
 
-}; // CRVDigisFromDataDecoders
-
-// ======================================================================
+};
 
 CRVDigisFromDataDecoders::CRVDigisFromDataDecoders(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}, _diagLevel(config().diagLevel()), _CRVDataDecodersTag(config().CRVDataDecodersTag())
@@ -63,8 +56,6 @@ CRVDigisFromDataDecoders::CRVDigisFromDataDecoders(const art::EDProducer::Table<
   produces<mu2e::CrvDigiCollection>("NZS");
   produces<mu2e::CrvDAQerrorCollection>();
 }
-
-// ----------------------------------------------------------------------
 
 void CRVDigisFromDataDecoders::produce(Event& event)
 {
@@ -75,9 +66,7 @@ void CRVDigisFromDataDecoders::produce(Event& event)
 
   if(_diagLevel>1)
   {
-    std::cout << std::dec << "Producer: Run " << event.run() << ", subrun " << event.subRun()
-              << ", event " << eventNumber << " has " << std::endl;
-    std::cout << nSubEvents << " CRV SubEvents." << std::endl;
+    std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
 
     size_t totalSize = 0;
     for(const auto &frag : *CRVDataDecoders)
@@ -89,7 +78,8 @@ void CRVDigisFromDataDecoders::produce(Event& event)
       }
     }
 
-    std::cout << "\tTotal Size: " << (int)totalSize << " bytes." << std::endl;
+    std::cout << "#SubEvents: " << nSubEvents << std::endl;
+    std::cout << "Total Size: " << totalSize << " bytes." << std::endl;
   }
 
   // Collection of CrvDigis for the event
@@ -185,15 +175,15 @@ void CRVDigisFromDataDecoders::produce(Event& event)
 
         if(_diagLevel>2)
         {
-          std::cout << "EventWindowTag (TDC header): "
-                    << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
+          std::cout << "EventWindowTag (TDC header): " << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
           std::cout << "SubsystemID: " << (uint16_t)header->GetSubsystemID() << std::endl;
           std::cout << "DTCID: " << (uint16_t)header->GetID() << std::endl;
-          std::cout << "ROCID: " << (uint16_t)header->GetLinkID() << std::endl;
+          std::cout << "ROCID (TDC header): " << (uint16_t)header->GetLinkID() << std::endl;
           std::cout << "packetCount: " << header->GetPacketCount() << std::endl;
           std::cout << "EVB mode: " << (uint16_t)header->GetEVBMode() << std::endl;
           std::cout << "TriggerCount: " << crvRocHeader->TriggerCount << std::endl;
           std::cout << "ActiveFEBFlags: " << crvRocHeader->GetActiveFEBFlags() << std::endl;
+          std::cout << "MicroBunchStatus: " << std::hex << (uint16_t)crvRocHeader->MicroBunchStatus << std::dec << std::endl;
           std::cout << "ROCID (ROC header): " << (uint16_t)crvRocHeader->ControllerID  << std::endl;
           std::cout << "EventWindowTag (ROC header): " << crvRocHeader->GetEventWindowTag() << std::endl;
         }
@@ -235,9 +225,6 @@ void CRVDigisFromDataDecoders::produce(Event& event)
   event.put(std::move(crv_digis));
   event.put(std::move(crv_digis_NZS),"NZS");
   event.put(std::move(crv_daq_errors));
-
-} // produce()
-
-// ======================================================================
+}
 
 DEFINE_ART_MODULE(CRVDigisFromDataDecoders)
