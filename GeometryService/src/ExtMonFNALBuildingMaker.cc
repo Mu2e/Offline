@@ -86,15 +86,17 @@ namespace mu2e {
 
     // Get relevant Hall solid
     ExtrudedSolid extMonRoomWall = hall.getBldgSolid("extMonExteriorWall");
+    ExtrudedSolid extMonRoomWallE = hall.getBldgSolid("extMonExteriorWallE");
     const CLHEP::Hep3Vector& offset = extMonRoomWall.getOffsetFromMu2eOrigin();
     // Get corner coordinates of extinction monitor room
     const auto & roomVertices = extMonRoomWall.getVertices();
+    const auto & roomVerticesE = extMonRoomWallE.getVertices();
     const double xfront = roomVertices[0][1]+offset[0];
     const double zfront = roomVertices[0][0]+offset[2];
     const double xback = roomVertices[1][1]+offset[0];
     const double zback = roomVertices[1][0]+offset[2];
-    const double xScorner = roomVertices[9][1]+offset[0];
-    const double zScorner = roomVertices[9][0]+offset[2];
+    const double xScorner = roomVerticesE[1][1]+offset[0];
+    const double zScorner = roomVerticesE[1][0]+offset[2];
     const double roomLength = sqrt((zfront-zback)*(zfront-zback)+(xfront-xback)*(xfront-xback));
     const double roomWidth = sqrt((zfront-zScorner)*(zfront-zScorner)+(xfront-xScorner)*(xfront-xScorner));
 
@@ -136,12 +138,12 @@ namespace mu2e {
     emfb->shieldingNCenterInMu2e_[0] = xfront + (dxdL*steelLength + dzdL*steelwidthN)/2.0;
     emfb->shieldingNCenterInMu2e_[1] = emfb->roomInsideYmin_ + layerHeight/2.0;
     emfb->shieldingNCenterInMu2e_[2] = zfront + (dzdL*steelLength - dxdL*steelwidthN)/2.0;
-
-    emfb->shieldingSCenterInMu2e_[0] = xScorner + (dxdL*steelLength - dzdL*steelwidthS)/2.0;
+    const double safety_gap=0.1; // 100 microns
+    emfb->shieldingSCenterInMu2e_[0] = xScorner + (dxdL*steelLength - dzdL*steelwidthS)/2.0+safety_gap; // SDF add safety gap
     emfb->shieldingSCenterInMu2e_[1] = emfb->roomInsideYmin_ + layerHeight/2.0;
-    emfb->shieldingSCenterInMu2e_[2] = zScorner + (dzdL*steelLength + dxdL*steelwidthS)/2.0;
+    emfb->shieldingSCenterInMu2e_[2] = zScorner + (dzdL*steelLength + dxdL*steelwidthS)/2.0-7.*safety_gap; // SDF add safety gap
 
-    emfb->shieldingBCenterInMu2e_[0] = xfront + (dxdL*(magnetRoomLength+steelLength) + dzdL*roomWidth)/2.0;
+    emfb->shieldingBCenterInMu2e_[0] = xfront + (dxdL*(magnetRoomLength+steelLength) + dzdL*roomWidth)/2.0+safety_gap; // SDF add safety gap
     emfb->shieldingBCenterInMu2e_[1] = emfb->roomInsideYmin_ + layerHeight/2.0;
     emfb->shieldingBCenterInMu2e_[2] = zfront + (dzdL*(magnetRoomLength+steelLength) - dxdL*roomWidth)/2.0;
 
@@ -156,7 +158,7 @@ namespace mu2e {
     emfb->shieldingSHalfSize_[2] = steelLength/2.0;
 
     emfb->shieldingBHalfSize_.resize(3);
-    emfb->shieldingBHalfSize_[0] = roomWidth/2.0;
+    emfb->shieldingBHalfSize_[0] = roomWidth/2.0-safety_gap;// SDF add safety gap
     emfb->shieldingBHalfSize_[1] = layerHeight/2.0;
     emfb->shieldingBHalfSize_[2] = (magnetRoomLength-steelLength)/2.0-2;
 

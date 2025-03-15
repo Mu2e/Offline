@@ -49,9 +49,8 @@ namespace mu2e
       fhicl::Atom<bool> useDQMcollector{Name("useDQMcollector"), Comment("fill DQM values, histograms, ...")};
       fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("label of CrvDigi module")};
       fhicl::Atom<std::string> crvDigiModuleLabelNZS{Name("crvDigiModuleLabelNZS"), Comment("label of CrvDigi NZS module")};
-      fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("label of CrvReco module")};
-      fhicl::Atom<std::string> crvCoincidenceClusterFinderModuleLabel{Name("crvCoincidenceClusterFinderModuleLabel"),
-                                                                      Comment("label of CoincidenceClusterFinder module")};
+      //fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("label of CrvReco module")};
+      fhicl::Atom<std::string> crvCoincidenceClusterFinderModuleLabel{Name("crvCoincidenceClusterFinderModuleLabel"), Comment("label of CoincidenceClusterFinder module")};
       fhicl::Atom<std::string> crvDaqErrorModuleLabel{Name("crvDaqErrorModuleLabel"), Comment("label of module that found the CRV-DAQ errors")};
       fhicl::Atom<std::string> daqErrorModuleLabel{Name("daqErrorModuleLabel"), Comment("label of module that found the DAQ errors")};
     };
@@ -272,7 +271,7 @@ namespace mu2e
     if(daqErrorCollection->size()>0) ++_totalEventsWithDAQerrors;
     else
     {
-      for(size_t i=0; i<crvDaqErrorCollection->size()>0; ++i)
+      for(size_t i=0; i<crvDaqErrorCollection->size(); ++i)
       {
         if(crvDaqErrorCollection->at(i).GetErrorCode()!=mu2e::CrvDAQerrorCode::wrongSubsystemID)  //don't count this error
         {

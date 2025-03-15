@@ -1,89 +1,78 @@
-// Feb 2025
-// dirtPsAreaDirtSlabN splitted into 2 volumes to accommodate PSH Steel Shielding
 string dirt.psArea.dirtSlab.N2.name     = "dirtPsAreaDirtSlabN2";
-
 string dirt.psArea.dirtSlab.N2.material = "CA7Backfill";
-
-double dirt.psArea.dirtSlab.N2.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.psArea.dirtSlab.N2.offsetFromFloorSurface.y = 6312.0003;
-double dirt.psArea.dirtSlab.N2.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.psArea.dirtSlab.N2.yHalfThickness           = 216.0003;
-
-vector<int>    dirt.psArea.dirtSlab.N2.xreplace   = { 20, 21 };
+double dirt.psArea.dirtSlab.N2.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.psArea.dirtSlab.N2.offsetFromFloorSurface.y = 6312.00;
+double dirt.psArea.dirtSlab.N2.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.psArea.dirtSlab.N2.xreplace ={20 ,21 };
+vector<int> dirt.psArea.dirtSlab.N2.yreplace ={21 ,22 };
+double dirt.psArea.dirtSlab.N2.yHalfThickness           = 216.00;
 vector<double> dirt.psArea.dirtSlab.N2.xPositions = {
-  -1270,   // c
-  -4140.2,   // P1
-  -4140.2,    // P0
-  -4749.8,    // P1
-  -4749.8,    // P2
-  -11709.4,   // P3
-  -11709.4,   // P3a
-  -12319,     // P3b
-  -12319,     // S1
-  -15367,     //-12750.8,   // S2
-  -15367,     //-12750.8,   // S3
-  -12319,     // S4
-  -12318.9,   // P3d
-  -12343.4,   // P3e
-  -12319.3,   // P3f
-  -15857.5,   // Meet up with dirtExtMon
-  -15954.5,   // NW corner of southern part of dirtExtMon
-  -15361.7,   // SW corner extMonCeiling
-  -16446,     // NW corner extMonCeiling
-  -17037.6,   // e
-  -50000,   // e_to_W
-  -50000,   // NWcorner
-  -1270,   // c_to_N
-  -1270,   // Down to NRetWall
-  -12319,  // NW corner NRetWall
-  -12319,  // NE corner WextWallFoot
-  -14706.6,// top elbow WextWallFoot
-  -20628.71,// NW corner WextWallFoot
-  -19761.22,// SW corner WextWallFoot
-  -14503.4,// bot elbow WextWallFoot
-  -12319,  // SE corner WextWallFoot
-  -12319,  // SW corner NRetWall
-  -1270    // c to N
+-1270.00, // 0
+-4140.20, // 1
+-4140.20, // 2
+-4749.80, // 3
+-4749.80, // 4
+-11709.40, // 5
+-11709.40, // 6
+-12319.00, // 7
+-12319.00, // 8
+-15367.00, // 9
+-15367.00, // 10
+-12319.02, // 11
+-12319.02, // 12
+-12318.90, // 13
+-12294.80, // 14
+-16359.75, // 15
+-16456.15, // 16
+-15863.94, // 17
+-16948.31, // 18
+-17540.45, // 19
+-50000.00, // 20
+-50000.00, // 21
+-1270.00, // 22
+-1270.00, // 23
+-12319.00, // 24
+-12319.00, // 25
+-14706.60, // 26
+-20628.71, // 27
+-19761.22, // 28
+-14503.40, // 29
+-12319.00, // 30
+-12319.00, // 31
+-1270.00 // 32
 };
-
-vector<int>    dirt.psArea.dirtSlab.N2.yreplace   = { 21, 22 };
 vector<double> dirt.psArea.dirtSlab.N2.yPositions = {
-  2438.4,   // c
-  2438.4,   // P1
-  6858,   // P0
-  6858,   // P1
-  6502.4,   // P2
-  6502.4,   // P3
-  6858,     // P3a
-  6858,     // P3b
-  5279.3,   // S1
-  5279.3,   // S2
-  -354.1,   // S3
-  -354.1,   // S4
-  -2091.9,  // P3d
-  -2096.1,  // P3e
-  -2194.8,  // P3f
-  -3057.63,   // Meet extMonDirt
-  -2660.36,   // NW corner of southern part of dirtExtMon
-  -2518.25,   // SW corner extMonCeiling
-  1923.3,     // NW corner extMonCeiling
-  1776.25,   // e
-  1776.25,   // e_to_W
-  50000,     // NWcorner
-  50000,     // c_to_N
-  10312.41,  // Down to NRetWall
-  10312.41,  // NW corner NRetWall
-  10922.01,  // NE corner WextWallFoot
-  10922.01,  // top of elbow
-  9476.19,   // NW corner WextWallFoot
-  5922.91,   // SW corner WextWallFoot
-  7264.39,   // bot of elbow
-  7264.39,   // SE corner WextWallFoot
-  9702.79,   // SW corner NRetWall
-  9702.79    // c to N
+2438.40, // 0
+2438.40, // 1
+6858.00, // 2
+6858.00, // 3
+6502.40, // 4
+6502.40, // 5
+6858.00, // 6
+6858.00, // 7
+5279.30, // 8
+5279.30, // 9
+-354.10, // 10
+-354.10, // 11
+-2091.90, // 12
+-2091.95, // 13
+-2190.65, // 14
+-3180.25, // 15
+-2785.45, // 16
+-2640.92, // 17
+1800.87, // 18
+1656.29, // 19
+1656.29, // 20
+50000.00, // 21
+50000.00, // 22
+10312.41, // 23
+10312.41, // 24
+10922.01, // 25
+10922.01, // 26
+9476.19, // 27
+5922.91, // 28
+7264.39, // 29
+7264.39, // 30
+9702.79, // 31
+9702.79 // 32
 };
-
-// Local Variables:
-// mode:c++
-// End:

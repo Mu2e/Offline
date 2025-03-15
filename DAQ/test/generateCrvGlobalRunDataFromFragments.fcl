@@ -24,17 +24,15 @@ physics :
   {
     genFrags :
     {
-       module_type  : ArtFragmentsFromDTCEvents
+       module_type  : ProcessDTCAndCFOEvents
        diagLevel    : 0
        makeCaloFrag : 0
        makeTrkFrag  : 0
        makeCRVFrag  : 1
-       makeSTMFrag  : 0
-
     }
     CrvGlobalRunData :
     {
-      module_type : CrvGlobalRunDataFromFragments
+      module_type : CRVGlobalRunDataFromDataDecoders
       crvTag      : "genFrags"
       diagLevel   : 10
       csvFileName : "crvGlobalRun.txt"
