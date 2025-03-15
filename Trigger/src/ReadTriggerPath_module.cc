@@ -56,19 +56,11 @@ namespace mu2e {
       kNTrigInfo = 20 //histogram sets
     };
 
-    // basic trigger information
-    struct trigInfo_ {
-      int           counts;
-      int           exclusive_counts;
-      std::string   label;
-
-      trigInfo_ ():counts(0), exclusive_counts(0), label(""){}
-    };
-
     // summary information about all triggers
     struct summaryInfoHist_ {
       TH1* _hTrigIndices; //trigger path indices that are firing
       TH1* _hTrigBits   ; //trigger path bits that are firing
+      TH1* _hTrigPaths  ; //trigger path names that are firing
       TH2* _hTrig2D     ; //trigger path acceptance correlation
       TH1* _hNPOT       ; //N(POT) without cuts, matching TrigPOTEff binning
       TH1* _hTrigInfo   [kNTrigInfo   ]; //1D trigger information
@@ -79,6 +71,7 @@ namespace mu2e {
         // initialize each histogram to null
         _hTrigIndices = nullptr;
         _hTrigBits    = nullptr;
+        _hTrigPaths   = nullptr;
         _hTrig2D      = nullptr;
         _hNPOT        = nullptr;
         for (int i = 0; i < kNTrigInfo; ++i) {
@@ -95,8 +88,7 @@ namespace mu2e {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
       fhicl::Atom<int>               diagLevel          {Name("diagLevel"          ), Comment("turn tool on or off"                       ), 0 };
-      fhicl::Sequence<std::string>   triggerPaths       {Name("triggerPaths"       ), Comment("Trigger path list"                         ), std::vector<std::string>()};
-      fhicl::Atom<size_t>            nMaxTrig           {Name("nPathIDs"           ), Comment("Number of trigger paths"                   ), 100};
+      fhicl::Sequence<std::string>   ignorePaths        {Name("ignorePaths"        ), Comment("Path tags to ignore in overlap/rejection"  ), {"Path"}}; //non-trigger paths typically contain "Path"
       fhicl::Atom<art::InputTag>     genCountTag        {Name("genCount"           ), Comment("GenEventCount label"                       ), "genCounter" };
       fhicl::Atom<art::InputTag>     PBITag             {Name("PBITag"             ), Comment("ProtonBunchIntensity label"                ), "PBISim" };
       fhicl::Atom<std::string>       processName        {Name("processName"        ), Comment("globalTrigger"                             ), ""  };
@@ -131,18 +123,16 @@ namespace mu2e {
 
   private:
     int                       _diagLevel;
-    std::vector<std::string>  _inputTrigPaths;
-    size_t                    _nMaxTrig;
-    std::vector<std::string>  _trigPaths;
+    std::vector<std::string>  _ignorePaths;
     art::InputTag             _genCountTag;
     art::InputTag             _PBITag;
-
     std::string               _processName;
+
+    size_t                    _nMaxTrig;
+    std::vector<std::string>  _trigPaths;
+
     int                       _nProcess;
     double                    _nPOT;
-
-    std::vector<trigInfo_>    _trigAll;
-    std::vector<trigInfo_>    _trigFinal;
 
     summaryInfoHist_          _sumHist;
 
@@ -154,24 +144,25 @@ namespace mu2e {
   ReadTriggerPath::ReadTriggerPath(const art::EDAnalyzer::Table<Config>& config):
     art::EDAnalyzer{config},
     _diagLevel           (config() .diagLevel()      ),
-    _inputTrigPaths      (config() .triggerPaths()   ),
-    _nMaxTrig            ((_inputTrigPaths.size() == 0) ? config().nMaxTrig() : _inputTrigPaths.size()),
+    _ignorePaths         (config() .ignorePaths()    ),
     _genCountTag         (config() .genCountTag()    ),
     _PBITag              (config() .PBITag()         ),
     _processName         (config() .processName()    ),
+    _nMaxTrig            (0                          ),
     _nProcess            (0                          ),
     _minPOT              (0.                         ),
     _maxPOT              (2.0e8                      )
   {
     if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
-    _trigAll.  resize(_nMaxTrig);
-    _trigFinal.resize(_nMaxTrig);
   }
 
   //--------------------------------------------------------------------------------//
   // Initialize all output histograms
   void ReadTriggerPath::bookHistograms() {
     if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
+    _nMaxTrig = _trigPaths.size();
+    if(_nMaxTrig > kMaxTriggers) throw cet::exception("BADCONFIG") << __func__ << ": Input trigger path list size (" << _nMaxTrig << ") is larger than the maximum ("
+                                                                   << kMaxTriggers << ")\n";
     art::ServiceHandle<art::TFileService> tfs;
     bookTrigInfoHist(tfs, _sumHist);
   }
@@ -181,15 +172,16 @@ namespace mu2e {
     if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
     art::TFileDirectory trigInfoDir = Tfs->mkdir("trigInfo");
     const int max_bits = 1000;
-    Hist._hTrigBits      = trigInfoDir.make<TH1F>("hTrigBits"         , "Trigger bits"           , max_bits    , -0.5, max_bits-0.5);
-    Hist._hTrigIndices   = trigInfoDir.make<TH1F>("hTrigIndices"      , "Trigger indices"        , kMaxTriggers, -0.5, float(kMaxTriggers)-0.5);
+    Hist._hTrigBits      = trigInfoDir.make<TH1F>("hTrigBits"         , "Trigger bits"           ,  max_bits, -0.5, max_bits-0.5);
+    Hist._hTrigPaths     = trigInfoDir.make<TH1F>("hTrigPaths"        , "Trigger paths"          , _nMaxTrig, -0.5, float(_nMaxTrig)-0.5);
+    Hist._hTrigIndices   = trigInfoDir.make<TH1F>("hTrigIndices"      , "Trigger indices"        , _nMaxTrig, -0.5, float(_nMaxTrig)-0.5);
 
-    Hist._hTrigInfo[0]  = trigInfoDir.make<TH1F>("hTrigEff"           , "Trigger efficiencies"   , kMaxTriggers, -0.5, float(kMaxTriggers)-0.5);
-    Hist._hTrigInfo[1]  = trigInfoDir.make<TH1F>("hTrigRej"           , "Trigger rejections"     , kMaxTriggers, -0.5, float(kMaxTriggers)-0.5);
-    Hist._hTrigInfo[2]  = trigInfoDir.make<TH1F>("hGlobalTrigEff"     , "Trigger efficiencies"   ,           10, -0.5, 9.5);
-    Hist._hTrigInfo[3]  = trigInfoDir.make<TH1F>("hGlobalTrigRej"     , "Trigger rejections"     ,           10, -0.5, 9.5);
-    Hist._hTrigInfo[4]  = trigInfoDir.make<TH1F>("hExclusiveTrigEff"  , "Exclusive trigger eff." , kMaxTriggers, -0.5, float(kMaxTriggers)-0.5);
-    Hist._hTrigInfo[5]  = trigInfoDir.make<TH1F>("hExclusiveTrigRej"  , "Exclusive trigger rej." , kMaxTriggers, -0.5, float(kMaxTriggers)-0.5);
+    Hist._hTrigInfo[0]  = trigInfoDir.make<TH1F>("hTrigEff"           , "Trigger efficiencies"   , _nMaxTrig, -0.5, float(_nMaxTrig)-0.5);
+    Hist._hTrigInfo[1]  = trigInfoDir.make<TH1F>("hTrigRej"           , "Trigger rejections"     , _nMaxTrig, -0.5, float(_nMaxTrig)-0.5);
+    Hist._hTrigInfo[2]  = trigInfoDir.make<TH1F>("hGlobalTrigEff"     , "Trigger efficiencies"   ,        10, -0.5, 9.5);
+    Hist._hTrigInfo[3]  = trigInfoDir.make<TH1F>("hGlobalTrigRej"     , "Trigger rejections"     ,        10, -0.5, 9.5);
+    Hist._hTrigInfo[4]  = trigInfoDir.make<TH1F>("hExclusiveTrigEff"  , "Exclusive trigger eff." , _nMaxTrig, -0.5, float(_nMaxTrig)-0.5);
+    Hist._hTrigInfo[5]  = trigInfoDir.make<TH1F>("hExclusiveTrigRej"  , "Exclusive trigger rej." , _nMaxTrig, -0.5, float(_nMaxTrig)-0.5);
 
     const int npot_bins(200);
     Hist._hNPOT         = trigInfoDir.make<TH1F>("hNPOT"              , "N(POT);N(POT)/#mu-bunch", npot_bins, _minPOT, _maxPOT);
@@ -278,7 +270,6 @@ namespace mu2e {
       for (auto module : modules) passed |= isCaloFilter(module);
     } else { // use the path name to determine if it's a calo-only path
       passed |= path.find("calo") != std::string::npos;
-      passed |= path.find("cst") != std::string::npos;
       passed &= !(isTrackPath(path, trigNavig) || isHelixPath(path, trigNavig));
     }
     return passed;
@@ -318,26 +309,20 @@ namespace mu2e {
       auto modules = trigNavig.triggerModules(path);
       auto size = modules.size();
       if(size > 0) {
-        for(unsigned i = 0; i <= size; ++i) {
+        for(unsigned i = 0; i < size; ++i) {
           h->GetXaxis()->SetBinLabel(h->FindBin(i), (i < size) ? modules[i].c_str() : "Final");
         }
       }
     }
 
     // cut-flow along the trigger path
-    for (unsigned i = 0; i <= lastModule ; ++i) h->Fill(i);
+    for (unsigned i = 0; i < lastModule ; ++i) h->Fill(i);
   }
 
 
   //--------------------------------------------------------------------------------//
   void ReadTriggerPath::beginJob() {
     if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
-
-    // Validate that the input collection sizes don't exceed the maxima
-    if(_nMaxTrig > kMaxTriggers) throw cet::exception("BADCONFIG") << "Number of triggers assumed " << _nMaxTrig << " is greater than the maximum " << kMaxTriggers << "\n";
-
-    // Initialize the output histograms
-    bookHistograms();
   }
 
   //--------------------------------------------------------------------------------//
@@ -445,7 +430,6 @@ namespace mu2e {
     if(PBIH.isValid()) _nPOT = PBIH.product()->intensity();
     else _nPOT  = -1.;
     if(_diagLevel > 1) printf("[ReadTriggerPath::%s] N(POT) = %.2e\n", __func__, _nPOT);
-    _sumHist._hNPOT->Fill(_nPOT);
 
     //get the TriggerResult
     std::ostringstream oss;
@@ -459,6 +443,9 @@ namespace mu2e {
     //now set the value of _trigPaths
     _trigPaths = trigNavig.getTrigPaths();
 
+    //check if the histograms have been initialized
+    if(!_sumHist._hTrigInfo[0]) bookHistograms();
+
     if(_trigPaths.size() > _nMaxTrig) throw cet::exception("BADCONFIG") << "Number of triggers assumed (" << _nMaxTrig << ") is less than the observed (" << _trigPaths.size() << ")\n";
 
     //initialize bin labels
@@ -471,6 +458,7 @@ namespace mu2e {
         _sumHist._hTrigInfo[5]->GetXaxis()->SetBinLabel(_sumHist._hTrigInfo[5]->FindBin(i), path.c_str());
         _sumHist._hTrig2D     ->GetXaxis()->SetBinLabel(_sumHist._hTrig2D->GetXaxis()->FindBin(i), path.c_str());
         _sumHist._hTrig2D     ->GetYaxis()->SetBinLabel(_sumHist._hTrig2D->GetYaxis()->FindBin(i), path.c_str());
+        _sumHist._hTrigPaths  ->Fill(path.c_str(), 0.);
       }
     }
     if(_sumHist._hTrigInfo[2]->Integral() <= 0.) {
@@ -482,6 +470,7 @@ namespace mu2e {
     }
 
     //fill the histogram with the accepted trigger bits
+    _sumHist._hNPOT->Fill(_nPOT);
     bool passed(false), track_passed(false), helix_passed(false), calo_passed(false), minbias_passed(false), unknown(false);
     unsigned naccept(0), exclusive_idx(-1);
     for (unsigned i=0; i< trigNavig.getTrigPaths().size(); ++i) {
@@ -495,31 +484,35 @@ namespace mu2e {
       if(trigNavig.accepted(path)) {
         _sumHist._hTrigBits->Fill(trigNavig.findTrigPathID(path));
         _sumHist._hTrigIndices->Fill(trigNavig.findTrigPath(path));
+        _sumHist._hTrigPaths  ->Fill(path.c_str(), 1.);
+        // _sumHist._hTrigPaths  ->Fill(i);
         _sumHist._hTrigInfo[0]->Fill(i);
         _sumHist._hTrigInfo[1]->Fill(i);
         if(_sumHist._hTrigPOTEff[i]->GetEntries() == 0) _sumHist._hTrigPOTEff[i]->SetTitle(Form("%s Eff. vs. N(POT);N(POT);#epsilon", path.c_str()));
         _sumHist._hTrigPOTEff[i]->Fill(_nPOT);
-        passed |= path.find("Path") == std::string::npos; //label for standard processing paths, not for triggers
-        if(passed) {
+        bool skip_exclusive = false;
+        for(auto tag : _ignorePaths) skip_exclusive |= path.find(tag) != std::string::npos;
+        if(!skip_exclusive) {
           ++naccept;
           exclusive_idx = i;
         }
-        const bool is_track   = isTrackPath  (path, trigNavig);
-        const bool is_helix   = isHelixPath  (path, trigNavig);
-        const bool is_calo    = isCaloPath   (path, trigNavig);
-        const bool is_minbias = isMinBiasPath(path);
+        const bool is_track   = isTrackPath  (path, trigNavig) && !skip_exclusive;
+        const bool is_helix   = isHelixPath  (path, trigNavig) && !skip_exclusive;
+        const bool is_calo    = isCaloPath   (path, trigNavig) && !skip_exclusive;
+        const bool is_minbias = isMinBiasPath(path) && !skip_exclusive;
+        passed         |= skip_exclusive;
         track_passed   |= is_track;
         helix_passed   |= is_helix;
         calo_passed    |= is_calo;
         minbias_passed |= is_minbias;
-        unknown |= passed && !(is_track || is_helix || is_calo || is_minbias);
+        unknown |= !(is_track || is_helix || is_calo || is_minbias || skip_exclusive);
         if(is_track + is_helix + is_calo + is_minbias > 1) {
           if(_diagLevel > -1) printf("[ReadTriggerPath::%s] Path %s identified as multiple types: track = %o helix = %o calo = %o minbias = %o\n",
                                      __func__, path.c_str(), is_track, is_helix, is_calo, is_minbias);
         }
         //Fill the correlation matrix
         for (unsigned j=0; j < trigNavig.getTrigPaths().size(); ++j) {
-          if(trigNavig.accepted(trigNavig.getTrigPathName(j))) _sumHist._hTrig2D->Fill(i,j);
+          if(trigNavig.accepted(trigNavig.getTrigPathName(j)) && !skip_exclusive) _sumHist._hTrig2D->Fill(i,j);
         }
       }
 
