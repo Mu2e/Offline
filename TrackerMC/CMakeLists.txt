@@ -1,13 +1,15 @@
 cet_make_library(
     SOURCE
+      src/AnalogWireSignal.cc
       src/StrawCluster.cc
       src/StrawClusterSequence.cc
       src/StrawClusterSequencePair.cc
       src/StrawDigiBundle.cc
       src/StrawDigiBundleCollection.cc
       src/StrawWaveform.cc
+      src/TruncatedSinusoid.cc
     LIBRARIES PUBLIC
-      
+
       Offline::ConditionsService
       Offline::DataProducts
       Offline::MCDataProducts
@@ -20,7 +22,7 @@ cet_build_plugin(MakeMCKalSeed art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::TrackerMC
-      
+
       Offline::BFieldGeom
       Offline::ConditionsService
       Offline::GeometryService
@@ -35,7 +37,7 @@ cet_build_plugin(MakeStrawGasSteps art::module
     REG_SOURCE src/MakeStrawGasSteps_module.cc
     LIBRARIES REG
       Offline::TrackerMC
-      
+
       Offline::BFieldGeom
       Offline::GeometryService
       Offline::GlobalConstantsService
@@ -46,11 +48,18 @@ cet_build_plugin(MakeStrawGasSteps art::module
       Offline::TrackerGeom
 )
 
+cet_build_plugin(PoissonTrackerNoise art::module
+    REG_SOURCE src/PoissonTrackerNoise_module.cc
+    LIBRARIES REG
+      Offline::TrackerMC
+      Offline::SeedService
+)
+
 cet_build_plugin(StrawDigisFromStrawGasSteps art::module
     REG_SOURCE src/StrawDigisFromStrawGasSteps_module.cc
     LIBRARIES REG
       Offline::TrackerMC
-      
+
       Offline::BFieldGeom
       Offline::ConditionsService
       Offline::ConfigTools
@@ -63,6 +72,12 @@ cet_build_plugin(StrawDigisFromStrawGasSteps art::module
       Offline::SeedService
       Offline::TrackerConditions
       Offline::TrackerGeom
+)
+
+cet_build_plugin(TruncatedSinusoidTool art::tool
+    REG_SOURCE src/TruncatedSinusoidTool_tool.cc
+    LIBRARIES REG
+      Offline::TrackerMC
 )
 
 art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults

@@ -30,6 +30,7 @@ namespace mu2e {
       constexpr static uint16_t _facemsk = 0x80; // mask for face field
       constexpr static uint16_t _facesft = 7; // shift for face field
       constexpr static uint16_t _planemsk = 0xFC00; // mask for plane field
+      constexpr static uint16_t _stplanemsk = 0xC00; // mask for plane stereo angle
       constexpr static uint16_t _planesft = 10; // shift for plane field
       constexpr static uint16_t _stationmsk = 0xF800; // mask for station field
       constexpr static uint16_t _stationsft = 11; // shift for station field
@@ -132,6 +133,14 @@ namespace mu2e {
 
       uint16_t uniquePanel() const{
         return plane()*_npanels + panel();
+      }
+      // the following returns a unique, contiguous number for each panel in a station at a particular azimuth
+      // see docdb 888 table 4 for details
+      uint16_t stereoPanel() const{
+        uint16_t retval =  panel();
+        uint16_t stplane = (_sid & _stplanemsk) >> _planesft;
+        if(stplane >0 && stplane < 3)retval += _npanels;
+        return retval;
       }
 
       uint16_t straw() const{

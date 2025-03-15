@@ -20,7 +20,7 @@ cet_build_plugin(MergeTriggerInfo art::module
 cet_build_plugin(PrescaleEvent art::module
     REG_SOURCE src/PrescaleEvent_module.cc
     LIBRARIES REG
-      artdaq_core_mu2e::artdaq-core-mu2e_Data
+      artdaq-core-mu2e::Data
 )
 
 cet_build_plugin(ReadTriggerInfo art::module

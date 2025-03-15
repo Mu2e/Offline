@@ -82,6 +82,8 @@ namespace mu2e {
       KKINTERCOL const& intersections() const { return inters_; }
       KKCALOHITCOL const& caloHits() const { return calohits_; }
       void printFit(std::ostream& ost=std::cout,int detail=0) const;
+      // allow reversing the charge (in some fits it can change dynamically)
+      void reverseCharge() { tpart_ = static_cast<PDGCode::type>(tpart_*-1); }
     private:
       // record the particle type
       PDGCode::type tpart_;

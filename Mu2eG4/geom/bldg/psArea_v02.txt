@@ -1,59 +1,46 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_PSareaTest.ccl
-
 string building.psArea.name     = "psArea";
-
 string building.psArea.material = "CONCRETE_MARS";
-
-double building.psArea.offsetFromMu2eOrigin.x   = 947.4;
-double building.psArea.offsetFromFloorSurface.y = 187.325;
-double building.psArea.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.psArea.yHalfThickness           = 339.725;
-
+double building.psArea.offsetFromMu2eOrigin.x   = 947.40;
+double building.psArea.offsetFromFloorSurface.y = 187.32;
+double building.psArea.offsetFromMu2eOrigin.z   = -3581.40;
+double building.psArea.yHalfThickness           = 339.68;
 vector<double> building.psArea.xPositions = {
-  -1270,   // P0
-  -6254.75,   // P1
-  -12343.4,   // P2
-  -12319.3,   // P3
-  -16841.4,   // P4
-  -16817.3,   // U0
-  -17853.7,   // U1
-  -19179,   // U2
-  -18142.6,   // U3
-  -18118.5,   // P5
-  -12319,   // P6
-  -12319,   // P7
-  -11709.4,   // Q1
-  -11709.4,   // Q2
-  -12817.4,   // Q3
-  -11877.6,   // Q4
-  -6327.77,   // Q5
-  -1270   // Q6
+-1270.00, // 0
+-6254.75, // 1
+-12343.40, // 2
+-12319.30, // 3
+-17343.65, // 4
+-17319.55, // 5
+-18355.95, // 6
+-19681.25, // 7
+-18644.85, // 8
+-18620.75, // 9
+-12319.00, // 10
+-12319.00, // 11
+-11709.40, // 12
+-11709.40, // 13
+-13319.65, // 14
+-12379.85, // 15
+-6327.77, // 16
+-1270.00 // 17
 };
-
 vector<double> building.psArea.yPositions = {
-  -609.6,   // P0
-  -609.6,   // P1
-  -2096.1,   // P2
-  -2194.8,   // P3
-  -3297.85,   // P4
-  -3396.55,   // U0
-  -3649.57,   // U1
-  1778.98,   // U2
-  2032,   // U3
-  1933.3,   // P5
-  3349.22,   // P6
-  6858,   // P7 mod  AH was 9445.22
-  6858,   // Q1 mod AH was 9445.22
-  2765.96,   // Q2
-  2495.45,   // Q3
-  -1353.89,   // Q4
-  0,   // Q5
-  0   // Q6
+-609.60, // 0
+-609.60, // 1
+-2096.10, // 2
+-2194.80, // 3
+-3420.47, // 4
+-3519.17, // 5
+-3772.19, // 6
+1656.36, // 7
+1909.38, // 8
+1810.68, // 9
+3349.22, // 10
+6858.00, // 11
+6858.00, // 12
+2765.96, // 13
+2372.83, // 14
+-1476.51, // 15
+0.00, // 16
+0.00 // 17
 };
-
-// Local Variables:
-// mode:c++
-// End:

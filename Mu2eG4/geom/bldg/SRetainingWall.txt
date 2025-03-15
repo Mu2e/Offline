@@ -1,31 +1,18 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_SretainingWall.ccl
-
 string building.S.retaining.Wall.name     = "SRetainingWall";
-
 string building.S.retaining.Wall.material = "CONCRETE_MARS";
-
-double building.S.retaining.Wall.offsetFromMu2eOrigin.x   = 947.4;
-double building.S.retaining.Wall.offsetFromFloorSurface.y = 8915.4;
-double building.S.retaining.Wall.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.S.retaining.Wall.yHalfThickness           = 2057.4;
-
+double building.S.retaining.Wall.offsetFromMu2eOrigin.x   = 947.40;
+double building.S.retaining.Wall.offsetFromFloorSurface.y = 8991.60;
+double building.S.retaining.Wall.offsetFromMu2eOrigin.z   = -3581.40;
+double building.S.retaining.Wall.yHalfThickness           = 1981.20;
 vector<double> building.S.retaining.Wall.xPositions = {
-  -2921,   // P0
-  -12192,   // P1
-  -12192,   // P2
-  -2921   // P3
+-2921.00, // 0
+-12029.00, // 1
+-12029.00, // 2
+-2921.00 // 3
 };
-
 vector<double> building.S.retaining.Wall.yPositions = {
-  -7505.7,   // P0
-  -7505.7,   // P1
-  -7861.3,   // P2
-  -7861.3   // P3
+-7861.30, // 0
+-7861.30, // 1
+-7505.70, // 2
+-7505.70 // 3
 };
-
-// Local Variables:
-// mode:c++
-// End:
