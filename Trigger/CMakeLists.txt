@@ -38,4 +38,19 @@ cet_build_plugin(ReadTriggerInfo art::module
       Offline::TrackerGeom
 )
 
+cet_build_plugin(ReadTriggerPath art::module
+    REG_SOURCE src/ReadTriggerPath_module.cc
+    LIBRARIES REG
+      
+      Offline::BFieldGeom
+      Offline::ConditionsService
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
+)
+
 install_source(SUBDIRS src)
