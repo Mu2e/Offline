@@ -3,14 +3,14 @@ cet_make_library(
       src/CaloDAQUtilities.cc
     LIBRARIES PUBLIC
       artdaq-core-mu2e::Data
-      
+
 )
 
 cet_build_plugin(ArtBinaryPacketsFromDigis art::module
     REG_SOURCE src/ArtBinaryPacketsFromDigis_module.cc
     LIBRARIES REG
       Offline::DAQ
-      
+
       Offline::CaloConditions
       Offline::CalorimeterGeom
       Offline::CosmicRayShieldGeom
@@ -25,14 +25,14 @@ cet_build_plugin(ProcessDTCAndCFOEvents art::module
     REG_SOURCE src/ProcessDTCAndCFOEvents_module.cc
     LIBRARIES REG
       Offline::DAQ
-      
+
 )
 
 cet_build_plugin(CaloHitsFromDataDecoders art::module
     REG_SOURCE src/CaloHitsFromDataDecoders_module.cc
     LIBRARIES REG
       Offline::DAQ
-      
+
       Offline::CaloConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
@@ -42,6 +42,7 @@ cet_build_plugin(CaloDigisFromDataDecoders art::module
     REG_SOURCE src/CaloDigisFromDataDecoders_module.cc
     LIBRARIES REG
       Offline::DAQ
+
       Offline::CaloConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
@@ -53,10 +54,24 @@ cet_build_plugin(CRVDigisFromDataDecoders art::module
     REG_SOURCE src/CRVDigisFromDataDecoders_module.cc
     LIBRARIES REG
       Offline::DAQ
-      
+
       Offline::CRVConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
+      artdaq_core_mu2e::Data
+      artdaq_core_mu2e::Data_dict
+)
+
+cet_build_plugin(CRVGlobalRunDataFromDataDecoders art::module
+    REG_SOURCE src/CRVGlobalRunDataFromDataDecoders_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+
+      Offline::CRVConditions
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      artdaq_core_mu2e::Data
+      artdaq_core_mu2e::Data_dict
 )
 
 cet_build_plugin(DataDecodersAna art::module
@@ -73,7 +88,7 @@ cet_build_plugin(PrefetchDAQData art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::DAQ
-      
+
       Offline::RecoDataProducts
 )
 
@@ -82,7 +97,7 @@ cet_build_plugin(ComboHitsFromDataDecoders art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::DAQ
-      
+
       Offline::ConditionsBase
       Offline::ConditionsService
       Offline::ConfigTools
@@ -99,7 +114,7 @@ cet_build_plugin(StrawDigisFromDataDecoders art::module
     REG_SOURCE src/StrawDigisFromDataDecoders_module.cc
     LIBRARIES REG
       Offline::DAQ
-      
+
       Offline::DataProducts
       Offline::RecoDataProducts
 )
