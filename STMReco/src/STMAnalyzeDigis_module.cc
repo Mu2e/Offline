@@ -376,14 +376,14 @@ void STMAnalyzeDigis::analyze(const Event& event)
       // Plot the first waveform
       if(firstEvent){
 	fEvent->Set(adcs.size());
-	for(int ii=0; ii < adcs.size(); ii++){
+	for(size_t ii=0; ii < adcs.size(); ii++){
 	  double t = ii / _samp_freq;
 	  fEvent->SetPoint(ii, t, adcs[ii]);
 	}
 	firstEvent=false;
       }
       // Get and fit the pulses
-      for(int i=0; i < adcs.size(); i++){
+      for(size_t i=0; i < adcs.size(); i++){
 	// If the data is above the pulse threshold
 	if (adcs[i] > _threshold) {
 	  // If the pulse started in the previous event
