@@ -58,8 +58,8 @@ cet_build_plugin(CRVDigisFromDataDecoders art::module
       Offline::CRVConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
-      artdaq_core_mu2e::Data
-      artdaq_core_mu2e::Data_dict
+      artdaq-core-mu2e::Data
+      artdaq-core-mu2e::Data_dict
 )
 
 cet_build_plugin(CRVGlobalRunDataFromDataDecoders art::module
@@ -70,8 +70,8 @@ cet_build_plugin(CRVGlobalRunDataFromDataDecoders art::module
       Offline::CRVConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
-      artdaq_core_mu2e::Data
-      artdaq_core_mu2e::Data_dict
+      artdaq-core-mu2e::Data
+      artdaq-core-mu2e::Data_dict
 )
 
 cet_build_plugin(DataDecodersAna art::module
