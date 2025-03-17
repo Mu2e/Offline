@@ -17,7 +17,7 @@ STM : {
     L : 200
     nsigma_cut : 9
     thresholdgrad : -0.3
-    defaultBaselineMean : 100 # estimated based on slide 6 docdb 42541
+    defaultBaselineMean : -100 # estimated based on slide 6 docdb 42541
     defaultBaselineSD : 100 # estimated based on slide 6 docdb 42541
   }
   LaBr : {

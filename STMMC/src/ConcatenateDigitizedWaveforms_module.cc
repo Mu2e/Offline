@@ -114,8 +114,8 @@ namespace mu2e {
   void ConcatenateDigitizedWaveforms::endJob() {
     mf::LogInfo log("ConcatenateDigitizedWaveforms summary");
     log << "=====ConcatenateDigitizedWaveforms summary=====\n";
-    log << std::left << std::setw(25) << "No. input events:  " << inputEvents  << "\n";
-    log << std::left << std::setw(25) << "No. output events: " << outputEvents << "\n";
+    log << std::left << std::setw(25) << "\tNo. input events:  " << inputEvents  << "\n";
+    log << std::left << std::setw(25) << "\tNo. output events: " << outputEvents << "\n";
     log << "===============================================\n";
   };
 }; // namespace mu2e
