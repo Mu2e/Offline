@@ -237,7 +237,7 @@ void STMWaveformDigisFromFragments::produce(Event& event)
     
     std::vector<int16_t> adcs;
     adcs.reserve(event_len);
-    for (unsigned long int i_adc_sample = 0; i_adc_sample < event_len; ++i_adc_sample) {
+    for (short int i_adc_sample = 0; i_adc_sample < event_len; ++i_adc_sample) {
       adcs.emplace_back(*(stm_frag.DataBegin()+i_adc_sample));
     }
 
@@ -249,7 +249,7 @@ void STMWaveformDigisFromFragments::produce(Event& event)
     std::vector<double> fit_vals;
     
     // Get and fit the pulses
-    for(int i=0; i < adcs.size(); i++){
+    for(long unsigned int i=0; i < adcs.size(); i++){
       // If the data is above the pulse threshold
       if (adcs[i] > _threshold) {
 	// If the pulse started in the previous event
