@@ -119,6 +119,16 @@ cet_build_plugin(StrawDigisFromDataDecoders art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(STMWaveformDigisFromFragments art::module
+    REG_SOURCE src/STMWaveformDigisFromFragments_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+      Offline::ProditionsService
+      Offline::DataProducts
+      Offline::RecoDataProducts
+      BTrk_difAlgebra
+)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/DAQ/fcl)
