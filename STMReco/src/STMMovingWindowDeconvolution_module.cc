@@ -6,7 +6,6 @@
 // stdlib includes
 #include <algorithm>
 #include <utility>
-#include <limits>
 
 // art includes
 #include "art/Framework/Principal/Event.h"
@@ -74,6 +73,7 @@ namespace mu2e {
     private:
     void beginJob() override;
     void produce(art::Event& e) override;
+    void endJob();
 
     void deconvolve();
     void differentiate();
@@ -112,6 +112,7 @@ namespace mu2e {
     std::vector<double> averaged_data;
     double sum = 0.0;                         // variable part of avarege()
     int count = 0;                            // counter variable
+    int16_t mwd_energy = 0;
 
     // Peak finding variables
     double baseline_mean = 0.0;
@@ -124,6 +125,7 @@ namespace mu2e {
     std::vector<double> peak_times;
     size_t nPeaks = 0;                // number of peaks found
     bool foundBaselineData = false;
+    const int16_t ADCMax = static_cast<int16_t>((-1 * std::pow(2, 15)) + 1);  // Maximum ADC value, power is 15 not 16 as using int16_t not uint16_t
 
     // TTree variables
     TTree* ttree;
@@ -133,6 +135,9 @@ namespace mu2e {
     uint32_t time = 0;
     double deconvoluted = 0.0, differentiated = 0.0, averaged = 0.0;
     uint eventId = 0;
+
+    // Summary data
+    uint processedEvents = 0, processedWaveforms = 0, foundPeaks = 0;
   };
 
   STMMovingWindowDeconvolution::STMMovingWindowDeconvolution(const Parameters& conf) :
@@ -204,6 +209,7 @@ namespace mu2e {
     nsPerCt = stmEnergyCalib.nsPerCt(channel);
     timeFactor = 1 - (nsPerCt / tau);
     count = 0;
+    processedEvents++;
     eventId = event.id().event();
     for (STMWaveformDigi waveform : *waveformDigisHandle) {
       // clear out data from previous waveform
@@ -215,6 +221,7 @@ namespace mu2e {
       peak_times.clear();
       ADCs = waveform.adcs();
       nADCs = ADCs.size();
+      processedWaveforms++;
 
       if (M < L)
         throw cet::exception("Configuration", "L (" + std::to_string(L) + ") is greater than M (" + std::to_string(M) + "), reconfigure\n");
@@ -230,10 +237,14 @@ namespace mu2e {
       find_peaks();
 
       nPeaks = peak_heights.size();
-      if (nPeaks) // TODO - change to verbosityLevel
+      foundPeaks += nPeaks;
+      if (nPeaks && verbosityLevel) // TODO - change to verbosityLevel
         std::cout << "MWD: found " << nPeaks << " peaks in event " << event.id() << std::endl;
       for (i = 0; i < nPeaks; ++i) {
-        STMMWDDigi mwd_digi(peak_times[i], -1 * peak_heights[i]); // peak_heights are negative, make them positive here
+        mwd_energy = (peak_heights[i] < ADCMax) ? ADCMax : static_cast<int16_t>(peak_heights[i]); // When saturating the int16_t limit, deconvolution goes below the int16_t limit so the energy turns negative. This clips the energy and the limit
+        STMMWDDigi mwd_digi(peak_times[i], -1 * mwd_energy); // peak_heights are negative, make them positive here
+        if (mwd_digi.energy() < -100)
+          throw cet::exception("logicError", "The peak height must be positive!");
         outputMWDDigis->push_back(mwd_digi);
         if (makeTTreeEnergies) {
           time = mwd_digi.time();
@@ -366,6 +377,16 @@ namespace mu2e {
     };
   };
 
+  void STMMovingWindowDeconvolution::endJob() {
+    mf::LogInfo log("MWD summary");
+    log << "==================MWD summary==================\n";
+    log << std::left << std::setw(25) << "\tProcessed events: "     << processedEvents    << "\n";
+    log << std::left << std::setw(25) << "\tProcessed waveforms: "  << processedWaveforms << "\n";
+    log << std::left << std::setw(25) << "\tFound peaks: "          << foundPeaks         << "\n";
+    log << "===============================================\n";
+    return;
+  };
+
   void STMMovingWindowDeconvolution::make_debug_histogram(const art::Event& event, int count, const STMWaveformDigi& waveform, const STMEnergyCalib& stmEnergyCalib, const std::vector<double>& deconvolved_data, const std::vector<double>& differentiated_data, const std::vector<double>& averaged_data, const double baseline_mean, const double baseline_stddev, const std::vector<double>& peak_heights, const std::vector<double>& peak_times) {
     art::ServiceHandle<art::TFileService> tfs;
     std::stringstream histsuffix;
@@ -398,8 +419,8 @@ namespace mu2e {
     for (size_t i_peak = 0; i_peak < peak_heights.size(); ++i_peak) {
       //      std::cout << "t = " << peak_times[i_peak] << ", E = " << peak_heights[i_peak] << std::endl;
       h_peaks->SetBinContent(peak_times[i_peak]+1, peak_heights[i_peak]);
-    }
-  }
-}
+    };
+  };
+};
 
 DEFINE_ART_MODULE(mu2e::STMMovingWindowDeconvolution)

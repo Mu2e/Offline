@@ -121,6 +121,7 @@ STMMCAnalysis : {
             thresholdgrad : @local::STM.HPGe.thresholdgrad
             defaultBaselineMean : @local::STM.HPGe.defaultBaselineMean
             defaultBaselineSD : @local::STM.HPGe.defaultBaselineSD
+            STMMWDDigiTag : "MWDHPGe:"
         }
         LaBr : {
             stmWaveformDigisTag : "ZSLaBr:"
@@ -131,6 +132,7 @@ STMMCAnalysis : {
             thresholdgrad : @local::STM.HPGe.thresholdgrad
             defaultBaselineMean : @local::STM.HPGe.defaultBaselineMean
             defaultBaselineSD : @local::STM.HPGe.defaultBaselineSD
+            STMMWDDigiTag : "MWDLaBr:"
         }
     }
 }
@@ -168,10 +170,11 @@ HPGeDigitization : {
     PreamplifierNoiseSD : 0.32 # mV
     DecayConstant : 50 # us
     resetEventNumber : 31858
-    microspillBufferLengthCount : 10
+    microspillBufferLengthCount : 1000
     concatenation : {
         STMWaveformDigisTag : "DigiHPGe:"
         nMerge : 31858
+        filterTag : "concatenateWaveformsHPGe:"
     }
 }
 

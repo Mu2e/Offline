@@ -35,7 +35,7 @@ namespace mu2e {
       virtual void endJob() override;
     private:
       art::ProductToken<STMWaveformDigiCollection> STMWaveformDigisToken;
-      uint keptEvents = 0, discardedEvents = 0;
+      uint inputEvents = 0, keptEvents = 0, discardedEvents = 0;
   };
 
   ConcatenationFilter::ConcatenationFilter(const Parameters& conf) :
@@ -44,6 +44,7 @@ namespace mu2e {
 
   bool ConcatenationFilter::filter(art::Event& event) {
     auto const& STMWaveformDigis = event.getProduct(STMWaveformDigisToken);
+    inputEvents++;
     // Only keep events that have non-zero size
     if(STMWaveformDigis.size() > 0) {
       keptEvents++;
@@ -57,10 +58,11 @@ namespace mu2e {
 
   void ConcatenationFilter::endJob() {
     mf::LogInfo log("ConcatenationFilter summary");
-    log << "=====ConcatenationFilter summary=====\n";
-    log << std::left << std::setw(25) << "\tNo. kept events:     " << keptEvents      << "\n";
-    log << std::left << std::setw(25) << "\tNo. discarded events:" << discardedEvents << "\n";
-    log << "=====================================\n";
+    log << "==========ConcatenationFilter summary==========\n";
+    log << std::left << std::setw(25) << "\tNo. input events:"      << inputEvents     << "\n";
+    log << std::left << std::setw(25) << "\tNo. kept events:"       << keptEvents      << "\n";
+    log << std::left << std::setw(25) << "\tNo. discarded events:"  << discardedEvents << "\n";
+    log << "===============================================\n";
   };
 }; // namespace mu2e
 

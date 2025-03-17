@@ -43,6 +43,12 @@ cet_build_plugin(HPGeWaveformsFromStepPointMCs art::module
       Offline::STMConditions
       Offline::GlobalConstantsService
 )
+cet_build_plugin(MWDTree art::module
+    REG_SOURCE src/MWDTree_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::RecoDataProducts
+)
 
 cet_build_plugin(ShiftVirtualDetectorStepPointMCs art::module
     REG_SOURCE src/ShiftVirtualDetectorStepPointMCs_module.cc
@@ -69,7 +75,7 @@ cet_build_plugin(ValidateConsecutiveEventIDs art::module
       Offline::MCDataProducts
 )
 
-cet_build_plugin(VirtualDete removectorTree art::module
+cet_build_plugin(VirtualDetectorTree art::module
     REG_SOURCE src/VirtualDetectorTree_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service

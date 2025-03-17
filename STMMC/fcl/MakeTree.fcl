@@ -43,9 +43,14 @@ physics: {
       SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
       Detector: @local::SimplifyStage2Data.DetectorName.LaBr
     }
+    MWDSpectra : {
+      module_type : MWDTree
+      STMMWDDigiTag : @local::STMMCAnalysis.MWD.HPGe.STMMWDDigiTag
+      EnergyCalib : @local::HPGeDigitization.EnergyPerADCBin
+    }
   }
-  o1 : @nil
+  o1 : [MWDSpectra] #@nil
   end_paths: [o1]
 }
 
-services.TFileService.fileName : @nil
+services.TFileService.fileName : "spectrum.root" #@nil

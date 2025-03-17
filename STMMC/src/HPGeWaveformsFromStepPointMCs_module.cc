@@ -82,78 +82,78 @@ namespace mu2e {
     double ADCToEnergy = 0;                                                                                     // Calibration of bin width to energy [keV/bin]
     double noiseSD = 0;                                                                                         // Standard deviation of ADC noise [mV]
     double risingEdgeDecayConstant = 0;                                                                         // [us]
-    bool makeTTree = false;
-    double timeOffset = 0.0;
-    uint resetEventNumber = 0;
-    int verbosityLevel = 0;
+    bool makeTTree = false;                                                                                     // Controls whether an analysis TTree is made
+    double timeOffset = 0.0;                                                                                    // Used for debugging [ns]
+    uint resetEventNumber = 0;                                                                                  // Event ID at which to reset the charge amplitude
+    int verbosityLevel = 0;                                                                                     // How much output to generate
 
     // Define experiment specific constants
-    const double feedbackCapacitance = 1e-12; // [Farads]
-    const double epsilonGe = 2.96;            // Energy required to generate an eh pair in Ge at 77K [eV]
-    const double micropulseTime = 1695.0;     // [ns]
+    const double feedbackCapacitance = 1e-12;                                                                   // [Farads]
+    const double epsilonGe = 2.96;                                                                              // Energy required to generate an eh pair in Ge at 77K [eV]
+    const double micropulseTime = 1695.0;                                                                       // [ns]
 
     // Define physics constants
-    const double _e = 1.602176634e-19;          // Electric charge constant [Coulombs]
-    const double electronDriftVelocity = 0.08;  // Apprixmate charged particle drift velocity [mm/ns]
-    const double holeDriftVelocity = 0.06;      // Apprixmate charged particle drift velocity [mm/ns]
+    const double _e = 1.602176634e-19;                                                                          // Electric charge constant [Coulombs]
+    const double electronDriftVelocity = 0.08;                                                                  // Apprixmate charged particle drift velocity [mm/ns]
+    const double holeDriftVelocity = 0.06;                                                                      // Apprixmate charged particle drift velocity [mm/ns]
 
     // ADC variables
-    double chargeToADC = 0;                                             // Conversion factor from charge built in capacitor to ADC determined voltage, multiply by this value to get from charge built to ADC voltage.
-    uint nADCs = 0;                                                     // Number of ADC values in an event
-    const int16_t ADCMax = static_cast<int16_t>((-1 * std::pow(2, 16)) + 1);  // Maximum ADC value
-    double ADC = 0;                                                     // iterator variable
-    uint32_t eventTimeBuffer = 0;
+    double chargeToADC = 0;                                                                                     // Conversion factor from charge built in capacitor to ADC determined voltage, multiply by this value to get from charge built to ADC voltage.
+    uint nADCs = 0;                                                                                             // Number of ADC values in an event
+    const int16_t ADCMax = static_cast<int16_t>((-1 * std::pow(2, 15)) + 1);                                    // Maximum ADC value, power is 15 not 16 as using int16_t not uint16_t
+    double ADC = 0;                                                                                             // iterator variable
+    uint32_t eventTimeBuffer = 0;                                                                               // Multiple of event ids to store
 
     // Define Ge crystal properties [mm]
-    const double crystalCentreX = -3973.81;
-    const double crystalCentreY = 0;
-    const double crystalCentreZ = 40699.1;
-    CLHEP::Hep3Vector crystalCentrePosition;
+    const double crystalCentreX = -3973.81;                                                                     // Crystal centre x position [mm]
+    const double crystalCentreY = 0;                                                                            // Crystal centre y position [mm]
+    const double crystalCentreZ = 40699.1;                                                                      // Crystal centre z position [mm]
+    CLHEP::Hep3Vector crystalCentrePosition;                                                                    // Crystal centre position vector
     // TODO - want to initialize hpgeEndcapCenterPosition and holeHemisphereCenter as consts here, but errors thrown
     CLHEP::Hep3Vector hitPosition;
-    const double crystalL = 78.5;                                               // Crystal length
-    const double crystalR = 36.05;                                              // Crystal radius
-    const double crystalHoleL = 64.7;                                           // Crystal hole length not including the hemisphere
-    const double crystalHoleR = 5.25;                                           // Crystal hole radius
-    const double crystalHoleZStart = crystalL - crystalHoleL;                   // Starting z position of the crystal hole not including the hemisphere
-    const double crystalDirectionGradientCutoff = -crystalHoleZStart/crystalR;  // Defines a cone under which points travel to the endcap and not the curved cylinder surface
-    const double stepPositionTolerance = 0.1;                                   // adjusts for resolution of applying rotation
-    const double maxR = crystalR + stepPositionTolerance;
-    const double maxZ = crystalL + stepPositionTolerance;
+    const double crystalL = 78.5;                                                                               // Crystal length [mm]
+    const double crystalR = 36.05;                                                                              // Crystal radius [mm]
+    const double crystalHoleL = 64.7;                                                                           // Crystal hole length not including the hemisphere [mm]
+    const double crystalHoleR = 5.25;                                                                           // Crystal hole radius [mm]
+    const double crystalHoleZStart = crystalL - crystalHoleL;                                                   // Starting z position of the crystal hole not including the hemisphere [mm]
+    const double crystalDirectionGradientCutoff = -crystalHoleZStart/crystalR;                                  // Defines a cone under which points travel to the endcap and not the curved cylinder surface
+    const double stepPositionTolerance = 0.1;                                                                   // Adjusts for resolution of applying rotation
+    const double maxR = crystalR + stepPositionTolerance;                                                       // Crystal radius including tolderance
+    const double maxZ = crystalL + stepPositionTolerance;                                                       // Crystal z including tolerance
 
     // Modelling variables
-    double hitR = 0;                // Hit radial distance [mm]
-    double hitZ = 0;                // Hit axial distance [mm]
-    double R0 = 0;                  // Hit radial position [mm]
-    const double R1 = crystalHoleR; // Distance travelled by electrons [mm]
-    double R2 = 0;                  // Distance travelled by holes [mm]
+    double hitR = 0;                                                                                            // Hit radial distance [mm]
+    double hitZ = 0;                                                                                            // Hit axial distance [mm]
+    double R0 = 0;                                                                                              // Hit radial position [mm]
+    const double R1 = crystalHoleR;                                                                             // Distance travelled by electrons [mm]
+    double R2 = 0;                                                                                              // Distance travelled by holes [mm]
 
-    double trigFactor = 0;  // Dimensionless constant used for caluclating distance
-    int32_t N_ehPairs = 0;  // Number of electron hole pairs
-    uint32_t eventTime = 0; // Time stamp to add to STMWaveformDigi
+    double trigFactor = 0;                                                                                      // Dimensionless constant used for caluclating distance
+    int32_t N_ehPairs = 0;                                                                                      // Number of electron hole pairs
+    uint32_t eventTime = 0;                                                                                     // Time stamp to add to STMWaveformDigi [ADC clock ticks]
 
-    double tADC = 0;                                                // Time step used for simulating the ADC values [ns]
-    double electronTravelDistance = 0, holeTravelDistance = 0;      // Drift distances [mm]
-    double electronTravelTime = 0, holeTravelTime = 0;              // Drift times [ns]
-    uint32_t electronTravelTimeSteps = 0, holeTravelTimeSteps = 0;  // Drift times [steps]
-    double decayExp = 0;                                            // Amount of decay with each tADC
-    double lastEventEndDecayedCharge = 0;                           // Carry over for starting new microspill waveforms
-    int microspillBufferLengthCount = 0;                            // Buffer to store the charge deposits that are allocated to this event but happen after the microspill ends e.g. 844keV
-    const int defaultMicrospillBufferLengthCount = 2;               // Default value for the microspill buffer length
+    double tADC = 0;                                                                                            // Time step used for simulating the ADC values [ns]
+    double electronTravelDistance = 0, holeTravelDistance = 0;                                                  // Drift distances [mm]
+    double electronTravelTime = 0, holeTravelTime = 0;                                                          // Drift times [ns]
+    uint32_t electronTravelTimeSteps = 0, holeTravelTimeSteps = 0;                                              // Drift times [steps]
+    double decayExp = 0;                                                                                        // Amount of decay with each tADC
+    double lastEventEndDecayedCharge = 0;                                                                       // Carry over for starting new microspill waveforms [charge carrier pairs]
+    int microspillBufferLengthCount = 0;                                                                        // Buffer to store the charge deposits that are allocated to this event but happen after the microspill ends e.g. 844keV
+    const int defaultMicrospillBufferLengthCount = 2;                                                           // Default value for the microspill buffer length
 
     // TTree and storage variables
-    TTree* ttree;                                   // ttree variable
-    double chargeCollected = 0, chargeDecayed = 0;  // used to fill the ttree
-    uint eventId = 0;                               // used to fill the ttree
-    uint32_t time = 0;                              // used to fill the ttree
-    int16_t ttreeADC = 0;                           // used to fill the ttree
+    TTree* ttree;                                                                                               // ttree variable
+    double chargeCollected = 0, chargeDecayed = 0;                                                              // used to fill the ttree
+    uint eventId = 0;                                                                                           // used to fill the ttree
+    uint32_t time = 0;                                                                                          // used to fill the ttree
+    int16_t ttreeADC = 0;                                                                                       // used to fill the ttree
 
     // Data storage vectors
-    std::vector<double> _charge;          // Buffer to store charge collected from STMDet StepPointMCs
-    std::vector<double> _chargeCollected; // Buffer to store charge collected from STMDet StepPointMCs in the given time step
-    std::vector<double> _chargeDecayed;   // Buffer to store charge collected that decays over time
-    std::vector<double> _chargeCarryOver; // Temporary buffer that will store _chargeCollected over the course of the next event
-    std::vector<int16_t> _adcs;           // Buffer for storing the ADC values to put into the STMWaveformDigi
+    std::vector<double> _charge;                                                                                // Buffer to store charge collected from STMDet StepPointMCs
+    std::vector<double> _chargeCollected;                                                                       // Buffer to store charge collected from STMDet StepPointMCs in the given time step
+    std::vector<double> _chargeDecayed;                                                                         // Buffer to store charge collected that decays over time
+    std::vector<double> _chargeCarryOver;                                                                       // Temporary buffer that will store _chargeCollected over the course of the next event
+    std::vector<int16_t> _adcs;                                                                                 // Buffer for storing the ADC values to put into the STMWaveformDigi
 
     // Offline utilities
     // TODO: include the prodition to get the sampling frequency
@@ -272,8 +272,10 @@ namespace mu2e {
     decayCharge();
 
     // Update the last event decayed charge before the noise so the noise isn't added twice
-    if (resetEventNumber != 0 && eventId == resetEventNumber)
+    if (resetEventNumber != 0 && eventId == resetEventNumber) {
       lastEventEndDecayedCharge = 0;
+      std::fill(_chargeCarryOver.begin(), _chargeCarryOver.end(), 0);
+    }
     else
       lastEventEndDecayedCharge = _chargeDecayed.back();
 
@@ -282,6 +284,12 @@ namespace mu2e {
 
     // Digitize the waveform
     digitize();
+
+    // Validate the digitized waveforms
+    for (auto j : _adcs) {
+      if (j > 1000)
+        throw cet::exception("LogicError", "ADC values too high!");
+    };
 
     // Simulation takes the POT time as t = 0, and has sequential microspills (events). The trigger time offset is not used here, left as a TODO
     // Create the STMWaveformDigi and insert all the relevant attributes
