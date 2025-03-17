@@ -8,6 +8,7 @@ cet_make_library(
       src/CrvDAQerror.cc
       src/CrvDigi.cc
       src/CrvRecoPulse.cc
+      src/DAQerror.cc
       src/ExtMonFNALRawCluster.cc
       src/ExtMonFNALRawHit.cc
       src/ExtMonFNALRecoCluster.cc
