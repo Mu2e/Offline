@@ -13,8 +13,22 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 cet_set_compiler_flags(DIAGS VIGILANT
  WERROR
  NO_UNDEFINED
- EXTRA_FLAGS -pedantic #-Wno-error=unused-parameter -Wno-error=type-limits -Wno-error=ignored-qualifiers -Wno-error=unused-but-set-parameter -Wno-error=extra -Wno-error=non-virtual-dtor -Wno-error=implicit-fallthrough -Wno-error=deprecated-copy
- -Wno-unused-parameter -Wno-type-limits -Wno-ignored-qualifiers -Wno-unused-but-set-parameter -Wno-extra -Wno-non-virtual-dtor -Wno-implicit-fallthrough -Wno-deprecated-copy -Wno-stringop-overflow
+ EXTRA_FLAGS -pedantic -Wall
+             -Wno-unused-local-typedefs
+             -Wtype-limits
+             -Wimplicit-fallthrough
+             -Wunused-but-set-parameter
+             -Wl,--no-undefined
+             -gdwarf-2
+             -Wl,--as-needed
+             -Werror=return-type
+             -Winit-self
+             -Woverloaded-virtual
+             # Added flags to the CMake build
+             -Wno-stringop-overflow
+             -Wno-ignored-qualifiers
+             -Wno-unused-parameter
+             -Wno-non-virtual-dtor
 )
 
 if(DEFINED Offline_UPS_QUALIFIER_STRING)
