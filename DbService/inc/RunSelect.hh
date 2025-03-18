@@ -10,6 +10,14 @@ namespace mu2e {
 class RunSelect {
  public:
 
+  // run:
+  //     runnumber, like "110000", means just this one run
+  //     start-stop (inclusive) like "110000-120000",
+  //     empty means all
+  // last: return only last N runs, 0 means all
+  // type, like "4" measn only runs of the type (see flags), empty is all
+  // time, TIME1 or TIME1/TIME2  for runs since a time, or in the range
+  // days only runs take in the last N days, 0 means all
   RunSelect(const std::string& run, int last, const std::string& type,
             const std::string& time, int days) :
       _run(run),

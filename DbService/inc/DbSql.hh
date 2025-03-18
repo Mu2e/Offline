@@ -3,6 +3,7 @@
 
 #include "Offline/DbTables/inc/DbId.hh"
 #include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/GeneralUtilities/inc/StringVec.hh"
 #include <libpq-fe.h>
 #include <string>
 
@@ -17,6 +18,7 @@ class DbSql {
   int connect();
   int disconnect();
   int execute(const std::string& command, std::string& result);
+  int transact(const StringVec& command, StringVec& result);
 
   void setDbId(const DbId& id) { _id = id; }
   void setUserPass(const std::string& user, const std::string& pass) {
