@@ -36,6 +36,17 @@ cet_build_plugin(ReadTriggerInfo art::module
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
       Offline::TrackerGeom
+      KinKal_Trajectory
+
+)
+
+cet_build_plugin(ReadTriggerPath art::module
+    REG_SOURCE src/ReadTriggerPath_module.cc
+    LIBRARIES REG
+      
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      Offline::Mu2eUtilities
 )
 
 install_source(SUBDIRS src)
