@@ -1,0 +1,2 @@
+root -q 'simulationStatisticsByPDGID.C({"Stage1/S1EleVD.root"}, 2.37e11, {"Stage1/S1MuVD.root", "Stage1/S1Mu3VD.root",  "Stage1/S11809VD.root"}, 9.95e12, "Stage1virtualdetector/ttree", 101, 20, 2)'
+root -q 'simulationStatisticsByPDGID.C({"Stage2/S2EleVD.root"}, 2.69e16, {"Stage2/S2MuVD.root", "Stage2/S21809VD.root"}, 2.69e16, "Stage2virtualdetector/ttree", 90, 4.5, 2)'

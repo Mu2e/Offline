@@ -5,7 +5,7 @@
 void customErrorHandler(int level, Bool_t abort, const char* location, const char* message) {
     /*
         Description
-        Define a custom error handler that won't print the stack trace but will print an error message and exit.
+            Define a custom error handler that won't print the stack trace but will print an error message and exit.
     */
     std::cerr << message << std::endl;
     if (level > kInfo)
@@ -15,9 +15,9 @@ void customErrorHandler(int level, Bool_t abort, const char* location, const cha
 void getHPGeFluxes(std::vector<double> &flux, std::vector<double> &fluxUncertainty) {
     /*
         Description
-        Stores all the HPGe flux data. Variables that store the fluxes are named as
-            flux_HPGe_DOC-DB-ID_LocationInSource - defines the energy flux from the indicated source
-            uncert_flux_HPGe_DOC-DB-ID_LocationInSource - defines the energy flux uncertainty from the indicated source
+            Stores all the HPGe flux data. Variables that store the fluxes are named as
+                flux_HPGe_DOC-DB-ID_LocationInSource - defines the energy flux from the indicated source
+                uncert_flux_HPGe_DOC-DB-ID_LocationInSource - defines the energy flux uncertainty from the indicated source
 
         Arguments
             flux - vector of the flux data
@@ -65,10 +65,10 @@ void getHPGeFluxes(std::vector<double> &flux, std::vector<double> &fluxUncertain
 void getLaBrFluxes(std::vector<double> &flux, std::vector<double> &fluxUncertainty) {
     /*
         Description
-        NOTE - the data has not been collated from the sources
-        Stores all the LaBr flux data. Variables that store the fluxes are named as
-            flux_LaBr_DOC-DB-ID_LocationInSource - defines the energy flux from the indicated source
-            uncert_flux_LaBr_DOC-DB-ID_LocationInSource - defines the energy flux uncertainty from the indicated source
+            NOTE - the data has not been collated from the sources
+            Stores all the LaBr flux data. Variables that store the fluxes are named as
+                flux_LaBr_DOC-DB-ID_LocationInSource - defines the energy flux from the indicated source
+                uncert_flux_LaBr_DOC-DB-ID_LocationInSource - defines the energy flux uncertainty from the indicated source
 
         Arguments
             flux - vector of the flux data
@@ -80,47 +80,47 @@ void getLaBrFluxes(std::vector<double> &flux, std::vector<double> &fluxUncertain
 void plotEnergyFlux(const std::string detector, const bool highResolution, std::vector<double> referenceTableSources) {
     /*
         Description
-        Plot the energy fluxes from previous STM studies
+            Plot the energy fluxes from previous STM studies
 
-        Parameters
-        detector - either "HPGe" or "LaBr"
-        highResolution - determines whether the plot is generated in high resolution or in low resolution
-        referenceTableSources - a vector used to index what entries in a linked publication correspond to the corresponding entry in the plot
+        Arguments
+            detector - either "HPGe" or "LaBr"
+            highResolution - determines whether the plot is generated in high resolution or in low resolution
+            referenceTableSources - a vector used to index what entries in a linked publication correspond to the corresponding entry in the plot
 
         // Variables
-        allowedDetectors - list of all the allowed STM detectors
-        flux - vector of the fluxes
-        fluxUncertainty - vector of the uncertainties corresponding to the entries in `flux`
-        fluxMin - vector of the minimum bounds of the fluxes incorporating the associated uncertainties
-        fluxMax - vector of the maximum bounds of the fluxes incorporating the associated uncertainties
-        xMin - minimum x value to use for the plot
-        xMax - maximum x value to use for the plot
-        yMin - minimum y value to use for the plot
-        yMax - maximum y value to use for the plot
-        eyV - vector of uncertainties associated with the entries (all zeros)
-        opcacityErrors - opacity of all the flux errors
-        opacityLimit - opacity of the flux limit
-        lineWidth - width of the saturation and average lines
-        px - number of x pixels for the TCanvas
-        py - number of y pixels for the TCanvas
-        c1 - the TCanvas
-        x - array of all the flux data
-        y - array of all the reference table sources
-        ex - array of all the flux data uncertainty
-        ey - array of all the reference table source uncertainty (all zeros)
-        graph - pointer to the TGraph for plotting the fluxes
-        errorX - defines the x coordinates of the uncertainty shading area, going counter-clockwise from the bottom left
-        errorY - as per `errorX`, but for the Y coordinates
-        errorBounds - vector of TGraphs for each flux with a non-zero uncertainty
-        xAvg - average flux value
-        exAvg - average uncertainty value
-        avgErrorBound - TGraph for the averaged flux uncertainty
-        avgLine - TLine for the averaged flux
-        avgLabel - TText for the averaged flux
-        saturationBound - TGraph for the saturation region
-        saturationLine - TLine for the saturation boundary
-        saturationLabel - TText for the saturation region
-        outputFileName - name of the output file
+            allowedDetectors - list of all the allowed STM detectors
+            flux - vector of the fluxes
+            fluxUncertainty - vector of the uncertainties corresponding to the entries in `flux`
+            fluxMin - vector of the minimum bounds of the fluxes incorporating the associated uncertainties
+            fluxMax - vector of the maximum bounds of the fluxes incorporating the associated uncertainties
+            xMin - minimum x value to use for the plot
+            xMax - maximum x value to use for the plot
+            yMin - minimum y value to use for the plot
+            yMax - maximum y value to use for the plot
+            eyV - vector of uncertainties associated with the entries (all zeros)
+            opcacityErrors - opacity of all the flux errors
+            opacityLimit - opacity of the flux limit
+            lineWidth - width of the saturation and average lines
+            px - number of x pixels for the TCanvas
+            py - number of y pixels for the TCanvas
+            c1 - the TCanvas
+            x - array of all the flux data
+            y - array of all the reference table sources
+            ex - array of all the flux data uncertainty
+            ey - array of all the reference table source uncertainty (all zeros)
+            graph - pointer to the TGraph for plotting the fluxes
+            errorX - defines the x coordinates of the uncertainty shading area, going counter-clockwise from the bottom left
+            errorY - as per `errorX`, but for the Y coordinates
+            errorBounds - vector of TGraphs for each flux with a non-zero uncertainty
+            xAvg - average flux value
+            exAvg - average uncertainty value
+            avgErrorBound - TGraph for the averaged flux uncertainty
+            avgLine - TLine for the averaged flux
+            avgLabel - TText for the averaged flux
+            saturationBound - TGraph for the saturation region
+            saturationLine - TLine for the saturation boundary
+            saturationLabel - TText for the saturation region
+            outputFileName - name of the output file
     */
 
     // Update global parameters

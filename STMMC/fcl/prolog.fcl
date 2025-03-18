@@ -117,7 +117,7 @@ STMMCAnalysis : {
             tau : @local::STM.HPGe.tau
             M : @local::STM.HPGe.M # 100 # @local::STM.HPGe.M
             L : @local::STM.HPGe.L # 50 # @local::STM.HPGe.L
-            nsigma_cut : @local::STM.HPGe.nsigma_cut
+            nsigma_cut : 3 # @local::STM.HPGe.nsigma_cut
             thresholdgrad : @local::STM.HPGe.thresholdgrad
             defaultBaselineMean : @local::STM.HPGe.defaultBaselineMean
             defaultBaselineSD : @local::STM.HPGe.defaultBaselineSD
