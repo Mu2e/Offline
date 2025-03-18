@@ -1,11 +1,11 @@
-// Generates summary tables of data generated from STM MC method, see doc db 00000 for more information
+// Generates summary tables of data generated from STM MC method, see doc db 51487 for more information
 // See table.sh for usage examples
 // Original author: Pawel Plesniak
 
 void customErrorHandler(int level, Bool_t abort, const char* location, const char* message) {
     /*
         Description
-        Define a custom error handler that won't print the stack trace but will print an error message and exit.
+            Define a custom error handler that won't print the stack trace but will print an error message and exit.
     */
     std::cerr << message << std::endl;
     if (level > kInfo)
@@ -15,23 +15,23 @@ void customErrorHandler(int level, Bool_t abort, const char* location, const cha
 void collectVirtualdetectorData(const std::string &fileName, const std::string &treeName, const int &virtualdetectorId, std::vector<double> &energies, std::vector<int> &pdgIds) {
     /*
         Description
-        Collects all the required data from virtual detector TTrees
+            Collects all the required data from virtual detector TTrees
 
         Arguments
-        fileName - as documented in function "table"
-        treeName - as documented in function "table"
-        energies - vector of energies associated with the relevant dataset
-        virtualdetectorId - as documented in function "table"
-        pdgIds - vector of PDG IDs associated with the relevant dataset
+            fileName - as documented in function "table"
+            treeName - as documented in function "table"
+            virtualdetectorId - as documented in function "table"
+            energies - vector of energies associated with the relevant dataset
+            pdgIds - vector of PDG IDs associated with the relevant dataset
 
         Variables
-        file - ROOT TFile interface
-        branches - ROOT TFile interface to TTree branches
-        branchNames - vector of branch names
-        dataVirtualDetectorId - virtual detector ID from file
-        dataPdgId - PDG ID from file
-        dataKE - kinetic energy from file
-        entries - number of entries in the TTree
+            file - ROOT TFile interface
+            branches - ROOT TFile interface to TTree branches
+            branchNames - vector of branch names
+            dataVirtualDetectorId - virtual detector ID from file
+            dataPdgId - PDG ID from file
+            dataKE - kinetic energy from file
+            entries - number of entries in the TTree
     */
     std::cout << "Processing file " << fileName << std::endl;
 
@@ -101,45 +101,45 @@ void collectVirtualdetectorData(const std::string &fileName, const std::string &
 void printTable(std::vector<int> &pdgIds, const std::vector<double> &energies, const long long nPOTs, const double &virtualdetectorRadius, const long long &numBatchesPerSuperCycle, const int w = 95) {
     /*
         Description
-        Calculates the parameter values for the number of particles, average particle energy, energy flux, and POT normalized intensity
+            Calculates the parameter values for the number of particles, average particle energy, energy flux, and POT normalized intensity
 
         Arguments
-        pdgIds - vector of relevant PDG IDs
-        energies - vector of relevant particle energies, in MeV
-        nPOTs - number of protons of target equivalent for the given dataset
-        virtualdetectorRadius - as documented in function "table"
-        numBatchesPerSuperCycle - as documented in function "table"
-        w - as documented in function "table"
+            pdgIds - vector of relevant PDG IDs
+            energies - vector of relevant particle energies, in MeV
+            nPOTs - number of protons of target equivalent for the given dataset
+            virtualdetectorRadius - as documented in function "table"
+            numBatchesPerSuperCycle - as documented in function "table"
+            w - as documented in function "table"
 
         Variables
-        pdgIdsSet - collection of unique PDG IDs
-        nPdgIds - number of unique PDG IDs
-        resultCount - vector of particle count by PDG ID
-        resultE - vector of total energy by PDG ID
-        nEnergies - number of entries in the tree
-        pdgId - entry PDG ID
-        index - position of PDG ID in pdgIdsSet
-        highEnergyPhotonCount - count of high energy photons
-        highEnergyPhotonE - total energy of high energy photons
-        highEnergyPhotonMinE - energy threshold of high energy photons
-        it - iterator for pdgIdSet
-        nPOTsPerMicroSpill - number of POTs per micro spill
-        nMicroSpillsPerMacroSpill - number of micro spills per macro spill
-        nMacroSpillsPerSuperCycle - number of macro spills per super cycle
-        nMicroSpills - total number of complete micro spills based on the POT count
-        nMacroSpills - total number of complete macro spills based on the micro spill count
-        nSuperCycles - total number of complete super cycles spills based on the macro spill count
-        nRemPOTs - number of POTs in incomplete micro spills
-        nRemMicroSpills - number of micro spills in incomplete macro spills
-        nRemMacroSpills - number of macro spills in incomplete super cycles
-        tMicroSpill - duration of the micro spill, in seconds
-        tMacroSpill - duration of the macro spill, in seconds
-        tMacroSpill45 - duration of the extra break betweeen spill 4 and spill 5, in seconds
-        tSuperCycle - duration of the super cycle, in seconds
-        time - equivalent time of beam operations based on the POT count and the booster batch count, in seconds
-        i - iterator for pdgIdsSet
-        stream - string stream for converting max photon energy to a string
-        highEnergyPhotonTitle - high energy photon title for the table
+            pdgIdsSet - collection of unique PDG IDs
+            nPdgIds - number of unique PDG IDs
+            resultCount - vector of particle count by PDG ID
+            resultE - vector of total energy by PDG ID
+            nEnergies - number of entries in the tree
+            pdgId - entry PDG ID
+            index - position of PDG ID in pdgIdsSet
+            highEnergyPhotonCount - count of high energy photons
+            highEnergyPhotonE - total energy of high energy photons
+            highEnergyPhotonMinE - energy threshold of high energy photons
+            it - iterator for pdgIdSet
+            nPOTsPerMicroSpill - number of POTs per micro spill
+            nMicroSpillsPerMacroSpill - number of micro spills per macro spill
+            nMacroSpillsPerSuperCycle - number of macro spills per super cycle
+            nMicroSpills - total number of complete micro spills based on the POT count
+            nMacroSpills - total number of complete macro spills based on the micro spill count
+            nSuperCycles - total number of complete super cycles spills based on the macro spill count
+            nRemPOTs - number of POTs in incomplete micro spills
+            nRemMicroSpills - number of micro spills in incomplete macro spills
+            nRemMacroSpills - number of macro spills in incomplete super cycles
+            tMicroSpill - duration of the micro spill, in seconds
+            tMacroSpill - duration of the macro spill, in seconds
+            tMacroSpill45 - duration of the extra break betweeen spill 4 and spill 5, in seconds
+            tSuperCycle - duration of the super cycle, in seconds
+            time - equivalent time of beam operations based on the POT count and the booster batch count, in seconds
+            i - iterator for pdgIdsSet
+            stream - string stream for converting max photon energy to a string
+            highEnergyPhotonTitle - high energy photon title for the table
     */
     // Set up data collation variables
     std::set<int> pdgIdsSet(pdgIds.begin(), pdgIds.end());
@@ -213,7 +213,7 @@ void printTable(std::vector<int> &pdgIds, const std::vector<double> &energies, c
     return;
 };
 
-void table(const std::vector<std::string> electronFileNames, const long long electronPOTs, const std::vector<std::string> muonFileNames, const long long muonPOTs, const std::string treeName, const int virtualdetectorId, const double virtualdetectorRadius, const int numBatchesPerSuperCycle) {
+void simulationStatisticsByPDGID(const std::vector<std::string> electronFileNames, const long long electronPOTs, const std::vector<std::string> muonFileNames, const long long muonPOTs, const std::string treeName, const int virtualdetectorId, const double virtualdetectorRadius, const int numBatchesPerSuperCycle) {
     /*
         Description
         Collate the data determined in STM studies to generate summary table
