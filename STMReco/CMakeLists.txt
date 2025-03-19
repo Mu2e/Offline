@@ -60,7 +60,6 @@ cet_build_plugin(STMAnalyzeDigis art::module
     LIBRARIES REG
     art_root_io::TFileService_service
     artdaq-core-mu2e::Data
-    otsdaq-mu2e::ArtModules
     Offline::Mu2eUtilities
     Offline::ProditionsService
     Offline::DataProducts
