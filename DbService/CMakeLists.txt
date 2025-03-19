@@ -67,13 +67,6 @@ cet_build_plugin(DbServiceTest art::module
       Offline::DbTables
 )
 
-cet_build_plugin(DbServiceTest art::module
-    REG_SOURCE src/DbServiceTest_module.cc
-    LIBRARIES REG
-      Offline::DbService
-      Offline::DbTables
-)
-
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/connections.txt ${CURRENT_BINARY_DIR} data/connections.txt)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/create.sql ${CURRENT_BINARY_DIR} data/create.sql)
