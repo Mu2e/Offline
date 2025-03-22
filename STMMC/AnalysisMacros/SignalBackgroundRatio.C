@@ -25,10 +25,9 @@ void collectDetectorData(const std::string fileName, const std::string treeName,
 
     // Get the branch
     TFile *file = new TFile(fileName.c_str());
-    if (!file || file->IsZombie())
+    if (!file || file->IsZombie()) {
         Fatal("collectData", "Failed to open the file.");
-
-    // Get the tree
+    }
     TTree *tree = (TTree*)file->Get(treeName.c_str());
     if (!tree)
         Fatal("collectData", "Requested tree does not exist in the file.");
@@ -40,11 +39,11 @@ void collectDetectorData(const std::string fileName, const std::string treeName,
         TBranch *branch = dynamic_cast<TBranch*>(branches->At(i));
         if (branch)
             branchNames.push_back(branch->GetName());
-    };
+    }
 
     // If the branches exist, assign them to the appropriate variables
     double dataE, dataTime;
-    if (std::find(branchNames.begin(), branchNames.end(), "E") != branchNames.end())
+    if (std::find(branchNames.begin(), branchNames.end(), "E") != branchNames.end()) // RETURNTOME - change "totE" to "E"
         tree->SetBranchAddress("E", &dataE);
     else
         Fatal("collectData", "Requested branch 'E' does not exist in the file.");
