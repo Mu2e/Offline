@@ -134,7 +134,7 @@ namespace mu2e {
     double E = 0;
     uint32_t time = 0;
     double deconvoluted = 0.0, differentiated = 0.0, averaged = 0.0;
-    uint eventId = 0;
+    uint eventId = 0, waveformID = 0;
 
     // Summary data
     uint processedEvents = 0, processedWaveforms = 0, foundPeaks = 0;
@@ -152,6 +152,8 @@ namespace mu2e {
     defaultBaselineMean(conf().defaultBaselineMean()),
     defaultBaselineSD(conf().defaultBaselineSD()) {
       produces<STMMWDDigiCollection>();
+      if (M < L)
+        throw cet::exception("Configuration", "L (" + std::to_string(L) + ") is greater than M (" + std::to_string(M) + "), reconfigure\n");
       verbosityLevel = conf().verbosityLevel() ? *(conf().verbosityLevel()) : 0;
       if (verbosityLevel > 10)
         verbosityLevel = 10;
@@ -168,13 +170,15 @@ namespace mu2e {
         ttree->Branch("averaged", &averaged, "averaged/D");
         ttree->Branch("eventId", &eventId, "eventId/i");
         ttree->Branch("time", &time, "time/i");
+        ttree->Branch("waveformID", &waveformID, "waveformID/i");
       };
       if (makeTTreeEnergies) {
         art::ServiceHandle<art::TFileService> tfs;
         ttree = tfs->make<TTree>("ttree", "STMMovingWindowDeconvolution pulse height ttree");
-        ttree->Branch("time", &time, "time/I");
+        ttree->Branch("time", &time, "time/i");
         ttree->Branch("eventId", &eventId, "eventId/i");
         ttree->Branch("E", &E, "E/D");
+        ttree->Branch("waveformID", &waveformID, "waveformID/i");
       };
       if (_xAxis != "") {
         if (verbosityLevel >= 5) {
@@ -211,6 +215,7 @@ namespace mu2e {
     count = 0;
     processedEvents++;
     eventId = event.id().event();
+    waveformID = 0;
     for (STMWaveformDigi waveform : *waveformDigisHandle) {
       // clear out data from previous waveform
       ADCs.clear();
@@ -222,9 +227,8 @@ namespace mu2e {
       ADCs = waveform.adcs();
       nADCs = ADCs.size();
       processedWaveforms++;
+      waveformID++;
 
-      if (M < L)
-        throw cet::exception("Configuration", "L (" + std::to_string(L) + ") is greater than M (" + std::to_string(M) + "), reconfigure\n");
       if (M > nADCs)
         M = nADCs;
       if (L > nADCs)

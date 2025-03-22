@@ -99,7 +99,7 @@ STMMCAnalysis : {
             tbefore : @local::STM.HPGe.tbefore
             tafter : @local::STM.HPGe.tafter
             threshold : @local::STM.HPGe.threshold
-            window : @local::STM.HPGe.window
+            window : 50 # @local::STM.HPGe.window TODO - when using the optimized number from STMReco, the gradients were fluctuating between the minimum band of an int16_t and 0, but this disappeared when set to 50. Figure out why.
             naverage : @local::STM.HPGe.naverage
         }
         LaBr : {
@@ -119,8 +119,14 @@ STMMCAnalysis : {
             L : @local::STM.HPGe.L # 50 # @local::STM.HPGe.L
             nsigma_cut : 3 # @local::STM.HPGe.nsigma_cut
             thresholdgrad : @local::STM.HPGe.thresholdgrad
-            defaultBaselineMean : @local::STM.HPGe.defaultBaselineMean
-            defaultBaselineSD : @local::STM.HPGe.defaultBaselineSD
+            defaultBaselineMean : { # TODO - this should be the pedestal
+                full : @local::STM.HPGe.defaultBaselineMean
+                suppressed : 0
+            }
+            defaultBaselineSD : { # TODO - this should be NoiseSD
+                full: @local::STM.HPGe.defaultBaselineSD
+                suppressed: 0
+            }
             STMMWDDigiTag : "MWDHPGe:"
         }
         LaBr : {

@@ -75,7 +75,7 @@ namespace mu2e {
       double threshold = 0.0;
       unsigned long int window = 0;
       unsigned long int nAverage = 0;
-      int verbosityLevel;
+      int verbosityLevel = 0;
       bool makeTTreeGradients = false;
       bool makeTTreeWaveforms = false;
 
@@ -83,6 +83,7 @@ namespace mu2e {
       unsigned long int nAverageInitial = 0;  // number of ADC values to average the gradient over
       double av_gradient = 0;
       unsigned long int i = 0, j = 0;         // iterator variables
+      const int16_t ADCMax = static_cast<int16_t>((-1 * std::pow(2, 15)) + 1);  // Maximum ADC value, power is 15 not 16 as using int16_t not uint16_t
 
       // Averaging variables
       std::vector<int16_t> ADCs;        // ADC values
@@ -133,6 +134,8 @@ namespace mu2e {
       produces<STMWaveformDigiCollection>();
       nAverageInitial = nAverage;
       verbosityLevel = conf().verbosityLevel() ? *(conf().verbosityLevel()) : 0;
+      if (verbosityLevel < 0)
+        throw cet::exception("Initialization", "Verbosity level cannot be negative");
       if (verbosityLevel > 10)
         verbosityLevel = 10;
       makeTTreeGradients = conf().makeTTreeGradients() ? *(conf().makeTTreeGradients()) : false;
@@ -177,6 +180,7 @@ namespace mu2e {
     // create output
     auto waveformsHandle = event.getValidHandle(stmWaveformDigisToken);
     std::unique_ptr<STMWaveformDigiCollection> outputSTMWaveformDigis(new STMWaveformDigiCollection());
+
     // Get the prodition
     const STMEnergyCalib& stmEnergyCalib = stmEnergyCalibHandle.get(event.id());
     nADCBefore = STMUtils::convertToClockTicks(tBefore, channel, stmEnergyCalib);
@@ -190,14 +194,21 @@ namespace mu2e {
 
     for (const auto& waveform : *waveformsHandle) {
       // Get the data product
-      ADCs = waveform.adcs();
-      time = waveform.trigTimeOffset();
-      // Assign the correct amount of space to all the data vectors
-      nADCs = ADCs.size();
-      nGradients = nADCs - window;
+      ADCs.clear();
       gradients.clear();
       avGradients.clear();
       peakTimes.clear();
+      peakStartTimes.clear();
+      peakEndTimes.clear();
+      finalPeakStartTimes.clear();
+      finalPeakEndTimes.clear();
+
+      ADCs = waveform.adcs();
+      time = waveform.trigTimeOffset();
+
+      // Assign the correct amount of space to all the data vectors
+      nADCs = ADCs.size();
+      nGradients = nADCs - window;
 
       // Calculate the ADC gradients
       calculateGradient();
@@ -211,9 +222,9 @@ namespace mu2e {
       // Generate the output waveforms
       eventId = event.id().event();
       nZSwaveforms = finalPeakStartTimes.size();
-      if (verbosityLevel > 3) {
+      if (verbosityLevel > 3 && nZSwaveforms != 0) {
         std::cout << "ZS: peak times: ";
-        for (uint i = 0; i < nZSwaveforms; i++)
+        for (i = 0; i < nZSwaveforms; i++)
           std::cout << "[" << finalPeakStartTimes[i] << ", " << finalPeakEndTimes[i] << "], ";
         std::cout << std::endl;
       };
@@ -257,6 +268,7 @@ namespace mu2e {
         };
       };
     };
+
     if (verbosityLevel)
       std::cout << "ZS: " << channel.name() << ": " << outputSTMWaveformDigis->size() << " waveforms found" << std::endl;
     event.put(std::move(outputSTMWaveformDigis));
@@ -273,7 +285,7 @@ namespace mu2e {
     };
     // Calculate the time and gradient vectors
     for(i = 0; i < nGradients; i++)
-      gradients.push_back(ADCs[i + window] - ADCs[i]);
+      gradients.push_back((ADCs[i + window] - ADCs[i]) < ADCMax ? ADCMax : ADCs[i + window] - ADCs[i]);
     // Print gradients
     if (verbosityLevel > 5) {
       std::cout << "ZS: Gradient (" << gradients.size() << " entries): ";
@@ -293,7 +305,7 @@ namespace mu2e {
         nAverage = nGradients - i; // Use the rest of the vector
       // Determine the sum
       for (j = 0; j < nAverage; j++)
-        av_gradient = av_gradient + gradients[i + j];
+        av_gradient += gradients[i + j];
       // Save the results
       avGradients.push_back(av_gradient / nAverage);
       // Reset for next loop
@@ -312,8 +324,6 @@ namespace mu2e {
   void STMZeroSuppression::findPeaks() {
     // STMEnergyCalib required to get the sampling frequency
     found_peak = false;
-    peakStartTimes.clear();
-    peakEndTimes.clear();
     // Store positions in clock ticks for the peaks found
     for (i = 0; i < nGradients; ++i) {
       // Check if current ADC is above threshold
@@ -338,11 +348,8 @@ namespace mu2e {
   };
 
   void STMZeroSuppression::chooseStartsAndEnds() {
-    // Setup the vectors
-    finalPeakStartTimes.clear();
-    finalPeakEndTimes.clear();
-    nPeakTimes = peakTimes.size();
     // Now go through and account for overlapped data
+    nPeakTimes = peakTimes.size();
     if (nPeakTimes == 0) // need to be careful just in case there were no peaks found (i.e. just noise)
       return;
     // Collect the peaks

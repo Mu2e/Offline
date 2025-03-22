@@ -7,7 +7,7 @@
 #include "Offline/STMReco/fcl/prolog.fcl"
 #include "Offline/STMMC/fcl/prolog.fcl"
 
-process_name: HPGeReco1
+process_name: HPGeReco
 
 source : {
   module_type : RootInput
@@ -29,13 +29,13 @@ physics : {
       makeTTree : false
       timeOffset : 0
       resetEventNumber : @local::HPGeDigitization.resetEventNumber
-      verbosityLevel : 1
+      verbosityLevel : 0
     }
     concatenateWaveformsHPGe : {
       module_type : ConcatenateDigitizedWaveforms
       STMWaveformDigisTag : @local::HPGeDigitization.concatenation.STMWaveformDigisTag
       nMerge : @local::HPGeDigitization.concatenation.nMerge
-      makeTTree : true
+      makeTTree : false
     }
     ZSHPGe : {
       module_type : STMZeroSuppression
@@ -57,8 +57,8 @@ physics : {
       L : @local::STMMCAnalysis.MWD.HPGe.L
       nsigma_cut : @local::STMMCAnalysis.MWD.HPGe.nsigma_cut
       thresholdgrad : @local::STMMCAnalysis.MWD.HPGe.thresholdgrad
-      defaultBaselineMean : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineMean
-      defaultBaselineSD : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineSD
+      defaultBaselineMean : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineMean.suppressed
+      defaultBaselineSD : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineSD.suppressed
       makeTTreeMWD: false
       makeTTreeEnergies: false
       TTreeEnergyCalib : @local::HPGeDigitization.EnergyPerADCBin
@@ -72,7 +72,7 @@ physics : {
       STMWaveformDigisTag : @local::HPGeDigitization.concatenation.filterTag
     }
   }
-  digitization_path : [DigiHPGe, concatenateWaveformsHPGe, concatenationFilterHPGe, ZSHPGe, MWDHPGe]
+  digitization_path : [DigiHPGe, concatenateWaveformsHPGe, concatenationFilterHPGe, MWDHPGe]
   trigger_paths : [digitization_path]
   output_path : [compressedOutput]
   end_paths : [output_path]
@@ -83,10 +83,10 @@ outputs : {
     module_type : RootOutput
     fileName : "dts.owner.HPGeReco.version.sequencer.art"
     SelectEvents: ["digitization_path"]
-    # outputCommands: [
-    #     "drop *_*_*_*",
-    #     "keep mu2e::STMMWDDigis_MWDHPGe_*_HPGeReco"
-    # ]
+    outputCommands: [
+        "drop *_*_*_*",
+        "keep mu2e::STMMWDDigis_MWDHPGe_*_HPGeReco"
+    ]
   }
 }
 
