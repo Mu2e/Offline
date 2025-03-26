@@ -121,17 +121,24 @@ namespace mu2e {
     auto pph = event.getValidHandle<PrimaryParticle>(pp_);
     auto const& pp = *pph;
     double res=cutMax_; // force to enter the loop
+    unsigned ntries(0);
     if(ProcessCode::isFromProtonBeam(pp.primaryProcess())){
+      if(debug_ > 1)std::cout << "Beam-based primary: sampling x lognormal(x)" << std::endl;
       // these primaries are biased in that their production is proporitional to the PBI. In this case, sample X * lognormal(X)
       while( (res < cutMin_) || (cutMax_ <= res) ) {
+        ++ntries;
         res = xLogNormalCDFInverse(unitflatd_(urbg_));
       }
+
     } else {
+      if(debug_ > 1)std::cout << "Non-beam-based primary: lognormal(x)" << std::endl;
       // primaries unrelated to beam protons scale as lognormal(X)
       while( (res < cutMin_) || (cutMax_ <= res) ) {
+        ++ntries;
         res = lognd_(urbg_);
       }
     }
+    if(debug_ > 1)std::cout << "PBI = " << res << " required " << ntries << " tries"  << std::endl;
 
     // convert to nearest ingeger and write out
     event.put(std::make_unique<ProtonBunchIntensity>(static_cast<unsigned long long>(llrint(res))));
