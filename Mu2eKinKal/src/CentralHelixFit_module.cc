@@ -326,7 +326,6 @@ namespace mu2e {
 
         try {
           seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
-
           // create and fit the track
           auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
           // Check the fit
@@ -348,15 +347,20 @@ namespace mu2e {
               fitflag.clear(TrkFitFlag::FitOK);
             // compare charge after the fit; either adjust or skip
             auto const& t0seg = kktrk->fitTraj().nearestPiece(kktrk->fitTraj().t0());
-            // check that the t0 segment is non-degenerate; skip tracks that are. This must be done in helix-local coordinates
-            auto g2l = Rotation3D(AxisAngle(VEC3(sin(t0seg.bnom().Phi()),-cos(t0seg.bnom().Phi()),0.0),t0seg.bnom().Theta()));
-            auto cpos = g2l(t0seg.center(t0seg.range().mid()));
-            auto cdist = cpos.Rho();
-            if( cdist > minCenterRho_){
-              double t0charge = t0seg.charge();
-              if(t0charge*PDGcharge_> 0 || useFitCharge_){
-                // flip the PDG particle assignment charge if required
-                if(t0charge*PDGcharge_ < 0)kktrk->reverseCharge();
+            double t0charge = t0seg.charge();
+            if(t0charge*PDGcharge_> 0 || useFitCharge_){
+              // flip the PDG particle assignment charge if required
+              if(t0charge*PDGcharge_ < 0)kktrk->reverseCharge();
+              // check that the segments are non-degenerate
+              bool degen(false);
+              for(auto const& seg : kktrk->fitTraj().pieces()){
+                auto cdist = fabs(-1.0/seg->omega() - seg->d0());
+                if( cdist < minCenterRho_){
+                  degen = true;
+                  break;
+                }
+              }
+              if(!degen){
                 auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h);
                 sampleFit(*kktrk,kkseed._inters);
                 kkseedcol->push_back(kkseed);
@@ -365,7 +369,6 @@ namespace mu2e {
               }
             }
           }
-
         } catch (std::invalid_argument const& error) {
           if(print_ > 0) std::cout << "CentralHelixFit Error " << error.what() << std::endl;
         }
