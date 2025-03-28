@@ -1,6 +1,8 @@
 cet_make_library(
     SOURCE
       src/TSdA.cc
+      srcProtonAbsorber.cc
+      
     LIBRARIES PUBLIC
       
       Offline::GeneralUtilities
