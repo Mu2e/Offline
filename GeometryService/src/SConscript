@@ -27,7 +27,6 @@ mainlib = helper.make_mainlib ( [
     'mu2e_ExternalShieldingGeom',
     'mu2e_ServicesGeom',
     'mu2e_DetectorSolenoidGeom',
-    'mu2e_MECOStyleProtonAbsorberGeom',
     'mu2e_PTMGeom',
     'mu2e_GlobalConstantsService',
     'mu2e_ConfigTools',
