@@ -77,8 +77,8 @@
 #include "Offline/GeometryService/inc/ExtMonFNALBuildingMaker.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "Offline/GeometryService/inc/ExtMonFNAL_Maker.hh"
-#include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
-#include "Offline/GeometryService/inc/MECOStyleProtonAbsorberMaker.hh"
+#include "Offline/BeamlineGeom/inc/ProtonAbsorber.hh"
+#include "Offline/GeometryService/inc/ProtonAbsorberMaker.hh"
 #include "Offline/MBSGeom/inc/MBS.hh"
 #include "Offline/GeometryService/inc/MBSMaker.hh"
 #include "Offline/STMGeom/inc/STM.hh"
@@ -357,8 +357,8 @@ namespace mu2e {
 
 
     if(_config->getBool("hasProtonAbsorber",false) && !_config->getBool("protonabsorber.isHelical", false) ){
-      MECOStyleProtonAbsorberMaker mecopam( *_config, ds, target);
-      addDetector( mecopam.getMECOStyleProtonAbsorberPtr() );
+      ProtonAbsorberMaker pam( *_config, ds, target);
+      addDetector( pam.getProtonAbsorberPtr() );
     }
 
     // This class has a default c'tor with all available information internally.

@@ -1,5 +1,5 @@
-#ifndef MECOStyleProtonAbsorberGeom_MECOStyleProtonAbsorberPart_hh
-#define MECOStyleProtonAbsorberGeom_MECOStyleProtonAbsorberPart_hh
+#ifndef ProtonAbsorberGeom_ProtonAbsorberPart_hh
+#define ProtonAbsorberGeom_ProtonAbsorberPart_hh
 
 //
 // Class to represent one part of MECO style Proton Absorber
@@ -16,17 +16,17 @@
 
 namespace mu2e {
 
-  class MECOStyleProtonAbsorberPart {
+  class ProtonAbsorberPart {
 
   public:
-    MECOStyleProtonAbsorberPart( int id,
+    ProtonAbsorberPart( int id,
                                  CLHEP::Hep3Vector const& c,
                                  double rOut0,
                                  double rIn0,
                                  double rOut1,
                                  double rIn1,
                                  double halflen,
-                                 std::string const& m):
+                                 std::string m):
       _id(id),
       _c(c),
       _rOut0(rOut0),
@@ -38,7 +38,7 @@ namespace mu2e {
       _material(m){
     }
 
-    MECOStyleProtonAbsorberPart( int id,
+    ProtonAbsorberPart( int id,
                                  CLHEP::Hep3Vector const& c,
                                  double rOut0,
                                  double rIn0,
@@ -46,7 +46,7 @@ namespace mu2e {
                                  double rIn1,
                                  double halflen,
                                  int    nSides,
-                                 std::string const& m):
+                                 std::string m):
       _id(id),
       _c(c),
       _rOut0(rOut0),
@@ -101,4 +101,4 @@ namespace mu2e {
   };
 
 }
-#endif /* MECOStyleProtonAbsorberGeom_MECOStyleProtonAbsorberPart_hh */
+#endif /* ProtonAbsorberGeom_ProtonAbsorberPart_hh */

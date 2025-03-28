@@ -18,7 +18,7 @@ cet_make_library(
       src/G4GeometryOptions.cc
       src/GeometryService.cc
       src/MBSMaker.cc
-      src/MECOStyleProtonAbsorberMaker.cc
+      src/ProtonAbsorberMaker.cc
       src/Mu2eCoordTransform.cc
       src/Mu2eEnvelope.cc
       src/Mu2eHallMaker.cc
@@ -55,7 +55,7 @@ cet_make_library(
       Offline::GeomPrimitives
       Offline::GlobalConstantsService
       Offline::MBSGeom
-      Offline::MECOStyleProtonAbsorberGeom
+      Offline::ProtonAbsorberGeom
       Offline::Mu2eHallGeom
       Offline::Mu2eInterfaces
       Offline::ProductionSolenoidGeom
@@ -82,7 +82,7 @@ cet_build_plugin(GeometryService art::service
       Offline::ExternalShieldingGeom
       Offline::ExtinctionMonitorFNAL_Geometry
       Offline::MBSGeom
-      Offline::MECOStyleProtonAbsorberGeom
+      Offline::ProtonAbsorberGeom
       Offline::Mu2eHallGeom
       Offline::ProductionSolenoidGeom
       Offline::ProductionTargetGeom

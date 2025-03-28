@@ -46,10 +46,18 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructTSdA(SimpleConfig const & _config){
+  void constructTSdA(SimpleConfig const & _config) {
 
-    int const verbosityLevel = _config.getInt("tsda.verbosityLevel",0);
-    double tmpRin = _config.getDouble("tsda.rin",0.0)*CLHEP::mm;
+    // Fetch TSdA geometry
+    GeomHandle<TSdA> atsd;
+
+    int tsda_build = _config.getInt("tsda.build",-4);
+    if (tsda_build == 0) return;
+//-----------------------------------------------------------------------------
+// TSdA build is required
+//-----------------------------------------------------------------------------
+    int       verbosityLevel = _config.getInt("tsda.verbosityLevel",0);
+    double    tmpRin         = _config.getDouble("tsda.rin",0.0)*CLHEP::mm;
 
 
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
@@ -66,9 +74,6 @@ namespace mu2e {
 
     // now constructing the internal neutron absorber
     // it is placed inside DS2Vacuum & DS3Vacuum like the protonabs1 & 2
-
-    // Fetch TSdA geometry
-    GeomHandle<TSdA> atsd;
 
     int version = atsd->version();
     if ( tmpRin < 1.0e-06 ) {  // just a check for zero

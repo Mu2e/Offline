@@ -30,7 +30,7 @@
 #include "Offline/GeometryService/inc/G4GeometryOptions.hh"
 #include "Offline/GeometryService/inc/VirtualDetector.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
-#include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "Offline/BeamlineGeom/inc/ProtonAbsorber.hh"
 #include "Offline/Mu2eG4/inc/checkForOverlaps.hh"
 #include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Offline/Mu2eG4/inc/finishNesting.hh"
@@ -273,10 +273,10 @@ namespace mu2e {
       bool opaflag = false;
       double opaz0, opaz1, opari0, opari1;
       if ( _config.getBool("hasProtonAbsorber", true) ) {
-        GeomHandle<MECOStyleProtonAbsorber> pageom;
+        GeomHandle<ProtonAbsorber> pageom;
         if ( pageom->isAvailable(ProtonAbsorberId::opabs1) ) {
           opaflag = true;
-          MECOStyleProtonAbsorberPart opa = pageom->part(2);
+          ProtonAbsorberPart opa = pageom->part(2);
           opaz0 = opa.center().z()-opa.halfLength();
           opaz1 = opa.center().z()+opa.halfLength();
           opari0 = opa.innerRadiusAtStart();
@@ -363,10 +363,10 @@ namespace mu2e {
       bool opaflag = false;
       double opaz0, opaz1, opari0, opari1;
       if ( _config.getBool("hasProtonAbsorber", true) ) {
-        GeomHandle<MECOStyleProtonAbsorber> pageom;
+        GeomHandle<ProtonAbsorber> pageom;
         if ( pageom->isAvailable(ProtonAbsorberId::opabs1) ) {
           opaflag = true;
-          MECOStyleProtonAbsorberPart opa = pageom->part(2);
+          ProtonAbsorberPart opa = pageom->part(2);
           opaz0 = opa.center().z()-opa.halfLength();
           opaz1 = opa.center().z()+opa.halfLength();
           opari0 = opa.innerRadiusAtStart();
@@ -1272,7 +1272,8 @@ namespace mu2e {
 
 
 
-    if ( _config.getBool("hasDiskCalorimeter",true)) {
+    if ( _config.getBool("hasDiskCalorimeter",true) )
+      {
 
         int vdIdDiskEdge = VirtualDetectorId::EMC_Disk_0_EdgeIn;
         int vdIdDiskSurf = VirtualDetectorId::EMC_Disk_0_SurfIn;

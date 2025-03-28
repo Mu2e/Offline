@@ -523,7 +523,7 @@ void EventDisplayFrame::changeSetup(bool whiteBackground, bool useHitColors, boo
   {
      redraw=true;
      _showProtonAbsorber=showProtonAbsorber;
-     _dataInterface->makeMecoStyleProtonAbsorberVisible(showProtonAbsorber);
+     _dataInterface->makeProtonAbsorberVisible(showProtonAbsorber);
   }
 
   if(std::isnan(_timeCurrent) || redraw) drawEverything();

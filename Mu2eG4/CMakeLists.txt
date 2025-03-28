@@ -143,7 +143,6 @@ cet_make_library(
       Offline::GlobalConstantsService
       Offline::MBSGeom
       Offline::MCDataProducts
-      Offline::MECOStyleProtonAbsorberGeom
       Offline::Mu2eG4Helper
       Offline::Mu2eHallGeom
       Offline::Mu2eUtilities

@@ -74,7 +74,7 @@ class DataInterface
   std::vector<boost::shared_ptr<VirtualShape> > _supportstructures;
   std::vector<boost::shared_ptr<VirtualShape> > _otherstructures;
   std::vector<boost::shared_ptr<VirtualShape> > _mbsstructures;
-  std::vector<boost::shared_ptr<Cone> > _mecostylepastructures;
+  std::vector<boost::shared_ptr<Cone> >         _pastructures;
   CLHEP::Hep3Vector _detSysOrigin;
   timeminmax        _hitsTimeMinmax, _tracksTimeMinmax;
   spaceminmax       _trackerMinmax, _targetMinmax, _calorimeterMinmax, _tracksMinmax, _crvMinmax;
@@ -131,7 +131,7 @@ class DataInterface
   void makeStrawsVisibleBeforeStart(bool visible);
   void makeCrystalsVisibleBeforeStart(bool visible);
   void makeMuonBeamStopStructuresVisible(bool visible);
-  void makeMecoStyleProtonAbsorberVisible(bool visible);
+  void makeProtonAbsorberVisible(bool visible);
   void useHitColors(bool hitcolors, bool whitebackground);
   void useTrackColors(boost::shared_ptr<ContentSelector> const &contentSelector, bool trackcolors, bool whitebackground);
   void getFilterValues(unsigned int &minPoints, double &minTime, double &maxTime, double &minMomentum,

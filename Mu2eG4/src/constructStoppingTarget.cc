@@ -33,7 +33,7 @@
 #include "Offline/Mu2eG4/inc/nestTubs.hh"
 #include "Offline/Mu2eG4/inc/nestCons.hh"
 #include "Offline/Mu2eG4/inc/checkForOverlaps.hh"
-#include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "Offline/BeamlineGeom/inc/ProtonAbsorber.hh"
 
 // G4 includes
 #include "Geant4/G4Material.hh"
@@ -76,7 +76,7 @@ namespace mu2e {
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
     //get the proton absorber elements to prevent overlaps
-    GeomHandle<MECOStyleProtonAbsorber> pabs;
+    GeomHandle<ProtonAbsorber> pabs;
     bool overlapPabs = false;
     double cylinderRadius = target->cylinderRadius();
     double rAtZClosest, opaZCenter, opaR1, opaR2, opaHL, stZCenter, zclosest;

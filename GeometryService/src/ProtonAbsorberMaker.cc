@@ -1,5 +1,5 @@
 //
-// Construct and return MECOStyleProtonAbsorber
+// Construct and return ProtonAbsorber
 //
 //
 // Original author MyeongJae Lee
@@ -22,8 +22,8 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "Offline/GeometryService/inc/MECOStyleProtonAbsorberMaker.hh"
-#include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "Offline/BeamlineGeom/inc/ProtonAbsorber.hh"
+#include "Offline/GeometryService/inc/ProtonAbsorberMaker.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
@@ -38,7 +38,7 @@ namespace mu2e {
 
   // Constructor that gets information from the config file instead of
   // from arguments.
-  MECOStyleProtonAbsorberMaker::MECOStyleProtonAbsorberMaker(SimpleConfig const& _config, const DetectorSolenoid& ds, const StoppingTarget& target)
+  ProtonAbsorberMaker::ProtonAbsorberMaker(SimpleConfig const& _config, const DetectorSolenoid& ds, const StoppingTarget& target)
     : _ds(&ds), _target(&target)
   {
     BuildIt (_config);
@@ -48,13 +48,13 @@ namespace mu2e {
 
   }
 
-  void MECOStyleProtonAbsorberMaker::BuildIt ( SimpleConfig const& _config)
+  void ProtonAbsorberMaker::BuildIt ( SimpleConfig const& _config)
   {
     _IPAVersion = _config.getInt("protonabsorber.version", 1);
     Build(_config);
   }
 
-  void MECOStyleProtonAbsorberMaker::Build ( SimpleConfig const& _config)
+  void ProtonAbsorberMaker::Build ( SimpleConfig const& _config)
   {
 
     //////////////////////////////////////
@@ -244,7 +244,7 @@ namespace mu2e {
     // Build
     /////////
 
-    _pabs = unique_ptr<MECOStyleProtonAbsorber>(new MECOStyleProtonAbsorber());
+    _pabs = unique_ptr<ProtonAbsorber>(new ProtonAbsorber());
     _pabs->_oPAVersion = oPAversion;
     _pabs->_nOPASupportSlats = 3; //default for versions before version 3
     _pabs->_nOPASupportSlatTypes = 1; //default for versions before version 3
@@ -301,14 +301,14 @@ namespace mu2e {
     // std::cout<< "Outer proton Z-end in Mu2e: "   << pabs4ZOffset+pabs4halflen << std::endl;
     // std::cout<< "Outer proton Z-start in Mu2e: " << pabs3ZOffset-pabs3halflen << std::endl;
 
-    _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 0, pabs1Offset, pabs1rOut0, pabs1rIn0, pabs1rOut1, pabs1rIn1, pabs1halflen, materialName));
-    _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 1, pabs2Offset, pabs2rOut0, pabs2rIn0, pabs2rOut1, pabs2rIn1, pabs2halflen, materialName));
+    _pabs->_parts.push_back( ProtonAbsorberPart( 0, pabs1Offset, pabs1rOut0, pabs1rIn0, pabs1rOut1, pabs1rIn1, pabs1halflen, materialName));
+    _pabs->_parts.push_back( ProtonAbsorberPart( 1, pabs2Offset, pabs2rOut0, pabs2rIn0, pabs2rOut1, pabs2rIn1, pabs2halflen, materialName));
     if ( oPAversion > 1 ) {
-      _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 2, pabs3Offset, pabs3rOut0, pabs3rIn0, pabs3rOut1, pabs3rIn1, pabs3halflen, oPAnSides, oPAmaterialName));
-      _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 3, pabs4Offset, pabs4rOut0, pabs4rIn0, pabs4rOut1, pabs4rIn1, pabs4halflen, oPAnSides, oPAmaterialName));
+      _pabs->_parts.push_back( ProtonAbsorberPart( 2, pabs3Offset, pabs3rOut0, pabs3rIn0, pabs3rOut1, pabs3rIn1, pabs3halflen, oPAnSides, oPAmaterialName));
+      _pabs->_parts.push_back( ProtonAbsorberPart( 3, pabs4Offset, pabs4rOut0, pabs4rIn0, pabs4rOut1, pabs4rIn1, pabs4halflen, oPAnSides, oPAmaterialName));
     } else {
-      _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 2, pabs3Offset, pabs3rOut0, pabs3rIn0, pabs3rOut1, pabs3rIn1, pabs3halflen, oPAmaterialName));
-      _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 3, pabs4Offset, pabs4rOut0, pabs4rIn0, pabs4rOut1, pabs4rIn1, pabs4halflen, oPAmaterialName));
+      _pabs->_parts.push_back( ProtonAbsorberPart( 2, pabs3Offset, pabs3rOut0, pabs3rIn0, pabs3rOut1, pabs3rIn1, pabs3halflen, oPAmaterialName));
+      _pabs->_parts.push_back( ProtonAbsorberPart( 3, pabs4Offset, pabs4rOut0, pabs4rIn0, pabs4rOut1, pabs4rIn1, pabs4halflen, oPAmaterialName));
     }
 
     // global variables
@@ -380,20 +380,22 @@ namespace mu2e {
     // Pion Degrader
     //******************
 
-    (_pabs->_degraderBuild) = _config.getBool("degrader.build",false);
+    _pabs->_degraderBuild = _config.getBool("degrader.build"  ,false);
     if ( _pabs->_degraderBuild ) {
-      _pabs->_degraderRot = _config.getDouble("degrader.rotation");
-      _pabs->_degraderZ0 =  _config.getDouble("degrader.upstreamEdge.z");
-      _pabs->_degraderFiltMaterial =
-        _config.getString("degrader.filter.materialName");
-      _pabs->_degraderFramMaterial =
-        _config.getString("degrader.frame.materialName");
-      _pabs->_degraderCowtMaterial =
-        _config.getString("degrader.counterweight.materialName");
-      _pabs->_degraderRodMaterial =
-        _config.getString("degrader.rod.materialName");
-      _pabs->_degraderSuptMaterial =
-        _config.getString("degrader.support.materialName","G4_Al");
+      _pabs->_degraderVersion = _config.getInt   ("degrader.version"  ,2);
+      _pabs->_degraderRot     = _config.getDouble("degrader.rotation");
+      _pabs->_degraderZ0      = _config.getDouble("degrader.upstreamEdge.z");
+      _pabs->_degraderFiltMaterial = _config.getString("degrader.filter.materialName");
+
+      if (_pabs->_degraderVersion >= 3) {
+        _pabs->_degraderFilter2Material   = _config.getString("degrader.filter2.materialName");
+        _pabs->_degraderConverterMaterial = _config.getString("degrader.converter.materialName");
+      }
+
+      _pabs->_degraderFramMaterial = _config.getString("degrader.frame.materialName");
+      _pabs->_degraderCowtMaterial = _config.getString("degrader.counterweight.materialName");
+      _pabs->_degraderRodMaterial  = _config.getString("degrader.rod.materialName");
+      _pabs->_degraderSuptMaterial = _config.getString("degrader.support.materialName","G4_Al");
 
       double rin = _config.getDouble("degrader.frame.rIn");
       _pabs->_degraderFrameDims.push_back(rin);
@@ -463,6 +465,30 @@ namespace mu2e {
       _pabs->_degraderSupportPlateDims.push_back(hlpy);
       double hlpz = _config.getDouble("degrader.supportPlate.dz",0.0);
       _pabs->_degraderSupportPlateDims.push_back(hlpz);
+
+      if (_pabs->_degraderVersion >= 3) {
+//-----------------------------------------------------------------------------
+// P.Murat: parameters of the second filter disk and the converter
+//-----------------------------------------------------------------------------
+        double rin2 = _config.getDouble("degrader.filter2.rIn");
+        _pabs->_degraderFilter2Dims.push_back(rin2);
+        double rout2 = _config.getDouble("degrader.filter2.rOut");
+        _pabs->_degraderFilter2Dims.push_back(rout2);
+        double hl2  = _config.getDouble("degrader.filter2.halfLength");
+        _pabs->_degraderFilter2Dims.push_back(hl2);
+//-----------------------------------------------------------------------------
+// parameters of the second filter disk and the converter
+// to minimize the energy losses may want to move the converter ring a bit forward
+//-----------------------------------------------------------------------------
+        double rin_conv  = _config.getDouble("degrader.converter.rIn");
+        _pabs->_degraderConverterDims.push_back(rin_conv);
+        double rout_conv = _config.getDouble("degrader.converter.rOut");
+        _pabs->_degraderConverterDims.push_back(rout_conv);
+        double hl_conv   = _config.getDouble("degrader.converter.halfLength");
+        _pabs->_degraderConverterDims.push_back(hl_conv);
+        double dz_conv   = _config.getDouble("degrader.converter.dz");
+        _pabs->_degraderConverterDz = dz_conv;
+      }
 
     } // end of the if for Pion Degrader building
 
@@ -550,17 +576,16 @@ namespace mu2e {
       }
       _pabs->_ipaSupport->_supportWireMap.push_back( wireVector );
     }
-
   }
 
 
-  void MECOStyleProtonAbsorberMaker::PrintConfig ( ) {
+  void ProtonAbsorberMaker::PrintConfig ( ) {
 
     double pabs1z = (_pabs->part(0)).center().z();
     double pabs2z = (_pabs->part(1)).center().z();
     double pabs1hl = (_pabs->part(0)).halfLength();
     double pabs2hl = (_pabs->part(1)).halfLength();
-    std::cout<<"MECOStyleProtonAbsorberMaker Configuration -----------------"<<std::endl;
+    std::cout<<"ProtonAbsorberMaker Configuration -----------------"<<std::endl;
     std::cout<<" Dist from target end : " << _pabs->distanceFromTargetEnd() << std::endl;
     std::cout<<" vdHL : " << _pabs->virtualDetectorHalfLength() << std::endl;
     std::cout<<" pabs1len (full length) : " << pabs1hl*2. << std::endl;
