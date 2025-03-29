@@ -1,0 +1,30 @@
+string building.backfill.psArea.RWallFootTop.name     = "backfillPsAreaRWallFootTop";
+string building.backfill.psArea.RWallFootTop.material = "MBOverburden";
+double building.backfill.psArea.RWallFootTop.offsetFromMu2eOrigin.x   = 947.40;
+double building.backfill.psArea.RWallFootTop.offsetFromFloorSurface.y = 7150.00;
+double building.backfill.psArea.RWallFootTop.offsetFromMu2eOrigin.z   = -3581.40;
+double building.backfill.psArea.RWallFootTop.yHalfThickness           = 139.60;
+vector<double> building.backfill.psArea.RWallFootTop.xPositions = {
+-2921.00, // 0
+-2921.00, // 1
+-6254.65, // 2
+-11709.30, // 3
+-12318.80, // 4
+-12294.70, // 5
+-16359.85, // 6
+-16456.25, // 7
+-18793.61, // 8
+-19250.27 // 9
+};
+vector<double> building.backfill.psArea.RWallFootTop.yPositions = {
+-7505.60, // 0
+-609.70, // 1
+-609.70, // 2
+-1943.20, // 3
+-2092.05, // 4
+-2190.75, // 5
+-3180.35, // 6
+-2785.55, // 7
+-3356.18, // 8
+-7505.60 // 9
+};

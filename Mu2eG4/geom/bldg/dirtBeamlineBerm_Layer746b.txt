@@ -1,49 +1,42 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_beamline_dirtBerm.ccl
-// Nov, 2024
-// dirtbeamline removed, several layers of berms added; ref: docdb:49557
-// layer-746' West side
-
 string dirt.beamline.berm.l746b.name     = "dirtBeamlineBerml746b";
-
 string dirt.beamline.berm.l746b.material = "MBOverburden";
-
-double dirt.beamline.berm.l746b.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.berm.l746b.offsetFromFloorSurface.y = 7924.8003;
-double dirt.beamline.berm.l746b.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.beamline.berm.l746b.yHalfThickness           = 152.4003; //0.5 US foot to mm
-
+double dirt.beamline.berm.l746b.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.beamline.berm.l746b.offsetFromFloorSurface.y = 7924.80;
+double dirt.beamline.berm.l746b.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.beamline.berm.l746b.xreplace ={4 ,5 };
+vector<int> dirt.beamline.berm.l746b.yreplace ={3 ,4 };
+double dirt.beamline.berm.l746b.yHalfThickness           = 152.30;
 vector<double> dirt.beamline.berm.l746b.xPositions = {
-  -14571.5, // S1
-  -15192.4, // S2
-  -16771,   // S3
-  -22009.2, // S4
-  -19192.2, // S5
-  -31750.5, // S6
-  -31750.5, // S7
-  -22633.6, // S8
-  -14706.7, // S9
-  -14706.0, // S10
-  -20527.2, // S11
-  -20527.2  // S12
+-15233.39, // 0
+-16771.00, // 1
+-22009.20, // 2
+-19192.20, // 3
+-51000.00, // 4
+-51000.00, // 5
+-22633.60, // 6
+-14706.70, // 7
+-14706.00, // 8
+-20490.68, // 9
+-20527.58, // 10
+-20527.58, // 11
+-20953.28, // 12
+-19488.92, // 13
+-19421.57 // 14
 };
-
 vector<double> dirt.beamline.berm.l746b.yPositions = {
-  -8302.8,  //S1
-  -9403.5,  //S2
-  -10659.9, //S3
-  -12176.3, //S4
-  -25857.2, //S5
-  -25857.2, //S6
-  27811.5,  //S7
-  8983.0,   //S9
-  11477.0,  //S10
-  10312.4,  //S11
-  8866.59,  //S12
-  -8302.8   //S13
+-9436.20, // 0
+-10659.90, // 1
+-12176.30, // 2
+-51000.00, // 3
+-51000.00, // 4
+27811.50, // 5
+8983.00, // 6
+11477.00, // 7
+10312.40, // 8
+8910.67, // 9
+8910.67, // 10
+-4380.39, // 11
+-8251.16, // 12
+-8412.31, // 13
+-9436.20 // 14
 };
-// Local Variables:
-// mode:c++
-// End:

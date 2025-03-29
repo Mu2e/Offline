@@ -55,3 +55,21 @@ int TimeUtility::parseTimeTZ(std::string const& stime, std::time_t& ttime) {
 
   return 0;
 }
+
+std::string TimeUtility::reformat1(const std::string& stime) {
+    std::string result = stime;
+
+    size_t dotPos = result.find('.');
+
+    if (dotPos != std::string::npos) { // Found a decimal point
+        size_t endPos = dotPos + 1;
+
+        while (endPos < result.length() && std::isdigit(result[endPos])) {
+            endPos++;
+        }
+
+        result.erase(dotPos, endPos - dotPos); // Remove the decimal part
+    }
+    result[10] = 'T';
+    return result;
+}

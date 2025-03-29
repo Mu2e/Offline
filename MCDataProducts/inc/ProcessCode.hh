@@ -39,6 +39,7 @@ namespace mu2e {
     // Need to keep the enum and the _name member in sync.
     // Add new elements just before lastEnum; do not insert new elements
     // prior to this - it will break backwards compatibility.
+    // if you add a new beam process (from stopped muons or pions) please update the isFromProtonBeam function
     enum enum_type {
       unknown,                AlphaInelastic,          annihil,             AntiLambdaInelastic, // 3
       AntiNeutronInelastic,   AntiOmegaMinusInelastic, AntiProtonInelastic, AntiSigmaMinusInelastic, // 7
@@ -231,6 +232,9 @@ namespace mu2e {
     bool isValid() const{
       return isValid(_id);
     }
+
+    // return true if this process originated with a beam proton
+    static bool isFromProtonBeam(const ProcessCode& pcode);
 
 #ifndef SWIG
     // List of names corresponding to the enum.

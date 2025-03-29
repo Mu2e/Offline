@@ -34,7 +34,7 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<art::InputTag> stmWaveformDigisTag{ Name("stmWaveformDigisTag"), Comment("InputTag for STMWaveformDigiCollection")};
         fhicl::Atom<bool> subtractPedestal{ Name("subtractPedestal"), Comment("True/False whether to subtract the pedestal before plotting")};
-        fhicl::Atom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit: \"sample_number\", \"waveform_time\", or \"event_time\"") };
+        fhicl::Atom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit: \"sample_number\", \"adcs_time\", or \"event_time\"") };
         fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Verbosity level")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
@@ -75,17 +75,17 @@ namespace mu2e {
 
     const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
 
-    for (const auto& waveform : *waveformsHandle) {
+    for (const auto& adcs : *waveformsHandle) {
       histname.str("");
-      histname << "evt" << event.event() << "_waveform" << count;
+      histname << "evt" << event.event() << "_adcs" << count;
       histtitle.str("");
       histtitle << "Event " << event.event() << " Waveform " << count << " (" << _channel.name() << ")";
 
-      Binning binning = STMUtils::getBinning(waveform, _xAxis, nsPerCt);
+      Binning binning = STMUtils::getBinning(adcs, _xAxis, nsPerCt);
       TH1F* hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), binning.nbins(),binning.low(),binning.high());
 
-      for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc) {
-        const auto adc = waveform.adcs().at(i_adc);
+      for (size_t i_adc = 0; i_adc < adcs.adcs().size(); ++i_adc) {
+        const auto adc = adcs.adcs().at(i_adc);
 
         auto content = adc;
         if (_subtractPedestal) {

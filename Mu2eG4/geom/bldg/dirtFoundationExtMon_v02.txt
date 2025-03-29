@@ -1,55 +1,36 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_foundation_ExtMon.ccl
-
 string dirt.foundation.extMon.name     = "dirtFoundationExtMon";
-
 string dirt.foundation.extMon.material = "MBOverburden";
-
-double dirt.foundation.extMon.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.foundation.extMon.offsetFromFloorSurface.y = 3860.8;
-double dirt.foundation.extMon.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.foundation.extMon.yHalfThickness           = 533.4;
-
-vector<int>    dirt.foundation.extMon.xreplace   = { 13, 14 };
+double dirt.foundation.extMon.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.foundation.extMon.offsetFromFloorSurface.y = 4089.40;
+double dirt.foundation.extMon.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.foundation.extMon.xreplace ={10 ,11 };
+vector<int> dirt.foundation.extMon.yreplace ={0 ,11 };
+double dirt.foundation.extMon.yHalfThickness           = 304.80;
 vector<double> dirt.foundation.extMon.xPositions = {
-  -19179,     // b
-  -19085.1,   // c
-  -26778.2,   // d
-  -25645.6,   // e
-  -23721,   // f
-  -23178.8,   // g
-  -21136.9,   // h
-  -20471.2,   // e0
-  -18670.6,   // e1
-  -18326.3,   // e6
-  -17952.5,   // SE corner of foundationExtMon
-  -17853.7,   // SW corner psWallUpper
-  -17853.7,   // e7_to_S
-  -50000,   // SWcorner
-  -50000   // b_to_W
+-19066.02, // 0
+-19066.02, // 1
+-20904.51, // 2
+-21639.36, // 3
+-23681.23, // 4
+-24223.42, // 5
+-26148.09, // 6
+-27280.66, // 7
+-19585.07, // 8
+-19681.30, // 9
+-60000.00, // 10
+-60000.00 // 11
 };
-
-vector<int>    dirt.foundation.extMon.yreplace   = { 12, 13 };
 vector<double> dirt.foundation.extMon.yPositions = {
-  1778.98,   // b
-  1383.57,   // c
-  -494.654,   // d
-  -5133.6,   // e
-  -4663.7,   // f
-  -6884.48,   // g
-  -6385.97,   // h
-  -9112.58,   // e0
-  -7928.18,   // e1
-  -3346.64,   // e6
-  -3255.37,   // SE corner foundationExtMon
-  -3649.57,   // SW corner psWallUpper
-  -50000,   // e7_to_S
-  -50000,   // SWcorner
-  1778.98   // b_to_W
+-60000.00, // 0
+-9518.47, // 1
+-9518.47, // 2
+-6508.57, // 3
+-7007.08, // 4
+-4786.31, // 5
+-5256.21, // 6
+-617.16, // 7
+1261.67, // 8
+1656.36, // 9
+1656.36, // 10
+-60000.00 // 11
 };
-
-// Local Variables:
-// mode:c++
-// End:

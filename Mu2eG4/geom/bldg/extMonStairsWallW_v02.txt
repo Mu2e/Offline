@@ -1,0 +1,18 @@
+string building.extMon.stairs.wallW.name     = "extMonStairsWallW";
+string building.extMon.stairs.wallW.material = "CONCRETE_MARS";
+double building.extMon.stairs.wallW.offsetFromMu2eOrigin.x   = 947.40;
+double building.extMon.stairs.wallW.offsetFromFloorSurface.y = 8978.95;
+double building.extMon.stairs.wallW.offsetFromMu2eOrigin.z   = -3581.40;
+double building.extMon.stairs.wallW.yHalfThickness           = 1689.05;
+vector<double> building.extMon.stairs.wallW.xPositions = {
+-19421.47, // 0
+-19065.97, // 1
+-19065.97, // 2
+-19421.47 // 3
+};
+vector<double> building.extMon.stairs.wallW.yPositions = {
+-7505.70, // 0
+-7505.70, // 1
+-9436.10, // 2
+-9436.10 // 3
+};
