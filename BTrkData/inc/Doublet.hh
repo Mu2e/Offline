@@ -12,7 +12,7 @@
 
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "BTrk/TrkBase/HelixParams.hh"
+#include "Offline/BTrkLegacy/HelixParams.hh"
 
 // C++
 #include <vector>

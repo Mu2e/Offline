@@ -7,8 +7,8 @@
 #ifndef DoubletAmbigResolver_HH
 #define DoubletAmbigResolver_HH
 
-#include "BTrk/BaBar/BaBar.hh"
-#include "Offline/TrkReco/inc/AmbigResolver.hh"
+// #include "BTrk/BaBar/BaBar.hh"
+   #include "Offline/TrkReco/inc/AmbigResolver.hh"
 
 #ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"

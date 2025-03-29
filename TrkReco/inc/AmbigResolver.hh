@@ -7,7 +7,7 @@
 //
 #ifndef AmbigResolver_HH
 #define AmbigResolver_HH
-#include "BTrk/BaBar/BaBar.hh"
+// #include "BTrk/BaBar/BaBar.hh"
 
 #include <vector>
 
