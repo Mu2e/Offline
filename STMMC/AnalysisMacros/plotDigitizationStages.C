@@ -60,7 +60,7 @@ void collectData(const std::string fileName, const std::string treeName, std::ve
         if (branch)
             branchNames.push_back(branch->GetName());
     };
-
+    
     // If the branches exist, assign them to the appropriate variables
     double dataChargeCollected, dataChargeDecayed;
     int16_t dataADC;
@@ -112,7 +112,7 @@ void plot(std::vector<double> &chargeCollected, std::vector<double> &chargeDecay
     /*
         Description
             Generates the plots
-
+        
         Arguments
             chargeCollected - vector of charge collected used to generate the plot
             chargeDecayed - vector of charges decayed used to generate the plot
@@ -170,7 +170,7 @@ void plot(std::vector<double> &chargeCollected, std::vector<double> &chargeDecay
         gChargeCollected->Delete();
         cChargeCollected->Close();
     };
-
+    
     // Generate the plot for the decayed charge
     if (!chargeDecayed.empty()) {
         TCanvas* cChargeDecayed = new TCanvas("cChargeDecayed", "chargeDecayed", 800, 600);
@@ -184,7 +184,7 @@ void plot(std::vector<double> &chargeCollected, std::vector<double> &chargeDecay
         gChargeDecayed->Delete();
         cChargeDecayed->Close();
     };
-
+    
     // Generate the plot for the digitized waveform
     if (!ADCs.empty()) {
         TCanvas* cADCs = new TCanvas("cADCs", "ADCs", 800, 600);
@@ -223,7 +223,7 @@ std::vector<unsigned int> makeVectorUnique(std::vector<unsigned int>& v) {
     return vUnique;
 };
 
-void plotDigitization(const std::string fileName, const std::string treeName, const unsigned int eventID = 0){
+void plotDigitizationStages(const std::string fileName, const std::string treeName, const unsigned int eventID = 0){
     /*
         Description
             Plots the results from HPGeWaveformsFromStepPointMCs

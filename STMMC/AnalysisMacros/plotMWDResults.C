@@ -205,9 +205,9 @@ void plot(std::vector<double> times, std::vector<double> energies, std::vector<d
     };
     double eRangeFull = eMax - eMin;
     double eRangeRed  = ERed - eMin;
-    double e347  = 347, eRange347  = e347  * signalAcceptance,  eMin347  = e347  - eRange347,   eMax347  = e347  + eRange347;
-    double e844  = 844, eRange844  = e844  * signalAcceptance,  eMin844  = e844  - eRange844,   eMax844  = e844  + eRange844;
-    double e1809 = 809, eRange1809 = e1809 * signalAcceptance,  eMin1809 = e1809 - eRange1809,  eMax1809 = e1809 + eRange1809;
+    double e347  = 347,  eRange347  = e347  * signalAcceptance,  eMin347  = e347  - eRange347,   eMax347  = e347  + eRange347;
+    double e844  = 844,  eRange844  = e844  * signalAcceptance,  eMin844  = e844  - eRange844,   eMax844  = e844  + eRange844;
+    double e1809 = 1809, eRange1809 = e1809 * signalAcceptance,  eMin1809 = e1809 - eRange1809,  eMax1809 = e1809 + eRange1809;
 
     // Double the energy range to include both sides of the acceptance
     eRange347  *=2;
@@ -279,7 +279,7 @@ void plot(std::vector<double> times, std::vector<double> energies, std::vector<d
     // Set up TH1Ds
     std::vector<TH1D*> hists;
     for (int i = 0; i < nOrder; i++)
-        hists.emplace_back(new TH1D(("h" + order[i]).c_str(), ("h" + order[i]).c_str(), nBins[i], eMinMax[i][0], eMinMax[i][1]));
+        hists.emplace_back(new TH1D((order[i] + " spectrum").c_str(), (order[i] + " spectrum").c_str(), nBins[i], eMinMax[i][0], eMinMax[i][1]));
 
     // Populate the TH1Ds
     const int nEntries = energies.size();
@@ -393,7 +393,7 @@ void makePlots(std::vector<double> &times, std::vector<double> &energies, double
 };
 
 
-void plotMWDResults(std::string fileName, std::string treeName, double ERed = 2000.0, double EMin = 0.0, const double signalAcceptance = 0.1, double binWidthFull = 500, double binWidthRed = 10, double binWidth347 = 2, double binWidth844 = 2, double binWidth1809 = 2) {
+void plotMWDResults(std::string fileName, std::string treeName, double ERed = 2000.0, double EMin = 0.0, const double signalAcceptance = 0.1, double binWidthFull = 500, double binWidthRed = 5, double binWidth347 = 5, double binWidth844 = 5, double binWidth1809 = 10) {
     /*
         Description
             Plots spectra measured by the detectors using the MWD algorithm. Names the files as

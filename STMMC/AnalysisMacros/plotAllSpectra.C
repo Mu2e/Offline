@@ -614,8 +614,8 @@ void makePlot(std::vector<double> electronEnergies, std::vector<double> electron
     // Set up the legend
     TLegend *legend = new TLegend(lx1, ly1, lx2, ly2, "Data");
     legend->SetHeader("Dataset", "C");
-    legend->AddEntry("Background",  "Background",   "l");
-    legend->AddEntry("Signal",      "Signal",       "l");
+    legend->AddEntry("Background",  "Background",   "")->SetTextColor(kRed);
+    legend->AddEntry("Signal",      "Signal",       "")->SetTextColor(kBlue);
     for (TCanvas* c : sCanvases)
         c->Update();
 
@@ -872,6 +872,7 @@ void plotAllSpectra(const std::vector<std::string> electronFileNames, const std:
             Required hard-coded changes for the user
             For virtual detectors, if plots are required for virtual detectors other than {101, 88, 89, 90}, this can be changed with variable plotVirtualdetectorIds
             For all plots, if plots are required for particles other than {positrons, electrons, muons, photons}, this can be changed with BOTH plotPdgIds and plotParticleNames
+
 
         Arguments
             electronFileNames - vector of EleBeamCat derived ROOT file names as a relative path to cwd

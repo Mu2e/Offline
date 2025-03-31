@@ -2,6 +2,16 @@
 // See SignalBackgroundRatio.sh for usage examples
 // Original author - Pawel Plesniak
 
+void customErrorHandler(int level, Bool_t abort, const char* location, const char* message) {
+    /*
+        Description
+            Define a custom error handler that won't print the stack trace but will print an error message and exit.
+    */
+    std::cerr << message << std::endl;
+    if (level > kInfo)
+        exit(1);
+};
+
 void collectDetectorData(const std::string fileName, const std::string treeName, std::vector<double> &energies, std::vector<double> &times) {
     /*
         Description
@@ -144,6 +154,9 @@ void SignalBackgroundRatio(const std::vector<std::string> electronFileNames, con
             signalTimes - vector of vectors of times used to accept the signals, as tMin, tMax, and tMod
             nSignals - number of signals to generate the signal to background ratio for
     */
+
+    // Update global parameters
+    SetErrorHandler(customErrorHandler);
     std::vector<double> electronEnergies, electronTimes, muonEnergies, muonTimes;
     for (std::string fileName : electronFileNames)
         collectDetectorData(fileName, treeName, electronEnergies, electronTimes);
@@ -160,6 +173,7 @@ void SignalBackgroundRatio(const std::vector<std::string> electronFileNames, con
         electronCount   = count(electronEnergies,   electronTimes,  signalEnergies[i],  signalAcceptance,   signalTimes[i]);
         muonCount       = count(muonEnergies,       muonTimes,      signalEnergies[i],  signalAcceptance,   signalTimes[i]);
         std::cout << "For signal at " << signalEnergies[i] << " MeV, the signal/background ratio is " << (1.0 * muonCount) / electronCount << std::endl;
+        std::cout << "For signal at " << signalEnergies[i] << " MeV, the signal/total ratio is " << (1.0 * muonCount) / (electronCount + muonCount) << " pm " << std::sqrt(1.0 * muonCount * (2 * muonCount + electronCount) / std::pow(electronCount + muonCount, 3)) << std::endl;
     };
     return;
 };
