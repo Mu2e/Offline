@@ -51,7 +51,7 @@ physics : {
     }
     MWDHPGe : {
       module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : @local::STMMCAnalysis.MWD.HPGe.stmWaveformDigisTag
+      stmWaveformDigisTag : @local::STMMCAnalysis.MWD.HPGe.stmWaveformDigisTag.concatenated
       tau : @local::STMMCAnalysis.MWD.HPGe.tau
       M : @local::STMMCAnalysis.MWD.HPGe.M
       L : @local::STMMCAnalysis.MWD.HPGe.L
@@ -72,7 +72,7 @@ physics : {
       STMWaveformDigisTag : @local::HPGeDigitization.concatenation.filterTag
     }
   }
-  digitization_path : [DigiHPGe, concatenateWaveformsHPGe, concatenationFilterHPGe, MWDHPGe]
+  digitization_path : [DigiHPGe, concatenateWaveformsHPGe, concatenationFilterHPGe, ZSHPGe, MWDHPGe]
   trigger_paths : [digitization_path]
   output_path : [compressedOutput]
   end_paths : [output_path]

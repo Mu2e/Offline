@@ -99,7 +99,7 @@ STMMCAnalysis : {
             tbefore : @local::STM.HPGe.tbefore
             tafter : @local::STM.HPGe.tafter
             threshold : @local::STM.HPGe.threshold
-            window : 50 # @local::STM.HPGe.window TODO - when using the optimized number from STMReco, the gradients were fluctuating between the minimum band of an int16_t and 0, but this disappeared when set to 50. Figure out why.
+            window : 50 # @local::STM.HPGe.window # TODO - when using the optimized number from STMReco, the gradients were fluctuating between the minimum band of an int16_t and 0, but this disappeared when set to 50. Figure out why.
             naverage : @local::STM.HPGe.naverage
         }
         LaBr : {
@@ -113,17 +113,20 @@ STMMCAnalysis : {
     }
     MWD : {
         HPGe : {
-            stmWaveformDigisTag : "ZSHPGe:"
+            stmWaveformDigisTag : {
+                ZS: "ZSHPGe:"
+                concatenated: "concatenateWaveformsHPGe:"
+            }
             tau : @local::STM.HPGe.tau
-            M : @local::STM.HPGe.M # 100 # @local::STM.HPGe.M
-            L : @local::STM.HPGe.L # 50 # @local::STM.HPGe.L
+            M : 100 # @local::STM.HPGe.M
+            L : 50 # @local::STM.HPGe.L
             nsigma_cut : 3 # @local::STM.HPGe.nsigma_cut
             thresholdgrad : @local::STM.HPGe.thresholdgrad
             defaultBaselineMean : { # TODO - this should be the pedestal
                 full : @local::STM.HPGe.defaultBaselineMean
                 suppressed : 0
             }
-            defaultBaselineSD : { # TODO - this should be NoiseSD
+            defaultBaselineSD : { # TODO - this should be NoiseSD converted to ADC bins
                 full: @local::STM.HPGe.defaultBaselineSD
                 suppressed: 0
             }
