@@ -1,0 +1,60 @@
+string dirt.psArea.dirtSlab2.N2.name     = "dirtPsAreaDirtSlab2N2";
+string dirt.psArea.dirtSlab2.N2.material = "CA7Backfill";
+double dirt.psArea.dirtSlab2.N2.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.psArea.dirtSlab2.N2.offsetFromFloorSurface.y = 7124.80;
+double dirt.psArea.dirtSlab2.N2.offsetFromMu2eOrigin.z   = -3581.40;
+double dirt.psArea.dirtSlab2.N2.yHalfThickness           = 164.90;
+vector<double> dirt.psArea.dirtSlab2.N2.xPositions = {
+-1270.10, // 0
+-4140.20, // 1
+-4140.20, // 2
+-4749.80, // 3
+-4749.80, // 4
+-11709.40, // 5
+-11709.40, // 6
+-12319.10, // 7
+-12319.10, // 8
+-13843.12, // 9
+-13843.12, // 10
+-12319.10, // 11
+-12318.90, // 12
+-12294.80, // 13
+-16359.75, // 14
+-16456.15, // 15
+-15864.06, // 16
+-16948.43, // 17
+-17540.45, // 18
+-17636.85, // 19
+-17636.85, // 20
+-14503.30, // 21
+-12318.90, // 22
+-12318.90, // 23
+-1270.10 // 24
+};
+vector<double> dirt.psArea.dirtSlab2.N2.yPositions = {
+2438.40, // 0
+2438.40, // 1
+6858.00, // 2
+6858.00, // 3
+6502.40, // 4
+6502.40, // 5
+6858.00, // 6
+6858.00, // 7
+5267.35, // 8
+5267.35, // 9
+-346.15, // 10
+-346.15, // 11
+-2091.95, // 12
+-2190.65, // 13
+-3180.25, // 14
+-2785.45, // 15
+-2640.85, // 16
+1800.84, // 17
+1656.29, // 18
+2051.10, // 19
+6464.50, // 20
+7264.30, // 21
+7264.30, // 22
+9702.70, // 23
+9702.70 // 24
+};

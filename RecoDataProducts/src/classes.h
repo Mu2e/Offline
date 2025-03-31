@@ -52,6 +52,7 @@
 #include "Offline/RecoDataProducts/inc/TrackSummary.hh"
 #include "Offline/RecoDataProducts/inc/TrackCaloAssns.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/KalIntersection.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
 #include "Offline/RecoDataProducts/inc/TrkCaloHitPID.hh"
 #include "Offline/RecoDataProducts/inc/TrkQual.hh"
@@ -69,6 +70,7 @@
 
 // CRV
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulseFlags.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
@@ -95,6 +97,7 @@
 
 // general reco
 #include "Offline/RecoDataProducts/inc/RecoCount.hh"
+#include "Offline/RecoDataProducts/inc/DAQerror.hh"
 
 // STM
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"

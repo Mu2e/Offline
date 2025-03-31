@@ -55,7 +55,7 @@ namespace mu2e {
     TubsParams const & getTubsParams() const { return _params; }
 
     std::string getName() const { return _name; }
-    void        setName( std::string name ) { _name = name; }
+    void        setName( std::string const& name ) { _name = name; }
 
     // Genreflex can't do persistency of vector<Tube> without a default constructor
     Tube() : _params(0,0,0) {}

@@ -212,6 +212,9 @@ namespace mu2e {
 
       bool overrideDbTimeOffsets() const { return _overrideDbTimeOffsets; }
 
+      TrkTypes::TDCValue timeAnalogToDigital(double time, StrawId& sid) const;
+      double timeDigitalToAnalog(TrkTypes::TDCValue time, StrawId& sid) const;
+
     private:
       bool _overrideDbTimeOffsets; // for digitization we override Db parameters and zero all time offsets
 

@@ -18,6 +18,8 @@ cet_make_library(
       src/constructDummyStoppingTarget.cc
       src/constructExternalShielding.cc
       src/constructExtMonFNALBuilding.cc
+      src/constructExtMonFNALDetector.cc
+      src/constructExtMonFNALInfrastructure.cc
       src/constructExtMonFNAL.cc
       src/constructHall.cc
       src/constructHaymanRings.cc
@@ -161,6 +163,7 @@ cet_make_library(
       Geant4::G4physicslists
       Geant4::G4persistency
       Geant4::G4error_propagation
+      CLHEP::CLHEP
 )
 
 

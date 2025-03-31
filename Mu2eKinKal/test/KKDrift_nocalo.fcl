@@ -1,4 +1,0 @@
-#include "Offline/Mu2eKinKal/test/KKDrift.fcl"
-physics.producers.KKDeM.KKFitSettings.UseCaloCluster : false
-physics.producers.KKUeP.KKFitSettings.UseCaloCluster : false
-physics.producers.KKDmuM.KKFitSettings.UseCaloCluster : false

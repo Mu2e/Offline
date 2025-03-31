@@ -4,7 +4,7 @@
 #ifndef CalPatRec_CalHelixFinder_module
 #define CalPatRec_CalHelixFinder_module
 
-#include "art/Framework/Core/EDFilter.h"
+#include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileService.h"
 
@@ -71,7 +71,7 @@ namespace mu2e {
   class Tracker;
   class ModuleHistToolBase;
 
-  class CalHelixFinder : public art::EDFilter {
+  class CalHelixFinder : public art::EDProducer {
   protected:
 //-----------------------------------------------------------------------------
 // data members
@@ -81,7 +81,6 @@ namespace mu2e {
     int                                   _diagLevel;
     int                                   _debugLevel;
     int                                   _printfreq;
-    int                                   _useAsFilter; //allows to use the module as a produer or as a filter
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
@@ -91,9 +90,11 @@ namespace mu2e {
 
     int                                   _minNHitsTimeCluster; //min nhits within a TimeCluster after check of Delta-ray hits
 
+    int                                   _fitparticle;
     TrkParticle                           _tpart;                // particle type being searched for
     TrkFitDirection                       _fdir;                // fit direction in search
     bool                                  _doSingleOutput;
+    float                                 _maxEDepAvg;
 //-----------------------------------------------------------------------------
 // cache of event objects
 //-----------------------------------------------------------------------------
@@ -124,14 +125,34 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   public:
 
+
+    struct Config
+    {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<int>                           diagLevel{            Name("diagLevel"),                  Comment("Diag"),0 };
+      fhicl::Atom<int>                           debugLevel{           Name("debugLevel"),                 Comment("Debug"),0 };
+      fhicl::Atom<int>                           printfreq{            Name("printFrequency"),                  Comment("Print Frequency") };
+      fhicl::Atom<std::string>                   shLabel{              Name("StrawHitCollectionLabel"),                    Comment("StrawHit Collection Label") };
+      fhicl::Atom<std::string>                   timeclLabel{          Name("TimeClusterCollectionLabel"),                Comment("TimeCluster Collection Label") };
+      fhicl::Atom<int>                           minNHitsTimeCluster{  Name("minNHitsTimeCluster"),        Comment("Min NHits in TimeCluster") };
+      fhicl::Atom<int>                           fitparticle{          Name("fitparticle"),                      Comment("Particle Type Searched For") };
+      fhicl::Atom<std::string>                   fitdirection{         Name("fitdirection"),               Comment("Fit Direction in Search (\"downstream\" or \"upstream\")") };
+      fhicl::Atom<bool>                          doSingleOutput{       Name("doSingleOutput"),             Comment("Do Single Output") };
+      fhicl::Atom<float>                         maxEDepAvg{           Name("maxEDepAvg"),                 Comment("Max Avg EDep") };
+      fhicl::Table<CalHelixFinderAlg::Config>    hfinder{              Name("HelixFinderAlg"),                    Comment("CalHelixFinderAlg Config") };
+      fhicl::Table<CalHelixFinderTypes::Config>  diagPlugin{           Name("diagPlugin"),                 Comment("Diag Plugin") };
+      fhicl::Sequence<int>                       Helicities{           Name("Helicities"),                 Comment("Helicity values") };
+    };
+
     enum fitType {helixFit=0,seedFit,kalFit};
 
-    explicit CalHelixFinder(const fhicl::ParameterSet& PSet);
+    explicit CalHelixFinder(const art::EDProducer::Table<Config>& config);
     virtual ~CalHelixFinder();
 
     virtual void beginJob();
-    virtual bool beginRun(art::Run&   run   );
-    virtual bool filter  (art::Event& event );
+    virtual void beginRun(art::Run&   run   );
+    virtual void produce (art::Event& event );
     virtual void endJob();
 //-----------------------------------------------------------------------------
 // helper functions

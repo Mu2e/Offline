@@ -15,27 +15,29 @@
 
 namespace mu2e {
 
-
     class CrystalMapper {
 
         public:
+          //no constructor for this interface
+          virtual ~CrystalMapper() = default;
 
-           //no constructor for this interface
-           virtual ~CrystalMapper() {};
+          virtual int                        nCrystalMax    (int maxRing)                   const = 0;
 
-           virtual int                nCrystalMax(int maxRing)                         const = 0;
+          virtual CLHEP::Hep2Vector          xyFromIndex    (int thisIndex)                 const = 0;
+          virtual int                        indexFromXY    (double x, double y)            const = 0;
+          virtual int                        indexFromRowCol(int nRow, int nCol)            const = 0;
+          virtual int                        rowFromIndex   (int thisIndex)                 const = 0;
+          virtual int                        colFromIndex   (int thisIndex)                 const = 0;
 
-           virtual CLHEP::Hep2Vector  xyFromIndex(int thisIndex)                       const = 0;
-           virtual int                indexFromXY(double x, double y)                  const = 0;
-           virtual int                indexFromRowCol(int nRow, int nCol)              const = 0;
-           virtual bool               isInsideCrystal(double x, double y,
-                                                      const CLHEP::Hep3Vector& pos,
-                                                      const CLHEP::Hep3Vector& size)   const = 0;
+          virtual int                        numNeighbors   (int level)                     const = 0;
+          virtual std::vector<int>           neighbors      (int thisIndex, int level)      const = 0;
 
-           virtual std::vector<int>   neighbors(int thisIndex,  int level)             const = 0;
-           virtual const std::vector<double>& apexX()                                  const = 0;
-           virtual const std::vector<double>& apexY()                                  const = 0;
+          virtual const std::vector<double>& apexX          ()                              const = 0;
+          virtual const std::vector<double>& apexY          ()                              const = 0;
 
+          virtual bool                       isInsideCrystal(double x, double y,
+                                                             const CLHEP::Hep3Vector& pos,
+                                                             const CLHEP::Hep3Vector& size) const = 0;
     };
 
 }

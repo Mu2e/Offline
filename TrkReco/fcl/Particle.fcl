@@ -1,0 +1,23 @@
+BEGIN_PROLOG
+
+# fit directions
+FitDir : {
+  downstream : "downstream"
+  upstream : "upstream"
+}
+
+#NB: fcl doesn't allow underscores in parameter names
+Particle : {
+  eminus : 11
+  eplus : -11
+  muminus : 13
+  muplus : -13
+  piminus : -211
+  piplus : 211
+  proton : 2212
+  antiproton : -2212
+  Kplus : 321
+  Kminus : -321
+}
+
+END_PROLOG

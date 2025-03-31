@@ -7,12 +7,28 @@ project(Offline VERSION 11.01.00)
 
 include(CetCMakeEnv)
 cet_cmake_env()
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+# ELF, 2025-Jan-28: Adding -Wno-stringop-overflow due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106199
 cet_set_compiler_flags(DIAGS VIGILANT
  WERROR
  NO_UNDEFINED
- EXTRA_FLAGS -pedantic #-Wno-error=unused-parameter -Wno-error=type-limits -Wno-error=ignored-qualifiers -Wno-error=unused-but-set-parameter -Wno-error=extra -Wno-error=non-virtual-dtor -Wno-error=implicit-fallthrough -Wno-error=deprecated-copy
- -Wno-unused-parameter -Wno-type-limits -Wno-ignored-qualifiers -Wno-unused-but-set-parameter -Wno-extra -Wno-non-virtual-dtor -Wno-implicit-fallthrough -Wno-deprecated-copy
+ EXTRA_FLAGS -pedantic -Wall
+             -Wno-unused-local-typedefs
+             -Wtype-limits
+             -Wimplicit-fallthrough
+             -Wunused-but-set-parameter
+             -Wl,--no-undefined
+             -gdwarf-2
+             -Wl,--as-needed
+             -Werror=return-type
+             -Winit-self
+             -Woverloaded-virtual
+             # Added flags to the CMake build
+             -Wno-stringop-overflow
+             -Wno-ignored-qualifiers
+             -Wno-unused-parameter
+             -Wno-non-virtual-dtor
 )
 
 if(DEFINED Offline_UPS_QUALIFIER_STRING)
@@ -37,7 +53,7 @@ find_package(CURL REQUIRED EXPORT)
 find_package(Boost COMPONENTS iostreams program_options REQUIRED EXPORT)
 find_package(XercesC REQUIRED EXPORT)
 find_package(BLAS REQUIRED EXPORT)
-find_package(artdaq_core_mu2e REQUIRED EXPORT)
+find_package(artdaq-core-mu2e REQUIRED EXPORT)
 if( ${WITH_G4} ) 
     message("--> ADDING G4 LIBS")	
     find_package(Geant4 REQUIRED EXPORT)
@@ -64,6 +80,7 @@ add_subdirectory(AnalysisUtilities)
 add_subdirectory(BeamlineGeom)
 add_subdirectory(BFieldGeom)
 add_subdirectory(BFieldTest)
+add_subdirectory(Blinding)
 add_subdirectory(bin)
 add_subdirectory(boost_fix)
 add_subdirectory(BTrkData)
@@ -118,6 +135,11 @@ if( ${WITH_G4} )
     add_subdirectory(EventGenerator)
     add_subdirectory(Mu2eG4)
     add_subdirectory(Mu2eG4Helper)
+else()
+    install(DIRECTORY Mu2eG4/g4study DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/Mu2eG4)
+    install(DIRECTORY Mu2eG4/geom DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/Mu2eG4)
+    install(DIRECTORY Mu2eG4/test DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/Mu2eG4)
+    install(DIRECTORY Mu2eG4/vis DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/Mu2eG4)
 endif()
 add_subdirectory(Mu2eHallGeom)
 add_subdirectory(Mu2eInterfaces)

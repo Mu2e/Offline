@@ -60,7 +60,7 @@
 // FIXME: should not need that
 #include "Offline/GeometryService/inc/WorldG4.hh"
 
-//#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
+// #define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)
 
 using namespace std;
@@ -117,7 +117,7 @@ namespace mu2e {
     //--------------------------------------------------------------------
     // Collimator Mother
 
-    TubsParams motherParams{ 0, collimator.shotLinerOuterRadius(), 0.5*collimator.length() };
+    TubsParams motherParams{ 0, collimator.shotLinerOuterRadius(), collimator.length()/2 };
 
     VolumeInfo collimatorMother = nestTubs(collimator.name()+"Mother",
                                            motherParams,
@@ -141,10 +141,10 @@ namespace mu2e {
     double const epsilon= ( collimator.radiusTransitiondZ() == 0. ) ? 0.1 : 0.;
 
     vector<double>zPlanes = {
-      -0.5*collimator.length(),
-      -0.5*collimator.radiusTransitiondZ()-epsilon,
-      +0.5*collimator.radiusTransitiondZ()+epsilon,
-      +0.5*collimator.length()
+      -collimator.length()/2,
+      -collimator.radiusTransitiondZ()/2-epsilon,
+      +collimator.radiusTransitiondZ()/2+epsilon,
+      +collimator.length()/2
     };
 
     vector<double>rInner (zPlanes.size(), 0. );
@@ -155,7 +155,7 @@ namespace mu2e {
     TubsParams shotLinerOuterParams(collimator.shotLinerOuterRadius()
                                     -collimator.shotLinerOuterThickness(),
                                     collimator.shotLinerOuterRadius(),
-                                    0.5*collimator.length()
+                                    collimator.length()/2
                                     );
 
     VolumeInfo shotLinerOuter = nestTubs(collimator.name()+"shotLinerOuter",
@@ -444,8 +444,8 @@ namespace mu2e {
                                           );
 
     std::vector<double> apertureHalfSize(3);
-    apertureHalfSize[0] = 0.5*mag.apertureWidth();
-    apertureHalfSize[1] = 0.5*mag.apertureHeight();
+    apertureHalfSize[0] = mag.apertureWidth()/2;
+    apertureHalfSize[1] = mag.apertureHeight()/2;
     apertureHalfSize[2] = mag.magneticLength()/2;
 
     VolumeInfo magnetAperture = nestBox("ExtMonFNAL"+volNameSuffix+"MagnetAperture",
@@ -470,8 +470,8 @@ namespace mu2e {
     }
 
     std::vector<double> apertureMarginHalfSize(3);
-    apertureMarginHalfSize[0] = 0.5*mag.apertureWidth();
-    apertureMarginHalfSize[1] = 0.5*mag.apertureHeight();
+    apertureMarginHalfSize[0] = mag.apertureWidth()/2;
+    apertureMarginHalfSize[1] = mag.apertureHeight()/2;
     apertureMarginHalfSize[2] = (mag.outerHalfSize()[2] - mag.magneticLength()/2)/2;
 
     const double apertureMarginOffset = (mag.magneticLength()/2 + mag.outerHalfSize()[2])/2;
@@ -620,8 +620,8 @@ namespace mu2e {
 
     CLHEP::HepRotation *pshieldingRot = reg.add(new CLHEP::HepRotation());
     CLHEP::HepRotation& shieldingRot = *pshieldingRot;
-    pshieldingRot->rotateX( 90*CLHEP::degree);
-    pshieldingRot->rotateZ( 90*CLHEP::degree);
+    pshieldingRot->rotateX( M_PI/2);
+    pshieldingRot->rotateZ( M_PI/2);
 
     double subCylinderLength = setDiameter(emfb->coll2ShieldingOutline());
 
@@ -639,14 +639,13 @@ namespace mu2e {
                                      CLHEP::twopi
                                      );
 
-    G4ExtrudedSolid* coll2ShieldingExtrusion = new G4ExtrudedSolid("ExtMonFNALCollimator2ShieldingExtrusion",
+    G4ExtrudedSolid* coll2ShieldingExtrusion= new G4ExtrudedSolid( "ExtMonFNALCollimator2ShieldingExtrusion",
                                                                    emfb->coll2ShieldingOutline(),
-                                                                   emfb->roomInsideFullHeight()/2.0,
+                                                                   emfb->roomInsideFullHeight()/2,
                                                                    G4TwoVector(0,0),
                                                                    1.,
                                                                    G4TwoVector(0,0), 1.
-                                                                   );
-
+                                                                 );
 
     VolumeInfo coll2Shielding("ExtMonFNALColl2Shielding",
                               emfb->coll2ShieldingCenterInMu2e() - mainParent.centerInMu2e(),
@@ -710,7 +709,7 @@ namespace mu2e {
     // The filter channel
 
     AGDEBUG("emfb->collimator1CenterInMu2e() = "<<emfb->collimator1CenterInMu2e());
-    AGDEBUG("collimator1Parent.centerInMu2e() = "<<collimatomaterialFinder.getr1Parent.centerInMu2e());
+    //AGDEBUG("collimator1Parent.centerInMu2e() = "<<collimatomaterialFinder.getr1Parent.centerInMu2e());
 
 
     constructCollimatorExtMonFNAL(emfb->collimator1(),
@@ -727,6 +726,8 @@ namespace mu2e {
                                   emfb->collimator2RotationInMu2e(),
                                   config);
 
+
+    /*
     // Test
     if (false) {
       Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
@@ -740,16 +741,16 @@ namespace mu2e {
                     test.centerInParent,
                     hall.logical,
                     0,
-                    true/*visible*/,
+                    true,
                     G4Colour::Blue(),
-                    true /*config.getBool("extMonFNAL.roomSolid")*/,
+                    true,  // config.getBool("extMonFNAL.roomSolid"),
                     forceAuxEdgeVisible,
                     placePV,
                     false
                     );
 
     }
-
+   */
     //--------------------------------------------------------------------
 
   } // constructExtMonFNALBuilding()

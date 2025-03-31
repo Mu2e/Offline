@@ -19,22 +19,28 @@ namespace mu2e {
 
   public:
     enum { kNEventHistsSets = 1,
-           kNTimeClusterHistsSets = 2,
+           kNTimeClusterHistsSets = 1,
+           kNHelixSeedHistsSets = 1,
+           kNLineInfoHistsSets = 1,
            kNLineSegmentHistsSets = 1 };
 
     struct EventHists {
-      TH1F* moduleTime;
       TH1F* nHelices;
       TH1F* nTimeClusters;
-      TProfile* moduleTimeVSnTimeClusters;
     };
 
     struct TimeClusterHists {
       TH1F* nHelicesPerTC;
       TH1F* nComboHitsPerTC;
       TH1F* nStrawHitsPerTC;
-      TH1F* timePerTC;
-      TProfile* timePerTCVSnComboHitsPerTC;
+    };
+
+    struct HelixSeedHists {
+      TH1F* eDepAvgPerHS;
+    };
+
+    struct LineInfoHists {
+      TH1F* nHitsRatioPerHS;
     };
 
     struct LineSegmentHists {
@@ -45,6 +51,8 @@ namespace mu2e {
     struct Hists {
       EventHists* _eventHists[kNEventHistsSets];
       TimeClusterHists* _timeClusterHists[kNTimeClusterHistsSets];
+      HelixSeedHists* _helixSeedHists[kNHelixSeedHistsSets];
+      LineInfoHists* _lineInfoHists[kNLineInfoHistsSets];
       LineSegmentHists* _lineSegmentHists[kNLineSegmentHistsSets];
     };
 
@@ -59,10 +67,14 @@ namespace mu2e {
   private:
     int bookEventHistograms(EventHists* Hist, art::TFileDirectory* Dir);
     int bookTimeClusterHistograms(TimeClusterHists* Hist, art::TFileDirectory* Dir);
+    int bookHelixSeedHistograms(HelixSeedHists* Hist, art::TFileDirectory* Dir);
+    int bookLineInfoHistograms(LineInfoHists* Hist, art::TFileDirectory* Dir);
     int bookLineSegmentHistograms(LineSegmentHists* Hist, art::TFileDirectory* Dir);
 
     int fillEventHistograms(EventHists* Hist, diagInfo* Data);
     int fillTimeClusterHistograms(TimeClusterHists* Hist, diagInfo* Data, int loopIndex);
+    int fillHelixSeedHistograms(HelixSeedHists* Hist, diagInfo* Data, int loopIndex);
+    int fillLineInfoHistograms(LineInfoHists* Hist, diagInfo* Data, int loopIndex);
     int fillLineSegmentHistograms(LineSegmentHists* Hist, diagInfo* Data, int loopIndex);
 
     virtual int bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) override;
@@ -78,13 +90,9 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   int AgnosticHelixFinderDiag::bookEventHistograms(EventHists* Hist, art::TFileDirectory* Dir) {
 
-    Hist->moduleTime =
-      Dir->make<TH1F>("moduleTime", "time (ms) per event spent at module", 10000, 0.0, 500.0);
     Hist->nHelices = Dir->make<TH1F>("nHelices", "number of helices found per event", 30, 0.0, 30.0);
     Hist->nTimeClusters =
       Dir->make<TH1F>("nTimeClusters", "number of time clusters per event", 100, 0.0, 100.0);
-    Hist->moduleTimeVSnTimeClusters = Dir->make<TProfile>(
-                                                          "moduleTimeVSnTimeClusters", "moduleTimeVSnTimeClusters", 100, 0.0, 100.0, 0.0, 500.0, "i");
 
     return 0;
   }
@@ -98,10 +106,24 @@ namespace mu2e {
       Dir->make<TH1F>("nComboHitsPerTC", "number of combo hits per TC", 200, 0, 200.0);
     Hist->nStrawHitsPerTC =
       Dir->make<TH1F>("nStrawHitsPerTC", "number of straw hits per TC", 300, 0, 300.0);
-    Hist->timePerTC =
-      Dir->make<TH1F>("timePerTC", "time (ms) searching for helix per TC", 50000, 0.0, 25.0);
-    Hist->timePerTCVSnComboHitsPerTC = Dir->make<TProfile>(
-                                                           "timePerTCVSnComboHitsPerTC", "timePerTCVSnComboHitsPerTC", 200, 0.0, 200.0, 0.0, 25.0, "i");
+
+    return 0;
+  }
+
+  //-----------------------------------------------------------------------------
+  int AgnosticHelixFinderDiag::bookHelixSeedHistograms(HelixSeedHists* Hist, art::TFileDirectory* Dir) {
+
+    Hist->eDepAvgPerHS =
+      Dir->make<TH1F>("eDepAvgPerHS", "average combo hit eDep per helix seed", 1000, 0, 0.01);
+
+    return 0;
+  }
+
+  //-----------------------------------------------------------------------------
+  int AgnosticHelixFinderDiag::bookLineInfoHistograms(LineInfoHists* Hist, art::TFileDirectory* Dir) {
+
+    Hist->nHitsRatioPerHS =
+      Dir->make<TH1F>("nHitsRatioPerHS", "ratio of circle fit hits to phi fit hits", 1000, 0, 5.0);
 
     return 0;
   }
@@ -141,6 +163,26 @@ namespace mu2e {
     }
 
     //-----------------------------------------------------------------------------
+    // book helix seed histograms
+    //-----------------------------------------------------------------------------
+    for (int i = 0; i < kNHelixSeedHistsSets; i++) {
+      sprintf(folder_name, "hs_%i", i);
+      art::TFileDirectory tfdir = Tfs->mkdir(folder_name);
+      _hist._helixSeedHists[i] = new HelixSeedHists;
+      bookHelixSeedHistograms(_hist._helixSeedHists[i], &tfdir);
+    }
+
+    //-----------------------------------------------------------------------------
+    // book lineInfo histograms
+    //-----------------------------------------------------------------------------
+    for (int i = 0; i < kNLineInfoHistsSets; i++) {
+      sprintf(folder_name, "li_%i", i);
+      art::TFileDirectory tfdir = Tfs->mkdir(folder_name);
+      _hist._lineInfoHists[i] = new LineInfoHists;
+      bookLineInfoHistograms(_hist._lineInfoHists[i], &tfdir);
+    }
+
+    //-----------------------------------------------------------------------------
     // book line segment histograms
     //-----------------------------------------------------------------------------
     for (int i = 0; i < kNLineSegmentHistsSets; i++) {
@@ -156,10 +198,8 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   int AgnosticHelixFinderDiag::fillEventHistograms(EventHists* Hist, diagInfo* Data) {
 
-    Hist->moduleTime->Fill(Data->moduleTime);
     Hist->nHelices->Fill(Data->nHelices);
     Hist->nTimeClusters->Fill(Data->nTimeClusters);
-    Hist->moduleTimeVSnTimeClusters->Fill(Data->nTimeClusters, Data->moduleTime, 1);
 
     return 0;
   }
@@ -172,9 +212,26 @@ namespace mu2e {
     Hist->nHelicesPerTC->Fill(Data->timeClusterData.at(loopIndex).nHelices);
     Hist->nComboHitsPerTC->Fill(Data->timeClusterData.at(loopIndex).nComboHits);
     Hist->nStrawHitsPerTC->Fill(Data->timeClusterData.at(loopIndex).nStrawHits);
-    Hist->timePerTC->Fill(Data->timeClusterData.at(loopIndex).time);
-    Hist->timePerTCVSnComboHitsPerTC->Fill(Data->timeClusterData.at(loopIndex).nComboHits,
-                                           Data->timeClusterData.at(loopIndex).time, 1);
+
+    return 0;
+  }
+
+  //-----------------------------------------------------------------------------
+  int AgnosticHelixFinderDiag::fillHelixSeedHistograms(HelixSeedHists* Hist, diagInfo* Data,
+                                                         int loopIndex) {
+
+    // fill per hs info
+    Hist->eDepAvgPerHS->Fill(Data->helixSeedData.at(loopIndex).eDepAvg);
+
+    return 0;
+  }
+
+  //-----------------------------------------------------------------------------
+  int AgnosticHelixFinderDiag::fillLineInfoHistograms(LineInfoHists* Hist, diagInfo* Data,
+                                                      int loopIndex) {
+
+    // fill per line info
+    Hist->nHitsRatioPerHS->Fill(Data->lineInfoData.at(loopIndex).nHitsRatio);
 
     return 0;
   }
@@ -206,13 +263,25 @@ namespace mu2e {
     // fill time cluster histograms
     //-----------------------------------------------------------------------------
     for (int i = 0; i < (int)_data->timeClusterData.size(); i++) {
-      // fill folder 0 always
       fillTimeClusterHistograms(_hist._timeClusterHists[0], _data, i);
-      // fill folder 1 only if TC takes more than 3.0 ms to process
-      if (_data->timeClusterData.at(i).time > 3.0) {
-        fillTimeClusterHistograms(_hist._timeClusterHists[1], _data, i);
+    }
+
+    //-----------------------------------------------------------------------------
+    // fill helix seed histograms
+    //-----------------------------------------------------------------------------
+    for (int i = 0; i < (int)_data->helixSeedData.size(); i++) {
+      if (_data->helixSeedData.at(i).eDepAvg > 1e-6) {
+        fillHelixSeedHistograms(_hist._helixSeedHists[0], _data, i);
       }
     }
+
+    //-----------------------------------------------------------------------------
+    // fill lineInfo seed histograms
+    //-----------------------------------------------------------------------------
+    for (int i = 0; i < (int)_data->lineInfoData.size(); i++) {
+      fillLineInfoHistograms(_hist._lineInfoHists[0], _data, i);
+    }
+
 
     //-----------------------------------------------------------------------------
     // fill line segment histograms

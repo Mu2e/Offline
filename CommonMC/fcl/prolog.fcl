@@ -31,9 +31,6 @@ CommonMC: {
   MakeSS : {
     module_type : MakeSurfaceSteps
     debugLevel : 0
-    VDStepPointMCs : "compressDigiMCs:virtualdetector"
-    IPAStepPointMCs : "compressDigiMCs:protonabsorber"
-    TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
     MaxDistGap : 0.1 # mm
     MaxTimeGap : 0.1 # ns
   }
@@ -61,13 +58,43 @@ CommonMC: {
   SSDiag : {
     module_type : SurfaceStepDiag
     SurfaceStepCollection : "MakeSS"
-    VDStepPointMCs : "compressDigiMCs:virtualdetector"
-    IPAStepPointMCs : "compressDigiMCs:protonabsorber"
-    TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
   }
-
-
 }
+CommonMC.MakeSSDigi : {# make SurfaceSteps from digitization output
+  @table::CommonMC.MakeSS
+    VDStepPointMCs : "compressDigiMCs:virtualdetector"
+    AbsorberStepPointMCs : "compressDigiMCs:protonabsorber"
+    TargetStepPointMCs : "compressDigiMCs:stoppingtarget"
+}
+CommonMC.MakeSSReco : {# make SurfaceSteps from reconstruction output
+  @table::CommonMC.MakeSS
+    VDStepPointMCs : "compressRecoMCs:virtualdetector"
+    AbsorberStepPointMCs : "compressRecoMCs:protonabsorber"
+    TargetStepPointMCs : "compressRecoMCs:stoppingtarget"
+}
+#
+# Trigger specific instance used for track trigger MC-truth based diagnostics
+#
+CommonMC.TTSelectRecoMC : {
+  @table::CommonMC.SelectRecoMC
+    TrkOnly : true
+    CaloClusterMinE : 10.0
+    SaveEnergySteps : false
+    SaveUnusedDigiMCs : false
+    SaveAllUnusedDigiMCs : false
+    PrimaryParticle : "compressDigiMCs"
+    StrawDigiCollection : "makeSD"
+    ComboHitCollection : "TTflagPH"
+    CaloDigiCollection : "CaloDigiMaker"
+    CaloClusterCollection : "CaloClusterFast"
+    StrawDigiMCCollection : "compressDigiMCs"
+    CrvDigiCollection : ""
+    CrvDigiMCCollection : ""
+    CrvCoincidenceClusterCollections : [  ]
+    VDSPCollection : "compressDigiMCs:virtualdetector"
+    HelixSeedCollections  : [ ]
+}
+
 #------------------------------------------------------------------------------
 
 END_PROLOG

@@ -54,6 +54,8 @@ namespace mu2e {
       float            avgZpos;
       int              nHits; // combo hits
       int              nStrawHits;
+      float            zMin;
+      float            zMax;
       int              nrgSelection; // 1 if passes energy selection (CE), 0 if not (protons)
       int              nCombines;
       int              caloIndex;
@@ -102,6 +104,8 @@ namespace mu2e {
       float       seedTime;
       float       seedWeight;
       float       seedZpos;
+      float       zMin;
+      float       zMax;
       int         seedNRGselection;
       int         startIndex;
       int         testIndice;

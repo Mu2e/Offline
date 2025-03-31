@@ -24,6 +24,11 @@
 
 namespace mu2e {
 
+  std::vector<art::Ptr<SimParticle> > simParticleList(art::ValidHandle<SimParticleCollection> simh);
+
+  std::vector<art::Ptr<SimParticle> > simParticleList(art::ValidHandle<SimParticleCollection> simh,
+                                                      PDGCode::type pdgId);
+
   std::vector<art::Ptr<SimParticle> > simParticleList(art::ValidHandle<SimParticleCollection> simh,
                                                       PDGCode::type pdgId,
                                                       ProcessCode stoppingCode);
@@ -34,9 +39,9 @@ namespace mu2e {
   }
 
 
-inline std::vector<art::Ptr<SimParticle> > stoppedMuPlusList(art::ValidHandle<SimParticleCollection> simh) {
+  inline std::vector<art::Ptr<SimParticle> > stoppedMuPlusList(art::ValidHandle<SimParticleCollection> simh) {
     // G4 sets this end code
-  return simParticleList(simh, PDGCode::mu_plus, ProcessCode::Decay);
+    return simParticleList(simh, PDGCode::mu_plus, ProcessCode::Decay);
   }
 
   inline std::vector<art::Ptr<SimParticle> > stoppedPiMinusList(art::ValidHandle<SimParticleCollection> simh) {

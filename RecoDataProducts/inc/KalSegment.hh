@@ -12,7 +12,7 @@
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/RecoDataProducts/inc/HitT0.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
-#include "KinKal/General/ParticleState.hh"
+#include "KinKal/General/ParticleStateEstimate.hh"
 #include "KinKal/Trajectory/KinematicLine.hh"
 #include "KinKal/Trajectory/CentralHelix.hh"
 #include "KinKal/Trajectory/LoopHelix.hh"
@@ -36,22 +36,22 @@ namespace mu2e {
     KinKal::VEC3 velocity() const { return _pstate.velocity(); }
     KinKal::VEC3 position3() const { return _pstate.position3(); }
     // convert content to a LoopHelix
-    KinKal::LoopHelix loopHelix() const { return KinKal::LoopHelix(_pstate, KKbnom(),timeRange()); }
+    KinKal::LoopHelix loopHelix() const { return KinKal::LoopHelix(_pstate, bnom(),timeRange()); }
     // convert to a CentralHelix
-    KinKal::CentralHelix centralHelix() const { return KinKal::CentralHelix(_pstate, KKbnom(),timeRange()); }
+    KinKal::CentralHelix centralHelix() const { return KinKal::CentralHelix(_pstate, bnom(),timeRange()); }
     // convert to a KinematicLine
-    KinKal::KinematicLine kinematicLine() const { return KinKal::KinematicLine(_pstate, KKbnom(),timeRange()); }
-    Float_t tmin() const { return _tmin; }
-    Float_t tmax() const { return _tmax; }
+    KinKal::KinematicLine kinematicLine() const { return KinKal::KinematicLine(_pstate, bnom(),timeRange()); }
+    double const& tmin() const { return _tmin; }
+    double const& tmax() const { return _tmax; }
     KinKal::TimeRange timeRange() const;
     auto tref() const { return _pstate.time(); }// note this is NOT t0; it is the reference time at which the trajectory was sampled
     double t0Val(TrkFitFlag const& flag = TrkFitFlag(TrkFitFlag::KKLoopHelix)) const;// this will give the local segment's t0, interpreted for the given trajectory type,  which is not necessarily the same as the track t0
-    XYZVectorF const& bnom() const { return _bnom; }
-    KinKal::VEC3 KKbnom() const { return KinKal::VEC3(_bnom); }
-    Float_t _tmin, _tmax; // time range
+    KinKal::VEC3 const& bnom() const { return _bnom; }
+    double _tmin, _tmax; // time range
 // main payload is the particle state estimate.  this includes all the kinematic information to
 // interpret as anything else.  BField is needed to interpret geometrically
-    XYZVectorF _bnom; // Bfield associated with this segment, needed to reconstitute helix
+    KinKal::VEC3 _bnom; // Bfield associated with this segment, needed to reconstitute helix. Needs to be double precision to avoid
+    // roundoff when reconstituting parameers
     KinKal::ParticleStateEstimate _pstate; // particle state at this sample
  // the following are deprecated legacy functions specific to the BTrk, these should be removed FIXME
     HitT0 t0() const;
@@ -60,9 +60,9 @@ namespace mu2e {
     void mom(double flt, XYZVectorF& momvec) const;
     double fmin() const { return timeToFlt(_tmin); } // local 3D flight range
     double fmax() const { return timeToFlt(_tmax); }
-    Float_t _dflt;
-    double localFlt(float globalflt) const { return globalflt + _dflt; }
-    double globalFlt(float localflt) const { return localflt - _dflt; }
+    double _dflt;
+    double localFlt(double globalflt) const { return globalflt + _dflt; }
+    double globalFlt(double localflt) const { return localflt - _dflt; }
     double fltToTime(double flt) const; // local flight
     double timeToFlt(double time) const; // local flight
   };

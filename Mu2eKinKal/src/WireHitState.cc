@@ -1,7 +1,7 @@
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include "cetlib_except/exception.h"
 namespace mu2e {
-  std::vector<std::string> WireHitState::StateNames_ = {"Unusable", "Inactive", "Left", "Right", "Null"};
+  std::vector<std::string> WireHitState::StateNames_ = {"Unusable", "Inactive", "Left", "Null","Right"};
   std::ostream& operator <<(std::ostream& ost, WireHitState const& whs) {
     ost << "WireHitState ";
     if(whs.frozen()) ost << " Frozen ";

@@ -16,6 +16,7 @@ namespace mu2e {
     typedef unsigned mask_type;
     enum bit_type { tot=0, absdrift=1, driftdt=2,// if set, these values are used to constrain t0
       nhdrift=8, // if set, use drift radius to set null hit variance (otherwise use straw radius)
+      longval=9, // if set, use time division to constrain longitudinal position
       annprob=15, // if set, interpret sign ANN probabilistically
       added=20 // record if the hit was added (otherwise original)
     };

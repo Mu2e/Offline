@@ -13,11 +13,11 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<double> minmom{Name("MinMomentum"), Comment("Minimum fit momentum ")};
-      fhicl::Atom<double> maxmom{Name("MaxMomentum"), Comment("Maximum fit momentum ")};
-      fhicl::Atom<double> minfcon{Name("MinFitConsistency"), Comment("Minimum fit consistency ")};
+      fhicl::Atom<float> minmom{Name("MinMomentum"), Comment("Minimum fit momentum ")};
+      fhicl::Atom<float> maxmom{Name("MaxMomentum"), Comment("Maximum fit momentum ")};
+      fhicl::Atom<float> minfcon{Name("MinFitConsistency"), Comment("Minimum fit consistency ")};
       fhicl::Atom<unsigned> minnactive{Name("MinActiveHits"), Comment("Minimum # of active hits ")};
-      fhicl::Atom<double> minsignhit{Name("MinDeltaNHitFraction"), Comment("Minimum difference in the fractional number of hits to consider significant")};
+      fhicl::Atom<float> minsignhit{Name("MinDeltaNHitFraction"), Comment("Minimum difference in the fractional number of hits to consider significant")};
     };
     typedef art::ToolConfigTable<Config> Parameters;
     explicit SimpleKalSeedSelector(Parameters const& conf) :
@@ -32,10 +32,10 @@ namespace mu2e {
     bool isBetter(KalSeed const& current,KalSeed const& test) const override;
 
   private:
-    double minmom_, maxmom_;
-    double minfcon_;
+    float minmom_, maxmom_;
+    float minfcon_;
     unsigned minnactive_;
-    double minsignhit_;
+    float minsignhit_;
   };
 }
 DEFINE_ART_CLASS_TOOL(mu2e::SimpleKalSeedSelector)
