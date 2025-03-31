@@ -49,8 +49,8 @@ physics: {
       EnergyCalib : @local::HPGeDigitization.EnergyPerADCBin
     }
   }
-  o1 : [MWDSpectra] #@nil
+  o1 : @nil
   end_paths: [o1]
 }
 
-services.TFileService.fileName : "spectrum.root" #@nil
+services.TFileService.fileName : @nil
