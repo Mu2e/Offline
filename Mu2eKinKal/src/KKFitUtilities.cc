@@ -16,7 +16,8 @@ namespace mu2e {
     }
     double LorentzAngle(KinKal::ClosestApproachData const& ptca, KinKal::VEC3 const& bdir) {
       auto tperp = (ptca.particleDirection() - ptca.particleDirection().Dot(ptca.sensorDirection())*ptca.sensorDirection()).unit();
-      return acos(tperp.Dot(bdir));
+      auto cosa = std::max(-1.0, std::min(1.0, tperp.Dot(bdir)));
+      return acos(cosa);
     }
     bool insideStraw(KinKal::ClosestApproachData const& ca,Straw const& straw,double ubuffer)  {
       // compute the position along the wire and compare to the 1/2 length
