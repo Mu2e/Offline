@@ -216,29 +216,27 @@ void printTable(std::vector<int> &pdgIds, const std::vector<double> &energies, c
 void simulationStatisticsByPDGID(const std::vector<std::string> electronFileNames, const long long electronPOTs, const std::vector<std::string> muonFileNames, const long long muonPOTs, const std::string treeName, const int virtualdetectorId, const double virtualdetectorRadius, const int numBatchesPerSuperCycle) {
     /*
         Description
-        Collate the data determined in STM studies to generate summary table
-        Uses the results of MakeTree.fcl
-        usage example - see table.sh
+            Collate the data determined in STM studies to generate summary table
 
         Arguments
-        electronFileNames - vector of EleBeamCat derived ROOT file names as a relative path to cwd
-        electronPOTs - number of POTs used to generate all the files listed in electronFileNames
-        muonFileNames - vector of MuBeamCat derived ROOT file names as a relative path to cwd
-        muonPOTs - number of POTs used to generate all the files listed in muonFileNames
-        treeName - name of tree containing all the data for electronFileNames and muonFileNames
-        virtualdetectorId - Virtual Detector ID for plotting
-        virtualdetectorRadius - radius of selected Virtual Detector, in cm
-        numBatchesPerSuperCycle - number of batches per supercycle either 1 for single batch mode or 2 for dual batch mode
+            electronFileNames - vector of EleBeamCat derived ROOT file names as a relative path to cwd
+            electronPOTs - number of POTs used to generate all the files listed in electronFileNames
+            muonFileNames - vector of MuBeamCat derived ROOT file names as a relative path to cwd
+            muonPOTs - number of POTs used to generate all the files listed in muonFileNames
+            treeName - name of tree containing all the data for electronFileNames and muonFileNames
+            virtualdetectorId - Virtual Detector ID for plotting
+            virtualdetectorRadius - radius of selected Virtual Detector, in cm
+            numBatchesPerSuperCycle - number of batches per supercycle either 1 for single batch mode or 2 for dual batch mode
 
         Variables
-        allowedBatchModes - used to check the range of numBatchesPerSuperCycle, in MeV
-        electronEnergies - vector for energies from EleBeamCat results
-        muonEnergies - vector of energies from MuBeamCat results, in MeV
-        electronPdgIds - vector of PDG IDs from EleBeamCat results
-        muonPdgIds - vector of PDG IDs from MuBeamCat results
-        fileName - iterator through electronFileNames and muonFileNames
-        w - width of the table in chars
-        spacing - used to format the table header
+            allowedBatchModes - used to check the range of numBatchesPerSuperCycle, in MeV
+            electronEnergies - vector for energies from EleBeamCat results
+            muonEnergies - vector of energies from MuBeamCat results, in MeV
+            electronPdgIds - vector of PDG IDs from EleBeamCat results
+            muonPdgIds - vector of PDG IDs from MuBeamCat results
+            fileName - iterator through electronFileNames and muonFileNames
+            w - width of the table in chars
+            spacing - used to format the table header
     */
     SetErrorHandler(customErrorHandler);
 

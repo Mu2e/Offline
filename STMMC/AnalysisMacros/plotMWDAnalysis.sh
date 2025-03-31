@@ -1,1 +1,1 @@
-root -l -q 'plotMWDAnalysis.C("FinalData/MWD.root", "MWDHPGe/ttree")'
+# root -l -q 'plotMWDAnalysis.C("FinalData/DigZS.root", "MWDHPGe/ttree")'
