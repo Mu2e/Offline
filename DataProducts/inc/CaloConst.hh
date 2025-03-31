@@ -26,7 +26,7 @@ namespace mu2e {
     constexpr static uint16_t _nChannel        = _nCrystalChannel + _nPINDiodPerDisk*_nDisk;
 
 
-    constexpr static uint16_t _nDIRAC       = 136;
+    constexpr static uint16_t _nDIRAC       = 160;
     constexpr static uint16_t _nChPerDIRAC  = 20;
     constexpr static uint16_t _nRawChannel  = _nChPerDIRAC*_nDIRAC;
 

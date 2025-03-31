@@ -20,6 +20,7 @@ namespace mu2e {
       bitnames[std::string("AbsDrift")]         = bit_to_mask(absdrift);
       bitnames[std::string("DriftDt")]          = bit_to_mask(driftdt);
       bitnames[std::string("NullDriftVar")]     = bit_to_mask(nhdrift);
+      bitnames[std::string("LongVal")]          = bit_to_mask(longval);
       bitnames[std::string("ANNProb")]          = bit_to_mask(annprob);
       bitnames[std::string("Added")]          = bit_to_mask(added);
     }

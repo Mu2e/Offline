@@ -30,7 +30,10 @@ namespace mu2e
       using Comment=fhicl::Comment;
       fhicl::Atom<art::InputTag>   cosmictag {Name("CosmicTrackSeedCollection"),Comment("track collection")};
       fhicl::Sequence<std::string> goodcosmic{Name("cosmicseedFitFlag"),Comment("Required flags"),std::vector<std::string>{"HelixOK","HelixConverged"}};
-      fhicl::Atom<int>             minnsh    {Name("minnsh"), Comment("minimum number of straw hits ")};
+      fhicl::Atom<unsigned>        minNStrawHits        {    Name("minNStrawHits"),                   Comment("minNStrawHits")};
+      fhicl::Atom<float>           minFracStrawHits{Name("minFracStrawHits"), Comment("Minimum fraction of hits in time cluster on track")};
+      fhicl::Atom<float>           maxTheta{Name("maxTheta"), Comment("Max track angle from vertical")};
+      fhicl::Atom<unsigned>        minNPanelStereo{Name("minNPanelStereo"), Comment("Min number of 12 possible panel orientations on track")};
       fhicl::Atom<int>             debug     {Name("debugLevel"), Comment("set to 1 for debug prints")};
     };
     typedef art::EDFilter::Table<Config> Parameters;
@@ -43,7 +46,10 @@ namespace mu2e
 
     art::InputTag   _cosmicTag;
     TrkFitFlag      _goodcosmic;
-    unsigned int    _minnsh;
+      unsigned      _minnhits;
+      float         _minFracStrawHits;
+      float         _maxTheta;
+      unsigned      _minNPanelStereo;
     int             _debug;
     unsigned        _nevt, _npass;
   };
@@ -52,7 +58,10 @@ namespace mu2e
     art::EDFilter(conf),
     _cosmicTag (conf().cosmictag()),
     _goodcosmic (conf().goodcosmic()),
-    _minnsh (conf().minnsh()),
+    _minnhits(conf().minNStrawHits()),
+    _minFracStrawHits(conf().minFracStrawHits()),
+    _maxTheta(conf().maxTheta()),
+    _minNPanelStereo(conf().minNPanelStereo()),
     _debug (conf().debug()),
     _nevt(0), _npass(0)
   {
@@ -67,18 +76,39 @@ namespace mu2e
     auto cosH = evt.getValidHandle<CosmicTrackSeedCollection>(_cosmicTag);
     const CosmicTrackSeedCollection* coscol = cosH.product();
     for(auto icos = coscol->begin(); icos != coscol->end(); ++icos) {
-      auto const& cosmic = *icos;
+      auto const& cs = *icos;
 
-      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.trkstrawhits().size() > _minnsh ){
-
-        ++_npass;
-        retval = true;
-        size_t index = std::distance(coscol->begin(),icos);
-        triginfo->_cosmics.push_back(art::Ptr<CosmicTrackSeed>(cosH,index));
-        if(_debug > 1){
-          std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
+      if( cs.status().hasAllProperties(_goodcosmic) && cs.hits().size() > _minnhits &&
+          (float)cs.hits().size() >= cs.timeCluster()->nStrawHits()*_minFracStrawHits &&
+          acos(fabs(cs.track().FitEquation.Dir.Unit().y())) <= _maxTheta){
+        std::vector<bool> panel(12,false);
+        for (size_t k=0;k<cs.hits().size();k++){
+          auto sid = cs.hits()[k].strawId();
+          if ((sid.plane()%4) == 0 || (sid.plane()%4) == 3){
+            panel[sid.panel()] = true;
+          }else{
+            panel[sid.panel()+6] = true;
+          }
         }
-        break;
+
+        unsigned panelcount = 0;
+        for (size_t i=0;i<12;i++){
+          if (panel[i])
+            panelcount++;
+        }
+        if (panelcount >= _minNPanelStereo)
+        {
+
+
+          ++_npass;
+          retval = true;
+          size_t index = std::distance(coscol->begin(),icos);
+          triginfo->_cosmics.push_back(art::Ptr<CosmicTrackSeed>(cosH,index));
+          if(_debug > 1){
+            std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
+          }
+          break;
+        }
       }
     }
     evt.put(std::move(triginfo));

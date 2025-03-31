@@ -167,6 +167,12 @@ cet_build_plugin(GenParticleMomFilter art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(GoodRunFilter art::module
+    REG_SOURCE src/GoodRunFilter_module.cc
+    LIBRARIES REG
+    Offline::DbService
+)
+
 cet_build_plugin(KilledEventFilter art::module
     REG_SOURCE src/KilledEventFilter_module.cc
     LIBRARIES REG

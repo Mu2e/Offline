@@ -49,7 +49,7 @@ namespace mu2e
 
     double  _counterThickness, _counterWidth;
     double  _offset, _gapLarge, _gapSmall, _gapBetweenModules;
-    int     _nSectors, _nLayers;
+    int     _nSectors, _nLayersGlobal;
 
     std::vector<std::string> _crvSectorNames;
     std::vector<double>      _gapBetweenLayers;
@@ -59,6 +59,7 @@ namespace mu2e
     //vector size is _nSectors
     std::vector<double>             _counterLength;
     std::vector<int>                _nModules;
+    std::vector<int>                _nLayers;
     std::vector<int>                _nCountersPerModule;
     std::vector<CLHEP::Hep3Vector>  _firstCounter;
     std::vector<CLHEP::Hep3Vector>  _offsetDirection;   //direction in which the layers are shifted

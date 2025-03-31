@@ -146,9 +146,7 @@ namespace mu2e {
       if ( ds->_cableRunVersion > 1 ) {
         ds->_upRInCableRunCal  = c.getDouble("ds.CableRunCal.UpRin");
         ds->_upROutCableRunCal = c.getDouble("ds.CableRunCal.UpRout");
-        ds->_upHL1CableRunCal  = c.getDouble("ds.CableRunCal.UpHL1");
         ds->_upHL2CableRunCal  = c.getDouble("ds.CableRunCal.UpHL2");
-        ds->_upZC1CableRunCal  = c.getDouble("ds.CableRunCal.UpZC1");
         ds->_upZC2CableRunCal  = c.getDouble("ds.CableRunCal.UpZC2");
       }
       if ( ds->_cableRunVersion > 2 ) {

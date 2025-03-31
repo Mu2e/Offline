@@ -364,9 +364,12 @@ void DataInterface::fillGeometry()
     mu2e::GeomHandle<mu2e::DiskCalorimeter> calo;
 
     double diskCaseDZLength      = calo->caloInfo().getDouble("diskCaseZLength")/2.0;
-    double diskInnerRingIn       = calo->caloInfo().getDouble("diskInnerRingIn");
-    double diskOuterRingOut      = calo->caloInfo().getDouble("diskOuterRingOut");
-    double diskOuterRailOut      = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
+//    double diskInnerRingIn       = calo->caloInfo().getDouble("diskInnerRingIn");
+    double diskInnerRingIn       = calo->caloInfo().getDouble("diskInCFRingRIn");
+//    double diskOuterRingOut      = calo->caloInfo().getDouble("diskOuterRingOut");
+    double diskOuterRingOut      = calo->caloInfo().getDouble("diskInCFRingROut");
+//    double diskOuterRailOut      = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
+    double diskOuterRailOut      = diskOuterRingOut;
 
     double FPCarbonDZ               = calo->caloInfo().getDouble("FPCarbonZLength")/2.0;
     double FPFoamDZ                 = calo->caloInfo().getDouble("FPFoamZLength")/2.0;
@@ -376,7 +379,8 @@ void DataInterface::fillGeometry()
 
     double crystalDXY            = calo->caloInfo().getDouble("crystalXYLength")/2.0;
     double crystalDZ             = calo->caloInfo().getDouble("crystalZLength")/2.0;
-    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalFrameZLength")/2.0;
+//    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalFrameZLength")/2.0;
+    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalCapZLength")/2.0;
     double wrapperHalfThick      = calo->caloInfo().getDouble("wrapperThickness")/2.0;
     double wrapperDXY            = crystalDXY + 2.0*wrapperHalfThick;
     double wrapperDZ             = crystalDZ + 2.0*crystalFrameDZ;
@@ -393,7 +397,7 @@ void DataInterface::fillGeometry()
     double crystalDiskLogOffset = frontPanelHalfThick - zHalfBP;
 
     int icrystal=0;
-    for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++)
+    for(unsigned int idisk=0; idisk<calo->nDisks(); idisk++)
     {
       CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
       diskPos += CLHEP::Hep3Vector(0.0, 0.0, crystalDiskLogOffset);
@@ -1132,10 +1136,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           multigraphIndex=v.size()-1;
         }
 
-        TGraph *graph = new TGraph(mu2e::CrvDigi::NSamples);
+        TGraph *graph = new TGraph(digi.GetADCs().size());
         graph->SetMarkerStyle(20);
         graph->SetMarkerSize(2);
-        for(size_t k=0; k<mu2e::CrvDigi::NSamples; k++)
+        for(size_t k=0; k<digi.GetADCs().size(); k++)
         {
           graph->SetPoint(k,TDC0time+(digi.GetStartTDC()+k)*mu2e::CRVDigitizationPeriod,digi.GetADCs()[k]);
         }

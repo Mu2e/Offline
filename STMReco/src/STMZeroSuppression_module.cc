@@ -255,6 +255,7 @@ namespace mu2e {
         outputSTMWaveformDigis->push_back(ZSWaveform);
       };
 
+
       // Save data to TTree
       time = waveform.trigTimeOffset();
       if (makeTTreeGradients) {

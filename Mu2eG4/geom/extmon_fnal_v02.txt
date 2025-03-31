@@ -42,8 +42,9 @@ double extMonFNAL.collimator1.shotLinerOuterDiameter = 609.6;
 double extMonFNAL.collimator1.shotLinerOuterThickness = 9.7;
 double extMonFNAL.collimator1.length = 4203.7;
 
-// Steel Shot material
-string         extMonFNAL.collimator1.shot.materialName  = "ClosePackedExtMonSteelShot";
+// Steel Shot material - eventually "ClosePackedExtMonSteelShot".
+// Steel shot will not be installed during initial commissioning:
+string         extMonFNAL.collimator1.shot.materialName  = "G4_AIR";
 
 // Transition between the two radii of the plug and hole happens over dz.
 double extMonFNAL.collimator1.radiusTransitiondZ = 0;
@@ -125,10 +126,9 @@ double extMonFNAL.collimator2.shotLinerOuterDiameter = 609.6;
 double extMonFNAL.collimator2.shotLinerOuterThickness = 9.7;
 double extMonFNAL.collimator2.length = 2298.7;
 
-// Steel Shot Material
-string         extMonFNAL.collimator2.shot.materialName  = "ClosePackedExtMonSteelShot";
-
-
+// Steel Shot material - eventually "ClosePackedExtMonSteelShot".
+// Steel shot will not be installed during initial commissioning:
+string         extMonFNAL.collimator2.shot.materialName  = "G4_AIR";
 
 double extMonFNAL.collimator2.radiusTransitiondZ = 0;
 
@@ -175,6 +175,36 @@ string         extMonFNAL.planeMaterial = "G4_C";
 bool extMonFNAL.stackMotherVisible = true;
 bool extMonFNAL.stackMotherSolid = true;
 
+double extMonFNAL.chipGapX = 0.13;
+double extMonFNAL.chipOffsetY = 0.835;
+
+//================================================================
+// Scintillator parameters
+
+vector<double> extMonFNAL.Dn.scintFullSize = { 45.0 , 54.0, 3 };
+vector<double> extMonFNAL.Up.scintFullSize = { 45 , 37, 3 };
+string         extMonFNAL.scintMaterial = "Scintillator";
+double         extMonFNAL.scintPlaneOffset = 29.0; // Distance from pixel plane center to center of scintillator closest to the pixels on outer ends of detector table
+double         extMonFNAL.scintInnerOffset = -33; // Distance from pixel plane center to center of scintillator on the magnet side
+double         extMonFNAL.scintGap = 5.3; // Distance between the surfaces of the two adjacent scintillators
+
+//================================================================
+// The Ext Mon detector mother
+
+vector<double> extMonFNAL.detectorMotherHS = { 150, 200, 750 };
+double extMonFNAL.detectorMotherDistToMagnet = 1;
+bool extMonFNAL.stackRotation = true;
+
+//================================================================
+// The pixel cooling tube parameters
+
+double extMonFNAL.coolingTubeInRad = 1.5542;
+double extMonFNAL.coolingTubeOutRad = 1.8542;
+double extMonFNAL.coolingTubeLen = 52.685;
+double extMonFNAL.coolingTubeTopLen = 34.57;
+double extMonFNAL.coolingTubeTsSweptRad = 3.969;
+double extMonFNAL.coolingTubePlaneOffset = 3.5;
+
 //================================================================
 // The upstream stack of the sensors.
 //
@@ -187,11 +217,8 @@ bool extMonFNAL.stackMotherSolid = true;
 // Details of the detector.  All of these vectors should be
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
-vector<double> extMonFNAL.up.motherTransverseHalfSize = { 70, 70 }; // x, y
-double extMonFNAL.up.motherStartZ = 295.;
-double extMonFNAL.up.motherEndZ = 605.;
 
-vector<double> extMonFNAL.up.plane_zoffset = { +300., +400., +500., +600.};
+vector<double> extMonFNAL.up.plane_zoffset = { +326., +426., +526., +626.};
 vector<double> extMonFNAL.up.plane_xoffset = { 0.,    0.,    0.,    0. };
 vector<double> extMonFNAL.up.plane_yoffset = { 0.,    0.,    0.,    0. };
 
@@ -213,19 +240,106 @@ vector<double> extMonFNAL.up.module_rotation = { 0., 0. };
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
 
-vector<double> extMonFNAL.dn.motherTransverseHalfSize = { 70, 70 }; // x, y
-double extMonFNAL.dn.motherStartZ = -605.;
-double extMonFNAL.dn.motherEndZ = -295.;
-
-vector<double> extMonFNAL.dn.plane_zoffset = {-600., -500.,  -400., -300.};
+vector<double> extMonFNAL.dn.plane_zoffset = {-626., -526.,  -426., -326.};
 vector<double> extMonFNAL.dn.plane_xoffset = { 0., 0., 0., 0. };
 vector<double> extMonFNAL.dn.plane_yoffset = { 0., 0., 0., 0. };
 
 // Assumes all planes in the stack have same module layout (these offsets are used to mount modules on all planes)
 vector<double> extMonFNAL.dn.module_xoffset = { 0., 0., 0. };
 vector<double> extMonFNAL.dn.module_yoffset = { 16.7, 0., -16.7 };
-vector<double> extMonFNAL.dn.module_zoffset = { 1., -1., 1. }; // just determines which side of the plane; all math is handed in constructExMonFNAL
+vector<double> extMonFNAL.dn.module_zoffset = { 1., -1., 1. }; // just determines which side of the plane; all math is handed in constructExMonFNALDetector
 vector<double> extMonFNAL.dn.module_rotation = { 0., 0., 180. };
+
+//================================================================
+// The pixel chillers parameters'
+
+// Pixel Chillers in detector room
+
+vector<double> extMonFNAL.pixelChiller.halfSize = { 250.19, 379.73, 320.0 };
+string         extMonFNAL.pixelChiller.caseMaterialName  = "MildSteel";
+string         extMonFNAL.pixelChiller.PCBMaterialName = "Electronics";
+string         extMonFNAL.pixelChiller.freonMaterial = "R452A"; //Alternate mat: R449A
+string         extMonFNAL.pixelChiller.coolantMaterial = "C5Coolant";
+
+double extMonFNAL.pixelChillerCaseThickness = 1.5;
+double extMonFNAL.pixelChiller.PCBThickness = 2;
+double extMonFNAL.pixelChiller.PCBDistanceFromWall = 20;
+
+double extMonFNAL.pixelChiller.C5CoolantVolume = 1; //Unit is liters
+double extMonFNAL.pixelChiller.freonVolume = 1; //Unit is liters
+
+int extMonFNAL.numChillersInRoom = 4;
+
+double extMonFNAL.room.chiller1.distanceToFloor = 1;
+string extMonFNAL.room.chiller1.referenceCorner = "NE";
+double extMonFNAL.room.chiller1.distanceToSideWall = 1;
+double extMonFNAL.room.chiller1.distanceToTranverseWall = 1;
+
+double extMonFNAL.room.chiller2.distanceToFloor = 1;
+string extMonFNAL.room.chiller2.referenceCorner = "SE";
+double extMonFNAL.room.chiller2.distanceToSideWall = 1;
+double extMonFNAL.room.chiller2.distanceToTranverseWall = 1;
+
+double extMonFNAL.room.chiller3.distanceToFloor = 1500;
+string extMonFNAL.room.chiller3.referenceCorner = "NE";
+double extMonFNAL.room.chiller3.distanceToSideWall = 1;
+double extMonFNAL.room.chiller3.distanceToTranverseWall = 1;
+
+double extMonFNAL.room.chiller4.distanceToFloor = 1500;
+string extMonFNAL.room.chiller4.referenceCorner = "SE";
+double extMonFNAL.room.chiller4.distanceToSideWall = 1;
+double extMonFNAL.room.chiller4.distanceToTranverseWall = 1;
+
+// Pixel Chillers in hall
+
+int extMonFNAL.numChillersInHall = 3;
+
+string extMonFNAL.hall.chiller1.wallName = "theInsideWall";
+string extMonFNAL.hall.chiller2.wallName = "extMonExteriorWallE";
+string extMonFNAL.hall.chiller3.wallName = "extMonExteriorWall";
+
+vector<int> extMonFNAL.hall.chiller1.refVertices = { 2, 3 };
+vector<int> extMonFNAL.hall.chiller2.refVertices = { 8, 0 }; // TO BE FIXED By ANDREI
+vector<int> extMonFNAL.hall.chiller3.refVertices = { 5, 6 };
+
+// The "wall" is the straight line connecting the two vertices.
+// Looking at the building from the above: we start at the first
+// reference vertex and go "offsets" mm along the line towards the
+// second to reach the projection of the closest chiller corner onto
+// the "wall" line.  Go chiller half size more to reach the projection
+// of the chiller center.  Then turn 90 degrees to the left and go
+// "distance" to that direction to reach the chiller side, go chiller
+// half size more to reach the center.
+// The chiller is oriented parallel to the wall.
+//
+// The offset and distance are signed quantities.
+
+double extMonFNAL.hall.chiller1.offsetAlongWall = 100; // mm
+double extMonFNAL.hall.chiller1.distanceToWall = 100; // mm
+double extMonFNAL.hall.chiller1.distanceToFloor = 1; // mm
+
+double extMonFNAL.hall.chiller2.offsetAlongWall = 0; // mm
+double extMonFNAL.hall.chiller2.distanceToWall = 100; // mm
+double extMonFNAL.hall.chiller2.distanceToFloor = 1; // mm
+
+double extMonFNAL.hall.chiller3.offsetAlongWall = 0; // mm
+double extMonFNAL.hall.chiller3.distanceToWall = 100; // mm
+double extMonFNAL.hall.chiller3.distanceToFloor = 1500; // mm
+
+// Electronics Rack In Detector Room
+
+vector<double> extMonFNAL.electronicsRack.halfSize = { 250.19, 1000, 320.0 };
+string         extMonFNAL.electronicsRack.caseMaterialName  = "MildSteel";
+string         extMonFNAL.electronicsRack.PCBMaterialName = "Electronics";
+
+double extMonFNAL.electronicsRack.numLayers = 5;
+double extMonFNAL.electronicsRackCaseThickness = 1.5;
+double extMonFNAL.electronicsRack.PCBThickness = 2;
+double extMonFNAL.electronicsRack.PCBDistanceFromWall = 20;
+
+double extMonFNAL.room.electronicsRack.distanceToFloor = 1;
+double extMonFNAL.room.electronicsRack.distanceToSideWall = 1;
+double extMonFNAL.room.electronicsRack.distanceToTranverseWall = 100;
 
 //----------------------------------------------------------------
 // These are detector VDs (not filter ones)
@@ -246,6 +360,7 @@ bool   extMonFNAL.filter.vd.enabled = true;
 bool   extMonFNAL.detector.vd.enabled = true;
 double extMonFNAL.detector.vd.halfdx = 100; // transverse size
 double extMonFNAL.detector.vd.halfdy = 100; // transverse size
+double extMonFNAL.detector.vd.Gapz = 10;
 
 // A set of 6 planar VDs that enclose ExtMonFNAL.
 // The "box" is rotated to be parallel to the ExtMon system axes.

@@ -1,0 +1,18 @@
+string building.extMon.hatch.block.name     = "extMonHatchBlock";
+string building.extMon.hatch.block.material = "CONCRETE_MARS";
+double building.extMon.hatch.block.offsetFromMu2eOrigin.x   = 947.40;
+double building.extMon.hatch.block.offsetFromFloorSurface.y = 8204.20;
+double building.extMon.hatch.block.offsetFromMu2eOrigin.z   = -3581.40;
+double building.extMon.hatch.block.yHalfThickness           = 914.40;
+vector<double> building.extMon.hatch.block.xPositions = {
+-19758.45, // 0
+-20616.87, // 1
+-20022.28, // 2
+-19163.86 // 3
+};
+vector<double> building.extMon.hatch.block.yPositions = {
+-8075.90, // 0
+-7981.43, // 1
+-2578.44, // 2
+-2672.91 // 3
+};

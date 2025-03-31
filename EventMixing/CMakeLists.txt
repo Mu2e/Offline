@@ -28,6 +28,12 @@ cet_build_plugin(MixDigis art::module
       Offline::EventMixing
 )
 
+cet_build_plugin(MixingFilter art::module
+    REG_SOURCE src/MixingFilter_module.cc
+    LIBRARIES REG
+      Offline::EventMixing
+)
+
 cet_build_plugin(ProtonBunchIntensityFlat art::module
     REG_SOURCE src/ProtonBunchIntensityFlat_module.cc
     LIBRARIES REG
@@ -57,6 +63,24 @@ cet_build_plugin(ResamplingMixer art::module
       
       Offline::Mu2eUtilities
       Offline::SeedService
+)
+
+cet_build_plugin(ProcessVolumeDetectorStepAntiSelectionTool art::tool
+    REG_SOURCE src/ProcessVolumeDetectorStepAntiSelectionTool_tool.cc
+    LIBRARIES REG
+      Offline::EventMixing
+)
+
+cet_build_plugin(PseudoCylindricalVolumeLookupTool art::tool
+    REG_SOURCE src/PseudoCylindricalVolumeLookupTool_tool.cc
+    LIBRARIES REG
+      Offline::EventMixing
+)
+
+cet_build_plugin(UniversalDetectorStepSelectionTool art::tool
+    REG_SOURCE src/UniversalDetectorStepSelectionTool_tool.cc
+    LIBRARIES REG
+      Offline::EventMixing
 )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)

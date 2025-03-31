@@ -50,7 +50,7 @@ namespace mu2e {
             // If "my" map is an inner map, it is not in the list.
             MapList inner;
 
-            CacheElement(std::shared_ptr<const BFMap> my, const MapList& in)
+            CacheElement(std::shared_ptr<const BFMap> const&  my, const MapList& in)
                 : myMap(my), inner(in) {}
         };
 

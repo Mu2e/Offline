@@ -23,6 +23,13 @@ namespace mu2e {
 
     STMMaker( SimpleConfig const & config,
               double solenoidOffset);
+    ~STMMaker() = default;
+
+    // delete automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
+    STMMaker( STMMaker const & ) = delete;
+    STMMaker( STMMaker&&       ) = delete;
+    STMMaker& operator=( STMMaker const & ) = delete;
+    STMMaker& operator=( STMMaker&&       ) = delete;
 
     void parseConfig( SimpleConfig const & _config );
 
@@ -34,10 +41,6 @@ namespace mu2e {
     std::unique_ptr<STM> getSTMPtr() { return std::move(_stm); }
 
   private:
-
-    // hide automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
-    STMMaker( STMMaker const & );
-    STMMaker const & operator= ( STMMaker const & );
 
     std::unique_ptr<STM> _stm;
 

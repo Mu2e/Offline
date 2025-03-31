@@ -57,14 +57,14 @@ cet_build_plugin(ShiftVirtualDetectorStepPointMCs art::module
       Offline::MCDataProducts
 )
 
-cet_build_plugin(STMResamplingFilter art::module
+cet_build_plugin(STMResamplingProducer art::module
     REG_SOURCE src/STMResamplingProducer_module.cc
     LIBRARIES REG
         Offline::MCDataProducts
 )
 
-cet_build_plugin(STMResamplingProducer art::module
-    REG_SOURCE src/STMResamplingProducer_module.cc
+cet_build_plugin(STMResamplingFilter art::module
+    REG_SOURCE src/STMResamplingFilter_module.cc
     LIBRARIES REG
         Offline::MCDataProducts
 )

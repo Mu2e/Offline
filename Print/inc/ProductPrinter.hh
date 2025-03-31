@@ -58,6 +58,8 @@ class ProductPrinter {
   virtual void PrintSubRun(art::SubRun const& subrun,
                            std::ostream& os = std::cout) {}
 
+  virtual void PrintEndJob(std::ostream& os = std::cout) {}
+
   void PrintMatrix(const CLHEP::HepSymMatrix& matrix, std::ostream& os,
                    int mode = 0) {
     // when this destructs, it restores the flag state

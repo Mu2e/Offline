@@ -443,81 +443,46 @@ namespace mu2e {
         int vdIdFEBEdge  = VirtualDetectorId::EMC_FEB_0_EdgeIn;
         int vdIdFEBSurf  = VirtualDetectorId::EMC_FEB_0_SurfIn;
 
-        double crateHalfLength = cg->caloInfo().getDouble("crateZLength")/2.0;
-        double delta           = 2*vdHL+0.02;
-
         CLHEP::Hep3Vector parentInMu2e = cg->geomUtil().origin();
 
-        for(size_t i=0; i<cg->nDisk(); ++i)
+        for (const auto& diskPtr : cg->diskPtrs())
         {
-           const CLHEP::Hep3Vector& sizeDisk = cg->disk(i).geomInfo().size();
-           CLHEP::Hep3Vector posDiskLocal  = cg->disk(i).geomInfo().origin() -
-           cg->geomUtil().origin();
-           CLHEP::Hep3Vector posCrateLocal = posDiskLocal + CLHEP::Hep3Vector(0.0,0.0,cg->disk(i).geomInfo().crateDeltaZ());
+           const CLHEP::Hep3Vector& sizeDisk = diskPtr->geomInfo().size();
+           CLHEP::Hep3Vector posDiskLocal  = diskPtr->geomInfo().origin() - cg->geomUtil().origin();
+           CLHEP::Hep3Vector posCrateLocal = posDiskLocal + CLHEP::Hep3Vector(0.0,0.0,diskPtr->geomInfo().FEBZOffset());
 
-           CLHEP::Hep3Vector  posFrontDisk = posDiskLocal - CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0+delta);
-           CLHEP::Hep3Vector  posBackDisk  = posDiskLocal + CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0+delta);
+           CLHEP::Hep3Vector  posFrontDisk = posDiskLocal - CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0-vdHL);
+           CLHEP::Hep3Vector  posBackDisk  = posDiskLocal + CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0-vdHL);
            CLHEP::Hep3Vector  posInnerDisk = posDiskLocal;
 
-           CLHEP::Hep3Vector  posFrontFEB  = posCrateLocal - CLHEP::Hep3Vector (0,0,crateHalfLength+delta);
-           CLHEP::Hep3Vector  posBackFEB   = posCrateLocal + CLHEP::Hep3Vector (0,0,crateHalfLength+delta);
-           CLHEP::Hep3Vector  posInnerFEB  = posCrateLocal;
+           CLHEP::Hep3Vector  posFrontFEB  = posFrontDisk  - CLHEP::Hep3Vector(0.0,0.0,diskPtr->geomInfo().FEBZOffset());
+           CLHEP::Hep3Vector  posBackFEB   = posFrontFEB   + CLHEP::Hep3Vector (0,0,diskPtr->geomInfo().FEBZLength());
+           CLHEP::Hep3Vector  posInnerFEB  = (posBackFEB+posFrontFEB)/2.0;
 
-          vd->addVirtualDetector( vdIdDiskSurf,
-                                  parentInMu2e,
-                                  0,
-                                  posFrontDisk);
-          ++vdIdDiskSurf;
+           vd->addVirtualDetector(vdIdDiskSurf, parentInMu2e,0,posFrontDisk);
+           ++vdIdDiskSurf;
 
-          vd->addVirtualDetector( vdIdDiskSurf,
-                                  parentInMu2e,
-                                  0,
-                                  posBackDisk);
-          ++vdIdDiskSurf;
+           vd->addVirtualDetector(vdIdDiskSurf,parentInMu2e,0,posBackDisk);
+           ++vdIdDiskSurf;
 
+           vd->addVirtualDetector(vdIdDiskEdge,parentInMu2e,0,posInnerDisk);
+           ++vdIdDiskEdge;
 
-          vd->addVirtualDetector( vdIdDiskEdge,
-                                  parentInMu2e,
-                                  0,
-                                  posInnerDisk);
-          ++vdIdDiskEdge;
+           vd->addVirtualDetector(vdIdDiskEdge,parentInMu2e,0,posInnerDisk);
+           ++vdIdDiskEdge;
 
-          vd->addVirtualDetector( vdIdDiskEdge,
-                                  parentInMu2e,
-                                  0,
-                                  posInnerDisk);
-          ++vdIdDiskEdge;
+           vd->addVirtualDetector(vdIdFEBSurf,parentInMu2e,0,posFrontFEB);
+           ++vdIdFEBSurf;
 
+           vd->addVirtualDetector(vdIdFEBSurf,parentInMu2e,0,posBackFEB);
+           ++vdIdFEBSurf;
 
+           vd->addVirtualDetector(vdIdFEBEdge,parentInMu2e,0,posInnerFEB);
+           ++vdIdFEBEdge;
 
-          vd->addVirtualDetector( vdIdFEBSurf,
-                                  parentInMu2e,
-                                  0,
-                                  posFrontFEB);
-          ++vdIdFEBSurf;
-
-          vd->addVirtualDetector( vdIdFEBSurf,
-                                  parentInMu2e,
-                                  0,
-                                  posBackFEB);
-          ++vdIdFEBSurf;
-
-
-           vd->addVirtualDetector( vdIdFEBEdge,
-                                  parentInMu2e,
-                                  0,
-                                  posInnerFEB);
-          ++vdIdFEBEdge;
-
-          vd->addVirtualDetector( vdIdFEBEdge,
-                                  parentInMu2e,
-                                  0,
-                                  posInnerFEB);
-          ++vdIdFEBEdge;
-
-
+           vd->addVirtualDetector(vdIdFEBEdge,parentInMu2e,0,posInnerFEB);
+           ++vdIdFEBEdge;
         }
-
       }
 
       if ( c.getBool("hasSTM",false) )

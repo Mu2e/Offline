@@ -49,15 +49,14 @@ namespace mu2e {
     G4int copyNo = touchableHandle->GetCopyNumber(1);  // Make sure to get the right copy number level here
     G4ThreeVector posWorld = aStep->GetPreStepPoint()->GetPosition();
 
-    // G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
-    // G4ThreeVector posLocal           = toLocal.TransformPoint(posWorld);
+    //G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
+    //G4ThreeVector posLocal           = toLocal.TransformPoint(posWorld);
     // diagnosis purposes only when playing with the geometry, uncomment next two line
     //for (int i=0;i<=touchableHandle->GetHistoryDepth();++i) std::cout<<"Cry Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)
     //<<"   "<<touchableHandle->GetHistory()->GetTransform(touchableHandle->GetHistoryDepth()-i).TransformPoint(posWorld)
-    //<<"  "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
+    //<<"  "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
 
     // VisibleEnergyDeposition following Birks law
-
     _collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                        copyNo,
                                        edep,

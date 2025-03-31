@@ -4,14 +4,15 @@
 //
 // Original Author: Ralf Ehrlich
 
+#include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/CRVConditions/inc/CRVStatus.hh"
 #include "Offline/CRVResponse/inc/MakeCrvSiPMCharges.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
-#include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
@@ -40,9 +41,44 @@ namespace mu2e
 {
   class CrvSiPMChargeGenerator : public art::EDProducer
   {
-
     public:
-    explicit CrvSiPMChargeGenerator(fhicl::ParameterSet const& pset);
+    using Name=fhicl::Name;
+    using Comment=fhicl::Comment;
+    struct Config
+    {
+      fhicl::Atom<std::string> crvPhotonsModuleLabel{Name("crvPhotonsModuleLabel")};
+      fhicl::Atom<int> nPixelsX{Name("nPixelsX")};                            //40
+      fhicl::Atom<int> nPixelsY{Name("nPixelsY")};                            //40
+      fhicl::Atom<double> overvoltage{Name("overvoltage")};                   //3.0V
+      fhicl::Atom<double> timeConstant{Name("timeConstant")};                 //12.0ns
+      fhicl::Atom<double> capacitance{Name("capacitance")};                   //8.84e-14F (per pixel)
+      fhicl::Atom<double> digitizationStart{Name("digitizationStart"),
+                                            Comment("start of digitization after DAQ event window start")};
+                                            //200ns (400ns...425ns after POT)
+      fhicl::Atom<double> digitizationEnd{Name("digitizationEnd"),
+                                          Comment("end of digitization after DAQ event window start")};
+                                            //1500ns (700ns...1725ns after POT)
+      fhicl::Atom<double> digitizationStartMargin{Name("digitizationStartMargin"),
+                                                  Comment("time window before digitization starts to account for photon travel time and electronics response.")};
+                                                  //50.0ns  start recording earlier to account for electronics response times
+      fhicl::Atom<int> numberSamplesNZS{Name("numberSamplesNZS")};           //134
+      fhicl::Atom<bool> simulateNZS{Name("simulateNZS")};                    //false
+      fhicl::Atom<art::InputTag> eventWindowMarkerTag{Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
+      fhicl::Atom<art::InputTag> protonBunchTimeMCTag{Name("protonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
+      fhicl::Atom<bool> useSipmStatusDB{Name("useSipmStatusDB")};             //false (all channels will be simulated. channels with status bit 1 can be ignored in reco)
+      fhicl::Sequence<fhicl::Sequence<int,2u> > inactivePixels{Name("inactivePixels")};      //{18,18},....,{21,21}
+      fhicl::Atom<std::string> photonMapFileName{Name("photonMapFileName")};
+      fhicl::Atom<double> avalancheProbParam1{Name("AvalancheProbParam1")};  //0.65
+      fhicl::Atom<double> avalancheProbParam2{Name("AvalancheProbParam2")};  //2.7
+      fhicl::Atom<double> trapType0Prob{Name("TrapType0Prob")};              //0
+      fhicl::Atom<double> trapType1Prob{Name("TrapType1Prob")};              //0
+      fhicl::Atom<double> trapType0Lifetime{Name("TrapType0Lifetime")};      //5ns
+      fhicl::Atom<double> trapType1Lifetime{Name("TrapType1Lifetime")};      //50ns
+      fhicl::Atom<double> thermalRate{Name("ThermalRate")};                  //1.0e-4 ns^-1   100kHz for entire SiPM
+      fhicl::Atom<double> crossTalkProb{Name("CrossTalkProb")};              //0.04
+    };
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit CrvSiPMChargeGenerator(const Parameters& conf);
     void produce(art::Event& e);
     void beginRun(art::Run &run);
 
@@ -54,8 +90,10 @@ namespace mu2e
     double      _timeConstant;
     double      _capacitance;
     double      _digitizationStart, _digitizationEnd, _digitizationStartMargin;
-    std::string _eventWindowMarkerLabel;
-    std::string _protonBunchTimeMCLabel;
+    int         _numberSamplesNZS;
+    bool        _simulateNZS;
+    art::InputTag _eventWindowMarkerTag;
+    art::InputTag _protonBunchTimeMCTag;
 
     mu2e::ProditionsHandle<mu2e::CRVStatus> _sipmStatus;
     bool                                    _useSipmStatusDB;
@@ -73,35 +111,42 @@ namespace mu2e
     ConfigFileLookupPolicy  _resolveFullPath;
   };
 
-  CrvSiPMChargeGenerator::CrvSiPMChargeGenerator(fhicl::ParameterSet const& pset) :
-    EDProducer{pset},
-    _crvPhotonsModuleLabel(pset.get<std::string>("crvPhotonsModuleLabel")),
-    _nPixelsX(pset.get<int>("nPixelsX")),                            //40
-    _nPixelsY(pset.get<int>("nPixelsY")),                            //40
-    _overvoltage(pset.get<double>("overvoltage")),                   //3.0V
-    _timeConstant(pset.get<double>("timeConstant")),                 //12.0ns
-    _capacitance(pset.get<double>("capacitance")),                   //8.84e-14F (per pixel)
-    _digitizationStart(pset.get<double>("digitizationStart")),       //400ns
-    _digitizationEnd(pset.get<double>("digitizationEnd")),           //1750ns
-    _digitizationStartMargin(pset.get<double>("digitizationStartMargin")),  //50ns
-    _eventWindowMarkerLabel(pset.get<std::string>("eventWindowMarker","EWMProducer")),
-    _protonBunchTimeMCLabel(pset.get<std::string>("protonBunchTimeMC","EWMProducer")),
-    _useSipmStatusDB(pset.get<bool>("useSipmStatusDB")),             //false (all channels will be simulated. channels with status bit 1 can be ignored in reco)
-    _inactivePixels(pset.get<std::vector<std::pair<int,int> > >("inactivePixels")),      //{18,18},....,{21,21}
+  CrvSiPMChargeGenerator::CrvSiPMChargeGenerator(const Parameters& conf) :
+    art::EDProducer{conf},
+    _crvPhotonsModuleLabel(conf().crvPhotonsModuleLabel()),
+    _nPixelsX(conf().nPixelsX()),
+    _nPixelsY(conf().nPixelsY()),
+    _overvoltage(conf().overvoltage()),
+    _timeConstant(conf().timeConstant()),
+    _capacitance(conf().capacitance()),
+    _digitizationStart(conf().digitizationStart()),
+    _digitizationEnd(conf().digitizationEnd()),
+    _digitizationStartMargin(conf().digitizationStartMargin()),
+    _numberSamplesNZS(conf().numberSamplesNZS()),
+    _simulateNZS(conf().simulateNZS()),
+    _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
+    _protonBunchTimeMCTag(conf().protonBunchTimeMCTag()),
+    _useSipmStatusDB(conf().useSipmStatusDB()),
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat{_engine},
     _randPoissonQ{_engine},
-    _photonMapFileName(pset.get<std::string>("photonMapFileName"))
+    _photonMapFileName(conf().photonMapFileName())
   {
     produces<CrvSiPMChargesCollection>();
-    _probabilities._avalancheProbParam1 = pset.get<double>("AvalancheProbParam1");  //0.65
-    _probabilities._avalancheProbParam2 = pset.get<double>("AvalancheProbParam2");  //2.7
-    _probabilities._trapType0Prob = pset.get<double>("TrapType0Prob");              //0
-    _probabilities._trapType1Prob = pset.get<double>("TrapType1Prob");              //0
-    _probabilities._trapType0Lifetime = pset.get<double>("TrapType0Lifetime");      //5.0ns
-    _probabilities._trapType1Lifetime = pset.get<double>("TrapType1Lifetime");      //50.0ns
-    _probabilities._thermalRate = pset.get<double>("ThermalRate");                  //3.0e-4 ns^-1   300MHz for entire SiPM
-    _probabilities._crossTalkProb = pset.get<double>("CrossTalkProb");              //0.05
+    const auto inactivePixelsTmp = conf().inactivePixels();
+    _inactivePixels.resize(inactivePixelsTmp.size());
+    for(size_t i=0; i<inactivePixelsTmp.size(); ++i)
+    {
+      _inactivePixels[i]=std::pair<int,int>(inactivePixelsTmp.at(i).at(0),inactivePixelsTmp.at(i).at(1));
+    }
+    _probabilities._avalancheProbParam1=conf().avalancheProbParam1();  //0.65
+    _probabilities._avalancheProbParam2=conf().avalancheProbParam2();  //2.7
+    _probabilities._trapType0Prob=conf().trapType0Prob();              //0
+    _probabilities._trapType1Prob=conf().trapType1Prob();              //0
+    _probabilities._trapType0Lifetime=conf().trapType0Lifetime();      //5.0ns
+    _probabilities._trapType1Lifetime=conf().trapType1Lifetime();      //50.0ns
+    _probabilities._thermalRate=conf().thermalRate();                  //1.0e-4 ns^-1   100kHz for entire SiPM
+    _probabilities._crossTalkProb=conf().crossTalkProb();              //0.05
 
     std::string fullPhotonMapFileName(_resolveFullPath(_photonMapFileName));
     _makeCrvSiPMCharges = boost::shared_ptr<mu2eCrv::MakeCrvSiPMCharges>(new mu2eCrv::MakeCrvSiPMCharges(_randFlat, _randPoissonQ, fullPhotonMapFileName));
@@ -117,29 +162,34 @@ namespace mu2e
     std::unique_ptr<CrvSiPMChargesCollection> crvSiPMChargesCollection(new CrvSiPMChargesCollection);
 
     art::Handle<CrvPhotonsCollection> crvPhotonsCollection;
-    event.getByLabel(_crvPhotonsModuleLabel,"",crvPhotonsCollection);
+    event.getByLabel(_crvPhotonsModuleLabel,crvPhotonsCollection);
 
     art::Handle<EventWindowMarker> eventWindowMarker;
-    event.getByLabel(_eventWindowMarkerLabel,"",eventWindowMarker);
+    event.getByLabel(_eventWindowMarkerTag,eventWindowMarker);
     EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
+    double eventWindowLength = eventWindowMarker->eventLength(); //onspill: 1675ns/1700ns, offspill: 100000ns
 
-    art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
-    event.getByLabel(_protonBunchTimeMCLabel, protonBunchTimeMC);
-    double TDC0time = -protonBunchTimeMC->pbtime_;
+    //offspill
+    double eventWindowStart=0;
+    double startTime=0;
+    double endTime=eventWindowLength;
 
-    ProditionsHandle<EventTiming> eventTimingHandle;
-    const EventTiming &eventTiming = eventTimingHandle.get(event.id());
-    double jitter = TDC0time - eventTiming.timeFromProtonsToDRMarker();
-
-    double startTime=_digitizationStart+jitter;
-    double endTime=_digitizationEnd+jitter;
-    if(spillType!=EventWindowMarker::SpillType::onspill)
+    //onspill
+    if(spillType==EventWindowMarker::SpillType::onspill)
     {
-      double eventWindowLength = eventWindowMarker->eventLength();
-      startTime = TDC0time;
-      endTime = startTime + eventWindowLength;
+      art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
+      event.getByLabel(_protonBunchTimeMCTag, protonBunchTimeMC);
+      eventWindowStart = -protonBunchTimeMC->pbtime_; //200ns...225ns
+
+      startTime=eventWindowStart+_digitizationStart-_digitizationStartMargin; //300ns...325ns
+      endTime=eventWindowStart+_digitizationEnd; //1700ns...1725ns
+
+      if(_simulateNZS)
+      {
+        startTime=eventWindowStart-_digitizationStartMargin; //100ns...125ns
+        endTime=eventWindowStart+_numberSamplesNZS*CRVDigitizationPeriod; //1875ns...1900s
+      }
     }
-    startTime -= _digitizationStartMargin;
 
     auto const& sipmStatus = _sipmStatus.get(event.id());
 

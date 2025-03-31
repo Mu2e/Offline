@@ -33,8 +33,8 @@ namespace mu2e {
     _hfitCon = tfs.make<TH1D>("FitConn", "Fit CL", 100, 0.0, 1.0);
     _hfitConC = tfs.make<TH1D>("FitConnC", "Fit CL CPR", 100, 0.0, 1.0);
     _hfitConT = tfs.make<TH1D>("FitConnT", "Fit CL TPR", 100, 0.0, 1.0);
-    _hp = tfs.make<TH1D>("p", "p", 100, 0., 110.);
-    _hp2 = tfs.make<TH1D>("p2", "p", 150, 0., 500.);
+    _hp = tfs.make<TH1D>("p", "p", 200, -110., 110.);
+    _hp2 = tfs.make<TH1D>("p2", "p", 300, -500., 500.);
     _hpC = tfs.make<TH1D>("pC", "p CPR", 100, 0., 110.);
     _hpT = tfs.make<TH1D>("pT", "p TPR", 100, 0., 110.);
     _hpce = tfs.make<TH1D>("pce", "p CE", 100, 95.0, 110.);
@@ -83,7 +83,7 @@ namespace mu2e {
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
     // increment this by 1 any time the defnitions of the histograms or the
     // histogram contents change, and will not match previous versions
-    _hVer->Fill(9.0);
+    _hVer->Fill(10.0);
 
     _hN->Fill(coll.size());
     for (auto const& ks : coll) {
@@ -118,13 +118,17 @@ namespace mu2e {
       double p_pri(0.0);
       double p_mc = mcTrkP(event,vdid,p_pri);
       SurfaceId sid = _vdmap[vdid];
-      auto ikinter = ks.intersection(sid);
+      auto kintercol = ks.intersections(sid);
       double ksCharge = ptable->particle(ks.particle()).charge();
-      if(ikinter != ks.intersections().end()){
+      if(kintercol.size() > 0){
+        auto ikinter = kintercol.front(); // just sample the 1st intersection if there are >1
         auto mom3 = ikinter->momentum3();
         double p = mom3.R();
-        _hp->Fill(p);
-        _hp2->Fill(p);
+        double recoCharge(1.);
+        auto   kseg = ks.segments().back();
+        if(ks.centralHelixFit()) recoCharge = kseg.centralHelix().charge();
+        _hp->Fill(p*recoCharge);
+        _hp2->Fill(p*recoCharge);
         if (isCPR) _hpC->Fill(p);
         if (isTPR) _hpT->Fill(p);
         _hpce->Fill(p);

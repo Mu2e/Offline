@@ -8,7 +8,6 @@ namespace mu2e {
 
     Box( double x, double y, double z) :
       _xhl(x), _yhl(y), _zhl(z){}
-    ~Box(){}
 
     double getXhalfLength() const { return _xhl; }
     double getYhalfLength() const { return _yhl; }

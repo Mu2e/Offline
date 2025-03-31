@@ -94,7 +94,7 @@ int  g4.nSurfaceCheckPointsPercmsq =   1;
 int  g4.minSurfaceCheckPoints      = 100; // per volume
 int  g4.maxSurfaceCheckPoints = 10000000; // per volume
 
-#remove all concrete and replace it with air
+//remove all concrete and replace it with air
 string building.escape.hatch.S.material = "G4_AIR";
 string building.tsArea.W.material = "G4_AIR";
 string building.dsArea.alcove1.ceiling.material = "G4_AIR";

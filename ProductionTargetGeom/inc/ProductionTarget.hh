@@ -66,13 +66,17 @@ namespace mu2e {
     const std::map<double, CLHEP::Hep3Vector> & anchoringPntsRgt() const { return _anchoringPntsRgt; }
     const std::map<double, CLHEP::Hep3Vector> & anchoringPntsLft() const { return _anchoringPntsLft; }
 
-    ~ProductionTarget() {
+    ~ProductionTarget() override {
 
       if (!_tier1TargetType.empty()){
         delete _pHubsRgtParams;
         delete _pHubsLftParams;
       }
     }
+    ProductionTarget( ProductionTarget const&  ) = default;
+    ProductionTarget( ProductionTarget&&       ) = default;
+    ProductionTarget& operator=(ProductionTarget const&  ) = default;
+    ProductionTarget& operator=(ProductionTarget &&      ) = default;
 
 
     //
@@ -148,9 +152,9 @@ namespace mu2e {
      if (_haymanTargetType == hayman_v_2_0){
         return _halfHaymanLength;}
      else if  (_tier1TargetType == "MDC2018"){
-        return _halfLength;}
-      else throw cet::exception("BADCONFIG")
-             << "in ProductionTarget.hh, no valid target specified"<< std::endl;
+       return _halfLength;}
+     else throw cet::exception("BADCONFIG")
+            << "in ProductionTarget.hh, no valid target specified"<< std::endl;
     }
 
 
@@ -208,6 +212,7 @@ namespace mu2e {
 
 //    std::unique_ptr<Polycone> _pHubsRgtParams;
 //    std::unique_ptr<Polycone> _pHubsLftParams;
+    // Fixme: replace with unique_ptr.
     Polycone * _pHubsRgtParams;
     Polycone * _pHubsLftParams;
     std::map<double,CLHEP::Hep3Vector> _anchoringPntsRgt;

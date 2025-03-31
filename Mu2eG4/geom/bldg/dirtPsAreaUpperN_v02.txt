@@ -1,36 +1,23 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_PSarea_upperExtension_N.ccl
-
 string dirt.psArea.upper.N.name     = "dirtPsAreaUpperN";
-
 string dirt.psArea.upper.N.material = "MBOverburden";
-
-double dirt.psArea.upper.N.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.psArea.upper.N.offsetFromFloorSurface.y = 4826.4;
-double dirt.psArea.upper.N.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.psArea.upper.N.yHalfThickness           = 406.8;
-
-vector<int>    dirt.psArea.upper.N.xreplace   = { 4, 5 };
+double dirt.psArea.upper.N.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.psArea.upper.N.offsetFromFloorSurface.y = 4826.40;
+double dirt.psArea.upper.N.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.psArea.upper.N.xreplace ={1 ,2 };
+double dirt.psArea.upper.N.yHalfThickness           = 406.80;
 vector<double> dirt.psArea.upper.N.xPositions = {
-  -12319,   // h1
-  -12319,   // h2
-  -17134.6,   // h3
-  -17041,    // h4
-  -50000,   // h4_to_W
-  -50000   // h1_to_W
+-12319.00, // 0
+-60000.00, // 1
+-60000.00, // 2
+-17540.55, // 3
+-17636.95, // 4
+-12319.10 // 5
 };
-
 vector<double> dirt.psArea.upper.N.yPositions = {
-  7086.59,   // h1
-  3390.67,   // h2
-  2173.52,   // h3
-  1779,      // h4
-  1779,   // h4_to_W
-  7086.59   // h1_to_W
+7086.50, // 0
+7086.50, // 1
+1656.29, // 2
+1656.29, // 3
+2051.20, // 4
+3349.32 // 5
 };
-
-// Local Variables:
-// mode:c++
-// End:

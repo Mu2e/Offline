@@ -27,6 +27,8 @@ namespace mu2e {
     constexpr static std::size_t nFEBPerROC = 25;
     constexpr static std::size_t nROC = 18;
 
+    constexpr static std::size_t nChanPerFPGA = 16;
+    constexpr static std::size_t nFPGAPerFEB = 4;
   };
 }
 #endif /* DataProducts_CRVId_hh */

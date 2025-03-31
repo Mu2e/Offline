@@ -362,4 +362,16 @@ namespace mu2e {
 
     }
 
+  TrkTypes::TDCValue StrawElectronics::timeAnalogToDigital(double time,
+                                                           StrawId& sid) const{
+    auto rv = this->tdcResponse(time);
+    return rv;
+  }
+
+  double StrawElectronics::timeDigitalToAnalog(TrkTypes::TDCValue time,
+                                               StrawId& sid) const{
+    auto rv = static_cast<double>(time) * this->tdcLSB();
+    rv -= this->electronicsTimeDelay();
+    return rv;
+  }
 }

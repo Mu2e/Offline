@@ -13,7 +13,7 @@ TrackerMC : {
     #    StrawDigiMaker  : {
     makeSD  : {
       module_type : StrawDigisFromStrawGasSteps
-      StrawGasStepModule : "StrawGasStepMaker"
+      StrawGasStepModules : [ "StrawGasStepMaker" ]
       # set to digitize all hits in outer straws of the first 2 planes
       AllHitsPlanes : [0,1]
       AllHitsStraw : 91 # this straw and higher are always digitized

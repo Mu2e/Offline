@@ -20,16 +20,12 @@ vector<double> dirt.dsArea.upper.xPositions = {
   21158.2,   // i3
   14046.2,   // i4
   14046.2,   // i5
-  13233.4,   // i6
-  13233.4,   // i7
-  6121.4,   // i8
-  6121.4,   // i9
-  5308.6,   // j0
-  5308.6,   // j0_to_S
+  13630.275,   // i6
+  13630.275,   // j0_to_S
   29083   // h9_to_S
 };
 
-vector<int>    dirt.dsArea.upper.yreplace   = { 12, 13 };
+vector<int>    dirt.dsArea.upper.yreplace   = { 8, 9 };
 vector<double> dirt.dsArea.upper.yPositions = {
   -9271,   // h9
   -9271,   // i0
@@ -39,10 +35,6 @@ vector<double> dirt.dsArea.upper.yPositions = {
   -9271,   // i4
   -12014.2,   // i5
   -12014.2,   // i6
-  -9550.4,   // i7
-  -9550.4,   // i8
-  -11734.8,   // i9
-  -11734.8,   // j0
   -50000,   // j0_to_S
   -50000   // h9_to_S
 };

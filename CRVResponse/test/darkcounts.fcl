@@ -1,0 +1,60 @@
+#include "Offline/fcl/standardServices.fcl"
+#include "Production/JobConfig/common/prolog.fcl"
+#include "Production/JobConfig/primary/prolog.fcl"
+#include "Production/JobConfig/cosmic/prolog.fcl"
+
+process_name : CrvDarkCounts
+
+services :
+{
+  @table::Services.SimAndReco
+}
+
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : @nil
+  firstRun  : 1200
+}
+
+physics: {
+
+  producers : {
+    @table::CommonMC.DigiProducers
+    @table::Common.producers
+    @table::Primary.producers
+    @table::CrvDAQPackage.producers
+  }
+
+  TriggerPath :  [ @sequence::CommonMC.DigiSim, @sequence::CrvDAQPackage.CrvDAQSequence]
+  EndPath : [ Output ]
+  trigger_paths : [ TriggerPath ]
+  end_paths : [ EndPath ]
+}
+
+outputs:
+{
+  Output :
+  {
+    module_type : RootOutput
+    fileName    : "mcs.owner.CRV_darkcounts-mc.configuration.sequencer.art"
+  }
+}
+
+
+physics.producers.EWMProducer.SpillType : 1 #onspill
+physics.producers.CrvPhotons.crvStepModuleLabels    : [] #no input steps
+physics.producers.CrvPhotons.crvStepProcessNames    : []
+physics.producers.CrvPhotons.simulateNZS : true
+physics.producers.CrvSiPMCharges.simulateNZS : true
+physics.producers.CrvWaveforms.simulateNZS : true
+physics.producers.CrvWaveforms.prescalingFactorNZS : 1  #to avoid generating events without NZS data (actual prescaling factor is 10)
+physics.producers.CrvDigi.simulateNZS : true
+
+services.SeedService.baseSeed : @local::Common.BaseSeed
+services.TFileService.fileName : "nts.owner.CRV_darkcounts-mc.configuration.sequencer.root"
+services.TimeTracker.printSummary: true
+services.scheduler.wantSummary: true
+services.message.destinations.log.outputStatistics : true
+
+#include "Offline/DbService/fcl/NominalDatabase.fcl"

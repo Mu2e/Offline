@@ -76,7 +76,7 @@ TrkHitReco : { @table::TrkHitReco
       ComboHitCollection    : makeSH
       EventWindowMarker     : EWMProducer
       StrawHitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
-      StrawHitMask          : ["Dead","Noisy"]
+      StrawHitMask          : ["Dead"]
       MaxDt                 : 45 # ns
       UseTOT                : true
       MaxWireDistDiffPull   : 5.0
@@ -104,7 +104,6 @@ TrkHitReco : { @table::TrkHitReco
       StereoLine            : false
       StereoLineNDOF        : 1 # require at least
       ComboHitCollection    : "makePH"
-      EventWindowMarker     : EWMProducer
       StrawHitSelectionBits : ["RadiusSelection","EnergySelection","TimeSelection"]
       StrawHitRejectionBits : []
       # hit selection parameters
@@ -147,6 +146,7 @@ TrkHitReco : { @table::TrkHitReco
       DebugLevel           : 0
    }
 }
+
 # combine together
 TrkHitReco : { @table::TrkHitReco
    producers : {
@@ -160,7 +160,7 @@ TrkHitReco : { @table::TrkHitReco
 
    # SEQUENCES
    # production sequence to prepare hits for tracking
-   PrepareHits  : [ PBTFSD, makeSH, makePH, makeSTH, FlagBkgHits ]
+   PrepareHits  : [ PBTFSD, makeSH, makePH, flagPH ]
 }
 
 END_PROLOG

@@ -64,7 +64,18 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // constructors and destructor
 //-----------------------------------------------------------------------------
-    DeltaSeed (int Index) { fIndex = Index; }
+    DeltaSeed() : fIndex(0), fStation(0), fType(0), fGood(0), fNHits(0), fNStrawHits(0), fChi21(0.f), fChi22(0.f),
+                  fSnx2(0.), fSnxy(0.), fSnxr(0.), fSnyr(0.), fSumEDep(0.f), fZ(0.f), fSumT(0.f), fSumT2(0.f),
+                  fMinHitTime(0.f), fMaxHitTime(0.f), fDeltaIndex(0), fProtonIndex(0), fChi2Par(0.f), fChi2Perp(0.f)
+    {
+      fSFace[0] = 0; fSFace[1] = 0;
+      for(int face = 0; face < kNFaces; ++face) {
+        fFaceProcessed[face] = 0;
+        fHitData      [face] = nullptr;
+      }
+    }
+
+    DeltaSeed(int Index) : DeltaSeed() { fIndex = Index; }
 
     ~DeltaSeed() {}
 

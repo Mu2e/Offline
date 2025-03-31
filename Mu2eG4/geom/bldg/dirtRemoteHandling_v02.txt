@@ -1,37 +1,34 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_remote.ccl
-
 string dirt.remote.handling.name     = "dirtRemoteHandling";
-
 string dirt.remote.handling.material = "MBOverburden";
-
-double dirt.remote.handling.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.remote.handling.offsetFromMu2eOrigin.x   = 947.40;
 double dirt.remote.handling.offsetFromFloorSurface.y = 2133.6;
-double dirt.remote.handling.offsetFromMu2eOrigin.z   = -3581.4;
-
+double dirt.remote.handling.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.remote.handling.xreplace ={9 ,10 };
+vector<int> dirt.remote.handling.yreplace ={8 ,9 };
 double dirt.remote.handling.yHalfThickness           = 2286;
-
-vector<int>    dirt.remote.handling.xreplace   = { 3, 4 };
 vector<double> dirt.remote.handling.xPositions = {
-  11684,   // r1
-  -12319,   // r2
-  -12319,   // e1
-  -50000,   // e1_to_W
-  -50000,   // NWcorner
-  11684   // r1_to_N
+-19681.30, // 0
+-18644.80, // 1
+-18620.70, // 2
+-14757.75, // 3
+-14757.75, // 4
+-12319.35, // 5
+-12319.10, // 6
+11683.95, // 7
+11683.95, // 8
+-60000.00, // 9
+-60000.00 // 10
 };
-
-vector<int>    dirt.remote.handling.yreplace   = { 4, 5 };
 vector<double> dirt.remote.handling.yPositions = {
-  16611.6,   // r1
-  16611.6,   // r2
-  6985.26,   // e1
-  6985.26,   // e1_to_W
-  50000,   // NWcorner
-  50000   // r1_to_N
+1656.41, // 0
+1909.43, // 1
+1810.73, // 2
+2753.83, // 3
+6985.30, // 4
+6985.30, // 5
+16611.70, // 6
+16611.70, // 7
+60000.00, // 8
+60000.00, // 9
+1656.46 // 10
 };
-
-// Local Variables:
-// mode:c++
-// End:

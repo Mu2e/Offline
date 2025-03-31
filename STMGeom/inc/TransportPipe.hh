@@ -16,12 +16,12 @@ namespace mu2e {
   class TransportPipe {
   public:
     TransportPipe(bool build, double radiusIn, double radiusOut,
-                  std::string material, std::string gasMaterial,
+                  std::string const& material, std::string const& gasMaterial,
                   double upStrSpace, double dnStrHalflength,
-                  std::string upStrWindowMaterial, double upStrWindowHalflength,
-                  std::string dnStrWindowMaterial, double dnStrWindowHalflength,
+                  std::string const& upStrWindowMaterial, double upStrWindowHalflength,
+                  std::string const& dnStrWindowMaterial, double dnStrWindowHalflength,
                   double flangeHalflength, double flangeOverhangR,
-                  CLHEP::Hep3Vector originInMu2e, CLHEP::HepRotation rotation
+                  CLHEP::Hep3Vector const& originInMu2e, CLHEP::HepRotation const& rotation
                 ) :
       _build( build ),
       _radiusIn( radiusIn ),

@@ -26,7 +26,7 @@ namespace mu2e {
                                  double rOut1,
                                  double rIn1,
                                  double halflen,
-                                 std::string m):
+                                 std::string const& m):
       _id(id),
       _c(c),
       _rOut0(rOut0),
@@ -46,7 +46,7 @@ namespace mu2e {
                                  double rIn1,
                                  double halflen,
                                  int    nSides,
-                                 std::string m):
+                                 std::string const& m):
       _id(id),
       _c(c),
       _rOut0(rOut0),

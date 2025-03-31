@@ -150,15 +150,16 @@ namespace mu2e {
       // This function is called recursively, so the the vector must be empty on the top-most call
 #ifndef __ROOTCLING__
       // find the parent at a given level
-      CHCPTR parent(StrawIdMask::Level level) const;
-      void fillStrawDigiIndices( size_t chindex, SHIV& shids) const;
+      // if parent and grandparent are the same level, will select the grandparent unless stopatfirst set
+      CHCPTR parent(StrawIdMask::Level level, bool stopatfirst=false) const;
+      void fillStrawDigiIndices( size_t chindex, SHIV& shids, bool stopatfirst=false) const;
       // Fill indices to the specified level.  Return value is the collection to whic
       // the indices apply.  first, given all my hits
-      ComboHitCollection const* fillStrawHitIndices( SHIV& shiv, StrawIdMask::Level clevel=StrawIdMask::uniquestraw) const;
+      ComboHitCollection const* fillStrawHitIndices( SHIV& shiv, StrawIdMask::Level clevel=StrawIdMask::uniquestraw, bool stopatfirst=false) const;
       // given a specific hit (index) in myself
-      ComboHitCollection const* fillStrawHitIndices( size_t chindex, SHIV& shiv, StrawIdMask::Level clevel=StrawIdMask::uniquestraw) const;
+      ComboHitCollection const* fillStrawHitIndices( size_t chindex, SHIV& shiv, StrawIdMask::Level clevel=StrawIdMask::uniquestraw, bool stopatfirst=false) const;
       // given a vector of indices
-      ComboHitCollection const* fillStrawHitIndices(SHIV const& inshiv, SHIV& outshiv, StrawIdMask::Level clevel=StrawIdMask::uniquestraw) const;
+      ComboHitCollection const* fillStrawHitIndices(SHIV const& inshiv, SHIV& outshiv, StrawIdMask::Level clevel=StrawIdMask::uniquestraw, bool stopatfirst=false) const;
       // the following are deprecated in favor of the more-efficient and self-checking functions above
       // translate a collection of ComboHits into the lowest-level (straw) combo hits.  This function is recursive
       void fillComboHits( std::vector<uint16_t> const& indices, CHCIter& iters) const;
@@ -171,12 +172,23 @@ namespace mu2e {
       void setParent(CHCPTR const& parent);
       // or set to be the same as another collection
       void setSameParent(ComboHitCollection const& other);
+      // if argument has its own parent, set this parent to match.
+      // otherwise set this parent to be collection in argument
+      void setAsSubset(CHCPTR const& other);
+      void setAsSubset(art::Handle<ComboHitCollection> const& ohandle);
+      void setAsSubset(art::ValidHandle<ComboHitCollection> const& ohandle);
+      // optionally specify what level to make as parent
+      // if parent and grandparent are the same level, will select the grandparent unless stopatfirst set
+      void setAsSubset(CHCPTR const& optr, StrawIdMask::Level level, bool stopatfirst=false);
+      void setAsSubset(art::Handle<ComboHitCollection> const& ohandle, StrawIdMask::Level level, bool stopatfirst=false);
+      void setAsSubset(art::ValidHandle<ComboHitCollection> const& ohandle, StrawIdMask::Level level, bool stopatfirst=false);
 #endif
       // accessors
       auto const& parent() const { return _parent; }
       StrawIdMask::Level level() const;
       auto sort() const { return _sort; }
       unsigned nStrawHits() const;
+      float eDepAvg() const;
     private:
       // reference back to the input ComboHit collection this one references
       CHCPTR _parent; // pointer to the parent object

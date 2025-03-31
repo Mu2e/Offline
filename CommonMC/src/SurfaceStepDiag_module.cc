@@ -9,7 +9,6 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/OptionalAtom.h"
 #include "art_root_io/TFileService.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -30,6 +29,8 @@ namespace mu2e
         fhicl::Atom<art::InputTag> vdstepmcs { Name("VDStepPointMCs"), Comment("Virtual Detector StepPointMC collection")};
         fhicl::Atom<art::InputTag> ipastepmcs { Name("IPAStepPointMCs"), Comment("IPAStepPointMC collection")};
         fhicl::Atom<art::InputTag> ststepmcs { Name("TargetStepPointMCs"), Comment("Stopping target StepPointMC collection")};
+        fhicl::Atom<int> process { Name("ProcessCode"), Comment("ProcessCode for histogramming")};
+
       };
 
       explicit SurfaceStepDiag(const art::EDAnalyzer::Table<Config>& config);
@@ -41,6 +42,8 @@ namespace mu2e
       art::ProductToken<StepPointMCCollection> vdstepmcs_, ipastepmcs_, ststepmcs_;
       TTree *ssdiag_;
       int evt_, subrun_, run_, sid_, sindex_;
+      int pdg_, proc_;
+      int process_;
       float edep_, path_, time_;
       XYZVectorF mom_, start_, mid_, end_;
       TH1F *nvdspmc_, *nipaspmc_, *nstspmc_;
@@ -52,7 +55,8 @@ namespace mu2e
     surfsteps_{ consumes<SurfaceStepCollection>(config().SurfaceStepCollection() ) },
     vdstepmcs_{ consumes<StepPointMCCollection>(config().vdstepmcs())},
     ipastepmcs_{ consumes<StepPointMCCollection>(config().ipastepmcs())},
-    ststepmcs_{ consumes<StepPointMCCollection>(config().ststepmcs())}
+    ststepmcs_{ consumes<StepPointMCCollection>(config().ststepmcs())},
+    process_(config().process())
  {}
 
   SurfaceStepDiag::~SurfaceStepDiag(){}
@@ -67,6 +71,8 @@ namespace mu2e
     ssdiag_->Branch("run",&run_,"run/I");
     ssdiag_->Branch("sid",&sid_,"sid/I");
     ssdiag_->Branch("sindex",&sindex_,"sindex/I");
+    ssdiag_->Branch("pdg",&pdg_,"pdg/I");
+    ssdiag_->Branch("proc",&proc_,"proc/I");
     ssdiag_->Branch("edep",&edep_,"edep/F");
     ssdiag_->Branch("path",&path_,"path/F");
     ssdiag_->Branch("time",&time_,"time/F");
@@ -87,14 +93,19 @@ namespace mu2e
 // first histogram StepPointMC precursor sizes
     auto const& vdspmccol_h = event.getValidHandle<StepPointMCCollection>(vdstepmcs_);
     auto const& vdspmccol = *vdspmccol_h;
-    nvdspmc_->Fill(vdspmccol.size());
+    int nvdspmc(0);
+    for(auto const& spmc : vdspmccol) if(spmc.simParticle()->creationCode() == process_)nvdspmc++;
+    nvdspmc_->Fill(nvdspmc);
     auto const& ipaspmccol_h = event.getValidHandle<StepPointMCCollection>(ipastepmcs_);
     auto const& ipaspmccol = *ipaspmccol_h;
-    nipaspmc_->Fill(ipaspmccol.size());
+    int nipaspmc(0);
+    for(auto const& spmc : ipaspmccol) if(spmc.simParticle()->creationCode() == process_)nipaspmc++;
+    nipaspmc_->Fill(nipaspmc);
     auto const& stspmccol_h = event.getValidHandle<StepPointMCCollection>(ststepmcs_);
     auto const& stspmccol = *stspmccol_h;
-    nstspmc_->Fill(stspmccol.size());
-
+    int nstspmc(0);
+    for(auto const& spmc : stspmccol) if(spmc.simParticle()->creationCode() == process_)nstspmc++;
+    nstspmc_->Fill(nstspmc);
 
     auto sscolH = event.getValidHandle(surfsteps_);
     auto const& sscol = *sscolH.product();
@@ -105,6 +116,8 @@ namespace mu2e
     for(auto const& ss : sscol) {
       sid_ = ss.surfaceId().id();
       sindex_ = ss.surfaceId().index();
+      pdg_ = ss.simParticle()->pdgId();
+      proc_ = ss.simParticle()->creationCode();
       edep_ = ss.energyDeposit();
       path_ = ss.pathLength();
       time_ = ss.time();
@@ -113,10 +126,10 @@ namespace mu2e
       mid_ = ss.midPosition();
       end_ = ss.endPosition();
       ssdiag_->Fill();
-      if(ss.surfaceId().id() < SurfaceIdDetail::IPA)nvd++;
-      if(ss.surfaceId().id() == SurfaceIdDetail::IPA)nipa++;
-      if(ss.surfaceId().id() == SurfaceIdDetail::ST_Foils)nstfoil++;
-      if(ss.surfaceId().id() == SurfaceIdDetail::ST_Wires)nstwire++;
+      if(ss.simParticle()->creationCode() == process_ && ss.surfaceId().id() < SurfaceIdDetail::IPA)nvd++;
+      if(ss.simParticle()->creationCode() == process_ && ss.surfaceId().id() == SurfaceIdDetail::IPA)nipa++;
+      if(ss.simParticle()->creationCode() == process_ && ss.surfaceId().id() == SurfaceIdDetail::ST_Foils)nstfoil++;
+      if(ss.simParticle()->creationCode() == process_ && ss.surfaceId().id() == SurfaceIdDetail::ST_Wires)nstwire++;
     }
     nvd_->Fill(nvd);
     nipa_->Fill(nipa);

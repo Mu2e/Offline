@@ -1,63 +1,42 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_extMon.ccl
-
 string building.extMon.exteriorWall.name     = "extMonExteriorWall";
-
 string building.extMon.exteriorWall.material = "CONCRETE_MARS";
-
-double building.extMon.exteriorWall.offsetFromMu2eOrigin.x   = 947.4;
-double building.extMon.exteriorWall.offsetFromFloorSurface.y = 5613.4;
-double building.extMon.exteriorWall.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.extMon.exteriorWall.yHalfThickness           = 1219.2;
-
+double building.extMon.exteriorWall.offsetFromMu2eOrigin.x   = 947.40;
+double building.extMon.exteriorWall.offsetFromFloorSurface.y = 5613.40;
+double building.extMon.exteriorWall.offsetFromMu2eOrigin.z   = -3581.40;
+double building.extMon.exteriorWall.yHalfThickness           = 1219.20;
 vector<double> building.extMon.exteriorWall.xPositions = {
-  -16965.9,   // A
-  -26287,   // B
-  -25347.2,   // C
-  -23422.6,   // D
-  -22880.4,   // E
-  -20838.5,   // F
-  -20172.8,   // G
-  -19098.7,   // H
-  -18570.7,   // I
-  -16026.1,   // J
-  -15954.5,   // K
-  -18350.7,   // L
-  -18795.7,   // M
-  -20396.6,   // N
-  -21062.3,   // O
-  -23104.2,   // P
-  -23646.4,   // Q
-  -25571,   // R
-  -26655.4,   // S
-  -17037.6   // T
+-17172.44, // 0
+-26789.61, // 1
+-25849.82, // 2
+-23925.15, // 3
+-23382.97, // 4
+-21341.09, // 5
+-20593.24, // 6
+-19066.07, // 7
+-19066.07, // 8
+-20820.09, // 9
+-21564.81, // 10
+-23606.68, // 11
+-24148.87, // 12
+-26073.54, // 13
+-27157.91, // 14
+-17244.63 // 15
 };
-
 vector<double> building.extMon.exteriorWall.yPositions = {
-  1482.61,   // A
-  -793.069,   // B
-  -4642.41,   // C
-  -4172.51,   // D
-  -6393.28,   // E
-  -5894.77,   // F
-  -8621.39,   // G
-  -7785.02,   // H
-  -2988.23,   // I
-  -2366.73,   // J
-  -2660.36,   // K
-  -3247,   // L
-  -7818.36,   // M
-  -8989.78,   // N
-  -6263.17,   // O
-  -6761.68,   // P
-  -4540.91,   // Q
-  -5010.8,   // R
-  -569.258,   // S
-  1776.25   // T
+1432.31, // 0
+-915.67, // 1
+-4765.00, // 2
+-4295.11, // 3
+-6515.88, // 4
+-6017.37, // 5
+-9080.50, // 6
+-9080.50, // 7
+-9436.03, // 8
+-9436.03, // 9
+-6385.72, // 10
+-6884.23, // 11
+-4663.46, // 12
+-5133.36, // 13
+-691.81, // 14
+1728.45 // 15
 };
-
-// Local Variables:
-// mode:c++
-// End:

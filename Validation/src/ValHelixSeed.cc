@@ -11,7 +11,7 @@ int mu2e::ValHelixSeed::declare(const art::TFileDirectory& tfs) {
   _hNStrHit = tfs.make<TH1D>("NStrHit", "N Straw Hits", 101, -0.5, 100.5);
   _hStatus = tfs.make<TH1D>("Status", "Status", 32, -0.5, 31.5);
   _ht0 = tfs.make<TH1D>("t0", "t0", 100, 400.0, 1800.0);
-  _hp = tfs.make<TH1D>("p", "p (mm)", 100, 0.0, 400.);
+  _hp = tfs.make<TH1D>("p", "p (mm)", 200, -400.0, 400.);
   _hpce = tfs.make<TH1D>("pce", "p CE (mm)", 100, 300.0, 400.);
   _hpt = tfs.make<TH1D>("pt", "pt (mm)", 100, 0., 400.);
   _hD0 = tfs.make<TH1D>("d0", "d0", 400, -400., 400.);
@@ -49,7 +49,14 @@ int mu2e::ValHelixSeed::fill(const mu2e::HelixSeedCollection& coll,
     auto const& rh = hs.helix();
 
     double p = rh.momentum();
-    _hp->Fill(p);
+    double charge(1.);
+
+    if ( ((rh.lambda()>0.) && (hs.recoDir().slope()>0.)) ||
+         ((rh.lambda()<0.) && (hs.recoDir().slope()<0.)) ){
+      charge = -1.;
+    }
+
+    _hp->Fill(p*charge);
     _hpce->Fill(p);
     _hpt->Fill(rh.radius());
     _hD0->Fill(rh.rcent() - rh.radius());

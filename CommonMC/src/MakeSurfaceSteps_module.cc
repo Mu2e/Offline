@@ -16,6 +16,7 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 namespace mu2e {
 
@@ -26,7 +27,7 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"), 0};
         fhicl::Atom<art::InputTag> vdstepmcs { Name("VDStepPointMCs"), Comment("Virtual Detector StepPointMC collection")};
-        fhicl::Atom<art::InputTag> ipastepmcs { Name("IPAStepPointMCs"), Comment("IPAStepPointMC collection")};
+        fhicl::Atom<art::InputTag> absstepmcs { Name("AbsorberStepPointMCs"), Comment("Absorber StepPointMC collection")};
         fhicl::Atom<art::InputTag> ststepmcs { Name("TargetStepPointMCs"), Comment("Stopping target StepPointMC collection")};
         fhicl::Atom<double> maxdgap{ Name("MaxDistGap"), Comment("Maximum dstance gap between aggregated StepPointMCs")};
         fhicl::Atom<double> maxtgap{ Name("MaxTimeGap"), Comment("Maximum time gap between aggregated StepPointMCs")};
@@ -38,7 +39,7 @@ namespace mu2e {
       int debug_;
       double maxdgap_;
       double maxtgap_;
-      art::ProductToken<StepPointMCCollection> vdstepmcs_, ipastepmcs_, ststepmcs_;
+      art::ProductToken<StepPointMCCollection> vdstepmcs_, absstepmcs_, ststepmcs_;
       std::map<VirtualDetectorId,SurfaceId> vdmap_; // map of VDIds to surfaceIds
   };
 
@@ -48,7 +49,7 @@ namespace mu2e {
     maxdgap_(config().maxdgap()),
     maxtgap_(config().maxtgap()),
     vdstepmcs_{ consumes<StepPointMCCollection>(config().vdstepmcs())},
-    ipastepmcs_{ consumes<StepPointMCCollection>(config().ipastepmcs())},
+    absstepmcs_{ consumes<StepPointMCCollection>(config().absstepmcs())},
     ststepmcs_{ consumes<StepPointMCCollection>(config().ststepmcs())}
     {
       produces <SurfaceStepCollection>();
@@ -75,43 +76,53 @@ namespace mu2e {
     }
     auto nvdsteps = ssc->size();
     if(debug_ > 0)std::cout << "Added " << nvdsteps << " VD steps " << std::endl;
-    // now IPA
-    // colate adjacent IPA steppointMCs from the same particle. The following assumes the StepPointMCs from the same SimParticle are adjacent and (roughly) time-ordered. This is observationally true currently, but if G4 ever evolves so that its not, this code will need reworking
-    auto const& ipaspmccol_h = event.getValidHandle<StepPointMCCollection>(ipastepmcs_);
-    auto const& ipaspmccol = *ipaspmccol_h;
-    if(debug_ > 0)std::cout << "IPA StepPointMC collection has " << ipaspmccol.size() << " Entries" << std::endl;
+    // now absorbers: IPA, OPA, and TSDA
+    // colate adjacent steppointMCs from the same particle. The following assumes the StepPointMCs from the same SimParticle are adjacent and (roughly) time-ordered. This is observationally true currently, but if G4 ever evolves so that its not, this code will need reworking
+    auto const& absspmccol_h = event.getValidHandle<StepPointMCCollection>(absstepmcs_);
+    auto const& absspmccol = *absspmccol_h;
+    if(debug_ > 0)std::cout << "Absorber StepPointMC collection has " << absspmccol.size() << " Entries" << std::endl;
     // match steps by their sim particle. There is only 1 volume for IPA
-    SurfaceStep ipastep;
-    for(auto const& spmc : ipaspmccol) {
+    SurfaceStep absorberstep;
+    for(auto const& spmc : absspmccol) {
+      // convert to detector coordinates
+      auto spmcpos = XYZVectorF(det->toDetector(spmc.position()));
       bool added(false);
       // decide if this step is contiguous to existing steps already aggregated
       // first, test SimParticle (surface is defined by the collection)
-      if(ipastep.simParticle() == spmc.simParticle()){
+      if(absorberstep.simParticle() == spmc.simParticle()){
         if(debug_ > 2) std::cout << "Same SimParticle" << std::endl;
         // then time;
-        auto tgap = fabs(ipastep.time()-spmc.time());
-        auto dgap = (ipastep.endPosition() - XYZVectorF(det->toDetector(spmc.position()))).R();
-        if(spmc.time() < ipastep.time())throw cet::exception("Simulation") << " StepPointMC times out-of-order" << std::endl;
+        auto tgap = fabs(absorberstep.time()-spmc.time());
+        auto dgap = (absorberstep.endPosition() - spmcpos).R();
+        if(spmc.time() < absorberstep.time())throw cet::exception("Simulation") << " StepPointMC times out-of-order" << std::endl;
         if(debug_ > 2) std::cout << "Time gap " << tgap << " Distance gap " << dgap << std::endl;
         if(tgap < maxtgap_ && dgap < maxdgap_){
           // accumulate this step into the existing surface step
           if(debug_ > 1)std::cout <<"Added step" << std::endl;
-          ipastep.addStep(spmc,det);
+          absorberstep.addStep(spmc,det);
           added = true;
         }
       }
       if(!added){
         // if the existing step is valid, save it
-        if(ipastep.surfaceId() != SurfaceIdDetail::unknown && ipastep.simParticle().isNonnull())ssc->push_back(ipastep);
+        if(absorberstep.surfaceId() != SurfaceIdDetail::unknown && absorberstep.simParticle().isNonnull())ssc->push_back(absorberstep);
         // start a new SurfaceStep for this step
-        ipastep = SurfaceStep(SurfaceId(SurfaceIdDetail::IPA),spmc,det);
+        // hack around the fact that the IPA, OPA, and TSDA are all in the same collection ('absorber')
+        SurfaceId sid;
+        if(spmcpos.Z() < -5960) // TSDA
+          sid = SurfaceId(SurfaceIdDetail::TSDA);
+        else if(spmcpos.Rho() > 400) // OPA
+          sid = SurfaceId(SurfaceIdDetail::OPA);
+        else
+          sid = SurfaceId(SurfaceIdDetail::IPA);
+        absorberstep = SurfaceStep(sid,spmc,det);
         if(debug_ > 1)std::cout <<"New step" << std::endl;
       }
     }
     // save last step
-    if(ipastep.surfaceId() != SurfaceIdDetail::unknown && ipastep.simParticle().isNonnull())ssc->push_back(ipastep);
-    auto nipasteps = ssc->size() - nvdsteps;
-    if(debug_ > 0)std::cout << "Added " << nipasteps << " IPA Steps "<< std::endl;
+    if(absorberstep.surfaceId() != SurfaceIdDetail::unknown && absorberstep.simParticle().isNonnull())ssc->push_back(absorberstep);
+    auto nabsorbersteps = ssc->size() - nvdsteps;
+    if(debug_ > 0)std::cout << "Added " << nabsorbersteps << " IPA Steps "<< std::endl;
     // same for stopping target. Here, the foil number (= volumeid) matters
     auto const& stspmccol_h = event.getValidHandle<StepPointMCCollection>(ststepmcs_);
     auto const& stspmccol = *stspmccol_h;
@@ -119,6 +130,8 @@ namespace mu2e {
     // match steps by their sim particle. There is only 1 volume for IPA
     SurfaceStep ststep;
     for(auto const& spmc : stspmccol) {
+      // convert to detector coordinates
+      auto spmcpos = XYZVectorF(det->toDetector(spmc.position()));
       bool added(false);
       // decide if this step is contiguous to existing steps already aggregated
       // first, test SimParticle (surface is defined by the collection)
@@ -126,11 +139,11 @@ namespace mu2e {
         if(debug_ > 2) std::cout << "Same SimParticle" << std::endl;
         // then time;
         auto tgap = fabs(ststep.time()-spmc.time());
-        auto dgap = (ststep.endPosition() - XYZVectorF(det->toDetector(spmc.position()))).R();
+        auto dgap = (ststep.endPosition() - spmcpos).R();
         if(spmc.time() < ststep.time())throw cet::exception("Simulation") << " StepPointMC times out-of-order" << std::endl;
         if(debug_ > 2) std::cout << "Time gap " << tgap << " Distance gap " << dgap << std::endl;
         if(tgap < maxtgap_ && dgap < maxdgap_){
-          // accumulate this step into the existing surface step
+          // accumulate this step into the existing e step
           if(debug_ > 1)std::cout <<"Added step" << std::endl;
           ststep.addStep(spmc,det);
           added = true;
@@ -142,13 +155,13 @@ namespace mu2e {
         // start a new SurfaceStep for this step
         // hack around the problem that the ST wires are mixed in with the ST foils
         SurfaceId stid(SurfaceIdDetail::ST_Foils,spmc.volumeId());
-        if(det->toDetector(spmc.position()).rho() > 75.001)stid = SurfaceId(SurfaceIdDetail::ST_Wires,spmc.volumeId());
+        if(spmcpos.Rho() > 75.001)stid = SurfaceId(SurfaceIdDetail::ST_Wires,spmc.volumeId());
         ststep = SurfaceStep(stid,spmc,det);
         if(debug_ > 1)std::cout <<"New step" << std::endl;
       }
     }
     if(ststep.surfaceId() != SurfaceIdDetail::unknown && ststep.simParticle().isNonnull())ssc->push_back(ststep);
-    auto nststeps = ssc->size() - nipasteps - nvdsteps;
+    auto nststeps = ssc->size() - nabsorbersteps - nvdsteps;
     if(debug_ > 0)std::cout << "Added " << nststeps << " stopping target Steps "<< std::endl;
     // finish
     event.put(move(ssc));

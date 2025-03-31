@@ -15,7 +15,6 @@
 #include "Offline/TrkPatRec/fcl/prolog.fcl"
 #include "Offline/Mu2eKinKal/fcl/prolog.fcl"
 #include "Offline/CalPatRec/fcl/prolog.fcl"
-#include "Offline/CalPatRec/fcl/prolog_common.fcl"
 #include "Offline/TrackCaloMatching/fcl/prolog.fcl"
 #include "Offline/ParticleID/fcl/prolog.fcl"
 #include "Offline/EventMixing/fcl/prolog.fcl"

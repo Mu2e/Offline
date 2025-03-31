@@ -28,7 +28,7 @@ namespace mu2e {
                 double length,
                 double angleOffset,
                 double foil_outer_radius,
-                std::string m,
+                std::string const& m,
                 const CLHEP::Hep3Vector& detSysOrigin
                 ):
       _support_id(support_id),

@@ -12,7 +12,7 @@ double dirt.dsArea.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.dsArea.yHalfThickness           = 1803.4;
 
-vector<int>    dirt.dsArea.xreplace   = { 14, 15 };
+vector<int>    dirt.dsArea.xreplace   = { 10, 11 };
 vector<double> dirt.dsArea.xPositions = {
   45745.4,   // g1
   45745.4,   // g2
@@ -22,17 +22,13 @@ vector<double> dirt.dsArea.xPositions = {
   38061.9,   // g6
   29083,   // g7
   29083,   // g8
-  13233.4,   // g9
-  13233.4,   // h0
-  6121.4,   // h1
-  6121.4,   // h2
-  5308.6,   // h3
-  5308.6,   // h3_to_S
+  13630.275,   // g9
+  13630.275,   // h3_to_S
   50000,   // SEcorner
   50000   // g1_to_E
 };
 
-vector<int>    dirt.dsArea.yreplace   = { 13, 14 };
+vector<int>    dirt.dsArea.yreplace   = { 9, 10 };
 vector<double> dirt.dsArea.yPositions = {
   2616.2,   // g1
   -10617.2,   // g2
@@ -43,10 +39,6 @@ vector<double> dirt.dsArea.yPositions = {
   -18186.4,   // g7
   -12014.2,   // g8
   -12014.2,   // g9
-  -9550.4,   // h0
-  -9550.4,   // h1
-  -11734.8,   // h2
-  -11734.8,   // h3
   -50000,   // h3_to_S
   -50000,   // SEcorner
   2616.2   // g1_to_E

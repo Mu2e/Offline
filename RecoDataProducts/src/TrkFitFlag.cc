@@ -47,6 +47,7 @@ namespace mu2e {
       bitnames[std::string("KKCentralHelix")]     = bit_to_mask(KKCentralHelix);
       bitnames[std::string("KKLine")]             = bit_to_mask(KKLine);
       bitnames[std::string("MCSeed")]             = bit_to_mask(MCSeed);
+      bitnames[std::string("AmbiguousFitDir")]    = bit_to_mask(AmbFitDir);
     }
     return bitnames;
   }

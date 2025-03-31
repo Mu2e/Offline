@@ -23,8 +23,15 @@ namespace mu2e {
 
   StrawDigiMC::StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, DigiProvenance::enum_type provenance):
     _strawid(sid), _cpos(cpos), _ctime(ctime), _wtime(wetime), _sgspa(sgs)
-    , _provenance(provenance)
+    , _provenance(provenance), _isnoise(false)
   {}
+
+  StrawDigiMC::StrawDigiMC(StrawId sid, bool isnoise): _isnoise(isnoise){
+    if (!_isnoise){
+      std::string msg = "Attempt to initialize empty StrawDigiMC not flagged as noise";
+      throw cet::exception("StrawDigiMC") << msg << std::endl;
+    }
+  }
 
   StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, SGSPA sgspa ) : StrawDigiMC(rhs)  {
     _sgspa = sgspa;

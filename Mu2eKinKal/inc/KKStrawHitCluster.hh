@@ -48,6 +48,7 @@ namespace mu2e {
       using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       using KKSTRAWHITCLUSTERER = KKStrawHitClusterer<KTRAJ>;
+      using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       KKStrawHitCluster() {}
       // create from a single hit
       KKStrawHitCluster(KKSTRAWHITPTR const& hitptr);
@@ -59,7 +60,7 @@ namespace mu2e {
       unsigned nDOF() const override { return 0; }
       KinKal::Weights const& weight() const override { return (*hits_.begin())->weight(); }
       double time() const override;
-      void updateReference(KTRAJPTR const& ktrajptr) override {} // nothing to do here, ref comes from individual hits
+      void updateReference(PTRAJ const& ptraj) override {} // nothing to do here, ref comes from individual hits
       KTRAJPTR const& refTrajPtr() const override { return (*hits_.begin())->refTrajPtr(); }
       // update the internals of the hit, specific to this meta-iteraion.  This will affect the next fit iteration
       void updateState(KinKal::MetaIterConfig const& config,bool first) override;

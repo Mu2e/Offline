@@ -65,6 +65,7 @@ class PrintModule : public art::EDAnalyzer {
   struct Config {
     fhicl::Atom<bool> printEvent { fhicl::Name("PrintEvent"), fhicl::Comment("Print Event Products"),true};
     fhicl::Atom<bool> printSubRun { fhicl::Name("PrintSubRun"), fhicl::Comment("Print SubRun Products"),true};
+    fhicl::Atom<int> verbose{fhicl::Name("verbose"),fhicl::Comment("verbose flag, 0 to 1 or 2"), 1};
 
     fhicl::Table<ProductPrinter::Config> statusG4Printer{
         fhicl::Name("statusG4Printer")};
@@ -166,9 +167,11 @@ class PrintModule : public art::EDAnalyzer {
   explicit PrintModule(const Parameters& conf);
   void analyze(art::Event const& event) override;
   void beginSubRun(art::SubRun const& subrun) override;
+  void endJob() override;
 
  private:
   bool _printevent, _printsubrun;
+  int _verbose;
   // each of these object prints a different product
   vector<unique_ptr<mu2e::ProductPrinter> > _printers;
 };
@@ -176,9 +179,7 @@ class PrintModule : public art::EDAnalyzer {
 }  // namespace mu2e
 
 mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
-  _printevent(conf().printEvent()), _printsubrun(conf().printSubRun()){
-  // cout << "start main pset\n"<< pset.to_string() << "\n end main pset"<<
-  // endl;
+  _printevent(conf().printEvent()), _printsubrun(conf().printSubRun()), _verbose(conf().verbose()){
 
   _printers.push_back(make_unique<StatusG4Printer>(conf().statusG4Printer()));
   _printers.push_back(
@@ -260,27 +261,36 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
 
 void mu2e::PrintModule::analyze(art::Event const& event) {
   if(_printevent) {
-    cout << "\n"
-      << " ###############  PrintModule Run/Subrun/Event " << setw(9)
-      << event.run() << setw(9) << event.subRun() << setw(9) << event.event()
-      << endl;
+    if(_verbose > 0){
+      cout << "\n"
+        << " ###############  PrintModule Run/Subrun/Event " << setw(9)
+        << event.run() << setw(9) << event.subRun() << setw(9) << event.event()
+        << endl;
+    }
 
     for (auto& prod_printer : _printers) prod_printer->Print(event);
 
-    cout << endl;
+    if(_verbose > 0)cout << endl;
   }
 }
 
 void mu2e::PrintModule::beginSubRun(art::SubRun const& subrun) {
   if(_printsubrun) {
-    cout << "\n"
-      << " ###############  PrintModule Run/Subrun " << setw(9) << subrun.run()
-      << setw(9) << subrun.subRun() << endl;
+    if(_verbose > 0){
+      cout << "\n"
+        << " ###############  PrintModule Run/Subrun " << setw(9) << subrun.run()
+        << setw(9) << subrun.subRun() << endl;
+    }
 
     for (auto& prod_printer : _printers) prod_printer->PrintSubRun(subrun);
 
-    cout << endl;
+    if(_verbose > 0)cout << endl;
   }
+}
+
+void mu2e::PrintModule::endJob() {
+  for (auto& prod_printer : _printers) prod_printer->PrintEndJob();
+  cout << endl;
 }
 
 DEFINE_ART_MODULE(mu2e::PrintModule)

@@ -28,7 +28,7 @@ namespace mu2e {
                 double rOut,
                 double rIn,
                 double t,
-                std::string m,
+                std::string const& m,
                 const CLHEP::Hep3Vector& detSysOrigin
                 ):
       _id(id),

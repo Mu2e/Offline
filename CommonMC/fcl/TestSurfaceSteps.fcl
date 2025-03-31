@@ -9,7 +9,12 @@ services : @local::Services.Reco
 physics :
 {
   producers : {
-    MakeSS : @local::CommonMC.MakeSS
+    MakeSS : {
+      @table::CommonMC.MakeSS
+      VDStepPointMCs : "compressRecoMCs:virtualdetector"
+      IPAStepPointMCs : "compressRecoMCs:protonabsorber"
+      TargetStepPointMCs : "compressRecoMCs:stoppingtarget"
+    }
   }
   TrigPath : [MakeSS]
   analyzers : {
@@ -19,7 +24,13 @@ physics :
         verbose : 1
       }
     }
-    SSDiag : @local::CommonMC.SSDiag
+    SSDiag : {
+      @table::CommonMC.SSDiag
+      VDStepPointMCs : "compressRecoMCs:virtualdetector"
+      IPAStepPointMCs : "compressRecoMCs:protonabsorber"
+      TargetStepPointMCs : "compressRecoMCs:stoppingtarget"
+      ProcessCode : 167 # conversion endpoint
+    }
   }
   EndPath : [printSSteps, SSDiag]
   end_paths : [EndPath]

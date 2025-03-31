@@ -21,9 +21,10 @@ physics :
   producers:
   {
     CrvRecoPulses: @local::CrvRecoPulses
+    CrvCoincidenceClusterFinder: @local::CrvCoincidenceClusterFinder
   }
 
-  an : [CrvRecoPulses]
+  an : [CrvRecoPulses, CrvCoincidenceClusterFinder]
   out: [Output]
 
   trigger_paths: [an]
@@ -41,5 +42,24 @@ outputs:
 
 services.TFileService.fileName : "recoWideband.root"
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_Wideband1module.txt"
+services.ProditionsService.crvStatus.useDb: false
 services.ProditionsService.crvCalib.useDb: true
 services.DbService.textFile : ["Offline/CRVConditions/data/calib_wideband1module.txt"]
+
+physics.producers.CrvCoincidenceClusterFinder.verboseLevel: 0
+physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
+      [
+        {
+          CRVSector : "W1"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          minOverlapTimeAdjacentPulses : 30
+          minOverlapTime : 30
+          minSlope :-11
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+          minClusterPEs : 0
+        }
+      ]

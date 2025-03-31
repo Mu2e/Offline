@@ -51,7 +51,7 @@ namespace mu2e {
     parseConfig(_config);
 
     // now create the specific components - Version 1 first, then Version 2
-    mbs._Version = _MBSVersion;
+    mbs._version = _MBSVersion;
 
     if ( _MBSVersion == 1 ) {
 

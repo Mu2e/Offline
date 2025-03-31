@@ -1,0 +1,26 @@
+string building.extMon.ceiling.N.name     = "extMonCeilingN";
+string building.extMon.ceiling.N.material = "CONCRETE_MARS";
+double building.extMon.ceiling.N.offsetFromMu2eOrigin.x   = 947.40;
+double building.extMon.ceiling.N.offsetFromFloorSurface.y = 7061.20;
+double building.extMon.ceiling.N.offsetFromMu2eOrigin.z   = -3581.40;
+double building.extMon.ceiling.N.yHalfThickness           = 228.60;
+vector<double> building.extMon.ceiling.N.xPositions = {
+-26073.54, // 0
+-27157.91, // 1
+-16948.53, // 2
+-15864.16, // 3
+-19198.81, // 4
+-19146.71, // 5
+-20106.12, // 6
+-20196.65 // 7
+};
+vector<double> building.extMon.ceiling.N.yPositions = {
+-5133.26, // 0
+-691.81, // 1
+1800.74, // 2
+-2640.75, // 3
+-3454.88, // 4
+-2981.44, // 5
+-2875.86, // 6
+-3698.49 // 7
+};

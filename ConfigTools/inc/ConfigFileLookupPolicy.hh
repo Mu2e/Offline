@@ -17,8 +17,7 @@ namespace mu2e {
 class mu2e::ConfigFileLookupPolicy :
   public cet::filepath_maker {
 public:
-  virtual std::string operator() (std::string const &filename);
-  virtual ~ConfigFileLookupPolicy() noexcept {}
+  std::string operator() (std::string const &filename) override;
 
 private:
   inline cet::search_path const &path() const;

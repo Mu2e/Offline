@@ -6,7 +6,6 @@
 //
 
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
-#include <array>
 #include <vector>
 #include <cstdint>
 
@@ -16,23 +15,23 @@ namespace mu2e
   {
     public:
 
-    static constexpr size_t NSamples = 8; //FIXME: this is also a parameter in CrvDigiMC
-
     CrvDigi() {}
 
-    CrvDigi(const std::array<int16_t, NSamples> &ADCs, uint16_t startTDC, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, uint8_t SiPMNumber) :
-            _ADCs(ADCs), _startTDC(startTDC), _scintillatorBarIndex(scintillatorBarIndex), _SiPMNumber(SiPMNumber) {}
+    CrvDigi(const std::vector<int16_t> &ADCs, uint16_t startTDC, bool NZS, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, uint8_t SiPMNumber) :
+            _ADCs(ADCs), _startTDC(startTDC), _NZS(NZS), _scintillatorBarIndex(scintillatorBarIndex), _SiPMNumber(SiPMNumber) {}
 
-    const std::array<int16_t, NSamples>  &GetADCs() const     {return _ADCs;}
+    const std::vector<int16_t>           &GetADCs() const     {return _ADCs;}
     uint16_t                              GetStartTDC() const {return _startTDC;}
+    bool                                  IsNZS() const       {return _NZS;}
 
     mu2e::CRSScintillatorBarIndex GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
     uint8_t                       GetSiPMNumber() const           {return _SiPMNumber;}
 
     private:
 
-    std::array<int16_t, NSamples>  _ADCs{0};
+    std::vector<int16_t>           _ADCs{0};
     uint16_t                       _startTDC{0};
+    bool                           _NZS{false};
 
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
     uint8_t                        _SiPMNumber{0};

@@ -19,6 +19,7 @@ physics :{
     printModule : {
       module_type : PrintModule
       PrintEvent : false
+      verbose : 0
       PrintSubRun : true
       CosmicLivetimePrinter : {
         verbose : 1

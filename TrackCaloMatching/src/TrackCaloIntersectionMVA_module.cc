@@ -251,7 +251,7 @@ namespace mu2e {
 
               TrkDifTraj const& traj = krep->traj();
 
-              for(unsigned int iSec=0; iSec<cal.nDisk(); ++iSec ) findIntersectSection(cal,traj,trkHel,iSec, intersectVec);
+              for(unsigned int iSec=0; iSec<cal.nDisks(); ++iSec ) findIntersectSection(cal,traj,trkHel,iSec, intersectVec);
               if (_downstream) std::sort(intersectVec.begin(),intersectVec.end(),[](const TrkCaloInter& a, const TrkCaloInter& b ){ return a.fSEntr < b.fSEntr;});
               else             std::sort(intersectVec.begin(),intersectVec.end(),[](const TrkCaloInter& a, const TrkCaloInter& b ){ return a.fSEntr > b.fSEntr;});
 

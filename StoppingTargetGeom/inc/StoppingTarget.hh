@@ -34,7 +34,7 @@ namespace mu2e {
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
-    int nFoils() const { return _foils.size(); }
+    int nFoils() const { return int(_foils.size()); }
 
     TargetFoil const& foil( unsigned int n ) const { return _foils.at(n); }
 
@@ -44,7 +44,7 @@ namespace mu2e {
 
     std::string const fillMaterial() const {return _fillMaterial;}
 
-    int nSupportStructures() const { return _supportStructures.size(); }
+    int nSupportStructures() const { return int(_supportStructures.size()); }
     TargetFoilSupportStructure const& supportStructure( unsigned int n ) const { return _supportStructures.at(n); }
 
   protected:

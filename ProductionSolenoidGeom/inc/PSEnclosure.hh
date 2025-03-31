@@ -36,7 +36,7 @@ namespace mu2e {
     const Tube& shell()     const { return shell_; }
     const Cone& shellCone() const { return shellCone_; }
 
-    void setFlange( Tube aFlange ) { flange_ = aFlange; }
+    void setFlange( Tube const& aFlange ) { flange_ = aFlange; }
     const Tube& flange()    const { return flange_; }
 
     const Tube& endPlate()  const { return endPlate_; }

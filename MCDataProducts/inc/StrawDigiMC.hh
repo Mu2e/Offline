@@ -36,6 +36,8 @@ namespace mu2e {
     StrawDigiMC();
     // construct from hitlets
     StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs, DigiProvenance::enum_type=DigiProvenance::Simulation);
+    // construct as noise
+    StrawDigiMC(StrawId sid, bool isnoise);
 
     // use compuater copy construcors
     StrawDigiMC(const StrawDigiMC& rhs, SGSPA sgsp ); // update the Ptrs
@@ -46,6 +48,7 @@ namespace mu2e {
 
     DigiProvenance provenance() const { return _provenance; }
     bool containsSimulation() const;
+    bool isNoise() const { return _isnoise; }
 
     SGSP const&  strawGasStep(StrawEnd strawend) const { return _sgspa[strawend]; }
     SGSPA const&  strawGasSteps() const { return _sgspa; }
@@ -75,6 +78,7 @@ namespace mu2e {
     FA _wtime; // times at the wire ends of the signals which fired the TDC.
     SGSPA _sgspa; // StrawGasStep that triggered each end
     DigiProvenance _provenance; // level of association with any MC truth info
+    bool _isnoise; // true if this digi was produced as noise; false otherwise
   };
 
   inline std::ostream& operator<<( std::ostream& ost,

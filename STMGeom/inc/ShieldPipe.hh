@@ -16,13 +16,13 @@ namespace mu2e {
   class ShieldPipe {
   public:
     ShieldPipe(bool build, double radiusIn, bool hasLiner, double linerWidth, double radiusOut, double pipeHalfLength,
-               std::string materialLiner, std::string material,
+               std::string const& materialLiner, std::string const& material,
                bool matchPipeBlock,
                double upStrSpace, double dnStrSpace,
                double dnStrWallHalflength, double dnStrWallHoleRadius,
                double dnStrWallHalfHeight, double dnStrWallHalfWidth,
-               double dnStrWallGap, std::string dnStrWallMaterial,
-               CLHEP::Hep3Vector originInMu2e, CLHEP::HepRotation rotation
+               double dnStrWallGap, std::string const& dnStrWallMaterial,
+               CLHEP::Hep3Vector const& originInMu2e, CLHEP::HepRotation const& rotation
               ) :
       _build( build ),
       _radiusIn( radiusIn ),

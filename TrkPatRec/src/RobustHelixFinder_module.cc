@@ -150,6 +150,7 @@ namespace mu2e {
         fhicl::Table<RobustHelixFinderTypes::Config>DiagPlugin{     Name("DiagPlugin"),           Comment("Diag plugin") };
         fhicl::Table<TrkTimeCalculator::Config>T0Calculator{        Name("T0Calculator"),         Comment("Track Time Calculator config") };
         fhicl::Atom<bool>                     UpdateStereo{         Name("UpdateStereo"),         Comment("Update Stereo") };
+        fhicl::Atom<float>                    maxEDepAvg{           Name("maxEDepAvg"),           Comment("Max eDepAvg") };
       };
 
       explicit RobustHelixFinder(const art::EDProducer::Table<Config>& config);
@@ -205,6 +206,8 @@ namespace mu2e {
       TrkTimeCalculator _ttcalc;
       StrawHitFlag      _outlier;
       bool              _updateStereo;
+
+      float             _maxEDepAvg;
 
       std::unique_ptr<ModuleHistToolBase>   _hmanager;
       RobustHelixFinderTypes::Data_t        _data;
@@ -273,7 +276,8 @@ namespace mu2e {
     _hfit        (config().HelixFitter()),
     _ttcalc      (config().T0Calculator()),
     _outlier     (StrawHitFlag::outlier),
-    _updateStereo(config().UpdateStereo())
+    _updateStereo(config().UpdateStereo()),
+    _maxEDepAvg  (config().maxEDepAvg())
     {
       std::vector<int> helvals = config().Helicities();
       for(auto hv : helvals) {
@@ -417,6 +421,8 @@ namespace mu2e {
             //fill the hits in the HelixSeedCollection
             fillGoodHits(tmpResult);
 
+            if (tmpResult._hseed._eDepAvg > _maxEDepAvg) continue;
+
             helix_seed_vec.push_back(tmpResult._hseed);
 
             // HelixSeedCollection* hcol = helcols[hel].get();
@@ -543,6 +549,7 @@ namespace mu2e {
       ComboHit                hhit(*hit);
       helixData._hseed._hhits.push_back(hhit);
     }
+    helixData._hseed._eDepAvg = helixData._hseed._hhits.eDepAvg();
 
     if (_diag){
       HelixTool helTool(&helixData._hseed, _tracker);//_trackerRIn, _trackerROut, _trackerLength);
@@ -1294,6 +1301,8 @@ void RobustHelixFinder::fillPluginDiag(RobustHelixFinderData& helixData, int hel
 
     _data.nHitsLoopFailed[helCounter][loc] = helixData._diag.nHitsLoopFailed;
 
+    _data.eDepAvg[helCounter][loc] = helixData._hseed._eDepAvg;
+
     _data.meanHitRadialDist [helCounter][loc] = helixData._diag.meanHitRadialDist;
 
     for (int i=0; i<helixData._diag.nXYCh; ++i) {
@@ -1303,7 +1312,7 @@ void RobustHelixFinder::fillPluginDiag(RobustHelixFinderData& helixData, int hel
       else break;
     }
   }   else {
-    printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());
+    if (_diag > 10) printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());
   }
 }
 

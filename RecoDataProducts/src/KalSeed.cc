@@ -52,13 +52,10 @@ namespace mu2e {
     return nactive;
   }
 
-  std::vector<KalIntersection>::const_iterator KalSeed::intersection(SurfaceId const& surfid) const{
-    auto retval = _inters.end();
+  KalSeed::InterIterCol KalSeed::intersections(SurfaceId const& surfid) const{
+    KalSeed::InterIterCol retval;
     for(auto iinter = _inters.begin(); iinter != _inters.end(); ++iinter) {
-      if(iinter->surfid_ == surfid){
-        retval = iinter;
-        break;
-      }
+      if(iinter->surfid_ == surfid) retval.push_back(iinter);
     }
     return retval;
   }
@@ -113,14 +110,17 @@ namespace mu2e {
 
 
   std::vector<KalSegment>::const_iterator KalSeed::t0Segment(double& t0) const {
-    if(segments().size() <= 0) throw cet::exception("RECO")<<"mu2e::KalSeed: no segments" << std::endl;
-// start with the first segment
-    auto iseg = segments().begin();
+    if(segments().size() == 0) throw cet::exception("RECO")<<"mu2e::KalSeed: no segments" << std::endl;
+// start with the middle
+    t0 = timeRange().mid();
+    auto iseg = nearestSegment(t0);
     auto oldseg = segments().end();
-    t0 = iseg->t0Val(_status);
-    while(iseg != oldseg && iseg->timeRange().inRange(t0)){
+    unsigned ntest(0);
+    while((!iseg->timeRange().inRange(t0)) && iseg != oldseg && ntest < segments().size()){
       oldseg = iseg;
+      t0 = iseg->t0Val(_status);
       iseg = nearestSegment(t0);
+      ++ntest;
     }
     return iseg;
   }

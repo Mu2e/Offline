@@ -44,7 +44,6 @@ namespace mu2e {
         using Comment = fhicl::Comment;
         fhicl::Atom<int>                 debug    { Name("DebugLevel"), Comment("Debug level")};
         fhicl::Atom<art::InputTag>       CHC      { Name("ComboHitCollection"),   Comment("Input ComboHit collection") };
-        fhicl::Atom<art::InputTag>       EWM      { Name("EventWindowMarker"),     Comment("EventWindowMarker")};
         fhicl::Sequence<std::string>     shsel    { Name("StrawHitSelectionBits"),    Comment("Mask for selecting hits") };
         fhicl::Sequence<std::string>     shrej    { Name("StrawHitRejectionBits"),   Comment("Mask for rejecting hits") };
         fhicl::Atom<float>               maxDt    { Name("MaxDt"),   Comment("Maximum time separation (ns)") };
@@ -74,7 +73,6 @@ namespace mu2e {
 
       int            _debug;
       art::ProductToken<ComboHitCollection> const _chctoken;
-      art::ProductToken<EventWindowMarker> const _ewmtoken;
 
       StrawHitFlag   _shsel;     // input flag selection
       StrawHitFlag   _shrej;     // input flag rejection
@@ -102,7 +100,6 @@ namespace mu2e {
     art::EDProducer{config},
     _debug(config().debug()),
     _chctoken{consumes<ComboHitCollection>(config().CHC())},
-    _ewmtoken{consumes<EventWindowMarker>(config().EWM())},
     _shsel(config().shsel()),
     _shrej(config().shrej()),
     _maxDt(config().maxDt()),
@@ -135,11 +132,6 @@ namespace mu2e {
   void MakeStereoHits::produce(art::Event& event) {
     auto chcH = event.getValidHandle(_chctoken);
     const ComboHitCollection& inchcol(*chcH);
-    auto ewmH = event.getValidHandle(_ewmtoken);
-    const EventWindowMarker& ewm(*ewmH);
-    // accept all OffSpill hits
-    bool filter = _filter && ewm.spillType() == EventWindowMarker::onspill;
-    bool testflag = _testflag && ewm.spillType() == EventWindowMarker::onspill;
     auto chcol = std::make_unique<ComboHitCollection>();
     chcol->reserve(inchcol.size());
     chcol->setParent(chcH);
@@ -151,7 +143,7 @@ namespace mu2e {
     for(uint16_t ihit=0;ihit<nch;++ihit){
       ComboHit const& ch = inchcol[ihit];
       // select hits based on flag
-      if( (!testflag) ||( ch.flag().hasAllProperties(_shsel) && (!ch.flag().hasAnyProperty(_shrej))) ){
+      if( (!_testflag) ||( ch.flag().hasAllProperties(_shsel) && (!ch.flag().hasAnyProperty(_shrej))) ){
         phits[ch.strawId().uniquePanel()].push_back(ihit);
       }
     }
@@ -173,13 +165,13 @@ namespace mu2e {
       // create a combiner seeded on this hit
       CombineStereoPoints cpts(_uvvar);
       cpts.addPoint(StereoPoint(ch1.pos(),ch1.uDir(),ch1.uVar(),ch1.vVar()),ihit);
-      if( (!testflag) ||( ch1.flag().hasAllProperties(_shsel) && (!ch1.flag().hasAnyProperty(_shrej))) ){
+      if( (!_testflag) ||( ch1.flag().hasAllProperties(_shsel) && (!ch1.flag().hasAnyProperty(_shrej))) ){
         // loop over the panels which overlap this hit's panel
         for (auto sid : _panelOverlap[ch1.strawId().uniquePanel()]) {
           // loop over hits in the overlapping panel
           for (auto jhit : phits[sid.uniquePanel()]) {
             const ComboHit& ch2 = inchcol[jhit];
-            if (!used[jhit] && cpts.nPoints() < ComboHit::MaxNCombo  && ( (!testflag) ||( ch2.flag().hasAllProperties(_shsel) && (!ch2.flag().hasAnyProperty(_shrej)))) ){
+            if (!used[jhit] && cpts.nPoints() < ComboHit::MaxNCombo  && ( (!_testflag) ||( ch2.flag().hasAllProperties(_shsel) && (!ch2.flag().hasAnyProperty(_shrej)))) ){
               if(_debug > 3) std::cout << " comparing hits in panels " << ch1.strawId().uniquePanel() << " and " << ch2.strawId().uniquePanel() << std::endl;
               float dt;
               dt = fabs(ch1.correctedTime()-ch2.correctedTime());
@@ -237,7 +229,7 @@ namespace mu2e {
       // update the level
       combohit._mask = _smask;
       // final test
-      if( (!filter) || ( combohit.flag().hasAllProperties(_shsel) &&
+      if( (!_filter) || ( combohit.flag().hasAllProperties(_shsel) &&
             (!combohit.flag().hasAnyProperty(_shrej))) ) chcol->push_back(combohit);
     }
     event.put(std::move(chcol));

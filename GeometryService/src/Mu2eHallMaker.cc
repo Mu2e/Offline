@@ -40,6 +40,13 @@ namespace mu2e {
     replaceBoundaryValues( b.dirtSolids_, c, "dirt.prefix.list", "y", mu2eEnv.xmin(), mu2eEnv.xmax() );
     replaceBoundaryValues( b.dirtSolids_, c, "dirt.prefix.list", "x", mu2eEnv.zmin(), mu2eEnv.zmax() );
   }
+ //==================================================================
+  void Mu2eHallMaker::makeRotated( Mu2eHall& b,
+                                G4GeometryOptions& geomOptions,
+                                const SimpleConfig& c,
+                                const Mu2eEnvelope& mu2eEnv ) {
+    loadRotSolids           ( b.rotatedSolids_, geomOptions, c, "rotated.prefix.list" );
+  }
 
   //==================================================================
   void Mu2eHallMaker::makeTrapDirt( Mu2eHall& b,
@@ -94,6 +101,73 @@ namespace mu2e {
 
   }
 
+
+  //==================================================================
+  std::vector<CLHEP::Hep2Vector>
+  Mu2eHallMaker::getPairedVector( const std::vector<double>& x,
+                                  const std::vector<double>& y ){
+
+    assert ( x.size() == y.size() );
+
+    std::vector<CLHEP::Hep2Vector> vCLHEP;
+
+    for ( std::size_t i(0) ; i < x.size() ; ++i ) {
+      vCLHEP.emplace_back( x.at(i), y.at(i) );
+    }
+
+    return vCLHEP;
+
+  }
+
+  //==================================================================
+  void Mu2eHallMaker::loadRotSolids( std::map<std::string,RotExtrudedSolid>& solidMap,
+                                      G4GeometryOptions& geomOptions,
+                                      const SimpleConfig& c,
+                                      const std::string& varPrefixStr )
+  {
+    std::vector<std::string> varNames;
+    c.getVectorString( varPrefixStr, varNames, varNames ); //default is empty list
+
+    for ( const auto& prefix : varNames ) {
+      CLHEP::Hep3Vector offset
+        (
+         c.getDouble( prefix+".offsetFromMu2eOrigin.x" ),
+         c.getDouble( prefix+".offsetFromFloorSurface.y" )+c.getDouble( "yOfFloorSurface.below.mu2eOrigin"),
+         c.getDouble( prefix+".offsetFromMu2eOrigin.z" )
+         );
+      std::vector<double> x,y, angles;
+      c.getVectorDouble( prefix+".xPositions", x );
+      c.getVectorDouble( prefix+".yPositions", y );
+      c.getVectorDouble( prefix+".angles", angles, {0.,0.,0.}, 3); //if given rotation angles, must have all 3
+
+
+      CLHEP::HepRotation rot(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
+      rot.rotateX(angles[0]);
+      rot.rotateY(angles[1]);
+      rot.rotateZ(angles[2]);
+      const std::string volName = c.getString( prefix+".name" );
+
+      std::string loadPrefix = prefix;
+      std::string dot = ".";
+      std::size_t place1 = prefix.find(dot);
+      std::size_t place2 = std::string::npos;
+      if ( place1 != std::string::npos ) place2 = prefix.find(dot,place1+1);
+      if ( place2 != std::string::npos ) loadPrefix = prefix.substr(0,place2);
+
+      solidMap[volName] = RotExtrudedSolid( volName,
+                                       c.getString( prefix+".material"),
+                                       offset,
+                                       c.getDouble( prefix+".yHalfThickness" ),
+                                       getPairedVector(x,y),
+                                       rot);
+
+
+      geomOptions.loadEntry( c, volName, loadPrefix );
+
+    }
+
+  }
+
   //==================================================================
   void Mu2eHallMaker::loadTrapSolids( std::map<std::string,GenericTrap>& solidMap,
                                       G4GeometryOptions& geomOptions,
@@ -140,24 +214,6 @@ namespace mu2e {
       geomOptions.loadEntry( c, volName, loadPrefix );
 
     }
-
-  }
-
-
-  //==================================================================
-  std::vector<CLHEP::Hep2Vector>
-  Mu2eHallMaker::getPairedVector( const std::vector<double>& x,
-                                  const std::vector<double>& y ){
-
-    assert ( x.size() == y.size() );
-
-    std::vector<CLHEP::Hep2Vector> vCLHEP;
-
-    for ( std::size_t i(0) ; i < x.size() ; ++i ) {
-      vCLHEP.emplace_back( x.at(i), y.at(i) );
-    }
-
-    return vCLHEP;
 
   }
 

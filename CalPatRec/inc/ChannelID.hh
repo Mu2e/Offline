@@ -3,10 +3,10 @@
 
 namespace CalPatRec {
   struct ChannelID {
-    int Station;
-    int Plane;
-    int Face;
-    int Panel;
+    int Station = 0;
+    int Plane = 0;
+    int Face = 0;
+    int Panel = 0;
 
     static void orderID  (ChannelID* X, ChannelID* Ordered);
     static void deOrderID(ChannelID* X, ChannelID* Ordered);

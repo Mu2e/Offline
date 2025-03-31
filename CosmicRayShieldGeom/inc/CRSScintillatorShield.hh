@@ -41,7 +41,7 @@ namespace mu2e
 
     const std::string& getName() const {return _name;}
 
-    int nModules() const {return _modules.size();}
+    int nModules() const {return int(_modules.size());}
 
     const std::vector<CRSScintillatorModule>& getCRSScintillatorModules() const
     {

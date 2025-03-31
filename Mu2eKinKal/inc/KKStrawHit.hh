@@ -38,12 +38,13 @@ namespace mu2e {
   using KinKal::VEC3;
   using KinKal::DVEC;
   using KinKal::CAHint;
-  using RESIDCOL = std::array<Residual,2>; // should be a struct FIXME
+  using RESIDCOL = std::array<Residual,3>; // should be a struct FIXME
 
   template <class KTRAJ> class KKStrawHit : public KinKal::ResidualHit<KTRAJ> {
     public:
       using HIT = KinKal::Hit<KTRAJ>;
       using RESIDHIT = KinKal::ResidualHit<KTRAJ>;
+      using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
       using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
@@ -51,13 +52,13 @@ namespace mu2e {
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
       // Hit interface implementations
       void updateState(MetaIterConfig const& config,bool first) override;
-      unsigned nResid() const override { return 2; } // potentially 2 residuals
+      unsigned nResid() const override { return 3; } // potentially 2 residuals
       Residual const& refResidual(unsigned ires=Mu2eKinKal::tresid) const override;
       auto const& refResiduals() const { return resids_; }
       auto const& timeResidual() const { return resids_[Mu2eKinKal::tresid];}
       auto const& distResidual() const { return resids_[Mu2eKinKal::dresid];}
       double time() const override { return ca_.particleToca(); }
-      void updateReference(KTRAJPTR const& ktrajptr) override;
+      void updateReference(PTRAJ const& ptraj) override;
       KTRAJPTR const& refTrajPtr() const override { return ca_.particleTrajPtr(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       // accessors
@@ -125,19 +126,21 @@ namespace mu2e {
     return CA(utraj,wire_,ca.hint(),ca.precision());
   }
 
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateReference(KTRAJPTR const& ktrajptr) {
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateReference(PTRAJ const& ptraj) {
     // if we already computed PCA in the previous iteration, use that to set the hint.  This speeds convergence
     // otherwise use the time at the center of the wire, corrected for drift
     CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(wire_.timeAtMidpoint()-chit_.driftTime(),wire_.timeAtMidpoint());
-    ca_ = CA(ktrajptr,wire_,tphint,precision());
+    PCA pca(ptraj,wire_,tphint,precision());
     // check that we're on the right branch: we can move off if t0 changes a lot between iterations
     double dz = straw().origin().z() - ca_.particlePoca().Z();
-    if((!ca_.usable()) || fabs(dz) >  100) { // need a better absolute scale; should come from KTRAJ FIXME
-      tphint = CAHint(Mu2eKinKal::zTime(*ktrajptr,straw().origin().z(),wire_.timeAtMidpoint()), wire_.timeAtMidpoint());
-      ca_ = CA(ktrajptr,wire_,tphint,precision());
-      dz = straw().origin().z() - ca_.particlePoca().Z();
-      if((!ca_.usable()) || fabs(dz) >  100) whstate_.state_ = WireHitState::unusable;// give up on 2nd try
+    double maxdz(100.0);// need a better absolute scale; should come from KTRAJ FIXME
+    if((!pca.usable()) || fabs(dz) >  maxdz) {
+      tphint = CAHint(Mu2eKinKal::zTime(ptraj,straw().origin().z(),wire_.timeAtMidpoint()), wire_.timeAtMidpoint());
+      pca = PCA(ptraj,wire_,tphint,precision());
+      dz = straw().origin().z() - pca.particlePoca().Z();
+      if((!pca.usable()) || fabs(dz) >  maxdz) whstate_.state_ = WireHitState::unusable;// give up on 2nd try
     }
+    ca_ = pca.localClosestApproach();
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
@@ -191,7 +194,7 @@ namespace mu2e {
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::setResiduals(MetaIterConfig const& miconfig, WireHitState const& whstate, RESIDCOL& resids) const {
     // reset the residuals, using the fixed state from the last update
-    resids[Mu2eKinKal::tresid] = resids[Mu2eKinKal::dresid] = Residual();
+    resids[Mu2eKinKal::tresid] = resids[Mu2eKinKal::dresid] = resids[Mu2eKinKal::lresid] = Residual();
     if(whstate.active()){
       auto dinfo = fillDriftInfo();
       // optionally constrain DeltaT using the ComboHit TOT drift time or the absolute drift time
@@ -216,11 +219,37 @@ namespace mu2e {
           resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,ca_.dTdP());
         }
       }
+
+      if (whstate.constrainLong()){
+        VEC3 udir(chit_.uDir().x(),chit_.uDir().y(),chit_.uDir().z());
+
+        double calong = (ca_.sensorPoca().Vect() - wire_.middle()).Dot(ca_.sensorDirection());
+
+        double lresidval = calong - chit_.wireDist();
+        if (ca_.sensorDirection().Dot(udir) < 0){
+          lresidval = calong + chit_.wireDist();
+        }
+
+        double lresidvar = chit_.uVar();
+        KinKal::SVEC3 sdir(ca_.sensorDirection().x(),ca_.sensorDirection().y(),ca_.sensorDirection().z());
+        KinKal::SVEC3 pdir(ca_.particleDirection().x(),ca_.particleDirection().y(),ca_.particleDirection().z());
+        KinKal::SVEC3 d(ca_.delta().x(),ca_.delta().y(),ca_.delta().z());
+        KinKal::DVDP dx = ca_.particleTraj().dXdPar(ca_.particleToca());
+        KinKal::DVDP dm = ca_.particleTraj().dMdPar(ca_.particleToca())/ca_.particleTraj().momentum(ca_.particleToca());
+        DVEC dx_dot_sdir = sdir*dx;
+        DVEC dx_dot_pdir = pdir*dx;
+        DVEC d_dot_dm = d*dm;
+        double pdir_dot_sdir = ca_.sensorDirection().Dot(ca_.particleDirection());
+        DVEC dLdP =  dx_dot_sdir + (dx_dot_sdir*pdir_dot_sdir - dx_dot_pdir - d_dot_dm)/(1-pdir_dot_sdir*pdir_dot_sdir)*pdir_dot_sdir;
+        dLdP *= -1;
+        resids[Mu2eKinKal::lresid] = Residual(lresidval,lresidvar,0.0,true,dLdP);
+      }
+
     }
   }
 
   template <class KTRAJ> Residual const& KKStrawHit<KTRAJ>::refResidual(unsigned ires) const {
-    if(ires >Mu2eKinKal::tresid)throw cet::exception("RECO")<<"mu2e::KKStrawHit: Invalid residual" << std::endl;
+    if(ires >Mu2eKinKal::lresid)throw cet::exception("RECO")<<"mu2e::KKStrawHit: Invalid residual" << std::endl;
     return resids_[ires];
   }
 

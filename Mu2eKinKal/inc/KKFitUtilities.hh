@@ -15,7 +15,7 @@ namespace mu2e {
   class Straw;
   class StrawResponse;
   namespace Mu2eKinKal{
-    enum Dimension { dresid=0, tresid=1};  // residual dimensions
+    enum Dimension { dresid=0, tresid=1, lresid=2};  // residual dimensions
     // function to turn a StrawHit into a SensorLine object
     KinKal::SensorLine hitLine(ComboHit const& ch, Straw const& straw,StrawResponse const& strawresponse);
     // test whether a point is inside the detector

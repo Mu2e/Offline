@@ -121,6 +121,10 @@ namespace mu2e {
       if(config.hasName(name)) _captureNeutronRate[material] = config.getDouble(name);
       name = "physicsParams."+material+".capture.photonRate";
       if(config.hasName(name)) _capturePhotonRate[material] = config.getDouble(name);
+      name = "physicsParams."+material+".capture.RMCRate";
+      if(config.hasName(name)) _captureRMCRate[material] = config.getDouble(name);
+      name = "physicsParams."+material+".capture.RMCInternalRate";
+      if(config.hasName(name)) _captureRMCInternalRate[material] = config.getDouble(name);
 
       // Load capture gamma rays
       name = "physicsParams."+material+".capture.photon.1809keV.energy";

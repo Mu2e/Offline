@@ -95,6 +95,7 @@ namespace mu2e {
     TH1F* _hPosiPx {nullptr};
     TH1F* _hPosiPy {nullptr};
     TH1F* _hPosiPz {nullptr};
+    TH1F* _hTime {nullptr};
     TH1F* _hMee;
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
@@ -140,6 +141,7 @@ namespace mu2e {
           _hPosiPx  = tfdir.make<TH1F>("hPosiPx" , "Produced positron momentum Px", 140,  -140. , 140.);
           _hPosiPy  = tfdir.make<TH1F>("hPosiPy" , "Produced positron momentum Py", 140,  -140. , 140.);
           _hPosiPz  = tfdir.make<TH1F>("hPosiPz" , "Produced positron momentum Pz", 140,  -140. , 140.);
+          _hTime    = tfdir.make<TH1F>("hTime" , "pion time",100,0,1700);
           _hMee      = tfdir.make<TH1F>("hMee"     , "M(e+e-) "           , 200,0.,200.);
           _hMeeVsE   = tfdir.make<TH2F>("hMeeVsE"  , "M(e+e-) vs E"       , 200,0.,200.,200,0,200);
           _hMeeOverE = tfdir.make<TH1F>("hMeeOverE", "M(e+e-)/E "         , 200, 0.,1);
@@ -152,14 +154,12 @@ namespace mu2e {
       const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
       double weight = 0.;
       double tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-
       while(part->parent().isNonnull()) { //while particle has a parent which is not null
         part = part->parent();
-        if ( abs(part->pdgId()) == PDGCode::pi_plus ) { //if pion
+        if ( std::abs(part->pdgId()) == PDGCode::pi_plus ) { //if pion
             tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
           }
       }
-
     weight = exp(-tau);
     return weight;
   }
@@ -169,12 +169,10 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     const auto pis = stoppedPiMinusList(simh);
-
     if(pis.empty()) {
       throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
     }
-
     unsigned int randIn = randomFlat_.fireInt(pis.size());
     double time_weight = 1.0;
     if(pionDecayOff_) time_weight = MakeEventWeight(pis[randIn]);
@@ -182,7 +180,6 @@ namespace mu2e {
     event.put(std::move(pw));
     addParticles(output.get(), pis[randIn]);
     event.put(std::move(output));
-
   }
 
   void RPCGun::addParticles(StageParticleCollection* output,
@@ -230,7 +227,7 @@ namespace mu2e {
           _hPosiPx ->Fill(momp.vect().x());
           _hPosiPy ->Fill(momp.vect().y());
           _hPosiPz ->Fill(momp.vect().z());
-
+          _hTime->Fill(pistop->endGlobalTime());
           double mee = (mome+momp).m();
           _hMee->Fill(mee);
           _hMeeVsE->Fill(energy,mee);

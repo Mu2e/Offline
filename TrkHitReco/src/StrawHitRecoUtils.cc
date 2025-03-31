@@ -13,13 +13,17 @@
 namespace mu2e {
 
   StrawHitRecoUtils::StrawHitRecoUtils(TrkHitReco::FitType fittype, int diagLevel,
-      StrawIdMask mask, bool writesh,
-      float minT, float maxT, float minE, float maxE, float minR, float maxR,
+      StrawIdMask mask, bool writesh, float minT, float maxT,
+      bool overrideminTOff, float minTOff, bool overridemaxTOff, float maxTOff,
+      float minE, float maxE, float minR, float maxR,
       bool filter,
       float ctE, float ctMinT, float ctMaxT, bool usecc, float clusterDt) :
     _fittype(fittype), _diagLevel(diagLevel),
     _mask(mask), _writesh(writesh),
-    _minT(minT), _maxT(maxT), _minE(minE), _maxE(maxE), _minR(minR), _maxR(maxR),
+    _minT(minT), _maxT(maxT),
+    _overrideminTOff(overrideminTOff), _minTOff(minTOff),
+    _overridemaxTOff(overridemaxTOff), _maxTOff(maxTOff),
+    _minE(minE), _maxE(maxE), _minR(minR), _maxR(maxR),
     _filter(filter), _ctE(ctE), _ctMinT(ctMinT), _ctMaxT(ctMaxT), _usecc(usecc), _clusterDt(clusterDt) {
       // Detailed histogram-based waveform fits are no longer supported TODO!
       if (_fittype != TrkHitReco::FitType::peakminusped && _fittype != TrkHitReco::FitType::peakminuspedavg && _fittype != TrkHitReco::FitType::firmwarepmp)
@@ -80,8 +84,12 @@ namespace mu2e {
       double pmp,
       TrackerStatus const& trackerStatus, StrawResponse const& srep, Tracker const& tt) const {
 
-    // don't filter OffSpill.  But always flag if not filtering
-    bool filter = _filter && ewm.spillType() == EventWindowMarker::onspill;
+    float minT = _minT;
+    float maxT = _maxT;
+    if (ewm.spillType() == EventWindowMarker::offspill && _overrideminTOff)
+      minT = _minTOff;
+    if (ewm.spillType() == EventWindowMarker::offspill && _overridemaxTOff)
+      maxT = _maxTOff;
 
     // flag digis that shouldn't be here or we don't want; true for both On and OffSpill
     StrawHitFlag flag;
@@ -111,7 +119,7 @@ namespace mu2e {
     // energy selection
     // filter based on composite e/P separation TODO!
     if( energy > _maxE || energy < _minE ) {
-      if(filter) return false;
+      if(_filter) return false;
     } else
       flag.merge(StrawHitFlag::energysel);
 
@@ -143,7 +151,7 @@ namespace mu2e {
     // select based on radial position
     auto rho = pos.Rho();
     if( rho < _minR || rho > _maxR) {
-      if(filter)return false;
+      if(_filter)return false;
     } else
       flag.merge(StrawHitFlag::radsel);
 
@@ -151,8 +159,8 @@ namespace mu2e {
     double dtime = srep.TOTdriftTime(straw,selected_tot,energy);
     double tres = srep.TOTdriftTimeError(straw,selected_tot,energy);
     double time = times[eend.end()] - ptime - dtime;
-    if (time < _minT || time > _maxT ){
-      if(filter) return false;
+    if (time < minT || time > maxT ){
+      if(_filter) return false;
     } else
       flag.merge(StrawHitFlag::timesel);
 
@@ -162,7 +170,7 @@ namespace mu2e {
       for (auto const& cluster : *caloClusters)
         if (std::abs(time-cluster.time())<_clusterDt) {outsideCaloTime=false; break;}
       if (outsideCaloTime){
-        if(filter) return false;
+        if(_filter) return false;
       } else
         flag.merge(StrawHitFlag::calosel);
     }

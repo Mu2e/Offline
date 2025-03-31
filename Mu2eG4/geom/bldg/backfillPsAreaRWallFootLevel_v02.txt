@@ -1,49 +1,34 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_FillpsAreaRFoot.ccl
-
 string building.backfill.psArea.RWallFootLevel.name     = "backfillPsAreaRWallFootLevel";
-
-string building.backfill.psArea.RWallFootLevel.material = "CA7Backfill";
-
-double building.backfill.psArea.RWallFootLevel.offsetFromMu2eOrigin.x   = 947.4;
-double building.backfill.psArea.RWallFootLevel.offsetFromFloorSurface.y = 6629.4;
-double building.backfill.psArea.RWallFootLevel.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.backfill.psArea.RWallFootLevel.yHalfThickness           = 228.6;
-
+string building.backfill.psArea.RWallFootLevel.material = "MBOverburden";
+double building.backfill.psArea.RWallFootLevel.offsetFromMu2eOrigin.x   = 947.40;
+double building.backfill.psArea.RWallFootLevel.offsetFromFloorSurface.y = 6781.90;
+double building.backfill.psArea.RWallFootLevel.offsetFromMu2eOrigin.z   = -3581.40;
+double building.backfill.psArea.RWallFootLevel.yHalfThickness           = 228.50;
 vector<double> building.backfill.psArea.RWallFootLevel.xPositions = {
-  -2921,   // P0
-  -6254.75,   // P1
-  -11709.4,   // inside corner psHatchLower leg
-  -12318.9,   // SW corner psHatchLower
-  -12343.4,   // P2
-  -12319.3,   // P3
-  -16841.4,   // P4
-  -16817.3,   // P5
-  -17853.7,   // P6
-  -17853.7,   // p5
-  -12213.8,   // p6
-  -12213.8,   // P7
-  -2921   // P8
+-12029.10, // 0
+-12029.10, // 1
+-2921.00, // 2
+-2921.00, // 3
+-6254.65, // 4
+-11709.40, // 5
+-12318.80, // 6
+-12294.70, // 7
+-16359.85, // 8
+-16456.25, // 9
+-18793.61, // 10
+-19250.27 // 11
 };
-
 vector<double> building.backfill.psArea.RWallFootLevel.yPositions = {
-  -609.6,   // P0
-  -609.6,   // P1
-  -1943.1,  // inside corner psHatchLower left "leg"
-  -2091.9,  // SW corner psHatchLower
-  -2096.1,   // P2
-  -2194.8,   // P3
-  -3297.85,  // P4
-  -3396.55,  // P5
-  -3649.57,  // P6
-  -7505.7,   // p5
-  -7505.7,   // p6
-  -4813.3,   // P7
-  -4813.3   // P8
+-7505.60, // 0
+-4813.20, // 1
+-4813.20, // 2
+-609.70, // 3
+-609.70, // 4
+-1943.20, // 5
+-2092.05, // 6
+-2190.75, // 7
+-3180.35, // 8
+-2785.55, // 9
+-3356.18, // 10
+-7505.60 // 11
 };
-
-// Local Variables:
-// mode:c++
-// End:

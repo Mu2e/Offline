@@ -1,0 +1,22 @@
+string dirt.NRetainingWall.extension.name     = "dirtNRetainingWallExtension";
+string dirt.NRetainingWall.extension.material = "StainlessSteel";
+double dirt.NRetainingWall.extension.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.NRetainingWall.extension.offsetFromFloorSurface.y = 6248.40;
+double dirt.NRetainingWall.extension.offsetFromMu2eOrigin.z   = -3581.40;
+double dirt.NRetainingWall.extension.yHalfThickness           = 152.40;
+vector<double> dirt.NRetainingWall.extension.xPositions = {
+-12319.00, // 0
+-14503.40, // 1
+-19761.20, // 2
+-20628.70, // 3
+-14706.60, // 4
+-12319.00 // 5
+};
+vector<double> dirt.NRetainingWall.extension.yPositions = {
+7264.40, // 0
+7264.40, // 1
+5922.93, // 2
+9476.17, // 3
+10922.00, // 4
+10922.00 // 5
+};

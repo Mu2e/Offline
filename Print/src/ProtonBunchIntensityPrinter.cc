@@ -1,4 +1,3 @@
-
 #include "Offline/Print/inc/ProtonBunchIntensityPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <iomanip>
@@ -6,7 +5,6 @@
 
 void mu2e::ProtonBunchIntensityPrinter::Print(art::Event const& event,
                                               std::ostream& os) {
-  if (verbose() < 1) return;
   if (tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector<art::Handle<ProtonBunchIntensity> > vah =
@@ -23,7 +21,6 @@ void mu2e::ProtonBunchIntensityPrinter::Print(art::Event const& event,
 
 void mu2e::ProtonBunchIntensityPrinter::Print(
     const art::Handle<ProtonBunchIntensity>& handle, std::ostream& os) {
-  if (verbose() < 1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back();  // remove trailing dot
@@ -33,7 +30,6 @@ void mu2e::ProtonBunchIntensityPrinter::Print(
 
 void mu2e::ProtonBunchIntensityPrinter::Print(
     const art::ValidHandle<ProtonBunchIntensity>& handle, std::ostream& os) {
-  if (verbose() < 1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back();  // remove trailing dot
@@ -43,15 +39,23 @@ void mu2e::ProtonBunchIntensityPrinter::Print(
 
 void mu2e::ProtonBunchIntensityPrinter::Print(
     const mu2e::ProtonBunchIntensity& obj, int ind, std::ostream& os) {
-  if (verbose() < 1) return;
-
-  os << std::setiosflags(std::ios::fixed | std::ios::right);
-
-  os << "  intensity: " << obj.intensity() << std::endl;
+  if (verbose() >0 ){
+    os << std::setiosflags(std::ios::fixed | std::ios::right);
+    os << "  intensity: " << std::scientific << obj.intensity() << std::endl;
+  }
+  // summary
+  nevts_++;
+  nPOT_ += obj.intensity();
 }
 
 void mu2e::ProtonBunchIntensityPrinter::PrintHeader(const std::string& tag,
                                                     std::ostream& os) {
   if (verbose() < 1) return;
   os << "\nProductPrint " << tag << "\n";
+}
+
+void mu2e::ProtonBunchIntensityPrinter::PrintEndJob(std::ostream& os) {
+  if(nevts_ > 0){
+    os << "Processed " << nevts_ << " events for a total of " << std::scientific << std::setprecision(3) << nPOT_ << " POT" << std::endl;
+  }
 }

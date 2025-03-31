@@ -47,7 +47,7 @@ namespace mu2e
 
     int nLayers() const
     {
-      return _layers.size();
+      return int(_layers.size());
     }
 
     const CRSScintillatorLayer& getLayer ( int n ) const
@@ -72,7 +72,7 @@ namespace mu2e
 
     int nAbsorberLayers() const
     {
-      return _absorberLayers.size();
+      return int(_absorberLayers.size());
     }
 
     const CRSAbsorberLayer& getAbsorberLayer ( int n ) const
@@ -87,7 +87,7 @@ namespace mu2e
 
     int nAluminumSheets() const
     {
-      return _aluminumSheets.size();
+      return int(_aluminumSheets.size());
     }
 
     const CRSAluminumSheet& getAluminumSheet ( int n ) const
@@ -102,7 +102,7 @@ namespace mu2e
 
     int nFEBs() const
     {
-      return _FEBs.size();
+      return int(_FEBs.size());
     }
 
     const CRSFEB& getFEB ( int n ) const

@@ -17,7 +17,7 @@ physics :
     MergeKalSeeds : {
       module_type : MergeKalSeeds
       debugLevel : 2
-      KalSeedCollections : ["KKDeM", "KKDeP", "KKUeM", "KKUeP", "KKDmuM", "KKDmuP", "KKUmuM", "KKUmuP" ]
+      KalSeedCollections : ["KKDe", "KKUe", "KKDmu", "KKUmu" ]
     }
   }
   TPath : [ MergeKalSeeds ]

@@ -22,6 +22,13 @@ cet_build_plugin(FindMCPrimary art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(GammaConversionPoints art::module
+    REG_SOURCE src/GammaConversionPoints_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::MCDataProducts
+)
+
 cet_build_plugin(GenEventCountReader art::module
     REG_SOURCE src/GenEventCountReader_module.cc
     LIBRARIES REG

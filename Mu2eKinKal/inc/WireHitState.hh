@@ -30,6 +30,7 @@ namespace mu2e {
     bool constrainTOT() const { return flag_.hasAnyProperty(KKSHFlag::tot); }
     bool constrainDriftDt() const { return flag_.hasAnyProperty(KKSHFlag::driftdt); }
     bool constrainAbsDriftDt() const { return flag_.hasAnyProperty(KKSHFlag::absdrift); }
+    bool constrainLong() const { return flag_.hasAnyProperty(KKSHFlag::longval); }
     bool nullDriftVar() const { return flag_.hasAnyProperty(KKSHFlag::nhdrift); }
     bool operator == (WireHitState const& whstate) const { return state_ == whstate.state_; }
     bool operator != (WireHitState const& whstate) const { return state_ != whstate.state_; }

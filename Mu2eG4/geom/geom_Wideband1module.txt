@@ -30,7 +30,7 @@ vector<double>  crs.firstCounterW1               =  {-3904.0,     0.0, 20000.0};
 
 vector<double>  crs.layerDirectionW1             =  {0, 1, 0};
 
-vector<double>  crs.offsetDirectionW1            =  {0, 0, 1};
+vector<double>  crs.offsetDirectionW1            =  {0, 0, -1};
 
 vector<double>  crs.gapDirectionW1               =  {0, 0, 1};
 

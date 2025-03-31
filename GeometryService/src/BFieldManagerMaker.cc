@@ -433,16 +433,16 @@ namespace mu2e {
             throw cet::exception("GEOM") << "Can't find data keyword in " << filename << "\n";
 
         // Expected grid dimentsions.
-        const int nx = bfmap._nx;
-        const int ny = bfmap._ny;
-        const int nz = bfmap._nz;
+        const size_t nx = bfmap._nx;
+        const size_t ny = bfmap._ny;
+        const size_t nz = bfmap._nz;
 
         // Calculate expected number of lines to read
-        const int nrecord = nx * ny * nz;
+        const size_t nrecord = nx * ny * nz;
 
         // Read data
         double x[3], b[3];
-        int nread = 0;
+        size_t nread = 0;
         getline(in, cbuf);
         while (!in.eof()) {
 
@@ -523,7 +523,7 @@ namespace mu2e {
                                 // search the path
 
         // Number of points in each big array.
-        int nPoints = bf.nx() * bf.ny() * bf.nz();
+        size_t nPoints = bf.nx() * bf.ny() * bf.nz();
 
         // Number of bytes in each big array.
         size_t nbytes = sizeof(CLHEP::Hep3Vector) * nPoints;
@@ -621,9 +621,9 @@ namespace mu2e {
         }
 
         // These maps fill the full box so mark all grid points as valid.
-        for (int ix = 0; ix < bf.nx(); ++ix) {
-            for (int iy = 0; iy < bf.ny(); ++iy) {
-                for (int iz = 0; iz < bf.nz(); ++iz) {
+        for (size_t ix = 0; ix < bf.nx(); ++ix) {
+            for (size_t iy = 0; iy < bf.ny(); ++iy) {
+                for (size_t iz = 0; iz < bf.nz(); ++iz) {
                     bf._isDefined.set(ix, iy, iz, true);
                 }
             }
@@ -706,7 +706,7 @@ namespace mu2e {
 
     void BFieldManagerMaker::writeG4BLBinary(const BFGridMap& bf, const std::string& outputfile) {
         // Number of points in the big array.
-        int nPoints = bf.nx() * bf.ny() * bf.nz();
+        size_t nPoints = bf.nx() * bf.ny() * bf.nz();
 
         // Number of bytes in the big array.
         size_t nBytes = sizeof(CLHEP::Hep3Vector) * nPoints;
@@ -764,9 +764,9 @@ namespace mu2e {
 
     void BFieldManagerMaker::flipMap(BFGridMap& bf) {
         std::cout << "Flipping B field vector in map " << bf.getKey() << std::endl;
-        for (int ix = 0; ix < bf.nx(); ++ix) {
-            for (int iy = 0; iy < bf.ny(); ++iy) {
-                for (int iz = 0; iz < bf.nz(); ++iz) {
+        for (size_t ix = 0; ix < bf.nx(); ++ix) {
+            for (size_t iy = 0; iy < bf.ny(); ++iy) {
+                for (size_t iz = 0; iz < bf.nz(); ++iz) {
                     bf._field.set(ix, iy, iz, -bf._field.get(ix, iy, iz));
                 }
             }

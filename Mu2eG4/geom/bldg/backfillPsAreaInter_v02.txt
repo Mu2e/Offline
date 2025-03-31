@@ -1,45 +1,30 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_FillpsAreaInter.ccl
-
 string building.backfill.psArea.Inter.name     = "backfillPsAreaInter";
-
-string building.backfill.psArea.Inter.material = "CA7Backfill";
-
-double building.backfill.psArea.Inter.offsetFromMu2eOrigin.x   = 947.4;
-double building.backfill.psArea.Inter.offsetFromFloorSurface.y = 5791.2;
-double building.backfill.psArea.Inter.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.backfill.psArea.Inter.yHalfThickness           = 609.6;
-
+string building.backfill.psArea.Inter.material = "MBOverburden";
+double building.backfill.psArea.Inter.offsetFromMu2eOrigin.x   = 947.40;
+double building.backfill.psArea.Inter.offsetFromFloorSurface.y = 5867.30;
+double building.backfill.psArea.Inter.offsetFromMu2eOrigin.z   = -3581.40;
+double building.backfill.psArea.Inter.yHalfThickness           = 685.70;
 vector<double> building.backfill.psArea.Inter.xPositions = {
-  -2921,   // P0
-  -6254.75,   // P1
-  -11709.4,   // inside corner psHatchLower leg
-  -12318.9,   // SW corner psHatchLower
-  -12343.4,   // P2
-  -12319.3,   // P3
-  -16841.4,   // P4
-  -16817.3,   // P5
-  -17853.7,   // P6
-  -17853.7,   // p5
-  -2921   // p6
+-2921.00, // 0
+-2921.00, // 1
+-6254.65, // 2
+-11709.30, // 3
+-12318.80, // 4
+-12294.70, // 5
+-16359.85, // 6
+-16456.25, // 7
+-18793.61, // 8
+-19250.27 // 9
 };
-
 vector<double> building.backfill.psArea.Inter.yPositions = {
-  -609.6,   // P0
-  -609.6,   // P1
-  -1943.1,  // inside corner psHatchLower left "leg"
-  -2091.9,  // SW corner psHatchLower
-  -2096.1,   // P2
-  -2194.8,   // P3
-  -3297.85,   // P4
-  -3396.55,   // P5
-  -3649.57,  // P6
-  -7505.7,   // p5
-  -7505.7   // p6
+-7505.30, // 0
+-609.70, // 1
+-609.70, // 2
+-1943.20, // 3
+-2092.05, // 4
+-2190.75, // 5
+-3180.35, // 6
+-2785.55, // 7
+-3356.18, // 8
+-7505.30 // 9
 };
-
-// Local Variables:
-// mode:c++
-// End:

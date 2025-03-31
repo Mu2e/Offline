@@ -2,6 +2,7 @@
 // diag mode: = 0 - most of the histograms
 //            = 1 - doca histograms
 ///////////////////////////////////////////////////////////////////////////////
+#include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "CLHEP/Matrix/Vector.h"
@@ -75,7 +76,6 @@ namespace mu2e {
     };
 
   protected:
-    int          _mcTruth;
     std::string  _shDigiLabel;
 
     std::unique_ptr<McUtilsToolBase> _mcUtils;
@@ -85,7 +85,7 @@ namespace mu2e {
 
   public:
 
-    CalTimePeakFinderDiag(const fhicl::ParameterSet& PSet);
+    CalTimePeakFinderDiag(const fhicl::Table<mu2e::CalTimePeakFinderTypes::Config>& Conf);
     ~CalTimePeakFinderDiag();
 
   private:
@@ -104,11 +104,7 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-  CalTimePeakFinderDiag::CalTimePeakFinderDiag(const fhicl::ParameterSet& PSet) {
-    _mcTruth = PSet.get <int >("mcTruth");
-
-    if (_mcTruth != 0) _mcUtils = art::make_tool<McUtilsToolBase>(PSet.get<fhicl::ParameterSet>("mcUtils"));
-    else               _mcUtils = std::make_unique<McUtilsToolBase>();
+  CalTimePeakFinderDiag::CalTimePeakFinderDiag(const fhicl::Table<mu2e::CalTimePeakFinderTypes::Config>& Conf) {
   }
 
 //-----------------------------------------------------------------------------

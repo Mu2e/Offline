@@ -28,4 +28,15 @@ namespace mu2e
       }
     }
   }
+
+  TrkFitDirection::FitDirection TrkFitDirection::fitDirectionFromName(std::string name) {
+    TrkFitDirection::FitDirection fdir(TrkFitDirection::FitDirection::unknown);
+    // convert to lowercase to protect against case-based issues
+    std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c){ return std::tolower(c); });
+
+    if     (name == "downstream") fdir = TrkFitDirection::FitDirection::downstream;
+    else if(name == "upstream"  ) fdir = TrkFitDirection::FitDirection::upstream;
+    return fdir;
+  }
+
 }

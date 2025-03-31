@@ -1,0 +1,37 @@
+
+#
+#  print products with a moderate amount of output - includes cuts on energy
+#
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : print
+
+services : {
+   message : @local::default_message
+  GlobalConstantsService  : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
+}
+
+physics :{
+  analyzers: {
+
+    printModule : {
+      module_type : PrintModule
+      PrintEvent : true
+      verbose : 0
+      ProtonBunchIntensityPrinter : {
+        verbose : 0
+      }
+    } # printModule
+
+
+  }  # analyzers
+
+  ana       : [ printModule ]
+  end_paths : [ ana ]
+
+}
+
+services.message.destinations.log.categories.ArtSummary.limit : 0
+services.message.destinations.statistics.stats : @local::mf_null

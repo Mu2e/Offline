@@ -1,0 +1,26 @@
+string building.foundation.ExtMon.PSarea.R.name     = "foundationExtMonPSareaR";
+string building.foundation.ExtMon.PSarea.R.material = "CONCRETE_MARS";
+double building.foundation.ExtMon.PSarea.R.offsetFromMu2eOrigin.x   = 947.40;
+double building.foundation.ExtMon.PSarea.R.offsetFromFloorSurface.y = 1816.10;
+double building.foundation.ExtMon.PSarea.R.offsetFromMu2eOrigin.z   = -3581.40;
+double building.foundation.ExtMon.PSarea.R.yHalfThickness           = 1968.45;
+vector<double> building.foundation.ExtMon.PSarea.R.xPositions = {
+-19681.30, // 0
+-18356.00, // 1
+-18356.00, // 2
+-19681.30, // 3
+-19681.30, // 4
+-18356.00, // 5
+-22180.66, // 6
+-23506.00 // 7
+};
+vector<double> building.foundation.ExtMon.PSarea.R.yPositions = {
+1656.31, // 0
+-3772.14, // 1
+-3772.14, // 2
+1656.31, // 3
+1656.31, // 4
+-3772.14, // 5
+-4705.91, // 6
+722.61 // 7
+};

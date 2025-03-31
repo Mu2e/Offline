@@ -19,9 +19,9 @@ namespace mu2e {
 
     // use compiler-generated copy c'tor, copy assignment, and d'tor
 
-    Collimator(double halfZ, CLHEP::Hep3Vector origin) :  _halfZ(halfZ), _origin(origin) {}
+    Collimator(double halfZ, CLHEP::Hep3Vector const& origin) :  _halfZ(halfZ), _origin(origin) {}
 
-    void set(double halfZ, CLHEP::Hep3Vector origin) {
+    void set(double halfZ, CLHEP::Hep3Vector const& origin) {
       _halfZ=halfZ;
       _origin=origin;
     }

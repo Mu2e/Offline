@@ -1,6 +1,21 @@
 #ifndef CalPatRec_CalHelixFinder_types_hh
 #define CalPatRec_CalHelixFinder_types_hh
 
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/Sequence.h"
+
+#include "art/Framework/Principal/Event.h"
+
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
+#include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
+#include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
+
 namespace art {
   class Event;
 }
@@ -16,10 +31,15 @@ namespace mu2e {
 
   namespace CalHelixFinderTypes {
 
+    struct Config {
+      fhicl::Atom<int>                      mcTruth   {fhicl::Name("mcTruth"),   fhicl::Comment("MC truth")                         };
+      fhicl::Table<McUtilsToolBase::Config> mcUtils   {fhicl::Name("mcUtils"),   fhicl::Comment("MC Diag plugin")                   };
+      fhicl::Atom<std::string>              tool_type {fhicl::Name("tool_type"), fhicl::Comment("tool type: Cal Helix Finder Diag") };
+    };
+
     struct Data_t {
       const art::Event*    event;
       std::string          shLabel;
-      fhicl::ParameterSet* timeOffsets;
 
       enum  { kMaxSeeds = 100, kMaxHits = 200 };
 
@@ -32,6 +52,7 @@ namespace mu2e {
       int     good     [kMaxSeeds];
       double  radius   [kMaxSeeds];
       double  chi2XY   [kMaxSeeds];
+
       double  chi2ZPhi [kMaxSeeds];
       double  pT       [kMaxSeeds];
       double  p        [kMaxSeeds];
@@ -47,6 +68,8 @@ namespace mu2e {
       double  chi2d_line_loop1[kMaxSeeds];
       int     loopId[kMaxSeeds];
       int maxSeeds() { return kMaxSeeds; }
+      float   nHitsRatio[kMaxSeeds];
+      float   eDepAvg[kMaxSeeds];
     };
 
     struct Hist_t {
@@ -73,6 +96,8 @@ namespace mu2e {
       TH1F*  chi2d_line_loop0[2];
       TH1F*  chi2d_line_loop1[2];
       TH1F*  loopId[2];
+      TH1F*  nHitsRatio[2];
+      TH1F*  eDepAvg[2];
     };
 
   }

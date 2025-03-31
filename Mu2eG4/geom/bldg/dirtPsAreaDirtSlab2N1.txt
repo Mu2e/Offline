@@ -1,0 +1,18 @@
+string dirt.psArea.dirtSlab2.N1.name     = "dirtPsAreaDirtSlab2N1";
+string dirt.psArea.dirtSlab2.N1.material = "CA7Backfill";
+double dirt.psArea.dirtSlab2.N1.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.psArea.dirtSlab2.N1.offsetFromFloorSurface.y = 7226.40;
+double dirt.psArea.dirtSlab2.N1.offsetFromMu2eOrigin.z   = -3581.40;
+double dirt.psArea.dirtSlab2.N1.yHalfThickness           = 63.40;
+vector<double> dirt.psArea.dirtSlab2.N1.xPositions = {
+-12750.85, // 0
+-12750.85, // 1
+-13842.77, // 2
+-13842.77 // 3
+};
+vector<double> dirt.psArea.dirtSlab2.N1.yPositions = {
+-346.00, // 0
+5267.30, // 1
+5267.30, // 2
+-346.00 // 3
+};

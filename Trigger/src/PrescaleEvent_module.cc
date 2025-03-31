@@ -18,6 +18,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 // #include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "artdaq-core-mu2e/Data/EventHeader.hh"
 
 #include <memory>
@@ -40,6 +41,7 @@ namespace mu2e
     };
 
     struct Config {
+      fhicl::Atom<art::InputTag>                       EWM       { Name("EventWindowMarker"), Comment("EventWindowMarker"),"EWMProducer"};
       fhicl::Atom<int>                                 debug     { Name("debugLevel")     , Comment("Debug Level"), 0};
       fhicl::Sequence<fhicl::Table<EventModeConfig>>   eventMode { Name("eventModeConfig"), Comment("List of the Event modes with their PS factor")};
     };
@@ -60,6 +62,7 @@ namespace mu2e
 
   private:
 
+    art::ProductToken<EventWindowMarker> const _ewmtoken;
     std::vector<EventModeConfig> _eventMode;
     int                  _debug;
     unsigned             _nevt, _npass;
@@ -68,6 +71,7 @@ namespace mu2e
 
   PrescaleEvent::PrescaleEvent(Parameters const & config) :
     art::EDFilter{config},
+    _ewmtoken{consumes<EventWindowMarker>(config().EWM())},
     _eventMode     (config().eventMode()),
     _debug         (config().debug()),
     _nevt(0), _npass(0){}
@@ -76,17 +80,25 @@ namespace mu2e
   {
     ++_nevt;
 
-    // auto const& evtHH = e.getValidHandle<mu2e::EventHeader>("*");
-    // uint8_t evtMode = evtHH->flags;
-    // int     ps(0);
-    // for (size_t i=0; i<_eventMode.size(); ++i){
-    //   //      if (_eventMode[i].eventMode() == evtMode){
-    //   if ((_eventMode[i].eventMode() & evtMode) == 1){
-    //     ps = _eventMode[i].prescale();
-    //     break;
-    //   }
-    // }
-    int ps = _eventMode[0].prescale();
+    auto ewmH = e.getValidHandle(_ewmtoken);
+    const EventWindowMarker& ewm(*ewmH);
+    int ps(0);
+    for (size_t i=0;i<_eventMode.size();++i){
+      uint8_t spillType;
+      // FIXME is event mode a mask?
+      if (_eventMode[i].eventMode() == "OffSpill"){
+        spillType = EventWindowMarker::offspill;
+      }else if (_eventMode[i].eventMode() == "OnSpill"){
+        spillType = EventWindowMarker::onspill;
+      }else{
+        std::cout << "PrescaleEvent: unknown eventMode " << _eventMode[i].eventMode() << std::endl;
+        continue;
+      }
+      if (spillType == ewm.spillType()){
+        ps = _eventMode[i].prescale();
+        break;
+      }
+    }
 
     bool retval(false);
 

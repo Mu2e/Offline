@@ -156,7 +156,7 @@ namespace mu2e{
     return rv;
   }
 
-  StrawDigiBundleCollection StrawDigiBundleCollection::ResolveCollisions(const StrawElectronics& conditions){
+  void StrawDigiBundleCollection::ResolveCollisions(const StrawElectronics& conditions, StrawDigiBundleCollection& rv){
     // identify time-overlapped chains: this is a 3 step process
     // first, partition bundles according to StrawId
     std::map<StrawId, StrawDigiBundleCollection> unsorted_map;
@@ -200,7 +200,6 @@ namespace mu2e{
 
     // finally, recast each bucket as a regular container
     // and resolve the set of degenerate digis into one
-    StrawDigiBundleCollection rv;
     for (const auto& pair: buckets_map){
       const auto& buckets = pair.second;
       for (const auto& bucket: buckets){
@@ -208,21 +207,16 @@ namespace mu2e{
         for (const auto& bundle: bucket){
           bundles.Append(bundle);
         }
-        auto resolved = this->ResolveCollision(bundles);
-        rv += resolved;
+        this->ResolveCollision(bundles, rv);
       }
     }
-
-    return rv;
   }
 
-  StrawDigiBundleCollection StrawDigiBundleCollection::ResolveCollision(StrawDigiBundleCollection& collided){
-    StrawDigiBundleCollection rv;
+  void StrawDigiBundleCollection::ResolveCollision(StrawDigiBundleCollection& collided, StrawDigiBundleCollection& rv){
     auto first = collided[0];
     // update StrawDigiMC component to reflect that the MC information may be tainted or incomplete
     auto mc = StrawDigiMC(first.GetStrawDigiMC(), first.GetStrawDigiMC().provenance());
     auto updated = StrawDigiBundle(first.GetStrawDigi(), first.GetStrawDigiADCWaveform(), mc);
     rv.Append(updated);
-    return rv;
   }
 }

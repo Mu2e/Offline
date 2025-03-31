@@ -1,0 +1,100 @@
+// SimpleConfig geometry file automatically produced for original file:
+//
+//   geom/geom_beamline_dirtBerm.ccl
+// Nov 2024
+// dirtbeamline removed, several layers of berms added; ref: docdb:49557
+// layer-754' NE side
+
+string dirt.beamline.berm.l754a.name     = "dirtBeamlineBerml754a";
+
+string dirt.beamline.berm.l754a.material = "MBOverburden";
+
+double dirt.beamline.berm.l754a.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.beamline.berm.l754a.offsetFromFloorSurface.y = 10363.2051;
+double dirt.beamline.berm.l754a.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.beamline.berm.l754a.yHalfThickness           = 152.4003; //0.5 US foot to mm
+
+vector<double> dirt.beamline.berm.l754a.xPositions = {
+  -4140.2,    // b
+  -4140.2,    // P0
+  -4749.8,    // P1
+  -4749.8,    // P2
+  -11709.4,   // P3
+  -11709.4,   // P3a
+  -12319,     // P3b
+  -12319,   // from NRetWall
+  3708.4,   // from NRetWall
+  3708.4,   // from NRetWall
+  3403.6,   // even with wall of remote hatch
+  3403.6,   // rem hatch corner SW
+  9550.5,   // SE corner rem hatch
+  9550.5,   // NE corner rem hatch
+  3403.6,   // NW corner rem hatch
+  3403.5,   // Back against wall
+  2917.52,  // C12
+  2924.05,  // C13
+  2975.22,  // C14
+  3165.13,  // C15
+  3538.25,   //C16
+  13233.5,   //C17
+  14871.9,  // cs1
+  15449.8,  // cs2
+  16122.5,  // cs3
+  23963.4,  // cs4
+  23514.4,  // C22
+  23849.2,  // C23
+  26085.5,  //C24
+  26302.5,  //C25
+  26376.3,  // C26
+  27977.4,  // C27
+  37342.0,  // C28
+  43298.3,
+  36174.7,
+  12629.9,
+  21165.18
+};
+
+vector<double> dirt.beamline.berm.l754a.yPositions = {
+  2438.4,   // b
+  6858,   // P0
+  6858,   // P1
+  6502.4,   // P2
+  6502.4,   // P3
+  6858,     // P3a
+  6858,     // P3b
+  9702.8,   // from NRetWall
+  9702.8,   // from NRetWall
+  10312.4,  // from NRetWall
+  10312.4,  // same
+  13055.6,  // SW corner rem hatch
+  13055.6,  // SE corner rem hatch
+  16459.2,  // NE corner rem hatch
+  16459.2,  // NW corner rem hatch
+  10312.5,  // back to wall
+  10312.5,  // C12
+  18300.6,  // C13
+  18523.3,  // C14
+  18756.5,  //C15
+  18876.3,  //C16
+  18891.0,  //C17
+  19149.3,  // cs1
+  18587.5,  // cs2
+  16788.0,  // cs3
+  18259.0,  // cs4
+  20740.5,  // C22
+  21454.2,  // C23
+  21825.9,  // C24
+  21621.8,  // C25
+  21469.7,  // C26
+  14830.7,  // C27
+  17046.6, // C28
+  10709.7,
+  10073.58,
+  4610.77,
+  2438.4
+};
+
+// Local Variables:
+// mode:c++
+// End:

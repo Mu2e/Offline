@@ -57,6 +57,8 @@ namespace mu2e
       fhicl::OptionalAtom<double>             minAbsLambda         {     Name("minAbsLambda"),            Comment("minAbsLambda   ") };
       fhicl::OptionalAtom<double>             maxNLoops            {     Name("maxNLoops"),               Comment("maxNLoops      ") };
       fhicl::OptionalAtom<double>             minNLoops            {     Name("minNLoops"),               Comment("minNLoops      ") };
+      fhicl::OptionalAtom<double>             slopeSigMin          {     Name("slopeSigMin"),             Comment("Minimum helix seed slope significance selection")};
+      fhicl::OptionalAtom<double>             slopeSigMax          {     Name("slopeSigMax"),             Comment("Maximum helix seed slope significance selection")};
       fhicl::Sequence<std::string>            helixFitFlag         {     Name("helixFitFlag"),            Comment("helixFitFlag   "), std::vector<std::string>{"HelixOK"} };
       fhicl::OptionalAtom<bool>               prescaleUsingD0Phi   {     Name("prescaleUsingD0Phi"),      Comment("prescaleUsingD0Phi") };
       fhicl::Table<PhiPrescalingParams::Config>             prescalerPar{     Name("prescalerPar"),      Comment("prescalerPar") };
@@ -83,6 +85,8 @@ namespace mu2e
           config.minAbsLambda(_minlambda);
           config.maxNLoops(_maxnloops);
           config.minNLoops(_minnloops);
+          _useSlopeSigMin = config.slopeSigMin(_slopeSigMin);
+          _useSlopeSigMax = config.slopeSigMax(_slopeSigMax);
         }
 
         bool val;
@@ -122,10 +126,14 @@ namespace mu2e
         float lambda     = std::fabs(Helix.helix().lambda());
         float nLoops     = helTool.nLoops();
         float hRatio     = helTool.hitRatio();
+        const float slope          = Helix.recoDir().slope();
+        const float slopeErr       = std::fabs(Helix.recoDir().slopeErr());
+        const float slopeSignedSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f; //signifance from 0 signed by the slope direction
 
         if(Debug > 2){
-          std::cout << "[HelixFilter] : status = " << Helix.status() << " nhits = " << nstrawhits << " mom = " << hmom << std::endl;
-          std::cout << "[HelixFilter] : chi2XY = " << chi2XY << " chi2ZPHI = " << chi2PhiZ << " d0 = " << d0 << " lambda = "<< lambda << " nLoops = " << nLoops << " hRatio = "<< hRatio << std::endl;
+          std::cout << "[HelixFilter] : status = " << Helix.status() << " nhits = " << nstrawhits << " mom = " << hmom << std::endl
+                    << "[HelixFilter] : chi2XY = " << chi2XY << " chi2ZPHI = " << chi2PhiZ << " d0 = " << d0 << " lambda = "<< lambda
+                    << " nLoops = " << nLoops << " hRatio = "<< hRatio << " slopeSignedSig = " << slopeSignedSig << std::endl;
         }
         if( Helix.status().hasAllProperties(_goodh)      &&
             (!_hascc || Helix.caloCluster().isNonnull()) &&
@@ -141,6 +149,8 @@ namespace mu2e
             nLoops     >= _minnloops     &&
             hmom       >= _minmom        &&
             hmom       <= _maxmom        &&
+            (!_useSlopeSigMin || slopeSignedSig > _slopeSigMin) &&
+            (!_useSlopeSigMax || slopeSignedSig < _slopeSigMax) &&
             hRatio     >= _minHitRatio ) {
           //now check if we want to prescake or not
           if (_prescaleUsingD0Phi) {
@@ -169,6 +179,10 @@ namespace mu2e
       double        _minlambda;
       double        _maxnloops;
       double        _minnloops;
+      bool          _useSlopeSigMin;
+      double        _slopeSigMin;
+      bool          _useSlopeSigMax;
+      double        _slopeSigMax;
       TrkFitFlag    _goodh; // helix fit flag
       bool          _prescaleUsingD0Phi;
       PhiPrescalingParams     _prescalerPar;
@@ -184,7 +198,9 @@ namespace mu2e
       fhicl::Atom<int>                debugLevel           { Name("debugLevel"),              Comment("debugLevel")     , 0 };
       fhicl::Atom<bool>               noFilter             { Name("noFilter"),                Comment("don't apply the filter decision"), false};
       fhicl::Atom<unsigned>           minNHelices          { Name("minNHelices"),             Comment("minimum number of helices passing the cuts"), 1};
+      fhicl::Atom<float>              maxDt0               { Name("maxDt0"),                  Comment("maximum difference in time between helices"), -1};
     };
+
 
     using Parameters = art::EDFilter::Table<Config>;
 
@@ -206,6 +222,7 @@ namespace mu2e
     unsigned      _nevt, _npass;
     bool          _noFilter;
     unsigned      _minNHelices;
+    float         _maxDt0;
 
     bool  checkHelixFromHelicity(const HelixSeed&helix);
   };
@@ -219,9 +236,11 @@ namespace mu2e
     _nevt(0),
     _npass(0),
     _noFilter          (config().noFilter()),
-    _minNHelices       (config().minNHelices())
+    _minNHelices       (config().minNHelices()),
+    _maxDt0            (config().maxDt0())
     {
       produces<TriggerInfo>();
+      if(_minNHelices < 2 && _maxDt0 >= 0.) throw cet::exception("BADCONFIG") << "Requested a timing difference cut of " << _maxDt0 << " ns between helices but only " << _minNHelices << " helices required";
     }
 
   void HelixFilter::beginJob() {
@@ -292,13 +311,40 @@ namespace mu2e
         }
       }
     }
-    evt.put(std::move(triginfo));
-    if (!_noFilter){
-      return (nGoodHelices >= _minNHelices);
-    }else {
-      return true;
+
+    bool dt_range = false;
+    if (_maxDt0 < 0){
+      dt_range = true;
     }
+    else{
+      for(auto ihs = hscol->begin();ihs != hscol->end(); ++ihs) {
+        auto const&  hel0 = ihs;
+        float  hel0_t0 =  hel0->t0()._t0;
+
+        for(auto jhs = std::next(ihs); jhs != hscol->end(); ++jhs) {
+          auto const&  hel1 =  jhs;
+          float hel1_t0 = hel1->t0()._t0;
+          float dt      = hel1_t0 - hel0_t0;
+          if (dt < _maxDt0 && dt > -_maxDt0) {
+            dt_range = true;
+            break;
+          }
+        }
+        if (dt_range) {
+          break; // Break out of the outer loop
+        }
+      }
+    }
+
+
+    evt.put(std::move(triginfo));
+
+
+    if(!_noFilter) {return (nGoodHelices >= _minNHelices) && dt_range;}
+    else {return true;} //filtering is turned off
+
   }
+
 
   bool HelixFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){      std::cout << moduleDescription().moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;

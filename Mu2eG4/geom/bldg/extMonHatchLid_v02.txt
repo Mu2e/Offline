@@ -1,0 +1,18 @@
+string building.extMon.hatch.lid.name     = "extMonHatchLid";
+string building.extMon.hatch.lid.material = "StainlessSteel";
+double building.extMon.hatch.lid.offsetFromMu2eOrigin.x   = 947.40;
+double building.extMon.hatch.lid.offsetFromFloorSurface.y = 11942.76;
+double building.extMon.hatch.lid.offsetFromMu2eOrigin.z   = -3581.40;
+double building.extMon.hatch.lid.yHalfThickness           = 4.76;
+vector<double> building.extMon.hatch.lid.xPositions = {
+-19488.82, // 0
+-20953.18, // 1
+-20291.91, // 2
+-18827.55 // 3
+};
+vector<double> building.extMon.hatch.lid.yPositions = {
+-8412.21, // 0
+-8251.06, // 1
+-2242.13, // 2
+-2403.28 // 3
+};

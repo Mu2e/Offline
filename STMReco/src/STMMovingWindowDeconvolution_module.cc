@@ -66,6 +66,7 @@ namespace mu2e {
         fhicl::OptionalAtom<double> TTreeEnergyCalib{ Name("TTreeEnergyCalib"), Comment("Controls whether to make the energy TTrees with units of energy or in ADC values. If 0, will leave as ADC value, otherwise will multiply by this calibration to generate the energy.")};
         fhicl::OptionalAtom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity level")};
         fhicl::OptionalAtom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit for histograms if verbosity level >= 5: \"sample_number\", \"waveform_time\", or \"event_time\"") };
+
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit STMMovingWindowDeconvolution(const Parameters& conf);
@@ -81,6 +82,7 @@ namespace mu2e {
     void calculate_baseline();
     void find_peaks();
     void make_debug_histogram(const art::Event& event, int count, const STMWaveformDigi& waveform, const STMEnergyCalib& stmEnergyCalib, const std::vector<double>& deconvolved_data, const std::vector<double>& differentiated_data, const std::vector<double>& averaged_data, const double baseline_mean, const double baseline_stddev, const std::vector<double>& peak_heights, const std::vector<double>& peak_times);
+
 
     // fhicl variables
     art::ProductToken<STMWaveformDigiCollection> _stmWaveformDigisToken;  // token of required data
@@ -249,6 +251,7 @@ namespace mu2e {
         STMMWDDigi mwd_digi(peak_times[i], -1 * mwd_energy); // peak_heights are negative, make them positive here
         if (mwd_digi.energy() < -100)
           throw cet::exception("logicError", "The peak height must be positive!");
+
         outputMWDDigis->push_back(mwd_digi);
         if (makeTTreeEnergies) {
           time = mwd_digi.time();
@@ -281,6 +284,7 @@ namespace mu2e {
       std::cout << "MWD: " << channel.name() << ": " << outputMWDDigis->size() << " MWD digis found" << std::endl;
     event.put(std::move(outputMWDDigis));
   };
+
 
   void STMMovingWindowDeconvolution::deconvolve() {
     if (verbosityLevel > 4) {
@@ -391,7 +395,7 @@ namespace mu2e {
     return;
   };
 
-  void STMMovingWindowDeconvolution::make_debug_histogram(const art::Event& event, int count, const STMWaveformDigi& waveform, const STMEnergyCalib& stmEnergyCalib, const std::vector<double>& deconvolved_data, const std::vector<double>& differentiated_data, const std::vector<double>& averaged_data, const double baseline_mean, const double baseline_stddev, const std::vector<double>& peak_heights, const std::vector<double>& peak_times) {
+  void STMMovingWindowDeconvolution::make_debug_histogram(const art::Event& event, int count, const STMWaveformDigi& adcs, const STMEnergyCalib& stmEnergyCalib, const std::vector<double>& deconvolved_data, const std::vector<double>& differentiated_data, const std::vector<double>& averaged_data, const double baseline_mean, const double baseline_stddev, const std::vector<double>& peak_heights, const std::vector<double>& peak_times) {
     art::ServiceHandle<art::TFileService> tfs;
     std::stringstream histsuffix;
     histsuffix.str("");
@@ -410,7 +414,7 @@ namespace mu2e {
     TH1D* h_peak_threshold = tfs->make<TH1D>(("h_peak_threshold"+histsuffix.str()).c_str(), "Threshold", binning.nbins(),binning.low(),binning.high());
 
     for (size_t i = 0; i < deconvolved_data.size(); ++i) {
-      h_waveform->SetBinContent(i+1, waveform.adcs()[i] - pedestal); // remove the pedestal
+      h_adcs->SetBinContent(i+1, adcs.adcs()[i] - pedestal); // remove the pedestal
       h_deconvolved->SetBinContent(i+1, deconvolved_data[i]);
       h_differentiated->SetBinContent(i+1, differentiated_data[i]);
       h_averaged->SetBinContent(i+1, averaged_data[i]);

@@ -24,6 +24,13 @@ namespace mu2e {
 
     ProductionSolenoidMaker( SimpleConfig const & config,
                              double solenoidOffset);
+    ~ProductionSolenoidMaker() = default;
+
+    // delete automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
+    ProductionSolenoidMaker( ProductionSolenoidMaker const& ) = delete;
+    ProductionSolenoidMaker( ProductionSolenoidMaker&&      ) = delete;
+    ProductionSolenoidMaker& operator= ( ProductionSolenoidMaker const& ) = delete;
+    ProductionSolenoidMaker& operator= ( ProductionSolenoidMaker&&      ) = delete;
 
     void parseConfig( SimpleConfig const & _config );
 
@@ -35,10 +42,6 @@ namespace mu2e {
     std::unique_ptr<ProductionSolenoid> getProductionSolenoidPtr() { return std::move(_ps); }
 
   private:
-
-    // hide automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
-    ProductionSolenoidMaker( ProductionSolenoidMaker const & );
-    ProductionSolenoidMaker const & operator= ( ProductionSolenoidMaker const & );
 
     std::unique_ptr<ProductionSolenoid> _ps;
 

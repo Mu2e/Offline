@@ -15,9 +15,24 @@ namespace mu2e {
     float stationZ   [kNStations];
 
 //-----------------------------------------------------------------------------
+    FaceZ_t::FaceZ_t() {
+      for(int i = 0; i < kMaxNTimeBins; ++i) {
+        fFirst [i] = 0;
+        fLast  [i] = 0;
+        fPFirst[i] = 0;
+        fPLast [i] = 0;
+      }
+    }
+
+//-----------------------------------------------------------------------------
     Data_t::Data_t() {
       for (int is=0; is<kNStations; is++) {
         fListOfSeeds    [is].reserve(100);
+      }
+      for(int i = 0; i < 2; ++i) {
+        for(int j = 0; j < 12; ++j) {
+          for(int k = 0; k < 12; ++k) panelOverlap[i][j][k] = 0;
+        }
       }
     }
 //-----------------------------------------------------------------------------

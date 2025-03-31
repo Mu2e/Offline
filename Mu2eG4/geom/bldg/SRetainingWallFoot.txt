@@ -1,31 +1,18 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_SretainingWallFoot.ccl
-
 string building.S.retaining.Wall.Foot.name     = "SRetainingWallFoot";
-
 string building.S.retaining.Wall.Foot.material = "CONCRETE_MARS";
-
-double building.S.retaining.Wall.Foot.offsetFromMu2eOrigin.x   = 947.4;
-double building.S.retaining.Wall.Foot.offsetFromFloorSurface.y = 6629.4;
-double building.S.retaining.Wall.Foot.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.S.retaining.Wall.Foot.yHalfThickness           = 228.6;
-
+double building.S.retaining.Wall.Foot.offsetFromMu2eOrigin.x   = 947.40;
+double building.S.retaining.Wall.Foot.offsetFromFloorSurface.y = 6781.80;
+double building.S.retaining.Wall.Foot.offsetFromMu2eOrigin.z   = -3581.40;
+double building.S.retaining.Wall.Foot.yHalfThickness           = 228.60;
 vector<double> building.S.retaining.Wall.Foot.xPositions = {
-  -2921,   // P0
-  -12192,   // P1
-  -12192,   // p2
-  -2921   // p3
+-2921.00, // 0
+-12029.00, // 1
+-12029.00, // 2
+-2921.00 // 3
 };
-
 vector<double> building.S.retaining.Wall.Foot.yPositions = {
-  -4813.3,   // P0
-  -4813.3,   // P1
-  -8470.9,   // p2
-  -8470.9   // p3
+-4813.30, // 0
+-4813.30, // 1
+-8470.90, // 2
+-8470.90 // 3
 };
-
-// Local Variables:
-// mode:c++
-// End:

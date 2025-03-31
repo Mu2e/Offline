@@ -67,6 +67,7 @@ helper.make_plugins( [ mainlib,
   'BTrk_BField',
   'CLHEP',
   'boost_filesystem',
+  'boost_math_tr1',
   rootlibs,
   'pthread'
   ] )

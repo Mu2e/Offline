@@ -15,7 +15,10 @@ namespace mu2e {
       int     nHelices;
       int     nComboHits;
       int     nStrawHits;
-      float   time;
+    };
+
+    struct hsInfo {
+      float eDepAvg;
     };
 
     struct lineSegmentInfo {
@@ -23,12 +26,17 @@ namespace mu2e {
       float   maxHitGap;
     };
 
+    struct finalLineInfo{
+      float nHitsRatio;
+    };
+
     struct diagInfo {
-      float                          moduleTime;
       int                            nHelices;
       int                            nTimeClusters;
       std::vector<tcInfo>            timeClusterData;
+      std::vector<hsInfo>            helixSeedData;
       std::vector<lineSegmentInfo>   lineSegmentData;
+      std::vector<finalLineInfo>     lineInfoData;
     };
 
   } // namespace AgnosticHelixFinderTypes

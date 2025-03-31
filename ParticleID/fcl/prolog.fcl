@@ -11,7 +11,7 @@ ParticleID: {
             ElectronTemplates : "Offline/ConditionsService/data/v5_7_9/pid_ele_dedx.rtbl"
             MuonTemplates     : "Offline/ConditionsService/data/v5_7_9/pid_muo_dedx.rtbl"
             fitparticle       : 11
-            fitdirection      : 0
+            fitdirection      : @local::FitDir.downstream
             debugLevel        : 0
             diagLevel         : 1
             verbosity         : 0

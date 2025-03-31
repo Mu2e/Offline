@@ -47,7 +47,7 @@ namespace mu2e {
         return *(_straws.at(strid.straw()));
       } else {
         std::ostringstream msg;
-        msg << __func__ << " Inconsistent straw/panel request "
+        msg << static_cast<const char*>(__func__) << " Inconsistent straw/panel request "
           << strid << " / " << _id << std::endl;
         throw cet::exception("RANGE") << msg.str();
       }

@@ -23,6 +23,49 @@ namespace mu2e {
       else
         jfnd->second.merge(status);
     }
+
+    // also fully parse to fill straw array for performance
+    if (mask == StrawIdMask::uniquestraw){
+      _fullstatus[mid.uniqueStraw()].merge(status);
+    }else if (mask == StrawIdMask::uniquepanel){
+      for (size_t i=0;i<StrawId::_nstraws;i++){
+        _fullstatus[StrawId(mid.plane(),mid.panel(),i).uniqueStraw()].merge(status);
+      }
+    }else if (mask == StrawIdMask::plane){
+      for (size_t i=0;i<StrawId::_npanels;i++){
+        for (size_t j=0;j<StrawId::_nstraws;j++){
+          _fullstatus[StrawId(mid.plane(),i,j).uniqueStraw()].merge(status);
+        }
+      }
+    }else if (mask == StrawIdMask::station){
+      for (size_t i=0;i<2;i++){
+        for (size_t j=0;j<StrawId::_npanels;j++){
+          for (size_t k=0;k<StrawId::_nstraws;k++){
+            _fullstatus[StrawId(mid.station()*2+i,j,k).uniqueStraw()].merge(status);
+          }
+        }
+      }
+    }else if (mask == StrawIdMask::tracker){
+      for (size_t i=0;i<StrawId::_nplanes;i++){
+        for (size_t j=0;j<StrawId::_npanels;j++){
+          for (size_t k=0;k<StrawId::_nstraws;k++){
+            _fullstatus[StrawId(i,j,k).uniqueStraw()].merge(status);
+          }
+        }
+      }
+    }else if (mask == StrawIdMask::straw){
+      for (size_t i=0;i<StrawId::_nplanes;i++){
+        for (size_t j=0;j<StrawId::_npanels;j++){
+          _fullstatus[StrawId(i,j,mid.straw()).uniqueStraw()].merge(status);
+        }
+      }
+    }else if (mask == StrawIdMask::panel){
+      for (size_t i=0;i<StrawId::_nplanes;i++){
+        for (size_t k=0;k<StrawId::_nstraws;k++){
+          _fullstatus[StrawId(i,mid.panel(),k).uniqueStraw()].merge(status);
+        }
+      }
+    }
   }
 
   void TrackerStatus::print( ostream& out) const{
@@ -38,17 +81,7 @@ namespace mu2e {
   }
 
   StrawStatus TrackerStatus::strawStatus(StrawId const& sid) const {
-    StrawStatus sstat;
-    for( auto ielem = _status.begin(); ielem != _status.end(); ++ielem) {
-      auto const& mask = ielem->first;
-      auto const& stati = ielem->second;
-      for(auto istat = stati.begin(); istat != stati.end(); ++istat){
-        auto const& elem = istat->first;
-        auto const& stat = istat->second;
-        if(mask.equal(sid,elem))sstat.merge(stat);
-      }
-    }
-    return sstat;
+    return _fullstatus[sid.uniqueStraw()];
   }
 
   StrawStatus TrackerStatus::panelStatus(StrawId const& sid) const {

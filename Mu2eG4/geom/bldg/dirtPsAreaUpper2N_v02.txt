@@ -1,55 +1,40 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_PSarea_upperExtension2_N.ccl
-
 string dirt.psArea.upper2.N.name     = "dirtPsAreaUpper2N";
-
 string dirt.psArea.upper2.N.material = "MBOverburden";
-
-double dirt.psArea.upper2.N.offsetFromMu2eOrigin.x   = 947.4;
-//double dirt.psArea.upper2.N.offsetFromFloorSurface.y = 5638.8;
-double dirt.psArea.upper2.N.offsetFromFloorSurface.y = 5664.6;
-double dirt.psArea.upper2.N.offsetFromMu2eOrigin.z   = -3581.4;
-
-//double dirt.psArea.upper2.N.yHalfThickness           = 457.2;
-double dirt.psArea.upper2.N.yHalfThickness           = 431.4;
-
-vector<int>    dirt.psArea.upper2.N.xreplace   = { 7, 8 };
+double dirt.psArea.upper2.N.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.psArea.upper2.N.offsetFromFloorSurface.y = 5664.60;
+double dirt.psArea.upper2.N.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.psArea.upper2.N.xreplace ={7 ,8 };
+vector<int> dirt.psArea.upper2.N.yreplace ={8 ,9 };
+double dirt.psArea.upper2.N.yHalfThickness           = 431.40;
 vector<double> dirt.psArea.upper2.N.xPositions = {
-  -2006.6,   // h0
-  -4749.8,
-  -4749.8,
-  -12319,   // h1
-  -12319,   // h2
-  -17134.6,   // h3
-  -17041,    // h4
-  -50000,   // h3_to_W
-  -50000,   // NWcorner
-  -2006.6,   // h0_to_N
-  -2006.6,   // To NRetWall
-  -12319,    // NW corner NRetWall
-  -12319,    // SW corner WextWall
-  -2006.6     // along NRetWall S face
+-2006.60, // 0
+-4749.80, // 1
+-4749.80, // 2
+-12319.00, // 3
+-12319.00, // 4
+-17636.95, // 5
+-17540.65, // 6
+-50000.00, // 7
+-50000.00, // 8
+-2006.60, // 9
+-2006.60, // 10
+-12319.00, // 11
+-12319.00, // 12
+-2006.60 // 13
 };
-
-vector<int>    dirt.psArea.upper2.N.yreplace   = { 8, 9 };
 vector<double> dirt.psArea.upper2.N.yPositions = {
-  6858,   // h0
-  6858,
-  6502.4,
-  6502.4,   // h1
-  3390.67,   // h2
-  2173.52,   // h3
-  1779,   // h4
-  1779,   // h4_to_W
-  50000,   // NWcorner
-  50000,   // h0_to_N
-  10312.41, // To NRetWall
-  10312.41, // NW corner NRetWall
-  9702.79,  // SW corner NRetWall
-  9702.79   // last point on NRetWall S face
+6858.00, // 0
+6858.00, // 1
+6502.40, // 2
+6502.40, // 3
+3349.32, // 4
+2051.20, // 5
+1656.29, // 6
+1656.29, // 7
+50000.00, // 8
+50000.00, // 9
+10312.41, // 10
+10312.41, // 11
+9702.79, // 12
+9702.79 // 13
 };
-
-// Local Variables:
-// mode:c++
-// End:

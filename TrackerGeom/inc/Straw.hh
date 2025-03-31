@@ -65,13 +65,13 @@ namespace mu2e {
       xyzVec strawEnd(StrawEnd const& end ) const { return strawEnd(end.end()); }
       xyzVec strawEnd(StrawEnd::End end ) const { return end == StrawEnd::cal ? _smid + _hlen*_sdir : _smid - _hlen*_sdir; }
 
-      bool operator==(const Straw other) const {
+      bool operator==(const Straw& other) const {
         return _id == other.id();
       }
-      bool operator>(const Straw other) const {
+      bool operator>(const Straw& other) const {
         return _id > other.id();
       }
-      bool operator<(const Straw other) const {
+      bool operator<(const Straw& other) const {
         return _id < other.id();
       }
 

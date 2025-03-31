@@ -1,0 +1,52 @@
+string building.backfill.psArea.foundation.name     = "backfillPsAreaFoundation";
+string building.backfill.psArea.foundation.material = "MBOverburden";
+double building.backfill.psArea.foundation.offsetFromMu2eOrigin.x   = 947.40;
+double building.backfill.psArea.foundation.offsetFromFloorSurface.y = 4089.50;
+double building.backfill.psArea.foundation.offsetFromMu2eOrigin.z   = -3581.40;
+double building.backfill.psArea.foundation.yHalfThickness           = 304.70;
+vector<double> building.backfill.psArea.foundation.xPositions = {
+-2921.00, // 0
+-2921.00, // 1
+-4089.30, // 2
+-4089.30, // 3
+-4851.50, // 4
+-4851.50, // 5
+-6254.65, // 6
+-7889.39, // 7
+-7491.78, // 8
+-8232.24, // 9
+-8629.84, // 10
+-11595.30, // 11
+-11199.20, // 12
+-11939.70, // 13
+-12319.40, // 14
+-17343.55, // 15
+-17319.45, // 16
+-18356.05, // 17
+-18380.25, // 18
+-18735.62, // 19
+-19132.16 // 20
+};
+vector<double> building.backfill.psArea.foundation.yPositions = {
+-7384.72, // 0
+-609.70, // 1
+-609.70, // 2
+-2286.10, // 3
+-2286.10, // 4
+-609.70, // 5
+-609.70, // 6
+-1008.81, // 7
+-2637.38, // 8
+-2818.11, // 9
+-1189.54, // 10
+-1920.13, // 11
+-3542.53, // 12
+-3723.26, // 13
+-2194.90, // 14
+-3420.57, // 15
+-3519.27, // 16
+-3772.29, // 17
+-3673.53, // 18
+-3781.57, // 19
+-7384.72 // 20
+};

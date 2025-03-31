@@ -5,20 +5,26 @@
 #ifndef TrkFitDirection_HH
 #define TrkFitDirection_HH
 #include <string>
+#include <cctype>
+#include <algorithm>
+#include <cmath>
 
 namespace mu2e
 {
   class TrkFitDirection {
     public:
 // define the fit direction as downstream (towards positive Z) or upstream (towards negative Z).
-      enum FitDirection {downstream=0,upstream};
-      TrkFitDirection(FitDirection fdir=downstream);
+      enum FitDirection {downstream=0,upstream,unknown};
+      TrkFitDirection(FitDirection fdir=unknown);
+      TrkFitDirection(std::string name) : TrkFitDirection(fitDirectionFromName(name)) {}
+      //accessors
       FitDirection fitDirection() const { return _fdir; }
-  // return the SIGN of the z component of velocity (magnitude is not returned)
-      double dzdt() const { return _fdir == downstream ? 1.0 : -1.0; }
+      // return the SIGN of the z component of velocity (magnitude is not returned)
+      double dzdt() const { return _fdir == downstream ? 1.0 : _fdir == upstream ? -1.0 : 0.0; }
       std::string const& name() const;
       bool operator == ( TrkFitDirection const& other) const { return _fdir == other._fdir; }
       bool operator != ( TrkFitDirection const& other) const { return _fdir != other._fdir; }
+      static FitDirection fitDirectionFromName(std::string name);
     private:
       FitDirection _fdir;
   };

@@ -66,7 +66,7 @@ namespace mu2e {
 
           CLHEP::Hep3Vector p(pos.x(), pos.y(), pos.z());
           getBFieldWithStatus(p, b);
-          XYZVectorF result(b.x(), b.y(), b.z());
+          XYZVectorF result(float(b.x()), float(b.y()), float(b.z()));
 
           return result;
         }
@@ -87,15 +87,8 @@ namespace mu2e {
         BFieldManager(MapContainerType const& innerMaps,
                       MapContainerType const& outerMaps);
 
-        // This class could support copying but it is not really needed and
-        // I would like to prevent unintended copies ( people forgetting to
-        // receive it into a const reference and making a copy instead ).
-        BFieldManager(const BFieldManager&);
-        BFieldManager& operator=(const BFieldManager&);
-
         MapContainerType innerMaps_;
         MapContainerType outerMaps_;
-
 
         // Handles caching and overlap resolution logic
         BFCacheManager cm_;

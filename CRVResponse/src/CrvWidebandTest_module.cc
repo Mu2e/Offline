@@ -142,7 +142,10 @@ void LandauGauss(TH1F &h, float &mpv, float &fwhm, float &signals, float &chi2)
     float leftX = fit.GetX(halfMaximum,0.0,mpv);
     float rightX = fit.GetX(halfMaximum,mpv,10.0*mpv);
     fwhm = rightX-leftX;
-    signals = fit.Integral(0,150);
+
+    signals = fit.Integral(0,150,1e-3)/h.GetBinWidth(1);  //need to divide by bin width.
+                                                          //if the bin width is 2 and one has e.g. 20 events for 50PEs and 20 events for 51PEs,
+                                                          //the combined bin of x=50/51 gets 40 entries and the integral assumes that there are 40 entries for x=50 and x=51.
 }
 
 } //end anonymous namespace for LandauGauss function
@@ -163,6 +166,7 @@ namespace mu2e
       fhicl::Atom<std::string> crvCoincidenceClusterMCModuleLabel{ Name("crvCoincidenceClusterMCModuleLabel"), Comment("CrvCoincidenceClusterMC Label")};
       fhicl::Atom<float> minTrackFitPEs{ Name("minTrackFitPEs"), Comment("minimum number of PEs to be considered for track fit")};
       fhicl::Atom<art::InputTag> protonBunchTimeTag{ Name("protonBunchTimeTag"), Comment("ProtonBunchTime producer"),"EWMProducer" };
+      fhicl::Sequence<int> triggerSectorTypes{ Name("triggerSectorTypes"), Comment("sector types used for trigger paddels")};
     };
 
     using Parameters = art::EDAnalyzer::Table<Config>;
@@ -179,6 +183,7 @@ namespace mu2e
     std::string   _crvCoincidenceClusterMCModuleLabel;
     const float   _minTrackFitPEs{5};
     art::InputTag _protonBunchTimeTag;
+    std::vector<int> _triggerSectorTypes;
 
     int     _nFEBs{0};
     int     _nSectorTypes{0};
@@ -225,7 +230,8 @@ namespace mu2e
     _crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
     _crvCoincidenceClusterModuleLabel(conf().crvCoincidenceClusterModuleLabel()),
     _crvCoincidenceClusterMCModuleLabel(conf().crvCoincidenceClusterMCModuleLabel()),
-    _protonBunchTimeTag(conf().protonBunchTimeTag())
+    _protonBunchTimeTag(conf().protonBunchTimeTag()),
+    _triggerSectorTypes(conf().triggerSectorTypes())
   {
     art::ServiceHandle<art::TFileService> tfs;
     _tree = tfs->make<TTree>("run", "run");
@@ -317,10 +323,10 @@ namespace mu2e
         int sectorType = CRS->getCRSScintillatorShields().at(sectorNumber).getSectorType();
         if(sectorType>=_nSectorTypes) _nSectorTypes=sectorType+1;
 
-        for(int SiPM=0; SiPM<4; SiPM++)
+        for(unsigned int SiPM=0; SiPM<CRVId::nChanPerBar; SiPM++)
         {
           if(!crvCounter.getBarDetail().hasCMB(SiPM%CRVId::nSidesPerBar)) continue;  //don't check non-existing SiPMs
-          uint16_t offlineChannel = barIndex.asUint()*4 + SiPM;
+          uint16_t offlineChannel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
           CRVROC   onlineChannel  = crvChannelMap.online(offlineChannel);
           uint16_t feb            = onlineChannel.FEB();
           if(feb>=_nFEBs) _nFEBs=feb+1;
@@ -377,9 +383,21 @@ namespace mu2e
       }
     }//setup at first event
 
+    for(int iFEB=0; iFEB<_nFEBs; ++iFEB)
+    for(int iChannel=0; iChannel<(int)CRVId::nChanPerFEB; ++iChannel)
+    {
+      int index=iFEB*CRVId::nChanPerFEB+iChannel;
+      _recoPEs[index]        =0;
+      _recoTime[index]       =0;
+      _fitStatus[index]      =0;
+      _depositedEnergy[index]=0;
+    }
+
     //fits for the entire stack of modules/sectors (sectorType=0) and for individual modules/sectors (sectorType=1,...)
     for(int iSectorType=0; iSectorType<_nSectorTypes; ++iSectorType)
     {
+     if(std::find(_triggerSectorTypes.begin(),_triggerSectorTypes.end(), iSectorType) != _triggerSectorTypes.end()) continue;
+
      //initialize track variables
      float sumX     =0;
      float sumY     =0;
@@ -404,7 +422,7 @@ namespace mu2e
         int sectorNumber = crvCounter.id().getShieldNumber();
         int sectorType = CRS->getCRSScintillatorShields().at(sectorNumber).getSectorType();
         if(iSectorType>0 && iSectorType!=sectorType) continue;
-
+        if(std::find(_triggerSectorTypes.begin(),_triggerSectorTypes.end(), sectorType) != _triggerSectorTypes.end()) continue;
 
         CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
         if(widthDirection!=crvCounter.getBarDetail().getWidthDirection() ||
@@ -427,7 +445,7 @@ namespace mu2e
 
         //get reco PEs of each SiPM of this counter
         float counterPEs=0;
-        for(int SiPM=0; SiPM<4; SiPM++)
+        for(unsigned int SiPM=0; SiPM<CRVId::nChanPerBar; SiPM++)
         {
           if(!(*iter)->getBarDetail().hasCMB(SiPM%CRVId::nSidesPerBar)) continue;  //don't check non-existing SiPMs
 
@@ -437,7 +455,7 @@ namespace mu2e
           for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++)
           {
             const CrvRecoPulse &crvRecoPulse = crvRecoPulseCollection->at(recoPulseIndex);
-            if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==SiPM)
+            if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==(int)SiPM)
             {
               if(recoPEs<crvRecoPulse.GetPEs())  //record the largest pulse to remove noise hits, after pulses, ...
               {
@@ -453,7 +471,7 @@ namespace mu2e
           //for iSectorType>0, a track fit for individual modules/sectors (with sectorType 1,2,3,...) is done
           if(iSectorType==0)
           {
-            uint16_t offlineChannel = barIndex.asUint()*4 + SiPM;
+            uint16_t offlineChannel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
             CRVROC   onlineChannel  = crvChannelMap.online(offlineChannel);
             uint16_t feb            = onlineChannel.FEB();
             uint16_t febChannel     = onlineChannel.FEBchannel();
@@ -497,6 +515,10 @@ namespace mu2e
         const CRSScintillatorBar &crvCounter = **iter;
         const CRSScintillatorBarIndex &barIndex = crvCounter.index();
 
+        int sectorNumber = crvCounter.id().getShieldNumber();
+        int sectorType = CRS->getCRSScintillatorShields().at(sectorNumber).getSectorType();
+        if(std::find(_triggerSectorTypes.begin(),_triggerSectorTypes.end(), sectorType) != _triggerSectorTypes.end()) continue;
+
         CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
         if(widthDirection!=crvCounter.getBarDetail().getWidthDirection() ||
            thicknessDirection!=crvCounter.getBarDetail().getThicknessDirection())
@@ -507,7 +529,7 @@ namespace mu2e
 
         //get reco PEs of each SiPM of this counter
         float counterPEs=0;
-        for(int SiPM=0; SiPM<4; SiPM++)
+        for(unsigned int SiPM=0; SiPM<CRVId::nChanPerBar; SiPM++)
         {
           if(!(*iter)->getBarDetail().hasCMB(SiPM%CRVId::nSidesPerBar)) continue;  //don't check non-existing SiPMs
 
@@ -515,7 +537,7 @@ namespace mu2e
           for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++)
           {
             const CrvRecoPulse &crvRecoPulse = crvRecoPulseCollection->at(recoPulseIndex);
-            if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==SiPM)
+            if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==(int)SiPM)
             {
               if(recoPEs<crvRecoPulse.GetPEs())  //record the largest pulse to remove noise hits, after pulses, ...
               {
@@ -560,6 +582,66 @@ namespace mu2e
       }
 
     }
+
+    //trigger paddels
+    for(iter=counters.begin(); iter!=counters.end(); iter++)
+    {
+      //get counter properties
+      const CRSScintillatorBar &crvCounter = **iter;
+      const CRSScintillatorBarIndex &barIndex = crvCounter.index();
+
+      int sectorNumber = crvCounter.id().getShieldNumber();
+      int sectorType = CRS->getCRSScintillatorShields().at(sectorNumber).getSectorType();
+      if(std::find(_triggerSectorTypes.begin(),_triggerSectorTypes.end(), sectorType) == _triggerSectorTypes.end()) continue;
+
+      //get visible deposited energy for each counter
+      double depositedEnergy=0;
+      if(crvStepsCollection.isValid())
+      {
+        for(size_t istep=0; istep<crvStepsCollection->size(); istep++)
+        {
+          CrvStep const& step(crvStepsCollection->at(istep));
+          if(step.barIndex()==barIndex) depositedEnergy+=step.visibleEDep();
+        }
+      }
+
+      //get reco PEs of each SiPM of this counter
+      for(unsigned int SiPM=0; SiPM<CRVId::nChanPerBar; SiPM++)
+      {
+        if(!(*iter)->getBarDetail().hasCMB(SiPM%CRVId::nSidesPerBar)) continue;  //don't check non-existing SiPMs
+
+        float recoPEs=0;
+        float recoTime=-1;
+        int   fitStatus=0;
+        for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++)
+        {
+          const CrvRecoPulse &crvRecoPulse = crvRecoPulseCollection->at(recoPulseIndex);
+          if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==(int)SiPM)
+          {
+            if(recoPEs<crvRecoPulse.GetPEs())  //record the largest pulse to remove noise hits, after pulses, ...
+            {
+              recoPEs   = crvRecoPulse.GetPEs();
+              recoTime  = crvRecoPulse.GetPulseTime();
+              fitStatus = 1;
+              if(crvRecoPulse.GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::failedFit)) fitStatus=2;
+            }
+          }
+        }
+
+        uint16_t offlineChannel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
+        CRVROC   onlineChannel  = crvChannelMap.online(offlineChannel);
+        uint16_t feb            = onlineChannel.FEB();
+        uint16_t febChannel     = onlineChannel.FEBchannel();
+
+        int index=feb*CRVId::nChanPerFEB+febChannel;
+        _recoPEs[index]   = recoPEs;
+        _recoTime[index]  = recoTime;
+        _fitStatus[index] = fitStatus;
+        _depositedEnergy[index] = depositedEnergy;
+        _histPEs[index]->Fill(recoPEs);
+      }
+    }
+
 
     _tree->Fill();
 
