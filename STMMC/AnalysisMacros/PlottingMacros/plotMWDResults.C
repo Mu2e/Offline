@@ -121,7 +121,7 @@ std::string convertBinWidthToStr(double binWidth) {
     return binWidthStr;
 };
 
-void plot(std::vector<double> times, std::vector<double> energies, std::vector<double> binWidths, double ERed, bool convertkeVToMeV, const double signalAcceptance, bool highResolution, bool timeCuts, bool flashCut347) {
+void plot(std::vector<double> times, std::vector<double> energies, std::vector<double> binWidths, double ERed, double EMin, bool convertkeVToMeV, const double signalAcceptance, bool highResolution, bool timeCuts, bool flashCut347) {
     /*
         Description
             Plots the full, reduced, and signal spectra
@@ -131,6 +131,7 @@ void plot(std::vector<double> times, std::vector<double> energies, std::vector<d
             energies - as documented in function "plotMWDResults"
             binWidths - as documented in function "plotMWDResults"
             ERed - as documented in function "plotMWDResults"
+            EMin - as documented in function "plotMWDResults"
             convertkeVToMeV - as documented in function "plotMWDResults"
             signalAcceptance - as documented in function "plotMWDResults"
             highResolution - as documented in function "plotMWDResults"
@@ -195,7 +196,8 @@ void plot(std::vector<double> times, std::vector<double> energies, std::vector<d
     std::cout << std::string("Generating plots with ")  + (highResolution ? "high resolution, " : "low resolution, ") + (timeCuts ? "time cuts, " : "no time cuts, ") + (convertkeVToMeV ? "in MeV" : "in MeV") << std::endl;
 
     // Define the energy parameters in keV
-    double eMax = *std::max_element(energies.begin(), energies.end()) + 1, eMin = *std::min_element(energies.begin(), energies.end());
+    double eMax = *std::max_element(energies.begin(), energies.end()) + 1;
+    double eMin = EMin < std::numeric_limits<double>::epsilon() ? *std::min_element(energies.begin(), energies.end()) : EMin;
     if (eMin < 0) {
         std::cout << "==========Warning==========" << std::endl;
         std::cout << "Negative minimum energy of " << *std::min_element(energies.begin(), energies.end()) << " keV" << std::endl;
@@ -203,9 +205,9 @@ void plot(std::vector<double> times, std::vector<double> energies, std::vector<d
     };
     double eRangeFull = eMax - eMin;
     double eRangeRed  = ERed - eMin;
-    double e347  = 347, eRange347  = e347  * signalAcceptance,  eMin347  = e347  - eRange347,   eMax347  = e347  + eRange347;
-    double e844  = 844, eRange844  = e844  * signalAcceptance,  eMin844  = e844  - eRange844,   eMax844  = e844  + eRange844;
-    double e1809 = 809, eRange1809 = e1809 * signalAcceptance,  eMin1809 = e1809 - eRange1809,  eMax1809 = e1809 + eRange1809;
+    double e347  = 347,  eRange347  = e347  * signalAcceptance,  eMin347  = e347  - eRange347,   eMax347  = e347  + eRange347;
+    double e844  = 844,  eRange844  = e844  * signalAcceptance,  eMin844  = e844  - eRange844,   eMax844  = e844  + eRange844;
+    double e1809 = 1809, eRange1809 = e1809 * signalAcceptance,  eMin1809 = e1809 - eRange1809,  eMax1809 = e1809 + eRange1809;
 
     // Double the energy range to include both sides of the acceptance
     eRange347  *=2;
@@ -277,7 +279,7 @@ void plot(std::vector<double> times, std::vector<double> energies, std::vector<d
     // Set up TH1Ds
     std::vector<TH1D*> hists;
     for (int i = 0; i < nOrder; i++)
-        hists.emplace_back(new TH1D(("h" + order[i]).c_str(), ("h" + order[i]).c_str(), nBins[i], eMinMax[i][0], eMinMax[i][1]));
+        hists.emplace_back(new TH1D((order[i] + " spectrum").c_str(), (order[i] + " spectrum").c_str(), nBins[i], eMinMax[i][0], eMinMax[i][1]));
 
     // Populate the TH1Ds
     const int nEntries = energies.size();
@@ -285,8 +287,9 @@ void plot(std::vector<double> times, std::vector<double> energies, std::vector<d
     for (uint i = 0; i < nEntries; i++) {
         e = energies[i];
         t = times[i];
-        hists[0]->Fill(e);
-        if (e < ERed)
+        if (eMin < e && e < eMax)
+            hists[0]->Fill(e);
+        if (eMin < e && e < ERed)
             hists[1]->Fill(e);
         if ((!timeCuts && eMin347 < e  && e < eMax347)  || (timeCuts && tMin347 < fmod(t, tMod347)   && fmod(t, tMod347) < tMax347   && eMin347 < e  && e < eMax347))
             hists[2]->Fill(e);
@@ -359,7 +362,7 @@ void plot(std::vector<double> times, std::vector<double> energies, std::vector<d
     return;
 };
 
-void makePlots(std::vector<double> &times, std::vector<double> &energies, double ERed, const double signalAcceptance, std::vector<double> &binWidths) {
+void makePlots(std::vector<double> &times, std::vector<double> &energies, double ERed, double EMin, const double signalAcceptance, std::vector<double> &binWidths) {
     /*
         Description
             Sets up loops for function "plot"
@@ -368,17 +371,21 @@ void makePlots(std::vector<double> &times, std::vector<double> &energies, double
             times - as documented in function "plotMWDResults"
             energies - as documented in function "plotMWDResults"
             ERed - as documented in function "plotMWDResults"
+            EMin - as documented in function "plotMWDResults"
             binWidths - as documented in function "plotMWDResults"
 
         Variables
+            bools - vector of allowed boolean values
+            highResolution - selects whether plot is generated in high or low resolution
+            convertkevToMeV - selects whether plot is generated in keV or MeV
     */
 
     std::vector<bool> bools = {true, false};
     for (bool highResolution : bools) {
         for (bool convertkeVToMeV : bools) {
-            plot(times, energies, binWidths, ERed, convertkeVToMeV, signalAcceptance, highResolution, false, false);
-            plot(times, energies, binWidths, ERed, convertkeVToMeV, signalAcceptance, highResolution, true,  false);
-            plot(times, energies, binWidths, ERed, convertkeVToMeV, signalAcceptance, highResolution, true,  true);
+            plot(times, energies, binWidths, ERed, EMin, convertkeVToMeV, signalAcceptance, highResolution, false, false);
+            plot(times, energies, binWidths, ERed, EMin, convertkeVToMeV, signalAcceptance, highResolution, true,  false);
+            plot(times, energies, binWidths, ERed, EMin, convertkeVToMeV, signalAcceptance, highResolution, true,  true);
         };
     };
 
@@ -386,7 +393,7 @@ void makePlots(std::vector<double> &times, std::vector<double> &energies, double
 };
 
 
-void plotMWDResults(std::string fileName, std::string treeName, double ERed = 2000.0, const double signalAcceptance = 0.1, double binWidthFull = 500, double binWidthRed = 10, double binWidth347 = 2, double binWidth844 = 2, double binWidth1809 = 2) {
+void plotMWDResults(std::string fileName, std::string treeName, double ERed = 2000.0, double EMin = 0.0, const double signalAcceptance = 0.1, double binWidthFull = 500, double binWidthRed = 5, double binWidth347 = 5, double binWidth844 = 5, double binWidth1809 = 10) {
     /*
         Description
             Plots spectra measured by the detectors using the MWD algorithm. Names the files as
@@ -404,6 +411,7 @@ void plotMWDResults(std::string fileName, std::string treeName, double ERed = 20
 
         Optional arguments
             ERed - reduced spectrum max energy [MeV]
+            eMin - minimum energy of plots
             signalAcceptance - for the signal plots, this controls the width of the plotted region as a multiple of the signal energy
             binWidthFull - full energy spectrum bin width
             binWidthRed - reduced energy spectrum bin width
@@ -431,7 +439,7 @@ void plotMWDResults(std::string fileName, std::string treeName, double ERed = 20
     std::vector<double> binWidths = {binWidthFull, binWidthRed, binWidth347, binWidth844, binWidth1809};
 
     // Generate the plots
-    makePlots(times, energies, ERed, signalAcceptance, binWidths);
+    makePlots(times, energies, ERed, EMin, signalAcceptance, binWidths);
 
     return;
 };
