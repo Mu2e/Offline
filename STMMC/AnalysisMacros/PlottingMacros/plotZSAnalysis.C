@@ -17,7 +17,7 @@ void customErrorHandler(int level, Bool_t abort, const char* location, const cha
         exit(1);
 };
 
-void collectAnalysisData(const std::string fileName, const std::string treeName, std::vector<int16_t> &ADCs, std::vector<int16_t> &gradients, std::vector<double> &averagedGradients, std::vector<unsigned int> &eventIds) {
+void collectAnalysisData(const std::string fileName, const std::string treeName, std::vector<int16_t> &ADCs, std::vector<double> &times, std::vector<int16_t> &gradients, std::vector<double> &averagedGradients, std::vector<unsigned int> &eventIds) {
     /*
         Description
             Collects all the required data from virtual detector TTrees
@@ -26,6 +26,7 @@ void collectAnalysisData(const std::string fileName, const std::string treeName,
             fileName - as documented in function "plotZSAnalysis"
             treeName - as documented in function "plotZSAnalysis"
             ADCs - as documented in function "plotZSAnalysis"
+            times - as documented in function "plotZSAnalysis"
             gradients - as documented in function "plotZSAnalysis"
             averagedGradients - as documented in function "plotZSAnalysis"
             eventIds - as documented in function "plotZSAnalysis"
@@ -35,6 +36,7 @@ void collectAnalysisData(const std::string fileName, const std::string treeName,
             branches - ROOT TFile interface to TTree branches
             branchNames - vector of branch names
             dataADC - ADC from file
+            dataTime - time from file
             ADCMin - minimum ADC value allowed
             dataGradient - gradient from file
             dataAveragedGradient - averaged gradient from file
@@ -65,12 +67,17 @@ void collectAnalysisData(const std::string fileName, const std::string treeName,
     // If the branches exist, assign them to the appropriate variables
     const int16_t ADCMin = (-1 * std::pow(2, 15) + 1), overlapThreshold = 100;
     int16_t dataADC, dataGradient;
+    uint32_t dataTime;
     double dataAveragedGradient;
     unsigned int dataEventId;
     if (std::find(branchNames.begin(), branchNames.end(), "ADC") != branchNames.end())
         tree->SetBranchAddress("ADC", &dataADC);
     else
         Fatal("collectData", "Requested branch 'ADC' does not exist in the file.");
+    if (std::find(branchNames.begin(), branchNames.end(), "time") != branchNames.end())
+        tree->SetBranchAddress("time", &dataTime);
+    else
+        Fatal("collectData", "Requested branch 'time' does not exist in the file.");
     if (std::find(branchNames.begin(), branchNames.end(), "gradient") != branchNames.end())
         tree->SetBranchAddress("gradient", &dataGradient);
     else
@@ -87,6 +94,9 @@ void collectAnalysisData(const std::string fileName, const std::string treeName,
     // Get the number of entries
     int entries = tree->GetEntries();
 
+    // Convert the time from ADC clock ticks to [ns]
+    const double tADC = 3.125;
+
     // Collect the data
     for (int i = 0; i < entries; i++) {
         // Get the corresponding entry
@@ -94,13 +104,14 @@ void collectAnalysisData(const std::string fileName, const std::string treeName,
 
         // Collect the data
         ADCs.push_back(dataADC);
+        times.push_back(dataTime * tADC);
         gradients.push_back(dataGradient > overlapThreshold ? ADCMin : dataGradient);
         averagedGradients.push_back(dataAveragedGradient > overlapThreshold ? ADCMin : dataAveragedGradient);
         eventIds.push_back(dataEventId);
     };
 
     // Check if data has been collected
-    if (eventIds.size() == 0)
+    if (ADCs.size() == 0)
         Fatal("collectData", "No data was collected from this file");
 
     // Clear
@@ -173,7 +184,7 @@ void collectResultData(std::string fileName, std::string treeName, std::vector<i
     // Get the number of entries
     int entries = tree->GetEntries();
 
-    // Choose the data entries corresponding to the chosen time
+    // Convert the time from ADC clock ticks to [ns]
     const double tADC = 3.125;
 
     // Collect the data
@@ -198,25 +209,22 @@ void collectResultData(std::string fileName, std::string treeName, std::vector<i
     return;
 };
 
-void plot(std::vector<int16_t> &inputADCs, std::vector<int16_t> &gradients, std::vector<double> &averagedGradients, std::vector<int16_t> &outputADCs, std::vector<double> outputTimes, unsigned int eventId, const double tBefore, const double tAfter, const double threshold, const int window, const int nAverage, const double tMin, const double tMax) {
+void plot(std::vector<int16_t> &inputADCs, std::vector<double> &inputTimes, std::vector<int16_t> &gradients, std::vector<double> &averagedGradients, std::vector<int16_t> &outputADCs, std::vector<double> outputTimes, unsigned int eventId, const double threshold, const double tMin, const double tMax, const std::string type) {
     /*
         Description
             Plots the ZS waveforms, their analysis steps, and the results
 
         Arguments
             inputADCs - as documented in function "plotZSAnalysis"
+            inputTimes - as documented in function "plotZSAnalysis"
             gradients - as documented in function "plotZSAnalysis"
             averagedGradients - as documented in function "plotZSAnalysis"
             outputADCs - as documented in function "plotZSAnalysis"
             outputTimes - as documented in function "plotZSAnalysis"
             eventId - as documented in function "plotZSAnalysis"
-            tBefore - as documented in function "plotZSAnalysis"
-            tAfter - as documented in function "plotZSAnalysis"
-            threshold - as documented in function "plotZSAnalysis"
-            window - as documented in function "plotZSAnalysis"
-            nAverage - as documented in function "plotZSAnalysis"
             tMin - as documented in function "plotZSAnalysis"
             tMax - as documented in function "plotZSAnalysis"
+            type - as documented in function "plotZSAnalysis"
 
         Variables
             nInput - number of input ADC values
@@ -249,36 +257,34 @@ void plot(std::vector<int16_t> &inputADCs, std::vector<int16_t> &gradients, std:
             cFileName - filename the plot is saved as
     */
 
-    std::cout << "Max averaged gradient " << *std::max_element(averagedGradients.begin(), averagedGradients.end()) << std::endl; // deleteme
     // Count the number of entries used to generate this plot
     int nInput = inputADCs.size(), nOutput = outputADCs.size();
 
     // Construct the time data used for the ZS algoritm analysis stages
-    const double tADC = 3.125, tMaxFull = tADC * nInput;
+    const double tADC = 3.125, tEvent0 = 1696.88; // tEvent0 is needed as the first event is event 1 and not 0 and the start time of this event is tEvent0 ns
+    const double tMinFull = std::min(*std::min_element(inputTimes.begin(), inputTimes.end()), *std::min_element(outputTimes.begin(), outputTimes.end())) - tEvent0;
+    const double tMaxFull = std::max(*std::max_element(inputTimes.begin(), inputTimes.end()), *std::max_element(outputTimes.begin(), outputTimes.end())) - tEvent0;
 
     // Sanity checks
     if (tMin > tMaxFull)
         Fatal("plot", "Selected minimum cut is greater than the maximum, exiting.");
 
     // Convert the times to the number of clock ticks for selecting the range of entries to plot
-    const int tMinCutIndex = static_cast<int>(tMin / tADC);
-    const int tMaxCutIndex = (tMaxFull < tMax || tMax < std::numeric_limits<double>::epsilon()) ? nInput : static_cast<int>(tMax / tADC); // if the time is zero or if the time is greater than the max, set the index to the number of entries in the dataset
-    const double tMaxCut = tMaxCutIndex * tADC;
+    const int tMinCutIndex = (tMinFull > tMin || tMin < std::numeric_limits<double>::epsilon()) ? static_cast<int>(tMinFull / tADC) : static_cast<int>(tMin / tADC);
+    const int tMaxCutIndex = (tMaxFull < tMax || tMax < std::numeric_limits<double>::epsilon()) ? static_cast<int>(tMaxFull / tADC) : static_cast<int>(tMax / tADC);
+    const double tMinns = tMinCutIndex * tADC, tMaxns = tMaxCutIndex * tADC;
+
     // Sanity checks
     if (tMaxCutIndex - tMinCutIndex < 10)
         Fatal("plot", "Selected data range is such that there are very few entries to plot, exiting.");
 
-    // Construct the time vector
-    std::vector<double> time;
-    for (int i = tMinCutIndex; i < tMaxCutIndex; i++)
-        time.push_back(i * tADC);
-
     // Construct the variables used to store the data relevant for plotting
-    std::vector<double> inputADCsA, outputADCsA, gradientsA, averagedGradientsA, outputTimesA;
+    std::vector<double> inputADCsA, outputADCsA, gradientsA, averagedGradientsA, inputTimesA, outputTimesA;
 
     // Select and convert the relevant data for plotting
     for (int i = tMinCutIndex; i < tMaxCutIndex; i++) {
         inputADCsA.push_back(static_cast<double>(inputADCs[i]));
+        inputTimesA.push_back(inputTimes[i]);
         gradientsA.push_back(static_cast<double>(gradients[i]));
         averagedGradientsA.push_back(averagedGradients[i]);
     };
@@ -286,7 +292,7 @@ void plot(std::vector<int16_t> &inputADCs, std::vector<int16_t> &gradients, std:
     double t = 0.0;
     for (int i = 0; i < nOutput; i++) {
         t = outputTimes[i];
-        if ((tMin < std::numeric_limits<double>::epsilon() || tMin < t) && (tMax < std::numeric_limits<double>::epsilon() || t < tMax)) {
+        if (tMinns < t && t < tMaxns) {
             outputADCsA.push_back(static_cast<double>(outputADCs[i]));
             outputTimesA.push_back(t);
         };
@@ -300,69 +306,99 @@ void plot(std::vector<int16_t> &inputADCs, std::vector<int16_t> &gradients, std:
     gPad->SetLeftMargin(0.14);
     gPad->SetRightMargin(0.08);
 
-    // Plot the input ADCs
-    TGraph *gInputADCs = new TGraph(nInput, time.data(), inputADCsA.data());
-    gInputADCs->GetXaxis()->SetLimits(tMin, tMaxCut);
-    gInputADCs->Draw("APL");
-    gInputADCs->SetTitle("Zero suppression;Time [ns];ADC [arb. unit]");
-
-    // Plot the gradients
-    TGraph *gGradients = new TGraph(nInput, time.data(), gradientsA.data());
-    gGradients->Draw("PL SAME");
-    gGradients->SetLineColor(kRed);
-
-    // Plot the analysis gradients
-    TGraph *gAveragedGradients = new TGraph(nInput, time.data(), averagedGradientsA.data());
-    gAveragedGradients->Draw("PL SAME");
-    gAveragedGradients->SetLineColor(kBlue);
-
-    // Plot the zero-suppressed waveforms
-    // Determine the start indexes of separate waveforms
-    std::vector<uint> splitIndexes;
-    for (uint i = 1; i < nOutput; i++) {
-        if ((outputTimesA[i] - outputTimesA[i - 1]) > tADC)
-            splitIndexes.push_back(i);
-    };
-
-    // Construct variables to hold the plot data
-    std::vector<double> splitOutputTimes, splitOutputADCs;
-    const int nOutputPlots = splitIndexes.size();
-
-    // Construct the plots of zero-suppressed waveforms
-    std::vector<TGraph*> outputPlots;
-    for (uint i = 1; i < nOutputPlots; i++) {
-        splitOutputTimes.assign(outputTimesA.begin() + splitIndexes[i - 1], outputTimesA.begin() + splitIndexes[i]);
-        splitOutputADCs.assign(outputADCsA.begin() + splitIndexes[i - 1], outputADCsA.begin() + splitIndexes[i]);
-        outputPlots.emplace_back(new TGraph(splitIndexes[i] - splitIndexes[i - 1], splitOutputTimes.data(), splitOutputADCs.data()));
-        outputPlots.back()->Draw("PL SAME");
-        outputPlots.back()->SetLineColor(kGreen + 2);
-        outputPlots.back()->SetLineWidth(2);
-        splitOutputTimes.clear();
-        splitOutputADCs.clear();
-    };
-
-    // Construct the legend, assign all the generated plots
-    const double x1 = 0.7, x2 = 0.9, y1 = 0.4, y2 = 0.6;
+    // Construct the legend
+    const double x1 = 0.7, x2 = 0.9, y1 = 0.3, y2 = 0.6;
     TLegend *legend = new TLegend(x1, y1, x2, y2);
     legend->SetBorderSize(1);
     legend->SetFillColor(0);
     legend->SetTextSize(0.04);
-    legend->AddEntry(gInputADCs, "Input ADCs", "l");
-    legend->AddEntry(gGradients, "Grad.", "l")->SetTextColor(kRed);
-    legend->AddEntry(gAveragedGradients, "Avg. Grad.", "l")->SetTextColor(kBlue);
-    legend->AddEntry(outputPlots.back(), "Output ADCs", "l")->SetTextColor(kGreen + 2);
+
+    if (type == "fit") {
+        // Plot the gradients
+        TGraph *gGradients = new TGraph(nInput, inputTimesA.data(), gradientsA.data());
+        gGradients->GetXaxis()->SetLimits(tMinns, tMaxns);
+        gGradients->SetLineColor(kRed);
+        gGradients->SetLineWidth(2);
+        gGradients->Draw("APL");
+        gGradients->SetTitle(Form("Zero suppression %s;Time [ns];ADC [arb. unit]", type.c_str()));
+        legend->AddEntry(gGradients, "Grad.", "l")->SetTextColor(kRed);
+
+        // Plot the analysis gradients
+        TGraph *gAveragedGradients = new TGraph(nInput, inputTimesA.data(), averagedGradientsA.data());
+        gAveragedGradients->SetLineColor(kBlue);
+        gAveragedGradients->SetLineWidth(2);
+        gAveragedGradients->Draw("PL SAME");
+        legend->AddEntry(gAveragedGradients, "Avg. Grad.", "l")->SetTextColor(kBlue);
+
+        // Add the averaged gradient threshold
+        TLine *averagedGradientThreshold = new TLine(tMinns, threshold, tMaxns, threshold);
+        averagedGradientThreshold->SetLineColor(kGreen + 2);
+        averagedGradientThreshold->SetLineWidth(2);
+        averagedGradientThreshold->Draw("SAME");
+        legend->AddEntry(averagedGradientThreshold, "Threshold", "l")->SetTextColor(kGreen + 2);
+    }
+    else {
+        // Plot the zero-suppressed waveforms
+        // Plot the input ADCs
+        TGraph *gInputADCs = new TGraph(nInput, inputTimesA.data(), inputADCsA.data());
+        gInputADCs->GetXaxis()->SetLimits(tMinns, tMaxns);
+        gInputADCs->SetLineWidth(3);
+        gInputADCs->Draw("APL");
+        gInputADCs->SetTitle(Form("Zero suppression %s;Time [ns];ADC [arb. unit]", type.c_str()));
+        legend->AddEntry(gInputADCs, "Input ADCs", "l");
+
+        // Determine the start indexes of separate waveforms
+        std::vector<uint> splitIndexes = {0};
+        for (uint i = 1; i < nOutput; i++) {
+            if ((outputTimesA[i] - outputTimesA[i - 1]) > tADC)
+                splitIndexes.push_back(i);
+        };
+        splitIndexes.push_back(nOutput);
+        const int nOutputPlots = splitIndexes.size();
+
+        // Construct the plots of zero-suppressed waveforms
+        std::vector<TGraph*> outputPlots;
+        if (nOutputPlots > 2) { // Case where we have multiple peaks - needs to be split due to the ADC discontinuity
+            // Construct variables to hold the plot data
+            std::vector<double> splitOutputTimes, splitOutputADCs;
+
+            // Generate the plots
+            for (uint i = 1; i < nOutputPlots; i++) {
+                splitOutputTimes.assign(outputTimesA.begin() + splitIndexes[i - 1], outputTimesA.begin() + splitIndexes[i]);
+                splitOutputADCs.assign(outputADCsA.begin() + splitIndexes[i - 1], outputADCsA.begin() + splitIndexes[i]);
+                outputPlots.emplace_back(new TGraph(splitIndexes[i] - splitIndexes[i - 1], splitOutputTimes.data(), splitOutputADCs.data()));
+                outputPlots.back()->GetXaxis()->SetLimits(tMinns, tMaxns);
+                outputPlots.back()->Draw("PL SAME");
+                outputPlots.back()->SetLineColor(kGreen + 2);
+                outputPlots.back()->SetLineWidth(10);
+                splitOutputTimes.clear();
+                splitOutputADCs.clear();
+            };
+        }
+        else {
+            outputPlots.emplace_back(new TGraph(nOutput, outputTimesA.data(), outputADCsA.data()));
+            outputPlots.back()->GetXaxis()->SetLimits(tMinns, tMaxns);
+            outputPlots.back()->Draw("PL SAME");
+            outputPlots.back()->SetLineColor(kGreen + 2);
+            outputPlots.back()->SetLineWidth(10);
+        };
+
+        // Add the relevant legend entry
+        legend->AddEntry(outputPlots.back(), "Output ADCs", "l")->SetTextColor(kGreen + 2);
+    };
+
+    // Draw the legend
     legend->Draw();
+    gPad->RedrawAxis();
+    gPad->Update();
+    c->Modified();
     c->Update();
 
     // Save the generated plot
-    std::string cFileName = "ZS.Event" + std::to_string(eventId) + ".png";
+    std::string cFileName = "ZS.Event" + std::to_string(eventId) + "." + type + ".png";
     c->SaveAs(cFileName.c_str());
 
     // Cleanup
-    gInputADCs->Delete();
-    gGradients->Delete();
-    gAveragedGradients->Delete();
-    outputPlots.clear();
     legend->Delete();
     c->Close();
 
@@ -385,7 +421,7 @@ std::vector<unsigned int> makeUniqueEventIds(std::vector<unsigned int> &inputEve
             uniqueOutputEventIds - vector of unique event IDs from ZS output data
             overlap - vector of unique event IDs present in both input and output data
     */
-    std::cout << "\nMaking the event IDs unique\n" << std::endl;
+    std::cout << "\nMaking the event IDs unique" << std::endl;
 
     // Get a unqiue set of input event IDs
     std::set<unsigned int> inputEventIdSet(inputEventIds.begin(), inputEventIds.end());
@@ -407,22 +443,19 @@ std::vector<unsigned int> makeUniqueEventIds(std::vector<unsigned int> &inputEve
     return overlap;
 }
 
-void plotZSAnalysis(const std::string analysisFileName, const std::string resultFileName, const std::string treeName, const unsigned int eventID = 0, const double tBefore = 2000, const double tAfter = 10000, const double threshold = -100, const int window = 100, const int nAverage = 5, const double tMin = 0.0, const double tMax = 0.0) {
+void plotZSAnalysis(const std::string analysisFileName, const std::string resultFileName, const std::string treeName, const unsigned int eventID = 0, const double threshold = -100, const double tMin = 0.0, const double tMax = 0.0) {
     /*
         Description
             Generates a plot of the ZS waveform analysis with file name
-                ZS.Event<EventID>.png
+                ZS.Event<EventID>.<type>.png
             <EventID> is allocated even if the parameter "eventID" is not used.
+            <type> is either "fit" or "results"
 
-        Parameters
+        Arguments
             fileName - name of the root file generated with STMZeroSuppression_module.cc
             treeName - name of the ttree containing all the data in fileName
             eventID - controls what eventID to plot for. If 0, generates plots for all events
-            tBefore - amount of data kept before the averaged gradient crosses the threshold [ns]
-            tAfter - amount of datta kept after the averaged graedient crosses the threshold [ns]
-            threshold - averaged gradient threshold [ADC]
-            window - window over which the average was applied
-            nAverage - number of entries used for the average
+            threshold - ADC threshold for averaged gradient data
             tMin - minimum ttime to plot [ns]. If zero, does not apply a time cut [ns]
             tMax - maximum time to plot [ns]. If zero, does not apply a time cut [ns]
 
@@ -431,6 +464,7 @@ void plotZSAnalysis(const std::string analysisFileName, const std::string result
             outputADCs - vector of ADC values stored by ZS algorithm
             gradients - vector of gradients calculated with ZS algorithm
             averagedGradients - vector of averaged gradients calculated with ZS algorithm
+            inputTimes - vector of times associated with inputADCs
             outputTimes - vector of times associated with outputADCs
             inputEventIds - vector of eventIds used as input to ZS algorithm
             outputEventIds - vector of eventIds saved by ZS algorithm
@@ -443,7 +477,8 @@ void plotZSAnalysis(const std::string analysisFileName, const std::string result
             plotOutputTimes - selected output times to use when generating the input plot
             plotEventIds - selected event IDss to use when generating the input plot
             plotEventId - iterator variable for plotEventIds
-
+            plotType - vector of generated plot types
+            type - iterator for plotType
     */
 
     // Update global parameters
@@ -460,17 +495,17 @@ void plotZSAnalysis(const std::string analysisFileName, const std::string result
 
     // Construct the variables used to hold the input data
     std::vector<int16_t> inputADCs, outputADCs, gradients;
-    std::vector<double> averagedGradients, outputTimes;
+    std::vector<double> averagedGradients, inputTimes, outputTimes;
     std::vector<unsigned int> inputEventIds, outputEventIds;
 
     // Read the data from the input files
-    collectAnalysisData(analysisFileName, treeName, inputADCs, gradients, averagedGradients, inputEventIds);
+    collectAnalysisData(analysisFileName, treeName, inputADCs, inputTimes, gradients, averagedGradients, inputEventIds);
     collectResultData(resultFileName, treeName, outputADCs, outputTimes, outputEventIds);
     int nInput = inputADCs.size(), nOutput = outputADCs.size();
 
     // Construct the variables used to hold the data used for plotting
     std::vector<int16_t> plotInputADCs, plotOutputADCs, plotGradients;
-    std::vector<double> plotAveragedGradients, plotOutputTimes;
+    std::vector<double> plotAveragedGradients, plotInputTimes, plotOutputTimes;
     std::vector<unsigned int> plotEventIds = makeUniqueEventIds(inputEventIds, outputEventIds);
 
     // Validate the event ID in the case that it is not present in the input files
@@ -482,6 +517,7 @@ void plotZSAnalysis(const std::string analysisFileName, const std::string result
     };
 
     // Generate the plots
+    std::vector<std::string> plotType = {"fit", "results"};
     for (unsigned int plotEventId : plotEventIds) {
         std::cout << "\nGenerating plot for event with ID " << plotEventId << std::endl;
 
@@ -489,6 +525,7 @@ void plotZSAnalysis(const std::string analysisFileName, const std::string result
         for (int i = 0; i < nInput; i++) {
             if (inputEventIds[i] == plotEventId) {
                 plotInputADCs.push_back(inputADCs[i]);
+                plotInputTimes.push_back(inputTimes[i]);
                 plotGradients.push_back(gradients[i]);
                 plotAveragedGradients.push_back(averagedGradients[i]);
             };
@@ -503,6 +540,8 @@ void plotZSAnalysis(const std::string analysisFileName, const std::string result
         // Sanity checks
         if (plotInputADCs.empty())
             Fatal("plotZSAnalysis", "Empty input ADC vector, exiting!");
+        if (plotInputTimes.empty())
+            Fatal("plotZSAnalysis", "Empty input time vector, exiting!");
         if (plotGradients.empty())
             Fatal("plotZSAnalysis", "Empty gradient vector, exiting!");
         if (plotAveragedGradients.empty())
@@ -513,10 +552,12 @@ void plotZSAnalysis(const std::string analysisFileName, const std::string result
             Fatal("plotZSAnalysis", "Empty output time vector, exiting!");
 
         // Generate the plots
-        plot(plotInputADCs, plotGradients, plotAveragedGradients, plotOutputADCs, plotOutputTimes, plotEventId, tBefore, tAfter, threshold, window, nAverage, tMin, tMax);
+        for (std::string type : plotType)
+            plot(plotInputADCs, plotInputTimes, plotGradients, plotAveragedGradients, plotOutputADCs, plotOutputTimes, plotEventId, threshold, tMin, tMax, type);
 
         // Prepare the buffer variables for the next event ID
         plotInputADCs.clear();
+        plotInputTimes.clear();
         plotGradients.clear();
         plotAveragedGradients.clear();
         plotOutputADCs.clear();
