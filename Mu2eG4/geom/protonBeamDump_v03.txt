@@ -21,8 +21,6 @@
 // Cc: Peter H Kasper; Rick Coleman
 // Subject: Local dump coordinates
 
-int  protonBeamDump.version = 3;
-
 vector<double> protonBeamDump.coreCenterInMu2e = {778.423,527.4,-18950.9};
 //AH changed, was {661.9, 527.4, -19428.2}
 double         protonBeamDump.coreRotY = 13.72; // degrees
