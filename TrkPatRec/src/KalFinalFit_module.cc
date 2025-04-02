@@ -3,7 +3,7 @@
 //
 // Original author D. Brown and G. Tassielli
 //
-
+/*
 // framework
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -718,3 +718,4 @@ namespace mu2e
   }// mu2e
 
   DEFINE_ART_MODULE(mu2e::KalFinalFit)
+*/

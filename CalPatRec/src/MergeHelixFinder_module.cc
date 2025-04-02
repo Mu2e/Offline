@@ -34,8 +34,8 @@
 
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "Offline/BTrkData/inc/Doublet.hh"
-#include "Offline/TrkReco/inc/DoubletAmbigResolver.hh"
+// #include "Offline/BTrkData/inc/Doublet.hh"
+// #include "Offline/TrkReco/inc/DoubletAmbigResolver.hh"
 
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 #include "Offline/CalPatRec/inc/ObjectDumpUtils.hh"

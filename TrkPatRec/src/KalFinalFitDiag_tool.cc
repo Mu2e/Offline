@@ -2,6 +2,7 @@
 // diag mode: = 0 - most of the histograms
 //            = 1 - doca histograms
 ///////////////////////////////////////////////////////////////////////////////
+/*
 #include "TH2.h"
 #include "TH1.h"
 
@@ -487,4 +488,4 @@ namespace mu2e {
   DEFINE_ART_CLASS_TOOL(KalFinalFitDiag)
 
 }
-
+*/
