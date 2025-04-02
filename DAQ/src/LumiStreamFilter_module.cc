@@ -9,6 +9,8 @@
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/ParameterSet.h"
 
+#include <artdaq-core-mu2e/Data/EventHeader.hh>
+
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
@@ -27,7 +29,9 @@ namespace mu2e
       fhicl::OptionalAtom<art::InputTag> caloTag{fhicl::Name("caloTag"), fhicl::Comment("Calo intensity info Tag")};
       fhicl::OptionalAtom<art::InputTag> timeClusterTag{fhicl::Name("timeClusterTag"), fhicl::Comment("Time cluster intensity info Tag")};
       fhicl::OptionalAtom<art::InputTag> trackerTag{fhicl::Name("trackerTag"), fhicl::Comment("Tracker intensity info Tag")};
+      fhicl::OptionalAtom<art::InputTag> headerTag{fhicl::Name("headerTag"), fhicl::Comment("Event header Tag")};
       fhicl::OptionalAtom<int>           eventFreq{fhicl::Name("eventFreq"), fhicl::Comment("Frequency of event data product writing, defaulting to sub-runs if not set")};
+      fhicl::Atom<bool>                  passFirst{fhicl::Name("passFirst"), fhicl::Comment("Pass first event per sub-run to ensure the output file is prepared"), false};
     };
 
     explicit LumiStreamFilter(const art::EDFilter::Table<Config>& config);
@@ -42,13 +46,18 @@ namespace mu2e
     bool                                     _useTimeCluster;
     art::InputTag                            _trackerTag;
     bool                                     _useTracker;
+    art::InputTag                            _headerTag;
+    bool                                     _useHeader;
     int                                      _eventFreq;
     bool                                     _useSubruns;
+    bool                                     _passFirst;
     long                                     _eventCount;
+    bool                                     _firstInSubrun;
 
     std::unique_ptr<mu2e::IntensityInfosCalo>         _caloInfos;
     std::unique_ptr<mu2e::IntensityInfosTimeCluster>  _timeClusterInfos;
     std::unique_ptr<mu2e::IntensityInfosTrackerHits>  _trackerInfos;
+    std::unique_ptr<mu2e::EventHeaders>               _headers;
 
   };
 
@@ -58,11 +67,15 @@ namespace mu2e
     , _useCalo(config().caloTag(_caloTag))
     , _useTimeCluster(config().timeClusterTag(_timeClusterTag))
     , _useTracker(config().trackerTag(_trackerTag))
-    , _useSubruns(config().eventFreq(_eventFreq))
+    , _useHeader(config().headerTag(_headerTag))
+    , _useSubruns(!config().eventFreq(_eventFreq))
+    , _passFirst(config().passFirst())
     , _eventCount(0)
+    , _firstInSubrun(true)
     , _caloInfos(nullptr)
     , _timeClusterInfos(nullptr)
     , _trackerInfos(nullptr)
+    , _headers(nullptr)
   {
     if(_diagLevel > 0) {
       std::cout << "LumiStreamFilter::" << __func__ << ": Configured with:\n eventFreq = " << _eventFreq << std::endl;
@@ -74,23 +87,31 @@ namespace mu2e
       std::cout << std::endl;
       std::cout << " useTracker = " << _useTracker;
       if(_useTracker) std::cout << " (" << _trackerTag.encode().c_str() << ")";
+      std::cout << " useHeader = " << _useHeader;
+      if(_useHeader) std::cout << " (" << _headerTag.encode().c_str() << ")";
+      std::cout << " passFirst = " << _passFirst << std::endl;
       std::cout << std::endl;
     }			 
 
     if(_useCalo) {
       _caloInfos = std::unique_ptr<mu2e::IntensityInfosCalo>(new mu2e::IntensityInfosCalo);
-      produces<mu2e::IntensityInfosCalo>();
+      if(!_useSubruns) produces<mu2e::IntensityInfosCalo>();
       produces<mu2e::IntensityInfosCalo, art::InSubRun>();
     }
     if(_useTimeCluster) {
       _timeClusterInfos = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
-      produces<mu2e::IntensityInfosTimeCluster>();
+      if(!_useSubruns) produces<mu2e::IntensityInfosTimeCluster>();
       produces<mu2e::IntensityInfosTimeCluster, art::InSubRun>();
     }
     if(_useTracker) {
       _trackerInfos = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
-      produces<mu2e::IntensityInfosTrackerHits>();
+      if(!_useSubruns) produces<mu2e::IntensityInfosTrackerHits>();
       produces<mu2e::IntensityInfosTrackerHits, art::InSubRun>();
+    }
+    if(_useHeader) {
+      _headers = std::unique_ptr<mu2e::EventHeaders>(new mu2e::EventHeaders);
+      if(!_useSubruns) produces<mu2e::EventHeaders>();
+      produces<mu2e::EventHeaders, art::InSubRun>();
     }
     if(_useSubruns) _eventFreq = 0;
     else {
@@ -107,15 +128,18 @@ namespace mu2e
 				  << ": Writing out the accumulated intensity info collections from " << _eventCount << " events\n";
 
     // Add the data to the subrun
-    if(_caloInfos       ) sr.put(std::move(_caloInfos       ), art::fullSubRun());
-    if(_timeClusterInfos) sr.put(std::move(_timeClusterInfos), art::fullSubRun());
-    if(_trackerInfos    ) sr.put(std::move(_trackerInfos    ), art::fullSubRun());
+    if(_useCalo       ) sr.put(std::move(_caloInfos       ), art::fullSubRun());
+    if(_useTimeCluster) sr.put(std::move(_timeClusterInfos), art::fullSubRun());
+    if(_useTracker    ) sr.put(std::move(_trackerInfos    ), art::fullSubRun());
+    if(_useHeader     ) sr.put(std::move(_headers         ), art::fullSubRun());
 
     // Initialize new collections
-    if(_caloInfos       ) _caloInfos        = std::unique_ptr<mu2e::IntensityInfosCalo       >(new mu2e::IntensityInfosCalo       );
-    if(_timeClusterInfos) _timeClusterInfos = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
-    if(_trackerInfos    ) _trackerInfos     = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
+    if(_useCalo       ) _caloInfos        = std::unique_ptr<mu2e::IntensityInfosCalo       >(new mu2e::IntensityInfosCalo       );
+    if(_useTimeCluster) _timeClusterInfos = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
+    if(_useTracker    ) _trackerInfos     = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
+    if(_useHeader     ) _headers          = std::unique_ptr<mu2e::EventHeaders             >(new mu2e::EventHeaders             );
 
+    _firstInSubrun = true;
     return true;
   }
 
@@ -175,10 +199,24 @@ namespace mu2e
       }
     }
 
+    if(_useHeader) {
+      art::Handle<mu2e::EventHeader> headerH;
+      if(!event.getByLabel(_headerTag, headerH) || !headerH.product()) {
+	std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
+		  << ": Event Header not found!\n";
+	_headers->push_back(mu2e::EventHeader()); // add an empty one to maintain the list alignment
+      } else {
+	const auto header = headerH.product();
+	_headers->push_back(mu2e::EventHeader(*header));
+	if(_diagLevel > 2) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
+				     << ": Retrieved Event Header\n";
+      }
+    }
+
     //---------------------------------------
     // Write out the data if requested
 
-    const bool retval = _eventFreq > 0 && (_eventCount % _eventFreq == 0);
+    bool retval = _eventFreq > 0 && (_eventCount % _eventFreq == 0);
     if(retval) {
       if(_diagLevel > 0) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
 				   << ": Writing out the accumulated intensity info collections from " << _eventCount << " events\n";
@@ -187,18 +225,21 @@ namespace mu2e
       if(_useCalo       ) event.put(std::move(_caloInfos       ));
       if(_useTimeCluster) event.put(std::move(_timeClusterInfos));
       if(_useTracker    ) event.put(std::move(_trackerInfos    ));
+      if(_useHeader     ) event.put(std::move(_headers         ));
 
       // Initialize new collections
       if(_useCalo       ) _caloInfos        = std::unique_ptr<mu2e::IntensityInfosCalo       >(new mu2e::IntensityInfosCalo       );
       if(_useTimeCluster) _timeClusterInfos = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
       if(_useTracker    ) _trackerInfos     = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
-      if(!_useSubruns && _useCalo       ) _caloInfos       ->reserve(_eventFreq);
-      if(!_useSubruns && _useTimeCluster) _timeClusterInfos->reserve(_eventFreq);
-      if(!_useSubruns && _useTracker    ) _trackerInfos    ->reserve(_eventFreq);
+      if(_useHeader     ) _headers          = std::unique_ptr<mu2e::EventHeaders             >(new mu2e::EventHeaders             );
+      if(_useCalo       ) _caloInfos       ->reserve(_eventFreq);
+      if(_useTimeCluster) _timeClusterInfos->reserve(_eventFreq);
+      if(_useTracker    ) _trackerInfos    ->reserve(_eventFreq);
+      if(_useHeader     ) _headers         ->reserve(_eventFreq);
 
       // Reset the counter
       _eventCount = 0;
-    } else { // add empty information in failed events
+    } else if(!_useSubruns) { // add empty information in failed events if writing into events
       if(_diagLevel > 2) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
 				   << ": Adding empty intensity information to the event\n";
       if(_useCalo) {
@@ -213,10 +254,18 @@ namespace mu2e
 	auto tmp_info = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
 	event.put(std::move(tmp_info));
       }
+      if(_useHeader) {
+	auto tmp_info = std::unique_ptr<mu2e::EventHeaders>(new mu2e::EventHeaders);
+	event.put(std::move(tmp_info));
+      }
     }
 
+    // Force the output file to be created by passing the first event seen in a subrun, still passing empty containers if it's not a selected event
+    retval |= _passFirst && _firstInSubrun;
+    _firstInSubrun = false;
+
     if(_diagLevel > 1) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
-				 << ": Return value = " << retval << " for event count = " << _eventCount << " events\n";
+				 << ": Return value = " << retval << " for event count = " << _eventCount << " events and event freq " << _eventFreq << std::endl;
     return retval;
   } //filter
 
