@@ -14,14 +14,13 @@ void customErrorHandler(int level, Bool_t abort, const char* location, const cha
         exit(1);
 };
 
-void plot(std::vector<std::vector<double>> muonCapturePerSignalPhoton, std::vector<std::vector<double>> nSignalPhotons, const unsigned long long int nPOTs, bool highResolution) {
+void plot(std::vector<std::vector<double>> capturedMuons, const unsigned long long int nPOTs, bool highResolution) {
     /*
         Description
             Generates the normalization plot. If an entry is null, it is not included in th plot
 
         Arguments
-            muonCapturePerSignalPhoton - as documented in CountMuCapPerMeasuredPhoton
-            nSignalPhotons - as documented in CountMuCapPerMeasuredPhoton
+            capturedMuons - as documented in CountMuCapPerMeasuredPhoton
             nPOTs - as documented in CountMuCapPerMeasuredPhoton
             highResolution - controls whether the plot is generated in low resolution or high resolution
 
@@ -99,25 +98,22 @@ void plot(std::vector<std::vector<double>> muonCapturePerSignalPhoton, std::vect
         std::cout << "Expected number of muon captures from POT count: " << nExpectedMuonCaptures << " ± " << uExpectedMuonCaptures << std::endl;
 
         muonCaptureCount.push_back(nExpectedMuonCaptures);
-        muonCaptureUncertainty.push_back(nExpectedMuonCaptures);
+        muonCaptureUncertainty.push_back(uExpectedMuonCaptures);
     };
-    if (nSignalPhotons[0][0] > std::numeric_limits<double>::epsilon()) {
+    if (capturedMuons[0][0] > std::numeric_limits<double>::epsilon()) {
         normalizationSource.push_back("347 keV signal");
-        muonCaptureCount.push_back(muonCapturePerSignalPhoton[0][0] * nSignalPhotons[0][0]);
-        uncertaintyQuadrature = std::pow(muonCapturePerSignalPhoton[0][1]/muonCapturePerSignalPhoton[0][0], 2) + std::pow(nSignalPhotons[0][1]/nSignalPhotons[0][0], 2);
-        muonCaptureUncertainty.push_back(muonCaptureCount.back() * std::sqrt(uncertaintyQuadrature));
+        muonCaptureCount.push_back(capturedMuons[0][0]);
+        muonCaptureUncertainty.push_back(capturedMuons[0][1]);
     };
-    if (nSignalPhotons[1][0] > std::numeric_limits<double>::epsilon()) {
+    if (capturedMuons[1][0] > std::numeric_limits<double>::epsilon()) {
         normalizationSource.push_back("844 keV signal");
-        muonCaptureCount.push_back(muonCapturePerSignalPhoton[1][0] * nSignalPhotons[1][0]);
-        uncertaintyQuadrature = std::pow(muonCapturePerSignalPhoton[1][1]/muonCapturePerSignalPhoton[1][0], 2) + std::pow(nSignalPhotons[1][1]/nSignalPhotons[1][0], 2);
-        muonCaptureUncertainty.push_back(muonCaptureCount.back() * std::sqrt(uncertaintyQuadrature));
+        muonCaptureCount.push_back(capturedMuons[1][0]);
+        muonCaptureUncertainty.push_back(capturedMuons[1][1]);
     };
-    if (nSignalPhotons[2][0] > std::numeric_limits<double>::epsilon()) {
+    if (capturedMuons[2][0] > std::numeric_limits<double>::epsilon()) {
         normalizationSource.push_back("1809 keV signal");
-        muonCaptureCount.push_back(muonCapturePerSignalPhoton[2][0] * nSignalPhotons[2][0]);
-        uncertaintyQuadrature = std::pow(muonCapturePerSignalPhoton[2][1]/muonCapturePerSignalPhoton[2][0], 2) + std::pow(nSignalPhotons[2][1]/nSignalPhotons[2][0], 2);
-        muonCaptureUncertainty.push_back(muonCaptureCount.back() * std::sqrt(uncertaintyQuadrature));
+        muonCaptureCount.push_back(capturedMuons[2][0]);
+        muonCaptureUncertainty.push_back(capturedMuons[2][1]);
     };
     const int N = normalizationSource.size();
     if (N == 0)
@@ -141,8 +137,8 @@ void plot(std::vector<std::vector<double>> muonCapturePerSignalPhoton, std::vect
     std::vector<double> muonCountMinusUncertainty(N), muonCountPlusUncertainty(N);
     std::transform(muonCaptureCount.begin(), muonCaptureCount.end(), muonCaptureUncertainty.begin(), muonCountMinusUncertainty.begin(), std::minus<double>());
     std::transform(muonCaptureCount.begin(), muonCaptureCount.end(), muonCaptureUncertainty.begin(), muonCountPlusUncertainty.begin(),  std::plus<double>());
-    const double xMin = *std::min_element(muonCountMinusUncertainty.begin(), muonCountMinusUncertainty.end());
-    const double xMax = *std::max_element(muonCountPlusUncertainty.begin(),  muonCountPlusUncertainty.end());
+    const double xMin = *std::min_element(muonCountMinusUncertainty.begin(), muonCountMinusUncertainty.end()) * 0.5;
+    const double xMax = *std::max_element(muonCountPlusUncertainty.begin(),  muonCountPlusUncertainty.end()) * 1.05;
 
     // Draw the TH1F
     TH1F *h = new TH1F("h", plotTitle.c_str(), 100, xMin, xMax);
