@@ -7,6 +7,8 @@
 #ifndef RecoDataProducts_IntensityInfoTrackerHits_hh
 #define RecoDataProducts_IntensityInfoTrackerHits_hh
 
+#include <vector>
+
 namespace mu2e {
 
   class IntensityInfoTrackerHits
@@ -25,6 +27,7 @@ namespace mu2e {
   private:
     unsigned short  nTrackerHits_ = 0;
   };
+  typedef std::vector<mu2e::IntensityInfoTrackerHits> IntensityInfosTrackerHits;
 }
 
 #endif

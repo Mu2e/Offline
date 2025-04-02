@@ -1,0 +1,59 @@
+# Test generating dummy lumi info and run it through the lumi stream filter
+# into TRK  collection and analzye it
+# Usage: mu2e -c Offline/DAQ/test/lumi_stream.fcl -n 1000
+#
+#
+# Contact person Michael MacKenzie
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+services : @local::Services.Reco
+
+services.scheduler.wantSummary: true
+
+process_name : lumiStream
+
+source : {
+  module_type : EmptyEvent
+}
+
+physics : {
+
+    producers : {
+	DummyLumiStream : {
+	    module_type : DummyLumiInfoProducer
+	    simMode     : 1
+	}
+    }
+
+    filters : {
+	LumiFilter : {
+	    module_type : LumiStreamFilter
+	    caloTag        : DummyLumiStream
+	    timeClusterTag : DummyLumiStream
+	    trackerTag     : DummyLumiStream
+	    # eventFreq      : 10000
+	    diagLevel      : 1
+	}
+    }
+
+    t1 : [ DummyLumiStream, LumiFilter  ]
+    e1 : [ outfile ]
+
+    trigger_paths  : [t1]
+    end_paths      : [e1]
+
+}
+
+outputs:  {
+    outfile :  {
+	module_type   :   RootOutput
+	fileName      :   "lumi_stream.art"
+	SelectEvents  : [ t1 ]
+	outputCommands: [
+			 "drop *_*_*_*",
+			 "keep *_LumiFilter_*_*"
+			]
+    }
+}
