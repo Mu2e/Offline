@@ -96,6 +96,7 @@ void plot(std::vector<std::vector<double>> muonCapturePerSignalPhoton, std::vect
         const double uMuonCapture = 0.001;
         const double nExpectedMuonCaptures = nPOTs * pMuonStopMDC2020 * pMuonCapture;
         const double uExpectedMuonCaptures = nExpectedMuonCaptures * std::sqrt(std::pow(uMuonStopMDC2020/pMuonStopMDC2020, 2) + std::pow(uMuonCapture/pMuonCapture, 2));
+        std::cout << "Expected number of muon captures from POT count: " << nExpectedMuonCaptures << " ± " << uExpectedMuonCaptures << std::endl;
 
         muonCaptureCount.push_back(nExpectedMuonCaptures);
         muonCaptureUncertainty.push_back(nExpectedMuonCaptures);
@@ -290,7 +291,7 @@ void CountMuCapPerMeasuredPhoton(bool makePlot = false, std::vector<std::vector<
     std::vector<std::vector<double>> absorberAcceptance     = {{0.87,       0},        {1,          0},         {1,         0}          };
     std::vector<std::vector<double>> detectorAcceptance     = {{0.628,      1.528e-4}, {0.288,      1.432e-4},  {0.179,     1.212e-4}   };
     std::vector<std::vector<double>> pathAttenuation        = {{1,          0},        {1,          0},         {1,         0}          };
-    std::vector<std::vector<double>> geantRateCorrection    = {{1,          0},        {0.259,      0},         {35.4,      0}          };
+    std::vector<std::vector<double>> geantRateCorrection    = {{1,          0},        {0.259,      0},         {1.0,       0}          };
     std::vector<std::vector<double>> signalInEnergyWindow   = {{0.67,       0},        {1,          0},         {1,         0}          };
     std::vector<std::vector<double>> clippingFactor         = {{0.85,       0},        {1,          0},         {0.85,      0}          };
     std::vector<std::vector<double>> geometricAcceptance    = {{3.25e-9,    0},        {3.25e-9,    0},         {3.25e-9,   0}          };
