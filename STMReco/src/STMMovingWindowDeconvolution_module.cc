@@ -395,7 +395,7 @@ namespace mu2e {
     return;
   };
 
-  void STMMovingWindowDeconvolution::make_debug_histogram(const art::Event& event, int count, const STMWaveformDigi& adcs, const STMEnergyCalib& stmEnergyCalib, const std::vector<double>& deconvolved_data, const std::vector<double>& differentiated_data, const std::vector<double>& averaged_data, const double baseline_mean, const double baseline_stddev, const std::vector<double>& peak_heights, const std::vector<double>& peak_times) {
+  void STMMovingWindowDeconvolution::make_debug_histogram(const art::Event& event, int count, const STMWaveformDigi& waveform, const STMEnergyCalib& stmEnergyCalib, const std::vector<double>& deconvolved_data, const std::vector<double>& differentiated_data, const std::vector<double>& averaged_data, const double baseline_mean, const double baseline_stddev, const std::vector<double>& peak_heights, const std::vector<double>& peak_times) {
     art::ServiceHandle<art::TFileService> tfs;
     std::stringstream histsuffix;
     histsuffix.str("");
@@ -414,7 +414,7 @@ namespace mu2e {
     TH1D* h_peak_threshold = tfs->make<TH1D>(("h_peak_threshold"+histsuffix.str()).c_str(), "Threshold", binning.nbins(),binning.low(),binning.high());
 
     for (size_t i = 0; i < deconvolved_data.size(); ++i) {
-      h_adcs->SetBinContent(i+1, adcs.adcs()[i] - pedestal); // remove the pedestal
+      h_waveform->SetBinContent(i+1, waveform.adcs()[i] - pedestal); // remove the pedestal
       h_deconvolved->SetBinContent(i+1, deconvolved_data[i]);
       h_differentiated->SetBinContent(i+1, differentiated_data[i]);
       h_averaged->SetBinContent(i+1, averaged_data[i]);
