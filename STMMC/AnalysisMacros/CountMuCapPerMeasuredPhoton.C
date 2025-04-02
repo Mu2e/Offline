@@ -331,11 +331,11 @@ void CountMuCapPerMeasuredPhoton(bool makePlot = false, std::vector<std::vector<
         if (nSignalPhotons[i][0] < std::numeric_limits<double>::epsilon() || muonCapturePerSignalPhoton[i][0] < std::numeric_limits<double>::epsilon())
             capturedMuons[i][1] = 0.0;
         else
-            capturedMuons[i][1] = muonCapturePerSignalPhoton[i][0] * std::sqrt(std::pow(nSignalPhotons[i][1]/nSignalPhotons[i][0], 2) + std::pow(muonCapturePerSignalPhoton[i][1]/muonCapturePerSignalPhoton[i][0], 2));
+            capturedMuons[i][1] = capturedMuons[i][0] * std::sqrt(std::pow(nSignalPhotons[i][1]/nSignalPhotons[i][0], 2) + std::pow(muonCapturePerSignalPhoton[i][1]/muonCapturePerSignalPhoton[i][0], 2));
     };
 
     // Print the title line and rules
-    const std::vector<const int> signalColumnWidths = {signal347ColumnWidth, signal844ColumnWidth, signal1809ColumnWidth};
+    const std::vector<int> signalColumnWidths = {signal347ColumnWidth, signal844ColumnWidth, signal1809ColumnWidth};
     std::cout << std::string(fullWidth, '-') << std::endl; // Title line
     std::cout << std::setw(correctionNameColumnWidth) << std::left << "Correction factor";
     for (i = 0; i < nOrder; i++)
@@ -383,7 +383,7 @@ void CountMuCapPerMeasuredPhoton(bool makePlot = false, std::vector<std::vector<
         // Generate the plots
         std::vector<bool> boolValues = {true, false};
         for (bool highResolution : boolValues)
-            plot(muonCapturePerSignalPhoton, nSignalPhotons, nPOTs, highResolution);
+            plot(capturedMuons, nPOTs, highResolution);
     };
 
     return;
