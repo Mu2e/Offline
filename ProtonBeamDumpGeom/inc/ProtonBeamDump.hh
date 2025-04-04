@@ -32,8 +32,6 @@ namespace mu2e {
     const std::vector<double>& backSteelHalfSize() const { return _backSteelHalfSize; }
     const std::vector<double>& coreAirHalfSize() const { return _coreAirHalfSize; }
 
-    double minCoreShieldingThickness() const { return _minCoreShieldingThickness; }
-
     //----
     // Primary inputs: placement
     const CLHEP::Hep3Vector& coreCenterInMu2e() const { return _coreCenterInMu2e; }
@@ -59,13 +57,6 @@ namespace mu2e {
 
     const std::vector<double>& backShieldingHalfSize() const { return _backShieldingHalfSize; }
     const CLHEP::Hep3Vector& backShieldingCenterInMu2e() const { return _backShieldingCenterInMu2e; }
-
-    double shieldingFaceYmin() const { return _shieldingFaceYmin; }
-    double shieldingFaceXmin() const { return _shieldingFaceXmin; }
-    double shieldingFaceXmax() const { return _shieldingFaceXmax; }
-
-    double shieldingFaceZatXmin() const { return _shieldingFaceZatXmin; }
-    double shieldingFaceZatXmax() const { return _shieldingFaceZatXmax; }
 
     std::vector<CLHEP::Hep2Vector> frontShieldingOutline() const { return _frontShieldingOutline; }
     std::vector<CLHEP::Hep2Vector> backShieldingOutline()  const { return _backShieldingOutline; }
