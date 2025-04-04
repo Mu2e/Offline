@@ -44,14 +44,14 @@ namespace mu2e {
 
   //================================================================
   double ExtMonFNALGunImpl::getpmin(const Config& conf, const ExtMonFNALBuilding& emb) {
-    double p = emb.filterMagnet().nominalMomentum();
+    double p = emb.filter().nominalMomentum();
     conf.pmin(p);
     return p;
   }
 
   //================================================================
   double ExtMonFNALGunImpl::getpmax(const Config& conf, const ExtMonFNALBuilding& emb) {
-    double p = emb.filterMagnet().nominalMomentum();
+    double p = emb.filter().nominalMomentum();
     conf.pmax(p);
     return p;
   }
@@ -59,8 +59,8 @@ namespace mu2e {
   //================================================================
   void ExtMonFNALGunImpl::initGeom(const std::string& ref) {
     if(ref == "filter") {
-      m_rotation = GeomHandle<ExtMonFNALBuilding>()->collimator1RotationInMu2e();
-      m_translation = GeomHandle<ExtMonFNALBuilding>()->filterEntranceInMu2e();
+      m_rotation = GeomHandle<ExtMonFNALBuilding>()->filter().collimator1().rotationInMu2e();
+      m_translation = GeomHandle<ExtMonFNALBuilding>()->filter().entranceInMu2e();
     }
     else if(ref == "detector") {
       m_rotation = GeomHandle<ExtMonFNAL::ExtMon>()->detectorRotationInMu2e();

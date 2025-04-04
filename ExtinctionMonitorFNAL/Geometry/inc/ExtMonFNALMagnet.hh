@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 
@@ -19,6 +20,7 @@ namespace mu2e {
     double apertureWidth_;
     double apertureHeight_;
 
+    double fieldIntegral_; // stash value from config file for staged construction
     CLHEP::Hep3Vector bfield_;
     double magneticLength_;
 
@@ -60,6 +62,9 @@ namespace mu2e {
     const CLHEP::HepRotation& magnetRotationInMu2e() const { return magnetRotationInMu2e_; }
 
     const CLHEP::Hep3Vector&  geometricCenterInMu2e() const { return geometricCenterInMu2e_; }
+
+    // another way to look at rotation
+    CLHEP::Hep2Vector dxdzdydz() const;
   };
 
 }// namespace mu2e

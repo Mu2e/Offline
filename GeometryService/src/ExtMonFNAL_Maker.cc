@@ -72,21 +72,23 @@ namespace mu2e {
       // Spectrometer magnet
 
       const double magnetToCollimatorDistance = config.getDouble("extMonFNAL.spectrometer.magnet.distanceToUpstreamWall")
-        / (cos(room.filterAngleH())*cos(room.collimator2().angleV()));
+        / (cos(room.filter().collimator2().angleH_inBeamDump())*cos(room.filter().collimator2().angleV()));
 
-      const CLHEP::Hep3Vector refEntranceToMagnet = room.filterExitInMu2e()
-        + room.collimator2RotationInMu2e() * CLHEP::Hep3Vector(0, 0, -magnetToCollimatorDistance);
+      const CLHEP::Hep3Vector refEntranceToMagnet = room.filter().exitInMu2e()
+        + room.filter().collimator2().rotationInMu2e() * CLHEP::Hep3Vector(0, 0, -magnetToCollimatorDistance);
 
       const double dp = config.getDouble("extMonFNAL.spectrometer.nominalMomentumAdjustment");
+      const double spectrometerNominalMomentum = room.filter().nominalMomentum() + dp;
+
       det->spectrometerMagnet_ = ExtMonFNALMagnetMaker::read(config,
                                                              "extMonFNAL.spectrometer.magnet",
-                                                             room.collimator2RotationInMu2e(),
+                                                             room.filter().collimator2().rotationInMu2e(),
                                                              refEntranceToMagnet,
-                                                             room.filterMagnet().nominalMomentum() + dp
+                                                             spectrometerNominalMomentum
                                                              );
 
       det->dnToExtMonCoordinateRotation_ =
-        CLHEP::HepRotationX( -2 * det->spectrometerMagnet_.nominalBendHalfAngle());
+        CLHEP::HepRotationX( -2 * det->spectrometerMagnet_.trackBendHalfAngle(spectrometerNominalMomentum));
 
       //----------------------------------------------------------------
       // Detector Mother
@@ -108,7 +110,7 @@ namespace mu2e {
       // The upstream stack
 
       const CLHEP::Hep3Vector upRefPointInMu2e = det->spectrometerMagnet_.refPointInMu2e();
-      det->up_ = readStack(config, "extMonFNAL.up", upRefPointInMu2e, room.collimator2RotationInMu2e(), det->module_);
+      det->up_ = readStack(config, "extMonFNAL.up", upRefPointInMu2e, room.filter().collimator2().rotationInMu2e(), det->module_);
 
       //----------------------------------------------------------------
       // The downstream stack
@@ -130,7 +132,7 @@ namespace mu2e {
         std::cout<<"ExtMonFNAL_Maker: magnet center in Mu2e = "<<det->spectrometerMagnet_.geometricCenterInMu2e()<<std::endl;
 
         std::cout<<"ExtMonFNAL_Maker: magnet half bend angle  = "
-                 <<det->spectrometerMagnet_.trackBendHalfAngle(room.filterMagnet().nominalMomentum() + dp)<<std::endl;
+                 <<det->spectrometerMagnet_.trackBendHalfAngle(spectrometerNominalMomentum)<<std::endl;
 
         std::cout<<"ExtMonFNAL_Maker: magnet rotation in Mu2e = "<<det->spectrometerMagnet_.magnetRotationInMu2e()<<std::endl;
 

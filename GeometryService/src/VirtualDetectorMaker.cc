@@ -296,20 +296,12 @@ namespace mu2e {
 
       if(geom->hasElement<ExtMonFNALBuilding>() && c.getBool("extMonFNAL.filter.vd.enabled", false)) {
         CLHEP::Hep3Vector vzero;
-
-        // This detector will be placed on the face of beam dump
-        // shielding.  Computing offsets here is inconvenient since we
-        // don't have VolumeInfo for the parent. Just ignore them.
+        // These detectors will be placed in the collimator channels.
+        // Computing offsets here is inconvenient. Just ignore them.
         vd->addVirtualDetector(VirtualDetectorId::EMFC1Entrance, vzero, 0, vzero);
-
-        // Detector inside the ExtMonFNAL magnet room, on the face of the upstream wall
         vd->addVirtualDetector(VirtualDetectorId::EMFC1Exit, vzero, 0, vzero);
-
-        // Detector inside the ExtMonFNAL magnet room, on the face of the downstream wall
         vd->addVirtualDetector(VirtualDetectorId::EMFC2Entrance, vzero, 0, vzero);
-
-        // Detector inside the ExtMonFNAL detector room, on the face of the upstream wall
-        vd->addVirtualDetector(VirtualDetectorId::EMFC2Exit, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+        vd->addVirtualDetector(VirtualDetectorId::EMFC2Exit, vzero, 0, vzero);
       }
 
       // This VD is related to PS

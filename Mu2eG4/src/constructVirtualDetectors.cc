@@ -962,67 +962,9 @@ namespace mu2e {
 
     vdId = VirtualDetectorId::EMFC1Entrance;
     if( vdg->exist(vdId) ) {
-
-      if ( verbosityLevel > 0) {
-        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-      }
-      /*
-        VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
-        GeomHandle<ProtonBeamDump> dump;
-
-        const double vdYmin = dump->frontShieldingCenterInMu2e().y()
-        - dump->frontShieldingHalfSize()[1]
-        + building->hallFloorThickness()
-        ;
-        const double vdYmax = std::min(
-        dump->frontShieldingCenterInMu2e().y() + dump->frontShieldingHalfSize()[1],
-        building->hallInsideYmax()
-        );
-
-        std::vector<double> hlen(3);
-        hlen[0] = dump->frontShieldingHalfSize()[0];
-        hlen[1] = (vdYmax - vdYmin)/2;
-        hlen[2] = vdg->getHalfLength();
-
-        // NB: it's not "shielding" center in Y in case the ceiling height is a limitation
-        CLHEP::Hep3Vector shieldingFaceCenterInMu2e( (dump->shieldingFaceXmin()+
-        dump->shieldingFaceXmax())/2,
-
-        (vdYmax + vdYmin)/2,
-
-        (dump->shieldingFaceZatXmin()+
-        dump->shieldingFaceZatXmax())/2
-        );
-
-        CLHEP::Hep3Vector vdOffset(dump->coreRotationInMu2e() * CLHEP::Hep3Vector(0, 0, hlen[2]));
-
-
-        if ( verbosityLevel > 0) {
-        std::cout<<"shieldingFaceCenterInMu2e = "<<shieldingFaceCenterInMu2e
-        <<", parent.centerInMu2e() = "<<parent.centerInMu2e()
-        <<", vdOffset = "<<vdOffset
-        <<std::endl;
-        }
-
-        VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-        hlen,
-        downstreamVacuumMaterial,
-        reg.add(dump->coreRotationInMu2e().inverse()),
-        shieldingFaceCenterInMu2e + vdOffset - parent.centerInMu2e(),
-        parent,
-        vdId,
-        vdIsVisible,
-        G4Color::Red(),
-        vdIsSolid,
-        forceAuxEdgeVisible,
-        placePV,
-        false);
-
-        doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-      */
+      // EMFC1Entrance, EMFC1Exit, EMFC2Entrance, EMFC2Exit are handled
+      // in constructExtMonFNALBuilding.cc
     }
-
 
     // placing virtual detector on the exit (beam dump direction) and inside
     // of PS vacuum,  right before the PS enclosure end plate.

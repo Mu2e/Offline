@@ -1,0 +1,42 @@
+// This file specifies position of the the extinction monitor filter channel.
+// It does so relative to the beam dump.  That makes sense because
+// the monitor is designed to sit on the beam dump and detect
+// protons scattered by the production target.
+//
+// The values here date to 2013, commit 08f3f15305948324bd62e4a36a0c111ba6b7c6f2
+//
+// Andrei Gaponenko, 2024
+
+
+string extMonFNAL.filter.positioning = "Relative"; // w.r.t the beam dump
+
+// The entrance point on the face of the beam dump enclosure,
+// transverse to the beam coordinates (horiz, vertical).  The offsets
+// are w.r.t to the core center position (== the nominal beam entrance
+// point).
+double         extMonFNAL.entranceOffsetX = 315;
+double         extMonFNAL.entranceOffsetY = 1250;
+
+// The offsets above are defined on the "reference plane" parallel to
+// the beam dump face.  The next parameter positions the collimator
+// along the beam dump axis.  The half thickness of the beam dump
+// front shielding used to be 2 m, and the collimator length was defined
+// by the shielding.  Now (2024) the collimator is a standalone object,
+// but we position its center at the same depth.
+double extMonFNAL.collimator1.centerDistanceToReferencePlane = 2000.; // mm
+
+// Filter channel orientation: angles in horizontal and vertical
+// planes w.r.t dump core. Note that angleH is the same for all filter
+// elements, while angleV is different.  We specify angleV at the
+// filter entrance.
+double         extMonFNAL.angleH = 0.0302; //radians
+double         extMonFNAL.entranceAngleV = 0.1653; //radians
+
+// Distance from the point where the reference trajectory
+// crosses the (physical) magnet face to where it exits collimator1.
+double extMonFNAL.filter.magnet.distanceToEntranceCollimator = 291; // mm
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -36,6 +36,7 @@
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
 #include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
@@ -56,14 +57,14 @@
 #include "Offline/GeomPrimitives/inc/PolyconsParams.hh"
 #include "Offline/Mu2eG4/inc/nestTubs.hh"
 #include "Offline/Mu2eG4/inc/nestPolycone.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 
-// FIXME: should not need that
-#include "Offline/GeometryService/inc/WorldG4.hh"
 
-// #define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
+//#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)
 
 using namespace std;
+using namespace mu2e;
 
 namespace {
 
@@ -84,12 +85,28 @@ namespace {
 
     return sqrt(pow((maxX-minX),2) + pow((maxY-minY),2));
   }
+
+  //================================================================
+  VirtualDetectorId::enum_type getEntranceVD(const ExtMonFNALCollimator& col) {
+    if(col.name() == "collimator1") return VirtualDetectorId::EMFC1Entrance;
+    if(col.name() == "collimator2") return VirtualDetectorId::EMFC2Entrance;
+    throw cet::exception("BADCONFIG")<<"ExtMonFNAL getEntranceVD(): unknown collimator name "<<col.name();
+  }
+
+  //================================================================
+  VirtualDetectorId::enum_type getExitVD(const ExtMonFNALCollimator& col) {
+    if(col.name() == "collimator1") return VirtualDetectorId::EMFC1Exit;
+    if(col.name() == "collimator2") return VirtualDetectorId::EMFC2Exit;
+    throw cet::exception("BADCONFIG")<<"ExtMonFNAL getExitVD(): unknown collimator name "<<col.name();
+  }
+
+  //================================================================
 }
 
 namespace mu2e {
 
   //================================================================
-  void constructCollimatorExtMonFNAL(const ExtMonFNALBuilding::CollimatorExtMonFNAL& collimator,
+  void constructExtMonFNALCollimator(const ExtMonFNALCollimator& collimator,
                                      const VolumeInfo& parent,
                                      const CLHEP::Hep3Vector& collimatorCenterInParent,
                                      const CLHEP::HepRotation& collimatorRotationInParent,
@@ -388,6 +405,55 @@ namespace mu2e {
                                       placePV,
                                       doSurfaceCheck
                                       );
+
+    //--------------------------------------------------------------------
+    // Channel entrance and exit virtual detectors
+
+    GeomHandle<VirtualDetector> vdg;
+
+    VirtualDetectorId::enum_type vd_entrance = getEntranceVD(collimator);
+    if( vdg->exist(vd_entrance) ) {
+
+      TubsParams vdpars(0., collimator.channelRadius()[0], vdg->getHalfLength());
+
+      nestTubs(VirtualDetector::volumeName(vd_entrance),
+               vdpars,
+               airMaterial,
+               0, // rotation
+               CLHEP::Hep3Vector(0,0, *zPlanes.rbegin() - vdg->getHalfLength()), // position in parent
+               channel, // parent
+               vd_entrance,
+               geomOptions->isVisible(VirtualDetector::volumeName(vd_entrance)),
+               G4Colour::Magenta(),
+               geomOptions->isSolid(VirtualDetector::volumeName(vd_entrance)),
+               forceAuxEdgeVisible,
+               placePV,
+               doSurfaceCheck
+               );
+    }
+
+    VirtualDetectorId::enum_type vd_exit = getExitVD(collimator);
+    if( vdg->exist(vd_exit) ) {
+
+      TubsParams vdpars(0., collimator.channelRadius()[1], vdg->getHalfLength());
+
+      nestTubs(VirtualDetector::volumeName(vd_exit),
+               vdpars,
+               airMaterial,
+               0, // rotation
+               CLHEP::Hep3Vector(0,0, *zPlanes.begin() + vdg->getHalfLength()), // position in parent
+               channel, // parent
+               vd_exit,
+               geomOptions->isVisible(VirtualDetector::volumeName(vd_exit)),
+               G4Colour::Magenta(),
+               geomOptions->isSolid(VirtualDetector::volumeName(vd_exit)),
+               forceAuxEdgeVisible,
+               placePV,
+               doSurfaceCheck
+               );
+    }
+
+    //--------------------------------------------------------------------
   }
 
   //================================================================
@@ -625,15 +691,15 @@ namespace mu2e {
 
     double subCylinderLength = setDiameter(emfb->coll2ShieldingOutline());
 
-    CLHEP::Hep3Vector subCylOffsetInParent = shieldingRot *(emfb->collimator2CenterInMu2e() - emfb->coll2ShieldingCenterInMu2e());
+    CLHEP::Hep3Vector subCylOffsetInParent = shieldingRot *(emfb->filter().collimator2().centerInMu2e() - emfb->coll2ShieldingCenterInMu2e());
 
     static CLHEP::HepRotation collimator2ParentRotationInMu2e = emfb->coll2ShieldingRotationInMu2e();
 
-    CLHEP::HepRotation *subCylinderRotation = reg.add(emfb->collimator2RotationInMu2e().inverse()*collimator2ParentRotationInMu2e.inverse());
+    CLHEP::HepRotation *subCylinderRotation = reg.add(emfb->filter().collimator2().rotationInMu2e().inverse()*collimator2ParentRotationInMu2e.inverse());
 
     G4Tubs* subCylinder = new G4Tubs("ExtMonFNALCollimator2Hole",
                                      0.*CLHEP::mm,
-                                     emfb->collimator2().shotLinerOuterRadius(),
+                                     emfb->filter().collimator2().shotLinerOuterRadius(),
                                      subCylinderLength,
                                      0,
                                      CLHEP::twopi
@@ -708,22 +774,18 @@ namespace mu2e {
     //--------------------------------------------------------------------
     // The filter channel
 
-    AGDEBUG("emfb->collimator1CenterInMu2e() = "<<emfb->collimator1CenterInMu2e());
-    //AGDEBUG("collimator1Parent.centerInMu2e() = "<<collimatomaterialFinder.getr1Parent.centerInMu2e());
-
-
-    constructCollimatorExtMonFNAL(emfb->collimator1(),
+    constructExtMonFNALCollimator(emfb->filter().collimator1(),
                                   mainParent,
-                                  emfb->collimator1CenterInMu2e()-mainParent.centerInMu2e(),
-                                  emfb->collimator1RotationInMu2e(),
+                                  emfb->filter().collimator1().centerInMu2e()-mainParent.centerInMu2e(),
+                                  emfb->filter().collimator1().rotationInMu2e(),
                                   config);
 
-    constructExtMonFNALMagnet(emfb->filterMagnet(), mainParent, "filter", mainParentRotationInMu2e, config);
+    constructExtMonFNALMagnet(emfb->filter().magnet(), mainParent, "filter", mainParentRotationInMu2e, config);
 
-    constructCollimatorExtMonFNAL(emfb->collimator2(),
+    constructExtMonFNALCollimator(emfb->filter().collimator2(),
                                   mainParent,
-                                  emfb->collimator2CenterInMu2e() - mainParent.centerInMu2e(),
-                                  emfb->collimator2RotationInMu2e(),
+                                  emfb->filter().collimator2().centerInMu2e() - mainParent.centerInMu2e(),
+                                  emfb->filter().collimator2().rotationInMu2e(),
                                   config);
 
 
@@ -732,7 +794,7 @@ namespace mu2e {
     if (false) {
       Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
       const VolumeInfo& hall = _helper->locateVolInfo("HallAir");
-      VolumeInfo test("emfMagnettest", emfb->filterMagnet().geometricCenterInMu2e() - hall.centerInMu2e(), hall.centerInWorld);
+      VolumeInfo test("emfMagnettest", emfb->filter().magnet().geometricCenterInMu2e() - hall.centerInMu2e(), hall.centerInWorld);
       test.solid = new G4Orb(test.name, 500.);
 
       finishNesting(test,

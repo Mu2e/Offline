@@ -9,6 +9,7 @@ mu2e::ExtMonFNALMagnet::ExtMonFNALMagnet()
   : outerHalfSize_()
   , apertureWidth_()
   , apertureHeight_()
+  , fieldIntegral_()
   , magneticLength_()
   , nominalMomentum_()
 {}
@@ -42,6 +43,12 @@ double mu2e::ExtMonFNALMagnet::trackBendHalfAngle(double momentum) const {
   }
 
   return asin(0.5*magneticLength_/rTrack);
+}
+
+//================================================================
+CLHEP::Hep2Vector mu2e::ExtMonFNALMagnet::dxdzdydz() const {
+  const auto v = magnetRotationInMu2e_ * CLHEP::Hep3Vector(0,0, -1);
+  return CLHEP::Hep2Vector( v.x()/v.z(), v.y()/v.z());
 }
 
 //================================================================
