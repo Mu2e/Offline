@@ -1,38 +1,198 @@
 #
-# prolog.fcl for fcl paramaters that will be used in STM modules
+# prolog.fcl for fcl paramaters that will be used in STM simulation modules
 #
+
+#include "Offline/STMReco/fcl/prolog.fcl"
 BEGIN_PROLOG
 
-STM : {
+# Geometry, all in mm
+ComponentPositions : { # In beam order
+    Beam : {
+        x : -3904.0
+        y : 0.0
+    }
+    Absorber : { # 50mm x 50mm x 390mm
+        x : -3944.6
+        y : -24.9 # TODO - why is this not 0.0?
+        z : 39900
+    }
+    VD101 : { # Centre
+        x : -3904.0
+        y : 0.0
+        z : 40301.0
+    }
+    HPGe : { # aperture centre
+        x : -3944.6
+        y : 0.0
+        z : 40404
+    }
+    HPGeCrystalEndcapCentre : {
+        x : -3942.15
+        y : 0
+        z : 40677.44
+    }
+    LaBr : { # aperture centre
+        x : -3863.4
+        y : 0.0
+    }
+}
 
-  HPGe : {
-    # zero-suppression parameters
-    tbefore : 2000 # ns
-    tafter : 10000 # ns
-    threshold : -100
-    window : 100
-    naverage : 5
-    # MWD parameters
-    tau : 50000
-    M : 400
-    L : 200
-    nsigma_cut : 9
-    thresholdgrad : -0.3
-  }
-  LaBr : {
-    # zero-suppression parameters
-    tbefore : 2000 # ns
-    tafter : 10000 # ns
-    threshold : -100
-    window : 100
-    naverage : 5
-    # MWD parameters
-    tau : 35 # LaBr is much faster than HPGe
-    M : 60
-    L : 45
-    nsigma_cut : 9
-    thresholdgrad : -0.3
-  }
+# Stage 1 propagation parameters
+ResamplingProducer : {
+    StepPointMCsTag : "g4run:virtualdetector"
+    VirtualDetectorID : 101
+}
+ResamplingFilter : {
+    StepPointMCsTag : "compressDetStepMCsSTM"
+}
+VirtualDetectorCounter : {
+    StepPointMCsTag : "g4run:virtualdetector"
+    virtualDetectorIDs : [88, 89, 90, 100, 101]
+}
+
+# ShiftVirtualDetectorStepPointMCs_module.cc parameters
+ShiftVD101Steps : {
+    StepPointMCsTag : "compressDetStepMCsSTM:virtualdetector"
+    VirtualDetectorID : 101
+    InputRadius : 200 # VD101 aperture radius
+    OutputRadius : 3.98942280401 # SSC aperture radius
+    HPGeUpStr : { # Position just upstream of absorber centered on the HPGe SSC aperture
+        x : -3944.6
+        y : 0.0
+        z : 39906.0
+    }
+    LaBrUpStr : { # Position just upstream of SSC centered on the Labr SSC aperture
+        x : -3863.4
+        y : 0.0
+        z : 40300.9
+    }
+    pdgID : 0
+}
+
+# Mixing parameters
+MixSTMEvents : {
+    extendedMean2BB : 3.93e7 # Copied from Production/JobConfig/mixing/TwoBB.fcl
+    cutMax2BB : 2.36e8 # Copied from Production/JobConfig/mixing/TwoBB.fcl
+    extendedMean1BB : 1.58e7 # Copied from Production/JobConfig/mixing/OneBB.fcl
+    cutMax1BB : 9.48e7 # Copied from Production/JobConfig/mixing/OneBB.fcl
+    SDF : 0.6
+    nPOTs : 26919873604557116
+    nMicroSpills : 690253169
+    meanEventsPerPOTFactors : {
+        EleBeamCat : 5.465876332164181e-11
+        MuBeamCat : 7.887481312841522e-13
+        TargetStopsCat1809 : 3.114418308224206e-16
+    }
+}
+STMMCAnalysis : {
+    MixedEventsTags : {
+        StepPointMCsTagEle : "STMStepMixerEle:STMDet"
+        StepPointMCsTagMu : "STMStepMixerMu:STMDet"
+        StepPointMCsTag1809 : "STMStepMixer1809:STMDet"
+    }
+    ZS : {
+        HPGe : {
+            stmWaveformDigisTag : {
+                concatenated : "concatenateWaveformsHPGe:"
+                uSpill : "DigiHPGe:"
+            }
+            tbefore : @local::STM.HPGe.tbefore
+            tafter : @local::STM.HPGe.tafter
+            threshold : @local::STM.HPGe.threshold
+            window : @local::STM.HPGe.window # TODO - when using the optimized number from STMReco, the gradients were fluctuating between the minimum band of an int16_t and 0, but this disappeared when set to 50. Figure out why.
+            naverage : @local::STM.HPGe.naverage
+        }
+        LaBr : {
+            stmWaveformDigisTag : "DigiLaBr:"
+            tbefore : @local::STM.LaBr.tbefore
+            tafter : @local::STM.LaBr.tafter
+            threshold : @local::STM.HPGe.threshold
+            window : @local::STM.HPGe.window
+            naverage : @local::STM.HPGe.naverage
+        }
+    }
+    MWD : {
+        HPGe : {
+            stmWaveformDigisTag : {
+                ZS: "ZSHPGe:"
+                concatenated: "concatenateWaveformsHPGe:"
+            }
+            tau : @local::STM.HPGe.tau
+            M : @local::STM.HPGe.M
+            L : @local::STM.HPGe.L
+            nsigma_cut : @local::STM.HPGe.nsigma_cut
+            thresholdgrad : @local::STM.HPGe.thresholdgrad
+            defaultBaselineMean : { # TODO - this should be the pedestal
+                full : @local::STM.HPGe.defaultBaselineMean
+                suppressed : 0
+            }
+            defaultBaselineSD : { # TODO - this should be NoiseSD converted to ADC bins
+                full: @local::STM.HPGe.defaultBaselineSD
+                suppressed: 0
+            }
+            STMMWDDigiTag : "MWDHPGe:"
+        }
+        LaBr : {
+            stmWaveformDigisTag : "ZSLaBr:"
+            tau : @local::STM.HPGe.tau
+            M : @local::STM.HPGe.M
+            L : @local::STM.HPGe.L
+            nsigma_cut : @local::STM.HPGe.nsigma_cut
+            thresholdgrad : @local::STM.HPGe.thresholdgrad
+            defaultBaselineMean : @local::STM.HPGe.defaultBaselineMean
+            defaultBaselineSD : @local::STM.HPGe.defaultBaselineSD
+            STMMWDDigiTag : "MWDLaBr:"
+        }
+    }
+}
+
+# MakeTree_module.cc parameters
+SimplifyStage1Data : {
+    StepPointMCsTag : "compressDetStepMCsSTM:"
+    StepPointMCsTag1809 : "compressDetStepMCsSTM:virtualdetector"
+    SimParticlemvTag : "compressDetStepMCsSTM:"
+    VirtualDetectorID : 101
+}
+SimplifyStage2Data : {
+    StepPointMCsTagSTMDet : "compressSTMDet:STMDet"
+    StepPointMCsTagVirtualdetector : "compressSTMDet:virtualdetector"
+    SimParticlemvTag : "compressSTMDet:"
+    VirtualDetectorID : {
+        HPGe : 90
+        LaBr : 89
+    }
+    DetectorName : {
+        HPGe : "HPGe"
+        LaBr : "LaBr"
+    }
+}
+
+# DAQ parameters
+STMDAQParameters : {
+    samplingFrequencies : {
+        HPGe : 320 # MSPS - copied from Offline/STMConditions/fcl/prolog.fcl
+        LaBr : 370.370370370 # MSPS - copied from Offline/STMConditions/fcl/prolog.fcl
+    }
+}
+HPGeDigitization : {
+    EnergyPerADCBin : 0.5 # keV/bin
+    PreamplifierNoiseSD : 0.32 # mV
+    DecayConstant : 50 # us
+    resetEventNumber : 31858
+    microspillBufferLengthCount : 1000
+    concatenation : {
+        STMWaveformDigisTag : "DigiHPGe:"
+        nMerge : 31858
+        filterTag : "concatenateWaveformsHPGe:"
+    }
+}
+
+# Normalization parameter determination studies
+# Detector efficiency simulation
+Efficiency : {
+    NPhotons : 1e7
+    PhotonEnergy : 1.809 # MeV
+    OutputFilename : "Efficiency.root"
 }
 
 END_PROLOG

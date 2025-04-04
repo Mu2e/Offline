@@ -1,88 +1,95 @@
+
+# Original author: Pawel Plesniak
+
 #include "Offline/fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/STMConditions/fcl/prolog.fcl"
 #include "Offline/STMReco/fcl/prolog.fcl"
+#include "Offline/STMMC/fcl/prolog.fcl"
 
-process_name: STMMixDigi
-source : { module_type : RootInput }
-services : @local::Services.SimAndReco # reco is needed for the trigger
+process_name: HPGeReco
 
+source : {
+  module_type : RootInput
+}
+
+services : @local::Services.Sim
 physics : {
-
   producers : {
-    PBISim : { # gives the number of POT per event
-      module_type: ProtonBunchIntensityLogNormal
-      SDF: @nil # will be filled in at the end of the file
-      extendedMean: @nil
-      cutMax:@nil
+    DigiHPGe : {
+      module_type : HPGeWaveformsFromStepPointMCs
+      StepPointMCsTagEle : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTagEle
+      StepPointMCsTagMu : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTagMu
+      StepPointMCsTag1809 : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTag1809
+      fADC : @local::STMDAQParameters.samplingFrequencies.HPGe #TODO - make this module work with multiple frequencies
+      EnergyPerADCBin : @local::HPGeDigitization.EnergyPerADCBin
+      NoiseSD : @local::HPGeDigitization.PreamplifierNoiseSD
+      risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant
+      microspillBufferLengthCount : @local::HPGeDigitization.microspillBufferLengthCount
+      makeTTree : false
+      timeOffset : 0
+      resetEventNumber : @local::HPGeDigitization.resetEventNumber
+      verbosityLevel : 0
     }
-    HPGeDigi : {
-      module_type : HPGeWaveformsFromGeantSim
-      fADC : 320
-      EnergyPerADCBin : 0.5
-      noiseSD : 0.32
-      verbose : true
+    concatenateWaveformsHPGe : {
+      module_type : ConcatenateDigitizedWaveforms
+      STMWaveformDigisTag : @local::HPGeDigitization.concatenation.STMWaveformDigisTag
+      nMerge : @local::HPGeDigitization.concatenation.nMerge
+      makeTTree : false
     }
-    HPGeZS : {
+    ZSHPGe : {
       module_type : STMZeroSuppression
-      stmWaveformDigisTag : "HPGeDigi"
-      tbefore : @local::STM.HPGe.tbefore
-      tafter : @local::STM.HPGe.tafter
-      threshold : @local::STM.HPGe.threshold
-      window : @local::STM.HPGe.window
-      naverage : @local::STM.HPGe.naverage
-      verbosityLevel : 1
+      stmWaveformDigisTag : @local::STMMCAnalysis.ZS.HPGe.stmWaveformDigisTag.concatenated
+      tbefore : @local::STMMCAnalysis.ZS.HPGe.tbefore
+      tafter : @local::STMMCAnalysis.ZS.HPGe.tafter
+      threshold : @local::STMMCAnalysis.ZS.HPGe.threshold
+      window : @local::STMMCAnalysis.ZS.HPGe.window
+      naverage : @local::STMMCAnalysis.ZS.HPGe.naverage
+      verbosityLevel : 0
+      makeTTreeGradients: false
+      makeTTreeWaveforms: false
     }
-    HPGeMWD : {
+    MWDHPGe : {
       module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : "HPGeZS"
-      verbosityLevel : 1
-      tau : @local::STM.HPGe.tau
-      M : @local::STM.HPGe.M
-      L : @local::STM.HPGe.L
-      nsigma_cut : @local::STM.HPGe.nsigma_cut
-      thesholdgrad : @local::STM.HPGe.thresholdgrad
+      stmWaveformDigisTag : @local::STMMCAnalysis.MWD.HPGe.stmWaveformDigisTag.concatenated
+      tau : @local::STMMCAnalysis.MWD.HPGe.tau
+      M : @local::STMMCAnalysis.MWD.HPGe.M
+      L : @local::STMMCAnalysis.MWD.HPGe.L
+      nsigma_cut : @local::STMMCAnalysis.MWD.HPGe.nsigma_cut
+      thresholdgrad : @local::STMMCAnalysis.MWD.HPGe.thresholdgrad
+      defaultBaselineMean : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineMean.suppressed
+      defaultBaselineSD : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineSD.suppressed
+      makeTTreeMWD: false
+      makeTTreeEnergies: false
+      TTreeEnergyCalib : @local::HPGeDigitization.EnergyPerADCBin
+      verbosityLevel : 0
+      xAxis : ""
     }
   }
-
   filters : {
-    STMStepMixer: {
-      module_type         : MixBackgroundFrames
-      fileNames           : @nil
-      readMode            : sequential
-      wrapFiles           : true
-      mu2e: {
-      protonBunchIntensityTag: "PBISim"
-      simStageEfficiencyTags: @nil # this will not be filled in because otherwise it will try to access the database
-      meanEventsPerPOTFactors : []
-      writeEventIDs : false
-      MaxEventsToSkip: @nil
-      products: {
-      genParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
-      simParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
-      stepPointMCMixer: { mixingMap: [ [ "STMDetHits:STMDet", ":" ] ] }
-      }
-      }
+    concatenationFilterHPGe : {
+      module_type : ConcatenationFilter
+      STMWaveformDigisTag : @local::HPGeDigitization.concatenation.filterTag
     }
   }
-  ## Reintroduce the paths one at a time to make sure that they all work together -t here are lots of other bits like in ZS.
-  mixing_path : [ PBISim, STMStepMixer] #, HPGeDigi ] #, HPGeZS, HPGeMWD ]
-  output_path : [output]
+  digitization_path : [DigiHPGe, concatenateWaveformsHPGe, concatenationFilterHPGe, ZSHPGe, MWDHPGe]
+  trigger_paths : [digitization_path]
+  output_path : [compressedOutput]
+  end_paths : [output_path]
 }
 
 outputs : {
-  output : {
+  compressedOutput : {
     module_type : RootOutput
-    fileName : "dig.mu2e.HPGeDigis.MDC2020ap.000001_00000000.art"
-    ### Make this the definition when the data object labels are known
-    #outputCommands : [
-    #  "drop *_*_*_*",
-    #  "keep mu2e::STMWaveformDigiCollection_HPGeDigi_*_*",
-    #  "keep mu2e::STMWaveformDigiCollection_HPGeZS_*_*",
-    #  "keep mu2e::STMMWDDigiCollection_HPGeMWD_*_*"
-    #]
+    fileName : "dts.owner.HPGeReco.version.sequencer.art"
+    SelectEvents: ["digitization_path"]
+    outputCommands: [
+        "drop *_*_*_*",
+        "keep mu2e::STMMWDDigis_MWDHPGe_*_HPGeReco"
+    ]
   }
 }
 
-physics.producers.PBISim.SDF: 0.6
-physics.producers.PBISim.extendedMean: 1.58e7 # mean of the uncut distribution
-physics.producers.PBISim.cutMax: 9.48e7  # truncate the tail at 6 times the mean
-physics.filters.STMStepMixer.mu2e.meanEventsPerPOTFactors : [  ] # fill in all the factors that go from a POT to an event, this will include your efficiencies but not the proton pulse intensity
+services.scheduler.wantSummary: true
+services.SeedService.baseSeed : 1
+services.TFileService.fileName : "nts.owner.HPGeRecoTree.version.sequencer.root"
