@@ -21,21 +21,21 @@ source : {
 physics : {
 
     producers : {
-	DummyLumiStream : {
-	    module_type : DummyLumiInfoProducer
-	    simMode     : 1
-	}
+        DummyLumiStream : {
+            module_type : DummyLumiInfoProducer
+            simMode     : 1
+        }
     }
 
     filters : {
-	LumiFilter : {
-	    module_type : LumiStreamFilter
-	    caloTag        : DummyLumiStream
-	    timeClusterTag : DummyLumiStream
-	    trackerTag     : DummyLumiStream
-	    # eventFreq      : 10000
-	    diagLevel      : 1
-	}
+        LumiFilter : {
+            module_type : LumiStreamFilter
+            caloTag        : DummyLumiStream
+            timeClusterTag : DummyLumiStream
+            trackerTag     : DummyLumiStream
+            # eventFreq      : 10000
+            diagLevel      : 1
+        }
     }
 
     t1 : [ DummyLumiStream, LumiFilter  ]
@@ -48,12 +48,12 @@ physics : {
 
 outputs:  {
     outfile :  {
-	module_type   :   RootOutput
-	fileName      :   "lumi_stream.art"
-	SelectEvents  : [ t1 ]
-	outputCommands: [
-			 "drop *_*_*_*",
-			 "keep *_LumiFilter_*_*"
-			]
+        module_type   :   RootOutput
+        fileName      :   "lumi_stream.art"
+        SelectEvents  : [ t1 ]
+        outputCommands: [
+                         "drop *_*_*_*",
+                         "keep *_LumiFilter_*_*"
+                        ]
     }
 }
