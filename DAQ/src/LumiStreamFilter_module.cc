@@ -91,7 +91,7 @@ namespace mu2e
       if(_useHeader) std::cout << " (" << _headerTag.encode().c_str() << ")";
       std::cout << " passFirst = " << _passFirst << std::endl;
       std::cout << std::endl;
-    }			 
+    }
 
     if(_useCalo) {
       _caloInfos = std::unique_ptr<mu2e::IntensityInfosCalo>(new mu2e::IntensityInfosCalo);
@@ -125,7 +125,7 @@ namespace mu2e
     art::SubRunNumber_t subrunNumber = sr.subRun();
     art::RunNumber_t    runNumber    = sr.run   ();
     if(_diagLevel > 0) std::cout << "LumiStreamFilter::" << __func__ << ": Subrun " << runNumber << ":" << subrunNumber
-				  << ": Writing out the accumulated intensity info collections from " << _eventCount << " events\n";
+                                  << ": Writing out the accumulated intensity info collections from " << _eventCount << " events\n";
 
     // Add the data to the subrun
     if(_useCalo       ) sr.put(std::move(_caloInfos       ), art::fullSubRun());
@@ -153,63 +153,63 @@ namespace mu2e
     const art::RunNumber_t    runNumber    = event.run   ();
 
     if(_diagLevel > 2) std::cout << "LumiStreamFilter::" << __func__ << ": Begin processing Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
-				 << std::endl;
+                                 << std::endl;
     //---------------------------------------
     // Retrieve the data
 
     if(_useCalo) {
       art::Handle<mu2e::IntensityInfoCalo> caloH;
       if(!event.getByLabel(_caloTag, caloH) || !caloH.product()) {
-	std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
-		  << ": Calo intensity object not found!\n";
-	_caloInfos->push_back(mu2e::IntensityInfoCalo()); // add an empty one to maintain the list alignment
+        std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
+                  << ": Calo intensity object not found!\n";
+        _caloInfos->push_back(mu2e::IntensityInfoCalo()); // add an empty one to maintain the list alignment
       } else {
-	const auto caloInfo = caloH.product();
-	_caloInfos->push_back(mu2e::IntensityInfoCalo(*caloInfo));
-	if(_diagLevel > 2) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
-				     << ": Retrieved calo information\n";
+        const auto caloInfo = caloH.product();
+        _caloInfos->push_back(mu2e::IntensityInfoCalo(*caloInfo));
+        if(_diagLevel > 2) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
+                                     << ": Retrieved calo information\n";
       }
     }
 
     if(_useTimeCluster) {
       art::Handle<mu2e::IntensityInfoTimeCluster> timeClusterH;
       if(!event.getByLabel(_timeClusterTag, timeClusterH) || !timeClusterH.product()) {
-	std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
-		  << ": Time cluster intensity object not found!\n";
-	_timeClusterInfos->push_back(mu2e::IntensityInfoTimeCluster()); // add an empty one to maintain the list alignment
+        std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
+                  << ": Time cluster intensity object not found!\n";
+        _timeClusterInfos->push_back(mu2e::IntensityInfoTimeCluster()); // add an empty one to maintain the list alignment
       } else {
-	const auto timeClusterInfo = timeClusterH.product();
-	_timeClusterInfos->push_back(mu2e::IntensityInfoTimeCluster(*timeClusterInfo));
-	if(_diagLevel > 2) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
-				     << ": Retrieved time cluster information\n";
+        const auto timeClusterInfo = timeClusterH.product();
+        _timeClusterInfos->push_back(mu2e::IntensityInfoTimeCluster(*timeClusterInfo));
+        if(_diagLevel > 2) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
+                                     << ": Retrieved time cluster information\n";
       }
     }
 
     if(_useTracker) {
       art::Handle<mu2e::IntensityInfoTrackerHits> trackerH;
       if(!event.getByLabel(_trackerTag, trackerH) || !trackerH.product()) {
-	std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
-		  << ": Tracker intensity object not found!\n";
-	_trackerInfos->push_back(mu2e::IntensityInfoTrackerHits()); // add an empty one to maintain the list alignment
+        std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
+                  << ": Tracker intensity object not found!\n";
+        _trackerInfos->push_back(mu2e::IntensityInfoTrackerHits()); // add an empty one to maintain the list alignment
       } else {
-	const auto trackerInfo = trackerH.product();
-	_trackerInfos->push_back(mu2e::IntensityInfoTrackerHits(*trackerInfo));
-	if(_diagLevel > 2) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
-				     << ": Retrieved tracker information\n";
+        const auto trackerInfo = trackerH.product();
+        _trackerInfos->push_back(mu2e::IntensityInfoTrackerHits(*trackerInfo));
+        if(_diagLevel > 2) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
+                                     << ": Retrieved tracker information\n";
       }
     }
 
     if(_useHeader) {
       art::Handle<mu2e::EventHeader> headerH;
       if(!event.getByLabel(_headerTag, headerH) || !headerH.product()) {
-	std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
-		  << ": Event Header not found!\n";
-	_headers->push_back(mu2e::EventHeader()); // add an empty one to maintain the list alignment
+        std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
+                  << ": Event Header not found!\n";
+        _headers->push_back(mu2e::EventHeader()); // add an empty one to maintain the list alignment
       } else {
-	const auto header = headerH.product();
-	_headers->push_back(mu2e::EventHeader(*header));
-	if(_diagLevel > 2) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
-				     << ": Retrieved Event Header\n";
+        const auto header = headerH.product();
+        _headers->push_back(mu2e::EventHeader(*header));
+        if(_diagLevel > 2) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
+                                     << ": Retrieved Event Header\n";
       }
     }
 
@@ -219,7 +219,7 @@ namespace mu2e
     bool retval = _eventFreq > 0 && (_eventCount % _eventFreq == 0);
     if(retval) {
       if(_diagLevel > 0) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
-				   << ": Writing out the accumulated intensity info collections from " << _eventCount << " events\n";
+                                   << ": Writing out the accumulated intensity info collections from " << _eventCount << " events\n";
 
       // Add the data to the event
       if(_useCalo       ) event.put(std::move(_caloInfos       ));
@@ -241,22 +241,22 @@ namespace mu2e
       _eventCount = 0;
     } else if(!_useSubruns) { // add empty information in failed events if writing into events
       if(_diagLevel > 2) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
-				   << ": Adding empty intensity information to the event\n";
+                                   << ": Adding empty intensity information to the event\n";
       if(_useCalo) {
-	auto tmp_info = std::unique_ptr<mu2e::IntensityInfosCalo>(new mu2e::IntensityInfosCalo);
-	event.put(std::move(tmp_info));
+        auto tmp_info = std::unique_ptr<mu2e::IntensityInfosCalo>(new mu2e::IntensityInfosCalo);
+        event.put(std::move(tmp_info));
       }
       if(_useTimeCluster) {
-	auto tmp_info = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
-	event.put(std::move(tmp_info));
+        auto tmp_info = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
+        event.put(std::move(tmp_info));
       }
       if(_useTracker) {
-	auto tmp_info = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
-	event.put(std::move(tmp_info));
+        auto tmp_info = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
+        event.put(std::move(tmp_info));
       }
       if(_useHeader) {
-	auto tmp_info = std::unique_ptr<mu2e::EventHeaders>(new mu2e::EventHeaders);
-	event.put(std::move(tmp_info));
+        auto tmp_info = std::unique_ptr<mu2e::EventHeaders>(new mu2e::EventHeaders);
+        event.put(std::move(tmp_info));
       }
     }
 
@@ -265,7 +265,7 @@ namespace mu2e
     _firstInSubrun = false;
 
     if(_diagLevel > 1) std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber << ":" << subrunNumber << ":" << eventNumber
-				 << ": Return value = " << retval << " for event count = " << _eventCount << " events and event freq " << _eventFreq << std::endl;
+                                 << ": Return value = " << retval << " for event count = " << _eventCount << " events and event freq " << _eventFreq << std::endl;
     return retval;
   } //filter
 
