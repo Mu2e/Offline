@@ -6,6 +6,7 @@
 
 #ifndef RecoDataProducts_IntensityInfoCalo_hh
 #define RecoDataProducts_IntensityInfoCalo_hh
+#include <vector>
 
 namespace mu2e {
 
@@ -31,6 +32,8 @@ namespace mu2e {
     unsigned short  caloEnergy_   = 0;
     unsigned short  nCaphriHits_  = 0;
   };
+
+  typedef std::vector<mu2e::IntensityInfoCalo> IntensityInfosCalo;
 }
 
 #endif

@@ -7,6 +7,8 @@
 #ifndef RecoDataProducts_IntensityInfoTimeCluster_hh
 #define RecoDataProducts_IntensityInfoTimeCluster_hh
 
+#include <vector>
+
 namespace mu2e {
 
   class IntensityInfoTimeCluster
@@ -25,6 +27,8 @@ namespace mu2e {
   private:
     unsigned short  nProtonTCs_   = 0;
   };
+
+  typedef std::vector<mu2e::IntensityInfoTimeCluster> IntensityInfosTimeCluster;
 }
 
 #endif
