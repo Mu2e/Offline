@@ -1,34 +1,40 @@
 #include "Offline/KinKalGeom/inc/CRV.hh"
+
+/*
+  // 04/04/25 : made with newest geometry. Rectangles are set within CRV modules so that they are at the depth of the center of the first layer. In offline they are treated as volumes.
+  // norm here = layerDirection in offline
+  // udir = gapDirection in offline
+*/
+
 namespace mu2e {
   namespace KinKalGeom {
     using KinKal::VEC3;
     using KinKal::Rectangle;
     // currently use hard-coded geometry
     CRV::CRV() :
-      r1_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2537.28,275.53,-10281.1),2070,2275)},
-      r2_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2537.28,275.53,-2829.1),5382,2275)},
-      r3_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2537.28,2028.03,2966.9),414,522.5)},
-      r4_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2537.28,-479.47,2966.9),414,1520)},
-      r5_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2537.28,275.53,4213.9),828,522.5)},
-      r6_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2537.28,950.53,5460.9),1656,522.5)},
-      l1_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(2537.28,275.53,-5727.1),1656,2275)},
-      l2_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(2537.28,275.53,482.9),4554,2275)},
-      l3_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(2537.28,950.53,6692.9),1656,1600)},
-      t1_{ std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0,2663.21,-11109.1),1242,3000)},
-      t2_{ std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0,2663.21,-9039.1),828,3000)},
-      t3_{ std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0,2663.21,-6555.1),1656,3000)},
-      t4_{ std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0,2663.21,482.9),5382,3000)},
-      t5_{ std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0,2663.21,7106.9),1242,3000)},
-      e1_{ std::make_shared<Rectangle>(VEC3(0.0,-1.0,0.0),VEC3(1.0,0.0,0.0), VEC3(4033.5,2837.58,-9986.8),414,2500)},
-      e2_{ std::make_shared<Rectangle>(VEC3(0.0,-1.0,0.0),VEC3(1.0,0.0,0.0), VEC3(6398,2837.58,-9986.8),414,2500)},
-      u1_{ std::make_shared<Rectangle>(VEC3(0.0,0.0,-1.0),VEC3(1.0,0.0,0.0), VEC3(1453,636.2,8465.76),3450,1656)},
-      d1_{ std::make_shared<Rectangle>(VEC3(0.0,0.0,-1.0),VEC3(1.0,0.0,0.0), VEC3(0,1719,8465.76),2850,1242)},
-      d2_{ std::make_shared<Rectangle>(VEC3(0.0,0.0,-1.0),VEC3(1.0,0.0,0.0), VEC3(-1665,63,8465.76),1185,424)},
-      d3_{ std::make_shared<Rectangle>(VEC3(0.0,0.0,-1.0),VEC3(1.0,0.0,0.0), VEC3(1665,63,8465.76),1185,424)},
-      d4_{ std::make_shared<Rectangle>(VEC3(0.0,0.0,-1.0),VEC3(1.0,0.0,0.0), VEC3(0,-765,8465.76),2850,424)},
-      c1_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2687.07,1329.88,2616.75),414,450)},
-      c2_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2687.07,1329.88,3483.4),414,450)},
-      c3_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-3216.21,1534.75,3947.4),414,1050)},
-      c4_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-3216.21,697.15,3808.4),414,1050)} {}
+      rightSector1_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2537.19,275.3,-10273.77),2066.25,2275)},
+      rightSector2_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2537.19,275.3,-2835.27),5372.25,2275)},
+      rightSector3_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2537.19,2058.03,2950.23),413.25,522.5)},
+      rightSector4_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2537.19,-471.97,2950.23),413.25,1520)},
+      rightSector5_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2537.19,275.3,4189.98),826.5,2275)},
+      rightSector6_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(-2537.19,950.53,6669.48),1653,1600)},
+      leftSector1_{ std::make_shared<Rectangle>(VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(2537.19,275.53,-5728.02),1653,2275)},
+      leftSector2_{ std::make_shared<Rectangle>(VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(2537.19,275.53,470.73),4545.75,2275)},
+      leftSector3_{ std::make_shared<Rectangle>(VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,1.0), VEC3(2537.19,950.53,6669.48),1653,1600)},
+      topSector1_{ std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0,2663.12,-11100.27),1239.5,3000)},
+      topSector2_{ std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0,2663.12,-9034.02),826.5,3000)},
+      topSector3_{ std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0,2663.12,-6554.52),1653,3000)},
+      topSector4_{ std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0,2663.12,470.73),5372.25,3000)},
+      topSector5_{ std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0,2663.12,7082.73),1239.75,3000)},
+      extSector1_{ std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(-1.0,0.0,0.0), VEC3(4034.17,2917.12,-9985.2),413.25,2500)},
+      extSector2_{ std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(-1.0,0.0,0.0), VEC3(3207.67,2917.12,-9985.2),413.25,2500)},
+      upstreamSector1_{ std::make_shared<Rectangle>(VEC3(0.0,0.0,1.0),VEC3(0.0,-1.0,0.0), VEC3(650,1597.12,-12599.76),1653,3450)},
+      downstreamSector1_{ std::make_shared<Rectangle>(VEC3(0.0,0.0,-1.0),VEC3(0.0,-1.0,0.0), VEC3(0,1759.67,8472.26),1239.75,2850)},
+      downstreamSector2_{ std::make_shared<Rectangle>(VEC3(0.0,0.0,-1.0),VEC3(0.0,-1.0,0.0), VEC3(-1665,106.67,8472.26),413.25,1185)},
+      downstreamSector3_{ std::make_shared<Rectangle>(VEC3(0.0,0.0,-1.0),VEC3(0.0,-1.0,0.0), VEC3(1665,106.67,8472.26),413.25,1185)},
+      downstreamSector4_{ std::make_shared<Rectangle>(VEC3(0.0,0.0,-1.0),VEC3(0.0,-1.0,0.0), VEC3(0,-719.83,8472.26),413.25,2850)},
+      cryoSector1_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,-1.0,0.0), VEC3(-7130.34,2006.65,3340.7),413.25,850)},
+      cryoSector2_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,-1.0,0.0), VEC3(-7130.34,1079,3618.2),413.25,572.5)}
+    {}
   }
 }
