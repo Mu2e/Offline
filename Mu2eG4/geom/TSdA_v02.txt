@@ -10,7 +10,8 @@ double tsda.halfLength4  = 25.4;
 double tsda.z0           = 4204.6; // z coordinate of center in Mu2e
 string tsda.materialName = "Polyethylene094";
 
-int    tsda.version        = 2; //increment version to no longer override z0 position
+int    tsda.version      = 2;  //increment version to no longer override z0 position
+int    tsda.build        = 1;  // P.M. : may want to set to false
 
 
 // This tells emacs to view this file in c++ mode.

@@ -6,12 +6,12 @@
 
 #include <iostream>
 
-#include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "Offline/BeamlineGeom/inc/ProtonAbsorber.hh"
 
 namespace mu2e {
 
 
-  MECOStyleProtonAbsorber::MECOStyleProtonAbsorber() :
+  ProtonAbsorber::ProtonAbsorber() :
     _parts(),
     _vdHL(0),
     _materialName(),
@@ -30,7 +30,7 @@ namespace mu2e {
   {}
 
 
-  bool MECOStyleProtonAbsorber::isAvailable (int id) const {
+  bool ProtonAbsorber::isAvailable (int id) const {
     switch (id) {
       case ProtonAbsorberId::pabs1 :
         return _pabs1flag;
@@ -50,4 +50,3 @@ namespace mu2e {
 
 
 }
-

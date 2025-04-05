@@ -20,9 +20,9 @@ cet_make_library(
       Offline::GeneralUtilities
       Offline::GeometryService
       Offline::MCDataProducts
-      Offline::MECOStyleProtonAbsorberGeom
       Offline::RecoDataProducts
       Offline::StoppingTargetGeom
+      Offline::BeamlineGeom
 )
 
 cet_build_plugin(TrkExt art::module
@@ -37,6 +37,7 @@ cet_build_plugin(TrkExt art::module
       Offline::GeometryService
       Offline::MCDataProducts
       Offline::RecoDataProducts
+      Offline::BeamlineGeom
 )
 
 install_source(SUBDIRS src)
