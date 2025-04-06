@@ -33,8 +33,8 @@ namespace mu2e {
       downstreamSector2_{ std::make_shared<Rectangle>(VEC3(0.0,0.0,-1.0),VEC3(0.0,-1.0,0.0), VEC3(-1665.,106.67,8472.26),413.25,1185.)},
       downstreamSector3_{ std::make_shared<Rectangle>(VEC3(0.0,0.0,-1.0),VEC3(0.0,-1.0,0.0), VEC3(1665.,106.67,8472.26),413.25,1185.)},
       downstreamSector4_{ std::make_shared<Rectangle>(VEC3(0.0,0.0,-1.0),VEC3(0.0,-1.0,0.0), VEC3(0.,-719.83,8472.26),413.25,2850.)},
-      cryoSector1_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,-1.0,0.0), VEC3(-7130.34,2006.65,3340.7),413.25,850.)},
-      cryoSector2_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,-1.0,0.0), VEC3(-7130.34,1079.,3618.2),413.25,572.5)}
+      cryoSector1_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,-1.0,0.0), VEC3(-7130.34,2006.65,3340.7),516.5625,850.)},
+      cryoSector2_{ std::make_shared<Rectangle>(VEC3(-1.0,0.0,0.0),VEC3(0.0,-1.0,0.0), VEC3(-7130.34,1079.,3618.2),103.3125,572.5)}
     {}
   }
 }
