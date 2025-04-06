@@ -1,5 +1,5 @@
 //
-
+/*
 #include "Offline/TrkPatRec/inc/KalSeedFit_types.hh"
 #include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
@@ -246,3 +246,4 @@ namespace mu2e {
   DEFINE_ART_CLASS_TOOL(KalSeedFitDiag)
 
 }
+*/

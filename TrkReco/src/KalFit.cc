@@ -3,6 +3,7 @@
 // Original author: Dave Brown LBNL 2012
 //
 //
+/*
 #include "Offline/TrkReco/inc/KalFit.hh"
 #include "Offline/TrkReco/inc/PanelAmbigResolver.hh"
 #include "Offline/TrkReco/inc/HitAmbigResolver.hh"
@@ -1192,3 +1193,4 @@ namespace mu2e
       }
 
     }
+*/

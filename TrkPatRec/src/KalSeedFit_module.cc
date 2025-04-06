@@ -6,7 +6,7 @@
 //
 // Original author Dave Brown (LBNL) 31 Aug 2016
 //
-
+/*
 // framework
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -488,7 +488,7 @@ namespace mu2e
 
     Hep3Vector               tdir;
     HepPoint                 tpos;
-    double                   doca, /*rdrift, */fltlen;
+    double                   doca, *rdrift, fltlen;
 
     if (_debug > 0) printf("[%s]: BEGIN\n",oname);
 
@@ -566,3 +566,4 @@ namespace mu2e
 }// mu2e
 using mu2e::KalSeedFit;
 DEFINE_ART_MODULE(KalSeedFit)
+*/

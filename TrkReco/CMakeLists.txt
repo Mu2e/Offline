@@ -4,7 +4,6 @@ cet_make_library(
       src/DoubletAmbigResolver.cc
       src/FixedAmbigResolver.cc
       src/HitAmbigResolver.cc
-      src/KalFit.cc
       src/KalFitData.cc
       src/PanelAmbigResolver.cc
       src/PanelAmbigStructs.cc
