@@ -1,11 +1,5 @@
 cet_make_library(
     SOURCE
-      src/AmbigResolver.cc
-      src/DoubletAmbigResolver.cc
-      src/FixedAmbigResolver.cc
-      src/HitAmbigResolver.cc
-      src/KalFitData.cc
-      src/PanelAmbigResolver.cc
       src/PanelAmbigStructs.cc
       src/PanelStateIterator.cc
       src/RobustHelixFinderData.cc

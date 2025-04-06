@@ -1,3 +1,4 @@
+/*
 #ifndef TrkPatRec_KalFinalFit_types_hh
 #define TrkPatRec_KalFinalFit_types_hh
 
@@ -46,3 +47,4 @@ namespace mu2e {
   }
 }
 #endif
+*/

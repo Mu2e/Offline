@@ -36,7 +36,7 @@
 #include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 
 //For Drift:
-#include "Offline/TrkReco/inc/PanelAmbigResolver.hh"
+//#include "Offline/TrkReco/inc/PanelAmbigResolver.hh"
 #include "Offline/TrkReco/inc/PanelStateIterator.hh"
 #include "Offline/TrkReco/inc/TrkFaceData.hh"
 
