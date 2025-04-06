@@ -26,7 +26,6 @@ namespace art {
 
 #include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "Offline/BTrkData/inc/Doublet.hh"
 
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
@@ -171,4 +170,3 @@ namespace mu2e {
   };
 }
 #endif
-

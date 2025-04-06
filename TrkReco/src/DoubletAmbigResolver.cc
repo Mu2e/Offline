@@ -4,6 +4,7 @@
 // DoubletAmbigResolver is instantiated from Stntuple/mod/InitTrackBlock.cc
 // thus all parameters need to have defaults in the source
 ///////////////////////////////////////////////////////////////////////////////
+/*
 #include "Offline/TrkReco/inc/DoubletAmbigResolver.hh"
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
@@ -1266,3 +1267,4 @@ namespace mu2e {
     return perr;
   }
 }
+*/

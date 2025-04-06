@@ -3,6 +3,7 @@
 // 2015 - 02 - 17 G. Pezzullo created class for housing the straw hits doublets
 //
 ///////////////////////////////////////////////////////////////////////////////
+/*
 #ifndef BTrkData_Doublet_hh
 #define BTrkData_Doublet_hh
 
@@ -78,3 +79,4 @@ namespace mu2e {
 }
 
 #endif
+*/

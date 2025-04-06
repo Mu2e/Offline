@@ -8,6 +8,7 @@
 // Original author P. Murat
 ///////////////////////////////////////////////////////////////////////////////
 // framework
+/*
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
@@ -365,3 +366,4 @@ namespace mu2e {
 
 using mu2e::MergeHelixFinder;
 DEFINE_ART_MODULE(MergeHelixFinder)
+*/

@@ -30,11 +30,11 @@
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 
 #include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
-
+//C++
 using CLHEP::HepVector;
 using CLHEP::HepSymMatrix;
 using CLHEP::Hep3Vector;
-
+using namespace std;
 namespace mu2e {
 //-----------------------------------------------------------------------------
 // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
