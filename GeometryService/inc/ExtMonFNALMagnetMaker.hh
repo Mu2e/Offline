@@ -16,11 +16,30 @@ namespace mu2e {
   class ExtMonFNALMagnetMaker {
   public:
 
+    // Initialize sizes and B field, but not orientation and position
+    static ExtMonFNALMagnet readIntrinsicParameters(const SimpleConfig& c,
+                                                    const std::string& prefix);
+    // Initialize position and rotation
+    static void positionMagnetRelative(ExtMonFNALMagnet *magnet,
+                                       const CLHEP::HepRotation& magnetInRotationInMu2e, // of the input arm of ref trajectory
+                                       const CLHEP::Hep3Vector& refTrajMagnetEntranceInMu2e,
+                                       double nominalMomentum);
+
+    // This combines the two functions above
     static ExtMonFNALMagnet read(const SimpleConfig& c,
                                  const std::string& prefix,
                                  const CLHEP::HepRotation& magnetInRotationInMu2e, // of the input arm of ref trajectory
                                  const CLHEP::Hep3Vector& refTrajMagnetEntranceInMu2e,
                                  double nominalMomentum);
+
+
+    // Initialize position and rotation
+    static void positionMagnetAbsolute(ExtMonFNALMagnet *magnet,
+                                       const SimpleConfig& c,
+                                       const std::string& prefix,
+                                       double nominalMomentum);
+
+
   };
 }
 
