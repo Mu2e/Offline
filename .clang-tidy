@@ -2,7 +2,6 @@
 Checks:          'clang-diagnostic-*,clang-analyzer-*,bugprone-*,performance-*,readability-misleading-indentation,readability-non-const-parameter,cppcoreguidelines-*,-bugprone-narrowing-conversions,-bugprone-easily-swappable-parameters'
 WarningsAsErrors: ''
 HeaderFilterRegex: 'Offline/.*'
-AnalyzeTemporaryDtors: false
 FormatStyle:     none
 User:            roneil
 CheckOptions:    
