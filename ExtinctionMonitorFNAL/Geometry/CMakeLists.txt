@@ -2,6 +2,7 @@ cet_make_library(
     SOURCE
       src/ExtMonFNALBuilding.cc
       src/ExtMonFNAL.cc
+      src/ExtMonFNALCollimator.cc
       src/ExtMonFNALMagnet.cc
       src/ExtMonFNALModule.cc
       src/ExtMonFNALModuleIdConverter.cc
