@@ -1,0 +1,23 @@
+string dirt.S.retaining.Wall.foot.name     = "dirtSRetWallFoot";
+string dirt.S.retaining.Wall.foot.material = "MBOverburden";
+double dirt.S.retaining.Wall.foot.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.S.retaining.Wall.foot.offsetFromFloorSurface.y = 6781.90;
+double dirt.S.retaining.Wall.foot.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.S.retaining.Wall.foot.yreplace ={4 ,5 };
+double dirt.S.retaining.Wall.foot.yHalfThickness           = 228.50;
+vector<double> dirt.S.retaining.Wall.foot.xPositions = {
+-2921.00, // 0
+-12028.90, // 1
+-12028.90, // 2
+-19065.78, // 3
+-19065.78, // 4
+-2921.00 // 5
+};
+vector<double> dirt.S.retaining.Wall.foot.yPositions = {
+-8471.00, // 0
+-8471.00, // 1
+-9436.15, // 2
+-9436.15, // 3
+-50000.00, // 4
+-50000.00 // 5
+};

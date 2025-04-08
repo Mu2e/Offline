@@ -1,0 +1,54 @@
+string building.firstFloor.wall.p1.name     = "firstFloorWallp1";
+string building.firstFloor.wall.p1.material = "CONCRETE_MARS";
+double building.firstFloor.wall.p1.offsetFromMu2eOrigin.x   = 947.40;
+double building.firstFloor.wall.p1.offsetFromFloorSurface.y = 9524.95;
+double building.firstFloor.wall.p1.offsetFromMu2eOrigin.z   = -3581.40;
+double building.firstFloor.wall.p1.yHalfThickness           = 685.75;
+vector<double> building.firstFloor.wall.p1.xPositions = {
+-2921.00, // 0
+-2921.00, // 1
+37820.60, // 2
+37820.60, // 3
+37007.80, // 4
+37007.80, // 5
+29895.80, // 6
+29895.80, // 7
+29083.00, // 8
+29083.00, // 9
+21971.00, // 10
+21971.00, // 11
+21158.20, // 12
+21158.20, // 13
+14046.20, // 14
+14046.20, // 15
+13233.40, // 16
+13233.40, // 17
+7975.60, // 18
+7975.60, // 19
+-2286.00, // 20
+-2286.00 // 21
+};
+vector<double> building.firstFloor.wall.p1.yPositions = {
+-4292.55, // 0
+2438.35, // 1
+2438.35, // 2
+1523.95, // 3
+1523.95, // 4
+2031.95, // 5
+2031.95, // 6
+1523.95, // 7
+1523.95, // 8
+2031.95, // 9
+2031.95, // 10
+1523.95, // 11
+1523.95, // 12
+2031.95, // 13
+2031.95, // 14
+1523.95, // 15
+1523.95, // 16
+2031.95, // 17
+2031.95, // 18
+609.65, // 19
+609.65, // 20
+-4292.55 // 21
+};

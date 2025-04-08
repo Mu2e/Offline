@@ -5,7 +5,7 @@ cet_make_library(
       src/EventDisplayFrame.cc
       src/TrackColorSelector.cc
     LIBRARIES PUBLIC
-      
+
       Offline::BTrkData
       Offline::CalorimeterGeom
       Offline::ConfigTools
@@ -32,7 +32,7 @@ cet_build_plugin(EventDisplay art::module
       art_root_io::TFileService_service
       Offline::EventDisplay
       Offline::EventDisplay_dict
-      
+
       Offline::CRVConditions
       Offline::MCDataProducts
       Offline::ProditionsService
@@ -46,4 +46,6 @@ art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
       Offline::EventDisplay
 )
 install_source(SUBDIRS src)
+install_headers(USE_PROJECT_NAME SUBDIRS src)
+install_headers(USE_PROJECT_NAME SUBDIRS src/dict_classes)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/EventDisplay/fcl)

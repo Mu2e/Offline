@@ -1,44 +1,42 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_beamline_dirtBerm.ccl
-// Nov 2024
-// dirtbeamline removed, several layers of berms added; ref: docdb:49557
-// layer-749' West side
-
 string dirt.beamline.berm.l749b.name     = "dirtBeamlineBerml749b";
-
 string dirt.beamline.berm.l749b.material = "MBOverburden";
-
-double dirt.beamline.berm.l749b.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.berm.l749b.offsetFromFloorSurface.y = 8839.2021;
-double dirt.beamline.berm.l749b.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.beamline.berm.l749b.yHalfThickness           = 152.4003; //0.5 US foot to mm
-
+double dirt.beamline.berm.l749b.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.beamline.berm.l749b.offsetFromFloorSurface.y = 8839.20;
+double dirt.beamline.berm.l749b.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.beamline.berm.l749b.xreplace ={3 ,4 };
+vector<int> dirt.beamline.berm.l749b.yreplace ={2 ,3 };
+double dirt.beamline.berm.l749b.yHalfThickness           = 152.30;
 vector<double> dirt.beamline.berm.l749b.xPositions = {
-  -18304.8, // S1
-  -25365, // S2
-  -21707.81,  // S3
-  -31750.5,  // S4 (corner)
-  -31750.5, // S5
-  -24117.4,
-  -21746.3,
-  -20527.2,
-  -20527.2  //S11
+-19421.57, // 0
+-25365.00, // 1
+-21707.81, // 2
+-60000.00, // 3
+-60000.00, // 4
+-26649.42, // 5
+-27111.29, // 6
+-27025.24, // 7
+-26447.70, // 8
+-24117.40, // 9
+-21746.30, // 10
+-20527.30, // 11
+-20527.30, // 12
+-20953.28, // 13
+-19488.92 // 14
 };
-
 vector<double> dirt.beamline.berm.l749b.yPositions = {
-  -8294.08,  //S1
-  -10002.8,   //S2
-  -25857.2, //S3
-  -25857.2, //S4 (corner)
-  16332.85, //S5
-  3533.47,
-  4127.94,
-  4964.96,
-  -8308.31   //S11
+-8564.26, // 0
+-10002.80, // 1
+-60000.00, // 2
+-60000.00, // 3
+16332.85, // 4
+7503.47, // 5
+7388.31, // 6
+7043.08, // 7
+7187.06, // 8
+3533.47, // 9
+4127.94, // 10
+4964.96, // 11
+-4381.00, // 12
+-8251.16, // 13
+-8412.31 // 14
 };
-
-// Local Variables:
-// mode:c++
-// End:

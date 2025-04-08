@@ -97,6 +97,7 @@
 
 // general reco
 #include "Offline/RecoDataProducts/inc/RecoCount.hh"
+#include "Offline/RecoDataProducts/inc/DAQerror.hh"
 
 // STM
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"

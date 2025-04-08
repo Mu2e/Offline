@@ -1,133 +1,113 @@
-// Nov 2024
-// dirtbeamline removed, several layers of berms added; ref: docdb:49557
-// layer-746' NE side
-// Feb 2025
-// modify to accommodate PSH Steel Shielding
-
 string dirt.beamline.berm.l746a.name     = "dirtBeamlineBerml746a";
-
 string dirt.beamline.berm.l746a.material = "MBOverburden";
-
-double dirt.beamline.berm.l746a.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.berm.l746a.offsetFromFloorSurface.y = 7924.8003;
-double dirt.beamline.berm.l746a.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.beamline.berm.l746a.yHalfThickness           = 152.4003; //0.5 US foot to mm
-
+double dirt.beamline.berm.l746a.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.beamline.berm.l746a.offsetFromFloorSurface.y = 7924.80;
+double dirt.beamline.berm.l746a.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.beamline.berm.l746a.xreplace ={46 ,47 ,49 ,50 };
+double dirt.beamline.berm.l746a.yHalfThickness           = 152.30;
 vector<double> dirt.beamline.berm.l746a.xPositions = {
-  -4140.2,    // b
-  -4140.2,    // P0
-  -4749.8,    // P1
-  -4749.8,    // P2
-  -11709.4,   // P3
-  -11709.4,   // P3a
-  -12319,     // P3b
-  -12319,     // S1
-  -12750.8,   // S2
-  -12750.8,   // S3
-  -12319,     // S4
-  -12318.9,   // P3d
-  -12343.4,   // P3e
-  -12319.3,   // P3f
-  -16841.4,   // P3g
-  -16817.3,   // P3h
-  -17853.7,   // P4
-  -17853.7,   // p5
-  -20527.11,   // p5_to_W
-  -20527.11,   // P2 from WextWall
-  -20442.71,   // P3 from WextWall
-  -14706.6,   // P4 from WextWall
-  -12319,   // P5    from WextWall
-  -12319,   // from NRetWall
-  3708.4,   // from NRetWall
-  3708.4,   // from NRetWall
-  3403.6,   // even with wall of remote hatch
-  3403.6,   // rem hatch corner SW
-  9550.5,   // SE corner rem hatch
-  9550.5,   // NE corner rem hatch
-  3403.6,   // NW corner rem hatch
-  3403.5,   // Back against wall
-  -4389.2,  // C12
-  -4337.1,  // C13
-  -3896.2,
-  -2970.46,  // C15
-  -2339.38,
-  -1073.96,
-  1290.1,
-  2603.1,
-  13594.4,
-  15900.8,  // NW corner escape hatch
-  17204.7, //SW corner of escapehatchN
-  17288.5,  // SW corner escapehatchS
-  20744.5,  // SE corner escape hatch
-  19356.8,  // NE corner escape hatch
-  22125.7,  // C32
-  22661.2,  // C33
-  23806.9,  // C34
-  44025.7, // C35
-  50000.0,   // NEcorner (replace)
-  50000.0,   // a_to_E (replace)
-  44847.6,
-  50000.0,
-  50000.0
+-4140.20, // 0
+-4140.20, // 1
+-4749.80, // 2
+-4749.80, // 3
+-11709.40, // 4
+-11709.40, // 5
+-12319.00, // 6
+-12319.00, // 7
+-12750.80, // 8
+-12750.80, // 9
+-12319.00, // 10
+-12318.90, // 11
+-18956.73, // 12
+-18827.35, // 13
+-20292.11, // 14
+-20527.38, // 15
+-20527.38, // 16
+-15238.68, // 17
+-12319.10, // 18
+-12319.10, // 19
+3708.50, // 20
+3708.50, // 21
+3403.60, // 22
+3403.60, // 23
+9550.50, // 24
+9550.50, // 25
+3403.60, // 26
+3403.50, // 27
+-4389.20, // 28
+-4337.10, // 29
+-3896.20, // 30
+-2970.46, // 31
+-2339.38, // 32
+-1073.96, // 33
+1290.10, // 34
+2603.10, // 35
+13594.40, // 36
+15900.80, // 37
+17204.70, // 38
+17288.50, // 39
+20744.50, // 40
+19356.80, // 41
+22125.70, // 42
+22661.20, // 43
+23806.90, // 44
+44025.70, // 45
+60000.00, // 46
+60000.00, // 47
+44847.60, // 48
+60000.00, // 49
+60000.00 // 50
 };
 vector<double> dirt.beamline.berm.l746a.yPositions = {
-  2438.4,   // b
-  6858,   // P0
-  6858,   // P1
-  6502.4,   // P2
-  6502.4,   // P3
-  6858,     // P3a
-  6858,     // P3b
-  5279.3,   // S1
-  5279.3,   // S2
-  -354.1,   // S3
-  -354.1,   // S4
-  -2091.9,  // P3d
-  -2096.1,  // P3e
-  -2194.8,  // P3f
-  -3297.85, // P3g
-  -3396.55, // P3h
-  -3649.57, // P4
-  -7505.7,   // p5
-  -7505.7,   // p5_to_W
-  8866.56,   // P2 from WextWall
-  8521.1,   // P3 from WextWall
-  9956.8,   // P4  from WextWall
-  9956.8,   // P5   from WextWall
-  9702.8,   // from NRetWall
-  9702.8,   // from NRetWall
-  10312.4,  // from NRetWall
-  10312.4,  // same
-  13055.6,  // SW corner rem hatch
-  13055.6,  // SE corner rem hatch
-  16459.2,  // NE corner rem hatch
-  16459.2,  // NW corner rem hatch
-  10312.5,  // back to wall
-  10312.5,   // C12
-  19809.6,   // C13
-  21531.7,   // C15
-  23213.7,
-  23964.3,
-  25008.9,
-  26010.1,
-  26201.3,
-  26483.4,
-  23684.2,   // NW corner escape hatch
-  18302.6,   // SW corner of escapehatchN
-  17957,     // SW corner escape hatch
-  18794.4,     // SE corner escape hatch
-  24521.6,   // NE corner escape hatch
-  28559.2,   // C32
-  28686.8,   // C33
-  28961.6,   // C34
-  30840,     // C35
-  30840.0,   // NEcorner
-  5102.08,   // a_to_E
-  3895.39,
-  2498.53,
-  2438.4
+2438.40, // 0
+6858.00, // 1
+6858.00, // 2
+6502.40, // 3
+6502.40, // 4
+6858.00, // 5
+6858.00, // 6
+5279.30, // 7
+5279.30, // 8
+-354.10, // 9
+-354.10, // 10
+-2091.90, // 11
+-3712.51, // 12
+-2403.18, // 13
+-2241.93, // 14
+-4379.79, // 15
+8663.53, // 16
+9982.42, // 17
+9982.42, // 18
+9702.70, // 19
+9702.70, // 20
+10312.50, // 21
+10312.40, // 22
+13055.60, // 23
+13055.60, // 24
+16459.20, // 25
+16459.20, // 26
+10312.50, // 27
+10312.50, // 28
+19809.60, // 29
+21531.70, // 30
+23213.70, // 31
+23964.30, // 32
+25008.90, // 33
+26010.10, // 34
+26201.30, // 35
+26483.40, // 36
+23684.20, // 37
+18302.60, // 38
+17957.00, // 39
+18794.40, // 40
+24521.60, // 41
+28559.20, // 42
+28686.80, // 43
+28961.60, // 44
+30840.00, // 45
+30840.00, // 46
+5102.08, // 47
+3895.39, // 48
+2498.53, // 49
+2438.40 // 50
 };
-// Local Variables:
-// mode:c++
-// End:

@@ -1,45 +1,42 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_beamline_dirtBerm.ccl
-// Nov 2024
-// dirtbeamline removed, several layers of berms added; ref: docdb:49557
-// layer-748' West side
-
 string dirt.beamline.berm.l748b.name     = "dirtBeamlineBerml748b";
-
 string dirt.beamline.berm.l748b.material = "MBOverburden";
-
-double dirt.beamline.berm.l748b.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.berm.l748b.offsetFromFloorSurface.y = 8534.4015;
-double dirt.beamline.berm.l748b.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.beamline.berm.l748b.yHalfThickness           = 152.4003; //0.5 US foot to mm
-
+double dirt.beamline.berm.l748b.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.beamline.berm.l748b.offsetFromFloorSurface.y = 8534.40;
+double dirt.beamline.berm.l748b.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.beamline.berm.l748b.xreplace ={3 ,4 };
+vector<int> dirt.beamline.berm.l748b.yreplace ={2 ,3 };
+double dirt.beamline.berm.l748b.yHalfThickness           = 152.30;
 vector<double> dirt.beamline.berm.l748b.xPositions = {
-  -16690.1, // S1
-  -17222.6, // S12
-  -24263.9, // S2
-  -20558.74,   // S3
-  -31750.5,  // S4 (corner)
-  -31750.5, // S5
-  -23605.3, // S6
-  -21670.8,  // S7
-  -20527.2,
-  -20527.2  //S11
+-19421.57, // 0
+-24263.90, // 1
+-20558.74, // 2
+-60000.00, // 3
+-60000.00, // 4
+-25128.00, // 5
+-27111.29, // 6
+-27025.24, // 7
+-24940.83, // 8
+-23605.30, // 9
+-21670.80, // 10
+-20527.30, // 11
+-20527.30, // 12
+-20953.28, // 13
+-19488.92 // 14
 };
-
 vector<double> dirt.beamline.berm.l748b.yPositions = {
-  -8302.78,  //S1
-  -8825.22,  // S12
-  -10674.4,   //S2
-  -25857.2, //S3
-  -25857.2, //S4 (corner)
-  20108.75, //S5
-  5280.23, //S6
-  5746.14,  //S7
-  6533.04,
-  -8308.31   //S11
+-9402.61, // 0
+-10674.40, // 1
+-60000.00, // 2
+-60000.00, // 3
+20108.75, // 4
+7882.89, // 5
+7388.31, // 6
+7043.08, // 7
+7562.85, // 8
+5280.23, // 9
+5746.14, // 10
+6533.04, // 11
+-4381.00, // 12
+-8251.16, // 13
+-8412.31 // 14
 };
-// Local Variables:
-// mode:c++
-// End:

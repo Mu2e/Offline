@@ -404,10 +404,19 @@
 <!--  ********* POT / stopped muons monitoring  ********* -->
  <class name="mu2e::IntensityInfoCalo"/>
  <class name="art::Wrapper<mu2e::IntensityInfoCalo>"/>
+ <class name="std::vector<mu2e::IntensityInfoCalo>" />
+ <class name="mu2e::IntensityInfosCalo" />
+ <class name="art::Wrapper<mu2e::IntensityInfosCalo>" />
  <class name="mu2e::IntensityInfoTrackerHits"/>
  <class name="art::Wrapper<mu2e::IntensityInfoTrackerHits>"/>
+ <class name="std::vector<mu2e::IntensityInfoTrackerHits>" />
+ <class name="mu2e::IntensityInfosTrackerHits" />
+ <class name="art::Wrapper<mu2e::IntensityInfosTrackerHits>" />
  <class name="mu2e::IntensityInfoTimeCluster"/>
  <class name="art::Wrapper<mu2e::IntensityInfoTimeCluster>"/>
+ <class name="std::vector<mu2e::IntensityInfoTimeCluster>" />
+ <class name="mu2e::IntensityInfosTimeCluster" />
+ <class name="art::Wrapper<mu2e::IntensityInfosTimeCluster>" />
 
 
 <!--  ********* general reco ********* -->
@@ -415,6 +424,13 @@
  <class name="mu2e::AHist<uint16_t,70>"/>
  <class name="mu2e::RecoCount"/>
  <class name="art::Wrapper<mu2e::RecoCount>"/>
+
+ <class name="mu2e::DAQerrorCodeDetail"/>
+ <class name="mu2e::DAQerrorCode"/>
+ <class name="mu2e::DAQerror" />
+ <class name="std::vector<mu2e::DAQerror>" />
+ <class name="mu2e::DAQerrorCollection" />
+ <class name="art::Wrapper<mu2e::DAQerrorCollection>" />
 
 <!--  ********* STM ********* -->
  <class name="mu2e::STMWaveformDigi"/>

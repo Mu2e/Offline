@@ -4,6 +4,8 @@
 
 bool           hasExtMonFNAL = true;
 
+#include "Offline/Mu2eG4/geom/extmon_filter_relative.txt"
+
 //----------------------------------------------------------------
 // ExtMonFNAL enclosure walls are no longer part of this module.
 // However, the shielding between the two rooms (collimator2.shielding) is.
@@ -23,10 +25,6 @@ string extMonFNAL.concreteMaterial = "ShieldingConcrete";
 
 //----------------------------------------------------------------
 // The extinction monitor filter channel
-
-// The first collimator is embedded in frontShielding of ProtonBeamDump
-// and this determines its length.
-//
 
 // Channel aperture (vector since upstream and downstream halves
 // may be different):  {upstream size, downstream size}
@@ -48,20 +46,6 @@ string         extMonFNAL.collimator1.shot.materialName  = "G4_AIR";
 
 // Transition between the two radii of the plug and hole happens over dz.
 double extMonFNAL.collimator1.radiusTransitiondZ = 0;
-
-// The entrance point on the face of the beam dump enclosure,
-// transverse to the beam coordinates (horiz, vertical).  The offsets
-// are w.r.t to the core center position (== the nominal beam entrance
-// point).
-double         extMonFNAL.entranceOffsetX = 315;
-double         extMonFNAL.entranceOffsetY = 1250;
-
-// Filter channel orientation: angles in horizontal and vertical
-// planes w.r.t dump core. Note that angleH is the same for all filter
-// elements, while angleV is different.  We specify angleV at the
-// filter entrance.
-double         extMonFNAL.angleH = 0.0302; //radians
-double         extMonFNAL.entranceAngleV = 0.1653; //radians
 
 bool extMonFNAL.collimator1.alignmentHole.visible = true;
 bool extMonFNAL.collimator1.alignmentHole.issolid = false;
@@ -87,10 +71,6 @@ bool extMonFNAL.filter.magnet.iron.visible = true;
 bool extMonFNAL.filter.magnet.iron.solid = false;
 bool extMonFNAL.filter.magnet.aperture.visible = true;
 bool extMonFNAL.filter.magnet.aperture.solid = false;
-
-// Distance from the point where the reference trajectory
-// crosses the (physical) magnet face to the upstream wall.
-double extMonFNAL.filter.magnet.distanceToUpstreamWall = 342.9; // mm
 
 // The magnet is placed in such a way that a positive particle with
 // the nominal momentum given below, travelling along the axis of
@@ -295,11 +275,11 @@ double extMonFNAL.room.chiller4.distanceToTranverseWall = 1;
 int extMonFNAL.numChillersInHall = 3;
 
 string extMonFNAL.hall.chiller1.wallName = "theInsideWall";
-string extMonFNAL.hall.chiller2.wallName = "extMonExteriorWall";
+string extMonFNAL.hall.chiller2.wallName = "extMonExteriorWallE";
 string extMonFNAL.hall.chiller3.wallName = "extMonExteriorWall";
 
 vector<int> extMonFNAL.hall.chiller1.refVertices = { 2, 3 };
-vector<int> extMonFNAL.hall.chiller2.refVertices = { 7, 8 };
+vector<int> extMonFNAL.hall.chiller2.refVertices = { 8, 0 }; // TO BE FIXED By ANDREI
 vector<int> extMonFNAL.hall.chiller3.refVertices = { 5, 6 };
 
 // The "wall" is the straight line connecting the two vertices.

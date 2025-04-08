@@ -1,31 +1,28 @@
-// SimpleConfig geometry file hand-made by DNB
-//
-//
-
 string dirt.WallFill.2.name     = "dirtWallFill2";
-
 string dirt.WallFill.2.material = "MBOverburden";
-
-double dirt.WallFill.2.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.WallFill.2.offsetFromFloorSurface.y = 7073.9;
-double dirt.WallFill.2.offsetFromMu2eOrigin.z   = -3581.4;
-
+double dirt.WallFill.2.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.WallFill.2.offsetFromFloorSurface.y = 7073.90;
+double dirt.WallFill.2.offsetFromMu2eOrigin.z   = -3581.40;
 double dirt.WallFill.2.yHalfThickness           = 215.88;
-
 vector<double> dirt.WallFill.2.xPositions = {
-  -12319,     // NE corner
-  -14706.6,   // elbow
-  -20628.69,   // NW corner
-  -20482.4,   // P3
-  -14706.6,   // P4
-  -12319   // P5
+-12319.05, // 0
+-15282.44, // 1
+-21196.19, // 2
+-27111.09, // 3
+-27221.54, // 4
+-21306.73, // 5
+-21343.61, // 6
+-15357.31, // 7
+-12319.05 // 8
 };
-
 vector<double> dirt.WallFill.2.yPositions = {
-   10921.99,     // NE corner
-   10921.99,     // elbow
-    9476.16,     // NW corner
-    8877.50,     // P3
-   10312.43,     // P4
-   10312.43      // P5
+10338.22, // 0
+10338.22, // 1
+8863.43, // 2
+7388.31, // 3
+7831.92, // 4
+9306.98, // 5
+9454.85, // 6
+10947.73, // 7
+10947.73 // 8
 };

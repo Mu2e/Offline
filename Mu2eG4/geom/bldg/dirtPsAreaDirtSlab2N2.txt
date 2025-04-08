@@ -1,67 +1,60 @@
-// Feb 2025
-// dirtPsAreaDirtSlab2N splitted into 3 volumes to accommodate PSH Steel Shielding
 string dirt.psArea.dirtSlab2.N2.name     = "dirtPsAreaDirtSlab2N2";
-
 string dirt.psArea.dirtSlab2.N2.material = "CA7Backfill";
-
-double dirt.psArea.dirtSlab2.N2.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.psArea.dirtSlab2.N2.offsetFromFloorSurface.y = 7067.7506;
-double dirt.psArea.dirtSlab2.N2.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.psArea.dirtSlab2.N2.yHalfThickness           = 107.95;
-
+double dirt.psArea.dirtSlab2.N2.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.psArea.dirtSlab2.N2.offsetFromFloorSurface.y = 7124.80;
+double dirt.psArea.dirtSlab2.N2.offsetFromMu2eOrigin.z   = -3581.40;
+double dirt.psArea.dirtSlab2.N2.yHalfThickness           = 164.90;
 vector<double> dirt.psArea.dirtSlab2.N2.xPositions = {
-  -1270,   // c
-  -4140.2,   // P1
-  -4140.2,    // P0
-  -4749.8,    // P1
-  -4749.8,    // P2
-  -11709.4,   // P3
-  -11709.4,   // P3a
-  -12319,     // P3b
-  -12319,     // S1
-  -13843,     // S2
-  -13843,   // S3
-  -12319,     // S4
-  -12318.9,   // P3d
-  -12343.4,   // P3e
-  -12319.3,   // P3f
-  -15265.2,   // e5b
-  -16446,     // NW corner of ExtMon
-  -17108.7,   // e7
-  -17108.7,   // up to WextWallFoot
-  -14503.4,   // To elbow of WextWallFoot
-  -12319,     // To end of WextWallFoot
-  -12319,     // SW corner NRetWall
-  -1270   // c_to_N
+-1270.10, // 0
+-4140.20, // 1
+-4140.20, // 2
+-4749.80, // 3
+-4749.80, // 4
+-11709.40, // 5
+-11709.40, // 6
+-12319.10, // 7
+-12319.10, // 8
+-13843.12, // 9
+-13843.12, // 10
+-12319.10, // 11
+-12318.90, // 12
+-12294.80, // 13
+-16359.75, // 14
+-16456.15, // 15
+-15864.06, // 16
+-16948.43, // 17
+-17540.45, // 18
+-17636.85, // 19
+-17636.85, // 20
+-14908.02, // 21
+-12318.95, // 22
+-12318.95, // 23
+-1270.10 // 24
 };
-
 vector<double> dirt.psArea.dirtSlab2.N2.yPositions = {
-  2438.4,   // c
-  2438.4,   // P1
-  6858,   // P0
-  6858,   // P1
-  6502.4,   // P2
-  6502.4,   // P3
-  6858,     // P3a
-  6858,     // P3b
-  5279.3,   // S1
-  5279.3,   // S2
-  -354.1,   // S3
-  -354.1,   // S4
-  -2091.9,  // P3d
-  -2096.1,  // P3e
-  -2194.8,  // P3f
-  -2913.11, // e5b
-  1923.3,   // NW corner of ExtMonCeiling
-  1761.51,   // e7
-  6599.68,   // up to WextWallFoot
-  7264.39,   // To elbow of WextWallFoot
-  7264.39,   // To end of WextWallFoot
-  9702.79,   // SW corner NRetWall
-  9702.79   // c_to_N
+2438.40, // 0
+2438.40, // 1
+6858.00, // 2
+6858.00, // 3
+6502.40, // 4
+6502.40, // 5
+6858.00, // 6
+6858.00, // 7
+5267.35, // 8
+5267.35, // 9
+-346.15, // 10
+-346.15, // 11
+-2091.95, // 12
+-2190.65, // 13
+-3180.25, // 14
+-2785.45, // 15
+-2640.85, // 16
+1800.84, // 17
+1656.29, // 18
+2051.10, // 19
+6609.62, // 20
+7290.02, // 21
+7290.02, // 22
+9702.70, // 23
+9702.70 // 24
 };
-
-// Local Variables:
-// mode:c++
-// End:

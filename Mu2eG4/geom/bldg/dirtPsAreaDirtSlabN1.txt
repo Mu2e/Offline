@@ -1,93 +1,90 @@
-// Feb 2025
-// dirtPsAreaDirtSlabN splitted into 2 volumes to accommodate PSH Steel Shielding
 string dirt.psArea.dirtSlab.N1.name     = "dirtPsAreaDirtSlabN1";
-
 string dirt.psArea.dirtSlab.N1.material = "CA7Backfill";
-
-double dirt.psArea.dirtSlab.N1.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.psArea.dirtSlab.N1.offsetFromFloorSurface.y = 6680.3003;
-double dirt.psArea.dirtSlab.N1.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.psArea.dirtSlab.N1.yHalfThickness           = 152.2997;
-
-vector<int>    dirt.psArea.dirtSlab.N1.xreplace   = { 22, 23 };
+double dirt.psArea.dirtSlab.N1.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.psArea.dirtSlab.N1.offsetFromFloorSurface.y = 6680.30;
+double dirt.psArea.dirtSlab.N1.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.psArea.dirtSlab.N1.xreplace ={22 ,23 };
+vector<int> dirt.psArea.dirtSlab.N1.yreplace ={23 ,24 };
+double dirt.psArea.dirtSlab.N1.yHalfThickness           = 152.30;
 vector<double> dirt.psArea.dirtSlab.N1.xPositions = {
-  -1270,   // c
-  -4140.2,   // P1
-  -4140.2,    // P0
-  -4749.8,    // P1
-  -4749.8,    // P2
-  -11709.4,   // P3
-  -11709.4,   // P3a
-  -12319,     // P3b
-  -12319,     // S1
-  -13843,     // S2
-  -13843,     // S3
-  -15367,     // S4
-  -15367,     // S5
-  -12319,     // S6
-  -12318.9,   // P3d
-  -12343.4,   // P3e
-  -12319.3,   // P3f
-  -15857.5,   // Meet up with dirtExtMon
-  -15954.5,   // NW corner of southern part of dirtExtMon
-  -15361.7,   // SW corner extMonCeiling
-  -16446,     // NW corner extMonCeiling
-  -17037.6,   // e
-  -50000,   // e_to_W
-  -50000,   // NWcorner
-  -1270,   // c_to_N
-  -1270,   // Down to NRetWall
-  -12319,  // NW corner NRetWall
-  -12319,  // NE corner WextWallFoot
-  -14706.6,// top elbow WextWallFoot
-  -20628.71,// NW corner WextWallFoot
-  -19761.22,// SW corner WextWallFoot
-  -14503.4,// bot elbow WextWallFoot
-  -12319,  // SE corner WextWallFoot
-  -12319,  // SW corner NRetWall
-  -1270    // c to N
+-1270.00, // 0
+-4140.20, // 1
+-4140.20, // 2
+-4749.80, // 3
+-4749.80, // 4
+-11709.40, // 5
+-11709.40, // 6
+-12319.00, // 7
+-12319.00, // 8
+-13843.00, // 9
+-13843.00, // 10
+-15367.00, // 11
+-15367.00, // 12
+-12319.00, // 13
+-12319.00, // 14
+-12318.90, // 15
+-12294.80, // 16
+-16359.75, // 17
+-16456.15, // 18
+-15863.96, // 19
+-16948.33, // 20
+-17540.45, // 21
+-50000.00, // 22
+-50000.00, // 23
+-1270.00, // 24
+-1270.00, // 25
+-12318.95, // 26
+-12318.95, // 27
+-15357.41, // 28
+-21343.71, // 29
+-21306.83, // 30
+-27221.64, // 31
+-26693.07, // 32
+-20778.26, // 33
+-20458.67, // 34
+-14908.02, // 35
+-12318.95, // 36
+-12318.95, // 37
+-1270.00 // 38
 };
-
-vector<int>    dirt.psArea.dirtSlab.N1.yreplace   = { 23, 24 };
 vector<double> dirt.psArea.dirtSlab.N1.yPositions = {
-  2438.4,   // c
-  2438.4,   // P1
-  6858,   // P0
-  6858,   // P1
-  6502.4,   // P2
-  6502.4,   // P3
-  6858,     // P3a
-  6858,     // P3b
-  5279.3,   // S1
-  5279.3,   // S2
-  2947.9,   // S3
-  2947.9,   // S4
-  -354.1,   // S5
-  -354.1,   // S6
-  -2091.9,  // P3d
-  -2096.1,  // P3e
-  -2194.8,  // P3f
-  -3057.63,   // Meet extMonDirt
-  -2660.36,   // NW corner of southern part of dirtExtMon
-  -2518.25,   // SW corner extMonCeiling
-  1923.3,     // NW corner extMonCeiling
-  1776.25,   // e
-  1776.25,   // e_to_W
-  50000,     // NWcorner
-  50000,     // c_to_N
-  10312.41,  // Down to NRetWall
-  10312.41,  // NW corner NRetWall
-  10922.01,  // NE corner WextWallFoot
-  10922.01,  // top of elbow
-  9476.19,   // NW corner WextWallFoot
-  5922.91,   // SW corner WextWallFoot
-  7264.39,   // bot of elbow
-  7264.39,   // SE corner WextWallFoot
-  9702.79,   // SW corner NRetWall
-  9702.79    // c to N
+2438.40, // 0
+2438.40, // 1
+6858.00, // 2
+6858.00, // 3
+6502.40, // 4
+6502.40, // 5
+6858.00, // 6
+6858.00, // 7
+5279.30, // 8
+5279.30, // 9
+2947.90, // 10
+2947.90, // 11
+-354.10, // 12
+-354.10, // 13
+-2091.90, // 14
+-2091.95, // 15
+-2190.65, // 16
+-3180.25, // 17
+-2785.45, // 18
+-2640.90, // 19
+1800.85, // 20
+1656.29, // 21
+1656.29, // 22
+50000.00, // 23
+50000.00, // 24
+10312.41, // 25
+10312.41, // 26
+10947.83, // 27
+10947.83, // 28
+9454.95, // 29
+9306.98, // 30
+7832.02, // 31
+5712.32, // 32
+7187.38, // 33
+5905.83, // 34
+7290.02, // 35
+7290.02, // 36
+7187.48, // 37
+7187.48 // 38
 };
-
-// Local Variables:
-// mode:c++
-// End:

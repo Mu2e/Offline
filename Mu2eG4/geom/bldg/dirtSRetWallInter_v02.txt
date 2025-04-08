@@ -1,0 +1,23 @@
+string dirt.S.retaining.Wall.inter.name     = "dirtSRetWallInter";
+string dirt.S.retaining.Wall.inter.material = "MBOverburden";
+double dirt.S.retaining.Wall.inter.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.S.retaining.Wall.inter.offsetFromFloorSurface.y = 5473.60;
+double dirt.S.retaining.Wall.inter.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.S.retaining.Wall.inter.yreplace ={4 ,5 };
+double dirt.S.retaining.Wall.inter.yHalfThickness           = 1079.40;
+vector<double> dirt.S.retaining.Wall.inter.xPositions = {
+-2921.00, // 0
+-11724.10, // 1
+-11724.10, // 2
+-19065.97, // 3
+-19065.97, // 4
+-2921.00 // 5
+};
+vector<double> dirt.S.retaining.Wall.inter.yPositions = {
+-7505.70, // 0
+-7505.70, // 1
+-9436.20, // 2
+-9436.20, // 3
+-50000.00, // 4
+-50000.00 // 5
+};

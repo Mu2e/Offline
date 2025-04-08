@@ -1,61 +1,48 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_FillpsAreaLower.ccl
-
 string building.backfill.psArea.Lower.name     = "backfillPsAreaLower";
-
-string building.backfill.psArea.Lower.material = "CA7Backfill";
-
-double building.backfill.psArea.Lower.offsetFromMu2eOrigin.x   = 947.4;
-double building.backfill.psArea.Lower.offsetFromFloorSurface.y = 2514.6;
-double building.backfill.psArea.Lower.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.backfill.psArea.Lower.yHalfThickness           = 2667;
-
+string building.backfill.psArea.Lower.material = "MBOverburden";
+double building.backfill.psArea.Lower.offsetFromMu2eOrigin.x   = 947.40;
+double building.backfill.psArea.Lower.offsetFromFloorSurface.y = 1816.20;
+double building.backfill.psArea.Lower.offsetFromMu2eOrigin.z   = -3581.40;
+double building.backfill.psArea.Lower.yHalfThickness           = 1968.40;
 vector<double> building.backfill.psArea.Lower.xPositions = {
-  -2921,   // P0
-  -4089.4,   // P1
-  -4089.4,   // P2
-  -4851.4,   // P3
-  -4851.4,   // P4
-  -6254.75,   // P5
-  -7889.49,   // P6
-  -7491.88,   // P7
-  -8232.14,   // P8
-  -8629.74,   // P9
-  -11595.4,   // Q0 mod DNB was  -11605.4
-  -11199.3,   // Q1
-  -11939.6,   // Q2
-  -12319.3,   // Q3  mod DNB was -12322
-  -16841.4,   // Q4
-  -16817.3,   // Q5
-  -17853.7,   // Q6
-  -17853.7,   // q5 mod DNB
-  -2921   // q6
+-2921.00, // 0
+-2921.00, // 1
+-4089.30, // 2
+-4089.30, // 3
+-4851.50, // 4
+-4851.50, // 5
+-6254.65, // 6
+-7889.39, // 7
+-7491.78, // 8
+-8232.24, // 9
+-8629.84, // 10
+-11595.30, // 11
+-11199.20, // 12
+-11939.70, // 13
+-12319.40, // 14
+-17343.55, // 15
+-17319.45, // 16
+-19065.74, // 17
+-19065.74 // 18
 };
-
 vector<double> building.backfill.psArea.Lower.yPositions = {
-  -609.6,   // P0
-  -609.6,   // P1
-  -2286,   // P2
-  -2286,   // P3
-  -609.6,   // P4
-  -609.6,   // P5
-  -1008.71,   // P6
-  -2637.28,   // P7
-  -2818.01,   // P8
-  -1189.44,   // P9
-  -1920.03,   // Q0
-  -3542.43,   // Q1
-  -3723.16,   // Q2
-  -2194.8,   // Q3
-  -3297.85,   // Q4
-  -3396.55,  // Q5
-  -3649.57,  // Q6
-  -7505.7,   // q5
-  -7505.7   // q6
+-7505.70, // 0
+-609.70, // 1
+-609.70, // 2
+-2286.10, // 3
+-2286.10, // 4
+-609.70, // 5
+-609.70, // 6
+-1008.81, // 7
+-2637.38, // 8
+-2818.11, // 9
+-1189.54, // 10
+-1920.13, // 11
+-3542.53, // 12
+-3723.26, // 13
+-2194.90, // 14
+-3420.57, // 15
+-3519.27, // 16
+-3945.62, // 17
+-7505.70 // 18
 };
-
-// Local Variables:
-// mode:c++
-// End:
