@@ -3,10 +3,7 @@
 #define RobustHelixFinderData_HH
 
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
-// #include "CalPatRec/inc/CalHelixPoint.hh"
 
-// #include "BTrk/TrkBase/TrkErrCode.hh"
-// #include "BTrk/TrkBase/TrkParticle.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"

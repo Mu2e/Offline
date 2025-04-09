@@ -10,8 +10,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 #include "CLHEP/Matrix/Vector.h"
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "Rtypes.h"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include <cstddef>
 #include <vector>
 #include <cassert>

@@ -5,7 +5,6 @@
 // Original author David Brown, LBNL
 //
 #include "Offline/TrkReco/inc/PanelAmbigStructs.hh"
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "cetlib_except/coded_exception.h"
 #include <iostream>
 #include <algorithm>

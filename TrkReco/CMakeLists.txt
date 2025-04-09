@@ -4,7 +4,6 @@ cet_make_library(
       src/PanelStateIterator.cc
       src/RobustHelixFinderData.cc
       src/RobustHelixFit.cc
-      src/TrkDef.cc
       src/TrkPrintUtils.cc
       src/TrkTimeCalculator.cc
       src/TrkUtilities.cc
