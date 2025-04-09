@@ -5,11 +5,9 @@ namespace mu2e {
   ProtonBeamDump::ProtonBeamDump()
     : _coreRotY(0.)
     , _coreRotationInMu2e(CLHEP::HepRotation::IDENTITY)
-    , _minCoreShieldingThickness(0.)
-    , _shieldingFaceXmin(0.)
-    , _shieldingFaceXmax(0.)
-    , _shieldingFaceZatXmin(0.)
-    , _shieldingFaceZatXmax(0.)
+    , _dumpConcreteHalfHeight(0.)
+    , _extMonSubtractionHalfHeight(0.)
+    , _coreCenterDistanceToReferencePlane(0.)
   {}
 
   //================================================================

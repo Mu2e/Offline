@@ -23,43 +23,57 @@ namespace mu2e {
   public:
 
     //----------------------------------------------------------------
-    // Primary inputs: sizes
+    // Beam dump core placement and dimensions
 
-    const std::vector<double>& coreHalfSize() const { return _coreHalfSize; }
-    const std::vector<double>& neutronCaveHalfSize() const { return _neutronCaveHalfSize; }
-    const std::vector<double>& mouthHalfSize() const { return _mouthHalfSize; }
-    const std::vector<double>& frontSteelHalfSize() const { return _frontSteelHalfSize; }
-    const std::vector<double>& backSteelHalfSize() const { return _backSteelHalfSize; }
-    const std::vector<double>& coreAirHalfSize() const { return _coreAirHalfSize; }
-
-    //----
-    // Primary inputs: placement
     const CLHEP::Hep3Vector& coreCenterInMu2e() const { return _coreCenterInMu2e; }
     // absolute w.r.t to the Mu2e
     double coreRotY() const { return _coreRotY; }
     const CLHEP::HepRotation& coreRotationInMu2e() const { return _coreRotationInMu2e; }
 
-    //---
-    // Derived stuff
+    const std::vector<double>& coreHalfSize() const { return _coreHalfSize; }
 
-    // Front core shielding: contains the dump core and collimator1.
-    double coreCenterDistanceToShieldingFace() const { return _coreCenterDistanceToShieldingFace; }
-    double coreCenterDistanceToReferencePlane() const { return _coreCenterDistanceToReferencePlane; }
+    //----------------------------------------------------------------
+    // The beam dump concrete poured around the core.  It is modeled
+    // as a boolean subtraction volume.  The starting volume is as an
+    // extruded solid parameterized here.  Some subtraction pieces are
+    // defined below: the "mouth" and the "neutron cave", as well as
+    // the ExtMon room cutout.  Another subtraction is based on the
+    // Entrace collimator for the Extinction Monitor, its parameters
+    // are not provided by this class.
+    //
+    // The parameters for the mouth and neutron cave subtraction
+    // volumes here are nominal.  The margins to ensure proper
+    // overlaps for G4 booleans are added by the code talking to G4.
+    // OTOH extMonSubtractionOutline is tweaked here, as postponing
+    // the extruded solid tweak would make the overall code too entangled.
 
-    const std::vector<double>& frontShieldingHalfSize() const { return _frontShieldingHalfSize; }
-    const CLHEP::Hep3Vector& frontShieldingCenterInMu2e() const { return _frontShieldingCenterInMu2e; }
+    std::vector<CLHEP::Hep2Vector> dumpConcreteOutline() const { return _dumpConcreteOutline; }
+    const CLHEP::Hep3Vector& dumpConcreteCenterInMu2e() const { return _dumpConcreteCenterInMu2e; }
+    double dumpConcreteHalfHeight() const { return _dumpConcreteHalfHeight; }
 
+    std::vector<CLHEP::Hep2Vector> extMonSubtractionOutline() const { return _extMonSubtractionOutline; }
+    const CLHEP::Hep3Vector& extMonSubtractionCenterInMu2e() const { return _extMonSubtractionCenterInMu2e; }
+    double extMonSubtractionHalfHeight() const { return _extMonSubtractionHalfHeight; }
+
+    const std::vector<double>& mouthHalfSize() const { return _mouthHalfSize; }
     const CLHEP::Hep3Vector& mouthCenterInMu2e() const { return _mouthCenterInMu2e; }
+
+    const std::vector<double>& neutronCaveHalfSize() const { return _neutronCaveHalfSize; }
     const CLHEP::Hep3Vector& neutronCaveCenterInMu2e() const { return _neutronCaveCenterInMu2e; }
-    const CLHEP::Hep3Vector& frontSteelCenterInMu2e() const { return _frontSteelCenterInMu2e; }
-    const CLHEP::Hep3Vector& backSteelCenterInMu2e() const { return _backSteelCenterInMu2e; }
+
+    //----------------------------------------------------------------
+    // More details of the beam dump construction
+
+    // the gap between the core and the concrete for the cooling air
+    const std::vector<double>& coreAirHalfSize() const { return _coreAirHalfSize; }
     const CLHEP::Hep3Vector& coreAirCenterInMu2e() const { return _coreAirCenterInMu2e; }
 
-    const std::vector<double>& backShieldingHalfSize() const { return _backShieldingHalfSize; }
-    const CLHEP::Hep3Vector& backShieldingCenterInMu2e() const { return _backShieldingCenterInMu2e; }
+    // The shielding steel on top of the core
+    const std::vector<double>& frontSteelHalfSize() const { return _frontSteelHalfSize; }
+    const CLHEP::Hep3Vector& frontSteelCenterInMu2e() const { return _frontSteelCenterInMu2e; }
 
-    std::vector<CLHEP::Hep2Vector> frontShieldingOutline() const { return _frontShieldingOutline; }
-    std::vector<CLHEP::Hep2Vector> backShieldingOutline()  const { return _backShieldingOutline; }
+    // Used for ExtMon.  FIXME: move this out.
+    double coreCenterDistanceToReferencePlane() const { return _coreCenterDistanceToReferencePlane; }
 
     //----------------------------------------------------------------
     // Transform to the "beam dump" coordinate system, which is centered
@@ -74,46 +88,36 @@ namespace mu2e {
     //----------------------------------------------------------------
   private:
     friend class ProtonBeamDumpMaker;
-    // Private ctr: the class should be only obtained via ProtonBeamDumpFNAL::ProtonBeamDumpMaker.
+    // Private ctr: the class should be only obtained via ProtonBeamDumpMaker
     ProtonBeamDump();
-    // Or read back from persistent storage
-    template<class T> friend class art::Wrapper;
 
     CLHEP::Hep3Vector _coreCenterInMu2e;
     double _coreRotY;
     CLHEP::HepRotation _coreRotationInMu2e;
 
     std::vector<double> _coreHalfSize;
-    std::vector<double> _neutronCaveHalfSize;
+
+    std::vector<CLHEP::Hep2Vector> _dumpConcreteOutline;
+    double _dumpConcreteHalfHeight;
+    CLHEP::Hep3Vector _dumpConcreteCenterInMu2e;
+
+    std::vector<CLHEP::Hep2Vector> _extMonSubtractionOutline;
+    double _extMonSubtractionHalfHeight;
+    CLHEP::Hep3Vector _extMonSubtractionCenterInMu2e;
+
     std::vector<double> _mouthHalfSize;
-    std::vector<double> _frontSteelHalfSize;
-    std::vector<double> _backSteelHalfSize;
-    std::vector<double> _coreAirHalfSize;
-    double _minCoreShieldingThickness;
-
-
-    // computed stuff
-    std::vector<CLHEP::Hep2Vector> _frontShieldingOutline;
-    double _coreCenterDistanceToShieldingFace;
-    double _coreCenterDistanceToReferencePlane;
-    std::vector<double> _frontShieldingHalfSize;
-    CLHEP::Hep3Vector _frontShieldingCenterInMu2e;
-
-    std::vector<CLHEP::Hep2Vector> _backShieldingOutline;
-    std::vector<double> _backShieldingHalfSize;
-    CLHEP::Hep3Vector _backShieldingCenterInMu2e;
-
     CLHEP::Hep3Vector _mouthCenterInMu2e;
+
+    std::vector<double> _neutronCaveHalfSize;
     CLHEP::Hep3Vector _neutronCaveCenterInMu2e;
-    CLHEP::Hep3Vector _frontSteelCenterInMu2e;
-    CLHEP::Hep3Vector _backSteelCenterInMu2e;
+
+    std::vector<double> _coreAirHalfSize;
     CLHEP::Hep3Vector _coreAirCenterInMu2e;
 
-    double _shieldingFaceYmin;
-    double _shieldingFaceXmin;
-    double _shieldingFaceXmax;
-    double _shieldingFaceZatXmin;
-    double _shieldingFaceZatXmax;
+    std::vector<double> _frontSteelHalfSize;
+    CLHEP::Hep3Vector _frontSteelCenterInMu2e;
+
+    double _coreCenterDistanceToReferencePlane;
   };
 }
 

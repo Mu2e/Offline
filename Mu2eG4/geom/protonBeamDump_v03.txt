@@ -32,8 +32,6 @@ vector<double> protonBeamDump.mouthHalfSize = {750., 750., 500.};
 // Neutron cave
 vector<double> protonBeamDump.neutronCaveHalfSize = {1250., 1250., 500.};
 
-// shielding around the core, minimal req.
-double         protonBeamDump.minCoreShieldingThickness = 1000.;
 // Air gap around core
 double         protonBeamDump.coreAirGap = 12.7;
 // Steel above dump
