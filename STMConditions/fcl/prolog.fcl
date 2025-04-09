@@ -4,7 +4,7 @@ STMEnergyCalib : {
    useDb : false
    verbose : 0
    pedestals : [ ["HPGe",0.0], ["LaBr",0.0] ]
-   samplingFrequencies : [ ["HPGe",1.0], ["LaBr",1.0] ]
+   samplingFrequencies : [ ["HPGe",320.0], ["LaBr",370.370370370] ]
 }
 
 END_PROLOG
