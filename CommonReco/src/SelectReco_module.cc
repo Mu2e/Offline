@@ -55,7 +55,7 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<int>  debug                   { Name("debugLevel"),                     Comment("Debug Level"), 0};
         fhicl::Atom<art::InputTag> CCC            { Name("CaloClusterCollection"),          Comment("CaloClusterCollection")};
-        fhicl::Atom<art::InputTag> CrvC           { Name("CrvCoincidenceClusterCollection"),Comment("CrvCoincidenceClusterCollections")};
+        fhicl::Atom<art::InputTag> CrvCCC         { Name("CrvCoincidenceClusterCollection"),Comment("CrvCoincidenceClusterCollections")};
         fhicl::Atom<art::InputTag> SDC            { Name("StrawDigiCollection"),            Comment("StrawDigiCollection")};
         fhicl::Atom<art::InputTag> CHC            { Name("ComboHitCollection"),             Comment("ComboHitCollection for the original StrawHits (not Panel hits)")};
         fhicl::Atom<art::InputTag> CDC            { Name("CaloDigiCollection"),             Comment("CaloDigiCollection")};
@@ -71,33 +71,33 @@ namespace mu2e {
       void produce(art::Event& evt) override;
 
     private:
+      typedef std::set<StrawDigiIndex> SDIS;
       // utility functions
       void fillStrawHitCounts(ComboHitCollection const& chc, RecoCount& nrec);
       void fillTrk           (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs, RecoCount& nrec);
       void fillCrv           (art::Event& event, RecoCount& nrec);
       void fillCalo          (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs, RecoCount& nrec);
+
       int debug_;
       art::InputTag ccct_, sdct_, chct_, cdct_, crvcct_, crvdct_;
       std::vector<art::InputTag> kscts_;
+      double ccme_;
       bool saveunused_;
-      typedef std::set<StrawDigiIndex> SDIS;
   };
 
   SelectReco::SelectReco(const Parameters& config )  :
     art::EDProducer{config},
     debug_(config().debug()),
-    saveunused_(config().saveNearby()),
-    _pp(config().PP()),
     ccct_(config().CCC()),
     sdct_(config().SDC()),
     chct_(config().CHC()),
     cdct_(config().CDC()),
+    crvcct_(config().CrvCCC()),
     crvdct_(config().CRVDC()),
     kscts_(config().KalSeeds()),
-    _hscs(config().HelixSeeds()),
-    crvcct_c(config().CrvCCC()),
-    _ccme(config().CCME())
-    {
+    ccme_(config().CCME()),
+    saveunused_(config().saveNearby())
+   {
       consumes<StrawDigiCollection>(sdct_);
       consumes<StrawDigiADCWaveformCollection>(sdct_);
       consumes<ComboHitCollection>(chct_);
@@ -153,10 +153,8 @@ namespace mu2e {
         auto const& ksc = *ksch;
         if(debug_ > 1) std::cout << "Found " << ksc.size() << " seeds from collection " << ksct << std::endl;
         for(auto const& ks : ksc) {
-          // add digis and hits assocated with this track
-          fillTSH(ks);
-          // add Digis 'near' the track
-          if(_saveunused)fillNearbyTSH(ks);
+          // add Digis associated with the hits used in this fit
+          for(auto const& hit : ks.hits() ) sdindices.insert(hit.index());
           // record the CaloCluster associated with this ks (if any)
           if(ks.hasCaloCluster())ccptrs.insert(ks.caloCluster());
         }
@@ -167,7 +165,6 @@ namespace mu2e {
     ssdc->reserve(sdindices.size());
     ssdadcc->reserve(sdindices.size());
     for(auto sdindex : sdindices){
-      sdmcim->addElement(sdindex,sdcount++);
       // deep-copy the selected StrawDigis
       ssdc->push_back(sdc[sdindex]);
       ssdadcc->push_back(sdadcc[sdindex]);
@@ -198,17 +195,16 @@ namespace mu2e {
     // find Crv data in event
     auto crvdch = event.getValidHandle<CrvDigiCollection>(crvdct_);
     auto const& crvdc = *crvdch;
-    auto crvdmcch = event.getValidHandle<CrvDigiMCCollection>(_crvdmcc);
-    auto const& crvdmcc = *crvdmcch;
     auto CrvRecoPulseCollectionPID = event.getProductID<CrvRecoPulseCollection>();
     auto CrvRecoPulseCollectionGetter = event.productGetter(CrvRecoPulseCollectionPID);
     // create new Crv collections
     std::unique_ptr<CrvDigiCollection> scrvdc(new CrvDigiCollection);
     std::unique_ptr<CrvRecoPulseCollection> scrvrpc(new CrvRecoPulseCollection);
     std::unique_ptr<CrvCoincidenceClusterCollection> scrvccc(new CrvCoincidenceClusterCollection);
+    std::unique_ptr<IndexMap> crvdim(new IndexMap);
 
     std::set<uint16_t> crvindices;
-    auto crvccch = event.getValidHandle<CrvCoincidenceClusterCollection>(crvcct_c);
+    auto crvccch = event.getValidHandle<CrvCoincidenceClusterCollection>(crvcct_);
     auto const& crvccc = *crvccch;
     // loop over CrvCoincidenceClusters
     for(auto const& crvcc: crvccc) {
@@ -225,12 +221,13 @@ namespace mu2e {
       }
       // deep-copy the coincidence-cluster with updated Reco Pulses
       CrvCoincidenceCluster scrvcc(crvcc);
-      scrvccc->SetCrvRecoPulses(pulses);
+      scrvcc.SetCrvRecoPulses(pulses);
+      scrvccc->push_back(scrvcc);
     }
     // Fill CrvIndex map
     uint16_t crvcount(0);
     for(auto crvindex : crvindices){
-      crvdmcim->addElement(crvindex,crvcount++);
+      crvdim->addElement(crvindex,crvcount++);
       // deep-copy the selected CrvDigis
       scrvdc->push_back(crvdc.at(crvindex));
     }
@@ -238,7 +235,7 @@ namespace mu2e {
     for(auto& crvrp : *scrvrpc) {
       auto& indices = crvrp.GetWaveformIndices();
       for(size_t iindex=0; iindex < indices.size(); ++iindex){
-        indices[iindex] = crvdmcim->getCondensedIndex(indices[iindex]);
+        indices[iindex] = crvdim->getCondensedIndex(indices[iindex]);
       }
     }
     // update reco count
@@ -246,10 +243,41 @@ namespace mu2e {
     // put new data in event
     event.put(std::move(scrvdc));
     event.put(std::move(scrvrpc));
-    for (size_t i_tag = 0; i_tag < crvcct_cs.size(); ++i_tag) {
-      event.put(std::move(scrvcccs.at(i_tag)), crvcct_cs.at(i_tag).label());
-    }
-    event.put(std::move(crvdmcim),"CrvDigiMap");
+    event.put(std::move(scrvccc));
+    event.put(std::move(crvdim),"CrvDigiMap");
   }
+  void SelectReco::fillCalo(art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs, RecoCount& nrec) {
+    auto cdch = event.getValidHandle<CaloDigiCollection>(cdct_);
+    auto const& cdc = *cdch;
+    auto ccch = event.getValidHandle<CaloClusterCollection>(ccct_);
+    auto const& ccc = *ccch;
+
+    std::unique_ptr<CaloDigiCollection> scdc(new CaloDigiCollection);
+    // reco count
+    nrec._ncalodigi = cdc.size();
+    nrec._ncc = ccc.size();
+    nrec._cce = 0.0;
+    // loop over all the CaloClusters and mark the ones that are above energy for saving by adding their Ptrs to the list
+    for(unsigned icc=0;icc < ccc.size(); icc++){
+      auto const& cc = ccc[icc];
+      nrec._cce += cc.energyDep();
+      if(cc.energyDep() > ccme_){
+        auto ccp = art::Ptr<CaloCluster>(ccch,icc);
+        ccptrs.insert(ccp);
+      }
+    }
+    // deep-copy CaloDigis from selected clusters
+    for(auto const& ccptr : ccptrs) {
+      for(auto const& cchptr : ccptr->caloHitsPtrVector()){
+        for (auto const& rcdptr : cchptr->recoCaloDigis()){
+          // deep-copy CaloDigis used in clusters
+          scdc->push_back(*rcdptr->caloDigiPtr());
+        }
+      }
+    }
+    // put new data into event
+    event.put(std::move(scdc));
+  }
+
 }
 DEFINE_ART_MODULE(mu2e::SelectReco)

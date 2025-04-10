@@ -19,19 +19,21 @@ rootlibs = env['ROOTLIBS']
 mainlib = helper.make_mainlib ( [] )
 
 helper.make_plugins( [ mainlib,
-  'mu2e_TrkDiag',
+  'mu2e_Mu2eKinKal',
   'mu2e_Mu2eUtilities',
   'mu2e_ConditionsService',
   'mu2e_TrackerConditions',
-  'mu2e_DAQConditions',
   'mu2e_GeometryService',
-  'mu2e_SeedService',
+  'mu2e_BFieldGeom',
+  'mu2e_CalorimeterGeom',
   'mu2e_TrackerGeom',
   'mu2e_RecoDataProducts',
   'mu2e_GlobalConstantsService',
-  'mu2e_DataProducts',
   'mu2e_DbTables',
+  'mu2e_ConfigTools',
+  'mu2e_DataProducts',
   'mu2e_GeneralUtilities',
+  'mu2e_GeomPrimitives',
   'art_Framework_Core',
   'art_Framework_Principal',
   'art_Framework_Services_Registry',
@@ -49,10 +51,19 @@ helper.make_plugins( [ mainlib,
   'cetlib',
   'cetlib_except',
   'CLHEP',
-  'boost_filesystem',
+  'mu2e_KinKalGeom',
+  'KinKal_Fit',
+  'KinKal_Trajectory',
+  'KinKal_Geometry',
+  'KinKal_Detector',
+  'KinKal_MatEnv',
+  'KinKal_General',
   rootlibs,
-  ],
-  )
+  'ROOTTMVASofie',
+  'xerces-c',
+  'boost_filesystem',
+  'pthread'
+  ])
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
