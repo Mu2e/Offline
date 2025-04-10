@@ -1,38 +1,25 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_PSarea_dirtSlab2_N.ccl
-
 string dirt.psArea.dirtSlab2.N.Beyond.name     = "dirtPsAreaDirtSlab2NBeyond";
-
 string dirt.psArea.dirtSlab2.N.Beyond.material = "MBOverburden";
-
-double dirt.psArea.dirtSlab2.N.Beyond.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.psArea.dirtSlab2.N.Beyond.offsetFromFloorSurface.y = 7061.2;
-double dirt.psArea.dirtSlab2.N.Beyond.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.psArea.dirtSlab2.N.Beyond.yHalfThickness           = 228.6;
-
+double dirt.psArea.dirtSlab2.N.Beyond.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.psArea.dirtSlab2.N.Beyond.offsetFromFloorSurface.y = 7061.20;
+double dirt.psArea.dirtSlab2.N.Beyond.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.psArea.dirtSlab2.N.Beyond.yreplace ={5 ,6 };
+double dirt.psArea.dirtSlab2.N.Beyond.yHalfThickness           = 228.60;
 vector<double> dirt.psArea.dirtSlab2.N.Beyond.xPositions = {
-  -1270,   // c
-  -12319,   // NW corner NRetWall
-  -12319,   // NE corner WextWallFoot
-  -14706.6, // top elbow WextWallFoot
-  -17108.7,   // e7
-  -17108.7,   // e7 to N
-  -1270   // c_to_N
+-1270.00, // 0
+-12318.95, // 1
+-12318.95, // 2
+-15357.41, // 3
+-17108.70, // 4
+-17108.70, // 5
+-1270.00 // 6
 };
-
-vector<int>    dirt.psArea.dirtSlab2.N.Beyond.yreplace   = { 5, 6 };
 vector<double> dirt.psArea.dirtSlab2.N.Beyond.yPositions = {
-  10312.41,   // c
-  10312.41, //  NW corner NRetWall
-  10922.01,   //NE corner WextWallFoot
-  10922.01,   //top elbow WextWallFoot
-  10335.6,   // e7
-  50000,   // e7 to N
-  50000   // c_to_N
+10312.41, // 0
+10312.41, // 1
+10947.83, // 2
+10947.83, // 3
+10511.09, // 4
+50000.00, // 5
+50000.00 // 6
 };
-
-// Local Variables:
-// mode:c++
-// End:

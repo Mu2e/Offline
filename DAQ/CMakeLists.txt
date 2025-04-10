@@ -25,8 +25,14 @@ cet_build_plugin(ProcessDTCAndCFOEvents art::module
     REG_SOURCE src/ProcessDTCAndCFOEvents_module.cc
     LIBRARIES REG
       Offline::DAQ
-
 )
+
+cet_build_plugin(EventHeaderFromCFOFragment art::module
+    REG_SOURCE src/EventHeaderFromCFOFragment_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+)
+    
 
 cet_build_plugin(CaloHitsFromDataDecoders art::module
     REG_SOURCE src/CaloHitsFromDataDecoders_module.cc
@@ -81,6 +87,20 @@ cet_build_plugin(DataDecodersAna art::module
       Offline::DAQ
       Offline::DataProducts
       ROOT::Hist
+)
+
+cet_build_plugin(DummyLumiInfoProducer art::module
+    REG_SOURCE src/DummyLumiInfoProducer_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+      Offline::RecoDataProducts
+)
+
+cet_build_plugin(LumiStreamFilter art::module
+    REG_SOURCE src/LumiStreamFilter_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(PrefetchDAQData art::module
