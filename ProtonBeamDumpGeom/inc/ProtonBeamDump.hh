@@ -72,9 +72,6 @@ namespace mu2e {
     const std::vector<double>& frontSteelHalfSize() const { return _frontSteelHalfSize; }
     const CLHEP::Hep3Vector& frontSteelCenterInMu2e() const { return _frontSteelCenterInMu2e; }
 
-    // Used for ExtMon.  FIXME: move this out.
-    double coreCenterDistanceToReferencePlane() const { return _coreCenterDistanceToReferencePlane; }
-
     //----------------------------------------------------------------
     // Transform to the "beam dump" coordinate system, which is centered
     // at the core center, and is rotated around the Y axis w.r.t the mu2e system
@@ -116,8 +113,6 @@ namespace mu2e {
 
     std::vector<double> _frontSteelHalfSize;
     CLHEP::Hep3Vector _frontSteelCenterInMu2e;
-
-    double _coreCenterDistanceToReferencePlane;
   };
 }
 

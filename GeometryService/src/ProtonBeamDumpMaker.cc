@@ -81,8 +81,6 @@ namespace mu2e {
                   [](double& v) { v *= 0.5; } // user inputs are full size, we need half size
                   );
 
-    dump->_coreCenterDistanceToReferencePlane = c.getDouble("protonBeamDump.coreCenterDistanceToReferencePlane");
-
     // FIXME: the reality is different
     const double coreAirGap = c.getDouble("protonBeamDump.coreAirGap");
     dump->_coreAirHalfSize.resize(3);

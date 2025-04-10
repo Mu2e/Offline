@@ -37,10 +37,6 @@ double         protonBeamDump.coreAirGap = 12.7;
 // Steel above dump
 vector<double> protonBeamDump.additionalSteel = {2514.6, 508, 3187.7};
 
-// This number defines the z location (in dump coordinates) at which
-// nominal entry point of the front collimator is defined
-double         protonBeamDump.coreCenterDistanceToReferencePlane = 3000.;
-
 //----------------------------------------------------------------
 string protonBeamDump.material.core  = "G4_Fe";
 string protonBeamDump.material.shielding = "ShieldingConcrete";
