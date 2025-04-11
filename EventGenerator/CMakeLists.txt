@@ -617,6 +617,13 @@ cet_build_plugin(MuplusMichelGenerator art::tool
       Offline::Mu2eUtilities
 )
 
+cet_build_plugin(PhotonGun art::module
+    REG_SOURCE src/PhotonGun_module.cc
+    LIBRARIES REG
+      Offline::MCDataProducts
+      Offline::DataProducts
+)
+
 cet_build_plugin(RMCGenerator art::tool
     REG_SOURCE src/RMCGenerator_tool.cc
     LIBRARIES REG

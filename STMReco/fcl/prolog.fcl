@@ -18,6 +18,8 @@ STM : {
     L : 200
     nsigma_cut : 9
     thresholdgrad : -0.3
+    defaultBaselineMean : -100
+    defaultBaselineSD : -100
   }
   LaBr : {
     # zero-suppression parameters
@@ -32,6 +34,8 @@ STM : {
     L : 45
     nsigma_cut : 9
     thresholdgrad : -0.3
+    defaultBaselineMean : -100
+    defaultBaselineSD : -100
   }
 }
 
