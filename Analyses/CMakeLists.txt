@@ -136,6 +136,8 @@ cet_build_plugin(CosmicFilter art::module
 cet_build_plugin(CountPionDecays art::module
     REG_SOURCE src/CountPionDecays_module.cc
     LIBRARIES REG
+
+
       Offline::DataProducts
       Offline::MCDataProducts
 )

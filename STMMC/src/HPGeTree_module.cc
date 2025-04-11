@@ -128,7 +128,7 @@ namespace mu2e {
   double HPGeTree::parentTime(const art::Event& event, key_type parentId) {
     // Get the data products from the event
     auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
-    auto const& SimParticles = event.getProduct(SimParticlemvToken);
+    auto const& SimParticles = event.getProduct(SimParticlemvToken); // TODO - resture this so we don't access the SimParticles from the data product directly, but through the parent particle
 
     // Set up a variable to track the maximum particle time
     time = std::numeric_limits<double>::max();

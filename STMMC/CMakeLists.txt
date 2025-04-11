@@ -1,12 +1,12 @@
-cet_build_plugin(ConcatenateOutputWaveforms art::module
-    REG_SOURCE src/ConcatenateOutputWaveforms_module.cc
+cet_build_plugin(ConcatenateDigitizedWaveforms art::module
+    REG_SOURCE src/ConcatenateDigitizedWaveforms_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::RecoDataProducts
 )
 
 cet_build_plugin(ConcatenationFilter art::module
-    REG_SOURCE src/ConcatenationFilter.cc
+    REG_SOURCE src/ConcatenationFilter_module.cc
     LIBRARIES REG
     Offline::RecoDataProducts
 )
@@ -18,7 +18,7 @@ cet_build_plugin(CountMixedEvents art::module
 )
 
 cet_build_plugin(DetectorEfficiency art::module
-    REG_SOURCE src/HPGeEfficiency_module.cc
+    REG_SOURCE src/DetectorEfficiency_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::MCDataProducts
