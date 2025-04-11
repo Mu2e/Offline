@@ -152,6 +152,17 @@ cet_build_plugin(STMWaveformDigisFromFragments art::module
       BTrk_difAlgebra
 )
 
+<<<<<<< HEAD
+=======
+cet_build_plugin(StrawDigisFromArtdaqFragments art::module
+  REG_SOURCE src/StrawDigisFromArtdaqFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::DataProducts
+  Offline::RecoDataProducts
+)
+
+>>>>>>> 8bcc2dcef (fix a typo)
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/DAQ/fcl)
