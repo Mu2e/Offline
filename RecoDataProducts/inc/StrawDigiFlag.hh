@@ -13,7 +13,7 @@ namespace mu2e {
 
   struct StrawDigiFlagDetail {
     typedef uint8_t mask_type;
-    enum bit_type {energysel=0, dedxsel=1, processed=7};
+    enum bit_type {energysel=0, dedxsel=1, corrupted=2, processed=7};
     // functions needed for the BitMap template
     static std::string const& typeName();
     static std::map<std::string,mask_type> const& bitNames();
