@@ -25,6 +25,11 @@ physics : {
             module_type : DummyLumiInfoProducer
             simMode     : 1
         }
+        EventHeaderFromCFO : {
+            module_type : EventHeaderFromCFOFragment
+            cfoTag      : "daq:CFO"
+            diagLevel   : 0
+        }
     }
 
     filters : {
@@ -33,12 +38,13 @@ physics : {
             caloTag        : DummyLumiStream
             timeClusterTag : DummyLumiStream
             trackerTag     : DummyLumiStream
-            # eventFreq      : 10000
-            diagLevel      : 1
+            headerTag      : EventHeaderFromCFO
+            # eventFreq      : 1
+            diagLevel      : 0
         }
     }
 
-    t1 : [ DummyLumiStream, LumiFilter  ]
+    t1 : [ EventHeaderFromCFO, DummyLumiStream, LumiFilter  ]
     e1 : [ outfile ]
 
     trigger_paths  : [t1]
@@ -55,5 +61,6 @@ outputs:  {
                          "drop *_*_*_*",
                          "keep *_LumiFilter_*_*"
                         ]
+        compressionLevel : 0
     }
 }

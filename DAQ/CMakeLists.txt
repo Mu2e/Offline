@@ -101,6 +101,7 @@ cet_build_plugin(LumiStreamFilter art::module
     LIBRARIES REG
       Offline::DAQ
       Offline::RecoDataProducts
+      artdaq::DAQdata
 )
 
 cet_build_plugin(PrefetchDAQData art::module
