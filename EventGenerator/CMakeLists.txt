@@ -641,6 +641,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/particleGun.txt	      
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/primaryProtonGun.txt   ${CURRENT_BINARY_DIR} defaultConfigs/primaryProtonGun.txt  )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/surfaceCheck.txt       ${CURRENT_BINARY_DIR} defaultConfigs/surfaceCheck.txt      )
 
+install(DIRECTORY defaultConfigs DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/EventGenerator)
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/EventGenerator/fcl)
