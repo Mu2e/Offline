@@ -172,13 +172,8 @@ namespace mu2e {
     // The ExtMon room subtraction.
     // The the back is the same as the concrete back.  Add a margin for the G4 boolean.
     const double booleanVolumeMargin = 50; // mm
-    dump->_extMonSubtractionOutline.emplace_back(pswVertices[14]+psWoff2
-                                                 +Hep2Vector(-booleanVolumeMargin, +booleanVolumeMargin)
-                                                 );
-
-    dump->_extMonSubtractionOutline.emplace_back(pswVertices[15]+psWoff2
-                                                 +Hep2Vector(-booleanVolumeMargin, -booleanVolumeMargin)
-                                                 );
+    dump->_extMonSubtractionOutline.emplace_back(pswVertices[14]+psWoff2 + booleanVolumeMargin*( nx-nz));
+    dump->_extMonSubtractionOutline.emplace_back(pswVertices[15]+psWoff2 + booleanVolumeMargin*(-nx-nz));
 
     // The front of the subtraction is lined up with psCeil vertices 6
     // and 7.  This line cuts through the bulk of the concrete and the
