@@ -120,6 +120,15 @@ namespace mu2e {
     const ExtrudedSolid& psWall  = hall.getBldgSolid("psWallUpper");    // contains back corners of dump slab
     const ExtrudedSolid& psCeil  = hall.getBldgSolid("psAreaCeilingSW");// top of dump and ExtMon cutout
 
+    // The scale of an artificial gap, in mm, between touching volumes
+    // needed to eliminate G4-reported volume overlaps that are
+    // artifacts of rounding errors.
+    const double ovlgap = 0.5;
+
+    // unit vectors in the beam dump reference frame
+    const Hep2Vector nx = toOutlinePlane(dump->beamDumpToMu2e_momentum(Hep3Vector(1,0,0)));
+    const Hep2Vector nz = toOutlinePlane(dump->beamDumpToMu2e_momentum(Hep3Vector(0,0,1)));
+
     //----------------------------------------------------------------
     // For the dump shielding we define an extruded solid that extends
     // the side faces of the nominal dump horizontally to the enclosure
@@ -155,10 +164,10 @@ namespace mu2e {
     const auto& pswVertices =  psWall.getVertices();
     const Hep2Vector& psWoff2 = toOutlinePlane(psWall.getOffsetFromMu2eOrigin());
 
-    dump->_dumpConcreteOutline.emplace_back(pswVertices[14]+psWoff2);
-    dump->_dumpConcreteOutline.emplace_back(pswVertices[15]+psWoff2);
-    dump->_dumpConcreteOutline.emplace_back(intersection(faceLine, Line(pswVertices[15] + psWoff2, pswVertices[16] + psWoff2)));
-    dump->_dumpConcreteOutline.emplace_back(intersection(faceLine, Line(pswVertices[13] + psWoff2, pswVertices[14] + psWoff2)));
+    dump->_dumpConcreteOutline.emplace_back(pswVertices[14]+psWoff2 + ovlgap*(-nx+nz));
+    dump->_dumpConcreteOutline.emplace_back(pswVertices[15]+psWoff2 + ovlgap*( nx+nz));
+    dump->_dumpConcreteOutline.emplace_back(intersection(faceLine, Line(pswVertices[15] + psWoff2, pswVertices[16] + psWoff2)) + ovlgap*( nx));
+    dump->_dumpConcreteOutline.emplace_back(intersection(faceLine, Line(pswVertices[13] + psWoff2, pswVertices[14] + psWoff2)) + ovlgap*(-nx));
 
     // The ExtMon room subtraction.
     // The the back is the same as the concrete back.  Add a margin for the G4 boolean.
