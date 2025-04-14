@@ -83,8 +83,6 @@ cet_build_plugin(VirtualDetectorTree art::module
       Offline::MCDataProducts
 )
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/HPGeWaveformsFromStepPointMCs.fcl   ${CURRENT_BINARY_DIR} fcl/HPGeWaveformsFromStepPointMCs.fcl   COPYONLY)
-
 
 install_source(SUBDIRS src)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/STMMC/fcl)
