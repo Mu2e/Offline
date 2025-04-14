@@ -125,7 +125,7 @@ namespace mu2e {
   inline std::ostream& operator<<(std::ostream& ost,
                                   const STMChannel& id ){
     ost << "( "
-        << id.id() << ": "
+        << static_cast<int>(id.id()) << ": "
         << id.name()
         << " )";
     return ost;

@@ -692,7 +692,7 @@ CalPatRec : { @table::CalPatRec
              #TimeClusterCollection  : "TimeClusterFinderDmu"
              diag                   : 0
              debug                  : 0
-             minNSH                 : 5
+             minNSH                 : 10
              threshold              : 1 # 4
              nPhiClusters           : 40
              phiMin                 : 0.0

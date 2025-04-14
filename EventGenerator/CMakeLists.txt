@@ -617,6 +617,13 @@ cet_build_plugin(MuplusMichelGenerator art::tool
       Offline::Mu2eUtilities
 )
 
+cet_build_plugin(PhotonGun art::module
+    REG_SOURCE src/PhotonGun_module.cc
+    LIBRARIES REG
+      Offline::MCDataProducts
+      Offline::DataProducts
+)
+
 cet_build_plugin(RMCGenerator art::tool
     REG_SOURCE src/RMCGenerator_tool.cc
     LIBRARIES REG
@@ -634,6 +641,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/particleGun.txt	      
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/primaryProtonGun.txt   ${CURRENT_BINARY_DIR} defaultConfigs/primaryProtonGun.txt  )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/surfaceCheck.txt       ${CURRENT_BINARY_DIR} defaultConfigs/surfaceCheck.txt      )
 
+install(DIRECTORY defaultConfigs DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/EventGenerator)
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/EventGenerator/fcl)

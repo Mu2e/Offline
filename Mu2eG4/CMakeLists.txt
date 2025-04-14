@@ -2,6 +2,13 @@ string(REGEX REPLACE "^([0-9]+)\.([0-9]+)\.([0-9]+)$" "-DG4VERSION=4\\1\\2" G4VE
 message("---> Adding geant4 version compile flag ${G4VERSIONFLAG}")
 add_compile_options(${G4VERSIONFLAG})
 
+if(Geant4_VERSION VERSION_GREATER "11.2.1")
+  set( G4LIBSUBSET "Geant4::G4gdml;Geant4::G4geomtext;Geant4::G4mctruth")
+else()
+  set( G4LIBSUBSET "Geant4::G4persistency")
+endif()
+
+
 cet_make_library(
     SOURCE
       src/addStepLimiter.cc
@@ -161,7 +168,7 @@ cet_make_library(
       Geant4::G4processes
       Geant4::G4run
       Geant4::G4physicslists
-      Geant4::G4persistency
+      ${G4LIBSUBSET}
       Geant4::G4error_propagation
       CLHEP::CLHEP
 )

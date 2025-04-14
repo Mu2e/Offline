@@ -1,0 +1,49 @@
+#!/usr/bin/perl -w
+#
+# GDML files include memory addresses as part of object identifiers.
+# Those addresses change randomly, therefore GDML files from different
+# runs of Offline look different even if they represent identical
+# geometries.  This script compares GDML geometries while ignoring
+# the address "noise".
+#
+# Andrei Gaponenko, 2024
+
+use strict;
+use warnings;
+use File::Basename;
+use File::Temp;
+
+sub usage() {
+    my $name = basename($0);
+
+    return <<EOF
+Usage:
+        $name file1.gdml file2.gdml
+EOF
+        ;
+}
+
+if($#ARGV != 1) {
+    print usage();
+    exit 1;
+}
+
+my @cleaned;
+foreach my $infile (@ARGV) {
+    my $tmp = File::Temp->new();
+
+    open(my $fh, '<', $infile) or die "Can not open for reading file \"$infile\": $!\n";
+    while(my $line = <$fh>) {
+        $line =~ s/0[xX][0-9a-fA-F]+"/"/g;
+        $line =~ s/0[xX][0-9a-fA-F]+_pos/_pos/g;
+        $line =~ s/0[xX][0-9a-fA-F]+_rot/_rot/g;
+        $line =~ s/0[xX][0-9a-fA-F]+_scl/_scl/g;
+
+        print $tmp $line;
+    }
+
+    push @cleaned, $tmp;
+}
+
+# Use system() not exec() as we want Perl to clean up the temp files
+system { 'diff' } 'diff', '-s',  @cleaned;
