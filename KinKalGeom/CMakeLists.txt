@@ -1,5 +1,6 @@
 cet_make_library(
     SOURCE
+      src/CRV.cc
       src/DetectorSolenoid.cc
       src/StoppingTarget.cc
       src/SurfaceMap.cc
