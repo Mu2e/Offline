@@ -14,18 +14,6 @@
 #include "Offline/RecoDataProducts/inc/TrkStrawHitSeed.hh"
 #include "Offline/RecoDataProducts/inc/TrkCaloHitSeed.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
-// BTrk
-#include "BTrk/TrkBase/HelixTraj.hh"
-#include "BTrk/TrkBase/TrkMomCalculator.hh"
-#include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrk/KalmanTrack/KalMaterial.hh"
-#include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "BTrk/TrkBase/TrkDifPieceTraj.hh"
-#include "BTrk/TrkBase/TrkPoca.hh"
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "Offline/BTrkData/inc/TrkCaloHit.hh"
-#include "Offline/Mu2eBTrk/inc/DetStrawElem.hh"
-#include "BTrk/ProbTools/ChisqConsistency.hh"
 // KinKal
 #include "KinKal/Trajectory/CentralHelix.hh"
 // CLHEP
@@ -40,7 +28,7 @@ using CLHEP::HepSymMatrix;
 using CLHEP::HepVector;
 namespace mu2e {
   namespace TrkUtilities {
-
+/*
     bool RobustHelix2Traj (RobustHelix const& helix, HepVector& hpvec, float amsign) {
       bool retval(false);
       // compare the input with this configuration's helicity: these must be the same
@@ -69,7 +57,7 @@ namespace mu2e {
       }
       return retval;
     }
-
+    */
     void RobustHelixFromMom(Hep3Vector const& pos, Hep3Vector const& mom, double charge, double Bz, RobustHelix& helix){
       double momToRad = 1000.0/(charge*Bz*CLHEP::c_light);
       // compute some simple useful parameters
@@ -88,7 +76,7 @@ namespace mu2e {
       Angles::deltaPhi(phi);
       helix._fz0 = phi;
     }
-
+    /*
     // legacy function
     void fillSegment(HelixTraj const& htraj, double locflt, double globflt, TrkT0 t0, double mass, int charge, BField const& bfield, KalSegment& kseg) {
       // compute the kinematics; this is external to htraj
@@ -188,7 +176,7 @@ namespace mu2e {
     }
     // DNB: the timeOffset() should NOT be added to time(), it is a double correction.
     // I'm leaving for now as the production was run with this error FIXME!
-
+*/
     // compute the overlap between 2 clusters
     double overlap(SHIV const& shiv1, SHIV const& shiv2) {
       double over(0.0);
@@ -204,7 +192,7 @@ namespace mu2e {
       }
       return over/norm;
     }
-
+    
     double overlap(TimeCluster const& tc1, TimeCluster const& tc2) {
       double hover = overlap(tc1._strawHitIdxs,tc2._strawHitIdxs);
       double norm = std::min(tc1.hits().size(),tc2.hits().size());
@@ -217,7 +205,7 @@ namespace mu2e {
       }
       return over/norm;
     }
-
+    /*
     double overlap(KalSeed const& ks1, KalSeed const& ks2) {
       // translate hit info into a simple index array.  Only count active hits
       SHIV shiv1, shiv2;
@@ -314,9 +302,9 @@ namespace mu2e {
           }
         }
         /*    if (ihit->nStrawHits()>=2) {
-              ++ndactive;
-              }
-              */
+        //    ++ndactive;
+        //    }
+              
         //    std::cout << "AE: ihit->nStrawHits() = " << ihit->nStrawHits() << std::endl;
         const auto& jhit = ihit+1;
         const auto& hhit = ihit-1;
@@ -360,10 +348,11 @@ namespace mu2e {
         }
       }
       return tch;
-    }
+    }*/
     double energy(double mass, double momentum) {  return sqrt(momentum*momentum + mass*mass); }
     double beta(double mass, double momentum) { return fabs(momentum)/energy(mass,momentum); }
     double betagamma(double mass, double momentum) { return fabs(momentum)/mass; }
     double gamma(double mass, double momentum) { return energy(mass,momentum)/mass; }
   } // TrkUtilities
 }// mu2e
+
