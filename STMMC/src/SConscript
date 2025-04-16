@@ -38,12 +38,17 @@ helper.make_plugins( [ mainlib,
                        'cetlib',
                        'cetlib_except',
                        'CLHEP',
+                       'MF_MessageLogger',
                        'mu2e_Mu2eUtilities',
                        'mu2e_DataProducts',
                        'mu2e_DbTables',
                        'mu2e_STMConditions',
                        'mu2e_ProditionsService',
                        'mu2e_RecoDataProducts',
+                       'mu2e_MCDataProducts',
+                       'mu2e_GlobalConstantsService',
+                       'mu2e_ConditionsService',
+                       'mu2e_GeometryService',
                        rootlibs
                      ] )
 
