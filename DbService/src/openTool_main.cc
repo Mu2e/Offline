@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
       Print all IoVs for a given table
      -n, --name TABLENAME  (default is all tables)
 
-)" << std::endl;
+)";
 
     return 1;
   }
@@ -84,9 +84,9 @@ int main(int argc, char** argv) {
     tool.setAdmin(true);
   }
 
-  std::string command = unregistered[0];
+  const std::string command(unregistered[0]);
 
-  int rc;
+  int rc{0};
   if (command == "commit-calibration") {
     DbIoV iov(iovstr);
     rc = tool.commit(filespec, iov, comment);
@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
     run = std::stoi(words[0]);
     if (words.size() > 1) subrun = std::stoi(words[1]);
     std::string csv;
-    int cid;
+    int cid{-1};
     DbIoV iov;
     rc = tool.table(name, run, subrun, csv, cid, iov);
     if (rc) return rc;
@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
     const ValOpenIovs& iovs = tool.iovs();
     std::cout << iovs.csv();
   } else {
-    std::cout << "unknown command: " << command << std::endl;
+    std::cout << "unknown command: " << command << "\n";
     return 1;
   }
 

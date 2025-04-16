@@ -31,14 +31,14 @@ void OpenTool::setVerbose(int verbose) {
 //**************************************************
 int OpenTool::commit(const std::string& filename, const DbIoV& iov,
                      const std::string& comment) {
-  std::string command, result;
+  std::string command;
   int rc = 0;
 
   // read the data table
   DbTableCollection coll = DbUtil::readFile(filename);
   if (coll.size() != 1) {
-    std::string mess("Error - did not find exactly one readable file in " +
-                     filename);
+    std::cout << "Error - did not find exactly one readable file in " <<
+      filename << "\n";
     return 1;
   }
 
@@ -53,8 +53,7 @@ int OpenTool::commit(const std::string& filename, const DbIoV& iov,
   // commit the data table
   rc = _dbtool.commitCalibrationList(coll, false, false, _admin);
   if (rc != 0) {
-    std::string mess("Error - commit calibration returned code " +
-                     std::to_string(rc));
+    std::cout << "Error - commit calibration returned code " << rc << "\n";
     return rc;
   }
 
@@ -64,8 +63,7 @@ int OpenTool::commit(const std::string& filename, const DbIoV& iov,
     std::cout << "New CID is " << cid << "\n";
   }
   if (cid < 0) {
-    std::string mess("Error - commit calibration return negative CID " +
-                     std::to_string(cid));
+    std::cout << "Error - commit calibration return negative CID\n";
     return 1;
   }
 
@@ -85,7 +83,7 @@ int OpenTool::commit(const std::string& filename, const DbIoV& iov,
 
   rc = _sql.transact(commands, results);
   if (rc != 0) {
-    std::string mess("Error - commit IoV returned code " + std::to_string(rc));
+    std::cout << "Error - commit IoV returned code " << rc << "\n";
     return rc;
   }
 
@@ -171,7 +169,7 @@ int OpenTool::readIoVs(const std::string& name) {
 
   rc = _reader.query(csv, select, table, where, order);
   if (rc != 0) {
-    std::cout << "ERROR - OpenIoV query failed " << std::endl;
+    std::cout << "ERROR - OpenIoV query failed\n";
     return 1;
   }
   _iovs.fill(csv);

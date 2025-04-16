@@ -5,7 +5,7 @@ using namespace mu2e;
 //**************************************************
 template <typename T>
 OpenHandle<T>::OpenHandle(const std::string& database) :
-    _tool(database), _name(T::cxname) {}
+  _tool(database), _name(T::cxname), _cid(0) {}
 
 //**************************************************
 template <typename T>
