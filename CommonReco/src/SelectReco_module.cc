@@ -144,6 +144,8 @@ namespace mu2e {
     // create products related to the reconstruction output
     std::unique_ptr<StrawDigiCollection> ssdc(new StrawDigiCollection);
     std::unique_ptr<StrawDigiADCWaveformCollection> ssdadcc(new StrawDigiADCWaveformCollection);
+    // index maps between original collections and pruned collections
+    std::unique_ptr<IndexMap> sdim(new IndexMap);
     // straw digi indices that are referenced by the tracks, or are 'close to' the track
     SDIS sdindices;
     // loop over input KalSeeds
@@ -165,6 +167,7 @@ namespace mu2e {
     ssdc->reserve(sdindices.size());
     ssdadcc->reserve(sdindices.size());
     for(auto sdindex : sdindices){
+      sdim->addElement(sdindex,sdcount++);
       // deep-copy the selected StrawDigis
       ssdc->push_back(sdc[sdindex]);
       ssdadcc->push_back(sdadcc[sdindex]);
@@ -173,6 +176,7 @@ namespace mu2e {
 
     // fill detailed StrawHit counts
     fillStrawHitCounts(chc,nrec);
+    event.put(std::move(sdim),"StrawDigiMap");
     event.put(std::move(ssdc));
     event.put(std::move(ssdadcc));
   }

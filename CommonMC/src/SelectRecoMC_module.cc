@@ -27,7 +27,6 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
-#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
@@ -78,7 +77,6 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> PBTMC          { Name("PBTMC"),                  Comment("ProtonBunchTimeMC")};
         fhicl::Atom<art::InputTag> EWM            { Name("EventWindowMarker"), Comment("EventWindowMarker")};
         fhicl::Sequence<std::string> KalSeeds     { Name("KalSeedCollections"),                  Comment("KalSeedCollections")};
-        fhicl::Sequence<std::string> HelixSeeds   { Name("HelixSeedCollections"),                  Comment("HelixSeedCollections")};
         fhicl::Atom<art::InputTag> VDSPC          { Name("VDSPCollection"),                  Comment("Virtual Detector StepPointMC collection")};
         fhicl::Atom<double> CCME                  { Name("CaloClusterMinE"),                Comment("Minimum energy CaloCluster to save digis (MeV)")};
       };
@@ -134,7 +132,6 @@ namespace mu2e {
     _ewm(config().EWM()),
     _vdspc(config().VDSPC()),
     _kscs(config().KalSeeds()),
-    _hscs(config().HelixSeeds()),
     _crvcccs(config().CrvCCCs()),
     _ccme(config().CCME())
     {
@@ -173,9 +170,6 @@ namespace mu2e {
       {
         std::cout << "Using KalSeed collections from ";
         for (auto const& kff : _kscs) std::cout << kff << " " << std::endl;
-
-        std::cout << "Using HelixSeed collections from ";
-        for (auto const& hsc : _hscs) std::cout << hsc << " " << std::endl;
       }
     }
 
@@ -480,28 +474,6 @@ namespace mu2e {
           if(seed.hasCaloCluster())ccptrs.insert(seed.caloCluster());
           if(_debug > 2) std::cout << "KalSeedMC has " << mcseed._tshmcs.size()
             << " MCHits , KalSeed has " << seed.hits().size() << " TrkStrawHits" << std::endl;
-        }
-      }
-    }
-    // get digi indices from all helices too
-    for (auto const& hsc : _hscs) {
-      // get all products from this
-      art::ModuleLabelSelector hscsel(hsc);
-      std::vector< art::Handle<HelixSeedCollection> > seedhs = event.getMany<HelixSeedCollection>(hscsel);
-      if(_debug > 1) std::cout << "Found " << seedhs.size() << " collections from module " << hsc << std::endl;
-      // loop over the HelixSeeds and the hits inside them
-      for(auto const& seedh : seedhs) {
-        auto const& seedc = *seedh;
-        if(_debug > 1) std::cout << "Found " << seedc.size() << " seeds from collection " << hsc << std::endl;
-        for(auto iseed=seedc.begin(); iseed!=seedc.end(); ++iseed){
-          auto const& seed = *iseed;
-          // go back to StrawDigi indices
-          std::vector<StrawDigiIndex> shids;
-          for(size_t ihit = 0; ihit < seed.hits().size(); ihit++)
-            seed.hits().fillStrawDigiIndices(ihit,shids);
-          // add these to the set (duplicates are suppressed)
-          for(auto shid : shids)
-            sdindices.insert(shid);
         }
       }
     }
