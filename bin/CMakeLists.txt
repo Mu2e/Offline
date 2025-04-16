@@ -1,0 +1,16 @@
+install_scripts(LIST
+  TEveMu2e.sh
+  addroot.sh
+  browse
+  browse.C
+  check_bfield_grid.sh
+  check_cmake.sh
+  findDataFiles.sh
+  gdmldiff
+  newPackage
+  overlapCheck.C
+  overlapCheck.sh
+  printOverlaps.sh
+  updateFCLFile.sh
+  viewGeometry.C
+)
