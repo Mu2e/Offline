@@ -92,7 +92,6 @@ CommonMC.TTSelectRecoMC : {
     CrvDigiMCCollection : ""
     CrvCoincidenceClusterCollections : [  ]
     VDSPCollection : "compressDigiMCs:virtualdetector"
-    HelixSeedCollections  : [ ]
 }
 
 #------------------------------------------------------------------------------
