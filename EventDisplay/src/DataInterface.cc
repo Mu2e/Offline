@@ -478,7 +478,7 @@ void DataInterface::fillGeometry()
     }
   }
 */
-  //MecoStyleProtonAbsorber
+  //ProtonAbsorber
   if(config.getBool("hasProtonAbsorber", false))
   {
     if (!config.getBool("protonabsorber.isHelical", false))
@@ -495,18 +495,18 @@ void DataInterface::fillGeometry()
       double stoppingtargetz=target->centerInMu2e().z() - _detSysOrigin.z();
       z = stoppingtargetz + stoppingtargetlength*0.5 + halflength;
 
-      boost::shared_ptr<ComponentInfo> infoMecoStylePA(new ComponentInfo());
-      infoMecoStylePA->setName("MECOStyleProtonAbsorber");
-      infoMecoStylePA->setText(0,"MECOStyleProtonAbsorber");
-      infoMecoStylePA->setText(1,Form("Inner Radius1 %.f mm  Outer Radius1 %.f mm",inr[0]/CLHEP::mm,outr[0]/CLHEP::mm));
-      infoMecoStylePA->setText(2,Form("Inner Radius2 %.f mm  Outer Radius2 %.f mm",inr[1]/CLHEP::mm,outr[1]/CLHEP::mm));
-      infoMecoStylePA->setText(3,Form("Length %.f mm",2.0*halflength/CLHEP::mm));
-      infoMecoStylePA->setText(4,Form("Center at x: 0 mm, y: 0 mm, z: %.f mm",z/CLHEP::mm));
+      boost::shared_ptr<ComponentInfo> infoPA(new ComponentInfo());
+      infoPA->setName("ProtonAbsorber");
+      infoPA->setText(0,"ProtonAbsorber");
+      infoPA->setText(1,Form("Inner Radius1 %.f mm  Outer Radius1 %.f mm",inr[0]/CLHEP::mm,outr[0]/CLHEP::mm));
+      infoPA->setText(2,Form("Inner Radius2 %.f mm  Outer Radius2 %.f mm",inr[1]/CLHEP::mm,outr[1]/CLHEP::mm));
+      infoPA->setText(3,Form("Length %.f mm",2.0*halflength/CLHEP::mm));
+      infoPA->setText(4,Form("Center at x: 0 mm, y: 0 mm, z: %.f mm",z/CLHEP::mm));
       boost::shared_ptr<Cone> shapePA(new Cone(0,0,z, 0,0,0,
                                                 halflength, inr[0], outr[0], inr[1], outr[1],
-                                                NAN, _geometrymanager, _topvolume, _mainframe, infoMecoStylePA, true));
+                                                NAN, _geometrymanager, _topvolume, _mainframe, infoPA, true));
       _components.push_back(shapePA);
-      _mecostylepastructures.push_back(shapePA);
+      _pastructures.push_back(shapePA);
     }
   }
 
@@ -581,10 +581,10 @@ void DataInterface::makeMuonBeamStopStructuresVisible(bool visible)
   if(visible) toForeground();
 }
 
-void DataInterface::makeMecoStyleProtonAbsorberVisible(bool visible)
+void DataInterface::makeProtonAbsorberVisible(bool visible)
 {
   std::vector<boost::shared_ptr<Cone> >::const_iterator structure;
-  for(structure=_mecostylepastructures.begin(); structure!=_mecostylepastructures.end(); structure++)
+  for(structure=_pastructures.begin(); structure!=_pastructures.end(); structure++)
   {
     (*structure)->makeGeometryVisible(visible);
   }
@@ -1625,7 +1625,7 @@ void DataInterface::removeAllComponents()
   _otherstructures.clear();
   _crvscintillatorbars.clear();
   _mbsstructures.clear();
-  _mecostylepastructures.clear();
+  _pastructures.clear();
   delete _geometrymanager;
   _geometrymanager=nullptr;
 
