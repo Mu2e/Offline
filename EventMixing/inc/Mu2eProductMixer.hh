@@ -37,6 +37,7 @@
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
+#include "Offline/MCDataProducts/inc/SurfaceStep.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
 #include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
@@ -102,6 +103,7 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> caloShowerStepMixer { fhicl::Name("caloShowerStepMixer") };
       fhicl::Table<CollectionMixerConfig> strawGasStepMixer { fhicl::Name("strawGasStepMixer") };
       fhicl::Table<CollectionMixerConfig> crvStepMixer { fhicl::Name("crvStepMixer") };
+      fhicl::Table<CollectionMixerConfig> surfaceStepMixer { fhicl::Name("surfaceStepMixer") };
       fhicl::Table<CollectionMixerConfig> extMonSimHitMixer { fhicl::Name("extMonSimHitMixer") };
       fhicl::Table<CollectionMixerConfig> eventIDMixer { fhicl::Name("eventIDMixer") };
       fhicl::Table<CollectionMixerConfig> strawDigiMixer { fhicl::Name("strawDigiMixer") };
@@ -148,6 +150,10 @@ namespace mu2e {
 
     bool mixCrvSteps(std::vector<CrvStepCollection const*> const& in,
                             CrvStepCollection& out,
+                            art::PtrRemapper const& remap);
+
+    bool mixSurfaceSteps(std::vector<SurfaceStepCollection const*> const& in,
+                            SurfaceStepCollection& out,
                             art::PtrRemapper const& remap);
 
     bool mixExtMonSimHits(std::vector<ExtMonFNALSimHitCollection const*> const& in,
