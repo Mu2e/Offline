@@ -38,6 +38,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
 #include "Offline/Mu2eG4/inc/validGeometryOrThrow.hh"
 #include "Offline/Mu2eG4/inc/writePhysicalVolumes.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4ScoringManager.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
 #include "Offline/Mu2eG4/inc/Mu2eG4VisCommands.hh"
 #endif
@@ -80,6 +81,7 @@
 #include "Geant4/G4RunManagerKernel.hh"
 #include "Geant4/G4RunManager.hh"
 #include "Geant4/G4SDManager.hh"
+#include "Geant4/G4ScoringManager.hh"
 
 // C++ includes.
 #include <iostream>
@@ -127,7 +129,8 @@ namespace mu2e {
 
     void DoVisualizationFromMacro();
 
-    std::unique_ptr<G4RunManager> _runManager;
+    std::unique_ptr<G4RunManager>         _runManager;
+    std::unique_ptr<Mu2eG4ScoringManager> _scorer;
 
     // Do we issue warnings about multiple runs?
     bool _warnEveryNewRun;
@@ -195,6 +198,7 @@ namespace mu2e {
     multiStagePars_(pars().inputs()),
     simStage_(-1u),
     _runManager(std::make_unique<G4RunManager>()),
+    _scorer(std::make_unique<Mu2eG4ScoringManager>(G4ScoringManager::GetScoringManager(), conf_.scoring())),
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),
     _exportPDTEnd(pars().debug().exportPDTEnd()),
@@ -310,6 +314,7 @@ namespace mu2e {
     _runManager->SetVerboseLevel(_rmvlevel);
 
     _runManager->SetUserInitialization(allMu2e);
+    _scorer->initialize();
 
     physicsList_ = physicsListDecider(conf_.physics(), conf_.debug(), mu2elimits_);
     physicsList_->SetVerboseLevel(_rmvlevel);
@@ -407,6 +412,10 @@ namespace mu2e {
           <<simStage_<<" vs "<<pvstage<<"\n";
       }
     }
+
+   _scorer->dumpInDataProduct(sr);
+   _scorer->reset();
+
   }
 
 

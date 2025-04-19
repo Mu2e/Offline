@@ -214,6 +214,14 @@ mu2eg4runDefaultSingleStage: {
         primariesOnly       : false
         prefix              : "SimParticle: "
     }
+
+    Scoring : {
+        enabled         : true
+        meshNames       : ["WorldMesh","CaloMesh"]
+        scorerNames     : ["DoseDeposit","TrackCounter"]
+        writeFile       : true
+        fileDirectory   : "/exp/mu2e/data/users/echenard/"
+    }
 }
 
 #------------------------------------------------------------------------------

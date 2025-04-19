@@ -32,6 +32,7 @@
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
 #include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
 #include "Offline/MCDataProducts/inc/SurfaceStep.hh"
+#include "Offline/MCDataProducts/inc/ScorerSummary.hh"
 
 // simulation bookeeping
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfo.hh"

@@ -91,6 +91,7 @@ namespace mu2e {
       uninitialized, NoProcess, GammaGeneralProc, // 186
       mu2eGammaConversion, Radioactivation, nCaptureHP, nFissionHP, mu2eAntiproton, // 191
       mu2eFlatMuMinus, mu2eFlatMuPlus, // 193
+      CoupledTransportation, //194
       lastEnum,
       // An alias for backward compatibility
       mu2eHallAir = mu2eKillerVolume

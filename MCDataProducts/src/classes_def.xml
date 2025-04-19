@@ -98,6 +98,10 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="mu2e::SimParticleRemapping" persistent="false"/>
 <class name="art::Wrapper<mu2e::SimParticleRemapping>"/>
 
+<class name="mu2e::ScorerSummary"/>
+<class name="mu2e::ScorerSummaryCollection"/>
+<class name="art::Wrapper<mu2e::ScorerSummaryCollection>"/>
+
 <!--  ********* resampling ********* -->
 <class name="mu2e::SimTimeOffset"/>
 <class name="art::Wrapper<mu2e::SimTimeOffset>"/>

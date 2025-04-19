@@ -232,6 +232,19 @@ namespace mu2e {
 
     };
 
+    struct Scoring {
+      using Name    = fhicl::Name;
+      using Comment = fhicl::Comment;
+
+      fhicl::Atom<bool>                enabled       {Name("enabled"),      Comment("Enabling Geant4 scoring")};
+      fhicl::Sequence<std::string>     meshNames     {Name("meshNames"),    Comment("List of mesh name(s)"), };
+      fhicl::Sequence<std::string>     scorerNames   {Name("scorerNames"),  Comment("List of scorer name(s)")};
+      fhicl::OptionalAtom<bool>        writeFile     {Name("writeFile"),    Comment("Write additional file with scores")};
+      fhicl::OptionalAtom<std::string> fileDirectory {Name("fileDirectory"),Comment("Directory to write file score")};
+    };
+
+
+
     struct Top {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
@@ -248,6 +261,8 @@ namespace mu2e {
       DelegatedParameter  Mu2eG4CommonCut { Name("Mu2eG4CommonCut") };
 
       fhicl::OptionalTable<SimParticleCollectionPrinter::Config> SimParticlePrinter { Name("SimParticlePrinter") };
+
+      fhicl::Table<Scoring> scoring { Name("Scoring") };
 
       fhicl::Table<Physics> physics { Name("physics") };
       fhicl::Table<Debug> debug { Name("debug") };
