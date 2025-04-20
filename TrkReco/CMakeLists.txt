@@ -1,7 +1,7 @@
 cet_make_library(
     SOURCE
-      src/PanelAmbigStructs.cc
-      src/PanelStateIterator.cc
+#      src/PanelAmbigStructs.cc
+#      src/PanelStateIterator.cc
       src/RobustHelixFinderData.cc
       src/RobustHelixFit.cc
       src/TrkTimeCalculator.cc
@@ -91,12 +91,12 @@ cet_build_plugin(TrkRecoMcUtils art::tool
       Offline::TrackerGeom
 )
 
-art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
-    CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
-    CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
-     DICTIONARY_LIBRARIES
-      Offline::TrkReco
-)
+#art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
+#    CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
+#    CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
+#     DICTIONARY_LIBRARIES
+#      Offline::TrkReco
+#)
 
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
