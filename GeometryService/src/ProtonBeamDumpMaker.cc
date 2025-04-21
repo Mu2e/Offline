@@ -81,11 +81,14 @@ namespace mu2e {
                   [](double& v) { v *= 0.5; } // user inputs are full size, we need half size
                   );
 
-    // FIXME: the reality is different
-    const double coreAirGap = c.getDouble("protonBeamDump.coreAirGap");
+
+    const double coreAirSideGap = c.getDouble("protonBeamDump.coreAirSideGap");
+    const double coreAirTopGap = c.getDouble("protonBeamDump.coreAirTopGap");
+    const double coreAirBottomGap = c.getDouble("protonBeamDump.coreAirBottomGap");
+
     dump->_coreAirHalfSize.resize(3);
-    dump->_coreAirHalfSize[0] = dump->_coreHalfSize[0] + coreAirGap;
-    dump->_coreAirHalfSize[1] = dump->_coreHalfSize[1] + coreAirGap/2.0;
+    dump->_coreAirHalfSize[0] = dump->_coreHalfSize[0] + coreAirSideGap;
+    dump->_coreAirHalfSize[1] = dump->_coreHalfSize[1] + (coreAirTopGap+coreAirBottomGap)/2;
     dump->_coreAirHalfSize[2] = dump->_coreHalfSize[2];
 
     dump->_neutronCaveCenterInMu2e =
@@ -103,13 +106,13 @@ namespace mu2e {
 
     dump->_coreAirCenterInMu2e =
       dump->beamDumpToMu2e_position(Hep3Vector(0,
-                                               -coreAirGap/2,
+                                               (coreAirTopGap-coreAirBottomGap)/2,
                                                0
                                                ));
 
     dump->_frontSteelCenterInMu2e =
       dump->beamDumpToMu2e_position(Hep3Vector(0,
-                                               dump->_coreAirHalfSize[1] + dump->_frontSteelHalfSize[1],
+                                               dump->_coreHalfSize[1] + coreAirTopGap + dump->_frontSteelHalfSize[1],
                                                dump->_coreHalfSize[2] - dump->_frontSteelHalfSize[2]
                                                ));
 

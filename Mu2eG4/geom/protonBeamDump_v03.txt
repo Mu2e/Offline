@@ -33,9 +33,12 @@ vector<double> protonBeamDump.mouthHalfSize = {750., 750., 500.};
 vector<double> protonBeamDump.neutronCaveHalfSize = {1250., 1250., 500.};
 
 // Air gap around core
-double         protonBeamDump.coreAirGap = 12.7;
-// Steel above dump
-vector<double> protonBeamDump.additionalSteel = {2514.6, 508, 3187.7};
+double         protonBeamDump.coreAirSideGap = 76;
+double         protonBeamDump.coreAirTopGap = 51;
+double         protonBeamDump.coreAirBottomGap = 152;
+
+// Steel above dump. Temporary workaround: make it thinner to avoid an ovelap.
+vector<double> protonBeamDump.additionalSteel = {2514.6, 200, 3187.7};
 
 //----------------------------------------------------------------
 string protonBeamDump.material.core  = "G4_Fe";
