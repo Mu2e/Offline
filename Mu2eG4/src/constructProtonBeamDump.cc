@@ -210,12 +210,12 @@ namespace mu2e {
             G4Colour::Blue()
             );
 
-    CLHEP::Hep3Vector frontSteelPositionInShield( shieldingRot * (dump->frontSteelCenterInMu2e() - beamDumpConcrete.centerInMu2e()));
-    nestBox("ProtonBeamDumpFrontSteel",
-            dump->frontSteelHalfSize(),
+    CLHEP::Hep3Vector topSteelFlatPositionInShield( shieldingRot * (dump->topSteelFlatCenterInMu2e() - beamDumpConcrete.centerInMu2e()));
+    nestBox("ProtonBeamDumpTopSteelFlat",
+            dump->topSteelFlatHalfSize(),
             materialFinder.get("protonBeamDump.material.core"),
             &rotationInShield,
-            frontSteelPositionInShield,
+            topSteelFlatPositionInShield,
             beamDumpConcrete, 0,
             G4Colour::Blue()
             );

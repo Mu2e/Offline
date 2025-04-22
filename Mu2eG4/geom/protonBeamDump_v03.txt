@@ -37,8 +37,17 @@ double         protonBeamDump.coreAirSideGap = 76;
 double         protonBeamDump.coreAirTopGap = 51;
 double         protonBeamDump.coreAirBottomGap = 152;
 
-// Steel above dump. Temporary workaround: make it thinner to avoid an ovelap.
-vector<double> protonBeamDump.additionalSteel = {2514.6, 200, 3187.7};
+// Steel above dump. There are two assemblies: a flat rectangle above
+// the core, and another rectangle with a scalloped cutout for the
+// ExtMon collimator laying of top of the flat piece.  The assemblies
+// extend from the top of the beam dump core to the back edge of the
+// beam dump concrete in the beam direction.  The transverse to the
+// beam horizontal size and position is determined by the
+// wallClearance nubers: the first one is the distance from the steel
+// to the wall on beam left, the second is to the wall on beam right.
+
+double protonBeamDump.topSteelFlat.thickness = 335; // mm = 13-3/16"
+vector<double> protonBeamDump.topSteelFlat.wallClearance = {572, 25};
 
 //----------------------------------------------------------------
 string protonBeamDump.material.core  = "G4_Fe";

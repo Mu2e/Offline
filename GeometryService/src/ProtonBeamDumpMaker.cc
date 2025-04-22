@@ -27,6 +27,10 @@ namespace mu2e {
       return CLHEP::Hep2Vector(mu2ePoint.z(), mu2ePoint.x());
     }
 
+    CLHEP::Hep3Vector toMu2eSpace(CLHEP::Hep2Vector outlinePoint, double y) {
+      return CLHEP::Hep3Vector(outlinePoint.y(), y, outlinePoint.x());
+    }
+
     struct Line {
       CLHEP::Hep2Vector A;
       CLHEP::Hep2Vector B;
@@ -75,13 +79,6 @@ namespace mu2e {
     c.getVectorDouble("protonBeamDump.neutronCaveHalfSize", dump->_neutronCaveHalfSize, 3);
     c.getVectorDouble("protonBeamDump.mouthHalfSize", dump->_mouthHalfSize, 3);
 
-    c.getVectorDouble("protonBeamDump.additionalSteel", dump->_frontSteelHalfSize, 3); // FIXME: the reality is different
-    std::for_each(dump->_frontSteelHalfSize.begin(),
-                  dump->_frontSteelHalfSize.end(),
-                  [](double& v) { v *= 0.5; } // user inputs are full size, we need half size
-                  );
-
-
     const double coreAirSideGap = c.getDouble("protonBeamDump.coreAirSideGap");
     const double coreAirTopGap = c.getDouble("protonBeamDump.coreAirTopGap");
     const double coreAirBottomGap = c.getDouble("protonBeamDump.coreAirBottomGap");
@@ -110,11 +107,6 @@ namespace mu2e {
                                                0
                                                ));
 
-    dump->_frontSteelCenterInMu2e =
-      dump->beamDumpToMu2e_position(Hep3Vector(0,
-                                               dump->_coreHalfSize[1] + coreAirTopGap + dump->_frontSteelHalfSize[1],
-                                               dump->_coreHalfSize[2] - dump->_frontSteelHalfSize[2]
-                                               ));
 
     //----------------------------------------------------------------
     // Get relevant Hall solids
@@ -198,6 +190,56 @@ namespace mu2e {
     dump->_extMonSubtractionHalfHeight = (extMonCutoutYmax - extMonCutoutYmin)/2;
     dump->_extMonSubtractionCenterInMu2e = Hep3Vector(0, (extMonCutoutYmax + extMonCutoutYmin)/2, 0);
 
+
+    //----------------------------------------------------------------
+    // The extra steel on top of the core
+
+    // Top steel clearances are from the side walls, which coincide
+    // with the sides of the dump concrete outline.  The sides are
+    // nominally parallel to the beam dump axis, so it should not
+    // matter what outline vertex is used.  We look at the both
+    // vertices and select the more constraining number to account for
+    // imperfections.
+
+    const double beamLeftWallX /*in the beam dump coordinates*/
+      = std::max(
+                 dump->mu2eToBeamDump_position(toMu2eSpace(dump->_dumpConcreteOutline[1], 0)).x(),
+                 dump->mu2eToBeamDump_position(toMu2eSpace(dump->_dumpConcreteOutline[2], 0)).x()
+                 );
+
+    const double beamRightWallX /*in the beam dump coordinates*/
+      = std::min(
+                 dump->mu2eToBeamDump_position(toMu2eSpace(dump->_dumpConcreteOutline[0], 0)).x(),
+                 dump->mu2eToBeamDump_position(toMu2eSpace(dump->_dumpConcreteOutline[3], 0)).x()
+                 );
+
+    const double beamDumpBackZ /*in the beam dump coordinates*/
+      = std::max(
+                 dump->mu2eToBeamDump_position(toMu2eSpace(dump->_dumpConcreteOutline[0], 0)).z(),
+                 dump->mu2eToBeamDump_position(toMu2eSpace(dump->_dumpConcreteOutline[1], 0)).z()
+                 );
+
+    const double topSteelFrontZ = dump->_coreHalfSize[2]; // reaches out to the front of the core
+
+    //----------------
+    std::vector<double> topSteelFlatWallClearance;
+    c.getVectorDouble("protonBeamDump.topSteelFlat.wallClearance", topSteelFlatWallClearance);
+
+    const double topSteelFlatXmin = beamLeftWallX + topSteelFlatWallClearance[0];
+    const double topSteelFlatXmax = beamRightWallX - topSteelFlatWallClearance[1];
+
+    dump->_topSteelFlatHalfSize.resize(3);
+    dump->_topSteelFlatHalfSize[0] = (topSteelFlatXmax - topSteelFlatXmin)/2;
+    dump->_topSteelFlatHalfSize[1] = c.getDouble("protonBeamDump.topSteelFlat.thickness")/2;
+    dump->_topSteelFlatHalfSize[2] = (topSteelFrontZ - beamDumpBackZ)/2;
+
+    dump->_topSteelFlatCenterInMu2e =
+      dump->beamDumpToMu2e_position(Hep3Vector(
+                                               (topSteelFlatXmax + topSteelFlatXmin)/2,
+                                               dump->_coreHalfSize[1] + coreAirTopGap + dump->_topSteelFlatHalfSize[1],
+                                               dump->_coreHalfSize[2] - dump->_topSteelFlatHalfSize[2]
+                                               ));
+
     //----------------------------------------------------------------
     if(verbose) {
       std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump core center in mu2e = "<<dump->_coreCenterInMu2e<<std::endl;
@@ -238,13 +280,13 @@ namespace mu2e {
                << dump->_neutronCaveHalfSize[2]<<", "
                << std::endl;
 
-      std::cout<<"Front Steel halfsize:  "
-               << dump->_frontSteelHalfSize[0]<<", "
-               << dump->_frontSteelHalfSize[1]<<", "
-               << dump->_frontSteelHalfSize[2]<<", "
+      std::cout<<"Flat steel halfsize:  "
+               << dump->_topSteelFlatHalfSize[0]<<", "
+               << dump->_topSteelFlatHalfSize[1]<<", "
+               << dump->_topSteelFlatHalfSize[2]<<", "
                << std::endl;
 
-      std::cout<<"Front Steel Center in Mu2e:  " << dump->_frontSteelCenterInMu2e << std::endl;
+      std::cout<<"Flat steel Center in Mu2e:  " << dump->_topSteelFlatCenterInMu2e << std::endl;
     }
 
     return dump;

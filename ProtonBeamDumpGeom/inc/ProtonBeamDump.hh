@@ -69,8 +69,8 @@ namespace mu2e {
     const CLHEP::Hep3Vector& coreAirCenterInMu2e() const { return _coreAirCenterInMu2e; }
 
     // The shielding steel on top of the core
-    const std::vector<double>& frontSteelHalfSize() const { return _frontSteelHalfSize; }
-    const CLHEP::Hep3Vector& frontSteelCenterInMu2e() const { return _frontSteelCenterInMu2e; }
+    const std::vector<double>& topSteelFlatHalfSize() const { return _topSteelFlatHalfSize; }
+    const CLHEP::Hep3Vector& topSteelFlatCenterInMu2e() const { return _topSteelFlatCenterInMu2e; }
 
     //----------------------------------------------------------------
     // Transform to the "beam dump" coordinate system, which is centered
@@ -111,8 +111,8 @@ namespace mu2e {
     std::vector<double> _coreAirHalfSize;
     CLHEP::Hep3Vector _coreAirCenterInMu2e;
 
-    std::vector<double> _frontSteelHalfSize;
-    CLHEP::Hep3Vector _frontSteelCenterInMu2e;
+    std::vector<double> _topSteelFlatHalfSize;
+    CLHEP::Hep3Vector _topSteelFlatCenterInMu2e;
   };
 }
 
