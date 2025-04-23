@@ -381,6 +381,13 @@ double vd.ExtMonCommonPlane.dxmax = +1700;
 double vd.ExtMonCommonPlane.dymin = -1000;
 double vd.ExtMonCommonPlane.dymax = +2000;
 
+// Visualize wall scans done by Fermilab Metrology.
+// This leads to an invalid geometry (volume overlaps),
+// so the setting should be off to run any simulations.
+
+bool extMonFNAL.debug.showWallScans = false;
+double extMonFNAL.debug.wallScanDotRadius = 10;
+
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++
