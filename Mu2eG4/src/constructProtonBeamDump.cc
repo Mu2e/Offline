@@ -95,13 +95,13 @@ namespace mu2e {
     subCylinderRotation->rotateY(-emfb->filter().collimator1().angleV());
 
     G4Tubs* subCylinder = new G4Tubs("ExtMonFNALCollimator1Hole",
-                                      0.*CLHEP::mm,
-                                      emfb->filter().collimator1().shotLinerOuterRadius(),
+                                     0.*CLHEP::mm,
+                                     emfb->filter().collimator1().shotLinerOuterRadius(),
                                      // factor of 2 to help the hole completely pierce the dump
                                      // even when the collimator center is off
                                      2. * 0.5*emfb->filter().collimator1().length(),
-                                      0,
-                                      CLHEP::twopi);
+                                     0,
+                                     CLHEP::twopi);
 
     //--------------------------------------------------------------------------------
     //Beam Dump Concrete
@@ -118,61 +118,61 @@ namespace mu2e {
                                                             - dump->dumpConcreteCenterInMu2e()));
 
     VolumeInfo beamDumpConcrete("ProtonBeamDumpConcrete",
-                             dump->dumpConcreteCenterInMu2e() - parent.centerInMu2e(),
-                             parent.centerInWorld
-                             );
+                                dump->dumpConcreteCenterInMu2e() - parent.centerInMu2e(),
+                                parent.centerInWorld
+                                );
 
-   G4ExtrudedSolid* beamDumpConcreteExtrusion  = new G4ExtrudedSolid("ProtonBeamDumpConcreteExtrusion",
-                                                                  dump->dumpConcreteOutline(),
-                                                                  dump->dumpConcreteHalfHeight(),
-                                                                  G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.
-                                                                  );
+    G4ExtrudedSolid* beamDumpConcreteExtrusion  = new G4ExtrudedSolid("ProtonBeamDumpConcreteExtrusion",
+                                                                      dump->dumpConcreteOutline(),
+                                                                      dump->dumpConcreteHalfHeight(),
+                                                                      G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.
+                                                                      );
 
-   G4ExtrudedSolid* extMonCutout  = new G4ExtrudedSolid("ProtonBeamDumpExtMonCutout",
-                                                        dump->extMonSubtractionOutline(),
-                                                        dump->extMonSubtractionHalfHeight(),
-                                                        G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.
-                                                        );
+    G4ExtrudedSolid* extMonCutout  = new G4ExtrudedSolid("ProtonBeamDumpExtMonCutout",
+                                                         dump->extMonSubtractionOutline(),
+                                                         dump->extMonSubtractionHalfHeight(),
+                                                         G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.
+                                                         );
 
-   G4SubtractionSolid* beamDumpConcreteSansExtMon = new G4SubtractionSolid("beamDumpConcreteSansExtMon",
-                                                                           beamDumpConcreteExtrusion,
-                                                                           extMonCutout,
-                                                                           0,
-                                                                           extMonSubtractionPositionInShield
-                                                                           );
+    G4SubtractionSolid* beamDumpConcreteSansExtMon = new G4SubtractionSolid("beamDumpConcreteSansExtMon",
+                                                                            beamDumpConcreteExtrusion,
+                                                                            extMonCutout,
+                                                                            0,
+                                                                            extMonSubtractionPositionInShield
+                                                                            );
 
-   G4SubtractionSolid* beamDumpConcreteCylSubtraction = new G4SubtractionSolid("beamDumpConcreteCylSubtraction",
-                                                                               beamDumpConcreteSansExtMon,
-                                                                               subCylinder,
-                                                                               subCylinderRotation,
-                                                                               subCylOffsetInParent
-                                                                               );
+    G4SubtractionSolid* beamDumpConcreteCylSubtraction = new G4SubtractionSolid("beamDumpConcreteCylSubtraction",
+                                                                                beamDumpConcreteSansExtMon,
+                                                                                subCylinder,
+                                                                                subCylinderRotation,
+                                                                                subCylOffsetInParent
+                                                                                );
 
-   G4Box* ProtonBeamNeutronCave = new G4Box("ProtonBeamNeutronCave",
-                                            dump->neutronCaveHalfSize()[0],
-                                            dump->neutronCaveHalfSize()[1],
-                                            dump->neutronCaveHalfSize()[2]
-                                            );
+    G4Box* ProtonBeamNeutronCave = new G4Box("ProtonBeamNeutronCave",
+                                             dump->neutronCaveHalfSize()[0],
+                                             dump->neutronCaveHalfSize()[1],
+                                             dump->neutronCaveHalfSize()[2]
+                                             );
 
-   G4SubtractionSolid* beamDumpConcreteCaveSubtraction = new G4SubtractionSolid("beamDumpConcreteCaveSubtraction",
-                                                                             beamDumpConcreteCylSubtraction,
-                                                                             ProtonBeamNeutronCave,
-                                                                             &rotationInShield,
-                                                                             cavePositionInShield
-                                                                             );
+    G4SubtractionSolid* beamDumpConcreteCaveSubtraction = new G4SubtractionSolid("beamDumpConcreteCaveSubtraction",
+                                                                                 beamDumpConcreteCylSubtraction,
+                                                                                 ProtonBeamNeutronCave,
+                                                                                 &rotationInShield,
+                                                                                 cavePositionInShield
+                                                                                 );
 
-   G4Box* ProtonBeamDumpMouth = new G4Box("ProtonBeamDumpMouth",
-                                          dump->mouthHalfSize()[0],
-                                          dump->mouthHalfSize()[1],
-                                          1.1*dump->mouthHalfSize()[2] //scale up to avoid coinciding boundaries
-                                          );
+    G4Box* ProtonBeamDumpMouth = new G4Box("ProtonBeamDumpMouth",
+                                           dump->mouthHalfSize()[0],
+                                           dump->mouthHalfSize()[1],
+                                           1.1*dump->mouthHalfSize()[2] //scale up to avoid coinciding boundaries
+                                           );
 
-   beamDumpConcrete.solid = new G4SubtractionSolid(beamDumpConcrete.name,
-                                                beamDumpConcreteCaveSubtraction,
-                                                ProtonBeamDumpMouth,
-                                                &rotationInShield,
-                                                mouthPositionInShield
-                                                );
+    beamDumpConcrete.solid = new G4SubtractionSolid(beamDumpConcrete.name,
+                                                    beamDumpConcreteCaveSubtraction,
+                                                    ProtonBeamDumpMouth,
+                                                    &rotationInShield,
+                                                    mouthPositionInShield
+                                                    );
 
     finishNesting(beamDumpConcrete,
                   materialFinder.get("protonBeamDump.material.shielding"),
@@ -180,12 +180,8 @@ namespace mu2e {
                   beamDumpConcrete.centerInParent,
                   parent.logical,
                   0,
-                  geomOptions->isVisible( "ProtonBeamDumpConcrete" ),
                   G4Colour::Red() ,
-                  geomOptions->isSolid( "ProtonBeamDumpConcrete" ),
-                  geomOptions->forceAuxEdgeVisible( "ProtonBeamDumpConcrete" ),
-                  geomOptions->placePV( "ProtonBeamDumpConcrete" ),
-                  geomOptions->doSurfaceCheck( "ProtonBeamDumpConcrete" )
+                  "ProtonBeamDumpConcrete"
                   );
 
     //--------------------------------------------------------------------------------
