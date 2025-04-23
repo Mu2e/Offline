@@ -220,6 +220,70 @@ namespace mu2e {
             G4Colour::Blue()
             );
 
+    //----------------------------------------------------------------
+    // The scalloped steel
+
+    G4Tubs* scallopCutout = new G4Tubs("BeamDumpScallopCutout",
+                                       0.*CLHEP::mm,
+
+                                       emfb->filter().collimator1().shotLinerOuterRadius()
+                                       + dump->scallopDistanceToCollimator(),
+
+                                       0.5*emfb->filter().collimator1().length(),
+                                       0,
+                                       CLHEP::twopi);
+
+    G4Box* scallopedSteelInitialBox  = new G4Box("BeamDumpScallopedSteelInitialBox",
+                                                 dump->topSteelScallopedHalfSize()[0],
+                                                 dump->topSteelScallopedHalfSize()[1],
+                                                 dump->topSteelScallopedHalfSize()[2]
+                                                 );
+
+    // The calculation below looks confusing because of the naming
+    // correspondance to active vs passive rotations.
+    // To get the cutout rotation C in steel S, we need Cinv*S.  But
+    // then we want the inverse of it for the G4 interface, leading to
+    // (Cinv*S)inv = Sinv * C.  The first two operators below are parts of
+    // Sinv.  Then the collimator rotation value has the opposite meaning
+    // compared to S, so it also gets the inverse() call below.
+    CLHEP::HepRotation *scallopCutoutRotation = reg.add(new CLHEP::HepRotation());
+    *scallopCutoutRotation *= shieldingRot.inverse();
+    *scallopCutoutRotation *= rotationInShield.inverse();
+    *scallopCutoutRotation *= emfb->filter().collimator1().rotationInMu2e().inverse();
+
+    CLHEP::Hep3Vector topSteelScallopedPositionInShield( shieldingRot
+                                                         *(dump->topSteelScallopedCenterInMu2e()
+                                                           - beamDumpConcrete.centerInMu2e())
+                                                         );
+
+    VolumeInfo scallopedSteel("ProtonBeamDumpTopSteelScalloped",
+                              topSteelScallopedPositionInShield,
+                              parent.centerInWorld);
+
+    CLHEP::Hep3Vector scallopCutoutPositionInSteel( rotationInShield*shieldingRot
+                                                    *(emfb->filter().collimator1().centerInMu2e()
+                                                      - dump->topSteelScallopedCenterInMu2e()
+                                                      )
+                                                    );
+
+    scallopedSteel.solid = new G4SubtractionSolid(scallopedSteel.name,
+                                                  scallopedSteelInitialBox,
+                                                  scallopCutout,
+                                                  scallopCutoutRotation,
+                                                  scallopCutoutPositionInSteel
+                                                  );
+
+    finishNesting(scallopedSteel,
+                  materialFinder.get("protonBeamDump.material.core"),
+                  &rotationInShield,
+                  topSteelScallopedPositionInShield,
+                  beamDumpConcrete.logical,
+                  0,
+                  G4Colour::Blue(),
+                  "ProtonBeamDumpTopSteel"
+                  );
+
+    //----------------------------------------------------------------
     constructExtMonFNAL(beamDumpConcrete, shieldingRot, parent, CLHEP::HepRotation::IDENTITY, config);
 
   } // constructProtonBeamDump()

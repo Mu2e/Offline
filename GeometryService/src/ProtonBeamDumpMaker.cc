@@ -240,6 +240,32 @@ namespace mu2e {
                                                dump->_coreHalfSize[2] - dump->_topSteelFlatHalfSize[2]
                                                ));
 
+    //----------------
+    std::vector<double> topSteelScallopedWallClearance;
+    c.getVectorDouble("protonBeamDump.topSteelScalloped.wallClearance", topSteelScallopedWallClearance);
+
+    const double topSteelScallopedXmin = beamLeftWallX + topSteelScallopedWallClearance[0];
+    const double topSteelScallopedXmax = beamRightWallX - topSteelScallopedWallClearance[1];
+
+    dump->_topSteelScallopedHalfSize.resize(3);
+    dump->_topSteelScallopedHalfSize[0] = (topSteelScallopedXmax - topSteelScallopedXmin)/2;
+    dump->_topSteelScallopedHalfSize[1] = c.getDouble("protonBeamDump.topSteelScalloped.thickness")/2;
+    dump->_topSteelScallopedHalfSize[2] = (topSteelFrontZ - beamDumpBackZ)/2;
+
+    dump->_topSteelScallopedCenterInMu2e =
+      dump->beamDumpToMu2e_position(Hep3Vector(
+                                               (topSteelScallopedXmax + topSteelScallopedXmin)/2,
+
+                                               dump->_coreHalfSize[1]
+                                               + coreAirTopGap
+                                               + 2*dump->_topSteelFlatHalfSize[1]
+                                               + dump->_topSteelScallopedHalfSize[1],
+
+                                               dump->_coreHalfSize[2] - dump->_topSteelScallopedHalfSize[2]
+                                               ));
+
+    dump->_scallopDistanceToCollimator = c.getDouble("protonBeamDump.topSteelScalloped.distanceToCollimator");
+
     //----------------------------------------------------------------
     if(verbose) {
       std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump core center in mu2e = "<<dump->_coreCenterInMu2e<<std::endl;
@@ -287,6 +313,16 @@ namespace mu2e {
                << std::endl;
 
       std::cout<<"Flat steel Center in Mu2e:  " << dump->_topSteelFlatCenterInMu2e << std::endl;
+
+      std::cout<<"Scalloped steel halfsize:  "
+               << dump->_topSteelScallopedHalfSize[0]<<", "
+               << dump->_topSteelScallopedHalfSize[1]<<", "
+               << dump->_topSteelScallopedHalfSize[2]<<", "
+               << std::endl;
+
+      std::cout<<"Scalloped steel Center in Mu2e:  " << dump->_topSteelScallopedCenterInMu2e << std::endl;
+
+      std::cout<<"Scalloped steel distance to collimator:  " << dump->_scallopDistanceToCollimator << std::endl;
     }
 
     return dump;

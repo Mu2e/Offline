@@ -72,6 +72,12 @@ namespace mu2e {
     const std::vector<double>& topSteelFlatHalfSize() const { return _topSteelFlatHalfSize; }
     const CLHEP::Hep3Vector& topSteelFlatCenterInMu2e() const { return _topSteelFlatCenterInMu2e; }
 
+    const std::vector<double>& topSteelScallopedHalfSize() const { return _topSteelScallopedHalfSize; }
+    const CLHEP::Hep3Vector& topSteelScallopedCenterInMu2e() const { return _topSteelScallopedCenterInMu2e; }
+
+    // the average distance, with the "scallop" modeled as a smooth cylindrical cutout
+    double scallopDistanceToCollimator() const { return _scallopDistanceToCollimator; }
+
     //----------------------------------------------------------------
     // Transform to the "beam dump" coordinate system, which is centered
     // at the core center, and is rotated around the Y axis w.r.t the mu2e system
@@ -113,6 +119,9 @@ namespace mu2e {
 
     std::vector<double> _topSteelFlatHalfSize;
     CLHEP::Hep3Vector _topSteelFlatCenterInMu2e;
+    std::vector<double> _topSteelScallopedHalfSize;
+    CLHEP::Hep3Vector _topSteelScallopedCenterInMu2e;
+    double _scallopDistanceToCollimator;
   };
 }
 

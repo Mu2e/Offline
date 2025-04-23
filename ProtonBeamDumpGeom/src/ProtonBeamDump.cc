@@ -7,6 +7,7 @@ namespace mu2e {
     , _coreRotationInMu2e(CLHEP::HepRotation::IDENTITY)
     , _dumpConcreteHalfHeight(0.)
     , _extMonSubtractionHalfHeight(0.)
+    , _scallopDistanceToCollimator(0.)
   {}
 
   //================================================================

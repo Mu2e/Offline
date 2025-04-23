@@ -48,6 +48,9 @@ double         protonBeamDump.coreAirBottomGap = 152;
 
 double protonBeamDump.topSteelFlat.thickness = 335; // mm = 13-3/16"
 vector<double> protonBeamDump.topSteelFlat.wallClearance = {572, 25};
+double protonBeamDump.topSteelScalloped.thickness = 203; // mm = 8"
+vector<double> protonBeamDump.topSteelScalloped.wallClearance = {711, 718};
+double protonBeamDump.topSteelScalloped.distanceToCollimator = 115;
 
 //----------------------------------------------------------------
 string protonBeamDump.material.core  = "G4_Fe";
