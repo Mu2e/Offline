@@ -1,6 +1,6 @@
 cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
     SOURCE
-      inc/KalFinalFit_types.hh
+      #inc/KalFinalFit_types.hh
       inc/KalSeedFit_types.hh
       inc/RobustHelixFinder_types.hh
       inc/RobustMultiHelixFinder_types.hh
@@ -10,42 +10,42 @@ cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
       
 )
 
-cet_build_plugin(KalFinalFit art::module
-    REG_SOURCE src/KalFinalFit_module.cc
-    LIBRARIES REG
-      Offline::TrkPatRec
-      
-      Offline::BTrkData
-      Offline::CalorimeterGeom
-      Offline::DataProducts
-      Offline::GeneralUtilities
-      Offline::GeometryService
-      Offline::Mu2eUtilities
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-      Offline::TrackerConditions
-      Offline::TrackerGeom
-      Offline::TrkReco
-)
+#cet_build_plugin(KalFinalFit art::module
+#    REG_SOURCE src/KalFinalFit_module.cc
+#    LIBRARIES REG
+#      Offline::TrkPatRec
+#      
+#      Offline::BTrkData
+#      Offline::CalorimeterGeom
+#      Offline::DataProducts
+#      Offline::GeneralUtilities
+#      Offline::GeometryService
+#      Offline::Mu2eUtilities
+#      Offline::ProditionsService
+#      Offline::RecoDataProducts
+#      Offline::TrackerConditions
+#      Offline::TrackerGeom
+#      Offline::TrkReco
+#)
 
-cet_build_plugin(KalSeedFit art::module
-    REG_SOURCE src/KalSeedFit_module.cc
-    LIBRARIES REG
-      Offline::TrkPatRec
+#cet_build_plugin(KalSeedFit art::module
+#    REG_SOURCE src/KalSeedFit_module.cc
+#    LIBRARIES REG
+#      Offline::TrkPatRec
       
-      Offline::BFieldGeom
-      Offline::BTrkData
-      Offline::ConditionsService
-      Offline::DataProducts
-      Offline::GeneralUtilities
-      Offline::GeometryService
-      Offline::Mu2eUtilities
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-      Offline::TrackerConditions
-      Offline::TrackerGeom
-      Offline::TrkReco
-)
+#      Offline::BFieldGeom
+#      Offline::BTrkData
+#      Offline::ConditionsService
+#      Offline::DataProducts
+#      Offline::GeneralUtilities
+#      Offline::GeometryService
+#      Offline::Mu2eUtilities
+#      Offline::ProditionsService
+#      Offline::RecoDataProducts
+#      Offline::TrackerConditions
+#      Offline::TrackerGeom
+#      Offline::TrkReco
+#)
 
 cet_build_plugin(RobustHelixFinder art::module
     REG_SOURCE src/RobustHelixFinder_module.cc
@@ -103,27 +103,27 @@ cet_build_plugin(TimeClusterFinder art::module
       Offline::TrkReco
 )
 
-cet_build_plugin(KalFinalFitDiag art::tool
-    REG_SOURCE src/KalFinalFitDiag_tool.cc
-    LIBRARIES REG
-      Offline::TrkPatRec
-      
-      Offline::BTrkData
-      Offline::CalorimeterGeom
-      Offline::Mu2eUtilities
-      Offline::TrackerGeom
-      Offline::TrkReco
-)
+#cet_build_plugin(KalFinalFitDiag art::tool
+#    REG_SOURCE src/KalFinalFitDiag_tool.cc
+#    LIBRARIES REG
+#      Offline::TrkPatRec
+#      
+#      Offline::BTrkData
+#      Offline::CalorimeterGeom
+#      Offline::Mu2eUtilities
+#      Offline::TrackerGeom
+#      Offline::TrkReco
+#)
 
-cet_build_plugin(KalSeedFitDiag art::tool
-    REG_SOURCE src/KalSeedFitDiag_tool.cc
-    LIBRARIES REG
-      Offline::TrkPatRec
-      
-      Offline::BTrkData
-      Offline::Mu2eUtilities
-      Offline::TrkReco
-)
+#cet_build_plugin(KalSeedFitDiag art::tool
+#    REG_SOURCE src/KalSeedFitDiag_tool.cc
+#    LIBRARIES REG
+#      Offline::TrkPatRec
+#      
+#      Offline::BTrkData
+#      Offline::Mu2eUtilities
+#      Offline::TrkReco
+#)
 
 cet_build_plugin(RobustHelixFinderDiag art::tool
     REG_SOURCE src/RobustHelixFinderDiag_tool.cc
