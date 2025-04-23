@@ -20,6 +20,7 @@
 #include "Offline/DataProducts/inc/Helicity.hh"
 
 // BaBar
+/*
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BField/BField.hh"
 #include "BTrk/BField/BFieldFixed.hh"
@@ -30,7 +31,8 @@
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
-
+*/
+#include "BTrk/TrkBase/HelixTraj.hh"
 #include "Offline/BFieldGeom/inc/BFieldConfig.hh"
 
 #include "Offline/CalPatRec/inc/CalHelixFinder_types.hh"

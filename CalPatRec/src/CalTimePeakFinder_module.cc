@@ -167,7 +167,7 @@ namespace mu2e {
 
     int                 ncl, nch;
     double              time, dt, tof, zstraw, cl_time;//, stime;
-    double              xcl, ycl, zcl/*, dz_cl*/;
+    double              xcl, ycl, zcl;//, dz_cl;
     const CaloCluster*  cl;
     const ComboHit*     hit;
     // const Straw*        straw;
