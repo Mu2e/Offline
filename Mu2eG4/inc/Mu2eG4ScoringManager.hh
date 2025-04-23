@@ -1,5 +1,5 @@
-#ifndef Mu2eG4_RunAction_hh
-#define Mu2eG4_RunAction_hh
+#ifndef Mu2eG4_ScoringManeger_hh
+#define Mu2eG4_ScoringManager_hh
 //
 // Mu2eG4ScoringManager provides declarations for the Geant4 built-in scorer
 // class for the Mu2e G4 simulation.
@@ -11,6 +11,7 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 #include "G4ScoringManager.hh"
+//#include "G4VScoreWriter.hh"
 
 
 namespace mu2e {

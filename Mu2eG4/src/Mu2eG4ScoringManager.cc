@@ -18,6 +18,7 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4ScoringManager.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4ScoreWriter.hh"
 #include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Offline/MCDataProducts/inc/ScorerSummary.hh"
 
@@ -31,6 +32,7 @@
 #include "G4PSEnergyDeposit.hh"
 #include "G4PSTrackCounter.hh"
 
+#include "CLHEP/Units/SystemOfUnits.h"
 
 
 namespace mu2e {
@@ -68,10 +70,10 @@ namespace mu2e {
     config.getVectorDouble("scoring.meshPositionY", meshPositionY, nMesh);
     config.getVectorDouble("scoring.meshPositionZ", meshPositionZ, nMesh);
 
-    std::vector<double> meshSizeX, meshSizeY, meshSizeZ;
-    config.getVectorDouble("scoring.meshSizeX", meshSizeX, nMesh);
-    config.getVectorDouble("scoring.meshsizeY", meshSizeY, nMesh);
-    config.getVectorDouble("scoring.meshsizeZ", meshSizeZ, nMesh);
+    std::vector<double> meshHalfSizeX, meshHalfSizeY, meshHalfSizeZ;
+    config.getVectorDouble("scoring.meshHalfSizeX", meshHalfSizeX, nMesh);
+    config.getVectorDouble("scoring.meshHalfSizeY", meshHalfSizeY, nMesh);
+    config.getVectorDouble("scoring.meshHalfSizeZ", meshHalfSizeZ, nMesh);
 
     std::vector<int> meshSegmentX, meshSegmentY, meshSegmentZ;
     config.getVectorInt("scoring.meshSegmentX", meshSegmentX, nMesh);
@@ -83,10 +85,10 @@ namespace mu2e {
       auto mesh = reg.add(new G4ScoringBox(meshNames_[i]));
       mesh->SetVerboseLevel(verboseLevel);
 
-      G4double vsize[3] ={meshSizeX[i],meshSizeY[i],meshSizeZ[i]};
+      G4double vsize[3] ={meshHalfSizeX[i]*CLHEP::mm,meshHalfSizeY[i]*CLHEP::mm,meshHalfSizeZ[i]*CLHEP::mm};
       mesh->SetSize(vsize);
 
-      G4double centerPosition[3]={meshPositionX[i],meshPositionY[i],meshPositionZ[i]};
+      G4double centerPosition[3]={meshPositionX[i]*CLHEP::mm,meshPositionY[i]*CLHEP::mm,meshPositionZ[i]*CLHEP::mm};
       mesh->SetCenterPosition(centerPosition);
 
       G4int nSegment[3]={meshSegmentX[i],meshSegmentY[i],meshSegmentZ[i]};
@@ -96,18 +98,23 @@ namespace mu2e {
         switch (hashString(psName)) {
           case StringCode::CellFlux:
               mesh->SetPrimitiveScorer(new G4PSCellFlux(psName));
+              mesh->GetPrimitiveScorer(psName)->SetVerboseLevel(verboseLevel);
               break;
           case StringCode::FlatSurfaceFlux:
               mesh->SetPrimitiveScorer(new G4PSFlatSurfaceFlux(psName,0));
+              mesh->GetPrimitiveScorer(psName)->SetVerboseLevel(verboseLevel);
               break;
           case StringCode::DoseDeposit:
               mesh->SetPrimitiveScorer(new G4PSDoseDeposit(psName));
+              mesh->GetPrimitiveScorer(psName)->SetVerboseLevel(verboseLevel);
               break;
           case StringCode::EnergyDeposit:
               mesh->SetPrimitiveScorer(new G4PSEnergyDeposit(psName));
+              mesh->GetPrimitiveScorer(psName)->SetVerboseLevel(verboseLevel);
               break;
           case StringCode::TrackCounter:
               mesh->SetPrimitiveScorer(new G4PSTrackCounter(psName,1));
+              mesh->GetPrimitiveScorer(psName)->SetVerboseLevel(verboseLevel);
               break;
           default:
              throw cet::exception("BADINPUT")<<"Mu2eG4ScoringManager: unsupported scorer "<<psName
@@ -115,6 +122,7 @@ namespace mu2e {
                                              <<"EnergyDeposit, TrackCounter\n"<< std::endl;
         }
       }
+      mesh->SetVerboseLevel(verboseLevel);
 
       fSMan_->RegisterScoringMesh(mesh);
       fSMan_->CloseCurrentMesh();
@@ -127,50 +135,12 @@ namespace mu2e {
   //------------------------------------------------------------------------------------------------------------
   void Mu2eG4ScoringManager::dumpInDataProduct(art::SubRun& subRun)
   {
-
     for (size_t i=0; i<fSMan_->GetNumberOfMesh(); ++i) {
-      auto mesh     = fSMan_->GetMesh(i);
-      auto meshName = mesh->GetWorldName();
-      auto scoreMap = mesh->GetScoreMap();
-
-      G4int nSegment[3]={0,0,0};
-      mesh->GetNumberOfSegments(nSegment);
-
-      G4VScoringMesh::MeshScoreMap::const_iterator msMapItr = scoreMap.begin();
-      for (; msMapItr != scoreMap.end(); msMapItr++) {
-
-        auto summaryColl = std::make_unique<ScorerSummaryCollection>();
-
-        auto psName = msMapItr->first;
-        auto score  = msMapItr->second->GetMap();
-        auto unit   = mesh->GetPSUnitValue(psName);
-
-        for (int ix = 0; ix < nSegment[0]; ++ix) {
-          for (int iy = 0; iy < nSegment[1]; ++iy) {
-            for (int iz = 0; iz < nSegment[2]; ++iz) {
-
-              G4int idx      = ix*nSegment[1]*nSegment[2] +iy*nSegment[2]+iz; //check G4VScoreWriter for changes
-              auto  value    = score->find(idx);
-              int   entries  = (value != score->end()) ? value->second->n() : 0;
-              float total    = (value != score->end()) ? value->second->sum_wx()/unit : 0.0;
-              float totalSqr = (value != score->end()) ? value->second->sum_wx2()/unit : 0.0;
-
-              summaryColl->emplace_back(ScorerSummary(ix,iy,iz,entries,total,totalSqr));
-            }
-          }
-        }
-
-        std::string instanceName = meshName + psName;
-        subRun.put(std::move(summaryColl),instanceName,art::fullSubRun());
-     }
-
-     if (writeFile_) {
-      std::string filename = fileDirectory_ + fSMan_->GetWorldName(i) + std::string(".dat");
-      fSMan_->DumpAllQuantitiesToFile(fSMan_->GetWorldName(i),filename);
-     }
-   }
-
- }
+      Mu2eG4ScoreWriter writer(fSMan_->GetMesh(i));
+      writer.dumpInDataProduct(subRun);
+      if (writeFile_) writer.dumpInFile(fileDirectory_);
+    }
+  }
 
 
   //------------------------------------------------------------------------------------------------------------

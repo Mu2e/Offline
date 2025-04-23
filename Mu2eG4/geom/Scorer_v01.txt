@@ -2,16 +2,16 @@
 // The name of the meshes are stored in Mu2eG4/fcl/prolog.fcl (needed to declare data products)
 //  --> Declare the mesh dimensions in the same order
 
-int            scoring.verboseLevel   = 0;
+int            scoring.verboseLevel   = 99;
 vector<double> scoring.meshPositionX  = {0.0,-3904.0};
 vector<double> scoring.meshPositionY  = {0.0,0.0};
-vector<double> scoring.meshPositionZ  = {0.0,12400.0};
-vector<double> scoring.meshSizeX      = {10000.,1000.};
-vector<double> scoring.meshsizeY      = {10000.,1000.};
-vector<double> scoring.meshsizeZ      = {10000.,100.};
-vector<int>    scoring.meshSegmentX   = {10,12};
-vector<int>    scoring.meshSegmentY   = {10,12};
-vector<int>    scoring.meshSegmentZ   = {10,12};
+vector<double> scoring.meshPositionZ  = {0.0,11841.0};
+vector<double> scoring.meshHalfSizeX  = {10000.,800.};
+vector<double> scoring.meshHalfSizeY  = {10000.,800.};
+vector<double> scoring.meshHalfSizeZ  = {10000.,0.01};
+vector<int>    scoring.meshSegmentX   = {10,30};
+vector<int>    scoring.meshSegmentY   = {10,30};
+vector<int>    scoring.meshSegmentZ   = {10,1};
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

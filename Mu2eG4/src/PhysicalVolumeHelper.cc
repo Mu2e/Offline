@@ -108,6 +108,12 @@ namespace mu2e {
       }
 
       //scorer volumes have no material and should be omitted
+      if (!vpv->GetLogicalVolume()->GetMaterial()) {
+        std::cout<<vpv->GetName()<<" "<<vpv->GetTranslation()<<" "
+                 <<vpv->IsReplicated()<<" "<<vpv->IsParameterised()<<" "
+                 <<vpv->GetLogicalVolume()->GetName()<<" "
+                 <<std::endl;
+      }
       if (!vpv->GetLogicalVolume()->GetMaterial()) continue;
 
       _pSingleStage[cet::map_vector_key(current)] =

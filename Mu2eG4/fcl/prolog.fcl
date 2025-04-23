@@ -218,7 +218,7 @@ mu2eg4runDefaultSingleStage: {
     Scoring : {
         enabled         : true
         meshNames       : ["WorldMesh","CaloMesh"]
-        scorerNames     : ["DoseDeposit","TrackCounter"]
+        scorerNames     : ["TrackCounter"]
         writeFile       : true
         fileDirectory   : "/exp/mu2e/data/users/echenard/"
     }
