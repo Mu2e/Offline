@@ -11,7 +11,6 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 #include "G4ScoringManager.hh"
-//#include "G4VScoreWriter.hh"
 
 
 namespace mu2e {

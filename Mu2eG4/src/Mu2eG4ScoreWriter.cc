@@ -40,10 +40,10 @@ namespace mu2e {
             for(int iz = 0; iz < fNMeshSegments[2]; iz++) {
 
               G4int idx = GetIndex(ix, iy, iz);
-              auto value = score->find(idx);
+              auto  value    = score->find(idx);
               int   entries  = (value != score->end()) ? value->second->n() : 0;
               float total    = (value != score->end()) ? value->second->sum_wx()/unit : 0.0;
-              float totalSqr = (value != score->end()) ? value->second->sum_wx2()/unit : 0.0;
+              float totalSqr = (value != score->end()) ? value->second->sum_wx2()/unit/unit : 0.0;
 
               summaryColl->emplace_back(ScorerSummary(ix,iy,iz,entries,total,totalSqr));
             }

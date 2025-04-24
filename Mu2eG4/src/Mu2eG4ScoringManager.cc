@@ -117,18 +117,19 @@ namespace mu2e {
               mesh->GetPrimitiveScorer(psName)->SetVerboseLevel(verboseLevel);
               break;
           default:
-             throw cet::exception("BADINPUT")<<"Mu2eG4ScoringManager: unsupported scorer "<<psName
-                                             <<". Choose among CellFlux, FlatSurfaceFlux, DoseDeposit, "
+             throw cet::exception("BADINPUT")<<"Mu2eG4ScoringManager: unsupported scorer "<<psName<<". "
+                                             <<"Choose among CellFlux, FlatSurfaceFlux, DoseDeposit, "
                                              <<"EnergyDeposit, TrackCounter\n"<< std::endl;
         }
       }
-      mesh->SetVerboseLevel(verboseLevel);
 
       fSMan_->RegisterScoringMesh(mesh);
+      mesh->SetVerboseLevel(verboseLevel);
       fSMan_->CloseCurrentMesh();
     }
 
     if (verboseLevel>1) fSMan_->List();
+fSMan_->Dump();
   }
 
 

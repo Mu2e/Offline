@@ -36,6 +36,8 @@
 // G4 includes
 #include "Geant4/G4PhysicalVolumeStore.hh"
 #include "Geant4/G4Track.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4Box.hh"
 
 using namespace std;
 
@@ -108,12 +110,6 @@ namespace mu2e {
       }
 
       //scorer volumes have no material and should be omitted
-      if (!vpv->GetLogicalVolume()->GetMaterial()) {
-        std::cout<<vpv->GetName()<<" "<<vpv->GetTranslation()<<" "
-                 <<vpv->IsReplicated()<<" "<<vpv->IsParameterised()<<" "
-                 <<vpv->GetLogicalVolume()->GetName()<<" "
-                 <<std::endl;
-      }
       if (!vpv->GetLogicalVolume()->GetMaterial()) continue;
 
       _pSingleStage[cet::map_vector_key(current)] =
