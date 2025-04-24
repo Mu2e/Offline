@@ -28,6 +28,7 @@ namespace mu2e {
     // accessors
       float energyDeposit() const { return edep_; }
       double const& time() const { return time_; } // time of the earliest StepPointMC used in this step
+      double& time() { return time_; } // used in resampling
       XYZVectorF const& startPosition() const { return startpos_; }
       XYZVectorF const& endPosition() const { return endpos_; }
       XYZVectorF midPosition() const { return 0.5*(startpos_ + endpos_); }

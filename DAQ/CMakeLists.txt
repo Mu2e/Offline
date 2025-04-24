@@ -25,8 +25,14 @@ cet_build_plugin(ProcessDTCAndCFOEvents art::module
     REG_SOURCE src/ProcessDTCAndCFOEvents_module.cc
     LIBRARIES REG
       Offline::DAQ
-
 )
+
+cet_build_plugin(EventHeaderFromCFOFragment art::module
+    REG_SOURCE src/EventHeaderFromCFOFragment_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+)
+    
 
 cet_build_plugin(CaloHitsFromDataDecoders art::module
     REG_SOURCE src/CaloHitsFromDataDecoders_module.cc
@@ -58,8 +64,8 @@ cet_build_plugin(CRVDigisFromDataDecoders art::module
       Offline::CRVConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
-      artdaq_core_mu2e::Data
-      artdaq_core_mu2e::Data_dict
+      artdaq-core-mu2e::Data
+      artdaq-core-mu2e::Data_dict
 )
 
 cet_build_plugin(CRVGlobalRunDataFromDataDecoders art::module
@@ -70,8 +76,8 @@ cet_build_plugin(CRVGlobalRunDataFromDataDecoders art::module
       Offline::CRVConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
-      artdaq_core_mu2e::Data
-      artdaq_core_mu2e::Data_dict
+      artdaq-core-mu2e::Data
+      artdaq-core-mu2e::Data_dict
 )
 
 cet_build_plugin(DataDecodersAna art::module
@@ -81,6 +87,23 @@ cet_build_plugin(DataDecodersAna art::module
       Offline::DAQ
       Offline::DataProducts
       ROOT::Hist
+)
+
+cet_build_plugin(DummyLumiInfoProducer art::module
+    REG_SOURCE src/DummyLumiInfoProducer_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+      Offline::RecoDataProducts
+)
+
+cet_build_plugin(LumiInfoAna art::module
+    REG_SOURCE src/LumiInfoAna_module.cc
+    LIBRARIES REG
+    Offline::DAQ
+    Offline::RecoDataProducts
+    art_root_io::TFileService_service
+    artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Data_dict
 )
 
 cet_build_plugin(PrefetchDAQData art::module
@@ -117,6 +140,16 @@ cet_build_plugin(StrawDigisFromDataDecoders art::module
 
       Offline::DataProducts
       Offline::RecoDataProducts
+)
+
+cet_build_plugin(STMWaveformDigisFromFragments art::module
+    REG_SOURCE src/STMWaveformDigisFromFragments_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+      Offline::ProditionsService
+      Offline::DataProducts
+      Offline::RecoDataProducts
+      BTrk_difAlgebra
 )
 
 install_source(SUBDIRS src)

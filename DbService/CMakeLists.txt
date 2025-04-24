@@ -8,6 +8,11 @@ cet_make_library(
       src/DbTool.cc
       src/DbValTool.cc
       src/EpicsTool.cc
+      src/GrlHeader.cc
+      src/GrlList.cc
+      src/GrlTool.cc
+      src/OpenHandle.cc
+      src/OpenTool.cc
       src/RunInfo.cc
       src/RunTool.cc
     LIBRARIES PUBLIC
@@ -41,6 +46,20 @@ cet_make_exec(NAME runTool
       Offline::DbService      
 )
 
+cet_make_exec(NAME grlTool
+    SOURCE src/grlTool_main.cc
+    LIBRARIES
+      Boost::program_options
+      Offline::DbService      
+)
+
+cet_make_exec(NAME openTool
+    SOURCE src/openTool_main.cc
+    LIBRARIES
+      Boost::program_options
+      Offline::DbService      
+)
+
 cet_build_plugin(DbService art::service
     REG_SOURCE src/DbService_service.cc
     LIBRARIES REG
@@ -54,7 +73,6 @@ cet_build_plugin(DbServiceTest art::module
     REG_SOURCE src/DbServiceTest_module.cc
     LIBRARIES REG
       Offline::DbService
-      
       Offline::DbTables
 )
 

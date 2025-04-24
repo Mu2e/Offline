@@ -151,6 +151,7 @@ namespace mu2e {
 
        intInfo.setCaloEnergy(evtEnergy);
        intInfo.setNCaloHits(pulseMap.size());
+       intInfo.setNCaphriHits(caphriHitsColl.size());
 
        if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caloHitsColl.size()<<" CaloDigis"<<std::endl;
        if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caphriHitsColl.size()<<" CapriDigis"<<std::endl;

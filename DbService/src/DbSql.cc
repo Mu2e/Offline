@@ -96,3 +96,30 @@ int mu2e::DbSql::execute(const std::string& command, std::string& result) {
   }
   return 0;
 }
+
+//*********************************************************
+
+int mu2e::DbSql::transact(const StringVec& commands, StringVec& results) {
+  std::string rr;
+  int rc = 0;
+  rc = connect();
+  if (rc) return 1;
+
+  rc = execute("BEGIN", rr);
+  if (rc) return rc;
+
+  for(const auto& cc: commands) {
+    rc = execute(cc,rr);
+    results.emplace_back(rr);
+    // execute will disconnect and abort the transaction on error
+    if(rc!=0) return rc;
+  }
+
+  rc = execute("COMMIT;", rr);
+  if (rc) return rc;
+
+  disconnect();
+
+  return 0;
+
+}

@@ -22,6 +22,8 @@ public:
   //  2018-10-12T08:58:26.792518-0500
   // will return time in ttime, return non-zero if parse error
   static int parseTimeTZ(std::string const& stime, std::time_t& ttime);
+  //  2018-10-12 08:58:26.792518-05:00 to 2018-10-12T08:58:26-05:00
+  static std::string reformat1(std::string const& stime);
 };
 } // namespace mu2e
 #endif
