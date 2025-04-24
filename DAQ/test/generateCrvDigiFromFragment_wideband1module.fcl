@@ -5,7 +5,7 @@
 #
 # Contact person G. Pezzullo, R. Ehrlich
 
-#include "mu2e_trig_config/core/trigProducers.fcl"
+#include "mu2e-trig-config/core/trigProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
 
 process_name : FragmentToDigi

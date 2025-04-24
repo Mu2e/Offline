@@ -96,11 +96,14 @@ cet_build_plugin(DummyLumiInfoProducer art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(LumiStreamFilter art::module
-    REG_SOURCE src/LumiStreamFilter_module.cc
+cet_build_plugin(LumiInfoAna art::module
+    REG_SOURCE src/LumiInfoAna_module.cc
     LIBRARIES REG
-      Offline::DAQ
-      Offline::RecoDataProducts
+    Offline::DAQ
+    Offline::RecoDataProducts
+    art_root_io::TFileService_service
+    artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Data_dict
 )
 
 cet_build_plugin(PrefetchDAQData art::module
