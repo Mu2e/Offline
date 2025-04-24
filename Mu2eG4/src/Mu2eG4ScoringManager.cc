@@ -129,7 +129,6 @@ namespace mu2e {
     }
 
     if (verboseLevel>1) fSMan_->List();
-fSMan_->Dump();
   }
 
 
