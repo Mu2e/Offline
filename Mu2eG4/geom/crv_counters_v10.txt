@@ -1,8 +1,6 @@
-//This geometry uses the same layout as v08 (same coordinates, etc.), but it splits the CRV-L1 and CRV-T4 sector into two sectors.
-//Therefore, this geometry is backward compatible with files that were simulated using v08.
-//This geometry requires the use of CRVResponse/fcl/prolog_v11.fcl.
+//This geometry requires the use of CRVResponse/fcl/prolog_v12.fcl.
 
-string crs.name = "nominal"; // final detector, to coordinate with conditions
+string crs.name = "nominal_v10";
 
 int   crs.nSectors = 23;
 int   crs.nLayers  = 4;
