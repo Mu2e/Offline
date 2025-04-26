@@ -598,7 +598,7 @@ namespace mu2e {
 
 
       if ( c.getBool("vd.STMSSCollUpStr.build", false) ) {//VD101, just upstream of Spot Size Collimator
-        double VD101_offset = 1.0; //No offset as there is no more space between the front of the SSC and the end of the volume stmDnStr
+        double VD101_offset = 15.0; //No offset as there is no more space between the front of the SSC and the end of the volume stmDnStr
         double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
           - pFrontShieldingParams.Front_Thickness() // Get to front of SSC
           - VD101_offset // Avoid the overlap
@@ -617,7 +617,7 @@ namespace mu2e {
 
 
       if ( c.getBool("vd.STMCollDnStr.build", false) ) { // VD88, just downstream of Spot Size Collimator
-        double VD88_offset = 0.25; // Smaller overlap than usual to get most information - VD89 and VD90 shortly behind these two
+        double VD88_offset = 25.4; // Smaller overlap than usual to get most information - VD89 and VD90 shortly behind these two
         double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
           + VD88_offset // Avoid the overlap
           + vd->_halfLength;  // Position the VD
@@ -635,9 +635,10 @@ namespace mu2e {
       }
 
       if ( c.getBool("vd.STMDet1UpStr.build", false) ) { // VD89, just upstream of LaBr
+        STM_SSC const & pSTM_SSCParams = *stmgh.getSTM_SSCPtr();
         LaBrDetector const & pLaBrDetectorParams = *stmgh.getLaBrDetectorPtr();
         double VD89_offset = 1.0;
-        double xOffset = pLaBrDetectorParams.originInMu2e().x()-stmDnStrEnvPositionInMu2e.x(); // Add collimator hole and offset shifts
+        double xOffset = -3904 + pSTM_SSCParams.offset_Spot() - stmDnStrEnvPositionInMu2e.x();
         double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
           + pLaBrDetectorParams.Z_LaBr() // Get to the front of the detector endcap
           - VD89_offset // Avoid the overlap
@@ -656,11 +657,10 @@ namespace mu2e {
       }
 
       if ( c.getBool("vd.STMDet2UpStr.build", false) ) {//VD90, just upstream of HPGe
+        STM_SSC const & pSTM_SSCParams = *stmgh.getSTM_SSCPtr();
         HPGeDetector const & pHPGeDetectorParams = *stmgh.getHPGeDetectorPtr();
         double VD90_offset = 1.0;
-        double HPGeToCenterLength = pHPGeDetectorParams.WindowD() + pHPGeDetectorParams.AirD() + pHPGeDetectorParams.Capsule_Windowthick() + pHPGeDetectorParams.CrystalL()/2;
-        double xOffset = pHPGeDetectorParams.originInMu2e().x() - stmDnStrEnvPositionInMu2e.x() // Get to the center of the front endcap
-          - (sqrt(2)/2)*HPGeToCenterLength; // Position VD on crystal center
+        double xOffset = -3904 - pSTM_SSCParams.offset_Spot() - stmDnStrEnvPositionInMu2e.x();
         double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
           + pHPGeDetectorParams.Z_HPGe() // Get to the front of the detector endcap
           - ((sqrt(2)/2)*pHPGeDetectorParams.EndcapR()) // Get to the corner of the endcap. Sqrt(2)/2 is cos(45).

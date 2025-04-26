@@ -1576,7 +1576,7 @@ namespace mu2e {
       //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
       const VolumeInfo& parent = _helper->locateVolInfo("stmDownstreamEnvelope");
       const double vdRIn  = 0.0;
-      const double vdROut = _config.getDouble("stm.det1.rOut");
+      const double vdROut = _config.getDouble("stm.det1VD.rOut");
       const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
@@ -1610,7 +1610,7 @@ namespace mu2e {
       //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
       const VolumeInfo& parent = _helper->locateVolInfo("stmDownstreamEnvelope");
       const double vdRIn  = 0.0;
-      const double vdROut = _config.getDouble("stm.det2.rOut");
+      const double vdROut = _config.getDouble("stm.det2VD.rOut");
       const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
