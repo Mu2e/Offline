@@ -70,10 +70,10 @@ RecoCompression: {
       module_type : CompressDigiMCsCheck
       oldStrawDigiMCTag : "compressDigiMCs"
       newStrawDigiMCTag : "compressRecoMCs"
-      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
+      strawDigiMCIndexMapTag : "SelectReco:StrawDigiMap"
       oldCrvDigiMCTag : "compressDigiMCs"
       newCrvDigiMCTag : "compressRecoMCs"
-      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
+      crvDigiMCIndexMapTag : "SelectReco:CrvDigiMap"
       oldCaloShowerSimTag : ""
       newCaloShowerSimTag : ""
       checkTrackerDuplicateSteps : false

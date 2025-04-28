@@ -159,6 +159,21 @@ CREATE TABLE val.extensionlists
 GRANT SELECT ON val.extensionlists TO PUBLIC;
 GRANT INSERT ON val.extensionlists TO manager_role;
 
+--- a table for open intervals, as a supplement to the main system
+CREATE TABLE val.openiovs
+  (name TEXT NOT NULL,
+  cid INTEGER NOT NULL,
+  start_run INT NOT NULL, 
+  start_subrun INT NOT NULL, 
+  end_run INT NOT NULL,
+  end_subrun INT NOT NULL,
+  comment TEXT NOT NULL,
+  create_time TIMESTAMP WITH TIME ZONE NOT NULL, 
+  create_user TEXT NOT NULL,  
+  CONSTRAINT iovs_cid_fk FOREIGN KEY (cid) REFERENCES val.calibrations(cid) );
+GRANT SELECT ON val.openiovs TO PUBLIC;
+GRANT INSERT ON val.openiovs TO val_role;
+
 --
 -- tst schema tables
 --

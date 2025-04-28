@@ -157,7 +157,7 @@ namespace mu2e {
     fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") };
     // LoopHelix module specific config
     fhicl::OptionalAtom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Input helix seed slope significance threshold to assume the direction")};
-    fhicl::Atom<bool> prioritizeCaloHits{ Name("PrioritizeCaloHits"), Comment("Prioritize tracks with calo-hits when determining the best fit direction"), true};
+    fhicl::Atom<bool> prioritizeCaloHits{ Name("PrioritizeCaloHits"), Comment("Prioritize tracks with calo-hits when determining the best fit direction")};
     fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
   };

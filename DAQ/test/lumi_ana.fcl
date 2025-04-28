@@ -1,0 +1,37 @@
+# Test reading lumi stream information
+# Usage: mu2e -c Offline/DAQ/test/lumi_ana.fcl -s <file>
+#
+#
+# Contact person Michael MacKenzie
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+services : @local::Services.Reco
+
+services.scheduler.wantSummary: true
+
+process_name : lumiStreamAna
+
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+  maxEvents   : -1
+}
+
+physics : {
+
+    analyzers : {
+        lumiAna : {
+            module_type : LumiInfoAna
+            diagLevel   : 1
+        }
+    }
+
+    t1 : [ ]
+    e1 : [ lumiAna ]
+
+    trigger_paths  : [t1]
+    end_paths      : [e1]
+}
+services.TFileService.fileName : "lumi_ana.root"
