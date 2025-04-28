@@ -4,7 +4,6 @@
 #include "Offline/DbTables/inc/DbTable.hh"
 #include "cetlib_except/exception.h"
 #include <iomanip>
-#include <map>
 #include <sstream>
 #include <string>
 
