@@ -23,7 +23,6 @@
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
-// #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
@@ -54,7 +53,7 @@ public:
   struct Config {
     fhicl::Atom<int> diagLevel    {fhicl::Name("diagLevel"    ), fhicl::Comment("diagnostic severity level, default = 0" ), 0};
     fhicl::Atom<int> debugLevel   {fhicl::Name("debugLevel"   ), fhicl::Comment("debug level, default = 0"               ), 0};
-    fhicl::Atom<int> saveWaveforms{fhicl::Name("saveWaveforms"), fhicl::Comment("save StrawDigiADCWaveforms, default = 1"), 1};
+    fhicl::Atom<bool> saveWaveforms{fhicl::Name("saveWaveforms"), fhicl::Comment("save StrawDigiADCWaveforms, default = true"), true};
 
     // individual tuple specifying a minnesota label, e.g. MN123,
     // with geographic plane/panel numbers, i.e. from DocDB-#888
@@ -120,7 +119,7 @@ private:
                                         // talk-to parameters
   int       diagLevel_    ;
   int       debugLevel_   ;
-  int       saveWaveforms_;
+  bool      saveWaveforms_;
                                         // the rest
   int       nADCPackets_{-1};           // N(ADC packets per hit)
   int       nSamples_   {-1};           // N(ADC samples per hit)
@@ -248,11 +247,6 @@ void art::StrawDigisFromArtdaqFragments::produce(Event& event) {
   // IntensityInfoTrackerHits
   std::unique_ptr<mu2e::IntensityInfoTrackerHits> intInfo(new mu2e::IntensityInfoTrackerHits);
 
-  // FIXME! this is temporary
-  // std::unique_ptr<mu2e::ProtonBunchTime> pbt(new mu2e::ProtonBunchTime);
-  // pbt->pbtime_ = 0;
-  // pbt->pbterr_ = 0;
-  //  event.put(std::move(pbt));
 //-----------------------------------------------------------------------------
 // defined by the first hit
 //-----------------------------------------------------------------------------
