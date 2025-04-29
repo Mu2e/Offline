@@ -11,12 +11,16 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/OptionalSequence.h"
 
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Data/TrackerDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 #include "artdaq-core-mu2e/Overlays/DTC_Packets/DTC_RocDataHeaderPacket.h"
 
+#include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
 // #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
@@ -29,6 +33,7 @@
 
 #include <string>
 
+#include <map>
 #include <memory>
 
 // #define TRACEMF_USE_VERBATIM 1
@@ -50,13 +55,57 @@ public:
     fhicl::Atom<int> diagLevel    {fhicl::Name("diagLevel"    ), fhicl::Comment("diagnostic severity level, default = 0" ), 0};
     fhicl::Atom<int> debugLevel   {fhicl::Name("debugLevel"   ), fhicl::Comment("debug level, default = 0"               ), 0};
     fhicl::Atom<int> saveWaveforms{fhicl::Name("saveWaveforms"), fhicl::Comment("save StrawDigiADCWaveforms, default = 1"), 1};
+
+    // individual tuple specifying a minnesota label, e.g. MN123,
+    // with geographic plane/panel numbers, i.e. from DocDB-#888
+    struct GeographicTuple{
+      fhicl::Atom<std::string> minnesota{
+        fhicl::Name("minnesota"),
+        fhicl::Comment("Minnesota # label")
+      };
+      fhicl::Atom<uint16_t> plane{
+        fhicl::Name("plane"),
+        fhicl::Comment("Geographic plane [DocDB-888]")
+      };
+      fhicl::Atom<uint16_t> panel{
+        fhicl::Name("panel"),
+        fhicl::Comment("Geographic panel [DocDB-888]")
+      };
+    };
+    // mandatory listing of geographic entries, to enable translation
+    // of panel-labelings in the data to Offline StrawIds
+    fhicl::Sequence< fhicl::Table<GeographicTuple> > geography{
+      fhicl::Name("geography"),
+      fhicl::Comment("Mapping of Minnesota numbers to geographic planes and panels")
+    };
+
+    // individual tuple specifying a minnesota label, e.g. MN123,
+    // with logical channeling, i.e. DTC ID and associated Link #
+    struct LogicalTuple{
+      fhicl::Atom<uint16_t> dtc{
+        fhicl::Name("dtc"),
+        fhicl::Comment("DTC ID")
+      };
+      fhicl::Atom<uint16_t> link{
+        fhicl::Name("link"),
+        fhicl::Comment("Link #")
+      };
+      fhicl::Atom<std::string> minnesota{
+        fhicl::Name("minnesota"),
+        fhicl::Comment("Minnesota # label")
+      };
+    };
+    // optional listing of logical entries, to provide a backup
+    // translation in case of invalid labeling in the data
+    fhicl::OptionalSequence< fhicl::Table<LogicalTuple> > channeling{
+      fhicl::Name("channeling"),
+      fhicl::Comment("Logical channeling of panels (optional)")
+    };
   };
 
   // --- C'tor/d'tor:
   explicit StrawDigisFromArtdaqFragments(const art::EDProducer::Table<Config>& config);
   virtual ~StrawDigisFromArtdaqFragments() {}
-
-  int          panelID(uint16_t ChannelID, int DtcID, int LinkID);
 
   void         print_(const std::string&  Message, int DiagLevel = -1,
                       const std::source_location& location = std::source_location::current());
@@ -77,10 +126,15 @@ private:
   int       nSamples_   {-1};           // N(ADC samples per hit)
   int       np_per_hit_ {-1};           // N(data packets per hits)
 
-  int       panel_map_[36][6];          // panel_map_[idtc][ilink] = panel MN number
+  std::map<uint16_t, uint16_t> minnesota_map_; // mapping from minnesota number to upper bits of StrawId
+  uint16_t channel_map_[36][6] ; // mapping from DTC link number to minnesota number
 
   const art::Event* event_;
 
+  // less than 300 panels physically exist and are enumeratively labeled
+  // hence, the max allowed word can act be used as a sentinel
+  const static uint16_t invalid_minnesota_ = static_cast<uint16_t>(-1);
+  uint16_t parse_minnesota_label(std::string label);
 };
 
 // ======================================================================
@@ -94,8 +148,49 @@ art::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::EDP
   if (saveWaveforms_) produces<mu2e::StrawDigiADCWaveformCollection>();
 
   produces<mu2e::IntensityInfoTrackerHits>();
-  // FIXME!
-  //  produces<mu2e::ProtonBunchTime>();
+
+  // initialize geographic mapping of minnesota-labled panels
+  for (const auto& entry: config().geography()){
+    const auto& minnesota = entry.minnesota();
+    const auto mid = parse_minnesota_label(minnesota);
+    auto plane = entry.plane();
+    auto panel = entry.panel();
+    mu2e::StrawId pid(plane, panel, 0);
+    if (0 < minnesota_map_.count(mid)){
+      std::string msg = "duplicate mapping of panel " + minnesota;
+      throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
+    }
+    minnesota_map_[mid] = pid.getPanelId().asUint16();
+  }
+
+  // initialize fallback mapping of dtc links to minnesota-labeling
+  for (size_t i = 0 ; i < mu2e::StrawId::_nplanes ; i++){
+    for (size_t j = 0 ; j < mu2e::StrawId::_npanels ; j++){
+      channel_map_[i][j] = StrawDigisFromArtdaqFragments::invalid_minnesota_;
+    }
+  }
+  const auto channeling = config().channeling();
+  if (channeling.has_value()){
+    for (const auto& entry: channeling.value()){
+      uint16_t dtc = entry.dtc();
+      if (!(dtc < mu2e::StrawId::_nplanes)){
+        std::string msg = "invalid DTC ID: " + std::to_string(dtc);
+        throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
+      }
+      uint16_t link = entry.link();
+      if (!(link < mu2e::StrawId::_npanels)){
+        std::string msg = "invalid DTC Link number: " + std::to_string(link);
+        throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
+      }
+      std::string minnesota = entry.minnesota();
+      uint16_t mid = parse_minnesota_label(minnesota);
+      if (minnesota_map_.count(mid) < 1){
+        std::string msg = "dtc link mapping defined for unmapped panel " + minnesota;
+        throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
+      }
+      channel_map_[dtc][link] = mid;
+    }
+  }
 }
 
 
@@ -134,60 +229,8 @@ void art::StrawDigisFromArtdaqFragments::print_fragment(const artdaq::Fragment* 
 }
 
 //-----------------------------------------------------------------------------
-// to be written - needs DB access
-// for now - all good
-// return panel ID part of the geographical (offline) channel ID - first channel ID of the panel
-//-----------------------------------------------------------------------------
-int art::StrawDigisFromArtdaqFragments::panelID(uint16_t MnID, int DtcID, int LinkID) {
-  int panel_id(-1), idtc(-1);
-
-  if      (DtcID == 18) idtc = 0;   // daq09
-  else if (DtcID == 19) idtc = 1;   // daq09
-  else if (DtcID == 42) idtc = 1;   // daq09 old
-  else if (DtcID == 73) idtc = 0;   // daq09 old
-  else if (DtcID == 44) idtc = 0;   // daq22
-  else if (DtcID == 45) idtc = 1;   // daq22
-  else {
-                                        // unknown DTC, return an error
-    print_(std::format("ERROR: unknown DtcID:{}",DtcID));
-    return -1;
-  }
-//-----------------------------------------------------------------------------
-// for the moment, assign unique panel ID's just to get through,
-//-----------------------------------------------------------------------------
-  panel_id = idtc*6+LinkID;
-
-//   if (MnID == panel_map_[idtc][LinkID]) return MnID;
-//   else {
-// //-----------------------------------------------------------------------------
-// //  handle test stands and the tower
-// //  panelID 400-405 : the tower (bottom to top)
-// //  panelID 410     : TS0
-// //  panelID 411     : TS1
-// //  panelID 412     : TS2
-// //  it would be interesting to see MnID's resulting in a failure
-// //-----------------------------------------------------------------------------
-//     if ((MnID >= 400) and (MnID < 412)) {
-//       panel_id = MnID-400;
-//     }
-//     else {
-//       print_(std::format("ERROR: Minnesota ID:{:04x} inconsistent with the dtc_id:{} and link_id:{}",
-//                          MnID, DtcID, LinkID));
-//     }
-//   }
-  return panel_id;
-}
-
-//-----------------------------------------------------------------------------
 void art::StrawDigisFromArtdaqFragments::beginRun(art::Run&  ArtRun) {
-  // fill panel_map_ for a given run - should come from the database
-
-  for (int idtc=0; idtc<36; idtc++) {
-    for (int ilink=0; ilink<6; ilink++) {
-      panel_map_[idtc][ilink] = idtc*6+ilink;
-    }
-  }
-
+  /**/
 }
 // ----------------------------------------------------------------------
 // runs on tracker Artdaq fragments
@@ -309,20 +352,34 @@ void art::StrawDigisFromArtdaqFragments::produce(Event& event) {
 // mn_id - 'MinnesotaID' of the panel
 //-----------------------------------------------------------------------------
               mu2e::StrawDigiFlag digi_flag;
-              int ch_id    = hit_data->StrawIndex & 0x7f;   // channel ID within the panel
-              int mn_id    = hit_data->StrawIndex >> 7;
-              int panel_id = panelID(mn_id,dtc_id,link_id);
-              if (panel_id < 0) {
-                print_(std::format("ERROR: hit chid:{:04x} inconsistent with the dtc_id:{} and link_id:{}",
-                                   hit_data->StrawIndex, dtc_id, link_id));
+              uint16_t channel = static_cast<uint16_t>(hit_data->StrawIndex);
+              uint16_t ch_id = mu2e::StrawId(channel).straw(); // channel ID within the panel
+              uint16_t mn_id = channel >> mu2e::StrawId::_panelsft;
+
+              uint16_t panel_id;
+              if (0 < minnesota_map_.count(mn_id)){
+                panel_id = minnesota_map_[mn_id];
+              }
 //-----------------------------------------------------------------------------
 // in case of a single channel ID error no need to skip the rest of the ROC data -
 // force geographical address and mark the produced digi
 //-----------------------------------------------------------------------------
-                panel_id  = panel_map_[dtc_id][link_id];
+              else{
+                print_(std::format("ERROR: hit chid:{:04x} inconsistent with the dtc_id:{} and link_id:{}", hit_data->StrawIndex, dtc_id, link_id));
+                mn_id = channel_map_[dtc_id][link_id];
+                if (mn_id == StrawDigisFromArtdaqFragments::invalid_minnesota_){
+                  std::string msg = "encountered invalid PanelID";
+                  throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
+                }
+                if (minnesota_map_.count(mn_id) < 1){
+                  std::string msg = "undefined minnesota number in fallback mapping:" + std::to_string(mn_id);
+                  throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
+                }
+                panel_id = minnesota_map_[mn_id];
                 digi_flag = mu2e::StrawDigiFlag::corrupted;
               }
-              else if (hit_data->NumADCPackets != nADCPackets_) {
+
+              if (hit_data->NumADCPackets != nADCPackets_) {
                 int np = hit_data->NumADCPackets;
                 print_(std::format("ERROR: wrong NADCpackets:{} , expected:{}, STOP PROCESSING HITS",
                                    np,nADCPackets_));
@@ -331,7 +388,7 @@ void art::StrawDigisFromArtdaqFragments::produce(Event& event) {
 //-----------------------------------------------------------------------------
 // convert channel_id into a strawID
 //-----------------------------------------------------------------------------
-              uint16_t straw_index = (panel_id << 7) | ch_id;
+              uint16_t straw_index = panel_id | ch_id;
               mu2e::StrawId sid(straw_index);
               mu2e::TrkTypes::TDCValues tdc = {hit_data->TDC0(), hit_data->TDC1()};
               mu2e::TrkTypes::TOTValues tot = {hit_data->TOT0, hit_data->TOT1};
@@ -429,6 +486,21 @@ void art::StrawDigisFromArtdaqFragments::produce(Event& event) {
 }
 
 
+uint16_t art::StrawDigisFromArtdaqFragments::parse_minnesota_label(std::string label){
+    if ((label.size() != 5) || (label[0] != 'M') || (label[1] != 'N')){
+        std::string msg = "invalid minnesota label: " + label;
+        throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
+    }
+    std::string substr = label.substr(2, 3);
+    unsigned int parsed;
+    int scanned = sscanf(substr.c_str(), "%u", &parsed);
+    if (scanned != 1){
+      std::string msg = "failed to parse minnesota label: " + label;
+      throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
+    }
+    uint16_t rv = static_cast<uint16_t>(parsed);
+    return rv;
+}
 
 // ======================================================================
 
