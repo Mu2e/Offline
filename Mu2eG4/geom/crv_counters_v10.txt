@@ -129,8 +129,8 @@ vector<double>  crs.firstCounterT2        =  {-3904.0,   2663.12,    365.15}; //
 vector<double>  crs.firstCounterT3        =  {-3904.0,   2663.12,   2018.15}; //11
 vector<double>  crs.firstCounterT4        =  {-3904.0,   2663.12,   5324.15}; //12
 vector<double>  crs.firstCounterT5        =  {-3904.0,   2663.12,  16068.65}; //13
-vector<double>  crs.firstCounterE1        =  {  517.75,  2837.12,    214.80}; //14 //crv_parameters: y=2917.12mm. causes overlap with ExtShieldUpstreamBox_37
-vector<double>  crs.firstCounterE2        =  { -308.75,  2837.12,    214.80}; //15 //crv_parameters: y=2917.12mm. causes overlap with ExtShieldUpstreamBox_37
+vector<double>  crs.firstCounterE1        =  {  517.75,  2917.12,    214.80}; //14
+vector<double>  crs.firstCounterE2        =  { -308.75,  2917.12,    214.80}; //15
 vector<double>  crs.firstCounterU         =  {-3254.00,  3225.25,  -2399.76}; //16
 vector<double>  crs.firstCounterD1        =  {-3904.0,   2973.75,  18672.26}; //17
 vector<double>  crs.firstCounterD2        =  {-5569.0,    494.25,  18672.26}; //18
