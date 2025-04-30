@@ -20,18 +20,6 @@
 #include "Offline/DataProducts/inc/Helicity.hh"
 
 // BaBar
-/*
-#include "BTrk/BaBar/BaBar.hh"
-#include "BTrk/BField/BField.hh"
-#include "BTrk/BField/BFieldFixed.hh"
-#include "BTrk/ProbTools/ChisqConsistency.hh"
-#include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "BTrk/BaBar/BbrStringUtils.hh"
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "BTrk/TrkBase/HelixParams.hh"
-#include "BTrk/TrkBase/TrkPoca.hh"
-#include "BTrk/TrkBase/TrkMomCalculator.hh"
-*/
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "Offline/BFieldGeom/inc/BFieldConfig.hh"
 

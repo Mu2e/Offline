@@ -13,8 +13,6 @@
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
-// BaBar
-#include "BTrk/TrkBase/TrkErrCode.hh"
 //root
 //#include "TString.h"
 

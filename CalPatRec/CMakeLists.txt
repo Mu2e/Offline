@@ -111,19 +111,19 @@ cet_build_plugin(DeltaFinder art::module
       Offline::TrackerGeom
 )
 
-cet_build_plugin(MergeHelixFinder art::module
-    REG_SOURCE src/MergeHelixFinder_module.cc
-    LIBRARIES REG
-      Offline::CalPatRec
-      
-      Offline::BTrkData
-      Offline::CalorimeterGeom
-      Offline::ConfigTools
-      Offline::GeometryService
-      Offline::Mu2eUtilities
-      Offline::RecoDataProducts
-      Offline::TrkReco
-)
+#cet_build_plugin(MergeHelixFinder art::module
+#    REG_SOURCE src/MergeHelixFinder_module.cc
+#    LIBRARIES REG
+#      Offline::CalPatRec
+#      
+#      Offline::BTrkData
+#      Offline::CalorimeterGeom
+#      Offline::ConfigTools
+#      Offline::GeometryService
+#      Offline::Mu2eUtilities
+#      Offline::RecoDataProducts
+#      Offline::TrkReco
+#)
 
 cet_build_plugin(PhiClusterFinder art::module
     REG_SOURCE src/PhiClusterFinder_module.cc

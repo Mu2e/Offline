@@ -9,7 +9,6 @@
 //
 // the following has to come before other BaBar includes
 ///////////////////////////////////////////////////////////////////////////////
-#include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "Offline/CalPatRec/inc/CalHelixFinderAlg.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
