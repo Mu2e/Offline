@@ -56,15 +56,10 @@ namespace mu2e {
     GeomHandle<DetectorSolenoid> ds;
     const CLHEP::Hep3Vector &dsP( ds->position() );
 
-    GeomHandle<CosmicRayShield> CRS;
-    std::vector<double> crvd_halfLengths = CRS->getSectorHalfLengths("D");
-    CLHEP::Hep3Vector   crvd_position    = CRS->getSectorPosition("D");
-    const double z_crv_max = crvd_position.z() + crvd_halfLengths[2];
-    //const double z_crv_max = 20000.0;
-
     //Create a reference position (most things in the STM geometry will be defined w.r.t. this position)
-    // Our reference z is the downstream edge of the CRV-D
-    const CLHEP::Hep3Vector _STMMOffsetInMu2e(dsP.x(), 0.0, z_crv_max );
+    //Our reference z is the downstream edge of the CRV-D as it was in crv_counters_v09.txt.
+    //It is now set as a user variable in STM_v08.txt without changing its value.
+    const CLHEP::Hep3Vector _STMMOffsetInMu2e(dsP.x(), 0.0, _stmReferenceZ );
     const CLHEP::HepRotation _magnetRotation = CLHEP::HepRotation::IDENTITY;
     double magnetZOffset = _magnetUpStrSpace+_magnetHalfLength;
     //calculate the magnet position assuming the shield pipe is flush to the wall
@@ -603,6 +598,8 @@ namespace mu2e {
 
     _verbosityLevel            = _config.getInt("stm.verbosityLevel",0);
     _stmZAllowed               = _config.getDouble("stm.z.allowed");
+
+    _stmReferenceZ             = _config.getDouble("stm.referenceZ");  //was previously calculated automatically based on the location of the CRV-D
 
     _magnetBuild               = _config.getBool(  "stm.magnet.build",false);
     _magnetUpStrSpace          = _config.getDouble("stm.magnet.UpStrSpace");
