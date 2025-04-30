@@ -1,7 +1,2 @@
 #include "Offline/Mu2eG4/geom/geom_common.txt"
 #include "Offline/Mu2eG4/geom/crv_counters_v10.txt"
-
-bool g4.doSurfaceCheck    = true;
-int  g4.nSurfaceCheckPointsPercmsq =   1;
-int  g4.minSurfaceCheckPoints      = 100; // per volume
-int  g4.maxSurfaceCheckPoints = 10000000; // per volume
