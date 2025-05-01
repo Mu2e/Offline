@@ -29,6 +29,7 @@ cet_set_compiler_flags(DIAGS VIGILANT
              -Wno-ignored-qualifiers
              -Wno-unused-parameter
              -Wno-non-virtual-dtor
+             -Wno-extra
 )
 
 if(DEFINED Offline_UPS_QUALIFIER_STRING)
