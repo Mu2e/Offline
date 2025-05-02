@@ -75,8 +75,6 @@
 #include <vector>
 #include <memory>
 //
-// Original author D. Brown (LBNL) 11/18/20
-//
 namespace mu2e {
   using KTRAJ= KinKal::LoopHelix;
   using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
