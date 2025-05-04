@@ -59,7 +59,6 @@ namespace mu2e {
   void PionFilter::beginJob(){}
 
   bool PionFilter::filter(art::Event& evt) {
-  std::cout<<"=============="<<std::endl;
       if(isNull_) return true;
       bool passed = false;
       std::vector<art::Handle<SimParticleCollection>> vah = evt.getMany<SimParticleCollection>();
