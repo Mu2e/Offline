@@ -6,18 +6,16 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art_root_io/TFileService.h"
 
 // Mu2e includes.
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
-#include "Offline/TrackerGeom/inc/Tracker.hh"
 #include <iostream>
 #include <string>
+
 using namespace std;
 namespace mu2e {
 
@@ -26,7 +24,7 @@ namespace mu2e {
       struct Config {
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
-        fhicl::Atom<int> diagLevel{Name("diagLevel"),1};
+        fhicl::Atom<int> diagLevel{Name("diagLevel"),0};
         fhicl::Atom<double> tmin{Name("tmin"),0};
         fhicl::Atom<double> tmax{Name("tmax"),1e6};
         fhicl::Atom<bool> isNull{Name("isNull"),true};
@@ -59,6 +57,7 @@ namespace mu2e {
   void PionFilter::beginJob(){}
 
   bool PionFilter::filter(art::Event& evt) {
+
       if(isNull_) return true;
       bool passed = false;
       std::vector<art::Handle<SimParticleCollection>> vah = evt.getMany<SimParticleCollection>();
