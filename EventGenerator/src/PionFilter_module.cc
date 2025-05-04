@@ -18,8 +18,6 @@
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include <iostream>
 #include <string>
-#include "TH1F.h"
-#include "TTree.h"
 using namespace std;
 namespace mu2e {
 
@@ -48,10 +46,6 @@ namespace mu2e {
       float _selectedweight = 0;
       int _ntot = 0;
       int _nsel = 0;
-      TTree* pions;
-      Float_t _posx;
-      Float_t _posy;
-      Float_t _posz;
   };
 
   PionFilter::PionFilter(const art::EDFilter::Table<Config>& config) :
@@ -62,17 +56,7 @@ namespace mu2e {
     , isNull_{config().isNull()}
   {
   }
-  void PionFilter::beginJob(){
-      art::ServiceHandle<art::TFileService> tfs;
-      //Tree for detailed diagnostics
-      pions=tfs->make<TTree>("pions","pions");
-
-      //Create branches:
-      pions->Branch("posx",&_posx,"posx/F");
-      pions->Branch("posy",&_posy,"posy/F");
-      pions->Branch("posz",&_posz,"posz/F");
-
-}
+  void PionFilter::beginJob(){}
 
   bool PionFilter::filter(art::Event& evt) {
   std::cout<<"=============="<<std::endl;
