@@ -35,6 +35,7 @@ namespace mu2e {
       };
       explicit PionFilter(const art::EDFilter::Table<Config>& config);
       virtual bool filter(art::Event& event) override;
+      virtual void beginJob() override;
       virtual void endJob() override;
 
     private:
@@ -47,6 +48,10 @@ namespace mu2e {
       float _selectedweight = 0;
       int _ntot = 0;
       int _nsel = 0;
+      TTree* pions;
+      Float_t _posx;
+      Float_t _posy;
+      Float_t _posz;
   };
 
   PionFilter::PionFilter(const art::EDFilter::Table<Config>& config) :
@@ -57,8 +62,20 @@ namespace mu2e {
     , isNull_{config().isNull()}
   {
   }
+  void PionFilter::beginJob(){
+      art::ServiceHandle<art::TFileService> tfs;
+      //Tree for detailed diagnostics
+      pions=tfs->make<TTree>("pions","pions");
+
+      //Create branches:
+      pions->Branch("posx",&_posx,"posx/F");
+      pions->Branch("posy",&_posy,"posy/F");
+      pions->Branch("posz",&_posz,"posz/F");
+
+}
 
   bool PionFilter::filter(art::Event& evt) {
+  std::cout<<"=============="<<std::endl;
       if(isNull_) return true;
       bool passed = false;
       std::vector<art::Handle<SimParticleCollection>> vah = evt.getMany<SimParticleCollection>();
@@ -66,12 +83,12 @@ namespace mu2e {
         for(const auto& aParticle : *ah){
           art::Ptr<SimParticle> pp(ah, aParticle.first.asUint());
           float _endglobaltime = pp->endGlobalTime();
-          if( pp->stoppingCode() == ProcessCode::mu2eKillerVolume and std::abs(pp->pdgId()) == PDGCode::pi_plus){
+          if( pp->stoppingCode() == ProcessCode::hBertiniCaptureAtRest and std::abs(pp->pdgId()) == PDGCode::pi_plus){
             const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
             _totalweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
             _ntot += 1;
           }
-          if( pp->stoppingCode() == ProcessCode::mu2eKillerVolume and (std::abs(pp->pdgId()) == PDGCode::pi_plus and _endglobaltime > tmin_ and _endglobaltime < tmax_ )){
+          if( pp->stoppingCode() == ProcessCode::hBertiniCaptureAtRest and (std::abs(pp->pdgId()) == PDGCode::pi_plus and _endglobaltime > tmin_ and _endglobaltime < tmax_ )){
             passed = true;
             const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
             _selectedweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));

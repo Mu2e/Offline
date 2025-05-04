@@ -1,7 +1,7 @@
 // Generates outgoing photon or electron/positron pair  for either external or internal RPC
 // Pions are generated with infinite lifetime, their real lifetime (proper time) is stored as a weight
 // Andrei Gaponenko, 2013
-// Sophie Middleton, 2021, 2024
+// Sophie Middleton, 2021
 
 #include <iostream>
 #include <string>
@@ -60,7 +60,6 @@ namespace mu2e {
         fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum")};
         fhicl::Atom<bool> pionDecayOff{Name("pionDecayOff"),true};
         fhicl::Atom<bool> doHistograms{Name("doHistograms"),false};
-        fhicl::Atom<double> survivalProbScaling{Name("SurvivalProbScalings"),1.0};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -87,7 +86,6 @@ namespace mu2e {
     ProcessCode process_;
     PionCaptureSpectrum pionCaptureSpectrum_;
 
-    double survivalProbScaling_;
     TH1F* _hmomentum;
     TH1F* _hElecMom {nullptr};
     TH1F* _hElecPx {nullptr};
@@ -98,7 +96,6 @@ namespace mu2e {
     TH1F* _hPosiPy {nullptr};
     TH1F* _hPosiPz {nullptr};
     TH1F* _hTime {nullptr};
-    TH1F* _hWeights {nullptr};
     TH1F* _hMee;
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
@@ -121,7 +118,6 @@ namespace mu2e {
     , randomUnitSphere_ {eng_}
     , randSpectrum_       {eng_, spectrum_.getPDF(),static_cast<int>(spectrum_.getNbins())}
     , pionCaptureSpectrum_{&randomFlat_,&randomUnitSphere_}
-    , survivalProbScaling_    {conf().survivalProbScaling()}
   {
     produces<mu2e::StageParticleCollection>();
     produces<mu2e::EventWeight>();
@@ -146,7 +142,6 @@ namespace mu2e {
           _hPosiPy  = tfdir.make<TH1F>("hPosiPy" , "Produced positron momentum Py", 140,  -140. , 140.);
           _hPosiPz  = tfdir.make<TH1F>("hPosiPz" , "Produced positron momentum Pz", 140,  -140. , 140.);
           _hTime    = tfdir.make<TH1F>("hTime" , "pion time",100,0,1700);
-          _hWeights   = tfdir.make<TH1F>("hWeights" , "pion weight",100,0,1);
           _hMee      = tfdir.make<TH1F>("hMee"     , "M(e+e-) "           , 200,0.,200.);
           _hMeeVsE   = tfdir.make<TH2F>("hMeeVsE"  , "M(e+e-) vs E"       , 200,0.,200.,200,0,200);
           _hMeeOverE = tfdir.make<TH1F>("hMeeOverE", "M(e+e-)/E "         , 200, 0.,1);
@@ -165,13 +160,12 @@ namespace mu2e {
             tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
           }
       }
-    weight = exp(-tau) * survivalProbScaling_;
+    weight = exp(-tau);
     return weight;
   }
 
   //================================================================
   void RPCGun::produce(art::Event& event) {
-    std::cout<<"production "<<std::endl;
     auto output{std::make_unique<StageParticleCollection>()};
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     const auto pis = stoppedPiMinusList(simh);
@@ -179,20 +173,9 @@ namespace mu2e {
       throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
     }
-    std::cout<<"surv prob"<<std::endl;
-    // Calculate and apply survival probability
     unsigned int randIn = randomFlat_.fireInt(pis.size());
     double time_weight = 1.0;
-    if(pionDecayOff_) {
-      time_weight = MakeEventWeight(pis[randIn]);
-      if(RPCType_ == "mu2eInternalRPC") _hWeights->Fill(time_weight);
-      while (true){
-        double rand = randomFlat_.fire();
-        if(time_weight > rand ){
-          break;
-        }
-      }
-    }
+    if(pionDecayOff_) time_weight = MakeEventWeight(pis[randIn]);
     std::unique_ptr<EventWeight> pw(new EventWeight(time_weight));
     event.put(std::move(pw));
     addParticles(output.get(), pis[randIn]);
