@@ -84,17 +84,16 @@ void mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind,
 
     os << " fitStatus: " << std::setw(3) << obj.status() << "\n";
     os << " part: " << ptable->particle(obj.particle()).name()
-      << "  flt0: " << std::setw(7)
-      << std::setprecision(1) << obj.flt0() << "  t0: " << std::setw(7)
-      << std::setprecision(1) << obj.t0().t0() << "\n";
-    os << " chi2: " << std::setw(7) << std::setprecision(2) << obj.chisquared()
-      << "  fitcon: " << std::setw(7) << std::setprecision(3)
-      << obj.fitConsistency() << "  nhits: " << std::setw(3)
-      << obj.hits().size()
-      << "  calo: " << (obj.caloCluster().isNull() ? "no" : "yes") << "\n";
+       << "  t0: " << std::setw(7)
+       << std::setprecision(1) << obj.t0().t0()
+       << " chi2: " << std::setw(7) << std::setprecision(2) << obj.chisquared()
+       << "  fitcon: " << std::setw(7) << std::setprecision(3)
+       << obj.fitConsistency() << "  nhits: " << std::setw(3)
+       << obj.hits().size()
+       << "  calo: " << (obj.caloCluster().isNull() ? "no" : "yes") << "\n";
     os << " intersections: \n";
     for (auto const& inter : obj.intersections()) {
-      os << " sid " << inter.surfaceId() << " time " << inter.time() << " P " << inter.mom() << " dP " << inter.dMom() << "\n";
+      os << " sid " << inter.surfaceId() << " time " << inter.time() << " P " << inter.momentum3() << " dP " << inter.dMom() << "\n";
     }
     if (verbose() >= 3) {
       os << " segments: \n";
