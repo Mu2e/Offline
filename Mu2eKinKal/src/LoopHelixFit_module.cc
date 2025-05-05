@@ -179,7 +179,7 @@ namespace mu2e {
       std::unique_ptr<KKTRK> fitTrack(art::Event& event, HelixSeed const& hseed, const TrkFitDirection fdir, const PDGCode::type fitpart);
       // extrapolation functions
       void extrapolate(KKTRK& ktrk) const;
-      void toTrackerEnds(KKTRK& ktrk,VEC3 const& dir0) const;
+      void toTrackerEnds(KKTRK& ktrk) const;
       bool extrapolateIPA(KKTRK& ktrk,TimeDir trkdir) const;
       bool extrapolateST(KKTRK& ktrk,TimeDir trkdir) const;
       bool extrapolateTracker(KKTRK& ktrk,TimeDir tdir) const;
@@ -598,9 +598,9 @@ namespace mu2e {
   void LoopHelixFit::extrapolate(KKTRK& ktrk) const {
     // define the time direction according to the fit direction inside the tracker
     auto const& ftraj = ktrk.fitTraj();
-    auto dir0 = ftraj.direction(ftraj.t0());
-    if(toTrackerEnds_)toTrackerEnds(ktrk,dir0);
+    if(toTrackerEnds_)toTrackerEnds(ktrk);
     if(upstream_){
+      auto dir0 = ftraj.direction(ftraj.t0());
       TimeDir tdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
       double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
       // extrapolate through the IPA in this direction.
@@ -631,25 +631,45 @@ namespace mu2e {
     }
   }
 
-  void LoopHelixFit::toTrackerEnds(KKTRK& ktrk,VEC3 const& dir0) const {
+  void LoopHelixFit::toTrackerEnds(KKTRK& ktrk) const {
+    // time direction to reach the bounding surfaces from the active region depends on the z momentum. This calculation assumes the particle doesn't
+    // reflect inside the tracker volumei
+    auto const& ftraj = ktrk.fitTraj();
+    auto dir0 = ftraj.direction(ftraj.t0());
     TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
     TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
-    ktrk.extrapolate(fronttdir,trackerFront_);
-    ktrk.extrapolate(backtdir,trackerBack_);
+    auto tofront = ktrk.extrapolate(fronttdir,trackerFront_);
+    auto toback = ktrk.extrapolate(backtdir,trackerBack_);
     // record the standard tracker intersections
-    auto const& ftraj = ktrk.fitTraj();
     TimeRange frange = ftraj.range();
     double tol = trackerFront_.tolerance();
     static const SurfaceId tt_front("TT_Front");
     static const SurfaceId tt_mid("TT_Mid");
     static const SurfaceId tt_back("TT_Back");
 
-    auto frontinter = KinKal::intersect(ftraj,*trkfrontptr_,frange,tol,fronttdir);
-    if(frontinter.onsurface_)ktrk.addIntersection(tt_front,frontinter);
+    if(tofront){
+      auto frontinter = KinKal::intersect(ftraj,*trkfrontptr_,frange,tol,fronttdir);
+      if(!frontinter.onsurface_){
+        // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
+        auto fhel = fronttdir == TimeDir::forwards ? ftraj.front() : ftraj.back();
+        frontinter = KinKal::intersect(fhel,*trkfrontptr_,fhel.range(),tol,fronttdir);
+      }
+      ktrk.addIntersection(tt_front,frontinter);
+    }
+
     auto midinter = KinKal::intersect(ftraj,*trkmidptr_,frange,tol);
     if(midinter.onsurface_)ktrk.addIntersection(tt_mid,midinter);
-    auto backinter = KinKal::intersect(ftraj,*trkbackptr_,frange,tol,backtdir);
-    if(backinter.onsurface_)ktrk.addIntersection(tt_back,backinter);
+
+    if(toback){
+      auto backinter = KinKal::intersect(ftraj,*trkbackptr_,frange,tol,backtdir);
+      if(!backinter.onsurface_){
+        // track extrapolation to the back succeeded, but the intersection failed. Use the last trajectory to force an intersection
+        auto bhel = backtdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
+        backinter = KinKal::intersect(bhel,*trkbackptr_,bhel.range(),tol,backtdir);
+      }
+      ktrk.addIntersection(tt_back,backinter);
+    }
+
   }
 
   bool LoopHelixFit::extrapolateIPA(KKTRK& ktrk,TimeDir tdir) const {
