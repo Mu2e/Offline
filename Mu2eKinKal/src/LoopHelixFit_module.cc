@@ -793,28 +793,12 @@ namespace mu2e {
     double tbeg = ftraj.range().begin();
     double tend = ftraj.range().end();
     static const double epsilon(1.0e-6);
-    // if this helix has reflected, limit the search
-    if(!backToTracker_){
-      auto mom0 = ftraj.momentum3(ftraj.t0());
-      if(mom0.Z() >0){ // downstream fit: skip any upstream-going segments
-        for(auto const& ktraj : ftraj.pieces()){
-          auto axis = ktraj->axis(ktraj->range().mid());
-          if(axis.direction().Z() > 0.0 )break; // helix headed downstream
-          tbeg = ktraj->range().end(); // force onto next piece
-        }
-      } else { // upstream fit: stop when the track reflects back downstream
-        for(auto const& ktraj : ftraj.pieces()){
-          auto axis = ktraj->axis(ktraj->range().mid());
-          if(axis.direction().Z() > 0.0 )break; // helix no longer heading upstream
-          tend = ktraj->range().begin();
-        }
-      }
-    }
     for(auto const& surf : sample_){
       // search for intersections with each surface within the specified time range, going forwards in time
       bool hasinter(true);
       size_t max_iter = 1000;
       size_t cur_iter = 0;
+      bool reftest (false);
       // loop to find multiple intersections
       while(hasinter && tbeg < tend) {
         TimeRange irange(tbeg,tend);
@@ -831,6 +815,16 @@ namespace mu2e {
           tbeg = surfinter.time_ + epsilon;// move past existing intersection to avoid repeating
           if(print_>1) printf(" [LoopHelixFit::%s::%s] Found intersection with surface %15s\n",
                               __func__, moduleDescription().moduleLabel().c_str(), surf.first.name().c_str());
+        } else if(!reftest){
+          // We might need to step past a reflection.
+          auto refltraj = ftraj.reflection(tbeg);
+          if(refltraj){
+            tbeg = refltraj->range().end();
+            hasinter = true; // to force next steps
+          } else { // finish
+            tbeg = tend;
+          }
+          reftest = true; // only test once
         }
       }
     }
