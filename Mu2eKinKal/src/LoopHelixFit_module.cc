@@ -794,18 +794,20 @@ namespace mu2e {
     double tend = ftraj.range().end();
     static const double epsilon(1.0e-6);
     // if this helix has reflected, limit the search
-    auto mom0 = ftraj.momentum3(ftraj.t0());
-    if(mom0.Z() >0){ // downstream fit: skip any upstream-going segments
-      for(auto const& ktraj : ftraj.pieces()){
-        auto axis = ktraj->axis(ktraj->range().mid());
-        if(axis.direction().Z() > 0.0 )break; // helix headed downstream
-        tbeg = ktraj->range().end(); // force onto next piece
-      }
-    } else { // upstream fit: stop when the track reflects back downstream
-      for(auto const& ktraj : ftraj.pieces()){
-        auto axis = ktraj->axis(ktraj->range().mid());
-        if(axis.direction().Z() > 0.0 )break; // helix no longer heading upstream
-        tend = ktraj->range().begin();
+    if(!backToTracker_){
+      auto mom0 = ftraj.momentum3(ftraj.t0());
+      if(mom0.Z() >0){ // downstream fit: skip any upstream-going segments
+        for(auto const& ktraj : ftraj.pieces()){
+          auto axis = ktraj->axis(ktraj->range().mid());
+          if(axis.direction().Z() > 0.0 )break; // helix headed downstream
+          tbeg = ktraj->range().end(); // force onto next piece
+        }
+      } else { // upstream fit: stop when the track reflects back downstream
+        for(auto const& ktraj : ftraj.pieces()){
+          auto axis = ktraj->axis(ktraj->range().mid());
+          if(axis.direction().Z() > 0.0 )break; // helix no longer heading upstream
+          tend = ktraj->range().begin();
+        }
       }
     }
     for(auto const& surf : sample_){
