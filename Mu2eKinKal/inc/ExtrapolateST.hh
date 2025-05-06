@@ -77,28 +77,28 @@ namespace mu2e {
     if(ktraj.range().range() <= epsilon) return true; // keep going if the step is very small
     auto stime = tdir == TimeDir::forwards ? ktraj.range().begin()+epsilon : ktraj.range().end()-epsilon;
     auto etime = tdir == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
-    auto vel = ktraj.speed(stime)*ktraj.axis(stime).direction();// use helix axis to define the velocity
+    auto vel = ktraj.velocity(stime); // physical velocity
+    if(tdir == TimeDir::backwards) vel *= -1.0;
     auto spos = ktraj.position3(stime);
     auto epos = ktraj.position3(etime);
-    double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
-    if(debug_ > 2)std::cout << "ST extrap tdir " << tdir << " start z " << spos.Z() << " end z " << epos.Z() << " zvel " << zvel << " rho " << spos.Rho() << std::endl;
+    if(debug_ > 2)std::cout << "ST extrap tdir " << tdir << " start z " << spos.Z() << " end z " << epos.Z() << " zvel " << vel.Z() << " rho " << spos.Rho() << std::endl;
     // stop if the particle is heading away from the ST
-    if( (zvel > 0 && spos.Z() > zmax_ ) || (zvel < 0 && spos.Z() < zmin_)){
+    if( (vel.Z() > 0 && spos.Z() > zmax_ ) || (vel.Z() < 0 && spos.Z() < zmin_)){
       reset(); // clear any cache
       if(debug_ > 1)std::cout << "Heading away from ST: done" << std::endl;
       return false;
     }
     // if the particle is going in the right direction but haven't yet reached the ST in Z just keep going
-    if( (zvel > 0 && epos.Z() < zmin_) || (zvel < 0 && epos.Z() > zmax_) ){
+    if( (vel.Z() > 0 && epos.Z() < zmin_) || (vel.Z() < 0 && epos.Z() > zmax_) ){
       reset();
       if(debug_ > 2)std::cout << "Heading towards ST, z " << spos.Z()<< std::endl;
       return true;
     }
     // if we get to here we are in the correct Z range. Test foils.
-    int ifoil = nearestFoil(spos.Z(),zvel);
+    int ifoil = nearestFoil(spos.Z(),vel.Z());
     if(ifoil >= (int)foils_.size())return true;
     if(debug_ > 2)std::cout << "Looping on foils " << std::endl;
-    int dfoil = zvel > 0.0 ? 1 : -1; // iteration direction
+    int dfoil = vel.Z() > 0.0 ? 1 : -1; // iteration direction
     auto trange = tdir == TimeDir::forwards ? TimeRange(stime,ktraj.range().end()) : TimeRange(ktraj.range().begin(),stime);
     // loop over foils in the z range of this piece
     while(ifoil >= 0 && ifoil < (int)foils_.size() && (foils_[ifoil]->center().Z() - epos.Z())*dfoil < 0.0){
@@ -121,7 +121,7 @@ namespace mu2e {
     // no more intersections: keep extending in Z till we clear the ST
     reset();
     if(debug_ > 1)std::cout << "Extrapolating to ST edge, z " << spos.Z() << std::endl;
-    if(zvel > 0.0)
+    if(vel.Z() > 0.0)
       return spos.Z() < zmax_;
     else
       return spos.Z() > zmin_;
