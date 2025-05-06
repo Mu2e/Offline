@@ -1,0 +1,28 @@
+# -*- mode:tcl -*-
+BEGIN_PROLOG
+DAQ : {
+    producers : {
+        StrawDigisFromArtdaqFragments: { module_type: StrawDigisFromArtdaqFragments
+            saveWaveforms : 0
+            diagLevel     : 0                        ## not used yet
+            debugLevel    : 0                        ##
+            debugBits     : [ "bit0:0", "bit1:0" ]   ## 100 in total, configure printout details
+        }
+    }
+
+    filters : { 
+        StrawDigiFilter : { module_type : StrawDigiFilter
+            strawDigiCollTag    : "StrawDigisFromArtdaqFragments"
+            minNStrawDigis      : 1
+            minNPlanes          : 0
+            nSamplesBL          : 9
+            minPulseHeight      : 5
+            minGoodPulseHeight  : 100
+            minNGoodHits        : 2
+            minNGoodPanels      : 2
+            debugLevel          : 0
+            noFilter            : false
+        }
+    }
+}
+END_PROLOG

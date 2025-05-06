@@ -734,7 +734,10 @@ namespace mu2e {
     const ComboHit*    hit;
 
     float  ccTime    = 0.0;
-    int    ncc       = _data._ccColl->size();
+    // P.M. : the code shold work in the absence of the calorimeter
+    int    ncc       = 0;
+    if (_data._ccColl != nullptr) ncc =  _data._ccColl->size();
+    
     int    nchunks   = _f.chunks.size();
     int    addedToTC = 0;
 

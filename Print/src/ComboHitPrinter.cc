@@ -107,6 +107,6 @@ void mu2e::ComboHitPrinter::PrintHeader(const std::string& tag,
 
 void mu2e::ComboHitPrinter::PrintListHeader(std::ostream& os) {
   if (verbose() < 1) return;
-  os << "ind  nCombo nStraw   x        y         z        t        E       "
+  os << "ind  nCombo nStraw   x        y         z        t      tcorr      E       "
     "qual\n";
 }
