@@ -811,7 +811,7 @@ namespace mu2e {
                                   emfb->filter().collimator1().rotationInMu2e(),
                                   config);
 
-//beam-dump-move-FIXME:    constructExtMonFNALMagnet(emfb->filter().magnet(), mainParent, "filter", mainParentRotationInMu2e, config);
+    constructExtMonFNALMagnet(emfb->filter().magnet(), mainParent, "filter", mainParentRotationInMu2e, config);
 
     constructExtMonFNALCollimator(emfb->filter().collimator2(),
                                   mainParent,
