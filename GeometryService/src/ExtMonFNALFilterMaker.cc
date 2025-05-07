@@ -134,9 +134,11 @@ namespace mu2e {
     // the "reference plane" parallel to the beam dump face (orthogonal to beam dump z)
     // at the distance dump.coreCenterDistanceToReferencePlane() from the core.
 
+    const double coreCenterDistanceToReferencePlane = c.getDouble("extMonFNAL.coreCenterDistanceToReferencePlane");
+
     const auto col1ReferenceInBeamDump = Hep3Vector(filterEntranceOffsetX,
                                                     filterEntranceOffsetY,
-                                                    dump.coreCenterDistanceToReferencePlane());
+                                                    coreCenterDistanceToReferencePlane);
 
     const auto col1ReferenceInMu2e = dump.beamDumpToMu2e_position(col1ReferenceInBeamDump);
 
@@ -264,7 +266,6 @@ namespace mu2e {
                           "extMonFNAL.filter.entranceCollimator.dydz"
                         });
 
-
     }
     else if(mode == "HybridFromEntrance") {
 
@@ -277,11 +278,11 @@ namespace mu2e {
                         std::array{
                           "extMonFNAL.entranceOffsetX",
                           "extMonFNAL.entranceOffsetY",
-                          "extMonFNAL.collimator1.centerDistanceToReferencePlane"
+                          "extMonFNAL.collimator1.centerDistanceToReferencePlane",
+                          "extMonFNAL.coreCenterDistanceToReferencePlane",
                           "extMonFNAL.angleH",
                           "extMonFNAL.entranceAngleV"
                         });
-
 
     }
     else if(mode == "Absolute") {
@@ -296,13 +297,12 @@ namespace mu2e {
                         std::array{
                           "extMonFNAL.entranceOffsetX",
                           "extMonFNAL.entranceOffsetY",
-                          "extMonFNAL.collimator1.centerDistanceToReferencePlane"
+                          "extMonFNAL.collimator1.centerDistanceToReferencePlane",
+                          "extMonFNAL.coreCenterDistanceToReferencePlane",
                           "extMonFNAL.angleH",
                           "extMonFNAL.entranceAngleV",
-                          "extMonFNAL.filter.magnet.distanceToEntranceCollimator",
+                          "extMonFNAL.filter.magnet.distanceToEntranceCollimator"
                         });
-
-
 
     }
     else {

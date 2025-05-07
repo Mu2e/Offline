@@ -21,10 +21,7 @@
 // Cc: Peter H Kasper; Rick Coleman
 // Subject: Local dump coordinates
 
-int  protonBeamDump.version = 3;
-
-vector<double> protonBeamDump.coreCenterInMu2e = {778.423,527.4,-18950.9};
-//AH changed, was {661.9, 527.4, -19428.2}
+vector<double> protonBeamDump.coreCenterInMu2e = {661.9, 527.4, -19428.2};
 double         protonBeamDump.coreRotY = 13.72; // degrees
 
 // Sizes below are given in mm in this order:
@@ -35,16 +32,25 @@ vector<double> protonBeamDump.mouthHalfSize = {750., 750., 500.};
 // Neutron cave
 vector<double> protonBeamDump.neutronCaveHalfSize = {1250., 1250., 500.};
 
-// shielding around the core, minimal req.
-double         protonBeamDump.minCoreShieldingThickness = 1000.;
 // Air gap around core
-double         protonBeamDump.coreAirGap = 12.7;
-// Steel above dump
-vector<double> protonBeamDump.additionalSteel = {2514.6, 508, 3187.7};
+double         protonBeamDump.coreAirSideGap = 76;
+double         protonBeamDump.coreAirTopGap = 51;
+double         protonBeamDump.coreAirBottomGap = 152;
 
-// This number defines the z location (in dump coordinates) at which
-// nominal entry point of the front collimator is defined
-double         protonBeamDump.coreCenterDistanceToReferencePlane = 3000.;
+// Steel above dump. There are two assemblies: a flat rectangle above
+// the core, and another rectangle with a scalloped cutout for the
+// ExtMon collimator laying of top of the flat piece.  The assemblies
+// extend from the top of the beam dump core to the back edge of the
+// beam dump concrete in the beam direction.  The transverse to the
+// beam horizontal size and position is determined by the
+// wallClearance nubers: the first one is the distance from the steel
+// to the wall on beam left, the second is to the wall on beam right.
+
+double protonBeamDump.topSteelFlat.thickness = 335; // mm = 13-3/16"
+vector<double> protonBeamDump.topSteelFlat.wallClearance = {572, 25};
+double protonBeamDump.topSteelScalloped.thickness = 203; // mm = 8"
+vector<double> protonBeamDump.topSteelScalloped.wallClearance = {711, 718};
+double protonBeamDump.topSteelScalloped.distanceToCollimator = 115;
 
 //----------------------------------------------------------------
 string protonBeamDump.material.core  = "G4_Fe";

@@ -10,6 +10,10 @@
 
 string extMonFNAL.filter.positioning = "Relative"; // w.r.t the beam dump
 
+// This number defines the z location (in dump coordinates) at which
+// nominal entry point of the front collimator is defined
+double         extMonFNAL.coreCenterDistanceToReferencePlane = 3000.;
+
 // The entrance point on the face of the beam dump enclosure,
 // transverse to the beam coordinates (horiz, vertical).  The offsets
 // are w.r.t to the core center position (== the nominal beam entrance
