@@ -671,38 +671,38 @@ namespace mu2e {
     static CLHEP::HepRotation shieldingRotationInMu2e = emfb->shieldingRotationInMu2e();
     const CLHEP::Hep3Vector offset(0.0,2*emfb->shieldingNHalfSize()[1],0.0);
 
-//beam-dump-move-FIXME:    nestBox("ExtMonShieldingNorthsteel",
-//beam-dump-move-FIXME:            emfb->shieldingNHalfSize(),
-//beam-dump-move-FIXME:            materialFinder.get("protonBeamDump.material.core"),
-//beam-dump-move-FIXME:            &shieldingRotationInMu2e,
-//beam-dump-move-FIXME:            emfb->shieldingNCenterInMu2e() - mainParent.centerInMu2e(),
-//beam-dump-move-FIXME:            mainParent.logical, 0,
-//beam-dump-move-FIXME:            G4Colour::Red()
-//beam-dump-move-FIXME:            );
-//beam-dump-move-FIXME:    nestBox("ExtMonShieldingNorthconcrete",
-//beam-dump-move-FIXME:            emfb->shieldingNHalfSize(),
-//beam-dump-move-FIXME:            materialFinder.get("protonBeamDump.material.shielding"),
-//beam-dump-move-FIXME:            &shieldingRotationInMu2e,
-//beam-dump-move-FIXME:            emfb->shieldingNCenterInMu2e() - mainParent.centerInMu2e() + offset,
-//beam-dump-move-FIXME:            mainParent.logical, 0,
-//beam-dump-move-FIXME:            G4Colour::Grey()
-//beam-dump-move-FIXME:            );
-//beam-dump-move-FIXME:    nestBox("ExtMonShieldingSouthsteel",
-//beam-dump-move-FIXME:            emfb->shieldingSHalfSize(),
-//beam-dump-move-FIXME:            materialFinder.get("protonBeamDump.material.core"),
-//beam-dump-move-FIXME:            &shieldingRotationInMu2e,
-//beam-dump-move-FIXME:            emfb->shieldingSCenterInMu2e() - mainParent.centerInMu2e(),
-//beam-dump-move-FIXME:            mainParent.logical, 0,
-//beam-dump-move-FIXME:            G4Colour::Red()
-//beam-dump-move-FIXME:            );
-//beam-dump-move-FIXME:    nestBox("ExtMonShieldingSouthconcrete",
-//beam-dump-move-FIXME:            emfb->shieldingSHalfSize(),
-//beam-dump-move-FIXME:            materialFinder.get("protonBeamDump.material.shielding"),
-//beam-dump-move-FIXME:            &shieldingRotationInMu2e,
-//beam-dump-move-FIXME:            emfb->shieldingSCenterInMu2e() - mainParent.centerInMu2e() + offset,
-//beam-dump-move-FIXME:            mainParent.logical, 0,
-//beam-dump-move-FIXME:            G4Colour::Grey()
-//beam-dump-move-FIXME:            );
+    nestBox("ExtMonShieldingNorthsteel",
+            emfb->shieldingNHalfSize(),
+            materialFinder.get("protonBeamDump.material.core"),
+            &shieldingRotationInMu2e,
+            emfb->shieldingNCenterInMu2e() - mainParent.centerInMu2e(),
+            mainParent.logical, 0,
+            G4Colour::Red()
+            );
+    nestBox("ExtMonShieldingNorthconcrete",
+            emfb->shieldingNHalfSize(),
+            materialFinder.get("protonBeamDump.material.shielding"),
+            &shieldingRotationInMu2e,
+            emfb->shieldingNCenterInMu2e() - mainParent.centerInMu2e() + offset,
+            mainParent.logical, 0,
+            G4Colour::Grey()
+            );
+    nestBox("ExtMonShieldingSouthsteel",
+            emfb->shieldingSHalfSize(),
+            materialFinder.get("protonBeamDump.material.core"),
+            &shieldingRotationInMu2e,
+            emfb->shieldingSCenterInMu2e() - mainParent.centerInMu2e(),
+            mainParent.logical, 0,
+            G4Colour::Red()
+            );
+    nestBox("ExtMonShieldingSouthconcrete",
+            emfb->shieldingSHalfSize(),
+            materialFinder.get("protonBeamDump.material.shielding"),
+            &shieldingRotationInMu2e,
+            emfb->shieldingSCenterInMu2e() - mainParent.centerInMu2e() + offset,
+            mainParent.logical, 0,
+            G4Colour::Grey()
+            );
     nestBox("ExtMonShieldingFloorConcrete",
             emfb->shieldingBHalfSize(),
             materialFinder.get("protonBeamDump.material.shielding"),
