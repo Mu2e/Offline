@@ -67,6 +67,7 @@ namespace mu2e
     art::EDProducer{conf},
     _seedTag(conf().seedTag()),
     _useCaloHit(conf().useCaloHit()),
+    _makeHists(conf().makeHists()),
     _debug(conf().debug())
   {
     produces<KalSeedPtrCollection>();
