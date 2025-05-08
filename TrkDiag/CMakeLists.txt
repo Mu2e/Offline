@@ -164,8 +164,8 @@ cet_build_plugin(TrackQuality art::module
 )
 
 
-cet_build_plugin(TrackResolving art::module
-    REG_SOURCE src/TrackResolving_module.cc
+cet_build_plugin(TrackResolution art::module
+    REG_SOURCE src/TrackResolution_module.cc
     LIBRARIES REG
       art_root_io::tfile_support
       Offline::TrkDiag
