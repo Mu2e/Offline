@@ -129,12 +129,13 @@ namespace mu2e
       auto handle = event.getValidHandle<KalSeedCollection>(tag);
       handles.push_back(handle);
       trackColls.push_back(handle.product());
-      if(_debug > 0) printf("[TrackMatching::%s::%s] Track collection %s has %zu entries\n", __func__, moduleDescription().moduleLabel().c_str(),
+      if(_debug > 0) printf("[TrackMatching::%s::%s] Track collection %s has %zu entries\n",
+                            __func__, moduleDescription().moduleLabel().c_str(),
                             tag.encode().c_str(), handle->size());
     }
 
     //
-    // For each track in each collection, check for overlaps with each track in each other collection
+    // For each track in each collection, check for overlaps with each other track
     //
 
     std::map<const KalSeed*, KalSeedPtr> ptr_map; // map of track -> art::Ptr
@@ -143,7 +144,8 @@ namespace mu2e
 
     const size_t ncolls = trackColls.size();
     const size_t max_coll = (ncolls < 1) ? 0 : ncolls - 1; // no need to check the last collection as others checked against it
-    if(_debug > 2) printf("[TrackMatching::%s::%s] Inspecting track inputs from %zu collections\n", __func__, moduleDescription().moduleLabel().c_str(), ncolls);
+    if(_debug > 2) printf("[TrackMatching::%s::%s] Inspecting track inputs from %zu collections\n",
+                          __func__, moduleDescription().moduleLabel().c_str(), ncolls);
 
     for(size_t i = 0; i < max_coll; ++i) {
       const KalSeedCollection* itrks = trackColls[i];
@@ -161,8 +163,8 @@ namespace mu2e
           ptr_map[itrkptr] = art::Ptr<KalSeed>(handles[i], i_index); //KalSeedPtr(itrks, i);
         }
 
-        // Check against each other track collection, ignoring earlier collections already checked
-        for(size_t j = i+1; j < ncolls; ++j) {
+        // Check against each track collection (including its own collection), ignoring earlier collections already checked
+        for(size_t j = i; j < ncolls; ++j) {
           const KalSeedCollection* jtrks = trackColls[j];
           const size_t n_jtrks = jtrks->size();
           if(_debug > 2) printf("    Checking against track collection %s (size = %zu)\n", _seedTags[j].encode().c_str(), n_jtrks);
@@ -176,15 +178,19 @@ namespace mu2e
             // Check if both tracks have already been clustered by another track
             if(cluster_index.count(itrkptr) && cluster_index.count(jtrkptr)) continue;
 
-            // Ensure this is not somehow the same track
+            // Ensure this is not the same track
             if(itrkptr == jtrkptr) {
-              if(_debug > 0) printf("[TrackMatching::%s::%s] A track is in two input track collections!\n", __func__, moduleDescription().moduleLabel().c_str());
+              if(i != j && _debug > 0) printf("[TrackMatching::%s::%s] A track is in two input track collections! Collection %s:%zu and %s:%zu\n",
+                                              __func__, moduleDescription().moduleLabel().c_str(),
+                                              _seedTags[i].encode().c_str(), i_index,
+                                              _seedTags[j].encode().c_str(), j_index);
               continue;
             }
 
             // If the tracks overlap, add the tracks to the match lists
             if(match(itrkptr, jtrkptr)) {
-              if(_debug > 1) printf("[TrackMatching::%s::%s] Found a match!\n", __func__, moduleDescription().moduleLabel().c_str());
+              if(_debug > 1) printf("[TrackMatching::%s::%s] Found a match!\n",
+                                    __func__, moduleDescription().moduleLabel().c_str());
               if(!ptr_map.count(jtrkptr)) { // add the track to the map
                 if(_debug > 3) printf("  --> Adding track %zu of %s to the Ptr map\n", j_index, _seedTags[j].encode().c_str());
                 ptr_map[jtrkptr] = KalSeedPtr(handles[j], j_index);
@@ -211,7 +217,8 @@ namespace mu2e
       }
     }
 
-    if(_debug > 0) printf("[TrackMatching::%s::%s] Found %zu track clusters\n", __func__, moduleDescription().moduleLabel().c_str(), clusters.size());
+    if(_debug > 0) printf("[TrackMatching::%s::%s] Found %zu track clusters\n",
+                          __func__, moduleDescription().moduleLabel().c_str(), clusters.size());
     if(_makeHists) _hists.nclusters->Fill(clusters.size());
 
     // Create the matched clusters
