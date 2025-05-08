@@ -86,12 +86,12 @@ namespace mu2e
 
     const float fitcon_1(k_1->fitConsistency()), fitcon_2(k_2->fitConsistency());
     if(_debug > 1) printf("    Comparing two tracks: Calo cluster: k1 = %o, k2 = %o; Fit quality: k1 = %.3g, k2 = %.3g\n",
-                          k_1->hasCaloCluster(), k_1->hasCaloCluster(), fitcon_1, fitcon_2);
+                          k_1->hasCaloCluster(), k_2->hasCaloCluster(), fitcon_1, fitcon_2);
 
     // If requested, prioritize tracks that include a calorimeter cluster
     if(_useCaloHit ) {
-      if(k_1->hasCaloCluster() && !k_2->hasCaloCluster()) return kFirst;
-      if(!k_1->hasCaloCluster() && k_2->hasCaloCluster()) return kSecond;
+      if( k_1->hasCaloCluster() && !k_2->hasCaloCluster()) return kFirst;
+      if(!k_1->hasCaloCluster() &&  k_2->hasCaloCluster()) return kSecond;
     }
 
     // Compare the fit quality
