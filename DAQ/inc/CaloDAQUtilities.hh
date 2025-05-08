@@ -55,7 +55,16 @@ namespace mu2e {
       if (Hit.first.LastSampleMarker == 0) return CaloHitError::LastSampleMarker;
       if (Hit.second.size() == 0) return CaloHitError::WaveformSize;
       if (Hit.first.NumberOfSamples != Hit.second.size()) return CaloHitError::NumberOfSamples;
-      if (Hit.first.IndexOfMaxDigitizerSample >= Hit.second.size()) return CaloHitError::NumberOfSamples;
+      if (Hit.first.IndexOfMaxDigitizerSample >= Hit.second.size()) return CaloHitError::MaxSampleIndex;
+      if (Hit.first.BoardID < 0 || Hit.first.BoardID >= 160) return CaloHitError::BoardID;
+      if (Hit.first.ChannelID < 0 || Hit.first.ChannelID >= 20) return CaloHitError::ChannelID;
+      return CaloHitError::Good;
+    }
+
+    CaloHitError isHitGood(std::pair<CalorimeterDataDecoder::CalorimeterHitTestDataPacket, uint16_t> const& Hit){
+      if (Hit.first.BeginMarker != 0xAAA) return CaloHitError::BeginMarker;
+      if (Hit.first.LastSampleMarker == 0) return CaloHitError::LastSampleMarker;
+      if (Hit.second == 0) return CaloHitError::WaveformSize;
       if (Hit.first.BoardID < 0 || Hit.first.BoardID >= 160) return CaloHitError::BoardID;
       if (Hit.first.ChannelID < 0 || Hit.first.ChannelID >= 20) return CaloHitError::ChannelID;
       return CaloHitError::Good;
