@@ -124,6 +124,7 @@ namespace mu2e {
   using Name    = fhicl::Name;
   using Comment = fhicl::Comment;
 
+  using CylPtr = std::shared_ptr<KinKal::Cylinder>;
   using DiskPtr = std::shared_ptr<KinKal::Disk>;
   using AnnPtr = std::shared_ptr<KinKal::Annulus>;
   using FruPtr = std::shared_ptr<KinKal::Frustrum>;
@@ -226,6 +227,7 @@ namespace mu2e {
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
       SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
+      CylPtr STInner_, STOuter_;
       int nSeen_ = 0;
       int nAmbiguous_ = 0;
       int nDownstream_ = 0;
@@ -324,6 +326,9 @@ namespace mu2e {
       // geometry service eventually, TODO
       SurfaceMap smap;
       smap.surfaces(ssids,sample_);
+      // Find the target bounding surfaces as well
+      STInner_ = smap.ST().innerPtr();
+      STOuter_ = smap.ST().outerPtr();
     }
 
   void LoopHelixFit::beginRun(art::Run& run) {
@@ -341,8 +346,8 @@ namespace mu2e {
 
     // Print the fit direction configuration
     if(print_ > 0) printf("[LoopHelixFit::%s::%s] Fit dz/dt direction = %.0f, PDG = %i, use helix slope = %o with threshold %.1f\n",
-                          __func__, moduleDescription().moduleLabel().c_str(), fdir_.dzdt(), (int) fpart_,
-                          useHelixSlope_, (useHelixSlope_) ? slopeSigThreshold_ : -1.f);
+        __func__, moduleDescription().moduleLabel().c_str(), fdir_.dzdt(), (int) fpart_,
+        useHelixSlope_, (useHelixSlope_) ? slopeSigThreshold_ : -1.f);
   }
 
   std::vector<TrkFitDirection::FitDirection> LoopHelixFit::chooseHelixDir(HelixSeed const& hseed) const {
@@ -438,7 +443,7 @@ namespace mu2e {
 
     auto goodfit = goodFit(*ktrk);
     if(print_>0) printf("[LoopHelixFit::%s] Before extending the fit: goodFit = %o, fitcon = %.4f, nHits = %2lu, %lu calo-hits\n",
-                        __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
+        __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
     // if we have an extension schedule, extend.
     if(goodfit && exconfig_.schedule().size() > 0) {
       kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *ktrk );
@@ -452,7 +457,7 @@ namespace mu2e {
 
     //store the fit quality result if it's a good fit
     if(print_>0) printf("[LoopHelixFit::%s] After extending the fit : goodFit = %o, fitcon = %.4f, nHits = %2lu, %lu calo-hits\n",
-                        __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
+        __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
     return ktrk;
   }
 
@@ -730,6 +735,17 @@ namespace mu2e {
           std::cout << "ST Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
           std::cout << " before append mom = " << reftrajptr->momentum();
         }
+        //        // check for an intersection with the target bounding surfaces
+        //        TimeRange irange(std::min(starttime,ftraj.range().end()), std::max(starttime,ftraj.range().end()));
+        //        auto surfinter = KinKal::intersect(ftraj.back(),*STInner_,irange,sampletol_,tdir);
+        //        if(surfinter.onsurface_ && surfinter.inbounds_)
+        //          ktrk.addIntersection(SurfaceIdDetail::ST_Inner,surfinter);
+        //        surfinter = KinKal::intersect(ftraj.back(),*STOuter_,irange,sampletol_,tdir);
+        //        if(surfinter.onsurface_ && surfinter.inbounds_)
+        //          ktrk.addIntersection(SurfaceIdDetail::ST_Outer,surfinter);
+        //        // advance the start time for the next search
+        //        starttime = ftraj.range().end();
+        // Add the xing. This truncates the fit
         ktrk.addSTXing(stxingptr,tdir);
         if(extrapST_.debug() > 0){
           auto const& newtrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
@@ -790,41 +806,41 @@ namespace mu2e {
 
   void LoopHelixFit::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
     auto const& ftraj = kktrk.fitTraj();
-    double tbeg = ftraj.range().begin();
-    double tend = ftraj.range().end();
-    static const double epsilon(1.0e-6);
-    for(auto const& surf : sample_){
-      // search for intersections with each surface within the specified time range, going forwards in time
-      bool hasinter(true);
-      size_t max_iter = 1000;
-      size_t cur_iter = 0;
-      bool reftest (false);
-      // loop to find multiple intersections
-      while(hasinter && tbeg < tend) {
-        TimeRange irange(tbeg,tend);
-        if (cur_iter > max_iter)
-          break;
-        cur_iter += 1;
-        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
-        hasinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
-        if(hasinter) {
-          // save the intersection information
-          auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
-          inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
-          // update for the next intersection
-          tbeg = surfinter.time_ + epsilon;// move past existing intersection to avoid repeating
-          if(print_>1) printf(" [LoopHelixFit::%s::%s] Found intersection with surface %15s\n",
-                              __func__, moduleDescription().moduleLabel().c_str(), surf.first.name().c_str());
-        } else if(!reftest){
-          // We might need to step past a reflection.
-          auto refltraj = ftraj.reflection(tbeg);
-          if(refltraj){
-            tbeg = refltraj->range().end();
-            hasinter = true; // to force next steps
-          } else { // finish
-            tbeg = tend;
+    std::vector<TimeRange> ranges;
+    // test for reflection, and if present, split the test in 2
+    auto refltraj = ftraj.reflection(ftraj.range().begin());
+    if(refltraj){
+      double tmid = refltraj->range().begin();
+      ranges.push_back(TimeRange(ftraj.range().begin(),tmid));
+      ranges.push_back(TimeRange(tmid,ftraj.range().end()));
+    } else {
+      ranges.push_back(ftraj.range());
+    }
+    for(auto range : ranges) {
+      double tbeg = range.begin();
+      double tend = range.end();
+      for(auto const& surf : sample_){
+        // search for intersections with each surface within the specified time range, going forwards in time
+        bool goodinter(true);
+        size_t max_inter = 100; // limit the number of intersections
+        size_t cur_inter = 0;
+        // loop to find multiple intersections
+        while(goodinter && tbeg < tend && cur_inter < max_inter){
+          TimeRange irange(tbeg,tend);
+          cur_inter += 1;
+          auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
+          goodinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
+          if(goodinter) {
+            // save the intersection information
+            auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
+            inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
+            // update for the next intersection
+            // move past existing intersection to avoid repeating
+            double epsilon = sampletol_/ktraj.speed(surfinter.time_);
+            tbeg = surfinter.time_ + epsilon;
           }
-          reftest = true; // only test once
+          if(print_>1) printf(" [LoopHelixFit::%s::%s] Found intersection with surface %15s\n",
+              __func__, moduleDescription().moduleLabel().c_str(), surf.first.name().c_str());
         }
       }
     }
@@ -832,8 +848,8 @@ namespace mu2e {
 
   void LoopHelixFit::print_track_info(const KalSeed& kkseed, const KKTRK& ktrk) const {
     if(print_>0) printf("[LoopHelixFit::%s::%s] Create seed             : fitcon = %.4f, nHits = %2lu, seedActiveHits = %2u, %lu calo-hits\n",
-                        __func__, moduleDescription().moduleLabel().c_str(), ktrk.fitStatus().chisq_.probability(), ktrk.strawHits().size(),
-                        kkseed.nHits(), ktrk.caloHits().size());
+        __func__, moduleDescription().moduleLabel().c_str(), ktrk.fitStatus().chisq_.probability(), ktrk.strawHits().size(),
+        kkseed.nHits(), ktrk.caloHits().size());
     if(print_>1) { //print the hit flags for the track and the KalSeed as well as the KalSegments and intersections
       for(auto const& hit : ktrk.strawHits())
         printf("  [LoopHelixFit::%s::%s] KKTRK straw flags: %s", __func__, moduleDescription().moduleLabel().c_str(), hit->hit().flag().hex().c_str());
@@ -843,15 +859,15 @@ namespace mu2e {
       for(size_t ikinter = 0; ikinter < kkseed.intersections().size(); ++ikinter){
         auto const& kinter = kkseed.intersections()[ikinter];
         printf("[LoopHelixFit::%s::%s]   Seed %10s intersection: t0 = %6.1f, t0Err = %6.4f, mom = %6.2f, momErr = %6.4f\n",
-               __func__, moduleDescription().moduleLabel().c_str(), kinter.surfaceId().name().c_str(), kinter.time(), std::sqrt(kinter.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
-               kinter.mom(), kinter.momerr());
+            __func__, moduleDescription().moduleLabel().c_str(), kinter.surfaceId().name().c_str(), kinter.time(), std::sqrt(kinter.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
+            kinter.mom(), kinter.momerr());
       }
       printf("[LoopHelixFit::%s::%s] KalSeed has %lu segments\n", __func__, moduleDescription().moduleLabel().c_str(), kkseed.segments().size());
       for(size_t ikseg = 0; ikseg < kkseed.segments().size(); ++ikseg){
         auto const& kseg = kkseed.segments()[ikseg];
         printf("[LoopHelixFit::%s::%s]   Seed segment %lu: tmin = %6.1f, terr = %6.4f, mom = %6.2f, momErr = %6.4f\n",
-               __func__, moduleDescription().moduleLabel().c_str(), ikseg, kseg.tmin(), std::sqrt(kseg.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
-               kseg.mom(), kseg.momerr());
+            __func__, moduleDescription().moduleLabel().c_str(), ikseg, kseg.tmin(), std::sqrt(kseg.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
+            kseg.mom(), kseg.momerr());
       }
     }
 
@@ -859,7 +875,7 @@ namespace mu2e {
 
   void LoopHelixFit::endJob() {
     if(print_ > 0) printf("[LoopHelixFit::%s::%s] Saw %i helix seeds, %i had ambiguous dz/dt slopes, accepted %i downstream and %i upstream fits\n",
-                          __func__, moduleDescription().moduleLabel().c_str(), nSeen_, nAmbiguous_, nDownstream_, nUpstream_);
+        __func__, moduleDescription().moduleLabel().c_str(), nSeen_, nAmbiguous_, nDownstream_, nUpstream_);
   }
 }
 

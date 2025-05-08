@@ -34,7 +34,7 @@ namespace mu2e {
       zmin_( (stoptarg.outer().center() - stoptarg.outer().axis()*stoptarg.outer().halfLength()).Z()),
       zmax_( (stoptarg.outer().center() + stoptarg.outer().axis()*stoptarg.outer().halfLength()).Z()),
       rmin_( stoptarg.inner().radius()), rmax_(stoptarg.outer().radius()),
-        foils_(stoptarg.foils()),outer_(stoptarg.outerPtr()), inner_(stoptarg.innerPtr()),debug_(debug) {}
+        foils_(stoptarg.foils()),debug_(debug) {}
       // interface for extrapolation
       double maxDt() const { return maxDt_; } // maximum time to extend the track
       double tolerance() const { return tol_; } // intersection tolerance
@@ -63,7 +63,6 @@ namespace mu2e {
       double zmin_, zmax_; // z range of ST volume
       double rmin_, rmax_; // inner and outer radii of the anuli
       FoilCol foils_; // foils
-      CylPtr outer_, inner_; // boundaries
       int debug_; // debug level
   };
 

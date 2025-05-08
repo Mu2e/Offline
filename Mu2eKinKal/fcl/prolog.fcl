@@ -342,7 +342,7 @@ Mu2eKinKal : {
     SeedFlags : [ "HelixOK" ]
     SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
     SampleInRange : true # require sample be in time range
-    SampleInBounds : false # require sample be in surface bounds
+    SampleInBounds : true # require sample be in surface bounds
   }
 
   LOOPEXTRAPOLATION : {

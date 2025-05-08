@@ -351,7 +351,7 @@ namespace mu2e {
 
   KTRAJ KinematicLineFit::makeSeedTraj(CosmicTrackSeed const& hseed) const {
     //exctract CosmicTrack (contains parameters)
-    VEC3 bnom(0.0,0.0,0.0);
+    VEC3 bnom(0.0,0.0,0.001);// non-zero value doesn't affect fit, but insures consistency with interfaces.
     KinKal::VEC4 pos(hseed._track.MinuitParams.A0, 0, hseed._track.MinuitParams.B0, hseed._t0._t0);
     XYZVectorF mom3(hseed._track.MinuitParams.A1, -1, hseed._track.MinuitParams.B1);
     mom3 = mom3.Unit()*seedmom_;
