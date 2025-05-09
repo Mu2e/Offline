@@ -615,6 +615,24 @@ namespace mu2e {
         }
       }
 
+      if ( c.getBool("vd.STMSSCollUpStr.build", false) ) {//VD116, 2.5 m upstream of Spot Size Collimator
+        double VD116_offset =  2.5*CLHEP::m;
+        double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
+          - pFrontShieldingParams.Front_Thickness() // Get to front of SSC
+          - VD116_offset - vd->_halfLength; // position of the VD
+        CLHEP::Hep3Vector vdPositionWRTparent(0.0, 0.0, zOffset);
+        vd->addVirtualDetector(VirtualDetectorId::STM_UpStrLarge, //ID
+                               stmDnStrEnvPositionInMu2e, //parentPositionInMu2e, //reference position
+                               0x0,                  //rotation
+                               vdPositionWRTparent); //placement w.r.t. reference
+
+        if ( verbosityLevel > 0) {
+          cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_UpStrLarge) << endl;
+          cout << "  at local=" << vd->getLocal(VirtualDetectorId::STM_UpStrLarge) << " global="<< vd->getGlobal(VirtualDetectorId::STM_UpStrLarge) <<endl;
+        }
+      }
+
+
 
       if ( c.getBool("vd.STMCollDnStr.build", false) ) { // VD88, just downstream of Spot Size Collimator
         double VD88_offset = 25.4; // Smaller overlap than usual to get most information - VD89 and VD90 shortly behind these two

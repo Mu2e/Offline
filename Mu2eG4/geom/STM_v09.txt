@@ -6,9 +6,9 @@
 
 #include "Offline/Mu2eG4/geom/STM_v08.txt"
 
-//Make Updates from STM_v07
+//Make Updates from STM_v08
 bool stm.downstream.build = true;
-double stm.downstream.halfLength = 819.15; // full length = 1638.30 mm (Fig. 46 of DocDB-44436)
+double stm.downstream.halfLength = 2219.15;
 double stm.downstream.halfWidth = 2000.0;
 double stm.downstream.halfHeight = 2312.416;
 string stm.downstream.material = "G4_AIR";
@@ -176,7 +176,7 @@ double stm.BackShielding.BackS_dY  = 0;
 
 bool   stm.InnerShielding.build    = true;
 
-bool    stm.ElectronicShielding.build     = true;
+bool    stm.ElectronicShielding.build     = false;
 double  stm.ElectronicShielding.SiGridX   = 127.0;
 double  stm.ElectronicShielding.SiGridY   = 127.0;
 double  stm.ElectronicShielding.SiGridZ   = 25.4;
@@ -195,6 +195,7 @@ double stm.STM_Absorber.GaptoSSC  = 20;
 double stm.det1VD.rOut = 60;
 double stm.det2VD.rOut = 60;
 double vd.STMCollDnStr.r = 60;
+double vd.STMSSCollUpStr.r = 2000;
 
 // This tells emacs to view this file in c++ mode
 // Local Variables:
