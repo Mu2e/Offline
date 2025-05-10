@@ -96,6 +96,16 @@ cet_build_plugin(DummyLumiInfoProducer art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(LumiInfoAna art::module
+    REG_SOURCE src/LumiInfoAna_module.cc
+    LIBRARIES REG
+    Offline::DAQ
+    Offline::RecoDataProducts
+    art_root_io::TFileService_service
+    artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Data_dict
+)
+
 cet_build_plugin(PrefetchDAQData art::module
     REG_SOURCE src/PrefetchDAQData_module.cc
     LIBRARIES REG
@@ -140,6 +150,14 @@ cet_build_plugin(STMWaveformDigisFromFragments art::module
       Offline::DataProducts
       Offline::RecoDataProducts
       BTrk_difAlgebra
+)
+
+cet_build_plugin(StrawDigisFromArtdaqFragments art::module
+  REG_SOURCE src/StrawDigisFromArtdaqFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::DataProducts
+  Offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

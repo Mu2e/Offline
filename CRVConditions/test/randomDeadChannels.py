@@ -4,7 +4,8 @@ import math
 
 if len(sys.argv) != 3:
   print("usage \"randomDeadChannels nChannels probability\"")
-  print("nChannels=22016 when using the full CRV\"")
+  print("nChannels=22016 when using the full old CRV\"")
+  print("nChannels=21376 when using the full new CRV\"")
   print("nChannels=2048 when using the extracted position\"")
   sys.exit()
 
