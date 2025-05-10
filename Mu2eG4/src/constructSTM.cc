@@ -3041,7 +3041,7 @@ namespace mu2e {
      finishNesting(AluminumTwall2PV,
      AlMaterial,
      0,
-     stmAluminumTwall1InParent,
+     stmAluminumTwall2InParent,
      parentInfo.logical,
      0,
      STMisVisible,
