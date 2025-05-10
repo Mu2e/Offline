@@ -20,7 +20,7 @@ namespace mu2e {
                  double delta_WlR, double delta_WlL, double W_middle,
                  double W_height, double Wdepth_f, double Wdepth_b,
                  double Aperture_HPGe1, double Aperture_HPGe2, double Aperture_LaBr1, double Aperture_LaBr2,
-                 double offset_Spot, double leak, double FrontToWall,
+                 double offset_Spot, double leak, double FrontToWall, double ZGap, double ZGapBack,
                  CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(),
                  CLHEP::HepRotation const & rotation = CLHEP::HepRotation(),
                  std::string const & material = ""
@@ -40,6 +40,8 @@ namespace mu2e {
       _offset_Spot(offset_Spot),
       _leak(leak),
       _FrontToWall(FrontToWall),
+      _ZGap(ZGap),
+      _ZGapBack(ZGapBack),
       _originInMu2e(originInMu2e),
       _rotation(rotation),
       _material(material)
@@ -63,7 +65,10 @@ namespace mu2e {
     double Aperture_LaBr2()    const {return _Aperture_LaBr2;}
     double offset_Spot()       const {return _offset_Spot;}
     double leak()              const {return _leak;}
-    double FrontToWall()              const {return _FrontToWall;}
+    double FrontToWall()       const {return _FrontToWall;}
+    double ZGap()              const {return _ZGap;}
+    double ZGapBack()          const {return _ZGapBack;}
+
 
     //double zBegin()          const { return _originInMu2e.z() - zTabletopHalfLength(); }
     //double zEnd()            const { return _originInMu2e.z() + zTabletopHalfLength(); }
@@ -91,6 +96,8 @@ namespace mu2e {
     double _offset_Spot;
     double _leak;
     double _FrontToWall;
+    double _ZGap;
+    double _ZGapBack;
 
     CLHEP::Hep3Vector  _originInMu2e;
     CLHEP::HepRotation _rotation; // wrt to parent volume
