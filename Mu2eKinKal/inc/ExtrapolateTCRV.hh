@@ -20,14 +20,14 @@ namespace mu2e {
   using RecPtr = std::shared_ptr<KinKal::Rectangle>;
   class ExtrapolateTCRV {
     public:
-      ExtrapolateTCRV() : maxDt_(-1.0), tol_(1e10), minv_(1e-5),
+      ExtrapolateTCRV() : maxDt_(-1.0), dptol_(1e10), intertol_(1e10), minv_(1e-5),
       step_(0),
       ymin_(std::numeric_limits<float>::max()),
       ymax_(-std::numeric_limits<float>::max()),
       debug_(0){}
 
-      ExtrapolateTCRV(double maxdt, double tol, double minv, TestCRV const& tcrv, int debug=0) : maxDt_(maxdt), tol_(tol), minv_(minv),
-      step_(0), debug_(debug)
+      ExtrapolateTCRV(double maxdt, double dptol, double intertol, double minv, TestCRV const& tcrv, int debug=0) :
+        maxDt_(maxdt), dptol_(dptol), intertol_(intertol), minv_(minv), step_(0), debug_(debug)
     {
       modules_.push_back(tcrv.ex1Ptr());
       modules_.push_back(tcrv.t1Ptr());
@@ -37,8 +37,9 @@ namespace mu2e {
     }
 
       // interface for extrapolation
-      double maxDt() const { return maxDt_; } // maximum time to extend the track
-      double tolerance() const { return tol_; } // intersection tolerance
+      double maxDt() const { return maxDt_; }
+      double dpTolerance() const { return dptol_; }
+      double interTolerance() const { return intertol_; }
       double step() const { return step_; }
       double ymin() const { return ymin_; }
       double ymax() const { return ymax_; }
@@ -51,7 +52,8 @@ namespace mu2e {
       template <class KTRAJ> bool needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const;
     private:
       double maxDt_; // maximum extrapolation time
-      double tol_; // intersection tolerance (mm)
+      double dptol_; // fractional momentum tolerance
+      double intertol_; // intersection tolerance (mm)
       double minv_; // minimum vel.Y
       mutable double step_; // predicted step length
       mutable Intersection inter_; // cache of most recent intersection
@@ -96,7 +98,7 @@ namespace mu2e {
     if (valid){
       auto trange = tdir == TimeDir::forwards ? TimeRange(stime,etime) : TimeRange(etime,stime);
       for (size_t i=0;i<modules_.size();i++){
-        auto newinter = KinKal::intersect(fittraj,*modules_[i],trange,tol_,tdir);
+        auto newinter = KinKal::intersect(fittraj,*modules_[i],trange,intertol_,tdir);
         if(debug_ > 2)std::cout << "TCRV " << newinter  << std::endl;
         if(newinter.good()){
           inter_ = newinter;

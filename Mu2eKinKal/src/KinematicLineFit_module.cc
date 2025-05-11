@@ -115,7 +115,7 @@ namespace mu2e {
       fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
       fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
       fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
-      fhicl::Atom<float> sampleTol { Name("SampleTolerance"), Comment("Tolerance for sample surface intersections (mm)") };
+      fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for sample surface intersections (mm)") };
       fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Time buffer for sample intersections (nsec)") };
     };
 
@@ -167,7 +167,7 @@ namespace mu2e {
     double mass_; // particle mass
     int charge_; // particle charge
     std::unique_ptr<KKBField> kkbf_;
-    double sampletol_; // surface intersection tolerance (mm)
+    double intertol_; // surface intersection tolerance (mm)
     double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
     bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
     SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
@@ -188,7 +188,7 @@ namespace mu2e {
     fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
     kkfit_(settings().mu2eSettings()),
     kkmat_(settings().matSettings()),
-    sampletol_(settings().modSettings().sampleTol()),
+    intertol_(settings().modSettings().interTol()),
     sampletbuff_(settings().modSettings().sampleTBuff()),
     sampleinrange_(settings().modSettings().sampleInRange()),
     sampleinbounds_(settings().modSettings().sampleInBounds()),
@@ -232,11 +232,11 @@ namespace mu2e {
         toCRV_ = settings().Extrapolation()->ToCRV();
         // global configs
         double maxdt = settings().Extrapolation()->MaxDt();
-        double tol =  settings().Extrapolation()->Tol();
+        double btol =  settings().extSettings().btol(); // use the same BField cor. tolerance as in fit extension
         double minv = settings().Extrapolation()->MinV();
         int debug =  settings().Extrapolation()->Debug();
         // extrapolate to the front of the tracker
-        TCRV_ = ExtrapolateTCRV(maxdt,tol,minv,smap.TCRV(),debug);
+        TCRV_ = ExtrapolateTCRV(maxdt,btol,intertol_,minv,smap.TCRV(),debug);
       }
 
       if(print_ > 0) std::cout << config_;
@@ -384,7 +384,7 @@ namespace mu2e {
         cur_iter += 1;
 
         TimeRange irange(tstart,std::max(ftraj.range().end(),tstart)+sampletbuff_);
-        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
+        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,intertol_);
         hasinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
         if(hasinter) {
           // save the intersection information
@@ -427,7 +427,7 @@ namespace mu2e {
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         // FIXME material?
-        KKCRVXINGPTR crvxingptr = std::make_shared<KKCRVXING>(TCRV_.module(), TCRVSID, *kkmat_.STMaterial(),TCRV_.intersection(),reftrajptr,tcrvthick_,TCRV_.tolerance());
+        KKCRVXINGPTR crvxingptr = std::make_shared<KKCRVXING>(TCRV_.module(), TCRVSID, *kkmat_.STMaterial(),TCRV_.intersection(),reftrajptr,tcrvthick_,TCRV_.interTolerance());
         ktrk.addTCRVXing(crvxingptr,tdir);
       }
     } while(hadintersection);

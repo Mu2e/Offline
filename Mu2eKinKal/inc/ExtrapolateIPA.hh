@@ -16,16 +16,18 @@ namespace mu2e {
   class ExtrapolateIPA {
     public:
       using CylPtr = std::shared_ptr<KinKal::Cylinder>;
-      ExtrapolateIPA() : maxDt_(-1.0), tol_(1e10),
+      ExtrapolateIPA() : maxDt_(-1.0), dptol_(1e10), intertol_(1e10),
       zmin_(std::numeric_limits<float>::max()),
       zmax_(-std::numeric_limits<float>::max()),debug_(0) {}
 
-      ExtrapolateIPA(double maxdt, double tol,CylPtr const& ipa, int debug=0) : maxDt_(maxdt), tol_(tol), ipa_(ipa),
+      ExtrapolateIPA(double maxdt, double dptol,double intertol, CylPtr const& ipa, int debug=0) :
+        maxDt_(maxdt), dptol_(dptol), intertol_(intertol), ipa_(ipa),
         zmin_( (ipa_->center() - ipa_->axis()*ipa_->halfLength()).Z()),
         zmax_( (ipa_->center() + ipa_->axis()*ipa_->halfLength()).Z()), debug_(debug) {}
       // interface for extrapolation
-      double maxDt() const { return maxDt_; } // maximum time to extend the track
-      double tolerance() const { return tol_; } // intersection tolerance
+      double maxDt() const { return maxDt_; }
+      double dpTolerance() const { return dptol_; }
+      double interTolerance() const { return intertol_; }
       CylPtr const& IPACylinder() const { return ipa_; }
       auto const& intersection() const { return inter_; }
       double zmin() const { return zmin_; }
@@ -37,7 +39,8 @@ namespace mu2e {
       void reset() const { inter_ = Intersection(); }
     private:
       double maxDt_; // maximum extrapolation time
-      double tol_; // intersection tolerance (mm)
+      double dptol_; // fractional momentum tolerance
+      double intertol_; // intersection tolerance (mm)
       CylPtr ipa_; // IPA cylinder
       mutable Intersection inter_; // cache of most recent intersection
       // cache of IPA front and back Z positions
@@ -73,7 +76,7 @@ namespace mu2e {
     }
     // if we get to here we need to test for an intersection with the actual cylinder. Make sure the range is positive definite
     auto trange = tdir == TimeDir::forwards ? TimeRange(stime,etime) : TimeRange(etime,stime);
-    Intersection newinter = KinKal::intersect(fittraj,*ipa_,trange,tol_,tdir);
+    Intersection newinter = KinKal::intersect(fittraj,*ipa_,trange,intertol_,tdir);
     if(debug_ > 2)std::cout << "IPA " << newinter << std::endl;
     if(newinter.good()){
       // update the cache

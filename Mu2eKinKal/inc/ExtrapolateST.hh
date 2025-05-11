@@ -23,21 +23,23 @@ namespace mu2e {
   using CylPtr = std::shared_ptr<KinKal::Cylinder>;
   class ExtrapolateST {
     public:
-      ExtrapolateST() : maxDt_(-1.0), tol_(1e10),
+      ExtrapolateST() : maxDt_(-1.0), dptol_(1e10), intertol_(1e10),
       zmin_(std::numeric_limits<float>::max()),
       zmax_(-std::numeric_limits<float>::max()),
       rmin_(std::numeric_limits<float>::max()),
       rmax_(-std::numeric_limits<float>::max()),
       debug_(0){}
 
-      ExtrapolateST(double maxdt, double tol, StoppingTarget const& stoptarg, int debug=0) : maxDt_(maxdt), tol_(tol),
-      zmin_( (stoptarg.outer().center() - stoptarg.outer().axis()*stoptarg.outer().halfLength()).Z()),
-      zmax_( (stoptarg.outer().center() + stoptarg.outer().axis()*stoptarg.outer().halfLength()).Z()),
-      rmin_( stoptarg.inner().radius()), rmax_(stoptarg.outer().radius()),
+      ExtrapolateST(double maxdt, double dptol, double intertol, StoppingTarget const& stoptarg, int debug=0) :
+        maxDt_(maxdt), dptol_(dptol), intertol_(intertol),
+        zmin_( (stoptarg.outer().center() - stoptarg.outer().axis()*stoptarg.outer().halfLength()).Z()),
+        zmax_( (stoptarg.outer().center() + stoptarg.outer().axis()*stoptarg.outer().halfLength()).Z()),
+        rmin_( stoptarg.inner().radius()), rmax_(stoptarg.outer().radius()),
         foils_(stoptarg.foils()),debug_(debug) {}
       // interface for extrapolation
-      double maxDt() const { return maxDt_; } // maximum time to extend the track
-      double tolerance() const { return tol_; } // intersection tolerance
+      double maxDt() const { return maxDt_; }
+      double dpTolerance() const { return dptol_; }
+      double interTolerance() const { return intertol_; }
       double zmin() const { return zmin_; }
       double zmax() const { return zmax_; }
       double rmin() const { return rmin_; }
@@ -55,7 +57,8 @@ namespace mu2e {
       size_t nearestFoil(double zpos, double zdir) const;
     private:
       double maxDt_; // maximum extrapolation time
-      double tol_; // intersection tolerance (mm)
+      double dptol_; // fractional momentum tolerance
+      double intertol_; // intersection tolerance (mm)
       mutable Intersection inter_; // cache of most recent intersection
       mutable SurfaceId sid_; // cache of most recent intersection foil SID
       mutable AnnPtr ann_; // cache of most recent intersection foil surface
@@ -103,7 +106,7 @@ namespace mu2e {
     while(ifoil >= 0 && ifoil < (int)foils_.size() && (foils_[ifoil]->center().Z() - epos.Z())*dfoil < 0.0){
       auto foilptr = foils_[ifoil];
       if(debug_ > 2)std::cout << "foil " << ifoil << " z " << foilptr->center().Z() << std::endl;
-      auto newinter = KinKal::intersect(ktraj,*foilptr,trange,tol_,tdir);
+      auto newinter = KinKal::intersect(ktraj,*foilptr,trange,intertol_,tdir);
       if(debug_ > 2)std::cout << "ST foil inter " << newinter  << std::endl;
       if(newinter.good()){
         // update the cache
