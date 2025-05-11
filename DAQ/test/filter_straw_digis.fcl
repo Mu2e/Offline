@@ -1,0 +1,84 @@
+# -*- mode:tcl -*-
+#------------------------------------------------------------------------------
+# run interactively, stop after each event to display waveforms
+#
+# Usage: mu2e -c daqana/fcl/trk_fragment_ana_001.fcl -s <input art file> [-n 10]
+# 
+# hopefully, prolog variables below are not used
+#-----------------------------------------------------------------------------
+# BEGIN_PROLOG
+#   STN_COMPRESS_MCS    : "compressDigiMCs"                    # "compressRecoMCs" looks dangerous
+#   STN_VDHITS_COLL_TAG : "compressDigiMCs:virtualdetector"    #
+#   GEN_ID              : "particleGun"                        #    ignore GEN_ID check
+#   PDG_ID              : 0                                    # 0: ignore PDG_ID
+# END_PROLOG
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+#include "Offline/DAQ/fcl/prolog.fcl"
+
+# process_name : FilterStrawDigis
+process_name : FilterStrawDigis2
+
+source : {
+    module_type : RootInput
+    fileNames   : @nil
+
+    # firstEvent  : 500
+    maxEvents   : -1
+    #   inputCommands: ["keep *",
+    #                   "drop *Mu2eEventHeader*_*_*_*"]
+}
+
+services : @local::Services.Reco
+
+outputs:  {
+    defaultOutput :  {
+        module_type   :   RootOutput
+        SelectEvents  : [ p1 ]
+        fileName      :   "filter_straw_digis_%06r.art"
+
+#        outputCommands: [
+#                         "drop *_*_*_*",
+#                         "keep *_*_*_*"
+#                        ]
+    }
+}
+physics : {
+    producers : {
+        @table::DAQ.producers
+    }
+    
+    filters : { @table::DAQ.filters}
+    
+    p1 : [ StrawDigisFromArtdaqFragments , StrawDigiFilter ]
+
+    # e1 : [  defaultOutput ]
+    e1 : []
+
+    trigger_paths  : [ p1 ]
+    end_paths      : [ e1 ]
+}
+
+# services.TimeTracker : {
+#     dbOutput : {
+#         filename  : "trk_fragment_ana.sqlite3"
+#         overwrite : true
+#     }
+# }
+#------------------------------------------------------------------------------
+# assume we're on mu2edaq22
+#------------------------------------------------------------------------------
+# services.TFileService.fileName                   : "/scratch/mu2e/mu2etrk_pasha_304/digi_ntuples/make_digi_ntuple_%06r.root"
+services.TFileService.fileName                   : "/dev/null" ## "/data/tracker/vst/mu2etrk_pasha_029/digi_ntuples/make_digi_ntuple_%06r.root"
+services.scheduler.wantSummary                   : true
+
+source.fileNames : [ "/exp/mu2e/data/projects/tracker/vst/datasets/raw.mu2e.trkvst.annex.art/raw.mu2e.trkvst.annex.105099_00000001.art" ]
+
+physics.filters.StrawDigiFilter.minNGoodHits     :  2
+physics.filters.StrawDigiFilter.minNGoodPanels   :  3
+physics.filters.StrawDigiFilter.debugLevel       :  1
+physics.filters.StrawDigiFilter.debugBits        :  [ "bit1:1" ]
+
+physics.producers.StrawDigisFromArtdaqFragments.saveWaveforms :  1

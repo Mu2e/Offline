@@ -23,30 +23,6 @@ CommonTrk                : {
             HelixFinders : [ "AgnosticHelixFinder", "CalHelixFinderUmu"]
         }
 #------------------------------------------------------------------------------
-# BTRK track fit, downstream electron hypothesis
-#------------------------------------------------------------------------------
-        KSFDeH     : { @table::TrkPatRec.producers.KSFDe                            SeedCollection : MHFinderDe  CheckHelicity:false }
-        KFFDeHPar  : { @table::TrkPatRec.producers.KFFDe                            SeedCollection : KSFDeH  }
-        KFFDeHDar  : { @table::CalPatRec.producers.CalTrkFitDe  SeedCollection : KSFDeH  }
-#------------------------------------------------------------------------------
-# BTRK track fit, upstream electron hypothesis
-#------------------------------------------------------------------------------
-        KSFUeH     : { @table::TrkPatRec.producers.KSFUe                            SeedCollection : MHFinderUe  CheckHelicity:false }
-        KFFUeHPar  : { @table::TrkPatRec.producers.KFFUe                            SeedCollection : KSFUeH  }
-        KFFUeHDar  : { @table::CalPatRec.producers.CalTrkFitUe  SeedCollection : KSFUeH  }
-#------------------------------------------------------------------------------
-# BTRK track fit, downstream muon hypothesis
-#------------------------------------------------------------------------------
-        KSFDmuH    : { @table::TrkPatRec.producers.KSFDmu                           SeedCollection : MHFinderDmu CheckHelicity:false}
-        KFFDmuHPar : { @table::TrkPatRec.producers.KFFDmu                           SeedCollection : KSFDmuH }
-        KFFDmuHDar : { @table::CalPatRec.producers.CalTrkFitDm  SeedCollection : KSFDmuH }
-#------------------------------------------------------------------------------
-# BTRK track fit, upstream muon hypothesis
-#------------------------------------------------------------------------------
-        KSFUmuH    : { @table::TrkPatRec.producers.KSFUmu                           SeedCollection : MHFinderUmu CheckHelicity:false }
-        KFFUmuHPar : { @table::TrkPatRec.producers.KFFUmu                           SeedCollection : KSFUmuH }
-        KFFUmuHDar : { @table::CalPatRec.producers.CalTrkFitUmm  SeedCollection : KSFUmuH }
-#------------------------------------------------------------------------------
 # assume KinKal doesn't check the helicity, using that of the helix
 # KinKal track fit, downstream electron hypothesis
 #------------------------------------------------------------------------------

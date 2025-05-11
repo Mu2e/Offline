@@ -56,7 +56,7 @@ void mu2e::ComboHitPrinter::Print(const art::Ptr<ComboHit>& obj, int ind,
 }
 
 void mu2e::ComboHitPrinter::Print(const mu2e::ComboHit& obj, int ind,
-    std::ostream& os) {
+                                  std::ostream& os) {
   if (verbose() < 1) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
@@ -64,14 +64,15 @@ void mu2e::ComboHitPrinter::Print(const mu2e::ComboHit& obj, int ind,
 
   if (verbose() == 1) {
     os << " " << std::setw(5) << obj.nCombo() << " " << std::setw(5)
-      << obj.nStrawHits() << " "
-      << " " << std::setw(8) << std::setprecision(3) << obj.pos().x() << " "
-      << std::setw(8) << std::setprecision(3) << obj.pos().y() << " "
-      << std::setw(9) << std::setprecision(3) << obj.pos().z() << " "
-      << std::setw(7) << std::setprecision(1) << obj.time() << " "
-      << std::setw(7) << std::setprecision(1) << obj.correctedTime() << " "
-      << std::setw(8) << std::setprecision(5) << obj.energyDep() << " "
-      << std::setw(8) << std::setprecision(4) << obj.qual() << std::endl;
+       << obj.nStrawHits() << " "
+       << std::setw(5) << obj.index() << " "
+       << " " << std::setw(8) << std::setprecision(3) << obj.pos().x() << " "
+       << std::setw(8) << std::setprecision(3) << obj.pos().y() << " "
+       << std::setw(9) << std::setprecision(3) << obj.pos().z() << " "
+       << std::setw(7) << std::setprecision(1) << obj.time() << " "
+       << std::setw(7) << std::setprecision(1) << obj.correctedTime() << " "
+       << std::setw(9) << std::setprecision(4) << obj.energyDep()*1.e3 << " "
+       << std::setw(8) << std::setprecision(4) << obj.qual() << std::endl;
   } else if (verbose() == 2) {
     os << " StrawId: " << std::setw(5) << obj.strawId().asUint16();
     os << " Level " << obj._mask.level();
@@ -107,6 +108,6 @@ void mu2e::ComboHitPrinter::PrintHeader(const std::string& tag,
 
 void mu2e::ComboHitPrinter::PrintListHeader(std::ostream& os) {
   if (verbose() < 1) return;
-  os << "ind  nCombo nStraw   x        y         z        t        E       "
+  os << " ind nCombo nStraw fsh     x        y         z        t      tcorr    E(keV)     "
     "qual\n";
 }

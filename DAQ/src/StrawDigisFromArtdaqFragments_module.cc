@@ -1,11 +1,14 @@
 // ======================================================================
 // PM
 // StrawDigisFromArtdaqFragments:  add tracker data products to the event
-// each diagnostic printout has a level >= 0
-// b) the higher it is, the less important is the printout
-// c) in a job with diagLevel_ set, only printouts with level <= diagLevel_ are enabled
-//
+// debugLevel_ > 0 : enables diagnostic printouts
+// diagLevel_ : bitmask, determines the format of the printout
 // ======================================================================
+#include <string>
+
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
@@ -23,6 +26,7 @@
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
+
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
@@ -39,6 +43,7 @@
 
 // #include "TRACE/tracemf.h"
 // #define TRACE_NAME "StrawDigisFromArtdaqFragments"
+
 
 
 namespace art {
@@ -206,7 +211,9 @@ void art::StrawDigisFromArtdaqFragments::print_(const std::string& Message, int 
 //-----------------------------------------------------------------------------
 // HEX print of a fragment, the data has to be in 2-byte words
 //-----------------------------------------------------------------------------
+
 void art::StrawDigisFromArtdaqFragments::print_fragment(const artdaq::Fragment* Frag) {
+
   ushort* buf = (ushort*) (Frag->dataBegin());
   int nw      = buf[0]/2;
   int loc     = 0;
@@ -261,10 +268,6 @@ void art::StrawDigisFromArtdaqFragments::produce(Event& event) {
     if (handle->front().type() == artdaq::Fragment::ContainerFragmentType) {
       for (const auto& cont : *handle) {
         artdaq::ContainerFragment contf(cont);
-        // if (contf.fragment_type() != mu2e::FragmentType::DTCEVT) {
-        //   break;
-        // }
-
         for (size_t ii = 0; ii < contf.block_count(); ++ii) {
           containerFragments.push_back(contf[ii]);
           fragments.push_back(*containerFragments.back());
@@ -281,11 +284,11 @@ void art::StrawDigisFromArtdaqFragments::produce(Event& event) {
       for (int ifrag=0; ifrag<nfrag; ifrag++) {
         const artdaq::Fragment* frag = &handle->at(ifrag);
         uint8_t* fdata   = (uint8_t*) (frag->dataBegin());
-
-        print_(std::format("-- fragment number:{}",ifrag),1);
-        if (debugLevel_ & 0x1) {
-                                        // debug: print fragment
-          print_fragment(frag);
+        if (debugLevel_) {
+          if (diagLevel_ > 0) print_(std::format("-- fragment number:{}",ifrag));
+          
+                                        // debugLevel bit0: print fragment
+          if (diagLevel_ & 0x1) print_fragment(frag);
         }
 //-----------------------------------------------------------------------------
 // skip non-tracker fragments
@@ -312,6 +315,7 @@ void art::StrawDigisFromArtdaqFragments::produce(Event& event) {
         while (roc_data < last_address) {
           RocDataHeaderPacket_t* rdh = (RocDataHeaderPacket_t*) roc_data;
           int nhits = 0;
+          int header_printed = 0;
 //------------------------------------------------------------------------------
 // skip empty ROC blocks
 //------------------------------------------------------------------------------
@@ -332,14 +336,17 @@ void art::StrawDigisFromArtdaqFragments::produce(Event& event) {
             int link_id = rdh->linkID;
             nhits       = rdh->packetCount/(nADCPackets_+1);
 
-            print_(std::format("--- DTC:{} ROC:{} nhits:{}",dtc_id,link_id,nhits),1);
+            if (debugLevel_) {
+              print_(std::format("--- DTC:{} ROC:{} nhits:{}",dtc_id,link_id,nhits));
+            }
             for (int ihit=0; ihit<nhits; ihit++) {
 //-----------------------------------------------------------------------------
 // first packet, 16 bytes, or 8 ushort's is the data header packet
 //-----------------------------------------------------------------------------
               mu2e::TrackerDataDecoder::TrackerDataPacket* hit_data ;
-              int offset          = (ihit*np_per_hit_+1)*packet_size;   // in bytes
-              hit_data = (mu2e::TrackerDataDecoder::TrackerDataPacket*) (roc_data+offset);
+              
+              int offset = (ihit*np_per_hit_+1)*packet_size;   // in bytes
+              hit_data   = (mu2e::TrackerDataDecoder::TrackerDataPacket*) (roc_data+offset);
 //-----------------------------------------------------------------------------
 // at this point, check consistency between the channel_id, dtc_id and link_id for a given run
 // panel ID is a derivative of the DTC ID and the link iD
@@ -382,14 +389,21 @@ void art::StrawDigisFromArtdaqFragments::produce(Event& event) {
 //-----------------------------------------------------------------------------
 // convert channel_id into a strawID
 //-----------------------------------------------------------------------------
-              uint16_t straw_index = panel_id | ch_id;
-              mu2e::StrawId sid(straw_index);
+              mu2e::StrawId sid(pm->plane, pm->panel, ch_id);
+              
               mu2e::TrkTypes::TDCValues tdc = {hit_data->TDC0(), hit_data->TDC1()};
               mu2e::TrkTypes::TOTValues tot = {hit_data->TOT0, hit_data->TOT1};
               mu2e::TrkTypes::ADCValue  pmp = hit_data->PMP;
-
-              print_(std::format("offset:0x{:04x} sid:{:5} times: {:9} {:9} TOT:{:2}:{:2} pmp:{}",
-                                 offset, straw_index,hit_data->TDC0(),hit_data->TDC1(),tot[0],tot[1],pmp),1);
+              if (debugLevel_ and debugBit_[1]) {
+                if (header_printed == 0) {
+                                        // print header
+                  std::cout << " offset sid_data  mnid ch_id panel_id sid_ofln      TDC0    TDC1   TOT0 TOT1   PMP\n";
+                  header_printed = 1;
+                }
+                std::cout << std::format("0x{:04x} 0x{:04x} MN{:03d} {:5}  {:3}  0x:{:04x}  {:9} {:9} {:2}  {:2} {:5}\n",
+                                         offset,hit_data->StrawIndex,mnid,ch_id,pm->panel,sid.straw(),hit_data->TDC0(),
+                                         hit_data->TDC1(),tot[0],tot[1],pmp);
+              }
 
               straw_digis->emplace_back(sid, tdc, tot, pmp);
 //-----------------------------------------------------------------------------
@@ -450,7 +464,7 @@ void art::StrawDigisFromArtdaqFragments::produce(Event& event) {
 // formatting the waveform printout takes time
 // so use an aditional switch (diagLevel_)
 //-----------------------------------------------------------------------------
-    if (debugLevel_ & 0x2) {
+    if (debugLevel_ and (diagLevel_ & 0x2)) {
 //-----------------------------------------------------------------------------
 // print waveforms - before moving, that invalidates the pointer...
 // make sure that the case of 2 packets prints in one line, the rest is less important
