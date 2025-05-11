@@ -660,7 +660,7 @@ namespace mu2e {
       if(!frontinter.onsurface_){
         // start from the middle
         TimeRange frange = ftraj.range();
-        if(midinter.onsurface_)frange = fronttdir == TimeDir::backwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
+        if(midinter.onsurface_)frange = fronttdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
         frontinter = KinKal::intersect(ftraj,*trkfrontptr_,frange,intertol_,fronttdir);
       }
       if(frontinter.onsurface_) ktrk.addIntersection(tt_front,frontinter);
