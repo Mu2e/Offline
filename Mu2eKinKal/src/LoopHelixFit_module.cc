@@ -136,7 +136,7 @@ namespace mu2e {
     fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
     fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
     fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
-    fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for sample surface intersections (mm)") };
+    fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for surface intersections (mm)") };
   };
   // Extrapolation configuration
   struct KKExtrapConfig {
