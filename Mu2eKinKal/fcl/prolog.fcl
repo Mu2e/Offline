@@ -422,7 +422,7 @@ Mu2eKinKal : {
     ModuleSettings : {
       @table::Mu2eKinKal.LOOPHELIX
       @table::Mu2eKinKal.KKPrecursors
-      SampleSurfaces : ["ST_Outer"] # these are additional surfaces; surfaces used in extrapolation are also sampled
+      SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
     }
     Extrapolation : @local::Mu2eKinKal.LOOPEXTRAPOLATION
     UsePDGCharge: false
