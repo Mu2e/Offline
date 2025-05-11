@@ -182,6 +182,14 @@ cet_build_plugin(StrawDigiFilter art::module
   ROOT::Gui
 )
 
+cet_build_plugin(StrawDigisFromArtdaqFragments art::module
+  REG_SOURCE src/StrawDigisFromArtdaqFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::DataProducts
+  Offline::RecoDataProducts
+)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/DAQ/fcl)

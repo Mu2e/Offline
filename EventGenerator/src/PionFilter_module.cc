@@ -10,11 +10,9 @@
 // Mu2e includes.
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
-#include "Offline/TrackerGeom/inc/Tracker.hh"
 #include <iostream>
 #include <string>
 
@@ -33,6 +31,8 @@ namespace mu2e {
       };
       explicit PionFilter(const art::EDFilter::Table<Config>& config);
       virtual bool filter(art::Event& event) override;
+      virtual void beginJob() override;
+      virtual void endJob() override;
 
     private:
       const SimParticleCollection* SimCol_;
@@ -40,8 +40,10 @@ namespace mu2e {
       double tmin_;
       double tmax_;
       bool isNull_;
-      double totalweight = 0;
-      double selectedweight = 0;
+      float _totalweight = 0;
+      float _selectedweight = 0;
+      int _ntot = 0;
+      int _nsel = 0;
   };
 
   PionFilter::PionFilter(const art::EDFilter::Table<Config>& config) :
@@ -52,8 +54,10 @@ namespace mu2e {
     , isNull_{config().isNull()}
   {
   }
+  void PionFilter::beginJob(){}
 
   bool PionFilter::filter(art::Event& evt) {
+
       if(isNull_) return true;
       bool passed = false;
       std::vector<art::Handle<SimParticleCollection>> vah = evt.getMany<SimParticleCollection>();
@@ -61,22 +65,29 @@ namespace mu2e {
         for(const auto& aParticle : *ah){
           art::Ptr<SimParticle> pp(ah, aParticle.first.asUint());
           float _endglobaltime = pp->endGlobalTime();
-          if( pp->stoppingCode() == ProcessCode::mu2eKillerVolume and std::abs(pp->pdgId()) == PDGCode::pi_plus){
+          if( pp->stoppingCode() == ProcessCode::hBertiniCaptureAtRest and std::abs(pp->pdgId()) == PDGCode::pi_plus){
             const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
-            totalweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
+            _totalweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
+            _ntot += 1;
           }
-          if( pp->stoppingCode() == ProcessCode::mu2eKillerVolume and (std::abs(pp->pdgId()) == PDGCode::pi_plus and _endglobaltime > tmin_ and _endglobaltime < tmax_ )){
+          if( pp->stoppingCode() == ProcessCode::hBertiniCaptureAtRest and (std::abs(pp->pdgId()) == PDGCode::pi_plus and _endglobaltime > tmin_ and _endglobaltime < tmax_ )){
             passed = true;
             const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
-            selectedweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
+            _selectedweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
+            _nsel += 1;
           }
         }
       }
-    if(diagLevel_ > 0 ){
-      std::cout<<"Total weight for all stops "<<totalweight<<std::endl;
-      std::cout<<"Selected weight for chosen stops "<<selectedweight<<std::endl;
-    }
     return passed;
+  }
+
+  void PionFilter::endJob(){
+     if(diagLevel_ > 0 ){
+      std::cout<<"Total weight for all stops "<<_totalweight<<std::endl;
+      std::cout<<"Total stops "<<_ntot<<std::endl;
+      std::cout<<"Selected weight for chosen stops "<<_selectedweight<<std::endl;
+      std::cout<<"Selected stops "<<_nsel<<std::endl;
+    }
   }
 }
 
