@@ -140,7 +140,7 @@ namespace mu2e {
   };
   // Extrapolation configuration
   struct KKExtrapConfig {
-    fhicl::Atom<float> Tol { Name("Tolerance"), Comment("Tolerance on fractional momemtum precision when extrapolating fits") };
+    fhicl::Atom<float> Tol { Name("Tolerance"), Comment("Tolerance on intersections when extrapolating fits (mm)") };
     fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit") };
     fhicl::Atom<bool> BackToTracker { Name("BackToTracker"), Comment("Extrapolate reflecting tracks back to the tracker") };
     fhicl::Atom<bool> ToTrackerEnds { Name("ToTrackerEnds"), Comment("Extrapolate tracks to the tracker ends") };
@@ -688,7 +688,7 @@ namespace mu2e {
     auto startdir = ftraj.direction(starttime);
     do {
       ktrk.extrapolate(tdir,extrapIPA_);
-      if(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_){
+      if(extrapIPA_.intersection().good()){
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
@@ -705,7 +705,7 @@ namespace mu2e {
           std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
         }
       }
-    } while(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_);
+    } while(extrapIPA_.intersection().good());
     // check if the particle exited in the same physical direction or not (reflection)
     double endtime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     auto enddir = ftraj.direction(endtime);
@@ -725,7 +725,7 @@ namespace mu2e {
     if(extrapST_.debug() > 0)std::cout << "extrapolating to ST " << std::endl;
     do {
       ktrk.extrapolate(tdir,extrapST_);
-      if(extrapST_.intersection().onsurface_ && extrapST_.intersection().inbounds_){
+      if(extrapST_.intersection().good()){
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         KKSTXINGPTR stxingptr = std::make_shared<KKSTXING>(extrapST_.foil(),extrapST_.foilId(),*kkmat_.STMaterial(),extrapST_.intersection(),reftrajptr,stthick_,extrapST_.tolerance());
@@ -735,16 +735,6 @@ namespace mu2e {
           std::cout << "ST Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
           std::cout << " before append mom = " << reftrajptr->momentum();
         }
-        //        // check for an intersection with the target bounding surfaces
-        //        TimeRange irange(std::min(starttime,ftraj.range().end()), std::max(starttime,ftraj.range().end()));
-        //        auto surfinter = KinKal::intersect(ftraj.back(),*STInner_,irange,sampletol_,tdir);
-        //        if(surfinter.onsurface_ && surfinter.inbounds_)
-        //          ktrk.addIntersection(SurfaceIdDetail::ST_Inner,surfinter);
-        //        surfinter = KinKal::intersect(ftraj.back(),*STOuter_,irange,sampletol_,tdir);
-        //        if(surfinter.onsurface_ && surfinter.inbounds_)
-        //          ktrk.addIntersection(SurfaceIdDetail::ST_Outer,surfinter);
-        //        // advance the start time for the next search
-        //        starttime = ftraj.range().end();
         // Add the xing. This truncates the fit
         ktrk.addSTXing(stxingptr,tdir);
         if(extrapST_.debug() > 0){
@@ -752,7 +742,7 @@ namespace mu2e {
           std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
         }
       }
-    } while(extrapST_.intersection().onsurface_ && extrapST_.intersection().inbounds_);
+    } while(extrapST_.intersection().good());
     // check if the particle exited in the same physical direction or not (reflection)
     double endtime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     auto enddir = ftraj.direction(endtime);
@@ -799,7 +789,7 @@ namespace mu2e {
     static const SurfaceId OPASID("OPA");
     TimeRange trange = tdir == TimeDir::forwards ? TimeRange(tstart,ftraj.range().end()) : TimeRange(ftraj.range().begin(),tstart);
     auto opainter = KinKal::intersect(ftraj,*opaptr_,trange,trackerFront_.tolerance(),tdir);
-    if(opainter.onsurface_ && opainter.inbounds_){ // require in bounds to say it was a physical intersection
+    if(opainter.good()){
       ktrk.addIntersection(OPASID,opainter);
     }
   }
@@ -829,7 +819,7 @@ namespace mu2e {
           TimeRange irange(tbeg,tend);
           cur_inter += 1;
           auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
-          goodinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
+          goodinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || surfinter.inrange_);
           if(goodinter) {
             // save the intersection information
             auto const& ktraj = ftraj.nearestPiece(surfinter.time_);

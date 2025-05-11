@@ -346,7 +346,7 @@ Mu2eKinKal : {
   }
 
   LOOPEXTRAPOLATION : {
-    Tolerance : 1.0e-4 # fractional momentum change
+    Tolerance : 0.1 # mm!
     MaxDt : 200.0 # (ns)
     ToTrackerEnds : true
     Upstream : true
@@ -386,7 +386,7 @@ Mu2eKinKal : {
   }
 
   LINEEXTRAPOLATION : {
-    Tolerance : 1.0e-4 # fractional momentum change
+    Tolerance : 0.1 # (mm)
     MaxDt : 200.0 # (ns)
     MinV : 1e-5
     ToCRV : true

@@ -53,7 +53,7 @@ namespace mu2e {
     surf_(surface), sid_(sid), mat_(mat), inter_(inter), reftrajptr_(reftrajptr), thick_(thickness),tol_(tol),
     varscale_(1.0)
   {
-    if(inter_.onsurface_ && inter_.inbounds_){
+    if(inter_.good()){
       // compute the path length
       double pathlen = thick_/(inter_.norm_.Dot(inter_.pdir_));
       mxings_.emplace_back(mat_,pathlen);
@@ -76,7 +76,7 @@ namespace mu2e {
     fparams_ = KinKal::Parameters();
     mxings_.clear();
     // check if we are on the surface; if so, create the xing
-    if(inter_.onsurface_ && inter_.inbounds_){
+    if(inter_.good()){
       // compute the path length
       double pathlen = thick_/(inter_.norm_.Dot(inter_.pdir_));
       mxings_.emplace_back(mat_,pathlen);

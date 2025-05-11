@@ -15,9 +15,9 @@
 namespace mu2e {
   using KinKal::TimeDir;
   using KinKal::TimeRange;
-  using KinKal::Intersection;
   using KinKalGeom::StoppingTarget;
   using KinKal::Annulus;
+  using KinKal::Intersection;
   using AnnPtr = std::shared_ptr<KinKal::Annulus>;
   using FoilCol = std::vector<AnnPtr>;
   using CylPtr = std::shared_ptr<KinKal::Cylinder>;
@@ -104,15 +104,13 @@ namespace mu2e {
       auto foilptr = foils_[ifoil];
       if(debug_ > 2)std::cout << "foil " << ifoil << " z " << foilptr->center().Z() << std::endl;
       auto newinter = KinKal::intersect(ktraj,*foilptr,trange,tol_,tdir);
-      if(debug_ > 2)std::cout << "ST foil inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << " rho " << newinter.pos_.Rho() << std::endl;
-      bool goodextrap = newinter.onsurface_ && newinter.inbounds_;
-      if(goodextrap){
+      if(debug_ > 2)std::cout << "ST foil inter " << newinter  << std::endl;
+      if(newinter.good()){
         // update the cache
         inter_ = newinter;
         ann_ = foils_[ifoil];
         sid_ = SurfaceId(SurfaceIdEnum::ST_Foils,ifoil);
-        if(debug_ > 0)std::cout << "Good ST foil intersection found in range, time " << inter_.time_ << " Z " << inter_.pos_.Z()
-          << " sid " << sid_ << std::endl;
+        if(debug_ > 0)std::cout << "Good ST foil " << newinter << " sid " << sid_ << std::endl;
         return false;
       }
       ifoil += dfoil; // otherwise continue loopin on foils

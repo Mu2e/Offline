@@ -121,7 +121,7 @@ namespace mu2e {
 
     // Extrapolation configuration
     struct KKExtrapConfig {
-      fhicl::Atom<float> Tol { Name("Tolerance"), Comment("Tolerance on fractional momemtum precision when extrapolating fits") };
+      fhicl::Atom<float> Tol { Name("Tolerance"), Comment("Tolerance on intersections when extrapolating fits (mm)") };
       fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit") };
       fhicl::Atom<float> MinV { Name("MinV"), Comment("Minimum Y vel to extrapolate a fit") };
       fhicl::Atom<bool> ToCRV { Name("ToCRV"), Comment("Extrapolate tracks to the CRV") };
@@ -422,7 +422,7 @@ namespace mu2e {
         time = tdir == TimeDir::forwards ? range.end() : range.begin();
       }
       hadintersection = false;
-      if (TCRV_.intersection().onsurface_ && TCRV_.intersection().inbounds_){
+      if (TCRV_.intersection().good()){
         hadintersection = true;
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();

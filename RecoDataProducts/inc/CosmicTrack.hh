@@ -202,7 +202,6 @@ namespace mu2e {
       double mom_;
 
   };
-  std::ostream& operator<<(std::ostream& os, mu2e::CosmicTrack const& track);
 }
 
 #endif

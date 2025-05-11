@@ -14,9 +14,9 @@
 namespace mu2e {
   using KinKal::TimeDir;
   using KinKal::TimeRange;
-  using KinKal::Intersection;
   using KinKalGeom::TestCRV;
   using KinKal::Rectangle;
+  using KinKal::Intersection;
   using RecPtr = std::shared_ptr<KinKal::Rectangle>;
   class ExtrapolateTCRV {
     public:
@@ -70,7 +70,7 @@ namespace mu2e {
     double yvel = vel.Y()*timeDirSign(tdir); // sign by extrapolation direction
     double yval = pos.Y();
     if(debug_ > 2)std::cout << "TCRV extrap tdir " << tdir << " start y " << pos.Y() << " yvel " << yvel << " time " << time << std::endl;
-    // stop if horizontal 
+    // stop if horizontal
     if(fabs(yvel) < minv_){
       reset(); // clear any cache
       return false;
@@ -97,11 +97,11 @@ namespace mu2e {
       auto trange = tdir == TimeDir::forwards ? TimeRange(stime,etime) : TimeRange(etime,stime);
       for (size_t i=0;i<modules_.size();i++){
         auto newinter = KinKal::intersect(fittraj,*modules_[i],trange,tol_,tdir);
-        if(debug_ > 2)std::cout << "TCRV inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << std::endl;
-        bool goodextrap = newinter.onsurface_ && newinter.inbounds_;
-        if(goodextrap){
+        if(debug_ > 2)std::cout << "TCRV " << newinter  << std::endl;
+        if(newinter.good()){
           inter_ = newinter;
           rec_ = modules_[i];
+          if(debug_ > 0)std::cout << "Good TCRV " <<  newinter << std::endl;
           return false;
         }
       }
@@ -111,7 +111,7 @@ namespace mu2e {
     // if no intersections left
     // stop if we're heading away from the target z
     if((yvel > 0 && yval > ymax_ ) || (yvel < 0 && yval < ymin_))return false;
-    
+
     // no intersections yet: keep extending in Y till we clear the CRV
     if(yvel > 0.0){
       step_ = std::min(maxDt_,fabs((ymax_ - pos.Y())/yvel)+epsilon);

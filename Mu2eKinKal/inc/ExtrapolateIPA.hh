@@ -73,13 +73,12 @@ namespace mu2e {
     }
     // if we get to here we need to test for an intersection with the actual cylinder. Make sure the range is positive definite
     auto trange = tdir == TimeDir::forwards ? TimeRange(stime,etime) : TimeRange(etime,stime);
-    auto newinter = KinKal::intersect(fittraj,*ipa_,trange,tol_,tdir);
-    if(debug_ > 2)std::cout << "IPA extrap inter " << newinter.time_ << " " << newinter.onsurface_ << " " << newinter.inbounds_ << std::endl;
-    bool goodextrap = newinter.onsurface_ && newinter.inbounds_;
-    if(goodextrap){
+    Intersection newinter = KinKal::intersect(fittraj,*ipa_,trange,tol_,tdir);
+    if(debug_ > 2)std::cout << "IPA " << newinter << std::endl;
+    if(newinter.good()){
       // update the cache
       inter_ = newinter;
-      if(debug_ > 0)std::cout << "Good IPA intersection found in range, time " << inter_.time_ << " z  " << inter_.pos_.Z() << std::endl;
+      if(debug_ > 0)std::cout << "Good IPA " << newinter << std::endl;
       return false;
     } else {
       // no more intersections: keep extending in Z till we clear the IPA
