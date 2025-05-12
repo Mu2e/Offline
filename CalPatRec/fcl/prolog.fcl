@@ -613,11 +613,11 @@ CalPatRec : { @table::CalPatRec
             useCCs                     : 1
             recoverCCs                 : 1
             chCollLabel                : "flagPH"
-            chCollLabel2               : "makeSH"
             tcCollLabel                : "TimeClusterFinderDe"
             ccCollLabel                : "CaloClusterMaker"
             hitBkgBits                 : ["Noisy","Dead","Background"]
             radSelect                  : 1
+            seedEThresh                : 0.0
             chunkSep                   : 5
             chunkWindow                : 20.0
             chunkThresh                : 3
@@ -631,6 +631,7 @@ CalPatRec : { @table::CalPatRec
             caloDtMax                  : 30.0
             caloTimeOffset             : @local::TrackCaloMatching.DtOffset
             doRefine                   : 0
+            minHitsEThresh             : 0
 
             diagPlugin : { tool_type  : "TZClusterFinderDiag"
                  mcTruth       : 1

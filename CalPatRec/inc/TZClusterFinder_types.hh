@@ -39,6 +39,7 @@ namespace mu2e {
       float  hTime;
       float  hWeight;
       float  hZpos;
+      float  hEdep;
       int    nStrawHits;
       int    hIsUsed;
     };
@@ -67,7 +68,6 @@ namespace mu2e {
       const art::Event*               _event;
       const TimeCluster*              _timeCluster;
       const ComboHitCollection*       _chColl;
-      const ComboHitCollection*       _chColl2; // for tool to get simID info before selection cuts
       const CaloClusterCollection*    _ccColl;
       TimeClusterCollection*          _tcColl; // 'tcColl': time cluster collection
       IntensityInfoTimeCluster*       _iiTC;

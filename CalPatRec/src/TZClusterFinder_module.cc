@@ -47,11 +47,11 @@ namespace mu2e {
       fhicl::Atom<int>               useCCs           {Name("useCCs"           ), Comment("add CCs to TCs"              ) };
       fhicl::Atom<int>               recoverCCs       {Name("recoverCCs"       ), Comment("recover TCs using CCs"       ) };
       fhicl::Atom<art::InputTag>     chCollLabel      {Name("chCollLabel"      ), Comment("combo hit collection label"  ) };
-      fhicl::Atom<art::InputTag>     chCollLabel2     {Name("chCollLabel2"     ), Comment("for MC tool"                 ) };
       fhicl::Atom<art::InputTag>     tcCollLabel      {Name("tcCollLabel"      ), Comment("time cluster coll label"     ) };
       fhicl::Atom<art::InputTag>     ccCollLabel      {Name("ccCollLabel"      ), Comment("Calo Cluster coll label"     ) };
       fhicl::Sequence<std::string>   hitBkgBits       {Name("hitBkgBits"       ), Comment("background bits"             ) };
       fhicl::Atom<int>               radSelect        {Name("radSelect"        ), Comment("whether or not to radial cut") };
+      fhicl::Atom<float>             seedEThresh      {Name("seedEThresh"      ), Comment("min energy for a seed hit"   ) };
       fhicl::Atom<int>               chunkSep         {Name("chunkSep"         ), Comment("max # of planes for chunk"   ) };
       fhicl::Atom<float>             chunkWindow      {Name("chunkWindow"      ), Comment("time window in ns"           ) };
       fhicl::Atom<int>               chunkThresh      {Name("chunkThresh"      ), Comment("number of combo hits"        ) };
@@ -65,6 +65,7 @@ namespace mu2e {
       fhicl::Atom<float>             caloDtMax        {Name("caloDtMax"        ), Comment("search time window (ns)"     ) };
       fhicl::Atom<float>             caloTimeOffset   {Name("caloTimeOffset"   ), Comment("in ns"                       ) };
       fhicl::Atom<int>               doRefine         {Name("doRefine"         ), Comment("filter out bad TCs at end"   ) };
+      fhicl::Atom<int>               minHitsEThresh   {Name("minHitsEThresh"   ), Comment("min hits above seedEThresh"  ) };
 
       fhicl::Table<TZClusterFinderTypes::Config> diagPlugin{Name("diagPlugin"      ), Comment("Diag plugin") };
     };
@@ -95,6 +96,7 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     // cluster search parameters
     //-----------------------------------------------------------------------------
+    float    _seedEThresh; // minimum energy of hit to be used in chunk seeding
     int      _chunkSep; // number of planes we allow chunks to be combined in
     float    _chunkWindow; // time window we allow hits to live within to be chunked together
     int      _chunkThresh; // how many hits need to be in a chunk to be saved
@@ -108,6 +110,7 @@ namespace mu2e {
     float    _caloDtMax; // max time from time cluster for calo cluster to be associated with time cluster
     float    _caloTimeOffset; // time offset for calo clusters
     int      _doRefine; // if set to 1 then some pattern recogntion is used to filter out bad TC candidates
+    int      _minHitsEThresh; // minimum number of hits above seedEThresh needed to save cluster
 
     //-----------------------------------------------------------------------------
     // diagnostics
@@ -166,7 +169,6 @@ namespace mu2e {
     _useCaloClusters        (config().useCCs()                                  ),
     _recoverCaloClusters    (config().recoverCCs()                              ),
     _chLabel                (config().chCollLabel()                             ),
-    _chLabel2               (config().chCollLabel2()                            ),
     _tcLabel                (config().tcCollLabel()                             ),
     _ccLabel                (config().ccCollLabel()                             ),
     _hbkg                   (config().hitBkgBits()                              ),
@@ -233,13 +235,6 @@ namespace mu2e {
     else {
       _data._chColl  = 0;
       std::cout << ">>> ERROR in TZClusterFinder::findData: ComboHitCollection not found." << std::endl;
-    }
-
-    if (_diagLevel  != 0) {
-      auto chcolH2 = evt.getValidHandle<ComboHitCollection>(_chLabel2);
-      if (chcolH2.product() != 0){
-        _data._chColl2 = chcolH2.product();
-      }
     }
 
     if (_useCaloClusters == 1) {
@@ -314,6 +309,7 @@ namespace mu2e {
       comboHit.hTime = hit->correctedTime();
       comboHit.hWeight = 1/(hit->timeVar());
       comboHit.hZpos = hit->pos().z();
+      comboHit.hEdep = hit->energyDep();
       comboHit.nStrawHits = hit->nStrawHits();
       comboHit.hIsUsed = 0;
       _f.cHits[plnID].plnHits.push_back(comboHit);
@@ -504,9 +500,10 @@ namespace mu2e {
     size_t nCeLikeChunks = 0;
 
     // first two for loops create seed point
-    for (int i=(int)_f.cHits.size()-1; i>=0; i--) {;
+    for (int i=(int)_f.cHits.size()-1; i>=0; i--) {
       for (size_t j=0; j<_f.cHits[i].plnHits.size(); j++) {
         if ( _f.cHits[i].plnHits[j].hIsUsed != 0 ) {continue;}
+        if ( _f.cHits[i].plnHits[j].hEdep < _seedEThresh ) {continue;}
         setSeed(i,j);
         // now we find points around the seed
         for (int k=i; k>=0; k--) {
@@ -791,14 +788,21 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void TZClusterFinder::refineChunks() {
 
+    const mu2e::ComboHit* hit;
+
     for (size_t i=0; i<_f.chunks.size(); i++) {
+      int nHitsAboveSeedThresh = 0;
       // first continue on chunks that are already not saved
       if (_f.chunks[i].nrgSelection == 0) {continue;}
       if ((int)_f.chunks[i].nStrawHits < _clusterThresh) {continue;}
       for (size_t j=0; j<_f.chunks[i].hIndices.size(); j++) {
-        // needs development
+        int hitIndex = _f.chunks[i].hIndices[j];
+        hit = &_data._chColl->at(hitIndex);
+        float hitEdep = hit->energyDep();
+        if (hitEdep > _seedEThresh) { nHitsAboveSeedThresh++; }
       }
-      //  set _f.chunks[i].goodCluster = false or true here based on result of logic you put above .. needs development
+      if (nHitsAboveSeedThresh < _minHitsEThresh) { _f.chunks[i].goodCluster = false;}
+      else { _f.chunks[i].goodCluster = true; }
     }
 
   }
@@ -843,7 +847,7 @@ namespace mu2e {
     countProtons(*_data._iiTC);
 
     // use calo clusters
-    if (_useCaloClusters == 1) { checkCaloClusters(); }
+    if (_useCaloClusters == 1 && _data._ccColl != NULL) { checkCaloClusters(); }
 
     // flag bad clusters
     if (_doRefine == 1) { refineChunks(); }
