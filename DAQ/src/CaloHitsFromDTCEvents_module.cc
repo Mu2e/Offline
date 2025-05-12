@@ -15,9 +15,9 @@
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
-#include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 #include "Offline/CaloConditions/inc/CaloDAQMap.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
 #include "Offline/DAQ/inc/CaloDAQUtilities.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
@@ -119,7 +119,6 @@ private:
   long int total_hits_good;
   long int total_hits_bad;
   std::map<mu2e::CaloDAQUtilities::CaloHitError, uint> failure_counter;
-
 };
 
 // ======================================================================
@@ -135,7 +134,6 @@ void art::CaloHitsFromDataDTCEvents::beginRun(art::Run& Run) {
     peakADC2MeV_[i] = 0.0461333;
     timeCalib_[i] = 0.;
   }
-
 }
 
 void art::CaloHitsFromDataDTCEvents::addPulse(
@@ -180,18 +178,15 @@ void art::CaloHitsFromDataDTCEvents::addPulse(
   }
 }
 
-art::CaloHitsFromDataDTCEvents::CaloHitsFromDataDTCEvents(const art::EDProducer::Table<Config>& config) :
-    art::EDProducer{config}, diagLevel_(config().diagLevel()),
-    digiSampling_(config().digiSampling()),
-    deltaTPulses_(config().deltaTPulses()),
-    hitEDepMax_(config().hitEDepMax()),
-    hitEDepMin_(config().hitEDepMin()),
-    caphriEDepMax_(config().caphriEDepMax()),
-    caphriEDepMin_(config().caphriEDepMin()),
-    nPEperMeV_(config().nPEperMeV()),
+art::CaloHitsFromDataDTCEvents::CaloHitsFromDataDTCEvents(
+    const art::EDProducer::Table<Config>& config) :
+    art::EDProducer{config},
+    diagLevel_(config().diagLevel()), digiSampling_(config().digiSampling()),
+    deltaTPulses_(config().deltaTPulses()), hitEDepMax_(config().hitEDepMax()),
+    hitEDepMin_(config().hitEDepMin()), caphriEDepMax_(config().caphriEDepMax()),
+    caphriEDepMin_(config().caphriEDepMin()), nPEperMeV_(config().nPEperMeV()),
     noise2_(config().noiseLevelMeV() * config().noiseLevelMeV()),
-    nSigmaNoise_(config().nSigmaNoise()),
-    caloDAQUtil_("CaloHitsFromDataDTCEvents") {
+    nSigmaNoise_(config().nSigmaNoise()), caloDAQUtil_("CaloHitsFromDataDTCEvents") {
   pulseMap_.reserve(4000);
   produces<mu2e::CaloHitCollection>("calo");
   produces<mu2e::CaloHitCollection>("caphri");
@@ -224,9 +219,10 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 
   std::unique_ptr<mu2e::CalorimeterDataDecoders> decoderColl(new mu2e::CalorimeterDataDecoders);
   artdaq::Fragments fragments = caloDAQUtil_.getFragments(event);
-  for(const auto& frag : fragments) {
+  for (const auto& frag : fragments) {
     mu2e::DTCEventFragment eventFragment(frag);
-    auto caloSEvents = eventFragment.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Calorimeter);
+    auto caloSEvents =
+        eventFragment.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Calorimeter);
     for (auto& subevent : caloSEvents) {
       decoderColl->emplace_back(subevent);
       auto& decoder = decoderColl->back();
@@ -240,7 +236,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 
   if (numCalDecoders == 0) {
     std::cout << "[CaloDigiFromDTCEvents::produce] found no Calorimeter decoders!" << std::endl;
-    //Must put empty vectors anyway
+    // Must put empty vectors anyway
     event.put(std::move(int_info));
     event.put(std::move(calo_hits), "calo");
     event.put(std::move(caphri_hits), "caphri");
@@ -248,8 +244,9 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
   }
 
   if (diagLevel_ > 1) {
-    std::cout << std::dec << "[CaloHitsFromDTCEvents::produce] Run " << event.run() << ", subrun " << event.subRun()
-      << ", event " << eventNumber << " has " << numCalDecoders << " CALO decoders." << std::endl;
+    std::cout << std::dec << "[CaloHitsFromDTCEvents::produce] Run " << event.run() << ", subrun "
+              << event.subRun() << ", event " << eventNumber << " has " << numCalDecoders
+              << " CALO decoders." << std::endl;
     std::cout << "Total Size: " << (int)totalSize << " bytes." << std::endl;
   }
 
@@ -265,64 +262,66 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 } // produce()
 
 void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
-    mu2e::CaloDAQMap const& calodaqconds,
-    const mu2e::CalorimeterDataDecoder& cc, std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
+    mu2e::CaloDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,
+    std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
     std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits, unsigned short& evtEnergy) {
 
   auto dtcID = cc.event_.GetDTCID();
 
-  //Loop through the ROCs of this caloDecoder
+  // Loop through the ROCs of this caloDecoder
   for (size_t iROC = 0; iROC < cc.block_count(); iROC++) {
 
-    //only data_type 1 for now
-    //if (data_type_ == 1)
+    // only data_type 1 for now
+    // if (data_type_ == 1)
     //
 
     auto hits = cc.GetCalorimeterHitTestForTrigger(iROC);
     if (hits == nullptr) {
-      mf::LogError("CaloHitsFromDataDTCEvents")
-          << "Error retrieving Calorimeter data from block " << iROC
-          << "! Aborting processing of this block!";
+      mf::LogError("CaloHitsFromDataDTCEvents") << "Error retrieving Calorimeter data from block "
+                                                << iROC << "! Aborting processing of this block!";
       continue;
     }
 
-    //Loop through the hits of this ROC
+    // Loop through the hits of this ROC
     total_hits += hits->size();
     for (size_t hitIdx = 0; hitIdx < hits->size(); hitIdx++) {
 
-      mu2e::CalorimeterDataDecoder::CalorimeterHitTestDataPacket& thisHitPacket = hits->at(hitIdx).first;
+      mu2e::CalorimeterDataDecoder::CalorimeterHitTestDataPacket& thisHitPacket =
+          hits->at(hitIdx).first;
       uint16_t thisHitPeak = hits->at(hitIdx).second;
 
-      //Check if hit was decoded correctly
+      // Check if hit was decoded correctly
       auto errorCode = caloDAQUtil_.isHitGood(hits->at(hitIdx));
-      if (errorCode){
+      if (errorCode) {
         failure_counter[errorCode]++;
         total_hits_bad++;
-        if (diagLevel_ > 1){
-          std::cout << "[CaloDigisFromDataDecoders] BAD calo hit! DTC: " << dtcID << ", ROC: " << iROC << ", hit number: " << hitIdx << " [failure code: " << errorCode << "]" << std::endl;
+        if (diagLevel_ > 1) {
+          std::cout << "[CaloDigisFromDataDecoders] BAD calo hit! DTC: " << dtcID
+                    << ", ROC: " << iROC << ", hit number: " << hitIdx
+                    << " [failure code: " << errorCode << "]" << std::endl;
           caloDAQUtil_.printCaloPulse(thisHitPacket);
         }
         continue;
       }
       total_hits_good++;
-      
+
       if (diagLevel_ > 2) {
         std::cout << "[CaloHitsFromDataDTCEvents] calo hit " << hitIdx << std::endl;
         caloDAQUtil_.printCaloPulse(thisHitPacket);
       }
 
       // Fill the CaloHitCollection
-      mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID,thisHitPacket.ChannelID);
+      mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
       mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
       uint16_t crystalID = offlineId.crystal().id();
       uint16_t SiPMID = offlineId.id();
-      
+
       size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
       float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
       float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];
 
-      bool  isCaphri = offlineId.crystal().isCaphri();
-      
+      bool isCaphri = offlineId.crystal().isCaphri();
+
       // FIX ME! WE NEED TO CHECK IF TEH PULSE IS SATURATED HERE
       if (((eDep >= hitEDepMin_) || (isCaphri && (eDep >= caphriEDepMin_))) &&
           ((eDep < hitEDepMax_) || (isCaphri && (eDep < caphriEDepMax_)))) {
@@ -331,12 +330,10 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
       }
 
     } // End loop over hits
-  } // End loop over ROCs
+  }   // End loop over ROCs
 }
 
-
-
-void art::CaloHitsFromDataDTCEvents::endJob(){
+void art::CaloHitsFromDataDTCEvents::endJob() {
 
   if (diagLevel_ > 0) {
     std::cout << "\n ----- [CaloHitsFromDataDTCEvents] Decoding errors summary ----- " << std::endl;
@@ -344,15 +341,13 @@ void art::CaloHitsFromDataDTCEvents::endJob(){
     std::cout << "Total hits: " << total_hits << std::endl;
     std::cout << "Total good hits: " << total_hits_good << std::endl;
     std::cout << "Total bad hits: " << total_hits_bad << std::endl;
-    for (auto fail : failure_counter){
-      std::cout << "Failure mode " << fail.first
-        << " [bad " << caloDAQUtil_.getCaloHitErrorName(fail.first)
-        << "], count: " << fail.second
-        << " (" << int(100.*fail.second/total_hits) << "%)\n";
+    for (auto fail : failure_counter) {
+      std::cout << "Failure mode " << fail.first << " [bad "
+                << caloDAQUtil_.getCaloHitErrorName(fail.first) << "], count: " << fail.second
+                << " (" << int(100. * fail.second / total_hits) << "%)\n";
     }
   }
 }
-
 
 // ======================================================================
 
