@@ -61,7 +61,6 @@ class art::CaloDigiFromDTCEvents : public EDProducer {
   private:
     mu2e::ProditionsHandle<mu2e::CaloDAQMap> _calodaqconds_h;
 
-	artdaq::Fragments getFragments(art::Event& event);
     void analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
         const mu2e::CalorimeterDataDecoder& cc,
         std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis);
@@ -112,7 +111,7 @@ void art::CaloDigiFromDTCEvents::produce(Event& event) {
   size_t numCalDecoders = 0;
   std::unique_ptr<mu2e::CalorimeterDataDecoders> decoderColl(new mu2e::CalorimeterDataDecoders);
 
-  artdaq::Fragments fragments = getFragments(event);
+  artdaq::Fragments fragments = caloDAQUtil_.getFragments(event);
   for(const auto& frag : fragments) {
     mu2e::DTCEventFragment eventFragment(frag);
     auto caloSEvents = eventFragment.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Calorimeter);
@@ -144,43 +143,6 @@ void art::CaloDigiFromDTCEvents::produce(Event& event) {
 
 } // produce()
 
-
-artdaq::Fragments art::CaloDigiFromDTCEvents::getFragments(art::Event& event) {
-	artdaq::Fragments    fragments;
-	artdaq::FragmentPtrs containerFragments;
-
-	std::vector<art::Handle<artdaq::Fragments>> fragmentHandles;
-	fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
-
-	TLOG(TLVL_DEBUG + 6) << "Iterating through " << fragmentHandles.size()
-	                     << " fragment handles\n";
-	for(const auto& handle : fragmentHandles) {
-		if(!handle.isValid() || handle->empty()) {
-			continue;
-		}
-
-		if(handle->front().type() == artdaq::Fragment::ContainerFragmentType) {
-			for(const auto& cont : *handle) {
-				artdaq::ContainerFragment contf(cont);
-				if(contf.fragment_type() != mu2e::FragmentType::DTCEVT) {
-					break;
-				}
-
-				for(size_t ii = 0; ii < contf.block_count(); ++ii) {
-					containerFragments.push_back(contf[ii]);
-					fragments.push_back(*containerFragments.back());
-				}
-			}
-		} else {
-			if(handle->front().type() == mu2e::FragmentType::DTCEVT) {
-				for(auto frag : *handle) {
-					fragments.emplace_back(frag);
-				}
-			}
-		}
-	}
-	return fragments;
-}
 
 void art::CaloDigiFromDTCEvents::analyze_calorimeter_(
     mu2e::CaloDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,

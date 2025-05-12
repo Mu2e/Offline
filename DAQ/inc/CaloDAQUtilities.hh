@@ -7,9 +7,13 @@
 
 #include "artdaq-core-mu2e/Data/CalorimeterDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Event.h"
 #include <artdaq-core/Data/Fragment.hh>
+#include <artdaq-core/Data/ContainerFragment.hh>
 
 #include <string>
+#include <vector>
 
 namespace mu2e {
 
@@ -80,6 +84,42 @@ namespace mu2e {
     void   printWaveform(std::vector<uint16_t> const& Pulse);
 
     void   printAllHitInfo(int CrystalID, int SiPMID, std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header, CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit, uint16_t PulseMax);
+
+    //Function to get art fragments from event
+    artdaq::Fragments getFragments(art::Event& event) {
+
+      artdaq::Fragments    fragments;
+      artdaq::FragmentPtrs containerFragments;
+    
+      std::vector<art::Handle<artdaq::Fragments>> fragmentHandles;
+      fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
+      for(const auto& handle : fragmentHandles) {
+        if(!handle.isValid() || handle->empty()) {
+          continue;
+        }
+    
+        if(handle->front().type() == artdaq::Fragment::ContainerFragmentType) {
+          for(const auto& cont : *handle) {
+            artdaq::ContainerFragment contf(cont);
+            if(contf.fragment_type() != mu2e::FragmentType::DTCEVT) {
+              break;
+            }
+    
+            for(size_t ii = 0; ii < contf.block_count(); ++ii) {
+              containerFragments.push_back(contf[ii]);
+              fragments.push_back(*containerFragments.back());
+            }
+          }
+        } else {
+          if(handle->front().type() == mu2e::FragmentType::DTCEVT) {
+            for(auto frag : *handle) {
+              fragments.emplace_back(frag);
+            }
+          }
+        }
+      }
+      return fragments;
+    }
 
   private:
     std::string  moduleName_;
