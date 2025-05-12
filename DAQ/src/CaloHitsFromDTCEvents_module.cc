@@ -298,7 +298,7 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
       if (errorCode){
         failure_counter[errorCode]++;
         total_hits_bad++;
-        if (diagLevel_ > 0){
+        if (diagLevel_ > 1){
           std::cout << "[CaloDigisFromDataDecoders] BAD calo hit! DTC: " << dtcID << ", ROC: " << iROC << ", hit number: " << hitIdx << " [failure code: " << errorCode << "]" << std::endl;
           caloDAQUtil_.printCaloPulse(thisHitPacket);
         }
@@ -306,7 +306,7 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
       }
       total_hits_good++;
       
-      if (diagLevel_ > 0) {
+      if (diagLevel_ > 2) {
         std::cout << "[CaloHitsFromDataDTCEvents] calo hit " << hitIdx << std::endl;
         caloDAQUtil_.printCaloPulse(thisHitPacket);
       }
@@ -338,18 +338,19 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
 
 void art::CaloHitsFromDataDTCEvents::endJob(){
 
-  std::cout << "\n ----- [CaloHitsFromDataDTCEvents] Decoding errors summary ----- " << std::endl;
-  std::cout << "Total events: " << total_events << std::endl;
-  std::cout << "Total hits: " << total_hits << std::endl;
-  std::cout << "Total good hits: " << total_hits_good << std::endl;
-  std::cout << "Total bad hits: " << total_hits_bad << std::endl;
-  for (auto fail : failure_counter){
-    std::cout << "Failure mode " << fail.first
-      << " [bad " << caloDAQUtil_.getCaloHitErrorName(fail.first)
-      << "], count: " << fail.second
-      << " (" << int(100.*fail.second/total_hits) << "%)\n";
+  if (diagLevel_ > 0) {
+    std::cout << "\n ----- [CaloHitsFromDataDTCEvents] Decoding errors summary ----- " << std::endl;
+    std::cout << "Total events: " << total_events << std::endl;
+    std::cout << "Total hits: " << total_hits << std::endl;
+    std::cout << "Total good hits: " << total_hits_good << std::endl;
+    std::cout << "Total bad hits: " << total_hits_bad << std::endl;
+    for (auto fail : failure_counter){
+      std::cout << "Failure mode " << fail.first
+        << " [bad " << caloDAQUtil_.getCaloHitErrorName(fail.first)
+        << "], count: " << fail.second
+        << " (" << int(100.*fail.second/total_hits) << "%)\n";
+    }
   }
-
 }
 
 
