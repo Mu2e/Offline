@@ -42,7 +42,6 @@ class art::CaloDigiFromDTCEvents : public EDProducer {
     struct Config {
       fhicl::Atom<int> data_type {fhicl::Name("dataType" ) , fhicl::Comment("Data type (0:standard, 1:debug, 2:counters)"), 0};
       fhicl::Atom<int> diagLevel {fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level"), 0};
-      fhicl::Atom<art::InputTag> caloTag {fhicl::Name("caloTag"), fhicl::Comment("Input module")};
       fhicl::Atom<bool> useOfflineID {fhicl::Name("useOfflineID"), fhicl::Comment("Use calo disk mapping for SiPM IDs (Default: true)"), true};
       fhicl::Atom<bool> useDTCROCID {fhicl::Name("useDTCROCID"), fhicl::Comment("Use DTC and ROC numbers instead of boardID for SiPM IDs (Default: false)"), false};
     };
@@ -84,7 +83,6 @@ art::CaloDigiFromDTCEvents::CaloDigiFromDTCEvents(const art::EDProducer::Table<C
   art::EDProducer{config},
   data_type_(config().data_type()),
   diagLevel_(config().diagLevel()),
-  caloFragmentsTag_(config().caloTag()),
   caloDAQUtil_("CaloDigiFromDTCEvents"),
   useOfflineID_(config().useOfflineID()),
   useDTCROCID_(config().useDTCROCID()) {

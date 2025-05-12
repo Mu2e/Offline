@@ -52,7 +52,6 @@ class art::CaloHitsFromDataDTCEvents : public EDProducer {
 public:
   struct Config {
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level")};
-    fhicl::Atom<art::InputTag> caloTag{fhicl::Name("caloTag"), fhicl::Comment("caloTag")};
     fhicl::Atom<float> digiSampling{fhicl::Name("digiSampling"),
                                     fhicl::Comment("calorimeter sampling period in ns")};
     fhicl::Atom<float> deltaTPulses{
@@ -183,12 +182,16 @@ void art::CaloHitsFromDataDTCEvents::addPulse(
 
 art::CaloHitsFromDataDTCEvents::CaloHitsFromDataDTCEvents(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}, diagLevel_(config().diagLevel()),
-    caloFragmentsTag_(config().caloTag()), digiSampling_(config().digiSampling()),
-    deltaTPulses_(config().deltaTPulses()), hitEDepMax_(config().hitEDepMax()),
-    hitEDepMin_(config().hitEDepMin()), caphriEDepMax_(config().caphriEDepMax()),
-    caphriEDepMin_(config().caphriEDepMin()), nPEperMeV_(config().nPEperMeV()),
+    digiSampling_(config().digiSampling()),
+    deltaTPulses_(config().deltaTPulses()),
+    hitEDepMax_(config().hitEDepMax()),
+    hitEDepMin_(config().hitEDepMin()),
+    caphriEDepMax_(config().caphriEDepMax()),
+    caphriEDepMin_(config().caphriEDepMin()),
+    nPEperMeV_(config().nPEperMeV()),
     noise2_(config().noiseLevelMeV() * config().noiseLevelMeV()),
-    nSigmaNoise_(config().nSigmaNoise()), caloDAQUtil_("CaloHitsFromDataDTCEvents") {
+    nSigmaNoise_(config().nSigmaNoise()),
+    caloDAQUtil_("CaloHitsFromDataDTCEvents") {
   pulseMap_.reserve(4000);
   produces<mu2e::CaloHitCollection>("calo");
   produces<mu2e::CaloHitCollection>("caphri");
