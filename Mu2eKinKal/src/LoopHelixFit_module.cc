@@ -651,26 +651,26 @@ namespace mu2e {
 
     // start with the middle
     auto midinter = KinKal::intersect(ftraj,*trkmidptr_,ftraj.range(),intertol_);
-    if(midinter.onsurface_) ktrk.addIntersection(tt_mid,midinter);
+    if(midinter.good()) ktrk.addIntersection(tt_mid,midinter);
     if(tofront){
       // check the front piece first; that is usually correct
       // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
       auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
       auto frontinter = KinKal::intersect(fhel,*trkfrontptr_,fhel.range(),intertol_,fronttdir);
-      if(!frontinter.onsurface_){
+      if(!frontinter.good()){
         // start from the middle
         TimeRange frange = ftraj.range();
-        if(midinter.onsurface_)frange = fronttdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
+        if(midinter.good())frange = fronttdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
         frontinter = KinKal::intersect(ftraj,*trkfrontptr_,frange,intertol_,fronttdir);
       }
-      if(frontinter.onsurface_) ktrk.addIntersection(tt_front,frontinter);
+      if(frontinter.good()) ktrk.addIntersection(tt_front,frontinter);
     }
     if(toback){
       // start from the middle
       TimeRange brange = ftraj.range();
-      if(midinter.onsurface_)brange = backtdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
+      if(midinter.good())brange = backtdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
       auto backinter = KinKal::intersect(ftraj,*trkbackptr_,brange,intertol_,backtdir);
-      if(backinter.onsurface_)ktrk.addIntersection(tt_back,backinter);
+      if(backinter.good())ktrk.addIntersection(tt_back,backinter);
     }
   }
 
