@@ -47,11 +47,11 @@ namespace mu2e {
     // OTOH extMonSubtractionOutline is tweaked here, as postponing
     // the extruded solid tweak would make the overall code too entangled.
 
-    std::vector<CLHEP::Hep2Vector> dumpConcreteOutline() const { return _dumpConcreteOutline; }
+    const std::vector<CLHEP::Hep2Vector>& dumpConcreteOutline() const { return _dumpConcreteOutline; }
     const CLHEP::Hep3Vector& dumpConcreteCenterInMu2e() const { return _dumpConcreteCenterInMu2e; }
     double dumpConcreteHalfHeight() const { return _dumpConcreteHalfHeight; }
 
-    std::vector<CLHEP::Hep2Vector> extMonSubtractionOutline() const { return _extMonSubtractionOutline; }
+    const std::vector<CLHEP::Hep2Vector>& extMonSubtractionOutline() const { return _extMonSubtractionOutline; }
     const CLHEP::Hep3Vector& extMonSubtractionCenterInMu2e() const { return _extMonSubtractionCenterInMu2e; }
     double extMonSubtractionHalfHeight() const { return _extMonSubtractionHalfHeight; }
 
