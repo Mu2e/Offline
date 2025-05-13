@@ -117,7 +117,7 @@ namespace mu2e {
     fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
     fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
     fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
-    fhicl::Atom<float> sampleTol { Name("SampleTolerance"), Comment("Tolerance for sample surface intersections (mm)") };
+    fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for surface intersections (mm)") };
     fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Time buffer for sample intersections (nsec)") };
     fhicl::Atom<bool> useFitCharge { Name("UseFitCharge"), Comment("Set the PDG particle according to the fit charge; otherwise reject fits that don't agree with the PDG particle charge") };
     fhicl::Atom<float> minCenterRho { Name("MinCenterRho"), Comment("Minimum transverse distance from the helix axis to the Z axis to consider the fit non-degenerate (mm)") };
@@ -165,7 +165,7 @@ namespace mu2e {
       bool fixedfield_; //
       double seedMom_;
       int seedCharge_;
-      double sampletol_; // surface intersection tolerance (mm)
+      double intertol_; // surface intersection tolerance (mm)
       double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
       bool useFitCharge_; // Set the PDG particle to agree with the fit charge
       double minCenterRho_; // min center distance to z axis
@@ -189,7 +189,7 @@ namespace mu2e {
     fixedfield_(false),
     seedMom_(settings().modSettings().seedMom()),
     seedCharge_(settings().modSettings().seedCharge()),
-    sampletol_(settings().modSettings().sampleTol()),
+    intertol_(settings().modSettings().interTol()),
     sampletbuff_(settings().modSettings().sampleTBuff()),
     useFitCharge_(settings().modSettings().useFitCharge()),
     minCenterRho_(settings().modSettings().minCenterRho()),
@@ -413,7 +413,7 @@ namespace mu2e {
         cur_iter += 1;
 
         TimeRange irange(tstart,std::max(ftraj.range().end(),tstart)+sampletbuff_);
-        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
+        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,intertol_);
         hasinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
         if(hasinter) {
           // save the intersection information
