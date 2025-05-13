@@ -173,6 +173,7 @@ namespace mu2e {
     _ccLabel                (config().ccCollLabel()                             ),
     _hbkg                   (config().hitBkgBits()                              ),
     _radSelect              (config().radSelect()                               ),
+    _seedEThresh            (config().seedEThresh()                             ),
     _chunkSep               (config().chunkSep()                                ),
     _chunkWindow            (config().chunkWindow()                             ),
     _chunkThresh            (config().chunkThresh()                             ),
@@ -185,7 +186,8 @@ namespace mu2e {
     _minCaloEnergy          (config().minCaloEnergy()                           ),
     _caloDtMax              (config().caloDtMax()                               ),
     _caloTimeOffset         (config().caloTimeOffset()                          ),
-    _doRefine               (config().doRefine()                                )
+    _doRefine               (config().doRefine()                                ),
+    _minHitsEThresh         (config().minHitsEThresh()                          )
     {
 
       consumes<ComboHitCollection>(_chLabel);
