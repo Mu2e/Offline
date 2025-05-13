@@ -1,0 +1,22 @@
+# -*- mode:tcl -*-
+# station 0
+# should be physics.producers.StrawDigisFromArtdaqFragments.geography:
+BEGIN_PROLOG
+station_00_geography: [
+                       { minnesota:"MN213"  panel:0  plane:0 },
+                       { minnesota:"MN247"  panel:2  plane:0 },        
+                       { minnesota:"MN253"  panel:4  plane:0 },
+                       
+                       { minnesota:"MN235"  panel:1  plane:0 },
+                       { minnesota:"MN101"  panel:3  plane:0 },
+                       { minnesota:"MN219"  panel:5  plane:0 },
+                      
+                       { minnesota:"MN224"  panel:0  plane:1 },
+                       { minnesota:"MN276"  panel:2  plane:1 },
+                       { minnesota:"MN248"  panel:4  plane:1 },
+                      
+                       { minnesota:"MN273"  panel:1  plane:1 },
+                       { minnesota:"MN261"  panel:3  plane:1 },
+                       { minnesota:"MN262"  panel:5  plane:1 }
+                     ]
+END_PROLOG
