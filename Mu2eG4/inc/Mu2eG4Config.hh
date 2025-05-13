@@ -152,6 +152,11 @@ namespace mu2e {
       fhicl::OptionalAtom<double> muonMaxPreAssignedDecayProperTime {Name("muonMaxPreAssignedDecayProperTime")};
       fhicl::OptionalAtom<double> muonMinPreAssignedDecayProperTime {Name("muonMinPreAssignedDecayProperTime")};
 
+#if G4VERSION>4112
+      // works for Geant4 11.3.p02
+      fhicl::OptionalAtom<bool> setBertiniAs11_2 {Name("setBertiniAs11_2")};
+#endif
+
       OptionalDelegatedParameter BirksConsts {Name("BirksConsts")};
       OptionalDelegatedParameter minRangeRegionCuts {Name("minRangeRegionCuts")};
 

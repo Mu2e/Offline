@@ -52,6 +52,10 @@
 #include "Geant4/G4EmParameters.hh"
 #endif
 
+#if G4VERSION>4106
+#include "Geant4/G4HadronicParameters.hh"
+#endif
+
 using namespace std;
 
 namespace mu2e{
@@ -84,6 +88,22 @@ namespace mu2e{
 
     // General case
     else {
+
+    // the Hadronic params have to be set before defining the list
+
+#if G4VERSION>4112
+    { bool BertiniAs11_2 = true; // restores 11.2 behavior in Geant4 11.3.p02
+      phys.setBertiniAs11_2(BertiniAs11_2);
+      if (BertiniAs11_2) {
+        if (debug.diagLevel()>0) {
+          G4cout << __func__
+                 << " Setting Bertini model behavior to one of 11.2 "
+                 << G4endl;
+        }
+        G4HadronicParameters::Instance()->SetBertiniAs11_2(BertiniAs11_2);
+      }
+    }
+#endif
 
       G4PhysListFactory physListFactory;
       physListFactory.SetVerbose(debug.diagLevel());
