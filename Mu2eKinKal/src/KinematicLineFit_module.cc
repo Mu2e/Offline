@@ -146,7 +146,7 @@ namespace mu2e {
     // utility functions
     KTRAJ makeSeedTraj(CosmicTrackSeed const& hseed) const;
     bool goodFit(KKTRK const& ktrk) const;
-    void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const;
+    void sampleFit(KKTRK& kktrk) const;
     void extrapolate(KKTRK& ktrk) const;
     // data payload
     std::vector<art::ProductToken<CosmicTrackSeedCollection>> seedCols_;
@@ -327,8 +327,8 @@ namespace mu2e {
           if(save || saveall_){
             TrkFitFlag fitflag(hptr->status());
             fitflag.merge(TrkFitFlag::KKLine);
+            sampleFit(*kktrk);
             auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h);
-            sampleFit(*kktrk,kkseed._inters);
             kkseedcol->push_back(kkseed);
             kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
             // fill assns with the cosmic seed
@@ -365,43 +365,32 @@ namespace mu2e {
     return ktrk.fitStatus().usable();
   }
 
-  void KinematicLineFit::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
+  void KinematicLineFit::sampleFit(KKTRK& kktrk) const {
     auto const& ftraj = kktrk.fitTraj();
     double tbeg = ftraj.range().begin();
-    static const double epsilon(1.0e-3);
     for(auto const& surf : sample_){
       // search for intersections with each surface from the begining
       double tstart = tbeg - sampletbuff_;
-      bool hasinter(true);
-      size_t max_iter = 1000;
-      size_t cur_iter = 0;
+      bool goodinter(true);
+      size_t max_inter = 100;
+      size_t cur_inter = 0;
 
       // loop to find multiple intersections
-      while(hasinter) {
-        if (cur_iter > max_iter)
-          break;
-        cur_iter += 1;
-
+      while(goodinter && cur_inter < max_inter) {
+        cur_inter += 1;
         TimeRange irange(tstart,std::max(ftraj.range().end(),tstart)+sampletbuff_);
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,intertol_);
-        hasinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
-        if(hasinter) {
+        goodinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
+        if(goodinter) {
           // save the intersection information
-          auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
-          inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
+          kktrk.addIntersection(surf.first,surfinter);
+          // move past existing intersection to avoid repeating
+          double epsilon = intertol_/ftraj.speed(surfinter.time_);
           // update for the next intersection
           tstart = surfinter.time_ + epsilon;// move psst existing intersection to avoid repeating
         }
       }
     }
-    // record other intersections saved in the track
-    for(auto const& interpair : kktrk.intersections()) {
-      auto const& sid = std::get<0>(interpair);
-      auto const& inter = std::get<1>(interpair);
-      auto const& ktraj = ftraj.nearestPiece(inter.time_);
-      inters.emplace_back(ktraj.stateEstimate(inter.time_),XYZVectorF(ktraj.bnom()),sid,inter);
-    }
-    // sort by time TODO
   }
 
   void KinematicLineFit::extrapolate(KKTRK& ktrk) const {

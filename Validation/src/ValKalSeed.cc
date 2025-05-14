@@ -25,7 +25,7 @@ namespace mu2e {
     _hN = tfs.make<TH1D>("NSeed", "N KalSeed", 11, -0.5, 10.0);
     _hNStraw = tfs.make<TH1D>("NHit", "N Straw Hits", 101, -0.5, 100.0);
     _hNSeg = tfs.make<TH1D>("NSeg", "N KalSegment", 100, 0.0, 500.0);
-    _hNInter = tfs.make<TH1D>("NInter", "N Intersections", 21, -0.5, 20.0);
+    _hNInter = tfs.make<TH1D>("NInter", "N Intersections", 51, -0.5, 50.0);
     _hTraj = tfs.make<TH1D>("Traj","Trajectory Type", 5,0.5,5.5);
     _hStatus = tfs.make<TH1D>("Status", "Status", 32, -0.5, 31.5);
     _hchi2 = tfs.make<TH1D>("Chi2N", "Chi2/DOF", 100, 0.0, 10.0);
@@ -83,7 +83,7 @@ namespace mu2e {
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
     // increment this by 1 any time the defnitions of the histograms or the
     // histogram contents change, and will not match previous versions
-    _hVer->Fill(10.0);
+    _hVer->Fill(11.0);
 
     _hN->Fill(coll.size());
     for (auto const& ks : coll) {
