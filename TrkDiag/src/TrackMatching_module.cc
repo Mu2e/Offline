@@ -50,7 +50,7 @@ namespace mu2e
 
   private:
     void produce(art::Event& event) override;
-    bool match(const KalSeedPtr k_1, const KalSeedPtr k_2);
+    bool match(const KalSeedPtr& k_1, const KalSeedPtr& k_2);
     void merge_clusters(KalSeedCluster& cluster, KalSeedCluster& cluster_j);
     void create_clusters(std::vector<KalSeedCluster>& clusters);
 
@@ -92,8 +92,9 @@ namespace mu2e
 
   //--------------------------------------------------------------------------------------------------------
   // Perform the matching
-  bool TrackMatching::match(const KalSeedPtr k_1, const KalSeedPtr k_2) {
-    if(!k_1 || !k_2)
+  bool TrackMatching::match(const KalSeedPtr& k_1, const KalSeedPtr& k_2) {
+    if(_debug > 3) printf("  Starting track overlap check\n");
+    if(k_1.isNull() || k_2.isNull())
       throw cet::exception("RECO") << "mu2e::TrackMatching::" << __func__ << ": Null input track seeds!";
 
     // Retrieve the hit lists
@@ -143,7 +144,6 @@ namespace mu2e
       if(cluster.size() > 1) // input clusters should always be 1 track, as matches are clustered into lower index clusters
         throw cet::exception("RECO") << "mu2e::TrackMatching::" << __func__ << ": Input track cluster has already been clustered! Size = " << cluster.size();
       if(_debug > 2) printf("  Checking track cluster %zu for overlaps\n", index);
-      KalSeedPtr& k_i = cluster.front();
 
       // Check each following cluster (of size 1) for overlapping tracks
       for(size_t jtrk = index + 1; jtrk < ntrks; ++jtrk) {
@@ -151,8 +151,14 @@ namespace mu2e
         if(cluster_j.empty()) continue;
         if(cluster_j.size() > 1) // input clusters should always be 1 track, as matches are clustered into lower index clusters
           throw cet::exception("RECO") << "mu2e::TrackMatching::" << __func__ << ": Track cluster matching against has already been clustered! Size = " << cluster_j.size();
-        if(_debug > 2) printf("    Checking against track cluster %zu for overlaps\n", jtrk);
+
+        // Get the tracks to compare
+        KalSeedPtr& k_i = cluster.front();
         KalSeedPtr& k_j = cluster_j.front();
+        if(k_i.isNull() || k_j.isNull())
+          throw cet::exception("RECO") << "mu2e::TrackMatching::" << __func__ << ": Bad track in clusters";
+
+        if(_debug > 2) printf("    Checking against track cluster %zu for overlaps\n", jtrk);
 
         // If the tracks overlap, add the tracks to the match lists
         if(match(k_i, k_j)) {
@@ -187,7 +193,7 @@ namespace mu2e
     // Start by creating a track cluster for each track, then merge collections as overlaps are found
 
     std::vector<KalSeedCluster> clusters;
-    for(auto handle : handles) {
+    for(auto& handle : handles) {
       const size_t ntrks = handle->size();
       for(size_t itrk = 0; itrk < ntrks; ++itrk) {
         KalSeedPtr ptr(handle, itrk);
