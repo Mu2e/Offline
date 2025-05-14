@@ -614,7 +614,7 @@ namespace mu2e {
     } else {
       kseed._segments.emplace_back(t0piece,t0val); // save the t0 piece even for failed fits
     }
-    // sample the fit at the locations provided. This is a deprecated function, to be replaced by extrapolation
+    // sample the fit at the locations recorded in the fit
     sampleFit(kktrk,kseed._inters);
     // remove unused storage
     kseed._segments.shrink_to_fit();

@@ -185,7 +185,7 @@ namespace mu2e {
       bool extrapolateTracker(KKTRK& ktrk,TimeDir tdir) const;
       bool extrapolateTSDA(KKTRK& ktrk,TimeDir tdir) const;
       void toOPA(KKTRK& ktrk, double tstart, TimeDir tdir) const;
-      void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const;
+      void sampleFit(KKTRK& kktrk) const;
       void print_track_info(const KalSeed& kkseed, const KKTRK& ktrk) const;
 
       // data payload
@@ -508,9 +508,10 @@ namespace mu2e {
             if(goodfit) fitflag.merge(TrkFitFlag::FitOK);
             else        fitflag.clear(TrkFitFlag::FitOK);
             if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
-
+            // sample the fit as requested
+            sampleFit(*ktrk);
+            // convert to seed output format
             auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h);
-            sampleFit(*ktrk,kkseed._inters);
             if(print_>0) print_track_info(kkseed, *ktrk);
             kkseedcol->push_back(kkseed);
             // fill assns with the helix seed
@@ -791,7 +792,7 @@ namespace mu2e {
     }
   }
 
-  void LoopHelixFit::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
+  void LoopHelixFit::sampleFit(KKTRK& kktrk) const {
     auto const& ftraj = kktrk.fitTraj();
     std::vector<TimeRange> ranges;
     // test for reflection, and if present, split the test in 2
@@ -813,17 +814,16 @@ namespace mu2e {
         size_t cur_inter = 0;
         // loop to find multiple intersections
         while(goodinter && tbeg < tend && cur_inter < max_inter){
-          TimeRange irange(tbeg,tend);
           cur_inter += 1;
+          TimeRange irange(tbeg,tend);
           auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,intertol_);
           goodinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || surfinter.inrange_);
           if(goodinter) {
             // save the intersection information
-            auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
-            inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
+            kktrk.addIntersection(surf.first,surfinter);
             // update for the next intersection
             // move past existing intersection to avoid repeating
-            double epsilon = intertol_/ktraj.speed(surfinter.time_);
+            double epsilon = intertol_/ftraj.speed(surfinter.time_);
             tbeg = surfinter.time_ + epsilon;
           }
           if(print_>1) printf(" [LoopHelixFit::%s::%s] Found intersection with surface %15s\n",
