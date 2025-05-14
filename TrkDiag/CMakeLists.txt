@@ -132,6 +132,14 @@ cet_build_plugin(TimeClusterDiag art::module
       Offline::TrkReco
 )
 
+cet_build_plugin(TrackMatching art::module
+    REG_SOURCE src/TrackMatching_module.cc
+    LIBRARIES REG
+      art_root_io::tfile_support
+      Offline::TrkDiag
+      Offline::RecoDataProducts
+)
+
 cet_build_plugin(TrackPID art::module
     REG_SOURCE src/TrackPID_module.cc
     LIBRARIES REG
@@ -153,6 +161,16 @@ cet_build_plugin(TrackQuality art::module
       Offline::Mu2eUtilities
       Offline::ProditionsService
       Offline::RecoDataProducts
+)
+
+
+cet_build_plugin(TrackResolution art::module
+    REG_SOURCE src/TrackResolution_module.cc
+    LIBRARIES REG
+      art_root_io::tfile_support
+      Offline::TrkDiag
+      Offline::RecoDataProducts
+      Offline::DataProducts
 )
 
 cet_build_plugin(TrkGeomTest art::module
