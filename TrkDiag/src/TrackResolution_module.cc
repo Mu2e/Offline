@@ -47,7 +47,7 @@ namespace mu2e
 
   private:
     void produce(art::Event& event) override;
-    int resolve(const KalSeed* k_1, const KalSeed* k_2);
+    int resolve(const KalSeedPtr& k_1, const KalSeedPtr& k_2);
 
     art::InputTag _seedTag;
     bool _useCaloHit;
@@ -80,7 +80,7 @@ namespace mu2e
 
   //--------------------------------------------------------------------------------------------------------
   // Decide which track is better
-  int TrackResolution::resolve(const KalSeed* k_1, const KalSeed* k_2) {
+  int TrackResolution::resolve(const KalSeedPtr& k_1, const KalSeedPtr& k_2) {
     if(!k_1 && !k_2) return kNeither;
     if(!k_1) return kSecond;
     if(!k_2) return kFirst;
@@ -106,7 +106,7 @@ namespace mu2e
     std::unique_ptr<KalSeedPtrCollection> trkcol(new KalSeedPtrCollection());
 
     // get the KalSeedPtrs
-    auto handle = event.getValidHandle<KalSeedPtrCollections>(_seedTag);
+    auto handle = event.getValidHandle<KalSeedClusterCollection>(_seedTag);
     const auto& clusters = *handle;
     if(_debug > 0) printf("[TrackResolution::%s::%s] Collection of %zu track clusters retrieved\n", __func__, moduleDescription().moduleLabel().c_str(), clusters.size());
 
@@ -114,45 +114,40 @@ namespace mu2e
     for (const auto& cluster : clusters) {
       if(cluster.empty()) continue;
       if(_debug > 1) printf("  Checking cluster of %zu tracks\n", cluster.size());
-      const KalSeedPtr* seedPtr = &(cluster.front());
+
+      // Default to the first track, replacing it as needed
+      trkcol->push_back(cluster.front());
       if(_makeHists) {
-        _hists.fitcon->Fill((*seedPtr)->fitConsistency());
+        _hists.fitcon->Fill(trkcol->back()->fitConsistency());
       }
 
       // Resolve the overlap for each track in the cluster
       const size_t ntrks = cluster.size();
       for(size_t itrk = 1; itrk < ntrks; ++itrk) {
-        const KalSeedPtr testPtr = cluster.at(itrk);
-        const KalSeed* k_1 = &(**seedPtr);
-        const KalSeed* k_2 = &(*testPtr);
-        const int result = resolve(k_1, k_2);
+        const KalSeedPtr k = cluster.at(itrk);
+        const int result = resolve(trkcol->back(), k);
         if(_debug > 1) printf("  Resolving against track %zu has status %i\n", itrk, result);
-        if(result == kSecond) seedPtr = &testPtr;
-        else if(result == kNeither) seedPtr = nullptr;
+        if(result == kSecond) (*trkcol)[trkcol->size()-1] = k;
         if(_makeHists) {
-          _hists.fitcon->Fill((*seedPtr)->fitConsistency());
+          _hists.fitcon->Fill(k->fitConsistency());
         }
       }
 
-      if(seedPtr) {
-        if(_debug > 1) {
-          // Approximate the fit trajectory by just taking the first tracker segment pZ sign
-          int traj = 0;
-          float mom = 0.f;
-          for(auto inter : (*seedPtr)->intersections()) {
-            if(inter.surfaceId() == SurfaceIdDetail::TT_Mid ||
-               inter.surfaceId() == SurfaceIdDetail::TT_Front ||
-               inter.surfaceId() == SurfaceIdDetail::TT_Back) {
-              traj = (inter.momentum3().z() < 0.) ? -1 : 1;
-              mom = inter.mom();
-              break;
-            }
+      // Debug info for resolved track
+      if(_debug > 1) {
+        // Approximate the fit trajectory by just taking the first tracker segment pZ sign
+        int traj = 0;
+        float mom = 0.f;
+        for(auto inter : trkcol->back()->intersections()) {
+          if(inter.surfaceId() == SurfaceIdDetail::TT_Mid ||
+             inter.surfaceId() == SurfaceIdDetail::TT_Front ||
+             inter.surfaceId() == SurfaceIdDetail::TT_Back) {
+            traj = (inter.momentum3().z() < 0.) ? -1 : 1;
+            mom = inter.mom();
+            break;
           }
-          printf("  Final track resolution: PDG = %5i, Trajectory = %2i, p = %5.1f\n", (*seedPtr)->particle(), traj, mom);
         }
-        trkcol->push_back(*seedPtr);
-      } else {
-        if(_debug > 0) printf("[TrackResolution::%s::%s] A track cluster did not resolve to any track\n", __func__, moduleDescription().moduleLabel().c_str());
+        printf("  Final track resolution: PDG = %5i, Trajectory = %2i, p = %5.1f\n", trkcol->back()->particle(), traj, mom);
       }
     }
 

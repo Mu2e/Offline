@@ -96,6 +96,7 @@ namespace mu2e {
   typedef std::vector<mu2e::KalSeed> KalSeedCollection;
   typedef art::Ptr<mu2e::KalSeed> KalSeedPtr;
   typedef std::vector<mu2e::KalSeedPtr> KalSeedPtrCollection;
-  typedef std::vector<KalSeedPtrCollection> KalSeedPtrCollections;
+  typedef std::vector<mu2e::KalSeedPtr> KalSeedCluster;
+  typedef std::vector<mu2e::KalSeedCluster> KalSeedClusterCollection;
 }
 #endif
