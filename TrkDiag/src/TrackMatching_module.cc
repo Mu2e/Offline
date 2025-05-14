@@ -145,29 +145,33 @@ namespace mu2e
         throw cet::exception("RECO") << "mu2e::TrackMatching::" << __func__ << ": Input track cluster has already been clustered! Size = " << cluster.size();
       if(_debug > 2) printf("  Checking track cluster %zu for overlaps\n", index);
 
-      // Check each following cluster (of size 1) for overlapping tracks
-      for(size_t jtrk = index + 1; jtrk < ntrks; ++jtrk) {
-        KalSeedCluster& cluster_j = clusters[jtrk];
-        if(cluster_j.empty()) continue;
-        if(cluster_j.size() > 1) // input clusters should always be 1 track, as matches are clustered into lower index clusters
-          throw cet::exception("RECO") << "mu2e::TrackMatching::" << __func__ << ": Track cluster matching against has already been clustered! Size = " << cluster_j.size();
+      size_t cluster_index = 0;
+      while(cluster_index < cluster.size()) { // keep checking the end of the cluster until no more tracks are added
+        // Check each following cluster (of size 1) for overlapping tracks
+        for(size_t jtrk = index + 1; jtrk < ntrks; ++jtrk) {
+          KalSeedCluster& cluster_j = clusters[jtrk];
+          if(cluster_j.empty()) continue;
+          if(cluster_j.size() > 1) // input clusters should always be 1 track, as matches are clustered into lower index clusters
+            throw cet::exception("RECO") << "mu2e::TrackMatching::" << __func__ << ": Track cluster matching against has already been clustered! Size = " << cluster_j.size();
 
-        // Get the tracks to compare
-        KalSeedPtr& k_i = cluster.front();
-        KalSeedPtr& k_j = cluster_j.front();
-        if(k_i.isNull() || k_j.isNull())
-          throw cet::exception("RECO") << "mu2e::TrackMatching::" << __func__ << ": Bad track in clusters";
+          // Get the tracks to compare
+          KalSeedPtr& k_i = cluster[cluster_index];
+          KalSeedPtr& k_j = cluster_j.front();
+          if(k_i.isNull() || k_j.isNull())
+            throw cet::exception("RECO") << "mu2e::TrackMatching::" << __func__ << ": Bad track in clusters";
 
-        if(_debug > 2) printf("    Checking against track cluster %zu for overlaps\n", jtrk);
+          if(_debug > 2) printf("    Checking against track cluster %zu for overlaps\n", jtrk);
 
-        // If the tracks overlap, add the tracks to the match lists
-        if(match(k_i, k_j)) {
-          if(_debug > 1) printf("[TrackMatching::%s::%s] Found a match! Track %zu <--> %zu\n",
-                                __func__, moduleDescription().moduleLabel().c_str(), index, jtrk);
+          // If the tracks overlap, add the tracks to the match lists
+          if(match(k_i, k_j)) {
+            if(_debug > 1) printf("[TrackMatching::%s::%s] Found a match! Track %zu <--> %zu\n",
+                                  __func__, moduleDescription().moduleLabel().c_str(), index, jtrk);
 
-          // merge the clusters
-          merge_clusters(cluster, cluster_j);
+            // merge the clusters
+            merge_clusters(cluster, cluster_j);
+          }
         }
+        ++cluster_index; //move to the next track to cluster
       }
     }
   }
