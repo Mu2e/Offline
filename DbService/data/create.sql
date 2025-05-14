@@ -19,6 +19,9 @@ GRANT USAGE ON SCHEMA sim TO PUBLIC;
 CREATE SCHEMA crv;
 GRANT USAGE ON SCHEMA crv TO PUBLIC;
 
+CREATE SCHEMA cal;
+GRANT USAGE ON SCHEMA cal TO PUBLIC;
+
 -- rows are calibration tables
 CREATE TABLE val.tables 
   (tid SERIAL, 
@@ -398,4 +401,27 @@ CREATE TABLE crv.time
    CONSTRAINT crv_time_pk PRIMARY KEY (cid,channel) );
 GRANT SELECT ON crv.time TO PUBLIC;
 GRANT INSERT ON crv.time TO crv_role;
+
+--
+-- cal schema tables
+--
+
+--- archive and adhoc tables
+
+CREATE TABLE cal.cosmicenergycalib
+  (cid INTEGER,
+   roid INTEGER, peak NUMERIC, errpeak NUMERIC,
+   width NUMERIC, errwidth NUMERIC, sigma NUMERIC, errsigma NUMERIC,
+   chisq NUMERIC,nhits INTEGER,
+   CONSTRAINT cal_cosmicenergycalib_pk PRIMARY KEY (cid,roid) );
+GRANT SELECT ON cal.cosmicenergycalib TO PUBLIC;
+GRANT INSERT ON cal.cosmicenergycalib TO cal_role;
+
+CREATE TABLE cal.cosmicenergycalibinfo
+  (firstcalibrun INTEGER, lastcalibrun INTEGER,
+   energymethod TEXT, fitmethod TEXT, comment TEXT,
+   create_time TIMESTAMP WITH TIME ZONE NOT NULL,
+   create_user TEXT NOT NULL );
+GRANT SELECT ON cal.cosmicenergycalibinfo TO PUBLIC;
+GRANT INSERT ON cal.cosmicenergycalibinfo TO cal_role;
 
