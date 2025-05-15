@@ -22,7 +22,7 @@ class OpenTool {
   int commit(const std::string& filename, const DbIoV& iov,
              const std::string& comment);
   int table(const std::string& name, uint32_t run, uint32_t subrun,
-            std::string& csv, int& cid, DbIoV& iov);
+            std::string& csv, int& cid, DbIoV& iov, std::string& metadata);
   const ValOpenIovs& iovs() { return _iovs; }
   int readIoVs(const std::string& name = "");
 

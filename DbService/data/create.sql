@@ -418,7 +418,7 @@ GRANT SELECT ON cal.cosmicenergycalib TO PUBLIC;
 GRANT INSERT ON cal.cosmicenergycalib TO cal_role;
 
 CREATE TABLE cal.cosmicenergycalibinfo
-  (firstcalibrun INTEGER, lastcalibrun INTEGER,
+  (cid INTEGER, firstcalibrun INTEGER, lastcalibrun INTEGER,
    energymethod TEXT, fitmethod TEXT, comment TEXT,
    create_time TIMESTAMP WITH TIME ZONE NOT NULL,
    create_user TEXT NOT NULL );
