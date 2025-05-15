@@ -22,6 +22,8 @@ bool   stm.SScollimator.liner.build   = false;
 bool   stm.detector.stand.build       = false;
 bool   stm.shield.build               = true;
 
+//STM reference point that was previously calculated automatically based on the CRV-D location
+double stm.referenceZ = 18766.81;
 
 //"spot-size" collimator, just upstream of the detector(s)
 bool   stm.STM_SSC.build     =  true;

@@ -47,6 +47,8 @@ namespace mu2e {
     int          _verbosityLevel;
     double       _stmZAllowed;
 
+    double       _stmReferenceZ;
+
     bool         _stmDnStrEnvBuild;
     double       _stmDnStrEnvHalfLength;
     double       _stmDnStrEnvHalfWidth;

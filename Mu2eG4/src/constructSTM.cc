@@ -126,20 +126,6 @@ namespace mu2e {
 
     // Fetch DS geom. object
     GeomHandle<DetectorSolenoid> ds;
-    const CLHEP::Hep3Vector &dsP( ds->position() );
-
-    GeomHandle<CosmicRayShield> CRS;
-    std::vector<double> crvd_halflengths = CRS->getSectorHalfLengths("D");
-    CLHEP::Hep3Vector   crvd_position    = CRS->getSectorPosition("D");
-    const double z_crv_max = crvd_position.z() + crvd_halflengths[2];
-
-    // Create a reference position (most things in the STM geometry will be defined w.r.t. this position)
-    // Our reference z is the downstream edge of the CRV
-    const G4ThreeVector stmReferencePositionInMu2e(dsP.x(),
-                                                    0.0,
-                                                    z_crv_max );
-    const G4ThreeVector stmReferencePositionInParent = stmReferencePositionInMu2e - parentCenterInMu2e;
-
 
     //===================== Sweeper Magnet ==========================
 
