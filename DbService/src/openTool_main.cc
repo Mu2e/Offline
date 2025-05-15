@@ -23,6 +23,7 @@ int main(int argc, char** argv) {
       "verbose,v", po::value<int>(&verbose), "set verbose level (0-3)")(
       "database,d", po::value<std::string>(&database), "database name")(
       "run,r", po::value<std::string>(&runstr), "run or run:subrun")(
+      "metadata,m","print metadata instead of content")(
       "iov,i", po::value<std::string>(&iovstr), "iov in std format")(
       "file,f", po::value<std::string>(&filespec), "file spec")(
       "comment,c", po::value<std::string>(&comment), "comment")(
@@ -58,9 +59,10 @@ int main(int argc, char** argv) {
       Example:
         openTool commit-calibration --file gains.txt --iov 105000-MAX
   get-calibration
-      Print the calibration table content for the given run
+      Print the calibration table content or metadata for the given run
      -n,--name TABLENAME the table name
      -r, --run  RUN:SUBRUN  may be RUN or RUN:SBRUN
+     -m, --metadata  print metadata instead of calibration
       Example:
         openTool get-calibration -n MyTable -r 105000
   print-iovs
@@ -96,13 +98,17 @@ int main(int argc, char** argv) {
     StringVec words = splitString(runstr, ":", "\"", "\\", true, false);
     run = std::stoi(words[0]);
     if (words.size() > 1) subrun = std::stoi(words[1]);
-    std::string csv;
+    std::string csv,metadata;
     int cid{-1};
     DbIoV iov;
-    rc = tool.table(name, run, subrun, csv, cid, iov);
+    rc = tool.table(name, run, subrun, csv, cid, iov, metadata);
     if (rc) return rc;
-    std::cout << "TABLE " << name << "\n";
-    std::cout << csv;
+    if (vm.count("metadata")) {
+      std::cout << metadata << "\n";
+    } else {
+      std::cout << "TABLE " << name << "\n";
+      std::cout << csv;
+    }
   } else if (command == "print-iovs") {
     rc = tool.readIoVs(name);
     if (rc) return rc;
