@@ -102,6 +102,10 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="mu2e::ScorerSummaryCollection"/>
 <class name="art::Wrapper<mu2e::ScorerSummaryCollection>"/>
 
+<class name="mu2e::ScorerConfigSummary"/>
+<class name="mu2e::ScorerConfigSummaryCollection"/>
+<class name="art::Wrapper<mu2e::ScorerConfigSummaryCollection>"/>
+
 <!--  ********* resampling ********* -->
 <class name="mu2e::SimTimeOffset"/>
 <class name="art::Wrapper<mu2e::SimTimeOffset>"/>

@@ -6,8 +6,8 @@
 
 #include "art/Framework/Principal/SubRun.h"
 
-#include "Offline/Mu2eG4/inc/Mu2eG4ScoreWriter.hh"
 #include "Offline/MCDataProducts/inc/ScorerSummary.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4ScoreWriter.hh"
 
 #include "G4VScoringMesh.hh"
 
@@ -15,16 +15,14 @@
 
 namespace mu2e {
 
-  Mu2eG4ScoreWriter::Mu2eG4ScoreWriter(G4VScoringMesh* mesh):
-     mesh_(mesh)
-  {}
+  Mu2eG4ScoreWriter::Mu2eG4ScoreWriter() {}
 
 
   //------------------------------------------------------------------------------------------------------------
   void Mu2eG4ScoreWriter::dumpInDataProduct(art::SubRun& subRun)
   {
-      auto meshName = mesh_->GetWorldName();
-      auto scoreMap = mesh_->GetScoreMap();
+      auto meshName = fScoringMesh->GetWorldName();
+      auto scoreMap = fScoringMesh->GetScoreMap();
 
       G4VScoringMesh::MeshScoreMap::const_iterator msMapItr = scoreMap.begin();
       for (; msMapItr != scoreMap.end(); msMapItr++) {
@@ -33,7 +31,7 @@ namespace mu2e {
 
         auto psName = msMapItr->first;
         auto score  = msMapItr->second->GetMap();
-        auto unit   = mesh_->GetPSUnitValue(psName);
+        auto unit   = fScoringMesh->GetPSUnitValue(psName);
 
         for(int ix = 0; ix < fNMeshSegments[0]; ix++) {
           for(int iy = 0; iy < fNMeshSegments[1]; iy++) {
@@ -45,7 +43,7 @@ namespace mu2e {
               float total    = (value != score->end()) ? value->second->sum_wx()/unit : 0.0;
               float totalSqr = (value != score->end()) ? value->second->sum_wx2()/unit/unit : 0.0;
 
-              summaryColl->emplace_back(ScorerSummary(ix,iy,iz,entries,total,totalSqr));
+              if (entries>0) summaryColl->emplace_back(ScorerSummary(ix,iy,iz,entries,total,totalSqr));
             }
           }
         }
@@ -57,8 +55,8 @@ namespace mu2e {
 
    void Mu2eG4ScoreWriter::dumpInFile(const std::string& fileDirectory){
      G4VScoreWriter writer;
-     writer.SetScoringMesh(mesh_);
-     std::string fileName = fileDirectory + mesh_->GetWorldName() + std::string(".dat");
+     writer.SetScoringMesh(fScoringMesh);
+     std::string fileName = fileDirectory + fScoringMesh->GetWorldName() + std::string(".dat");
      writer.DumpAllQuantitiesToFile(fileName, "");
    }
 

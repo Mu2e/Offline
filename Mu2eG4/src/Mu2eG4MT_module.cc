@@ -25,6 +25,7 @@
 #include "Offline/Mu2eG4/inc/writePhysicalVolumes.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 #include "Offline/Mu2eG4/inc/validGeometryOrThrow.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4ScoringManager.hh"
 
 // Data products that will be produced by this module.
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
@@ -47,6 +48,7 @@
 // Geant4 includes
 #include "Geant4/G4Run.hh"
 #include "Geant4/G4VUserPhysicsList.hh"
+#include "Geant4/G4ScoringManager.hh"
 
 // C++ includes.
 #include <cstdlib>
@@ -109,6 +111,7 @@ namespace mu2e {
     unsigned simStage_;
 
     std::unique_ptr<MTMasterThread> masterThread;
+    std::unique_ptr<Mu2eG4ScoringManager> _scorer;
 
     // Do we issue warnings about multiple runs?
     bool _warnEveryNewRun;
@@ -161,6 +164,7 @@ namespace mu2e {
     simStage_(-1u),
 
     masterThread(std::make_unique<MTMasterThread>(pars(),mu2elimits_ )),
+    _scorer(std::make_unique<Mu2eG4ScoringManager>(G4ScoringManager::GetScoringManager(), conf_.scoring())),
 
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),
@@ -236,6 +240,8 @@ namespace mu2e {
               << " with verbosity " << _rmvlevel << endl;
     }
 
+    _scorer->initialize();
+
     masterThread->storeRunNumber(run.id().run());
     masterThread->readRunData(&physVolHelper_);
     masterThread->beginRun();
@@ -273,6 +279,8 @@ namespace mu2e {
           <<simStage_<<" vs "<<pvstage<<"\n";
       }
     }
+   _scorer->dumpInDataProduct(sr);
+   _scorer->reset();
   }
 
   // Create one G4 event and copy its output to the art::event.

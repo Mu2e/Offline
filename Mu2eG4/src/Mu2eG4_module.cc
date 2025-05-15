@@ -314,7 +314,6 @@ namespace mu2e {
     _runManager->SetVerboseLevel(_rmvlevel);
 
     _runManager->SetUserInitialization(allMu2e);
-    _scorer->initialize();
 
     physicsList_ = physicsListDecider(conf_.physics(), conf_.debug(), mu2elimits_);
     physicsList_->SetVerboseLevel(_rmvlevel);
@@ -327,6 +326,7 @@ namespace mu2e {
 #endif
     _runManager->SetUserInitialization(physicsList_);
 
+    _scorer->initialize();
 
     //this is where the UserActions are instantiated
     Mu2eG4ActionInitialization* actioninit = new Mu2eG4ActionInitialization(conf_,

@@ -16,24 +16,32 @@
 // Mu2e includes
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/MCDataProducts/inc/ScorerConfigSummary.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4ScoringManager.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4ScoreWriter.hh"
+#include "Offline/Mu2eG4/inc/customScorer.hh"
 #include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "Offline/MCDataProducts/inc/ScorerSummary.hh"
 
 #include "G4ScoringManager.hh"
 #include "G4ScoringBox.hh"
 #include "G4PSPassageCellFlux.hh"
 #include "G4ScoreLogColorMap.hh"
-#include "G4PSCellFlux.hh"
-#include "G4PSFlatSurfaceFlux.hh"
-#include "G4PSDoseDeposit.hh"
-#include "G4PSEnergyDeposit.hh"
-#include "G4PSTrackCounter.hh"
+#include "G4PSCellFlux3D.hh"
+#include "G4PSFlatSurfaceFlux3D.hh"
+#include "G4PSDoseDeposit3D.hh"
+#include "G4PSEnergyDeposit3D.hh"
+#include "G4PSTrackCounter3D.hh"
+#include "G4PSPassageCellFlux3D.hh"
+#include "G4SDParticleFilter.hh"
+#include "G4PSFlatSurfaceFlux3D.hh"
+#include "G4PSVolumeFlux3D.hh"
+#include "G4ParticleTable.hh"
+
+
+
 
 #include "CLHEP/Units/SystemOfUnits.h"
-
 
 namespace mu2e {
 
@@ -63,7 +71,7 @@ namespace mu2e {
     auto& reg    = (art::ServiceHandle<Mu2eG4Helper>())->antiLeakRegistry();
 
     const int verboseLevel = config.getInt("scoring.verboseLevel");
-    const int nMesh        =  meshNames_.size();
+    const int nMesh        = meshNames_.size();
 
     std::vector<double> meshPositionX, meshPositionY, meshPositionZ;
     config.getVectorDouble("scoring.meshPositionX", meshPositionX, nMesh);
@@ -95,31 +103,58 @@ namespace mu2e {
       mesh->SetNumberOfSegments(nSegment);
 
       for (const auto& psName: scorerNames_){
-        switch (hashString(psName)) {
-          case StringCode::CellFlux:
-              mesh->SetPrimitiveScorer(new G4PSCellFlux(psName));
-              mesh->GetPrimitiveScorer(psName)->SetVerboseLevel(verboseLevel);
+
+        //Select the scorer
+        switch (hashScorer(psName)) {
+          case ScorerCode::CellFlux:
+              mesh->SetPrimitiveScorer(new G4PSCellFlux3D(psName));
               break;
-          case StringCode::FlatSurfaceFlux:
-              mesh->SetPrimitiveScorer(new G4PSFlatSurfaceFlux(psName,0));
-              mesh->GetPrimitiveScorer(psName)->SetVerboseLevel(verboseLevel);
+          case ScorerCode::DoseDeposit:
+              mesh->SetPrimitiveScorer(new G4PSDoseDeposit3D(psName));
               break;
-          case StringCode::DoseDeposit:
-              mesh->SetPrimitiveScorer(new G4PSDoseDeposit(psName));
-              mesh->GetPrimitiveScorer(psName)->SetVerboseLevel(verboseLevel);
+          case ScorerCode::EnergyDeposit:
+              mesh->SetPrimitiveScorer(new G4PSEnergyDeposit3D(psName));
               break;
-          case StringCode::EnergyDeposit:
-              mesh->SetPrimitiveScorer(new G4PSEnergyDeposit(psName));
-              mesh->GetPrimitiveScorer(psName)->SetVerboseLevel(verboseLevel);
+          case ScorerCode::FlatSurfaceFlux:
+              mesh->SetPrimitiveScorer(new G4PSFlatSurfaceFlux3D(psName,1));
               break;
-          case StringCode::TrackCounter:
-              mesh->SetPrimitiveScorer(new G4PSTrackCounter(psName,1));
-              mesh->GetPrimitiveScorer(psName)->SetVerboseLevel(verboseLevel);
+          case ScorerCode::PassageCellFlux:
+              mesh->SetPrimitiveScorer(new G4PSPassageCellFlux3D(psName,1));
+              break;
+          case ScorerCode::TrackCounter:
+              mesh->SetPrimitiveScorer(new G4PSTrackCounter3D(psName,1));
+              break;
+          case ScorerCode::VolumeFlux:
+              mesh->SetPrimitiveScorer(new G4PSVolumeFlux3D(psName,1));
+              break;
+          case ScorerCode::Custom:
+              mesh->SetPrimitiveScorer(new customScorer(psName,1));
               break;
           default:
              throw cet::exception("BADINPUT")<<"Mu2eG4ScoringManager: unsupported scorer "<<psName<<". "
-                                             <<"Choose among CellFlux, FlatSurfaceFlux, DoseDeposit, "
-                                             <<"EnergyDeposit, TrackCounter\n"<< std::endl;
+                                             <<"Choose among CellFlux, DoseDeposit, EnergyDeposit, FlatSurfaceFlux, "
+                                             <<"TrackCounter, PassageCellFlux, VolumeFlux, Custom\n"<< std::endl;
+        }
+
+        //optionaly add a particle filter
+        switch (hashParticle(psName)) {
+          case ParticleCode::Electron:
+              mesh->SetFilter(new G4SDParticleFilter("Electron filter",std::vector<G4String>{"e-","e+"}));
+              break;
+          case ParticleCode::Photon:
+              mesh->SetFilter(new G4SDParticleFilter("Photon filter", std::vector<G4String>{"gamma"}));
+              break;
+          case ParticleCode::Pion:
+              mesh->SetFilter(new G4SDParticleFilter("Pion filter",std::vector<G4String>{"pi+","pi-"} ));
+              break;
+          case ParticleCode::Proton:
+              mesh->SetFilter(new G4SDParticleFilter("Proton filter",std::vector<G4String>{"proton","anti_proton"} ));
+              break;
+          case ParticleCode::Neutron:
+              mesh->SetFilter(new G4SDParticleFilter("Neutron filter",std::vector<G4String>{"neutron","anti_neutron"} ));
+              break;
+          default:
+              break; //no filter applied by default
         }
       }
 
@@ -135,8 +170,23 @@ namespace mu2e {
   //------------------------------------------------------------------------------------------------------------
   void Mu2eG4ScoringManager::dumpInDataProduct(art::SubRun& subRun)
   {
+
+    //Write the configuration of each mesh
+    auto summaryConfigColl = std::make_unique<ScorerConfigSummaryCollection>();
     for (size_t i=0; i<fSMan_->GetNumberOfMesh(); ++i) {
-      Mu2eG4ScoreWriter writer(fSMan_->GetMesh(i));
+      G4int nBins[3];
+      fSMan_->GetMesh(i)->GetNumberOfSegments(nBins);
+      const auto& name   = fSMan_->GetMesh(i)->GetWorldName();
+      const auto& size   = fSMan_->GetMesh(i)->GetSize();
+      const auto& center = fSMan_->GetMesh(i)->GetTranslation();
+      summaryConfigColl->emplace_back(ScorerConfigSummary(name, nBins[0],nBins[1],nBins[2],size,center));
+    }
+    subRun.put(std::move(summaryConfigColl),art::fullSubRun());
+
+    //Write the content of each mesh
+    for (size_t i=0; i<fSMan_->GetNumberOfMesh(); ++i) {
+      Mu2eG4ScoreWriter writer;
+      writer.SetScoringMesh(fSMan_->GetMesh(i));
       writer.dumpInDataProduct(subRun);
       if (writeFile_) writer.dumpInFile(fileDirectory_);
     }
@@ -151,14 +201,26 @@ namespace mu2e {
 
 
   //------------------------------------------------------------------------------------------------------------
-  Mu2eG4ScoringManager::StringCode Mu2eG4ScoringManager::hashString(const G4String& str)
+  Mu2eG4ScoringManager::ScorerCode Mu2eG4ScoringManager::hashScorer(const G4String& str)
   {
-    if (str == "CellFlux")        return StringCode::CellFlux;
-    if (str == "FlatSurfaceFlux") return StringCode::FlatSurfaceFlux;
-    if (str == "DoseDeposit")     return StringCode::DoseDeposit;
-    if (str == "EnergyDeposit")   return StringCode::EnergyDeposit;
-    if (str == "TrackCounter")    return StringCode::TrackCounter;
-    return StringCode::Unknown;
+    if (str.find("CellFlux")        != std::string::npos) return ScorerCode::CellFlux;
+    if (str.find("FlatSurfaceFlux") != std::string::npos) return ScorerCode::FlatSurfaceFlux;
+    if (str.find("DoseDeposit")     != std::string::npos) return ScorerCode::DoseDeposit;
+    if (str.find("EnergyDeposit")   != std::string::npos) return ScorerCode::EnergyDeposit;
+    if (str.find("TrackCounter")    != std::string::npos) return ScorerCode::TrackCounter;
+    if (str.find("Custom")          != std::string::npos) return ScorerCode::Custom;
+    return ScorerCode::Unknown;
+  }
+
+  //------------------------------------------------------------------------------------------------------------
+  Mu2eG4ScoringManager::ParticleCode Mu2eG4ScoringManager::hashParticle(const G4String& str)
+  {
+    if (str.find("Electron") != std::string::npos) return ParticleCode::Electron;
+    if (str.find("Photon")   != std::string::npos) return ParticleCode::Photon;
+    if (str.find("Pion")     != std::string::npos) return ParticleCode::Pion;
+    if (str.find("Proton")   != std::string::npos) return ParticleCode::Proton;
+    if (str.find("Neutron")  != std::string::npos) return ParticleCode::Neutron;
+    return ParticleCode::Unknown;
   }
 
 }

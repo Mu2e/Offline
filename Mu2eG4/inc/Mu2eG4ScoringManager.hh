@@ -18,21 +18,23 @@ namespace mu2e {
   class Mu2eG4ScoringManager
   {
     public:
-      enum class StringCode{CellFlux, FlatSurfaceFlux, DoseDeposit, EnergyDeposit,
-                            TrackCounter, Unknown};
+      enum class ScorerCode{CellFlux, DoseDeposit, EnergyDeposit, FlatSurfaceFlux,
+                            TrackCounter, PassageCellFlux, VolumeFlux, Custom, Unknown};
+      enum class ParticleCode{Electron, Pion, Proton, Neutron, Photon, Unknown};
+
 
     public:
       Mu2eG4ScoringManager(G4ScoringManager* fSMan, const Mu2eG4Config::Scoring& config);
      ~Mu2eG4ScoringManager() = default;
 
-      //methods
       void initialize();
       void dumpInDataProduct(art::SubRun& subRun);
       void reset();
 
 
     private:
-      StringCode hashString(const G4String& str);
+      ScorerCode   hashScorer  (const G4String& str);
+      ParticleCode hashParticle(const G4String& str);
 
       G4ScoringManager*        fSMan_;     //non-owning G4 pointer
       bool                     enabled_;

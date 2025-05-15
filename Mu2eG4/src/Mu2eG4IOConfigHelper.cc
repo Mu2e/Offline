@@ -9,6 +9,7 @@
 
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
 #include "Offline/MCDataProducts/inc/ScorerSummary.hh"
+#include "Offline/MCDataProducts/inc/ScorerConfigSummary.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
@@ -105,6 +106,7 @@ namespace mu2e {
           pc.produces<ScorerSummaryCollection,art::InSubRun>(instanceName);
         }
       }
+      pc.produces<ScorerConfigSummaryCollection,art::InSubRun>();
     }
 
 

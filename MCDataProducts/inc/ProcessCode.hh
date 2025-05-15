@@ -149,7 +149,7 @@ namespace mu2e {
     "mu2eCaloCalib", "mu2ePienu", "mu2eunused7", "mu2eunused8", \
       "uninitialized", "NoProcess", "GammaGeneralProc", \
       "mu2eGammaConversion","Radioactivation", "nCaptureHP", "nFissionHP", "mu2eAntiproton", \
-      "mu2eFlatMuMinus", "mu2eFlatMuPlus"
+      "mu2eFlatMuMinus", "mu2eFlatMuPlus", "CoupledTransportation"
 #endif
 
   public:
