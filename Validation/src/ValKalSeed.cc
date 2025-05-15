@@ -83,7 +83,7 @@ namespace mu2e {
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
     // increment this by 1 any time the defnitions of the histograms or the
     // histogram contents change, and will not match previous versions
-    _hVer->Fill(11.0);
+    _hVer->Fill(12.0);
 
     _hN->Fill(coll.size());
     for (auto const& ks : coll) {
@@ -113,7 +113,16 @@ namespace mu2e {
       if (isTPR) _hfitConT->Fill(ks.fitConsistency());
 
       // sample fit at an appropriate intersection
-      VirtualDetectorId vdid = ks.loopHelixFit() ? VirtualDetectorId(VirtualDetectorId::TT_Mid) : VirtualDetectorId(VirtualDetectorId::TT_OutSurf);
+      VirtualDetectorId vdid = VirtualDetectorId(VirtualDetectorId::TT_Mid);
+      if(!ks.loopHelixFit()){
+        if(ks.intersections(SurfaceId("TT_Outer")).size() > 0){
+          vdid = VirtualDetectorId::TT_OutSurf;
+        } else if(ks.intersections(SurfaceId("TT_Back")).size() > 0){
+          vdid = VirtualDetectorId::TT_Back;
+        } else
+          vdid = VirtualDetectorId::TT_FrontHollow;
+      }
+      // stop at the first found intersection
       // p of MC associated particle at this intersection
       double p_pri(0.0);
       double p_mc = mcTrkP(event,vdid,p_pri);
