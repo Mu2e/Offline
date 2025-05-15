@@ -67,7 +67,7 @@ cet_build_plugin(TrackMatching art::module
     REG_SOURCE src/TrackMatching_module.cc
     LIBRARIES REG
       art_root_io::tfile_support
-      Offline::TrkDiag
+      Offline::TrkReco
       Offline::RecoDataProducts
 )
 
@@ -75,7 +75,7 @@ cet_build_plugin(TrackResolution art::module
     REG_SOURCE src/TrackResolution_module.cc
     LIBRARIES REG
       art_root_io::tfile_support
-      Offline::TrkDiag
+      Offline::TrkReco
       Offline::RecoDataProducts
       Offline::DataProducts
 )
