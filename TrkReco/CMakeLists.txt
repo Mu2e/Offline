@@ -63,6 +63,23 @@ cet_build_plugin(SimpleKalSeedSelector art::tool
       Offline::Mu2eKinKal
 )
 
+cet_build_plugin(TrackMatching art::module
+    REG_SOURCE src/TrackMatching_module.cc
+    LIBRARIES REG
+      art_root_io::tfile_support
+      Offline::TrkDiag
+      Offline::RecoDataProducts
+)
+
+cet_build_plugin(TrackResolution art::module
+    REG_SOURCE src/TrackResolution_module.cc
+    LIBRARIES REG
+      art_root_io::tfile_support
+      Offline::TrkDiag
+      Offline::RecoDataProducts
+      Offline::DataProducts
+)
+
 cet_build_plugin(TrkRecoMcUtils art::tool
     REG_SOURCE src/TrkRecoMcUtils_tool.cc
     LIBRARIES REG
