@@ -873,7 +873,8 @@ namespace mu2e {
       for (size_t j=0; j<_f.chunks[i].hIndices.size(); j++) {
         _f._clusterInfo._strawHitIdxs.push_back(StrawHitIndex(_f.chunks[i].hIndices[j]));
       }
-      _f._clusterInfo._t0 = TrkT0(_f.chunks[i].fitter.y0(), 0.);
+      // P.Murat   _f._clusterInfo._t0 = TrkT0(_f.chunks[i].fitter.y0(), 0.);
+      _f._clusterInfo._t0 = TrkT0(_f.chunks[i].avgTime, 0.);
       int caloIdx = _f.chunks[i].caloIndex;
       if (caloIdx != -1) {
         _f._clusterInfo._caloCluster = art::Ptr<mu2e::CaloCluster>(_ccHandle, caloIdx);
