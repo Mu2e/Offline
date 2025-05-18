@@ -31,7 +31,7 @@ DAQ : {
         StrawHitFilter : { module_type : StrawHitFilter
             shCollTag           : "makeSH"
             minNGoodHits        : 1
-            maxDt               : 10.
+            maxDt               : 40.
             minEDep             : 0.0006 ## in MeV 
             debugMode           : false
             debugBits           : [ "bit0:0" ]

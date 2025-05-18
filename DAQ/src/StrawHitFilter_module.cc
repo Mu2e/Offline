@@ -85,6 +85,7 @@ namespace mu2e {
 
     const art::Event* _event;
     int               _rn;
+    bool              _run_initialized;
   };
 
 //-----------------------------------------------------------------------------
@@ -110,6 +111,7 @@ namespace mu2e {
       sscanf(key,"bit%i:%i",&index,&value);
       _debugBit[index]  = value;
     }
+    _run_initialized = false;
   }
 
 
@@ -168,9 +170,12 @@ namespace mu2e {
   bool StrawHitFilter::beginRun(art::Run& ArtRun) {
     _rn = ArtRun.run();
 
-    if (_fillHistograms) {
+    if (not _run_initialized) {
+      if (_fillHistograms) {
                                         // make sure the job doesn't crash
-      book_histograms(_rn);
+        book_histograms(_rn);
+      }
+      _run_initialized = true;
     }
     return true;
   }

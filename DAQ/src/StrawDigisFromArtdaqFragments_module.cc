@@ -373,6 +373,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
             if (debugMode_) {
               print_(std::format("--- DTC:{} ROC:{} nhits:{}\n",dtc_id,link_id,nhits));
             }
+            
             for (int ihit=0; ihit<nhits; ihit++) {
 //-----------------------------------------------------------------------------
 // first packet, 16 bytes, or 8 ushort's is the data header packet
@@ -401,13 +402,6 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
                 digi_flag = mu2e::StrawDigiFlag::corrupted;
               }
-              else if (hit_data->NumADCPackets != nADCPackets_) {
-                int np = hit_data->NumADCPackets;
-                print_(std::format("ERROR: wrong NADCpackets:{} , expected:{}, STOP PROCESSING HITS\n",
-                                   np,nADCPackets_));
-                break;
-              }
-
 //               uint16_t panel_id;
 //               if (0 < minnesota_map_.count(mnid)){
 //                 panel_id = minnesota_map_[mnid];

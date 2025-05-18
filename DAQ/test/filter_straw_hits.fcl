@@ -50,12 +50,14 @@ outputs:  {
     defaultOutput :  {
         module_type   :   RootOutput
         SelectEvents  : [ @sequence::TRIGGER_PATHS ]
-        fileName      :   "rec.mu2e.trk.vst00s002r001n000.%06r_%06s.art"
-
-#        outputCommands: [
-#                         "drop *_*_*_*",
-#                         "keep *_*_*_*"
-#                        ]
+        fileName      :   "rec.mu2e.trk.vst00s001r000n000.%06r_%06s.art"
+#------------------------------------------------------------------------------
+# filtering only, drop evrything created by this process except ... 
+#------------------------------------------------------------------------------
+        outputCommands: ["keep *_daq_*_*",
+                         "drop *_*_*_FilterStrawHits",
+                         "keep *_EWMProducer_*_*"           ## to not think of random numbers again
+                        ]
     }
 }
 physics : {
@@ -101,7 +103,9 @@ physics : {
     # art 3.15.00 doesn't take well the file boundary 
     filters : {
         StrawHitFilter : { @table::DAQ.filters.StrawHitFilter
-            fillHistograms: false ## true
+            fillHistograms: true
+            maxDt         : 40.
+            minEDep       : 0.0006
         }
     }
     
@@ -123,7 +127,7 @@ services.TimeTracker : {
 #------------------------------------------------------------------------------
 # assume we're on mu2edaq22
 #------------------------------------------------------------------------------
-services.TFileService.fileName                   : "hst.filter_straw_hits.%06r_%06s.root" ## "/dev/null" ##
+services.TFileService.fileName                   : "hst.mu2e.vst.filter_straw_hits.%06r_%06s.root" ## "/dev/null" ##
 services.scheduler.wantSummary                   : true
 
 source.fileNames : [ "aaa.art" ] 
