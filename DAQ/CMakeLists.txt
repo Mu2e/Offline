@@ -34,8 +34,8 @@ cet_build_plugin(EventHeaderFromCFOFragment art::module
 )
     
 
-cet_build_plugin(CaloHitsFromDataDecoders art::module
-    REG_SOURCE src/CaloHitsFromDataDecoders_module.cc
+cet_build_plugin(CaloHitsFromDTCEvents art::module
+    REG_SOURCE src/CaloHitsFromDTCEvents_module.cc
     LIBRARIES REG
       Offline::DAQ
 
@@ -44,8 +44,8 @@ cet_build_plugin(CaloHitsFromDataDecoders art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(CaloDigisFromDataDecoders art::module
-    REG_SOURCE src/CaloDigisFromDataDecoders_module.cc
+cet_build_plugin(CaloDigisFromDTCEvents art::module
+    REG_SOURCE src/CaloDigisFromDTCEvents_module.cc
     LIBRARIES REG
       Offline::DAQ
 

@@ -349,9 +349,44 @@ namespace mu2e {
                                _STM_SSCoffset_Spot,
                                _STM_SSCleak,
                                _STM_SSCFrontToWall,
+                               _STM_SSCZGap,
+                               _STM_SSCZGapBack,
                                _STM_SSCOffsetInMu2e,
                                _STM_SSCRotation,
                                _STM_SSCMaterial));
+
+   ////////////////////////////////////////////////////////////////
+   //Spot-Size Collimator Support
+
+    const CLHEP::HepRotation _SSCSupportRotation     = CLHEP::HepRotation::IDENTITY;
+    const CLHEP::Hep3Vector  _SSCSupportOffsetInMu2e = _STMShieldingRef + CLHEP::Hep3Vector(0, 0, _STM_SSCZGap/2);
+
+          stm._pSSCSupportParams = std::unique_ptr<SSCSupport>
+                  (new SSCSupport(_SSCSupportBuild,
+                               _SSCSupporttable_L,
+                               _SSCSupporttable_H,
+                               _SSCSupporttable_T,
+                               _SSCSupportleg_L,
+                               _SSCSupportleg_H,
+                               _SSCSupportleg_T,
+                               _SSCSupportbase_L,
+                               _SSCSupportbase_H,
+                               _SSCSupportbase_T,
+                               _SSCSupportwall_L,
+                               _SSCSupportwall_H,
+                               _SSCSupportwall_T,
+                               _SSCSupporthole_H,
+                               _SSCSupporthole_T,
+                               _SSCSupportFLeadStand_L,
+                               _SSCSupportFLeadStand_H,
+                               _SSCSupportFLeadStand_T,
+                               _SSCSupportFLeadShim_H,
+                               _SSCSupportFLeadShim_T,
+                               _SSCSupportFAluminumShim_T,
+                               _SSCSupportFAluminumExtra_L,
+                               _SSCSupportFAluminumExtra_H,
+                               _SSCSupportOffsetInMu2e,
+                               _SSCSupportRotation));
 
    ////////////////////////////////////////////////////////////////
    //STM Front Shielding
@@ -372,11 +407,12 @@ namespace mu2e {
                               _FrontSaluminumdepth,
                               _FrontScopperdepth,
                               _FrontSBPdepth,
-                              _FrontSBPdepth2,
                               _FrontSfPb_lengthL,
                               _FrontSfPb_lengthR,
                               _FrontSGapForTop,
                               _FrontSLeakForSSC,
+                              _FrontSCopperL,
+                              _FrontS_H,
                               _FrontSOffsetInMu2e,
                               _FrontSRotation));
 
@@ -454,6 +490,7 @@ namespace mu2e {
           (new BottomShielding(_BottomShieldingBuild,
                                _BottomSfloor_Zlength,
                                _BottomSFront_LB,
+                               _BottomSFront_LB_inner,
                                _BottomSleaddepth,
                                _BottomScopperdepth,
                                _BottomSBPdepth,
@@ -525,9 +562,16 @@ namespace mu2e {
           stm._pSTMTopShieldingParams = std::unique_ptr<TopShielding>
           (new TopShielding(_TopShieldingBuild,
                             _TopShieldingSkirtBuild,
+                            _TopLiftBeam_L,
+                            _TopLiftBeam_H,
+                            _TopLiftBeam_T,
+                            _TopLiftBeam_Xmove,
                             _TopSZlength,
                             _TopSXlength,
                             _TopSFront_LT,
+                            _TopTFZlength,
+                            _TopTFXlength,
+                            _TopTBZlength,
                             _TopScontainerdepth,
                             _TopSleaddepth,
                             _TopScopperdepth,
@@ -764,7 +808,36 @@ namespace mu2e {
     _STM_SSCoffset_Spot    = _config.getDouble("stm.STM_SSC.offset_Spot");
     _STM_SSCleak           = _config.getDouble("stm.STM_SSC.leak");
     _STM_SSCFrontToWall    = _config.getDouble("stm.STM_SSC.FrontToWall");
+    _STM_SSCZGap           = _config.getDouble("stm.STM_SSC.ZGap");
+    _STM_SSCZGapBack       = _config.getDouble("stm.STM_SSC.ZGapBack");
     _STM_SSCMaterial       = _config.getString("stm.STM_SSC.material");
+
+    _SSCSupportBuild          = _config.getBool(  "stm.SSCSupport.build");
+    _SSCSupporttable_L      = _config.getDouble("stm.SSCSupport.table_L");
+    _SSCSupporttable_H      = _config.getDouble("stm.SSCSupport.table_H");
+    _SSCSupporttable_T      = _config.getDouble("stm.SSCSupport.table_T");
+    _SSCSupportleg_L      = _config.getDouble("stm.SSCSupport.leg_L");
+    _SSCSupportleg_H      = _config.getDouble("stm.SSCSupport.leg_H");
+    _SSCSupportleg_T      = _config.getDouble("stm.SSCSupport.leg_T");
+    _SSCSupportbase_L      = _config.getDouble("stm.SSCSupport.base_L");
+    _SSCSupportbase_H      = _config.getDouble("stm.SSCSupport.base_H");
+    _SSCSupportbase_T      = _config.getDouble("stm.SSCSupport.base_T");
+    _SSCSupportwall_L      = _config.getDouble("stm.SSCSupport.wall_L");
+    _SSCSupportwall_H      = _config.getDouble("stm.SSCSupport.wall_H");
+    _SSCSupportwall_T      = _config.getDouble("stm.SSCSupport.wall_T");
+    _SSCSupporthole_H      = _config.getDouble("stm.SSCSupport.hole_H");
+    _SSCSupporthole_T      = _config.getDouble("stm.SSCSupport.hole_T");
+    _SSCSupportFLeadStand_L      = _config.getDouble("stm.SSCSupport.FLeadStand_L");
+    _SSCSupportFLeadStand_H      = _config.getDouble("stm.SSCSupport.FLeadStand_H");
+    _SSCSupportFLeadStand_T      = _config.getDouble("stm.SSCSupport.FLeadStand_T");
+    _SSCSupportFLeadShim_H       = _config.getDouble("stm.SSCSupport.FLeadShim_H");
+    _SSCSupportFLeadShim_T       = _config.getDouble("stm.SSCSupport.FLeadShim_T");
+    _SSCSupportFAluminumShim_T   = _config.getDouble("stm.SSCSupport.FAluminumShim_T");
+    _SSCSupportFAluminumExtra_L  = _config.getDouble("stm.SSCSupport.FAluminumExtra_L");
+    _SSCSupportFAluminumExtra_H  = _config.getDouble("stm.SSCSupport.FAluminumExtra_H");
+
+
+
 
     _FrontShieldingBuild   = _config.getBool(  "stm.FrontShielding.build");
     _FrontSHeightofRoom    = _config.getDouble("stm.FrontShielding.HeightofRoom");
@@ -775,11 +848,12 @@ namespace mu2e {
     _FrontSaluminumdepth   = _config.getDouble("stm.FrontShielding.aluminumdepth");
     _FrontScopperdepth     = _config.getDouble("stm.FrontShielding.copperdepth");
     _FrontSBPdepth         = _config.getDouble("stm.FrontShielding.BPdepth");
-    _FrontSBPdepth2        = _config.getDouble("stm.FrontShielding.BPdepth2");
     _FrontSfPb_lengthL     = _config.getDouble("stm.FrontShielding.fPb_lengthL");
     _FrontSfPb_lengthR     = _config.getDouble("stm.FrontShielding.fPb_lengthR");
     _FrontSGapForTop       = _config.getDouble("stm.FrontShielding.GapForTop");
     _FrontSLeakForSSC      = _config.getDouble("stm.FrontShielding.LeakForSSC");
+    _FrontSCopperL         = _config.getDouble("stm.FrontShielding.CopperL");
+    _FrontS_H              = _config.getDouble("stm.FrontShielding.FrontS_H");
 
     _HPGeBuild                = _config.getBool("stm.HPGe.build");
     _HPGecrystalMaterial      = _config.getString("stm.HPGe.crystalMaterial");
@@ -818,12 +892,13 @@ namespace mu2e {
     _LaBroffset_LaBr          = _config.getDouble("stm.LaBr.offset_LaBr");
 
 
-    _BottomShieldingBuild = _config.getBool("stm.BottomShielding.build");
-    _BottomSfloor_Zlength = _config.getDouble("stm.BottomShielding.floor_Zlength");
-    _BottomSFront_LB      = _config.getDouble("stm.BottomShielding.Front_LB");
-    _BottomSleaddepth     = _config.getDouble("stm.BottomShielding.leaddepth");
-    _BottomScopperdepth   = _config.getDouble("stm.BottomShielding.copperdepth");
-    _BottomSBPdepth       = _config.getDouble("stm.BottomShielding.BPdepth");
+    _BottomShieldingBuild  = _config.getBool("stm.BottomShielding.build");
+    _BottomSfloor_Zlength  = _config.getDouble("stm.BottomShielding.floor_Zlength");
+    _BottomSFront_LB       = _config.getDouble("stm.BottomShielding.Front_LB");
+    _BottomSFront_LB_inner = _config.getDouble("stm.BottomShielding.Front_LB_inner");
+    _BottomSleaddepth      = _config.getDouble("stm.BottomShielding.leaddepth");
+    _BottomScopperdepth    = _config.getDouble("stm.BottomShielding.copperdepth");
+    _BottomSBPdepth        = _config.getDouble("stm.BottomShielding.BPdepth");
 
 
     _LeftShieldingBuild   = _config.getBool("stm.LeftShielding.build");
@@ -842,9 +917,16 @@ namespace mu2e {
 
     _TopShieldingBuild      = _config.getBool("stm.TopShielding.build");
     _TopShieldingSkirtBuild = _config.getBool("stm.TopShielding.Skirtbuild");
+    _TopLiftBeam_L        = _config.getDouble("stm.TopShielding.LiftBeam_L");
+    _TopLiftBeam_H        = _config.getDouble("stm.TopShielding.LiftBeam_H");
+    _TopLiftBeam_T        = _config.getDouble("stm.TopShielding.LiftBeam_T");
+    _TopLiftBeam_Xmove    = _config.getDouble("stm.TopShielding.LiftBeam_Xmove");
     _TopSZlength          = _config.getDouble("stm.TopShielding.Zlength");
     _TopSXlength          = _config.getDouble("stm.TopShielding.Xlength");
     _TopSFront_LT         = _config.getDouble("stm.TopShielding.Front_LT");
+    _TopTFZlength         = _config.getDouble("stm.TopShielding.TFZlength");
+    _TopTFXlength         = _config.getDouble("stm.TopShielding.TFXlength");
+    _TopTBZlength         = _config.getDouble("stm.TopShielding.TBZlength");
     _TopScontainerdepth   = _config.getDouble("stm.TopShielding.containerdepth");
     _TopSleaddepth        = _config.getDouble("stm.TopShielding.leaddepth");
     _TopScopperdepth      = _config.getDouble("stm.TopShielding.copperdepth");
