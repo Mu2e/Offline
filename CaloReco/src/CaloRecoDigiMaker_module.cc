@@ -103,14 +103,19 @@ namespace mu2e {
   {
       if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiMaker::produce] begin"<<std::endl;
 
-      const auto& caloDigisH = event.getValidHandle(caloDigisToken_);
       auto recoCaloDigiColl  = std::make_unique<CaloRecoDigiCollection>();
 
-      auto pbtH = event.getValidHandle(pbttoken_);
-      const ProtonBunchTime& pbt(*pbtH);
-      double pbtOffset = pbt.pbtime_;
-
-      extractRecoDigi(caloDigisH, *recoCaloDigiColl, pbtOffset);
+      // try {
+      //   const auto& caloDigisH = event.getValidHandle(caloDigisToken_);
+      //   auto pbtH = event.getValidHandle(pbttoken_);
+      //   const ProtonBunchTime& pbt(*pbtH);
+      //   double pbtOffset = pbt.pbtime_;
+        
+      //   extractRecoDigi(caloDigisH, *recoCaloDigiColl, pbtOffset);
+      // }
+      // catch(...) {
+      //   if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiMaker::produce] ERROR: input coll not found" << std::endl;
+      // }
 
       event.put(std::move(recoCaloDigiColl));
 
