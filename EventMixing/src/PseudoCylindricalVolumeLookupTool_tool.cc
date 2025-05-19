@@ -78,7 +78,7 @@ namespace mu2e{
   // deferred initialization is necessary to make use of GeometryService
   void PseudoCylindricalVolumeLookupTool::initialize(){
     _frame = std::make_unique< GeomHandle<DetectorSystem> >();
-    _ipa = std::make_unique< GeomHandle<MECOStyleProtonAbsorber> >();
+    _ipa = std::make_unique< GeomHandle<ProtonAbsorber> >();
     _st = std::make_unique< GeomHandle<StoppingTarget> >();
     _initialized = true;
   }
