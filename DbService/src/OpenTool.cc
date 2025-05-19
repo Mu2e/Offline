@@ -37,8 +37,8 @@ int OpenTool::commit(const std::string& filename, const DbIoV& iov,
   // read the data table
   DbTableCollection coll = DbUtil::readFile(filename);
   if (coll.size() != 1) {
-    std::cout << "Error - did not find exactly one readable file in " <<
-      filename << "\n";
+    std::cout << "Error - did not find exactly one readable file in "
+              << filename << "\n";
     return 1;
   }
 
@@ -92,7 +92,8 @@ int OpenTool::commit(const std::string& filename, const DbIoV& iov,
 
 //**************************************************
 int OpenTool::table(const std::string& name, uint32_t run, uint32_t subrun,
-                    std::string& csv, int& cid, DbIoV& iov) {
+                    std::string& csv, int& cid, DbIoV& iov,
+                    std::string& metadata) {
   int rc = 0;
 
   rc = readIoVs(name);
@@ -116,6 +117,9 @@ int OpenTool::table(const std::string& name, uint32_t run, uint32_t subrun,
   }
 
   cid = _iovs.rows()[ind].cid();
+  std::ostringstream sstream;
+  _iovs.rowToCsv(sstream, ind);
+  metadata = sstream.str();
 
   // now, starting from this iov, find when it gets superceded
   iov = _iovs.rows()[ind].iov();

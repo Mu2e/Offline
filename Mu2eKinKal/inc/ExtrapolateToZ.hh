@@ -11,18 +11,18 @@ namespace mu2e {
   using KinKal::timeDirSign;
   class ExtrapolateToZ {
     public:
-      ExtrapolateToZ() : maxDt_(-1.0), tol_(1e10), zval_(0.0), debug_(0) {}
-      ExtrapolateToZ(double maxdt, double tol, double zval,int debug) : maxDt_(maxdt), tol_(tol), zval_(zval), debug_(debug) {}
+      ExtrapolateToZ() : maxDt_(-1.0), dptol_(1e10), zval_(0.0), debug_(0) {}
+      ExtrapolateToZ(double maxdt, double tol, double zval,int debug) : maxDt_(maxdt), dptol_(tol), zval_(zval), debug_(debug) {}
       // interface for extrapolation
       double maxDt() const { return maxDt_; } // maximum time to extend the track, WRT the time of the first(last) measurement
-      double tolerance() const { return tol_; } // tolerance on fractional momentum change
+      double dpTolerance() const { return dptol_; } // tolerance on fractional momentum change
       double zVal() const { return zval_; }
       int debug() const { return debug_; }
       // extrapolation predicate: the track will be extrapolated until this predicate returns false, subject to the maximum time
       template <class KTRAJ> bool needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const;
     private:
       double maxDt_; // maximum extrapolation time
-      double tol_; // momentum tolerance in BField domain
+      double dptol_; // fractional momentum tolerance in BField domain
       double zval_; // z value targeted
       int debug_; // debug level
   };

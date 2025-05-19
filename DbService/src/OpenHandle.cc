@@ -13,8 +13,8 @@ int OpenHandle<T>::update(uint32_t run, uint32_t subrun) {
   int rc = 0;
   if (_iov.inInterval(run, subrun)) return rc;
 
-  std::string csv;
-  _tool.table(_name, run, subrun, csv, _cid, _iov);
+  std::string csv,metadata;
+  _tool.table(_name, run, subrun, csv, _cid, _iov, metadata);
   _table = std::make_shared<T>();
   _table->fill(csv);
 

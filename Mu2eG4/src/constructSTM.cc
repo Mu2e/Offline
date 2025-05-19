@@ -80,7 +80,9 @@ namespace mu2e {
     GeDetector      const & pSTMDetector2Params            = *stmgh.getSTMDetector2Ptr();
     ShieldPipe      const & pSTMShieldPipeParams           = *stmgh.getSTMShieldPipePtr();
     STMDownstreamEnvelope const & pSTMDnStrEnvParams       = *stmgh.getSTMDnStrEnvPtr();
+
     STM_SSC         const & pSTM_SSCParams                 = *stmgh.getSTM_SSCPtr();
+    SSCSupport      const & pSSCSupportParams              = *stmgh.getSSCSupportPtr();
     HPGeDetector    const & pHPGeDetectorParams            = *stmgh.getHPGeDetectorPtr();
     LaBrDetector    const & pLaBrDetectorParams            = *stmgh.getLaBrDetectorPtr();
 
@@ -1441,6 +1443,8 @@ namespace mu2e {
 
    const double offset_Spot = pSTM_SSCParams.offset_Spot();
    const double leak = pSTM_SSCParams.leak();
+   const double SSC_ZGap = pSTM_SSCParams.ZGap();
+   const double SSC_ZGapBack = pSTM_SSCParams.ZGapBack();
 
    const G4ThreeVector  STMShieldingRef =  pSTM_SSCParams.originInMu2e() - parentCenterInMu2e - CLHEP::Hep3Vector(0, 0, Wdepth_f/2);
 
@@ -1458,8 +1462,8 @@ namespace mu2e {
    G4Box* TungstenMiddle1 = new G4Box("TungstenMiddle1", W_middle/2, W_height/2, Wdepth_f/2);
    G4Box* TungstenLeft1   = new G4Box("TungstenLeft1",  delta_WlL/2, W_height/2, Wdepth_f/2);
    G4Box* TungstenRight1  = new G4Box("TungstenRight1", delta_WlR/2, W_height/2, Wdepth_f/2);
-   G4Tubs* Spot_LaBr1 = new G4Tubs("Spot_LaBr1", 0, r_LaBr1, Wdepth_f/2 + 0.004, 360.*CLHEP::degree, 360.*CLHEP::degree);
-   G4Tubs* Spot_HPGe1 = new G4Tubs("Spot_HPGe1", 0, r_HPGe1, Wdepth_f/2 + 0.004, 360.*CLHEP::degree, 360.*CLHEP::degree);
+   G4Tubs* Spot_LaBr1 = new G4Tubs("Spot_LaBr1", 0, r_LaBr1, Wdepth_f/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+   G4Tubs* Spot_HPGe1 = new G4Tubs("Spot_HPGe1", 0, r_HPGe1, Wdepth_f/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
    G4SubtractionSolid* TungstenONEhole1 = new G4SubtractionSolid("TungstenONEhole1", TungstenMiddle1,  Spot_LaBr1, 0, G4ThreeVector(+offset_Spot, 0, 0));
    G4SubtractionSolid* TungstenTwohole1 = new G4SubtractionSolid("TungstenTWOhole1", TungstenONEhole1, Spot_HPGe1, 0, G4ThreeVector(-offset_Spot, 0, 0));
    G4UnionSolid* TungstenAdd1 = new G4UnionSolid("TungstenAdd1", TungstenTwohole1, TungstenLeft1, 0, G4ThreeVector(+(W_middle+delta_WlL)/2, 0, 0));
@@ -1468,8 +1472,8 @@ namespace mu2e {
    G4Box* TungstenMiddle2 = new G4Box("TungstenMiddle2", W_middle/2, W_height/2, Wdepth_b/2);
    G4Box* TungstenLeft2   = new G4Box("TungstenLeft2",  delta_WlL/2, W_height/2, Wdepth_b/2);
    G4Box* TungstenRight2  = new G4Box("TungstenRight2", delta_WlR/2, W_height/2, Wdepth_b/2);
-   G4Tubs* Spot_LaBr2 = new G4Tubs("Spot_LaBr2", 0, r_LaBr2, Wdepth_b/2 + 0.004, 360.*CLHEP::degree, 360.*CLHEP::degree);
-   G4Tubs* Spot_HPGe2 = new G4Tubs("Spot_HPGe2", 0, r_HPGe2, Wdepth_b/2 + 0.004, 360.*CLHEP::degree, 360.*CLHEP::degree);
+   G4Tubs* Spot_LaBr2 = new G4Tubs("Spot_LaBr2", 0, r_LaBr2, Wdepth_b/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+   G4Tubs* Spot_HPGe2 = new G4Tubs("Spot_HPGe2", 0, r_HPGe2, Wdepth_b/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
    G4SubtractionSolid* TungstenONEhole2 = new G4SubtractionSolid("TungstenONEhole2", TungstenMiddle2,  Spot_LaBr2, 0, G4ThreeVector(+offset_Spot, 0, 0));
    G4SubtractionSolid* TungstenTwohole2 = new G4SubtractionSolid("TungstenTWOhole2", TungstenONEhole2, Spot_HPGe2, 0, G4ThreeVector(-offset_Spot, 0, 0));
    G4UnionSolid* TungstenAdd2 = new G4UnionSolid("TungstenAdd2", TungstenTwohole2, TungstenLeft2, 0, G4ThreeVector(+(W_middle+delta_WlL)/2, 0, 0));
@@ -1481,7 +1485,7 @@ namespace mu2e {
    TungstenSSCPV.name = "TungstenSSCPV";
    TungstenSSCPV.solid = TungstenSSC;
 
-   G4ThreeVector stmSTM_SSCInParent = STMShieldingRef + G4ThreeVector(0, 0, Wdepth_f/2);
+   G4ThreeVector stmSTM_SSCInParent = STMShieldingRef + G4ThreeVector(0, 0, Wdepth_f/2 + SSC_ZGap - SSC_ZGapBack);
 
    if(pSTM_SSCParams.build()){
                       finishNesting(TungstenSSCPV,
@@ -1516,7 +1520,7 @@ namespace mu2e {
    AirHole_LaBrPV.name = "AirHole_LaBrPV";
    AirHole_LaBrPV.solid = Spot_LaBr1;
 
-   G4ThreeVector stmAirHole_LaBrInParent = STMShieldingRef + G4ThreeVector(offset_Spot, 0, Wdepth_f/2);
+   G4ThreeVector stmAirHole_LaBrInParent = STMShieldingRef + G4ThreeVector(offset_Spot, 0, Wdepth_f/2 + SSC_ZGap  - SSC_ZGapBack);
 
                       finishNesting(AirHole_LaBrPV,
                       stmDnStrEnvMaterial,
@@ -1536,7 +1540,7 @@ namespace mu2e {
    AirHole_HPGePV.name = "AirHole_HPGePV";
    AirHole_HPGePV.solid = Spot_HPGe1;
 
-   G4ThreeVector stmAirHole_HPGeInParent = STMShieldingRef + G4ThreeVector(-offset_Spot, 0, Wdepth_f/2);
+   G4ThreeVector stmAirHole_HPGeInParent = STMShieldingRef + G4ThreeVector(-offset_Spot, 0, Wdepth_f/2 + SSC_ZGap - SSC_ZGapBack);
 
                       finishNesting(AirHole_HPGePV,
                       stmDnStrEnvMaterial,
@@ -1562,7 +1566,7 @@ namespace mu2e {
    SSCLeak_lPV.name = "SSCLeak_lPV";
    SSCLeak_lPV.solid = SSCLeak_lr;
 
-   G4ThreeVector stmSSCLeak_lInParent = STMShieldingRef + G4ThreeVector(fW_x + (W_length+leak)/2,  0, Wdepth/2);
+   G4ThreeVector stmSSCLeak_lInParent = STMShieldingRef + G4ThreeVector(fW_x + (W_length+leak)/2,  0, Wdepth/2 + SSC_ZGap - SSC_ZGapBack);
 
                       finishNesting(SSCLeak_lPV,
                       stmDnStrEnvMaterial,
@@ -1582,7 +1586,7 @@ namespace mu2e {
    SSCLeak_rPV.name = "SSCLeak_rPV";
    SSCLeak_rPV.solid = SSCLeak_lr;
 
-   G4ThreeVector stmSSCLeak_rInParent = STMShieldingRef + G4ThreeVector(fW_x - (W_length+leak)/2,  0, Wdepth/2);
+   G4ThreeVector stmSSCLeak_rInParent = STMShieldingRef + G4ThreeVector(fW_x - (W_length+leak)/2,  0, Wdepth/2 + SSC_ZGap - SSC_ZGapBack);
 
                       finishNesting(SSCLeak_rPV,
                       stmDnStrEnvMaterial,
@@ -1602,7 +1606,7 @@ namespace mu2e {
    SSCLeak_tPV.name = "SSCLeak_tPV";
    SSCLeak_tPV.solid = SSCLeak_tb;
 
-   G4ThreeVector stmSSCLeak_tInParent = STMShieldingRef + G4ThreeVector(fW_x, (W_height+leak)/2, Wdepth/2);
+   G4ThreeVector stmSSCLeak_tInParent = STMShieldingRef + G4ThreeVector(fW_x, (W_height+leak)/2, Wdepth/2 + SSC_ZGap - SSC_ZGapBack);
 
                       finishNesting(SSCLeak_tPV,
                       stmDnStrEnvMaterial,
@@ -1622,7 +1626,7 @@ namespace mu2e {
    SSCLeak_bPV.name = "SSCLeak_bPV";
    SSCLeak_bPV.solid = SSCLeak_tb;
 
-   G4ThreeVector stmSSCLeak_bInParent = STMShieldingRef + G4ThreeVector(fW_x, -(W_height+leak)/2, Wdepth/2);
+   G4ThreeVector stmSSCLeak_bInParent = STMShieldingRef + G4ThreeVector(fW_x, -(W_height+leak)/2, Wdepth/2 + SSC_ZGap - SSC_ZGapBack);
 
                       finishNesting(SSCLeak_bPV,
                       stmDnStrEnvMaterial,
@@ -1638,13 +1642,13 @@ namespace mu2e {
                       doSurfaceCheck);
 
    //back
-   G4Box* SSCLeak_back = new G4Box("SSCLeak_back", (W_length+leak*2)/2,  (W_height+2*leak)/2, leak/2);
+   G4Box* SSCLeak_back = new G4Box("SSCLeak_back", (W_length+leak*2)/2,  (W_height+2*leak)/2, SSC_ZGapBack/2);
 
    VolumeInfo SSCLeak_backPV;
    SSCLeak_backPV.name = "SSCLeak_backPV";
    SSCLeak_backPV.solid = SSCLeak_back;
 
-   G4ThreeVector stmSSCLeak_backInParent = STMShieldingRef + G4ThreeVector(fW_x, 0, Wdepth + leak/2);
+   G4ThreeVector stmSSCLeak_backInParent = STMShieldingRef + G4ThreeVector(fW_x, 0, Wdepth + SSC_ZGap - SSC_ZGapBack/2);
 
                       finishNesting(SSCLeak_backPV,
                       stmDnStrEnvMaterial,
@@ -1668,14 +1672,14 @@ namespace mu2e {
     G4Material* AlMaterial = findMaterialOrThrow("G4_Al");
     G4Material* SiMaterial = findMaterialOrThrow("G4_Si");
     G4Material* BPMaterial = findMaterialOrThrow("BP");
-    G4Material* SteelMaterial = findMaterialOrThrow("StainlessSteel");
+    G4Material* SteelMaterial = findMaterialOrThrow("RackSteel");
     G4Material* PolyMaterial = findMaterialOrThrow("Polyethylene");
     G4Material* ConcreteMaterial = findMaterialOrThrow("ShieldingConcrete");
 
     /////////// Front Shielding /////////////////////
 
     const double height = pFrontShieldingParams.HeightofRoom();
-    const double Front_T = pFrontShieldingParams.Front_Thickness();
+    const double Front_T = pFrontShieldingParams.Front_Thickness() + pSTM_SSCParams.ZGap();
     const double Front_L = pFrontShieldingParams.Front_Length();
 
     if(pFrontShieldingParams.build())
@@ -1684,48 +1688,20 @@ namespace mu2e {
     //Support for the SSC
 
 
-     const double Front_H = pFrontShieldingParams.Front_Height();
+     const double Front_H = pFrontShieldingParams.Front_H();
 
      const double Fleaddepth2    = pFrontShieldingParams.Fleaddepth2();
      const double Fcopperdepth   = pFrontShieldingParams.Fcopperdepth();
      const double FBPdepth  = pFrontShieldingParams.FBPdepth();
-     const double FBPdepth2 = pFrontShieldingParams.FBPdepth2();
 
-     const double fPb_lengthL = pFrontShieldingParams.fPb_lengthL();
-     const double fPb_lengthR = pFrontShieldingParams.fPb_lengthR();
+     const double Bcopperdepth   = pBottomShieldingParams.Bcopperdepth();
 
-     const double Front_dY  = Front_H/2 - (height/2 + Fcopperdepth + Fleaddepth2*2 + FBPdepth2*2);
+     //const double fPb_lengthL = pFrontShieldingParams.fPb_lengthL();
+     //const double fPb_lengthR = pFrontShieldingParams.fPb_lengthR();
 
-     const double support_dx                = 0.75*25.4;
-     const double support_mid_thickness     = 1*25.4;
-     const double support_Lowerhole_Ylength = 3.6*25.4;
-     const double fPb_height                = leak*2 + W_height + support_mid_thickness*2 + support_Lowerhole_Ylength;
-     const double fPb_height_dx             = (W_height/2 +leak) - fPb_height/2;
+     const double Front_dY  = Front_H/2 - (height/2 + Fcopperdepth + Fleaddepth2*2 + FBPdepth*2);
 
-     G4Box* Support_outer = new G4Box("Support_outer", (2*leak+W_length)/2, fPb_height/2, (Wdepth+leak)/2 - 0.5);
-     G4Box* Support_inner_upper = new G4Box("Support_inner", (2*leak + W_length)/2 + 2, (2*leak + W_height)/2 + 2, (Wdepth+leak)/2 + 0.5);
-     G4Box* Support_inner_lower = new G4Box("Support_inner", (2*leak + W_length-2*support_dx)/2, support_Lowerhole_Ylength/2 , (Wdepth+leak)/2 + 0.5);
-     G4SubtractionSolid* Support1 = new G4SubtractionSolid("Support", Support_outer, Support_inner_upper, 0, G4ThreeVector(0, -fPb_height_dx, 0));
-     G4SubtractionSolid* Support = new G4SubtractionSolid("Support", Support1, Support_inner_lower, 0, G4ThreeVector(0, -(W_height/2+leak+support_mid_thickness+support_Lowerhole_Ylength/2)-fPb_height_dx, 0));
-
-     VolumeInfo SupportPV;
-     SupportPV.name = "SupportPV";
-     SupportPV.solid = Support;
-     G4ThreeVector stmSupportInParent = STMShieldingRef + G4ThreeVector(fW_x, fPb_height_dx ,  (Wdepth+leak)/2);
-
-     finishNesting(SupportPV,
-     SteelMaterial,
-     0,
-     stmSupportInParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Gray(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
-
+     /*
     /////////////////////////////////////////////////////////////////////
      G4Box* FrontLeadBlock1 = new G4Box("FrontLeadBlock1", fPb_lengthL/2, fPb_height/2, (Wdepth+leak)/2 );
 
@@ -1769,7 +1745,7 @@ namespace mu2e {
      doSurfaceCheck);
 
     /////////////////////////////////////////////////////////////////////
-     const double f_delta_y = 5.3*25.4;
+     const double f_delta_y = 7*25.4;
      G4Box* FrontLeadBlock3 = new G4Box("FrontLeadBlock3", Front_L/2, f_delta_y/2, (Wdepth+leak)/2);
 
      VolumeInfo FrontLeadBlock3PV;
@@ -1789,24 +1765,35 @@ namespace mu2e {
      forceAuxEdgeVisible,
      placePV,
      doSurfaceCheck);
+     */
 
-    /////////////////////////////////////////////////////////////////////
+     /////////////////////////////////////////////////////////////////////
 
      G4ThreeVector Pos_hole1 = G4ThreeVector( -offset_Spot - fW_x, -Front_dY , 0);
      G4ThreeVector Pos_hole2 = G4ThreeVector( +offset_Spot - fW_x, -Front_dY, 0);
 
     ////////////////////////////////////////
-     G4Box*  CopperFwallLayer  = new G4Box("CopperFwallLayer", Front_L/2, height/2, Fcopperdepth/2);
-     G4Tubs* Spot_FCopper_HPGe = new G4Tubs("Spot_FCopper_HPGe", 0, r_HPGe1+10, Fcopperdepth/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
-     G4Tubs* Spot_FCopper_LaBr = new G4Tubs("Spot_FCopper_LaBr", 0, r_LaBr1+10, Fcopperdepth/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
 
-     G4SubtractionSolid* CopperFwall_1hole = new G4SubtractionSolid("CopperFwall_1hole",CopperFwallLayer, Spot_FCopper_HPGe, 0, G4ThreeVector(-offset_Spot - fW_x, 0, 0));
-     G4SubtractionSolid* CopperFwall = new G4SubtractionSolid("CopperFwall", CopperFwall_1hole, Spot_FCopper_LaBr, 0, G4ThreeVector(offset_Spot - fW_x, 0, 0));
+     G4double CopperL = pFrontShieldingParams.CopperL();
+     G4double floorTheta= -atan(0.5);
+     G4double CopperFwall_X = pLeftShieldingParams.Left_Xmin() - CopperL/2 + Fcopperdepth/4;
+
+     G4Trap* CopperFwallLayer = new G4Trap( "CopperFwallLayer",
+                                    Fcopperdepth/2,
+                                    floorTheta, 0,
+                                    (height - Bcopperdepth)/2, (CopperL-Bcopperdepth)/2, (CopperL-Bcopperdepth)/2, 0,
+                                    (height - Bcopperdepth)/2, CopperL/2, CopperL/2, 0);
+
+     G4Tubs* Spot_FCopper_HPGe = new G4Tubs("Spot_FCopper_HPGe", 0, r_HPGe1+10, Fcopperdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FCopper_LaBr = new G4Tubs("Spot_FCopper_LaBr", 0, r_LaBr1+10, Fcopperdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+
+     G4SubtractionSolid* CopperFwall_1hole = new G4SubtractionSolid("CopperFwall_1hole",CopperFwallLayer, Spot_FCopper_HPGe, 0, G4ThreeVector(-offset_Spot - CopperFwall_X, -Fcopperdepth/2, 0));
+     G4SubtractionSolid* CopperFwall = new G4SubtractionSolid("CopperFwall", CopperFwall_1hole, Spot_FCopper_LaBr, 0, G4ThreeVector(offset_Spot - CopperFwall_X, -Fcopperdepth/2, 0));
 
      VolumeInfo CopperFwallPV;
      CopperFwallPV.name = "CopperFwallPV";
      CopperFwallPV.solid = CopperFwall;
-     G4ThreeVector stmCopperFwallInParent = STMShieldingRef + G4ThreeVector(fW_x, 0, Wdepth+leak+3*Fleaddepth2+2*FBPdepth+Fcopperdepth/2);
+     G4ThreeVector stmCopperFwallInParent = STMShieldingRef + G4ThreeVector(CopperFwall_X, Fcopperdepth/2, Wdepth + SSC_ZGap + 3*Fleaddepth2 + 2*FBPdepth + Fcopperdepth/2);
 
      finishNesting(CopperFwallPV,
      CuMaterial,
@@ -1823,8 +1810,8 @@ namespace mu2e {
 
     ////////////////////////////////////////
      G4Box*  Lead1FwallLayer  = new G4Box("Lead1FwallLayer", Front_L/2, Front_H/2, Fleaddepth2/2);
-     G4Tubs* Spot_FLead1_HPGe = new G4Tubs("Spot_FLead_HPGe", 0, r_HPGe1+10, Fleaddepth2/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
-     G4Tubs* Spot_FLead1_LaBr = new G4Tubs("Spot_FLead_LaBr", 0, r_LaBr1+10, Fleaddepth2/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FLead1_HPGe = new G4Tubs("Spot_FLead_HPGe", 0, r_HPGe1+10, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FLead1_LaBr = new G4Tubs("Spot_FLead_LaBr", 0, r_LaBr1+10, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
 
      G4SubtractionSolid* Lead1Fwall_1hole = new G4SubtractionSolid("Lead1Fwall_1hole", Lead1FwallLayer, Spot_FLead1_HPGe, 0, Pos_hole1);
      G4SubtractionSolid* Lead1Fwall = new G4SubtractionSolid("Lead1Fwall", Lead1Fwall_1hole, Spot_FLead1_LaBr, 0, Pos_hole2);
@@ -1832,7 +1819,7 @@ namespace mu2e {
      VolumeInfo Lead1FwallPV;
      Lead1FwallPV.name = "Lead1FwallPV";
      Lead1FwallPV.solid = Lead1Fwall;
-     G4ThreeVector stmLead1FwallInParent = STMShieldingRef + G4ThreeVector(fW_x, Front_dY, Wdepth+leak+5*Fleaddepth2/2+2*FBPdepth);
+     G4ThreeVector stmLead1FwallInParent = STMShieldingRef + G4ThreeVector(fW_x, Front_dY, Wdepth + SSC_ZGap + 5*Fleaddepth2/2 + 2*FBPdepth);
 
      finishNesting(Lead1FwallPV,
      PbMaterial,
@@ -1849,8 +1836,8 @@ namespace mu2e {
 
     ////////////////////////////////////////
      G4Box*  BP1FwallLayer  = new G4Box("BP1FwallLayer", Front_L/2, Front_H/2, FBPdepth/2);
-     G4Tubs* Spot_FBP1_HPGe = new G4Tubs("Spot_FBP1_HPGe", 0, r_HPGe1+10, FBPdepth/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
-     G4Tubs* Spot_FBP1_LaBr = new G4Tubs("Spot_FBP1_LaBr", 0, r_LaBr1+10, FBPdepth/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FBP1_HPGe = new G4Tubs("Spot_FBP1_HPGe", 0, r_HPGe1+10, FBPdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FBP1_LaBr = new G4Tubs("Spot_FBP1_LaBr", 0, r_LaBr1+10, FBPdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
 
      G4SubtractionSolid* BP1Fwall_1hole = new G4SubtractionSolid("BP1Fwall_1hole",BP1FwallLayer, Spot_FBP1_HPGe, 0, Pos_hole1);
      G4SubtractionSolid* BP1Fwall = new G4SubtractionSolid("BP1Fwall", BP1Fwall_1hole, Spot_FBP1_LaBr, 0, Pos_hole2);
@@ -1858,7 +1845,7 @@ namespace mu2e {
      VolumeInfo BP1FwallPV;
      BP1FwallPV.name = "BP1FwallPV";
      BP1FwallPV.solid = BP1Fwall;
-     G4ThreeVector stmBP1FwallInParent = STMShieldingRef + G4ThreeVector(fW_x, Front_dY, Wdepth+leak+2*Fleaddepth2+3*FBPdepth/2);
+     G4ThreeVector stmBP1FwallInParent = STMShieldingRef + G4ThreeVector(fW_x, Front_dY, Wdepth + SSC_ZGap + 2*Fleaddepth2 + 3*FBPdepth/2);
 
      finishNesting(BP1FwallPV,
      BPMaterial,
@@ -1875,8 +1862,8 @@ namespace mu2e {
 
     ////////////////////////////////////////
      G4Box*  Lead2FwallLayer  = new G4Box("Lead2FwallLayer", Front_L/2, Front_H/2, Fleaddepth2/2);
-     G4Tubs* Spot_FLead2_HPGe = new G4Tubs("Spot_FLead_HPGe", 0, r_HPGe1+10, Fleaddepth2/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
-     G4Tubs* Spot_FLead2_LaBr = new G4Tubs("Spot_FLead_LaBr", 0, r_LaBr1+10, Fleaddepth2/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FLead2_HPGe = new G4Tubs("Spot_FLead_HPGe", 0, r_HPGe1+10, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FLead2_LaBr = new G4Tubs("Spot_FLead_LaBr", 0, r_LaBr1+10, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
 
      G4SubtractionSolid* Lead2Fwall_1hole = new G4SubtractionSolid("Lead2Fwall_1hole", Lead2FwallLayer, Spot_FLead2_HPGe, 0, Pos_hole1);
      G4SubtractionSolid* Lead2Fwall = new G4SubtractionSolid("Lead2Fwall", Lead2Fwall_1hole, Spot_FLead2_LaBr, 0, Pos_hole2);
@@ -1884,7 +1871,7 @@ namespace mu2e {
      VolumeInfo Lead2FwallPV;
      Lead2FwallPV.name = "Lead2FwallPV";
      Lead2FwallPV.solid = Lead2Fwall;
-     G4ThreeVector stmLead2FwallInParent = STMShieldingRef + G4ThreeVector(fW_x, Front_dY, Wdepth+leak+3*Fleaddepth2/2+FBPdepth);
+     G4ThreeVector stmLead2FwallInParent = STMShieldingRef + G4ThreeVector(fW_x, Front_dY, Wdepth + SSC_ZGap + 3*Fleaddepth2/2 + FBPdepth);
 
      finishNesting(Lead2FwallPV,
      PbMaterial,
@@ -1901,15 +1888,15 @@ namespace mu2e {
 
     ////////////////////////////////////////
      G4Box*  BP2FwallLayer  = new G4Box("BP2FwallLayer", Front_L/2, Front_H/2, FBPdepth/2);
-     G4Tubs* Spot_FBP2_HPGe = new G4Tubs("Spot_FBP2_HPGe", 0, r_HPGe1+10, FBPdepth/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
-     G4Tubs* Spot_FBP2_LaBr = new G4Tubs("Spot_FBP2_LaBr", 0, r_LaBr1+10, FBPdepth/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FBP2_HPGe = new G4Tubs("Spot_FBP2_HPGe", 0, r_HPGe1+10, FBPdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FBP2_LaBr = new G4Tubs("Spot_FBP2_LaBr", 0, r_LaBr1+10, FBPdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
      G4SubtractionSolid* BP2Fwall_1hole = new G4SubtractionSolid("BP2Fwall_1hole",BP2FwallLayer, Spot_FBP2_HPGe, 0, Pos_hole1);
      G4SubtractionSolid* BP2Fwall = new G4SubtractionSolid("BP2Fwall", BP2Fwall_1hole, Spot_FBP2_LaBr, 0, Pos_hole2);
 
      VolumeInfo BP2FwallPV;
      BP2FwallPV.name = "BP2FwallPV";
      BP2FwallPV.solid = BP2Fwall;
-     G4ThreeVector stmBP2FwallInParent = STMShieldingRef + G4ThreeVector(fW_x, Front_dY,  Wdepth+leak+Fleaddepth2+FBPdepth/2);
+     G4ThreeVector stmBP2FwallInParent = STMShieldingRef + G4ThreeVector(fW_x, Front_dY,  Wdepth + SSC_ZGap + Fleaddepth2 + FBPdepth/2);
 
      finishNesting(BP2FwallPV,
      BPMaterial,
@@ -1928,8 +1915,8 @@ namespace mu2e {
     ////////////////////////////////////////
 
      G4Box*  Lead3FwallLayer  = new G4Box("Lead3FwallLayer", Front_L/2, Front_H/2, Fleaddepth2/2);
-     G4Tubs* Spot_FLead3_HPGe = new G4Tubs("Spot_FLead_HPGe", 0, r_HPGe1+10, Fleaddepth2/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
-     G4Tubs* Spot_FLead3_LaBr = new G4Tubs("Spot_FLead_LaBr", 0, r_LaBr1+10, Fleaddepth2/2 + 0.002, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FLead3_HPGe = new G4Tubs("Spot_FLead_HPGe", 0, r_HPGe1+10, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FLead3_LaBr = new G4Tubs("Spot_FLead_LaBr", 0, r_LaBr1+10, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
 
      G4SubtractionSolid* Lead3Fwall_1hole = new G4SubtractionSolid("Lead3Fwall_1hole", Lead3FwallLayer, Spot_FLead3_HPGe, 0, Pos_hole1);
      G4SubtractionSolid* Lead3Fwall = new G4SubtractionSolid("Lead3Fwall", Lead3Fwall_1hole, Spot_FLead3_LaBr, 0, Pos_hole2);
@@ -1937,7 +1924,7 @@ namespace mu2e {
      VolumeInfo Lead3FwallPV;
      Lead3FwallPV.name = "Lead3FwallPV";
      Lead3FwallPV.solid = Lead3Fwall;
-     G4ThreeVector stmLead3FwallInParent = STMShieldingRef + G4ThreeVector(fW_x, Front_dY, Wdepth+leak+Fleaddepth2/2);
+     G4ThreeVector stmLead3FwallInParent = STMShieldingRef + G4ThreeVector(fW_x, Front_dY, Wdepth + SSC_ZGap + Fleaddepth2/2);
 
      finishNesting(Lead3FwallPV,
      PbMaterial,
@@ -1951,9 +1938,383 @@ namespace mu2e {
      forceAuxEdgeVisible,
      placePV,
      doSurfaceCheck);
-
    }
 
+
+    if(pSSCSupportParams.build())
+   {
+
+     const double Support_table_L = pSSCSupportParams.table_L();
+     const double Support_table_H = pSSCSupportParams.table_H();
+     const double Support_table_T = pSSCSupportParams.table_T();
+
+     const double Support_leg_L = pSSCSupportParams.leg_L();
+     const double Support_leg_H = pSSCSupportParams.leg_H();
+     const double Support_leg_T = pSSCSupportParams.leg_T();
+
+     const double Support_base_L = pSSCSupportParams.base_L();
+     const double Support_base_H = pSSCSupportParams.base_H();
+     const double Support_base_T = pSSCSupportParams.base_T();
+
+     const double Support_wall_L = pSSCSupportParams.wall_L();
+     const double Support_wall_H = pSSCSupportParams.wall_H();
+     const double Support_wall_T = pSSCSupportParams.wall_T();
+
+     const double Support_hole_H = pSSCSupportParams.hole_H();
+     const double Support_hole_T = pSSCSupportParams.hole_T();
+
+    ////////////////////////////////////////
+
+     G4Box* Support_tableS = new G4Box("Support_tableS", Support_table_L/2, Support_table_H/2, Support_table_T/2);
+
+     VolumeInfo Support_tablePV;
+     Support_tablePV.name = "Support_tablePV";
+     Support_tablePV.solid = Support_tableS;
+     G4ThreeVector stmSupport_tableInParent = STMShieldingRef + G4ThreeVector(fW_x, -W_height/2 - leak - Support_table_H/2,  Support_table_T/2);
+
+     finishNesting(Support_tablePV,
+     SteelMaterial,
+     0,
+     stmSupport_tableInParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Blue(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+    ////////////////////////////////////////
+
+     G4Box* Support_legS = new G4Box("Support_legS", Support_leg_L/2, Support_leg_H/2, Support_leg_T/2);
+
+     VolumeInfo Support_legPV1;
+     Support_legPV1.name = "Support_legPV1";
+     Support_legPV1.solid = Support_legS;
+     G4ThreeVector stmSupport_leg1InParent = STMShieldingRef + G4ThreeVector(fW_x + Support_table_L/2 - Support_leg_L/2,  -W_height/2 - leak - Support_table_H - Support_leg_H/2,  Support_leg_T/2);
+
+     finishNesting(Support_legPV1,
+     SteelMaterial,
+     0,
+     stmSupport_leg1InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Blue(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+     VolumeInfo Support_legPV2;
+     Support_legPV2.name = "Support_legPV2";
+     Support_legPV2.solid = Support_legS;
+     G4ThreeVector stmSupport_leg2InParent = STMShieldingRef + G4ThreeVector(fW_x - Support_table_L/2 + Support_leg_L/2,  -W_height/2 - leak - Support_table_H - Support_leg_H/2,  Support_leg_T/2);
+
+     finishNesting(Support_legPV2,
+     SteelMaterial,
+     0,
+     stmSupport_leg2InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Blue(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+    ////////////////////////////////////////
+
+     G4Box* Support_baseS = new G4Box("Support_baseS", Support_base_L/2, Support_base_H/2, Support_base_T/2);
+
+     VolumeInfo Support_basePV;
+     Support_basePV.name = "Support_basePV";
+     Support_basePV.solid = Support_baseS;
+     G4ThreeVector stmSupport_baseInParent = STMShieldingRef + G4ThreeVector(fW_x, -W_height/2 - leak - Support_table_H - Support_leg_H - Support_base_H/2,  Support_base_T/2);
+
+     finishNesting(Support_basePV,
+     SteelMaterial,
+     0,
+     stmSupport_baseInParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Blue(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+    ////////////////////////////////////////
+
+   G4Box* Support_wallLayer = new G4Box("Support_wallLayer", Support_wall_L/2, Support_wall_H/2, Support_wall_T/2);
+   G4Box* Support_wallHole = new G4Box("Support_wallHole", Support_wall_L/2, Support_hole_H/2, Support_hole_T/2);
+   G4SubtractionSolid* Support_wallS = new G4SubtractionSolid("Support_wallS", Support_wallLayer, Support_wallHole, 0, G4ThreeVector(0, (Support_wall_H-Support_hole_H)/2, (Support_wall_T-Support_hole_T)/2));
+
+     VolumeInfo Support_wallPV1;
+     Support_wallPV1.name = "Support_wallPV1";
+     Support_wallPV1.solid = Support_wallS;
+     G4ThreeVector stmSupport_wall1InParent = STMShieldingRef + G4ThreeVector(fW_x + Support_base_L/2 - Support_wall_L/2,  -W_height/2 - leak - Support_table_H - Support_leg_H + Support_wall_H/2,  Support_wall_T/2);
+
+     finishNesting(Support_wallPV1,
+     SteelMaterial,
+     0,
+     stmSupport_wall1InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Blue(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+
+     VolumeInfo Support_wallPV2;
+     Support_wallPV2.name = "Support_wallPV2";
+     Support_wallPV2.solid = Support_wallS;
+     G4ThreeVector stmSupport_wall2InParent = STMShieldingRef + G4ThreeVector(fW_x + Support_table_L/2 + Support_wall_L/2,  -W_height/2 - leak - Support_table_H - Support_leg_H + Support_wall_H/2,  Support_wall_T/2);
+
+     finishNesting(Support_wallPV2,
+     SteelMaterial,
+     0,
+     stmSupport_wall2InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Blue(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+
+     VolumeInfo Support_wallPV3;
+     Support_wallPV3.name = "Support_wallPV3";
+     Support_wallPV3.solid = Support_wallS;
+     G4ThreeVector stmSupport_wall3InParent = STMShieldingRef + G4ThreeVector(fW_x - Support_table_L/2 - Support_wall_L/2,  -W_height/2 - leak - Support_table_H - Support_leg_H + Support_wall_H/2,  Support_wall_T/2);
+
+     finishNesting(Support_wallPV3,
+     SteelMaterial,
+     0,
+     stmSupport_wall3InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Blue(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+
+     VolumeInfo Support_wallPV4;
+     Support_wallPV4.name = "Support_wallPV4";
+     Support_wallPV4.solid = Support_wallS;
+     G4ThreeVector stmSupport_wall4InParent = STMShieldingRef + G4ThreeVector(fW_x - Support_base_L/2 + Support_wall_L/2,  -W_height/2 - leak - Support_table_H - Support_leg_H + Support_wall_H/2,  Support_wall_T/2);
+
+     finishNesting(Support_wallPV4,
+     SteelMaterial,
+     0,
+     stmSupport_wall4InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Blue(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+    /////////////////////////////////////////////////////////////////////
+
+    const double FLeadStand_L = pSSCSupportParams.FLeadStand_L();
+    const double FLeadStand_H = pSSCSupportParams.FLeadStand_H();
+    const double FLeadStand_T = pSSCSupportParams.FLeadStand_T();
+
+    const double FLeadShim_H = pSSCSupportParams.FLeadShim_H();
+    const double FLeadShim_T = pSSCSupportParams.FLeadShim_T();
+
+    const double FAluminumShim_T = pSSCSupportParams.FAluminumShim_T();
+    const double FAluminumExtra_L = pSSCSupportParams.FAluminumExtra_L();
+    const double FAluminumExtra_H = pSSCSupportParams.FAluminumExtra_H();
+
+     G4Box* FrontLeadStandLayer = new G4Box("FrontLeadStandLayer", FLeadStand_L/2, FLeadStand_H/2, FLeadStand_T/2);
+     G4Box* FrontLeadStandHole = new G4Box("FrontLeadStandHole", FLeadStand_L/2, Support_hole_H/2, Support_hole_T/2);
+     G4SubtractionSolid* FrontLeadStandS = new G4SubtractionSolid("FrontLeadStandS", FrontLeadStandLayer, FrontLeadStandHole, 0, G4ThreeVector(0, (FLeadStand_H-Support_hole_H)/2, (FLeadStand_T-Support_hole_T)/2));
+
+     VolumeInfo FrontLeadStandPV1;
+     FrontLeadStandPV1.name = "FrontLeadStandPV1";
+     FrontLeadStandPV1.solid = FrontLeadStandS;
+     G4ThreeVector stmFrontLeadStand1InParent = STMShieldingRef + G4ThreeVector(fW_x + Support_table_L/2 + Support_wall_L + FLeadStand_L/2, -W_height/2 - leak - Support_table_H - Support_leg_H + FLeadStand_H/2, FLeadStand_T/2);
+
+     finishNesting(FrontLeadStandPV1,
+     PbMaterial,
+     0,
+     stmFrontLeadStand1InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Gray(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+
+     VolumeInfo FrontLeadStandPV2;
+     FrontLeadStandPV2.name = "FrontLeadStandPV2";
+     FrontLeadStandPV2.solid = FrontLeadStandS;
+     G4ThreeVector stmFrontLeadStand2InParent = STMShieldingRef + G4ThreeVector(fW_x - Support_table_L/2 - Support_wall_L - FLeadStand_L/2, -W_height/2 - leak - Support_table_H - Support_leg_H + FLeadStand_H/2, FLeadStand_T/2);
+
+     finishNesting(FrontLeadStandPV2,
+     PbMaterial,
+     0,
+     stmFrontLeadStand2InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Gray(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+
+    /////////////////////////////////////////////////////////////////////
+
+     G4Box* FrontLeadShimLayer1 = new G4Box("FrontLeadShimLayer1", Support_base_L/2, (FLeadShim_H+Support_hole_H)/2, FLeadShim_T/2);
+     G4Box* FrontLeadShimHole = new G4Box("FrontLeadShimHole", Support_table_L/2, Support_hole_H/2, FLeadShim_T/2);
+     G4SubtractionSolid* FrontLeadShimS1 = new G4SubtractionSolid("FrontLeadShimS1", FrontLeadShimLayer1, FrontLeadShimHole, 0, G4ThreeVector(0, -(FLeadShim_H)/2, 0));
+
+     VolumeInfo FrontLeadShimPV1;
+     FrontLeadShimPV1.name = "FrontLeadShimPV1";
+     FrontLeadShimPV1.solid = FrontLeadShimS1;
+     G4ThreeVector stmFrontLeadShim1InParent = STMShieldingRef + G4ThreeVector(fW_x, W_height/2 + leak + (FLeadShim_H - Support_hole_H)/2, Support_table_T - FLeadShim_T/2);
+
+     finishNesting(FrontLeadShimPV1,
+     PbMaterial,
+     0,
+     stmFrontLeadShim1InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Gray(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+
+     G4Box* FrontLeadShimS23 = new G4Box("FrontLeadShimS23", Support_base_L/2, FLeadShim_H/2, FLeadShim_T/2);
+
+
+     VolumeInfo FrontLeadShimPV2;
+     FrontLeadShimPV2.name = "FrontLeadShimPV2";
+     FrontLeadShimPV2.solid = FrontLeadShimS23;
+     G4ThreeVector stmFrontLeadShim2InParent = STMShieldingRef + G4ThreeVector(fW_x, W_height/2 + leak + FLeadShim_H/2, Support_table_T - 3*FLeadShim_T/2 - FAluminumShim_T);
+
+     finishNesting(FrontLeadShimPV2,
+     PbMaterial,
+     0,
+     stmFrontLeadShim2InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Gray(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+
+     VolumeInfo FrontLeadShimPV3;
+     FrontLeadShimPV3.name = "FrontLeadShimPV3";
+     FrontLeadShimPV3.solid = FrontLeadShimS23;
+     G4ThreeVector stmFrontLeadShim3InParent = STMShieldingRef + G4ThreeVector(fW_x, W_height/2 + leak + FLeadShim_H/2, Support_table_T - 5*FLeadShim_T/2 - 2*FAluminumShim_T);
+
+     finishNesting(FrontLeadShimPV3,
+     PbMaterial,
+     0,
+     stmFrontLeadShim3InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Gray(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+
+    ////////////////////////////////////////
+
+    G4Box* FrontAluminumShimLayer = new G4Box("FrontAluminumShimLayer", Support_base_L/2, FLeadShim_H/2, FAluminumShim_T/2);
+    G4Box* FrontAluminumShimExtra = new G4Box("FrontAluminumShimExtra", FAluminumExtra_L/2, FAluminumExtra_H/2, FAluminumShim_T/2);
+    G4Tubs* FrontAluminumShimHole = new G4Tubs("FrontAluminumShimHole", 0, 0.75*25.4/2, FAluminumShim_T/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+
+    G4SubtractionSolid* FrontAluminumShimHat = new G4SubtractionSolid("FrontAluminumShimHat", FrontAluminumShimExtra, FrontAluminumShimHole, 0, G4ThreeVector(0, 0, 0));
+    G4UnionSolid* FrontAluminumShimS = new G4UnionSolid("FrontAluminumShimS", FrontAluminumShimLayer, FrontAluminumShimHat, 0, G4ThreeVector(0, (FLeadShim_H + FAluminumExtra_H)/2, 0));
+
+     VolumeInfo FrontAluminumShimPV1;
+     FrontAluminumShimPV1.name = "FrontAluminumShimPV1";
+     FrontAluminumShimPV1.solid = FrontAluminumShimS;
+     G4ThreeVector stmFrontAluminumShim1InParent = STMShieldingRef + G4ThreeVector(fW_x, W_height/2 + leak + FLeadShim_H/2, Support_table_T - FLeadShim_T - FAluminumShim_T/2);
+
+     finishNesting(FrontAluminumShimPV1,
+     AlMaterial,
+     0,
+     stmFrontAluminumShim1InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::White(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+
+     VolumeInfo FrontAluminumShimPV2;
+     FrontAluminumShimPV2.name = "FrontAluminumShimPV2";
+     FrontAluminumShimPV2.solid = FrontAluminumShimS;
+     G4ThreeVector stmFrontAluminumShim2InParent = STMShieldingRef + G4ThreeVector(fW_x, W_height/2 + leak + FLeadShim_H/2, Support_table_T - 2*FLeadShim_T - 3*FAluminumShim_T/2);
+
+     finishNesting(FrontAluminumShimPV2,
+     AlMaterial,
+     0,
+     stmFrontAluminumShim2InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::White(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+     VolumeInfo FrontAluminumShimPV3;
+     FrontAluminumShimPV3.name = "FrontAluminumShimPV3";
+     FrontAluminumShimPV3.solid = FrontAluminumShimS;
+     G4ThreeVector stmFrontAluminumShim3InParent = STMShieldingRef + G4ThreeVector(fW_x, W_height/2 + leak + FLeadShim_H/2, Support_table_T - 3*FLeadShim_T - 5*FAluminumShim_T/2);
+
+     finishNesting(FrontAluminumShimPV3,
+     AlMaterial,
+     0,
+     stmFrontAluminumShim3InParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::White(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+
+   }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //   LaBr Detector
@@ -2214,28 +2575,29 @@ namespace mu2e {
     if(pBottomShieldingParams.build())
    {
 
-     const double floor_Zlength = pBottomShieldingParams.floor_Zlength();
-     const double Front_LB      = pBottomShieldingParams.Front_LB();
-     const double Bleaddepth    = pBottomShieldingParams.Bleaddepth();
-     const double Bcopperdepth  = pBottomShieldingParams.Bcopperdepth();
-     const double BBPdepth      = pBottomShieldingParams.BBPdepth();
-
+     const double floor_Zlength  = pBottomShieldingParams.floor_Zlength();
+     const double Front_LB       = pBottomShieldingParams.Front_LB();
+     const double Front_LB_inner = pBottomShieldingParams.Front_LB_inner();
+     const double Bleaddepth     = pBottomShieldingParams.Bleaddepth();
+     const double Bcopperdepth   = pBottomShieldingParams.Bcopperdepth();
+     const double BBPdepth       = pBottomShieldingParams.BBPdepth();
 
      const double floorTheta= -atan(0.5);
-     const double B_dX = - Front_LB/2 - floor_Zlength/4 + 264.12;
-     const double B_dZ = Front_T - 0.5*25.4*CLHEP::mm + floor_Zlength/2;
+     const double B_dX = - Front_LB/2 - floor_Zlength/4 + 270.256*CLHEP::mm;
+     const double B_dX_inner = - Front_LB_inner/2 - floor_Zlength/4 + pLeftShieldingParams.Left_Xmin();
+     const double B_dZ = Front_T + floor_Zlength/2;
 
     /////////////////////////////////////////////////////////////////////
 
      G4Trap* CopperfloorwallLayer = new G4Trap( "Copperfloorwall",
                                       floor_Zlength/2, floorTheta, 0, Bcopperdepth/2,
-                                      Front_LB/2, Front_LB/2, 0, Bcopperdepth/2,
-                                      Front_LB/2 + floor_Zlength/2, Front_LB/2 + floor_Zlength/2, 0);
+                                      Front_LB_inner/2, Front_LB_inner/2, 0, Bcopperdepth/2,
+                                      Front_LB_inner/2 + floor_Zlength/2, Front_LB_inner/2 + floor_Zlength/2, 0);
 
      VolumeInfo CopperBwallPV;
      CopperBwallPV.name = "CopperBwallPV";
      CopperBwallPV.solid = CopperfloorwallLayer;
-     G4ThreeVector stmCopperBwallInParent = STMShieldingRef + G4ThreeVector(B_dX, -height/2  - Bcopperdepth/2, B_dZ);
+     G4ThreeVector stmCopperBwallInParent = STMShieldingRef + G4ThreeVector(B_dX_inner, -height/2  + Bcopperdepth/2, B_dZ);
 
      finishNesting(CopperBwallPV,
      CuMaterial,
@@ -2260,7 +2622,7 @@ namespace mu2e {
      VolumeInfo LeadBwall1PV;
      LeadBwall1PV.name = "LeadBwall1PV";
      LeadBwall1PV.solid = LeadfloorwallLayer1;
-     G4ThreeVector stmLeadBwall1InParent = STMShieldingRef + G4ThreeVector(B_dX, -height/2  - Bcopperdepth - Bleaddepth/2, B_dZ);
+     G4ThreeVector stmLeadBwall1InParent = STMShieldingRef + G4ThreeVector(B_dX, -height/2 - Bleaddepth/2, B_dZ);
 
      finishNesting(LeadBwall1PV,
      PbMaterial,
@@ -2278,7 +2640,7 @@ namespace mu2e {
      VolumeInfo LeadBwall2PV;
      LeadBwall2PV.name = "LeadBwall2PV";
      LeadBwall2PV.solid = LeadfloorwallLayer1;
-     G4ThreeVector stmLeadBwall2InParent = STMShieldingRef + G4ThreeVector(B_dX, -height/2 - Bcopperdepth - 3*Bleaddepth/2 - BBPdepth, B_dZ);
+     G4ThreeVector stmLeadBwall2InParent = STMShieldingRef + G4ThreeVector(B_dX, -height/2 - 3*Bleaddepth/2 - BBPdepth, B_dZ);
 
      finishNesting(LeadBwall2PV,
      PbMaterial,
@@ -2305,7 +2667,7 @@ namespace mu2e {
      VolumeInfo BPBwall1PV;
      BPBwall1PV.name = "BPBwall1PV";
      BPBwall1PV.solid = BPfloorwallLayer;
-     G4ThreeVector stmBPBwall1InParent = STMShieldingRef + G4ThreeVector(B_dX, -height/2 - Bcopperdepth - Bleaddepth - BBPdepth/2, B_dZ);
+     G4ThreeVector stmBPBwall1InParent = STMShieldingRef + G4ThreeVector(B_dX, -height/2 - Bleaddepth - BBPdepth/2, B_dZ);
 
      finishNesting(BPBwall1PV,
      BPMaterial,
@@ -2324,7 +2686,7 @@ namespace mu2e {
      VolumeInfo BPBwall2PV;
      BPBwall2PV.name = "BPBwall2PV";
      BPBwall2PV.solid = BPfloorwallLayer;
-     G4ThreeVector stmBPBwall2InParent = STMShieldingRef + G4ThreeVector(B_dX, -height/2  - Bcopperdepth - 2*Bleaddepth - 3*BBPdepth/2, B_dZ);
+     G4ThreeVector stmBPBwall2InParent = STMShieldingRef + G4ThreeVector(B_dX, -height/2  - 2*Bleaddepth - 3*BBPdepth/2, B_dZ);
      finishNesting(BPBwall2PV,
      BPMaterial,
      0,
@@ -2353,13 +2715,16 @@ namespace mu2e {
      const double Lcopperdepth  = pLeftShieldingParams.Lcopperdepth();
      const double LBPdepth      = pLeftShieldingParams.LBPdepth();
 
+     const double BBPdepth      = pBottomShieldingParams.BBPdepth();
+     const double Bleaddepth    = pBottomShieldingParams.Bleaddepth();
+
 
     /////////////////////////////////////////////////////////////////////
-     G4Box* CopperLwallLayer = new G4Box("CopperLwall", Lcopperdepth/2, height/2, L_Length/2);
+     G4Box* CopperLwall = new G4Box("CopperLwall", Lcopperdepth/2, height/2, L_Length/2);
 
      VolumeInfo CopperLwallPV;
      CopperLwallPV.name = "CopperLwallPV";
-     CopperLwallPV.solid = CopperLwallLayer;
+     CopperLwallPV.solid = CopperLwall;
      G4ThreeVector stmCopperLwallInParent = STMShieldingRef + G4ThreeVector(Left_Xmin + Lcopperdepth/2, 0, Left_Zmin + L_Length/2);
 
      finishNesting(CopperLwallPV,
@@ -2376,11 +2741,11 @@ namespace mu2e {
      doSurfaceCheck);
 
     /////////////////////////////////////////////////////////////////////
-     G4Box* LeadLwallLayer = new G4Box("LeadLwall", Lleaddepth/2, height/2, L_Length/2);
+     G4Box* LeadLwall = new G4Box("LeadLwall", Lleaddepth/2, height/2, L_Length/2);
 
      VolumeInfo LeadLwall1PV;
      LeadLwall1PV.name = "LeadLwall1PV";
-     LeadLwall1PV.solid = LeadLwallLayer;
+     LeadLwall1PV.solid = LeadLwall;
      G4ThreeVector stmLeadLwall1InParent = STMShieldingRef + G4ThreeVector(Left_Xmin + Lcopperdepth + Lleaddepth/2, 0, Left_Zmin + L_Length/2);
 
      finishNesting(LeadLwall1PV,
@@ -2398,7 +2763,7 @@ namespace mu2e {
 
      VolumeInfo LeadLwall2PV;
      LeadLwall2PV.name = "LeadLwall2PV";
-     LeadLwall2PV.solid = LeadLwallLayer;
+     LeadLwall2PV.solid = LeadLwall;
      G4ThreeVector stmLeadLwall2InParent = STMShieldingRef + G4ThreeVector(Left_Xmin + Lcopperdepth + Lleaddepth + LBPdepth + Lleaddepth/2, 0, Left_Zmin + L_Length/2);
 
      finishNesting(LeadLwall2PV,
@@ -2415,11 +2780,11 @@ namespace mu2e {
      doSurfaceCheck);
 
     /////////////////////////////////////////////////////////////////////
-     G4Box* BPLwallLayer = new G4Box("BPLwall", LBPdepth/2, height/2, L_Length/2);
+     G4Box* BPLwall1 = new G4Box("BPLwall1", LBPdepth/2, height/2, L_Length/2);
 
      VolumeInfo BPLwall1PV;
      BPLwall1PV.name = "BPLwall1PV";
-     BPLwall1PV.solid = BPLwallLayer;
+     BPLwall1PV.solid = BPLwall1;
      G4ThreeVector stmBPLwall1InParent = STMShieldingRef + G4ThreeVector(Left_Xmin + Lcopperdepth + Lleaddepth + LBPdepth/2, 0, Left_Zmin + L_Length/2);
 
      finishNesting(BPLwall1PV,
@@ -2436,10 +2801,12 @@ namespace mu2e {
      doSurfaceCheck);
 
 
+     G4Box* BPLwall2 = new G4Box("BPLwall2", LBPdepth/2, height/2 + BBPdepth + Bleaddepth, L_Length/2);
+
      VolumeInfo BPLwall2PV;
      BPLwall2PV.name = "BPLwall2PV";
-     BPLwall2PV.solid = BPLwallLayer;
-     G4ThreeVector stmBPLwall2InParent = STMShieldingRef + G4ThreeVector(Left_Xmin + Lcopperdepth + Lleaddepth + LBPdepth + Lleaddepth + LBPdepth/2, 0, Left_Zmin + L_Length/2);
+     BPLwall2PV.solid = BPLwall2;
+     G4ThreeVector stmBPLwall2InParent = STMShieldingRef + G4ThreeVector(Left_Xmin + Lcopperdepth + Lleaddepth + LBPdepth + Lleaddepth + LBPdepth/2, -BBPdepth - Bleaddepth, Left_Zmin + L_Length/2);
 
      finishNesting(BPLwall2PV,
      BPMaterial,
@@ -2467,23 +2834,24 @@ namespace mu2e {
      const double Rcopperdepth  = pRightShieldingParams.Rcopperdepth();
      const double RBPdepth      = pRightShieldingParams.RBPdepth();
 
+     const double Bleaddepth    = pBottomShieldingParams.Bleaddepth();
+     const double BBPdepth      = pBottomShieldingParams.BBPdepth();
+
      const double Right_Xmax = pRightShieldingParams.Right_Xmax();
      const double Right_Zmin = Front_T;
-
-     //const double Right_Xmax = -428.33;
 
      const double rTheta=(-45)*CLHEP::degree;
 
 
     /////////////////////////////////////////////////////////////////////
-     G4Trap* CopperRwallLayer = new G4Trap( "CopperRwall",
+     G4Trap* CopperRwall = new G4Trap( "CopperRwall",
                                     R_Length/2, rTheta, 0, height/2,
                                     Rcopperdepth/sqrt(2), Rcopperdepth/sqrt(2), 0, height/2,
                                     Rcopperdepth/sqrt(2), Rcopperdepth/sqrt(2), 0);
 
      VolumeInfo CopperRwallPV;
      CopperRwallPV.name = "CopperRwallPV";
-     CopperRwallPV.solid = CopperRwallLayer;
+     CopperRwallPV.solid = CopperRwall;
      G4ThreeVector stmCopperRwallInParent = STMShieldingRef + G4ThreeVector(Right_Xmax - Rcopperdepth/sqrt(2), 0, Front_T + R_Length/2);
 
      finishNesting(CopperRwallPV,
@@ -2500,14 +2868,14 @@ namespace mu2e {
      doSurfaceCheck);
 
     /////////////////////////////////////////////////////////////////////
-     G4Trap* LeadRwallLayer = new G4Trap( "LeadRwall",
+     G4Trap* LeadRwall = new G4Trap( "LeadRwall",
                                     R_Length/2, rTheta, 0, height/2,
                                     Rleaddepth/sqrt(2), Rleaddepth/sqrt(2), 0, height/2,
                                     Rleaddepth/sqrt(2), Rleaddepth/sqrt(2), 0);
 
      VolumeInfo LeadRwall1PV;
      LeadRwall1PV.name = "LeadRwall1PV";
-     LeadRwall1PV.solid = LeadRwallLayer;
+     LeadRwall1PV.solid = LeadRwall;
      G4ThreeVector stmLeadRwall1InParent = STMShieldingRef + G4ThreeVector(Right_Xmax - Rcopperdepth*sqrt(2) - Rleaddepth/sqrt(2), 0, Right_Zmin + R_Length/2);
 
      finishNesting(LeadRwall1PV,
@@ -2525,7 +2893,7 @@ namespace mu2e {
 
      VolumeInfo LeadRwall2PV;
      LeadRwall2PV.name = "LeadRwall2PV";
-     LeadRwall2PV.solid = LeadRwallLayer;
+     LeadRwall2PV.solid = LeadRwall;
      G4ThreeVector stmLeadRwall2InParent = STMShieldingRef + G4ThreeVector(Right_Xmax - Rcopperdepth*sqrt(2) - 3*Rleaddepth/sqrt(2) - 2*RBPdepth/sqrt(2), 0, Right_Zmin + R_Length/2);
 
      finishNesting(LeadRwall2PV,
@@ -2542,14 +2910,14 @@ namespace mu2e {
      doSurfaceCheck);
 
     /////////////////////////////////////////////////////////////////////
-     G4Trap* BPRwallLayer = new G4Trap( "BPRwall",
+     G4Trap* BPRwall1 = new G4Trap( "BPRwall1",
                                     R_Length/2, rTheta, 0, height/2,
                                     RBPdepth/sqrt(2), RBPdepth/sqrt(2), 0, height/2,
                                     RBPdepth/sqrt(2), RBPdepth/sqrt(2), 0);
 
      VolumeInfo BPRwall1PV;
      BPRwall1PV.name = "BPRwall1PV";
-     BPRwall1PV.solid = BPRwallLayer;
+     BPRwall1PV.solid = BPRwall1;
      G4ThreeVector stmBPRwall1InParent = STMShieldingRef + G4ThreeVector(Right_Xmax - Rcopperdepth*sqrt(2) - 2*Rleaddepth/sqrt(2) - RBPdepth/sqrt(2), 0, Right_Zmin + R_Length/2);
 
      finishNesting(BPRwall1PV,
@@ -2566,10 +2934,15 @@ namespace mu2e {
      doSurfaceCheck);
 
 
+     G4Trap* BPRwall2 = new G4Trap( "BPRwall2",
+                                    R_Length/2, rTheta, 0, height/2 + Bleaddepth + BBPdepth,
+                                    RBPdepth/sqrt(2), RBPdepth/sqrt(2), 0, height/2 + Bleaddepth + BBPdepth,
+                                    RBPdepth/sqrt(2), RBPdepth/sqrt(2), 0);
+
      VolumeInfo BPRwall2PV;
      BPRwall2PV.name = "BPRwall2PV";
-     BPRwall2PV.solid = BPRwallLayer;
-     G4ThreeVector stmBPRwall2InParent = STMShieldingRef + G4ThreeVector(Right_Xmax - Rcopperdepth*sqrt(2) - 4*Rleaddepth/sqrt(2) - 3*RBPdepth/sqrt(2), 0, Right_Zmin + R_Length/2);
+     BPRwall2PV.solid = BPRwall2;
+     G4ThreeVector stmBPRwall2InParent = STMShieldingRef + G4ThreeVector(Right_Xmax - Rcopperdepth*sqrt(2) - 4*Rleaddepth/sqrt(2) - 3*RBPdepth/sqrt(2), -Bleaddepth - BBPdepth, Right_Zmin + R_Length/2);
 
      finishNesting(BPRwall2PV,
      BPMaterial,
@@ -2597,7 +2970,7 @@ namespace mu2e {
 
 
      const double Tcontainerdepth =  pTopShieldingParams.Tcontainerdepth();
-     const double Tleaddepth2     =  pTopShieldingParams.Tleaddepth();
+     const double Tleaddepth     =  pTopShieldingParams.Tleaddepth();
      const double Tcopperdepth    =  pTopShieldingParams.Tcopperdepth();
      const double TBPdepth        =  pTopShieldingParams.TBPdepth();
 
@@ -2617,14 +2990,14 @@ namespace mu2e {
      const double T_dX = -(T_Xlength1 + T_Xlength)/4 + Top_Bar_Left + Top_Gap_Left + Front_LT/2 + fW_x;
      const double T_dZ = Front_T + T_Zlength/2 - T_ZHole;
      const double Cut_dX=(T_Xlength1+T_Xlength)/4-Top_Bar_Left-(Front_LT+Top_Gap_Left+Top_Gap_Right)/2;
-     const double Cut_dZ= -(T_Zlength-T_ZHole)/2 - 0.01;
+     const double Cut_dZ= -(T_Zlength-T_ZHole)/2;
 
     /////////////////////////////////////////////////////////////////////
      G4Trap* AluminumTwallLayer = new G4Trap( "AluminumTwallLayer",
                                    T_Zlength/2, tTheta, 0, Tcontainerdepth/2,
                                    T_Xlength1/2, T_Xlength1/2, 0, Tcontainerdepth/2,
                                    T_Xlength/2, T_Xlength/2, 0);
-     G4Box* AluminumTwallHole = new G4Box("AluminumTwallHole", T_XHole/2, Tcontainerdepth/2*1.02, T_ZHole/2+0.01);
+     G4Box* AluminumTwallHole = new G4Box("AluminumTwallHole", T_XHole/2, Tcontainerdepth/2, T_ZHole/2);
      G4SubtractionSolid* AluminumTwall = new G4SubtractionSolid("AluminumTwall", AluminumTwallLayer, AluminumTwallHole, 0, G4ThreeVector(Cut_dX, 0, Cut_dZ));
 
      VolumeInfo AluminumTwall1PV;
@@ -2648,7 +3021,8 @@ namespace mu2e {
      VolumeInfo AluminumTwall2PV;
      AluminumTwall2PV.name = "AluminumTwall2PV";
      AluminumTwall2PV.solid = AluminumTwall;
-     G4ThreeVector stmAluminumTwall2InParent = STMShieldingRef + G4ThreeVector(T_dX, 0 + height/2 + Top_Leak + 3*Tcontainerdepth/2 + Tcopperdepth+ 3*Tleaddepth2/2 +2*TBPdepth, T_dZ);
+
+     G4ThreeVector stmAluminumTwall2InParent = STMShieldingRef + G4ThreeVector(T_dX, height/2 + Top_Leak + Tcontainerdepth + Tcopperdepth+ 2*Tleaddepth + 2*TBPdepth + Tcontainerdepth/2, T_dZ);
 
      finishNesting(AluminumTwall2PV,
      AlMaterial,
@@ -2668,7 +3042,7 @@ namespace mu2e {
                                     T_Zlength/2, tTheta, 0, Tcopperdepth/2,
                                     T_Xlength1/2, T_Xlength1/2, 0, Tcopperdepth/2,
                                     T_Xlength/2,T_Xlength/2, 0);
-     G4Box* CopperTwallHole = new G4Box("CopperTwallHole", T_XHole/2, Tcopperdepth/2*1.02, T_ZHole/2+0.01);
+     G4Box* CopperTwallHole = new G4Box("CopperTwallHole", T_XHole/2, Tcopperdepth/2, T_ZHole/2);
      G4SubtractionSolid* CopperTwall = new G4SubtractionSolid("CopperTwall", CopperTwallLayer, CopperTwallHole, 0, G4ThreeVector(Cut_dX,0,Cut_dZ));
 
      VolumeInfo CopperTwallPV;
@@ -2691,16 +3065,16 @@ namespace mu2e {
 
     /////////////////////////////////////////////////////////////////////
      G4Trap* LeadTwallLayer1 = new G4Trap( "LeadTwallLayer1",
-                                    T_Zlength/2, tTheta, 0, Tleaddepth2/2,
-                                    T_Xlength1/2, T_Xlength1/2, 0, Tleaddepth2/2,
+                                    T_Zlength/2, tTheta, 0, Tleaddepth/2,
+                                    T_Xlength1/2, T_Xlength1/2, 0, Tleaddepth/2,
                                     T_Xlength/2,T_Xlength/2, 0);
-     G4Box* LeadTwallHole1 = new G4Box("LeadTwallHole1", T_XHole/2, Tleaddepth2/2*1.02, T_ZHole/2 + 0.01);
+     G4Box* LeadTwallHole1 = new G4Box("LeadTwallHole1", T_XHole/2, Tleaddepth/2, T_ZHole/2);
      G4SubtractionSolid* LeadTwall1 = new G4SubtractionSolid("LeadTwall1", LeadTwallLayer1, LeadTwallHole1, 0, G4ThreeVector(Cut_dX,0,Cut_dZ));
 
      VolumeInfo LeadTwall1PV;
      LeadTwall1PV.name = "LeadTwall1PV";
      LeadTwall1PV.solid = LeadTwall1;
-     G4ThreeVector stmLeadTwall1InParent = STMShieldingRef + G4ThreeVector(T_dX, 0 + height/2 + Top_Leak + Tcontainerdepth + Tcopperdepth+Tleaddepth2/2, T_dZ);
+     G4ThreeVector stmLeadTwall1InParent = STMShieldingRef + G4ThreeVector(T_dX, 0 + height/2 + Top_Leak + Tcontainerdepth + Tcopperdepth+Tleaddepth/2, T_dZ);
 
      finishNesting(LeadTwall1PV,
      PbMaterial,
@@ -2715,44 +3089,18 @@ namespace mu2e {
      placePV,
      doSurfaceCheck);
 
-
-     G4Trap* LeadTwallLayer2 = new G4Trap( "LeadTwallLayer2",
-                                    T_Zlength/2, tTheta, 0, Tleaddepth2/4,
-                                    T_Xlength1/2, T_Xlength1/2, 0, Tleaddepth2/4,
-                                    T_Xlength/2, T_Xlength/2, 0);
-     G4Box* LeadTwallHole2 = new G4Box("LeadTwallHole2", T_XHole/2, Tleaddepth2/4*1.02, T_ZHole/2+0.01);
-     G4SubtractionSolid* LeadTwall2 = new G4SubtractionSolid("LeadTwall2", LeadTwallLayer2, LeadTwallHole2, 0, G4ThreeVector(Cut_dX,0,Cut_dZ));
-
-     VolumeInfo LeadTwall2PV;
-     LeadTwall2PV.name = "LeadTwall2PV";
-     LeadTwall2PV.solid = LeadTwall2;
-     G4ThreeVector stmLeadTwall2InParent = STMShieldingRef + G4ThreeVector(T_dX, 0 + height/2 + Top_Leak + Tcontainerdepth + Tcopperdepth + +TBPdepth + 5*Tleaddepth2/4, T_dZ);
-
-     finishNesting(LeadTwall2PV,
-     PbMaterial,
-     0,
-     stmLeadTwall2InParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Gray(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
-
     /////////////////////////////////////////////////////////////////////
      G4Trap* BPTwallLayer = new G4Trap( "BPTwallLayer",
                                     T_Zlength/2, tTheta, 0, TBPdepth/2,
                                     T_Xlength1/2, T_Xlength1/2, 0, TBPdepth/2,
                                     T_Xlength/2, T_Xlength/2, 0);
-     G4Box* BPTwallHole = new G4Box("BPTwallHole", T_XHole/2, TBPdepth/2*1.02, T_ZHole/2+0.01);
+     G4Box* BPTwallHole = new G4Box("BPTwallHole", T_XHole/2, TBPdepth/2, T_ZHole/2);
      G4SubtractionSolid* BPTwall = new G4SubtractionSolid("BPTwall", BPTwallLayer, BPTwallHole, 0, G4ThreeVector(Cut_dX,0,Cut_dZ));
 
      VolumeInfo BPTwall1PV;
      BPTwall1PV.name = "BPTwall1PV";
      BPTwall1PV.solid = BPTwall;
-     G4ThreeVector stmBPTwall1InParent = STMShieldingRef + G4ThreeVector(T_dX, 0 + height/2 + Top_Leak + Tcontainerdepth + Tcopperdepth+ Tleaddepth2 +TBPdepth/2, T_dZ);
+     G4ThreeVector stmBPTwall1InParent = STMShieldingRef + G4ThreeVector(T_dX, 0 + height/2 + Top_Leak + Tcontainerdepth + Tcopperdepth + Tleaddepth + TBPdepth/2, T_dZ);
 
      finishNesting(BPTwall1PV,
      BPMaterial,
@@ -2767,15 +3115,134 @@ namespace mu2e {
      placePV,
      doSurfaceCheck);
 
-     VolumeInfo BPTwall2PV;
-     BPTwall2PV.name = "BPTwall2PV";
-     BPTwall2PV.solid = BPTwall;
-     G4ThreeVector stmBPTwall2InParent = STMShieldingRef + G4ThreeVector(T_dX, 0 + height/2 + Top_Leak + Tcontainerdepth + Tcopperdepth+ 3*Tleaddepth2/2 +3*TBPdepth/2, T_dZ);
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-     finishNesting(BPTwall2PV,
+   const double LiftBeam_L = pTopShieldingParams.LiftBeam_L();
+   const double LiftBeam_H = pTopShieldingParams.LiftBeam_H();
+   const double LiftBeam_T = pTopShieldingParams.LiftBeam_T();
+   const double LiftBeam_Xmove = pTopShieldingParams.LiftBeam_Xmove();
+
+   const double TTF_Zlength = pTopShieldingParams.TTF_Zlength();
+   const double TTF_Xlength = pTopShieldingParams.TTF_Xlength();
+   const double TTB_Zlength = pTopShieldingParams.TTB_Zlength();
+
+   const double TTF_dX = -(T_Xlength1 + TTF_Xlength)/4 + Top_Bar_Left + Top_Gap_Left + Front_LT/2 + fW_x;
+   const double TTF_dZ = Front_T + TTF_Zlength/2 - T_ZHole;
+   const double ttfTheta=-atan((TTF_Xlength-T_Xlength1)/2/TTF_Zlength);
+
+   const double CutTTF_dX = (T_Xlength1+TTF_Xlength)/4-Top_Bar_Left-(Front_LT+Top_Gap_Left+Top_Gap_Right)/2;
+   const double CutTTF_dZ = -(TTF_Zlength-T_ZHole)/2;
+
+     G4Box* LiftBeamS = new G4Box("LiftBeamS", LiftBeam_L/2, LiftBeam_H/2, LiftBeam_T/2);
+     VolumeInfo LiftBeamPV;
+     LiftBeamPV.name = "LiftBeamPV";
+     LiftBeamPV.solid = LiftBeamS;
+     G4ThreeVector LiftBeamInParent = STMShieldingRef + G4ThreeVector(T_dX - LiftBeam_Xmove, height/2 + Top_Leak + Tcontainerdepth + Tcopperdepth + Tleaddepth + TBPdepth + LiftBeam_H/2, Front_T + TTF_Zlength - T_ZHole + LiftBeam_T/2);
+
+     finishNesting(LiftBeamPV,
+     SteelMaterial,
+     0,
+     LiftBeamInParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Cyan(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+    /////////////////////////////////////////////////////////////////////
+
+     G4Trap* LeadTT_FrontLayer = new G4Trap( "LeadTT_FrontLayer",
+                                    TTF_Zlength/2, ttfTheta, 0, Tleaddepth/2,
+                                    T_Xlength1/2, T_Xlength1/2, 0, Tleaddepth/2,
+                                    TTF_Xlength/2, TTF_Xlength/2, 0);
+
+     G4Box* LeadTT_FrontHole = new G4Box("LeadTT_FrontHole", T_XHole/2, Tleaddepth/2*1.02, T_ZHole/2);
+     G4SubtractionSolid* LeadTT_Front = new G4SubtractionSolid("LeadTT_Front", LeadTT_FrontLayer, LeadTT_FrontHole, 0, G4ThreeVector(CutTTF_dX, 0, CutTTF_dZ));
+
+     VolumeInfo LeadTT_FrontPV;
+     LeadTT_FrontPV.name = "LeadTT_FrontPV";
+     LeadTT_FrontPV.solid = LeadTT_Front;
+     G4ThreeVector LeadTT_FrontInParent = STMShieldingRef + G4ThreeVector(TTF_dX, height/2 + Top_Leak + Tcontainerdepth + Tcopperdepth + Tleaddepth +TBPdepth + Tleaddepth/2, TTF_dZ);
+
+     finishNesting(LeadTT_FrontPV,
+     PbMaterial,
+     0,
+     LeadTT_FrontInParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Cyan(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+
+    G4Trap* BPTT_FrontLayer = new G4Trap( "BPTT_FrontLayer",
+                                    TTF_Zlength/2, ttfTheta, 0, TBPdepth/2,
+                                    T_Xlength1/2, T_Xlength1/2, 0, TBPdepth/2,
+                                    TTF_Xlength/2, TTF_Xlength/2, 0);
+
+     G4Box* BPTT_FrontHole = new G4Box("BPTT_FrontHole", T_XHole/2, TBPdepth/2*1.02, T_ZHole/2+0.01);
+     G4SubtractionSolid* BPTT_Front = new G4SubtractionSolid("BPTT_Front", BPTT_FrontLayer, BPTT_FrontHole, 0, G4ThreeVector(CutTTF_dX, 0, CutTTF_dZ));
+
+     VolumeInfo BPTT_FrontPV;
+     BPTT_FrontPV.name = "BPTT_FrontPV";
+     BPTT_FrontPV.solid = BPTT_Front;
+     G4ThreeVector BPTT_FrontInParent = STMShieldingRef + G4ThreeVector(TTF_dX, height/2 + Top_Leak + Tcontainerdepth + Tcopperdepth + 2*Tleaddepth + 1.5*TBPdepth, TTF_dZ);
+
+     finishNesting(BPTT_FrontPV,
      BPMaterial,
      0,
-     stmBPTwall2InParent,
+     BPTT_FrontInParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Cyan(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+    /////////////////////////////////////////////////////////////////////
+
+     G4double TTB_dX = -T_Xlength/2 + Top_Bar_Left + Top_Gap_Left + Front_LT/2 + fW_x;
+     G4double TTB_dZ = Front_T + TTF_Zlength - T_ZHole + LiftBeam_T + TTB_Zlength/2;
+
+     G4Box* LeadTT_Back = new G4Box("LeadTT_Back", T_Xlength/2, Tleaddepth/2, TTB_Zlength/2);
+
+     VolumeInfo LeadTT_BackPV;
+     LeadTT_BackPV.name = "LeadTT_BackPV";
+     LeadTT_BackPV.solid = LeadTT_Back;
+     G4ThreeVector LeadTT_BackInParent = STMShieldingRef + G4ThreeVector(TTB_dX, height/2 + Top_Leak + Tcontainerdepth + Tcopperdepth + Tleaddepth +TBPdepth + Tleaddepth/2, TTB_dZ);
+
+     finishNesting(LeadTT_BackPV,
+     PbMaterial,
+     0,
+     LeadTT_BackInParent,
+     parentInfo.logical,
+     0,
+     STMisVisible,
+     G4Colour::Cyan(),
+     STMisSolid,
+     forceAuxEdgeVisible,
+     placePV,
+     doSurfaceCheck);
+
+     G4Box* BPTT_Back = new G4Box("BPTT_Back", T_Xlength/2, TBPdepth/2, TTB_Zlength/2);
+
+     VolumeInfo BPTT_BackPV;
+     BPTT_BackPV.name = "BPTT_BackPV";
+     BPTT_BackPV.solid = BPTT_Back;
+     G4ThreeVector BPTT_BackInParent = STMShieldingRef + G4ThreeVector(TTB_dX, height/2 + Top_Leak + Tcontainerdepth + Tcopperdepth+ 2*Tleaddepth +3*TBPdepth/2, TTB_dZ);
+
+     finishNesting(BPTT_BackPV,
+     BPMaterial,
+     0,
+     BPTT_BackInParent,
      parentInfo.logical,
      0,
      STMisVisible,
@@ -2961,12 +3428,14 @@ namespace mu2e {
 
      const double BP_dX = -12*25.4; //pBackShieldingParams.Back_dX();
      const double BP_dY = pBackShieldingParams.Back_dY();
+     const double floor_Zlength  = pBottomShieldingParams.floor_Zlength();
+
 
      G4Box* BPWall = new G4Box("BPWall", BP_length/2, BP_height/2, BP_thick/2);
      VolumeInfo BPWallPV;
      BPWallPV.name = "BPWallPV";
      BPWallPV.solid = BPWall;
-     G4ThreeVector stmBPWallInParent = STMShieldingRef + G4ThreeVector(BP_dX, BP_dY, Front_T + 28.4*25.4 + BP_thick/2);
+     G4ThreeVector stmBPWallInParent = STMShieldingRef + G4ThreeVector(BP_dX, BP_dY, Front_T + floor_Zlength + BP_thick/2);
 
      finishNesting(BPWallPV,
      BPMaterial,
@@ -2988,361 +3457,191 @@ namespace mu2e {
 
     if(pInnerShieldingParams.build())
    {
-    const double fHalf_Pb = 25;
-    const double  Half_Cu = (0.16*25.4)/2;
 
-    const double InnerFront_l = 4.7*25.4;
-    const double Finner_X = Left_Xmin - InnerFront_l/2;
+      const double InnerFront_l = 6.69*25.4*CLHEP::mm;
+      const double InnerFront_t = 3.34*25.4*CLHEP::mm;
 
-    const double distance = 2.5*25.4;
-    const double InnerSide_Z = 5.847*25.4;
-    const double FrontCu_Z1  = Front_T + InnerSide_Z + Half_Cu;
-    const double FrontPb_Z1  = FrontCu_Z1 + Half_Cu + fHalf_Pb;
-    const double FrontCu_Z2  = FrontPb_Z1 + Half_Cu + fHalf_Pb;
-    const double FrontCu_Z3  = FrontCu_Z2 + distance + 2*Half_Cu;
-    const double FrontPb_Z2  = FrontCu_Z3 + Half_Cu + fHalf_Pb;
-    const double FrontCu_Z4  = FrontPb_Z2 + fHalf_Pb + Half_Cu;
-    const double Holesize= 1.57*25.4/2;
+      const double InnerBackL_t = 16*25.4*CLHEP::mm;
+      const double InnerBackR_t = 10.7*25.4*CLHEP::mm;
+      const double InnerBack_l  = 5.3*25.4*CLHEP::mm;
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //Internal Shielding in front of the LaBr Detector
+      const double Holesize= 1.57*25.4*CLHEP::mm/2;
+      const double HoleOffset = -0.195*25.4*CLHEP::mm;
 
-    G4Box* CopperInnerFLayer = new G4Box ("CopperInnerFLayer", InnerFront_l/2, height/2, Half_Cu);
-    G4Tubs* CopperInnerFHole = new G4Tubs("CopperInnerFHole",  0, Holesize, Half_Cu*1.01, 360.*CLHEP::degree, 360.*CLHEP::degree);
-    G4SubtractionSolid* CopperInnerF = new G4SubtractionSolid("CopperInnerF", CopperInnerFLayer, CopperInnerFHole, 0, G4ThreeVector( -23.86, 0, 0));
+      const double Bcopperdepth   = pBottomShieldingParams.Bcopperdepth();
 
-    G4Box* LeadInnerFLayer = new G4Box ("LeadInnerFLayer", InnerFront_l/2, height/2, fHalf_Pb);
-    G4Tubs* LeadInnerFHole = new G4Tubs("LeadInnerFHole",  0, Holesize, fHalf_Pb*1.01, 360.*CLHEP::degree, 360.*CLHEP::degree);
-    G4SubtractionSolid* LeadInnerF = new G4SubtractionSolid("LeadInnerF", LeadInnerFLayer, LeadInnerFHole, 0, G4ThreeVector( -23.86, 0, 0));
+    /////////////////////////////////
 
-    /////////////////////////////////////
-     VolumeInfo CopperInnerF1PV;
-     CopperInnerF1PV.name = "CopperInnerF1PV";
-     CopperInnerF1PV.solid = CopperInnerF;
-     G4ThreeVector stmCopperInnerF1InParent = STMShieldingRef + G4ThreeVector(Finner_X, 0, FrontCu_Z1);
+      G4Box* LeadInnerFLayer = new G4Box ("LeadInnerFLayer", InnerFront_l/2,  (height-Bcopperdepth)/2, InnerFront_t/2);
+      G4Tubs* LeadInnerFHole = new G4Tubs("LeadInnerFHole",  0, Holesize, InnerFront_t/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+      G4SubtractionSolid* LeadInnerF = new G4SubtractionSolid("LeadInnerF", LeadInnerFLayer, LeadInnerFHole, 0, G4ThreeVector( HoleOffset, -Bcopperdepth/2, 0));
 
-     finishNesting(CopperInnerF1PV,
-     CuMaterial,
-     0,
-     stmCopperInnerF1InParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Red(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
+      VolumeInfo LeadInnerFPV;
+      LeadInnerFPV.name = "LeadInnerFPV";
+      LeadInnerFPV.solid = LeadInnerF;
+      G4ThreeVector LeadInnerFInParent = STMShieldingRef + G4ThreeVector(Left_Xmin - InnerFront_l/2, Bcopperdepth/2, Front_T + L_Length - InnerBackL_t + InnerFront_t - InnerFront_t/2);
 
-    /////////////////////////////////////
-     VolumeInfo LeadInnerFFPV;
-     LeadInnerFFPV.name = "LeadInnerFFPV";
-     LeadInnerFFPV.solid = LeadInnerF;
-     G4ThreeVector stmLeadInnerFFInParent = STMShieldingRef + G4ThreeVector(Finner_X, 0, FrontPb_Z1);
+      finishNesting(LeadInnerFPV,
+      PbMaterial,
+      0,
+      LeadInnerFInParent,
+      parentInfo.logical,
+      0,
+      STMisVisible,
+      G4Colour::Gray(),
+      STMisSolid,
+      forceAuxEdgeVisible,
+      placePV,
+      doSurfaceCheck);
 
-     finishNesting(LeadInnerFFPV,
-     PbMaterial,
-     0,
-     stmLeadInnerFFInParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Gray(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
+    /////////////////////////////////
 
-    /////////////////////////////////////
-     VolumeInfo CopperInnerF2PV;
-     CopperInnerF2PV.name = "CopperInnerF2PV";
-     CopperInnerF2PV.solid = CopperInnerF;
-     G4ThreeVector stmCopperInnerF2InParent = STMShieldingRef + G4ThreeVector(Finner_X, 0, FrontCu_Z2);
-
-     finishNesting(CopperInnerF2PV,
-     CuMaterial,
-     0,
-     stmCopperInnerF2InParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Red(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
-
-    /////////////////////////////////////
-     VolumeInfo CopperInnerF3PV;
-     CopperInnerF3PV.name = "CopperInnerF3PV";
-     CopperInnerF3PV.solid = CopperInnerF;
-     G4ThreeVector stmCopperInnerF3InParent = STMShieldingRef + G4ThreeVector(Finner_X, 0, FrontCu_Z3);
-
-     finishNesting(CopperInnerF3PV,
-     CuMaterial,
-     0,
-     stmCopperInnerF3InParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Red(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
-
-    /////////////////////////////////////
-     VolumeInfo LeadInnerFBPV;
-     LeadInnerFBPV.name = "LeadInnerFBPV";
-     LeadInnerFBPV.solid = LeadInnerF;
-     G4ThreeVector stmLeadInnerFBInParent = STMShieldingRef + G4ThreeVector(Finner_X, 0, FrontPb_Z2);
-
-     finishNesting(LeadInnerFBPV,
-     PbMaterial,
-     0,
-     stmLeadInnerFBInParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Gray(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
-
-    /////////////////////////////////////
-     VolumeInfo CopperInnerF4PV;
-     CopperInnerF4PV.name = "CopperInnerF4PV";
-     CopperInnerF4PV.solid = CopperInnerF;
-     G4ThreeVector stmCopperInnerF4InParent = STMShieldingRef + G4ThreeVector(Finner_X, 0, FrontCu_Z4);
-
-     finishNesting(CopperInnerF4PV,
-     CuMaterial,
-     0,
-     stmCopperInnerF4InParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Red(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
-
-
-  /////////////////////////////////////////////////////////////////////////////
-  /// The Copper and Lead bar  in Internal Shielding
-
-     G4double rHalf_Pb = 13.7;
-     G4double SidePb_X  = Finner_X - InnerFront_l/2 - rHalf_Pb - 2*Half_Cu;
-     G4double InnerSideS_Z = InnerSide_Z + distance/2 +2*fHalf_Pb +4*Half_Cu;
-
-     G4Box* LeadInnerS_R  = new G4Box("LeadInnerS_R", rHalf_Pb, height/2, (distance+4*fHalf_Pb+4*Half_Cu)/2);
-
-     VolumeInfo LeadInnerSRPV;
-     LeadInnerSRPV.name = "LeadInnerSRPV";
-     LeadInnerSRPV.solid = LeadInnerS_R;
-     G4ThreeVector stmLeadInnerSRInParent = STMShieldingRef + G4ThreeVector(SidePb_X, 0, Front_T + InnerSideS_Z);
-
-     finishNesting(LeadInnerSRPV,
-     PbMaterial,
-     0,
-     stmLeadInnerSRInParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Gray(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
-
-    /////////////////////////////////////
-     G4Box* CopperInnerS_F_edge = new G4Box("CopperInnerS_F_edge", rHalf_Pb, height/2, Half_Cu);
-
-     VolumeInfo CopperInnerSFPV;
-     CopperInnerSFPV.name = "CopperInnerSFPV";
-     CopperInnerSFPV.solid = CopperInnerS_F_edge;
-     G4ThreeVector stmCopperInnerSFInParent = STMShieldingRef + G4ThreeVector(SidePb_X, 0, FrontCu_Z1);
-
-     finishNesting(CopperInnerSFPV,
-     CuMaterial,
-     0,
-     stmCopperInnerSFInParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Red(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
-
-     VolumeInfo CopperInnerSBPV;
-     CopperInnerSBPV.name = "CopperInnerSBPV";
-     CopperInnerSBPV.solid = CopperInnerS_F_edge;
-     G4ThreeVector stmCopperInnerSBInParent = STMShieldingRef + G4ThreeVector(SidePb_X, 0, FrontCu_Z4);
-
-     finishNesting(CopperInnerSBPV,
-     CuMaterial,
-     0,
-     stmCopperInnerSBInParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Red(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
-
-
-    /////////////////////////////////////
-     G4Box* CopperInnerS_F  = new G4Box("CopperInnerS_F", Half_Cu, height/2, (distance+fHalf_Pb*4+Half_Cu*8)/2);
-
-     VolumeInfo CopperInnerSLPV;
-     CopperInnerSLPV.name = "CopperInnerSLPV";
-     CopperInnerSLPV.solid = CopperInnerS_F;
-     G4ThreeVector stmCopperInnerSLInParent = STMShieldingRef + G4ThreeVector(SidePb_X - Half_Cu - rHalf_Pb, 0, FrontCu_Z2 + (FrontCu_Z3-FrontCu_Z2)/2);
-
-     finishNesting(CopperInnerSLPV,
-     CuMaterial,
-     0,
-     stmCopperInnerSLInParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Red(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
-
-     VolumeInfo CopperInnerSRPV;
-     CopperInnerSRPV.name = "CopperInnerSRPV";
-     CopperInnerSRPV.solid = CopperInnerS_F;
-     G4ThreeVector stmCopperInnerSRInParent = STMShieldingRef + G4ThreeVector(SidePb_X + Half_Cu + rHalf_Pb, 0, FrontCu_Z2 + (FrontCu_Z3-FrontCu_Z2)/2);
-
-     finishNesting(CopperInnerSRPV,
-     CuMaterial,
-     0,
-     stmCopperInnerSRInParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Red(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
-
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    //Internal Shielding on the right of the LaBr Detector
-
-     const double Half_Cu_Mid_side= (0.16*25.4)/2;
-     const double InnerSideBL_Z= 22.7*25.4 - InnerSide_Z;
-     const double InnerSideBR_Z= 11.48*25.4;
-     const double thick_Pb   =5.26*25.4;
-
-     const double InnerMidCu_X       = SidePb_X  - rHalf_Pb - 3*Half_Cu;
-     const double InnerSideBackRCu_X = SidePb_X  - rHalf_Pb - Half_Cu*2 - thick_Pb - 3*Half_Cu;
-
-
-    /////////////////////////////////////
-     G4Box* CopperInnerS_BackLeft  = new G4Box("CopperInnerS_BackLeft", Half_Cu_Mid_side, height/2, InnerSideBL_Z/2);
-     G4Box* CopperInnerS_BackRight = new G4Box("CopperInnerS_BackRight",Half_Cu_Mid_side, height/2, InnerSideBR_Z/2);
-
-     VolumeInfo CopperInnerS2PV;
-     CopperInnerS2PV.name = "CopperInnerS2PV";
-     CopperInnerS2PV.solid = CopperInnerS_BackLeft;
-     G4ThreeVector stmCopperInnerS2InParent = STMShieldingRef + G4ThreeVector(InnerMidCu_X, 0, Front_T + L_Length - InnerSideBL_Z/2);
-
-     finishNesting(CopperInnerS2PV,
-     CuMaterial,
-     0,
-     stmCopperInnerS2InParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Red(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
-
-     VolumeInfo CopperInnerS3PV;
-     CopperInnerS3PV.name = "CopperInnerS3PV";
-     CopperInnerS3PV.solid = CopperInnerS_BackRight;
-     G4ThreeVector stmCopperInnerS3InParent = STMShieldingRef + G4ThreeVector(InnerSideBackRCu_X, 0, Front_T + L_Length - InnerSideBR_Z/2);
-
-     finishNesting(CopperInnerS3PV,
-     CuMaterial,
-     0,
-     stmCopperInnerS3InParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Red(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
-
-
-    /////////////////////////////////////
     G4RotationMatrix* rotLeadBlock = new G4RotationMatrix();
     rotLeadBlock->rotateX(90*CLHEP::degree);
     rotLeadBlock->rotateZ(-90*CLHEP::degree);
 
-    G4Trap* LeadInnerS_B = new G4Trap( "LeadInnerS_B", height,  thick_Pb, InnerSideBL_Z, InnerSideBR_Z);
+    G4Trap* LeadInnerB = new G4Trap( "LeadInnerB", (height-Bcopperdepth), InnerBack_l, InnerBackL_t, InnerBackR_t);
 
-    VolumeInfo LeadInnerSTrapPV;
-    LeadInnerSTrapPV.name = "LeadInnerSTrapPV";
-    LeadInnerSTrapPV.solid = LeadInnerS_B;
-    G4ThreeVector stmLeadInnerSTrapInParent = STMShieldingRef + G4ThreeVector(SidePb_X-rHalf_Pb-Half_Cu*4-thick_Pb/2, 0, Front_T + L_Length - (InnerSideBL_Z+InnerSideBR_Z)/4);
+      VolumeInfo LeadInnerBPV;
+      LeadInnerBPV.name = "LeadInnerBPV";
+      LeadInnerBPV.solid = LeadInnerB;
+      G4ThreeVector LeadInnerBInParent = STMShieldingRef + G4ThreeVector(Left_Xmin - InnerFront_l - InnerBack_l/2, Bcopperdepth/2, Front_T + L_Length - (InnerBackL_t+InnerBackR_t)/4);
 
-    finishNesting(LeadInnerSTrapPV,
-    PbMaterial,
-    rotLeadBlock,
-    stmLeadInnerSTrapInParent,
-    parentInfo.logical,
-    0,
-    STMisVisible,
-    G4Colour::Gray(),
-    STMisSolid,
-    forceAuxEdgeVisible,
-    placePV,
-    doSurfaceCheck);
+      finishNesting(LeadInnerBPV,
+      PbMaterial,
+      rotLeadBlock,
+      LeadInnerBInParent,
+      parentInfo.logical,
+      0,
+      STMisVisible,
+      G4Colour::Gray(),
+      STMisSolid,
+      forceAuxEdgeVisible,
+      placePV,
+      doSurfaceCheck);
 
+    /////////////////////////////////////////////////////////////////////
 
-  /////////////////////////////////////
-    const double Block_X = SidePb_X - rHalf_Pb - Half_Cu_Mid_side*4 - thick_Pb/2 - Half_Cu_Mid_side/sqrt(2);
-    const double Block_Z = Front_T + L_Length - (InnerSideBL_Z+InnerSideBR_Z)/2 - Half_Cu_Mid_side*sqrt(2);
+    G4double  Half_Cu = (0.16*25.4)/2*CLHEP::mm;
 
-    G4Trap* CopperBlockShape = new G4Trap( "CopperBlockShape",
-                                    (InnerSideBL_Z-InnerSideBR_Z)/2 + Half_Cu_Mid_side, -45*CLHEP::degree, 0, height/2,
-                                    Half_Cu_Mid_side/sqrt(2), Half_Cu_Mid_side/sqrt(2), 0, height/2,
-                                    Half_Cu_Mid_side/sqrt(2), Half_Cu_Mid_side/sqrt(2), 0);
+    G4Box* CopperInnerFLayer = new G4Box ("CopperInnerFLayer", InnerFront_l/2, (height-Bcopperdepth)/2, Half_Cu);
+    G4Tubs* CopperInnerFHole = new G4Tubs("CopperInnerFHole",  0, Holesize, Half_Cu, 360.*CLHEP::degree, 360.*CLHEP::degree);
+    G4SubtractionSolid* CopperInnerF1 = new G4SubtractionSolid("CopperInnerF1", CopperInnerFLayer, CopperInnerFHole, 0, G4ThreeVector( HoleOffset, -Bcopperdepth/2, 0));
 
 
-     VolumeInfo CopperBackBlockPV;
-     CopperBackBlockPV.name = "CopperBackBlockPV";
-     CopperBackBlockPV.solid = CopperBlockShape;
-     G4ThreeVector stmCopperBackBlockInParent = STMShieldingRef +  G4ThreeVector(Block_X , 0, Block_Z);
+      VolumeInfo CopperInnerFPV1;
+      CopperInnerFPV1.name = "CopperInnerFPV1";
+      CopperInnerFPV1.solid = CopperInnerF1;
+      G4ThreeVector CopperInnerF1InParent = STMShieldingRef + G4ThreeVector(Left_Xmin - InnerFront_l/2, Bcopperdepth/2,  Front_T + L_Length - InnerBackL_t + InnerFront_t + Half_Cu);
 
-     finishNesting(CopperBackBlockPV,
-     CuMaterial,
-     0,
-     stmCopperBackBlockInParent,
-     parentInfo.logical,
-     0,
-     STMisVisible,
-     G4Colour::Red(),
-     STMisSolid,
-     forceAuxEdgeVisible,
-     placePV,
-     doSurfaceCheck);
+      finishNesting(CopperInnerFPV1,
+      CuMaterial,
+      0,
+      CopperInnerF1InParent,
+      parentInfo.logical,
+      0,
+      STMisVisible,
+      G4Colour::Red(),
+      STMisSolid,
+      forceAuxEdgeVisible,
+      placePV,
+      doSurfaceCheck);
 
+    /////////////////////////////////
+
+    G4Box* CopperInnerFCorner = new G4Box ("CopperInnerFCorner", Half_Cu*sqrt(2), (height-Bcopperdepth)/2, Half_Cu);
+    G4UnionSolid* CopperInnerF2 = new G4UnionSolid("CopperInnerF2", CopperInnerF1, CopperInnerFCorner, 0, G4ThreeVector( -(InnerFront_l + Half_Cu*sqrt(2))/2, 0, 0));
+
+      VolumeInfo CopperInnerFPV2;
+      CopperInnerFPV2.name = "CopperInnerFPV2";
+      CopperInnerFPV2.solid = CopperInnerF2;
+      G4ThreeVector CopperInnerF2InParent = STMShieldingRef + G4ThreeVector(Left_Xmin - InnerFront_l/2, Bcopperdepth/2,  Front_T + L_Length - InnerBackL_t + InnerFront_t - InnerFront_t - Half_Cu);
+
+      finishNesting(CopperInnerFPV2,
+      CuMaterial,
+      0,
+      CopperInnerF2InParent,
+      parentInfo.logical,
+      0,
+      STMisVisible,
+      G4Colour::Red(),
+      STMisSolid,
+      forceAuxEdgeVisible,
+      placePV,
+      doSurfaceCheck);
+
+    /////////////////////////////////
+
+
+    double CopperInnerB_t = InnerBackL_t - InnerFront_t - 2*Half_Cu;
+    G4Box* CopperInnerB1 = new G4Box ("CopperInnerB1", Half_Cu, (height-Bcopperdepth)/2, CopperInnerB_t/2);
+
+      VolumeInfo CopperInnerBPV1;
+      CopperInnerBPV1.name = "CopperInnerBPV1";
+      CopperInnerBPV1.solid = CopperInnerB1;
+      G4ThreeVector CopperInnerB1InParent = STMShieldingRef + G4ThreeVector(Left_Xmin - InnerFront_l + Half_Cu, Bcopperdepth/2,  Front_T + L_Length - CopperInnerB_t/2);
+
+      finishNesting(CopperInnerBPV1,
+      CuMaterial,
+      0,
+      CopperInnerB1InParent,
+      parentInfo.logical,
+      0,
+      STMisVisible,
+      G4Colour::Red(),
+      STMisSolid,
+      forceAuxEdgeVisible,
+      placePV,
+      doSurfaceCheck);
+
+    /////////////////////////////////
+
+      G4Box* CopperInnerB2 = new G4Box ("CopperInnerB2", Half_Cu, (height-Bcopperdepth)/2, InnerBackR_t/2);
+
+      VolumeInfo CopperInnerBPV2;
+      CopperInnerBPV2.name = "CopperInnerBPV2";
+      CopperInnerBPV2.solid = CopperInnerB2;
+      G4ThreeVector CopperInnerB2InParent = STMShieldingRef + G4ThreeVector(Left_Xmin - InnerFront_l - InnerBack_l - Half_Cu, Bcopperdepth/2,  Front_T + L_Length - InnerBackR_t/2);
+
+      finishNesting(CopperInnerBPV2,
+      CuMaterial,
+      0,
+      CopperInnerB2InParent,
+      parentInfo.logical,
+      0,
+      STMisVisible,
+      G4Colour::Red(),
+      STMisSolid,
+      forceAuxEdgeVisible,
+      placePV,
+      doSurfaceCheck);
+
+
+    /////////////////////////////////
+
+  G4Trap* CopperInnerB3 = new G4Trap( "CopperInnerB3",
+                                    InnerBack_l/2, -45*CLHEP::degree, 0, (height-Bcopperdepth)/2,
+                                    Half_Cu*sqrt(2), Half_Cu*sqrt(2), 0, (height-Bcopperdepth)/2,
+                                    Half_Cu*sqrt(2), Half_Cu*sqrt(2), 0);
+
+
+      VolumeInfo CopperInnerBPV3;
+      CopperInnerBPV3.name = "CopperInnerBPV3";
+      CopperInnerBPV3.solid = CopperInnerB3;
+      G4ThreeVector CopperInnerB3InParent = STMShieldingRef + G4ThreeVector(Left_Xmin - InnerFront_l - InnerBack_l/2 - Half_Cu*sqrt(2), Bcopperdepth/2, Front_T + L_Length - InnerBack_l/2 - InnerBackR_t);
+
+      finishNesting(CopperInnerBPV3,
+      CuMaterial,
+      0,
+      CopperInnerB3InParent,
+      parentInfo.logical,
+      0,
+      STMisVisible,
+      G4Colour::Red(),
+      STMisSolid,
+      forceAuxEdgeVisible,
+      placePV,
+      doSurfaceCheck);
   }
 
 
