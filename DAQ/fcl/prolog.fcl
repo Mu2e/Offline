@@ -5,6 +5,7 @@
 BEGIN_PROLOG
 DAQ : {
     producers : {
+        StrawDigisFromArtdaqFragments: { module_type: StrawDigisFromArtdaqFragments
         makeSD: { module_type: StrawDigisFromArtdaqFragments
             diagLevel     : 0                        ## not used yet
             debugMode     : 0                        ##
@@ -16,6 +17,7 @@ DAQ : {
 
     filters : { 
         StrawDigiFilter : { module_type : StrawDigiFilter
+            strawDigiCollTag    : "StrawDigisFromArtdaqFragments"
             strawDigiCollTag    : "makeSD"
             minNStrawDigis      : 1
             minNPlanes          : 0

@@ -152,23 +152,8 @@ cet_build_plugin(STMWaveformDigisFromFragments art::module
   BTrk_difAlgebra
 )
     
-# cet_build_plugin(StrawDigisFromArtdaqFragments art::module
-#   REG_SOURCE src/StrawDigisFromArtdaqFragments_module.cc
-#   LIBRARIES REG
-#   Offline::DAQ
-#   Offline::RecoDataProducts
-#   Offline::DataProducts
-#   artdaq-core-mu2e::Data
-#   art_root_io::TFileService_service
-#   ROOT::Hist
-#   ROOT::Tree
-#   ROOT::Core
-#   ROOT::RIO
-#   ROOT::Gui
-# )
-
-cet_build_plugin(StrawDigiFilter art::module
-  REG_SOURCE src/StrawDigiFilter_module.cc
+cet_build_plugin(StrawDigisFromArtdaqFragments art::module
+  REG_SOURCE src/StrawDigisFromArtdaqFragments_module.cc
   LIBRARIES REG
   Offline::DAQ
   Offline::RecoDataProducts
@@ -195,14 +180,6 @@ cet_build_plugin(StrawHitFilter art::module
   ROOT::Core
   ROOT::RIO
   ROOT::Gui
-)
-
-cet_build_plugin(StrawDigisFromArtdaqFragments art::module
-  REG_SOURCE src/StrawDigisFromArtdaqFragments_module.cc
-  LIBRARIES REG
-  Offline::DAQ
-  Offline::DataProducts
-  Offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)
