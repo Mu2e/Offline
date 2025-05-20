@@ -1,10 +1,12 @@
 # -*- mode:tcl -*-
 BEGIN_PROLOG
-DAQ : {
-    producers : {
-        StrawDigisFromArtdaqFragments: { module_type: StrawDigisFromArtdaqFragments
-            saveWaveforms : 0
-            diagLevel     : 0  # not used yet
+DAQ: {
+    producers: {
+        StrawDigisFromArtdaqFragments: {
+            module_type: StrawDigisFromArtdaqFragments
+            diagLevel: 0
+            saveWaveforms: false
+            containsDTCHeaders: true
         }
     }
 }

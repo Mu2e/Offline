@@ -19,6 +19,7 @@
 #include "artdaq-core-mu2e/Data/TrackerDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 #include "artdaq-core-mu2e/Overlays/DTC_Packets/DTC_RocDataHeaderPacket.h"
+#include "artdaq-core-mu2e/Overlays/DTC_Packets/DTC_EventHeader.h"
 
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/TrkTypes.hh"
@@ -54,6 +55,11 @@ public:
     fhicl::Atom<int> diagLevel    {fhicl::Name("diagLevel"    ), fhicl::Comment("diagnostic severity level, default = 0" ), 0};
     fhicl::Atom<int> debugLevel   {fhicl::Name("debugLevel"   ), fhicl::Comment("debug level, default = 0"               ), 0};
     fhicl::Atom<bool> saveWaveforms{fhicl::Name("saveWaveforms"), fhicl::Comment("save StrawDigiADCWaveforms, default = true"), true};
+
+    fhicl::Atom<bool> containsDTCHeaders{
+      fhicl::Name("containsDTCHeaders"),
+      fhicl::Comment("Whether data was produced in DTC_Events; set to false to disable skipping DTC-level header in deserialization sequence.")
+    };
 
     // individual tuple specifying a minnesota label, e.g. MN123,
     // with geographic plane/panel numbers, i.e. from DocDB-#888
@@ -120,6 +126,7 @@ private:
   int       diagLevel_    ;
   int       debugLevel_   ;
   bool      saveWaveforms_;
+  uint8_t   roc_payload_offset_;
                                         // the rest
   int       nADCPackets_{-1};           // N(ADC packets per hit)
   int       nSamples_   {-1};           // N(ADC samples per hit)
@@ -141,12 +148,19 @@ art::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::EDP
     art::EDProducer{config},
     diagLevel_    (config().diagLevel    ()),
     debugLevel_   (config().debugLevel   ()),
-    saveWaveforms_(config().saveWaveforms())
+    saveWaveforms_(config().saveWaveforms()),
+    roc_payload_offset_(0)
 {
   produces<mu2e::StrawDigiCollection>();
   if (saveWaveforms_) produces<mu2e::StrawDigiADCWaveformCollection>();
 
   produces<mu2e::IntensityInfoTrackerHits>();
+
+  // if data is properly embedded in DTC_Events, then skip DTC-level header
+  // when deserializing
+  if (config().containsDTCHeaders()){
+    roc_payload_offset_ = static_cast<uint8_t>(sizeof(DTCLib::DTC_EventHeader));
+  }
 
   // initialize geographic mapping of minnesota-labled panels
   for (const auto& entry: config().geography()){
@@ -306,8 +320,8 @@ void art::StrawDigisFromArtdaqFragments::produce(Event& event) {
 //-----------------------------------------------------------------------------
         ushort*  buf          = (ushort*) fdata;
         int      nbytes       = buf[0];             // frag.dataSizeBytes() includes extra 0x20
-        uint8_t* roc_data     = fdata+sizeof(*seh);
-        uint8_t* last_address = fdata+nbytes;
+        uint8_t* roc_data     = fdata + roc_payload_offset_ + sizeof(*seh);
+        uint8_t* last_address = fdata + nbytes;
 
         while (roc_data < last_address) {
           RocDataHeaderPacket_t* rdh = (RocDataHeaderPacket_t*) roc_data;
