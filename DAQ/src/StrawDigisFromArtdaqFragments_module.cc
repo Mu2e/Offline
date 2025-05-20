@@ -306,7 +306,7 @@ void art::StrawDigisFromArtdaqFragments::produce(Event& event) {
 // after a recent format change, a DTC fragment may contain ROC data from different
 // subdetectors, make sure that at least one of them is the tracker ROC
 //-----------------------------------------------------------------------------
-        DTCLib::DTC_SubEventHeader* seh = (DTCLib::DTC_SubEventHeader*) fdata;
+        DTCLib::DTC_SubEventHeader* seh = (DTCLib::DTC_SubEventHeader*) (fdata + roc_payload_offset_);
         if ((seh->link0_subsystem != DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker) and
             (seh->link1_subsystem != DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker) and
             (seh->link2_subsystem != DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker) and
