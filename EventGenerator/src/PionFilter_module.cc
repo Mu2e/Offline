@@ -31,7 +31,7 @@ namespace mu2e {
         fhicl::Atom<int> diagLevel{Name("diagLevel"),1};
         fhicl::Atom<double> tmin{Name("tmin"),0};
         fhicl::Atom<double> tmax{Name("tmax"),1e6};
-        fhicl::Atom<int> processCode{Name("processCode"),154};
+        fhicl::Atom<int> processCode{Name("processCode"),54};
         fhicl::Atom<bool> isNull{Name("isNull"),true};
       };
       explicit PionFilter(const art::EDFilter::Table<Config>& config);
