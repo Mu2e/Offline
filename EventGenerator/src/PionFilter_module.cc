@@ -28,11 +28,11 @@ namespace mu2e {
       struct Config {
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
-        fhicl::Atom<int> diagLevel{Name("diagLevel"),1};
-        fhicl::Atom<double> tmin{Name("tmin"),0};
-        fhicl::Atom<double> tmax{Name("tmax"),1e6};
-        fhicl::Atom<int> processCode{Name("processCode"),54};
-        fhicl::Atom<bool> isNull{Name("isNull"),true};
+        fhicl::Atom<int> diagLevel{Name("diagLevel")};
+        fhicl::Atom<double> tmin{Name("tmin")};
+        fhicl::Atom<double> tmax{Name("tmax")};
+        fhicl::Atom<int> processCode{Name("processCode")};
+        fhicl::Atom<bool> isNull{Name("isNull")};
       };
       explicit PionFilter(const art::EDFilter::Table<Config>& config);
       virtual bool filter(art::Event& event) override;
@@ -81,7 +81,7 @@ namespace mu2e {
             _totalweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
             _ntot += 1;
           }
-          if( pp->stoppingCode() == processCode_ and (std::abs(pp->pdgId()) == PDGCode::pi_plus and _endglobaltime > tmin_ and _endglobaltime < tmax_ )){
+          if( pp->stoppingCode() == processCode_ and std::abs(pp->pdgId()) == PDGCode::pi_plus and _endglobaltime > tmin_ and _endglobaltime < tmax_ ){
             passed = true;
             const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
             _selectedweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
