@@ -56,9 +56,9 @@ public:
     fhicl::Atom<int> debugLevel   {fhicl::Name("debugLevel"   ), fhicl::Comment("debug level, default = 0"               ), 0};
     fhicl::Atom<bool> saveWaveforms{fhicl::Name("saveWaveforms"), fhicl::Comment("save StrawDigiADCWaveforms, default = true"), true};
 
-    fhicl::Atom<bool> containsDTCHeaders{
-      fhicl::Name("containsDTCHeaders"),
-      fhicl::Comment("Whether data was produced in DTC_Events; set to false to disable skipping DTC-level header in deserialization sequence.")
+    fhicl::Atom<bool> missingDTCHeaders{
+      fhicl::Name("missingDTCHeaders"),
+      fhicl::Comment("Whether data was (not) produced using DTC_Events; set to true to disable skipping DTC-level header in deserialization sequence.")
     };
 
     // individual tuple specifying a minnesota label, e.g. MN123,
@@ -158,7 +158,7 @@ art::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::EDP
 
   // if data is properly embedded in DTC_Events, then skip DTC-level header
   // when deserializing
-  if (config().containsDTCHeaders()){
+  if (!config().missingDTCHeaders()){
     roc_payload_offset_ = static_cast<uint8_t>(sizeof(DTCLib::DTC_EventHeader));
   }
 

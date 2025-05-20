@@ -6,7 +6,7 @@ DAQ: {
             module_type: StrawDigisFromArtdaqFragments
             diagLevel: 0
             saveWaveforms: false
-            containsDTCHeaders: true
+            missingDTCHeaders: false
         }
     }
 }
