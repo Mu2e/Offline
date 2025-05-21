@@ -373,10 +373,12 @@ void art::StrawDigisFromArtdaqFragments::produce(Event& event) {
 // force geographical address and mark the produced digi
 //-----------------------------------------------------------------------------
               else{
-                print_(std::format("ERROR: hit chid:{:04x} inconsistent with the dtc_id:{} and link_id:{}", hit_data->StrawIndex, dtc_id, link_id));
                 mn_id = channel_map_[dtc_id][link_id];
                 if (mn_id == StrawDigisFromArtdaqFragments::invalid_minnesota_){
-                  std::string msg = "encountered invalid PanelID";
+                  std::string msg = "encountered invalid PanelID;";
+                  msg += " no panel mapped from DTC " + std::to_string(dtc_id);
+                  msg += " / link # " + std::to_string(link_id);
+                  msg += "; packed StrawId = " + std::format("0x{:04x}", hit_data->StrawIndex);
                   throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
                 }
                 if (minnesota_map_.count(mn_id) < 1){
