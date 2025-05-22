@@ -11,6 +11,7 @@ DAQ : {
             debugMode     : 0                        ##
             debugBits     : [ "bit0:0", "bit1:0" ]   ## 100 in total, configure printout details
             saveWaveforms : false
+            dtcHeaderPresent: true                     ## present for runs > 107246
             geography     : []                       ## for now, a real job should include a real map
         }
     }

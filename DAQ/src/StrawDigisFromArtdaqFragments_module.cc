@@ -2,7 +2,7 @@
 // PM
 // StrawDigisFromArtdaqFragments:  add tracker data products to the event
 // debugMode_ > 0 : enables diagnostic printouts
-// debugBit_[0]: ???
+// debugBit_[0]: print raw fragments
 // debugBit_[1]: digis
 // debugBit_[2]: waveforms
 // ======================================================================
@@ -23,6 +23,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Data/TrackerDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
+#include "artdaq-core-mu2e/Overlays/DTC_Packets/DTC_EventHeader.h"
 #include "artdaq-core-mu2e/Overlays/DTC_Packets/DTC_RocDataHeaderPacket.h"
 
 #include "Offline/DataProducts/inc/StrawId.hh"
@@ -58,10 +59,11 @@ class mu2e::StrawDigisFromArtdaqFragments : public art::EDProducer {
 public:
 
   struct Config {
-    fhicl::Atom<int>              diagLevel    {fhicl::Name("diagLevel"    ), fhicl::Comment("diagnostic severity level, default = 0" ), 0};
-    fhicl::Atom<int>              debugMode    {fhicl::Name("debugMode"    ), fhicl::Comment("debug mode, default = 0"                ), 0};
-    fhicl::Sequence<std::string>  debugBits    {fhicl::Name("debugBits"    ), fhicl::Comment("debug bits"                             )   };
-    fhicl::Atom<bool>             saveWaveforms{fhicl::Name("saveWaveforms"), fhicl::Comment("save StrawDigiADCWaveforms, default = true"), true};
+    fhicl::Atom<int>              diagLevel       {fhicl::Name("diagLevel"       ), fhicl::Comment("diagnostic severity level, default = 0"    )};
+    fhicl::Atom<int>              debugMode       {fhicl::Name("debugMode"       ), fhicl::Comment("debug mode, default = 0"                   )};
+    fhicl::Sequence<std::string>  debugBits       {fhicl::Name("debugBits"       ), fhicl::Comment("debug bits"                                )};
+    fhicl::Atom<bool>             saveWaveforms   {fhicl::Name("saveWaveforms"   ), fhicl::Comment("save StrawDigiADCWaveforms, default = true")};
+    fhicl::Atom<bool>             dtcHeaderPresent{fhicl::Name("dtcHeaderPresent"), fhicl::Comment("present for runs > 107246, default = true" )};
 
     // individual tuple specifying a minnesota label, e.g. MN123,
     // with geographic plane/panel numbers, i.e. from DocDB-#888
@@ -133,6 +135,7 @@ private:
   std::vector<std::string> debugBits_;
   int                      debugBit_[kNDebugBits];  
   bool      saveWaveforms_;
+  bool      dtcHeaderPresent_;
                                         // the rest
   int       nADCPackets_{-1};           // N(ADC packets per hit)
   int       nSamples_   {-1};           // N(ADC samples per hit)
@@ -154,12 +157,13 @@ private:
 
 // ======================================================================
 mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::EDProducer::Table<Config>& config) :
-    art::EDProducer{config},
-    diagLevel_    (config().diagLevel    ()),
-    debugMode_    (config().debugMode    ()),
-    debugBits_    (config().debugBits    ()),
-    saveWaveforms_(config().saveWaveforms()),
-    event_(nullptr)
+    art::EDProducer  {config},
+    diagLevel_       (config().diagLevel    ()),
+    debugMode_       (config().debugMode    ()),
+    debugBits_       (config().debugBits    ()),
+    saveWaveforms_   (config().saveWaveforms()),
+    dtcHeaderPresent_(config().dtcHeaderPresent()),
+    event_           (nullptr)
 {
   produces<mu2e::StrawDigiCollection>();
   if (saveWaveforms_) produces<mu2e::StrawDigiADCWaveformCollection>();
@@ -319,7 +323,13 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
       int nfrag = handle->size();
       for (int ifrag=0; ifrag<nfrag; ifrag++) {
         const artdaq::Fragment* frag = &handle->at(ifrag);
-        uint8_t* fdata   = (uint8_t*) (frag->dataBegin());
+        uint8_t* fdata = (uint8_t*) (frag->dataBegin());
+        
+                                        // runs > 107236
+        if (dtcHeaderPresent_) {
+          fdata += sizeof(DTCLib::DTC_EventHeader);
+        }
+
         if (debugMode_ and (debugBit_[0] > 0)) {
           print_(std::format("-- fragment number:{}\n",ifrag));
           print_fragment(frag);
@@ -371,7 +381,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
             nhits       = rdh->packetCount/(nADCPackets_+1);
 
             if (debugMode_) {
-              print_(std::format("--- DTC:{} ROC:{} nhits:{}\n",dtc_id,link_id,nhits));
+              print_(std::format("-- DTC:{} ROC:{} nhits:{}\n",dtc_id,link_id,nhits));
             }
             
             for (int ihit=0; ihit<nhits; ihit++) {
