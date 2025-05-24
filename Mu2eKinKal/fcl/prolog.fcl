@@ -406,7 +406,6 @@ Mu2eKinKal : {
       SampleSurfaces : ["TT_Mid"]
     }
     UsePDGCharge : false
-    PrioritizeCaloHits : true
   }
 
   LHDriftFit : {
@@ -426,7 +425,6 @@ Mu2eKinKal : {
     }
     Extrapolation : @local::Mu2eKinKal.LOOPEXTRAPOLATION
     UsePDGCharge: false
-    PrioritizeCaloHits : true
   }
 
   KLSeedFit : {

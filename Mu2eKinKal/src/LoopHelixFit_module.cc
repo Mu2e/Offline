@@ -157,7 +157,6 @@ namespace mu2e {
     fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") };
     // LoopHelix module specific config
     fhicl::OptionalAtom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Input helix seed slope significance threshold to assume the direction")};
-    fhicl::Atom<bool> prioritizeCaloHits{ Name("PrioritizeCaloHits"), Comment("Prioritize tracks with calo-hits when determining the best fit direction")};
     fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
   };
@@ -200,7 +199,6 @@ namespace mu2e {
       PDGCode::type fpart_;
       double slopeSigThreshold_; //helix slope significance threshold to assume the direction
       bool useHelixSlope_; //use the helix slope estimate to decide the fit direction
-      bool prioritizeCaloHits_; //prioritize tracks with a calo-hit when deciding the track direction
       TrkFitDirection fdir_;
       bool usePDGCharge_; // use the pdg particle charge: otherwise use the helicity and direction to determine the charge
       KKFIT kkfit_; // fit helper
@@ -242,7 +240,6 @@ namespace mu2e {
     print_(settings().modSettings().printLevel()),
     fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
     useHelixSlope_(settings().slopeSigThreshold(slopeSigThreshold_)),
-    prioritizeCaloHits_(settings().prioritizeCaloHits()),
     usePDGCharge_(settings().pdgCharge()),
     kkfit_(settings().kkfitSettings()),
     kkmat_(settings().matSettings()),

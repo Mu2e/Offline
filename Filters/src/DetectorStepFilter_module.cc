@@ -125,7 +125,7 @@ namespace mu2e {
     }
 
   // input must be a physical time!
-  bool DetectorStepFilter::timeCut(double ptime) const { return (!timecut_) || (ptime > minTime_ && ptime < maxTime_); }
+  bool DetectorStepFilter::timeCut(double ptime) const { return (!timecut_) || (ptime > minTime_ || ptime < maxTime_); } // maxtime is 1 cycle around!!!
 
   bool DetectorStepFilter::filter(art::Event& event) {
     double mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
