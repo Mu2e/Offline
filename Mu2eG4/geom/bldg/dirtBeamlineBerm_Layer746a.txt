@@ -111,3 +111,7 @@ vector<double> dirt.beamline.berm.l746a.yPositions = {
 2498.53, // 49
 2438.40 // 50
 };
+
+// Local Variables:
+// mode:c++
+// End:

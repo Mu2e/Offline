@@ -59,7 +59,9 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/backfillPsAreaRWallFootLevel_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillPsAreaTopLayer_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillPsHatchE.txt"
+#include "Offline/Mu2eG4/geom/bldg/backfillPsHatchE2.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillPsHatchS.txt"
+#include "Offline/Mu2eG4/geom/bldg/backfillPsHatchS2.txt"
 //#include "Mu2eG4/geom/bldg/backfillTSarea-W1.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1Lower.txt"
 //#include "Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotch2.txt"
@@ -346,7 +348,9 @@ vector<string> bldg.prefix.list = {
    "building.backfill.psArea.RWallFootLevel",
    "building.backfill.psArea.TopLayer",
    "building.backfill.psHatch.E",
+   "building.backfill.psHatch.E2",
    "building.backfill.psHatch.S",
+   "building.backfill.psHatch.S2",
    "building.backfill.TSarea-W.1Lower",
    "building.backfill.TSarea-W.1UpperNotchLower",
    "building.backfill.TSarea-W.1UpperNotchUpper1",
@@ -609,8 +613,16 @@ vector<string> rotated.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer751a.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer751b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer752a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer752b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer753a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer753b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer754a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer754b.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer755b.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer755a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer756a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer756b.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPSHatchUpperBoundary.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingW.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlabE.txt"
@@ -733,8 +745,16 @@ vector<string> dirt.prefix.list = {
   "dirt.beamline.berm.l751a",
   "dirt.beamline.berm.l751b",
   "dirt.beamline.berm.l752a",
+  "dirt.beamline.berm.l752b",
   "dirt.beamline.berm.l753a",
+  "dirt.beamline.berm.l753b",
   "dirt.beamline.berm.l754a",
+  "dirt.beamline.berm.l754b",
+  "dirt.beamline.berm.l755b",
+  "dirt.beamline.berm.l755a",
+  "dirt.beamline.berm.l756a",
+  "dirt.beamline.berm.l756b",
+  "dirt.PSHatch.Upper.Boundary",
   "dirt.beamline.ceiling.E",
   "dirt.beamline.ceiling.W",
   "dirt.beamline.slab.E",
