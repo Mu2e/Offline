@@ -4,7 +4,7 @@
 
 string building.backfill.foundation.N.name     = "backfillFoundationN";
 
-string building.backfill.foundation.N.material = "CA7Backfill";
+string building.backfill.foundation.N.material = "MBOverburden";
 
 double building.backfill.foundation.N.offsetFromMu2eOrigin.x   = 947.4;
 double building.backfill.foundation.N.offsetFromFloorSurface.y = -685.8;

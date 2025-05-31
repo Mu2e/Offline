@@ -4,7 +4,7 @@
 
 string building.backfill.escape.stair.W01.name     = "backfillEscapeStairW01";
 
-string building.backfill.escape.stair.W01.material = "CA7Backfill";
+string building.backfill.escape.stair.W01.material = "MBOverburden";
 
 double building.backfill.escape.stair.W01.offsetFromMu2eOrigin.x   = 947.4;
 double building.backfill.escape.stair.W01.offsetFromFloorSurface.y = 3784.6;
