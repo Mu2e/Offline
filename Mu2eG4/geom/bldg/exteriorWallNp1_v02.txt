@@ -1,5 +1,5 @@
 string building.exteriorWall.N.p1.name     = "exteriorWallNp1";
-string building.exteriorWall.N.p1.material = "AluminumHoneycomb";
+string building.exteriorWall.N.p1.material = "MildSteel";
 double building.exteriorWall.N.p1.offsetFromMu2eOrigin.x   = 947.40;
 double building.exteriorWall.N.p1.offsetFromFloorSurface.y = 13563.55;
 double building.exteriorWall.N.p1.offsetFromMu2eOrigin.z   = -3581.40;
@@ -11,8 +11,8 @@ vector<double> building.exteriorWall.N.p1.xPositions = {
 29895.85 // 3
 };
 vector<double> building.exteriorWall.N.p1.yPositions = {
-2438.35, // 0
-2438.35, // 1
-2031.95, // 2
-2031.95 // 3
+2235.91, // 0
+2235.91, // 1
+2234.39, // 2
+2234.39 // 3
 };

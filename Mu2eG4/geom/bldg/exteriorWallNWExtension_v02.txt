@@ -1,0 +1,18 @@
+string building.exteriorWall.NW.extension.name     = "exteriorWallNWExtension";
+string building.exteriorWall.NW.extension.material = "CONCRETE_MARS";
+double building.exteriorWall.NW.extension.offsetFromMu2eOrigin.x   = 947.40;
+double building.exteriorWall.NW.extension.offsetFromFloorSurface.y = 6730.90;
+double building.exteriorWall.NW.extension.offsetFromMu2eOrigin.z   = -3581.40;
+double building.exteriorWall.NW.extension.yHalfThickness           = 634.90;
+vector<double> building.exteriorWall.NW.extension.xPositions = {
+-2921.00, // 0
+-2006.60, // 1
+-2006.60, // 2
+-2921.00 // 3
+};
+vector<double> building.exteriorWall.NW.extension.yPositions = {
+7518.40, // 0
+7518.40, // 1
+-2438.30, // 2
+-2438.30 // 3
+};

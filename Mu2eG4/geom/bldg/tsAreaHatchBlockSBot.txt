@@ -1,27 +1,18 @@
 string building.tsArea.hatchblock.southBot.name     = "tsAreaHatchBlockSouthBot";
-
 string building.tsArea.hatchblock.southBot.material = "CONCRETE_MARS";
-
-double building.tsArea.hatchblock.southBot.offsetFromMu2eOrigin.x   = 947.4;
-double building.tsArea.hatchblock.southBot.offsetFromFloorSurface.y = 6165.85;
-double building.tsArea.hatchblock.southBot.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.tsArea.hatchblock.southBot.yHalfThickness           = 222.25;
-
+double building.tsArea.hatchblock.southBot.offsetFromMu2eOrigin.x   = 947.40;
+double building.tsArea.hatchblock.southBot.offsetFromFloorSurface.y = 6400.80;
+double building.tsArea.hatchblock.southBot.offsetFromMu2eOrigin.z   = -3581.40;
+double building.tsArea.hatchblock.southBot.yHalfThickness           = 457.20;
 vector<double> building.tsArea.hatchblock.southBot.xPositions = {
-  6324.6,   // B
-  -330.2,   // A
-  -330.2,   // D
-  6324.6   // E
+-355.60, // 0
+-355.60, // 1
+6654.80, // 2
+6654.80 // 3
 };
-
 vector<double> building.tsArea.hatchblock.southBot.yPositions = {
-  -8661.4,   // C1
-  -8661.4,   // A
-  -4025.9,   // D
-  -4025.9   // E
+-8661.40, // 0
+-6705.70, // 1
+-6705.70, // 2
+-8661.40 // 3
 };
-
-// Local Variables:
-// mode:c++
-// End:

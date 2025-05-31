@@ -4,7 +4,7 @@
 
 string building.backfill.beamline.name     = "backfillBeamline";
 
-string building.backfill.beamline.material = "CA7Backfill";
+string building.backfill.beamline.material = "MBOverburden";
 
 double building.backfill.beamline.offsetFromMu2eOrigin.x   = 947.4;
 double building.backfill.beamline.offsetFromFloorSurface.y = 2870.2;

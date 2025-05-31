@@ -1,22 +1,22 @@
 string building.exteriorWall.E.name     = "exteriorWallE";
-string building.exteriorWall.E.material = "CONCRETE_MARS";
+string building.exteriorWall.E.material = "MildSteel";
 double building.exteriorWall.E.offsetFromMu2eOrigin.x   = 947.40;
 double building.exteriorWall.E.offsetFromFloorSurface.y = 12725.40;
 double building.exteriorWall.E.offsetFromMu2eOrigin.z   = -3581.40;
 double building.exteriorWall.E.yHalfThickness           = 4953.00;
 vector<double> building.exteriorWall.E.xPositions = {
-45745.40, // 0
-45669.20, // 1
+45504.86, // 0
+45504.86, // 1
 37985.70, // 2
 37985.70, // 3
-45262.80, // 4
-45262.80 // 5
+45503.34, // 4
+45503.34 // 5
 };
 vector<double> building.exteriorWall.E.yPositions = {
 1523.90, // 0
--10541.00, // 1
--10541.00, // 2
--10134.60, // 3
--10134.60, // 4
+-10338.56, // 1
+-10338.56, // 2
+-10337.04, // 3
+-10337.04, // 4
 1523.90 // 5
 };

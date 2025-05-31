@@ -1,5 +1,5 @@
 string dirt.psArea.dirtSlab.N1.name     = "dirtPsAreaDirtSlabN1";
-string dirt.psArea.dirtSlab.N1.material = "CA7Backfill";
+string dirt.psArea.dirtSlab.N1.material = "MBOverburden";
 double dirt.psArea.dirtSlab.N1.offsetFromMu2eOrigin.x   = 947.40;
 double dirt.psArea.dirtSlab.N1.offsetFromFloorSurface.y = 6680.30;
 double dirt.psArea.dirtSlab.N1.offsetFromMu2eOrigin.z   = -3581.40;
@@ -7,7 +7,7 @@ vector<int> dirt.psArea.dirtSlab.N1.xreplace ={22 ,23 };
 vector<int> dirt.psArea.dirtSlab.N1.yreplace ={23 ,24 };
 double dirt.psArea.dirtSlab.N1.yHalfThickness           = 152.30;
 vector<double> dirt.psArea.dirtSlab.N1.xPositions = {
--1270.00, // 0
+-2921.10, // 0
 -4140.20, // 1
 -4140.20, // 2
 -4749.80, // 3
@@ -44,8 +44,12 @@ vector<double> dirt.psArea.dirtSlab.N1.xPositions = {
 -20458.67, // 34
 -14908.02, // 35
 -12318.95, // 36
--12318.95, // 37
--1270.00 // 38
+-12318.93, // 37
+-1270.00, // 38
+-1270.00, // 39
+-2006.50, // 40
+-2006.50, // 41
+-2921.10 // 42
 };
 vector<double> dirt.psArea.dirtSlab.N1.yPositions = {
 2438.40, // 0
@@ -85,6 +89,10 @@ vector<double> dirt.psArea.dirtSlab.N1.yPositions = {
 5905.83, // 34
 7290.02, // 35
 7290.02, // 36
-7187.48, // 37
-7187.48 // 38
+9702.79, // 37
+9702.79, // 38
+2438.40, // 39
+2438.40, // 40
+7518.50, // 41
+7518.50 // 42
 };

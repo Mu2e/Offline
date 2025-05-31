@@ -2,7 +2,7 @@
 
 string building.backfill.psHatch.S.name     = "backfillPsHatchS";
 
-string building.backfill.psHatch.S.material = "CA7Backfill";
+string building.backfill.psHatch.S.material = "MBOverburden";
 
 double building.backfill.psHatch.S.offsetFromMu2eOrigin.x   = 947.4;
 double building.backfill.psHatch.S.offsetFromFloorSurface.y = 8178.9;

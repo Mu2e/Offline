@@ -1,47 +1,34 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_exteriorWallS.ccl
-
 string building.exteriorWall.S.name     = "exteriorWallS";
-
-string building.exteriorWall.S.material = "CONCRETE_MARS";
-
-double building.exteriorWall.S.offsetFromMu2eOrigin.x   = 947.4;
-double building.exteriorWall.S.offsetFromFloorSurface.y = 11049;
-double building.exteriorWall.S.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.exteriorWall.S.yHalfThickness           = 3276.6;
-
+string building.exteriorWall.S.material = "MildSteel";
+double building.exteriorWall.S.offsetFromMu2eOrigin.x   = 947.40;
+double building.exteriorWall.S.offsetFromFloorSurface.y = 11049.00;
+double building.exteriorWall.S.offsetFromMu2eOrigin.z   = -3581.40;
+double building.exteriorWall.S.yHalfThickness           = 3276.60;
 vector<double> building.exteriorWall.S.xPositions = {
-  38087.3,   // q2
-  38087.3,   // q3
-  31076.9,   // q4
-  31076.9,   // q5
-  -2921,   // q6
-  -2921,   // q7
-  -2514.6,   // r1
-  -2514.6,   // r2
-  30556.2,   // r3
-  30556.2,   // r4
-  37566.6,   // r5
-  37566.6   // r6
+37987.22, // 0
+37987.22, // 1
+30817.31, // 2
+30817.31, // 3
+-2718.56, // 4
+-2718.56, // 5
+-2717.04, // 6
+-2717.04, // 7
+30815.79, // 8
+30815.79, // 9
+37985.70, // 10
+37985.70 // 11
 };
-
 vector<double> building.exteriorWall.S.yPositions = {
-  -10551,   // q2 - DNB mod
-  -18237.2,   // q3
-  -18237.2,   // q4
-  -25857.2,   // q5
-  -25857.2,   // q6
-  -7870,   // q7 - DNB mod
-  -7870,   // r1 - DNB mod
-  -25450.8,   // r2
-  -25450.8,   // r3
-  -17830.8,   // r4
-  -17830.8,   // r5
-  -10668   // r6
+-10338.66, // 0
+-18034.76, // 1
+-18034.76, // 2
+-25654.76, // 3
+-25654.76, // 4
+-7870.00, // 5
+-7870.00, // 6
+-25653.24, // 7
+-25653.24, // 8
+-18033.24, // 9
+-18033.24, // 10
+-10338.66 // 11
 };
-
-// Local Variables:
-// mode:c++
-// End:

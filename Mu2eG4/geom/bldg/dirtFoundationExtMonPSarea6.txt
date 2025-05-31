@@ -4,7 +4,7 @@
 
 string dirt.foundation.extMonPSarea.6.name     = "dirtFoundationExtMonPSarea6";
 
-string dirt.foundation.extMonPSarea.6.material = "CA7Backfill";
+string dirt.foundation.extMonPSarea.6.material = "MBOverburden";
 
 double dirt.foundation.extMonPSarea.6.offsetFromMu2eOrigin.x   = 947.4;
 double dirt.foundation.extMonPSarea.6.offsetFromFloorSurface.y = 762.0;

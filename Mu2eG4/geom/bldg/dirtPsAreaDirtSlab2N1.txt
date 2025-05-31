@@ -1,5 +1,5 @@
 string dirt.psArea.dirtSlab2.N1.name     = "dirtPsAreaDirtSlab2N1";
-string dirt.psArea.dirtSlab2.N1.material = "CA7Backfill";
+string dirt.psArea.dirtSlab2.N1.material = "MBOverburden";
 double dirt.psArea.dirtSlab2.N1.offsetFromMu2eOrigin.x   = 947.40;
 double dirt.psArea.dirtSlab2.N1.offsetFromFloorSurface.y = 7226.40;
 double dirt.psArea.dirtSlab2.N1.offsetFromMu2eOrigin.z   = -3581.40;

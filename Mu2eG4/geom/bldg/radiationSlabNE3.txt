@@ -1,29 +1,22 @@
-// SimpleConfig geometry file for north-east radiation slab 3
-
 string building.radiation.slabne3.name     = "radiationSlabNE3";
-
 string building.radiation.slabne3.material = "CONCRETE_MARS";
-
-double building.radiation.slabne3.offsetFromMu2eOrigin.x   = 947.4;
-double building.radiation.slabne3.offsetFromFloorSurface.y = 8686.8;
-double building.radiation.slabne3.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.radiation.slabne3.yHalfThickness           = 914.4;
-
+double building.radiation.slabne3.offsetFromMu2eOrigin.x   = 947.40;
+double building.radiation.slabne3.offsetFromFloorSurface.y = 8915.50;
+double building.radiation.slabne3.offsetFromMu2eOrigin.z   = -3581.40;
+double building.radiation.slabne3.yHalfThickness           = 228.60;
 vector<double> building.radiation.slabne3.xPositions = {
-  7975.8,   // B
-  12547.8,
-  12547.8,
-  7975.8    // C
+7975.90, // 0
+11633.60, // 1
+11633.60, // 2
+9804.80, // 3
+9804.80, // 4
+7975.90 // 5
 };
-
 vector<double> building.radiation.slabne3.yPositions = {
-  2031.9,
-  2031.9,
-  1574.7,
-  1574.7
+2031.65, // 0
+2031.65, // 1
+1574.45, // 2
+1574.45, // 3
+660.05, // 4
+660.05 // 5
 };
-
-// Local Variables:
-// mode:c++
-// End:

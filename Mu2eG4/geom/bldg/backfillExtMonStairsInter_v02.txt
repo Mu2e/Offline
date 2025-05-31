@@ -1,5 +1,5 @@
 string building.backfill.extMon.stairs.inter.name     = "backfillExtMonStairsInter";
-string building.backfill.extMon.stairs.inter.material = "CA7Backfill";
+string building.backfill.extMon.stairs.inter.material = "MBOverburden";
 double building.backfill.extMon.stairs.inter.offsetFromMu2eOrigin.x   = -7523.40;
 double building.backfill.extMon.stairs.inter.offsetFromFloorSurface.y = 5994.40;
 double building.backfill.extMon.stairs.inter.offsetFromMu2eOrigin.z   = -18986.40;

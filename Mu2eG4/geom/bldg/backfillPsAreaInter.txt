@@ -4,7 +4,7 @@
 
 string building.backfill.psArea.Inter.name     = "backfillPsAreaInter";
 
-string building.backfill.psArea.Inter.material = "CA7Backfill";
+string building.backfill.psArea.Inter.material = "MBOverburden";
 
 double building.backfill.psArea.Inter.offsetFromMu2eOrigin.x   = 947.4;
 double building.backfill.psArea.Inter.offsetFromFloorSurface.y = 5791.2;

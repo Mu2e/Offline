@@ -5,7 +5,7 @@
 string dirt.island.name     = "dirtIsland";
 
 //string dirt.island.material = "MBOverburden";
-string dirt.island.material = "CA7Backfill";
+string dirt.island.material = "MBOverburden";
 
 double dirt.island.offsetFromMu2eOrigin.x   = 947.4;
 double dirt.island.offsetFromFloorSurface.y = 1219.2;
