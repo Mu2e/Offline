@@ -413,6 +413,7 @@ namespace mu2e {
                               _FrontSLeakForSSC,
                               _FrontSCopperL,
                               _FrontS_H,
+                              _FrontSHole_r,
                               _FrontSOffsetInMu2e,
                               _FrontSRotation));
 
@@ -607,6 +608,7 @@ namespace mu2e {
                               _BackSBPHeight,
                               _BackS_dX,
                               _BackS_dY,
+                              _BackSPipeGap,
                               _BackSOffsetInMu2e,
                               _BackSRotation));
 
@@ -854,6 +856,8 @@ namespace mu2e {
     _FrontSLeakForSSC      = _config.getDouble("stm.FrontShielding.LeakForSSC");
     _FrontSCopperL         = _config.getDouble("stm.FrontShielding.CopperL");
     _FrontS_H              = _config.getDouble("stm.FrontShielding.FrontS_H");
+    _FrontSHole_r          = _config.getDouble("stm.FrontShielding.FrontSHole_r");
+
 
     _HPGeBuild                = _config.getBool("stm.HPGe.build");
     _HPGecrystalMaterial      = _config.getString("stm.HPGe.crystalMaterial");
@@ -944,7 +948,7 @@ namespace mu2e {
     _BackSBPHeight        = _config.getDouble("stm.BackShielding.BPHeight");
     _BackS_dX             = _config.getDouble("stm.BackShielding.BackS_dX");
     _BackS_dY             = _config.getDouble("stm.BackShielding.BackS_dY");
-
+    _BackSPipeGap         = _config.getDouble("stm.BackShielding.PipeGap");
 
 
     _InnerShieldingBuild        = _config.getBool("stm.InnerShielding.build");
