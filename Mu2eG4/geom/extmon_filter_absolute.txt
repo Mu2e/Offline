@@ -1,33 +1,23 @@
 // This file specifies position of the the extinction monitor filter channel.
 //
-// As a workaround for the unexplicable beam dump move by commit
-// e8c06f49b0857265ebaa4d31f23252c35d55c0fd we specify extmon filter
-// position in a "absolute" way in the Mu2e coordinate system, without
-// tying it to the beam dump position.
+// See docdb-52582v1
 //
-// Andrei Gaponenko, 2024
+// Andrei Gaponenko, 2025
 
-// Specify all elements in Mu2e coordinates
+// Specify all elements in the Mu2e coordinate system
 string extMonFNAL.filter.positioning = "Absolute";
 
-// The following two values are computed using the start and end of
-// the upstream collimator given in docdb-5197-v2.
-double         extMonFNAL.filter.collimator1.dxdz = 0.21236639;
-double         extMonFNAL.filter.collimator1.dydz = -0.17054298;
-vector<double> extMonFNAL.filter.collimator1.centerInMu2e = { 1267.36, 2108.325, -18528.93 }; // 0.5*start+0.5*end, using docdb-5197-v2
+double         extMonFNAL.filter.collimator1.dxdz =  0.21221122;
+double         extMonFNAL.filter.collimator1.dydz = -0.17050919;
+vector<double> extMonFNAL.filter.collimator1.centerInMu2e = { 1257.26, 2115.45,  -18575.00 };
 
-// The following two values are computed using the start and end of
-// the filter magnet given in docdb-5197-v2.
-double         extMonFNAL.filter.magnet.dxdz = 0.21236843;
-double         extMonFNAL.filter.magnet.dydz = -0.13985785;
-vector<double> extMonFNAL.filter.magnet.centerInMu2e = { 404.995, 2746.085, -22589.625 }; // 0.5*start+0.5*end, using docdb-5197-v2
+double         extMonFNAL.filter.magnet.dxdz = 0.21236062;
+double         extMonFNAL.filter.magnet.dydz = -0.13985543;
+vector<double> extMonFNAL.filter.magnet.centerInMu2e = { 403.86, 2746.10, -22594.30 };
 
-// The following two values are computed using the start and end of
-// the downstream collimator given in docdb-5197-v2.
-double         extMonFNAL.filter.collimator2.dxdz = 0.21236782;
-double         extMonFNAL.filter.collimator2.dydz = -0.10942018;
-vector<double> extMonFNAL.filter.collimator2.centerInMu2e = { -234.155, 3129.715, -25599.26 }; // 0.5*start+0.5*end, using docdb-5197-v2
-
+double         extMonFNAL.filter.collimator2.dxdz = 0.21205986;
+double         extMonFNAL.filter.collimator2.dydz = -0.10968310;
+vector<double> extMonFNAL.filter.collimator2.centerInMu2e = { -217.14,  3120.90,  -25520.80 };
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
