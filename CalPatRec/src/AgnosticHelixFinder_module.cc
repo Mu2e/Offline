@@ -453,6 +453,7 @@ namespace mu2e {
         int nHelicesInitial = _diagInfo.nHelices;
         _tcHits.clear();
         tcHitsFill(i);
+        if (_diagLevel == 1) fillAllHitsData();
         continueSearch = true;
         while (continueSearch == true) {
           findHelix(i, *hsColl, continueSearch);
