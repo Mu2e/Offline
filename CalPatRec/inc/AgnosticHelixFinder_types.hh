@@ -11,6 +11,11 @@ namespace mu2e {
       fhicl::Atom<std::string> tool_type{fhicl::Name("tool_type"), fhicl::Comment("tool type: AgnosticHelixFinderDiag")};
     };
 
+    struct hitInfo {
+      float eDep;
+    };
+
+
     struct tcInfo {
       int     nHelices;
       int     nComboHits;
@@ -37,6 +42,7 @@ namespace mu2e {
       std::vector<hsInfo>            helixSeedData;
       std::vector<lineSegmentInfo>   lineSegmentData;
       std::vector<finalLineInfo>     lineInfoData;
+      std::vector<hitInfo>           allHitsData;
     };
 
   } // namespace AgnosticHelixFinderTypes
