@@ -1,55 +1,105 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_DSarea_firstFloor_S.ccl
-
 string building.dsArea.firstFloor.S.name     = "dsAreaFirstFloorS";
-
 string building.dsArea.firstFloor.S.material = "CONCRETE_MARS";
-
-double building.dsArea.firstFloor.S.offsetFromMu2eOrigin.x   = 947.4;
-double building.dsArea.firstFloor.S.offsetFromFloorSurface.y = 7569.2;
-double building.dsArea.firstFloor.S.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.dsArea.firstFloor.S.yHalfThickness           = 203.2;
-
+double building.dsArea.firstFloor.S.offsetFromMu2eOrigin.x   = 947.40;
+double building.dsArea.firstFloor.S.offsetFromFloorSurface.y = 7569.20;
+double building.dsArea.firstFloor.S.offsetFromMu2eOrigin.z   = -3581.40;
+double building.dsArea.firstFloor.S.yHalfThickness           = 203.20;
 vector<double> building.dsArea.firstFloor.S.xPositions = {
-  -2921,   // A
-  45847,   // q
-  45847,   // g2
-  38163.5,   // q2
-  38163.5,   // q4
-  38430.2,   // g4
-  38430.2,   // g5
-  31153.1,   // g6
-  31153.1,   // g7
-  31419.8,   // g8
-  31419.8,   // g9
-  13233.4,   // g10
-  13233.4,   // g11
-  12014.2,   // g12
-  12014.2,   // g13
-  -2921   // q5
+-2921.00, // 0
+-609.60, // 1
+-609.60, // 2
+5308.60, // 3
+5308.60, // 4
+-609.50, // 5
+-609.50, // 6
+19827.88, // 7
+19827.88, // 8
+21158.10, // 9
+21158.10, // 10
+19827.98, // 11
+19827.98, // 12
+21971.10, // 13
+21971.10, // 14
+23815.67, // 15
+23815.67, // 16
+21971.20, // 17
+21971.20, // 18
+45847.00, // 19
+45847.00, // 20
+38163.50, // 21
+38163.50, // 22
+32689.80, // 23
+32689.80, // 24
+29895.80, // 25
+29895.80, // 26
+38163.50, // 27
+38163.50, // 28
+29794.20, // 29
+29794.20, // 30
+35585.40, // 31
+35585.40, // 32
+38163.50, // 33
+38163.50, // 34
+38430.20, // 35
+38430.20, // 36
+31153.10, // 37
+31153.10, // 38
+31419.80, // 39
+31419.80, // 40
+13233.40, // 41
+13233.40, // 42
+12014.20, // 43
+12014.20, // 44
+-2921.00 // 45
 };
-
 vector<double> building.dsArea.firstFloor.S.yPositions = {
-  -8661.4,   // A
-  -8661.4,   // q
-  -10668,   // g2
-  -10668,   // q2
-  -17678.4,   // q4
-  -17678.4,   // g4
-  -18288,   // g5
-  -18288,   // g6
-  -25298.4,   // g7
-  -25298.4,   // g8
-  -25908,   // g9
-  -25908,   // g10
-  -19431,   // g11
-  -19431,   // g12
-  -25908,   // g13
-  -25908   // q5
+-8661.40, // 0
+-8661.40, // 1
+-11277.60, // 2
+-11277.60, // 3
+-10769.60, // 4
+-10769.60, // 5
+-8661.40, // 6
+-8661.40, // 7
+-11404.60, // 8
+-11404.60, // 9
+-10566.40, // 10
+-10566.40, // 11
+-8661.40, // 12
+-8661.40, // 13
+-11404.60, // 14
+-11404.60, // 15
+-10566.40, // 16
+-10566.40, // 17
+-8661.40, // 18
+-8661.40, // 19
+-10668.00, // 20
+-10668.00, // 21
+-14427.10, // 22
+-14427.10, // 23
+-12090.40, // 24
+-12090.40, // 25
+-14427.20, // 26
+-14427.20, // 27
+-14732.00, // 28
+-14732.00, // 29
+-17475.20, // 30
+-17475.20, // 31
+-14732.10, // 32
+-14732.10, // 33
+-17678.40, // 34
+-17678.40, // 35
+-18288.00, // 36
+-18288.00, // 37
+-25298.40, // 38
+-25298.40, // 39
+-25908.00, // 40
+-25908.00, // 41
+-19431.00, // 42
+-19431.00, // 43
+-25908.00, // 44
+-25908.00 // 45
 };
-
 int building.dsArea.firstFloor.S.Notch.numberOfNotches  = 1;
 vector<double> building.dsArea.firstFloor.S.Notch.halfDims.1 = {76.2,127.,3350};
 vector<double> building.dsArea.firstFloor.S.Notch.position.1 = {18000.,-12801.6,-2159.};

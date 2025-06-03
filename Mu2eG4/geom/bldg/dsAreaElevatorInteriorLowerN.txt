@@ -1,0 +1,18 @@
+string building.dsArea.elevator.interior.lower.N.name     = "dsAreaElevatorInteriorLowerN";
+string building.dsArea.elevator.interior.lower.N.material = "CONCRETE_MARS";
+double building.dsArea.elevator.interior.lower.N.offsetFromMu2eOrigin.x   = 947.40;
+double building.dsArea.elevator.interior.lower.N.offsetFromFloorSurface.y = 1524.00;
+double building.dsArea.elevator.interior.lower.N.offsetFromMu2eOrigin.z   = -3581.40;
+double building.dsArea.elevator.interior.lower.N.yHalfThickness           = 1524.00;
+vector<double> building.dsArea.elevator.interior.lower.N.xPositions = {
+29895.80, // 0
+32994.60, // 1
+32994.60, // 2
+29895.80 // 3
+};
+vector<double> building.dsArea.elevator.interior.lower.N.yPositions = {
+-11684.00, // 0
+-11684.00, // 1
+-12090.40, // 2
+-12090.40 // 3
+};

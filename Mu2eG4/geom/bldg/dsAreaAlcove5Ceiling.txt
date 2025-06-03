@@ -1,29 +1,24 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_DSarea_alcove5_ceiling.ccl
-
 string building.dsArea.alcove5.ceiling.name     = "dsAreaAlcove5Ceiling";
-
 string building.dsArea.alcove5.ceiling.material = "CONCRETE_MARS";
-
-double building.dsArea.alcove5.ceiling.offsetFromMu2eOrigin.x   = 947.4;
-double building.dsArea.alcove5.ceiling.offsetFromFloorSurface.y = 3251.2;
-double building.dsArea.alcove5.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.dsArea.alcove5.ceiling.yHalfThickness           = 203.2;
-
+double building.dsArea.alcove5.ceiling.offsetFromMu2eOrigin.x   = 947.40;
+double building.dsArea.alcove5.ceiling.offsetFromFloorSurface.y = 3251.20;
+double building.dsArea.alcove5.ceiling.offsetFromMu2eOrigin.z   = -3581.40;
+double building.dsArea.alcove5.ceiling.yHalfThickness           = 203.20;
 vector<double> building.dsArea.alcove5.ceiling.xPositions = {
-  14046.2,   // g
-  14046.2,   // f
-  21158.2,   // e
-  21158.2   // d
+21158.20, // 0
+21158.20, // 1
+19827.78, // 2
+19827.78, // 3
+14046.20, // 4
+14046.20 // 5
 };
-
 vector<double> building.dsArea.alcove5.ceiling.yPositions = {
-  -8661.4,   // g
-  -11404.6,   // f
-  -11404.6,   // e
-  -8661.4   // d
+-8661.40, // 0
+-10566.50, // 1
+-10566.50, // 2
+-11404.60, // 3
+-11404.60, // 4
+-8661.40 // 5
 };
 
 int building.dsArea.alcove5.ceiling.Notch.numberOfNotches  = 1;
