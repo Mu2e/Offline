@@ -426,7 +426,6 @@ namespace mu2e {
       _diagInfo.timeClusterData.clear();
       _diagInfo.helixSeedData.clear();
       _diagInfo.lineSegmentData.clear();
-
     }
 
     // flag whether event is intense or not
@@ -632,7 +631,6 @@ namespace mu2e {
       return _chColl->at(a.hitIndice).pos().z() > _chColl->at(b.hitIndice).pos().z();
     });
   }
-
 
   //-----------------------------------------------------------------------------
   // logic for setting certain flags on hits

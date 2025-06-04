@@ -22,8 +22,7 @@ namespace mu2e {
            kNTimeClusterHistsSets = 1,
            kNHelixSeedHistsSets = 1,
            kNLineInfoHistsSets = 1,
-           kNLineSegmentHistsSets = 1
-    };
+           kNLineSegmentHistsSets = 1 };
 
     struct EventHists {
       TH1F* nHelices;
