@@ -22,8 +22,7 @@ namespace mu2e {
            kNTimeClusterHistsSets = 1,
            kNHelixSeedHistsSets = 1,
            kNLineInfoHistsSets = 1,
-           kNLineSegmentHistsSets = 1,
-           kNHitHistsSets =1
+           kNLineSegmentHistsSets = 1
     };
 
     struct EventHists {
@@ -35,10 +34,6 @@ namespace mu2e {
       TH1F* nHelicesPerTC;
       TH1F* nComboHitsPerTC;
       TH1F* nStrawHitsPerTC;
-    };
-
-    struct HitHists {
-      TH1F* hitEdep;
     };
 
     struct HelixSeedHists {
@@ -60,7 +55,6 @@ namespace mu2e {
       HelixSeedHists* _helixSeedHists[kNHelixSeedHistsSets];
       LineInfoHists* _lineInfoHists[kNLineInfoHistsSets];
       LineSegmentHists* _lineSegmentHists[kNLineSegmentHistsSets];
-      HitHists*           _hitHists[kNHitHistsSets];
     };
 
   protected:
@@ -77,14 +71,12 @@ namespace mu2e {
     int bookHelixSeedHistograms(HelixSeedHists* Hist, art::TFileDirectory* Dir);
     int bookLineInfoHistograms(LineInfoHists* Hist, art::TFileDirectory* Dir);
     int bookLineSegmentHistograms(LineSegmentHists* Hist, art::TFileDirectory* Dir);
-    int bookHitHistograms(HitHists* Hist, art::TFileDirectory* Dir);
 
     int fillEventHistograms(EventHists* Hist, diagInfo* Data);
     int fillTimeClusterHistograms(TimeClusterHists* Hist, diagInfo* Data, int loopIndex);
     int fillHelixSeedHistograms(HelixSeedHists* Hist, diagInfo* Data, int loopIndex);
     int fillLineInfoHistograms(LineInfoHists* Hist, diagInfo* Data, int loopIndex);
     int fillLineSegmentHistograms(LineSegmentHists* Hist, diagInfo* Data, int loopIndex);
-    int fillHitHistograms(HitHists* Hist, diagInfo* Data, int loopIndex);
 
     virtual int bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) override;
     virtual int fillHistograms(void* Data, int Mode = -1) override;
@@ -146,15 +138,6 @@ namespace mu2e {
     return 0;
   }
 
-  //------------------------------------------------------------------------------
-  // hit histograms
-  int AgnosticHelixFinderDiag::bookHitHistograms(HitHists* Hist, art::TFileDirectory* Dir) {
-
-    Hist->hitEdep = Dir->make<TH1F>("hitEdep", "energy deposition of all hits", 600, 0, 0.006);
-
-    return 0;
-  }
-
   //-----------------------------------------------------------------------------
   int AgnosticHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) {
     char folder_name[20];
@@ -209,17 +192,6 @@ namespace mu2e {
       _hist._lineSegmentHists[i] = new LineSegmentHists;
       bookLineSegmentHistograms(_hist._lineSegmentHists[i], &tfdir);
     }
-
-    //-----------------------------------------------------------------------------
-    // book hit  histograms
-    //-----------------------------------------------------------------------------
-    for (int i = 0; i < kNHitHistsSets; i++) {
-      sprintf(folder_name, "h_%i", i);
-      art::TFileDirectory tfdir = Tfs->mkdir(folder_name);
-      _hist._hitHists[i] = new HitHists;
-      bookHitHistograms(_hist._hitHists[i], &tfdir);
-    }
-
 
     return 0;
   }
@@ -277,16 +249,6 @@ namespace mu2e {
   }
 
   //-----------------------------------------------------------------------------
-  int AgnosticHelixFinderDiag::fillHitHistograms(HitHists* Hist, diagInfo* Data,
-                                                         int loopIndex) {
-
-    // fill hit info
-    Hist->hitEdep->Fill(Data->allHitsData.at(loopIndex).eDep);
-
-    return 0;
-  }
-
-  //-----------------------------------------------------------------------------
   // Mode is not used here
   //-----------------------------------------------------------------------------
   int AgnosticHelixFinderDiag::fillHistograms(void* Data, int Mode) {
@@ -327,13 +289,6 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     for (int i = 0; i < (int)_data->lineSegmentData.size(); i++) {
       fillLineSegmentHistograms(_hist._lineSegmentHists[0], _data, i);
-    }
-
-    //-----------------------------------------------------------------------------
-    // fill hit histograms
-    //-----------------------------------------------------------------------------
-    for (int i = 0; i < (int)_data->allHitsData.size(); i++) {
-      fillHitHistograms(_hist._hitHists[0], _data, i);
     }
 
     return 0;

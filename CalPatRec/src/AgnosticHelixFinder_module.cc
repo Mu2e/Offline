@@ -265,7 +265,6 @@ namespace mu2e {
     float        computeHelixMomentum2     (float& radius, float& dphidz);
     float        computeHelixPerpMomentum  (float& radius);
     void         tcHitsFill                (size_t tc);
-    void         fillAllHitsData           ();
     void         setFlags                  ();
     void         resetFlags                ();
     void         findHelix                 (size_t tc, HelixSeedCollection& HSColl, bool& findAnotherHelix);
@@ -427,7 +426,6 @@ namespace mu2e {
       _diagInfo.timeClusterData.clear();
       _diagInfo.helixSeedData.clear();
       _diagInfo.lineSegmentData.clear();
-      _diagInfo.allHitsData.clear();
 
     }
 
@@ -453,7 +451,6 @@ namespace mu2e {
         int nHelicesInitial = _diagInfo.nHelices;
         _tcHits.clear();
         tcHitsFill(i);
-        if (_diagLevel == 1) fillAllHitsData();
         continueSearch = true;
         while (continueSearch == true) {
           findHelix(i, *hsColl, continueSearch);
@@ -635,23 +632,6 @@ namespace mu2e {
       return _chColl->at(a.hitIndice).pos().z() > _chColl->at(b.hitIndice).pos().z();
     });
   }
-
-  //-----------------------------------------------------------------------------
-  // fill _diagInfo.allHitsData vector after _tcHits if is filled
-  //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::fillAllHitsData() {
-
-    for (size_t i = 0; i < _tcHits.size(); i++) {
-      if (_tcHits[i].hitIndice == HitType::STOPPINGTARGET || _tcHits[i].hitIndice == CALOCLUSTER) {
-       continue;
-      }
-      int chCollIndex = _tcHits.at(i).hitIndice;
-      hitInfo _hitInfo;
-      _hitInfo.eDep = _chColl->at(chCollIndex).energyDep();
-      _diagInfo.allHitsData.push_back(_hitInfo);
-    }
-
-   }
 
 
   //-----------------------------------------------------------------------------
