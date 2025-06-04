@@ -137,6 +137,7 @@ namespace mu2e {
       ConcreteMars->AddElement( getElementOrThrow("Fe"), 0.014); //Iron
     }
 
+    // SDF the average density refers to the average density of an 8'' Masonry Concrete Unit (see doc-db 11669 Architectural Drawings pag.9)
     mat = uniqueMaterialOrThrow( "CONCRETE_MASONRY" );
     {
       G4Material* ConcreteMasonry = new G4Material(mat.name, 1.16*CLHEP::g/CLHEP::cm3, 9 );
