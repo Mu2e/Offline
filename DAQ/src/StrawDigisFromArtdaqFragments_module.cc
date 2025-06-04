@@ -37,6 +37,7 @@
 
 #include <iostream>
 
+#include <regex>
 #include <string>
 
 #include <map>
@@ -231,6 +232,17 @@ mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::ED
 }
 
 
+std::vector<std::string> splitString(const std::string& str, const std::string& delimiter) {
+    std::vector<std::string> result;
+    std::regex re(delimiter);
+    std::sregex_token_iterator it(str.begin(), str.end(), re, -1);
+    std::sregex_token_iterator end;
+    while (it != end) {
+        result.push_back(*it++);
+    }
+    return result;
+}
+
 //-----------------------------------------------------------------------------
 void mu2e::StrawDigisFromArtdaqFragments::print_(const std::string& Message, int DiagLevel,
                                                 const std::source_location& location) {
@@ -238,7 +250,10 @@ void mu2e::StrawDigisFromArtdaqFragments::print_(const std::string& Message, int
   if (event_) {
     std::cout << std::format(" event:{}:{}:{} ",event_->run(),event_->subRun(),event_->event());
   }
-  std::cout << location.file_name() << ":" << location.line()
+
+  std::vector<std::string> ss = splitString(location.file_name(),"/");
+
+  std::cout << ss.back() << ":" << location.line()
     //            << location.function_name()
             << ": " << Message;
 }
@@ -400,6 +415,13 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               mu2e::StrawDigiFlag digi_flag;
               uint16_t channel = static_cast<uint16_t>(hit_data->StrawIndex);
               uint16_t chid   = mu2e::StrawId(channel).straw(); // channel ID within the panel
+
+              if (chid > 95) {
+                print_(std::format("ERROR: hit with corrupted chid:{:04x} : straw:{} / dtc_id:{} link_id:{}, SKIPPING\n",
+                                   hit_data->StrawIndex, chid, dtc_id, link_id));
+                continue;
+              }
+              
               uint16_t mnid    = channel >> mu2e::StrawId::_panelsft;
               
               const TrkPanelMap_t* pm = panel_map_[dtc_id][link_id];  // DB here

@@ -5,7 +5,6 @@
 BEGIN_PROLOG
 DAQ : {
     producers : {
-        StrawDigisFromArtdaqFragments: { module_type: StrawDigisFromArtdaqFragments
         makeSD: { module_type: StrawDigisFromArtdaqFragments
             diagLevel     : 0                        ## not used yet
             debugMode     : 0                        ##
