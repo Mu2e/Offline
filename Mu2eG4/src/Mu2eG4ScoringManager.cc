@@ -20,7 +20,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4ScoringManager.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4ScoreWriter.hh"
-#include "Offline/Mu2eG4/inc/customScorer.hh"
+#include "Offline/Mu2eG4/inc/scorerDoseEffective.hh"
 #include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 
 #include "G4ScoringManager.hh"
@@ -127,13 +127,14 @@ namespace mu2e {
           case ScorerCode::VolumeFlux:
               mesh->SetPrimitiveScorer(new G4PSVolumeFlux3D(psName,1));
               break;
-          case ScorerCode::Custom:
-              mesh->SetPrimitiveScorer(new customScorer(psName,1));
+          case ScorerCode::DoseEffective:
+              mesh->SetPrimitiveScorer(new scorerDoseEffective(psName,1));
               break;
           default:
              throw cet::exception("BADINPUT")<<"Mu2eG4ScoringManager: unsupported scorer "<<psName<<". "
-                                             <<"Choose among CellFlux, DoseDeposit, EnergyDeposit, FlatSurfaceFlux, "
-                                             <<"TrackCounter, PassageCellFlux, VolumeFlux, Custom\n"<< std::endl;
+                                             <<"Choose among CellFlux, DoseDeposit, EnergyDeposit, "
+                                             <<"FlatSurfaceFlux, TrackCounter, PassageCellFlux, VolumeFlux, "
+                                             <<"DoseEffective \n"<< std::endl;
         }
 
         //optionaly add a particle filter
@@ -170,6 +171,8 @@ namespace mu2e {
   //------------------------------------------------------------------------------------------------------------
   void Mu2eG4ScoringManager::dumpInDataProduct(art::SubRun& subRun)
   {
+
+    if (!enabled_) return;
 
     //Write the configuration of each mesh
     auto summaryConfigColl = std::make_unique<ScorerConfigSummaryCollection>();
@@ -208,8 +211,8 @@ namespace mu2e {
     if (str.find("DoseDeposit")     != std::string::npos) return ScorerCode::DoseDeposit;
     if (str.find("EnergyDeposit")   != std::string::npos) return ScorerCode::EnergyDeposit;
     if (str.find("TrackCounter")    != std::string::npos) return ScorerCode::TrackCounter;
-    if (str.find("Custom")          != std::string::npos) return ScorerCode::Custom;
-    return ScorerCode::Unknown;
+    if (str.find("DoseEffective")   != std::string::npos) return ScorerCode::DoseEffective;
+   return ScorerCode::Unknown;
   }
 
   //------------------------------------------------------------------------------------------------------------
