@@ -16,11 +16,11 @@ namespace mu2e {
   class BackShielding {
   public:
     BackShielding(bool build, double thick, double length, double height,
-    double Back_dX, double Back_dY,
+    double Back_dX, double Back_dY, double PipeGap,
     CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(), CLHEP::HepRotation const & rotation = CLHEP::HepRotation()
     ):
       _build(build), _BPThick(thick), _BPLength(length), _BPHeight(height),
-      _Back_dX(Back_dX), _Back_dY(Back_dY),
+      _Back_dX(Back_dX), _Back_dY(Back_dY), _PipeGap(PipeGap),
       _originInMu2e(originInMu2e), _rotation(rotation)
     {}
 
@@ -30,7 +30,7 @@ namespace mu2e {
    double   BPHeight()                 const {return _BPHeight;}
    double   Back_dX()                  const {return _Back_dX;}
    double   Back_dY()                  const {return _Back_dY;}
-
+   double   PipeGap()                  const {return _PipeGap;}
 
     BackShielding() {}
   private:
@@ -41,6 +41,7 @@ namespace mu2e {
     double             _BPHeight;
     double             _Back_dX;
     double             _Back_dY;
+    double             _PipeGap;
 
     CLHEP::Hep3Vector  _originInMu2e;
     CLHEP::HepRotation _rotation;
