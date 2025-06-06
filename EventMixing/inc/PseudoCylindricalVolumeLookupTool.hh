@@ -24,7 +24,7 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "Offline/BeamlineGeom/inc/ProtonAbsorber.hh"
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "Offline/StoppingTargetGeom/inc/TargetFoil.hh"
 
@@ -59,7 +59,7 @@ namespace mu2e{
       std::string _st_name;
       std::string _other_name;
       std::unique_ptr< GeomHandle<DetectorSystem> > _frame;
-      std::unique_ptr< GeomHandle<MECOStyleProtonAbsorber> > _ipa;
+      std::unique_ptr< GeomHandle<ProtonAbsorber> > _ipa;
       std::unique_ptr< GeomHandle<StoppingTarget> > _st;
 
       // deferred initialization is necessary to make use of GeometryService
