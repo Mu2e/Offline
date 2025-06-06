@@ -47,7 +47,6 @@ namespace mu2e {
       fhicl::Atom<int>               useCCs           {Name("useCCs"           ), Comment("add CCs to TCs"              ) };
       fhicl::Atom<int>               recoverCCs       {Name("recoverCCs"       ), Comment("recover TCs using CCs"       ) };
       fhicl::Atom<art::InputTag>     chCollLabel      {Name("chCollLabel"      ), Comment("combo hit collection label"  ) };
-      fhicl::Atom<art::InputTag>     chCollLabel2     {Name("chCollLabel2"     ), Comment("for MC tool"                 ) };
       fhicl::Atom<art::InputTag>     tcCollLabel      {Name("tcCollLabel"      ), Comment("time cluster coll label"     ) };
       fhicl::Atom<art::InputTag>     ccCollLabel      {Name("ccCollLabel"      ), Comment("Calo Cluster coll label"     ) };
       fhicl::Sequence<std::string>   hitBkgBits       {Name("hitBkgBits"       ), Comment("background bits"             ) };
@@ -166,7 +165,6 @@ namespace mu2e {
     _useCaloClusters        (config().useCCs()                                  ),
     _recoverCaloClusters    (config().recoverCCs()                              ),
     _chLabel                (config().chCollLabel()                             ),
-    _chLabel2               (config().chCollLabel2()                            ),
     _tcLabel                (config().tcCollLabel()                             ),
     _ccLabel                (config().ccCollLabel()                             ),
     _hbkg                   (config().hitBkgBits()                              ),
@@ -233,13 +231,6 @@ namespace mu2e {
     else {
       _data._chColl  = 0;
       std::cout << ">>> ERROR in TZClusterFinder::findData: ComboHitCollection not found." << std::endl;
-    }
-
-    if (_diagLevel  != 0) {
-      auto chcolH2 = evt.getValidHandle<ComboHitCollection>(_chLabel2);
-      if (chcolH2.product() != 0){
-        _data._chColl2 = chcolH2.product();
-      }
     }
 
     if (_useCaloClusters == 1) {
@@ -504,7 +495,7 @@ namespace mu2e {
     size_t nCeLikeChunks = 0;
 
     // first two for loops create seed point
-    for (int i=(int)_f.cHits.size()-1; i>=0; i--) {;
+    for (int i=(int)_f.cHits.size()-1; i>=0; i--) {
       for (size_t j=0; j<_f.cHits[i].plnHits.size(); j++) {
         if ( _f.cHits[i].plnHits[j].hIsUsed != 0 ) {continue;}
         setSeed(i,j);
@@ -843,7 +834,7 @@ namespace mu2e {
     countProtons(*_data._iiTC);
 
     // use calo clusters
-    if (_useCaloClusters == 1) { checkCaloClusters(); }
+    if (_useCaloClusters == 1 && _data._ccColl != NULL) { checkCaloClusters(); }
 
     // flag bad clusters
     if (_doRefine == 1) { refineChunks(); }
