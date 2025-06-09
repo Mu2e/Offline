@@ -257,6 +257,7 @@ namespace mu2e {
     double  _FrontSLeakForSSC;
     double  _FrontSCopperL;
     double  _FrontS_H;
+    double  _FrontSHole_r;
     double  _FrontS_Thickness;
     double  _FrontS_Length;
 
@@ -350,7 +351,7 @@ namespace mu2e {
     double  _BackSBPHeight;
     double  _BackS_dX;
     double  _BackS_dY;
-
+    double  _BackSPipeGap;
 
     bool   _InnerShieldingBuild;
 

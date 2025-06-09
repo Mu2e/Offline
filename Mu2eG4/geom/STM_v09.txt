@@ -36,7 +36,7 @@ double stm.STM_SSC.Aperture_HPGe1  = 50;
 double stm.STM_SSC.Aperture_HPGe2  = 150;
 double stm.STM_SSC.Aperture_LaBr1  = 50;
 double stm.STM_SSC.Aperture_LaBr2  = 150;
-double stm.STM_SSC.offset_Spot     = 40.6;
+double stm.STM_SSC.offset_Spot     = 40.64;
 double stm.STM_SSC.leak            = 10.16;
 double stm.STM_SSC.FrontToWall     = 1049.2;  //41.3 in
 double stm.STM_SSC.ZGap            = 12.7;
@@ -85,6 +85,8 @@ double stm.FrontShielding.GapForTop      = 5;
 double stm.FrontShielding.LeakForSSC     = 10.16;
 double stm.FrontShielding.CopperL        = 257.048;
 double stm.FrontShielding.FrontS_H       = 508;
+double stm.FrontShielding.FrontSHole_r   = 19.939;
+
 
 bool   stm.LaBr.build     = true;
 string stm.LaBr.crystalMaterial = "LaBr3Ce";
@@ -169,10 +171,13 @@ double stm.TopShielding.Leak      = 5;
 
 bool   stm.BackShielding.build     = true;
 double stm.BackShielding.BPThick   = 25.4;
+double stm.BackShielding.ShieldingPipeGap   = 76.2;
+
 double stm.BackShielding.BPLength  = 1500;
 double stm.BackShielding.BPHeight  = 1000;
 double stm.BackShielding.BackS_dX  = -304.8;
 double stm.BackShielding.BackS_dY  = 0;
+
 
 bool   stm.InnerShielding.build    = true;
 
