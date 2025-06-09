@@ -948,7 +948,7 @@ namespace mu2e {
     _BackSBPHeight        = _config.getDouble("stm.BackShielding.BPHeight");
     _BackS_dX             = _config.getDouble("stm.BackShielding.BackS_dX");
     _BackS_dY             = _config.getDouble("stm.BackShielding.BackS_dY");
-    _BackSPipeGap         = _config.getDouble("stm.BackShielding.PipeGap");
+    _BackSPipeGap         = _config.getDouble("stm.BackShielding.ShieldingPipeGap");
 
 
     _InnerShieldingBuild        = _config.getBool("stm.InnerShielding.build");

@@ -1447,7 +1447,7 @@ namespace mu2e {
    const double SSC_ZGapBack = pSTM_SSCParams.ZGapBack();
 
    const double Back_BPThick = pBackShieldingParams.BPThick();
-   const double Back_PipeGap = pBackShieldingParams.PipeGap();
+   const double Back_PipeGap = pBackShieldingParams.STMShieldingPipeGap();
 
    const G4ThreeVector  STMShieldingRef =  pSTM_SSCParams.originInMu2e() - parentCenterInMu2e - CLHEP::Hep3Vector(0, 0, Wdepth_f/2 + Back_BPThick + Back_PipeGap);
 
@@ -3429,7 +3429,7 @@ namespace mu2e {
      const double BP_thick  = pBackShieldingParams.BPThick();
      const double BP_length = pBackShieldingParams.BPLength();
      const double BP_height = pBackShieldingParams.BPHeight();
-     const double PipeGap = pBackShieldingParams.PipeGap();
+     const double PipeGap = pBackShieldingParams.STMShieldingPipeGap();
 
 
      const double BP_dX = -12*25.4; //pBackShieldingParams.Back_dX();

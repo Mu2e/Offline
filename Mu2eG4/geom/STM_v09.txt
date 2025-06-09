@@ -171,7 +171,7 @@ double stm.TopShielding.Leak      = 5;
 
 bool   stm.BackShielding.build     = true;
 double stm.BackShielding.BPThick   = 25.4;
-double stm.BackShielding.PipeGap   = 76.2;
+double stm.BackShielding.ShieldingPipeGap   = 76.2;
 
 double stm.BackShielding.BPLength  = 1500;
 double stm.BackShielding.BPHeight  = 1000;
