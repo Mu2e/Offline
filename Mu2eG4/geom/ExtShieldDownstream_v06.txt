@@ -250,10 +250,14 @@ double ExtShieldDownstream.lengthType23 = 4918;
 double ExtShieldDownstream.lengthType24 = 904.4; // penetration notch shield
 double ExtShieldDownstream.lengthType25 = 3851;
 double ExtShieldDownstream.lengthType26 = 3851.0;
-double ExtShieldDownstream.lengthType27 = 1042.8; // New endcap blocks
-double ExtShieldDownstream.lengthType28 = 966.6; // New endcap bottom block
-double ExtShieldDownstream.lengthType29 = 1011; // New endcap top back block
-double ExtShieldDownstream.lengthType30 = 1011; // New endcap top back block
+//double ExtShieldDownstream.lengthType27 = 1042.8; // New endcap blocks
+//double ExtShieldDownstream.lengthType28 = 966.6; // New endcap bottom block
+//double ExtShieldDownstream.lengthType30 = 1011; // New endcap top back block
+//double ExtShieldDownstream.lengthType29 = 1011; // New endcap top back block
+double ExtShieldDownstream.lengthType27 = 1116.85; // New endcap blocks (15 microns gap on top and bottom)
+double ExtShieldDownstream.lengthType28 = 906.77; // New endcap bottom block
+double ExtShieldDownstream.lengthType29 = 913.9; // New endcap top back block
+double ExtShieldDownstream.lengthType30 = 913.9; // New endcap top back block
 
 // "Tolerances" on the dimensions in u, v, and w for each type of box.
 // Tolerance here means the amount the size is changed from nominal, in mm.
@@ -481,17 +485,23 @@ vector<double> ExtShieldDownstream.centerType24Box2 = {-596.0,278.93,-3589.0};
 vector<double> ExtShieldDownstream.centerType26Box1 = {-2886.8,-381.4, 2220.7};
 
 // New endcap blocks
-vector<double> ExtShieldDownstream.centerType27Box1 = {-3904.0,-867.84,18542.0};
+//vector<double> ExtShieldDownstream.centerType27Box1 = {-3904.0,-867.84,18542.0};
+//vector<double> ExtShieldDownstream.centerType27Box2 = {-3904.0,78.31,18542.0};
+//vector<double> ExtShieldDownstream.centerType27Box3 = {-3904.0,1024.5,18542.0};
+vector<double> ExtShieldDownstream.centerType27Box1 = {-3904.0,-936.323,18542.0};
 vector<double> ExtShieldDownstream.centerType27Box2 = {-3904.0,78.31,18542.0};
-vector<double> ExtShieldDownstream.centerType27Box3 = {-3904.0,1024.5,18542.0};
+vector<double> ExtShieldDownstream.centerType27Box3 = {-3904.0,1092.943,18542.0};
 
 // And the bottom one
-vector<double> ExtShieldDownstream.centerType28Box1 = {-3904.0,-1775.9,18542.0};
+//vector<double> ExtShieldDownstream.centerType28Box1 = {-3904.0,-1775.9,18542.0};
+vector<double> ExtShieldDownstream.centerType28Box1 = {-3904.0,-1845.915,18542.0};
 // And top back at the end of the DS
-vector<double> ExtShieldDownstream.centerType29Box1 = {-3904.0,1954.8,18542.0};
+//vector<double> ExtShieldDownstream.centerType29Box1 = {-3904.0,1954.8,18542.0};
+vector<double> ExtShieldDownstream.centerType29Box1 = {-3904.0,2006.1,18542.0};
 
 // And top front of the endcap
-vector<double> ExtShieldDownstream.centerType30Box1 = {-3904.0,1954.8,16916.0};
+//vector<double> ExtShieldDownstream.centerType30Box1 = {-3904.0,1954.8,16916.0};
+vector<double> ExtShieldDownstream.centerType30Box1 = {-3904.0,2006.1,16916.0};
 
 
 
@@ -709,88 +719,118 @@ vector<double> ExtShieldDownstream.notchDimType17Box1Notch2 = {762.,762.,762.};
 
 // New endcap model
 int ExtShieldDownstream.nNotchesType27Box1 = 4;
-vector<double> ExtShieldDownstream.notchCenterType27Box1Notch1 = {0,1702,473};
-vector<double> ExtShieldDownstream.notchDimType27Box1Notch1 = {4622.8,3100,102.2};
-vector<double> ExtShieldDownstream.notchCenterType27Box1Notch2 = {-2388,1625.6,-473};
-vector<double> ExtShieldDownstream.notchDimType27Box1Notch2 = {154,3252,102.2};
-
-vector<double> ExtShieldDownstream.notchCenterType27Box1Notch3 = {2388,1625.6,-473};
-vector<double> ExtShieldDownstream.notchDimType27Box1Notch3 = {154,3252,102.2};
-
-vector<double> ExtShieldDownstream.notchCenterType27Box1Notch4 = {0,76.2,-473};
-vector<double> ExtShieldDownstream.notchDimType27Box1Notch4 = {4623,154,102.2};
+//vector<double> ExtShieldDownstream.notchCenterType27Box1Notch1 = {0,1702,473};
+vector<double> ExtShieldDownstream.notchCenterType27Box1Notch1 = {0,1702,507.32};
+vector<double> ExtShieldDownstream.notchDimType27Box1Notch1 = {4622.8,3100,102.23};
+//vector<double> ExtShieldDownstream.notchCenterType27Box1Notch2 = {-2388,1625.6,-473};
+vector<double> ExtShieldDownstream.notchCenterType27Box1Notch2 = {-2388,1625.6,-507.32};
+vector<double> ExtShieldDownstream.notchDimType27Box1Notch2 = {154,3252,102.23};
+//vector<double> ExtShieldDownstream.notchCenterType27Box1Notch3 = {2388,1625.6,-473};
+vector<double> ExtShieldDownstream.notchCenterType27Box1Notch3 = {2388,1625.6,-507.32};
+vector<double> ExtShieldDownstream.notchDimType27Box1Notch3 = {154,3252,102.23};
+//vector<double> ExtShieldDownstream.notchCenterType27Box1Notch4 = {0,76.2,-473};
+vector<double> ExtShieldDownstream.notchCenterType27Box1Notch4 = {0,76.2,-507.32};
+vector<double> ExtShieldDownstream.notchDimType27Box1Notch4 = {4623,154,102.23};
 
 int ExtShieldDownstream.nNotchesType27Box2 = 4;
-vector<double> ExtShieldDownstream.notchCenterType27Box2Notch1 = {0,1702,473};
-vector<double> ExtShieldDownstream.notchDimType27Box2Notch1 = {4622.8,3100,102.2};
-vector<double> ExtShieldDownstream.notchCenterType27Box2Notch2 = {-2388,1625.6,-473};
-vector<double> ExtShieldDownstream.notchDimType27Box2Notch2 = {154,3252,102.2};
+//vector<double> ExtShieldDownstream.notchCenterType27Box2Notch1 = {0,1702,473};
+vector<double> ExtShieldDownstream.notchCenterType27Box2Notch1 = {0,1702,507.32};
+vector<double> ExtShieldDownstream.notchDimType27Box2Notch1 = {4622.8,3100,102.23};
+//vector<double> ExtShieldDownstream.notchCenterType27Box2Notch2 = {-2388,1625.6,-473};
+vector<double> ExtShieldDownstream.notchCenterType27Box2Notch2 = {-2388,1625.6,-507.32};
+vector<double> ExtShieldDownstream.notchDimType27Box2Notch2 = {154,3252,102.23};
+//vector<double> ExtShieldDownstream.notchCenterType27Box2Notch3 = {2388,1625.6,-473};
+vector<double> ExtShieldDownstream.notchCenterType27Box2Notch3 = {2388,1625.6,-507.32};
+vector<double> ExtShieldDownstream.notchDimType27Box2Notch3 = {154,3252,102.23};
+//vector<double> ExtShieldDownstream.notchCenterType27Box2Notch4 = {0,76.2,-473};
+vector<double> ExtShieldDownstream.notchCenterType27Box2Notch4 = {0,76.2,-507.32};
+vector<double> ExtShieldDownstream.notchDimType27Box2Notch4 = {4623,154,102.23};
 
-vector<double> ExtShieldDownstream.notchCenterType27Box2Notch3 = {2388,1625.6,-473};
-vector<double> ExtShieldDownstream.notchDimType27Box2Notch3 = {154,3252,102.2};
-
-vector<double> ExtShieldDownstream.notchCenterType27Box2Notch4 = {0,76.2,-473};
-vector<double> ExtShieldDownstream.notchDimType27Box2Notch4 = {4623,154,102.2};
-
-int ExtShieldDownstream.nNotchesType27Box3 = 4;
-vector<double> ExtShieldDownstream.notchCenterType27Box3Notch1 = {0,1702,473};
-vector<double> ExtShieldDownstream.notchDimType27Box3Notch1 = {4622.8,3100,102.2};
-vector<double> ExtShieldDownstream.notchCenterType27Box3Notch2 = {-2388,1625.6,-473};
-vector<double> ExtShieldDownstream.notchDimType27Box3Notch2 = {154,3252,102.2};
-
-vector<double> ExtShieldDownstream.notchCenterType27Box3Notch3 = {2388,1625.6,-473};
-vector<double> ExtShieldDownstream.notchDimType27Box3Notch3 = {154,3252,102.2};
-
-vector<double> ExtShieldDownstream.notchCenterType27Box3Notch4 = {0,76.2,-473};
-vector<double> ExtShieldDownstream.notchDimType27Box3Notch4 = {4623,154,102.2};
+int ExtShieldDownstream.nNotchesType27Box3 = 5;
+//vector<double> ExtShieldDownstream.notchCenterType27Box3Notch1 = {0,1702,473};
+vector<double> ExtShieldDownstream.notchCenterType27Box3Notch1 = {0,1702,507.32};
+vector<double> ExtShieldDownstream.notchDimType27Box3Notch1 = {4622.8,3100,102.23};
+//vector<double> ExtShieldDownstream.notchCenterType27Box3Notch2 = {-2388,1625.6,-473};
+vector<double> ExtShieldDownstream.notchCenterType27Box3Notch2 = {-2388,1625.6,-507.32};
+vector<double> ExtShieldDownstream.notchDimType27Box3Notch2 = {154,3252,102.23};
+// vector<double> ExtShieldDownstream.notchCenterType27Box3Notch3 = {2388,1625.6,-473};
+vector<double> ExtShieldDownstream.notchCenterType27Box3Notch3 = {2388,1625.6,-507.32};
+vector<double> ExtShieldDownstream.notchDimType27Box3Notch3 = {154,3252,102.23};
+//vector<double> ExtShieldDownstream.notchCenterType27Box3Notch4 = {0,76.2,-473};
+vector<double> ExtShieldDownstream.notchCenterType27Box3Notch4 = {0,76.2,-507.32};
+vector<double> ExtShieldDownstream.notchDimType27Box3Notch4 = {4623,154,102.23};
+vector<double> ExtShieldDownstream.notchCenterType27Box3Notch5 = {0,3017.7,507.32};
+vector<double> ExtShieldDownstream.notchDimType27Box3Notch5 = {4928,457.3,102.23};
 
 // Endcap bottom block new model
 int ExtShieldDownstream.nNotchesType28Box1 = 6;
-vector<double> ExtShieldDownstream.notchCenterType28Box1Notch1 = {0,1702,435};
-vector<double> ExtShieldDownstream.notchDimType28Box1Notch1 = {4622.8,3100,102.2};
-
-vector<double> ExtShieldDownstream.notchCenterType28Box1Notch2 = {0,177.8,0};
-vector<double> ExtShieldDownstream.notchDimType28Box1Notch2 = {2083,354,972};
-
-vector<double> ExtShieldDownstream.notchCenterType28Box1Notch3 = {-2182.8,406.4,-435};
-vector<double> ExtShieldDownstream.notchDimType28Box1Notch3 = {562,508.2,102.2};
-
-vector<double> ExtShieldDownstream.notchCenterType28Box1Notch4 = {2182.8,406.4,-435};
-vector<double> ExtShieldDownstream.notchDimType28Box1Notch4 = {562,508.2,102.2};
-
-vector<double> ExtShieldDownstream.notchCenterType28Box1Notch5 = {-2182.8,2388,-435};
-vector<double> ExtShieldDownstream.notchDimType28Box1Notch5 = {562,508.2,102.2};
-vector<double> ExtShieldDownstream.notchCenterType28Box1Notch6 = {2182.8,2388,-435};
-vector<double> ExtShieldDownstream.notchDimType28Box1Notch6 = {562,508.2,102.2};
+//vector<double> ExtShieldDownstream.notchCenterType28Box1Notch1 = {0,1702,435};
+vector<double> ExtShieldDownstream.notchCenterType28Box1Notch1 = {0,1702,402.28};
+vector<double> ExtShieldDownstream.notchDimType28Box1Notch1 = {4622.8,3100,102.23};
+//vector<double> ExtShieldDownstream.notchCenterType28Box1Notch2 = {0,177.8,0};
+//vector<double> ExtShieldDownstream.notchDimType28Box1Notch2 = {2083,354,972};
+vector<double> ExtShieldDownstream.notchCenterType28Box1Notch2 = {0,454.7,-302.235};
+// dx=1' dy=1'-1'' dz=3'
+vector<double> ExtShieldDownstream.notchDimType28Box1Notch2 = {1981.2,914.4,307.3};
+//vector<double> ExtShieldDownstream.notchCenterType28Box1Notch3 = {-2182.8,406.4,-435};
+vector<double> ExtShieldDownstream.notchCenterType28Box1Notch3 = {-2182.9,406.4,-402.28};
+vector<double> ExtShieldDownstream.notchDimType28Box1Notch3 = {562,508.2,102.23};
+//vector<double> ExtShieldDownstream.notchCenterType28Box1Notch4 = {2182.8,406.4,-435};
+vector<double> ExtShieldDownstream.notchCenterType28Box1Notch4 = {2182.9,406.4,-402.28};
+vector<double> ExtShieldDownstream.notchDimType28Box1Notch4 = {562,508.2,102.23};
+//vector<double> ExtShieldDownstream.notchCenterType28Box1Notch5 = {-2182.8,2388,-435};
+vector<double> ExtShieldDownstream.notchCenterType28Box1Notch5 = {-2182.9,2388,-402.28};
+vector<double> ExtShieldDownstream.notchDimType28Box1Notch5 = {562,508.2,102.23};
+//vector<double> ExtShieldDownstream.notchCenterType28Box1Notch6 = {2182.8,2388,-402.2};
+vector<double> ExtShieldDownstream.notchCenterType28Box1Notch6 = {2182.9,2388,-402.28};
+vector<double> ExtShieldDownstream.notchDimType28Box1Notch6 = {562,508.2,102.23};
 
 // Top, end block of new endcap now
 int ExtShieldDownstream.nNotchesType29Box1 = 4;
-vector<double> ExtShieldDownstream.notchCenterType29Box1Notch1 = {0,1702,279.4};
+//vector<double> ExtShieldDownstream.notchCenterType29Box1Notch1 = {0,1702,279.4};
+//vector<double> ExtShieldDownstream.notchDimType29Box1Notch1 = {4928,153,457.4};
+vector<double> ExtShieldDownstream.notchCenterType29Box1Notch1 = {0,1702,228.35};
 vector<double> ExtShieldDownstream.notchDimType29Box1Notch1 = {4928,153,457.4};
 
-vector<double> ExtShieldDownstream.notchCenterType29Box1Notch2 = {-2388,889,-457};
-vector<double> ExtShieldDownstream.notchDimType29Box1Notch2 = {154,1780,102.2};
+//vector<double> ExtShieldDownstream.notchCenterType29Box1Notch2 = {-2388,889,-457};
+//vector<double> ExtShieldDownstream.notchDimType29Box1Notch2 = {154,1780,102.2};
+vector<double> ExtShieldDownstream.notchCenterType29Box1Notch2 = {-2388,889,-405.845};
+vector<double> ExtShieldDownstream.notchDimType29Box1Notch2 = {154,1780,102.23};
 
-vector<double> ExtShieldDownstream.notchCenterType29Box1Notch3 = {2388,889,-457};
-vector<double> ExtShieldDownstream.notchDimType29Box1Notch3 = {154,1780,102.2};
+//vector<double> ExtShieldDownstream.notchCenterType29Box1Notch3 = {2388,889,-457};
+//vector<double> ExtShieldDownstream.notchDimType29Box1Notch3 = {154,1780,102.2};
+vector<double> ExtShieldDownstream.notchCenterType29Box1Notch3 = {2388,889,-405.845};
+vector<double> ExtShieldDownstream.notchDimType29Box1Notch3 = {154,1780,102.23};
 
-vector<double> ExtShieldDownstream.notchCenterType29Box1Notch4 = {0,76.2,-457};
-vector<double> ExtShieldDownstream.notchDimType29Box1Notch4 = {4623,154,102.2};
+//vector<double> ExtShieldDownstream.notchCenterType29Box1Notch4 = {0,76.2,-457};
+//vector<double> ExtShieldDownstream.notchDimType29Box1Notch4 = {4623,154,102.2};
+vector<double> ExtShieldDownstream.notchCenterType29Box1Notch4 = {0,76.2,-405.845};
+vector<double> ExtShieldDownstream.notchDimType29Box1Notch4 = {4623,154,102.23};
 
 // Top, front block of new endcap now
 int ExtShieldDownstream.nNotchesType30Box1 = 4;
-vector<double> ExtShieldDownstream.notchCenterType30Box1Notch1 = {0,1397,-228.6};
-vector<double> ExtShieldDownstream.notchDimType30Box1Notch1 = {4928,461,562};
+//vector<double> ExtShieldDownstream.notchCenterType30Box1Notch1 = {0,1397,-228.6};
+//vector<double> ExtShieldDownstream.notchDimType30Box1Notch1 = {4928,461,562};
+vector<double> ExtShieldDownstream.notchCenterType30Box1Notch1 = {0,1397,-228.36};
+vector<double> ExtShieldDownstream.notchDimType30Box1Notch1 = {4928,461,457.2};
 
 
-vector<double> ExtShieldDownstream.notchCenterType30Box1Notch2 = {-2388,812.8,-457};
-vector<double> ExtShieldDownstream.notchDimType30Box1Notch2 = {154,1625,102.2};
+//vector<double> ExtShieldDownstream.notchCenterType30Box1Notch2 = {-2388,812.8,-457};
+//vector<double> ExtShieldDownstream.notchDimType30Box1Notch2 = {154,1625,102.2};
 
-vector<double> ExtShieldDownstream.notchCenterType30Box1Notch3 = {2388,812.8,-457};
-vector<double> ExtShieldDownstream.notchDimType30Box1Notch3 = {154,1625,102.2};
+vector<double> ExtShieldDownstream.notchCenterType30Box1Notch2 = {-2388,812.8,-405.845};
+vector<double> ExtShieldDownstream.notchDimType30Box1Notch2 = {154,1625,102.23};
 
-vector<double> ExtShieldDownstream.notchCenterType30Box1Notch4 = {0,76.2,-228.6};
-vector<double> ExtShieldDownstream.notchDimType30Box1Notch4 = {4928,154,559};
+//vector<double> ExtShieldDownstream.notchCenterType30Box1Notch3 = {2388,812.8,-457};
+//vector<double> ExtShieldDownstream.notchDimType30Box1Notch3 = {154,1625,102.2};
+
+vector<double> ExtShieldDownstream.notchCenterType30Box1Notch3 = {2388,812.8,-405.845};
+vector<double> ExtShieldDownstream.notchDimType30Box1Notch3 = {154,1625,102.23};
+
+//vector<double> ExtShieldDownstream.notchCenterType30Box1Notch4 = {0,76.2,-228.6};
+//vector<double> ExtShieldDownstream.notchDimType30Box1Notch4 = {4928,154,559};
+vector<double> ExtShieldDownstream.notchCenterType30Box1Notch4 = {0,76.2,-228.36};
+vector<double> ExtShieldDownstream.notchDimType30Box1Notch4 = {4928,154,457.2};
 
 
 
@@ -805,7 +845,8 @@ string ExtShieldDownstream.holeOrientationType11Box4Hole1 = "100";
 // New endcap model
 int ExtShieldDownstream.nHolesType27Box2 = 1;
 vector<double> ExtShieldDownstream.holeCenterType27Box2Hole1 = {0,458,-78.31};
-double ExtShieldDownstream.holeRadiusType27Box2Hole1 = 125.0;  //hole for photons to STM in concrete
+//double ExtShieldDownstream.holeRadiusType27Box2Hole1 = 125.0;  //hole for photons to STM in concrete
+double ExtShieldDownstream.holeRadiusType27Box2Hole1 = 127.0;  //hole for photons to STM in concrete
 double ExtShieldDownstream.holeLengthType27Box2Hole1 = 920;
 string ExtShieldDownstream.holeOrientationType27Box2Hole1 = "100";
 

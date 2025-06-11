@@ -176,8 +176,9 @@ GenFilter : {
 
 PionFilter : {
         module_type : PionFilter
-        tmin : 350
+        tmin : 300
         tmax : 1e8
+        processCode : 54 #mu2eKillerVolume
         isNull : false
 }
 

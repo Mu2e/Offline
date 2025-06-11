@@ -4,7 +4,7 @@
 
 string building.tempDirt.backfill.psArea.RWallFootLevel.name     = "tempDirtBackfillPsAreaRWallFootLevel";
 
-string building.tempDirt.backfill.psArea.RWallFootLevel.material = "CA7Backfill";
+string building.tempDirt.backfill.psArea.RWallFootLevel.material = "MBOverburden";
 
 double building.tempDirt.backfill.psArea.RWallFootLevel.offsetFromMu2eOrigin.x   = 947.4;
 double building.tempDirt.backfill.psArea.RWallFootLevel.offsetFromFloorSurface.y = 6629.4;

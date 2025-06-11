@@ -4,7 +4,7 @@
 
 string building.backfill.escape.inner.02.name     = "backfillEscapeInner02";
 
-string building.backfill.escape.inner.02.material = "CA7Backfill";
+string building.backfill.escape.inner.02.material = "MBOverburden";
 
 double building.backfill.escape.inner.02.offsetFromMu2eOrigin.x   = 947.4;
 double building.backfill.escape.inner.02.offsetFromFloorSurface.y = 2514.6;
