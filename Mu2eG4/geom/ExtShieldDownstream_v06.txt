@@ -66,8 +66,10 @@ int ExtShieldDownstream.nVertType21 = 6; // NE corner near TSu
 int ExtShieldDownstream.nVertType22 = 8;
 int ExtShieldDownstream.nVertType23 = 8;
 int ExtShieldDownstream.nVertType24 = 10; // NW corner penetration notch shield
-int ExtShieldDownstream.nVertType25 = 8;
-int ExtShieldDownstream.nVertType26 = 3;
+//int ExtShieldDownstream.nVertType25 = 8;
+int ExtShieldDownstream.nVertType25 = 4;
+//int ExtShieldDownstream.nVertType26 = 3;
+int ExtShieldDownstream.nVertType26 = 4;
 int ExtShieldDownstream.nVertType27 = 12; // New endcap blocks
 int ExtShieldDownstream.nVertType28 = 12; // New endcap bottom block
 int ExtShieldDownstream.nVertType29 = 4; // New endcap top back block
@@ -142,7 +144,9 @@ vector<double> ExtShieldDownstream.outlineType14VVerts = {0,440.2,440.2,0};
 
 
 // Triangular column at north corner between upstream and downstream
-vector<double> ExtShieldDownstream.outlineType15UVerts = {680.8,680.8,223.6,223.6,-479.4,-479.4,-1343,-885.8};
+//vector<double> ExtShieldDownstream.outlineType15UVerts = {680.8,680.8,223.6,223.6,-479.4,-479.4,-1343,-885.8};
+//vector<double> ExtShieldDownstream.outlineType15VVerts = {-452.2,-5,-5,452.2,452.2,-5,-5,-452.2};
+vector<double> ExtShieldDownstream.outlineType15UVerts = {680.8,680.8,223.6,223.6,-223.6,-223.6,-1252.3,-795.1};
 vector<double> ExtShieldDownstream.outlineType15VVerts = {-452.2,-5,-5,452.2,452.2,-5,-5,-452.2};
 
 // The L blocks are similar, but cut out two vertices
@@ -169,8 +173,10 @@ vector<double> ExtShieldDownstream.outlineType20UVerts = {2458.8,2458.8,2004.8,2
 vector<double> ExtShieldDownstream.outlineType20VVerts = {0,440.2,440.2,0};
 
 // large corner block at NE corner near TSu
-vector<double> ExtShieldDownstream.outlineType21UVerts = {680.8,680.8,223.6,223.6,-842.2,-842.2};
-vector<double> ExtShieldDownstream.outlineType21VVerts = {-452.2,-5,-5,858.6,858.6,-452.2};
+//vector<double> ExtShieldDownstream.outlineType21UVerts = {680.8,680.8,223.6,223.6,-842.2,-842.2};
+//vector<double> ExtShieldDownstream.outlineType21VVerts = {-452.2,-5,-5,858.6,858.6,-452.2};
+vector<double> ExtShieldDownstream.outlineType21UVerts = {778.3,778.3,223.6,223.6,-842.2,-842.2};
+vector<double> ExtShieldDownstream.outlineType21VVerts = {-552.9,-260.8,-260.8,767.9,767.9,-552.9};
 
 // T blocks around the stopping target wall
 vector<double> ExtShieldDownstream.outlineType22UVerts = {680.8,680.8,223.6,223.6,-223.6,-223.6,-680.8,-680.8};
@@ -188,11 +194,15 @@ vector<double> ExtShieldDownstream.outlineType23VVerts = {-452.2,-5,-5,452.2,452
 vector<double> ExtShieldDownstream.outlineType24UVerts = {0.1,0.1,139,139,368,368,139,139,584,584};
 vector<double> ExtShieldDownstream.outlineType24VVerts = {0.1,2590,2590,1981,1981,1270,1270,813,813,0.1};
 
-vector<double> ExtShieldDownstream.outlineType25UVerts = {680.8,680.8,223.6,223.6,-223.6,-223.6,-680.8,-680.8};
-vector<double> ExtShieldDownstream.outlineType25VVerts = {-858.6,-5,-5,452.2,452.2,-5,-5,-856.6};
+//vector<double> ExtShieldDownstream.outlineType25UVerts = {680.8,680.8,223.6,223.6,-223.6,-223.6,-680.8,-680.8};
+//vector<double> ExtShieldDownstream.outlineType25VVerts = {-858.6,-5,-5,452.2,452.2,-5,-5,-856.6};
+vector<double> ExtShieldDownstream.outlineType25UVerts = {680.8,680.8,-680.8,-680.8};
+vector<double> ExtShieldDownstream.outlineType25VVerts = {-767.9,250.8,250.8,-767.9};
 
-vector<double> ExtShieldDownstream.outlineType26UVerts = {315.7, -315.7, 315.7};
-vector<double> ExtShieldDownstream.outlineType26VVerts = {130.8, 130.8, -130.8};
+//vector<double> ExtShieldDownstream.outlineType26UVerts = {315.7, -315.7, 315.7};
+//vector<double> ExtShieldDownstream.outlineType26VVerts = {130.8, 130.8, -130.8};
+vector<double> ExtShieldDownstream.outlineType26UVerts = {252.45, -312.65, -312.65, 252.45};
+vector<double> ExtShieldDownstream.outlineType26VVerts = {-136.1, 120.76, 123.3, 123.3};
 
 
 // New endcap blocks
