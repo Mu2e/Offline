@@ -56,8 +56,10 @@ vector<double> ExtShieldUpstream.dimsType10 = {523,3850.8,1158};
 // BRP-152 21"x46"x152" tall -> 533.4mm*3860.8mm*1168.4mm
 vector<double> ExtShieldUpstream.dimsType11 = {523,3850.8,1158};
 // Special block to shield CR muons
-vector<double> ExtShieldUpstream.dimsType12 = {396.4,3840.8,1006};
-vector<double> ExtShieldUpstream.dimsType13 = {701.2,3840.8,294.8};
+//vector<double> ExtShieldUpstream.dimsType12 = {396.4,3840.8,1006};
+vector<double> ExtShieldUpstream.dimsType12 = {403.4,3840.8,1009.6};
+//vector<double> ExtShieldUpstream.dimsType13 = {701.2,3840.8,294.8};
+vector<double> ExtShieldUpstream.dimsType13 = {803.9,3840.8,302.3};
 vector<double> ExtShieldUpstream.dimsType14 = {701.2,3840.8,269.4};
 // Borated poly
 vector<double> ExtShieldUpstream.dimsType15 = {6400.8,3302.1,25.4};
@@ -145,8 +147,10 @@ vector<double> ExtShieldUpstream.centerType10Box3 = {2196,-382,2852.7};//BRP152
 vector<double> ExtShieldUpstream.centerType11Box1 = {1878.5,-382,-2550};//BRP152
 vector<double> ExtShieldUpstream.centerType11Box2 = {2411.5,-382,-2550};//BRP152
 // Special block to shield CR muons
-vector<double> ExtShieldUpstream.centerType12Box1 = {-2552.8,-381.4, 2413.0};
-vector<double> ExtShieldUpstream.centerType13Box1 = {-1473.2,-381.4, 1222.4};
+//vector<double> ExtShieldUpstream.centerType12Box1 = {-2552.8,-381.4, 2413.0};
+vector<double> ExtShieldUpstream.centerType12Box1 = {-2556.5,-381.4, 2417.8};
+//vector<double> ExtShieldUpstream.centerType13Box1 = {-1473.2,-381.4, 1222.4};
+vector<double> ExtShieldUpstream.centerType13Box1 = {-1484,-381.4, 1312};
 vector<double> ExtShieldUpstream.centerType14Box1 = {0.0,-381.4, -1186.1};
 // Borated poly
 vector<double> ExtShieldUpstream.centerType15Box1 = {-3018.2,1454.5,-2524.7};

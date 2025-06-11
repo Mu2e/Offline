@@ -1,0 +1,18 @@
+string building.dsArea.hatchblock.E.name     = "dsAreaHatchBlockE";
+string building.dsArea.hatchblock.E.material = "CONCRETE_MARS";
+double building.dsArea.hatchblock.E.offsetFromMu2eOrigin.x   = 947.40;
+double building.dsArea.hatchblock.E.offsetFromFloorSurface.y = 6172.20;
+double building.dsArea.hatchblock.E.offsetFromMu2eOrigin.z   = -3581.40;
+double building.dsArea.hatchblock.E.yHalfThickness           = 228.60;
+vector<double> building.dsArea.hatchblock.E.xPositions = {
+26334.77, // 0
+29077.97, // 1
+29077.97, // 2
+26334.77 // 3
+};
+vector<double> building.dsArea.hatchblock.E.yPositions = {
+-1193.80, // 0
+-1193.80, // 1
+-8509.00, // 2
+-8509.00 // 3
+};

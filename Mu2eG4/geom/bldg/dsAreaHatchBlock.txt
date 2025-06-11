@@ -1,31 +1,18 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_DSarea_upstreamCeiling.ccl
-
 string building.dsArea.hatchblock.name     = "dsAreaHatchBlock";
-
 string building.dsArea.hatchblock.material = "CONCRETE_MARS";
-
-double building.dsArea.hatchblock.offsetFromMu2eOrigin.x   = 947.4;
-double building.dsArea.hatchblock.offsetFromFloorSurface.y = 6400.8;
-double building.dsArea.hatchblock.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.dsArea.hatchblock.yHalfThickness           = 457.2;
-
+double building.dsArea.hatchblock.offsetFromMu2eOrigin.x   = 947.40;
+double building.dsArea.hatchblock.offsetFromFloorSurface.y = 6400.80;
+double building.dsArea.hatchblock.offsetFromMu2eOrigin.z   = -3581.40;
+double building.dsArea.hatchblock.yHalfThickness           = 457.20;
 vector<double> building.dsArea.hatchblock.xPositions = {
-  7589.52,   // B
-  29078.08,   // C
-  29078.08,   // C1
-  7589.52   // E
+7589.52, // 0
+26334.72, // 1
+26334.72, // 2
+7589.52 // 3
 };
-
 vector<double> building.dsArea.hatchblock.yPositions = {
-  -1193.8,   // B
-  -1193.8,   // C
-  -8509.0,   // C1
-  -8509.0   // A
+-1193.80, // 0
+-1193.80, // 1
+-8509.00, // 2
+-8509.00 // 3
 };
-
-// Local Variables:
-// mode:c++
-// End:
