@@ -333,7 +333,11 @@ namespace mu2e {
           // if we have an extension schedule, extend.
           if(goodfit && exconfig_.schedule().size() > 0) {
             //  std::cout << "EXTENDING TRACK " << event.id() << " " << index << std::endl;
-            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
+            if (kkfit_.useCalo()){
+              kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
+            }else{
+              kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *kktrk );
+            }
             goodfit = goodFit(*kktrk);
           }
 

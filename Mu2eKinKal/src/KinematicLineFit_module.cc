@@ -263,7 +263,6 @@ namespace mu2e {
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
-    auto cc_H = event.getValidHandle<CaloClusterCollection>(cccol_T_);
     auto const& chcol = *ch_H;
     // create output
     unique_ptr<KKTRKCOL> kktrkcol(new KKTRKCOL );
@@ -318,7 +317,12 @@ namespace mu2e {
           auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fpart_,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
           auto goodfit = goodFit(*kktrk);
           if(goodfit && exconfig_.schedule().size() > 0){
-            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
+            if (kkfit_.useCalo()){
+              auto cc_H = event.getValidHandle<CaloClusterCollection>(cccol_T_);
+              kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
+            }else{
+              kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *kktrk );
+            }
           }
           goodfit = goodFit(*kktrk);
           // extrapolate as required
@@ -328,6 +332,7 @@ namespace mu2e {
             TrkFitFlag fitflag(hptr->status());
             fitflag.merge(TrkFitFlag::KKLine);
             sampleFit(*kktrk);
+            std::cout << "Intersections " << kktrk->intersections().size() << std::endl;
             auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h);
             kkseedcol->push_back(kkseed);
             kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
@@ -367,10 +372,14 @@ namespace mu2e {
 
   void KinematicLineFit::sampleFit(KKTRK& kktrk) const {
     auto const& ftraj = kktrk.fitTraj();
+    // need to extend range for now even if sampleinrange_ is false
+    TimeRange extrange(ftraj.range().begin() - sampletbuff_,ftraj.range().end() + sampletbuff_);
+    kktrk.extendTraj(extrange);
     double tbeg = ftraj.range().begin();
+
     for(auto const& surf : sample_){
       // search for intersections with each surface from the begining
-      double tstart = tbeg - sampletbuff_;
+      double tstart = tbeg;
       bool goodinter(true);
       size_t max_inter = 100;
       size_t cur_inter = 0;
@@ -378,7 +387,7 @@ namespace mu2e {
       // loop to find multiple intersections
       while(goodinter && cur_inter < max_inter) {
         cur_inter += 1;
-        TimeRange irange(tstart,std::max(ftraj.range().end(),tstart)+sampletbuff_);
+        TimeRange irange(tstart,std::max(ftraj.range().end(),tstart));
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,intertol_);
         goodinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
         if(goodinter) {
