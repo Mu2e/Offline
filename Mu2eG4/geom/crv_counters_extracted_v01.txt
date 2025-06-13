@@ -34,9 +34,9 @@ int             crs.nCountersPerModuleEX         = 16;  //0 //per layer
 int             crs.nCountersPerModuleT1         = 16;  //1
 int             crs.nCountersPerModuleT2         = 16;  //2
 
-vector<double>  crs.firstCounterEX               =  {-3904.00,   4730,  22105.00}; //0 //in mu2e coordinates
-vector<double>  crs.firstCounterT1               =  {-4704.85,   4580,  23733.85}; //1
-vector<double>  crs.firstCounterT2               =  {-3904.00,   4880,  22933.00}; //2
+vector<double>  crs.firstCounterEX               =  {-3904.00,   4387,  21127}; //0 //in mu2e coordinates
+vector<double>  crs.firstCounterT1               =  {-4704.85,   4237,  22756}; //1
+vector<double>  crs.firstCounterT2               =  {-3904.00,   4537,  21955}; //2
 
 string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
 string          crs.absorberMaterialName         = "G4_Al";
