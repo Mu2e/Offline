@@ -332,7 +332,6 @@ namespace mu2e {
             TrkFitFlag fitflag(hptr->status());
             fitflag.merge(TrkFitFlag::KKLine);
             sampleFit(*kktrk);
-            std::cout << "Intersections " << kktrk->intersections().size() << std::endl;
             auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h);
             kkseedcol->push_back(kkseed);
             kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
