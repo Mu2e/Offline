@@ -701,8 +701,10 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       if (i_crvCoincClusterMC.HasMCInfo()) {
         for (auto& i_pulseInfo : i_crvCoincClusterMC.GetModifiablePulses()) {
           art::Ptr<SimParticle> oldSimPtr = i_pulseInfo._simParticle;
-          art::Ptr<SimParticle> newSimPtr = safeRemapRef(remap,oldSimPtr,__LINE__);
-          i_pulseInfo._simParticle = newSimPtr;
+          if (oldSimPtr.isNonnull()) { // sometimes CrvCoincedenceClusterMC has DigiMC but no CrvStep or SimParticle (i.e. dark counts)
+            art::Ptr<SimParticle> newSimPtr = safeRemapRef(remap,oldSimPtr,__LINE__);
+            i_pulseInfo._simParticle = newSimPtr;
+          }
         }
 
         art::Ptr<SimParticle> oldSimPtr = i_crvCoincClusterMC.GetMostLikelySimParticle();
@@ -902,7 +904,9 @@ void mu2e::CompressDigiMCs::copyCrvCoincClusterMC(const mu2e::CrvCoincidenceClus
 
   if (old_crv_coinc_cluster_mc.HasMCInfo()) { // sometimes CrvCoincidenceClusterMC doesn't have MC information e.g. when it is a noise hit
     for (const auto& i_pulseInfo : old_crv_coinc_cluster_mc.GetPulses()) {
-      keepSimParticle(i_pulseInfo._simParticle);
+      if (i_pulseInfo._simParticle.isNonnull()) { // sometimes CrvCoincedenceClusterMC has DigiMC but no CrvStep or SimParticle (i.e. dark counts)
+        keepSimParticle(i_pulseInfo._simParticle);
+      }
     }
     keepSimParticle(old_crv_coinc_cluster_mc.GetMostLikelySimParticle());
   }
