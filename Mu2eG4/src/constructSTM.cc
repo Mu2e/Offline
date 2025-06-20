@@ -3843,18 +3843,20 @@ namespace mu2e {
                                           0.0, CLHEP::twopi );
 
     if (pSTMShieldPipeParams.build()){
-      finishNesting(crvshield,
-                    findMaterialOrThrow(pSTMShieldPipeParams.dnStrWallMaterial()),
-                    0,
-                    mstmCRVShieldPositionInParent,
-                    parentInfo.logical,
-                    0,
-                    STMisVisible,
-                    G4Colour::Magenta(),
-                    STMisSolid,
-                    forceAuxEdgeVisible,
-                    placePV,
-                    doSurfaceCheck);
+      if (pSTMShieldPipeParams.buildMatingBlock()) {
+        finishNesting(crvshield,
+                      findMaterialOrThrow(pSTMShieldPipeParams.dnStrWallMaterial()),
+                      0,
+                      mstmCRVShieldPositionInParent,
+                      parentInfo.logical,
+                      0,
+                      STMisVisible,
+                      G4Colour::Magenta(),
+                      STMisSolid,
+                      forceAuxEdgeVisible,
+                      placePV,
+                      doSurfaceCheck);
+      }
       if(pSTMShieldPipeParams.hasLiner()) {
         finishNesting(crvlinershieldtube,
                       findMaterialOrThrow(pSTMShieldPipeParams.materialLiner()),

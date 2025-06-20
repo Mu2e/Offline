@@ -200,6 +200,7 @@ double vd.STMSSCollUpStr.r = 2000;
 // changes for STM Upstream infrastructure
 string stm.magnet.stand.material = "StainlessSteel"; // update material of table
 bool   stm.magnet.build = false; // don't build the magnet
+bool stm.shield.matingBlock.build = false; // don't build the mating block since we no longer have a magnet
 // This tells emacs to view this file in c++ mode
 // Local Variables:
 // mode:c++
