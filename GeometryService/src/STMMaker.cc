@@ -90,7 +90,14 @@ namespace mu2e {
 
 
     const CLHEP::HepRotation _FOVCollimatorRotation     = CLHEP::HepRotation::IDENTITY;
-    const CLHEP::Hep3Vector  _FOVCollimatorOffsetInMu2e = _magnetOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_magnetHalfLength + _FOVCollimatorUpStrSpace + _FOVCollimatorHalfLength);
+    CLHEP::Hep3Vector  _FOVCollimatorOffsetInMu2e = _magnetOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_magnetHalfLength + _FOVCollimatorUpStrSpace + _FOVCollimatorHalfLength);
+    // If we actually don't want to build the magnet, subtract off the offsets related to the magnet.
+    // (We can't just set _magnetHalfLength = 0 in config because it is needed in various parts of constructSTM.cc
+    // including to make a G4Box, which cannot have length 0...)
+    if(_config.getBool("stm.magnet.build") == false) {
+      _FOVCollimatorOffsetInMu2e -= CLHEP::Hep3Vector(0.0, 0.0, 2*_magnetHalfLength);
+    }
+
     //if (_FOVCollimatorBuild){
       stm._pSTMFOVCollimatorParams = std::unique_ptr<STMCollimator>
         (new STMCollimator(_FOVCollimatorBuild,
