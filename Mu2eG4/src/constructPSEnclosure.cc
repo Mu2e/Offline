@@ -290,13 +290,13 @@ namespace mu2e {
         const double boxlength = pipe.halfLength()*10.;
         G4Box* box = new G4Box(boxname.str(), boxside, boxside, boxlength);
         CLHEP::Hep3Vector windowOrigin = pse->windows()[iwindow].originInMu2e() - coneOrigin;
-        CLHEP::Hep3Vector boxOrigin = windowOrigin - CLHEP::Hep3Vector(0.,0.,boxlength-pse->windows()[iwindow].getTubsParams().zHalfLength());
+        CLHEP::Hep3Vector boxOrigin = windowOrigin - CLHEP::Hep3Vector(0.,0.,boxlength-pse->windows()[iwindow].getTubsParams().zHalfLength()-0.01); // add gap
         solid = new G4SubtractionSolid(solidname.str()+"_3", solid, box, nullptr, boxOrigin);
         //now add the window
         windowOrigin = pse->windows()[iwindow].originInMu2e() - parent.centerInMu2e() + extraOffset;
         if(pse->hasWindowFrames()[iwindow]) { //offset the window to be at the outside edge of the window frame if it exists
           windowOrigin -= CLHEP::Hep3Vector(0., 0., (2.*pse->wFramesIn()[iwindow].getTubsParams().zHalfLength()
-                                                     + pse->windows()[iwindow].getTubsParams().zHalfLength()));
+                                                     + pse->windows()[iwindow].getTubsParams().zHalfLength()-0.01)); // add gap
         }
         nestTubs(windowname.str(),
                  pse->windows()[iwindow].getTubsParams(),
