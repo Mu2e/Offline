@@ -202,6 +202,8 @@ string stm.magnet.stand.material = "StainlessSteel"; // update material of table
 bool   stm.magnet.build = false; // don't build the magnet
 bool stm.shield.matingBlock.build = false; // don't build the mating block since we no longer have a magnet
 double stm.shield.pipe.halfLength      = 888.0; // fullLength = 1776.0 mm, Docdb-49112v2 "STM Aperatures, Positions, and Dimensions"
+double stm.shield.rIn = 139.70; // inner diameter = 11" = 279.4 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") => inner radius = 139.7 mm (note: this is same as previous version)
+double stm.shield.rOut = 177.8; // outer diameter = 14" = 355.6 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") => inner radius = 177.8 mm (note: this is different to previous version)
 // This tells emacs to view this file in c++ mode
 // Local Variables:
 // mode:c++
