@@ -197,6 +197,8 @@ double stm.det2VD.rOut = 60;
 double vd.STMCollDnStr.r = 60;
 double vd.STMSSCollUpStr.r = 2000;
 
+// changes for STM Upstream infrastructure
+string stm.magnet.stand.material = "StainlessSteel"; // update material of table
 // This tells emacs to view this file in c++ mode
 // Local Variables:
 // mode:c++
