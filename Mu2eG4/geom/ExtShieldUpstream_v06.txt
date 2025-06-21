@@ -6,7 +6,6 @@
 // Sort boxes into "types"
 // 04/08/18: addition of CR passive absorbers (GG3) as described in doicdb-8322
 
-//int ExtShieldUpstream.numberOfBoxTypes = 20;
 int ExtShieldUpstream.numberOfBoxTypes = 21;
 
 // How many of each type box to make
