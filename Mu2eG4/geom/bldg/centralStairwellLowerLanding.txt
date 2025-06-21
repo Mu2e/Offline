@@ -1,32 +1,22 @@
-
-string building.central.stairwell.lower.landing.name     = "CentralStairwellLowerLanding";
-
+string building.central.stairwell.lower.landing.name     = "centralStairwellLowerLanding";
 string building.central.stairwell.lower.landing.material = "CONCRETE_MARS";
-
-double building.central.stairwell.lower.landing.offsetFromMu2eOrigin.x   = 947.4;
+double building.central.stairwell.lower.landing.offsetFromMu2eOrigin.x   = 947.40;
 double building.central.stairwell.lower.landing.offsetFromFloorSurface.y = 2673.35;
-double building.central.stairwell.lower.landing.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.central.stairwell.lower.landing.yHalfThickness           = 152.4;
-
+double building.central.stairwell.lower.landing.offsetFromMu2eOrigin.z   = -3581.40;
+double building.central.stairwell.lower.landing.yHalfThickness           = 152.40;
 vector<double> building.central.stairwell.lower.landing.xPositions = {
-  9956.8,   // h
-  9956.8,   // h0
-  12014.2,   // h1
-  12014.2,   // h2
-  13233.4,   // h3
-  13233.4    // h4
+13233.40, // 0
+13233.40, // 1
+12014.20, // 2
+12014.20, // 3
+9956.90, // 4
+9956.90 // 5
 };
-
 vector<double> building.central.stairwell.lower.landing.yPositions = {
-  -12369.8,    // h
-  -13589,      // h0
-  -13589,      // h1
-  -14892.65,   // h2
-  -14892.65,   // h3
-  -12369.8     // h3
+-12369.80, // 0
+-14892.65, // 1
+-14892.65, // 2
+-13589.00, // 3
+-13589.00, // 4
+-12369.80 // 5
 };
-
-// Local Variables:
-// mode:c++
-// End:
