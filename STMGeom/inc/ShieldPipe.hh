@@ -22,6 +22,7 @@ namespace mu2e {
                double dnStrWallHalflength, double dnStrWallHoleRadius,
                double dnStrWallHalfHeight, double dnStrWallHalfWidth,
                double dnStrWallGap, std::string const& dnStrWallMaterial, bool buildMatingBlock,
+               double upStrAirGap,
                CLHEP::Hep3Vector const& originInMu2e, CLHEP::HepRotation const& rotation
               ) :
       _build( build ),
@@ -42,6 +43,7 @@ namespace mu2e {
       _dnStrWallGap( dnStrWallGap ),
       _dnStrWallMaterial( dnStrWallMaterial ),
       _buildMatingBlock( buildMatingBlock ),
+      _upStrAirGap( upStrAirGap ),
       _originInMu2e( originInMu2e ),
       _rotation    ( rotation     )
     {}
@@ -64,6 +66,7 @@ namespace mu2e {
     double dnStrWallGap()                     const { return _dnStrWallGap; }
     std::string const & dnStrWallMaterial()   const { return _dnStrWallMaterial; }
     bool buildMatingBlock()                   const { return _buildMatingBlock; }
+    double upStrAirGap()                       const { return _upStrAirGap; }
     CLHEP::Hep3Vector const &  originInMu2e() const { return _originInMu2e; }
     CLHEP::HepRotation const & rotation()     const { return _rotation; }
     //double zBegin()          const { return _originInMu2e.z() - zTabletopHalflength(); }
@@ -91,6 +94,7 @@ namespace mu2e {
     double             _dnStrWallGap; //between mating block/shield pipe and magnet
     std::string        _dnStrWallMaterial;
     bool               _buildMatingBlock;
+    double             _upStrAirGap;
     CLHEP::Hep3Vector  _originInMu2e;
     CLHEP::HepRotation _rotation; // wrt to parent volume
 

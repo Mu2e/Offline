@@ -3763,6 +3763,7 @@ namespace mu2e {
     const double mstmCRVShieldHalfLength  =  pSTMShieldPipeParams.dnStrWallHalflength();
     double mstmCRVShieldHalfWidth         =  pSTMShieldPipeParams.dnStrWallHalfWidth();
     double mstmCRVShieldHalfHeight        =  pSTMShieldPipeParams.dnStrWallHalfHeight();
+    double shieldPipeUpStrAirGap          =  pSTMShieldPipeParams.upStrAirGap();
 
     //if mating block parameters aren't defined, default to the magnet dimensions for backwards compatibility
     if(mstmCRVShieldHalfWidth < 0.) {
@@ -3805,7 +3806,7 @@ namespace mu2e {
                                       0.0, CLHEP::twopi );
     }
     double zOffsetBuffer = 0.1;
-    double mstmCRVShieldTubeZOffset = -mstmCRVShieldHalfLength-crvShieldTubeHalfLength-zOffsetBuffer;
+    double mstmCRVShieldTubeZOffset = -mstmCRVShieldHalfLength-crvShieldTubeHalfLength-zOffsetBuffer + shieldPipeUpStrAirGap;
     if(pSTMShieldPipeParams.matchPipeBlock()) { //match the pipe to the downstream end of the mating block
       //remove the buffer added in previous versions to prevent overlap as well as mating block half length, then add another half length
       mstmCRVShieldTubeZOffset += zOffsetBuffer + 2.*mstmCRVShieldHalfLength;

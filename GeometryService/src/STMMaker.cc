@@ -340,6 +340,7 @@ namespace mu2e {
                         _shieldDnStrWallGap,
                         _shieldDnStrWallMaterial,
                         _shieldBuildMatingBlock,
+                        _shieldPipeUpStrAirGap,
                         _shieldOffsetInMu2e, //This is upstream edge of FOV collimator for now.
                         _shieldRotation
                        ));
@@ -810,6 +811,7 @@ namespace mu2e {
     _shieldUpStrWallGap         = _config.getDouble("stm.shield.UpStrWall.gap", 0.); //only if using pipe as origin
     _shieldDnStrWallMaterial    = _config.getString("stm.shield.DnStrWall.material", _shieldMaterial);
     _shieldBuildMatingBlock     = _config.getBool("stm.shield.matingBlock.build", true); // default to true because that is what older versions did
+    _shieldPipeUpStrAirGap      = _config.getDouble("stm.shield.pipe.upStrAirGap", 0); // default to 0 for backwards compatibility
 
     _stmDnStrEnvBuild       = _config.getBool("stm.downstream.build");
     _stmDnStrEnvHalfLength  = _config.getDouble("stm.downstream.halfLength");

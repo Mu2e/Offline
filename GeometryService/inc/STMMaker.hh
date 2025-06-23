@@ -195,6 +195,7 @@ namespace mu2e {
     double       _shieldDnStrWallHalfWidth;
     double       _shieldDnStrWallGap;
     double       _shieldUpStrWallGap;
+    double       _shieldPipeUpStrAirGap;
     std::string  _shieldDnStrWallMaterial;
     bool         _shieldBuildMatingBlock;
 

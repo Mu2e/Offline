@@ -218,6 +218,7 @@ double stm.FOVcollimator.hole1.radiusUpStr =   70.0; // diameter = 140 mm (DocDB
 double stm.FOVcollimator.hole1.radiusDnStr =   70.0; // note: the same underlying class is used for FOV and SSC collimators hence why we see a "hole 1" and "UpStr" and "DnStr" radii. These are used in the SSC collimator
 double stm.FOVcollimator.plug.radius       = 70.0;
 
+double stm.shield.pipe.upStrAirGap = 25.3; // 1" gap between ECS and shield pipe (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") but there is a hardcoded 0.1 mm zOffset buffer in constructSTM.cc that we account for here
 
 // This tells emacs to view this file in c++ mode
 // Local Variables:
