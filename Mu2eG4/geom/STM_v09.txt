@@ -216,6 +216,8 @@ double stm.FOVcollimator.halfLength =   63.5; // fullLength = 127.0 mm (DocDB-49
 
 double stm.FOVcollimator.hole1.radiusUpStr =   70.0; // diameter = 140 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions")
 double stm.FOVcollimator.hole1.radiusDnStr =   70.0; // note: the same underlying class is used for FOV and SSC collimators hence why we see a "hole 1" and "UpStr" and "DnStr" radii. These are used in the SSC collimator
+double stm.FOVcollimator.plug.radius       = 70.0;
+
 
 // This tells emacs to view this file in c++ mode
 // Local Variables:
