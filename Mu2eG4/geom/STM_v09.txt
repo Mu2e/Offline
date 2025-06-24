@@ -221,7 +221,7 @@ double stm.FOVcollimator.plug.radius       = 70.0;
 double stm.shield.pipe.upStrAirGap = 25.3; // 1" (25.4 mm) gap between ECS and shield pipe (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") but there is a hardcoded 0.1 mm zOffset buffer in constructSTM.cc that we account for here
 double stm.FOVcollimator.UpStrSpace = 11.7; // 0.5" (12.7 mm) gap between shield pipe and FOV collimator (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") but there is a 1 mm offset between where this ends up and that DocDB. Subtract 1 mm here so that FOV sits at z=20419.7 mm
 double stm.shield.DnStrWall.gap  = 0.0;
-
+double stm.magnet.stand.topExtraLength = -200.0; // reduce length of table to avoid overlap with virtual detector
 // This tells emacs to view this file in c++ mode
 // Local Variables:
 // mode:c++
