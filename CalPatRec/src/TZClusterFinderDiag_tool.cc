@@ -207,9 +207,9 @@ namespace mu2e {
 
     // fill mcSimIDs data members simID, nHits, and pdgID
     if ( _mcTruth != 0 ) {
-      for (size_t i=0; i<_data->_chColl2->size(); ++i){
+      for (size_t i=0; i<_data->_chColl->size(); ++i){
         std::vector<StrawDigiIndex> shids;
-        _data->_chColl2->fillStrawDigiIndices(i,shids);
+        _data->_chColl->fillStrawDigiIndices(i,shids);
         int SimID = _mcUtils->strawHitSimId(_data->_event,shids[0]);
         _simParticle = _mcUtils->getSimParticle(_data->_event,shids[0]);
         int _pdgID = _simParticle->pdgId();
@@ -217,7 +217,7 @@ namespace mu2e {
           mcSimIDs sim_info;
           sim_info.simID = SimID;
           sim_info.pdgID = _pdgID;
-          sim_info.nHits = 1;
+          sim_info.nHits = shids.size();
           _mcHits.push_back(sim_info);
           continue;
         }
@@ -225,7 +225,7 @@ namespace mu2e {
         for (size_t j=0; j<_mcHits.size(); j++) {
           if (_mcHits[j].simID == SimID) {
             alreadyStored = 1;
-            _mcHits[j].nHits++;
+            _mcHits[j].nHits = _mcHits[j].nHits + shids.size();
             break;
           }
         }
@@ -234,7 +234,7 @@ namespace mu2e {
           mcSimIDs sim_info;
           sim_info.simID = SimID;
           sim_info.pdgID = _pdgID;
-          sim_info.nHits = 1;
+          sim_info.nHits = shids.size();
           _mcHits.push_back(sim_info);
         }
       }

@@ -13,12 +13,14 @@ class CalCosmicEnergyCalibInfo : public DbTable {
  public:
   class Row {
    public:
-    Row(int FirstCalibRun, int LastCalibRun, std::string EnergyMethod, std::string FitMethod, std::string Comment) :
+    Row(int cID, int FirstCalibRun, int LastCalibRun, std::string EnergyMethod, std::string FitMethod, std::string Comment) :
+        _cID(cID),
         _FirstCalibRun(FirstCalibRun),
         _LastCalibRun(LastCalibRun),
         _EnergyMethod(EnergyMethod),
         _FitMethod(FitMethod),
         _Comment(Comment) {}
+    int cID() const {return _cID; }
     int FirstCalibRun() const { return _FirstCalibRun; }
     int LastCalibRun() const { return _LastCalibRun; }
     std::string EnergyMethod() const { return _EnergyMethod; }
@@ -26,6 +28,7 @@ class CalCosmicEnergyCalibInfo : public DbTable {
     std::string Comment() const { return _Comment; }
 
    private:
+    int _cID; // Commit ID of the calibration table
     int _FirstCalibRun; //First run the calibration was extracted from
     int _LastCalibRun;  //Last run the calibration was extracted from
     std::string _EnergyMethod; // "vmax", "peak", "integral"
@@ -35,7 +38,7 @@ class CalCosmicEnergyCalibInfo : public DbTable {
 
   constexpr static const char* cxname = "CalCosmicEnergyCalibInfo";
 
-  CalCosmicEnergyCalibInfo() : DbTable(cxname, "cal.cosmicenergycalibinfo", "firstcalibrun,lastcalibrun,energymethod,fitmethod,comment") {}
+  CalCosmicEnergyCalibInfo() : DbTable(cxname, "cal.cosmicenergycalibinfo", "cid,firstcalibrun,lastcalibrun,energymethod,fitmethod,comment") {}
   const Row& rowAt(const std::size_t index) const { return _rows.at(index); }
   std::vector<Row> const& rows() const { return _rows; }
   std::size_t nrow() const override { return _rows.size(); };
@@ -45,11 +48,12 @@ class CalCosmicEnergyCalibInfo : public DbTable {
   tableType type() const override { return Adhoc; }
 
   void addRow(const std::vector<std::string>& columns) override {
-    _rows.emplace_back(std::stoi(columns[0]),std::stoi(columns[1]),columns[2],columns[3],columns[4]);
+    _rows.emplace_back(std::stoi(columns[0]),std::stoi(columns[1]),std::stoi(columns[2]),columns[3],columns[4],columns[5]);
   }
 
   void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
     Row const& r = _rows.at(irow);
+    sstream << r.cID() << ",";
     sstream << r.FirstCalibRun() << ",";
     sstream << r.LastCalibRun() << ",";
     sstream << r.EnergyMethod() << ",";

@@ -13,7 +13,7 @@ namespace mu2e {
       PrimaryParticle() {}
       PrimaryParticle(SPPV const& simps) : _simps(simps) {}
       SPPV const& primarySimParticles() const { return _simps; }
-      ProcessCode primaryProcess() const { return _simps.front()->creationCode(); }
+      ProcessCode primaryProcess() const { return _simps.size() >0 ? _simps.front()->creationCode(): ProcessCode(ProcessCode::NoProcess); }
       SPPV& modifySimParticles() { return _simps; } // needed for compression
     private:
       SPPV _simps; // associated SimParticles (can be >1).  All must have the same creation code

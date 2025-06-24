@@ -19,21 +19,8 @@ namespace mu2e {
     bool operator == (StrawEnd const& other) const { return other._end == _end; }
     bool operator != (StrawEnd const& other) const { return other._end != _end; }
 
-    friend std::ostream& operator << (std::ostream& os, StrawEnd const& end) {
-      switch ( end._end ) {
-        case cal:
-          os << "Cal";
-          break;
-        case hv:
-          os << "HV";
-          break;
-              default:
-          os << "Unknown";
-          break;
-      }
-      return os;
-    }
   };
 }
+std::ostream& operator << (std::ostream& os, mu2e::StrawEnd const& end);
 #endif
 

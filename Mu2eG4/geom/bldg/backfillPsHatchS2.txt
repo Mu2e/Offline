@@ -1,0 +1,29 @@
+string building.backfill.psHatch.S2.name     = "backfillPsHatchS2";
+
+string building.backfill.psHatch.S2.material = "MBOverburden";
+
+double building.backfill.psHatch.S2.offsetFromMu2eOrigin.x   = 947.4;
+double building.backfill.psHatch.S2.offsetFromFloorSurface.y = 10693.4033;
+double building.backfill.psHatch.S2.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.backfill.psHatch.S2.yHalfThickness           = 431.8033;
+
+vector<double> building.backfill.psHatch.S2.xPositions = {
+  -4749.9,   // P0 SE
+  -4749.9,   // P1 NE
+  -11709.3,  // P2 NW
+  -11709.3,  // P3 SW
+  -6254.75   // P4 lower elbow
+};
+
+vector<double> building.backfill.psHatch.S2.yPositions = {
+  -609.5,    // P0 SE
+  -254.1,    // P1 NE
+  -254.1,    // P2 NW
+  -1943,     // P3 SW
+  -609.0     // P4 lower elbow
+};
+
+// Local Variables:
+// mode:c++
+// End:

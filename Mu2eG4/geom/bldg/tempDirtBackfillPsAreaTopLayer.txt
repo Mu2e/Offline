@@ -4,7 +4,7 @@
 
 string building.tempDirt.backfill.psArea.TopLayer.name     = "tempDirtBackfillPsAreaTopLayer";
 
-string building.tempDirt.backfill.psArea.TopLayer.material = "CA7Backfill";
+string building.tempDirt.backfill.psArea.TopLayer.material = "MBOverburden";
 
 double building.tempDirt.backfill.psArea.TopLayer.offsetFromMu2eOrigin.x   = 947.4;
 double building.tempDirt.backfill.psArea.TopLayer.offsetFromFloorSurface.y = 8788.4;

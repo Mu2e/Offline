@@ -6,6 +6,7 @@
 #include <cmath>
 #include <iterator>
 #include <iostream>
+#include <limits>
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"
@@ -20,224 +21,308 @@
 
 namespace mu2e {
 
+  namespace {
+
+    CLHEP::Hep2Vector toOutlinePlane(CLHEP::Hep3Vector mu2ePoint) {
+      return CLHEP::Hep2Vector(mu2ePoint.z(), mu2ePoint.x());
+    }
+
+    CLHEP::Hep3Vector toMu2eSpace(CLHEP::Hep2Vector outlinePoint, double y) {
+      return CLHEP::Hep3Vector(outlinePoint.y(), y, outlinePoint.x());
+    }
+
+    struct Line {
+      CLHEP::Hep2Vector A;
+      CLHEP::Hep2Vector B;
+      Line(CLHEP::Hep2Vector Ain, CLHEP::Hep2Vector Bin) : A{Ain}, B{Bin} {}
+    };
+
+    CLHEP::Hep2Vector intersection(Line L1, Line L2) {
+      const auto AB = L1.A - L1.B;
+      const auto DC = L2.B - L2.A;
+      const auto AC = L1.A - L2.A;
+
+      const double det = DC.x()*AB.y() - DC.y()*AB.x();
+      const double tRHS = DC.x() * AC.y() - DC.y()*AC.x();
+
+      if(std::abs(tRHS) < std::abs(det) * std::numeric_limits<double>::max()) { // can divide
+        const double t = tRHS / det;
+        return L1.A - t * AB;
+      }
+      else {
+        throw cet::exception("GEOM")<<"ProtonBeamDumpMaker: internal error, det is too small\n";
+      }
+    }
+
+  } // end of anonymous namespace
+
   //================================================================
   std::unique_ptr<ProtonBeamDump> ProtonBeamDumpMaker::make(const SimpleConfig& c,
                                                             const Mu2eHall& hall)
   {
+    using CLHEP::Hep3Vector;
+    using CLHEP::Hep2Vector;
 
     std::unique_ptr<ProtonBeamDump> dump(new ProtonBeamDump());
 
     int verbose = c.getInt("protonBeamDump.verbosityLevel", 0);
-    int version = c.getInt("protonBeamDump.version",2);
 
-    // Get relevant Hall solids
-    ExtrudedSolid psArea  = hall.getBldgSolid("psArea");        // contains front corners of dump slab
-    ExtrudedSolid psWall  = hall.getBldgSolid("psWallUpper");   // contains back corners of dump slab
-    ExtrudedSolid psWallS = hall.getBldgSolid("psAreaUpperS");  // contains boundary between front and back
-    ExtrudedSolid psWallN = hall.getBldgSolid("psAreaUpperN");  // contains boundary between front and back
-    ExtrudedSolid psCeil;
-    if ( version > 2 ) {
-      psCeil = hall.getBldgSolid("psAreaCeilingSW");
-    } else {
-      psCeil = hall.getBldgSolid("psAreaCeiling"); // contains ceiling height
-    }
-
-    // position
     dump->_coreCenterInMu2e = c.getHep3Vector("protonBeamDump.coreCenterInMu2e");
     const double coreRotY = dump->_coreRotY = c.getDouble("protonBeamDump.coreRotY") * CLHEP::degree;
     dump->_coreRotationInMu2e.rotateY(coreRotY);
+    //
+    // Dump core position and rotation have been initialized, from
+    // this point on mu2eToBeamDump_position() and other coordinate
+    // conversion methods can be used.
 
-    std::vector<double> additionalSteel;
     c.getVectorDouble("protonBeamDump.coreHalfSize", dump->_coreHalfSize, 3);
     c.getVectorDouble("protonBeamDump.neutronCaveHalfSize", dump->_neutronCaveHalfSize, 3);
     c.getVectorDouble("protonBeamDump.mouthHalfSize", dump->_mouthHalfSize, 3);
-    c.getVectorDouble("protonBeamDump.additionalSteel", additionalSteel, 3);
-    dump->_minCoreShieldingThickness = c.getDouble("protonBeamDump.minCoreShieldingThickness");
-    const double coreAirGap = c.getDouble("protonBeamDump.coreAirGap");
 
-    const CLHEP::Hep3Vector& offset = psWall.getOffsetFromMu2eOrigin();
-    dump->_shieldingFaceYmin = offset[1] - psWall.getYhalfThickness();
-    const CLHEP::Hep3Vector& ceiling = psCeil.getOffsetFromMu2eOrigin();
+    const double coreAirSideGap = c.getDouble("protonBeamDump.coreAirSideGap");
+    const double coreAirTopGap = c.getDouble("protonBeamDump.coreAirTopGap");
+    const double coreAirBottomGap = c.getDouble("protonBeamDump.coreAirBottomGap");
 
-    // Compute the overall size of the nominal dump front portion
-    dump->_frontShieldingHalfSize.resize(3);
-    dump->_frontShieldingHalfSize[0] = dump->_coreHalfSize[0] + dump->_minCoreShieldingThickness;
-    dump->_frontShieldingHalfSize[1] = (ceiling[1] - psCeil.getYhalfThickness() - dump->_shieldingFaceYmin)/2.0;
-    dump->_frontShieldingHalfSize[2] = dump->_coreHalfSize[2] + dump->_neutronCaveHalfSize[2] + dump->_mouthHalfSize[2];
-    if(verbose) {
-      std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump frontShielding half size = ";
-      std::copy(dump->_frontShieldingHalfSize.begin(), dump->_frontShieldingHalfSize.end(), std::ostream_iterator<double>(std::cout, ", "));
-      std::cout<<std::endl;
-    }
-
-    dump->_frontSteelHalfSize.resize(3);
-    dump->_frontSteelHalfSize[0] = additionalSteel[0]/2.0;
-    dump->_frontSteelHalfSize[1] = additionalSteel[1]/2.0;
-    dump->_frontSteelHalfSize[2] = dump->_coreHalfSize[2];
-    dump->_backSteelHalfSize.resize(3);
-    dump->_backSteelHalfSize[0] = dump->_frontSteelHalfSize[0];
-    dump->_backSteelHalfSize[1] = dump->_frontSteelHalfSize[1];
-    dump->_backSteelHalfSize[2] = additionalSteel[2]/2.0 - dump->_frontSteelHalfSize[2]-0.5;
     dump->_coreAirHalfSize.resize(3);
-    dump->_coreAirHalfSize[0] = dump->_coreHalfSize[0] + coreAirGap;
-    dump->_coreAirHalfSize[1] = dump->_coreHalfSize[1] + coreAirGap/2.0;
+    dump->_coreAirHalfSize[0] = dump->_coreHalfSize[0] + coreAirSideGap;
+    dump->_coreAirHalfSize[1] = dump->_coreHalfSize[1] + (coreAirTopGap+coreAirBottomGap)/2;
     dump->_coreAirHalfSize[2] = dump->_coreHalfSize[2];
 
-    // The offset of the front shielding coordinates w.r.t. the core, along the dump z
-    dump->_coreCenterDistanceToReferencePlane = c.getDouble("protonBeamDump.coreCenterDistanceToReferencePlane");
-    dump->_coreCenterDistanceToShieldingFace = 2.0*dump->_frontShieldingHalfSize[2] - dump->_coreHalfSize[2];
+    dump->_neutronCaveCenterInMu2e =
+      dump->beamDumpToMu2e_position(Hep3Vector(0,
+                                               0,
+                                               dump->_coreHalfSize[2] + dump->_neutronCaveHalfSize[2]));
 
-    const double frontShieldingOffset = dump->_coreCenterDistanceToShieldingFace - dump->_frontShieldingHalfSize[2];
-    dump->_frontShieldingCenterInMu2e[0] = dump->_coreCenterInMu2e[0] + frontShieldingOffset*sin(coreRotY);
-    dump->_frontShieldingCenterInMu2e[1] = dump->_shieldingFaceYmin   + dump->_frontShieldingHalfSize[1];
-    dump->_frontShieldingCenterInMu2e[2] = dump->_coreCenterInMu2e[2] + frontShieldingOffset*cos(coreRotY);
+    dump->_mouthCenterInMu2e =
+      dump->beamDumpToMu2e_position(Hep3Vector(0,
+                                               0,
+                                               dump->_coreHalfSize[2]
+                                               + 2*dump->_neutronCaveHalfSize[2]
+                                               + dump->_mouthHalfSize[2]
+                                               ));
 
-    dump->_backShieldingHalfSize.resize(3);
-    dump->_backShieldingHalfSize[0] = dump->_coreHalfSize[0] + dump->_minCoreShieldingThickness;
-    dump->_backShieldingHalfSize[1] = psWall.getYhalfThickness();
-    dump->_backShieldingHalfSize[2] = dump->_minCoreShieldingThickness/2;
+    dump->_coreAirCenterInMu2e =
+      dump->beamDumpToMu2e_position(Hep3Vector(0,
+                                               (coreAirTopGap-coreAirBottomGap)/2,
+                                               0
+                                               ));
 
-    const double backShieldingOffset = dump->_backShieldingHalfSize[2] + dump->_coreHalfSize[2];
-    dump->_backShieldingCenterInMu2e[0] = dump->_coreCenterInMu2e[0] - backShieldingOffset*sin(coreRotY);
-    dump->_backShieldingCenterInMu2e[1] = dump->_shieldingFaceYmin    + dump->_backShieldingHalfSize[1];
-    dump->_backShieldingCenterInMu2e[2] = dump->_coreCenterInMu2e[2] - backShieldingOffset*cos(coreRotY);
-
-    dump->_mouthCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e
-      *CLHEP::Hep3Vector(0,0,frontShieldingOffset + dump->_frontShieldingHalfSize[2] - dump->_mouthHalfSize[2]);
-
-    dump->_neutronCaveCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e
-      *CLHEP::Hep3Vector(0,0, frontShieldingOffset + dump->_frontShieldingHalfSize[2] - 2*dump->_mouthHalfSize[2] - dump->_neutronCaveHalfSize[2]);
-
-    dump->_coreAirCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e * CLHEP::Hep3Vector(0,-coreAirGap/2.0,0);
-
-    dump->_frontSteelCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e
-      *CLHEP::Hep3Vector(0,     dump->_coreAirHalfSize[1] + dump->_frontSteelHalfSize[1],
-                                dump->_coreHalfSize[2] - dump->_frontSteelHalfSize[2]);
-
-    dump->_backSteelCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e
-      *CLHEP::Hep3Vector(0,     dump->_coreAirHalfSize[1] + dump->_backSteelHalfSize[1],
-                                dump->_coreHalfSize[2] - 2.0*dump->_frontSteelHalfSize[2] - dump->_backSteelHalfSize[2]);
 
     //----------------------------------------------------------------
-    // Shielding face coordinates
-    dump->_shieldingFaceXmin = dump->_frontShieldingCenterInMu2e[0]
-      + dump->_frontShieldingHalfSize[2] * sin(coreRotY)
-      - dump->_frontShieldingHalfSize[0] * cos(coreRotY)
-      ;
+    // Get relevant Hall solids
 
-    dump->_shieldingFaceXmax = dump->_frontShieldingCenterInMu2e[0]
-      + dump->_frontShieldingHalfSize[2] * sin(coreRotY)
-      + dump->_frontShieldingHalfSize[0] * cos(coreRotY)
-      ;
+    const ExtrudedSolid& psArea  = hall.getBldgSolid("psArea");         // bottom of dump
+    const ExtrudedSolid& psWall  = hall.getBldgSolid("psWallUpper");    // contains back corners of dump slab
+    const ExtrudedSolid& psCeil  = hall.getBldgSolid("psAreaCeilingSW");// top of dump and ExtMon cutout
 
-    dump->_shieldingFaceZatXmin = dump->_frontShieldingCenterInMu2e[2]
-      + dump->_frontShieldingHalfSize[2] * cos(coreRotY)
-      + dump->_frontShieldingHalfSize[0] * sin(coreRotY)
-      ;
+    // The scale of an artificial gap, in mm, between touching volumes
+    // needed to eliminate G4-reported volume overlaps that are
+    // artifacts of rounding errors.
+    const double ovlgap = 0.5;
 
-    dump->_shieldingFaceZatXmax = dump->_frontShieldingCenterInMu2e[2]
-      + dump->_frontShieldingHalfSize[2] * cos(coreRotY)
-      - dump->_frontShieldingHalfSize[0] * sin(coreRotY)
-      ;
+    // unit vectors in the beam dump reference frame
+    const Hep2Vector nx = toOutlinePlane(dump->beamDumpToMu2e_momentum(Hep3Vector(1,0,0)));
+    const Hep2Vector nz = toOutlinePlane(dump->beamDumpToMu2e_momentum(Hep3Vector(0,0,1)));
 
     //----------------------------------------------------------------
     // For the dump shielding we define an extruded solid that extends
     // the side faces of the nominal dump horizontally to the enclosure
     // walls and vertically to the ceiling and floor. In this way we
     // accommodate the slight diference between the enclosure
-    // orientation and the nominal dump rotation.  There is a matching
-    // solid that fills the area behind the dump core that ends
-    // vertically at the floor level of the extinction monitor room
+    // orientation and the nominal dump rotation.
 
-    // Create deltas (of 1.1 mm, with rotation) to avoid overlaps
-    double dW = 1.1;
-    double ccW = cos(coreRotY)*dW;
-    if ( version > 2 ) ccW = -ccW;
-    const CLHEP::Hep2Vector deltaNE( -ccW, -sin(coreRotY)*dW );
-    const CLHEP::Hep2Vector deltaNW(  cos(coreRotY)*dW, -sin(coreRotY)*dW );
-    const CLHEP::Hep2Vector deltaSW(  cos(coreRotY)*dW,  sin(coreRotY)*dW );
-    const CLHEP::Hep2Vector deltaSE( -cos(coreRotY)*dW,  sin(coreRotY)*dW );
+    // The vertical extent of beam dump concrete is from psArea concrete to the ceiling.
+    const double concreteYmin = psArea.getOffsetFromMu2eOrigin().y() + psArea.getYhalfThickness();
+    const double concreteYmax = psCeil.getOffsetFromMu2eOrigin().y() - psCeil.getYhalfThickness();
 
-    // Extract or compute the appropriate front shielding vertices
-    const CLHEP::Hep3Vector psAoffset =  psArea.getOffsetFromMu2eOrigin();
-    const CLHEP::Hep3Vector psWoffset =  psWall.getOffsetFromMu2eOrigin();
-    const CLHEP::Hep3Vector psSoffset = psWallS.getOffsetFromMu2eOrigin();
-    const CLHEP::Hep3Vector psNoffset = psWallN.getOffsetFromMu2eOrigin();
+    dump->_dumpConcreteHalfHeight = (concreteYmax - concreteYmin)/2;
+    dump->_dumpConcreteCenterInMu2e = Hep3Vector(0, (concreteYmax+concreteYmin)/2, 0);
 
-    const auto & psaVertices =  psArea.getVertices();
-    const auto & pswVertices =  psWall.getVertices();
-    const auto & psSVertices = psWallS.getVertices();
-    const auto & psNVertices = psWallN.getVertices();
+    // Beam dump outline is contained by psWallUpper vertices 13-14-15-16,
+    // with the back of the dump following the 14-15 line.
+    // The front corners are at the intersections of straight lines
+    // through psWallUpper vertices 13-14 or 15-16 and the beam dump face.
 
-    double zs = dump->_coreCenterInMu2e[2] - dump->_coreHalfSize[2]*cos(coreRotY)
-      + dump->_frontShieldingHalfSize[0]*sin(coreRotY);
-    double xs = dump->_coreCenterInMu2e[0] - dump->_coreHalfSize[2]*sin(coreRotY)
-      - dump->_frontShieldingHalfSize[0]*cos(coreRotY);
-    double zn = dump->_coreCenterInMu2e[2] - dump->_coreHalfSize[2]*cos(coreRotY)
-      - dump->_frontShieldingHalfSize[0]*sin(coreRotY);
-    double xn = dump->_coreCenterInMu2e[0] - dump->_coreHalfSize[2]*sin(coreRotY)
-      + dump->_frontShieldingHalfSize[0]*cos(coreRotY);
+    const double dumpCoreCenterToConcreteFaceDistance =
+      dump->_coreHalfSize[2]
+      + 2 * dump->_neutronCaveHalfSize[2]
+      + 2*dump->_mouthHalfSize[2];
 
-    if (version > 2) {
-      dump->_backShieldingOutline.emplace_back(psNVertices[5][0]+psNoffset[2]+deltaNE[0],psNVertices[5][1]+psNoffset[0]+deltaNE[1]);
-      dump->_backShieldingOutline.emplace_back(pswVertices[14][0]+psWoffset[2]+deltaNW[0],pswVertices[14][1]+psWoffset[0]+deltaNW[1]);
-      dump->_backShieldingOutline.emplace_back(pswVertices[15][0]+psWoffset[2]+deltaSW[0],pswVertices[15][1]+psWoffset[0]+deltaSW[1]);
+    // Beam dump face line in the plan view
+    Line faceLine(
+                  // Concrete face point on dump axis
+                  toOutlinePlane(dump->beamDumpToMu2e_position(Hep3Vector(0, 0, dumpCoreCenterToConcreteFaceDistance))),
+                  // Move 10m sideway.  An arbitrary point to define the line.
+                  toOutlinePlane(dump->beamDumpToMu2e_position(Hep3Vector(10000., 0, dumpCoreCenterToConcreteFaceDistance)))
+                  );
 
-    } else {
-      dump->_backShieldingOutline.emplace_back(psNVertices[7][0]+psNoffset[2]+deltaNE[0],psNVertices[7][1]+psNoffset[0]+deltaNE[1]);
-      dump->_backShieldingOutline.emplace_back(pswVertices[3][0]+psWoffset[2]+deltaNW[0],pswVertices[3][1]+psWoffset[0]+deltaNW[1]);
-      dump->_backShieldingOutline.emplace_back(pswVertices[2][0]+psWoffset[2]+deltaSW[0],pswVertices[2][1]+psWoffset[0]+deltaSW[1]);
-    }
-      // Due to changes in bldg construction, use vertex [7] instead of [2]
-    dump->_backShieldingOutline.emplace_back(psSVertices[7][0]+psSoffset[2]+deltaSE[0],psSVertices[7][1]+psSoffset[0]+deltaSE[1]);
-    dump->_backShieldingOutline.emplace_back(zs,xs);
-    dump->_backShieldingOutline.emplace_back(zn,xn);
+    const auto& pswVertices =  psWall.getVertices();
+    const Hep2Vector& psWoff2 = toOutlinePlane(psWall.getOffsetFromMu2eOrigin());
 
-    if ( version > 2 ) {
-      dump->_frontShieldingOutline.emplace_back(psNVertices[5][0]+psNoffset[2]+deltaNE[0],psNVertices[5][1]+psNoffset[0]+deltaNE[1]);
-    } else {
-      dump->_frontShieldingOutline.emplace_back(psNVertices[7][0]+psNoffset[2]+deltaNE[0],psNVertices[7][1]+psNoffset[0]+deltaNE[1]);
-    }
+    dump->_dumpConcreteOutline.emplace_back(pswVertices[14]+psWoff2 + ovlgap*(-nx+nz));
+    dump->_dumpConcreteOutline.emplace_back(pswVertices[15]+psWoff2 + ovlgap*( nx+nz));
+    dump->_dumpConcreteOutline.emplace_back(intersection(faceLine, Line(pswVertices[15] + psWoff2, pswVertices[16] + psWoff2)) + ovlgap*( nx));
+    dump->_dumpConcreteOutline.emplace_back(intersection(faceLine, Line(pswVertices[13] + psWoff2, pswVertices[14] + psWoff2)) + ovlgap*(-nx));
 
-    dump->_frontShieldingOutline.emplace_back(zn,xn);
-    dump->_frontShieldingOutline.emplace_back(zs,xs);
-    // Due to changes in bldg construction, use vertex [7] instead of [2]
-    dump->_frontShieldingOutline.emplace_back(psSVertices[7][0]+psSoffset[2]+deltaSE[0],psSVertices[7][1]+psSoffset[0]+deltaSE[1]);
-    // Temporary workaround while bldg geom is in flux.
-    double tempWorkaround = 10.5;
-    if ( version > 2 ) {
-      dump->_frontShieldingOutline.emplace_back(psaVertices[15][0]+psAoffset[2]+deltaSE[0],psaVertices[15][1]+psAoffset[0]+deltaSE[1]+tempWorkaround);
-    } else {
-      dump->_frontShieldingOutline.emplace_back(psaVertices[2][0]+psAoffset[2]+deltaSE[0],psaVertices[2][1]+psAoffset[0]+deltaSE[1]+tempWorkaround);
-    }
-    dump->_frontShieldingOutline.emplace_back(dump->_shieldingFaceZatXmin,dump->_shieldingFaceXmin);
-    dump->_frontShieldingOutline.emplace_back(dump->_shieldingFaceZatXmax,dump->_shieldingFaceXmax);
-    if ( version > 2 ) {
-      dump->_frontShieldingOutline.emplace_back(psaVertices[14][0]+psAoffset[2]+deltaNE[0],psaVertices[14][1]+psAoffset[0]+deltaNE[1]);
-    } else {
-      dump->_frontShieldingOutline.emplace_back(psaVertices[3][0]+psAoffset[2]+deltaNE[0],psaVertices[3][1]+psAoffset[0]+deltaNE[1]);
-    }
+    // The ExtMon room subtraction.
+    // The the back is the same as the concrete back.  Add a margin for the G4 boolean.
+    const double booleanVolumeMargin = 50; // mm
+    dump->_extMonSubtractionOutline.emplace_back(pswVertices[14]+psWoff2 + booleanVolumeMargin*( nx-nz));
+    dump->_extMonSubtractionOutline.emplace_back(pswVertices[15]+psWoff2 + booleanVolumeMargin*(-nx-nz));
+
+    // The front of the subtraction is lined up with psCeil vertices 6
+    // and 7.  This line cuts through the bulk of the concrete and the
+    // position of the line should be exact (no margin), but the ends
+    // should protrude sideways. The protrusion is taken care of by
+    // using the vertices that are spaced wider than the beam dump
+    // concrete width.
+
+    const auto& pscVertices =  psCeil.getVertices();
+    const Hep2Vector& psCoff2 = toOutlinePlane(psCeil.getOffsetFromMu2eOrigin());
+    dump->_extMonSubtractionOutline.emplace_back(pscVertices[6]+psCoff2);
+    dump->_extMonSubtractionOutline.emplace_back(pscVertices[7]+psCoff2);
+
+    // The bottom of the cutout should be exact.  It lines up with psWallUpper
+    const double extMonCutoutYmin = psWall.getOffsetFromMu2eOrigin().y() + psWall.getYhalfThickness();
+    // The top should go  above the top of the beam dump concrete
+    const double extMonCutoutYmax = concreteYmax + booleanVolumeMargin;
+
+    dump->_extMonSubtractionHalfHeight = (extMonCutoutYmax - extMonCutoutYmin)/2;
+    dump->_extMonSubtractionCenterInMu2e = Hep3Vector(0, (extMonCutoutYmax + extMonCutoutYmin)/2, 0);
+
+
+    //----------------------------------------------------------------
+    // The extra steel on top of the core
+
+    // Top steel clearances are from the side walls, which coincide
+    // with the sides of the dump concrete outline.  The sides are
+    // nominally parallel to the beam dump axis, so it should not
+    // matter what outline vertex is used.  We look at the both
+    // vertices and select the more constraining number to account for
+    // imperfections.
+
+    const double beamLeftWallX /*in the beam dump coordinates*/
+      = std::max(
+                 dump->mu2eToBeamDump_position(toMu2eSpace(dump->_dumpConcreteOutline[1], 0)).x(),
+                 dump->mu2eToBeamDump_position(toMu2eSpace(dump->_dumpConcreteOutline[2], 0)).x()
+                 );
+
+    const double beamRightWallX /*in the beam dump coordinates*/
+      = std::min(
+                 dump->mu2eToBeamDump_position(toMu2eSpace(dump->_dumpConcreteOutline[0], 0)).x(),
+                 dump->mu2eToBeamDump_position(toMu2eSpace(dump->_dumpConcreteOutline[3], 0)).x()
+                 );
+
+    const double beamDumpBackZ /*in the beam dump coordinates*/
+      = std::max(
+                 dump->mu2eToBeamDump_position(toMu2eSpace(dump->_dumpConcreteOutline[0], 0)).z(),
+                 dump->mu2eToBeamDump_position(toMu2eSpace(dump->_dumpConcreteOutline[1], 0)).z()
+                 );
+
+    const double topSteelFrontZ = dump->_coreHalfSize[2]; // reaches out to the front of the core
+
+    //----------------
+    std::vector<double> topSteelFlatWallClearance;
+    c.getVectorDouble("protonBeamDump.topSteelFlat.wallClearance", topSteelFlatWallClearance);
+
+    const double topSteelFlatXmin = beamLeftWallX + topSteelFlatWallClearance[0];
+    const double topSteelFlatXmax = beamRightWallX - topSteelFlatWallClearance[1];
+
+    dump->_topSteelFlatHalfSize.resize(3);
+    dump->_topSteelFlatHalfSize[0] = (topSteelFlatXmax - topSteelFlatXmin)/2;
+    dump->_topSteelFlatHalfSize[1] = c.getDouble("protonBeamDump.topSteelFlat.thickness")/2;
+    dump->_topSteelFlatHalfSize[2] = (topSteelFrontZ - beamDumpBackZ)/2;
+
+    dump->_topSteelFlatCenterInMu2e =
+      dump->beamDumpToMu2e_position(Hep3Vector(
+                                               (topSteelFlatXmax + topSteelFlatXmin)/2,
+                                               dump->_coreHalfSize[1] + coreAirTopGap + dump->_topSteelFlatHalfSize[1],
+                                               dump->_coreHalfSize[2] - dump->_topSteelFlatHalfSize[2]
+                                               ));
+
+    //----------------
+    std::vector<double> topSteelScallopedWallClearance;
+    c.getVectorDouble("protonBeamDump.topSteelScalloped.wallClearance", topSteelScallopedWallClearance);
+
+    const double topSteelScallopedXmin = beamLeftWallX + topSteelScallopedWallClearance[0];
+    const double topSteelScallopedXmax = beamRightWallX - topSteelScallopedWallClearance[1];
+
+    dump->_topSteelScallopedHalfSize.resize(3);
+    dump->_topSteelScallopedHalfSize[0] = (topSteelScallopedXmax - topSteelScallopedXmin)/2;
+    dump->_topSteelScallopedHalfSize[1] = c.getDouble("protonBeamDump.topSteelScalloped.thickness")/2;
+    dump->_topSteelScallopedHalfSize[2] = (topSteelFrontZ - beamDumpBackZ)/2;
+
+    dump->_topSteelScallopedCenterInMu2e =
+      dump->beamDumpToMu2e_position(Hep3Vector(
+                                               (topSteelScallopedXmax + topSteelScallopedXmin)/2,
+
+                                               dump->_coreHalfSize[1]
+                                               + coreAirTopGap
+                                               + 2*dump->_topSteelFlatHalfSize[1]
+                                               + dump->_topSteelScallopedHalfSize[1],
+
+                                               dump->_coreHalfSize[2] - dump->_topSteelScallopedHalfSize[2]
+                                               ));
+
+    dump->_scallopDistanceToCollimator = c.getDouble("protonBeamDump.topSteelScalloped.distanceToCollimator");
 
     //----------------------------------------------------------------
     if(verbose) {
-
-      for( std::size_t i=0; i<dump->_frontShieldingOutline.size(); i++ ) {
-        std::cout<<"front "     <<      dump->_frontShieldingOutline[i][0]
-                 <<"\t"         <<      dump->_frontShieldingOutline[i][1]      <<"\n";
-      }
-
-      for( std::size_t i=0; i<dump->_backShieldingOutline.size(); i++ ) {
-        std::cout<<"back "      <<      dump->_backShieldingOutline[i][0]
-                 <<"\t"         <<      dump->_backShieldingOutline[i][1]       <<"\n";
-      }
-
       std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump core center in mu2e = "<<dump->_coreCenterInMu2e<<std::endl;
-      std::cout<<"ProtonBeamDumpMaker"<<": shieldingFaceXmin = "<<dump->_shieldingFaceXmin
-               <<", Xmax = "<<dump->_shieldingFaceXmax<<std::endl;
-      std::cout<<"ProtonBeamDumpMaker"<<": shieldingFaceZatXmin = "<<dump->_shieldingFaceZatXmin
-               <<", ZatXmax = "<<dump->_shieldingFaceZatXmax<<std::endl;
-      std::cout<<"Front Steel Center in Mu2e:  " << dump->_frontSteelCenterInMu2e[0] << ", " << dump->_frontSteelCenterInMu2e[1] << ", " << dump->_frontSteelCenterInMu2e[2] << std::endl;
 
+      std::cout<<"core halfsize:  "
+               << dump->_coreHalfSize[0]<<", "
+               << dump->_coreHalfSize[1]<<", "
+               << dump->_coreHalfSize[2]<<", "
+               << std::endl;
+
+      for( std::size_t i=0; i<dump->_dumpConcreteOutline.size(); i++ ) {
+        // whitespace or tab separated print for the ease of use with gnuplot
+        std::cout<<"dumpConcreteOutline  "
+                 <<dump->_dumpConcreteOutline[i][0]<<"\t"
+                 <<dump->_dumpConcreteOutline[i][1]<<"\n";
+      }
+      std::cout<<"dumpConcreteHalfHeight = "<<dump->_dumpConcreteHalfHeight<<std::endl;
+      std::cout<<"dumpConcreteCenterInMu2e = "<<dump->_dumpConcreteCenterInMu2e<<std::endl;
+
+      for( std::size_t i=0; i<dump->_extMonSubtractionOutline.size(); i++ ) {
+        // whitespace or tab separated print for the ease of use with gnuplot
+        std::cout<<"extMonSubtractionOutline  "
+                 <<dump->_extMonSubtractionOutline[i][0]<<"\t"
+                 <<dump->_extMonSubtractionOutline[i][1]<<"\n";
+      }
+      std::cout<<"extMonSubtractionHalfHeight = "<<dump->_extMonSubtractionHalfHeight<<std::endl;
+      std::cout<<"extMonSubtractionCenterInMu2e = "<<dump->_extMonSubtractionCenterInMu2e<<std::endl;
+
+      std::cout<<"dump mouth halfsize:  "
+               << dump->_mouthHalfSize[0]<<", "
+               << dump->_mouthHalfSize[1]<<", "
+               << dump->_mouthHalfSize[2]<<", "
+               << std::endl;
+
+      std::cout<<"dump neutronCave halfsize:  "
+               << dump->_neutronCaveHalfSize[0]<<", "
+               << dump->_neutronCaveHalfSize[1]<<", "
+               << dump->_neutronCaveHalfSize[2]<<", "
+               << std::endl;
+
+      std::cout<<"Flat steel halfsize:  "
+               << dump->_topSteelFlatHalfSize[0]<<", "
+               << dump->_topSteelFlatHalfSize[1]<<", "
+               << dump->_topSteelFlatHalfSize[2]<<", "
+               << std::endl;
+
+      std::cout<<"Flat steel Center in Mu2e:  " << dump->_topSteelFlatCenterInMu2e << std::endl;
+
+      std::cout<<"Scalloped steel halfsize:  "
+               << dump->_topSteelScallopedHalfSize[0]<<", "
+               << dump->_topSteelScallopedHalfSize[1]<<", "
+               << dump->_topSteelScallopedHalfSize[2]<<", "
+               << std::endl;
+
+      std::cout<<"Scalloped steel Center in Mu2e:  " << dump->_topSteelScallopedCenterInMu2e << std::endl;
+
+      std::cout<<"Scalloped steel distance to collimator:  " << dump->_scallopDistanceToCollimator << std::endl;
     }
 
     return dump;

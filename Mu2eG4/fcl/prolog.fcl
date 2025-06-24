@@ -29,6 +29,8 @@ mu2eg4DefaultPhysics: {
     // or any of the _HP ones
     turnOnThermalNeutronPhysics: false
 
+    // setBertiniAs11_2: false  // For Geant4 11.3.p02 and above uncommenting turns on the new behavior which as of 11.3.p02 may be not good for Mu2e; more validation/work needed in future
+
     setMuHadLateralDisplacement: true // improves accuracy of boundary
                                       // crossing for muons and common charged hadrons
 

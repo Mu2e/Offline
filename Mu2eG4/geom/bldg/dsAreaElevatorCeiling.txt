@@ -1,39 +1,34 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_DSelevator_ceiling.ccl
-
 string building.dsArea.elevator.ceiling.name     = "dsAreaElevatorCeiling";
-
 string building.dsArea.elevator.ceiling.material = "CONCRETE_MARS";
-
-double building.dsArea.elevator.ceiling.offsetFromMu2eOrigin.x   = 947.4;
-double building.dsArea.elevator.ceiling.offsetFromFloorSurface.y = 3251.2;
-double building.dsArea.elevator.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.dsArea.elevator.ceiling.yHalfThickness           = 203.2;
-
+double building.dsArea.elevator.ceiling.offsetFromMu2eOrigin.x   = 947.40;
+double building.dsArea.elevator.ceiling.offsetFromFloorSurface.y = 3251.20;
+double building.dsArea.elevator.ceiling.offsetFromMu2eOrigin.z   = -3581.40;
+double building.dsArea.elevator.ceiling.yHalfThickness           = 203.20;
 vector<double> building.dsArea.elevator.ceiling.xPositions = {
-  29895.8,   // Y
-  29895.8,   // X
-  29794.2,   // W
-  29794.2,   // V
-  37350.7,   // U
-  37350.7,   // T
-  37249.1,   // S
-  37249.1   // R
+37249.10, // 0
+37249.10, // 1
+37350.70, // 2
+37350.70, // 3
+35585.40, // 4
+35585.40, // 5
+29794.20, // 6
+29794.20, // 7
+32689.80, // 8
+32689.80, // 9
+29895.80, // 10
+29895.80 // 11
 };
-
 vector<double> building.dsArea.elevator.ceiling.yPositions = {
-  -8661.4,   // Y
-  -12090.4,   // X
-  -12090.4,   // W
-  -17475.2,   // V
-  -17475.2,   // U
-  -11887.2,   // T
-  -11887.2,   // S
-  -8661.4   // R
+-8661.40, // 0
+-11887.20, // 1
+-11887.20, // 2
+-17475.20, // 3
+-17475.20, // 4
+-14732.00, // 5
+-14732.00, // 6
+-14427.20, // 7
+-14427.20, // 8
+-12090.40, // 9
+-12090.40, // 10
+-8661.40 // 11
 };
-
-// Local Variables:
-// mode:c++
-// End:

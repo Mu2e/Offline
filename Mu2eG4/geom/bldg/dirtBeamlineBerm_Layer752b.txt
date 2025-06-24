@@ -1,0 +1,38 @@
+string dirt.beamline.berm.l752b.name     = "dirtBeamlineBerml752b";
+string dirt.beamline.berm.l752b.material = "MBOverburden";
+double dirt.beamline.berm.l752b.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.beamline.berm.l752b.offsetFromFloorSurface.y = 9753.60;
+double dirt.beamline.berm.l752b.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.beamline.berm.l752b.xreplace ={3 ,4 };
+vector<int> dirt.beamline.berm.l752b.yreplace ={2 ,3 };
+double dirt.beamline.berm.l752b.yHalfThickness           = 152.40;
+vector<double> dirt.beamline.berm.l752b.xPositions = {
+-19488.92, //0
+-28106.61, //1
+-23815.89, //2
+-60000.00, //3
+-60000.00, //4
+-25201.89, //5
+-24637.26, //6
+-24420.00, //7
+-20527.30, //8
+-20527.30, //9
+-20953.28  //10
+};
+vector<double> dirt.beamline.berm.l752b.yPositions = {
+-8412.31, //0
+-10256.65, //1
+-60000.00, //2
+-60000.00, //3
+3852.50, //4
+6352.94, //5
+6679.03, //6
+7691.20, //7
+8663.49, //8
+-4381.00, //9
+-8251.16 //10
+};
+
+// Local Variables:
+// mode:c++
+// End:
