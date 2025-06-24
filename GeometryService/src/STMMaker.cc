@@ -90,7 +90,7 @@ namespace mu2e {
 
 
     const CLHEP::HepRotation _FOVCollimatorRotation     = CLHEP::HepRotation::IDENTITY;
-    CLHEP::Hep3Vector  _FOVCollimatorOffsetInMu2e = _magnetOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_magnetHalfLength + _FOVCollimatorUpStrSpace + _FOVCollimatorHalfLength);
+    CLHEP::Hep3Vector  _FOVCollimatorOffsetInMu2e = _magnetOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_magnetHalfLength + _FOVCollimatorUpStrSpace + _FOVCollimatorHalfLength + _shieldPipeUpStrAirGap);
     // If we actually don't want to build the magnet, subtract off the offsets related to the magnet.
     // (We can't just set _magnetHalfLength = 0 in config because it is needed in various parts of constructSTM.cc
     // including to make a G4Box, which cannot have length 0...)
@@ -177,11 +177,11 @@ namespace mu2e {
     if ( _pipeBuild )          _magnetTableOffsetInMu2e += CLHEP::Hep3Vector(0.0,0.,_pipeDnStrHalfLength);
     if ( _FOVCollimatorBuild ) _magnetTableOffsetInMu2e += CLHEP::Hep3Vector(0.0,0.,0.5*_FOVCollimatorUpStrSpace+_FOVCollimatorHalfLength);
     if ( _shieldBuild ) {
-      _magnetTableOffsetInMu2e += CLHEP::Hep3Vector(0.0,0.,-0.5*_shieldDnStrSpace-_shieldDnStrWallHalfLength);
+      _magnetTableOffsetInMu2e += CLHEP::Hep3Vector(0.0,0.,-0.5*_shieldDnStrSpace-_shieldDnStrWallHalfLength + _shieldPipeUpStrAirGap);
       if (!_magnetBuild) {
         // Previous versions (<STM_v09) didn't need to include the shield pipe length in here.
         // Now we will include it, otherwise the table is tiny
-        _magnetTableOffsetInMu2e += CLHEP::Hep3Vector(0.0,0.,-0.5*_shieldDnStrSpace-_shieldDnStrWallHalfLength+_shieldPipeHalfLength);
+        _magnetTableOffsetInMu2e += CLHEP::Hep3Vector(0.0,0.,_shieldPipeHalfLength+0.5*_shieldDnStrSpace+_shieldDnStrWallHalfLength+_shieldPipeUpStrAirGap);
       }
     }
 
