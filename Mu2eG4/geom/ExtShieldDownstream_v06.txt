@@ -194,11 +194,11 @@ vector<double> ExtShieldDownstream.outlineType26VVerts = {-136.1, 120.76, 123.3,
 
 
 // New endcap blocks
-vector<double> ExtShieldDownstream.outlineType27UVerts = {2463.8,2463.8,2011.6,2011.6,1554.4,1554.4,-1554.4,-1554.4,-2011.6,-2011.6,-2463.8,-2463.8};
+vector<double> ExtShieldDownstream.outlineType27UVerts = {2463.8,2463.8,2011.6,2011.6,1574.8,1574.8,-1574.8,-1574.8,-2011.6,-2011.6,-2463.8,-2463.8};
 vector<double> ExtShieldDownstream.outlineType27VVerts = {0,3246.2,3246.2,2789,2789,909.4,909.4,2789,2789,3246.2,3246.2,0};
 
 // New endcap bottom block
-vector<double> ExtShieldDownstream.outlineType28UVerts = {2463.8,2463.8,2011.6,2011.6,1554.4,1554.4,-1554.4,-1554.4,-2011.6,-2011.6,-2463.8,-2463.8};
+vector<double> ExtShieldDownstream.outlineType28UVerts = {2463.8,2463.8,2011.6,2011.6,1574.8,1574.8,-1574.8,-1574.8,-2011.6,-2011.6,-2463.8,-2463.8};
 vector<double> ExtShieldDownstream.outlineType28VVerts = {0,3246.2,3246.2,2789,2789,909.4,909.4,2789,2789,3246.2,3246.2,0};
 
 // New endcap top back block
