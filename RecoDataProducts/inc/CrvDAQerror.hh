@@ -14,7 +14,7 @@ namespace mu2e
   {
     public:
 
-    enum enum_type{unknown=0, unableToGetDataBlock=1, invalidPacket=2, wrongSubsystemID=3, errorUnpackingStatusPacket=4, errorUnpackingCrvHits=5};
+    enum enum_type{unknown=0, unableToGetDataBlock=1, invalidPacket=2, wrongSubsystemID=3, errorUnpackingStatusPacket=4, errorUnpackingCrvHits=5, byteCountMismatch=6};
     static std::string const& typeName();
     static std::map<enum_type,std::string> const& names();
   };
@@ -25,12 +25,13 @@ namespace mu2e
     public:
 
     CrvDAQerror() :
-               _errorCode(), _subEvent(0), _dataBlock(0), _packetCount(0) {}
+               _errorCode(), _fragment(0), _subEvent(0), _dataBlock(0), _packetCount(0) {}
 
-    CrvDAQerror(CrvDAQerrorCode::type errorCode, int subEvent, int dataBlock, int packetCount) :
-               _errorCode(errorCode), _subEvent(subEvent), _dataBlock(dataBlock), _packetCount(packetCount) {}
+    CrvDAQerror(CrvDAQerrorCode::type errorCode, int fragment, int subEvent, int dataBlock, int packetCount) :
+               _errorCode(errorCode), _fragment(fragment), _subEvent(subEvent), _dataBlock(dataBlock), _packetCount(packetCount) {}
 
     CrvDAQerrorCode::type GetErrorCode() const     {return _errorCode;}
+    int                   GetFragment() const      {return _fragment;}
     int                   GetSubEvent() const      {return _subEvent;}
     int                   GetDataBlock() const     {return _dataBlock;}
     int                   GetPacketCount() const   {return _packetCount;}
@@ -38,6 +39,7 @@ namespace mu2e
     private:
 
     CrvDAQerrorCode::type _errorCode;
+    int                   _fragment;
     int                   _subEvent;
     int                   _dataBlock;
     int                   _packetCount;
