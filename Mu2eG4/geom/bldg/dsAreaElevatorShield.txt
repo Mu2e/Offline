@@ -1,0 +1,18 @@
+string building.dsArea.elevator.shield.name     = "dsAreaElevatorShield";
+string building.dsArea.elevator.shield.material = "CONCRETE_MARS";
+double building.dsArea.elevator.shield.offsetFromMu2eOrigin.x   = 947.40;
+double building.dsArea.elevator.shield.offsetFromFloorSurface.y = 1295.40;
+double building.dsArea.elevator.shield.offsetFromMu2eOrigin.z   = -3581.40;
+double building.dsArea.elevator.shield.yHalfThickness           = 1143.00;
+vector<double> building.dsArea.elevator.shield.xPositions = {
+29895.85, // 0
+32639.05, // 1
+32639.05, // 2
+29895.85 // 3
+};
+vector<double> building.dsArea.elevator.shield.yPositions = {
+-8661.40, // 0
+-8661.40, // 1
+-9118.60, // 2
+-9118.60 // 3
+};

@@ -107,10 +107,12 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorInteriorLowerN.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorInteriorLowerE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorInteriorDoorFrame.txt"
+#include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorShield.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaFirstFloorS.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaTrenchFloor.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaHatchBlock.txt"
+#include "Offline/Mu2eG4/geom/bldg/dsAreaHatchBlockE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaHatchNLedge.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaHatchSLedge.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaHatchELedge.txt"
@@ -394,11 +396,13 @@ vector<string> bldg.prefix.list = {
    "building.dsArea.elevator.interior",
    "building.dsArea.elevator.interior.lower.S",
    "building.dsArea.elevator.interior.lower.N",
+   "building.dsArea.elevator.shield",
    "building.dsArea.firstFloor.S",
    "building.dsArea.trench.cover",
    "building.dsArea.trench.floor",
    "building.dsArea.upper",
    "building.dsArea.hatchblock",
+   "building.dsArea.hatchblock.E",
    "building.dsArea.hatchnledge",
    "building.dsArea.hatchsledge",
    "building.dsArea.hatcheledge",
