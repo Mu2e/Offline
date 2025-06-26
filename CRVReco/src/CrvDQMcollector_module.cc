@@ -16,7 +16,6 @@
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
-#include "Offline/RecoDataProducts/inc/DAQerror.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art_root_io/TFileDirectory.h"
@@ -52,7 +51,6 @@ namespace mu2e
       //fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("label of CrvReco module")};
       fhicl::Atom<std::string> crvCoincidenceClusterFinderModuleLabel{Name("crvCoincidenceClusterFinderModuleLabel"), Comment("label of CoincidenceClusterFinder module")};
       fhicl::Atom<std::string> crvDaqErrorModuleLabel{Name("crvDaqErrorModuleLabel"), Comment("label of module that found the CRV-DAQ errors")};
-      fhicl::Atom<std::string> daqErrorModuleLabel{Name("daqErrorModuleLabel"), Comment("label of module that found the DAQ errors")};
     };
 
     typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -69,7 +67,6 @@ namespace mu2e
     //std::string _crvRecoPulsesModuleLabel;
     std::string _crvCoincidenceClusterFinderModuleLabel;
     std::string _crvDaqErrorModuleLabel;
-    std::string _daqErrorModuleLabel;
 
     int                _totalEvents;
     int                _totalEventsWithCoincidenceClusters;
@@ -102,7 +99,6 @@ namespace mu2e
     //_crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
     _crvCoincidenceClusterFinderModuleLabel(conf().crvCoincidenceClusterFinderModuleLabel()),
     _crvDaqErrorModuleLabel(conf().crvDaqErrorModuleLabel()),
-    _daqErrorModuleLabel(conf().daqErrorModuleLabel()),
     _totalEvents(0),
     _totalEventsWithCoincidenceClusters(0),
     _totalEventsWithDAQerrors(0)
@@ -194,14 +190,12 @@ namespace mu2e
     //art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
     art::Handle<CrvCoincidenceClusterCollection> crvCoincidenceClusterCollection;
     art::Handle<CrvDAQerrorCollection> crvDaqErrorCollection;
-    art::Handle<DAQerrorCollection> daqErrorCollection;
 
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
     event.getByLabel(_crvDigiModuleLabelNZS,"NZS",crvDigiCollectionNZS);
     //event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
     event.getByLabel(_crvCoincidenceClusterFinderModuleLabel,"",crvCoincidenceClusterCollection);
     event.getByLabel(_crvDaqErrorModuleLabel,"",crvDaqErrorCollection);
-    event.getByLabel(_daqErrorModuleLabel,"",daqErrorCollection);
 
     auto const& calib = _calib.get(event.id());
     auto const& sipmStatus = _sipmStatus.get(event.id());
@@ -268,16 +262,12 @@ namespace mu2e
     }
     if(crvCoincidenceClusterCollection->size()>0) ++_totalEventsWithCoincidenceClusters;
 
-    if(daqErrorCollection->size()>0) ++_totalEventsWithDAQerrors;
-    else
+    for(size_t i=0; i<crvDaqErrorCollection->size(); ++i)
     {
-      for(size_t i=0; i<crvDaqErrorCollection->size(); ++i)
+      if(crvDaqErrorCollection->at(i).GetErrorCode()!=mu2e::CrvDAQerrorCode::wrongSubsystemID)  //don't count this error
       {
-        if(crvDaqErrorCollection->at(i).GetErrorCode()!=mu2e::CrvDAQerrorCode::wrongSubsystemID)  //don't count this error
-        {
-          ++_totalEventsWithDAQerrors;
-          break;
-        }
+        ++_totalEventsWithDAQerrors;
+        break;
       }
     }
   }

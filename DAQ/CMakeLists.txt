@@ -26,7 +26,7 @@ cet_build_plugin(EventHeaderFromCFOFragment art::module
     LIBRARIES REG
       Offline::DAQ
 )
-    
+
 
 cet_build_plugin(CaloHitsFromDTCEvents art::module
     REG_SOURCE src/CaloHitsFromDTCEvents_module.cc
@@ -92,6 +92,26 @@ cet_build_plugin(StrawDigisFromArtdaqFragments art::module
   Offline::DAQ
   Offline::DataProducts
   Offline::RecoDataProducts
+)
+
+cet_build_plugin(CrvDigisFromArtdaqFragments art::module
+  REG_SOURCE src/CrvDigisFromArtdaqFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::DataProducts
+  Offline::RecoDataProducts
+  artdaq-core-mu2e::Data
+  artdaq-core-mu2e::Overlays
+)
+
+cet_build_plugin(CrvGRdataFromArtdaqFragments art::module
+  REG_SOURCE src/CrvGRdataFromArtdaqFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::DataProducts
+  Offline::RecoDataProducts
+  artdaq-core-mu2e::Data
+  artdaq-core-mu2e::Overlays
 )
 
 install_source(SUBDIRS src)

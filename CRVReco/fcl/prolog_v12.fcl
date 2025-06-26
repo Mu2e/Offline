@@ -24,7 +24,6 @@ BEGIN_PROLOG
       #crvRecoPulsesModuleLabel               : "CrvRecoPulses"
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
       crvDaqErrorModuleLabel                 : "CrvDigi"
-      daqErrorModuleLabel                    : "genFrags"
     }
 
     CrvRecoPulses:

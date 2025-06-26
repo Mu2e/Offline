@@ -409,6 +409,7 @@ namespace mu2e
      _trackPoints[iSectorType]   =0;
      _trackChi2[iSectorType]     =-1;
 
+      double counterWidth = counters.at(0)->getBarDetail().getHalfWidth()*2.0;
       int widthDirection = counters.at(0)->getBarDetail().getWidthDirection();  //assumes that all counters are oriented in the same way
       int thicknessDirection = counters.at(0)->getBarDetail().getThicknessDirection();
 
@@ -505,8 +506,11 @@ namespace mu2e
         {
           _trackSlope[iSectorType]=(_trackPEs[iSectorType]*sumXY-sumX*sumY)/(_trackPEs[iSectorType]*sumYY-sumY*sumY);
           _trackIntercept[iSectorType]=(sumX-_trackSlope[iSectorType]*sumY)/_trackPEs[iSectorType];
+          _trackChi2[iSectorType]=0;
         }
+        else continue;
       }
+      else continue;
 
       //calculate chi2
       for(iter=counters.begin(); iter!=counters.end(); iter++)
@@ -517,6 +521,7 @@ namespace mu2e
 
         int sectorNumber = crvCounter.id().getShieldNumber();
         int sectorType = CRS->getCRSScintillatorShields().at(sectorNumber).getSectorType();
+        if(iSectorType>0 && iSectorType!=sectorType) continue;
         if(std::find(_triggerSectorTypes.begin(),_triggerSectorTypes.end(), sectorType) != _triggerSectorTypes.end()) continue;
 
         CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
@@ -552,7 +557,7 @@ namespace mu2e
         float xFit = _trackSlope[iSectorType]*y + _trackIntercept[iSectorType];
         _trackChi2[iSectorType]+=(xFit-x)*(xFit-x)*counterPEs;  //PE-weighted chi2
       }
-      _trackChi2[iSectorType]/=_trackPEs[iSectorType];
+      _trackChi2[iSectorType]/=(counterWidth*counterWidth/12.0)*(_trackPEs[iSectorType]/_trackPoints[iSectorType]);
     }//track fits
 
     //get PDG ID of all sectors (if available)

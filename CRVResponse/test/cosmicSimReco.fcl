@@ -1,0 +1,140 @@
+#
+# generate and simulate cosmics in 1 stage (field off), and reconstruct in the CRV
+#
+#include "Offline/CommonMC/fcl/prolog.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/EventGenerator/fcl/prolog.fcl"
+#include "Production/JobConfig/common/prolog.fcl"
+#include "Production/JobConfig/primary/prolog.fcl"
+#include "Production/JobConfig/cosmic/prolog.fcl"
+#include "Offline/CRVResponse/fcl/prolog_v12.fcl"
+#include "Offline/CRVReco/fcl/prolog_v12.fcl"
+
+process_name : cosmicSimReco
+
+source : {
+  module_type :EmptyEvent
+  firstRun: 1200
+}
+services : @local::Services.Sim
+
+physics: {
+  producers : {
+    @table::Common.producers
+    @table::CommonMC.DigiProducers
+    @table::Primary.producers
+    @table::CrvResponsePackage.producers
+    @table::CrvRecoPackage.producers
+    cosmicTimeOffset : {
+      @table::Cosmic.cosmicTimeOffset
+      cosmicModuleLabel : "generate"
+    }
+    generate : @local::Cosmic.generateCRY
+  }
+  filters : {
+    @table::Common.filters
+    @table::Primary.filters
+    # override the DetStep filter to select CRV
+    PrimaryFilter : {
+      module_type : DetectorStepFilter
+      StrawGasSteps : [ ]
+      CaloShowerSteps : [ ]
+      CrvSteps : [ "CrvSteps" ]
+      MinimumTrkStepEnergy : 1.0e-6 # 1 ev
+      MinimumCaloStepEnergy : 0.0
+      MinimumCrvStepEnergy : 1.0e-6 # get a real value from CRV experts FIXME!
+      MinimumPartMom : 50.0 # MeV/c
+      MaximumPartMom : 1.0e6 # MeV/c
+      KeepPDG : [ ] # Loop at steps from all particle types
+      MinimumTrkSteps : 0 # primary must produce at least this many TrkSteps
+      MinimumSumCaloStepE : 0.0 # or at least this much calo energy
+    }
+  }
+  analyzers: {
+    @table::Common.analyzers
+    @table::Primary.analyzers
+  }
+
+  TriggerPath : [
+    @sequence::Common.generateSequence,
+    cosmicTimeOffset,
+    @sequence::Common.g4Sequence,
+    @sequence::Primary.DetStepSequence, PrimaryFilter,
+    @sequence::CommonMC.DigiSim,
+    @sequence::CrvDAQPackage.CrvDAQSequence,
+    @sequence::CrvRecoPackage.CrvRecoSequence
+  ]
+  EndPath : [ @sequence::Primary.EndSequence,
+    Output
+  ]
+  trigger_paths : [ TriggerPath ]
+  end_paths : [ EndPath ]
+}
+
+outputs : {
+  Output : {
+    module_type : RootOutput
+    SelectEvents : [ TriggerPath ]
+    fileName    : @nil
+  }
+}
+# fix MakeSS config (overwritten by digi, reco)
+physics.producers.MakeSS : {
+  @table::CommonMC.MakeSS
+  VDStepPointMCs : "g4run:virtualdetector"
+  AbsorberStepPointMCs : "g4run:protonabsorber"
+  TargetStepPointMCs : "g4run:stoppingtarget"
+}
+
+#include "Production/JobConfig/primary/epilog.fcl"
+#include "Production/JobConfig/digitize/epilog.fcl"
+#include "Production/JobConfig/reco/epilog.fcl"
+physics.analyzers.digiCompressionCheck.SelectEvents : [ TriggerPath ]
+physics.producers.FindMCPrimary.PrimaryGenIds: ["CosmicCRY"]
+
+# set the event timing for OffSpill
+physics.producers.EWMProducer.SpillType : 0
+# override the Untriggered filter to just prescale
+# nofield geometry
+services.GeometryService.bFieldFile : "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
+# g4 config
+physics.producers.g4run.TrajectoryControl: @local::mu2eg4NoTrajectories
+physics.producers.g4run.inputs.primaryTag : cosmicTimeOffset
+physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicNoField
+physics.producers.g4run.physics.minRangeCut : 1.0 // mm
+# stop showers outside the detector
+physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicNoField
+
+# only simulate CRV
+#physics.producers.g4run.SDConfig.enableSD : [ CRV ]
+
+physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
+physics.producers.CrvPhotons.crvStepProcessNames  : ["cosmicSimReco"]
+
+# turn off very verbose
+physics.producers.CrvCoincidence.verboseLevel : 0
+physics.producers.CrvCoincidenceClusterFinder.verboseLevel : 0
+
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
+# histogram file
+services.TFileService.fileName : "nts.owner.val-cosmicSimReco.dsconf.seq.root"
+# art file
+outputs.Output.fileName : "mcs.owner.val-cosmicSimReco.dsconf.seq.art"
+
+# run 1h by default
+source.maxEvents: 50000
+
+# Initialze seeding of random engines
+services.SeedService.baseSeed         :  8
+#include "Production/Validation/database.fcl"
+#
+#
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_crv_v10.txt"
+services.DbService.textFile : ["Offline/CRVConditions/data/status_nominal_v10.txt","Offline/CRVConditions/data/photonyield_nominal_v10.txt", "Offline/CRVConditions/data/calib_nominal_v10.txt"]

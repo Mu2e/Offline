@@ -8,7 +8,6 @@ cet_make_library(
       src/CrvDAQerror.cc
       src/CrvDigi.cc
       src/CrvRecoPulse.cc
-      src/DAQerror.cc
       src/ExtMonFNALRawCluster.cc
       src/ExtMonFNALRawHit.cc
       src/ExtMonFNALRecoCluster.cc
@@ -39,7 +38,7 @@ cet_make_library(
       BTrk_KalmanTrack
       BTrk_ProbTools
       KinKal_Trajectory
-      
+
       Offline::DataProducts
       Offline::GeneralUtilities
       Offline::KinKalGeom
