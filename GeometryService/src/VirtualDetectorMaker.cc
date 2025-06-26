@@ -513,7 +513,7 @@ namespace mu2e {
       // Define the z offset from stmDnStrEnvPositionInMu2e to the dnstr plate of the SSC (copper)
       STM_SSC const & pSTM_SSCParams = *stmgh.getSTM_SSCPtr();
       FrontShielding const & pFrontShieldingParams = *stmgh.getFrontShieldingPtr();
-      const double stmDnStrEnvToSSCBack = -stmDnStrEnvPositionInMu2e.z() + pSTM_SSCParams.originInMu2e().z() - (pSTM_SSCParams.Wdepth_f()/2) + pFrontShieldingParams.Front_Thickness();
+      const double stmDnStrEnvToSSCBack = -stmDnStrEnvPositionInMu2e.z() + pSTM_SSCParams.originInMu2e().z() - (pSTM_SSCParams.Wdepth_f()/2) + pFrontShieldingParams.Front_Thickness() - c.getDouble("stm.BackShielding.BPThick") - c.getDouble("stm.BackShielding.ShieldingPipeGap");
 
       if ( c.getBool("vd.STMUpStr.build", false) ) {//VD86, xy plane size of CRV 1mm downstream from CRS
       CLHEP::Hep3Vector vdPositionWRTparent(0.0, 0.0, 1.0-vd->_halfLength);
