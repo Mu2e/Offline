@@ -442,7 +442,11 @@ namespace mu2e {
         __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
     // if we have an extension schedule, extend.
     if(goodfit && exconfig_.schedule().size() > 0) {
-      kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *ktrk );
+      if (kkfit_.useCalo()){
+        kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *ktrk );
+      }else{
+        kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *ktrk );
+      }
       goodfit = goodFit(*ktrk);
       // if finaling, apply that now.
       if(goodfit && fconfig_.schedule().size() > 0){
