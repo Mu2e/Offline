@@ -222,6 +222,9 @@ double stm.shield.pipe.upStrAirGap = 25.3; // 1" (25.4 mm) gap between ECS and s
 double stm.FOVcollimator.UpStrSpace = 11.7; // 0.5" (12.7 mm) gap between shield pipe and FOV collimator (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") but there is a 1 mm offset between where this ends up and that DocDB. Subtract 1 mm here so that FOV sits at z=20419.7 mm
 double stm.shield.DnStrWall.gap  = 0.0;
 double stm.magnet.stand.topExtraLength = -200.0; // reduce length of table to avoid overlap with virtual detector
+
+double stm.shieldingHolePoly.rOut = 127.0; // diameter of ECS hole is 254 mm
+
 // This tells emacs to view this file in c++ mode
 // Local Variables:
 // mode:c++
