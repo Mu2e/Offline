@@ -54,8 +54,6 @@ namespace mu2e {
       using Comment=fhicl::Comment;
       struct Config {
         fhicl::Atom<int>  debug                   { Name("debugLevel"),                     Comment("Debug Level"), 0};
-        fhicl::Atom<bool> hasCalo                 { Name("HasCalo"), Comment("calorimeter data exists"),true};
-        fhicl::Atom<bool> hasCRV                  { Name("HasCRV"), Comment("crv data exists"),true};
         fhicl::Atom<art::InputTag> CCC            { Name("CaloClusterCollection"),          Comment("CaloClusterCollection")};
         fhicl::Atom<art::InputTag> CrvCCC         { Name("CrvCoincidenceClusterCollection"),Comment("CrvCoincidenceClusterCollections")};
         fhicl::Atom<art::InputTag> SDC            { Name("StrawDigiCollection"),            Comment("StrawDigiCollection")};
@@ -81,7 +79,6 @@ namespace mu2e {
       void fillCalo          (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs, RecoCount& nrec);
 
       int debug_;
-      bool hasCalo_, hasCRV_;
       art::InputTag ccct_, sdct_, chct_, cdct_, crvcct_, crvdct_;
       std::vector<art::InputTag> kscts_;
       double ccme_;
@@ -91,8 +88,6 @@ namespace mu2e {
   SelectReco::SelectReco(const Parameters& config )  :
     art::EDProducer{config},
     debug_(config().debug()),
-    hasCalo_(config().hasCalo()),
-    hasCRV_(config().hasCRV()),
     ccct_(config().CCC()),
     sdct_(config().SDC()),
     chct_(config().CHC()),
@@ -106,14 +101,10 @@ namespace mu2e {
       consumes<StrawDigiCollection>(sdct_);
       consumes<StrawDigiADCWaveformCollection>(sdct_);
       consumes<ComboHitCollection>(chct_);
-      if (hasCalo_){
-        consumes<CaloDigiCollection>(cdct_);
-        consumes<CaloClusterCollection>(ccct_);
-      }
-      if (hasCRV_){
-        consumes<CrvDigiCollection>(crvdct_);
-        consumes<CrvCoincidenceClusterCollection>(crvcct_);
-      }
+      consumes<CaloDigiCollection>(cdct_);
+      consumes<CaloClusterCollection>(ccct_);
+      consumes<CrvDigiCollection>(crvdct_);
+      consumes<CrvCoincidenceClusterCollection>(crvcct_);
       consumesMany<KalSeedCollection>();
       produces <IndexMap>("StrawDigiMap");
       produces <IndexMap>("CrvDigiMap");
@@ -211,15 +202,15 @@ namespace mu2e {
     std::unique_ptr<CrvCoincidenceClusterCollection> scrvccc(new CrvCoincidenceClusterCollection);
     std::unique_ptr<IndexMap> crvdim(new IndexMap);
 
-    if (hasCRV_){
+    auto crvdch = event.getHandle<CrvDigiCollection>(crvdct_);
+    auto crvccch = event.getHandle<CrvCoincidenceClusterCollection>(crvcct_);
+    if (crvdch.isValid() && crvccch.isValid()){
       // find Crv data in event
-      auto crvdch = event.getValidHandle<CrvDigiCollection>(crvdct_);
       auto const& crvdc = *crvdch;
       auto CrvRecoPulseCollectionPID = event.getProductID<CrvRecoPulseCollection>();
       auto CrvRecoPulseCollectionGetter = event.productGetter(CrvRecoPulseCollectionPID);
 
       std::set<uint16_t> crvindices;
-      auto crvccch = event.getValidHandle<CrvCoincidenceClusterCollection>(crvcct_);
       auto const& crvccc = *crvccch;
       // loop over CrvCoincidenceClusters
       for(auto const& crvcc: crvccc) {
@@ -265,10 +256,10 @@ namespace mu2e {
   void SelectReco::fillCalo(art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs, RecoCount& nrec) {
     std::unique_ptr<CaloDigiCollection> scdc(new CaloDigiCollection);
 
-    if (hasCalo_){
-      auto cdch = event.getValidHandle<CaloDigiCollection>(cdct_);
+    auto cdch = event.getHandle<CaloDigiCollection>(cdct_);
+    auto ccch = event.getHandle<CaloClusterCollection>(ccct_);
+    if (cdch.isValid() and ccch.isValid()){
       auto const& cdc = *cdch;
-      auto ccch = event.getValidHandle<CaloClusterCollection>(ccct_);
       auto const& ccc = *ccch;
 
       // reco count

@@ -49,7 +49,7 @@ namespace mu2e {
   using KinKal::BFieldMap;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
   using Mu2eKinKal::KKFitConfig;
-  using CCHandle = art::ValidHandle<CaloClusterCollection>;
+  using CCHandle = art::Handle<CaloClusterCollection>;
   template <class KTRAJ> class KKFit {
     public:
       // fit configuration
@@ -93,9 +93,6 @@ namespace mu2e {
       void extendTrack(Config const& config, BFieldMap const& kkbf, Tracker const& tracker,
           StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
           Calorimeter const& calo, CCHandle const& cchandle,
-          KKTRK& kktrk) const;
-      void extendTrack(Config const& config, BFieldMap const& kkbf, Tracker const& tracker,
-          StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
           KKTRK& kktrk) const;
       // extend the fit to the surfaces specified in the config
       void extendFit(KKTRK& kktrk);
@@ -262,22 +259,6 @@ namespace mu2e {
       std::cout << "KKTrk extension adding "
         << addstrawhits.size() << " StrawHits and "
         << addcalohits.size() << " CaloHits and "
-        << addstrawxings.size() << " Straw Xings" << std::endl;
-    }
-    kktrk.extendTrack(exconfig,addstrawhits,addstrawxings,addcalohits);
-  }
-
-  template <class KTRAJ> void KKFit<KTRAJ>::extendTrack(Config const& exconfig, BFieldMap const& kkbf, Tracker const& tracker,
-      StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
-      KKTRK& kktrk) const {
-    KKSTRAWHITCOL addstrawhits;
-    KKCALOHITCOL addcalohits;
-    KKSTRAWXINGCOL addstrawxings;
-    if(addhits_)addStrawHits(tracker, strawresponse, kkbf, smat, kktrk, chcol, addstrawhits );
-    if(matcorr_ && addmat_)addStraws(tracker, smat, kktrk, addstrawhits, addstrawxings);
-    if(printLevel_ > 1){
-      std::cout << "KKTrk extension adding "
-        << addstrawhits.size() << " StrawHits and "
         << addstrawxings.size() << " Straw Xings" << std::endl;
     }
     kktrk.extendTrack(exconfig,addstrawhits,addstrawxings,addcalohits);

@@ -165,7 +165,7 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
       endIndex = startIndex;
     double startTime = ordChCol[startIndex].correctedTime();
     double endTime = -1;
-    if (ordChCol[endIndex].flag().hasAnyProperty(_hnotnoise))
+    if (ordChCol[endIndex].flag().hasAllProperties(_hnotnoise))
       hasNonNoise = true;
     while (true) {
       endIndex++;
@@ -173,7 +173,7 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
         break;
       endTime = ordChCol[endIndex].correctedTime();
       count += ordChCol[endIndex].nStrawHits();
-      if (ordChCol[endIndex].flag().hasAnyProperty(_hnotnoise))
+      if (ordChCol[endIndex].flag().hasAllProperties(_hnotnoise))
         hasNonNoise = true;
       if (_usetimeStep && endTime - ordChCol[endIndex - 1].correctedTime() > _timeStep)
         break;
