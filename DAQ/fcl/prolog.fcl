@@ -8,6 +8,11 @@ DAQ: {
             saveWaveforms: false
             missingDTCHeaders: false
         }
+        MTPHitsFromDTCEvents: {
+            module_type: MTPHitsFromDTCEvents
+            debugLevel: 0
+            clockFrequency: 200
+        }
     }
 }
 END_PROLOG
