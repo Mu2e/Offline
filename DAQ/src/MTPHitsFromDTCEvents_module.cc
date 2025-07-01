@@ -11,6 +11,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Overlays/Decoders/MTPDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/DTCEventFragment.hh"
+#include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 
 #include "Offline/RecoDataProducts/inc/MTPHit.hh"
 
@@ -96,7 +97,7 @@ void art::MTPHitsFromDTCEvents::produce(Event& event) {
         // loop over dataPacketsVec and grab products of interest
         for (size_t vecIndex = 0; vecIndex < dataPacketsVec.size(); vecIndex++) {
           // grap MTPDataPacket and initialize MTPHit, grabbing timeStamp0 and timeStamp1
-          mu2e::MTPDataDecoder::MTPDataPacket* packet = dataPacketsVec.at(vecIndex);
+          const mu2e::MTPDataDecoder::MTPDataPacket* packet = dataPacketsVec.at(vecIndex);
           // grab the two time stamp counters, convert them to ns, and save them
           int channelID = 0; // not in payload yet, will be in future
           uint16_t counter0 = packet->GetTimestamp(0);
