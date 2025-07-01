@@ -23,6 +23,7 @@
 #include "Offline/Print/inc/CrvDigiPrinter.hh"
 #include "Offline/Print/inc/CrvRecoPulsePrinter.hh"
 #include "Offline/Print/inc/CrvStepPrinter.hh"
+#include "Offline/Print/inc/EventHeaderPrinter.hh"
 #include "Offline/Print/inc/EventWindowMarkerPrinter.hh"
 #include "Offline/Print/inc/GenParticlePrinter.hh"
 #include "Offline/Print/inc/KalRepPrinter.hh"
@@ -67,6 +68,8 @@ class PrintModule : public art::EDAnalyzer {
     fhicl::Atom<bool> printSubRun { fhicl::Name("PrintSubRun"), fhicl::Comment("Print SubRun Products"),true};
     fhicl::Atom<int> verbose{fhicl::Name("verbose"),fhicl::Comment("verbose flag, 0 to 1 or 2"), 1};
 
+    fhicl::Table<ProductPrinter::Config> EventHeaderPrinter{
+        fhicl::Name("EventHeaderPrinter")};
     fhicl::Table<ProductPrinter::Config> statusG4Printer{
         fhicl::Name("statusG4Printer")};
     fhicl::Table<ProductPrinter::Config> ProtonBunchTimePrinter{
@@ -181,6 +184,7 @@ class PrintModule : public art::EDAnalyzer {
 mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
   _printevent(conf().printEvent()), _printsubrun(conf().printSubRun()), _verbose(conf().verbose()){
 
+  _printers.push_back(make_unique<EventHeaderPrinter>(conf().EventHeaderPrinter()));
   _printers.push_back(make_unique<StatusG4Printer>(conf().statusG4Printer()));
   _printers.push_back(
       make_unique<ProtonBunchTimePrinter>(conf().ProtonBunchTimePrinter()));
