@@ -44,8 +44,16 @@ public:
   virtual void produce (art::Event& ArtEvent) override;
   virtual void beginRun(art::Run&   ArtRun  ) override;
 
+  //-----------------------------------------------------------------------------
+  // helper functions
+  //-----------------------------------------------------------------------------
+  artdaq::Fragments getFragments(art::Event& event);
+
 private:
 
+  //-----------------------------------------------------------------------------
+  // fcl parameters
+  //-----------------------------------------------------------------------------
   int      _debugLevel;
   float    _clockFrequency;
 
