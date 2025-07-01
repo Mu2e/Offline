@@ -1,0 +1,18 @@
+string dirt.psArea.shielding.top.name     = "dirtPsAreaShieldingTop";
+string dirt.psArea.shielding.top.material = "MBOverburden";
+double dirt.psArea.shielding.top.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.psArea.shielding.top.offsetFromFloorSurface.y = 9309.10;
+double dirt.psArea.shielding.top.offsetFromMu2eOrigin.z   = -3581.40;
+double dirt.psArea.shielding.top.yHalfThickness           = 139.50;
+vector<double> dirt.psArea.shielding.top.xPositions = {
+-12319.00, // 0
+-12750.70, // 1
+-12750.70, // 2
+-12319.00 // 3
+};
+vector<double> dirt.psArea.shielding.top.yPositions = {
+5279.20, // 0
+5279.20, // 1
+-354.00, // 2
+-354.00 // 3
+};
