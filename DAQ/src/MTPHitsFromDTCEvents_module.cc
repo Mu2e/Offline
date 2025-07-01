@@ -10,8 +10,7 @@
 
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Overlays/Decoders/MTPDataDecoder.hh"
-#include "artdaq-core-mu2e/Overlays/DTC_Packets/DTC_RocDataHeaderPacket.h"
-#include "artdaq-core-mu2e/Overlays/DTC_Packets/DTC_EventHeader.h"
+#include "artdaq-core-mu2e/Overlays/DTCEventFragment.hh"
 
 #include "Offline/RecoDataProducts/inc/MTPHit.hh"
 
