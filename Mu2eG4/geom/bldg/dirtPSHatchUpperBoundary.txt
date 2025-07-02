@@ -1,9 +1,9 @@
 string dirt.PSHatch.Upper.Boundary.name     = "dirtPSHatchUpperBoundary";
 string dirt.PSHatch.Upper.Boundary.material = "MBOverburden";
 double dirt.PSHatch.Upper.Boundary.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.PSHatch.Upper.Boundary.offsetFromFloorSurface.y = 10769.6033;
+double dirt.PSHatch.Upper.Boundary.offsetFromFloorSurface.y = 10642.6;
 double dirt.PSHatch.Upper.Boundary.offsetFromMu2eOrigin.z   = -3581.40;
-double dirt.PSHatch.Upper.Boundary.yHalfThickness           = 355.6033;
+double dirt.PSHatch.Upper.Boundary.yHalfThickness           = 228.6;
 vector<double> dirt.PSHatch.Upper.Boundary.xPositions = {
   -4140.2,   // 0
   -4749.8,   // 1

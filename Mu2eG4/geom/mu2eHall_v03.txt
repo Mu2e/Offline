@@ -618,16 +618,15 @@ vector<string> rotated.prefix.list = {
 
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamline_v02.txt"
 //#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_v03.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer746a.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer746b.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer746a.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer746b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer747a.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer747b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer748a.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer748b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer749a.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer749b.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer750a1.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer750a2.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer750a.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer750b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer751a.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer751b.txt"
@@ -637,10 +636,12 @@ vector<string> rotated.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer753b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer754a.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer754b.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer755b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer755a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer755b.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer755c.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer756a.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer756b.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer756c.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtPSHatchUpperBoundary.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingW.txt"
@@ -737,7 +738,7 @@ vector<string> rotated.prefix.list = {
 //#include "Offline/Mu2eG4/geom/bldg/dirtSRetainingWallFoot.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtWallFill1.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtWallFill2.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtSRetWallUpper_v02.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtSRetWallUpper_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtSRetWallTop_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtSRetWallFoot_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtSRetWallInter_v02.txt"
@@ -746,20 +747,16 @@ vector<string> rotated.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/backfillPsAreaRWallFootTop_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtNRetainingWallExtension_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtPsAreaBaselevel_v02.txt"
-
-
+#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaShieldingTop_v02.txt"
 vector<string> dirt.prefix.list = {
   "dirt.beamline",
-  "dirt.beamline.berm.l746a",
-  "dirt.beamline.berm.l746b",
   "dirt.beamline.berm.l747a",
   "dirt.beamline.berm.l747b",
   "dirt.beamline.berm.l748a",
   "dirt.beamline.berm.l748b",
   "dirt.beamline.berm.l749a",
   "dirt.beamline.berm.l749b",
-  "dirt.beamline.berm.l750a1",
-  "dirt.beamline.berm.l750a2",
+  "dirt.beamline.berm.l750a",
   "dirt.beamline.berm.l750b",
   "dirt.beamline.berm.l751a",
   "dirt.beamline.berm.l751b",
@@ -769,10 +766,12 @@ vector<string> dirt.prefix.list = {
   "dirt.beamline.berm.l753b",
   "dirt.beamline.berm.l754a",
   "dirt.beamline.berm.l754b",
-  "dirt.beamline.berm.l755b",
   "dirt.beamline.berm.l755a",
+  "dirt.beamline.berm.l755b",
+  "dirt.beamline.berm.l755c",
   "dirt.beamline.berm.l756a",
   "dirt.beamline.berm.l756b",
+  "dirt.beamline.berm.l756c",
   "dirt.PSHatch.Upper.Boundary",
   "dirt.beamline.ceiling.E",
   "dirt.beamline.ceiling.W",
@@ -843,13 +842,13 @@ vector<string> dirt.prefix.list = {
   "dirt.escape.stair.07",
   "dirt.escape.stair.11",
   "dirt.S.retaining.Wall.top",
-  "dirt.S.retaining.Wall.upper",
   "dirt.S.retaining.Wall.foot",
   "dirt.S.retaining.Wall.inter",
   "dirt.foundation.extMon.S",
   "dirt.extMon.lower.S",
   "dirt.NRetainingWall.extension",
-  "dirt.psArea.baselevel"
+  "dirt.psArea.baselevel",
+  "dirt.psArea.shielding.top"
 };
 
 //  "dirt.S.retaining.Wall.Foot",
@@ -871,6 +870,11 @@ vector<string> dirt.prefix.list = {
 // "dirt.foundation.extMonPSarea.10",
 // "dirt.foundation.extMonPSarea.11",
 // "dirt.psArea.W",
+//  "dirt.beamline.berm.l746a",
+//  "dirt.beamline.berm.l746b",
+//  "dirt.S.retaining.Wall.upper",
+//  "dirt.beamline.berm.l750a1",
+//  "dirt.beamline.berm.l750a2",
 
 #include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSareaR_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSareaR_v02.txt"
