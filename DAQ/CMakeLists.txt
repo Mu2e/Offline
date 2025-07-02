@@ -114,6 +114,13 @@ cet_build_plugin(CrvGRdataFromArtdaqFragments art::module
   artdaq-core-mu2e::Overlays
 )
 
+cet_build_plugin(MTPHitsFromDTCEvents art::module
+    REG_SOURCE src/MTPHitsFromDTCEvents_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+      Offline::RecoDataProducts
+)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/DAQ/fcl)
