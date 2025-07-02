@@ -1,4 +1,4 @@
-cet_build_plugin(CosmicTimeOffset art::module
+cet_build_plugin(SelectReco art::module
   REG_SOURCE src/SelectReco_module.cc
   LIBRARIES REG
   Offline::ConditionsService
