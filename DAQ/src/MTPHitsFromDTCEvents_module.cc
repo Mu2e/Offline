@@ -99,13 +99,13 @@ void art::MTPHitsFromDTCEvents::produce(Event& event) {
           // grap MTPDataPacket and initialize MTPHit, grabbing timeStamp0 and timeStamp1
           const mu2e::MTPDataDecoder::MTPDataPacket* packet = dataPacketsVec.at(vecIndex);
           // grab the two time stamp counters, convert them to ns, and save them
-          int channelID = 0; // not in payload yet, will be in future
+          unsigned int channelID = 0; // not in payload yet, will be in future
           uint16_t counter0 = packet->GetTimestamp(0);
-          float time0 = counter0*1000.0/_clockFrequency;
+          double time0 = counter0*1000.0/_clockFrequency;
           mu2e::MTPHit mtpHit0(time0, channelID);
           mtp_hits->emplace_back(mtpHit0);
           uint16_t counter1 = packet->GetTimestamp(1);
-          float time1 = counter1*1000.0/_clockFrequency;
+          double time1 = counter1*1000.0/_clockFrequency;
           mu2e::MTPHit mtpHit1(time1, channelID);
           mtp_hits->emplace_back(mtpHit1);
           if (_debugLevel == 1) { std::cout << "time0, time1 = " << time0 << ", " << time1 << std::endl; }

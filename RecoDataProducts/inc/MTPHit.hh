@@ -13,17 +13,17 @@ namespace mu2e
 
     // constructors
     MTPHit() : _time(0), _channelID(0) {};
-    MTPHit(float Time, int ChannelID) : _time(Time), _channelID(ChannelID) {};
+    MTPHit(double Time, unsigned int ChannelID) : _time(Time), _channelID(ChannelID) {};
 
     // accessors
-    float const& time()	      const { return _time;	 }
-    int	  const& channelID()  const { return _channelID; }
+    double          const& time()	      const { return _time;	 }
+    unsigned int    const& channelID()        const { return _channelID; }
 
   private:
 
     // data members
-    float _time;      // time of hit
-    int	  _channelID; // paddle
+    double       _time;      // time of hit
+    unsigned int _channelID; // paddle
 
   };
 
