@@ -31,8 +31,8 @@ namespace mu2e {
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
         fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("Diagnostic print level"), 0};
-        fhicl::Atom<double> tmin{Name("tmin"), Comment("Selected pion minimum end time")};
-        fhicl::Atom<double> tmax{Name("tmax"), Comment("Selected pion maximum end time")};
+        fhicl::OptionalAtom<double> tmin{Name("tmin"), Comment("Selected pion minimum end time")};
+        fhicl::OptionalAtom<double> tmax{Name("tmax"), Comment("Selected pion maximum end time")};
         fhicl::OptionalAtom<int> maxPions{Name("maxPions"), Comment("Maximum number of pion stops")};
         fhicl::Atom<int> processCode{Name("processCode"), Comment("Pion end process code to select")};
         fhicl::Atom<bool> isNull{Name("isNull"), Comment("Skip filtering is turned on"), false};
@@ -59,11 +59,11 @@ namespace mu2e {
   PionFilter::PionFilter(const art::EDFilter::Table<Config>& config) :
      EDFilter{config}
     , diagLevel_{config().diagLevel()}
-    , tmin_{config().tmin()}
-    , tmax_{config().tmax()}
     , processCode_{config().processCode()}
     , isNull_{config().isNull()}
   {
+    if(!config().tmin(tmin_)) tmin_ = -1.e10;
+    if(!config().tmax(tmax_)) tmax_ =  1.e10;
     if(!config().maxPions(maxPions_)) maxPions_ = -1;
   }
 

@@ -87,7 +87,8 @@ namespace mu2e {
     ProcessCode process_;
     PionCaptureSpectrum pionCaptureSpectrum_;
 
-    TH1F* _hmomentum;
+    TH1F* _hnstops {nullptr};
+    TH1F* _hmomentum {nullptr};
     TH1F* _hElecMom {nullptr};
     TH1F* _hElecPx {nullptr};
     TH1F* _hElecPy {nullptr};
@@ -136,7 +137,8 @@ namespace mu2e {
         art::ServiceHandle<art::TFileService> tfs;
         art::TFileDirectory tfdir = tfs->mkdir( "RPCGun" );
 
-        _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 100,  40.,  140.  );
+        _hnstops       = tfdir.make<TH1F>("hNStops", "N(pion stops) / event", 10,  -0.5,  9.5);
+        _hmomentum     = tfdir.make<TH1F>("hmomentum", "Produced photon momentum", 100,  40.,  140.  );
         _hTime         = tfdir.make<TH1F>("hTime" , "pion time",100,0,1700);
         _hTimeWt       = tfdir.make<TH1F>("hTimeWt", "pion time, weighted",100,0,1700);
         _hStopXY       = tfdir.make<TH2F>("hStopXY", "Pion stop position;x (mm); y(mm)",100, -200, 200, 100, -200, 200);
@@ -195,6 +197,9 @@ namespace mu2e {
     event.put(std::move(pw));
     addParticles(output.get(), pis[randIn]);
     event.put(std::move(output));
+    if(doHistograms_) {
+      _hnstops->Fill(pis.size());
+    }
   }
 
   void RPCGun::addParticles(StageParticleCollection* output,
