@@ -79,11 +79,12 @@ namespace mu2e {
     //
     // contained content substructure.
     //
-    std::vector<KalSegment>     _segments; // segments of the Kalman filter fit result
-    std::vector<KalIntersection>     _inters; // intersections with materials or reference locations
-    std::vector<TrkStrawHitSeed>    _hits; // hit seeds for all the hits used in this fit
-    std::vector<TrkStraw>     _straws; // straws interesected by this fit
-    TrkCaloHitSeed        _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
+    std::vector<KalSegment>       _segments; // segments of the Kalman filter fit result
+    std::vector<KalIntersection>  _inters; // intersections with materials or reference locations
+    std::vector<TrkStrawHitSeed>  _hits; // hit seeds for all the hits used in this fit
+    std::vector<TrkStraw>         _straws; // straws interesected by this fit
+    std::vector<double>           _domainbounds; // domain time boundaries
+    TrkCaloHitSeed                _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
     //
     // deprecated BTrk legacy content, DO NOT write any new code which depends on these functions
     // find the nearest segment to a given the time

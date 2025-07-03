@@ -112,9 +112,10 @@ namespace mu2e {
     auto const& flag() const { return _flag; }
     auto const& algorithm() const { return _algo; }
     auto strawHitState() const { return _ambig; }
-    auto hitTime() const { return _etime[_eend]; }
+    auto time() const { return _etime[_eend]; }
     auto energyDep() const { return _edep; }
     auto const& earlyEnd() const { return _eend; }
+    StrawEnd lateEnd() const { return _eend.otherEnd(); }
     auto wireDist() const { return _wdist; }
     auto wireRes() const { return _werr; }
     auto TOTDriftTime() const { return _tottdrift; }
