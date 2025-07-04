@@ -12,6 +12,8 @@ namespace mu2e {
 
   class CalCosmicEnergyCalib : public DbTable {
   public:
+    typedef std::shared_ptr<CalCosmicEnergyCalib> ptr_t;
+    typedef std::shared_ptr<const CalCosmicEnergyCalib> cptr_t;
 
     class Row {
     public:
