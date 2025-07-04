@@ -99,6 +99,7 @@ namespace mu2e {
     if (pid == PDGCode::e_minus) { process = ProcessCode::mu2eFlateMinus; }
     else if (pid == PDGCode::e_plus) { process = ProcessCode::mu2eFlatePlus; }
     else if (pid == PDGCode::gamma) { process = ProcessCode::mu2eFlatPhoton; }
+    else if (pid == PDGCode::mu_minus) { process = ProcessCode::mu2eFlatMuMinus; }
     else {
       throw   cet::exception("BADINPUT")
         <<"FlatMuonDaughterGenerator::produce(): No process associated with chosen PDG id\n";

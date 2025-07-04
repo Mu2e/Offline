@@ -89,7 +89,7 @@ namespace mu2e {
       mu2eCePlusLeadingLog, mu2ePionCaptureAtRest, mu2eExternalRPC, mu2eInternalRPC, // 179
       mu2eCaloCalib, mu2ePienu, mu2eunused7, mu2eunused8, // 183
       uninitialized, NoProcess, GammaGeneralProc, // 186
-      mu2eGammaConversion, Radioactivation, nCaptureHP, nFissionHP, mu2eAntiproton, // 191
+      mu2eGammaConversion, Radioactivation, nCaptureHP, nFissionHP, mu2eAntiproton, mu2eFlatMuMinus, // 192
       lastEnum,
       // An alias for backward compatibility
       mu2eHallAir = mu2eKillerVolume
@@ -146,7 +146,7 @@ namespace mu2e {
   "mu2eCePlusLeadingLog", "mu2ePionCaptureAtRest", "mu2eExternalRPC", "mu2eInternalRPC", \
     "mu2eCaloCalib", "mu2ePienu", "mu2eunused7", "mu2eunused8", \
       "uninitialized", "NoProcess", "GammaGeneralProc", \
-      "mu2eGammaConversion","Radioactivation", "nCaptureHP", "nFissionHP", "mu2eAntiproton"
+      "mu2eGammaConversion","Radioactivation", "nCaptureHP", "nFissionHP", "mu2eAntiproton", "mu2eFlatMuMinus"
 #endif
 
   public:
