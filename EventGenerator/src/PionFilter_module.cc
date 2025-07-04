@@ -16,6 +16,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/MCDataProducts/inc/SumOfWeights.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include <iostream>
@@ -39,6 +40,8 @@ namespace mu2e {
       };
       explicit PionFilter(const art::EDFilter::Table<Config>& config);
       virtual bool filter(art::Event& event) override;
+      virtual bool beginSubRun(art::SubRun& sr) override;
+      virtual bool endSubRun(art::SubRun& sr) override;
       virtual void beginJob() override;
       virtual void endJob() override;
 
@@ -50,10 +53,8 @@ namespace mu2e {
       int maxPions_;
       int processCode_;
       bool isNull_;
-      float _totalweight = 0;
-      float _selectedweight = 0;
-      int _ntot = 0;
-      int _nsel = 0;
+      SumOfWeights total_;
+      SumOfWeights selected_;
   };
 
   PionFilter::PionFilter(const art::EDFilter::Table<Config>& config) :
@@ -65,6 +66,8 @@ namespace mu2e {
     if(!config().tmin(tmin_)) tmin_ = -1.e10;
     if(!config().tmax(tmax_)) tmax_ =  1.e10;
     if(!config().maxPions(maxPions_)) maxPions_ = -1;
+    produces<SumOfWeights, art::InSubRun>("total");
+    produces<SumOfWeights, art::InSubRun>("selected");
   }
 
   void PionFilter::beginJob(){
@@ -85,18 +88,17 @@ namespace mu2e {
           // check if this is a pion of interest
           if( pp->stoppingCode() == processCode_ and std::abs(pp->pdgId()) == PDGCode::pi_plus){
             const float globalTime = pp->endGlobalTime();
-            const float weight = SimParticleGetTau::calculate(pp, decayOffCodes, gc);
+            const float tau = SimParticleGetTau::calculate(pp, decayOffCodes, gc);
+            const float weight = std::exp(-tau);
 
             // count found pions
-            _totalweight += weight;
-            ++_ntot;
+            total_.add(weight);
             ++npions;
 
             // check additional filters
             if(globalTime > tmin_ and globalTime < tmax_ ){
               passed = true;
-              _selectedweight += weight;
-              ++_nsel;
+              selected_.add(weight);
             }
           }
         }
@@ -109,12 +111,24 @@ namespace mu2e {
       return passed;
   }
 
+  bool PionFilter::beginSubRun(art::SubRun&) {
+    total_   .reset();
+    selected_.reset();
+    return true;
+  }
+
+  bool PionFilter::endSubRun(art::SubRun& sr) {
+    sr.put(std::unique_ptr<SumOfWeights>(new SumOfWeights(total_   .sum(), total_   .count())), "total"   , art::fullSubRun());
+    sr.put(std::unique_ptr<SumOfWeights>(new SumOfWeights(selected_.sum(), selected_.count())), "selected", art::fullSubRun());
+    return true;
+  }
+
   void PionFilter::endJob(){
      if(diagLevel_ > 0 ){
-      std::cout<<"Total weight for all stops "<<_totalweight<<std::endl;
-      std::cout<<"Total stops "<<_ntot<<std::endl;
-      std::cout<<"Selected weight for chosen stops "<<_selectedweight<<std::endl;
-      std::cout<<"Selected stops "<<_nsel<<std::endl;
+       std::cout<<"Total weight for all stops "<<total_.sum()<<std::endl;
+       std::cout<<"Total stops "<<total_.count()<<std::endl;
+       std::cout<<"Selected weight for chosen stops "<<selected_.sum()<<std::endl;
+       std::cout<<"Selected stops "<<selected_.count()<<std::endl;
     }
   }
 }

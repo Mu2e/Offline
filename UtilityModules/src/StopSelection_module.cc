@@ -20,6 +20,7 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SumOfWeights.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
@@ -44,6 +45,8 @@ namespace mu2e {
     };
     explicit StopSelection(const art::EDProducer::Table<Config>& config);
     virtual void produce(art::Event& event) override;
+    virtual void beginSubRun(art::SubRun& sr) override;
+    virtual void endSubRun(art::SubRun& sr) override;
     virtual void beginJob() override;
     virtual void endJob() override;
 
@@ -53,6 +56,7 @@ namespace mu2e {
     ProcessCode::enum_type processCode_;
     std::vector<int> decayOffPdgs_;
     int diagLevel_;
+    SumOfWeights total_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandFlat randomFlat_;
@@ -71,6 +75,7 @@ namespace mu2e {
     if(!config().decayOffPdgs(decayOffPdgs_)) decayOffPdgs_ = {};
     // if some decays were turned off, produce an event weight
     if(!decayOffPdgs_.empty()) produces<mu2e::EventWeight>();
+    produces<SumOfWeights, art::InSubRun>();
   }
 
   void StopSelection::beginJob(){
@@ -85,6 +90,9 @@ namespace mu2e {
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     const auto stops = simParticleList(simh, pdgId_, processCode_);
 
+    if(diagLevel_ > 1) {
+      printf("StopSelection::%s:: Printing input sim collections:\n", __func__);
+    }
     // select a random stop if available
     if(!stops.empty()) {
       const int index = randomFlat_.fireInt(stops.size());
@@ -99,16 +107,30 @@ namespace mu2e {
 
       // save the entire lineage
       while(sim.isNonnull()) {
+        // output->insert(std::make_pair(output->size(), *sim));
         output->insert(std::make_pair(sim->id(), *sim));
         sim = sim->parent();
       }
     }
+
+    total_.add(weight);
 
     // produce the data products
     event.put(std::move(output));
     if(make_weight) {
       std::unique_ptr<EventWeight> ew(new EventWeight(weight));
       event.put(std::move(ew));
+    }
+  }
+
+  void StopSelection::beginSubRun(art::SubRun&) {
+    total_.reset();
+  }
+
+  void StopSelection::endSubRun(art::SubRun& sr) {
+    sr.put(std::unique_ptr<SumOfWeights>(new SumOfWeights(total_.sum(), total_.count())), art::fullSubRun());
+    if(diagLevel_ > 0) {
+      printf("[StopSelection::%s] Selected %lu stops with a sum of weights of %.5g\n", __func__, total_.count(), total_.sum());
     }
   }
 
