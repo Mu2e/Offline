@@ -115,6 +115,8 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 
 <class name="mu2e::EventWeight"/>
 <class name="art::Wrapper<mu2e::EventWeight>"/>
+<class name="mu2e::SumOfWeights"/>
+<class name="art::Wrapper<mu2e::SumOfWeights>"/>
 
 <class name="mu2e::ProtonBunchTimeMC" />
 <class name="art::Wrapper<mu2e::ProtonBunchTimeMC>"/>
