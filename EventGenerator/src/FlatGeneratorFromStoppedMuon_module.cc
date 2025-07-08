@@ -36,7 +36,7 @@
 namespace mu2e {
 
   //================================================================
-  class FlatMuonDaughterGenerator : public art::EDProducer {
+  class FlatGeneratorFromStoppedMuon : public art::EDProducer {
   public:
     struct Config {
       using Name=fhicl::Name;
@@ -52,7 +52,7 @@ namespace mu2e {
     };
 
     using Parameters= art::EDProducer::Table<Config>;
-    explicit FlatMuonDaughterGenerator(const Parameters& conf);
+    explicit FlatGeneratorFromStoppedMuon(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
 
@@ -78,7 +78,7 @@ namespace mu2e {
   };
 
   //================================================================
-  FlatMuonDaughterGenerator::FlatMuonDaughterGenerator(const Parameters& conf)
+  FlatGeneratorFromStoppedMuon::FlatGeneratorFromStoppedMuon(const Parameters& conf)
     : EDProducer{conf}
     , particleMass_(GlobalConstantsHandle<ParticleDataList>()->particle(static_cast<PDGCode::type>(conf().pdgId())).mass())
     , startMom_(conf().startMom())
@@ -102,13 +102,13 @@ namespace mu2e {
     else if (pid == PDGCode::mu_minus) { process = ProcessCode::mu2eFlatMuMinus; }
     else {
       throw   cet::exception("BADINPUT")
-        <<"FlatMuonDaughterGenerator::produce(): No process associated with chosen PDG id\n";
+        <<"FlatGeneratorFromStoppedMuon::produce(): No process associated with chosen PDG id\n";
     }
 
   }
 
   //================================================================
-  void FlatMuonDaughterGenerator::produce(art::Event& event) {
+  void FlatGeneratorFromStoppedMuon::produce(art::Event& event) {
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
@@ -116,7 +116,7 @@ namespace mu2e {
 
     if(mus.empty()) {
       throw   cet::exception("BADINPUT")
-        <<"FlatMuonDaughterGenerator::produce(): no suitable stopped mu- in the input SimParticleCollection\n";
+        <<"FlatGeneratorFromStoppedMuon::produce(): no suitable stopped mu- in the input SimParticleCollection\n";
 
     }
 
@@ -140,4 +140,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FlatMuonDaughterGenerator)
+DEFINE_ART_MODULE(mu2e::FlatGeneratorFromStoppedMuon)
