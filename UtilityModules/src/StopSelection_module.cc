@@ -20,6 +20,7 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SumOfWeights.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
@@ -47,10 +48,12 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<art::InputTag> simCollTag{Name("simParticles"),Comment("A SimParticleCollection with input stopped particles")};
+      fhicl::Atom<art::InputTag> stepCollTag{Name("stepPointMCs"),Comment("A StepPointMCCollection with input steps")};
       fhicl::Atom<int> pdgId{Name("pdgId"),Comment("Particle PDG code to select")};
       fhicl::Atom<int> processCode{Name("processCode"), Comment("Particle end process code to select")};
       fhicl::OptionalSequence<int> decayOffPdgs{Name("decayOffPdgs"), Comment("List of PDG IDs that decay was turned off, for event weights")};
       fhicl::OptionalTable<StopConfig> cuts { Name("cuts"), Comment("Stop selection table") };
+      fhicl::OptionalAtom<double> acceptRejectMax{Name("acceptRejectMax"), Comment("Perform accept/reject with a given maximum weight")};
       fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("Diagnostic print level"), 0};
     };
 
@@ -84,9 +87,12 @@ namespace mu2e {
     std::vector<art::Ptr<SimParticle>> pruneStops(const std::vector<art::Ptr<SimParticle>>& sims);
 
     art::ProductToken<SimParticleCollection> const simsToken_;
+    art::ProductToken<StepPointMCCollection> const stepsToken_;
     PDGCode pdgId_;
     ProcessCode::enum_type processCode_;
     std::vector<int> decayOffPdgs_;
+    double maxWeight_;
+    bool acceptReject_;
     int diagLevel_;
     StopCuts cuts_;
     SumOfWeights total_;
@@ -100,19 +106,25 @@ namespace mu2e {
   StopSelection::StopSelection(const art::EDProducer::Table<Config>& config) :
     EDProducer{config}
     , simsToken_{consumes<SimParticleCollection>(config().simCollTag())}
+    , stepsToken_{consumes<StepPointMCCollection>(config().stepCollTag())}
     , pdgId_{config().pdgId()}
     , processCode_{static_cast<ProcessCode::enum_type>(config().processCode())}
+    , acceptReject_{config().acceptRejectMax(maxWeight_)}
     , diagLevel_{config().diagLevel()}
     , nempty_(0)
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randomFlat_{eng_}
   {
     produces<mu2e::SimParticleCollection>();
+    produces<mu2e::StepPointMCCollection>();
     if(!config().decayOffPdgs(decayOffPdgs_)) decayOffPdgs_ = {};
     if(config().cuts()) cuts_ = StopCuts(*config().cuts());
     // if some decays were turned off, produce an event weight
     if(!decayOffPdgs_.empty()) produces<mu2e::EventWeight>();
     produces<SumOfWeights, art::InSubRun>();
+    if(diagLevel_ > 0 && acceptReject_) {
+      printf("[StopSelection::%s] Performing accept/rejection selection with a maximum weight of %.3g\n", __func__, maxWeight_);
+    }
   }
 
   //--------------------------------------------------------------------------------------------------------------
@@ -132,43 +144,83 @@ namespace mu2e {
   //--------------------------------------------------------------------------------------------------------------
   void StopSelection::produce(art::Event& event) {
     auto output{std::make_unique<SimParticleCollection>()};
+    auto out_steps{std::make_unique<StepPointMCCollection>()};
+    const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
     const bool make_weight = !decayOffPdgs_.empty();
     double weight = 1.;
 
+    // for mapping new sim art Ptrs
+    // auto out_pid = event.getProductID<SimParticleCollection>(moduleDescription().moduleLabel());
+    auto out_pid = event.getProductID<SimParticleCollection>("");
+    auto out_getter = event.productGetter(out_pid);
+
     // get the sim collection and the corresponding stops
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
-    const auto stops = simParticleList(simh, pdgId_, processCode_);
-    const auto selected = pruneStops(stops);
+    const auto steps = event.getValidHandle<StepPointMCCollection>(stepsToken_);
+    const auto stops = simParticleList(simh, pdgId_, processCode_); // stopped particles
+    const auto selected = pruneStops(stops); // stopped particles satisfying a given selection
 
     if(diagLevel_ > 1) {
       printf("StopSelection::%s:: From %zu stops selected %zu candidates\n", __func__, stops.size(), selected.size());
     }
-    // select a random stop if available
-    if(!selected.empty()) {
-      const int index = randomFlat_.fireInt(selected.size());
+
+    const size_t nstops = selected.size();
+    const int offset = (acceptReject_) ? 0 : randomFlat_.fireInt(nstops); // if picking 1 stop, make it random, otherwise sample all
+    for(size_t istop = 0; istop < nstops; ++istop) {
+      const size_t index = (istop + offset) % nstops;
       art::Ptr<SimParticle> sim = selected[index];
 
       // get the selected stop's time weight if requested
       if(make_weight) {
-        const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
         const double tau = SimParticleGetTau::calculate(sim, decayOffPdgs_, gc);
         weight = std::exp(-tau);
       }
 
-      // save the entire lineage
-      while(sim.isNonnull()) {
-        // output->insert(std::make_pair(output->size(), *sim));
-        output->insert(std::make_pair(sim->id(), *sim));
-        sim = sim->parent();
+      // check if doing accept/reject
+      if(acceptReject_) {
+        if(weight < maxWeight_ * randomFlat_.fire()) continue; // if it fails, continue to the next stop
+        weight = 1.; // reset as no event weight is used if using accept/reject
       }
-      total_.add(weight);
-    } else {
-      ++nempty_;
-    }
 
+      // save the entire lineage, updating the pointer mapping
+      while(sim.isNonnull()) {
+        auto sim_id_pair = std::make_pair(sim->id(), *sim);
+        auto& new_sim = sim_id_pair.second;
+        auto parent = sim->parent();
+        new_sim.parent() = art::Ptr<SimParticle>(out_pid, parent.key(), out_getter);
+        for (auto& daughter : new_sim.daughters()) {
+          daughter = art::Ptr<SimParticle>(out_pid,daughter.key(),out_getter);
+        }
+        sim = parent;
+        output->insert(sim_id_pair);
+      }
+
+      total_.add(weight);
+      if(!acceptReject_) break; // no need to check each stop if not doing accept/reject
+    }
+    if(output->size() == 0) ++nempty_;
+
+
+    // for every input step point, add it to the output if relevant, with remapping
+    for(auto& step : *steps) {
+      bool found = false;
+      const auto id = step.simParticle()->id();
+      for(auto& sim : *output) {
+        if(sim.first == id) {
+          found = true;
+          break;
+        }
+      }
+      if(found) { // save the step
+        auto out_step(step);
+        out_step.simParticle() = art::Ptr<SimParticle>(out_pid, step.simParticle().key(), out_getter);
+        out_steps->push_back(out_step);
+      }
+    }
 
     // produce the data products
     event.put(std::move(output));
+    event.put(std::move(out_steps));
     if(make_weight) {
       std::unique_ptr<EventWeight> ew(new EventWeight(weight));
       event.put(std::move(ew));
