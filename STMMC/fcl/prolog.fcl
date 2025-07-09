@@ -34,6 +34,12 @@ ComponentPositions : { # In beam order
     LaBr : { # aperture centre
         x : -3863.4
         y : 0.0
+        z : 40404
+    }
+    ST : { # ST centre
+        x : -3904.0
+        y : 0.0
+        z : 627.0
     }
 }
 
@@ -191,8 +197,37 @@ HPGeDigitization : {
 # Detector efficiency simulation
 Efficiency : {
     NPhotons : 1e7
-    PhotonEnergy : 1.809 # MeV
-    OutputFilename : "Efficiency.root"
+    PhotonEnergy : @nil #1.809 # MeV
+    OutputFilename : "nts.owner.Absorber.Spectrum.sequencer.root"
+    ST : {
+        x : -3904.0 # mm
+        y : 0.0 # mm
+        z : 627.0 # mm
+    }
+    FromSTToSSCAperture: {
+        HPGe: {
+            x : -40.6 # mm
+            y : 0.0 # mm
+            z : 39777 # mm
+        }
+        LaBr: {
+            x : 40.6 # mm
+            y : 0.0 # mm
+            z : 39777 # mm
+        }
+    }
+    FromSTToDet: { # ST at (-3904, 0, 627)
+        HPGe: {
+            x : -40.6 # mm
+            y : 0.0 # mm
+            z : 40072.1 # mm
+        }
+        LaBr: {
+            x : 40.6 # mm
+            y : 0.0 # mm
+            z : 40264.5 # mm
+        }
+    }
 }
 
 END_PROLOG

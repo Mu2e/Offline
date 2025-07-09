@@ -3,14 +3,14 @@
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/STMMC/fcl/prolog.fcl"
 
-# This module simulates photons being fired upstream of the HPGe absorber to investigate the relative shift in spectrum
+# This module simulates photons being fired from the ST incident on the STM detectors to investigate the relative shift in spectrum
 # Original author : Pawel Plesniak
 # Note - edit the parameters in this prolog.fcl, aside from which detector is being used which is stored in the generate module
 
 process_name: HPGeAbsorberSpectrumShift
 source : {
   module_type : EmptyEvent
-  maxEvents : 10 # @local::Efficiency.NPhotons
+  maxEvents : @local::Efficiency.NPhotons
 }
 
 services : {
@@ -25,9 +25,12 @@ physics: {
   producers : {
     generate : {
       module_type : PhotonGun
-      x : @local::ComponentPositions.LaBr.x
-      y : @local::ComponentPositions.LaBr.y
-      z : @local::ComponentPositions.LaBr.z
+      x : @local::Efficiency.ST.x
+      y : @local::Efficiency.ST.y
+      z : @local::Efficiency.ST.z
+      deltax : @local::Efficiency.FromSTToDet.LaBr.x
+      deltay : @local::Efficiency.FromSTToDet.LaBr.y
+      deltaz : @local::Efficiency.FromSTToDet.LaBr.z
       E : @local::Efficiency.PhotonEnergy
     }
     g4run : @local::g4run
@@ -52,5 +55,5 @@ physics.producers.g4run.SDConfig.enableSD: [STMDet, virtualdetector]
 services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 services.TFileService.fileName : @local::Efficiency.OutputFilename
-# physics.producers.g4run.debug.trackingVerbosityLevel : 1
-# physics.producers.g4run.debug.steppingVerbosityLevel : 1
+physics.producers.g4run.debug.trackingVerbosityLevel : 1
+physics.producers.g4run.debug.steppingVerbosityLevel : 1
