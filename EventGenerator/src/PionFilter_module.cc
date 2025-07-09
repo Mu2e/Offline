@@ -36,6 +36,7 @@ namespace mu2e {
         fhicl::OptionalAtom<double> tmax{Name("tmax"), Comment("Selected pion maximum end time")};
         fhicl::OptionalAtom<int> maxPions{Name("maxPions"), Comment("Maximum number of pion stops")};
         fhicl::Atom<int> processCode{Name("processCode"), Comment("Pion end process code to select")};
+        fhicl::Atom<art::InputTag> simCollTag{Name("simParticles"),Comment("A SimParticleCollection with input stopped pions")};
         fhicl::Atom<bool> isNull{Name("isNull"), Comment("Skip filtering is turned on"), false};
       };
       explicit PionFilter(const art::EDFilter::Table<Config>& config);
@@ -52,6 +53,7 @@ namespace mu2e {
       double tmax_;
       int maxPions_;
       int processCode_;
+      art::ProductToken<SimParticleCollection> const simsToken_;
       bool isNull_;
       SumOfWeights total_;
       SumOfWeights selected_;
@@ -61,6 +63,7 @@ namespace mu2e {
      EDFilter{config}
     , diagLevel_{config().diagLevel()}
     , processCode_{config().processCode()}
+    , simsToken_{consumes<SimParticleCollection>(config().simCollTag())}
     , isNull_{config().isNull()}
   {
     if(!config().tmin(tmin_)) tmin_ = -1.e10;
@@ -77,29 +80,27 @@ namespace mu2e {
   bool PionFilter::filter(art::Event& evt) {
       if(isNull_) return true;
       bool passed = false;
-      std::vector<art::Handle<SimParticleCollection>> vah = evt.getMany<SimParticleCollection>();
+      const auto simh = evt.getValidHandle<SimParticleCollection>(simsToken_);
       const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
       const std::vector<int> decayOffCodes = {PDGCode::pi_plus, PDGCode::pi_minus};
       int npions(0);
-      for (auto const& ah : vah) { //always one collection
-        for(const auto& aParticle : *ah){
-          art::Ptr<SimParticle> pp(ah, aParticle.first.asUint());
+      for(const auto& aParticle : *simh){
+        const art::Ptr<SimParticle> pp(simh, aParticle.first.asUint());
 
-          // check if this is a pion of interest
-          if( pp->stoppingCode() == processCode_ and std::abs(pp->pdgId()) == PDGCode::pi_plus){
-            const float globalTime = pp->endGlobalTime();
-            const float tau = SimParticleGetTau::calculate(pp, decayOffCodes, gc);
-            const float weight = std::exp(-tau);
+        // check if this is a pion of interest
+        if( pp->stoppingCode() == processCode_ and std::abs(pp->pdgId()) == PDGCode::pi_plus){
+          const float globalTime = pp->endGlobalTime();
+          const float tau = SimParticleGetTau::calculate(pp, decayOffCodes, gc);
+          const float weight = std::exp(-tau);
 
-            // count found pions
-            total_.add(weight);
-            ++npions;
+          // count found pions
+          total_.add(weight);
+          ++npions;
 
-            // check additional filters
-            if(globalTime > tmin_ and globalTime < tmax_ ){
-              passed = true;
-              selected_.add(weight);
-            }
+          // check additional filters
+          if(globalTime > tmin_ and globalTime < tmax_ ){
+            passed = true;
+            selected_.add(weight);
           }
         }
       }
