@@ -613,7 +613,6 @@ CalPatRec : { @table::CalPatRec
             useCCs                     : 1
             recoverCCs                 : 1
             chCollLabel                : "flagPH"
-            chCollLabel2               : "makeSH"
             tcCollLabel                : "TimeClusterFinderDe"
             ccCollLabel                : "CaloClusterMaker"
             hitBkgBits                 : ["Noisy","Dead","Background"]
@@ -653,6 +652,8 @@ CalPatRec : { @table::CalPatRec
             isoRad                  : 150.0
             isoMinHitsNear          : 2
             doAverageFlag           : true
+            doEDepFlag              : false
+            eDepFlagThresh          : 0.003
             minDistCut              : 20.0
             minTripletSeedZ         : 0.0
             minTripletDz            : 50.0
@@ -692,7 +693,7 @@ CalPatRec : { @table::CalPatRec
              #TimeClusterCollection  : "TimeClusterFinderDmu"
              diag                   : 0
              debug                  : 0
-             minNSH                 : 5
+             minNSH                 : 10
              threshold              : 1 # 4
              nPhiClusters           : 40
              phiMin                 : 0.0

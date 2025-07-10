@@ -9,7 +9,7 @@ int mu2e::ValCaloDigi::declare(const art::TFileDirectory& tfs) {
   _ht = tfs.make<TH1D>("t", "time", 100, 0.0, 2000.0);
   _ht2 = tfs.make<TH1D>("t2", "time", 100, 0.0, 100.0e3);
   _hm = tfs.make<TH1D>("Nwave", "N points in waveform", 81, -0.5, 80.5);
-  _hE = tfs.make<TH1D>("EMax", "E max in waveform", 100, 0.0, 1500.0);
+  _hE = tfs.make<TH1D>("EMax", "E max in waveform", 100, 0.0, 5000.0);
 
   return 0;
 }

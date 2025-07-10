@@ -1,7 +1,7 @@
 # Reads CRV Global Run Info
 # Contact person R. Ehrlich
 
-#include "mu2e_trig_config/core/trigProducers.fcl"
+#include "mu2e-trig-config/core/trigProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
 
 process_name : CrvGlobalRun
@@ -22,39 +22,22 @@ physics :
 {
   producers :
   {
-    genFrags :
-    {
-       module_type  : ProcessDTCAndCFOEvents
-       diagLevel    : 0
-       makeCaloFrag : 0
-       makeTrkFrag  : 0
-       makeCRVFrag  : 1
-    }
     CrvGlobalRunData :
     {
-      module_type : CRVGlobalRunDataFromDataDecoders
-      crvTag      : "genFrags"
-      diagLevel   : 10
-      csvFileName : "crvGlobalRun.txt"
-      writeCsvFile: true
+      module_type   : CrvGRdataFromArtdaqFragments
+      diagLevel     : 10
+      csvFileName   : "crvGlobalRun.txt"
+      writeCsvFile  : true
+      useSubsystem0 : false
     }
   }
 
-  t1 : [ genFrags, CrvGlobalRunData ]
-  e1 : [ outfile ]
+  t1 : [ CrvGlobalRunData ]
+  e1 : [ ]
 
   trigger_paths  : [t1]
   end_paths      : [e1]
 
-}
-
-outputs:
-{
-  outfile :
-  {
-    module_type   :   RootOutput
-    fileName      :   "crvGlobalRun.art"
-  }
 }
 
 services.message.destinations.log.categories.ArtReport.limit : 0

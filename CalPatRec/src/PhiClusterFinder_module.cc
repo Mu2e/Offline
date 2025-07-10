@@ -99,10 +99,12 @@ namespace mu2e {
     std::unique_ptr<ModuleHistToolBase> _hmanager;
 
     void findClusters (TimeClusterCollection& tccol1, const std::vector<StrawHitIndex>& ordchcol);
+    void useoldTC(TimeClusterCollection& tccol1, const std::vector<StrawHitIndex>& ordchcol);
     void clusterminmax(float& cluphimin, float& cluphimax);
     void initCluster(TimeCluster& tc);
     float checkdelta(TimeCluster& tc, int ClustNo, const std::vector<StrawHitIndex>& ordchcol);
     void addCaloClusters(TimeClusterCollection& tccol1, const TimeClusterCollection& tccol);
+    //void recoverhits();
 };
 
  PhiClusterFinder::PhiClusterFinder(const art::EDProducer::Table<Config>& config):
@@ -191,9 +193,35 @@ namespace mu2e {
     if (_diag > 0) {
       _hmanager->fillHistograms(&_data);
     }
-    // if (tccol1->size() == 0 and tccol.size()>0)
-    // std::cout<<"tccol new size = "<<tccol1->size()<<" tccol size = "<<tccol.size()<<" event = "<<_iev<<std::endl;
+    if (tccol1->size() < tccol.size()){
+      if(tccol.size() > 0){
+        for(size_t ipeak=0; ipeak<tccol.size(); ipeak++) {
+         const auto& tc = tccol[ipeak];
+         useoldTC(*tccol1, tc.hits());
+         }
+      }
+    }
+    if(_debug > 0 and tccol.size() > 0){
+      int newsize = tccol1->size();
+      int oldsize = tccol.size();
+      int eventno = _iev;
+      printf("Final tccol size = %i Input tccol size =  %i event = %i\n",newsize,oldsize,eventno);
+    }
     event.put(std::move(tccol1));
+  }
+
+//-----------------------------------------------------------------------------
+// use the input time cluster collection itself
+//-----------------------------------------------------------------------------
+  void PhiClusterFinder::useoldTC(TimeClusterCollection& tccol1, const std::vector<StrawHitIndex>& ordchcol) {
+    int nh = ordchcol.size();
+    TimeCluster tc;
+    for(int ih=0; ih<nh; ih++) {
+    //Fill the straw hit indices if the cluster number of the hit == j
+      tc._strawHitIdxs.push_back(ordchcol[ih]);
+    }
+    initCluster(tc);
+    tccol1.push_back(tc);
   }
 
 //-----------------------------------------------------------------------------
@@ -201,19 +229,21 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void PhiClusterFinder::findClusters(TimeClusterCollection& tccol1, const std::vector<StrawHitIndex>& ordchcol) {
     int nh = ordchcol.size();
+    //std::cout<<"input tc size = "<<nh<<std::endl;
     // Counts the no. of hits used to form the clusters
     int countusedhit(0);
     // Counts the no. of clusters
     int counter(0);
     // Count the no. of hits in a cluster when it is an event with two phi clusters
     int count1(0),count2(0);
-    float dphi(0);
+    float sigma(0);
     // Mark true if a hit is used to form a cluster
     std::vector<bool> usedhit(ordchcol.size(),false);
     float bin = _hist1.GetBinWidth(0);
     if (nh > (_minnsh/2)) {
       // Check if all the hits are used and keep trying to find peaks until < 5 hits are left in the collection
-      while(nh-countusedhit > (_minnsh/2)) {
+      //while(nh-countusedhit > (_minnsh/2)) {
+      while(countusedhit < nh) {
         int   finalcount(0);
         float phi1(0);
         _hist1.Reset("ICSEM");
@@ -228,7 +258,7 @@ namespace mu2e {
           // change the range to [0,2pi]
           if(phi < 0) phi += 2*M_PI;
           _hist1.Fill(phi,ch->nStrawHits());
-          // if(_debug>3) std::cout<<"Phi "<<phi<<" ch phi "<< phi << "n straw hits = "<<ch->nStrawHits()<<std::endl;
+          //if(_debug > 3) std::cout<<"Phi "<<phi<<" ch phi "<< phi << "n straw hits = "<<ch->nStrawHits()<<std::endl;
         }
 
         // Find the min and max phi around the highest phi bin in the phi spectrum
@@ -251,7 +281,7 @@ namespace mu2e {
               count1++;
               // Insert the cluster no. for each hit
               _clustno[i] = counter;
-              // if(_debug>3) std::cout<<"Simple cluster case = "<<_clustno[i]<<" Cluster no. = "<<counter<<" hit = "<<i<<" Pos x = "<<ch->pos().X()<<" y = "<<ch->pos().Y()<<std::endl;
+              //if(_debug>3) std::cout<<"Simple cluster case = "<<_clustno[i]<<" Cluster no. = "<<counter<<" hit = "<<i<<" Pos x = "<<ch->pos().X()<<" y = "<<ch->pos().Y()<<std::endl;
             }
           }
         }
@@ -269,9 +299,9 @@ namespace mu2e {
               count2++;
               phi1 = phi1+phi;
               _clustno[i] = counter;
-              // if(_debug>3)std::cout<<"Alternate cluster case = "<<_clustno[i]<<" Cluster no. = "<<counter<<" hit = "<<i<<" Pos x = "<<ch->pos().X()<<" y = "<<ch->pos().Y()<<std::endl;
+              //if(_debug>3)std::cout<<"Alternate cluster case = "<<_clustno[i]<<" Cluster no. = "<<counter<<" hit = "<<i<<" Pos x = "<<ch->pos().X()<<" y = "<<ch->pos().Y()<<std::endl;
            }
-         }
+          }
         }
         else {
           // Hit associated to no cluster. Note : Need to investigate further
@@ -288,54 +318,74 @@ namespace mu2e {
         counter += 1;
       }
     }
-    // phi separation between the clusters. Note : Only used for the events with two phi clusters at the moment
-    if (counter == 2) {
-      dphi = fabs(_phitotal[0]/_nhitotal[0]-_phitotal[1]/_nhitotal[1]);
-      if (dphi > M_PI) dphi = 2*M_PI-dphi;
-    }
-    // Events where two phi clusters are found but they are separated < min delta phi.
-    if (counter == 2 and dphi < _mindphi){
-      TimeCluster otc;
-      for(int ih=0; ih<nh; ih++) {
-        //Fill the straw hit indices if the cluster number of the hit == j
-        otc._strawHitIdxs.push_back(ordchcol[ih]);
-      }
-      initCluster(otc);
-      if(otc._nsh > _minnsh) tccol1.push_back(otc);
-      if (_debug > 1) {
-        int onsh = otc._nsh;
-        printf("dphi = %f nh = %i nsh = %i \n",dphi,nh,onsh);
-      }
-    }
-    // Loop through the phi clusters and form time clusters
-    for(int j=0;j<counter;j++){
-       TimeCluster tc;
-       for(int ih=0; ih<nh; ih++) {
-        //Fill the straw hit indices if the cluster number of the hit == j
-        if (_clustno[ih]==j) tc._strawHitIdxs.push_back(ordchcol[ih]);
-       }
-       initCluster(tc);
-       if (_debug > 1) {
-         int nsh = tc._nsh;
-         printf("Time cluster : %i No. straw hits : %i \n",counter,nsh);
-       }
-       // Sigma of the phi spectrum
-       float sigma(0);
-       if (tc._nsh > _minnsh) {
-         if (tc._nsh > _nphiclusters) {
-           sigma = checkdelta(tc, j, ordchcol);
-           // if (_debug>2 and sigma>0) std::cout<<"Phi cluster sigma = "<<sigma<<" n straw hits = "<<tc._nsh<<" n combo hits = "<<tc._strawHitIdxs.size()<<std::endl;
-         }
-         if (sigma == 0 or sigma > _minsigma) {
-           if (counter == 2){
-             if (dphi >= _mindphi)
+    if(counter > 1){
+      for(int k = 0; k<counter; k++){
+        if((k+1) <= counter){
+          float dphi2 = fabs(_phitotal[k]/_nhitotal[k]-_phitotal[k+1]/_nhitotal[k+1]);
+          if (dphi2 > M_PI) dphi2 = 2*M_PI-dphi2;
+          if(dphi2 < _mindphi and dphi2 > 0){
+             TimeCluster tc;
+             for(int ih=0; ih<nh; ih++) {
+               //Fill the straw hit indices if the cluster number of the hit == j
+               if(_nhitotal[k] < _minnsh or _nhitotal[k+1] < _minnsh){
+                 if (_clustno[ih]==k or _clustno[ih] == (k+1)) tc._strawHitIdxs.push_back(ordchcol[ih]);
+               }
+               else
+                 if (_clustno[ih]==k) tc._strawHitIdxs.push_back(ordchcol[ih]);
+             }
+             initCluster(tc);
+             if (_debug > 1) {
+               int nsh = tc._nsh;
+               printf("Time cluster : %i No. straw hits : %i \n",k,nsh);
+             }
+             if(tc._nsh >= _minnsh){
                tccol1.push_back(tc);
-           }
-          else tccol1.push_back(tc);
+             }
           }
-          // if(_debug>1) std::cout<<"Delta phi = "<<dphi<<" T0 = "<<tc._t0._t0<<" n straw hits = "<<tc._nsh<<"n combo hits = "<<tc._strawHitIdxs.size()<<std::endl;
-       }
-       // if(_debug>2) std::cout<<"No. of time clusters = "<<counter<<" T0 = "<<tc._t0._t0<<" n straw hits = "<<tc._nsh<<" n combo hits = "<<tc._strawHitIdxs.size()<<std::endl;
+          else{
+            TimeCluster tc;
+              for(int ih=0; ih<nh; ih++) {
+                //Fill the straw hit indices if the cluster number of the hit == j
+                if (_clustno[ih]==k) tc._strawHitIdxs.push_back(ordchcol[ih]);
+              }
+              initCluster(tc);
+              if (_debug > 1) {
+                int nsh = tc._nsh;
+                printf("Time cluster : %i No. straw hits : %i \n",k,nsh);
+              }
+              if(tc._nsh >= _minnsh){
+                if (tc._nsh > _nphiclusters) {
+                  sigma = checkdelta(tc, 0, ordchcol);
+                  if (sigma == 0 or sigma > _minsigma)
+                    tccol1.push_back(tc);
+                }
+                else
+                  tccol1.push_back(tc);
+              }
+          }
+        }
+      }
+    }
+    else{
+      TimeCluster tc;
+      for(int ih=0; ih<nh; ih++) {
+         //Fill the straw hit indices if the cluster number of the hit == j
+         if (_clustno[ih]==0) tc._strawHitIdxs.push_back(ordchcol[ih]);
+      }
+      initCluster(tc);
+      if (_debug > 1) {
+        int nsh = tc._nsh;
+        printf("Time cluster : %i No. straw hits : %i \n",counter,nsh);
+      }
+      if(tc._nsh >= _minnsh){
+         if (tc._nsh > _nphiclusters) {
+            sigma = checkdelta(tc, 0, ordchcol);
+            if (sigma == 0 or sigma > _minsigma)
+              tccol1.push_back(tc);
+         }
+         else
+           tccol1.push_back(tc);
+      }
     }
   }
 
@@ -345,13 +395,12 @@ namespace mu2e {
   void PhiClusterFinder::clusterminmax(float& cluphimin, float& cluphimax) {
     int   nbx = _hist1.GetNbinsX();
     float bin = _hist1.GetBinWidth(0);
-
     int nsteps(0);
     int max_bin  = _hist1.GetMaximumBin();
     // Check to the left of the peak bin
     int bincheck = max_bin;
     while(_hist1.GetBinContent(bincheck) >=_threshold) {
-      // if(_debug>3) std::cout<<"bincheck = "<<_hist1.GetBinContent(bincheck)<<" bincontent = "<<bincheck<<"   "<<_hist1.GetBinCenter(bincheck)<<std::endl;
+      //if(_debug>3) std::cout<<"bincontent = "<<_hist1.GetBinContent(bincheck)<<" bincheck = "<<bincheck<<"   "<<_hist1.GetBinCenter(bincheck)<<std::endl;
       if (bincheck > _threshold) bincheck--;
       else bincheck = nbx;
       nsteps++;
@@ -365,12 +414,13 @@ namespace mu2e {
     // Check to the right of the highest bin
     int bincheckr=max_bin;
     while(_hist1.GetBinContent(bincheckr)>=_threshold){
-      // if(_debug>3) std::cout<<"bincheckr = "<<_hist1.GetBinContent(bincheckr)<<"bincontent = "<<bincheckr<<"  "<<_hist1.GetBinCenter(bincheckr)<<std::endl;
+      //if(_debug>3) std::cout<<"Rbincontent = "<<_hist1.GetBinContent(bincheckr)<<" bincheck = "<<bincheckr<<"  "<<_hist1.GetBinCenter(bincheckr)<<std::endl;
       if(bincheckr<nbx) bincheckr++;
       else bincheckr = 1;
     }
     cluphimax = _hist1.GetXaxis()->GetBinCenter(bincheckr)+bin/2;
     cluphimin = _hist1.GetXaxis()->GetBinCenter(bincheck )-bin/2;
+    //std::cout<<"bincheck = "<<_hist1.GetXaxis()->GetBinCenter(bincheck)<<" r bincheck = "<<_hist1.GetXaxis()->GetBinCenter(bincheckr)<<std::endl;
     if (_debug>3) printf("Phi min = %10.3f max : %10.3f\n",cluphimin,cluphimax);
   }
 

@@ -16,13 +16,13 @@ namespace mu2e {
   class FrontShielding {
   public:
     FrontShielding(bool build, double height, double W_length, double W_depth,
-    double Pb_depth1, double Pb_depth2, double Al_depth, double Cu_depth, double BP_depth, double BP_depth2,
-    double fPb_lengthL, double fPb_lengthR, double GapForTop, double LeakForSSC,
+    double Pb_depth1, double Pb_depth2, double Al_depth, double Cu_depth, double BP_depth,
+    double fPb_lengthL, double fPb_lengthR, double GapForTop, double LeakForSSC, double CopperL, double Front_H, double FrontHole_r,
     CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(), CLHEP::HepRotation const & rotation = CLHEP::HepRotation()
     ):
       _build(build), _HeightofRoom(height), _Ftungstenlength(W_length), _Ftungstendepth(W_depth),
-      _Fleaddepth1(Pb_depth1), _Fleaddepth2(Pb_depth2), _Faluminumdepth(Al_depth), _Fcopperdepth(Cu_depth), _FBPdepth(BP_depth), _FBPdepth2(BP_depth2),
-      _fPb_lengthL(fPb_lengthL), _fPb_lengthR(fPb_lengthR), _GapForTop(GapForTop), _LeakForSSC(LeakForSSC),
+      _Fleaddepth1(Pb_depth1), _Fleaddepth2(Pb_depth2), _Faluminumdepth(Al_depth), _Fcopperdepth(Cu_depth), _FBPdepth(BP_depth),
+      _fPb_lengthL(fPb_lengthL), _fPb_lengthR(fPb_lengthR), _GapForTop(GapForTop), _LeakForSSC(LeakForSSC), _CopperL(CopperL), _Front_H(Front_H), _FrontHole_r(FrontHole_r),
       _originInMu2e(originInMu2e), _rotation(rotation)
     {}
 
@@ -36,14 +36,15 @@ namespace mu2e {
    double  Faluminumdepth()   const {return _Faluminumdepth;}
    double  Fcopperdepth()     const {return _Fcopperdepth;}
    double  FBPdepth()         const {return _FBPdepth;}
-   double  FBPdepth2()        const {return _FBPdepth2;}
    double  fPb_lengthL()      const {return _fPb_lengthL;}
    double  fPb_lengthR()      const {return _fPb_lengthR;}
    double  GapForTop()        const {return _GapForTop;}
    double  LeakForSSC()       const {return _LeakForSSC;}
+   double  CopperL()          const {return _CopperL;}
+   double  Front_H()          const {return _Front_H;}
+   double  FrontHole_r()      const {return _FrontHole_r;}
 
-   double  Front_Thickness()  const {return _Ftungstendepth + _LeakForSSC + _Fleaddepth2*3 + _FBPdepth*2 + _Fcopperdepth;}
-   double  Front_Height()     const {return _HeightofRoom + _Faluminumdepth*2 + _Fcopperdepth*2 + _Fleaddepth2*3 + _Fleaddepth1 + _FBPdepth2*2 + _FBPdepth*2 + _GapForTop;}
+   double  Front_Thickness()  const {return _Ftungstendepth + _Fleaddepth2*3 + _FBPdepth*2;}
    double  Front_Length()     const {return _Ftungstenlength + 2*_LeakForSSC + _fPb_lengthL + _fPb_lengthR;}
 
     FrontShielding() {}
@@ -59,11 +60,13 @@ namespace mu2e {
     double             _Faluminumdepth;
     double             _Fcopperdepth;
     double             _FBPdepth;
-    double             _FBPdepth2;
     double             _fPb_lengthL;
     double             _fPb_lengthR;
     double             _GapForTop;
     double             _LeakForSSC;
+    double             _CopperL;
+    double             _Front_H;
+    double             _FrontHole_r;
 
     CLHEP::Hep3Vector  _originInMu2e;
     CLHEP::HepRotation _rotation;

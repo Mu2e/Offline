@@ -1,75 +1,62 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_TSDS_NfirstFloorEdge.ccl
-
 string dirt.tsDsArea.firstFloorEdge.N.name     = "dirtTsDsAreaFirstFloorEdgeN";
-
 string dirt.tsDsArea.firstFloorEdge.N.material = "MBOverburden";
-
-double dirt.tsDsArea.firstFloorEdge.N.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.tsDsArea.firstFloorEdge.N.offsetFromFloorSurface.y = 7569.2;
-double dirt.tsDsArea.firstFloorEdge.N.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.tsDsArea.firstFloorEdge.N.yHalfThickness           = 203.2;
-
-vector<int>    dirt.tsDsArea.firstFloorEdge.N.xreplace   = { 23, 24 };
+double dirt.tsDsArea.firstFloorEdge.N.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.tsDsArea.firstFloorEdge.N.offsetFromFloorSurface.y = 7493.0;
+double dirt.tsDsArea.firstFloorEdge.N.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.tsDsArea.firstFloorEdge.N.xreplace ={23 ,24 };
+vector<int> dirt.tsDsArea.firstFloorEdge.N.yreplace ={7 ,8 ,13 ,14 ,22 ,23 };
+double dirt.tsDsArea.firstFloorEdge.N.yHalfThickness           = 127.0;
 vector<double> dirt.tsDsArea.firstFloorEdge.N.xPositions = {
-  45745.4,   // f2
-  45745.4,   // g1
-  -2921,   // g
-  -2921,   // N to NRetWall
-  3708.41, // SE corner NRetWall
-  3708.41, // NE corner NRetWall
-  -2921,   // Back along NRetWall
-  -2921,   // g_to_N
-  9550.5,  // N of NE corner rem hatch
-  9550.5,  // NE corner rem hatch
-  3403.59, // NW corner rem hatch
-  3403.59, // SW corner rem hatch
-  9550.51, // SE corner rem hatch
-  9550.51, // N of rem hatch E wall
-  15900.8, // N of escape hatch NW corner
-  15900.8,  // NW corner escape hatch
-  17204.7, // SW corner escape Hatch N
-  17288.5,  // SW corner escape hatch
-  20744.5,  // SE corner escape hatch
-  20660.7,  // SE corner escape Hatch N
-  19356.8,  // NE corner escape hatch
-  15900.81, // return to escape hatch NW corner
-  15900.81, // return N of escape hatch NW corner
-  50000,   // NEcorner
-  50000   // f2_to_E
+45745.40, // 0
+45745.40, // 1
+-1270.00, // 2
+-1270.00, // 3
+3708.41, // 4
+3708.41, // 5
+-1270.00, // 6
+-1270.00, // 7
+9550.50, // 8
+9550.50, // 9
+3403.59, // 10
+3403.59, // 11
+9550.51, // 12
+9550.51, // 13
+15900.80, // 14
+15900.80, // 15
+17204.70, // 16
+17288.50, // 17
+20744.50, // 18
+20660.70, // 19
+19356.80, // 20
+15900.81, // 21
+15900.81, // 22
+50847.00, // 23
+50847.00 // 24
 };
-
-vector<int>    dirt.tsDsArea.firstFloorEdge.N.yreplace   = { 7, 8, 13, 14, 22, 23 };
 vector<double> dirt.tsDsArea.firstFloorEdge.N.yPositions = {
-  -8661.4,   // f2
-  2438.4,   // g1
-  2438.4,   // g
-  9702.79,  // N to NRetWall
-  9702.79,  // SE corner NRetWall
-  10312.5,  // NE corner NRetWall
-  10312.5,  // Ball along NRetWall
-  50000,   // g_to_N
-  50000,   // N or NE corner rem hatch
-  16459.21, // NE corner rem hatch
-  16459.21, // NW corner rem hatch
-  13055.59, // SW corner rem hatch
-  13055.59, // SE corner rem hatch
-  50000,   // N of E wall rem hatch
-  50000, // N of escape hatch NW corner
-  23684.2,  // NW corner escape hatch
-  18302.6,  // SW corner escape hatch N
-  17957,     // SW corner escape hatch
-  18794.4,     // SE corner escape hatch
-  19140.1,    // SE corner escape Hatch N
-  24521.6,  // NE corner escape hatch
-  23684.22,    // return to escape hatch NW corner
-  50000, // return N or escape hatch NW corner
-  50000,   // NEcorner
-  -8661.4   // f2_to_E
+-8661.40, // 0
+2438.40, // 1
+2438.40, // 2
+9702.70, // 3
+9702.79, // 4
+10312.50, // 5
+10312.50, // 6
+30840.20, // 7
+30840.20, // 8
+16459.21, // 9
+16459.21, // 10
+13055.59, // 11
+13055.59, // 12
+30840.20, // 13
+30840.20, // 14
+23684.20, // 15
+18302.60, // 16
+17957.00, // 17
+18794.40, // 18
+19140.10, // 19
+24521.60, // 20
+23684.22, // 21
+30840.20, // 22
+30840.20, // 23
+-8661.40 // 24
 };
-
-// Local Variables:
-// mode:c++
-// End:

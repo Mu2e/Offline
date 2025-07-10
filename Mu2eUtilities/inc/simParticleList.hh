@@ -45,7 +45,7 @@ namespace mu2e {
   }
 
   inline std::vector<art::Ptr<SimParticle> > stoppedPiMinusList(art::ValidHandle<SimParticleCollection> simh) {
-    return simParticleList(simh, PDGCode::pi_minus, ProcessCode::mu2eKillerVolume);
+    return simParticleList(simh, PDGCode::pi_minus, ProcessCode::hBertiniCaptureAtRest);
   }
 
 }

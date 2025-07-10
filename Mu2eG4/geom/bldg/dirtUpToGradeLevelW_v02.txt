@@ -1,11 +1,11 @@
 string dirt.upToGradeLevel.W.name     = "dirtUpToGradeLevelW";
 string dirt.upToGradeLevel.W.material = "MBOverburden";
 double dirt.upToGradeLevel.W.offsetFromMu2eOrigin.x   = 947.40;
-double dirt.upToGradeLevel.W.offsetFromFloorSurface.y = 7531.10;
+double dirt.upToGradeLevel.W.offsetFromFloorSurface.y = 7454.9;
 double dirt.upToGradeLevel.W.offsetFromMu2eOrigin.z   = -3581.40;
 vector<int> dirt.upToGradeLevel.W.xreplace ={21 ,22 };
 vector<int> dirt.upToGradeLevel.W.yreplace ={20 ,21 ,22 ,23 };
-double dirt.upToGradeLevel.W.yHalfThickness           = 241.30;
+double dirt.upToGradeLevel.W.yHalfThickness           = 165.1;
 vector<double> dirt.upToGradeLevel.W.xPositions = {
 -2921.00, // 0
 -4140.20, // 1
@@ -28,17 +28,21 @@ vector<double> dirt.upToGradeLevel.W.xPositions = {
 -19421.78, // 18
 -19065.88, // 19
 -19065.88, // 20
--60000.00, // 21
--60000.00, // 22
--2921.10, // 23
--2921.10, // 24
--14605.10, // 25
--20490.68, // 26
--20406.40, // 27
--14706.50, // 28
--12319.10, // 29
--12319.10, // 30
--2921.00 // 31
+-50000.00, // 21
+-50000.00, // 22
+-1270.10, // 23
+-1270.10, // 24
+-15282.54, // 25
+-27111.19, // 26
+-27025.14, // 27
+-15238.68, // 28
+-12319.15, // 29
+-12319.15, // 30
+-1270.10, // 31
+-1270.10, // 32
+-2006.50, // 33
+-2006.50, // 34
+-2921.10 // 35
 };
 vector<double> dirt.upToGradeLevel.W.yPositions = {
 2438.40, // 0
@@ -61,16 +65,20 @@ vector<double> dirt.upToGradeLevel.W.yPositions = {
 -8419.70, // 17
 -9436.20, // 18
 -9436.20, // 19
--60000.00, // 20
--60000.00, // 21
-60000.00, // 22
-60000.00, // 23
-10312.50, // 24
-10312.50, // 25
-8910.57, // 26
-8565.15, // 27
-9956.70, // 28
-9956.70, // 29
+-50000.00, // 20
+-50000.00, // 21
+50000.00, // 22
+50000.00, // 23
+10338.22, // 24
+10338.22, // 25
+7388.31, // 26
+7043.08, // 27
+9982.42, // 28
+9982.42, // 29
 9702.70, // 30
-9702.70 // 31
+9702.70, // 31
+2438.40, // 32
+2438.40, // 33
+7518.50, // 34
+7518.50 // 35
 };

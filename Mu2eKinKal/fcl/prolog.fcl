@@ -340,13 +340,12 @@ Mu2eKinKal : {
   LOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     SeedFlags : [ "HelixOK" ]
-    SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
+    IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
     SampleInRange : true # require sample be in time range
-    SampleInBounds : false # require sample be in surface bounds
+    SampleInBounds : true # require sample be in surface bounds
   }
 
   LOOPEXTRAPOLATION : {
-    Tolerance : 1.0e-4 # fractional momentum change
     MaxDt : 200.0 # (ns)
     ToTrackerEnds : true
     Upstream : true
@@ -363,7 +362,7 @@ Mu2eKinKal : {
     SeedFlags : [ "HelixOK" ]
     SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
     SampleTimeBuffer : 100 # time buffer for intersections (ns)
-    SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
+    IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
     UseFitCharge : true # Allow the PDG code to follow the fit
@@ -380,13 +379,12 @@ Mu2eKinKal : {
     SeedFlags : [ "HelixOK" ]
     SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
     SampleTimeBuffer : 100 # time buffer for intersections (ns)
-    SampleTolerance : 0.1 #  tolerance for intersection sample (mm)
+    IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
   }
 
   LINEEXTRAPOLATION : {
-    Tolerance : 1.0e-4 # fractional momentum change
     MaxDt : 200.0 # (ns)
     MinV : 1e-5
     ToCRV : true
@@ -407,7 +405,7 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KKPrecursors
       SampleSurfaces : ["TT_Mid"]
     }
-    UsePDGCharge: false
+    UsePDGCharge : false
   }
 
   LHDriftFit : {
@@ -423,7 +421,7 @@ Mu2eKinKal : {
     ModuleSettings : {
       @table::Mu2eKinKal.LOOPHELIX
       @table::Mu2eKinKal.KKPrecursors
-      SampleSurfaces : ["ST_Outer","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
+      SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
     }
     Extrapolation : @local::Mu2eKinKal.LOOPEXTRAPOLATION
     UsePDGCharge: false

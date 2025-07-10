@@ -117,7 +117,7 @@ namespace mu2e {
     fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
     fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
     fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
-    fhicl::Atom<float> sampleTol { Name("SampleTolerance"), Comment("Tolerance for sample surface intersections (mm)") };
+    fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for surface intersections (mm)") };
     fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Time buffer for sample intersections (nsec)") };
     fhicl::Atom<bool> useFitCharge { Name("UseFitCharge"), Comment("Set the PDG particle according to the fit charge; otherwise reject fits that don't agree with the PDG particle charge") };
     fhicl::Atom<float> minCenterRho { Name("MinCenterRho"), Comment("Minimum transverse distance from the helix axis to the Z axis to consider the fit non-degenerate (mm)") };
@@ -141,7 +141,7 @@ namespace mu2e {
       void produce(art::Event& event) override;
     protected:
       bool goodFit(KKTRK const& ktrk) const;
-      void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const;
+      void sampleFit(KKTRK& kktrk) const;
       TrkFitFlag fitflag_;
       // parameter-specific functions that need to be overridden in subclasses
       // data payload
@@ -165,7 +165,7 @@ namespace mu2e {
       bool fixedfield_; //
       double seedMom_;
       int seedCharge_;
-      double sampletol_; // surface intersection tolerance (mm)
+      double intertol_; // surface intersection tolerance (mm)
       double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
       bool useFitCharge_; // Set the PDG particle to agree with the fit charge
       double minCenterRho_; // min center distance to z axis
@@ -189,7 +189,7 @@ namespace mu2e {
     fixedfield_(false),
     seedMom_(settings().modSettings().seedMom()),
     seedCharge_(settings().modSettings().seedCharge()),
-    sampletol_(settings().modSettings().sampleTol()),
+    intertol_(settings().modSettings().interTol()),
     sampletbuff_(settings().modSettings().sampleTBuff()),
     useFitCharge_(settings().modSettings().useFitCharge()),
     minCenterRho_(settings().modSettings().minCenterRho()),
@@ -326,7 +326,6 @@ namespace mu2e {
 
         try {
           seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
-
           // create and fit the track
           auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
           // Check the fit
@@ -348,24 +347,28 @@ namespace mu2e {
               fitflag.clear(TrkFitFlag::FitOK);
             // compare charge after the fit; either adjust or skip
             auto const& t0seg = kktrk->fitTraj().nearestPiece(kktrk->fitTraj().t0());
-            // check that the t0 segment is non-degenerate; skip tracks that are. This must be done in helix-local coordinates
-            auto g2l = Rotation3D(AxisAngle(VEC3(sin(t0seg.bnom().Phi()),-cos(t0seg.bnom().Phi()),0.0),t0seg.bnom().Theta()));
-            auto cpos = g2l(t0seg.center(t0seg.range().mid()));
-            auto cdist = cpos.Rho();
-            if( cdist > minCenterRho_){
-              double t0charge = t0seg.charge();
-              if(t0charge*PDGcharge_> 0 || useFitCharge_){
-                // flip the PDG particle assignment charge if required
-                if(t0charge*PDGcharge_ < 0)kktrk->reverseCharge();
+            double t0charge = t0seg.charge();
+            if(t0charge*PDGcharge_> 0 || useFitCharge_){
+              // flip the PDG particle assignment charge if required
+              if(t0charge*PDGcharge_ < 0)kktrk->reverseCharge();
+              // check that the segments are non-degenerate
+              bool degen(false);
+              for(auto const& seg : kktrk->fitTraj().pieces()){
+                auto cdist = fabs(-1.0/seg->omega() - seg->d0());
+                if( cdist < minCenterRho_){
+                  degen = true;
+                  break;
+                }
+              }
+              if(!degen){
+                sampleFit(*kktrk);
                 auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h);
-                sampleFit(*kktrk,kkseed._inters);
                 kkseedcol->push_back(kkseed);
                 // save (unpersistable) KKTrk in the event
                 kktrkcol->push_back(kktrk.release());
               }
             }
           }
-
         } catch (std::invalid_argument const& error) {
           if(print_ > 0) std::cout << "CentralHelixFit Error " << error.what() << std::endl;
         }
@@ -392,43 +395,31 @@ namespace mu2e {
     return retval;
   }
 
-  void CentralHelixFit::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
+  void CentralHelixFit::sampleFit(KKTRK& kktrk) const {
     auto const& ftraj = kktrk.fitTraj();
     double tbeg = ftraj.range().begin();
-    static const double epsilon(1.0e-3);
     for(auto const& surf : sample_){
       // search for intersections with each surface from the begining
       double tstart = tbeg - sampletbuff_;
-      bool hasinter(true);
-      size_t max_iter = 1000;
-      size_t cur_iter = 0;
+      bool goodinter(true);
+      size_t max_inter = 100;
+      size_t cur_inter = 0;
 
       // loop to find multiple intersections
-      while(hasinter) {
-        if (cur_iter > max_iter)
-          break;
-        cur_iter += 1;
-
+      while(goodinter && cur_inter < max_inter) {
+        cur_inter += 1;
         TimeRange irange(tstart,std::max(ftraj.range().end(),tstart)+sampletbuff_);
-        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
-        hasinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
-        if(hasinter) {
+        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,intertol_);
+        goodinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
+        if(goodinter) {
           // save the intersection information
-          auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
-          inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
+          kktrk.addIntersection(surf.first,surfinter);
           // update for the next intersection
+          double epsilon = intertol_/ftraj.speed(surfinter.time_);
           tstart = surfinter.time_ + epsilon;// move psst existing intersection to avoid repeating
         }
       }
     }
-    // record other intersections saved in the track
-    for(auto const& interpair : kktrk.intersections()) {
-      auto const& sid = std::get<0>(interpair);
-      auto const& inter = std::get<1>(interpair);
-      auto const& ktraj = ftraj.nearestPiece(inter.time_);
-      inters.emplace_back(ktraj.stateEstimate(inter.time_),XYZVectorF(ktraj.bnom()),sid,inter);
-    }
-    // sort by time TODO
   }
 
 } // mu2e

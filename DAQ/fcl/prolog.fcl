@@ -1,0 +1,13 @@
+# -*- mode:tcl -*-
+BEGIN_PROLOG
+DAQ: {
+    producers: {
+        StrawDigisFromArtdaqFragments: {
+            module_type: StrawDigisFromArtdaqFragments
+            diagLevel: 0
+            saveWaveforms: false
+            missingDTCHeaders: false
+        }
+    }
+}
+END_PROLOG

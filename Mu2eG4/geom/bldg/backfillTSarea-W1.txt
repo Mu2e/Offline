@@ -4,7 +4,7 @@
 
 string building.backfill.TSarea-W.1.name     = "backfillTSarea-W1";
 
-string building.backfill.TSarea-W.1.material = "CA7Backfill";
+string building.backfill.TSarea-W.1.material = "MBOverburden";
 
 double building.backfill.TSarea-W.1.offsetFromMu2eOrigin.x   = 947.4;
 double building.backfill.TSarea-W.1.offsetFromFloorSurface.y = 3200.4;

@@ -1,0 +1,235 @@
+//Use with Mu2eG4/geom/crv_counters_v10.txt
+
+//The geometry in Mu2eG4/geom/crv_counters_v10.txt uses a CRV counter cross section of 51.34mm x 19.78mm (same as v6_0 lookup tables)
+
+//The v6_0 lookup tables use counter lengths of 2100mm and 1550mm for modules C1 and C2 while the geometry uses 1700mm and 1145mm.
+//The results in using only the central portion of the simulated counter response (omitting the reduced response at the counter ends).
+//Fixing this problem requires generating new lookup tables.
+
+#include "Offline/CommonMC/fcl/prolog.fcl"
+#include "Offline/CRVReco/fcl/prolog.fcl"
+BEGIN_PROLOG
+
+    NumberSamplesNZS  :    134 //first 134 ADC samples of a on/off spill event will be recorded
+    SimulateNZS       :  false //if NZS data is simulated, no dead time for the photon generator and SiPM charge generator is used
+    DigitizationStart :  200.0 //ns after event window start (400ns...425ns after POT)
+    DigitizationEnd   : 1500.0 //ns after event window start (1700ns...1725ns after POT)
+                               //event window starts 200ns after first clock tick after POT (200ns...225ns after POT)
+    CrvSteps:
+    {
+      module_type               : CrvStepsFromStepPointMCs
+      removeNeutralParticles    : true
+      debugLevel                : 0
+      diagLevel                 : 0
+      stepPointsInstance        : "CRV"
+      stepPointsModuleLabels    : @nil
+    }
+    CrvPhotons:
+    {
+      module_type               : CrvPhotonGenerator
+      crvStepModuleLabels       : @nil
+      crvStepProcessNames       : @nil
+      CRVSectors                : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","T5","E1","E2","U" ,"D1","D2","D3","D4","C1","C2"] //used only to match the vector entries below
+      reflectors                : [  0 ,  0 , -1 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  1 ,  1 ,  0 ,  0 ,  0 , -1 , -1 , 1  ,  0 ,  1 , -1 ,  0 , -1 , -1 ]
+      lookupTableFileNames      : ["CRVConditions/v6_0/LookupTable_4550_0",  //R1
+                                   "CRVConditions/v6_0/LookupTable_4550_0",  //R2
+                                   "CRVConditions/v6_0/LookupTable_1045_1",  //R3
+                                   "CRVConditions/v6_0/LookupTable_3040_0",  //R4
+                                   "CRVConditions/v6_0/LookupTable_4550_0",  //R5
+                                   "CRVConditions/v6_0/LookupTable_3200_0",  //R6
+                                   "CRVConditions/v6_0/LookupTable_4550_0",  //L1
+                                   "CRVConditions/v6_0/LookupTable_4550_0",  //L2
+                                   "CRVConditions/v6_0/LookupTable_3200_0",  //L3
+                                   "CRVConditions/v6_0/LookupTable_6000_1",  //T1
+                                   "CRVConditions/v6_0/LookupTable_6000_1",  //T2
+                                   "CRVConditions/v6_0/LookupTable_6000_0",  //T3
+                                   "CRVConditions/v6_0/LookupTable_6000_0",  //T4
+                                   "CRVConditions/v6_0/LookupTable_6000_0",  //T5
+                                   "CRVConditions/v6_0/LookupTable_5000_1",  //E1
+                                   "CRVConditions/v6_0/LookupTable_5000_1",  //E2
+                                   "CRVConditions/v6_0/LookupTable_6900_1",  //U
+                                   "CRVConditions/v6_0/LookupTable_5700_0",  //D1
+                                   "CRVConditions/v6_0/LookupTable_2370_1",  //D2
+                                   "CRVConditions/v6_0/LookupTable_2370_1",  //D3
+                                   "CRVConditions/v6_0/LookupTable_5700_0",  //D4
+                                   "CRVConditions/v6_0/LookupTable_2100_1",  //C1
+                                   "CRVConditions/v6_0/LookupTable_1550_1"]  //C2
+
+                                //all measurements were done at 1m away from SiPM with a reference date of 12/2023
+                                //CRV-Top (1.8mm) modules: 39794 - based on comparison between Wideband measurements and fined-tuned simulation
+                                //                         (all counters come from scintillator batch 1)
+                                //CRV-Top (1.4mm) modules: 30442 - based on comparions between UVA measurements of 1.4mm and 1.8mm CRV-Top modules (adjusted for age)
+                                //                         (most counters come from scintillator batch 1)
+                                //                         assuming 3% aging per year
+                                //                         T (1.4mm) measured 2/2022 at 44.5 PEs, 1.83 years to 12/2023, aging factor 0.946, --> 42.1 PEs
+                                //                         T (1.8mm) measured 8/2022 at 57.3 PEs, 1.33 years to 12/2023, aging factor 0.960, --> 55.0 PEs
+                                //                         --> photon yield ratio: 0.765
+                                //CRV-TS modules:          30442 - same as CRV-Top (1.4mm), because all counters come from scintillator batch 1
+                                //CRV-R19-T module:        30442 - same as CRV-Top (1.4mm), because all counters come from scintillator batch 1
+                                //all other modules:       28573 - counters come from scintillator batch 2, with a photon yield ratio of 1.07/1.14
+                                //CRV-U, CRV-TS-Ext:       23811 - reference CRV-Top (1.8mm) was measured at 3.0V overvoltage,
+                                //                         but CRV-U/CRV-TS-Ext will run at 2.5V --> scale to 2.5/3.0
+      scintillationYields       : [28573,28573,30442,28573,28573,28573,  //R1...6
+                                   28573,28573,28573,                    //L1...3
+                                   30442,30442,39794,39794,30442,        //T1...5
+                                   23811,23811,                          //E1,E2
+                                   23811,                                //U
+                                   28573,28573,28573,28573,              //D1...4
+                                   28573,28573]                          //C1...2
+
+      photonYieldScaleFactor                : 0.91  //scale factor applied to photon yields to mimic aging
+                                                    //of 3 years with a rate 3% per year (from 12/2023 to 12/2026)
+                                                    //used in SU2020
+      photonYieldVariationScale             : 1.0   //scale factor for the photon yield variation in the database
+                                                    //-should be kept at 1.0 (i.e. no scaling),
+                                                    // if a database table of measured deviations from a nominal photon yield is used,
+                                                    //-may be changed for testing purposes,
+                                                    // if a database table of a random gaussian distribution is used
+                                                    // (current random table uses a sigma equal to 5% of the nominal photon yied)
+      photonYieldVariationCutoffLow         :-0.2   //the photon yield variation is cut off at 20% below the mean
+      photonYieldVariationCutoffHigh        : 0.2   //the photon yield variation is cut off at 20% above the mean
+                                                    //note: if measured deviations are used, the cutoffs should be set to the maximum values
+      digitizationStart                     : @local::DigitizationStart
+      digitizationEnd                       : @local::DigitizationEnd
+      digitizationStartMargin               : 100.0 //ns  start recording earlier to account for photon travel times and electronics response times
+      numberSamplesNZS                      : @local::NumberSamplesNZS
+      simulateNZS                           : @local::SimulateNZS
+    }
+    CrvSiPMCharges:
+    {
+      module_type                  : CrvSiPMChargeGenerator
+      crvPhotonsModuleLabel        : "CrvPhotons"
+      digitizationStart            : @local::DigitizationStart
+      digitizationEnd              : @local::DigitizationEnd
+      digitizationStartMargin      : 100.0      //ns  start recording earlier to account for electronics response times
+
+      nPixelsX                     : 40
+      nPixelsY                     : 40
+      inactivePixels               : [ [18,18], [18,19], [18,20], [18,21],
+                                       [19,18], [19,19], [19,20], [19,21],
+                                       [20,18], [20,19], [20,20], [20,21],
+                                       [21,18], [21,19], [21,20], [21,21] ]
+      photonMapFileName            : "CRVConditions/v6_0/photonMap.root"
+      overvoltage                  : 3.0        //V
+      timeConstant                 : 13.3       //ns  according to an Hamamatsu example with R_q=150kOhm --> tau=R_q*C=13.3ns
+      capacitance                  : 8.84e-14   //F   capacitance of one pixel according to specs
+
+      AvalancheProbParam1          : 0.607      // = p1
+      AvalancheProbParam2          : 2.7        // = p2
+                                                //Avalanche probability at over voltage v: p1*(1 - exp(-v/p2))
+
+      TrapType0Prob                : 0.0        //0.14 (Paul's number)  ????
+      TrapType1Prob                : 0.0        //0.06 (Paul's number)  ????
+      TrapType0Lifetime            : 5.0        //ns  ????
+      TrapType1Lifetime            : 50.0       //ns  ????
+
+      ThermalRate                  : 1.0e-4     //ns^-1     0.1MHz for entire SiPM
+      CrossTalkProb                : 0.04       //
+
+      useSipmStatusDB              : true       //channel with status bits 0 (not connected) and 2 (no data) will not be simulated. channels with status bit 1 can be ignored in reco.
+
+      numberSamplesNZS             : @local::NumberSamplesNZS
+      simulateNZS                  : @local::SimulateNZS
+    }
+    CrvWaveforms:
+    {
+      module_type                  : CrvWaveformsGenerator
+      crvSiPMChargesModuleLabel    : "CrvSiPMCharges"
+      digitizationStart            : @local::DigitizationStart
+      digitizationEnd              : @local::DigitizationEnd
+      singlePEWaveformFileName     : "Offline/CRVResponse/data/singlePEWaveform_v3.txt"
+      singlePEWaveformPrecision    : 0.5    //0.5 ns
+      singlePEWaveformStretchFactor: 1.047  //1.047 for singlePEWaveform_v3.txt //from comparison with testbeam data
+      singlePEWaveformMaxTime      : 100    //100 ns
+      singlePEReferenceCharge      : 2.652e-13  //2.652e-13 C charge which was used to generate the above 1PE waveform
+                                                //capacitance of one pixel (8.84e-14C) * overvoltage (3.0V)
+      minVoltage                   : 0.0275 //27.5mV (corresponds to 5.5PE)
+      noise                        : 4.0e-4 //0.4mV
+      timeOffsetScale              : 1.0    //scale factor for the time offsets from the database
+                                            //examples:
+                                            //-if a database table of measured time offset is used,
+                                            // the scale factor should be set to 1.0 (i.e. no scaling)
+                                            //-if a database table of a random gaussian distribution of time offsets
+                                            // with a sigma equal to 1ns is used and one wants to run a simulation with a sigma of 0.5ns,
+                                            // then the scale factor should be set to 0.5 (i.e. scaled to a sigma of 50%)
+      timeOffsetCutoffLow          :-3.0    //the time offsets are cut off at -3ns
+      timeOffsetCutoffHigh         : 3.0    //the time offsets are cut off at +3ns
+                                            //note: if measured time offsets are used, the cutoffs should be set to the maximum values
+      useTimeOffsetDB              : false  //will be applied at reco
+      numberSamplesZS              : 12
+      numberSamplesNZS             : @local::NumberSamplesNZS
+      simulateNZS                  : @local::SimulateNZS
+      prescalingFactorNZS          : 10
+    }
+    CrvDigi:
+    {
+      module_type                  : CrvDigitizer
+      crvWaveformsModuleLabel      : "CrvWaveforms"
+      ADCconversionFactor          : 2300      //2300 ADC/V
+      pedestal                     : 100       //ADC
+      simulateNZS                  : @local::SimulateNZS
+    }
+    CrvCoincidenceClusterMatchMC:
+    {
+      module_type                            : CrvCoincidenceClusterMatchMC
+      crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
+      crvWaveformsModuleLabel                : "CrvWaveforms"
+      doNtuples                              : false
+    }
+    CrvPlot:
+    {
+      module_type                    : CrvPlot
+      events                         : @nil
+      crvBarIndices                  : @nil
+      crvPhotonsModuleLabel          : CrvPhotons
+      crvSiPMChargesModuleLabel      : CrvSiPMCharges
+      crvDigiModuleLabel             : CrvDigi
+      crvRecoPulsesModuleLabel       : CrvRecoPulses
+      timeStart                      : 500
+      timeEnd                        : 1600
+    }
+
+    # Makes one big Assns for mutiple CrvCoincidenceCluster collections
+    CrvCoincidenceClusterMCAssns : {
+      module_type : "MakeCrvCoincidenceClusterMCAssns"
+      crvCoincidenceTags : [ "CrvCoincidenceClusterFinder" ]
+      crvCoincidenceMCTags : [ "CrvCoincidenceClusterMatchMC" ]
+    }
+
+
+CrvDAQPackage :
+{
+   producers :
+   {
+     CrvPhotons                  : @local::CrvPhotons
+     CrvSiPMCharges              : @local::CrvSiPMCharges
+     CrvWaveforms                : @local::CrvWaveforms
+     CrvDigi                     : @local::CrvDigi
+   }
+   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi ] //for backward compatibility
+   CrvDAQSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi ]
+}
+
+CrvRecoMCPackage :
+{
+   producers :
+   {
+     @table::CrvRecoPackage.producers
+     CrvCoincidenceClusterMatchMC : @local::CrvCoincidenceClusterMatchMC
+     CrvCoincidenceClusterMCAssns : @local::CrvCoincidenceClusterMCAssns
+   }
+   CrvRecoMCSequence : [ @sequence::CrvRecoPackage.CrvRecoSequence, CrvCoincidenceClusterMatchMC ]
+   CrvMCAssnsSequence : [ CrvCoincidenceClusterMCAssns ] # want to run this after compression in Production so put in a separate sequence
+}
+
+CrvResponsePackage :
+{
+   producers :
+   {
+     @table::CrvDAQPackage.producers
+     @table::CrvRecoMCPackage.producers
+   }
+   CrvResponseSequence : [ @sequence::CrvDAQPackage.CrvDAQSequence, @sequence::CrvRecoMCPackage.CrvRecoMCSequence ]
+}
+
+END_PROLOG

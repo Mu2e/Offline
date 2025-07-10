@@ -61,6 +61,8 @@ namespace mu2e {
       fhicl::Atom<float>           isoRad                 {Name("isoRad"               ), Comment("for isolation cut"           )  };
       fhicl::Atom<int>             isoMinHitsNear         {Name("isoMinHitsNear"       ), Comment("#hits threshold for iso cut" )  };
       fhicl::Atom<bool>            doAverageFlag          {Name("doAverageFlag"        ), Comment("to average out hits or not"  )  };
+      fhicl::Atom<bool>            doEDepFlag             {Name("doEDepFlag"           ), Comment("avoid protons in tripleting" )  };
+      fhicl::Atom<float>           eDepFlagThresh         {Name("eDepFlagThresh"       ), Comment("threshold to set eDep flag"  )  };
       fhicl::Atom<float>           minDistCut             {Name("minDistCut"           ), Comment("for averaging out points"    )  };
       fhicl::Atom<float>           minTripletSeedZ        {Name("minTripletSeedZ"      ), Comment("minimum z for triplet seed"  )  };
       fhicl::Atom<float>           minTripletDz           {Name("minTripletDz"         ), Comment("min Z dist btwn 2 trip pts"  )  };
@@ -106,6 +108,7 @@ namespace mu2e {
       bool    used = false; // whether or not hit is used in fits
       bool    isolated = false;
       bool    averagedOut = false;
+      bool    highEDep = false; // avoid hits in tripleting that are most likely protons
       bool    notOnLine = true;
       bool    uselessTripletSeed = false;
       bool    notOnSegment = true;
@@ -172,6 +175,8 @@ namespace mu2e {
     float    _isoRad;
     int      _isoMinHitsNear;
     bool     _doAverageFlag;
+    bool     _doEDepFlag;
+    float    _eDepFlagThresh;
     float    _minDistCut;
     float    _minTripletSeedZ;
     float    _minTripletDz;
@@ -299,6 +304,8 @@ namespace mu2e {
     _isoRad                        (config().isoRad()                                ),
     _isoMinHitsNear                (config().isoMinHitsNear()                        ),
     _doAverageFlag                 (config().doAverageFlag()                         ),
+    _doEDepFlag                    (config().doEDepFlag()                            ),
+    _eDepFlagThresh                (config().eDepFlagThresh()                        ),
     _minDistCut                    (config().minDistCut()                            ),
     _minTripletSeedZ               (config().minTripletSeedZ()                       ),
     _minTripletDz                  (config().minTripletDz()                          ),
@@ -630,29 +637,34 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::setFlags() {
 
-    // do isolation and average flagging
-    if (_doIsolationFlag == true || _doAverageFlag == true) {
+    // do isolation, average, and eDepFlag flagging
+    if (_doIsolationFlag == true || _doAverageFlag == true || _doEDepFlag == true) {
       for (size_t i = 0; i < _tcHits.size(); i++) {
         if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) { continue; }
-        int nHitsNear = 0;
-        XYZVectorF seedPos = getPos(i);
-        for (size_t j = 0; j < _tcHits.size(); j++) {
-          if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice < 0) { continue; }
-          if (j == i) { continue; }
-          XYZVectorF testPos = getPos(j);
-          // do isolation flagging
-          if (_doIsolationFlag == true) {
-            if ((seedPos-testPos).Perp2() < _isoRad * _isoRad) { nHitsNear++; }
-            if (nHitsNear < _isoMinHitsNear) { _tcHits[i].isolated = true; }
-            else { _tcHits[i].isolated = false; }
-          }
-          // do averaging out
-          if (_doAverageFlag == true) {
-            if (_tcHits[i].averagedOut == true) { continue; }
-            if (_tcHits[j].averagedOut == true) { continue; }
-            if ((seedPos-testPos).Perp2() <= _minDistCut * _minDistCut) { _tcHits[j].averagedOut = true; }
-          }
-        }
+        int hitIndice = _tcHits[i].hitIndice;
+        float hitEnergy = _chColl->at(hitIndice).energyDep();
+        if (_doEDepFlag == true && hitEnergy > _eDepFlagThresh) { _tcHits[i].highEDep = true; }
+        if (_doIsolationFlag == true || _doAverageFlag == true) {
+          int nHitsNear = 0;
+          XYZVectorF seedPos = getPos(i);
+          for (size_t j = 0; j < _tcHits.size(); j++) {
+            if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice < 0) { continue; }
+            if (j == i) { continue; }
+            XYZVectorF testPos = getPos(j);
+            // do isolation flagging
+            if (_doIsolationFlag == true) {
+              if ((seedPos-testPos).Perp2() < _isoRad * _isoRad) { nHitsNear++; }
+              if (nHitsNear < _isoMinHitsNear) { _tcHits[i].isolated = true; }
+              else { _tcHits[i].isolated = false; }
+            }
+            // do averaging out
+            if (_doAverageFlag == true) {
+              if (_tcHits[i].averagedOut == true) { continue; }
+              if (_tcHits[j].averagedOut == true) { continue; }
+              if ((seedPos-testPos).Perp2() <= _minDistCut * _minDistCut) { _tcHits[j].averagedOut = true; }
+           }
+         }
+       }
       }
     }
   }
@@ -662,10 +674,9 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::resetFlags() {
 
-    // first flag hits that are isolated
+    // reset flags that need to be reset before next helix search
     for (size_t i = 0; i < _tcHits.size(); i++) {
       if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::STOPPINGTARGET) { continue; }
-      _tcHits[i].isolated = false;
       _tcHits[i].averagedOut = false;
       _tcHits[i].notOnLine = true;
       _tcHits[i].notOnSegment = true;
@@ -757,7 +768,7 @@ namespace mu2e {
               return;
             } else {
               findAnotherHelix = true;
-              if (_doIsolationFlag == true || _doAverageFlag == true) { resetFlags(); }
+              if (_doAverageFlag == true) { resetFlags(); }
               return;
             }
           }
@@ -776,6 +787,8 @@ namespace mu2e {
     if (_tcHits[tcHitsIndex].uselessTripletSeed == true) { return false; }
     if (_doIsolationFlag == true && _tcHits[tcHitsIndex].isolated == true) { return false; }
     if (_doAverageFlag == true && _tcHits[tcHitsIndex].averagedOut == true) { return false; }
+    if (_doEDepFlag == true && _tcHits[tcHitsIndex].highEDep == true) { return false; }
+
 
     return true;
   }

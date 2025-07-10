@@ -1,47 +1,62 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_firstFloor_Wall.ccl
-
 string building.firstFloor.wall.name     = "firstFloorWall";
-
 string building.firstFloor.wall.material = "CONCRETE_MARS";
-
-double building.firstFloor.wall.offsetFromMu2eOrigin.x   = 947.4;
-double building.firstFloor.wall.offsetFromFloorSurface.y = 9144.0027;
-double building.firstFloor.wall.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.firstFloor.wall.yHalfThickness           = 1371.6027;
-
+double building.firstFloor.wall.offsetFromMu2eOrigin.x   = 947.40;
+double building.firstFloor.wall.offsetFromFloorSurface.y = 8305.80;
+double building.firstFloor.wall.offsetFromMu2eOrigin.z   = -3581.40;
+double building.firstFloor.wall.yHalfThickness           = 533.40;
 vector<double> building.firstFloor.wall.xPositions = {
-  -2921,   // a
-  -2286,   // b
-  -2286,   // c
-  7975.6,   // d
-  7975.6,   // e
-  13233.4,   // p1 northwest pillar
-  13233.4,   // p2
-  14046.2,   // p3
-  14046.2,    // p4
-  21165.18,   // d1
-  21165.18,   // d2
-  -2921   // h
+-2921.00, // 0
+-2921.00, // 1
+45745.40, // 2
+45745.40, // 3
+44932.60, // 4
+44932.60, // 5
+37820.60, // 6
+37820.60, // 7
+37007.80, // 8
+37007.80, // 9
+29895.80, // 10
+29895.80, // 11
+29083.00, // 12
+29083.00, // 13
+21971.00, // 14
+21971.00, // 15
+21158.20, // 16
+21158.20, // 17
+14046.20, // 18
+14046.20, // 19
+13233.40, // 20
+13233.40, // 21
+7975.60, // 22
+7975.60, // 23
+-2286.00, // 24
+-2286.00 // 25
 };
-
 vector<double> building.firstFloor.wall.yPositions = {
-  -4292.6,   // a
-  -4292.6,   // b
-  609.6,   // c
-  609.6,   // d
-  2032,   // e
-  2032,   // p1 northwest pillar
-  1524.0,   // p2
-  1524.0,   // p3
-  2032,   // p4
-  2032,   // f
-  2438.4,   // g
-  2438.4   // h
+-4292.55, // 0
+2438.35, // 1
+2438.35, // 2
+1523.95, // 3
+1523.95, // 4
+2031.95, // 5
+2031.95, // 6
+1523.95, // 7
+1523.95, // 8
+2031.95, // 9
+2031.95, // 10
+1523.95, // 11
+1523.95, // 12
+2031.95, // 13
+2031.95, // 14
+1523.95, // 15
+1523.95, // 16
+2031.95, // 17
+2031.95, // 18
+1523.95, // 19
+1523.95, // 20
+2031.95, // 21
+2031.95, // 22
+609.65, // 23
+609.65, // 24
+-4292.55 // 25
 };
-
-// Local Variables:
-// mode:c++
-// End:

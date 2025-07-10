@@ -41,7 +41,7 @@ namespace mu2e {
       cout << "CalCalibMaker::fromDb making CalCalib\n";
     }
 
-    size_t nChan = CaloConst::_nChannel;
+    size_t nChan = CaloConst::_nCrystalChannel;
 
     if (_config.verbose()) {
       cout << "CalCalibMaker::fromDb checking for " << nChan << " channels\n";

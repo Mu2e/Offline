@@ -21,15 +21,15 @@ cet_build_plugin(ArtBinaryPacketsFromDigis art::module
       Offline::SeedService
 )
 
-cet_build_plugin(ProcessDTCAndCFOEvents art::module
-    REG_SOURCE src/ProcessDTCAndCFOEvents_module.cc
+cet_build_plugin(EventHeaderFromCFOFragment art::module
+    REG_SOURCE src/EventHeaderFromCFOFragment_module.cc
     LIBRARIES REG
       Offline::DAQ
-
 )
 
-cet_build_plugin(CaloHitsFromDataDecoders art::module
-    REG_SOURCE src/CaloHitsFromDataDecoders_module.cc
+
+cet_build_plugin(CaloHitsFromDTCEvents art::module
+    REG_SOURCE src/CaloHitsFromDTCEvents_module.cc
     LIBRARIES REG
       Offline::DAQ
 
@@ -38,8 +38,8 @@ cet_build_plugin(CaloHitsFromDataDecoders art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(CaloDigisFromDataDecoders art::module
-    REG_SOURCE src/CaloDigisFromDataDecoders_module.cc
+cet_build_plugin(CaloDigisFromDTCEvents art::module
+    REG_SOURCE src/CaloDigisFromDTCEvents_module.cc
     LIBRARIES REG
       Offline::DAQ
 
@@ -50,37 +50,21 @@ cet_build_plugin(CaloDigisFromDataDecoders art::module
       artdaq-core-mu2e::Data_dict
 )
 
-cet_build_plugin(CRVDigisFromDataDecoders art::module
-    REG_SOURCE src/CRVDigisFromDataDecoders_module.cc
+cet_build_plugin(DummyLumiInfoProducer art::module
+    REG_SOURCE src/DummyLumiInfoProducer_module.cc
     LIBRARIES REG
       Offline::DAQ
-
-      Offline::CRVConditions
-      Offline::ProditionsService
       Offline::RecoDataProducts
-      artdaq-core-mu2e::Data
-      artdaq-core-mu2e::Data_dict
 )
 
-cet_build_plugin(CRVGlobalRunDataFromDataDecoders art::module
-    REG_SOURCE src/CRVGlobalRunDataFromDataDecoders_module.cc
+cet_build_plugin(LumiInfoAna art::module
+    REG_SOURCE src/LumiInfoAna_module.cc
     LIBRARIES REG
-      Offline::DAQ
-
-      Offline::CRVConditions
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-      artdaq-core-mu2e::Data
-      artdaq-core-mu2e::Data_dict
-)
-
-cet_build_plugin(DataDecodersAna art::module
-    REG_SOURCE src/DataDecodersAna_module.cc
-    LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::DAQ
-      Offline::DataProducts
-      ROOT::Hist
+    Offline::DAQ
+    Offline::RecoDataProducts
+    art_root_io::TFileService_service
+    artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Data_dict
 )
 
 cet_build_plugin(PrefetchDAQData art::module
@@ -92,33 +76,6 @@ cet_build_plugin(PrefetchDAQData art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(ComboHitsFromDataDecoders art::module
-    REG_SOURCE src/ComboHitsFromDataDecoders_module.cc
-    LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::DAQ
-
-      Offline::ConditionsBase
-      Offline::ConditionsService
-      Offline::ConfigTools
-      Offline::DataProducts
-      Offline::GeometryService
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-      Offline::TrackerConditions
-      Offline::TrackerGeom
-      Offline::TrkHitReco
-)
-
-cet_build_plugin(StrawDigisFromDataDecoders art::module
-    REG_SOURCE src/StrawDigisFromDataDecoders_module.cc
-    LIBRARIES REG
-      Offline::DAQ
-
-      Offline::DataProducts
-      Offline::RecoDataProducts
-)
-
 cet_build_plugin(STMWaveformDigisFromFragments art::module
     REG_SOURCE src/STMWaveformDigisFromFragments_module.cc
     LIBRARIES REG
@@ -127,6 +84,41 @@ cet_build_plugin(STMWaveformDigisFromFragments art::module
       Offline::DataProducts
       Offline::RecoDataProducts
       BTrk_difAlgebra
+)
+
+cet_build_plugin(StrawDigisFromArtdaqFragments art::module
+  REG_SOURCE src/StrawDigisFromArtdaqFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::DataProducts
+  Offline::RecoDataProducts
+)
+
+cet_build_plugin(CrvDigisFromArtdaqFragments art::module
+  REG_SOURCE src/CrvDigisFromArtdaqFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::DataProducts
+  Offline::RecoDataProducts
+  artdaq-core-mu2e::Data
+  artdaq-core-mu2e::Overlays
+)
+
+cet_build_plugin(CrvGRdataFromArtdaqFragments art::module
+  REG_SOURCE src/CrvGRdataFromArtdaqFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::DataProducts
+  Offline::RecoDataProducts
+  artdaq-core-mu2e::Data
+  artdaq-core-mu2e::Overlays
+)
+
+cet_build_plugin(MTPHitsFromDTCEvents art::module
+    REG_SOURCE src/MTPHitsFromDTCEvents_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+      Offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

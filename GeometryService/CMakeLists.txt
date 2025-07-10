@@ -11,6 +11,7 @@ cet_make_library(
       src/DUSAFMu2eConverter.cc
       src/ElectronicRackMaker.cc
       src/ExtMonFNALBuildingMaker.cc
+      src/ExtMonFNALFilterMaker.cc
       src/ExtMonFNALMagnetMaker.cc
       src/ExtMonFNAL_Maker.cc
       src/ExtShieldDownstreamMaker.cc
