@@ -205,8 +205,8 @@ cet_build_plugin(ExtMonFNALRoomGenerator art::module
       Offline::SeedService
 )
 
-cet_build_plugin(FlatMuonDaughterGenerator art::module
-    REG_SOURCE src/FlatMuonDaughterGenerator_module.cc
+cet_build_plugin(FlatGeneratorFromStoppedMuon art::module
+    REG_SOURCE src/FlatGeneratorFromStoppedMuon_module.cc
     LIBRARIES REG
       Offline::EventGenerator
       
