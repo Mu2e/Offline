@@ -78,7 +78,8 @@ namespace mu2e {
       ProcessCode::mu2ePienu,
       ProcessCode::mu2eGammaConversion,
       ProcessCode::mu2eAntiproton,
-      ProcessCode::mu2eFlatMuMinus };
+      ProcessCode::mu2eFlatMuMinus,
+      ProcessCode::mu2eFlatMuPlus };
     for(auto pbeamcode : pbeamcodes){
       if(pcode._id == pbeamcode) return true;
     }
