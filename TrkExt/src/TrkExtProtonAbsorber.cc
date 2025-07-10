@@ -12,7 +12,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Offline/TrkExt/inc/TrkExtProtonAbsorber.hh"
-#include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "Offline/BeamlineGeom/inc/ProtonAbsorber.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
@@ -47,7 +47,7 @@ namespace mu2e {
       return;
     }
 
-    GeomHandle<MECOStyleProtonAbsorber> pabs;
+    GeomHandle<ProtonAbsorber> pabs;
     if (!(pabs->isAvailable(0)) && !(pabs->isAvailable(0)) ) {
       cerr << "TrkExtProtonAbsorber warning : pabs1 & pabs2 not avaliable" << endl;
       valid = false;
