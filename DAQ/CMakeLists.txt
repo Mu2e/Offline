@@ -104,6 +104,16 @@ cet_build_plugin(CrvDigisFromArtdaqFragments art::module
   artdaq-core-mu2e::Overlays
 )
 
+cet_build_plugin(CrvDigisFromArtdaqFragmentsFEBII art::module
+  REG_SOURCE src/CrvDigisFromArtdaqFragmentsFEBII_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::DataProducts
+  Offline::RecoDataProducts
+  artdaq-core-mu2e::Data
+  artdaq-core-mu2e::Overlays
+)
+
 cet_build_plugin(CrvGRdataFromArtdaqFragments art::module
   REG_SOURCE src/CrvGRdataFromArtdaqFragments_module.cc
   LIBRARIES REG
@@ -113,6 +123,10 @@ cet_build_plugin(CrvGRdataFromArtdaqFragments art::module
   artdaq-core-mu2e::Data
   artdaq-core-mu2e::Overlays
 )
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test/generateCrvDigiFromFragment.fcl   ${CURRENT_BINARY_DIR} test/generateCrvDigiFromFragment.fcl  )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test/generateCrvDigiFromFragmentFEBII.fcl   ${CURRENT_BINARY_DIR} test/generateCrvDigiFromFragmentFEBII.fcl  )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test/generateCrvGlobalRunDataFromFragments.fcl   ${CURRENT_BINARY_DIR} test/generateCrvGlobalRunDataFromFragments.fcl  )
 
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
