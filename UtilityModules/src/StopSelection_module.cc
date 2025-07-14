@@ -104,6 +104,7 @@ namespace mu2e {
     int diagLevel_;
     StopCuts cuts_;
     SumOfWeights total_;
+    SumOfWeights sampled_;
     SumOfWeights selected_;
     int nempty_;
 
@@ -131,7 +132,8 @@ namespace mu2e {
     if(config().cuts()) cuts_ = StopCuts(*config().cuts());
     // if some decays were turned off, produce an event weight
     if(!decayOffPdgs_.empty()) produces<mu2e::EventWeight>();
-    produces<SumOfWeights, art::InSubRun>();
+    produces<SumOfWeights, art::InSubRun>("total");
+    produces<SumOfWeights, art::InSubRun>("sampled");
     if(diagLevel_ > 0 && acceptReject_) {
       printf("[StopSelection::%s] Performing accept/rejection selection with a maximum weight of %.3g\n", __func__, maxWeight_);
     }
@@ -227,6 +229,8 @@ namespace mu2e {
         weight = std::exp(-tau);
       }
       total_.add(weight);
+      if(istop > 0 && !acceptReject_) continue; // if not doing accept reject, don't need to test more, just store their weights
+      sampled_.add(weight);
 
       // check if doing accept/reject
       if(acceptReject_) {
@@ -238,9 +242,8 @@ namespace mu2e {
       addSim(sim, out_sims, out_pid, out_getter);
 
       selected_.add(weight);
-      if(!acceptReject_) break; // no need to check each stop if not doing accept/reject
     }
-    if(out_sims->size() == 0) ++nempty_;
+    if(nstops == 0) ++nempty_;
 
     // for every input step point, add it to the output if relevant, with remapping
     if(out_sims->size() > 0) {
@@ -273,10 +276,11 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------------------------------------------
   bool StopSelection::endSubRun(art::SubRun& sr) {
-    sr.put(std::unique_ptr<SumOfWeights>(new SumOfWeights(total_.sum(), total_.count())), art::fullSubRun());
+    sr.put(std::unique_ptr<SumOfWeights>(new SumOfWeights(total_.sum(), total_.count())), "total", art::fullSubRun());
+    sr.put(std::unique_ptr<SumOfWeights>(new SumOfWeights(sampled_.sum(), sampled_.count())), "sampled", art::fullSubRun());
     if(diagLevel_ > 0) {
-      printf("[StopSelection::%s] Selected %lu stops with a sum of weights of %.5g, %lu total events with %.5g sum of weights, %i empty events\n", __func__,
-             selected_.count(), selected_.sum(), total_.count(), total_.sum(), nempty_);
+      printf("[StopSelection::%s] Selected %lu stops with a sum of weights of %.5g, %lu total events with %.5g sum of weights, sampled %lu events with %.5g sum of weights, %i empty events\n", __func__,
+             selected_.count(), selected_.sum(), total_.count(), total_.sum(), sampled_.count(), sampled_.sum(), nempty_);
     }
     return true;
   }
