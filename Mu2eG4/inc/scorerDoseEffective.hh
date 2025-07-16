@@ -5,6 +5,7 @@
 // Author BE
 //
 #include "Offline/Mu2eG4/inc/scorerFTDConverter.hh"
+#include "CLHEP/Random/RandFlat.h"
 
 #include "G4VPrimitiveScorer.hh"
 #include "G4THitsMap.hh"
@@ -15,6 +16,8 @@ namespace mu2e {
 
   class scorerDoseEffective : public G4VPrimitiveScorer
   {
+     using vectorPairF = std::vector<std::pair<float,float>>;
+
      public:
        scorerDoseEffective(const G4String& name, G4int depth = 0);
        ~scorerDoseEffective() override = default;
@@ -22,8 +25,6 @@ namespace mu2e {
        void Initialize(G4HCofThisEvent*) override;
        void clear()                      override;
        void PrintAll();
-
-       inline void SetWeighted(G4bool flg = true) {weighted = flg;}
 
 
      protected:
@@ -33,13 +34,14 @@ namespace mu2e {
 
 
      private:
-      G4int                 HCID{-1};
-      G4THitsMap<G4double>* EvtMap{nullptr};
-      G4bool                weighted{false};
-      G4int                 fDepthi;
-      G4int                 fDepthj;
-      G4int                 fDepthk;
-      scorerFTDConverter    FTDConverter;
+
+
+      G4int                 HCID_{-1};
+      G4THitsMap<G4double>* EvtMap_{nullptr};
+      G4int                 fDepthi_;
+      G4int                 fDepthj_;
+      G4int                 fDepthk_;
+      scorerFTDConverter    FTDConverter_;
   };
 
 }

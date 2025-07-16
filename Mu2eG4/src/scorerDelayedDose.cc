@@ -1,5 +1,7 @@
-#include "Offline/Mu2eG4/inc/scorerDoseEffective.hh"
+#include "Offline/Mu2eG4/inc/scorerDelayedDose.hh"
 #include "Offline/Mu2eG4/inc/scorerFTDConverter.hh"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "Offline/SeedService/inc/SeedService.hh"
 #include "CLHEP/Random/RandFlat.h"
 
 #include "G4SystemOfUnits.hh"
@@ -10,33 +12,64 @@
 #include "G4UnitsTable.hh"
 #include "G4VProcess.hh"
 
-#include "G4Box.hh"
-
 
 
 namespace mu2e {
-  scorerDoseEffective::scorerDoseEffective(const G4String& name, G4int depth)
+  scorerDelayedDose::scorerDelayedDose(const G4String& name, const Mu2eG4Config::Physics& configPhysics, G4int depth)
     : G4VPrimitiveScorer(name,depth),
-      fDepthi_(2),
-      fDepthj_(1),
-      fDepthk_(0),
-      FTDConverter_("ISO")  {}
+      fDepthi_       (2),
+      fDepthj_       (1),
+      fDepthk_       (0),
+      FTDConverter_  ("ISO"),
+      isBiased_      (configPhysics.radiationVRmode())
+  {
+     readTimeProfile(configPhysics.coolTimeProfileRad());
+  }
 
+  void scorerDelayedDose::readTimeProfile(std::string filename)
+  {
+     bin_.clear();
+     profile_.clear();
 
-  void scorerDoseEffective::Initialize(G4HCofThisEvent* HCE)
+     std::ifstream infile (filename, std::ios::in);
+     if (!infile){
+        throw cet::exception("INIT")<<"scorerDelayedDose::readTimeProfile "
+                                    <<filename<<" does not exist\n";
+     }
+
+     G4double bin(0.), flux(0.),rsum(0.);
+     while (infile >> bin >> flux) {
+       bin_.push_back(bin * s);
+       rsum += flux;
+       profile_.push_back(flux);
+     }
+
+     if (bin_.size()<2) {
+        throw cet::exception("INIT")<<"scorerDelayedDose::readTimeProfile "
+                                    <<filename<<" has wrong format, less than 2 entries\n";
+     }
+
+     for (size_t i=1;i<bin_.size();++i){
+       if (profile_[i-1]>1e-6) totalCoolTime_ += (bin_[i]-bin_[i-1])/s;
+     }
+  }
+
+  void scorerDelayedDose::Initialize(G4HCofThisEvent* HCE)
   {
      EvtMap_ = new G4THitsMap<G4double>(detector->GetName(), GetName());
      if (HCID_ < 0) HCID_ = GetCollectionID(0);
      HCE->AddHitsCollection(HCID_, (G4VHitsCollection*)EvtMap_);
   }
 
-  void scorerDoseEffective::clear() { EvtMap_->clear(); }
+  void scorerDelayedDose::clear() { EvtMap_->clear(); }
 
 
-  G4bool scorerDoseEffective::ProcessHits(G4Step* aStep, G4TouchableHistory*)
+  G4bool scorerDelayedDose::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   {
     G4double stepLength = aStep->GetStepLength();
     if (stepLength <1e-12) return false;
+
+    if (!IsInDecayWindow(aStep->GetPreStepPoint()->GetGlobalTime())) return false;
 
     G4int idx  = ((G4TouchableHistory*) (aStep->GetPreStepPoint()->GetTouchable()))
                   ->GetReplicaNumber(indexDepth);
@@ -44,12 +77,14 @@ namespace mu2e {
     G4double CellFlux    = stepLength / cubicVolume;
     CellFlux            *= aStep->GetPreStepPoint()->GetWeight();
 
-
     //table lookup
     int pdgCode      = aStep->GetTrack()->GetDefinition()->GetPDGEncoding();
     double energy    = aStep->GetPreStepPoint()->GetKineticEnergy();
     double FTDfactor = FTDConverter_.evaluate(pdgCode,energy);
     CellFlux *= FTDfactor;
+
+    //If we run in biased mode, normalize the flux in seconds
+    if (isBiased_) CellFlux /= totalCoolTime_;
 
     G4int index = GetIndex(aStep);
     EvtMap_->add(index, CellFlux);
@@ -57,14 +92,23 @@ namespace mu2e {
     return true;
   }
 
-  G4double scorerDoseEffective::ComputeVolume(G4Step* aStep, G4int idx)
+
+  G4bool scorerDelayedDose::IsInDecayWindow(G4double time)
+  {
+    for (size_t i=1;i<bin_.size();++i){
+      if (time > bin_[i-1] && time < bin_[i] && profile_[i-1]>1e-6) return true;
+    }
+    return false;
+  }
+
+  G4double scorerDelayedDose::ComputeVolume(G4Step* aStep, G4int idx)
   {
      G4VSolid* solid = ComputeSolid(aStep, idx);
      assert(solid);
      return solid->GetCubicVolume();
   }
 
-  G4int scorerDoseEffective::GetIndex(G4Step* aStep)
+  G4int scorerDelayedDose::GetIndex(G4Step* aStep)
   {
     const G4VTouchable* touchable = aStep->GetPreStepPoint()->GetTouchable();
     G4int i = touchable->GetReplicaNumber(fDepthi_);
@@ -74,7 +118,7 @@ namespace mu2e {
   }
 
 
-  void scorerDoseEffective::PrintAll()
+  void scorerDelayedDose::PrintAll()
   {
     G4cout << " MultiFunctionalDet  " << detector->GetName() << G4endl;
     G4cout << " PrimitiveScorer " << GetName() << G4endl;
@@ -87,7 +131,4 @@ namespace mu2e {
              << G4endl;
     }
   }
-
-
 }
-

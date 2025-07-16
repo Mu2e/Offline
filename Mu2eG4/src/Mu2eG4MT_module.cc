@@ -26,6 +26,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 #include "Offline/Mu2eG4/inc/validGeometryOrThrow.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4ScoringManager.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 // Data products that will be produced by this module.
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
@@ -35,6 +36,7 @@
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
 
 // From art and its tool chain.
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
@@ -164,7 +166,8 @@ namespace mu2e {
     simStage_(-1u),
 
     masterThread(std::make_unique<MTMasterThread>(pars(),mu2elimits_ )),
-    _scorer(std::make_unique<Mu2eG4ScoringManager>(G4ScoringManager::GetScoringManager(), conf_.scoring())),
+    _scorer(std::make_unique<Mu2eG4ScoringManager>(G4ScoringManager::GetScoringManager(),
+                                                   conf_.scoring(),conf_.physics())),
 
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),

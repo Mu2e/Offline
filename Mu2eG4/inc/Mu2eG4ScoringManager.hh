@@ -20,12 +20,13 @@ namespace mu2e {
     public:
       enum class ScorerCode{CellFlux, DoseDeposit, EnergyDeposit, FlatSurfaceFlux,
                             TrackCounter, PassageCellFlux, VolumeFlux,
-                            DoseEffective,Unknown};
+                            DoseEffective,DelayedDose,Unknown};
       enum class ParticleCode{Electron, Pion, Proton, Neutron, Photon, Unknown};
 
 
     public:
-      Mu2eG4ScoringManager(G4ScoringManager* fSMan, const Mu2eG4Config::Scoring& config);
+      Mu2eG4ScoringManager(G4ScoringManager* fSMan, const Mu2eG4Config::Scoring& configScoring,
+                           const Mu2eG4Config::Physics& configPhysics);
      ~Mu2eG4ScoringManager() = default;
 
       void initialize();
@@ -38,6 +39,7 @@ namespace mu2e {
       ParticleCode hashParticle(const G4String& str);
 
       G4ScoringManager*        fSMan_;     //non-owning G4 pointer
+      Mu2eG4Config::Physics    configPhysics_;
       bool                     enabled_;
       std::vector<std::string> meshNames_;
       std::vector<std::string> scorerNames_;

@@ -125,6 +125,15 @@ namespace mu2e {
       fhicl::Atom<bool> decayMuonsWithSpin {Name("decayMuonsWithSpin"), false};
       fhicl::Atom<double> minRangeCut {Name("minRangeCut")};
 
+fhicl::Atom<std::string> beamTimeProfileRad {Name("beamTimeProfileRad"), Comment("Beam time profile for radiation studies")};
+fhicl::Atom<std::string> coolTimeProfileRad {Name("coolTimeProfileRad"), Comment("Cool off time profile for radiation studies")};
+fhicl::Atom<bool>   radiationVRmode {Name("radiationVRmode"), Comment("Run G4RadiationDecay in variance reduction mode"),false};
+fhicl::Atom<bool>   radiationBRBias {Name("radiationBRBias"), Comment("Bias BR in variance reduction mode"),false};
+fhicl::Atom<int>    radiationNsplit {Name("radiationNsplit"), Comment("Number nucleus split in variance reduction mode"),1};
+fhicl::Atom<double> radiationHLT    {Name("radiationHLT"),    Comment("Half-life threshold for isomer in variance reduction mode"),1e60};
+
+
+
 
       fhicl::Atom<bool> setMuHadLateralDisplacement {Name("setMuHadLateralDisplacement"), false};
 

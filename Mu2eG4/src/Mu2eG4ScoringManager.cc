@@ -7,7 +7,7 @@
 #include <cstdio>
 
 // Framework includes
-#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
@@ -21,6 +21,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4ScoringManager.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4ScoreWriter.hh"
 #include "Offline/Mu2eG4/inc/scorerDoseEffective.hh"
+#include "Offline/Mu2eG4/inc/scorerDelayedDose.hh"
 #include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 
 #include "G4ScoringManager.hh"
@@ -45,20 +46,23 @@
 
 namespace mu2e {
 
-  Mu2eG4ScoringManager::Mu2eG4ScoringManager(G4ScoringManager* fSMan, const Mu2eG4Config::Scoring& config):
+  Mu2eG4ScoringManager::Mu2eG4ScoringManager(G4ScoringManager* fSMan,
+                                             const Mu2eG4Config::Scoring& configScore,
+                                             const Mu2eG4Config::Physics& configPhysics):
      fSMan_(fSMan),
-     enabled_(config.enabled()),
-     meshNames_(config.meshNames()),
-     scorerNames_(config.scorerNames()),
+     configPhysics_(configPhysics),
+     enabled_(configScore.enabled()),
+     meshNames_(configScore.meshNames()),
+     scorerNames_(configScore.scorerNames()),
      writeFile_(false),
      fileDirectory_("")
   {
-    config.writeFile(writeFile_);
-    config.fileDirectory(fileDirectory_);
+    configScore.writeFile(writeFile_);
+    configScore.fileDirectory(fileDirectory_);
 
     if (enabled_ && (meshNames_.empty() || scorerNames_.empty()))
-       throw cet::exception("BADINPUT")<<"Mu2eG4ScoringManager: scoring requires at least one mesh name and one scorer name"
-                                       << std::endl;
+       throw cet::exception("BADINPUT")<<"Mu2eG4ScoringManager: scoring requires at least one "<<
+                                         "mesh name and one scorer name"<< std::endl;
   }
 
 
@@ -130,11 +134,14 @@ namespace mu2e {
           case ScorerCode::DoseEffective:
               mesh->SetPrimitiveScorer(new scorerDoseEffective(psName,1));
               break;
+          case ScorerCode::DelayedDose:
+              mesh->SetPrimitiveScorer(new scorerDelayedDose(psName,configPhysics_,1));
+              break;
           default:
              throw cet::exception("BADINPUT")<<"Mu2eG4ScoringManager: unsupported scorer "<<psName<<". "
                                              <<"Choose among CellFlux, DoseDeposit, EnergyDeposit, "
                                              <<"FlatSurfaceFlux, TrackCounter, PassageCellFlux, VolumeFlux, "
-                                             <<"DoseEffective \n"<< std::endl;
+                                             <<"DoseEffective DelayedDose\n"<< std::endl;
         }
 
         //optionaly add a particle filter
@@ -212,6 +219,7 @@ namespace mu2e {
     if (str.find("EnergyDeposit")   != std::string::npos) return ScorerCode::EnergyDeposit;
     if (str.find("TrackCounter")    != std::string::npos) return ScorerCode::TrackCounter;
     if (str.find("DoseEffective")   != std::string::npos) return ScorerCode::DoseEffective;
+    if (str.find("DelayedDose")     != std::string::npos) return ScorerCode::DelayedDose;
    return ScorerCode::Unknown;
   }
 

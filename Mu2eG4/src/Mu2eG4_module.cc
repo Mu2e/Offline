@@ -53,6 +53,7 @@
 #include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
 
 // From art and its tool chain.
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
@@ -198,7 +199,8 @@ namespace mu2e {
     multiStagePars_(pars().inputs()),
     simStage_(-1u),
     _runManager(std::make_unique<G4RunManager>()),
-    _scorer(std::make_unique<Mu2eG4ScoringManager>(G4ScoringManager::GetScoringManager(), conf_.scoring())),
+    _scorer(std::make_unique<Mu2eG4ScoringManager>(G4ScoringManager::GetScoringManager(),
+                                                   conf_.scoring(),conf_.physics())),
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),
     _exportPDTEnd(pars().debug().exportPDTEnd()),

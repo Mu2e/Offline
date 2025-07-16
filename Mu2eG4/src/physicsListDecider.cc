@@ -36,6 +36,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4MinDEDXModularPhysicsList.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4StepLimiterPhysicsConstructor.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4BiasedRDPhysics.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -65,7 +66,6 @@ namespace mu2e{
                                          , const Mu2eG4ResourceLimits& lim) {
 
     G4VModularPhysicsList* tmpPL(nullptr);
-
     const string name = phys.physicsListName();
 
     debug.diagLevel()>-1 && G4cout << __func__ << " invoked with " << name << G4endl;
@@ -135,7 +135,15 @@ namespace mu2e{
     }
 
     if (phys.turnOnRadioactiveDecay()) {
-      tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(debug.diagLevel()));
+      if (phys.radiationVRmode()){
+        tmpPL->RemovePhysics("G4RadioactiveDecay");
+        tmpPL->RegisterPhysics(new Mu2eG4BiasedRDPhysics(&phys, debug.diagLevel()));
+      } else {
+        // turn it off to avoid warning if this process is already included in the physics list,
+        // easier than checking if the process is already included
+        tmpPL->RemovePhysics("G4RadioactiveDecay");
+        tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(debug.diagLevel()));
+      }
     }
 
     if (phys.turnOnThermalNeutronPhysics()) {
