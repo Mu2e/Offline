@@ -24,12 +24,14 @@ mu2eg4DefaultPhysics: {
     turnOffRadioactiveDecay:  false    // If both are false, we get the G4 default, which may be physics list dependent.
     turnOnRadioactiveDecay:  true     // If both are true, it is a configuraiton error detected at run-time.
 
+    //options for radiation studies
     radiationVRmode    : true
     beamTimeProfileRad : "Offline/Mu2eG4/data/beamProfile.data"
     coolTimeProfileRad : "Offline/Mu2eG4/data/cooling.data"
     radiationBRBias    : true
     radiationNsplit    : 3
     radiationHLT       : 1e+60
+    radiationTableName : "ISO"
 
 
     // the following option is to be used mainly as an extention of

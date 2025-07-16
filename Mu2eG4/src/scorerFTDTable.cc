@@ -1,6 +1,7 @@
 #include "Offline/Mu2eG4/inc/scorerFTDTable.hh"
-#include "CLHEP/Units/SystemOfUnits.h"
 #include "cetlib_except/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "CLHEP/Units/SystemOfUnits.h"
 
 #include <string>
 #include <vector>
@@ -38,8 +39,11 @@ namespace mu2e{
       ++iColumn;
     }
 
-    //Need to put proper warning message here
-    if (!found) std::cout<<"Method "<<method_<<" not found, switching to ISO"<<std::endl;
+    if (!found){
+      mf::LogWarning logm("G4");
+      logm << "Method "<<method_<<" not found in scorerFTDTable for "<<filename_
+           <<", switching to ISO";
+    }
 
     while (getline(file, line)){
       std::stringstream linestream(line);
@@ -51,8 +55,8 @@ namespace mu2e{
       coeffs_.push_back(number*1e-12*CLHEP::cm*CLHEP::cm/CLHEP::mm/CLHEP::mm);
     }
 
-    if (coeffs_.empty())   throw cet::exception("BADINPUT")<<"scorerFTDTable: wrong formatting in file "
-                                                           <<filename_<<".\n "<< std::endl;
+    if (coeffs_.empty()) throw cet::exception("BADINPUT")<<"scorerFTDTable: wrong formatting in file "
+                                                         <<filename_<<".\n "<< std::endl;
   }
 
 

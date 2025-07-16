@@ -8,19 +8,20 @@
 #include <sstream>
 #include <iostream>
 
+
 namespace mu2e{
 
   scorerFTDConverter::scorerFTDConverter(const std::string& method) :
-    photon  ("Offline/Mu2eG4/data/Photon_effective_dose.dat",method),
+    photon  ("Offline/Mu2eG4/data/Photon_effective_dose.dat",  method),
     electron("Offline/Mu2eG4/data/Electron_effective_dose.dat",method),
     positron("Offline/Mu2eG4/data/Positron_effective_dose.dat",method),
-    muminus ("Offline/Mu2eG4/data/Muminus_effective_dose.dat",method),
-    muplus  ("Offline/Mu2eG4/data/Muplus_effective_dose.dat",method),
-    piminus ("Offline/Mu2eG4/data/Piminus_effective_dose.dat",method),
-    piplus  ("Offline/Mu2eG4/data/Piplus_effective_dose.dat",method),
-    proton  ("Offline/Mu2eG4/data/Proton_effective_dose.dat",method),
-    neutron ("Offline/Mu2eG4/data/Neutron_effective_dose.dat",method),
-    helium  ("Offline/Mu2eG4/data/Helium_effective_dose.dat",method)
+    muminus ("Offline/Mu2eG4/data/Muminus_effective_dose.dat", method),
+    muplus  ("Offline/Mu2eG4/data/Muplus_effective_dose.dat",  method),
+    piminus ("Offline/Mu2eG4/data/Piminus_effective_dose.dat", method),
+    piplus  ("Offline/Mu2eG4/data/Piplus_effective_dose.dat",  method),
+    proton  ("Offline/Mu2eG4/data/Proton_effective_dose.dat",  method),
+    neutron ("Offline/Mu2eG4/data/Neutron_effective_dose.dat", method),
+    helium  ("Offline/Mu2eG4/data/Helium_effective_dose.dat",  method)
   {}
 
 
@@ -60,7 +61,7 @@ namespace mu2e{
       case 2212:
         return proton.evaluate(energy);
       default:
-        //std::cout<<"Unknown pdgCode "<<pdgCode<<" use proton value instead"<<std::endl;
+        //use proton as proxy for heavier nuclei and other particles
         return proton.evaluate(energy);
     }
  }

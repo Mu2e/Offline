@@ -19,7 +19,8 @@ namespace mu2e{
 G4_DECLARE_PHYSCONSTR_FACTORY(Mu2eG4BiasedRDPhysics);
 
 
-Mu2eG4BiasedRDPhysics::Mu2eG4BiasedRDPhysics(const Mu2eG4Config::Physics* phys, G4int verbose)
+Mu2eG4BiasedRDPhysics::Mu2eG4BiasedRDPhysics(const Mu2eG4Config::Physics* phys,
+                                             G4int verbose)
  : G4VPhysicsConstructor("G4Radioactivation"),
    phys_{phys},
    verbose_{verbose}
@@ -27,10 +28,10 @@ Mu2eG4BiasedRDPhysics::Mu2eG4BiasedRDPhysics(const Mu2eG4Config::Physics* phys, 
   G4EmParameters::Instance()->AddPhysics("World","G4Radioactivation");
   G4DeexPrecoParameters* deex = G4NuclearLevelData::GetInstance()->GetParameters();
   deex->SetStoreICLevelData(true);
-  deex->SetCorrelatedGamma(false);
   deex->SetStoreAllLevels(true);
   deex->SetInternalConversionFlag(true);
   deex->SetIsomerProduction(true);
+  deex->SetCorrelatedGamma(false);
   deex->SetMaxLifeTime(G4NuclideTable::GetInstance()->GetThresholdOfHalfLife()/std::log(2.));
 
   const G4double meanLife = 1*picosecond;
@@ -57,7 +58,7 @@ void Mu2eG4BiasedRDPhysics::ConstructProcess()
 {
   G4LossTableManager* man = G4LossTableManager::Instance();
   G4VAtomDeexcitation* ad = man->AtomDeexcitation();
-  if(!ad) {
+  if (!ad) {
     G4EmParameters::Instance()->SetAugerCascade(true);
     ad = new G4UAtomicDeexcitation();
     man->SetAtomDeexcitation(ad);
@@ -70,11 +71,11 @@ void Mu2eG4BiasedRDPhysics::ConstructProcess()
   process->SetARM(false); //Atomic Rearangement
 
    if (phys_){
-    process->SetHLThreshold(phys_->radiationHLT());
-    process->SetBRBias(phys_->radiationBRBias());
-    process->SetSplitNuclei(phys_->radiationNsplit());
-    process->SetSourceTimeProfile(phys_->beamTimeProfileRad());
-    process->SetDecayBias(phys_->coolTimeProfileRad());
+     process->SetHLThreshold(phys_->radiationHLT());
+     process->SetBRBias(phys_->radiationBRBias());
+     process->SetSplitNuclei(phys_->radiationNsplit());
+     process->SetSourceTimeProfile(phys_->beamTimeProfileRad());
+     process->SetDecayBias(phys_->coolTimeProfileRad());
   }
 
   G4PhysicsListHelper::GetPhysicsListHelper()->

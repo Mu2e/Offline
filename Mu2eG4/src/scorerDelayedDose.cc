@@ -1,8 +1,6 @@
 #include "Offline/Mu2eG4/inc/scorerDelayedDose.hh"
 #include "Offline/Mu2eG4/inc/scorerFTDConverter.hh"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-#include "Offline/SeedService/inc/SeedService.hh"
-#include "CLHEP/Random/RandFlat.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
@@ -15,50 +13,58 @@
 
 
 namespace mu2e {
-  scorerDelayedDose::scorerDelayedDose(const G4String& name, const Mu2eG4Config::Physics& configPhysics, G4int depth)
-    : G4VPrimitiveScorer(name,depth),
-      fDepthi_       (2),
-      fDepthj_       (1),
-      fDepthk_       (0),
-      FTDConverter_  ("ISO"),
-      isBiased_      (configPhysics.radiationVRmode())
+  scorerDelayedDose::scorerDelayedDose(const G4String& name,
+                                       const Mu2eG4Config::Physics& configPhysics,
+                                       G4int depth) :
+    G4VPrimitiveScorer(name,depth),
+    fDepthi_       (2),
+    fDepthj_       (1),
+    fDepthk_       (0),
+    FTDConverter_  (configPhysics.radiationTableName()),
+    isBiased_      (configPhysics.radiationVRmode())
   {
-     readTimeProfile(configPhysics.coolTimeProfileRad());
+    readTimeProfile(configPhysics.coolTimeProfileRad());
+
+    if (!isBiased_){
+      mf::LogWarning logm("G4");
+      logm << "scorerDelayedDose: beam time profile should be implemented in "
+          << "primary generator if required in analogueMC mode";
+    }
   }
 
   void scorerDelayedDose::readTimeProfile(std::string filename)
   {
-     bin_.clear();
-     profile_.clear();
+    bin_.clear();
+    profile_.clear();
 
-     std::ifstream infile (filename, std::ios::in);
-     if (!infile){
-        throw cet::exception("INIT")<<"scorerDelayedDose::readTimeProfile "
-                                    <<filename<<" does not exist\n";
-     }
+    std::ifstream infile (filename, std::ios::in);
+    if (!infile){
+       throw cet::exception("INIT")<<"scorerDelayedDose::readTimeProfile "
+                                   <<filename<<" does not exist\n";
+    }
 
-     G4double bin(0.), flux(0.),rsum(0.);
-     while (infile >> bin >> flux) {
-       bin_.push_back(bin * s);
-       rsum += flux;
-       profile_.push_back(flux);
-     }
+    G4double bin(0.), flux(0.),rsum(0.);
+    while (infile >> bin >> flux) {
+      bin_.push_back(bin * s);
+      rsum += flux;
+      profile_.push_back(flux);
+    }
 
-     if (bin_.size()<2) {
-        throw cet::exception("INIT")<<"scorerDelayedDose::readTimeProfile "
-                                    <<filename<<" has wrong format, less than 2 entries\n";
-     }
+    if (bin_.size()<2) {
+       throw cet::exception("INIT")<<"scorerDelayedDose::readTimeProfile "
+                                   <<filename<<" has wrong format, less than 2 entries\n";
+    }
 
-     for (size_t i=1;i<bin_.size();++i){
-       if (profile_[i-1]>1e-6) totalCoolTime_ += (bin_[i]-bin_[i-1])/s;
-     }
+    for (size_t i=1;i<bin_.size();++i){
+      if (profile_[i-1]>1e-6) totalCoolTime_ += (bin_[i]-bin_[i-1])/s;
+    }
   }
 
   void scorerDelayedDose::Initialize(G4HCofThisEvent* HCE)
   {
-     EvtMap_ = new G4THitsMap<G4double>(detector->GetName(), GetName());
-     if (HCID_ < 0) HCID_ = GetCollectionID(0);
-     HCE->AddHitsCollection(HCID_, (G4VHitsCollection*)EvtMap_);
+    EvtMap_ = new G4THitsMap<G4double>(detector->GetName(), GetName());
+    if (HCID_ < 0) HCID_ = GetCollectionID(0);
+    HCE->AddHitsCollection(HCID_, (G4VHitsCollection*)EvtMap_);
   }
 
   void scorerDelayedDose::clear() { EvtMap_->clear(); }
@@ -83,6 +89,11 @@ namespace mu2e {
     double FTDfactor = FTDConverter_.evaluate(pdgCode,energy);
     CellFlux *= FTDfactor;
 
+std::cout<<"PID= "<<pdgCode<<"  energy= "<<energy<<"  time= "<<aStep->GetPreStepPoint()->GetGlobalTime()/s<<"  "<<aStep->GetPreStepPoint()->GetLocalTime()/s
+         <<"  position= "<<aStep->GetPreStepPoint()->GetPosition()
+         <<"   weight= "<<aStep->GetPreStepPoint()->GetWeight();
+if (aStep->GetPostStepPoint()->GetProcessDefinedStep()) std::cout<<"   process="<<aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
+
     //If we run in biased mode, normalize the flux in seconds
     if (isBiased_) CellFlux /= totalCoolTime_;
 
@@ -103,9 +114,9 @@ namespace mu2e {
 
   G4double scorerDelayedDose::ComputeVolume(G4Step* aStep, G4int idx)
   {
-     G4VSolid* solid = ComputeSolid(aStep, idx);
-     assert(solid);
-     return solid->GetCubicVolume();
+    G4VSolid* solid = ComputeSolid(aStep, idx);
+    assert(solid);
+    return solid->GetCubicVolume();
   }
 
   G4int scorerDelayedDose::GetIndex(G4Step* aStep)

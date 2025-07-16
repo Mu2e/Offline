@@ -139,8 +139,8 @@ namespace mu2e{
         tmpPL->RemovePhysics("G4RadioactiveDecay");
         tmpPL->RegisterPhysics(new Mu2eG4BiasedRDPhysics(&phys, debug.diagLevel()));
       } else {
-        // turn it off to avoid warning if this process is already included in the physics list,
-        // easier than checking if the process is already included
+        // turn it off first to avoid warning if this process is already included in the
+        // physics list, does nothing if the process is absent
         tmpPL->RemovePhysics("G4RadioactiveDecay");
         tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(debug.diagLevel()));
       }

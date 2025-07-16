@@ -1,6 +1,7 @@
 #include "Offline/Mu2eG4/inc/scorerDoseEffective.hh"
 #include "Offline/Mu2eG4/inc/scorerFTDConverter.hh"
 #include "CLHEP/Random/RandFlat.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
@@ -15,19 +16,22 @@
 
 
 namespace mu2e {
-  scorerDoseEffective::scorerDoseEffective(const G4String& name, G4int depth)
-    : G4VPrimitiveScorer(name,depth),
-      fDepthi_(2),
-      fDepthj_(1),
-      fDepthk_(0),
-      FTDConverter_("ISO")  {}
+  scorerDoseEffective::scorerDoseEffective(const G4String& name,
+                                           const Mu2eG4Config::Physics& configPhysics,
+                                           G4int depth) :
+    G4VPrimitiveScorer(name,depth),
+    fDepthi_(2),
+    fDepthj_(1),
+    fDepthk_(0),
+    FTDConverter_(configPhysics.radiationTableName())
+  {}
 
 
   void scorerDoseEffective::Initialize(G4HCofThisEvent* HCE)
   {
-     EvtMap_ = new G4THitsMap<G4double>(detector->GetName(), GetName());
-     if (HCID_ < 0) HCID_ = GetCollectionID(0);
-     HCE->AddHitsCollection(HCID_, (G4VHitsCollection*)EvtMap_);
+    EvtMap_ = new G4THitsMap<G4double>(detector->GetName(), GetName());
+    if (HCID_ < 0) HCID_ = GetCollectionID(0);
+    HCE->AddHitsCollection(HCID_, (G4VHitsCollection*)EvtMap_);
   }
 
   void scorerDoseEffective::clear() { EvtMap_->clear(); }
@@ -59,9 +63,9 @@ namespace mu2e {
 
   G4double scorerDoseEffective::ComputeVolume(G4Step* aStep, G4int idx)
   {
-     G4VSolid* solid = ComputeSolid(aStep, idx);
-     assert(solid);
-     return solid->GetCubicVolume();
+    G4VSolid* solid = ComputeSolid(aStep, idx);
+    assert(solid);
+    return solid->GetCubicVolume();
   }
 
   G4int scorerDoseEffective::GetIndex(G4Step* aStep)

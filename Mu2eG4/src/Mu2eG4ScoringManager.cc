@@ -132,7 +132,7 @@ namespace mu2e {
               mesh->SetPrimitiveScorer(new G4PSVolumeFlux3D(psName,1));
               break;
           case ScorerCode::DoseEffective:
-              mesh->SetPrimitiveScorer(new scorerDoseEffective(psName,1));
+              mesh->SetPrimitiveScorer(new scorerDoseEffective(psName,configPhysics_,1));
               break;
           case ScorerCode::DelayedDose:
               mesh->SetPrimitiveScorer(new scorerDelayedDose(psName,configPhysics_,1));
@@ -220,7 +220,7 @@ namespace mu2e {
     if (str.find("TrackCounter")    != std::string::npos) return ScorerCode::TrackCounter;
     if (str.find("DoseEffective")   != std::string::npos) return ScorerCode::DoseEffective;
     if (str.find("DelayedDose")     != std::string::npos) return ScorerCode::DelayedDose;
-   return ScorerCode::Unknown;
+    return ScorerCode::Unknown;
   }
 
   //------------------------------------------------------------------------------------------------------------

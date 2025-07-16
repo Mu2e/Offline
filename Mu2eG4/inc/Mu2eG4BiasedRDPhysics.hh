@@ -18,9 +18,7 @@ namespace mu2e{
       void ConstructProcess()  override;
 
    private:
-
-    // non owning pointer
-    // can't be ref due to the default constructor factory requirement
+    // non owning pointer, can't be ref due to the default constructor requirement
     const Mu2eG4Config::Physics* phys_;
     G4int                        verbose_;
 

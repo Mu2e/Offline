@@ -16,7 +16,9 @@ namespace mu2e {
   class scorerDelayedDose : public G4VPrimitiveScorer
   {
      public:
-       scorerDelayedDose(const G4String& name, const Mu2eG4Config::Physics& configPhysics, G4int depth = 0);
+       scorerDelayedDose(const G4String& name,
+                         const Mu2eG4Config::Physics& configPhysics,
+                         G4int depth = 0);
        ~scorerDelayedDose() override = default;
 
        void Initialize(G4HCofThisEvent*) override;
@@ -40,7 +42,7 @@ namespace mu2e {
        G4int                 fDepthj_;
        G4int                 fDepthk_;
        scorerFTDConverter    FTDConverter_;
-       G4bool                isBiased_;
+       G4bool                isBiased_{false};
        std::vector<G4double> bin_{};
        std::vector<G4double> profile_{};
        G4double              totalCoolTime_{0};
