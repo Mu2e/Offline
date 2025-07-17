@@ -19,6 +19,7 @@
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/DataProducts/inc/StrawIdMask.hh"
+#include "Offline/DataProducts/inc/IndexMap.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
@@ -84,8 +85,13 @@ namespace mu2e {
       // construct from fit configuration objects
       explicit KKFit(KKFitConfig const& fitconfig);
       // helper functions used to create components of the fit
+      // Make KKStrawHits from ComboHits (HelixSeed)
       bool makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf, KKStrawMaterial const& smat,
           PTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
+          KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
+      // Make KKStrawHits from a KalSeed
+      bool KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
+          PTRAJ const& ptraj, KalSeed const& kseed, ComboHitCollection const& chcol, mu2e::IndexMap const& strawindexmap,
           KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
       SensorLine caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const; // should come from CaloCluster TODO
       bool makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PTRAJ const& pktraj, KKCALOHITCOL& hits) const;
@@ -138,6 +144,7 @@ namespace mu2e {
       mutable bool needstrackerinfo_ = true;
 
       SaveTraj savetraj_; // trajectory saving option
+      bool savedomains_; // save domain bounds
   };
 
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(KKFitConfig const& fitconfig) :
@@ -162,7 +169,8 @@ namespace mu2e {
     maxStrawHitDt_(fitconfig.maxStrawHitDt()),
     maxStrawDoca_(fitconfig.maxStrawDOCA()),
     maxStrawDocaCon_(fitconfig.maxStrawDOCAConsistency()),
-    maxDStraw_(fitconfig.maxDStraw())
+    maxDStraw_(fitconfig.maxDStraw()),
+    savedomains_(fitconfig.saveDomains())
   {
     if (fitconfig.saveTraj() == "T0") {
         savetraj_ = t0seg;
@@ -209,6 +217,33 @@ namespace mu2e {
     return ngood >= minNStrawHits_;
   }
 
+  template <class KTRAJ> bool KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
+      PTRAJ const& ptraj, ComboHitCollection const& chcol, mu2e::IndexMap const& strawindexmap,
+      KalSeed const& kseed,
+      KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const {
+    unsigned ngood(0);
+    // loop over the TrkStrawHitSeeds in this KalSeed
+    for(auto const& tshs : kseed.hits()) {
+      const Straw& straw = tracker.getStraw(tshs.strawId());
+      // find the corresponding ComboHit using the index map ( the tshs index is WRT the original ComboHit collection)
+      auto const& combohit = chcol.at(strawindexmap[tshs.index()]);
+      auto wline = Mu2eKinKal::hitLine(combohit,straw,strawresponse); // points from the signal to the straw center
+      // use the recorded TOCA to initialize the POCA
+      CAHint hint(tshs.particleTOCA(),tshs.sensorTOCA());
+      PCA pca(ptraj, wline, hint, tprec_ );
+      // create the hit.  Note these may initially be unusable
+      hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, pca, combohit, straw, strawidx, strawresponse));
+      // set the hit state according to what was in the
+      // create the material crossing, including this reference
+      if(matcorr_){
+
+        exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),smat));
+      }
+    }
+    return ngood >= minNStrawHits_;
+  }
+
+
   template <class KTRAJ> SensorLine KKFit<KTRAJ>::caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const {
     // move cluster COG into the tracker frame.  COG is at the front face of the disk
     CLHEP::Hep3Vector cog = calo.geomUtil().mu2eToTracker(calo.geomUtil().diskFFToMu2e( cluster.diskID(), cluster.cog3Vector()));
@@ -220,7 +255,6 @@ namespace mu2e {
     // create the SensorLine trajectory from this information: signal goes towards the sipm
     return SensorLine(sipmcog,ffcog,cluster.time()+caloDt_,caloPropSpeed_);
   }
-
 
   template <class KTRAJ> bool KKFit<KTRAJ>::makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PTRAJ const& pktraj, KKCALOHITCOL& hits) const {
     bool retval(false);
@@ -575,6 +609,14 @@ namespace mu2e {
           // skip zero-range segments.  By convention, sample the state at the mid-time
           if(traj->range().range() > 0.0) kseed._segments.emplace_back(*traj,traj->range().mid());
         }
+        if(savedomains_){
+          kseed._domainbounds.reserve(kktrk.domains().size()+1);
+          for (auto const& domain : kktrk.domains()){
+            kseed._domainbounds.push_back(domain->begin());
+          }
+          // save end of last domain
+          kseed._domainbounds.push_back((*kktrk.domains().end())->end());
+        }
       } else if (savetraj_ == detector ) {
         // only save segments inside the tracker volume. First, find the time limits for that
         double tmin = std::numeric_limits<float>::max();
@@ -606,10 +648,23 @@ namespace mu2e {
         kseed._segments.reserve(fittraj.pieces().size());// this will be oversized
         for (auto const& traj : fittraj.pieces() ){
           // skip segments outside the tracker volume range
-          if(traj->range().range() > 0.0 && (traj->range().inRange(tmin) || traj->range().inRange(tmax) || (traj->range().begin() > tmin && traj->range().end() < tmax)) ) kseed._segments.emplace_back(*traj,traj->range().mid());
+          if(traj->range().range() > 0.0 && ((traj->range().begin() > tmin && traj->range().end() < tmax) || traj->range().inRange(tmin) || traj->range().inRange(tmax) ) ) kseed._segments.emplace_back(*traj,traj->range().mid());
         }
+        kseed._segments.shrink_to_fit();
+        if(savedomains_){
+          kseed._domainbounds.reserve(kktrk.domains().size()+1); // oversized
+          for (auto const& domain : kktrk.domains()){
+            if((domain->range().begin() > tmin && domain->range().end() < tmax) || domain->range().inRange(tmin) || domain->range().inRange(tmax) )
+              kseed._domainbounds.push_back(domain->begin());
+            // save end of last domain
+            if(domain->range().inRange(tmax))kseed._domainbounds.push_back(domain->end());
+          }
+          kseed._domainbounds.shrink_to_fit();
+        }
+
       } else if (savetraj_ == t0seg ) {
         kseed._segments.emplace_back(t0piece,t0val);
+        // domain storage is non-sensical in this case, leave empty
       }
     } else {
       kseed._segments.emplace_back(t0piece,t0val); // save the t0 piece even for failed fits

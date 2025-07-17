@@ -87,6 +87,7 @@ namespace mu2e {
       fhicl::Atom<float> maxStrawDOCAConsistency { Name("MaxStrawDOCAConsistency"), Comment("Max DOCA chi-consistency to add straw material") };
       // extension and sampling
       fhicl::Atom<std::string> saveTraj { Name("SaveTrajectory"), Comment("How to save the trajectory in the KalSeed: None, Full, Detector, or T0 (1 segment containing t0)") };
+      fhicl::Atom<bool> saveDomains { Name("SaveDomains"), Comment("Save the Bfield domain walls in the KalSeed: this will follow the range specified by SaveTrajectory") };
     };
     // struct for configuring a KinKal fit module
     struct KKModuleConfig {

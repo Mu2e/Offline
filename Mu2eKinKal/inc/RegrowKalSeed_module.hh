@@ -1,5 +1,6 @@
 //
-// Recreate a KKTrack from a KalSeed. This can include additional extrapolation
+// Recreate a KKTrack from a KalSeed. This can include additional extrapolation, new calibrations/alignment, etc.
+// By default, no Pat. Rec. or straw hit state re-assignment is done.
 //
 // Original author: D. Brown (LBNL) 4/18/2025
 //

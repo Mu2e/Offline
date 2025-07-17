@@ -415,6 +415,7 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KKFIT
       # save trajectories in the Detector region
      SaveTrajectory : Detector
+     SaveDomains : true
     }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
@@ -432,7 +433,10 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: @local::Mu2eKinKal.KKFIT
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
-    ExtensionSettings : @local::Mu2eKinKal.CHSEEDEXT
+    ExtensionSettings : {
+      @table::Mu2eKinKal.CHSEEDEXT
+      BFieldCorrection : false
+    }
     ModuleSettings : {
       @table::Mu2eKinKal.KINEMATICLINE
       @table::Mu2eKinKal.KKPrecursors
@@ -451,6 +455,7 @@ Mu2eKinKal : {
       MaxCaloClusterDt: 8
       # save the full trajectory
        SaveTrajectory: Full
+       SaveDomains : false # meaningless for Linefit
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
@@ -467,6 +472,7 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : T0
+       SaveDomains : false
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHSEEDEXT
@@ -482,6 +488,7 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : Full
+      SaveDomains : true
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
@@ -511,31 +518,24 @@ Mu2eKinKal : {
 Mu2eKinKal.producers.KKUe.Extrapolation.BackToTracker : true
 Mu2eKinKal.producers.KKUmu.Extrapolation.BackToTracker : true
 
+# update directions and particles as needed
 Mu2eKinKal.producers.KKCHSeedFitmuM.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKCHSeedFitmuP.ModuleSettings.FitParticle : @local::Particle.muplus
 Mu2eKinKal.producers.KKCHmu.ModuleSettings.FitParticle : @local::Particle.muminus # charge floats in the fit, this just determines the mass
 
-Mu2eKinKal.producers.KLSeedFit.ExtensionSettings.BFieldCorrection : false
 Mu2eKinKal.producers.KLSeedFit.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKLine.ModuleSettings.FitParticle : @local::Particle.muminus
 
-Mu2eKinKal.producers.KKDeSeedFit.ModuleSettings.FitParticle : @local::Particle.eminus
-Mu2eKinKal.producers.KKDeSeedFit.FitDirection : @local::FitDir.downstream
-
-# save trajectories in the Detector region for downstream fits, just the T0 segment for the rest
 Mu2eKinKal.producers.KKDe.ModuleSettings.FitParticle : @local::Particle.eminus
 Mu2eKinKal.producers.KKDe.FitDirection : @local::FitDir.downstream
-Mu2eKinKal.producers.KKDe.KKFitSettings.SaveTrajectory : "Detector"
 Mu2eKinKal.producers.KKDmu.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKDmu.FitDirection : @local::FitDir.downstream
-Mu2eKinKal.producers.KKDmu.KKFitSettings.SaveTrajectory : "Detector"
 Mu2eKinKal.producers.KKUe.ModuleSettings.FitParticle : @local::Particle.eminus
 Mu2eKinKal.producers.KKUe.FitDirection : @local::FitDir.upstream
-Mu2eKinKal.producers.KKUe.KKFitSettings.SaveTrajectory : "Detector"
 Mu2eKinKal.producers.KKUmu.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKUmu.FitDirection : @local::FitDir.upstream
-Mu2eKinKal.producers.KKUmu.KKFitSettings.SaveTrajectory : "Detector"
 # extrapolate upstream fits back to the tracker
 physics.producers.KKUmu.Extrapolation.BackToTracker : true
 physics.producers.KKUe.Extrapolation.BackToTracker  : true
+#
 END_PROLOG
