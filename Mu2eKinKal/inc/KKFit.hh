@@ -50,7 +50,7 @@ namespace mu2e {
   using KinKal::BFieldMap;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
   using Mu2eKinKal::KKFitConfig;
-  using CCHandle = art::ValidHandle<CaloClusterCollection>;
+  using CCHandle = art::Handle<CaloClusterCollection>;
   template <class KTRAJ> class KKFit {
     public:
       // fit configuration

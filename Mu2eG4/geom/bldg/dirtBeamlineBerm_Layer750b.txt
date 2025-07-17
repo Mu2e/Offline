@@ -1,7 +1,7 @@
 string dirt.beamline.berm.l750b.name     = "dirtBeamlineBerml750b";
 string dirt.beamline.berm.l750b.material = "MBOverburden";
 double dirt.beamline.berm.l750b.offsetFromMu2eOrigin.x   = 947.40;
-double dirt.beamline.berm.l750b.offsetFromFloorSurface.y = 9144.00;
+double dirt.beamline.berm.l750b.offsetFromFloorSurface.y = 8686.80;
 double dirt.beamline.berm.l750b.offsetFromMu2eOrigin.z   = -3581.40;
 vector<int> dirt.beamline.berm.l750b.xreplace ={3 ,4 };
 vector<int> dirt.beamline.berm.l750b.yreplace ={2 ,3 };

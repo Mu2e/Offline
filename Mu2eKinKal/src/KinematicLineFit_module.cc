@@ -93,7 +93,7 @@ namespace mu2e {
   using KinKal::Status;
   using HPtr = art::Ptr<CosmicTrackSeed>;
   using CCPtr = art::Ptr<CaloCluster>;
-  using CCHandle = art::ValidHandle<CaloClusterCollection>;
+  using CCHandle = art::Handle<CaloClusterCollection>;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
   using KKCRVXING = KKShellXing<KTRAJ,KinKal::Rectangle>;
   using KKCRVXINGPTR = std::shared_ptr<KKCRVXING>;
@@ -263,7 +263,7 @@ namespace mu2e {
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
-    auto cc_H = event.getValidHandle<CaloClusterCollection>(cccol_T_);
+    auto cc_H = event.getHandle<CaloClusterCollection>(cccol_T_);
     auto const& chcol = *ch_H;
     // create output
     unique_ptr<KKTRKCOL> kktrkcol(new KKTRKCOL );
@@ -367,10 +367,14 @@ namespace mu2e {
 
   void KinematicLineFit::sampleFit(KKTRK& kktrk) const {
     auto const& ftraj = kktrk.fitTraj();
+    // need to extend range for now even if sampleinrange_ is false
+    TimeRange extrange(ftraj.range().begin() - sampletbuff_,ftraj.range().end() + sampletbuff_);
+    kktrk.extendTraj(extrange);
     double tbeg = ftraj.range().begin();
+
     for(auto const& surf : sample_){
       // search for intersections with each surface from the begining
-      double tstart = tbeg - sampletbuff_;
+      double tstart = tbeg;
       bool goodinter(true);
       size_t max_inter = 100;
       size_t cur_inter = 0;
@@ -378,7 +382,7 @@ namespace mu2e {
       // loop to find multiple intersections
       while(goodinter && cur_inter < max_inter) {
         cur_inter += 1;
-        TimeRange irange(tstart,std::max(ftraj.range().end(),tstart)+sampletbuff_);
+        TimeRange irange(tstart,std::max(ftraj.range().end(),tstart));
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,intertol_);
         goodinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
         if(goodinter) {

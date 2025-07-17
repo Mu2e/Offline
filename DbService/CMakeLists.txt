@@ -11,7 +11,6 @@ cet_make_library(
       src/GrlHeader.cc
       src/GrlList.cc
       src/GrlTool.cc
-      src/OpenHandle.cc
       src/OpenTool.cc
       src/RunInfo.cc
       src/RunTool.cc

@@ -425,13 +425,6 @@
  <class name="mu2e::RecoCount"/>
  <class name="art::Wrapper<mu2e::RecoCount>"/>
 
- <class name="mu2e::DAQerrorCodeDetail"/>
- <class name="mu2e::DAQerrorCode"/>
- <class name="mu2e::DAQerror" />
- <class name="std::vector<mu2e::DAQerror>" />
- <class name="mu2e::DAQerrorCollection" />
- <class name="art::Wrapper<mu2e::DAQerrorCollection>" />
-
 <!--  ********* STM ********* -->
  <class name="mu2e::STMWaveformDigi"/>
  <class name="mu2e::STMWaveformDigiCollection"/>
@@ -442,5 +435,8 @@
  <class name="mu2e::STMHit"/>
  <class name="mu2e::STMHitCollection"/>
  <class name="art::Wrapper<mu2e::STMHitCollection>"/>
+
+ <!--  ********* MTP ********* -->
+  <class name="mu2e::MTPHit"/>
 
 </lcgdict>
