@@ -514,7 +514,7 @@ namespace mu2e {
           utres, udres,
           strawhit->refResidual(Mu2eKinKal::tresid),
           strawhit->refResidual(Mu2eKinKal::dresid),
-          strawhit->fillDriftInfo(),
+          strawhit->fillDriftInfo(strawhit->closestApproach()),
           strawhit->hitState(),
           strawhit->straw());
     }
