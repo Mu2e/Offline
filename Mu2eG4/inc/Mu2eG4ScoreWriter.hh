@@ -24,7 +24,6 @@ namespace mu2e {
       void dumpInDataProduct(art::SubRun& subRun);
       void dumpInFile(const std::string& fileDirectory);
 
-
     private:
       G4VScoringMesh* mesh_; //non-owning G4 pointer
   };

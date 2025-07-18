@@ -27,7 +27,8 @@ namespace mu2e {
       center_()
     {}
 
-    ScorerConfigSummary(std::string name, unsigned nbinsX, unsigned nbinsY, unsigned nbinsZ, const CLHEP::Hep3Vector& halfSize, const CLHEP::Hep3Vector& center):
+    ScorerConfigSummary(const std::string& name, unsigned nbinsX, unsigned nbinsY, unsigned nbinsZ,
+                        const CLHEP::Hep3Vector& halfSize, const CLHEP::Hep3Vector& center):
       name_(name),
       nbinsX_(nbinsX),
       nbinsY_(nbinsY),

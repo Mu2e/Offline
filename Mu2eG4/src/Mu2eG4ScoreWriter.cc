@@ -33,9 +33,9 @@ namespace mu2e {
         auto score  = msMapItr->second->GetMap();
         auto unit   = fScoringMesh->GetPSUnitValue(psName);
 
-        for(int ix = 0; ix < fNMeshSegments[0]; ix++) {
-          for(int iy = 0; iy < fNMeshSegments[1]; iy++) {
-            for(int iz = 0; iz < fNMeshSegments[2]; iz++) {
+        for (int ix = 0; ix < fNMeshSegments[0]; ix++) {
+          for (int iy = 0; iy < fNMeshSegments[1]; iy++) {
+            for (int iz = 0; iz < fNMeshSegments[2]; iz++) {
 
               G4int idx = GetIndex(ix, iy, iz);
               auto  value    = score->find(idx);
