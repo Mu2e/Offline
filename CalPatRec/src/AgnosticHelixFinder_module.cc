@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // AgnosticHelixFinder
-// M. Stortini & E. Martinez
+// M. Stortini, E. Martinez, N. Mazotov
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "Offline/CalPatRec/inc/AgnosticHelixFinder_types.hh"
@@ -640,7 +640,9 @@ namespace mu2e {
     // do isolation, average, and eDepFlag flagging
     if (_doIsolationFlag == true || _doAverageFlag == true || _doEDepFlag == true) {
       for (size_t i = 0; i < _tcHits.size(); i++) {
-        if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) { continue; }
+        if (_tcHits[i].inHelix == true) { continue; }
+        if (_tcHits[i].hitIndice == HitType::STOPPINGTARGET) { continue; }
+        if (_tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
         int hitIndice = _tcHits[i].hitIndice;
         float hitEnergy = _chColl->at(hitIndice).energyDep();
         if (_doEDepFlag == true && hitEnergy > _eDepFlagThresh) { _tcHits[i].highEDep = true; }
@@ -648,7 +650,9 @@ namespace mu2e {
           int nHitsNear = 0;
           XYZVectorF seedPos = getPos(i);
           for (size_t j = 0; j < _tcHits.size(); j++) {
-            if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice < 0) { continue; }
+            if (_tcHits[j].inHelix == true) { continue; }
+            if (_tcHits[j].hitIndice == HitType::STOPPINGTARGET) { continue; }
+            if (_tcHits[j].hitIndice == HitType::CALOCLUSTER) { continue; }
             if (j == i) { continue; }
             XYZVectorF testPos = getPos(j);
             // do isolation flagging
@@ -750,7 +754,9 @@ namespace mu2e {
           int nComboHitsInTimeCluster = 0;
           // compute number of usable hits in time cluster, and number of hits in candidate helix
           for (size_t q = 0; q < _tcHits.size(); q++) {
-            if (_tcHits[q].inHelix == true || _tcHits[q].hitIndice < 0) { continue; }
+            if (_tcHits[q].inHelix == true) { continue; }
+            if (_tcHits[q].hitIndice == HitType::STOPPINGTARGET) { continue; }
+            if (_tcHits[q].hitIndice == HitType::CALOCLUSTER) { continue; }
             int hitIndice = _tcHits[q].hitIndice;
             nStrawHitsInTimeCluster = nStrawHitsInTimeCluster + _chColl->at(hitIndice).nStrawHits();
             nComboHitsInTimeCluster = nComboHitsInTimeCluster + 1;
@@ -970,7 +976,9 @@ namespace mu2e {
 
     // seed point
     for (size_t i = 0; i < _tcHits.size() - _minLineSegmentHits; i++) {
-      if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) { continue; }
+      if (_tcHits[i].inHelix == true) { continue; }
+      if (_tcHits[i].hitIndice == HitType::STOPPINGTARGET) { continue; }
+      if (_tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
       if (_tcHits[i].used == false) { continue; }
       if (_tcHits[i].notOnSegment == false) { continue; }
       float seedZ = getPos(i).z();
@@ -997,7 +1005,9 @@ namespace mu2e {
       lastAddedPositiveZ = seedZ;
       // now loop over test point
       for (size_t j = i + 1; j < _tcHits.size(); j++) {
-        if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice < 0) { continue; }
+        if (_tcHits[j].inHelix == true) { continue; }
+        if (_tcHits[j].hitIndice == HitType::STOPPINGTARGET) { continue; }
+        if (_tcHits[j].hitIndice == HitType::CALOCLUSTER) { continue; }
         if (_tcHits[j].used == false) { continue; }
         float testZ = getPos(j).z();
         if (testZ == seedZ) { continue; }
@@ -1371,7 +1381,9 @@ namespace mu2e {
     // also add points to linear fitter to get t0
     ::LsqSums2 fitter;
     for (size_t i = 0; i < _tcHits.size(); i++) {
-      if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) { continue; }
+      if (_tcHits[i].inHelix == true)  { continue; }
+      if (_tcHits[i].hitIndice == HitType::STOPPINGTARGET) { continue; }
+       if (_tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
       if (_tcHits[i].used == false) { continue; }
       if (_tcHits[i].used == true) { _tcHits[i].inHelix = true; }
       int hitIndice = _tcHits[i].hitIndice;
