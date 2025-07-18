@@ -100,4 +100,4 @@ services.scheduler.wantSummary                   : true
 source.fileNames : [ "aaa.art" ] 
 
 physics.producers.makeSD.debugMode      :  1
-physics.producers.makeSD.debugBits      :  [ "bit0:1" ]
+physics.producers.makeSD.debugBits      :  [ "bit0:1", "bit1:1", "bit2:1" ]

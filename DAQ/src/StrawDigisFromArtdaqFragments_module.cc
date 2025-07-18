@@ -229,6 +229,7 @@ mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::ED
         
     print_(std::format("StrawDigisFromArtdaqFragments: bit={:4d} is set to {}\n",index,debugBit_[index]));
   }
+
 }
 
 
@@ -474,11 +475,13 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               if (debugMode_ and debugBit_[1]) {
                 if (header_printed == 0) {
                                         // print header
-                  std::cout << "offset sid_data  mnID  plane panel    straw      TDC0       TDC1  TOT0  TOT1   PMP\n";
+                  std::cout << "index offset sid_data  mnID  plane panel    straw      TDC0       TDC1  TOT0  TOT1   PMP\n";
                   header_printed = 1;
                 }
-                std::cout << std::format("0x{:04x}   0x{:04x} MN{:03d}   {:3} {:3}      0x:{:04x}  {:9} {:9}   {:2}   {:2}  {:5}\n",
-                                         offset,hit_data->StrawIndex,mnid,pm->plane,pm->panel,sid.straw(),hit_data->TDC0(),
+                
+                int ind = straw_digis->size();
+                std::cout << std::format("{:5} 0x{:04x}   0x{:04x} MN{:03d}   {:3} {:3}      0x:{:04x}  {:9} {:9}   {:2}   {:2}  {:5}\n",
+                                         ind,offset,hit_data->StrawIndex,mnid,pm->plane,pm->panel,sid.straw(),hit_data->TDC0(),
                                          hit_data->TDC1(),tot[0],tot[1],pmp);
               }
 
