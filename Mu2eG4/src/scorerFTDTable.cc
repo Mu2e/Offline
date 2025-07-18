@@ -51,8 +51,11 @@ namespace mu2e{
       linestream >> number;
       energies_.push_back(number);
 
+      // the fluence-to-dose conversion numbers in ICRP113 are given in pSv / cm2,
+      // transform in Sv / mm2 to be compatible with Geant4
+      double pico(1e-12);
       for (int i=1;i<=iColumn;++i) linestream >> number;
-      coeffs_.push_back(number*1e-12*CLHEP::cm*CLHEP::cm/CLHEP::mm/CLHEP::mm);
+      coeffs_.push_back(number*pico*CLHEP::cm*CLHEP::cm/CLHEP::mm/CLHEP::mm);
     }
 
     if (coeffs_.empty()) throw cet::exception("BADINPUT")<<"scorerFTDTable: wrong formatting in file "

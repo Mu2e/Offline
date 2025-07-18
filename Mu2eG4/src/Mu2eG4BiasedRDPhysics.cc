@@ -68,6 +68,7 @@ void Mu2eG4BiasedRDPhysics::ConstructProcess()
   //ownership ofobject is trasnferred to Geant4
   auto process = new G4Radioactivation();
   process->SetVerboseLevel(verbose_);
+
   process->SetARM(false); //Atomic Rearangement
 
    if (phys_){

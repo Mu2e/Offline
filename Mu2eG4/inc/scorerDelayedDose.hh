@@ -42,7 +42,6 @@ namespace mu2e {
        G4int                 fDepthj_;
        G4int                 fDepthk_;
        scorerFTDConverter    FTDConverter_;
-       G4bool                isBiased_{false};
        std::vector<G4double> bin_{};
        std::vector<G4double> profile_{};
        G4double              totalCoolTime_{0};

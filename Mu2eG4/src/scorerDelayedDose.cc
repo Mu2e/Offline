@@ -20,16 +20,9 @@ namespace mu2e {
     fDepthi_       (2),
     fDepthj_       (1),
     fDepthk_       (0),
-    FTDConverter_  (configPhysics.radiationTableName()),
-    isBiased_      (configPhysics.radiationVRmode())
+    FTDConverter_  (configPhysics.radiationTableName())
   {
     readTimeProfile(configPhysics.coolTimeProfileRad());
-
-    if (!isBiased_){
-      mf::LogWarning logm("G4");
-      logm << "scorerDelayedDose: beam time profile should be implemented in "
-          << "primary generator if required in analogueMC mode";
-    }
   }
 
   void scorerDelayedDose::readTimeProfile(std::string filename)
@@ -73,7 +66,7 @@ namespace mu2e {
   G4bool scorerDelayedDose::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   {
     G4double stepLength = aStep->GetStepLength();
-    if (stepLength <1e-12) return false;
+    //if (stepLength <1e-12) return false;
 
     if (!IsInDecayWindow(aStep->GetPreStepPoint()->GetGlobalTime())) return false;
 
@@ -89,13 +82,8 @@ namespace mu2e {
     double FTDfactor = FTDConverter_.evaluate(pdgCode,energy);
     CellFlux *= FTDfactor;
 
-std::cout<<"PID= "<<pdgCode<<"  energy= "<<energy<<"  time= "<<aStep->GetPreStepPoint()->GetGlobalTime()/s<<"  "<<aStep->GetPreStepPoint()->GetLocalTime()/s
-         <<"  position= "<<aStep->GetPreStepPoint()->GetPosition()
-         <<"   weight= "<<aStep->GetPreStepPoint()->GetWeight();
-if (aStep->GetPostStepPoint()->GetProcessDefinedStep()) std::cout<<"   process="<<aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-
-    //If we run in biased mode, normalize the flux in seconds
-    if (isBiased_) CellFlux /= totalCoolTime_;
+    //Normalize the flux in seconds
+    CellFlux /= totalCoolTime_;
 
     G4int index = GetIndex(aStep);
     EvtMap_->add(index, CellFlux);

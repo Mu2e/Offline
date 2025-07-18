@@ -40,7 +40,7 @@ namespace mu2e {
   G4bool scorerDoseEffective::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   {
     G4double stepLength = aStep->GetStepLength();
-    if (stepLength <1e-12) return false;
+    //if (stepLength <1e-12) return false;
 
     G4int idx  = ((G4TouchableHistory*) (aStep->GetPreStepPoint()->GetTouchable()))
                   ->GetReplicaNumber(indexDepth);
