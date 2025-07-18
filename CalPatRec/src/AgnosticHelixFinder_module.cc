@@ -486,7 +486,9 @@ namespace mu2e {
 
     int hitIndice = _tcHits[tcHitsIndex].hitIndice;
 
-    if (hitIndice >= 0) { return _chColl->at(hitIndice).pos(); }
+    if (hitIndice != HitType::CALOCLUSTER && hitIndice != HitType::STOPPINGTARGET) {
+      return _chColl->at(hitIndice).pos();
+    }
     if (hitIndice == HitType::STOPPINGTARGET) { return _stopTargPos; }
     if (hitIndice == HitType::CALOCLUSTER) { return _caloPos; }
 
@@ -814,7 +816,7 @@ namespace mu2e {
       return;
     }
     if (_intenseEvent == true || _intenseCluster == true) {
-      if (trip.i.hitIndice >= 0) {
+      if (trip.i.hitIndice != HitType::CALOCLUSTER && trip.i.hitIndice != HitType::STOPPINGTARGET) {
         outcome = BREAK;
         return;
       }
@@ -840,14 +842,18 @@ namespace mu2e {
     float dz12 = trip.i.pos.z() - trip.j.pos.z();
 
     // check if point should break for loop
-    if (trip.i.hitIndice >= 0 && dz12 > _maxTripletDz) {
-      outcome = BREAK;
-      return;
+    if (trip.i.hitIndice != HitType::CALOCLUSTER && trip.i.hitIndice != HitType::STOPPINGTARGET){
+        if (dz12 > _maxTripletDz) {
+          outcome = BREAK;
+          return;
+        }
     }
     if (_intenseEvent == true || _intenseCluster == true) {
-      if (trip.i.hitIndice == HitType::STOPPINGTARGET && trip.j.hitIndice >= 0) {
-        outcome = BREAK;
-        return;
+      if (trip.i.hitIndice == HitType::STOPPINGTARGET) {
+        if(trip.j.hitIndice != HitType::CALOCLUSTER && trip.j.hitIndice != HitType::STOPPINGTARGET){
+          outcome = BREAK;
+          return;
+        }
       }
     }
 
@@ -872,9 +878,11 @@ namespace mu2e {
     float dz23 = trip.j.pos.z() - trip.k.pos.z();
 
     // check if point should break for loop
-    if (trip.j.hitIndice >= 0 && dz23 > _maxTripletDz) {
-      outcome = BREAK;
-      return;
+    if (trip.j.hitIndice != HitType::CALOCLUSTER && trip.j.hitIndice != HitType::STOPPINGTARGET){
+        if(dz23 > _maxTripletDz) {
+          outcome = BREAK;
+          return;
+        }
     }
 
     // check if point should be continued on
