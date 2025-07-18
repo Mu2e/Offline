@@ -849,11 +849,9 @@ namespace mu2e {
         }
     }
     if (_intenseEvent == true || _intenseCluster == true) {
-      if (trip.i.hitIndice == HitType::STOPPINGTARGET) {
-        if(trip.j.hitIndice != HitType::CALOCLUSTER && trip.j.hitIndice != HitType::STOPPINGTARGET){
+      if (trip.i.hitIndice == HitType::STOPPINGTARGET && trip.j.hitIndice != HitType::CALOCLUSTER) {
           outcome = BREAK;
           return;
-        }
       }
     }
 
