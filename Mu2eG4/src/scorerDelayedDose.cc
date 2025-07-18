@@ -25,7 +25,7 @@ namespace mu2e {
     readTimeProfile(configPhysics.coolTimeProfileRad());
   }
 
-  void scorerDelayedDose::readTimeProfile(std::string filename)
+  void scorerDelayedDose::readTimeProfile(const std::string& filename)
   {
     bin_.clear();
     profile_.clear();
@@ -36,10 +36,9 @@ namespace mu2e {
                                    <<filename<<" does not exist\n";
     }
 
-    G4double bin(0.), flux(0.),rsum(0.);
+    G4double bin(0.), flux(0.);
     while (infile >> bin >> flux) {
       bin_.push_back(bin * s);
-      rsum += flux;
       profile_.push_back(flux);
     }
 
@@ -70,7 +69,7 @@ namespace mu2e {
 
     if (!IsInDecayWindow(aStep->GetPreStepPoint()->GetGlobalTime())) return false;
 
-    G4int idx  = ((G4TouchableHistory*) (aStep->GetPreStepPoint()->GetTouchable()))
+    G4int idx  = (dynamic_cast<const G4TouchableHistory*>(aStep->GetPreStepPoint()->GetTouchable()))
                   ->GetReplicaNumber(indexDepth);
     G4double cubicVolume = ComputeVolume(aStep, idx);
     G4double CellFlux    = stepLength / cubicVolume;

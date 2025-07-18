@@ -1,4 +1,5 @@
 #include "Offline/Mu2eG4/inc/scorerFTDConverter.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "cetlib_except/exception.h"
 
@@ -42,23 +43,23 @@ namespace mu2e{
   double scorerFTDConverter::evaluate(int pdgCode, double energy)
   {
     switch(pdgCode) {
-      case 22:
+      case PDGCode::gamma:
         return photon.evaluate(energy);
-      case 11:
-        return positron.evaluate(energy);
-      case -11:
+      case PDGCode::e_minus:
         return electron.evaluate(energy);
-      case -13:
+      case PDGCode::e_plus:
+        return positron.evaluate(energy);
+      case PDGCode::mu_minus:
         return muminus.evaluate(energy);
-      case 13:
+      case PDGCode::mu_plus:
         return muplus.evaluate(energy);
-      case -211:
+      case PDGCode::pi_minus:
         return piminus.evaluate(energy);
-      case 211:
+      case PDGCode::pi_plus:
         return piplus.evaluate(energy);
-      case 2112:
+      case PDGCode::n0:
         return neutron.evaluate(energy);
-      case 2212:
+      case PDGCode::proton:
         return proton.evaluate(energy);
       default:
         //use proton as proxy for heavier nuclei and other particles

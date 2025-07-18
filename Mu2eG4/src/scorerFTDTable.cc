@@ -23,7 +23,7 @@ namespace mu2e{
   {
     std::ifstream file(filename_);
     if (!file.is_open()) throw cet::exception("BADINPUT")<<"scorerFTDTable: file "<<filename_
-                                                         <<"does NOT exist \n"<< std::endl;
+                                                         <<"does NOT exist \n";
     std::string line,item;
 
     getline(file,line);
@@ -42,12 +42,12 @@ namespace mu2e{
     if (!found){
       mf::LogWarning logm("G4");
       logm << "Method "<<method_<<" not found in scorerFTDTable for "<<filename_
-           <<", switching to ISO";
+           <<", switching to ISO"<<"\n";
     }
 
     while (getline(file, line)){
       std::stringstream linestream(line);
-      double number;
+      double number(0);
       linestream >> number;
       energies_.push_back(number);
 
@@ -59,14 +59,14 @@ namespace mu2e{
     }
 
     if (coeffs_.empty()) throw cet::exception("BADINPUT")<<"scorerFTDTable: wrong formatting in file "
-                                                         <<filename_<<".\n "<< std::endl;
+                                                         <<filename_<<".\n ";
   }
 
 
   void scorerFTDTable::print()
   {
-    std::cout<<"Flux-to-effetive dose for file "<<filename_<<" with method "<<method_<<std::endl;
-    for (size_t i=0;i<energies_.size();++i) std::cout<<energies_[i]<<" "<<coeffs_[i]<<std::endl;
+    std::cout<<"Flux-to-effetive dose for file "<<filename_<<" with method "<<method_<<"\n";
+    for (size_t i=0;i<energies_.size();++i) std::cout<<energies_[i]<<" "<<coeffs_[i]<<"\n";
   }
 
 

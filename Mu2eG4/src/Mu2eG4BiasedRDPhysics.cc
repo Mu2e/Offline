@@ -32,7 +32,7 @@ Mu2eG4BiasedRDPhysics::Mu2eG4BiasedRDPhysics(const Mu2eG4Config::Physics* phys,
   deex->SetInternalConversionFlag(true);
   deex->SetIsomerProduction(true);
   deex->SetCorrelatedGamma(false);
-  deex->SetMaxLifeTime(G4NuclideTable::GetInstance()->GetThresholdOfHalfLife()/std::log(2.));
+  deex->SetMaxLifeTime(G4NuclideTable::GetInstance()->GetThresholdOfHalfLife()/std::log(2.0));
 
   const G4double meanLife = 1*picosecond;
   G4NuclideTable::GetInstance()->SetMeanLifeThreshold(meanLife);

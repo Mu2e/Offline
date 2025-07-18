@@ -75,7 +75,7 @@ namespace mu2e {
     auto& reg    = (art::ServiceHandle<Mu2eG4Helper>())->antiLeakRegistry();
 
     const int verboseLevel = config.getInt("scoring.verboseLevel");
-    const int nMesh        = meshNames_.size();
+    const auto nMesh        = meshNames_.size();
 
     std::vector<double> meshPositionX, meshPositionY, meshPositionZ;
     config.getVectorDouble("scoring.meshPositionX", meshPositionX, nMesh);
@@ -141,7 +141,7 @@ namespace mu2e {
              throw cet::exception("BADINPUT")<<"Mu2eG4ScoringManager: unsupported scorer "<<psName<<". "
                                              <<"Choose among CellFlux, DoseDeposit, EnergyDeposit, "
                                              <<"FlatSurfaceFlux, TrackCounter, PassageCellFlux, VolumeFlux, "
-                                             <<"DoseEffective DelayedDose\n"<< std::endl;
+                                             <<"DoseEffective DelayedDose\n";
         }
 
         //optionaly add a particle filter

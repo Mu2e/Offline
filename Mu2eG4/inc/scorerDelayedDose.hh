@@ -33,7 +33,7 @@ namespace mu2e {
 
 
      private:
-       void     readTimeProfile(std::string filename);
+       void     readTimeProfile(const std::string& filename);
        G4bool   IsInDecayWindow(G4double time);
 
        G4int                 HCID_{-1};

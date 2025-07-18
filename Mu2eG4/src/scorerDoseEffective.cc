@@ -42,7 +42,7 @@ namespace mu2e {
     G4double stepLength = aStep->GetStepLength();
     //if (stepLength <1e-12) return false;
 
-    G4int idx  = ((G4TouchableHistory*) (aStep->GetPreStepPoint()->GetTouchable()))
+    G4int idx  = (dynamic_cast<const G4TouchableHistory*>(aStep->GetPreStepPoint()->GetTouchable()))
                   ->GetReplicaNumber(indexDepth);
     G4double cubicVolume = ComputeVolume(aStep, idx);
     G4double CellFlux    = stepLength / cubicVolume;
@@ -94,4 +94,3 @@ namespace mu2e {
 
 
 }
-
