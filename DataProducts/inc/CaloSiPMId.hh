@@ -32,6 +32,7 @@ namespace mu2e {
     bool isLaserPINDiode() const { return _id >= (CaloConst::_nCrystalChannel + CaloConst::_nPINDiodPerDisk*CaloConst::_nDisk); }
     CaloConst::detType detType() const;
 
+    //Valid for on-disk pin diodes only
     std::bitset<4> pinDiodeCode() const { return std::bitset<4>(_id-CaloConst::_nCrystalChannel); }
     int pinDiodeDisk() const { return pinDiodeCode()[0]; }
     int pinDiodePhi() const { return pinDiodeCode()[1]; }
