@@ -652,10 +652,9 @@ namespace mu2e {
           int nHitsNear = 0;
           XYZVectorF seedPos = getPos(i);
           for (size_t j = 0; j < _tcHits.size(); j++) {
-            if (_tcHits[j].inHelix == true) { continue; }
-            if (_tcHits[j].hitIndice == HitType::STOPPINGTARGET) { continue; }
-            if (_tcHits[j].hitIndice == HitType::CALOCLUSTER) { continue; }
-            if (j == i) { continue; }
+            if (j == i || _tcHits[j].inHelix == true
+                || _tcHits[j].hitIndice == HitType::STOPPINGTARGET
+                || _tcHits[j].hitIndice == HitType::CALOCLUSTER) { continue; }
             XYZVectorF testPos = getPos(j);
             // do isolation flagging
             if (_doIsolationFlag == true) {
@@ -756,9 +755,8 @@ namespace mu2e {
           int nComboHitsInTimeCluster = 0;
           // compute number of usable hits in time cluster, and number of hits in candidate helix
           for (size_t q = 0; q < _tcHits.size(); q++) {
-            if (_tcHits[q].inHelix == true) { continue; }
-            if (_tcHits[q].hitIndice == HitType::STOPPINGTARGET) { continue; }
-            if (_tcHits[q].hitIndice == HitType::CALOCLUSTER) { continue; }
+            if (_tcHits[q].inHelix == true || _tcHits[q].hitIndice == HitType::STOPPINGTARGET
+                || _tcHits[q].hitIndice == HitType::CALOCLUSTER) { continue; }
             int hitIndice = _tcHits[q].hitIndice;
             nStrawHitsInTimeCluster = nStrawHitsInTimeCluster + _chColl->at(hitIndice).nStrawHits();
             nComboHitsInTimeCluster = nComboHitsInTimeCluster + 1;
@@ -982,11 +980,10 @@ namespace mu2e {
 
     // seed point
     for (size_t i = 0; i < _tcHits.size() - _minLineSegmentHits; i++) {
-      if (_tcHits[i].inHelix == true) { continue; }
-      if (_tcHits[i].hitIndice == HitType::STOPPINGTARGET) { continue; }
-      if (_tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
-      if (_tcHits[i].used == false) { continue; }
-      if (_tcHits[i].notOnSegment == false) { continue; }
+      if (_tcHits[i].inHelix == true || _tcHits[i].used == false
+          || _tcHits[i].notOnSegment == false
+          || _tcHits[i].hitIndice == HitType::STOPPINGTARGET
+          || _tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
       float seedZ = getPos(i).z();
       float seedPhi = _tcHits[i].helixPhi;
       float seedError2 = _tcHits[i].helixPhiError2;
@@ -1011,10 +1008,9 @@ namespace mu2e {
       lastAddedPositiveZ = seedZ;
       // now loop over test point
       for (size_t j = i + 1; j < _tcHits.size(); j++) {
-        if (_tcHits[j].inHelix == true) { continue; }
-        if (_tcHits[j].hitIndice == HitType::STOPPINGTARGET) { continue; }
-        if (_tcHits[j].hitIndice == HitType::CALOCLUSTER) { continue; }
-        if (_tcHits[j].used == false) { continue; }
+        if (_tcHits[j].inHelix == true || _tcHits[j].used == false
+            || _tcHits[j].hitIndice == HitType::STOPPINGTARGET
+            || _tcHits[j].hitIndice == HitType::CALOCLUSTER) { continue; }
         float testZ = getPos(j).z();
         if (testZ == seedZ) { continue; }
         if (std::abs(seedZ - testZ) > _maxZWindow) { break; }
@@ -1387,11 +1383,10 @@ namespace mu2e {
     // also add points to linear fitter to get t0
     ::LsqSums2 fitter;
     for (size_t i = 0; i < _tcHits.size(); i++) {
-      if (_tcHits[i].inHelix == true)  { continue; }
-      if (_tcHits[i].hitIndice == HitType::STOPPINGTARGET) { continue; }
-       if (_tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
-      if (_tcHits[i].used == false) { continue; }
-      if (_tcHits[i].used == true) { _tcHits[i].inHelix = true; }
+      if (_tcHits[i].inHelix == true || _tcHits[i].used == false
+          || _tcHits[i].hitIndice == HitType::STOPPINGTARGET
+          || _tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
+      _tcHits[i].inHelix = true;
       int hitIndice = _tcHits[i].hitIndice;
       const ComboHit* hit = &_chColl->at(hitIndice);
       fitter.addPoint(hit->pos().z(), hit->correctedTime(), 1 / (hit->timeRes() * hit->timeRes()));
