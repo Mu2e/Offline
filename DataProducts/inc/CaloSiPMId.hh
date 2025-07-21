@@ -29,6 +29,7 @@ namespace mu2e {
     bool isValid() const { return _id < CaloConst::_nChannel; }
     bool isCrystal() const { return _id < CaloConst::_nCrystalChannel; }
     bool isPINDiode() const { return _id >= CaloConst::_nCrystalChannel; }
+    bool isLaserPINDiode() const { return _id >= (CaloConst::_nCrystalChannel + CaloConst::_nPINDiodPerDisk*CaloConst::_nDisk); }
     CaloConst::detType detType() const;
 
     std::bitset<4> pinDiodeCode() const { return std::bitset<4>(_id-CaloConst::_nCrystalChannel); }
