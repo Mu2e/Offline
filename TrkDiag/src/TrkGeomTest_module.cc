@@ -129,10 +129,10 @@ namespace mu2e {
           strawtest_->Fill();
           // compare Z positions for straws 1 and 0 in panels 0 and 1
           if(print_>0){
-            if(splane_ == 9){
+            if(splane_ == 8 || splane_ == 9){
               if(spanel_ == 0 || spanel_ == 1){
                 if(straw_ == 0 || straw_ == 1){
-                  std::cout << std::setw(8) << "Straw " << straw_ << " Panel " << spanel_ << " Z " << npos.z() << std::endl;
+                  std::cout << std::setw(8) << "Straw " << straw_ << " Panel " << spanel_ << " Plane " << splane_ << " Z " << npos.z() << std::endl;
                   zpos.insert(npos.z());
                 }
               }
@@ -156,7 +156,7 @@ namespace mu2e {
         if(print_ > 0){
           double zavg = 0.0;
           for(auto iz = zpos.begin(); iz != zpos.end(); ++iz) zavg += *iz;
-          zavg /= 4.0;
+          zavg /= zpos.size();
           for(auto iz = zpos.begin(); iz != zpos.end(); ++iz) std::cout << std::setw(8) << "DZ =  " << *iz - zavg << std::endl;
         }
 
