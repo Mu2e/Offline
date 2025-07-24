@@ -11,7 +11,7 @@ physics : {
   analyzers : {
     trkgeomtest : {
       module_type : TrkGeomTest
-      printLevel : 0
+      printLevel : 1
       diagLevel : 1
     }
   }

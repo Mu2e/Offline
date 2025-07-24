@@ -42,7 +42,7 @@ double tracker.planeRotation               =   60.0;
 double tracker.oddStationRotation          =   60.0;
 double tracker.planeHalfSeparation        =   27.992; // final
 double tracker.planeSpacing               =   174.0; // final
-vector<double> tracker.manifoldHalfLengths = { 3.125, 5.0, 8.25}; // [0] = radial shift, [1] = unused, [2] = used to define layer Z offsets
+vector<double> tracker.manifoldHalfLengths = { 3.125, 5.0, 8.4454}; // [0] = radial shift, [1] = unused, [2] = used to define layer Z offsets
 double tracker.panelPhi0                  =   45.0; // degrees
 
 // straw parameters
@@ -163,8 +163,8 @@ double trackerSupport.electronics.cu.halfLength   =  0.5;
 string trackerSupport.electronics.cu.material     =  "Electronics";
 
 // channel =? gap for modeling where the staws go through the manifold
-double trackerSupport.channel.zOffset  = 11.017;
-double trackerSupport.panel.zOffset = 11.017;
+double trackerSupport.channel.zOffset  = 11.2124;
+double trackerSupport.panel.zOffset = 11.2124;
 double trackerSupport.channel.depth    =  5.8;
 string trackerSupport.channel.material =  "DSVacuum";
 string trackerSupport.electronicsSpace.material =  "StrawGas";

@@ -91,8 +91,10 @@ namespace mu2e {
       // fetch tracker status
       ProditionsHandle<TrackerStatus> trackerstatus_h;
       auto const& trkstatus = trackerstatus_h.get(event.id());
-      std::cout << "TrackerStatus ";
-      if(print_ > 0)trkstatus.print(std::cout);
+      if(print_ > 1){
+        std::cout << "TrackerStatus " << std::endl;
+        trkstatus.print(std::cout);
+      }
       // fetch aligned and nominal tracker objects
       GeomHandle<Tracker> nominalTracker_h;
       auto const& ntracker = *nominalTracker_h;
@@ -101,6 +103,7 @@ namespace mu2e {
       if(ntracker.straws().size() != atracker.straws().size()){
         std::cout << "Trackers don't match" << std::endl;
       } else {
+        std::set<double> zpos;
         for(size_t istr = 0; istr < ntracker.straws().size(); istr++){
           auto const& nstraw = ntracker.straws()[istr];
           auto const& astraw = atracker.straws()[istr];
@@ -124,6 +127,17 @@ namespace mu2e {
           dphinom_ = ndir.phi();
           deltax_ = delta.x(); deltay_ = delta.y(); deltaz_ = delta.z();
           strawtest_->Fill();
+          // compare Z positions for straws 1 and 0 in panels 0 and 1
+          if(print_>0){
+            if(splane_ == 9){
+              if(spanel_ == 0 || spanel_ == 1){
+                if(straw_ == 0 || straw_ == 1){
+                  std::cout << std::setw(8) << "Straw " << straw_ << " Panel " << spanel_ << " Z " << npos.z() << std::endl;
+                  zpos.insert(npos.z());
+                }
+              }
+            }
+          }
         }
         //
         // panel test
@@ -139,10 +153,17 @@ namespace mu2e {
           ophi_ = panel.origin().phi();
           paneltest_->Fill();
         }
+        if(print_ > 0){
+          double zavg = 0.0;
+          for(auto iz = zpos.begin(); iz != zpos.end(); ++iz) zavg += *iz;
+          zavg /= 4.0;
+          for(auto iz = zpos.begin(); iz != zpos.end(); ++iz) std::cout << std::setw(8) << "DZ =  " << *iz - zavg << std::endl;
+        }
+
+        first_ = false;
+        std::cout << "Total # Straws " << ntracker.straws().size() << " Sum length = " << totallength
+          << " volume = " << totallength*M_PI*ntracker.strawProperties().strawInnerRadius() << std::endl;
       }
-      first_ = false;
-      std::cout << "Total # Straws " << ntracker.straws().size() << " Sum length = " << totallength
-        << " volume = " << totallength*M_PI*ntracker.strawProperties().strawInnerRadius() << std::endl;
     }
   }
 }
