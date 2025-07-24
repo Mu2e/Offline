@@ -186,11 +186,8 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
               int crvBarIndex = offlineChannel / 4;
               int SiPMNumber = offlineChannel % 4;
 
-              std::vector<int16_t> adc;
-              adc.insert(adc.end(),waveform.begin(),waveform.end());  //convert from uint16_t to int16_t
-              for(size_t i=0; i<waveform.size(); ++i) {if((adc[i] & 0x800) == 0x800) adc[i]=(int16_t)(adc[i] | 0xF000);}  //to handle negative numbers stored in 12bit ADC samples
-              crvDigis->emplace_back(adc, crvHitInfo.hitTime, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
-              crvDigisNZS->emplace_back(adc, crvHitInfo.hitTime, true, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);  //temporary solution until we get the FEB-II
+              crvDigis->emplace_back(waveform, crvHitInfo.hitTime, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
+              crvDigisNZS->emplace_back(waveform, crvHitInfo.hitTime, true, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);  //temporary solution until we get the FEB-II
             } // loop over all crvHits
 
             if(_diagLevel>2)

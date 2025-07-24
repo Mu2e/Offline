@@ -97,31 +97,31 @@ cet_build_plugin(StrawDigisFromArtdaqFragments art::module
 cet_build_plugin(CrvDigisFromArtdaqFragments art::module
   REG_SOURCE src/CrvDigisFromArtdaqFragments_module.cc
   LIBRARIES REG
-  Offline::DAQ
-  Offline::DataProducts
-  Offline::RecoDataProducts
-  artdaq-core-mu2e::Data
-  artdaq-core-mu2e::Overlays
+    Offline::DAQ
+    Offline::DataProducts
+    Offline::RecoDataProducts
+    artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Overlays
 )
 
 cet_build_plugin(CrvDigisFromArtdaqFragmentsFEBII art::module
   REG_SOURCE src/CrvDigisFromArtdaqFragmentsFEBII_module.cc
   LIBRARIES REG
-  Offline::DAQ
-  Offline::DataProducts
-  Offline::RecoDataProducts
-  artdaq-core-mu2e::Data
-  artdaq-core-mu2e::Overlays
+    Offline::DAQ
+    Offline::DataProducts
+    Offline::RecoDataProducts
+    artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Overlays
 )
 
 cet_build_plugin(CrvGRdataFromArtdaqFragments art::module
   REG_SOURCE src/CrvGRdataFromArtdaqFragments_module.cc
   LIBRARIES REG
-  Offline::DAQ
-  Offline::DataProducts
-  Offline::RecoDataProducts
-  artdaq-core-mu2e::Data
-  artdaq-core-mu2e::Overlays
+    Offline::DAQ
+    Offline::DataProducts
+    Offline::RecoDataProducts
+    artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Overlays
 )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test/generateCrvDigiFromFragment.fcl   ${CURRENT_BINARY_DIR} test/generateCrvDigiFromFragment.fcl  )
