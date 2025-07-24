@@ -616,7 +616,7 @@ CalPatRec : { @table::CalPatRec
             tcCollLabel                : "TimeClusterFinderDe"
             ccCollLabel                : "CaloClusterMaker"
             hitBkgBits                 : ["Noisy","Dead","Background"]
-            radSelect                  : 1
+            radSelect                  : 0
             chunkSep                   : 5
             chunkWindow                : 20.0
             chunkThresh                : 3
