@@ -92,7 +92,7 @@ namespace mu2e {
       ProditionsHandle<TrackerStatus> trackerstatus_h;
       auto const& trkstatus = trackerstatus_h.get(event.id());
       std::cout << "TrackerStatus ";
-      trkstatus.print(std::cout);
+      if(print_ > 0)trkstatus.print(std::cout);
       // fetch aligned and nominal tracker objects
       GeomHandle<Tracker> nominalTracker_h;
       auto const& ntracker = *nominalTracker_h;
