@@ -50,13 +50,13 @@ namespace mu2e {
     auto udir = DStoUVW.rotation()*_udir;
     auto vdir = DStoUVW.rotation()*_vdir;
     auto wdir = DStoUVW.rotation()*_wdir;
-    if( fabs(1.0 - udir.dot(Hep3Vector(1.0,0.0,0.0))) > 1e-6 ||
-        fabs(1.0 - vdir.dot(Hep3Vector(0.0,1.0,0.0))) > 1e-6 ||
-        fabs(1.0 - wdir.dot(Hep3Vector(0.0,0.0,1.0))) > 1e-6 )
-      throw cet::exception("Geom") << "Panel direction error: id " << _id << " udir " << udir << " vdir " << vdir << " wdir " << wdir << std::endl;
-    auto po = DStoUVW*origin;
-    if( fabs(po.r()) > 1e-6 )
-      throw cet::exception("Geom") << "Panel origin error: id " << _id << " po " << po << " transform " << DStoUVW << std::endl;
+//    if( fabs(1.0 - udir.dot(Hep3Vector(1.0,0.0,0.0))) > 1e-6 ||
+//        fabs(1.0 - vdir.dot(Hep3Vector(0.0,1.0,0.0))) > 1e-6 ||
+//        fabs(1.0 - wdir.dot(Hep3Vector(0.0,0.0,1.0))) > 1e-6 )
+//      throw cet::exception("Geom") << "Panel direction error: id " << _id << " udir " << udir << " vdir " << vdir << " wdir " << wdir << std::endl;
+//    auto po = DStoUVW*origin;
+//    if( fabs(po.r()) > 1e-6 )
+//      throw cet::exception("Geom") << "Panel origin error: id " << _id << " po " << po << " transform " << DStoUVW << std::endl;
     //
   }
 

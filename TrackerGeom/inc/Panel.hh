@@ -62,6 +62,13 @@ namespace mu2e {
     auto const& panelToDS() const { return _UVWtoDS; }
     auto dsToPanel() const { return _UVWtoDS.inverse(); }
 
+    void setPanelToDS(HepTransform const& panelToDS) {
+      _UVWtoDS = panelToDS;
+      _udir = panelToDS.rotation()*xyzVec(1.0,0.0,0.0);
+      _vdir = panelToDS.rotation()*xyzVec(0.0,1.0,0.0);
+      _wdir = panelToDS.rotation()*xyzVec(0.0,0.0,1.0);
+    }
+
     // deprecated interface: either use the above local coordinates, or get the straw direction directly
     xyzVec straw0Direction() const { return _straws[0]->wireDirection(); }
     // (The primary straw of each layer is the straw used to establish position.
