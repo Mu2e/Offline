@@ -92,6 +92,7 @@ namespace mu2e {
                   std::unique_ptr<SimParticleCollection>& sims,
                   std::unique_ptr<StepPointMCCollection>& out_steps,
                   art::ProductID const& pid, art::EDProductGetter const* getter);
+    void cleanDaughters(std::unique_ptr<SimParticleCollection>& coll);
 
     art::ProductToken<SimParticleCollection> const simsToken_;
     art::ProductToken<StepPointMCCollection> const stepsToken_;
@@ -158,6 +159,9 @@ namespace mu2e {
   void StopSelection::addSim(art::Ptr<SimParticle> sim, std::unique_ptr<SimParticleCollection>& coll,
                              art::ProductID const& pid, art::EDProductGetter const* getter) {
       while(sim.isNonnull()) {
+        // check if the sim has already been added
+        if(coll->has(sim->id())) break;
+        //if not, add the sim to the output and continue up the lineage
         auto sim_id_pair = std::make_pair(sim->id(), *sim);
         auto& new_sim = sim_id_pair.second;
         auto parent = sim->parent();
@@ -196,6 +200,18 @@ namespace mu2e {
   }
 
   //--------------------------------------------------------------------------------------------------------------
+  // remove daughters that were not added to the collection
+  void StopSelection::cleanDaughters(std::unique_ptr<SimParticleCollection>& coll) {
+    for(auto& sim : *coll) {
+      std::vector<art::Ptr<SimParticle>> out_daughters;
+      for (auto& daughter : sim.second.daughters()) {
+        if(coll->has(cet::map_vector_key(daughter.key()))) out_daughters.push_back(daughter);
+      }
+      sim.second.setDaughterPtrs(out_daughters);
+    }
+  }
+
+  //--------------------------------------------------------------------------------------------------------------
   bool StopSelection::filter(art::Event& event) {
     auto out_sims{std::make_unique<SimParticleCollection>()};
     auto out_steps{std::make_unique<StepPointMCCollection>()};
@@ -219,6 +235,7 @@ namespace mu2e {
 
     const size_t nstops = selected.size();
     const int offset = (acceptReject_) ? 0 : randomFlat_.fireInt(nstops); // if picking 1 stop, make it random, otherwise sample all
+    int naccepted = 0;
     for(size_t istop = 0; istop < nstops; ++istop) {
       const size_t index = (istop + offset) % nstops;
       art::Ptr<SimParticle> sim = selected[index];
@@ -237,6 +254,7 @@ namespace mu2e {
         if(weight < maxWeight_ * randomFlat_.fire()) continue; // if it fails, continue to the next stop
         weight = 1.; // reset as no event weight is used if using accept/reject
       }
+      ++naccepted;
 
       // save the entire lineage, updating the pointer mapping
       addSim(sim, out_sims, out_pid, out_getter);
@@ -248,10 +266,11 @@ namespace mu2e {
     // for every input step point, add it to the output if relevant, with remapping
     if(out_sims->size() > 0) {
       addSteps(*steps, out_sims, out_steps, out_pid, out_getter);
+      cleanDaughters(out_sims);
     }
 
     if(diagLevel_ > 1) {
-      printf("[StopSelection::%s] From %zu candidates accepted %zu stops\n", __func__, selected.size(), out_sims->size());
+      printf("[StopSelection::%s] From %zu candidates accepted %i stops\n", __func__, selected.size(), naccepted);
     }
 
     // determine whether or not to accept the event
