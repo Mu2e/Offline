@@ -6,21 +6,17 @@ double building.radiation.slab1.offsetFromMu2eOrigin.z   = -3581.40;
 double building.radiation.slab1.yHalfThickness           = 457.20;
 vector<double> building.radiation.slab1.xPositions = {
 -2285.90, // 0
-7924.80, // 1
-7924.80, // 2
-7010.40, // 3
-7010.40, // 4
--914.40, // 5
--914.40, // 6
--2285.90 // 7
+7620.00, // 1
+7620.00, // 2
+-914.40, // 3
+-914.40, // 4
+-2285.90 // 5
 };
 vector<double> building.radiation.slab1.yPositions = {
 609.55, // 0
 609.55, // 1
--3962.35, // 2
--3962.35, // 3
--4419.55, // 4
--4419.55, // 5
--4876.75, // 6
--4876.75 // 7
+-4419.55, // 2
+-4419.55, // 3
+-4876.75, // 4
+-4876.75 // 5
 };

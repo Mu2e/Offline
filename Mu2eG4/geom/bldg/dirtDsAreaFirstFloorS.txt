@@ -7,10 +7,10 @@ string dirt.dsArea.firstFloor.S.name     = "dirtDsAreaFirstFloorS";
 string dirt.dsArea.firstFloor.S.material = "MBOverburden";
 
 double dirt.dsArea.firstFloor.S.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.dsArea.firstFloor.S.offsetFromFloorSurface.y = 7569.2;
+double dirt.dsArea.firstFloor.S.offsetFromFloorSurface.y = 7493.0;
 double dirt.dsArea.firstFloor.S.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.dsArea.firstFloor.S.yHalfThickness           = 203.2;
+double dirt.dsArea.firstFloor.S.yHalfThickness           = 127.0;
 
 vector<int>    dirt.dsArea.firstFloor.S.xreplace   = { 12, 13 };
 vector<double> dirt.dsArea.firstFloor.S.xPositions = {
