@@ -150,7 +150,7 @@ namespace mu2e {
     auto bkgshu = miconfig.findUpdater<BkgANNSHU>();
     CA ca = unbiasedClosestApproach();
     if(ca.usable()){
-      auto dinfo = fillDriftInfo(ca_);
+      auto dinfo = fillDriftInfo(ca);
       // there can be multiple updaters: apply them all
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
       if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
