@@ -408,6 +408,9 @@ Mu2eKinKal : {
       SampleSurfaces : ["TT_Mid"]
     }
     UsePDGCharge: false
+    HelixMask: {
+      MinHelixMom : 0
+    }
   }
 
   LHDriftFit : {
@@ -427,6 +430,9 @@ Mu2eKinKal : {
     }
     Extrapolation : @local::Mu2eKinKal.LOOPEXTRAPOLATION
     UsePDGCharge: false
+    HelixMask: {
+      MinHelixMom : 0
+    }
   }
 
   KLSeedFit : {
