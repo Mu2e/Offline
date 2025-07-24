@@ -139,11 +139,11 @@ double tracker.panelPadding                  = 0.25; // mm
 // innerRing =? composite manifold of plastic and Al
 double trackerSupport.innerRing.innerRadius  = 701.;
 double trackerSupport.innerRing.outerRadius  = 712.7;
-double trackerSupport.innerRing.halfLength   =  12.1;// ????
+double trackerSupport.innerRing.halfLength   =  12.1;// ???? should be 12.8, but changing this will break everything else
 string trackerSupport.innerRing.material     =  "TrackerManifold";
 
 // centerPlate =? base plate
-double trackerSupport.centerPlate.halfLength =  2.38; // ????
+double trackerSupport.centerPlate.halfLength =  2.38; //OK, this is the center plate
 string trackerSupport.centerPlate.material   = "Al6061";
 
 // outerRing =? outer ring

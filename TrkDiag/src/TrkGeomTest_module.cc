@@ -25,6 +25,7 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<int> printLevel{ Name("printLevel"), Comment("Print level" ),0 };
         fhicl::Atom<int> diagLevel{ Name("diagLevel"), Comment("Diagnostic level" ),0 };
+        fhicl::Atom<int> testStation{ Name("testStation"), Comment("Station to test" ),8 };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit TrkGeomTest(Parameters const& config);
@@ -42,6 +43,7 @@ namespace mu2e {
       float rnom_, phinom_, dphinom_;
       float deltax_, deltay_, deltaz_;
       bool first_;
+      int teststation_;
       float uphi_, vphi_, wcost_;
       float oz_, or_, ophi_;
   };
@@ -50,7 +52,9 @@ namespace mu2e {
   strawtest_(0),
   print_(config().printLevel()),
   diag_(config().diagLevel()),
-  first_(true) {}
+  first_(true),
+  teststation_(config().testStation())
+  {}
 
   TrkGeomTest::~TrkGeomTest() {}
 
@@ -129,7 +133,7 @@ namespace mu2e {
           strawtest_->Fill();
           // compare Z positions for straws 1 and 0 in panels 0 and 1
           if(print_>0){
-            if(splane_ == 8 || splane_ == 9){
+            if(splane_ == teststation_*2 || splane_ == teststation_*2+1){
               if(spanel_ == 0 || spanel_ == 1){
                 if(straw_ == 0 || straw_ == 1){
                   std::cout << std::setw(8) << "Straw " << straw_ << " Panel " << spanel_ << " Plane " << splane_ << " Z " << npos.z() << std::endl;
@@ -156,7 +160,8 @@ namespace mu2e {
         if(print_ > 0){
           double zavg = 0.0;
           for(auto iz = zpos.begin(); iz != zpos.end(); ++iz) zavg += *iz;
-          zavg /= zpos.size();
+          zavg /= double(zpos.size());
+          std::cout << "Average Z position " << std::setw(8) << zavg << std::endl;
           for(auto iz = zpos.begin(); iz != zpos.end(); ++iz) std::cout << std::setw(8) << "DZ =  " << *iz - zavg << std::endl;
         }
 

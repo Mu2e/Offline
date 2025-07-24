@@ -13,6 +13,7 @@ physics : {
       module_type : TrkGeomTest
       printLevel : 1
       diagLevel : 1
+      testStation : 8
     }
   }
   e1        : [trkgeomtest]
