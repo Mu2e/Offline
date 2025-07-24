@@ -78,8 +78,7 @@ namespace mu2e {
               strawends[StrawEnd::cal], strawends[StrawEnd::hv]);
         } // straw loop
         Panel &newpanel = tracker.getPanel(panel.id());
-        newpanel = Panel(panel.id(),tracker.straws());
-        tracker.getPanel(panel.id()).setPanelToDS(aligned_panel_to_ds);
+        newpanel = Panel(panel.id(),tracker.straws(),aligned_panel_to_ds);
       } // panel loop
       Plane &newplane = tracker.getPlane(plane.id());
       newplane = Plane(plane.id(),tracker.panels());

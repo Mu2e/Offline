@@ -25,6 +25,7 @@ namespace mu2e {
     using TrackerStrawCollection = std::array<Straw,StrawId::_nustraws>;
     Panel():_straws(){} // default object non-function but needed for storage classes
     Panel( const StrawId& id, TrackerStrawCollection const& straws ); // construct from the Id and the full set of straws
+    Panel( const StrawId& id, TrackerStrawCollection const& straws, HepTransform const& panelToDS ); // construct with alignment
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
