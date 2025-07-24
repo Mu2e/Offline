@@ -1,0 +1,18 @@
+string building.N.retaining.Wall.W.extension2.name     = "NRetainingWallWExtension2";
+string building.N.retaining.Wall.W.extension2.material = "CONCRETE_MARS";
+double building.N.retaining.Wall.W.extension2.offsetFromMu2eOrigin.x   = 947.40;
+double building.N.retaining.Wall.W.extension2.offsetFromFloorSurface.y = 7926.27;
+double building.N.retaining.Wall.W.extension2.offsetFromMu2eOrigin.z   = -3581.40;
+double building.N.retaining.Wall.W.extension2.yHalfThickness           = 1066.75;
+vector<double> building.N.retaining.Wall.W.extension2.xPositions = {
+-21196.24, // 0
+-27111.09, // 1
+-27025.04, // 2
+-21110.19 // 3
+};
+vector<double> building.N.retaining.Wall.W.extension2.yPositions = {
+8863.28, // 0
+7388.21, // 1
+7043.18, // 2
+8518.25 // 3
+};

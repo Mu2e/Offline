@@ -105,7 +105,7 @@ namespace mu2e {
   using MatEnv::DetMaterial;
   using HPtr = art::Ptr<HelixSeed>;
   using CCPtr = art::Ptr<CaloCluster>;
-  using CCHandle = art::ValidHandle<CaloClusterCollection>;
+  using CCHandle = art::Handle<CaloClusterCollection>;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
 
   using KKConfig = Mu2eKinKal::KinKalConfig;
@@ -124,6 +124,7 @@ namespace mu2e {
   using Name    = fhicl::Name;
   using Comment = fhicl::Comment;
 
+  using CylPtr = std::shared_ptr<KinKal::Cylinder>;
   using DiskPtr = std::shared_ptr<KinKal::Disk>;
   using AnnPtr = std::shared_ptr<KinKal::Annulus>;
   using FruPtr = std::shared_ptr<KinKal::Frustrum>;
@@ -135,11 +136,10 @@ namespace mu2e {
     fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
     fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
     fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
-    fhicl::Atom<float> sampleTol { Name("SampleTolerance"), Comment("Tolerance for sample surface intersections (mm)") };
+    fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for surface intersections (mm)") };
   };
   // Extrapolation configuration
   struct KKExtrapConfig {
-    fhicl::Atom<float> Tol { Name("Tolerance"), Comment("Tolerance on fractional momemtum precision when extrapolating fits") };
     fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit") };
     fhicl::Atom<bool> BackToTracker { Name("BackToTracker"), Comment("Extrapolate reflecting tracks back to the tracker") };
     fhicl::Atom<bool> ToTrackerEnds { Name("ToTrackerEnds"), Comment("Extrapolate tracks to the tracker ends") };
@@ -160,7 +160,6 @@ namespace mu2e {
     fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") };
     // LoopHelix module specific config
     fhicl::OptionalAtom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Input helix seed slope significance threshold to assume the direction")};
-    fhicl::Atom<bool> prioritizeCaloHits{ Name("PrioritizeCaloHits"), Comment("Prioritize tracks with calo-hits when determining the best fit direction"), true};
     fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
     fhicl::OptionalTable<HelixMaskConfig> HelixMask { Name("HelixMask"), Comment("Selections applied to input helices")};
@@ -183,13 +182,13 @@ namespace mu2e {
       std::unique_ptr<KKTRK> fitTrack(art::Event& event, HelixSeed const& hseed, const TrkFitDirection fdir, const PDGCode::type fitpart);
       // extrapolation functions
       void extrapolate(KKTRK& ktrk) const;
-      void toTrackerEnds(KKTRK& ktrk,VEC3 const& dir0) const;
+      void toTrackerEnds(KKTRK& ktrk) const;
       bool extrapolateIPA(KKTRK& ktrk,TimeDir trkdir) const;
       bool extrapolateST(KKTRK& ktrk,TimeDir trkdir) const;
       bool extrapolateTracker(KKTRK& ktrk,TimeDir tdir) const;
       bool extrapolateTSDA(KKTRK& ktrk,TimeDir tdir) const;
       void toOPA(KKTRK& ktrk, double tstart, TimeDir tdir) const;
-      void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const;
+      void sampleFit(KKTRK& kktrk) const;
       void print_track_info(const KalSeed& kkseed, const KKTRK& ktrk) const;
 
       // data payload
@@ -204,7 +203,6 @@ namespace mu2e {
       PDGCode::type fpart_;
       double slopeSigThreshold_; //helix slope significance threshold to assume the direction
       bool useHelixSlope_; //use the helix slope estimate to decide the fit direction
-      bool prioritizeCaloHits_; //prioritize tracks with a calo-hit when deciding the track direction
       TrkFitDirection fdir_;
       bool usePDGCharge_; // use the pdg particle charge: otherwise use the helicity and direction to determine the charge
       KKFIT kkfit_; // fit helper
@@ -216,7 +214,7 @@ namespace mu2e {
       Config config_; // initial fit configuration object
       Config exconfig_; // extension configuration object
       Config fconfig_; // final final configuration object
-      double sampletol_; // surface intersection tolerance (mm)
+      double intertol_; // surface intersection tolerance (mm)
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
       SurfaceMap smap_;
@@ -230,8 +228,9 @@ namespace mu2e {
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
       SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
-    //Helix Mask params
+      //Helix Mask params
       float minHelixP_ = -1.;
+      CylPtr STInner_, STOuter_;
       int nSeen_ = 0;
       int nFit_ = 0;
       int nSkipped_ = 0;
@@ -249,13 +248,12 @@ namespace mu2e {
     print_(settings().modSettings().printLevel()),
     fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
     useHelixSlope_(settings().slopeSigThreshold(slopeSigThreshold_)),
-    prioritizeCaloHits_(settings().prioritizeCaloHits()),
     usePDGCharge_(settings().pdgCharge()),
     kkfit_(settings().kkfitSettings()),
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
-    sampletol_(settings().modSettings().sampleTol()),
+    intertol_(settings().modSettings().interTol()),
     sampleinrange_(settings().modSettings().sampleInRange()),
     sampleinbounds_(settings().modSettings().sampleInBounds()),
     fixedfield_(false), extrapolate_(false), backToTracker_(false), toOPA_(false)
@@ -302,20 +300,20 @@ namespace mu2e {
         auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
         // global configs
         double maxdt = settings().Extrapolation()->MaxDt();
-        double tol =  settings().Extrapolation()->Tol();
+        double btol =  settings().extSettings().btol(); // use the same BField cor. tolerance as in fit extension
         int debug =  settings().Extrapolation()->Debug();
         // predicate to extrapolate through IPA
-        extrapIPA_ = ExtrapolateIPA(maxdt,tol,IPA,debug);
+        extrapIPA_ = ExtrapolateIPA(maxdt,btol,intertol_,IPA,debug);
         // predicate to extrapolate through ST
         if(debug > 0)std::cout << "IPA limits z " << extrapIPA_.zmin() << " " << extrapIPA_.zmax() << std::endl;
-        extrapST_ = ExtrapolateST(maxdt,tol,smap_.ST(),debug);
+        extrapST_ = ExtrapolateST(maxdt,btol,intertol_,smap_.ST(),debug);
         // temporary
         if(debug > 0)std::cout << "ST limits z " << extrapST_.zmin() << " " << extrapST_.zmax() << " r " << extrapST_.rmin() << " " << extrapST_.rmax() << std::endl;
         // extrapolate to the front of the tracker
-        trackerFront_ = ExtrapolateToZ(maxdt,tol,smap_.tracker().front().center().Z(),debug);
-        trackerBack_ = ExtrapolateToZ(maxdt,tol,smap_.tracker().back().center().Z(),debug);
+        trackerFront_ = ExtrapolateToZ(maxdt,btol,smap_.tracker().front().center().Z(),debug);
+        trackerBack_ = ExtrapolateToZ(maxdt,btol,smap_.tracker().back().center().Z(),debug);
         // extrapolate to the back of the detector solenoid
-        TSDA_ = ExtrapolateToZ(maxdt,tol,smap_.DS().upstreamAbsorber().center().Z(),debug);
+        TSDA_ = ExtrapolateToZ(maxdt,btol,smap_.DS().upstreamAbsorber().center().Z(),debug);
         tsdaptr_ = smap_.DS().upstreamAbsorberPtr();
         trkfrontptr_ = smap_.tracker().frontPtr();
         trkmidptr_ = smap_.tracker().middlePtr();
@@ -337,6 +335,9 @@ namespace mu2e {
       // geometry service eventually, TODO
       SurfaceMap smap;
       smap.surfaces(ssids,sample_);
+      // Find the target bounding surfaces as well
+      STInner_ = smap.ST().innerPtr();
+      STOuter_ = smap.ST().outerPtr();
     }
 
   void LoopHelixFit::beginRun(art::Run& run) {
@@ -354,8 +355,8 @@ namespace mu2e {
 
     // Print the fit direction configuration
     if(print_ > 0) printf("[LoopHelixFit::%s::%s] Fit dz/dt direction = %.0f, PDG = %i, use helix slope = %o with threshold %.1f\n",
-                          __func__, moduleDescription().moduleLabel().c_str(), fdir_.dzdt(), (int) fpart_,
-                          useHelixSlope_, (useHelixSlope_) ? slopeSigThreshold_ : -1.f);
+        __func__, moduleDescription().moduleLabel().c_str(), fdir_.dzdt(), (int) fpart_,
+        useHelixSlope_, (useHelixSlope_) ? slopeSigThreshold_ : -1.f);
   }
 
   std::vector<TrkFitDirection::FitDirection> LoopHelixFit::chooseHelixDir(HelixSeed const& hseed) const {
@@ -392,7 +393,7 @@ namespace mu2e {
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
-    auto cc_H = event.getValidHandle<CaloClusterCollection>(cccol_T_);
+    auto cc_H = event.getHandle<CaloClusterCollection>(cccol_T_);
     auto const& chcol = *ch_H;
     // empty collections
     static MEASCOL nohits; // empty
@@ -451,7 +452,7 @@ namespace mu2e {
 
     auto goodfit = goodFit(*ktrk);
     if(print_>0) printf("[LoopHelixFit::%s] Before extending the fit: goodFit = %o, fitcon = %.4f, nHits = %2lu, %lu calo-hits\n",
-                        __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
+        __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
     // if we have an extension schedule, extend.
     if(goodfit && exconfig_.schedule().size() > 0) {
       kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *ktrk );
@@ -465,7 +466,7 @@ namespace mu2e {
 
     //store the fit quality result if it's a good fit
     if(print_>0) printf("[LoopHelixFit::%s] After extending the fit : goodFit = %o, fitcon = %.4f, nHits = %2lu, %lu calo-hits\n",
-                        __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
+        __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
     return ktrk;
   }
 
@@ -522,9 +523,10 @@ namespace mu2e {
             if(goodfit) fitflag.merge(TrkFitFlag::FitOK);
             else        fitflag.clear(TrkFitFlag::FitOK);
             if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
-
+            // sample the fit as requested
+            sampleFit(*ktrk);
+            // convert to seed output format
             auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h);
-            sampleFit(*ktrk,kkseed._inters);
             if(print_>0) print_track_info(kkseed, *ktrk);
             kkseedcol->push_back(kkseed);
             // fill assns with the helix seed
@@ -627,9 +629,9 @@ namespace mu2e {
   void LoopHelixFit::extrapolate(KKTRK& ktrk) const {
     // define the time direction according to the fit direction inside the tracker
     auto const& ftraj = ktrk.fitTraj();
-    auto dir0 = ftraj.direction(ftraj.t0());
-    if(toTrackerEnds_)toTrackerEnds(ktrk,dir0);
+    if(toTrackerEnds_)toTrackerEnds(ktrk);
     if(upstream_){
+      auto dir0 = ftraj.direction(ftraj.t0());
       TimeDir tdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
       double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
       // extrapolate through the IPA in this direction.
@@ -660,25 +662,43 @@ namespace mu2e {
     }
   }
 
-  void LoopHelixFit::toTrackerEnds(KKTRK& ktrk,VEC3 const& dir0) const {
+  void LoopHelixFit::toTrackerEnds(KKTRK& ktrk) const {
+    // time direction to reach the bounding surfaces from the active region depends on the z momentum. This calculation assumes the particle doesn't
+    // reflect inside the tracker volumei
+    auto const& ftraj = ktrk.fitTraj();
+    auto dir0 = ftraj.direction(ftraj.t0());
     TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
     TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
-    ktrk.extrapolate(fronttdir,trackerFront_);
-    ktrk.extrapolate(backtdir,trackerBack_);
+    auto tofront = ktrk.extrapolate(fronttdir,trackerFront_);
+    auto toback = ktrk.extrapolate(backtdir,trackerBack_);
     // record the standard tracker intersections
-    auto const& ftraj = ktrk.fitTraj();
-    TimeRange frange = ftraj.range();
-    double tol = trackerFront_.tolerance();
     static const SurfaceId tt_front("TT_Front");
     static const SurfaceId tt_mid("TT_Mid");
     static const SurfaceId tt_back("TT_Back");
 
-    auto frontinter = KinKal::intersect(ftraj,*trkfrontptr_,frange,tol,fronttdir);
-    if(frontinter.onsurface_)ktrk.addIntersection(tt_front,frontinter);
-    auto midinter = KinKal::intersect(ftraj,*trkmidptr_,frange,tol);
-    if(midinter.onsurface_)ktrk.addIntersection(tt_mid,midinter);
-    auto backinter = KinKal::intersect(ftraj,*trkbackptr_,frange,tol,backtdir);
-    if(backinter.onsurface_)ktrk.addIntersection(tt_back,backinter);
+    // start with the middle
+    auto midinter = KinKal::intersect(ftraj,*trkmidptr_,ftraj.range(),intertol_);
+    if(midinter.good()) ktrk.addIntersection(tt_mid,midinter);
+    if(tofront){
+      // check the front piece first; that is usually correct
+      // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
+      auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
+      auto frontinter = KinKal::intersect(fhel,*trkfrontptr_,fhel.range(),intertol_,fronttdir);
+      if(!frontinter.good()){
+        // start from the middle
+        TimeRange frange = ftraj.range();
+        if(midinter.good())frange = fronttdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
+        frontinter = KinKal::intersect(ftraj,*trkfrontptr_,frange,intertol_,fronttdir);
+      }
+      if(frontinter.good()) ktrk.addIntersection(tt_front,frontinter);
+    }
+    if(toback){
+      // start from the middle
+      TimeRange brange = ftraj.range();
+      if(midinter.good())brange = backtdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
+      auto backinter = KinKal::intersect(ftraj,*trkbackptr_,brange,intertol_,backtdir);
+      if(backinter.good())ktrk.addIntersection(tt_back,backinter);
+    }
   }
 
   bool LoopHelixFit::extrapolateIPA(KKTRK& ktrk,TimeDir tdir) const {
@@ -692,11 +712,11 @@ namespace mu2e {
     auto startdir = ftraj.direction(starttime);
     do {
       ktrk.extrapolate(tdir,extrapIPA_);
-      if(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_){
+      if(extrapIPA_.intersection().good()){
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
-        KKIPAXINGPTR ipaxingptr = std::make_shared<KKIPAXING>(IPA,IPASID,*kkmat_.IPAMaterial(),extrapIPA_.intersection(),reftrajptr,ipathick_,extrapIPA_.tolerance());
+        KKIPAXINGPTR ipaxingptr = std::make_shared<KKIPAXING>(IPA,IPASID,*kkmat_.IPAMaterial(),extrapIPA_.intersection(),reftrajptr,ipathick_,extrapIPA_.interTolerance());
         if(extrapIPA_.debug() > 0){
           double dmom, paramomvar, perpmomvar;
           ipaxingptr->materialEffects(dmom,paramomvar,perpmomvar);
@@ -709,7 +729,7 @@ namespace mu2e {
           std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
         }
       }
-    } while(extrapIPA_.intersection().onsurface_ && extrapIPA_.intersection().inbounds_);
+    } while(extrapIPA_.intersection().good());
     // check if the particle exited in the same physical direction or not (reflection)
     double endtime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     auto enddir = ftraj.direction(endtime);
@@ -729,23 +749,24 @@ namespace mu2e {
     if(extrapST_.debug() > 0)std::cout << "extrapolating to ST " << std::endl;
     do {
       ktrk.extrapolate(tdir,extrapST_);
-      if(extrapST_.intersection().onsurface_ && extrapST_.intersection().inbounds_){
+      if(extrapST_.intersection().good()){
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        KKSTXINGPTR stxingptr = std::make_shared<KKSTXING>(extrapST_.foil(),extrapST_.foilId(),*kkmat_.STMaterial(),extrapST_.intersection(),reftrajptr,stthick_,extrapST_.tolerance());
+        KKSTXINGPTR stxingptr = std::make_shared<KKSTXING>(extrapST_.foil(),extrapST_.foilId(),*kkmat_.STMaterial(),extrapST_.intersection(),reftrajptr,stthick_,extrapST_.interTolerance());
         if(extrapST_.debug() > 0){
           double dmom, paramomvar, perpmomvar;
           stxingptr->materialEffects(dmom,paramomvar,perpmomvar);
           std::cout << "ST Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
           std::cout << " before append mom = " << reftrajptr->momentum();
         }
+        // Add the xing. This truncates the fit
         ktrk.addSTXing(stxingptr,tdir);
         if(extrapST_.debug() > 0){
           auto const& newtrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
           std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
         }
       }
-    } while(extrapST_.intersection().onsurface_ && extrapST_.intersection().inbounds_);
+    } while(extrapST_.intersection().good());
     // check if the particle exited in the same physical direction or not (reflection)
     double endtime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     auto enddir = ftraj.direction(endtime);
@@ -762,7 +783,7 @@ namespace mu2e {
     ktrk.extrapolate(tdir,trackerFront_);
     // the last piece appended should cover the necessary range
     auto const& ktraj = tdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-    auto trkfrontinter = KinKal::intersect(ftraj,*trkfrontptr_,ktraj.range(),trackerFront_.tolerance(),tdir);
+    auto trkfrontinter = KinKal::intersect(ftraj,*trkfrontptr_,ktraj.range(),intertol_,tdir);
     if(trkfrontinter.onsurface_){ // dont worry about bounds here
       ktrk.addIntersection(TrackerSID,trkfrontinter);
       return true;
@@ -781,7 +802,7 @@ namespace mu2e {
     bool retval = epos.Z() < TSDA_.zVal();
     if(retval){
       auto const& ktraj = tdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-      auto tsdainter = KinKal::intersect(ftraj,*tsdaptr_,ktraj.range(),TSDA_.tolerance(),tdir);
+      auto tsdainter = KinKal::intersect(ftraj,*tsdaptr_,ktraj.range(),intertol_,tdir);
       if(tsdainter.onsurface_)ktrk.addIntersection(TSDASID,tsdainter);
     }
     return retval;
@@ -791,53 +812,48 @@ namespace mu2e {
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId OPASID("OPA");
     TimeRange trange = tdir == TimeDir::forwards ? TimeRange(tstart,ftraj.range().end()) : TimeRange(ftraj.range().begin(),tstart);
-    auto opainter = KinKal::intersect(ftraj,*opaptr_,trange,trackerFront_.tolerance(),tdir);
-    if(opainter.onsurface_ && opainter.inbounds_){ // require in bounds to say it was a physical intersection
+    auto opainter = KinKal::intersect(ftraj,*opaptr_,trange,intertol_,tdir);
+    if(opainter.good()){
       ktrk.addIntersection(OPASID,opainter);
     }
   }
 
-  void LoopHelixFit::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {
+  void LoopHelixFit::sampleFit(KKTRK& kktrk) const {
     auto const& ftraj = kktrk.fitTraj();
-    double tbeg = ftraj.range().begin();
-    double tend = ftraj.range().end();
-    static const double epsilon(1.0e-6);
-    // if this helix has reflected, limit the search
-    auto mom0 = ftraj.momentum3(ftraj.t0());
-    if(mom0.Z() >0){ // downstream fit: skip any upstream-going segments
-      for(auto const& ktraj : ftraj.pieces()){
-        auto axis = ktraj->axis(ktraj->range().mid());
-        if(axis.direction().Z() > 0.0 )break; // helix headed downstream
-        tbeg = ktraj->range().end(); // force onto next piece
-      }
-    } else { // upstream fit: stop when the track reflects back downstream
-      for(auto const& ktraj : ftraj.pieces()){
-        auto axis = ktraj->axis(ktraj->range().mid());
-        if(axis.direction().Z() > 0.0 )break; // helix no longer heading upstream
-        tend = ktraj->range().begin();
-      }
+    std::vector<TimeRange> ranges;
+    // test for reflection, and if present, split the test in 2
+    auto refltraj = ftraj.reflection(ftraj.range().begin());
+    if(refltraj){
+      double tmid = refltraj->range().begin();
+      ranges.push_back(TimeRange(ftraj.range().begin(),tmid));
+      ranges.push_back(TimeRange(tmid,ftraj.range().end()));
+    } else {
+      ranges.push_back(ftraj.range());
     }
-    for(auto const& surf : sample_){
-      // search for intersections with each surface within the specified time range, going forwards in time
-      bool hasinter(true);
-      size_t max_iter = 1000;
-      size_t cur_iter = 0;
-      // loop to find multiple intersections
-      while(hasinter && tbeg < tend) {
-        TimeRange irange(tbeg,tend);
-        if (cur_iter > max_iter)
-          break;
-        cur_iter += 1;
-        auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,sampletol_);
-        hasinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
-        if(hasinter) {
-          // save the intersection information
-          auto const& ktraj = ftraj.nearestPiece(surfinter.time_);
-          inters.emplace_back(ktraj.stateEstimate(surfinter.time_),XYZVectorF(ktraj.bnom()),surf.first,surfinter);
-          // update for the next intersection
-          tbeg = surfinter.time_ + epsilon;// move past existing intersection to avoid repeating
+    for(auto range : ranges) {
+      double tbeg = range.begin();
+      double tend = range.end();
+      for(auto const& surf : sample_){
+        // search for intersections with each surface within the specified time range, going forwards in time
+        bool goodinter(true);
+        size_t max_inter = 100; // limit the number of intersections
+        size_t cur_inter = 0;
+        // loop to find multiple intersections
+        while(goodinter && tbeg < tend && cur_inter < max_inter){
+          cur_inter += 1;
+          TimeRange irange(tbeg,tend);
+          auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,intertol_);
+          goodinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || surfinter.inrange_);
+          if(goodinter) {
+            // save the intersection information
+            kktrk.addIntersection(surf.first,surfinter);
+            // update for the next intersection
+            // move past existing intersection to avoid repeating
+            double epsilon = intertol_/ftraj.speed(surfinter.time_);
+            tbeg = surfinter.time_ + epsilon;
+          }
           if(print_>1) printf(" [LoopHelixFit::%s::%s] Found intersection with surface %15s\n",
-                              __func__, moduleDescription().moduleLabel().c_str(), surf.first.name().c_str());
+              __func__, moduleDescription().moduleLabel().c_str(), surf.first.name().c_str());
         }
       }
     }
@@ -845,8 +861,8 @@ namespace mu2e {
 
   void LoopHelixFit::print_track_info(const KalSeed& kkseed, const KKTRK& ktrk) const {
     if(print_>0) printf("[LoopHelixFit::%s::%s] Create seed             : fitcon = %.4f, nHits = %2lu, seedActiveHits = %2u, %lu calo-hits\n",
-                        __func__, moduleDescription().moduleLabel().c_str(), ktrk.fitStatus().chisq_.probability(), ktrk.strawHits().size(),
-                        kkseed.nHits(), ktrk.caloHits().size());
+        __func__, moduleDescription().moduleLabel().c_str(), ktrk.fitStatus().chisq_.probability(), ktrk.strawHits().size(),
+        kkseed.nHits(), ktrk.caloHits().size());
     if(print_>1) { //print the hit flags for the track and the KalSeed as well as the KalSegments and intersections
       for(auto const& hit : ktrk.strawHits())
         printf("  [LoopHelixFit::%s::%s] KKTRK straw flags: %s", __func__, moduleDescription().moduleLabel().c_str(), hit->hit().flag().hex().c_str());
@@ -856,15 +872,15 @@ namespace mu2e {
       for(size_t ikinter = 0; ikinter < kkseed.intersections().size(); ++ikinter){
         auto const& kinter = kkseed.intersections()[ikinter];
         printf("[LoopHelixFit::%s::%s]   Seed %10s intersection: t0 = %6.1f, t0Err = %6.4f, mom = %6.2f, momErr = %6.4f\n",
-               __func__, moduleDescription().moduleLabel().c_str(), kinter.surfaceId().name().c_str(), kinter.time(), std::sqrt(kinter.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
-               kinter.mom(), kinter.momerr());
+            __func__, moduleDescription().moduleLabel().c_str(), kinter.surfaceId().name().c_str(), kinter.time(), std::sqrt(kinter.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
+            kinter.mom(), kinter.momerr());
       }
       printf("[LoopHelixFit::%s::%s] KalSeed has %lu segments\n", __func__, moduleDescription().moduleLabel().c_str(), kkseed.segments().size());
       for(size_t ikseg = 0; ikseg < kkseed.segments().size(); ++ikseg){
         auto const& kseg = kkseed.segments()[ikseg];
         printf("[LoopHelixFit::%s::%s]   Seed segment %lu: tmin = %6.1f, terr = %6.4f, mom = %6.2f, momErr = %6.4f\n",
-               __func__, moduleDescription().moduleLabel().c_str(), ikseg, kseg.tmin(), std::sqrt(kseg.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
-               kseg.mom(), kseg.momerr());
+            __func__, moduleDescription().moduleLabel().c_str(), ikseg, kseg.tmin(), std::sqrt(kseg.loopHelix().paramVar(KinKal::LoopHelix::t0_)),
+            kseg.mom(), kseg.momerr());
       }
     }
 

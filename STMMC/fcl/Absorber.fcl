@@ -1,0 +1,57 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMMC/fcl/prolog.fcl"
+
+# This module simulates photons being fired upstream of the HPGe absorber to investigate the relative shift in spectrum
+# Original author : Pawel Plesniak
+# Note - edit the parameters in this prolog.fcl, aside from which detector is being used which is stored in the generate module
+
+process_name: HPGeAbsorberSpectrumShift
+source : {
+  module_type : EmptyEvent
+  maxEvents : @local::Efficiency.NPhotons
+}
+
+services : {
+  # @local::Services.Sim
+  @table::Services.Core
+  @table::Services.SimOnly
+  message: @local::default_message
+  GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
+}
+
+physics: {
+  producers : {
+    generate : {
+      module_type : PhotonGun
+      x : @local::Efficiency.Absorber.x
+      y : @local::Efficiency.Absorber.y
+      z : @local::Efficiency.Absorber.z
+      E : @local::Efficiency.PhotonEnergy
+    }
+    g4run : @local::g4run
+  }
+
+  analyzers : {
+    EDep : {
+      module_type : MakeVirtualDetectorTree
+      VirtualDetectorId : 101
+      StepPointMCsTag: "g4run:virtualdetector"
+      SimParticlemvTag: "g4run:"
+    }
+  }
+
+  p1 : [ generate, g4run ]
+  trigger_paths : [p1]
+  o1 : [ EDep ]
+  end_paths: [ o1 ]
+}
+
+physics.producers.g4run.physics.physicsListName: "QGSP_BERT_EMZ"
+physics.producers.g4run.SDConfig.enableSD: [STMDet, virtualdetector]
+services.SeedService.baseSeed         :  8
+services.SeedService.maxUniqueEngines :  20
+services.TFileService.fileName : @local::Efficiency.OutputFilename
+# physics.producers.g4run.debug.trackingVerbosityLevel : 1
+# physics.producers.g4run.debug.steppingVerbosityLevel : 1

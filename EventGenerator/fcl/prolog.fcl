@@ -176,8 +176,9 @@ GenFilter : {
 
 PionFilter : {
         module_type : PionFilter
-        tmin : 350
+        tmin : 300
         tmax : 1e8
+        processCode : 54 #mu2eKillerVolume
         isNull : false
 }
 
@@ -331,20 +332,6 @@ EventGenerator : { @table::EventGenerator
             muonStops            : { @table::mu2e.tgtMuonStops
                 inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
             }
-        }
-
-        RPCGun : {
-            module_type    : RPCGun
-            verbosityLevel : 0
-            doHistograms   : false
-            physics : {
-                generateIntConversion : 0    # 0:photons 1: e+e- internal conversion pairs
-                spectrumShape         : "Bistirlich"    # could also be "flat"
-                elow                  : 1.5
-                ehi                   : 140.1
-                spectrumResolution    : 0.1 # hopefully, in MeV
-            }
-            pionStops                 : { @table::EventGenerator.pionStops }
         }
 
         RMCGun : {

@@ -41,6 +41,7 @@
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensitySummary.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
+#include "Offline/MCDataProducts/inc/SumOfWeights.hh"
 
 // G4
 #include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
@@ -83,4 +84,3 @@
 
 // Analysis
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
-

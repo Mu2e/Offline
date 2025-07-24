@@ -49,7 +49,7 @@ namespace mu2e {
   using KinKal::BFieldMap;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
   using Mu2eKinKal::KKFitConfig;
-  using CCHandle = art::ValidHandle<CaloClusterCollection>;
+  using CCHandle = art::Handle<CaloClusterCollection>;
   template <class KTRAJ> class KKFit {
     public:
       // fit configuration
@@ -484,18 +484,18 @@ namespace mu2e {
     double t0sig = sqrt(t0piece.params().covariance()(KTRAJ::t0_,KTRAJ::t0_));
     HitT0 t0(t0val,t0sig);
     // create the shell for the output
-    KalSeed fseed(kktrk.fitParticle(),fflag);
+    KalSeed kseed(kktrk.fitParticle(),fflag);
     auto const& fstatus = kktrk.fitStatus();
-    fseed._chisq = fstatus.chisq_.chisq();
-    fseed._ndof = fstatus.chisq_.nDOF();
-    fseed._fitcon = fstatus.chisq_.probability();
+    kseed._chisq = fstatus.chisq_.chisq();
+    kseed._ndof = fstatus.chisq_.nDOF();
+    kseed._fitcon = fstatus.chisq_.probability();
     size_t igap;
     double maxgap,avggap;
     fittraj.gaps(maxgap,igap,avggap);
-    fseed._maxgap = maxgap;
-    fseed._avggap = avggap;
+    kseed._maxgap = maxgap;
+    kseed._avggap = avggap;
     // loop over track components and store them
-    fseed._hits.reserve(kktrk.strawHits().size());
+    kseed._hits.reserve(kktrk.strawHits().size());
     for(auto const& strawhit : kktrk.strawHits() ) {
       Residual utres = strawhit->refResidual(Mu2eKinKal::tresid);
       Residual udres = strawhit->refResidual(Mu2eKinKal::dresid);
@@ -508,7 +508,7 @@ namespace mu2e {
          // std::cout << "Unbiased KKStrawHit residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
         }
       }
-      fseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
+      kseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
           strawhit->closestApproach().tpData(),
           strawhit->unbiasedClosestApproach().tpData(),
           utres, udres,
@@ -540,13 +540,13 @@ namespace mu2e {
       // calculate the distance from POCA to the SiPM, along the crystal (Z) direction, and projected along the track
       float clen = backz-ca.sensorPoca().Z();
       float trklen = clen/ca.particleTraj().direction(ca.particleToca()).Z();
-      fseed._chit = TrkCaloHitSeed(calohit->caloCluster(),hflag,
+      kseed._chit = TrkCaloHitSeed(calohit->caloCluster(),hflag,
           clen,trklen,
           ca.tpData(),
           calohit->unbiasedClosestApproach().tpData(),
           ctres,ca.particleTraj().momentum3(ca.particleToca()));
     }
-    fseed._straws.reserve(kktrk.strawXings().size());
+    kseed._straws.reserve(kktrk.strawXings().size());
     for(auto const& sxing : kktrk.strawXings()) {
       // compute energy loss
       double dm, paramomvar, perpmomvar;
@@ -558,7 +558,7 @@ namespace mu2e {
         if(matxing.dmat_.name().compare(5,3,"gas",3)==0)gaspath = matxing.plen_;
       }
       auto const& tpocad = sxing->closestApproach();
-      fseed._straws.emplace_back(sxing->strawId(),
+      kseed._straws.emplace_back(sxing->strawId(),
           tpocad.doca(),
           tpocad.particleToca(),
           tpocad.sensorToca(),
@@ -570,10 +570,10 @@ namespace mu2e {
     // save the fit segments as requested
     if(kktrk.fitStatus().usable()){
       if (savetraj_ == full){
-        fseed._segments.reserve(fittraj.pieces().size());
+        kseed._segments.reserve(fittraj.pieces().size());
         for (auto const& traj : fittraj.pieces() ){
           // skip zero-range segments.  By convention, sample the state at the mid-time
-          if(traj->range().range() > 0.0) fseed._segments.emplace_back(*traj,traj->range().mid());
+          if(traj->range().range() > 0.0) kseed._segments.emplace_back(*traj,traj->range().mid());
         }
       } else if (savetraj_ == detector ) {
         // only save segments inside the tracker volume. First, find the time limits for that
@@ -603,22 +603,22 @@ namespace mu2e {
           tmin = fittraj.range().begin();
           tmax = fittraj.range().end();
         }
-        fseed._segments.reserve(fittraj.pieces().size());// this will be oversized
+        kseed._segments.reserve(fittraj.pieces().size());// this will be oversized
         for (auto const& traj : fittraj.pieces() ){
           // skip segments outside the tracker volume range
-          if(traj->range().range() > 0.0 && (traj->range().inRange(tmin) || traj->range().inRange(tmax) || (traj->range().begin() > tmin && traj->range().end() < tmax)) ) fseed._segments.emplace_back(*traj,traj->range().mid());
+          if(traj->range().range() > 0.0 && (traj->range().inRange(tmin) || traj->range().inRange(tmax) || (traj->range().begin() > tmin && traj->range().end() < tmax)) ) kseed._segments.emplace_back(*traj,traj->range().mid());
         }
       } else if (savetraj_ == t0seg ) {
-        fseed._segments.emplace_back(t0piece,t0val);
+        kseed._segments.emplace_back(t0piece,t0val);
       }
     } else {
-      fseed._segments.emplace_back(t0piece,t0val); // save the t0 piece even for failed fits
+      kseed._segments.emplace_back(t0piece,t0val); // save the t0 piece even for failed fits
     }
-    // sample the fit at the locations provided. This is a deprecated function, to be replaced by extrapolation
-    sampleFit(kktrk,fseed._inters);
+    // sample the fit at the locations recorded in the fit
+    sampleFit(kktrk,kseed._inters);
     // remove unused storage
-    fseed._segments.shrink_to_fit();
-    return fseed;
+    kseed._segments.shrink_to_fit();
+    return kseed;
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const {

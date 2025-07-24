@@ -87,6 +87,11 @@ namespace mu2e {
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCrvSteps, *this);
     }
 
+    for(const auto& e: conf.surfaceStepMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixSurfaceSteps, *this);
+    }
+
     for(const auto& e: conf.extMonSimHitMixer().mixingMap()) {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixExtMonSimHits, *this);
@@ -402,6 +407,26 @@ namespace mu2e {
   }
 
   //----------------------------------------------------------------
+  bool Mu2eProductMixer::mixSurfaceSteps(std::vector<SurfaceStepCollection const*> const& in,
+                                          SurfaceStepCollection& out,
+                                          art::PtrRemapper const& remap)
+  {
+    std::vector<SurfaceStepCollection::size_type> stepOffsets;
+    art::flattenCollections(in, out, stepOffsets);
+
+    for(SurfaceStepCollection::size_type i=0; i<out.size(); ++i) {
+      auto ie = getInputEventIndex(i, stepOffsets);
+      auto& step = out[i];
+      step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
+      if(applyTimeOffset_){
+        step.time() += stoff_.timeOffset_;
+      }
+    }
+
+    return true;
+  }
+
+ //----------------------------------------------------------------
   bool Mu2eProductMixer::mixExtMonSimHits(std::vector<ExtMonFNALSimHitCollection const*> const& in,
                                           ExtMonFNALSimHitCollection& out,
                                           art::PtrRemapper const& remap)

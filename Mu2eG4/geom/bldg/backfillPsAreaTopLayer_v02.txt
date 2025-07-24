@@ -1,9 +1,9 @@
 string building.backfill.psArea.TopLayer.name     = "backfillPsAreaTopLayer";
 string building.backfill.psArea.TopLayer.material = "MBOverburden";
 double building.backfill.psArea.TopLayer.offsetFromMu2eOrigin.x   = 947.40;
-double building.backfill.psArea.TopLayer.offsetFromFloorSurface.y = 9080.40;
+double building.backfill.psArea.TopLayer.offsetFromFloorSurface.y = 9080.5;
 double building.backfill.psArea.TopLayer.offsetFromMu2eOrigin.z   = -3581.40;
-double building.backfill.psArea.TopLayer.yHalfThickness           = 1790.60;
+double building.backfill.psArea.TopLayer.yHalfThickness           = 1790.7;
 vector<double> building.backfill.psArea.TopLayer.xPositions = {
 -2921.00, // 0
 -2921.00, // 1

@@ -97,11 +97,13 @@
 
 // general reco
 #include "Offline/RecoDataProducts/inc/RecoCount.hh"
-#include "Offline/RecoDataProducts/inc/DAQerror.hh"
 
 // STM
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
+
+// MTP
+#include "Offline/RecoDataProducts/inc/MTPHit.hh"
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

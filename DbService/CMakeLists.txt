@@ -11,6 +11,7 @@ cet_make_library(
       src/GrlHeader.cc
       src/GrlList.cc
       src/GrlTool.cc
+      src/OpenTool.cc
       src/RunInfo.cc
       src/RunTool.cc
     LIBRARIES PUBLIC
@@ -46,6 +47,13 @@ cet_make_exec(NAME runTool
 
 cet_make_exec(NAME grlTool
     SOURCE src/grlTool_main.cc
+    LIBRARIES
+      Boost::program_options
+      Offline::DbService      
+)
+
+cet_make_exec(NAME openTool
+    SOURCE src/openTool_main.cc
     LIBRARIES
       Boost::program_options
       Offline::DbService      

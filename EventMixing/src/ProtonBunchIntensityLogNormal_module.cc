@@ -111,9 +111,12 @@ namespace mu2e {
                                        <<".  Write a better algorithm for the task."<<"\n";
     }
     if(debug_ > 0)
-      std::cout << "LogNormal PBI with mean " << lognd_.m() << " sigma " << lognd_.s()
-      << " SDF " << exp(-lognd_.s()*lognd_.s())
+      std::cout << "LogNormal PBI with mum " << lognd_.m() << " sigma " << lognd_.s()
+      << " SDF " << exp(-lognd_.s()*lognd_.s()) << " mean " << exp(lognd_.m() + 0.5*std::pow(lognd_.s(),2))
       << " min " << lognd_.min() << " max " << lognd_.max() << std::endl;
+// compute the average POT/event for the PBI-biased (beam) generation. Note this DOES NOT take
+// into account the cutoff
+    std::cout <<"logNormal PBI mean NPOT/X LogNormal PBI mean NPOT = " << exp(-pow(lognd_.s(),2)) << std::endl;
   }
 
   void ProtonBunchIntensityLogNormal::produce(art::Event& event) {

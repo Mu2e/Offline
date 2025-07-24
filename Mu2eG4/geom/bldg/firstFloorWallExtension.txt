@@ -1,31 +1,18 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_firstFloor_WallExtension.ccl
-
 string building.firstFloor.wall.extension.name     = "firstFloorWallExtension";
-
 string building.firstFloor.wall.extension.material = "CONCRETE_MARS";
-
-double building.firstFloor.wall.extension.offsetFromMu2eOrigin.x   = 947.4;
-double building.firstFloor.wall.extension.offsetFromFloorSurface.y = 9144.0027;//9601.2;
-double building.firstFloor.wall.extension.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.firstFloor.wall.extension.yHalfThickness           = 1371.6027;//1828.8;
-
+double building.firstFloor.wall.extension.offsetFromMu2eOrigin.x   = 947.40;
+double building.firstFloor.wall.extension.offsetFromFloorSurface.y = 9525.00;
+double building.firstFloor.wall.extension.offsetFromMu2eOrigin.z   = -3581.40;
+double building.firstFloor.wall.extension.yHalfThickness           = 1752.60;
 vector<double> building.firstFloor.wall.extension.xPositions = {
-  -2921,   // P0
-  -2921,   // P1
-  -2514.6,   // P2
-  -2514.6   // P3
+-2514.60, // 0
+-2514.60, // 1
+-2921.00, // 2
+-2921.00 // 3
 };
-
 vector<double> building.firstFloor.wall.extension.yPositions = {
-  -4292.6,   // P0
-  -7861.3,   // P1
-  -7861.3,   // P2
-  -4292.6   // P3
+-4292.60, // 0
+-7861.30, // 1
+-7861.30, // 2
+-4292.60 // 3
 };
-
-// Local Variables:
-// mode:c++
-// End:

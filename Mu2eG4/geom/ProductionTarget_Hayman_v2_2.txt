@@ -1,0 +1,12 @@
+
+#include "Offline/Mu2eG4/geom/ProductionTarget_Hayman_v2_1.txt"
+string targetPS_targetCoreMaterial         = "Inconel718";
+string targetPS_targetFinMaterial          = "Inconel718";
+string targetPS_spokeMaterial              = "Inconel718";
+string targetPS.supports.spokes.material   = "Inconel718";
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

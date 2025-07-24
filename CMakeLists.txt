@@ -29,6 +29,7 @@ cet_set_compiler_flags(DIAGS VIGILANT
              -Wno-ignored-qualifiers
              -Wno-unused-parameter
              -Wno-non-virtual-dtor
+             -Wno-extra
 )
 
 if(DEFINED Offline_UPS_QUALIFIER_STRING)
@@ -94,6 +95,7 @@ add_subdirectory(CaloReco)
 add_subdirectory(CalorimeterGeom)
 add_subdirectory(CalPatRec)
 add_subdirectory(CommonMC)
+add_subdirectory(CommonReco)
 add_subdirectory(Compression)
 add_subdirectory(ConditionsBase)
 add_subdirectory(ConditionsService)
