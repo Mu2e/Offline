@@ -15,7 +15,8 @@ extrarootlibs = ['TMVA' , 'Minuit' , 'XMLIO' ]
 
 helper=mu2e_helper(env);
 
-mainlib = helper.make_mainlib( [ 'mu2e_CalPatRec_dict',
+mainlib = helper.make_mainlib( [ 'mu2e_SeedService', #added
+                                 'mu2e_CalPatRec_dict',
                                  'mu2e_CaloCluster',
                                  'mu2e_TrkReco',
                                  'mu2e_BTrkData',
@@ -55,6 +56,7 @@ mainlib = helper.make_mainlib( [ 'mu2e_CalPatRec_dict',
                                  ] )
 
 helper.make_plugins( [ mainlib,
+                       'mu2e_SeedService', #added
                        'mu2e_TrkReco',
                        'mu2e_BTrkData',
                        'mu2e_Mu2eBTrk',
@@ -96,6 +98,7 @@ helper.make_plugins( [ mainlib,
 
 
 helper.make_dict_and_map( [ # mainlib,
+    'mu2e_SeedService', #added
   'mu2e_GeomPrimitives',
   'mu2e_GeneralUtilities',
   'mu2e_TrackerGeom',
