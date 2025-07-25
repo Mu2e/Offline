@@ -12,7 +12,6 @@
 #include "art_root_io/TFileService.h"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-
 //MC DataProducts
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 
@@ -24,13 +23,7 @@
 #include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
-
-//math stupp
 #include <cmath>
-
-
-
-//try to get debugging statements to print
 #include <iostream>
 
 namespace mu2e {
@@ -55,7 +48,7 @@ namespace mu2e {
     };
 
     //-----------------------------------------------------------------------------
-    // how im storing my data within this module
+    // Data Storage SetUp
     //-----------------------------------------------------------------------------
     struct Data {
       const art::Event* _event;
@@ -78,12 +71,12 @@ namespace mu2e {
   private:
 
     //-----------------------------------------------------------------------------
-    // data members
+    // Data Members
     //-----------------------------------------------------------------------------
     int              _debugLevel;
 
     //-----------------------------------------------------------------------------
-    // event object labels
+    // Event Object Labels
     //-----------------------------------------------------------------------------
     // art::InputTag   _chCollTag ;
     // art::InputTag   _tcCollTag ;
@@ -104,15 +97,15 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     const ProtonBunchIntensity*      _evtWeight;
     const IntensityInfoCalo*         _caloIntInfo;
-    // const IntensityInfoTimeCluster*  _tcIntInfoTZ;
-    // const IntensityInfoTimeCluster*  _tcIntInfoFlag;
+    //const IntensityInfoTimeCluster*  _tcIntInfoTZ;
+    //const IntensityInfoTimeCluster*  _tcIntInfoFlag;
     //const IntensityInfoTrackerHits*  _trkHitIntInfo;
     //const TimeClusterCollection*     _tcColl;
-    // const HelixSeedCollection*       _hsColl;
+    //const HelixSeedCollection*       _hsColl;
     //const ComboHitCollection*        _chColl;
 
 
-    ProtonBunchIntensity*            recoPBI; //pointer to what  i am producing
+    ProtonBunchIntensity*            recoPBI; //Pointer to Collection Module Produces
 
     //-----------------------------------------------------------------------------
     // functions
@@ -134,10 +127,9 @@ namespace mu2e {
     bool findData                                        (const art::Event& evt);
 
 
-    //store the predicted nPOT for each event and observable
+    //Add Prediction to Data Storage
     void addPrediction                                   (Data& data, const std::string& obsName, double& obsVal, unsigned long long& predicted);
-
-
+    //Functions to Reconstruct nPOT from Observable
     unsigned long long predictnPOTfromCaloEnergy         (const art::Event& evt, double& caloEnergy);
 
   };
@@ -151,7 +143,7 @@ namespace mu2e {
     _debugLevel               (config().debugLevel()                                  ),
     // _chCollTag                (config().chCollTag()                                   ),
     // _tcCollTag                (config().tcCollTag()                                   ),
-    //  _hsCollTag                (config().hsCollTag()                                   ),
+    // _hsCollTag                (config().hsCollTag()                                   ),
     _caloIntInfoTag           (config().caloIntInfoTag()                              ),
     // _tcIntInfoTZTag           (config().tcIntInfoTZTag()                              ),
     // _tcIntInfoFlagTag         (config().tcIntInfoFlagTag()                            ),
@@ -258,7 +250,6 @@ namespace mu2e {
        //HelixSeedCollection
        auto hsCollH = evt.getValidHandle<HelixSeedCollection>(_hsCollTag);
        if (hsCollH.product() != 0) {_hsColl = hsCollH.product(); }
-
     */
     return true;
   }
@@ -281,7 +272,6 @@ namespace mu2e {
 
       //IntensityInfoCalo
       if(_caloIntInfo != nullptr){
-        //std::cout << "[RecoNPOTMaker::produce] >> nCaloHits = " << _caloIntInfo->nCaloHits() << std::endl;
         double caloEnergy = _caloIntInfo->caloEnergy();
         // int nCalo = _caloIntInfo->nCaloHits();
         // int nCaphri = _caloIntInfo->nCaphriHits();
@@ -292,11 +282,9 @@ namespace mu2e {
         caloPred.observableValue = caloEnergy;
         caloPredicted = predictnPOTfromCaloEnergy(event, caloEnergy);
         addPrediction(_Data, "caloEnergy", caloEnergy, caloPredicted);
-
-        //nCaloHits()
-        //nCaphriHits()
       }
       else {std:: cout <<"[RecoNPOTMaker::produce] Did Not find IntensityInfoCalo data" << std::endl;}
+
       /*
       //IntensityInfoTimeCluster, TTTZClusterFinder
       if(_tcIntInfoTZ != nullptr){std::cout << "[RecoNPOTMaker::produce] >> nProtonTCs = " <<  _tcIntInfoTZ->nProtonTCs() << std::endl; }
@@ -360,7 +348,7 @@ namespace mu2e {
   //------------------------ My Helper Functions---------------------------------
 
   //-----------------------------------------------------------------------------
-  // predict nPOT from CaloEnergy Observable (from FittedPlots_2batchjuly10th2025)
+  // predict nPOT from CaloEnergy Observable
   //-----------------------------------------------------------------------------
 
   unsigned long long RecoNPOTMaker:: predictnPOTfromCaloEnergy(const art::Event& evt, double& caloEnergy){
@@ -369,17 +357,11 @@ namespace mu2e {
     if (caloEnergy >= 0.000000 && caloEnergy <= 3750.000000) {
       predictednPOT = 700948 + 12627.9*pow(caloEnergy,1) + 0.293111*pow(caloEnergy,2);
     }
-    else if (caloEnergy >= 3750.000000 && caloEnergy <= 6300.000000) { //try changing 5625 to 6300
+    else if (caloEnergy >= 3750.000000 && caloEnergy <= 6300.000000) {
       predictednPOT = 3.25191e+06 + 11524*pow(caloEnergy,1) + 0.403671*pow(caloEnergy,2);
     }
-    //else if (caloEnergy >= 5625.000000 && caloEnergy <= 6300.000000) {//changed  6300 bc then stats drop off
-      //predictednPOT = -2.47431e+08 + 94480*pow(caloEnergy,1) + -6.45608*pow(caloEnergy,2); //fit from histogramfitting.c
-    // predictednPOT = -5.36566e+06 + 15314.2*pow(caloEnergy,1); //fit i did dynamically from 5250 to 6500, linear fit chi2rd 15.3631/15
     else {
-      //predictednPOT = 0;
-      //predictednPOT =409009+13038.4*pow(caloEnergy,1); // july18th2batch100000weridbump.root
-      predictednPOT = -5.36566e+06 + 15314.2*pow(caloEnergy,1); //july18thlowstatstotrynewfitbutnotsatisfied.root
-      //predictednPOT = -1.86775e+08 +  74433.2*pow(caloEnergy,1) + -4.80806*pow(caloEnergy,2); //really bad residuals, over estimates the tail
+      predictednPOT = -5.36566e+06 + 15314.2*pow(caloEnergy,1);
     }
 
     return predictednPOT;
@@ -393,15 +375,6 @@ namespace mu2e {
     pred.observable = obsName;
     pred.observableValue = obsVal;
     pred.predictedNPOT = predicted;
-    /*
-    //TO CHECK IT IS WORKING
-    std::cout << "\n[addPrediction] Final PredictionResult Summary:" << std::endl;
-    std::cout << "  Observable            : " << pred.observable << std::endl;
-    std::cout << "  Observable Value      : " << pred.observableValue << std::endl;
-    std::cout << "  Predicted nPOT        : " << pred.predictedNPOT << std::endl;
-    std::cout << "  Actual nPOT           : " << data.actualNPOT << std::endl;
-    //can delete btw comments once satisfied
-    */
     data.predictions.push_back(pred);
   }
 

@@ -64,7 +64,6 @@ namespace mu2e {
       fhicl::Atom<float>             caloDtMax        {Name("caloDtMax"        ), Comment("search time window (ns)"     ) };
       fhicl::Atom<float>             caloTimeOffset   {Name("caloTimeOffset"   ), Comment("in ns"                       ) };
       fhicl::Atom<int>               doRefine         {Name("doRefine"         ), Comment("filter out bad TCs at end"   ) };
-      //----------ADDING MIN AND MAX E------------
       fhicl::Atom<float>            minE    { Name("MinimumEnergy"),         Comment("Minimum straw energy deposit (MeV)")};
       fhicl::Atom<float>            maxE    { Name("MaximumEnergy"),         Comment("Maximum straw energy deposit (MeV)")};
 
@@ -111,7 +110,6 @@ namespace mu2e {
     float    _caloDtMax; // max time from time cluster for calo cluster to be associated with time cluster
     float    _caloTimeOffset; // time offset for calo clusters
     int      _doRefine; // if set to 1 then some pattern recogntion is used to filter out bad TC candidates
-    //ADDING MIN AND MAX E
     float         _minE, _maxE;
     //-----------------------------------------------------------------------------
     // diagnostics
@@ -187,25 +185,24 @@ namespace mu2e {
     _caloDtMax              (config().caloDtMax()                               ),
     _caloTimeOffset         (config().caloTimeOffset()                          ),
     _doRefine               (config().doRefine()                                ),
-    //adding min and max e
     _minE(      config().minE()                                                 ),
     _maxE(      config().maxE()                                                 )
-    {
+  {
 
-      consumes<ComboHitCollection>(_chLabel);
-      consumes<CaloClusterCollection>(_ccLabel);
-      produces<TimeClusterCollection>();
-      produces<IntensityInfoTimeCluster>();
+    consumes<ComboHitCollection>(_chLabel);
+    consumes<CaloClusterCollection>(_ccLabel);
+    produces<TimeClusterCollection>();
+    produces<IntensityInfoTimeCluster>();
 
 
-      if (_runDisplay == 1) { _c1 = new TCanvas("_c1", "t vs. z", 900, 900); }
+    if (_runDisplay == 1) { _c1 = new TCanvas("_c1", "t vs. z", 900, 900); }
 
-      if (_debugLevel != 0) _printfreq = 1;
+    if (_debugLevel != 0) _printfreq = 1;
 
-      if (_diagLevel  != 0) _hmanager = art::make_tool<ModuleHistToolBase>(config().diagPlugin, "diagPlugin");
-      else                  _hmanager = std::make_unique<ModuleHistToolBase>();
+    if (_diagLevel  != 0) _hmanager = art::make_tool<ModuleHistToolBase>(config().diagPlugin, "diagPlugin");
+    else                  _hmanager = std::make_unique<ModuleHistToolBase>();
 
-    }
+  }
 
   //-----------------------------------------------------------------------------
   // destructor
@@ -631,9 +628,8 @@ namespace mu2e {
         _f.testWeight = _f.cHits[i].plnHits[j].hWeight;
         _f.testZpos = _f.cHits[i].plnHits[j].hZpos;
         _f.testIndice = _f.cHits[i].plnHits[j].hIndex;
-        //const StrawHitFlag flag = _data._chColl->at(_f.testIndice).flag();
-        auto energy = _data._chColl->at(_f.testIndice).energyDep(); //newline
-        if ((energy < _maxE) && (energy >  _minE) ) { _f.testNRGselection = 1; } //replacedline
+        auto energy = _data._chColl->at(_f.testIndice).energyDep();
+        if ((energy < _maxE) && (energy >  _minE) ) { _f.testNRGselection = 1; }
         else { _f.testNRGselection = 0; }
         validLinesFound = 0;
         minValidDtFound = 0.0;

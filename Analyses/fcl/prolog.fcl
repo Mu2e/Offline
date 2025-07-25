@@ -10,7 +10,6 @@ NPOTAnalysis : {
     hsCollTag: "TTAprHelixFinder"
     prontonBunchIntensity: "PBISim"
     processName: "S5Stn"
-    ##changed to lumiStream from RecoNPOTFilter
     filterName: "lumiStream"
 }
 
