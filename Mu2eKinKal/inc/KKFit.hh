@@ -42,6 +42,9 @@
 #include <cmath>
 #include <limits>
 #include <algorithm>
+
+using std::endl;
+
 namespace mu2e {
   using KinKal::SensorLine;
   using KinKal::TimeRange;
