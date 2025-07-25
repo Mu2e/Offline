@@ -74,10 +74,13 @@
 #include <memory>
 
 namespace mu2e {
+  using Name    = fhicl::Name;
+  using Comment = fhicl::Comment;
 
-  struct KKRGModuleConfig {
+  struct RegrowKalSeedConfig {
     fhicl::Atom<art::InputTag> kalSeedCollection {Name("KalSeedPtrCollection"), Comment("KalSeedPtr collection to processed ") };
-    fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
+    fhicl::Atom<art::InputTag> comboHitCollection {Name("ComboHitCollection"), Comment("Reduced ComboHit collection ") };
+    fhicl::Atom<art::InputTag> indexMap {Name("StrawDigiIndexMap"), Comment("Map between original and reduced ComboHits") };
   };
 
   // Extrapolation configuration
@@ -85,62 +88,12 @@ namespace mu2e {
     fhicl::Atom<float> Tol { Name("Tolerance"), Comment("Tolerance on fractional momemtum precision when extrapolating fits") };
     fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit") };
     fhicl::Sequence<int> SurfaceIDs { Name("Surfaces"), Comment("Surface IDs to extrapolate to") };
-    fhicl::Sequence<int> ExtrapolationDirection { Name("ExtrapolationDirections", Comment("Time Directions to extrapolate in") };
+    fhicl::Sequence<int> ExtrapolationDirection { Name("ExtrapolationDirections"), Comment("Time Directions to extrapolate in") };
   };
-//
+  //
   template <class KTRAJ> class RegrowKalSeed : public art::EDProducer {
     public:
-    using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
-    using KKTRK = KKTrack<KTRAJ>;
-    using KKTRKCOL = OwningPointerCollection<KKTRK>;
-    using KKSTRAWHIT = KKStrawHit<KTRAJ>;
-    using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
-    using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
-    using KKSTRAWXING = KKStrawXing<KTRAJ>;
-    using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
-    using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
-    using KKIPAXING = KKShellXing<KTRAJ,KinKal::Cylinder>;
-    using KKIPAXINGPTR = std::shared_ptr<KKIPAXING>;
-    using KKIPAXINGCOL = std::vector<KKIPAXINGPTR>;
-    using KKSTXING = KKShellXing<KTRAJ,KinKal::Annulus>;
-    using KKSTXINGPTR = std::shared_ptr<KKSTXING>;
-    using KKSTXINGCOL = std::vector<KKSTXINGPTR>;
-    using KKCALOHIT = KKCaloHit<KTRAJ>;
-    using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
-    using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
-    using KKFIT = KKFit<KTRAJ>;
-    using KinKal::VEC3;
-    using KinKal::DMAT;
-    using KinKal::DVEC;
-    using KinKal::TimeDir;
-    using MatEnv::DetMaterial;
-    using HPtr = art::Ptr<HelixSeed>;
-    using CCPtr = art::Ptr<CaloCluster>;
-    using CCHandle = art::ValidHandle<CaloClusterCollection>;
-    using StrawHitIndexCollection = std::vector<StrawHitIndex>;
-
-    using KKConfig = Mu2eKinKal::KinKalConfig;
-    using Mu2eKinKal::KKFinalConfig;
-    using KKFitConfig = Mu2eKinKal::KKFitConfig;
-    using KKModuleConfig = Mu2eKinKal::KKModuleConfig;
-
-    using MEAS = KinKal::Hit<KTRAJ>;
-    using MEASPTR = std::shared_ptr<MEAS>;
-    using MEASCOL = std::vector<MEASPTR>;
-    using EXING = KinKal::ElementXing<KTRAJ>;
-    using EXINGPTR = std::shared_ptr<EXING>;
-    using EXINGCOL = std::vector<EXINGPTR>;
-
-    using KKMaterialConfig = KKMaterial::Config;
-    using Name    = fhicl::Name;
-    using Comment = fhicl::Comment;
-
-    using Parameters = art::EDProducer::Table<LoopHelixFitConfig>;
-    explicit RegrowKalSeed(const Parameters& settings);
-    void beginRun(art::Run& run) override;
-    void produce(art::Event& event) override;
-    void endJob() override;
-    private:
-    produces<KKTRKCOL>();
+      using Parameters = art::EDProducer::Table<RegrowKalSeedConfig>;
+      explicit RegrowKalSeed(const Parameters& settings);
   };
 }

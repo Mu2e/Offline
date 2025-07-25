@@ -90,7 +90,7 @@ namespace mu2e {
           PTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
           KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
       // Make KKStrawHits from a KalSeed
-      bool KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
+      bool makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
           PTRAJ const& ptraj, KalSeed const& kseed, ComboHitCollection const& chcol, mu2e::IndexMap const& strawindexmap,
           KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
       SensorLine caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const; // should come from CaloCluster TODO
@@ -218,21 +218,24 @@ namespace mu2e {
   }
 
   template <class KTRAJ> bool KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
-      PTRAJ const& ptraj, ComboHitCollection const& chcol, mu2e::IndexMap const& strawindexmap,
-      KalSeed const& kseed,
+      PTRAJ const& ptraj, KalSeed const& kseed,
+      ComboHitCollection const& chcol, mu2e::IndexMap const& strawindexmap,
       KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const {
     unsigned ngood(0);
     // loop over the TrkStrawHitSeeds in this KalSeed
     for(auto const& tshs : kseed.hits()) {
       const Straw& straw = tracker.getStraw(tshs.strawId());
       // find the corresponding ComboHit using the index map ( the tshs index is WRT the original ComboHit collection)
-      auto const& combohit = chcol.at(strawindexmap[tshs.index()]);
+      auto ifind = strawindexmap.map().find(tshs.index());
+      if(ifind == strawindexmap.map().end())throw cet::exception("RECO")<<"mu2e::KKFit: map index not found"<< tshs.index() << endl;
+      auto chindex = ifind->second;
+      auto const& combohit = chcol.at(chindex);
       auto wline = Mu2eKinKal::hitLine(combohit,straw,strawresponse); // points from the signal to the straw center
       // use the recorded TOCA to initialize the POCA
       CAHint hint(tshs.particleTOCA(),tshs.sensorTOCA());
       PCA pca(ptraj, wline, hint, tprec_ );
       // create the hit.  Note these may initially be unusable
-      hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, pca, combohit, straw, strawidx, strawresponse));
+      hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, pca, combohit, straw, chindex, strawresponse)); // use original index, so the KSeed can be re-persisted
       // set the hit state according to what was in the
       // create the material crossing, including this reference
       if(matcorr_){
