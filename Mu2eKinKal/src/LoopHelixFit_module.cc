@@ -131,7 +131,7 @@ namespace mu2e {
 
   // extend the generic module configuration as needed
   struct KKLHModuleConfig : KKModuleConfig {
-    fhicl::Sequence<art::InputTag> seedCollections {Name("HelixSeedCollections"),     Comment("Seed fit collections to be processed ") };
+    fhicl::Sequence<art::InputTag> seedCollections {Name("HelixSeedCollections"), Comment("Seed fit collections to be processed ") };
     fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
     fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
     fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
@@ -147,6 +147,9 @@ namespace mu2e {
     fhicl::Atom<bool> ToOPA { Name("ToOPA"), Comment("Test tracks for intersection with the OPA") };
     fhicl::Atom<int> Debug { Name("Debug"), Comment("Debug level"), 0 };
   };
+  struct HelixMaskConfig {
+    fhicl::OptionalAtom<float> minHelixP{ Name("MinHelixMom"), Comment("Minimum Momentum of a helix for a track to be fit.")};
+  };
   struct LoopHelixFitConfig {
     fhicl::Table<KKLHModuleConfig> modSettings { Name("ModuleSettings") };
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
@@ -159,6 +162,7 @@ namespace mu2e {
     fhicl::OptionalAtom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Input helix seed slope significance threshold to assume the direction")};
     fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
+    fhicl::OptionalTable<HelixMaskConfig> HelixMask { Name("HelixMask"), Comment("Selections applied to input helices")};
   };
 
   class LoopHelixFit : public art::EDProducer {
@@ -224,8 +228,12 @@ namespace mu2e {
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
       SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
+      //Helix Mask params
+      float minHelixP_ = -1.;
       CylPtr STInner_, STOuter_;
       int nSeen_ = 0;
+      int nFit_ = 0;
+      int nSkipped_ = 0;
       int nAmbiguous_ = 0;
       int nDownstream_ = 0;
       int nUpstream_ = 0;
@@ -311,6 +319,11 @@ namespace mu2e {
         trkmidptr_ = smap_.tracker().middlePtr();
         trkbackptr_ = smap_.tracker().backPtr();
         opaptr_ = smap_.DS().outerProtonAbsorberPtr();
+      }
+      if (settings().HelixMask()){
+        if (settings().HelixMask()->minHelixP())
+          {minHelixP_ = settings().HelixMask()->minHelixP().value();}
+
       }
 
       // additional surfaces to sample: these should be replaced by extrapolation TODO
@@ -477,9 +490,14 @@ namespace mu2e {
         ++nSeen_;
         auto const& hseed = hseedcol[iseed];
 
-        // determine the fit direction hypotheses
+        // determine the fit direction hypotheses + check whether helix momentum is over the minimum momentum threshold (if set)
         auto helix_dirs = chooseHelixDir(hseed);
-        if(helix_dirs.empty()) continue; //bad helix, no fits to perform
+        if(helix_dirs.empty()) {
+          ++nSkipped_;
+          continue; //bad helix, no fits to perform
+        }
+        ++nFit_;
+
         const unsigned dirs_size = helix_dirs.size();
         const bool undefined_dir = dirs_size > 1; //fitting multiple hypotheses to determine the best fit
         if(undefined_dir) ++nAmbiguous_;
@@ -592,6 +610,17 @@ namespace mu2e {
     auto const& helix = hseed.helix();
     if(helix.radius() == 0.0 || helix.lambda() == 0.0) {
       if(print_>0) printf("LoopHelixFit::%s::%s: Degenerate helix seed parameters, skipping helix\n", __func__, moduleDescription().moduleLabel().c_str());
+      return false;
+    }
+    auto zcent = Mu2eKinKal::zMid(hseed.hits());
+    // take the magnetic field at the helix center as nominal
+    VEC3 center(helix.centerx(), helix.centery(),zcent);
+    auto bnom = kkbf_->fieldVect(center);
+    // convert momentum from mm to MeV
+    const double bz = bnom.Z();
+    const double b_to_p(3./10.); // conversion factor
+    if (std::fabs(helix.momentum()*bz*b_to_p) < minHelixP_) {
+      if(print_>0) printf("LoopHelixFit::%s::%s: Helix does not pass minimum momentum threshold. \n", __func__, moduleDescription().moduleLabel().c_str());
       return false;
     }
     return true;
@@ -858,8 +887,11 @@ namespace mu2e {
   }
 
   void LoopHelixFit::endJob() {
-    if(print_ > 0) printf("[LoopHelixFit::%s::%s] Saw %i helix seeds, %i had ambiguous dz/dt slopes, accepted %i downstream and %i upstream fits\n",
-        __func__, moduleDescription().moduleLabel().c_str(), nSeen_, nAmbiguous_, nDownstream_, nUpstream_);
+    if(print_ > 0) {
+      printf("[LoopHelixFit::%s::%s] Saw %i helix seeds, %i had ambiguous dz/dt slopes, accepted %i downstream and %i upstream fits\n",
+                          __func__, moduleDescription().moduleLabel().c_str(), nSeen_, nAmbiguous_, nDownstream_, nUpstream_);
+      printf("Number of fits: %i;  number of helices skipped: %i \n ", nFit_, nSkipped_);
+    }
   }
 }
 
