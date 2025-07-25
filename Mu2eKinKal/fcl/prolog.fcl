@@ -39,6 +39,7 @@ Mu2eKinKal : {
     MaxDStraw : 2 # integer (straw)
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
+    MaxStrawUposBuffer : 0.0 # units of mm
   }
 
    CHSEEDFIT: {

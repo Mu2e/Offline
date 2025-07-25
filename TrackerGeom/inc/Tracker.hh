@@ -75,6 +75,8 @@ namespace mu2e {
     PlaneCollection const& getPlanes() const { return _planes; }
     const Panel& getPanel( const StrawId& id ) const{ return _panels.at(id.uniquePanel()); }
     const Straw& getStraw( const StrawId& id) const{ return _straws[id.uniqueStraw()]; }
+    Plane& getPlane( const StrawId& id) { return _planes.at(id.getPlane()); }
+    Panel& getPanel( const StrawId& id) { return _panels.at(id.uniquePanel()); }
     Straw& getStraw( const StrawId& id) { return _straws[id.uniqueStraw()]; }
     StrawCollection const& getStraws() const{ return _straws; }
     // the following are deprecated: access should be through StrawProperties

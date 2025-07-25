@@ -77,7 +77,12 @@ namespace mu2e {
               wireends[StrawEnd::cal], wireends[StrawEnd::hv],
               strawends[StrawEnd::cal], strawends[StrawEnd::hv]);
         } // straw loop
+        Panel &newpanel = tracker.getPanel(panel.id());
+        newpanel = Panel(panel.id(),tracker.straws(),aligned_panel_to_ds);
       } // panel loop
+      Plane &newplane = tracker.getPlane(plane.id());
+      newplane = Plane(plane.id(),tracker.panels());
+      newplane.setPlaneToDS(aligned_plane_to_ds);
     } // plane loop
     // should update tracker, plane and panel origins FIXME!
   }
