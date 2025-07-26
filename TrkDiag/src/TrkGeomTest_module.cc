@@ -34,7 +34,7 @@ namespace mu2e {
       void beginJob ( ) override;
     private:
       ProditionsHandle<Tracker> _alignedTracker_h;
-      TTree* strawtest_, *paneltest_;
+      TTree* strawtest_, *paneltest_, *planetest_;
       int print_, diag_;
       int splane_, spanel_, straw_;
       int pplane_, panel_;
@@ -46,6 +46,8 @@ namespace mu2e {
       int teststation_;
       float uphi_, vphi_, wcost_;
       float oz_, or_, ophi_;
+      float puphi_, pvphi_, pwcost_;
+      float poz_, por_, pophi_;
   };
 
   TrkGeomTest::TrkGeomTest(Parameters const& config) :     art::EDAnalyzer(config),
@@ -86,6 +88,15 @@ namespace mu2e {
       paneltest_->Branch("oz",&oz_,"oz/F");
       paneltest_->Branch("or",&or_,"or/F");
       paneltest_->Branch("ophi",&ophi_,"ophi/F");
+      planetest_=tfs->make<TTree>("planetest","planetest");
+      planetest_->Branch("plane",&pplane_,"plane/I");
+      planetest_->Branch("uphi",&puphi_,"uphi/F");
+      planetest_->Branch("vphi",&pvphi_,"vphi/F");
+      planetest_->Branch("wcost",&pwcost_,"wcost/F");
+      planetest_->Branch("oz",&poz_,"oz/F");
+      planetest_->Branch("or",&por_,"or/F");
+      planetest_->Branch("ophi",&pophi_,"ophi/F");
+
     }
   }
 
@@ -146,7 +157,7 @@ namespace mu2e {
         //
         // panel test
         //
-        for(auto const& panel : ntracker.panels()){
+        for(auto const& panel : atracker.panels()){
           pplane_ = panel.id().plane();
           panel_ = panel.id().panel();
           uphi_ = panel.uDirection().phi();
@@ -156,6 +167,16 @@ namespace mu2e {
           or_ = panel.origin().rho();
           ophi_ = panel.origin().phi();
           paneltest_->Fill();
+        }
+        for(auto const& plane : atracker.planes()){
+          pplane_ = plane.id().plane();
+          puphi_ = plane.uDirection().phi();
+          pvphi_ = plane.vDirection().phi();
+          pwcost_ = cos(plane.wDirection().theta());
+          poz_ = plane.origin().z();
+          por_ = plane.origin().rho();
+          pophi_ = plane.origin().phi();
+          planetest_->Fill();
         }
         if(print_ > 0){
           double zavg = 0.0;
