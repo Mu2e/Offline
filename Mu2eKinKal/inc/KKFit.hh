@@ -344,20 +344,17 @@ namespace mu2e {
                   // add strawExists test TODO
                   // make sure we haven't already seen this straw
                   if(oldstraws.find(straw.id()) == oldstraws.end()){
-                    KinKal::VEC3 vp0(straw.wireEnd(StrawEnd::cal));
-                    KinKal::VEC3 vp1(straw.wireEnd(StrawEnd::hv));
-                    KinKal::VEC3 smid = 0.5*(vp0+vp1);
-                    // eventually this trajectory should be a native member of Straw TODO
-                    KinKal::SensorLine wline(vp0,vp1,zt,CLHEP::c_light); // time is irrelevant: use speed of light as sprop
+                    auto sline = Mu2eKinKal::strawLine(straw,zt); // line down the straw axis center
                     CAHint hint(zt,zt);
                     // compute PCA between the trajectory and this straw
-                    PCA pca(ftraj, wline, hint, tprec_ );
+                    PCA pca(ftraj, sline, hint, tprec_ );
                     // require consistency with this track passing through this straw
+                    VEC3 smid(0.5*(straw.strawEnd(StrawEnd::cal)+ straw.strawEnd(StrawEnd::hv)));
                     double du = (pca.sensorPoca().Vect()-smid).R();
                     double doca = fabs(pca.doca());
                     double dsig = std::max(0.0,doca-strawradius_)/sqrt(pca.docaVar());
                     if(doca < maxStrawDoca_ && dsig < maxStrawDocaCon_ && du < straw.halfLength()){
-                      addexings.push_back(std::make_shared<KKSTRAWXING>(pca,smat,straw.id()));
+                      addexings.push_back(std::make_shared<KKSTRAWXING>(pca,smat,straw));
                       oldstraws.insert(straw.id());
                     }
                   } // not existing straw cut
