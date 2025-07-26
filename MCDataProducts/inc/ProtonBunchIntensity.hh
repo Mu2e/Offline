@@ -15,6 +15,7 @@ namespace mu2e {
         return _intensity == other.intensity(); }
       bool operator != (ProtonBunchIntensity const& other ) const { return !(operator ==(other)); }
       void add(ProtonBunchIntensity const& other) { _intensity += other.intensity(); }
+    void set(unsigned long long intensity){ _intensity = intensity;}
     private:
       unsigned long long _intensity; // this has units # of protons/microbunch
   };

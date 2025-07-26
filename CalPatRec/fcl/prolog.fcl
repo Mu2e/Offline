@@ -630,6 +630,8 @@ CalPatRec : { @table::CalPatRec
             caloDtMax                  : 30.0
             caloTimeOffset             : @local::TrackCaloMatching.DtOffset
             doRefine                   : 0
+            MinimumEnergy              : 0.0001
+            MaximumEnergy              : 0.005
 
             diagPlugin : { tool_type  : "TZClusterFinderDiag"
                  mcTruth       : 1
@@ -637,6 +639,22 @@ CalPatRec : { @table::CalPatRec
                  mcUtils       : { @table::TrkReco.McUtils }
             }
         }
+
+        ##------------------------MY NEW MODULE-----------------------------
+        RecoNPOTMaker : {
+            module_type         : RecoNPOTMaker
+            debugLevel          : 0
+            evtWeightTag        : "PBISim"
+           ## chCollTag           : "TTmakePH"
+           ## tcCollTag           : "TTTZClusterFinder"
+           ## hsCollTag           : "TTAprHelixFinder"
+            caloIntInfoTag      : "CaloHitMakerFast"
+           ## tcIntInfoTZTag      : "TTTZClusterFinder"
+            ## tcIntInfoFlagTag    : "TTflagPH"
+            ## trkHitIntInfoTag    : "TTmakeSH"
+        }
+
+        ##-----------------------------------------------------------------
 
         AgnosticHelixFinder : {
             module_type : AgnosticHelixFinder
@@ -719,6 +737,15 @@ CalPatRec : { @table::CalPatRec
     }
 
     filters : {
+
+        RecoNPOTFilter: {
+            module_type         : RecoNPOTFilter
+            recoNPOTTag         : "RecoNPOTMaker"
+            minWeight           : 1e-2
+        }
+
+
+
 #------------------------------------------------------------------------------
 # new modules
 #------------------------------------------------------------------------------
