@@ -13,6 +13,7 @@ cet_make_library(
       src/OrientationResolver.cc
       src/ParameterSetFromFile.cc
       src/ParameterSetHelpers.cc
+      src/ParseCLI.cc
       src/PathnameWithNextVersion.cc
       src/RMS.cc
       src/RootNameTitleHelper.cc
