@@ -1,4 +1,5 @@
 #include "Offline/GeneralUtilities/inc/ParseCLI.hh"
+#include <span>
 
 using namespace mu2e;
 
@@ -90,10 +91,16 @@ int ParseCLI::setArgs(int argc, char** argv) {
       addSwitch(ss.subcommand, "help", "h", "help", false, "print help","");
   }
 
-  _command = argv[0]; // program name
+  std::span<char*> args_span(argv, static_cast<size_t>(argc));
 
-  for (size_t i = 1; i < size_t(argc); i++)
-    a0.emplace_back(argv[i]);
+  _command = args_span[0];
+  size_t last_slash_pos = _command.rfind('/');
+
+  if (last_slash_pos != std::string::npos) _command = _command.substr(last_slash_pos + 1);
+
+  for (size_t i = 1; i < args_span.size(); ++i) {
+    a0.emplace_back(args_span[i]); // Safely access via span::at()
+  }
 
   // loop over a0 and expand args as needed into words in a1
   // "-ab=value" into "-a -b value" and --key=value into "--key value"
@@ -246,7 +253,7 @@ void ParseCLI::autohelp() const {
 
   std::cout << "\n";
   if (_subcommand.empty()) {
-    std::cout << _command << " [GLOBAL OPTIONS] [SUBCOMMAND] [SUBCOMMAND OPTIONS]"
+    std::cout << "   " << _command << " [GLOBAL OPTIONS] [SUBCOMMAND] [SUBCOMMAND OPTIONS]"
               << "\n\n";
     std::cout << "   " << _helpstr << "\n\n";
   } else {
@@ -315,7 +322,7 @@ int ParseCLI::getCount(const std::string& subcommand, const std::string& name) c
   size_t i = findItem(subcommand, name);
   if (i == BADIND)
     return 0;
-  return _items[i].values.size();
+  return int(_items[i].values.size());
 }
 
 /*********************************************************/
