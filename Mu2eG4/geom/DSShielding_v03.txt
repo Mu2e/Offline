@@ -8,10 +8,10 @@ double ifb.endwindow.halfLength = 0.79375; // mm
 double ifb.endwindow.rOut       = 127.;
 double ifb.endplug.rIn        = 127.; //Should be >= ifb.endwindow.rOut
 
-double ifb.endwindowFrameInside.z        = -1.;
-double ifb.endwindowFrameInside.rIn        = 127.; //Should be >= ifb.endwindow.rOut
-double ifb.endwindowFrameInside.rOut        = 154.;
-double ifb.endwindowFrameInside.halfLength        = 154.; //Should be >= ifb.endwindow.rOut
+//double ifb.endwindowFrameInside.z        = -1.;
+//double ifb.endwindowFrameInside.rIn        = 127.; //Should be >= ifb.endwindow.rOut
+//double ifb.endwindowFrameInside.rOut        = 154.;
+//double ifb.endwindowFrameInside.halfLength        = 154.; //Should be >= ifb.endwindow.rOut
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

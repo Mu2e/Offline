@@ -106,7 +106,7 @@ namespace mu2e {
                                         c.getDouble("ifb.endwindow.halfLength") ) );
 
     dss->_dssTubes.push_back( dss->getIFBendWindow() );
-
+    /*
     dss->_ifbEndWindowFrameInside.reset( new Tube( c.getString("ifb.endwindowFrameInside.material", c.getString("ifb.material") ),
                                         CLHEP::Hep3Vector( dsPos.x(),
                                                            dsPos.y(),
@@ -116,7 +116,7 @@ namespace mu2e {
                                         c.getDouble("ifb.endwindowFrameInside.halfLength") ) );
 
     dss->_dssTubes.push_back( dss->getIFBendWindowFrameInside() );
-
+    */
     // Set names of Tubes
     dss->_vpspCryoSeal ->setName("VPSP_CryoSeal" );
     dss->_vpspMain     ->setName("VPSP_Main"     );
