@@ -30,7 +30,7 @@ namespace mu2e {
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
       // construct without an associated StrawHit
-      KKStrawXing(PCA const& ptca, KKStrawMaterial const& smat, Straw const& straw);
+      KKStrawXing(CA const& ca, KKStrawMaterial const& smat, Straw const& straw);
       // construct with an associated StrawHit
       KKStrawXing(KKSTRAWHITPTR const& strawhit, KKStrawMaterial const& smat);
       virtual ~KKStrawXing() {}
@@ -64,12 +64,12 @@ namespace mu2e {
       double varscale_; // variance scale
   };
 
-  template <class KTRAJ> KKStrawXing<KTRAJ>::KKStrawXing(PCA const& pca, KKStrawMaterial const& smat, Straw const& straw) :
-    axis_(pca.sensorTraj()),
+  template <class KTRAJ> KKStrawXing<KTRAJ>::KKStrawXing(CA const& ca, KKStrawMaterial const& smat, Straw const& straw) :
+    axis_(ca.sensorTraj()),
     smat_(smat),
     straw_(straw),
-    ca_(pca.localClosestApproach()),
-    toff_(smat.wireRadius()/pca.particleTraj().speed(pca.particleToca())), // locate the effect to 1 side of the wire to avoid overlap with hits
+    ca_(ca.particleTraj(),axis_,ca.hint(),ca.precision()),
+    toff_(smat.wireRadius()/ca.particleTraj().speed(ca.particleToca())), // locate the effect to 1 side of the wire to avoid overlap with hits
     varscale_(1.0)
   {}
 
@@ -78,9 +78,11 @@ namespace mu2e {
     axis_(Mu2eKinKal::strawLine(strawhit->straw(),strawhit->closestApproach().particleToca())),
     smat_(smat),
     straw_(strawhit->straw()),
-    ca_(strawhit->closestApproach().particleTraj(),axis_,strawhit->closestApproach().precision()),
+    ca_(strawhit->closestApproach().particleTraj(),axis_,strawhit->closestApproach().hint(),strawhit->closestApproach().precision()),
     toff_(smat.wireRadius()/strawhit->closestApproach().particleTraj().speed(strawhit->closestApproach().particleToca()))
-  {}
+  {
+    if(!ca_.usable()) sxconfig_.hitstate_ = WireHitState::inactive;
+  }
 
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(PTRAJ const& ptraj) {
     CAHint tphint(axis_.timeAtMidpoint(),axis_.timeAtMidpoint());

@@ -350,12 +350,11 @@ namespace mu2e {
                     // compute PCA between the trajectory and this straw
                     PCA pca(ftraj, sline, hint, tprec_ );
                     // require consistency with this track passing through this straw
-                    VEC3 smid(0.5*(straw.strawEnd(StrawEnd::cal)+ straw.strawEnd(StrawEnd::hv)));
-                    double du = (pca.sensorPoca().Vect()-smid).R();
+                    double du = fabs((pca.sensorPoca().Vect()-VEC3(straw.wirePosition(0.0))).Dot(VEC3(straw.wireDirection(0.0))));
                     double doca = fabs(pca.doca());
                     double dsig = std::max(0.0,doca-strawradius_)/sqrt(pca.docaVar());
                     if(doca < maxStrawDoca_ && dsig < maxStrawDocaCon_ && du < straw.halfLength() + maxStrawUposBuff_){
-                      addexings.push_back(std::make_shared<KKSTRAWXING>(pca,smat,straw));
+                      addexings.push_back(std::make_shared<KKSTRAWXING>(pca.localClosestApproach(),smat,straw));
                       oldstraws.insert(straw.id());
                     }
                   } // not existing straw cut
