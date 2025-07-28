@@ -107,6 +107,16 @@ namespace mu2e {
 
     dss->_dssTubes.push_back( dss->getIFBendWindow() );
 
+    dss->_ifbEndWindowFrameInside.reset( new Tube( c.getString("ifb.endwindowFrameInside.material", c.getString("ifb.material") ),
+                                        CLHEP::Hep3Vector( dsPos.x(),
+                                                           dsPos.y(),
+                                                           ds.cryoZMax()+c.getDouble("ifb.endwindow.z") ),
+                                        c.getDouble("ifb.endwindowFrameInside.rIn"),
+                                        c.getDouble("ifb.endwindowFrameInside.rOut"),
+                                        c.getDouble("ifb.endwindowFrameInside.halfLength") ) );
+
+    dss->_dssTubes.push_back( dss->getIFBendWindowFrameInside() );
+
     // Set names of Tubes
     dss->_vpspCryoSeal ->setName("VPSP_CryoSeal" );
     dss->_vpspMain     ->setName("VPSP_Main"     );

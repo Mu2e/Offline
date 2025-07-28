@@ -429,6 +429,21 @@ namespace mu2e {
       StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.65545 );
     }
 
+    // Stainless Steel 304L https://www.thyssenkrupp-materials.co.uk/stainless-steel-304l-14307.html
+    mat = uniqueMaterialOrThrow( "StainlessSteel304L");
+    {
+      G4Material* StainlessSteel304L = new G4Material( mat.name, 8.00*CLHEP::g/CLHEP::cm3, 9);
+      StainlessSteel304L->AddMaterial(findMaterialOrThrow("G4_Cr"), 0.185    );
+      StainlessSteel304L->AddMaterial(findMaterialOrThrow("G4_Ni"), 0.095    );
+      StainlessSteel304L->AddMaterial(findMaterialOrThrow("G4_C"),  0.0003  );
+      StainlessSteel304L->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.02    );
+      StainlessSteel304L->AddMaterial(findMaterialOrThrow("G4_Si"), 0.01   );
+      StainlessSteel304L->AddMaterial(findMaterialOrThrow("G4_P"),  0.00045 );
+      StainlessSteel304L->AddMaterial(findMaterialOrThrow("G4_S"),  0.00015  );
+      StainlessSteel304L->AddMaterial(findMaterialOrThrow("G4_N"),  0.001   );
+      StainlessSteel304L->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.6881 );
+    }
+
     // A standard carbon-steel used for racks
     mat = uniqueMaterialOrThrow( "RackSteel" );
     {
@@ -1784,6 +1799,20 @@ namespace mu2e {
      C5Coolant->AddElement( eO,   1);
 
     }
+
+    // Grade 5 Titanium
+    //Information from https://www.matweb.com/search/DataSheet.aspx?MatGUID=a0655d261898456b958e5f825ae85390&ckck=1
+    mat = uniqueMaterialOrThrow("Ti6Al4V");
+    {
+     G4Material* Ti6Al4V = new G4Material(mat.name, 4.43*CLHEP::g/CLHEP::cm3, 3);
+
+     const double AlPercentage=6.125;
+     const double VPercentage=4.;
+     Ti6Al4V->AddMaterial(findMaterialOrThrow("G4_Ti"),(100.- AlPercentage -VPercentage)*CLHEP::perCent);
+     Ti6Al4V->AddMaterial(findMaterialOrThrow("G4_Al"),AlPercentage*CLHEP::perCent);
+     Ti6Al4V->AddMaterial(findMaterialOrThrow("G4_V"),VPercentage*CLHEP::perCent);
+    }
+
     // Add new materials before this line
 
   }
