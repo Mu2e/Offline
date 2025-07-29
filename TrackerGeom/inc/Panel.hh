@@ -25,6 +25,7 @@ namespace mu2e {
     using TrackerStrawCollection = std::array<Straw,StrawId::_nustraws>;
     Panel():_straws(){} // default object non-function but needed for storage classes
     Panel( const StrawId& id, TrackerStrawCollection const& straws ); // construct from the Id and the full set of straws
+    Panel( const StrawId& id, TrackerStrawCollection const& straws, HepTransform const& panelToDS ); // construct with alignment
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
@@ -61,6 +62,13 @@ namespace mu2e {
     // transform from local to DS coordinates
     auto const& panelToDS() const { return _UVWtoDS; }
     auto dsToPanel() const { return _UVWtoDS.inverse(); }
+
+    void setPanelToDS(HepTransform const& panelToDS) {
+      _UVWtoDS = panelToDS;
+      _udir = panelToDS.rotation()*xyzVec(1.0,0.0,0.0);
+      _vdir = panelToDS.rotation()*xyzVec(0.0,1.0,0.0);
+      _wdir = panelToDS.rotation()*xyzVec(0.0,0.0,1.0);
+    }
 
     // deprecated interface: either use the above local coordinates, or get the straw direction directly
     xyzVec straw0Direction() const { return _straws[0]->wireDirection(); }
