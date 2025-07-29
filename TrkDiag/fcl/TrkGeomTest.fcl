@@ -30,4 +30,4 @@ services.DbService.verbose: 2
 
 services.TFileService.fileName: "/dev/null"
 
-services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_run1a.txt"
+services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_run1_a.txt"

@@ -605,7 +605,7 @@ namespace mu2e {
     }
 
     // Aluminium alloy 6061
-    mat = uniqueMaterialOrThrow("A6061");
+    mat = uniqueMaterialOrThrow("Al6061");
     {
       G4Material* Al6061 = new G4Material(mat.name, 2.70*CLHEP::g/CLHEP::cm3, 4);
       Al6061->AddMaterial(findMaterialOrThrow("G4_Al"), 0.980);
@@ -615,13 +615,13 @@ namespace mu2e {
     }
 
     // Aluminium alloy 7075
-    mat = uniqueMaterialOrThrow("A7075");
+    mat = uniqueMaterialOrThrow("Al7075");
     {
       G4Material* Al7075 = new G4Material(mat.name, 2.81*CLHEP::g/CLHEP::cm3, 4);
-      Al7075->AddMaterial(findMaterialOrThrow("G4_Al"), 0.910);
-      Al7075->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.061);
-      Al7075->AddMaterial(findMaterialOrThrow("G4_Mg"), 0.029);
-      Al7075->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.020);
+      Al7075->AddMaterial(findMaterialOrThrow("G4_Al"), 0.903);
+      Al7075->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.056);
+      Al7075->AddMaterial(findMaterialOrThrow("G4_Mg"), 0.025);
+      Al7075->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.016);
     }
 
     // NbTi
