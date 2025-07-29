@@ -92,5 +92,4 @@ namespace mu2e {
     }
   }
 
-
 }
