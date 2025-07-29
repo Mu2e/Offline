@@ -117,14 +117,7 @@ namespace mu2e {
       else
         varscale_ = 1.0;
       // find the material xings from gas, straw wall, and wire
-      auto cad = ca_.tpData();
-      if(shptr_ && shptr_->hitState().active()){
-        // if we have an associated hit, overwrite the DOCA and DOCAVAR using the drift info, which is much more accurate
-        auto dinfo = shptr_->fillDriftInfo(ca_);
-        cad.doca_ = dinfo.rDrift_;
-        cad.docavar_ = dinfo.unsignedDriftVar();
-      }
-      smat_.findXings(cad,sxconfig_,mxings_);
+      smat_.findXings(ca_.tpData(),sxconfig_,mxings_);
     }
     if(mxings_.size() > 0){
       fparams_ = this->parameterChange(varscale_);
