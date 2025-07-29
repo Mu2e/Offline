@@ -266,7 +266,7 @@ Mu2eKinKal : {
     ]
   }
 
-  DRIFTEXT: {
+  LHDRIFTEXT: {
     PrintLevel : 0
     MinNDOF : 1
     MaxNIter : 10
@@ -327,9 +327,9 @@ Mu2eKinKal : {
       [ 4.0,  -1.0, -1.0, false, 0 ],
       [ 4.0,   2.0, 0.2,  false, 0 ],
       [ 3.5,   2.0, 0.2,  false, 0 ],
-      [ 3.0,   2.0, 0.2,  false, 0 ],
-      [ 3.0,   2.3, 0.1,  false, 0 ],
-      [ 3.0,   2.3, 0.1,  false, 0 ]
+      [ 3.0,   2.3, 0.2,  false, 0 ],
+      [ 2.5,   2.4, 0.1,  false, 0 ],
+      [ 2.5,   2.4, 0.1,  false, 0 ]
     ]
   }
 
@@ -418,7 +418,7 @@ Mu2eKinKal : {
      SaveTrajectory : Detector
     }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
-    ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
+    ExtensionSettings : @local::Mu2eKinKal.LHDRIFTEXT
     ModuleSettings : {
       @table::Mu2eKinKal.LOOPHELIX
       @table::Mu2eKinKal.KKPrecursors

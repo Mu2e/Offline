@@ -12,6 +12,7 @@
 #include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "TTree.h"
+#include "cetlib_except/exception.h"
 #include <iostream>
 
 namespace mu2e {
@@ -25,6 +26,7 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<int> printLevel{ Name("printLevel"), Comment("Print level" ),0 };
         fhicl::Atom<int> diagLevel{ Name("diagLevel"), Comment("Diagnostic level" ),0 };
+        fhicl::Atom<int> testStation{ Name("testStation"), Comment("Station to test" ),8 };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit TrkGeomTest(Parameters const& config);
@@ -42,6 +44,7 @@ namespace mu2e {
       float rnom_, phinom_, dphinom_;
       float deltax_, deltay_, deltaz_;
       bool first_;
+      int teststation_;
       float uphi_, vphi_, wcost_;
       float oz_, or_, ophi_;
       float puphi_, pvphi_, pwcost_;
@@ -52,7 +55,9 @@ namespace mu2e {
   strawtest_(0),
   print_(config().printLevel()),
   diag_(config().diagLevel()),
-  first_(true) {}
+  first_(true),
+  teststation_(config().testStation())
+  {}
 
   TrkGeomTest::~TrkGeomTest() {}
 
@@ -102,39 +107,49 @@ namespace mu2e {
       // fetch tracker status
       ProditionsHandle<TrackerStatus> trackerstatus_h;
       auto const& trkstatus = trackerstatus_h.get(event.id());
-      std::cout << "TrackerStatus ";
-      trkstatus.print(std::cout);
+      if(print_ > 1){
+        std::cout << "TrackerStatus " << std::endl;
+        trkstatus.print(std::cout);
+      }
       // fetch aligned and nominal tracker objects
       GeomHandle<Tracker> nominalTracker_h;
       auto const& ntracker = *nominalTracker_h;
       auto const& atracker = _alignedTracker_h.get(event.id());
       double totallength(0.0);
-      if(ntracker.straws().size() != atracker.straws().size()){
-        std::cout << "Trackers don't match" << std::endl;
-      } else {
-        for(size_t istr = 0; istr < ntracker.straws().size(); istr++){
-          auto const& nstraw = ntracker.straws()[istr];
-          auto const& astraw = atracker.straws()[istr];
-          if(nstraw.id() != astraw.id())
-            std::cout << "StrawIds don't match: nominal " << nstraw.id() << " aligned " << astraw.id() << std::endl;
-          totallength += 2.0*nstraw.halfLength();
-          splane_ = nstraw.id().plane();
-          spanel_ = nstraw.id().panel();
-          straw_ = nstraw.id().straw();
-          auto npos = nstraw.origin();
-          auto ndir = nstraw.wireDirection();
-          auto adir = astraw.wireDirection();
-          // test
-          if(ndir.dot(adir)<0.0)std::cout << "Straw directions don't match: nominal " << ndir << " aligned " << adir << std::endl;
-          auto apos = astraw.origin();
-          auto delta = apos-npos;
-          nomx_ = npos.x(); nomy_ = npos.y(); nomz_ = npos.z();
-          nomdx_ = ndir.x(); nomdy_ = ndir.y(); nomdz_ = ndir.z();
-          rnom_ = npos.rho();
-          phinom_ = npos.phi();
-          dphinom_ = ndir.phi();
-          deltax_ = delta.x(); deltay_ = delta.y(); deltaz_ = delta.z();
-          strawtest_->Fill();
+      if(ntracker.straws().size() != atracker.straws().size()) throw cet::exception("RECO")<<  "Trackers don't match" << std::endl;
+      std::set<double> zpos;
+      for(size_t istr = 0; istr < ntracker.straws().size(); istr++){
+        auto const& nstraw = ntracker.straws()[istr];
+        auto const& astraw = atracker.straws()[istr];
+        if(nstraw.id() != astraw.id()) throw cet::exception("RECO")<<  "StrawIds don't match: nominal " << nstraw.id() << " aligned " << astraw.id() << std::endl;
+        totallength += 2.0*nstraw.halfLength();
+        splane_ = nstraw.id().plane();
+        spanel_ = nstraw.id().panel();
+        straw_ = nstraw.id().straw();
+        auto npos = nstraw.origin();
+        auto ndir = nstraw.wireDirection();
+        auto adir = astraw.wireDirection();
+        // test
+        if(ndir.dot(adir)<0.0)throw cet::exception("RECO") << "Straw directions don't match: nominal " << ndir << " aligned " << adir << std::endl;
+        auto apos = astraw.origin();
+        auto delta = apos-npos;
+        nomx_ = npos.x(); nomy_ = npos.y(); nomz_ = npos.z();
+        nomdx_ = ndir.x(); nomdy_ = ndir.y(); nomdz_ = ndir.z();
+        rnom_ = npos.rho();
+        phinom_ = npos.phi();
+        dphinom_ = ndir.phi();
+        deltax_ = delta.x(); deltay_ = delta.y(); deltaz_ = delta.z();
+        strawtest_->Fill();
+        // compare Z positions for straws 1 and 0 in panels 0 and 1
+        if(print_>0){
+          if(splane_ == teststation_*2 || splane_ == teststation_*2+1){
+            if(spanel_ == 0 || spanel_ == 1){
+              if(straw_ == 0 || straw_ == 1){
+                std::cout << std::setw(8) << "Straw " << straw_ << " Panel " << spanel_ << " Plane " << splane_ << " Z " << npos.z() << std::endl;
+                zpos.insert(npos.z());
+              }
+            }
+          }
         }
         //
         // panel test
@@ -160,11 +175,17 @@ namespace mu2e {
           pophi_ = plane.origin().phi();
           planetest_->Fill();
         }
-
+      }
+      if(print_ > 0){
+        double zavg = 0.0;
+        for(auto iz = zpos.begin(); iz != zpos.end(); ++iz) zavg += *iz;
+        zavg /= double(zpos.size());
+        std::cout << "Average Z position " << std::setw(8) << zavg << std::endl;
+        for(auto iz = zpos.begin(); iz != zpos.end(); ++iz) std::cout << std::setw(8) << "DZ =  " << *iz - zavg << std::endl;
+        std::cout << "Total # Straws " << ntracker.straws().size() << " Sum length = " << totallength
+          << " volume = " << totallength*M_PI*ntracker.strawProperties().strawInnerRadius() << std::endl;
       }
       first_ = false;
-      std::cout << "Total # Straws " << ntracker.straws().size() << " Sum length = " << totallength
-        << " volume = " << totallength*M_PI*ntracker.strawProperties().strawInnerRadius() << std::endl;
     }
   }
 }

@@ -524,7 +524,6 @@ namespace mu2e {
       BronzeC938->AddMaterial(findMaterialOrThrow("G4_Sb"),0.008);
     }
 
-
     // C360 brass
     mat = uniqueMaterialOrThrow( "BrassC360" );
     {
@@ -618,6 +617,26 @@ namespace mu2e {
       A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Si"), 0.01);
       A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Ti"), 0.001);
       A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.001);
+    }
+
+    // Aluminium alloy 6061
+    mat = uniqueMaterialOrThrow("Al6061");
+    {
+      G4Material* Al6061 = new G4Material(mat.name, 2.70*CLHEP::g/CLHEP::cm3, 4);
+      Al6061->AddMaterial(findMaterialOrThrow("G4_Al"), 0.980);
+      Al6061->AddMaterial(findMaterialOrThrow("G4_Mg"), 0.010);
+      Al6061->AddMaterial(findMaterialOrThrow("G4_Si"), 0.006);
+      Al6061->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.004);
+    }
+
+    // Aluminium alloy 7075
+    mat = uniqueMaterialOrThrow("Al7075");
+    {
+      G4Material* Al7075 = new G4Material(mat.name, 2.81*CLHEP::g/CLHEP::cm3, 4);
+      Al7075->AddMaterial(findMaterialOrThrow("G4_Al"), 0.903);
+      Al7075->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.056);
+      Al7075->AddMaterial(findMaterialOrThrow("G4_Mg"), 0.025);
+      Al7075->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.016);
     }
 
     // NbTi
