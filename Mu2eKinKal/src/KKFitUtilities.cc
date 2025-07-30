@@ -11,6 +11,12 @@ namespace mu2e {
       KinKal::VEC3 vp1(straw.wireEnd(ch.lateEnd()));
       return KinKal::SensorLine(vp0,vp1,ch.time(),sprop);
     }
+
+    KinKal::SensorLine strawLine(Straw const& straw,double time) {
+      KinKal::VEC3 vp0(straw.strawEnd(StrawEnd::cal));
+      KinKal::VEC3 vp1(straw.strawEnd(StrawEnd::hv));
+      return KinKal::SensorLine(vp0,vp1,time,CLHEP::c_light); // time is irrelevant: use speed of light as sprop
+    }
     bool inDetector(KinKal::VEC3 const& point) {
       return point.Rho() < 900.0 && fabs(point.Z()) < 1800; // numbers should come from Tracker TODO
     }
