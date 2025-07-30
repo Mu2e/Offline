@@ -252,7 +252,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 
   int_info->setCaloEnergy(evtEnergy);
   int_info->setNCaloHits(calo_hits->size());
-  int_info->setNCaphriHits(caphri_hits->size());
+  // int_info->setNCaphriHits(caphri_hits->size());
   event.put(std::move(int_info));
 
   // Store the calo hits in the event

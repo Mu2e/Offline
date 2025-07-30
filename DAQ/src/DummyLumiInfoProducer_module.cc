@@ -62,7 +62,7 @@ namespace mu2e
       const static int prime_1(17), prime_2(251), prime_3(503), prime_4(1523); //for distributing values somewhat evenly
       caloInfo->setNCaloHits  ((eventNumber * prime_2) % (prime_3));
       caloInfo->setCaloEnergy ((eventNumber * prime_1) % (prime_2));
-      caloInfo->setNCaphriHits((eventNumber * prime_3) % (prime_1));
+      // caloInfo->setNCaphriHits((eventNumber * prime_3) % (prime_1));
 
       timeClusterInfo->setNProtonTCs((eventNumber * prime_1) % (prime_2));
 

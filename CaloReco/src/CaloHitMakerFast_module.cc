@@ -11,6 +11,10 @@
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
+#include "Offline/CaloConditions/inc/CaloDAQMap.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 
 
 namespace
@@ -44,6 +48,8 @@ namespace mu2e {
             fhicl::Atom<double>        noiseLevelMeV      { Name("noiseLevelMeV"),      Comment("Noise level in MeV") };
             fhicl::Atom<double>        nSigmaNoise        { Name("nSigmaNoise"),        Comment("Maxnumber of sigma Noise to combine digi") };
             fhicl::Sequence<int>       caphriCrystalID    { Name("caphriCrystalID"),    Comment("List of caphri crystal ID") };
+            fhicl::Atom<float>         caphriEDepMax      { Name("caphriEDepMax"),      Comment("Maximum CAPHRI hit energy in MeV")};
+            fhicl::Atom<float>         caphriEDepMin      { Name("caphriEDepMin"),      Comment("Minimum CAPHRI hit energy in MeV")};
             fhicl::Atom<int>           diagLevel          { Name("diagLevel"),          Comment("Diag Level"),0 };
         };
 
@@ -57,6 +63,8 @@ namespace mu2e {
            noise2_            (config().noiseLevelMeV()*config().noiseLevelMeV()),
            nSigmaNoise_       (config().nSigmaNoise()),
            caphriCrystalID_   (config().caphriCrystalID()),
+           caphriEDepMax_     (config().caphriEDepMax()),
+           caphriEDepMin_     (config().caphriEDepMin()),
            diagLevel_         (config().diagLevel())
         {
             produces<CaloHitCollection>("calo");
@@ -81,6 +89,8 @@ namespace mu2e {
         double              noise2_;
         double              nSigmaNoise_;
         std::vector<int>    caphriCrystalID_;
+        float               caphriEDepMax_;
+        float               caphriEDepMin_;
         int                 diagLevel_;
     };
 
@@ -135,26 +145,58 @@ namespace mu2e {
            if (diagLevel_ > 2) std::cout<<"[FastRecoDigiFromDigi] extracted Digi with crystalID="<<crystalID<<" eDep="<<eDep<<"\t time=" <<time<<std::endl;
        }
 
-       unsigned short evtEnergy(0);
+       // Evaluate intensity stream information
+       const Calorimeter& cal = *(GeomHandle<Calorimeter>()); // to get crystal positions
+       unsigned short evtEnergy(0); // total calorimeter energy
+       unsigned short evtEnergy_r1(0), evtEnergy_r2(0), evtEnergy_r3(0); // calorimeter energy above specified radii
+       const static float r1(432.f), r2(504.f), r3(576.f); // FIXME: Make these official
+       std::vector<unsigned short> caphri_energies;
        for (auto& crystal : pulseMap)
        {
-           int crID = crystal.first;
-           bool isCaphri = std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crID) != caphriCrystalID_.end();
+           const int crID = crystal.first;
+           const auto itr = std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crID);
+           const bool isCaphri = itr != caphriCrystalID_.end();
            for (auto& info : crystal.second)
            {
-               if (diagLevel_ > 1) std::cout<<"[FastRecoDigiFromDigi] extracted Hit with crystalID="<<crID<<" eDep="<<info.eDep_<<"\t time=" <<info.time_<<"\t nSiPM= "<<info.nSiPM_<<std::endl;
+               if (diagLevel_ > 1) std::cout<<"[CaloHitMakerFast::" << __func__ << "] extracted Hit with crystalID="<<crID<<" eDep="<<info.eDep_<<"\t time=" <<info.time_<<"\t nSiPM= "<<info.nSiPM_<<std::endl;
                if (isCaphri) caphriHitsColl.emplace_back(CaloHit(crID, info.nSiPM_, info.time_,info.eDep_));
                else          caloHitsColl.emplace_back(  CaloHit(crID, info.nSiPM_, info.time_,info.eDep_));
-               evtEnergy += info.eDep_;
+               const float energy = info.eDep_;
+               evtEnergy += energy;
+
+               // Radius dependent info
+               const float xCrystal = cal.crystal(crID).localPosition().x();
+               const float yCrystal = cal.crystal(crID).localPosition().y();
+               const float rCrystal = std::sqrt(xCrystal*xCrystal +yCrystal*yCrystal);
+
+               if(rCrystal > r1) evtEnergy_r1 += energy;
+               if(rCrystal > r2) evtEnergy_r2 += energy;
+               if(rCrystal > r3) evtEnergy_r3 += energy;
+
+               // CAPHRI info
+               if(isCaphri) {
+                 if(energy > caphriEDepMin_ && energy < caphriEDepMax_) {
+                   const unsigned short e_short = energy * 100.f; // store the hit in units of 0.01 MeV
+                   const int caphri_ID = std::distance(caphriCrystalID_.begin(), itr);
+                   if(caphri_ID > 3) printf("[CaloHitMakerFast::%s] Unknown CAPHRI index of %i\n", __func__, caphri_ID);
+                   else {
+                     const unsigned short encoded_energy = e_short | caphri_ID << 14; // use last 2 bits for the crystal ID
+                     caphri_energies.push_back(encoded_energy);
+                   }
+                 }
+               }
            }
        }
 
        intInfo.setCaloEnergy(evtEnergy);
        intInfo.setNCaloHits(pulseMap.size());
-       intInfo.setNCaphriHits(caphriHitsColl.size());
+       // V0:
+       // intInfo.setNCaphriHits(caphriHitsColl.size());
+       // V1:
+       intInfo.setCaphriHits(caphri_energies);
 
        if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caloHitsColl.size()<<" CaloDigis"<<std::endl;
-       if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caphriHitsColl.size()<<" CapriDigis"<<std::endl;
+       if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caphriHitsColl.size()<<" CaphriDigis"<<std::endl;
 
    }
 

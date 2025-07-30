@@ -14,23 +14,23 @@ namespace mu2e {
   {
   public:
     IntensityInfoCalo() {}
-    IntensityInfoCalo( unsigned short nCaloHits, unsigned short caloEnergy, unsigned short nCaphriHits):
-      nCaloHits_(nCaloHits),caloEnergy_(caloEnergy),nCaphriHits_(nCaphriHits)
+    IntensityInfoCalo( unsigned short nCaloHits, unsigned short caloEnergy, std::vector<unsigned short> caphriHits):
+      nCaloHits_(nCaloHits),caloEnergy_(caloEnergy),caphriHits_(caphriHits)
     {}
 
 
     void setNCaloHits      (unsigned short tmp) {nCaloHits_    = tmp;}
     void setCaloEnergy     (unsigned short tmp) {caloEnergy_   = tmp;}
-    void setNCaphriHits    (unsigned short tmp) {nCaphriHits_  = tmp;}
+    void setCaphriHits     (std::vector<unsigned short> tmp) {caphriHits_  = tmp;}
 
     unsigned short nCaloHits    () const { return nCaloHits_   ; }
     unsigned short caloEnergy   () const { return caloEnergy_  ; }
-    unsigned short nCaphriHits  () const { return nCaphriHits_ ; }
+    std::vector<unsigned short> caphriHits  () const { return caphriHits_ ; }
 
   private:
     unsigned short  nCaloHits_    = 0;
     unsigned short  caloEnergy_   = 0;
-    unsigned short  nCaphriHits_  = 0;
+    std::vector<unsigned short>  caphriHits_ = {};
   };
 
   typedef std::vector<mu2e::IntensityInfoCalo> IntensityInfosCalo;

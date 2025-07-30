@@ -123,7 +123,7 @@ void LumiInfoAna::fillCalo(std::vector<art::Handle<mu2e::IntensityInfosCalo>>& h
     for(auto& info : *handle) {
       _hNCaloHits  ->Fill(info.nCaloHits());
       _hCaloEnergy ->Fill(info.caloEnergy());
-      _hNCaphriHits->Fill(info.nCaphriHits());
+      // _hNCaphriHits->Fill(info.nCaphriHits());
     }
   }
 }
