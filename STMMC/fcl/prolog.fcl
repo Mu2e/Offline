@@ -13,7 +13,7 @@ ComponentPositions : { # In beam order
     }
     Absorber : { # 50mm x 50mm x 390mm
         x : -3944.6
-        y : -24.9 # TODO - why is this not 0.0?
+        y : 0
         z : 39900
     }
     VD101 : { # Centre

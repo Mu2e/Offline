@@ -19,6 +19,7 @@
 // fhicl includes
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 
 // message handling
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -45,6 +46,7 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<art::InputTag> StepPointMCsTag{Name("StepPointMCsTag"), Comment("Tag identifying the StepPointMCs")};
         fhicl::Atom<art::InputTag> SimParticlemvTag{Name("SimParticlemvTag"), Comment("Tag identifying the SimParticlemv")};
+        fhicl::OptionalAtom<int> consecutiveEmptyFileThreshold{Name("consecutiveEmptyFileThreshold"), Comment("Number of consecutive empty files before stopping the job")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit VirtualDetectorTree(const Parameters& conf);
@@ -54,8 +56,8 @@ namespace mu2e {
       art::ProductToken<StepPointMCCollection> StepPointMCsToken;
       art::ProductToken<SimParticleCollection> SimParticlemvToken;
       GlobalConstantsHandle<ParticleDataList> pdt;
-      int pdgId = 0;
-      double x = 0.0, y = 0.0, z = 0.0, mass = 0.0, E = 0.0, time = 0.0;
+      int pdgId = 0, consecutiveEmptyFileCounter = 0, consecutiveEmptyFileThreshold = 0;
+      double x = 0.0, y = 0.0, z = 0.0, mass = 0.0, Ekin = 0.0, Etot = 0.0, time = 0.0, p = 0.0, p2 = 0.0, px = 0.0, py = 0.0, pz = 0.0;
       VolumeId_type virtualdetectorId = 0;
       TTree* ttree;
       std::map<int, int> pdgIds; // <id, count>
@@ -65,6 +67,7 @@ namespace mu2e {
     art::EDAnalyzer(conf),
     StepPointMCsToken(consumes<StepPointMCCollection>(conf().StepPointMCsTag())),
     SimParticlemvToken(consumes<SimParticleCollection>(conf().SimParticlemvTag())) {
+      consecutiveEmptyFileThreshold = conf().consecutiveEmptyFileThreshold() ? *(conf().consecutiveEmptyFileThreshold()) : 10;
       art::ServiceHandle<art::TFileService> tfs;
       ttree = tfs->make<TTree>( "ttree", "Virtual Detectors ttree");
       ttree->Branch("time", &time, "time/D"); // ns
@@ -73,18 +76,35 @@ namespace mu2e {
       ttree->Branch("x", &x, "x/D"); // mm
       ttree->Branch("y", &y, "y/D"); // mm
       ttree->Branch("z", &z, "z/D"); // mm
-      ttree->Branch("E", &E, "E/D"); // MeV
+      ttree->Branch("px", &px, "px/D"); // mm
+      ttree->Branch("py", &py, "py/D"); // mm
+      ttree->Branch("pz", &pz, "pz/D"); // mm
+      ttree->Branch("p", &p, "p/D"); // mm
+      ttree->Branch("p2", &p2, "p2/D"); // mm
+      ttree->Branch("mass", &mass, "mass/D"); // MeV/c^2
+      ttree->Branch("Ekin", &Ekin, "Ekin/D"); // MeV
+      ttree->Branch("Etot", &Etot, "Etot/D"); // MeV
     };
 
   void VirtualDetectorTree::analyze(const art::Event& event) {
-    // Get the data products from the event
-    auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
-    if (StepPointMCs.empty())
+    auto stepHandle = event.getHandle< std::vector<StepPointMC> >(StepPointMCsToken);
+    if (!stepHandle || stepHandle->empty()) {
+      consecutiveEmptyFileCounter++;
       return;
-    auto const& SimParticles = event.getProduct(SimParticlemvToken);
-    if (SimParticles.empty())
-      return;
+    }
 
+    // Try to get SimParticles (assuming it's a map or vector)
+    auto simHandle = event.getHandle< SimParticleCollection >(SimParticlemvToken);
+    if (!simHandle || simHandle->empty()) {
+      consecutiveEmptyFileCounter++;
+      return;
+    }
+    if (consecutiveEmptyFileCounter > consecutiveEmptyFileThreshold) {
+      throw cet::exception("LogicError", "Too many consecutive empty files, stopping the job");
+    }
+    auto const& StepPointMCs = *stepHandle;
+    auto const& SimParticles = *simHandle;
+    consecutiveEmptyFileCounter = 0;
     // Loop over all VD hits
     for (const StepPointMC& step : StepPointMCs) {
       // Get the associated particle
@@ -97,9 +117,15 @@ namespace mu2e {
       x = step.position().x();
       y = step.position().y();
       z = step.position().z();
+      px = step.momentum().x();
+      py = step.momentum().y();
+      pz = step.momentum().z();
+      p2 = step.momentum().mag2();
+      p = std::sqrt(p2);
       mass = pdt->particle(pdgId).mass();
-      E = std::sqrt(step.momentum().mag2()+mass*mass)-mass; // Subtract the rest mass
-      if (E < 0)
+      Etot = std::sqrt(p2 + mass * mass); // Total energy
+      Ekin = Etot - mass; // Subtract the rest mass
+      if (Ekin < 0)
         throw cet::exception("LogicError", "Energy is negative");
       ttree->Fill();
 

@@ -23,7 +23,7 @@ physics: {
   analyzers : {
     Stage1virtualdetector : {
       module_type : VirtualDetectorTree
-      StepPointMCsTag : @local::SimplifyStage1Data.StepPointMCsTag
+      StepPointMCsTag : @local::SimplifyStage1Data.StepPointMCsTag1809
       SimParticlemvTag : @local::SimplifyStage1Data.SimParticlemvTag
     }
     Stage2virtualdetector : {
@@ -49,8 +49,9 @@ physics: {
       EnergyCalib : @local::HPGeDigitization.EnergyPerADCBin
     }
   }
-  o1 : @nil
+
+  o1 : [Stage1virtualdetector]
   end_paths: [o1]
 }
 
-services.TFileService.fileName : @nil
+services.TFileService.fileName : "test.root"

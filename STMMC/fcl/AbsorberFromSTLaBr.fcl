@@ -32,6 +32,7 @@ physics: {
       deltay : @local::Efficiency.FromSTToDet.LaBr.y
       deltaz : @local::Efficiency.FromSTToDet.LaBr.z
       E : @local::Efficiency.PhotonEnergy
+      verbose: false
     }
     g4run : @local::g4run
   }
@@ -55,5 +56,5 @@ physics.producers.g4run.SDConfig.enableSD: [STMDet, virtualdetector]
 services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 services.TFileService.fileName : @local::Efficiency.OutputFilename
-physics.producers.g4run.debug.trackingVerbosityLevel : 1
-physics.producers.g4run.debug.steppingVerbosityLevel : 1
+# physics.producers.g4run.debug.trackingVerbosityLevel : 1
+# physics.producers.g4run.debug.steppingVerbosityLevel : 1
