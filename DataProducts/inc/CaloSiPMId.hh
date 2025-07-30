@@ -34,10 +34,10 @@ namespace mu2e {
 
     //Valid for on-disk pin diodes only
     std::bitset<4> pinDiodeCode() const { return std::bitset<4>(_id-CaloConst::_nCrystalChannel); }
-    int pinDiodeDisk() const { return pinDiodeCode()[0]; }
-    int pinDiodePhi() const { return pinDiodeCode()[1]; }
-    int pinDiodeSphere() const { return pinDiodeCode()[2]; }
-    int pinDiodePin() const { return pinDiodeCode()[3]; }
+    int pinDiodeDisk() const { return pinDiodeCode()[3]; }
+    int pinDiodePhi() const { return pinDiodeCode()[2]; }
+    int pinDiodeSphere() const { return pinDiodeCode()[1]; }
+    int pinDiodePin() const { return pinDiodeCode()[0]; }
 
   private:
 
