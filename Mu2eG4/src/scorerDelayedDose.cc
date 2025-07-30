@@ -1,6 +1,7 @@
 #include "Offline/Mu2eG4/inc/scorerDelayedDose.hh"
 #include "Offline/Mu2eG4/inc/scorerFTDConverter.hh"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include "G4SystemOfUnits.hh"
 #include "G4Track.hh"
@@ -30,10 +31,13 @@ namespace mu2e {
     bin_.clear();
     profile_.clear();
 
-    std::ifstream infile (filename, std::ios::in);
+    ConfigFileLookupPolicy configFile;
+    std::string file_name = configFile(filename);
+    std::ifstream infile(file_name.c_str());
+
     if (!infile){
        throw cet::exception("INIT")<<"scorerDelayedDose::readTimeProfile "
-                                   <<filename<<" does not exist\n";
+                                   <<file_name<<" does not exist\n";
     }
 
     G4double bin(0.), flux(0.);

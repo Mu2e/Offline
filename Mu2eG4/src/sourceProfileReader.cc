@@ -1,6 +1,7 @@
 #include "Offline/Mu2eG4/inc/sourceProfileReader.hh"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "CLHEP/Random/RandFlat.h"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include "G4SystemOfUnits.hh"
 #include <string>
@@ -19,10 +20,12 @@ namespace mu2e {
      bin_.clear();
      profile_.clear();
 
-     std::ifstream infile (filename, std::ios::in);
+     ConfigFileLookupPolicy configFile;
+     std::string file_name = configFile(filename);
+     std::ifstream infile (file_name.c_str(), std::ios::in);
      if (!infile){
         throw cet::exception("INIT")<<"scorerDelayedRadiation::readTimeProfile "
-                                    <<filename<<" does not exist\n";
+                                    <<file_name<<" does not exist\n";
      }
 
      double bin(0.), flux(0.),rsum(0.);

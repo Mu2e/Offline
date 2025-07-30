@@ -1,4 +1,5 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4BiasedRDPhysics.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include "Geant4/G4Radioactivation.hh"
 #include "Geant4/G4GenericIon.hh"
@@ -72,11 +73,15 @@ void Mu2eG4BiasedRDPhysics::ConstructProcess()
   process->SetARM(false); //Atomic Rearangement
 
    if (phys_){
+     ConfigFileLookupPolicy configFile;
+     std::string filenameSource = configFile(phys_->beamTimeProfileRad());
+     std::string filenameDecay  = configFile(phys_->coolTimeProfileRad());
+
      process->SetHLThreshold(phys_->radiationHLT());
      process->SetBRBias(phys_->radiationBRBias());
      process->SetSplitNuclei(phys_->radiationNsplit());
-     process->SetSourceTimeProfile(phys_->beamTimeProfileRad());
-     process->SetDecayBias(phys_->coolTimeProfileRad());
+     process->SetSourceTimeProfile(filenameSource);
+     process->SetDecayBias(filenameDecay);
   }
 
   G4PhysicsListHelper::GetPhysicsListHelper()->

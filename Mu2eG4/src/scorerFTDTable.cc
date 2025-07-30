@@ -2,6 +2,7 @@
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Units/SystemOfUnits.h"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include <string>
 #include <vector>
@@ -21,8 +22,10 @@ namespace mu2e{
 
   void scorerFTDTable::initialize()
   {
-    std::ifstream file(filename_);
-    if (!file.is_open()) throw cet::exception("BADINPUT")<<"scorerFTDTable: file "<<filename_
+    ConfigFileLookupPolicy configFile;
+    std::string filename = configFile(filename_);
+    std::ifstream file(filename.c_str());
+    if (!file.is_open()) throw cet::exception("BADINPUT")<<"scorerFTDTable: file "<<filename
                                                          <<"does NOT exist \n";
     std::string line,item;
 
@@ -53,7 +56,7 @@ namespace mu2e{
 
       // the fluence-to-dose conversion numbers in ICRP113 are given in pSv / cm2,
       // transform in Sv / mm2 to be compatible with Geant4
-      double pico(1e-12);
+      const double pico(1e-12);
       for (int i=1;i<=iColumn;++i) linestream >> number;
       coeffs_.push_back(number*pico*CLHEP::cm*CLHEP::cm/CLHEP::mm/CLHEP::mm);
     }
