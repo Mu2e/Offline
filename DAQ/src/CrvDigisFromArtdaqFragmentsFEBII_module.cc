@@ -182,7 +182,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
               uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
                                                                                                   //the 5th bit indicates special situations
                                                                                                   //e.g. fake pulses
-              if(crvHitInfo.fpgaChannel & 0x10 != 0) continue;  //special situation, if the 5th bit of the fpgaChannel is non-zero
+              if((crvHitInfo.fpgaChannel & 0x10) != 0) continue;  //special situation, if the 5th bit of the fpgaChannel is non-zero
                                                                 //don't decode them, since there is no match to any offline channel.
               mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
 
@@ -221,7 +221,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
                 uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
                                                                                                     //the 5th bit indicates special situations
                                                                                                     //e.g. fake pulses
-                if(crvHitInfo.fpgaChannel & 0x10 == 0)  //special situation, if the 5th bit of the fpgaChannel is non-zero (see below)
+                if((crvHitInfo.fpgaChannel & 0x10) == 0)  //special situation, if the 5th bit of the fpgaChannel is non-zero (see below)
                 {
                   mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
 
