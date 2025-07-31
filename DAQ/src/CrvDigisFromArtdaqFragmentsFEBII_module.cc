@@ -179,7 +179,11 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
 
               uint16_t rocID = crvRocHeader->ControllerID+1; // FIXME ROC IDs between 1 and 17  //also header->GetLinkID()
               uint16_t rocPort = crvHitInfo.portNumber+1; //FIXME Port numbers beween 1 and 24
-              uint16_t febChannel = crvHitInfo.febChannel;
+              uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
+                                                                                                  //the 5th bit indicates special situations
+                                                                                                  //e.g. fake pulses
+              if(crvHitInfo.fpgaChannel & 0x10 != 0) continue;  //special situation, if the 5th bit of the fpgaChannel is non-zero
+                                                                //don't decode them, since there is no match to any offline channel.
               mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
 
               uint16_t offlineChannel = channelMap.offline(onlineChannel);
@@ -192,10 +196,10 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
 
             if(_diagLevel>2)
             {
-              std::cout << "EventWindowTag (TDC header): " << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
+              std::cout << "EventWindowTag (DTC header): " << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
               std::cout << "SubsystemID: " << (uint16_t)header->GetSubsystemID() << std::endl;
               std::cout << "DTCID: " << (uint16_t)header->GetID() << std::endl;
-              std::cout << "ROCID (TDC header): " << (uint16_t)header->GetLinkID() << std::endl;
+              std::cout << "ROCID (DTC header): " << (uint16_t)header->GetLinkID() << std::endl;
               std::cout << "packetCount: " << header->GetPacketCount() << std::endl;
               std::cout << "EVB mode: " << (uint16_t)header->GetEVBMode() << std::endl;
               std::cout << "TriggerCount: " << crvRocHeader->TriggerCount << std::endl;
@@ -214,17 +218,29 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
 
                 uint16_t rocID = crvRocHeader->ControllerID + 1; // FIXME  //ROC IDs are between 1 and 17
                 uint16_t rocPort = crvHitInfo.portNumber+1; //FIXME Port numbers beween 1 and 24
-                uint16_t febChannel = crvHitInfo.febChannel;
-                mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
+                uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
+                                                                                                    //the 5th bit indicates special situations
+                                                                                                    //e.g. fake pulses
+                if(crvHitInfo.fpgaChannel & 0x10 == 0)  //special situation, if the 5th bit of the fpgaChannel is non-zero (see below)
+                {
+                  mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
 
-                uint16_t offlineChannel = channelMap.offline(onlineChannel);
-                int crvBarIndex = offlineChannel / 4;
-                int SiPMNumber = offlineChannel % 4;
+                  uint16_t offlineChannel = channelMap.offline(onlineChannel);
+                  int crvBarIndex = offlineChannel / 4;
+                  int SiPMNumber = offlineChannel % 4;
 
-                std::cout << "ROCID (increased by 1 to match the Online/Offline-Channel Map) " << rocID
-                          << "   rocPort " << rocPort << "   febChannel " << febChannel
-                          << "   crvBarIndex " << crvBarIndex << "   SiPMNumber " << SiPMNumber
-                          << std::endl;
+                  std::cout << "ROCID (increased by 1 to match the Online/Offline-Channel Map) " << rocID
+                            << "   rocPort " << rocPort << "   febChannel " << febChannel
+                            << "   crvBarIndex " << crvBarIndex << "   SiPMNumber " << SiPMNumber
+                            << std::endl;
+                }
+                else
+                {
+                  std::cout << "Special hits (fake pulses, etc.) "
+                            << "   ROCID (increased by 1 to match the Online/Offline-Channel Map) " << rocID
+                            << "   rocPort " << rocPort << "   fpgaNumber " << crvHitInfo.fpgaNumber << "   fpgaChannel " << crvHitInfo.fpgaChannel
+                            << std::endl;
+                }
                 std::cout << "TDC: " << crvHitInfo.hitTime << std::endl;
                 std::cout << "nSamples " << waveform.size() << "  ";
                 std::cout << "Waveform: {";

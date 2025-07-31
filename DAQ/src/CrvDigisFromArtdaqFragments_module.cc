@@ -196,10 +196,10 @@ void CrvDigisFromArtdaqFragments::produce(art::Event& event)
 
             if(_diagLevel>2)
             {
-              std::cout << "EventWindowTag (TDC header): " << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
+              std::cout << "EventWindowTag (DTC header): " << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
               std::cout << "SubsystemID: " << (uint16_t)header->GetSubsystemID() << std::endl;
               std::cout << "DTCID: " << (uint16_t)header->GetID() << std::endl;
-              std::cout << "ROCID (TDC header): " << (uint16_t)header->GetLinkID() << std::endl;
+              std::cout << "ROCID (DTC header): " << (uint16_t)header->GetLinkID() << std::endl;
               std::cout << "packetCount: " << header->GetPacketCount() << std::endl;
               std::cout << "EVB mode: " << (uint16_t)header->GetEVBMode() << std::endl;
               std::cout << "TriggerCount: " << crvRocHeader->TriggerCount << std::endl;
