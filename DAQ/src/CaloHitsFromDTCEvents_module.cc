@@ -10,8 +10,8 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Overlays/Decoders/CalorimeterDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/DTCEventFragment.hh"
+#include "artdaq-core-mu2e/Overlays/Decoders/CalorimeterDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
@@ -20,8 +20,8 @@
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
 #include "Offline/DAQ/inc/CaloDAQUtilities.hh"
-#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/DataProducts/inc/CaloConst.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 
 #include <iostream>
 

@@ -9,40 +9,40 @@
 #include "fhiclcpp/types/Table.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Overlays/Decoders/MTPDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/DTCEventFragment.hh"
+#include "artdaq-core-mu2e/Overlays/Decoders/MTPDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 
 #include "Offline/RecoDataProducts/inc/MTPHit.hh"
 
-#include <artdaq-core/Data/Fragment.hh>
 #include <artdaq-core/Data/ContainerFragment.hh>
+#include <artdaq-core/Data/Fragment.hh>
 
 #include <iostream>
-#include <string>
 #include <map>
 #include <memory>
+#include <string>
 
 namespace art {
-  class MTPHitsFromDTCEvents;
+class MTPHitsFromDTCEvents;
 }
 // ======================================================================
 
 class art::MTPHitsFromDTCEvents : public EDProducer {
 
 public:
-
   struct Config {
-    fhicl::Atom<int>   debugLevel        {fhicl::Name("debugLevel"    ), fhicl::Comment("debug level"           )};
-    fhicl::Atom<float> clockFrequency    {fhicl::Name("clockFrequency"), fhicl::Comment("clock frequency in MHz")};
+    fhicl::Atom<int> debugLevel{fhicl::Name("debugLevel"), fhicl::Comment("debug level")};
+    fhicl::Atom<float> clockFrequency{fhicl::Name("clockFrequency"),
+                                      fhicl::Comment("clock frequency in MHz")};
   };
 
   explicit MTPHitsFromDTCEvents(const art::EDProducer::Table<Config>& config);
   virtual ~MTPHitsFromDTCEvents() {}
 
   // --- overloaded functions of the art producer
-  virtual void produce (art::Event& ArtEvent) override;
-  virtual void beginRun(art::Run&   ArtRun  ) override;
+  virtual void produce(art::Event& ArtEvent) override;
+  virtual void beginRun(art::Run& ArtRun) override;
 
   //-----------------------------------------------------------------------------
   // helper functions
@@ -50,27 +50,22 @@ public:
   artdaq::Fragments getFragments(art::Event& event);
 
 private:
-
   //-----------------------------------------------------------------------------
   // fcl parameters
   //-----------------------------------------------------------------------------
-  int      _debugLevel;
-  float    _clockFrequency;
-
+  int _debugLevel;
+  float _clockFrequency;
 };
 
 // ======================================================================
 art::MTPHitsFromDTCEvents::MTPHitsFromDTCEvents(const art::EDProducer::Table<Config>& config) :
-    art::EDProducer{config},
-    _debugLevel    (config().debugLevel    ()),
-    _clockFrequency(config().clockFrequency())
-{
+    art::EDProducer{config}, _debugLevel(config().debugLevel()),
+    _clockFrequency(config().clockFrequency()) {
   produces<mu2e::MTPHitCollection>();
 }
 
-
 //-----------------------------------------------------------------------------
-void art::MTPHitsFromDTCEvents::beginRun(art::Run&  ArtRun) {}
+void art::MTPHitsFromDTCEvents::beginRun(art::Run& ArtRun) {}
 
 // ----------------------------------------------------------------------------
 // event entry point
@@ -101,24 +96,25 @@ void art::MTPHitsFromDTCEvents::produce(Event& event) {
           // grab the two time stamp counters, convert them to ns, and save them
           unsigned int channelID = 0; // not in payload yet, will be in future
           uint16_t counter0 = packet->GetTimestamp(0);
-          double time0 = counter0*1000.0/_clockFrequency;
+          double time0 = counter0 * 1000.0 / _clockFrequency;
           mu2e::MTPHit mtpHit0(time0, channelID);
           mtp_hits->emplace_back(mtpHit0);
           uint16_t counter1 = packet->GetTimestamp(1);
-          double time1 = counter1*1000.0/_clockFrequency;
+          double time1 = counter1 * 1000.0 / _clockFrequency;
           mu2e::MTPHit mtpHit1(time1, channelID);
           mtp_hits->emplace_back(mtpHit1);
-          if (_debugLevel == 1) { std::cout << "time0, time1 = " << time0 << ", " << time1 << std::endl; }
+          if (_debugLevel == 1) {
+            std::cout << "time0, time1 = " << time0 << ", " << time1 << std::endl;
+          }
         }
       }
     }
   }
 
-//-----------------------------------------------------------------------------
-// Store the mtp hits
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  // Store the mtp hits
+  //-----------------------------------------------------------------------------
   event.put(std::move(mtp_hits));
-
 }
 
 // ----------------------------------------------------------------------------
@@ -126,7 +122,7 @@ void art::MTPHitsFromDTCEvents::produce(Event& event) {
 //-----------------------------------------------------------------------------
 artdaq::Fragments art::MTPHitsFromDTCEvents::getFragments(art::Event& event) {
 
-  artdaq::Fragments    fragments;
+  artdaq::Fragments fragments;
   artdaq::FragmentPtrs containerFragments;
 
   std::vector<art::Handle<artdaq::Fragments>> fragmentHandles;
