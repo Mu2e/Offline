@@ -101,8 +101,8 @@ public:
     return CaloHitError::Good;
   }
 
-  CaloHitError isHitGood(std::pair<CalorimeterDataDecoder::CalorimeterHitDataPacketNew,
-                                   std::vector<uint16_t>> const& Hit) {
+  CaloHitError
+  isHitGood(std::pair<CalorimeterDataDecoder::CalorimeterHitDataPacketNew, std::vector<uint16_t>> const& Hit) {
     if (Hit.first.Reserved1 != 0xAAA)
       return CaloHitError::BeginMarker;
     if (Hit.second.size() == 0)

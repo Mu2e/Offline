@@ -44,28 +44,9 @@ void CaloDAQUtilities::printCaloPulse(CalorimeterDataDecoder::CalorimeterHitData
   std::cout << "[CaloDAQUtilities] \tDIRACA     " << (int)Hit.DIRACA << std::endl;
   std::cout << "[CaloDAQUtilities] \tDIRACB     " << (int)Hit.DIRACB << std::endl;
   std::cout << "[CaloDAQUtilities] \tErrorFlags " << (int)Hit.ErrorFlags << std::endl;
-  std::cout << "[CaloDAQUtilities] \tTime       " << (int)Hit.Time << std::endl;
+  std::cout << "[CaloDAQUtilities] \tTime              " << (int)Hit.Time << std::endl;
   std::cout << "[CaloDAQUtilities] \tNSamples   " << (int)Hit.NumberOfSamples << std::endl;
   std::cout << "[CaloDAQUtilities] \tIndexMax   " << (int)Hit.IndexOfMaxDigitizerSample
-            << std::endl;
-}
-
-void CaloDAQUtilities::printCaloPulse(
-    CalorimeterDataDecoder::CalorimeterHitDataPacketNew const& Hit) {
-  std::cout << "[CaloDAQUtilities] \tBoardID                    " << (int)Hit.BoardID << std::endl;
-  std::cout << "[CaloDAQUtilities] \tDetectorID                 " << (int)Hit.DetectorID
-            << std::endl;
-  std::cout << "[CaloDAQUtilities] \tChannelID                  " << (int)Hit.ChannelID
-            << std::endl;
-  std::cout << "[CaloDAQUtilities] \tTime                       " << (int)Hit.Time << std::endl;
-  std::cout << "[CaloDAQUtilities] \tInPayloadEventWindowTag    "
-            << (int)Hit.InPayloadEventWindowTag << std::endl;
-  std::cout << "[CaloDAQUtilities] \tBaseline                   " << (int)Hit.Baseline << std::endl;
-  std::cout << "[CaloDAQUtilities] \tIndexOfMaxDigitizerSample  "
-            << (int)Hit.IndexOfMaxDigitizerSample << std::endl;
-  std::cout << "[CaloDAQUtilities] \tErrorFlags                 " << (int)Hit.ErrorFlags
-            << std::endl;
-  std::cout << "[CaloDAQUtilities] \tNumberOfSamples            " << (int)Hit.NumberOfSamples
             << std::endl;
 }
 

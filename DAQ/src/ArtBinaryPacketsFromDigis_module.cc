@@ -908,7 +908,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(DTCLib::DTC_Event& cur
       pos += waveform_size;
     } // end loop over the CalorimeterHitDataPacketVector
   }
-  putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_Calorimeter, thisBlock);
+    putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_Calorimeter, thisBlock);
 }
 
 //--------------------------------------------------------------------------------
@@ -1082,8 +1082,7 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(const CRVOrdinal& crvChannel
                                                     uint64_t eventNum) {
   size_t nHits = crvData.hits.size();
   size_t nSamples = 12;
-  if (crvData.hits.size() > 0)
-    nSamples = crvData.hits.at(0).second.size();
+  if(crvData.hits.size()>0) nSamples=crvData.hits.at(0).second.size();
 
   //----------------------------------------------
   // DataBlockHeader //TODO: This may have changed
@@ -1207,7 +1206,8 @@ void ArtBinaryPacketsFromDigis::fillCrvDataStream(DTCLib::DTC_Event& currentEven
     pos += sizeof(CRVHitWaveformSample) * crvData.hits[i].second.size();
   }
 
-  putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_CRV, thisBlock);
+    putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_CRV, thisBlock);
+
 }
 
 } // namespace mu2e
