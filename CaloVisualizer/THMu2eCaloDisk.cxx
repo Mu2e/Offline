@@ -90,6 +90,18 @@ void mu2e::THMu2eCaloDiskBin::Update() {
 	SetChanged(true);
 }
 
+void mu2e::THMu2eCaloDiskBin::SetContentL(Double_t content) {
+	fContentL = content;
+	Update();
+	SetChanged(true);
+}
+
+void mu2e::THMu2eCaloDiskBin::SetContentR(Double_t content) {
+	fContentR = content;
+	Update();
+	SetChanged(true);
+}
+
 void mu2e::THMu2eCaloDiskBin::Merge(const mu2e::THMu2eCaloDiskBin* toMerge) {
 	this->fContentL += toMerge->fContentL;
 	this->fContentR += toMerge->fContentR;
@@ -129,8 +141,6 @@ void mu2e::THMu2eCaloDiskBin::FillR(Double_t w) {
 	SetChanged(true);
 	this->Update();
 }
-
-mu2e::THMu2eCaloDisk::THMu2eCaloDisk() : fDisk(0), combineMode(kSum) {}
 
 mu2e::THMu2eCaloDisk::THMu2eCaloDisk(const char* name, const char* title, Int_t disk) : TH2Poly(name, title, xmin0, xmax0, ymin0, ymax0) {
 	fDisk = disk;
@@ -306,4 +316,74 @@ Int_t mu2e::THMu2eCaloDisk::FillRaw(int board, int channel, Double_t w) {
 	}
 
 	return 0;
+}
+
+
+
+void mu2e::THMu2eCaloDisk::Scale(Double_t c1, Option_t* option)
+{
+   for( int i = 0; i < this->GetNumberOfBins(); i++ ) {
+      this->SetBinContentL(i+1, c1*this->GetBinContentL(i+1));
+      this->SetBinContentR(i+1, c1*this->GetBinContentR(i+1));
+   }
+   for( int i = 0; i < kNOverflow; i++ ) {
+      this->SetBinContentL(-i-1, c1*this->GetBinContentL(-i-1) );
+      this->SetBinContentR(-i-1, c1*this->GetBinContentR(-i-1) );
+   }
+}
+
+Double_t mu2e::THMu2eCaloDisk::GetBinContentL(Int_t bin) const
+{
+   if (bin > GetNumberOfBins() || bin == 0 || bin < -kNOverflow) return 0;
+   if (bin<0) return fOverflow[-bin - 1];
+   return ((THMu2eCaloDiskBin*) fBins->At(bin-1))->GetContentL();
+}
+ 
+Double_t mu2e::THMu2eCaloDisk::GetBinContentR(Int_t bin) const
+{
+   if (bin > GetNumberOfBins() || bin == 0 || bin < -kNOverflow) return 0;
+   if (bin<0) return fOverflow[-bin - 1];
+   return ((THMu2eCaloDiskBin*) fBins->At(bin-1))->GetContentR();
+}
+ 
+
+void mu2e::THMu2eCaloDisk::SetBinContentL(Int_t bin, Double_t content)
+{
+	if (bin > GetNumberOfBins() || bin == 0 || bin < -9 ) return;
+	if (bin > 0) {
+		((THMu2eCaloDiskBin*) fBins->At(bin-1))->SetContentL(content);
+	} else {
+		fOverflow[-bin - 1] = content;
+	}
+
+	SetBinContentChanged(kTRUE);
+	fEntries++;
+}
+
+void mu2e::THMu2eCaloDisk::SetBinContentR(Int_t bin, Double_t content)
+{
+	if (bin > GetNumberOfBins() || bin == 0 || bin < -9 ) return;
+	if (bin > 0) {
+		((THMu2eCaloDiskBin*) fBins->At(bin-1))->SetContentR(content);
+	} else {
+		fOverflow[-bin - 1] = content;
+	}
+
+	SetBinContentChanged(kTRUE);
+	fEntries++;
+}
+
+void mu2e::THMu2eCaloDisk::Reset(Option_t *opt)
+{
+   TIter next(fBins);
+   TObject *obj;
+   THMu2eCaloDiskBin *bin;
+ 
+   // Clears the bin contents
+   while ((obj = next())) {
+      bin = (THMu2eCaloDiskBin*) obj;
+      bin->ClearContent();
+   }
+ 
+   TH2::Reset(opt);
 }

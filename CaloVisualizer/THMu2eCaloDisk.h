@@ -49,8 +49,16 @@ class THMu2eCaloDiskBin : public TH2PolyBin {
 	~THMu2eCaloDiskBin() override {}
 
 	void Update();
+	void SetContentL(Double_t content);
+	void SetContentR(Double_t content);
 	void Merge(const THMu2eCaloDiskBin* toMerge);
 	void ClearStats();
+	void ClearContent(){
+		fContent = 0;
+		fContentL = 0;
+		fContentR = 0;
+		Update();
+	}
 
 	Int_t    GetCrystalId() const { return fCrystalId; }
 	Int_t    GetOfflineIdL() const { return fOfflineIdL; }
@@ -117,26 +125,38 @@ class THMu2eCaloDiskBin : public TH2PolyBin {
 
 class THMu2eCaloDisk : public TH2Poly {
   public:
-	THMu2eCaloDisk();
+	THMu2eCaloDisk() : TH2Poly() {}
 	THMu2eCaloDisk(const char* name, const char* title, Int_t disk);
-	~THMu2eCaloDisk() {}
+	~THMu2eCaloDisk() override {}
 
-	THMu2eCaloDiskBin* CreateBin(TObject* poly) override;
+	void Scale(Double_t c1 = 1, Option_t* option = "") override;
+	Double_t GetBinContentL(Int_t bin) const ;
+	Double_t GetBinContentR(Int_t bin) const ;
+
+	void SetBinContent(Int_t bin, Double_t content) override{} ///< NOT IMPLEMENTED for THMu2eCaloDisk
+	void SetBinContentL(Int_t bin, Double_t content);
+	void SetBinContentR(Int_t bin, Double_t content);
 
 	void SetBinCombineMode(Int_t bin, Int_t mode);
 	void SetCombineMode(Int_t mode);
 	bool LoadMapFile(std::map<int, std::map<int, mu2e::channelInfo>>& output, const char* filename = "/home/mu2edaq/dev_calo/pgirotti_testing/srcs/Offline/CaloConditions/data/caloDMAP_latest.dat");
 	bool LoadMapDB(std::map<int, std::map<int, mu2e::channelInfo>>& output);
-
+	
 	Int_t FillOffline(int SiPMId, Double_t w);
 	Int_t FillRaw(int board, int channel, Double_t w);
+	//void SetBinContent(Int_t bin, Double_t content) override;
+	void Reset(Option_t *opt = "") override;
 
   protected:
+
+    THMu2eCaloDiskBin* CreateBin(TObject* poly) override;
+
 	constexpr static float wcry  = 34.3;
 	constexpr static float xmin0 = -755;
 	constexpr static float xmax0 = 755;
 	constexpr static float ymin0 = -755;
 	constexpr static float ymax0 = 755;
+
 	int                    fDisk;
 	int                    combineMode;
 
