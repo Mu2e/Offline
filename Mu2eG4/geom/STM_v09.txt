@@ -36,7 +36,7 @@ double stm.STM_SSC.Aperture_HPGe1  = 50;
 double stm.STM_SSC.Aperture_HPGe2  = 150;
 double stm.STM_SSC.Aperture_LaBr1  = 50;
 double stm.STM_SSC.Aperture_LaBr2  = 150;
-double stm.STM_SSC.offset_Spot     = 40.6;
+double stm.STM_SSC.offset_Spot     = 40.64;
 double stm.STM_SSC.leak            = 10.16;
 double stm.STM_SSC.FrontToWall     = 1049.2;  //41.3 in
 double stm.STM_SSC.ZGap            = 12.7;
@@ -85,6 +85,8 @@ double stm.FrontShielding.GapForTop      = 5;
 double stm.FrontShielding.LeakForSSC     = 10.16;
 double stm.FrontShielding.CopperL        = 257.048;
 double stm.FrontShielding.FrontS_H       = 508;
+double stm.FrontShielding.FrontSHole_r   = 19.939;
+
 
 bool   stm.LaBr.build     = true;
 string stm.LaBr.crystalMaterial = "LaBr3Ce";
@@ -169,10 +171,13 @@ double stm.TopShielding.Leak      = 5;
 
 bool   stm.BackShielding.build     = true;
 double stm.BackShielding.BPThick   = 25.4;
+double stm.BackShielding.ShieldingPipeGap   = 76.2;
+
 double stm.BackShielding.BPLength  = 1500;
 double stm.BackShielding.BPHeight  = 1000;
 double stm.BackShielding.BackS_dX  = -304.8;
 double stm.BackShielding.BackS_dY  = 0;
+
 
 bool   stm.InnerShielding.build    = true;
 
@@ -197,7 +202,35 @@ double stm.det2VD.rOut = 60;
 double vd.STMCollDnStr.r = 60;
 double vd.STMSSCollUpStr.r = 2000;
 
+//
+// Changes for STM Upstream infrastructure
+//
+string stm.magnet.stand.material = "MildSteel"; // update material of table
+bool   stm.magnet.build = false; // don't build the magnet
+bool stm.shield.matingBlock.build = false; // don't build the mating block since we no longer have a magnet
+
+// Shield Pipe
+double stm.shield.pipe.halfLength      = 888.0; // fullLength = 1776.0 mm, Docdb-49112v2 "STM Aperatures, Positions, and Dimensions"
+double stm.shield.rIn = 139.70; // inner diameter = 11" = 279.4 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") => inner radius = 139.7 mm (note: this is same as previous version)
+double stm.shield.rOut = 177.8; // outer diameter = 14" = 355.6 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") => inner radius = 177.8 mm (note: this is different to previous version)
+
+// FOV Collimator
+double stm.FOVcollimator.halfWidth  =  198.1; // fullWidth = 396.2 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") => halfWidth = 198.1 mm (note: this is different to previous version)
+double stm.FOVcollimator.halfHeight =  245.1; // fullHeight = 490.2 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") => halfHeight = 245.1 mm (note: this is different to previous version)
+double stm.FOVcollimator.halfLength =   63.5; // fullLength = 127.0 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") => halfLength = 63.5 mm (note: this is same as previous version)
+
+double stm.FOVcollimator.hole1.radiusUpStr =   70.0; // diameter = 140 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions")
+double stm.FOVcollimator.hole1.radiusDnStr =   70.0; // note: the same underlying class is used for FOV and SSC collimators hence why we see a "hole 1" and "UpStr" and "DnStr" radii. These are used in the SSC collimator
+double stm.FOVcollimator.plug.radius       = 70.0;
+
+double stm.shield.pipe.upStrAirGap = 25.3; // 1" (25.4 mm) gap between ECS and shield pipe (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") but there is a hardcoded 0.1 mm zOffset buffer in constructSTM.cc that we account for here
+double stm.FOVcollimator.UpStrSpace = 11.7; // 0.5" (12.7 mm) gap between shield pipe and FOV collimator (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") but there is a 1 mm offset between where this ends up and that DocDB. Subtract 1 mm here so that FOV sits at z=20419.7 mm
+double stm.shield.DnStrWall.gap  = 0.0;
+double stm.magnet.stand.topExtraLength = -200.0; // reduce length of table to avoid overlap with virtual detector
+
+double stm.shieldingHolePoly.rOut = 127.0; // diameter of ECS hole is 254 mm
+double stm.ifbPoly.rOut = 127.0;
 // This tells emacs to view this file in c++ mode
 // Local Variables:
 // mode:c++
-// End
+// End:

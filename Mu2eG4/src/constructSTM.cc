@@ -1446,7 +1446,10 @@ namespace mu2e {
    const double SSC_ZGap = pSTM_SSCParams.ZGap();
    const double SSC_ZGapBack = pSTM_SSCParams.ZGapBack();
 
-   const G4ThreeVector  STMShieldingRef =  pSTM_SSCParams.originInMu2e() - parentCenterInMu2e - CLHEP::Hep3Vector(0, 0, Wdepth_f/2);
+   const double Back_BPThick = pBackShieldingParams.BPThick();
+   const double Back_PipeGap = pBackShieldingParams.STMShieldingPipeGap();
+
+   const G4ThreeVector  STMShieldingRef =  pSTM_SSCParams.originInMu2e() - parentCenterInMu2e - CLHEP::Hep3Vector(0, 0, Wdepth_f/2 + Back_BPThick + Back_PipeGap);
 
    const double Aperture_HPGe1 = pSTM_SSCParams.Aperture_HPGe1();
    const double Aperture_HPGe2 = pSTM_SSCParams.Aperture_HPGe2();
@@ -1774,6 +1777,7 @@ namespace mu2e {
 
     ////////////////////////////////////////
 
+     G4double FrontHole_r = pFrontShieldingParams.FrontHole_r();
      G4double CopperL = pFrontShieldingParams.CopperL();
      G4double floorTheta= -atan(0.5);
      G4double CopperFwall_X = pLeftShieldingParams.Left_Xmin() - CopperL/2 + Fcopperdepth/4;
@@ -1784,8 +1788,8 @@ namespace mu2e {
                                     (height - Bcopperdepth)/2, (CopperL-Bcopperdepth)/2, (CopperL-Bcopperdepth)/2, 0,
                                     (height - Bcopperdepth)/2, CopperL/2, CopperL/2, 0);
 
-     G4Tubs* Spot_FCopper_HPGe = new G4Tubs("Spot_FCopper_HPGe", 0, r_HPGe1+10, Fcopperdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
-     G4Tubs* Spot_FCopper_LaBr = new G4Tubs("Spot_FCopper_LaBr", 0, r_LaBr1+10, Fcopperdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FCopper_HPGe = new G4Tubs("Spot_FCopper_HPGe", 0, FrontHole_r, Fcopperdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FCopper_LaBr = new G4Tubs("Spot_FCopper_LaBr", 0, FrontHole_r, Fcopperdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
 
      G4SubtractionSolid* CopperFwall_1hole = new G4SubtractionSolid("CopperFwall_1hole",CopperFwallLayer, Spot_FCopper_HPGe, 0, G4ThreeVector(-offset_Spot - CopperFwall_X, -Fcopperdepth/2, 0));
      G4SubtractionSolid* CopperFwall = new G4SubtractionSolid("CopperFwall", CopperFwall_1hole, Spot_FCopper_LaBr, 0, G4ThreeVector(offset_Spot - CopperFwall_X, -Fcopperdepth/2, 0));
@@ -1810,8 +1814,8 @@ namespace mu2e {
 
     ////////////////////////////////////////
      G4Box*  Lead1FwallLayer  = new G4Box("Lead1FwallLayer", Front_L/2, Front_H/2, Fleaddepth2/2);
-     G4Tubs* Spot_FLead1_HPGe = new G4Tubs("Spot_FLead_HPGe", 0, r_HPGe1+10, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
-     G4Tubs* Spot_FLead1_LaBr = new G4Tubs("Spot_FLead_LaBr", 0, r_LaBr1+10, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FLead1_HPGe = new G4Tubs("Spot_FLead_HPGe", 0, FrontHole_r, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FLead1_LaBr = new G4Tubs("Spot_FLead_LaBr", 0, FrontHole_r, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
 
      G4SubtractionSolid* Lead1Fwall_1hole = new G4SubtractionSolid("Lead1Fwall_1hole", Lead1FwallLayer, Spot_FLead1_HPGe, 0, Pos_hole1);
      G4SubtractionSolid* Lead1Fwall = new G4SubtractionSolid("Lead1Fwall", Lead1Fwall_1hole, Spot_FLead1_LaBr, 0, Pos_hole2);
@@ -1836,8 +1840,8 @@ namespace mu2e {
 
     ////////////////////////////////////////
      G4Box*  BP1FwallLayer  = new G4Box("BP1FwallLayer", Front_L/2, Front_H/2, FBPdepth/2);
-     G4Tubs* Spot_FBP1_HPGe = new G4Tubs("Spot_FBP1_HPGe", 0, r_HPGe1+10, FBPdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
-     G4Tubs* Spot_FBP1_LaBr = new G4Tubs("Spot_FBP1_LaBr", 0, r_LaBr1+10, FBPdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FBP1_HPGe = new G4Tubs("Spot_FBP1_HPGe", 0, FrontHole_r, FBPdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FBP1_LaBr = new G4Tubs("Spot_FBP1_LaBr", 0, FrontHole_r, FBPdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
 
      G4SubtractionSolid* BP1Fwall_1hole = new G4SubtractionSolid("BP1Fwall_1hole",BP1FwallLayer, Spot_FBP1_HPGe, 0, Pos_hole1);
      G4SubtractionSolid* BP1Fwall = new G4SubtractionSolid("BP1Fwall", BP1Fwall_1hole, Spot_FBP1_LaBr, 0, Pos_hole2);
@@ -1862,8 +1866,8 @@ namespace mu2e {
 
     ////////////////////////////////////////
      G4Box*  Lead2FwallLayer  = new G4Box("Lead2FwallLayer", Front_L/2, Front_H/2, Fleaddepth2/2);
-     G4Tubs* Spot_FLead2_HPGe = new G4Tubs("Spot_FLead_HPGe", 0, r_HPGe1+10, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
-     G4Tubs* Spot_FLead2_LaBr = new G4Tubs("Spot_FLead_LaBr", 0, r_LaBr1+10, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FLead2_HPGe = new G4Tubs("Spot_FLead_HPGe", 0, FrontHole_r, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FLead2_LaBr = new G4Tubs("Spot_FLead_LaBr", 0, FrontHole_r, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
 
      G4SubtractionSolid* Lead2Fwall_1hole = new G4SubtractionSolid("Lead2Fwall_1hole", Lead2FwallLayer, Spot_FLead2_HPGe, 0, Pos_hole1);
      G4SubtractionSolid* Lead2Fwall = new G4SubtractionSolid("Lead2Fwall", Lead2Fwall_1hole, Spot_FLead2_LaBr, 0, Pos_hole2);
@@ -1888,8 +1892,8 @@ namespace mu2e {
 
     ////////////////////////////////////////
      G4Box*  BP2FwallLayer  = new G4Box("BP2FwallLayer", Front_L/2, Front_H/2, FBPdepth/2);
-     G4Tubs* Spot_FBP2_HPGe = new G4Tubs("Spot_FBP2_HPGe", 0, r_HPGe1+10, FBPdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
-     G4Tubs* Spot_FBP2_LaBr = new G4Tubs("Spot_FBP2_LaBr", 0, r_LaBr1+10, FBPdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FBP2_HPGe = new G4Tubs("Spot_FBP2_HPGe", 0, FrontHole_r, FBPdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FBP2_LaBr = new G4Tubs("Spot_FBP2_LaBr", 0, FrontHole_r, FBPdepth/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
      G4SubtractionSolid* BP2Fwall_1hole = new G4SubtractionSolid("BP2Fwall_1hole",BP2FwallLayer, Spot_FBP2_HPGe, 0, Pos_hole1);
      G4SubtractionSolid* BP2Fwall = new G4SubtractionSolid("BP2Fwall", BP2Fwall_1hole, Spot_FBP2_LaBr, 0, Pos_hole2);
 
@@ -1915,8 +1919,8 @@ namespace mu2e {
     ////////////////////////////////////////
 
      G4Box*  Lead3FwallLayer  = new G4Box("Lead3FwallLayer", Front_L/2, Front_H/2, Fleaddepth2/2);
-     G4Tubs* Spot_FLead3_HPGe = new G4Tubs("Spot_FLead_HPGe", 0, r_HPGe1+10, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
-     G4Tubs* Spot_FLead3_LaBr = new G4Tubs("Spot_FLead_LaBr", 0, r_LaBr1+10, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FLead3_HPGe = new G4Tubs("Spot_FLead_HPGe", 0, FrontHole_r, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
+     G4Tubs* Spot_FLead3_LaBr = new G4Tubs("Spot_FLead_LaBr", 0, FrontHole_r, Fleaddepth2/2, 360.*CLHEP::degree, 360.*CLHEP::degree);
 
      G4SubtractionSolid* Lead3Fwall_1hole = new G4SubtractionSolid("Lead3Fwall_1hole", Lead3FwallLayer, Spot_FLead3_HPGe, 0, Pos_hole1);
      G4SubtractionSolid* Lead3Fwall = new G4SubtractionSolid("Lead3Fwall", Lead3Fwall_1hole, Spot_FLead3_LaBr, 0, Pos_hole2);
@@ -3425,6 +3429,8 @@ namespace mu2e {
      const double BP_thick  = pBackShieldingParams.BPThick();
      const double BP_length = pBackShieldingParams.BPLength();
      const double BP_height = pBackShieldingParams.BPHeight();
+     const double PipeGap = pBackShieldingParams.STMShieldingPipeGap();
+
 
      const double BP_dX = -12*25.4; //pBackShieldingParams.Back_dX();
      const double BP_dY = pBackShieldingParams.Back_dY();
@@ -3435,7 +3441,7 @@ namespace mu2e {
      VolumeInfo BPWallPV;
      BPWallPV.name = "BPWallPV";
      BPWallPV.solid = BPWall;
-     G4ThreeVector stmBPWallInParent = STMShieldingRef + G4ThreeVector(BP_dX, BP_dY, Front_T + floor_Zlength + BP_thick/2);
+     G4ThreeVector stmBPWallInParent = STMShieldingRef + G4ThreeVector(BP_dX, BP_dY, Front_T + floor_Zlength + BP_thick/2 + PipeGap);
 
      finishNesting(BPWallPV,
      BPMaterial,
@@ -3763,6 +3769,7 @@ namespace mu2e {
     const double mstmCRVShieldHalfLength  =  pSTMShieldPipeParams.dnStrWallHalflength();
     double mstmCRVShieldHalfWidth         =  pSTMShieldPipeParams.dnStrWallHalfWidth();
     double mstmCRVShieldHalfHeight        =  pSTMShieldPipeParams.dnStrWallHalfHeight();
+    double shieldPipeUpStrAirGap          =  pSTMShieldPipeParams.upStrAirGap();
 
     //if mating block parameters aren't defined, default to the magnet dimensions for backwards compatibility
     if(mstmCRVShieldHalfWidth < 0.) {
@@ -3805,7 +3812,7 @@ namespace mu2e {
                                       0.0, CLHEP::twopi );
     }
     double zOffsetBuffer = 0.1;
-    double mstmCRVShieldTubeZOffset = -mstmCRVShieldHalfLength-crvShieldTubeHalfLength-zOffsetBuffer;
+    double mstmCRVShieldTubeZOffset = -mstmCRVShieldHalfLength-crvShieldTubeHalfLength-zOffsetBuffer + shieldPipeUpStrAirGap;
     if(pSTMShieldPipeParams.matchPipeBlock()) { //match the pipe to the downstream end of the mating block
       //remove the buffer added in previous versions to prevent overlap as well as mating block half length, then add another half length
       mstmCRVShieldTubeZOffset += zOffsetBuffer + 2.*mstmCRVShieldHalfLength;
@@ -3843,18 +3850,20 @@ namespace mu2e {
                                           0.0, CLHEP::twopi );
 
     if (pSTMShieldPipeParams.build()){
-      finishNesting(crvshield,
-                    findMaterialOrThrow(pSTMShieldPipeParams.dnStrWallMaterial()),
-                    0,
-                    mstmCRVShieldPositionInParent,
-                    parentInfo.logical,
-                    0,
-                    STMisVisible,
-                    G4Colour::Magenta(),
-                    STMisSolid,
-                    forceAuxEdgeVisible,
-                    placePV,
-                    doSurfaceCheck);
+      if (pSTMShieldPipeParams.buildMatingBlock()) {
+        finishNesting(crvshield,
+                      findMaterialOrThrow(pSTMShieldPipeParams.dnStrWallMaterial()),
+                      0,
+                      mstmCRVShieldPositionInParent,
+                      parentInfo.logical,
+                      0,
+                      STMisVisible,
+                      G4Colour::Magenta(),
+                      STMisSolid,
+                      forceAuxEdgeVisible,
+                      placePV,
+                      doSurfaceCheck);
+      }
       if(pSTMShieldPipeParams.hasLiner()) {
         finishNesting(crvlinershieldtube,
                       findMaterialOrThrow(pSTMShieldPipeParams.materialLiner()),

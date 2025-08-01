@@ -3,10 +3,10 @@ string building.backfill.psHatch.E2.name     = "backfillPsHatchE2";
 string building.backfill.psHatch.E2.material = "MBOverburden";
 
 double building.backfill.psHatch.E2.offsetFromMu2eOrigin.x   = 947.4;
-double building.backfill.psHatch.E2.offsetFromFloorSurface.y = 10693.4033;
+double building.backfill.psHatch.E2.offsetFromFloorSurface.y = 10604.5;
 double building.backfill.psHatch.E2.offsetFromMu2eOrigin.z   = -3581.4;
 
-double building.backfill.psHatch.E2.yHalfThickness           = 431.8033;
+double building.backfill.psHatch.E2.yHalfThickness           = 266.7;
 
 vector<double> building.backfill.psHatch.E2.xPositions = {
   -2921.1,   // P0 NE

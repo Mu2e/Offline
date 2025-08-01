@@ -117,7 +117,6 @@ namespace mu2e {
     double _outerSupportRadius;          // Outer radius of support frame.
     double _supportHalfThickness;        // Thickness of support frame.
     double _wireRadius;                  // Wire radius
-    double _manifoldYOffset;             // Offset of manifold from inner edge of support.
     double _passivationMargin;           // Deadened region near the end of the straw.
     double _wallOuterMetalThickness;     // Metal on the outer surface of the straw
     double _wallInnerMetal1Thickness;    // Metal on the inner surface of the straw
