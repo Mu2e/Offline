@@ -1,0 +1,100 @@
+//This geometry requires the use of CRVResponse/fcl/prolog_run1a_v1.fcl.
+
+string crs.name = "run1a";
+
+int   crs.nSectors = 1;
+int   crs.nLayers  = 4;
+
+vector<string> crs.sectorNames = {
+                       "T"  //0   CRV-T modules
+                      };
+
+double          crs.scintillatorBarLengthT      =  6000; //0
+
+double          crs.scintillatorBarThickness     =  19.80; //mm
+double          crs.scintillatorBarWidth         =  51.34; //mm
+double          crs.layerOffset                  =  42;    //mm
+double          crs.gapLarge                     =   0.2;  //mm
+double          crs.gapSmall                     =   0.0;  //mm
+double          crs.gapBetweenModules            =   3.66; //mm to match what's in crv_parameters.xlsx
+vector<double>  crs.gapBetweenLayers             =   {9.525, 9.525, 9.525}; //mm
+double          crs.aluminumSheetThickness       =   3.175;  //mm
+double          crs.strongBackThickness          =  12.7;    //mm
+
+int             crs.nModulesT                   =   20;  //0
+
+int             crs.nCountersPerModuleT         =   16;  //0 //per layer
+
+//with of one module: 822.84mm
+//distance between two modules (incl. gaps): 826.5mm
+vector<double>  crs.firstCounterT        =  {-3904.00,    4745.90,  4114.07}; //0 //in mu2e coordinates
+
+string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
+string          crs.absorberMaterialName         = "G4_Al";
+string          crs.aluminumSheetMaterialName    = "G4_Al";
+
+bool   crs.veto.visible    = true;
+bool   crs.veto.solid      = true;
+int    crs.verbosityLevel = 0;
+
+vector<double>  crs.layerDirectionT  =  {0, 1, 0};  //0
+
+vector<double>  crs.offsetDirectionT  =  {0, 0, -1}; //0
+
+vector<double>  crs.gapDirectionT  =  {0,  0, 1}; //0
+
+// virtual detectors
+bool vd.crv.build = false;
+
+// counter mother boards
+double crs.CMBOffset        = 15.0;
+double crs.CMBHalfThickness =  5.0;
+string crs.CMBMaterialName  = "ElectronicsCMB";
+
+// information about the SiPMs
+double crs.fiberSeparation = 26.0; //mm
+
+// side 0 is the negative side of the counter, i.e. the -x side of a CRV-T counter, or the -y side of a CRV-R counter
+bool crs.sipmsAtSide0T  = true;  //0
+
+// side 1 is the positive side of the counter, i.e. the +x side of a CRV-T counter, or the +y side of a CRV-R counter
+bool crs.sipmsAtSide1T  = false; //0
+
+// information about the coincidence groups
+int crs.precedingSectorForT  = -1;  //0   //no preceding sector
+
+int crs.sectorTypeT  = 1;  //0
+
+//information about the FEBs
+int crs.FEBBoxesAtSide0T  = 0; //0
+
+int crs.FEBBoxesAtSide1T  = 0; //0
+
+string         crs.FEBMaterialName     = "ElectronicsFEB";
+double         crs.FEBDistanceToModule =  50;        //between surface of 4th scintillator layer and center of 1st FEB
+double         crs.FEBDistanceToEdge   = 240.0;
+double         crs.FEBDistanceBetween2FEBsW  = 397.9;  //between two FEBs sitting next to each other
+double         crs.FEBDistanceBetween2FEBsT  =  47.7;  //between two FEBs sitting on top of each other
+vector<double> crs.FEBHalfLengths      = {5.0, 150.0, 92.5};  //thickness, width, lengths w.r.t. counter orientation
+
+//simplified version of the top support structure
+//total area in Offline: 110.38m^2
+//total volume in CAD model: 0.8092m^3
+//--> thickness in Offline: 7.336mm
+int crs.nSupportStructures = 1;                                   //TODO: this is only a place holder so far
+vector<string> crs.supportStructureNames = {"CRV_Support_T"};
+vector<double> crs.supportStructurePosition_CRV_Support_T  = {-3904.0, 4725.8, 12351.57};
+vector<double> crs.supportStructureHalfLengths_CRV_Support_T  = {2463.8, 2.5, 8263.17};
+string         crs.supportStructureMaterialName = "G4_Fe";
+
+
+//MARS requires gdml file with unique logical volumes for the CMBs
+bool crs.forMARS = false;
+
+//FIXME: this is temporary until the GDML issue is fixed
+bool crs.hideCRVCMBs = true;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
