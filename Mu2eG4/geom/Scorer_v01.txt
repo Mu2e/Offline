@@ -3,25 +3,25 @@
 //  --> Declare the mesh dimensions in the same order
 
 int            scoring.verboseLevel   = 0;
-//vector<double> scoring.meshPositionX  = {0.0,          0.0};
-//vector<double> scoring.meshPositionY  = {0.0,          0.0};
-//vector<double> scoring.meshPositionZ  = {0.0,       12750.0};
-//vector<double> scoring.meshHalfSizeX  = {36787.,    20000.0};
-//vector<double> scoring.meshHalfSizeY  = {20366.,      500.0};
-//vector<double> scoring.meshHalfSizeZ  = {52265.,    36750.0};
-//vector<int>    scoring.meshSegmentX   = {10,             52};
-//vector<int>    scoring.meshSegmentY   = {10,              1};
-//vector<int>    scoring.meshSegmentZ   = {10,            230};
+vector<double> scoring.meshPositionX  = {0.0,          0.0};
+vector<double> scoring.meshPositionY  = {0.0,          0.0};
+vector<double> scoring.meshPositionZ  = {0.0,       12750.0};
+vector<double> scoring.meshHalfSizeX  = {36787.,    20000.0};
+vector<double> scoring.meshHalfSizeY  = {20366.,      500.0};
+vector<double> scoring.meshHalfSizeZ  = {52265.,    36750.0};
+vector<int>    scoring.meshSegmentX   = {10,             52};
+vector<int>    scoring.meshSegmentY   = {10,             10};
+vector<int>    scoring.meshSegmentZ   = {10,            230};
 
-vector<double> scoring.meshPositionX  = {0.0};
-vector<double> scoring.meshPositionY  = {0.0};
-vector<double> scoring.meshPositionZ  = {12750.0};
-vector<double> scoring.meshHalfSizeX  = {20000.0};
-vector<double> scoring.meshHalfSizeY  = {500.0};
-vector<double> scoring.meshHalfSizeZ  = {36750.0};
-vector<int>    scoring.meshSegmentX   = {52};
-vector<int>    scoring.meshSegmentY   = {1};
-vector<int>    scoring.meshSegmentZ   = {230};
+//vector<double> scoring.meshPositionX  = {0.0};
+//vector<double> scoring.meshPositionY  = {0.0};
+//vector<double> scoring.meshPositionZ  = {12750.0};
+//vector<double> scoring.meshHalfSizeX  = {20000.0};
+//vector<double> scoring.meshHalfSizeY  = {500.0};
+//vector<double> scoring.meshHalfSizeZ  = {36750.0};
+//vector<int>    scoring.meshSegmentX   = {52};
+//vector<int>    scoring.meshSegmentY   = {1};
+//vector<int>    scoring.meshSegmentZ   = {230};
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
