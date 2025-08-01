@@ -143,8 +143,9 @@ public:
   Double_t GetBinContentL(Int_t bin) const;
   Double_t GetBinContentR(Int_t bin) const;
 
-  void SetBinContent(Int_t bin, Double_t content) override {
-  } ///< NOT IMPLEMENTED for THMu2eCaloDisk
+  void SetBinContent(Int_t, Double_t) override {} ///< NOT IMPLEMENTED for THMu2eCaloDisk
+  void SetBinContent(Int_t, Int_t, Double_t) override {} ///< NOT IMPLEMENTED for THMu2eCaloDisk
+  void SetBinContent(Int_t, Int_t, Int_t, Double_t) override {} ///< NOT IMPLEMENTED for THMu2eCaloDisk
   void SetBinContentL(Int_t bin, Double_t content);
   void SetBinContentR(Int_t bin, Double_t content);
 
