@@ -14,7 +14,7 @@
 
 #include "Offline/DataProducts/inc/CaloConst.hh"
 
-#include "THMu2eCaloDisk.h"
+#include "Offline/CaloVisualizer/inc/THMu2eCaloDisk.hh"
 
 ClassImp(mu2e::THMu2eCaloDisk);
 
