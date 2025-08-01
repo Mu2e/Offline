@@ -1,15 +1,17 @@
-//This geometry requires the use of CRVResponse/fcl/prolog_run1a_v1.fcl.
+//This geometry requires the use of CRVResponse/fcl/epilog_run1a_v01.fcl.
 
 string crs.name = "run1a";
 
-int   crs.nSectors = 1;
+int   crs.nSectors = 2;
 int   crs.nLayers  = 4;
 
 vector<string> crs.sectorNames = {
-                       "T"  //0   CRV-T modules
+                       "T1"  //0   CRV-T modules (1.8mm fibers, upstream)
+                       "T2"  //1   CRV-T modules (1.4mm fibers, downstream)
                       };
 
-double          crs.scintillatorBarLengthT      =  6000; //0
+double          crs.scintillatorBarLengthT1      =  6000; //0
+double          crs.scintillatorBarLengthT2      =  6000; //1
 
 double          crs.scintillatorBarThickness     =  19.80; //mm
 double          crs.scintillatorBarWidth         =  51.34; //mm
@@ -21,13 +23,16 @@ vector<double>  crs.gapBetweenLayers             =   {9.525, 9.525, 9.525}; //mm
 double          crs.aluminumSheetThickness       =   3.175;  //mm
 double          crs.strongBackThickness          =  12.7;    //mm
 
-int             crs.nModulesT                   =   20;  //0
+int             crs.nModulesT1                   =   17;  //0
+int             crs.nModulesT2                   =    3;  //1
 
-int             crs.nCountersPerModuleT         =   16;  //0 //per layer
+int             crs.nCountersPerModuleT1         =   16;  //0 //per layer
+int             crs.nCountersPerModuleT2         =   16;  //1
 
 //with of one module: 822.84mm
 //distance between two modules (incl. gaps): 826.5mm
-vector<double>  crs.firstCounterT        =  {-3904.00,    4745.90,  4114.07}; //0 //in mu2e coordinates
+vector<double>  crs.firstCounterT1        =  {-3904.00,    4745.90,  4114.07}; //0 //in mu2e coordinates
+vector<double>  crs.firstCounterT2        =  {-3904.00,    4745.90, 18164.57}; //1
 
 string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
 string          crs.absorberMaterialName         = "G4_Al";
@@ -37,11 +42,14 @@ bool   crs.veto.visible    = true;
 bool   crs.veto.solid      = true;
 int    crs.verbosityLevel = 0;
 
-vector<double>  crs.layerDirectionT  =  {0, 1, 0};  //0
+vector<double>  crs.layerDirectionT1  =  {0, 1, 0};  //0
+vector<double>  crs.layerDirectionT2  =  {0, 1, 0};  //1
 
-vector<double>  crs.offsetDirectionT  =  {0, 0, -1}; //0
+vector<double>  crs.offsetDirectionT1  =  {0, 0, -1}; //0
+vector<double>  crs.offsetDirectionT2  =  {0, 0, -1}; //1
 
-vector<double>  crs.gapDirectionT  =  {0,  0, 1}; //0
+vector<double>  crs.gapDirectionT1  =  {0,  0, 1}; //0
+vector<double>  crs.gapDirectionT2  =  {0,  0, 1}; //1
 
 // virtual detectors
 bool vd.crv.build = false;
@@ -55,20 +63,26 @@ string crs.CMBMaterialName  = "ElectronicsCMB";
 double crs.fiberSeparation = 26.0; //mm
 
 // side 0 is the negative side of the counter, i.e. the -x side of a CRV-T counter, or the -y side of a CRV-R counter
-bool crs.sipmsAtSide0T  = true;  //0
+bool crs.sipmsAtSide0T1  = true;  //0
+bool crs.sipmsAtSide0T2  = true;  //1
 
 // side 1 is the positive side of the counter, i.e. the +x side of a CRV-T counter, or the +y side of a CRV-R counter
-bool crs.sipmsAtSide1T  = false; //0
+bool crs.sipmsAtSide1T1  = true; //0
+bool crs.sipmsAtSide1T2  = true; //1
 
 // information about the coincidence groups
-int crs.precedingSectorForT  = -1;  //0   //no preceding sector
+int crs.precedingSectorForT1  = -1;  //0   //no preceding sector
+int crs.precedingSectorForT2  =  0;  //1
 
-int crs.sectorTypeT  = 1;  //0
+int crs.sectorTypeT1  = 1;  //0
+int crs.sectorTypeT2  = 1;  //1
 
 //information about the FEBs
-int crs.FEBBoxesAtSide0T  = 0; //0
+int crs.FEBBoxesAtSide0T1  = 0; //0
+int crs.FEBBoxesAtSide0T2  = 0; //1
 
-int crs.FEBBoxesAtSide1T  = 0; //0
+int crs.FEBBoxesAtSide1T1  = 0; //0
+int crs.FEBBoxesAtSide1T2  = 0; //1
 
 string         crs.FEBMaterialName     = "ElectronicsFEB";
 double         crs.FEBDistanceToModule =  50;        //between surface of 4th scintillator layer and center of 1st FEB
