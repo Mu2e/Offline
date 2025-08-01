@@ -1,13 +1,13 @@
 //This geometry requires the use of CRVResponse/fcl/epilog_run1a_v01.fcl.
 
-string crs.name = "run1a";
+string crs.name = "run1a_v01";
 
 int   crs.nSectors = 2;
 int   crs.nLayers  = 4;
 
 vector<string> crs.sectorNames = {
-                       "T1"  //0   CRV-T modules (1.8mm fibers, upstream)
-                       "T2"  //1   CRV-T modules (1.4mm fibers, downstream)
+                       "T1",  //0   CRV-T modules (1.8mm fibers, upstream)
+                       "T2"   //1   CRV-T modules (1.4mm fibers, downstream)
                       };
 
 double          crs.scintillatorBarLengthT1      =  6000; //0
