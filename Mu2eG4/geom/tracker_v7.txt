@@ -46,9 +46,9 @@ vector<double> tracker.manifoldHalfLengths = { 3.125, 5.0, 8.4454}; // [0] = rad
 double tracker.panelPhi0                  =   45.0; // degrees
 
 // straw parameters
-double tracker.strawOuterRadius     =     2.5;
+double tracker.strawOuterRadius     =     2.515;
 double tracker.strawWallThickness   =     0.015;
-double tracker.strawGap             =     1.25;
+double tracker.strawGap             =     1.22;
 double tracker.wireRadius           =     0.0125;
 string tracker.mat.strawgas  = "StrawGas";
 string tracker.mat.wire      = "G4_W";

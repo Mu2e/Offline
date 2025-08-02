@@ -1,5 +1,7 @@
 #include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
+#include "KinKal/MatEnv/DetMaterial.hh"
+#include "KinKal/MatEnv/MatDBInfo.hh"
 #include <cmath>
 #include <algorithm>
 #include "cetlib_except/exception.h"
@@ -13,8 +15,9 @@ namespace mu2e {
     sprops_(sprops),
     wallmat_(wallmat), gasmat_(gasmat), wiremat_(wiremat) {
       // compute some caches
-      srad2_ = strawRadius()*strawRadius();
-      grad2_ = gasRadius()*gasRadius();
+      orad2_ = pow(outerRadius(),2);
+      irad2_ = pow(innerRadius(),2);
+      tpath_ = sqrt(2.0*outerRadius()*wallThickness());
     }
 
   KKStrawMaterial::KKStrawMaterial(MatEnv::MatDBInfo const& matdbinfo,StrawProperties const& sprops,
@@ -31,14 +34,21 @@ namespace mu2e {
     double docasig = sqrt(cadata.docaVar());
     if(adoca < caconfig.maxdoca_ || caconfig.hitstate_.active()){
       if (docasig < caconfig.maxdocasig_ && adoca < caconfig.maxddoca_) {  // use exact calculation based on DOCA
-        double doca = std::min(adoca, gasRadius()); // truncate
-        double ddoca = doca*doca;
-        gaspath = 2.0*sqrt(grad2_- ddoca);
-        wallpath = 2.0*wallThickness()*strawRadius()/sqrt(srad2_-ddoca);
+        double adoca2 = adoca*adoca;
+        gaspath = 2.0*sqrt(std::max(0.0,irad2_ - adoca2));
+        if(adoca < outerRadius()){
+          wallpath = 2.0*(sqrt(std::max(0.0,orad2_ - adoca2)) - sqrt(std::max(0.0,irad2_ - adoca2)));
+          pathcalc_ = exactdoca;
+        } else {
+          // outside the straw: take the average over the outer part of the straw for the wall thickness
+          wallpath = tpath_;
+          pathcalc_ = truncdoca;
+        }
       } else {
         // errors are large WRT the size of the straw, or DOCA is very far from the wire: just take the average over all impact parameters
-        gaspath = M_PI_2*strawRadius();
-        wallpath = M_PI*wallThickness();
+        gaspath = 0.5*M_PI*innerRadius();
+        wallpath = 0.5*M_PI*(orad2_-irad2_)/outerRadius();
+        pathcalc_ = average;
       }
       if(isnan(wallpath) || isnan(gaspath))throw cet::exception("RECO")<<"mu2e::KKStrawMaterial: Invalid pathlength" << std::endl;
       // Model the wire as a diffuse gas, density constrained by DOCA TODO
@@ -50,8 +60,8 @@ namespace mu2e {
   }
 
   double KKStrawMaterial::transitLength(ClosestApproachData const& cadata) const {
-    double doca = std::min(fabs(cadata.doca()),gasRadius());
-    double tlen = 2.0*sqrt(srad2_-doca*doca);
+    double doca = std::min(fabs(cadata.doca()),innerRadius());
+    double tlen = 2.0*sqrt(orad2_-doca*doca);
     // correct for the angle WRT the axis
     double afac = angleFactor(cadata.dirDot());
     tlen *= afac;
