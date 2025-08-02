@@ -98,7 +98,7 @@ vector<double> crs.FEBHalfLengths      = {5.0, 150.0, 92.5};  //thickness, width
 int crs.nSupportStructures = 1;                                   //TODO: this is only a place holder so far
 vector<string> crs.supportStructureNames = {"CRV_Support_T"};
 vector<double> crs.supportStructurePosition_CRV_Support_T  = {-3904.0, 4719.97, 12351.57};
-vector<double> crs.supportStructureHalfLengths_CRV_Support_T  = {2463.8, 2.5, 8263.17};
+vector<double> crs.supportStructureHalfLengths_CRV_Support_T  = {2463.8, 2.5, 8265.0};
 string         crs.supportStructureMaterialName = "G4_Fe";
 
 
