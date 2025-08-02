@@ -2,6 +2,7 @@
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 #include "KinKal/MatEnv/DetMaterial.hh"
 #include "KinKal/MatEnv/MatDBInfo.hh"
+#include "KinKal/Detector/MaterialXing.hh"
 #include <cmath>
 #include <algorithm>
 #include "cetlib_except/exception.h"

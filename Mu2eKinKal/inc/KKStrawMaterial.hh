@@ -4,7 +4,6 @@
 //  description of a local segment of a straw, including a
 //  mixture for the straw, the gas, and the wire,
 //
-#include "KinKal/Detector/MaterialXing.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 #include "Offline/TrackerGeom/inc/StrawProperties.hh"
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
@@ -13,10 +12,14 @@ namespace MatEnv {
   class MatDBInfo;
   class DetMaterial;
 }
+namespace KinKal {
+  class MaterialXing;
+}
 namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::MaterialXing;
   using MatEnv::DetMaterial;
+  using MatEnv::MatDBInfo;
 
   class KKStrawMaterial {
     public:
@@ -27,7 +30,7 @@ namespace mu2e {
           const std::shared_ptr<DetMaterial> gasmat_,
           const std::shared_ptr<DetMaterial> wiremat_);
       // construct using materials by name
-      KKStrawMaterial(MatEnv::MatDBInfo const& matdbinfo,StrawProperties const& sprops,
+      KKStrawMaterial(MatDBInfo const& matdbinfo,StrawProperties const& sprops,
           const std::string& wallmat="straw-wall", const std::string& gasmat="straw-gas", const std::string& wiremat="straw-wire");
       // pathlength through straw components, given closest approach
       void pathLengths(ClosestApproachData const& cadata,StrawXingUpdater const& caconfig, double& wallpath, double& gaspath, double& wirepath) const;
