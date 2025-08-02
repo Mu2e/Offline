@@ -123,27 +123,29 @@ namespace mu2e {
 
     void fillStraws(const KalRep* krep, std::vector<TrkStraw>& tstraws) {
       tstraws.clear();
+// disabled: not compatible with KinKal
+
       // get material sites from the KalRep
-      for(auto isite : krep->siteList()){
-        if(isite->kalMaterial() != 0) {
-          const KalMaterial* kmat = isite->kalMaterial();
-          const DetStrawElem* detstraw = dynamic_cast<const DetStrawElem*>(kmat->detElem());
-          if(detstraw != 0){
-            // found a straw: create a TrkStraw object from it
-            // i must recompute POCA since the KalMaterial doesn't cache the hit flight FIXME!
-            TrkPoca poca(krep->traj(),kmat->detIntersection().pathlen,*detstraw->wireTraj(),0);
-            TrkStraw tstraw(detstraw->straw()->id(),
-                kmat->detIntersection().dist, //poca.doca(),
-                kmat->detIntersection().pathlen, // poca.flt1(),
-                poca.flt2(),  // not stored in KalMaterial, FIXME!
-                kmat->detIntersection().pathLength(),
-                detstraw->radiationFraction(kmat->detIntersection()),
-                kmat->momFraction(),
-                isite->isActive() );
-            tstraws.push_back(tstraw);
-          }
-        }
-      }
+//      for(auto isite : krep->siteList()){
+//        if(isite->kalMaterial() != 0) {
+//          const KalMaterial* kmat = isite->kalMaterial();
+//          const DetStrawElem* detstraw = dynamic_cast<const DetStrawElem*>(kmat->detElem());
+//          if(detstraw != 0){
+//            // found a straw: create a TrkStraw object from it
+//            // i must recompute POCA since the KalMaterial doesn't cache the hit flight FIXME!
+//            TrkPoca poca(krep->traj(),kmat->detIntersection().pathlen,*detstraw->wireTraj(),0);
+//            TrkStraw tstraw(detstraw->straw()->id(),
+//                kmat->detIntersection().dist, //poca.doca(),
+//                kmat->detIntersection().pathlen, // poca.flt1(),
+//                poca.flt2(),  // not stored in KalMaterial, FIXME!
+//                kmat->detIntersection().pathLength(),
+//                detstraw->radiationFraction(kmat->detIntersection()),
+//                kmat->momFraction(),
+//                isite->isActive() );
+//            tstraws.push_back(tstraw);
+//          }
+//        }
+//      }
     }
 
     void fillStrawHitSeeds(const KalRep* krep,ComboHitCollection const& chits, std::vector<TrkStrawHitSeed>& hitseeds) {

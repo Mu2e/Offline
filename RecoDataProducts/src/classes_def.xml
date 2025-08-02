@@ -81,6 +81,12 @@
  <class name="std::vector<art::Ptr<mu2e::StrawHitFlag> >"/>
  <class name="art::Wrapper<mu2e::StrawHitFlagCollection>"/>
 
+ <class name="mu2e::StrawFlag"/>
+ <class name="mu2e::StrawFlagDetail"/>
+ <class name="art::Ptr<mu2e::StrawFlag>"/>
+ <class name="std::vector<art::Ptr<mu2e::StrawFlag> >"/>
+ <class name="art::Wrapper<mu2e::StrawFlagCollection>"/>
+
  <class name="mu2e::ComboHit"/>
  <class name="std::vector<mu2e::ComboHit>"/>
  <class name="art::ProductPtr<mu2e::ComboHitCollection>"/>

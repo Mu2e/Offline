@@ -50,7 +50,9 @@ namespace mu2e {
       auto const& strawMaterial() const { return smat_; }
       auto const& config() const { return sxconfig_; }
       auto precision() const { return ca_.precision(); }
+      auto const& straw() const { return straw_; }
       auto const& strawId() const { return straw_.id(); }
+      auto const& strawHitPtr() const { return shptr_; }
     private:
       KKSTRAWHITPTR shptr_; // reference to associated StrawHit
       SensorLine axis_; // straw axis, expressed as a timeline
