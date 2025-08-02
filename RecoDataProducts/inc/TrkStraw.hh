@@ -37,7 +37,7 @@ namespace mu2e {
     bool driftHit() const { return _flag.hasAllProperties(StrawFlag::drifthit); }
     StrawId _straw; // which straw was traversed
     StrawFlag _flag; // description of how this straw was used in the fit
-    KKStrawMaterial::PathCalc _pcalc = KKStrawMaterial::unknown; // how were pathlengths calculated?
+    int _pcalc = KKStrawMaterial::unknown; // how were pathlengths calculated?
     XYZVectorF _poca; // POCA to the straw axis
     float _doca = 0.0; // DOCA from the track to the straw axis
     float _dirdot = 0.0; // dot product between straw axis and track direction
