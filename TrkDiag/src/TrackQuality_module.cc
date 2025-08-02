@@ -125,7 +125,7 @@ namespace mu2e
         ++nmat;
         if (i_straw->active()) {
           ++nmatactive;
-          radlen += i_straw->radlen_;
+          radlen += i_straw->_radlen;
         }
       }
 
