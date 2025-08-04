@@ -15,6 +15,7 @@ Lumi : {
             module_type         : RecoNPOTFilter
             recoNPOTTag         : "RecoNPOTMaker"
             minWeight           : 0.01
+            fileName            : "npot_1b.root"
             debugLevel          : 0
         }
     }

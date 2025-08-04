@@ -14,10 +14,14 @@
 
 // Mu2e includes.
 #include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-//MC DataProduct
+// MC DataProduct
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 
+// ROOT
+#include "TFile.h"
+#include "TH1.h"
 
 #include <iostream>
 #include <string>
@@ -32,6 +36,7 @@ namespace mu2e {
       using Comment=fhicl::Comment;
       fhicl::Atom<art::InputTag>     recoNPOTTag      {Name("recoNPOTTag"         ) ,Comment("The reconstructed N(POT) estimate")};
       fhicl::Atom<float>             minWeight        {Name("minWeight"           ) ,Comment("The smallest bin height in the POT distribution to invert")};
+      fhicl::Atom<std::string>       fileName         {Name("fileName"            ) ,Comment("Data file with the nominal POT distribution to assume")};
       fhicl::Atom<int>               debugLevel       {Name("debugLevel"          ) ,Comment("Debug level"), 0};
     };
     explicit RecoNPOTFilter(const art::EDFilter::Table<Config>& config);
@@ -45,72 +50,57 @@ namespace mu2e {
 
   private:
 
-    art::RandomNumberGenerator::base_engine_t& eng_;
-    CLHEP::RandFlat randomFlat_;
+    art::RandomNumberGenerator::base_engine_t& _eng;
+    CLHEP::RandFlat _randomFlat;
 
-    //-----------------------------------------------------------------------------
-    // event object labels
-    //-----------------------------------------------------------------------------
-
+    // inputs
     art::InputTag   _recoNPOTTag ;
     float           _minWeight;
+    std::string     _fileName;
     int             _debugLevel;
 
 
-    const art::Event*                  _event;
-    //-----------------------------------------------------------------------------
-    // collections
-    //-----------------------------------------------------------------------------
+    const art::Event*                _event;
     const ProtonBunchIntensity*      _recoNPOT;
-
-    //-----------------------------------------------------------------------------
-    // Data Members
-    //-----------------------------------------------------------------------------
-
-    //Hardcoded from a histogram of nPOT with 100 bins run on 2-batch no primary dataset
-    std::array<float, 100> _weights = {
-      1e-7    , 1e-7    , 0.004985, 0.019526, 0.068550,
-      0.154549, 0.230577, 0.341089, 0.472372, 0.530120,
-      0.665559, 0.755713, 0.787287, 0.863731, 0.892813,
-      0.929788, 0.979227, 1.000000, 0.944329, 0.985875,
-      0.942252, 0.959701, 0.985044, 0.970503, 0.949314,
-      0.891151, 0.883673, 0.847113, 0.833818, 0.840050,
-      0.798089, 0.753220, 0.728292, 0.704612, 0.655588,
-      0.688409, 0.640216, 0.615289, 0.574574, 0.570004,
-      0.543831, 0.525135, 0.498961, 0.468218, 0.488990,
-      0.465310, 0.446199, 0.412962, 0.387619, 0.389281,
-      0.363939, 0.347736, 0.336934, 0.342750, 0.325717,
-      0.299958, 0.302036, 0.272954, 0.293311, 0.287910,
-      0.247611, 0.242210, 0.230162, 0.206897, 0.211467,
-      0.216452, 0.207312, 0.199834, 0.174491, 0.171998,
-      0.177815, 0.171998, 0.162027, 0.136269, 0.141670,
-      0.154549, 0.119651, 0.120482, 0.130868, 0.119236,
-      0.116743, 0.110926, 0.114250, 0.105526, 0.106356,
-      0.105110, 0.086415, 0.094308, 0.081429, 0.081429,
-      0.079767, 0.068135, 0.081014, 0.068135, 0.075613,
-      0.068966, 0.067304, 0.081014, 0.068135, 0.059826}; //weights of 0 are manually written as  1e-7
-
-
-    //min value on x-axis from nPOT histogram
-    const double _minNPOT = 0;
-    //nPOT value of the maxBin / number of bins
-    const double _binWidth= 1000000.0; // 100e6/100  = 1e6
+    TH1*                             _hPOT; // input POT distribution
+    double                           _binWidth; // nPOT histogram bin width
+    int                              _nBins; // number of POT histogram bins
 
   };
 
 
   RecoNPOTFilter::RecoNPOTFilter(const art::EDFilter::Table<Config>& config) :
     EDFilter{config}                                                                       ,
-    eng_                   {createEngine(art::ServiceHandle<SeedService>()->getSeed())}    ,
-    randomFlat_            {eng_}                                                          ,
+    _eng                   {createEngine(art::ServiceHandle<SeedService>()->getSeed())}    ,
+    _randomFlat            {_eng}                                                          ,
     _recoNPOTTag           {config().recoNPOTTag()}                                        ,
     _minWeight             {config().minWeight()}                                          ,
+    _fileName              {config().fileName()}                                           ,
     _debugLevel            {config().debugLevel()}
   {
     if(_minWeight <= 0.) {
       throw cet::exception("BADCONFIG") << " Minimum weight must be greater than 0 to invert!";
     }
     consumes<ProtonBunchIntensity>(_recoNPOTTag);
+
+    // Read in the POT distribution histogram
+    ConfigFileLookupPolicy configFile;
+    std::string filePath = configFile(_fileName);
+    TFile* f = TFile::Open(filePath.c_str(), "READ");
+    if(!f) throw cet::exception("BADCONFIG") << " POT distribution file " << filePath << " not found!";
+    _hPOT = (TH1*) f->Get("POT");
+    if(!_hPOT) throw cet::exception("BADCONFIG") << " POT distribution in " << filePath << " file not found!";
+    _hPOT->SetDirectory(0);
+    f->Close();
+
+    // assume the distribution has fixed-width binning
+    _binWidth = _hPOT->GetBinWidth(1);
+    _nBins = _hPOT->GetNbinsX();
+
+    // scale the histogram to have a maximum of 1
+    const double max_weight = _hPOT->GetMaximum();
+    if(max_weight <= 0.) throw cet::exception("BADCONFIG") << " Maximum POT bin must be greater than 0!";
+    _hPOT->Scale(1./max_weight);
   }
 
 
@@ -132,22 +122,22 @@ namespace mu2e {
     if (_recoNPOT) {
       const auto npotreco = _recoNPOT->intensity();
       //if recoNPOT exceeds our weights array, default its bin index to the last index
-      const size_t binIndex = std::min( (_weights.size() - 1), static_cast<size_t>((npotreco - _minNPOT) / (_binWidth)) );
+      const int bin = 1 + std::min(int(npotreco / _binWidth), _nBins-1);
       //If a bin's weight < minimum binWeight, set it to the minWeight (and therefore 100% sampling probability)
-      const float weight = std::max(_minWeight, _weights[binIndex]);
+      const float weight = std::max(_minWeight, (float) _hPOT->GetBinContent(bin));
       const float inverseWeight = 1./weight;
 
       const float inverseWeightScaled = inverseWeight*_minWeight; //ensure between 0 and 1
-      const float randomVal = randomFlat_.fire(); //random integer between 0 and 1
+      const float randomVal = _randomFlat.fire(); //random integer between 0 and 1
 
       //Filtering Step
       const bool passed = randomVal < inverseWeightScaled;
 
-      if(_debugLevel > 1) printf("[RecoNPOTFilter::%s: N(POT) = %8llu, index = %2zu, weight = %-5.3g, scaled inv = %-6.3g, rand = %-5.3g --> passed = %o\n",
-                                 __func__, npotreco, binIndex, weight, inverseWeightScaled, randomVal, passed);
+      if(_debugLevel > 1) printf("[RecoNPOTFilter::%s: N(POT) = %8llu, index = %2i, weight = %-5.3g, scaled inv = %-6.3g, rand = %-5.3g --> passed = %o\n",
+                                 __func__, npotreco, bin, weight, inverseWeightScaled, randomVal, passed);
       return passed;
     } else {
-      std::cout << "[RecoNPOTFilter] recoNPOT not found, returning false" << std::endl;
+      std::cout << "[RecoNPOTFilter] Reco N(POT) not found, returning false" << std::endl;
       return false;
     }
     return false;
