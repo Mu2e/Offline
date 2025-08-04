@@ -86,6 +86,7 @@ namespace mu2e {
       fhicl::Atom<float> maxStrawDOCA { Name("MaxStrawDOCA"), Comment("Max DOCA to add straw material (mm)") };
       fhicl::Atom<float> maxStrawDOCAConsistency { Name("MaxStrawDOCAConsistency"), Comment("Max DOCA chi-consistency to add straw material") };
       fhicl::Atom<float> maxStrawUposBuff { Name("MaxStrawUposBuffer"), Comment("Max Upos beyond strawlength to add straw material (mm)") };
+      fhicl::Atom<bool> saveHitCalib { Name("SaveHitCalibInfo"), Comment("Save hit calib info in KalSeed") };
       // extension and sampling
       fhicl::Atom<std::string> saveTraj { Name("SaveTrajectory"), Comment("How to save the trajectory in the KalSeed: None, Full, Detector, or T0 (1 segment containing t0)") };
     };

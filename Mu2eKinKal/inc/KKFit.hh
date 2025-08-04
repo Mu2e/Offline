@@ -97,7 +97,7 @@ namespace mu2e {
       // extend the fit to the surfaces specified in the config
       void extendFit(KKTRK& kktrk);
       // save the complete fit trajectory as a seed
-      KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo) const;
+      KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, Tracker const& nominalTracker) const;
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
       bool useCalo() const { return usecalo_; }
       bool correctMaterial() const { return matcorr_; }
@@ -137,6 +137,7 @@ namespace mu2e {
       mutable double spitch_;
       mutable bool needstrackerinfo_ = true;
 
+      bool saveHitCalib_;
       SaveTraj savetraj_; // trajectory saving option
   };
 
@@ -163,7 +164,8 @@ namespace mu2e {
     maxStrawDoca_(fitconfig.maxStrawDOCA()),
     maxStrawDocaCon_(fitconfig.maxStrawDOCAConsistency()),
     maxStrawUposBuff_(fitconfig.maxStrawUposBuff()),
-    maxDStraw_(fitconfig.maxDStraw())
+    maxDStraw_(fitconfig.maxDStraw()),
+    saveHitCalib_(fitconfig.saveHitCalib())
   {
     if (fitconfig.saveTraj() == "T0") {
       savetraj_ = t0seg;
@@ -465,7 +467,7 @@ namespace mu2e {
 
   }
 
-  template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo) const {
+  template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, Tracker const& nominalTracker) const {
     TrkFitFlag fflag(seedflag);  // initialize the flag with the seed fit flag
     if(kktrk.fitStatus().usable()){
       fflag.merge(TrkFitFlag::kalmanOK);
@@ -493,14 +495,18 @@ namespace mu2e {
     kseed._avggap = avggap;
     // loop over track components and store them
     kseed._hits.reserve(kktrk.strawHits().size());
+    if (saveHitCalib_)
+      kseed._hitcalibs.reserve(kktrk.strawHits().size());
     for(auto const& strawhit : kktrk.strawHits() ) {
       Residual utres = strawhit->refResidual(Mu2eKinKal::tresid);
       Residual udres = strawhit->refResidual(Mu2eKinKal::dresid);
+      Residual ulres = strawhit->refResidual(Mu2eKinKal::lresid);
       // compute unbiased residuals; this can fail if the track has marginal coverage
       if(kktrk.fitStatus().usable()) {
         try {
           udres = strawhit->residual(Mu2eKinKal::dresid);
           utres = strawhit->residual(Mu2eKinKal::tresid);
+          ulres = strawhit->residual(Mu2eKinKal::lresid);
         } catch (std::exception const& error) {
           // std::cout << "Unbiased KKStrawHit residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
         }
@@ -508,12 +514,20 @@ namespace mu2e {
       kseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
           strawhit->closestApproach().tpData(),
           strawhit->unbiasedClosestApproach().tpData(),
-          utres, udres,
+          utres, udres, ulres,
           strawhit->refResidual(Mu2eKinKal::tresid),
           strawhit->refResidual(Mu2eKinKal::dresid),
+          strawhit->refResidual(Mu2eKinKal::lresid),
           strawhit->fillDriftInfo(strawhit->closestApproach()),
           strawhit->hitState(),
           strawhit->straw());
+      if (saveHitCalib_){
+        kseed._hitcalibs.emplace_back(nominalTracker,strawhit->strawId(),
+            strawhit->refResidual(Mu2eKinKal::dresid),
+            strawhit->refResidual(Mu2eKinKal::lresid),
+            strawhit->dRdX(Mu2eKinKal::dresid),
+            strawhit->closestApproach().tpData());
+      }
     }
     if(kktrk.caloHits().size() > 0){
       auto const& calohit = kktrk.caloHits().front(); // for now take the front: not sure if there will ever be >1 TODO
