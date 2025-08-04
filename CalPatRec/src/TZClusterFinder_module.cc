@@ -64,8 +64,8 @@ namespace mu2e {
       fhicl::Atom<float>             caloDtMax        {Name("caloDtMax"        ), Comment("search time window (ns)"     ) };
       fhicl::Atom<float>             caloTimeOffset   {Name("caloTimeOffset"   ), Comment("in ns"                       ) };
       fhicl::Atom<int>               doRefine         {Name("doRefine"         ), Comment("filter out bad TCs at end"   ) };
-      fhicl::Atom<float>            minE    { Name("MinimumEnergy"),         Comment("Minimum straw energy deposit (MeV)")};
-      fhicl::Atom<float>            maxE    { Name("MaximumEnergy"),         Comment("Maximum straw energy deposit (MeV)")};
+      fhicl::Atom<float>             minE             {Name("MinimumEnergy"    ), Comment("Minimum straw energy deposit (MeV)")};
+      fhicl::Atom<float>             maxE             {Name("MaximumEnergy"    ), Comment("Maximum straw energy deposit (MeV)")};
 
 
       fhicl::Table<TZClusterFinderTypes::Config> diagPlugin{Name("diagPlugin"      ), Comment("Diag plugin") };
@@ -88,7 +88,6 @@ namespace mu2e {
     // event object labels
     //-----------------------------------------------------------------------------
     art::InputTag   _chLabel ;
-    art::InputTag   _chLabel2;
     art::InputTag   _tcLabel ;
     art::InputTag   _ccLabel;
     StrawHitFlag    _hbkg;
@@ -110,7 +109,7 @@ namespace mu2e {
     float    _caloDtMax; // max time from time cluster for calo cluster to be associated with time cluster
     float    _caloTimeOffset; // time offset for calo clusters
     int      _doRefine; // if set to 1 then some pattern recogntion is used to filter out bad TC candidates
-    float         _minE, _maxE;
+    float    _minE, _maxE; // range of straw hit energies to consider in the clustering
     //-----------------------------------------------------------------------------
     // diagnostics
     //-----------------------------------------------------------------------------
@@ -185,8 +184,8 @@ namespace mu2e {
     _caloDtMax              (config().caloDtMax()                               ),
     _caloTimeOffset         (config().caloTimeOffset()                          ),
     _doRefine               (config().doRefine()                                ),
-    _minE(      config().minE()                                                 ),
-    _maxE(      config().maxE()                                                 )
+    _minE                   (config().minE()                                    ),
+    _maxE                   (config().maxE()                                    )
   {
 
     consumes<ComboHitCollection>(_chLabel);
