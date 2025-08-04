@@ -96,7 +96,6 @@ helper.make_plugins( [ mainlib,
 
 
 helper.make_dict_and_map( [ # mainlib,
-  'mu2e_SeedService',
   'mu2e_GeomPrimitives',
   'mu2e_GeneralUtilities',
   'mu2e_TrackerGeom',
