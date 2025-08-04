@@ -3,16 +3,6 @@
 # -*- mode: tcl -*-
 BEGIN_PROLOG
 
-NPOTAnalysis : {
-    module_type           : NPOTAnalysis
-    chCollTag: "TTmakePH"
-    tcCollTag: "TTTZClusterFinder"
-    hsCollTag: "TTAprHelixFinder"
-    prontonBunchIntensity: "PBISim"
-    processName: "S5Stn"
-    filterName: "lumiStream"
-}
-
 CosmicFilter: {
     module_type           : CosmicFilter
     diagLevel             : 0

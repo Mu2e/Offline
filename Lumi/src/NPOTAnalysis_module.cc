@@ -1,91 +1,52 @@
-
 //
-//
-//
+// Analyze MC and reco N(POT) info
+// Original author: Hope Applegate, 2025
 //
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "art/Utilities/make_tool.h"
-#include "canvas/Persistency/Common/TriggerResults.h"
 #include "art/Framework/Services/System/TriggerNamesService.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
+#include "canvas/Persistency/Common/TriggerResults.h"
+#include "canvas/Utilities/InputTag.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/ParameterSetRegistry.h"
-
 #include "messagefacility/MessageLogger/MessageLogger.h"
-// #include "canvas/Utilities/InputTag.h"
-#include "Offline/BFieldGeom/inc/BFieldManager.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/GeometryService/inc/DetectorSystem.hh"
-#include "Offline/TrackerGeom/inc/Tracker.hh"
 
-//Conditions
-// #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-// #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-
-//Dataproducts
+//Data products
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
-#include "Offline/RecoDataProducts/inc/CaloTrigSeed.hh"
-#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
-#include "Offline/RecoDataProducts/inc/KalSeed.hh"
-#include "Offline/RecoDataProducts/inc/TrkQual.hh"
-#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
-#include "Offline/RecoDataProducts/inc/ComboHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
-#include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh" //added
-#include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh" //added
-#include "Offline/DataProducts/inc/GenVector.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 
-
-//MC dataproducts
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+//MC data products
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
-#include "Offline/DataProducts/inc/PDGCode.hh"
-
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 
 //Utilities
-#include "Offline/Mu2eUtilities/inc/TriggerResultsNavigator.hh"
-#include "Offline/Mu2eUtilities/inc/HelixTool.hh"
-#include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
-#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
-#include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 #include "Offline/Mu2eUtilities/inc/TriggerResultsNavigator.hh"
 
 
 //ROOT
-#include "TH1F.h"
-#include "TH2D.h"
-#include "TProfile.h"
-#include "TEfficiency.h"
-#include "TMath.h"
-#include "TCanvas.h"
-#include "TMultiGraph.h"
-#include "TGraph.h"
-#include <TROOT.h>
-#include "TLine.h"
-#include "TEllipse.h"
+#include "TH1.h"
+#include "TH2.h"
 
-#include <cmath>
+//c++
 #include <string>
-#include <cstring>
-#include <sstream>
 #include <vector>
 #include <iostream>
 
@@ -96,9 +57,7 @@ namespace mu2e {
   public:
 
     enum {
-      kNEventHistsSets = 1,
-      kNTimeClusterHistsSets = 1,
-      kNHelixSeedHistsSets = 1
+      kNEventHistsSets = 1
     };
 
     struct EventHists {
@@ -163,38 +122,22 @@ namespace mu2e {
 
     };
 
-    struct TimeClusterHists {
-      TH1D* dT;
-      TH1D* t0;
-    };
-
-    struct HelixSeedHists{
-      TH1D* radius;
-    };
-
     struct Hists {
       EventHists* _EventHists[kNEventHistsSets];
-      TimeClusterHists* _TimeClusterHists[kNTimeClusterHistsSets];
-      HelixSeedHists* _HelixSeedHists[kNHelixSeedHistsSets];
-    };
-
-    struct tcData {
-      double dT;
-      double t0;
     };
 
     struct eventData {
-      int nPOT_;
+      long long nPOT_;
       //-------------Observables-------------
       int nProtonsDeltaFinder_;
-      int nClusters;
+      int nClusters_;
       int nCaloHits_;
       int caloEnergy_;
       int nCaphriHits_;
       int nProtonTCs_;
       int nTrackerHits_;
       //-------------Made in RecoNPOTMaker_module.cc as <ProtonBunchIntensity>
-      int recoNPOT_caloE_;
+      long long recoNPOT_caloE_;
 
       //-------------Residuals-------------
       // double resid_nTimeClusters_;
@@ -205,14 +148,45 @@ namespace mu2e {
       // double resid_nTrackerHits_;
 
       //-------------Passed RecoNPOTFilter_module.cc-------------
-      bool passed;
+      bool passed_;
+
+      eventData() { reset(); }
+
+      void reset() {
+        nPOT_ = 0;
+        nProtonsDeltaFinder_ = 0;
+        nClusters_ = 0;
+        nCaloHits_ = 0;
+        caloEnergy_ = 0;
+        nCaphriHits_ = 0;
+        nProtonTCs_ = 0;
+        nTrackerHits_ = 0;
+        recoNPOT_caloE_ = 0;
+        // resid_nTimeClusters_ = 0;
+        // resid_nCaloHits_ = 0;
+        resid_caloE_reco_ = 0;
+        // resid_nCaphriHits_ = 0;
+        // resid_nProtonTCs_ = 0;
+        // resid_nTrackerHits_ = 0;
+        passed_ = 0;
+      }
     };
 
-    struct hsData{
-      double radius;
+    struct Config {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<art::InputTag> caloTag   {Name("caloTag")    , Comment("Calo cluster tag")};
+      fhicl::Atom<art::InputTag> thCollTag {Name("thCollTag")  , Comment("Straw hit collection tag")};
+      fhicl::Atom<art::InputTag> dfCollTag {Name("dfCollTag")  , Comment("Delta finder tag")};
+      fhicl::Atom<art::InputTag> tcCollTag {Name("tcCollTag")  , Comment("Time cluster collection")};
+      fhicl::Atom<art::InputTag> recoPOTTag{Name("recoPOTTag") , Comment("Reco POT tag")};
+      fhicl::Atom<art::InputTag> MCPOTTag  {Name("MCPOTTag")   , Comment("MC POT tag")};
+      fhicl::Atom<std::string>   process   {Name("processName"), Comment("Name of this process")};
+      fhicl::Atom<std::string>   filter    {Name("filterName") , Comment("Name of the N(POT) filter")};
     };
+    using Parameters = art::EDAnalyzer::Table<Config>;
 
-    explicit NPOTAnalysis(fhicl::ParameterSet const& pset);
+    explicit NPOTAnalysis(const Parameters& conf);
     virtual ~NPOTAnalysis();
 
     virtual void beginJob();
@@ -223,60 +197,49 @@ namespace mu2e {
     virtual void beginRun(const art::Run & run);
 
     void bookEventHistograms(EventHists* Hist, art::TFileDirectory* Dir);
-    void bookTimeClusterHistograms(TimeClusterHists* Hist, art::TFileDirectory* Dir);
-    void bookHelixSeedHistograms(HelixSeedHists* Hist, art::TFileDirectory* Dir);
-
     void fillEventHistograms(EventHists* Hist);
-    void fillTimeClusterHistograms(TimeClusterHists* Hist, size_t loopIndex);
-    void fillHelixSeedHistograms(HelixSeedHists* Hist, size_t loopIndex);
 
     void bookHistograms(art::ServiceHandle<art::TFileService>& Tfs);
     void fillHistograms();
 
-    void computeTimeClusterData();
+    void retrieveData();
     void computeEventData();
-    void computeHelixSeedData();
 
 
 
   private:
 
-    std::string                        _chCollTag;
-    std::string                        _tcCollTag;
-    std::string                        _hsCollTag;
-    art::InputTag                      _evtWeightTag;
+    art::InputTag                      _caloTag;
+    art::InputTag                      _thCollTag;
+    art::InputTag                      _dfCollTag;
+    art::InputTag                      _tcCollTag;
+    art::InputTag                      _recoPOTTag;
+    art::InputTag                      _MCPOTTag;
+    std::string                        _processName;
+    std::string                        _filterName;
 
-
-    Hists                              _hist;
-    const mu2e::ComboHitCollection*    _chColl;
-    const mu2e::TimeClusterCollection* _tcColl;
-    const mu2e::ComboHit*              _ch;
     const art::Event*                  _event;
-    const mu2e::HelixSeedCollection*   _hsColl;
-
-    std::vector<tcData>                _tcData;
-    std::vector<hsData>                _hsData;
-
-    std::string _processName;
-    std::string _filterName;
+    const mu2e::TimeClusterCollection* _tcColl;
 
     eventData                          _eventData;
+    Hists                              _hist;
 
   };
 
-
-
-  NPOTAnalysis::NPOTAnalysis(fhicl::ParameterSet const& pset) :
-    art::EDAnalyzer(pset),
-    _chCollTag      (pset.get<string>("chCollTag", "TTmakePH")),
-    _tcCollTag      (pset.get<string>("tcCollTag", "TTTZClusterFinder")),
-    _hsCollTag      (pset.get<string>("hsCollTag", "TTAprHelixFinder")),
-    _evtWeightTag   (pset.get<art::InputTag>("protonBunchIntensity" , "PBISim")),
-    _processName    (pset.get<std::string>("processName", " S5Stn")),
-    _filterName     (pset.get<std::string>("filterName", "lumiStream"))
+  //-----------------------------------------------------------------------------
+  NPOTAnalysis::NPOTAnalysis(const Parameters& conf) : art::EDAnalyzer{conf}
+    , _caloTag       (conf().caloTag())
+    , _thCollTag     (conf().thCollTag())
+    , _dfCollTag     (conf().dfCollTag())
+    , _tcCollTag     (conf().tcCollTag())
+    , _recoPOTTag    (conf().recoPOTTag())
+    , _MCPOTTag      (conf().MCPOTTag())
+    , _processName   (conf().process())
+    , _filterName    (conf().filter())
   {
 
   }
+
   //-----------------------------------------------------------------------------
   NPOTAnalysis::~NPOTAnalysis() {}
 
@@ -295,37 +258,16 @@ namespace mu2e {
       _hist._EventHists[i] = new EventHists;
       bookEventHistograms(_hist._EventHists[i],&tfdir);
     }
-
-    //-----------------------------------------------------------------------------
-    // book time cluster histograms
-    //-----------------------------------------------------------------------------
-    for (int i=0; i<kNTimeClusterHistsSets; i++) {
-      sprintf(folder_name,"tcl_%i",i);
-      art::TFileDirectory tfdir = Tfs->mkdir(folder_name);
-      _hist._TimeClusterHists[i] = new TimeClusterHists;
-      bookTimeClusterHistograms(_hist._TimeClusterHists[i],&tfdir);
-    }
-
-
-    //-----------------------------------------------------------------------------
-    // book helix seed histograms
-    //-----------------------------------------------------------------------------
-
-    for (int i=0; i<kNHelixSeedHistsSets; i++) {
-      sprintf(folder_name, "hsc_%i",i);
-      art::TFileDirectory tfdir = Tfs->mkdir(folder_name);
-      _hist._HelixSeedHists[i] = new HelixSeedHists;
-      bookHelixSeedHistograms(_hist._HelixSeedHists[i],&tfdir);
-    }
   }
+
   //-----------------------------------------------------------------------------
   void NPOTAnalysis::bookEventHistograms(EventHists* Hist, art::TFileDirectory* Dir) {
 
     //-------------1D Observables-------------
-    Hist->nTimeClusters          = Dir->make<TH1D>("nTimeClusters" , "Number of Time Clusters; nTC ", 100, 0.0, 30.0 );
+    Hist->nTimeClusters          = Dir->make<TH1D>("nTimeClusters" , "Number of Time Clusters; nTC ", 30, 0.0, 30.0 );
     Hist->nCaloHits              = Dir->make<TH1D>("nCaloHits", "Number of Calorimeter Hits; nCaloHits", 100, 0.0, 1300);
     Hist->caloEnergy             = Dir->make<TH1D>("caloEnergy", "Calorimeter Energy; E[MeV]", 100, 0.0, 7500);
-    Hist->nCaphriHits            = Dir->make<TH1D>("nCAPHRIHits", "Number of CAPHRI Hits; nCAPHRIHits", 100, 0.0, 20);
+    Hist->nCaphriHits            = Dir->make<TH1D>("nCAPHRIHits", "Number of CAPHRI Hits; nCAPHRIHits", 20, 0.0, 20);
     Hist->nProtonTCs             = Dir->make<TH1D>("nProtonTCs", "Number of Proton Time Clusters from Intensity Information; nProtonTC from Int", 100, 0.0, 100);
     Hist->nTrackerHits           = Dir->make<TH1D>("nTrackerHits", "Number of Tracker Hits from Intensity Information; nTrkHits from Int", 100, 0.0, 7500);
     Hist->nProtonsDeltaFinder    = Dir->make<TH1D>("nProtonsDeltaFinder", "Number of Proton tracks from DeltaFinder Module; nProtons ", 100, 0.0, 100);
@@ -385,21 +327,6 @@ namespace mu2e {
     Hist->resid_caloE_reco_v_caloE2d = Dir->make<TH2D>("resid_caloE_reco_v_caloE2d", "Normalized Residual of nPOT from Calorimeter Energy v Calorimeter Energy; CaloE [MeV]; (nPOT-recoNPOT)/nPOT", 100, 0.0, 1e4, 100, -0.600, 0.600);
   }
 
-
-  //-----------------------------------------------------------------------------
-  void NPOTAnalysis::bookTimeClusterHistograms(TimeClusterHists* Hist, art::TFileDirectory* Dir) {
-
-    Hist->dT = Dir->make<TH1D>("dT" , "width of time clusters", 40, 0.0, 500.0 );
-    Hist->t0 = Dir->make<TH1D>("t0" , "time of cluster", 200, 0.0, 1800.0 );
-
-  }
-
-  //The one im adding
-  //-----------------------------------------------------------------------------
-  void NPOTAnalysis::bookHelixSeedHistograms(HelixSeedHists* Hist, art::TFileDirectory* Dir) {
-    Hist->radius = Dir->make<TH1D>("radius", "radius of Helix", 50, 0.0, 500);
-  }
-
   //--------------------------------------------------------------------------------//
   void NPOTAnalysis::beginJob(){
     art::ServiceHandle<art::TFileService> tfs;
@@ -421,32 +348,15 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     // fill event histograms
     //-----------------------------------------------------------------------------
-
     fillEventHistograms(_hist._EventHists[0]);
 
-
-
-    //-----------------------------------------------------------------------------
-    // fill time cluster histograms
-    //-----------------------------------------------------------------------------
-    for (size_t i=0; i<_tcData.size(); i++) {
-      fillTimeClusterHistograms(_hist._TimeClusterHists[0], i);
-    }
-
-    //-----------------------------------------------------------------------------
-    // fill helix seed histograms
-    //-----------------------------------------------------------------------------
-
-    for (size_t i=0; i<_hsData.size(); i++) {
-      fillHelixSeedHistograms(_hist._HelixSeedHists[0], i);
-    }
   }
 
   //-----------------------------------------------------------------------------
   void NPOTAnalysis::fillEventHistograms(EventHists* Hist) {
 
     //----------------1D Observables----------------
-    Hist->nTimeClusters->Fill(_eventData.nClusters);
+    Hist->nTimeClusters->Fill(_eventData.nClusters_);
     Hist->nCaloHits->Fill(_eventData.nCaloHits_);
     Hist->caloEnergy->Fill(_eventData.caloEnergy_);
     Hist->nCaphriHits->Fill(_eventData.nCaphriHits_);
@@ -461,10 +371,10 @@ namespace mu2e {
     Hist->recoNPOT_caloE->Fill(_eventData.recoNPOT_caloE_);
 
     //----------------Passed Filter----------------
-    if (_eventData.passed) {Hist->filteredRecoNPOT->Fill(_eventData.recoNPOT_caloE_); }
+    if (_eventData.passed_) {Hist->filteredRecoNPOT->Fill(_eventData.recoNPOT_caloE_); }
 
     //----------------nPOT v Observable----------------
-    Hist->nTimeClusters2d->Fill(_eventData.nClusters, _eventData.nPOT_);
+    Hist->nTimeClusters2d->Fill(_eventData.nClusters_, _eventData.nPOT_);
     Hist->nCaloHits2d->Fill(_eventData.nCaloHits_, _eventData.nPOT_);
     Hist->caloEnergy2d->Fill(_eventData.caloEnergy_, _eventData.nPOT_);
     Hist->nCaphriHits2d->Fill(_eventData.nCaphriHits_, _eventData.nPOT_);
@@ -473,7 +383,7 @@ namespace mu2e {
     Hist->nPOTvnProtonTracks->Fill(_eventData.nProtonsDeltaFinder_, _eventData.nPOT_);
 
     //---------------- nProtonsDeltaFinder v Observable----------------
-    Hist->nTimeClusters2df->Fill(_eventData.nClusters, _eventData.nProtonsDeltaFinder_);
+    Hist->nTimeClusters2df->Fill(_eventData.nClusters_, _eventData.nProtonsDeltaFinder_);
     Hist->nCaloHits2df->Fill(_eventData.nCaloHits_, _eventData.nProtonsDeltaFinder_);
     Hist->caloEnergy2df->Fill(_eventData.caloEnergy_, _eventData.nProtonsDeltaFinder_);
     Hist->nCaphriHits2df->Fill(_eventData.nCaphriHits_, _eventData.nProtonsDeltaFinder_);
@@ -482,7 +392,7 @@ namespace mu2e {
 
     //----------------Observable v Observable----------------
     Hist->caloEH->Fill(_eventData.nCaloHits_, _eventData.caloEnergy_);
-    Hist->cTCs->Fill(_eventData.nProtonTCs_, _eventData.nClusters);
+    Hist->cTCs->Fill(_eventData.nProtonTCs_, _eventData.nClusters_);
     Hist->hitsTC->Fill(_eventData.nCaloHits_, _eventData.nTrackerHits_);
     Hist->hitsCAPHRIvCal->Fill(_eventData.nCaloHits_, _eventData.nCaphriHits_);
     Hist->hitsCAPHRIvTrker->Fill(_eventData.nTrackerHits_, _eventData.nCaphriHits_);
@@ -508,186 +418,103 @@ namespace mu2e {
     Hist->resid_caloE_reco_v_caloE2d->Fill(_eventData.caloEnergy_, _eventData.resid_caloE_reco_);
   }
 
-  //-----------------------------------------------------------------------------
-  void NPOTAnalysis::fillTimeClusterHistograms(TimeClusterHists* Hist, size_t loopIndex) {
-
-    // fill dT plot
-    double deltaTime = _tcData.at(loopIndex).dT;
-    Hist->dT->Fill(deltaTime);
-    // fill t0 plot
-    double timeZero = _tcData.at(loopIndex).t0;
-    Hist->t0->Fill(timeZero);
-
-  }
-
-
-  //-----------------------------------------------------------------------------
-  void NPOTAnalysis::fillHelixSeedHistograms(HelixSeedHists* Hist, size_t loopIndex) {
-    //fill radius plot
-    double radiusdata = _hsData.at(loopIndex).radius;
-    Hist->radius->Fill(radiusdata);
-  }
   //--------------------------------------------------------------------------------
-  void NPOTAnalysis::computeEventData() {
+  void NPOTAnalysis::retrieveData() {
 
-    // for (size_t i=0; i<_chCollph->size(); i++) {
-
-
-
-    // compute event level stuff
-    _eventData.nClusters = (int)_tcColl->size();
-
-    if (_eventData.nPOT_ > 0 && _eventData.recoNPOT_caloE_ > 0) {
-      double residual = _eventData.nPOT_ - _eventData.recoNPOT_caloE_;
-      _eventData.resid_caloE_reco_ = residual / _eventData.nPOT_;
-    } else {
-      _eventData.resid_caloE_reco_ = 0.0;
-      std::cout << "Failed to calculate normalized residual: nPOT = "
-                << _eventData.nPOT_ << ", recoNPOT = " << _eventData.recoNPOT_caloE_ << std::endl;
-    }
-
-  }
-
-  //--------------------------------------------------------------------------------
-  void NPOTAnalysis::computeTimeClusterData() {
-
-    // compute dT for each cluster
-    for (size_t i=0; i<_tcColl->size(); i++) {
-      tcData clusterData;
-      clusterData.t0 = _tcColl->at(i)._t0._t0;
-      double minT = 0.0;
-      double maxT = 0.0;
-      for (size_t j=0; j<_tcColl->at(i)._strawHitIdxs.size(); j++) {
-        int chIndex = _tcColl->at(i)._strawHitIdxs[j];
-        double chTime = _chColl->at(chIndex).correctedTime();
-        if (j==0) {
-          minT = chTime;
-          maxT = chTime;
-        }
-        if (chTime<minT) {minT = chTime;}
-        if (chTime>maxT) {maxT = chTime;}
-      }
-      clusterData.dT = maxT - minT;
-      _tcData.push_back(clusterData);
-    }
-
-  }
-
-  //--------------------------------------------------------------------------------
-  void NPOTAnalysis::computeHelixSeedData() {
-
-
-    //loop through all of the helices and grab the data members of interest
-    for (size_t i=0; i<_hsColl->size(); i++) {
-      hsData radiusData;
-      radiusData.radius = _hsColl->at(i).helix().radius();
-      _hsData.push_back(radiusData);
-    }
-
-  }
-
-  //--------------------------------------------------------------------------------
-  void NPOTAnalysis::analyze(const art::Event& event) {
-
-    // get event
-    _event = &event;
-
+    // reset information
+    _eventData.reset();
 
     //--------------Get if passed RecoNPOTFilter_module.cc--------------
-    std::ostringstream oss;
-    oss << "TriggerResults::" << _processName;
-    art::InputTag const tag{oss.str()};
-
-    try {
-      auto const trigResultsH = event.getValidHandle<art::TriggerResults>(tag);
-      if (trigResultsH.isValid()) {
-        const art::TriggerResults* trigResults = trigResultsH.product();
-        TriggerResultsNavigator trigNavig(trigResults);
-        //If passed, set boolean "passed" to TRUE for this event
-        _eventData.passed = trigNavig.accepted(_filterName);
-      } else {
-        std::cout << "[NPOTAnalysis] TriggerResults handle is not valid!" << std::endl;
-        _eventData.passed = false;
-      }
-    } catch (const std::exception& e) {
-      std::cout << "[NPOTAnalysis] Could not retrieve TriggerResults with tag '"
-                << tag.encode() << "'. Error: " << e.what() << std::endl;
-      _eventData.passed = false;
+    const art::InputTag triggerTag{"TriggerResults::" + _processName};
+    art::Handle<art::TriggerResults> trigResultsH;
+    _event->getByLabel(triggerTag, trigResultsH);
+    if (trigResultsH.isValid()) {
+      const art::TriggerResults* trigResults = trigResultsH.product();
+      TriggerResultsNavigator trigNavig(trigResults);
+      _eventData.passed_ = trigNavig.accepted(_filterName);
+    } else {
+      std::cout << "[NPOTAnalysis::" << __func__ << "] TriggerResults handle is not valid!" << std::endl;
+      _eventData.passed_ = false;
     }
 
     //--------------Get Reconstructed nPOT from RecoNPOTMaker_module.cc--------------
     art::Handle<ProtonBunchIntensity> recoNPOTH;
-    _event->getByLabel("RecoNPOTMaker",recoNPOTH);
+    _event->getByLabel(_recoPOTTag,recoNPOTH);
     if(recoNPOTH.isValid()) {
       _eventData.recoNPOT_caloE_ = recoNPOTH->intensity();
     }
-    else { std::cout << "[NPOTAnalysis] Could not retrieve RecoNPOT from RecoNPOTMaker!" << std::endl; }
+    else { std::cout << "[NPOTAnalysis::" << __func__ << "] Could not retrieve RecoNPOT!" << std::endl; }
 
     //--------------Get the EventData from ProtonBunchIntensity--------------
-    art::Handle<ProtonBunchIntensity> evtWeightH;
-    _event->getByLabel(_evtWeightTag, evtWeightH);
-    if (evtWeightH.isValid()) {_eventData.nPOT_  = evtWeightH->intensity();}
+    art::Handle<ProtonBunchIntensity> MCPOTH;
+    _event->getByLabel(_MCPOTTag, MCPOTH);
+    if (MCPOTH.isValid()) {_eventData.nPOT_  = MCPOTH->intensity();}
 
     //--------------Get the EventData from IntensityInfoCalo--------------
     art::Handle<IntensityInfoCalo> caloInt;
-    _event->getByLabel("CaloHitMakerFast", caloInt);
+    _event->getByLabel(_caloTag, caloInt);
     if (caloInt.isValid()){
       _eventData.nCaloHits_   = caloInt->nCaloHits();
       _eventData.caloEnergy_  = caloInt->caloEnergy();
       _eventData.nCaphriHits_ = caloInt->nCaphriHits();
-    }
+    } else { std::cout << "Calorimeter intensity info is not valid" << std::endl;}
 
     //--------------Get the EventData from IntensityInfoTimeCluster--------------
-    //Use TTTZClusterFinder
+    //Default is trigger-level TZClusterFinder
     art::Handle<IntensityInfoTimeCluster> tcInt;
-    _event->getByLabel("TTTZClusterFinder", tcInt);
+    _event->getByLabel(_tcCollTag, tcInt);
     if (tcInt.isValid()) { _eventData.nProtonTCs_  = tcInt->nProtonTCs();}
+    else { std::cout << "Time cluster intensity info is not valid" << std::endl;}
+
     //Use DeltaFinder Module
-    art::Handle<IntensityInfoTimeCluster> tcIntph;
-    _event->getByLabel("TTflagPH", tcIntph);
-    if (tcIntph.isValid()) { _eventData.nProtonsDeltaFinder_ = tcIntph->nProtonTCs();}
-    else { std::cout << "tcIntph is not valid, not filling nProtonsDeltaFinder_" << std::endl;}
+    art::Handle<IntensityInfoTimeCluster> dfInt;
+    _event->getByLabel(_dfCollTag, dfInt);
+    if (dfInt.isValid()) { _eventData.nProtonsDeltaFinder_ = dfInt->nProtonTCs();}
+    else { std::cout << "Delta-Finder intensity info is not valid" << std::endl;}
 
     //--------------Get the EventData from IntensityInfoTrackerHits--------------
     art::Handle<IntensityInfoTrackerHits> thInt;
-    _event->getByLabel("TTmakeSH", thInt);
+    _event->getByLabel(_thCollTag, thInt);
     if (thInt.isValid()) { _eventData.nTrackerHits_ = thInt->nTrackerHits();}
-
-    //--------------Get the ComboHitCollection--------------
-    art::Handle<mu2e::ComboHitCollection> chCollHandle;
-    _event->getByLabel(_chCollTag, chCollHandle);
-    if (chCollHandle.isValid())
-      {
-        _chColl = chCollHandle.product();
-      }
-    else {_chColl = NULL;}
-
+    else { std::cout << "Tracker hits intensity info is not valid" << std::endl;}
 
     //--------------Get the TimeClusterCollection--------------
     art::Handle<mu2e::TimeClusterCollection> tcCollHandle;
     _event->getByLabel(_tcCollTag, tcCollHandle);
     if (tcCollHandle.isValid()) {_tcColl = tcCollHandle.product();}
-    else {_tcColl = NULL;}
+    else {_tcColl = nullptr;}
+  }
 
-    //--------------Get the HelixSeedCollection--------------
-    art::Handle<mu2e::HelixSeedCollection> hsCollHandle;
-    _event->getByLabel(_hsCollTag, hsCollHandle);
-    if (hsCollHandle.isValid()) {_hsColl = hsCollHandle.product();}
-    else {_hsColl = NULL;}
+  //--------------------------------------------------------------------------------
+  void NPOTAnalysis::computeEventData() {
 
+    // compute event level information
+    _eventData.nClusters_ = (_tcColl) ? (int)_tcColl->size() : -1;
 
+    if (_eventData.nPOT_ > 0 && _eventData.recoNPOT_caloE_ > 0) {
+      const double residual = _eventData.nPOT_ - _eventData.recoNPOT_caloE_;
+      _eventData.resid_caloE_reco_ = residual / _eventData.nPOT_;
+    } else {
+      _eventData.resid_caloE_reco_ = 0.;
+      std::cout << "Failed to calculate normalized residual: nPOT = "
+                << _eventData.nPOT_ << ", recoNPOT = " << _eventData.recoNPOT_caloE_ << std::endl;
+    }
+  }
+
+  //--------------------------------------------------------------------------------
+  void NPOTAnalysis::analyze(const art::Event& event) {
+
+    // get the event
+    _event = &event;
+
+    // retrieve the event data
+    retrieveData();
+
+    // process the data
     computeEventData();
-    // compute data that will be plotted
-    if(_tcColl != NULL){ computeTimeClusterData();}
-    if(_hsColl != NULL){ computeHelixSeedData();}
-
 
     // fill histograms
     fillHistograms();
-
-    _tcData.clear();
-    _hsData.clear();
-
   }
 }
 DEFINE_ART_MODULE(mu2e::NPOTAnalysis)

@@ -640,22 +640,6 @@ CalPatRec : { @table::CalPatRec
             }
         }
 
-        ##------------------------MY NEW MODULE-----------------------------
-        RecoNPOTMaker : {
-            module_type         : RecoNPOTMaker
-            debugLevel          : 0
-            evtWeightTag        : "PBISim"
-           ## chCollTag           : "TTmakePH"
-           ## tcCollTag           : "TTTZClusterFinder"
-           ## hsCollTag           : "TTAprHelixFinder"
-            caloIntInfoTag      : "CaloHitMakerFast"
-           ## tcIntInfoTZTag      : "TTTZClusterFinder"
-            ## tcIntInfoFlagTag    : "TTflagPH"
-            ## trkHitIntInfoTag    : "TTmakeSH"
-        }
-
-        ##-----------------------------------------------------------------
-
         AgnosticHelixFinder : {
             module_type : AgnosticHelixFinder
             diagLevel               : 0
@@ -737,13 +721,6 @@ CalPatRec : { @table::CalPatRec
     }
 
     filters : {
-
-        RecoNPOTFilter: {
-            module_type         : RecoNPOTFilter
-            recoNPOTTag         : "RecoNPOTMaker"
-            minWeight           : 1e-2
-        }
-
 
 
 #------------------------------------------------------------------------------
