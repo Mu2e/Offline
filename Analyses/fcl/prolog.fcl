@@ -1,7 +1,6 @@
 # -*- mode: tcl -*-
 BEGIN_PROLOG
 
-
 CosmicFilter: {
     module_type           : CosmicFilter
     diagLevel             : 0

@@ -28,6 +28,7 @@
 // G4 includes
 #include "Geant4/G4ParticleTable.hh"
 #include "Geant4/G4ProcessManager.hh"
+#include "Geant4/G4ProcessType.hh"
 
 using namespace std;
 
@@ -75,9 +76,15 @@ namespace mu2e{
       // Loop over all processes.
       for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
 
+
         G4VProcess const* proc = (*pVector)[j];
-        G4String const& processName = proc->GetProcessName();
+        G4String processName = proc->GetProcessName();
+
+        //artificially attach generic name for parallel tracking worlds (only scoring planes live there)
+        if (proc->GetProcessType() == G4ProcessType::fParallel) processName=G4String("Transportation");
+
         nUnknownProcesses+=insertIfNotFound(processName,particleName);
+
 
         if ( processName == gammaGP ){
           // special case for G4GammaGeneralProcess as of Geant4 11

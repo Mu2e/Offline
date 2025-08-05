@@ -21,6 +21,7 @@
 
 #include "Offline/DAQ/inc/CaloDAQUtilities.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 
 #include <iostream>
 
@@ -109,11 +110,11 @@ private:
   const int hexShiftPrint = 7;
 
   std::unordered_map<uint16_t, std::list<mu2e::CaloHit>>
-      pulseMap_; // Temporary hack until the Calorimeter channel map is finialized
+      pulseMap_; // Temporary hack until the Calorimeter channel map is finalized
   mu2e::CaloDAQUtilities caloDAQUtil_;
 
-  std::array<float, 674 * 4> peakADC2MeV_;
-  std::array<float, 674 * 4> timeCalib_;
+  std::array<float, mu2e::CaloConst::_nCrystalChannel> peakADC2MeV_;
+  std::array<float, mu2e::CaloConst::_nCrystalChannel> timeCalib_;
 
   long int total_events;
   long int total_hits;
@@ -128,9 +129,7 @@ void art::CaloHitsFromDataDTCEvents::beginRun(art::Run& Run) {
 
   // FIX ME!
   // here we need to load the prodition-service with the calibrations
-  // for converting teh peakADC into MeV. I decided to fill an array
-  // with the conversion constants in order to speed up the access
-  // NOW FILLING THE ARRAY WITH A DUMMY VALUE
+  // for converting teh peakADC into MeV and sync times
   for (size_t i = 0; i < peakADC2MeV_.size(); ++i) {
     peakADC2MeV_[i] = 0.0461333;
     timeCalib_[i] = 0.;

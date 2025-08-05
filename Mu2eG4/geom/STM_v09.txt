@@ -229,7 +229,7 @@ double stm.shield.DnStrWall.gap  = 0.0;
 double stm.magnet.stand.topExtraLength = -200.0; // reduce length of table to avoid overlap with virtual detector
 
 double stm.shieldingHolePoly.rOut = 127.0; // diameter of ECS hole is 254 mm
-
+double stm.ifbPoly.rOut = 127.0;
 // This tells emacs to view this file in c++ mode
 // Local Variables:
 // mode:c++

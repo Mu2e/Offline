@@ -630,6 +630,8 @@ CalPatRec : { @table::CalPatRec
             caloDtMax                  : 30.0
             caloTimeOffset             : @local::TrackCaloMatching.DtOffset
             doRefine                   : 0
+            MinimumEnergy              : 0.0001
+            MaximumEnergy              : 0.005
 
             diagPlugin : { tool_type  : "TZClusterFinderDiag"
                  mcTruth       : 1
@@ -719,6 +721,8 @@ CalPatRec : { @table::CalPatRec
     }
 
     filters : {
+
+
 #------------------------------------------------------------------------------
 # new modules
 #------------------------------------------------------------------------------

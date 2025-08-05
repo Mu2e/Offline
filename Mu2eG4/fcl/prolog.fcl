@@ -24,6 +24,16 @@ mu2eg4DefaultPhysics: {
     turnOffRadioactiveDecay:  false    // If both are false, we get the G4 default, which may be physics list dependent.
     turnOnRadioactiveDecay:  false     // If both are true, it is a configuraiton error detected at run-time.
 
+    //options for radiation studies
+    radiationVRmode    : false
+    beamTimeProfileRad : "Offline/Mu2eG4/data/beamProfile.data"
+    coolTimeProfileRad : "Offline/Mu2eG4/data/cooling.data"
+    radiationBRBias    : false
+    radiationNsplit    : 3
+    radiationHLT       : 1e+60
+    radiationTableName : "ISO"
+
+
     // the following option is to be used mainly as an extention of
     // the physics lists activating HP neutron physics e.g., Shielding, ShieldingM
     // or any of the _HP ones
@@ -213,6 +223,14 @@ mu2eg4runDefaultSingleStage: {
         enabled             : false
         primariesOnly       : false
         prefix              : "SimParticle: "
+    }
+
+    Scoring : {
+        enabled         : false
+        meshNames       : ["WorldMesh","MARSMesh"]
+        scorerNames     : ["DoseDeposit","DelayedDose"]
+        writeFile       : false
+        #fileDirectory   : "/dev/null"
     }
 }
 
