@@ -12,6 +12,8 @@
 #include <artdaq-core/Data/ContainerFragment.hh>
 #include <artdaq-core/Data/Fragment.hh>
 
+#include "Offline/DataProducts/inc/CaloConst.hh"
+
 #include <string>
 #include <vector>
 
@@ -77,9 +79,9 @@ public:
       return CaloHitError::NumberOfSamples;
     if (Hit.first.IndexOfMaxDigitizerSample >= Hit.second.size())
       return CaloHitError::MaxSampleIndex;
-    if (Hit.first.BoardID < 0 || Hit.first.BoardID >= 160)
+    if (Hit.first.BoardID >= CaloConst::_nDIRAC)
       return CaloHitError::BoardID;
-    if (Hit.first.ChannelID < 0 || Hit.first.ChannelID >= 20)
+    if (Hit.first.ChannelID >= CaloConst::_nChPerDIRAC)
       return CaloHitError::ChannelID;
     return CaloHitError::Good;
   }
@@ -92,9 +94,9 @@ public:
       return CaloHitError::LastSampleMarker;
     if (Hit.second == 0)
       return CaloHitError::WaveformSize;
-    if (Hit.first.BoardID < 0 || Hit.first.BoardID >= 160)
+    if (Hit.first.BoardID >= CaloConst::_nDIRAC)
       return CaloHitError::BoardID;
-    if (Hit.first.ChannelID < 0 || Hit.first.ChannelID >= 20)
+    if (Hit.first.ChannelID >= CaloConst::_nChPerDIRAC)
       return CaloHitError::ChannelID;
     return CaloHitError::Good;
   }
