@@ -69,6 +69,8 @@ namespace mu2e {
       TH1D* nProtonTCs;
       TH1D* nTrackerHits;
       TH1D* nProtonsDeltaFinder; //Number of Protons from DeltaFinder module
+      TH1D* nCaloHitsD0; //disk 0 calo hits
+      TH1D* nCaloHitsD1; //disk 1 calo hits
 
       TH1D* nPOT; //MC Truth  nPOT
 
@@ -84,6 +86,8 @@ namespace mu2e {
       TH2D* nProtonTCs2d;
       TH2D* nTrackerHits2d;
       TH2D* nPOTvnProtonTracks; //nPOT v nProtonsDeltaFinder
+      TH2D* nPOTvnCaloHitsD0;
+      TH2D* nPOTvnCaloHitsD1;
 
       //-------------Observable v. nProtons from Delta Finder Module-------------
       TH2D* nTimeClusters2df;
@@ -136,6 +140,8 @@ namespace mu2e {
       int nCaphriHits_;
       int nProtonTCs_;
       int nTrackerHits_;
+      int nCaloHitsD0_;
+      int nCaloHitsD1_;
       //-------------Made in RecoNPOTMaker_module.cc as <ProtonBunchIntensity>
       long long recoNPOT_caloE_;
 
@@ -161,6 +167,8 @@ namespace mu2e {
         nCaphriHits_ = 0;
         nProtonTCs_ = 0;
         nTrackerHits_ = 0;
+        nCaloHitsD0_ = 0;
+        nCaloHitsD1_ = 0;
         recoNPOT_caloE_ = 0;
         // resid_nTimeClusters_ = 0;
         // resid_nCaloHits_ = 0;
@@ -271,6 +279,8 @@ namespace mu2e {
     Hist->nProtonTCs             = Dir->make<TH1D>("nProtonTCs", "Number of Proton Time Clusters from Intensity Information; nProtonTC from Int", 100, 0.0, 100);
     Hist->nTrackerHits           = Dir->make<TH1D>("nTrackerHits", "Number of Tracker Hits from Intensity Information; nTrkHits from Int", 100, 0.0, 7500);
     Hist->nProtonsDeltaFinder    = Dir->make<TH1D>("nProtonsDeltaFinder", "Number of Proton tracks from DeltaFinder Module; nProtons ", 100, 0.0, 100);
+    Hist->nCaloHitsD0            = Dir->make<TH1D>("nCaloHitsD0", "Number of Calorimeter Hits in Disk 0; N(hits)", 100, 0.0, 1300);
+    Hist->nCaloHitsD1            = Dir->make<TH1D>("nCaloHitsD1", "Number of Calorimeter Hits in Disk 1; N(hits)", 100, 0.0, 1300);
 
     //-------------MC Truth nPOT-------------
     Hist->nPOT                   = Dir->make<TH1D>("nPOT", "Number of Protons on Target; nPOT", 100, 0.0, 1e8);
@@ -289,6 +299,8 @@ namespace mu2e {
     Hist->nProtonTCs2d           = Dir->make<TH2D>("nProtonTCs2d", "Number of Protons on Target v Number of Proton Time Clusters from Intensity Information; nProtonTC from Int; nPOT", 100, 0.0, 100, 100, 0.0, 1e8);
     Hist->nTrackerHits2d         = Dir->make<TH2D>("nTrackerHits2d", "Number of Protons on Target v Number of Tracker Hits from Intensity Information; nTrkHits from Int; nPOT", 100, 0.0, 7500, 100, 0.0, 1e8);
     Hist->nPOTvnProtonTracks     = Dir->make<TH2D>("nPOTvnProtonTracks", "Number of Protons v Number of Protons from Delta Finder; nProtons from DF; nPOT", 100, 0.0, 100, 100, 0.0, 1e8);
+    Hist->nPOTvnCaloHitsD0       = Dir->make<TH2D>("nPOTvnCaloHitsD0", "Number of Protons v N(calo hits) in disk 0; N(calo hits) in disk 0; nPOT", 100, 0.0, 1300, 100, 0.0, 1e8);
+    Hist->nPOTvnCaloHitsD1       = Dir->make<TH2D>("nPOTvnCaloHitsD1", "Number of Protons v N(calo hits) in disk 1; N(calo hits) in disk 1; nPOT", 100, 0.0, 1300, 100, 0.0, 1e8);
 
     //-------------Observable v nProtons from DeltaFinder-------------
     Hist->nTimeClusters2df       = Dir->make<TH2D>("nTimeClusters2df" , "Number of Protons from Delta Finder v Number of Time Clusters; nTC; nProtons from DeltaFinder ", 100, 0.0, 100.0, 100, 0.0, 100);
@@ -363,6 +375,8 @@ namespace mu2e {
     Hist->nProtonTCs->Fill(_eventData.nProtonTCs_);
     Hist->nTrackerHits->Fill(_eventData.nTrackerHits_);
     Hist->nProtonsDeltaFinder->Fill(_eventData.nProtonsDeltaFinder_);
+    Hist->nCaloHitsD0->Fill(_eventData.nCaloHitsD0_);
+    Hist->nCaloHitsD1->Fill(_eventData.nCaloHitsD1_);
 
     //----------------MC Truth nPOT----------------
     Hist->nPOT->Fill(_eventData.nPOT_);
@@ -381,6 +395,8 @@ namespace mu2e {
     Hist->nProtonTCs2d->Fill(_eventData.nProtonTCs_, _eventData.nPOT_);
     Hist->nTrackerHits2d->Fill(_eventData.nTrackerHits_, _eventData.nPOT_);
     Hist->nPOTvnProtonTracks->Fill(_eventData.nProtonsDeltaFinder_, _eventData.nPOT_);
+    Hist->nPOTvnCaloHitsD0->Fill(_eventData.nCaloHitsD0_, _eventData.nPOT_);
+    Hist->nPOTvnCaloHitsD1->Fill(_eventData.nCaloHitsD1_, _eventData.nPOT_);
 
     //---------------- nProtonsDeltaFinder v Observable----------------
     Hist->nTimeClusters2df->Fill(_eventData.nClusters_, _eventData.nProtonsDeltaFinder_);
@@ -457,6 +473,8 @@ namespace mu2e {
       _eventData.nCaloHits_   = caloInt->nCaloHits();
       _eventData.caloEnergy_  = caloInt->caloEnergy();
       _eventData.nCaphriHits_ = caloInt->nCaphriHits();
+      _eventData.nCaloHitsD0_ = 0; // FIXME: Add hit counts by disk
+      _eventData.nCaloHitsD1_ = 0;
     } else { std::cout << "Calorimeter intensity info is not valid" << std::endl;}
 
     //--------------Get the EventData from IntensityInfoTimeCluster--------------
