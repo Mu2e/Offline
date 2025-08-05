@@ -4,9 +4,12 @@ BEGIN_PROLOG
 Lumi : {
     producers : {
         RecoNPOTMaker : {
-            module_type    : RecoNPOTMaker
-            caloIntInfoTag : "CaloHitMakerFast"
-            debugLevel     : 0
+            module_type      : RecoNPOTMaker
+            caloIntInfoTag   : "CaloHitMakerFast"
+            trkHitIntInfoTag : "TTmakeSH"
+            tcIntInfoTZTag   : "TTTZClusterFinder"
+            tcIntInfoDFTag   : "TTflagPH"
+            debugLevel       : 0
         }
     }
 

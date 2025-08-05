@@ -26,12 +26,11 @@ namespace mu2e {
     struct Config {
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<art::InputTag>     caloIntInfoTag   {Name("caloIntInfoTag"    ), Comment("IntensityInfoCalo"          ) };
-      // fhicl::Atom<art::InputTag>     tcIntInfoTZTag   {Name("tcIntInfoTZTag"    ), Comment("IntensityInfoTimeCluster"   ) };
-      // fhicl::Atom<art::InputTag>     tcIntInfoFlagTag {Name("tcIntInfoFlagTag"  ), Comment("IntensityInfoTimeCluster"   ) };
-      // fhicl::Atom<art::InputTag>     trkHitIntInfoTag {Name("trkHitIntInfoTag"  ), Comment("IntensityInfoTrackerHits"   ) };
-      fhicl::Atom<int>               debugLevel       {Name("debugLevel"       ), Comment("turn on/off debug"           ), 0};
-
+      fhicl::Atom<art::InputTag>     caloIntInfoTag   {Name("caloIntInfoTag"    ), Comment("IntensityInfoCalo tag"                          ) };
+      fhicl::Atom<art::InputTag>     tcIntInfoTZTag   {Name("tcIntInfoTZTag"    ), Comment("IntensityInfoTimeCluster TZClusterFinder tag"   ) };
+      fhicl::Atom<art::InputTag>     tcIntInfoDFTag   {Name("tcIntInfoDFTag"    ), Comment("IntensityInfoTimeCluster DeltaFinder tag"       ) };
+      fhicl::Atom<art::InputTag>     trkHitIntInfoTag {Name("trkHitIntInfoTag"  ), Comment("IntensityInfoTrackerHits tag"                   ) };
+      fhicl::Atom<int>               debugLevel       {Name("debugLevel"        ), Comment("turn on/off debug"                              ), 0};
     };
 
     //-----------------------------------------------------------------------------
@@ -42,7 +41,7 @@ namespace mu2e {
       struct PredictionResult {
         std::string observable; //which observable gave this prediction
         double  observableValue = 0.0; //the value of the observable
-        unsigned long long predictedNPOT = 0; //nPOT observable predicted
+        unsigned long long NPOT = 0; //nPOT observable predicted
       };
       std::vector<PredictionResult> predictions;
     };
@@ -57,9 +56,9 @@ namespace mu2e {
     // Event Object Labels
     //-----------------------------------------------------------------------------
     art::InputTag   _caloIntInfoTag ;
-    // art::InputTag   _trkHitIntInfoTag ;
-    // art::InputTag   _tcIntInfoTZTag ;
-    // art::InputTag   _tcIntInfoFlagTag ;
+    art::InputTag   _trkHitIntInfoTag ;
+    art::InputTag   _tcIntInfoTZTag ;
+    art::InputTag   _tcIntInfoDFTag ;
 
     int              _debugLevel;
     Data             _Data;
@@ -70,9 +69,9 @@ namespace mu2e {
     // collections
     //-----------------------------------------------------------------------------
     const IntensityInfoCalo*         _caloIntInfo;
-    //const IntensityInfoTrackerHits*  _trkHitIntInfo;
-    //const IntensityInfoTimeCluster*  _tcIntInfoTZ;
-    //const IntensityInfoTimeCluster*  _tcIntInfoFlag;
+    const IntensityInfoTrackerHits*  _trkHitIntInfo;
+    const IntensityInfoTimeCluster*  _tcIntInfoTZ;
+    const IntensityInfoTimeCluster*  _tcIntInfoDF;
 
 
     ProtonBunchIntensity*            recoPBI; //Pointer to collection module produces
@@ -92,9 +91,13 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     void findData                                        (const art::Event& evt);
     //Add prediction to data storage
-    void addPrediction                                   (Data& data, const std::string& obsName, const double obsVal, const unsigned long long predicted);
+    void addPrediction                                   (Data& data, const std::string& obsName, const double obsVal, const unsigned long long POT);
     //Functions to reconstruct nPOT from observable
-    unsigned long long predictnPOTfromCaloEnergy         (const art::Event& evt, const double caloEnergy);
+    unsigned long long POTfromCaloEnergy         (const art::Event& evt, const double caloEnergy);
+    unsigned long long POTfromCaloHits           (const art::Event& evt, const int caloHits);
+    unsigned long long POTfromTrackerHits        (const art::Event& evt, const int trackerHits);
+    unsigned long long POTfromTZTCs              (const art::Event& evt, const int TCs);
+    unsigned long long POTfromDFTCs              (const art::Event& evt, const int TCs);
 
   };
 
@@ -104,16 +107,16 @@ namespace mu2e {
   RecoNPOTMaker::RecoNPOTMaker(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}
     , _caloIntInfoTag           (config().caloIntInfoTag()                              )
-    // , _trkHitIntInfoTag         (config().trkHitIntInfoTag()                            )
-    // , _tcIntInfoTZTag           (config().tcIntInfoTZTag()                              )
-    // , _tcIntInfoFlagTag         (config().tcIntInfoFlagTag()                            )
+    , _trkHitIntInfoTag         (config().trkHitIntInfoTag()                            )
+    , _tcIntInfoTZTag           (config().tcIntInfoTZTag()                              )
+    , _tcIntInfoDFTag           (config().tcIntInfoDFTag()                              )
     , _debugLevel               (config().debugLevel()                                  )
   {
 
     consumes<IntensityInfoCalo>(_caloIntInfoTag);
-    // consumes<IntensityInfoTrackerHits>(_trkHitIntInfoTag);
-    // consumes<IntensityInfoTimeCluster>(_tcIntInfoTZTag);
-    // consumes<IntensityInfoTimeCluster>(_tcIntInfoFlagTag);
+    consumes<IntensityInfoTrackerHits>(_trkHitIntInfoTag);
+    consumes<IntensityInfoTimeCluster>(_tcIntInfoTZTag);
+    consumes<IntensityInfoTimeCluster>(_tcIntInfoDFTag);
 
     produces<ProtonBunchIntensity>();
 
@@ -140,22 +143,24 @@ namespace mu2e {
   void RecoNPOTMaker::findData(const art::Event& evt) {
 
     //IntensityInfoCalo
-    auto caloIntInfoH = evt.getValidHandle<IntensityInfoCalo>(_caloIntInfoTag);
-    _caloIntInfo = caloIntInfoH.product();
+    art::Handle<IntensityInfoCalo> caloIntInfoH;
+    if(evt.getByLabel(_caloIntInfoTag, caloIntInfoH)) { _caloIntInfo = caloIntInfoH.product(); }
+    else                                              { _caloIntInfo = nullptr;                }
 
-    /*
-       //IntensityInfoTrackerHits
-       auto trkHitIntInfoH = evt.getValidHandle<IntensityInfoTrackerHits>(_trkHitIntInfoTag);
-       _trkHitIntInfo = trkHitIntInfoH.product();
+    //IntensityInfoTrackerHits
+    art::Handle<IntensityInfoTrackerHits> trkHitIntInfoH;
+    if(evt.getByLabel(_trkHitIntInfoTag, trkHitIntInfoH)) { _trkHitIntInfo = trkHitIntInfoH.product(); }
+    else                                                  { _trkHitIntInfo = nullptr  ;                }
 
-       //IntensityInfoTimeCluster, TTTZClusterFinder
-       auto tcIntInfoTZH = evt.getValidHandle<IntensityInfoTimeCluster>(_tcIntInfoTZTag);
-       _tcIntInfoTZ = tcIntInfoTZH.product();
+    //IntensityInfoTimeCluster, TZClusterFinder
+    art::Handle<IntensityInfoTimeCluster> tcIntInfoTZH;
+    if(evt.getByLabel(_tcIntInfoTZTag, tcIntInfoTZH)) { _tcIntInfoTZ = tcIntInfoTZH.product(); }
+    else                                              { _tcIntInfoTZ = nullptr;                }
 
-       //IntensityInfoTimeCluster, TTflagPH
-       auto tcIntInfoFlagH = evt.getValidHandle<IntensityInfoTimeCluster>(_tcIntInfoFlagTag);
-       _tcIntInfoFlag = tcIntInfoFlagH.product();
-    */
+    //IntensityInfoTimeCluster, DeltaFinder
+    art::Handle<IntensityInfoTimeCluster> tcIntInfoDFH;
+    if(evt.getByLabel(_tcIntInfoDFTag, tcIntInfoDFH)) { _tcIntInfoDF = tcIntInfoDFH.product(); }
+    else                                              { _tcIntInfoDF = nullptr;                }
   }
 
   //-----------------------------------------------------------------------------
@@ -163,26 +168,63 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void RecoNPOTMaker::produce(art::Event& event) {
 
-    unsigned long long caloPredicted(0);
+    unsigned long long POT_caloEnergy(0), POT_caloHits(0), POT_trkHits(0), POT_TZTCs(0), POT_DFTCs(0);
 
     findData(event);
 
-    //IntensityInfoCalo
+    //calo info
     if(_caloIntInfo) {
       const double caloEnergy = _caloIntInfo->caloEnergy();
-      // int nCalo = _caloIntInfo->nCaloHits();
-      // int nCaphri = _caloIntInfo->nCaphriHits();
+      Data::PredictionResult caloEnergyPred;
+      caloEnergyPred.observable = "caloEnergy";
+      caloEnergyPred.observableValue = caloEnergy;
+      POT_caloEnergy = POTfromCaloEnergy(event, caloEnergy);
+      addPrediction(_Data, "caloEnergy", caloEnergy, POT_caloEnergy);
 
-      Data::PredictionResult caloPred;
-      caloPred.observable = "caloEnergy";
-      caloPred.observableValue = caloEnergy;
-      caloPredicted = predictnPOTfromCaloEnergy(event, caloEnergy);
-      addPrediction(_Data, "caloEnergy", caloEnergy, caloPredicted);
+      const int nCaloHits = _caloIntInfo->nCaloHits();
+      Data::PredictionResult caloHitsPred;
+      caloHitsPred.observable = "caloHits";
+      caloHitsPred.observableValue = nCaloHits;
+      POT_caloHits = POTfromCaloHits(event, nCaloHits);
+      addPrediction(_Data, "caloHits", nCaloHits, POT_caloHits);
     }
-    else {std:: cout <<"[RecoNPOTMaker::produce] Did Not find IntensityInfoCalo data" << std::endl;}
+    else if(_debugLevel > 0) {std:: cout <<"[RecoNPOTMaker::produce] Did Not find IntensityInfoCalo data" << std::endl;}
+
+    // tracker hits
+    if(_trkHitIntInfo) {
+      const int nHits = _trkHitIntInfo->nTrackerHits();
+      Data::PredictionResult pred;
+      pred.observable = "trackerHits";
+      pred.observableValue = nHits;
+      POT_trkHits = POTfromTrackerHits(event, nHits);
+      addPrediction(_Data, "trackerHits", nHits, POT_trkHits);
+    }
+    else if(_debugLevel > 0) {std:: cout <<"[RecoNPOTMaker::produce] Did Not find IntensityInfoTrackerHits data" << std::endl;}
+
+    // TZClusterFinder proton time clusters
+    if(_tcIntInfoTZ) {
+      const int nTCs = _tcIntInfoTZ->nProtonTCs();
+      Data::PredictionResult pred;
+      pred.observable = "TZTimeClusters";
+      pred.observableValue = nTCs;
+      POT_TZTCs = POTfromTZTCs(event, nTCs);
+      addPrediction(_Data, "TZTimeClusters", nTCs, POT_TZTCs);
+    }
+    else if(_debugLevel > 0) {std:: cout <<"[RecoNPOTMaker::produce] Did Not find TZClusterFinder IntensityInfoTimeCluster data" << std::endl;}
+
+    // DeltaFinder proton time clusters
+    if(_tcIntInfoDF) {
+      const int nTCs = _tcIntInfoDF->nProtonTCs();
+      Data::PredictionResult pred;
+      pred.observable = "DFTimeClusters";
+      pred.observableValue = nTCs;
+      POT_DFTCs = POTfromDFTCs(event, nTCs);
+      addPrediction(_Data, "DFTimeClusters", nTCs, POT_DFTCs);
+    }
+    else if(_debugLevel > 0) {std:: cout <<"[RecoNPOTMaker::produce] Did Not find TZClusterFinder IntensityInfoTimeCluster data" << std::endl;}
 
     std::unique_ptr<ProtonBunchIntensity> recoPBI (new ProtonBunchIntensity);
-    recoPBI->set(caloPredicted);
+    recoPBI->set(POT_caloEnergy); // only using calo energy to make the estimate for now
 
 
     event.put(std::move(recoPBI));
@@ -199,19 +241,38 @@ namespace mu2e {
   // predict nPOT from CaloEnergy Observable
   //-----------------------------------------------------------------------------
 
-  unsigned long long RecoNPOTMaker:: predictnPOTfromCaloEnergy(const art::Event& evt, const double caloEnergy){
-    unsigned long long predictednPOT(0);
+  unsigned long long RecoNPOTMaker:: POTfromCaloEnergy(const art::Event& evt, const double caloEnergy){
+    unsigned long long POT(0);
 
     // FIXME: Using a piece-wise fit result for now
     if (caloEnergy < 3750.) {
-      predictednPOT = 700948. + 12627.9*std::pow(caloEnergy,1) + 0.293111*std::pow(caloEnergy,2);
+      POT = 700948. + 12627.9*std::pow(caloEnergy,1) + 0.293111*std::pow(caloEnergy,2);
     } else if (caloEnergy < 6300.) {
-      predictednPOT = 3.25191e+06 + 11524*std::pow(caloEnergy,1) + 0.403671*std::pow(caloEnergy,2);
+      POT = 3.25191e+06 + 11524*std::pow(caloEnergy,1) + 0.403671*std::pow(caloEnergy,2);
     } else { // linear extrapolation to high POT
-      predictednPOT = -5.36566e+06 + 15314.2*std::pow(caloEnergy,1);
+      POT = -5.36566e+06 + 15314.2*std::pow(caloEnergy,1);
     }
+    return POT;
+  }
 
-    return predictednPOT;
+  unsigned long long RecoNPOTMaker:: POTfromTrackerHits(const art::Event& evt, const int /*nHits*/){
+    unsigned long long POT(0);
+    return POT;
+  }
+
+  unsigned long long RecoNPOTMaker:: POTfromTZTCs(const art::Event& evt, const int /*nTCs*/){
+    unsigned long long POT(0);
+    return POT;
+  }
+
+  unsigned long long RecoNPOTMaker:: POTfromDFTCs(const art::Event& evt, const int /*nTCs*/){
+    unsigned long long POT(0);
+    return POT;
+  }
+
+  unsigned long long RecoNPOTMaker:: POTfromCaloHits(const art::Event& evt, const int /*nHits*/){
+    unsigned long long POT(0);
+    return POT;
   }
 
   //-----------------------------------------------------------------------------
@@ -222,7 +283,7 @@ namespace mu2e {
     Data::PredictionResult pred;
     pred.observable = obsName;
     pred.observableValue = obsVal;
-    pred.predictedNPOT = predicted;
+    pred.NPOT = predicted;
     data.predictions.push_back(pred);
   }
 }

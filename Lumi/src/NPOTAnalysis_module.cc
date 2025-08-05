@@ -102,20 +102,20 @@ namespace mu2e {
 
       //--------------Residual histograms: (nPOT predicted from Observable-nPOT)/(nPOT)--------------
       //naming scheme: resid_Observable
-      //TH1D* resid_nTimeClusters;
-      // TH1D* resid_nCaloHits;
+      TH1D* resid_nTimeClusters;
+      TH1D* resid_nCaloHits;
       TH1D* resid_caloE_reco;
-      // TH1D* resid_nCaphriHits;
-      // TH1D* resid_nProtonTCs;
-      // TH1D* resid_nTrackerHits;
+      TH1D* resid_nCaphriHits;
+      TH1D* resid_nProtonTCs;
+      TH1D* resid_nTrackerHits;
 
       //--------------nPOT v residual histograms:--------------
-      // TH2D* resid_nTimeClusters2d;
-      // TH2D* resid_nCaloHits2d;
+      TH2D* resid_nTimeClusters2d;
+      TH2D* resid_nCaloHits2d;
       TH2D* resid_caloE_reco2d; //nPOT versus resid_caloEnergy normalized
-      // TH2D* resid_nCaphriHits2d;
-      // TH2D* resid_nProtonTCs2d;
-      // TH2D* resid_nTrackerHits2d;
+      TH2D* resid_nCaphriHits2d;
+      TH2D* resid_nProtonTCs2d;
+      TH2D* resid_nTrackerHits2d;
 
       //-------------Observable v Residual-------------
       TH2D* resid_caloE_reco_v_caloE2d; // resid_caloEnergy versus caloE
@@ -140,12 +140,12 @@ namespace mu2e {
       long long recoNPOT_caloE_;
 
       //-------------Residuals-------------
-      // double resid_nTimeClusters_;
-      // double resid_nCaloHits_;
+      double resid_nTimeClusters_;
+      double resid_nCaloHits_;
       double resid_caloE_reco_;
-      // double resid_nCaphriHits_;
-      // double resid_nProtonTCs_;
-      // double resid_nTrackerHits_;
+      double resid_nCaphriHits_;
+      double resid_nProtonTCs_;
+      double resid_nTrackerHits_;
 
       //-------------Passed RecoNPOTFilter_module.cc-------------
       bool passed_;
@@ -162,12 +162,12 @@ namespace mu2e {
         nProtonTCs_ = 0;
         nTrackerHits_ = 0;
         recoNPOT_caloE_ = 0;
-        // resid_nTimeClusters_ = 0;
-        // resid_nCaloHits_ = 0;
+        resid_nTimeClusters_ = 0;
+        resid_nCaloHits_ = 0;
         resid_caloE_reco_ = 0;
-        // resid_nCaphriHits_ = 0;
-        // resid_nProtonTCs_ = 0;
-        // resid_nTrackerHits_ = 0;
+        resid_nCaphriHits_ = 0;
+        resid_nProtonTCs_ = 0;
+        resid_nTrackerHits_ = 0;
         passed_ = 0;
       }
     };
@@ -307,21 +307,21 @@ namespace mu2e {
     Hist->hitsCAPHRIvTrker       = Dir->make<TH2D>("hitsCAPHRIvTrker", "Number of CAPHRI Hits v Number of Tracker Hits; nTrackerHits; nCAPHRIHits", 100, 0.0, 7500, 100, 0.0, 100);
 
     //-------------1D Residuals-------------
-    //Hist->resid_nTimeClusters  = Dir->make<TH1D>("resid_nTimeClusters", "Residual between nPOT and predicted nPOT using the nTimeClusters; nPOT-PredictednPOT", 100, -1e6, 1e6);
-    //Hist->resid_nCaloHits      = Dir->make<TH1D>("resid_nCaloHits", "Residual between nPOT and predicted nPOT using the nCaloHits;  nPOT-PredictednPOT", 100, -1e7, 1e7);
+    Hist->resid_nTimeClusters  = Dir->make<TH1D>("resid_nTimeClusters", "Residual between nPOT and predicted nPOT using the nTimeClusters; nPOT-PredictednPOT", 100, -1e6, 1e6);
+    Hist->resid_nCaloHits      = Dir->make<TH1D>("resid_nCaloHits", "Residual between nPOT and predicted nPOT using the nCaloHits;  nPOT-PredictednPOT", 100, -1e7, 1e7);
     Hist->resid_caloE_reco       = Dir->make<TH1D>("resid_caloE_reco", "Normalized Residual:  nPOT - reconstucted  nPOT from Calorimeter Energy; ( nPOT-recoNPOT)/nPOT", 100, -0.600, 0.600); //eventually -.5,5 i hope
-    //Hist->resid_nCaphriHits    = Dir->make<TH1D>("resid_nCAPHRIHits", "Residual between nPOT and predicted nPOT using the nCAPHRIHits;  nPOT-PredictednPOT", 100, -1e7, 1e7);
-    //Hist->resid_nProtonTCs     = Dir->make<TH1D>("resid_nProtonTCs", "Residual between nPOT and predicted nPOT using the nProtonTCs;  nPOT-PredictednPOT", 100, -1e8, 1e8);
-    //Hist->resid_nTrackerHits   = Dir->make<TH1D>("resid_nTrackerHits", "Residual between nPOT and predicted nPOT using the nTrackerHits;  nPOT-PredictednPOT", 100, -1e7, 1e7);
+    Hist->resid_nCaphriHits    = Dir->make<TH1D>("resid_nCAPHRIHits", "Residual between nPOT and predicted nPOT using the nCAPHRIHits;  nPOT-PredictednPOT", 100, -1e7, 1e7);
+    Hist->resid_nProtonTCs     = Dir->make<TH1D>("resid_nProtonTCs", "Residual between nPOT and predicted nPOT using the nProtonTCs;  nPOT-PredictednPOT", 100, -1e8, 1e8);
+    Hist->resid_nTrackerHits   = Dir->make<TH1D>("resid_nTrackerHits", "Residual between nPOT and predicted nPOT using the nTrackerHits;  nPOT-PredictednPOT", 100, -1e7, 1e7);
 
 
     //------------Residual v nPOT-------------
-    // Hist->resid_nTimeClusters2d = Dir->make<TH2D>("resid_nTimeClusters2d", "nPOT v Residual of nPOT from nTimeClusters; nPOT-PredictednPOT; nPOT", 100, -1e6, 1e6, 100, 0.0, 1e8);
-    // Hist->resid_nCaloHits2d     = Dir->make<TH2D>("resid_nCaloHits2d", "nPOT v Residual of nPOT from nCaloHits; nPOT-PredictednPOT; ", 100, -1e7, 1e7, 100, 0.0, 1e8);
+    Hist->resid_nTimeClusters2d = Dir->make<TH2D>("resid_nTimeClusters2d", "nPOT v Residual of nPOT from nTimeClusters; nPOT-PredictednPOT; nPOT", 100, -1e6, 1e6, 100, 0.0, 1e8);
+    Hist->resid_nCaloHits2d     = Dir->make<TH2D>("resid_nCaloHits2d", "nPOT v Residual of nPOT from nCaloHits; nPOT-PredictednPOT; ", 100, -1e7, 1e7, 100, 0.0, 1e8);
     Hist->resid_caloE_reco2d       = Dir->make<TH2D>("resid_caloE_reco2d", "Normalized Residual of nPOT from Calorimeter Energy v nPOT;nPOT; (nPOT-recoNPOT)/nPOT", 100, 0.0, 1e8, 100, -0.600, 0.600);
-    //Hist->resid_nCaphriHits2d    = Dir->make<TH2D>("resid_nCAPHRIHits2d", "nPT v Residual of nPOT from nCAPHRIHits; nPOT-PredictednPOT; nPOT", 100, -1e7, 1e7, 100, 0.0, 1e8);
-    // Hist->resid_nProtonTCs2d    = Dir->make<TH2D>("resid_nProtonTCs2d", "nPOT v Residual of nPOT from nProtonTCs; nPOT-PredictednPOT; nPOT", 100, -1e8, 1e8, 100, 0.0, 1e8);
-    // Hist->resid_nTrackerHits2d  = Dir->make<TH2D>("resid_nTrackerHits2d", "nPOT v Residual of nPOT from nTrackerHits; nPOT-PredictednPOT; nPOT", 100, -1e7, 1e7, 100, 0.0, 1e8);
+    Hist->resid_nCaphriHits2d    = Dir->make<TH2D>("resid_nCAPHRIHits2d", "nPT v Residual of nPOT from nCAPHRIHits; nPOT-PredictednPOT; nPOT", 100, -1e7, 1e7, 100, 0.0, 1e8);
+    Hist->resid_nProtonTCs2d    = Dir->make<TH2D>("resid_nProtonTCs2d", "nPOT v Residual of nPOT from nProtonTCs; nPOT-PredictednPOT; nPOT", 100, -1e8, 1e8, 100, 0.0, 1e8);
+    Hist->resid_nTrackerHits2d  = Dir->make<TH2D>("resid_nTrackerHits2d", "nPOT v Residual of nPOT from nTrackerHits; nPOT-PredictednPOT; nPOT", 100, -1e7, 1e7, 100, 0.0, 1e8);
 
     //-------------Residual v Observable------------
     Hist->resid_caloE_reco_v_caloE2d = Dir->make<TH2D>("resid_caloE_reco_v_caloE2d", "Normalized Residual of nPOT from Calorimeter Energy v Calorimeter Energy; CaloE [MeV]; (nPOT-recoNPOT)/nPOT", 100, 0.0, 1e4, 100, -0.600, 0.600);
@@ -399,20 +399,20 @@ namespace mu2e {
 
 
     //----------------1D Residual----------------
-    // Hist->resid_nTimeClusters->Fill(_eventData.resid_nTimeClusters_);
-    //Hist->resid_nCaloHits->Fill(_eventData.resid_nCaloHits_);
+    Hist->resid_nTimeClusters->Fill(_eventData.resid_nTimeClusters_);
+    Hist->resid_nCaloHits->Fill(_eventData.resid_nCaloHits_);
     Hist->resid_caloE_reco->Fill(_eventData.resid_caloE_reco_);
-    //Hist->resid_nCaphriHits->Fill(_eventData.resid_nCaphriHits_);
-    // Hist->resid_nProtonTCs->Fill(_eventData.resid_nProtonTCs_);
-    // Hist->resid_nTrackerHits->Fill(_eventData.resid_nTrackerHits_);
+    Hist->resid_nCaphriHits->Fill(_eventData.resid_nCaphriHits_);
+    Hist->resid_nProtonTCs->Fill(_eventData.resid_nProtonTCs_);
+    Hist->resid_nTrackerHits->Fill(_eventData.resid_nTrackerHits_);
 
     //----------------Residual v nPOT----------------
-    // Hist->resid_nTimeClusters->Fill(_eventData.resid_nTimeClusters_, _eventData.nPOT_);
-    //Hist->resid_nCaloHits->Fill(_eventData.resid_nCaloHits_, _eventData.nPOT_);
+    Hist->resid_nTimeClusters->Fill(_eventData.resid_nTimeClusters_, _eventData.nPOT_);
+    Hist->resid_nCaloHits->Fill(_eventData.resid_nCaloHits_, _eventData.nPOT_);
     Hist->resid_caloE_reco2d->Fill( _eventData.nPOT_, _eventData.resid_caloE_reco_); //residuals on y-axis
-    //Hist->resid_nCaphriHits->Fill(_eventData.resid_nCaphriHits_, _eventData.nPOT_);
-    //Hist->resid_nProtonTCs->Fill(_eventData.resid_nProtonTCs_, _eventData.nPOT_);
-    //Hist->resid_nTrackerHits->Fill(_eventData.resid_nTrackerHits_, _eventData.nPOT_);
+    Hist->resid_nCaphriHits->Fill(_eventData.resid_nCaphriHits_, _eventData.nPOT_);
+    Hist->resid_nProtonTCs->Fill(_eventData.resid_nProtonTCs_, _eventData.nPOT_);
+    Hist->resid_nTrackerHits->Fill(_eventData.resid_nTrackerHits_, _eventData.nPOT_);
 
     //----------------Residual v Observable----------------
     Hist->resid_caloE_reco_v_caloE2d->Fill(_eventData.caloEnergy_, _eventData.resid_caloE_reco_);
