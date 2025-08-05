@@ -10,7 +10,7 @@ Lumi : {
         }
     }
 
-    filters {
+    filters : {
         RecoNPOTFilter: {
             module_type         : RecoNPOTFilter
             recoNPOTTag         : "RecoNPOTMaker"
