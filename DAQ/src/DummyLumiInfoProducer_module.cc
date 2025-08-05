@@ -62,7 +62,14 @@ namespace mu2e
       const static int prime_1(17), prime_2(251), prime_3(503), prime_4(1523); //for distributing values somewhat evenly
       caloInfo->setNCaloHits  ((eventNumber * prime_2) % (prime_3));
       caloInfo->setCaloEnergy ((eventNumber * prime_1) % (prime_2));
-      // caloInfo->setNCaphriHits((eventNumber * prime_3) % (prime_1));
+      const int nCaphriHits = (eventNumber * prime_3) % (prime_1);
+      std::vector<unsigned short> caphriHits;
+      for(int ihit = 0; ihit < nCaphriHits; ++ihit) {
+	const unsigned short id = (eventNumber * prime_1) % 4;
+	const unsigned short energy = (eventNumber * prime_3) % prime_4; // units of 0.01 MeV
+	caphriHits.push_back(IntensityInfoCalo::encodeCaphriHit(energy, id));
+      }
+      caloInfo->setCaphriHits(caphriHits);
 
       timeClusterInfo->setNProtonTCs((eventNumber * prime_1) % (prime_2));
 

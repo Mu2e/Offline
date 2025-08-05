@@ -176,12 +176,12 @@ namespace mu2e {
                // CAPHRI info
                if(isCaphri) {
                  if(energy > caphriEDepMin_ && energy < caphriEDepMax_) {
-                   const unsigned short e_short = energy * 100.f; // store the hit in units of 0.01 MeV
-                   const int caphri_ID = std::distance(caphriCrystalID_.begin(), itr);
-                   if(caphri_ID > 3) printf("[CaloHitMakerFast::%s] Unknown CAPHRI index of %i\n", __func__, caphri_ID);
+                   const unsigned short e_short = IntensityInfoCalo::encodeCaphriEnergy(energy);
+                   const unsigned short caphri_ID = IntensityInfoCalo::encodeCaphriIndex(crID);
+                   if(caphri_ID > 3) printf("[CaloHitMakerFast::%s] Unknown CAPHRI index of %i from crystal ID %i\n", __func__, caphri_ID, crID);
                    else {
-                     const unsigned short encoded_energy = e_short | caphri_ID << 14; // use last 2 bits for the crystal ID
-                     caphri_energies.push_back(encoded_energy);
+                     const unsigned short encoded_hit = IntensityInfoCalo::encodeCaphriHit(e_short, caphri_ID);
+                     caphri_energies.push_back(encoded_hit);
                    }
                  }
                }

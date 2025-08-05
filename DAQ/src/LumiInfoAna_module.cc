@@ -64,6 +64,7 @@ private:
 
   TH1* _hNCaloHits;
   TH1* _hCaloEnergy;
+  TH1* _hCaphriEnergy;
   TH1* _hNCaphriHits;
   TH1* _hNTimeClusters;
   TH1* _hNTrackerHits;
@@ -87,9 +88,11 @@ void LumiInfoAna::beginJob() {
   art::TFileDirectory infoDir = tfs->mkdir("info");
 
   _hNCaloHits = infoDir.make<TH1F>("hNCaloHits", "N(Calorimeter hits);N(hits);Events",
-                                   100, 0., 100.);
-  _hCaloEnergy = infoDir.make<TH1F>("hCaloEnergy", "Calorimeter energy;Energy (MeV);Events",
                                    100, 0., 1000.);
+  _hCaloEnergy = infoDir.make<TH1F>("hCaloEnergy", "Calorimeter energy;Energy (MeV);Events",
+                                   100, 0., 6000.);
+  _hCaphriEnergy = infoDir.make<TH1F>("hCaphriEnergy", "CAPHRI energy;Energy (MeV);Events",
+				      100, 0., 10.);
   _hNCaphriHits = infoDir.make<TH1F>("hNCaphriHits", "N(CAPHRI hits);N(hits);Events",
                                    100, 0., 100.);
   _hNTrackerHits = infoDir.make<TH1F>("hNTrackerHits", "N(tracker hits);N(hits);Events",
@@ -123,7 +126,13 @@ void LumiInfoAna::fillCalo(std::vector<art::Handle<mu2e::IntensityInfosCalo>>& h
     for(auto& info : *handle) {
       _hNCaloHits  ->Fill(info.nCaloHits());
       _hCaloEnergy ->Fill(info.caloEnergy());
-      // _hNCaphriHits->Fill(info.nCaphriHits());
+      _hNCaphriHits->Fill(info.nCaphriHits());
+      for(unsigned short caphriHit : info.caphriHits()) {
+	unsigned short e_short, id;
+	IntensityInfoCalo::decodeCaphriHit(caphriHit, e_short, id);
+	const double energy = IntensityInfoCalo::decodeCaphriEnergy(e_short);
+	_hCaphriEnergy->Fill(energy);
+      }
     }
   }
 }
