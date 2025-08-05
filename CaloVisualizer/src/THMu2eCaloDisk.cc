@@ -6,11 +6,13 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <cctype>
 
 #include "TGraph.h"
 #include "TH2Poly.h"
 #include "TList.h"
 #include "TMultiGraph.h"
+#include "TFormula.h"
 
 #include "Offline/DataProducts/inc/CaloConst.hh"
 
@@ -36,6 +38,7 @@ mu2e::THMu2eCaloDiskBin::THMu2eCaloDiskBin() {
   fContentL = 0.0;
   fContentR = 0.0;
   fCombineMode = kSum;
+  ClearStats();
 }
 
 mu2e::THMu2eCaloDiskBin::THMu2eCaloDiskBin(TObject* poly, Int_t bin_number) :
@@ -57,6 +60,7 @@ mu2e::THMu2eCaloDiskBin::THMu2eCaloDiskBin(TObject* poly, Int_t bin_number) :
   fContentL = 0.0;
   fContentR = 0.0;
   fCombineMode = kSum;
+  ClearStats();
 }
 
 void mu2e::THMu2eCaloDiskBin::Update() {
@@ -64,6 +68,11 @@ void mu2e::THMu2eCaloDiskBin::Update() {
   fAverage = 0.5 * (fContentL + fContentR);
   fDifference = fContentL - fContentR;
   fAsymmetry = (fSum != 0 ? fDifference / fSum : 0.0);
+  if (_formula.IsValid()){
+    fFormula = _formula.Eval(fContentL,fContentR);
+  } else {
+    fFormula = 0;
+  }
 
   switch (fCombineMode) {
   case kLeft:
@@ -84,6 +93,9 @@ void mu2e::THMu2eCaloDiskBin::Update() {
   case kAsymmetry:
     fContent = fAsymmetry;
     break;
+  case kFormula:
+    fContent = fFormula;
+    break;
   default:
     fContent = fSum;
   }
@@ -103,18 +115,40 @@ void mu2e::THMu2eCaloDiskBin::SetContentR(Double_t content) {
   SetChanged(true);
 }
 
+void mu2e::THMu2eCaloDiskBin::SetFormula(const char* formula) {
+  //Replace L and R with x and y
+  std::string tformula(formula);
+  for (size_t i=0; i<tformula.length(); i++) {
+    if (tformula[i] == 'L' || tformula[i] == 'R') {
+      //Check it's not surrounded by alphanumeric symbols
+      bool left_alnum = (i > 0) && std::isalnum(static_cast<unsigned char>(tformula[i-1]));
+      bool right_alnum = (i < tformula.length()-1) && std::isalnum(static_cast<unsigned char>(tformula[i+1]));
+      if (!left_alnum && !right_alnum) {
+        if (tformula[i] == 'L'){
+          tformula[i] = 'x';
+        } else if (tformula[i] == 'R'){
+          tformula[i] = 'y';
+        }
+      }
+    }
+  }
+  _formula.Compile(tformula.c_str());
+  Update();
+  SetChanged(true);
+}
+
 void mu2e::THMu2eCaloDiskBin::Merge(const mu2e::THMu2eCaloDiskBin* toMerge) {
   this->fContentL += toMerge->fContentL;
   this->fContentR += toMerge->fContentR;
+  Update();
+  SetChanged(true);
 }
 
 void mu2e::THMu2eCaloDiskBin::ClearStats() {
   fContentL = 0;
   fContentR = 0;
-  fSum = 0;
-  fAverage = 0;
-  fDifference = 0;
-  fAsymmetry = 0;
+  Update();
+  SetChanged(true);
 }
 
 mu2e::THMu2eCaloDiskBin* mu2e::THMu2eCaloDisk::CreateBin(TObject* poly) {
@@ -273,6 +307,18 @@ void mu2e::THMu2eCaloDisk::SetCombineMode(Int_t mode) {
   while ((obj = next())) {
     bin = (THMu2eCaloDiskBin*)obj;
     bin->fCombineMode = mode;
+    bin->Update();
+  }
+}
+
+void mu2e::THMu2eCaloDisk::SetCombineMode(const char* formula) {
+  TIter next(fBins);
+  TObject* obj;
+  THMu2eCaloDiskBin* bin;
+  while ((obj = next())) {
+    bin = (THMu2eCaloDiskBin*)obj;
+    bin->fCombineMode = kFormula;
+    bin->SetFormula(formula);
     bin->Update();
   }
 }
