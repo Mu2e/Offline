@@ -557,8 +557,6 @@ namespace mu2e {
       double dm, paramomvar, perpmomvar;
       sxing->materialEffects(dm, paramomvar,perpmomvar);
       double radfrac = sxing->radiationFraction();
-      // calculate the U position, relative to the end of the straw.
-      double udist = fabs(sxing->closestApproach().sensorPoca().Vect().Dot(sxing->closestApproach().sensorDirection())) - sxing->straw().halfLength();
       kseed._straws.emplace_back(
           sxing->strawId(),
           flag,

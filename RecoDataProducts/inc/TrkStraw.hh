@@ -14,12 +14,11 @@
 namespace mu2e {
   struct TrkStraw {
     TrkStraw(StrawId const& id,StrawFlag const& flag, KinKal::ClosestApproachData const& pocadata, KKStrawMaterial const& smat,StrawXingUpdater const& caconfig,
-        double udist, double radlen, double dmom) :
+        double radlen, double dmom) :
       _straw(id), _flag(flag),_pcalc(smat.pathCalculation()),
       _poca(pocadata.sensorPoca().Vect()),
       _doca(pocadata.doca()),
       _dirdot(pocadata.dirDot()),
-      _udist(udist),
       _radlen(radlen),
       _dmom(dmom)
     {
@@ -44,7 +43,6 @@ namespace mu2e {
     float _gaspath = 0.0; // path length in gas material
     float _wallpath = 0.0; // path length in straw wall material
     float _wirepath = 0.0; // path length in straw wire material
-    float _udist = 0.0; // distance along the straw direction starting from the active edge (negative is inside the active region)
     float _radlen = 0.0; // radiation lengths of material traversed in this straw (gas + wall)
     float _dmom =0.0; // momentum change due to energy loss in this straw (gas + wall)
   };
