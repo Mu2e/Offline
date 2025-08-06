@@ -26,6 +26,29 @@ namespace mu2e {
       using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using HIT = KinKal::Hit<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
+      // clone op for reinstantiation
+      KKCaloHit(KKCaloHit<KTRAJ> const& rhs):
+              caloCluster_(rhs.caloCluster()),
+              axis_(rhs.sensorAxis()),
+              tvar_(rhs.timeVariance()),
+              wvar_(rhs.widthVariance()),
+              ca_(
+                rhs.closestApproach().particleTraj(),
+                axis_,
+                rhs.closestApproach().hint(),
+                rhs.closestApproach().precision()
+              ),
+              rresid_(rhs.timeResidual()){
+        /**/
+      };
+      std::shared_ptr< KinKal::Hit<KTRAJ> > clone(CloneContext& context) const override{
+        auto rv = std::make_shared< KKCaloHit<KTRAJ> >(*this);
+        auto ca = rv->closestApproach();
+        auto trajectory = std::make_shared<KTRAJ>(ca.particleTraj());
+        ca.setTrajectory(trajectory);
+        rv->setClosestApproach(ca);
+        return rv;
+      };
       // Hit interface overrrides
       unsigned nResid() const override { return 1; } // 1 time residual
       Residual const& refResidual(unsigned ires=0) const override;
@@ -46,6 +69,8 @@ namespace mu2e {
       auto widthVariance() const { return wvar_; }
       auto const& caloCluster() const { return caloCluster_; }
       auto precision() const { return ca_.precision(); }
+      // other accessors
+      void setClosestApproach(const CA& ca){ ca_ = ca; }
 
     private:
       CCPtr caloCluster_;  // associated calorimeter cluster
