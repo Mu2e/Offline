@@ -11,6 +11,8 @@
 <!--  ********* beam  ********* -->
  <class name="mu2e::ProtonBunchTime"/>
  <class name="art::Wrapper<mu2e::ProtonBunchTime>"/>
+ <class name="mu2e::RecoProtonBunchIntensity"/>
+ <class name="art::Wrapper<mu2e::RecoProtonBunchIntensity>"/>
 
 <!--  ********* cosmics  ********* -->
  <class name="mu2e::TrackParams"/>
