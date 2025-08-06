@@ -1,24 +1,37 @@
 #ifndef RecoDataProducts_RecoProtonBunchIntensity_hh
 #define RecoDataProducts_RecoProtonBunchIntensity_hh
-#include <cmath>
 //
 // This object defines the reconstructed proton bunch intensity of a single microbunch (event).
 //
 // Original author M. MacKenzie, 2025
+
+#include <cmath>
+#include <functional>
+
 namespace mu2e {
   class RecoProtonBunchIntensity {
     public:
-    explicit RecoProtonBunchIntensity(unsigned long long intensity = 0, unsigned long long uncertainty = 0) :
+    typedef unsigned long long RecoPBI_t;
+    explicit RecoProtonBunchIntensity(RecoPBI_t intensity = 0, RecoPBI_t uncertainty = 0) :
       _intensity(intensity), _uncertainty(uncertainty) {}
-      unsigned long long intensity() const { return _intensity; }
-      unsigned long long uncertainty() const { return _uncertainty; }
+      RecoPBI_t intensity() const { return _intensity; }
+      RecoPBI_t uncertainty() const { return _uncertainty; }
       bool operator == (RecoProtonBunchIntensity const& other ) const {
         return _intensity == other.intensity() && _uncertainty == other.uncertainty(); }
       bool operator != (RecoProtonBunchIntensity const& other ) const { return !(operator ==(other)); }
-    void add(RecoProtonBunchIntensity const& other) { _intensity += other.intensity(); _uncertainty = std::sqrt(std::pow(_uncertainty, 2) + std::pow(other.uncertainty(), 2)); }
+    void setIntensity(RecoPBI_t tmp) { _intensity = tmp; }
+    void setUncertainty(RecoPBI_t tmp) { _uncertainty = tmp; }
+    template<typename UncAdd> void add(RecoProtonBunchIntensity const& other, UncAdd unc_add = unc_add_quad) {
+      _intensity += other.intensity();
+      _uncertainty = unc_add(_uncertainty, other.uncertainty());
+    }
+
+    // common uncertainty combination options
+    static RecoPBI_t unc_add_quad(const RecoPBI_t u_1, const RecoPBI_t u_2) { return std::sqrt(std::pow(u_1, 2) + std::pow(u_2, 2)); }
+    static RecoPBI_t unc_add_linear(const RecoPBI_t u_1, const RecoPBI_t u_2) { return u_1 + u_2; }
     private:
-      unsigned long long _intensity; // this has units # of protons/microbunch
-      unsigned long long _uncertainty;
+      RecoPBI_t _intensity; // this has units # of protons/microbunch
+      RecoPBI_t _uncertainty;
   };
 }
 

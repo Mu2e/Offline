@@ -213,7 +213,7 @@ namespace mu2e {
     else if(_debugLevel > 0) {std:: cout <<"[RecoNPOTMaker::produce] Did not find DeltaFinder IntensityInfoTimeCluster data" << std::endl;}
 
     // only using calo energy to make the estimate for now, with a fixed 10% uncertainty
-    std::unique_ptr<RecoProtonBunchIntensity> recoPBI (new RecoProtonBunchIntensity(POT_caloEnergy, 0.1*POT_caloEnergy));
+    auto recoPBI = std::make_unique<RecoProtonBunchIntensity>(POT_caloEnergy, 0.1*POT_caloEnergy);
 
 
     event.put(std::move(recoPBI));
