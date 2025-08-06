@@ -149,6 +149,7 @@ namespace mu2e {
        const Calorimeter& cal = *(GeomHandle<Calorimeter>()); // to get crystal positions
        unsigned short evtEnergy(0); // total calorimeter energy
        unsigned short evtEnergy_r1(0), evtEnergy_r2(0), evtEnergy_r3(0); // calorimeter energy above specified radii
+       unsigned short nhits_d0(0), nhits_d1(0); // calo hits in each disk
        const static float r1(432.f), r2(504.f), r3(576.f); // FIXME: Make these official
        std::vector<unsigned short> caphri_energies;
        for (auto& crystal : pulseMap)
@@ -163,6 +164,12 @@ namespace mu2e {
                else          caloHitsColl.emplace_back(  CaloHit(crID, info.nSiPM_, info.time_,info.eDep_));
                const float energy = info.eDep_;
                evtEnergy += energy;
+               if(!isCaphri) {
+                 if(cal.crystal(crID).diskID() == 0) ++nhits_d0;
+                 else                                ++nhits_d1;
+                 // if(crID < CaloConst::_nCrystalPerDisk) ++nhits_d0;
+                 // else                                   ++nhits_d1;
+               }
 
                // Radius dependent info
                const float xCrystal = cal.crystal(crID).localPosition().x();
@@ -189,10 +196,10 @@ namespace mu2e {
        }
 
        intInfo.setCaloEnergy(evtEnergy);
-       intInfo.setNCaloHits(pulseMap.size());
-       // V0:
-       // intInfo.setNCaphriHits(caphriHitsColl.size());
-       // V1:
+       // intInfo.setNCaloHits(pulseMap.size());
+       intInfo.setNCaloHits(nhits_d0 + nhits_d1); //pulseMap.size());
+       intInfo.setNCaloHitsD0(nhits_d0);
+       intInfo.setNCaloHitsD1(nhits_d1);
        intInfo.setCaphriHits(caphri_energies);
 
        if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caloHitsColl.size()<<" CaloDigis"<<std::endl;

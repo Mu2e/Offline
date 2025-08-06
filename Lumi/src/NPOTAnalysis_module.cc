@@ -62,15 +62,14 @@ namespace mu2e {
 
     struct EventHists {
       //-------------1D Histograms of all the Observables-------------
-      TH1D* nTimeClusters;
       TH1D* nCaloHits;
-      TH1D* caloEnergy;
-      TH1D* nCaphriHits;
-      TH1D* nProtonTCs;
-      TH1D* nTrackerHits;
-      TH1D* nProtonsDeltaFinder; //Number of Protons from DeltaFinder module
       TH1D* nCaloHitsD0; //disk 0 calo hits
       TH1D* nCaloHitsD1; //disk 1 calo hits
+      TH1D* caloEnergy;
+      TH1D* nCaphriHits;
+      TH1D* nTrackerHits;
+      TH1D* nProtonsTZ; // proton time clusters from TZClusterFinder
+      TH1D* nProtonsDF; // proton time clusters from DeltaFinder
 
       TH1D* nPOT; //MC Truth  nPOT
 
@@ -79,23 +78,14 @@ namespace mu2e {
       TH1D* filteredRecoNPOT; //Passed RecoNPOTFilter_module.cc
 
       //-------------Observable v. NPOT-------------
-      TH2D* nTimeClusters2d;
-      TH2D* nCaloHits2d;
-      TH2D* caloEnergy2d;
-      TH2D* nCaphriHits2d;
-      TH2D* nProtonTCs2d;
-      TH2D* nTrackerHits2d;
-      TH2D* nPOTvnProtonTracks; //nPOT v nProtonsDeltaFinder
+      TH2D* nPOTvnCaloHits;
       TH2D* nPOTvnCaloHitsD0;
       TH2D* nPOTvnCaloHitsD1;
-
-      //-------------Observable v. nProtons from Delta Finder Module-------------
-      TH2D* nTimeClusters2df;
-      TH2D* nCaloHits2df;
-      TH2D* caloEnergy2df;
-      TH2D* nCaphriHits2df;
-      TH2D* nProtonTCs2df;
-      TH2D* nTrackerHits2df;
+      TH2D* nPOTvcaloEnergy;
+      TH2D* nPOTvnCaphriHits;
+      TH2D* nPOTvnTrackerHits;
+      TH2D* nPOTvnProtonsTZ;
+      TH2D* nPOTvnProtonsDF;
 
       //-------------Observable v Observable-------------
       TH2D* caloEH; //caloEnergy v nCaloHits
@@ -106,23 +96,27 @@ namespace mu2e {
 
       //--------------Residual histograms: (nPOT predicted from Observable-nPOT)/(nPOT)--------------
       //naming scheme: resid_Observable
-      TH1D* resid_nTimeClusters;
       TH1D* resid_nCaloHits;
-      TH1D* resid_caloE_reco;
+      TH1D* resid_nCaloHitsD0;
+      TH1D* resid_nCaloHitsD1;
+      TH1D* resid_caloEnergy;
       TH1D* resid_nCaphriHits;
-      TH1D* resid_nProtonTCs;
       TH1D* resid_nTrackerHits;
+      TH1D* resid_nProtonsTZ;
+      TH1D* resid_nProtonsDF;
 
       //--------------nPOT v residual histograms:--------------
-      TH2D* resid_nTimeClusters2d;
-      TH2D* resid_nCaloHits2d;
-      TH2D* resid_caloE_reco2d; //nPOT versus resid_caloEnergy normalized
-      TH2D* resid_nCaphriHits2d;
-      TH2D* resid_nProtonTCs2d;
-      TH2D* resid_nTrackerHits2d;
+      TH2D* nPOTvresid_nCaloHits;
+      TH2D* nPOTvresid_nCaloHitsD0;
+      TH2D* nPOTvresid_nCaloHitsD1;
+      TH2D* nPOTvresid_caloEnergy;
+      TH2D* nPOTvresid_nCaphriHits;
+      TH2D* nPOTvresid_nTrackerHits;
+      TH2D* nPOTvresid_nProtonsTZ;
+      TH2D* nPOTvresid_nProtonsDF;
 
       //-------------Observable v Residual-------------
-      TH2D* resid_caloE_reco_v_caloE2d; // resid_caloEnergy versus caloE
+      TH2D* resid_caloEnergy_v_caloEnergy;
 
     };
 
@@ -133,25 +127,27 @@ namespace mu2e {
     struct eventData {
       long long nPOT_;
       //-------------Observables-------------
-      int nProtonsDeltaFinder_;
-      int nClusters_;
       int nCaloHits_;
-      int caloEnergy_;
-      int nCaphriHits_;
-      int nProtonTCs_;
-      int nTrackerHits_;
       int nCaloHitsD0_;
       int nCaloHitsD1_;
+      int caloEnergy_;
+      int nCaphriHits_;
+      int nTrackerHits_;
+      int nProtonsTZ_;
+      int nProtonsDF_;
+
       //-------------Made in RecoNPOTMaker_module.cc as <ProtonBunchIntensity>
       long long recoNPOT_caloE_;
 
       //-------------Residuals-------------
-      double resid_nTimeClusters_;
       double resid_nCaloHits_;
-      double resid_caloE_reco_;
+      double resid_nCaloHitsD0_;
+      double resid_nCaloHitsD1_;
+      double resid_caloEnergy_;
       double resid_nCaphriHits_;
-      double resid_nProtonTCs_;
       double resid_nTrackerHits_;
+      double resid_nProtonsTZ_;
+      double resid_nProtonsDF_;
 
       //-------------Passed RecoNPOTFilter_module.cc-------------
       bool passed_;
@@ -160,22 +156,23 @@ namespace mu2e {
 
       void reset() {
         nPOT_ = 0;
-        nProtonsDeltaFinder_ = 0;
-        nClusters_ = 0;
         nCaloHits_ = 0;
-        caloEnergy_ = 0;
-        nCaphriHits_ = 0;
-        nProtonTCs_ = 0;
-        nTrackerHits_ = 0;
         nCaloHitsD0_ = 0;
         nCaloHitsD1_ = 0;
+        caloEnergy_ = 0;
+        nCaphriHits_ = 0;
+        nTrackerHits_ = 0;
+        nProtonsTZ_ = 0;
+        nProtonsDF_ = 0;
         recoNPOT_caloE_ = 0;
-        resid_nTimeClusters_ = 0;
         resid_nCaloHits_ = 0;
-        resid_caloE_reco_ = 0;
+        resid_nCaloHitsD0_ = 0;
+        resid_nCaloHitsD1_ = 0;
+        resid_caloEnergy_ = 0;
         resid_nCaphriHits_ = 0;
-        resid_nProtonTCs_ = 0;
         resid_nTrackerHits_ = 0;
+        resid_nProtonsTZ_ = 0;
+        resid_nProtonsDF_ = 0;
         passed_ = 0;
       }
     };
@@ -271,44 +268,36 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void NPOTAnalysis::bookEventHistograms(EventHists* Hist, art::TFileDirectory* Dir) {
 
+    constexpr double max_pot = 2.e8;
+
     //-------------1D Observables-------------
-    Hist->nTimeClusters          = Dir->make<TH1D>("nTimeClusters" , "Number of Time Clusters; nTC ", 30, 0.0, 30.0 );
-    Hist->nCaloHits              = Dir->make<TH1D>("nCaloHits", "Number of Calorimeter Hits; nCaloHits", 100, 0.0, 1300);
-    Hist->caloEnergy             = Dir->make<TH1D>("caloEnergy", "Calorimeter Energy; E[MeV]", 100, 0.0, 7500);
-    Hist->nCaphriHits            = Dir->make<TH1D>("nCAPHRIHits", "Number of CAPHRI Hits; nCAPHRIHits", 20, 0.0, 20);
-    Hist->nProtonTCs             = Dir->make<TH1D>("nProtonTCs", "Number of Proton Time Clusters from Intensity Information; nProtonTC from Int", 100, 0.0, 100);
-    Hist->nTrackerHits           = Dir->make<TH1D>("nTrackerHits", "Number of Tracker Hits from Intensity Information; nTrkHits from Int", 100, 0.0, 7500);
-    Hist->nProtonsDeltaFinder    = Dir->make<TH1D>("nProtonsDeltaFinder", "Number of Proton tracks from DeltaFinder Module; nProtons ", 100, 0.0, 100);
-    Hist->nCaloHitsD0            = Dir->make<TH1D>("nCaloHitsD0", "Number of Calorimeter Hits in Disk 0; N(hits)", 100, 0.0, 1300);
-    Hist->nCaloHitsD1            = Dir->make<TH1D>("nCaloHitsD1", "Number of Calorimeter Hits in Disk 1; N(hits)", 100, 0.0, 1300);
+    Hist->nCaloHits              = Dir->make<TH1D>("nCaloHits", "Number of Calorimeter Hits; N(calo hits)"                             , 100, 0.0, 5000);
+    Hist->nCaloHitsD0            = Dir->make<TH1D>("nCaloHitsD0", "Number of Calorimeter Hits in Disk 0; N(hits)"                      , 100, 0.0, 3000);
+    Hist->nCaloHitsD1            = Dir->make<TH1D>("nCaloHitsD1", "Number of Calorimeter Hits in Disk 1; N(hits)"                      , 100, 0.0, 2000);
+    Hist->caloEnergy             = Dir->make<TH1D>("caloEnergy", "Calorimeter Energy; E[MeV]"                                          , 100, 0.0,12000);
+    Hist->nCaphriHits            = Dir->make<TH1D>("nCaphriHits", "Number of CAPHRI Hits; nCAPHRIHits"                                 ,  30, 0.0,   30);
+    Hist->nTrackerHits           = Dir->make<TH1D>("nTrackerHits", "Number of Tracker Hits from Intensity Information; N(tracker hits)", 100, 0.0, 8000);
+    Hist->nProtonsTZ             = Dir->make<TH1D>("nProtonsTZ", "Number of Proton Time Clusters from TZClusterFinder; N(proton TCs)"  ,  40, 0.0,   40);
+    Hist->nProtonsDF             = Dir->make<TH1D>("nProtonsDF", "Number of Proton Time Clusters from DeltaFinder; N(proton TCs)"      ,  40, 0.0,   40);
 
     //-------------MC Truth nPOT-------------
-    Hist->nPOT                   = Dir->make<TH1D>("nPOT", "Number of Protons on Target; nPOT", 100, 0.0, 1e8);
+    Hist->nPOT                   = Dir->make<TH1D>("nPOT", "Number of Protons on Target; nPOT"                                         , 100, 0.0, max_pot);
 
     //-------------Reconstructed nPOT from Observable-------------
-    Hist->recoNPOT_caloE         = Dir->make<TH1D>("recoNPOT_caloE", "Reconstructed nPOT from Calorimeter Energy; RecoNPOT from CaloE", 100, 0.0, 1e8);
+    Hist->recoNPOT_caloE         = Dir->make<TH1D>("recoNPOT_caloE", "Reconstructed nPOT from Calorimeter Energy; RecoNPOT from CaloE" , 100, 0.0, max_pot);
 
     //-------------Filtered-------------
-    Hist->filteredRecoNPOT       = Dir->make<TH1D>("filteredRecoNPOT", "Reconstructed nPOT that passed Filter; Filtered ReconPOT", 100, 0.0, 1e8);
+    Hist->filteredRecoNPOT       = Dir->make<TH1D>("filteredRecoNPOT", "Reconstructed nPOT that passed Filter; Filtered ReconPOT"      , 100, 0.0, max_pot);
 
     //-------------Observable v nPOT-------------
-    Hist->nTimeClusters2d        = Dir->make<TH2D>("nTimeClusters2d" , "Number of Protons on Target v Number of Time Clusters; nTC; nPOT ", 100, 0.0, 100.0, 100, 0.0, 1e8);
-    Hist->nCaloHits2d            = Dir->make<TH2D>("nCaloHits2d", "Number of Protons on Target v Number of Calorimeter Hits; nCaloHits; nPOT", 100, 0.0, 1300, 100, 0.0, 1e8);
-    Hist->caloEnergy2d           = Dir->make<TH2D>("caloEnergy2d", "Number of Protons on Target v Calorimeter Energy; E[MeV]; nPOT", 100, 0.0, 7500, 100, 0.0, 1e8);
-    Hist->nCaphriHits2d          = Dir->make<TH2D>("nCAPHRIHits2d", "Number of Protons on Target v Number of CAPHRI Hits; nCAPHRIHits; nPOT", 100, 0.0, 100, 100, 0.0, 1e8);
-    Hist->nProtonTCs2d           = Dir->make<TH2D>("nProtonTCs2d", "Number of Protons on Target v Number of Proton Time Clusters from Intensity Information; nProtonTC from Int; nPOT", 100, 0.0, 100, 100, 0.0, 1e8);
-    Hist->nTrackerHits2d         = Dir->make<TH2D>("nTrackerHits2d", "Number of Protons on Target v Number of Tracker Hits from Intensity Information; nTrkHits from Int; nPOT", 100, 0.0, 7500, 100, 0.0, 1e8);
-    Hist->nPOTvnProtonTracks     = Dir->make<TH2D>("nPOTvnProtonTracks", "Number of Protons v Number of Protons from Delta Finder; nProtons from DF; nPOT", 100, 0.0, 100, 100, 0.0, 1e8);
-    Hist->nPOTvnCaloHitsD0       = Dir->make<TH2D>("nPOTvnCaloHitsD0", "Number of Protons v N(calo hits) in disk 0; N(calo hits) in disk 0; nPOT", 100, 0.0, 1300, 100, 0.0, 1e8);
-    Hist->nPOTvnCaloHitsD1       = Dir->make<TH2D>("nPOTvnCaloHitsD1", "Number of Protons v N(calo hits) in disk 1; N(calo hits) in disk 1; nPOT", 100, 0.0, 1300, 100, 0.0, 1e8);
-
-    //-------------Observable v nProtons from DeltaFinder-------------
-    Hist->nTimeClusters2df       = Dir->make<TH2D>("nTimeClusters2df" , "Number of Protons from Delta Finder v Number of Time Clusters; nTC; nProtons from DeltaFinder ", 100, 0.0, 100.0, 100, 0.0, 100);
-    Hist->nCaloHits2df           = Dir->make<TH2D>("nCaloHits2df", "Number of Protons from Delta Finder v Number of Calorimeter Hits; nCaloHits; nProtons from DeltaFinder", 100, 0.0, 1300, 100, 0.0, 100);
-    Hist->caloEnergy2df          = Dir->make<TH2D>("caloEnergy2df", "Number of Protons from Delta Finder v Calorimeter Energy; E[MeV]; nProtons from DeltaFinder", 100, 0.0, 7500, 100, 0.0, 100);
-    Hist->nCaphriHits2df         = Dir->make<TH2D>("nCAPHRIHits2df", "Number of Protons from Delta Finder v Number of CAPHRI Hits; nCAPHRIHits; nProtons from DeltaFinder", 100, 0.0, 100, 100, 0.0, 100);
-    Hist->nProtonTCs2df          = Dir->make<TH2D>("nProtonTCs2df", "Number of Protons from Delta Finder v Number of Proton Time Clusters from Intensity Information; nProtonTC from Int; nProtons from DeltaFinder", 100, 0.0, 100, 100, 0.0, 100);
-    Hist->nTrackerHits2df        = Dir->make<TH2D>("nTrackerHits2df", "Number of Protons from Delta Finder v Number of Tracker Hits from Intensity Information; nTrkHits from Int; nProtons from DeltaFinder", 100, 0.0, 7500, 100, 0.0, 100);
+    Hist->nPOTvnCaloHits         = Dir->make<TH2D>("nPOTvnCaloHits"   , "N(POT) vs N(Calo hits); N(calo hits); N(POT)"                 , 100, 0.0, 5000, 100, 0.0, max_pot);
+    Hist->nPOTvnCaloHitsD0       = Dir->make<TH2D>("nPOTvnCaloHitsD0" , "N(POT) vs N(Calo hits) in disk 0; N(disk 0 calo hits); N(POT)", 100, 0.0, 4000, 100, 0.0, max_pot);
+    Hist->nPOTvnCaloHitsD1       = Dir->make<TH2D>("nPOTvnCaloHitsD1" , "N(POT) vs N(Calo hits) in disk 1; N(disk 1 calo hits); N(POT)", 100, 0.0, 2000, 100, 0.0, max_pot);
+    Hist->nPOTvcaloEnergy        = Dir->make<TH2D>("nPOTvcaloEnergy"  , "N(POT) vs Calorimeter Energy; E [MeV]; N(POT)"                , 100, 0.0,12000, 100, 0.0, max_pot);
+    Hist->nPOTvnCaphriHits       = Dir->make<TH2D>("nPOTvnCaphriHits" , "N(POT) vs N(CAPHRI hits); N(CAPHRI hits); N(POT)"             ,  30, 0.0,   30, 100, 0.0, max_pot);
+    Hist->nPOTvnTrackerHits      = Dir->make<TH2D>("nPOTvnTrackerHits", "N(POT) vs N(Tracker hits); N(tracker hits); N(POT)"           , 100, 0.0, 6000, 100, 0.0, max_pot);
+    Hist->nPOTvnProtonsTZ        = Dir->make<TH2D>("nPOTvnProtonsTZ"  , "N(POT) vs N(TZ protons); N(protons); nPOT"                    ,  40, 0.0,   40, 100, 0.0, max_pot);
+    Hist->nPOTvnProtonsDF        = Dir->make<TH2D>("nPOTvnProtonsDF"  , "N(POT) vs N(DF protons); N(protons); nPOT"                    ,  40, 0.0,   40, 100, 0.0, max_pot);
 
     //-------------Observable v Observable-------------
 
@@ -319,24 +308,28 @@ namespace mu2e {
     Hist->hitsCAPHRIvTrker       = Dir->make<TH2D>("hitsCAPHRIvTrker", "Number of CAPHRI Hits v Number of Tracker Hits; nTrackerHits; nCAPHRIHits", 100, 0.0, 7500, 100, 0.0, 100);
 
     //-------------1D Residuals-------------
-    Hist->resid_nTimeClusters  = Dir->make<TH1D>("resid_nTimeClusters", "Residual between nPOT and predicted nPOT using the nTimeClusters; nPOT-PredictednPOT", 100, -1e6, 1e6);
-    Hist->resid_nCaloHits      = Dir->make<TH1D>("resid_nCaloHits", "Residual between nPOT and predicted nPOT using the nCaloHits;  nPOT-PredictednPOT", 100, -1e7, 1e7);
-    Hist->resid_caloE_reco       = Dir->make<TH1D>("resid_caloE_reco", "Normalized Residual:  nPOT - reconstucted  nPOT from Calorimeter Energy; ( nPOT-recoNPOT)/nPOT", 100, -0.600, 0.600); //eventually -.5,5 i hope
-    Hist->resid_nCaphriHits    = Dir->make<TH1D>("resid_nCAPHRIHits", "Residual between nPOT and predicted nPOT using the nCAPHRIHits;  nPOT-PredictednPOT", 100, -1e7, 1e7);
-    Hist->resid_nProtonTCs     = Dir->make<TH1D>("resid_nProtonTCs", "Residual between nPOT and predicted nPOT using the nProtonTCs;  nPOT-PredictednPOT", 100, -1e8, 1e8);
-    Hist->resid_nTrackerHits   = Dir->make<TH1D>("resid_nTrackerHits", "Residual between nPOT and predicted nPOT using the nTrackerHits;  nPOT-PredictednPOT", 100, -1e7, 1e7);
+    Hist->resid_nCaloHits        = Dir->make<TH1D>("resid_nCaloHits"   , "Number of Calorimeter Hits residual;"                         , 100, -1., 1.);
+    Hist->resid_nCaloHitsD0      = Dir->make<TH1D>("resid_nCaloHitsD0" , "Number of Calorimeter Hits in Disk 0 residual;"               , 100, -1., 1.);
+    Hist->resid_nCaloHitsD1      = Dir->make<TH1D>("resid_nCaloHitsD1" , "Number of Calorimeter Hits in Disk 1 residual;"               , 100, -1., 1.);
+    Hist->resid_caloEnergy       = Dir->make<TH1D>("resid_caloEnergy"  , "Calorimeter Energy residual;"                                 , 100, -1., 1.);
+    Hist->resid_nCaphriHits      = Dir->make<TH1D>("resid_nCaphriHits" , "Number of CAPHRI Hits residual;"                              , 100, -1., 1.);
+    Hist->resid_nTrackerHits     = Dir->make<TH1D>("resid_nTrackerHits", "Number of Tracker Hits from Intensity Information residual;"  , 100, -1., 1.);
+    Hist->resid_nProtonsTZ       = Dir->make<TH1D>("resid_nProtonsTZ"  , "Number of Proton Time Clusters from TZClusterFinder residual;", 100, -1., 1.);
+    Hist->resid_nProtonsDF       = Dir->make<TH1D>("resid_nProtonsDF"  , "Number of Proton Time Clusters from DeltaFinder residual;"    , 100, -1., 1.);
 
 
     //------------Residual v nPOT-------------
-    Hist->resid_nTimeClusters2d = Dir->make<TH2D>("resid_nTimeClusters2d", "nPOT v Residual of nPOT from nTimeClusters; nPOT-PredictednPOT; nPOT", 100, -1e6, 1e6, 100, 0.0, 1e8);
-    Hist->resid_nCaloHits2d     = Dir->make<TH2D>("resid_nCaloHits2d", "nPOT v Residual of nPOT from nCaloHits; nPOT-PredictednPOT; ", 100, -1e7, 1e7, 100, 0.0, 1e8);
-    Hist->resid_caloE_reco2d       = Dir->make<TH2D>("resid_caloE_reco2d", "Normalized Residual of nPOT from Calorimeter Energy v nPOT;nPOT; (nPOT-recoNPOT)/nPOT", 100, 0.0, 1e8, 100, -0.600, 0.600);
-    Hist->resid_nCaphriHits2d    = Dir->make<TH2D>("resid_nCAPHRIHits2d", "nPT v Residual of nPOT from nCAPHRIHits; nPOT-PredictednPOT; nPOT", 100, -1e7, 1e7, 100, 0.0, 1e8);
-    Hist->resid_nProtonTCs2d    = Dir->make<TH2D>("resid_nProtonTCs2d", "nPOT v Residual of nPOT from nProtonTCs; nPOT-PredictednPOT; nPOT", 100, -1e8, 1e8, 100, 0.0, 1e8);
-    Hist->resid_nTrackerHits2d  = Dir->make<TH2D>("resid_nTrackerHits2d", "nPOT v Residual of nPOT from nTrackerHits; nPOT-PredictednPOT; nPOT", 100, -1e7, 1e7, 100, 0.0, 1e8);
+    Hist->nPOTvresid_nCaloHits   = Dir->make<TH2D>("nPOTvresid_nCaloHits"   , "N(POT) vs Number of Calorimeter Hits residual;"                         , 100, -1., 1., 100, 0., 1e8);
+    Hist->nPOTvresid_nCaloHitsD0 = Dir->make<TH2D>("nPOTvresid_nCaloHitsD0" , "N(POT) vs Number of Calorimeter Hits in Disk 0 residual;"               , 100, -1., 1., 100, 0., 1e8);
+    Hist->nPOTvresid_nCaloHitsD1 = Dir->make<TH2D>("nPOTvresid_nCaloHitsD1" , "N(POT) vs Number of Calorimeter Hits in Disk 1 residual;"               , 100, -1., 1., 100, 0., 1e8);
+    Hist->nPOTvresid_caloEnergy  = Dir->make<TH2D>("nPOTvresid_caloEnergy"  , "N(POT) vs Calorimeter Energy residual;"                                 , 100, -1., 1., 100, 0., 1e8);
+    Hist->nPOTvresid_nCaphriHits = Dir->make<TH2D>("nPOTvresid_nCaphriHits" , "N(POT) vs Number of CAPHRI Hits residual;"                              , 100, -1., 1., 100, 0., 1e8);
+    Hist->nPOTvresid_nTrackerHits= Dir->make<TH2D>("nPOTvresid_nTrackerHits", "N(POT) vs Number of Tracker Hits from Intensity Information residual;"  , 100, -1., 1., 100, 0., 1e8);
+    Hist->nPOTvresid_nProtonsTZ  = Dir->make<TH2D>("nPOTvresid_nProtonsTZ"  , "N(POT) vs Number of Proton Time Clusters from TZClusterFinder residual;", 100, -1., 1., 100, 0., 1e8);
+    Hist->nPOTvresid_nProtonsDF  = Dir->make<TH2D>("nPOTvresid_nProtonsDF"  , "N(POT) vs Number of Proton Time Clusters from DeltaFinder residual;"    , 100, -1., 1., 100, 0., 1e8);
 
     //-------------Residual v Observable------------
-    Hist->resid_caloE_reco_v_caloE2d = Dir->make<TH2D>("resid_caloE_reco_v_caloE2d", "Normalized Residual of nPOT from Calorimeter Energy v Calorimeter Energy; CaloE [MeV]; (nPOT-recoNPOT)/nPOT", 100, 0.0, 1e4, 100, -0.600, 0.600);
+    Hist->resid_caloEnergy_v_caloEnergy = Dir->make<TH2D>("resid_caloEnergy_v_caloEnergy", "Normalized Residual of nPOT from Calorimeter Energy v Calorimeter Energy; CaloE [MeV]; (nPOT-recoNPOT)/nPOT", 100, 0.0, 1e4, 100, -0.600, 0.600);
   }
 
   //--------------------------------------------------------------------------------//
@@ -368,15 +361,14 @@ namespace mu2e {
   void NPOTAnalysis::fillEventHistograms(EventHists* Hist) {
 
     //----------------1D Observables----------------
-    Hist->nTimeClusters->Fill(_eventData.nClusters_);
-    Hist->nCaloHits->Fill(_eventData.nCaloHits_);
-    Hist->caloEnergy->Fill(_eventData.caloEnergy_);
-    Hist->nCaphriHits->Fill(_eventData.nCaphriHits_);
-    Hist->nProtonTCs->Fill(_eventData.nProtonTCs_);
+    Hist->nCaloHits   ->Fill(_eventData.nCaloHits_   );
+    Hist->nCaloHitsD0 ->Fill(_eventData.nCaloHitsD0_ );
+    Hist->nCaloHitsD1 ->Fill(_eventData.nCaloHitsD1_ );
+    Hist->caloEnergy  ->Fill(_eventData.caloEnergy_  );
+    Hist->nCaphriHits ->Fill(_eventData.nCaphriHits_ );
     Hist->nTrackerHits->Fill(_eventData.nTrackerHits_);
-    Hist->nProtonsDeltaFinder->Fill(_eventData.nProtonsDeltaFinder_);
-    Hist->nCaloHitsD0->Fill(_eventData.nCaloHitsD0_);
-    Hist->nCaloHitsD1->Fill(_eventData.nCaloHitsD1_);
+    Hist->nProtonsTZ  ->Fill(_eventData.nProtonsTZ_  );
+    Hist->nProtonsDF  ->Fill(_eventData.nProtonsDF_  );
 
     //----------------MC Truth nPOT----------------
     Hist->nPOT->Fill(_eventData.nPOT_);
@@ -388,50 +380,45 @@ namespace mu2e {
     if (_eventData.passed_) {Hist->filteredRecoNPOT->Fill(_eventData.recoNPOT_caloE_); }
 
     //----------------nPOT v Observable----------------
-    Hist->nTimeClusters2d->Fill(_eventData.nClusters_, _eventData.nPOT_);
-    Hist->nCaloHits2d->Fill(_eventData.nCaloHits_, _eventData.nPOT_);
-    Hist->caloEnergy2d->Fill(_eventData.caloEnergy_, _eventData.nPOT_);
-    Hist->nCaphriHits2d->Fill(_eventData.nCaphriHits_, _eventData.nPOT_);
-    Hist->nProtonTCs2d->Fill(_eventData.nProtonTCs_, _eventData.nPOT_);
-    Hist->nTrackerHits2d->Fill(_eventData.nTrackerHits_, _eventData.nPOT_);
-    Hist->nPOTvnProtonTracks->Fill(_eventData.nProtonsDeltaFinder_, _eventData.nPOT_);
-    Hist->nPOTvnCaloHitsD0->Fill(_eventData.nCaloHitsD0_, _eventData.nPOT_);
-    Hist->nPOTvnCaloHitsD1->Fill(_eventData.nCaloHitsD1_, _eventData.nPOT_);
-
-    //---------------- nProtonsDeltaFinder v Observable----------------
-    Hist->nTimeClusters2df->Fill(_eventData.nClusters_, _eventData.nProtonsDeltaFinder_);
-    Hist->nCaloHits2df->Fill(_eventData.nCaloHits_, _eventData.nProtonsDeltaFinder_);
-    Hist->caloEnergy2df->Fill(_eventData.caloEnergy_, _eventData.nProtonsDeltaFinder_);
-    Hist->nCaphriHits2df->Fill(_eventData.nCaphriHits_, _eventData.nProtonsDeltaFinder_);
-    Hist->nProtonTCs2df->Fill(_eventData.nProtonTCs_, _eventData.nProtonsDeltaFinder_);
-    Hist->nTrackerHits2df->Fill(_eventData.nTrackerHits_, _eventData.nProtonsDeltaFinder_);
+    Hist->nPOTvnCaloHits   ->Fill(_eventData.nCaloHits_   , _eventData.nPOT_);
+    Hist->nPOTvnCaloHitsD0 ->Fill(_eventData.nCaloHitsD0_ , _eventData.nPOT_);
+    Hist->nPOTvnCaloHitsD1 ->Fill(_eventData.nCaloHitsD1_ , _eventData.nPOT_);
+    Hist->nPOTvcaloEnergy  ->Fill(_eventData.caloEnergy_  , _eventData.nPOT_);
+    Hist->nPOTvnCaphriHits ->Fill(_eventData.nCaphriHits_ , _eventData.nPOT_);
+    Hist->nPOTvnTrackerHits->Fill(_eventData.nTrackerHits_, _eventData.nPOT_);
+    Hist->nPOTvnProtonsTZ  ->Fill(_eventData.nProtonsTZ_  , _eventData.nPOT_);
+    Hist->nPOTvnProtonsDF  ->Fill(_eventData.nProtonsDF_  , _eventData.nPOT_);
 
     //----------------Observable v Observable----------------
-    Hist->caloEH->Fill(_eventData.nCaloHits_, _eventData.caloEnergy_);
-    Hist->cTCs->Fill(_eventData.nProtonTCs_, _eventData.nClusters_);
-    Hist->hitsTC->Fill(_eventData.nCaloHits_, _eventData.nTrackerHits_);
-    Hist->hitsCAPHRIvCal->Fill(_eventData.nCaloHits_, _eventData.nCaphriHits_);
-    Hist->hitsCAPHRIvTrker->Fill(_eventData.nTrackerHits_, _eventData.nCaphriHits_);
+    // Hist->caloEH->Fill(_eventData.nCaloHits_, _eventData.caloEnergy_);
+    // Hist->cTCs->Fill(_eventData.nProtonTCs_, _eventData.nClusters_);
+    // Hist->hitsTC->Fill(_eventData.nCaloHits_, _eventData.nTrackerHits_);
+    // Hist->hitsCAPHRIvCal->Fill(_eventData.nCaloHits_, _eventData.nCaphriHits_);
+    // Hist->hitsCAPHRIvTrker->Fill(_eventData.nTrackerHits_, _eventData.nCaphriHits_);
 
 
     //----------------1D Residual----------------
-    Hist->resid_nTimeClusters->Fill(_eventData.resid_nTimeClusters_);
-    Hist->resid_nCaloHits->Fill(_eventData.resid_nCaloHits_);
-    Hist->resid_caloE_reco->Fill(_eventData.resid_caloE_reco_);
-    Hist->resid_nCaphriHits->Fill(_eventData.resid_nCaphriHits_);
-    Hist->resid_nProtonTCs->Fill(_eventData.resid_nProtonTCs_);
+    Hist->resid_nCaloHits   ->Fill(_eventData.resid_nCaloHits_   );
+    Hist->resid_nCaloHitsD0 ->Fill(_eventData.resid_nCaloHitsD0_ );
+    Hist->resid_nCaloHitsD1 ->Fill(_eventData.resid_nCaloHitsD1_ );
+    Hist->resid_caloEnergy  ->Fill(_eventData.resid_caloEnergy_  );
+    Hist->resid_nCaphriHits ->Fill(_eventData.resid_nCaphriHits_ );
     Hist->resid_nTrackerHits->Fill(_eventData.resid_nTrackerHits_);
+    Hist->resid_nProtonsTZ  ->Fill(_eventData.resid_nProtonsTZ_  );
+    Hist->resid_nProtonsDF  ->Fill(_eventData.resid_nProtonsDF_  );
 
     //----------------Residual v nPOT----------------
-    Hist->resid_nTimeClusters->Fill(_eventData.resid_nTimeClusters_, _eventData.nPOT_);
-    Hist->resid_nCaloHits->Fill(_eventData.resid_nCaloHits_, _eventData.nPOT_);
-    Hist->resid_caloE_reco2d->Fill( _eventData.nPOT_, _eventData.resid_caloE_reco_); //residuals on y-axis
-    Hist->resid_nCaphriHits->Fill(_eventData.resid_nCaphriHits_, _eventData.nPOT_);
-    Hist->resid_nProtonTCs->Fill(_eventData.resid_nProtonTCs_, _eventData.nPOT_);
-    Hist->resid_nTrackerHits->Fill(_eventData.resid_nTrackerHits_, _eventData.nPOT_);
+    Hist->nPOTvresid_nCaloHits   ->Fill(_eventData.resid_nCaloHits_   , _eventData.nPOT_);
+    Hist->nPOTvresid_nCaloHitsD0 ->Fill(_eventData.resid_nCaloHitsD0_ , _eventData.nPOT_);
+    Hist->nPOTvresid_nCaloHitsD1 ->Fill(_eventData.resid_nCaloHitsD1_ , _eventData.nPOT_);
+    Hist->nPOTvresid_caloEnergy  ->Fill(_eventData.resid_caloEnergy_  , _eventData.nPOT_);
+    Hist->nPOTvresid_nCaphriHits ->Fill(_eventData.resid_nCaphriHits_ , _eventData.nPOT_);
+    Hist->nPOTvresid_nTrackerHits->Fill(_eventData.resid_nTrackerHits_, _eventData.nPOT_);
+    Hist->nPOTvresid_nProtonsTZ  ->Fill(_eventData.resid_nProtonsTZ_  , _eventData.nPOT_);
+    Hist->nPOTvresid_nProtonsDF  ->Fill(_eventData.resid_nProtonsDF_  , _eventData.nPOT_);
 
     //----------------Residual v Observable----------------
-    Hist->resid_caloE_reco_v_caloE2d->Fill(_eventData.caloEnergy_, _eventData.resid_caloE_reco_);
+    Hist->resid_caloEnergy_v_caloEnergy->Fill(_eventData.caloEnergy_, _eventData.resid_caloEnergy_);
   }
 
   //--------------------------------------------------------------------------------
@@ -471,23 +458,23 @@ namespace mu2e {
     _event->getByLabel(_caloTag, caloInt);
     if (caloInt.isValid()){
       _eventData.nCaloHits_   = caloInt->nCaloHits();
+      _eventData.nCaloHitsD0_ = caloInt->nCaloHitsD0();
+      _eventData.nCaloHitsD1_ = caloInt->nCaloHitsD1();
       _eventData.caloEnergy_  = caloInt->caloEnergy();
       _eventData.nCaphriHits_ = caloInt->nCaphriHits();
-      _eventData.nCaloHitsD0_ = 0; // FIXME: Add hit counts by disk
-      _eventData.nCaloHitsD1_ = 0;
     } else { std::cout << "Calorimeter intensity info is not valid" << std::endl;}
 
     //--------------Get the EventData from IntensityInfoTimeCluster--------------
     //Default is trigger-level TZClusterFinder
     art::Handle<IntensityInfoTimeCluster> tcInt;
     _event->getByLabel(_tcCollTag, tcInt);
-    if (tcInt.isValid()) { _eventData.nProtonTCs_  = tcInt->nProtonTCs();}
+    if (tcInt.isValid()) { _eventData.nProtonsTZ_  = tcInt->nProtonTCs();}
     else { std::cout << "Time cluster intensity info is not valid" << std::endl;}
 
     //Use DeltaFinder Module
     art::Handle<IntensityInfoTimeCluster> dfInt;
     _event->getByLabel(_dfCollTag, dfInt);
-    if (dfInt.isValid()) { _eventData.nProtonsDeltaFinder_ = dfInt->nProtonTCs();}
+    if (dfInt.isValid()) { _eventData.nProtonsDF_ = dfInt->nProtonTCs();}
     else { std::cout << "Delta-Finder intensity info is not valid" << std::endl;}
 
     //--------------Get the EventData from IntensityInfoTrackerHits--------------
@@ -495,25 +482,17 @@ namespace mu2e {
     _event->getByLabel(_thCollTag, thInt);
     if (thInt.isValid()) { _eventData.nTrackerHits_ = thInt->nTrackerHits();}
     else { std::cout << "Tracker hits intensity info is not valid" << std::endl;}
-
-    //--------------Get the TimeClusterCollection--------------
-    art::Handle<mu2e::TimeClusterCollection> tcCollHandle;
-    _event->getByLabel(_tcCollTag, tcCollHandle);
-    if (tcCollHandle.isValid()) {_tcColl = tcCollHandle.product();}
-    else {_tcColl = nullptr;}
   }
 
   //--------------------------------------------------------------------------------
   void NPOTAnalysis::computeEventData() {
 
     // compute event level information
-    _eventData.nClusters_ = (_tcColl) ? (int)_tcColl->size() : -1;
-
     if (_eventData.nPOT_ > 0 && _eventData.recoNPOT_caloE_ > 0) {
       const double residual = _eventData.nPOT_ - _eventData.recoNPOT_caloE_;
-      _eventData.resid_caloE_reco_ = residual / _eventData.nPOT_;
+      _eventData.resid_caloEnergy_ = residual / _eventData.nPOT_;
     } else {
-      _eventData.resid_caloE_reco_ = 0.;
+      _eventData.resid_caloEnergy_ = 0.;
       std::cout << "Failed to calculate normalized residual: nPOT = "
                 << _eventData.nPOT_ << ", recoNPOT = " << _eventData.recoNPOT_caloE_ << std::endl;
     }
