@@ -563,7 +563,6 @@ namespace mu2e {
           sxing->closestApproach().tpData(),
           sxing->strawMaterial(),
           sxing->config(),
-          udist,
           radfrac,
           dm);
     }

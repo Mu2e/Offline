@@ -15,6 +15,7 @@
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
 #include <cmath>
+#include <memory>
 #include <iostream>
 
 namespace mu2e {
@@ -212,10 +213,8 @@ namespace mu2e {
     }
     else if(_debugLevel > 0) {std:: cout <<"[RecoNPOTMaker::produce] Did not find DeltaFinder IntensityInfoTimeCluster data" << std::endl;}
 
-    std::unique_ptr<ProtonBunchIntensity> recoPBI (new ProtonBunchIntensity);
-    recoPBI->set(POT_caloEnergy); // only using calo energy to make the estimate for now
-
-
+    auto recoPBI = std::make_unique<ProtonBunchIntensity>(POT_caloEnergy); // only using calo energy to make the estimate for now
+//DNB ProtonBunchIntensity is a MC product, this module needs to use a reco data product FIXME
     event.put(std::move(recoPBI));
 
   }
