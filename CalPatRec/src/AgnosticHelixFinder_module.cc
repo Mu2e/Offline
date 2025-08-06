@@ -642,9 +642,9 @@ namespace mu2e {
     // do isolation, average, and eDepFlag flagging
     if (_doIsolationFlag == true || _doAverageFlag == true || _doEDepFlag == true) {
       for (size_t i = 0; i < _tcHits.size(); i++) {
-        if (_tcHits[i].inHelix == true) { continue; }
-        if (_tcHits[i].hitIndice == HitType::STOPPINGTARGET) { continue; }
-        if (_tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
+        if (_tcHits[i].inHelix == true
+            || _tcHits[i].hitIndice == HitType::STOPPINGTARGET
+            || _tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
         int hitIndice = _tcHits[i].hitIndice;
         float hitEnergy = _chColl->at(hitIndice).energyDep();
         if (_doEDepFlag == true && hitEnergy > _eDepFlagThresh) { _tcHits[i].highEDep = true; }
