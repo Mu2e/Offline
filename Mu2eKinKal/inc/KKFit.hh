@@ -166,13 +166,13 @@ namespace mu2e {
     maxDStraw_(fitconfig.maxDStraw())
   {
     if (fitconfig.saveTraj() == "T0") {
-        savetraj_ = t0seg;
+      savetraj_ = t0seg;
     } else if (fitconfig.saveTraj() == "Full") {
-        savetraj_ = full;
+      savetraj_ = full;
     } else if (fitconfig.saveTraj() == "Detector") {
-        savetraj_ = detector;
+      savetraj_ = detector;
     } else if (fitconfig.saveTraj() == "None") {
-        savetraj_ = none;
+      savetraj_ = none;
     } else {
       throw cet::exception("RECO")<<"mu2e::KKFit: unknown trajectory option "<< fitconfig.saveTraj() << endl;
     }
@@ -236,7 +236,7 @@ namespace mu2e {
       // check that CA is within the active volume of the calorimeter
       double dz = pca.sensorPoca().Z() - caxis.position3(caxis.measurementTime()).Z();
       if( dz > -caxis.length() -maxCaloDoca_ && dz < maxCaloDoca_) {
-//        double tvar = cluster->timeErr()*cluster->timeErr(); the returned value seems unphysically smalL, ~70 ps.
+        //        double tvar = cluster->timeErr()*cluster->timeErr(); the returned value seems unphysically smalL, ~70 ps.
         double tvar = caloTimeRes_*caloTimeRes_; // temporary kludge, this number comes from MDC2020 sim studies.  FIXME
         double wvar = caloPosRes_*caloPosRes_;
         hits.push_back(std::make_shared<KKCALOHIT>(cluster,pca,tvar,wvar));
@@ -406,7 +406,7 @@ namespace mu2e {
           double dz = pca.sensorPoca().Z() - caxis.position3(caxis.measurementTime()).Z();
           if( dz > -caxis.length() -maxCaloDoca_ && dz < maxCaloDoca_) {
             art::Ptr<CaloCluster> ccPtr = art::Ptr<CaloCluster>(cchandle,icc);
-//            double tvar = cc.timeErr()*cc.timeErr();
+            //            double tvar = cc.timeErr()*cc.timeErr();
             double tvar = caloTimeRes_*caloTimeRes_;
             double wvar = caloPosRes_*caloPosRes_;
             chitptr = std::make_shared<KKCALOHIT>(ccPtr,pca,tvar,wvar);
@@ -459,11 +459,11 @@ namespace mu2e {
     return TimeRange(tmin,tmax);
   }
 
-   template <class KTRAJ> void KKFit<KTRAJ>::extendFit(KKTRK& kktrk) {
-     // extend the fit upstream and downstream (up and down for cosmics) to the specified surfaces;
- //TODO
+  template <class KTRAJ> void KKFit<KTRAJ>::extendFit(KKTRK& kktrk) {
+    // extend the fit upstream and downstream (up and down for cosmics) to the specified surfaces;
+    //TODO
 
-   }
+  }
 
   template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo) const {
     TrkFitFlag fflag(seedflag);  // initialize the flag with the seed fit flag
@@ -502,7 +502,7 @@ namespace mu2e {
           udres = strawhit->residual(Mu2eKinKal::dresid);
           utres = strawhit->residual(Mu2eKinKal::tresid);
         } catch (std::exception const& error) {
-         // std::cout << "Unbiased KKStrawHit residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
+          // std::cout << "Unbiased KKStrawHit residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
         }
       }
       kseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
@@ -545,24 +545,26 @@ namespace mu2e {
     }
     kseed._straws.reserve(kktrk.strawXings().size());
     for(auto const& sxing : kktrk.strawXings()) {
+      // create and fill the flag
+      StrawFlag flag;
+      if(sxing->active())flag.merge(StrawFlag::active);
+      if(sxing->strawHitPtr()){
+        flag.merge(StrawFlag::hashit);
+        if(sxing->strawHitPtr()->active())flag.merge(StrawFlag::activehit);
+        if(sxing->strawHitPtr()->hitState().driftConstraint())flag.merge(StrawFlag::drifthit);
+      }
       // compute energy loss
       double dm, paramomvar, perpmomvar;
       sxing->materialEffects(dm, paramomvar,perpmomvar);
       double radfrac = sxing->radiationFraction();
-      // find the gas path
-      double gaspath(0.0);
-      for(auto const& matxing : sxing->matXings()){
-        if(matxing.dmat_.name().compare(5,3,"gas",3)==0)gaspath = matxing.plen_;
-      }
-      auto const& tpocad = sxing->closestApproach();
-      kseed._straws.emplace_back(sxing->strawId(),
-          tpocad.doca(),
-          tpocad.particleToca(),
-          tpocad.sensorToca(),
-          gaspath,
+      kseed._straws.emplace_back(
+          sxing->strawId(),
+          flag,
+          sxing->closestApproach().tpData(),
+          sxing->strawMaterial(),
+          sxing->config(),
           radfrac,
-          dm,
-          sxing->active() );
+          dm);
     }
     // save the fit segments as requested
     if(kktrk.fitStatus().usable()){
