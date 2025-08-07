@@ -13,6 +13,7 @@
 
 // beam
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/RecoDataProducts/inc/RecoProtonBunchIntensity.hh"
 
 // calorimeter
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"

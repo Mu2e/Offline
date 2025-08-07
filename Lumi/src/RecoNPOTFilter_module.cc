@@ -15,9 +15,7 @@
 // Mu2e includes.
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
-
-// MC DataProduct
-#include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Offline/RecoDataProducts/inc/RecoProtonBunchIntensity.hh"
 
 // ROOT
 #include "TFile.h"
@@ -61,7 +59,7 @@ namespace mu2e {
 
 
     const art::Event*                _event;
-    const ProtonBunchIntensity*      _recoNPOT;
+    const RecoProtonBunchIntensity*  _recoNPOT;
     TH1*                             _hPOT; // input POT distribution
     double                           _binWidth; // nPOT histogram bin width
     int                              _nBins; // number of POT histogram bins
@@ -81,7 +79,7 @@ namespace mu2e {
     if(_minWeight <= 0.) {
       throw cet::exception("BADCONFIG") << " Minimum weight must be greater than 0 to invert!";
     }
-    consumes<ProtonBunchIntensity>(_recoNPOTTag);
+    consumes<RecoProtonBunchIntensity>(_recoNPOTTag);
 
     // Read in the POT distribution histogram
     ConfigFileLookupPolicy configFile;
@@ -110,7 +108,7 @@ namespace mu2e {
   void RecoNPOTFilter::findData(const art::Event& evt) {
 
     //Reco N(POT)
-    auto recoNPOTH = evt.getValidHandle<ProtonBunchIntensity>(_recoNPOTTag);
+    auto recoNPOTH = evt.getValidHandle<RecoProtonBunchIntensity>(_recoNPOTTag);
     _recoNPOT = recoNPOTH.product();
   }
 

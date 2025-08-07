@@ -26,6 +26,7 @@
 #include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
+#include "Offline/RecoDataProducts/inc/RecoProtonBunchIntensity.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
@@ -136,7 +137,7 @@ namespace mu2e {
       int nCaphriHits_;
       int nProtonTCs_;
       int nTrackerHits_;
-      //-------------Made in RecoNPOTMaker_module.cc as <ProtonBunchIntensity>
+      //-------------Made in RecoNPOTMaker_module.cc as <RecoProtonBunchIntensity>
       long long recoNPOT_caloE_;
 
       //-------------Residuals-------------
@@ -438,7 +439,7 @@ namespace mu2e {
     }
 
     //--------------Get Reconstructed nPOT from RecoNPOTMaker_module.cc--------------
-    art::Handle<ProtonBunchIntensity> recoNPOTH;
+    art::Handle<RecoProtonBunchIntensity> recoNPOTH;
     _event->getByLabel(_recoPOTTag,recoNPOTH);
     if(recoNPOTH.isValid()) {
       _eventData.recoNPOT_caloE_ = recoNPOTH->intensity();
