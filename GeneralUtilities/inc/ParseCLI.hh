@@ -43,6 +43,7 @@ public:
   const std::string& subcommand() const { return _subcommand; }
   const StringVec& positionals() const { return _positionals; }
 
+  bool getBool(const std::string& subcommand, const std::string& name) const;
   int getCount(const std::string& subcommand, const std::string& name) const;
   std::string getString(const std::string& subcommand, const std::string& name) const;
   StringVec getStrings(const std::string& subcommand, const std::string& name) const;
@@ -57,7 +58,7 @@ public:
 private:
   static constexpr size_t BADIND{9999};
   size_t findItem(const std::string& subcommand, const std::string& name) const;
-  void autohelp() const;
+  int autohelp() const;
 
   std::string _helpstr;
   bool _autohelp;
