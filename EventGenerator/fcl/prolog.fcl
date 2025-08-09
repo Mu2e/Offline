@@ -211,54 +211,7 @@ EventGenerator : { @table::EventGenerator
             }
             doHistograms              : true
         }
-        #--------------Table of mu-->e+X (arXiv: 1110.2874)-------------#
-        mueXTable : {
-          @table::StoppedParticleReactionGun # Mu-->e+X
-          physics : { @table::StoppedParticleReactionGun.physics
-          pdgId            :  11
-          spectrumVariable : "totalEnergy"
-          spectrumShape    : "tabulated"
-          spectrumFileName : "ConditionsService/data/mu2eX.tbl"
-          ehi                   : 104.97384
-          elow                  : 100.
-          }
-        }
 
-        #--------------Table of mu-->e+X (from arXiv: 2005.07894)-------------#
-        mu2eXS0 : {
-          @table::StoppedParticleReactionGun # Mu-->e+X
-          physics : { @table::StoppedParticleReactionGun.physics
-          pdgId            :  11
-          spectrumVariable : "totalEnergy"
-          spectrumShape    : "tabulated"
-          spectrumFileName : "ConditionsService/data/mu2eXS0.tbl"
-          ehi                   : 104.97384
-          elow                  : 100.
-          }
-        }
-        mu2eXS1 : {
-          @table::StoppedParticleReactionGun # Mu-->e+X
-          physics : { @table::StoppedParticleReactionGun.physics
-          pdgId            :  11
-          spectrumVariable : "totalEnergy"
-          spectrumShape    : "tabulated"
-          spectrumFileName : "ConditionsService/data/mu2eXS1.tbl"
-          ehi                   : 104.97384
-          elow                  : 100.
-          }
-        }
-
-        mu2eXV1 : {
-          @table::StoppedParticleReactionGun # Mu-->e+X
-          physics : { @table::StoppedParticleReactionGun.physics
-          pdgId            :  11
-          spectrumVariable : "totalEnergy"
-          spectrumShape    : "tabulated"
-          spectrumFileName : "ConditionsService/data/mu2eXV1.tbl"
-          ehi                   : 104.97384
-          elow                  : 100.
-          }
-        }
         #------------ Spectrum for mu-->e+X- arXiv: 1110.2874-------#
         mu2XSpectrum : {
         module_type: StoppedParticleReactionGun
