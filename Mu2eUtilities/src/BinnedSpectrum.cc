@@ -17,7 +17,7 @@
 #include "Offline/Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/PionCaptureSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/SimpleSpectrum.hh"
-
+#include "Offline/Mu2eUtilities/inc/Mu2eXSpectrum.hh"
 namespace mu2e {
 
   BinnedSpectrum::BinnedSpectrum(const fhicl::ParameterSet& psphys) :
@@ -60,7 +60,12 @@ namespace mu2e {
 
       _finalBin = true;
       this->initialize<ConversionSpectrum>(elow,ehi,bin,ehi,bin);
-    }else if (spectrumShape == "ejectedProtons") {
+    } else if (spectrumShape == "Mu2eX"){ // Sophie Middleton, 2021
+      double elow = psphys.get<double>("elow",100);
+      double ehi  = psphys.get<double>("ehi",105 );
+      double bin = psphys.get<double>("spectrumResolution");
+      this->initialize<Mu2eXSpectrum>(elow,ehi,bin,ehi,bin);
+    } else if (spectrumShape == "ejectedProtons") {
       // should be kinetic energy
       double elow = 0.;
       // cut off at muon mass
