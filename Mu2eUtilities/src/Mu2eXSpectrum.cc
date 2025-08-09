@@ -67,7 +67,6 @@ namespace mu2e {
     double delta = ((Emu - E - pow(E,2)/(2*mN))/mmu);
     double f     = BR*(1/mmu)*(a0*pow(delta,1) + a1*pow(delta,2) + a2*pow(delta,3) + a3*pow(delta,4) + a4*pow(delta,5) + a5*pow(delta,6));
     if (f < 0) f = 0;
-    std::cout<<"Spectrum : "<<f<<std::endl;
     return f; //F = 1/Gamma * d(Gamma)/dEe
   }
 

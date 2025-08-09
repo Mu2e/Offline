@@ -42,7 +42,7 @@
 namespace mu2e {
 
   //================================================================
-  class Mu2eXSpectrum : public art::EDProducer {
+  class Mu2eX : public art::EDProducer {
   public:
     struct Config {
       using Name=fhicl::Name;
@@ -56,7 +56,7 @@ namespace mu2e {
     };
 
     using Parameters= art::EDProducer::Table<Config>;
-    explicit Mu2eXSpectrum(const Parameters& conf);
+    explicit Mu2eX(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
 
@@ -82,7 +82,7 @@ namespace mu2e {
   };
 
   //================================================================
-  Mu2eXSpectrum::Mu2eXSpectrum(const Parameters& conf)
+  Mu2eX::Mu2eX(const Parameters& conf)
     : EDProducer{conf}
     , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
@@ -95,12 +95,13 @@ namespace mu2e {
   {
     produces<mu2e::StageParticleCollection>();
     pid_ = static_cast<PDGCode::type>(pdgId_);
-
-    process_ = ProcessCode::Mu2eX;
-
+    std::cout<<"testing"<<std::endl;
+    if (pid_ == PDGCode::e_minus) {
+      process_ = ProcessCode::Mu2eX;
+    }
     else {
       throw   cet::exception("BADINPUT")
-        <<"Mu2eXSpectrumGenerator::produce(): No process associated with chosen PDG id : "<<pid_<<std::endl;
+        <<"Mu2eXGenerator::produce(): No process associated with chosen PDG id : "<<pid_<<std::endl;
     }
 
     randomUnitSphere_ = new RandomUnitSphere(eng_);
@@ -108,14 +109,14 @@ namespace mu2e {
   }
 
   //================================================================
-  void Mu2eXSpectrum::produce(art::Event& event) {
+  void Mu2eX::produce(art::Event& event) {
     auto output{std::make_unique<StageParticleCollection>()};
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     const auto mus = stoppedMuMinusList(simh);
 
     if(mus.empty()) {
         throw   cet::exception("BADINPUT")
-        <<"Mu2eXSpectrum::produce(): no suitable stopped muon in the input SimParticleCollection\n";
+        <<"Mu2eX::produce(): no suitable stopped muon in the input SimParticleCollection\n";
     }
 
     for(const auto& mustop: mus) {
@@ -126,7 +127,7 @@ namespace mu2e {
   }
 
   //================================================================
-  void Mu2eXSpectrum::addParticles(StageParticleCollection* output,
+  void Mu2eX::addParticles(StageParticleCollection* output,
                             art::Ptr<SimParticle> mustop,
                             double time)
   {
@@ -152,4 +153,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::Mu2eXSpectrum)
+DEFINE_ART_MODULE(mu2e::Mu2eX)
