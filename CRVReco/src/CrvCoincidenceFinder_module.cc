@@ -295,6 +295,9 @@ namespace mu2e
       int sectorNumber, moduleNumber, layerNumber, barNumber;
       CrvHelper::GetCrvCounterInfo(CRS, crvBarIndex, sectorNumber, moduleNumber, layerNumber, barNumber);
 
+      //ignore pulses from modules that have a number of layers other than 4.
+      if(CRS->getCRSScintillatorShield(sectorNumber).getModule(moduleNumber).nLayers()!=CRVId::nLayers) continue;
+
       //sector properties
       std::map<int,sectorCoincidenceProperties>::const_iterator sIter = _sectorMap.find(sectorNumber);
       if(sIter==_sectorMap.end()) throw std::logic_error("CrvCoincidenceFinder: Found a CRV hit at a CRV sector without properties.");

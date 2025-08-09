@@ -1,14 +1,18 @@
-// Use with Offline/CRVResponse/test/wideband/widebandCRYconfig_v5.txt
+// Use with Offline/CRVResponse/test/wideband/widebandMTCRYconfig_v1.txt
 #include "Offline/Mu2eG4/geom/geom_common.txt"
 
 bool hasSTM = false; //to prevent errors from the Offline environment
 
-string crs.name = "wideband4modules2sides2triggers"; // same as channelMap name
+string crs.name = "widebandMuonTaggers"; // same as channelMap name
 
-int   crs.nSectors = 6;
+int   crs.nSectors = 5;
 int   crs.nLayers  = 4;
 
-vector<string>  crs.sectorNames = {"W1","W2","W3","W4","T1","T2"};
+vector<string>  crs.sectorNames = {"W",   //0  2 L-modules, 1 R-module (turned so that it can be used as an L-module)
+                                   "M1",  //1  muon tagger
+                                   "M2",  //2  muon tagger
+                                   "T1",  //3  trigger
+                                   "T2"}; //4  trigger
 
 
 double          crs.scintillatorBarThickness     =  19.78; //mm
@@ -21,109 +25,101 @@ vector<double>  crs.gapBetweenLayers             =   {9.525, 9.525, 9.525}; //mm
 double          crs.aluminumSheetThickness       =   3.175;  //mm
 double          crs.strongBackThickness          =  12.7;    //mm
 
-double          crs.scintillatorBarLengthW1      =  6000;
-double          crs.scintillatorBarLengthW2      =  6000;
-double          crs.scintillatorBarLengthW3      =  6000;
-double          crs.scintillatorBarLengthW4      =  6000;
+double          crs.scintillatorBarLengthW       =  4550;
+double          crs.scintillatorBarLengthM1      =  1045;
+double          crs.scintillatorBarLengthM2      =  1045;
 double          crs.scintillatorBarLengthT1      =  1045;
 double          crs.scintillatorBarLengthT2      =  1045;
 
-int             crs.nModulesW1                   =   1;
-int             crs.nModulesW2                   =   1;
-int             crs.nModulesW3                   =   1;
-int             crs.nModulesW4                   =   1;
+int             crs.nModulesW                    =   3;
+int             crs.nModulesM1                   =   1;
+int             crs.nModulesM2                   =   1;
 int             crs.nModulesT1                   =   1;
 int             crs.nModulesT2                   =   1;
 
+int             crs.nLayersM1                    =   8;
+int             crs.nLayersM2                    =   8;
 int             crs.nLayersT1                    =   1;
 int             crs.nLayersT2                    =   1;
 
+bool            crs.countersOnlyM1               =   true;  //no strongbacks or aluminum sheets
+bool            crs.countersOnlyM2               =   true;  //no strongbacks or aluminum sheets
 bool            crs.countersOnlyT1               =   true;  //no strongbacks or aluminum sheets
 bool            crs.countersOnlyT2               =   true;  //no strongbacks or aluminum sheets
 
-int             crs.nCountersPerModuleW1         =   16;  //per layer
-int             crs.nCountersPerModuleW2         =   16;
-int             crs.nCountersPerModuleW3         =   16;
-int             crs.nCountersPerModuleW4         =   16;
+int             crs.nCountersPerModuleW          =   16;  //per layer
+int             crs.nCountersPerModuleM1         =    2;
+int             crs.nCountersPerModuleM2         =    2;
 int             crs.nCountersPerModuleT1         =    2;
 int             crs.nCountersPerModuleT2         =    2;
 
-vector<double>  crs.firstCounterW1               =  {-3904.0, -1500.00, 39000.0};
-vector<double>  crs.firstCounterW2               =  {-3904.0, -1725.25, 39000.0};
-vector<double>  crs.firstCounterW3               =  {-3904.0, -1950.50, 39000.0};
-vector<double>  crs.firstCounterW4               =  {-3904.0, -2175.75, 39000.0};
-vector<double>  crs.firstCounterT1               =  {-5929.67,-2064.88, 39449.45};  //so that the center of the di-counter is 1m away from the readout end of the W modules
-vector<double>  crs.firstCounterT2               =  {-5929.67,-2208.23, 39449.45};
+vector<double>  crs.firstCounterW                =  {-4000.00, -1900.00, 39000.00};
+vector<double>  crs.firstCounterM1               =  {-5300.67, -2080.00, 37800.00};  //so that the center of the di-counter is 1m away from the readout end of the W modules
+vector<double>  crs.firstCounterM2               =  {-5300.67, -1780.00, 37800.00};
+vector<double>  crs.firstCounterT1               =  {-5300.67, -2120.00, 37800.00};  //so that the center of the di-counter is 1m away from the readout end of the W modules
+vector<double>  crs.firstCounterT2               =  {-5300.67, -1580.00, 37800.00};
 
-vector<double>  crs.layerDirectionW1             =  {0, 1, 0};
-vector<double>  crs.layerDirectionW2             =  {0, 1, 0};
-vector<double>  crs.layerDirectionW3             =  {0, 1, 0};
-vector<double>  crs.layerDirectionW4             =  {0, 1, 0};
+vector<double>  crs.layerDirectionW              =  {0, 1, 0};
+vector<double>  crs.layerDirectionM1             =  {0, 1, 0};
+vector<double>  crs.layerDirectionM2             =  {0, 1, 0};
 vector<double>  crs.layerDirectionT1             =  {0, 1, 0};
 vector<double>  crs.layerDirectionT2             =  {0, 1, 0};
 
-vector<double>  crs.offsetDirectionW1            =  {0, 0, 1};
-vector<double>  crs.offsetDirectionW2            =  {0, 0, 1};
-vector<double>  crs.offsetDirectionW3            =  {0, 0, 1};
-vector<double>  crs.offsetDirectionW4            =  {0, 0, 1};
-vector<double>  crs.offsetDirectionT1            =  {1, 0, 0};
-vector<double>  crs.offsetDirectionT2            =  {1, 0, 0};
+vector<double>  crs.offsetDirectionW             =  {0, 0, 1};
+vector<double>  crs.offsetDirectionM1            =  {0, 0, 0};
+vector<double>  crs.offsetDirectionM2            =  {0, 0, 0};
+vector<double>  crs.offsetDirectionT1            =  {0, 0, 0};
+vector<double>  crs.offsetDirectionT2            =  {0, 0, 0};
 
-vector<double>  crs.gapDirectionW1               =  {0, 0, 1};
-vector<double>  crs.gapDirectionW2               =  {0, 0, 1};
-vector<double>  crs.gapDirectionW3               =  {0, 0, 1};
-vector<double>  crs.gapDirectionW4               =  {0, 0, 1};
+vector<double>  crs.gapDirectionW                =  {0, 0, -1};
+vector<double>  crs.gapDirectionM1               =  {1, 0, 0};
+vector<double>  crs.gapDirectionM2               =  {1, 0, 0};
 vector<double>  crs.gapDirectionT1               =  {1, 0, 0};
 vector<double>  crs.gapDirectionT2               =  {1, 0, 0};
 
-int crs.precedingSectorForW1  = -1;   //no preceding sector
-int crs.precedingSectorForW2  = -1;
-int crs.precedingSectorForW3  = -1;
-int crs.precedingSectorForW4  = -1;
+int crs.precedingSectorForW   = -1;   //no preceding sector
+int crs.precedingSectorForM1  = -1;
+int crs.precedingSectorForM2  = -1;
 int crs.precedingSectorForT1  = -1;
 int crs.precedingSectorForT2  = -1;
 
-int crs.sectorTypeW1  = 1;
-int crs.sectorTypeW2  = 2;
-int crs.sectorTypeW3  = 3;
-int crs.sectorTypeW4  = 4;
-int crs.sectorTypeT1  = 5;
-int crs.sectorTypeT2  = 6;
+int crs.sectorTypeW   = 1;
+int crs.sectorTypeM1  = 2;
+int crs.sectorTypeM2  = 3;
+int crs.sectorTypeT1  = 4;
+int crs.sectorTypeT2  = 5;
 
-bool crs.sipmsAtSide0W1 = true;
-bool crs.sipmsAtSide0W2 = true;
-bool crs.sipmsAtSide0W3 = true;
-bool crs.sipmsAtSide0W4 = true;
+bool crs.sipmsAtSide0W  = true;
+bool crs.sipmsAtSide0M1 = true;
+bool crs.sipmsAtSide0M2 = true;
 bool crs.sipmsAtSide0T1 = true;
 bool crs.sipmsAtSide0T2 = true;
 
-bool crs.sipmsAtSide1W1 = false;
-bool crs.sipmsAtSide1W2 = false;
-bool crs.sipmsAtSide1W3 = false;
-bool crs.sipmsAtSide1W4 = false;
+bool crs.sipmsAtSide1W  = false;
+bool crs.sipmsAtSide1M1 = false;
+bool crs.sipmsAtSide1M2 = false;
 bool crs.sipmsAtSide1T1 = false;
 bool crs.sipmsAtSide1T2 = false;
 
-int crs.FEBBoxesAtSide0W1  = 0;
-int crs.FEBBoxesAtSide0W2  = 0;
-int crs.FEBBoxesAtSide0W3  = 0;
-int crs.FEBBoxesAtSide0W4  = 0;
+int crs.FEBBoxesAtSide0W   = 0;
+int crs.FEBBoxesAtSide0M1  = 0;
+int crs.FEBBoxesAtSide0M2  = 0;
 int crs.FEBBoxesAtSide0T1  = 0;
 int crs.FEBBoxesAtSide0T2  = 0;
 
-int crs.FEBBoxesAtSide1W1  = 0;
-int crs.FEBBoxesAtSide1W2  = 0;
-int crs.FEBBoxesAtSide1W3  = 0;
-int crs.FEBBoxesAtSide1W4  = 0;
+int crs.FEBBoxesAtSide1W   = 0;
+int crs.FEBBoxesAtSide1M1  = 0;
+int crs.FEBBoxesAtSide1M2  = 0;
 int crs.FEBBoxesAtSide1T1  = 0;
 int crs.FEBBoxesAtSide1T2  = 0;
 
 //support structure volumes used as lead brick
-int crs.nSupportStructures = 1;
-vector<string> crs.supportStructureNames = {"WidebandLeadBrick"};
-vector<double> crs.supportStructurePosition_WidebandLeadBrick  = {-5904.0, -1824.12, 39449.45};
-vector<double> crs.supportStructureHalfLengths_WidebandLeadBrick  = {101.6, 25.4, 508.0};  //10 lead bricks of 8" x 2" x 4"
-string         crs.supportStructureMaterialName = "G4_Pb";
+int crs.nSupportStructures = 0;
+//vector<string> crs.supportStructureNames = {"WidebandLeadBrick"};
+vector<string> crs.supportStructureNames = {};
+//vector<double> crs.supportStructurePosition_WidebandLeadBrick  = {-5904.0, -1824.12, 39449.45};
+//vector<double> crs.supportStructureHalfLengths_WidebandLeadBrick  = {101.6, 25.4, 508.0};  //10 lead bricks of 8" x 2" x 4"
+//string         crs.supportStructureMaterialName = "G4_Pb";
 
 //bool g4.doSurfaceCheck    = true;
 int  g4.nSurfaceCheckPointsPercmsq =   1;
