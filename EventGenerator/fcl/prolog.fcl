@@ -212,20 +212,6 @@ EventGenerator : { @table::EventGenerator
             doHistograms              : true
         }
 
-        #------------ Spectrum for mu-->e+X- arXiv: 1110.2874-------#
-        mu2XSpectrum : {
-        module_type: StoppedParticleReactionGun
-        physics: { @table::StoppedParticleReactionGun.physics
-        genId                 : Mu2eX
-        pdgId                 : 11
-        spectrumShape         : "Mu2eX"     # could also be "flat" or "CeEndpoint"
-        spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
-        spectrumResolution    : 0.1                # MeV
-        ehi                   : 104.97
-        elow                  : 100.
-        }
-        }
-
         CePEndpoint              : {   module_type: StoppedParticleReactionGun
             physics: { @table::StoppedParticleReactionGun.physics
                 genId                 : CeEndpoint
