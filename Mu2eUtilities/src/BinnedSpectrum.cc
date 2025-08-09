@@ -60,11 +60,6 @@ namespace mu2e {
 
       _finalBin = true;
       this->initialize<ConversionSpectrum>(elow,ehi,bin,ehi,bin);
-    } else if (spectrumShape == "Mu2eXSpectrum"){ // Sophie Middleton, 2021
-      double elow = psphys.get<double>("elow",100);
-      double ehi  = psphys.get<double>("ehi",105 );
-      double bin = psphys.get<double>("spectrumResolution");
-      this->initialize<Mu2eXSpectrum>(elow,ehi,bin,ehi,bin);
     } else if (spectrumShape == "ejectedProtons") {
       // should be kinetic energy
       double elow = 0.;
