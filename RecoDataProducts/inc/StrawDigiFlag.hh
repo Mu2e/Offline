@@ -9,6 +9,7 @@
 #include "Offline/GeneralUtilities/inc/BitMap.hh"
 #include <string>
 #include <map>
+#include <cstdint>
 namespace mu2e {
 
   struct StrawDigiFlagDetail {

@@ -41,4 +41,6 @@ DAQ : {
         }
     }
 }
+# and add panel mapping for proditions
+
 END_PROLOG

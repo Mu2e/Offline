@@ -43,12 +43,15 @@
 #include <map>
 #include <memory>
 
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/TrkPanelMapEntity.hh"
+
 // #define TRACEMF_USE_VERBATIM 1
 
 // #include "TRACE/tracemf.h"
 // #define TRACE_NAME "StrawDigisFromArtdaqFragments"
 
-#include "Offline/DAQ/inc/TrkPanelMap_t.hh"
+// #include "Offline/DAQ/inc/TrkPanelMap_t.hh"
 
 namespace mu2e {
   class StrawDigisFromArtdaqFragments;
@@ -147,9 +150,11 @@ private:
 
   const art::Event*        event_;
                                                 // for now, IDTC=2*nodename+PCIE_ADDR
-  const TrkPanelMap_t*     panel_map_[50][6];   // panel_map_[idtc][ilink] = pointer to future DB record
-                                                // make sure DAQ22 fits in
-
+  int _last_run;
+  
+  ProditionsHandle<TrkPanelMapEntity> _trkPanelMap_h;
+  const TrkPanelMapEntity* _trkPanelMap;
+  
   // less than 300 panels physically exist and are enumeratively labeled
   // hence, the max allowed word can act be used as a sentinel
   const static uint16_t invalid_minnesota_ = static_cast<uint16_t>(-1);
@@ -230,6 +235,8 @@ mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::ED
     print_(std::format("StrawDigisFromArtdaqFragments: bit={:4d} is set to {}\n",index,debugBit_[index]));
   }
 
+  _last_run = -1;
+
 }
 
 
@@ -285,23 +292,22 @@ void mu2e::StrawDigisFromArtdaqFragments::print_fragment(const artdaq::Fragment*
 
 //-----------------------------------------------------------------------------
 void mu2e::StrawDigisFromArtdaqFragments::beginRun(art::Run&  ArtRun) {
-  // fill panel_map_ for a given run - should come from the database
-  
-  for (const TrkPanelMap_t* tpm = TrkPanelMap_data.begin(); tpm != TrkPanelMap_data.end(); ++tpm) {
-    int dtc               = tpm->dtc;
-    int link              = tpm->link;
-    panel_map_[dtc][link] = tpm;
-  }
 }
+
 // ----------------------------------------------------------------------
 // runs on tracker Artdaq fragments
 //-----------------------------------------------------------------------------
 void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
   int const packet_size(16); // in bytes
 
-  event_ = &event;                      // cache for printouts
-  
   if (debugMode_ > 0) print_("-- START\n",1);
+
+  event_ = &event;                      // cache to print events
+  
+  if (_last_run != (int) event.run()) {
+    _trkPanelMap = &_trkPanelMap_h.get(event.id());
+    _last_run    = event.run();
+  }
 
    // Collection of StrawDigis for the event
   std::unique_ptr<mu2e::StrawDigiCollection> straw_digis(new mu2e::StrawDigiCollection);
@@ -425,8 +431,8 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               
               uint16_t mnid    = channel >> mu2e::StrawId::_panelsft;
               
-              const TrkPanelMap_t* pm = panel_map_[dtc_id][link_id];  // DB here
-              if (pm->mnid != mnid) {
+              const TrkPanelMap::Row* tpm = _trkPanelMap->panel_map_by_online_ind(dtc_id,link_id);
+              if (tpm->mnid() != mnid) {
                 print_(std::format("ERROR: hit chid:{:04x} inconsistent with the dtc_id:{} and link_id:{}\n",
                                    hit_data->StrawIndex, dtc_id, link_id));
 //-----------------------------------------------------------------------------
@@ -467,7 +473,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
 // convert channel_id into a strawID
 //-----------------------------------------------------------------------------
-              mu2e::StrawId sid(pm->plane, pm->panel, chid);
+              mu2e::StrawId sid(tpm->plane(),tpm->panel(),chid);
               
               mu2e::TrkTypes::TDCValues tdc = {hit_data->TDC0(), hit_data->TDC1()};
               mu2e::TrkTypes::TOTValues tot = {hit_data->TOT0  , hit_data->TOT1  };
@@ -481,7 +487,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
                 
                 int ind = straw_digis->size();
                 std::cout << std::format("{:5} 0x{:04x}   0x{:04x} MN{:03d}   {:3} {:3}      0x:{:04x}  {:9} {:9}   {:2}   {:2}  {:5}\n",
-                                         ind,offset,hit_data->StrawIndex,mnid,pm->plane,pm->panel,sid.straw(),hit_data->TDC0(),
+                                         ind,offset,hit_data->StrawIndex,mnid,tpm->plane(),tpm->panel(),sid.straw(),hit_data->TDC0(),
                                          hit_data->TDC1(),tot[0],tot[1],pmp);
               }
 

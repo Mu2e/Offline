@@ -29,6 +29,7 @@
 #include "Offline/TrackerConditions/inc/StrawPhysicsCache.hh"
 #include "Offline/TrackerConditions/inc/StrawResponseCache.hh"
 #include "Offline/TrackerConditions/inc/TrackerStatusCache.hh"
+#include "Offline/TrackerConditions/inc/TrkPanelMapCache.hh"
 
 #include "Offline/AnalysisConditions/inc/TrkQualCatalogCache.hh"
 #include "Offline/SimulationConditions/inc/SimBookkeeperCache.hh"
@@ -65,9 +66,10 @@ ProditionsService::ProditionsService(Parameters const& sTable,
   auto frc =
       std::make_shared<mu2e::FullReadoutStrawCache>(_config.fullReadoutStraw());
   _caches[frc->name()] = frc;
-  auto tsc =
-      std::make_shared<mu2e::TrackerStatusCache>(_config.trackerStatus());
+  auto tsc = std::make_shared<mu2e::TrackerStatusCache>(_config.trackerStatus());
   _caches[tsc->name()] = tsc;
+  auto tpm = std::make_shared<mu2e::TrkPanelMapCache>(_config.trkPanelMap());
+  _caches[tpm->name()] = tpm;
   auto sdc = std::make_shared<mu2e::StrawDriftCache>(_config.strawDrift());
   _caches[sdc->name()] = sdc;
   auto spc = std::make_shared<mu2e::StrawPhysicsCache>(_config.strawPhysics());

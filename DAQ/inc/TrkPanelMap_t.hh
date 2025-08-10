@@ -6,17 +6,19 @@
 #ifndef __Offline_DAQ_inc_TrkPanelMap_t__
 #define __Offline_DAQ_inc_TrkPanelMap_t__
 
-namespace {
-  struct TrkPanelMap_t {
-    int  mnid;                        // 101='MN101' etc
-    int  dtc;
-    int  link;
-    int  station;
-    int  plane;                       // now: only one stations, plane = 0 or 1
-    int  panel;                       // "geo" panel index
-    int  zface;                       // z-ordered face (so far, random, could've calculated, *TODO*)
-  };
+struct TrkPanelMap_t {
+  int  mnid;                        // 101='MN101' etc
+  int  dtc;
+  int  link;
+  int  station;                     // geo index of the station
+  int  psid;                        // production station ID  (station_0 ...)
+  int  plane;                       // geo index of the plane
+  int  ppid;                        // production plane   ID  (plane_21 ... )
+  int  panel;                       // "geo" panel index
+  int  zface;                       // z-ordered face (so far, random, could've calculated, *TODO*)
+};
 
+namespace {
   std::initializer_list<TrkPanelMap_t> TrkPanelMap_data = {
 //-----------------------------------------------------------------------------
 // station 0
@@ -24,28 +26,28 @@ namespace {
 //                           (253 | 213 | 247) inward   1
 //             plane 1 (25): (248 | 276 | 224) inward   2
 //                           (262 | 261 | 273) outward  3
-//  mn_id  dtc lnk stn pln pnl zf
-//-----------------------------------------------------------------------------
-    { 261, 18,  0,  0,  1,  3, 3},
-    { 248, 18,  1,  0,  1,  4, 2},
-    { 224, 18,  2,  0,  1,  0, 2},
-    { 262, 18,  3,  0,  1,  5, 3},
-    { 273, 18,  4,  0,  1,  1, 3},
-    { 276, 18,  5,  0,  1,  2, 2},
+//  mn_id  dtc lnk stn psid pln ppid pnl zf
+//---------------------------------------------------------------------------
+    { 261, 18,  0,  0,  0,   1,  25,  3,  3},
+    { 248, 18,  1,  0,  0,   1,  25,  4,  2},
+    { 224, 18,  2,  0,  0,   1,  25,  0,  2},
+    { 262, 18,  3,  0,  0,   1,  25,  5,  3},
+    { 273, 18,  4,  0,  0,   1,  25,  1,  3},
+    { 276, 18,  5,  0,  0,   1,  25,  2,  2},
                               
-    { 253, 19,  0,  0,  0,  4, 1},
-    { 101, 19,  1,  0,  0,  3, 0},
-    { 219, 19,  2,  0,  0,  5, 0},
-    { 213, 19,  3,  0,  0,  0, 1},
-    { 235, 19,  4,  0,  0,  1, 0},
-    { 247, 19,  5,  0,  0,  2, 1},
-                                        // EC, roctower
-    { 400, 44,  0,  0,198,  0, 0},      // why would it be 2? 
-    { 401, 44,  1,  0,198,  1, 0},
-    { 402, 44,  2,  0,198,  2, 0},
-    { 403, 44,  3,  0,198,  3, 0},
-    { 404, 44,  4,  0,198,  4, 0},
-    { 405, 44,  5,  0,198,  5, 0},
+    { 253, 19,  0,  0,  0,   0,  21,  4,  1},
+    { 101, 19,  1,  0,  0,   0,  21,  3,  0},
+    { 219, 19,  2,  0,  0,   0,  21,  5,  0},
+    { 213, 19,  3,  0,  0,   0,  21,  0,  1},
+    { 235, 19,  4,  0,  0,   0,  21,  1,  0},
+    { 247, 19,  5,  0,  0,   0,  21,  2,  1},
+                                              // EC, roctower
+    { 400, 44,  0,  0, 99,  99,  99,  0,  0},      // why would it be 2? 
+    { 401, 44,  1,  0, 99,  99,  99,  1,  0},
+    { 402, 44,  2,  0, 99,  99,  99,  2,  0},
+    { 403, 44,  3,  0, 99,  99,  99,  3,  0},
+    { 404, 44,  4,  0, 99,  99,  99,  4,  0},
+    { 405, 44,  5,  0, 99,  99,  99,  5,  0},
   };
 };
 #endif
