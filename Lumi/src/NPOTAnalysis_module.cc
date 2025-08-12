@@ -26,6 +26,7 @@
 #include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
+#include "Offline/RecoDataProducts/inc/RecoProtonBunchIntensity.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
@@ -136,7 +137,7 @@ namespace mu2e {
       int nProtonsTZ_;
       int nProtonsDF_;
 
-      //-------------Made in RecoNPOTMaker_module.cc as <ProtonBunchIntensity>
+      //-------------Made in RecoNPOTMaker_module.cc as <RecoProtonBunchIntensity>
       long long recoNPOT_caloE_;
 
       //-------------Residuals-------------
@@ -329,7 +330,9 @@ namespace mu2e {
     Hist->nPOTvresid_nProtonsDF  = Dir->make<TH2D>("nPOTvresid_nProtonsDF"  , "N(POT) vs Number of Proton Time Clusters from DeltaFinder residual;"    , 100, -1., 1., 100, 0., 1e8);
 
     //-------------Residual v Observable------------
-    Hist->resid_caloEnergy_v_caloEnergy = Dir->make<TH2D>("resid_caloEnergy_v_caloEnergy", "Normalized Residual of nPOT from Calorimeter Energy v Calorimeter Energy; CaloE [MeV]; (nPOT-recoNPOT)/nPOT", 100, 0.0, 1e4, 100, -0.600, 0.600);
+    Hist->resid_caloEnergy_v_caloEnergy = Dir->make<TH2D>("resid_caloEnergy_v_caloEnergy",
+                                                          "N(POT) residual from Calorimeter Energy v Calorimeter Energy; Energy [MeV]; (N(POT)- reco N(POT))/N(POT)",
+                                                          100, 0.0, 1e4, 100, -0.600, 0.600);
   }
 
   //--------------------------------------------------------------------------------//
@@ -441,7 +444,7 @@ namespace mu2e {
     }
 
     //--------------Get Reconstructed nPOT from RecoNPOTMaker_module.cc--------------
-    art::Handle<ProtonBunchIntensity> recoNPOTH;
+    art::Handle<RecoProtonBunchIntensity> recoNPOTH;
     _event->getByLabel(_recoPOTTag,recoNPOTH);
     if(recoNPOTH.isValid()) {
       _eventData.recoNPOT_caloE_ = recoNPOTH->intensity();

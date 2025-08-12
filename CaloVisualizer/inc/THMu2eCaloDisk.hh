@@ -1,13 +1,15 @@
 #ifndef ROOT_THMu2eCaloDisk_H
 #define ROOT_THMu2eCaloDisk_H
 
-#include "TGraph.h"
-#include "TH2Poly.h"
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
+
+#include "TGraph.h"
+#include "TH2Poly.h"
+#include "TFormula.h"
 
 namespace mu2e {
 
@@ -17,7 +19,8 @@ enum ECombineMode {
   kSum = 2,
   kAverage = 3,
   kDifference = 4,
-  kAsymmetry = 5
+  kAsymmetry = 5,
+  kFormula = 6
 };
 
 struct channelInfo {
@@ -61,6 +64,7 @@ public:
   void Update();
   void SetContentL(Double_t content);
   void SetContentR(Double_t content);
+  void SetFormula(const char* formula);
   void Merge(const THMu2eCaloDiskBin* toMerge);
   void ClearStats();
   void ClearContent() {
@@ -124,6 +128,8 @@ private:
   Double_t fAverage;
   Double_t fDifference;
   Double_t fAsymmetry;
+  Double_t fFormula;
+  TFormula _formula;
 
 protected:
   int fCombineMode;
@@ -151,6 +157,7 @@ public:
 
   void SetBinCombineMode(Int_t bin, Int_t mode);
   void SetCombineMode(Int_t mode);
+  void SetCombineMode(const char* formula);
   bool LoadMapFile(std::map<int, std::map<int, mu2e::channelInfo>>& output,
                    const char* filename = "/home/mu2edaq/dev_calo/pgirotti_testing/srcs/Offline/"
                                           "CaloConditions/data/caloDMAP_latest.dat");

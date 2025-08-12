@@ -7,29 +7,44 @@
 #ifndef RecoDataProducts_TrkStraw_HH
 #define RecoDataProducts_TrkStraw_HH
 #include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/RecoDataProducts/inc/StrawFlag.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
+#include "KinKal/Trajectory/ClosestApproachData.hh"
+
 namespace mu2e {
   struct TrkStraw {
-    TrkStraw() : _doca(-1.0), _trklen(0.0), _wirelen(0.0), _slen(0.0), _radlen(0.0)  {}
-    TrkStraw(StrawId const& id, double doca, double trklen, double wirelen, double slen, double radlen, double pfrac, bool active) : _straw(id), _doca(doca), _trklen(trklen),
-    _wirelen(wirelen), _slen(slen), _radlen(radlen), _pfrac(pfrac), _active(active) {}
+    TrkStraw(StrawId const& id,StrawFlag const& flag, KinKal::ClosestApproachData const& pocadata, KKStrawMaterial const& smat,StrawXingUpdater const& caconfig,
+        double radlen, double dmom) :
+      _straw(id), _flag(flag),_pcalc(smat.pathCalculation()),
+      _poca(pocadata.sensorPoca().Vect()),
+      _doca(pocadata.doca()),
+      _dirdot(pocadata.dirDot()),
+      _radlen(radlen),
+      _dmom(dmom)
+    {
+      double wallpath, gaspath, wirepath;
+      smat.pathLengths(pocadata,caconfig,wallpath,gaspath,wirepath);
+      _wallpath = wallpath;
+      _gaspath = gaspath;
+      _wirepath = wirepath;
+    }
+    TrkStraw() {}
 
-    StrawId const& straw() const { return _straw; }
-    Float_t doca() const { return _doca; }
-    Float_t trkLen() const { return _trklen; }
-    Float_t wireLen() const { return _wirelen; }
-    Float_t strawLen() const { return _slen; }
-    Float_t radLen() const { return _radlen; }
-    Float_t pfrac() const { return _pfrac; }
-    Bool_t active() const { return _active; }
-
-    StrawId   _straw; // which straw was traversed
-    Float_t   _doca; // DOCA from the track to the wire of this straw
-    Float_t   _trklen; // length along the track from z=0 to track-wire POCA
-    Float_t   _wirelen; // length along the wire from the wire middle to the track-wire POCA
-    Float_t   _slen; // path length through this straw
-    Float_t   _radlen; // total radiation length of material traversed in this straw
-    Float_t   _pfrac; // fractional momentum change due to energy loss
-    Bool_t    _active; // was this material active in the fit?
+    bool active() const { return _flag.hasAllProperties(StrawFlag::active); }
+    bool hasHit() const { return _flag.hasAllProperties(StrawFlag::hashit); }
+    bool activeHit() const { return _flag.hasAllProperties(StrawFlag::activehit); }
+    bool driftHit() const { return _flag.hasAllProperties(StrawFlag::drifthit); }
+    StrawId _straw; // which straw was traversed
+    StrawFlag _flag; // description of how this straw was used in the fit
+    int _pcalc = KKStrawMaterial::unknown; // how were pathlengths calculated?
+    XYZVectorF _poca; // POCA to the straw axis
+    float _doca = 0.0; // DOCA from the track to the straw axis
+    float _dirdot = 0.0; // dot product between straw axis and track direction
+    float _gaspath = 0.0; // path length in gas material
+    float _wallpath = 0.0; // path length in straw wall material
+    float _wirepath = 0.0; // path length in straw wire material
+    float _radlen = 0.0; // radiation lengths of material traversed in this straw (gas + wall)
+    float _dmom =0.0; // momentum change due to energy loss in this straw (gas + wall)
   };
 }
 #endif

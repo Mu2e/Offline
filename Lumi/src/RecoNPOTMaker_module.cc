@@ -9,12 +9,13 @@
 #include "fhiclcpp/ParameterSet.h"
 
 //Reco DataProducts
-#include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Offline/RecoDataProducts/inc/RecoProtonBunchIntensity.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
 #include <cmath>
+#include <memory>
 #include <iostream>
 
 namespace mu2e {
@@ -76,7 +77,7 @@ namespace mu2e {
     const IntensityInfoTimeCluster*  _tcIntInfoDF;
 
 
-    ProtonBunchIntensity*            recoPBI; //Pointer to collection module produces
+    RecoProtonBunchIntensity*            recoPBI; //Pointer to collection module produces
 
   public:
 
@@ -120,7 +121,7 @@ namespace mu2e {
     consumes<IntensityInfoTimeCluster>(_tcIntInfoTZTag);
     consumes<IntensityInfoTimeCluster>(_tcIntInfoDFTag);
 
-    produces<ProtonBunchIntensity>();
+    produces<RecoProtonBunchIntensity>();
 
   }
 
@@ -212,9 +213,8 @@ namespace mu2e {
     }
     else if(_debugLevel > 0) {std:: cout <<"[RecoNPOTMaker::produce] Did not find DeltaFinder IntensityInfoTimeCluster data" << std::endl;}
 
-    std::unique_ptr<ProtonBunchIntensity> recoPBI (new ProtonBunchIntensity);
-    recoPBI->set(POT_caloEnergy); // only using calo energy to make the estimate for now
-
+    // only using calo energy to make the estimate for now, with a fixed 10% uncertainty
+    auto recoPBI = std::make_unique<RecoProtonBunchIntensity>(POT_caloEnergy, 0.1*POT_caloEnergy);
 
     event.put(std::move(recoPBI));
 
