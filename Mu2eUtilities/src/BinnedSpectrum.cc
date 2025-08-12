@@ -60,7 +60,7 @@ namespace mu2e {
 
       _finalBin = true;
       this->initialize<ConversionSpectrum>(elow,ehi,bin,ehi,bin);
-    } else if (spectrumShape == "ejectedProtons") {
+    }else if (spectrumShape == "ejectedProtons") {
       // should be kinetic energy
       double elow = 0.;
       // cut off at muon mass
