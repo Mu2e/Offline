@@ -93,8 +93,8 @@ private:
                             const mu2e::CalorimeterDataDecoder& cc,
                             std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
                             std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
-                            unsigned short& evtEnergy,
-			    std::vector<unsigned short>& caphriEnergies);
+                            unsigned short& evtEnergy, unsigned short& nhits_d0, unsigned short& nhits_d1,
+                            std::vector<unsigned short>& caphriEnergies);
 
   void addPulse(uint16_t& crystalID, float& time, float& eDep,
                 std::unique_ptr<mu2e::CaloHitCollection> const& hits_calo,
@@ -215,7 +215,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 
   size_t totalSize = 0;
   size_t numCalDecoders = 0;
-  unsigned short evtEnergy(0);
+  unsigned short evtEnergy(0), nhits_d0(0), nhits_d1(0);
   std::vector<unsigned short> caphriEnergies;
 
   std::unique_ptr<mu2e::CalorimeterDataDecoders> decoderColl(new mu2e::CalorimeterDataDecoders);
@@ -227,7 +227,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
     for (auto& subevent : caloSEvents) {
       decoderColl->emplace_back(subevent);
       auto& decoder = decoderColl->back();
-      analyze_calorimeter_(calodaqconds, decoder, calo_hits, caphri_hits, evtEnergy, caphriEnergies);
+      analyze_calorimeter_(calodaqconds, decoder, calo_hits, caphri_hits, evtEnergy, nhits_d0, nhits_d1, caphriEnergies);
       for (size_t i = 0; i < decoder.block_count(); ++i) {
         totalSize += decoder.blockSizeBytes(i);
       }
@@ -252,9 +252,9 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
   }
 
   int_info->setCaloEnergy(evtEnergy);
-  // int_info->setNCaloHits(calo_hits->size()); // FIXME
+  int_info->setNCaloHitsD0(nhits_d0);
+  int_info->setNCaloHitsD1(nhits_d1);
   int_info->setCaphriHits(caphriEnergies);
-  // int_info->setNCaphriHits(caphri_hits->size());
   event.put(std::move(int_info));
 
   // Store the calo hits in the event
@@ -266,7 +266,8 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
     mu2e::CaloDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,
     std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
-    std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits, unsigned short& evtEnergy,
+    std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
+    unsigned short& evtEnergy, unsigned short& nhits_d0, unsigned short& nhits_d1,
     std::vector<unsigned short>& caphriEnergies) {
 
   auto dtcID = cc.event_.GetDTCID();
@@ -324,22 +325,25 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
       float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];
 
       bool isCaphri = offlineId.crystal().isCaphri();
+      if(!isCaphri) {
+        if(offlineId.crystal().disk() == 0) ++nhits_d0;
+        else                                ++nhits_d1;
+      }
 
       // FIX ME! WE NEED TO CHECK IF TEH PULSE IS SATURATED HERE
       if (((eDep >= hitEDepMin_) || (isCaphri && (eDep >= caphriEDepMin_))) &&
           ((eDep < hitEDepMax_) || (isCaphri && (eDep < caphriEDepMax_)))) {
         addPulse(crystalID, time, eDep, calo_hits, caphri_hits);
         evtEnergy += eDep;
-	if(isCaphri) {
-	  const unsigned short caphri_ID = mu2e::IntensityInfoCalo::encodeCaphriIndex(crystalID);
-	  if(caphri_ID < 4) {
-	    const unsigned short e_short = mu2e::IntensityInfoCalo::encodeCaphriEnergy(eDep);
-	    const unsigned short encoded_hit = mu2e::IntensityInfoCalo::encodeCaphriHit(e_short, caphri_ID);
-	    caphriEnergies.push_back(encoded_hit);
-	  }
-	}
+        if(isCaphri) {
+          const unsigned short caphri_ID = mu2e::IntensityInfoCalo::encodeCaphriIndex(crystalID);
+          if(caphri_ID < 4) {
+            const unsigned short e_short = mu2e::IntensityInfoCalo::encodeCaphriEnergy(eDep);
+            const unsigned short encoded_hit = mu2e::IntensityInfoCalo::encodeCaphriHit(e_short, caphri_ID);
+            caphriEnergies.push_back(encoded_hit);
+          }
+        }
       }
-
     } // End loop over hits
   }   // End loop over ROCs
 }
