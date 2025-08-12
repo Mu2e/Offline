@@ -17,7 +17,7 @@
 #include "Offline/Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/PionCaptureSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/SimpleSpectrum.hh"
-#include "Offline/Mu2eUtilities/inc/Mu2eXSpectrum.hh"
+
 namespace mu2e {
 
   BinnedSpectrum::BinnedSpectrum(const fhicl::ParameterSet& psphys) :
