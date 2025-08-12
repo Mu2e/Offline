@@ -197,7 +197,7 @@ namespace mu2e {
 
        intInfo.setCaloEnergy(evtEnergy);
        // intInfo.setNCaloHits(pulseMap.size());
-       intInfo.setNCaloHits(nhits_d0 + nhits_d1); //pulseMap.size());
+       // intInfo.setNCaloHits(nhits_d0 + nhits_d1); //pulseMap.size());
        intInfo.setNCaloHitsD0(nhits_d0);
        intInfo.setNCaloHitsD1(nhits_d1);
        intInfo.setCaphriHits(caphri_energies);

@@ -16,18 +16,19 @@ namespace mu2e {
   {
   public:
     IntensityInfoCalo() {}
-    IntensityInfoCalo( unsigned short nCaloHits, unsigned short caloEnergy, std::vector<unsigned short> caphriHits):
-      nCaloHits_(nCaloHits),caloEnergy_(caloEnergy),caphriHits_(caphriHits)
+    IntensityInfoCalo(/* unsigned short nCaloHits,*/ unsigned short caloEnergy, std::vector<unsigned short> caphriHits):
+      // nCaloHits_(nCaloHits),
+      caloEnergy_(caloEnergy),caphriHits_(caphriHits)
     {}
 
 
-    void setNCaloHits      (unsigned short tmp) {nCaloHits_    = tmp;}
+    // void setNCaloHits      (unsigned short tmp) {nCaloHits_    = tmp;}
     void setNCaloHitsD0    (unsigned short tmp) {nCaloHitsD0_  = tmp;}
     void setNCaloHitsD1    (unsigned short tmp) {nCaloHitsD1_  = tmp;}
     void setCaloEnergy     (unsigned short tmp) {caloEnergy_   = tmp;}
     void setCaphriHits     (std::vector<unsigned short> tmp) {caphriHits_  = tmp;}
 
-    unsigned short nCaloHits    () const { return nCaloHits_   ; }
+    unsigned short nCaloHits    () const { return nCaloHitsD0_ + nCaloHitsD1_; }
     unsigned short nCaloHitsD0  () const { return nCaloHitsD0_ ; }
     unsigned short nCaloHitsD1  () const { return nCaloHitsD1_ ; }
     unsigned short caloEnergy   () const { return caloEnergy_  ; }
@@ -69,7 +70,7 @@ namespace mu2e {
     }
 
   private:
-    unsigned short  nCaloHits_    = 0;
+    // unsigned short  nCaloHits_    = 0;
     unsigned short  nCaloHitsD0_  = 0;
     unsigned short  nCaloHitsD1_  = 0;
     unsigned short  caloEnergy_   = 0;

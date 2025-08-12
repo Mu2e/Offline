@@ -60,7 +60,8 @@ namespace mu2e
     // Assign non-zero entries for harder compression
     if(_simMode == 1) {
       const static int prime_1(17), prime_2(251), prime_3(503), prime_4(1523); //for distributing values somewhat evenly
-      caloInfo->setNCaloHits  ((eventNumber * prime_2) % (prime_3));
+      caloInfo->setNCaloHitsD0((eventNumber * prime_2) % (prime_4));
+      caloInfo->setNCaloHitsD1((eventNumber * prime_2) % (prime_3));
       caloInfo->setCaloEnergy ((eventNumber * prime_1) % (prime_2));
       const int nCaphriHits = (eventNumber * prime_3) % (prime_1);
       std::vector<unsigned short> caphriHits;
