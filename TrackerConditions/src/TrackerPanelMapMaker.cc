@@ -1,6 +1,6 @@
 // clang-format off
-#include "Offline/TrackerConditions/inc/TrkPanelMapEntity.hh"
-#include "Offline/TrackerConditions/inc/TrkPanelMapMaker.hh"
+#include "Offline/TrackerConditions/inc/TrackerPanelMap.hh"
+#include "Offline/TrackerConditions/inc/TrackerPanelMapMaker.hh"
 // #include "cetlib_except/exception.h"
 // #include "TMath.h"
 // #include <cmath>
@@ -14,9 +14,9 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------  
 // all vectors are supposed to have the same length  
-  TrkPanelMapEntity::ptr_t TrkPanelMapMaker::fromFcl() {
+  TrackerPanelMap::ptr_t TrackerPanelMapMaker::fromFcl() {
 
-    auto ptr = std::make_shared<TrkPanelMapEntity>();
+    auto ptr = std::make_shared<TrackerPanelMap>();
 
     std::vector<int> mnid    = config_.mnid   ();
     std::vector<int> dtcid   = config_.dtcid  ();
@@ -39,7 +39,7 @@ namespace mu2e {
   } // end fromFcl
 
 //-----------------------------------------------------------------------------  
-  TrkPanelMapEntity::ptr_t TrkPanelMapMaker::fromDb(TrkPanelMap::cptr_t Table) {
+  TrackerPanelMap::ptr_t TrackerPanelMapMaker::fromDb(TrkPanelMap::cptr_t Table) {
     // initially fill from fcl to get all the constants
     auto ptr = fromFcl(); 
     int nr = Table->nrow();

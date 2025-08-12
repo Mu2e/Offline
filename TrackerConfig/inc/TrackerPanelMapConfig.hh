@@ -1,7 +1,7 @@
-#ifndef TrackerConditions_TrkPanelMapConfig_hh
-#define TrackerConditions_TrkPanelMapConfig_hh
+#ifndef TrackerConditions_TrackerPanelMapConfig_hh
+#define TrackerConditions_TrackerPanelMapConfig_hh
 // clang-format off
-// Initialize TrkPanelMap from fcl
+// Initialize TrackerPanelMap from fcl
 //
 #include <string>
 #include "fhiclcpp/types/Atom.h"
@@ -11,7 +11,7 @@
 
 namespace mu2e {
 
-  struct TrkPanelMapConfig {
+  struct TrackerPanelMapConfig {
     using Name   =fhicl::Name;
     using Comment=fhicl::Comment;
     fhicl::Atom<int>     verbose{Name("verbose"), Comment("verbosity: 0,1,2")};

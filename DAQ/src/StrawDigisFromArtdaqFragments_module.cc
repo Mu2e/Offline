@@ -44,7 +44,7 @@
 #include <memory>
 
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
-#include "Offline/TrackerConditions/inc/TrkPanelMapEntity.hh"
+#include "Offline/TrackerConditions/inc/TrackerPanelMap.hh"
 
 // #define TRACEMF_USE_VERBATIM 1
 
@@ -152,8 +152,7 @@ private:
                                                 // for now, IDTC=2*nodename+PCIE_ADDR
   int _last_run;
   
-  ProditionsHandle<TrkPanelMapEntity> _trkPanelMap_h;
-  const TrkPanelMapEntity* _trkPanelMap;
+  const TrackerPanelMap*            _trackerPanelMap;
   
   // less than 300 panels physically exist and are enumeratively labeled
   // hence, the max allowed word can act be used as a sentinel
@@ -305,7 +304,8 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
   event_ = &event;                      // cache to print events
   
   if (_last_run != (int) event.run()) {
-    _trkPanelMap = &_trkPanelMap_h.get(event.id());
+    ProditionsHandle<TrackerPanelMap> tpm_h;
+    _trackerPanelMap = &tpm_h.get(event.id());
     _last_run    = event.run();
   }
 
@@ -431,7 +431,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               
               uint16_t mnid    = channel >> mu2e::StrawId::_panelsft;
               
-              const TrkPanelMap::Row* tpm = _trkPanelMap->panel_map_by_online_ind(dtc_id,link_id);
+              const TrkPanelMap::Row* tpm = _trackerPanelMap->panel_map_by_online_ind(dtc_id,link_id);
               if (tpm->mnid() != mnid) {
                 print_(std::format("ERROR: hit chid:{:04x} inconsistent with the dtc_id:{} and link_id:{}\n",
                                    hit_data->StrawIndex, dtc_id, link_id));

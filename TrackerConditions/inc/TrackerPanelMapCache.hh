@@ -1,19 +1,19 @@
-#ifndef TrackerConditions_TrkPanelMapCache_hh
-#define TrackerConditions_TrkPanelMapCache_hh
+#ifndef TrackerConditions_TrackerPanelMapCache_hh
+#define TrackerConditions_TrackerPanelMapCache_hh
 
 #include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
 #include "Offline/DbTables/inc/DbIoV.hh"
 #include "Offline/DbService/inc/DbHandle.hh"
 
-#include "Offline/TrackerConditions/inc/TrkPanelMapMaker.hh"
-#include "Offline/TrackerConfig/inc/TrkPanelMapConfig.hh"
+#include "Offline/TrackerConditions/inc/TrackerPanelMapMaker.hh"
+#include "Offline/TrackerConfig/inc/TrackerPanelMapConfig.hh"
 
 
 namespace mu2e {
-  class TrkPanelMapCache : public ProditionsCache {
+  class TrackerPanelMapCache : public ProditionsCache {
     public:
-      TrkPanelMapCache(TrkPanelMapConfig const& config):
-        ProditionsCache(TrkPanelMapEntity::cxname,config.verbose()),
+      TrackerPanelMapCache(TrackerPanelMapConfig const& config):
+        ProditionsCache(TrackerPanelMap::cxname,config.verbose()),
         _useDb(config.useDb()),_maker(config) {}
 
       void initialize() {
@@ -53,13 +53,12 @@ namespace mu2e {
       }
 
     private:
-      bool             _useDb;
-      TrkPanelMapMaker _maker;
+      bool                 _useDb;
+      TrackerPanelMapMaker _maker;
 
       // these handles are not default constructed
       // so the db can be completely turned off
       std::unique_ptr<DbHandle<TrkPanelMap>> _tpm_p;
-
   };
 }
 

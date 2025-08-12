@@ -1,6 +1,6 @@
 // clang-format off
-#ifndef TrackerConditions_TrkPanelMapEntity_hh
-#define TrackerConditions_TrkPanelMapEntity_hh
+#ifndef TrackerConditions_TrackerPanelMap_hh
+#define TrackerConditions_TrackerPanelMap_hh
 //
 // defines cross-mapping of different indices corresponding to a tracker panel
 //
@@ -16,19 +16,19 @@
 
 namespace mu2e {
 
-  class TrkPanelMapEntity : public ProditionsEntity {
+  class TrackerPanelMap : public ProditionsEntity {
   public:
     enum {
       kMaxPlanes = 100,
       kMaxPanels = 600
     };
       
-    typedef std::shared_ptr<TrkPanelMapEntity> ptr_t;
-    typedef std::shared_ptr<const TrkPanelMapEntity> cptr_t;
-    constexpr static const char* cxname = {"TrkPanelMapEntity"};
+    typedef std::shared_ptr<TrackerPanelMap> ptr_t;
+    typedef std::shared_ptr<const TrackerPanelMap> cptr_t;
+    constexpr static const char* cxname = {"TrackerPanelMap"};
 
-    TrkPanelMapEntity();
-    virtual ~TrkPanelMapEntity() {}
+    TrackerPanelMap();
+    virtual ~TrackerPanelMap() {}
 
     const TrkPanelMap::Row* panel_map_by_mnid       (int MnID) const {
       return _tpm_by_mnid[MnID];
