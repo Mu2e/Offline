@@ -11,7 +11,7 @@
 #include "fhiclcpp/types/OptionalAtom.h"
 
 #include <artdaq-core-mu2e/Data/EventHeader.hh>
-#ifdef ARTDAQ_DAQDATA_GLOBALS_HH
+#ifdef ONLINE_MODE
 #include "artdaq/DAQdata/Globals.hh"
 #endif
 
@@ -81,7 +81,7 @@ namespace mu2e {
     , _useSubruns(!config().eventFreq(_eventFreq))
     , _passFirst(config().passFirst())
     , _duplications(config().duplications())
-#ifdef ARTDAQ_DAQDATA_GLOBALS_HH
+#ifdef ONLINE_MODE
     , _outName(app_name)
 #else
     , _outName("")
@@ -163,10 +163,10 @@ namespace mu2e {
     if(_useHeader)      sr.put(std::move(_headers)         , _outName, art::fullSubRun());
 
     // Initialize new collections
-    if(_useCalo)         _caloInfos = std::unique_ptr<mu2e::IntensityInfosCalo>(new mu2e::IntensityInfosCalo);
+    if(_useCalo)         _caloInfos       = std::unique_ptr<mu2e::IntensityInfosCalo>(new mu2e::IntensityInfosCalo);
     if(_useTimeCluster) _timeClusterInfos = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
-    if(_useTracker)     _trackerInfos = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
-    if(_useHeader)      _headers = std::unique_ptr<mu2e::EventHeaders>(new mu2e::EventHeaders);
+    if(_useTracker)     _trackerInfos     = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
+    if(_useHeader)      _headers          = std::unique_ptr<mu2e::EventHeaders>(new mu2e::EventHeaders);
 
     _firstInSubrun = true;
     _eventCount    = 0;
