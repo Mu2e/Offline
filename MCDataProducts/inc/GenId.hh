@@ -44,8 +44,8 @@ namespace mu2e {
       cosmicCRY,  pbarFlat, fromAscii, ExternalRMC, InternalRMC, CeLeadingLog, cosmicCORSIKA, //44
       MuCapProtonGenTool, MuCapDeuteronGenTool, DIOGenTool, MuCapNeutronGenTool, // 48
       MuCapPhotonGenTool, MuCapGammaRayGenTool, CeLeadingLogGenTool, MuplusMichelGenTool,// 52
-      gammaPairProduction, antiproton, Mu2eXGenTool,//54
-      lastEnum //55
+      gammaPairProduction, antiproton, Mu2eXGenTool,//55
+      lastEnum //56
     };
 
 #ifndef SWIG
