@@ -230,6 +230,10 @@ double stm.magnet.stand.topExtraLength = -200.0; // reduce length of table to av
 
 double stm.shieldingHolePoly.rOut = 127.0; // diameter of ECS hole is 254 mm
 double stm.ifbPoly.rOut = 127.0;
+
+// decouple the VD sizes from the size of the CRS, which is not there for geom_run1_a.txt
+double stm.upstreamVDs.xHalfLength = 2850.;
+
 // This tells emacs to view this file in c++ mode
 // Local Variables:
 // mode:c++
