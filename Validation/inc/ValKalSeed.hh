@@ -31,9 +31,11 @@ class ValKalSeed {
   TH1D* _hTraj;
   TH1D* _hStatus;
   TH1D* _ht0;
+  TH1D* _ht0e;
   TH1D* _ht02;
   TH1D* _hchi2;
   TH1D* _hhasCal;
+  TH1D* _hactiveCal;
   TH1D* _hfitCon;
   TH1D* _hfitConC;
   TH1D* _hfitConT;
