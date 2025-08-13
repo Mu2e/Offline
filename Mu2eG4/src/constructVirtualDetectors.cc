@@ -1359,7 +1359,7 @@ namespace mu2e {
       GeomHandle<CosmicRayShield> CRS;
       //const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
       const double yExtentLow      = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
-      const double x_vd_halflength = _config.getDouble("upstreamVDs.xHalfLength", 2850.); // 2850. is default to use for older version os STM geom before v09;
+      const double x_vd_halflength = _config.getDouble("stm.upstreamVDs.xHalfLength", 2850.); // 2850. is default to use for older version os STM geom before v09;
       //const double y_vd_halflength = (y_crv_max + yExtentLow)/2.0;
       const double y_mother_halflength = yExtentLow;
       const double dimVD[3] = { x_vd_halflength, y_mother_halflength, vdg->getHalfLength() };
@@ -1427,7 +1427,7 @@ namespace mu2e {
       GeomHandle<CosmicRayShield> CRS;
       //const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
       const double yExtentLow      = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
-      const double x_vd_halflength = _config.getDouble("upstreamVDs.xHalfLength", 2850.); // 2850. is default to use for older version os STM geom before v09;
+      const double x_vd_halflength = _config.getDouble("stm.upstreamVDs.xHalfLength", 2850.); // 2850. is default to use for older version os STM geom before v09;
       //const double y_vd_halflength = (y_crv_max + yExtentLow)/2.0;
       const double y_mother_halflength = yExtentLow;
       const double dimVD[3] = { x_vd_halflength, y_mother_halflength, vdg->getHalfLength() };
@@ -1473,7 +1473,7 @@ namespace mu2e {
         x_vd_halflength     = _config.getDouble("stm.magnet.holeHalfWidth");
       } else {
         yExtentLow      = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
-        x_vd_halflength = _config.getDouble("upstreamVDs.xHalfLength", 2850.); // 2850. is default to use for older version of STM geom before v09;
+        x_vd_halflength = _config.getDouble("stm.upstreamVDs.xHalfLength", 2850.); // 2850. is default to use for older version of STM geom before v09;
       }
       const double y_mother_halflength = yExtentLow;
 
