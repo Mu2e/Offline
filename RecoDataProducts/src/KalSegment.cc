@@ -1,4 +1,5 @@
 #include "Offline/RecoDataProducts/inc/KalSegment.hh"
+#include "cetlib_except/exception.h"
 
 namespace mu2e {
 
@@ -28,6 +29,21 @@ namespace mu2e {
     // for now, revert to the legacy implementation.  Once BTrk is fully removed this should be removed
     auto vel = _pstate.velocity();
     return _pstate.time() - _pstate.position3().Z()/vel.Z();
+  }
+
+  double KalSegment::t0Var(TrkFitFlag const& flag) const {
+    // convert to the appropriate parameterization.
+    if(flag.hasAllProperties(TrkFitFlag::KKLoopHelix)) {
+      auto lh = loopHelix();
+      return lh.paramVar(KinKal::LoopHelix::t0Index());
+    } else if(flag.hasAllProperties(TrkFitFlag::KKCentralHelix)) {
+      auto ch = loopHelix();
+      return ch.paramVar(KinKal::CentralHelix::t0Index());
+    } else if (flag.hasAllProperties(TrkFitFlag::KKLine)) {
+      auto kl = kinematicLine();
+      return kl.paramVar(KinKal::KinematicLine::t0Index());
+    }
+    throw cet::exception("RECO")<<"mu2e::KalSegment: no trajectory specified in flag" << std::endl;
   }
 
   // deprecated legacy functions, these should be removed FIXME

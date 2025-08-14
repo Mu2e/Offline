@@ -47,6 +47,7 @@ namespace mu2e {
     auto const& intersections() const { return _inters; }
     auto const& status() const { return _status; }
     double t0Val() const;
+    double t0Var() const;
     float chisquared() const { return _chisq; }
     int nDOF() const { return _ndof; }
     unsigned nHits(bool active=true) const;

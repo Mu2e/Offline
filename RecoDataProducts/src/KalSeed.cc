@@ -131,6 +131,12 @@ namespace mu2e {
     return t0;
   }
 
+  double KalSeed::t0Var() const {
+    double t0;
+    auto segiter = t0Segment(t0);
+    return segiter->t0Var(_status);
+  }
+
   // deprecated legacy functions
 
   HitT0 KalSeed::t0() const {
