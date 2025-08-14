@@ -83,6 +83,9 @@ namespace mu2e {
       fhicl::Atom<float> maxStrawHitDOCA { Name("MaxStrawHitDOCA"), Comment("Max DOCA to add a hit (mm)") };
       fhicl::Atom<float> maxStrawHitDt { Name("MaxStrawHitDt"), Comment("Max Detla time to add a hit (ns)") };
       fhicl::Atom<int> maxDStraw { Name("MaxDStraw"), Comment("Maximum (integer) straw separation when adding straw hits") };
+      fhicl::Atom<bool> skipStrawCheck { Name("SkipStrawCheck"), Comment("Skip rho and panel longitudinal checks when adding straws") };
+      fhicl::Atom<float> addStrawMinDz { Name("AddStrawMinDz"), Comment("For tracks more vertical than this add all straws") };
+      fhicl::Atom<int> strawNBuffer { Name("StrawNBuffer"), Comment("Project track N straws to calculate v span when adding straws") };
       fhicl::Atom<float> maxStrawDOCA { Name("MaxStrawDOCA"), Comment("Max DOCA to add straw material (mm)") };
       fhicl::Atom<float> maxStrawDOCAConsistency { Name("MaxStrawDOCAConsistency"), Comment("Max DOCA chi-consistency to add straw material") };
       fhicl::Atom<float> maxStrawUposBuff { Name("MaxStrawUposBuffer"), Comment("Max Upos beyond strawlength to add straw material (mm)") };
