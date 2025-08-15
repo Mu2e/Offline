@@ -11,27 +11,4 @@ EventTiming : {
    OffSpillEventLength : 4000
 }
 
-#------------------------------------------------------------------------------
-# PM : cross-mapping of different panel-related indices
-# station,plane,panel: offline ('geographical') indices
-# dtcid,link         : online (DAQ) indices
-# mnid,psid,ppid     : production indices (labels)
-# for online,  use the FCL backedn
-# for offline, use the DB  backend (either text or real DB)
-#------------------------------------------------------------------------------
-TrackerPanelMap : {
-    verbose: 0
-    useDb  : false
-#            |       plane 25             |        plane 21             |       tower                 |
-    mnid   : [261, 248, 224, 262, 273, 276, 253, 101, 219, 213, 235, 247, 400, 401, 402, 403, 404, 405]
-    dtcid  : [ 18,  18,  18,  18,  18,  18,  19,  19,  19,  19,  19,  19,  44,  44,  44,  44,  44,  44]
-    link   : [  0,   1,   2,   3,   4,   5,   0,   1,   2,   3,   4,   5,   0,   1,   2,   3,   4,   5]
-    station: [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  99,  99,  99,  99,  99,  99]
-    psid   : [  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  99,  99,  99,  99,  99,  99]
-    plane  : [  1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,  99,  99,  99,  99,  99,  99]
-    ppid   : [ 25,  25,  25,  25,  25,  25,  21,  21,  21,  21,  21,  21,  99,  99,  99,  99,  99,  99]
-    panel  : [  3,   4,   0,   5,   1,   2,   4,   3,   5,   0,   1,   2,   0,   1,   2,   3,   4,   5]
-    zface  : [  3,   2,   2,   3,   3,   2,   1,   0,   0,   1,   0,   1,   0,   0,   0,   0,   0,   0]
-}
-
 END_PROLOG
