@@ -1,0 +1,104 @@
+# -*- mode:tcl -*-
+#------------------------------------------------------------------------------
+# run interactively, stop after each event to display waveforms
+#
+# Usage: mu2e -c daqana/fcl/trk_fragment_ana_001.fcl -s <input art file> [-n 10]
+# 
+# hopefully, prolog variables below are not used
+#-----------------------------------------------------------------------------
+BEGIN_PROLOG
+  TRIGGER_PATHS : [  "p1" ]
+END_PROLOG
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+#include "Offline/CommonMC/fcl/prolog.fcl"
+#include "Offline/DAQ/fcl/prolog.fcl"
+#include "Offline/TrkHitReco/fcl/prolog.fcl"
+
+process_name : FilterStrawHits
+
+source : {
+    module_type : RootInput
+    fileNames   : @nil
+
+    # firstEvent  : 500
+    maxEvents   : -1
+    #   inputCommands: ["keep *",
+    #                   "drop *Mu2eEventHeader*_*_*_*"]
+}
+
+services : @local::Services.SimAndReco
+
+services.scheduler.wantSummary                   : true
+
+services.DbService : @local::DbEmpty
+services.SeedService.baseSeed         : 8
+services.SeedService.maxUniqueEngines : 100
+
+services.ProditionsService.alignedTracker.useDb : false
+services.ProditionsService.alignedTrackerSim.useDb : false
+services.ProditionsService.strawElectronics.useDb : false
+services.ProditionsService.fullReadoutStraw.useDb : false
+services.ProditionsService.strawDrift.useDb : false
+services.ProditionsService.strawPhysics.useDb : false
+services.ProditionsService.strawResponse.useDb : false
+services.ProditionsService.trackerStatus.Settings.useDb : false
+
+outputs:  {
+    defaultOutput :  {
+        module_type   :   RootOutput
+        SelectEvents  : [ @sequence::TRIGGER_PATHS ]
+        fileName      :   "rec.mu2e.trk.vst00s001r000n000.%06r_%06s.art"
+#------------------------------------------------------------------------------
+# filtering only, drop evrything created by this process except ... 
+#------------------------------------------------------------------------------
+        outputCommands: ["keep *_daq_*_*",
+                         "drop *_*_*_FilterStrawHits",
+                         "keep *_EWMProducer_*_*"           ## to not think of random numbers again
+                        ]
+    }
+}
+physics : {
+    producers : {
+        EWMProducer: { @table::CommonMC.DigiProducers.EWMProducer
+            SpillType:          0   ## offspill
+            RecoFromMCTruth: false  ## default
+            RecoFromMCTruthErr: 0   ## default
+            InitialPhaseShift:  0   ## optional, set it to zero just in case
+        }
+
+        makeSD: { @table::DAQ.producers.makeSD
+            diagLevel     :  0 ## 10
+            saveWaveforms :  true
+            geography     : [ @sequence::station_00_geography ]
+           
+        }
+    }
+    p1 : [ makeSD ]
+
+    e1 : [ ] ##  defaultOutput ]
+
+    trigger_paths  : [ @sequence::TRIGGER_PATHS ]
+    end_paths      : [ e1 ]
+}
+
+services.TimeTracker : {
+    printSummary : true
+    dbOutput : {
+        filename  : ""    ## "filter_straw_hits.sqlite3"
+        overwrite : false ## true
+    }
+}
+#------------------------------------------------------------------------------
+# assume we're on mu2edaq22
+#------------------------------------------------------------------------------
+services.TFileService.fileName                   : "hst.mu2e.vst.filter_straw_hits.%06r_%06s.root" ## "/dev/null" ##
+services.scheduler.wantSummary                   : true
+
+source.fileNames : [ "aaa.art" ] 
+
+physics.producers.makeSD.debugMode       : 1
+physics.producers.makeSD.debugBits       : [ "bit0:1" ]
+physics.producers.makeSD.dtcHeaderPresent: false
