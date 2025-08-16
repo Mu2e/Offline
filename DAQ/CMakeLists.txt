@@ -78,21 +78,43 @@ cet_build_plugin(PrefetchDAQData art::module
 )
 
 cet_build_plugin(STMWaveformDigisFromFragments art::module
-    REG_SOURCE src/STMWaveformDigisFromFragments_module.cc
-    LIBRARIES REG
-      Offline::DAQ
-      Offline::ProditionsService
-      Offline::DataProducts
-      Offline::RecoDataProducts
-      BTrk_difAlgebra
+  REG_SOURCE src/STMWaveformDigisFromFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::ProditionsService
+  Offline::DataProducts
+  Offline::RecoDataProducts
+  BTrk_difAlgebra
 )
-
+    
 cet_build_plugin(StrawDigisFromArtdaqFragments art::module
   REG_SOURCE src/StrawDigisFromArtdaqFragments_module.cc
   LIBRARIES REG
   Offline::DAQ
-  Offline::DataProducts
   Offline::RecoDataProducts
+  Offline::DataProducts
+  artdaq-core-mu2e::Data
+  art_root_io::TFileService_service
+  ROOT::Hist
+  ROOT::Tree
+  ROOT::Core
+  ROOT::RIO
+  ROOT::Gui
+)
+
+cet_build_plugin(StrawHitFilter art::module
+  REG_SOURCE src/StrawHitFilter_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::RecoDataProducts
+  Offline::DataProducts
+  artdaq-core-mu2e::Data
+  art_root_io::TFileService_service
+  ROOT::Hist
+  ROOT::Tree
+  ROOT::Core
+  ROOT::RIO
+  ROOT::Gui
 )
 
 cet_build_plugin(CrvDigisFromArtdaqFragments art::module
