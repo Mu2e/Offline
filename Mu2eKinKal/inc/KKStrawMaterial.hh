@@ -32,26 +32,24 @@ namespace mu2e {
       // construct using materials by name
       KKStrawMaterial(MatDBInfo const& matdbinfo,StrawProperties const& sprops,
           const std::string& wallmat="straw-wall", const std::string& gasmat="straw-gas", const std::string& wiremat="straw-wire");
-      // pathlength through straw components, given closest approach
-      void pathLengths(ClosestApproachData const& cadata,StrawXingUpdater const& caconfig, double& wallpath, double& gaspath, double& wirepath) const;
+      // pathlength through straw components, given closest approach. Return the method used to compute the paths
+      PathCalc pathLengths(ClosestApproachData const& cadata,StrawXingUpdater const& caconfig, double& wallpath, double& gaspath, double& wirepath) const;
+      PathCalc averagePathLengths(double& wallpath, double& gaspath, double& wirepath) const;
       // transit length given closest approach
       double transitLength(ClosestApproachData const& cadata) const;
       // find the material crossings given doca and error on doca.  Should allow for straw and wire to have different axes TODO
-      void findXings(ClosestApproachData const& cadata,StrawXingUpdater const& caconfig, std::vector<MaterialXing>& mxings) const;
-      double outerRadius() const { return sprops_.strawOuterRadius(); }
-      double innerRadius() const { return sprops_.strawInnerRadius(); }
-      double wallThickness() const { return sprops_.strawWallThickness(); }
-      double wireRadius() const { return sprops_.wireRadius(); }
+      PathCalc findXings(ClosestApproachData const& cadata,StrawXingUpdater const& caconfig, std::vector<MaterialXing>& mxings) const;
       DetMaterial const& wallMaterial() const { return *wallmat_; }
       DetMaterial const& gasMaterial() const { return *gasmat_; }
       DetMaterial const& wireMaterial() const { return *wiremat_; }
-      auto pathCalculation() const& { return pathcalc_; }
+      double wireRadius() const { return wrad_; }
     private:
-      StrawProperties const& sprops_;
       double orad2_; // outer radius of the straw squared
+      double irad_;
       double irad2_; // inner radius of the straw squared
-      double tpath_; // outer radius * thickness = average path at the tangent point
-      mutable PathCalc pathcalc_ = unknown; // how were path lenghts calculated?
+      double wallonlypath_; // average wall path for paths outside the gas
+      double avggaspath_, avgwallpath_; // average wall and gas paths
+      double wrad_; // wire radius
       const std::shared_ptr<DetMaterial> wallmat_; // material of the straw wall
       const std::shared_ptr<DetMaterial> gasmat_; // material of the straw gas
       const std::shared_ptr<DetMaterial> wiremat_; // material of the wire
