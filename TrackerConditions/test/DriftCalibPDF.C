@@ -15,7 +15,7 @@
 #include "TFile.h"
 
 
-void DriftCalibPDF(std::string filename)
+void DriftCalibPDF(std::string filename, std::string calib_type)
 {
 #ifndef __CINT__
 
@@ -176,14 +176,14 @@ void DriftCalibPDF(std::string filename)
     std::cout << " All tracks:            " << tracks_all << std::endl;
     std::cout << " Tracks passing cut #1: " << tracks_passcut1 << std::endl;
     std::cout << " Tracks passing cut #2: " << tracks_passcut2 << std::endl;
-    std::cout << " Tracks passing cut #2: " << tracks_passcut3 << std::endl;
+    std::cout << " Tracks passing cut #3: " << tracks_passcut3 << std::endl;
     std::cout << " Tracks with at least one good trackhit: " << tracks_goodtrackhits << std::endl;
     std::cout << std::endl;
     std::cout << " All track hits:            " << trackhits_all << std::endl;
-    std::cout << " Track hits passing cut #3: " << trackhits_passcut4 << std::endl;
-    std::cout << " Track hits passing cut #4: " << trackhits_passcut5 << std::endl;
-    std::cout << " Track hits passing cut #5: " << trackhits_passcut6 << std::endl;
-    std::cout << " Track hits passing cut #6: " << trackhits_passcut7 << std::endl;
+    std::cout << " Track hits passing cut #4: " << trackhits_passcut4 << std::endl;
+    std::cout << " Track hits passing cut #5: " << trackhits_passcut5 << std::endl;
+    std::cout << " Track hits passing cut #6: " << trackhits_passcut6 << std::endl;
+    std::cout << " Track hits passing cut #7: " << trackhits_passcut7 << std::endl;
     std::cout << std::endl;
     
     
@@ -256,31 +256,31 @@ void DriftCalibPDF(std::string filename)
     h_cdrift_corr -> Scale(1.0 / h_cdrift_corr->Integral());
     
     
-    // Save calibration file
-    std::string cfname = "DriftCalibPDF.txt";
-    ofstream cfile(cfname.c_str(), ios::trunc);
+    // // Save calibration file
+    // std::string cfname = "DriftCalibPDF";
+    // ofstream cfile(Form("%s_%s.txt", cfname.c_str(), calib_type.c_str()), ios::trunc);
     
-    time_t now = time(0);
-    char* dt = ctime(&now);
+    // time_t now = time(0);
+    // char* dt = ctime(&now);
     
-    cfile << "# The following was produced by DriftCalibPDF.C with track hit selection 'trkhit.reco->driftqual > 0.2' on " << dt << std::endl;
-    cfile << std::setw(4) << std::setprecision(3);
-    cfile << "driftOffBins : [ ";
-    cfile << rcbinedges[0] << " , " << rcbinedges[1] << " ]" << endl;
-    cfile << "driftOffset : [ ";
+    // cfile << "# The following was produced by DriftCalibPDF.C with track hit selection 'trkhit.reco->driftqual > 0.2' on " << dt << std::endl;
+    // cfile << std::setw(4) << std::setprecision(3);
+    // cfile << "driftOffBins : [ ";
+    // cfile << rcbinedges[0] << " , " << rcbinedges[1] << " ]" << endl;
+    // cfile << "driftOffset : [ ";
     
-    bool first(true);
-    for( int ibin = 0; ibin < nrcbins; ++ibin ) {
-        if ( !first ) cfile << " , ";
-        first = false;
-        cfile << offsets[ibin];
-    }
-    cfile << " ]" << endl;
-    cfile.close();
+    // bool first(true);
+    // for( int ibin = 0; ibin < nrcbins; ++ibin ) {
+    //     if ( !first ) cfile << " , ";
+    //     first = false;
+    //     cfile << offsets[ibin];
+    // }
+    // cfile << " ]" << endl;
+    // cfile.close();
     
     
     // Save histograms
-    TFile outputfile("DriftCalibPDF.root", "RECREATE");
+    TFile outputfile(Form("../root_files/DriftCalibPDF_%s.root", calib_type.c_str()), "RECREATE");
     
     h_mc_dist -> Write();
     h_rdrift  -> Write();
