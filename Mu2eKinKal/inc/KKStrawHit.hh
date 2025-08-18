@@ -188,7 +188,7 @@ namespace mu2e {
   }
 
   template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::fillDriftInfo() const {
-    double lorentzAngle = Mu2eKinKal::LorentzAngle(ca_.tpData(),ca_.particleTraj().bnom().Unit());
+    double lorentzAngle = Mu2eKinKal::LorentzAngle(ca_.tpData(),ca_.particleTraj().bnom().Unit(),chit_);
     return sresponse_.driftInfo(strawId(),ca_.deltaT(),lorentzAngle);
   }
 
