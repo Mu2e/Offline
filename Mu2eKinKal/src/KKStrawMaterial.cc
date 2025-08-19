@@ -18,7 +18,7 @@ namespace mu2e {
     irad2_(pow(sprops.strawInnerRadius(),2)),
     wallonlypath_(sqrt(2.0*sprops.strawOuterRadius()*sprops.strawWallThickness())),
     avggaspath_(0.5*M_PI*sprops.strawInnerRadius()),
-    avgwallpath_(0.5*M_PI*(orad2_-irad2_)/sprops.strawOuterRadius()),
+    avgwallpath_(M_PI*sprops.strawWallThickness()),
     wrad_(sprops.wireRadius()),
     wallmat_(wallmat), gasmat_(gasmat), wiremat_(wiremat)
   {}
