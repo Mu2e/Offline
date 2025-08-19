@@ -15,15 +15,16 @@ namespace mu2e {
   struct TrkStraw {
     TrkStraw(StrawId const& id,StrawFlag const& flag, KinKal::ClosestApproachData const& pocadata, KKStrawMaterial const& smat,StrawXingUpdater const& caconfig,
         double radlen, double dmom) :
-      _straw(id), _flag(flag),_pcalc(smat.pathCalculation()),
+      _straw(id), _flag(flag),
       _poca(pocadata.sensorPoca().Vect()),
       _doca(pocadata.doca()),
+      _docavar(pocadata.docaVar()),
       _dirdot(pocadata.dirDot()),
       _radlen(radlen),
       _dmom(dmom)
     {
       double wallpath, gaspath, wirepath;
-      smat.pathLengths(pocadata,caconfig,wallpath,gaspath,wirepath);
+      _pcalc = smat.pathLengths(pocadata,caconfig,wallpath,gaspath,wirepath);
       _wallpath = wallpath;
       _gaspath = gaspath;
       _wirepath = wirepath;
@@ -39,6 +40,7 @@ namespace mu2e {
     int _pcalc = KKStrawMaterial::unknown; // how were pathlengths calculated?
     XYZVectorF _poca; // POCA to the straw axis
     float _doca = 0.0; // DOCA from the track to the straw axis
+    float _docavar = 0.0; // DOCA variance
     float _dirdot = 0.0; // dot product between straw axis and track direction
     float _gaspath = 0.0; // path length in gas material
     float _wallpath = 0.0; // path length in straw wall material
