@@ -256,27 +256,26 @@ void DriftCalibPDF(std::string filename, std::string calib_type)
     h_cdrift_corr -> Scale(1.0 / h_cdrift_corr->Integral());
     
     
-    // // Save calibration file
-    // std::string cfname = "DriftCalibPDF";
-    // ofstream cfile(Form("%s_%s.txt", cfname.c_str(), calib_type.c_str()), ios::trunc);
-    
-    // time_t now = time(0);
-    // char* dt = ctime(&now);
-    
-    // cfile << "# The following was produced by DriftCalibPDF.C with track hit selection 'trkhit.reco->driftqual > 0.2' on " << dt << std::endl;
-    // cfile << std::setw(4) << std::setprecision(3);
-    // cfile << "driftOffBins : [ ";
-    // cfile << rcbinedges[0] << " , " << rcbinedges[1] << " ]" << endl;
-    // cfile << "driftOffset : [ ";
-    
-    // bool first(true);
-    // for( int ibin = 0; ibin < nrcbins; ++ibin ) {
-    //     if ( !first ) cfile << " , ";
-    //     first = false;
-    //     cfile << offsets[ibin];
-    // }
-    // cfile << " ]" << endl;
-    // cfile.close();
+    // Save calibration file
+    std::string cfname = "DriftCalibPDF";
+    ofstream cfile(Form("%s_%s.txt", cfname.c_str(), calib_type.c_str()), ios::trunc);
+    time_t now = time(0);
+    char* dt = ctime(&now);
+
+    cfile << "# The following was produced by DriftCalibPDF.C with track hit selection 'trkhit.reco->driftqual > 0.2' on " << dt << std::endl;
+    cfile << std::setw(4) << std::setprecision(3);
+    cfile << "driftOffBins : [ ";
+    cfile << rcbinedges[0] << " , " << rcbinedges[1] << " ]" << endl;
+    cfile << "driftOffset : [ ";
+
+    bool first(true);
+    for ( int ibin = 0; ibin < nrcbins; ++ibin ) {
+      if ( !first ) cfile << " , ";
+      first = false;
+      cfile << offsets[ibin];
+    }
+    cfile << " ]" << endl;
+    cfile.close();
     
     
     // Save histograms
@@ -291,8 +290,7 @@ void DriftCalibPDF(std::string filename, std::string calib_type)
     h_cdrift_corr -> Write();
     
     outputfile.Close();
-    
+
 #endif  // __CINT__
 }
-
 #endif  // DriftCalibPDF_C
