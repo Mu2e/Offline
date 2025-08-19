@@ -247,7 +247,7 @@ Mu2eKinKal : {
       [ 2.0, "CADSHU" ],
       [ 1.0, "CADSHU" ],
       [ 0.3, "CADSHU" ],
-      [ 0.0, "CADSHU:BkgANNSHU" ]
+      [ 0.3, "CADSHU:BkgANNSHU" ]
     ]
     CADSHUSettings : [
       # maxdoca, maderr, minrdrift, maxrdrift, flag, allow, tofreeze, diag
@@ -258,10 +258,10 @@ Mu2eKinKal : {
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
-      [10.0, -1.0, 0.0, true, 0 ],
       [5.0, -1.0, 0.0, true, 0 ],
-      [3.0, 3.0, 0.0, true, 0 ],
-      [3.0, 3.0, 0.0, true, 0 ]
+      [3.0, -1.0, 0.0, true, 0 ],
+      [2.5, 1.8, 0.5, true, 0 ],
+      [2.5, 1.8, 0.5, true, 0 ]
     ]
     BkgANNSHUSettings : [
       [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.2,"Inactive", 1]
@@ -358,6 +358,14 @@ Mu2eKinKal : {
     ToOPA : true
   }
 
+  SEEDEXTRAPOLATION : {
+    MaxDt : 200.0 # (ns)
+    ToTrackerEnds : true
+    Upstream : false
+    BackToTracker : false
+    ToOPA : false
+  }
+
   CENTRALHELIX : {
     SeedMomentum : 10000.0
     SeedCharge : 1
@@ -402,19 +410,22 @@ Mu2eKinKal : {
   LHSeedFit : {
     module_type : LoopHelixFit
     MaterialSettings : @local::Mu2eKinKal.MAT
-    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SaveTrajectory : Detector
+    }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
     ModuleSettings : {
       @table::Mu2eKinKal.LOOPHELIX
       @table::Mu2eKinKal.KKPrecursors
-      SampleSurfaces : ["TT_Mid"]
+      SampleSurfaces : []
     }
+    Extrapolation : @local::Mu2eKinKal.SEEDEXTRAPOLATION
     UsePDGCharge: false
     HelixMask: {
       MinHelixMom : 0
     }
-
   }
 
   LHDriftFit : {
@@ -423,7 +434,7 @@ Mu2eKinKal : {
     KKFitSettings : {
       @table::Mu2eKinKal.KKFIT
       # save trajectories in the Detector region
-     SaveTrajectory : Detector
+     SaveTrajectory : Full
     }
     FitSettings : @local::Mu2eKinKal.SEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.LHDRIFTEXT
@@ -510,6 +521,10 @@ Mu2eKinKal : {
     # seed fits: these don't use drift information or BField corrections
     KLSeedFit: @local::Mu2eKinKal.KLSeedFit
     KKCHSeedFitmu: @local::Mu2eKinKal.CHSeedFit
+    KKDeSeedFit: @local::Mu2eKinKal.LHSeedFit
+    KKDmuSeedFit: @local::Mu2eKinKal.LHSeedFit
+    KKUeSeedFit: @local::Mu2eKinKal.LHSeedFit
+    KKUmuSeedFit: @local::Mu2eKinKal.LHSeedFit
     # drift fits: these depend on particle type and direction
     KKLine: @local::Mu2eKinKal.KLDriftFit
     KKCHmu: @local::Mu2eKinKal.CHDriftFit
@@ -533,6 +548,13 @@ Mu2eKinKal.producers.KKLine.ModuleSettings.FitParticle : @local::Particle.muminu
 
 Mu2eKinKal.producers.KKDeSeedFit.ModuleSettings.FitParticle : @local::Particle.eminus
 Mu2eKinKal.producers.KKDeSeedFit.FitDirection : @local::FitDir.downstream
+Mu2eKinKal.producers.KKDmuSeedFit.ModuleSettings.FitParticle : @local::Particle.muminus
+Mu2eKinKal.producers.KKDmuSeedFit.FitDirection : @local::FitDir.downstream
+
+Mu2eKinKal.producers.KKUeSeedFit.ModuleSettings.FitParticle : @local::Particle.eminus
+Mu2eKinKal.producers.KKUeSeedFit.FitDirection : @local::FitDir.downstream
+Mu2eKinKal.producers.KKUmuSeedFit.ModuleSettings.FitParticle : @local::Particle.muminus
+Mu2eKinKal.producers.KKUmuSeedFit.FitDirection : @local::FitDir.downstream
 
 # save trajectories in the Detector region for downstream fits, just the T0 segment for the rest
 Mu2eKinKal.producers.KKDe.ModuleSettings.FitParticle : @local::Particle.eminus
