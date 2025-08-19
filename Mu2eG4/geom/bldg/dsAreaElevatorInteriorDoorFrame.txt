@@ -1,0 +1,27 @@
+string building.dsArea.elevator.interior.door.frame.name     = "dsAreaElevatorInteriorDoorFrame";
+string building.dsArea.elevator.interior.door.frame.material = "CONCRETE_MASONRY";
+double building.dsArea.elevator.interior.door.frame.offsetFromMu2eOrigin.x   = -12578.10;
+double building.dsArea.elevator.interior.door.frame.offsetFromFloorSurface.y = 1257.30;
+double building.dsArea.elevator.interior.door.frame.offsetFromMu2eOrigin.z   = 29260.80;
+double building.dsArea.elevator.interior.door.frame.yHalfThickness           = 152.40;
+vector<double> building.dsArea.elevator.interior.door.frame.angles = {1.5708,0.,0.};
+vector<double> building.dsArea.elevator.interior.door.frame.xPositions = {
+1257.20, // 0
+-1257.20, // 1
+-1257.20, // 2
+876.40, // 3
+876.40, // 4
+-1257.20, // 5
+-1257.20, // 6
+1257.20 // 7
+};
+vector<double> building.dsArea.elevator.interior.door.frame.yPositions = {
+800.10, // 0
+800.10, // 1
+648.10, // 2
+648.10, // 3
+-571.50, // 4
+-571.50, // 5
+-800.10, // 6
+-800.10 // 7
+};

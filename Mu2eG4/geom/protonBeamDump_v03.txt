@@ -27,8 +27,8 @@ double         protonBeamDump.coreRotY = 13.72; // degrees
 // Sizes below are given in mm in this order:
 //  {horizontal transverse to beam, vertical, horizontal along beam}
 vector<double> protonBeamDump.coreHalfSize  = { 750.9, 750.1, 1016.};
-// Beam entrance.
-vector<double> protonBeamDump.mouthHalfSize = {750., 750., 500.};
+// Beam entrance.  Updated to as-built 2025-07-09.
+vector<double> protonBeamDump.mouthHalfSize = {838., 838., 500.};
 // Neutron cave
 vector<double> protonBeamDump.neutronCaveHalfSize = {1250., 1250., 500.};
 

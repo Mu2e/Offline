@@ -8,6 +8,8 @@
 #include "Offline/Mu2eG4/inc/IMu2eG4Cut.hh"
 
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
+#include "Offline/MCDataProducts/inc/ScorerSummary.hh"
+#include "Offline/MCDataProducts/inc/ScorerConfigSummary.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
@@ -94,6 +96,19 @@ namespace mu2e {
     if(trajectoryControl_.produce()) {
       pc.produces<MCTrajectoryCollection>();
     }
+
+    //----------------------------------------------------------------
+    auto const& scoringTable = conf.scoring();
+    if (scoringTable.enabled()) {
+      for (const auto& meshName : scoringTable.meshNames()){
+        for (const auto& scorerName: scoringTable.scorerNames()){
+          std::string instanceName = meshName+scorerName;
+          pc.produces<ScorerSummaryCollection,art::InSubRun>(instanceName);
+        }
+      }
+      pc.produces<ScorerConfigSummaryCollection,art::InSubRun>();
+    }
+
 
     // Use temporary local objects to call the declare methods
     sd.declareProducts(pc); // FIXME: also handle SD consumes

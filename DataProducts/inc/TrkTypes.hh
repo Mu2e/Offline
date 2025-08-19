@@ -6,6 +6,7 @@
 #define TrackerConditions_Types_hh
 #include <array>
 #include <vector>
+#include <cstddef>
 #include <cstdint>
 
 namespace mu2e {

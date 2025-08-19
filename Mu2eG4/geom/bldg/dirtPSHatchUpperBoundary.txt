@@ -1,0 +1,50 @@
+string dirt.PSHatch.Upper.Boundary.name     = "dirtPSHatchUpperBoundary";
+string dirt.PSHatch.Upper.Boundary.material = "MBOverburden";
+double dirt.PSHatch.Upper.Boundary.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.PSHatch.Upper.Boundary.offsetFromFloorSurface.y = 10642.6;
+double dirt.PSHatch.Upper.Boundary.offsetFromMu2eOrigin.z   = -3581.40;
+double dirt.PSHatch.Upper.Boundary.yHalfThickness           = 228.6;
+vector<double> dirt.PSHatch.Upper.Boundary.xPositions = {
+  -4140.2,   // 0
+  -4749.8,   // 1
+  -4749.8,   // 2
+  -4495.8,   // 3
+  -4495.8,   // 4
+  -11963.4,   // 5
+  -11963.4,   // 6
+  -4750.05,   // 7
+  -4750.05,   // 8
+  -11709.4, // 9
+  -11709.4, // 10
+  -12318.9,   // 11
+  -12319.0,   // 12
+  -11709.4,   // 13
+  -11709.4,   // 14
+  -4749.8,   // 15
+  -4749.8,   // 16
+  -4140.2   // 17
+};
+vector<double> dirt.PSHatch.Upper.Boundary.yPositions = {
+  -609.6,   // 0
+  -609.6,   // 1
+  101.6,   // 2
+  101.6,   // 3
+  6146.8,   // 4
+  6146.8,   // 5
+  101.6,   // 6
+  101.6,   // 7
+  -254.0,   // 8
+  -254.0,   // 9
+  -1943.1,   // 10
+  -2091.9,   // 11
+  6858.0,   // 12
+  6858.0,   // 13
+  6502.4,   // 14
+  6502.4,   // 15
+  6858.0,   // 16
+  6858.0    // 17
+};
+
+// Local Variables:
+// mode:c++
+// End:

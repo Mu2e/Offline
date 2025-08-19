@@ -1,42 +1,62 @@
 string dirt.beamline.berm.l748b.name     = "dirtBeamlineBerml748b";
 string dirt.beamline.berm.l748b.material = "MBOverburden";
 double dirt.beamline.berm.l748b.offsetFromMu2eOrigin.x   = 947.40;
-double dirt.beamline.berm.l748b.offsetFromFloorSurface.y = 8534.40;
+double dirt.beamline.berm.l748b.offsetFromFloorSurface.y = 8077.20;
 double dirt.beamline.berm.l748b.offsetFromMu2eOrigin.z   = -3581.40;
-vector<int> dirt.beamline.berm.l748b.xreplace ={3 ,4 };
-vector<int> dirt.beamline.berm.l748b.yreplace ={2 ,3 };
+vector<int> dirt.beamline.berm.l748b.xreplace ={7 ,8 };
+vector<int> dirt.beamline.berm.l748b.yreplace ={6 ,7 };
 double dirt.beamline.berm.l748b.yHalfThickness           = 152.30;
 vector<double> dirt.beamline.berm.l748b.xPositions = {
--19421.57, // 0
--24263.90, // 1
--20558.74, // 2
--60000.00, // 3
--60000.00, // 4
--25128.00, // 5
--27111.29, // 6
--27025.24, // 7
--24940.83, // 8
--23605.30, // 9
--21670.80, // 10
--20527.30, // 11
--20527.30, // 12
--20953.28, // 13
--19488.92 // 14
+-13023.60, // 0
+-13190.45, // 1
+-13605.54, // 2
+-14159.71, // 3
+-14646.27, // 4
+-23704.44, // 5
+-20735.89, // 6
+-60000.00, // 7
+-60000.00, // 8
+-29110.06, // 9
+-26065.14, // 10
+-25626.48, // 11
+-25171.17, // 12
+-24824.89, // 13
+-24643.10, // 14
+-24008.42, // 15
+-27111.29, // 16
+-27025.24, // 17
+-20527.30, // 18
+-20527.30, // 19
+-20953.28, // 20
+-19488.92, // 21
+-19421.57  // 22
 };
 vector<double> dirt.beamline.berm.l748b.yPositions = {
--9402.61, // 0
--10674.40, // 1
--60000.00, // 2
--60000.00, // 3
-20108.75, // 4
-7882.89, // 5
-7388.31, // 6
-7043.08, // 7
-7562.85, // 8
-5280.23, // 9
-5746.14, // 10
-6533.04, // 11
--4381.00, // 12
--8251.16, // 13
--8412.31 // 14
+-9436.20, //0
+-9475.18, //1
+-10137.89, //2
+-10571.44, //3
+-10760.64, //4
+-12945.69, //5
+-60000.00, //6
+-60000.00, //7
+20108.75, //8
+9142.71, //9
+9906.67, //10
+9930.62, //11
+9768.51, //12
+9477.34, //13
+9153.76, //14
+8164.02, //15
+7388.31, //16
+7043.08, //17
+8663.49, //18
+-4381.00, //19
+-8251.16, //20
+-8412.31, //21
+-9436.20 //22
 };
+
+// Local Variables:
+// mode:c++
+// End:

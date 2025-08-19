@@ -8,6 +8,7 @@
 #include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/CrystalId.hh"
 #include <iosfwd>
+#include <bitset>
 
 namespace mu2e {
 
@@ -26,9 +27,17 @@ namespace mu2e {
     { return CrystalId(CrystalId::value_type(_id/CaloConst::_nSiPMPerCrystal)); }
     value_type disk() const;
     bool isValid() const { return _id < CaloConst::_nChannel; }
-    bool isCrystal() const { return _id < CaloConst::_nCrystal; }
-    bool isPINDiode() const { return _id >= CaloConst::_nCrystal; }
-    value_type detType() const;
+    bool isCrystal() const { return _id < CaloConst::_nCrystalChannel; }
+    bool isPINDiode() const { return _id >= CaloConst::_nCrystalChannel; }
+    bool isLaserPINDiode() const { return _id >= (CaloConst::_nCrystalChannel + CaloConst::_nPINDiodPerDisk*CaloConst::_nDisk); }
+    CaloConst::detType detType() const;
+
+    //Valid for on-disk pin diodes only
+    std::bitset<4> pinDiodeCode() const { return std::bitset<4>(_id-CaloConst::_nCrystalChannel); }
+    int pinDiodeDisk() const { return pinDiodeCode()[3]; }
+    int pinDiodePhi() const { return pinDiodeCode()[2]; }
+    int pinDiodeSphere() const { return pinDiodeCode()[1]; }
+    int pinDiodePin() const { return pinDiodeCode()[0]; }
 
   private:
 

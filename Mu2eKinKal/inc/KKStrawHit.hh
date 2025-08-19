@@ -73,11 +73,11 @@ namespace mu2e {
       auto const& strawHitIndex() const { return shindex_; }
       auto const& strawResponse() const { return sresponse_; }
       // Functions used in updating
-      void setResiduals(MetaIterConfig const& miconfig, WireHitState const& whstate, RESIDCOL& resids) const; // compute residuals WRT current reference given the state
+      void setResiduals(WireHitState const& whstate, RESIDCOL& resids) const; // compute residuals WRT current reference given the state
       CA unbiasedClosestApproach() const;
       auto updater() const { return whstate_.algo_; }
       void setState(WireHitState const& whstate); // allow cluster updaters to set the state directly
-      DriftInfo fillDriftInfo() const;
+      DriftInfo fillDriftInfo(CA const& ca) const;
     private:
       BFieldMap const& bfield_; // drift calculation requires the BField for ExB effects
       WireHitState whstate_; // current state
@@ -150,7 +150,7 @@ namespace mu2e {
     auto bkgshu = miconfig.findUpdater<BkgANNSHU>();
     CA ca = unbiasedClosestApproach();
     if(ca.usable()){
-      auto dinfo = fillDriftInfo();
+      auto dinfo = fillDriftInfo(ca);
       // there can be multiple updaters: apply them all
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
       if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
@@ -179,24 +179,24 @@ namespace mu2e {
     // first iteration of a new meta-iteration, update the wire hit state
     if(first)updateWHS(miconfig);
     // update residuals and weights every iteration, regardless of updater algorithm
-    setResiduals(miconfig, whstate_, resids_);
-    this->updateWeight(miconfig);
+    setResiduals(whstate_, resids_);
+    this->updateWeight(miconfig); // this uses temperature from miconfig
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::setState(WireHitState const& whstate) {
     whstate_ = whstate;
   }
 
-  template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::fillDriftInfo() const {
-    double lorentzAngle = Mu2eKinKal::LorentzAngle(ca_.tpData(),ca_.particleTraj().bnom().Unit(),chit_);
-    return sresponse_.driftInfo(strawId(),ca_.deltaT(),lorentzAngle);
+  template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::fillDriftInfo(CA const& ca) const {
+    double lorentzAngle = Mu2eKinKal::LorentzAngle(ca.tpData(),ca.particleTraj().bnom().Unit());
+    return sresponse_.driftInfo(strawId(),ca.deltaT(),lorentzAngle);
   }
 
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::setResiduals(MetaIterConfig const& miconfig, WireHitState const& whstate, RESIDCOL& resids) const {
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::setResiduals(WireHitState const& whstate, RESIDCOL& resids) const {
     // reset the residuals, using the fixed state from the last update
     resids[Mu2eKinKal::tresid] = resids[Mu2eKinKal::dresid] = resids[Mu2eKinKal::lresid] = Residual();
     if(whstate.active()){
-      auto dinfo = fillDriftInfo();
+      auto dinfo = fillDriftInfo(ca_);
       // optionally constrain DeltaT using the ComboHit TOT drift time or the absolute drift time
       if(whstate.constrainTOT()){
         double tvar = chit_.timeVar();

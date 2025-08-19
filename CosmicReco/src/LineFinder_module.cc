@@ -196,9 +196,9 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
                   ll += pow(dist-shC[kloc].wireDist(),2)/shC[kloc].wireVar();
                 }
               }
-              if (count == (int) shiv.size())
-                found_all = true;
               if (count > bestcount || (count == bestcount && ll < bestll)){
+  //              besti = i;
+  //              bestj = j;
                 bestcount = count;
                 bestll = ll;
                 seedDir = newdir.unit();
@@ -210,6 +210,8 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
           }
         }
       }
+      if (bestcount == (int) shiv.size())
+        found_all = true;
       if (n > _nmax){
         i = shiv.size();j = 1;
       }
@@ -231,7 +233,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
         seedInt, seedDir);
     double dist = (pca.point1()-strawk.getMidPoint()).dot(strawk.getDirection());
     if (pca.dca() < _maxDOCA && fabs(dist) < strawk.halfLength()){
-      double traj_time = ((pca.point2() - seedInt).dot(seedDir))/299.9;
+      double traj_time = ((pca.point2() - seedInt).dot(seedDir.unit()))/299.9;
       double hit_t0 = shC[kloc].time() - shC[kloc].driftTime() - shC[kloc].propTime() - traj_time;
       avg_t0 += hit_t0;
       good_hits++;
