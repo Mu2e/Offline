@@ -77,7 +77,7 @@ namespace mu2e {
     private:
         using pulseMapType = std::unordered_map<unsigned, std::vector<HitInfo>>;
 
-        void extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, IntensityInfoCalo&intCalo, double pbtOffset);
+        void extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, IntensityInfoCalo& intCalo, double pbtOffset);
         void addPulse(pulseMapType& pulseMap, unsigned crystalID, float time, float eDep);
 
         art::ProductToken<CaloDigiCollection> caloDigisToken_;
@@ -168,13 +168,12 @@ namespace mu2e {
                // CAPHRI info
                if(isCaphri) {
                  if(energy > caphriEDepMin_ && energy < caphriEDepMax_) {
-                   const unsigned short e_short = IntensityInfoCalo::encodeCaphriEnergy(energy);
-                   const unsigned short caphri_ID = IntensityInfoCalo::encodeCaphriIndex(crID);
-                   if(caphri_ID > 3) printf("[CaloHitMakerFast::%s] Unknown CAPHRI index of %i from crystal ID %i\n", __func__, caphri_ID, crID);
-                   else {
-                     const unsigned short encoded_hit = IntensityInfoCalo::encodeCaphriHit(e_short, caphri_ID);
-                     caphri_energies.push_back(encoded_hit);
-                   }
+                   const auto e_short = IntensityInfoCalo::encodeCaphriEnergy(energy);
+                   const auto caphri_ID = IntensityInfoCalo::encodeCaphriIndex(crID);
+                   if(caphri_ID > 3) throw cet::exception("RECO") << "[CaloHitMakerFast::" << __func__ << "] Unknown CAPHRI index of " << caphri_ID
+                                                                  << "from crystal ID " << crID;
+                   const auto encoded_hit = IntensityInfoCalo::encodeCaphriHit(e_short, caphri_ID);
+                   caphri_energies.push_back(encoded_hit);
                  }
                }
            }
