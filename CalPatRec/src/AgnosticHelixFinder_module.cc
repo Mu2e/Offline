@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // AgnosticHelixFinder
-// M. Stortini & E. Martinez
+// M. Stortini, E. Martinez, N. Mazotov
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "Offline/CalPatRec/inc/AgnosticHelixFinder_types.hh"
@@ -486,7 +486,9 @@ namespace mu2e {
 
     int hitIndice = _tcHits[tcHitsIndex].hitIndice;
 
-    if (hitIndice >= 0) { return _chColl->at(hitIndice).pos(); }
+    if (hitIndice != HitType::CALOCLUSTER && hitIndice != HitType::STOPPINGTARGET) {
+      return _chColl->at(hitIndice).pos();
+    }
     if (hitIndice == HitType::STOPPINGTARGET) { return _stopTargPos; }
     if (hitIndice == HitType::CALOCLUSTER) { return _caloPos; }
 
@@ -640,7 +642,9 @@ namespace mu2e {
     // do isolation, average, and eDepFlag flagging
     if (_doIsolationFlag == true || _doAverageFlag == true || _doEDepFlag == true) {
       for (size_t i = 0; i < _tcHits.size(); i++) {
-        if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) { continue; }
+        if (_tcHits[i].inHelix == true
+            || _tcHits[i].hitIndice == HitType::STOPPINGTARGET
+            || _tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
         int hitIndice = _tcHits[i].hitIndice;
         float hitEnergy = _chColl->at(hitIndice).energyDep();
         if (_doEDepFlag == true && hitEnergy > _eDepFlagThresh) { _tcHits[i].highEDep = true; }
@@ -648,8 +652,9 @@ namespace mu2e {
           int nHitsNear = 0;
           XYZVectorF seedPos = getPos(i);
           for (size_t j = 0; j < _tcHits.size(); j++) {
-            if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice < 0) { continue; }
-            if (j == i) { continue; }
+            if (j == i || _tcHits[j].inHelix == true
+                || _tcHits[j].hitIndice == HitType::STOPPINGTARGET
+                || _tcHits[j].hitIndice == HitType::CALOCLUSTER) { continue; }
             XYZVectorF testPos = getPos(j);
             // do isolation flagging
             if (_doIsolationFlag == true) {
@@ -750,7 +755,8 @@ namespace mu2e {
           int nComboHitsInTimeCluster = 0;
           // compute number of usable hits in time cluster, and number of hits in candidate helix
           for (size_t q = 0; q < _tcHits.size(); q++) {
-            if (_tcHits[q].inHelix == true || _tcHits[q].hitIndice < 0) { continue; }
+            if (_tcHits[q].inHelix == true || _tcHits[q].hitIndice == HitType::STOPPINGTARGET
+                || _tcHits[q].hitIndice == HitType::CALOCLUSTER) { continue; }
             int hitIndice = _tcHits[q].hitIndice;
             nStrawHitsInTimeCluster = nStrawHitsInTimeCluster + _chColl->at(hitIndice).nStrawHits();
             nComboHitsInTimeCluster = nComboHitsInTimeCluster + 1;
@@ -808,7 +814,7 @@ namespace mu2e {
       return;
     }
     if (_intenseEvent == true || _intenseCluster == true) {
-      if (trip.i.hitIndice >= 0) {
+      if (trip.i.hitIndice != HitType::CALOCLUSTER && trip.i.hitIndice != HitType::STOPPINGTARGET) {
         outcome = BREAK;
         return;
       }
@@ -834,14 +840,16 @@ namespace mu2e {
     float dz12 = trip.i.pos.z() - trip.j.pos.z();
 
     // check if point should break for loop
-    if (trip.i.hitIndice >= 0 && dz12 > _maxTripletDz) {
-      outcome = BREAK;
-      return;
+    if (trip.i.hitIndice != HitType::CALOCLUSTER && trip.i.hitIndice != HitType::STOPPINGTARGET){
+        if (dz12 > _maxTripletDz) {
+          outcome = BREAK;
+          return;
+        }
     }
     if (_intenseEvent == true || _intenseCluster == true) {
-      if (trip.i.hitIndice == HitType::STOPPINGTARGET && trip.j.hitIndice >= 0) {
-        outcome = BREAK;
-        return;
+      if (trip.i.hitIndice == HitType::STOPPINGTARGET && trip.j.hitIndice != HitType::CALOCLUSTER) {
+          outcome = BREAK;
+          return;
       }
     }
 
@@ -866,9 +874,11 @@ namespace mu2e {
     float dz23 = trip.j.pos.z() - trip.k.pos.z();
 
     // check if point should break for loop
-    if (trip.j.hitIndice >= 0 && dz23 > _maxTripletDz) {
-      outcome = BREAK;
-      return;
+    if (trip.j.hitIndice != HitType::CALOCLUSTER && trip.j.hitIndice != HitType::STOPPINGTARGET){
+        if(dz23 > _maxTripletDz) {
+          outcome = BREAK;
+          return;
+        }
     }
 
     // check if point should be continued on
@@ -970,9 +980,10 @@ namespace mu2e {
 
     // seed point
     for (size_t i = 0; i < _tcHits.size() - _minLineSegmentHits; i++) {
-      if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) { continue; }
-      if (_tcHits[i].used == false) { continue; }
-      if (_tcHits[i].notOnSegment == false) { continue; }
+      if (_tcHits[i].inHelix == true || _tcHits[i].used == false
+          || _tcHits[i].notOnSegment == false
+          || _tcHits[i].hitIndice == HitType::STOPPINGTARGET
+          || _tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
       float seedZ = getPos(i).z();
       float seedPhi = _tcHits[i].helixPhi;
       float seedError2 = _tcHits[i].helixPhiError2;
@@ -997,8 +1008,9 @@ namespace mu2e {
       lastAddedPositiveZ = seedZ;
       // now loop over test point
       for (size_t j = i + 1; j < _tcHits.size(); j++) {
-        if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice < 0) { continue; }
-        if (_tcHits[j].used == false) { continue; }
+        if (_tcHits[j].inHelix == true || _tcHits[j].used == false
+            || _tcHits[j].hitIndice == HitType::STOPPINGTARGET
+            || _tcHits[j].hitIndice == HitType::CALOCLUSTER) { continue; }
         float testZ = getPos(j).z();
         if (testZ == seedZ) { continue; }
         if (std::abs(seedZ - testZ) > _maxZWindow) { break; }
@@ -1371,9 +1383,10 @@ namespace mu2e {
     // also add points to linear fitter to get t0
     ::LsqSums2 fitter;
     for (size_t i = 0; i < _tcHits.size(); i++) {
-      if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) { continue; }
-      if (_tcHits[i].used == false) { continue; }
-      if (_tcHits[i].used == true) { _tcHits[i].inHelix = true; }
+      if (_tcHits[i].inHelix == true || _tcHits[i].used == false
+          || _tcHits[i].hitIndice == HitType::STOPPINGTARGET
+          || _tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
+      _tcHits[i].inHelix = true;
       int hitIndice = _tcHits[i].hitIndice;
       const ComboHit* hit = &_chColl->at(hitIndice);
       fitter.addPoint(hit->pos().z(), hit->correctedTime(), 1 / (hit->timeRes() * hit->timeRes()));

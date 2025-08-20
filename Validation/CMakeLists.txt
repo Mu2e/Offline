@@ -82,7 +82,7 @@ cet_build_plugin(Validation art::module
       
 )
 
-art_dictionary(
+art_dictionary( NO_CHECK_CLASS_VERSION
   CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/root/classes_def.xml
   CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/root/classes.h
   DICTIONARY_LIBRARIES
