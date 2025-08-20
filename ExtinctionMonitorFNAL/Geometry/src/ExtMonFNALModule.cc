@@ -45,27 +45,27 @@ namespace mu2e {
           ix_ = chip_.nColumns() - 1;
        }
 
-        else if(xSensor>chip_.xPitch_Mid() && xSensor<= (chip_.nColumns()-2)*chip_.xPitch()+chip_.xPitch_Mid())
+        else if(xSensor>chip_.xPitch_Mid())
        {
-          ix_ = floor((xSensor - chipx0 - chip_.xPitch_Mid() + chip_.xPitch())/chip_.xPitch());
+          ix_ = floor((xSensor - chipx0 - chip_.xPitch_Mid())/chip_.xPitch()) + 1;
        }
 
-        else if(xSensor>=0 && xSensor<=chip_.xPitch_Mid())
+        else if(xSensor>=0)
        {
           ix_ = 0;
        }
 
-        else if(xSensor<0 && xSensor>=-chip_.xPitch_Mid())
+        else if(xSensor>=-chip_.xPitch_Mid())
        {
           ix_ = chip_.nColumns() - 1;
        }
 
-        else if(xSensor<-chip_.xPitch_Mid() && xSensor>=  -(chip_.nColumns()-2)*chip_.xPitch()-chip_.xPitch_Mid() )
+        else if(xSensor>=  -(chip_.nColumns()-2)*chip_.xPitch()-chip_.xPitch_Mid() )
        {
-          ix_ = floor((xSensor - chipx0)/chip_.xPitch_Mid()) - 1;
+          ix_ = floor((xSensor - chipx0 - chip_.xPitch_Edge())/chip_.xPitch()) + 1;
        }
 
-        else if (xSensor < -(chip_.nColumns()-2)*chip_.xPitch()-chip_.xPitch_Mid())
+        else
        {
           ix_ = 0;
        }
