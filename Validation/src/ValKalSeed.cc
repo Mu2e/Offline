@@ -140,9 +140,8 @@ namespace mu2e {
       SurfaceId sid = _vdmap[vdid];
       auto kintercol = ks.intersections(sid);
       double ksCharge = ptable->particle(ks.particle()).charge();
-      auto trkinters = ks.intersections(SurfaceIdDetail::TT_Front);
-      if(trkinters.size() > 0){
-        auto ikinter = trkinters.front(); // just sample the 1st intersection if there are >1
+      auto ikinter = ks.t0Segment(t0);
+      if(ikinter != ks.segments().end()){
         auto mom3 = ikinter->momentum3();
         double p = mom3.R();
         double recoCharge(1.);
