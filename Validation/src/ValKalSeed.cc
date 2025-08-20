@@ -60,8 +60,8 @@ namespace mu2e {
     _hHDOCA = tfs.make<TH1D>("HDOCA", "Hit Wire DOCA;DOCA (mm)", 100, -5.0, 5.0);
     _hHEDep = tfs.make<TH1D>("HEDep", "Hit Energy Deposition;EDep (KeV)", 100, 0, 5.0);
     _hHPanel = tfs.make<TH1D>("HPanel", "Hit Unique Panel", 216, -0.5, 215.5);
-    _hSRadLen = tfs.make<TH1D>("SRadLen", "Fractional Straw Radiation Length", 100, 0, 1.0e-3);
-    _hSRadLenSum = tfs.make<TH1D>( "SRadLenSum", "Sum Fractional Straw Radiation Length", 100, 0, 0.04);
+    _hSRadLen = tfs.make<TH1D>("SRadLen", "Fractional Straw Radiation Length", 100, 0, 2.5e-3);
+    _hSRadLenSum = tfs.make<TH1D>( "SRadLenSum", "Sum Fractional Straw Radiation Length", 100, 0, 0.08);
     int ibin = 1;
     _hCuts->GetXaxis()->SetBinLabel(ibin++, "MC Primary");  // bin 1, first visible
     _hCuts->GetXaxis()->SetBinLabel(ibin++, "MC Momentum");
@@ -85,7 +85,7 @@ namespace mu2e {
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
     // increment this by 1 any time the defnitions of the histograms or the
     // histogram contents change, and will not match previous versions
-    _hVer->Fill(12.0);
+    _hVer->Fill(13.0);
 
     _hN->Fill(coll.size());
     for (auto const& ks : coll) {

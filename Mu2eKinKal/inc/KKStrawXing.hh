@@ -46,7 +46,7 @@ namespace mu2e {
       KTRAJ const& referenceTrajectory() const override { return ca_.particleTraj(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       // accessors
-      bool active() const { return active_; }
+      bool active() const { return mxings_.size() > 0; }
       auto const& closestApproach() const { return ca_; }
       auto const& strawMaterial() const { return smat_; }
       auto const& config() const { return sxconfig_; }
@@ -55,7 +55,6 @@ namespace mu2e {
       auto const& strawId() const { return straw_.id(); }
       auto const& strawHitPtr() const { return shptr_; }
     private:
-      bool active_ = false; // is this xing modeling a physical straw xing
       StrawXingUpdater sxconfig_; // cache of most recent config
       KKSTRAWHITPTR shptr_; // reference to associated StrawHit
       SensorLine axis_; // straw axis, expressed as a timeline
@@ -119,8 +118,7 @@ namespace mu2e {
     bool hitactive (false);
     if(shptr_)hitactive = shptr_->hitState().active();
     // decide if this straw xing should be active
-    active_ = hitactive || fabs(ca_.tpData().doca()) < sxconfig_.maxdoca_;
-    if(active_){
+    if(hitactive || fabs(ca_.tpData().doca()) < sxconfig_.maxdoca_) {
       // update the material xings from gas, straw wall, and wire
       smat_.findXings(ca_.tpData(),sxconfig_,mxings_);
       if(mxings_.size() > 0){
