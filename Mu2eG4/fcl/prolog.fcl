@@ -229,8 +229,7 @@ mu2eg4runDefaultSingleStage: {
         enabled         : false
         meshNames       : ["WorldMesh","MARSMesh"]
         scorerNames     : ["DoseDeposit","DelayedDose"]
-        writeFile       : false
-        #fileDirectory   : "/dev/null"
+        verboseLevel    : 0
     }
 }
 

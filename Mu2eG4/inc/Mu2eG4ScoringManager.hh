@@ -27,7 +27,8 @@ namespace mu2e {
     public:
       Mu2eG4ScoringManager(G4ScoringManager* fSMan,
                            const Mu2eG4Config::Scoring& configScoring,
-                           const Mu2eG4Config::Physics& configPhysics);
+                           const Mu2eG4Config::Physics& configPhysics,
+                           const Mu2eG4Config::Debug&   configDebug);
      ~Mu2eG4ScoringManager() = default;
 
       void initialize();
@@ -44,8 +45,7 @@ namespace mu2e {
       bool                     enabled_;
       std::vector<std::string> meshNames_;
       std::vector<std::string> scorerNames_;
-      bool                     writeFile_;
-      std::string              fileDirectory_;
+      int                      verboseLevel_;
   };
 
 }

@@ -2,7 +2,6 @@
 // The name of the meshes are stored in Mu2eG4/fcl/prolog.fcl (needed to declare data products)
 //  --> Declare the mesh dimensions in the same order
 
-int            scoring.verboseLevel   = 0;
 vector<double> scoring.meshPositionX  = {0.0,          0.0};
 vector<double> scoring.meshPositionY  = {0.0,          0.0};
 vector<double> scoring.meshPositionZ  = {0.0,          0.0};

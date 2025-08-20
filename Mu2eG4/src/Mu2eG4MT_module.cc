@@ -167,7 +167,7 @@ namespace mu2e {
 
     masterThread(std::make_unique<MTMasterThread>(pars(),mu2elimits_ )),
     _scorer(std::make_unique<Mu2eG4ScoringManager>(G4ScoringManager::GetScoringManager(),
-                                                   conf_.scoring(),conf_.physics())),
+                                                   conf_.scoring(),conf_.physics(),conf_.debug())),
 
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),
