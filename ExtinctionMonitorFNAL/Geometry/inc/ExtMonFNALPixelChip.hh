@@ -17,6 +17,8 @@ namespace mu2e {
 
     unsigned int nColumns() const;
     double xPitch() const;
+    double xPitch_Edge() const;
+    double xPitch_Mid() const;
 
     unsigned int nRows() const;
     double yPitch() const;
