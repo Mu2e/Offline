@@ -252,7 +252,6 @@ namespace mu2e {
     fCaloY           = tpos.y();
     float     offset = _calorimeter->caloInfo().getDouble("diskCaseZLength")/2. + (_calorimeter->caloInfo().getDouble("BPPipeZOffset") + _calorimeter->caloInfo().getDouble("BPHoleZLength")+ _calorimeter->caloInfo().getDouble("FEEZLength"))/2. - _calorimeter->caloInfo().getDouble("FPCarbonZLength") - _calorimeter->caloInfo().getDouble("FPFoamZLength");
     fCaloZ           = tpos.z()-offset;
-    return;
   }
 
 
@@ -1346,7 +1345,7 @@ namespace mu2e {
       printf("    phi         dphi      xdphi      zlast        dz      dphidz  szphidfdz  chi2\n");
     }
 
-    if(Helix._timeCluster && Helix._timeCluster->hasCaloCluster()){
+    if(Helix._timeCluster->hasCaloCluster()){
       addCaloClusterToFitPhiZ(Helix);
     }
 
