@@ -1,20 +1,20 @@
 int cosmicCRY.verbose = 0;
 
 string cosmicCRY.refPoint = "UNDEFINED";
-double cosmicCRY.refX0 = -5275;
-double cosmicCRY.refY0 = -2000;
-double cosmicCRY.refZ0 = 37800;
+double cosmicCRY.refX0 = -3974.5;
+double cosmicCRY.refY0 = -1515;
+double cosmicCRY.refZ0 = 38150;
 
 bool cosmicCRY.projectToTargetBox = true;
 
-double cosmicCRY.targetBoxXmin = -5326;  //1m away from readout at negative x-side, 10cm width of dicounter
-double cosmicCRY.targetBoxXmax = -5223;
+double cosmicCRY.targetBoxXmin = -4026;  //center of the module, 10cm width of dicounter
+double cosmicCRY.targetBoxXmax = -3923;
 
-double cosmicCRY.targetBoxYmin =   -2130;  //just the scintillator below the modules
-double cosmicCRY.targetBoxYmax =   -2110;
+double cosmicCRY.targetBoxYmin =   -1590; //-2130; //-1590;  //just the scintillator below the modules   jg: testing whether including both triggers in the box helps
+double cosmicCRY.targetBoxYmax =   -1570;
 
-double cosmicCRY.targetBoxZmin = 36450;  //~width of three modules
-double cosmicCRY.targetBoxZmax = 39150;
+double cosmicCRY.targetBoxZmin = 37375;  //~width of three modules
+double cosmicCRY.targetBoxZmax = 38925;
 
 // Enable all particles by default
 bool cosmicCRY.returnMuons = true;
@@ -34,7 +34,7 @@ int cosmicCRY.year = 2021;
 // Experiment site settings
 double cosmicCRY.latitude = 41.8;
 int cosmicCRY.altitude = 0; // meter, accepts either of 3 values: 0, 2100 or 11300
-double cosmicCRY.subboxLength = 10.; // meter
+double cosmicCRY.subboxLength = 10.; //10.; // meter, originally 10meters
 double cosmicCRY.maxShowerEn  = 1e8; // MeV
 double cosmicCRY.minShowerEn  = 10;//50; // MeV
 
