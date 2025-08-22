@@ -265,7 +265,6 @@ namespace mu2e {
 
       _hfResult._timeCluster    = tc;
       _hfResult._timeClusterPtr = art::Ptr<mu2e::TimeCluster>(_timeclcolH,ipeak);
-
 //-----------------------------------------------------------------------------
 // fill the face-order hits collector
 //-----------------------------------------------------------------------------
@@ -490,13 +489,11 @@ namespace mu2e {
     double   tandip        = hel->tanDip();
     double   mom           = helixRadius*mm2MeV/std::cos( std::atan(tandip));
     double   beta          = _tpart.beta(mom);
-    CLHEP::Hep3Vector        gpos = _hfinder._calorimeter->geomUtil().diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskID(),
-                                                                        HfResult._timeClusterPtr->caloCluster()->cog3Vector());
-    CLHEP::Hep3Vector        tpos = _hfinder._calorimeter->geomUtil().mu2eToTracker(gpos);
-    double   pitchAngle    = M_PI/2. - atan(tandip);
-    double   hel_t0        = HfResult._timeClusterPtr->caloCluster()->time() - (tpos.z() - z0)/sin(pitchAngle)/(beta*CLHEP::c_light);
 
-    HelSeed._t0            = TrkT0(hel_t0, 0.1); //dummy error on T0 FIXME!
+    CLHEP::Hep3Vector gpos,tpos;
+    double hel_t0;
+    double pitchAngle = M_PI/2. - std::atan(tandip);
+
     HelSeed._timeCluster   = HfResult._timeClusterPtr;
 
     // cluster hits assigned to the reconsturcted Helix
@@ -512,12 +509,44 @@ namespace mu2e {
     for (int i=0; i<nhits; ++i){
       unsigned        hitId   = HfResult._goodhits[i];
       ComboHit*       hit     = &HfResult._chHitsToProcess[hitId];//panelz->_chHitsToProcess.at(hitInfo->panelHitIndex);
-
-      ComboHit                hhit(*hit);
-      //      hhit._hphi = shphi;
-      // hhit._flag.merge(StrawHitFlag::resolvedphi);
+      ComboHit        hhit(*hit);
       HelSeed._hhits.push_back(hhit);
     }
+
+    if(HfResult._timeClusterPtr->hasCaloCluster()) {
+
+      gpos   = _hfinder._calorimeter->geomUtil().diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskID(),
+                                                                        HfResult._timeClusterPtr->caloCluster()->cog3Vector());
+      tpos   = _hfinder._calorimeter->geomUtil().mu2eToTracker(gpos);
+
+      hel_t0 = HfResult._timeClusterPtr->caloCluster()->time() - (tpos.z() - z0)/sin(pitchAngle)/(beta*CLHEP::c_light);
+
+    }
+    else {
+
+      double tSum = 0.;
+
+      size_t nHits = HelSeed.hits().size();
+
+      if(nHits == 0) {
+        hel_t0 = 0.;
+      }
+      else {
+
+        for(size_t i = 0; i<nHits; i++) {
+
+          const ComboHit& comboHit = HelSeed.hits()[i];
+          double tCorrected = comboHit.correctedTime() - (comboHit.pos().z()-z0)/std::sin(pitchAngle)/(beta*CLHEP::c_light);
+          tSum += tCorrected;
+
+        }
+        hel_t0 = tSum/((double) nHits);
+      }
+
+    }
+
+    HelSeed._t0            = TrkT0(hel_t0, 0.1); //dummy error on T0 FIXME!
+
     HelSeed._eDepAvg = HelSeed._hhits.eDepAvg();
 
 
