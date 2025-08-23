@@ -147,7 +147,6 @@ namespace mu2e {
        const Calorimeter& cal = *(GeomHandle<Calorimeter>()); // to get crystal positions
        unsigned short evtEnergy(0); // total calorimeter energy
        unsigned short nhits_d0(0), nhits_d1(0); // calo hits in each disk
-       std::vector<unsigned short> caphri_energies;
        for (auto& crystal : pulseMap)
        {
            const int crID = crystal.first;
@@ -168,12 +167,7 @@ namespace mu2e {
                // CAPHRI info
                if(isCaphri) {
                  if(energy > caphriEDepMin_ && energy < caphriEDepMax_) {
-                   const auto e_short = IntensityInfoCalo::encodeCaphriEnergy(energy);
-                   const auto caphri_ID = IntensityInfoCalo::encodeCaphriIndex(crID);
-                   if(caphri_ID > 3) throw cet::exception("RECO") << "[CaloHitMakerFast::" << __func__ << "] Unknown CAPHRI index of " << caphri_ID
-                                                                  << "from crystal ID " << crID;
-                   const auto encoded_hit = IntensityInfoCalo::encodeCaphriHit(e_short, caphri_ID);
-                   caphri_energies.push_back(encoded_hit);
+                   if(!intInfo.addCaphriHit(energy, crID)) throw cet::exception("RECO") << "[CaloHitMakerFast::" << __func__ << "] CAPHRI hit storing error from crystal ID " << crID;
                  }
                }
            }
@@ -182,7 +176,6 @@ namespace mu2e {
        intInfo.setCaloEnergy(evtEnergy);
        intInfo.setNCaloHitsD0(nhits_d0);
        intInfo.setNCaloHitsD1(nhits_d1);
-       intInfo.setCaphriHits(caphri_energies);
 
        if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caloHitsColl.size()<<" CaloDigis"<<std::endl;
        if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caphriHitsColl.size()<<" CaphriDigis"<<std::endl;

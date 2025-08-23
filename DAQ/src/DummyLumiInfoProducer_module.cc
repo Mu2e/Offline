@@ -67,11 +67,10 @@ namespace mu2e
       constexpr int max_caphri_index = 4; // only four CAPHRI crystals
       std::vector<unsigned short> caphriHits;
       for(int ihit = 0; ihit < nCaphriHits; ++ihit) {
-        const unsigned short id = (eventNumber * prime_1) % max_caphri_index;
-        const unsigned short energy = (eventNumber * prime_3) % prime_4; // units of 0.01 MeV
-        caphriHits.push_back(IntensityInfoCalo::encodeCaphriHit(energy, id));
+        const int index = CaloConst::_caphriId[(eventNumber * prime_1) % max_caphri_index];
+        const double energy = (eventNumber * prime_2) % prime_1;
+        caloInfo->addCaphriHit(energy, index);
       }
-      caloInfo->setCaphriHits(caphriHits);
 
       timeClusterInfo->setNProtonTCs((eventNumber * prime_1) % (prime_2));
 

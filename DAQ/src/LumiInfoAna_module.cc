@@ -120,10 +120,10 @@ void LumiInfoAna::fillCalo(std::vector<art::Handle<mu2e::IntensityInfosCalo>>& h
       _hNCaloHits  ->Fill(info.nCaloHits());
       _hCaloEnergy ->Fill(info.caloEnergy());
       _hNCaphriHits->Fill(info.nCaphriHits());
-      for(unsigned short caphriHit : info.caphriHits()) {
-        unsigned short e_short, id;
-        IntensityInfoCalo::decodeCaphriHit(caphriHit, e_short, id);
-        const double energy = IntensityInfoCalo::decodeCaphriEnergy(e_short);
+      for(size_t ihit = 0; ihit < info.nCaphriHits(); ++ihit) {
+        double energy;
+        int id;
+        info.getCaphriHit(ihit, energy, id);
         _hCaphriEnergy->Fill(energy);
       }
     }

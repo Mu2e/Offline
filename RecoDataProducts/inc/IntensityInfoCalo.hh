@@ -26,24 +26,16 @@ namespace mu2e {
     void setNCaloHitsD0    (unsigned short tmp) {nCaloHitsD0_  = tmp;}
     void setNCaloHitsD1    (unsigned short tmp) {nCaloHitsD1_  = tmp;}
     void setCaloEnergy     (unsigned short tmp) {caloEnergy_   = tmp;}
-    void setCaphriHits     (std::vector<unsigned short> tmp) {caphriHits_  = tmp;}
 
     unsigned short nCaloHits    () const { return nCaloHitsD0_ + nCaloHitsD1_; }
     unsigned short nCaloHitsD0  () const { return nCaloHitsD0_ ; }
     unsigned short nCaloHitsD1  () const { return nCaloHitsD1_ ; }
     unsigned short caloEnergy   () const { return caloEnergy_  ; }
-    std::vector<unsigned short> caphriHits  () const { return caphriHits_ ; }
     size_t         nCaphriHits  () const { return caphriHits_.size(); }
 
-    // Static methods to encode CAPHRI hit information
-    static unsigned short encodeCaphriIndex(const int id);
-    static unsigned short encodeCaphriEnergy(const double energy);
-    static unsigned short encodeCaphriHit(const unsigned short energy, const unsigned short index);
-
-    // Static methods to decode CAPHRI hit information
-    static int decodeCaphriIndex(const unsigned short idx);
-    static double decodeCaphriEnergy(const unsigned short e_short);
-    static void decodeCaphriHit(const unsigned short encoded, unsigned short& energy, unsigned short& index);
+    // Methods to store/retrieve caphri hit info
+    bool addCaphriHit(const double energy, const int ID);
+    void getCaphriHit(const size_t ihit, double& energy, int& ID) const;
 
   private:
     // unsigned short  nCaloHits_    = 0;
