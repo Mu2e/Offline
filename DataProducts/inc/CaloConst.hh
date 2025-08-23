@@ -33,11 +33,6 @@ namespace mu2e {
 
     constexpr static uint16_t _invalid      = 9999;
 
-    // For storing compact CAPHRI hit info
-    constexpr static double _caphriEnergyUnits       = 0.01; // Store CAPHRI hit energies in units of 0.01 MeV
-    constexpr static int    _caphriIndexBits         =   14; // Store the CAPHRI hit index 14 bits into the 16-bit word
-    constexpr static unsigned short _caphriIndexMask = 0x3 << _caphriIndexBits; // mask for where the hit index is stored
-
     using CaloSiPMId_type = std::uint16_t;
 
     enum SiPMn {SiPM0=0,SiPM1=1};

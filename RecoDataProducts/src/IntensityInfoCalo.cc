@@ -13,10 +13,10 @@ namespace mu2e {
     const unsigned short index = std::distance(CaloConst::_caphriId.begin(), itr);
     if(index > 3) return false; // must be between 0-3
 
-    const unsigned short e_short = energy / CaloConst::_caphriEnergyUnits; // store in different units from MeV input
+    const unsigned short e_short = energy / caphriEnergyUnits_; // store in different units from MeV input to adjust the precision
 
     // encode the energy + index into a single short
-    const unsigned short hit_info = e_short | index << CaloConst::_caphriIndexBits;
+    const unsigned short hit_info = e_short | index << caphriIndexBits_;
 
     // add it to the hit vector
     caphriHits_.push_back(hit_info);
@@ -31,10 +31,11 @@ namespace mu2e {
 
     const auto hit_info = caphriHits_[ihit];
 
-    const unsigned short e_short =  hit_info & ~CaloConst::_caphriIndexMask;
-    const unsigned short index   = (hit_info &  CaloConst::_caphriIndexMask) >> CaloConst::_caphriIndexBits;
+    constexpr static unsigned short caphriIndexMask = 0x3 << caphriIndexBits_; // mask for where the hit index is stored
+    const unsigned short e_short =  hit_info & ~caphriIndexMask;
+    const unsigned short index   = (hit_info &  caphriIndexMask) >> caphriIndexBits_;
 
-    energy = e_short * CaloConst::_caphriEnergyUnits; // convert from stored units
+    energy = e_short * caphriEnergyUnits_; // convert from stored units
     if(index < CaloConst::_caphriId.size()) ID = CaloConst::_caphriId[index];
   }
 }
