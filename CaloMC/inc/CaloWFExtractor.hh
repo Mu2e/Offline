@@ -4,6 +4,7 @@
 // Utility to simulate waveform hit extraction in FPGA
 //
 #include <vector>
+#include <cstddef>
 
 namespace mu2e {
 
@@ -14,7 +15,7 @@ namespace mu2e {
                   bufferDigi_(bufferDigi),nBinsPeak_(nBinsPeak),minPeakADC_(minPeakADC), startOffset_(startOffset)
                {};
 
-               void extract(const std::vector<int>& wf, std::vector<size_t>& starts, std::vector<size_t>& stops) const;
+               void extract(const std::vector<int>& wf, std::vector<std::size_t>& starts, std::vector<std::size_t>& stops) const;
 
            private:
                unsigned  bufferDigi_;

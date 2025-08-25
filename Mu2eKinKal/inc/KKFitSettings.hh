@@ -83,6 +83,7 @@ namespace mu2e {
       fhicl::Atom<int> maxDStraw { Name("MaxDStraw"), Comment("Maximum (integer) straw separation when adding straw hits") };
       fhicl::Atom<float> maxStrawDOCA { Name("MaxStrawDOCA"), Comment("Max DOCA to add straw material (mm)") };
       fhicl::Atom<float> maxStrawDOCAConsistency { Name("MaxStrawDOCAConsistency"), Comment("Max DOCA chi-consistency to add straw material") };
+      fhicl::Atom<float> maxStrawUposBuff { Name("MaxStrawUposBuffer"), Comment("Max Upos beyond strawlength to add straw material (mm)") };
       // extension and sampling
       fhicl::Atom<std::string> saveTraj { Name("SaveTrajectory"), Comment("How to save the trajectory in the KalSeed: None, Full, Detector, or T0 (1 segment containing t0)") };
       fhicl::Atom<bool> saveDomains { Name("SaveDomains"), Comment("Save the Bfield domain walls in the KalSeed: this will follow the range specified by SaveTrajectory") };
