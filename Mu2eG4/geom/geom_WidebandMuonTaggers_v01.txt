@@ -26,10 +26,10 @@ double          crs.aluminumSheetThickness       =   3.175;  //mm
 double          crs.strongBackThickness          =  12.7;    //mm
 
 double          crs.scintillatorBarLengthW       =  4550;
-double          crs.scintillatorBarLengthM1      =  1045;
-double          crs.scintillatorBarLengthM2      =  1045;
-double          crs.scintillatorBarLengthT1      =  1045;
-double          crs.scintillatorBarLengthT2      =  1045;
+double          crs.scintillatorBarLengthM1      =  2370;
+double          crs.scintillatorBarLengthM2      =  2370;
+double          crs.scintillatorBarLengthT1      =  1550;
+double          crs.scintillatorBarLengthT2      =  1550;
 
 int             crs.nModulesW                    =   3;
 int             crs.nModulesM1                   =   1;
@@ -54,10 +54,10 @@ int             crs.nCountersPerModuleT1         =    2;
 int             crs.nCountersPerModuleT2         =    2;
 
 vector<double>  crs.firstCounterW                =  {-4000.00, -1900.00, 39000.00};
-vector<double>  crs.firstCounterM1               =  {-5300.67, -2080.00, 37800.00};  //so that the center of the di-counter is 1m away from the readout end of the W modules
-vector<double>  crs.firstCounterM2               =  {-5300.67, -1780.00, 37800.00};
-vector<double>  crs.firstCounterT1               =  {-5300.67, -2120.00, 37800.00};  //so that the center of the di-counter is 1m away from the readout end of the W modules
-vector<double>  crs.firstCounterT2               =  {-5300.67, -1580.00, 37800.00};
+vector<double>  crs.firstCounterM1               =  {-4000.00, -2080.00, 37915.00};
+vector<double>  crs.firstCounterM2               =  {-4000.00, -1780.00, 37915.00};
+vector<double>  crs.firstCounterT1               =  {-4000.00, -2120.00, 38150.00};
+vector<double>  crs.firstCounterT2               =  {-4000.00, -1580.00, 38150.00};
 
 vector<double>  crs.layerDirectionW              =  {0, 1, 0};
 vector<double>  crs.layerDirectionM1             =  {0, 1, 0};

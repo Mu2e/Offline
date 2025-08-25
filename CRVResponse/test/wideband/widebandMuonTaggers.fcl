@@ -113,10 +113,10 @@ physics.producers.CrvPhotons.CRVSectors                   : [ "W",  "M1", "M2", 
 physics.producers.CrvPhotons.reflectors                   : [  0,    1,    1,    1,    1  ]
 physics.producers.CrvPhotons.scintillationYields          : [28573,28573,28573,28573,28573]
 physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0/LookupTable_4550_0",
-                                                             "CRVConditions/v6_0/LookupTable_1045_1",
-                                                             "CRVConditions/v6_0/LookupTable_1045_1",
-                                                             "CRVConditions/v6_0/LookupTable_1045_1",
-                                                             "CRVConditions/v6_0/LookupTable_1045_1"]
+                                                             "CRVConditions/v6_0/LookupTable_2370_1",
+                                                             "CRVConditions/v6_0/LookupTable_2370_1",
+                                                             "CRVConditions/v6_0/LookupTable_1550_1",
+                                                             "CRVConditions/v6_0/LookupTable_1550_1"]
 physics.producers.CrvSiPMCharges.CrossTalkProb            : 0.04
 physics.producers.CrvSiPMCharges.ThermalRate              : 0.0  #to speed up things
 physics.producers.CrvCoincidenceClusterFinder.verboseLevel: 0
