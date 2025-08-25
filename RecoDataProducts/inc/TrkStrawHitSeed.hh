@@ -65,24 +65,24 @@ namespace mu2e {
 
       // calculate the doca and phi relative to the straw envelope at POCA to wire
       auto ppoca = XYZVectorF(uptca.particlePoca().Vect());
-
       static XYZVectorF zdir(0.0,0.0,1.0); // relative to Z
+      
       auto wmid = XYZVectorF(straw.wirePosition());
       auto wdir = XYZVectorF(straw.wireDirection());
       auto delta = ppoca - wmid;
-      auto raddir = wdir.Cross(zdir);
-      if (raddir.Dot(wmid) < 0.0) raddir *= -1.0; // sign radially outwards
       float dw = delta.Dot(wdir);
       XYZVectorF cperp = delta - dw*wdir; // just perp part
+      auto raddir = wdir.Cross(zdir);
+      if (raddir.Dot(wmid) < 0.0) raddir *= -1.0; // sign radially outwards
       _uwirephi = atan2(cperp.Dot(raddir),cperp.Dot(zdir));
 
       auto smid = XYZVectorF(straw.strawPosition());
       auto sdir = XYZVectorF(straw.strawDirection());
       delta = ppoca - smid; // particle poca to wire WRT straw middle
-      raddir = sdir.Cross(zdir);
-      if(raddir.Dot(smid) < 0.0)raddir *= -1.0; // sign radially outwards
       dw = delta.Dot(sdir);
       cperp = delta - dw*sdir; // just perp part
+      raddir = sdir.Cross(zdir);
+      if(raddir.Dot(smid) < 0.0) raddir *= -1.0; // sign radially outwards
       _ustrawphi = atan2(cperp.Dot(raddir),cperp.Dot(zdir)); // angle around wire WRT z axis in range -pi,pi
       _ustrawdist = sqrt(cperp.mag2());
 

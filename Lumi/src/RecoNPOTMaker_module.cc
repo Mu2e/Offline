@@ -15,6 +15,7 @@
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
 #include <cmath>
+#include <memory>
 #include <iostream>
 
 namespace mu2e {
@@ -214,7 +215,6 @@ namespace mu2e {
 
     // only using calo energy to make the estimate for now, with a fixed 10% uncertainty
     auto recoPBI = std::make_unique<RecoProtonBunchIntensity>(POT_caloEnergy, 0.1*POT_caloEnergy);
-
 
     event.put(std::move(recoPBI));
 

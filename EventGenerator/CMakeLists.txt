@@ -541,6 +541,17 @@ cet_build_plugin(DIOGenerator art::tool
       Offline::Mu2eUtilities
 )
 
+cet_build_plugin(Mu2eXGenerator art::tool
+    REG_SOURCE src/Mu2eXGenerator_tool.cc
+    LIBRARIES REG
+      Offline::EventGenerator
+
+      Offline::DataProducts
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+)
+
 cet_build_plugin(MuCap1809keVGammaGenerator art::tool
     REG_SOURCE src/MuCap1809keVGammaGenerator_tool.cc
     LIBRARIES REG

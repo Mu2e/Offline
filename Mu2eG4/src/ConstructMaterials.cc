@@ -1901,7 +1901,7 @@ namespace mu2e {
                  << cond
                  << G4endl;
         }
-        if (std::find(conductors.begin(), conductors.end(), theMaterial->GetName())
+        if (std::find(conductors.begin(), conductors.end(), (std::string)(theMaterial->GetName()))
             != conductors.end() ) {
           G4NistManager::Instance()->SetDensityEffectCalculatorFlag(theMaterial, true);
           if (config_.debug().diagLevel() > 0) {

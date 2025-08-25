@@ -52,8 +52,10 @@ void ParseCLI::print() {
   if (_subs.size() > 0) {
     std::cout << "subcommands : \n";
     for (const auto& x : _subs) {
-      if(x.subcommand.empty()) {
-        std::cout << "  " << "(blank)" << "\n";
+      if (x.subcommand.empty()) {
+        std::cout << "  "
+                  << "(blank)"
+                  << "\n";
       } else {
         std::cout << "  " << x.subcommand << "\n";
       }
@@ -88,7 +90,7 @@ int ParseCLI::setArgs(int argc, char** argv) {
 
   if (_autohelp) { // create help switches
     for (const auto& ss : _subs)
-      addSwitch(ss.subcommand, "help", "h", "help", false, "print help","");
+      addSwitch(ss.subcommand, "help", "h", "help", false, "print help", "");
   }
 
   std::span<char*> args_span(argv, static_cast<size_t>(argc));
@@ -96,7 +98,8 @@ int ParseCLI::setArgs(int argc, char** argv) {
   _command = args_span[0];
   size_t last_slash_pos = _command.rfind('/');
 
-  if (last_slash_pos != std::string::npos) _command = _command.substr(last_slash_pos + 1);
+  if (last_slash_pos != std::string::npos)
+    _command = _command.substr(last_slash_pos + 1);
 
   for (size_t i = 1; i < args_span.size(); ++i) {
     a0.emplace_back(args_span[i]); // Safely access via span::at()
@@ -222,6 +225,9 @@ int ParseCLI::setArgs(int argc, char** argv) {
     i++; // increment to next word in a1 args
   }      // end i while
 
+  int rc = autohelp();
+  if(rc != 0) return rc;
+
   for (const auto& i : _items) {
     if (i.required) {
       if (i.values.size() == 0 && i.defaultstr.empty()) {
@@ -234,22 +240,21 @@ int ParseCLI::setArgs(int argc, char** argv) {
   if (_verbose)
     print();
 
-  autohelp();
 
   return 0;
 }
 
 /*********************************************************/
-void ParseCLI::autohelp() const {
+int ParseCLI::autohelp() const {
   if (!_autohelp)
-    return;
+    return 0;
   bool need = false;
   for (const auto& ii : _items) {
     if (ii.name == "help" && getCount(ii.subcommand, ii.name) > 0)
       need = true;
   }
   if (!need)
-    return;
+    return 0;
 
   std::cout << "\n";
   if (_subcommand.empty()) {
@@ -278,13 +283,17 @@ void ParseCLI::autohelp() const {
         std::cout << "--" << ii.lname << "  ";
       std::cout << ii.helpstr;
       StringVec notes;
-      if(ii.repeated) notes.emplace_back("repeated");
-      if(ii.required) notes.emplace_back("required");
-      if(!ii.defaultstr.empty()) notes.emplace_back("default="+ii.defaultstr);
-      if(notes.size()>0) {
+      if (ii.repeated)
+        notes.emplace_back("repeated");
+      if (ii.required)
+        notes.emplace_back("required");
+      if (!ii.defaultstr.empty())
+        notes.emplace_back("default=" + ii.defaultstr);
+      if (notes.size() > 0) {
         std::cout << " (";
-        for(size_t i=0; i<notes.size(); i++) {
-          if(i!=0) std::cout << ",";
+        for (size_t i = 0; i < notes.size(); i++) {
+          if (i != 0)
+            std::cout << ",";
           std::cout << notes[i];
         }
         std::cout << ")";
@@ -303,7 +312,8 @@ void ParseCLI::autohelp() const {
   }
   std::cout << "\n";
 
-  return;
+  // return 999 to say that help was run, so other commands should not be
+  return 999;
 }
 
 /*********************************************************/
@@ -315,6 +325,13 @@ size_t ParseCLI::findItem(const std::string& subcommand, const std::string& name
   }
   std::cout << "Error: can't find subcommand=" << subcommand << " and name " << name << "\n";
   return BADIND;
+}
+
+/*********************************************************/
+bool ParseCLI::getBool(const std::string& subcommand, const std::string& name) const {
+  if (getCount(subcommand, name) == 0)
+    return false;
+  return true;
 }
 
 /*********************************************************/
@@ -334,7 +351,7 @@ std::string ParseCLI::getString(const std::string& subcommand, const std::string
   if (itemi.values.size() == 0) {
     return itemi.defaultstr;
   }
-  if(itemi.repeated) {
+  if (itemi.repeated) {
     return itemi.values[0];
   } else {
     return itemi.values.back();
@@ -351,28 +368,31 @@ StringVec ParseCLI::getStrings(const std::string& subcommand, const std::string&
 
 /*********************************************************/
 int ParseCLI::getInt(const std::string& subcommand, const std::string& name) const {
-  std::string str = getString(subcommand,name);
+  std::string str = getString(subcommand, name);
   return std::stoi(str);
 }
 
 /*********************************************************/
 std::vector<int> ParseCLI::getInts(const std::string& subcommand, const std::string& name) const {
   std::vector<int> intv;
-  StringVec strs = getStrings(subcommand,name);
-  for(const auto& istr : strs) intv.emplace_back(std::stoi(istr));
+  StringVec strs = getStrings(subcommand, name);
+  for (const auto& istr : strs)
+    intv.emplace_back(std::stoi(istr));
   return intv;
 }
 
 /*********************************************************/
 float ParseCLI::getFloat(const std::string& subcommand, const std::string& name) const {
-  std::string fstr = getString(subcommand,name);
+  std::string fstr = getString(subcommand, name);
   return std::stof(fstr);
 }
 
 /*********************************************************/
-std::vector<float> ParseCLI::getFloats(const std::string& subcommand, const std::string& name) const {
+std::vector<float> ParseCLI::getFloats(const std::string& subcommand,
+                                       const std::string& name) const {
   std::vector<float> floatv;
-  StringVec strs = getStrings(subcommand,name);
-  for(const auto& istr : strs) floatv.emplace_back(std::stof(istr));
+  StringVec strs = getStrings(subcommand, name);
+  for (const auto& istr : strs)
+    floatv.emplace_back(std::stof(istr));
   return floatv;
 }

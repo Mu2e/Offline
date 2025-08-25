@@ -1,0 +1,47 @@
+int cosmicCRY.verbose = 0;
+
+string cosmicCRY.refPoint = "UNDEFINED";
+double cosmicCRY.refX0 = -5275;
+double cosmicCRY.refY0 = -2000;
+double cosmicCRY.refZ0 = 37800;
+
+bool cosmicCRY.projectToTargetBox = true;
+
+double cosmicCRY.targetBoxXmin = -5326;  //1m away from readout at negative x-side, 10cm width of dicounter
+double cosmicCRY.targetBoxXmax = -5223;
+
+double cosmicCRY.targetBoxYmin =   -2130;  //just the scintillator below the modules
+double cosmicCRY.targetBoxYmax =   -2110;
+
+double cosmicCRY.targetBoxZmin = 36450;  //~width of three modules
+double cosmicCRY.targetBoxZmax = 39150;
+
+// Enable all particles by default
+bool cosmicCRY.returnMuons = true;
+bool cosmicCRY.returnNeutrons = true;
+bool cosmicCRY.returnProtons = true;
+bool cosmicCRY.returnGammas = true;
+bool cosmicCRY.returnElectrons = true;
+bool cosmicCRY.returnPions = true;
+bool cosmicCRY.returnKaons = true;
+
+
+// Date
+int cosmicCRY.month = 6;
+int cosmicCRY.day = 21;
+int cosmicCRY.year = 2021;
+
+// Experiment site settings
+double cosmicCRY.latitude = 41.8;
+int cosmicCRY.altitude = 0; // meter, accepts either of 3 values: 0, 2100 or 11300
+double cosmicCRY.subboxLength = 10.; // meter
+double cosmicCRY.maxShowerEn  = 1e8; // MeV
+double cosmicCRY.minShowerEn  = 10;//50; // MeV
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
+// Similar stuff for vim
+// vim: ft=cpp

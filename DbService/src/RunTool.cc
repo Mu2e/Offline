@@ -3,6 +3,7 @@
 #include "Offline/GeneralUtilities/inc/TimeUtility.hh"
 #include "Offline/GeneralUtilities/inc/splitString.hh"
 #include "cetlib_except/exception.h"
+#include <algorithm>
 
 using namespace mu2e;
 
