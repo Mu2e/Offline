@@ -30,9 +30,8 @@ namespace mu2e {
 
     const auto hit_info = caphriHits_[ihit];
 
-    constexpr static unsigned short caphriIndexMask = 0x3 << caphriIndexBits_; // mask for where the hit index is stored
-    const unsigned short e_short =  hit_info & ~caphriIndexMask;
-    const unsigned short index   = (hit_info &  caphriIndexMask) >> caphriIndexBits_;
+    const unsigned short e_short =  hit_info & ~caphriIndexMask_;
+    const unsigned short index   = (hit_info &  caphriIndexMask_) >> caphriIndexBits_;
     if(index >= CaloConst::_caphriId.size()) throw cet::exception("RECO") << "CAPHRI crystal index " << index << " is >= N(CAPHRI) = " << CaloConst::_caphriId.size();
 
     energy = e_short * caphriEnergyUnits_; // convert from stored units

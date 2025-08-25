@@ -47,6 +47,7 @@ namespace mu2e {
     // For storing compact CAPHRI hit info
     constexpr static double caphriEnergyUnits_       = 0.01; // Store CAPHRI hit energies in units of 0.01 MeV
     constexpr static int    caphriIndexBits_         =   14; // Store the CAPHRI hit index 14 bits into the 16-bit word
+    constexpr static unsigned short caphriIndexMask_ = 0x3 << caphriIndexBits_; // mask for where the hit index is stored
   };
 
   typedef std::vector<mu2e::IntensityInfoCalo> IntensityInfosCalo;
