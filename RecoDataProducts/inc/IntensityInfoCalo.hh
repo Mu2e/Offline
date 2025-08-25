@@ -9,6 +9,7 @@
 
 #include "Offline/DataProducts/inc/CaloConst.hh"
 #include <vector>
+#include <array>
 
 namespace mu2e {
 
@@ -22,25 +23,24 @@ namespace mu2e {
     {}
 
 
-    // void setNCaloHits      (unsigned short tmp) {nCaloHits_    = tmp;}
-    void setNCaloHitsD0    (unsigned short tmp) {nCaloHitsD0_  = tmp;}
-    void setNCaloHitsD1    (unsigned short tmp) {nCaloHitsD1_  = tmp;}
+    void setNCaloHits      (std::array<unsigned short, 2> tmp) {nCaloHits_ = tmp;}
+    void setNCaloHitsD0    (unsigned short tmp) {nCaloHits_[0] = tmp;}
+    void setNCaloHitsD1    (unsigned short tmp) {nCaloHits_[1] = tmp;}
     void setCaloEnergy     (unsigned short tmp) {caloEnergy_   = tmp;}
 
-    unsigned short nCaloHits    () const { return nCaloHitsD0_ + nCaloHitsD1_; }
-    unsigned short nCaloHitsD0  () const { return nCaloHitsD0_ ; }
-    unsigned short nCaloHitsD1  () const { return nCaloHitsD1_ ; }
+    unsigned short nCaloHits    () const { return nCaloHitsD0() + nCaloHitsD1(); }
+    unsigned short nCaloHitsD0  () const { return nCaloHits_[0] ; }
+    unsigned short nCaloHitsD1  () const { return nCaloHits_[1] ; }
     unsigned short caloEnergy   () const { return caloEnergy_  ; }
     size_t         nCaphriHits  () const { return caphriHits_.size(); }
 
     // Methods to store/retrieve caphri hit info
-    bool addCaphriHit(const double energy, const int ID);
+    void addCaphriHit(const double energy, const int ID);
     void getCaphriHit(const size_t ihit, double& energy, int& ID) const;
 
   private:
     // unsigned short  nCaloHits_    = 0;
-    unsigned short  nCaloHitsD0_  = 0;
-    unsigned short  nCaloHitsD1_  = 0;
+    std::array<unsigned short, 2> nCaloHits_ = {0, 0};
     unsigned short  caloEnergy_   = 0;
     std::vector<unsigned short>  caphriHits_ = {};
 

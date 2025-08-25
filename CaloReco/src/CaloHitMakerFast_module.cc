@@ -146,7 +146,7 @@ namespace mu2e {
        // Evaluate intensity stream information
        const Calorimeter& cal = *(GeomHandle<Calorimeter>()); // to get crystal positions
        unsigned short evtEnergy(0); // total calorimeter energy
-       unsigned short nhits_d0(0), nhits_d1(0); // calo hits in each disk
+       std::array<unsigned short, 2> nhits = {0, 0}; // calo hits in each disk
        for (auto& crystal : pulseMap)
        {
            const int crID = crystal.first;
@@ -154,28 +154,28 @@ namespace mu2e {
            const bool isCaphri = itr != CaloConst::_caphriId.end();
            for (auto& info : crystal.second)
            {
-               if (diagLevel_ > 1) std::cout<<"[CaloHitMakerFast::" << __func__ << "] extracted Hit with crystalID="<<crID<<" eDep="<<info.eDep_<<"\t time=" <<info.time_<<"\t nSiPM= "<<info.nSiPM_<<std::endl;
-               if (isCaphri) caphriHitsColl.emplace_back(CaloHit(crID, info.nSiPM_, info.time_,info.eDep_));
-               else          caloHitsColl.emplace_back(  CaloHit(crID, info.nSiPM_, info.time_,info.eDep_));
+               if (diagLevel_ > 1) std::cout<<"[CaloHitMakerFast::" << __func__ << "] extracted Hit with crystalID="<<crID
+                                            <<" eDep="<<info.eDep_<<"\t time=" <<info.time_<<"\t nSiPM= "<<info.nSiPM_<<std::endl;
+
+               // Add the energy to the total calorimeter energy
                const float energy = info.eDep_;
                evtEnergy += energy;
-               if(!isCaphri) {
-                 if(cal.crystal(crID).diskID() == 0) ++nhits_d0;
-                 else                                ++nhits_d1;
-               }
 
-               // CAPHRI info
-               if(isCaphri) {
-                 if(energy > caphriEDepMin_ && energy < caphriEDepMax_) {
-                   if(!intInfo.addCaphriHit(energy, crID)) throw cet::exception("RECO") << "[CaloHitMakerFast::" << __func__ << "] CAPHRI hit storing error from crystal ID " << crID;
-                 }
+               // CAPHRI crystal hit
+               if (isCaphri) {
+                 caphriHitsColl.emplace_back(CaloHit(crID, info.nSiPM_, info.time_,info.eDep_));
+                 if(energy > caphriEDepMin_ && energy < caphriEDepMax_) intInfo.addCaphriHit(energy, crID);
+               }
+               // Normal crystal hit
+               else {
+                 caloHitsColl.emplace_back(  CaloHit(crID, info.nSiPM_, info.time_,info.eDep_));
+                 ++nhits[cal.crystal(crID).diskID()];
                }
            }
        }
 
        intInfo.setCaloEnergy(evtEnergy);
-       intInfo.setNCaloHitsD0(nhits_d0);
-       intInfo.setNCaloHitsD1(nhits_d1);
+       intInfo.setNCaloHits(nhits);
 
        if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caloHitsColl.size()<<" CaloDigis"<<std::endl;
        if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caphriHitsColl.size()<<" CaphriDigis"<<std::endl;

@@ -265,7 +265,8 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
 
   auto dtcID = cc.event_.GetDTCID();
 
-  unsigned evtEnergy(0), nhits_d0(0), nhits_d1(0);
+  unsigned evtEnergy(0);
+  std::array<unsigned short, 2> nhits = {0, 0}; //N(hits) by disk
 
   // Loop through the ROCs of this caloDecoder
   for (size_t iROC = 0; iROC < cc.block_count(); iROC++) {
@@ -320,14 +321,14 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
       float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];
 
       bool isCaphri = offlineId.crystal().isCaphri();
-      if(!isCaphri) {
-        if(offlineId.crystal().disk() == 0) ++nhits_d0;
-        else                                ++nhits_d1;
-      }
+      if(!isCaphri) ++nhits[offlineId.crystal().disk()];
+
+      // Energy threshold depends on the crystal type
+      const float emin = (isCaphri) ? caphriEDepMin_ : hitEDepMin_;
+      const float emax = (isCaphri) ? caphriEDepMax_ : hitEDepMax_;
 
       // FIX ME! WE NEED TO CHECK IF TEH PULSE IS SATURATED HERE
-      if (((eDep >= hitEDepMin_) || (isCaphri && (eDep >= caphriEDepMin_))) &&
-          ((eDep < hitEDepMax_) || (isCaphri && (eDep < caphriEDepMax_)))) {
+      if (eDep >= emin && eDep < emax) {
         addPulse(crystalID, time, eDep, calo_hits, caphri_hits);
         evtEnergy += eDep;
         if(isCaphri) {
@@ -339,8 +340,7 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
 
   // Store summary intensity info
   int_info->setCaloEnergy(evtEnergy);
-  int_info->setNCaloHitsD0(nhits_d0);
-  int_info->setNCaloHitsD1(nhits_d1);
+  int_info->setNCaloHits(nhits);
 }
 
 void art::CaloHitsFromDataDTCEvents::endJob() {
