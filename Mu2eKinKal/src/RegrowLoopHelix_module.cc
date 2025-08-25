@@ -139,10 +139,13 @@ namespace mu2e {
     produces<KalSeedCollection>();
   }
 
-  RegrowLoopHelix::beginRun(art::Run& run)
+  void RegrowLoopHelix::beginRun(art::Run& run)
   {}
 
-  RegrowLoopHelix::produce(art::Event& event)
+  void RegrowLoopHelix::produce(art::Event& event)
+  {}
+
+  void RegrowLoopHelix::endJob()
   {}
 
 }

@@ -170,9 +170,9 @@ namespace mu2e {
     maxStrawHitDt_(fitconfig.maxStrawHitDt()),
     maxStrawDoca_(fitconfig.maxStrawDOCA()),
     maxStrawDocaCon_(fitconfig.maxStrawDOCAConsistency()),
-    savedomains_(fitconfig.saveDomains())
     maxStrawUposBuff_(fitconfig.maxStrawUposBuff()),
-    maxDStraw_(fitconfig.maxDStraw())
+    maxDStraw_(fitconfig.maxDStraw()),
+    savedomains_(fitconfig.saveDomains())
   {
     if (fitconfig.saveTraj() == "T0") {
       savetraj_ = t0seg;
