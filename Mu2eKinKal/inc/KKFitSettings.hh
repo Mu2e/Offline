@@ -19,10 +19,8 @@
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 namespace mu2e {
   namespace Mu2eKinKal{
-
-    using Name    = fhicl::Name;
-    using Comment = fhicl::Comment;
-
+    using fhicl::Name;
+    using fhicl::Comment;
     // struct for defining the KinKal Config object and updaters
     struct KinKalConfig {
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level") };
