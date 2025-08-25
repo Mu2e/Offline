@@ -84,7 +84,7 @@ namespace mu2e {
     G4cout << " PrimitiveScorer " << GetName() << G4endl;
     G4cout << " Number of entries " << EvtMap_->entries() << G4endl;
     std::map<G4int,G4double*>::iterator itr = EvtMap_->GetMap()->begin();
-    for(; itr != EvtMap_->GetMap()->end(); itr++) {
+    for(; itr != EvtMap_->GetMap()->end(); ++itr) {
       G4cout << "  copy no.: " << itr->first
              << "  track count: " << *(itr->second)
              << " [tracks] "

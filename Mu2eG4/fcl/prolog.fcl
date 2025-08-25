@@ -25,7 +25,7 @@ mu2eg4DefaultPhysics: {
     turnOnRadioactiveDecay:  false     // If both are true, it is a configuraiton error detected at run-time.
 
     //options for radiation studies
-    radiationVRmode    : false
+    radiationVRmode    : true
     beamTimeProfileRad : "Offline/Mu2eG4/data/beamProfile.data"
     coolTimeProfileRad : "Offline/Mu2eG4/data/cooling.data"
     radiationBRBias    : false
@@ -229,8 +229,7 @@ mu2eg4runDefaultSingleStage: {
         enabled         : false
         meshNames       : ["WorldMesh","MARSMesh"]
         scorerNames     : ["DoseDeposit","DelayedDose"]
-        writeFile       : false
-        #fileDirectory   : "/dev/null"
+        verboseLevel    : 0
     }
 }
 
