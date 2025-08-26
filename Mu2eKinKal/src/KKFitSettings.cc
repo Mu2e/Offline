@@ -27,20 +27,15 @@ namespace mu2e {
       std::vector<DriftANNSHU::Config> driftannshusettings;
       std::vector<BkgANNSHU::Config> bkgannshusettings;
       std::vector<Chi2SHU::Config> chi2shusettings;
-      std::vector<ToggleDriftConstraintSHU::Config> toggledriftshusettings;
-      std::vector<StatisticallyEnableDriftConstraintSHU::Config> sampledriftshusettings;
       // specific updaters can be empty, so fetch config data with a default empty vector
       cadshusettings = fitconfig.cadshuConfig().value_or(cadshusettings);
       driftannshusettings = fitconfig.annshuConfig().value_or(driftannshusettings);
       bkgannshusettings = fitconfig.bkgshuConfig().value_or(bkgannshusettings);
       chi2shusettings = fitconfig.combishuConfig().value_or(chi2shusettings);
-      toggledriftshusettings = fitconfig.toggledriftshuConfig().value_or(toggledriftshusettings);
-      sampledriftshusettings = fitconfig.sampledriftshuConfig().value_or(sampledriftshusettings);
       // straw material updater must always be here
       auto const& sxusettings = fitconfig.sxuConfig();
       // set the schedule for the meta-iterations
       unsigned ncadshu(0), nann(0), nbkg(0), ncomb(0), nnone(0), nsxu(0);
-      unsigned ntoggle(0), nsample(0);
       for(auto const& misetting : fitconfig.miConfig()) {
         MetaIterConfig miconfig(std::get<0>(misetting));
         // parse StrawHit updaters, and add to the config of this meta-iteraion
@@ -56,10 +51,6 @@ namespace mu2e {
             miconfig.addUpdater(std::any(BkgANNSHU(bkgannshusettings.at(nbkg++))));
           } else if(alg == StrawHitUpdaters::Chi2) {
             miconfig.addUpdater(std::any(Chi2SHU(chi2shusettings.at(ncomb++))));
-          } else if(alg == StrawHitUpdaters::ToggleDriftConstraint){
-            miconfig.addUpdater(std::any(ToggleDriftConstraintSHU(toggledriftshusettings.at(ntoggle++))));
-          } else if(alg == StrawHitUpdaters::StatisticallyEnableDriftConstraint){
-            miconfig.addUpdater(std::any(StatisticallyEnableDriftConstraintSHU(sampledriftshusettings.at(nsample++))));
           } else if(alg == StrawHitUpdaters::none) {
             ++nnone;
           } else {

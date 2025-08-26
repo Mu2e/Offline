@@ -9,7 +9,7 @@
 namespace mu2e {
   // straw hit updater algorithms: this needs to be extended if new updaters are defined
   struct StrawHitUpdaters {
-    enum algorithm: int {unknown=-1,none=0, CAD=1, DriftANN=2, BkgANN=3, ToggleDriftConstraint=4, StatisticallyEnableDriftConstraint=5, Chi2=10, nalgos };
+    enum algorithm: int {unknown=-1,none=0, CAD=1, DriftANN=2, BkgANN=3, Chi2=10, nalgos };
     // translate from algo to name
     static std::string const& name(algorithm alg);
     static algorithm algo(std::string const& name);

@@ -16,6 +16,8 @@ cet_make_library(
       src/WHSIterator.cc
       src/WHSMask.cc
       src/WireHitState.cc
+      src/ToggleDriftConstraintSHU.cc
+      src/StatisticallyEnableDriftConstraintSHU.cc
     LIBRARIES PUBLIC
       BLAS::BLAS
       KinKal_General
