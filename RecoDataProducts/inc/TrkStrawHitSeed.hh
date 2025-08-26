@@ -137,6 +137,10 @@ namespace mu2e {
     float signalTime() const { return _stime; }
     float wireDOCA() const { return _rdoca; }
     int ambig() const { return _ambig; }
+    // return a true WireHitState
+    WireHitState wireHitState() const {
+      return WireHitState(static_cast<WireHitState::State>(_ambig),static_cast<StrawHitUpdaters::algorithm>(_algo),_kkshflag);
+    }
     //
     //  Payload
     //

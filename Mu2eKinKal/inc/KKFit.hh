@@ -238,16 +238,27 @@ namespace mu2e {
       PCA pca(ptraj, wline, hint, tprec_ );
       // create the hit.  Note these may initially be unusable
       hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, pca, combohit, straw, chindex, strawresponse)); // use original index, so the KSeed can be re-persisted
-      // set the hit state according to what was in the
+      // set the hit state according to what it was in the fit
+      hits.back()->setState(tshs.wireHitState());
+      if(hits.back()->hitState().usable())ngood++;
       // create the material crossing, including this reference
-      if(matcorr_){
-
-        exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),smat));
+      if(matcorr_)exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),smat));
+    }
+    if(matcorr_){
+      // add Straw Xings for Xings without hits
+      for(auto const& sx : kseed.straws()){
+        if(!sx.hasHit()){
+          double zt = Mu2eKinKal::zTime(ptraj,sx._poca.Z(),ptraj.range().begin());
+          auto const& straw = tracker.getStraw(sx._straw);
+          auto sline = Mu2eKinKal::strawLine(straw,zt); // line down the straw axis center
+          CAHint hint(zt,zt);
+          PCA pca(ptraj, sline, hint, tprec_ );
+          exings.push_back(std::make_shared<KKSTRAWXING>(pca.localClosestApproach(),smat,straw));
+        }
       }
     }
     return ngood >= minNStrawHits_;
   }
-
 
   template <class KTRAJ> SensorLine KKFit<KTRAJ>::caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const {
     // move cluster COG into the tracker frame.  COG is at the front face of the disk

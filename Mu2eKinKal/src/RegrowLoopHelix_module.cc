@@ -37,6 +37,7 @@
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/DataProducts/inc/IndexMap.hh"
 // KinKal
 #include "KinKal/Fit/Track.hh"
 #include "KinKal/Fit/Config.hh"
@@ -82,6 +83,8 @@ namespace mu2e {
   using Mu2eKinKal::KKFinalConfig;
   using KKFitConfig = Mu2eKinKal::KKFitConfig;
   using KKModuleConfig = Mu2eKinKal::KKModuleConfig;
+  using KKMaterialConfig = KKMaterial::Config;
+  using SDIS = std::set<StrawDigiIndex>;
 
   using Name    = fhicl::Name;
   using Comment = fhicl::Comment;
@@ -89,8 +92,8 @@ namespace mu2e {
     fhicl::Atom<art::InputTag> kalSeedCollection {Name("KalSeedPtrCollection"), Comment("KalSeedPtr collection to processed ") };
     fhicl::Atom<art::InputTag> comboHitCollection {Name("ComboHitCollection"), Comment("Reduced ComboHit collection ") };
     fhicl::Atom<art::InputTag> indexMap {Name("StrawDigiIndexMap"), Comment("Map between original and reduced ComboHits") };
-
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
+    fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
     fhicl::Table<KKConfig> extSettings { Name("RefitSettings") };
 //     fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") }; needs to be pulled out of LoopHelixFit if needed
   };
@@ -133,17 +136,70 @@ namespace mu2e {
       void produce(art::Event& event) override;
       void endJob() override;
     private:
+      ProditionsHandle<StrawResponse> strawResponse_h_;
+      ProditionsHandle<Tracker> alignedTracker_h_;
+      std::unique_ptr<KinKal::BFieldMap> kkbf_;
+      KKFIT kkfit_;
+      KKMaterial kkmat_;
+      art::ProductToken<KalSeedCollection> kseedcol_T_;
+      art::ProductToken<ComboHitCollection> chcol_T_;
+      art::ProductToken<IndexMap> indexmap_T_;
   };
-  RegrowLoopHelix::RegrowLoopHelix(const Parameters& settings) : art::EDProducer(settings) {
+
+  RegrowLoopHelix::RegrowLoopHelix(const Parameters& settings) : art::EDProducer(settings),
+    kkfit_(settings().kkfitSettings()),
+    kkmat_(settings().matSettings()),
+    kseedcol_T_(consumes<KalSeedCollection>(settings().kalSeedCollection())),
+    chcol_T_(consumes<ComboHitCollection>(settings().comboHitCollection())),
+    indexmap_T_(consumes<IndexMap>(settings().indexMap()))
+  {
     produces<KKTRKCOL>();
     produces<KalSeedCollection>();
   }
 
   void RegrowLoopHelix::beginRun(art::Run& run)
-  {}
+  {
+    GeomHandle<BFieldManager> bfmgr;
+    GeomHandle<DetectorSystem> det;
+    kkbf_ = std::move(std::make_unique<KKBField>(*bfmgr,*det));
+    // create a schedule TODO
+  }
 
   void RegrowLoopHelix::produce(art::Event& event)
-  {}
+  {
+    // proditions
+    auto const& strawresponse = strawResponse_h_.getPtr(event.id());
+    auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
+    // find input event data
+    auto kseed_H = event.getValidHandle<KalSeedCollection>(kseedcol_T_);
+    const auto& kseedcol = *kseed_H;
+    auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
+    const auto& chcol = *ch_H;
+    auto indexmap_H = event.getValidHandle<IndexMap>(indexmap_T_);
+    const auto& indexmap = *indexmap_H;
+    // create outputs
+    unique_ptr<KKTRKCOL> ktrkcol(new KKTRKCOL );
+    unique_ptr<KalSeedCollection> r_kseedcol(new KalSeedCollection );
+    for (const auto& kseed : kseedcol) {
+      // test
+      if(!kseed.loopHelixFit())throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: passed KalSeed from non-LoopHelix fit " << endl;
+      // create the trajectory object from the seed. This will be the initial reference trajectory
+      auto trajptr = kseed.loopHelixFitTrajectory();
+      // convert the TrkStrawHitSeeds into KKStrawHits and Straw Xings
+      KKSTRAWHITCOL strawhits;
+      strawhits.reserve(kseed.hits().size());
+      KKSTRAWXINGCOL strawxings;
+      strawxings.reserve(kseed.straws().size());
+      auto goodhits = kkfit_.makeStrawHits(*tracker,*strawresponse,*kkbf_, kkmat_.strawMaterial(),
+          *trajptr, kseed, chcol, indexmap, strawhits, strawxings);
+      // create domains TODO
+      // create and fit the  KKTrack from these TODO
+      // convert the fit to a KalSeed TODO
+      if(goodhits){
+      }
+    }
+    // store output TODO
+  }
 
   void RegrowLoopHelix::endJob()
   {}
