@@ -23,6 +23,8 @@
 #include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/BkgANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
+#include "Offline/Mu2eKinKal/inc/ToggleDriftConstraintSHU.hh"
+#include "Offline/Mu2eKinKal/inc/StatisticallyEnableDriftConstraintSHU.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 // Other
@@ -180,6 +182,8 @@ namespace mu2e {
     auto cashu = miconfig.findUpdater<CADSHU>();
     auto driftshu = miconfig.findUpdater<DriftANNSHU>();
     auto bkgshu = miconfig.findUpdater<BkgANNSHU>();
+    auto toggleshu = miconfig.findUpdater<ToggleDriftConstraintSHU>();
+    auto sampleshu = miconfig.findUpdater<StatisticallyEnableDriftConstraintSHU>();
     CA ca = unbiasedClosestApproach();
     if(ca.usable()){
       auto dinfo = fillDriftInfo(ca);
@@ -187,6 +191,8 @@ namespace mu2e {
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
       if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(driftshu)whstate_ = driftshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
+      if(toggleshu)whstate_ = toggleshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
+      if(sampleshu)whstate_ = sampleshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(whstate_.driftConstraint()){
         dVar_ = dinfo.driftHitVar();
         if(whstate_.constrainDriftDt()){

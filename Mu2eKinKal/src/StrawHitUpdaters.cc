@@ -1,6 +1,6 @@
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 namespace mu2e {
-  std::vector<std::string> StrawHitUpdaters::names_{"None","CADSHU","DriftANNSHU","BkgANNSHU","","","","","","","Chi2SHU"};
+  std::vector<std::string> StrawHitUpdaters::names_{"None","CADSHU","DriftANNSHU","BkgANNSHU","ToggleDriftConstraint","StatisticallyEnableDriftConstraint","","","","","Chi2SHU"};
   std::string const& StrawHitUpdaters::name(algorithm alg) {
     return names_[static_cast<size_t>(alg)];
   }

@@ -82,7 +82,7 @@ namespace mu2e {
       using PtrVector = std::vector< std::shared_ptr<T> >;
       template<typename T, typename U>
       void remap_pointer_collection(PtrVector<T>& lhs, const PtrVector<U>& rhs){
-        CloneContext& context = this->context_;
+        CloneContext& context = *(this->context_);
         lhs.clear();
         lhs.reserve(rhs.size());
         for (const auto& item: rhs){
@@ -95,7 +95,7 @@ namespace mu2e {
       }
       template<typename T, typename U>
       void clone_pointer_collection(PtrVector<T>& lhs, const PtrVector<U>& rhs){
-        CloneContext& context = this->context_;
+        CloneContext& context = *(this->context_);
         lhs.clear();
         lhs.reserve(rhs.size());
         for (const auto& ptr: rhs){
