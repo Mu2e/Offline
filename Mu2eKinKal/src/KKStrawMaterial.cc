@@ -39,11 +39,10 @@ namespace mu2e {
       double& wallpath, double& gaspath, double& wirepath) const {
     wallpath = gaspath = wirepath = 0.0;
     PathCalc retval = KKStrawMaterial::unknown;
-    static double mindocarange(0.05); // require a minimum range to average over straw imperfections
-    double docarange = std::max(caconfig.nsig_*sqrt(std::max(0.0,cadata.docaVar())),mindocarange);
+    double docarange = 0.5*caconfig.nsig_*sqrt(std::max(0.0,cadata.docaVar()));
     // if the doca range covers the straw, use averages
     double adoca = fabs(cadata.doca());
-    double mindoca = std::min(std::max(0.0,adoca-docarange),irad_-mindocarange);
+    double mindoca = std::min(std::max(0.0,adoca-docarange),irad_);
     double imaxdoca = std::min(irad_,adoca+docarange);
     double omaxdoca = std::min(orad_,adoca+docarange);
     if(2*docarange > irad_){
@@ -53,10 +52,10 @@ namespace mu2e {
     } else {
       // path average is the area covered by the DOCA ranged divided by the range
       double agas = segmentArea(mindoca,irad_) - segmentArea(imaxdoca,irad_);
-      gaspath = agas/(imaxdoca-mindoca);
+      if(agas>0.0)gaspath = agas/(imaxdoca-mindoca);
       // wall area is the outer radius area - gas area
       double awall = segmentArea(mindoca,orad_) - segmentArea(omaxdoca,orad_) - agas;
-      wallpath = awall/(omaxdoca-mindoca);
+      if(awall>0.0)wallpath = awall/(omaxdoca-mindoca);
       retval = range;
     }
     if(caconfig.diag_>0){
@@ -104,8 +103,11 @@ namespace mu2e {
   }
 
   double KKStrawMaterial::segmentArea(double doca, double r){
-    double theta = 2*acos(doca/r); // angle of segment
-    return 0.5*r*r*(theta-sin(theta));
-  }
+    if(doca<r){
+      double theta = 2*acos(doca/r); // angle of segment
+      return 0.5*r*r*(theta-sin(theta));
+    } else
+      return 0.0;
+    }
 
 }
