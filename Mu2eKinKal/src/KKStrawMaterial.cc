@@ -39,10 +39,10 @@ namespace mu2e {
       double& wallpath, double& gaspath, double& wirepath) const {
     wallpath = gaspath = wirepath = 0.0;
     PathCalc retval = KKStrawMaterial::unknown;
-    double docarange = 0.5*caconfig.nsig_*sqrt(std::max(0.0,cadata.docaVar()));
+    double docarange = caconfig.nsig_*sqrt(std::max(0.0,cadata.docaVar()));
     // if the doca range covers the straw, use averages
     double adoca = fabs(cadata.doca());
-    double mindoca = std::min(std::max(0.0,adoca-docarange),irad_);
+    double mindoca = std::max(0.0,std::min(adoca,irad_)-docarange);
     double imaxdoca = std::min(irad_,adoca+docarange);
     double omaxdoca = std::min(orad_,adoca+docarange);
     if(2*docarange > irad_){
