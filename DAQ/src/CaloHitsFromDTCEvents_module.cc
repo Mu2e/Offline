@@ -93,7 +93,7 @@ private:
                             const mu2e::CalorimeterDataDecoder& cc,
                             std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
                             std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
-                            unsigned short& evtEnergy);
+                            std::unique_ptr<mu2e::IntensityInfoCalo> const& int_info);
 
   void addPulse(uint16_t& crystalID, float& time, float& eDep,
                 std::unique_ptr<mu2e::CaloHitCollection> const& hits_calo,
@@ -214,7 +214,6 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 
   size_t totalSize = 0;
   size_t numCalDecoders = 0;
-  unsigned short evtEnergy(0);
 
   std::unique_ptr<mu2e::CalorimeterDataDecoders> decoderColl(new mu2e::CalorimeterDataDecoders);
   artdaq::Fragments fragments = caloDAQUtil_.getFragments(event);
@@ -225,7 +224,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
     for (auto& subevent : caloSEvents) {
       decoderColl->emplace_back(subevent);
       auto& decoder = decoderColl->back();
-      analyze_calorimeter_(calodaqconds, decoder, calo_hits, caphri_hits, evtEnergy);
+      analyze_calorimeter_(calodaqconds, decoder, calo_hits, caphri_hits, int_info);
       for (size_t i = 0; i < decoder.block_count(); ++i) {
         totalSize += decoder.blockSizeBytes(i);
       }
@@ -249,9 +248,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
     std::cout << "Total Size: " << (int)totalSize << " bytes." << std::endl;
   }
 
-  int_info->setCaloEnergy(evtEnergy);
-  int_info->setNCaloHits(calo_hits->size());
-  int_info->setNCaphriHits(caphri_hits->size());
+  // Store the summary intensity info
   event.put(std::move(int_info));
 
   // Store the calo hits in the event
@@ -263,9 +260,13 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
     mu2e::CaloDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,
     std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
-    std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits, unsigned short& evtEnergy) {
+    std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
+    std::unique_ptr<mu2e::IntensityInfoCalo> const& int_info) {
 
   auto dtcID = cc.event_.GetDTCID();
+
+  unsigned evtEnergy(0);
+  std::array<unsigned short, 2> nhits = {0, 0}; //N(hits) by disk
 
   // Loop through the ROCs of this caloDecoder
   for (size_t iROC = 0; iROC < cc.block_count(); iROC++) {
@@ -320,16 +321,26 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
       float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];
 
       bool isCaphri = offlineId.crystal().isCaphri();
+      if(!isCaphri) ++nhits[offlineId.crystal().disk()];
+
+      // Energy threshold depends on the crystal type
+      const float emin = (isCaphri) ? caphriEDepMin_ : hitEDepMin_;
+      const float emax = (isCaphri) ? caphriEDepMax_ : hitEDepMax_;
 
       // FIX ME! WE NEED TO CHECK IF TEH PULSE IS SATURATED HERE
-      if (((eDep >= hitEDepMin_) || (isCaphri && (eDep >= caphriEDepMin_))) &&
-          ((eDep < hitEDepMax_) || (isCaphri && (eDep < caphriEDepMax_)))) {
+      if (eDep >= emin && eDep < emax) {
         addPulse(crystalID, time, eDep, calo_hits, caphri_hits);
         evtEnergy += eDep;
+        if(isCaphri) {
+          int_info->addCaphriHit(eDep, crystalID);
+        }
       }
-
     } // End loop over hits
   }   // End loop over ROCs
+
+  // Store summary intensity info
+  int_info->setCaloEnergy(evtEnergy);
+  int_info->setNCaloHits(nhits);
 }
 
 void art::CaloHitsFromDataDTCEvents::endJob() {
