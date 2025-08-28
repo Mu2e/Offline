@@ -39,7 +39,7 @@ namespace mu2e {
       double& wallpath, double& gaspath, double& wirepath) const {
     wallpath = gaspath = wirepath = 0.0;
     PathCalc retval = KKStrawMaterial::unknown;
-    static double mindocarange(0.1); // require a minimum range to average over straw imperfections
+    static double mindocarange(0.05); // require a minimum range to average over straw imperfections
     double docarange = std::max(caconfig.nsig_*sqrt(std::max(0.0,cadata.docaVar())),mindocarange);
     // if the doca range covers the straw, use averages
     double adoca = fabs(cadata.doca());
