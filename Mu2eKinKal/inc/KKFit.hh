@@ -629,7 +629,7 @@ namespace mu2e {
             kseed._domainbounds.push_back(domain->begin());
           }
           // save end of last domain
-          kseed._domainbounds.push_back((*kktrk.domains().end())->end());
+          kseed._domainbounds.push_back((*(kktrk.domains().rbegin()))->end());
         }
       } else if (savetraj_ == detector ) {
         // only save segments inside the tracker volume. First, find the time limits for that
