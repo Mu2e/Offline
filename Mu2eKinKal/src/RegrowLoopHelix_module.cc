@@ -89,13 +89,14 @@ namespace mu2e {
   using Name    = fhicl::Name;
   using Comment = fhicl::Comment;
   struct RegrowLoopHelixConfig {
-    fhicl::Atom<art::InputTag> kalSeedCollection {Name("KalSeedPtrCollection"), Comment("KalSeedPtr collection to processed ") };
+    fhicl::Atom<int> debug{Name("debug"), Comment("Debug level"), 0};
+    fhicl::Atom<art::InputTag> kalSeedPtrCollection {Name("KalSeedPtrCollection"), Comment("KalSeedPtr collection to processed ") };
     fhicl::Atom<art::InputTag> comboHitCollection {Name("ComboHitCollection"), Comment("Reduced ComboHit collection ") };
     fhicl::Atom<art::InputTag> indexMap {Name("StrawDigiIndexMap"), Comment("Map between original and reduced ComboHits") };
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
     fhicl::Table<KKConfig> extSettings { Name("RefitSettings") };
-//     fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") }; needs to be pulled out of LoopHelixFit if needed
+    //     fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") }; needs to be pulled out of LoopHelixFit if needed
   };
 
   class RegrowLoopHelix : public art::EDProducer {
@@ -136,22 +137,24 @@ namespace mu2e {
       void produce(art::Event& event) override;
       void endJob() override;
     private:
+      bool debug_;
       ProditionsHandle<StrawResponse> strawResponse_h_;
       ProditionsHandle<Tracker> alignedTracker_h_;
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
       KKFIT kkfit_;
       KKMaterial kkmat_;
-      art::ProductToken<KalSeedCollection> kseedcol_T_;
+      art::ProductToken<KalSeedPtrCollection> kseedptrcol_T_;
       art::ProductToken<ComboHitCollection> chcol_T_;
       art::ProductToken<IndexMap> indexmap_T_;
   };
 
   RegrowLoopHelix::RegrowLoopHelix(const Parameters& settings) : art::EDProducer(settings),
-    kkfit_(settings().kkfitSettings()),
-    kkmat_(settings().matSettings()),
-    kseedcol_T_(consumes<KalSeedCollection>(settings().kalSeedCollection())),
-    chcol_T_(consumes<ComboHitCollection>(settings().comboHitCollection())),
-    indexmap_T_(consumes<IndexMap>(settings().indexMap()))
+  debug_(settings().debug()),
+  kkfit_(settings().kkfitSettings()),
+  kkmat_(settings().matSettings()),
+  kseedptrcol_T_(consumes<KalSeedPtrCollection>(settings().kalSeedPtrCollection())),
+  chcol_T_(consumes<ComboHitCollection>(settings().comboHitCollection())),
+  indexmap_T_(consumes<IndexMap>(settings().indexMap()))
   {
     produces<KKTRKCOL>();
     produces<KalSeedCollection>();
@@ -171,16 +174,17 @@ namespace mu2e {
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     // find input event data
-    auto kseed_H = event.getValidHandle<KalSeedCollection>(kseedcol_T_);
-    const auto& kseedcol = *kseed_H;
+    auto kseed_H = event.getValidHandle<KalSeedPtrCollection>(kseedptrcol_T_);
+    const auto& kseedptrcol = *kseed_H;
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
     const auto& chcol = *ch_H;
     auto indexmap_H = event.getValidHandle<IndexMap>(indexmap_T_);
     const auto& indexmap = *indexmap_H;
     // create outputs
     unique_ptr<KKTRKCOL> ktrkcol(new KKTRKCOL );
-    unique_ptr<KalSeedCollection> r_kseedcol(new KalSeedCollection );
-    for (const auto& kseed : kseedcol) {
+    unique_ptr<KalSeedCollection> kseedcol(new KalSeedCollection );
+    for (const auto& kseedptr : kseedptrcol) {
+      auto const& kseed = *kseedptr;
       // test
       if(!kseed.loopHelixFit())throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: passed KalSeed from non-LoopHelix fit " << endl;
       // create the trajectory object from the seed. This will be the initial reference trajectory
@@ -195,10 +199,15 @@ namespace mu2e {
       // create domains TODO
       // create and fit the  KKTrack from these TODO
       // convert the fit to a KalSeed TODO
+      if(debug_ > 0){
+        std::cout << "Regrew " << strawhits.size() << " straw hits and " << strawxings.size() << " straw xings, status = " << goodhits << std::endl;
+      }
       if(goodhits){
       }
     }
-    // store output TODO
+    // store output
+    event.put(move(ktrkcol));
+    event.put(move(kseedcol));
   }
 
   void RegrowLoopHelix::endJob()

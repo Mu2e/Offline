@@ -35,6 +35,7 @@
 // KinKal includes
 #include "KinKal/Fit/Status.hh"
 #include "KinKal/Fit/Config.hh"
+#include "KinKal/Fit/Domain.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 #include "KinKal/Trajectory/SensorLine.hh"
@@ -82,6 +83,8 @@ namespace mu2e {
       using EXING = KinKal::ElementXing<KTRAJ>;
       using EXINGPTR = std::shared_ptr<EXING>;
       using EXINGCOL = std::vector<EXINGPTR>;
+      using DOMAINPTR = std::shared_ptr<KinKal::Domain>;
+      using DOMAINCOL = std::set<DOMAINPTR>;
       enum SaveTraj {none=0, full, detector, t0seg};
       // construct from fit configuration objects
       explicit KKFit(KKFitConfig const& fitconfig);
