@@ -16,6 +16,7 @@ cet_make_library(
       src/ExtMonFNALTrkParam.cc
       src/ExtMonUCITofHit.cc
       src/HelixVal.cc
+      src/IntensityInfoCalo.cc
       src/KalSeed.cc
       src/KalSegment.cc
       src/PIDProduct.cc

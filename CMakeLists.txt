@@ -62,6 +62,8 @@ if( ${WITH_G4} )
 # TODO: Find or implement FindCRY.cmake
 include_directories($ENV{CRYHOME}/src)
 link_directories($ENV{CRYHOME}/lib)
+else()
+    add_definitions("-DONLINE_MODE")
 endif()
 
 

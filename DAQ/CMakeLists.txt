@@ -1,3 +1,11 @@
+
+
+# Create a variable to hold optional Online libraries
+set(artdaq_data_lib "")
+if(ONLINE_MODE)
+  set(artdaq_daqdata_lib "artdaq::DAQdata")
+endif()
+
 cet_make_library(
     SOURCE
       src/CaloDAQUtilities.cc
@@ -66,6 +74,17 @@ cet_build_plugin(LumiInfoAna art::module
     art_root_io::TFileService_service
     artdaq-core-mu2e::Data
     artdaq-core-mu2e::Data_dict
+)
+
+cet_build_plugin(LumiStreamFilter art::module
+  REG_SOURCE src/LumiStreamFilter_module.cc
+  LIBRARIES REG
+  fhiclcpp::types
+  Offline::DAQ
+  Offline::RecoDataProducts
+  artdaq-core-mu2e::Data
+  artdaq-core-mu2e::Data_dict
+  ${artdaq_daqdata_lib}
 )
 
 cet_build_plugin(PrefetchDAQData art::module

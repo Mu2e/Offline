@@ -215,6 +215,28 @@
  <class name="mu2e::KalIntersection"/>
  <class name="mu2e::KalIntersectionCollection"/>
 
+
+<ioread sourceClass="mu2e::TrkStraw"
+  source="bool _active"
+  checksum="[0x7089f126]"
+  targetClass="mu2e::TrkStraw"
+  target="_flag">
+<![CDATA[
+  if(onfile._active)_flag.merge(mu2e::StrawFlagDetail::active);
+  ]]>
+</ioread>
+
+<!-- the dmom translation is not correct, as the total momentum isn't known. This is a flaw with the original data and can't be fixed -->
+<ioread sourceClass="mu2e::TrkStraw"
+  source="float _pfrac"
+  checksum="[0x7089f126]"
+  targetClass="mu2e::TrkStraw"
+  target="_dmom">
+<![CDATA[
+  _dmom = onfile._pfrac;
+  ]]>
+</ioread>
+
  <class name="mu2e::KalSeed"/>
  <class name="mu2e::KalSeedCollection"/>
  <class name="mu2e::KalSeedPtr"/>
