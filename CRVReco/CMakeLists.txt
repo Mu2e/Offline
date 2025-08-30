@@ -83,6 +83,18 @@ cet_build_plugin(CrvWidebandTriggerFilter art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(CrvTimingStudies art::module
+    REG_SOURCE src/CrvTimingStudies_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::CRVReco
+
+      Offline::CosmicRayShieldGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::RecoDataProducts
+)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_v11.fcl ${CURRENT_BINARY_DIR} fcl/prolog_v11.fcl)
 
 install_source(SUBDIRS src)

@@ -190,8 +190,10 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
               int crvBarIndex = offlineChannel / 4;
               int SiPMNumber = offlineChannel % 4;
 
-              crvDigis->emplace_back(waveform, crvHitInfo.hitTime, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
-              crvDigisNZS->emplace_back(waveform, crvHitInfo.hitTime, true, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);  //temporary solution until we get the FEB-II
+	      //time stamps coming from FEB-II are in units of 6.25ns, but only the even time stamps are used.
+	      //convert them into time stamps in units of 12.5ns - same period as the ADC samples.
+              crvDigis->emplace_back(waveform, crvHitInfo.hitTime/2, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
+              crvDigisNZS->emplace_back(waveform, crvHitInfo.hitTime/2, true, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);  //temporary solution until we get the FEB-II
             } // loop over all crvHits
 
             if(_diagLevel>2)
@@ -241,7 +243,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
                             << "   rocPort " << rocPort << "   fpgaNumber " << crvHitInfo.fpgaNumber << "   fpgaChannel " << crvHitInfo.fpgaChannel
                             << std::endl;
                 }
-                std::cout << "TDC: " << crvHitInfo.hitTime << std::endl;
+                std::cout << "TDC (units of 6.25ns): " << crvHitInfo.hitTime << std::endl;
                 std::cout << "nSamples " << waveform.size() << "  ";
                 std::cout << "Waveform: {";
                 for(size_t i = 0; i < waveform.size(); ++i) std::cout << "  " << waveform.at(i);
