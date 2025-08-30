@@ -1,4 +1,4 @@
-//CRV module geometry in the extracted detector geometry
+//CRV module geometry in the extracted detector geometry.
 
 //Comment (1): The nominal gap between two dicounters is 0.366mm according to crv_parameters.xlsx on doc-db.
 //             The smaller value of 0.2mm was found empirically by tests at Wideband.
