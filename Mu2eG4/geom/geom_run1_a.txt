@@ -48,8 +48,8 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Offline/Mu2eG4/geom/TransportSolenoid_v08.txt"
 
 // External Shielding
-#include "Offline/Mu2eG4/geom/ExtShieldUpstream_v06.txt"
-#include "Offline/Mu2eG4/geom/ExtShieldDownstream_v06.txt"
+#include "Offline/Mu2eG4/geom/reduced_ExtShieldUpstream_v06.txt"
+#include "Offline/Mu2eG4/geom/reduced_ExtShieldDownstream_v06.txt"
 #include "Offline/Mu2eG4/geom/Saddle_v03.txt"
 #include "Offline/Mu2eG4/geom/Pipe_v04.txt"
 #include "Offline/Mu2eG4/geom/ElectronicRack_v02.txt"
@@ -100,7 +100,9 @@ bool   vd.solid          = false;
 #include "Offline/Mu2eG4/geom/visualization_regions.txt"
 
 
-
+// patch to change East DS hatch block height
+double building.dsArea.hatchblock.E.offsetFromFloorSurface.y = 6400.80;
+double building.dsArea.hatchblock.E.yHalfThickness           = 457.20;
 
 //
 //
