@@ -101,7 +101,7 @@ namespace mu2e
         const std::vector<int16_t> &ADCs = _makeCrvDigis->GetADCs();
         uint16_t startTDC = _makeCrvDigis->GetTDC();
 
-        crvDigiCollection[i]->emplace_back(ADCs, startTDC, NZS, barIndex, SiPM);
+        crvDigiCollection[i]->emplace_back(ADCs, startTDC, NZS, false, barIndex, SiPM);
       }
 
       event.put(std::move(crvDigiCollection[i]),(i==1?"NZS":""));

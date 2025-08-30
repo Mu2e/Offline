@@ -178,13 +178,14 @@ namespace mu2e
 
       //checking following digis whether they are a continuation of the current digis
       //if that is the case, append the next digis
+      //requires that digis belonging to the same channel are grouped together and ordered by timestamp
       while(++waveformIndex<crvDigiCollection->size())
       {
         const CrvDigi &nextDigi = crvDigiCollection->at(waveformIndex);
         if(barIndex!=nextDigi.GetScintillatorBarIndex()) break;
         if(SiPM!=nextDigi.GetSiPMNumber()) break;
-        if(startTDC+ADCs.size()!=nextDigi.GetStartTDC()) break;
-        for(size_t i=0; i<nextDigi.GetADCs().size(); ++i) ADCs.push_back(nextDigi.GetADCs()[i]);
+        if(startTDC+ADCs.size()!=nextDigi.GetStartTDC()) break;  //checks that the next waveform begins right after the previous one
+        ADCs.insert(ADCs.end(),nextDigi.GetADCs().begin(),nextDigi.GetADCs().end()); //append the waveform
         waveformIndices.push_back(waveformIndex);
       }
 

@@ -353,12 +353,23 @@
         source="std::array<int16_t,8> _ADCs"
         checksum="[3596926525]"
         targetClass="mu2e::CrvDigi"
-        target="_ADCs, _NZS"
+        target="_ADCs, _NZS, _oddTimestamp"
         include="array, vector">
 <![CDATA[
   _ADCs.resize(onfile._ADCs.size());
   for(size_t i=0; i<onfile._ADCs.size(); ++i) _ADCs[i]=onfile._ADCs[i];
   _NZS=false;
+  _oddTimestamp=false;
+]]>
+</ioread>
+
+<ioread sourceClass="mu2e::CrvDigi"
+        source=""
+        checksum="[1961551691]"
+        targetClass="mu2e::CrvDigi"
+	target="_oddTimestamp">
+<![CDATA[
+  _oddTimestamp=false;
 ]]>
 </ioread>
 

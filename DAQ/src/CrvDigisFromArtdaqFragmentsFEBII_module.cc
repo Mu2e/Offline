@@ -58,9 +58,15 @@ CrvDigisFromArtdaqFragmentsFEBII::CrvDigisFromArtdaqFragmentsFEBII(const art::ED
 void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
 {
   // Collection of CrvDigis for the event
+  // Digis belonging to the same channel are grouped together and ordered by timestamp
+  // This is needed by the reconstruction so that subsequent digis can be merged
   std::unique_ptr<mu2e::CrvDigiCollection> crvDigis(new mu2e::CrvDigiCollection);
   std::unique_ptr<mu2e::CrvDigiCollection> crvDigisNZS(new mu2e::CrvDigiCollection);
   std::unique_ptr<mu2e::CrvDAQerrorCollection> crvDaqErrors(new mu2e::CrvDAQerrorCollection);
+
+  // Temporary collections for unordered digis
+  std::map<int, std::vector<mu2e::CrvDigi>> crvDigisTmp;
+  std::map<int, std::vector<mu2e::CrvDigi>> crvDigisNZSTmp;
 
   auto const& channelMap = _channelMap_h.get(event.id());
 
@@ -192,8 +198,9 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
 
 	      //time stamps coming from FEB-II are in units of 6.25ns, but only the even time stamps are used.
 	      //convert them into time stamps in units of 12.5ns - same period as the ADC samples.
-              crvDigis->emplace_back(waveform, crvHitInfo.hitTime/2, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
-              crvDigisNZS->emplace_back(waveform, crvHitInfo.hitTime/2, true, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);  //temporary solution until we get the FEB-II
+              bool oddTimestamp=(crvHitInfo.hitTime%2==1);
+	      crvDigisTmp[offlineChannel].emplace_back(waveform, crvHitInfo.hitTime/2, false, oddTimestamp, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
+              crvDigisNZSTmp[offlineChannel].emplace_back(waveform, crvHitInfo.hitTime/2, true, oddTimestamp, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);  //temporary solution until we get the NZS data
             } // loop over all crvHits
 
             if(_diagLevel>2)
@@ -258,6 +265,18 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
   }             // loop over fragment handles
 
   if(_diagLevel>1) std::cout << "Total Size: " << totalSize << std::endl;
+
+  //order digis
+  for(auto digis=crvDigisTmp.begin(); digis!=crvDigisTmp.end(); ++digis)
+  {
+    std::sort(digis->second.begin(),digis->second.end(), [](const mu2e::CrvDigi &d1, const mu2e::CrvDigi &d2) {return d1.GetStartTDC()<d2.GetStartTDC();});  //sort by TDC
+    crvDigis->insert(crvDigis->end(),digis->second.begin(),digis->second.end());
+  }
+  for(auto digis=crvDigisNZSTmp.begin(); digis!=crvDigisNZSTmp.end(); ++digis)
+  {
+    std::sort(digis->second.begin(),digis->second.end(), [](const mu2e::CrvDigi &d1, const mu2e::CrvDigi &d2) {return d1.GetStartTDC()<d2.GetStartTDC();});  //sort by TDC
+    crvDigisNZS->insert(crvDigisNZS->end(),digis->second.begin(),digis->second.end());
+  }
 
   // Store the crv digis in the event
   event.put(std::move(crvDigis));

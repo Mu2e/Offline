@@ -190,8 +190,8 @@ void CrvDigisFromArtdaqFragments::produce(art::Event& event)
               adc.resize(waveform.size());
               for(size_t i=0; i<waveform.size(); ++i) adc[i]=waveform.at(i).ADC;
               for(size_t i=0; i<waveform.size(); ++i) {if((adc[i] & 0x800) == 0x800) adc[i]=(int16_t)(adc[i] | 0xF000);}  //to handle negative numbers stored in 12bit ADC samples
-              crvDigis->emplace_back(adc, crvHitInfo.HitTime, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
-              crvDigisNZS->emplace_back(adc, crvHitInfo.HitTime, true, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);  //temporary solution until we get the FEB-II
+              crvDigis->emplace_back(adc, crvHitInfo.HitTime, false, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
+              crvDigisNZS->emplace_back(adc, crvHitInfo.HitTime, true, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);  //temporary solution until we get the FEB-II
             } // loop over all crvHits
 
             if(_diagLevel>2)
