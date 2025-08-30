@@ -244,10 +244,9 @@ namespace mu2e {
       using Comment = fhicl::Comment;
 
       fhicl::Atom<bool>                enabled       {Name("enabled"),      Comment("Enabling Geant4 scoring")};
-      fhicl::Sequence<std::string>     meshNames     {Name("meshNames"),    Comment("List of mesh name(s)"), };
-      fhicl::Sequence<std::string>     scorerNames   {Name("scorerNames"),  Comment("List of scorer name(s)")};
-      fhicl::OptionalAtom<bool>        writeFile     {Name("writeFile"),    Comment("Write additional file with scores")};
-      fhicl::OptionalAtom<std::string> fileDirectory {Name("fileDirectory"),Comment("Directory to write file score")};
+      fhicl::Sequence<std::string>     meshNames     {Name("meshNames"),    Comment("List of mesh name(s)"),  };
+      fhicl::Sequence<std::string>     scorerNames   {Name("scorerNames"),  Comment("List of scorer name(s)") };
+      fhicl::Atom<int>                 verboseLevel  {Name("verboseLevel"), Comment("Set vervosity level"),  0};
     };
 
 
