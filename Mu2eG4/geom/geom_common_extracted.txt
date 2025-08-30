@@ -65,7 +65,7 @@ double calorimeter.caloMotherZ1                 = 27220;
 double calorimeter.calorimeterZFront            = 25843.0;
 
 //CRV in the extracted position for the detector KPP
-#include "Offline/Mu2eG4/geom/crv_counters_extracted_v01.txt"
+#include "Offline/Mu2eG4/geom/crv_counters_extracted_v02.txt"
 
 //
 // End notes:
