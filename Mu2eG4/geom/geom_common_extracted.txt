@@ -36,6 +36,17 @@ vector<double> building.dsArea.hatchblock.yPositions = {
   -8509.0   // A
 };
 
+// G-block on the west is rotated 90 degrees
+vector<double> building.dsArea.hatchblock.E.xPositions = {
+24042, // 0
+24042, // 1
+24500, // 2
+24500  // 3
+};
+
+double building.dsArea.hatchblock.E.yHalfThickness           = 457.2;
+double building.dsArea.hatchblock.E.offsetFromFloorSurface.y = 6400.8;
+
 // Turn off downstream external shields
 int ExtShieldDownstream.numberOfBoxTypes = 0;
 double ExtShieldDownstream.detecHoleZ = 32007.0;
