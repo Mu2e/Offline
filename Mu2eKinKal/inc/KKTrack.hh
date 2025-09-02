@@ -12,6 +12,7 @@
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "KinKal/Geometry/Intersection.hh"
 #include <tuple>
 namespace mu2e {
@@ -73,6 +74,8 @@ namespace mu2e {
 
       // accessors
       PDGCode::type fitParticle() const { return tpart_;}
+      TrkFitFlag const& fitFlag() const { return flag_; }
+      TrkFitFlag fitFlag() { return flag_; }
       KKSTRAWHITCOL const& strawHits() const { return strawhits_; }
       KKSTRAWHITCLUSTERCOL const& strawHitClusters() const { return strawhitclusters_; }
       KKSTRAWXINGCOL const& strawXings() const { return strawxings_; }
@@ -88,6 +91,7 @@ namespace mu2e {
       // record the particle type
       PDGCode::type tpart_;
       KKSTRAWHITCLUSTERER shclusterer_; // clustering functor
+      TrkFitFlag flag_;
       KKSTRAWHITCOL strawhits_;  // straw hits used in this fit
       KKSTRAWXINGCOL strawxings_;  // straw material crossings used in this fit
       KKIPAXINGCOL ipaxings_;  // ipa material crossings used in extrapolation
@@ -109,7 +113,7 @@ namespace mu2e {
       KKSTRAWXINGCOL const& strawxings,
       KKCALOHITCOL const& calohits,
       std::array<double, KinKal::NParams()> constraints) :
-    KinKal::Track<KTRAJ>(config,bfield,seedtraj), tpart_(tpart), shclusterer_(shclusterer),
+    KinKal::Track<KTRAJ>(config,bfield), tpart_(tpart), shclusterer_(shclusterer),
     strawhits_(strawhits),
     strawxings_(strawxings),
     calohits_(calohits) {
@@ -123,7 +127,7 @@ namespace mu2e {
           shcluster->print(std::cout,this->config().plevel_);
         }
       }
-      convertTypes(strawhits_, strawxings_, calohits_,  hits,exings);
+      convertTypes(strawhits_, strawxings_, calohits_,  hits, exings);
 
       std::array<bool,KinKal::NParams()> mask = {false};
       bool constraining = false;
@@ -148,8 +152,8 @@ namespace mu2e {
         }
         hits.push_back(std::make_shared<KinKal::ParameterHit<KTRAJ>>(seedtraj.range().mid(),seedtraj,cparams,mask));
       }
-
-      this->fit(hits,exings);
+      // now fit these
+      this->fit(hits, exings, seedtraj);
     }
 
   template <class KTRAJ> void KKTrack<KTRAJ>::addHitClusters(KKSTRAWHITCOL const& strawhits,KKSTRAWXINGCOL const& strawxings,MEASCOL& hits) {
@@ -238,7 +242,6 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKTrack<KTRAJ>::printFit(std::ostream& ost,int printlevel) const {
-    if(printlevel > 1) std::cout << "Seed Helix " << this->seedTraj() << std::endl;
     TRACK::print(ost,0);
     ost << "Fit with " << strawhits_.size() << " StrawHits and " << calohits_.size() << " CaloHits and " << strawxings_.size() << " Straw Xings" << std::endl;
     if(printlevel > 2){
@@ -275,8 +278,6 @@ namespace mu2e {
     // store the xing
     crvxings_.push_back(crvxingptr);
   }
-
-
 
 }
 #endif

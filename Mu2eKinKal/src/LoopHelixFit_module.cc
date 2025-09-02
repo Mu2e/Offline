@@ -174,7 +174,7 @@ namespace mu2e {
       TrkFitFlag fitflag_;
       // parameter-specific functions that need to be overridden in subclasses
       KTRAJ makeSeedTraj(HelixSeed const& hseed,TimeRange const& trange,VEC3 const& bnom, int charge) const;
-      bool goodFit(KKTRK const& ktrk) const;
+      bool goodFit(KKTRK const& ktrk,KTRAJ const& seed) const;
       bool goodHelix(HelixSeed const& hseed) const;
       std::vector<TrkFitDirection::FitDirection> chooseHelixDir(HelixSeed const& hseed) const;
       std::unique_ptr<KKTRK> fitTrack(art::Event& event, HelixSeed const& hseed, const TrkFitDirection fdir, const PDGCode::type fitpart);
@@ -415,7 +415,6 @@ namespace mu2e {
     }
     // time range of the hits
     auto trange = Mu2eKinKal::timeBounds(hseed.hits());
-
     // Begin constructing the track fit
     // construct the seed trajectory
     KTRAJ seedtraj = makeSeedTraj(hseed,trange,bnom,charge);
@@ -448,20 +447,21 @@ namespace mu2e {
     if(!ktrk) // check that the track exists
       throw cet::exception("RECO")<<"mu2e::LoopHelixFit: Track fit was performed but no track is found\n";
 
-    auto goodfit = goodFit(*ktrk);
+    auto goodfit = goodFit(*ktrk,seedtraj);
     if(print_>0) printf("[LoopHelixFit::%s] Before extending the fit: goodFit = %o, fitcon = %.4f, nHits = %2lu, %lu calo-hits\n",
         __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
     // if we have an extension schedule, extend.
     if(goodfit && exconfig_.schedule().size() > 0) {
       kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *ktrk );
-      goodfit = goodFit(*ktrk);
+      goodfit = goodFit(*ktrk,seedtraj);
       // if finaling, apply that now.
       if(goodfit && fconfig_.schedule().size() > 0){
         ktrk->extend(fconfig_,nohits,noexings);
-        goodfit = goodFit(*ktrk);
+        goodfit = goodFit(*ktrk,seedtraj);
       }
     }
 
+    if(goodfit)ktrk->fitFlag().merge(TrkFitFlag::FitOK);
     //store the fit quality result if it's a good fit
     if(print_>0) printf("[LoopHelixFit::%s] After extending the fit : goodFit = %o, fitcon = %.4f, nHits = %2lu, %lu calo-hits\n",
         __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
@@ -503,11 +503,9 @@ namespace mu2e {
         // fit each track hypothesis
         for(auto helix_dir : helix_dirs) {
           auto ktrk = fitTrack(event, hseed,  TrkFitDirection(helix_dir), fpart_);
-
           if(!ktrk) continue; //ensure that the track exists
 
-          // Check the fit
-          auto goodfit = goodFit(*ktrk);
+          auto goodfit = ktrk->fitFlag().hasAllProperties(TrkFitFlag::FitOK);
 
           // extrapolate as required
           if(goodfit && extrapolate_) extrapolate(*ktrk);
@@ -517,9 +515,6 @@ namespace mu2e {
           if(goodfit || saveall_){
             auto hptr = HPtr(hseedcol_h,iseed);
             TrkFitFlag fitflag(hptr->status());
-            fitflag.merge(fitflag_);
-            if(goodfit) fitflag.merge(TrkFitFlag::FitOK);
-            else        fitflag.clear(TrkFitFlag::FitOK);
             if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
             // sample the fit as requested
             sampleFit(*ktrk);
@@ -571,11 +566,11 @@ namespace mu2e {
     return ktraj;
   }
 
-  bool LoopHelixFit::goodFit(KKTRK const& ktrk) const {
-    // require physical consistency: fit can succeed but the result can have changed charge or helicity
-    bool retval = ktrk.fitStatus().usable() &&
-      ktrk.fitTraj().front().parameterSign()*ktrk.seedTraj().front().parameterSign() > 0 &&
-      ktrk.fitTraj().front().helicity()*ktrk.seedTraj().front().helicity() > 0;
+  bool LoopHelixFit::goodFit(KKTRK const& ktrk,KTRAJ const& seed) const {
+    // require physical consistency: fit can succeed but the result can have changed charge or helicity. Test at the t0 segment
+    auto t0 = Mu2eKinKal::zTime(ktrk.fitTraj(),0.0,ktrk.fitTraj().range().mid());
+    auto const& t0seg = ktrk.fitTraj().nearestPiece(t0);
+    bool retval = ktrk.fitStatus().usable() && t0seg.parameterSign()*seed.parameterSign() > 0 && t0seg.helicity()*seed.helicity() > 0;
     // also check that the fit is inside the physical detector volume.  Test where the StrawHits are
     if(retval){
       for(auto const& shptr : ktrk.strawHits()) {
