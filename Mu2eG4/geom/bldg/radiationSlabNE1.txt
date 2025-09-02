@@ -10,10 +10,10 @@ vector<double> building.radiation.slabne1.xPositions = {
 13157.40, // 2
 12547.80, // 3
 12547.80, // 4
-10211.00, // 5
-10211.00, // 6
-7620.10, // 7
-7620.10, // 8
+9905.90, // 5
+9905.90, // 6
+7620.00, // 7
+7620.00, // 8
 7975.70 // 9
 };
 vector<double> building.radiation.slabne1.yPositions = {
