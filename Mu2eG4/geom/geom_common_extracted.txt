@@ -20,11 +20,32 @@ double mu2e.detectorSystemZ0 = 24171.;   // mm
 
 //Reduce shielding block above DS, only cover some of extracted detectors
 vector<double> building.dsArea.hatchblock.xPositions = {
-  24506.08,   // B
-  29078.08,   // C
-  29078.08,   // C1
-  24506.08    // E
+  24506,   // B
+  29078,   // C
+  29078,   // C1
+  24506    // E
 };
+
+double building.dsArea.hatchblock.yHalfThickness           = 228.6;
+double building.dsArea.hatchblock.offsetFromFloorSurface.y = 6172.2;
+
+vector<double> building.dsArea.hatchblock.yPositions = {
+  -1193.8,   // B
+  -1193.8,   // C
+  -8509.0,   // C1
+  -8509.0   // A
+};
+
+// G-block on the west is rotated 90 degrees
+vector<double> building.dsArea.hatchblock.E.xPositions = {
+24042, // 0
+24042, // 1
+24500, // 2
+24500  // 3
+};
+
+double building.dsArea.hatchblock.E.yHalfThickness           = 457.2;
+double building.dsArea.hatchblock.E.offsetFromFloorSurface.y = 6400.8;
 
 // Turn off downstream external shields
 int ExtShieldDownstream.numberOfBoxTypes = 0;
