@@ -20,9 +20,7 @@ namespace mu2e {
     fhicl::Sequence<int> mnid   {Name("mnid"   ), Comment("minnesota ID of the panel, main index")};
     fhicl::Sequence<int> dtcid  {Name("dtcid"  ), Comment("ID of the DTC reading the panel")};
     fhicl::Sequence<int> link   {Name("link"   ), Comment("DTC link of the panel (0-5)")};
-    fhicl::Sequence<int> station{Name("station"), Comment("geo index of the station for this panel")};
-    fhicl::Sequence<int> psid   {Name("psid"   ), Comment("production index of the station")};
-    fhicl::Sequence<int> plane  {Name("plane"  ), Comment("geo index of the plane for this panel")};
+    fhicl::Sequence<int> uniquePlane  {Name("uniquePlane"  ), Comment("geo index of the plane for this panel")};
     fhicl::Sequence<int> ppid   {Name("ppid"   ), Comment("production index of the plane")};
     fhicl::Sequence<int> panel  {Name("panel"  ), Comment("geo index of the panel")};
     fhicl::Sequence<int> zface  {Name("zface"  ), Comment("z-ordered index of this panel\'s face (0-3)")};

@@ -1,4 +1,5 @@
 // ======================================================================
+// clang-format off
 // PM
 // StrawDigisFromArtdaqFragments:  add tracker data products to the event
 // debugMode_ > 0 : enables diagnostic printouts
@@ -62,11 +63,11 @@ class mu2e::StrawDigisFromArtdaqFragments : public art::EDProducer {
 public:
 
   struct Config {
-    fhicl::Atom<int>              diagLevel       {fhicl::Name("diagLevel"       ), fhicl::Comment("diagnostic severity level, default = 0"    )};
-    fhicl::Atom<int>              debugMode       {fhicl::Name("debugMode"       ), fhicl::Comment("debug mode, default = 0"                   )};
-    fhicl::Sequence<std::string>  debugBits       {fhicl::Name("debugBits"       ), fhicl::Comment("debug bits"                                )};
-    fhicl::Atom<bool>             saveWaveforms   {fhicl::Name("saveWaveforms"   ), fhicl::Comment("save StrawDigiADCWaveforms, default = true")};
-    fhicl::Atom<bool>             dtcHeaderPresent{fhicl::Name("dtcHeaderPresent"), fhicl::Comment("present for runs > 107246, default = true" )};
+    fhicl::Atom<int>             diagLevel        {fhicl::Name("diagLevel"        ), fhicl::Comment("diagnostic severity level, default:0"    )};
+    fhicl::Atom<int>             debugMode        {fhicl::Name("debugMode"        ), fhicl::Comment("debug mode, default:0"                   )};
+    fhicl::Sequence<std::string> debugBits        {fhicl::Name("debugBits"        ), fhicl::Comment("debug bits"                              )};
+    fhicl::Atom<bool>            saveWaveforms    {fhicl::Name("saveWaveforms"    ), fhicl::Comment("save StrawDigiADCWaveforms, default:true")};
+    fhicl::Atom<bool>            missingDTCHeaders{fhicl::Name("missingDTCHeaders"), fhicl::Comment("true for runs <= 107246, default:false"  )};
 
     // individual tuple specifying a minnesota label, e.g. MN123,
     // with geographic plane/panel numbers, i.e. from DocDB-#888
@@ -138,7 +139,7 @@ private:
   std::vector<std::string> debugBits_;
   int                      debugBit_[kNDebugBits];  
   bool      saveWaveforms_;
-  bool      dtcHeaderPresent_;
+  bool      missingDTCHeaders_;
                                         // the rest
   int       nADCPackets_{-1};           // N(ADC packets per hit)
   int       nSamples_   {-1};           // N(ADC samples per hit)
@@ -153,10 +154,10 @@ private:
   
   const TrackerPanelMap*            _trackerPanelMap;
   
-  // less than 300 panels physically exist and are enumeratively labeled
-  // hence, the max allowed word can act be used as a sentinel
-  const static uint16_t invalid_minnesota_ = static_cast<uint16_t>(-1);
-  uint16_t parse_minnesota_label(std::string label);
+  // // less than 300 panels physically exist and are enumeratively labeled
+  // // hence, the max allowed word can act be used as a sentinel
+  // const static uint16_t invalid_minnesota_ = static_cast<uint16_t>(-1);
+  // uint16_t parse_minnesota_label(std::string label);
 };
 
 // ======================================================================
@@ -166,7 +167,7 @@ mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::ED
     debugMode_       (config().debugMode    ()),
     debugBits_       (config().debugBits    ()),
     saveWaveforms_   (config().saveWaveforms()),
-    dtcHeaderPresent_(config().dtcHeaderPresent()),
+    missingDTCHeaders_(config().missingDTCHeaders()),
     event_           (nullptr)
 {
   produces<mu2e::StrawDigiCollection>();
@@ -354,7 +355,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
         uint8_t* fdata = (uint8_t*) (frag->dataBegin());
         
                                         // runs > 107236
-        if (dtcHeaderPresent_) {
+        if (not missingDTCHeaders_) {
           fdata += sizeof(DTCLib::DTC_EventHeader);
         }
 
@@ -404,10 +405,22 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               nADCPackets_ = h0->NumADCPackets;
               nSamples_    = 3+12*nADCPackets_;
               np_per_hit_  = nADCPackets_+1;
-            }
-            int link_id = rdh->linkID;
+            }            int link_id = rdh->linkID;
             nhits       = rdh->packetCount/(nADCPackets_+1);
 
+            const TrkPanelMap::Row* tpm;
+            try {
+              tpm = _trackerPanelMap->panel_map_by_online_ind(dtc_id,link_id);
+            }
+            catch(...) {
+//-----------------------------------------------------------------------------
+// either DTC ID or link ID are corrupted. Haven't seen that so far, switch to the next ROC anyway
+//-----------------------------------------------------------------------------
+              print_(std::format("ERROR: either dtc_id:{} or link_id:{} is corrupted, skip ROC data\n",
+                                 dtc_id,link_id));
+              continue;
+            }
+              
             if (debugMode_) {
               print_(std::format("-- DTC:{} ROC:{} nhits:{}\n",dtc_id,link_id,nhits));
             }
@@ -429,15 +442,14 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               uint16_t channel = static_cast<uint16_t>(hit_data->StrawIndex);
               uint16_t chid   = mu2e::StrawId(channel).straw(); // channel ID within the panel
 
-              if (chid > 95) {
+              if (chid > StrawId::_nstraws) {
                 print_(std::format("ERROR: hit with corrupted chid:{:04x} : straw:{} / dtc_id:{} link_id:{}, SKIPPING\n",
                                    hit_data->StrawIndex, chid, dtc_id, link_id));
                 continue;
               }
               
               uint16_t mnid    = channel >> mu2e::StrawId::_panelsft;
-              
-              const TrkPanelMap::Row* tpm = _trackerPanelMap->panel_map_by_online_ind(dtc_id,link_id);
+
               if (tpm->mnid() != mnid) {
                 print_(std::format("ERROR: hit chid:{:04x} inconsistent with the dtc_id:{} and link_id:{}\n",
                                    hit_data->StrawIndex, dtc_id, link_id));
@@ -472,14 +484,14 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 
               if (hit_data->NumADCPackets != nADCPackets_) {
                 int np = hit_data->NumADCPackets;
-                print_(std::format("ERROR: wrong NADCpackets:{} , expected:{}, STOP PROCESSING HITS\n",
+                print_(std::format("ERROR: wrong NADCpackets:{} , expected:{}, GO TO THE NEXT ROC\n",
                                    np,nADCPackets_));
                 break;
               }
 //-----------------------------------------------------------------------------
 // convert channel_id into a strawID
 //-----------------------------------------------------------------------------
-              mu2e::StrawId sid(tpm->plane(),tpm->panel(),chid);
+              mu2e::StrawId sid(tpm->uniquePlane(),tpm->panel(),chid);
               
               mu2e::TrkTypes::TDCValues tdc = {hit_data->TDC0(), hit_data->TDC1()};
               mu2e::TrkTypes::TOTValues tot = {hit_data->TOT0  , hit_data->TOT1  };
@@ -493,7 +505,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
                 
                 int ind = straw_digis->size();
                 std::cout << std::format("{:5} 0x{:04x}   0x{:04x} MN{:03d}   {:3} {:3}      0x:{:04x}  {:9} {:9}   {:2}   {:2}  {:5}\n",
-                                         ind,offset,hit_data->StrawIndex,mnid,tpm->plane(),tpm->panel(),sid.straw(),hit_data->TDC0(),
+                                         ind,offset,hit_data->StrawIndex,mnid,tpm->uniquePlane(),tpm->panel(),sid.straw(),hit_data->TDC0(),
                                          hit_data->TDC1(),tot[0],tot[1],pmp);
               }
 
@@ -586,22 +598,22 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 }
 
 
-//-----------------------------------------------------------------------------
-uint16_t mu2e::StrawDigisFromArtdaqFragments::parse_minnesota_label(std::string label){
-    if ((label.size() != 5) || (label[0] != 'M') || (label[1] != 'N')){
-        std::string msg = "invalid minnesota label: " + label;
-        throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
-    }
-    std::string substr = label.substr(2, 3);
-    unsigned int parsed;
-    int scanned = sscanf(substr.c_str(), "%u", &parsed);
-    if (scanned != 1){
-      std::string msg = "failed to parse minnesota label: " + label;
-      throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
-    }
-    uint16_t rv = static_cast<uint16_t>(parsed);
-    return rv;
-}
+// //-----------------------------------------------------------------------------
+// uint16_t mu2e::StrawDigisFromArtdaqFragments::parse_minnesota_label(std::string label){
+//     if ((label.size() != 5) || (label[0] != 'M') || (label[1] != 'N')){
+//         std::string msg = "invalid minnesota label: " + label;
+//         throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
+//     }
+//     std::string substr = label.substr(2, 3);
+//     unsigned int parsed;
+//     int scanned = sscanf(substr.c_str(), "%u", &parsed);
+//     if (scanned != 1){
+//       std::string msg = "failed to parse minnesota label: " + label;
+//       throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
+//     }
+//     uint16_t rv = static_cast<uint16_t>(parsed);
+//     return rv;
+// }
 
 // ======================================================================
 

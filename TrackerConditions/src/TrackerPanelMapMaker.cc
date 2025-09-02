@@ -21,17 +21,14 @@ namespace mu2e {
     std::vector<int> mnid    = config_.mnid   ();
     std::vector<int> dtcid   = config_.dtcid  ();
     std::vector<int> link    = config_.link   ();
-    std::vector<int> station = config_.station();
-    std::vector<int> psid    = config_.psid   ();
-    std::vector<int> plane   = config_.plane  ();
+    std::vector<int> uniquePlane   = config_.uniquePlane  ();
     std::vector<int> ppid    = config_.ppid   ();
     std::vector<int> panel   = config_.panel  ();
     std::vector<int> zface   = config_.zface  ();
     
     int npanels = mnid.size();
     for (int i=0; i<npanels; i++) {
-      TrkPanelMap::Row r(mnid[i],dtcid[i],link[i],station[i],
-                         psid[i],plane[i],ppid[i],panel[i],zface[i]);
+      TrkPanelMap::Row r(mnid[i],dtcid[i],link[i],uniquePlane[i],ppid[i],panel[i],zface[i]);
       ptr->add(r);
     }
 

@@ -37,8 +37,8 @@ namespace mu2e {
   void TrackerPanelMap::add(const TrkPanelMap::Row& Tpm) {
     _map.push_back(Tpm);
     const TrkPanelMap::Row* r = &_map.back();
-    _tpm_by_mnid   [r->mnid()]              = r;
-    _tpm_by_offline[r->plane()][r->panel()] = r;
-    _tpm_by_online [r->dtc()  ][r->link() ] = r;
+    _tpm_by_mnid   [r->mnid()       ]             = r;
+    _tpm_by_offline[r->uniquePlane()][r->panel()] = r;
+    _tpm_by_online [r->dtc()        ][r->link() ] = r;
   }
 } // namespace mu2e

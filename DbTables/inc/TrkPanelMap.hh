@@ -17,44 +17,38 @@ class TrkPanelMap : public DbTable {
 
   class Row {
   public:
-    Row(int MnID, int DtcID, int Link, int Station, int PsID, int Plane,
-        int PpID, int Panel, int ZFace) {
+    Row(int MnID, int DtcID, int Link, int UniquePlane, int PpID, int Panel, int ZFace) {
       _mnid    = MnID;
       _dtc     = DtcID;
       _link    = Link ;
-      _station = Station;
-      _psid    = PsID;
-      _plane   = Plane;
+      _uniquePlane   = UniquePlane;
       _ppid    = PpID;
       _panel   = Panel;
       _zface   = ZFace;
     }
     
-    int   mnid   () const { return _mnid;  }
-    int   dtc    () const { return _dtc;   }
-    int   link   () const { return _link;  }
-    int   station() const { return _station; }
-    int   psid   () const { return _psid;  }
-    int   plane  () const { return _plane; }
-    int   ppid   () const { return _ppid;  }
-    int   panel  () const { return _panel; }
-    int   zface  () const { return _zface; }
+    int   mnid         () const { return _mnid;          }
+    int   dtc          () const { return _dtc;           }
+    int   link         () const { return _link;          }
+    int   station      () const { return _uniquePlane/2; }
+    int   uniquePlane  () const { return _uniquePlane;   }
+    int   ppid         () const { return _ppid;          }
+    int   panel        () const { return _panel;         }
+    int   zface        () const { return _zface;         }
   private:
     int _mnid;                        // panel production ('Minnesota') ID
     int _dtc;                         // DTC ID, not just PCIE slot ID
     int _link;                        // ROC link of this panel
-    int _station;                     // offline, 'geo' index
-    int _psid;                        // production station ID, as in 'station_0'
-    int _plane;                       // 'geo' plane ID
+    int _uniquePlane;                 // 'geo' (or 'unique') plane ID (0-35)
     int _ppid;                        // production plane ID, as in 'plane 21'
-    int _panel;                       // 'geo' panel ID
+    int _panel;                       // 'geo' (offline) panel ID
     int _zface;                       // Z index of a face in the installed station, 0-3
   };
 
   constexpr static const char* cxname = "TrkPanelMap";
 
   TrkPanelMap() : DbTable(cxname, "trk.panelmap",
-                               "mnid,dtc,link,station,psid,plane,ppid,panel,zface") {}
+                               "mnid,dtc,link,plane,ppid,panel,zface") {}
 
   const Row& rowAt(const std::size_t index) const { return _rows.at(index); }
   
@@ -69,8 +63,7 @@ class TrkPanelMap : public DbTable {
     _rows.emplace_back(std::stoi(columns[0]), std::stoi(columns[1]),
                        std::stoi(columns[2]), std::stoi(columns[3]),
                        std::stoi(columns[4]), std::stoi(columns[5]),
-                       std::stoi(columns[6]), std::stoi(columns[7]),
-                       std::stoi(columns[8]));
+                       std::stoi(columns[6]));
   }
 
   void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
@@ -78,9 +71,7 @@ class TrkPanelMap : public DbTable {
     sstream << r.mnid()    << "," 
             << r.dtc()     << ","
             << r.link()    << ","
-            << r.station() << ","
-            << r.psid()    << ","
-            << r.plane()   << ","
+            << r.uniquePlane()   << ","
             << r.ppid()    << ","
             << r.panel()   << ","
             << r.zface();

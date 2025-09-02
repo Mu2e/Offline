@@ -109,7 +109,7 @@ namespace mu2e {
     int           _n_good_panels;
 
     const TrkPanelMap_t* _panel_map[36][6];   // indexing: [plane][panel]
-                                        // counters
+                                              // counters
     unsigned      _nevt, _npass;
     const mu2e::StrawDigiCollection*            _digis;
     const mu2e::StrawDigiADCWaveformCollection* _sdwfc;
@@ -119,7 +119,9 @@ namespace mu2e {
     const art::Event* _event;
     int               _rn;
 
-    float             _tdc_bin;
+    ProditionsHandle<StrawElectronics> _stre_h;
+    const StrawElectronics*            _strawElectronics;
+    float                              _tdc_bin_ns;           // TDC bin, ns
   };
 
   StrawDigiFilter::StrawDigiFilter(const Parameters& conf)
@@ -143,8 +145,6 @@ namespace mu2e {
       int panel = tpm->panel;
       _panel_map[plane][panel] = tpm;
     }
-
-    _tdc_bin             = (5./256.*1e-3);       // TDC bin width (Richie), in us
 //-----------------------------------------------------------------------------
 // parse debug bits
 //-----------------------------------------------------------------------------
@@ -273,6 +273,12 @@ namespace mu2e {
 
   bool StrawDigiFilter::beginRun(art::Run& ArtRun) {
     _rn = ArtRun.run();
+    
+    art::EventID eid(_rn, 1, 1);
+    _strawElectronics = &_stre_h.get(eid);
+    _tdc_bin_ns = _strawElectronics->tdcLSB(); // 5./256 , ns
+    // _tdc_bin             = (5./256.*1e-3);       // TDC bin width (Richie), in us
+      
     book_histograms(_rn);
     return true;
   }
@@ -360,8 +366,8 @@ namespace mu2e {
       if (_debugLevel) {
         StrawId sid = sd->strawId();
         StrawDigiFlagDetail::mask_type /*uint8_t*/ sd_flag = *((StrawDigiFlagDetail::mask_type*) &sd->digiFlag());
-        float t0        = sd->TDC()[0]*_tdc_bin*1e3;
-        float t1        = sd->TDC()[1]*_tdc_bin*1e3;
+        float t0        = sd->TDC()[0]*_tdc_bin_ns;  // in ns
+        float t1        = sd->TDC()[1]*_tdc_bin_ns;
 
         int print_it = 0;
         if      (_debugLevel & _debugBit[0]) {                                     print_it = 1; }
@@ -380,7 +386,7 @@ namespace mu2e {
       }
 
       if (wfpar.ph > _minGoodPulseHeight) {
-        _n_good_hits[tpm->plane][tpm->panel]++;
+        _n_good_hits[tpm->uniquePlane][tpm->panel]++;
       }
     }
 

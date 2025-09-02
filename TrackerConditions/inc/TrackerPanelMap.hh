@@ -34,8 +34,8 @@ namespace mu2e {
       return _tpm_by_mnid[MnID];
     };
 
-    const TrkPanelMap::Row* panel_map_by_offline_ind(int Plane, int Panel) const {
-      return _tpm_by_offline[Plane][Panel];
+    const TrkPanelMap::Row* panel_map_by_offline_ind(int UniquePlane, int Panel) const {
+      return _tpm_by_offline[UniquePlane][Panel];
     }
     
     const TrkPanelMap::Row* panel_map_by_online_ind (int DtcID, int Link ) const {
@@ -50,11 +50,11 @@ namespace mu2e {
                                         // panel map for a given run
     std::vector<TrkPanelMap::Row> _map;
 //-----------------------------------------------------------------------------
-// assume less than 600 panels, 100 planes
+// assume less than 100 planes, 600 panels
 //-----------------------------------------------------------------------------
-    const TrkPanelMap::Row*  _tpm_by_mnid   [kMaxPanels];
-    const TrkPanelMap::Row*  _tpm_by_offline[kMaxPlanes][6];
-    const TrkPanelMap::Row*  _tpm_by_online [kMaxPlanes][6];
+    const TrkPanelMap::Row*  _tpm_by_mnid   [kMaxPanels];    // indexed by 'minnesota ID'
+    const TrkPanelMap::Row*  _tpm_by_offline[kMaxPlanes][6]; // indexed by the offline uniquePlane and panel 
+    const TrkPanelMap::Row*  _tpm_by_online [kMaxPlanes][6]; // indexed by the DTC ID and link ID
   };
 
 }
