@@ -104,6 +104,7 @@ namespace mu2e {
       using Parameters = art::EDProducer::Table<RegrowLoopHelixConfig>;
       using KTRAJ = KinKal::LoopHelix;
       using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
+      using PTRAJPTR = std::unique_ptr<PTRAJ>;
       using KKTRK = KKTrack<KTRAJ>;
       using KKTRKCOL = OwningPointerCollection<KKTRK>;
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
@@ -129,6 +130,8 @@ namespace mu2e {
       using EXING = KinKal::ElementXing<KTRAJ>;
       using EXINGPTR = std::shared_ptr<EXING>;
       using EXINGCOL = std::vector<EXINGPTR>;
+      using DOMAINPTR = std::shared_ptr<KinKal::Domain>;
+      using DOMAINCOL = std::set<DOMAINPTR>;
 
       using KKMaterialConfig = KKMaterial::Config;
 
@@ -170,10 +173,14 @@ namespace mu2e {
 
   void RegrowLoopHelix::produce(art::Event& event)
   {
+//    using KTRAJ = KinKal::LoopHelix;
+//    using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
+//    using PTRAJPTR = std::unique_ptr<PTRAJ>;
     // proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
-    // find input event data
+    GeomHandle<Calorimeter> calo_h;
+   // find input event data
     auto kseed_H = event.getValidHandle<KalSeedPtrCollection>(kseedptrcol_T_);
     const auto& kseedptrcol = *kseed_H;
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
@@ -185,24 +192,26 @@ namespace mu2e {
     unique_ptr<KalSeedCollection> kseedcol(new KalSeedCollection );
     for (const auto& kseedptr : kseedptrcol) {
       auto const& kseed = *kseedptr;
-      // test
       if(!kseed.loopHelixFit())throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: passed KalSeed from non-LoopHelix fit " << endl;
-      // create the trajectory object from the seed. This will be the initial reference trajectory
-      auto trajptr = kseed.loopHelixFitTrajectory();
-      // convert the TrkStrawHitSeeds into KKStrawHits and Straw Xings
+      // regrow the components from the seed
+      PTRAJPTR trajptr;
       KKSTRAWHITCOL strawhits;
       strawhits.reserve(kseed.hits().size());
       KKSTRAWXINGCOL strawxings;
       strawxings.reserve(kseed.straws().size());
-      auto goodhits = kkfit_.makeStrawHits(*tracker,*strawresponse,*kkbf_, kkmat_.strawMaterial(),
-          *trajptr, kseed, chcol, indexmap, strawhits, strawxings);
+      KKCALOHITCOL calohits;
+      DOMAINCOL domains;
+      auto goodhits = kkfit_.regrowComponents(kseed,chcol, indexmap,
+          *tracker,*calo_h,*strawresponse,*kkbf_, kkmat_.strawMaterial(),
+          trajptr, strawhits, calohits, strawxings, domains);
       // create domains TODO
       // create and fit the  KKTrack from these TODO
       // convert the fit to a KalSeed TODO
       if(debug_ > 0){
-        std::cout << "Regrew " << strawhits.size() << " straw hits and " << strawxings.size() << " straw xings, status = " << goodhits << std::endl;
+        std::cout << "Regrew " << strawhits.size() << " straw hits and " << strawxings.size() << " straw xings and " << domains.size() << " domains, status = " << goodhits << std::endl;
       }
       if(goodhits){
+        // create the KKTrack from these components
       }
     }
     // store output

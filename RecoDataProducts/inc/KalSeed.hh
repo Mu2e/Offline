@@ -46,10 +46,12 @@ namespace mu2e {
     auto const& segments() const { return _segments; }
     auto const& intersections() const { return _inters; }
     auto const& status() const { return _status; }
+    auto const& domainBounds() const { return _domainbounds; }
     double t0Val() const;
     double t0Var() const;
     float chisquared() const { return _chisq; }
     int nDOF() const { return _ndof; }
+    float domainTolerance() const { return _dtol; }
     unsigned nHits(bool active=true) const;
     float fitConsistency() const { return _fitcon; }
     UInt_t nTrajSegments() const { return _segments.size(); }
@@ -77,6 +79,7 @@ namespace mu2e {
     float           _fitcon = -1; // fit consistency
     float           _maxgap = 0;
     float           _avggap = 0; // information about trajectory gaps
+    float           _dtol = 0; // tolerance used when creating BField domain
     //
     // contained content substructure.
     //
