@@ -28,7 +28,11 @@
 #include <memory>
 #include <map>
 
-#include "Offline/DAQ/inc/TrkPanelMap_t.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/TrackerConditions/inc/TrackerPanelMap.hh"
+
+// #include "Offline/DAQ/inc/TrkPanelMap_t.hh"
 
 namespace mu2e {
   class StrawDigiFilter : public art::EDFilter {
@@ -108,8 +112,8 @@ namespace mu2e {
     int           _n_good_hits[2][6];
     int           _n_good_panels;
 
-    const TrkPanelMap_t* _panel_map[36][6];   // indexing: [plane][panel]
-                                              // counters
+    //     const TrkPanelMap_t* _panel_map[36][6];   // indexing: [plane][panel]
+                                                     // counters
     unsigned      _nevt, _npass;
     const mu2e::StrawDigiCollection*            _digis;
     const mu2e::StrawDigiADCWaveformCollection* _sdwfc;
@@ -122,6 +126,9 @@ namespace mu2e {
     ProditionsHandle<StrawElectronics> _stre_h;
     const StrawElectronics*            _strawElectronics;
     float                              _tdc_bin_ns;           // TDC bin, ns
+
+    ProditionsHandle<TrackerPanelMap> _tpm_h;
+    const TrackerPanelMap*            _trackerPanelMap;
   };
 
   StrawDigiFilter::StrawDigiFilter(const Parameters& conf)
@@ -140,11 +147,11 @@ namespace mu2e {
       _nevt              (0),
       _npass             (0)
   {
-    for (const TrkPanelMap_t* tpm = TrkPanelMap_data.begin(); tpm != TrkPanelMap_data.end(); ++tpm) {
-      int plane = tpm->plane;
-      int panel = tpm->panel;
-      _panel_map[plane][panel] = tpm;
-    }
+    // for (const TrkPanelMap_t* tpm = TrkPanelMap_data.begin(); tpm != TrkPanelMap_data.end(); ++tpm) {
+    //   int plane = tpm->plane;
+    //   int panel = tpm->panel;
+    //   _panel_map[plane][panel] = tpm;
+    // }
 //-----------------------------------------------------------------------------
 // parse debug bits
 //-----------------------------------------------------------------------------
@@ -276,8 +283,10 @@ namespace mu2e {
     
     art::EventID eid(_rn, 1, 1);
     _strawElectronics = &_stre_h.get(eid);
-    _tdc_bin_ns = _strawElectronics->tdcLSB(); // 5./256 , ns
+    _tdc_bin_ns = _strawElectronics->tdcLSB();      // 5./256 , ns
     // _tdc_bin             = (5./256.*1e-3);       // TDC bin width (Richie), in us
+    ProditionsHandle<TrackerPanelMap> tpm_h;
+    _trackerPanelMap = &tpm_h.get(eid);
       
     book_histograms(_rn);
     return true;
@@ -342,8 +351,19 @@ namespace mu2e {
     for(int i = 0; i<_ndigis; ++i) {
       const mu2e::StrawDigi* sd = &_digis->at(i);
       uint16_t     plane = sd->strawId().plane();  // this is the GEO ID of the panel
-      uint16_t     panel = sd->strawId().panel();  // this is the GEO ID of the panel
-      const TrkPanelMap_t* tpm = _panel_map[plane][panel];
+      uint16_t     panel = sd->strawId().panel();        // this is the GEO ID of the panel
+      const TrkPanelMap::Row* tpm;
+      try {
+        tpm = _trackerPanelMap->panel_map_by_online_ind(plane,panel);
+      }
+      catch(...) {
+//-----------------------------------------------------------------------------
+// either DTC ID or link ID are corrupted. Haven't seen that so far, switch to the next ROC anyway
+//-----------------------------------------------------------------------------
+        print_(std::format("ERROR: either plane:{} or panel:{} is corrupted, skip ROC data\n",
+                           plane,panel));
+        continue;
+      }
 //-----------------------------------------------------------------------------
 // unpacking: 
 //-----------------------------------------------------------------------------
@@ -379,14 +399,14 @@ namespace mu2e {
             header_printed = 1;
           }
           std::cout << std::format("0x{:04x} {:5}   {:4}  {:4}    MN{:03d} {:3} {:8.1f} {:8.1f} 0x{:02x}",
-                                   sid.asUint16(), sid.station(),sid.plane(),sid.panel(),tpm->mnid,sid.straw(),t0,t1,sd_flag);
+                                   sid.asUint16(), sid.station(),sid.plane(),sid.panel(),tpm->mnid(),sid.straw(),t0,t1,sd_flag);
           print_waveform(wf,&wfpar);
           std::cout << std::format(" {:2d} {:8.3f} {:8.3f} ",wfpar.fs,wfpar.ph,wfpar.bl) << std::endl;
         }
       }
 
       if (wfpar.ph > _minGoodPulseHeight) {
-        _n_good_hits[tpm->uniquePlane][tpm->panel]++;
+        _n_good_hits[tpm->uniquePlane()][tpm->panel()]++;
       }
     }
 

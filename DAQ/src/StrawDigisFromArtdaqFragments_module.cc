@@ -152,6 +152,7 @@ private:
                                                 // for now, IDTC=2*nodename+PCIE_ADDR
   int _last_run;
   
+  ProditionsHandle<TrackerPanelMap> _tpm_h;
   const TrackerPanelMap*            _trackerPanelMap;
   
   // // less than 300 panels physically exist and are enumeratively labeled
@@ -299,8 +300,7 @@ void mu2e::StrawDigisFromArtdaqFragments::print_fragment(const artdaq::Fragment*
 void mu2e::StrawDigisFromArtdaqFragments::beginRun(art::Run&  ArtRun) {
   if (_last_run != (int)ArtRun.run()) {
     art::EventID eid(ArtRun.run(),1,1); // art id of the first event of the new run
-    ProditionsHandle<TrackerPanelMap> tpm_h;
-    _trackerPanelMap = &tpm_h.get(eid);
+    _trackerPanelMap = &_tpm_h.get(eid);
     _last_run    = ArtRun.run();
   }
 
