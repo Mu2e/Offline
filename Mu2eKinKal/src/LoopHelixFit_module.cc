@@ -510,6 +510,7 @@ namespace mu2e {
           // save the fit result
           auto hptr = HPtr(hseedcol_h,iseed);
           TrkFitFlag fitflag(hptr->status());
+          fitflag.merge(fitflag_);
           if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
           // sample the fit as requested
           sampleFit(*ktrk);
