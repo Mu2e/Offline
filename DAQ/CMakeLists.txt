@@ -1,9 +1,10 @@
 
 
 # Create a variable to hold optional Online libraries
-set(artdaq_data_lib "")
 if(ONLINE_MODE)
-  set(artdaq_daqdata_lib "artdaq::DAQdata")
+  set(ARTDAQ_DAQDATA_LIB "artdaq::DAQdata")
+else()
+  set(ARTDAQ_DAQDATA_LIB "")
 endif()
 
 cet_make_library(
@@ -84,7 +85,8 @@ cet_build_plugin(LumiStreamFilter art::module
   Offline::RecoDataProducts
   artdaq-core-mu2e::Data
   artdaq-core-mu2e::Data_dict
-  ${artdaq_daqdata_lib}
+  TRACE::MF
+  ${ARTDAQ_DAQDATA_LIB}
 )
 
 cet_build_plugin(PrefetchDAQData art::module
