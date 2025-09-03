@@ -460,11 +460,9 @@ namespace mu2e {
         goodfit = goodFit(*ktrk,seedtraj);
       }
     }
-
-    if(goodfit)ktrk->fitFlag().merge(TrkFitFlag::FitOK);
-    //store the fit quality result if it's a good fit
     if(print_>0) printf("[LoopHelixFit::%s] After extending the fit : goodFit = %o, fitcon = %.4f, nHits = %2lu, %lu calo-hits\n",
         __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
+    if((!goodfit) && (! saveall_)) ktrk.reset();
     return ktrk;
   }
 
@@ -505,32 +503,28 @@ namespace mu2e {
           auto ktrk = fitTrack(event, hseed,  TrkFitDirection(helix_dir), fpart_);
           if(!ktrk) continue; //ensure that the track exists
 
-          auto goodfit = ktrk->fitFlag().hasAllProperties(TrkFitFlag::FitOK);
-
           // extrapolate as required
-          if(goodfit && extrapolate_) extrapolate(*ktrk);
+          if(extrapolate_) extrapolate(*ktrk);
           if(print_>1) ktrk->printFit(std::cout,print_-1);
 
           // save the fit result
-          if(goodfit || saveall_){
-            auto hptr = HPtr(hseedcol_h,iseed);
-            TrkFitFlag fitflag(hptr->status());
-            if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
-            // sample the fit as requested
-            sampleFit(*ktrk);
-            // convert to seed output format
-            auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h);
-            if(print_>0) print_track_info(kkseed, *ktrk);
-            kkseedcol->push_back(kkseed);
-            // fill assns with the helix seed
-            auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
-            kkseedassns->addSingle(kseedptr,hptr);
-            // save (unpersistable) KKTrk in the event
-            ktrkcol->push_back(ktrk.release());
-            //increment the counts
-            if(helix_dir == TrkFitDirection::FitDirection::downstream) ++nDownstream_;
-            if(helix_dir == TrkFitDirection::FitDirection::upstream  ) ++nUpstream_;
-          }
+          auto hptr = HPtr(hseedcol_h,iseed);
+          TrkFitFlag fitflag(hptr->status());
+          if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
+          // sample the fit as requested
+          sampleFit(*ktrk);
+          // convert to seed output format
+          auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h);
+          if(print_>0) print_track_info(kkseed, *ktrk);
+          kkseedcol->push_back(kkseed);
+          // fill assns with the helix seed
+          auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
+          kkseedassns->addSingle(kseedptr,hptr);
+          // save (unpersistable) KKTrk in the event
+          ktrkcol->push_back(ktrk.release());
+          //increment the counts
+          if(helix_dir == TrkFitDirection::FitDirection::downstream) ++nDownstream_;
+          if(helix_dir == TrkFitDirection::FitDirection::upstream  ) ++nUpstream_;
         } //end track fit result loop
       } //end helix seed loop
     } //end helix colllection loop

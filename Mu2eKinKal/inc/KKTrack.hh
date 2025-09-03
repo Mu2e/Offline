@@ -12,7 +12,6 @@
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
-#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "KinKal/Geometry/Intersection.hh"
 #include <tuple>
 namespace mu2e {
@@ -74,8 +73,6 @@ namespace mu2e {
 
       // accessors
       PDGCode::type fitParticle() const { return tpart_;}
-      TrkFitFlag const& fitFlag() const { return flag_; }
-      TrkFitFlag fitFlag() { return flag_; }
       KKSTRAWHITCOL const& strawHits() const { return strawhits_; }
       KKSTRAWHITCLUSTERCOL const& strawHitClusters() const { return strawhitclusters_; }
       KKSTRAWXINGCOL const& strawXings() const { return strawxings_; }

@@ -190,7 +190,7 @@ Mu2eKinKal : {
     DivergenceDeltaChisq : 10.0
     DivergenceDeltaParams : 1e6
     DivergenceGap : 10 # mm
-    BFieldCorrection : false
+    BFieldCorrection : true
     BCorrTolerance : 1e-2 # momemntum fraction
     ProcessEnds : false
     MetaIterationSettings : [
@@ -230,7 +230,7 @@ Mu2eKinKal : {
     StrawXingUpdaterSettings : []
   }
 
-  SEEDEXT: {
+  LHSEEDEXT: {
     PrintLevel : 0
     MinNDOF : 1
     MaxNIter : 10
@@ -342,7 +342,7 @@ Mu2eKinKal : {
     CaloClusterCollection : "CaloClusterMaker"
   }
 
-  LOOPHELIX : {
+  LHHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     SeedFlags : [ "HelixOK" ]
     IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
@@ -350,7 +350,7 @@ Mu2eKinKal : {
     SampleInBounds : true # require sample be in surface bounds
   }
 
-  LOOPEXTRAPOLATION : {
+  LHXTRAP : {
     MaxDt : 200.0 # (ns)
     ToTrackerEnds : true
     Upstream : true
@@ -358,7 +358,7 @@ Mu2eKinKal : {
     ToOPA : true
   }
 
-  SEEDEXTRAPOLATION : {
+  LHSEEDXTRAP : {
     MaxDt : 200.0 # (ns)
     ToTrackerEnds : true
     Upstream : false
@@ -415,13 +415,13 @@ Mu2eKinKal : {
       SaveTrajectory : Detector
     }
     FitSettings : @local::Mu2eKinKal.LHSEEDFIT
-    ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
+    ExtensionSettings : @local::Mu2eKinKal.LHSEEDEXT
     ModuleSettings : {
-      @table::Mu2eKinKal.LOOPHELIX
+      @table::Mu2eKinKal.LHHELIX
       @table::Mu2eKinKal.KKPrecursors
       SampleSurfaces : []
     }
-    Extrapolation : @local::Mu2eKinKal.SEEDEXTRAPOLATION
+    Extrapolation : @local::Mu2eKinKal.LHSEEDXTRAP
     UsePDGCharge: false
     HelixMask: {
       MinHelixMom : 0
@@ -440,11 +440,11 @@ Mu2eKinKal : {
     FitSettings : @local::Mu2eKinKal.LHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.LHDRIFTEXT
     ModuleSettings : {
-      @table::Mu2eKinKal.LOOPHELIX
+      @table::Mu2eKinKal.LHHELIX
       @table::Mu2eKinKal.KKPrecursors
       SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
     }
-    Extrapolation : @local::Mu2eKinKal.LOOPEXTRAPOLATION
+    Extrapolation : @local::Mu2eKinKal.LHXTRAP
     UsePDGCharge: false
     HelixMask: {
       MinHelixMom : 0
