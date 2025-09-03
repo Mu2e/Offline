@@ -208,7 +208,7 @@ namespace mu2e {
       // create and fit the  KKTrack from these TODO
       // convert the fit to a KalSeed TODO
       if(debug_ > 0){
-        std::cout << "Regrew " << strawhits.size() << " straw hits and " << strawxings.size() << " straw xings and " << domains.size() << " domains, status = " << goodhits << std::endl;
+        std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits and " << domains.size() << " domains, status = " << goodhits << std::endl;
       }
       if(goodhits){
         // create the KKTrack from these components
