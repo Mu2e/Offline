@@ -212,11 +212,15 @@ namespace mu2e {
       }
       if(goodhits){
       // create the KKTrack from these components
-        auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,trajptr,strawhits,strawxings,calohits,domains);
+        auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "successful track refit" << std::endl;
+          // convert to seed output format
+          TrkFitFlag fitflag = kseed.status();
+          fitflag.merge(TrkFitFlag::Regrown);
+          auto rekseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h);
+          kseedcol->push_back(rekseed);
           ktrkcol->push_back(ktrk.release());
-          // create KalSeed TODO
         } else {
           std::cout << "failed track refit" << std::endl;
         }

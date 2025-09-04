@@ -62,8 +62,8 @@ namespace mu2e {
       KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart, KKSTRAWHITCLUSTERER const& shclusterer,
           KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits, std::array<double, KinKal::NParams()> constraints = {0});
       // construct from regrown constituants
-      KKTrack(Config const& config, BFieldMap const& bfield, PKTRAJPTR& fittraj,
-      KKSTRAWHITCOL& strawhits, KKSTRAWXINGCOL& strawxings, KKCALOHITCOL& calohits, DOMAINCOL& domains);
+      KKTrack(Config const& config, BFieldMap const& bfield, PDGCode::type tpart,
+          PKTRAJPTR& fittraj, KKSTRAWHITCOL& strawhits, KKSTRAWXINGCOL& strawxings, KKCALOHITCOL& calohits, DOMAINCOL& domains);
       // extend the track according to new configuration, hits, and/or exings
       void extendTrack(Config const& config,
           KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits );
@@ -161,9 +161,9 @@ namespace mu2e {
     }
 
 
-  template <class KTRAJ> KKTrack<KTRAJ>::KKTrack(Config const& config, BFieldMap const& bfield, PKTRAJPTR& fittraj,
-      KKSTRAWHITCOL& strawhits, KKSTRAWXINGCOL& strawxings, KKCALOHITCOL& calohits, DOMAINCOL& domains) : KinKal::Track<KTRAJ>(config,bfield),
-  strawhits_(strawhits), strawxings_(strawxings), calohits_(calohits),shclusterer_(StrawIdMask::none,0,0.0) {
+  template <class KTRAJ> KKTrack<KTRAJ>::KKTrack(Config const& config, BFieldMap const& bfield, PDGCode::type tpart,
+      PKTRAJPTR& fittraj, KKSTRAWHITCOL& strawhits, KKSTRAWXINGCOL& strawxings, KKCALOHITCOL& calohits, DOMAINCOL& domains) : KinKal::Track<KTRAJ>(config,bfield),
+  tpart_(tpart), strawhits_(strawhits), strawxings_(strawxings), calohits_(calohits),shclusterer_(StrawIdMask::none,0,0.0) {
     // convert types
     MEASCOL hits; // polymorphic container of hits
     EXINGCOL exings; // polymorphic container of detector element crossings

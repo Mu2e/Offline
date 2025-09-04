@@ -70,7 +70,7 @@ void mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind,
     if(obj.loopHelixFit())fittype = "LoopHelix";
     if(obj.centralHelixFit())fittype = "CentralHelix";
     if(obj.kinematicLineFit())fittype = "KinematicLine";
-    os << std::setprecision(2) << obj.particle() << " " << std::setw(2)
+    os << " " << std::setprecision(2) << obj.particle() << " " << std::setw(2)
       << std::setprecision(2) << fittype << " " << std::setw(2)
       << std::setprecision(3) << obj.fitConsistency() << " " << std::setw(5)
       << std::setprecision(1) << (obj.caloCluster().isNull() ? "no" : "yes") << std::setw(3)
@@ -113,5 +113,5 @@ void mu2e::KalSeedPrinter::PrintHeader(const std::string& tag,
 
 void mu2e::KalSeedPrinter::PrintListHeader(std::ostream& os) {
   if (verbose() < 1) return;
-  os << "ind pdg fittype  fitcon   calo?  nhit nstraw nseg ninter   p      pErr   cos(theta)  t0 \n";
+  os << "ind pdg fittype  fitcon calo? nhit nst nseg nint p   pErr cos(theta)  t0 \n";
 }
