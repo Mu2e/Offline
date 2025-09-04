@@ -54,9 +54,16 @@ namespace mu2e {
       using KKINTER = std::tuple<SurfaceId,KinKal::Intersection>;
       using KKINTERCOL = std::vector<KKINTER>;
       using TRACK = KinKal::Track<KTRAJ>;
+      using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
+      using PKTRAJPTR = std::unique_ptr<PKTRAJ>;
+      using DOMAINPTR = std::shared_ptr<KinKal::Domain>;
+      using DOMAINCOL = std::set<DOMAINPTR>;
       // construct from configuration, fit environment, and hits and materials
       KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart, KKSTRAWHITCLUSTERER const& shclusterer,
           KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits, std::array<double, KinKal::NParams()> constraints = {0});
+      // construct from regrown constituants
+      KKTrack(Config const& config, BFieldMap const& bfield, PKTRAJPTR& fittraj,
+      KKSTRAWHITCOL& strawhits, KKSTRAWXINGCOL& strawxings, KKCALOHITCOL& calohits, DOMAINCOL& domains);
       // extend the track according to new configuration, hits, and/or exings
       void extendTrack(Config const& config,
           KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits );
@@ -152,6 +159,18 @@ namespace mu2e {
       // now fit these
       this->fit(hits, exings, seedtraj);
     }
+
+
+  template <class KTRAJ> KKTrack<KTRAJ>::KKTrack(Config const& config, BFieldMap const& bfield, PKTRAJPTR& fittraj,
+      KKSTRAWHITCOL& strawhits, KKSTRAWXINGCOL& strawxings, KKCALOHITCOL& calohits, DOMAINCOL& domains) : KinKal::Track<KTRAJ>(config,bfield),
+  strawhits_(strawhits), strawxings_(strawxings), calohits_(calohits),shclusterer_(StrawIdMask::none,0,0.0) {
+    // convert types
+    MEASCOL hits; // polymorphic container of hits
+    EXINGCOL exings; // polymorphic container of detector element crossings
+    convertTypes(strawhits_, strawxings_, calohits_,  hits, exings);
+    this->fit(hits,exings,domains,fittraj);
+    // add ParameterHit, intersections, passive xings, ... TODO
+  }
 
   template <class KTRAJ> void KKTrack<KTRAJ>::addHitClusters(KKSTRAWHITCOL const& strawhits,KKSTRAWXINGCOL const& strawxings,MEASCOL& hits) {
     if(shclusterer_.clusterLevel() != StrawIdMask::none){

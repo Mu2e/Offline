@@ -269,7 +269,7 @@ namespace mu2e {
       double tstart = kseed.domainBounds()[idb];
       double trange = kseed.domainBounds()[idb+1] - tstart;
       double tmid = tstart + 0.5*trange;
-      auto domainptr = std::make_shared<KinKal::Domain>(tstart,trange,ptraj->nearestPiece(tmid).bnom(),kseed.domainTolerance());
+      auto domainptr = std::make_shared<KinKal::Domain>(tstart,trange,ptraj->nearestPiece(tmid).bnom());
       domains.emplace(domainptr);
     }
     return ngood >= minNStrawHits_;
@@ -683,7 +683,7 @@ namespace mu2e {
             if(domain->range().inRange(tmax))kseed._domainbounds.push_back(domain->end());
           }
           kseed._domainbounds.shrink_to_fit();
-          kseed._dtol = (*kktrk.domains().begin())->tolerance(); // should be the same for all domains
+          kseed._dtol = kktrk.config().tol_;
         }
 
       } else if (savetraj_ == t0seg ) {

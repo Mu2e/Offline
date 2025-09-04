@@ -78,6 +78,7 @@ namespace mu2e {
   using KinKal::DMAT;
   using KinKal::DVEC;
   using KinKal::TimeDir;
+  using KinKal::Config;
   using MatEnv::DetMaterial;
   using KKConfig = Mu2eKinKal::KinKalConfig;
   using Mu2eKinKal::KKFinalConfig;
@@ -95,16 +96,17 @@ namespace mu2e {
     fhicl::Atom<art::InputTag> indexMap {Name("StrawDigiIndexMap"), Comment("Map between original and reduced ComboHits") };
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
-    fhicl::Table<KKConfig> extSettings { Name("RefitSettings") };
-    //     fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") }; needs to be pulled out of LoopHelixFit if needed
+    fhicl::Table<KKConfig> fitSettings { Name("RefitSettings") };
+    // fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") }; needs to be pulled out of LoopHelixFit if needed
+    // maybe allow extension? extrapolation? hit adding? TODO
   };
 
   class RegrowLoopHelix : public art::EDProducer {
     public:
       using Parameters = art::EDProducer::Table<RegrowLoopHelixConfig>;
       using KTRAJ = KinKal::LoopHelix;
-      using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
-      using PTRAJPTR = std::unique_ptr<PTRAJ>;
+      using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
+      using PKTRAJPTR = std::unique_ptr<PKTRAJ>;
       using KKTRK = KKTrack<KTRAJ>;
       using KKTRKCOL = OwningPointerCollection<KKTRK>;
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
@@ -144,6 +146,7 @@ namespace mu2e {
       ProditionsHandle<StrawResponse> strawResponse_h_;
       ProditionsHandle<Tracker> alignedTracker_h_;
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
+      Config config_; // refit configuration object, containing the fit schedule
       KKFIT kkfit_;
       KKMaterial kkmat_;
       art::ProductToken<KalSeedPtrCollection> kseedptrcol_T_;
@@ -153,6 +156,7 @@ namespace mu2e {
 
   RegrowLoopHelix::RegrowLoopHelix(const Parameters& settings) : art::EDProducer(settings),
   debug_(settings().debug()),
+  config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
   kkfit_(settings().kkfitSettings()),
   kkmat_(settings().matSettings()),
   kseedptrcol_T_(consumes<KalSeedPtrCollection>(settings().kalSeedPtrCollection())),
@@ -173,9 +177,6 @@ namespace mu2e {
 
   void RegrowLoopHelix::produce(art::Event& event)
   {
-//    using KTRAJ = KinKal::LoopHelix;
-//    using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
-//    using PTRAJPTR = std::unique_ptr<PTRAJ>;
     // proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
@@ -194,7 +195,7 @@ namespace mu2e {
       auto const& kseed = *kseedptr;
       if(!kseed.loopHelixFit())throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: passed KalSeed from non-LoopHelix fit " << endl;
       // regrow the components from the seed
-      PTRAJPTR trajptr;
+      PKTRAJPTR trajptr;
       KKSTRAWHITCOL strawhits;
       strawhits.reserve(kseed.hits().size());
       KKSTRAWXINGCOL strawxings;
@@ -204,14 +205,21 @@ namespace mu2e {
       auto goodhits = kkfit_.regrowComponents(kseed,chcol, indexmap,
           *tracker,*calo_h,*strawresponse,*kkbf_, kkmat_.strawMaterial(),
           trajptr, strawhits, calohits, strawxings, domains);
-      // create domains TODO
       // create and fit the  KKTrack from these TODO
       // convert the fit to a KalSeed TODO
       if(debug_ > 0){
         std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits and " << domains.size() << " domains, status = " << goodhits << std::endl;
       }
       if(goodhits){
-        // create the KKTrack from these components
+      // create the KKTrack from these components
+        auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,trajptr,strawhits,strawxings,calohits,domains);
+        if(ktrk && ktrk->fitStatus().usable()){
+          if(debug_ > 0) std::cout << "successful track refit" << std::endl;
+          ktrkcol->push_back(ktrk.release());
+          // create KalSeed TODO
+        } else {
+          std::cout << "failed track refit" << std::endl;
+        }
       }
     }
     // store output
