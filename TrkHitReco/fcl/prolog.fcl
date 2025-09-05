@@ -16,6 +16,7 @@ TrkHitReco :{
       TestFlag        : false
       BackgroundMask  : []
       SignalMask      : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+      KerasWeights    : ""
    }
 
    TNTClusterer : {
@@ -32,9 +33,12 @@ TrkHitReco :{
       TimeRMS          : 2.0
       MedianCentroid   : false
       ComboInit        : true
+      MinActiveHits    : 3
+      MinNPlanes       : 2
       TestFlag         : true
       BackgroundMask   : []
       SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+      KerasWeights     : "Offline/TrkHitReco/data/TrainBkgDiagStationSpatial.dat"
    }
 
    Chi2Clusterer : {
@@ -43,9 +47,13 @@ TrkHitReco :{
       MinClusterHits   : 1
       MaxHitTimeDiff   : 30.0
       MaxCluIterations : 5
+      MinActiveHits    : 3
+      MinNPlanes       : 2
       TestFlag         : true
       BackgroundMask   : []
       SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+      KerasWeights     : "Offline/TrkHitReco/data/TrainBkgDiagStationSpatial.dat"
+      UseSLine         : false
       Diag             : 0
    }
 }
@@ -145,19 +153,15 @@ TrkHitReco : {
    FlagBkgHits : {
       module_type          : FlagBkgHits
       ComboHitCollection   : "makeSTH"
-      ClusterAlgorithm     : 3
+      ClusterAlgorithm     : 2
       TNTClustering        : {@table::TrkHitReco.TNTClusterer}
       Chi2Clustering       : {@table::TrkHitReco.Chi2Clusterer}
       DBSClustering        : {@table::TrkHitReco.DBSClusterer}
-      MinActiveHits        : 3
-      MinNPlanes           : 2
       ClusterPositionError : 10
       FilterHits           : false
       BackgroundMask       : ["Background"]
       OutputLevel          : "uniquepanel"
       SaveBkgClusters      : true
-      KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiagStationSpatial.dat"
-      UseSLine             : false
       KerasQuality         : 0.5
       DebugLevel           : 0
    }

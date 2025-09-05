@@ -1,7 +1,10 @@
 #include "Offline/TrkHitReco/inc/DBSClusterer.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+
 #include <algorithm>
 #include <vector>
 #include <queue>
+
 
 namespace mu2e
 {
@@ -9,23 +12,24 @@ namespace mu2e
     DBSminExpand_     (config.value().DBSminN()),
     deltaTime_        (config.value().hitDeltaTime()),
     deltaZ_           (config.value().hitDeltaZ()),
+    deltaXY2_         (config.value().hitDeltaXY()*config.value().hitDeltaXY()),
     minClusterHits_   (config.value().minClusterHits()),
     bkgmask_          (config.value().bkgmsk()),
     sigmask_          (config.value().sigmsk()),
     testflag_         (config.value().testflag()),
+    kerasW_           (config.value().kerasWeights()),
     diag_             (config.value().diag())
-  {
-    float dxy         (config.value().hitDeltaXY());
-    deltaXY2_ = dxy*dxy;
-  }
+  {}
 
 
   //---------------------------------------------------------------------------------------
-  void DBSClusterer::init() {}
+  void DBSClusterer::init() {
+    //Add Classifier init here (see TNTClsuterer for example)
+  }
 
 
   //----------------------------------------------------------------------------------------------------------
-  void DBSClusterer::findClusters(BkgClusterCollection& clusters, const ComboHitCollection& chcol, int iev)
+  void DBSClusterer::findClusters(BkgClusterCollection& clusters, const ComboHitCollection& chcol)
   {
      if (chcol.empty()) return;
 
@@ -115,6 +119,9 @@ namespace mu2e
   // Find the neighbors of given a point - can use any suitable distance function
   unsigned DBSClusterer::findNeighbors(unsigned ihit, const std::vector<unsigned>& idx, const ComboHitCollection& chcol, std::vector<unsigned>& neighbors)
   {
+    // Define number of neighbors as number of straw hits in the neighboring point.
+    // Commneted version is number of neighbor is 1 regardless of number of straw hits
+
     //unsigned nNeighbors(0);
     unsigned nNeighbors(chcol[idx[ihit]].nStrawHits()-1);
     neighbors.clear();
@@ -147,6 +154,7 @@ namespace mu2e
 
 
   //---------------------------------------------------------------------------------------
+  // this is only used for diagnosis at this point
   float DBSClusterer::distance(const BkgCluster& cluster, const ComboHit& hit) const
   {
     float psep_x = hit.pos().x()-cluster.pos().x();
@@ -194,6 +202,17 @@ namespace mu2e
     cluster.time(ctime);
     cluster.pos(XYZVectorF(crho*cos(cphi),crho*sin(cphi),0.0f));
   }
+
+
+  //---------------------------------------------------------------------------------------
+  void DBSClusterer::classifyCluster(BkgCluster& cluster, const ComboHitCollection& chcol){
+
+     //code logic to classify cluster with MVA
+
+     cluster.setKerasQ(-1.0);
+  }
+
+
 
 
 

@@ -1,15 +1,15 @@
+#ifndef DBSClusterer_HH
+#define DBSClusterer_HH
+
 //
 // DBScan clustering
 //
 //  Bertrand Echenard (2025) CIT
 //
-#ifndef DBSClusterer_HH
-#define DBSClusterer_HH
-
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/TrkHitReco/inc/BkgClusterer.hh"
-#include "fhiclcpp/types/Sequence.h"
 
 
 namespace mu2e {
@@ -30,6 +30,7 @@ namespace mu2e {
         fhicl::Sequence<std::string>  bkgmsk{           Name("BackgroundMask"),   Comment("Bkg hit selection mask") };
         fhicl::Sequence<std::string>  sigmsk{           Name("SignalMask"),       Comment("Signal hit selection mask") };
         fhicl::Atom<bool>             testflag{         Name("TestFlag"),         Comment("Test hit flags") };
+        fhicl::Atom<std::string>      kerasWeights{     Name("KerasWeights"),     Comment("Weights for keras model") };
         fhicl::Atom<int>              diag{             Name("Diag"),             Comment("Diagnosis level"),0 };
       };
 
@@ -38,8 +39,9 @@ namespace mu2e {
       virtual ~DBSClusterer() {};
 
       void          init        ();
-      virtual void  findClusters(BkgClusterCollection& clusters, const ComboHitCollection& chcol, int iev);
-      virtual float distance    (const BkgCluster& cluster,      const ComboHit& hit) const;
+      virtual void  findClusters   (BkgClusterCollection& clusters, const ComboHitCollection& shcol);
+      virtual void  classifyCluster(BkgCluster& cluster,            const ComboHitCollection& chcol);
+      virtual float distance       (const BkgCluster& cluster,      const ComboHit& hit) const;
 
 
     private:
@@ -55,7 +57,11 @@ namespace mu2e {
       StrawHitFlag            bkgmask_;
       StrawHitFlag            sigmask_;
       bool                    testflag_;
+      std::string             kerasW_;
       int                     diag_;
+
+      //Need the correct Sophie description
+      //std::shared_ptr<TMVA_SOFIE_TrainBkgDiag::Session> sofiePtr_;
   };
 }
 

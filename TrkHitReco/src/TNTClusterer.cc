@@ -1,25 +1,33 @@
 #include "Offline/TrkHitReco/inc/TNTClusterer.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+
+#include "TMath.h"
+
 #include <algorithm>
 #include <vector>
 #include <queue>
 
+
 namespace mu2e
 {
   TNTClusterer::TNTClusterer(const std::optional<Config> config) :
-    dhit_             (config.value().hitDistance()),
-    dseed_            (config.value().seedDistance()),
-    dd_               (config.value().clusterDiameter()),
-    dt_               (config.value().clusterTime()),
-    minClusterHits_   (config.value().minClusterHits()),
-    maxHitdt_         (config.value().maxHitTimeDiff()),
-    maxDistSum_       (config.value().maxSumDistance()),
-    maxNiter_         (config.value().maxCluIterations()),
-    useMedian_        (config.value().medianCentroid()),
-    comboInit_        (config.value().comboInit()),
-    bkgmask_          (config.value().bkgmsk()),
-    sigmask_          (config.value().sigmsk()),
-    testflag_         (config.value().testflag()),
-    diag_             (config.value().diag())
+    dhit_          (config.value().hitDistance()),
+    dseed_         (config.value().seedDistance()),
+    dd_            (config.value().clusterDiameter()),
+    dt_            (config.value().clusterTime()),
+    minClusterHits_(config.value().minClusterHits()),
+    maxHitdt_      (config.value().maxHitTimeDiff()),
+    maxDistSum_    (config.value().maxSumDistance()),
+    maxNiter_      (config.value().maxCluIterations()),
+    useMedian_     (config.value().medianCentroid()),
+    comboInit_     (config.value().comboInit()),
+    bkgmask_       (config.value().bkgmsk()),
+    sigmask_       (config.value().sigmsk()),
+    testflag_      (config.value().testflag()),
+    minnhits_      (config.value().minActiveHits() ),
+    minnp_         (config.value().minNPlanes()),
+    kerasW_        (config.value().kerasWeights()),
+    diag_          (config.value().diag())
   {
     float minerr (config.value().minHitError());
     float maxdist(config.value().maxDistance());
@@ -36,11 +44,16 @@ namespace mu2e
 
 
   //---------------------------------------------------------------------------------------
-  void TNTClusterer::init() {}
+  void TNTClusterer::init()
+  {
+     ConfigFileLookupPolicy configFile;
+     auto kerasWgtsFile = configFile(kerasW_);
+     sofiePtr_          = std::make_shared<TMVA_SOFIE_TrainBkgDiag::Session>(kerasWgtsFile);
+  }
 
 
   //----------------------------------------------------------------------------------------------------------
-  void TNTClusterer::findClusters(BkgClusterCollection& clusters, const ComboHitCollection& chcol, int iev)
+  void TNTClusterer::findClusters(BkgClusterCollection& clusters, const ComboHitCollection& chcol)
   {
     std::vector<BkgHit> BkgHits;
     BkgHits.reserve(chcol.size());
@@ -319,6 +332,109 @@ namespace mu2e
     cluster.time(ctime);
     cluster.pos(XYZVectorF(crho*cos(cphi),crho*sin(cphi),0.0f));
 
+  }
+
+
+  //---------------------------------------------------------------------------------------
+  void TNTClusterer::classifyCluster(BkgCluster& cluster, const ComboHitCollection& chcol)
+  {
+    // count hits and planes
+    std::array<int,StrawId::_nplanes> hitplanes{0};
+    for (const auto& chit : cluster.hits()) {
+    const ComboHit& ch = chcol[chit];
+    hitplanes[ch.strawId().plane()] += ch.nStrawHits();
+    }
+
+    unsigned npexp(0),np(0),nhits(0);
+    int ipmin(0),ipmax(StrawId::_nplanes-1);
+    while (hitplanes[ipmin]==0 && ipmin<StrawId::_nplanes) ++ipmin;
+    while (hitplanes[ipmax]==0 and ipmax>0)                --ipmax;
+    int fp(ipmin),lp(ipmin-1),pgap(0);
+    for (int ip = ipmin; ip <= ipmax; ++ip) {
+    npexp++; // should use TTracker to see if plane is physically present FIXME!
+    if (hitplanes[ip]> 0){
+      ++np;
+      if(lp > 0 && ip - lp -1 > pgap)pgap = ip - lp -1;
+      if(ip > lp)lp = ip;
+      if(ip < fp)fp = ip;
+      lp = ip;
+    }
+    nhits += hitplanes[ip];
+    }
+
+
+    if(nhits < minnhits_ || np < minnp_) return;
+
+    // find averages
+    double sumEdep(0.);
+    double sqrSumDeltaTime(0.);
+    double sqrSumDeltaX(0.);
+    double sqrSumDeltaY(0.);
+    double sqrSumQual(0.);
+    double sumPitch(0.);
+    double sumYaw(0.);
+    double sumwPitch(0.);
+    double sumwYaw(0.);
+    double sumEcc(0.);
+    double sumwEcc(0.);
+    unsigned nsthits(0.);
+    unsigned nchits = cluster.hits().size();
+    for (const auto& chit : cluster.hits()) {
+      sumEdep         +=  chcol[chit].energyDep()/chcol[chit].nStrawHits();
+      sqrSumDeltaX    += std::pow(chcol[chit].pos().x() - cluster.pos().x(),2);
+      sqrSumDeltaY    += std::pow(chcol[chit].pos().y() - cluster.pos().y(),2);
+      sqrSumDeltaTime += std::pow(chcol[chit].time() - cluster.time(),2);
+      auto hdir        = chcol[chit].hDir();
+      auto wecc        = chcol[chit].nStrawHits();
+      sumEcc          += std::sqrt(1-(chcol[chit].vVar()/chcol[chit].uVar()))*wecc;
+      sumwEcc         += wecc;
+      if (chcol[chit].flag().hasAllProperties(StrawHitFlag::sline)){
+
+        //quality of SLine fit
+        sqrSumQual += std::pow(chcol[chit].qual(),2);
+
+        //angle with Mu2e-Y
+        double varPitch = std::pow(TMath::ACos(std::sqrt(chcol[chit].hcostVar())),2);
+        double wPitch = 1/varPitch;
+        double signPitch = hdir.Y()/std::abs(hdir.Y());
+        sumPitch += signPitch*wPitch*hdir.theta();
+        sumwPitch += wPitch;
+
+        ROOT::Math::XYZVectorF z = {0,0,1};
+        ROOT::Math::XYZVectorF dxdz = {hdir.X(),0,hdir.Z()};
+        float magdxdz = std::sqrt(dxdz.Mag2());
+
+        //angle with Mu2e-Z
+        double varYaw = std::sqrt(chcol[chit].hphiVar() + varPitch);
+        double wYaw = 1/varYaw;
+        double signYaw = hdir.X()/std::abs(hdir.X());
+        sumYaw += signYaw*wYaw*TMath::ACos(dxdz.Dot(z)/magdxdz);
+        sumwYaw += wYaw;
+
+        // # of stereo hits with SLine
+        nsthits++;
+      }
+    }
+
+    // fill mva input variables
+    std::array<float,12> kerasvars;
+    kerasvars[0]  = cluster.pos().Rho(); // cluster rho, cyl coor
+    kerasvars[1]  = fp;// first plane hit
+    kerasvars[2]  = lp;// last plane hit
+    kerasvars[3]  = pgap;// largest plane gap without hits between planes with hits
+    kerasvars[4]  = np;// # of planes hit
+    kerasvars[5]  =  static_cast<float>(np)/static_cast<float>(lp - fp);// fraction of planes hit between first and last plane
+    kerasvars[6]  = nhits;// sum of straw hits
+    kerasvars[7]  = std::sqrt((sqrSumDeltaX+sqrSumDeltaY)/nchits);  // RMS of cluster rho
+    kerasvars[8]  = std::sqrt(sqrSumDeltaTime/nchits);// RMS of cluster time
+    kerasvars[9]  = nsthits > 0 ? sumPitch/sumwPitch : 0.;
+    kerasvars[10] = nsthits > 0 ? sumYaw/sumwYaw : 0.;
+    kerasvars[11] = sumEcc/sumwEcc;
+
+    std::vector<float> kerasout = sofiePtr_->infer(kerasvars.data());
+    cluster.setKerasQ(kerasout[0]);
+
+    if (diag_>0)std::cout << "kerasout = " << kerasout[0] << std::endl;
   }
 
 
