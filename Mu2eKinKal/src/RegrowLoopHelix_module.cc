@@ -35,7 +35,6 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
-#include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/DataProducts/inc/IndexMap.hh"
 // KinKal
@@ -91,8 +90,8 @@ namespace mu2e {
   using Comment = fhicl::Comment;
   struct RegrowLoopHelixConfig {
     fhicl::Atom<int> debug{Name("debug"), Comment("Debug level"), 0};
-    fhicl::Atom<art::InputTag> kalSeedPtrCollection {Name("KalSeedPtrCollection"), Comment("KalSeedPtr collection to processed ") };
-    fhicl::Atom<art::InputTag> comboHitCollection {Name("ComboHitCollection"), Comment("Reduced ComboHit collection ") };
+    fhicl::Atom<art::InputTag> kalSeedCollection {Name("KalSeedCollection"), Comment("KalSeed collection to process") };
+    fhicl::Atom<art::InputTag> comboHitCollection {Name("ComboHitCollection"), Comment("Reduced ComboHit collection") };
     fhicl::Atom<art::InputTag> indexMap {Name("StrawDigiIndexMap"), Comment("Map between original and reduced ComboHits") };
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
@@ -149,7 +148,7 @@ namespace mu2e {
       Config config_; // refit configuration object, containing the fit schedule
       KKFIT kkfit_;
       KKMaterial kkmat_;
-      art::ProductToken<KalSeedPtrCollection> kseedptrcol_T_;
+      art::ProductToken<KalSeedCollection> kseedcol_T_;
       art::ProductToken<ComboHitCollection> chcol_T_;
       art::ProductToken<IndexMap> indexmap_T_;
   };
@@ -159,20 +158,19 @@ namespace mu2e {
   config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
   kkfit_(settings().kkfitSettings()),
   kkmat_(settings().matSettings()),
-  kseedptrcol_T_(consumes<KalSeedPtrCollection>(settings().kalSeedPtrCollection())),
+  kseedcol_T_(consumes<KalSeedCollection>(settings().kalSeedCollection())),
   chcol_T_(consumes<ComboHitCollection>(settings().comboHitCollection())),
   indexmap_T_(consumes<IndexMap>(settings().indexMap()))
   {
     produces<KKTRKCOL>();
     produces<KalSeedCollection>();
-  }
+ }
 
   void RegrowLoopHelix::beginRun(art::Run& run)
   {
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
     kkbf_ = std::move(std::make_unique<KKBField>(*bfmgr,*det));
-    // create a schedule TODO
   }
 
   void RegrowLoopHelix::produce(art::Event& event)
@@ -182,17 +180,16 @@ namespace mu2e {
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     GeomHandle<Calorimeter> calo_h;
    // find input event data
-    auto kseed_H = event.getValidHandle<KalSeedPtrCollection>(kseedptrcol_T_);
-    const auto& kseedptrcol = *kseed_H;
+    auto kseed_H = event.getValidHandle<KalSeedCollection>(kseedcol_T_);
+    const auto& kseedcol = *kseed_H;
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
     const auto& chcol = *ch_H;
     auto indexmap_H = event.getValidHandle<IndexMap>(indexmap_T_);
     const auto& indexmap = *indexmap_H;
     // create outputs
     unique_ptr<KKTRKCOL> ktrkcol(new KKTRKCOL );
-    unique_ptr<KalSeedCollection> kseedcol(new KalSeedCollection );
-    for (const auto& kseedptr : kseedptrcol) {
-      auto const& kseed = *kseedptr;
+    unique_ptr<KalSeedCollection> rgkseedcol(new KalSeedCollection );
+    for (auto const& kseed : kseedcol) {
       if(!kseed.loopHelixFit())throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: passed KalSeed from non-LoopHelix fit " << endl;
       // regrow the components from the seed
       PKTRAJPTR trajptr;
@@ -217,7 +214,7 @@ namespace mu2e {
           TrkFitFlag fitflag = kseed.status();
           fitflag.merge(TrkFitFlag::Regrown);
           auto rekseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h);
-          kseedcol->push_back(rekseed);
+          rgkseedcol->push_back(rekseed);
           ktrkcol->push_back(ktrk.release());
         } else {
           std::cout << "failed track refit" << std::endl;
@@ -226,7 +223,7 @@ namespace mu2e {
     }
     // store output
     event.put(move(ktrkcol));
-    event.put(move(kseedcol));
+    event.put(move(rgkseedcol));
   }
 
   void RegrowLoopHelix::endJob()
