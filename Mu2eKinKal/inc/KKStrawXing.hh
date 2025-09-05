@@ -34,6 +34,36 @@ namespace mu2e {
       // construct with an associated StrawHit
       KKStrawXing(KKSTRAWHITPTR const& strawhit, KKStrawMaterial const& smat);
       virtual ~KKStrawXing() {}
+      // clone op for reinstantiation
+      KKStrawXing(KKStrawXing const& rhs):
+          KKStrawXing(
+            rhs.closestApproach(),
+            rhs.strawMaterial(),
+            rhs.straw()
+          ){
+        auto shptr = rhs.strawHitPtr();
+        if (shptr){
+          this->setStrawHitPtr(rhs.strawHitPtr());
+        }
+      }
+      std::shared_ptr< KinKal::ElementXing<KTRAJ> > clone(CloneContext& context) const override{
+        auto rv = std::make_shared< KKStrawXing<KTRAJ> >(*this);
+
+        // point to new instance of partner hit, if not null
+        KKSTRAWHITPTR shptr;
+        if (shptr_){
+          shptr = context.get(shptr_);
+        }
+        rv->setStrawHitPtr(shptr);
+
+        // point to new instance of ClosestApproach
+        auto ca = rv->closestApproach();
+        auto trajectory = std::make_shared<KTRAJ>(ca.particleTraj());
+        ca.setTrajectory(trajectory);
+        rv->setClosestApproach(ca);
+
+        return rv;
+      };
       // ElementXing interface
       void updateReference(PTRAJ const& ptraj) override;
       void updateState(MetaIterConfig const& config,bool first) override;
@@ -66,6 +96,9 @@ namespace mu2e {
       Parameters fparams_; // parameter change for forwards time
       bool active_; // active or not
       double varscale_; // variance scale
+      // modifiers to support cloning
+      void setStrawHitPtr(KKSTRAWHITPTR ptr) { shptr_ = ptr; }
+      void setClosestApproach(const CA& ca){ ca_ = ca; }
   };
 
   template <class KTRAJ> KKStrawXing<KTRAJ>::KKStrawXing(CA const& ca, KKStrawMaterial const& smat, Straw const& straw,bool active) :

@@ -22,6 +22,15 @@ namespace mu2e {
       // construct from a surface, material, intersection, and transverse thickness
       KKShellXing(SURFPTR surface, SurfaceId const& sid, MatEnv::DetMaterial const& mat, KinKal::Intersection inter, KTRAJPTR reftraj, double thickness, double tol);
       virtual ~KKShellXing() {}
+      // clone op for reinstantiation
+      KKShellXing(KKShellXing const& rhs) = default;
+      std::shared_ptr< KinKal::ElementXing<KTRAJ> > clone(CloneContext& context) const override{
+        auto rv = std::make_shared< KKShellXing<KTRAJ,SURF> >(*this);
+        //auto ptr = context.get(reftrajptr_);
+        auto ptr = std::make_shared<KTRAJ>(*reftrajptr_);
+        rv->setReferenceTrajectoryPtr(ptr);
+        return rv;
+      };
       // ElementXing interface
       void updateReference(PTRAJ const& ptraj) override;
       void updateState(MetaIterConfig const& config,bool first) override;
@@ -36,6 +45,8 @@ namespace mu2e {
       auto const& intersection() const { return inter_; }
       auto const& material() const { return mat_; }
       auto const& surfaceId() const { return sid_; }
+      // other accessors
+      void setReferenceTrajectoryPtr(KTRAJPTR ptr){ reftrajptr_ = ptr; }
     private:
       SURFPTR surf_; // surface
       SurfaceId sid_; // surface Id

@@ -26,6 +26,29 @@ namespace mu2e {
       using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using HIT = KinKal::Hit<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
+      // clone op for reinstantiation
+      KKCaloHit(KKCaloHit<KTRAJ> const& rhs):
+              caloCluster_(rhs.caloCluster()),
+              axis_(rhs.sensorAxis()),
+              tvar_(rhs.timeVariance()),
+              wvar_(rhs.widthVariance()),
+              ca_(
+                rhs.closestApproach().particleTraj(),
+                axis_,
+                rhs.closestApproach().hint(),
+                rhs.closestApproach().precision()
+              ),
+              rresid_(rhs.timeResidual()){
+        /**/
+      };
+      std::shared_ptr< KinKal::Hit<KTRAJ> > clone(CloneContext& context) const override{
+        auto rv = std::make_shared< KKCaloHit<KTRAJ> >(*this);
+        auto ca = rv->closestApproach();
+        auto trajectory = std::make_shared<KTRAJ>(ca.particleTraj());
+        ca.setTrajectory(trajectory);
+        rv->setClosestApproach(ca);
+        return rv;
+      };
       // Hit interface overrrides
       unsigned nResid() const override { return 1; } // 1 time residual
       Residual const& refResidual(unsigned ires=0) const override;
@@ -54,6 +77,8 @@ namespace mu2e {
       double wvar_; // variance in transverse position of the sensor/measurement in mm.  Assumes cylindrical error, could be more general
       CA ca_; // reference time and distance of closest approach to the axis
       Residual rresid_; // residual WRT most recent reference parameters
+      // clone support
+      void setClosestApproach(const CA& ca){ ca_ = ca; }
   };
 
   template <class KTRAJ> KKCaloHit<KTRAJ>::KKCaloHit(CCPtr caloCluster,  PCA const& pca, double tvar, double wvar) :    caloCluster_(caloCluster), axis_(pca.sensorTraj()), tvar_(tvar), wvar_(wvar),

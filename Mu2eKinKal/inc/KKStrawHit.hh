@@ -50,6 +50,34 @@ namespace mu2e {
       using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       KKStrawHit(BFieldMap const& bfield, PCA const& pca,
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
+      // clone op for reinstantiation
+      KKStrawHit(KKStrawHit<KTRAJ> const& rhs):
+          bfield_(rhs.bfield()),
+          whstate_(rhs.hitState()),
+          dVar_(driftVariance()),
+          dDdT_(driftVelocity()),
+          wire_(rhs.wire()),
+          ca_(
+            rhs.closestApproach().particleTraj(),
+            wire_,
+            rhs.closestApproach().hint(),
+            rhs.closestApproach().precision()
+          ),
+          resids_(rhs.refResiduals()),
+          chit_(rhs.hit()),
+          shindex_(rhs.strawHitIndex()),
+          straw_(rhs.straw()),
+          sresponse_(rhs.strawResponse()){
+        /**/
+      };
+      std::shared_ptr< KinKal::Hit<KTRAJ> > clone(CloneContext& context) const override{
+        auto rv = std::make_shared< KKStrawHit<KTRAJ> >(*this);
+        auto ca = rv->closestApproach();
+        auto trajectory = std::make_shared<KTRAJ>(ca.particleTraj());
+        ca.setTrajectory(trajectory);
+        rv->setClosestApproach(ca);
+        return rv;
+      };
       // Hit interface implementations
       void updateState(MetaIterConfig const& config,bool first) override;
       unsigned nResid() const override { return 3; } // potentially 2 residuals
@@ -80,6 +108,8 @@ namespace mu2e {
       auto updater() const { return whstate_.algo_; }
       void setState(WireHitState const& whstate); // allow cluster updaters to set the state directly
       DriftInfo fillDriftInfo(CA const& ca) const;
+      auto const& driftVariance() { return dVar_; }
+      auto const& driftVelocity() { return dDdT_; }
     private:
       BFieldMap const& bfield_; // drift calculation requires the BField for ExB effects
       WireHitState whstate_; // current state
@@ -98,6 +128,8 @@ namespace mu2e {
       StrawResponse const& sresponse_; // straw calibration information
       // utility functions
       void updateWHS(MetaIterConfig const& miconfig);
+      // clone support
+      void setClosestApproach(const CA& ca){ ca_ = ca; }
   };
 
   // struct to sort hits by time
