@@ -61,6 +61,8 @@ namespace mu2e {
       void updateReference(PTRAJ const& ptraj) override;
       KTRAJPTR const& refTrajPtr() const override { return ca_.particleTrajPtr(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
+      // re-override; even though this is implemented in the base class
+      bool active() const override { return whstate_.active(); }
       // accessors
       auto const& closestApproach() const { return ca_; }
       auto const& hitState() const { return whstate_; }

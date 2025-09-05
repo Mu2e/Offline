@@ -260,7 +260,7 @@ namespace mu2e {
           auto sline = Mu2eKinKal::strawLine(straw,zt); // line down the straw axis center
           CAHint hint(zt,zt);
           PCA pca(*ptraj, sline, hint, tprec_ );
-          exings.push_back(std::make_shared<KKSTRAWXING>(pca.localClosestApproach(),smat,straw));
+          exings.push_back(std::make_shared<KKSTRAWXING>(pca.localClosestApproach(),smat,straw,sx.active()));
         }
       }
     }

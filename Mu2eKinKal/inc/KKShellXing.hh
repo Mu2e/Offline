@@ -31,6 +31,7 @@ namespace mu2e {
       KTRAJ const& referenceTrajectory() const override { return *reftrajptr_; }
       std::vector<MaterialXing>const&  matXings() const override { return mxings_; }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
+      bool active() const override { return mxings_.size() > 0; }
       // specific accessors
       auto const& intersection() const { return inter_; }
       auto const& material() const { return mat_; }

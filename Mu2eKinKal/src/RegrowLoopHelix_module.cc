@@ -205,8 +205,6 @@ namespace mu2e {
       auto goodhits = kkfit_.regrowComponents(kseed,chcol, indexmap,
           *tracker,*calo_h,*strawresponse,*kkbf_, kkmat_.strawMaterial(),
           trajptr, strawhits, calohits, strawxings, domains);
-      // create and fit the  KKTrack from these TODO
-      // convert the fit to a KalSeed TODO
       if(debug_ > 0){
         std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits and " << domains.size() << " domains, status = " << goodhits << std::endl;
       }
