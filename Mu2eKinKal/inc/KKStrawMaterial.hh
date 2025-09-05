@@ -23,7 +23,7 @@ namespace mu2e {
 
   class KKStrawMaterial {
     public:
-      enum PathCalc {exactdoca=0,truncdoca,average,unknown};
+      enum PathCalc {range,average,unknown};
       // construct from geometry and explicit materials
       KKStrawMaterial(StrawProperties const& sprops,
           const std::shared_ptr<DetMaterial> wallmat_,
@@ -44,17 +44,15 @@ namespace mu2e {
       DetMaterial const& wireMaterial() const { return *wiremat_; }
       double wireRadius() const { return wrad_; }
     private:
-      double orad2_; // outer radius of the straw squared
-      double irad_;
-      double irad2_; // inner radius of the straw squared
-      double wallonlypath_; // average wall path for paths outside the gas
+      double irad_, orad_; // inner and outer radii
       double avggaspath_, avgwallpath_; // average wall and gas paths
       double wrad_; // wire radius
       const std::shared_ptr<DetMaterial> wallmat_; // material of the straw wall
       const std::shared_ptr<DetMaterial> gasmat_; // material of the straw gas
       const std::shared_ptr<DetMaterial> wiremat_; // material of the wire
       // utility to calculate material factor given the cosine of the angle of the particle WRT the straw
-      double angleFactor(double dirdot) const;
+      static double angleFactor(double dirdot);
+      static double segmentArea(double doca, double r); // area of a circular segment defined by the cord DOCA to the center
   };
 
 }
