@@ -1,3 +1,4 @@
+# -*- mode:tcl -*-
 BEGIN_PROLOG
 
 EventTiming : {
