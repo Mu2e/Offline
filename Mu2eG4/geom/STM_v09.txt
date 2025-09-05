@@ -181,7 +181,7 @@ double stm.BackShielding.BackS_dY  = 0;
 
 bool   stm.InnerShielding.build    = true;
 
-bool    stm.ElectronicShielding.build     = false;
+bool    stm.ElectronicShielding.build     = true;
 double  stm.ElectronicShielding.SiGridX   = 127.0;
 double  stm.ElectronicShielding.SiGridY   = 127.0;
 double  stm.ElectronicShielding.SiGridZ   = 25.4;
@@ -200,7 +200,7 @@ double stm.STM_Absorber.GaptoSSC  = 20;
 double stm.det1VD.rOut = 60;
 double stm.det2VD.rOut = 60;
 double vd.STMCollDnStr.r = 60;
-double vd.STMSSCollUpStr.r = 2000;
+double vd.STMSSCollUpStr.r = 100;
 
 //
 // Changes for STM Upstream infrastructure
