@@ -244,6 +244,7 @@ namespace mu2e {
 
   void CentralHelixFit::produce(art::Event& event ) {
     GeomHandle<Calorimeter> calo_h;
+    GeomHandle<mu2e::Tracker> nominalTracker_h;
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
@@ -362,7 +363,7 @@ namespace mu2e {
               }
               if(!degen){
                 sampleFit(*kktrk);
-                auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h);
+                auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h,*nominalTracker_h);
                 kkseedcol->push_back(kkseed);
                 // save (unpersistable) KKTrk in the event
                 kktrkcol->push_back(kktrk.release());

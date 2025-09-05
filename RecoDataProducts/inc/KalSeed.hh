@@ -9,6 +9,7 @@
 #include "Offline/RecoDataProducts/inc/HitT0.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/RecoDataProducts/inc/TrkStrawHitSeed.hh"
+#include "Offline/RecoDataProducts/inc/TrkStrawHitCalib.hh"
 #include "Offline/RecoDataProducts/inc/TrkCaloHitSeed.hh"
 #include "Offline/RecoDataProducts/inc/TrkStraw.hh"
 #include "Offline/RecoDataProducts/inc/KalSegment.hh"
@@ -41,6 +42,7 @@ namespace mu2e {
 
     PDGCode::type particle() const { return _tpart; }
     auto const& hits() const { return _hits;}
+    auto const& hitCalibInfos() const { return _hitcalibs;}
     auto const& caloHit() const { return _chit; }
     auto const& straws() const { return _straws;}
     auto const& segments() const { return _segments; }
@@ -83,6 +85,7 @@ namespace mu2e {
     std::vector<KalSegment>     _segments; // segments of the Kalman filter fit result
     std::vector<KalIntersection>     _inters; // intersections with materials or reference locations
     std::vector<TrkStrawHitSeed>    _hits; // hit seeds for all the hits used in this fit
+    std::vector<TrkStrawHitCalib>   _hitcalibs; // extra calibration/alignment info
     std::vector<TrkStraw>     _straws; // straws interesected by this fit
     TrkCaloHitSeed        _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
     //

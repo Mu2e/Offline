@@ -473,6 +473,7 @@ namespace mu2e {
   void LoopHelixFit::produce(art::Event& event ) {
     // calo geom
     GeomHandle<Calorimeter> calo_h;
+    GeomHandle<mu2e::Tracker> nominalTracker_h;
     // create output
     unique_ptr<KKTRKCOL> ktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
@@ -526,7 +527,7 @@ namespace mu2e {
             // sample the fit as requested
             sampleFit(*ktrk);
             // convert to seed output format
-            auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h);
+            auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
             if(print_>0) print_track_info(kkseed, *ktrk);
             kkseedcol->push_back(kkseed);
             // fill assns with the helix seed

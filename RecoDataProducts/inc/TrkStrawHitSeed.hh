@@ -25,8 +25,8 @@ namespace mu2e {
     TrkStrawHitSeed(StrawHitIndex index, ComboHit const& chit,
         KinKal::ClosestApproachData const& rptca,
         KinKal::ClosestApproachData const& uptca,
-        KinKal::Residual const& utresid, KinKal::Residual const& udresid,
-        KinKal::Residual const& rtresid, KinKal::Residual const& rdresid,
+        KinKal::Residual const& utresid, KinKal::Residual const& udresid, KinKal::Residual const& ulresid,
+        KinKal::Residual const& rtresid, KinKal::Residual const& rdresid, KinKal::Residual const& rlresid,
         DriftInfo const& dinfo,
         WireHitState const& whs,
         Straw const& straw) :
@@ -48,8 +48,10 @@ namespace mu2e {
       _sderr(dinfo.signedDriftError_),_uderr(dinfo.unsignedDriftError_), _dvel(dinfo.driftVelocity_),_lang(dinfo.LorentzAngle_),
       _utresid(utresid.value()),_utresidmvar(utresid.measurementVariance()),_utresidpvar(utresid.parameterVariance()),
       _udresid(udresid.value()),_udresidmvar(udresid.measurementVariance()),_udresidpvar(udresid.parameterVariance()),
+      _ulresid(ulresid.value()),_ulresidmvar(ulresid.measurementVariance()),_ulresidpvar(ulresid.parameterVariance()),
       _rtresid(rtresid.value()),_rtresidmvar(rtresid.measurementVariance()),_rtresidpvar(rtresid.parameterVariance()),
       _rdresid(rdresid.value()),_rdresidmvar(rdresid.measurementVariance()),_rdresidpvar(rdresid.parameterVariance()),
+      _rlresid(rlresid.value()),_rlresidmvar(rlresid.measurementVariance()),_rlresidpvar(rlresid.parameterVariance()),
       _upoca(XYZVectorF(uptca.particlePoca().Vect()))
     {
       // compute position along wire according to Mu2e convention
@@ -174,8 +176,10 @@ namespace mu2e {
     float         _lang =0; // Lorentz angle for EXB effects
     float         _utresid=0, _utresidmvar=0, _utresidpvar =0; // unbiased time residual and associated measurement and parameter variances
     float         _udresid=0, _udresidmvar=0, _udresidpvar =0; // unbiased distance residual and associated measurement and parameter variances
+    float         _ulresid=0, _ulresidmvar=0, _ulresidpvar =0; // unbiased longitudinal residual and associated measurement and parameter variances
     float         _rtresid=0, _rtresidmvar=0, _rtresidpvar =0; // reference time residual and associated measurement and parameter variances
     float         _rdresid=0, _rdresidmvar=0, _rdresidpvar =0; // reference distance residual and associated measurement and parameter variances
+    float         _rlresid=0, _rlresidmvar=0, _rlresidpvar =0; // reference longitudinal residual and associated measurement and parameter variances
     float         _ustrawdist = 0;
     float         _ustrawphi = 0;
     float         _uwirephi = 0;
