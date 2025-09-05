@@ -255,10 +255,9 @@ namespace mu2e {
       // add Straw Xings for straws without hits
       for(auto const& sx : kseed.straws()){
         if(!sx.hasHit()){
-          double zt = Mu2eKinKal::zTime(*ptraj,sx._poca.Z(),ptraj->range().begin());
           auto const& straw = tracker.getStraw(sx._straw);
-          auto sline = Mu2eKinKal::strawLine(straw,zt); // line down the straw axis center
-          CAHint hint(zt,zt);
+          auto sline = Mu2eKinKal::strawLine(straw,sx._toca); // line down the straw axis center
+          CAHint hint(sx._toca,sx._toca);
           PCA pca(*ptraj, sline, hint, tprec_ );
           exings.push_back(std::make_shared<KKSTRAWXING>(pca.localClosestApproach(),smat,straw,sx.active()));
         }

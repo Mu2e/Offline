@@ -19,6 +19,7 @@ namespace mu2e {
       _poca(pocadata.sensorPoca().Vect()),
       _doca(pocadata.doca()),
       _docavar(pocadata.docaVar()),
+      _toca(pocadata.particleToca()),
       _dirdot(pocadata.dirDot()),
       _radlen(radlen),
       _dmom(dmom)
@@ -41,6 +42,7 @@ namespace mu2e {
     XYZVectorF _poca; // POCA to the straw axis
     float _doca = 0.0; // DOCA from the track to the straw axis
     float _docavar = 0.0; // DOCA variance
+    float _toca = 0.0; // TOCA from the track to the straw axis
     float _dirdot = 0.0; // dot product between straw axis and track direction
     float _gaspath = 0.0; // path length in gas material
     float _wallpath = 0.0; // path length in straw wall material
