@@ -69,11 +69,11 @@ Mu2eKinKal : {
        [ 10.0, 20.0, 5.0, 3.0, "TOT:LongVal", "Null:Inactive", "", 0 ]
      ]
      StrawXingUpdaterSettings : [
-       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
-       [100.0, -1.0, 0.0, true, 0 ],
-       [10.0, -1.0, 0.0, true, 0 ],
-       [10.0, -1.0, 0.0, true, 0 ],
-       [10.0, -1.0, 0.0, true, 0 ]
+       # maxdoca, doca sig range,  scale with temp?, diag
+       [2.5, 100.0, true, 0 ],
+       [2.5, 100.0, true, 0 ],
+       [2.5, 100.0, true, 0 ],
+       [2.5, 100.0, true, 0 ]
      ]
    }
 
@@ -104,11 +104,11 @@ Mu2eKinKal : {
       [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar:LongVal", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
-      [10.0, -1.0, 0.0, true, 0 ],
-      [5.0, -1.0, 0.0, true, 0 ],
-      [3.0, 3.0, 0.0, true, 0 ],
-      [3.0, 3.0, 0.0, true, 0 ]
+      # maxdoca, doca sig range,  scale with temp?, diag
+      [2.5, 100.0, true, 0 ],
+      [2.5, 100.0, true, 0 ],
+      [2.5, 100.0, true, 0 ],
+      [2.5, 100.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
       [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.2,"Inactive", 1]
@@ -168,20 +168,20 @@ Mu2eKinKal : {
     Chi2SHUSettings : [
     ]
     StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
-      [ 10.0, -1.0, 0.0, true, 0 ],
-      [ 5.0,  -1.0, 0.0, true, 0 ],
-      [ 4.0,  -1.0, 0.0, true, 0 ],
-      [ 4.0,  -1.0, 0.0, false, 0 ],
-      [ 4.0,   4.0, 0.4,  false, 0 ],
-      [ 3.5,   3.5, 0.3,  false, 0 ],
-      [ 3.0,   3.0, 0.2,  false, 0 ],
-      [ 2.8,   2.8, 0.2,  false, 0 ],
-      [ 2.6,   2.6, 0.2,  false, 0 ]
+      # maxdoca, doca sig range,  scale with temp?, diag
+      [2.5, 10.0, true, 0 ],
+      [2.5, 5.0, true, 0 ],
+      [2.5, 2.0, true, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ]
     ]
   }
 
-  SEEDFIT: {
+  LHSEEDFIT: {
     PrintLevel : 0
     MinNDOF : 1
     MaxNIter : 10
@@ -190,7 +190,7 @@ Mu2eKinKal : {
     DivergenceDeltaChisq : 10.0
     DivergenceDeltaParams : 1e6
     DivergenceGap : 10 # mm
-    BFieldCorrection : false
+    BFieldCorrection : true
     BCorrTolerance : 1e-2 # momemntum fraction
     ProcessEnds : false
     MetaIterationSettings : [
@@ -206,10 +206,10 @@ Mu2eKinKal : {
       [ 10.0, 20.0, 5.0, 3.0, "TOT", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
-      [10.0, -1.0, 0.0, true, 0 ],
-      [10.0, -1.0, 0.0, true, 0 ],
-      [10.0, -1.0, 0.0, true, 0 ]
+      # maxdoca, doca sig range,  scale with temp?, diag
+      [2.5, 100.0, true, 0 ],
+      [2.5, 100.0, true, 0 ],
+      [2.5, 100.0, true, 0 ]
     ]
   }
 
@@ -230,7 +230,7 @@ Mu2eKinKal : {
     StrawXingUpdaterSettings : []
   }
 
-  SEEDEXT: {
+  LHSEEDEXT: {
     PrintLevel : 0
     MinNDOF : 1
     MaxNIter : 10
@@ -257,11 +257,11 @@ Mu2eKinKal : {
       [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
-      [5.0, -1.0, 0.0, true, 0 ],
-      [3.0, -1.0, 0.0, true, 0 ],
-      [2.5, 1.8, 0.5, true, 0 ],
-      [2.5, 1.8, 0.5, true, 0 ]
+      # maxdoca, doca sig range,  scale with temp?, diag
+      [2.5, 5.0, true, 0 ],
+      [2.5, 2.0, true, 0 ],
+      [2.5, 1.0, true, 0 ],
+      [2.5, 1.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
       [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.2,"Inactive", 1]
@@ -323,16 +323,16 @@ Mu2eKinKal : {
     ]
 
     StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
-      [ 5.0,  -1.0, 0.0, true, 0 ],
-      [ 5.0,  -1.0, 0.0, true, 0 ],
-      [ 4.0,  -1.0, 0.0, true, 0 ],
-      [ 3.0,  -1.0, 0.0, false, 0 ],
-      [ 3.0,   3.0, 0.2,  false, 0 ],
-      [ 2.8,   3.0, 0.2,  false, 0 ],
-      [ 2.8,   3.0, 0.2,  false, 0 ],
-      [ 2.5,   2.25, 0.2,  false, 0 ],
-      [ 2.5,   2.25, 0.2,  false, 0 ]
+      # maxdoca, doca sig range,  scale with temp?, diag
+      [2.5, 5.0, true, 0 ],
+      [2.5, 3.0, true, 0 ],
+      [2.5, 2.0, true, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ]
     ]
 
   }
@@ -342,7 +342,7 @@ Mu2eKinKal : {
     CaloClusterCollection : "CaloClusterMaker"
   }
 
-  LOOPHELIX : {
+  LHHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     SeedFlags : [ "HelixOK" ]
     IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
@@ -350,7 +350,7 @@ Mu2eKinKal : {
     SampleInBounds : true # require sample be in surface bounds
   }
 
-  LOOPEXTRAPOLATION : {
+  LHXTRAP : {
     MaxDt : 200.0 # (ns)
     ToTrackerEnds : true
     Upstream : true
@@ -358,7 +358,7 @@ Mu2eKinKal : {
     ToOPA : true
   }
 
-  SEEDEXTRAPOLATION : {
+  LHSEEDXTRAP : {
     MaxDt : 200.0 # (ns)
     ToTrackerEnds : true
     Upstream : false
@@ -414,14 +414,14 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : Detector
     }
-    FitSettings : @local::Mu2eKinKal.SEEDFIT
-    ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
+    FitSettings : @local::Mu2eKinKal.LHSEEDFIT
+    ExtensionSettings : @local::Mu2eKinKal.LHSEEDEXT
     ModuleSettings : {
-      @table::Mu2eKinKal.LOOPHELIX
+      @table::Mu2eKinKal.LHHELIX
       @table::Mu2eKinKal.KKPrecursors
       SampleSurfaces : []
     }
-    Extrapolation : @local::Mu2eKinKal.SEEDEXTRAPOLATION
+    Extrapolation : @local::Mu2eKinKal.LHSEEDXTRAP
     UsePDGCharge: false
     HelixMask: {
       MinHelixMom : 0
@@ -434,16 +434,17 @@ Mu2eKinKal : {
     KKFitSettings : {
       @table::Mu2eKinKal.KKFIT
       # save trajectories in the Detector region
+     SaveDomains : true
      SaveTrajectory : Full
     }
-    FitSettings : @local::Mu2eKinKal.SEEDFIT
+    FitSettings : @local::Mu2eKinKal.LHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.LHDRIFTEXT
     ModuleSettings : {
-      @table::Mu2eKinKal.LOOPHELIX
+      @table::Mu2eKinKal.LHHELIX
       @table::Mu2eKinKal.KKPrecursors
       SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
     }
-    Extrapolation : @local::Mu2eKinKal.LOOPEXTRAPOLATION
+    Extrapolation : @local::Mu2eKinKal.LHXTRAP
     UsePDGCharge: false
     HelixMask: {
       MinHelixMom : 0
@@ -455,7 +456,10 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: @local::Mu2eKinKal.KKFIT
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
-    ExtensionSettings : @local::Mu2eKinKal.CHSEEDEXT
+    ExtensionSettings : {
+      @table::Mu2eKinKal.CHSEEDEXT
+      BFieldCorrection : false
+    }
     ModuleSettings : {
       @table::Mu2eKinKal.KINEMATICLINE
       @table::Mu2eKinKal.KKPrecursors
@@ -474,6 +478,7 @@ Mu2eKinKal : {
       MaxCaloClusterDt: 8
       # save the full trajectory
        SaveTrajectory: Full
+       SaveDomains : false # meaningless for Linefit
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
@@ -490,6 +495,7 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : T0
+       SaveDomains : false
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHSEEDEXT
@@ -505,6 +511,7 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : Full
+      SaveDomains : true
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
@@ -538,11 +545,11 @@ Mu2eKinKal : {
 Mu2eKinKal.producers.KKUe.Extrapolation.BackToTracker : true
 Mu2eKinKal.producers.KKUmu.Extrapolation.BackToTracker : true
 
+# update directions and particles as needed
 Mu2eKinKal.producers.KKCHSeedFitmuM.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKCHSeedFitmuP.ModuleSettings.FitParticle : @local::Particle.muplus
 Mu2eKinKal.producers.KKCHmu.ModuleSettings.FitParticle : @local::Particle.muminus # charge floats in the fit, this just determines the mass
 
-Mu2eKinKal.producers.KLSeedFit.ExtensionSettings.BFieldCorrection : false
 Mu2eKinKal.producers.KLSeedFit.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKLine.ModuleSettings.FitParticle : @local::Particle.muminus
 
@@ -559,17 +566,14 @@ Mu2eKinKal.producers.KKUmuSeedFit.FitDirection : @local::FitDir.downstream
 # save trajectories in the Detector region for downstream fits, just the T0 segment for the rest
 Mu2eKinKal.producers.KKDe.ModuleSettings.FitParticle : @local::Particle.eminus
 Mu2eKinKal.producers.KKDe.FitDirection : @local::FitDir.downstream
-Mu2eKinKal.producers.KKDe.KKFitSettings.SaveTrajectory : "Detector"
 Mu2eKinKal.producers.KKDmu.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKDmu.FitDirection : @local::FitDir.downstream
-Mu2eKinKal.producers.KKDmu.KKFitSettings.SaveTrajectory : "Detector"
 Mu2eKinKal.producers.KKUe.ModuleSettings.FitParticle : @local::Particle.eminus
 Mu2eKinKal.producers.KKUe.FitDirection : @local::FitDir.upstream
-Mu2eKinKal.producers.KKUe.KKFitSettings.SaveTrajectory : "Detector"
 Mu2eKinKal.producers.KKUmu.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKUmu.FitDirection : @local::FitDir.upstream
-Mu2eKinKal.producers.KKUmu.KKFitSettings.SaveTrajectory : "Detector"
 # extrapolate upstream fits back to the tracker
 physics.producers.KKUmu.Extrapolation.BackToTracker : true
 physics.producers.KKUe.Extrapolation.BackToTracker  : true
+#
 END_PROLOG

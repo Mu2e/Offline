@@ -19,10 +19,8 @@
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 namespace mu2e {
   namespace Mu2eKinKal{
-
-    using Name    = fhicl::Name;
-    using Comment = fhicl::Comment;
-
+    using fhicl::Name;
+    using fhicl::Comment;
     // struct for defining the KinKal Config object and updaters
     struct KinKalConfig {
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level") };
@@ -47,7 +45,7 @@ namespace mu2e {
       BkgANNSHUSettings bkgshuConfig{ Name("BkgANNSHUSettings"), Comment(BkgANNSHU::configDescription()) };
       using Chi2SHUSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,std::string,std::string,std::string,std::string,int>>;
       Chi2SHUSettings combishuConfig{ Name("Chi2SHUSettings"), Comment(Chi2SHU::configDescription()) };
-      using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,bool,int>>;
+      using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,bool,int>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment(StrawXingUpdater::configDescription()) };
     };
     // function to convert fhicl configuration to KinKal Config object
@@ -88,6 +86,7 @@ namespace mu2e {
       fhicl::Atom<float> maxStrawUposBuff { Name("MaxStrawUposBuffer"), Comment("Max Upos beyond strawlength to add straw material (mm)") };
       // extension and sampling
       fhicl::Atom<std::string> saveTraj { Name("SaveTrajectory"), Comment("How to save the trajectory in the KalSeed: None, Full, Detector, or T0 (1 segment containing t0)") };
+      fhicl::Atom<bool> saveDomains { Name("SaveDomains"), Comment("Save the Bfield domain walls in the KalSeed: this will follow the range specified by SaveTrajectory") };
     };
     // struct for configuring a KinKal fit module
     struct KKModuleConfig {

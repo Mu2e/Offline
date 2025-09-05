@@ -5,11 +5,10 @@
 namespace mu2e {
   // simple struct to hold crossing calculation configuration parameters
   struct StrawXingUpdater {
-    using SXUConfig = std::tuple<float,float,float,bool,int>;
+    using SXUConfig = std::tuple<float,float,bool,int>;
     static std::string const& configDescription(); // description of the variables
     double maxdoca_ =0; // maximum DOCA to include this straw's material
-    double maxddoca_ =0; // maximum DOCA to use non-averaged value
-    double maxdocasig_ =0; // maximum doca error to use non-averaged value
+    double nsig_ =0; // Number of doca_sigma around doca value to use when averageing
     bool scalevar_ =false; // scale variance or not
     int diag_ =0; // diag print level
     // default constructor is functional but will always use the impact-parameter averaged material

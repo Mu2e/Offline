@@ -30,10 +30,40 @@ namespace mu2e {
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
       // construct without an associated StrawHit
-      KKStrawXing(CA const& ca, KKStrawMaterial const& smat, Straw const& straw);
+      KKStrawXing(CA const& ca, KKStrawMaterial const& smat, Straw const& straw,bool active=false);
       // construct with an associated StrawHit
       KKStrawXing(KKSTRAWHITPTR const& strawhit, KKStrawMaterial const& smat);
       virtual ~KKStrawXing() {}
+      // clone op for reinstantiation
+      KKStrawXing(KKStrawXing const& rhs):
+          KKStrawXing(
+            rhs.closestApproach(),
+            rhs.strawMaterial(),
+            rhs.straw()
+          ){
+        auto shptr = rhs.strawHitPtr();
+        if (shptr){
+          this->setStrawHitPtr(rhs.strawHitPtr());
+        }
+      }
+      std::shared_ptr< KinKal::ElementXing<KTRAJ> > clone(CloneContext& context) const override{
+        auto rv = std::make_shared< KKStrawXing<KTRAJ> >(*this);
+
+        // point to new instance of partner hit, if not null
+        KKSTRAWHITPTR shptr;
+        if (shptr_){
+          shptr = context.get(shptr_);
+        }
+        rv->setStrawHitPtr(shptr);
+
+        // point to new instance of ClosestApproach
+        auto ca = rv->closestApproach();
+        auto trajectory = std::make_shared<KTRAJ>(ca.particleTraj());
+        ca.setTrajectory(trajectory);
+        rv->setClosestApproach(ca);
+
+        return rv;
+      };
       // ElementXing interface
       void updateReference(PTRAJ const& ptraj) override;
       void updateState(MetaIterConfig const& config,bool first) override;
@@ -46,7 +76,7 @@ namespace mu2e {
       KTRAJ const& referenceTrajectory() const override { return ca_.particleTraj(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       // accessors
-      bool active() const { return mxings_.size() > 0; }
+      bool active() const override { return active_; }
       auto const& closestApproach() const { return ca_; }
       auto const& strawMaterial() const { return smat_; }
       auto const& config() const { return sxconfig_; }
@@ -64,15 +94,20 @@ namespace mu2e {
       double toff_; // small time offset
       std::vector<MaterialXing> mxings_;
       Parameters fparams_; // parameter change for forwards time
+      bool active_; // active or not
       double varscale_; // variance scale
+      // modifiers to support cloning
+      void setStrawHitPtr(KKSTRAWHITPTR ptr) { shptr_ = ptr; }
+      void setClosestApproach(const CA& ca){ ca_ = ca; }
   };
 
-  template <class KTRAJ> KKStrawXing<KTRAJ>::KKStrawXing(CA const& ca, KKStrawMaterial const& smat, Straw const& straw) :
+  template <class KTRAJ> KKStrawXing<KTRAJ>::KKStrawXing(CA const& ca, KKStrawMaterial const& smat, Straw const& straw,bool active) :
     axis_(ca.sensorTraj()),
     smat_(smat),
     straw_(straw),
     ca_(ca.particleTraj(),axis_,ca.hint(),ca.precision()),
     toff_(smat.wireRadius()/ca.particleTraj().speed(ca.particleToca())), // locate the effect to 1 side of the wire to avoid overlap with hits
+    active_(active),
     varscale_(1.0)
   {}
 
@@ -82,7 +117,9 @@ namespace mu2e {
     smat_(smat),
     straw_(strawhit->straw()),
     ca_(strawhit->closestApproach().particleTraj(),axis_,strawhit->closestApproach().hint(),strawhit->closestApproach().precision()),
-    toff_(smat.wireRadius()/strawhit->closestApproach().particleTraj().speed(strawhit->closestApproach().particleToca()))
+    toff_(smat.wireRadius()/strawhit->closestApproach().particleTraj().speed(strawhit->closestApproach().particleToca())),
+    active_(strawhit->active()),
+    varscale_(1.0)
   {}
 
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(PTRAJ const& ptraj) {
@@ -104,6 +141,7 @@ namespace mu2e {
     // reset
     fparams_ = Parameters();
     if(first) {
+      active_ = false;
       // search for an update to the xing configuration among this meta-iteration payload
       auto sxconfig = miconfig.findUpdater<StrawXingUpdater>();
       if(sxconfig != 0){
@@ -113,17 +151,15 @@ namespace mu2e {
         varscale_ = miconfig.varianceScale();
       else
         varscale_ = 1.0;
-    }
     //  update the associated hit state
-    bool hitactive (false);
-    if(shptr_)hitactive = shptr_->hitState().active();
-    // decide if this straw xing should be active
-    if(hitactive || fabs(ca_.tpData().doca()) < sxconfig_.maxdoca_) {
+      if(shptr_)active_ = shptr_->active();
+      // decide if this straw xing should be active
+      active_ |= fabs(ca_.tpData().doca()) < sxconfig_.maxdoca_;
+    }
+    if(active_){
       // update the material xings from gas, straw wall, and wire
       smat_.findXings(ca_.tpData(),sxconfig_,mxings_);
-      if(mxings_.size() > 0){
-        fparams_ = this->parameterChange(varscale_);
-      }
+      fparams_ = this->parameterChange(varscale_);
     }
   }
 

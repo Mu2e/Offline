@@ -46,10 +46,12 @@ namespace mu2e {
     auto const& segments() const { return _segments; }
     auto const& intersections() const { return _inters; }
     auto const& status() const { return _status; }
+    auto const& domainBounds() const { return _domainbounds; }
     double t0Val() const;
     double t0Var() const;
     float chisquared() const { return _chisq; }
     int nDOF() const { return _ndof; }
+    float domainTolerance() const { return _dtol; }
     unsigned nHits(bool active=true) const;
     float fitConsistency() const { return _fitcon; }
     UInt_t nTrajSegments() const { return _segments.size(); }
@@ -77,14 +79,16 @@ namespace mu2e {
     float           _fitcon = -1; // fit consistency
     float           _maxgap = 0;
     float           _avggap = 0; // information about trajectory gaps
+    float           _dtol = 0; // tolerance used when creating BField domain
     //
     // contained content substructure.
     //
-    std::vector<KalSegment>     _segments; // segments of the Kalman filter fit result
-    std::vector<KalIntersection>     _inters; // intersections with materials or reference locations
-    std::vector<TrkStrawHitSeed>    _hits; // hit seeds for all the hits used in this fit
-    std::vector<TrkStraw>     _straws; // straws interesected by this fit
-    TrkCaloHitSeed        _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
+    std::vector<KalSegment>       _segments; // segments of the Kalman filter fit result
+    std::vector<KalIntersection>  _inters; // intersections with materials or reference locations
+    std::vector<TrkStrawHitSeed>  _hits; // hit seeds for all the hits used in this fit
+    std::vector<TrkStraw>         _straws; // straws interesected by this fit
+    std::vector<double>           _domainbounds; // domain time boundaries
+    TrkCaloHitSeed                _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
     //
     // deprecated BTrk legacy content, DO NOT write any new code which depends on these functions
     // find the nearest segment to a given the time

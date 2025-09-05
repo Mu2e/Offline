@@ -109,7 +109,7 @@ namespace mu2e
         if(_useIndices) { // match using the digi index
           if(hit_1._index == hit_2._index) ++overlap;
         } else {
-          if(hit_1._sid == hit_2._sid && std::fabs(hit_1.hitTime() - hit_2.hitTime()) < _timeWindow) ++overlap;
+          if(hit_1._sid == hit_2._sid && std::fabs(hit_1.time() - hit_2.time()) < _timeWindow) ++overlap;
         }
       }
     }
