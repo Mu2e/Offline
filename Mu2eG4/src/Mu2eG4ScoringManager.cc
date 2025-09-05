@@ -48,21 +48,22 @@ namespace mu2e {
 
   Mu2eG4ScoringManager::Mu2eG4ScoringManager(G4ScoringManager* fSMan,
                                              const Mu2eG4Config::Scoring& configScore,
-                                             const Mu2eG4Config::Physics& configPhysics):
-     fSMan_(fSMan),
+                                             const Mu2eG4Config::Physics& configPhysics,
+                                             const Mu2eG4Config::Debug&   configDebug):
+     fSMan_        (fSMan),
      configPhysics_(configPhysics),
-     enabled_(configScore.enabled()),
-     meshNames_(configScore.meshNames()),
-     scorerNames_(configScore.scorerNames()),
-     writeFile_(false),
-     fileDirectory_("")
+     enabled_      (configScore.enabled()),
+     meshNames_    (configScore.meshNames()),
+     scorerNames_  (configScore.scorerNames()),
+     verboseLevel_ (configScore.verboseLevel())
   {
-    configScore.writeFile(writeFile_);
-    configScore.fileDirectory(fileDirectory_);
-
     if (enabled_ && (meshNames_.empty() || scorerNames_.empty()))
        throw cet::exception("BADINPUT")<<"Mu2eG4ScoringManager: scoring requires at least one "<<
                                          "mesh name and one scorer name"<< std::endl;
+
+    if (enabled_ && (verboseLevel_>0 || configDebug.diagLevel()>0))
+      G4cout<<"Mu2eG4Scoring enabled\n";
+
   }
 
 
@@ -70,12 +71,12 @@ namespace mu2e {
   {
     if (!enabled_) return;
 
+
     auto& geom   = *(art::ServiceHandle<GeometryService>());
     auto& config = geom.config();
     auto& reg    = (art::ServiceHandle<Mu2eG4Helper>())->antiLeakRegistry();
 
-    const int verboseLevel = config.getInt("scoring.verboseLevel");
-    const auto nMesh        = meshNames_.size();
+    const auto nMesh = meshNames_.size();
 
     std::vector<double> meshPositionX, meshPositionY, meshPositionZ;
     config.getVectorDouble("scoring.meshPositionX", meshPositionX, nMesh);
@@ -95,7 +96,6 @@ namespace mu2e {
 
     for (size_t i=0;i<meshNames_.size();++i){
       auto mesh = reg.add(new G4ScoringBox(meshNames_[i]));
-      mesh->SetVerboseLevel(verboseLevel);
 
       G4double vsize[3] ={meshHalfSizeX[i]*CLHEP::mm,meshHalfSizeY[i]*CLHEP::mm,meshHalfSizeZ[i]*CLHEP::mm};
       mesh->SetSize(vsize);
@@ -167,11 +167,10 @@ namespace mu2e {
       }
 
       fSMan_->RegisterScoringMesh(mesh);
-      mesh->SetVerboseLevel(verboseLevel);
+      mesh->SetVerboseLevel(verboseLevel_);
       fSMan_->CloseCurrentMesh();
     }
-
-    if (verboseLevel>1) fSMan_->List();
+    if (verboseLevel_>0) fSMan_->List();
   }
 
 
@@ -198,7 +197,6 @@ namespace mu2e {
       Mu2eG4ScoreWriter writer;
       writer.SetScoringMesh(fSMan_->GetMesh(i));
       writer.dumpInDataProduct(subRun);
-      if (writeFile_) writer.dumpInFile(fileDirectory_);
     }
   }
 
