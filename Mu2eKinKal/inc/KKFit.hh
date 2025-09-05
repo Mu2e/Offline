@@ -417,7 +417,9 @@ namespace mu2e {
                     double doca = fabs(pca.doca());
                     double dsig = std::max(0.0,doca-strawradius_)/sqrt(pca.docaVar());
                     if(doca < maxStrawDoca_ && dsig < maxStrawDocaCon_ && du < straw.halfLength() + maxStrawUposBuff_){
-                      addexings.push_back(std::make_shared<KKSTRAWXING>(pca.localClosestApproach(),smat,straw));
+                      // make it initially active if DOCA<straw radius
+                      bool active = doca < tracker.strawProperties().strawInnerRadius();
+                      addexings.push_back(std::make_shared<KKSTRAWXING>(pca.localClosestApproach(),smat,straw,active));
                       oldstraws.insert(straw.id());
                     }
                   } // not existing straw cut

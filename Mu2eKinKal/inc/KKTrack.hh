@@ -169,7 +169,7 @@ namespace mu2e {
     EXINGCOL exings; // polymorphic container of detector element crossings
     convertTypes(strawhits_, strawxings_, calohits_,  hits, exings);
     this->fit(hits,exings,domains,fittraj);
-    // add ParameterHit, intersections, passive xings, ... TODO
+    // add ParameterHit, intersect, extrapolate, ... TODO
   }
 
   template <class KTRAJ> void KKTrack<KTRAJ>::addHitClusters(KKSTRAWHITCOL const& strawhits,KKSTRAWXINGCOL const& strawxings,MEASCOL& hits) {
