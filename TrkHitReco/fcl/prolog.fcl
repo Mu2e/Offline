@@ -153,7 +153,7 @@ TrkHitReco : {
    FlagBkgHits : {
       module_type          : FlagBkgHits
       ComboHitCollection   : "makeSTH"
-      ClusterAlgorithm     : 2
+      ClusterAlgorithm     : 3
       TNTClustering        : {@table::TrkHitReco.TNTClusterer}
       Chi2Clustering       : {@table::TrkHitReco.Chi2Clusterer}
       DBSClustering        : {@table::TrkHitReco.DBSClusterer}
