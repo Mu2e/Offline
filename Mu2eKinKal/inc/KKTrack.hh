@@ -58,7 +58,7 @@ namespace mu2e {
       KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart, KKSTRAWHITCLUSTERER const& shclusterer,
           KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits, std::array<double, KinKal::NParams()> constraints = {0});
       // copy constructor
-      KKTrack(KKTrack<KTRAJ> const& rhs): KinKal::Track<KTRAJ>(rhs),
+      KKTrack(KKTrack<KTRAJ> const& rhs, CloneContext& context): KinKal::Track<KTRAJ>(rhs, context),
           tpart_(rhs.fitParticle()),
           shclusterer_(rhs.strawHitClusterer()),
           strawhits_(rhs.strawHits()),
@@ -67,22 +67,22 @@ namespace mu2e {
           calohits_(rhs.caloHits()){
         // hits and crossings were reallocated into the base copy; here,
         // we propagate references to those reallocations to the subclass
-        this->remap_pointer_collection(strawhits_, this->hits());
-        this->remap_pointer_collection(calohits_, this->hits());
-        this->remap_pointer_collection(strawxings_, this->exings());
+        this->remap_pointer_collection(strawhits_, this->hits(), context);
+        this->remap_pointer_collection(calohits_, this->hits(), context);
+        this->remap_pointer_collection(strawxings_, this->exings(), context);
         // noncontained crossings and clusters are not stored in
         // the base, so we are responsible for reallocations here
-        this->clone_pointer_collection(ipaxings_, rhs.IPAXings());
-        this->clone_pointer_collection(stxings_, rhs.STXings());
-        this->clone_pointer_collection(crvxings_, rhs.CRVXings());
-        this->clone_pointer_collection(strawhitclusters_, rhs.strawHitClusters());
+        this->clone_pointer_collection(ipaxings_, rhs.IPAXings(), context);
+        this->clone_pointer_collection(stxings_, rhs.STXings(), context);
+        this->clone_pointer_collection(crvxings_, rhs.CRVXings(), context);
+        this->clone_pointer_collection(strawhitclusters_, rhs.strawHitClusters(), context);
       }
 
       template<typename T>
       using PtrVector = std::vector< std::shared_ptr<T> >;
       template<typename T, typename U>
-      void remap_pointer_collection(PtrVector<T>& lhs, const PtrVector<U>& rhs){
-        CloneContext& context = *(this->context_);
+      void remap_pointer_collection(PtrVector<T>& lhs, const PtrVector<U>& rhs,
+                                    CloneContext& context){
         lhs.clear();
         lhs.reserve(rhs.size());
         for (const auto& item: rhs){
@@ -94,8 +94,8 @@ namespace mu2e {
         }
       }
       template<typename T, typename U>
-      void clone_pointer_collection(PtrVector<T>& lhs, const PtrVector<U>& rhs){
-        CloneContext& context = *(this->context_);
+      void clone_pointer_collection(PtrVector<T>& lhs, const PtrVector<U>& rhs,
+                                    CloneContext& context){
         lhs.clear();
         lhs.reserve(rhs.size());
         for (const auto& ptr: rhs){
