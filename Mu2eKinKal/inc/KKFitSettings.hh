@@ -17,8 +17,6 @@
 #include "Offline/Mu2eKinKal/inc/BkgANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/ToggleDriftConstraintSHU.hh"
-#include "Offline/Mu2eKinKal/inc/StatisticallyEnableDriftConstraintSHU.hh"
 namespace mu2e {
   namespace Mu2eKinKal{
 
@@ -51,17 +49,6 @@ namespace mu2e {
       Chi2SHUSettings combishuConfig{ Name("Chi2SHUSettings"), Comment(Chi2SHU::configDescription()) };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,bool,int>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment(StrawXingUpdater::configDescription()) };
-      //using ToggleDriftConstraintSHUSettings = fhicl::Sequence<ToggleDriftConstraintSHU::Parameters>;
-      using ToggleDriftConstraintSHUSettings = fhicl::OptionalSequence<ToggleDriftConstraintSHU::Config>;
-      ToggleDriftConstraintSHUSettings toggledriftshuConfig{
-        Name("ToggleDriftConstraintSHUSettings"),
-        Comment("TODO")
-      };
-      using StatisticallyEnableDriftConstraintSHUSettings = fhicl::OptionalSequence<StatisticallyEnableDriftConstraintSHU::Config>;
-      StatisticallyEnableDriftConstraintSHUSettings sampledriftshuConfig{
-        Name("StatisticallyEnableDriftConstraintSHUSettings"),
-        Comment("TODO")
-      };
     };
     // function to convert fhicl configuration to KinKal Config object
     KinKal::Config makeConfig(KinKalConfig const& fconfig);
