@@ -87,6 +87,10 @@ namespace mu2e {
       // extension and sampling
       fhicl::Atom<std::string> saveTraj { Name("SaveTrajectory"), Comment("How to save the trajectory in the KalSeed: None, Full, Detector, or T0 (1 segment containing t0)") };
       fhicl::Atom<bool> saveDomains { Name("SaveDomains"), Comment("Save the Bfield domain walls in the KalSeed: this will follow the range specified by SaveTrajectory") };
+      fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("Sample the final fit at these surfaces") };
+      fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for surface intersections (mm)") };
+      fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
+      fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
     };
     // struct for configuring a KinKal fit module
     struct KKModuleConfig {

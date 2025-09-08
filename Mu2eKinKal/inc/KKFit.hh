@@ -30,6 +30,8 @@
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
 #include "Offline/RecoDataProducts/inc/KalIntersection.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
+#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
 // geometry
 #include "Offline/KinKalGeom/inc/Tracker.hh"
 // KinKal includes
@@ -105,6 +107,8 @@ namespace mu2e {
           StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
           Calorimeter const& calo, CCHandle const& cchandle,
           KKTRK& kktrk) const;
+      // sample the fit at the specificed surfaces
+      void sampleFit(KKTRK& kktrk) const;
       // save the complete fit trajectory as a seed
       KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo) const;
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
@@ -120,7 +124,7 @@ namespace mu2e {
       void addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK const& kktrk, KKSTRAWHITCOL const& addhits, KKSTRAWXINGCOL& addexings) const;
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
       void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const; // sample fit at the surfaces specified in the config
-      int printLevel_;
+      int print_;
       unsigned minNStrawHits_;
       bool matcorr_, addhits_, addmat_, usecalo_; // flags
       KKSTRAWHITCLUSTERER shclusterer_; // functor to cluster KKStrawHits
@@ -144,13 +148,16 @@ namespace mu2e {
       mutable double rmin_, rmax_; // plane-level info
       mutable double spitch_;
       mutable bool needstrackerinfo_ = true;
-
+      // extrapolation and sampling options
+      SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
+      double intertol_; // surface intersection tolerance (mm)
+      bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       SaveTraj savetraj_; // trajectory saving option
       bool savedomains_; // save domain bounds
   };
 
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(KKFitConfig const& fitconfig) :
-    printLevel_(fitconfig.printLevel()),
+    print_(fitconfig.printLevel()),
     minNStrawHits_(fitconfig.minNStrawHits()),
     matcorr_(fitconfig.matCorr()),
     addhits_(fitconfig.addHits()),
@@ -173,6 +180,9 @@ namespace mu2e {
     maxStrawDocaCon_(fitconfig.maxStrawDOCAConsistency()),
     maxStrawUposBuff_(fitconfig.maxStrawUposBuff()),
     maxDStraw_(fitconfig.maxDStraw()),
+    intertol_(fitconfig.interTol()),
+    sampleinrange_(fitconfig.sampleInRange()),
+    sampleinbounds_(fitconfig.sampleInBounds()),
     savedomains_(fitconfig.saveDomains())
   {
     if (fitconfig.saveTraj() == "T0") {
@@ -186,6 +196,15 @@ namespace mu2e {
     } else {
       throw cet::exception("RECO")<<"mu2e::KKFit: unknown trajectory option "<< fitconfig.saveTraj() << endl;
     }
+    // Lookup surfaces to sample: these should be replaced by extrapolation TODO
+    SurfaceIdCollection ssids;
+    for(auto const& sidname : fitconfig.sampleSurfaces()){
+      ssids.push_back(SurfaceId(sidname,-1)); // match all elements
+    }
+    // translate the sample and extend surface names to actual surfaces using the SurfaceMap.  This should come from the
+    // geometry service eventually, TODO
+    SurfaceMap smap;
+    smap.surfaces(ssids,sample_);
   }
 
   template <class KTRAJ> bool KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
@@ -319,7 +338,7 @@ namespace mu2e {
     if(addhits_)addStrawHits(tracker, strawresponse, kkbf, smat, kktrk, chcol, addstrawhits );
     if(matcorr_ && addmat_)addStraws(tracker, smat, kktrk, addstrawhits, addstrawxings);
     if(addhits_ && usecalo_ && kktrk.caloHits().size()==0)addCaloHit(calo, kktrk, cchandle, addcalohits);
-    if(printLevel_ > 1){
+    if(print_ > 1){
       std::cout << "KKTrk extension adding "
         << addstrawhits.size() << " StrawHits and "
         << addcalohits.size() << " CaloHits and "
@@ -735,5 +754,48 @@ namespace mu2e {
     }
     // sort by time TODO
   }
+
+  template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK& kktrk) const {
+    auto const& ftraj = kktrk.fitTraj();
+    std::vector<TimeRange> ranges;
+    // test for reflection, and if present, split the test in 2
+    auto refltraj = ftraj.reflection(ftraj.range().begin());
+    if(refltraj){
+      double tmid = refltraj->range().begin();
+      ranges.push_back(TimeRange(ftraj.range().begin(),tmid));
+      ranges.push_back(TimeRange(tmid,ftraj.range().end()));
+    } else {
+      ranges.push_back(ftraj.range());
+    }
+    for(auto range : ranges) {
+      double tbeg = range.begin();
+      double tend = range.end();
+      for(auto const& surf : sample_){
+        // search for intersections with each surface within the specified time range, going forwards in time
+        bool goodinter(true);
+        size_t max_inter = 100; // limit the number of intersections
+        size_t cur_inter = 0;
+        // loop to find multiple intersections
+        while(goodinter && tbeg < tend && cur_inter < max_inter){
+          cur_inter += 1;
+          TimeRange irange(tbeg,tend);
+          auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,intertol_);
+          goodinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || surfinter.inrange_);
+          if(goodinter) {
+            // save the intersection information
+            kktrk.addIntersection(surf.first,surfinter);
+            // update for the next intersection
+            // move past existing intersection to avoid repeating
+            double epsilon = intertol_/ftraj.speed(surfinter.time_);
+            tbeg = surfinter.time_ + epsilon;
+          }
+          if(print_>1) printf(" [KKFit::%s] Found intersection with surface %15s\n",
+              __func__, surf.first.name().c_str());
+        }
+      }
+    }
+  }
+
+
 }
 #endif
