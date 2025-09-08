@@ -210,6 +210,9 @@ namespace mu2e {
         auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "successful track refit" << std::endl;
+          // extrapolate as requested TODO
+          // sample the fit as requested
+          kkfit_.sampleFit(*ktrk);
           // convert to seed output format
           TrkFitFlag fitflag = kseed.status();
           fitflag.merge(TrkFitFlag::Regrown);
