@@ -64,10 +64,7 @@
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKConstantBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
-#include "Offline/Mu2eKinKal/inc/ExtrapolateToZ.hh"
-#include "Offline/Mu2eKinKal/inc/ExtrapolateIPA.hh"
-#include "Offline/Mu2eKinKal/inc/ExtrapolateST.hh"
-#include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
+#include "Offline/Mu2eKinKal/inc/KKExtrap.hh"
 // C++
 #include <iostream>
 #include <string>
@@ -86,9 +83,6 @@ namespace mu2e {
   using KKSTRAWXING = KKStrawXing<KTRAJ>;
   using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
   using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
-  using KKIPAXING = KKShellXing<KTRAJ,KinKal::Cylinder>;
-  using KKIPAXINGPTR = std::shared_ptr<KKIPAXING>;
-  using KKIPAXINGCOL = std::vector<KKIPAXINGPTR>;
   using KKSTXING = KKShellXing<KTRAJ,KinKal::Annulus>;
   using KKSTXINGPTR = std::shared_ptr<KKSTXING>;
   using KKSTXINGCOL = std::vector<KKSTXINGPTR>;
@@ -131,16 +125,6 @@ namespace mu2e {
   struct KKLHModuleConfig : KKModuleConfig {
     fhicl::Sequence<art::InputTag> seedCollections {Name("HelixSeedCollections"), Comment("Seed fit collections to be processed ") };
     fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
-    fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for surface intersections (mm)") };
-  };
-  // Extrapolation configuration
-  struct KKExtrapConfig {
-    fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit") };
-    fhicl::Atom<bool> BackToTracker { Name("BackToTracker"), Comment("Extrapolate reflecting tracks back to the tracker") };
-    fhicl::Atom<bool> ToTrackerEnds { Name("ToTrackerEnds"), Comment("Extrapolate tracks to the tracker ends") };
-    fhicl::Atom<bool> Upstream { Name("Upstream"), Comment("Extrapolate tracks upstream") };
-    fhicl::Atom<bool> ToOPA { Name("ToOPA"), Comment("Test tracks for intersection with the OPA") };
-    fhicl::Atom<int> Debug { Name("Debug"), Comment("Debug level"), 0 };
   };
   struct HelixMaskConfig {
     fhicl::OptionalAtom<float> minHelixP{ Name("MinHelixMom"), Comment("Minimum Momentum of a helix for a track to be fit.")};
@@ -152,7 +136,7 @@ namespace mu2e {
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
     fhicl::OptionalTable<KKFinalConfig> finalSettings { Name("FinalSettings") };
-    fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") };
+    fhicl::OptionalTable<KKExtrapConfig> extrapSettings { Name("ExtrapolationSettings") };
     // LoopHelix module specific config
     fhicl::OptionalAtom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Input helix seed slope significance threshold to assume the direction")};
     fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
@@ -175,14 +159,6 @@ namespace mu2e {
       bool goodHelix(HelixSeed const& hseed) const;
       std::vector<TrkFitDirection::FitDirection> chooseHelixDir(HelixSeed const& hseed) const;
       std::unique_ptr<KKTRK> fitTrack(art::Event& event, HelixSeed const& hseed, const TrkFitDirection fdir, const PDGCode::type fitpart);
-      // extrapolation functions
-      void extrapolate(KKTRK& ktrk) const;
-      void toTrackerEnds(KKTRK& ktrk) const;
-      bool extrapolateIPA(KKTRK& ktrk,TimeDir trkdir) const;
-      bool extrapolateST(KKTRK& ktrk,TimeDir trkdir) const;
-      bool extrapolateTracker(KKTRK& ktrk,TimeDir tdir) const;
-      bool extrapolateTSDA(KKTRK& ktrk,TimeDir tdir) const;
-      void toOPA(KKTRK& ktrk, double tstart, TimeDir tdir) const;
       void print_track_info(const KalSeed& kkseed, const KKTRK& ktrk) const;
 
       // data payload
@@ -208,18 +184,8 @@ namespace mu2e {
       Config config_; // initial fit configuration object
       Config exconfig_; // extension configuration object
       Config fconfig_; // final final configuration object
-      double intertol_; // surface intersection tolerance (mm)
+      std::unique_ptr<KKExtrap> extrap_; // extrapolation helper
       bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
-      SurfaceMap smap_;
-      AnnPtr tsdaptr_;
-      DiskPtr trkfrontptr_, trkmidptr_, trkbackptr_;
-      FruPtr opaptr_;
-      bool extrapolate_, backToTracker_, toOPA_, toTrackerEnds_, upstream_;
-      ExtrapolateToZ TSDA_, trackerFront_, trackerBack_; // extrapolation predicate based on Z values
-      ExtrapolateIPA extrapIPA_; // extrapolation to intersections with the IPA
-      ExtrapolateST extrapST_; // extrapolation to intersections with the ST
-      double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
-      double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
       //Helix Mask params
       float minHelixP_ = -1.;
       int nSeen_ = 0;
@@ -244,8 +210,7 @@ namespace mu2e {
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
-    intertol_(settings().modSettings().interTol()),
-    fixedfield_(false), extrapolate_(false), backToTracker_(false), toOPA_(false)
+    fixedfield_(false)
     {
       std::string fdir;
       if(settings().fitDirection(fdir))fdir_ = fdir;
@@ -267,6 +232,8 @@ namespace mu2e {
         fixedfield_ = true;
         kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
       }
+      // setup extrapolation
+      if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings(),kkmat_);
 
       // setup optional fit finalization; this just updates the internals, not the fit result itself
       if(settings().finalSettings()){
@@ -278,36 +245,6 @@ namespace mu2e {
         fconfig_.schedule_.push_back(KinKal::MetaIterConfig()); // 1 stage, 0 temperature
         fconfig_.convdchisq_ = settings().finalSettings()->convdchisq();
         fconfig_.maxniter_ =  settings().finalSettings()->maxniter();
-      }
-      // configure extrapolation
-      if(settings().Extrapolation()){
-        extrapolate_ = true;
-        backToTracker_ = settings().Extrapolation()->BackToTracker();
-        toTrackerEnds_ = settings().Extrapolation()->ToTrackerEnds();
-        upstream_ = settings().Extrapolation()->Upstream();
-        toOPA_ = settings().Extrapolation()->ToOPA();
-        auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
-        // global configs
-        double maxdt = settings().Extrapolation()->MaxDt();
-        double btol =  settings().extSettings().btol(); // use the same BField cor. tolerance as in fit extension
-        int debug =  settings().Extrapolation()->Debug();
-        // predicate to extrapolate through IPA
-        extrapIPA_ = ExtrapolateIPA(maxdt,btol,intertol_,IPA,debug);
-        // predicate to extrapolate through ST
-        if(debug > 0)std::cout << "IPA limits z " << extrapIPA_.zmin() << " " << extrapIPA_.zmax() << std::endl;
-        extrapST_ = ExtrapolateST(maxdt,btol,intertol_,smap_.ST(),debug);
-        // temporary
-        if(debug > 0)std::cout << "ST limits z " << extrapST_.zmin() << " " << extrapST_.zmax() << " r " << extrapST_.rmin() << " " << extrapST_.rmax() << std::endl;
-        // extrapolate to the front of the tracker
-        trackerFront_ = ExtrapolateToZ(maxdt,btol,smap_.tracker().front().center().Z(),debug);
-        trackerBack_ = ExtrapolateToZ(maxdt,btol,smap_.tracker().back().center().Z(),debug);
-        // extrapolate to the back of the detector solenoid
-        TSDA_ = ExtrapolateToZ(maxdt,btol,smap_.DS().upstreamAbsorber().center().Z(),debug);
-        tsdaptr_ = smap_.DS().upstreamAbsorberPtr();
-        trkfrontptr_ = smap_.tracker().frontPtr();
-        trkmidptr_ = smap_.tracker().middlePtr();
-        trkbackptr_ = smap_.tracker().backPtr();
-        opaptr_ = smap_.DS().outerProtonAbsorberPtr();
       }
       if (settings().HelixMask()){
         if (settings().HelixMask()->minHelixP())
@@ -463,7 +400,6 @@ namespace mu2e {
       for(size_t iseed=0; iseed < hseedcol.size(); ++iseed) {
         ++nSeen_;
         auto const& hseed = hseedcol[iseed];
-
         // determine the fit direction hypotheses + check whether helix momentum is over the minimum momentum threshold (if set)
         auto helix_dirs = chooseHelixDir(hseed);
         if(helix_dirs.empty()) {
@@ -471,21 +407,16 @@ namespace mu2e {
           continue; //bad helix, no fits to perform
         }
         ++nFit_;
-
         const unsigned dirs_size = helix_dirs.size();
         const bool undefined_dir = dirs_size > 1; //fitting multiple hypotheses to determine the best fit
         if(undefined_dir) ++nAmbiguous_;
-
         // fit each track hypothesis
         for(auto helix_dir : helix_dirs) {
           auto ktrk = fitTrack(event, hseed,  TrkFitDirection(helix_dir), fpart_);
           if(!ktrk) continue; //ensure that the track exists
-
           // extrapolate as required
-          if(extrapolate_) extrapolate(*ktrk);
+          if(extrap_)extrap_->extrapolate(*ktrk);
           if(print_>1) ktrk->printFit(std::cout,print_-1);
-
-          // save the fit result
           auto hptr = HPtr(hseedcol_h,iseed);
           TrkFitFlag fitflag(hptr->status());
           fitflag.merge(fitflag_);
@@ -590,198 +521,6 @@ namespace mu2e {
       return false;
     }
     return true;
-  }
-
-  void LoopHelixFit::extrapolate(KKTRK& ktrk) const {
-    // define the time direction according to the fit direction inside the tracker
-    auto const& ftraj = ktrk.fitTraj();
-    if(toTrackerEnds_)toTrackerEnds(ktrk);
-    if(upstream_){
-      auto dir0 = ftraj.direction(ftraj.t0());
-      TimeDir tdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
-      double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
-      // extrapolate through the IPA in this direction.
-      bool exitsIPA = extrapolateIPA(ktrk,tdir);
-      if(exitsIPA){ // if it exits out the back, extrapolate through the target
-        bool exitsST = extrapolateST(ktrk,tdir);
-        if(exitsST) { // if it exits out the back, extrapolate to the TSDA (DS rear absorber)
-          bool hitTSDA = extrapolateTSDA(ktrk,tdir);
-          // if we hit the TSDA we are done. Otherwise if we reflected, go back through the ST
-          if(!hitTSDA){ // reflection upstream of the target: go back through the target
-            extrapolateST(ktrk,tdir);
-            if(backToTracker_){ // optionally extrapolate back through the IPA, then to the tracker entrance
-              extrapolateIPA(ktrk,tdir);
-              extrapolateTracker(ktrk,tdir);
-            }
-          }
-        } else { // reflection inside the ST; extrapolate back through the IPA, then to the tracker entrance
-          if(backToTracker_){
-            extrapolateIPA(ktrk,tdir);
-            extrapolateTracker(ktrk,tdir);
-          }
-        }
-      } else { // reflection inside the IPA; extrapolate back through the IPA, then to the tracker entrance
-        if(backToTracker_)ktrk.extrapolate(tdir,trackerFront_);
-      }
-      // optionally test for intersection with the OPA
-      if(toOPA_)toOPA(ktrk,starttime,tdir);
-    }
-  }
-
-  void LoopHelixFit::toTrackerEnds(KKTRK& ktrk) const {
-    // time direction to reach the bounding surfaces from the active region depends on the z momentum. This calculation assumes the particle doesn't
-    // reflect inside the tracker volumei
-    auto const& ftraj = ktrk.fitTraj();
-    auto dir0 = ftraj.direction(ftraj.t0());
-    TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
-    TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
-    auto tofront = ktrk.extrapolate(fronttdir,trackerFront_);
-    auto toback = ktrk.extrapolate(backtdir,trackerBack_);
-    // record the standard tracker intersections
-    static const SurfaceId tt_front("TT_Front");
-    static const SurfaceId tt_mid("TT_Mid");
-    static const SurfaceId tt_back("TT_Back");
-
-    // start with the middle
-    auto midinter = KinKal::intersect(ftraj,*trkmidptr_,ftraj.range(),intertol_);
-    if(midinter.good()) ktrk.addIntersection(tt_mid,midinter);
-    if(tofront){
-      // check the front piece first; that is usually correct
-      // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
-      auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-      auto frontinter = KinKal::intersect(fhel,*trkfrontptr_,fhel.range(),intertol_,fronttdir);
-      if(!frontinter.good()){
-        // start from the middle
-        TimeRange frange = ftraj.range();
-        if(midinter.good())frange = fronttdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
-        frontinter = KinKal::intersect(ftraj,*trkfrontptr_,frange,intertol_,fronttdir);
-      }
-      if(frontinter.good()) ktrk.addIntersection(tt_front,frontinter);
-    }
-    if(toback){
-      // start from the middle
-      TimeRange brange = ftraj.range();
-      if(midinter.good())brange = backtdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
-      auto backinter = KinKal::intersect(ftraj,*trkbackptr_,brange,intertol_,backtdir);
-      if(backinter.good())ktrk.addIntersection(tt_back,backinter);
-    }
-  }
-
-  bool LoopHelixFit::extrapolateIPA(KKTRK& ktrk,TimeDir tdir) const {
-    if(extrapIPA_.debug() > 0)std::cout << "extrapolating to IPA " << std::endl;
-    // extraplate the fit through the IPA. This will add material effects for each intersection. It will continue till the
-    // track exits the IPA
-    extrapIPA_.reset();
-    auto const& ftraj = ktrk.fitTraj();
-    static const SurfaceId IPASID("IPA");
-    double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
-    auto startdir = ftraj.direction(starttime);
-    do {
-      ktrk.extrapolate(tdir,extrapIPA_);
-      if(extrapIPA_.intersection().good()){
-        // we have a good intersection. Use this to create a Shell material Xing
-        auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
-        KKIPAXINGPTR ipaxingptr = std::make_shared<KKIPAXING>(IPA,IPASID,*kkmat_.IPAMaterial(),extrapIPA_.intersection(),reftrajptr,ipathick_,extrapIPA_.interTolerance());
-        if(extrapIPA_.debug() > 0){
-          double dmom, paramomvar, perpmomvar;
-          ipaxingptr->materialEffects(dmom,paramomvar,perpmomvar);
-          std::cout << "IPA Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
-          std::cout << " before append mom = " << reftrajptr->momentum();
-        }
-        ktrk.addIPAXing(ipaxingptr,tdir);
-        if(extrapIPA_.debug() > 0){
-          auto const& newtrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-          std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
-        }
-      }
-    } while(extrapIPA_.intersection().good());
-    // check if the particle exited in the same physical direction or not (reflection)
-    double endtime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
-    auto enddir = ftraj.direction(endtime);
-    if(enddir.Z() * startdir.Z() > 0.0){
-      return true;
-    }
-    return false;
-  }
-
-  bool LoopHelixFit::extrapolateST(KKTRK& ktrk,TimeDir tdir) const {
-    // extraplate the fit through the ST. This will add material effects for each foil intersection. It will continue till the
-    // track exits the ST in Z
-    extrapST_.reset();
-    auto const& ftraj = ktrk.fitTraj();
-    double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
-    auto startdir = ftraj.direction(starttime);
-    if(extrapST_.debug() > 0)std::cout << "extrapolating to ST " << std::endl;
-    do {
-      ktrk.extrapolate(tdir,extrapST_);
-      if(extrapST_.intersection().good()){
-        // we have a good intersection. Use this to create a Shell material Xing
-        auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        KKSTXINGPTR stxingptr = std::make_shared<KKSTXING>(extrapST_.foil(),extrapST_.foilId(),*kkmat_.STMaterial(),extrapST_.intersection(),reftrajptr,stthick_,extrapST_.interTolerance());
-        if(extrapST_.debug() > 0){
-          double dmom, paramomvar, perpmomvar;
-          stxingptr->materialEffects(dmom,paramomvar,perpmomvar);
-          std::cout << "ST Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
-          std::cout << " before append mom = " << reftrajptr->momentum();
-        }
-        // Add the xing. This truncates the fit
-        ktrk.addSTXing(stxingptr,tdir);
-        if(extrapST_.debug() > 0){
-          auto const& newtrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-          std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
-        }
-      }
-    } while(extrapST_.intersection().good());
-    // check if the particle exited in the same physical direction or not (reflection)
-    double endtime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
-    auto enddir = ftraj.direction(endtime);
-    if(enddir.Z() * startdir.Z() > 0.0){
-      return true;
-    }
-    return false;
-  }
-
-  bool LoopHelixFit::extrapolateTracker(KKTRK& ktrk,TimeDir tdir) const {
-    if(trackerFront_.debug() > 0)std::cout << "extrapolating to Tracker " << std::endl;
-    auto const& ftraj = ktrk.fitTraj();
-    static const SurfaceId TrackerSID("TT_Front");
-    ktrk.extrapolate(tdir,trackerFront_);
-    // the last piece appended should cover the necessary range
-    auto const& ktraj = tdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-    auto trkfrontinter = KinKal::intersect(ftraj,*trkfrontptr_,ktraj.range(),intertol_,tdir);
-    if(trkfrontinter.onsurface_){ // dont worry about bounds here
-      ktrk.addIntersection(TrackerSID,trkfrontinter);
-      return true;
-    }
-    return false;
-  }
-
-  bool LoopHelixFit::extrapolateTSDA(KKTRK& ktrk,TimeDir tdir) const {
-    if(TSDA_.debug() > 0)std::cout << "extrapolating to TSDA " << std::endl;
-    auto const& ftraj = ktrk.fitTraj();
-    static const SurfaceId TSDASID("TSDA");
-    ktrk.extrapolate(tdir,TSDA_);
-    // if we reflected we're done. Otherwize, save the TSDA intersection
-    double tend = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
-    auto epos = ftraj.position3(tend);
-    bool retval = epos.Z() < TSDA_.zVal();
-    if(retval){
-      auto const& ktraj = tdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-      auto tsdainter = KinKal::intersect(ftraj,*tsdaptr_,ktraj.range(),intertol_,tdir);
-      if(tsdainter.onsurface_)ktrk.addIntersection(TSDASID,tsdainter);
-    }
-    return retval;
-  }
-
-  void LoopHelixFit::toOPA(KKTRK& ktrk, double tstart, TimeDir tdir) const {
-    auto const& ftraj = ktrk.fitTraj();
-    static const SurfaceId OPASID("OPA");
-    TimeRange trange = tdir == TimeDir::forwards ? TimeRange(tstart,ftraj.range().end()) : TimeRange(ftraj.range().begin(),tstart);
-    auto opainter = KinKal::intersect(ftraj,*opaptr_,trange,intertol_,tdir);
-    if(opainter.good()){
-      ktrk.addIntersection(OPASID,opainter);
-    }
   }
 
   void LoopHelixFit::print_track_info(const KalSeed& kkseed, const KKTRK& ktrk) const {

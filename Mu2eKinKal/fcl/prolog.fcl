@@ -351,8 +351,10 @@ Mu2eKinKal : {
     SeedFlags : [ "HelixOK" ]
   }
 
-  LHXTRAP : {
+  LHDRIFTXTRAP : {
+    IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
+    BCorrTolerance : 1e-4 # momemntum fraction
     ToTrackerEnds : true
     Upstream : true
     BackToTracker : false
@@ -360,7 +362,9 @@ Mu2eKinKal : {
   }
 
   LHSEEDXTRAP : {
+    IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
+    BCorrTolerance : 1e-2 # momemntum fraction
     ToTrackerEnds : true
     Upstream : false
     BackToTracker : false
@@ -420,9 +424,8 @@ Mu2eKinKal : {
     ModuleSettings : {
       @table::Mu2eKinKal.LHHELIX
       @table::Mu2eKinKal.KKPrecursors
-      IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
     }
-    Extrapolation : @local::Mu2eKinKal.LHSEEDXTRAP
+    ExtrapolationSettings : @local::Mu2eKinKal.LHSEEDXTRAP
     UsePDGCharge: false
     HelixMask: {
       MinHelixMom : 0
@@ -446,9 +449,8 @@ Mu2eKinKal : {
     ModuleSettings : {
       @table::Mu2eKinKal.LHHELIX
       @table::Mu2eKinKal.KKPrecursors
-      IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
     }
-    Extrapolation : @local::Mu2eKinKal.LHXTRAP
+    ExtrapolationSettings : @local::Mu2eKinKal.LHDRIFTXTRAP
     UsePDGCharge: false
     HelixMask: {
       MinHelixMom : 0
@@ -545,10 +547,6 @@ Mu2eKinKal : {
     KKUmu: @local::Mu2eKinKal.LHDriftFit
   }
 }
-# Extrapolate upstream fits back to the tracker entrance
-Mu2eKinKal.producers.KKUe.Extrapolation.BackToTracker : true
-Mu2eKinKal.producers.KKUmu.Extrapolation.BackToTracker : true
-
 # update directions and particles as needed
 Mu2eKinKal.producers.KKCHSeedFitmuM.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKCHSeedFitmuP.ModuleSettings.FitParticle : @local::Particle.muplus
@@ -576,8 +574,9 @@ Mu2eKinKal.producers.KKUe.ModuleSettings.FitParticle : @local::Particle.eminus
 Mu2eKinKal.producers.KKUe.FitDirection : @local::FitDir.upstream
 Mu2eKinKal.producers.KKUmu.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKUmu.FitDirection : @local::FitDir.upstream
-# extrapolate upstream fits back to the tracker
-physics.producers.KKUmu.Extrapolation.BackToTracker : true
-physics.producers.KKUe.Extrapolation.BackToTracker  : true
+# propagate upstream fits back to the tracker
+Mu2eKinKal.producers.KKUe.ExtrapolationSettings.BackToTracker : true
+Mu2eKinKal.producers.KKUmu.ExtrapolationSettings.BackToTracker : true
+
 #
 END_PROLOG

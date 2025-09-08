@@ -59,12 +59,7 @@
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
-#include "Offline/Mu2eKinKal/inc/KKConstantBField.hh"
-#include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
-#include "Offline/Mu2eKinKal/inc/ExtrapolateToZ.hh"
-#include "Offline/Mu2eKinKal/inc/ExtrapolateIPA.hh"
-#include "Offline/Mu2eKinKal/inc/ExtrapolateST.hh"
-#include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
+#include "Offline/Mu2eKinKal/inc/KKExtrap.hh"
 // C++
 #include <iostream>
 #include <string>
@@ -96,8 +91,7 @@ namespace mu2e {
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("RefitSettings") };
-    // fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") }; needs to be pulled out of LoopHelixFit if needed
-    // maybe allow extension? extrapolation? hit adding? TODO
+    fhicl::OptionalTable<KKExtrapConfig> extrapSettings { Name("ExtrapolationSettings") };
   };
 
   class RegrowLoopHelix : public art::EDProducer {
@@ -151,6 +145,7 @@ namespace mu2e {
       art::ProductToken<KalSeedCollection> kseedcol_T_;
       art::ProductToken<ComboHitCollection> chcol_T_;
       art::ProductToken<IndexMap> indexmap_T_;
+      std::unique_ptr<KKExtrap> extrap_;
   };
 
   RegrowLoopHelix::RegrowLoopHelix(const Parameters& settings) : art::EDProducer(settings),
@@ -164,6 +159,7 @@ namespace mu2e {
   {
     produces<KKTRKCOL>();
     produces<KalSeedCollection>();
+    if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings(),kkmat_);
  }
 
   void RegrowLoopHelix::beginRun(art::Run& run)
@@ -210,7 +206,8 @@ namespace mu2e {
         auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "successful track refit" << std::endl;
-          // extrapolate as requested TODO
+          // extrapolate as requested
+          if(extrap_)extrap_->extrapolate(*ktrk);
           // sample the fit as requested
           kkfit_.sampleFit(*ktrk);
           // convert to seed output format
