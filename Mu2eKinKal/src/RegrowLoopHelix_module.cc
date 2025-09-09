@@ -194,14 +194,16 @@ namespace mu2e {
     auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
     auto KalSeedCollectionGetter = event.productGetter(KalSeedCollectionPID);
     art::Handle<KalSeedMCAssns> ksmca_H;
-    if(fillMCAssns_){
-      ksmca_H = event.getHandle<KalSeedMCAssns>(ksmca_T_);
-      if(!ksmca_H)throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: No KalSeedMCAssns found" << endl;
-    }
     // create outputs
     unique_ptr<KKTRKCOL> ktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> rgkseedcol(new KalSeedCollection );
     std::unique_ptr<KalSeedMCAssns> ksmca;
+    // deal with MC
+    if(fillMCAssns_){
+      ksmca_H = event.getHandle<KalSeedMCAssns>(ksmca_T_);
+      if(!ksmca_H)throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: No KalSeedMCAssns found" << endl;
+      ksmca = std::unique_ptr<KalSeedMCAssns>(new KalSeedMCAssns);
+    }
     size_t iseed(0);
     for (auto const& kseed : kseedcol) {
       if(!kseed.loopHelixFit())throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: passed KalSeed from non-LoopHelix fit " << endl;
