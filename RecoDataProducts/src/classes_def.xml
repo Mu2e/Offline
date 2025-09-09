@@ -373,6 +373,17 @@
 ]]>
 </ioread>
 
+<ioread sourceClass="mu2e::CrvRecoPulse"
+        source=""
+        checksum="[587252082]"
+        targetClass="mu2e::CrvRecoPulse"
+	target="_pedestal,_pedestalFromDB">
+<![CDATA[
+  _pedestal=0;
+  _pedestalFromDB=true;
+]]>
+</ioread>
+
 <!--  ********* ExtMon  ********* -->
  <class name="mu2e::ExtMonFNALRawHit" />
  <class name="std::vector<mu2e::ExtMonFNALRawHit>" />
