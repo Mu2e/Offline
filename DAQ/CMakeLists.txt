@@ -1,10 +1,10 @@
 
 
 # Create a variable to hold optional Online libraries
-if(ONLINE_MODE)
-  set(ARTDAQ_DAQDATA_LIB "artdaq::DAQdata")
-else()
-  set(ARTDAQ_DAQDATA_LIB "")
+if(artdaq_FOUND)
+  message("ARTDAQ found, enabling ONLINE_MODE for LumiStreamFilter")
+  set(ARTDAQ_DAQDATA_LIB artdaq::DAQdata)
+  add_definitions("-DONLINE_MODE=1")
 endif()
 
 cet_make_library(

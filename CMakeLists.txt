@@ -55,15 +55,16 @@ find_package(Boost COMPONENTS iostreams program_options REQUIRED EXPORT)
 find_package(XercesC REQUIRED EXPORT)
 find_package(BLAS REQUIRED EXPORT)
 find_package(artdaq-core-mu2e REQUIRED EXPORT)
+find_package(TRACE REQUIRED EXPORT)
 if( ${WITH_G4} ) 
     message("--> ADDING G4 LIBS")	
     find_package(Geant4 REQUIRED EXPORT)
 
-# TODO: Find or implement FindCRY.cmake
-include_directories($ENV{CRYHOME}/src)
-link_directories($ENV{CRYHOME}/lib)
+    # TODO: Find or implement FindCRY.cmake
+    include_directories($ENV{CRYHOME}/src)
+    link_directories($ENV{CRYHOME}/lib)
 else()
-    add_definitions("-DONLINE_MODE")
+    find_package(artdaq)
 endif()
 
 
