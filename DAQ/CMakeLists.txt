@@ -1,12 +1,4 @@
 
-
-# Create a variable to hold optional Online libraries
-if(ONLINE_MODE)
-  set(ARTDAQ_DAQDATA_LIB "artdaq::DAQdata")
-else()
-  set(ARTDAQ_DAQDATA_LIB "")
-endif()
-
 cet_make_library(
     SOURCE
       src/CaloDAQUtilities.cc
