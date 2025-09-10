@@ -101,11 +101,29 @@ public:
     return CaloHitError::Good;
   }
 
+  CaloHitError isHitGood(std::pair<CalorimeterDataDecoder::CalorimeterHitDataPacketNew,
+                                   std::vector<uint16_t>> const& Hit) {
+    if (Hit.first.Reserved1 != 0xAAA)
+      return CaloHitError::BeginMarker;
+    if (Hit.second.size() == 0)
+      return CaloHitError::WaveformSize;
+    if (Hit.first.NumberOfSamples != Hit.second.size())
+      return CaloHitError::NumberOfSamples;
+    if (Hit.first.IndexOfMaxDigitizerSample >= Hit.second.size())
+      return CaloHitError::MaxSampleIndex;
+    if (Hit.first.BoardID >= CaloConst::_nDIRAC)
+      return CaloHitError::BoardID;
+    if (Hit.first.ChannelID >= CaloConst::_nChPerDIRAC)
+      return CaloHitError::ChannelID;
+    return CaloHitError::Good;
+  }
+
   void printCaloFragmentInfo(CalorimeterDataDecoder const& Frag);
 
   void printCaloFragmentHeader(std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header);
 
   void printCaloPulse(CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit);
+  void printCaloPulse(CalorimeterDataDecoder::CalorimeterHitDataPacketNew const& Hit);
   void printCaloPulse(CalorimeterDataDecoder::CalorimeterHitTestDataPacket const& Hit);
 
   void printWaveform(std::vector<uint16_t> const& Pulse);
