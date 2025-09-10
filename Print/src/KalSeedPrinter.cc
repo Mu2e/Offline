@@ -82,7 +82,8 @@ void mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind,
       os << std::setprecision(3) << seg->mom() << " " << std::setw(6)
       << std::setprecision(3) << seg->momerr() << " " << std::setw(8)
       << std::setprecision(3) << cos(seg->momentum3().Theta()) << " " << std::setw(7)
-      << std::setprecision(1) << t0 << " " << std::setw(7);
+      << std::setprecision(1) << t0 << " " << std::setw(7)
+      << obj.status();
     }
     os << "\n";
 
@@ -102,5 +103,5 @@ void mu2e::KalSeedPrinter::PrintHeader(const std::string& tag,
 
 void mu2e::KalSeedPrinter::PrintListHeader(std::ostream& os) {
   if (verbose() < 1) return;
-  os << "ind pdg fittype  fitcon   calo?  nhit nstraw nseg ninter   p      pErr   cos(theta)  t0 \n";
+  os << "ind pdg fittype  fitcon   calo?  nhit   nstraw    nseg    ninter     p       pErr     cos(theta)    t0 \n";
 }
