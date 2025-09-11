@@ -244,6 +244,8 @@ namespace mu2e {
             auto mcseedp = ksmcai.second;
             auto rgksp = art::Ptr<KalSeed>(KalSeedCollectionPID,rgkseedcol->size()-1,KalSeedCollectionGetter);
             ksmca->addSingle(rgksp,mcseedp);
+            // add the original too
+            ksmca->addSingle(origksp,mcseedp);
           }
           ktrkcol->push_back(ktrk.release());
         } else {
