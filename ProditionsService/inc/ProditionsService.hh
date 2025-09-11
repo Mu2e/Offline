@@ -26,6 +26,7 @@
 #include "Offline/TrackerConfig/inc/StrawPhysicsConfig.hh"
 #include "Offline/TrackerConfig/inc/StrawResponseConfig.hh"
 #include "Offline/TrackerConfig/inc/TrackerStatusConfig.hh"
+#include "Offline/TrackerConfig/inc/TrackerPanelMapConfig.hh"
 
 #include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
 #include "Offline/SimulationConfig/inc/SimBookkeeperConfig.hh"
@@ -72,6 +73,8 @@ class ProditionsService {
     fhicl::Table<TrackerStatusConfig> trackerStatus{
         Name("trackerStatus"),
         Comment("Status of tracker elements (straws, panels, planes, ...)")};
+    fhicl::Table<TrackerPanelMapConfig> trackerPanelMap {
+      Name("trackerPanelMap"),Comment("TrackerPanelMap config")};
     fhicl::Table<StrawDriftConfig> strawDrift{
         Name("strawDrift"), Comment("Straw drift model function and binning")};
     fhicl::Table<StrawPhysicsConfig> strawPhysics{
