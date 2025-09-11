@@ -18,16 +18,18 @@ namespace mu2e {
     constexpr static uint16_t _nDisk           = 2;
     // PIN diodes are each one SiPM channel
     constexpr static uint16_t _nPINDiodPerDisk = 8;
-    constexpr static uint16_t _nPINDiodeLaserBox = 8;
+    constexpr static uint16_t _nPINDiodeLaserBox = 4;
+    constexpr static uint16_t _nChannelSpares = 4;
     constexpr static uint16_t _nCrystal        = _nCrystalPerDisk*_nDisk;
     constexpr static uint16_t _nCrystalChannel = _nCrystal*_nSiPMPerCrystal;
     constexpr static uint16_t _nCaphriCrystal  = 4;
     // crystal numbers, not SiPM channels. Only in disk 0.
     constexpr static std::array<uint16_t,_nCaphriCrystal> _caphriId = {582,609,610,637};
+
     constexpr static uint16_t _nChannel        = _nCrystalChannel + _nPINDiodPerDisk*_nDisk + _nPINDiodeLaserBox;
+    constexpr static uint16_t _nChannelDB      = _nChannel + _nChannelSpares;
 
-
-    constexpr static uint16_t _nDIRAC       = 160;
+    constexpr static uint16_t _nDIRAC       = 161;
     constexpr static uint16_t _nChPerDIRAC  = 20;
     constexpr static uint16_t _nRawChannel  = _nChPerDIRAC*_nDIRAC;
 

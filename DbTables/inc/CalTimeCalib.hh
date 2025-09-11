@@ -44,7 +44,7 @@ namespace mu2e {
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
-    virtual std::size_t nrowFix() const override { return CaloConst::_nChannel; };
+    virtual std::size_t nrowFix() const override { return CaloConst::_nChannelDB; };
     const std::string orderBy() const { return std::string("roid"); }
 
     void addRow(const std::vector<std::string>& columns) override {
