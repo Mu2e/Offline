@@ -37,9 +37,13 @@ Mu2eKinKal : {
     MaxStrawHitDOCA : 10.0 # mm
     MaxStrawHitDt : 50.0 # ns
     MaxDStraw : 2 # integer (straw)
+    SkipStrawCheck : false
+    AddStrawMinDz : 0
+    StrawNBuffer : 0
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
     MaxStrawUposBuffer : 0.0 # units of mm
+    SaveHitCalibInfo : false
   }
 
    CHSEEDFIT: {
