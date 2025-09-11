@@ -1,5 +1,6 @@
 cet_make_library(
     SOURCE
+      src/DBSClusterer.cc
       src/Chi2Clusterer.cc
       src/CombineStereoPoints.cc
       src/ComboPeakFitRoot.cc
