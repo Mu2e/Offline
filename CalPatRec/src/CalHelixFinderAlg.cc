@@ -180,7 +180,9 @@ namespace mu2e {
     _chi2zphiMax(config.chi2zphiMax()),
     _chi2hel3DMax(config.chi2hel3DMax()),
     _dfdzErr(config.dfdzErr()),
-    _maxNHitsRatio(config.maxNHitsRatio()){
+    _maxNHitsRatio(config.maxNHitsRatio()),
+    _procAllTCs(config.procAllTCs()),
+    _slopeRatioLimit(config.slopeRatioLimit()){
 
     float minarea(config.minArea());
     _minarea2    = minarea*minarea;
@@ -216,7 +218,7 @@ namespace mu2e {
     if (cl == NULL){
       const std::vector<StrawHitIndex>& shIndices = Helix._timeCluster->hits();
 
-      if(shIndices.size() !=0){
+      if((shIndices.size() !=0) && (_procAllTCs)){
         float  zMax(-1e10);
         size_t zMaxIndex(0);
         for (size_t i=0; i<shIndices.size(); ++i){
@@ -3587,11 +3589,8 @@ namespace mu2e {
     float t = y_n - x_n*k;
     //the eq. is: y = x*k + t
 
-    //check we are not in a degenerate case where m is close to k, which rapresents two almost parallel lines
-    float limit = 0.8;//FIXME
-
     if (std::isfinite(m) && std::isfinite(k) && std::fabs(k) > 1e-9) {
-      if ( (m/k>0) && ( (m/k) - int(m/k) > limit) ) {//invert p3 with p1 and recalculate: x_n, y_n, k, t
+      if ( (m/k>0) && ( (m/k) - int(m/k) > _slopeRatioLimit) ) {//invert p3 with p1 and recalculate: x_n, y_n, k, t
         x_n = (p1.x() + p2.x())/2.;
         y_n = (p1.y() + p2.y())/2.;
         k   = -1.*(p1.x() - p2.x())/(p1.y() - p2.y());

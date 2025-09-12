@@ -251,10 +251,10 @@ namespace mu2e {
     _data.nTimePeaks  = _timeclcol->size();
     for (int ipeak=0; ipeak<_data.nTimePeaks; ipeak++) {
       const TimeCluster* tc = &_timeclcol->at(ipeak);
+      if (!tc->hasCaloCluster() && !_hfinder._procAllTCs)    continue;
       nGoodTClusterHits     = goodHitsTimeCluster(tc);
       if ( nGoodTClusterHits < _minNHitsTimeCluster)         continue;
 
-      //      HelixSeed          helix_seed;
       std::vector<HelixSeed>          helix_seed_vec;
 
 //-----------------------------------------------------------------------------
