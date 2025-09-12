@@ -37,9 +37,13 @@ Mu2eKinKal : {
     MaxStrawHitDOCA : 10.0 # mm
     MaxStrawHitDt : 50.0 # ns
     MaxDStraw : 2 # integer (straw)
+    SkipStrawCheck : false
+    AddStrawMinDz : 0
+    StrawNBuffer : 0
     MaxStrawDOCA : 5.0 # mm
     MaxStrawDOCAConsistency : 1.0 # units of chi
     MaxStrawUposBuffer : 0.0 # units of mm
+    SaveHitCalibInfo : false
   }
 
    CHSEEDFIT: {
@@ -69,11 +73,11 @@ Mu2eKinKal : {
        [ 10.0, 20.0, 5.0, 3.0, "TOT:LongVal", "Null:Inactive", "", 0 ]
      ]
      StrawXingUpdaterSettings : [
-       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
-       [100.0, -1.0, 0.0, true, 0 ],
-       [10.0, -1.0, 0.0, true, 0 ],
-       [10.0, -1.0, 0.0, true, 0 ],
-       [10.0, -1.0, 0.0, true, 0 ]
+       # maxdoca, doca sig range,  scale with temp?, diag
+       [2.5, 100.0, true, 0 ],
+       [2.5, 100.0, true, 0 ],
+       [2.5, 100.0, true, 0 ],
+       [2.5, 100.0, true, 0 ]
      ]
    }
 
@@ -104,11 +108,11 @@ Mu2eKinKal : {
       [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar:LongVal", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
-      [10.0, -1.0, 0.0, true, 0 ],
-      [5.0, -1.0, 0.0, true, 0 ],
-      [3.0, 3.0, 0.0, true, 0 ],
-      [3.0, 3.0, 0.0, true, 0 ]
+      # maxdoca, doca sig range,  scale with temp?, diag
+      [2.5, 100.0, true, 0 ],
+      [2.5, 100.0, true, 0 ],
+      [2.5, 100.0, true, 0 ],
+      [2.5, 100.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
       [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.2,"Inactive", 1]
@@ -168,16 +172,16 @@ Mu2eKinKal : {
     Chi2SHUSettings : [
     ]
     StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
-      [ 10.0, -1.0, 0.0, true, 0 ],
-      [ 5.0,  -1.0, 0.0, true, 0 ],
-      [ 4.0,  -1.0, 0.0, true, 0 ],
-      [ 4.0,  -1.0, 0.0, false, 0 ],
-      [ 4.0,   4.0, 0.4,  false, 0 ],
-      [ 3.5,   3.5, 0.3,  false, 0 ],
-      [ 3.0,   3.0, 0.2,  false, 0 ],
-      [ 2.8,   2.8, 0.2,  false, 0 ],
-      [ 2.6,   2.6, 0.2,  false, 0 ]
+      # maxdoca, doca sig range,  scale with temp?, diag
+      [2.5, 10.0, true, 0 ],
+      [2.5, 5.0, true, 0 ],
+      [2.5, 2.0, true, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ]
     ]
   }
 
@@ -206,10 +210,10 @@ Mu2eKinKal : {
       [ 10.0, 20.0, 5.0, 3.0, "TOT", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
-      [10.0, -1.0, 0.0, true, 0 ],
-      [10.0, -1.0, 0.0, true, 0 ],
-      [10.0, -1.0, 0.0, true, 0 ]
+      # maxdoca, doca sig range,  scale with temp?, diag
+      [2.5, 100.0, true, 0 ],
+      [2.5, 100.0, true, 0 ],
+      [2.5, 100.0, true, 0 ]
     ]
   }
 
@@ -257,11 +261,11 @@ Mu2eKinKal : {
       [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
-      [5.0, -1.0, 0.0, true, 0 ],
-      [3.0, -1.0, 0.0, true, 0 ],
-      [2.5, 1.8, 0.5, true, 0 ],
-      [2.5, 1.8, 0.5, true, 0 ]
+      # maxdoca, doca sig range,  scale with temp?, diag
+      [2.5, 5.0, true, 0 ],
+      [2.5, 2.0, true, 0 ],
+      [2.5, 1.0, true, 0 ],
+      [2.5, 1.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
       [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.2,"Inactive", 1]
@@ -323,16 +327,16 @@ Mu2eKinKal : {
     ]
 
     StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
-      [ 5.0,  -1.0, 0.0, true, 0 ],
-      [ 5.0,  -1.0, 0.0, true, 0 ],
-      [ 4.0,  -1.0, 0.0, true, 0 ],
-      [ 3.0,  -1.0, 0.0, false, 0 ],
-      [ 3.0,   3.0, 0.2,  false, 0 ],
-      [ 2.8,   3.0, 0.2,  false, 0 ],
-      [ 2.8,   3.0, 0.2,  false, 0 ],
-      [ 2.5,   2.25, 0.2,  false, 0 ],
-      [ 2.5,   2.25, 0.2,  false, 0 ]
+      # maxdoca, doca sig range,  scale with temp?, diag
+      [2.5, 5.0, true, 0 ],
+      [2.5, 3.0, true, 0 ],
+      [2.5, 2.0, true, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ],
+      [2.5, 1.0, false, 0 ]
     ]
 
   }
