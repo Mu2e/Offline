@@ -70,11 +70,13 @@ void mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind,
     if(obj.loopHelixFit())fittype = "LoopHelix";
     if(obj.centralHelixFit())fittype = "CentralHelix";
     if(obj.kinematicLineFit())fittype = "KinematicLine";
+    unsigned nactive(0);
+    for(auto const& hit : obj.hits())if(hit._ambig>WireHitState::inactive)nactive++;
     os << " " << std::setprecision(2) << obj.particle() << " " << std::setw(2)
       << std::setprecision(2) << fittype << " " << std::setw(2)
       << std::setprecision(3) << obj.fitConsistency() << " " << std::setw(5)
       << std::setprecision(1) << (obj.caloCluster().isNull() ? "no" : "yes") << std::setw(3)
-      << std::setprecision(4) << obj.hits().size() << " " << std::setw(3)
+      << std::setprecision(4) << nactive << " " << std::setw(3)
       << std::setprecision(4) << obj.straws().size() << " " << std::setw(3)
       << std::setprecision(4) << obj.segments().size() << " " << std::setw(3)
       << std::setprecision(4) << obj.intersections().size() << " " << std::setw(3);
