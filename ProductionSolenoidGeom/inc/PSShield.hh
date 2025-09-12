@@ -62,7 +62,7 @@ namespace mu2e {
     const double getBeamAngleY() const { return beamAngleY_; }
     const double getBeamAngleX() const { return beamAngleX_; }
     const CLHEP::Hep3Vector getBeamInletCenter() const { return beamInletCenter_; }
-
+    const bool getCreateBeamPipe() const { return createBeamPipe_; };
   private:
 
     PSShield();
@@ -81,7 +81,7 @@ namespace mu2e {
     double beamAngleY_;
     double beamAngleX_;
     CLHEP::Hep3Vector beamInletCenter_;
-
+    bool createBeamPipe_;
   };
 
   std::ostream& operator<<(std::ostream& os, const PSShield::Groove& groove);
