@@ -156,7 +156,6 @@ namespace mu2e {
                   parent.logical,
                   0,
                   true,
-                  //G4Colour(0xFF/double(0xFF), 0x99/double(0xFF), 0),
                   G4Color::Blue(),
                   true,
                   true,
@@ -388,21 +387,23 @@ namespace mu2e {
                   true,
                   false
                   );
-    /* This is for debugging: create the beamPass volume to see it even if it creates interferences with other mother volumes
-       std::string bTubeName  = "beamPass";
-       nestTubs( bTubeName,
-       TubsParams(  beamPassTub->GetInnerRadius(),
-       beamPassTub->GetOuterRadius(),
-       beamPassTub->GetZHalfLength() ),
-       cryoMaterial,
-       turn,
-       place- parent.centerInWorld,
-       parent,
-       0,
-       G4Color::Red(),
-       "TSCryo"
-       );
-    */
+    // This is for debugging: create the beamPass volume to see it even if it creates interferences with other mother volumes
+    if( createBeamPipe(config) ){
+      G4cout << "ASKED TO CREATE beamPass VOLUME: ONLY FOR DEBUG PURPOSES" << G4endl;
+      std::string bTubeName  = "beamPass";
+      nestTubs( bTubeName,
+                TubsParams(  beamPassTub->GetInnerRadius(),
+                             beamPassTub->GetOuterRadius(),
+                             beamPassTub->GetZHalfLength() ),
+                cryoMaterial,
+                turn,
+                place- parent.centerInWorld,
+                parent,
+                0,
+                G4Color::Red(),
+                "TSCryo"
+                );
+    }
     // Put in the insulating vacuum, which will serve as the mother volume
     // for the coils and coil assemblies (CAs).
     std::array<double,5> ts2CIVParams { { ts2InsVacRIn, ts2InsVacROut, torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
@@ -3064,5 +3065,12 @@ namespace mu2e {
 
     place = hrs->getBeamInletCenter();
 
+  }
+  // Function to get beam pipe dimensions, orientation and position
+  bool createBeamPipe(SimpleConfig const& config){
+    GeomHandle<PSShield> hrs;
+    G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "PSShield", "PSShield" );
+    return hrs->getCreateBeamPipe();
   }
 } //end namespace mu2e

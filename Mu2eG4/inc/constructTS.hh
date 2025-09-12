@@ -39,6 +39,8 @@ namespace mu2e {
                                      CLHEP::Hep3Vector const& origin, std::string name);
 
   void getBeamPipe(SimpleConfig const& config, AntiLeakRegistry& reg, G4Tubs * &beamPassTub, CLHEP::HepRotation * &turn, CLHEP::Hep3Vector &place);
+
+  bool createBeamPipe(SimpleConfig const& config);
 }
 
 #endif /* Mu2eG4_constructTS_hh */
