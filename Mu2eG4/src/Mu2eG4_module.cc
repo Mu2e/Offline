@@ -200,7 +200,7 @@ namespace mu2e {
     simStage_(-1u),
     _runManager(std::make_unique<G4RunManager>()),
     _scorer(std::make_unique<Mu2eG4ScoringManager>(G4ScoringManager::GetScoringManager(),
-                                                   conf_.scoring(),conf_.physics())),
+                                                   conf_.scoring(),conf_.physics(),conf_.debug())),
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),
     _exportPDTEnd(pars().debug().exportPDTEnd()),

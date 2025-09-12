@@ -183,6 +183,7 @@ namespace mu2e {
     // proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
+    GeomHandle<mu2e::Tracker> nominalTracker_h;
     GeomHandle<Calorimeter> calo_h;
    // find input event data
     auto kseed_H = event.getValidHandle<KalSeedCollection>(kseedcol_T_);
@@ -233,7 +234,7 @@ namespace mu2e {
           // convert to seed output format
           TrkFitFlag fitflag = kseed.status();
           fitflag.merge(TrkFitFlag::Regrown);
-          auto rgks = kkfit_.createSeed(*ktrk,fitflag,*calo_h);
+          auto rgks = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
           rgkseedcol->push_back(rgks);
           if(fillMCAssns_){
             // find the MC assns

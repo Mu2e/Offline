@@ -81,6 +81,7 @@ namespace mu2e {
       // Hit interface implementations
       void updateState(MetaIterConfig const& config,bool first) override;
       unsigned nResid() const override { return 3; } // potentially 2 residuals
+      VEC3 dRdX(unsigned ires) const;
       Residual const& refResidual(unsigned ires=Mu2eKinKal::tresid) const override;
       auto const& refResiduals() const { return resids_; }
       auto const& timeResidual() const { return resids_[Mu2eKinKal::tresid];}
@@ -224,6 +225,19 @@ namespace mu2e {
   template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::fillDriftInfo(CA const& ca) const {
     double lorentzAngle = Mu2eKinKal::LorentzAngle(ca.tpData(),ca.particleTraj().bnom().Unit());
     return sresponse_.driftInfo(strawId(),ca.deltaT(),lorentzAngle);
+  }
+
+  template <class KTRAJ> VEC3 KKStrawHit<KTRAJ>::dRdX(unsigned ires) const {
+    if (whstate_.active()){
+      if (ires == Mu2eKinKal::dresid){
+        if (whstate_.driftConstraint()){
+          return ca_.lSign()*ca_.delta().Vect().Unit();
+        }else{
+          return -1*ca_.lSign()*ca_.delta().Vect().Unit();
+        }
+      }
+    }
+    return VEC3(0,0,0);
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::setResiduals(WireHitState const& whstate, RESIDCOL& resids) const {
