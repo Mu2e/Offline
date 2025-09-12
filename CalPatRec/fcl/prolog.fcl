@@ -81,7 +81,9 @@ CalPatRec : { @table::CalPatRec
         chi2hel3DMax                            : @local::CalPatRec.chi2hel3DMax
         dfdzErr                                 : 0.1
         maxNHitsRatio                           : 500
+        slopeRatioLimit                         : 0.8
         minArea                                 : 5000.
+        procAllTCs                              : false
     }
 #------------------------------------------------------------------------------
 # KalFitHack configuration for the KFF fits
