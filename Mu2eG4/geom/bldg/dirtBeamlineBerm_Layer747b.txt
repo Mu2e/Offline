@@ -1,45 +1,62 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_beamline_dirtBerm.ccl
-// Nov 2024
-// dirtbeamline removed, several layers of berms added; ref: docdb:49557
-// layer-747' West side
-
 string dirt.beamline.berm.l747b.name     = "dirtBeamlineBerml747b";
-
 string dirt.beamline.berm.l747b.material = "MBOverburden";
-
-double dirt.beamline.berm.l747b.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.berm.l747b.offsetFromFloorSurface.y = 8229.6009;
-double dirt.beamline.berm.l747b.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.beamline.berm.l747b.yHalfThickness           = 152.4003; //0.5 US foot to mm
-
+double dirt.beamline.berm.l747b.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.beamline.berm.l747b.offsetFromFloorSurface.y = 7772.40;
+double dirt.beamline.berm.l747b.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.beamline.berm.l747b.xreplace ={7 ,8 };
+vector<int> dirt.beamline.berm.l747b.yreplace ={6 ,7 };
+double dirt.beamline.berm.l747b.yHalfThickness           =152.30;
 vector<double> dirt.beamline.berm.l747b.xPositions = {
-  -15583.5, // S1
-  -16332.6, // S2
-  -17105.2,   // S3
-  -23152,  // S4
-  -19965.89, // S5
-  -31750.5, // S6
-  -31750.5, // S7
-  -23076.5, //
-  -21586.8, //
-  -20527.2,  //
-  -20527.2  // S11
+-12102.57, // 0
+-12240.47, // 1
+-12743.38, // 2
+-13261.67, // 3
+-14405.52, // 4
+-22632.51, // 5
+-19965.89, // 6
+-60000.00, // 7
+-60000.00, // 8
+-28439.20, // 9
+-26324.49, // 10
+-25517.42, // 11
+-24896.98, // 12
+-24469.19, // 13
+-23450.00, // 14
+-23055.42, // 15
+-27111.29, // 16
+-27025.24, // 17
+-23571.07, // 18
+-20527.11, // 19
+-20527.30, // 20
+-20953.28, // 21
+-19488.92, // 22
+-19421.57  // 23
 };
 vector<double> dirt.beamline.berm.l747b.yPositions = {
-  -8308.31,  //S1
-  -9285.2,   //S2
-  -9807.9, //S3
-  -11357.2, //S4
-  -25857.2, //S5
-  -25857.2, //S6
-  23809.74,  //S7
-  7001.47,  //S8
-  7362.58, // S81
-  8096.74,
-  -8308.31   //S11
+-9436.20, // 0
+-9572.03, // 1
+-10542.91, // 2
+-11079.34, // 3
+-11646.74, // 4
+-13656.38, // 5
+-60000.00, // 6
+-60000.00, // 7
+23809.74, // 8
+10251.61, // 9
+10801.70, // 10
+10842.34, // 11
+10665.38, // 12
+10401.58, // 13
+9250.00, // 14
+8400.57, // 15
+7388.31, // 16
+7043.08, // 17
+7904.44, // 18
+8663.53, // 19
+-4381.00, // 20
+-8251.16, // 21
+-8412.31, // 22
+-9436.20 // 23
 };
 
 // Local Variables:

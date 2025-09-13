@@ -6,6 +6,19 @@ BEGIN_PROLOG
 TrkHitReco :{
    # flag hits from low-energy electrons (Compton electrons, delta rays, ...)
    # First, configure the clusters
+
+   DBSClusterer : {
+      DBSminExpand    : 2
+      DeltaTime       : 15
+      DeltaZ          : 800
+      DeltaXY         : 50
+      MinClusterHits  : 1
+      TestFlag        : false
+      BackgroundMask  : []
+      SignalMask      : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+      KerasWeights    : ""
+   }
+
    TNTClusterer : {
       HitDistance      : 5
       SeedDistance     : 20
@@ -20,9 +33,12 @@ TrkHitReco :{
       TimeRMS          : 2.0
       MedianCentroid   : false
       ComboInit        : true
+      MinActiveHits    : 3
+      MinNPlanes       : 2
       TestFlag         : true
       BackgroundMask   : []
       SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+      KerasWeights     : "Offline/TrkHitReco/data/TrainBkgDiagStationSpatial.dat"
    }
 
    Chi2Clusterer : {
@@ -31,14 +47,20 @@ TrkHitReco :{
       MinClusterHits   : 1
       MaxHitTimeDiff   : 30.0
       MaxCluIterations : 5
+      MinActiveHits    : 3
+      MinNPlanes       : 2
       TestFlag         : true
       BackgroundMask   : []
       SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
+      KerasWeights     : "Offline/TrkHitReco/data/TrainBkgDiagStationSpatial.dat"
+      UseSLine         : false
       Diag             : 0
    }
 }
 
-TrkHitReco : { @table::TrkHitReco
+TrkHitReco : {
+
+   @table::TrkHitReco
 
    PBTFSD : {
       module_type             : ProtonBunchTimeFromStrawDigis
@@ -76,7 +98,7 @@ TrkHitReco : { @table::TrkHitReco
       ComboHitCollection    : makeSH
       EventWindowMarker     : EWMProducer
       StrawHitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
-      StrawHitMask          : ["Dead","Noisy"]
+      StrawHitMask          : ["Dead"]
       MaxDt                 : 45 # ns
       UseTOT                : true
       MaxWireDistDiffPull   : 5.0
@@ -85,7 +107,7 @@ TrkHitReco : { @table::TrkHitReco
       MinimumTime           : 410.0 # ns
       MaximumTime           : 1700.0 # ns
       MinimumEnergy         : 0.0001 # MeV
-      MaximumEnergy         : 0.0045 # MeV
+      MaximumEnergy         : 0.005 # MeV
       MinimumRadius         : 380.0 # mm
       MaximumRadius         : 700.0 # mm
       MinimumNHits          : 1
@@ -101,7 +123,7 @@ TrkHitReco : { @table::TrkHitReco
       DebugLevel            : 0
       TestFlag              : true
       FilterHits            : false
-      StereoLine            : false
+      StereoLine            : true
       StereoLineNDOF        : 1 # require at least
       ComboHitCollection    : "makePH"
       StrawHitSelectionBits : ["RadiusSelection","EnergySelection","TimeSelection"]
@@ -114,7 +136,7 @@ TrkHitReco : { @table::TrkHitReco
       MinRho                : 380 # mm
       MaxRho                : 700 # mm
       MinimumEnergy         : 0.0001 # MeV
-      MaximumEnergy         : 0.004 # MeV
+      MaximumEnergy         : 0.005 # MeV
       # parameters used to define overlapping panels
       MaxWdot               : 0.9
       MaxFaceSeparation     : 3
@@ -131,17 +153,15 @@ TrkHitReco : { @table::TrkHitReco
    FlagBkgHits : {
       module_type          : FlagBkgHits
       ComboHitCollection   : "makeSTH"
-      ClusterAlgorithm     : 1
+      ClusterAlgorithm     : 3
       TNTClustering        : {@table::TrkHitReco.TNTClusterer}
-      MinActiveHits        : 3
-      MinNPlanes           : 2
+      Chi2Clustering       : {@table::TrkHitReco.Chi2Clusterer}
+      DBSClustering        : {@table::TrkHitReco.DBSClusterer}
       ClusterPositionError : 10
       FilterHits           : false
       BackgroundMask       : ["Background"]
       OutputLevel          : "uniquepanel"
-      SaveBkgClusters      : false
-      KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiagStationSpatial.dat"
-      UseSLine             : false
+      SaveBkgClusters      : true
       KerasQuality         : 0.5
       DebugLevel           : 0
    }
@@ -160,7 +180,7 @@ TrkHitReco : { @table::TrkHitReco
 
    # SEQUENCES
    # production sequence to prepare hits for tracking
-   PrepareHits  : [ PBTFSD, makeSH, makePH, makeSTH, FlagBkgHits ]
+   PrepareHits  : [ PBTFSD, makeSH, makePH, makeSTH, flagPH ]
 }
 
 END_PROLOG

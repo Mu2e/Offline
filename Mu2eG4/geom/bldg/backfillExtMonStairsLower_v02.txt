@@ -1,0 +1,31 @@
+string building.backfill.extMon.stairs.lower.name     = "backfillExtMonStairsLower";
+string building.backfill.extMon.stairs.lower.material = "MBOverburden";
+double building.backfill.extMon.stairs.lower.offsetFromMu2eOrigin.x   = -7523.50;
+double building.backfill.extMon.stairs.lower.offsetFromFloorSurface.y = 5308.60;
+double building.backfill.extMon.stairs.lower.offsetFromMu2eOrigin.z   = -17812.80;
+double building.backfill.extMon.stairs.lower.yHalfThickness           = 965.20;
+vector<double> building.backfill.extMon.stairs.lower.angles = {0.,0.,-1.5708};
+vector<double> building.backfill.extMon.stairs.lower.xPositions = {
+-2507.20, // 0
+-2507.20, // 1
+-1288.00, // 2
+-1288.00, // 3
+-68.80, // 4
+-68.80, // 5
+1150.40, // 6
+1150.40, // 7
+2507.20, // 8
+2507.20 // 9
+};
+vector<double> building.backfill.extMon.stairs.lower.yPositions = {
+-914.35, // 0
+-609.65, // 1
+-609.65, // 2
+-0.05, // 3
+-0.05, // 4
+609.54, // 5
+609.54, // 6
+914.34, // 7
+914.34, // 8
+-914.35 // 9
+};

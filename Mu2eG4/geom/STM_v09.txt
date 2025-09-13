@@ -1,0 +1,240 @@
+// (Muon) Stoping Target Monitor (STM)
+//
+// Author: Haichuan Cao
+// Notes: All dimensions in mm
+
+
+#include "Offline/Mu2eG4/geom/STM_v08.txt"
+
+//Make Updates from STM_v08
+bool stm.downstream.build = true;
+double stm.downstream.halfLength = 2219.15;
+double stm.downstream.halfWidth = 2000.0;
+double stm.downstream.halfHeight = 2312.416;
+string stm.downstream.material = "G4_AIR";
+
+//Make Updates from STM_v03
+bool   stm.det1.build                 = false;
+bool   stm.det2.build                 = false;
+bool   stm.SScollimator.build         = false;
+bool   stm.SScollimator.liner.build   = false;
+bool   stm.detector.stand.build       = false;
+bool   stm.shield.build               = true;
+
+
+//"spot-size" collimator, just upstream of the detector(s)
+bool   stm.STM_SSC.build     =  true;
+bool   stm.STM_SSC.VDbuild   =  true;
+string stm.STM_SSC.material  = "G4_W";
+double stm.STM_SSC.delta_WlR = 88.9;   //3.5 in;
+double stm.STM_SSC.delta_WlL = 50.8;   //2.0 in;
+double stm.STM_SSC.W_middle  = 177.8;  //7 in;
+double stm.STM_SSC.W_height  = 177.8;  //7 in;
+double stm.STM_SSC.Wdepth_f  = 50.8;   //2 in;
+double stm.STM_SSC.Wdepth_b  = 50.8;   //2 in;
+double stm.STM_SSC.Aperture_HPGe1  = 50;
+double stm.STM_SSC.Aperture_HPGe2  = 150;
+double stm.STM_SSC.Aperture_LaBr1  = 50;
+double stm.STM_SSC.Aperture_LaBr2  = 150;
+double stm.STM_SSC.offset_Spot     = 40.64;
+double stm.STM_SSC.leak            = 10.16;
+double stm.STM_SSC.FrontToWall     = 1049.2;  //41.3 in
+double stm.STM_SSC.ZGap            = 12.7;
+double stm.STM_SSC.ZGapBack        = 6.35;
+
+
+//Steel Support of spot-size collimator
+bool   stm.SSCSupport.build     =  true;
+double stm.SSCSupport.table_L = 337.82;
+double stm.SSCSupport.table_H = 19.05;
+double stm.SSCSupport.table_T = 114.3;
+double stm.SSCSupport.leg_L = 19.05;
+double stm.SSCSupport.leg_H = 100.33;
+double stm.SSCSupport.leg_T = 114.3;
+double stm.SSCSupport.base_L = 579.12;
+double stm.SSCSupport.base_H = 12.7;
+double stm.SSCSupport.base_T = 114.3;
+double stm.SSCSupport.wall_L = 9.525;
+double stm.SSCSupport.wall_H = 317.5;
+double stm.SSCSupport.wall_T = 114.3;
+double stm.SSCSupport.hole_H = 25.4;
+double stm.SSCSupport.hole_T = 38.1;
+double stm.SSCSupport.FLeadStand_L = 101.6;
+double stm.SSCSupport.FLeadStand_H = 317.5;
+double stm.SSCSupport.FLeadStand_T = 114.3;
+double stm.SSCSupport.FLeadShim_H = 177.8;
+double stm.SSCSupport.FLeadShim_T = 38.1;
+double stm.SSCSupport.FAluminumShim_T = 4.7625;
+double stm.SSCSupport.FAluminumExtra_L = 76.2;
+double stm.SSCSupport.FAluminumExtra_H = 50.8;
+
+
+//Front Shielding of STM House
+bool   stm.FrontShielding.build    = true;
+double stm.FrontShielding.HeightofRoom   = 147.32;  //5.8 in
+double stm.FrontShielding.tungstenlength = 317.5; //12.5 in
+double stm.FrontShielding.tungstendepth  = 101.6; //4 in
+double stm.FrontShielding.leaddepth1     = 25.4;
+double stm.FrontShielding.leaddepth2     = 50.8;
+double stm.FrontShielding.aluminumdepth  = 19.05;
+double stm.FrontShielding.copperdepth    = 12.7;
+double stm.FrontShielding.BPdepth        = 25.4;
+double stm.FrontShielding.fPb_lengthL    = 120.65;
+double stm.FrontShielding.fPb_lengthR    = 120.65;
+double stm.FrontShielding.GapForTop      = 5;
+double stm.FrontShielding.LeakForSSC     = 10.16;
+double stm.FrontShielding.CopperL        = 257.048;
+double stm.FrontShielding.FrontS_H       = 508;
+double stm.FrontShielding.FrontSHole_r   = 19.939;
+
+
+bool   stm.LaBr.build     = true;
+string stm.LaBr.crystalMaterial = "LaBr3Ce";
+string stm.LaBr.windowMaterial  = "G4_Al";
+string stm.LaBr.wallMaterial    = "G4_Al";
+double stm.LaBr.EndcapR         = 48.0;
+double stm.LaBr.EndcapL         = 66.3;
+double stm.LaBr.CrystalR        = 38.1;
+double stm.LaBr.CrystalL        = 76.2;
+double stm.LaBr.Z_LaBr       = 330;
+double stm.LaBr.WindowD      = 1.5;
+double stm.LaBr.EndcapD      = 1.5;
+double stm.LaBr.AirD         = 4.0;
+double stm.LaBr.offset_LaBr  = 0.0;
+
+bool   stm.HPGe.build     = true;
+string stm.HPGe.crystalMaterial = "G4_Ge";
+string stm.HPGe.holeMaterial    = "G4_AIR";
+string stm.HPGe.windowMaterial  = "G4_Al";
+string stm.HPGe.wallMaterial    = "G4_Al";
+string stm.HPGe.capsuleMaterial = "G4_Al";
+double stm.HPGe.EndcapR         = 50.165;
+double stm.HPGe.EndcapL         = 173;
+double stm.HPGe.CrystalR        = 36.05;
+double stm.HPGe.CrystalL        = 78.5;
+double stm.HPGe.Z_HPGe      = 63.131;
+double stm.HPGe.HoleR       = 5.25;
+double stm.HPGe.HoleL       = 64.7;
+double stm.HPGe.Capsule_Wallthick    = 0.8;
+double stm.HPGe.Capsule_Windowthick  = 0.03;
+double stm.HPGe.Capsule_Endthick     = 3;
+double stm.HPGe.Capsule_Walllength   = 130;
+double stm.HPGe.WindowD      = 1.5;
+double stm.HPGe.EndcapD      = 1.5;
+double stm.HPGe.AirD         = 4.0;
+double stm.HPGe.offset_HPGe  = -10;
+
+bool   stm.BottomShielding.build          = true;
+double stm.BottomShielding.floor_Zlength  = 609.6;
+double stm.BottomShielding.Front_LB       = 581.66;
+double stm.BottomShielding.Front_LB_inner = 244.348;
+double stm.BottomShielding.leaddepth      = 50.8;
+double stm.BottomShielding.copperdepth    = 12.7;
+double stm.BottomShielding.BPdepth        = 25.4;
+
+bool   stm.LeftShielding.build     = true;
+double stm.LeftShielding.Length    = 609.6;
+double stm.LeftShielding.leaddepth      = 50.8;
+double stm.LeftShielding.copperdepth    = 12.7;
+double stm.LeftShielding.BPdepth        = 25.4;
+double stm.LeftShielding.Left_Xmin      = 130.556;
+
+bool   stm.RightShielding.build     = true;
+double stm.RightShielding.Length    = 609.6;
+double stm.RightShielding.leaddepth      = 50.8;
+double stm.RightShielding.copperdepth    = 12.7;
+double stm.RightShielding.BPdepth        = 25.4;
+double stm.RightShielding.Right_Xmax     = -418.864;
+
+bool   stm.TopShielding.build       = true;
+bool   stm.TopShielding.Skirtbuild  = true;
+double stm.TopShielding.LiftBeam_L  = 1841.5;    //72.5 in
+double stm.TopShielding.LiftBeam_H  = 76.2;      // 3 in
+double stm.TopShielding.LiftBeam_T  = 101.6;     // 4 in
+double stm.TopShielding.LiftBeam_Xmove  = 254;
+double stm.TopShielding.Zlength     = 901.7;     //35.5 in
+double stm.TopShielding.Xlength     = 1351.28;   //53.2 in
+double stm.TopShielding.Front_LT    = 579.12;
+double stm.TopShielding.TFZlength   = 508.0;     //20.0 in
+double stm.TopShielding.TFXlength   = 1191.26;   //46.9 in
+double stm.TopShielding.TBZlength   = 285.75;   //11.25 in
+double stm.TopShielding.containerdepth = 19.05;
+double stm.TopShielding.leaddepth      = 50.8;
+double stm.TopShielding.copperdepth    = 12.7;
+double stm.TopShielding.BPdepth        = 25.4;
+double stm.TopShielding.Zhole     = 317.5;
+double stm.TopShielding.BarLeft   = 76.2;
+double stm.TopShielding.BarRight  = 88.9;
+double stm.TopShielding.GapLeft   = 12.7;
+double stm.TopShielding.GapRight  = 13.208;
+double stm.TopShielding.Leak      = 5;
+
+bool   stm.BackShielding.build     = true;
+double stm.BackShielding.BPThick   = 25.4;
+double stm.BackShielding.ShieldingPipeGap   = 76.2;
+
+double stm.BackShielding.BPLength  = 1500;
+double stm.BackShielding.BPHeight  = 1000;
+double stm.BackShielding.BackS_dX  = -304.8;
+double stm.BackShielding.BackS_dY  = 0;
+
+
+bool   stm.InnerShielding.build    = true;
+
+bool    stm.ElectronicShielding.build     = true;
+double  stm.ElectronicShielding.SiGridX   = 127.0;
+double  stm.ElectronicShielding.SiGridY   = 127.0;
+double  stm.ElectronicShielding.SiGridZ   = 25.4;
+double  stm.ElectronicShielding.SiXcenter = -381.0;
+double  stm.ElectronicShielding.SiYcenter = -1219.2;
+double  stm.ElectronicShielding.SiZcenter = 0;
+double  stm.ElectronicShielding.ConcreteT = 457.2;
+double  stm.ElectronicShielding.GapToSi   = 127;
+
+bool   stm.STM_Absorber.build     = true;
+double stm.STM_Absorber.hW        = 25;
+double stm.STM_Absorber.hH        = 25;
+double stm.STM_Absorber.hT        = 195;
+double stm.STM_Absorber.GaptoSSC  = 20;
+
+double stm.det1VD.rOut = 60;
+double stm.det2VD.rOut = 60;
+double vd.STMCollDnStr.r = 60;
+double vd.STMSSCollUpStr.r = 100;
+
+//
+// Changes for STM Upstream infrastructure
+//
+string stm.magnet.stand.material = "MildSteel"; // update material of table
+bool   stm.magnet.build = false; // don't build the magnet
+bool stm.shield.matingBlock.build = false; // don't build the mating block since we no longer have a magnet
+
+// Shield Pipe
+double stm.shield.pipe.halfLength      = 888.0; // fullLength = 1776.0 mm, Docdb-49112v2 "STM Aperatures, Positions, and Dimensions"
+double stm.shield.rIn = 139.70; // inner diameter = 11" = 279.4 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") => inner radius = 139.7 mm (note: this is same as previous version)
+double stm.shield.rOut = 177.8; // outer diameter = 14" = 355.6 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") => inner radius = 177.8 mm (note: this is different to previous version)
+
+// FOV Collimator
+double stm.FOVcollimator.halfWidth  =  198.1; // fullWidth = 396.2 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") => halfWidth = 198.1 mm (note: this is different to previous version)
+double stm.FOVcollimator.halfHeight =  245.1; // fullHeight = 490.2 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") => halfHeight = 245.1 mm (note: this is different to previous version)
+double stm.FOVcollimator.halfLength =   63.5; // fullLength = 127.0 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") => halfLength = 63.5 mm (note: this is same as previous version)
+
+double stm.FOVcollimator.hole1.radiusUpStr =   70.0; // diameter = 140 mm (DocDB-49112v2 "STM Apertures, Positions, and Dimensions")
+double stm.FOVcollimator.hole1.radiusDnStr =   70.0; // note: the same underlying class is used for FOV and SSC collimators hence why we see a "hole 1" and "UpStr" and "DnStr" radii. These are used in the SSC collimator
+double stm.FOVcollimator.plug.radius       = 70.0;
+
+double stm.shield.pipe.upStrAirGap = 25.3; // 1" (25.4 mm) gap between ECS and shield pipe (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") but there is a hardcoded 0.1 mm zOffset buffer in constructSTM.cc that we account for here
+double stm.FOVcollimator.UpStrSpace = 11.7; // 0.5" (12.7 mm) gap between shield pipe and FOV collimator (DocDB-49112v2 "STM Apertures, Positions, and Dimensions") but there is a 1 mm offset between where this ends up and that DocDB. Subtract 1 mm here so that FOV sits at z=20419.7 mm
+double stm.shield.DnStrWall.gap  = 0.0;
+double stm.magnet.stand.topExtraLength = -200.0; // reduce length of table to avoid overlap with virtual detector
+
+double stm.shieldingHolePoly.rOut = 127.0; // diameter of ECS hole is 254 mm
+double stm.ifbPoly.rOut = 127.0;
+
+// decouple the VD sizes from the size of the CRS, which is not there for geom_run1_a.txt
+double stm.upstreamVDs.xHalfLength = 2850.;
+
+// This tells emacs to view this file in c++ mode
+// Local Variables:
+// mode:c++
+// End:

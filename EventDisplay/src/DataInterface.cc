@@ -364,9 +364,8 @@ void DataInterface::fillGeometry()
     mu2e::GeomHandle<mu2e::DiskCalorimeter> calo;
 
     double diskCaseDZLength      = calo->caloInfo().getDouble("diskCaseZLength")/2.0;
-    double diskInnerRingIn       = calo->caloInfo().getDouble("diskInnerRingIn");
-    double diskOuterRingOut      = calo->caloInfo().getDouble("diskOuterRingOut");
-    double diskOuterRailOut      = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
+    double diskRadiusIn          = calo->caloInfo().getDouble("caloDiskRadiusIn");
+    double diskRadiusOut         = calo->caloInfo().getDouble("caloDiskRadiusOut");
 
     double FPCarbonDZ               = calo->caloInfo().getDouble("FPCarbonZLength")/2.0;
     double FPFoamDZ                 = calo->caloInfo().getDouble("FPFoamZLength")/2.0;
@@ -376,7 +375,7 @@ void DataInterface::fillGeometry()
 
     double crystalDXY            = calo->caloInfo().getDouble("crystalXYLength")/2.0;
     double crystalDZ             = calo->caloInfo().getDouble("crystalZLength")/2.0;
-    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalFrameZLength")/2.0;
+    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalCapZLength")/2.0;
     double wrapperHalfThick      = calo->caloInfo().getDouble("wrapperThickness")/2.0;
     double wrapperDXY            = crystalDXY + 2.0*wrapperHalfThick;
     double wrapperDZ             = crystalDZ + 2.0*crystalFrameDZ;
@@ -393,22 +392,22 @@ void DataInterface::fillGeometry()
     double crystalDiskLogOffset = frontPanelHalfThick - zHalfBP;
 
     int icrystal=0;
-    for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++)
+    for(unsigned int idisk=0; idisk<calo->nDisks(); idisk++)
     {
       CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
       diskPos += CLHEP::Hep3Vector(0.0, 0.0, crystalDiskLogOffset);
 
-      findBoundaryP(_calorimeterMinmax, diskPos.x()+diskOuterRailOut, diskPos.y()+diskOuterRailOut, diskPos.z()+diskCaseDZLength);
-      findBoundaryP(_calorimeterMinmax, diskPos.x()-diskOuterRailOut, diskPos.y()-diskOuterRailOut, diskPos.z()-diskCaseDZLength);
+      findBoundaryP(_calorimeterMinmax, diskPos.x()+diskRadiusOut, diskPos.y()+diskRadiusOut, diskPos.z()+diskCaseDZLength);
+      findBoundaryP(_calorimeterMinmax, diskPos.x()-diskRadiusOut, diskPos.y()-diskRadiusOut, diskPos.z()-diskCaseDZLength);
 
       boost::shared_ptr<ComponentInfo> diskInfo(new ComponentInfo());
       std::string c=Form("Disk %i",idisk);
       diskInfo->setName(c.c_str());
       diskInfo->setText(0,c.c_str());
       diskInfo->setText(1,Form("Center at x: %.f mm, y: %.f mm, z: %.f mm",diskPos.x(),diskPos.y(),diskPos.z()));
-      diskInfo->setText(2,Form("Outer radius: %.f mm, Inner radius: %.f mm, Thickness: %.f mm",diskOuterRailOut,diskInnerRingIn,2.0*diskCaseDZLength));
+      diskInfo->setText(2,Form("Outer radius: %.f mm, Inner radius: %.f mm, Thickness: %.f mm",diskRadiusOut,diskRadiusIn,2.0*diskCaseDZLength));
       boost::shared_ptr<Cylinder> calodisk(new Cylinder(diskPos.x(),diskPos.y(),diskPos.z(),  0,0,0,
-                                                        diskCaseDZLength, diskInnerRingIn, diskOuterRailOut, NAN,
+                                                        diskCaseDZLength, diskRadiusIn, diskRadiusOut, NAN,
                                                         _geometrymanager, _topvolume, _mainframe, diskInfo, true));
       calodisk->makeGeometryVisible(true);
       _components.push_back(calodisk);

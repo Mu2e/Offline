@@ -2,6 +2,13 @@ string(REGEX REPLACE "^([0-9]+)\.([0-9]+)\.([0-9]+)$" "-DG4VERSION=4\\1\\2" G4VE
 message("---> Adding geant4 version compile flag ${G4VERSIONFLAG}")
 add_compile_options(${G4VERSIONFLAG})
 
+if(Geant4_VERSION VERSION_GREATER "11.2.1")
+  set( G4LIBSUBSET "Geant4::G4gdml;Geant4::G4geomtext;Geant4::G4mctruth")
+else()
+  set( G4LIBSUBSET "Geant4::G4persistency")
+endif()
+
+
 cet_make_library(
     SOURCE
       src/addStepLimiter.cc
@@ -18,6 +25,7 @@ cet_make_library(
       src/constructDummyStoppingTarget.cc
       src/constructExternalShielding.cc
       src/constructExtMonFNALBuilding.cc
+      src/constructExtMonFNALDetector.cc
       src/constructExtMonFNALInfrastructure.cc
       src/constructExtMonFNAL.cc
       src/constructHall.cc
@@ -64,6 +72,7 @@ cet_make_library(
       src/MaterialFinder.cc
       src/MTMasterThread.cc
       src/Mu2eG4ActionInitialization.cc
+      src/Mu2eG4BiasedRDPhysics.cc
       src/Mu2eG4Config.cc
       src/Mu2eG4CustomizationPhysicsConstructor.cc
       src/Mu2eG4Cuts.cc
@@ -83,6 +92,8 @@ cet_make_library(
       src/Mu2eG4PrimaryType.cc
       src/Mu2eG4ResourceLimits.cc
       src/Mu2eG4RunAction.cc
+      src/Mu2eG4ScoreWriter.cc
+      src/Mu2eG4ScoringManager.cc
       src/Mu2eG4SensitiveDetector.cc
       src/Mu2eG4StackingAction.cc
       src/Mu2eG4StepLimiterPhysicsConstructor.cc
@@ -112,6 +123,11 @@ cet_make_library(
       src/PhysicsProcessInfo.cc
       src/preG4InitializeTasks.cc
       src/ReflectionProcess.cc
+      src/scorerDelayedDose.cc
+      src/scorerDoseEffective.cc
+      src/scorerFTDConverter.cc
+      src/scorerFTDTable.cc
+      src/sourceProfileReader.cc
       src/SensitiveDetectorHelper.cc
       src/setBirksConstant.cc
       src/SimParticleHelper.cc
@@ -160,7 +176,7 @@ cet_make_library(
       Geant4::G4processes
       Geant4::G4run
       Geant4::G4physicslists
-      Geant4::G4persistency
+      ${G4LIBSUBSET}
       Geant4::G4error_propagation
       CLHEP::CLHEP
 )
@@ -291,7 +307,9 @@ install(DIRECTORY g4study DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/Mu2eG
 install(DIRECTORY geom DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/Mu2eG4)
 install(DIRECTORY test DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/Mu2eG4)
 install(DIRECTORY vis DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/Mu2eG4)
+install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/Mu2eG4)
 
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/Mu2eG4/fcl)
+install_fhicl(SUBDIRS g4study GLOB SUBDIRNAME Offline/Mu2eG4/g4study)

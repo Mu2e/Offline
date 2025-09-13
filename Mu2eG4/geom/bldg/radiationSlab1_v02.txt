@@ -1,31 +1,22 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_radiation_slab1.ccl
-
 string building.radiation.slab1.name     = "radiationSlab1";
-
 string building.radiation.slab1.material = "CONCRETE_MARS";
-
-double building.radiation.slab1.offsetFromMu2eOrigin.x   = 947.4;
-double building.radiation.slab1.offsetFromFloorSurface.y = 8229.6;
-double building.radiation.slab1.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.radiation.slab1.yHalfThickness           = 457.2;
-
+double building.radiation.slab1.offsetFromMu2eOrigin.x   = 947.40;
+double building.radiation.slab1.offsetFromFloorSurface.y = 8229.60;
+double building.radiation.slab1.offsetFromMu2eOrigin.z   = -3581.40;
+double building.radiation.slab1.yHalfThickness           = 457.20;
 vector<double> building.radiation.slab1.xPositions = {
-  -2286,   // A1
-  7467.6,   // B
-  7467.6,   // C
-  -2286   // D
+-2285.90, // 0
+7620.00, // 1
+7620.00, // 2
+-914.40, // 3
+-914.40, // 4
+-2285.90 // 5
 };
-
 vector<double> building.radiation.slab1.yPositions = {
-  609.6,   // A1
-  609.6,   // B
-  -3505.2,   // C
-  -3505.2   // D
+609.55, // 0
+609.55, // 1
+-4419.55, // 2
+-4419.55, // 3
+-4876.75, // 4
+-4876.75 // 5
 };
-
-// Local Variables:
-// mode:c++
-// End:

@@ -110,14 +110,17 @@ namespace mu2e {
 
 
   std::vector<KalSegment>::const_iterator KalSeed::t0Segment(double& t0) const {
-    if(segments().size() <= 0) throw cet::exception("RECO")<<"mu2e::KalSeed: no segments" << std::endl;
-// start with the first segment
-    auto iseg = segments().begin();
+    if(segments().size() == 0) throw cet::exception("RECO")<<"mu2e::KalSeed: no segments" << std::endl;
+// start with the middle
+    t0 = timeRange().mid();
+    auto iseg = nearestSegment(t0);
     auto oldseg = segments().end();
-    t0 = iseg->t0Val(_status);
-    while(iseg != oldseg && iseg->timeRange().inRange(t0)){
+    unsigned ntest(0);
+    while((!iseg->timeRange().inRange(t0)) && iseg != oldseg && ntest < segments().size()){
       oldseg = iseg;
+      t0 = iseg->t0Val(_status);
       iseg = nearestSegment(t0);
+      ++ntest;
     }
     return iseg;
   }
@@ -126,6 +129,12 @@ namespace mu2e {
     double t0;
     t0Segment(t0);
     return t0;
+  }
+
+  double KalSeed::t0Var() const {
+    double t0;
+    auto segiter = t0Segment(t0);
+    return segiter->t0Var(_status);
   }
 
   // deprecated legacy functions

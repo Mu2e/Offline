@@ -9,11 +9,27 @@ include(CetCMakeEnv)
 cet_cmake_env()
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+# ELF, 2025-Jan-28: Adding -Wno-stringop-overflow due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106199
 cet_set_compiler_flags(DIAGS VIGILANT
  WERROR
  NO_UNDEFINED
- EXTRA_FLAGS -pedantic #-Wno-error=unused-parameter -Wno-error=type-limits -Wno-error=ignored-qualifiers -Wno-error=unused-but-set-parameter -Wno-error=extra -Wno-error=non-virtual-dtor -Wno-error=implicit-fallthrough -Wno-error=deprecated-copy
- -Wno-unused-parameter -Wno-type-limits -Wno-ignored-qualifiers -Wno-unused-but-set-parameter -Wno-extra -Wno-non-virtual-dtor -Wno-implicit-fallthrough -Wno-deprecated-copy
+ EXTRA_FLAGS -pedantic -Wall
+             -Wno-unused-local-typedefs
+             -Wtype-limits
+             -Wimplicit-fallthrough
+             -Wunused-but-set-parameter
+             -Wl,--no-undefined
+             -gdwarf-2
+             -Wl,--as-needed
+             -Werror=return-type
+             -Winit-self
+             -Woverloaded-virtual
+             # Added flags to the CMake build
+             -Wno-stringop-overflow
+             -Wno-ignored-qualifiers
+             -Wno-unused-parameter
+             -Wno-non-virtual-dtor
+             -Wno-extra
 )
 
 if(DEFINED Offline_UPS_QUALIFIER_STRING)
@@ -28,6 +44,14 @@ endif()
 
 message("WITH_G4 SET TO ${WITH_G4}")
 
+# Create a variable to hold optional Online libraries
+find_package(artdaq)
+if(artdaq_FOUND) # only enable ONLINE_MODE if artdaq is found, so we can use artdaq libraries
+  message("ARTDAQ found, enabling ONLINE_MODE")
+  set(ARTDAQ_DAQDATA_LIB artdaq::DAQdata)
+  add_definitions("-DONLINE_MODE=1")
+endif()
+
 message("Creating link from ${CMAKE_CURRENT_SOURCE_DIR} to ${CMAKE_CURRENT_SOURCE_DIR}/Offline to satisfy includes")
 file(CREATE_LINK ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/Offline SYMBOLIC)
  
@@ -38,14 +62,15 @@ find_package(CURL REQUIRED EXPORT)
 find_package(Boost COMPONENTS iostreams program_options REQUIRED EXPORT)
 find_package(XercesC REQUIRED EXPORT)
 find_package(BLAS REQUIRED EXPORT)
-find_package(artdaq_core_mu2e REQUIRED EXPORT)
+find_package(artdaq-core-mu2e REQUIRED EXPORT)
+find_package(TRACE REQUIRED EXPORT)
 if( ${WITH_G4} ) 
     message("--> ADDING G4 LIBS")	
     find_package(Geant4 REQUIRED EXPORT)
 
-# TODO: Find or implement FindCRY.cmake
-include_directories($ENV{CRYHOME}/src)
-link_directories($ENV{CRYHOME}/lib)
+    # TODO: Find or implement FindCRY.cmake
+    include_directories($ENV{CRYHOME}/src)
+    link_directories($ENV{CRYHOME}/lib)
 endif()
 
 
@@ -65,6 +90,7 @@ add_subdirectory(AnalysisUtilities)
 add_subdirectory(BeamlineGeom)
 add_subdirectory(BFieldGeom)
 add_subdirectory(BFieldTest)
+add_subdirectory(Blinding)
 add_subdirectory(bin)
 add_subdirectory(boost_fix)
 add_subdirectory(BTrkData)
@@ -76,8 +102,10 @@ add_subdirectory(CaloFilters)
 add_subdirectory(CaloMC)
 add_subdirectory(CaloReco)
 add_subdirectory(CalorimeterGeom)
+add_subdirectory(CaloVisualizer)
 add_subdirectory(CalPatRec)
 add_subdirectory(CommonMC)
+add_subdirectory(CommonReco)
 add_subdirectory(Compression)
 add_subdirectory(ConditionsBase)
 add_subdirectory(ConditionsService)

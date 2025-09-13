@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // AgnosticHelixFinder
-// M. Stortini & E. Martinez
+// M. Stortini, E. Martinez, N. Mazotov
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "Offline/CalPatRec/inc/AgnosticHelixFinder_types.hh"
@@ -26,6 +26,7 @@
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "Offline/RecoDataProducts/inc/HelixRecoDir.hh"
 
@@ -60,6 +61,8 @@ namespace mu2e {
       fhicl::Atom<float>           isoRad                 {Name("isoRad"               ), Comment("for isolation cut"           )  };
       fhicl::Atom<int>             isoMinHitsNear         {Name("isoMinHitsNear"       ), Comment("#hits threshold for iso cut" )  };
       fhicl::Atom<bool>            doAverageFlag          {Name("doAverageFlag"        ), Comment("to average out hits or not"  )  };
+      fhicl::Atom<bool>            doEDepFlag             {Name("doEDepFlag"           ), Comment("avoid protons in tripleting" )  };
+      fhicl::Atom<float>           eDepFlagThresh         {Name("eDepFlagThresh"       ), Comment("threshold to set eDep flag"  )  };
       fhicl::Atom<float>           minDistCut             {Name("minDistCut"           ), Comment("for averaging out points"    )  };
       fhicl::Atom<float>           minTripletSeedZ        {Name("minTripletSeedZ"      ), Comment("minimum z for triplet seed"  )  };
       fhicl::Atom<float>           minTripletDz           {Name("minTripletDz"         ), Comment("min Z dist btwn 2 trip pts"  )  };
@@ -90,7 +93,7 @@ namespace mu2e {
       fhicl::Atom<float>           chi2LineSaveThresh     {Name("chi2LineSaveThresh"   ), Comment("max chi2Dof for line"        )  };
       fhicl::Atom<float>           maxEDepAvg             {Name("maxEDepAvg"           ), Comment("max avg edep of combohits"   )  };
       fhicl::Atom<float>           tzSlopeSigThresh       {Name("tzSlopeSigThresh"     ), Comment("direction ambiguous if below")  };
-      fhicl::Sequence<int>         validHelixDirections   {Name("validHelixDirections" ), Comment("only save desired directions")  };
+      fhicl::Sequence<std::string> validHelixDirections   {Name("validHelixDirections" ), Comment("only save desired directions")  };
 
       fhicl::Table<AgnosticHelixFinderTypes::Config> diagPlugin  {Name("diagPlugin"), Comment("diag plugin"                   )  };
     };
@@ -105,6 +108,7 @@ namespace mu2e {
       bool    used = false; // whether or not hit is used in fits
       bool    isolated = false;
       bool    averagedOut = false;
+      bool    highEDep = false; // avoid hits in tripleting that are most likely protons
       bool    notOnLine = true;
       bool    uselessTripletSeed = false;
       bool    notOnSegment = true;
@@ -171,6 +175,8 @@ namespace mu2e {
     float    _isoRad;
     int      _isoMinHitsNear;
     bool     _doAverageFlag;
+    bool     _doEDepFlag;
+    float    _eDepFlagThresh;
     float    _minDistCut;
     float    _minTripletSeedZ;
     float    _minTripletDz;
@@ -201,7 +207,7 @@ namespace mu2e {
     float    _chi2LineSaveThresh;
     float    _maxEDepAvg;
     float    _tzSlopeSigThresh;
-    std::vector<int> _validHelixDirections;
+    std::vector<TrkFitDirection::FitDirection> _validHelixDirections;
 
     //-----------------------------------------------------------------------------
     // diagnostics
@@ -277,7 +283,7 @@ namespace mu2e {
     void         recoverPoints             (bool& recoveries);
     void         checkHelixViability       (LoopCondition& outcome);
     void         saveHelix                 (size_t tc, HelixSeedCollection& HSColl);
-    bool         validHelixDirection       (HelixRecoDir::PropDir direction);
+    bool         validHelixDirection       (TrkFitDirection::FitDirection direction);
 
   };
 
@@ -298,6 +304,8 @@ namespace mu2e {
     _isoRad                        (config().isoRad()                                ),
     _isoMinHitsNear                (config().isoMinHitsNear()                        ),
     _doAverageFlag                 (config().doAverageFlag()                         ),
+    _doEDepFlag                    (config().doEDepFlag()                            ),
+    _eDepFlagThresh                (config().eDepFlagThresh()                        ),
     _minDistCut                    (config().minDistCut()                            ),
     _minTripletSeedZ               (config().minTripletSeedZ()                       ),
     _minTripletDz                  (config().minTripletDz()                          ),
@@ -327,22 +335,24 @@ namespace mu2e {
     _maxHelixMomentum              (config().maxHelixMomentum()                      ),
     _chi2LineSaveThresh            (config().chi2LineSaveThresh()                    ),
     _maxEDepAvg                    (config().maxEDepAvg()                            ),
-    _tzSlopeSigThresh              (config().tzSlopeSigThresh()                      ),
-    _validHelixDirections          (config().validHelixDirections()                  )
+    _tzSlopeSigThresh              (config().tzSlopeSigThresh()                      )
+  {
 
-    {
-
-      consumes<ComboHitCollection>     (_chLabel);
-      consumes<TimeClusterCollection>  (_tcLabel);
-      consumes<CaloClusterCollection>  (_ccLabel);
-      produces<HelixSeedCollection>    ();
-
-      if (_diagLevel == 1) _hmanager = art::make_tool<ModuleHistToolBase>(config().diagPlugin, "diagPlugin");
-      else _hmanager = std::make_unique<ModuleHistToolBase>();
-
-      if (_useStoppingTarget == true) { _stopTargPos.SetCoordinates(0.0, 0.0, std::numeric_limits<float>::max()); }
-
+    // convert the helix direction names into enums
+    for(auto helix_dir : config().validHelixDirections()) {
+      _validHelixDirections.push_back(TrkFitDirection::fitDirectionFromName(helix_dir));
     }
+    consumes<ComboHitCollection>     (_chLabel);
+    consumes<TimeClusterCollection>  (_tcLabel);
+    consumes<CaloClusterCollection>  (_ccLabel);
+    produces<HelixSeedCollection>    ();
+
+    if (_diagLevel == 1) _hmanager = art::make_tool<ModuleHistToolBase>(config().diagPlugin, "diagPlugin");
+    else _hmanager = std::make_unique<ModuleHistToolBase>();
+
+    if (_useStoppingTarget == true) { _stopTargPos.SetCoordinates(0.0, 0.0, std::numeric_limits<float>::max()); }
+
+  }
 
   //-----------------------------------------------------------------------------
   // destructor
@@ -476,7 +486,9 @@ namespace mu2e {
 
     int hitIndice = _tcHits[tcHitsIndex].hitIndice;
 
-    if (hitIndice >= 0) { return _chColl->at(hitIndice).pos(); }
+    if (hitIndice != HitType::CALOCLUSTER && hitIndice != HitType::STOPPINGTARGET) {
+      return _chColl->at(hitIndice).pos();
+    }
     if (hitIndice == HitType::STOPPINGTARGET) { return _stopTargPos; }
     if (hitIndice == HitType::CALOCLUSTER) { return _caloPos; }
 
@@ -618,9 +630,8 @@ namespace mu2e {
     // order from largest z to smallest z (skip over stopping target and calo cluster since they
     // aren't in _chColl)
     std::sort(_tcHits.begin() + sortStartIndex, _tcHits.end(), [&](const cHit& a, const cHit& b) {
-        return _chColl->at(a.hitIndice).pos().z() > _chColl->at(b.hitIndice).pos().z();
-      });
-
+      return _chColl->at(a.hitIndice).pos().z() > _chColl->at(b.hitIndice).pos().z();
+    });
   }
 
   //-----------------------------------------------------------------------------
@@ -628,29 +639,37 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::setFlags() {
 
-    // do isolation and average flagging
-    if (_doIsolationFlag == true || _doAverageFlag == true) {
+    // do isolation, average, and eDepFlag flagging
+    if (_doIsolationFlag == true || _doAverageFlag == true || _doEDepFlag == true) {
       for (size_t i = 0; i < _tcHits.size(); i++) {
-        if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) { continue; }
-        int nHitsNear = 0;
-        XYZVectorF seedPos = getPos(i);
-        for (size_t j = 0; j < _tcHits.size(); j++) {
-          if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice < 0) { continue; }
-          if (j == i) { continue; }
-          XYZVectorF testPos = getPos(j);
-          // do isolation flagging
-          if (_doIsolationFlag == true) {
-            if ((seedPos-testPos).Perp2() < _isoRad * _isoRad) { nHitsNear++; }
-            if (nHitsNear < _isoMinHitsNear) { _tcHits[i].isolated = true; }
-            else { _tcHits[i].isolated = false; }
-          }
-          // do averaging out
-          if (_doAverageFlag == true) {
-            if (_tcHits[i].averagedOut == true) { continue; }
-            if (_tcHits[j].averagedOut == true) { continue; }
-            if ((seedPos-testPos).Perp2() <= _minDistCut * _minDistCut) { _tcHits[j].averagedOut = true; }
-          }
-        }
+        if (_tcHits[i].inHelix == true
+            || _tcHits[i].hitIndice == HitType::STOPPINGTARGET
+            || _tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
+        int hitIndice = _tcHits[i].hitIndice;
+        float hitEnergy = _chColl->at(hitIndice).energyDep();
+        if (_doEDepFlag == true && hitEnergy > _eDepFlagThresh) { _tcHits[i].highEDep = true; }
+        if (_doIsolationFlag == true || _doAverageFlag == true) {
+          int nHitsNear = 0;
+          XYZVectorF seedPos = getPos(i);
+          for (size_t j = 0; j < _tcHits.size(); j++) {
+            if (j == i || _tcHits[j].inHelix == true
+                || _tcHits[j].hitIndice == HitType::STOPPINGTARGET
+                || _tcHits[j].hitIndice == HitType::CALOCLUSTER) { continue; }
+            XYZVectorF testPos = getPos(j);
+            // do isolation flagging
+            if (_doIsolationFlag == true) {
+              if ((seedPos-testPos).Perp2() < _isoRad * _isoRad) { nHitsNear++; }
+              if (nHitsNear < _isoMinHitsNear) { _tcHits[i].isolated = true; }
+              else { _tcHits[i].isolated = false; }
+            }
+            // do averaging out
+            if (_doAverageFlag == true) {
+              if (_tcHits[i].averagedOut == true) { continue; }
+              if (_tcHits[j].averagedOut == true) { continue; }
+              if ((seedPos-testPos).Perp2() <= _minDistCut * _minDistCut) { _tcHits[j].averagedOut = true; }
+           }
+         }
+       }
       }
     }
   }
@@ -660,10 +679,9 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::resetFlags() {
 
-    // first flag hits that are isolated
+    // reset flags that need to be reset before next helix search
     for (size_t i = 0; i < _tcHits.size(); i++) {
       if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice == HitType::STOPPINGTARGET) { continue; }
-      _tcHits[i].isolated = false;
       _tcHits[i].averagedOut = false;
       _tcHits[i].notOnLine = true;
       _tcHits[i].notOnSegment = true;
@@ -737,7 +755,8 @@ namespace mu2e {
           int nComboHitsInTimeCluster = 0;
           // compute number of usable hits in time cluster, and number of hits in candidate helix
           for (size_t q = 0; q < _tcHits.size(); q++) {
-            if (_tcHits[q].inHelix == true || _tcHits[q].hitIndice < 0) { continue; }
+            if (_tcHits[q].inHelix == true || _tcHits[q].hitIndice == HitType::STOPPINGTARGET
+                || _tcHits[q].hitIndice == HitType::CALOCLUSTER) { continue; }
             int hitIndice = _tcHits[q].hitIndice;
             nStrawHitsInTimeCluster = nStrawHitsInTimeCluster + _chColl->at(hitIndice).nStrawHits();
             nComboHitsInTimeCluster = nComboHitsInTimeCluster + 1;
@@ -755,7 +774,7 @@ namespace mu2e {
               return;
             } else {
               findAnotherHelix = true;
-              if (_doIsolationFlag == true || _doAverageFlag == true) { resetFlags(); }
+              if (_doAverageFlag == true) { resetFlags(); }
               return;
             }
           }
@@ -774,6 +793,8 @@ namespace mu2e {
     if (_tcHits[tcHitsIndex].uselessTripletSeed == true) { return false; }
     if (_doIsolationFlag == true && _tcHits[tcHitsIndex].isolated == true) { return false; }
     if (_doAverageFlag == true && _tcHits[tcHitsIndex].averagedOut == true) { return false; }
+    if (_doEDepFlag == true && _tcHits[tcHitsIndex].highEDep == true) { return false; }
+
 
     return true;
   }
@@ -793,7 +814,7 @@ namespace mu2e {
       return;
     }
     if (_intenseEvent == true || _intenseCluster == true) {
-      if (trip.i.hitIndice >= 0) {
+      if (trip.i.hitIndice != HitType::CALOCLUSTER && trip.i.hitIndice != HitType::STOPPINGTARGET) {
         outcome = BREAK;
         return;
       }
@@ -819,14 +840,16 @@ namespace mu2e {
     float dz12 = trip.i.pos.z() - trip.j.pos.z();
 
     // check if point should break for loop
-    if (trip.i.hitIndice >= 0 && dz12 > _maxTripletDz) {
-      outcome = BREAK;
-      return;
+    if (trip.i.hitIndice != HitType::CALOCLUSTER && trip.i.hitIndice != HitType::STOPPINGTARGET){
+        if (dz12 > _maxTripletDz) {
+          outcome = BREAK;
+          return;
+        }
     }
     if (_intenseEvent == true || _intenseCluster == true) {
-      if (trip.i.hitIndice == HitType::STOPPINGTARGET && trip.j.hitIndice >= 0) {
-        outcome = BREAK;
-        return;
+      if (trip.i.hitIndice == HitType::STOPPINGTARGET && trip.j.hitIndice != HitType::CALOCLUSTER) {
+          outcome = BREAK;
+          return;
       }
     }
 
@@ -851,9 +874,11 @@ namespace mu2e {
     float dz23 = trip.j.pos.z() - trip.k.pos.z();
 
     // check if point should break for loop
-    if (trip.j.hitIndice >= 0 && dz23 > _maxTripletDz) {
-      outcome = BREAK;
-      return;
+    if (trip.j.hitIndice != HitType::CALOCLUSTER && trip.j.hitIndice != HitType::STOPPINGTARGET){
+        if(dz23 > _maxTripletDz) {
+          outcome = BREAK;
+          return;
+        }
     }
 
     // check if point should be continued on
@@ -955,9 +980,10 @@ namespace mu2e {
 
     // seed point
     for (size_t i = 0; i < _tcHits.size() - _minLineSegmentHits; i++) {
-      if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) { continue; }
-      if (_tcHits[i].used == false) { continue; }
-      if (_tcHits[i].notOnSegment == false) { continue; }
+      if (_tcHits[i].inHelix == true || _tcHits[i].used == false
+          || _tcHits[i].notOnSegment == false
+          || _tcHits[i].hitIndice == HitType::STOPPINGTARGET
+          || _tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
       float seedZ = getPos(i).z();
       float seedPhi = _tcHits[i].helixPhi;
       float seedError2 = _tcHits[i].helixPhiError2;
@@ -982,8 +1008,9 @@ namespace mu2e {
       lastAddedPositiveZ = seedZ;
       // now loop over test point
       for (size_t j = i + 1; j < _tcHits.size(); j++) {
-        if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice < 0) { continue; }
-        if (_tcHits[j].used == false) { continue; }
+        if (_tcHits[j].inHelix == true || _tcHits[j].used == false
+            || _tcHits[j].hitIndice == HitType::STOPPINGTARGET
+            || _tcHits[j].hitIndice == HitType::CALOCLUSTER) { continue; }
         float testZ = getPos(j).z();
         if (testZ == seedZ) { continue; }
         if (std::abs(seedZ - testZ) > _maxZWindow) { break; }
@@ -1346,7 +1373,6 @@ namespace mu2e {
   // function to save helix
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::saveHelix(size_t tc, HelixSeedCollection& HSColl) {
-
     HelixSeed hseed;
     hseed._t0 = _tcColl->at(tc)._t0;
     auto _tcCollH = _event->getValidHandle<TimeClusterCollection>(_tcLabel);
@@ -1357,9 +1383,10 @@ namespace mu2e {
     // also add points to linear fitter to get t0
     ::LsqSums2 fitter;
     for (size_t i = 0; i < _tcHits.size(); i++) {
-      if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) { continue; }
-      if (_tcHits[i].used == false) { continue; }
-      if (_tcHits[i].used == true) { _tcHits[i].inHelix = true; }
+      if (_tcHits[i].inHelix == true || _tcHits[i].used == false
+          || _tcHits[i].hitIndice == HitType::STOPPINGTARGET
+          || _tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
+      _tcHits[i].inHelix = true;
       int hitIndice = _tcHits[i].hitIndice;
       const ComboHit* hit = &_chColl->at(hitIndice);
       fitter.addPoint(hit->pos().z(), hit->correctedTime(), 1 / (hit->timeRes() * hit->timeRes()));
@@ -1421,7 +1448,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // check if the propagation direction is among the desired save directions
   //-----------------------------------------------------------------------------
-  bool AgnosticHelixFinder::validHelixDirection(HelixRecoDir::PropDir direction) {
+  bool AgnosticHelixFinder::validHelixDirection(TrkFitDirection::FitDirection direction) {
 
     for (size_t i=0; i<_validHelixDirections.size(); i++) {
       if (_validHelixDirections.at(i) == direction) return true;

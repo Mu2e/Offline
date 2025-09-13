@@ -1,45 +1,62 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_beamline_dirtBerm.ccl
-// Nov 2024
-// dirtbeamline removed, several layers of berms added; ref: docdb:49557
-// layer-748' West side
-
 string dirt.beamline.berm.l748b.name     = "dirtBeamlineBerml748b";
-
 string dirt.beamline.berm.l748b.material = "MBOverburden";
-
-double dirt.beamline.berm.l748b.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.berm.l748b.offsetFromFloorSurface.y = 8534.4015;
-double dirt.beamline.berm.l748b.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.beamline.berm.l748b.yHalfThickness           = 152.4003; //0.5 US foot to mm
-
+double dirt.beamline.berm.l748b.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.beamline.berm.l748b.offsetFromFloorSurface.y = 8077.20;
+double dirt.beamline.berm.l748b.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.beamline.berm.l748b.xreplace ={7 ,8 };
+vector<int> dirt.beamline.berm.l748b.yreplace ={6 ,7 };
+double dirt.beamline.berm.l748b.yHalfThickness           = 152.30;
 vector<double> dirt.beamline.berm.l748b.xPositions = {
-  -16690.1, // S1
-  -17222.6, // S12
-  -24263.9, // S2
-  -20558.74,   // S3
-  -31750.5,  // S4 (corner)
-  -31750.5, // S5
-  -23605.3, // S6
-  -21670.8,  // S7
-  -20527.2,
-  -20527.2  //S11
+-13023.60, // 0
+-13190.45, // 1
+-13605.54, // 2
+-14159.71, // 3
+-14646.27, // 4
+-23704.44, // 5
+-20735.89, // 6
+-60000.00, // 7
+-60000.00, // 8
+-29110.06, // 9
+-26065.14, // 10
+-25626.48, // 11
+-25171.17, // 12
+-24824.89, // 13
+-24643.10, // 14
+-24008.42, // 15
+-27111.29, // 16
+-27025.24, // 17
+-20527.30, // 18
+-20527.30, // 19
+-20953.28, // 20
+-19488.92, // 21
+-19421.57  // 22
+};
+vector<double> dirt.beamline.berm.l748b.yPositions = {
+-9436.20, //0
+-9475.18, //1
+-10137.89, //2
+-10571.44, //3
+-10760.64, //4
+-12945.69, //5
+-60000.00, //6
+-60000.00, //7
+20108.75, //8
+9142.71, //9
+9906.67, //10
+9930.62, //11
+9768.51, //12
+9477.34, //13
+9153.76, //14
+8164.02, //15
+7388.31, //16
+7043.08, //17
+8663.49, //18
+-4381.00, //19
+-8251.16, //20
+-8412.31, //21
+-9436.20 //22
 };
 
-vector<double> dirt.beamline.berm.l748b.yPositions = {
-  -8302.78,  //S1
-  -8825.22,  // S12
-  -10674.4,   //S2
-  -25857.2, //S3
-  -25857.2, //S4 (corner)
-  20108.75, //S5
-  5280.23, //S6
-  5746.14,  //S7
-  6533.04,
-  -8308.31   //S11
-};
 // Local Variables:
 // mode:c++
 // End:

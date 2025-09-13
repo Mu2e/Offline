@@ -10,7 +10,8 @@
 // Revamp: Andrei Gaponenko, 2018
 
 #include <random>
-#include "gsl/gsl_sf_erf.h"
+#include <numbers>
+//#include "gsl/gsl_sf_erf.h"
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
@@ -24,6 +25,8 @@
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/Mu2eUtilities/inc/artURBG.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
+#include <boost/math/special_functions/erf.hpp>
 
 namespace mu2e {
 
@@ -39,7 +42,8 @@ namespace mu2e {
       fhicl::OptionalAtom<double> SDF{Name("SDF"), Comment("Spill Duty Factor. sigma =sqrt(-log(SDF))")};
       fhicl::Atom<double> cutMin{Name("cutMin"), Comment("The min number of protons to generate."), 0.};
       fhicl::Atom<double> cutMax{Name("cutMax"), Comment("The high tail of the distribution will be truncated at cutMax.")};
-    };
+      fhicl::Atom<art::InputTag> PP{ Name("PrimaryParticle"), Comment("PrimaryParticle")};
+   };
 
     typedef art::EDProducer::Table<Config> Parameters;
 
@@ -48,24 +52,30 @@ namespace mu2e {
     void beginSubRun(art::SubRun & subrun ) override;
 
   private:
+    art::InputTag pp_;
     artURBG urbg_;
     std::lognormal_distribution<double> lognd_;
+    std::uniform_real_distribution<double> unitflatd_;
     int debug_;
     double mean_;
     double cutMin_;
     double cutMax_;
-
     static double solveForMu(double mean, double sigma);
+    double xLogNormalCDFInverse(double x);
+
   };
 
   ProtonBunchIntensityLogNormal::ProtonBunchIntensityLogNormal(const Parameters& conf)
     : art::EDProducer{conf}
+    , pp_(conf().PP())
     , urbg_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+    , unitflatd_(0.0,1.0)
     , debug_(conf().debug())
     , mean_(conf().extendedMean())
     , cutMin_(conf().cutMin())
     , cutMax_(conf().cutMax())
   {
+    consumes<PrimaryParticle>(pp_);
     produces<mu2e::ProtonBunchIntensity>();
     produces<mu2e::ProtonBunchIntensity,art::InSubRun>("MeanIntensity");
     double sigma(0.0), SDF(0.0);
@@ -101,16 +111,37 @@ namespace mu2e {
                                        <<".  Write a better algorithm for the task."<<"\n";
     }
     if(debug_ > 0)
-      std::cout << "LogNormal PBI with mean " << lognd_.m() << " sigma " << lognd_.s()
-      << " SDF " << exp(-lognd_.s()*lognd_.s())
+      std::cout << "LogNormal PBI with mum " << lognd_.m() << " sigma " << lognd_.s()
+      << " SDF " << exp(-lognd_.s()*lognd_.s()) << " mean " << exp(lognd_.m() + 0.5*std::pow(lognd_.s(),2))
       << " min " << lognd_.min() << " max " << lognd_.max() << std::endl;
+// compute the average POT/event for the PBI-biased (beam) generation. Note this DOES NOT take
+// into account the cutoff
+    std::cout <<"logNormal PBI mean NPOT/X LogNormal PBI mean NPOT = " << exp(-pow(lognd_.s(),2)) << std::endl;
   }
 
   void ProtonBunchIntensityLogNormal::produce(art::Event& event) {
+    // determine the event type
+    auto pph = event.getValidHandle<PrimaryParticle>(pp_);
+    auto const& pp = *pph;
     double res=cutMax_; // force to enter the loop
-    while( (res < cutMin_) || (cutMax_ <= res) ) {
+    unsigned ntries(0);
+    if(ProcessCode::isFromProtonBeam(pp.primaryProcess())){
+      if(debug_ > 1)std::cout << "Beam-based primary: sampling x lognormal(x)" << std::endl;
+      // these primaries are biased in that their production is proporitional to the PBI. In this case, sample X * lognormal(X)
+      while( (res < cutMin_) || (cutMax_ <= res) ) {
+        ++ntries;
+        res = xLogNormalCDFInverse(unitflatd_(urbg_));
+      }
+
+    } else {
+      if(debug_ > 1)std::cout << "Non-beam-based primary: lognormal(x)" << std::endl;
+      // primaries unrelated to beam protons scale as lognormal(X)
+      while( (res < cutMin_) || (cutMax_ <= res) ) {
+        ++ntries;
         res = lognd_(urbg_);
+      }
     }
+    if(debug_ > 1)std::cout << "PBI = " << res << " required " << ntries << " tries"  << std::endl;
 
     // convert to nearest ingeger and write out
     event.put(std::make_unique<ProtonBunchIntensity>(static_cast<unsigned long long>(llrint(res))));
@@ -125,11 +156,11 @@ namespace mu2e {
   double ProtonBunchIntensityLogNormal::solveForMu(double mean, double sigma) {
     if(mean <= 0.) {
       throw cet::exception("BADCONFIG")<<"ProtonBunchIntensityLogNormal: illegal mean = "
-                                       <<mean<<" <= 0.\n";
+        <<mean<<" <= 0.\n";
     }
     if(sigma <= 0.) {
       throw cet::exception("BADCONFIG")<<"ProtonBunchIntensityLogNormal: illegal sigma = "
-                                       <<sigma<<" <= 0.\n";
+        <<sigma<<" <= 0.\n";
     }
 
     const double sigma2 = std::pow(sigma,2);
@@ -139,6 +170,12 @@ namespace mu2e {
 
     return mu0;
   }
+
+  double ProtonBunchIntensityLogNormal::xLogNormalCDFInverse(double x) {
+    const double mu = lognd_.m();
+    const double sigma = lognd_.s();
+    return exp( mu + sigma*sigma -sigma*std::numbers::sqrt2_v<double>*boost::math::erfc_inv(2.0*x));
+  };
 
 }
 

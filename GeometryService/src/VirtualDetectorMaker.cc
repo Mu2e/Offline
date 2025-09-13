@@ -296,20 +296,12 @@ namespace mu2e {
 
       if(geom->hasElement<ExtMonFNALBuilding>() && c.getBool("extMonFNAL.filter.vd.enabled", false)) {
         CLHEP::Hep3Vector vzero;
-
-        // This detector will be placed on the face of beam dump
-        // shielding.  Computing offsets here is inconvenient since we
-        // don't have VolumeInfo for the parent. Just ignore them.
+        // These detectors will be placed in the collimator channels.
+        // Computing offsets here is inconvenient. Just ignore them.
         vd->addVirtualDetector(VirtualDetectorId::EMFC1Entrance, vzero, 0, vzero);
-
-        // Detector inside the ExtMonFNAL magnet room, on the face of the upstream wall
         vd->addVirtualDetector(VirtualDetectorId::EMFC1Exit, vzero, 0, vzero);
-
-        // Detector inside the ExtMonFNAL magnet room, on the face of the downstream wall
         vd->addVirtualDetector(VirtualDetectorId::EMFC2Entrance, vzero, 0, vzero);
-
-        // Detector inside the ExtMonFNAL detector room, on the face of the upstream wall
-        vd->addVirtualDetector(VirtualDetectorId::EMFC2Exit, CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector());
+        vd->addVirtualDetector(VirtualDetectorId::EMFC2Exit, vzero, 0, vzero);
       }
 
       // This VD is related to PS
@@ -443,81 +435,46 @@ namespace mu2e {
         int vdIdFEBEdge  = VirtualDetectorId::EMC_FEB_0_EdgeIn;
         int vdIdFEBSurf  = VirtualDetectorId::EMC_FEB_0_SurfIn;
 
-        double crateHalfLength = cg->caloInfo().getDouble("crateZLength")/2.0;
-        double delta           = 2*vdHL+0.02;
-
         CLHEP::Hep3Vector parentInMu2e = cg->geomUtil().origin();
 
-        for(size_t i=0; i<cg->nDisk(); ++i)
+        for (const auto& diskPtr : cg->diskPtrs())
         {
-           const CLHEP::Hep3Vector& sizeDisk = cg->disk(i).geomInfo().size();
-           CLHEP::Hep3Vector posDiskLocal  = cg->disk(i).geomInfo().origin() -
-           cg->geomUtil().origin();
-           CLHEP::Hep3Vector posCrateLocal = posDiskLocal + CLHEP::Hep3Vector(0.0,0.0,cg->disk(i).geomInfo().crateDeltaZ());
+           const CLHEP::Hep3Vector& sizeDisk = diskPtr->geomInfo().size();
+           CLHEP::Hep3Vector posDiskLocal  = diskPtr->geomInfo().origin() - cg->geomUtil().origin();
+           CLHEP::Hep3Vector posCrateLocal = posDiskLocal + CLHEP::Hep3Vector(0.0,0.0,diskPtr->geomInfo().FEBZOffset());
 
-           CLHEP::Hep3Vector  posFrontDisk = posDiskLocal - CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0+delta);
-           CLHEP::Hep3Vector  posBackDisk  = posDiskLocal + CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0+delta);
+           CLHEP::Hep3Vector  posFrontDisk = posDiskLocal - CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0-vdHL);
+           CLHEP::Hep3Vector  posBackDisk  = posDiskLocal + CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0-vdHL);
            CLHEP::Hep3Vector  posInnerDisk = posDiskLocal;
 
-           CLHEP::Hep3Vector  posFrontFEB  = posCrateLocal - CLHEP::Hep3Vector (0,0,crateHalfLength+delta);
-           CLHEP::Hep3Vector  posBackFEB   = posCrateLocal + CLHEP::Hep3Vector (0,0,crateHalfLength+delta);
-           CLHEP::Hep3Vector  posInnerFEB  = posCrateLocal;
+           CLHEP::Hep3Vector  posFrontFEB  = posFrontDisk  - CLHEP::Hep3Vector(0.0,0.0,diskPtr->geomInfo().FEBZOffset());
+           CLHEP::Hep3Vector  posBackFEB   = posFrontFEB   + CLHEP::Hep3Vector (0,0,diskPtr->geomInfo().FEBZLength());
+           CLHEP::Hep3Vector  posInnerFEB  = (posBackFEB+posFrontFEB)/2.0;
 
-          vd->addVirtualDetector( vdIdDiskSurf,
-                                  parentInMu2e,
-                                  0,
-                                  posFrontDisk);
-          ++vdIdDiskSurf;
+           vd->addVirtualDetector(vdIdDiskSurf, parentInMu2e,0,posFrontDisk);
+           ++vdIdDiskSurf;
 
-          vd->addVirtualDetector( vdIdDiskSurf,
-                                  parentInMu2e,
-                                  0,
-                                  posBackDisk);
-          ++vdIdDiskSurf;
+           vd->addVirtualDetector(vdIdDiskSurf,parentInMu2e,0,posBackDisk);
+           ++vdIdDiskSurf;
 
+           vd->addVirtualDetector(vdIdDiskEdge,parentInMu2e,0,posInnerDisk);
+           ++vdIdDiskEdge;
 
-          vd->addVirtualDetector( vdIdDiskEdge,
-                                  parentInMu2e,
-                                  0,
-                                  posInnerDisk);
-          ++vdIdDiskEdge;
+           vd->addVirtualDetector(vdIdDiskEdge,parentInMu2e,0,posInnerDisk);
+           ++vdIdDiskEdge;
 
-          vd->addVirtualDetector( vdIdDiskEdge,
-                                  parentInMu2e,
-                                  0,
-                                  posInnerDisk);
-          ++vdIdDiskEdge;
+           vd->addVirtualDetector(vdIdFEBSurf,parentInMu2e,0,posFrontFEB);
+           ++vdIdFEBSurf;
 
+           vd->addVirtualDetector(vdIdFEBSurf,parentInMu2e,0,posBackFEB);
+           ++vdIdFEBSurf;
 
+           vd->addVirtualDetector(vdIdFEBEdge,parentInMu2e,0,posInnerFEB);
+           ++vdIdFEBEdge;
 
-          vd->addVirtualDetector( vdIdFEBSurf,
-                                  parentInMu2e,
-                                  0,
-                                  posFrontFEB);
-          ++vdIdFEBSurf;
-
-          vd->addVirtualDetector( vdIdFEBSurf,
-                                  parentInMu2e,
-                                  0,
-                                  posBackFEB);
-          ++vdIdFEBSurf;
-
-
-           vd->addVirtualDetector( vdIdFEBEdge,
-                                  parentInMu2e,
-                                  0,
-                                  posInnerFEB);
-          ++vdIdFEBEdge;
-
-          vd->addVirtualDetector( vdIdFEBEdge,
-                                  parentInMu2e,
-                                  0,
-                                  posInnerFEB);
-          ++vdIdFEBEdge;
-
-
+           vd->addVirtualDetector(vdIdFEBEdge,parentInMu2e,0,posInnerFEB);
+           ++vdIdFEBEdge;
         }
-
       }
 
       if ( c.getBool("hasSTM",false) )
@@ -556,7 +513,7 @@ namespace mu2e {
       // Define the z offset from stmDnStrEnvPositionInMu2e to the dnstr plate of the SSC (copper)
       STM_SSC const & pSTM_SSCParams = *stmgh.getSTM_SSCPtr();
       FrontShielding const & pFrontShieldingParams = *stmgh.getFrontShieldingPtr();
-      const double stmDnStrEnvToSSCBack = -stmDnStrEnvPositionInMu2e.z() + pSTM_SSCParams.originInMu2e().z() - (pSTM_SSCParams.Wdepth_f()/2) + pFrontShieldingParams.Front_Thickness();
+      const double stmDnStrEnvToSSCBack = -stmDnStrEnvPositionInMu2e.z() + pSTM_SSCParams.originInMu2e().z() - (pSTM_SSCParams.Wdepth_f()/2) + pFrontShieldingParams.Front_Thickness() - c.getDouble("stm.BackShielding.BPThick") - c.getDouble("stm.BackShielding.ShieldingPipeGap");
 
       if ( c.getBool("vd.STMUpStr.build", false) ) {//VD86, xy plane size of CRV 1mm downstream from CRS
       CLHEP::Hep3Vector vdPositionWRTparent(0.0, 0.0, 1.0-vd->_halfLength);
@@ -641,7 +598,7 @@ namespace mu2e {
 
 
       if ( c.getBool("vd.STMSSCollUpStr.build", false) ) {//VD101, just upstream of Spot Size Collimator
-        double VD101_offset = 1.0; //No offset as there is no more space between the front of the SSC and the end of the volume stmDnStr
+        double VD101_offset = 15.0;
         double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
           - pFrontShieldingParams.Front_Thickness() // Get to front of SSC
           - VD101_offset // Avoid the overlap
@@ -658,9 +615,27 @@ namespace mu2e {
         }
       }
 
+      if ( c.getBool("vd.STMSSCollUpStr.build", false) ) {//VD116, 2.5 m upstream of Spot Size Collimator
+        double VD116_offset =  2.5*CLHEP::m;
+        double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
+          - pFrontShieldingParams.Front_Thickness() // Get to front of SSC
+          - VD116_offset - vd->_halfLength; // position of the VD
+        CLHEP::Hep3Vector vdPositionWRTparent(0.0, 0.0, zOffset);
+        vd->addVirtualDetector(VirtualDetectorId::STM_UpStrLarge, //ID
+                               stmDnStrEnvPositionInMu2e, //parentPositionInMu2e, //reference position
+                               0x0,                  //rotation
+                               vdPositionWRTparent); //placement w.r.t. reference
+
+        if ( verbosityLevel > 0) {
+          cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_UpStrLarge) << endl;
+          cout << "  at local=" << vd->getLocal(VirtualDetectorId::STM_UpStrLarge) << " global="<< vd->getGlobal(VirtualDetectorId::STM_UpStrLarge) <<endl;
+        }
+      }
+
+
 
       if ( c.getBool("vd.STMCollDnStr.build", false) ) { // VD88, just downstream of Spot Size Collimator
-        double VD88_offset = 0.25; // Smaller overlap than usual to get most information - VD89 and VD90 shortly behind these two
+        double VD88_offset = 25.4; // Smaller overlap than usual to get most information - VD89 and VD90 shortly behind these two
         double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
           + VD88_offset // Avoid the overlap
           + vd->_halfLength;  // Position the VD
@@ -678,9 +653,10 @@ namespace mu2e {
       }
 
       if ( c.getBool("vd.STMDet1UpStr.build", false) ) { // VD89, just upstream of LaBr
+        STM_SSC const & pSTM_SSCParams = *stmgh.getSTM_SSCPtr();
         LaBrDetector const & pLaBrDetectorParams = *stmgh.getLaBrDetectorPtr();
         double VD89_offset = 1.0;
-        double xOffset = pLaBrDetectorParams.originInMu2e().x()-stmDnStrEnvPositionInMu2e.x(); // Add collimator hole and offset shifts
+        double xOffset = -c.getDouble("mu2e.solenoidOffset") + pSTM_SSCParams.offset_Spot() - stmDnStrEnvPositionInMu2e.x();
         double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
           + pLaBrDetectorParams.Z_LaBr() // Get to the front of the detector endcap
           - VD89_offset // Avoid the overlap
@@ -699,11 +675,10 @@ namespace mu2e {
       }
 
       if ( c.getBool("vd.STMDet2UpStr.build", false) ) {//VD90, just upstream of HPGe
+        STM_SSC const & pSTM_SSCParams = *stmgh.getSTM_SSCPtr();
         HPGeDetector const & pHPGeDetectorParams = *stmgh.getHPGeDetectorPtr();
         double VD90_offset = 1.0;
-        double HPGeToCenterLength = pHPGeDetectorParams.WindowD() + pHPGeDetectorParams.AirD() + pHPGeDetectorParams.Capsule_Windowthick() + pHPGeDetectorParams.CrystalL()/2;
-        double xOffset = pHPGeDetectorParams.originInMu2e().x() - stmDnStrEnvPositionInMu2e.x() // Get to the center of the front endcap
-          - (sqrt(2)/2)*HPGeToCenterLength; // Position VD on crystal center
+        double xOffset = -c.getDouble("mu2e.solenoidOffset") - pSTM_SSCParams.offset_Spot() - stmDnStrEnvPositionInMu2e.x();
         double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
           + pHPGeDetectorParams.Z_HPGe() // Get to the front of the detector endcap
           - ((sqrt(2)/2)*pHPGeDetectorParams.EndcapR()) // Get to the corner of the endcap. Sqrt(2)/2 is cos(45).

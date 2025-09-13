@@ -110,7 +110,7 @@ namespace mu2e{
         double wrapperDXY = crystalDXY + calo->caloInfo().getDouble("wrapperThickness");
 
         Double_t crystalpos[3];
-        for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++){
+        for(unsigned int idisk=0; idisk<calo->nDisks(); idisk++){
 
           CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() + CLHEP::Hep3Vector(0.0, 0.0, (-holeDZ+frontPanelHalfThick)) - _detSysOrigin;
           double diskXZwidth = diskOuterRailOut + diskInnerRingIn;

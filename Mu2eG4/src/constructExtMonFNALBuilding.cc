@@ -36,6 +36,7 @@
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
 #include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
@@ -56,14 +57,14 @@
 #include "Offline/GeomPrimitives/inc/PolyconsParams.hh"
 #include "Offline/Mu2eG4/inc/nestTubs.hh"
 #include "Offline/Mu2eG4/inc/nestPolycone.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 
-// FIXME: should not need that
-#include "Offline/GeometryService/inc/WorldG4.hh"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)
 
 using namespace std;
+using namespace mu2e;
 
 namespace {
 
@@ -84,12 +85,59 @@ namespace {
 
     return sqrt(pow((maxX-minX),2) + pow((maxY-minY),2));
   }
+
+  //================================================================
+  VirtualDetectorId::enum_type getEntranceVD(const ExtMonFNALCollimator& col) {
+    if(col.name() == "collimator1") return VirtualDetectorId::EMFC1Entrance;
+    if(col.name() == "collimator2") return VirtualDetectorId::EMFC2Entrance;
+    throw cet::exception("BADCONFIG")<<"ExtMonFNAL getEntranceVD(): unknown collimator name "<<col.name();
+  }
+
+  //================================================================
+  VirtualDetectorId::enum_type getExitVD(const ExtMonFNALCollimator& col) {
+    if(col.name() == "collimator1") return VirtualDetectorId::EMFC1Exit;
+    if(col.name() == "collimator2") return VirtualDetectorId::EMFC2Exit;
+    throw cet::exception("BADCONFIG")<<"ExtMonFNAL getExitVD(): unknown collimator name "<<col.name();
+  }
+
+  //================================================================
+  void placeWallScanPoints(const std::string& scanName,
+                           const std::vector<CLHEP::Hep3Vector>& points,
+                           double dotRadius)
+  {
+
+    Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
+    const VolumeInfo& hall = _helper->locateVolInfo("HallAir");
+
+    int ipoint = 1;
+    for(const auto& p: points) {
+
+      VolumeInfo test(scanName + std::to_string(ipoint++),
+                      p - hall.centerInMu2e(),
+                      hall.centerInWorld
+                      );
+
+      test.solid = new G4Orb(test.name, dotRadius);
+
+      finishNesting(test,
+                    findMaterialOrThrow("G4_Au"),
+                    0,
+                    test.centerInParent,
+                    hall.logical,
+                    0,
+                    G4Colour::Red(),
+                    "wallScan"
+                    );
+    }
+
+  }
+  //================================================================
 }
 
 namespace mu2e {
 
   //================================================================
-  void constructCollimatorExtMonFNAL(const ExtMonFNALBuilding::CollimatorExtMonFNAL& collimator,
+  void constructExtMonFNALCollimator(const ExtMonFNALCollimator& collimator,
                                      const VolumeInfo& parent,
                                      const CLHEP::Hep3Vector& collimatorCenterInParent,
                                      const CLHEP::HepRotation& collimatorRotationInParent,
@@ -117,7 +165,7 @@ namespace mu2e {
     //--------------------------------------------------------------------
     // Collimator Mother
 
-    TubsParams motherParams{ 0, collimator.shotLinerOuterRadius(), 0.5*collimator.length() };
+    TubsParams motherParams{ 0, collimator.shotLinerOuterRadius(), collimator.length()/2 };
 
     VolumeInfo collimatorMother = nestTubs(collimator.name()+"Mother",
                                            motherParams,
@@ -141,10 +189,10 @@ namespace mu2e {
     double const epsilon= ( collimator.radiusTransitiondZ() == 0. ) ? 0.1 : 0.;
 
     vector<double>zPlanes = {
-      -0.5*collimator.length(),
-      -0.5*collimator.radiusTransitiondZ()-epsilon,
-      +0.5*collimator.radiusTransitiondZ()+epsilon,
-      +0.5*collimator.length()
+      -collimator.length()/2,
+      -collimator.radiusTransitiondZ()/2-epsilon,
+      +collimator.radiusTransitiondZ()/2+epsilon,
+      +collimator.length()/2
     };
 
     vector<double>rInner (zPlanes.size(), 0. );
@@ -155,7 +203,7 @@ namespace mu2e {
     TubsParams shotLinerOuterParams(collimator.shotLinerOuterRadius()
                                     -collimator.shotLinerOuterThickness(),
                                     collimator.shotLinerOuterRadius(),
-                                    0.5*collimator.length()
+                                    collimator.length()/2
                                     );
 
     VolumeInfo shotLinerOuter = nestTubs(collimator.name()+"shotLinerOuter",
@@ -388,6 +436,55 @@ namespace mu2e {
                                       placePV,
                                       doSurfaceCheck
                                       );
+
+    //--------------------------------------------------------------------
+    // Channel entrance and exit virtual detectors
+
+    GeomHandle<VirtualDetector> vdg;
+
+    VirtualDetectorId::enum_type vd_entrance = getEntranceVD(collimator);
+    if( vdg->exist(vd_entrance) ) {
+
+      TubsParams vdpars(0., collimator.channelRadius()[0], vdg->getHalfLength());
+
+      nestTubs(VirtualDetector::volumeName(vd_entrance),
+               vdpars,
+               airMaterial,
+               0, // rotation
+               CLHEP::Hep3Vector(0,0, *zPlanes.rbegin() - vdg->getHalfLength()), // position in parent
+               channel, // parent
+               vd_entrance,
+               geomOptions->isVisible(VirtualDetector::volumeName(vd_entrance)),
+               G4Colour::Magenta(),
+               geomOptions->isSolid(VirtualDetector::volumeName(vd_entrance)),
+               forceAuxEdgeVisible,
+               placePV,
+               doSurfaceCheck
+               );
+    }
+
+    VirtualDetectorId::enum_type vd_exit = getExitVD(collimator);
+    if( vdg->exist(vd_exit) ) {
+
+      TubsParams vdpars(0., collimator.channelRadius()[1], vdg->getHalfLength());
+
+      nestTubs(VirtualDetector::volumeName(vd_exit),
+               vdpars,
+               airMaterial,
+               0, // rotation
+               CLHEP::Hep3Vector(0,0, *zPlanes.begin() + vdg->getHalfLength()), // position in parent
+               channel, // parent
+               vd_exit,
+               geomOptions->isVisible(VirtualDetector::volumeName(vd_exit)),
+               G4Colour::Magenta(),
+               geomOptions->isSolid(VirtualDetector::volumeName(vd_exit)),
+               forceAuxEdgeVisible,
+               placePV,
+               doSurfaceCheck
+               );
+    }
+
+    //--------------------------------------------------------------------
   }
 
   //================================================================
@@ -444,8 +541,8 @@ namespace mu2e {
                                           );
 
     std::vector<double> apertureHalfSize(3);
-    apertureHalfSize[0] = 0.5*mag.apertureWidth();
-    apertureHalfSize[1] = 0.5*mag.apertureHeight();
+    apertureHalfSize[0] = mag.apertureWidth()/2;
+    apertureHalfSize[1] = mag.apertureHeight()/2;
     apertureHalfSize[2] = mag.magneticLength()/2;
 
     VolumeInfo magnetAperture = nestBox("ExtMonFNAL"+volNameSuffix+"MagnetAperture",
@@ -470,8 +567,8 @@ namespace mu2e {
     }
 
     std::vector<double> apertureMarginHalfSize(3);
-    apertureMarginHalfSize[0] = 0.5*mag.apertureWidth();
-    apertureMarginHalfSize[1] = 0.5*mag.apertureHeight();
+    apertureMarginHalfSize[0] = mag.apertureWidth()/2;
+    apertureMarginHalfSize[1] = mag.apertureHeight()/2;
     apertureMarginHalfSize[2] = (mag.outerHalfSize()[2] - mag.magneticLength()/2)/2;
 
     const double apertureMarginOffset = (mag.magneticLength()/2 + mag.outerHalfSize()[2])/2;
@@ -620,20 +717,20 @@ namespace mu2e {
 
     CLHEP::HepRotation *pshieldingRot = reg.add(new CLHEP::HepRotation());
     CLHEP::HepRotation& shieldingRot = *pshieldingRot;
-    pshieldingRot->rotateX( 90*CLHEP::degree);
-    pshieldingRot->rotateZ( 90*CLHEP::degree);
+    pshieldingRot->rotateX( M_PI/2);
+    pshieldingRot->rotateZ( M_PI/2);
 
     double subCylinderLength = setDiameter(emfb->coll2ShieldingOutline());
 
-    CLHEP::Hep3Vector subCylOffsetInParent = shieldingRot *(emfb->collimator2CenterInMu2e() - emfb->coll2ShieldingCenterInMu2e());
+    CLHEP::Hep3Vector subCylOffsetInParent = shieldingRot *(emfb->filter().collimator2().centerInMu2e() - emfb->coll2ShieldingCenterInMu2e());
 
     static CLHEP::HepRotation collimator2ParentRotationInMu2e = emfb->coll2ShieldingRotationInMu2e();
 
-    CLHEP::HepRotation *subCylinderRotation = reg.add(emfb->collimator2RotationInMu2e().inverse()*collimator2ParentRotationInMu2e.inverse());
+    CLHEP::HepRotation *subCylinderRotation = reg.add(emfb->filter().collimator2().rotationInMu2e().inverse()*collimator2ParentRotationInMu2e.inverse());
 
     G4Tubs* subCylinder = new G4Tubs("ExtMonFNALCollimator2Hole",
                                      0.*CLHEP::mm,
-                                     emfb->collimator2().shotLinerOuterRadius(),
+                                     emfb->filter().collimator2().shotLinerOuterRadius(),
                                      subCylinderLength,
                                      0,
                                      CLHEP::twopi
@@ -641,7 +738,7 @@ namespace mu2e {
 
     G4ExtrudedSolid* coll2ShieldingExtrusion= new G4ExtrudedSolid( "ExtMonFNALCollimator2ShieldingExtrusion",
                                                                    emfb->coll2ShieldingOutline(),
-                                                                   emfb->roomInsideFullHeight()/2.0,
+                                                                   emfb->roomInsideFullHeight()/2,
                                                                    G4TwoVector(0,0),
                                                                    1.,
                                                                    G4TwoVector(0,0), 1.
@@ -708,29 +805,94 @@ namespace mu2e {
     //--------------------------------------------------------------------
     // The filter channel
 
-    AGDEBUG("emfb->collimator1CenterInMu2e() = "<<emfb->collimator1CenterInMu2e());
-    AGDEBUG("collimator1Parent.centerInMu2e() = "<<collimatomaterialFinder.getr1Parent.centerInMu2e());
-
-
-    constructCollimatorExtMonFNAL(emfb->collimator1(),
+    constructExtMonFNALCollimator(emfb->filter().collimator1(),
                                   mainParent,
-                                  emfb->collimator1CenterInMu2e()-mainParent.centerInMu2e(),
-                                  emfb->collimator1RotationInMu2e(),
+                                  emfb->filter().collimator1().centerInMu2e()-mainParent.centerInMu2e(),
+                                  emfb->filter().collimator1().rotationInMu2e(),
                                   config);
 
-    constructExtMonFNALMagnet(emfb->filterMagnet(), mainParent, "filter", mainParentRotationInMu2e, config);
+    constructExtMonFNALMagnet(emfb->filter().magnet(), mainParent, "filter", mainParentRotationInMu2e, config);
 
-    constructCollimatorExtMonFNAL(emfb->collimator2(),
+    constructExtMonFNALCollimator(emfb->filter().collimator2(),
                                   mainParent,
-                                  emfb->collimator2CenterInMu2e() - mainParent.centerInMu2e(),
-                                  emfb->collimator2RotationInMu2e(),
+                                  emfb->filter().collimator2().centerInMu2e() - mainParent.centerInMu2e(),
+                                  emfb->filter().collimator2().rotationInMu2e(),
                                   config);
 
+    //--------------------------------------------------------------------
+    // Show wall scans done by precision metrology to see how close our
+    // simulation model is to the real building
+
+    if (config.getBool("extMonFNAL.debug.showWallScans", false)) {
+
+      const double r = config.getDouble("extMonFNAL.debug.wallScanDotRadius");
+
+      // Beam dump face wall scan.
+      // E-mail from John Kyle on 2025-03-28
+      std::vector<CLHEP::Hep3Vector> wallScanEntranceUp = {
+        {-450.2,  -300.5,   -16071.1},
+        {1618.2,  -289.4,   -16573.2},
+        {3020.3,  -283.9,   -16914.9},
+        {3044.3, -1731.0,   -16919.3},
+        {1567.4, -1734.3,   -16560.1},
+        {-467.8, -1708.8,   -16063.1}
+      };
+
+      placeWallScanPoints("wallScanEntranceUp", wallScanEntranceUp, r);
+
+      // Wall scan, entrance collimator downstream end.
+      // E-mail from John Kyle on 2025-04-14
+      std::vector<CLHEP::Hep3Vector> wallScanEntranceDn = {
+        {-398.3, 3224.4, -20063.2},
+        {-343.7, 3662.1, -20075.0},
+        { 827.6, 3711.9, -20360.6},
+        { 895.2, 3033.5, -20381.3},
+        {1585.8, 3073.2, -20548.9},
+        {1552.9, 3696.8, -20539.6}
+      };
+
+      placeWallScanPoints("wallScanEntranceDn", wallScanEntranceDn, r);
+
+      // Wall scan, exit collimator upstream end.
+      // E-mail from John Kyle on 2025-04-14
+      std::vector<CLHEP::Hep3Vector> wallScanExitUp = {
+        { 540.6, 4198.8, -24643.9},
+        { 612.5, 3839.0, -24660.4},
+        { 513.4, 2168.6, -24638.8},
+        {-971.4, 2191.9, -24276.2},
+        {-995.0, 4233.0, -24270.5},
+        { -18.9, 4263.0, -24505.5},
+        {   5.6, 3578.9, -24515.0},
+        { -84.9, 2142.4, -24493.7}
+      };
+
+      placeWallScanPoints("wallScanExitUp", wallScanExitUp, r);
+
+      // Wall scan, exit collimator downstrea end.
+      // E-mail from John Kyle on 2025-04-14
+      std::vector<CLHEP::Hep3Vector> wallScanExitDn = {
+        {  179.9,   4269.4, -26620.4},
+        {  204.3,   2339.0, -26634.9},
+        { -467.2,  2389.3, -26469.6},
+        { -405.1,  3877.1, -26475.8},
+        { -335.6,  4309.5, -26493.7},
+        {-1345.4, 4232.4, -26246.4},
+        {-1416.0, 3426.7, -26237.6},
+        {-1489.2, 2331.1, -26223.2},
+        {  281.7,   3394.5, -26650.5}
+      };
+
+      placeWallScanPoints("wallScanExitDn", wallScanExitDn, r);
+
+    }
+
+    //--------------------------------------------------------------------
+    /*
     // Test
     if (false) {
       Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
       const VolumeInfo& hall = _helper->locateVolInfo("HallAir");
-      VolumeInfo test("emfMagnettest", emfb->filterMagnet().geometricCenterInMu2e() - hall.centerInMu2e(), hall.centerInWorld);
+      VolumeInfo test("emfMagnettest", emfb->filter().magnet().geometricCenterInMu2e() - hall.centerInMu2e(), hall.centerInWorld);
       test.solid = new G4Orb(test.name, 500.);
 
       finishNesting(test,
@@ -739,16 +901,16 @@ namespace mu2e {
                     test.centerInParent,
                     hall.logical,
                     0,
-                    true/*visible*/,
+                    true,
                     G4Colour::Blue(),
-                    true /*config.getBool("extMonFNAL.roomSolid")*/,
+                    true,  // config.getBool("extMonFNAL.roomSolid"),
                     forceAuxEdgeVisible,
                     placePV,
                     false
                     );
 
     }
-
+   */
     //--------------------------------------------------------------------
 
   } // constructExtMonFNALBuilding()

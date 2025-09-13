@@ -44,6 +44,12 @@ cet_build_plugin(AntiProtonGun art::module
       Offline::SeedService
 )
 
+cet_build_plugin(AntiprotonResampling art::module
+    REG_SOURCE src/AntiprotonResampling_module.cc
+    LIBRARIES REG
+      Offline::EventGenerator
+)
+
 cet_build_plugin(CaloCalibGun art::module
     REG_SOURCE src/CaloCalibGun_module.cc
     LIBRARIES REG
@@ -199,8 +205,8 @@ cet_build_plugin(ExtMonFNALRoomGenerator art::module
       Offline::SeedService
 )
 
-cet_build_plugin(FlatMuonDaughterGenerator art::module
-    REG_SOURCE src/FlatMuonDaughterGenerator_module.cc
+cet_build_plugin(FlatGeneratorFromStoppedMuon art::module
+    REG_SOURCE src/FlatGeneratorFromStoppedMuon_module.cc
     LIBRARIES REG
       Offline::EventGenerator
       
@@ -276,6 +282,12 @@ cet_build_plugin(G4BeamlineGenerator art::module
 
 cet_build_plugin(GammaConvFlat art::module
     REG_SOURCE src/GammaConvFlat_module.cc
+    LIBRARIES REG
+      Offline::EventGenerator
+)
+
+cet_build_plugin(GammaConversion art::module
+    REG_SOURCE src/GammaConversion_module.cc
     LIBRARIES REG
       Offline::EventGenerator
 )
@@ -364,6 +376,12 @@ cet_build_plugin(Pileup art::module
       Offline::SeedService
 )
 
+cet_build_plugin(PionFilter art::module
+    REG_SOURCE src/PionFilter_module.cc
+    LIBRARIES REG
+      Offline::EventGenerator
+)
+
 cet_build_plugin(PrimaryAntiProtonGun art::module
     REG_SOURCE src/PrimaryAntiProtonGun_module.cc
     LIBRARIES REG
@@ -423,6 +441,12 @@ cet_build_plugin(RPCGun art::module
       Offline::MCDataProducts
       Offline::Mu2eUtilities
       Offline::SeedService
+)
+
+cet_build_plugin(SimpleAntiprotonGun art::module
+    REG_SOURCE src/SimpleAntiprotonGun_module.cc
+    LIBRARIES REG
+      Offline::EventGenerator
 )
 
 cet_build_plugin(SingleProcessGenerator art::module
@@ -517,6 +541,17 @@ cet_build_plugin(DIOGenerator art::tool
       Offline::Mu2eUtilities
 )
 
+cet_build_plugin(Mu2eXGenerator art::tool
+    REG_SOURCE src/Mu2eXGenerator_tool.cc
+    LIBRARIES REG
+      Offline::EventGenerator
+
+      Offline::DataProducts
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+)
+
 cet_build_plugin(MuCap1809keVGammaGenerator art::tool
     REG_SOURCE src/MuCap1809keVGammaGenerator_tool.cc
     LIBRARIES REG
@@ -593,6 +628,19 @@ cet_build_plugin(MuplusMichelGenerator art::tool
       Offline::Mu2eUtilities
 )
 
+cet_build_plugin(PhotonGun art::module
+    REG_SOURCE src/PhotonGun_module.cc
+    LIBRARIES REG
+      Offline::MCDataProducts
+      Offline::DataProducts
+)
+
+cet_build_plugin(RMCGenerator art::tool
+    REG_SOURCE src/RMCGenerator_tool.cc
+    LIBRARIES REG
+      Offline::EventGenerator
+)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/cosmicDYB.txt	      ${CURRENT_BINARY_DIR} defaultConfigs/cosmicDYB.txt	     )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/defaultCRYconfig.txt   ${CURRENT_BINARY_DIR} defaultConfigs/defaultCRYconfig.txt  )
@@ -604,6 +652,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/particleGun.txt	      
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/primaryProtonGun.txt   ${CURRENT_BINARY_DIR} defaultConfigs/primaryProtonGun.txt  )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/defaultConfigs/surfaceCheck.txt       ${CURRENT_BINARY_DIR} defaultConfigs/surfaceCheck.txt      )
 
+install(DIRECTORY defaultConfigs DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/EventGenerator)
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/EventGenerator/fcl)

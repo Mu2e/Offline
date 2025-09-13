@@ -13,6 +13,7 @@
 
 // beam
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/RecoDataProducts/inc/RecoProtonBunchIntensity.hh"
 
 // calorimeter
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
@@ -25,6 +26,7 @@
 // straws
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigiFlag.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
@@ -70,6 +72,7 @@
 
 // CRV
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulseFlags.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
@@ -101,5 +104,8 @@
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
+
+// MTP
+#include "Offline/RecoDataProducts/inc/MTPHit.hh"
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

@@ -1,52 +1,50 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_DSwall_upper.ccl
-
 string dirt.dsArea.upper.name     = "dirtDsAreaUpper";
-
 string dirt.dsArea.upper.material = "MBOverburden";
-
-double dirt.dsArea.upper.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.dsArea.upper.offsetFromFloorSurface.y = 5410.2;
-double dirt.dsArea.upper.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.dsArea.upper.yHalfThickness           = 1955.8;
-
+double dirt.dsArea.upper.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.dsArea.upper.offsetFromFloorSurface.y = 5410.20;
+double dirt.dsArea.upper.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.dsArea.upper.yreplace ={0 ,1 };
+double dirt.dsArea.upper.yHalfThickness           = 1955.80;
 vector<double> dirt.dsArea.upper.xPositions = {
-  29083,   // h9
-  21971,   // i0
-  21971,   // i1
-  21158.2,   // i2
-  21158.2,   // i3
-  14046.2,   // i4
-  14046.2,   // i5
-  13233.4,   // i6
-  13233.4,   // i7
-  6121.4,   // i8
-  6121.4,   // i9
-  5308.6,   // j0
-  5308.6,   // j0_to_S
-  29083   // h9_to_S
+29083.00, // 0
+13630.28, // 1
+13630.28, // 2
+14046.20, // 3
+14046.20, // 4
+21158.20, // 5
+21158.20, // 6
+19573.88, // 7
+19573.88, // 8
+21158.20, // 9
+21158.20, // 10
+21971.00, // 11
+21971.00, // 12
+24069.77, // 13
+24069.77, // 14
+21971.00, // 15
+21971.00, // 16
+29083.00 // 17
 };
-
-vector<int>    dirt.dsArea.upper.yreplace   = { 12, 13 };
 vector<double> dirt.dsArea.upper.yPositions = {
-  -9271,   // h9
-  -9271,   // i0
-  -12014.2,   // i1
-  -12014.2,   // i2
-  -9271,   // i3
-  -9271,   // i4
-  -12014.2,   // i5
-  -12014.2,   // i6
-  -9550.4,   // i7
-  -9550.4,   // i8
-  -11734.8,   // i9
-  -11734.8,   // j0
-  -50000,   // j0_to_S
-  -50000   // h9_to_S
+-50000.00, // 0
+-50000.00, // 1
+-12014.20, // 2
+-12014.20, // 3
+-9271.00, // 4
+-9271.00, // 5
+-10312.30, // 6
+-10312.30, // 7
+-11658.30, // 8
+-11658.30, // 9
+-12014.20, // 10
+-12014.20, // 11
+-11658.70, // 12
+-11658.70, // 13
+-10312.30, // 14
+-10312.30, // 15
+-9271.00, // 16
+-9271.00 // 17
 };
-
 int dirt.dsArea.upper.Notch.numberOfNotches  = 1;
 vector<double> dirt.dsArea.upper.Notch.halfDims.1 = {76.2,127.,3350};
 vector<double> dirt.dsArea.upper.Notch.position.1 = {18000.,-12801.6,0.};

@@ -1,0 +1,7 @@
+# -*- mode:org  buffer-read-only:t -*-
+
+
+* StrawRecoFromArtdaqFragments module
+
+  - diagLevel: default:0
+  -          : > 1: print waveforms via TRACE (TLVL_DEBUG+2)

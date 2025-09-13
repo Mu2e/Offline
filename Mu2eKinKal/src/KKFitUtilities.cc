@@ -11,12 +11,27 @@ namespace mu2e {
       KinKal::VEC3 vp1(straw.wireEnd(ch.lateEnd()));
       return KinKal::SensorLine(vp0,vp1,ch.time(),sprop);
     }
+
+    KinKal::SensorLine strawLine(Straw const& straw,double time) {
+      KinKal::VEC3 vp0(straw.strawEnd(StrawEnd::cal));
+      KinKal::VEC3 vp1(straw.strawEnd(StrawEnd::hv));
+      return KinKal::SensorLine(vp0,vp1,time,CLHEP::c_light); // time is irrelevant: use speed of light as sprop
+    }
     bool inDetector(KinKal::VEC3 const& point) {
       return point.Rho() < 900.0 && fabs(point.Z()) < 1800; // numbers should come from Tracker TODO
     }
     double LorentzAngle(KinKal::ClosestApproachData const& ptca, KinKal::VEC3 const& bdir) {
-      auto tperp = (ptca.particleDirection() - ptca.particleDirection().Dot(ptca.sensorDirection())*ptca.sensorDirection()).unit();
-      return acos(tperp.Dot(bdir));
+      // New version to harmonize the value of "lang" and "uwirephi" in RecoDataProducts/inc/TrkStrawHitSeed
+      auto ppoca = ptca.particlePoca().Vect();
+      auto spoca = ptca.sensorPoca().Vect();
+      auto sdir = ptca.sensorDirection();
+      auto tperp = ppoca - spoca;
+      auto raddir = sdir.Cross(bdir);
+      if (raddir.Dot(tperp) < 0.0) raddir *= -1.0; // sign radially outwards such "tperp" and "raddir" angle is within [-pi,pi]
+      auto lang = atan2(tperp.Dot(raddir),tperp.Dot(bdir));
+      auto lang_folded = lang;
+      if (lang > M_PI/2.0) lang_folded = M_PI - lang; // "folded" version of "lang" between [0,pi/2]
+      return lang_folded;
     }
     bool insideStraw(KinKal::ClosestApproachData const& ca,Straw const& straw,double ubuffer)  {
       // compute the position along the wire and compare to the 1/2 length

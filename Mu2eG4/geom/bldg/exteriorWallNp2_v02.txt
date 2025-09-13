@@ -1,0 +1,22 @@
+string building.exteriorWall.N.p2.name     = "exteriorWallNp2";
+string building.exteriorWall.N.p2.material = "MildSteel";
+double building.exteriorWall.N.p2.offsetFromMu2eOrigin.x   = 947.40;
+double building.exteriorWall.N.p2.offsetFromFloorSurface.y = 12877.75;
+double building.exteriorWall.N.p2.offsetFromMu2eOrigin.z   = -3581.40;
+double building.exteriorWall.N.p2.yHalfThickness           = 4038.55;
+vector<double> building.exteriorWall.N.p2.xPositions = {
+37820.65, // 0
+45504.86, // 1
+45504.86, // 2
+45503.34, // 3
+45503.34, // 4
+37820.65 // 5
+};
+vector<double> building.exteriorWall.N.p2.yPositions = {
+2231.35, // 0
+2231.35, // 1
+1523.95, // 2
+1523.95, // 3
+2229.83, // 4
+2229.83 // 5
+};

@@ -47,6 +47,8 @@ namespace mu2e {
     int          _verbosityLevel;
     double       _stmZAllowed;
 
+    double       _stmReferenceZ;
+
     bool         _stmDnStrEnvBuild;
     double       _stmDnStrEnvHalfLength;
     double       _stmDnStrEnvHalfWidth;
@@ -193,7 +195,9 @@ namespace mu2e {
     double       _shieldDnStrWallHalfWidth;
     double       _shieldDnStrWallGap;
     double       _shieldUpStrWallGap;
+    double       _shieldPipeUpStrAirGap;
     std::string  _shieldDnStrWallMaterial;
+    bool         _shieldBuildMatingBlock;
 
     bool        _STM_SSCBuild;
     bool        _STM_SSCVDBuild;
@@ -210,7 +214,35 @@ namespace mu2e {
     double      _STM_SSCoffset_Spot;
     double      _STM_SSCleak;
     double      _STM_SSCFrontToWall;
+    double      _STM_SSCZGap;
+    double      _STM_SSCZGapBack;
     std::string _STM_SSCMaterial;
+
+
+    bool        _SSCSupportBuild;
+    double      _SSCSupporttable_L;
+    double      _SSCSupporttable_H;
+    double      _SSCSupporttable_T;
+    double      _SSCSupportleg_L;
+    double      _SSCSupportleg_H;
+    double      _SSCSupportleg_T;
+    double      _SSCSupportbase_L;
+    double      _SSCSupportbase_H;
+    double      _SSCSupportbase_T;
+    double      _SSCSupportwall_L;
+    double      _SSCSupportwall_H;
+    double      _SSCSupportwall_T;
+    double      _SSCSupporthole_H;
+    double      _SSCSupporthole_T;
+    double      _SSCSupportFLeadStand_L;
+    double      _SSCSupportFLeadStand_H;
+    double      _SSCSupportFLeadStand_T;
+    double      _SSCSupportFLeadShim_H;
+    double      _SSCSupportFLeadShim_T;
+    double      _SSCSupportFAluminumShim_T;
+    double      _SSCSupportFAluminumExtra_L;
+    double      _SSCSupportFAluminumExtra_H;
+
 
     bool    _FrontShieldingBuild;
     double  _FrontSHeightofRoom;
@@ -221,14 +253,16 @@ namespace mu2e {
     double  _FrontSaluminumdepth;
     double  _FrontScopperdepth;
     double  _FrontSBPdepth;
-    double  _FrontSBPdepth2;
     double  _FrontSfPb_lengthL;
     double  _FrontSfPb_lengthR;
     double  _FrontSGapForTop;
     double  _FrontSLeakForSSC;
+    double  _FrontSCopperL;
+    double  _FrontS_H;
+    double  _FrontSHole_r;
     double  _FrontS_Thickness;
-    double  _FrontS_Height;
     double  _FrontS_Length;
+
 
     bool   _HPGeBuild;
     std::string _HPGecrystalMaterial;
@@ -268,6 +302,7 @@ namespace mu2e {
 
     bool    _BottomShieldingBuild;
     double  _BottomSFront_LB;
+    double  _BottomSFront_LB_inner;
     double  _BottomSfloor_Zlength;
     double  _BottomSleaddepth;
     double  _BottomScopperdepth;
@@ -291,9 +326,16 @@ namespace mu2e {
 
     bool    _TopShieldingBuild;
     bool    _TopShieldingSkirtBuild;
+    double  _TopLiftBeam_L;
+    double  _TopLiftBeam_H;
+    double  _TopLiftBeam_T;
+    double  _TopLiftBeam_Xmove;
     double  _TopSZlength;
     double  _TopSXlength;
     double  _TopSFront_LT;
+    double  _TopTFZlength;
+    double  _TopTFXlength;
+    double  _TopTBZlength;
     double  _TopScontainerdepth;
     double  _TopSleaddepth;
     double  _TopScopperdepth;
@@ -311,7 +353,7 @@ namespace mu2e {
     double  _BackSBPHeight;
     double  _BackS_dX;
     double  _BackS_dY;
-
+    double  _BackSPipeGap;
 
     bool   _InnerShieldingBuild;
 

@@ -1,0 +1,26 @@
+string dirt.foundation.ExtMon.PSarea.R.name     = "dirtFoundationExtMonPSareaR";
+string dirt.foundation.ExtMon.PSarea.R.material = "MBOverburden";
+double dirt.foundation.ExtMon.PSarea.R.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.foundation.ExtMon.PSarea.R.offsetFromFloorSurface.y = 1816.10;
+double dirt.foundation.ExtMon.PSarea.R.offsetFromMu2eOrigin.z   = -3581.40;
+double dirt.foundation.ExtMon.PSarea.R.yHalfThickness           = 1968.45;
+vector<double> dirt.foundation.ExtMon.PSarea.R.xPositions = {
+-19681.35, // 0
+-18356.05, // 1
+-22180.71, // 2
+-23506.05, // 3
+-23506.04, // 4
+-22180.7, // 5
+-22180.71, // 6
+-23506.05 // 7
+};
+vector<double> dirt.foundation.ExtMon.PSarea.R.yPositions = {
+1656.31, // 0
+-3772.14, // 1
+-4705.91, // 2
+722.61, // 3
+722.61, // 4
+-4705.91, // 5
+-4705.91, // 6
+722.61 // 7
+};

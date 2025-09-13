@@ -55,6 +55,17 @@ cet_build_plugin(STMZeroSuppression art::module
       Offline::STMConditions
 )
 
+cet_build_plugin(STMAnalyzeDigis art::module
+    REG_SOURCE src/STMAnalyzeDigis_module.cc
+    LIBRARIES REG
+    art_root_io::TFileService_service
+    artdaq-core-mu2e::Data
+    Offline::Mu2eUtilities
+    Offline::ProditionsService
+    Offline::DataProducts
+    Offline::RecoDataProducts
+)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/makeSTMHits.fcl   ${CURRENT_BINARY_DIR} fcl/makeSTMHits.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/makeSTMHits_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/makeSTMHits_testbeam.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/mwd.fcl   ${CURRENT_BINARY_DIR} fcl/mwd.fcl   COPYONLY)
@@ -66,6 +77,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl   ${CURRENT_BINARY_DIR
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/prolog_testbeam.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/zeroSuppression.fcl   ${CURRENT_BINARY_DIR} fcl/zeroSuppression.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/zeroSuppression_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/zeroSuppression_testbeam.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/analyzeDigis.fcl   ${CURRENT_BINARY_DIR} fcl/analyzeDigis.fcl   COPYONLY)
 
 
 install_source(SUBDIRS src)

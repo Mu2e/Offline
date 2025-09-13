@@ -72,6 +72,27 @@ CommonMC.MakeSSReco : {# make SurfaceSteps from reconstruction output
     AbsorberStepPointMCs : "compressRecoMCs:protonabsorber"
     TargetStepPointMCs : "compressRecoMCs:stoppingtarget"
 }
+#
+# Trigger specific instance used for track trigger MC-truth based diagnostics
+#
+CommonMC.TTSelectRecoMC : {
+  @table::CommonMC.SelectRecoMC
+    TrkOnly : true
+    CaloClusterMinE : 10.0
+    SaveEnergySteps : false
+    SaveUnusedDigiMCs : false
+    SaveAllUnusedDigiMCs : false
+    PrimaryParticle : "compressDigiMCs"
+    StrawDigiCollection : "makeSD"
+    ComboHitCollection : "TTflagPH"
+    CaloDigiCollection : "CaloDigiMaker"
+    CaloClusterCollection : "CaloClusterFast"
+    StrawDigiMCCollection : "compressDigiMCs"
+    CrvDigiCollection : ""
+    CrvDigiMCCollection : ""
+    CrvCoincidenceClusterCollections : [  ]
+    VDSPCollection : "compressDigiMCs:virtualdetector"
+}
 
 #------------------------------------------------------------------------------
 

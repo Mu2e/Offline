@@ -40,6 +40,15 @@ namespace mu2e {
     return it->second;
   }
 
+  const RotExtrudedSolid& Mu2eHall::getRotSolid(const std::string& name) const {
+    auto it = rotatedSolids_.find(name);
+    if(it == rotatedSolids_.end()) {
+      throw cet::exception("GEOM")
+        <<"Mu2eHall::getRotSolid(): unknown volume \""<< name <<"\"\n";
+    }
+    return it->second;
+  }
+
   const GenericTrap& Mu2eHall::getDirtTrapSolid(const std::string& name) const {
     auto it = dirtTrapSolids_.find(name);
     if(it == dirtTrapSolids_.end()) {

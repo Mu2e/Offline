@@ -1,0 +1,25 @@
+// This file specifies position of the the extinction monitor filter channel.
+//
+// See docdb-52582v1
+//
+// Andrei Gaponenko, 2025
+
+// Specify all elements in the Mu2e coordinate system
+string extMonFNAL.filter.positioning = "Absolute";
+
+double         extMonFNAL.filter.collimator1.dxdz =  0.21221122;
+double         extMonFNAL.filter.collimator1.dydz = -0.17050919;
+vector<double> extMonFNAL.filter.collimator1.centerInMu2e = { 1257.26, 2115.45,  -18575.00 };
+
+double         extMonFNAL.filter.magnet.dxdz = 0.21236062;
+double         extMonFNAL.filter.magnet.dydz = -0.13985543;
+vector<double> extMonFNAL.filter.magnet.centerInMu2e = { 403.86, 2746.10, -22594.30 };
+
+double         extMonFNAL.filter.collimator2.dxdz = 0.21205986;
+double         extMonFNAL.filter.collimator2.dydz = -0.10968310;
+vector<double> extMonFNAL.filter.collimator2.centerInMu2e = { -217.14,  3120.90,  -25520.80 };
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

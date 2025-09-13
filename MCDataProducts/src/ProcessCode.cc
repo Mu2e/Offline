@@ -56,5 +56,36 @@ namespace mu2e {
     return codes;
   }
 
+  bool ProcessCode::isFromProtonBeam(const ProcessCode& pcode) {
+    static std::vector<ProcessCode::enum_type> pbeamcodes = {
+      ProcessCode::mu2eMuonCaptureAtRest,
+      ProcessCode::mu2eMuonCaptureAtRest,
+      ProcessCode::mu2eMuonDecayAtRest,
+      ProcessCode::mu2eCeMinusEndpoint,
+      ProcessCode::mu2eCeMinusLeadingLog,
+      ProcessCode::mu2eCePlusEndpoint,
+      ProcessCode::mu2eDIOLeadingLog,
+      ProcessCode::mu2eInternalRMC,
+      ProcessCode::mu2eExternalRMC,
+      ProcessCode::mu2eFlateMinus,
+      ProcessCode::mu2eFlatePlus,
+      ProcessCode::mu2eFlatPhoton,
+      ProcessCode::mu2eCePlusLeadingLog,
+      ProcessCode::mu2ePionCaptureAtRest,
+      ProcessCode::mu2eExternalRPC,
+      ProcessCode::mu2eInternalRPC,
+      ProcessCode::mu2eCaloCalib,
+      ProcessCode::mu2ePienu,
+      ProcessCode::mu2eGammaConversion,
+      ProcessCode::mu2eAntiproton,
+      ProcessCode::mu2eFlatMuMinus,
+      ProcessCode::mu2eFlatMuPlus };
+    for(auto pbeamcode : pbeamcodes){
+      if(pcode._id == pbeamcode) return true;
+    }
+    return false;
+  }
+
+
 
 }

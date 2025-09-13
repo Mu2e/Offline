@@ -140,9 +140,7 @@ namespace mu2e {
     std::string calCableRunMaterial()  const { return _materialCableRunCal; }
     double upRInCableRunCal()          const { return _upRInCableRunCal; }
     double upROutCableRunCal()         const { return _upROutCableRunCal;}
-    double upHL1CableRunCal()          const { return _upHL1CableRunCal; }
     double upHL2CableRunCal()          const { return _upHL2CableRunCal; }
-    double upZC1CableRunCal()          const { return _upZC1CableRunCal; }
     double upZC2CableRunCal()          const { return _upZC2CableRunCal; }
     double rInCableRunCal()            const { return _rInCableRunCal; }
     double rOutCableRunCal()           const { return _rOutCableRunCal; }
@@ -349,9 +347,7 @@ namespace mu2e {
     double              _lengthCableRunCal;
     double              _upRInCableRunCal;
     double              _upROutCableRunCal;
-    double              _upHL1CableRunCal;
     double              _upHL2CableRunCal;
-    double              _upZC1CableRunCal;
     double              _upZC2CableRunCal;
     double              _rInCableRunCal;
     double              _rOutCableRunCal;

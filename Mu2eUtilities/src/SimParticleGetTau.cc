@@ -36,6 +36,20 @@ namespace mu2e {
   }
 
   //==========================================================================
+  double SimParticleGetTau::calculate( const art::Ptr<SimParticle>& p,
+                                       const std::vector<int>& decayOffCodes,
+                                       const PhysicsParams& gc ){
+    double tau = 0.;
+    const auto pdgId = p->pdgId();
+    // check if this code was turned off
+    if (std::find(decayOffCodes.begin(), decayOffCodes.end(), pdgId) != decayOffCodes.end())
+      tau = p->endProperTime() / gc.getParticleLifetime(pdgId);
+     // continue through the history
+    if(p->parent().isNonnull()) tau += calculate(p->parent(), decayOffCodes, gc);
+    return tau;
+  }
+
+  //==========================================================================
   double SimParticleGetTau::getMultiStageTau( const art::Ptr<SimParticle>& p,
                                               const VspMC& hitColls,
                                               const std::vector<int>& decayOffCodes,

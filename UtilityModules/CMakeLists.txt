@@ -22,4 +22,13 @@ cet_build_plugin(RecoNullProducer art::module
       Offline::SeedService
 )
 
+cet_build_plugin(StopSelection art::module
+    REG_SOURCE src/StopSelection_module.cc
+    LIBRARIES REG      
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::SeedService
+)
+
 install_source(SUBDIRS src)

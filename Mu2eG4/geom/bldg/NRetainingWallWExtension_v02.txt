@@ -1,35 +1,22 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_NretainingWallWext.ccl
-
 string building.N.retaining.Wall.W.extension.name     = "NRetainingWallWExtension";
-
 string building.N.retaining.Wall.W.extension.material = "CONCRETE_MARS";
-
-double building.N.retaining.Wall.W.extension.offsetFromMu2eOrigin.x   = 947.4;
-double building.N.retaining.Wall.W.extension.offsetFromFloorSurface.y = 8915.4;
-double building.N.retaining.Wall.W.extension.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.N.retaining.Wall.W.extension.yHalfThickness           = 2057.4;
-
+double building.N.retaining.Wall.W.extension.offsetFromMu2eOrigin.x   = 947.40;
+double building.N.retaining.Wall.W.extension.offsetFromFloorSurface.y = 8916.87;
+double building.N.retaining.Wall.W.extension.offsetFromMu2eOrigin.z   = -3581.40;
+double building.N.retaining.Wall.W.extension.yHalfThickness           = 2057.35;
 vector<double> building.N.retaining.Wall.W.extension.xPositions = {
-  -12319,   // P0
-  -14605,   // P1
-  -20527.1,   // P2
-  -20442.7,   // P3
-  -14706.6,   // P4
-  -12319   // P5
+-12319.05, // 0
+-15282.44, // 1
+-21196.19, // 2
+-21110.14, // 3
+-15238.78, // 4
+-12319.05 // 5
 };
-
 vector<double> building.N.retaining.Wall.W.extension.yPositions = {
-  10312.4,   // P0
-  10312.4,   // P1
-  8866.57,   // P2
-  8521.11,   // P3
-  9956.8,   // P4
-  9956.8   // P5
+10338.12, // 0
+10338.12, // 1
+8863.33, // 2
+8518.30, // 3
+9982.52, // 4
+9982.52 // 5
 };
-
-// Local Variables:
-// mode:c++
-// End:

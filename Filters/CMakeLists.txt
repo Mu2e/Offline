@@ -167,6 +167,12 @@ cet_build_plugin(GenParticleMomFilter art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(GoodRunFilter art::module
+    REG_SOURCE src/GoodRunFilter_module.cc
+    LIBRARIES REG
+    Offline::DbService
+)
+
 cet_build_plugin(KilledEventFilter art::module
     REG_SOURCE src/KilledEventFilter_module.cc
     LIBRARIES REG
@@ -281,6 +287,7 @@ cet_build_plugin(WeightSamplingFilter art::module
       Offline::DataProducts
       Offline::MCDataProducts
       Offline::SeedService
+      art_root_io::TFileService_service
 )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)

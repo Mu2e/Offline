@@ -1,39 +1,26 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_PSarea_upperExtension_N.ccl
-
 string building.psArea.upper.N.name     = "psAreaUpperN";
-
 string building.psArea.upper.N.material = "CONCRETE_MARS";
-
-double building.psArea.upper.N.offsetFromMu2eOrigin.x   = 947.4;
-double building.psArea.upper.N.offsetFromFloorSurface.y = 4787.9;
-double building.psArea.upper.N.offsetFromMu2eOrigin.z   = -3581.4;
-
-double building.psArea.upper.N.yHalfThickness           = 393.7;
-
+double building.psArea.upper.N.offsetFromMu2eOrigin.x   = 947.40;
+double building.psArea.upper.N.offsetFromFloorSurface.y = 4787.90;
+double building.psArea.upper.N.offsetFromMu2eOrigin.z   = -3581.40;
+double building.psArea.upper.N.yHalfThickness           = 393.70;
 vector<double> building.psArea.upper.N.xPositions = {
-  -17134.6,   // R0
-  -12319,   // P6
-  -12319,   // R1
-  -11709.4,   // R2
-  -11709.4,   // Q2
-  -16669.8,   // R5
-  -16742.1,   // R6
-  -17038.2   // R7
+-17636.85, // 0
+-12319.00, // 1
+-12319.00, // 2
+-11709.40, // 3
+-11709.40, // 4
+-17172.05, // 5
+-17244.35, // 6
+-17540.45 // 7
 };
-
 vector<double> building.psArea.upper.N.yPositions = {
-  2173.52,   // R0
-  3349.22,   // P6
-  6502.4,   // R1
-  6502.4,   // R2
-  2765.96,   // Q2
-  1554.9,   // R5
-  1851.01,   // R6
-  1778.71   // R7
+2050.90, // 0
+3349.22, // 1
+6502.40, // 2
+6502.40, // 3
+2765.96, // 4
+1432.28, // 5
+1728.59, // 6
+1656.29 // 7
 };
-
-// Local Variables:
-// mode:c++
-// End:

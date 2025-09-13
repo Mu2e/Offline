@@ -1,79 +1,84 @@
-// SimpleConfig geometry file automatically produced for original file:
-//
-//   geom/geom_upToGradeLevel_W.ccl
-
 string dirt.upToGradeLevel.W.name     = "dirtUpToGradeLevelW";
-
 string dirt.upToGradeLevel.W.material = "MBOverburden";
-
-double dirt.upToGradeLevel.W.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.upToGradeLevel.W.offsetFromFloorSurface.y = 7531.1;
-double dirt.upToGradeLevel.W.offsetFromMu2eOrigin.z   = -3581.4;
-
-double dirt.upToGradeLevel.W.yHalfThickness           = 241.3;
-
-vector<int>    dirt.upToGradeLevel.W.xreplace   = { 16, 17 };
+double dirt.upToGradeLevel.W.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.upToGradeLevel.W.offsetFromFloorSurface.y = 7454.9;
+double dirt.upToGradeLevel.W.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.upToGradeLevel.W.xreplace ={21 ,22 };
+vector<int> dirt.upToGradeLevel.W.yreplace ={20 ,21 ,22 ,23 };
+double dirt.upToGradeLevel.W.yHalfThickness           = 165.1;
 vector<double> dirt.upToGradeLevel.W.xPositions = {
-  -2921,   // p0
-  -4140.2,   // P1
-  -4140.2,    // P0
-  -4749.8,    // P1
-  -4749.8,    // P2
-  -11709.4,   // P3
-  -11709.4,   // P3a
-  -12319,     // P3b
-  -12319,     // P3c
-  -12318.9,   // P3d
-  -12343.4,   // P3e
-  -12319.3,   // P3f
-  -16841.4,   // P3g
-  -16817.3,   // P3h
-  -17853.7,   // p5
-  -17853.7,   // p5_to_S
-  -50000,   // SWcorner
-  -50000,   // NWcorner
-  -2921,   // p0_to_N
-  -2921,   // To NRetWall
-  -14605,  // elbow WextWall
-  -20527.1, // NW corner WextWall
-  -20442.7, // SW corner WextWall
-  -14706.6, // elbow WextWall
-  -12319,   // SE WextWall
-  -12319,   // SW NRetWall
-  -2921     // along NRetWall S face
+-2921.00, // 0
+-4140.20, // 1
+-4140.20, // 2
+-4749.80, // 3
+-4749.80, // 4
+-11709.40, // 5
+-11709.40, // 6
+-12319.00, // 7
+-12319.00, // 8
+-12750.80, // 9
+-12750.80, // 10
+-12319.00, // 11
+-12318.90, // 12
+-18956.93, // 13
+-18827.45, // 14
+-20292.01, // 15
+-20953.28, // 16
+-19421.78, // 17
+-19421.78, // 18
+-19065.88, // 19
+-19065.88, // 20
+-50000.00, // 21
+-50000.00, // 22
+-1270.10, // 23
+-1270.10, // 24
+-15282.54, // 25
+-27111.19, // 26
+-27025.14, // 27
+-15238.68, // 28
+-12319.15, // 29
+-12319.15, // 30
+-1270.10, // 31
+-1270.10, // 32
+-2006.50, // 33
+-2006.50, // 34
+-2921.10 // 35
 };
-
-vector<int>    dirt.upToGradeLevel.W.yreplace   = { 15, 16, 17, 18 };
 vector<double> dirt.upToGradeLevel.W.yPositions = {
-  2438.4,   // p0
-  2438.4,   // P1
-  6858,   // P0
-  6858,   // P1
-  6502.4,   // P2
-  6502.4,   // P3
-  6858,     // P3a
-  6858,     // P3b
-  6502.4,   // P3c
-  -2091.9,  // P3d
-  -2096.1,  // P3e
-  -2194.8,  // P3f
-  -3297.85, // P3g
-  -3396.55, // P3h
-  -3649.57,   // p5
-  -50000,   // p5_to_S
-  -50000,   // SWcorner
-  50000,   // NWcorner
-  50000,   // p0_to_N
-  10312.41, // To NRetWall
-  10312.4, // Elbow WextWall
-  8866.57,  // NW corner WextWall
-  8521.11,  // SW corner WextWall
-  9956.79,  // elbow WextWall
-  9956.79,  // SE corner WextWall
-  9702.79,  // SW corner NRetWall
-  9702.79   // last point on NRetWall S face
+2438.40, // 0
+2438.40, // 1
+6858.00, // 2
+6858.00, // 3
+6502.40, // 4
+6502.40, // 5
+6858.00, // 6
+6858.00, // 7
+5279.30, // 8
+5279.30, // 9
+-354.10, // 10
+-354.10, // 11
+-2091.90, // 12
+-3712.51, // 13
+-2403.18, // 14
+-2242.03, // 15
+-8251.16, // 16
+-8419.70, // 17
+-9436.20, // 18
+-9436.20, // 19
+-50000.00, // 20
+-50000.00, // 21
+50000.00, // 22
+50000.00, // 23
+10338.22, // 24
+10338.22, // 25
+7388.31, // 26
+7043.08, // 27
+9982.42, // 28
+9982.42, // 29
+9702.70, // 30
+9702.70, // 31
+2438.40, // 32
+2438.40, // 33
+7518.50, // 34
+7518.50 // 35
 };
-
-// Local Variables:
-// mode:c++
-// End:

@@ -5,7 +5,7 @@
 #
 # Contact person G. Pezzullo, R. Ehrlich
 
-#include "mu2e_trig_config/core/trigProducers.fcl"
+#include "mu2e-trig-config/core/trigProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
 
 process_name : FragmentToDigi
@@ -26,25 +26,15 @@ physics :
 {
   producers :
   {
-    genFrags :
-    {
-       module_type  : ArtFragmentsFromDTCEvents
-       diagLevel    : 10
-       makeCaloFrag : 0
-       makeTrkFrag  : 0
-       makeCRVFrag  : 1
-       makeSTMFrag  : 0
-
-    }
     CrvDigi :
     {
-      module_type : CrvDigisFromFragments
-      crvTag      : "genFrags"
-      diagLevel   : 2
+      module_type   : CrvDigisFromArtdaqFragments
+      diagLevel     : 10
+      useSubsystem0 : true
     }
   }
 
-  t1 : [ genFrags, CrvDigi]
+  t1 : [ CrvDigi]
   e1 : [ outfile ]
 
   trigger_paths  : [t1]
@@ -57,7 +47,7 @@ outputs:
   outfile :
   {
     module_type   :   RootOutput
-    fileName      :   "digis_from_frags_crv.art"
+    fileName      :   "crvDigis.art"
   }
 }
 

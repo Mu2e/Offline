@@ -25,11 +25,12 @@ namespace mu2e {
     _hN = tfs.make<TH1D>("NSeed", "N KalSeed", 11, -0.5, 10.0);
     _hNStraw = tfs.make<TH1D>("NHit", "N Straw Hits", 101, -0.5, 100.0);
     _hNSeg = tfs.make<TH1D>("NSeg", "N KalSegment", 100, 0.0, 500.0);
-    _hNInter = tfs.make<TH1D>("NInter", "N Intersections", 21, -0.5, 20.0);
+    _hNInter = tfs.make<TH1D>("NInter", "N Intersections", 51, -0.5, 50.0);
     _hTraj = tfs.make<TH1D>("Traj","Trajectory Type", 5,0.5,5.5);
     _hStatus = tfs.make<TH1D>("Status", "Status", 32, -0.5, 31.5);
     _hchi2 = tfs.make<TH1D>("Chi2N", "Chi2/DOF", 100, 0.0, 10.0);
     _hhasCal = tfs.make<TH1D>("hasCal", "CalCluster attached", 2, -0.5, 1.5);
+    _hactiveCal = tfs.make<TH1D>("activeCal", "Calo Hit Active", 2, -0.5, 1.5);
     _hfitCon = tfs.make<TH1D>("FitConn", "Fit CL", 100, 0.0, 1.0);
     _hfitConC = tfs.make<TH1D>("FitConnC", "Fit CL CPR", 100, 0.0, 1.0);
     _hfitConT = tfs.make<TH1D>("FitConnT", "Fit CL TPR", 100, 0.0, 1.0);
@@ -46,6 +47,7 @@ namespace mu2e {
     _hPhi = tfs.make<TH1D>("phi", "phi", 100, -M_PI, M_PI);
     _hCost = tfs.make<TH1D>("cost", "cos(Theta)", 100, -1.0, 1.0);
     _ht0 = tfs.make<TH1D>("t0", "t0", 100, 0.0,1800);
+    _ht0e = tfs.make<TH1D>("t0e", "t0 error", 100, 0.0,5.0);
     _ht02 = tfs.make<TH1D>("t02", "t0", 100, 0.0,1e5);
     _hCuts = tfs.make<TH1D>("Cuts", "Cut series", 8, 0.5, 8.5);
     _hCCdisk = tfs.make<TH1D>("CCdisk", "Calo Disk", 2, -0.5, 1.5);
@@ -58,8 +60,8 @@ namespace mu2e {
     _hHDOCA = tfs.make<TH1D>("HDOCA", "Hit Wire DOCA;DOCA (mm)", 100, -5.0, 5.0);
     _hHEDep = tfs.make<TH1D>("HEDep", "Hit Energy Deposition;EDep (KeV)", 100, 0, 5.0);
     _hHPanel = tfs.make<TH1D>("HPanel", "Hit Unique Panel", 216, -0.5, 215.5);
-    _hSRadLen = tfs.make<TH1D>("SRadLen", "Fractional Straw Radiation Length", 100, 0, 1.0e-3);
-    _hSRadLenSum = tfs.make<TH1D>( "SRadLenSum", "Sum Fractional Straw Radiation Length", 100, 0, 0.04);
+    _hSRadLen = tfs.make<TH1D>("SRadLen", "Fractional Straw Radiation Length", 100, 0, 2.5e-3);
+    _hSRadLenSum = tfs.make<TH1D>( "SRadLenSum", "Sum Fractional Straw Radiation Length", 100, 0, 0.08);
     int ibin = 1;
     _hCuts->GetXaxis()->SetBinLabel(ibin++, "MC Primary");  // bin 1, first visible
     _hCuts->GetXaxis()->SetBinLabel(ibin++, "MC Momentum");
@@ -83,7 +85,7 @@ namespace mu2e {
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
     // increment this by 1 any time the defnitions of the histograms or the
     // histogram contents change, and will not match previous versions
-    _hVer->Fill(10.0);
+    _hVer->Fill(13.0);
 
     _hN->Fill(coll.size());
     for (auto const& ks : coll) {
@@ -108,20 +110,38 @@ namespace mu2e {
       _hchi2->Fill(ks.chisquared() /ks.nDOF());
       int q = ks.hasCaloCluster();
       _hhasCal->Fill(q);
+      q = ks.caloHit()._flag.hasAllProperties(StrawHitFlag::active);
+      _hactiveCal->Fill(q);
       _hfitCon->Fill(ks.fitConsistency());
       if (isCPR) _hfitConC->Fill(ks.fitConsistency());
       if (isTPR) _hfitConT->Fill(ks.fitConsistency());
 
       // sample fit at an appropriate intersection
-      VirtualDetectorId vdid = ks.loopHelixFit() ? VirtualDetectorId(VirtualDetectorId::TT_Mid) : VirtualDetectorId(VirtualDetectorId::TT_OutSurf);
+      VirtualDetectorId vdid = VirtualDetectorId(VirtualDetectorId::TT_Mid);
+      if(!ks.loopHelixFit()){
+        if(ks.intersections(SurfaceId("TT_Outer")).size() > 0){
+          vdid = VirtualDetectorId::TT_OutSurf;
+        } else if(ks.intersections(SurfaceId("TT_Back")).size() > 0){
+          vdid = VirtualDetectorId::TT_Back;
+        } else
+          vdid = VirtualDetectorId::TT_FrontHollow;
+      }
+      //
+      double t0 = ks.t0Val();
+      double t0var = ks.t0Var();
+      _ht0->Fill(t0);
+      _ht02->Fill(t0);
+      _ht0e->Fill(sqrt(t0var));
+
+      // stop at the first found intersection
       // p of MC associated particle at this intersection
       double p_pri(0.0);
       double p_mc = mcTrkP(event,vdid,p_pri);
       SurfaceId sid = _vdmap[vdid];
       auto kintercol = ks.intersections(sid);
       double ksCharge = ptable->particle(ks.particle()).charge();
-      if(kintercol.size() > 0){
-        auto ikinter = kintercol.front(); // just sample the 1st intersection if there are >1
+      auto ikinter = ks.t0Segment(t0);
+      if(ikinter != ks.segments().end()){
         auto mom3 = ikinter->momentum3();
         double p = mom3.R();
         double recoCharge(1.);
@@ -140,16 +160,13 @@ namespace mu2e {
         _hPhi->Fill(mom3.Phi());
         double cost = cos(mom3.Theta());
         _hCost->Fill(cost);
-        _ht0->Fill(ikinter->time());
-        _ht02->Fill(ikinter->time());
 
         // fill the cut series; this needs updating TODO
         bool d0cut =true;
         // the first of the cut series, number of events
         _hCuts->Fill(1.0);
         // MC CE found
-        double t0 = ikinter->time();
-        double td = 1.0/tan(mom3.Theta());
+       double td = 1.0/tan(mom3.Theta());
         // note: these are crude and arbitrary cuts just for validation,
         // do not intepret these as a correct analysis selection!
         _hPResA->Fill(p - p_pri);
@@ -199,8 +216,8 @@ namespace mu2e {
       float radlensum(0.0);
       for (auto const& ts : ks.straws()) {
         if (ts.active()) {
-          _hSRadLen->Fill(ts.radLen());
-          radlensum += ts.radLen();
+          _hSRadLen->Fill(ts._radlen);
+          radlensum += ts._radlen;
         }
       }
       _hSRadLenSum->Fill(radlensum);

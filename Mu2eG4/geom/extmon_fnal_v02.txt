@@ -4,6 +4,8 @@
 
 bool           hasExtMonFNAL = true;
 
+#include "Offline/Mu2eG4/geom/extmon_filter_absolute.txt"
+
 //----------------------------------------------------------------
 // ExtMonFNAL enclosure walls are no longer part of this module.
 // However, the shielding between the two rooms (collimator2.shielding) is.
@@ -23,10 +25,6 @@ string extMonFNAL.concreteMaterial = "ShieldingConcrete";
 
 //----------------------------------------------------------------
 // The extinction monitor filter channel
-
-// The first collimator is embedded in frontShielding of ProtonBeamDump
-// and this determines its length.
-//
 
 // Channel aperture (vector since upstream and downstream halves
 // may be different):  {upstream size, downstream size}
@@ -48,20 +46,6 @@ string         extMonFNAL.collimator1.shot.materialName  = "G4_AIR";
 
 // Transition between the two radii of the plug and hole happens over dz.
 double extMonFNAL.collimator1.radiusTransitiondZ = 0;
-
-// The entrance point on the face of the beam dump enclosure,
-// transverse to the beam coordinates (horiz, vertical).  The offsets
-// are w.r.t to the core center position (== the nominal beam entrance
-// point).
-double         extMonFNAL.entranceOffsetX = 315;
-double         extMonFNAL.entranceOffsetY = 1250;
-
-// Filter channel orientation: angles in horizontal and vertical
-// planes w.r.t dump core. Note that angleH is the same for all filter
-// elements, while angleV is different.  We specify angleV at the
-// filter entrance.
-double         extMonFNAL.angleH = 0.0302; //radians
-double         extMonFNAL.entranceAngleV = 0.1653; //radians
 
 bool extMonFNAL.collimator1.alignmentHole.visible = true;
 bool extMonFNAL.collimator1.alignmentHole.issolid = false;
@@ -87,10 +71,6 @@ bool extMonFNAL.filter.magnet.iron.visible = true;
 bool extMonFNAL.filter.magnet.iron.solid = false;
 bool extMonFNAL.filter.magnet.aperture.visible = true;
 bool extMonFNAL.filter.magnet.aperture.solid = false;
-
-// Distance from the point where the reference trajectory
-// crosses the (physical) magnet face to the upstream wall.
-double extMonFNAL.filter.magnet.distanceToUpstreamWall = 342.9; // mm
 
 // The magnet is placed in such a way that a positive particle with
 // the nominal momentum given below, travelling along the axis of
@@ -175,15 +155,37 @@ string         extMonFNAL.planeMaterial = "G4_C";
 bool extMonFNAL.stackMotherVisible = true;
 bool extMonFNAL.stackMotherSolid = true;
 
+double extMonFNAL.chipGapX = 0.13;
+double extMonFNAL.chipOffsetY = 0.835;
+
 //================================================================
 // Scintillator parameters
 
-vector<double> extMonFNAL.scintHalfSize = { 54.0 , 42.0, 3.0 };
+vector<double> extMonFNAL.Dn.scintFullSize = { 45.0 , 54.0, 3 };
+vector<double> extMonFNAL.Up.scintFullSize = { 45 , 37, 3 };
 string         extMonFNAL.scintMaterial = "Scintillator";
-double         extMonFNAL.scintOffset = 29.0; // Distance from pixel plane center to center of scintillator closest to the pixels on outer ends of detector table
-double         extMonFNAL.scintInnerOffset = 33; // Distance from pixel plane center to center of scintillator on the magnet side
+double         extMonFNAL.scintPlaneOffset = 29.0; // Distance from pixel plane center to center of scintillator closest to the pixels on outer ends of detector table
+double         extMonFNAL.scintInnerOffset = -33; // Distance from pixel plane center to center of scintillator on the magnet side
 double         extMonFNAL.scintGap = 5.3; // Distance between the surfaces of the two adjacent scintillators
 
+//================================================================
+// The Ext Mon detector mother
+
+vector<double> extMonFNAL.detectorMotherHS = { 150, 200, 750 };
+double extMonFNAL.detectorMotherDistToMagnet = 1;
+bool extMonFNAL.stackRotation = true;
+
+//================================================================
+// The pixel cooling tube parameters
+
+double extMonFNAL.coolingTubeInRad = 1.5542;
+double extMonFNAL.coolingTubeOutRad = 1.8542;
+double extMonFNAL.coolingTubeLen = 52.685;
+double extMonFNAL.coolingTubeTopLen = 34.57;
+double extMonFNAL.coolingTubeTsSweptRad = 3.969;
+double extMonFNAL.coolingTubePlaneOffset = 3.5;
+
+//================================================================
 // The upstream stack of the sensors.
 //
 // Location in room: the center is on the continuation of
@@ -195,9 +197,6 @@ double         extMonFNAL.scintGap = 5.3; // Distance between the surfaces of th
 // Details of the detector.  All of these vectors should be
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
-vector<double> extMonFNAL.up.motherTransverseHalfSize = { 115, 115 }; // x, y
-double extMonFNAL.up.motherStartZ = 276.;
-double extMonFNAL.up.motherEndZ = 676.;
 
 vector<double> extMonFNAL.up.plane_zoffset = { +326., +426., +526., +626.};
 vector<double> extMonFNAL.up.plane_xoffset = { 0.,    0.,    0.,    0. };
@@ -221,10 +220,6 @@ vector<double> extMonFNAL.up.module_rotation = { 0., 0. };
 // of the same size: one entry per detector plane.
 // The coordinates are relative to the detector box volume.
 
-vector<double> extMonFNAL.dn.motherTransverseHalfSize = { 115, 115 }; // x, y
-double extMonFNAL.dn.motherStartZ = -676.;
-double extMonFNAL.dn.motherEndZ = -276.;
-
 vector<double> extMonFNAL.dn.plane_zoffset = {-626., -526.,  -426., -326.};
 vector<double> extMonFNAL.dn.plane_xoffset = { 0., 0., 0., 0. };
 vector<double> extMonFNAL.dn.plane_yoffset = { 0., 0., 0., 0. };
@@ -232,7 +227,7 @@ vector<double> extMonFNAL.dn.plane_yoffset = { 0., 0., 0., 0. };
 // Assumes all planes in the stack have same module layout (these offsets are used to mount modules on all planes)
 vector<double> extMonFNAL.dn.module_xoffset = { 0., 0., 0. };
 vector<double> extMonFNAL.dn.module_yoffset = { 16.7, 0., -16.7 };
-vector<double> extMonFNAL.dn.module_zoffset = { 1., -1., 1. }; // just determines which side of the plane; all math is handed in constructExMonFNAL
+vector<double> extMonFNAL.dn.module_zoffset = { 1., -1., 1. }; // just determines which side of the plane; all math is handed in constructExMonFNALDetector
 vector<double> extMonFNAL.dn.module_rotation = { 0., 0., 180. };
 
 //================================================================
@@ -280,11 +275,11 @@ double extMonFNAL.room.chiller4.distanceToTranverseWall = 1;
 int extMonFNAL.numChillersInHall = 3;
 
 string extMonFNAL.hall.chiller1.wallName = "theInsideWall";
-string extMonFNAL.hall.chiller2.wallName = "extMonExteriorWall";
+string extMonFNAL.hall.chiller2.wallName = "extMonExteriorWallE";
 string extMonFNAL.hall.chiller3.wallName = "extMonExteriorWall";
 
 vector<int> extMonFNAL.hall.chiller1.refVertices = { 2, 3 };
-vector<int> extMonFNAL.hall.chiller2.refVertices = { 7, 8 };
+vector<int> extMonFNAL.hall.chiller2.refVertices = { 8, 0 }; // TO BE FIXED By ANDREI
 vector<int> extMonFNAL.hall.chiller3.refVertices = { 5, 6 };
 
 // The "wall" is the straight line connecting the two vertices.
@@ -345,6 +340,7 @@ bool   extMonFNAL.filter.vd.enabled = true;
 bool   extMonFNAL.detector.vd.enabled = true;
 double extMonFNAL.detector.vd.halfdx = 100; // transverse size
 double extMonFNAL.detector.vd.halfdy = 100; // transverse size
+double extMonFNAL.detector.vd.Gapz = 10;
 
 // A set of 6 planar VDs that enclose ExtMonFNAL.
 // The "box" is rotated to be parallel to the ExtMon system axes.
@@ -384,6 +380,13 @@ double vd.ExtMonCommonPlane.dxmin = -1000;
 double vd.ExtMonCommonPlane.dxmax = +1700;
 double vd.ExtMonCommonPlane.dymin = -1000;
 double vd.ExtMonCommonPlane.dymax = +2000;
+
+// Visualize wall scans done by Fermilab Metrology.
+// This leads to an invalid geometry (volume overlaps),
+// so the setting should be off to run any simulations.
+
+bool extMonFNAL.debug.showWallScans = false;
+double extMonFNAL.debug.wallScanDotRadius = 10;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

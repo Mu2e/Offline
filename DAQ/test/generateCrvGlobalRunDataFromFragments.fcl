@@ -1,0 +1,43 @@
+# Reads CRV Global Run Info
+# Contact person R. Ehrlich
+
+#include "mu2e-trig-config/core/trigProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : CrvGlobalRun
+
+services :
+{
+  @table::Services.Core
+}
+
+source :
+{
+  module_type : RootInput
+  fileNames   : @nil
+  maxEvents   : -1
+}
+
+physics :
+{
+  producers :
+  {
+    CrvGlobalRunData :
+    {
+      module_type   : CrvGRdataFromArtdaqFragments
+      diagLevel     : 10
+      csvFileName   : "crvGlobalRun.txt"
+      writeCsvFile  : true
+      useSubsystem0 : false
+    }
+  }
+
+  t1 : [ CrvGlobalRunData ]
+  e1 : [ ]
+
+  trigger_paths  : [t1]
+  end_paths      : [e1]
+
+}
+
+services.message.destinations.log.categories.ArtReport.limit : 0

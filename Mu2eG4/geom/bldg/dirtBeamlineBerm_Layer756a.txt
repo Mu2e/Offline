@@ -1,0 +1,61 @@
+string dirt.beamline.berm.l756a.name     = "dirtBeamlineBerml756a";
+string dirt.beamline.berm.l756a.material = "MBOverburden";
+double dirt.beamline.berm.l756a.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.beamline.berm.l756a.offsetFromFloorSurface.y = 10515.6;
+double dirt.beamline.berm.l756a.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.beamline.berm.l756a.xreplace ={13 ,14 };
+double dirt.beamline.berm.l756a.yHalfThickness           = 152.30;
+vector<double> dirt.beamline.berm.l756a.xPositions = {
+183.22, // 0
+-4140.20, // 1
+-4140.20, // 2
+-4749.80, // 3
+-4749.80, // 4
+-11709.40, // 5
+-11709.40, // 6
+-12319.00, // 7
+-12319.00, // 8
+-12318.90, // 9
+-18956.73, // 10
+-18827.35, // 11
+-20292.11, // 12
+-32280.61, // 13
+-32280.61, // 14
+-24207.47, // 15
+-22537.56, // 16
+-21460.36, // 17
+-20749.15, // 18
+-20663.02, // 19
+-20527.30, // 20
+-15238.68, // 21
+-12319.05, // 22
+-12319.00, // 23
+183.22 // 24
+};
+vector<double> dirt.beamline.berm.l756a.yPositions = {
+2438.40, // 0
+2438.40, // 1
+6858.00, // 2
+6858.00, // 3
+6502.40, // 4
+6502.40, // 5
+6858.00, // 6
+6858.00, // 7
+6502.40, // 8
+-2091.90, // 9
+-3712.51, // 10
+-2403.18, // 11
+-2241.93, // 12
+-6053.85, // 13
+-1254.00, // 14
+2831.36, // 15
+3652.34, // 16
+4817.99, // 17
+6432.68, // 18
+8101.52, // 19
+8663.49, // 20
+9982.42, // 21
+9982.42, // 22
+9702.80, // 23
+9702.80 // 24
+};

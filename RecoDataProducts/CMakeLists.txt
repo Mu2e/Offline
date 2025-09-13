@@ -5,6 +5,7 @@ cet_make_library(
       src/BkgQual.cc
       src/ComboHit.cc
       src/CosmicTrack.cc
+      src/CrvDAQerror.cc
       src/CrvDigi.cc
       src/CrvRecoPulse.cc
       src/ExtMonFNALRawCluster.cc
@@ -15,6 +16,7 @@ cet_make_library(
       src/ExtMonFNALTrkParam.cc
       src/ExtMonUCITofHit.cc
       src/HelixVal.cc
+      src/IntensityInfoCalo.cc
       src/KalSeed.cc
       src/KalSegment.cc
       src/PIDProduct.cc
@@ -23,6 +25,7 @@ cet_make_library(
       src/StrawDigiFlag.cc
       src/StrawHit.cc
       src/StrawHitFlag.cc
+      src/StrawFlag.cc
       src/TrackClusterMatch.cc
       src/TrackSummary.cc
       src/TrkCaloHitPID.cc
@@ -37,7 +40,7 @@ cet_make_library(
       BTrk_KalmanTrack
       BTrk_ProbTools
       KinKal_Trajectory
-      
+
       Offline::DataProducts
       Offline::GeneralUtilities
       Offline::KinKalGeom

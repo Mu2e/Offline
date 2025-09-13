@@ -9,8 +9,8 @@ namespace mu2e {
 
     // currently use hard-coded geometry.  So far define only surfaces, volumes and materials will come later
     DetectorSolenoid::DetectorSolenoid() :
-      outer_{ std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-1482),950,5450)},
-      inner_{ std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-1482),1328,5450)}, // bounding surfaces
+      inner_{ std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-1482),950,5450)},
+      outer_{ std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-1482),1328,5450)}, // bounding surfaces
       front_{ std::make_shared<Disk>(outer_->frontDisk())},
       back_{ std::make_shared<Disk>(outer_->backDisk())},
       ipa_{ std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-2770),300.0,500.0)},

@@ -17,6 +17,7 @@
 #include "Offline/STMGeom/inc/GeDetector.hh"
 #include "Offline/STMGeom/inc/ShieldPipe.hh"
 #include "Offline/STMGeom/inc/STM_SSC.hh"
+#include "Offline/STMGeom/inc/SSCSupport.hh"
 #include "Offline/STMGeom/inc/HPGeDetector.hh"
 #include "Offline/STMGeom/inc/LaBrDetector.hh"
 #include "Offline/STMGeom/inc/FrontShielding.hh"
@@ -58,6 +59,8 @@ namespace mu2e {
     GeDetector       const * getSTMDetector2Ptr()            const { return _pSTMDetector2Params.get(); }
     ShieldPipe       const * getSTMShieldPipePtr()           const { return _pSTMShieldPipeParams.get(); }
     STM_SSC          const * getSTM_SSCPtr()                 const { return _pSTM_SSCParams.get(); }
+    SSCSupport       const * getSSCSupportPtr()              const { return _pSSCSupportParams.get(); }
+
     HPGeDetector     const * getHPGeDetectorPtr()            const { return _pSTMHPGeDetectorParams.get(); }
     LaBrDetector     const * getLaBrDetectorPtr()            const { return _pSTMLaBrDetectorParams.get(); }
 
@@ -94,6 +97,8 @@ namespace mu2e {
     std::unique_ptr<GeDetector>       _pSTMDetector2Params;
     std::unique_ptr<ShieldPipe>       _pSTMShieldPipeParams;
     std::unique_ptr<STM_SSC>          _pSTM_SSCParams;
+    std::unique_ptr<SSCSupport>       _pSSCSupportParams;
+
     std::unique_ptr<HPGeDetector>     _pSTMHPGeDetectorParams;
     std::unique_ptr<LaBrDetector>     _pSTMLaBrDetectorParams;
 

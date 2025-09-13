@@ -70,14 +70,13 @@ namespace mu2e {
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    geomOptions->loadEntry( config, "ProtonBeamDumpFront"    , "protonBeamDump.front");
-    geomOptions->loadEntry( config, "ProtonBeamDumpBack"     , "protonBeamDump.back");
+    geomOptions->loadEntry( config, "ProtonBeamDumpConcrete" , "protonBeamDump.concrete");
     geomOptions->loadEntry( config, "ProtonBeamDumpDirt"     , "protonBeamDump.dirt"       );
-    geomOptions->loadEntry( config, "ProtonBeamDumpShielding", "protonBeamDump.shielding"  );
     geomOptions->loadEntry( config, "ProtonBeamDumpCore"     , "protonBeamDump.core"       );
     geomOptions->loadEntry( config, "ProtonBeamDumpMouth"    , "protonBeamDump.mouth"      );
     geomOptions->loadEntry( config, "ProtonBeamNeutronCave"  , "protonBeamDump.neutronCave");
 
+    // Use the same rotation as for other concrete volumes in constructHall()
     CLHEP::HepRotation *pshieldingRot = reg.add(new CLHEP::HepRotation());
     CLHEP::HepRotation& shieldingRot = *pshieldingRot;
     pshieldingRot->rotateX( 90*CLHEP::degree);
@@ -86,125 +85,114 @@ namespace mu2e {
     //--------------------------------------------------------------------
     // Subtraction Cylinder
 
-    CLHEP::Hep3Vector subCylOffsetInParent = shieldingRot *(emfb->collimator1CenterInMu2e()
-                                                            - CLHEP::Hep3Vector(0, dump->frontShieldingCenterInMu2e()[1], 0));
+    CLHEP::Hep3Vector subCylOffsetInParent = shieldingRot *(emfb->filter().collimator1().centerInMu2e()
+                                                            - dump->dumpConcreteCenterInMu2e());
 
     //Create a Rotation Matrix
     CLHEP::HepRotation *subCylinderRotation = reg.add(new CLHEP::HepRotation());
     subCylinderRotation->rotateY(90*CLHEP::degree);
-    subCylinderRotation->rotateX(emfb->filterAngleH()-dump->coreRotY());
-    subCylinderRotation->rotateY(-emfb->filterEntranceAngleV());
+    subCylinderRotation->rotateX(emfb->filter().collimator1().angleH_inBeamDump()-dump->coreRotY());
+    subCylinderRotation->rotateY(-emfb->filter().collimator1().angleV());
 
     G4Tubs* subCylinder = new G4Tubs("ExtMonFNALCollimator1Hole",
-                                      0.*CLHEP::mm,
-                                      emfb->collimator1().shotLinerOuterRadius(),
-                                      1.2*0.5*emfb->collimator1().length(),//1.2 factor to ensure hole exceeds dump dimensions
-                                      0,
-                                      CLHEP::twopi);
+                                     0.*CLHEP::mm,
+                                     emfb->filter().collimator1().shotLinerOuterRadius(),
+                                     // factor of 2 to help the hole completely pierce the dump
+                                     // even when the collimator center is off
+                                     2. * 0.5*emfb->filter().collimator1().length(),
+                                     0,
+                                     CLHEP::twopi);
 
     //--------------------------------------------------------------------------------
-    //Beam Dump Front
+    //Beam Dump Concrete
 
     static CLHEP::HepRotation rotationInShield( (shieldingRot*dump->coreRotationInMu2e()).inverse() );
 
+    CLHEP::Hep3Vector extMonSubtractionPositionInShield( shieldingRot * (dump->extMonSubtractionCenterInMu2e()
+                                                                         - dump->dumpConcreteCenterInMu2e()));
+
     CLHEP::Hep3Vector mouthPositionInShield( shieldingRot * (dump->mouthCenterInMu2e()
-                                             - (CLHEP::Hep3Vector(0, dump->frontShieldingCenterInMu2e()[1], 0))));
+                                                             - dump->dumpConcreteCenterInMu2e()));
 
     CLHEP::Hep3Vector cavePositionInShield( shieldingRot * (dump->neutronCaveCenterInMu2e()
-                                            - (CLHEP::Hep3Vector(0, dump->frontShieldingCenterInMu2e()[1], 0))));
+                                                            - dump->dumpConcreteCenterInMu2e()));
 
-    VolumeInfo beamDumpFront("ProtonBeamDumpFront",
-                             CLHEP::Hep3Vector(0, dump->frontShieldingCenterInMu2e()[1], 0)
-                             - parent.centerInMu2e(),
-                             parent.centerInWorld
-                             );
+    VolumeInfo beamDumpConcrete("ProtonBeamDumpConcrete",
+                                dump->dumpConcreteCenterInMu2e() - parent.centerInMu2e(),
+                                parent.centerInWorld
+                                );
 
-   G4ExtrudedSolid* beamDumpFrontExtrusion  = new G4ExtrudedSolid("ProtonBeamDumpFrontExtrusion",
-                                                                  dump->frontShieldingOutline(),
-                                                                  dump->frontShieldingHalfSize()[1],
-                                                                  G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.
-                                                                  );
+    G4ExtrudedSolid* beamDumpConcreteExtrusion  = new G4ExtrudedSolid("ProtonBeamDumpConcreteExtrusion",
+                                                                      dump->dumpConcreteOutline(),
+                                                                      dump->dumpConcreteHalfHeight(),
+                                                                      G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.
+                                                                      );
 
-   G4SubtractionSolid* beamDumpFrontCylSubtraction = new G4SubtractionSolid("beamDumpFrontCylSubtraction",
-                                                                            beamDumpFrontExtrusion,
-                                                                            subCylinder,
-                                                                            subCylinderRotation,
-                                                                            subCylOffsetInParent
+    G4ExtrudedSolid* extMonCutout  = new G4ExtrudedSolid("ProtonBeamDumpExtMonCutout",
+                                                         dump->extMonSubtractionOutline(),
+                                                         dump->extMonSubtractionHalfHeight(),
+                                                         G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.
+                                                         );
+
+    G4SubtractionSolid* beamDumpConcreteSansExtMon = new G4SubtractionSolid("beamDumpConcreteSansExtMon",
+                                                                            beamDumpConcreteExtrusion,
+                                                                            extMonCutout,
+                                                                            0,
+                                                                            extMonSubtractionPositionInShield
                                                                             );
 
-   G4Box* ProtonBeamNeutronCave = new G4Box("ProtonBeamNeutronCave",
-                                            dump->neutronCaveHalfSize()[0],
-                                            dump->neutronCaveHalfSize()[1],
-                                            dump->neutronCaveHalfSize()[2]
-                                            );
+    G4SubtractionSolid* beamDumpConcreteCylSubtraction = new G4SubtractionSolid("beamDumpConcreteCylSubtraction",
+                                                                                beamDumpConcreteSansExtMon,
+                                                                                subCylinder,
+                                                                                subCylinderRotation,
+                                                                                subCylOffsetInParent
+                                                                                );
 
-   G4SubtractionSolid* beamDumpFrontCaveSubtraction = new G4SubtractionSolid("beamDumpFrontCaveSubtraction",
-                                                                             beamDumpFrontCylSubtraction,
-                                                                             ProtonBeamNeutronCave,
-                                                                             &rotationInShield,
-                                                                             cavePositionInShield
-                                                                             );
+    G4Box* ProtonBeamNeutronCave = new G4Box("ProtonBeamNeutronCave",
+                                             dump->neutronCaveHalfSize()[0],
+                                             dump->neutronCaveHalfSize()[1],
+                                             dump->neutronCaveHalfSize()[2]
+                                             );
 
-   G4Box* ProtonBeamDumpMouth = new G4Box("ProtonBeamDumpMouth",
-                                          dump->mouthHalfSize()[0],
-                                          dump->mouthHalfSize()[1],
-                                          1.1*dump->mouthHalfSize()[2] //scale up to avoid coinciding boundaries
-                                          );
+    G4SubtractionSolid* beamDumpConcreteCaveSubtraction = new G4SubtractionSolid("beamDumpConcreteCaveSubtraction",
+                                                                                 beamDumpConcreteCylSubtraction,
+                                                                                 ProtonBeamNeutronCave,
+                                                                                 &rotationInShield,
+                                                                                 cavePositionInShield
+                                                                                 );
 
-   beamDumpFront.solid = new G4SubtractionSolid(beamDumpFront.name,
-                                                beamDumpFrontCaveSubtraction,
-                                                ProtonBeamDumpMouth,
-                                                &rotationInShield,
-                                                mouthPositionInShield
-                                                );
+    G4Box* ProtonBeamDumpMouth = new G4Box("ProtonBeamDumpMouth",
+                                           dump->mouthHalfSize()[0],
+                                           dump->mouthHalfSize()[1],
+                                           1.1*dump->mouthHalfSize()[2] //scale up to avoid coinciding boundaries
+                                           );
 
-    finishNesting(beamDumpFront,
+    beamDumpConcrete.solid = new G4SubtractionSolid(beamDumpConcrete.name,
+                                                    beamDumpConcreteCaveSubtraction,
+                                                    ProtonBeamDumpMouth,
+                                                    &rotationInShield,
+                                                    mouthPositionInShield
+                                                    );
+
+    finishNesting(beamDumpConcrete,
                   materialFinder.get("protonBeamDump.material.shielding"),
                   pshieldingRot,
-                  beamDumpFront.centerInParent,
+                  beamDumpConcrete.centerInParent,
                   parent.logical,
                   0,
-                  geomOptions->isVisible( "ProtonBeamDumpFront" ),
                   G4Colour::Red() ,
-                  geomOptions->isSolid( "ProtonBeamDumpFront" ),
-                  geomOptions->forceAuxEdgeVisible( "ProtonBeamDumpFront" ),
-                  geomOptions->placePV( "ProtonBeamDumpFront" ),
-                  geomOptions->doSurfaceCheck( "ProtonBeamDumpFront" )
+                  "ProtonBeamDumpConcrete"
                   );
 
     //--------------------------------------------------------------------------------
-    //Beam Dump Back
-
-    CLHEP::Hep3Vector coreAirPositionInShield( shieldingRot * (dump->coreAirCenterInMu2e() - beamDumpFront.centerInMu2e()));
-    VolumeInfo beamDumpBack("ProtonBeamDumpBack",
-                            CLHEP::Hep3Vector(0, dump->backShieldingCenterInMu2e()[1], 0)
-                            - parent.centerInMu2e(),
-                            parent.centerInWorld);
-
-    beamDumpBack.solid = new G4ExtrudedSolid(beamDumpBack.name, dump->backShieldingOutline(),
-                                             dump->backShieldingHalfSize()[1],
-                                             G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-
-    finishNesting(beamDumpBack,
-                  materialFinder.get("protonBeamDump.material.shielding"),
-                  pshieldingRot,
-                  beamDumpBack.centerInParent,
-                  parent.logical,
-                  0,
-                  geomOptions->isVisible( "ProtonBeamDumpBack" ),
-                  G4Colour::Red() ,
-                  geomOptions->isSolid( "ProtonBeamDumpBack" ),
-                  geomOptions->forceAuxEdgeVisible( "ProtonBeamDumpBack" ),
-                  geomOptions->placePV( "ProtonBeamDumpBack" ),
-                  geomOptions->doSurfaceCheck( "ProtonBeamDumpBack" )
-                  );
+    CLHEP::Hep3Vector coreAirPositionInShield( shieldingRot * (dump->coreAirCenterInMu2e() - beamDumpConcrete.centerInMu2e()));
 
     VolumeInfo  beamDumpCoreAir = nestBox("ProtonBeamDumpCoreAir",
                                           dump->coreAirHalfSize(),
                                           materialFinder.get("protonBeamDump.material.air"),
                                           &rotationInShield,
                                           coreAirPositionInShield,
-                                          beamDumpFront, 0,
+                                          beamDumpConcrete, 0,
                                           G4Colour::Cyan()
                                           );
 
@@ -218,27 +206,81 @@ namespace mu2e {
             G4Colour::Blue()
             );
 
-    CLHEP::Hep3Vector frontSteelPositionInShield( shieldingRot * (dump->frontSteelCenterInMu2e() - beamDumpFront.centerInMu2e()));
-    nestBox("ProtonBeamDumpFrontSteel",
-            dump->frontSteelHalfSize(),
+    CLHEP::Hep3Vector topSteelFlatPositionInShield( shieldingRot * (dump->topSteelFlatCenterInMu2e() - beamDumpConcrete.centerInMu2e()));
+    nestBox("ProtonBeamDumpTopSteelFlat",
+            dump->topSteelFlatHalfSize(),
             materialFinder.get("protonBeamDump.material.core"),
             &rotationInShield,
-            frontSteelPositionInShield,
-            beamDumpFront, 0,
+            topSteelFlatPositionInShield,
+            beamDumpConcrete, 0,
             G4Colour::Blue()
             );
 
-    CLHEP::Hep3Vector backSteelPositionInShield( shieldingRot * (dump->backSteelCenterInMu2e() - beamDumpBack.centerInMu2e()));
-    nestBox("ProtonBeamDumpBackSteel",
-            dump->backSteelHalfSize(),
-            materialFinder.get("protonBeamDump.material.core"),
-            &rotationInShield,
-            backSteelPositionInShield,
-            beamDumpBack, 0,
-            G4Colour::Blue()
-            );
+    //----------------------------------------------------------------
+    // The scalloped steel
 
-    constructExtMonFNAL(beamDumpFront, shieldingRot, parent, CLHEP::HepRotation::IDENTITY, config);
+    G4Tubs* scallopCutout = new G4Tubs("BeamDumpScallopCutout",
+                                       0.*CLHEP::mm,
+
+                                       emfb->filter().collimator1().shotLinerOuterRadius()
+                                       + dump->scallopDistanceToCollimator(),
+
+                                       0.5*emfb->filter().collimator1().length(),
+                                       0,
+                                       CLHEP::twopi);
+
+    G4Box* scallopedSteelInitialBox  = new G4Box("BeamDumpScallopedSteelInitialBox",
+                                                 dump->topSteelScallopedHalfSize()[0],
+                                                 dump->topSteelScallopedHalfSize()[1],
+                                                 dump->topSteelScallopedHalfSize()[2]
+                                                 );
+
+    // The calculation below looks confusing because of the naming
+    // correspondance to active vs passive rotations.
+    // To get the cutout rotation C in steel S, we need Cinv*S.  But
+    // then we want the inverse of it for the G4 interface, leading to
+    // (Cinv*S)inv = Sinv * C.  The first two operators below are parts of
+    // Sinv.  Then the collimator rotation value has the opposite meaning
+    // compared to S, so it also gets the inverse() call below.
+    CLHEP::HepRotation *scallopCutoutRotation = reg.add(new CLHEP::HepRotation());
+    *scallopCutoutRotation *= shieldingRot.inverse();
+    *scallopCutoutRotation *= rotationInShield.inverse();
+    *scallopCutoutRotation *= emfb->filter().collimator1().rotationInMu2e().inverse();
+
+    CLHEP::Hep3Vector topSteelScallopedPositionInShield( shieldingRot
+                                                         *(dump->topSteelScallopedCenterInMu2e()
+                                                           - beamDumpConcrete.centerInMu2e())
+                                                         );
+
+    VolumeInfo scallopedSteel("ProtonBeamDumpTopSteelScalloped",
+                              topSteelScallopedPositionInShield,
+                              parent.centerInWorld);
+
+    CLHEP::Hep3Vector scallopCutoutPositionInSteel( rotationInShield*shieldingRot
+                                                    *(emfb->filter().collimator1().centerInMu2e()
+                                                      - dump->topSteelScallopedCenterInMu2e()
+                                                      )
+                                                    );
+
+    scallopedSteel.solid = new G4SubtractionSolid(scallopedSteel.name,
+                                                  scallopedSteelInitialBox,
+                                                  scallopCutout,
+                                                  scallopCutoutRotation,
+                                                  scallopCutoutPositionInSteel
+                                                  );
+
+    finishNesting(scallopedSteel,
+                  materialFinder.get("protonBeamDump.material.core"),
+                  &rotationInShield,
+                  topSteelScallopedPositionInShield,
+                  beamDumpConcrete.logical,
+                  0,
+                  G4Colour::Blue(),
+                  "ProtonBeamDumpTopSteel"
+                  );
+
+    //----------------------------------------------------------------
+    constructExtMonFNAL(beamDumpConcrete, shieldingRot, parent, CLHEP::HepRotation::IDENTITY, config);
 
   } // constructProtonBeamDump()
 

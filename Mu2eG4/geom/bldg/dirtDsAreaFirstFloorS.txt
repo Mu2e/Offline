@@ -7,12 +7,12 @@ string dirt.dsArea.firstFloor.S.name     = "dirtDsAreaFirstFloorS";
 string dirt.dsArea.firstFloor.S.material = "MBOverburden";
 
 double dirt.dsArea.firstFloor.S.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.dsArea.firstFloor.S.offsetFromFloorSurface.y = 7569.2;
+double dirt.dsArea.firstFloor.S.offsetFromFloorSurface.y = 7493.0;
 double dirt.dsArea.firstFloor.S.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.dsArea.firstFloor.S.yHalfThickness           = 203.2;
+double dirt.dsArea.firstFloor.S.yHalfThickness           = 127.0;
 
-vector<int>    dirt.dsArea.firstFloor.S.xreplace   = { 16, 17 };
+vector<int>    dirt.dsArea.firstFloor.S.xreplace   = { 12, 13 };
 vector<double> dirt.dsArea.firstFloor.S.xPositions = {
   45847,   // q
   45847,   // g2
@@ -24,17 +24,13 @@ vector<double> dirt.dsArea.firstFloor.S.xPositions = {
   31153.1,   // g7
   31419.8,   // g8
   31419.8,   // g9
-  14922.5,   // g10
-  14922.5,   // g11
-  12950.8,   // g12
-  12950.8,   // g13
   -2921,   // q5
   -2921,   // q5_to_S
   50000,   // SEcorner
   50000   // q_to_E
 };
 
-vector<int>    dirt.dsArea.firstFloor.S.yreplace   = { 15, 16 };
+vector<int>    dirt.dsArea.firstFloor.S.yreplace   = { 11, 12 };
 vector<double> dirt.dsArea.firstFloor.S.yPositions = {
   -8661.4,   // q
   -10668,   // g2
@@ -46,10 +42,6 @@ vector<double> dirt.dsArea.firstFloor.S.yPositions = {
   -25298.4,   // g7
   -25298.4,   // g8
   -25908,   // g9
-  -25908,   // g10
-  -19431,   // g11
-  -19431,   // g12
-  -25908,   // g13
   -25908,   // q5
   -50000,   // q5_to_S
   -50000,   // SEcorner

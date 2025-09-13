@@ -7,6 +7,8 @@
 #include <map>
 
 #include "canvas/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Sampled.h"
+#include "canvas/Persistency/Provenance/SubRunID.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/RNGsnapshot.h"
@@ -30,6 +32,8 @@
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
 #include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
 #include "Offline/MCDataProducts/inc/SurfaceStep.hh"
+#include "Offline/MCDataProducts/inc/ScorerSummary.hh"
+#include "Offline/MCDataProducts/inc/ScorerConfigSummary.hh"
 
 // simulation bookeeping
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfo.hh"
@@ -39,6 +43,7 @@
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensitySummary.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
+#include "Offline/MCDataProducts/inc/SumOfWeights.hh"
 
 // G4
 #include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
@@ -81,4 +86,3 @@
 
 // Analysis
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
-

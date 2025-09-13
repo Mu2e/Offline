@@ -446,7 +446,7 @@ namespace mu2e {
 
     _evt          = event.id().event();
     _run          = event.run();
-    _caloCrystals = _calorimeter->nCrystal();
+    _caloCrystals = _calorimeter->nCrystals();
     _caloDisk0Crystals = _calorimeter->disk(0).nCrystals();
     _caloDisk1Crystals = _calorimeter->disk(1).nCrystals();
     _nTrkGood          = 0;

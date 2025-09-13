@@ -39,6 +39,7 @@ namespace mu2e {
     // Need to keep the enum and the _name member in sync.
     // Add new elements just before lastEnum; do not insert new elements
     // prior to this - it will break backwards compatibility.
+    // if you add a new beam process (from stopped muons or pions) please update the isFromProtonBeam function
     enum enum_type {
       unknown,                AlphaInelastic,          annihil,             AntiLambdaInelastic, // 3
       AntiNeutronInelastic,   AntiOmegaMinusInelastic, AntiProtonInelastic, AntiSigmaMinusInelastic, // 7
@@ -86,9 +87,10 @@ namespace mu2e {
       mu2eCeMinusLeadingLog,   mu2eCePlusEndpoint,  mu2eDIOLeadingLog, mu2eInternalRMC,  // 171
       mu2eExternalRMC,         mu2eFlateMinus,      mu2eFlatePlus, mu2eFlatPhoton, // 175
       mu2eCePlusLeadingLog, mu2ePionCaptureAtRest, mu2eExternalRPC, mu2eInternalRPC, // 179
-      mu2eCaloCalib, mu2ePienu, mu2eunused7, mu2eunused8, // 183
-      uninitialized, NoProcess, GammaGeneralProc, // 186
-      mu2eGammaConversion, Radioactivation, nCaptureHP, nFissionHP, // 190
+      mu2eCaloCalib, mu2ePienu, CoupledTransportation, mu2eunused8, // 183
+      uninitialized, NoProcess, GammaGeneralProc, mu2eGammaConversion, // 187
+      Radioactivation, nCaptureHP, nFissionHP, mu2eAntiproton, // 191
+      mu2eFlatMuMinus, mu2eFlatMuPlus, Mu2eX, // 194
       lastEnum,
       // An alias for backward compatibility
       mu2eHallAir = mu2eKillerVolume
@@ -143,9 +145,10 @@ namespace mu2e {
     "mu2eCeMinusLeadingLog", "mu2eCePlusEndpoint",  "mu2eDIOLeadingLog", "mu2eInternalRMC", \
     "mu2eExternalRMC",  "mu2eFlateMinus",      "mu2eFlatePlus", "mu2eFlatPhoton", \
   "mu2eCePlusLeadingLog", "mu2ePionCaptureAtRest", "mu2eExternalRPC", "mu2eInternalRPC", \
-    "mu2eCaloCalib", "mu2ePienu", "mu2eunused7", "mu2eunused8", \
+    "mu2eCaloCalib", "mu2ePienu", "CoupledTransportation", "mu2eunused8", \
       "uninitialized", "NoProcess", "GammaGeneralProc", \
-      "mu2eGammaConversion","Radioactivation", "nCaptureHP", "nFissionHP"
+      "mu2eGammaConversion","Radioactivation", "nCaptureHP", "nFissionHP", "mu2eAntiproton", \
+      "mu2eFlatMuMinus", "mu2eFlatMuPlus", "Mu2eX"
 #endif
 
   public:
@@ -231,6 +234,9 @@ namespace mu2e {
     bool isValid() const{
       return isValid(_id);
     }
+
+    // return true if this process originated with a beam proton
+    static bool isFromProtonBeam(const ProcessCode& pcode);
 
 #ifndef SWIG
     // List of names corresponding to the enum.

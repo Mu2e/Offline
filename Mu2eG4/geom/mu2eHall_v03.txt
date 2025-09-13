@@ -53,21 +53,39 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/backfillEscapeStairE03.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillEscapeStairE04.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillFoundationN.txt"
-#include "Offline/Mu2eG4/geom/bldg/backfillPsAreaBaselevel_v02.txt"
+//#include "Offline/Mu2eG4/geom/bldg/backfillPsAreaBaselevel_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillPsAreaInter_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillPsAreaLower_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillPsAreaRWallFootLevel_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillPsAreaTopLayer_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillPsHatchE.txt"
+#include "Offline/Mu2eG4/geom/bldg/backfillPsHatchE2.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillPsHatchS.txt"
+#include "Offline/Mu2eG4/geom/bldg/backfillPsHatchS2.txt"
 //#include "Mu2eG4/geom/bldg/backfillTSarea-W1.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1Lower.txt"
 //#include "Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotch2.txt"
-#include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchLower.txt"
+//#include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchLower.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper1.txt"
-#include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper2.txt"
+//#include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper2.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W2.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W2Upper.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerCeiling.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerLanding.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerStairs.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallN.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallN2.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallS.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerWallW.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperLanding.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperPlatform.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStairs1.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperStairs2.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallE.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallE2.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallN.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallW.txt"
+#include "Offline/Mu2eG4/geom/bldg/centralStairwellUpperWallW2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsArea.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaAlcove1Ceiling.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaAlcove2Ceiling.txt"
@@ -85,11 +103,16 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorCeiling.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorInterior.txt"
-#include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorInteriorLower.txt"
+#include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorInteriorLowerS.txt"
+#include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorInteriorLowerN.txt"
+#include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorInteriorLowerE.txt"
+#include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorInteriorDoorFrame.txt"
+#include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorShield.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaFirstFloorS.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaTrenchFloor.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaHatchBlock.txt"
+#include "Offline/Mu2eG4/geom/bldg/dsAreaHatchBlockE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaHatchNLedge.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaHatchSLedge.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaHatchELedge.txt"
@@ -97,11 +120,11 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/dsAreaFirstFloorHatchGap.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaHatchNEdge.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaHatchSEdge.txt"
-#include "Offline/Mu2eG4/geom/bldg/tsAreaHatchBlockNTop.txt"
+//#include "Offline/Mu2eG4/geom/bldg/tsAreaHatchBlockNTop.txt"
 #include "Offline/Mu2eG4/geom/bldg/tsAreaHatchBlockNBot.txt"
-#include "Offline/Mu2eG4/geom/bldg/tsAreaHatchBlockSTop.txt"
+//#include "Offline/Mu2eG4/geom/bldg/tsAreaHatchBlockSTop.txt"
 #include "Offline/Mu2eG4/geom/bldg/tsAreaHatchBlockSBot.txt"
-#include "Offline/Mu2eG4/geom/bldg/tsAreaHatchELedge.txt"
+//#include "Offline/Mu2eG4/geom/bldg/tsAreaHatchELedge.txt"
 #include "Offline/Mu2eG4/geom/bldg/tsAreaHatchWLedge.txt"
 #include "Offline/Mu2eG4/geom/bldg/tsAreaHatchWEdge.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaTrenchCover.txt"
@@ -138,28 +161,30 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/escapeStairBrick.txt"
 #include "Offline/Mu2eG4/geom/bldg/escapeWallE.txt"
 #include "Offline/Mu2eG4/geom/bldg/extMonExteriorWall_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/extMonBitN.txt"
-#include "Offline/Mu2eG4/geom/bldg/extMonBitS.txt"
+//#include "Offline/Mu2eG4/geom/bldg/extMonBitN.txt"
+//#include "Offline/Mu2eG4/geom/bldg/extMonBitS.txt"
 #include "Offline/Mu2eG4/geom/bldg/extMonCeiling_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/extMonUpper_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/exteriorWallE.txt"
 #include "Offline/Mu2eG4/geom/bldg/exteriorWallN_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/exteriorWallN_p1.txt"
-#include "Offline/Mu2eG4/geom/bldg/exteriorWallN_p2.txt"
-#include "Offline/Mu2eG4/geom/bldg/exteriorWallN_p3.txt"
-#include "Offline/Mu2eG4/geom/bldg/exteriorWallN_p4.txt"
-#include "Offline/Mu2eG4/geom/bldg/exteriorWallN_p5.txt"
-#include "Offline/Mu2eG4/geom/bldg/exteriorWallN_p6.txt"
-#include "Offline/Mu2eG4/geom/bldg/exteriorWallN_p7.txt"
+#include "Offline/Mu2eG4/geom/bldg/exteriorWallNp1_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/exteriorWallNp2_v02.txt"
+// #include "Offline/Mu2eG4/geom/bldg/exteriorWallN_p3.txt"
+// #include "Offline/Mu2eG4/geom/bldg/exteriorWallN_p4.txt"
+// #include "Offline/Mu2eG4/geom/bldg/exteriorWallN_p5.txt"
+// #include "Offline/Mu2eG4/geom/bldg/exteriorWallN_p6.txt"
+// #include "Offline/Mu2eG4/geom/bldg/exteriorWallN_p7.txt"
 #include "Offline/Mu2eG4/geom/bldg/exteriorWallS.txt"
 #include "Offline/Mu2eG4/geom/bldg/firstFloorWall_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p1.txt"
-#include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p2.txt"
-#include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p3.txt"
-#include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p4.txt"
-#include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p5.txt"
-#include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p6.txt"
-#include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p7.txt"
+#include "Offline/Mu2eG4/geom/bldg/firstFloorWallp1_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/firstFloorWallp2_v02.txt"
+// #include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p1.txt"
+// #include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p2.txt"
+// #include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p3.txt"
+// #include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p4.txt"
+// #include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p5.txt"
+// #include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p6.txt"
+// #include "Offline/Mu2eG4/geom/bldg/firstFloorWall_p7.txt"
 #include "Offline/Mu2eG4/geom/bldg/firstFloorWallExtension.txt"
 #include "Offline/Mu2eG4/geom/bldg/floorN_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/floorPassage.txt"
@@ -167,17 +192,17 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/floorSd_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/floorSu.txt"
 #include "Offline/Mu2eG4/geom/bldg/foundationExtMon_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea1.txt"
-#include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea2.txt"
-#include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea3.txt"
-#include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea4.txt"
-#include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea5.txt"
-#include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea6.txt"
-#include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea7.txt"
-#include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea8.txt"
-#include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea9.txt"
-#include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea10.txt"
-#include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea11.txt"
+// #include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea1.txt"
+// #include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea2.txt"
+// #include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea3.txt"
+// #include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea4.txt"
+// #include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea5.txt"
+// #include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea6.txt"
+// #include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea7.txt"
+// #include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea8.txt"
+// #include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea9.txt"
+// #include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea10.txt"
+// #include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSarea11.txt"
 #include "Offline/Mu2eG4/geom/bldg/foundationN_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/foundationSd.txt"
 #include "Offline/Mu2eG4/geom/bldg/foundationSmid.txt"
@@ -205,13 +230,15 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/psAreaHatchLower.txt"
 #include "Offline/Mu2eG4/geom/bldg/psAreaHatchUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/psAreaShieldingBlock_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/psAreaSteelShieldingSlab_1.txt"
+#include "Offline/Mu2eG4/geom/bldg/psAreaSteelShieldingSlab_2.txt"
 #include "Offline/Mu2eG4/geom/bldg/psAreaUpperN_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/psAreaUpperS_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/psWallUpper_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/radiationSlab1_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/radiationSlab2_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/radiationSlab3_v02.txt"
-//#include "Mu2eG4/geom/bldg/radiationSlab4.txt"
+#include "Offline/Mu2eG4/geom/bldg/radiationSlab4_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/radiationSlabNE1.txt"
 #include "Offline/Mu2eG4/geom/bldg/radiationSlabNE2.txt"
 #include "Offline/Mu2eG4/geom/bldg/radiationSlabNE3.txt"
@@ -255,9 +282,31 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/WTSareaCFbeam.txt"
 #include "Offline/Mu2eG4/geom/bldg/NRetainingWallAboveRH.txt"
 #include "Offline/Mu2eG4/geom/bldg/NRetainingWallWExtension_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/NRetainingWallWExtension2_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/NRetainingWallExtensionFoot1.txt"
 #include "Offline/Mu2eG4/geom/bldg/SRetainingWall.txt"
 #include "Offline/Mu2eG4/geom/bldg/SRetainingWallFoot.txt"
+#include "Offline/Mu2eG4/geom/bldg/extMonExteriorWallE_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/extMonStairsWallE_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/extMonStairsCeiling_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/extMonStairs_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/extMonStairsBase_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/backfillExtMonStairsInter_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/backfillExtMonStairsLower_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/extMonStairsWallN_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/extMonStairsWallS_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/extMonStairsWallW_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/extMonCeilingN_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/extMonHatchLower_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/extMonHatchUpper_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/extMonHatchLid_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/extMonHatchBlock_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/backfillPsAreaFoundationTop_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/backfillPsAreaFoundation_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/exteriorWallNWExtension_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/exteriorWallNWExtension2_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dsAreaUpperWallW_v08.txt"
+#include "Offline/Mu2eG4/geom/bldg/dsAreaUpperWallE_v08.txt"
 
 vector<string> bldg.prefix.list = {
    "building.beamline",
@@ -303,19 +352,31 @@ vector<string> bldg.prefix.list = {
    "building.backfill.escape.stair.E02",
    "building.backfill.escape.stair.E03",
    "building.backfill.escape.stair.E04",
-   "building.backfill.psArea.baselevel",
    "building.backfill.psArea.Inter",
    "building.backfill.psArea.Lower",
    "building.backfill.psArea.RWallFootLevel",
    "building.backfill.psArea.TopLayer",
    "building.backfill.psHatch.E",
+   "building.backfill.psHatch.E2",
    "building.backfill.psHatch.S",
+   "building.backfill.psHatch.S2",
    "building.backfill.TSarea-W.1Lower",
-   "building.backfill.TSarea-W.1UpperNotchLower",
    "building.backfill.TSarea-W.1UpperNotchUpper1",
-   "building.backfill.TSarea-W.1UpperNotchUpper2",
    "building.backfill.TSarea-W.2",
    "building.backfill.TSarea-W.2Upper",
+   "building.central.stairwell.lower.ceiling",
+   "building.central.stairwell.lower.landing",
+   "building.central.stairwell.lower.wall.n",
+   "building.central.stairwell.lower.wall.n2",
+   "building.central.stairwell.lower.wall.s",
+   "building.central.stairwell.lower.wall.w",
+   "building.central.stairwell.upper.landing",
+   "building.central.stairwell.upper.platform",
+   "building.central.stairwell.upper.wall.e",
+   "building.central.stairwell.upper.wall.e2",
+   "building.central.stairwell.upper.wall.n",
+   "building.central.stairwell.upper.wall.w",
+   "building.central.stairwell.upper.wall.w2",
    "building.dsArea",
    "building.dsArea.alcove1.ceiling",
    "building.dsArea.alcove2.ceiling",
@@ -333,12 +394,15 @@ vector<string> bldg.prefix.list = {
    "building.dsArea.elevator.ceiling",
    "building.dsArea.elevator.upper",
    "building.dsArea.elevator.interior",
-   "building.dsArea.elevator.interior.lower",
+   "building.dsArea.elevator.interior.lower.S",
+   "building.dsArea.elevator.interior.lower.N",
+   "building.dsArea.elevator.shield",
    "building.dsArea.firstFloor.S",
    "building.dsArea.trench.cover",
    "building.dsArea.trench.floor",
    "building.dsArea.upper",
    "building.dsArea.hatchblock",
+   "building.dsArea.hatchblock.E",
    "building.dsArea.hatchnledge",
    "building.dsArea.hatchsledge",
    "building.dsArea.hatcheledge",
@@ -346,11 +410,8 @@ vector<string> bldg.prefix.list = {
    "building.dsArea.firstfloor.hatchgap",
    "building.dsArea.hatchnedge",
    "building.dsArea.hatchsedge",
-   "building.tsArea.hatchblock.northTop",
    "building.tsArea.hatchblock.northBot",
-   "building.tsArea.hatchblock.southTop",
    "building.tsArea.hatchblock.southBot",
-   "building.tsArea.hatcheledge",
    "building.tsArea.hatchwledge",
    "building.tsArea.hatchwedge",
    "building.escape.ceiling.W",
@@ -386,28 +447,16 @@ vector<string> bldg.prefix.list = {
    "building.escape.stair.wall.W04",
    "building.escape.wall.E",
    "building.extMon.exteriorWall",
-   "building.extMon.bit.N",
-   "building.extMon.bit.S",
    "building.extMon.ceiling",
    "building.extMon.upper",
    "building.exteriorWall.E",
    "building.exteriorWall.N",
    "building.exteriorWall.N.p1",
    "building.exteriorWall.N.p2",
-   "building.exteriorWall.N.p3",
-   "building.exteriorWall.N.p4",
-   "building.exteriorWall.N.p5",
-   "building.exteriorWall.N.p6",
-   "building.exteriorWall.N.p7",
    "building.exteriorWall.S",
    "building.firstFloor.wall",
    "building.firstFloor.wall.p1",
    "building.firstFloor.wall.p2",
-   "building.firstFloor.wall.p3",
-   "building.firstFloor.wall.p4",
-   "building.firstFloor.wall.p5",
-   "building.firstFloor.wall.p6",
-   "building.firstFloor.wall.p7",
    "building.firstFloor.wall.extension",
    "building.floor.N",
    "building.floor.Sd",
@@ -419,17 +468,6 @@ vector<string> bldg.prefix.list = {
    "building.foundation.Smid",
    "building.foundation.Su",
    "building.foundation.extMon",
-   "building.foundation.extMonPSarea.1",
-   "building.foundation.extMonPSarea.2",
-   "building.foundation.extMonPSarea.3",
-   "building.foundation.extMonPSarea.4",
-   "building.foundation.extMonPSarea.5",
-   "building.foundation.extMonPSarea.6",
-   "building.foundation.extMonPSarea.7",
-   "building.foundation.extMonPSarea.8",
-   "building.foundation.extMonPSarea.9",
-   "building.foundation.extMonPSarea.10",
-   "building.foundation.extMonPSarea.11",
    "building.island.N",
    "building.island.N.upper",
    "building.island.S",
@@ -453,12 +491,14 @@ vector<string> bldg.prefix.list = {
    "building.psArea.hatch.lower",
    "building.psArea.hatch.upper",
    "building.psArea.ShieldingBlock",
+   "building.psArea.SteelShieldingSlab.2",
    "building.psArea.upper.N",
    "building.psArea.upper.S",
    "building.psWall.upper",
    "building.radiation.slab1",
    "building.radiation.slab2",
    "building.radiation.slab3",
+   "building.radiation.slab4",
    "building.radiation.slabne1",
    "building.radiation.slabne2",
    "building.radiation.slabne3",
@@ -502,9 +542,41 @@ vector<string> bldg.prefix.list = {
    "building.W.TSareaCFbeam",
    "building.N.retaining.Wall.aboveRH",
    "building.N.retaining.Wall.W.extension",
+   "building.N.retaining.Wall.W.extension2",
    "building.N.retaining.Wall.extension.foot.1",
    "building.S.retaining.Wall",
-   "building.S.retaining.Wall.Foot"
+   "building.S.retaining.Wall.Foot",
+   "building.extMon.exteriorWallE",
+   "building.extMon.stairs.ceiling",
+   "building.extMon.stairs.wallW",
+   "building.extMon.ceiling.N",
+   "building.extMon.hatch.lower",
+   "building.extMon.hatch.upper",
+   "building.extMon.hatch.lid",
+   "building.extMon.hatch.block",
+   "building.backfill.psArea.RWallFootTop",
+   "building.backfill.psArea.foundation.top",
+   "building.backfill.psArea.foundation",
+   "building.exteriorWall.NW.extension",
+   "building.exteriorWall.NW.extension2",
+   "building.dsArea.upper.wall.W",
+   "building.dsArea.upper.wall.E"
+};
+
+vector<string> rotated.prefix.list = {
+   "building.central.stairwell.lower.stairs",
+   "building.central.stairwell.upper.stairs.1",
+   "building.central.stairwell.upper.stairs.2",
+   "building.psArea.SteelShieldingSlab.1",
+   "building.extMon.stairs.wallE",
+   "building.extMon.stairs",
+   "building.extMon.stairs.base",
+   "building.backfill.extMon.stairs.inter",
+   "building.backfill.extMon.stairs.lower",
+   "building.extMon.stairs.wallN",
+   "building.extMon.stairs.wallS",
+   "building.dsArea.elevator.interior.lower.E",
+   "building.dsArea.elevator.interior.door.frame"
 };
 
 //   "building.tempDirt.backfill.psArea.baselevel",
@@ -513,11 +585,41 @@ vector<string> bldg.prefix.list = {
 //   "building.tempDirt.backfill.psArea.RWallFootLevel",
 //   "building.tempDirt.backfill.psArea.TopLayer",
 //   "building.beamline.upper.N",
+//   "building.extMon.bit.N",
+//   "building.extMon.bit.S",
+//   "building.backfill.psArea.baselevel",
+
+//   "building.foundation.extMonPSarea.1",
+//   "building.foundation.extMonPSarea.2",
+//   "building.foundation.extMonPSarea.3",
+//   "building.foundation.extMonPSarea.4",
+//   "building.foundation.extMonPSarea.5",
+//   "building.foundation.extMonPSarea.6",
+//   "building.foundation.extMonPSarea.7",
+//   "building.foundation.extMonPSarea.8",
+//   "building.foundation.extMonPSarea.9",
+//   "building.foundation.extMonPSarea.10",
+//   "building.foundation.extMonPSarea.11",
+// "building.firstFloor.wall.p3",
+// "building.firstFloor.wall.p4",
+// "building.firstFloor.wall.p5",
+// "building.firstFloor.wall.p6",
+// "building.firstFloor.wall.p7",
+// "building.exteriorWall.N.p3",
+// "building.exteriorWall.N.p4",
+// "building.exteriorWall.N.p5",
+// "building.exteriorWall.N.p6",
+// "building.exteriorWall.N.p7",
+//   "building.backfill.TSarea-W.1UpperNotchLower",
+//   "building.backfill.TSarea-W.1UpperNotchUpper2",
+//   "building.tsArea.hatchblock.northTop",
+//   "building.tsArea.hatchblock.southTop",
+//   "building.tsArea.hatcheledge",
 
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamline_v02.txt"
 //#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_v03.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer746a.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer746b.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer746a.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer746b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer747a.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer747b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer748a.txt"
@@ -529,8 +631,18 @@ vector<string> bldg.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer751a.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer751b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer752a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer752b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer753a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer753b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer754a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer754b.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer755a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer755b.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer755c.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer756a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer756b.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer756c.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPSHatchUpperBoundary.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingW.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlabE.txt"
@@ -540,11 +652,15 @@ vector<string> bldg.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlab2NC.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlab2NE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineUpper_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellLower.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellMiddle.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtEscapeCeiling.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsArea.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaAlcove1.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaAlcove2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaAlcove3.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtDsAreaAlcoveStairwell.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaDownstreamCeilingVslab1.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaDownstreamCeilingVslab2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaDownstreamCeilingVslab3.txt"
@@ -565,17 +681,17 @@ vector<string> bldg.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtFoundationE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMon_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea1.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea2.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea3.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea4.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea5.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea6.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea7.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea8.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea9.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea10.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea11.txt"
+// #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea1.txt"
+// #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea2.txt"
+// #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea3.txt"
+// #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea4.txt"
+// #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea5.txt"
+// #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea6.txt"
+// #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea7.txt"
+// #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea8.txt"
+// #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea9.txt"
+// #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea10.txt"
+// #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea11.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtFoundationIsland.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtFoundationN_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtFoundationSd.txt"
@@ -585,17 +701,20 @@ vector<string> bldg.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtIslandUpper_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtPassageE.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsArea.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2N_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlabN1.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlabN2.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2N1.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2N2.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2N3.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2NBeyond.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2S.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaDirtSlabN_v02.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlabS.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtPsAreaUpper2N_v02.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaUpper2SliverN_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtPsAreaUpperN_v02.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaUpperS.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaUpperSliverS.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaW_v02.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaW_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtPsAreaWLower.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsWallUpper.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsWallUpperSliver.txt"
@@ -611,20 +730,26 @@ vector<string> bldg.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtWTSareaCFbeam.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtTsDsAreaFirstFloorEdgeN_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtUpToGradeLevelW_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaBaselevel_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaInter_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaLower_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaRWallFootLevel_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtTempSofRetWallTop_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtSRetainingWallFoot.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaBaselevel_v02.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaInter_v02.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaLower_v02.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaRWallFootLevel_v02.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtTempSofRetWallTop_v02.txt"
+//#include "Offline/Mu2eG4/geom/bldg/dirtSRetainingWallFoot.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtWallFill1.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtWallFill2.txt"
-
-
+//#include "Offline/Mu2eG4/geom/bldg/dirtSRetWallUpper_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtSRetWallTop_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtSRetWallFoot_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtSRetWallInter_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonS_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtExtMonLowerS_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/backfillPsAreaRWallFootTop_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtNRetainingWallExtension_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaBaselevel_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtPsAreaShieldingTop_v02.txt"
 vector<string> dirt.prefix.list = {
   "dirt.beamline",
-  "dirt.beamline.berm.l746a",
-  "dirt.beamline.berm.l746b",
   "dirt.beamline.berm.l747a",
   "dirt.beamline.berm.l747b",
   "dirt.beamline.berm.l748a",
@@ -636,8 +761,18 @@ vector<string> dirt.prefix.list = {
   "dirt.beamline.berm.l751a",
   "dirt.beamline.berm.l751b",
   "dirt.beamline.berm.l752a",
+  "dirt.beamline.berm.l752b",
   "dirt.beamline.berm.l753a",
+  "dirt.beamline.berm.l753b",
   "dirt.beamline.berm.l754a",
+  "dirt.beamline.berm.l754b",
+  "dirt.beamline.berm.l755a",
+  "dirt.beamline.berm.l755b",
+  "dirt.beamline.berm.l755c",
+  "dirt.beamline.berm.l756a",
+  "dirt.beamline.berm.l756b",
+  "dirt.beamline.berm.l756c",
+  "dirt.PSHatch.Upper.Boundary",
   "dirt.beamline.ceiling.E",
   "dirt.beamline.ceiling.W",
   "dirt.beamline.slab.E",
@@ -647,11 +782,15 @@ vector<string> dirt.prefix.list = {
   "dirt.beamline.slab2.NE",
   "dirt.beamline.slab2.NW",
   "dirt.beamline.upper",
+  "dirt.central.stairwell.lower",
+  "dirt.central.stairwell.middle",
+  "dirt.central.stairwell.upper",
   "dirt.escape.ceiling",
   "dirt.dsArea",
   "dirt.dsArea.alcove1",
   "dirt.dsArea.alcove2",
   "dirt.dsArea.alcove3",
+  "dirt.dsArea.alcove.stairwell",
   "dirt.dsArea.downstreamCeiling.vslab1",
   "dirt.dsArea.downstreamCeiling.vslab2",
   "dirt.dsArea.downstreamCeiling.vslab3",
@@ -672,25 +811,16 @@ vector<string> dirt.prefix.list = {
   "dirt.foundation.Su",
   "dirt.foundation.extMon",
   "dirt.foundation.extMonPSarea",
-  "dirt.foundation.extMonPSarea.1",
-  "dirt.foundation.extMonPSarea.2",
-  "dirt.foundation.extMonPSarea.3",
-  "dirt.foundation.extMonPSarea.4",
-  "dirt.foundation.extMonPSarea.5",
-  "dirt.foundation.extMonPSarea.6",
-  "dirt.foundation.extMonPSarea.7",
-  "dirt.foundation.extMonPSarea.8",
-  "dirt.foundation.extMonPSarea.9",
-  "dirt.foundation.extMonPSarea.10",
-  "dirt.foundation.extMonPSarea.11",
   "dirt.foundation.island",
   "dirt.island",
   "dirt.island.upper",
   "dirt.passage.E",
-  "dirt.psArea.W",
   "dirt.psArea.WLower",
-  "dirt.psArea.dirtSlab.N",
-  "dirt.psArea.dirtSlab2.N",
+  "dirt.psArea.dirtSlab.N1",
+  "dirt.psArea.dirtSlab.N2",
+  "dirt.psArea.dirtSlab2.N1",
+  "dirt.psArea.dirtSlab2.N2",
+  "dirt.psArea.dirtSlab2.N3",
   "dirt.psArea.dirtSlab2.N.Beyond",
   "dirt.psArea.upper.N",
   "dirt.psArea.upper2.N",
@@ -706,20 +836,54 @@ vector<string> dirt.prefix.list = {
   "dirt.W.TSareaCFbeam",
   "dirt.tsDsArea.firstFloorEdge.N",
   "dirt.upToGradeLevel.W",
-  "dirt.tempDirt.backfill.psArea.baselevel",
-  "dirt.tempDirt.backfill.psArea.Inter",
-  "dirt.tempDirt.backfill.psArea.Lower",
-  "dirt.tempDirt.backfill.psArea.RWallFootLevel",
-  "dirt.Temp.SofRetWallTop",
-  "dirt.S.retaining.Wall.Foot",
   "dirt.WallFill.1",
   "dirt.WallFill.2",
   "dirt.escape.stair.04",
   "dirt.escape.stair.07",
-  "dirt.escape.stair.11"
+  "dirt.escape.stair.11",
+  "dirt.S.retaining.Wall.top",
+  "dirt.S.retaining.Wall.foot",
+  "dirt.S.retaining.Wall.inter",
+  "dirt.foundation.extMon.S",
+  "dirt.extMon.lower.S",
+  "dirt.NRetainingWall.extension",
+  "dirt.psArea.baselevel",
+  "dirt.psArea.shielding.top"
 };
 
-vector<string> dirt.trap.prefix.list = {};
+//  "dirt.S.retaining.Wall.Foot",
+// "dirt.tempDirt.backfill.psArea.RWallFootLevel",
+//  "dirt.tempDirt.backfill.psArea.Inter",
+//  "dirt.tempDirt.backfill.psArea.baselevel",
+//  "dirt.tempDirt.backfill.psArea.Lower",
+//  "dirt.Temp.SofRetWallTop",
+
+// "dirt.foundation.extMonPSarea.1",
+// "dirt.foundation.extMonPSarea.2",
+// "dirt.foundation.extMonPSarea.3",
+// "dirt.foundation.extMonPSarea.4",
+// "dirt.foundation.extMonPSarea.5",
+// "dirt.foundation.extMonPSarea.6",
+// "dirt.foundation.extMonPSarea.7",
+// "dirt.foundation.extMonPSarea.8",
+// "dirt.foundation.extMonPSarea.9",
+// "dirt.foundation.extMonPSarea.10",
+// "dirt.foundation.extMonPSarea.11",
+// "dirt.psArea.W",
+//  "dirt.beamline.berm.l746a",
+//  "dirt.beamline.berm.l746b",
+//  "dirt.S.retaining.Wall.upper",
+//  "dirt.beamline.berm.l750a1",
+//  "dirt.beamline.berm.l750a2",
+
+#include "Offline/Mu2eG4/geom/bldg/foundationExtMonPSareaR_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSareaR_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/NRetainingWallWExtension3_v02.txt"
+vector<string> dirt.trap.prefix.list = {
+  "building.foundation.ExtMon.PSarea.R",
+  "dirt.foundation.ExtMon.PSarea.R",
+  "building.N.retaining.Wall.W.extension3"
+};
 
 // Local Variables:
 // mode:c++

@@ -1,0 +1,31 @@
+# Concatenates all the stage2 simulation output files, keeping only the relevant data products
+# Original author: Andrei Gaponenko, 2016
+# Adapted for STM studies: Pawel Plesniak
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/STMMC/fcl/prolog.fcl"
+
+process_name: STMCat
+
+source: {
+    module_type: RootInput
+}
+
+services: {
+    message: @local::default_message
+}
+
+physics: {
+    analyzers : {
+        CountMixedEvents : {
+            module_type : CountMixedEvents
+            stepPointMCsTagEleBeamCat : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTagEle
+            stepPointMCsTagMuBeamCat : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTagMu
+            stepPointMCsTagTargetStopsCat : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTag1809
+        }
+    }
+    ep: [CountMixedEvents]
+    end_paths: [ep]
+}
+
+services.scheduler.wantSummary: true
