@@ -770,11 +770,9 @@ namespace mu2e {
     }
 
     int       nstations, nhits[30], nstations_with_hits(0);
-    float    phiVec[30], zVec[30], weight(0);
+    float     phiVec[30], zVec[30], weight(0);
 
-    // np        = _xyzp.size();
-    int       nPlanesPerStation(2);
-    nstations = StrawId::_nplanes/nPlanesPerStation;//_tracker->nStations();
+    nstations = StrawId::_nstations;
 
     for (int i=0; i<nstations+1; i++) {
       phiVec[i] = 0;
@@ -1662,10 +1660,10 @@ namespace mu2e {
     for (unsigned i=0; i<ordChCol.size(); ++i) {
       ComboHit& ch = ordChCol[i];
 
-      cx.Station                 = ch.strawId().station();//straw.id().getStation();
-      cx.Plane                   = ch.strawId().plane() % 2;//straw.id().getPlane() % 2;
+      cx.Station                 = ch.strawId().station();
+      cx.Plane                   = ch.strawId().plane() % 2;
       cx.Face                    = ch.strawId().face();
-      cx.Panel                   = ch.strawId().panel();//straw.id().getPanel();
+      cx.Panel                   = ch.strawId().panel();
 
       // get Z-ordered location
       Helix.orderID(&cx, &co);
@@ -1676,8 +1674,7 @@ namespace mu2e {
       int op       = co.Panel;
 
       int       stationId = os;
-      int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;//FaceZ_t::kNFaces;
-      //        int       panelId   = op + faceId*FaceZ_t::kNPanels;//PerFace;
+      int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;
       FaceZ_t*  fz        = &Helix._oTracker[faceId];
       PanelZ_t* pz        = &fz->panelZs[op];
 
