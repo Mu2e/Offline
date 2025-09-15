@@ -14,6 +14,7 @@
 #include "TMultiGraph.h"
 #include "TFormula.h"
 
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/DataProducts/inc/CaloConst.hh"
 
 #include "Offline/CaloVisualizer/inc/THMu2eCaloDisk.hh"
@@ -261,9 +262,13 @@ mu2e::THMu2eCaloDisk::THMu2eCaloDisk(const char* name, const char* title, Int_t 
 
 bool mu2e::THMu2eCaloDisk::LoadMapFile(std::map<int, std::map<int, mu2e::channelInfo>>& output,
                                        const char* filename) {
+
+  ConfigFileLookupPolicy mapFile;
+  std::string fullPath = mapFile(filename);
+
   // Read channel map
   std::ifstream fmap;
-  fmap.open(filename);
+  fmap.open(fullPath);
   if (!fmap.is_open()) {
     std::cout << "Couldn't open file " << filename << "\n";
     return false;
@@ -273,11 +278,11 @@ bool mu2e::THMu2eCaloDisk::LoadMapFile(std::map<int, std::map<int, mu2e::channel
   while (!fmap.eof()) {
     double temp, x, y;
     int row, column;
-    int board, channel, cryid, roid;
+    int board, channel, cryid, roid, offid;
     std::string type;
     fmap >> row >> column >> temp >> temp >> temp >> temp >> temp;
     fmap >> board >> temp >> temp >> channel;
-    fmap >> temp >> x >> y >> cryid >> roid >> type;
+    fmap >> temp >> x >> y >> cryid >> roid >> offid >> type;
     if (fmap.eof())
       break;
 
