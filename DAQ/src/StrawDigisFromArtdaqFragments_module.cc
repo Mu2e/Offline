@@ -63,11 +63,12 @@ class mu2e::StrawDigisFromArtdaqFragments : public art::EDProducer {
 public:
 
   struct Config {
-    fhicl::Atom<int>             diagLevel        {fhicl::Name("diagLevel"        ), fhicl::Comment("diagnostic severity level, default:0"    )};
-    fhicl::Atom<int>             debugMode        {fhicl::Name("debugMode"        ), fhicl::Comment("debug mode, default:0"                   )};
-    fhicl::Sequence<std::string> debugBits        {fhicl::Name("debugBits"        ), fhicl::Comment("debug bits"                              )};
-    fhicl::Atom<bool>            saveWaveforms    {fhicl::Name("saveWaveforms"    ), fhicl::Comment("save StrawDigiADCWaveforms, default:true")};
-    fhicl::Atom<bool>            missingDTCHeaders{fhicl::Name("missingDTCHeaders"), fhicl::Comment("true for runs <= 107246, default:false"  )};
+    fhicl::Atom<int>             diagLevel        {fhicl::Name("diagLevel"        ), fhicl::Comment("diagnostic severity level, default:0"      )};
+    fhicl::Atom<int>             debugMode        {fhicl::Name("debugMode"        ), fhicl::Comment("debug mode, default:0"                     )};
+    fhicl::Sequence<std::string> debugBits        {fhicl::Name("debugBits"        ), fhicl::Comment("debug bits"                                )};
+    fhicl::Atom<bool>            saveWaveforms    {fhicl::Name("saveWaveforms"    ), fhicl::Comment("save StrawDigiADCWaveforms, default:true"  )};
+    fhicl::Atom<bool>            missingDTCHeaders{fhicl::Name("missingDTCHeaders"), fhicl::Comment("true for runs <= 107246, default:false"    )};
+    fhicl::Atom<bool>            keyOnMnid        {fhicl::Name("keyOnMnid"        ), fhicl::Comment("true if need to key on MnID, default:false")};
 
     // individual tuple specifying a minnesota label, e.g. MN123,
     // with geographic plane/panel numbers, i.e. from DocDB-#888
@@ -140,6 +141,7 @@ private:
   int                      debugBit_[kNDebugBits];  
   bool      saveWaveforms_;
   bool      missingDTCHeaders_;
+  bool      keyOnMnid_;
                                         // the rest
   int       nADCPackets_{-1};           // N(ADC packets per hit)
   int       nSamples_   {-1};           // N(ADC samples per hit)
@@ -163,13 +165,14 @@ private:
 
 // ======================================================================
 mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::EDProducer::Table<Config>& config) :
-    art::EDProducer  {config},
-    diagLevel_       (config().diagLevel    ()),
-    debugMode_       (config().debugMode    ()),
-    debugBits_       (config().debugBits    ()),
-    saveWaveforms_   (config().saveWaveforms()),
+    art::EDProducer   {config},
+    diagLevel_        (config().diagLevel    ()),
+    debugMode_        (config().debugMode    ()),
+    debugBits_        (config().debugBits    ()),
+    saveWaveforms_    (config().saveWaveforms()),
     missingDTCHeaders_(config().missingDTCHeaders()),
-    event_           (nullptr)
+    keyOnMnid_        (config().keyOnMnid()),
+    event_            (nullptr)
 {
   produces<mu2e::StrawDigiCollection>();
   if (saveWaveforms_) produces<mu2e::StrawDigiADCWaveformCollection>();
@@ -408,17 +411,19 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
             }            int link_id = rdh->linkID;
             nhits       = rdh->packetCount/(nADCPackets_+1);
 
-            const TrkPanelMap::Row* tpm;
-            try {
-              tpm = _trackerPanelMap->panel_map_by_online_ind(dtc_id,link_id);
-            }
-            catch(...) {
+            const TrkPanelMap::Row* tpm(nullptr);
+            if (not keyOnMnid_) {
+              try {
+                tpm = _trackerPanelMap->panel_map_by_online_ind(dtc_id,link_id);
+              }
+              catch(...) {
 //-----------------------------------------------------------------------------
 // either DTC ID or link ID are corrupted. Haven't seen that so far, switch to the next ROC anyway
 //-----------------------------------------------------------------------------
-              print_(std::format("ERROR: either dtc_id:{} or link_id:{} is corrupted, skip ROC data\n",
-                                 dtc_id,link_id));
-              continue;
+                print_(std::format("ERROR: either dtc_id:{} or link_id:{} is corrupted, skip ROC data\n",
+                                   dtc_id,link_id));
+                continue;
+              }
             }
               
             if (debugMode_) {
@@ -450,6 +455,19 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               
               uint16_t mnid    = channel >> mu2e::StrawId::_panelsft;
 
+              if (keyOnMnid_) {
+                try {
+                  tpm = _trackerPanelMap->panel_map_by_mnid(mnid);
+                }
+                catch(...) {
+//-----------------------------------------------------------------------------
+// bad mnid. Likely, corrupted data block. For now, skip the hit data and proceed with the next hit
+//-----------------------------------------------------------------------------
+                  print_(std::format("ERROR: corrupted mnid:{}, skip hit data\n",mnid));
+                  continue;
+                }
+              }
+// in principle, could this could become an 'else if'
               if (tpm->mnid() != mnid) {
                 print_(std::format("ERROR: hit chid:{:04x} inconsistent with the dtc_id:{} and link_id:{}\n",
                                    hit_data->StrawIndex, dtc_id, link_id));
