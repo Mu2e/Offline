@@ -47,6 +47,7 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   rootlibs,
                                 ] )
 
+exclude_files = [ ] # 'StrawDigiFilter_module.cc' ]  # dont need it in scons-based world
 helper.make_plugins( [ mainlib,
                        'mu2e_Mu2eBTrk',
                        'mu2e_Mu2eUtilities',
@@ -90,7 +91,8 @@ helper.make_plugins( [ mainlib,
                        'artdaq-core_Data',
                        'artdaq-core-mu2e_Data',
                        'artdaq-core-mu2e_Data_dict'
-                     ]
+                      ],
+                     exclude_files
                      )
 
 # This tells emacs to view this file in python mode.
