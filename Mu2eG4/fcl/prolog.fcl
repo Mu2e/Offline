@@ -22,17 +22,17 @@ mu2eg4DefaultPhysics: {
     physicsListName:  "ShieldingM"
 
     turnOffRadioactiveDecay:  false    // If both are false, we get the G4 default, which may be physics list dependent.
-    turnOnRadioactiveDecay:  false     // If both are true, it is a configuraiton error detected at run-time.
+    turnOnRadioactiveDecay:   true    // If both are true, it is a configuraiton error detected at run-time.
 
     //options for radiation studies
-    radiationVRmode    : true
+    // radiationVRmode turn on biased Radioactive mode, if turnOnRadioactiveDecay is also true this is a config error
+    radiationVRmode    : false
     beamTimeProfileRad : "Offline/Mu2eG4/data/beamProfile.data"
     coolTimeProfileRad : "Offline/Mu2eG4/data/cooling.data"
     radiationBRBias    : false
     radiationNsplit    : 3
     radiationHLT       : 1e+60
     radiationTableName : "ISO"
-
 
     // the following option is to be used mainly as an extention of
     // the physics lists activating HP neutron physics e.g., Shielding, ShieldingM
