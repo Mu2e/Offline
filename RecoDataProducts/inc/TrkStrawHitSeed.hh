@@ -68,7 +68,6 @@ namespace mu2e {
       // calculate the doca and phi relative to the straw envelope at POCA to wire
       auto ppoca = XYZVectorF(uptca.particlePoca().Vect());
       static XYZVectorF zdir(0.0,0.0,1.0); // relative to Z
-      
       auto wmid = XYZVectorF(straw.wirePosition());
       auto wdir = XYZVectorF(straw.wireDirection());
       auto delta = ppoca - wmid;
@@ -114,9 +113,10 @@ namespace mu2e {
     auto const& flag() const { return _flag; }
     auto const& algorithm() const { return _algo; }
     auto strawHitState() const { return _ambig; }
-    auto hitTime() const { return _etime[_eend]; }
+    auto time() const { return _etime[_eend]; }
     auto energyDep() const { return _edep; }
     auto const& earlyEnd() const { return _eend; }
+    StrawEnd lateEnd() const { return _eend.otherEnd(); }
     auto wireDist() const { return _wdist; }
     auto wireRes() const { return _werr; }
     auto TOTDriftTime() const { return _tottdrift; }
@@ -139,6 +139,10 @@ namespace mu2e {
     float signalTime() const { return _stime; }
     float wireDOCA() const { return _rdoca; }
     int ambig() const { return _ambig; }
+    // return a true WireHitState
+    WireHitState wireHitState() const {
+      return WireHitState(static_cast<WireHitState::State>(_ambig),static_cast<StrawHitUpdaters::algorithm>(_algo),_kkshflag);
+    }
     //
     //  Payload
     //
