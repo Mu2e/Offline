@@ -117,6 +117,21 @@ cet_build_plugin(StrawHitFilter art::module
   ROOT::Gui
 )
 
+cet_build_plugin(StrawDigiFilter art::module
+  REG_SOURCE src/StrawDigiFilter_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::RecoDataProducts
+  Offline::DataProducts
+  artdaq-core-mu2e::Data
+  art_root_io::TFileService_service
+  ROOT::Hist
+  ROOT::Tree
+  ROOT::Core
+  ROOT::RIO
+  ROOT::Gui
+)
+
 cet_build_plugin(CrvDigisFromArtdaqFragments art::module
   REG_SOURCE src/CrvDigisFromArtdaqFragments_module.cc
   LIBRARIES REG
