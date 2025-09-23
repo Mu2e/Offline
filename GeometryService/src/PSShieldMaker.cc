@@ -161,6 +161,7 @@ namespace mu2e {
     double pipeLength = c.getDouble("PSShield.inlet.length")*CLHEP::mm;
     double angle1 = c.getDouble("PSShield.inlet.angleY")*CLHEP::degree;
     double angle2 = c.getDouble("PSShield.inlet.angleX")*CLHEP::degree;
+    bool createBeamPipe = c.getBool("PSShield.inlet.createBeamPipe");
 
     res->beamAngleY_ = angle1;
     res->beamAngleX_ = angle2;
@@ -172,6 +173,8 @@ namespace mu2e {
     res->beamInlet_ = Tube(pipeMaterial, shieldOriginInMu2e,
                            pipeIR, pipeOR, pipeLength/2.0, 0, CLHEP::twopi,
                            pipeRotat);
+
+    res->createBeamPipe_ = createBeamPipe;
 
     return res;
   }
