@@ -8,14 +8,13 @@
 
 // framework
 #include "art/Framework/Principal/Event.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
-#include "fhiclcpp/types/Table.h"
-#include "fhiclcpp/types/Atom.h"
-#include "canvas/Utilities/InputTag.h"
 // utilities
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/Mu2eUtilities/inc/MVATools.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 // data
@@ -40,81 +39,79 @@ namespace TMVA_SOFIE_TrackPID {
 namespace mu2e {
   class TrackPID : public art::EDProducer {
     public:
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<int> debug{ Name("debugLevel"),
-          Comment("Debug Level"), 0};
-        fhicl::Atom<float> MaxDE{ Name("MaxDE"),
-          Comment("Maximum difference between calorimeter cluster EDep energy and the track energy (assuming electron mass)")};
+        using Name=fhicl::Name;
+        using Comment=fhicl::Comment;
+
+        fhicl::Atom<float> MaxDE{Name("MaxDE"), Comment("Maximum difference between calorimeter cluster EDep energy and the track energy (assuming electron mass)")};
         fhicl::Atom<float> DT{ Name("DeltaTOffset"),
           Comment("Track - Calorimeter time offset")}; // this should be a condition FIXME!
-        fhicl::Atom<art::InputTag> KSC { Name("KalSeedCollection"),
-          Comment("KalSeedCollection producer")};
-        fhicl::Table<typename MVATools::Config> MVAConfig{fhicl::Name("MVAConfig"),
-          fhicl::Comment("MVA Configuration") };
+        fhicl::Atom<art::InputTag> kalSeedPtrTag{Name("KalSeedPtrCollection"), Comment("Input tag for KalSeedPtrCollection")};
+        fhicl::Atom<bool> printMVA{Name("printMVA"), Comment("print the MVA used") };
         fhicl::Atom<std::string> datFilename{Name("datFilename"), Comment("Fiename for the .dat file to use")};
+        fhicl::Atom<int> debug{Name("debugLevel"), Comment("Debug printout Level"), 0};
       };
 
       using Parameters = art::EDProducer::Table<Config>;
-      explicit TrackPID(const Parameters& conf);
+      TrackPID(const Parameters& conf);
 
     private:
       void produce(art::Event& event) override;
-      bool _debug;
+      void initializeMVA(std::string xmlfilename);
+
       float _maxde, _dtoffset;
-      art::InputTag _kalSeedTag;
-      MVATools* _tchmva;
+      art::InputTag _kalSeedPtrTag;
+      bool _printMVA;
+      int _debug;
 
       std::shared_ptr<TMVA_SOFIE_TrackPID::Session> mva_;
   };
 
-  TrackPID::TrackPID(const Parameters& config ) :
-    art::EDProducer(config),
-    _debug(config().debug()),
-    _maxde(config().MaxDE()),
-    _dtoffset(config().DT()),
-    _kalSeedTag(config().KSC()),
-    _tchmva(new MVATools(config().MVAConfig()))
+  TrackPID::TrackPID(const Parameters& conf) :
+    art::EDProducer(conf),
+    _maxde(conf().MaxDE()),
+    _dtoffset(conf().DT()),
+    _kalSeedPtrTag(conf().kalSeedPtrTag()),
+    _printMVA(conf().printMVA()),
+    _debug(conf().debug())
   {
-    _tchmva->initMVA();
-    if(_debug> 0)_tchmva->showMVA();
     produces<MVAResultCollection>();
 
     ConfigFileLookupPolicy configFile;
-    mva_ = std::make_shared<TMVA_SOFIE_TrackPID::Session>(ConfigFile(config().datFilename()));
+    mva_ = std::make_shared<TMVA_SOFIE_TrackPID::Session>(configFile(conf().datFilename()));
   }
 
   void TrackPID::produce(art::Event& event ) {
     mu2e::GeomHandle<mu2e::Calorimeter> calo;
     // create output
     unique_ptr<MVAResultCollection> mvacol(new MVAResultCollection());
-    // get the KalSeeds
-    art::Handle<KalSeedCollection> kalSeedHandle;
-    event.getByLabel(_kalSeedTag, kalSeedHandle);
-    const auto& kalSeeds = *kalSeedHandle;
+    // get the KalSeedsPtrs
+    art::Handle<KalSeedPtrCollection> kalSeedPtrHandle;
+    event.getByLabel(_kalSeedPtrTag, kalSeedPtrHandle);
+    const auto& kalSeedPtrs = *kalSeedPtrHandle;
 
-    for (const auto& kseed : kalSeeds) {
-      TrkCaloHitPID tchpid;
-      tchpid.setMVAStatus(MVAStatus::unset);
-      tchpid.setMVAValue(-1.0);
+    // Go through the tracks and calculate the track PID
+    for (const auto& kalSeedPtr : kalSeedPtrs) {
+      const auto& kalSeed = *kalSeedPtr;
+      //TrkCaloHitPID tchpid;
+      //tchpid.setMVAStatus(MVAStatus::unset);
+      //tchpid.setMVAValue(-1.0);
       std::array<float,4> features; // features used for training
 
       static TrkFitFlag goodfit(TrkFitFlag::kalmanOK);
-      if (kseed.status().hasAllProperties(goodfit)){
-        if(kseed.hasCaloCluster() &&
-            kseed.caloHit()._flag.hasAllProperties(StrawHitFlag::active)){
-          auto const& tchs = kseed.caloHit();
+      if (kalSeed.status().hasAllProperties(goodfit)){
+        if(kalSeed.hasCaloCluster() &&
+            kalSeed.caloHit()._flag.hasAllProperties(StrawHitFlag::active)){
+          auto const& tchs = kalSeed.caloHit();
           auto const& cc = tchs.caloCluster();
           XYZVectorF trkmom;
-          auto ikseg = kseed.nearestSegment(tchs._rptoca);
-          if(ikseg != kseed.segments().end())
+          auto ikseg = kalSeed.nearestSegment(tchs._rptoca);
+          if(ikseg != kalSeed.segments().end())
             ikseg->mom(ikseg->localFlt(tchs.trkLen()),trkmom);
           else
             throw cet::exception("RECO")<<"mu2e::TrackPID: KalSeed segment missing" << endl;
           // compute the energy difference, assuming an electron mass
-          features[0] = cc.energyDep() = sqrt(trkmom.Mag2())
-          //features[1] = tchs._trkdepth()
+          features[0] = cc->energyDep() - sqrt(trkmom.Mag2());
           // move into detector coordinates.  Yikes!!
           XYZVectorF cpos = XYZVectorF(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e( cc->diskID(), cc->cog3Vector())));
           features[1] = sqrt(cpos.Perp2());
@@ -129,7 +126,7 @@ namespace mu2e {
           // reconstructed as a downstream particle associated to this cluster
           if(features[0] < _maxde){
             // evaluate the MVA
-            auto mvaout - mva->infer(features.data());
+            auto mvaout = mva_->infer(features.data());
             mvacol->push_back(MVAResult(mvaout[0]));
           }
         }
