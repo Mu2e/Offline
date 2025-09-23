@@ -35,6 +35,7 @@ namespace mu2e {
 
       DbIoV makeIov(art::EventID const& eid) {
         DbIoV iov;
+        iov.setMax();
         if(_useDb) { // use fcl config, overwrite part from DB
           // get the tables up to date
           _tpm_p->get(eid);
