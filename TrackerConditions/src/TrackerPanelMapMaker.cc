@@ -37,8 +37,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------  
   TrackerPanelMap::ptr_t TrackerPanelMapMaker::fromDb(TrkPanelMap::cptr_t Table) {
-    // initially fill from fcl to get all the constants
-    auto ptr = fromFcl(); 
+    auto ptr = std::make_shared<TrackerPanelMap>();
     int nr = Table->nrow();
     
     for (int i=0; i<nr; i++) {
