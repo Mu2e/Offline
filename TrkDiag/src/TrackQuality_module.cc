@@ -22,6 +22,7 @@
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/MVAResult.hh"
 #include "Offline/TrkDiag/inc/TrkQual_ANN1.hxx"
+#include "Offline/TrkDiag/inc/TrkQual_ANN1_v2.hxx"
 // C++
 #include <iostream>
 #include <fstream>
@@ -36,6 +37,11 @@ using CLHEP::HepVector;
 namespace TMVA_SOFIE_TrkQual_ANN1 {
   class Session;
 }
+
+namespace TMVA_SOFIE_TrkQual_ANN1_v2 { // version 2 has a different header file despite being the same model
+  class Session;
+}
+
 namespace mu2e
 {
 
@@ -48,6 +54,7 @@ namespace mu2e
 
         fhicl::Atom<art::InputTag> kalSeedPtrTag{Name("KalSeedPtrCollection"), Comment("Input tag for KalSeedPtrCollection")};
         fhicl::Atom<bool> printMVA{Name("PrintMVA"), Comment("Print the MVA used"), false};
+        fhicl::Atom<int> version{Name("version"), Comment("Version of TrkQualANN to run")};
         fhicl::Atom<std::string> datFilename{Name("datFilename"), Comment("Filename for the .dat file to use")};
         fhicl::Atom<int> debug{Name("debugLevel"), Comment("Debug printout level"), 0};
       };
@@ -61,9 +68,11 @@ namespace mu2e
 
       art::InputTag _kalSeedPtrTag;
       bool _printMVA;
+      int _version;
       int _debug;
 
-    std::shared_ptr<TMVA_SOFIE_TrkQual_ANN1::Session> mva_;
+    std::shared_ptr<TMVA_SOFIE_TrkQual_ANN1::Session> mvaV1_;
+    std::shared_ptr<TMVA_SOFIE_TrkQual_ANN1_v2::Session> mvaV2_;
 
   };
 
@@ -71,12 +80,21 @@ namespace mu2e
     art::EDProducer{conf},
     _kalSeedPtrTag(conf().kalSeedPtrTag()),
     _printMVA(conf().printMVA()),
+    _version(conf().version()),
     _debug(conf().debug())
     {
       produces<MVAResultCollection>();
 
       ConfigFileLookupPolicy configFile;
-      mva_ = std::make_shared<TMVA_SOFIE_TrkQual_ANN1::Session>(configFile(conf().datFilename()));
+      if (_version == 1) {
+        mvaV1_ = std::make_shared<TMVA_SOFIE_TrkQual_ANN1::Session>(configFile(conf().datFilename()));
+      }
+      else if (_version == 2) {
+        mvaV2_ = std::make_shared<TMVA_SOFIE_TrkQual_ANN1_v2::Session>(configFile(conf().datFilename()));
+      }
+      else {
+        throw cet::exception("TrackQuality") << "Invalid version number: " << _version << std::endl;
+      }
     }
 
   void TrackQuality::produce(art::Event& event ) {
@@ -151,7 +169,14 @@ namespace mu2e
         features[5] = -9999;
       }
 
-      auto mvaout = mva_->infer(features.data());
+      std::vector<float> mvaout;
+      if (_version == 1) {
+        mvaout = mvaV1_->infer(features.data());
+      }
+      else if (_version == 2) {
+        mvaout = mvaV2_->infer(features.data());
+      }
+
       if (!entrance_found) {
         mvaout[0] = 0; // this is not a good track
       }
