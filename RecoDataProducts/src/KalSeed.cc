@@ -2,13 +2,18 @@
 #include <limits>
 namespace mu2e {
 
+  const double KalSeed::_regrowtol(1.0e-3); // 1 ps minimum = ~300 um.
+
   KalSeed::LHPTPtr KalSeed::loopHelixFitTrajectory() const {
     if(loopHelixFit() && segments().size() > 0){
       // initialize the piecewise trajectory with the front segment
       LHPTPtr ptraj(new KalSeed::LHPT(segments().front().loopHelix()));
       auto iseg = segments().begin(); ++iseg;
       while(iseg != segments().end()){
-        if(!iseg->timeRange().null())ptraj->append(iseg->loopHelix());
+        if(iseg->timeRange().range() > _regrowtol ){
+          auto trajptr = std::make_shared<KinKal::LoopHelix>(iseg->loopHelix());
+          ptraj->add(trajptr,_regrowtol); // note this call resolves the phi0 ambiguity
+        }
         ++iseg;
       }
       return ptraj;
@@ -22,7 +27,10 @@ namespace mu2e {
       CHPTPtr ptraj(new KalSeed::CHPT(segments().front().centralHelix()));
       auto iseg = segments().begin(); ++iseg;
       while(iseg != segments().end()){
-        if(!iseg->timeRange().null())ptraj->append(iseg->centralHelix());
+        if(iseg->timeRange().range() > _regrowtol ){
+          auto trajptr = std::make_shared<KinKal::CentralHelix>(iseg->centralHelix());
+          ptraj->add(trajptr,_regrowtol);
+        }
         ++iseg;
       }
       return ptraj;
@@ -36,7 +44,10 @@ namespace mu2e {
       KLPTPtr ptraj(new KalSeed::KLPT(segments().front().kinematicLine()));
       auto iseg = segments().begin(); ++iseg;
       while(iseg != segments().end()){
-        if(!iseg->timeRange().null())ptraj->append(iseg->kinematicLine());
+        if(iseg->timeRange().range() > _regrowtol ){
+          auto trajptr = std::make_shared<KinKal::KinematicLine>(iseg->kinematicLine());
+          ptraj->add(trajptr,_regrowtol);
+        }
         ++iseg;
       }
       return ptraj;

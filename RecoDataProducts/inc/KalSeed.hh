@@ -92,6 +92,8 @@ namespace mu2e {
     std::vector<TrkStraw>         _straws; // straws interesected by this fit
     std::vector<double>           _domainbounds; // domain time boundaries
     TrkCaloHitSeed                _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
+    // static value used in regrowing
+    static const double _regrowtol; // Minimimum time length for adding a segment
     //
     // deprecated BTrk legacy content, DO NOT write any new code which depends on these functions
     // find the nearest segment to a given the time

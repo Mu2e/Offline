@@ -137,7 +137,7 @@ namespace mu2e {
       void produce(art::Event& event) override;
       void endJob() override;
     private:
-      bool debug_;
+      int debug_;
       ProditionsHandle<StrawResponse> strawResponse_h_;
       ProditionsHandle<Tracker> alignedTracker_h_;
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
@@ -222,11 +222,12 @@ namespace mu2e {
       if(debug_ > 0){
         std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits and " << domains.size() << " domains, status = " << goodhits << std::endl;
       }
+      if(debug_ > 5)static_cast<KinKal::PiecewiseTrajectory<KTRAJ>*>(trajptr.get())->print(std::cout,2);
       if(goodhits){
       // create the KKTrack from these components
         auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,domains);
         if(ktrk && ktrk->fitStatus().usable()){
-          if(debug_ > 0) std::cout << "successful track refit" << std::endl;
+          if(debug_ > 0) std::cout << "RegrowLoopHelix: successful track refit" << std::endl;
           // extrapolate as requested
           if(extrap_)extrap_->extrapolate(*ktrk);
           // sample the fit as requested
@@ -249,9 +250,8 @@ namespace mu2e {
             ksmca->addSingle(origksp,mcseedp);
           }
           ktrkcol->push_back(ktrk.release());
-        } else {
-          std::cout << "failed track refit" << std::endl;
-        }
+        } else if(debug_ > 0)
+          std::cout << "RegrowLoopHelix: failed track refit, status " << ktrk->fitStatus() << std::endl;
       }
       ++iseed;
     }
