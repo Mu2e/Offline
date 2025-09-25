@@ -45,13 +45,29 @@ namespace mu2e {
         fhicl::Atom<double> minhitfrac{ Name("MinHitFrac"), Comment("Minimum number of common tracker hits")};
         fhicl::DelegatedParameter selector{ Name("Selector"), Comment("Selector parameters")};
         fhicl::Atom<int> selectbest{ Name("SelectBestPair"), Comment("Method to select the best pair if multiple pairs are found ")};
+        fhicl::Atom<std::string> comparisonDirection{ Name("ComparisonDirection"), Comment("Direction (dZ/dt) to compare fits, 'Unknown' means test all")};
+        fhicl::Atom<std::string> surface{ Name("ComparisonSurface"), Comment("Surface at which to compare fits")};
       };
+
+      struct TrkMatch {
+        size_t priIndex_; // indices of matched tracks
+        size_t secIndex_;
+        double primom_; // primary momentum
+        double dt_; // primary - secondary time difference
+        double dmom_; // primary - secondary momentum difference
+        double hfrac_; // matched hit fraction
+        TrkMatch(size_t ipri, size_t isec, double primom, double dt, double dmom, double hfrac) :
+          priIndex_(ipri), secIndex_(isec), primom_(primom), dt_(dt), dmom_(dmom), hfrac_(hfrac) {}
+      };
+
       using Parameters = art::EDFilter::Table<Config>;
       explicit SelectSameTrack(const Parameters& config);
       bool filter(art::Event& evt) override;
     private:
       int debug_;
       double maxdt_, maxdp_, minhf_;
+      SurfaceId compsurf_;
+      TrkFitDirection compdir_;
       art::ProductToken<KalSeedCollection> primarytoken_, secondarytoken_;
       std::unique_ptr<KalSeedSelector> selector_;
       bestpair selbest_;
@@ -62,6 +78,8 @@ namespace mu2e {
     maxdt_(config().maxdt()),
     maxdp_(config().maxdp()),
     minhf_(config().minhitfrac()),
+    compsurf_(config().surface()),
+    compdir_(config().comparisonDirection()),
     primarytoken_ { consumes<KalSeedCollection> (config().primaryTag()) },
     secondarytoken_ { consumes<KalSeedCollection> (config().secondaryTag()) },
     selector_(art::make_tool<KalSeedSelector>(config().selector.get<fhicl::ParameterSet>())),
@@ -70,7 +88,6 @@ namespace mu2e {
     }
 
   bool SelectSameTrack::filter(art::Event& event) {
-    static const SurfaceId trkmid (SurfaceIdDetail::TT_Mid);
     // create output
     std::unique_ptr<KalSeedPtrCollection> mkseeds(new KalSeedPtrCollection);
     auto const& priksch = event.getValidHandle<KalSeedCollection>(primarytoken_);
@@ -80,7 +97,7 @@ namespace mu2e {
     if(debug_ > 1) std::cout << "Primary " << priksc.size() << " , Secondary " << secksc.size() << " KalSeeds" << std::endl;
     bool keep(false);
     if(priksc.size() > 0 && secksc.size() > 0){
-      std::vector<std::tuple<size_t, size_t,double, double, double, double>> matches; // matched primary and secondary track, with (primary) mom, dt, dmom, hfrac
+      std::vector<TrkMatch> matches;
       for(size_t ipri = 0; ipri <priksc.size(); ++ipri){
         auto const& priks = priksc[ipri];
         if(selector_->select(priks)){
@@ -89,7 +106,7 @@ namespace mu2e {
           auto pritrkiinter = priks.intersections().end();
           for(auto priiinter = priks.intersections().begin(); priiinter != priks.intersections().end(); ++priiinter){
             auto const& priinter = *priiinter;
-            if(priinter.surfaceId() == trkmid && priinter.momentum3().Z() > 0.0){ // correct surface and direction
+            if(priinter.surfaceId() == compsurf_ && priinter.momentum3().Z()*compdir_.dzdt() > 0.0){ // correct surface and direction
               if(debug_ > 1) std::cout << "Found primary intersection mom " << priinter.momentum3() << " time " << priinter.time() << std::endl;
               pritrkiinter = priiinter;
               break;
@@ -106,7 +123,7 @@ namespace mu2e {
               auto sectrkiinter = secks.intersections().end();
               for(auto seciinter = secks.intersections().begin(); seciinter != secks.intersections().end(); ++seciinter){
                 auto const& secinter = *seciinter;
-                if(secinter.surfaceId() == trkmid && secinter.momentum3().Z() > 0.0){ // correct surface and direction
+                if(secinter.surfaceId() == compsurf_ && secinter.momentum3().Z()*compdir_.dzdt() > 0.0){ // correct surface and direction
                   if(debug_ > 1) std::cout << "Found secondary intersection mom " << secinter.momentum3() << " time " << secinter.time() << std::endl;
                   sectrkiinter = seciinter;
                   break;
@@ -146,30 +163,30 @@ namespace mu2e {
           double value = std::numeric_limits<float>::max();
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
             auto const& match = matches[imatch];
-            if(selbest_ == mom && -std::get<2>(match) < value){
+            if(selbest_ == mom && -match.primom_ < value){
               ibest = imatch;
-              value = -std::get<2>(match); // sign to make highest momentum best
-            } else if(selbest_ == deltat && std::get<3>(match) < value){
+              value = -match.primom_; // sign to make highest momentum best
+            } else if(selbest_ == deltat && match.dt_ < value){
               ibest = imatch;
-              value = std::get<3>(match);
-            } else if(selbest_ == deltap && std::get<4>(match) < value){
+              value = match.dt_;
+            } else if(selbest_ == deltap && match.dmom_ < value){
               ibest = imatch;
-              value = std::get<4>(match);
-            } else if(selbest_ == hitfrac && std::get<5>(match) < value){
+              value = match.dmom_;
+            } else if(selbest_ == hitfrac && match.hfrac_ < value){
               ibest = imatch;
-              value = std::get<5>(match);
+              value = match.hfrac_;
             }
           }
         }
       }
       if(ibest > -1){
-        if(debug_ > 0) std::cout << "Found track pair candidate, primary momentum " << std::get<2>(matches[ibest])
-          << " delta t " << std::get<3>(matches[ibest])
-            << " delta P " << std::get<4>(matches[ibest])
-            << " hitfrac " << std::get<5>(matches[ibest])
-            << std::endl;
-        mkseeds->emplace_back(priksch,std::get<0>(matches[ibest])); // store the primary track first by convention
-        mkseeds->emplace_back(secksch,std::get<1>(matches[ibest]));
+        if(debug_ > 0) std::cout << "Found track pair candidate, primary momentum " << matches[ibest].primom_
+          << " delta t " << matches[ibest].dt_
+          << " delta P " << matches[ibest].dmom_
+          << " hitfrac " << matches[ibest].hfrac_
+          << std::endl;
+        mkseeds->emplace_back(priksch,matches[ibest].priIndex_); // store the primary track first by convention
+        mkseeds->emplace_back(secksch,matches[ibest].secIndex_);
         keep = true;
       }
     }
