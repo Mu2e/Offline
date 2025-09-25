@@ -353,10 +353,8 @@ namespace mu2e {
       uint16_t     plane = sd->strawId().plane();  // this is the GEO ID of the panel
       uint16_t     panel = sd->strawId().panel();        // this is the GEO ID of the panel
       const TrkPanelMap::Row* tpm;
-      try {
-        tpm = _trackerPanelMap->panel_map_by_online_ind(plane,panel);
-      }
-      catch(...) {
+      tpm = _trackerPanelMap->panel_map_by_online_ind(plane,panel);
+      if (tpm == nullptr) {
 //-----------------------------------------------------------------------------
 // either DTC ID or link ID are corrupted. Haven't seen that so far, switch to the next ROC anyway
 //-----------------------------------------------------------------------------

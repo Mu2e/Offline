@@ -379,7 +379,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
             (seh->link4_subsystem != DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker) and
             (seh->link5_subsystem != DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker)     )
                                                             continue;
-        int dtc_id = seh->source_dtc_id;
+        uint32_t dtc_id = seh->source_dtc_id;
 //-----------------------------------------------------------------------------
 // this is a tracker DTC fragment, loop over the ROCs
 //-----------------------------------------------------------------------------
@@ -408,15 +408,14 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               nADCPackets_ = h0->NumADCPackets;
               nSamples_    = 3+12*nADCPackets_;
               np_per_hit_  = nADCPackets_+1;
-            }            int link_id = rdh->linkID;
-            nhits       = rdh->packetCount/(nADCPackets_+1);
+            }
+            uint32_t link_id = rdh->linkID;
+            nhits            = rdh->packetCount/(nADCPackets_+1);
 
             const TrkPanelMap::Row* tpm(nullptr);
             if (not keyOnMnid_) {
-              try {
-                tpm = _trackerPanelMap->panel_map_by_online_ind(dtc_id,link_id);
-              }
-              catch(...) {
+              tpm = _trackerPanelMap->panel_map_by_online_ind(dtc_id,link_id);
+              if (tpm == nullptr) {
 //-----------------------------------------------------------------------------
 // either DTC ID or link ID are corrupted. Haven't seen that so far, switch to the next ROC anyway
 //-----------------------------------------------------------------------------
@@ -456,10 +455,8 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               uint16_t mnid    = channel >> mu2e::StrawId::_panelsft;
 
               if (keyOnMnid_) {
-                try {
-                  tpm = _trackerPanelMap->panel_map_by_mnid(mnid);
-                }
-                catch(...) {
+                tpm = _trackerPanelMap->panel_map_by_mnid(mnid);
+                if (tpm == nullptr) {
 //-----------------------------------------------------------------------------
 // bad mnid. Likely, corrupted data block. For now, skip the hit data and proceed with the next hit
 //-----------------------------------------------------------------------------
