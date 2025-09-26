@@ -181,6 +181,10 @@ namespace mu2e
   }
 
   bool KalSeedFilter::checkKalSeed(const KalSeed&Ks, const KalSeedCutsTool&Cuts){
+    if(_debug > 3){
+      std::cout << "KalSeedFilter: in checkKalSeed status "<< Ks.status() << " intersections " << Ks.intersections().size() << std::endl;
+    }
+
     if( Ks.status().hasAllProperties(Cuts._goods) && Ks.intersections().size()>0){
 
       // extract test quantities from the fit segment at t0
@@ -206,15 +210,16 @@ namespace mu2e
         return false;
       }
 
-
       //check particle type and fitdirection
       if ( Cuts._doParticleTypeCheck){
         if (Ks.particle() != Cuts._tpart)  {
+          if(_debug > 2)std::cout << "KalSeedFilter: particle cut failed" << std::endl;
           return false;
         }
       }
       if (Cuts._doZPropDirCheck){
         if (momvec.Z()*Cuts._fdir.dzdt() < 0) {
+          if(_debug > 2)std::cout << "KalSeedFilter: dir cut failed" << std::endl;
           return false;
         }
       }
@@ -234,6 +239,7 @@ namespace mu2e
         printf("[KalSeedFilter::filter] %4d %4lu %4lu %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n",
                nactive, stcount.size(), pcount.size(), mom, t0seg->momerr(),Ks.chisquared()/Ks.nDOF(), Ks.fitConsistency(), td, d0);
       }
+
       if( (!Cuts._hascc || Ks.caloCluster().isNonnull()) &&
           nactive >= Cuts._minnhits &&
           stcount.size() >= Cuts._minnstereo &&
@@ -245,7 +251,11 @@ namespace mu2e
           d0 > Cuts._minD0   && d0 < Cuts._maxD0) {
         if(_debug > 1) std::cout << "Selected track " << std::endl;
         return true;
+      } else if(_debug > 2){
+        std::cout << "KalSeedFilter: parameter cuts failed: nactive " << std::endl;
       }
+    } else {
+      if(_debug > 2)std::cout << "KalSeedFilter: basic cuts failed: status "<< Ks.status() << " intersections " << Ks.intersections().size() << std::endl;
     }
     return false;
   }
