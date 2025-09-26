@@ -5,7 +5,7 @@
 
 #include "canvas/Persistency/Common/Assns.h"
 namespace mu2e {
-  // Assns between a KalSeed and the HelixSeed it was created from
+  // Assns between a KalSeed and the thing it was created from
   typedef art::Assns<KalSeed,HelixSeed> KalHelixAssns;
   typedef art::Assns<KalSeed,CosmicTrackSeed> KalLineAssns;
 }

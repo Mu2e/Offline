@@ -48,10 +48,12 @@ namespace mu2e {
     auto const& segments() const { return _segments; }
     auto const& intersections() const { return _inters; }
     auto const& status() const { return _status; }
+    auto const& domainBounds() const { return _domainbounds; }
     double t0Val() const;
     double t0Var() const;
     float chisquared() const { return _chisq; }
     int nDOF() const { return _ndof; }
+    float domainTolerance() const { return _dtol; }
     unsigned nHits(bool active=true) const;
     float fitConsistency() const { return _fitcon; }
     UInt_t nTrajSegments() const { return _segments.size(); }
@@ -72,22 +74,26 @@ namespace mu2e {
     KLPTPtr kinematicLineFitTrajectory() const;
 
     // global information about the track
-    PDGCode::type     _tpart = PDGCode::unknown; // particle assumed for this fit
-    TrkFitFlag        _status; // status of this fit: includes alglorithm information
+    PDGCode::type   _tpart = PDGCode::unknown; // particle assumed for this fit
+    TrkFitFlag      _status; // status of this fit: includes alglorithm information
     float           _chisq = -1; // fit chisquared value
-    int               _ndof = -1;
+    int             _ndof = -1;
     float           _fitcon = -1; // fit consistency
     float           _maxgap = 0;
     float           _avggap = 0; // information about trajectory gaps
+    float           _dtol = 0; // tolerance used when creating BField domain
     //
     // contained content substructure.
     //
-    std::vector<KalSegment>     _segments; // segments of the Kalman filter fit result
-    std::vector<KalIntersection>     _inters; // intersections with materials or reference locations
-    std::vector<TrkStrawHitSeed>    _hits; // hit seeds for all the hits used in this fit
-    std::vector<TrkStrawHitCalib>   _hitcalibs; // extra calibration/alignment info
-    std::vector<TrkStraw>     _straws; // straws interesected by this fit
-    TrkCaloHitSeed        _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
+    std::vector<KalSegment>       _segments; // segments of the Kalman filter fit result
+    std::vector<KalIntersection>  _inters; // intersections with materials or reference locations
+    std::vector<TrkStrawHitSeed>  _hits; // hit seeds for all the hits used in this fit
+    std::vector<TrkStrawHitCalib> _hitcalibs; // extra calibration/alignment info
+    std::vector<TrkStraw>         _straws; // straws interesected by this fit
+    std::vector<double>           _domainbounds; // domain time boundaries
+    TrkCaloHitSeed                _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
+    // static value used in regrowing
+    static const double _regrowtol; // Minimimum time length for adding a segment
     //
     // deprecated BTrk legacy content, DO NOT write any new code which depends on these functions
     // find the nearest segment to a given the time
@@ -95,7 +101,7 @@ namespace mu2e {
     std::vector<KalSegment>::const_iterator nearestSegment(const XYZVectorF& pos)  const; // find nearest segment to a GLOBAL position
     float flt0() const { return _flt0; }
     HitT0 t0() const;
-    float         _flt0 = 0.0; // flight distance where the track crosses the tracker midplane (z=0).  Redundant with t0 in KinKal fits, and in the wrong unit
+    float _flt0 = 0.0; // flight distance where the track crosses the tracker midplane (z=0).  Redundant with t0 in KinKal fits, and in the wrong unit
   };
   typedef std::vector<mu2e::KalSeed> KalSeedCollection;
   typedef art::Ptr<mu2e::KalSeed> KalSeedPtr;
