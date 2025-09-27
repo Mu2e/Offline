@@ -47,7 +47,7 @@ namespace mu2e {
         fhicl::Atom<float> DT{ Name("DeltaTOffset"),
           Comment("Track - Calorimeter time offset")}; // this should be a condition FIXME!
         fhicl::Atom<art::InputTag> kalSeedPtrTag{Name("KalSeedPtrCollection"), Comment("Input tag for KalSeedPtrCollection")};
-        fhicl::Atom<bool> printMVA{Name("printMVA"), Comment("print the MVA used") };
+        fhicl::Atom<bool> printMVA{Name("printMVA"), Comment("print the MVA used"), false};
         fhicl::Atom<std::string> datFilename{Name("datFilename"), Comment("Fiename for the .dat file to use")};
         fhicl::Atom<int> debug{Name("debugLevel"), Comment("Debug printout Level"), 0};
       };
@@ -93,15 +93,21 @@ namespace mu2e {
     // Go through the tracks and calculate the track PID
     for (const auto& kalSeedPtr : kalSeedPtrs) {
       const auto& kalSeed = *kalSeedPtr;
-      //TrkCaloHitPID tchpid;
-      //tchpid.setMVAStatus(MVAStatus::unset);
-      //tchpid.setMVAValue(-1.0);
       std::array<float,4> features; // features used for training
+      features[0] = -9999;
+      features[1] = -9999;
+      features[2] = -9999;
+      features[3] = -9999;
+      auto mvaout = mva_->infer(features.data());
+      mvaout[0] = -1;
+      //printf("TrackPID ; input features: %f ; %f ; %f ; %f ; output: %f",
+        //features[0], features[1], features[2], features[3], mvaout[0]);
+      //printf("KalSeedPtrs size: %lu ; mvaout size: %lu", kalSeedPtrs.size(), mvacol->size());
 
+      // Fill the features
       static TrkFitFlag goodfit(TrkFitFlag::kalmanOK);
       if (kalSeed.status().hasAllProperties(goodfit)){
-        if(kalSeed.hasCaloCluster() &&
-            kalSeed.caloHit()._flag.hasAllProperties(StrawHitFlag::active)){
+        if(kalSeed.hasCaloCluster() && kalSeed.caloHit()._flag.hasAllProperties(StrawHitFlag::active)){
           auto const& tchs = kalSeed.caloHit();
           auto const& cc = tchs.caloCluster();
           XYZVectorF trkmom;
@@ -126,11 +132,22 @@ namespace mu2e {
           // reconstructed as a downstream particle associated to this cluster
           if(features[0] < _maxde){
             // evaluate the MVA
-            auto mvaout = mva_->infer(features.data());
-            mvacol->push_back(MVAResult(mvaout[0]));
+            mvaout = mva_->infer(features.data());
+            //mvacol->push_back(MVAResult(mvaout[0]));
+          }
+          else if (_debug > 0) {
+            printf("energy difference at %f, above threshold %f", features[0], _maxde);
           }
         }
       }
+      if (_debug > 0) {
+        printf("TrackPID ; input features: %f ; %f ; %f ; %f ; output: %f",
+          features[0], features[1], features[2], features[3], mvaout[0]);
+      }
+      mvacol->push_back(MVAResult(mvaout[0]));
+    }
+    if (mvacol->size() != kalSeedPtrs.size()) {
+      throw cet::exception("TrackPID") << "KalSeedPtr and MVAResult sizes are inconsistent: KalSeedPtr.size() = " << kalSeedPtrs.size() << " ; MVAResult.size() = " << mvacol->size();
     }
     // put the output products into the event
     event.put(move(mvacol));
