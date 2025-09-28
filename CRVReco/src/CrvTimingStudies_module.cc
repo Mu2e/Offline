@@ -93,6 +93,7 @@ namespace mu2e
 
     auto const& crvChannelMap = _crvChannelMap_h.get(event.id());
 
+    int previousOfflineChannel=-1;
     std::map<uint16_t,std::vector<double> > fpgaTimes;
     for(auto crvRecoPulse=crvRecoPulseCollection->begin(); crvRecoPulse!=crvRecoPulseCollection->end(); ++crvRecoPulse)
     {
@@ -104,6 +105,8 @@ namespace mu2e
       double recoPulseTime  = crvRecoPulse->GetPulseTime();
 
       uint16_t offlineChannel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
+      if(offlineChannel==previousOfflineChannel) continue;
+      previousOfflineChannel=offlineChannel;
       CRVROC   onlineChannel  = crvChannelMap.online(offlineChannel);
       uint16_t ROC            = onlineChannel.ROC();
       uint16_t feb            = onlineChannel.FEB();
@@ -111,6 +114,7 @@ namespace mu2e
 ROC--;
 feb--;
       uint16_t fpgaIndex      = (ROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB+feb*CRVId::nChanPerFEB+febChannel)/(CRVId::nChanPerFEB/CRVId::nFPGAPerFEB);
+//uint16_t fpgaIndex      = (ROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB+feb*CRVId::nChanPerFEB+febChannel)/(8);
 //uint16_t fpgaIndex      = (ROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB+feb*CRVId::nChanPerFEB+febChannel);
 
       fpgaTimes[fpgaIndex].push_back(recoPulseTime);
@@ -139,6 +143,9 @@ feb--;
         _histTimeDiffs[histIndex] = tfs->make<TH1F>(Form("fpgaTimeDiff_%i_%i",fpga1->first,fpga2->first),
                                                     Form("Time Diffs between FGPAs %i and %i;time difference [ns];Counts",fpga1->first,fpga2->first),
                                                     100,-50,50);
+//        _histTimeDiffs[histIndex] = tfs->make<TH1F>(Form("AFETimeDiff_%i_%i",fpga1->first,fpga2->first),
+//                                                    Form("Time Diffs between AFEs %i and %i;time difference [ns];Counts",fpga1->first,fpga2->first),
+//                                                    100,-50,50);
       }
 
       double timeDiff=fpga1->second-fpga2->second;
