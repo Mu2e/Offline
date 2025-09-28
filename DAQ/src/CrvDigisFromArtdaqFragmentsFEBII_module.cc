@@ -27,7 +27,7 @@
 namespace mu2e
 {
 
-class CrvDigisFromArtdaqFragments : public art::EDProducer
+class CrvDigisFromArtdaqFragmentsFEBII : public art::EDProducer
 {
   public:
   struct Config
@@ -37,8 +37,8 @@ class CrvDigisFromArtdaqFragments : public art::EDProducer
     fhicl::Atom<bool> useSubsystem0{fhicl::Name("useSubsystem0"), fhicl::Comment("consider subevents encoded with subsystem 0")};
   };
 
-  explicit CrvDigisFromArtdaqFragments(const art::EDProducer::Table<Config>& config);
-  ~CrvDigisFromArtdaqFragments() override {}
+  explicit CrvDigisFromArtdaqFragmentsFEBII(const art::EDProducer::Table<Config>& config);
+  ~CrvDigisFromArtdaqFragmentsFEBII() override {}
   void produce(art::Event&) override;
 
   private:
@@ -47,7 +47,7 @@ class CrvDigisFromArtdaqFragments : public art::EDProducer
   mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
 };
 
-CrvDigisFromArtdaqFragments::CrvDigisFromArtdaqFragments(const art::EDProducer::Table<Config>& config) :
+CrvDigisFromArtdaqFragmentsFEBII::CrvDigisFromArtdaqFragmentsFEBII(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}, _diagLevel(config().diagLevel()), _useSubsystem0(config().useSubsystem0())
 {
   produces<mu2e::CrvDigiCollection>();
@@ -55,12 +55,18 @@ CrvDigisFromArtdaqFragments::CrvDigisFromArtdaqFragments(const art::EDProducer::
   produces<mu2e::CrvDAQerrorCollection>();
 }
 
-void CrvDigisFromArtdaqFragments::produce(art::Event& event)
+void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
 {
   // Collection of CrvDigis for the event
+  // Digis belonging to the same channel are grouped together and ordered by timestamp
+  // This is needed by the reconstruction so that subsequent digis can be merged
   std::unique_ptr<mu2e::CrvDigiCollection> crvDigis(new mu2e::CrvDigiCollection);
   std::unique_ptr<mu2e::CrvDigiCollection> crvDigisNZS(new mu2e::CrvDigiCollection);
   std::unique_ptr<mu2e::CrvDAQerrorCollection> crvDaqErrors(new mu2e::CrvDAQerrorCollection);
+
+  // Temporary collections for unordered digis
+  std::map<int, std::vector<mu2e::CrvDigi>> crvDigisTmp;
+  std::map<int, std::vector<mu2e::CrvDigi>> crvDigisNZSTmp;
 
   auto const& channelMap = _channelMap_h.get(event.id());
 
@@ -164,8 +170,8 @@ void CrvDigisFromArtdaqFragments::produce(art::Event& event)
               continue;
             }
 
-            std::vector<mu2e::CRVDataDecoder::CRVHit> crvHits;
-            if(!decoder.GetCRVHits(iDataBlock, crvHits))
+            std::vector<mu2e::CRVDataDecoder::CRVHitFEBII> crvHits;
+            if(!decoder.GetCRVHitsFEBII(iDataBlock, crvHits))
             {
               std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
               std::cerr << "Error unpacking of CRV Hits" << std::endl;
@@ -177,21 +183,24 @@ void CrvDigisFromArtdaqFragments::produce(art::Event& event)
               const auto& crvHitInfo = crvHit.first;
               const auto& waveform = crvHit.second;
 
-              uint16_t rocID = crvHitInfo.controllerNumber + 1; // FIXME ROC IDs between 1 and 17   //also: header->GetLinkID()+1;
-              uint16_t rocPort = crvHitInfo.portNumber;
-              uint16_t febChannel = crvHitInfo.febChannel;
+              uint16_t rocID = crvRocHeader->ControllerID+1; // FIXME ROC IDs between 1 and 17  //also header->GetLinkID()
+              uint16_t rocPort = crvHitInfo.portNumber+1; //FIXME Port numbers beween 1 and 24
+              uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
+                                                                                                  //the 5th bit indicates special situations
+                                                                                                  //e.g. fake pulses
+              if((crvHitInfo.fpgaChannel & 0x10) != 0) continue;  //special situation, if the 5th bit of the fpgaChannel is non-zero
+                                                                //don't decode them, since there is no match to any offline channel.
               mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
 
               uint16_t offlineChannel = channelMap.offline(onlineChannel);
               int crvBarIndex = offlineChannel / 4;
               int SiPMNumber = offlineChannel % 4;
 
-              std::vector<int16_t> adc;
-              adc.resize(waveform.size());
-              for(size_t i=0; i<waveform.size(); ++i) adc[i]=waveform.at(i).ADC;
-              for(size_t i=0; i<waveform.size(); ++i) {if((adc[i] & 0x800) == 0x800) adc[i]=(int16_t)(adc[i] | 0xF000);}  //to handle negative numbers stored in 12bit ADC samples
-              crvDigis->emplace_back(adc, crvHitInfo.HitTime, false, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
-              crvDigisNZS->emplace_back(adc, crvHitInfo.HitTime, true, false, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);  //temporary solution until we get the FEB-II
+	      //time stamps coming from FEB-II are in units of 6.25ns, but only the even time stamps are used.
+	      //convert them into time stamps in units of 12.5ns - same period as the ADC samples.
+              bool oddTimestamp=(crvHitInfo.hitTime%2==1);
+	      crvDigisTmp[offlineChannel].emplace_back(waveform, crvHitInfo.hitTime/2, false, oddTimestamp, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
+              crvDigisNZSTmp[offlineChannel].emplace_back(waveform, crvHitInfo.hitTime/2, true, oddTimestamp, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);  //temporary solution until we get the NZS data
             } // loop over all crvHits
 
             if(_diagLevel>2)
@@ -216,23 +225,35 @@ void CrvDigisFromArtdaqFragments::produce(art::Event& event)
                 const auto& crvHitInfo = crvHit.first;
                 const auto& waveform = crvHit.second;
 
-                uint16_t rocID = crvHitInfo.controllerNumber + 1; // FIXME  //ROC IDs are between 1 and 17
-                uint16_t rocPort = crvHitInfo.portNumber;
-                uint16_t febChannel = crvHitInfo.febChannel;
-                mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
+                uint16_t rocID = crvRocHeader->ControllerID + 1; // FIXME  //ROC IDs are between 1 and 17
+                uint16_t rocPort = crvHitInfo.portNumber+1; //FIXME Port numbers beween 1 and 24
+                uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
+                                                                                                    //the 5th bit indicates special situations
+                                                                                                    //e.g. fake pulses
+                if((crvHitInfo.fpgaChannel & 0x10) == 0)  //special situation, if the 5th bit of the fpgaChannel is non-zero (see below)
+                {
+                  mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
 
-                uint16_t offlineChannel = channelMap.offline(onlineChannel);
-                int crvBarIndex = offlineChannel / 4;
-                int SiPMNumber = offlineChannel % 4;
+                  uint16_t offlineChannel = channelMap.offline(onlineChannel);
+                  int crvBarIndex = offlineChannel / 4;
+                  int SiPMNumber = offlineChannel % 4;
 
-                std::cout << "ROCID (increased by 1 to match the Online/Offline-Channel Map) " << rocID
-                          << "   rocPort " << rocPort << "   febChannel " << febChannel
-                          << "   crvBarIndex " << crvBarIndex << "   SiPMNumber " << SiPMNumber
-                          << std::endl;
-                std::cout << "TDC: " << crvHitInfo.HitTime << std::endl;
-                std::cout << "nSamples " << crvHitInfo.NumSamples << "  ";
+                  std::cout << "ROCID (increased by 1 to match the Online/Offline-Channel Map) " << rocID
+                            << "   rocPort " << rocPort << "   febChannel " << febChannel
+                            << "   crvBarIndex " << crvBarIndex << "   SiPMNumber " << SiPMNumber
+                            << std::endl;
+                }
+                else
+                {
+                  std::cout << "Special hits (fake pulses, etc.) "
+                            << "   ROCID (increased by 1 to match the Online/Offline-Channel Map) " << rocID
+                            << "   rocPort " << rocPort << "   fpgaNumber " << crvHitInfo.fpgaNumber << "   fpgaChannel " << crvHitInfo.fpgaChannel
+                            << std::endl;
+                }
+                std::cout << "TDC (units of 6.25ns): " << crvHitInfo.hitTime << std::endl;
+                std::cout << "nSamples " << waveform.size() << "  ";
                 std::cout << "Waveform: {";
-                for(size_t i = 0; i < crvHitInfo.NumSamples; i++) std::cout << "  " << waveform.at(i).ADC;
+                for(size_t i = 0; i < waveform.size(); ++i) std::cout << "  " << waveform.at(i);
                 std::cout << "}" << std::endl;
                 std::cout << std::endl;
               } // loop over hits
@@ -245,6 +266,18 @@ void CrvDigisFromArtdaqFragments::produce(art::Event& event)
 
   if(_diagLevel>1) std::cout << "Total Size: " << totalSize << std::endl;
 
+  //order digis
+  for(auto digis=crvDigisTmp.begin(); digis!=crvDigisTmp.end(); ++digis)
+  {
+    std::sort(digis->second.begin(),digis->second.end(), [](const mu2e::CrvDigi &d1, const mu2e::CrvDigi &d2) {return d1.GetStartTDC()<d2.GetStartTDC();});  //sort by TDC
+    crvDigis->insert(crvDigis->end(),digis->second.begin(),digis->second.end());
+  }
+  for(auto digis=crvDigisNZSTmp.begin(); digis!=crvDigisNZSTmp.end(); ++digis)
+  {
+    std::sort(digis->second.begin(),digis->second.end(), [](const mu2e::CrvDigi &d1, const mu2e::CrvDigi &d2) {return d1.GetStartTDC()<d2.GetStartTDC();});  //sort by TDC
+    crvDigisNZS->insert(crvDigisNZS->end(),digis->second.begin(),digis->second.end());
+  }
+
   // Store the crv digis in the event
   event.put(std::move(crvDigis));
   event.put(std::move(crvDigisNZS),"NZS");
@@ -253,5 +286,5 @@ void CrvDigisFromArtdaqFragments::produce(art::Event& event)
 
 } //namespace mu2e
 
-using mu2e::CrvDigisFromArtdaqFragments;
-DEFINE_ART_MODULE(CrvDigisFromArtdaqFragments)
+using mu2e::CrvDigisFromArtdaqFragmentsFEBII;
+DEFINE_ART_MODULE(CrvDigisFromArtdaqFragmentsFEBII)

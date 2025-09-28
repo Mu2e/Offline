@@ -1,0 +1,52 @@
+#include "Offline/Mu2eG4/geom/geom_common.txt"
+
+bool hasSTM = false; //to prevent errors from the Offline environment
+
+string crs.name = "wideband2modules"; // same as channelMap name
+
+int   crs.nSectors = 1;
+int   crs.nLayers  = 4;
+
+vector<string>  crs.sectorNames = {"W1"};
+
+
+double          crs.scintillatorBarThickness     =  19.78; //mm
+double          crs.scintillatorBarWidth         =  51.34; //mm
+double          crs.layerOffset                  =  42.0; //mm
+double          crs.gapLarge                     =   0.5; //mm
+double          crs.gapSmall                     =   0.0875; //mm
+double          crs.gapBetweenModules            =   3.0;    //mm
+vector<double>  crs.gapBetweenLayers             =   {9.525, 9.525, 9.525}; //mm
+double          crs.aluminumSheetThickness       =   3.175;  //mm
+double          crs.strongBackThickness          =  12.7;    //mm
+
+double          crs.scintillatorBarLengthW1      =  4550;
+
+int             crs.nModulesW1                   =   2;
+
+int             crs.nCountersPerModuleW1         =   16;  //per layer
+
+vector<double>  crs.firstCounterW1               =  {-3904.0,     0.0, 20000.0};
+
+vector<double>  crs.layerDirectionW1             =  {0, 1, 0};
+
+vector<double>  crs.offsetDirectionW1            =  {0, 0, -1};
+
+vector<double>  crs.gapDirectionW1               =  {0, 0, 1};
+
+int crs.precedingSectorForW1  = -1;   //no preceding sector
+
+int crs.sectorTypeW1  = 1;
+
+bool crs.sipmsAtSide0W1 = false;
+
+bool crs.sipmsAtSide1W1 = true;
+
+int crs.FEBBoxesAtSide0W1  = 0;
+
+int crs.FEBBoxesAtSide1W1  = 0;
+
+//bool g4.doSurfaceCheck    = true;
+int  g4.nSurfaceCheckPointsPercmsq =   1;
+int  g4.minSurfaceCheckPoints      = 100; // per volume
+int  g4.maxSurfaceCheckPoints = 10000000; // per volume
