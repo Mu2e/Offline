@@ -88,21 +88,17 @@ void mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind,
     }
     os << "\n";
 
-  } else if (verbose() >= 2) {
-    auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
-
-    os << " fitStatus: " << std::setw(3) << obj.status() << "\n";
-    os << " part: " << ptable->particle(obj.particle()).name()
-       << "  t0: " << std::setw(7)
-       << std::setprecision(1) << obj.t0().t0()
-       << " chi2: " << std::setw(7) << std::setprecision(2) << obj.chisquared()
-       << "  fitcon: " << std::setw(7) << std::setprecision(3)
-       << obj.fitConsistency() << "  nhits: " << std::setw(3)
-       << obj.hits().size()
-       << "  calo: " << (obj.caloCluster().isNull() ? "no" : "yes") << "\n";
-    os << " intersections: \n";
+  }
+  if(verbose() >= 2) {
+    os << std::setprecision(3) << "Intersections: \n";
     for (auto const& inter : obj.intersections()) {
-      os << " sid " << inter.surfaceId() << " time " << inter.time() << " P " << inter.momentum3() << " dP " << inter.dMom() << "\n";
+      os << " sid " << inter.surfaceId() << " time " << inter.time() << " Pos " << inter.position3() << " Mom " << inter.momentum3() << " dP " << inter.dMom() << "\n";
+    }
+  }
+  if(verbose() >= 3) {
+    os << std::setprecision(4) << "Segments: \n";
+    for (auto const& iseg : obj.segments()) {
+      os << "Range" << iseg.timeRange() << " Pos " << iseg.position3() << " Mom " << iseg.momentum3() << " Bnom " << iseg.bnom() << "\n";
     }
   }
 }

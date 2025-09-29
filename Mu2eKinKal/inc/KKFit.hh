@@ -714,11 +714,12 @@ namespace mu2e {
     }
     // save the fit segments as requested
     if(kktrk.fitStatus().usable()){
+      static const double minrange(1.0e-2); // minimum time range to save a segment.
       if (savetraj_ == full){
         kseed._segments.reserve(fittraj.pieces().size());
         for (auto const& traj : fittraj.pieces() ){
-          // skip zero-range segments.  By convention, sample the state at the mid-time
-          if(traj->range().range() > 0.0) kseed._segments.emplace_back(*traj,traj->range().mid());
+          // skip 'zero-range' segments.  By convention, sample the state at the mid-time
+          if(traj->range().range() > minrange) kseed._segments.emplace_back(*traj,traj->range().mid());
         }
         if(savedomains_){
           kseed._domainbounds.reserve(kktrk.domains().size()+1);

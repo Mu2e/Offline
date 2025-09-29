@@ -249,6 +249,7 @@ namespace mu2e {
             // add the original too
             ksmca->addSingle(origksp,mcseedp);
           }
+          if(debug_ > 5)static_cast<const KinKal::PiecewiseTrajectory<KTRAJ>&>(ktrk->fitTraj()).print(std::cout,2);
           ktrkcol->push_back(ktrk.release());
         } else if(debug_ > 0)
           std::cout << "RegrowLoopHelix: failed track refit, status " << ktrk->fitStatus() << std::endl;

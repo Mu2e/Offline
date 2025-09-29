@@ -1,7 +1,7 @@
 #ifndef Mu2eKinKal_KKStrawXing_hh
 #define Mu2eKinKal_KKStrawXing_hh
 //
-//  StrawXing using Mu2e-specific StrawMaterial class.  Otherwise it's the same as KinKal::StrawXing
+//  StrawXing using Mu2e-specific StrawMaterial class
 //
 #include "KinKal/Detector/ElementXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
@@ -140,21 +140,22 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
     // reset
     fparams_ = Parameters();
+    mxings_.clear();
     if(first) {
-      active_ = false;
-      // search for an update to the xing configuration among this meta-iteration payload
+      // search for an updater among this meta-iteration payload
       auto sxconfig = miconfig.findUpdater<StrawXingUpdater>();
-      if(sxconfig != 0){
-        sxconfig_ = *sxconfig;
+      if(sxconfig != 0)sxconfig_ = *sxconfig;
+      // update the activity
+      if(shptr_ && shptr_->active()){
+        active_ = true;
+      } else {
+        // if there's no associated hit OR the hit is inactive, and maxdoca >0.0, determine activity from DOCA
+        if(sxconfig_.maxdoca_ > 0.0)active_ = fabs(ca_.tpData().doca()) < sxconfig_.maxdoca_;
       }
       if(sxconfig_.scalevar_)
         varscale_ = miconfig.varianceScale();
       else
         varscale_ = 1.0;
-    //  update the associated hit state
-      if(shptr_)active_ = shptr_->active();
-      // decide if this straw xing should be active
-      active_ |= fabs(ca_.tpData().doca()) < sxconfig_.maxdoca_;
     }
     if(active_){
       // update the material xings from gas, straw wall, and wire

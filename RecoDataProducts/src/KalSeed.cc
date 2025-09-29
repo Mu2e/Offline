@@ -2,7 +2,7 @@
 #include <limits>
 namespace mu2e {
 
-  const double KalSeed::_regrowtol(1.0e-3); // 1 ps minimum = ~300 um.
+  const double KalSeed::_regrowtol(2.0e-3);
 
   KalSeed::LHPTPtr KalSeed::loopHelixFitTrajectory() const {
     if(loopHelixFit() && segments().size() > 0){
