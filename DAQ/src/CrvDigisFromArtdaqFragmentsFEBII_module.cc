@@ -53,6 +53,7 @@ CrvDigisFromArtdaqFragmentsFEBII::CrvDigisFromArtdaqFragmentsFEBII(const art::ED
   produces<mu2e::CrvDigiCollection>();
   produces<mu2e::CrvDigiCollection>("NZS");
   produces<mu2e::CrvDAQerrorCollection>();
+  produces<mu2e::CRVDataDecoder::CRVROCStatusPacketCollection>();
 }
 
 void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
@@ -63,6 +64,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
   std::unique_ptr<mu2e::CrvDigiCollection> crvDigis(new mu2e::CrvDigiCollection);
   std::unique_ptr<mu2e::CrvDigiCollection> crvDigisNZS(new mu2e::CrvDigiCollection);
   std::unique_ptr<mu2e::CrvDAQerrorCollection> crvDaqErrors(new mu2e::CrvDAQerrorCollection);
+  std::unique_ptr<mu2e::CRVDataDecoder::CRVROCStatusPacketCollection> crvROCStatusPackets(new mu2e::CRVDataDecoder::CRVROCStatusPacketCollection);
 
   // Temporary collections for unordered digis
   std::map<int, std::vector<mu2e::CrvDigi>> crvDigisTmp;
@@ -169,6 +171,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
               crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingStatusPacket,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
               continue;
             }
+            crvROCStatusPackets->push_back(*crvRocHeader);
 
             std::vector<mu2e::CRVDataDecoder::CRVHitFEBII> crvHits;
             if(!decoder.GetCRVHitsFEBII(iDataBlock, crvHits))
@@ -282,6 +285,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
   event.put(std::move(crvDigis));
   event.put(std::move(crvDigisNZS),"NZS");
   event.put(std::move(crvDaqErrors));
+  event.put(std::move(crvROCStatusPackets));
 }
 
 } //namespace mu2e

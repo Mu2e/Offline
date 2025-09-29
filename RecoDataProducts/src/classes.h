@@ -76,6 +76,7 @@
 #include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "artdaq-core-mu2e/Overlays/Decoders/CRVDataDecoder.hh"
 
 // ExtMon
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"

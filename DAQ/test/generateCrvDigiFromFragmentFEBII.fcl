@@ -23,7 +23,7 @@ physics :
     {
       module_type   : CrvDigisFromArtdaqFragmentsFEBII
       diagLevel     : 10
-      useSubsystem0 : true
+      useSubsystem0 : false
     }
   }
 

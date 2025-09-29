@@ -384,6 +384,11 @@
 ]]>
 </ioread>
 
+  <class name="mu2e::CRVDataDecoder::CRVROCStatusPacket" />
+  <class name="std::vector<mu2e::CRVDataDecoder::CRVROCStatusPacket>" />
+  <class name="mu2e::CRVDataDecoder::CRVROCStatusPacketCollection" />
+  <class name="art::Wrapper<mu2e::CRVDataDecoder::CRVROCStatusPacketCollection>" />
+
 <!--  ********* ExtMon  ********* -->
  <class name="mu2e::ExtMonFNALRawHit" />
  <class name="std::vector<mu2e::ExtMonFNALRawHit>" />
