@@ -22,6 +22,7 @@
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
 #include "Offline/TrackerMC/inc/StrawDigiBundle.hh"
 #include "Offline/TrackerMC/inc/StrawDigiBundleCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 
 namespace mu2e{
   class MergeDigis: public art::EDProducer{
@@ -35,6 +36,10 @@ namespace mu2e{
           fhicl::Name("MergeStrawDigiMCs"),
           fhicl::Comment("True/false to merge tracker MC truth")
         };
+        fhicl::Sequence<art::InputTag> calo_digi_tags{
+          fhicl::Name("CaloDigiCollections"),
+          fhicl::Comment("art::InputTags of source CaloDigis")
+        };
       };
 
       using Parameters = art::EDProducer::Table<Config>;
@@ -46,6 +51,9 @@ namespace mu2e{
       bool _tracker_mc;
       ProditionsHandle<StrawElectronics> _tracker_conditions_handle;
 
+      // calorimeter
+      std::vector<art::InputTag> _calo_digi_tags;
+
     private:
       void produce(art::Event&);
   };
@@ -54,7 +62,8 @@ namespace mu2e{
   MergeDigis::MergeDigis(const Parameters& config):
       art::EDProducer(config),
       _tracker_digi_tags(config().tracker_digi_tags()),
-      _tracker_mc(config().tracker_mc()){
+      _tracker_mc(config().tracker_mc()),
+      _calo_digi_tags(config().calo_digi_tags()){
     // tracker
     for (const auto& tag: _tracker_digi_tags){
       this->consumes<StrawDigiCollection>(tag);
@@ -64,6 +73,10 @@ namespace mu2e{
     this->produces<StrawDigiADCWaveformCollection>();
 
     // calorimeter...
+    for (const auto& tag: _calo_digi_tags){
+      this->consumes<CaloDigiCollection>(tag);
+    }
+    this->produces<CaloDigiCollection>();
 
     // crv...
 

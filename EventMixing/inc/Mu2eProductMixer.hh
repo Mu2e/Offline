@@ -44,6 +44,7 @@
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
 
@@ -109,6 +110,7 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> strawDigiMixer { fhicl::Name("strawDigiMixer") };
       fhicl::Table<CollectionMixerConfig> strawDigiADCWaveformMixer { fhicl::Name("strawDigiADCWaveformMixer") };
       fhicl::Table<CollectionMixerConfig> strawDigiMCMixer { fhicl::Name("strawDigiMCMixer") };
+      fhicl::Table<CollectionMixerConfig> caloDigiMixer { fhicl::Name("caloDigiMixer") };
       fhicl::Table<CollectionMixerConfig> eventWindowMarkerMixer { fhicl::Name("eventWindowMarkerMixer") };
       fhicl::OptionalTable<CosmicLivetimeMixerConfig> cosmicLivetimeMixer { fhicl::Name("cosmicLivetimeMixer") };
       fhicl::OptionalTable<VolumeInfoMixerConfig> volumeInfoMixer { fhicl::Name("volumeInfoMixer") };
@@ -170,6 +172,10 @@ namespace mu2e {
 
     bool mixStrawDigiMCs(std::vector<StrawDigiMCCollection const*> const& in,
                        StrawDigiMCCollection& out,
+                       art::PtrRemapper const& remap);
+
+    bool mixCaloDigis(std::vector<CaloDigiCollection const*> const& in,
+                       CaloDigiCollection& out,
                        art::PtrRemapper const& remap);
 
     bool mixEventWindowMarkers(std::vector<EventWindowMarker const*> const& in,

@@ -117,6 +117,11 @@ namespace mu2e {
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixStrawDigiMCs, *this);
     }
 
+    for(const auto& e: conf.caloDigiMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCaloDigis, *this);
+    }
+
     for(const auto& e: conf.eventWindowMarkerMixer().mixingMap()) {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixEventWindowMarkers, *this);
@@ -477,6 +482,14 @@ namespace mu2e {
       steps[StrawEnd::hv]  = remap(steps[StrawEnd::hv],  sgsOffset);
     }
 
+    return true;
+  }
+
+  bool Mu2eProductMixer::mixCaloDigis(std::vector<CaloDigiCollection const*> const& in,
+                    CaloDigiCollection& out,
+                    art::PtrRemapper const& remap)
+  {
+    art::flattenCollections(in, out);
     return true;
   }
 
