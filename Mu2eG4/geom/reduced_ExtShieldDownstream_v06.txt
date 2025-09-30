@@ -492,8 +492,8 @@ vector<double> ExtShieldDownstream.centerType29Box1 = {-3904.0,2006.1,18542.0};
 vector<double> ExtShieldDownstream.centerType30Box1 = {-3904.0,2006.1,16916.0};
 
 // Shielding blocks by penetration notch in NW
-vector<double> ExtShieldDownstream.centerType31Box1 = {444.0,190.112,-3589.0};
-vector<double> ExtShieldDownstream.centerType31Box2 = {-596.0,190.112,-3589.0};
+vector<double> ExtShieldDownstream.centerType31Box1 = {444.0,278.8,-3589.0};
+vector<double> ExtShieldDownstream.centerType31Box2 = {-596.0,278.8,-3589.0};
 
 
 

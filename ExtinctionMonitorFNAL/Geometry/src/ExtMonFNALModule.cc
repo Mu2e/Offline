@@ -26,13 +26,15 @@ namespace mu2e {
     const int icx = std::floor(xSensor/chipXPitch + nxChips()/2.);
     const int icy = std::floor(ySensor/chipYPitch + nyChips()/2.);
 
+    const int N_Columns=chip_.nColumns();
+
     if((0 <= icx)&&(unsigned(icx) < nxChips())&&(0 <= icy)&&(unsigned(icy) < nyChips())) {
 
         ExtMonFNALChipId cid(mid, icx, icy);
 
         // Assume no gaps between chips
         // x0 and y0 are the coordinates of the bottom left chip corner in the module frame
-        const double chipx0 = (icx - nxChips()/2.)*chip_.nColumns()*chip_.xPitch();
+        const double chipx0 = (icx - nxChips()/2.)*N_Columns*chip_.xPitch();
         const double chipy0 = (icy - nyChips()/2.)*chip_.nRows()*chip_.yPitch();
 
         // Zero based pixel column and row numbers for the offline identifier
@@ -40,9 +42,9 @@ namespace mu2e {
         const int iy = std::floor((ySensor - chipy0)/chip_.yPitch());
         int ix_=-1;
 
-        if(xSensor > (chip_.nColumns()-2)*chip_.xPitch()+chip_.xPitch_Mid())
+        if(xSensor > (N_Columns-2)*chip_.xPitch()+chip_.xPitch_Mid())
        {
-          ix_ = chip_.nColumns() - 1;
+          ix_ = N_Columns - 1;
        }
 
         else if(xSensor>chip_.xPitch_Mid())
@@ -57,10 +59,10 @@ namespace mu2e {
 
         else if(xSensor>=-chip_.xPitch_Mid())
        {
-          ix_ = chip_.nColumns() - 1;
+          ix_ = N_Columns - 1;
        }
 
-        else if(xSensor>=  -(chip_.nColumns()-2)*chip_.xPitch()-chip_.xPitch_Mid() )
+        else if(xSensor>=  -(N_Columns-2)*chip_.xPitch()-chip_.xPitch_Mid() )
        {
           ix_ = floor((xSensor - chipx0 - chip_.xPitch_Edge())/chip_.xPitch()) + 1;
        }
