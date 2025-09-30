@@ -14,7 +14,7 @@ protected:
 
 
 public:
-  LsqSums2();
+  LsqSums2(double X0=0,double Y0=0);
 
   void   clear();
 

@@ -5,8 +5,10 @@
 #include <cmath>
 
 
-LsqSums2::LsqSums2() {
+LsqSums2::LsqSums2(double X0, double Y0) {
   clear();
+  fX0 = X0;
+  fY0 = Y0;
 }
 
 
