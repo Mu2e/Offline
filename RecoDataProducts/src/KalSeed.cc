@@ -2,7 +2,7 @@
 #include <limits>
 namespace mu2e {
 
-  const double KalSeed::_regrowtol(2.0e-3);
+  const double KalSeed::_regrowtol(1e-3); // 1 ps minimum for regrown segments
 
   KalSeed::LHPTPtr KalSeed::loopHelixFitTrajectory() const {
     if(loopHelixFit() && segments().size() > 0){
@@ -12,7 +12,7 @@ namespace mu2e {
       while(iseg != segments().end()){
         if(iseg->timeRange().range() > _regrowtol ){
           auto trajptr = std::make_shared<KinKal::LoopHelix>(iseg->loopHelix());
-          ptraj->add(trajptr,_regrowtol); // note this call resolves the phi0 ambiguity
+          ptraj->add(trajptr); // note this call resolves the phi0 ambiguity
         }
         ++iseg;
       }
@@ -29,7 +29,7 @@ namespace mu2e {
       while(iseg != segments().end()){
         if(iseg->timeRange().range() > _regrowtol ){
           auto trajptr = std::make_shared<KinKal::CentralHelix>(iseg->centralHelix());
-          ptraj->add(trajptr,_regrowtol);
+          ptraj->add(trajptr);
         }
         ++iseg;
       }
@@ -46,7 +46,7 @@ namespace mu2e {
       while(iseg != segments().end()){
         if(iseg->timeRange().range() > _regrowtol ){
           auto trajptr = std::make_shared<KinKal::KinematicLine>(iseg->kinematicLine());
-          ptraj->add(trajptr,_regrowtol);
+          ptraj->add(trajptr);
         }
         ++iseg;
       }

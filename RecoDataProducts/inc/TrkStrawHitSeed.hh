@@ -120,16 +120,16 @@ namespace mu2e {
     auto wireDist() const { return _wdist; }
     auto wireRes() const { return _werr; }
     auto TOTDriftTime() const { return _tottdrift; }
-    auto particleTOCA() const { return _ptoca; }
-    auto sensorTOCA() const { return _stoca; }
+    auto particleToca() const { return _ptoca; }
+    auto sensorToca() const { return _stoca; }
     auto fitDOCA() const { return _udoca; }
     auto fitDOCAVar() const { return _udocavar; }
     auto fitDt() const { return _udt; }
-    auto fitTOCAVar() const { return _utocavar; }
+    auto fitTocaVar() const { return _utocavar; }
     auto refDOCA() const { return _rdoca; }
     auto refDOCAVar() const { return _rdocavar; }
     auto refDt() const { return _rdt; }
-    auto reTOCAVar() const { return _rtocavar; }
+    auto reTocaVar() const { return _rtocavar; }
     auto refPOCA_Upos() const { return _rupos; }
     auto driftRadius() const { return _rdrift; }
     auto radialErr() const { return _sderr; }

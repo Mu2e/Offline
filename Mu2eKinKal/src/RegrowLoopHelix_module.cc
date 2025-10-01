@@ -222,6 +222,14 @@ namespace mu2e {
       if(debug_ > 0){
         std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits and " << domains.size() << " domains, status = " << goodhits << std::endl;
       }
+      if(debug_ > 2){
+        unsigned nhactive(0);
+        unsigned nsactive(0);
+        for( auto const& strawh : strawhits)if(strawh->active())++nhactive;
+        for( auto const& strawx : strawxings)if(strawx->active())++nsactive;
+        std::cout << "Regrow " << nhactive << " active hits and " << nsactive << " active straws" << std::endl;
+
+      }
       if(debug_ > 5)static_cast<KinKal::PiecewiseTrajectory<KTRAJ>*>(trajptr.get())->print(std::cout,2);
       if(goodhits){
       // create the KKTrack from these components

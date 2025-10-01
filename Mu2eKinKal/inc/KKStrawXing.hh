@@ -29,14 +29,15 @@ namespace mu2e {
       using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
-      // construct without an associated StrawHit
-      KKStrawXing(CA const& ca, KKStrawMaterial const& smat, Straw const& straw,bool active=false);
+      // construct with closest approach
+      KKStrawXing(KKSTRAWHITPTR const& strawhit, CA const& ca, KKStrawMaterial const& smat, Straw const& straw,bool active=false);
       // construct with an associated StrawHit
       KKStrawXing(KKSTRAWHITPTR const& strawhit, KKStrawMaterial const& smat);
       virtual ~KKStrawXing() {}
       // clone op for reinstantiation
       KKStrawXing(KKStrawXing const& rhs):
           KKStrawXing(
+            rhs.strawHitPtr(),
             rhs.closestApproach(),
             rhs.strawMaterial(),
             rhs.straw()
@@ -101,7 +102,8 @@ namespace mu2e {
       void setClosestApproach(const CA& ca){ ca_ = ca; }
   };
 
-  template <class KTRAJ> KKStrawXing<KTRAJ>::KKStrawXing(CA const& ca, KKStrawMaterial const& smat, Straw const& straw,bool active) :
+  template <class KTRAJ> KKStrawXing<KTRAJ>::KKStrawXing(KKSTRAWHITPTR const& strawhit, CA const& ca, KKStrawMaterial const& smat, Straw const& straw,bool active) :
+    shptr_(strawhit),
     axis_(ca.sensorTraj()),
     smat_(smat),
     straw_(straw),
