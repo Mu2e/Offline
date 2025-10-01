@@ -23,6 +23,7 @@
 #include "Offline/TrackerMC/inc/StrawDigiBundle.hh"
 #include "Offline/TrackerMC/inc/StrawDigiBundleCollection.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/CaloMC/inc/CaloDigiWrapperCollection.hh"
 
 namespace mu2e{
   class MergeDigis: public art::EDProducer{
@@ -117,7 +118,18 @@ namespace mu2e{
       event.put(std::move(dgmc));
     }
 
-    // calorimeter...
+    // calorimeter: two easy steps:
+    //   i) read all digis into a CaloDigiWrapperCollection
+    //  ii) defer collision resolution to that collection
+    CaloDigiWrapperCollection wrappers;
+    for (const auto& tag: _calo_digi_tags){
+      auto handle = event.getValidHandle<CaloDigiCollection>(tag);
+      wrappers.Append(*handle);
+    }
+    CaloDigiWrapperCollection calo_resolved;
+    wrappers.ResolveCollisions(calo_resolved);
+    auto calo_digis = calo_resolved.GetDigis();
+    event.put(std::move(calo_digis));
 
     // crv...
   }
