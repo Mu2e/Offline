@@ -8,6 +8,7 @@
 #include "Offline/RecoDataProducts/inc/HitT0.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/Mu2eKinKal/inc/KKSHFlag.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/DataProducts/inc/TrkTypes.hh"
@@ -86,8 +87,11 @@ namespace mu2e {
       if(raddir.Dot(smid) < 0.0) raddir *= -1.0; // sign radially outwards
       _ustrawphi = atan2(cperp.Dot(raddir),cperp.Dot(zdir)); // angle around wire WRT z axis in range -pi,pi
       _ustrawdist = sqrt(cperp.mag2());
-
       _wdot = uptca.particleDirection().Dot(straw.wireDirection());
+      // set unbiased residual flags
+      if(udresid.active())_kkshflag.merge(KKSHFlag::goodudresid);
+      if(utresid.active())_kkshflag.merge(KKSHFlag::goodutresid);
+      if(ulresid.active())_kkshflag.merge(KKSHFlag::goodulresid);
     }
 
     //Legacy constructor for BTrk

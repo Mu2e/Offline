@@ -18,7 +18,8 @@ namespace mu2e {
       nhdrift=8, // if set, use drift radius to set null hit variance (otherwise use straw radius)
       longval=9, // if set, use time division to constrain longitudinal position
       annprob=15, // if set, interpret sign ANN probabilistically
-      added=20 // record if the hit was added (otherwise original)
+      added=20, // record if the hit was added (otherwise original)
+      goodudresid=21, goodutresid, goodulresid // status of unbiased residual calculation
     };
     // functions needed for the BitMap template
     static std::string const& typeName();

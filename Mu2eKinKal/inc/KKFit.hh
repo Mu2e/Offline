@@ -307,12 +307,14 @@ namespace mu2e {
     //temp
     std::cout << "N active hits " << nactive << " N active straws " << nsactive << std::endl;
     // create domains from the domain boundaries. Use the traj bnom, as that's guaranteed to be consistent
-    for(size_t idb = 0; idb < kseed.domainBounds().size()-1;++idb){
-      double tstart = kseed.domainBounds()[idb];
-      double trange = kseed.domainBounds()[idb+1] - tstart;
-      double tmid = tstart + 0.5*trange;
-      auto domainptr = std::make_shared<KinKal::Domain>(tstart,trange,ptraj->nearestPiece(tmid).bnom());
-      domains.emplace(domainptr);
+    if(kseed.domainBounds().size() > 0){
+      for(size_t idb = 0; idb < kseed.domainBounds().size()-1;++idb){
+        double tstart = kseed.domainBounds()[idb];
+        double trange = kseed.domainBounds()[idb+1] - tstart;
+        double tmid = tstart + 0.5*trange;
+        auto domainptr = std::make_shared<KinKal::Domain>(tstart,trange,ptraj->nearestPiece(tmid).bnom());
+        domains.emplace(domainptr);
+      }
     }
 
     return ngood >= minNStrawHits_;
