@@ -8,8 +8,8 @@ namespace mu2e {
     using SXUConfig = std::tuple<float,float,bool,int>;
     static std::string const& configDescription(); // description of the variables
     double maxdoca_ =0; // maximum DOCA to activate straw materials without an associated hits. <0 means don't change the state
-    double nsig_ =0; // Number of doca_sigma around doca value to use when averageing
-    bool scalevar_ =false; // scale variance or not
+    double nsig_ =-1; // Number of doca_sigma around doca value to use when averageing
+    bool scalevar_ =false; // scale variance with temperature or not
     int diag_ =0; // diag print level
     // default constructor is functional but will always use the impact-parameter averaged material
     StrawXingUpdater(SXUConfig const& sxusetting);

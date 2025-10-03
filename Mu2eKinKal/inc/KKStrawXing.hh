@@ -76,17 +76,17 @@ namespace mu2e {
       double transitTime() const override; // time to cross this element
       KTRAJ const& referenceTrajectory() const override { return ca_.particleTraj(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
+      bool active() const override;
       // accessors
-      bool active() const override { return active_; }
+      auto const& config() const { return sxconfig_; }
       auto const& closestApproach() const { return ca_; }
       auto const& strawMaterial() const { return smat_; }
-      auto const& config() const { return sxconfig_; }
       auto precision() const { return ca_.precision(); }
       auto const& straw() const { return straw_; }
       auto const& strawId() const { return straw_.id(); }
       auto const& strawHitPtr() const { return shptr_; }
     private:
-      StrawXingUpdater sxconfig_; // cache of most recent config
+      StrawXingUpdater sxconfig_; // cache of most recent update
       KKSTRAWHITPTR shptr_; // reference to associated StrawHit
       SensorLine axis_; // straw axis, expressed as a timeline
       KKStrawMaterial const& smat_;
@@ -95,7 +95,7 @@ namespace mu2e {
       double toff_; // small time offset
       std::vector<MaterialXing> mxings_;
       Parameters fparams_; // parameter change for forwards time
-      bool active_; // active or not
+      bool active_; // inside active region or not
       double varscale_; // variance scale
       // modifiers to support cloning
       void setStrawHitPtr(KKSTRAWHITPTR ptr) { shptr_ = ptr; }
@@ -124,6 +124,11 @@ namespace mu2e {
     varscale_(1.0)
   {}
 
+  template <class KTRAJ> bool KKStrawXing<KTRAJ>::active() const {
+    // if the associated hit is active, use it's state. Otherwise use the intrinsic state
+    return active_ || (shptr_ && shptr_->hitState().active());
+  }
+
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(PTRAJ const& ptraj) {
     CAHint tphint(axis_.timeAtMidpoint(),axis_.timeAtMidpoint());
     if(ca_.usable()){
@@ -141,29 +146,26 @@ namespace mu2e {
 
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
     // reset
-    fparams_ = Parameters();
     mxings_.clear();
     if(first) {
       // search for an updater among this meta-iteration payload
       auto sxconfig = miconfig.findUpdater<StrawXingUpdater>();
+      // cache, as this also sets parameters used in calculating path lengths
       if(sxconfig != 0)sxconfig_ = *sxconfig;
-      // update the activity
-      if(shptr_ && shptr_->active()){
-        active_ = true;
-      } else {
-        // if there's no associated hit OR the hit is inactive, and maxdoca >0.0, determine activity from DOCA
-        if(sxconfig_.maxdoca_ > 0.0)active_ = fabs(ca_.tpData().doca()) < sxconfig_.maxdoca_;
-      }
+      // require a validat updater
+      if(sxconfig_.nsig_ < 0)throw cet::exception("RECO")<<"mu2e::KKStrawXing: invalid updater!" <<  std::endl;
+      // update the DOCA range test
+      if(sxconfig_.maxdoca_ > 0.0)active_ = fabs(ca_.tpData().doca()) < sxconfig_.maxdoca_;
+      // set the variance scale (temperature)
       if(sxconfig_.scalevar_)
         varscale_ = miconfig.varianceScale();
       else
         varscale_ = 1.0;
     }
-    if(active_){
-      // update the material xings from gas, straw wall, and wire
-      smat_.findXings(ca_.tpData(),sxconfig_,mxings_);
-      fparams_ = this->parameterChange(varscale_);
-    }
+    // update the material xings from gas, straw wall, and wire
+    smat_.findXings(ca_.tpData(),sxconfig_,mxings_);
+    // update the effect these have on the parameters
+    fparams_ = this->parameterChange(varscale_);
   }
 
   template <class KTRAJ> double KKStrawXing<KTRAJ>::transitTime() const {
