@@ -92,7 +92,7 @@ namespace mu2e {
       // construct from fit configuration objects
       explicit KKFit(KKFitConfig const& fitconfig);
       // helper functions used to create components of the fit
-      // Make KKStrawHits from ComboHits (HelixSeed)
+      // Make KKStrawHits from ComboHits
       bool makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf, KKStrawMaterial const& smat,
           PTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
           KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
@@ -258,8 +258,6 @@ namespace mu2e {
       StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat, // other conditions
       PTRAJPTR& ptraj, KKSTRAWHITCOL& strawhits, KKCALOHITCOL& calohits, KKSTRAWXINGCOL& exings, DOMAINCOL& domains) const { // return values
     unsigned ngood(0), nactive(0), nsactive(0);
-    // create the trajectory
-    ptraj = kseed.loopHelixFitTrajectory();
     // loop over the TrkStrawHitSeeds in this KalSeed
     for(auto const& tshs : kseed.hits()) {
       const Straw& straw = tracker.getStraw(tshs.strawId());

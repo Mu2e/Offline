@@ -1,5 +1,5 @@
 //
-// Instantiation of RegrowKalSeed for LoopHelix fits
+// Instantiation of RegrowKalSeed for KinematicLine fits
 //
 // Original author: D. Brown (LBNL) 4/18/2025
 //
@@ -46,7 +46,7 @@
 #include "KinKal/Geometry/Cylinder.hh"
 #include "KinKal/Geometry/Disk.hh"
 #include "KinKal/Geometry/Frustrum.hh"
-#include "KinKal/Trajectory/LoopHelix.hh"
+#include "KinKal/Trajectory/KinematicLine.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
@@ -84,7 +84,7 @@ namespace mu2e {
 
   using Name    = fhicl::Name;
   using Comment = fhicl::Comment;
-  struct RegrowLoopHelixConfig {
+  struct RegrowKinematicLineConfig {
     fhicl::Atom<int> debug{Name("debug"), Comment("Debug level"), 0};
     fhicl::Atom<art::InputTag> kalSeedCollection {Name("KalSeedCollection"), Comment("KalSeed collection to process") };
     fhicl::Atom<art::InputTag> comboHitCollection {Name("ComboHitCollection"), Comment("Reduced ComboHit collection") };
@@ -96,10 +96,10 @@ namespace mu2e {
     fhicl::OptionalTable<KKExtrapConfig> extrapSettings { Name("ExtrapolationSettings") };
   };
 
-  class RegrowLoopHelix : public art::EDProducer {
+  class RegrowKinematicLine : public art::EDProducer {
     public:
-      using Parameters = art::EDProducer::Table<RegrowLoopHelixConfig>;
-      using KTRAJ = KinKal::LoopHelix;
+      using Parameters = art::EDProducer::Table<RegrowKinematicLineConfig>;
+      using KTRAJ = KinKal::KinematicLine;
       using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using PKTRAJPTR = std::unique_ptr<PKTRAJ>;
       using KKTRK = KKTrack<KTRAJ>;
@@ -132,7 +132,7 @@ namespace mu2e {
 
       using KKMaterialConfig = KKMaterial::Config;
 
-      explicit RegrowLoopHelix(const Parameters& settings);
+      explicit RegrowKinematicLine(const Parameters& settings);
       void beginRun(art::Run& run) override;
       void produce(art::Event& event) override;
       void endJob() override;
@@ -152,7 +152,7 @@ namespace mu2e {
       std::unique_ptr<KKExtrap> extrap_;
   };
 
-  RegrowLoopHelix::RegrowLoopHelix(const Parameters& settings) : art::EDProducer(settings),
+  RegrowKinematicLine::RegrowKinematicLine(const Parameters& settings) : art::EDProducer(settings),
   debug_(settings().debug()),
   config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
   kkfit_(settings().kkfitSettings()),
@@ -171,14 +171,14 @@ namespace mu2e {
     }
   }
 
-  void RegrowLoopHelix::beginRun(art::Run& run)
+  void RegrowKinematicLine::beginRun(art::Run& run)
   {
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
     kkbf_ = std::move(std::make_unique<KKBField>(*bfmgr,*det));
   }
 
-  void RegrowLoopHelix::produce(art::Event& event)
+  void RegrowKinematicLine::produce(art::Event& event)
   {
     // proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
@@ -202,14 +202,14 @@ namespace mu2e {
     // deal with MC
     if(fillMCAssns_){
       ksmca_H = event.getHandle<KalSeedMCAssns>(ksmca_T_);
-      if(!ksmca_H)throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: No KalSeedMCAssns found" << endl;
+      if(!ksmca_H)throw cet::exception("RECO")<<"mu2e::RegrowKinematicLine: No KalSeedMCAssns found" << endl;
       ksmca = std::unique_ptr<KalSeedMCAssns>(new KalSeedMCAssns);
     }
     size_t iseed(0);
     for (auto const& kseed : kseedcol) {
-      if(!kseed.loopHelixFit())throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: passed KalSeed from non-LoopHelix fit " << endl;
+      if(!kseed.loopHelixFit())throw cet::exception("RECO")<<"mu2e::RegrowKinematicLine: passed KalSeed from non-KinematicLine fit " << endl;
       // regrow the components from the seed
-      PKTRAJPTR trajptr = kseed.loopHelixFitTrajectory();
+      PKTRAJPTR trajptr = kseed.kinematicLineFitTrajectory();
       KKSTRAWHITCOL strawhits;
       strawhits.reserve(kseed.hits().size());
       KKSTRAWXINGCOL strawxings;
@@ -236,7 +236,7 @@ namespace mu2e {
       // create the KKTrack from these components
         auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,domains);
         if(ktrk && ktrk->fitStatus().usable()){
-          if(debug_ > 0) std::cout << "RegrowLoopHelix: successful track refit" << std::endl;
+          if(debug_ > 0) std::cout << "RegrowKinematicLine: successful track refit" << std::endl;
           // extrapolate as requested
           if(extrap_)extrap_->extrapolate(*ktrk);
           // sample the fit as requested
@@ -251,7 +251,7 @@ namespace mu2e {
             auto ksmcai = (*ksmca_H)[iseed];
             auto origksp = art::Ptr<KalSeed>(kseed_H,iseed);
             // test this is the right ptr
-            if(ksmcai.first != origksp)throw cet::exception("Reco")<<"mu2e::RegrowLoopHelix: wrong KalSeed ptr"<< std::endl;
+            if(ksmcai.first != origksp)throw cet::exception("Reco")<<"mu2e::RegrowKinematicLine: wrong KalSeed ptr"<< std::endl;
             auto mcseedp = ksmcai.second;
             auto rgksp = art::Ptr<KalSeed>(KalSeedCollectionPID,rgkseedcol->size()-1,KalSeedCollectionGetter);
             ksmca->addSingle(rgksp,mcseedp);
@@ -261,7 +261,7 @@ namespace mu2e {
           if(debug_ > 5)static_cast<const KinKal::PiecewiseTrajectory<KTRAJ>&>(ktrk->fitTraj()).print(std::cout,2);
           ktrkcol->push_back(ktrk.release());
         } else if(debug_ > 0)
-          std::cout << "RegrowLoopHelix: failed track refit, status " << ktrk->fitStatus() << std::endl;
+          std::cout << "RegrowKinematicLine: failed track refit, status " << ktrk->fitStatus() << std::endl;
       }
       ++iseed;
     }
@@ -271,8 +271,8 @@ namespace mu2e {
     if(fillMCAssns_)event.put(move(ksmca));
   }
 
-  void RegrowLoopHelix::endJob()
+  void RegrowKinematicLine::endJob()
   {}
 
 }
-DEFINE_ART_MODULE(mu2e::RegrowLoopHelix)
+DEFINE_ART_MODULE(mu2e::RegrowKinematicLine)
