@@ -207,7 +207,7 @@ namespace mu2e {
     }
     size_t iseed(0);
     for (auto const& kseed : kseedcol) {
-      if(!kseed.loopHelixFit())throw cet::exception("RECO")<<"mu2e::RegrowKinematicLine: passed KalSeed from non-KinematicLine fit " << endl;
+      if(!kseed.kinematicLineFit())throw cet::exception("RECO")<<"mu2e::RegrowKinematicLine: passed KalSeed from non-KinematicLine fit " << endl;
       // regrow the components from the seed
       PKTRAJPTR trajptr = kseed.kinematicLineFitTrajectory();
       KKSTRAWHITCOL strawhits;
@@ -228,7 +228,7 @@ namespace mu2e {
         unsigned nsactive(0);
         for( auto const& strawh : strawhits)if(strawh->active())++nhactive;
         for( auto const& strawx : strawxings)if(strawx->active())++nsactive;
-        std::cout << "Regrow " << nhactive << " active hits and " << nsactive << " active straws" << std::endl;
+        std::cout << "Regrew " << nhactive << " active hits and " << nsactive << " active straws" << std::endl;
 
       }
       if(debug_ > 5)static_cast<KinKal::PiecewiseTrajectory<KTRAJ>*>(trajptr.get())->print(std::cout,2);
