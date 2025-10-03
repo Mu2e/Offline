@@ -98,7 +98,7 @@ namespace mu2e {
     //    if(ca_.usable()) tphint = CAHint(ca_.particleToca(),ca_.sensorToca());
     PCA pca(ptraj,axis_,tphint,precision());
     ca_ = pca.localClosestApproach();
-    if(!ca_.usable())rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,false,rresid_.dRdP());
+    rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,rresid_.dRdP(),ca_.usable());
   }
 
   template <class KTRAJ> void KKCaloHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
@@ -137,9 +137,9 @@ namespace mu2e {
         double invvar2 = std::max(s2*sint2/(cost2*wvar_), 12/(ldt*ldt));
         totvar += 1.0/invvar2;
       }
-      rresid_ = Residual(ca_.deltaT(),totvar,0.0,true,ca_.dTdP());
+      rresid_ = Residual(ca_.deltaT(),totvar,0.0,ca_.dTdP());
     } else {
-      rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,false,rresid_.dRdP());
+      rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,rresid_.dRdP(),false);
     }
     // finally update the weight
     this->updateWeight(miconfig);

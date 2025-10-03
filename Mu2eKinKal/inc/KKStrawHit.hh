@@ -249,22 +249,22 @@ namespace mu2e {
       if(whstate.constrainTOT()){
         double tvar = chit_.timeVar();
         double dt = ca_.deltaT() - chit_.driftTime();
-        resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,ca_.dTdP());
+        resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,ca_.dTdP());
       }
       // distance residual
       if(whstate.driftConstraint()){
         double dr = whstate.lrSign()*dinfo.rDrift_ - ca_.doca();
         DVEC dRdP = whstate.lrSign()*dDdT_*ca_.dTdP() -ca_.dDdP();
-        resids[Mu2eKinKal::dresid] = Residual(dr,dVar_,0.0,true,dRdP);
+        resids[Mu2eKinKal::dresid] = Residual(dr,dVar_,0.0,dRdP);
       } else {
         // Null LR ambiguity. interpret DOCA against the wire directly as the spatial residual
-        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),dVar_,0.0,true,ca_.dDdP());
+        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),dVar_,0.0,ca_.dDdP());
         // optionally use the null hit time measurement to constrain t0
         if(whstate.constrainAbsDriftDt()){
           double dt = ca_.deltaT() - sresponse_.strawDrift().D2T(fabs(ca_.doca()),dinfo.LorentzAngle_);
           double tvar = dinfo.driftTimeVar();
           // this overwrites the TOT time constraint, in principle both can be used TODO
-          resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,ca_.dTdP());
+          resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,ca_.dTdP());
         }
       }
 
@@ -290,7 +290,7 @@ namespace mu2e {
         double pdir_dot_sdir = ca_.sensorDirection().Dot(ca_.particleDirection());
         DVEC dLdP =  dx_dot_sdir + (dx_dot_sdir*pdir_dot_sdir - dx_dot_pdir - d_dot_dm)/(1-pdir_dot_sdir*pdir_dot_sdir)*pdir_dot_sdir;
         dLdP *= -1;
-        resids[Mu2eKinKal::lresid] = Residual(lresidval,lresidvar,0.0,true,dLdP);
+        resids[Mu2eKinKal::lresid] = Residual(lresidval,lresidvar,0.0,dLdP);
       }
 
     }

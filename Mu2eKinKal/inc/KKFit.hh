@@ -377,7 +377,9 @@ namespace mu2e {
     auto const& ptraj = kktrk.fitTraj();
     // build the set of existing hits
     std::set<StrawHitIndex> oldhits;
+    std::set<StrawId> oldstrawxs;
     for(auto const& strawhit : kktrk.strawHits())oldhits.insert(strawhit->strawHitIndex());
+    for(auto const& strawx : kktrk.strawXings())oldstrawxs.insert(strawx->strawId());
     for( size_t ich=0; ich < chcol.size();++ich){
       if(oldhits.find(ich)==oldhits.end()){      // make sure this hit wasn't already found
         ComboHit const& strawhit = chcol[ich];
@@ -393,8 +395,11 @@ namespace mu2e {
             PCA pca(ptraj, wline, hint, tprec_ );
             if(fabs(pca.doca()) < maxStrawHitDoca_){ // add test of chi TODO
               addhits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, pca, strawhit, straw, ich, strawresponse));
+              oldhits.insert(addhits.back()->strawHitIndex());
               // add the associated straw
               if(matcorr_){
+                // test
+                if(oldstrawxs.find(strawhit.strawId()) != oldstrawxs.end())throw cet::exception("RECO")<<"mu2e::addStrawHits: duplicate straw!!" <<  std::endl;
                 auto sline = Mu2eKinKal::strawLine(straw,pca.particleToca()); // line down the straw axis center
                 CAHint hint(pca.particleToca(),pca.sensorToca());
                 PCA spca(ptraj, sline, hint, tprec_ );
@@ -418,6 +423,7 @@ namespace mu2e {
     // list the IDs of existing straws: this speeds the search
     std::set<StrawId> oldstraws;
     for(auto const& strawxing : kktrk.strawXings())oldstraws.insert(strawxing->strawId());
+    for(auto const& strawxing : addexings)oldstraws.insert(strawxing->strawId());
     // check for vertical tracks
     auto t0pos = ptraj.position3(ptraj.t0());
     auto t0dir = ptraj.direction(ptraj.t0());
@@ -649,19 +655,9 @@ namespace mu2e {
     if (saveHitCalib_)
       kseed._hitcalibs.reserve(kktrk.strawHits().size());
     for(auto const& strawhit : kktrk.strawHits() ) {
-      Residual utres = strawhit->refResidual(Mu2eKinKal::tresid);
-      Residual udres = strawhit->refResidual(Mu2eKinKal::dresid);
-      Residual ulres = strawhit->refResidual(Mu2eKinKal::lresid);
-      // compute unbiased residuals; this can fail if the track has marginal coverage
-      if(kktrk.fitStatus().usable()) {
-        try {
-          udres = strawhit->residual(Mu2eKinKal::dresid);
-          utres = strawhit->residual(Mu2eKinKal::tresid);
-          ulres = strawhit->residual(Mu2eKinKal::lresid);
-        } catch (std::exception const& error) {
-          // std::cout << "Unbiased KKStrawHit residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
-        }
-      }
+      auto udres = strawhit->residual(Mu2eKinKal::dresid);
+      auto utres = strawhit->residual(Mu2eKinKal::tresid);
+      auto ulres = strawhit->residual(Mu2eKinKal::lresid);
       kseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
           strawhit->closestApproach().tpData(),
           strawhit->unbiasedClosestApproach().tpData(),
@@ -689,14 +685,7 @@ namespace mu2e {
         hflag.merge(StrawHitFlag::doca);
       }
       // calculate the unbiased time residual
-      Residual ctres = calohit->refResidual(0);
-      if(kktrk.fitStatus().usable()){
-        try {
-          ctres = calohit->residual(0);
-        } catch (std::exception const& error) {
-          // std::cout << "Unbiased KKCaloHit residual calculation failure, nDOF = " << fstatus.chisq_.nDOF() << std::endl;
-        }
-      }
+      Residual ctres = calohit->residual(0);
       // calculate the cluster depth = distance along the crystal axis from the POCA to the back face of this disk (where the SiPM sits)
       double backz = calo.geomUtil().mu2eToTracker(calo.disk(calohit->caloCluster()->diskID()).geomInfo().backFaceCenter()).z();
       // calculate the distance from POCA to the SiPM, along the crystal (Z) direction, and projected along the track
@@ -730,9 +719,6 @@ namespace mu2e {
           sxing->config(),
           radfrac,
           dm);
-      //test
-      if(sxing->strawHitPtr() && (sxing->strawHitPtr()->hitState().active() != sxing->active()))std::cout << "Mismatched activity, hit "
-        < sxing->strawHitPtr()->hitState().active() << " straw " << sxing->active() << std::endl;
     }
     // save the fit segments as requested
     if(kktrk.fitStatus().usable()){
