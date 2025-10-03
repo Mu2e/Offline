@@ -29,7 +29,6 @@ physics :
       g4ModuleLabel             : "compressRecoMCs"
 #      physicalVolumesMultiLabel : "compressPV"
       kalSeedStepSize           : 0.1
-      extracted                 : true
     }
   }
 
@@ -41,6 +40,6 @@ physics :
 #include "Offline/DbService/fcl/NominalDatabase.fcl"
 
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
-#services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_common_current.txt"
-services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_common_extracted_v02.txt"
+services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_run1_a.txt"
+#services.DbService.textFile : ["Offline/CRVConditions/data/status_run1a_v01.txt","Offline/CRVConditions/data/photonyield_run1a_v01.txt", "Offline/CRVConditions/data/calib_run1a_v01.txt"]
 #source.readParameterSets : false
