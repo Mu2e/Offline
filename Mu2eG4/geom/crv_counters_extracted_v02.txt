@@ -72,12 +72,12 @@ double crs.fiberSeparation = 26.0; //mm
 // Using CRV-DS modules as bottom trigger modules. They have readouts at one side only.
 // side 0 is the negative side of the counter, i.e. the -x side of a CRV-T counter, or the -y side of a CRV-R counter
 bool crs.sipmsAtSide0EX  = true;  //0
-bool crs.sipmsAtSide0T1  = true;  //1
+bool crs.sipmsAtSide0T1  = false; //1
 bool crs.sipmsAtSide0T2  = true;  //2
 
 // side 1 is the positive side of the counter, i.e. the +x side of a CRV-T counter, or the +y side of a CRV-R counter
 bool crs.sipmsAtSide1EX  = true;  //0
-bool crs.sipmsAtSide1T1  = false; //1
+bool crs.sipmsAtSide1T1  = true;  //1
 bool crs.sipmsAtSide1T2  = true;  //2
 
 // information about the coincidence groups

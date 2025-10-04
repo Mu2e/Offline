@@ -1,0 +1,8 @@
+physics.producers.CrvPhotons.CRVSectors           : ["EX","T1","T2"]
+physics.producers.CrvPhotons.reflectors           : [  0,  -1,   0 ]
+physics.producers.CrvPhotons.scintillationYields  : [39794,28573,28573]   //assuming modules from CRV-T(1.8mm),CRV-DS,CRV-L
+physics.producers.CrvPhotons.lookupTableFileNames : [
+                                                     "CRVConditions/v6_0/LookupTable_6000_0",
+                                                     "CRVConditions/v6_0/LookupTable_2370_1",
+                                                     "CRVConditions/v6_0/LookupTable_3200_0"
+                                                    ]
