@@ -1,4 +1,3 @@
-# -*- mode:tcl -*-
 #------------------------------------------------------------------------------
 # run interactively, stop after each event to display waveforms
 #
@@ -52,7 +51,7 @@ physics : {
     
     filters : { @table::DAQ.filters}
     
-    p1 : [ StrawDigisFromArtdaqFragments , StrawDigiFilter ]
+    p1 : [ makeSD , StrawDigiFilter ]
 
     # e1 : [  defaultOutput ]
     e1 : []
@@ -81,4 +80,4 @@ physics.filters.StrawDigiFilter.minNGoodPanels   :  3
 physics.filters.StrawDigiFilter.debugLevel       :  1
 physics.filters.StrawDigiFilter.debugBits        :  [ "bit1:1" ]
 
-physics.producers.StrawDigisFromArtdaqFragments.saveWaveforms :  1
+physics.producers.makeSD.saveWaveforms           :  1

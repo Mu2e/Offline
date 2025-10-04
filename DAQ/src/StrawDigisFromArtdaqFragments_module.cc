@@ -13,6 +13,8 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Sequence.h"
 
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -121,7 +123,7 @@ public:
   explicit StrawDigisFromArtdaqFragments(const art::EDProducer::Table<Config>& config);
   virtual ~StrawDigisFromArtdaqFragments() {}
 
-  void         print_(const std::string&  Message, int DiagLevel = -1,
+  void         print_(const std::string&  Message,
                       const std::source_location& location = std::source_location::current());
 
   void         print_fragment(const artdaq::Fragment* Frag);
@@ -241,7 +243,7 @@ mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::ED
     sscanf(key,"bit%i:%i",&index,&value);
     debugBit_[index]  = value;
         
-    print_(std::format("StrawDigisFromArtdaqFragments: bit={:4d} is set to {}\n",index,debugBit_[index]));
+    print_(std::format("StrawDigisFromArtdaqFragments: bit={:4d} is set to {}",index,debugBit_[index]));
   }
 
   _last_run = -1;
@@ -261,18 +263,17 @@ std::vector<std::string> splitString(const std::string& str, const std::string& 
 }
 
 //-----------------------------------------------------------------------------
-void mu2e::StrawDigisFromArtdaqFragments::print_(const std::string& Message, int DiagLevel,
-                                                const std::source_location& location) {
-  if (DiagLevel > diagLevel_) return;
-  if (event_) {
-    std::cout << std::format(" event:{}:{}:{} ",event_->run(),event_->subRun(),event_->event());
-  }
+void mu2e::StrawDigisFromArtdaqFragments::print_(const std::string& Message, const std::source_location& location) {
+  //  if (DiagLevel > diagLevel_) return;
+
+  std::string s;
+  if (event_) s = std::format("event: {}:{}:{} ",event_->run(),event_->subRun(),event_->event());
 
   std::vector<std::string> ss = splitString(location.file_name(),"/");
 
-  std::cout << ss.back() << ":" << location.line()
+  mf::LogVerbatim("") << s << ss.back() << ":" << location.line()
     //            << location.function_name()
-            << ": " << Message;
+                      << " : " << Message;
 }
 
 //-----------------------------------------------------------------------------
@@ -301,11 +302,10 @@ void mu2e::StrawDigisFromArtdaqFragments::print_fragment(const artdaq::Fragment*
 
 //-----------------------------------------------------------------------------
 void mu2e::StrawDigisFromArtdaqFragments::beginRun(art::Run&  ArtRun) {
-  if (_last_run != (int)ArtRun.run()) {
-    art::EventID eid(ArtRun.run(),1,1); // art id of the first event of the new run
-    _trackerPanelMap = &_tpm_h.get(eid);
-    _last_run    = ArtRun.run();
-  }
+  // if (_last_run != (int)ArtRun.run()) {
+  //   art::EventID eid(ArtRun.run(),1,1); // art id of the first event of the new run
+  //   _last_run    = ArtRun.run();
+  // }
 
 }
 
@@ -315,11 +315,13 @@ void mu2e::StrawDigisFromArtdaqFragments::beginRun(art::Run&  ArtRun) {
 void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
   int const packet_size(16); // in bytes
 
-  if (debugMode_ > 0) print_("-- START\n",1);
+  if (debugMode_ > 0) print_("-- START");
 
   event_ = &event;                      // cache to print events
   
-   // Collection of StrawDigis for the event
+  _trackerPanelMap = &_tpm_h.get(event.id());
+
+  // Collection of StrawDigis for the event
   std::unique_ptr<mu2e::StrawDigiCollection> straw_digis(new mu2e::StrawDigiCollection);
   std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> straw_digi_adcs(new mu2e::StrawDigiADCWaveformCollection);
 
@@ -363,7 +365,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
         }
 
         if (debugMode_ and (debugBit_[0] > 0)) {
-          print_(std::format("-- fragment number:{}\n",ifrag));
+          print_(std::format("-- fragment number:{}",ifrag));
           print_fragment(frag);
         }
 //-----------------------------------------------------------------------------
@@ -419,14 +421,14 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
 // either DTC ID or link ID are corrupted. Haven't seen that so far, switch to the next ROC anyway
 //-----------------------------------------------------------------------------
-                print_(std::format("ERROR: either dtc_id:{} or link_id:{} is corrupted, skip ROC data\n",
+                print_(std::format("ERROR: either dtc_id:{} or link_id:{} is corrupted, skip ROC data",
                                    dtc_id,link_id));
                 continue;
               }
             }
               
             if (debugMode_) {
-              print_(std::format("-- DTC:{} ROC:{} nhits:{}\n",dtc_id,link_id,nhits));
+              print_(std::format("-- DTC:{} ROC:{} nhits:{}",dtc_id,link_id,nhits));
             }
             
             for (int ihit=0; ihit<nhits; ihit++) {
@@ -447,7 +449,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               uint16_t chid   = mu2e::StrawId(channel).straw(); // channel ID within the panel
 
               if (chid > StrawId::_nstraws) {
-                print_(std::format("ERROR: hit with corrupted chid:{:04x} : straw:{} / dtc_id:{} link_id:{}, SKIPPING\n",
+                print_(std::format("ERROR: hit with corrupted chid:{:04x} : straw:{} / dtc_id:{} link_id:{}, SKIPPING",
                                    hit_data->StrawIndex, chid, dtc_id, link_id));
                 continue;
               }
@@ -460,13 +462,13 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
 // bad mnid. Likely, corrupted data block. For now, skip the hit data and proceed with the next hit
 //-----------------------------------------------------------------------------
-                  print_(std::format("ERROR: corrupted mnid:{}, skip hit data\n",mnid));
+                  print_(std::format("ERROR: corrupted mnid:{}, skip hit data",mnid));
                   continue;
                 }
               }
 // in principle, could this could become an 'else if'
               if (tpm->mnid() != mnid) {
-                print_(std::format("ERROR: hit chid:{:04x} inconsistent with the dtc_id:{} and link_id:{}\n",
+                print_(std::format("ERROR: hit chid:{:04x} inconsistent with the dtc_id:{} and link_id:{}",
                                    hit_data->StrawIndex, dtc_id, link_id));
 //-----------------------------------------------------------------------------
 // in case of a single channel ID error no need to skip the rest of the ROC data -
@@ -499,7 +501,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 
               if (hit_data->NumADCPackets != nADCPackets_) {
                 int np = hit_data->NumADCPackets;
-                print_(std::format("ERROR: wrong NADCpackets:{} , expected:{}, GO TO THE NEXT ROC\n",
+                print_(std::format("ERROR: wrong NADCpackets:{} , expected:{}, GO TO THE NEXT ROC",
                                    np,nADCPackets_));
                 break;
               }
@@ -588,7 +590,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 // print waveforms - before moving, that invalidates the pointer...
 // make sure that the case of 2 packets prints in one line, the rest is less important
 //-----------------------------------------------------------------------------
-      print_(std::format("--- waveforms: n:{}\n",straw_digi_adcs->size()));
+      print_(std::format("--- waveforms: n:{}",straw_digi_adcs->size()));
       int iwf = 0;
       for (auto wf : *straw_digi_adcs) {
         std::string line = std::format("{:5d}",iwf);
@@ -609,7 +611,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
     event.put(std::move(straw_digi_adcs));
   }
 
-  if (debugMode_) print_("-- END\n",1);
+  if (debugMode_) print_("-- END");
 }
 
 
