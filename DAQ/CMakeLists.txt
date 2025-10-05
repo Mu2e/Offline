@@ -111,6 +111,7 @@ cet_build_plugin(CrvDigisFromArtdaqFragmentsFEBII art::module
     Offline::DataProducts
     Offline::RecoDataProducts
     artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Data_dict
     artdaq-core-mu2e::Overlays
 )
 
@@ -121,6 +122,7 @@ cet_build_plugin(CrvGRdataFromArtdaqFragments art::module
     Offline::DataProducts
     Offline::RecoDataProducts
     artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Data_dict
     artdaq-core-mu2e::Overlays
 )
 

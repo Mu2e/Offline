@@ -14,6 +14,7 @@
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
+#include "Offline/RecoDataProducts/inc/CrvStatus.hh"
 
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 #include "artdaq-core-mu2e/Overlays/DTCEventFragment.hh"
@@ -53,7 +54,7 @@ CrvDigisFromArtdaqFragmentsFEBII::CrvDigisFromArtdaqFragmentsFEBII(const art::ED
   produces<mu2e::CrvDigiCollection>();
   produces<mu2e::CrvDigiCollection>("NZS");
   produces<mu2e::CrvDAQerrorCollection>();
-  produces<mu2e::CRVDataDecoder::CRVROCStatusPacketCollection>();
+  produces<mu2e::CrvStatusCollection>();
 }
 
 void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
@@ -64,7 +65,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
   std::unique_ptr<mu2e::CrvDigiCollection> crvDigis(new mu2e::CrvDigiCollection);
   std::unique_ptr<mu2e::CrvDigiCollection> crvDigisNZS(new mu2e::CrvDigiCollection);
   std::unique_ptr<mu2e::CrvDAQerrorCollection> crvDaqErrors(new mu2e::CrvDAQerrorCollection);
-  std::unique_ptr<mu2e::CRVDataDecoder::CRVROCStatusPacketCollection> crvROCStatusPackets(new mu2e::CRVDataDecoder::CRVROCStatusPacketCollection);
+  std::unique_ptr<mu2e::CrvStatusCollection> crvStatus(new mu2e::CrvStatusCollection);
 
   // Temporary collections for unordered digis
   std::map<int, std::vector<mu2e::CrvDigi>> crvDigisTmp;
@@ -135,6 +136,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
           }
 
           auto header = block->GetHeader();
+          crvStatus->emplace_back(*header);
           if(!header->isValid())
           {
             std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
@@ -171,7 +173,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
               crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingStatusPacket,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
               continue;
             }
-            crvROCStatusPackets->push_back(*crvRocHeader);
+            crvStatus->back().GetROCHeader().push_back(*crvRocHeader);
 
             std::vector<mu2e::CRVDataDecoder::CRVHitFEBII> crvHits;
             if(!decoder.GetCRVHitsFEBII(iDataBlock, crvHits))
@@ -285,7 +287,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
   event.put(std::move(crvDigis));
   event.put(std::move(crvDigisNZS),"NZS");
   event.put(std::move(crvDaqErrors));
-  event.put(std::move(crvROCStatusPackets));
+  event.put(std::move(crvStatus));
 }
 
 } //namespace mu2e
