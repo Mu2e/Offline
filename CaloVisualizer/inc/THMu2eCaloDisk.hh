@@ -158,9 +158,7 @@ public:
   void SetBinCombineMode(Int_t bin, Int_t mode);
   void SetCombineMode(Int_t mode);
   void SetCombineMode(const char* formula);
-  bool LoadMapFile(std::map<int, std::map<int, mu2e::channelInfo>>& output,
-                   const char* filename = "/home/mu2edaq/dev_calo/pgirotti_testing/srcs/Offline/"
-                                          "CaloConditions/data/caloDMAP_latest.dat");
+  bool LoadMapFile(std::map<int, std::map<int, mu2e::channelInfo>>& output, const char* filename = "Offline/CaloConditions/data/caloDMAP_20250827.dat");
   bool LoadMapDB(std::map<int, std::map<int, mu2e::channelInfo>>& output);
 
   Int_t FillOffline(int SiPMId, Double_t w);

@@ -124,26 +124,38 @@ namespace mu2e{
     // Mu2e Customizations
     tmpPL->RegisterPhysics( new Mu2eG4CustomizationPhysicsConstructor(&phys, &debug, &lim));
 
-    if (phys.turnOffRadioactiveDecay()) {
-      tmpPL->RemovePhysics("G4RadioactiveDecay");
-    }
-
     if ( phys.turnOffRadioactiveDecay() && phys.turnOnRadioactiveDecay() ) {
       mf::LogError("Config") << "Inconsistent config";
       G4cout << "Error: turnOnRadioactiveDecay & turnOffRadioactiveDecay on" << G4endl;
       throw cet::exception("BADINPUT")<<" decide on turnOn/OffRadioactiveDecay\n";
     }
 
+    if ( phys.turnOnRadioactiveDecay() && phys.radiationVRmode() ) {
+      mf::LogError("Config") << "Inconsistent config";
+      G4cout << "Error: turnOnRadioactiveDecay & radiationVRmode on" << G4endl;
+      throw cet::exception("BADINPUT")<<" decide on one option\n";
+    }
+
+    if ( phys.turnOffRadioactiveDecay() && phys.radiationVRmode() ) {
+      mf::LogError("Config") << "Inconsistent config";
+      G4cout << "Error: turnOffRadioactiveDecay & radiationVRmode on" << G4endl;
+      throw cet::exception("BADINPUT")<<" decide on one option\n";
+    }
+
+    if (phys.turnOffRadioactiveDecay()) {
+      tmpPL->RemovePhysics("G4RadioactiveDecay");
+    }
+
     if (phys.turnOnRadioactiveDecay()) {
-      if (phys.radiationVRmode()){
-        tmpPL->RemovePhysics("G4RadioactiveDecay");
-        tmpPL->RegisterPhysics(new Mu2eG4BiasedRDPhysics(&phys, debug.diagLevel()));
-      } else {
-        // turn it off first to avoid warning if this process is already included in the
-        // physics list, does nothing if the process is absent
-        tmpPL->RemovePhysics("G4RadioactiveDecay");
-        tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(debug.diagLevel()));
-      }
+      // turn it off first to avoid warning if this process is already included in the
+      // physics list, does nothing if the process is absent
+      tmpPL->RemovePhysics("G4RadioactiveDecay");
+      tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(debug.diagLevel()));
+    }
+
+    if (phys.radiationVRmode()){
+      tmpPL->RemovePhysics("G4RadioactiveDecay");
+      tmpPL->RegisterPhysics(new Mu2eG4BiasedRDPhysics(&phys, debug.diagLevel()));
     }
 
     if (phys.turnOnThermalNeutronPhysics()) {
