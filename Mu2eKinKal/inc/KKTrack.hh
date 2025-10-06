@@ -152,12 +152,12 @@ namespace mu2e {
       TrkFitFlag flag_;
       KKSTRAWHITCOL strawhits_;  // straw hits used in this fit
       KKSTRAWXINGCOL strawxings_;  // straw material crossings used in this fit
+      KKCALOHITCOL calohits_;  // calo hits used in this fit
       KKIPAXINGCOL ipaxings_;  // ipa material crossings used in extrapolation
       KKSTXINGCOL stxings_;  // stopping target material crossings used in extrapolation
       KKCRVXINGCOL crvxings_; // crv crossings using in extrapolation
       KKINTERCOL inters_; // other recorded intersections
       KKSTRAWHITCLUSTERCOL strawhitclusters_;  // straw hit clusters used in this fit
-      KKCALOHITCOL calohits_;  // calo hits used in this fit
       // utility function to convert to generic types
       void convertTypes( KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings,KKCALOHITCOL const& calohits,
           MEASCOL& hits, EXINGCOL& exings);
