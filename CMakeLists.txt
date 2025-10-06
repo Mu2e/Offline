@@ -30,6 +30,7 @@ cet_set_compiler_flags(DIAGS VIGILANT
              -Wno-unused-parameter
              -Wno-non-virtual-dtor
              -Wno-extra
+             -Wreorder
 )
 
 if(DEFINED Offline_UPS_QUALIFIER_STRING)
@@ -54,7 +55,7 @@ endif()
 
 message("Creating link from ${CMAKE_CURRENT_SOURCE_DIR} to ${CMAKE_CURRENT_SOURCE_DIR}/Offline to satisfy includes")
 file(CREATE_LINK ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/Offline SYMBOLIC)
- 
+
 find_package(art_root_io REQUIRED EXPORT)
 find_package(GSL REQUIRED EXPORT)
 find_package(PostgreSQL REQUIRED EXPORT)
@@ -64,8 +65,8 @@ find_package(XercesC REQUIRED EXPORT)
 find_package(BLAS REQUIRED EXPORT)
 find_package(artdaq-core-mu2e REQUIRED EXPORT)
 find_package(TRACE REQUIRED EXPORT)
-if( ${WITH_G4} ) 
-    message("--> ADDING G4 LIBS")	
+if( ${WITH_G4} )
+    message("--> ADDING G4 LIBS")
     find_package(Geant4 REQUIRED EXPORT)
 
     # TODO: Find or implement FindCRY.cmake
@@ -142,7 +143,7 @@ add_subdirectory(MCDataProducts)
 add_subdirectory(MECOStyleProtonAbsorberGeom)
 add_subdirectory(Mu2e)
 add_subdirectory(Mu2eBTrk)
-if( ${WITH_G4} ) 
+if( ${WITH_G4} )
     message("---> ADDING G4 DIRS")
     add_subdirectory(EventGenerator)
     add_subdirectory(Mu2eG4)
