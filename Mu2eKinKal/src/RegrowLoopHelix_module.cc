@@ -88,11 +88,14 @@ namespace mu2e {
     fhicl::Atom<int> debug{Name("debug"), Comment("Debug level"), 0};
     fhicl::Atom<art::InputTag> kalSeedCollection {Name("KalSeedCollection"), Comment("KalSeed collection to process") };
     fhicl::Atom<art::InputTag> comboHitCollection {Name("ComboHitCollection"), Comment("Reduced ComboHit collection") };
+    fhicl::Atom<art::InputTag> caloClusterCollection {Name("CaloClusterCollection"),     Comment("CaloCluster collection ") };
     fhicl::Atom<art::InputTag> indexMap {Name("StrawDigiIndexMap"), Comment("Map between original and reduced ComboHits") };
     fhicl::OptionalAtom<art::InputTag> kalSeedMCAssns {Name("KalSeedMCAssns"), Comment("Association to KalSeedMC. If set, regrown KalSeeds will be associated with the same KalSeedMC as the original") };
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("RefitSettings") };
+    fhicl::Atom<bool> extend {Name("Extend"), Comment("Extend the fit") };
+
     fhicl::OptionalTable<KKExtrapConfig> extrapSettings { Name("ExtrapolationSettings") };
   };
 
@@ -146,9 +149,11 @@ namespace mu2e {
       KKMaterial kkmat_;
       art::ProductToken<KalSeedCollection> kseedcol_T_;
       art::ProductToken<ComboHitCollection> chcol_T_;
+      art::ProductToken<CaloClusterCollection> cccol_T_;
       art::ProductToken<IndexMap> indexmap_T_;
       art::InputTag ksmca_T_;
       bool fillMCAssns_;
+      bool extend_;
       std::unique_ptr<KKExtrap> extrap_;
   };
 
@@ -159,8 +164,10 @@ namespace mu2e {
   kkmat_(settings().matSettings()),
   kseedcol_T_(consumes<KalSeedCollection>(settings().kalSeedCollection())),
   chcol_T_(consumes<ComboHitCollection>(settings().comboHitCollection())),
+  cccol_T_(mayConsume<CaloClusterCollection>(settings().caloClusterCollection())),
   indexmap_T_(consumes<IndexMap>(settings().indexMap())),
-  fillMCAssns_(settings().kalSeedMCAssns(ksmca_T_))
+  fillMCAssns_(settings().kalSeedMCAssns(ksmca_T_)),
+  extend_(settings().extend())
   {
     produces<KKTRKCOL>();
     produces<KalSeedCollection>();
@@ -190,6 +197,7 @@ namespace mu2e {
     const auto& kseedcol = *kseed_H;
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
     const auto& chcol = *ch_H;
+    auto cc_H = event.getHandle<CaloClusterCollection>(cccol_T_);
     auto indexmap_H = event.getValidHandle<IndexMap>(indexmap_T_);
     const auto& indexmap = *indexmap_H;
     auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
@@ -237,6 +245,8 @@ namespace mu2e {
         auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "RegrowLoopHelix: successful track refit" << std::endl;
+// temporary test
+          kkfit_.extendTrack(config_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H , *ktrk );
           // extrapolate as requested
           if(extrap_)extrap_->extrapolate(*ktrk);
           // sample the fit as requested
