@@ -172,9 +172,7 @@ namespace mu2e {
       KKCALOHITCOL const& calohits,
       std::array<double, KinKal::NParams()> constraints) :
     KinKal::Track<KTRAJ>(config,bfield), tpart_(tpart), shclusterer_(shclusterer),
-    strawhits_(strawhits),
-    strawxings_(strawxings),
-    calohits_(calohits) {
+    strawhits_(strawhits), strawxings_(strawxings), calohits_(calohits) {
       MEASCOL hits; // polymorphic container of hits
       EXINGCOL exings; // polymorphic container of detector element crossings
       // add the hits to clusters, as required
@@ -216,8 +214,9 @@ namespace mu2e {
 
 
   template <class KTRAJ> KKTrack<KTRAJ>::KKTrack(Config const& config, BFieldMap const& bfield, PDGCode::type tpart,
-      PKTRAJPTR& fittraj, KKSTRAWHITCOL& strawhits, KKSTRAWXINGCOL& strawxings, KKCALOHITCOL& calohits, DOMAINCOL& domains) : KinKal::Track<KTRAJ>(config,bfield),
-  tpart_(tpart), strawhits_(strawhits), strawxings_(strawxings), calohits_(calohits),shclusterer_(StrawIdMask::none,0,0.0) {
+      PKTRAJPTR& fittraj, KKSTRAWHITCOL& strawhits, KKSTRAWXINGCOL& strawxings, KKCALOHITCOL& calohits, DOMAINCOL& domains) :
+    KinKal::Track<KTRAJ>(config,bfield), tpart_(tpart),shclusterer_(StrawIdMask::none,0,0.0),
+    strawhits_(strawhits), strawxings_(strawxings), calohits_(calohits) {
     // convert types
     MEASCOL hits; // polymorphic container of hits
     EXINGCOL exings; // polymorphic container of detector element crossings
