@@ -441,6 +441,7 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
+      SaveDomains : false
       SaveTrajectory : Detector
     }
     FitSettings : @local::Mu2eKinKal.LHSEEDFIT
