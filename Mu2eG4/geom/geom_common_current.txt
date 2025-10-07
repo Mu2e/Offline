@@ -2,7 +2,7 @@
 // and features that will eventually become default -
 // the latest for testing..
 
-#include "Offline/Mu2eG4/geom/geom_2021_PhaseI_v03.txt"
+#include "Offline/Mu2eG4/geom/geom_common.txt"
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
