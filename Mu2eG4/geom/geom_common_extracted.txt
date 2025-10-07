@@ -1,2 +1,2 @@
-//Extracted position for the detector KPP - original/old v01 version
-#include "Offline/Mu2eG4/geom/geom_common_extracted_v01.txt"
+//Extracted position for the detector KPP
+#include "Offline/Mu2eG4/geom/geom_common_extracted_MDC2020.txt"
