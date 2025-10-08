@@ -473,16 +473,19 @@ namespace mu2e {
   }
 
   bool LoopHelixFit::goodFit(KKTRK const& ktrk,KTRAJ const& seed) const {
-    // require physical consistency: fit can succeed but the result can have changed charge or helicity. Test at the t0 segment
-    auto t0 = Mu2eKinKal::zTime(ktrk.fitTraj(),0.0,ktrk.fitTraj().range().mid());
-    auto const& t0seg = ktrk.fitTraj().nearestPiece(t0);
-    bool retval = ktrk.fitStatus().usable() && t0seg.parameterSign()*seed.parameterSign() > 0 && t0seg.helicity()*seed.helicity() > 0;
-    // also check that the fit is inside the physical detector volume.  Test where the StrawHits are
+    bool retval = ktrk.fitStatus().usable();
     if(retval){
-      for(auto const& shptr : ktrk.strawHits()) {
-        if(shptr->active() && !Mu2eKinKal::inDetector(ktrk.fitTraj().position3(shptr->time()))){
-          retval = false;
-          break;
+      // require physical consistency: fit can succeed but the result can have changed charge or helicity. Test at the t0 segment
+      auto t0 = Mu2eKinKal::zTime(ktrk.fitTraj(),0.0,ktrk.fitTraj().range().mid());
+      auto const& t0seg = ktrk.fitTraj().nearestPiece(t0);
+      bool retval = ktrk.fitStatus().usable() && t0seg.parameterSign()*seed.parameterSign() > 0 && t0seg.helicity()*seed.helicity() > 0;
+      // also check that the fit is inside the physical detector volume.  Test where the StrawHits are
+      if(retval){
+        for(auto const& shptr : ktrk.strawHits()) {
+          if(shptr->active() && !Mu2eKinKal::inDetector(ktrk.fitTraj().position3(shptr->time()))){
+            retval = false;
+            break;
+          }
         }
       }
     }
