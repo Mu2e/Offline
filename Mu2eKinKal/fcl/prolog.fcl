@@ -48,6 +48,7 @@ Mu2eKinKal : {
     SampleInBounds : true # require sample be in surface bounds
     SampleSurfaces : [] # specific to the fit type
     SaveHitCalibInfo : false
+    SaveDomains : false
   }
 
    CHSEEDFIT: {
