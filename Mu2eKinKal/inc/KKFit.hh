@@ -302,8 +302,6 @@ namespace mu2e {
         if(sx.active())nsactive++;
       }
     }
-    //temp
-    std::cout << "N active hits " << nactive << " N active straws " << nsactive << std::endl;
     // create domains from the domain boundaries. Use the traj bnom, as that's guaranteed to be consistent
     if(kseed.domainBounds().size() > 0){
       for(size_t idb = 0; idb < kseed.domainBounds().size()-1;++idb){

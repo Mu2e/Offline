@@ -245,31 +245,32 @@ namespace mu2e {
         auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "RegrowLoopHelix: successful track refit" << std::endl;
-// temporary test
-          kkfit_.extendTrack(config_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H , *ktrk );
-          // extrapolate as requested
-          if(extrap_)extrap_->extrapolate(*ktrk);
-          // sample the fit as requested
-          kkfit_.sampleFit(*ktrk);
-          // convert to seed output format
-          TrkFitFlag fitflag = kseed.status();
-          fitflag.merge(TrkFitFlag::Regrown);
-          auto rgks = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
-          rgkseedcol->push_back(rgks);
-          if(fillMCAssns_){
-            // find the MC assns
-            auto ksmcai = (*ksmca_H)[iseed];
-            auto origksp = art::Ptr<KalSeed>(kseed_H,iseed);
-            // test this is the right ptr
-            if(ksmcai.first != origksp)throw cet::exception("Reco")<<"mu2e::RegrowLoopHelix: wrong KalSeed ptr"<< std::endl;
-            auto mcseedp = ksmcai.second;
-            auto rgksp = art::Ptr<KalSeed>(KalSeedCollectionPID,rgkseedcol->size()-1,KalSeedCollectionGetter);
-            ksmca->addSingle(rgksp,mcseedp);
-            // add the original too
-            ksmca->addSingle(origksp,mcseedp);
+          if(extend_)kkfit_.extendTrack(config_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H , *ktrk );
+          if(ktrk->fitStatus().usable()){
+            // extrapolate as requested
+            if(extrap_)extrap_->extrapolate(*ktrk);
+            // sample the fit as requested
+            kkfit_.sampleFit(*ktrk);
+            // convert to seed output format
+            TrkFitFlag fitflag = kseed.status();
+            fitflag.merge(TrkFitFlag::Regrown);
+            auto rgks = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
+            rgkseedcol->push_back(rgks);
+            if(fillMCAssns_){
+              // find the MC assns
+              auto ksmcai = (*ksmca_H)[iseed];
+              auto origksp = art::Ptr<KalSeed>(kseed_H,iseed);
+              // test this is the right ptr
+              if(ksmcai.first != origksp)throw cet::exception("Reco")<<"mu2e::RegrowLoopHelix: wrong KalSeed ptr"<< std::endl;
+              auto mcseedp = ksmcai.second;
+              auto rgksp = art::Ptr<KalSeed>(KalSeedCollectionPID,rgkseedcol->size()-1,KalSeedCollectionGetter);
+              ksmca->addSingle(rgksp,mcseedp);
+              // add the original too
+              ksmca->addSingle(origksp,mcseedp);
+            }
+            if(debug_ > 5)static_cast<const KinKal::PiecewiseTrajectory<KTRAJ>&>(ktrk->fitTraj()).print(std::cout,2);
+            ktrkcol->push_back(ktrk.release());
           }
-          if(debug_ > 5)static_cast<const KinKal::PiecewiseTrajectory<KTRAJ>&>(ktrk->fitTraj()).print(std::cout,2);
-          ktrkcol->push_back(ktrk.release());
         } else if(debug_ > 0)
           std::cout << "RegrowLoopHelix: failed track refit, status " << ktrk->fitStatus() << std::endl;
       }
