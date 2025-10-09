@@ -182,10 +182,10 @@ namespace mu2e
 
   bool KalSeedFilter::checkKalSeed(const KalSeed&Ks, const KalSeedCutsTool&Cuts){
     if(_debug > 3){
-      std::cout << "KalSeedFilter: in checkKalSeed status "<< Ks.status() << " intersections " << Ks.intersections().size() << std::endl;
+      std::cout << "KalSeedFilter: in checkKalSeed status "<< Ks.status() << std::endl;
     }
 
-    if( Ks.status().hasAllProperties(Cuts._goods) && Ks.intersections().size()>0){
+    if( Ks.status().hasAllProperties(Cuts._goods) ){
 
       // extract test quantities from the fit segment at t0
       double t0;
