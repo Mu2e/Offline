@@ -72,7 +72,19 @@ cet_build_plugin(LoopHelixFit art::module
       Offline::TrkReco
 
 )
+cet_build_plugin(RegrowLoopHelix art::module
+  REG_SOURCE src/RegrowLoopHelix_module.cc
+      LIBRARIES REG
+      Offline::Mu2eKinKal
+      Offline::TrkReco
+)
 
+cet_build_plugin(RegrowKinematicLine art::module
+  REG_SOURCE src/RegrowKinematicLine_module.cc
+      LIBRARIES REG
+      Offline::Mu2eKinKal
+      Offline::TrkReco
+)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgFinal.dat   ${CURRENT_BINARY_DIR} data/TrainBkgFinal.dat   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgSeed.dat   ${CURRENT_BINARY_DIR} data/TrainBkgSeed.dat   COPYONLY)

@@ -57,7 +57,7 @@ namespace mu2e {
     if(ktraj.range().range() <= epsilon) return true; // keep going if the step is very small
     auto stime = tdir == TimeDir::forwards ? ktraj.range().begin()+epsilon : ktraj.range().end()-epsilon;
     auto etime = tdir == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
-    auto vel = ktraj.speed(stime)*ktraj.axis(stime).direction();// use helix axis to define the velocity
+    auto vel = ktraj.speed(stime)*ktraj.linearize(stime).direction();// use hlinear approximation
     auto spos = ktraj.position3(stime);
     auto epos = ktraj.position3(etime);
     double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
