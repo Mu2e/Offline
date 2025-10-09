@@ -228,7 +228,7 @@ namespace mu2e {
       auto goodhits = kkfit_.regrowComponents(kseed, chcol, indexmap,
           *tracker,*calo_h,*strawresponse,*kkbf_, kkmat_.strawMaterial(),
           trajptr, strawhits, calohits, strawxings, domains);
-      if(debug_ > 0){
+      if(debug_ > 1){
         std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits and " << domains.size() << " domains, status = " << goodhits << std::endl;
       }
       if(debug_ > 2){
@@ -236,11 +236,11 @@ namespace mu2e {
         unsigned nsactive(0);
         for( auto const& strawh : strawhits)if(strawh->active())++nhactive;
         for( auto const& strawx : strawxings)if(strawx->active())++nsactive;
-        std::cout << "Regrow " << nhactive << " active hits and " << nsactive << " active straws" << std::endl;
-
+        std::cout << "Regrew " << nhactive << " active hits and " << nsactive << " active straws" << std::endl;
       }
       if(debug_ > 5)static_cast<KinKal::PiecewiseTrajectory<KTRAJ>*>(trajptr.get())->print(std::cout,2);
-      if(goodhits){
+      // require hits and consistent BField domains
+      if(goodhits && (domains.size() > 0 || !config_.bfcorr_)){
       // create the KKTrack from these components
         auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,domains);
         if(ktrk && ktrk->fitStatus().usable()){
