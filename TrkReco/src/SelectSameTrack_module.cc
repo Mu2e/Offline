@@ -133,6 +133,7 @@ namespace mu2e {
                 // potentially matching tracks: compare time and momentum
                 double dt = fabs(pritrkiinter->time() - sectrkiinter->time());
                 double dmom = fabs(pritrkiinter->mom() - sectrkiinter->mom());
+                if(debug_ > 2) std::cout << "Delta time " << dt << " Delta Momentum " << dmom << std::endl;
                 if( dt < maxdt_ && dmom < maxdp_){
                   // now test hit overlap
                   std::set<unsigned> prihits;
@@ -144,6 +145,7 @@ namespace mu2e {
                     if(hit._ambig > WireHitState::inactive && prihits.find(hit._index) != prihits.end())++nover;
                   }
                   double hfrac = float(nover)/float(prihits.size());
+                  if(debug_ > 2) std::cout << "Hit overlap " << hfrac << std::endl;
                   if(hfrac > minhf_){
                     if(debug_ > 1) std::cout << "Found matching track pair " << std::endl;
                     matches.emplace_back(ipri,isec,pritrkiinter->mom(),dt,dmom,hfrac);
