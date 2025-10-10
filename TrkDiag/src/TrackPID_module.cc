@@ -48,7 +48,7 @@ namespace mu2e {
           Comment("Track - Calorimeter time offset")}; // this should be a condition FIXME!
         fhicl::Atom<art::InputTag> kalSeedPtrTag{Name("KalSeedPtrCollection"), Comment("Input tag for KalSeedPtrCollection")};
         fhicl::Atom<bool> printMVA{Name("printMVA"), Comment("print the MVA used"), false};
-        fhicl::Atom<std::string> datFilename{Name("datFilename"), Comment("Fiename for the .dat file to use")};
+        fhicl::Atom<std::string> datFilename{Name("datFilename"), Comment("Filename for the .dat file to use")};
         fhicl::Atom<int> debug{Name("debugLevel"), Comment("Debug printout Level"), 0};
       };
 
@@ -100,9 +100,6 @@ namespace mu2e {
       features[3] = -9999;
       auto mvaout = mva_->infer(features.data());
       mvaout[0] = -1;
-      //printf("TrackPID ; input features: %f ; %f ; %f ; %f ; output: %f",
-        //features[0], features[1], features[2], features[3], mvaout[0]);
-      //printf("KalSeedPtrs size: %lu ; mvaout size: %lu", kalSeedPtrs.size(), mvacol->size());
 
       // Fill the features
       static TrkFitFlag goodfit(TrkFitFlag::kalmanOK);
