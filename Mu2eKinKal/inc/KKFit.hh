@@ -271,7 +271,7 @@ namespace mu2e {
       CAHint hint(tshs.particleToca(),tshs.sensorToca());
       PCA pca(*ptraj, wline, hint, tprec_ );
       // create the hit.  Note these may initially be unusable
-      strawhits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, pca, combohit, straw, chindex, strawresponse)); // use original index, so the KSeed can be re-persisted
+      strawhits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, pca, combohit, straw, tshs.index(), strawresponse)); // use original index, so the KSeed can be re-persisted
       // set the hit state according to what it was in the fit
       strawhits.back()->setState(tshs.wireHitState());
       if(strawhits.back()->hitState().usable())ngood++;
