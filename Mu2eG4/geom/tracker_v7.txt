@@ -1,0 +1,215 @@
+//
+// Geometry description of the Tracker, based on Mu2e-doc-888-v15 (Run1 construction)
+//   All lengths are given in mm.
+//   All angles are given in degrees.
+//
+
+// basic parameters
+bool hasTracker      = true;
+// Tell the Tracker object that we using the detailed support structure.
+string trackerSupport.model = "detailedv0";
+int TrackerVersion   = 5;
+bool TrackerHasBrassRings = true;
+
+int    tracker.verbosityLevel     =    0;
+// bool   tracker.doSurfaceCheck     = false;
+// Mother to hold all straws and supports.
+double tracker.mother.rIn         =    376.9; // mm
+double tracker.mother.rOut        =    850.1; // mm
+double tracker.mother.halfLength  =   1635.5; // mm
+//double tracker.mother.halfLength  =   1635.1; // mm
+double tracker.mother.z0          =  10175.0;  // mm
+double tracker.z0                   = 10171.0; // 10200.0;
+
+// overall geometry
+string tracker.mat.vacuum             = "DSVacuum";
+double tracker.envelopeInnerRadius  =   377.0;
+double tracker.rInnermostWire       =   380.0;
+int    tracker.innermostLayer       =     0;    // Which layer has innermost straw
+int    tracker.panelZPattern        =     1;    // Controls up/down stream choice for odd/even panels.
+int    tracker.layerZPattern        =     1;    // Which straw layer is closest to the base plate.
+
+// basic geometry numbers
+// numerology is taken from StrawId class
+int    tracker.spacingPattern              =   1;
+int    tracker.strawsPerManifold           =   1;
+int    tracker.manifoldsPerEnd             =   48;
+int    tracker.rotationPattern             =   6;
+// do not build some planes
+vector<int> tracker.nonExistingPlanes = {  };
+
+// angles and spacings
+double tracker.planeRotation               =   60.0;
+double tracker.oddStationRotation          =   60.0;
+double tracker.planeHalfSeparation        =   27.992; // final
+double tracker.planeSpacing               =   174.0; // final
+vector<double> tracker.manifoldHalfLengths = { 3.125, 5.0, 8.4454}; // [0] = radial shift, [1] = unused, [2] = used to define layer Z offsets
+double tracker.panelPhi0                  =   45.0; // degrees
+
+// straw parameters
+double tracker.strawOuterRadius     =     2.5235;
+double tracker.strawWallThickness   =     0.015;
+double tracker.strawGap             =     1.203;
+double tracker.wireRadius           =     0.0125;
+string tracker.mat.strawgas  = "StrawGas";
+string tracker.mat.wire      = "G4_W";
+vector<string> tracker.strawMaterials = { "G4_MYLAR", "StrawGas", "G4_W" };
+// define an inactive length at each end of every straw
+double tracker.passivationMargin = -4.;
+// Define the parameters of the metal coatings on the straws and wires.
+double tracker.straw.wallOuterMetal.thickness  = 0.00005;
+string tracker.straw.wallOuterMetal.material   = "Al6061";
+double tracker.straw.wallInnerMetal1.thickness = 0.00005;
+string tracker.straw.wallInnerMetal1.material  = "Al6061";
+double tracker.straw.wallInnerMetal2.thickness = 0.00002;
+string tracker.straw.wallInnerMetal2.material  = "G4_Au";
+double tracker.straw.wirePlate.thickness       = 0.00025;
+string tracker.straw.wirePlate.material        = "G4_Au";
+
+// support description
+double tracker.outerSupportRadius   =   830.0;
+double tracker.innerSupportRadius   =   700.0;
+string tracker.mat.manifold  = "Al6061";
+string tracker.mat.support   = "Al6061";
+double tracker.supportHalfThickness        =   2.767; // still used to build the tracker stations, not in the support ?????
+
+// endRing =? stiffener ring at the upstream end of the tracker
+double trackerSupport.endRing.outerRadius =  819.;
+double trackerSupport.endRing.innerRadius =  701.;
+double trackerSupport.endRing.halfLength  =   25.4;
+double trackerSupport.endRing.zOffset     = 1606.;// relative to tracker.z0
+// Which is same as 1610 relative to mother z0
+string trackerSupport.endRing.material    = "BronzeC938";
+
+// downRing =? stiffener ring at the downstream end of the tracker
+bool   trackerSupport.downRing.build     = true;
+double trackerSupport.downRing.outerRadius = 819.0;
+double trackerSupport.downRing.innerRadius =  701.;
+double trackerSupport.downRing.halfLength  =   25.4;
+double trackerSupport.downRing.zOffset     = 1614.;
+string trackerSupport.downRing.material    = "BronzeC938";
+
+// midRing =? support rings which connect to the rail system
+vector<int> trackerSupport.midRing.slot  = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+double trackerSupport.midRing.halfLength = 9.525;
+double trackerSupport.midRing.Phi0       = 0.0;   // in degrees
+double trackerSupport.midRing.dPhi       = 360.0; // degrees
+string trackerSupport.midRing.material   = "BronzeC938";
+
+// staves are called beams now
+// in doc-db 888.v7 the one at the top is different one from the ones
+// on the sides
+
+vector<double> trackerSupport.beam0.phiRange = { 81.4, 98.7 };
+double trackerSupport.beam0.innerRadius   =  810.;
+double trackerSupport.beam0.outerRadius   =  830.;
+string trackerSupport.beam0.material      = "Al7075";
+
+// see fig 8, page 7 in doc-db 888.v7
+
+vector<double> trackerSupport.beam1.phiRange = { 180.4, 221.7 };
+vector<double> trackerSupport.beam1.phiSpans = { 0.4, 14.1, 34.8, 41.7 }; //deltas from 0
+string trackerSupport.beam1.material      = "Al7075";
+double trackerSupport.beam1.innerRadius   =  810.;
+double trackerSupport.beam1.midRadius1    =  820.;
+double trackerSupport.beam1.midRadius2    =  840.;
+double trackerSupport.beam1.outerRadius   =  850.;
+// services and their starting, ending phi positions and materials
+vector<double> trackerSupport.beam1.servicePhi0s      = { 14.10, 17.64, 21.18, 30.48, 31.35 };
+vector<double> trackerSupport.beam1.servicePhiEnds    = { 16.28, 21.18, 30.17, 30.63, 34.80 };
+vector<double> trackerSupport.beam1.serviceOuterRadii = { 840., 840., 840., 840., 840. };
+// should be >= midRadius1 <= midRadius2
+vector<string> trackerSupport.beam1.serviceMaterials  = {"G4_Cu", "G4_Cu", "StrawGas", "G4_SILICON_DIOXIDE", "G4_Cu"} ;
+vector<double> trackerSupport.beam1.serviceCovRelThickness = {.1, .1, .1, .1, .1} ; // fractions of service layers as "covers"
+vector<string> trackerSupport.beam1.serviceMaterialsCov =
+  { "G4_POLYETHYLENE", "G4_POLYETHYLENE", "Al7075", "G4_POLYETHYLENE", "G4_POLYETHYLENE" };
+
+
+// In this version, panel means the as-built panel and not just the
+// straws associated to a panel.
+// Specify the angular composition
+// A panel's support ring structure covers 120 degrees of the circle
+double trackerSupport.phiCoverage            = 120.0;
+// Angle between ribs at the top of the panel arc
+double trackerSupport.dphiRibs               = 27.0; // degrees.  Between ribs
+double trackerSupport.ribHalfAngle           = 1.0; // degree.  Span of rib
+double tracker.planePadding                  = 0.5; // mm
+double tracker.panelPadding                  = 0.25; // mm
+
+
+// innerRing =? composite manifold of plastic and Al
+double trackerSupport.innerRing.innerRadius  = 701.;
+double trackerSupport.innerRing.outerRadius  = 712.7;
+double trackerSupport.innerRing.halfLength   =  12.1;// ???? should be 12.8, but changing this will break everything else
+string trackerSupport.innerRing.material     =  "TrackerManifold";
+
+// centerPlate =? base plate
+double trackerSupport.centerPlate.halfLength =  2.38; //OK, this is the center plate
+string trackerSupport.centerPlate.material   = "Al6061";
+
+// outerRing =? outer ring
+double trackerSupport.outerRing.innerRadius  = 797.3;
+double trackerSupport.outerRing.outerRadius  = 810.0;
+string trackerSupport.outerRing.material     =  "Al6061";
+
+// cover =? cover
+double trackerSupport.cover.halfLength       =  1.588; // 1/8" thick
+string trackerSupport.cover.material         =  "Al6061";
+
+// electronics =? electronics board and components, including ROC.  Should
+// include some Si
+double trackerSupport.electronics.g10.halfLength  =  1.5;
+string trackerSupport.electronics.g10.material    =  "Electronics";
+double trackerSupport.electronics.cu.halfLength   =  0.5;
+string trackerSupport.electronics.cu.material     =  "Electronics";
+
+// channel =? gap for modeling where the staws go through the manifold
+double trackerSupport.channel.zOffset  = 11.2124;
+double trackerSupport.panel.zOffset = 11.2124;
+double trackerSupport.channel.depth    =  5.8;
+string trackerSupport.channel.material =  "DSVacuum";
+string trackerSupport.electronicsSpace.material =  "StrawGas";
+
+// electronic board aka key
+// additional electronics related/connected to each of the pannels
+// R 810.1 814.1 mm; 9 degrees arc, G10, first at the top 0.064" thick
+// The distance from the front face of the panel to the front face of the KEY is 12.15mm. ???
+
+double trackerSupport.electronics.key.halfLength        =  0.8128;  // board half thickness
+double trackerSupport.electronics.key.shieldHalfLength  =  0.8128;  // shield half thickness
+double trackerSupport.electronics.key.innerRadius =  810.1;
+double trackerSupport.electronics.key.outerRadius =  814.1;
+double trackerSupport.electronics.key.shiftFromPanelFace = 12.15; //unused for now,
+                                                                   // the bords are in the panel center
+bool   trackerSupport.electronics.key.visible          = true;
+bool   trackerSupport.electronics.key.solid            = true;
+bool   trackerSupport.electronics.key.shield.visible    = true;
+bool   trackerSupport.electronics.key.shield.solid      = true;
+string trackerSupport.electronics.key.material         = "G10"; // board material
+string trackerSupport.electronics.key.shieldMaterial   = "DSVacuum"; // shield board material
+double trackerSupport.electronics.key.phiRange         = 9.;    // degrees; centered at the panel center phi
+double trackerSupport.electronics.key.phiExtraRotation = 15.;   // degrees; deltas from the center
+
+// Debug control for Tracker; uncomment to make only a selected panel.
+// it is not about drawing, but about the construction itself
+int    tracker.plnDraw  =   -1;
+int    tracker.pnlDraw  =   -1;
+//
+bool   tracker.drawAxes = false;
+//
+bool   tracker.envelope.visible      =  true;
+bool   tracker.envelope.solid        =  false;
+bool   tracker.planeEnvelope.visible = true;
+bool   tracker.planeEnvelope.solid   = false;
+bool   tracker.support.visible        = true;
+bool   tracker.support.solid          = false;
+bool   tracker.panelEnvelope.visible = true;
+bool   tracker.panelEnvelope.solid   = false;
+bool   tracker.straw.visible         =  false;
+bool   tracker.straw.solid           =  false;
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

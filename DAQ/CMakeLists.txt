@@ -1,3 +1,4 @@
+
 cet_make_library(
     SOURCE
       src/CaloDAQUtilities.cc
@@ -36,6 +37,7 @@ cet_build_plugin(CaloHitsFromDTCEvents art::module
       Offline::CaloConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
+      Offline::DataProducts
 )
 
 cet_build_plugin(CaloDigisFromDTCEvents art::module
@@ -65,6 +67,18 @@ cet_build_plugin(LumiInfoAna art::module
     art_root_io::TFileService_service
     artdaq-core-mu2e::Data
     artdaq-core-mu2e::Data_dict
+)
+
+cet_build_plugin(LumiStreamFilter art::module
+  REG_SOURCE src/LumiStreamFilter_module.cc
+  LIBRARIES REG
+  fhiclcpp::types
+  Offline::DAQ
+  Offline::RecoDataProducts
+  artdaq-core-mu2e::Data
+  artdaq-core-mu2e::Data_dict
+  TRACE::MF
+  ${ARTDAQ_DAQDATA_LIB}
 )
 
 cet_build_plugin(PrefetchDAQData art::module

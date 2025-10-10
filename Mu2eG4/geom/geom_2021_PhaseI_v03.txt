@@ -101,7 +101,10 @@ bool   vd.solid          = false;
 #include "Offline/Mu2eG4/geom/visualization_regions.txt"
 
 
-
+//---------------------------------------
+// Geant4 internal scorers
+//---------------------------------------
+#include "Offline/Mu2eG4/geom/Scorer_v01.txt"
 
 //
 //

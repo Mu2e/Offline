@@ -258,6 +258,7 @@ namespace mu2e {
 
   void KinematicLineFit::produce(art::Event& event ) {
     GeomHandle<mu2e::Calorimeter> calo_h;
+    GeomHandle<mu2e::Tracker> nominalTracker_h;
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
@@ -328,7 +329,7 @@ namespace mu2e {
             TrkFitFlag fitflag(hptr->status());
             fitflag.merge(TrkFitFlag::KKLine);
             sampleFit(*kktrk);
-            auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h);
+            auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h,*nominalTracker_h);
             kkseedcol->push_back(kkseed);
             kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
             // fill assns with the cosmic seed

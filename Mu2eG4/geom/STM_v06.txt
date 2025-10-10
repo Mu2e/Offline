@@ -90,7 +90,7 @@ string stm.shield.DnStrWall.material   = "StainlessSteel"; //Stainless steel, no
 //Adding hole vd in shield pipe for vd 86
 int stm.verbosityLevel = 0;
 bool vd.STMUpStrHole.build = true;
-bool   vd.STMUpStr.build     = true; //VD86 Rectangle in x-y plane, same size as the CRV (1mm dnStr of CRV)
+bool   vd.STMUpStr.build     = false; //VD86 Rectangle in x-y plane, same size as the CRV (1mm dnStr of CRV)
 bool   vd.STMMagDnStr.build  = true; //VD87 Rectangle in x-y plane, same size as the CRV
 bool   vd.STMSSCollUpStr.build = true; //VD101 Disk upstream of Spot-Size collimator
 double vd.STMSSCollUpStr.r     = 200.0;// r=20cm

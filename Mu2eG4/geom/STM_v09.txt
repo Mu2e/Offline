@@ -181,7 +181,7 @@ double stm.BackShielding.BackS_dY  = 0;
 
 bool   stm.InnerShielding.build    = true;
 
-bool    stm.ElectronicShielding.build     = false;
+bool    stm.ElectronicShielding.build     = true;
 double  stm.ElectronicShielding.SiGridX   = 127.0;
 double  stm.ElectronicShielding.SiGridY   = 127.0;
 double  stm.ElectronicShielding.SiGridZ   = 25.4;
@@ -200,7 +200,7 @@ double stm.STM_Absorber.GaptoSSC  = 20;
 double stm.det1VD.rOut = 60;
 double stm.det2VD.rOut = 60;
 double vd.STMCollDnStr.r = 60;
-double vd.STMSSCollUpStr.r = 2000;
+double vd.STMSSCollUpStr.r = 100;
 
 //
 // Changes for STM Upstream infrastructure
@@ -229,6 +229,10 @@ double stm.shield.DnStrWall.gap  = 0.0;
 double stm.magnet.stand.topExtraLength = -200.0; // reduce length of table to avoid overlap with virtual detector
 
 double stm.shieldingHolePoly.rOut = 127.0; // diameter of ECS hole is 254 mm
+double stm.ifbPoly.rOut = 127.0;
+
+// decouple the VD sizes from the size of the CRS, which is not there for geom_run1_a.txt
+double stm.upstreamVDs.xHalfLength = 2850.;
 
 // This tells emacs to view this file in c++ mode
 // Local Variables:

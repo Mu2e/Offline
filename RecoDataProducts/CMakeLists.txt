@@ -16,6 +16,7 @@ cet_make_library(
       src/ExtMonFNALTrkParam.cc
       src/ExtMonUCITofHit.cc
       src/HelixVal.cc
+      src/IntensityInfoCalo.cc
       src/KalSeed.cc
       src/KalSegment.cc
       src/PIDProduct.cc
@@ -24,6 +25,7 @@ cet_make_library(
       src/StrawDigiFlag.cc
       src/StrawHit.cc
       src/StrawHitFlag.cc
+      src/StrawFlag.cc
       src/TrackClusterMatch.cc
       src/TrackSummary.cc
       src/TrkCaloHitPID.cc
