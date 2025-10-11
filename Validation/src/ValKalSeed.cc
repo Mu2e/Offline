@@ -137,11 +137,17 @@ namespace mu2e {
       // p of MC associated particle at this intersection
       double p_pri(0.0);
       double p_mc = mcTrkP(event,vdid,p_pri);
+      double ksCharge = ptable->particle(ks.particle()).charge();
       SurfaceId sid = _vdmap[vdid];
       auto kintercol = ks.intersections(sid);
-      double ksCharge = ptable->particle(ks.particle()).charge();
-      auto ikinter = ks.t0Segment(t0);
-      if(ikinter != ks.segments().end()){
+      if(kintercol.size() > 0){
+        auto ikinter = kintercol.front();
+        for(auto jkinter : kintercol) {
+          if(jkinter->momentum3().Z() > 0.0){
+            ikinter = jkinter;
+            break;
+          }
+        }
         auto mom3 = ikinter->momentum3();
         double p = mom3.R();
         double recoCharge(1.);
