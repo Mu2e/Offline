@@ -89,8 +89,6 @@ namespace mu2e
       TrkFitFlag      _goods; // helix fit flag
       bool            _doParticleTypeCheck;
       bool            _doZPropDirCheck;
-      bool            _intmom; // check momentum at intersection? if not, use t0 segment
-      SurfaceId       _momsid; //Surface for momentum test
     };
 
     struct Config{
@@ -119,7 +117,8 @@ namespace mu2e
     int             _debug;
     bool            _noFilter, _noInfo;
     unsigned        _minNTrks;
-
+    bool            _intmom; // check momentum at intersection? if not, use t0 segment
+    SurfaceId       _momsid; //Surface for momentum test
     // counters
     unsigned        _nevt, _npass;
   };
@@ -200,11 +199,11 @@ namespace mu2e
       auto momvec = t0seg->momentum3();
       auto posvec = t0seg->position3();
       if(_intmom){
-        auto kintercol = ks.intersections(_momsid);
-        for(auto jiinter : kintercol) {
-          if(jkinter->momentum3().Z() > 0.0){
-            momvec = jkinter->momentum3();
-            posvec = jkinter->position3();
+        auto kintercol = Ks.intersections(_momsid);
+        for(auto kinter : kintercol) {
+          if(kinter->momentum3().Z() > 0.0){
+            momvec = kinter->momentum3();
+            posvec = kinter->position3();
             break;
           }
         }
