@@ -442,6 +442,7 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
+      SampleSurfaces : ["TT_Mid"]
       SaveDomains : false
       SaveTrajectory : Detector
     }

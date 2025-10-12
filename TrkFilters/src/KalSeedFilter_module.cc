@@ -89,6 +89,8 @@ namespace mu2e
       TrkFitFlag      _goods; // helix fit flag
       bool            _doParticleTypeCheck;
       bool            _doZPropDirCheck;
+      bool            _intmom; // check momentum at intersection? if not, use t0 segment
+      SurfaceId       _momsid; //Surface for momentum test
     };
 
     struct Config{
@@ -100,6 +102,7 @@ namespace mu2e
       fhicl::Atom<bool>                   noFilter          { Name("noFilter"),               Comment("don't apply any filter decision") , false};
       fhicl::Atom<bool>                   noInfo            { Name("noInfo"),                 Comment("don't create TriggerInfo object") , false};
       fhicl::Atom<unsigned>               minNTrks          { Name("minNTrks"),               Comment("minimum number of tracks passing the selection") , 1};
+      fhicl::OptionalAtom<std::string>    surface           { Name("momSurface"),             Comment("Surface at which to compare fits. If unset use t0 segment")};
     };
 
     using Parameters = art::EDFilter::Table<Config>;
@@ -135,6 +138,9 @@ namespace mu2e
         _ksCuts.push_back(KalSeedCutsTool(cf));
       }
       if(!_noInfo)produces<TriggerInfo>();
+      std::string momsurf;
+      _intmom = config().surface(momsurf);
+      if(_intmom)_momsid = SurfaceId(momsurf);
     }
 
   bool KalSeedFilter::filter(art::Event& evt){
@@ -193,7 +199,16 @@ namespace mu2e
       if(t0seg == Ks.segments().end()) return false;
       auto momvec = t0seg->momentum3();
       auto posvec = t0seg->position3();
-
+      if(_intmom){
+        auto kintercol = ks.intersections(_momsid);
+        for(auto jiinter : kintercol) {
+          if(jkinter->momentum3().Z() > 0.0){
+            momvec = jkinter->momentum3();
+            posvec = jkinter->position3();
+            break;
+          }
+        }
+      }
       double td     = 1.0/tan(momvec.Theta());
       double mom    = momvec.R();
       double d0(0.0);
