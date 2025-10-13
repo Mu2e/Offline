@@ -127,7 +127,8 @@ namespace mu2e {
           vdid = VirtualDetectorId::TT_FrontHollow;
       }
       //
-      double t0 = ks.t0Val();
+      double t0;
+      auto t0seg = ks.t0Segment(t0);
       double t0var = ks.t0Var();
       _ht0->Fill(t0);
       _ht02->Fill(t0);
@@ -138,9 +139,15 @@ namespace mu2e {
       double p_pri(0.0);
       double p_mc = mcTrkP(event,vdid,p_pri);
       double ksCharge = ptable->particle(ks.particle()).charge();
+      double recoCharge = t0seg->state().charge();
       SurfaceId sid = _vdmap[vdid];
       auto kintercol = ks.intersections(sid);
-      if(kintercol.size() > 0){
+      auto mom3 = t0seg->momentum3();
+      double momerr = t0seg->momerr();
+      double p = mom3.R();
+      double rho = t0seg->position3().Rho();
+      // if loophelix, use the intersection instead of t0 segment
+      if(ks.loopHelixFit() && kintercol.size() > 0){
         auto ikinter = kintercol.front();
         for(auto jkinter : kintercol) {
           if(jkinter->momentum3().Z() > 0.0){
@@ -148,48 +155,47 @@ namespace mu2e {
             break;
           }
         }
-        auto mom3 = ikinter->momentum3();
-        double p = mom3.R();
-        double recoCharge(1.);
-        auto   kseg = ks.segments().back();
-        if(ks.centralHelixFit()) recoCharge = kseg.centralHelix().charge();
-        _hp->Fill(p*recoCharge);
-        _hp2->Fill(p*recoCharge);
-        if (isCPR) _hpC->Fill(p);
-        if (isTPR) _hpT->Fill(p);
-        _hpce->Fill(p);
-        _hpcep->Fill(p);
-        _hsignedp->Fill(p*ksCharge);
-        _hsignedp2->Fill(p*ksCharge);
-        _hpe->Fill(ikinter->momerr());
-        _hRho->Fill(ikinter->position3().Rho());
-        _hPhi->Fill(mom3.Phi());
-        double cost = cos(mom3.Theta());
-        _hCost->Fill(cost);
+        mom3 = ikinter->momentum3();
+        momerr = ikinter->momerr();
+        p = mom3.R();
+        rho = ikinter->position3().Rho();
+      }
+      _hp->Fill(p*recoCharge);
+      _hp2->Fill(p*recoCharge);
+      if (isCPR) _hpC->Fill(p);
+      if (isTPR) _hpT->Fill(p);
+      _hpce->Fill(p);
+      _hpcep->Fill(p);
+      _hsignedp->Fill(p*ksCharge);
+      _hsignedp2->Fill(p*ksCharge);
+      _hpe->Fill(momerr);
+      _hRho->Fill(rho);
+      _hPhi->Fill(mom3.Phi());
+      double cost = cos(mom3.Theta());
+      _hCost->Fill(cost);
 
-        // fill the cut series; this needs updating TODO
-        bool d0cut =true;
-        // the first of the cut series, number of events
-        _hCuts->Fill(1.0);
-        // MC CE found
-       double td = 1.0/tan(mom3.Theta());
-        // note: these are crude and arbitrary cuts just for validation,
-        // do not intepret these as a correct analysis selection!
-        _hPResA->Fill(p - p_pri);
-        if (p_mc > 90.0) {
-          _hCuts->Fill(2.0);
-          if (tff.hasAllProperties(TrkFitFlag("KalmanOK"))) {
-            _hCuts->Fill(3.0);
-            if (ks.fitConsistency() > 0.002) {
-              _hCuts->Fill(4.0);
-              if (t0 > 700.0 && t0 < 1695.0) {
-                _hCuts->Fill(5.0);
-                if (td > 0.577 && td < 1.0) {
-                  _hCuts->Fill(6.0);
-                  if (d0cut) {
-                    _hCuts->Fill(7.0);
-                    _hPRes->Fill(p - p_mc);
-                  }
+      // fill the cut series; this needs updating TODO
+      bool d0cut =true;
+      // the first of the cut series, number of events
+      _hCuts->Fill(1.0);
+      // MC CE found
+      double td = 1.0/tan(mom3.Theta());
+      // note: these are crude and arbitrary cuts just for validation,
+      // do not intepret these as a correct analysis selection!
+      _hPResA->Fill(p - p_pri);
+      if (p_mc > 90.0) {
+        _hCuts->Fill(2.0);
+        if (tff.hasAllProperties(TrkFitFlag("KalmanOK"))) {
+          _hCuts->Fill(3.0);
+          if (ks.fitConsistency() > 0.002) {
+            _hCuts->Fill(4.0);
+            if (t0 > 700.0 && t0 < 1695.0) {
+              _hCuts->Fill(5.0);
+              if (td > 0.577 && td < 1.0) {
+                _hCuts->Fill(6.0);
+                if (d0cut) {
+                  _hCuts->Fill(7.0);
+                  _hPRes->Fill(p - p_mc);
                 }
               }
             }
