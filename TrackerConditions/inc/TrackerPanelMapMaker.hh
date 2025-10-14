@@ -21,7 +21,7 @@ namespace mu2e {
 
   private:
       const TrackerPanelMapConfig config_;
-    
+
   };
 }
 

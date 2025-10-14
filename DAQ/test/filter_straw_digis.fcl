@@ -2,7 +2,7 @@
 # run interactively, stop after each event to display waveforms
 #
 # Usage: mu2e -c daqana/fcl/trk_fragment_ana_001.fcl -s <input art file> [-n 10]
-# 
+#
 # hopefully, prolog variables below are not used
 #-----------------------------------------------------------------------------
 # BEGIN_PROLOG
@@ -48,9 +48,9 @@ physics : {
     producers : {
         @table::DAQ.producers
     }
-    
+
     filters : { @table::DAQ.filters}
-    
+
     p1 : [ makeSD , StrawDigiFilter ]
 
     # e1 : [  defaultOutput ]

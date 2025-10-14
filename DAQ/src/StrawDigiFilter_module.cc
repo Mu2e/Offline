@@ -39,7 +39,7 @@ namespace mu2e {
   public:
 
     enum { kMaxNSamples = 100 };
-    
+
     struct Config{
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
@@ -79,7 +79,7 @@ namespace mu2e {
 
     int book_histograms(int RunNumber);
     int fill_histograms();
-    
+
     // takes unpacked waveform
     int       process_adc_waveform(float* Wf, int NSamples, WfParam_t* Wp);
     int       print_waveform      (const StrawDigiADCWaveform* Wf, WfParam_t* Wp);
@@ -87,7 +87,7 @@ namespace mu2e {
                      const std::source_location& location = std::source_location::current());
 
     int                   offlineDtcID   (int DtcID);
-    
+
   private:
     bool filter  (art::Event& ArtEvent) override;
     bool beginRun(art::Run&   Run     ) override;
@@ -97,17 +97,17 @@ namespace mu2e {
     unsigned      _minndigis;
     unsigned      _minnplanes;
     int           _debugLevel;
-    
+
     std::vector<std::string> _debugBits;
     int                      _debugBit[100];
-    
+
     bool          _noFilter;
     int           _nSamplesBL;
     float         _minPulseHeight;
     float         _minGoodPulseHeight;
     int           _minNGoodHits;
     int           _minNGoodPanels;
-    
+
     int           _ndigis;
     int           _n_good_hits[2][6];
     int           _n_good_panels;
@@ -163,7 +163,7 @@ namespace mu2e {
       key               = _debugBits[i].data();
       sscanf(key,"bit%i:%i",&index,&value);
       _debugBit[index]  = value;
-      
+
       TLOG(TLVL_DEBUG+1) << Form("... TrackerDQM: bit=%4i is set to %i\n",index,_debugBit[index]);
     }
   }
@@ -176,15 +176,15 @@ namespace mu2e {
       //            << location.function_name()
               << ": " << Message << std::endl;
   }
-  
+
 //-----------------------------------------------------------------------------
   int StrawDigiFilter::book_histograms(int RunNumber) {
     art::ServiceHandle<art::TFileService> tfs;
- 
+
     _hist.ph            = tfs->make<TH1F>("ph"  , Form("run:%06i pulse height"   ,RunNumber),  100, 0., 1000.);
     _hist.ngh           = tfs->make<TH1F>("ngh" , Form("run:%06i N(good hits"    ,RunNumber),  100, 0.,  100.);
     _hist.ngp           = tfs->make<TH1F>("ngp" , Form("run:%06i N(good panels"  ,RunNumber),   20, 0.,   20.);
-    
+
     return 0;
   }
 
@@ -196,11 +196,11 @@ namespace mu2e {
       }
     }
     _hist.ngp->Fill(_n_good_panels);
-    
+
     for(int i = 0; i < _ndigis; ++i) {
       _hist.ph->Fill(_wfp[i].ph);
     }
-                     
+
     return 0;
   }
 
@@ -209,7 +209,7 @@ namespace mu2e {
   int StrawDigiFilter::print_waveform(const StrawDigiADCWaveform* Wf, WfParam_t* Wp) {
     // print waveform
     std::string line;
-    
+
     int ns = Wf->samples().size();
     int loc = 0;
     for (int i=0; i<ns; i++) {
@@ -224,7 +224,7 @@ namespace mu2e {
     if (loc > 0) printf("%s",line.data());
     return 0;
   }
-  
+
 //-----------------------------------------------------------------------------
   int StrawDigiFilter::process_adc_waveform(float* Wf, int NSamples, WfParam_t* Wp) {
 //-----------------------------------------------------------------------------
@@ -272,7 +272,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     if (Wp->q < 100) {
       TLOG(TLVL_DEBUG+1) << "event=" << _event->run() << ":"
-                         << _event->subRun() << ":" << _event->event() 
+                         << _event->subRun() << ":" << _event->event()
                          << " Q=" << Wp->q;
     }
     return 0;
@@ -280,18 +280,18 @@ namespace mu2e {
 
   bool StrawDigiFilter::beginRun(art::Run& ArtRun) {
     _rn = ArtRun.run();
-    
+
     art::EventID eid(_rn, 1, 1);
     _strawElectronics = &_stre_h.get(eid);
     _tdc_bin_ns = _strawElectronics->tdcLSB();      // 5./256 , ns
     // _tdc_bin             = (5./256.*1e-3);       // TDC bin width (Richie), in us
     ProditionsHandle<TrackerPanelMap> tpm_h;
     _trackerPanelMap = &tpm_h.get(eid);
-      
+
     book_histograms(_rn);
     return true;
   }
-  
+
 //-----------------------------------------------------------------------------
   bool StrawDigiFilter::endRun(art::Run& run) {
     if(_debugLevel > 0){
@@ -304,7 +304,7 @@ namespace mu2e {
   bool StrawDigiFilter::filter(art::Event& ArtEvent) {
 
     _event         = &ArtEvent;         // should always be the first line
-    
+
     if (_debugLevel > 0) print_("-- START");
 
     ++_nevt;
@@ -313,8 +313,8 @@ namespace mu2e {
     _n_good_panels = 0;
     _wfp.clear();
 
-    if (_debugLevel > 0) 
-    
+    if (_debugLevel > 0)
+
     for (int plane=0; plane<2; plane++) {
       for (int j=0; j<6; j++) {
         _n_good_hits[plane][j] = 0;
@@ -363,7 +363,7 @@ namespace mu2e {
         continue;
       }
 //-----------------------------------------------------------------------------
-// unpacking: 
+// unpacking:
 //-----------------------------------------------------------------------------
       const mu2e::StrawDigiADCWaveform* wf = &_sdwfc->at(i);
       int ns = wf->samples().size();
@@ -376,7 +376,7 @@ namespace mu2e {
       for (int i=0; i<ns; i++) {
         wf_data[i] = wf->samples().at(i);
       }
-      
+
       process_adc_waveform(wf_data,ns,&wfpar);
 
       _wfp.push_back(wfpar);
@@ -416,7 +416,7 @@ namespace mu2e {
       }
       std::cout << std::endl;
     }
-    
+
     fill_histograms();
 
     if (_debugLevel > 0) print_(std::format("-- END: n_good_panels:{}",_n_good_panels));

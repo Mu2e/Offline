@@ -56,7 +56,7 @@ namespace mu2e {
 
     int book_histograms(int RunNumber);
     int fill_histograms(Hist_t* Hist);
-    
+
     void      print_(const std::string&          Message,
                      const std::source_location& location = std::source_location::current());
 
@@ -70,12 +70,12 @@ namespace mu2e {
     bool                     _debugMode;
     std::vector<std::string> _debugBits;
     int                      _debugBit[100];
-    
+
     float                    _maxDt;
     float                    _minEDep;
     int                      _minNGoodHits;
     int                      _fillHistograms;
-    
+
     int                      _nevt;
     int                      _nevp;
     int                      _nsht;
@@ -122,21 +122,21 @@ namespace mu2e {
       //            << location.function_name()
               << ": " << Message << std::endl;
   }
-  
+
 //-----------------------------------------------------------------------------
   int StrawHitFilter::book_histograms(int RunNumber) {
     art::ServiceHandle<art::TFileService> tfs;
 
      TH1::AddDirectory(kFALSE);
-   
+
      art::TFileDirectory d1 = tfs->mkdir("all");
-     
+
     _hist[0].evt  = d1.make<TH1F>("evt" , Form("run:%06i Event number[0]", RunNumber), 10000,   0., 1.e7 );
     _hist[0].nsht = d1.make<TH1F>("nsht", Form("run:%06i N(shT)      [0]", RunNumber),   500, -0.5, 499.5);
     _hist[0].nshg = d1.make<TH1F>("nshg", Form("run:%06i N(shG)      [0]", RunNumber),   100, -0.5,  99.5);
     _hist[0].dt   = d1.make<TH1F>("dt"  , Form("run:%06i delta(T), ns[0]", RunNumber),   200, -100, 100. );
     _hist[0].edep = d1.make<TH1F>("edep", Form("run:%06i edep, keV   [0]", RunNumber),   100, -  2,   8. );
-    
+
     art::TFileDirectory d2 = tfs->mkdir("passed");
 
     _hist[1].evt  = d2.make<TH1F>("evt" , Form("run:%06i Event number[1]", RunNumber), 10000,   0., 1.e7 );
@@ -147,8 +147,8 @@ namespace mu2e {
 
     return 0;
   }
-  
-  
+
+
 //-----------------------------------------------------------------------------
   int StrawHitFilter::fill_histograms(Hist_t* Hist) {
 
@@ -159,10 +159,10 @@ namespace mu2e {
       Hist->dt->Fill(sh->dt());
       Hist->edep->Fill(sh->energyDep()*1.e3);
     }
-  
+
     Hist->nsht->Fill(_nsht);
     Hist->nshg->Fill(_nshg);
-                     
+
     return 0;
   }
 
@@ -179,7 +179,7 @@ namespace mu2e {
     }
     return true;
   }
-  
+
 //-----------------------------------------------------------------------------
   bool StrawHitFilter::endRun(art::Run& run) {
     const float rate = (_nevt > 0) ? float(_nevp)/float(_nevt) : 0.f;
@@ -190,14 +190,14 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   bool StrawHitFilter::filter(art::Event& ArtEvent) {
-    
+
     _event         = &ArtEvent;         // should always be the first line
-    
+
     if (_debugMode) print_("-- START");
-    
+
     ++_nevt;
-    
-    
+
+
     art::Handle<mu2e::StrawHitCollection> shch;
     if (!ArtEvent.getByLabel(_shCollTag, shch)) {
       TLOG(TLVL_ERROR) << "No straw hit collection tag:" << _shCollTag.data();
@@ -212,25 +212,25 @@ namespace mu2e {
 // process waveforms, count good hits
 //-----------------------------------------------------------------------------
     _nshg          = 0;
-    
+
     for (int i = 0; i<_nsht; ++i) {
       const mu2e::StrawHit* sh = &_shc->at(i);
       if (fabs(sh->dt())  > _maxDt  ) continue;
       if (sh->energyDep() < _minEDep) continue;
       _nshg++;
     }
-  
+
     if (_fillHistograms) fill_histograms(&_hist[0]);
-  
+
     if (_debugMode) print_(std::format("-- END, n good hits:{}",_nshg));
-    
+
     bool passed = false;
     if (_nshg >= _minNGoodHits) {
       passed = true;
       _nevp++;
       if (_fillHistograms) fill_histograms(&_hist[1]);
     }
-  
+
     return passed;
   }
 }
