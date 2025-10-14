@@ -25,7 +25,7 @@ namespace mu2e {
       kMaxPlanes = 100,
       kMaxPanels = 600
     };
-      
+
     typedef std::shared_ptr<TrackerPanelMap> ptr_t;
     typedef std::shared_ptr<const TrackerPanelMap> cptr_t;
     constexpr static const char* cxname = {"TrackerPanelMap"};

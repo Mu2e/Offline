@@ -26,7 +26,7 @@ class TrkPanelMap : public DbTable {
       _panel   = Panel;
       _zface   = ZFace;
     }
-    
+
     int   mnid         () const { return _mnid;          }
     int   dtc          () const { return _dtc;           }
     int   link         () const { return _link;          }
@@ -51,7 +51,7 @@ class TrkPanelMap : public DbTable {
                                "mnid,dtc,link,plane,ppid,panel,zface") {}
 
   const Row& rowAt(const std::size_t index) const { return _rows.at(index); }
-  
+
   std::vector<Row> const& rows   () const          { return _rows; }
   std::size_t             nrow   () const override { return _rows.size(); };
   // virtual std::size_t     nrowFix() const override { return 0; };  // the number of rows is variable
@@ -68,7 +68,7 @@ class TrkPanelMap : public DbTable {
 
   void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
     Row const& r = _rows.at(irow);
-    sstream << r.mnid()    << "," 
+    sstream << r.mnid()    << ","
             << r.dtc()     << ","
             << r.link()    << ","
             << r.uniquePlane()   << ","

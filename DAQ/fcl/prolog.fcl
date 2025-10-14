@@ -15,7 +15,7 @@ DAQ : {
         }
     }
 
-    filters : { 
+    filters : {
         StrawDigiFilter : { module_type : StrawDigiFilter
             strawDigiCollTag    : "makeSD"
             minNStrawDigis      : 1
@@ -33,7 +33,7 @@ DAQ : {
             shCollTag           : "makeSH"
             minNGoodHits        : 1
             maxDt               : 40.
-            minEDep             : 0.0006 ## in MeV 
+            minEDep             : 0.0006 ## in MeV
             debugMode           : false
             debugBits           : [ "bit0:0" ]
             fillHistograms      : false

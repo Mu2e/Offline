@@ -2,7 +2,7 @@
 # run interactively, stop after each event to display waveforms
 #
 # Usage: mu2e -c daqana/fcl/trk_fragment_ana_001.fcl -s <input art file> [-n 10]
-# 
+#
 # hopefully, prolog variables below are not used
 #-----------------------------------------------------------------------------
 BEGIN_PROLOG
@@ -51,7 +51,7 @@ outputs:  {
         SelectEvents  : [ @sequence::TRIGGER_PATHS ]
         fileName      :   "rec.mu2e.trk.vst00s001r000n000.%06r_%06s.art"
 #------------------------------------------------------------------------------
-# filtering only, drop evrything created by this process except ... 
+# filtering only, drop evrything created by this process except ...
 #------------------------------------------------------------------------------
         outputCommands: ["keep *_daq_*_*",
                          "drop *_*_*_FilterStrawHits",
@@ -72,7 +72,7 @@ physics : {
             diagLevel     :  0 ## 10
             saveWaveforms :  true
             geography     : [ @sequence::station_00_geography ]
-           
+
         }
 
         makeSH: { @table::TrkHitReco.producers.makeSH
@@ -99,7 +99,7 @@ physics : {
             crossTalkMaximumTime              : 100        ## ns
         }
     }
-    # art 3.15.00 doesn't take well the file boundary 
+    # art 3.15.00 doesn't take well the file boundary
     filters : {
         StrawHitFilter : { @table::DAQ.filters.StrawHitFilter
             fillHistograms: true
@@ -107,7 +107,7 @@ physics : {
             minEDep       : 0.0006
         }
     }
-    
+
     p1 : [ EWMProducer, makeSD, makeSH, StrawHitFilter ]
 
     e1 : [  defaultOutput ]
@@ -129,7 +129,7 @@ services.TimeTracker : {
 services.TFileService.fileName                   : "hst.mu2e.vst.filter_straw_hits.%06r_%06s.root" ## "/dev/null" ##
 services.scheduler.wantSummary                   : true
 
-source.fileNames : [ "aaa.art" ] 
+source.fileNames : [ "aaa.art" ]
 
 physics.filters.StrawHitFilter.minNGoodHits     :  1
 # physics.filters.StrawHitFilter.debugMode      :  true

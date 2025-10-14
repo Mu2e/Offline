@@ -138,9 +138,9 @@ private:
                                         // talk-to parameters
   int       diagLevel_    ;
   int       debugMode_   ;
-  
+
   std::vector<std::string> debugBits_;
-  int                      debugBit_[kNDebugBits];  
+  int                      debugBit_[kNDebugBits];
   bool      saveWaveforms_;
   bool      missingDTCHeaders_;
   bool      keyOnMnid_;
@@ -155,10 +155,10 @@ private:
   const art::Event*        event_;
                                                 // for now, IDTC=2*nodename+PCIE_ADDR
   int _last_run;
-  
+
   ProditionsHandle<TrackerPanelMap> _tpm_h;
   const TrackerPanelMap*            _trackerPanelMap;
-  
+
   // // less than 300 panels physically exist and are enumeratively labeled
   // // hence, the max allowed word can act be used as a sentinel
   // const static uint16_t invalid_minnesota_ = static_cast<uint16_t>(-1);
@@ -242,7 +242,7 @@ mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::ED
     key               = debugBits_[i].data();
     sscanf(key,"bit%i:%i",&index,&value);
     debugBit_[index]  = value;
-        
+
     print_(std::format("StrawDigisFromArtdaqFragments: bit={:4d} is set to {}",index,debugBit_[index]));
   }
 
@@ -318,7 +318,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
   if (debugMode_ > 0) print_("-- START");
 
   event_ = &event;                      // cache to print events
-  
+
   _trackerPanelMap = &_tpm_h.get(event.id());
 
   // Collection of StrawDigis for the event
@@ -358,7 +358,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
       for (int ifrag=0; ifrag<nfrag; ifrag++) {
         const artdaq::Fragment* frag = &handle->at(ifrag);
         uint8_t* fdata = (uint8_t*) (frag->dataBegin());
-        
+
                                         // runs > 107236
         if (not missingDTCHeaders_) {
           fdata += sizeof(DTCLib::DTC_EventHeader);
@@ -426,17 +426,17 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
                 continue;
               }
             }
-              
+
             if (debugMode_) {
               print_(std::format("-- DTC:{} ROC:{} nhits:{}",dtc_id,link_id,nhits));
             }
-            
+
             for (int ihit=0; ihit<nhits; ihit++) {
 //-----------------------------------------------------------------------------
 // first packet, 16 bytes, or 8 ushort's is the data header packet
 //-----------------------------------------------------------------------------
               mu2e::TrackerDataDecoder::TrackerDataPacket* hit_data ;
-              
+
               int offset = (ihit*np_per_hit_+1)*packet_size;   // in bytes
               hit_data   = (mu2e::TrackerDataDecoder::TrackerDataPacket*) (roc_data+offset);
 //-----------------------------------------------------------------------------
@@ -453,7 +453,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
                                    hit_data->StrawIndex, chid, dtc_id, link_id));
                 continue;
               }
-              
+
               uint16_t mnid    = channel >> mu2e::StrawId::_panelsft;
 
               if (keyOnMnid_) {
@@ -509,7 +509,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 // convert channel_id into a strawID
 //-----------------------------------------------------------------------------
               mu2e::StrawId sid(tpm->uniquePlane(),tpm->panel(),chid);
-              
+
               mu2e::TrkTypes::TDCValues tdc = {hit_data->TDC0(), hit_data->TDC1()};
               mu2e::TrkTypes::TOTValues tot = {hit_data->TOT0  , hit_data->TOT1  };
               mu2e::TrkTypes::ADCValue  pmp = hit_data->PMP;
@@ -519,7 +519,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
                   std::cout << "index offset sid_data  mnID  plane panel    straw      TDC0       TDC1  TOT0  TOT1   PMP\n";
                   header_printed = 1;
                 }
-                
+
                 int ind = straw_digis->size();
                 std::cout << std::format("{:5} 0x{:04x}   0x{:04x} MN{:03d}   {:3} {:3}      0x:{:04x}  {:9} {:9}   {:2}   {:2}  {:5}\n",
                                          ind,offset,hit_data->StrawIndex,mnid,tpm->uniquePlane(),tpm->panel(),sid.straw(),hit_data->TDC0(),
