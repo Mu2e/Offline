@@ -23,8 +23,6 @@ physics : {
    p1 : [generate , g4run ]
    trigger_paths  : [p1]
 }
-# disable this script: explicit input is required
-services.GeometryService.inputFile : @nil
 
 // Disable all physics except transport.
 physics.producers.g4run.physics.physicsListName: "Minimal"
