@@ -72,7 +72,7 @@ namespace mu2e {
               pvar = resid.parameterVariance();
             }
             // Use the unbiased residual to compute the chisq
-            Residual uresid(uresidval,resid.variance(),pvar,resid.active(),resid.dRdP());
+            Residual uresid(uresidval,resid.variance(),pvar,resid.dRdP(),resid.active());
             chisq += uresid.chisq();
             ++ndof;
           }

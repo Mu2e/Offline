@@ -26,6 +26,29 @@ namespace mu2e {
       using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using HIT = KinKal::Hit<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
+      // clone op for reinstantiation
+      KKCaloHit(KKCaloHit<KTRAJ> const& rhs):
+              caloCluster_(rhs.caloCluster()),
+              axis_(rhs.sensorAxis()),
+              tvar_(rhs.timeVariance()),
+              wvar_(rhs.widthVariance()),
+              ca_(
+                rhs.closestApproach().particleTraj(),
+                axis_,
+                rhs.closestApproach().hint(),
+                rhs.closestApproach().precision()
+              ),
+              rresid_(rhs.timeResidual()){
+        /**/
+      };
+      std::shared_ptr< KinKal::Hit<KTRAJ> > clone(CloneContext& context) const override{
+        auto rv = std::make_shared< KKCaloHit<KTRAJ> >(*this);
+        auto ca = rv->closestApproach();
+        auto trajectory = std::make_shared<KTRAJ>(ca.particleTraj());
+        ca.setTrajectory(trajectory);
+        rv->setClosestApproach(ca);
+        return rv;
+      };
       // Hit interface overrrides
       unsigned nResid() const override { return 1; } // 1 time residual
       Residual const& refResidual(unsigned ires=0) const override;
@@ -54,6 +77,8 @@ namespace mu2e {
       double wvar_; // variance in transverse position of the sensor/measurement in mm.  Assumes cylindrical error, could be more general
       CA ca_; // reference time and distance of closest approach to the axis
       Residual rresid_; // residual WRT most recent reference parameters
+      // clone support
+      void setClosestApproach(const CA& ca){ ca_ = ca; }
   };
 
   template <class KTRAJ> KKCaloHit<KTRAJ>::KKCaloHit(CCPtr caloCluster,  PCA const& pca, double tvar, double wvar) :    caloCluster_(caloCluster), axis_(pca.sensorTraj()), tvar_(tvar), wvar_(wvar),
@@ -73,7 +98,7 @@ namespace mu2e {
     //    if(ca_.usable()) tphint = CAHint(ca_.particleToca(),ca_.sensorToca());
     PCA pca(ptraj,axis_,tphint,precision());
     ca_ = pca.localClosestApproach();
-    if(!ca_.usable())rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,false,rresid_.dRdP());
+    rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,rresid_.dRdP(),ca_.usable());
   }
 
   template <class KTRAJ> void KKCaloHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
@@ -112,9 +137,9 @@ namespace mu2e {
         double invvar2 = std::max(s2*sint2/(cost2*wvar_), 12/(ldt*ldt));
         totvar += 1.0/invvar2;
       }
-      rresid_ = Residual(ca_.deltaT(),totvar,0.0,true,ca_.dTdP());
+      rresid_ = Residual(ca_.deltaT(),totvar,0.0,ca_.dTdP());
     } else {
-      rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,false,rresid_.dRdP());
+      rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,rresid_.dRdP(),false);
     }
     // finally update the weight
     this->updateWeight(miconfig);

@@ -16,7 +16,7 @@ int    tracker.verbosityLevel     =    0;
 // Mother to hold all straws and supports.
 double tracker.mother.rIn         =    376.9; // mm
 double tracker.mother.rOut        =    850.1; // mm
-double tracker.mother.halfLength  =   1635.1; // mm
+double tracker.mother.halfLength  =   1635.5; // mm
 double tracker.mother.z0          =  10175.0;  // mm
 double tracker.z0                   = 10171.0; // 10200.0;
 
