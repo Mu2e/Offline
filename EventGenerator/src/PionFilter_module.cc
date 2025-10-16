@@ -74,7 +74,6 @@ namespace mu2e {
   }
 
   void PionFilter::beginJob(){
-      art::ServiceHandle<art::TFileService> tfs;
   }
 
   bool PionFilter::filter(art::Event& evt) {
