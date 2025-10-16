@@ -74,7 +74,7 @@ elif [ "$COMMAND" == "GDML"  ]; then
     # find gdml fcl files and make all GDML files, add to build dir
     RC=0
     mkdir -p ${MUSE_BUILD_BASE}/Offline/gen/gdml
-    FCLS=$(ls Offline/Mu2eG4/fcl/gdmldump* )
+    FCLS=$(ls Offline/Mu2eG4/fcl/gdmldump_* )
     OWD=$PWD
     TWD=$(mktemp -d)
     cd $TWD
