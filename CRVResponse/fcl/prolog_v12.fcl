@@ -7,7 +7,7 @@
 //Fixing this problem requires generating new lookup tables.
 
 #include "Offline/CommonMC/fcl/prolog.fcl"
-#include "Offline/CRVReco/fcl/prolog.fcl"
+#include "Offline/CRVReco/fcl/prolog_v12.fcl"
 BEGIN_PROLOG
 
     NumberSamplesNZS  :    134 //first 134 ADC samples of a on/off spill event will be recorded
