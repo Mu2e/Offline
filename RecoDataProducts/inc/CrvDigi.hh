@@ -17,12 +17,13 @@ namespace mu2e
 
     CrvDigi() {}
 
-    CrvDigi(const std::vector<int16_t> &ADCs, uint16_t startTDC, bool NZS, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, uint8_t SiPMNumber) :
-            _ADCs(ADCs), _startTDC(startTDC), _NZS(NZS), _scintillatorBarIndex(scintillatorBarIndex), _SiPMNumber(SiPMNumber) {}
+    CrvDigi(const std::vector<int16_t> &ADCs, uint16_t startTDC, bool NZS, bool oddTimestamp, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, uint8_t SiPMNumber) :
+            _ADCs(ADCs), _startTDC(startTDC), _NZS(NZS), _oddTimestamp(oddTimestamp), _scintillatorBarIndex(scintillatorBarIndex), _SiPMNumber(SiPMNumber) {}
 
     const std::vector<int16_t>           &GetADCs() const     {return _ADCs;}
     uint16_t                              GetStartTDC() const {return _startTDC;}
     bool                                  IsNZS() const       {return _NZS;}
+    bool                                  HasOddTimestamp() const {return _oddTimestamp;}
 
     mu2e::CRSScintillatorBarIndex GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
     uint8_t                       GetSiPMNumber() const           {return _SiPMNumber;}
@@ -32,6 +33,7 @@ namespace mu2e
     std::vector<int16_t>           _ADCs{0};
     uint16_t                       _startTDC{0};
     bool                           _NZS{false};
+    bool                           _oddTimestamp{false};
 
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
     uint8_t                        _SiPMNumber{0};
