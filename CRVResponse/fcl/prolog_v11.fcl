@@ -6,7 +6,7 @@
 //The TiO2 coating of the CRV counters has a thickness of 0.25mm so that the active volume of the lookup table counters
 //is fully covered by the Offline counters.
 
-#include "Offline/CRVReco/fcl/prolog.fcl"
+#include "Offline/CRVReco/fcl/prolog_v11.fcl"
 BEGIN_PROLOG
 
     NumberSamplesNZS  :    134 //first 134 ADC samples of a on/off spill event will be recorded

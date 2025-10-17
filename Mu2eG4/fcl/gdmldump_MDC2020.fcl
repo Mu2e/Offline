@@ -1,0 +1,3 @@
+#include "Offline/Mu2eG4/fcl/gdmldump.fcl"
+services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common_MDC2020.txt"
+physics.producers.g4run.debug.GDMLFileName: "mu2e_MDC2020.gdml"
