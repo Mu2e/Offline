@@ -4,7 +4,7 @@
 
 #include "find_volume_at_point.C"
 
-void find_stm_beamline_volumes(TString gdmlname = "mu2e.gdml") {
+void find_stm_beamline_volumes(TString gdmlname = "mu2e_common.gdml") {
 
   TGeoManager::SetDefaultUnits(TGeoManager::kG4Units); // default is kRootUnits which is cm, s, GeV; kG4Units are mm, ns, MeV
   TGeoManager *geom = TGeoManager::Import(gdmlname);
