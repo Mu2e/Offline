@@ -44,7 +44,7 @@ The TEve code can be used like any other Analyzer and added to your Reco/End pat
 Current notable features of the code:
 
 ### gdml
-The GDML file used here can be regenerated using: ```mu2e -c mu2eG4/fcl/gdmldump.fcl```. It contains the entire Mu2e World. We use fix.gdml as a bug in the mu2e.gdml was found in the early stages of this development.
+The GDML file used here can be regenerated using: ```mu2e -c mu2eG4/fcl/gdmldump.fcl```. It contains the entire Mu2e World. We use fix.gdml as a bug in the mu2e_common.gdml was found in the early stages of this development.
 
 ### Geom Interface
 Contains callers for access to Tracker and Calo geometry. This class also contains functions to set visability of different elements based on their names within the gdml.

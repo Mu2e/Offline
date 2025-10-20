@@ -11,6 +11,8 @@
 
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandExponential.h"
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandGeneral.h"
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/DelegatedParameter.h"
@@ -45,6 +47,7 @@ namespace mu2e {
           Comment("Material determines muon life time, capture fraction, and particle spectra.\n"
                   "Only aluminum (Al) is supported, emisson spectra for other materials are not implemented.\n"),"Al" };
       fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle"),PDGCode::e_minus};
+      fhicl::Atom<bool> selectOne{Name("selectOne"),Comment("Select one input muon from the stopped muon list"), false};
 
       fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("spectrum (and variables) to be generated")};
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
@@ -62,10 +65,12 @@ namespace mu2e {
     art::ProductToken<SimParticleCollection> const simsToken_;
     unsigned verbosity_;
     int pdgId_;
+    bool selectOne_;
 
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandExponential randExp_;
+    CLHEP::RandFlat randFlat_;
 
     std::unique_ptr<ParticleGeneratorTool> Generator_;
 
@@ -79,8 +84,10 @@ namespace mu2e {
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , verbosity_{conf().verbosity()}
     , pdgId_{conf().pdgId()}
+    , selectOne_{conf().selectOne()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
+    , randFlat_{eng_}
   {
     produces<mu2e::StageParticleCollection>();
     if(verbosity_ > 0) {
@@ -104,12 +111,17 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
-    const auto mus=(pdgId_==PDGCode::e_minus) ? stoppedMuMinusList(simh) : stoppedMuPlusList(simh);
+    const auto mus  = (pdgId_==PDGCode::e_minus) ? stoppedMuMinusList(simh) : stoppedMuPlusList(simh);
 
-     for(const auto& mustop: mus) {
-      const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
+    const bool   select_one  = selectOne_ && !mus.empty();
+    const size_t first_index = (select_one) ? randFlat_.fireInt(mus.size()) : 0;
+    const size_t last_index  = (select_one) ? first_index + 1               : mus.size(); // last index + 1
+
+    for(size_t index = first_index; index < last_index; ++index) {
+      const auto& mustop = mus[index];
+      const double time  = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
       addParticles(output.get(), mustop, time, Generator_.get());
-      }
+    }
 
     event.put(std::move(output));
   }

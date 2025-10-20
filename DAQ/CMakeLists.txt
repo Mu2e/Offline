@@ -1,3 +1,4 @@
+
 cet_make_library(
     SOURCE
       src/CaloDAQUtilities.cc
@@ -36,6 +37,7 @@ cet_build_plugin(CaloHitsFromDTCEvents art::module
       Offline::CaloConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
+      Offline::DataProducts
 )
 
 cet_build_plugin(CaloDigisFromDTCEvents art::module
@@ -67,6 +69,18 @@ cet_build_plugin(LumiInfoAna art::module
     artdaq-core-mu2e::Data_dict
 )
 
+cet_build_plugin(LumiStreamFilter art::module
+  REG_SOURCE src/LumiStreamFilter_module.cc
+  LIBRARIES REG
+  fhiclcpp::types
+  Offline::DAQ
+  Offline::RecoDataProducts
+  artdaq-core-mu2e::Data
+  artdaq-core-mu2e::Data_dict
+  TRACE::MF
+  ${ARTDAQ_DAQDATA_LIB}
+)
+
 cet_build_plugin(PrefetchDAQData art::module
     REG_SOURCE src/PrefetchDAQData_module.cc
     LIBRARIES REG
@@ -77,21 +91,58 @@ cet_build_plugin(PrefetchDAQData art::module
 )
 
 cet_build_plugin(STMWaveformDigisFromFragments art::module
-    REG_SOURCE src/STMWaveformDigisFromFragments_module.cc
-    LIBRARIES REG
-      Offline::DAQ
-      Offline::ProditionsService
-      Offline::DataProducts
-      Offline::RecoDataProducts
-      BTrk_difAlgebra
+  REG_SOURCE src/STMWaveformDigisFromFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::ProditionsService
+  Offline::DataProducts
+  Offline::RecoDataProducts
+  BTrk_difAlgebra
 )
-
+    
 cet_build_plugin(StrawDigisFromArtdaqFragments art::module
   REG_SOURCE src/StrawDigisFromArtdaqFragments_module.cc
   LIBRARIES REG
   Offline::DAQ
-  Offline::DataProducts
   Offline::RecoDataProducts
+  Offline::DataProducts
+  artdaq-core-mu2e::Data
+  art_root_io::TFileService_service
+  ROOT::Hist
+  ROOT::Tree
+  ROOT::Core
+  ROOT::RIO
+  ROOT::Gui
+)
+
+cet_build_plugin(StrawHitFilter art::module
+  REG_SOURCE src/StrawHitFilter_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::RecoDataProducts
+  Offline::DataProducts
+  artdaq-core-mu2e::Data
+  art_root_io::TFileService_service
+  ROOT::Hist
+  ROOT::Tree
+  ROOT::Core
+  ROOT::RIO
+  ROOT::Gui
+)
+
+cet_build_plugin(StrawDigiFilter art::module
+  REG_SOURCE src/StrawDigiFilter_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::RecoDataProducts
+  Offline::DataProducts
+  artdaq-core-mu2e::Data
+  art_root_io::TFileService_service
+  ROOT::Hist
+  ROOT::Tree
+  ROOT::Core
+  ROOT::RIO
+  ROOT::Gui
 )
 
 cet_build_plugin(CrvDigisFromArtdaqFragments art::module

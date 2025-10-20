@@ -24,8 +24,6 @@ physics : {
    trigger_paths  : [p1]
 }
 
-services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
-
 // Disable all physics except transport.
 physics.producers.g4run.physics.physicsListName: "Minimal"
 physics.producers.g4run.SDConfig.enableSD     : []

@@ -100,6 +100,7 @@ namespace mu2e
       fhicl::Atom<bool>                   noFilter          { Name("noFilter"),               Comment("don't apply any filter decision") , false};
       fhicl::Atom<bool>                   noInfo            { Name("noInfo"),                 Comment("don't create TriggerInfo object") , false};
       fhicl::Atom<unsigned>               minNTrks          { Name("minNTrks"),               Comment("minimum number of tracks passing the selection") , 1};
+      fhicl::OptionalAtom<std::string>    surface           { Name("momSurface"),             Comment("Surface at which to compare fits. If unset use t0 segment")};
     };
 
     using Parameters = art::EDFilter::Table<Config>;
@@ -116,7 +117,8 @@ namespace mu2e
     int             _debug;
     bool            _noFilter, _noInfo;
     unsigned        _minNTrks;
-
+    bool            _intmom; // check momentum at intersection? if not, use t0 segment
+    SurfaceId       _momsid; //Surface for momentum test
     // counters
     unsigned        _nevt, _npass;
   };
@@ -135,6 +137,9 @@ namespace mu2e
         _ksCuts.push_back(KalSeedCutsTool(cf));
       }
       if(!_noInfo)produces<TriggerInfo>();
+      std::string momsurf;
+      _intmom = config().surface(momsurf);
+      if(_intmom)_momsid = SurfaceId(momsurf);
     }
 
   bool KalSeedFilter::filter(art::Event& evt){
@@ -181,7 +186,11 @@ namespace mu2e
   }
 
   bool KalSeedFilter::checkKalSeed(const KalSeed&Ks, const KalSeedCutsTool&Cuts){
-    if( Ks.status().hasAllProperties(Cuts._goods) && Ks.intersections().size()>0){
+    if(_debug > 3){
+      std::cout << "KalSeedFilter: in checkKalSeed status "<< Ks.status() << std::endl;
+    }
+
+    if( Ks.status().hasAllProperties(Cuts._goods) ){
 
       // extract test quantities from the fit segment at t0
       double t0;
@@ -189,7 +198,16 @@ namespace mu2e
       if(t0seg == Ks.segments().end()) return false;
       auto momvec = t0seg->momentum3();
       auto posvec = t0seg->position3();
-
+      if(_intmom){
+        auto kintercol = Ks.intersections(_momsid);
+        for(auto kinter : kintercol) {
+          if(kinter->momentum3().Z() > 0.0){
+            momvec = kinter->momentum3();
+            posvec = kinter->position3();
+            break;
+          }
+        }
+      }
       double td     = 1.0/tan(momvec.Theta());
       double mom    = momvec.R();
       double d0(0.0);
@@ -206,15 +224,16 @@ namespace mu2e
         return false;
       }
 
-
       //check particle type and fitdirection
       if ( Cuts._doParticleTypeCheck){
         if (Ks.particle() != Cuts._tpart)  {
+          if(_debug > 2)std::cout << "KalSeedFilter: particle cut failed" << std::endl;
           return false;
         }
       }
       if (Cuts._doZPropDirCheck){
         if (momvec.Z()*Cuts._fdir.dzdt() < 0) {
+          if(_debug > 2)std::cout << "KalSeedFilter: dir cut failed" << std::endl;
           return false;
         }
       }
@@ -234,6 +253,7 @@ namespace mu2e
         printf("[KalSeedFilter::filter] %4d %4lu %4lu %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n",
                nactive, stcount.size(), pcount.size(), mom, t0seg->momerr(),Ks.chisquared()/Ks.nDOF(), Ks.fitConsistency(), td, d0);
       }
+
       if( (!Cuts._hascc || Ks.caloCluster().isNonnull()) &&
           nactive >= Cuts._minnhits &&
           stcount.size() >= Cuts._minnstereo &&
@@ -245,7 +265,11 @@ namespace mu2e
           d0 > Cuts._minD0   && d0 < Cuts._maxD0) {
         if(_debug > 1) std::cout << "Selected track " << std::endl;
         return true;
+      } else if(_debug > 2){
+        std::cout << "KalSeedFilter: parameter cuts failed: nactive " << std::endl;
       }
+    } else {
+      if(_debug > 2)std::cout << "KalSeedFilter: basic cuts failed: status "<< Ks.status() << " intersections " << Ks.intersections().size() << std::endl;
     }
     return false;
   }

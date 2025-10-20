@@ -26,6 +26,7 @@
 #include "Offline/DbTables/inc/TrkDelayPanel.hh"
 #include "Offline/DbTables/inc/TrkDelayRStraw.hh"
 #include "Offline/DbTables/inc/TrkElementStatus.hh"
+#include "Offline/DbTables/inc/TrkPanelMap.hh"
 #include "Offline/DbTables/inc/TrkPreampStraw.hh"
 #include "Offline/DbTables/inc/TstCalib1.hh"
 #include "Offline/DbTables/inc/TstCalib2.hh"
@@ -65,6 +66,8 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkAlignPanelSim());
   } else if (name == "TrkAlignStrawSim") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkAlignStrawSim());
+  } else if (name == "TrkPanelMap") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkPanelMap());
   } else if (name == "TrkPlaneStatus") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkPlaneStatus());
   } else if (name == "TrkPanelStatus") {

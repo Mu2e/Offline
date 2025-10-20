@@ -48,6 +48,7 @@ namespace mu2e {
         ost << std::endl;
       }
     }
+    auto const& map() const { return _theMap; }
 
   private:
     std::map<FullIndex, CondensedIndex> _theMap; // FullIndex is first, CondensedIndex is second

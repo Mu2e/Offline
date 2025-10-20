@@ -1,158 +1,296 @@
-//
-//  Routine to calibrate the straw drift correction using PDFs
-//
-#include "TCut.h"
-#include "TTree.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TProfile.h"
-#include "TCanvas.h"
-#include "TDirectory.h"
-#include "THStack.h"
-#include "TStyle.h"
-#include <fstream>
-#include "KKCuts.hh"
-#include "FillChain.C"
+#ifndef DriftCalibPDF_C
+#define DriftCalibPDF_C
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <cmath>
 #include <ctime>
+#include <limits>
 
-void DriftCalibPDF(TTree* ta,const char* hcut="") {
-  if(ta==0){
-    cout << "No tree specified" << endl;
-    return;
-  }
+#include "EventNtuple/utils/rooutil/inc/RooUtil.hh"
+#include "EventNtuple/utils/rooutil/inc/common_cuts.hh"
 
-  gStyle->SetStatH(0.2);
-  gStyle->SetStatW(0.2);
+#include "TH1.h"
+#include "TFile.h"
+
+
+void DriftCalibPDF(std::string filename, std::string calib_type)
+{
+#ifndef __CINT__
+
+  TH1::AddDirectory(false);
+
+
+  // Histograms
   double binsize = 0.025;
-  double doff = 10*binsize;
-  double rdbinedges[2] = {0.0,2.5};
-  unsigned finefactor(100);
-  int nrdbins= (rdbinedges[1]-rdbinedges[0])/binsize;
-  TH1D* mcdoca = new TH1D("mcdoca","Wire Distance;DOCA (mm)",nrdbins,rdbinedges[0],rdbinedges[1]);
-  double rcbinedges[2] = {rdbinedges[0]-doff,rdbinedges[1]+doff};
-  int nrcbins= (rcbinedges[1]-rcbinedges[0])/binsize;
-  TH1D* rcluster = new TH1D("rcluster","Cluster Drift Distance;R_{cluster} (mm)",nrcbins,rcbinedges[0],rcbinedges[1]);
-  TH1D* rcluster_fine = new TH1D("rcluster_fine","Cluster Drift Distance;R_{cluster} (mm)",finefactor*nrcbins,rcbinedges[0],rcbinedges[1]);
-  TH1D* rdrift = new TH1D("rdrift","Drift Distance;R_{drift} (mm)",nrdbins,rdbinedges[0],rdbinedges[1]);
-  mcdoca->SetStats(0);
-  rcluster->SetStats(0);
-  rdrift->SetStats(0);
+  double doff = binsize * 10.;
+  unsigned int finefactor = 100;
 
-  TCut hsel(hcut);
-  TCut hitsel =gfit+gmom+ghit+thit+hsel;
-  ta->Project("mcdoca","detshmc.dist",hitsel);
-  ta->Project("rcluster","detsh.cdrift",hitsel);
-  ta->Project("rcluster_fine","detsh.cdrift",hitsel);
-  ta->Project("rdrift","detsh.rdrift",hitsel);
-  cout << "mcdoca entries " << mcdoca->GetEntries() << " rcluster entries " << rcluster->GetEntries() << endl;
-  // normalize
-  rcluster->Scale(1.0/rcluster->Integral());
-  mcdoca->Scale(1.0/mcdoca->Integral());
-  rdrift->Scale(1.0/rdrift->Integral());
-  rdrift->SetMarkerColor(kGreen);
-  rdrift->SetLineColor(kGreen);
+  // double rdbinedges[2] = {0.0, 2.5};
+  double rdbinedges[2] = {0.0, 3.0};
+  int nrdbins = (rdbinedges[1] - rdbinedges[0]) / binsize;
 
-  // loop over the bins in the measured pdf, and extract the shift necessary to make that replicate the true pdf
+  double rcbinedges[2] = {rdbinedges[0] - doff, rdbinedges[1] + doff};
+  int nrcbins = (rcbinedges[1] - rcbinedges[0]) / binsize;
 
-  std::vector<double> offsets(nrcbins,0.0);
-  unsigned jbin(1);
+  TH1D* h_mc_dist = new TH1D("h_mc_dist", "", nrdbins, rdbinedges[0], rdbinedges[1]);  // Unsigned MC true DOCA between particle trajectory and wire axis
+  TH1D* h_rdrift  = new TH1D("h_rdrift", "", nrdbins, rdbinedges[0], rdbinedges[1]);   // Cluster drift distance calibrated under old method
+  TH1D* h_cdrift  = new TH1D("h_cdrift", "", nrcbins, rcbinedges[0], rcbinedges[1]);   // Not calibrated cluster drift distance
+
+  TH1D* h_cdrift_fine = new TH1D("h_cdrift_fine", "", nrcbins*finefactor, rcbinedges[0], rcbinedges[1]);
+  TH1D* h_correction  = new TH1D("h_correction", "", nrcbins, rcbinedges[0], rcbinedges[1]);   // Bin-by-bin corrections to not-calibrated cluster drift distance
+  TH1D* h_cdrift_corr = new TH1D("h_cdrift_corr", "", nrcbins, rcbinedges[0], rcbinedges[1]);  // Cluster drift distance corrected
+
+
+  // Set up RooUtil
+  RooUtil util(filename);
+
+
+  // Event and track counters
+  int events_all = util.GetNEvents();
+  int events_withtracks = 0;
+
+  int tracks_all      = 0;
+  int tracks_passcut1 = 0;
+  int tracks_passcut2 = 0;
+  int tracks_passcut3 = 0;
+  int tracks_goodtrackhits = 0;
+
+  int trackhits_all      = 0;
+  int trackhits_passcut4 = 0;
+  int trackhits_passcut5 = 0;
+  int trackhits_passcut6 = 0;
+  int trackhits_passcut7 = 0;
+
+
+  // Loop over events
+  // ----------------
+  for ( int i_event = 0; i_event < util.GetNEvents(); ++i_event )
+  {
+    // Get event
+    auto& event = util.GetEvent(i_event);
+
+
+    // Get tracks
+    auto tracks = event.GetTracks(is_e_minus);
+
+    if ( event.CountTracks() <= 0 ) continue;
+    events_withtracks++;
+
+
+    // Loop over tracks
+    // ----------------
+    for ( auto& track : tracks ) {
+      tracks_all++;
+
+      // Get track particles
+      auto particles = track.GetMCParticles(is_track_particle);
+
+
+      // FIRST CUT: Adapted from 'gfit': ["dem.status>0"]
+      if ( !(track.trk->status > 0) ) continue;
+      tracks_passcut1++;
+
+      // SECOND CUT: Also adapted from 'gfit' ["demmcsim[0].prirel._rel==0"]
+      if ( !(particles.at(0).mcsim->prirel.relationship() == 0) ) continue;
+      tracks_passcut2++;
+
+
+      // Get track segments
+      auto trksegments = track.GetSegments();
+
+      // Loop over track segments
+      bool bad_trksegment = false;
+      for ( auto& trksegment : trksegments ) {
+        if ( !has_mc_step(trksegment) ) continue;
+
+        // SECOND CUT: Adapted from 'gmom': ["demmcsim[0].mom.R()-demmcvd.mom.R()<2.0"]
+        if ( !(particles.at(0).mcsim->mom.R() - trksegment.trksegmc->mom.R() < 2.0) ) {
+          bad_trksegment = true;
+          break;
+        }
+      }
+      if ( bad_trksegment ) continue;
+      tracks_passcut3++;
+
+
+      // Get track hits
+      auto trkhits = track.GetHits();
+
+
+      // Loop over track hits
+      // --------------------
+      bool passcut4 = false;
+      bool passcut5 = false;
+      bool passcut6 = false;
+      bool passcut7 = false;
+
+      for ( auto& trkhit : trkhits ) {
+        trackhits_all++;
+
+        // THIRD CUT: If track hit has no reconstructed object associated, skip it
+        if ( !(trkhit.reco != nullptr) ) continue;
+        bool passcut3 = true;
+        trackhits_passcut4++;
+
+        // FOURTH CUT: Adapted from 'ghit': ["demtsh.state>-2"]
+        if ( !(trkhit.reco->state > -2) ) continue;
+        bool passcut4 = true;
+        trackhits_passcut5++;
+
+        // FIFTH CUT: Adapted from 'thit': ["demtshmc.rel._rel==0"]
+        if ( !(trkhit.mc->rel.relationship() == 0) ) continue;
+        bool passcut5 = true;
+        trackhits_passcut6++;
+
+        // SIXTH CUT: Drift quality
+        if ( trkhit.reco->driftqual <= 0.2 ) continue;
+        bool passcut6 = true;
+        trackhits_passcut7++;
+
+
+        // Define variables
+        double mc_dist = trkhit.mc->dist;
+        double rdrift  = trkhit.reco->rdrift;
+        double cdrift  = trkhit.reco->cdrift;
+
+
+        // Fill histograms
+        h_mc_dist -> Fill(mc_dist);
+        h_rdrift  -> Fill(rdrift);
+        h_cdrift  -> Fill(cdrift);
+        h_cdrift_fine -> Fill(cdrift);
+
+      }  // End of loop over track hits
+
+      tracks_goodtrackhits++;
+
+    }  // End of loop over tracks
+  }  // End of loop over events
+
+  std::cout << std::endl;
+  std::cout << " All events:         " << events_all << std::endl;
+  std::cout << " Events with tracks: " << events_withtracks << std::endl;
+  std::cout << std::endl;
+  std::cout << " All tracks:            " << tracks_all << std::endl;
+  std::cout << " Tracks passing cut #1: " << tracks_passcut1 << std::endl;
+  std::cout << " Tracks passing cut #2: " << tracks_passcut2 << std::endl;
+  std::cout << " Tracks passing cut #3: " << tracks_passcut3 << std::endl;
+  std::cout << " Tracks with at least one good trackhit: " << tracks_goodtrackhits << std::endl;
+  std::cout << std::endl;
+  std::cout << " All track hits:            " << trackhits_all << std::endl;
+  std::cout << " Track hits passing cut #4: " << trackhits_passcut4 << std::endl;
+  std::cout << " Track hits passing cut #5: " << trackhits_passcut5 << std::endl;
+  std::cout << " Track hits passing cut #6: " << trackhits_passcut6 << std::endl;
+  std::cout << " Track hits passing cut #7: " << trackhits_passcut7 << std::endl;
+  std::cout << std::endl;
+
+
+  // Normalize histograms
+  h_mc_dist -> Scale(1.0 / h_mc_dist->Integral());
+  h_rdrift  -> Scale(1.0 / h_rdrift->Integral());
+  h_cdrift  -> Scale(1.0 / h_cdrift->Integral());
+  h_cdrift_fine -> Scale(1.0 / h_cdrift_fine->Integral());
+
+
+  // Find corrections to cluster drift distance 'cdrift'
+  // ---------------------------------------------------
+
+  std::vector<double> offsets(nrcbins, 0.0);  // Offset vector with length equal to number of bins of 'h_cdrift' all initialized to 0
+
+  int jbin = 1;
+  double ncalib = h_mc_dist->GetBinContent(jbin);  // Content of a particular bin of 'h_mc_dist'
+  double cedge  = h_mc_dist->GetBinLowEdge(jbin);  // Lower edge of a particular bin of 'h_mc_dist'
+
+  double calibsum = ncalib;  // Sum of bin contents of 'h_mc_dist'
   double nraw = 0.0;
-  double ncalib = mcdoca->GetBinContent(jbin);
-  double cedge= mcdoca->GetBinLowEdge(jbin);
-  double calibsum = ncalib;
-  double rawsum = nraw;
-  for(int ibin=1;ibin<=nrcbins;++ibin){
-    double bincount = rcluster->GetBinContent(ibin);
-    double bincent = rcluster->GetBinCenter(ibin);
-    rawsum += bincount;
-    offsets[ibin-1] = bincent - (cedge + binsize*((nraw+0.5*bincount)/ncalib));
-    if(nraw + bincount < ncalib){
-      nraw += bincount;
-    } else {
-      // update for next bin
-      nraw += bincount - ncalib;
-      jbin++;
-      if(jbin > nrdbins || mcdoca->GetBinContent(jbin) <= 0)break;
-      // the remaining content goes into the next step
-      ncalib = mcdoca->GetBinContent(jbin);
-      cedge = mcdoca->GetBinLowEdge(jbin);
-      calibsum += ncalib;
+  double rawsum = nraw;      // Sum of bin contents of 'h_cdrift'
+
+  // Loop over bins of 'h_cdrift'
+  for ( int ibin = 1; ibin <= nrcbins; ++ibin ) {
+    double bincontent = h_cdrift->GetBinContent(ibin);  // Bin content
+    double bincenter  = h_cdrift->GetBinCenter(ibin);   // Bin center
+
+    rawsum += bincontent;  // Add bin content to 'rawsum'
+    offsets[ibin-1] = bincenter - (cedge + binsize*((nraw + 0.5*bincontent)/ncalib));  // Fill offset vector entry corresponding to this bin
+
+    // If 'nraw' plus 'h_cdrift' bin content is less than 'h_mc_dist' bin content...
+    if ( nraw + bincontent < ncalib ) {
+      nraw += bincontent;  // Add 'h_cdrift' bin content to 'nraw'
+    }
+    else {
+      nraw += bincontent - ncalib;  // Otherwise, add to 'nraw' the difference between bin contents of 'h_cdrift' minus 'h_mc_dist'
+      ++jbin;   // Go to the next bin of 'h_mc_dist'
+
+      // If the bin number of 'h_mc_dist' is too big, or the corresponding bin content is less than zero, break the loop
+      if ( jbin > nrdbins || h_mc_dist->GetBinContent(jbin) <= 0 ) break;
+
+      // Otherwise, prepare 'ncalib' and 'cedge' with the info from the next bin of 'h_mc_dist'
+      ncalib = h_mc_dist->GetBinContent(jbin);
+      cedge  = h_mc_dist->GetBinLowEdge(jbin);
+
+      calibsum += ncalib;  // Add to 'calibsum' the content of such bin of 'h_mc_dist'
     }
   }
-  // check
-  if(jbin < nrcbins && (abs(1.0-calibsum)>1e-6 || abs(1.0-rawsum)>1e-6) ){
-    cout << "early exit, jbin " << jbin << " remaining mc fraction " << 1.0-calibsum << " rcluster fraction " << 1.0-rawsum << endl;
+
+
+  // Perform a safety check
+  if ( jbin < nrcbins && (std::fabs(1.0 - calibsum) > 1.0e-6 || std::fabs(1.0 - rawsum) > 1.0e-6) ) {
+    std::cout << " Early exit! " << std::endl;
+    std::cout << " \tjbin                  = " << jbin << std::endl;
+    std::cout << " \tRemaining MC fraction = " << 1.0 - calibsum << std::endl;
+    std::cout << " \tcdrift fraction       = " << 1.0 - calibsum << std::endl;
   }
 
-  TH1D* offsets_hist = new TH1D("offsets","R Offset vs R_{cluster};R_{cluster} (mm)",nrcbins,rcbinedges[0],rcbinedges[1]);
-  offsets_hist->SetStats(0);
-  TH1D* corrected = new TH1D("corrected","Corrected R_{cluster};Corrected R_{cluster} (mm)",nrcbins,rcbinedges[0],rcbinedges[1]);
-  corrected->SetStats(0);
-  corrected->SetLineColor(kRed);
-  corrected->SetMarkerColor(kRed);
-  offsets_hist->SetStats(0);
-  for(size_t ibin=0;ibin<offsets.size();++ibin){
-    offsets_hist->SetBinContent(ibin+1,offsets[ibin]);
+
+  // Fill bin-by-bin corrections and corrected drift histograms
+  for ( unsigned int ibin = 0; ibin < offsets.size(); ++ibin ) {
+    h_correction -> SetBinContent(ibin+1, offsets[ibin]);
   }
-  for(size_t ibin=1;ibin <= finefactor*nrcbins;++ibin){
-    unsigned jbin = floor(float(ibin)/float(finefactor));
-    corrected->Fill(rcluster_fine->GetBinCenter(ibin+1)-offsets[jbin],rcluster_fine->GetBinContent(ibin+1));
+
+  for ( unsigned int ibin = 1; ibin <= finefactor*nrcbins; ++ibin ) {
+    unsigned int jbin = floor(float(ibin)/float(finefactor));
+    h_cdrift_corr -> Fill(h_cdrift_fine->GetBinCenter(ibin+1) - offsets[jbin], h_cdrift_fine->GetBinContent(ibin+1));
   }
-  corrected->Scale(1.0/corrected->Integral());
+  h_cdrift_corr -> Scale(1.0 / h_cdrift_corr->Integral());
 
-  TLegend* cleg = new TLegend(0.2,0.3,0.6,0.6);
-  cleg->AddEntry(mcdoca,"MC DOCA","PL");
-  cleg->AddEntry(rdrift,"Calibrated R_{drift}","PL");
-  cleg->AddEntry(corrected,"Corrected R_{cluster}","PL");
-   TCanvas* dccan = new TCanvas("dccan","dccan",1000,1000);
-  dccan->Divide(2,2);
-  dccan->cd(1);
-  rcluster->Draw();
-  dccan->cd(2);
-  offsets_hist->Draw();
-  dccan->cd(3);
-  mcdoca->Draw();
-  corrected->Draw("histsame");
-  rdrift->Draw("same");
-  cleg->Draw();
-  //
-  // dump the offsets
-  //
 
-  string cfname;
-  string cutstr(hcut);
-  if(!cutstr.empty())
-    cfname = string("DriftCalibPDF_") + cutstr + string(".txt");
-  else
-    cfname = string("DriftCalibPDF.txt");
-
-  cout << "Saving calibration to " << cfname << endl;
-  ofstream cfile(cfname.c_str(),ios::trunc);
+  // Save calibration file
+  std::string cfname = "DriftCalibPDF";
+  ofstream cfile(Form("%s_%s.txt", cfname.c_str(), calib_type.c_str()), ios::trunc);
   time_t now = time(0);
   char* dt = ctime(&now);
-  cfile << "# The following was produced by DriftCalibPDF.C with hit selection " << cutstr << " on " << dt << endl;
+
+  cfile << "# The following was produced by DriftCalibPDF.C with track hit selection 'trkhit.reco->driftqual > 0.2' on " << dt << std::endl;
   cfile << std::setw(4) << std::setprecision(3);
   cfile << "driftOffBins : [ ";
   cfile << rcbinedges[0] << " , " << rcbinedges[1] << " ]" << endl;
   cfile << "driftOffset : [ ";
+
   bool first(true);
-  for(size_t ibin=0;ibin<nrcbins;++ibin){
-    if(!first) cfile << " , ";
+  for ( int ibin = 0; ibin < nrcbins; ++ibin ) {
+    if ( !first ) cfile << " , ";
     first = false;
     cfile << offsets[ibin];
   }
   cfile << " ]" << endl;
   cfile.close();
-}
 
-void DriftCalibPDFFile(const char* file,const char* hcut="") {
-  TFile* tf = new TFile(file);
-  TTree* ta = (TTree*)tf->Get("TAKK/trkana");
-  DriftCalibPDF(ta,hcut);
-}
 
-void DriftCalibPDFChain(const char* files,const char* hcut="") {
-  TChain* ta = new TChain("TAKK/trkana");
-  FillChain(ta,files);
-  DriftCalibPDF(ta,hcut);
+  // Save histograms
+  TFile outputfile(Form("../root_files/DriftCalibPDF_%s.root", calib_type.c_str()), "RECREATE");
+
+  h_mc_dist -> Write();
+  h_rdrift  -> Write();
+  h_cdrift  -> Write();
+
+  h_cdrift_fine -> Write();
+  h_correction  -> Write();
+  h_cdrift_corr -> Write();
+
+  outputfile.Close();
+
+#endif  // __CINT__
 }
+#endif  // DriftCalibPDF_C

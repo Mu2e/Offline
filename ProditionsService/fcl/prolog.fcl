@@ -13,6 +13,7 @@ Proditions : {
    stmEnergyCalib : @local::STMEnergyCalib
    fullReadoutStraw : @local::FullReadoutStraw
    trackerStatus : @local::TrackerStatus
+   trackerPanelMap : @local::TrackerPanelMap
    strawDrift : @local::StrawDrift
    strawPhysics : @local::StrawPhysics
    strawElectronics : @local::StrawElectronics

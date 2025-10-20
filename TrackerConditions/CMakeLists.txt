@@ -18,6 +18,8 @@ cet_make_library(
       src/StrawResponseMaker.cc
       src/TrackerStatus.cc
       src/TrackerStatusMaker.cc
+      src/TrackerPanelMap.cc
+      src/TrackerPanelMapMaker.cc
     LIBRARIES PUBLIC
       BTrk_MatEnv
       Offline::BFieldGeom

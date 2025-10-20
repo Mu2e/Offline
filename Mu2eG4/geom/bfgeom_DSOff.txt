@@ -1,0 +1,67 @@
+//
+// BField information maintained as a separate file.
+//
+// Warning:
+//  There are multiple points of maintenance when you change bfield.innerMaps
+//  There are multiple points of maintenance when you change bfield.innerMaps
+//    - bfgeom_v01.txt           ( the base geometry  )
+//    - bfgeom_no_ds_v01.txt     ( DS map removed     )
+//    - bfgeom_reco_v01.txt      ( only maps needed for reconstruction )
+//    - bfgeom_no_tsu_ps_v01.txt ( PS and TSu maps removed.
+//    - bfgeam_DS50_v01.txt      ( DS field reduced to 50% )
+//    - bfgeam_DS50_no_ds_v01.txt ( DS field reduced to 50% and with DS map removed )
+//    - bfgeam_DS50_no_tsu_ps_v01.txt ( DS field reduced to 50% and with PS and TSu maps removed )
+//    - bfgeam_DS50_reco_v01.txt ( DS field reduced to 50% and only maps needed for reconstrucion )
+//
+
+bool hasBFieldManager   = true;
+
+// Form of DS field: 0 is full field;
+//                   1 is full upstream, const downstream;
+//                   2 is const throughout
+int detSolFieldForm = 0;
+
+vector<string> bfield.innerMaps = {
+  "BFieldMaps/Mau13/DSMap_DSOff.header",
+  "BFieldMaps/Mau13/PSMap_DSOff.header",
+  "BFieldMaps/Mau13/TSuMap_DSOff.header",
+  "BFieldMaps/Mau13/TSdMap_DSOff.header",
+  "BFieldMaps/Mau13/PStoDumpAreaMap.header",
+  "BFieldMaps/Mau13/ProtonDumpAreaMap.header",
+  "BFieldMaps/Mau13/DSExtension.header"
+};
+
+// Value of the uniform magnetic field with the DS volume (only for
+// detSolFieldForm>0)
+double toyDS.bz            = 1.0;
+
+// Gradient of field in DS2 volume. Applied only in the case
+// of detSolFieldForm=1 or detSolFieldForm=2.
+double toyDS.gradient      = 0.0; // Tesla/m
+
+// This is recommended field map.
+string bfield.format  = "G4BL";
+
+// method for interpolation between field grid points
+string bfield.interpolationStyle = trilinear;
+
+int  bfield.verbosityLevel =  0;
+bool bfield.writeG4BLBinaries     =  false;
+
+vector<string> bfield.outerMaps = {
+  "BFieldMaps/Mau13/PSAreaMap.header",
+  "BFieldMaps/Mau13/WorldMap.header"
+};
+
+// This scale factor is of limited use.
+// It can make approximate sense to scale the PS field to get a rough
+// answer; the answer will be wrong in detail.
+// It never makes sense to scale the TS field.
+// Not sure if it ever makes sense to scale the PS field.
+double bfield.scaleFactor = 1.0;
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

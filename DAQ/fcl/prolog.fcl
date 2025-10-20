@@ -1,13 +1,45 @@
-# -*- mode:tcl -*-
+#
+## : #include "Offline/DAQ/fcl/panel_map.fcl" ## not needed any more
+
 BEGIN_PROLOG
-DAQ: {
-    producers: {
-        StrawDigisFromArtdaqFragments: {
-            module_type: StrawDigisFromArtdaqFragments
-            diagLevel: 0
-            saveWaveforms: false
-            missingDTCHeaders: false
+DAQ : {
+    producers : {
+        makeSD: { module_type: StrawDigisFromArtdaqFragments
+            diagLevel        : 0                      ## not used yet
+            debugMode        : 0                      ##
+            debugBits        : [ "bit0:0", "bit1:0" ] ## 100 in total, configure printout details
+            saveWaveforms    : false
+            missingDTCHeaders: false                  ## true for runs <= 107246
+            keyOnMnid        : false                  ##
+            geography        : []                     ## for now, a real job should include a real map
+        }
+    }
+
+    filters : {
+        StrawDigiFilter : { module_type : StrawDigiFilter
+            strawDigiCollTag    : "makeSD"
+            minNStrawDigis      : 1
+            minNPlanes          : 0
+            nSamplesBL          : 9
+            minPulseHeight      : 5
+            minGoodPulseHeight  : 100
+            minNGoodHits        : 2
+            minNGoodPanels      : 2
+            debugLevel          : 0
+            noFilter            : false
+        }
+
+        StrawHitFilter : { module_type : StrawHitFilter
+            shCollTag           : "makeSH"
+            minNGoodHits        : 1
+            maxDt               : 40.
+            minEDep             : 0.0006 ## in MeV
+            debugMode           : false
+            debugBits           : [ "bit0:0" ]
+            fillHistograms      : false
         }
     }
 }
+# and add panel mapping for proditions
+
 END_PROLOG

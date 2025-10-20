@@ -16,6 +16,9 @@ cet_make_library(
       Offline::ProditionsService
 )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/nominal.txt ${CURRENT_BINARY_DIR} data/nominal.txt)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/caloDMAP_20250827.dat ${CURRENT_BINARY_DIR} data/caloDMAP_20250827.dat)
+
 install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/CaloConditions)
 
 install_source(SUBDIRS src)
