@@ -36,7 +36,7 @@ cet_build_plugin(ReadTriggerInfo art::module
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
       Offline::TrackerGeom
-      KinKal_Trajectory
+      KinKal::Trajectory
 
 )
 
