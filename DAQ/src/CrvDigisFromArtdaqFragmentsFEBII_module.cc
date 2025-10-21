@@ -188,7 +188,9 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
               const auto& crvHitInfo = crvHit.first;
               const auto& waveform = crvHit.second;
 
-              uint16_t rocID = crvRocHeader->ControllerID+1; // FIXME ROC IDs between 1 and 17  //also header->GetLinkID()
+              uint16_t dtcID = header->GetID();
+              uint16_t linkID = header->GetLinkID();  //identical to crvRocHeader->ControllerID
+              uint16_t rocID = dtcID*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
               uint16_t rocPort = crvHitInfo.portNumber; //Port numbers beween 1 and 24
               uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
                                                                                                   //the 5th bit indicates special situations
@@ -213,7 +215,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
               std::cout << "EventWindowTag (DTC header): " << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
               std::cout << "SubsystemID: " << (uint16_t)header->GetSubsystemID() << std::endl;
               std::cout << "DTCID: " << (uint16_t)header->GetID() << std::endl;
-              std::cout << "ROCID (DTC header): " << (uint16_t)header->GetLinkID() << std::endl;
+              std::cout << "linkID (DTC header): " << (uint16_t)header->GetLinkID() << std::endl;
               std::cout << "packetCount: " << header->GetPacketCount() << std::endl;
               std::cout << "EVB mode: " << (uint16_t)header->GetEVBMode() << std::endl;
               std::cout << "TriggerCount: " << crvRocHeader->TriggerCount << std::endl;
@@ -230,7 +232,9 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
                 const auto& crvHitInfo = crvHit.first;
                 const auto& waveform = crvHit.second;
 
-                uint16_t rocID = crvRocHeader->ControllerID + 1; // FIXME  //ROC IDs are between 1 and 17
+                uint16_t dtcID = header->GetID();
+                uint16_t linkID = header->GetLinkID();  //identical to crvRocHeader->ControllerID
+                uint16_t rocID = dtcID*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
                 uint16_t rocPort = crvHitInfo.portNumber; //Port numbers beween 1 and 24
                 uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
                                                                                                     //the 5th bit indicates special situations
