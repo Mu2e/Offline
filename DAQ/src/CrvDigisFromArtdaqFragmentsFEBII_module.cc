@@ -189,7 +189,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
               const auto& waveform = crvHit.second;
 
               uint16_t rocID = crvRocHeader->ControllerID+1; // FIXME ROC IDs between 1 and 17  //also header->GetLinkID()
-              uint16_t rocPort = crvHitInfo.portNumber+1; //FIXME Port numbers beween 1 and 24
+              uint16_t rocPort = crvHitInfo.portNumber; //Port numbers beween 1 and 24
               uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
                                                                                                   //the 5th bit indicates special situations
                                                                                                   //e.g. fake pulses
@@ -231,7 +231,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
                 const auto& waveform = crvHit.second;
 
                 uint16_t rocID = crvRocHeader->ControllerID + 1; // FIXME  //ROC IDs are between 1 and 17
-                uint16_t rocPort = crvHitInfo.portNumber+1; //FIXME Port numbers beween 1 and 24
+                uint16_t rocPort = crvHitInfo.portNumber; //Port numbers beween 1 and 24
                 uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
                                                                                                     //the 5th bit indicates special situations
                                                                                                     //e.g. fake pulses
