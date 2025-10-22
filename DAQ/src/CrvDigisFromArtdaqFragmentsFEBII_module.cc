@@ -161,7 +161,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
           if(_diagLevel>1)
           {
             std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-            std::cout << "packet count (from DTC header): " << header->GetPacketCount() << std::endl;
+            std::cout << "packet count (from data header): " << header->GetPacketCount() << std::endl;
           }
           if(header->GetPacketCount()>0)
           {
@@ -212,13 +212,13 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
 
             if(_diagLevel>2)
             {
-              std::cout << "EventWindowTag (DTC header): " << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
+              std::cout << "EventWindowTag (data header): " << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
               std::cout << "EventWindowTag (ROC header): " << crvRocHeader->GetEventWindowTag() << std::endl;
-              std::cout << "SubsystemID (DTC header): " << (uint16_t)header->GetSubsystemID() << std::endl;
-              std::cout << "DTCID (DTC header): " << (uint16_t)header->GetID() << std::endl;
-              std::cout << "LinkID (DTC header): " << (uint16_t)header->GetLinkID() << std::endl;
+              std::cout << "SubsystemID (data header): " << (uint16_t)header->GetSubsystemID() << std::endl;
+              std::cout << "DTCID (data header): " << (uint16_t)header->GetID() << std::endl;
+              std::cout << "LinkID (data header): " << (uint16_t)header->GetLinkID() << std::endl;
               std::cout << "ControllerID (ROC header): " << (uint16_t)crvRocHeader->ControllerID  << std::endl;
-              std::cout << "EVB mode (DTC header): " << (uint16_t)header->GetEVBMode() << std::endl;
+              std::cout << "EVB mode (data header): " << (uint16_t)header->GetEVBMode() << std::endl;
               std::cout << "TriggerCount (ROC header): " << crvRocHeader->TriggerCount << std::endl;
               std::cout << "ActiveFEBFlags (ROC header): " << crvRocHeader->GetActiveFEBFlags() << std::endl;
               std::cout << "MicroBunchStatus (ROC header): " << std::hex << (uint16_t)crvRocHeader->MicroBunchStatus << std::dec << std::endl;
