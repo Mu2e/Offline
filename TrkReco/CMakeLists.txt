@@ -79,17 +79,17 @@ cet_build_plugin(SelectSameTrack art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(TrkRecoMcUtils art::tool
-    REG_SOURCE src/TrkRecoMcUtils_tool.cc
-    LIBRARIES REG
-      Offline::TrkReco
-      Offline::BTrkData
-      Offline::ConditionsService
-      Offline::MCDataProducts
-      Offline::Mu2eUtilities
-      Offline::RecoDataProducts
-      Offline::TrackerGeom
-)
+#cet_build_plugin(TrkRecoMcUtils art::tool
+#    REG_SOURCE src/TrkRecoMcUtils_tool.cc
+#    LIBRARIES REG
+      #Offline::TrkReco
+      #Offline::BTrkData
+      #Offline::ConditionsService
+      #Offline::MCDataProducts
+      #Offline::Mu2eUtilities
+      #Offline::RecoDataProducts
+      #Offline::TrackerGeom
+#)
 
 #art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
 #    CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml

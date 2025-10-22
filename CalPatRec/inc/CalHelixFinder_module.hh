@@ -20,7 +20,7 @@
 #include "Offline/DataProducts/inc/Helicity.hh"
 
 // BaBar
-#include "BTrk/TrkBase/HelixTraj.hh"
+#include "BTrkLegacy/HelixTraj.hh"
 #include "Offline/BFieldGeom/inc/BFieldConfig.hh"
 
 #include "Offline/CalPatRec/inc/CalHelixFinder_types.hh"
