@@ -17,7 +17,7 @@ cet_build_plugin(KalSeedFilter art::module
 )
 
 cet_build_plugin(MultiHelixFilter art::module
-    REG_SOURCE src/HelixFilter_module.cc
+    REG_SOURCE src/MultiHelixFilter_module.cc
     LIBRARIES REG      
       Offline::BFieldGeom
       Offline::DataProducts
