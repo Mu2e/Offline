@@ -9,9 +9,6 @@
 #include "CLHEP/Matrix/SymMatrix.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "BTrk/BbrGeom/HepPoint.h"
-#include "BTrk/KalmanTrack/KalRep.hh"
-
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
 
 #include "Offline/CalPatRec/inc/CalTimePeakFinder_types.hh"

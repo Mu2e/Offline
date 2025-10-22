@@ -4,8 +4,8 @@
 
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 
-#include "BTrk/TrkBase/TrkErrCode.hh"
-#include "BTrk/TrkBase/TrkParticle.hh"
+#include "BTrkLegacy/inc/TrkErrCode.hh"
+#include "BTrkLegacy/inc/TrkParticle.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
