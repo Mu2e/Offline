@@ -39,7 +39,7 @@ cet_make_library(
       BTrk_BbrGeom
       BTrk_KalmanTrack
       BTrk_ProbTools
-      KinKal_Trajectory
+      KinKal::Trajectory
 
       Offline::DataProducts
       Offline::GeneralUtilities
