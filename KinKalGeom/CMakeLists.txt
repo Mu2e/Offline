@@ -7,7 +7,7 @@ cet_make_library(
       src/TestCRV.cc
       src/Tracker.cc
     LIBRARIES PUBLIC
-      KinKal_Geometry
+      KinKal::Geometry
       Offline::GeneralUtilities
 )
 

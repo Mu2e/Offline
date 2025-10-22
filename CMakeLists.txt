@@ -65,6 +65,8 @@ find_package(XercesC REQUIRED EXPORT)
 find_package(BLAS REQUIRED EXPORT)
 find_package(artdaq-core-mu2e REQUIRED EXPORT)
 find_package(TRACE REQUIRED EXPORT)
+find_package(KinKal REQUIRED EXPORT)
+
 if( ${WITH_G4} )
     message("--> ADDING G4 LIBS")
     find_package(Geant4 REQUIRED EXPORT)
@@ -76,9 +78,10 @@ endif()
 
 
 # BTrk and KinKal have non-standard Find*.cmake...
-include_directories($ENV{KINKAL_INC})
+if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/../KinKal/KinKalTargets.cmake)
+  include(${CMAKE_CURRENT_BINARY_DIR}/../KinKal/KinKalTargets.cmake)
+endif()
 include_directories($ENV{BTRK_INC})
-link_directories($ENV{KINKAL_LIB})
 link_directories($ENV{BTRK_LIB})
 
 include(ArtDictionary)

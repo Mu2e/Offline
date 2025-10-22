@@ -18,12 +18,12 @@ cet_make_library(
       src/WireHitState.cc
     LIBRARIES PUBLIC
       BLAS::BLAS
-      KinKal_General
-      KinKal_MatEnv
-      KinKal_Geometry
-      KinKal_Detector
-      KinKal_Trajectory
-      KinKal_Fit
+      KinKal::General
+      KinKal::MatEnv
+      KinKal::Geometry
+      KinKal::Detector
+      KinKal::Trajectory
+      KinKal::Fit
       Offline::BFieldGeom
       Offline::CalorimeterGeom
       Offline::ConfigTools
