@@ -3,6 +3,7 @@
 //  Michael MacKenzie, 2025
 //
 // framework
+#include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/OptionalSequence.h"
@@ -10,17 +11,19 @@
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art_root_io/TFileService.h"
+
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+
+// data
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
-#include "fhiclcpp/ParameterSet.h"
-#include "Offline/BFieldGeom/inc/BFieldManager.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/GeometryService/inc/DetectorSystem.hh"
-#include "Offline/TrackerGeom/inc/Tracker.hh"
-// data
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/DataProducts/inc/Helicity.hh"
 // mu2e
@@ -28,6 +31,11 @@
 // helper function
 #include "Offline/GeneralUtilities/inc/PhiPrescalingParams.hh"
 #include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
+
+// ROOT
+#include "TFile.h"
+#include "TH1.h"
+#include "TH2.h"
 
 // c++
 #include <string>
@@ -194,6 +202,7 @@ namespace mu2e
       fhicl::Atom<float>                             maxOverlap           { Name("maxOverlap"),          Comment("Maximum hit overlap between helices"), -1.};
       fhicl::Atom<float>                             minArcGap            { Name("minArcGap"),           Comment("Minimum distance between helix arcs of same curve direction"), -1.};
       fhicl::Sequence<fhicl::Table<HelixCutsConfig>> HelixCuts            { Name("HelixCuts"),           Comment("Helix cut sets")};
+      fhicl::Atom<bool>                              doHistograms         { Name("doHistograms"),        Comment("Make debug histograms"), false};
     };
 
 
@@ -207,10 +216,38 @@ namespace mu2e
 
   private:
 
+    struct Hist_t {
+      TH1* p            ;
+      TH1* pt           ;
+      TH1* t            ;
+      TH1* d0           ;
+      TH1* lambda       ;
+      TH1* clusterEnergy;
+      TH1* nStrawHits   ;
+      TH1* hitRatio     ;
+      TH1* chi2XY       ;
+      TH1* chi2PhiZ     ;
+      TH1* nLoops       ;
+      TH1* slopeSig     ;
+      TH1* helicity     ;
+
+      // multi-helix info
+      TH1* overlap      ;
+      TH1* arcGap       ;
+      TH1* deltaT       ;
+
+      // Per-fill info
+      TH1* helicitySum  ;
+      TH1* nHelices     ;
+      TH1* nInSet       ;
+    };
+
     float evaluateOverlap(const HelixSeed* h1, const HelixSeed* h2);
     float evaluateArcGap(const HelixSeed* h1, const HelixSeed* h2);
     bool checkHelixList(std::vector<const HelixSeed*> helices);
     void doPermutations(const std::vector<size_t>& given, const HelixSeedCollection* hcol, std::set<size_t>& accepted);
+    void bookHistograms(const int index, const char* name, const char* title);
+    void fillHistograms(Hist_t* Hist, const std::set<size_t>& indices, const HelixSeedCollection* hcol);
 
     art::InputTag  _hsTag;
     int            _debugLevel;
@@ -221,6 +258,7 @@ namespace mu2e
     float          _minArcGap;
     // cut sets
     std::vector<HelixCuts> _helixCuts;
+    bool          _doHistograms;
 
     double         _bz0;
     const Tracker* _tracker;
@@ -228,6 +266,8 @@ namespace mu2e
     // counters
     unsigned      _nevt, _npass;
 
+    // histogram info
+    Hist_t* _hists[10];
   };
 
   //--------------------------------------------------------------------------------------
@@ -249,6 +289,11 @@ namespace mu2e
 
   //--------------------------------------------------------------------------------------
   void MultiHelixFilter::beginJob() {
+    if(_doHistograms) {
+      art::ServiceHandle<art::TFileService> tfs;
+      bookHistograms(0, "all_events", "All events");
+      bookHistograms(1, "accepted_events", "Accepted events");
+    }
   }
 
   //--------------------------------------------------------------------------------------
@@ -270,6 +315,78 @@ namespace mu2e
       cuts._debugLevel = _debugLevel;
     }
     return true;
+  }
+
+  //--------------------------------------------------------------------------------------
+  void MultiHelixFilter::bookHistograms(const int index, const char* name, const char* title) {
+    _hists[index] = new Hist_t;
+    auto Hist = _hists[index];
+    art::ServiceHandle<art::TFileService> tfs;
+    art::TFileDirectory tfdir = tfs->mkdir(name, title);
+
+    Hist->p              = tfdir.make<TH1F>("p"             , "Helix momentum"           , 100,    0.,  200.);
+    Hist->pt             = tfdir.make<TH1F>("pt"            , "Helix transverse momentum", 100,    0.,  200.);
+    Hist->t              = tfdir.make<TH1F>("t"             , "Helix time"               , 100,    0., 2000.);
+    Hist->d0             = tfdir.make<TH1F>("d0"            , "Helix d_{0}"              , 100, -500.,  500.);
+    Hist->lambda         = tfdir.make<TH1F>("lambda"        , "Helix |#lambda|"          , 100,    0., 2000.);
+    Hist->clusterEnergy  = tfdir.make<TH1F>("clusterEnergy" , "Helix cluster energy"     , 100,    0.,  200.);
+    Hist->nStrawHits     = tfdir.make<TH1F>("nStrawHits"    , "Helix N(straw hits)"      , 100,    0.,  100.);
+    Hist->hitRatio       = tfdir.make<TH1F>("hitRatio"      , "Helix hit ratio"          , 100,    0.,    2.);
+    Hist->chi2XY         = tfdir.make<TH1F>("chi2XY"        , "Helix #chi^{2}(x,y)"      , 100,    0.,   10.);
+    Hist->chi2PhiZ       = tfdir.make<TH1F>("chi2PhiZ"      , "Helix #chi^{2}(#phi,z)"   , 100,    0.,   10.);
+    Hist->nLoops         = tfdir.make<TH1F>("nLoops"        , "Helix N(loops)"           , 100,    0.,   10.);
+    Hist->slopeSig       = tfdir.make<TH1F>("slopeSig"      , "Helix slope/uncertainty"  , 100,  -20.,   20.);
+    Hist->helicity       = tfdir.make<TH1D>("helicity"      , "Helix helicity"           ,   4,   -2.,    2.);
+
+    Hist->overlap        = tfdir.make<TH1F>("overlap"       , "Helix overlap"            , 100,    0.,    1.);
+    Hist->arcGap         = tfdir.make<TH1F>("arcGap"        , "Helix arc-gap"            , 100,    0.,  500.);
+    Hist->deltaT         = tfdir.make<TH1F>("deltaT"        , "Helix #Deltat"            , 100,    0.,  500.);
+
+    Hist->helicitySum    = tfdir.make<TH1F>("helicitySum"   , "#Sigma(helicity)"         ,  20,  -10.,   10.);
+    Hist->nHelices       = tfdir.make<TH1F>("nHelices"      , "N(helices)"               ,  20,    0.,   20.);
+    Hist->nInSet         = tfdir.make<TH1F>("nInSet"        , "N(helices) in set"        ,  20,    0.,   20.);
+  }
+
+  //--------------------------------------------------------------------------------------
+  void MultiHelixFilter::fillHistograms(Hist_t* Hist, const std::set<size_t>& indices, const HelixSeedCollection* hcol) {
+    std::set<size_t> checked; // to avoid double counting in comparisons
+    float helSum = 0.;
+    for(auto index : indices) {
+      const HelixSeed& helix = hcol->at(index);
+      HelixTool hTool(&helix, _tracker);
+      constexpr float mmToMeV = 3./10.;
+
+      Hist->p              ->Fill(_bz0 * mmToMeV * helix.helix().momentum());
+      Hist->pt             ->Fill(_bz0 * mmToMeV * helix.helix().radius  ());
+      Hist->t              ->Fill(helix.t0().t0());
+      Hist->d0             ->Fill(helix.helix().rcent() - helix.helix().radius());
+      Hist->lambda         ->Fill(std::fabs(helix.helix().lambda()));
+      Hist->clusterEnergy  ->Fill((helix.caloCluster().isNonnull()) ? helix.caloCluster()->energyDep() : 0.);
+      Hist->nStrawHits     ->Fill(hTool.nstrawhits());
+      Hist->hitRatio       ->Fill(hTool.hitRatio());
+      Hist->chi2XY         ->Fill(helix.helix().chi2dXY());
+      Hist->chi2PhiZ       ->Fill(helix.helix().chi2dZPhi());
+      Hist->nLoops         ->Fill(hTool.nLoops());
+      Hist->helicity       ->Fill(helix.helix().helicity().value());
+      const float slope          = helix.recoDir().slope();
+      const float slopeErr       = std::fabs(helix.recoDir().slopeErr());
+      const float slopeSignedSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f; //signifance from 0 signed by the slope direction
+      Hist->slopeSig       ->Fill(slopeSignedSig);
+      helSum += helix.helix().helicity().value();
+
+      for(auto other : indices) {
+        if(other == index) continue;
+        if(checked.find(other) != checked.end()) continue;
+        const HelixSeed& other_helix = hcol->at(other);
+        Hist->overlap ->Fill(evaluateOverlap(&helix, &other_helix));
+        Hist->arcGap  ->Fill(evaluateArcGap (&helix, &other_helix));
+        Hist->deltaT  ->Fill(std::fabs(helix.t0().t0() - other_helix.t0().t0()));
+      }
+      checked.insert(index); // to avoid double counting in comparisons
+    }
+    Hist->helicitySum->Fill(helSum);
+    Hist->nHelices->Fill(hcol->size());
+    Hist->nInSet  ->Fill(indices.size());
   }
 
   //--------------------------------------------------------------------------------------
@@ -446,6 +563,13 @@ namespace mu2e
     }
 
     event.put(std::move(triginfo));
+
+    if(_doHistograms) {
+      std::set<size_t> all_helices;
+      for(size_t index = 0; index < hscol->size(); ++index) all_helices.insert(index);
+      fillHistograms(_hists[0], all_helices, hscol);
+      if(pass) fillHistograms(_hists[1], accepted, hscol);
+    }
 
     return pass || _noFilter;
   }
