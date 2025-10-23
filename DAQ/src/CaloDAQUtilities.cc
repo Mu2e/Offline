@@ -25,62 +25,38 @@ void CaloDAQUtilities::printCaloFragmentInfo(CalorimeterDataDecoder const& cc) {
             << "=========================" << std::endl;
 }
 
-void CaloDAQUtilities::printCaloFragmentHeader(
-    std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header) {
-
-  std::cout << "timestamp: "
-            << static_cast<int>(Header->GetEventWindowTag().GetEventWindowTag(true)) << std::endl;
+// clang-format off
+void CaloDAQUtilities::printCaloFragmentHeader(std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header) {
+  std::cout << "timestamp: "           << static_cast<int>(Header->GetEventWindowTag().GetEventWindowTag(true)) << std::endl;
   std::cout << "Header->SubsystemID: " << static_cast<int>(Header->GetSubsystemID()) << std::endl;
-  std::cout << "dtcID: " << static_cast<int>(Header->GetID()) << std::endl;
-  std::cout << "rocID: " << static_cast<int>(Header->GetLinkID()) << std::endl;
-  std::cout << "packetCount: " << static_cast<int>(Header->GetPacketCount()) << std::endl;
-  std::cout << "EVB mode: " << static_cast<int>(Header->GetEVBMode()) << std::endl;
-
-  std::cout << std::endl;
+  std::cout << "dtcID: "               << static_cast<int>(Header->GetID()) << std::endl;
+  std::cout << "rocID: "               << static_cast<int>(Header->GetLinkID()) << std::endl;
+  std::cout << "packetCount: "         << static_cast<int>(Header->GetPacketCount()) << std::endl;
+  std::cout << "EVB mode: "            << static_cast<int>(Header->GetEVBMode()) << std::endl;
 }
 
 void CaloDAQUtilities::printCaloPulse(CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit) {
-  std::cout << "[CaloDAQUtilities] \tChNumber   " << (int)Hit.ChannelNumber << std::endl;
-  std::cout << "[CaloDAQUtilities] \tDIRACA     " << (int)Hit.DIRACA << std::endl;
-  std::cout << "[CaloDAQUtilities] \tDIRACB     " << (int)Hit.DIRACB << std::endl;
-  std::cout << "[CaloDAQUtilities] \tErrorFlags " << (int)Hit.ErrorFlags << std::endl;
-  std::cout << "[CaloDAQUtilities] \tTime       " << (int)Hit.Time << std::endl;
-  std::cout << "[CaloDAQUtilities] \tNSamples   " << (int)Hit.NumberOfSamples << std::endl;
-  std::cout << "[CaloDAQUtilities] \tIndexMax   " << (int)Hit.IndexOfMaxDigitizerSample
-            << std::endl;
-}
-
-void CaloDAQUtilities::printCaloPulse(
-    CalorimeterDataDecoder::CalorimeterHitDataPacketNew const& Hit) {
   std::cout << "[CaloDAQUtilities] \tBoardID                    " << (int)Hit.BoardID << std::endl;
-  std::cout << "[CaloDAQUtilities] \tDetectorID                 " << (int)Hit.DetectorID
-            << std::endl;
-  std::cout << "[CaloDAQUtilities] \tChannelID                  " << (int)Hit.ChannelID
-            << std::endl;
+  std::cout << "[CaloDAQUtilities] \tDetectorID                 " << (int)Hit.DetectorID<< std::endl;
+  std::cout << "[CaloDAQUtilities] \tChannelID                  " << (int)Hit.ChannelID << std::endl;
   std::cout << "[CaloDAQUtilities] \tTime                       " << (int)Hit.Time << std::endl;
-  std::cout << "[CaloDAQUtilities] \tInPayloadEventWindowTag    "
-            << (int)Hit.InPayloadEventWindowTag << std::endl;
+  std::cout << "[CaloDAQUtilities] \tInPayloadEventWindowTag    " << (int)Hit.InPayloadEventWindowTag << std::endl;
   std::cout << "[CaloDAQUtilities] \tBaseline                   " << (int)Hit.Baseline << std::endl;
-  std::cout << "[CaloDAQUtilities] \tIndexOfMaxDigitizerSample  "
-            << (int)Hit.IndexOfMaxDigitizerSample << std::endl;
-  std::cout << "[CaloDAQUtilities] \tErrorFlags                 " << (int)Hit.ErrorFlags
-            << std::endl;
-  std::cout << "[CaloDAQUtilities] \tNumberOfSamples            " << (int)Hit.NumberOfSamples
-            << std::endl;
+  std::cout << "[CaloDAQUtilities] \tIndexOfMaxDigitizerSample  " << (int)Hit.IndexOfMaxDigitizerSample << std::endl;
+  std::cout << "[CaloDAQUtilities] \tErrorFlags                 " << (int)Hit.ErrorFlags<< std::endl;
+  std::cout << "[CaloDAQUtilities] \tNumberOfSamples            " << (int)Hit.NumberOfSamples<< std::endl;
 }
 
-void CaloDAQUtilities::printCaloPulse(
-    CalorimeterDataDecoder::CalorimeterHitTestDataPacket const& Hit) {
+void CaloDAQUtilities::printCaloPulse(CalorimeterDataDecoder::CalorimeterHitTestDataPacket const& Hit) {
   std::cout << "[CaloDAQUtilities] \tBoardID      " << (int)Hit.BoardID << std::endl;
   std::cout << "[CaloDAQUtilities] \tChNumber     " << (int)Hit.ChannelID << std::endl;
-  std::cout << "[CaloDAQUtilities] \tEWT          " << (int)Hit.InPayloadEventWindowTag
-            << std::endl;
+  std::cout << "[CaloDAQUtilities] \tEWT          " << (int)Hit.InPayloadEventWindowTag<< std::endl;
   std::cout << "[CaloDAQUtilities] \tErrorFlags   " << (int)Hit.ErrorFlags << std::endl;
   std::cout << "[CaloDAQUtilities] \tTime         " << (int)Hit.Time << std::endl;
   std::cout << "[CaloDAQUtilities] \tNSamples     " << (int)Hit.NumberOfSamples << std::endl;
-  std::cout << "[CaloDAQUtilities] \tIndexMax     " << (int)Hit.IndexOfMaxDigitizerSample
-            << std::endl;
+  std::cout << "[CaloDAQUtilities] \tIndexMax     " << (int)Hit.IndexOfMaxDigitizerSample<< std::endl;
 }
+// clang-format on
 
 void CaloDAQUtilities::printWaveform(std::vector<uint16_t> const& Pulse) {
   std::cout << "Waveform: {";
@@ -93,6 +69,7 @@ void CaloDAQUtilities::printWaveform(std::vector<uint16_t> const& Pulse) {
   std::cout << "}" << std::endl;
 }
 
+// TODO REMOVE THIS?
 void CaloDAQUtilities::printAllHitInfo(int CrystalID, int SiPMID,
                                        std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header,
                                        CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit,
