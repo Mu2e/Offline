@@ -153,68 +153,7 @@ void art::CaloDigiFromDTCEvents::analyze_calorimeter_(
 
     if (data_type_ == 0) { // Standard calo data
 
-      auto calHitDataVec = cc.GetCalorimeterHitData(iROC);
-      if (calHitDataVec == nullptr) {
-        mf::LogError("CaloDigiFromDTCEvents") << "Error retrieving Calorimeter data from ROC "
-                                              << iROC << "! Aborting processing of this ROC!";
-        continue;
-      }
-
-      // Loop through the hits of this ROC
-      for (unsigned int hitIdx = 0; hitIdx < calHitDataVec->size(); hitIdx++) {
-        mu2e::CalorimeterDataDecoder::CalorimeterHitDataPacket& thisHitPacket =
-            calHitDataVec->at(hitIdx).first;
-        std::vector<uint16_t>& thisHitWaveform = calHitDataVec->at(hitIdx).second;
-
-        // Fill the CaloDigiCollection
-
-        if (diagLevel_ > 2) {
-          std::cout << "[CaloDigiFromDTCEvents] calo hit " << hitIdx << std::endl;
-          std::cout << "[CaloDigiFromDTCEvents] \tChNumber   " << (int)thisHitPacket.ChannelNumber
-                    << std::endl;
-          std::cout << "[CaloDigiFromDTCEvents] \tDIRACA     " << (int)thisHitPacket.DIRACA
-                    << std::endl;
-          std::cout << "[CaloDigiFromDTCEvents] \tDIRACB     " << (int)thisHitPacket.DIRACB
-                    << std::endl;
-          std::cout << "[CaloDigiFromDTCEvents] \tErrorFlags " << (int)thisHitPacket.ErrorFlags
-                    << std::endl;
-          std::cout << "[CaloDigiFromDTCEvents] \tTime              " << (int)thisHitPacket.Time
-                    << std::endl;
-          std::cout << "[CaloDigiFromDTCEvents] \tNSamples   " << (int)thisHitPacket.NumberOfSamples
-                    << std::endl;
-          std::cout << "[CaloDigiFromDTCEvents] \tIndexMax   "
-                    << (int)thisHitPacket.IndexOfMaxDigitizerSample << std::endl;
-        }
-
-        uint16_t packetid = thisHitPacket.DIRACA;
-        uint16_t dirac = packetid & 0xFF;
-        uint16_t diracChannel = (packetid >> 8) & 0x1F;
-        mu2e::CaloRawSiPMId rawId(dirac, diracChannel);
-        uint16_t roID = calodaqconds.offlineId(rawId).id();
-        // uint16_t dettype = (packetId & 0x7000) >> 13;
-
-        calo_digis->emplace_back(roID, thisHitPacket.Time,
-                                 std::vector<int>(thisHitWaveform.begin(), thisHitWaveform.end()),
-                                 thisHitPacket.IndexOfMaxDigitizerSample);
-
-        if (diagLevel_ > 2) {
-          // Until we have the final mapping, the BoardID is just a placeholder
-          // adc_t BoardId    = cc.DBC_BoardID(pos,channelIdx);
-          uint16_t crystalID = roID / 2;
-          std::cout << "Crystal ID: " << (int)crystalID << std::endl;
-          std::cout << "SiPM ID: " << (int)roID << std::endl;
-          std::cout << "Time: " << (int)thisHitPacket.Time << std::endl;
-          std::cout << "NumSamples: " << (int)thisHitPacket.NumberOfSamples << std::endl;
-          std::cout << "Waveform: {";
-          for (auto sample : thisHitWaveform) {
-            std::cout << sample << " ";
-          }
-          std::cout << "}" << std::endl;
-        } // End debug output
-      }
-    } else if (data_type_ == 1) { // debug calo data
-
-      auto calHitTestDataVec = cc.GetCalorimeterHitTestData(iROC);
+      auto calHitTestDataVec = cc.GetCalorimeterHitData(iROC);
       if (calHitTestDataVec == nullptr) {
         mf::LogError("CaloDigiFromDTCEvents")
             << "Error retrieving Calorimeter test data from block " << iROC
@@ -226,7 +165,7 @@ void art::CaloDigiFromDTCEvents::analyze_calorimeter_(
       total_hits += calHitTestDataVec->size();
       for (unsigned int hitIdx = 0; hitIdx < calHitTestDataVec->size(); hitIdx++) {
 
-        mu2e::CalorimeterDataDecoder::CalorimeterHitTestDataPacket& thisHitPacket =
+        mu2e::CalorimeterDataDecoder::CalorimeterHitDataPacket& thisHitPacket =
             calHitTestDataVec->at(hitIdx).first;
         std::vector<uint16_t>& thisHitWaveform = calHitTestDataVec->at(hitIdx).second;
 
@@ -276,9 +215,9 @@ void art::CaloDigiFromDTCEvents::analyze_calorimeter_(
         } // End debug output
       }
 
-    } else if (data_type_ == 3) { // new data packet
+    } else if (data_type_ == 1) { // debug calo data
 
-      auto calHitTestDataVec = cc.GetCalorimeterHitDataNew(iROC);
+      auto calHitTestDataVec = cc.GetCalorimeterHitTestData(iROC);
       if (calHitTestDataVec == nullptr) {
         mf::LogError("CaloDigiFromDTCEvents")
             << "Error retrieving Calorimeter test data from block " << iROC
@@ -290,7 +229,7 @@ void art::CaloDigiFromDTCEvents::analyze_calorimeter_(
       total_hits += calHitTestDataVec->size();
       for (unsigned int hitIdx = 0; hitIdx < calHitTestDataVec->size(); hitIdx++) {
 
-        mu2e::CalorimeterDataDecoder::CalorimeterHitDataPacketNew& thisHitPacket =
+        mu2e::CalorimeterDataDecoder::CalorimeterHitTestDataPacket& thisHitPacket =
             calHitTestDataVec->at(hitIdx).first;
         std::vector<uint16_t>& thisHitWaveform = calHitTestDataVec->at(hitIdx).second;
 
