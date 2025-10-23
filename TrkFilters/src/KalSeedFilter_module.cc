@@ -171,7 +171,7 @@ namespace mu2e
             if(!_noInfo)triginfo->_tracks.push_back(art::Ptr<KalSeed>(ksH,index));
 
             if(_debug > 1){
-              std::cout << moduleDescription().moduleLabel() << " --> accepted a track\n";
+              std::cout << moduleDescription().moduleLabel() << " --> accepted a track" << std::endl;
             }
             break;//no need to check the other ksCuts entries
           }
