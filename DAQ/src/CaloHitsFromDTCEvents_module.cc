@@ -236,7 +236,9 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
   }
 
   if (numCalDecoders == 0) {
-    std::cout << "[CaloDigiFromDTCEvents::produce] found no Calorimeter decoders!" << std::endl;
+    if (diagLevel_ > 0) {
+      std::cout << "[CaloDigiFromDTCEvents::produce] found no Calorimeter decoders!" << std::endl;
+    }
     // Must put empty vectors anyway
     event.put(std::move(int_info));
     event.put(std::move(calo_hits), "calo");

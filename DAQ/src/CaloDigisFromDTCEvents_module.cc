@@ -125,7 +125,9 @@ void art::CaloDigiFromDTCEvents::produce(Event& event) {
   }
 
   if (numCalDecoders == 0) {
-    std::cout << "[CaloDigiFromDTCEvents::produce] found no Calorimeter decoders!" << std::endl;
+    if (diagLevel_ > 0) {
+      std::cout << "[CaloDigiFromDTCEvents::produce] found no Calorimeter decoders!" << std::endl;
+    }
     event.put(std::move(calo_digis));
     return;
   }
