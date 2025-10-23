@@ -93,13 +93,8 @@ namespace mu2e {
     // Go through the tracks and calculate the track PID
     for (const auto& kalSeedPtr : kalSeedPtrs) {
       const auto& kalSeed = *kalSeedPtr;
-      std::array<float,4> features; // features used for training
-      features[0] = -9999;
-      features[1] = -9999;
-      features[2] = -9999;
-      features[3] = -9999;
-      auto mvaout = mva_->infer(features.data());
-      mvaout[0] = -1;
+      std::array<float,4> features{-9999,-9999,-9999,-9999}; // features used for training
+      double mvaval = -1;
 
       // Fill the features
       static TrkFitFlag goodfit(TrkFitFlag::kalmanOK);
@@ -129,8 +124,8 @@ namespace mu2e {
           // reconstructed as a downstream particle associated to this cluster
           if(features[0] < _maxde){
             // evaluate the MVA
-            mvaout = mva_->infer(features.data());
-            //mvacol->push_back(MVAResult(mvaout[0]));
+            auto mvaout = mva_->infer(features.data());
+            mvaval = mvaout[0];
           }
           else if (_debug > 0) {
             printf("energy difference at %f, above threshold %f", features[0], _maxde);
@@ -139,9 +134,9 @@ namespace mu2e {
       }
       if (_debug > 0) {
         printf("TrackPID ; input features: %f ; %f ; %f ; %f ; output: %f",
-          features[0], features[1], features[2], features[3], mvaout[0]);
+          features[0], features[1], features[2], features[3], mvaval);
       }
-      mvacol->push_back(MVAResult(mvaout[0]));
+      mvacol->push_back(MVAResult(mvaval));
     }
     if (mvacol->size() != kalSeedPtrs.size()) {
       throw cet::exception("TrackPID") << "KalSeedPtr and MVAResult sizes are inconsistent: KalSeedPtr.size() = " << kalSeedPtrs.size() << " ; MVAResult.size() = " << mvacol->size();
