@@ -24,15 +24,6 @@ class CaloDAQUtilities {
 public:
   CaloDAQUtilities(std::string ModuleName);
 
-  //uint16_t getCrystalID(CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit) {
-  //  return Hit.DIRACB & 0x0FFF;
-  //}
-  //uint16_t getSiPMID(CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit) {
-  //  uint16_t crystalID = getCrystalID(Hit);
-  //  uint16_t sipmID = Hit.DIRACB >> 12;
-  //  return (crystalID * 2 + sipmID);
-  //}
-
   enum CaloHitError {
     Good = 0,
     BeginMarker = 1,
@@ -144,12 +135,6 @@ public:
 
   void printWaveform(std::vector<uint16_t> const& Pulse);
 
-
-  // TODO REMOVE THIS?
-  void printAllHitInfo(int CrystalID, int SiPMID,
-                       std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header,
-                       CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit,
-                       uint16_t PulseMax);
 
   // Function to get art fragments from event
   artdaq::Fragments getFragments(art::Event& event) {
