@@ -110,7 +110,8 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
       for(size_t iSubEvent=0; iSubEvent<dtcSubEvents.size(); ++iSubEvent) actualSize+=dtcSubEvents.at(iSubEvent).GetSubEventByteCount();
       if(_diagLevel>1)
       {
-        std::cout << "Fragment index: " << iFragment << "      expected event size: " << expectedSize << ", actual event size: " << actualSize << std::endl;
+        std::cout << "Fragment index: " << iFragment << "      expected event size: " << expectedSize << ", actual event size: " << actualSize << "      ";
+        std::cout << "Number of subEvents: " << dtcSubEvents.size() << std::endl;
       }
       if(expectedSize!=actualSize)
       {
@@ -165,7 +166,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
           }
           if(header->GetPacketCount()>0)
           {
-            auto crvRocHeader = decoder.GetCRVROCStatusPacket(iDataBlock);
+            auto crvRocHeader = decoder.GetCRVROCStatusPacketFEBII(iDataBlock);
             if(crvRocHeader == nullptr)
             {
               std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
@@ -189,7 +190,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
               const auto& waveform = crvHit.second;
 
               uint16_t dtcID = header->GetID();
-              uint16_t linkID = header->GetLinkID();  //identical to crvRocHeader->ControllerID
+              uint16_t linkID = header->GetLinkID();
               uint16_t rocID = dtcID*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
               uint16_t rocPort = crvHitInfo.portNumber; //Port numbers beween 1 and 24
               uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
@@ -217,11 +218,10 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
               std::cout << "SubsystemID (data header): " << (uint16_t)header->GetSubsystemID() << std::endl;
               std::cout << "DTCID (data header): " << (uint16_t)header->GetID() << std::endl;
               std::cout << "LinkID (data header): " << (uint16_t)header->GetLinkID() << std::endl;
-              std::cout << "ControllerID (ROC header): " << (uint16_t)crvRocHeader->ControllerID  << std::endl;
               std::cout << "EVB mode (data header): " << (uint16_t)header->GetEVBMode() << std::endl;
               std::cout << "TriggerCount (ROC header): " << crvRocHeader->TriggerCount << std::endl;
               std::cout << "ActiveFEBFlags (ROC header): " << crvRocHeader->GetActiveFEBFlags() << std::endl;
-              std::cout << "MicroBunchStatus (ROC header): " << std::hex << (uint16_t)crvRocHeader->MicroBunchStatus << std::dec << std::endl;
+              std::cout << "MicroBunchStatus (ROC header): 0x" << std::hex << (uint32_t)crvRocHeader->GetMicroBunchStatus() << std::dec << std::endl;
             }
 
             if(_diagLevel>3)
@@ -232,7 +232,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
                 const auto& waveform = crvHit.second;
 
                 uint16_t dtcID = header->GetID();
-                uint16_t linkID = header->GetLinkID();  //identical to crvRocHeader->ControllerID
+                uint16_t linkID = header->GetLinkID();
                 uint16_t rocID = dtcID*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
                 uint16_t rocPort = crvHitInfo.portNumber; //Port numbers beween 1 and 24
                 uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel

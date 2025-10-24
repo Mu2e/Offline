@@ -416,8 +416,8 @@
 ]]>
 </ioread>
 
- <class name="mu2e::CRVDataDecoder::CRVROCStatusPacket" />
- <class name="std::vector<mu2e::CRVDataDecoder::CRVROCStatusPacket>" />
+ <class name="mu2e::CRVDataDecoder::CRVROCStatusPacketFEBII" />
+ <class name="std::vector<mu2e::CRVDataDecoder::CRVROCStatusPacketFEBII>" />
  <class name="mu2e::CrvStatus" />
  <class name="std::vector<mu2e::CrvStatus>" />
  <class name="mu2e::CrvStatusCollection" />

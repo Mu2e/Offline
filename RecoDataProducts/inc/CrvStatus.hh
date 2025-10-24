@@ -32,7 +32,7 @@ namespace mu2e
     uint64_t GetEventWindowTag() const           {return _eventWindowTag;}
     uint8_t GetStatus() const                    {return _status;}
     uint8_t GetDTCID() const                     {return _dtcID;}
-    std::vector<CRVDataDecoder::CRVROCStatusPacket> &GetROCHeader() {return _rocHeader;}
+    std::vector<CRVDataDecoder::CRVROCStatusPacketFEBII> &GetROCHeader() {return _rocHeader;}
 
     private:
 
@@ -41,9 +41,9 @@ namespace mu2e
     uint64_t                    _eventWindowTag;
     uint8_t                     _status{0};
     uint8_t                     _dtcID{0};
-    std::vector<CRVDataDecoder::CRVROCStatusPacket>  _rocHeader;   //not every DTC link has a ROC attached.
-                                                                   //actually wanted to use std::optional, 
-								   //but this causes problems with the dictionary.
+    std::vector<CRVDataDecoder::CRVROCStatusPacketFEBII>  _rocHeader;   //not every DTC link has a ROC attached.
+                                                                        //actually wanted to use std::optional, 
+							                //but this causes problems with the dictionary.
   };
   typedef std::vector<CrvStatus> CrvStatusCollection;  //one entry per block
 }
