@@ -151,6 +151,9 @@ namespace mu2e
       auto ksH = evt.getValidHandle<KalSeedCollection>(kstag);
       const KalSeedCollection* kscol = ksH.product();
       // loop over the collection: if any pass the selection, pass this event
+      if(_debug > 1){
+        std::cout << moduleDescription().moduleLabel() << " input " << kstag.encode() << " collection has " << kscol->size() << " tracks\n";
+      }
       if(_debug > 2){
         if (kscol->size()>0) printf("[KalSeedFilter::filter]   nhits nst npl    mom     momErr    chi2ndof     fitCon   tanDip    d0      \n");
       }
@@ -168,7 +171,7 @@ namespace mu2e
             if(!_noInfo)triginfo->_tracks.push_back(art::Ptr<KalSeed>(ksH,index));
 
             if(_debug > 1){
-              std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
+              std::cout << moduleDescription().moduleLabel() << " --> accepted a track" << std::endl;
             }
             break;//no need to check the other ksCuts entries
           }
@@ -176,6 +179,9 @@ namespace mu2e
       }//end loop over the kalseeds
     }// end loop over KalSeed collections
 
+    if(_debug > 1){
+      std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
+    }
     if(!_noInfo)evt.put(std::move(triginfo));
 
     if (!_noFilter){
