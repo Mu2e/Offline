@@ -180,7 +180,9 @@ namespace mu2e {
     _chi2zphiMax(config.chi2zphiMax()),
     _chi2hel3DMax(config.chi2hel3DMax()),
     _dfdzErr(config.dfdzErr()),
-    _maxNHitsRatio(config.maxNHitsRatio()){
+    _maxNHitsRatio(config.maxNHitsRatio()),
+    _procAllTCs(config.procAllTCs()),
+    _slopeRatioLimit(config.slopeRatioLimit()){
 
     float minarea(config.minArea());
     _minarea2    = minarea*minarea;
@@ -214,10 +216,34 @@ namespace mu2e {
     //check presence of a cluster
     const CaloCluster* cl = Helix._timeCluster->caloCluster().get();
     if (cl == NULL){
-      fCaloTime = -9999.;
-      fCaloX    = -9999.;
-      fCaloY    = -9999.;
-      fCaloZ    = -9999.;
+      const std::vector<StrawHitIndex>& shIndices = Helix._timeCluster->hits();
+
+      if((shIndices.size() !=0) && (_procAllTCs)){
+        float  zMax(-1e10);
+        size_t zMaxIndex(0);
+        for (size_t i=0; i<shIndices.size(); ++i){
+          StrawHitIndex   ll   = shIndices[i];
+          float           hitZ = Helix.chcol()->at(ll).pos().z();
+          if (hitZ > zMax){
+            zMax      = hitZ;
+            zMaxIndex = i;
+          }
+        }
+        StrawHitIndex   loc = shIndices[zMaxIndex];
+        const ComboHit& ch  = Helix.chcol()->at(loc);
+
+        fCaloTime = ch.correctedTime();
+        fCaloX    = ch.pos().x();
+        fCaloY    = ch.pos().y();
+        fCaloZ    = ch.pos().z();
+      }
+      else{
+        fCaloTime = -9999.;
+        fCaloX    = -9999.;
+        fCaloY    = -9999.;
+        fCaloZ    = -9999.;
+      }
+
       return;
     }
     //fill the calorimeter cluster info
@@ -744,13 +770,11 @@ namespace mu2e {
     }
 
     int       nstations, nhits[30], nstations_with_hits(0);
-    float    phiVec[30], zVec[30], weight(0);
+    float     phiVec[30], zVec[30], weight(0);
 
-    // np        = _xyzp.size();
-    int       nPlanesPerStation(2);
-    nstations = StrawId::_nplanes/nPlanesPerStation;//_tracker->nStations();
+    nstations = StrawId::_nstations;
 
-    for (int i=0; i<nstations; i++) {
+    for (int i=0; i<nstations+1; i++) {
       phiVec[i] = 0;
       zVec  [i] = 0;
       nhits [i] = 0;
@@ -760,6 +784,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // calorimeter cluster - point number nstations+1
 //-----------------------------------------------------------------------------
+
     float zCl     = fCaloZ;
     float phiCl   = polyAtan2(fCaloY-center->y(),fCaloX-center->x());
     if (phiCl < 0) phiCl += 2*M_PI;
@@ -843,6 +868,12 @@ namespace mu2e {
 
         dphi = phiVec[j]-phi_ref;
         dz   = zVec[j] - z_ref;
+
+        if(std::fabs(dz) < 10e-10)         continue;
+        if((dz < 0.) && (!Helix._timeCluster->hasCaloCluster())) {
+          dz = -dz;
+        }
+
         float dphidz =dphi/dz*_dfdzsign; //HERE
 
         weight = nhits[i] + nhits[j];
@@ -852,7 +883,6 @@ namespace mu2e {
         int n(0), nmax(0), nmin(0), nchoices = 0;
 
         float x = dphidz + n*2*M_PI/dz;
-
         if (x < _minDfDz) {
 //-----------------------------------------------------------------------------
 // for n=0, x < _minDfDz
@@ -869,11 +899,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // for n=0,   _xMin <= x < _xMax
 //-----------------------------------------------------------------------------
-          while (x < _maxDfDz) {
-            nmax = n;
-            if ((x > _minDfDz) && (x < _maxDfDz)) nchoices += 1;
-            n += 1;
-            x += 2*M_PI/dz;
+        while (x < _maxDfDz) {
+          nmax = n;
+          if ((x > _minDfDz) && (x < _maxDfDz)) nchoices += 1;
+          n += 1;
+          x += 2*M_PI/dz;
           }
 
           nmin = 0;
@@ -1315,7 +1345,9 @@ namespace mu2e {
       printf("    phi         dphi      xdphi      zlast        dz      dphidz  szphidfdz  chi2\n");
     }
 
-    addCaloClusterToFitPhiZ(Helix);
+    if(Helix._timeCluster->hasCaloCluster()){
+      addCaloClusterToFitPhiZ(Helix);
+    }
 
     count = 0;
 
@@ -1628,10 +1660,10 @@ namespace mu2e {
     for (unsigned i=0; i<ordChCol.size(); ++i) {
       ComboHit& ch = ordChCol[i];
 
-      cx.Station                 = ch.strawId().station();//straw.id().getStation();
-      cx.Plane                   = ch.strawId().plane() % 2;//straw.id().getPlane() % 2;
+      cx.Station                 = ch.strawId().station();
+      cx.Plane                   = ch.strawId().plane() % 2;
       cx.Face                    = ch.strawId().face();
-      cx.Panel                   = ch.strawId().panel();//straw.id().getPanel();
+      cx.Panel                   = ch.strawId().panel();
 
       // get Z-ordered location
       Helix.orderID(&cx, &co);
@@ -1642,8 +1674,7 @@ namespace mu2e {
       int op       = co.Panel;
 
       int       stationId = os;
-      int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;//FaceZ_t::kNFaces;
-      //        int       panelId   = op + faceId*FaceZ_t::kNPanels;//PerFace;
+      int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;
       FaceZ_t*  fz        = &Helix._oTracker[faceId];
       PanelZ_t* pz        = &fz->panelZs[op];
 
@@ -2011,6 +2042,7 @@ namespace mu2e {
     FaceZ_t*  facez(0);
     PanelZ_t* panelz(0);
 
+    if (_debug > 5) { printf("[CalHelixFinderAlg::searchBestTriplet] BEGIN, nSh = %d\n",nSh); }
     for (int f=StrawId::_ntotalfaces-1; f>=0; --f){
       ///if (Helix._zFace[f] < _maxZTripletSearch)     break;
       facez     = &Helix._oTracker[f];
@@ -2019,7 +2051,7 @@ namespace mu2e {
         int       nhits  = panelz->nChHits();
         for (int i=0; i<nhits; ++i){
           if (Helix._nStrawHits > (nSh - nHitsTested))   continue;
-          if ((nSh - nHitsTested) < _minNHits        )  continue;
+          if ((nSh - nHitsTested) < _minNHits        )   continue;
           //clear the info of the tmp object used to test the triplet
           TmpHelix.clearResults();
 
@@ -2033,10 +2065,10 @@ namespace mu2e {
           //2019-02-15: gianipez put the old logic back. FIXME!
           if (( TmpHelix._nStrawHits >  Helix._nStrawHits) ||
               ((TmpHelix._nStrawHits == Helix._nStrawHits) && (TmpHelix._helixChi2 < Helix._helixChi2))) {
-          // int   deltaNSh = TmpHelix._nStrawHits -  Helix._nStrawHits;
-          // if ( ( deltaNSh >=  _minDeltaNShPatRec)  ||
-          //      ( deltaNSh>=0 && (deltaNSh-_minDeltaNShPatRec < 0) && (TmpHelix._helixChi2 < Helix._helixChi2)) ||
-          //      ((TmpHelix._nStrawHits == Helix._nStrawHits) && (TmpHelix._helixChi2 < Helix._helixChi2)) ) {
+            // int   deltaNSh = TmpHelix._nStrawHits -  Helix._nStrawHits;
+            // if ( ( deltaNSh >=  _minDeltaNShPatRec)  ||
+            //      ( deltaNSh>=0 && (deltaNSh-_minDeltaNShPatRec < 0) && (TmpHelix._helixChi2 < Helix._helixChi2)) ||
+            //      ((TmpHelix._nStrawHits == Helix._nStrawHits) && (TmpHelix._helixChi2 < Helix._helixChi2)) ) {
             Helix = TmpHelix;
           }
           if (_debug > 5) {
@@ -2046,7 +2078,7 @@ namespace mu2e {
         }//end loop over the hits on the panel
       }//end panels loop
     }//end faces loop
-
+    //}//end loop over the fake caloclusters
   }
 
 
@@ -2066,7 +2098,15 @@ namespace mu2e {
     tripletHelix._helix = NULL;//FIXME!
 
     _findTrackLoopIndex = 1;                 // debugging
+    if (_debug != 0) {
+      printf("[CalHelixFinderAlg::doPatternRecognition]: before first SearchBestTriplet \n");
+      printInfo(Helix);
+    }
     searchBestTriplet(Helix, tripletHelix);
+    if (_debug != 0) {
+      printf("[CalHelixFinderAlg::doPatternRecognition]: after first SearchBestTriplet \n");
+      printInfo(Helix);
+    }
     //-----------------------------------------------------------------------------
     // 2014-11-09 gianipez: if no track was found requiring the recalculation of dfdz
     // look for a track candidate using the default value of dfdz and the target center
@@ -2074,6 +2114,10 @@ namespace mu2e {
     _findTrackLoopIndex = 2;                 // *DEBUGGING*
     if (fUseDefaultDfDz == 0) {
       searchBestTriplet(Helix, tripletHelix, useMPVdfdz);
+      if (_debug != 0) {
+        printf("[CalHelixFinderAlg::doPatternRecognition]: after second SearchBestTriplet \n");
+        printInfo(Helix);
+      }
    }
 
     if (_debug == 0){
@@ -2277,8 +2321,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void   CalHelixFinderAlg::doWeightedCircleFit (CalHelixFinderData& Helix,
                                                  HitInfo_t           SeedIndex,
-                                                 XYZVectorF&             HelCenter,
-                                                 float&             Radius   ,
+                                                 XYZVectorF&         HelCenter,
+                                                 float&              Radius   ,
                                                  int                 Print    ,
                                                  const char*         Banner   ) {
     float     wt;
@@ -3028,7 +3072,7 @@ namespace mu2e {
     bool removeTarget(true);            // avoid the recalculation of dfdz
                                         // and helix parameters in case when
                                         // others strawhit candidates are found
-    float dfdz = _mpDfDz;                // tanLambda/radius (set to most probable);
+    float dfdz = _mpDfDz;               // tanLambda/radius (set to most probable);
 //----------------------------------------------------------------------
 // calculate helix paramters using the center of the stopping target,
 // the EMC cluster which seeded the CalTimePeak and the seeding strawhit.
@@ -3037,11 +3081,19 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     float          lastFacez    = seedFacez;//Helix._zFace[SeedIndex.face];
     float          faceHitChi2  = 1e10;
+    std::string name("CalHelixFinderAlg::findTrack");
+
 
     XYZVectorF p1(0.,0.,0.);               // target, z(ST) = 5971. - 10200. is not used
     XYZVectorF p2(seedHit->_pos);          // seed hit
     XYZVectorF p3(fCaloX,fCaloY,fCaloZ);   // cluster
-
+    if( _debug > 5){
+      printf("[%s]              X       Y      Z \n",name.data());
+      printf("[%s]  SeedHit %6.2f %6.2f %6.2f \n",name.data(), p2.x(), p2.y(), p2.z() );
+      printf("[%s]  CaloCl  %6.2f %6.2f %6.2f \n",name.data(), p3.x(), p3.y(), p3.z() );
+    }
+    XYZVectorF pDiff = p2-p3;
+    if (!Helix._timeCluster->hasCaloCluster() && pDiff.R() < 1e-10)     return;
     if (!calculateTrackParameters(p1,p2,p3,center,radius,phi0,dfdz))    return;
 
 //--------------------------------------------------------------------------------
@@ -3072,8 +3124,6 @@ namespace mu2e {
     sxy.addPoint(p2.x(), p2.y(), 1.     );  // seed hit
     sxy.addPoint(p3.x(), p3.y(), 1.     );  // EMC cluster position
     sxy.addPoint(    0.,     0., wtarget);  // Target center in the transverse plane, with small weight
-
-    std::string name("CalHelixFinderAlg::findTrack");
 
     int  NPoints = seedHit->nStrawHits();     // nhits, associated with the track, sxy has NPoints+2 or NPoints+1 points
     int  NComboHits(1);
@@ -3536,21 +3586,23 @@ namespace mu2e {
     float t = y_n - x_n*k;
     //the eq. is: y = x*k + t
 
-    //check we are not in a degenerate case where m is close to k, which rapresents two almost parallel lines
-    float limit = 0.8;//FIXME!
+    if (std::isfinite(m) && std::isfinite(k) && std::fabs(k) > 1e-9) {
+      if ( (m/k>0) && ( (m/k) - int(m/k) > _slopeRatioLimit) ) {//invert p3 with p1 and recalculate: x_n, y_n, k, t
+        x_n = (p1.x() + p2.x())/2.;
+        y_n = (p1.y() + p2.y())/2.;
+        k   = -1.*(p1.x() - p2.x())/(p1.y() - p2.y());
+        t   = y_n - x_n*k;
+      }
+    }
 
-    if ( (m/k>0) && ( (m/k) - int(m/k) > limit) ) {//invert p3 with p1 and recalculate: x_n, y_n, k, t
-      x_n = (p1.x() + p2.x())/2.;
-      y_n = (p1.y() + p2.y())/2.;
-      k   = -1.*(p1.x() - p2.x())/(p1.y() - p2.y());
-      t   = y_n - x_n*k;
-     }
+    if (!std::isfinite(m) || !std::isfinite(k) || std::fabs(m-k) < 1e-6) return false;
 
     // calculate Center.x and Center.y
     float x0 = (t - c)/(m - k);//(c - t) * (k*m)/(m-k);
     Center.SetX(x0);
     float y0 = m*x0 + c;   //(c - t) * m / (m - k) + t;
     Center.SetY(y0);
+
 //-----------------------------------------------------------------------------
 // calculate the radius,phi0, tanLambda assuming that the helix also crosses
 // the point (0,0). Note that the Z-position of the stopping target is not used

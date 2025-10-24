@@ -11,6 +11,8 @@
 <!--  ********* beam  ********* -->
  <class name="mu2e::ProtonBunchTime"/>
  <class name="art::Wrapper<mu2e::ProtonBunchTime>"/>
+ <class name="mu2e::RecoProtonBunchIntensity"/>
+ <class name="art::Wrapper<mu2e::RecoProtonBunchIntensity>"/>
 
 <!--  ********* cosmics  ********* -->
  <class name="mu2e::TrackParams"/>
@@ -80,6 +82,12 @@
  <class name="art::Ptr<mu2e::StrawHitFlag>"/>
  <class name="std::vector<art::Ptr<mu2e::StrawHitFlag> >"/>
  <class name="art::Wrapper<mu2e::StrawHitFlagCollection>"/>
+
+ <class name="mu2e::StrawFlag"/>
+ <class name="mu2e::StrawFlagDetail"/>
+ <class name="art::Ptr<mu2e::StrawFlag>"/>
+ <class name="std::vector<art::Ptr<mu2e::StrawFlag> >"/>
+ <class name="art::Wrapper<mu2e::StrawFlagCollection>"/>
 
  <class name="mu2e::ComboHit"/>
  <class name="std::vector<mu2e::ComboHit>"/>
@@ -193,12 +201,14 @@
 
  <class name="mu2e::TrkFitDirection"/>
  <class name="mu2e::TrkStrawHitSeed"/>
+ <class name="mu2e::TrkStrawHitCalib"/>
  <class name="mu2e::TrkCaloHitSeed"/>
  <class name="mu2e::TrkStraw"/>
  <class name="mu2e::KalSegment"/>
  <class name="mu2e::KKSHFlag"/>
  <class name="mu2e::KKSHFlagDetail"/>
  <class name="std::vector<mu2e::TrkStrawHitSeed>"/>
+ <class name="std::vector<mu2e::TrkStrawHitCalib>"/>
  <class name="std::vector<mu2e::TrkCaloHitSeed>"/>
  <class name="std::vector<mu2e::TrkStraw>"/>
  <class name="std::vector<mu2e::KalSegment>"/>
@@ -206,6 +216,28 @@
  <class name="KinKal::Intersection"/>
  <class name="mu2e::KalIntersection"/>
  <class name="mu2e::KalIntersectionCollection"/>
+
+
+<ioread sourceClass="mu2e::TrkStraw"
+  source="bool _active"
+  checksum="[0x7089f126]"
+  targetClass="mu2e::TrkStraw"
+  target="_flag">
+<![CDATA[
+  if(onfile._active)_flag.merge(mu2e::StrawFlagDetail::active);
+  ]]>
+</ioread>
+
+<!-- the dmom translation is not correct, as the total momentum isn't known. This is a flaw with the original data and can't be fixed -->
+<ioread sourceClass="mu2e::TrkStraw"
+  source="float _pfrac"
+  checksum="[0x7089f126]"
+  targetClass="mu2e::TrkStraw"
+  target="_dmom">
+<![CDATA[
+  _dmom = onfile._pfrac;
+  ]]>
+</ioread>
 
  <class name="mu2e::KalSeed"/>
  <class name="mu2e::KalSeedCollection"/>
@@ -425,13 +457,6 @@
  <class name="mu2e::RecoCount"/>
  <class name="art::Wrapper<mu2e::RecoCount>"/>
 
- <class name="mu2e::DAQerrorCodeDetail"/>
- <class name="mu2e::DAQerrorCode"/>
- <class name="mu2e::DAQerror" />
- <class name="std::vector<mu2e::DAQerror>" />
- <class name="mu2e::DAQerrorCollection" />
- <class name="art::Wrapper<mu2e::DAQerrorCollection>" />
-
 <!--  ********* STM ********* -->
  <class name="mu2e::STMWaveformDigi"/>
  <class name="mu2e::STMWaveformDigiCollection"/>
@@ -442,5 +467,8 @@
  <class name="mu2e::STMHit"/>
  <class name="mu2e::STMHitCollection"/>
  <class name="art::Wrapper<mu2e::STMHitCollection>"/>
+
+ <!--  ********* MTP ********* -->
+  <class name="mu2e::MTPHit"/>
 
 </lcgdict>

@@ -13,6 +13,7 @@
 
 // beam
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/RecoDataProducts/inc/RecoProtonBunchIntensity.hh"
 
 // calorimeter
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
@@ -25,6 +26,7 @@
 // straws
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigiFlag.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
@@ -97,11 +99,13 @@
 
 // general reco
 #include "Offline/RecoDataProducts/inc/RecoCount.hh"
-#include "Offline/RecoDataProducts/inc/DAQerror.hh"
 
 // STM
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
+
+// MTP
+#include "Offline/RecoDataProducts/inc/MTPHit.hh"
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

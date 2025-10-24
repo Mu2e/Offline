@@ -81,7 +81,9 @@ CalPatRec : { @table::CalPatRec
         chi2hel3DMax                            : @local::CalPatRec.chi2hel3DMax
         dfdzErr                                 : 0.1
         maxNHitsRatio                           : 500
+        slopeRatioLimit                         : 0.8
         minArea                                 : 5000.
+        procAllTCs                              : false
     }
 #------------------------------------------------------------------------------
 # KalFitHack configuration for the KFF fits
@@ -616,7 +618,7 @@ CalPatRec : { @table::CalPatRec
             tcCollLabel                : "TimeClusterFinderDe"
             ccCollLabel                : "CaloClusterMaker"
             hitBkgBits                 : ["Noisy","Dead","Background"]
-            radSelect                  : 1
+            radSelect                  : 0
             chunkSep                   : 5
             chunkWindow                : 20.0
             chunkThresh                : 3
@@ -662,7 +664,7 @@ CalPatRec : { @table::CalPatRec
             minTripletArea          : 1.0e4
             maxSeedCircleResidual   : 2.0
             minSeedCircleHits       : 7
-            maxDphiDz               : 0.008
+            maxDphiDz               : 0.025
             maxSeedLineGap          : 250.0
             maxZWindow              : 700.0
             minLineSegmentHits      : 3
@@ -677,9 +679,9 @@ CalPatRec : { @table::CalPatRec
             caloClusterSigma        : 30.0
             minNHelixComboHits      : 10
             minNHelixStrawHits      : 12
-            minHelixPerpMomentum    : 40.0
+            minHelixPerpMomentum    : 20.0
             maxHelixPerpMomentum    : 140.0
-            minHelixMomentum        : 60.0
+            minHelixMomentum        : 30.0
             maxHelixMomentum        : 400.0
             chi2LineSaveThresh      : 5.0
             maxEDepAvg              : @local::TrkReco.HelixFinderParams.maxEDepAvg

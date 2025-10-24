@@ -1,0 +1,118 @@
+// Based off Mu2eG4/geom/geom_2021_PhaseI_v02.txt
+// Updates made to include the detector stand geometry for the PTM
+
+string detector.name  = "g4geom_v00";
+
+bool hasHall            = true;
+bool hasTarget          = true;
+bool hasProtonAbsorber  = true;
+bool hasTSdA           = true;
+bool hasExternalShielding = true;
+bool hasDiskCalorimeter = true;
+bool hasBeamline        = true;
+bool hasVirtualDetector = true; // some components, e.g. ProtonAbsorber assume vd presence now;
+bool hasCosmicRayShield = true;
+bool hasSTM             = true;
+bool hasMBS             = true; // note the two subcomponents, see mbs section below;
+                                // no MBS implies no downstream hole in Cosmic Ray Passive Shield
+                                // Magnetic field may be affected as well
+bool hasPTM             = true;
+
+
+
+
+#include "Offline/Mu2eG4/geom/g4_visOptions.txt"
+
+//-------------------------------------------
+// Mu2e geometry includes
+//-------------------------------------------
+
+// X-offset of the PS(+x) and DS(-x) from the Mu2e origin.
+// The origin of the detector coordinate system is on the DS axis at the specified z.
+double mu2e.solenoidOffset   =  3904.;   // mm
+double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
+
+#include "Offline/Mu2eG4/geom/mu2eWorld.txt"
+// mu2eHall.txt should be used with protonBeamDump_v02.txt, below
+//#include "Mu2eG4/geom/mu2eHall.txt"
+// whereas mu2eHall_v*.txt should be used with protonBeamDump_v03.txt, below
+#include "Offline/Mu2eG4/geom/mu2eHall_v04.txt"
+
+// Solenoids
+#include "Offline/Mu2eG4/geom/DetectorSolenoid_v05.txt"
+#include "Offline/Mu2eG4/geom/DSShielding_v03.txt"
+#include "Offline/Mu2eG4/geom/ProductionSolenoid_v02.txt"
+#include "Offline/Mu2eG4/geom/psEnclosure_v05.txt"
+#include "Offline/Mu2eG4/geom/PSShield_v06.txt"
+#include "Offline/Mu2eG4/geom/PSExternalShielding_v01.txt"
+#include "Offline/Mu2eG4/geom/TransportSolenoid_v08.txt"
+
+// External Shielding
+#include "Offline/Mu2eG4/geom/reduced_ExtShieldUpstream_v06.txt"
+#include "Offline/Mu2eG4/geom/reduced_ExtShieldDownstream_v06.txt"
+#include "Offline/Mu2eG4/geom/Saddle_v03.txt"
+#include "Offline/Mu2eG4/geom/Pipe_v04.txt"
+#include "Offline/Mu2eG4/geom/ElectronicRack_v02.txt"
+
+// #include "Mu2eG4/geom/stoppingTargetHoles_DOE_review_2017.txt" // 37 foil muon stopping target with holes
+#include "Offline/Mu2eG4/geom/stoppingTargetHoles_v02.txt" // 37 foil muon stopping target with holes and thicker foils (0.1 mm -> 0.1056 mm)
+
+#include "Offline/Mu2eG4/geom/TSdA_v02.txt"
+#include "Offline/Mu2eG4/geom/muonBeamStop_v08.txt"
+
+#include "Offline/Mu2eG4/geom/STM_v09.txt" // (muon) stopping target monitor
+
+// Proton Absorber
+#include "Offline/Mu2eG4/geom/protonAbsorber_cylindrical_v04.txt"
+#include "Offline/Mu2eG4/geom/degrader_v02.txt" // pion degrader.  Off by default
+
+#include "Offline/Mu2eG4/geom/ProductionTarget_Hayman_v2_2.txt"
+#include "Offline/Mu2eG4/geom/protonBeamDump_v03.txt"
+#include "Offline/Mu2eG4/geom/extmon_fnal_v02.txt"
+
+// as-built panel numbering
+#include "Offline/Mu2eG4/geom/tracker_v7.txt"
+
+// Crystal calorimeter
+#include "Offline/Mu2eG4/geom/calorimeter_CsI_v2.txt"
+
+//CRV counters
+#include "Offline/Mu2eG4/geom/crv_counters_run1a_v01.txt"
+
+// Production target beam-scanning detectors
+#include "Offline/Mu2eG4/geom/PTM_v02.txt"
+
+//---------------------------------------
+// Virtual detectors
+//---------------------------------------
+double vd.halfLength     = 0.01; //mm
+int    vd.verbosityLevel = 0;
+bool   vd.visible        = true;
+bool   vd.solid          = false;
+
+// // VD right in front of a hall wall
+// double vd.ExtMonCommonPlane.z = -11999.99;
+
+
+//---------------------------------------
+// Region visualization
+//---------------------------------------
+#include "Offline/Mu2eG4/geom/visualization_regions.txt"
+
+
+// patch to change East DS hatch block height
+double building.dsArea.hatchblock.E.offsetFromFloorSurface.y = 6400.80;
+double building.dsArea.hatchblock.E.yHalfThickness           = 457.20;
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

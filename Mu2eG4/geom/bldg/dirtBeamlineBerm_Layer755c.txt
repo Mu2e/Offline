@@ -1,0 +1,26 @@
+string dirt.beamline.berm.l755c.name     = "dirtBeamlineBerml755c";
+string dirt.beamline.berm.l755c.material = "MBOverburden";
+double dirt.beamline.berm.l755c.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.beamline.berm.l755c.offsetFromFloorSurface.y = 10210.8;
+double dirt.beamline.berm.l755c.offsetFromMu2eOrigin.z   = -3581.40;
+double dirt.beamline.berm.l755c.yHalfThickness           = 152.30;
+vector<double> dirt.beamline.berm.l755c.xPositions = {
+-15282.44, // 0
+2916.76, // 1
+2916.76, // 2
+-15282.44, // 3
+-15924.04, // 4
+-16435.77, // 5
+-16714.06, // 6
+-16702.56 // 7
+};
+vector<double> dirt.beamline.berm.l755c.yPositions = {
+10338.22, // 0
+10338.22, // 1
+11801.82, // 2
+11801.82, // 3
+11653.70, // 4
+11239.30, // 5
+10642.52, // 6
+9984.14 // 7
+};

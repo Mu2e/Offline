@@ -35,8 +35,12 @@ mainlib = helper.make_mainlib([
   'tbb',
   'cetlib',
   'cetlib_except',
+  'TMVA',
+  'ROOTTMVASofie',
+  'openblas',
   rootlibs,
  ])
+
 
 helper.make_plugins([mainlib,
   'mu2e_ConditionsService',

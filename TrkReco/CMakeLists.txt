@@ -43,7 +43,7 @@ cet_build_plugin(MergeHelices art::module
     REG_SOURCE src/MergeHelices_module.cc
     LIBRARIES REG
       Offline::TrkReco
-      
+
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
 )
@@ -59,7 +59,7 @@ cet_build_plugin(SimpleKalSeedSelector art::tool
     REG_SOURCE src/SimpleKalSeedSelector_tool.cc
     LIBRARIES REG
       Offline::TrkReco
-      
+
       Offline::Mu2eKinKal
 )
 
@@ -80,11 +80,18 @@ cet_build_plugin(TrackResolution art::module
       Offline::DataProducts
 )
 
+cet_build_plugin(SelectSameTrack art::module
+    REG_SOURCE src/SelectSameTrack_module.cc
+    LIBRARIES REG
+      art_root_io::tfile_support
+      Offline::TrkReco
+      Offline::RecoDataProducts
+)
+
 cet_build_plugin(TrkRecoMcUtils art::tool
     REG_SOURCE src/TrkRecoMcUtils_tool.cc
     LIBRARIES REG
       Offline::TrkReco
-      
       Offline::BTrkData
       Offline::ConditionsService
       Offline::MCDataProducts

@@ -98,6 +98,14 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="mu2e::SimParticleRemapping" persistent="false"/>
 <class name="art::Wrapper<mu2e::SimParticleRemapping>"/>
 
+<class name="mu2e::ScorerSummary"/>
+<class name="mu2e::ScorerSummaryCollection"/>
+<class name="art::Wrapper<mu2e::ScorerSummaryCollection>"/>
+
+<class name="mu2e::ScorerConfigSummary"/>
+<class name="mu2e::ScorerConfigSummaryCollection"/>
+<class name="art::Wrapper<mu2e::ScorerConfigSummaryCollection>"/>
+
 <!--  ********* resampling ********* -->
 <class name="mu2e::SimTimeOffset"/>
 <class name="art::Wrapper<mu2e::SimTimeOffset>"/>
@@ -115,6 +123,8 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 
 <class name="mu2e::EventWeight"/>
 <class name="art::Wrapper<mu2e::EventWeight>"/>
+<class name="mu2e::SumOfWeights"/>
+<class name="art::Wrapper<mu2e::SumOfWeights>"/>
 
 <class name="mu2e::ProtonBunchTimeMC" />
 <class name="art::Wrapper<mu2e::ProtonBunchTimeMC>"/>

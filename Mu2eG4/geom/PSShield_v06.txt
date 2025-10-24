@@ -67,6 +67,7 @@ double PSShield.inlet.angleY = -13.62;  // degrees
 double PSShield.inlet.angleX = 2.30;   // degrees
 //vector<double> PSShield.inlet.center = {4127.1, 39.0, -5250.0};
 vector<double> PSShield.inlet.center = {4424.4, 91., -4031.5};
+bool PSShield.inlet.createBeamPipe = false;  // create the beam pipe volume (only for debug purposes since it overlaps with mother volumes of TS and PS)
 
 // Each groove is a cylinder of the given dimensions, with the center
 // at the given reference point and rotated by the given angles, which
