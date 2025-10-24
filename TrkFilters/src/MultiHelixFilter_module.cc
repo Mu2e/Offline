@@ -104,17 +104,16 @@ namespace mu2e
       }
       void setB(const float bz0) { _bz0 = bz0; }
       void setTracker(const Tracker* tracker) { _tracker = tracker; }
-      bool applyCuts(const HelixSeed* helix) {
+      bool applyCuts(const HelixSeed& helix) {
         if(_debugLevel > 2) std::cout << "Testing helix:\n";
 
-        // helix exists and has a good status
-        if(!helix) return false;
-        if(!helix->status().hasAllProperties(_goodh))                return false;
+        // helix has a good status
+        if(!helix.status().hasAllProperties(_goodh))                return false;
 
         // momentum selections
         constexpr float mmToMeV = 3./10.;
-        const float mom = _bz0 * mmToMeV * helix->helix().momentum(); //convert mm --> momentum using B-field
-        const float pt  = _bz0 * mmToMeV * helix->helix().radius  (); //convert mm --> momentum using B-field
+        const float mom = _bz0 * mmToMeV * helix.helix().momentum(); //convert mm --> momentum using B-field
+        const float pt  = _bz0 * mmToMeV * helix.helix().radius  (); //convert mm --> momentum using B-field
         if(_debugLevel > 2) std::cout << "  p = " << mom << " pT = " << pt << std::endl;
 
         if(_minMomentum > 0. && mom < _minMomentum)                  return false;
@@ -122,15 +121,15 @@ namespace mu2e
         if(_minPt       > 0. && pt  < _minPt)                        return false;
 
         // initialize the helix tool
-        HelixTool hTool(helix, _tracker);
+        HelixTool hTool(&helix, _tracker);
 
         // geometric selections
-        const Helicity hel         = helix->helix().helicity();
-        const float d0             = helix->helix().rcent() - helix->helix().radius();
-        const float lambda         = std::fabs(helix->helix().lambda());
+        const Helicity hel         = helix.helix().helicity();
+        const float d0             = helix.helix().rcent() - helix.helix().radius();
+        const float lambda         = std::fabs(helix.helix().lambda());
         const float nLoops         = hTool.nLoops();
-        const float slope          = helix->recoDir().slope();
-        const float slopeErr       = std::fabs(helix->recoDir().slopeErr());
+        const float slope          = helix.recoDir().slope();
+        const float slopeErr       = std::fabs(helix.recoDir().slopeErr());
         const float slopeSignedSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f; //signifance from 0 signed by the slope direction
         if(_debugLevel > 2) std::cout << "  hel = " << hel.value() << " d0 = " << d0 << " lambda = " << lambda << " nLoops = " << nLoops
                                       << " slopeSig = " << slopeSignedSig << std::endl;
@@ -146,11 +145,11 @@ namespace mu2e
         if(slopeSignedSig > _maxSlopeSig)                            return false;
 
         // quality selections
-        const float chi2XY         = helix->helix().chi2dXY();
-        const float chi2PhiZ       = helix->helix().chi2dZPhi();
+        const float chi2XY         = helix.helix().chi2dXY();
+        const float chi2PhiZ       = helix.helix().chi2dZPhi();
         const int   nhits          = hTool.nstrawhits();
         const float hRatio         = hTool.hitRatio();
-        const bool  hasCluster     = helix->caloCluster().isNonnull();
+        const bool  hasCluster     = helix.caloCluster().isNonnull();
         if(_debugLevel > 2) std::cout << " chi2XY = " << chi2XY << " chi2PhiZ = " << chi2PhiZ
                                       << " nhits = " << nhits << " hitRatio = " << hRatio << " hasCC = " << hasCluster << std::endl;
 
@@ -242,9 +241,9 @@ namespace mu2e
       TH1* nInSet       ;
     };
 
-    float evaluateOverlap(const HelixSeed* h1, const HelixSeed* h2);
-    float evaluateArcGap(const HelixSeed* h1, const HelixSeed* h2);
-    bool checkHelixList(std::vector<const HelixSeed*> helices);
+    float evaluateOverlap(const HelixSeed& h1, const HelixSeed& h2);
+    float evaluateArcGap(const HelixSeed& h1, const HelixSeed& h2);
+    bool checkHelixList(const std::vector<size_t>& indices, const HelixSeedCollection* hcol);
     void doPermutations(const std::vector<size_t>& given, const HelixSeedCollection* hcol, std::set<size_t>& accepted);
     void bookHistograms(const int index, const char* name, const char* title);
     void fillHistograms(Hist_t* Hist, const std::set<size_t>& indices, const HelixSeedCollection* hcol);
@@ -378,8 +377,8 @@ namespace mu2e
         if(other == index) continue;
         if(checked.find(other) != checked.end()) continue;
         const HelixSeed& other_helix = hcol->at(other);
-        Hist->overlap ->Fill(evaluateOverlap(&helix, &other_helix));
-        Hist->arcGap  ->Fill(evaluateArcGap (&helix, &other_helix));
+        Hist->overlap ->Fill(evaluateOverlap(helix, other_helix));
+        Hist->arcGap  ->Fill(evaluateArcGap (helix, other_helix));
         Hist->deltaT  ->Fill(std::fabs(helix.t0().t0() - other_helix.t0().t0()));
       }
       checked.insert(index); // to avoid double counting in comparisons
@@ -390,14 +389,11 @@ namespace mu2e
   }
 
   //--------------------------------------------------------------------------------------
-  float MultiHelixFilter::evaluateOverlap(const HelixSeed* h1, const HelixSeed* h2) {
-    // ensure both exist
-    if(!h1 || !h2) return 1.f;
-
+  float MultiHelixFilter::evaluateOverlap(const HelixSeed& h1, const HelixSeed& h2) {
     // get the hit lists for each helix
     std::vector<StrawHitIndex> h1_hits, h2_hits;
-    for(size_t index = 0; index < h1->hits().size(); ++index) h1->hits().fillStrawHitIndices(index, h1_hits);
-    for(size_t index = 0; index < h2->hits().size(); ++index) h2->hits().fillStrawHitIndices(index, h2_hits);
+    for(size_t index = 0; index < h1.hits().size(); ++index) h1.hits().fillStrawHitIndices(index, h1_hits);
+    for(size_t index = 0; index < h2.hits().size(); ++index) h2.hits().fillStrawHitIndices(index, h2_hits);
 
     // use a set for O(1) searching
     const std::unordered_set<StrawHitIndex> h2_set(h2_hits.begin(), h2_hits.end());
@@ -415,25 +411,22 @@ namespace mu2e
 
     if(_debugLevel > 0) std::cout << ">>> [MultiHelixFilter::" << __func__ << "::" << moduleDescription().moduleLabel() << "]"
                                   << " Overlap = " << overlap << ", Avg hits = " << avg_hits << " ratio = " << ratio
-                                  << "\n  Helix 1: " << "N(hits) = " << h1_hits.size() << " p = " << _bz0 * 3./10. * h1->helix().momentum()
-                                  << " t = " << h1->t0().t0()
-                                  << " x = " << h1->helix().centerx() << " y = " << h1->helix().centery() << " r = " << h1->helix().radius()
-                                  << "\n  Helix 2: " << "N(hits) = " << h2_hits.size() << " p = " << _bz0 * 3./10. * h2->helix().momentum()
-                                  << " t = " << h2->t0().t0()
-                                  << " x = " << h2->helix().centerx() << " y = " << h2->helix().centery() << " r = " << h2->helix().radius()
+                                  << "\n  Helix 1: " << "N(hits) = " << h1_hits.size() << " p = " << _bz0 * 3./10. * h1.helix().momentum()
+                                  << " t = " << h1.t0().t0()
+                                  << " x = " << h1.helix().centerx() << " y = " << h1.helix().centery() << " r = " << h1.helix().radius()
+                                  << "\n  Helix 2: " << "N(hits) = " << h2_hits.size() << " p = " << _bz0 * 3./10. * h2.helix().momentum()
+                                  << " t = " << h2.t0().t0()
+                                  << " x = " << h2.helix().centerx() << " y = " << h2.helix().centery() << " r = " << h2.helix().radius()
                                   << std::endl;
     return ratio;
   }
 
   //--------------------------------------------------------------------------------------
-  float MultiHelixFilter::evaluateArcGap(const HelixSeed* h1, const HelixSeed* h2) {
-    // ensure both exist
-    if(!h1 || !h2) return 0.f;
-
+  float MultiHelixFilter::evaluateArcGap(const HelixSeed& h1, const HelixSeed& h2) {
     // distance between shared circle side
-    const float distance_between = std::sqrt(std::pow(h1->helix().centerx() - h2->helix().centerx(), 2) +
-                                             std::pow(h1->helix().centery() - h2->helix().centery(), 2));
-    const float radial_diff = std::fabs(h1->helix().radius() - h2->helix().radius());
+    const float distance_between = std::sqrt(std::pow(h1.helix().centerx() - h2.helix().centerx(), 2) +
+                                             std::pow(h1.helix().centery() - h2.helix().centery(), 2));
+    const float radial_diff = std::fabs(h1.helix().radius() - h2.helix().radius());
     const float arc_distance = std::fabs(distance_between - radial_diff);
 
     if(_debugLevel > 0) std::cout << ">>> [MultiHelixFilter::" << __func__ << "::" << moduleDescription().moduleLabel() << "]"
@@ -443,17 +436,18 @@ namespace mu2e
   }
 
   //--------------------------------------------------------------------------------------
-  bool MultiHelixFilter::checkHelixList(std::vector<const HelixSeed*> helices) {
+  bool MultiHelixFilter::checkHelixList(const std::vector<size_t>& indices, const HelixSeedCollection* hcol) {
     // check the collection can pass the cuts
-    if(helices.empty() || helices.size() > _helixCuts.size()) return false;
+    if(indices.empty() || indices.size() > _helixCuts.size()) return false;
 
 
     // check if each helix passes the corresponding cut set
-    double min_time(helices[0]->t0().t0()), max_time(helices[0]->t0().t0()); // to get the time window of the helices
-    for(size_t index = 0; index < helices.size(); ++index) {
-      if(!_helixCuts[index].applyCuts(helices[index])) return false;
-      min_time = std::min(min_time, helices[index]->t0().t0());
-      max_time = std::max(max_time, helices[index]->t0().t0());
+    double min_time(hcol->at(indices[0]).t0().t0()), max_time(hcol->at(indices[0]).t0().t0()); // to get the time window of the helices
+    for(size_t index = 0; index < indices.size(); ++index) {
+      const auto& helix = hcol->at(indices[index]);
+      if(!_helixCuts[index].applyCuts(helix)) return false;
+      min_time = std::min(min_time, helix.t0().t0());
+      max_time = std::max(max_time, helix.t0().t0());
     }
 
     // check the helices are contained in the time window
@@ -463,10 +457,10 @@ namespace mu2e
     const bool do_overlap = _maxOverlap > 0. && _maxOverlap < 1.;
     const bool do_arc     = _minArcGap > 0.;
     if(do_overlap || do_arc) {
-      for(size_t i = 0; i < helices.size() - 1; ++i) {
-        for(size_t j = i+1; j < helices.size(); ++j) {
-          const HelixSeed* h1 = helices[i];
-          const HelixSeed* h2 = helices[j];
+      for(size_t i = 0; i < indices.size() - 1; ++i) {
+        for(size_t j = i+1; j < indices.size(); ++j) {
+          const auto& h1 = hcol->at(indices[i]);
+          const auto& h2 = hcol->at(indices[j]);
           if(do_overlap && evaluateOverlap(h1,h2) > _maxOverlap) return false;
           // check if it they share a side of the helix circle
           if(do_arc && evaluateArcGap(h1, h2) < _minArcGap) return false;
@@ -507,11 +501,9 @@ namespace mu2e
     }
 
     // at the base level where all indices are fixed
-    std::vector<const HelixSeed*> helices;
-    for(size_t index = 0; index < given.size(); ++index) helices.push_back(&hcol->at(given[index]));
 
     // check whether the group passes the cuts
-    if(checkHelixList(helices)) {
+    if(checkHelixList(given, hcol)) {
       for(size_t index = 0; index < given.size(); ++index) {
         const size_t ih = given[index];
         if(accepted.find(ih) == accepted.end()) accepted.insert(ih);
