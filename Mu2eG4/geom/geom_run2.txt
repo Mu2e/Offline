@@ -48,7 +48,7 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Offline/Mu2eG4/geom/TransportSolenoid_v08.txt"
 
 // External Shielding
-#include "Offline/Mu2eG4/geom/ExtShieldUpstream_v06.txt"
+#include "Offline/Mu2eG4/geom/ExtShieldUpstream_v07.txt"
 #include "Offline/Mu2eG4/geom/ExtShieldDownstream_v06.txt"
 #include "Offline/Mu2eG4/geom/Saddle_v03.txt"
 #include "Offline/Mu2eG4/geom/Pipe_v04.txt"
