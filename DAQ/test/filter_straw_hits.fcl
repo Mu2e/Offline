@@ -30,20 +30,31 @@ source : {
 
 services : @local::Services.SimAndReco
 
-services.scheduler.wantSummary                   : true
+services.scheduler.wantSummary : true
 
-services.DbService : @local::DbEmpty
+services.DbService          : @local::DbEmpty
+services.DbService.textFile : [ "Offline/TrackerConditions/data/TrkPanelMap.txt" ]
+
 services.SeedService.baseSeed         : 8
 services.SeedService.maxUniqueEngines : 100
 
-services.ProditionsService.alignedTracker.useDb : false
-services.ProditionsService.alignedTrackerSim.useDb : false
-services.ProditionsService.strawElectronics.useDb : false
-services.ProditionsService.fullReadoutStraw.useDb : false
-services.ProditionsService.strawDrift.useDb : false
-services.ProditionsService.strawPhysics.useDb : false
-services.ProditionsService.strawResponse.useDb : false
+services.ProditionsService.alignedTracker.useDb         : false
+services.ProditionsService.alignedTrackerSim.useDb      : false
+services.ProditionsService.strawElectronics.useDb       : false
+services.ProditionsService.fullReadoutStraw.useDb       : false
+services.ProditionsService.strawDrift.useDb             : false
+services.ProditionsService.strawPhysics.useDb           : false
+services.ProditionsService.strawResponse.useDb          : false
 services.ProditionsService.trackerStatus.Settings.useDb : false
+services.ProditionsService.trackerPanelMap.useDb        : true
+
+services.TimeTracker : {
+    printSummary : true
+    dbOutput : {
+        filename  : ""    ## "filter_straw_hits.sqlite3"
+        overwrite : false ## true
+    }
+}
 
 outputs:  {
     defaultOutput :  {
@@ -115,19 +126,10 @@ physics : {
     trigger_paths  : [ @sequence::TRIGGER_PATHS ]
     end_paths      : [ e1 ]
 }
-
-services.TimeTracker : {
-    printSummary : true
-    dbOutput : {
-        filename  : ""    ## "filter_straw_hits.sqlite3"
-        overwrite : false ## true
-    }
-}
 #------------------------------------------------------------------------------
 # assume we're on mu2edaq22
 #------------------------------------------------------------------------------
 services.TFileService.fileName                   : "hst.mu2e.vst.filter_straw_hits.%06r_%06s.root" ## "/dev/null" ##
-services.scheduler.wantSummary                   : true
 
 source.fileNames : [ "aaa.art" ]
 
