@@ -20,14 +20,24 @@ int ExtShieldUpstream.nBoxType8 = 2;   // Block label  CRW-262
 int ExtShieldUpstream.nBoxType9 = 0;   // Protection Collimator
 int ExtShieldUpstream.nBoxType10 = 1;  // Block label  BRP-152
 int ExtShieldUpstream.nBoxType11 = 2;  // Block label  BRP-152
-int ExtShieldUpstream.nBoxType12 = 1;  // Special block "1" for shielding CR muons
-int ExtShieldUpstream.nBoxType13 = 1;  // Special block "3" for shielding CR muons
-int ExtShieldUpstream.nBoxType14 = 1;  // Special block "5" for shielding CR muons
-int ExtShieldUpstream.nBoxType15 = 1;  // Borated poly: Outer CRV-U
-int ExtShieldUpstream.nBoxType16 = 1;  // Borated poly: Inner CRV-U
-int ExtShieldUpstream.nBoxType17 = 1;  // Borated poly: Inner CRV-TS
-int ExtShieldUpstream.nBoxType18 = 1;  // Borated poly: Outer CRV-TS
-int ExtShieldUpstream.nBoxType19 = 1;  // Borated poly: Outer CRV-TS-Ext
+
+// int ExtShieldUpstream.nBoxType12 = 1;  // Special block "1" for shielding CR muons
+// int ExtShieldUpstream.nBoxType13 = 1;  // Special block "3" for shielding CR muons
+// int ExtShieldUpstream.nBoxType14 = 1;  // Special block "5" for shielding CR muons
+// int ExtShieldUpstream.nBoxType15 = 1;  // Borated poly: Outer CRV-U
+// int ExtShieldUpstream.nBoxType16 = 1;  // Borated poly: Inner CRV-U
+// int ExtShieldUpstream.nBoxType17 = 1;  // Borated poly: Inner CRV-TS
+// int ExtShieldUpstream.nBoxType18 = 1;  // Borated poly: Outer CRV-TS
+// int ExtShieldUpstream.nBoxType19 = 1;  // Borated poly: Outer CRV-TS-Ext
+
+int ExtShieldUpstream.nBoxType12 = 0;  // Special block "1" for shielding CR muons
+int ExtShieldUpstream.nBoxType13 = 0;  // Special block "3" for shielding CR muons
+int ExtShieldUpstream.nBoxType14 = 0;  // Special block "5" for shielding CR muons
+int ExtShieldUpstream.nBoxType15 = 0;  // Borated poly: Outer CRV-U
+int ExtShieldUpstream.nBoxType16 = 0;  // Borated poly: Inner CRV-U
+int ExtShieldUpstream.nBoxType17 = 0;  // Borated poly: Inner CRV-TS
+int ExtShieldUpstream.nBoxType18 = 0;  // Borated poly: Outer CRV-TS
+int ExtShieldUpstream.nBoxType19 = 0;  // Borated poly: Outer CRV-TS-Ext
 int ExtShieldUpstream.nBoxType20 = 1;  // Remote handling room door
 int ExtShieldUpstream.nBoxType21 = 3;  // Remote handling room door
 
@@ -155,7 +165,7 @@ vector<double> ExtShieldUpstream.centerType15Box1 = {-3018.2,1454.5,-2524.7};
 vector<double> ExtShieldUpstream.centerType16Box1 = {-2655.4,1175.1,-2260.6};
 vector<double> ExtShieldUpstream.centerType17Box1 = {-2909.4,2526.2,  203.2};
 vector<double> ExtShieldUpstream.centerType18Box1 = {-3620.6,2780.2,  213.6};
-vector<double> ExtShieldUpstream.centerType19Box1 = {-267.8 ,2952.0,  202.4};
+vector<double> ExtShieldUpstream.centerType19Box1 = {-267.8 ,3031.47,  202.4};
 
 // Remote handling room door
 vector<double> ExtShieldUpstream.centerType20Box1 = {9381 ,-103, -12077.7};
