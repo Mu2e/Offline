@@ -379,17 +379,14 @@ void ArtBinaryPacketsFromDigis::printCalorimeterData(CaloDataPacket const& caloD
 
   for (size_t i = 0; i < nHits; ++i) {
     CalorimeterHitDataPacket const& hit = caloData.hitPacketVec[i];
-    TLOG(TLVL_DEBUG + 14) << "hit               : " << (int)i;
-    TLOG(TLVL_DEBUG + 14) << "Reserved1         : " << (int)hit.Reserved1;
-    TLOG(TLVL_DEBUG + 14) << "BoardID           : " << (int)hit.BoardID;
-    TLOG(TLVL_DEBUG + 14) << "DetectorID        : " << (int)hit.DetectorID;
-    TLOG(TLVL_DEBUG + 14) << "ChannelID         : " << (int)hit.ChannelID;
-    TLOG(TLVL_DEBUG + 14) << "Time              : " << (int)hit.Time;
-    TLOG(TLVL_DEBUG + 14) << "InPayloadEventWindowTag   : " << (int)hit.InPayloadEventWindowTag;
-    TLOG(TLVL_DEBUG + 14) << "Baseline          : " << (int)hit.Baseline;
+    TLOG(TLVL_DEBUG + 14) << "hit           : " << (int)i;
+    TLOG(TLVL_DEBUG + 14) << "ChannelNumber : " << (int)hit.ChannelNumber;
+    TLOG(TLVL_DEBUG + 14) << "DIRACA        : " << (int)hit.DIRACA;
+    TLOG(TLVL_DEBUG + 14) << "DIRACB        : " << (int)hit.DIRACB;
+    TLOG(TLVL_DEBUG + 14) << "ErrorFlags    : " << (int)hit.ErrorFlags;
+    TLOG(TLVL_DEBUG + 14) << "Time          : " << (int)hit.Time;
+    // TLOG(TLVL_DEBUG + 14) << "NumberOfSamples : " << (int)hit.NumberOfSamples;// TODO
     TLOG(TLVL_DEBUG + 14) << "IndexOfMaxDigitizerSample : " << (int)hit.IndexOfMaxDigitizerSample;
-    TLOG(TLVL_DEBUG + 14) << "ErrorFlags        : " << (int)hit.ErrorFlags;
-    TLOG(TLVL_DEBUG + 14) << "NumberOfSamples   : " << (int)hit.NumberOfSamples;
   }
 }
 
@@ -773,7 +770,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(CaloDAQMap const& calo
   uint16_t globalROCID = rawId.dirac();
   uint16_t DiracChannel = rawId.ROCchannel();
   uint16_t DetType = offId.detType();
-  //uint16_t packetId = globalROCID | (DiracChannel << 8) | (DetType << 13);
+  uint16_t packetId = globalROCID | (DiracChannel << 8) | (DetType << 13);
 
   TLOG(TLVL_DEBUG + 1) << "..FromDigis: DTYPE " << DetType << " ROCID  " << globalROCID << " CHAN "
                        << DiracChannel << (DetType == 1 ? " Caphri" : "");
@@ -783,24 +780,21 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(CaloDAQMap const& calo
   CaloData.dataFooterPacket.ChannelStatusFlagC = 0;
   CaloData.dataFooterPacket.unused = 0;
 
+  CaloData.dataPacket.ChannelNumber = DiracChannel; // modified as it should be in the packet
+  CaloData.dataPacket.DIRACA = packetId;            // Change-5
+  CaloData.dataPacket.DIRACB =
+      (((CD.SiPMID() % 2) << 12) | (crystalId)); // this is useless for the moment .. can be a test
+  CaloData.dataPacket.ErrorFlags = 0;
+  CaloData.dataPacket.Time = CD.t0();
   std::vector<adc_t> theWaveform;
   for (size_t i = 0; i < CD.waveform().size(); ++i) {
     theWaveform.push_back((adc_t)CD.waveform().at(i));
   }
-  CaloData.waveformVec.push_back(theWaveform);
-
-  CaloData.dataPacket.Reserved1 = 0xAAA;
-  CaloData.dataPacket.BoardID = globalROCID;
-  CaloData.dataPacket.DetectorID = DetType;
-  CaloData.dataPacket.ChannelID = DiracChannel;
-  CaloData.dataPacket.Time = CD.t0();
-  CaloData.dataPacket.InPayloadEventWindowTag = 0;
-  CaloData.dataPacket.Baseline = 0;
-  CaloData.dataPacket.IndexOfMaxDigitizerSample = waveformMaximumIndex(theWaveform);
-  CaloData.dataPacket.ErrorFlags = 0;
   CaloData.dataPacket.NumberOfSamples = theWaveform.size();
+  CaloData.dataPacket.IndexOfMaxDigitizerSample = waveformMaximumIndex(theWaveform);
   CaloData.hitPacketVec.push_back(CaloData.dataPacket); // TODO - where from????
 
+  CaloData.waveformVec.push_back(theWaveform);
 }
 
 //--------------------------------------------------------------------------------
