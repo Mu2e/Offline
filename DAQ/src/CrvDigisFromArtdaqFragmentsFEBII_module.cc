@@ -181,6 +181,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
             {
               std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
               std::cerr << "Error unpacking of CRV Hits" << std::endl;
+	      decoder.PrintBlockFEBII(iDataBlock);
               crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingCrvHits,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
               break;
             }
