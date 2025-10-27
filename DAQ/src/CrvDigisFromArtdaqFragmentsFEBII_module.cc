@@ -193,11 +193,18 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
               uint16_t linkID = header->GetLinkID();
               uint16_t rocID = dtcID*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
               uint16_t rocPort = crvHitInfo.portNumber; //Port numbers beween 1 and 24
-              uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
+	      uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
                                                                                                   //the 5th bit indicates special situations
                                                                                                   //e.g. fake pulses
               if((crvHitInfo.fpgaChannel & 0x10) != 0) continue;  //special situation, if the 5th bit of the fpgaChannel is non-zero
                                                                 //don't decode them, since there is no match to any offline channel.
+              if(rocPort==0) //corrupted data
+	      {
+                std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+                std::cerr << "ROC-port-0 error!" << std::endl;
+		//TODO: Add to crvDaqErrors
+		continue;
+	      }
               mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
 
               uint16_t offlineChannel = channelMap.offline(onlineChannel);
@@ -238,6 +245,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
                 uint16_t febChannel = (crvHitInfo.fpgaNumber<<4) + (crvHitInfo.fpgaChannel & 0xF);  //use only 4 lowest bits of the fpgaChannel
                                                                                                     //the 5th bit indicates special situations
                                                                                                     //e.g. fake pulses
+                if(rocPort==0) continue; //corrupted data
                 if((crvHitInfo.fpgaChannel & 0x10) == 0)  //special situation, if the 5th bit of the fpgaChannel is non-zero (see below)
                 {
                   mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
