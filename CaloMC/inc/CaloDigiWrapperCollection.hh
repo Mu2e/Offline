@@ -39,7 +39,7 @@ namespace mu2e{
 
       // insertion
       void Append(const CaloDigiCollection&);
-      void Append(const CaloDigiWrapper);
+      void Append(const CaloDigiWrapper&);
 
       // accessor
       std::unique_ptr<CaloDigiCollection> GetDigis() const;

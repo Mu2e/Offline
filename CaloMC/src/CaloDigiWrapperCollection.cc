@@ -73,7 +73,7 @@ namespace mu2e{
     }
   }
 
-  void CaloDigiWrapperCollection::Append(const CaloDigiWrapper wrapper){
+  void CaloDigiWrapperCollection::Append(const CaloDigiWrapper& wrapper){
     _wrappers.push_back(wrapper);
   }
 
@@ -159,12 +159,21 @@ namespace mu2e{
     // if only one digi present, then nothing to do
     if (collided.size() < 2){
       rv.Append(collided.front());
+      return;
     }
 
     // multiple digis must be summed into a single waveform
+    // here we determine the length of that waveform, by finding
+    // how far past the end of the first it extends, if at all
     const auto& first = collided.front().Digi();
-    const auto& last = collided.back().Digi();
-    size_t length = (last.t0() - first.t0()) + last.waveform().size();
+    size_t length = 0;
+    for (const auto& wrapper: collided){
+      const auto& digi = wrapper.Digi();
+      size_t proposed = (digi.t0() - first.t0()) + digi.waveform().size();
+      if (length < proposed){
+        length = proposed;
+      }
+    }
     std::vector<sample_t> samples(length, 0);
 
     // sum each individual waveform into the total
