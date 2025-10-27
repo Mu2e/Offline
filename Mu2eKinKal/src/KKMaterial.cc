@@ -16,15 +16,7 @@ namespace mu2e {
     ipamatname_(matconfig.IPAMaterialName()),
     stmatname_(matconfig.STMaterialName()),
     eloss_((DetMaterial::energylossmode)matconfig.eloss()),
-    matdbinfo_(std::make_unique<MatDBInfo>(filefinder_,eloss_)) {
-      // std::cout << "Setting KinKal scattering Dahl-Lynch fraction to " << matconfig.dahlLynchScatteringFraction() << std::endl;
-      // MatEnv forces const-cast to change scattering parameter
-      matdbinfo_->findDetMaterial(wallmatname_)->setScatterFraction(matconfig.dahlLynchScatteringFraction());
-      matdbinfo_->findDetMaterial(gasmatname_)->setScatterFraction(matconfig.dahlLynchScatteringFraction());
-      matdbinfo_->findDetMaterial(wirematname_)->setScatterFraction(matconfig.dahlLynchScatteringFraction());
-      matdbinfo_->findDetMaterial(ipamatname_)->setScatterFraction(matconfig.dahlLynchScatteringFraction());
-      matdbinfo_->findDetMaterial(stmatname_)->setScatterFraction(matconfig.dahlLynchScatteringFraction());
-    }
+    matdbinfo_(std::make_unique<MatDBInfo>(filefinder_,eloss_)) {}
 
   KKStrawMaterial const& KKMaterial::strawMaterial() const {
     if(smat_ == nullptr){
