@@ -1,0 +1,44 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CommonMC/fcl/prolog.fcl"
+
+process_name : EventDisplay
+
+source :
+{
+  module_type : RootInput
+  inputCommands: ["keep *",
+                  "drop *KalRepPayload*_*_*_*",
+                  "drop *CaloCrystalOnlyHit*_*_*_*"]
+}
+
+services :
+{
+  @table::Services.Core
+}
+
+physics :
+{
+  analyzers:
+  {
+    eventdisplay:
+    {
+      module_type               : EventDisplay
+#      g4ModuleLabel             : "g4run"
+      g4ModuleLabel             : "compressRecoMCs"
+#      physicalVolumesMultiLabel : "compressPV"
+      kalSeedStepSize           : 0.1
+    }
+  }
+
+  e1 : [eventdisplay]
+
+  end_paths      : [e1]
+}
+
+#include "Offline/DbService/fcl/NominalDatabase.fcl"
+
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_common_MDC2020.txt"
+#source.readParameterSets : false
