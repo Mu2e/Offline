@@ -11,7 +11,7 @@ Import('mu2e_helper')
 
 babarlibs     = env['BABARLIBS']
 rootlibs      = env['ROOTLIBS']
-extrarootlibs = ['TMVA' , 'Minuit' , 'XMLIO' ]
+extrarootlibs = ['TMVA' , 'Minuit' , 'XMLIO', "Geom" ]
 
 helper=mu2e_helper(env);
 

@@ -20,11 +20,15 @@
 
 // ROOT
 #include "TH1.h"
+#include "TH3.h"
 #include "TProfile.h"
 #include "TObject.h"
+#include "TLatex.h"
 #include "TCanvas.h"
+#include "TPad.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
+#include "TGraph2D.h"
 #include "TEllipse.h"
 #include "TLine.h"
 #include "TGFrame.h"
@@ -33,7 +37,6 @@
 #include "TGClient.h"
 #include "TApplication.h"
 #include "TRint.h"
-
 
 namespace mu2e {
 
@@ -166,12 +169,25 @@ namespace mu2e {
     int fillLineSegmentHistograms(LineSegmentHists* Hist, diagInfo* Data, int loopIndex);
     int fillTripletHistograms(TripletHists* Hist, const tripletInfo& info);
 
-    const SimParticle* helixSimMatch(const HelixSeed* hlx, double& pmc, int& mc_hits);
-    const SimParticle* tripletSimMatch(const triplet* trip);
-    float MCHitPurity(const HelixSeed* hlx);
-    float MCHitFraction(const HelixSeed* hlx);
+    const SimParticle* helixSimMatch(const HelixSeed& hlx, double& pmc, int& mc_hits);
+    const SimParticle* circleSimMatch();
+    const SimParticle* tripletSimMatch(const triplet& trip);
+    void checkSimTriplets();
+    float MCHitPurity(const HelixSeed& hlx);
+    float MCHitFraction(const HelixSeed& hlx);
     const SimParticle* hitSim(int index);
     void initSimInfo(const SimParticleCollection* simcol, const StrawDigiMCCollection* digcol);
+    int MCColor(int pdg, double pmc = 0.) {
+      pdg = std::abs(pdg);
+      if(pdg == 0) return kBlack;
+      if(pdg == 2212) return kOrange;
+      if(pmc > 0.) {
+        if(pmc < 20.) return kAzure-9;
+        if(pmc < 50.) return kCyan;
+        if(pmc < 70.) return kMagenta - 2;
+      }
+      return kBlue;
+    }
 
     virtual int bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) override;
     virtual int fillHistograms(void* Data, int Mode = -1) override;
@@ -186,13 +202,32 @@ namespace mu2e {
                              bool draw_center = true);
     void plotHitXY          (const ComboHit& hit, int color);
     void plotHitXY          (const tripletPoint& point, int color);
-    void plotHitPhiZ        (int index, int iline = 0);
+    void plotHitPhiZ        (double z, double phi, int color, int iline = 0, int marker = -1);
+    void plotHitPhiZ        (int index, int color, int iline = 0, int marker = -1);
+    void plotLinePhiZ       (const lineInfo& line, int iline = 0);
     void plotTracker        ();
-    void plotHelixXY        (const HelixSeed* hseed, const int index = -1);
-    void plotTripletXY      (const tripletInfo& info, const int index = -1);
+    void plotHelixXY        (const HelixSeed& hseed, const int index = -1);
+    void plotHelixPhiZ      (const HelixSeed& hseed, const int index = -1);
+    void plotSimPhiZ        (const SimParticle* sim, const int index = -1);
+    void plotCircleXY       ();
+    void plotTripletXY      (const tripletInfo& info, const int index = -1, bool mc_triplet = false);
     void plotXY             (int stage);
     void plotPhiZ           (int stage);
     void plotSegment        (int option);
+    void plotTotal          (int stage);
+    void plotLabel          (float left_margin, float right_margin) {
+      TLatex* label = new TLatex();
+      label->SetNDC();
+      label->SetTextFont(43);
+      label->SetTextSize(24);
+      label->SetTextAlign(11);
+      label->DrawLatex(left_margin, 1.01 - right_margin,
+                       Form("Event: %i:%i:%u",
+                            _data->event->run(),
+                            _data->event->subRun(),
+                            _data->event->event()));
+      _drawn_objects.push_back(label);
+    }
 
     const SimParticle* simByID(const SimParticleCollection* simcol, const unsigned id) {
       return simcol->getOrNull(cet::map_vector_key(id));
@@ -208,8 +243,8 @@ namespace mu2e {
       return _simInfo[id].nhits_;
     }
 
-    void MCCircle(const int sim_id, float& xC, float& yC, float& r) {
-      xC = 0.; yC = 0.; r = 0.;
+    void MCCircle(const int sim_id, float& xC, float& yC, float& r, float& lambda, float& phi0) {
+      xC = 0.; yC = 0.; r = 0.; lambda = 0.; phi0 = 0.;
 
       // Get the sim info
       if(_simInfo.find(sim_id) == _simInfo.end()) return;
@@ -224,51 +259,65 @@ namespace mu2e {
       case 11: case 13: case -211: charge = -1; break;
       }
       const float MeVmm = 10. / 3. / _data->bz0;
-      float xC_1, xC_2, r_1, yC_1, yC_2, r_2;
+      float xC_1, xC_2, yC_1, yC_2, r_1, r_2, l_1, l_2, phi0_1, phi0_2;
       { // Evaluate using the lowest z hit
         const float x   = info.hit_start_x_ ;
         const float y   = info.hit_start_y_ ;
         const float z   = info.hit_start_z_ ;
+        const float t   = info.hit_start_t_ ;
         const float px  = info.hit_start_px_;
         const float py  = info.hit_start_py_;
         const float pz  = info.hit_start_pz_;
         const float pt  = info.hit_start_pt_;
-        const int traj  = (pz < 0.) ? -1 : 1;
+        const float phi = polyAtan2(px, py) + charge*M_PI/2.;
         r_1  = pt * MeVmm; // convert to mm
-        xC_1 = x + traj*charge*r_1*py/pt; //std::sin(phi);
-        yC_1 = y - traj*charge*r_1*px/pt; //std::cos(phi);
-        if(_debugLevel > 2) printf(" MC info: Hit 1: x = (%6.1f, %6.1f, %7.1f), p = (%6.1f, %6.1f, %6.1f), pt = %5.1f --> r = %5.1f, center = (%6.1f, %6.1f)\n",
-                                   x, y, z, px, py, pz, pt, r_1, xC_1, yC_1);
+        xC_1 = x + charge*r_1*py/pt; //std::sin(phi);
+        yC_1 = y - charge*r_1*px/pt; //std::cos(phi);
+        l_1 = pz * MeVmm;
+        // phi = phi0 + z / lambda
+        phi0_1 = std::fmod(phi - z / l_1, M_PI);
+        if(_debugLevel > 2) printf(" MC info: Start: x = (%6.1f, %6.1f, %7.1f, %7.1f), p = (%6.1f, %6.1f, %6.1f), pt = %5.1f --> r = %5.1f, center = (%6.1f, %6.1f), lambda = %6.1f, phi0 = %4.1f\n",
+                                   x, y, z, t, px, py, pz, pt, r_1, xC_1, yC_1, l_1, phi0_1);
       }
       { // Evaluate using the highest z hit
         const float x   = info.hit_end_x_ ;
         const float y   = info.hit_end_y_ ;
         const float z   = info.hit_end_z_ ;
+        const float t   = info.hit_end_t_ ;
         const float px  = info.hit_end_px_;
         const float py  = info.hit_end_py_;
         const float pz  = info.hit_end_pz_;
         const float pt  = info.hit_end_pt_;
-        const int traj  = (pz < 0.) ? -1 : 1;
+        const float phi = polyAtan2(px, py) + charge*M_PI/2.;
         r_2  = pt * MeVmm; // convert to mm
-        xC_2 = x + traj*charge*r_2*py/pt;//std::sin(phi);
-        yC_2 = y - traj*charge*r_2*px/pt;//std::cos(phi);
-        if(_debugLevel > 2) printf(" MC info: Hit 2: x = (%6.1f, %6.1f, %7.1f), p = (%6.1f, %6.1f, %6.1f), pt = %5.1f --> r = %5.1f, center = (%6.1f, %6.1f)\n",
-                                   x, y, z, px, py, pz, pt, r_2, xC_2, yC_2);
+        xC_2 = x + charge*r_2*py/pt;//std::sin(phi);
+        yC_2 = y - charge*r_2*px/pt;//std::cos(phi);
+        l_2 = pz * MeVmm;
+        phi0_2 = std::fmod(phi - z / l_2, M_PI);
+        if(_debugLevel > 2) printf(" MC info: End: x = (%6.1f, %6.1f, %7.1f, %7.1f), p = (%6.1f, %6.1f, %6.1f), pt = %5.1f --> r = %5.1f, center = (%6.1f, %6.1f), lambda = %6.1f, phi0 = %4.1f\n",
+                                   x, y, z, t, px, py, pz, pt, r_2, xC_2, yC_2, l_2, phi0_2);
       }
-      xC = 0.5*(xC_1 + xC_2);
-      yC = 0.5*(yC_1 + yC_2);
-      r  = 0.5*( r_1 +  r_2);
+      // Just take the average of the two point estimates
+      xC     = 0.5*( xC_1 +  xC_2);
+      yC     = 0.5*( yC_1 +  yC_2);
+      r      = 0.5*(  r_1 +   r_2);
+      lambda = 0.5*(  l_1 +   l_2);
+      phi0   = phi0_1; // FIXME: Add logic for angle bisector
+    }
+    void MCCircle(const int sim_id, float& xC, float& yC, float& r) {
+      float lambda, phi0;
+      MCCircle(sim_id, xC, yC, r, lambda, phi0);
     }
 
-    const SimParticle* helixSimMatch(const HelixSeed* hlx, double& pmc) {
+    const SimParticle* helixSimMatch(const HelixSeed& hlx, double& pmc) {
       int mc_hits;
       return helixSimMatch(hlx, pmc, mc_hits);
     }
-    const SimParticle* helixSimMatch(const HelixSeed* hlx, int& mc_hits) {
+    const SimParticle* helixSimMatch(const HelixSeed& hlx, int& mc_hits) {
       double pmc;
       return helixSimMatch(hlx, pmc, mc_hits);
     }
-    const SimParticle* helixSimMatch(const HelixSeed* hlx) {
+    const SimParticle* helixSimMatch(const HelixSeed& hlx) {
       int mc_hits; double pmc;
       return helixSimMatch(hlx, pmc, mc_hits);
     }
@@ -283,6 +332,10 @@ namespace mu2e {
     std::string _simTag;
     std::string _digTag;
     bool        _display;
+    bool        _display3D;
+    bool        _showProtons;
+    double      _pMin;
+    double      _tMin;
     int         _debugLevel;
 
     Hists _hist;
@@ -291,12 +344,14 @@ namespace mu2e {
     const StrawDigiMCCollection* _digcol = nullptr;
 
     std::map<unsigned, Sim_t> _simInfo;
+    std::map<unsigned, tripletInfo> _simTriplets; // map sims to their closest triplet
 
     // For running a display
-    TCanvas* c_end_ = nullptr;
-    TCanvas* c_hlx_ = nullptr;
-    TCanvas* c_seg_ = nullptr;
-    TCanvas* c_trp_ = nullptr;
+    TCanvas* c_tot_ = nullptr;
+    TCanvas* c_3d_  = nullptr;
+    TPad* c_hlx_ = nullptr;
+    TPad* c_seg_ = nullptr;
+    TPad* c_trp_ = nullptr;
     std::vector<TObject*> _drawn_objects;
     TGMainFrame* _gMainFrame = nullptr;
     TApplication* _application = nullptr;
@@ -308,6 +363,10 @@ namespace mu2e {
     _simTag(config().simTag())
     , _digTag(config().digTag())
     , _display(config().display())
+    , _display3D(config().display3D())
+    , _showProtons(config().showProtons())
+    , _pMin(config().pMin())
+    , _tMin(config().tMin())
     , _debugLevel(config().debug())
   {
     if(gROOT->IsBatch()) _display = false;
@@ -527,16 +586,18 @@ namespace mu2e {
   int AgnosticHelixFinderDiag::fillHelixSeedHistograms(HelixSeedHists* Hist, const hsInfo& info) {
 
     // Retrieve the info
-    const HelixSeed* seed = info.seed;
+    const HelixSeed& seed = info.seed;
+    if(seed.hits().empty()) return 1; // empty helix seed
+
     const float bz0 = info.bz0;
     constexpr float mmMeV = 3./10.; // convert to MeV/c
-    const float edep  = (seed) ? seed->hits().eDepAvg() : info.eDepAvg;
-    const float p     = (seed) ? mmMeV * bz0 * seed->helix().momentum() : 0.f;
-    const float t     = (seed) ? seed->t0().t0() : 0.f;
-    const float r     = (seed) ? seed->helix().radius() : 0.f;
-    const float l     = (seed) ? std::fabs(seed->helix().lambda()) : 0.f;
-    const float d0    = (seed) ? seed->helix().rcent() - r : 0.f; // no helicity sign, for simplicity
-    const int   nhits = (seed) ? seed->hits().nStrawHits() : 0;
+    const float edep  = seed.hits().eDepAvg();
+    const float p     = mmMeV * bz0 * seed.helix().momentum();
+    const float t     = seed.t0().t0();
+    const float r     = seed.helix().radius();
+    const float l     = std::fabs(seed.helix().lambda());
+    const float d0    = seed.helix().rcent() - r; // no helicity sign, for simplicity
+    const int   nhits = seed.hits().nStrawHits();
 
     // Reco info
     Hist->eDepAvg->Fill(edep);
@@ -586,23 +647,23 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   int AgnosticHelixFinderDiag::fillTripletHistograms(TripletHists* Hist, const tripletInfo& info) {
 
-    const auto* trip = info.trip;
+    const auto& trip = info.trip;
     const float r  = info.radius;
     const float xC = info.xC;
     const float yC = info.yC;
     const float rC = std::sqrt(xC*xC + yC*yC);
     const float rmax = r + rC;
     const float d0 = rC - r;
-    const float dz12 = std::fabs(trip->i.pos.z() - trip->j.pos.z());
-    const float dz23 = std::fabs(trip->j.pos.z() - trip->k.pos.z());
-    const float dz13 = std::fabs(trip->i.pos.z() - trip->k.pos.z());
-    const float d12  = std::sqrt((trip->i.pos - trip->j.pos).Perp2());
-    const float d23  = std::sqrt((trip->j.pos - trip->k.pos).Perp2());
-    const float d13  = std::sqrt((trip->i.pos - trip->k.pos).Perp2());
+    const float dz12 = std::fabs(trip.i.pos.z() - trip.j.pos.z());
+    const float dz23 = std::fabs(trip.j.pos.z() - trip.k.pos.z());
+    const float dz13 = std::fabs(trip.i.pos.z() - trip.k.pos.z());
+    const float d12  = std::sqrt((trip.i.pos - trip.j.pos).Perp2());
+    const float d23  = std::sqrt((trip.j.pos - trip.k.pos).Perp2());
+    const float d13  = std::sqrt((trip.i.pos - trip.k.pos).Perp2());
 
-    const float phi1 = polyAtan2(trip->i.pos.x() - xC, trip->i.pos.y() - yC);
-    const float phi2 = polyAtan2(trip->j.pos.x() - xC, trip->j.pos.y() - yC);
-    const float phi3 = polyAtan2(trip->k.pos.x() - xC, trip->k.pos.y() - yC);
+    const float phi1 = polyAtan2(trip.i.pos.x() - xC, trip.i.pos.y() - yC);
+    const float phi2 = polyAtan2(trip.j.pos.x() - xC, trip.j.pos.y() - yC);
+    const float phi3 = polyAtan2(trip.k.pos.x() - xC, trip.k.pos.y() - yC);
     float dphi12 = phi1 - phi2;
     float dphi23 = phi2 - phi3;
     float dphi13 = phi1 - phi3;
@@ -627,9 +688,9 @@ namespace mu2e {
     Hist->dphi13         ->Fill(dphi13);
 
     // MC info
-    const SimParticle* sim_1 = hitSim(trip->i.hitIndice);
-    const SimParticle* sim_2 = hitSim(trip->j.hitIndice);
-    const SimParticle* sim_3 = hitSim(trip->k.hitIndice);
+    const SimParticle* sim_1 = hitSim(trip.i.hitIndice);
+    const SimParticle* sim_2 = hitSim(trip.j.hitIndice);
+    const SimParticle* sim_3 = hitSim(trip.k.hitIndice);
 
     const SimParticle* best_sim = tripletSimMatch(trip);
     const int best_sim_id = (best_sim) ? best_sim->id().asInt() : -1;
@@ -664,6 +725,7 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
 
     if(Mode == DIAG::kBegin) {
+      if(_debugLevel > 1) printf("[AgnosticHelixFinderDiag::%s: Processing the BEGIN stage\n", __func__);
       if(_data->event) { // the art::Event object is available
         // retrieve the collections
         art::Handle<SimParticleCollection> simH;
@@ -686,8 +748,26 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
 
     if(Mode == DIAG::kTriplet) {
-      if(_display && _data->diagLevel > 3) plotXY(0);
+      if(_display && _data->diagLevel > 5) {
+        std::cout << "Triplet stage: Loop condition " << ConditionName(_data->loopCondition)
+                  << std::endl;
+        plotXY(0);
+      }
       fillTripletHistograms(_hist._tripletHists[0], _data->tripInfo);
+      checkSimTriplets();
+      return 0;
+    }
+
+    //-----------------------------------------------------------------------------
+    // Circle stage histograms
+    //-----------------------------------------------------------------------------
+
+    if(Mode == DIAG::kCircle) {
+      if(_display && _data->diagLevel > 4) {
+        std::cout << "Circle stage: Loop condition " << ConditionName(_data->loopCondition)
+                  << std::endl;
+        plotXY(2);
+      }
       return 0;
     }
 
@@ -696,9 +776,11 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
 
     if(Mode == DIAG::kSegments) {
-      if(_display && _data->diagLevel > 2) {
+      if(_display && _data->diagLevel > 4) {
+        std::cout << "Segment stage: Loop condition " << ConditionName(_data->loopCondition)
+                  << std::endl;
         plotXY(1); // triplet
-        plotSegment(0); // line segment
+        plotSegment(0); // line segments
       }
       fillTripletHistograms(_hist._tripletHists[1], _data->tripInfo);
       return 0;
@@ -709,10 +791,11 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
 
     if(Mode == DIAG::kLine) {
-      if(_display && _data->diagLevel > 1) {
+      if(_display && _data->diagLevel > 3) {
+        std::cout << "Line stage: Loop condition " << ConditionName(_data->loopCondition)
+                  << std::endl;
         plotXY(1); // triplet
-        plotSegment(0); // line segment
-        // plotSegment(1); // line
+        plotSegment(0); // line segments
       }
       fillTripletHistograms(_hist._tripletHists[1], _data->tripInfo);
       return 0;
@@ -723,10 +806,18 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
 
     if(Mode == DIAG::kHelix) {
-      hsInfo info(_data->bz0, _data->hseed);
-      if(_display && _data->diagLevel > 1) {plotXY(1); plotXY(3);}
-      fillHelixSeedHistograms(_hist._helixSeedHists[0], info);
-      fillTripletHistograms(_hist._tripletHists[2], _data->tripInfo);
+      if(_data->hseed) {
+        hsInfo info(_data->bz0, *(_data->hseed));
+        if(_display && _data->diagLevel > 2) {
+          std::cout << "Helix stage: Loop condition " << ConditionName(_data->loopCondition)
+                    << std::endl;
+          plotXY(1); // plot the triplet
+          plotSegment(2); // plot the helix phi z
+          plotXY(3); // plot the helix x y
+        }
+        fillHelixSeedHistograms(_hist._helixSeedHists[0], info);
+        fillTripletHistograms(_hist._tripletHists[2], _data->tripInfo);
+      }
       return 0;
     }
 
@@ -735,9 +826,24 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
 
     if(Mode == DIAG::kFinal) {
-      hsInfo info(_data->bz0, _data->hseed);
-      fillHelixSeedHistograms(_hist._helixSeedHists[1], info);
-      fillTripletHistograms(_hist._tripletHists[3], _data->tripInfo);
+      if(_data->hseed) {
+        hsInfo info(_data->bz0, *(_data->hseed));
+        fillHelixSeedHistograms(_hist._helixSeedHists[1], info);
+        fillTripletHistograms(_hist._tripletHists[3], _data->tripInfo);
+      }
+      return 0;
+    }
+
+    //-----------------------------------------------------------------------------
+    // Time cluster stage histograms
+    //-----------------------------------------------------------------------------
+
+    if(Mode == DIAG::kTimeCluster) {
+      if(_display && _data->diagLevel > 1) {
+        plotSegment(3);
+        plotXY(5);
+        plotXY(6); // plot the helices in the time cluster
+      }
       return 0;
     }
 
@@ -746,7 +852,12 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
 
     if(Mode == DIAG::kEnd) {
-      if(_display) {plotXY(1);}
+      if(_display) {
+        plotSegment(3);
+        plotXY(5);
+        plotXY(4);
+        if(_display3D) plotTotal(0);
+      }
 
       //-----------------------------------------------------------------------------
       // fill event histograms
@@ -780,16 +891,16 @@ namespace mu2e {
   }
 
   //--------------------------------------------------------------------------------------
-  const SimParticle* AgnosticHelixFinderDiag::helixSimMatch(const HelixSeed* hlx, double& pmc, int& mc_hits) {
+  const SimParticle* AgnosticHelixFinderDiag::helixSimMatch(const HelixSeed& hlx, double& pmc, int& mc_hits) {
     pmc = -1.; mc_hits = -1;
 
     // Ensure valid collections
-    if(!hlx) return nullptr;
+    if(hlx.hits().empty()) return nullptr;
     if(!_simcol) return nullptr;
     if(!_digcol) return nullptr;
 
     // Loop through the hits on the helix looking for the sim with the most hits
-    const auto& hits = hlx->hits();
+    const auto& hits = hlx.hits();
     const size_t nhits = hits.size();
     if(nhits == 0) return nullptr;
     int max_hits(-1), max_id(-1); // current maxima
@@ -819,13 +930,46 @@ namespace mu2e {
   }
 
   //--------------------------------------------------------------------------------------
-  const SimParticle* AgnosticHelixFinderDiag::tripletSimMatch(const triplet* trip) {
-    if(!trip) return nullptr;
+  const SimParticle* AgnosticHelixFinderDiag::circleSimMatch() {
+    // Ensure valid collections
+    if(!_data || !_data->tcHits || !_data->chColl) return nullptr;
+    if(!_simcol) return nullptr;
+    if(!_digcol) return nullptr;
+
+    // Loop through the hits on the circle looking for the sim with the most hits
+    int max_hits(-1), max_id(-1); // current maxima
+    std::map<int, int> id_to_hits;
+    for(size_t ihit = 0; ihit < _data->tcHits->size(); ++ihit) {
+      const auto& tcHit = _data->tcHits->at(ihit);
+      if(tcHit.inHelix || !tcHit.used || tcHit.hitIndice < 0) continue;
+      std::vector<StrawDigiIndex> shids;
+      _data->chColl->fillStrawDigiIndices(tcHit.hitIndice,shids);
+      for (size_t j = 0; j < shids.size(); ++j) {
+        if(shids[j] >= _digcol->size()) continue;
+        const auto& sdmc   = _digcol->at(shids[j]);
+        const auto& spmcp  = sdmc.earlyStrawGasStep();
+        const auto& simptr = spmcp->simParticle();
+        const int sim_id   = simptr->id().asInt();
+        ++id_to_hits[sim_id];
+        if(id_to_hits[sim_id] > max_hits) {
+          max_hits = id_to_hits[sim_id];
+          max_id = sim_id;
+        }
+      }
+    }
+
+    // Return the sim with the most hits
+    const SimParticle* sim = (max_id >= 0) ? simByID(_simcol, max_id) : nullptr;
+    return sim;
+  }
+
+  //--------------------------------------------------------------------------------------
+  const SimParticle* AgnosticHelixFinderDiag::tripletSimMatch(const triplet& trip) {
 
     // Sim particle for each hit
-    const SimParticle* sim_1 = hitSim(trip->i.hitIndice);
-    const SimParticle* sim_2 = hitSim(trip->j.hitIndice);
-    const SimParticle* sim_3 = hitSim(trip->k.hitIndice);
+    const SimParticle* sim_1 = hitSim(trip.i.hitIndice);
+    const SimParticle* sim_2 = hitSim(trip.j.hitIndice);
+    const SimParticle* sim_3 = hitSim(trip.k.hitIndice);
 
     // Sim IDs to see if one sim made multiple hits
     const int sim_id_1 = (sim_1) ? sim_1->id().asInt() : -1;
@@ -844,19 +988,57 @@ namespace mu2e {
   }
 
   //--------------------------------------------------------------------------------------
-  float AgnosticHelixFinderDiag::MCHitPurity(const HelixSeed* hlx) {
-    if(!hlx) return -1.f;
+  void AgnosticHelixFinderDiag::checkSimTriplets() {
+    if(!_data || !_simcol) return;
+
+    // See if the current triplet is the best match the sim hits in it
+    const auto& tripInfo = _data->tripInfo;
+
+    // Check if this triplet is better for each sim
+    for(auto& info_pair : _simInfo) {
+      const auto& info = info_pair.second;
+      if(info.nhits_ == 0) continue;
+      const unsigned sim_id = info.id_;
+
+      // Check if no triplet has been found
+      if(_simTriplets.find(sim_id) == _simTriplets.end()) {
+        _simTriplets[sim_id] = tripInfo;
+        continue;
+      }
+
+      // If one has been found, determine which is better
+      float x, y, r;
+      MCCircle(sim_id, x, y, r);
+
+      const float dr = tripInfo.radius - r;
+      const float dx = tripInfo.xC - x;
+      const float dy = tripInfo.yC - y;
+      const float d = dr*dr + dx*dx + dy*dy;
+
+      const auto& curr = _simTriplets[sim_id];
+      const float dr_curr = curr.radius - r;
+      const float dx_curr = curr.xC - x;
+      const float dy_curr = curr.yC - y;
+      const float d_curr = dr_curr*dr_curr + dx_curr*dx_curr + dy_curr*dy_curr;
+
+      if(d < d_curr) _simTriplets[sim_id] = tripInfo;
+    }
+  }
+
+  //--------------------------------------------------------------------------------------
+  float AgnosticHelixFinderDiag::MCHitPurity(const HelixSeed& hlx) {
+    if(hlx.hits().empty()) return -1.f;
     int mc_hits;
     const auto sim = helixSimMatch(hlx, mc_hits);
     if(!sim) return -1.f;
     if(mc_hits < 0) return -1.f;
-    const size_t nhits = hlx->hits().nStrawHits();
+    const size_t nhits = hlx.hits().nStrawHits();
     return float(mc_hits) / nhits;
   }
 
   //--------------------------------------------------------------------------------------
-  float AgnosticHelixFinderDiag::MCHitFraction(const HelixSeed* hlx) {
-    if(!hlx) return -1.f;
+  float AgnosticHelixFinderDiag::MCHitFraction(const HelixSeed& hlx) {
+    if(hlx.hits().empty()) return -1.f;
     int mc_hits_hlx;
     const auto sim = helixSimMatch(hlx, mc_hits_hlx);
     if(!sim) return -1.f;
@@ -897,6 +1079,7 @@ namespace mu2e {
   void AgnosticHelixFinderDiag::initSimInfo(const SimParticleCollection* simcol,
                                             const StrawDigiMCCollection* digcol) {
     _simInfo.clear(); // clear the info from the previous event
+    _simTriplets.clear();
     if(!simcol || !digcol) return;
 
     // Count the number of hits for each sim particle
@@ -975,31 +1158,38 @@ namespace mu2e {
     } else if(gApplication && !_application) _application = gApplication; // use the existing one
 
     // Ensure the display canvases are available
-    // if(!c_end_) {
-    //   c_end_ = new TCanvas("c_end", "Helices canvas"  , 900, 900);
-    //   c_end_->SetLeftMargin(0.12);
-    //   c_end_->SetBottomMargin(0.12);
-    // }
+    if(_display3D && !c_3d_) {
+      c_3d_ = new TCanvas("c_3d", "3D canvas"  , 900, 900);
+    }
+    if(!c_tot_) {
+      c_tot_ = new TCanvas("c_tot", "Total canvas"  , 1260, 900);
+    }
     if(!c_hlx_) {
-      c_hlx_ = new TCanvas("c_hlx", "Helix canvas"  , 900, 900);
+      c_hlx_ = new TPad("c_hlx", "Helix canvas"  , 0., 0.3, 0.5, 1.);
       c_hlx_->SetLeftMargin(0.12);
-      c_hlx_->SetBottomMargin(0.12);
+      c_hlx_->SetBottomMargin(0.10);
       c_hlx_->SetTicks(1);
+      c_tot_->cd();
+      c_hlx_->Draw();
     }
     if(!c_seg_) {
-      c_seg_ = new TCanvas("c_seg", "Line segment canvas"  , 900, 900);
-      c_seg_->SetLeftMargin(0.12);
-      c_seg_->SetBottomMargin(0.12);
+      c_seg_ = new TPad("c_seg", "Segment canvas"  , 0., 0.0, 1.0, 0.3);
+      c_seg_->SetLeftMargin(0.06);
+      c_seg_->SetBottomMargin(0.22);
+      c_seg_->SetRightMargin(0.01);
+      c_seg_->SetTopMargin(0.08);
       c_seg_->SetTicks(1);
+      c_tot_->cd();
+      c_seg_->Draw();
     }
     if(!c_trp_) {
-      c_trp_ = new TCanvas("c_trp", "Triplet canvas", 900, 900);
+      c_trp_ = new TPad("c_trp", "Triplet canvas"  , 0.5, 0.3, 1.0, 1.0);
       c_trp_->SetLeftMargin(0.12);
       c_trp_->SetBottomMargin(0.12);
       c_trp_->SetTicks(1);
+      c_tot_->cd();
+      c_trp_->Draw();
     }
-    c_hlx_->Draw();
-    c_trp_->Draw();
 
     // clean up the last event
     for(auto o : _drawn_objects) delete o;
@@ -1088,7 +1278,28 @@ namespace mu2e {
   }
 
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinderDiag::plotHitPhiZ(int index, int iline) {
+  void AgnosticHelixFinderDiag::plotHitPhiZ(double z, double phi, int color, int iline, int marker) {
+
+    // initialize the point
+    TGraph* g = new TGraph(1, &z, &phi);
+    constexpr int styles[] = {24, 25, 26, 27, 28, 30};
+    const static int nstyles = sizeof(styles) / sizeof(*styles);
+    if(marker < 0) {
+      const int istyle = std::max(iline, 0) % nstyles;
+      marker = styles[istyle];
+    }
+    g->SetMarkerColor(color);
+    g->SetLineColor(color);
+    g->SetMarkerStyle(marker);
+    g->SetMarkerSize(1);
+    g->Draw("PE");
+    if(_debugLevel > 1) printf("  %s: Adding point z = %6.1f, phi = %5.2f, line = %i\n", __func__, z, phi, iline);
+
+    _drawn_objects.push_back(g);
+  }
+
+  //-----------------------------------------------------------------------------
+  void AgnosticHelixFinderDiag::plotHitPhiZ(int index, int color, int iline, int marker) {
     if(!_data || !_data->tcHits || !_data->chColl) return;
 
     // Get the hit
@@ -1112,13 +1323,14 @@ namespace mu2e {
     // initialize the point
     TGraph* g = new TGraphErrors(1, &z, &phi, &zError, &phiError);
     constexpr int styles[] = {24, 25, 26, 27, 28, 30};
-    constexpr int colors[] = {kBlue, kGreen, kRed, kOrange, kPink, kYellow-2};
     const static int nstyles = sizeof(styles) / sizeof(*styles);
-    const static int ncolors = sizeof(colors) / sizeof(*colors);
-    const int color = colors[iline % ncolors];
+    if(marker < 0) {
+      const int istyle = std::max(iline, 0) % nstyles;
+      marker = styles[istyle];
+    }
     g->SetMarkerColor(color);
     g->SetLineColor(color);
-    g->SetMarkerStyle(styles[iline % nstyles]);
+    g->SetMarkerStyle(marker);
     g->SetMarkerSize(1);
     g->Draw("PE");
     if(_debugLevel > 1) printf("  %s: Adding point z = %6.1f, phi = %5.2f, line = %i\n", __func__, z, phi, iline);
@@ -1127,18 +1339,45 @@ namespace mu2e {
   }
 
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinderDiag::plotHelixXY(const HelixSeed* hseed, const int index) {
-    if(!hseed) return;
+  void AgnosticHelixFinderDiag::plotLinePhiZ(const lineInfo& line, int iline) {
 
-    const float r  = hseed->helix().radius(); // reco info
-    const float xC = hseed->helix().center().x();
-    const float yC = hseed->helix().center().y();
+    constexpr int colors[] = {kBlue, kGreen, kRed, kOrange, kPink, kYellow-2};
+    const static int ncolors = sizeof(colors) / sizeof(*colors);
+    const int color = colors[iline % ncolors];
+
+    // Plot the points
+    for(auto index : line.tcHitsIndices) plotHitPhiZ(index, color, iline);
+
+    // Draw the fit line
+    const float zmin  = line.zMin;
+    const float zmax  = line.zMax;
+    // clone the fitter to avoid changing its state
+    ::LsqSums2 fitter = line.fitter;
+    const float slope = fitter.dydx();
+    const float phi0  = fitter.y0();;
+    const float phi1  = slope * zmin + phi0;
+    const float phi2  = slope * zmax + phi0;
+    TLine* tline = new TLine(zmin, phi1, zmax, phi2);
+    tline->SetLineColor(color);
+    tline->SetLineWidth(1);
+    tline->Draw("same");
+
+    _drawn_objects.push_back(tline);
+  }
+
+  //-----------------------------------------------------------------------------
+  void AgnosticHelixFinderDiag::plotHelixXY(const HelixSeed& hseed, const int index) {
+    if(hseed.hits().empty()) return;
+
+    const float r  = hseed.helix().radius(); // reco info
+    const float xC = hseed.helix().center().x();
+    const float yC = hseed.helix().center().y();
     if(_debugLevel > 2) printf("    Reco circle %i: x = %6.1f, y = %6.1f, r = %6.1f\n", index, xC, yC, r);
     std::string title = (index >= 0) ? Form("Reco_%i", index) : "Reco";
     plotCircle(xC, yC, r, kRed, 2, title); // Reco helix
 
     // Helix hits
-    for(auto& hit : hseed->hits()) plotHitXY(hit, kGreen);
+    for(auto& hit : hseed.hits()) plotHitXY(hit, kGreen);
 
     // check for MC info
     const auto sim = helixSimMatch(hseed);
@@ -1148,13 +1387,105 @@ namespace mu2e {
       MCCircle(sim_id, xC_mc, yC_mc, r_mc);
       if(_debugLevel > 2) printf("    MC circle   %i: x = %6.1f, y = %6.1f, r = %6.1f\n", index, xC_mc, yC_mc, r_mc);
       title = (index >= 0) ? Form("MC_%i", index) : "MC";
-      plotCircle(xC_mc, yC_mc, r_mc, kBlue, 2, title); // MC helix estimate
+      const int pdg = std::abs(sim->pdgId());
+      if(pdg != 2212 || _showProtons) {
+        const int mc_color = (pdg == 2212) ? kOrange : kBlue;
+        plotCircle(xC_mc, yC_mc, r_mc, mc_color, 2, title); // MC helix estimate
+      }
     }
   }
 
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinderDiag::plotTripletXY(const tripletInfo& info, const int index) {
-    if(!info.trip) return;
+  void AgnosticHelixFinderDiag::plotHelixPhiZ(const HelixSeed& hseed, const int index) {
+    if(hseed.hits().empty()) return;
+
+    // Helix hits
+    const int iline = std::max(index, 0);
+    constexpr int colors[] = {kBlue, kGreen, kRed, kOrange, kPink, kYellow-2};
+    const static int ncolors = sizeof(colors) / sizeof(*colors);
+    const int color = colors[iline % ncolors];
+    for(auto& hit : hseed.hits()) {
+      const double z = hit.pos().z();
+      plotHitPhiZ(z, hseed.helix().circleAzimuth(z), color, iline);
+    }
+  }
+
+  //-----------------------------------------------------------------------------
+  void AgnosticHelixFinderDiag::plotSimPhiZ(const SimParticle* sim, const int index) {
+    if(!sim || !_data || !_data->chColl) return;
+
+    const int sim_id = sim->id().asInt();
+    if(_simInfo.find(sim_id) == _simInfo.end()) return;
+
+    const int pdg = std::abs(sim->pdgId());
+    if(pdg > 10000 || (pdg == 2212 && !_showProtons)) return;
+
+    // Get the MC circle info
+    float xC, yC, r, lambda, phi0;
+    MCCircle(sim_id, xC, yC, r, lambda, phi0);
+    if(_debugLevel > 2) printf(" Sim phi-z: r = %6.1f, lambda = %6.1f, phi 0 = %4.1f\n",
+                               r, lambda, phi0);
+
+    // Loop through the hits, drawing MC-matched ones
+    constexpr int colors[] = {kBlue, kGreen, kRed, kOrange, kPink, kYellow-2};
+    const static int ncolors = sizeof(colors) / sizeof(*colors);
+    const int iline = std::max(index, 0);
+    const int color = colors[iline % ncolors];
+
+    const size_t nhits = _data->chColl->size();
+    for(size_t index = 0; index < nhits; ++index) {
+      const SimParticle* hit_sim = hitSim(index);
+      if(hit_sim && hit_sim->id() == sim->id()) {
+        const auto hit = _data->chColl->at(index);
+        const double z = hit.pos().z();
+        plotHitPhiZ(z, phi0 + z/lambda, color, iline, 2);
+      }
+    }
+  }
+
+  //-----------------------------------------------------------------------------
+  void AgnosticHelixFinderDiag::plotCircleXY() {
+    if(!_data || !_data->tcHits || !_data->chColl) return;
+
+    // check for MC info, plot below the reco data
+    const auto sim = circleSimMatch();
+    const int sim_id = (sim) ? sim->id().asInt() : -1;
+    if(sim && _simInfo.find(sim_id) != _simInfo.end()) {
+      float xC_mc, yC_mc, r_mc;
+      MCCircle(sim_id, xC_mc, yC_mc, r_mc);
+      const int pdg = std::abs(sim->pdgId());
+      const int mc_color = (pdg == 2212) ? kOrange : kBlue;
+      plotCircle(xC_mc, yC_mc, r_mc, mc_color, 2, "MCCircle"); // MC circle estimate
+
+      // all of the MC hits
+      for(size_t index = 0; index < _data->chColl->size(); ++index) {
+        const auto hit_sim = hitSim(index);
+        if(!hit_sim) continue;
+        const int hit_sim_id = hit_sim->id().asInt();
+        if(sim_id == hit_sim_id) {
+          plotHitXY(_data->chColl->at(index), mc_color);
+        }
+      }
+    }
+
+    // Plot the reco circle
+    ::LsqSums4 fitter = *(_data->circleFitter); // clone to not change the fitter
+    const float xC = fitter.x0();
+    const float yC = fitter.y0();
+    const float r  = fitter.radius();
+    plotCircle(xC, yC, r, kRed, 2, "RecoCircle"); // Reco circle
+
+    // Plot each hit on the circle
+    for(auto& tcHit : *(_data->tcHits)) {
+      if(tcHit.inHelix || !tcHit.used) continue;
+      const int index = tcHit.hitIndice;
+      if(index < 0) continue;
+      plotHitXY(_data->chColl->at(index), kGreen);
+    }
+  }
+
+  //-----------------------------------------------------------------------------
+  void AgnosticHelixFinderDiag::plotTripletXY(const tripletInfo& info, const int index, bool mc_triplet) {
 
     // Plot the circle from the triplet
     const float r  = info.radius;
@@ -1165,9 +1496,10 @@ namespace mu2e {
     plotCircle(xC, yC, r, kRed, 2, title); // Reco triplet
 
     // Plot the triplet points used
-    plotHitXY(info.trip->i, kGreen);
-    plotHitXY(info.trip->j, kGreen);
-    plotHitXY(info.trip->k, kGreen);
+    const int color = (mc_triplet) ? kOrange : kGreen;
+    plotHitXY(info.trip.i, color);
+    plotHitXY(info.trip.j, color);
+    plotHitXY(info.trip.k, color);
 
     // check for MC info
     const auto sim = tripletSimMatch(info.trip);
@@ -1185,48 +1517,76 @@ namespace mu2e {
   // function to plot XY view at various stages of logic
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinderDiag::plotXY(int stage) {
-    if(_debugLevel > -1) printf("  %s: Plotting XY for stage %i\n", __func__, stage);
+    if(_debugLevel > -1) printf("  %12s: Plotting XY for stage %i\n", __func__, stage);
     if(!_data) return;
-    if(stage == 1) return;
+    if(!c_tot_) return;
 
-    TCanvas* c(nullptr);
+    TPad* c(nullptr);
     switch(stage) {
     case 0: c = c_trp_; break;
     case 1: c = c_trp_; break; // triplet, but don't stop to animate
-    case 3: c = c_hlx_; break;
-    case 4: c = c_hlx_; break;
+    case 5: c = c_trp_; break;
+    case 2: c = c_hlx_; break; // seed circle
+    case 3: c = c_hlx_; break; // final helix
+    case 4: c = c_hlx_; break; // total event
+    case 6: c = c_hlx_; break; // time cluster stage
     }
     if(!c) {
       printf("[AgnosticHelixFinderDiag::%s] Undefined fit stage %i\n", __func__, stage);
       return;
     }
+    c_tot_->cd();
+    c->Draw();
     c->cd();
 
     // Use a graph to control the axes
-    TGraph* mg = new TGraph();
-    mg->AddPoint(0.,0.); // necessary for drawing
-    mg->GetXaxis()->SetLimits(-900, 900);
-    mg->GetYaxis()->SetRangeUser(-900, 900);
-    mg->GetXaxis()->SetTitle("x");
-    mg->GetYaxis()->SetTitle("y");
-    mg->Draw("AP");
-    _drawn_objects.push_back(mg);
+    TGraph* axes = new TGraph();
+    axes->AddPoint(0.,0.); // necessary for drawing
+    axes->GetXaxis()->SetLimits(-900, 900);
+    axes->GetYaxis()->SetRangeUser(-900, 900);
+    axes->GetXaxis()->SetTitle("x (mm)");
+    axes->GetYaxis()->SetTitle("y (mm)");
+    axes->Draw("AP");
+    _drawn_objects.push_back(axes);
 
     // Draw the tracker
     plotCircle(0., 0., 380., kBlack, 2, "tracker");
     plotCircle(0., 0., 700., kBlack, 2, "tracker", false);
 
-    // Stage 0: Per triplet
+    // Stage 0/1: Per triplet
     if(stage == 0 || stage == 1) plotTripletXY(_data->tripInfo);
 
-    // Stage 3: Per helix
-    if(stage == 3) plotHelixXY(_data->hseed);
+    // Stage 2: Circle fit
+    if(stage == 2) plotCircleXY();
 
-    // Stage 4: End of the event processing
-    if(stage == 4) {
+    // Stage 3: Per helix
+    if(stage == 3 && _data->hseed) plotHelixXY(*(_data->hseed));
+
+    // Stage 4: End of the event processing: helix canvas
+    if(stage == 4 || stage == 6) {
+
       // All hits in the event
-      if(_data && _data->chColl) {
-        for(const auto& hit : *(_data->chColl)) plotHitXY(hit, kBlack);
+      if(_data && _data->chColl && (stage != 6 || _data->tc)) {
+        const size_t nhits = (stage == 6) ? _data->tc->hits().size() : _data->chColl->size();
+        for(size_t ihit = 0; ihit < nhits; ++ihit) {
+          const size_t index = (stage == 6) ? _data->tc->hits().at(ihit) : ihit;
+          const auto& hit = _data->chColl->at(index);
+          if(hit.time() < _tMin) continue;
+          const auto sim = hitSim(index);
+          double pmc(0.);
+          int pdg = 0;
+          if(sim) {
+            pdg = std::abs(sim->pdgId());
+            const int sim_id = sim->id().asInt();
+            if(_simInfo.find(sim_id) != _simInfo.end()) {
+              const auto& info = _simInfo[sim_id];
+              pmc = std::max(info.hit_start_p_, info.hit_end_p_);
+            }
+            if(pdg == 2212 && !_showProtons) continue;
+          }
+          const int color = MCColor(pdg, pmc);
+          plotHitXY(hit, color);
+        }
       }
 
       // All helices
@@ -1235,19 +1595,41 @@ namespace mu2e {
         plotHelixXY(info.seed, index);
         ++index;
       }
+    }
 
+    // Stage 4/5: End of the event processing: MC truth
+    if(stage == 4 || stage == 5) {
       // Relevant sim particles
+      int index = 0;
       for(auto info_pair : _simInfo) {
         auto& info = info_pair.second;
-        if(info.nhits_ > 10 && (info.hit_start_p_ > 20. || info.hit_end_p_ > 20.)) {
-          float xC_mc, yC_mc, r_mc;
-          MCCircle(info.id_, xC_mc, yC_mc, r_mc);
-          plotCircle(xC_mc, yC_mc, r_mc, kBlue, 2, "MC_Sim"); // MC helix estimate
+        const double pmc = std::max(info.hit_start_p_, info.hit_end_p_);
+        const double tmc = std::max(info.hit_start_t_, info.hit_end_t_);
+        if(info.nhits_ > 10 && pmc > _pMin && tmc > _tMin) {
+          const auto sim = simByID(_simcol, info.id_);
+          const int pdg = std::abs(sim->pdgId());
+          if((pdg < 10000) && (pdg != 2212 || _showProtons)) {
+            if(stage == 4) { // helix canvas
+              float xC_mc, yC_mc, r_mc;
+              MCCircle(info.id_, xC_mc, yC_mc, r_mc);
+              if(_debugLevel > 2) printf(" Relevant MC: pdg = %4i, pmc = %6.1f, x(C) = %7.1f, y(C) = %7.1f, r = %6.1f\n",
+                                         pdg, pmc, xC_mc, yC_mc, r_mc);
+              const int mc_color = MCColor(pdg, pmc);
+              plotCircle(xC_mc, yC_mc, r_mc, mc_color, 2, "MC_Sim"); // MC helix estimate
+            } else if(stage == 5) { // triplet canvas
+              if(_simTriplets.find(info.id_) != _simTriplets.end()) {
+                plotTripletXY(_simTriplets[info.id_], index, true);
+                ++index;
+              }
+            }
+          }
         }
       }
     }
+
+    plotLabel(c->GetLeftMargin(), c->GetTopMargin());
     c->Modified(); c->Update();
-    if(stage != 1) {
+    if(stage == 0 || stage == 3 || (!_display3D && stage == 4) || stage == 6) {
       _application->Run(true);
       std::cout << std::endl;
     }
@@ -1260,110 +1642,147 @@ namespace mu2e {
   // function to plot a phi-z segment
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinderDiag::plotSegment(int option) {
-    if(_debugLevel > -1) printf("  %s: Plotting segment with option %i\n", __func__, option);
-    if(!_data || !_data->tcHits || !_data->seedPhiLines || _data->seedPhiLines->empty()) return;
+    if(_debugLevel > -1) printf("  %12s: Plotting segment with option %i\n", __func__, option);
+    if(!_data || !_data->tcHits) return;
+    if(!c_tot_) return;
+
+    // Retrieve the relevant canvas and switch to this pad
+    TPad* c(nullptr);
+    switch(option) {
+    case 0: c = c_seg_; break;
+    case 1: c = c_seg_; break;
+    case 2: c = c_seg_; break; // plot helix PhiZ
+    case 3: c = c_seg_; break; // all helices PhiZ
+    case 4: c = c_seg_; break; // all time cluster helices PhiZ
+    }
+    if(!c) {
+      printf("AgnosticHelixFinderDiag::%s: Undefined option %i\n", __func__, option);
+      return;
+    }
+    c_tot_->cd();
+    c->Draw();
+    c->cd();
+
+    // Use a graph to control the axes
+    TGraph* axes = new TGraph();
+    axes->AddPoint(0.,0.); // necessary for drawing
+    axes->SetMarkerSize(0.);
+    axes->GetXaxis()->SetLimits(-1600., 1600.);
+    axes->GetYaxis()->SetRangeUser(-7.0, 7.0);
+    axes->GetXaxis()->SetTitle("z (mm)");
+    axes->GetYaxis()->SetTitle("#phi");
+    axes->Draw("AP");
+    _drawn_objects.push_back(axes);
+
+    axes->GetXaxis()->SetLabelSize(0.08);
+    axes->GetYaxis()->SetLabelSize(0.08);
+    axes->GetXaxis()->SetTitleSize(0.10);
+    axes->GetYaxis()->SetTitleSize(0.10);
+    axes->GetYaxis()->SetTitleOffset(0.3);
+
+    // Plot each line information
+    if(option == 0 || option == 1) {
+      if(!_data->seedPhiLines) {
+        printf("[AgnosticHelixFinderDiag::%s] Exiting due to missing data!\n", __func__);
+        return;
+      }
+      for(size_t iline = 0; iline < _data->seedPhiLines->size(); ++iline) {
+        plotLinePhiZ(_data->seedPhiLines->at(iline), iline);
+      }
+    } else if(option == 2 || option == 3) { // helix info
+      if(option == 2 && _data->hseed) plotHelixPhiZ(*(_data->hseed));
+      if(option == 3) {
+        // Relevant sim particles
+        int index = 0;
+        for(auto info_pair : _simInfo) {
+          auto& info = info_pair.second;
+          const double pmc = std::max(info.hit_start_p_, info.hit_end_p_);
+          const double tmc = std::max(info.hit_start_t_, info.hit_end_t_);
+          if(info.nhits_ > 10 && pmc > _pMin && tmc > _tMin) {
+            const auto sim = simByID(_simcol, info.id_);
+            plotSimPhiZ(sim, index); // MC helix estimate
+            ++index;
+          }
+        }
+
+        // Helices
+        index = 0;
+        for(auto& info : _data->helixSeedData) {
+          plotHelixPhiZ(info.seed, index);
+          ++index;
+        }
+      }
+    }
+
+    plotLabel(c->GetLeftMargin(), c->GetTopMargin());
+    c->Modified(); c->Update();
+    if(option == 0 || option == 1) _application->Run(true);
+  }
+
+  //-----------------------------------------------------------------------------
+  // function to plot the 3D event
+  //-----------------------------------------------------------------------------
+  void AgnosticHelixFinderDiag::plotTotal(int option) {
+    if(_debugLevel > -1) printf("  %12s: Plotting with option %i\n", __func__, option);
+    if(!_data || !_data->tcHits || !_data->chColl) return;
 
     // Retrieve the relevant canvas and switch to this pad
     TCanvas* c(nullptr);
     switch(option) {
-    case 0: c = c_seg_; break;
-    case 1: c = c_seg_; break;
+    case 0: c = c_3d_; break;
     }
     if(!c) {
       printf("AgnosticHelixFinderDiag::%s: Undefined option %i\n", __func__, option);
       return;
     }
     c->cd();
+    c->Draw();
 
     // Use a graph to control the axes
-    TGraph* mg = new TGraph();
-    mg->AddPoint(0.,0.); // necessary for drawing
-    mg->SetMarkerSize(0.);
-    mg->GetXaxis()->SetLimits(-1600., 1600.);
-    mg->GetYaxis()->SetRangeUser(-7.0, 7.0);
-    mg->GetXaxis()->SetTitle("z (mm)");
-    mg->GetYaxis()->SetTitle("#phi");
-    mg->Draw("AP");
-    _drawn_objects.push_back(mg);
+    TH3F* frame3d = new TH3F("frame3d","frame3d",
+                             10, -1600., 1600.,
+                             10, -900, 900,
+                             10, -900, 900);
+    _drawn_objects.push_back(frame3d);
 
-    // Plot each line information
-    for(size_t iline = 0; iline < _data->seedPhiLines->size(); ++iline) {
-      auto& line = _data->seedPhiLines->at(iline);
-      for(auto index : line.tcHitsIndices) plotHitPhiZ(index, iline);
+    // Make a graph of all hits
+    auto g_hits = new TGraph2D();
+    for(const auto& hit : *(_data->chColl)) {
+      const auto pos = hit.pos();
+      g_hits->AddPoint(pos.z(), pos.x(), pos.y());
     }
+    g_hits->SetMarkerStyle(20);
+    g_hits->SetMarkerColor(kRed);
+    _drawn_objects.push_back(g_hits);
+
+    // Draw the "tracker" -- just use points for simplicity
+    TGraph2D* g_tracker = new TGraph2D();
+    const int nphi = 40; const int nz = 4;
+    const double rmin(380.), rmax(700.), zmin(-1500.), zmax(1500.);
+    for(int iphi = 0; iphi <= nphi; ++iphi) {
+      for(int iz = 0; iz <= nz; ++iz) {
+        const double phi = 2.*M_PI*iphi/nphi;
+        const double z = zmin + (zmax - zmin)*iz/nz;
+        g_tracker->AddPoint(z, rmin*std::cos(phi), rmin*std::sin(phi));
+        g_tracker->AddPoint(z, rmax*std::cos(phi), rmax*std::sin(phi));
+      }
+    }
+    g_tracker->SetMarkerStyle(6);
+    g_tracker->SetMarkerColor(kBlack);
+    _drawn_objects.push_back(g_tracker);
+
+    // FIXME: Currently 3D drawing throws warnings due to ROOT issue and art upgrades to an error
+    if(false) {
+      frame3d->Draw();
+      g_tracker->Draw("P SAME");
+      g_hits->Draw("P SAME");
+    } else { // only draw the hits for now
+      g_hits->Draw("P SAME");
+    }
+
+    plotLabel(c->GetLeftMargin(), c->GetTopMargin());
     c->Modified(); c->Update();
     _application->Run(true);
-
-    // // set up stuff for line
-    // float lineZMin = line.zMin;
-    // float lineZMax = line.zMax;
-    // float lineSlope = line.fitter.dydx();
-    // float linePhi0 = line.fitter.y0();
-    // float linePhi1 = lineSlope * lineZMin + linePhi0;
-    // float linePhi2 = lineSlope * lineZMax + linePhi0;
-
-    // // set up MultiGraph that multiple graphs can be added to
-    // TMultiGraph* mg = new TMultiGraph();
-    // mg->GetXaxis()->SetLimits(lineZMin - 100.0, lineZMax + 100.0);
-    // mg->GetYaxis()->SetRangeUser(linePhi1 - 1.0, linePhi2 + 1.0);
-    // mg->GetXaxis()->SetTitle("z");
-    // mg->GetYaxis()->SetTitle("phi");
-
-    // // add dummy point to graph to make sure something is drawn
-    // float dummyArray1[1] = {0.0};
-    // float dummyArray2[1] = {0.0};
-    // TGraph* dummyGraph = new TGraph(1, dummyArray1, dummyArray2);
-    // dummyGraph->SetMarkerColor(0);
-    // dummyGraph->SetMarkerSize(0.01);
-    // mg->Add(dummyGraph);
-
-    // // make TGraphs
-    // if (!particlePhiPoints.empty()) {
-    //   TGraphErrors* particleGraph =
-    //     new TGraphErrors(particlePhiPoints.size(), particleZPoints.data(), particlePhiPoints.data(),
-    //                      particleZErrors.data(), particlePhiErrors.data());
-    //   particleGraph->SetMarkerStyle(20);
-    //   particleGraph->SetMarkerSize(1.1);
-    //   particleGraph->SetMarkerColor(8);
-    //   mg->Add(particleGraph);
-    // }
-    // if (!bkgPhiPoints.empty()) {
-    //   TGraphErrors* bkgGraph =
-    //     new TGraphErrors(bkgPhiPoints.size(), bkgZPoints.data(), bkgPhiPoints.data(),
-    //                      bkgZErrors.data(), bkgPhiErrors.data());
-    //   bkgGraph->SetMarkerStyle(20);
-    //   bkgGraph->SetMarkerSize(1.1);
-    //   bkgGraph->SetMarkerColor(2);
-    //   mg->Add(bkgGraph);
-    // }
-    // if(_debugLevel > 2) printf("    Drawing the first graphs\n");
-    // // draw TGraphs
-    // mg->Draw("AP");
-
-    // // add "legend" to plot
-    // std::vector<std::string> labels = {Form("N_{green} = %zu", particlePhiPoints.size()),
-    //   Form("N_{red} = %zu", bkgPhiPoints.size())};
-    // TLatex* latex = new TLatex();
-    // latex->SetNDC();
-    // latex->SetTextFont(43);
-    // latex->SetTextSize(24);
-    // latex->SetTextAlign(31);
-    // float th = 0.05;
-    // float tx = 0.30;
-    // float ty = 0.85;
-    // for (size_t l = 0; l < labels.size(); l++) {
-    //   latex->DrawLatex(tx, ty, labels[l].c_str());
-    //   ty -= th;
-    // }
-
-    // // add line fit
-    // TLine* phiZFit = new TLine(lineZMin, linePhi1, lineZMax, linePhi2);
-    // phiZFit->SetLineColor(6);
-    // phiZFit->Draw("same");
-
-    // c->Modified(); c->Update();
-    // if(_debugLevel > 2) c->Print(Form("line_seg_display_%i.png", option));
-    // if(_debugLevel > 1) printf("  %s: Finished plotting segment with option %i\n", __func__, option);
   }
 
   DEFINE_ART_CLASS_TOOL(AgnosticHelixFinderDiag)

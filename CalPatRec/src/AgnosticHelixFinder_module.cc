@@ -42,6 +42,7 @@
 namespace mu2e {
 
   using namespace AgnosticHelixFinderTypes;
+  using LoopCondition = AgnosticHelixFinderTypes::LoopCondition;
 
   class AgnosticHelixFinder : public art::EDProducer {
 
@@ -96,12 +97,6 @@ namespace mu2e {
       fhicl::Sequence<std::string> validHelixDirections   {Name("validHelixDirections" ), Comment("only save desired directions")  };
 
       fhicl::Table<AgnosticHelixFinderTypes::Config> diagPlugin  {Name("diagPlugin"), Comment("diag plugin"                   )  };
-    };
-
-    enum LoopCondition {
-      CONTINUE,
-      BREAK,
-      GOOD
     };
 
   private:
@@ -379,11 +374,12 @@ namespace mu2e {
       _diagInfo.timeClusterData.clear();
       _diagInfo.helixSeedData.clear();
       _diagInfo.lineSegmentData.clear();
-      _diagInfo.tripInfo.trip = nullptr;
       _diagInfo.hseed = nullptr;
       _diagInfo.event = &evt;
       _diagInfo.tcHits = &_tcHits;
       _diagInfo.seedPhiLines = &_seedPhiLines;
+      _diagInfo.circleFitter = &_circleFitter;
+      _diagInfo.lineFitter = &_lineFitter;
       _diagInfo.chColl = _chColl;
       _diagInfo.diagLevel = _diagLevel;
       _diagInfo.bz0 = _bz0;
@@ -410,9 +406,10 @@ namespace mu2e {
       for (size_t i = 0; i < _tcColl->size(); i++) {
         // check to see if cluster is a busy one
         // if cluster is busy or event is intense then only process the time cluster if it has calo cluster
-        _intenseCluster = (int) _tcColl->at(i).nhits() > _intenseClusterThresh;
+        const auto tc = _tcColl->at(i);
+        _intenseCluster = (int) tc.nhits() > _intenseClusterThresh;
         if (_intenseEvent || _intenseCluster) {
-          if (!_tcColl->at(i).hasCaloCluster()) { continue; }
+          if (!tc.hasCaloCluster()) { continue; }
         }
         const int nHelicesInitial = _diagInfo.nHelices; // Only valid if diagLevel > 0, for diagnostic tracking
         tcHitsFill(i); // Initialize the list of hits in the time cluster
@@ -423,6 +420,8 @@ namespace mu2e {
           timeClusterInfo.nComboHits = _tcColl->at(i).nhits();
           timeClusterInfo.nStrawHits = _tcColl->at(i).nStrawHits();
           _diagInfo.timeClusterData.push_back(timeClusterInfo);
+          _hmanager->fillHistograms(&_diagInfo, DIAG::kTimeCluster);
+          _diagInfo.helixSeedData.clear(); // clear for the next time cluster
         }
       }
     }
@@ -430,7 +429,7 @@ namespace mu2e {
     // fill necessary data members for diagnostic tool
     if (_diagLevel > 0) {
       _diagInfo.nTimeClusters = _tcColl->size();
-      for(auto& hseed : *hsColl) _diagInfo.helixSeedData.push_back(hsInfo(_bz0, &hseed));
+      for(auto& hseed : *hsColl) _diagInfo.helixSeedData.push_back(hsInfo(_bz0, hseed));
       _hmanager->fillHistograms(&_diagInfo, DIAG::kEnd);
     }
 
@@ -596,6 +595,7 @@ namespace mu2e {
     if(_diagLevel > 0) {
       _diagInfo.targPos = _stopTargPos;
       _diagInfo.caloPos = _caloPos;
+      _diagInfo.tc = &_tcColl->at(tc);
     }
   }
 
@@ -871,10 +871,11 @@ namespace mu2e {
     else { outcome = GOOD; }
 
     if(_diagLevel > 0) { // diagnose triplets
-      _diagInfo.tripInfo.trip = &trip;
+      _diagInfo.tripInfo.trip = trip;
       _diagInfo.tripInfo.radius = radius;
       _diagInfo.tripInfo.xC = _circleFitter.x0();
       _diagInfo.tripInfo.yC = _circleFitter.y0();
+      _diagInfo.loopCondition = outcome;
 
       _hmanager->fillHistograms(&_diagInfo, DIAG::kTriplet);
     }
@@ -914,7 +915,10 @@ namespace mu2e {
     if (_circleFitter.qn() < _minSeedCircleHits) { outcome = CONTINUE;}
     else { outcome = GOOD; }
 
-    if(_diagLevel > 0) _hmanager->fillHistograms(&_diagInfo, DIAG::kCircle);
+    if(_diagLevel > 0) {
+      _diagInfo.loopCondition = outcome;
+      _hmanager->fillHistograms(&_diagInfo, DIAG::kCircle);
+    }
   }
 
   //-----------------------------------------------------------------------------
@@ -1069,7 +1073,10 @@ namespace mu2e {
     if (_seedPhiLines.size() == 0) { outcome = CONTINUE; }
     else { outcome = GOOD; }
 
-    if(_diagLevel > 0) _hmanager->fillHistograms(&_diagInfo, DIAG::kSegments);
+    if(_diagLevel > 0) {
+      _diagInfo.loopCondition = outcome;
+      _hmanager->fillHistograms(&_diagInfo, DIAG::kSegments);
+    }
 
   }
 
@@ -1236,7 +1243,10 @@ namespace mu2e {
     if (_circleFitter.qn() < _minFinalSeedHits || nHitsRatio > _maxNHitsRatio) { outcome = CONTINUE;}
     else { outcome = GOOD; }
 
-    if(_diagLevel > 0) _hmanager->fillHistograms(&_diagInfo, DIAG::kLine);
+    if(_diagLevel > 0) {
+      _diagInfo.loopCondition = outcome;
+      _hmanager->fillHistograms(&_diagInfo, DIAG::kLine);
+    }
   }
 
   //-----------------------------------------------------------------------------
@@ -1348,7 +1358,10 @@ namespace mu2e {
         pt > _maxHelixPerpMomentum) { outcome = CONTINUE; }
     else { outcome = GOOD; }
 
-    if(_diagLevel > 0) _hmanager->fillHistograms(&_diagInfo, DIAG::kViability);
+    if(_diagLevel > 0) {
+      _diagInfo.loopCondition = outcome;
+      _hmanager->fillHistograms(&_diagInfo, DIAG::kViability);
+    }
   }
 
   //-----------------------------------------------------------------------------
@@ -1423,6 +1436,7 @@ namespace mu2e {
     HSColl.emplace_back(hseed);
 
     if(_diagLevel > 0) { // diagnostics for accepted helix seeds
+      _diagInfo.helixSeedData.push_back(hsInfo(_bz0, hseed)); // list of helices per time cluster
       _hmanager->fillHistograms(&_diagInfo, DIAG::kFinal);
     }
 

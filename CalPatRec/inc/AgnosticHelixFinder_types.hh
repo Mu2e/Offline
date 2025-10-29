@@ -19,6 +19,26 @@ namespace mu2e {
     // Used in the AgnosticHelixFinder
     //-----------------------------------------------------------------------------
 
+    // Special "hits" used in the helix finding
+    enum HitType {
+      CALOCLUSTER = -1,
+      STOPPINGTARGET = -2
+    };
+
+    // Conditions within the helix finding loop
+    enum LoopCondition {
+      CONTINUE,
+      BREAK,
+      GOOD
+    };
+
+    std::string ConditionName(LoopCondition condition) {
+      if(condition == LoopCondition::CONTINUE) return "Continue";
+      if(condition == LoopCondition::BREAK) return "Break";
+      if(condition == LoopCondition::GOOD) return "Good";
+      return "Unkown";
+    }
+
     struct cHit {
       int     hitIndice = 0; // index of point in _chColl
       float   circleError2 = 1.0;
@@ -61,15 +81,19 @@ namespace mu2e {
     struct Config {
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<std::string> tool_type{Name("tool_type")      , Comment("tool type: AgnosticHelixFinderDiag")};
-      fhicl::Atom<std::string> simTag   {Name("simTag")         , Comment("Sim particle collection tag"), ""};
-      fhicl::Atom<std::string> digTag   {Name("strawDigiMCTag") , Comment("Straw digi MC collection tag"), ""};
-      fhicl::Atom<bool>        display  {Name("display")        , Comment("Run the display"), false};
-      fhicl::Atom<int>         debug    {Name("debug")          , Comment("Tool debug printouts"), 0};
+      fhicl::Atom<std::string> tool_type     {Name("tool_type")       , Comment("tool type: AgnosticHelixFinderDiag")};
+      fhicl::Atom<std::string> simTag        {Name("simTag")          , Comment("Sim particle collection tag"), ""};
+      fhicl::Atom<std::string> digTag        {Name("strawDigiMCTag")  , Comment("Straw digi MC collection tag"), ""};
+      fhicl::Atom<bool>        display       {Name("display")         , Comment("Run the display"), false};
+      fhicl::Atom<bool>        display3D     {Name("display3D")       , Comment("Run the 3D display"), false};
+      fhicl::Atom<bool>        showProtons   {Name("showProtons")     , Comment("Show proton hits/helices"), false};
+      fhicl::Atom<double>      pMin          {Name("pMin")            , Comment("Minimum time momentum for relevant MC"), 70.};
+      fhicl::Atom<double>      tMin          {Name("tMin")            , Comment("Minimum time for hits/MC tracks"), 500.};
+      fhicl::Atom<int>         debug         {Name("debug")           , Comment("Tool debug printouts"), 0};
     };
 
     struct tripletInfo { // for diagnostics
-      const triplet* trip;
+      triplet trip;
       float   radius = 0.f;
       float   xC = 0.f;
       float   yC = 0.f;
@@ -82,12 +106,10 @@ namespace mu2e {
     };
 
     struct hsInfo {
-      float eDepAvg;
       float bz0;
-      const HelixSeed* seed;
-      hsInfo(float EDep = 0., float B = 0., const HelixSeed* Seed = nullptr) :
-        eDepAvg(EDep), bz0(B), seed(Seed) {}
-      hsInfo(float B, const HelixSeed* Seed) : hsInfo(0., B, Seed) {}
+      HelixSeed seed;
+      hsInfo(float B, const HelixSeed& Seed) :
+        bz0(B), seed(Seed) {}
     };
 
     struct lineSegmentInfo {
@@ -115,6 +137,11 @@ namespace mu2e {
       const std::vector<cHit>* tcHits = nullptr;
       const std::vector<lineInfo>* seedPhiLines = nullptr;
       const ComboHitCollection* chColl = nullptr;
+      const TimeCluster* tc = nullptr;
+      const ::LsqSums4* circleFitter = nullptr;
+      const ::LsqSums2* lineFitter = nullptr;
+
+      LoopCondition loopCondition;
 
       XYZVectorF caloPos;
       XYZVectorF targPos;
@@ -122,12 +149,6 @@ namespace mu2e {
       float bz0 = 0.f;
 
       int diagLevel = 0;
-    };
-
-    // Special "hits" used in the helix finding
-    enum HitType {
-      CALOCLUSTER = -1,
-      STOPPINGTARGET = -2
     };
 
     // Enums for the diagnostic tool
