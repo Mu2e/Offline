@@ -215,17 +215,22 @@ namespace mu2e {
     void plotPhiZ           (int stage);
     void plotSegment        (int option);
     void plotTotal          (int stage);
-    void plotLabel          (float left_margin, float right_margin) {
+    void plotLabel          (float left_margin, float top_margin,
+                             float right_margin = 0.1, std::string title = "") {
       TLatex* label = new TLatex();
       label->SetNDC();
       label->SetTextFont(43);
       label->SetTextSize(24);
       label->SetTextAlign(11);
-      label->DrawLatex(left_margin, 1.01 - right_margin,
+      label->DrawLatex(left_margin, 1.01 - top_margin,
                        Form("Event: %i:%i:%u",
                             _data->event->run(),
                             _data->event->subRun(),
                             _data->event->event()));
+      if(title != "") {
+        label->SetTextAlign(31);
+        label->DrawLatex(1. - right_margin, 1.01 - top_margin, title.c_str());
+      }
       _drawn_objects.push_back(label);
     }
 
@@ -1357,6 +1362,7 @@ namespace mu2e {
     const float phi0  = fitter.y0();;
     const float phi1  = slope * zmin + phi0;
     const float phi2  = slope * zmax + phi0;
+
     TLine* tline = new TLine(zmin, phi1, zmax, phi2);
     tline->SetLineColor(color);
     tline->SetLineWidth(1);
@@ -1522,14 +1528,15 @@ namespace mu2e {
     if(!c_tot_) return;
 
     TPad* c(nullptr);
+    std::string title("");
     switch(stage) {
-    case 0: c = c_trp_; break;
-    case 1: c = c_trp_; break; // triplet, but don't stop to animate
-    case 5: c = c_trp_; break;
-    case 2: c = c_hlx_; break; // seed circle
-    case 3: c = c_hlx_; break; // final helix
-    case 4: c = c_hlx_; break; // total event
-    case 6: c = c_hlx_; break; // time cluster stage
+    case 0: c = c_trp_; title = "Triplets"; break;
+    case 1: c = c_trp_; title = "Triplets"; break; // triplet, but don't stop to animate
+    case 5: c = c_trp_; title = "Triplets"; break;
+    case 2: c = c_hlx_; title = "Seed circle"; break; // seed circle
+    case 3: c = c_hlx_; title = "Helix"; break; // final helix
+    case 4: c = c_hlx_; title = "Helices"; break; // total event
+    case 6: c = c_hlx_; title = "Helices"; break; // time cluster stage
     }
     if(!c) {
       printf("[AgnosticHelixFinderDiag::%s] Undefined fit stage %i\n", __func__, stage);
@@ -1627,7 +1634,7 @@ namespace mu2e {
       }
     }
 
-    plotLabel(c->GetLeftMargin(), c->GetTopMargin());
+    plotLabel(c->GetLeftMargin(), c->GetTopMargin(), c->GetRightMargin(), title);
     c->Modified(); c->Update();
     if(stage == 0 || stage == 3 || (!_display3D && stage == 4) || stage == 6) {
       _application->Run(true);
@@ -1648,12 +1655,13 @@ namespace mu2e {
 
     // Retrieve the relevant canvas and switch to this pad
     TPad* c(nullptr);
+    std::string title("");
     switch(option) {
-    case 0: c = c_seg_; break;
-    case 1: c = c_seg_; break;
-    case 2: c = c_seg_; break; // plot helix PhiZ
-    case 3: c = c_seg_; break; // all helices PhiZ
-    case 4: c = c_seg_; break; // all time cluster helices PhiZ
+    case 0: c = c_seg_; title = "Line segments"; break;
+    case 1: c = c_seg_; title = "Lines"; break;
+    case 2: c = c_seg_; title = "Helix #phi-z"; break; // plot helix PhiZ
+    case 3: c = c_seg_; title = "Helices #phi-z"; break; // all helices PhiZ
+    case 4: c = c_seg_; title = "Helices #phi-z"; break; // all time cluster helices PhiZ
     }
     if(!c) {
       printf("AgnosticHelixFinderDiag::%s: Undefined option %i\n", __func__, option);
@@ -1714,7 +1722,7 @@ namespace mu2e {
       }
     }
 
-    plotLabel(c->GetLeftMargin(), c->GetTopMargin());
+    plotLabel(c->GetLeftMargin(), c->GetTopMargin(), c->GetRightMargin(), title);
     c->Modified(); c->Update();
     if(option == 0 || option == 1) _application->Run(true);
   }
