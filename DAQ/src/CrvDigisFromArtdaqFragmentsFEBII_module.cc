@@ -203,6 +203,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
 	      {
                 std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
                 std::cerr << "ROC-port-0 error!" << std::endl;
+	        decoder.PrintBlockFEBII(iDataBlock);
 		//TODO: Add to crvDaqErrors
 		continue;
 	      }
