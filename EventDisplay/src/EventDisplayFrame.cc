@@ -51,6 +51,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   TGMainFrame(p, w, h),
   _wideband(pset.get<bool>("wideband",false)),
   _extracted(pset.get<bool>("extracted",false)),
+  _extractedCrvOnly(pset.get<bool>("extractedCrvOnly",false)),
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
   _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV")),
   _protonBunchTimeLabel(pset.get<std::string>("protonBunchTimeTag","EWMProducer")),
@@ -454,7 +455,7 @@ void EventDisplayFrame::initSetup()
   _showOtherStructures=false;
   _showMuonBeamStop=false;
   _showProtonAbsorber=false;
-  if(_wideband || _extracted)
+  if(_wideband || _extracted || _extractedCrvOnly)
   {
     _showSupportStructures=false;
     _showCRV=true;
@@ -601,8 +602,9 @@ void EventDisplayFrame::fillGeometry()
   DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, true, false, _showCRV);
   if(_wideband) m=_dataInterface->getSpaceBoundary(false, false, false, false, true);
   if(_extracted) m=_dataInterface->getSpaceBoundary(true, false, true, false, true);
+  if(_extractedCrvOnly) m=_dataInterface->getSpaceBoundary(false, false, false, false, true);
   _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
-  if(_wideband || _extracted)
+  if(_wideband || _extracted || _extractedCrvOnly)
   {
     EventDisplayViewSetup::sideview();
     _parallelButton->SetState(kButtonDown);
@@ -890,6 +892,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, true, param1==73, _showCRV);
                            if(_wideband) m=_dataInterface->getSpaceBoundary(false, false, false, false, true);
                            if(_extracted) m=_dataInterface->getSpaceBoundary(true, false, true, false, true);
+                           if(_extractedCrvOnly) m=_dataInterface->getSpaceBoundary(false, false, false, false, true);
                            _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
                            if(param1<73)
                            {
