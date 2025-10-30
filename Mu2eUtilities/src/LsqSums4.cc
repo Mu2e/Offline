@@ -5,9 +5,10 @@
 
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 
-
-LsqSums4::LsqSums4() {
+LsqSums4::LsqSums4(double X0, double Y0) {
   clear();
+  fX0 = X0;
+  fY0 = Y0;
 }
 
 void LsqSums4::clear() {
@@ -32,10 +33,10 @@ void LsqSums4::clear() {
   fY0   = 0;
 }
 
-
+//-----------------------------------------------------------------------------
 void LsqSums4::addPoint(double XX, double YY, double W) {
   double X, Y;
-  // move to COG
+                                        // move to COG to improve numerical accuracy
   X = XX-fX0;
   Y = YY-fY0;
 
@@ -81,6 +82,7 @@ void LsqSums4::removePoint(double XX, double YY, double W) {
   sy4   -= Y*Y*Y*Y*W;
 }
 
+//-----------------------------------------------------------------------------
 double LsqSums4::x0() {
   double x;
   x  = (sigYY()*(sigX2X()+sigXY2())-sigXY()*(sigX2Y()+sigYY2()))/2/det();
@@ -96,13 +98,13 @@ double LsqSums4::y0() {
 double LsqSums4::radius () {
   double r, x_0, y_0, dx, dy;
 
-  x_0 = x0();
-  y_0 = y0();
+  x_0 = x0()-fX0;
+  y_0 = y0()-fY0;
 
   dx = xMean()-x_0;
   dy = yMean()-y_0;
 
-  r = sqrt(sigXX()+sigYY()+dx*dx+dy*dy);
+  r  = sqrt(sigXX()+sigYY()+dx*dx+dy*dy);
 
   return r;
 }
@@ -117,11 +119,13 @@ double LsqSums4::phi0(){
   return phi0;
 }
 
+//-----------------------------------------------------------------------------
+// the straight line slope
+//-----------------------------------------------------------------------------
 double LsqSums4::dfdz(){
   double dfdz, D;
-  D = sw*sx2 - sx*sx;
-
-  dfdz = sw*sxy - sy*sx;
+  D     = sw*sx2 - sx*sx;
+  dfdz  = sw*sxy - sy*sx;
   dfdz /= D;
 
   return dfdz;
