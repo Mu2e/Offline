@@ -158,18 +158,17 @@ namespace mu2e {
 
   void
   TriggerResultsNavigator::print() const {
-    std::cout << "TriggerResultsNaviogator Map" << std::endl;
-    std::cout << "//------------------------------------------//" << std::endl;
-    std::cout << "//  trig_pathName          id     accepted  //" << std::endl;
-    std::cout << "//------------------------------------------//" << std::endl;
+    std::cout << "TriggerResultsNavigator Map" << std::endl;
+    std::cout << "//------------------------------------------------//" << std::endl;
+    std::cout << "//      trig_pathName           id      accepted  //" << std::endl;
+    std::cout << "//------------------------------------------------//" << std::endl;
 
-    for  (unsigned int i=0; i< _trigPathsNames.size(); ++i){
-      std::string name     = _trigPathsNames[i];
-      size_t      index    = findTrigPath(name);
-      bool        good     = accepted(name);
+    for (unsigned i=0; i< getTrigPaths().size(); ++i) {
+      const std::string path = getTrigPathName(i);
+      const int bit = findTrigPathID(path);
+      const bool good = accepted(path);
       std::cout << std::right;
-      std::cout <<"//"<<std::setw(24) << name << std::setw(2) << index << (good == true ? 1:0) << "//"<< std::endl;
-      // %24s  %2li       %i    //\n", name.c_str(), index, good == true ? 1:0);
+      std::cout <<"//"<<std::setw(40) << path << std::setw(5) << bit << " " << good << " //"<< std::endl;
     }
 
   }
