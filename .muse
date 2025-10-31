@@ -1,5 +1,5 @@
 # prefer to build with this environment
-ENVSET p087
+ENVSET p088
 # add Offline/bin to path
 PATH bin
 # recent commits can take enforce these flags
