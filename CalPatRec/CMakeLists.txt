@@ -1,5 +1,6 @@
 cet_make_library(
-    SOURCE
+  SOURCE
+      src/AgnosticHelixFinderDiag.cc
       src/CalHelixFinderAlg.cc
       src/CalHelixFinderData.cc
       src/ChannelID.cc
