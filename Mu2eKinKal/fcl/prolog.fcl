@@ -12,7 +12,10 @@ Mu2eKinKal : {
     strawWireMaterialName : "straw-wire"
     IPAMaterialName : "HDPE"
     STMaterialName : "Target"
-    dahlLynchScatteringFraction : 0.995
+    IonizationEnergyLossMode : 1 # Moyal mean
+    SolidScatteringFraction : 0.995
+    GasScatteringFraction : 0.999
+    ElectronBrehmsFraction : 0.04
   }
   KKFIT: {
     PrintLevel : 0
