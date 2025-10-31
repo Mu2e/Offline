@@ -92,6 +92,7 @@ void AgnosticHelixFinderDiag::initDisplay() {
 }
 
 //-----------------------------------------------------------------------------
+// Draw an x-y circle
 void AgnosticHelixFinderDiag::plotCircle(float xc, float yc, float r,
                                          int color, int marker_style,
                                          std::string title,
@@ -119,6 +120,7 @@ void AgnosticHelixFinderDiag::plotCircle(float xc, float yc, float r,
 }
 
 //-----------------------------------------------------------------------------
+// Plot a straw hit
 void AgnosticHelixFinderDiag::plotHitXY(const ComboHit& hit, int color) {
 
   // Get the hit position
@@ -154,6 +156,7 @@ void AgnosticHelixFinderDiag::plotHitXY(const ComboHit& hit, int color) {
 }
 
 //-----------------------------------------------------------------------------
+// Plot a straw hit associated with a triplet
 void AgnosticHelixFinderDiag::plotHitXY(const tripletPoint& point, int color) {
   if(!_data || !_data->chColl) return;
   if(point.hitIndice >= 0) {
@@ -173,6 +176,7 @@ void AgnosticHelixFinderDiag::plotHitXY(const tripletPoint& point, int color) {
 }
 
 //-----------------------------------------------------------------------------
+// Plot a hit in phi-z
 void AgnosticHelixFinderDiag::plotHitPhiZ(double z, double phi, int color, int iline, int marker) {
 
   // initialize the point
@@ -194,6 +198,7 @@ void AgnosticHelixFinderDiag::plotHitPhiZ(double z, double phi, int color, int i
 }
 
 //-----------------------------------------------------------------------------
+// Plot a combo hit in phi-z, for the assumed helix
 void AgnosticHelixFinderDiag::plotHitPhiZ(int index, int color, int iline, int marker) {
   if(!_data || !_data->tcHits || !_data->chColl) return;
 
@@ -234,6 +239,7 @@ void AgnosticHelixFinderDiag::plotHitPhiZ(int index, int color, int iline, int m
 }
 
 //-----------------------------------------------------------------------------
+// Plot a fit line in phi-z
 void AgnosticHelixFinderDiag::plotLinePhiZ(const lineInfo& line, bool resolve, int iline) {
 
   constexpr int colors[] = {kBlue, kGreen, kRed, kOrange, kPink, kYellow-2};
@@ -280,6 +286,7 @@ void AgnosticHelixFinderDiag::plotLinePhiZ(const lineInfo& line, bool resolve, i
 }
 
 //-----------------------------------------------------------------------------
+// Plot a helix in x-y
 void AgnosticHelixFinderDiag::plotHelixXY(const HelixSeed& hseed, const int index) {
   if(hseed.hits().empty()) return;
 
@@ -310,6 +317,7 @@ void AgnosticHelixFinderDiag::plotHelixXY(const HelixSeed& hseed, const int inde
 }
 
 //-----------------------------------------------------------------------------
+// Plot a helix in phi-z
 void AgnosticHelixFinderDiag::plotHelixPhiZ(const HelixSeed& hseed, const int index) {
   if(hseed.hits().empty()) return;
 
@@ -325,6 +333,7 @@ void AgnosticHelixFinderDiag::plotHelixPhiZ(const HelixSeed& hseed, const int in
 }
 
 //-----------------------------------------------------------------------------
+// Plot the phi-z hits associated with a sim particle
 void AgnosticHelixFinderDiag::plotSimPhiZ(const SimParticle* sim, bool resolve, const int index) {
   if(!sim || !_data || !_data->chColl) return;
 
@@ -363,6 +372,7 @@ void AgnosticHelixFinderDiag::plotSimPhiZ(const SimParticle* sim, bool resolve, 
 }
 
 //-----------------------------------------------------------------------------
+// Plot a fit circle in x-y
 void AgnosticHelixFinderDiag::plotCircleXY() {
   if(!_data || !_data->tcHits || !_data->chColl) return;
 
@@ -404,6 +414,7 @@ void AgnosticHelixFinderDiag::plotCircleXY() {
 }
 
 //-----------------------------------------------------------------------------
+// Plot the hits in phi-z for a reco circle
 void AgnosticHelixFinderDiag::plotCirclePhiZ() {
   if(!_data || !_data->tcHits || !_data->chColl) return;
 
@@ -432,6 +443,7 @@ void AgnosticHelixFinderDiag::plotCirclePhiZ() {
 }
 
 //-----------------------------------------------------------------------------
+// Plot a triplet in x-y
 void AgnosticHelixFinderDiag::plotTripletXY(const tripletInfo& info, const int index, bool mc_triplet) {
 
   // Plot the circle from the triplet
@@ -679,8 +691,7 @@ void AgnosticHelixFinderDiag::plotHelixStagePhiZ(int stage) {
 }
 
 //-----------------------------------------------------------------------------
-// function to plot the 3D event
-//-----------------------------------------------------------------------------
+// Plot the 3D event: Not fully implemented
 void AgnosticHelixFinderDiag::plotTotal(int option) {
   if(_debugLevel > -1) printf("  %12s: Plotting with option %i\n", __func__, option);
   if(!_data || !_data->tcHits || !_data->chColl) return;
@@ -730,7 +741,7 @@ void AgnosticHelixFinderDiag::plotTotal(int option) {
   g_tracker->SetMarkerColor(kBlack);
   _drawn_objects.push_back(g_tracker);
 
-  // FIXME: Currently 3D drawing throws warnings due to ROOT issue and art upgrades to an error
+  // FIXME: Currently 3D drawing returns warnings due to ROOT issue and art upgrades these to errors
   if(false) {
     frame3d->Draw();
     g_tracker->Draw("P SAME");
