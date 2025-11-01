@@ -99,6 +99,13 @@ namespace mu2e {
       float   yC = 0.f;
     };
 
+    struct seedCircleInfo { // for diagnostics
+      std::vector<int> hits; // list of combo hit indices included
+      float xC = 0.;
+      float yC = 0.;
+      float radius = 0.;
+    };
+
     struct tcInfo {
       int     nHelices;
       int     nComboHits;

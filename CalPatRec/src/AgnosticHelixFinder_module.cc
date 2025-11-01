@@ -42,7 +42,6 @@
 namespace mu2e {
 
   using namespace AgnosticHelixFinderTypes;
-  using LoopCondition = AgnosticHelixFinderTypes::LoopCondition;
 
   class AgnosticHelixFinder : public art::EDProducer {
 

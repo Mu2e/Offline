@@ -401,6 +401,7 @@ int AgnosticHelixFinderDiag::fillHistograms(void* Data, int Mode) {
   //-----------------------------------------------------------------------------
 
   if(Mode == DIAG::kTriplet) {
+    checkSimTriplets();
     if(_display && _data->diagLevel > 5) {
       std::cout << "Triplet stage: Loop condition " << ConditionName(_data->loopCondition)
                 << std::endl;
@@ -409,7 +410,6 @@ int AgnosticHelixFinderDiag::fillHistograms(void* Data, int Mode) {
       runDisplay();
     }
     fillTripletHistograms(_hist._tripletHists[0], _data->tripInfo);
-    checkSimTriplets();
     return 0;
   }
 
@@ -418,6 +418,7 @@ int AgnosticHelixFinderDiag::fillHistograms(void* Data, int Mode) {
   //-----------------------------------------------------------------------------
 
   if(Mode == DIAG::kCircle) {
+    checkSimCircles();
     if(_display && _data->diagLevel > 4) {
       std::cout << "Circle stage: Loop condition " << ConditionName(_data->loopCondition)
                 << std::endl;
@@ -510,7 +511,8 @@ int AgnosticHelixFinderDiag::fillHistograms(void* Data, int Mode) {
 
   if(Mode == DIAG::kTimeCluster) {
     if(_display && _data->diagLevel > 1) {
-      plotTripletStage(true);
+      // plotTripletStage(true);
+      plotCircleStage(true);
       plotHelixStageXY(kTimeCluster);
       plotHelixStagePhiZ(kTimeCluster);
       runDisplay();
@@ -524,7 +526,8 @@ int AgnosticHelixFinderDiag::fillHistograms(void* Data, int Mode) {
 
   if(Mode == DIAG::kEnd) {
     if(_display) {
-      plotTripletStage(true);
+      // plotTripletStage(true);
+      plotCircleStage(true);
       plotHelixStageXY(kEnd);
       plotHelixStagePhiZ(kEnd);
       if(_display3D) plotTotal(0);
@@ -601,6 +604,74 @@ void AgnosticHelixFinderDiag::checkSimTriplets() {
 }
 
 //--------------------------------------------------------------------------------------
+void AgnosticHelixFinderDiag::checkSimCircles() {
+  if(!_data || !_simcol) return;
+
+  // See if the current circle is the best match the sim hits in it
+  seedCircleInfo circleInfo;
+  {
+    ::LsqSums4 fitter = *(_data->circleFitter); // clone to not change the fitter
+    const float xC = fitter.x0();
+    const float yC = fitter.y0();
+    const float r  = fitter.radius();
+
+    circleInfo.xC = xC;
+    circleInfo.yC = yC;
+    circleInfo.radius = r;
+  }
+
+  for(size_t index = 0; index < _data->tcHits->size(); ++index) {
+    const auto& tcHit = _data->tcHits->at(index);
+    if(!tcHit.inHelix && tcHit.used) {
+      circleInfo.hits.push_back(tcHit.hitIndice);
+    }
+  }
+  if(_debugLevel > 1) printf("  %s: Retrieved seed circle with (x, y, r) = (%7.1f, %7.1f, %6.1f), N(hits) = %zu\n",
+                             __func__, circleInfo.xC, circleInfo.yC, circleInfo.radius,
+                             circleInfo.hits.size());
+
+  // Check if this circle is better for each sim
+  for(auto info_pair : _simInfo) {
+    const auto& info = info_pair.second;
+    if(info.nhits_ == 0) continue;
+    const unsigned sim_id = info.id_;
+
+    // Check if no circle has been found for this sim
+    if(_simCircles.find(sim_id) == _simCircles.end()) {
+      _simCircles[sim_id] = circleInfo;
+      continue;
+    }
+
+    // If one has been found, determine which is better
+    float x, y, r;
+    MCCircle(sim_id, x, y, r);
+
+    const float dr = circleInfo.radius - r;
+    const float dx = circleInfo.xC - x;
+    const float dy = circleInfo.yC - y;
+    const float d = std::sqrt(dr*dr + dx*dx + dy*dy);
+
+    const auto& curr = _simCircles[sim_id];
+    const float dr_curr = curr.radius - r;
+    const float dx_curr = curr.xC - x;
+    const float dy_curr = curr.yC - y;
+    const float d_curr = std::sqrt(dr_curr*dr_curr + dx_curr*dx_curr + dy_curr*dy_curr);
+
+    const int dhits = circleInfo.hits.size() - curr.hits.size();
+    if(std::fabs(d - d_curr) < 20.) {  // if both are similarly close, use N(hits)
+      if(dhits > 0) {
+        _simCircles[sim_id] = circleInfo;
+      }
+    } else {
+      if(d < d_curr) {
+        _simCircles[sim_id] = circleInfo;
+
+      }
+    }
+  }
+}
+
+//--------------------------------------------------------------------------------------
 float AgnosticHelixFinderDiag::MCHitPurity(const HelixSeed& hlx) {
   if(hlx.hits().empty()) return -1.f;
   int mc_hits;
@@ -628,6 +699,7 @@ void AgnosticHelixFinderDiag::initSimInfo(const SimParticleCollection* simcol,
                                           const StrawDigiMCCollection* digcol) {
   _simInfo.clear(); // clear the info from the previous event
   _simTriplets.clear();
+  _simCircles.clear();
   if(!simcol || !digcol) return;
 
   // Count the number of hits for each sim particle

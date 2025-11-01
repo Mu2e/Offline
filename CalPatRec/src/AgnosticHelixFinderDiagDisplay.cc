@@ -414,6 +414,26 @@ void AgnosticHelixFinderDiag::plotCircleXY() {
 }
 
 //-----------------------------------------------------------------------------
+// Plot a fit circle in x-y
+void AgnosticHelixFinderDiag::plotCircleXY(const seedCircleInfo& info, int index) {
+  if(!_data || !_data->tcHits || !_data->chColl) return;
+
+  // Plot the reco circle
+  const float xC = info.xC;
+  const float yC = info.yC;
+  const float r  = info.radius;
+  if(_debugLevel > 2) printf("  %s: Plotting circle (x, y, r) = (%7.1f, %7.1f, %6.1f), index = %i\n",
+                             __func__, xC, yC, r, index);
+  plotCircle(xC, yC, r, kRed, 2, (index < 0) ? "RecoCircle" : Form("RecoCircle_%i", index)); // Reco circle
+
+  // Plot each hit on the circle
+  for(auto index : info.hits) {
+    if(index < 0) continue;
+    plotHitXY(_data->chColl->at(index), kGreen);
+  }
+}
+
+//-----------------------------------------------------------------------------
 // Plot the hits in phi-z for a reco circle
 void AgnosticHelixFinderDiag::plotCirclePhiZ() {
   if(!_data || !_data->tcHits || !_data->chColl) return;
@@ -562,9 +582,15 @@ void AgnosticHelixFinderDiag::plotMC(int stage, bool phiz) {
             const int mc_color = MCColor(pdg, pmc);
             plotCircle(xC_mc, yC_mc, r_mc, mc_color, 2, "MC_Sim"); // MC helix estimate
           }
-        } else if(stage == kTriplet && !phiz) { // triplet canvas
+        } else if(stage == kTriplet && !phiz) { // triplets
           if(_simTriplets.find(info.id_) != _simTriplets.end()) {
             plotTripletXY(_simTriplets[info.id_], index, true);
+          }
+        } else if(stage == kCircle && !phiz) { // seed circles
+          if(_simCircles.find(info.id_) != _simCircles.end()) {
+            plotCircleXY(_simCircles[info.id_], index);
+          } else {
+            if(_debugLevel > 0) printf("--> Missing MC circle for ID %i, index %i\n", info.id_, index);
           }
         }
         ++index;
@@ -606,14 +632,19 @@ void AgnosticHelixFinderDiag::plotTripletStage(const bool mc_triplets) {
 
 //-----------------------------------------------------------------------------
 // Plot the seed circle(s)
-void AgnosticHelixFinderDiag::plotCircleStage() {
-  if(_debugLevel > 0) printf("  %12s: Plotting the seed circle\n",
-                             __func__);
-  auto c = c_hlx_;
+void AgnosticHelixFinderDiag::plotCircleStage(const bool mc_circles) {
+  if(_debugLevel > 0) printf("  %12s: Plotting the seed circle, MC = %o\n",
+                             __func__, mc_circles);
+  auto c = (mc_circles) ? c_trp_ : c_hlx_;
   if(!beginPlot(c)) return;
   std::string title("Seed Circle");
   plotXYAxes();
-  plotCircleXY();
+  if(mc_circles) {
+    plotMC(kCircle);
+    title = "Seed circles matched to MC";
+  } else {
+    plotCircleXY();
+  }
 
   endPlot(c, title);
 }

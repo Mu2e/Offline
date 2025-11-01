@@ -174,6 +174,7 @@ namespace mu2e {
 
     // MC utilities
     void checkSimTriplets();
+    void checkSimCircles();
     float MCHitPurity(const HelixSeed& hlx);
     float MCHitFraction(const HelixSeed& hlx);
     const SimParticle* helixSimMatch(const HelixSeed& hlx, double& pmc, int& mc_hits);
@@ -206,13 +207,14 @@ namespace mu2e {
     void plotHelixPhiZ      (const HelixSeed& hseed, const int index = -1);
     void plotSimPhiZ        (const SimParticle* sim, bool resolve = false, const int index = -1);
     void plotCircleXY       ();
+    void plotCircleXY       (const seedCircleInfo& info, int index = -1);
     void plotCirclePhiZ     ();
     void plotTripletXY      (const tripletInfo& info, const int index = -1, bool mc_triplet = false);
     void plotHitsXY         (const bool use_tc);
     void plotMC             (int stage, bool phiz = false);
     void plotBeginStage     (const bool use_tc = false);
     void plotTripletStage   (const bool mc_triplets = false);
-    void plotCircleStage    ();
+    void plotCircleStage    (const bool mc_circles = false);
     void plotSegmentStage   (bool resolve = false, bool seed_cirlce = false);
     void plotHelixStageXY   (int stage);
     void plotHelixStagePhiZ (int stage);
@@ -281,6 +283,7 @@ namespace mu2e {
 
     std::map<unsigned, Sim_t> _simInfo;
     std::map<unsigned, tripletInfo> _simTriplets; // map sims to their closest triplet
+    std::map<unsigned, seedCircleInfo> _simCircles; // map sims to their closest seed circle
 
     // For running a display
     TCanvas* c_tot_ = nullptr;
@@ -338,7 +341,7 @@ namespace mu2e {
       r_1  = pt * MeVmm; // convert to mm
       xC_1 = x + charge*r_1*py/pt;
       yC_1 = y - charge*r_1*px/pt;
-      l_1 = pz * MeVmm;
+      l_1  = -charge*pz * MeVmm;
       // phi = phi0 + z / lambda
       phi0_1 = std::fmod(phi - z / l_1, 2.*M_PI);
       if     (phi0_1 >  M_PI) phi0_2 -= 2.*M_PI;
@@ -359,7 +362,7 @@ namespace mu2e {
       r_2  = pt * MeVmm; // convert to mm
       xC_2 = x + charge*r_2*py/pt;
       yC_2 = y - charge*r_2*px/pt;
-      l_2 = pz * MeVmm;
+      l_2  = -charge*pz * MeVmm;
       phi0_2 = std::fmod(phi - z / l_2, 2.*M_PI);
       if     (phi0_2 >  M_PI) phi0_2 -= 2.*M_PI;
       else if(phi0_2 < -M_PI) phi0_2 += 2.*M_PI;
