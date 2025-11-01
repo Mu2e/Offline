@@ -53,37 +53,37 @@ void AgnosticHelixFinderDiag::initDisplay() {
   } else if(gApplication && !_application) _application = gApplication; // use the existing one
 
   // Ensure the display canvases are available
-  if(_display3D && !c_3d_) {
-    c_3d_ = new TCanvas("c_3d", "3D canvas"  , 900, 900);
+  if(_display3D && !_c_3d) {
+    _c_3d = new TCanvas("c_3d", "3D canvas"  , 900, 900);
   }
-  if(!c_tot_) {
-    c_tot_ = new TCanvas("c_tot", "Total canvas"  , 1260, 900);
+  if(!_c_tot) {
+    _c_tot = new TCanvas("c_tot", "Total canvas"  , 1260, 900);
   }
-  if(!c_hlx_) {
-    c_hlx_ = new TPad("c_hlx", "Helix canvas"  , 0., 0.3, 0.5, 1.);
-    c_hlx_->SetLeftMargin(0.12);
-    c_hlx_->SetBottomMargin(0.10);
-    c_hlx_->SetTicks(1);
-    c_tot_->cd();
-    c_hlx_->Draw();
+  if(!_c_hlx) {
+    _c_hlx = new TPad("c_hlx", "Helix canvas"  , 0., 0.3, 0.5, 1.);
+    _c_hlx->SetLeftMargin(0.12);
+    _c_hlx->SetBottomMargin(0.10);
+    _c_hlx->SetTicks(1);
+    _c_tot->cd();
+    _c_hlx->Draw();
   }
-  if(!c_seg_) {
-    c_seg_ = new TPad("c_seg", "Segment canvas"  , 0., 0.0, 1.0, 0.3);
-    c_seg_->SetLeftMargin(0.06);
-    c_seg_->SetBottomMargin(0.22);
-    c_seg_->SetRightMargin(0.01);
-    c_seg_->SetTopMargin(0.08);
-    c_seg_->SetTicks(1);
-    c_tot_->cd();
-    c_seg_->Draw();
+  if(!_c_seg) {
+    _c_seg = new TPad("c_seg", "Segment canvas"  , 0., 0.0, 1.0, 0.3);
+    _c_seg->SetLeftMargin(0.06);
+    _c_seg->SetBottomMargin(0.22);
+    _c_seg->SetRightMargin(0.01);
+    _c_seg->SetTopMargin(0.08);
+    _c_seg->SetTicks(1);
+    _c_tot->cd();
+    _c_seg->Draw();
   }
-  if(!c_trp_) {
-    c_trp_ = new TPad("c_trp", "Triplet canvas"  , 0.5, 0.3, 1.0, 1.0);
-    c_trp_->SetLeftMargin(0.12);
-    c_trp_->SetBottomMargin(0.12);
-    c_trp_->SetTicks(1);
-    c_tot_->cd();
-    c_trp_->Draw();
+  if(!_c_trp) {
+    _c_trp = new TPad("c_trp", "Triplet canvas"  , 0.5, 0.3, 1.0, 1.0);
+    _c_trp->SetLeftMargin(0.12);
+    _c_trp->SetBottomMargin(0.12);
+    _c_trp->SetTicks(1);
+    _c_tot->cd();
+    _c_trp->Draw();
   }
 
   // clean up the last event
@@ -508,6 +508,40 @@ void AgnosticHelixFinderDiag::plotXYAxes() {
   // Draw the tracker
   plotCircle(0., 0., 380., kBlack, 2, "tracker");
   plotCircle(0., 0., 700., kBlack, 2, "tracker", false);
+
+  plotXYLegend(0);
+}
+
+//-----------------------------------------------------------------------------
+// Create legend for the x-y plots
+void AgnosticHelixFinderDiag::plotXYLegend(int) {
+  TLegend* leg = new TLegend(0.16, 0.82, 0.80, 0.9);
+  leg->SetLineWidth(0);
+  leg->SetFillColor(0);
+  leg->SetFillStyle(0);
+  leg->SetTextSize(0.05);
+  TGraph* g_r = new TGraph();
+  g_r->SetLineColor(kRed);
+  g_r->SetLineWidth(2);
+  _drawn_objects.push_back(g_r);
+  leg->AddEntry(g_r, "Reco", "L");
+  TGraph* g_h = new TGraph();
+  g_h->SetLineColor(kGreen);
+  g_h->SetLineWidth(2);
+  _drawn_objects.push_back(g_h);
+  leg->AddEntry(g_h, "Used hits", "L");
+  if(_simcol) {
+    leg->SetNColumns(3);
+    TGraph* g_m = new TGraph();
+    g_m->SetLineColor(kBlue);
+    g_m->SetLineWidth(2);
+    leg->AddEntry(g_m, "MC", "L");
+    _drawn_objects.push_back(g_m);
+  } else {
+    leg->SetNColumns(2);
+  }
+  leg->Draw();
+  _drawn_objects.push_back(leg);
 }
 
 //-----------------------------------------------------------------------------
@@ -529,6 +563,34 @@ void AgnosticHelixFinderDiag::plotPhiZAxes(double phi_min, double phi_max) {
   axes->GetXaxis()->SetTitleSize(0.10);
   axes->GetYaxis()->SetTitleSize(0.10);
   axes->GetYaxis()->SetTitleOffset(0.3);
+  plotPhiZLegend(0);
+}
+
+//-----------------------------------------------------------------------------
+// Create legend for the phi-z plots
+void AgnosticHelixFinderDiag::plotPhiZLegend(int) {
+  TLegend* leg = new TLegend(0.10, 0.8, 0.23, 0.9);
+  leg->SetLineWidth(0);
+  leg->SetFillColor(0);
+  leg->SetFillStyle(0);
+  leg->SetTextSize(0.10);
+  TGraph* g_r = new TGraph();
+  g_r->SetMarkerColor(kBlue);
+  g_r->SetMarkerStyle(24);
+  g_r->SetMarkerSize(2);
+  _drawn_objects.push_back(g_r);
+  leg->AddEntry(g_r, "Reco", "P");
+  if(_simcol) {
+    leg->SetNColumns(2);
+    TGraph* g_m = new TGraph();
+    g_m->SetMarkerColor(kBlue);
+    g_m->SetMarkerStyle(2);
+    g_m->SetMarkerSize(2);
+    leg->AddEntry(g_m, "MC", "P");
+    _drawn_objects.push_back(g_m);
+  }
+  leg->Draw();
+  _drawn_objects.push_back(leg);
 }
 
 //-----------------------------------------------------------------------------
@@ -604,7 +666,7 @@ void AgnosticHelixFinderDiag::plotMC(int stage, bool phiz) {
 void AgnosticHelixFinderDiag::plotBeginStage(const bool use_tc) {
   if(_debugLevel > 0) printf("  %12s: Plotting the event, use timecluster = %o\n",
                              __func__, use_tc);
-  auto c = c_hlx_;
+  auto c = _c_hlx;
   if(!beginPlot(c)) return;
   std::string title("Hits");
   plotXYAxes();
@@ -618,7 +680,7 @@ void AgnosticHelixFinderDiag::plotBeginStage(const bool use_tc) {
 void AgnosticHelixFinderDiag::plotTripletStage(const bool mc_triplets) {
   if(_debugLevel > 0) printf("  %12s: Plotting the triplet circle, MC = %o\n",
                              __func__, mc_triplets);
-  auto c = c_trp_;
+  auto c = _c_trp;
   if(!beginPlot(c)) return;
   std::string title("Triplet");
   plotXYAxes();
@@ -635,7 +697,7 @@ void AgnosticHelixFinderDiag::plotTripletStage(const bool mc_triplets) {
 void AgnosticHelixFinderDiag::plotCircleStage(const bool mc_circles) {
   if(_debugLevel > 0) printf("  %12s: Plotting the seed circle, MC = %o\n",
                              __func__, mc_circles);
-  auto c = (mc_circles) ? c_trp_ : c_hlx_;
+  auto c = (mc_circles) ? _c_trp : _c_hlx;
   if(!beginPlot(c)) return;
   std::string title("Seed Circle");
   plotXYAxes();
@@ -654,7 +716,7 @@ void AgnosticHelixFinderDiag::plotCircleStage(const bool mc_circles) {
 void AgnosticHelixFinderDiag::plotSegmentStage(bool resolve, bool seed_circle) {
   if(_debugLevel > 0) printf("  %12s: Plotting the segments, resolve = %o\n",
                              __func__, resolve);
-  auto c = c_seg_;
+  auto c = _c_seg;
   if(!beginPlot(c)) return;
   std::string title("Line segment #phi-z");
 
@@ -676,7 +738,7 @@ void AgnosticHelixFinderDiag::plotSegmentStage(bool resolve, bool seed_circle) {
       phi_max = std::max(phi_max, std::max(phi1, phi2));
     }
     const double buffer = 0.1*(phi_max - phi_min);
-    plotPhiZAxes(phi_min - buffer, phi_max + buffer);
+    plotPhiZAxes(phi_min - buffer, phi_max + 2.*buffer);
   }
 
   // Draw the info
@@ -697,7 +759,7 @@ void AgnosticHelixFinderDiag::plotSegmentStage(bool resolve, bool seed_circle) {
 void AgnosticHelixFinderDiag::plotHelixStageXY(int stage) {
   if(_debugLevel > 0) printf("  %12s: Plotting the helix XY circle, stage = %i\n",
                              __func__, stage);
-  auto c = c_hlx_;
+  auto c = _c_hlx;
   if(!beginPlot(c)) return;
   std::string title("Helices");
   plotXYAxes();
@@ -722,7 +784,7 @@ void AgnosticHelixFinderDiag::plotHelixStageXY(int stage) {
 void AgnosticHelixFinderDiag::plotHelixStagePhiZ(int stage) {
   if(_debugLevel > 0) printf("  %12s: Plotting the helix phi-z line, stage = %i\n",
                              __func__, stage);
-  auto c = c_seg_;
+  auto c = _c_seg;
   if(!beginPlot(c)) return;
   std::string title("Helices #phi-z");
 
@@ -744,7 +806,7 @@ void AgnosticHelixFinderDiag::plotHelixStagePhiZ(int stage) {
     }
   }
   const double buffer = 0.1*(phi_max - phi_min);
-  plotPhiZAxes(phi_min - buffer, phi_max + buffer);
+  plotPhiZAxes(phi_min - buffer, phi_max + 2.*buffer);
 
   // Plot the info
   if(stage == kHelix) { // Current helix
@@ -770,10 +832,7 @@ void AgnosticHelixFinderDiag::plotTotal(int option) {
   if(!_data || !_data->tcHits || !_data->chColl) return;
 
   // Retrieve the relevant canvas and switch to this pad
-  TCanvas* c(nullptr);
-  switch(option) {
-  case 0: c = c_3d_; break;
-  }
+  auto c = _c_3d;
   if(!c) {
     printf("AgnosticHelixFinderDiag::%s: Undefined option %i\n", __func__, option);
     return;

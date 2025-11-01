@@ -31,6 +31,7 @@
 #include "TGraph2D.h"
 #include "TEllipse.h"
 #include "TLine.h"
+#include "TLegend.h"
 #include "TGFrame.h"
 #include "TRootEmbeddedCanvas.h"
 #include "TROOT.h"
@@ -220,6 +221,8 @@ namespace mu2e {
     void plotHelixStagePhiZ (int stage);
     void plotXYAxes         ();
     void plotPhiZAxes       (double phi_min, double phi_max);
+    void plotXYLegend       (int mode);
+    void plotPhiZLegend     (int mode);
     void plotTotal          (int stage);
     void plotLabel          (float left_margin, float top_margin,
                              float right_margin = 0.1, std::string title = "");
@@ -230,8 +233,8 @@ namespace mu2e {
       }
     }
     bool beginPlot(TPad* c) {
-      if(!_data || !c_tot_ || !c) return false;
-      c_tot_->cd(); c->Draw(); c->cd();
+      if(!_data || !_c_tot || !c) return false;
+      _c_tot->cd(); c->Draw(); c->cd();
       return true;
     }
     void endPlot(TPad* c, std::string title = "") {
@@ -286,11 +289,11 @@ namespace mu2e {
     std::map<unsigned, seedCircleInfo> _simCircles; // map sims to their closest seed circle
 
     // For running a display
-    TCanvas* c_tot_ = nullptr;
-    TCanvas* c_3d_  = nullptr;
-    TPad* c_hlx_ = nullptr;
-    TPad* c_seg_ = nullptr;
-    TPad* c_trp_ = nullptr;
+    TCanvas* _c_tot = nullptr;
+    TCanvas* _c_3d  = nullptr;
+    TPad* _c_hlx = nullptr;
+    TPad* _c_seg = nullptr;
+    TPad* _c_trp = nullptr;
     std::vector<TObject*> _drawn_objects;
     TGMainFrame* _gMainFrame = nullptr;
     TApplication* _application = nullptr;
