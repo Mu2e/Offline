@@ -626,8 +626,29 @@ void AgnosticHelixFinderDiag::plotSegmentStage(bool resolve, bool seed_circle) {
   auto c = c_seg_;
   if(!beginPlot(c)) return;
   std::string title("Line segment #phi-z");
+
+  // Draw the axes
   if(seed_circle || !resolve) plotPhiZAxes(-0.2, 6.5);
-  else                        plotPhiZAxes(-12.0, 12.0);
+  else { // determine the phi range needed
+    double phi_min(-2.*M_PI), phi_max(2.*M_PI); // default to -2pi - 2pi
+    for(size_t iline = 0; iline < _data->seedPhiLines->size(); ++iline) {
+      const auto& line = _data->seedPhiLines->at(iline);
+      const double zmin  = line.zMin;
+      const double zmax  = line.zMax;
+      // clone the fitter to avoid changing its state
+      ::LsqSums2 fitter = line.fitter;
+      const double slope = fitter.dydx();
+      const double phi0  = fitter.y0();;
+      const double phi1  = slope * zmin + phi0;
+      const double phi2  = slope * zmax + phi0;
+      phi_min = std::min(phi_min, std::min(phi1, phi2));
+      phi_max = std::max(phi_max, std::max(phi1, phi2));
+    }
+    const double buffer = 0.1*(phi_max - phi_min);
+    plotPhiZAxes(phi_min - buffer, phi_max + buffer);
+  }
+
+  // Draw the info
   if(seed_circle) {
     title = "Seed Circle #phi-z";
     plotCirclePhiZ();
@@ -673,7 +694,28 @@ void AgnosticHelixFinderDiag::plotHelixStagePhiZ(int stage) {
   auto c = c_seg_;
   if(!beginPlot(c)) return;
   std::string title("Helices #phi-z");
-  plotPhiZAxes(-12.,12.);
+
+  // determin the phi range needed
+  double phi_min(-2.*M_PI), phi_max(2.*M_PI);
+  if(stage == kHelix) {
+    const auto& seed = *(_data->hseed);
+    const double phi_1 = seed.helix().circleAzimuth(-1600.);
+    const double phi_2 = seed.helix().circleAzimuth( 1600.);
+    phi_min = std::min(phi_min, std::min(phi_1, phi_2));
+    phi_max = std::max(phi_max, std::max(phi_1, phi_2));
+  } else {
+    for(size_t index = 0; index < _data->helixSeedData.size(); ++index) {
+      const auto& seed = _data->helixSeedData.at(index).seed;
+      const double phi_1 = seed.helix().circleAzimuth(-1600.);
+      const double phi_2 = seed.helix().circleAzimuth( 1600.);
+      phi_min = std::min(phi_min, std::min(phi_1, phi_2));
+      phi_max = std::max(phi_max, std::max(phi_1, phi_2));
+    }
+  }
+  const double buffer = 0.1*(phi_max - phi_min);
+  plotPhiZAxes(phi_min - buffer, phi_max + buffer);
+
+  // Plot the info
   if(stage == kHelix) { // Current helix
     title = "Helix #phi-z";
     const auto& seed = *(_data->hseed);

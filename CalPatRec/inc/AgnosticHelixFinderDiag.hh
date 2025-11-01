@@ -336,11 +336,13 @@ namespace mu2e {
       const float pt  = info.hit_start_pt_;
       const float phi = polyAtan2(px, py) + charge*M_PI/2.;
       r_1  = pt * MeVmm; // convert to mm
-      xC_1 = x + charge*r_1*py/pt; //std::sin(phi);
-      yC_1 = y - charge*r_1*px/pt; //std::cos(phi);
+      xC_1 = x + charge*r_1*py/pt;
+      yC_1 = y - charge*r_1*px/pt;
       l_1 = pz * MeVmm;
       // phi = phi0 + z / lambda
-      phi0_1 = std::fmod(phi - z / l_1, M_PI);
+      phi0_1 = std::fmod(phi - z / l_1, 2.*M_PI);
+      if     (phi0_1 >  M_PI) phi0_2 -= 2.*M_PI;
+      else if(phi0_1 < -M_PI) phi0_2 += 2.*M_PI;
       if(_debugLevel > 2) printf(" MC info: Start: x = (%6.1f, %6.1f, %7.1f, %7.1f), p = (%6.1f, %6.1f, %6.1f), pt = %5.1f --> r = %5.1f, center = (%6.1f, %6.1f), lambda = %6.1f, phi0 = %4.1f\n",
                                  x, y, z, t, px, py, pz, pt, r_1, xC_1, yC_1, l_1, phi0_1);
     }
@@ -355,10 +357,12 @@ namespace mu2e {
       const float pt  = info.hit_end_pt_;
       const float phi = polyAtan2(px, py) + charge*M_PI/2.;
       r_2  = pt * MeVmm; // convert to mm
-      xC_2 = x + charge*r_2*py/pt;//std::sin(phi);
-      yC_2 = y - charge*r_2*px/pt;//std::cos(phi);
+      xC_2 = x + charge*r_2*py/pt;
+      yC_2 = y - charge*r_2*px/pt;
       l_2 = pz * MeVmm;
-      phi0_2 = std::fmod(phi - z / l_2, M_PI);
+      phi0_2 = std::fmod(phi - z / l_2, 2.*M_PI);
+      if     (phi0_2 >  M_PI) phi0_2 -= 2.*M_PI;
+      else if(phi0_2 < -M_PI) phi0_2 += 2.*M_PI;
       if(_debugLevel > 2) printf(" MC info: End: x = (%6.1f, %6.1f, %7.1f, %7.1f), p = (%6.1f, %6.1f, %6.1f), pt = %5.1f --> r = %5.1f, center = (%6.1f, %6.1f), lambda = %6.1f, phi0 = %4.1f\n",
                                  x, y, z, t, px, py, pz, pt, r_2, xC_2, yC_2, l_2, phi0_2);
     }
@@ -367,7 +371,16 @@ namespace mu2e {
     yC     = 0.5*( yC_1 +  yC_2);
     r      = 0.5*(  r_1 +   r_2);
     lambda = 0.5*(  l_1 +   l_2);
-    phi0   = phi0_1; // FIXME: Add logic for angle bisector
+
+    // bisect the two angles
+    float phi_diff = phi0_2 - phi0_1;
+    if(phi_diff > M_PI) phi_diff -= 2.*M_PI;
+    else if(phi_diff < -M_PI) phi_diff += 2.*M_PI;
+    phi0   = phi0_1 + phi_diff/2.;
+    if     (phi0 >  M_PI) phi0 -= 2.*M_PI;
+    else if(phi0 < -M_PI) phi0 += 2.*M_PI;
+    if(_debugLevel > 2) printf(" MC info: Avg: r = %5.1f, center = (%6.1f, %6.1f), lambda = %6.1f, phi0 = %4.1f\n",
+                                 r, xC, yC, lambda, phi0);
   }
 
   //--------------------------------------------------------------------------------------
