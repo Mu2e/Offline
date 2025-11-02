@@ -687,7 +687,14 @@ CalPatRec : { @table::CalPatRec
             maxEDepAvg              : @local::TrkReco.HelixFinderParams.maxEDepAvg
             tzSlopeSigThresh        : 5.0
             validHelixDirections    : ["downstream", "upstream", "unknown"]
-            diagPlugin              : { tool_type : "AgnosticHelixFinderDiag" }
+            diagPlugin              : {
+                tool_type : "AgnosticHelixFinderDiag"
+                simTag         : ""
+                strawDigiMCTag : ""
+                display        : true
+                showProtons    : false
+                debug          : 0
+            }
         }
 
         PhiClusterFinder : { module_type : PhiClusterFinder
