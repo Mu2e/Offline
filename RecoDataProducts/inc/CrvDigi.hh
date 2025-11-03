@@ -20,6 +20,9 @@ namespace mu2e
     CrvDigi(const std::vector<int16_t> &ADCs, uint16_t startTDC, bool NZS, bool oddTimestamp, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, uint8_t SiPMNumber) :
             _ADCs(ADCs), _startTDC(startTDC), _NZS(NZS), _oddTimestamp(oddTimestamp), _scintillatorBarIndex(scintillatorBarIndex), _SiPMNumber(SiPMNumber) {}
 
+    CrvDigi(std::vector<int16_t> &&ADCs, uint16_t startTDC, bool NZS, bool oddTimestamp, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, uint8_t SiPMNumber) :
+            _ADCs(std::move(ADCs)), _startTDC(startTDC), _NZS(NZS), _oddTimestamp(oddTimestamp), _scintillatorBarIndex(scintillatorBarIndex), _SiPMNumber(SiPMNumber) {}
+
     const std::vector<int16_t>           &GetADCs() const     {return _ADCs;}
     uint16_t                              GetStartTDC() const {return _startTDC;}
     bool                                  IsNZS() const       {return _NZS;}
