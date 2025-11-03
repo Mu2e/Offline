@@ -32,6 +32,12 @@ source : {
 
 services : @local::Services.Reco
 
+services.DbService          : @local::DbEmpty
+services.DbService.textFile : [ "Offline/TrackerConditions/data/TrkPanelMap.txt" ]
+
+services.ProditionsService.trackerPanelMap.useDb : true
+services.scheduler.wantSummary                   : true
+
 outputs:  {
     defaultOutput :  {
         module_type   :   RootOutput
@@ -69,9 +75,7 @@ physics : {
 #------------------------------------------------------------------------------
 # assume we're on mu2edaq22
 #------------------------------------------------------------------------------
-# services.TFileService.fileName                   : "/scratch/mu2e/mu2etrk_pasha_304/digi_ntuples/make_digi_ntuple_%06r.root"
 services.TFileService.fileName                   : "/dev/null" ## "/data/tracker/vst/mu2etrk_pasha_029/digi_ntuples/make_digi_ntuple_%06r.root"
-services.scheduler.wantSummary                   : true
 
 source.fileNames : [ "/exp/mu2e/data/projects/tracker/vst/datasets/raw.mu2e.trkvst.annex.art/raw.mu2e.trkvst.annex.105099_00000001.art" ]
 

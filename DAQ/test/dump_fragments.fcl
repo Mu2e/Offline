@@ -32,18 +32,21 @@ services : @local::Services.SimAndReco
 
 services.scheduler.wantSummary                   : true
 
-services.DbService : @local::DbEmpty
+services.DbService          : @local::DbEmpty
+services.DbService.textFile : [ "Offline/TrackerConditions/data/TrkPanelMap.txt" ]
+
 services.SeedService.baseSeed         : 8
 services.SeedService.maxUniqueEngines : 100
 
-services.ProditionsService.alignedTracker.useDb : false
-services.ProditionsService.alignedTrackerSim.useDb : false
-services.ProditionsService.strawElectronics.useDb : false
-services.ProditionsService.fullReadoutStraw.useDb : false
-services.ProditionsService.strawDrift.useDb : false
-services.ProditionsService.strawPhysics.useDb : false
-services.ProditionsService.strawResponse.useDb : false
+services.ProditionsService.alignedTracker.useDb         : false
+services.ProditionsService.alignedTrackerSim.useDb      : false
+services.ProditionsService.strawElectronics.useDb       : false
+services.ProditionsService.fullReadoutStraw.useDb       : false
+services.ProditionsService.strawDrift.useDb             : false
+services.ProditionsService.strawPhysics.useDb           : false
+services.ProditionsService.strawResponse.useDb          : false
 services.ProditionsService.trackerStatus.Settings.useDb : false
+services.ProditionsService.trackerPanelMap.useDb        : true
 
 outputs:  {
     defaultOutput :  {
@@ -71,7 +74,7 @@ physics : {
         makeSD: { @table::DAQ.producers.makeSD
             diagLevel     :  0 ## 10
             saveWaveforms :  true
-            geography     : [ @sequence::station_00_geography ]
+            # geography     : [ @sequence::station_00_geography ]
 
         }
     }
