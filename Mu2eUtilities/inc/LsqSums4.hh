@@ -1,11 +1,12 @@
 #ifndef murat_LsqSums4
 #define murat_LsqSums4
 ///////////////////////////////////////////////////////////////////////////////
-// circle fit
-// Author: P. Murat
-// Date:
+// PM: Kasa fit of the circle parameters
+// Kasa, I. (1976). A curve fitting procedure and its error analysis.
+// IEEE Trans. Inst. Meas. 25 8–14.
+// the original Kasa paper is difficult to find in open access,
+// so see https://arxiv.org/pdf/0907.0421 by N.Chernov instead
 ///////////////////////////////////////////////////////////////////////////////
-
 class LsqSums4 {
 
 protected:
@@ -15,7 +16,7 @@ protected:
 
 
 public:
-  LsqSums4();
+  LsqSums4(double X0 = 0, double Y0 = 0);
 
   void   clear();
 
@@ -57,16 +58,15 @@ public:
 
   double det     () { return sigXX()*sigYY() -sigXY()*sigXY(); }
 
-  // reconstructed parameters of the circle
-  double x0();
-  double y0();
-  double radius ();
-  double phi0();
-  double dfdz();
+                                        // reconstructed parameters of the circle
+  double x0    ();
+  double y0    ();
+  double radius();
+  double phi0  ();
+  double dfdz  ();                      // straight line slope
 
   double chi2DofCircle();
-  double chi2DofLine();
-  //  ClassDef(LsqSums4,0)
+  double chi2DofLine  ();
 
 };
 

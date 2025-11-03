@@ -1,3 +1,5 @@
+#Don't use this fcl file. It's only base fcl file. Please use one of the special fcl files.
+
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
@@ -9,6 +11,7 @@ source :
 {
   module_type : RootInput
   inputCommands: ["keep *",
+                  "drop *CrvStatus*_*_*_*",
                   "drop *KalRepPayload*_*_*_*",
                   "drop *CaloCrystalOnlyHit*_*_*_*"]
 }
@@ -28,6 +31,7 @@ physics :
 #      g4ModuleLabel             : "g4run"
       g4ModuleLabel             : "compressRecoMCs"
 #      physicalVolumesMultiLabel : "compressPV"
+#      timeOffsets               : { inputs : [ ] }  #if the art file has no time maps
       kalSeedStepSize           : 0.1
     }
   }
@@ -40,5 +44,5 @@ physics :
 #include "Offline/DbService/fcl/NominalDatabase.fcl"
 
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
-#services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_common_current.txt"
+services.GeometryService.inputFile                   : @nil  #Don't use this fcl file. It's only base fcl file. Please use one of the special fcl files.
 #source.readParameterSets : false

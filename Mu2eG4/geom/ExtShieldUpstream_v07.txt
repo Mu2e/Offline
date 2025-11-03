@@ -155,7 +155,7 @@ vector<double> ExtShieldUpstream.centerType15Box1 = {-3018.2,1454.5,-2524.7};
 vector<double> ExtShieldUpstream.centerType16Box1 = {-2655.4,1175.1,-2260.6};
 vector<double> ExtShieldUpstream.centerType17Box1 = {-2909.4,2526.2,  203.2};
 vector<double> ExtShieldUpstream.centerType18Box1 = {-3620.6,2780.2,  213.6};
-vector<double> ExtShieldUpstream.centerType19Box1 = {-267.8 ,2952.0,  202.4};
+vector<double> ExtShieldUpstream.centerType19Box1 = {-267.8 ,3031.47,  202.4};
 
 // Remote handling room door
 vector<double> ExtShieldUpstream.centerType20Box1 = {9381 ,-103, -12077.7};
