@@ -24,7 +24,7 @@ namespace mu2e {
     // not all the implied possible channels below are active
     // these are the dimensions of sparse containers
     constexpr static std::size_t nChanPerFEB = 64;
-    constexpr static std::size_t nFEBPerROC = 25;
+    constexpr static std::size_t nFEBPerROC = 24;
     constexpr static std::size_t nROC = 18;
     constexpr static std::size_t nROCPerDTC = 6;
 

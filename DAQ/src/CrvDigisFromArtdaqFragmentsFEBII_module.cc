@@ -47,7 +47,6 @@ class CrvDigisFromArtdaqFragmentsFEBII : public art::EDProducer
   private:
   int                                      _diagLevel;
   bool                                     _useSubsystem0;
-  bool                                     _useOnlineChannel;
   bool                                     _produceNZS;
   mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
 };
@@ -56,7 +55,6 @@ CrvDigisFromArtdaqFragmentsFEBII::CrvDigisFromArtdaqFragmentsFEBII(const art::ED
     art::EDProducer{config}, 
     _diagLevel(config().diagLevel()), 
     _useSubsystem0(config().useSubsystem0()),
-    _useOnlineChannel(config().useOnlineChannel()),
     _produceNZS(config().produceNZS())
 {
   produces<mu2e::CrvDigiCollection>();
@@ -188,7 +186,7 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
             crvStatus->back().GetROCHeader().push_back(*crvRocHeader);
 
             auto crvHits = decoder.GetCRVHitRangeFEBII(iDataBlock);
-            if(crvHits.empty())
+            if(crvHits.error())
             {
               std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
               std::cerr << "Error unpacking of CRV Hits" << std::endl;
@@ -198,13 +196,15 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
             }
             for(auto const& crvHit : crvHits)
             {
-              // Access hit info directly from raw memory (no copy)
+              uint16_t dtcID = header->GetID();
+              uint16_t linkID = header->GetLinkID();
+              uint16_t rocID = dtcID*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
               uint16_t rocPort = crvHit.getPortNumber(); //Port numbers beween 1 and 24
 	      uint16_t febChannel = (crvHit.getFpgaNumber()<<4) + (crvHit.getFpgaChannel() & 0xF);  //use only 4 lowest bits of the fpgaChannel
-                                                                                                  //the 5th bit indicates special situations
-                                                                                                  //e.g. fake pulses
+                                                                                                    //the 5th bit indicates special situations
+                                                                                                    //e.g. fake pulses
               if((crvHit.getFpgaChannel() & 0x10) != 0) continue;  //special situation, if the 5th bit of the fpgaChannel is non-zero
-                                                                //don't decode them, since there is no match to any offline channel.
+                                                                   //don't decode them, since there is no match to any offline channel.
               if(rocPort==0) //corrupted data
 	      {
                 std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
@@ -214,39 +214,29 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
 		continue;
 	      }
               
-              uint16_t dtcID = header->GetID();
-              uint16_t linkID = header->GetLinkID();
-              uint16_t rocID = dtcID*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
               mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
 
-              int channelForMap;
-              int crvBarIndex;
-              int SiPMNumber;
-              
-              if (_useOnlineChannel) {
-                // Use online channel encoding: rocID * 10000 + rocPort * 100 + febChannel
-                channelForMap = (rocID - 1) * (64*24)  + (rocPort * 64 + febChannel);
-                crvBarIndex = channelForMap;  // Store online channel in barIndex
-                SiPMNumber = 0;  // Not meaningful for online channel
-              } else {
-                // Use offline channel (normal mode)
-                uint16_t offlineChannel = channelMap.offline(onlineChannel);
-                channelForMap = offlineChannel;
-                crvBarIndex = offlineChannel / 4;
-                SiPMNumber = offlineChannel % 4;
-              }
+              uint16_t offlineChannel = channelMap.offline(onlineChannel);
+              int crvBarIndex = offlineChannel / CRVId::nChanPerBar;
+              int SiPMNumber = offlineChannel % CRVId::nChanPerBar;
 
 	      //time stamps coming from FEB-II are in units of 6.25ns, but only the even time stamps are used.
 	      //convert them into time stamps in units of 12.5ns - same period as the ADC samples.
               bool oddTimestamp=(crvHit.getHitTime()%2==1);
               
-              // Extract waveform only when needed (lazy evaluation)
+              //extract waveform only when needed (lazy evaluation)
               //auto waveform = crvHit.getWaveform();
-	      crvDigisTmp[channelForMap].emplace_back(crvHit.getWaveform(), crvHit.getHitTime()/2, false, oddTimestamp, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
+	      crvDigisTmp[offlineChannel].emplace_back(crvHit.getWaveform(), crvHit.getHitTime()/2, false, oddTimestamp, 
+			                              mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber,
+			                              rocID, rocPort, febChannel);
               
-              // NZS digis - only if requested
-              if (_produceNZS) {
-                crvDigisNZSTmp[channelForMap].emplace_back(crvHit.getWaveform(), crvHit.getHitTime()/2, true, oddTimestamp, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
+              //NZS digis - only if requested
+	      //this is a temporary implementation (simply using ZS data as NZS data) until we get real NZS data
+              if(_produceNZS) 
+	      {
+                crvDigisNZSTmp[offlineChannel].emplace_back(crvHit.getWaveform(), crvHit.getHitTime()/2, true, oddTimestamp,
+			                                   mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber,
+			                                   rocID, rocPort, febChannel);
               }
             } // loop over all crvHits
 
@@ -282,22 +272,14 @@ void CrvDigisFromArtdaqFragmentsFEBII::produce(art::Event& event)
                 {
                   mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
 
-                  if (_useOnlineChannel) {
-                    int onlineCh = (rocID - 1) * (64*24)  + (rocPort * 64 + febChannel);
-                    std::cout << "ROCID " << rocID
-                              << "   rocPort " << rocPort << "   febChannel " << febChannel
-                              << "   onlineChannel " << onlineCh
-                              << std::endl;
-                  } else {
-                    uint16_t offlineChannel = channelMap.offline(onlineChannel);
-                    int crvBarIndex = offlineChannel / 4;
-                    int SiPMNumber = offlineChannel % 4;
+                  uint16_t offlineChannel = channelMap.offline(onlineChannel);
+                  int crvBarIndex = offlineChannel / CRVId::nChanPerBar;
+                  int SiPMNumber = offlineChannel % CRVId::nChanPerBar;
 
                   std::cout << "ROCID (increased by 1 to match the Online/Offline-Channel Map) " << rocID
                             << "   rocPort " << rocPort << "   febChannel " << febChannel
                             << "   crvBarIndex " << crvBarIndex << "   SiPMNumber " << SiPMNumber
                             << std::endl;
-                  }
                 }
                 else
                 {

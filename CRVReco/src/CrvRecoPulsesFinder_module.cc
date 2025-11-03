@@ -173,7 +173,10 @@ namespace mu2e
     {
       const CrvDigi &digi = crvDigiCollection->at(waveformIndex);
       const CRSScintillatorBarIndex &barIndex = digi.GetScintillatorBarIndex();
-      int SiPM = digi.GetSiPMNumber();
+      uint8_t SiPM = digi.GetSiPMNumber();
+      uint8_t ROC = digi.GetROC();
+      uint8_t FEB = digi.GetFEB();
+      uint8_t FEBchannel = digi.GetFEBchannel();
       uint16_t startTDC = digi.GetStartTDC();
       std::vector<int16_t> ADCs=digi.GetADCs();
       std::vector<size_t> waveformIndices;
@@ -253,7 +256,7 @@ namespace mu2e
 
         crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags,
                                              PEsNoFit, pulseTimeNoFit, pulseStart, pulseEnd,
-                                             waveformIndices, barIndex, SiPM, pedestal, pedestalFromDB);
+                                             waveformIndices, barIndex, SiPM, ROC, FEB, FEBchannel, pedestal, pedestalFromDB);
       }
 
     }

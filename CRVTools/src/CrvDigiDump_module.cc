@@ -55,6 +55,9 @@ namespace mu2e {
     Short_t ADC_[nADC_]; // ADC waveform (12-bit values, use Short_t) - 2 bytes each
     UShort_t time_;       // Time in TDC units (0-65535) - 2 bytes
     UChar_t sipmNumber_;  // SiPM number (0-3) - 1 byte
+    UChar_t roc_;         // ROC (1-18) - 1 byte
+    UChar_t feb_;         // FEB (1-24) - 1 byte
+    UChar_t febChannel_;  // FEB channel (0-63) - 1 byte
     Bool_t NZS_;          // Non-zero-suppressed flag - 1 byte
     Bool_t oddTimestamp_; // Odd timestamp flag - 1 byte
     
@@ -105,7 +108,10 @@ namespace mu2e {
     
     // Digi information (one per row)
     digiTree_->Branch("barIndex", &barIndex_, "barIndex/I");
-    digiTree_->Branch("sipmNumber", &sipmNumber_, "sipmNumber/b");  // UChar_t
+    digiTree_->Branch("sipmNumber", &sipmNumber_, "sipmNumber/b");   // UChar_t
+    digiTree_->Branch("roc", &roc_, "roc/b");                        // UChar_t
+    digiTree_->Branch("feb", &feb_, "feb/b");                        // UChar_t
+    digiTree_->Branch("febChannel", &febChannel_, "febChannel/b");   // UChar_t
     digiTree_->Branch("time", &time_, "time/s");                     // UShort_t
     digiTree_->Branch("NZS", &NZS_, "NZS/O");                        // Bool_t
     digiTree_->Branch("oddTimestamp", &oddTimestamp_, "oddTimestamp/O"); // Bool_t
@@ -179,6 +185,9 @@ namespace mu2e {
         // Digi info
         barIndex_ = digi.GetScintillatorBarIndex().asInt();
         sipmNumber_ = digi.GetSiPMNumber();
+        roc_ = digi.GetROC();
+        feb_ = digi.GetFEB();
+        febChannel_ = digi.GetFEBchannel();
         time_ = digi.GetStartTDC();
         NZS_ = digi.IsNZS();
         oddTimestamp_ = digi.HasOddTimestamp();
@@ -195,6 +204,9 @@ namespace mu2e {
         if (diagLevel_ > 2) {
           std::cout << "    Digi " << i << ": bar=" << barIndex_ 
                     << " sipm=" << sipmNumber_
+                    << " roc=" << roc_
+                    << " feb=" << feb_
+                    << " febChannel=" << febChannel_
                     << " TDC=" << time_
                     << " nADC=" << nSamples << std::endl;
         }

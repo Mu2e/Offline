@@ -399,9 +399,12 @@
         source=""
         checksum="[1961551691]"
         targetClass="mu2e::CrvDigi"
-	target="_oddTimestamp">
+	target="_oddTimestamp, _ROC, _FEB, _FEBchannel">
 <![CDATA[
   _oddTimestamp=false;
+  _ROC=0;
+  _FEB=0;
+  _FEBchannel=0;
 ]]>
 </ioread>
 
@@ -409,10 +412,13 @@
         source=""
         checksum="[587252082]"
         targetClass="mu2e::CrvRecoPulse"
-	target="_pedestal,_pedestalFromDB">
+	target="_pedestal,_pedestalFromDB, _ROC, _FEB, _FEBchannel">
 <![CDATA[
   _pedestal=0;
   _pedestalFromDB=true;
+  _ROC=0;
+  _FEB=0;
+  _FEBchannel=0;
 ]]>
 </ioread>
 
