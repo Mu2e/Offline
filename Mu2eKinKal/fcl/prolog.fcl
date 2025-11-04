@@ -13,8 +13,8 @@ Mu2eKinKal : {
     IPAMaterialName : "HDPE"
     STMaterialName : "Target"
     IonizationEnergyLossMode : 1 # Moyal mean
-    SolidScatteringFraction : 0.995
-    GasScatteringFraction : 0.999
+    SolidScatteringFraction : 0.999999
+    GasScatteringFraction : 0.9999999
     ElectronBrehmsFraction : 0.04
   }
   KKFIT: {
@@ -470,7 +470,7 @@ Mu2eKinKal : {
       SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
       # save trajectories in the Detector region
      SaveDomains : true
-     SaveTrajectory : Full
+     SaveTrajectory : Detector
     }
     FitSettings : {
       @table::Mu2eKinKal.LHSEEDFIT
@@ -513,7 +513,7 @@ Mu2eKinKal : {
       # Additional width is needed here as straight tracks have worse time resolution
       MaxCaloClusterDt: 8
       # save the full trajectory
-       SaveTrajectory: Full
+       SaveTrajectory: Detector
        SaveDomains : false # meaningless for Linefit
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
@@ -531,7 +531,7 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : T0
-       SaveDomains : false
+      SaveDomains : false
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHSEEDEXT
@@ -546,7 +546,7 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
-      SaveTrajectory : Full
+      SaveTrajectory : Detector
       SaveDomains : true
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
