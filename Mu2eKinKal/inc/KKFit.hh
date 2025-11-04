@@ -636,6 +636,7 @@ namespace mu2e {
     double t0val = fittraj.t0();
     auto const& t0piece = fittraj.nearestPiece(t0val);
     double t0sig = sqrt(t0piece.params().covariance()(KTRAJ::t0_,KTRAJ::t0_));
+    auto t0dir = t0piece.direction(t0val);
     HitT0 t0(t0val,t0sig);
     // create the shell for the output
     KalSeed kseed(kktrk.fitParticle(),fflag);
@@ -736,18 +737,13 @@ namespace mu2e {
           kseed._domainbounds.push_back((*(kktrk.domains().rbegin()))->end());
         }
       } else if (savetraj_ == detector ) {
-        // only save segments inside the tracker volume. First, find the time limits for that
+        // only save segments inside the tracker volume. Find the limits for that. Start with the times of active hits
         double tmin = std::numeric_limits<float>::max();
         double tmax = -tmin;
-        static const SurfaceId tt_front("TT_Front");
-        static const SurfaceId tt_mid("TT_Mid");
-        static const SurfaceId tt_back("TT_Back");
-        for(auto const& interpair : kktrk.intersections()) {
-          auto const& sid = std::get<0>(interpair);
-          if(sid == tt_front || sid == tt_mid || sid == tt_back){
-            auto const& inter = std::get<1>(interpair);
-            tmin = std::min(tmin,inter.time_);
-            tmax = std::max(tmax,inter.time_);
+        for(auto const& kkshp : kktrk.strawHits()){
+          if(kkshp->active()){
+            tmin = std::min(tmin,kkshp->time());
+            tmax = std::max(tmax,kkshp->time());
           }
         }
         // extend as needed to the calohit. Eventually we should extrapolate all tracks to the calorimeter
@@ -758,15 +754,30 @@ namespace mu2e {
             tmax = std::max(tmax,calohit->time());
           }
         }
+        // Find intersections with the detector bounding surfaces and add them
+        static const std::vector<SurfaceId> detsurfaces { SurfaceIdDetail::TT_Front,
+          SurfaceIdDetail::TT_Back, SurfaceIdDetail::TT_Outer};
+        for(auto const& interpair : kktrk.intersections()) {
+          auto const& sid = std::get<0>(interpair);
+          if(std::find(detsurfaces.begin(),detsurfaces.end(),sid) != detsurfaces.end()){
+            auto const& inter = std::get<1>(interpair);
+            // to avoid reflections, intersection should be going in the same direction as t0 segment
+            if(inter.pdir_.Z()*t0dir.Z() > 0.0 ){
+              tmin = std::min(tmin,inter.time_);
+              tmax = std::max(tmax,inter.time_);
+            }
+          }
+        }
         if(tmin > tmax){
           std::cout << "mu2e::KKFit: tracker intersections missing"<< std::endl;
           tmin = fittraj.range().begin();
           tmax = fittraj.range().end();
         }
+        TimeRange detrange(tmin,tmax);
         kseed._segments.reserve(fittraj.pieces().size());// this will be oversized
         for (auto const& traj : fittraj.pieces() ){
-          // skip segments outside the tracker volume range
-          if(traj->range().range() > 0.0 && ((traj->range().begin() > tmin && traj->range().end() < tmax) || traj->range().inRange(tmin) || traj->range().inRange(tmax) ) ) kseed._segments.emplace_back(*traj,traj->range().mid());
+          // skip segments outside the detector range
+          if(traj->range().range() > 0.0 && traj->range().overlaps(detrange) ) kseed._segments.emplace_back(*traj,traj->range().mid());
         }
         kseed._segments.shrink_to_fit();
         if(savedomains_){

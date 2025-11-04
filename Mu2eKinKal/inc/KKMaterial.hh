@@ -1,7 +1,7 @@
 #ifndef Mu2eKinKal_KKMaterial_hh
 #define Mu2eKinKal_KKMaterial_hh
 //
-//  build KinKal fit configuration objects from art parameter configuration
+//  build KinKal DetMaterial objects from art parameter configuration
 //
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
@@ -30,7 +30,10 @@ namespace mu2e {
         fhicl::Atom<std::string> strawWireMaterialName{ Name("strawWireMaterialName"), Comment("strawWireMaterialName") };
         fhicl::Atom<std::string> IPAMaterialName{ Name("IPAMaterialName"), Comment("IPA MaterialName") };
         fhicl::Atom<std::string> STMaterialName{ Name("STMaterialName"), Comment("Stopping Target MaterialName") };
-        fhicl::Atom<double> dahlLynchScatteringFraction{ Name("dahlLynchScatteringFraction"), Comment("dahlLynchScatteringFraction") };
+        fhicl::Atom<int> elossMode { Name("IonizationEnergyLossMode"), Comment( "Ionization energy loss mode") };
+        fhicl::Atom<double> solidScatter{ Name("SolidScatteringFraction"), Comment("DahlLynch Scattering model cutoff Fraction for solids") };
+        fhicl::Atom<double> gasScatter{ Name("GasScatteringFraction"), Comment("DahlLynch Scattering model cutoff Fraction for gases") };
+        fhicl::Atom<double> eBrehms{ Name("ElectronBrehmsFraction"), Comment("Electron Brehmsstrahlung cutoff Fraction") };
       };
 
       explicit KKMaterial( Config const& config);
@@ -40,7 +43,6 @@ namespace mu2e {
     private:
       KKFileFinder filefinder_; // used to find material info
       std::string wallmatname_, gasmatname_, wirematname_,ipamatname_, stmatname_;
-      MatEnv::DetMaterial::energylossmode eloss_;
       mutable std::unique_ptr<MatDBInfo> matdbinfo_; // material database
       mutable std::unique_ptr<KKStrawMaterial> smat_; // straw material
   };
