@@ -60,11 +60,6 @@ namespace mu2e {
     // for now the wire type isn't set or used: FIXME!!!
     const DetMaterial* wiremat(nullptr);
 
-    // overwrite the scattering fraction.  Sadly I must cast-off const for this
-    double scatfrac = _config.dahlLynchScatteringFraction();
-    const_cast<DetMaterial*>(gasmat)->setScatterFraction(scatfrac);
-    const_cast<DetMaterial*>(wallmat)->setScatterFraction(scatfrac);
-
     // the offset displaces the element from the wire, which avoids
     // problems when computing POCA on the fit trajectory.
     double offset = _config.strawElementOffset();
