@@ -26,9 +26,9 @@ vector<string> bfield.innerMaps = {
   "BFieldMaps/Mau13/PSMap_DSOff.header",
   "BFieldMaps/Mau13/TSuMap_DSOff.header",
   "BFieldMaps/Mau13/TSdMap_DSOff.header",
-  "BFieldMaps/Mau13/PStoDumpAreaMap.header",
-  "BFieldMaps/Mau13/ProtonDumpAreaMap.header",
-  "BFieldMaps/Mau13/DSExtension.header"
+  "BFieldMaps/Mau13/PStoDumpAreaMap_DSOff.header",
+  "BFieldMaps/Mau13/ProtonDumpAreaMap_DSOff.header",
+  "BFieldMaps/Mau13/DSExtension_DSOff.header"
 };
 
 // Value of the uniform magnetic field with the DS volume (only for
@@ -49,8 +49,8 @@ int  bfield.verbosityLevel =  0;
 bool bfield.writeG4BLBinaries     =  false;
 
 vector<string> bfield.outerMaps = {
-  "BFieldMaps/Mau13/PSAreaMap.header",
-  "BFieldMaps/Mau13/WorldMap.header"
+  "BFieldMaps/Mau13/PSAreaMap_DSOff.header",
+  "BFieldMaps/Mau13/WorldMap_DSOff.header"
 };
 
 // This scale factor is of limited use.
