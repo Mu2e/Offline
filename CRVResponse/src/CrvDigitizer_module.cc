@@ -93,13 +93,13 @@ namespace mu2e
         const CRSScintillatorBarIndex &barIndex = crvDigiMC.GetScintillatorBarIndex();
         const int SiPM = crvDigiMC.GetSiPMNumber();
 
-	uint16_t offlineChannel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
+        uint16_t offlineChannel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
         CRVROC   onlineChannel  = channelMap.online(offlineChannel);
         uint8_t  roc            = onlineChannel.ROC();
         uint8_t  feb            = onlineChannel.FEB();
         uint8_t  febChannel     = onlineChannel.FEBchannel();
 
-	const std::vector<double> &voltages = crvDigiMC.GetVoltages();
+        const std::vector<double> &voltages = crvDigiMC.GetVoltages();
         double startTime = crvDigiMC.GetStartTime();
         double TDC0time = crvDigiMC.GetTDC0Time();
         double NZS = crvDigiMC.IsNZS();

@@ -18,14 +18,14 @@ namespace mu2e
     CrvDigi() {}
 
     CrvDigi(const std::vector<int16_t> &ADCs, uint16_t startTDC, bool NZS, bool oddTimestamp, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, uint8_t SiPMNumber,
-	    uint8_t ROC, uint8_t FEB, uint8_t FEBchannel) :
+            uint8_t ROC, uint8_t FEB, uint8_t FEBchannel) :
             _ADCs(ADCs), _startTDC(startTDC), _NZS(NZS), _oddTimestamp(oddTimestamp), _scintillatorBarIndex(scintillatorBarIndex), _SiPMNumber(SiPMNumber),
-	    _ROC(ROC), _FEB(FEB), _FEBchannel(FEBchannel) {}
+            _ROC(ROC), _FEB(FEB), _FEBchannel(FEBchannel) {}
 
     CrvDigi(std::vector<int16_t> &&ADCs, uint16_t startTDC, bool NZS, bool oddTimestamp, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, uint8_t SiPMNumber,
-	    uint8_t ROC, uint8_t FEB, uint8_t FEBchannel) :
+            uint8_t ROC, uint8_t FEB, uint8_t FEBchannel) :
             _ADCs(std::move(ADCs)), _startTDC(startTDC), _NZS(NZS), _oddTimestamp(oddTimestamp), _scintillatorBarIndex(scintillatorBarIndex), _SiPMNumber(SiPMNumber),
-	    _ROC(ROC), _FEB(FEB), _FEBchannel(FEBchannel) {}
+            _ROC(ROC), _FEB(FEB), _FEBchannel(FEBchannel) {}
 
     const std::vector<int16_t>           &GetADCs() const     {return _ADCs;}
     uint16_t                              GetStartTDC() const {return _startTDC;}

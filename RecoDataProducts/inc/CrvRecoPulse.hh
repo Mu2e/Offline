@@ -23,8 +23,8 @@ namespace mu2e
                  const CrvRecoPulseFlags &flags,
                  float PEsNoFit, double pulseTimeNoFit, double pulseStart, double pulseEnd,
                  const std::vector<size_t> &waveformIndices, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, uint8_t SiPMNumber,
-	         uint8_t ROC, uint8_t FEB, uint8_t FEBchannel,
-		 float pedestal, bool pedestalFromDB) :
+                 uint8_t ROC, uint8_t FEB, uint8_t FEBchannel,
+                 float pedestal, bool pedestalFromDB) :
                                                                             _PEs(PEs),
                                                                             _PEsPulseHeight(PEsPulseHeight),
                                                                             _pulseTime(pulseTime),
@@ -40,9 +40,9 @@ namespace mu2e
                                                                             _waveformIndices(waveformIndices),
                                                                             _scintillatorBarIndex(scintillatorBarIndex),
                                                                             _SiPMNumber(SiPMNumber),
-	                                                                    _ROC(ROC),
-									    _FEB(FEB),
-									    _FEBchannel(FEBchannel),
+                                                                            _ROC(ROC),
+                                                                            _FEB(FEB),
+                                                                            _FEBchannel(FEBchannel),
                                                                             _pedestal(pedestal),
                                                                             _pedestalFromDB(pedestalFromDB)
                                                                              {}
@@ -62,7 +62,7 @@ namespace mu2e
     double GetPulseEnd() const       {return _pulseEnd;}
 
     const std::vector<size_t>    &GetWaveformIndices() const      {return _waveformIndices;}
-    std::vector<size_t>    &GetWaveformIndices() {return _waveformIndices;} // used in reco compression
+    std::vector<size_t>          &GetWaveformIndices()            {return _waveformIndices;} // used in reco compression
     mu2e::CRSScintillatorBarIndex GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
     uint8_t                       GetSiPMNumber() const           {return _SiPMNumber;}
     uint8_t                       GetROC() const                  {return _ROC;}

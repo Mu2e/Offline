@@ -1,5 +1,6 @@
 #include "Offline/EventDisplay/fcl/EventDisplayBase.fcl"
 
+physics.analyzers.eventdisplay.wideband              : true
 services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_Wideband1module.txt"
 services.ProditionsService.crvStatus.useDb           : false
 services.ProditionsService.crvCalib.useDb            : true

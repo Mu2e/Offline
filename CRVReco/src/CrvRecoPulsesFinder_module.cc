@@ -207,8 +207,8 @@ namespace mu2e
       double pedestalFromDB = true;
       if(pedestal-((float)ADCs.at(0))>_pedestalUndershootThreshold) //pulse seems to be in an undershoot. get pedestal from 1st ADC sample instead of DB.
       {
-	pedestal=ADCs.at(0);
-	pedestalFromDB=false;
+        pedestal=ADCs.at(0);
+        pedestalFromDB=false;
       }
       double calibPulseArea = calib.pulseArea(channel);
       double calibPulseHeight = calib.pulseHeight(channel);
