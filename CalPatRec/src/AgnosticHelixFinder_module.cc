@@ -413,7 +413,7 @@ namespace mu2e {
         }
         const int nHelicesInitial = _diagInfo.nHelices; // Only valid if diagLevel > 0, for diagnostic tracking
         tcHitsFill(i); // Initialize the list of hits in the time cluster
-        while(findHelix(i, *hsColl) && !_findMultipleHelices); // Exit the search if no helix is found or after finding a helix if configured for multi-helix reco
+        while(findHelix(i, *hsColl) && _findMultipleHelices); // Exit the search if no helix is found or after finding a helix if configured for multi-helix reco
 
         if (_diagLevel > 0) {
           tcInfo timeClusterInfo;
