@@ -381,6 +381,7 @@ namespace mu2e {
       _diagInfo.circleFitter = &_circleFitter;
       _diagInfo.lineFitter = &_lineFitter;
       _diagInfo.chColl = _chColl;
+      _diagInfo.tcColl = _tcColl;
       _diagInfo.diagLevel = _diagLevel;
       _diagInfo.bz0 = _bz0;
       _hmanager->fillHistograms(&_diagInfo, DIAG::kBegin);
@@ -402,6 +403,8 @@ namespace mu2e {
 
       // flag whether event is intense or not
       _intenseEvent = (int) _tcColl->size() > _intenseEventThresh;
+      if(_diagLevel > 1)
+        printf("[AgnosticHelixFinder::%s] Event %i:%i:%i: N(time clusters) = %zu\n", __func__, event.run(), event.subRun(), event.event(), _tcColl->size());
 
       for (size_t i = 0; i < _tcColl->size(); i++) {
         // check to see if cluster is a busy one
@@ -409,11 +412,15 @@ namespace mu2e {
         const auto& tc = _tcColl->at(i);
         _intenseCluster = (int) tc.nhits() > _intenseClusterThresh;
         if (_intenseEvent || _intenseCluster) {
-          if (!tc.hasCaloCluster()) { continue; }
+          if (!tc.hasCaloCluster()) {
+            if(_diagLevel > 1)
+              printf("  --> Skipping time cluster (%zu hits) without a calo cluster\n", tc.nhits());
+            continue;
+          }
         }
         const int nHelicesInitial = _diagInfo.nHelices; // Only valid if diagLevel > 0, for diagnostic tracking
         tcHitsFill(i); // Initialize the list of hits in the time cluster
-        while(findHelix(i, *hsColl) && _findMultipleHelices); // Exit the search if no helix is found or after finding a helix if configured for multi-helix reco
+        while(findHelix(i, *hsColl) && _findMultipleHelices); // Exit the search if no helix is found or after finding a helix if not configured for multi-helix reco
 
         if (_diagLevel > 0) {
           tcInfo timeClusterInfo;
@@ -425,6 +432,8 @@ namespace mu2e {
           _diagInfo.helixSeedData.clear(); // clear for the next time cluster
         }
       }
+    } else if(_diagLevel > 0) {
+      printf("[AgnosticHelixFinder::%s] %i:%i:%i Event data not found!\n", __func__, event.run(), event.subRun(), event.event());
     }
 
     // fill necessary data members for diagnostic tool
@@ -736,6 +745,8 @@ namespace mu2e {
             if(findAnotherHelix && _doAverageFlag) resetFlags(); // reset flags if needed
             // Helix found, so we can exit this search
             return findAnotherHelix;
+          } else if(_diagLevel > 4) {
+            printf("Helix hits: Failed with %i straw hits (%i combo hits)\n", nStrawHitsInHelix, nComboHitsInHelix);
           }
         } // end triplet k loop
       } // end triplet j loop
@@ -1345,18 +1356,17 @@ namespace mu2e {
     // first check if line has good enough fit
     if (_lineFitter.chi2Dof() > _chi2LineSaveThresh) {
       outcome = CONTINUE;
-      return;
+    } else {
+      // if line fit was good enough make sure momenta are within allowable range
+      float radius = _circleFitter.radius();
+      float slope = _lineFitter.dydx();
+      float mom2 = computeHelixMomentum2(radius, slope);
+      float pt = computeHelixPerpMomentum(radius);
+      if (mom2 < _minHelixMomentum * _minHelixMomentum ||
+          mom2 > _maxHelixMomentum * _maxHelixMomentum || pt < _minHelixPerpMomentum ||
+          pt > _maxHelixPerpMomentum) { outcome = CONTINUE; }
+      else { outcome = GOOD; }
     }
-
-    // if line fit was good enough make sure momenta are within allowable range
-    float radius = _circleFitter.radius();
-    float slope = _lineFitter.dydx();
-    float mom2 = computeHelixMomentum2(radius, slope);
-    float pt = computeHelixPerpMomentum(radius);
-    if (mom2 < _minHelixMomentum * _minHelixMomentum ||
-        mom2 > _maxHelixMomentum * _maxHelixMomentum || pt < _minHelixPerpMomentum ||
-        pt > _maxHelixPerpMomentum) { outcome = CONTINUE; }
-    else { outcome = GOOD; }
 
     if(_diagLevel > 0) {
       _diagInfo.loopCondition = outcome;

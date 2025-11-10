@@ -144,6 +144,7 @@ namespace mu2e {
       const std::vector<cHit>* tcHits = nullptr;
       const std::vector<lineInfo>* seedPhiLines = nullptr;
       const ComboHitCollection* chColl = nullptr;
+      const TimeClusterCollection* tcColl = nullptr;
       const TimeCluster* tc = nullptr;
       const ::LsqSums4* circleFitter = nullptr;
       const ::LsqSums2* lineFitter = nullptr;

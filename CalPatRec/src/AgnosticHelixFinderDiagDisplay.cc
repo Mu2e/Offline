@@ -598,25 +598,30 @@ void AgnosticHelixFinderDiag::plotPhiZLegend(int) {
 void AgnosticHelixFinderDiag::plotHitsXY(const bool use_tc) {
   if(!_data || !_data->chColl) return;
   if(use_tc && !_data->tc) return;
+  if(!use_tc && !_data->tcColl) return;
 
-  const size_t nhits = (use_tc) ? _data->tc->hits().size() : _data->chColl->size();
-  for(size_t ihit = 0; ihit < nhits; ++ihit) {
-    const size_t index = (use_tc) ? _data->tc->hits().at(ihit) : ihit;
-    const auto& hit = _data->chColl->at(index);
-    if(hit.time() < _tMin) continue;
-    const auto sim = hitSim(index);
-    double pmc(0.); int pdg = 0; // for MC-based hit coloring, if MC is available
-    if(sim) {
-      pdg = std::abs(sim->pdgId());
-      const int sim_id = sim->id().asInt();
-      if(_simInfo.find(sim_id) != _simInfo.end()) {
-        const auto& info = _simInfo[sim_id];
-        pmc = std::max(info.hit_start_p_, info.hit_end_p_);
+  const size_t ntc = (use_tc) ? 1 : _data->tcColl->size();
+  for(size_t itc = 0; itc < ntc; ++itc) {
+    const TimeCluster* tc = (use_tc) ? _data->tc : &_data->tcColl->at(itc);
+    const size_t nhits = tc->hits().size();
+    for(size_t ihit = 0; ihit < nhits; ++ihit) {
+      const size_t index = tc->hits().at(ihit);
+      const auto& hit = _data->chColl->at(index);
+      if(hit.time() < _tMin) continue;
+      const auto sim = hitSim(index);
+      double pmc(0.); int pdg = 0; // for MC-based hit coloring, if MC is available
+      if(sim) {
+        pdg = std::abs(sim->pdgId());
+        const int sim_id = sim->id().asInt();
+        if(_simInfo.find(sim_id) != _simInfo.end()) {
+          const auto& info = _simInfo[sim_id];
+          pmc = std::max(info.hit_start_p_, info.hit_end_p_);
+        }
+        if(pdg == 2212 && !_showProtons) continue;
       }
-      if(pdg == 2212 && !_showProtons) continue;
+      const int color = MCColor(pdg, pmc);
+      plotHitXY(hit, color);
     }
-    const int color = MCColor(pdg, pmc);
-    plotHitXY(hit, color);
   }
 }
 

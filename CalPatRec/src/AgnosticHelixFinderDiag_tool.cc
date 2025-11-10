@@ -463,6 +463,30 @@ int AgnosticHelixFinderDiag::fillHistograms(void* Data, int Mode) {
   }
 
   //-----------------------------------------------------------------------------
+  // Recover stage histograms
+  //-----------------------------------------------------------------------------
+
+  if(Mode == DIAG::kRecover) {
+    if(_display && _data->diagLevel > 4) {
+      std::cout << "Recover stage: Loop condition " << ConditionName(_data->loopCondition)
+                << std::endl;
+    }
+    return 0;
+  }
+
+  //-----------------------------------------------------------------------------
+  // Viability stage histograms
+  //-----------------------------------------------------------------------------
+
+  if(Mode == DIAG::kViability) {
+    if(_display && _data->diagLevel > 4) {
+      std::cout << "Viability stage: Loop condition " << ConditionName(_data->loopCondition)
+                << std::endl;
+    }
+    return 0;
+  }
+
+  //-----------------------------------------------------------------------------
   // Helix stage histograms
   //-----------------------------------------------------------------------------
 
