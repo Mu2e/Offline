@@ -9,6 +9,7 @@
 #include "Offline/RecoDataProducts/inc/CrvRecoPulseFlags.hh"
 
 #include <vector>
+#include <cstdint>
 
 namespace mu2e
 {
@@ -21,7 +22,9 @@ namespace mu2e
     CrvRecoPulse(float PEs, float PEsPulseHeight, double pulseTime, float pulseHeight, float pulseBeta, float pulseFitChi2, double LEtime,
                  const CrvRecoPulseFlags &flags,
                  float PEsNoFit, double pulseTimeNoFit, double pulseStart, double pulseEnd,
-                 const std::vector<size_t> &waveformIndices, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, int SiPMNumber) :
+                 const std::vector<size_t> &waveformIndices, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, uint8_t SiPMNumber,
+                 uint8_t ROC, uint8_t FEB, uint8_t FEBchannel,
+                 float pedestal, bool pedestalFromDB) :
                                                                             _PEs(PEs),
                                                                             _PEsPulseHeight(PEsPulseHeight),
                                                                             _pulseTime(pulseTime),
@@ -36,7 +39,12 @@ namespace mu2e
                                                                             _pulseEnd(pulseEnd),
                                                                             _waveformIndices(waveformIndices),
                                                                             _scintillatorBarIndex(scintillatorBarIndex),
-                                                                            _SiPMNumber(SiPMNumber)
+                                                                            _SiPMNumber(SiPMNumber),
+                                                                            _ROC(ROC),
+                                                                            _FEB(FEB),
+                                                                            _FEBchannel(FEBchannel),
+                                                                            _pedestal(pedestal),
+                                                                            _pedestalFromDB(pedestalFromDB)
                                                                              {}
 
     float  GetPEs() const            {return _PEs;}
@@ -54,9 +62,14 @@ namespace mu2e
     double GetPulseEnd() const       {return _pulseEnd;}
 
     const std::vector<size_t>    &GetWaveformIndices() const      {return _waveformIndices;}
-    std::vector<size_t>    &GetWaveformIndices() {return _waveformIndices;} // used in reco compression
+    std::vector<size_t>          &GetWaveformIndices()            {return _waveformIndices;} // used in reco compression
     mu2e::CRSScintillatorBarIndex GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
-    int                           GetSiPMNumber() const           {return _SiPMNumber;}
+    uint8_t                       GetSiPMNumber() const           {return _SiPMNumber;}
+    uint8_t                       GetROC() const                  {return _ROC;}
+    uint8_t                       GetFEB() const                  {return _FEB;}
+    uint8_t                       GetFEBchannel() const           {return _FEBchannel;}
+    float                         GetPedestal() const             {return _pedestal;}
+    bool                          IsPedestalFromDB() const        {return _pedestalFromDB;}
 
     private:
 
@@ -76,7 +89,12 @@ namespace mu2e
 
     std::vector<size_t>            _waveformIndices;  //indices in the vector of the CrvDigiCollection (which is the same as the index in the CrvDigiMCCollection)
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
-    int                            _SiPMNumber{0};
+    uint8_t                        _SiPMNumber{0};
+    uint8_t                        _ROC{0};
+    uint8_t                        _FEB{0};
+    uint8_t                        _FEBchannel{0};
+    float                          _pedestal;
+    bool                           _pedestalFromDB;
   };
   typedef std::vector<mu2e::CrvRecoPulse> CrvRecoPulseCollection;
 }

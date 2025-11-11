@@ -38,6 +38,10 @@ namespace mu2e
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("module label for CrvDigis")};
+      fhicl::Atom<bool>        firstSampleOnly{Name("firstSampleOnly"), Comment("only use first sample of a hit")};
+      fhicl::Atom<int>         histBins{Name("histBins"), Comment("pedestal histogram bins"), 201};
+      fhicl::Atom<double>      histMin{Name("histMin"), Comment("start range of pedestal histogram"), -50.5};
+      fhicl::Atom<double>      histMax{Name("histMax"), Comment("end range of pedestal histogram"), 150.5};
       fhicl::Atom<double>      maxADCspread{Name("maxADCspread"), Comment("maximum spread of ADC values within a waveform to be considered for the pedestal")};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
@@ -51,6 +55,9 @@ namespace mu2e
 
     private:
     std::string        _crvDigiModuleLabel;
+    bool               _firstSampleOnly;
+    int                _histBins;
+    double             _histMin, _histMax;
     double             _maxADCspread;
     std::string        _tmpDBfileName;
     std::vector<TH1F*> _pedestalHists;
@@ -63,7 +70,13 @@ namespace mu2e
 
   CrvPedestalFinder::CrvPedestalFinder(const Parameters& conf) :
     art::EDAnalyzer(conf),
-    _crvDigiModuleLabel(conf().crvDigiModuleLabel()), _maxADCspread(conf().maxADCspread()), _tmpDBfileName(conf().tmpDBfileName())
+    _crvDigiModuleLabel(conf().crvDigiModuleLabel()), 
+    _firstSampleOnly(conf().firstSampleOnly()),
+    _histBins(conf().histBins()),
+    _histMin(conf().histMin()),
+    _histMax(conf().histMax()),
+    _maxADCspread(conf().maxADCspread()),
+    _tmpDBfileName(conf().tmpDBfileName())
   {
   }
 
@@ -82,10 +95,10 @@ namespace mu2e
       for(size_t SiPM=0; SiPM<CRVId::nChanPerBar; ++SiPM)
       {
         //produce histograms also for non-existing channels to get a continuously running index
-        size_t channelIndex=barIndex*4 + SiPM;
+        size_t channelIndex=barIndex*CRVId::nChanPerBar + SiPM;
         _pedestalHists.emplace_back(tfs->make<TH1F>(Form("crvPedestalHist_%lu",channelIndex),
                                                     Form("crvPedestalHist_%lu",channelIndex),
-                                                    201,-50.5,150.5));   //TODO: needs to be only between -50 and +50, but Offline currently sets the pedestal at +100
+                                                    _histBins,_histMin,_histMax));
         _timeOffsets[channelIndex]=0;
       }
     }
@@ -160,14 +173,20 @@ namespace mu2e
 
     for(auto iter=crvDigiCollection->begin(); iter!=crvDigiCollection->end(); ++iter)
     {
-      auto minmaxTest = std::minmax_element(iter->GetADCs().begin(),iter->GetADCs().end());
-      if(*minmaxTest.second-*minmaxTest.first>_maxADCspread) continue;  //ignore waveforms that fluctuate too much.
-                                                                        //they probably contain a signal or noise pulse
-
       int barIndex = iter->GetScintillatorBarIndex().asInt();
       int SiPM = iter->GetSiPMNumber();
       int channelIndex=barIndex*CRVId::nChanPerBar+SiPM;
       auto hist = _pedestalHists.at(channelIndex);
+
+      if(_firstSampleOnly)
+      {
+        hist->Fill(iter->GetADCs().at(0));
+        continue;	
+      }
+
+      auto minmaxTest = std::minmax_element(iter->GetADCs().begin(),iter->GetADCs().end());
+      if(*minmaxTest.second-*minmaxTest.first>_maxADCspread) continue;  //ignore waveforms that fluctuate too much.
+                                                                        //they probably contain a signal or noise pulse
 
       for(size_t i=0; i<iter->GetADCs().size(); ++i)
       {

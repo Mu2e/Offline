@@ -1,5 +1,6 @@
 #include "Offline/EventDisplay/fcl/EventDisplayBase.fcl"
 
+physics.analyzers.eventdisplay.wideband              : true
 services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_WidebandMuonTaggers_v01.txt"
 services.ProditionsService.crvPhotonYield.useDb      : false
 services.ProditionsService.crvStatus.useDb           : false

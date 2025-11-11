@@ -385,14 +385,52 @@
         source="std::array<int16_t,8> _ADCs"
         checksum="[3596926525]"
         targetClass="mu2e::CrvDigi"
-        target="_ADCs, _NZS"
+        target="_ADCs, _NZS, _oddTimestamp, _ROC, _FEB, _FEBchannel"
         include="array, vector">
 <![CDATA[
   _ADCs.resize(onfile._ADCs.size());
   for(size_t i=0; i<onfile._ADCs.size(); ++i) _ADCs[i]=onfile._ADCs[i];
   _NZS=false;
+  _oddTimestamp=false;
+  _ROC=0;
+  _FEB=0;
+  _FEBchannel=0;
 ]]>
 </ioread>
+
+<ioread sourceClass="mu2e::CrvDigi"
+        source=""
+        checksum="[1961551691]"
+        targetClass="mu2e::CrvDigi"
+	target="_oddTimestamp, _ROC, _FEB, _FEBchannel">
+<![CDATA[
+  _oddTimestamp=false;
+  _ROC=0;
+  _FEB=0;
+  _FEBchannel=0;
+]]>
+</ioread>
+
+<ioread sourceClass="mu2e::CrvRecoPulse"
+        source=""
+        checksum="[587252082]"
+        targetClass="mu2e::CrvRecoPulse"
+	target="_pedestal,_pedestalFromDB, _ROC, _FEB, _FEBchannel">
+<![CDATA[
+  _pedestal=0;
+  _pedestalFromDB=true;
+  _ROC=0;
+  _FEB=0;
+  _FEBchannel=0;
+]]>
+</ioread>
+
+ <class name="mu2e::CRVDataDecoder::CRVROCStatusPacketFEBII" />
+ <class name="std::vector<mu2e::CRVDataDecoder::CRVROCStatusPacketFEBII>" />
+ <class name="mu2e::CrvStatus" />
+ <class name="std::vector<mu2e::CrvStatus>" />
+ <class name="mu2e::CrvStatusCollection" />
+ <class name="art::Wrapper<mu2e::CrvStatusCollection>" />
 
 <!--  ********* ExtMon  ********* -->
  <class name="mu2e::ExtMonFNALRawHit" />
