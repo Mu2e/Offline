@@ -53,6 +53,7 @@ namespace mu2e {
       bool    notOnLine = true;
       bool    uselessTripletSeed = false;
       bool    notOnSegment = true;
+      XYZVectorF pos; // position of the hit
     };
 
     struct lineInfo {
