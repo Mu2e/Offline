@@ -154,6 +154,7 @@ namespace mu2e {
     float    _maxZWindow;
     int      _minLineSegmentHits;
     float    _segMultiplier;
+    float    _segMultiplierSq;
     float    _maxSegmentChi2;
     float    _max2PiAmbigResidual;
     float    _maxPhiZResidual;
@@ -168,7 +169,9 @@ namespace mu2e {
     float    _minHelixPerpMomentum;
     float    _maxHelixPerpMomentum;
     float    _minHelixMomentum;
+    float    _minHelixMomentumSq;
     float    _maxHelixMomentum;
+    float    _maxHelixMomentumSq;
     float    _chi2LineSaveThresh;
     float    _maxEDepAvg;
     float    _tzSlopeSigThresh;
@@ -314,7 +317,12 @@ namespace mu2e {
     _caloClusterSigmaSq = _caloClusterSigma * _caloClusterSigma;
     _isoRadSq = _isoRad * _isoRad;
     _minDistCutSq = _minDistCut * _minDistCut;
+    _minHelixMomentumSq = _minHelixMomentum * _minHelixMomentum;
+    _maxHelixMomentumSq = _maxHelixMomentum * _maxHelixMomentum;
+    _segMultiplierSq = _segMultiplier * _segMultiplier;
 
+    // reserve a reasonable amount of space for future hit collections
+    _tcHits.reserve(200);
 
       // convert the helix direction names into enums
     for(auto helix_dir : config().validHelixDirections()) {
@@ -524,7 +532,7 @@ namespace mu2e {
     if (hitIndice == HitType::CALOCLUSTER) {
       tcHit.circleError2 = _caloClusterSigmaSq;
     } else if(hitIndice >= 0) {
-      const auto& hit = _chColl->at(hitIndice);
+      const auto& hit = *(tcHit.hit);
       float transVar = hit.transVar();
       const auto& pos = hit.pos();
       float x = pos.x();
@@ -575,7 +583,7 @@ namespace mu2e {
     if (hitIndice == HitType::CALOCLUSTER) {
       deltaS2 = _caloClusterSigmaSq;
     } else {
-      const auto& hit = _chColl->at(hitIndice);
+      const auto& hit = *(tcHit.hit);
       const float R = std::sqrt(Rsq);
       const auto& udir = hit.uDir();
       const float ux = udir.x();
@@ -621,7 +629,6 @@ namespace mu2e {
     _tcHits.clear(); // clear the initial list
 
     const auto& tc = _tcColl->at(itc);
-    _tcHits.reserve(tc._strawHitIdxs.size() + 2); // reserve the maximum memory needed first
     size_t sortStartIndex = 0;
 
     // push back stopping target if it is to be used
@@ -652,14 +659,14 @@ namespace mu2e {
     for (size_t i = 0; i < tc._strawHitIdxs.size(); i++) {
       cHit hit;
       hit.hitIndice = tc._strawHitIdxs[i];
-      hit.pos = _chColl->at(hit.hitIndice).pos();
+      hit.hit = &(_chColl->at(hit.hitIndice));
+      hit.pos = hit.hit->pos();
       _tcHits.push_back(hit);
     }
 
-    // order from largest z to smallest z (skip over stopping target and calo cluster since they
-    // aren't in _chColl)
+    // order from largest z to smallest z (leave the stopping target and calo cluster hits at the front)
     std::sort(_tcHits.begin() + sortStartIndex, _tcHits.end(), [&](const cHit& a, const cHit& b) {
-      return _chColl->at(a.hitIndice).pos().z() > _chColl->at(b.hitIndice).pos().z();
+      return a.pos.z() > b.pos.z();
     });
 
     // For diagnostics
@@ -687,7 +694,7 @@ namespace mu2e {
           || index_i == HitType::CALOCLUSTER) { continue; }
 
       // test for high energy deposition
-      tcHit_i.highEDep = _doEDepFlag && _chColl->at(index_i).energyDep() > _eDepFlagThresh;
+      tcHit_i.highEDep = _doEDepFlag && tcHit_i.hit->energyDep() > _eDepFlagThresh;
 
       // check for isolated hits or average out nearby hits
       if (_doIsolationFlag == true || _doAverageFlag == true) {
@@ -809,11 +816,11 @@ namespace mu2e {
           for (size_t q = 0; q < _tcHits.size(); q++) {
             if (_tcHits[q].inHelix == true || _tcHits[q].hitIndice == HitType::STOPPINGTARGET
                 || _tcHits[q].hitIndice == HitType::CALOCLUSTER) { continue; }
-            int hitIndice = _tcHits[q].hitIndice;
-            const int nStrawHitsInHit = _chColl->at(hitIndice).nStrawHits();
+            const auto& tcHit = _tcHits[q];
+            const int nStrawHitsInHit = tcHit.hit->nStrawHits();
             nStrawHitsInTimeCluster += nStrawHitsInHit;
             ++nComboHitsInTimeCluster;
-            if (_tcHits[q].used == false) { continue; }
+            if (tcHit.used == false) { continue; }
             nStrawHitsInHelix += nStrawHitsInHit;
             ++nComboHitsInHelix;
           }
@@ -1087,6 +1094,8 @@ namespace mu2e {
     float maxHitGap = 0.f; // For diagnostics
 
     // seed point
+    lineInfo positiveLine; // for negative/positive slope hypotheses
+    lineInfo negativeLine;
     const size_t ntcHits = _tcHits.size();
     const size_t max_index = ntcHits - _minLineSegmentHits; // max + 1
     for (size_t i = 0; i < max_index; i++) {
@@ -1102,17 +1111,20 @@ namespace mu2e {
       float seedPhi = tcHit_i.helixPhi;
       float seedError2 = tcHit_i.helixPhiError2;
       float seedWeight = 1.f / (seedError2);
+
       // initialize line for both positive and negative slopes
-      lineInfo _positiveLine;
-      _positiveLine.tcHitsIndices.push_back(i);
-      _positiveLine.helixPhiCorrections.push_back(0);
-      _positiveLine.zMax = seedZ;
-      _positiveLine.fitter.addPoint(seedZ, seedPhi, seedWeight);
-      lineInfo _negativeLine;
-      _negativeLine.tcHitsIndices.push_back(i);
-      _negativeLine.helixPhiCorrections.push_back(0);
-      _negativeLine.zMax = seedZ;
-      _negativeLine.fitter.addPoint(seedZ, seedPhi, seedWeight);
+      positiveLine.clear();
+      positiveLine.tcHitsIndices.push_back(i);
+      positiveLine.helixPhiCorrections.push_back(0);
+      positiveLine.zMax = seedZ;
+      positiveLine.fitter.addPoint(seedZ, seedPhi, seedWeight);
+
+      negativeLine.clear();
+      negativeLine.tcHitsIndices.push_back(i);
+      negativeLine.helixPhiCorrections.push_back(0);
+      negativeLine.zMax = seedZ;
+      negativeLine.fitter.addPoint(seedZ, seedPhi, seedWeight);
+
       // make clear phi for the most recently added point to fitter
       lastAddedNegativePhi = seedPhi;
       lastAddedNegativePhiError2 = seedError2;
@@ -1120,87 +1132,93 @@ namespace mu2e {
       lastAddedPositivePhi = seedPhi;
       lastAddedPositivePhiError2 = seedError2;
       lastAddedPositiveZ = seedZ;
-      // now loop over test point
+
+      // now loop over test points
       for (size_t j = i + 1; j < ntcHits; j++) {
         auto& tcHit_j = _tcHits[j];
         if (tcHit_j.inHelix == true || tcHit_j.used == false
             || tcHit_j.hitIndice == HitType::STOPPINGTARGET
             || tcHit_j.hitIndice == HitType::CALOCLUSTER) { continue; }
+
+         // Note: looping in decreasing z order, so seed z,last positive z, and last negative z >= test z
         float testZ = tcHit_j.pos.z();
-        if (std::abs(seedZ - testZ) > _maxZWindow) { break; }
+        if (seedZ - testZ > _maxZWindow) { break; }
         float positiveDeltaZ = lastAddedPositiveZ - testZ;
         float negativeDeltaZ = lastAddedNegativeZ - testZ;
         if (positiveDeltaZ > _maxSeedLineGap && negativeDeltaZ > _maxSeedLineGap) { break; }
-        float testPhi = tcHit_j.helixPhi;
-        float testPhiError2 = tcHit_j.helixPhiError2;
-        float testWeight = 1.f / (testPhiError2);
-        float positiveDiff = lastAddedPositivePhi - testPhi; // sign dropped in squaring
-        float positiveDiffSq = positiveDiff*positiveDiff; // faster than sqrt(error)
-        float positiveDiffErrorSq = lastAddedPositivePhiError2 + testPhiError2;
-        float negativeDiff = lastAddedNegativePhi - testPhi; // sign dropped in squaring
-        float negativeDiffSq = negativeDiff*negativeDiff; // faster than sqrt(error)
-        float negativeDiffErrorSq = lastAddedNegativePhiError2 + testPhiError2;
+
+        float testPhi              = tcHit_j.helixPhi;
+        float testPhiError2        = tcHit_j.helixPhiError2;
+        float testWeight           = 1.f / (testPhiError2);
+        float positiveDiff         = lastAddedPositivePhi - testPhi; // sign dropped in squaring
+        float positiveDiffSq       = positiveDiff*positiveDiff; // faster than sqrt(error)
+        float positiveDiffErrorSq  = lastAddedPositivePhiError2 + testPhiError2;
+        float negativeDiff         = lastAddedNegativePhi - testPhi; // sign dropped in squaring
+        float negativeDiffSq       = negativeDiff*negativeDiff; // faster than sqrt(error)
+        float negativeDiffErrorSq  = lastAddedNegativePhiError2 + testPhiError2;
 
         // Test adding the hit to the positive line
-        bool add_to_positive = (lastAddedPositivePhi > testPhi || positiveDiffSq < positiveDiffErrorSq) && positiveDeltaZ <= _maxSeedLineGap;
-        add_to_positive &= !(positiveDiffSq >= positiveDiffErrorSq && std::abs((lastAddedPositivePhi-testPhi)/positiveDeltaZ) > _maxDphiDz
-                             && underEstimateSlope(lastAddedPositivePhi,lastAddedPositivePhiError2,testPhi,testPhiError2,positiveDeltaZ) > _maxDphiDz);
+        bool add_to_positive = ((lastAddedPositivePhi > testPhi || positiveDiffSq < positiveDiffErrorSq)
+                                && positiveDeltaZ <= _maxSeedLineGap && positiveDeltaZ > 1.e-10);
+        add_to_positive &= (positiveDiffSq < positiveDiffErrorSq || std::abs((lastAddedPositivePhi-testPhi)/positiveDeltaZ) <= _maxDphiDz
+                            || underEstimateSlope(lastAddedPositivePhi,lastAddedPositivePhiError2,testPhi,testPhiError2,positiveDeltaZ) <= _maxDphiDz);
         if(add_to_positive) {
-          _positiveLine.tcHitsIndices.push_back(j);
-          _positiveLine.helixPhiCorrections.push_back(0);
-          _positiveLine.zMin = testZ;
-          _positiveLine.fitter.addPoint(testZ, testPhi, testWeight);
+          positiveLine.tcHitsIndices.push_back(j);
+          positiveLine.helixPhiCorrections.push_back(0);
+          positiveLine.zMin = testZ;
+          positiveLine.fitter.addPoint(testZ, testPhi, testWeight);
           lastAddedPositivePhi = testPhi;
           lastAddedPositivePhiError2 = testPhiError2;
           if (_diagLevel > 0 && positiveDeltaZ > maxHitGap) { maxHitGap = positiveDeltaZ; } // for diagnostics, focus on positive lines
         }
 
         // Test adding the hit to the negative line
-        bool add_to_negative = (testPhi > lastAddedNegativePhi || negativeDiffSq < negativeDiffErrorSq) && negativeDeltaZ <= _maxSeedLineGap;
-        add_to_negative &= !(negativeDiffSq >= negativeDiffErrorSq && std::abs((lastAddedNegativePhi-testPhi)/positiveDeltaZ) > _maxDphiDz
-                             && underEstimateSlope(lastAddedNegativePhi,lastAddedNegativePhiError2,testPhi,testPhiError2,negativeDeltaZ) > _maxDphiDz);
+        bool add_to_negative = ((testPhi > lastAddedNegativePhi || negativeDiffSq < negativeDiffErrorSq)
+                                && negativeDeltaZ <= _maxSeedLineGap && negativeDeltaZ > 1.e-10);
+        add_to_negative &= (negativeDiffSq < negativeDiffErrorSq || std::abs((lastAddedNegativePhi-testPhi)/positiveDeltaZ) <= _maxDphiDz
+                             || underEstimateSlope(lastAddedNegativePhi,lastAddedNegativePhiError2,testPhi,testPhiError2,negativeDeltaZ) <= _maxDphiDz);
         if(add_to_negative) {
-          _negativeLine.tcHitsIndices.push_back(j);
-          _negativeLine.helixPhiCorrections.push_back(0);
-          _negativeLine.zMin = testZ;
-          _negativeLine.fitter.addPoint(testZ, testPhi, testWeight);
+          negativeLine.tcHitsIndices.push_back(j);
+          negativeLine.helixPhiCorrections.push_back(0);
+          negativeLine.zMin = testZ;
+          negativeLine.fitter.addPoint(testZ, testPhi, testWeight);
           lastAddedNegativePhi = testPhi;
           lastAddedNegativePhiError2 = testPhiError2;
         }
       } // end hit j loop
 
-      if (_positiveLine.fitter.qn() >= _minLineSegmentHits && _positiveLine.fitter.dydx() <= _maxDphiDz) {
-        float dphidz = _positiveLine.fitter.dydx();
+      if (positiveLine.fitter.qn() >= _minLineSegmentHits && positiveLine.fitter.dydx() <= _maxDphiDz) {
+        float dphidz = positiveLine.fitter.dydx();
         float p2 = computeHelixMomentum2(rC, dphidz);
-        if ((seedPhi - lastAddedPositivePhi) * (seedPhi - lastAddedPositivePhi) >
-            _segMultiplier * _segMultiplier * seedError2 &&
-            p2 > _minHelixMomentum * _minHelixMomentum &&
-            p2 < _maxHelixMomentum * _maxHelixMomentum &&
-            _positiveLine.fitter.chi2Dof() <= _maxSegmentChi2) {
+        const float dphi = (seedPhi - lastAddedPositivePhi);
+        if (dphi*dphi > _segMultiplierSq * seedError2 &&
+            p2 > _minHelixMomentumSq &&
+            p2 < _maxHelixMomentumSq &&
+            positiveLine.fitter.chi2Dof() <= _maxSegmentChi2) {
           // Accept the positive seed phi line
-          _seedPhiLines.push_back(_positiveLine);
+          _seedPhiLines.push_back(positiveLine);
           if (_diagLevel > 0) {
-            lsInfo.chi2dof = _positiveLine.fitter.chi2Dof();
+            lsInfo.chi2dof = positiveLine.fitter.chi2Dof();
             lsInfo.maxHitGap = maxHitGap;
             _diagInfo.lineSegmentData.push_back(lsInfo);
           }
-          for (size_t n = 0; n < _positiveLine.tcHitsIndices.size(); n++) {
-            _tcHits[_positiveLine.tcHitsIndices[n]].notOnSegment = false;
+          for (size_t n = 0; n < positiveLine.tcHitsIndices.size(); n++) {
+            _tcHits[positiveLine.tcHitsIndices[n]].notOnSegment = false;
           }
         }
       }
-      if (_negativeLine.fitter.qn() >= _minLineSegmentHits && std::abs(_negativeLine.fitter.dydx()) <= _maxDphiDz) {
-        float dphidz = _negativeLine.fitter.dydx();
+      if (negativeLine.fitter.qn() >= _minLineSegmentHits && std::abs(negativeLine.fitter.dydx()) <= _maxDphiDz) {
+        float dphidz = negativeLine.fitter.dydx();
         float p2 = computeHelixMomentum2(rC, dphidz);
-        if ((seedPhi - lastAddedNegativePhi) * (seedPhi - lastAddedNegativePhi) >
-            _segMultiplier * _segMultiplier * seedError2 &&
-            p2 > _minHelixMomentum * _minHelixMomentum &&
-            p2 < _maxHelixMomentum * _maxHelixMomentum &&
-            _negativeLine.fitter.chi2Dof() <= _maxSegmentChi2) {
+        const float dphi = (seedPhi - lastAddedNegativePhi);
+        if (dphi*dphi > _segMultiplierSq * seedError2 &&
+            p2 > _minHelixMomentumSq &&
+            p2 < _maxHelixMomentumSq &&
+            negativeLine.fitter.chi2Dof() <= _maxSegmentChi2) {
           // Accept the negative seed phi line
-          _seedPhiLines.push_back(_negativeLine);
-          for (size_t n = 0; n < _negativeLine.tcHitsIndices.size(); n++) {
-            _tcHits[_negativeLine.tcHitsIndices[n]].notOnSegment = false;
+          _seedPhiLines.push_back(negativeLine);
+          for (size_t n = 0; n < negativeLine.tcHitsIndices.size(); n++) {
+            _tcHits[negativeLine.tcHitsIndices[n]].notOnSegment = false;
           }
         }
       }
@@ -1501,8 +1519,8 @@ namespace mu2e {
       float slope = _lineFitter.dydx();
       float mom2 = computeHelixMomentum2(radius, slope);
       float pt = computeHelixPerpMomentum(radius);
-      if (mom2 < _minHelixMomentum * _minHelixMomentum ||
-          mom2 > _maxHelixMomentum * _maxHelixMomentum || pt < _minHelixPerpMomentum ||
+      if (mom2 < _minHelixMomentumSq ||
+          mom2 > _maxHelixMomentumSq || pt < _minHelixPerpMomentum ||
           pt > _maxHelixPerpMomentum) { outcome = CONTINUE; }
       else { outcome = GOOD; }
     }
@@ -1531,8 +1549,7 @@ namespace mu2e {
           || _tcHits[i].hitIndice == HitType::STOPPINGTARGET
           || _tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
       _tcHits[i].inHelix = true;
-      int hitIndice = _tcHits[i].hitIndice;
-      const ComboHit& hit = _chColl->at(hitIndice);
+      const ComboHit& hit = *(_tcHits[i].hit);
       fitter.addPoint(hit.pos().z(), hit.correctedTime(), 1 / (hit.timeRes() * hit.timeRes()));
       ComboHit hhit(hit);
       hhit._hphi = _tcHits[i].helixPhi + _tcHits[i].helixPhiCorrection * _twopi;
