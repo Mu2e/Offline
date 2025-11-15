@@ -3,6 +3,7 @@
 //
 // Original Author: Ralf Ehrlich
 
+#include "Offline/CRVConditions/inc/CRVOrdinal.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/CRVConditions/inc/CRVStatus.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -111,6 +112,7 @@ namespace mu2e
     std::vector<int>   _nDigis, _nDigisNZS;  //for each channel
     std::vector<int>   _nDigisROC, _nDigisROCNZS;  //for each channel
     std::vector<TH1F*> _histPEs;             //for each channel
+    std::vector<TH1F*> _histPEsROC;          //for each channel
     std::vector<bool>  _notConnected;        //for each channel
 
     std::vector<TH1F*> _histDigisPerChannelAndEvent;
@@ -118,6 +120,7 @@ namespace mu2e
     std::vector<TH1F*> _histDigiRatesROC;
     std::vector<TH1F*> _histDigiRatesROCNZS;
     std::vector<TH1F*> _histPEsMPV;
+    std::vector<TH1F*> _histPEsMPVROC;
     std::vector<TH1F*> _histPedestals;
     std::vector<TH1F*> _histCalibConstants;
     TH1I*              _histCoincidenceClusters;
@@ -125,6 +128,7 @@ namespace mu2e
 
     ProditionsHandle<CRVCalib>  _calib;
     ProditionsHandle<CRVStatus> _sipmStatus;
+    ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
   };
 
   CrvDQMcollector::CrvDQMcollector(const Parameters& conf) :
@@ -181,6 +185,9 @@ namespace mu2e
       {
         _histDigiRatesROC.at(ROC-1)->Fill(channel,(float)(_nDigisROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+channel))/_totalEvents);
         _histDigiRatesROCNZS.at(ROC-1)->Fill(channel,(float)(_nDigisROCNZS.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+channel))/_totalEvents);
+
+        float PEsMPV = _histPEsROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+channel)->GetMean();  //FIXME: replace by MPV from Gauss-Landau fit
+        _histPEsMPVROC.at(ROC-1)->Fill(channel,PEsMPV);
       }
     }
 
@@ -195,6 +202,7 @@ namespace mu2e
     auto &crvSectors = CRS->getCRSScintillatorShields();
     auto &crvCounters = CRS->getAllCRSScintillatorBars();
     _histPEsMPV.reserve(crvSectors.size());
+    _histPEsMPVROC.reserve(CRVId::nROC);
     _histPedestals.reserve(crvSectors.size());
     _histCalibConstants.reserve(crvSectors.size());
     _histDigisPerChannelAndEvent.reserve(crvSectors.size());
@@ -207,12 +215,17 @@ namespace mu2e
     _nDigisROC.resize(CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB);
     _nDigisROCNZS.resize(CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB);
     _histPEs.reserve(crvCounters.size()*CRVId::nChanPerBar);
+    _histPEsROC.reserve(CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB);
     _notConnected.resize(crvCounters.size()*CRVId::nChanPerBar);
 
     art::ServiceHandle<art::TFileService> tfs;
     for(size_t i=0; i<crvCounters.size()*CRVId::nChanPerBar; ++i)
     {
-      _histPEs.emplace_back(new TH1F(Form("crvPEsMPV_channel%lu",i), Form("crvPEsMPV_channel%lu",i), 150,0,150));
+      _histPEs.emplace_back(new TH1F(Form("crvPEs_channel%lu",i), Form("crvPEs_channel%lu",i), _histPEsBins,_histPEsStart,_histPEsEnd));
+    }
+    for(size_t i=0; i<CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB; ++i)
+    {
+      _histPEsROC.emplace_back(new TH1F(Form("crvPEsROC_channel%lu",i), Form("crvPEsROC_channel%lu",i), _histPEsBins,_histPEsStart,_histPEsEnd));
     }
     for(size_t i=0; i<crvSectors.size(); ++i)
     {
@@ -234,6 +247,9 @@ namespace mu2e
     }
     for(size_t ROC=1; ROC<=CRVId::nROC; ++ROC)
     {
+      _histPEsMPVROC.emplace_back(tfs->make<TH1F>(Form("crvPEsMPV_ROC%zu",ROC),
+                                            Form("crvPEsMPV_ROC%zu",ROC),
+                                            CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB-1));
       _histDigiRatesROC.emplace_back(tfs->make<TH1F>(Form("crvDigiRates_ROC%zu",ROC),
                                             Form("crvDigiRates_ROC%zu",ROC),
                                             CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB-1));
@@ -273,6 +289,7 @@ namespace mu2e
 
     auto const& calib = _calib.get(event.id());
     auto const& sipmStatus = _sipmStatus.get(event.id());
+    auto const& channelMap = _channelMap_h.get(event.id());
 
     for(size_t i=0; i<crvDigiCollection->size(); ++i)
     {
@@ -344,6 +361,13 @@ namespace mu2e
         size_t channel = barIndex*CRVId::nChanPerBar + SiPM;
         float PEs =recoPulse->GetPEs();
         _histPEs.at(channel)->Fill(PEs);
+
+        mu2e::CRVROC onlineChannel = channelMap.online(channel);
+        int ROC=onlineChannel.ROC();
+        int ROCport=onlineChannel.FEB();
+        int FEBchannel=onlineChannel.FEBchannel();
+        size_t onlineChannelIndex = (ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB + (ROCport-1)*CRVId::nChanPerFEB + FEBchannel;
+        _histPEsROC.at(onlineChannelIndex)->Fill(PEs);
       }
     }
     if(crvCoincidenceClusterCollection->size()>0) ++_totalEventsWithCoincidenceClusters;
