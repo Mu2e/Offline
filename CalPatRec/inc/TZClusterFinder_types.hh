@@ -45,6 +45,7 @@ namespace mu2e {
 
     struct plnData {
       std::vector<cHit> plnHits;
+      plnData() { plnHits.reserve(50); }
     };
 
     struct chunkInfo {
@@ -60,6 +61,7 @@ namespace mu2e {
       int              nCombines;
       int              caloIndex;
       bool             goodCluster;
+      chunkInfo(const size_t nreserve = 10) { hIndices.reserve(nreserve); }
     };
 
     struct Data_t {

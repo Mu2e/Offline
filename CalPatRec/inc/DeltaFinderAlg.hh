@@ -15,6 +15,7 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
 #include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
+#include "Offline/Mu2eUtilities/inc/StopWatch.hh"
 
 #include "Offline/CalPatRec/inc/DeltaFinder_types.hh"
 
@@ -118,10 +119,13 @@ namespace mu2e {
     int             _diagLevel;
     int             _printErrors;
     int             _testOrder;
+    int             _doTiming;
 
     bool            _testHitMask;
     StrawHitFlag    _goodHitMask;
     StrawHitFlag    _bkgHitMask;
+
+    std::shared_ptr<StopWatch> _watch;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
