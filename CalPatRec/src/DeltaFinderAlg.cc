@@ -255,7 +255,7 @@ namespace mu2e {
       float  t1       = ch1->time();
       int    time_bin = (int) t1/_timeBin;
 
-      int    max_bin(_maxT/_timeBin), first_tbin(0), last_tbin(max_bin);
+      int    first_tbin(0), last_tbin(_maxT/_timeBin), max_bin(_maxT/_timeBin);
 
       if (time_bin >       0) first_tbin = time_bin-1;
       if (time_bin < max_bin) last_tbin  = time_bin+1;
@@ -270,7 +270,6 @@ namespace mu2e {
         int      ftbin = first_tbin;
         int      ltbin = last_tbin;
 
-        // starts from max(0, tbin - 1) - min(nbins, tbin + 1), narrow if those side bins are empty
         while ((ftbin<ltbin) and (fz2->fFirst[ftbin] < 0)) ftbin++;
         while ((ltbin>ftbin) and (fz2->fFirst[ltbin] < 0)) ltbin--;
         int first = fz2->fFirst[ftbin];
@@ -644,6 +643,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   int DeltaFinderAlg::orderHits() {
     if(_doTiming > 0) _watch->SetTime(__func__);
+    ChannelID cx, co;
 //-----------------------------------------------------------------------------
 // vector of pointers to CH, ordered in time. Initial list is not touched
 //-----------------------------------------------------------------------------
@@ -709,13 +709,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     if(_doTiming > 1) _watch->StopTime("orderHits-sort-pointers");
     if(_doTiming > 1) _watch->SetTime("orderHits-time-bins");
-    ChannelID cx, co;
     for (int ih=0; ih<_data->_nComboHits; ih++) {
       const ComboHit* ch = _data->_v[ih];
 
       const StrawHitFlag* flag   = &ch->flag();
-      if (_testHitMask &&
-          (! flag->hasAllProperties(_goodHitMask) || flag->hasAnyProperty(_bkgHitMask)) ) continue;
+      if (_testHitMask && (! flag->hasAllProperties(_goodHitMask) || flag->hasAnyProperty(_bkgHitMask)) ) continue;
 
       // float corr_time    = ch->correctedTime();
 

@@ -19,7 +19,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
-#include "Offline/Mu2eUtilities/inc/StopWatch.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include <vector>
@@ -65,8 +64,6 @@ namespace mu2e {
       fhicl::Atom<float>             caloDtMax        {Name("caloDtMax"        ), Comment("search time window (ns)"     ) };
       fhicl::Atom<float>             caloTimeOffset   {Name("caloTimeOffset"   ), Comment("in ns"                       ) };
       fhicl::Atom<int>               doRefine         {Name("doRefine"         ), Comment("filter out bad TCs at end"   ) };
-      fhicl::Atom<bool>              countProtons     {Name("countProtons"     ), Comment("count proton clusters"       ), true};
-      fhicl::Atom<int>               doTiming         {Name("doTiming"         ), Comment("perform timing analysis"     ), 0};
 
       fhicl::Table<TZClusterFinderTypes::Config> diagPlugin{Name("diagPlugin"      ), Comment("Diag plugin") };
     };
@@ -76,6 +73,7 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     // data members
     //-----------------------------------------------------------------------------
+    unsigned         _iev;
     int              _diagLevel;
     int              _debugLevel;
     int              _printfreq;
@@ -109,22 +107,15 @@ namespace mu2e {
     float    _caloDtMax; // max time from time cluster for calo cluster to be associated with time cluster
     float    _caloTimeOffset; // time offset for calo clusters
     int      _doRefine; // if set to 1 then some pattern recogntion is used to filter out bad TC candidates
-    bool     _countProtons; // count proton time clusters
-    int      _doTiming; // perform timing analysis
-
-    //-----------------------------------------------------------------------------
-    // event data
-    //-----------------------------------------------------------------------------
-    Data_t                                 _data;
-    art::Handle<CaloClusterCollection>     _ccHandle;
-    facilitateVars                         _f; // data being processed
 
     //-----------------------------------------------------------------------------
     // diagnostics
     //-----------------------------------------------------------------------------
+    Data_t                                 _data;
+    art::Handle<CaloClusterCollection>     _ccHandle;
+    facilitateVars                         _f;
     std::unique_ptr<ModuleHistToolBase>    _hmanager;
     TCanvas*                               _c1;
-    std::unique_ptr<StopWatch>             _watch;
 
     //-----------------------------------------------------------------------------
     // functions
@@ -190,9 +181,7 @@ namespace mu2e {
     _minCaloEnergy          (config().minCaloEnergy()                           ),
     _caloDtMax              (config().caloDtMax()                               ),
     _caloTimeOffset         (config().caloTimeOffset()                          ),
-    _doRefine               (config().doRefine()                                ),
-    _countProtons           (config().countProtons()                            ),
-    _doTiming               (config().doTiming()                                )
+    _doRefine               (config().doRefine()                                )
     {
 
       consumes<ComboHitCollection>(_chLabel);
@@ -207,7 +196,6 @@ namespace mu2e {
 
       if (_diagLevel  != 0) _hmanager = art::make_tool<ModuleHistToolBase>(config().diagPlugin, "diagPlugin");
       else                  _hmanager = std::make_unique<ModuleHistToolBase>();
-      if(_doTiming) _watch = std::make_unique<StopWatch>();
 
     }
 
@@ -235,32 +223,38 @@ namespace mu2e {
   // find input things
   //-----------------------------------------------------------------------------
   bool TZClusterFinder::findData(const art::Event& evt) {
-    if(_doTiming > 0) _watch->SetTime(__func__);
 
-    _data._chColl  = nullptr;
     auto chcolH = evt.getValidHandle<ComboHitCollection>(_chLabel);
-    _data._chColl = chcolH.product();
-
-    _data._ccColl = nullptr;
-    if (_useCaloClusters == 1 && evt.getByLabel(_ccLabel, _ccHandle)) {
-      _data._ccColl = _ccHandle.product();
+    if (chcolH.product() != 0){
+      _data._chColl = chcolH.product();
+    }
+    else {
+      _data._chColl  = 0;
+      std::cout << ">>> ERROR in TZClusterFinder::findData: ComboHitCollection not found." << std::endl;
     }
 
-    if(_doTiming > 0) _watch->StopTime(__func__);
-    return (_data._chColl) && (!_useCaloClusters || _data._ccColl);
+    if (_useCaloClusters == 1) {
+      if (evt.getByLabel(_ccLabel, _ccHandle)) {
+        _data._ccColl = _ccHandle.product();
+      }
+      else {
+        _data._ccColl = NULL;
+      }
+    }
+
+    return (_data._chColl != 0);
   }
 
   //-----------------------------------------------------------------------------
   // event entry point
   //-----------------------------------------------------------------------------
   void TZClusterFinder::produce(art::Event& event) {
-    if(_doTiming > 0) _watch->SetTime(__func__);
 
     const char* oname = "TZClusterFinder::filter";
 
     // event printout
-    const unsigned iev = event.id().event();
-    if ((_debugLevel > 0) && (iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname, iev);
+    _iev = event.id().event();
+    if ((_debugLevel > 0) && (_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 
     // for when we are in runDisplay mode
     if (_runDisplay == 1) { _c1->Clear(); }
@@ -276,39 +270,30 @@ namespace mu2e {
     bool ok = findData(event);
 
     if (ok) { findClusters(*_data._tcColl); }
-    else    { printf("%s ERROR: Data not found in event %i\n",oname, iev); }
+    else    { printf("%s ERROR: No straw hits found in event %i\n",oname,_iev); }
 
     if (_diagLevel > 0) { _hmanager->fillHistograms(&_data);}
 
     //-----------------------------------------------------------------------------
-    // put time cluster collection and intensity info into the event record
+    // put time cluster collection and protons counted into the event record
     //-----------------------------------------------------------------------------
-    if(_doTiming > 0) _watch->SetTime("output");
     event.put(std::move(tcColl));
     event.put(std::move(iiTC));
-    if(_doTiming > 0) _watch->StopTime("output");
 
-    if(_doTiming > 0) _watch->StopTime(__func__);
   }
 
   //-----------------------------------------------------------------------------
   // endJob
   //-----------------------------------------------------------------------------
-  void TZClusterFinder::endJob(){
-    if(_doTiming) {
-      std::cout << "[TZClusterFinder::" << __func__ << "::" <<
-        moduleDescription().moduleLabel() << "] Timing:\n" << *_watch;
-    }
-  }
+  void TZClusterFinder::endJob(){ }
 
   //-----------------------------------------------------------------------------
   // order combo hits to aid in finding clusters
   //-----------------------------------------------------------------------------
   void TZClusterFinder::cHitsFill() {
-    if(_doTiming > 0) _watch->SetTime(__func__);
 
     const mu2e::ComboHit* hit;
-    // fill cHits indexed by plane, each column being a vector housing cHit info
+    // fill cHits indexed by pln, each column being a vector housing cHit info
     for (size_t i=0; i<_data._chColl->size(); i++) {
       const StrawHitFlag flag = _data._chColl->at(i).flag();
       if (!flag.hasAnyProperty(StrawHitFlag::radsel) && _radSelect == 1) {continue;}
@@ -325,13 +310,12 @@ namespace mu2e {
       _f.cHits[plnID].plnHits.push_back(comboHit);
     }
 
-    // order the plnHits in each plane by descending time
+    // order the plnHits in each pln by descending time
     for (size_t i=0; i<_f.cHits.size(); i++) {
       std::sort(_f.cHits[i].plnHits.begin(), _f.cHits[i].plnHits.end(),
                 [](const cHit &a, const cHit &b) -> bool
                 { return a.hTime > b.hTime;});
     }
-    if(_doTiming > 0) _watch->StopTime(__func__);
   }
 
 
@@ -416,7 +400,6 @@ namespace mu2e {
   // for setting original seed in findClusters logic
   //----------------------------------------------------------------------------
   void TZClusterFinder::setSeed(int& seedPln, size_t& seedPlnHit) {
-    if(_doTiming > 2) _watch->SetTime(__func__);
 
     _f.clear_chunkInfo();
     _f.holdIndices.clear(); // hold index in cHits where seeds are so you can flag them if cluster is saved
@@ -439,7 +422,6 @@ namespace mu2e {
     _f.zMin = _f.seedZpos;
     _f.zMax = _f.seedZpos;
 
-    if(_doTiming > 2) _watch->StopTime(__func__);
   }
 
 
@@ -508,7 +490,6 @@ namespace mu2e {
   // logic for looping over cHits to create chunks of hits
   //-----------------------------------------------------------------------------
   void TZClusterFinder::chunkHits() {
-    if(_doTiming > 0) _watch->SetTime(__func__);
 
     size_t nProtonChunks = 0;
     size_t nCeLikeChunks = 0;
@@ -569,7 +550,6 @@ namespace mu2e {
                 { return a.avgTime < b.avgTime;});
     }
 
-    if(_doTiming > 0) _watch->StopTime(__func__);
   }
 
 
@@ -577,7 +557,6 @@ namespace mu2e {
   // logic for combining chunks of hits together
   //-----------------------------------------------------------------------------
   void TZClusterFinder::combineChunks() {
-    if(_doTiming > 1) _watch->SetTime(__func__);
 
     float  minValidDtFound    = 0.0;
     size_t validCombinesFound = 0;
@@ -626,14 +605,12 @@ namespace mu2e {
 
     else { _f.moreCombines = false; }
 
-    if(_doTiming > 1) _watch->StopTime(__func__);
   }
 
   //-----------------------------------------------------------------------------
   // for recovering hits
   //-----------------------------------------------------------------------------
   void TZClusterFinder::recoverHits() {
-    if(_doTiming > 0) _watch->SetTime(__func__);
 
     float  minValidDtFound = 0.0;
     size_t validLinesFound = 0;
@@ -647,7 +624,7 @@ namespace mu2e {
         _f.testZpos = _f.cHits[i].plnHits[j].hZpos;
         _f.testIndice = _f.cHits[i].plnHits[j].hIndex;
         const StrawHitFlag flag = _data._chColl->at(_f.testIndice).flag();
-        if (flag.hasAnyProperty(StrawHitFlag::energysel)) { _f.testNRGselection = 1; } // flagged as proton
+        if (flag.hasAnyProperty(StrawHitFlag::energysel)) { _f.testNRGselection = 1; }
         else { _f.testNRGselection = 0; }
         validLinesFound = 0;
         minValidDtFound = 0.0;
@@ -673,14 +650,12 @@ namespace mu2e {
       }
     }
 
-    if(_doTiming > 0) _watch->StopTime(__func__);
   }
 
   //-----------------------------------------------------------------------------
   // combine lines (chunks that could be considered clusters but are separated)
   //-----------------------------------------------------------------------------
   void TZClusterFinder::combineLines() {
-    if(_doTiming > 1) _watch->SetTime(__func__);
 
     _f.moreCombines = false;
 
@@ -722,7 +697,6 @@ namespace mu2e {
       }
     }
 
-    if(_doTiming > 1) _watch->StopTime(__func__);
   }
 
 
@@ -746,7 +720,6 @@ namespace mu2e {
   // logic to use calo clusters
   //-----------------------------------------------------------------------------
   void TZClusterFinder::checkCaloClusters() {
-    if(_doTiming > 0) _watch->SetTime(__func__);
 
     const CaloCluster* cc;
     const ComboHit*    hit;
@@ -802,14 +775,12 @@ namespace mu2e {
       }
     }
 
-    if(_doTiming > 0) _watch->StopTime(__func__);
   }
 
   //-----------------------------------------------------------------------------
   // logic to flag bad TC candidates
   //-----------------------------------------------------------------------------
   void TZClusterFinder::refineChunks() {
-    if(_doTiming > 0) _watch->SetTime(__func__);
 
     for (size_t i=0; i<_f.chunks.size(); i++) {
       // first continue on chunks that are already not saved
@@ -821,14 +792,12 @@ namespace mu2e {
       //  set _f.chunks[i].goodCluster = false or true here based on result of logic you put above .. needs development
     }
 
-    if(_doTiming > 0) _watch->StopTime(__func__);
   }
 
   //-----------------------------------------------------------------------------
   // logic to find clusters
   //-----------------------------------------------------------------------------
   void TZClusterFinder::findClusters(TimeClusterCollection& TimeClusterColl) {
-    if(_doTiming > 0) _watch->SetTime(__func__);
 
     // clear relevant data members that carry over from processing of previous event
     _f.clear_cHits();
@@ -843,19 +812,16 @@ namespace mu2e {
     chunkHits();
 
     // look for chunks that can be combined together
-    if(_doTiming > 0) _watch->SetTime("combineChunks-total");
     if (_f.chunks.size() != 0) {
       _f.moreCombines = true;
       while(_f.moreCombines) {
         combineChunks();
       }
     }
-    if(_doTiming > 0) _watch->StopTime("combineChunks-total");
 
     // recover hits that were missed
     recoverHits();
 
-    if(_doTiming > 0) _watch->SetTime("combineLines-total");
     // combine lines (chunks that could be considered clusters but are separated)
     if (_f.chunks.size() != 0) {
       _f.moreCombines = true;
@@ -863,10 +829,9 @@ namespace mu2e {
         combineLines();
       }
     }
-    if(_doTiming > 0) _watch->StopTime("combineLines-total");
 
     // count number of protons
-    if(_countProtons) countProtons(*_data._iiTC);
+    countProtons(*_data._iiTC);
 
     // use calo clusters
     if (_useCaloClusters == 1 && _data._ccColl != NULL) { checkCaloClusters(); }
@@ -875,7 +840,6 @@ namespace mu2e {
     if (_doRefine == 1) { refineChunks(); }
 
     // fill TimeClusterColl and perform final fit to save
-    if(_doTiming > 0) _watch->SetTime("fill-and-fit");
     for (size_t i=0; i<_f.chunks.size(); i++) {
       if (_f.chunks[i].nrgSelection == 0) {continue;} // don't save proton clusters
       if ((int)_f.chunks[i].nStrawHits < _clusterThresh) {continue;} // only save chunks with enough straw hits
@@ -900,12 +864,10 @@ namespace mu2e {
         _data.chi2DOF.push_back(_f.chunks[i].fitter.chi2Dof());
       }
     }
-    if(_doTiming > 0) _watch->StopTime("fill-and-fit");
 
     if (_diagLevel != 0 || _runDisplay != 0) { _data._nTZClusters = (int)TimeClusterColl.size(); }
     if (_runDisplay != 0 ) { plotTZ(); }
 
-    if(_doTiming > 0) _watch->StopTime(__func__);
   }
 
 }

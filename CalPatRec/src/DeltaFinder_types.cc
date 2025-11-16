@@ -71,8 +71,8 @@ namespace mu2e {
           fz->fProtonHitData.clear() ;
           memset(fz->fFirst ,0xff,_nTimeBins*sizeof(int));
           memset(fz->fLast  ,0xff,_nTimeBins*sizeof(int));
-          // memset(fz->fPFirst,0xff,_size_time_bins);
-          // memset(fz->fPLast ,0xff,_size_time_bins);
+          // memset(fz->fPFirst,0xff,_nTimeBins*sizeof(int));
+          // memset(fz->fPLast ,0xff,_nTimeBins*sizeof(int));
         }
         if(doTiming > 2) watch->StopTime("FaceZ_t::clear");
       }

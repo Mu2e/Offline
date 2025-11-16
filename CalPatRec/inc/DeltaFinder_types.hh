@@ -80,7 +80,6 @@ namespace mu2e {
 // data structures passed to the diagnostics plugin
 //-----------------------------------------------------------------------------
     enum { kMaxNTimeBins = 3000 };                     // with a 40ns bin, covers up to 120 us
-    constexpr int _size_time_bins = kMaxNTimeBins*sizeof(int);
 
     struct FaceZ_t {
       int                     fID = 0;                     // 3*face+panel, for pre-calculating overlaps
