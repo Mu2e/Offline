@@ -16,10 +16,10 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
     FaceZ_t::FaceZ_t() {
-      memset(fFirst ,0,_size_time_bins);
-      memset(fLast  ,0,_size_time_bins);
-      // memset(fPFirst,0,_size_time_bins);
-      // memset(fPLast ,0,_size_time_bins);
+      memset(fFirst ,0,kMaxNTimeBins*sizeof(int));
+      memset(fLast  ,0,kMaxNTimeBins*sizeof(int));
+      // memset(fPFirst,0,kMaxNTimeBins*sizeof(int));
+      // memset(fPLast ,0,kMaxNTimeBins*sizeof(int));
       fHitData.reserve(10);
       fProtonHitData.reserve(10);
     }
