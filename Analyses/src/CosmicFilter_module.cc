@@ -28,7 +28,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 
-#include "BTrk/TrkBase/HelixParams.hh"
+#include "BTrkLegacy/inc/HelixParams.hh"
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 using namespace std;

@@ -36,9 +36,6 @@
 
 using namespace CLHEP;
 #include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrk/TrkBase/TrkHelixUtils.hh"
 
 typedef struct
 {

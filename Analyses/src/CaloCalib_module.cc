@@ -50,9 +50,6 @@
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
-// BaBar Kalman filter includes
-#include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrk/TrkBase/HelixTraj.hh"
 
 
 #include <cmath>

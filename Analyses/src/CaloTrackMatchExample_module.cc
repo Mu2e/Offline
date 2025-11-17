@@ -16,7 +16,6 @@
 
 #include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
-#include "BTrk/KalmanTrack/KalRep.hh"
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 
