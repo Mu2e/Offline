@@ -59,7 +59,7 @@ namespace mu2e {
     {
         double sx(0),sy(0),sz(0),sx2(0),sy2(0),sw(0);
         fill(sx,sy,sz,sx2,sy2,sw);
-        return sx2-sx*sx/sw + sy2-sy*sy/sw;
+        return (sx2-sx*sx/sw + sy2-sy*sy/sw)/sw;
     }
 
     void ClusterUtils::fill(double& sx, double& sy, double& sz, double& sx2, double& sy2, double& sw) const

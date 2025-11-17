@@ -36,22 +36,18 @@ namespace mu2e {
        {
            using Name    = fhicl::Name;
            using Comment = fhicl::Comment;
-           fhicl::Atom<art::InputTag>     caloClusterCollection   { Name("caloClusterCollection"),   Comment("Calo cluster collection name") };
-           fhicl::Atom<art::InputTag>     caloClusterMCCollection { Name("caloClusterMCCollection"), Comment("Calo cluster MC collection name") };
-           fhicl::Table<MVATools::Config> caloBkgMVA              { Name("caloBkgMVA"),              Comment("MVA Configuration") };
-           fhicl::Atom<float>             minEtoTest              { Name("minEtoTest"),              Comment("Minimum Energy to run the MVA") };
-           fhicl::Atom<float>             minMVAScore             { Name("minMVAScore"),             Comment("MVA cut for signal") };
-           fhicl::Atom<float>             MCEdepCut               { Name("MCEdepCut"),               Comment("Min E cut for MC contribution to cluster") };
-           fhicl::Atom<int>               diagLevel               { Name("diagLevel"),               Comment("Diag Level"),0 };
+           fhicl::Atom<art::InputTag> caloClusterCollection   { Name("caloClusterCollection"),   Comment("Calo cluster collection name") };
+           fhicl::Atom<art::InputTag> caloClusterMCCollection { Name("caloClusterMCCollection"), Comment("Calo cluster MC collection name") };
+           fhicl::Atom<float>         minEtoTest              { Name("minEtoTest"),              Comment("Minimum Energy to run the MVA") };
+           fhicl::Atom<float>         MCEdepCut               { Name("MCEdepCut"),               Comment("Min E cut for MC contribution to cluster") };
+           fhicl::Atom<int>           diagLevel               { Name("diagLevel"),               Comment("Diag Level"),0 };
        };
 
        explicit CaloNNTrain(const art::EDAnalyzer::Table<Config>& config) :
          EDAnalyzer{config},
          caloClusterToken_  {consumes<CaloClusterCollection> (config().caloClusterCollection())},
          caloClusterMCToken_{consumes<CaloClusterMCTruthAssn>(config().caloClusterMCCollection())},
-         caloBkgMVA_        (config().caloBkgMVA()),
          minEtoTest_        (config().minEtoTest()),
-         minMVAScore_       (config().minMVAScore()),
          MCEdepCut_         (config().MCEdepCut()),
          diagLevel_         (config().diagLevel())
        {}
@@ -65,15 +61,13 @@ namespace mu2e {
 
        art::ProductToken<CaloClusterCollection>  caloClusterToken_;
        art::ProductToken<CaloClusterMCTruthAssn> caloClusterMCToken_;
-       MVATools  caloBkgMVA_;
-       float     minEtoTest_;
-       float     minMVAScore_;
-       float     MCEdepCut_;
-       int       diagLevel_;
+       float   minEtoTest_;
+       float   MCEdepCut_;
+       int     diagLevel_;
 
        TTree* Ntup_;
        int    evt_,cluNcrys_,cluDisk_;
-       float  cluEnergy_,cluTime_,cluCogR_,cluE1_,cluE2_,cluE9_,cluE25_,cluSec_,clumva_,cluMCEtot_;
+       float  cluEnergy_,cluTime_,cluCogR_,cluE1_,cluE2_,cluE9_,cluE25_,cluSec_,cluMCEtot_;
        std::vector<int> cluMCEPdg_,cluMCCr_;
        std::vector<float> cluMCEdep_;
   };
@@ -81,8 +75,6 @@ namespace mu2e {
 
   void CaloNNTrain::beginJob()
   {
-     caloBkgMVA_.initMVA();
-
      art::ServiceHandle<art::TFileService> tfs;
      Ntup_  = tfs->make<TTree>("Calo", "Calo");
      Ntup_->Branch("evt",         &evt_ ,         "evt/I");
@@ -96,7 +88,6 @@ namespace mu2e {
      Ntup_->Branch("cluE9",       &cluE9_ ,       "cluE9/F");
      Ntup_->Branch("cluE25",      &cluE25_ ,      "cluE25/F");
      Ntup_->Branch("cluSec",      &cluSec_ ,      "cluSec/F");
-     Ntup_->Branch("mva",         &clumva_ ,      "mva/F");
      Ntup_->Branch("cluMCEtot",   &cluMCEtot_ ,   "cluMCEtot/F");
      Ntup_->Branch("cluMCEdep",   &cluMCEdep_);
      Ntup_->Branch("cluMCEPdg",   &cluMCEPdg_);
@@ -122,7 +113,11 @@ namespace mu2e {
         const auto& neighborsId   = cal.crystal(hits[0]->crystalID()).neighbors();
         const auto& nneighborsId  = cal.crystal(hits[0]->crystalID()).nextNeighbors();
 
-        double e9(hits[0]->energyDep()),e25(hits[0]->energyDep());
+
+        float e1(hits[0]->energyDep()),e2(hits[0]->energyDep());
+        if (hits.size()>1) e2 += hits[1]->energyDep();
+
+        float e9(hits[0]->energyDep()),e25(hits[0]->energyDep());
         for (auto hit : hits)
         {
             if (std::find(neighborsId.begin(),  neighborsId.end(),  hit->crystalID()) != neighborsId.end())  {e9 += hit->energyDep();e25 += hit->energyDep();}
@@ -130,7 +125,6 @@ namespace mu2e {
         }
 
         float secondMom = secondMoment(cal,hits);
-
 
         //MC analyis
         float MCEdepTot(0);
@@ -150,31 +144,16 @@ namespace mu2e {
           }
         }
 
-
-       //Fill ntuple
-       std::vector<float> mvavars(8,0.0);
-       mvavars[0] = cluster.energyDep();
-       mvavars[1] = cluster.cog3Vector().perp();
-       mvavars[2] = cluster.size();
-       mvavars[3] = hits[0]->energyDep();
-       mvavars[4] = (hits.size()>1) ?  hits[0]->energyDep() + hits[1]->energyDep() : hits[0]->energyDep();
-       mvavars[5] = e9;
-       mvavars[6] = e25;
-       mvavars[7] = cluster.diskID();
-
-       float mvaout = caloBkgMVA_.evalMVA(mvavars);
-
-       cluNcrys_  = mvavars[2];
-       cluDisk_   = mvavars[7];
-       cluEnergy_ = mvavars[0];
+       cluNcrys_  = cluster.size();
+       cluDisk_   = cluster.diskID();
+       cluEnergy_ = cluster.energyDep();
        cluTime_   = cluster.time();
-       cluCogR_   = mvavars[1];
-       cluE1_     = mvavars[3];
-       cluE2_     = mvavars[4];
-       cluE9_     = mvavars[5];
-       cluE25_    = mvavars[6];
+       cluCogR_   = cluster.cog3Vector().perp();
+       cluE1_     = e1/cluster.energyDep();
+       cluE2_     = e2/cluster.energyDep();
+       cluE9_     = e9/cluster.energyDep();
+       cluE25_    = e25/cluster.energyDep();
        cluSec_    = secondMom;
-       clumva_    = mvaout;
        cluMCEtot_ = MCEdepTot;
 
        Ntup_->Fill();
@@ -200,7 +179,7 @@ namespace mu2e {
         sx2 += xCrystal*xCrystal*weight;
         sy2 += yCrystal*yCrystal*weight;
      }
-     return sx2-sx*sx/sw + sy2-sy*sy/sw;
+     return (sx2-sx*sx/sw + sy2-sy*sy/sw)/sw;
   }
 
 }

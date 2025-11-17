@@ -5,12 +5,15 @@
 
 BEGIN_PROLOG
 CaloNNDiag : {
-  module_type                : CaloNNDiag
-  vdCollection               : "compressDigiMCs:virtualdetector"
-  caloHitCollection          : CaloHitMaker
-  caloClusterCollection      : CaloClusterMaker
-  caloHitTruth               : CaloHitTruthMatch
-  caloClusterTruth           : CaloClusterTruthMatch
+  module_type            : CaloNNDiag
+  vdCollection           : "compressDigiMCs:virtualdetector"
+  caloHitCollection      : CaloHitMaker
+  caloClusterCollection  : CaloClusterMaker
+  caloHitTruth           : CaloHitTruthMatch
+  caloClusterTruth       : CaloClusterTruthMatch
+  minCluEnergy           : 0
+  fillMVA                : false
+  caloMVA                : { MVAWeights: "Offline/CaloFilters/data/FlatPhoton_ReLU.weights.xml" }
 }
 
 
@@ -18,13 +21,10 @@ CaloNNTrain: {
   module_type             : CaloNNTrain
   caloClusterCollection   : CaloClusterMaker
   caloClusterMCCollection : CaloClusterTruthMatch
-  caloBkgMVA              : {MVAWeights: "Offline/CaloFilters/data/CE_NN_ReLU.weights.xml"}
   minEtoTest              : 40
-  minMVAScore             : 9.5e-1
   MCEdepCut               : 3
   diagLevel               : 0
 }
-
 
 CaloDiag : {
   analyzers : {
