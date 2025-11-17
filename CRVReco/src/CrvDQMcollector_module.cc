@@ -30,13 +30,133 @@
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Sequence.h"
 
+#include <TMath.h>
+#include <TF1.h>
+#include <TFitResult.h>
 #include <TH1F.h>
 #include <TH1I.h>
 #include <TTree.h>
-#include <TGraph.h>
 
 #include <string>
 #include <array>
+
+namespace
+{
+double LandauGaussFunction(double *x, double *par)
+{
+    //From $ROOTSYS/tutorials/fit/langaus.C
+    //Fit parameters:
+    //par[0]=Width (scale) parameter of Landau density
+    //par[1]=Most Probable (MP, location) parameter of Landau density
+    //par[2]=Total area (integral -inf to inf, normalization constant)
+    //par[3]=Width (sigma) of convoluted Gaussian function
+    //
+    //In the Landau distribution (represented by the CERNLIB approximation),
+    //the maximum is located at x=-0.22278298 with the location parameter=0.
+    //This shift is corrected within this function, so that the actual
+    //maximum is identical to the MP parameter.
+
+    // Numeric constants
+    constexpr Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
+    constexpr Double_t mpshift  = -0.22278298;       // Landau maximum location
+
+    // Control constants
+    constexpr Double_t np = 100.0;      // number of convolution steps
+    constexpr Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
+
+    // Variables
+    Double_t xx = 0.0;
+    Double_t mpc = 0.0;
+    Double_t fland = 0.0;
+    Double_t sum = 0.0;
+    Double_t xlow = 0.0, xupp = 0.0;
+    Double_t step = 0.0;
+    Int_t    i = 0.0;
+
+    // MP shift correction
+    mpc = par[1] - mpshift * par[0];
+
+    // Range of convolution integral
+    xlow = x[0] - sc * par[3];
+    xupp = x[0] + sc * par[3];
+    step = (xupp-xlow) / np;
+
+    // Convolution integral of Landau and Gaussian by sum
+    for(i=1.0; i<=np/2; i++)
+    {
+      xx = xlow + (i-.5) * step;
+      fland = TMath::Landau(xx,mpc,par[0]) / par[0];
+      sum += fland * TMath::Gaus(x[0],xx,par[3]);
+
+      xx = xupp - (i-.5) * step;
+      fland = TMath::Landau(xx,mpc,par[0]) / par[0];
+      sum += fland * TMath::Gaus(x[0],xx,par[3]);
+    }
+
+    return (par[2] * step * sum * invsq2pi / par[3]);
+}
+void LandauGauss(TH1F &h, float &mpv, float &fwhm, float &signals, float &chi2)
+{
+    std::multimap<float,float> bins;  //binContent,binCenter
+    for(int i=1; i<=h.GetNbinsX(); i++)
+    {
+      if(h.GetBinCenter(i)<10.0) continue;
+      bins.emplace(h.GetBinContent(i),h.GetBinCenter(i));  //ordered from smallest to largest bin entries
+    }
+    if(bins.size()<4) return;
+    if(bins.rbegin()->first<20) return;  //low statistics
+    int nBins=0;
+    float binSum=0;
+    for(auto bin=bins.rbegin(); bin!=bins.rend(); ++bin)
+    {
+      nBins++;
+      binSum+=bin->second;
+      if(nBins==4) break;
+    }
+    float maxX=binSum/4;
+    float fitRangeStart=0.7*maxX;  //0.6 @ 24
+    float fitRangeEnd  =2.0*maxX;
+    if(fitRangeStart<15.0) fitRangeStart=15.0;
+
+    //Parameters
+    Double_t startValues[4], parLimitsLow[4], parLimitsHigh[4];
+    //Most probable value
+    startValues[1]=maxX;
+    parLimitsLow[1]=fitRangeStart;
+    parLimitsHigh[1]=fitRangeEnd;
+    //Area
+    startValues[2]=h.Integral(h.FindBin(fitRangeStart),h.FindBin(fitRangeEnd));
+    parLimitsLow[2]=0.01*startValues[2];
+    parLimitsHigh[2]=100*startValues[2];
+    //Other parameters
+    startValues[0]=5.0;   startValues[3]=10.0;
+    parLimitsLow[0]=2.0;  parLimitsLow[3]=2.0;
+    parLimitsHigh[0]=15.0; parLimitsHigh[3]=20.0; //7 and 15 @ 21  //6 and 13 @ 23
+
+    TF1 fit("LandauGauss",LandauGaussFunction,fitRangeStart,fitRangeEnd,4);
+    fit.SetParameters(startValues);
+    fit.SetLineColor(kRed);
+    fit.SetParNames("Width","MP","Area","GSigma");
+    for(int i=0; i<4; i++) fit.SetParLimits(i, parLimitsLow[i], parLimitsHigh[i]);
+    TFitResultPtr fr = h.Fit(&fit,"LQRS");
+    fit.Draw("same");
+
+    mpv = fit.GetMaximumX();
+    chi2 = (fr->Ndf()>0?fr->Chi2()/fr->Ndf():NAN);
+    if(mpv==fitRangeStart) {mpv=0; return;}
+/*
+    float halfMaximum = fit.Eval(mpv)/2.0;
+    float leftX = fit.GetX(halfMaximum,0.0,mpv);
+    float rightX = fit.GetX(halfMaximum,mpv,10.0*mpv);
+    fwhm = rightX-leftX;
+*/
+
+    signals = fit.Integral(0,150,1e-3)/h.GetBinWidth(1);  //need to divide by bin width.
+                                                          //if the bin width is 2 and one has e.g. 20 events for 50PEs and 20 events for 51PEs,
+                                                          //the combined bin of x=50/51 gets 40 entries and the integral assumes that there are 40 entries for x=50 and x=51.
+}
+
+} //end anonymous namespace for LandauGauss function
 
 namespace mu2e
 {
@@ -54,7 +174,7 @@ namespace mu2e
       fhicl::Atom<std::string> crvCoincidenceClusterFinderModuleLabel{Name("crvCoincidenceClusterFinderModuleLabel"), Comment("label of CoincidenceClusterFinder module")};
       fhicl::Atom<std::string> crvDaqErrorModuleLabel{Name("crvDaqErrorModuleLabel"), Comment("label of module that found the CRV-DAQ errors")};
 
-      fhicl::Atom<int>    histPEsBins{Name("histPEsBins"), Comment("number of bins for PE histograms"), 150};
+      fhicl::Atom<int>    histPEsBins{Name("histPEsBins"), Comment("number of bins for PE histograms"), 75};
       fhicl::Atom<double> histPEsStart{Name("histPEsStart"), Comment("range start for PE histograms"), 0};
       fhicl::Atom<double> histPEsEnd{Name("histPEsEnd"), Comment("range end for PE histograms"), 150};
       fhicl::Atom<int>    histPedestalsBins{Name("histPedestalsBins"), Comment("number of bins for pedestal histograms"), 200};
@@ -174,8 +294,14 @@ namespace mu2e
       _histDigisPerChannelAndEvent.at(sectorNumber)->Fill((float)(_nDigis.at(channel))/_totalEvents);
       _histDigisPerChannelAndEventNZS.at(sectorNumber)->Fill((float)(_nDigisNZS.at(channel))/_totalEvents);
 
-      float PEsMPV = _histPEs.at(channel)->GetMean();  //FIXME: replace by MPV from Gauss-Landau fit
-      _histPEsMPV.at(sectorNumber)->Fill(PEsMPV);
+      float MPV=0;
+      float FWHM=0;
+      float signals=0;
+      float chi2=0;
+      LandauGauss(*_histPEs.at(channel), MPV, FWHM, signals, chi2);
+//      _histPEs.at(channel)->GetXaxis()->SetRangeUser(20.0,_histPEsEnd);
+//      float MPV=_histPEs.at(channel)->GetMean();
+      _histPEsMPV.at(sectorNumber)->Fill(MPV);
     }
 
     art::ServiceHandle<art::TFileService> tfs;
@@ -186,8 +312,14 @@ namespace mu2e
         _histDigiRatesROC.at(ROC-1)->Fill(channel,(float)(_nDigisROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+channel))/_totalEvents);
         _histDigiRatesROCNZS.at(ROC-1)->Fill(channel,(float)(_nDigisROCNZS.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+channel))/_totalEvents);
 
-        float PEsMPV = _histPEsROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+channel)->GetMean();  //FIXME: replace by MPV from Gauss-Landau fit
-        _histPEsMPVROC.at(ROC-1)->Fill(channel,PEsMPV);
+        float MPV=0;
+        float FWHM=0;
+        float signals=0;
+        float chi2=0;
+        LandauGauss(*_histPEsROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+channel), MPV, FWHM, signals, chi2);
+//        _histPEsROC.at(channel)->GetXaxis()->SetRangeUser(20.0,_histPEsEnd);
+//        float MPV=_histPEsROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+channel)->GetMean();
+        _histPEsMPVROC.at(ROC-1)->Fill(channel,MPV);
       }
     }
 
