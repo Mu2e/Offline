@@ -14,17 +14,6 @@ cet_build_plugin(CaloShowerSimFilter art::module
       Offline::MCDataProducts
 )
 
-cet_build_plugin(ChooseTrackFilter art::module
-    REG_SOURCE src/ChooseTrackFilter_module.cc
-    LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::CalorimeterGeom
-      Offline::DataProducts
-      Offline::GeometryService
-      Offline::MCDataProducts
-      Offline::RecoDataProducts
-)
-
 cet_build_plugin(CompressPhysicalVolumes art::module
     REG_SOURCE src/CompressPhysicalVolumes_module.cc
     LIBRARIES REG
@@ -253,13 +242,6 @@ cet_build_plugin(TriggerResultsFilter art::module
     REG_SOURCE src/TriggerResultsFilter_module.cc
     LIBRARIES REG
       Offline::Mu2eUtilities
-)
-
-cet_build_plugin(TrkPatRecFilter art::module
-    REG_SOURCE src/TrkPatRecFilter_module.cc
-    LIBRARIES REG
-      Offline::MCDataProducts
-      Offline::RecoDataProducts
 )
 
 cet_build_plugin(TrkQualFilter art::module
