@@ -38,9 +38,6 @@
 //For Drift:
 #include "Offline/TrkReco/inc/TrkFaceData.hh"
 
-// Mu2e BaBar
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
-
 //CLHEP:
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
