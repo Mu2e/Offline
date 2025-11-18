@@ -818,7 +818,7 @@ namespace mu2e {
     _stmDnStrEnvBuild       = _config.getBool("stm.downstream.build");
     _stmDnStrEnvHalfLength  = _config.getDouble("stm.downstream.halfLength");
     _stmDnStrEnvHalfWidth   = _config.getDouble("stm.downstream.halfWidth");
-    _stmDnStrEnvHalfHeight  = _config.getDouble("stm.downstream.halfHeight");
+    _stmDnStrEnvHalfHeight  = - _config.getDouble("yOfFloorSurface.below.mu2eOrigin");
     _stmDnStrEnvMaterial    = _config.getString("stm.downstream.material");
 
     _STM_SSCBuild          = _config.getBool(  "stm.STM_SSC.build");
