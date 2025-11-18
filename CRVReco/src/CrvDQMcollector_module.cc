@@ -34,6 +34,7 @@
 #include <TF1.h>
 #include <TFitResult.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TH1I.h>
 #include <TTree.h>
 
@@ -243,6 +244,9 @@ namespace mu2e
     std::vector<TH1F*> _histPEsMPVROC;
     std::vector<TH1F*> _histPedestals;
     std::vector<TH1F*> _histCalibConstants;
+    TH2F*              _hist2DDigiRatesROC;
+    TH2F*              _hist2DDigiRatesROCNZS;
+    TH2F*              _hist2DPEsMPVROC;
     TH1I*              _histCoincidenceClusters;
     TTree*             _treeMetaData;
 
@@ -299,27 +303,32 @@ namespace mu2e
       float signals=0;
       float chi2=0;
       LandauGauss(*_histPEs.at(channel), MPV, FWHM, signals, chi2);
-//      _histPEs.at(channel)->GetXaxis()->SetRangeUser(20.0,_histPEsEnd);
-//      float MPV=_histPEs.at(channel)->GetMean();
       _histPEsMPV.at(sectorNumber)->Fill(MPV);
     }
 
     art::ServiceHandle<art::TFileService> tfs;
     for(size_t ROC=1; ROC<=CRVId::nROC; ++ROC)
     {
-      for(size_t channel=0; channel<CRVId::nFEBPerROC*CRVId::nChanPerFEB; ++channel)
+      for(size_t FEB=1; FEB<=CRVId::nFEBPerROC; ++FEB)
+      for(size_t FEBchannel=0; FEBchannel<CRVId::nChanPerFEB; ++FEBchannel)
       {
-        _histDigiRatesROC.at(ROC-1)->Fill(channel,(float)(_nDigisROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+channel))/_totalEvents);
-        _histDigiRatesROCNZS.at(ROC-1)->Fill(channel,(float)(_nDigisROCNZS.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+channel))/_totalEvents);
+        size_t ROCchannel=(FEB-1)*CRVId::nChanPerFEB+FEBchannel;
+
+        _histDigiRatesROC.at(ROC-1)->Fill(ROCchannel,(float)(_nDigisROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel))/_totalEvents);
+        _histDigiRatesROCNZS.at(ROC-1)->Fill(ROCchannel,(float)(_nDigisROCNZS.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel))/_totalEvents);
 
         float MPV=0;
         float FWHM=0;
         float signals=0;
         float chi2=0;
-        LandauGauss(*_histPEsROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+channel), MPV, FWHM, signals, chi2);
-//        _histPEsROC.at(channel)->GetXaxis()->SetRangeUser(20.0,_histPEsEnd);
-//        float MPV=_histPEsROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+channel)->GetMean();
-        _histPEsMPVROC.at(ROC-1)->Fill(channel,MPV);
+        LandauGauss(*_histPEsROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel), MPV, FWHM, signals, chi2);
+        _histPEsMPVROC.at(ROC-1)->Fill(ROCchannel,MPV);
+
+        size_t portIndex=(ROC-1)*CRVId::nFEBPerROC+FEB-1;
+
+        _hist2DDigiRatesROC->Fill(FEBchannel,portIndex,(float)(_nDigisROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel))/_totalEvents);
+        _hist2DDigiRatesROCNZS->Fill(FEBchannel,portIndex,(float)(_nDigisROCNZS.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel))/_totalEvents);
+        _hist2DPEsMPVROC->Fill(FEBchannel,portIndex,MPV);
       }
     }
 
@@ -354,10 +363,12 @@ namespace mu2e
     for(size_t i=0; i<crvCounters.size()*CRVId::nChanPerBar; ++i)
     {
       _histPEs.emplace_back(new TH1F(Form("crvPEs_channel%lu",i), Form("crvPEs_channel%lu",i), _histPEsBins,_histPEsStart,_histPEsEnd));
+//      _histPEs.emplace_back(tfs->make<TH1F>(Form("crvPEs_channel%lu",i), Form("crvPEs_channel%lu",i), _histPEsBins,_histPEsStart,_histPEsEnd));
     }
     for(size_t i=0; i<CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB; ++i)
     {
       _histPEsROC.emplace_back(new TH1F(Form("crvPEsROC_channel%lu",i), Form("crvPEsROC_channel%lu",i), _histPEsBins,_histPEsStart,_histPEsEnd));
+//      _histPEsROC.emplace_back(tfs->make<TH1F>(Form("crvPEsROC_channel%lu",i), Form("crvPEsROC_channel%lu",i), _histPEsBins,_histPEsStart,_histPEsEnd));
     }
     for(size_t i=0; i<crvSectors.size(); ++i)
     {
@@ -381,14 +392,17 @@ namespace mu2e
     {
       _histPEsMPVROC.emplace_back(tfs->make<TH1F>(Form("crvPEsMPV_ROC%zu",ROC),
                                             Form("crvPEsMPV_ROC%zu",ROC),
-                                            CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB-1));
+                                            CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB));
       _histDigiRatesROC.emplace_back(tfs->make<TH1F>(Form("crvDigiRates_ROC%zu",ROC),
                                             Form("crvDigiRates_ROC%zu",ROC),
-                                            CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB-1));
+                                            CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB));
       _histDigiRatesROCNZS.emplace_back(tfs->make<TH1F>(Form("crvDigiRatesNZS_ROC%zu",ROC),
                                             Form("crvDigiRatesNZS_ROC%zu",ROC),
-                                            CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB-1));
+                                            CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB));
     }
+    _hist2DPEsMPVROC=tfs->make<TH2F>("crvPEsMPV","crvPEsMPV", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
+    _hist2DDigiRatesROC=tfs->make<TH2F>("crvDigiRates","crvDigiRates", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
+    _hist2DDigiRatesROCNZS=tfs->make<TH2F>("crvDigiRatesNZS","crvDigiRatesNZS", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
     _histCoincidenceClusters=tfs->make<TH1I>("crvCoincidencesClusters","crvCoincidenceClusters",10,0,10);
 
     _treeMetaData=tfs->make<TTree>("crvMetaData","crvMetaData");
