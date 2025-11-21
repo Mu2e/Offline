@@ -85,6 +85,8 @@ namespace mu2e {
       auto const& straw() const { return straw_; }
       auto const& strawId() const { return straw_.id(); }
       auto const& strawHitPtr() const { return shptr_; }
+      // allow overwriting the straw hit
+      void setHit(KKSTRAWHITPTR& shptr) { shptr_ = shptr; }
     private:
       StrawXingUpdater sxconfig_; // cache of most recent update
       KKSTRAWHITPTR shptr_; // reference to associated StrawHit

@@ -373,6 +373,8 @@ namespace mu2e {
   template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf, KKStrawMaterial const& smat,
       KKTRK const& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& addhits, KKSTRAWXINGCOL& addexings) const {
     auto const& ptraj = kktrk.fitTraj();
+    // add the buffer to the time range; this defines the search range for new hits
+    TimeRange brange(ptraj.range().begin()-maxStrawHitDt_, ptraj.range().end()+maxStrawHitDt_);
     // build the set of existing hits
     std::set<StrawHitIndex> oldhits;
     std::set<StrawId> oldstrawxs;
@@ -382,26 +384,46 @@ namespace mu2e {
       if(oldhits.find(ich)==oldhits.end()){      // make sure this hit wasn't already found
         ComboHit const& strawhit = chcol[ich];
         if(strawhit.flag().hasAllProperties(addsel_) && (!strawhit.flag().hasAnyProperty(addrej_))){
-          double zt = Mu2eKinKal::zTime(ptraj,strawhit.pos().Z(),strawhit.correctedTime());
-          if(fabs(strawhit.correctedTime()-zt) < maxStrawHitDt_) {      // compare the measured time with the estimate from the fit
-            const Straw& straw = tracker.getStraw(strawhit.strawId());
-            auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse);
-            double psign = wline.direction().Dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
-            double htime = wline.measurementTime() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed(wline.timeAtMidpoint());
-            CAHint hint(zt,htime);
-            // compute PCA between the trajectory and this straw
-            PCA pca(ptraj, wline, hint, tprec_ );
-            if(fabs(pca.doca()) < maxStrawHitDoca_){ // add test of chi TODO
-              addhits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, pca, strawhit, straw, ich, strawresponse));
-              oldhits.insert(addhits.back()->strawHitIndex());
-              // add the associated straw
-              if(matcorr_){
-                // test
-                if(oldstrawxs.find(strawhit.strawId()) != oldstrawxs.end())throw cet::exception("RECO")<<"mu2e::addStrawHits: duplicate straw!!" <<  std::endl;
-                auto sline = Mu2eKinKal::strawLine(straw,pca.particleToca()); // line down the straw axis center
-                CAHint hint(pca.particleToca(),pca.sensorToca());
-                PCA spca(ptraj, sline, hint, tprec_ );
-                addexings.push_back(std::make_shared<KKSTRAWXING>(addhits.back(),spca.localClosestApproach(),smat,straw));
+          if(brange.inRange(strawhit.correctedTime())){
+            double zt = Mu2eKinKal::zTime(ptraj,strawhit.pos().Z(),strawhit.correctedTime());
+            if(fabs(strawhit.correctedTime()-zt) < maxStrawHitDt_) {      // compare the measured time with the estimate from the fit
+              const Straw& straw = tracker.getStraw(strawhit.strawId());
+              auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse);
+              double psign = wline.direction().Dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
+              double htime = wline.measurementTime() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed(wline.timeAtMidpoint());
+              CAHint hint(zt,htime);
+              // compute PCA between the trajectory and this straw
+              PCA pca(ptraj, wline, hint, tprec_ );
+              if(fabs(pca.doca()) < maxStrawHitDoca_){ // add test of chi TODO
+                addhits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, pca, strawhit, straw, ich, strawresponse));
+                oldhits.insert(addhits.back()->strawHitIndex());
+                // add the associated straw
+                if(matcorr_){
+                  // test
+                  auto found = oldstrawxs.find(strawhit.strawId());
+                  if(found == oldstrawxs.end()){
+                    auto sline = Mu2eKinKal::strawLine(straw,pca.particleToca()); // line down the straw axis center
+                    CAHint hint(pca.particleToca(),pca.sensorToca());
+                    PCA spca(ptraj, sline, hint, tprec_ );
+                    addexings.push_back(std::make_shared<KKSTRAWXING>(addhits.back(),spca.localClosestApproach(),smat,straw));
+                  } else {
+                    // find this straw xing
+                    for(auto& sx : kktrk.strawXings()) {
+                      if(sx->strawId() == *found){
+                        if(!sx->strawHitPtr()){
+                          sx->setHit(addhits.back());
+                        } else {
+                          // multiple hits in the same straw
+                          auto sline = Mu2eKinKal::strawLine(straw,pca.particleToca()); // line down the straw axis center
+                          CAHint hint(pca.particleToca(),pca.sensorToca());
+                          PCA spca(ptraj, sline, hint, tprec_ );
+                          addexings.push_back(std::make_shared<KKSTRAWXING>(addhits.back(),spca.localClosestApproach(),smat,straw));
+                        }
+                        break;
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -796,6 +818,8 @@ namespace mu2e {
         kseed._segments.emplace_back(t0piece,t0val);
         // domain storage is non-sensical in this case, leave empty
       }
+      // require at least 1 segment
+      if(kseed._segments.size() == 0)kseed._segments.emplace_back(t0piece,t0val);
     } else {
       kseed._segments.emplace_back(t0piece,t0val); // save the t0 piece even for failed fits
     }
