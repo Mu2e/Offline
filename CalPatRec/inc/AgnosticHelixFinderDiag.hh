@@ -347,8 +347,8 @@ namespace mu2e {
       l_1  = -charge*pz * MeVmm;
       // phi = phi0 + z / lambda
       phi0_1 = std::fmod(phi - z / l_1, 2.*M_PI);
-      if     (phi0_1 >  M_PI) phi0_2 -= 2.*M_PI;
-      else if(phi0_1 < -M_PI) phi0_2 += 2.*M_PI;
+      if     (phi0_1 >  M_PI) phi0_1 -= 2.*M_PI;
+      else if(phi0_1 < -M_PI) phi0_1 += 2.*M_PI;
       if(_debugLevel > 2) printf(" MC info: Start: x = (%6.1f, %6.1f, %7.1f, %7.1f), p = (%6.1f, %6.1f, %6.1f), pt = %5.1f --> r = %5.1f, center = (%6.1f, %6.1f), lambda = %6.1f, phi0 = %4.1f\n",
                                  x, y, z, t, px, py, pz, pt, r_1, xC_1, yC_1, l_1, phi0_1);
     }
