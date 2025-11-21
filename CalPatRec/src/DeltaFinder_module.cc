@@ -23,6 +23,7 @@
 
 #include "art/Utilities/make_tool.h"
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/Mu2eUtilities/inc/StopWatch.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
@@ -64,6 +65,7 @@ namespace mu2e {
       using Comment = fhicl::Comment;
       fhicl::Atom<art::InputTag>   sschCollTag            {Name("sschCollTag"       )    , Comment("SS ComboHit collection name") };
       fhicl::Atom<art::InputTag>   chCollTag              {Name("chCollTag"         )    , Comment("ComboHit collection Name"   ) };
+      fhicl::Atom<art::InputTag>   ewmTag                 {Name("ewmTag"            )    , Comment("EventWindowMarker tag") };
       fhicl::Atom<art::InputTag>   sdmcCollTag            {Name("sdmcCollTag"       )    , Comment("StrawDigiMC collection Name") };
       fhicl::Atom<int>             debugLevel             {Name("debugLevel"        )    , Comment("debug level"                ) };
       fhicl::Atom<int>             diagLevel              {Name("diagLevel"         )    , Comment("diag level"                 ) };
@@ -72,6 +74,7 @@ namespace mu2e {
       fhicl::Atom<int>             writeStrawHits         {Name("writeStrawHits"    )    , Comment("1: write all SH, new flags" ) };
       fhicl::Atom<int>             testOrder              {Name("testOrder"         )    , Comment("1: test order"              ) };
       fhicl::Atom<bool>            testHitMask            {Name("testHitMask"       )    , Comment("true: test hit mask"        ) };
+      fhicl::Atom<int>             doTiming               {Name("doTiming"          )    , Comment("perform timing analysis"    ), 0};
       fhicl::Sequence<std::string> goodHitMask            {Name("goodHitMask"       )    , Comment("good hit mask"              ) };
       fhicl::Sequence<std::string> bkgHitMask             {Name("bkgHitMask"        )    , Comment("background hit mask"        ) };
 
@@ -85,6 +88,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     art::InputTag   _sschCollTag;
     art::InputTag   _chCollTag;
+    art::InputTag   _ewmTag;
     art::InputTag   _sdmcCollTag;
 
     int             _writeFilteredComboHits;   // write filtered combo hits
@@ -95,10 +99,12 @@ namespace mu2e {
     int             _diagLevel;
     int             _printErrors;
     int             _testOrder;
+    int             _doTiming;
 
     StrawHitFlag    _bkgHitMask;
 
     std::unique_ptr<ModuleHistToolBase> _hmanager;
+    std::shared_ptr<StopWatch>          _watch;
 //-----------------------------------------------------------------------------
 // cache event/geometry objects
 //-----------------------------------------------------------------------------
@@ -135,6 +141,7 @@ namespace mu2e {
     art::EDProducer{config},
     _sschCollTag           (config().sschCollTag()       ),
     _chCollTag             (config().chCollTag()         ),
+    _ewmTag                (config().ewmTag()            ),
     _sdmcCollTag           (config().sdmcCollTag()       ),
     _writeFilteredComboHits(config().writeFilteredComboHits()    ),
     // _writeStrawHitFlags    (config().writeStrawHitFlags()),
@@ -143,6 +150,7 @@ namespace mu2e {
     _diagLevel             (config().diagLevel()         ),
     _printErrors           (config().printErrors()       ),
     _testOrder             (config().testOrder()         ),
+    _doTiming              (config().doTiming()          ),
     _bkgHitMask            (config().bkgHitMask()        )
   {
 
@@ -156,7 +164,14 @@ namespace mu2e {
                                         // this is a list of delta-electron candidates (or proton ones ?)
     produces<TimeClusterCollection>();
 
+    if(_doTiming) {
+      _watch = std::make_shared<StopWatch>();
+      _data.doTiming = _doTiming; // add the watch to the data so the finder can use it
+      _data.watch = _watch;
+    }
+
     _finder = new DeltaFinderAlg(config().finderParameters,&_data);
+    _data.timeBin = config().finderParameters().timeBin();
 
     _testOrderPrinted = 0;
 
@@ -178,6 +193,10 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   void DeltaFinder::endJob() {
+    if(_doTiming) {
+      std::cout << "[DeltaFinder::" << __func__ << "::" <<
+        moduleDescription().moduleLabel() << "] Timing:\n" << *_watch;
+    }
   }
 
 //-----------------------------------------------------------------------------
@@ -200,6 +219,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   bool DeltaFinder::findData(const art::Event& Evt) {
+    if(_doTiming > 0) _watch->SetTime(__func__);
 
     auto chcH   = Evt.getValidHandle<mu2e::ComboHitCollection>(_chCollTag);
     _data.chcol = chcH.product();
@@ -207,6 +227,10 @@ namespace mu2e {
     auto sschcH = Evt.getValidHandle<mu2e::ComboHitCollection>(_sschCollTag);
     _sschColl   = sschcH.product();
 
+    art::Handle<mu2e::EventWindowMarker> ewmHandle;
+    if(Evt.getByLabel(_ewmTag, ewmHandle)) _data.ewm = ewmHandle.product();
+
+    if(_doTiming > 0) _watch->StopTime(__func__);
     return (_data.chcol != nullptr) and (_sschColl != nullptr);
   }
 
@@ -218,18 +242,21 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void DeltaFinder::produce(art::Event& Event) {
+    if(_doTiming > 0) _watch->SetTime(__func__);
     if (_debugLevel) printf("* >>> DeltaFinder::produce  event number: %10i\n",Event.event());
 //-----------------------------------------------------------------------------
 // clear memory in the beginning of event processing and cache event pointer
 //-----------------------------------------------------------------------------
-    _data.InitEvent(&Event,_debugLevel);
-//-----------------------------------------------------------------------------
-// process event
-//-----------------------------------------------------------------------------
-    if (! findData(Event)) {
+    if (! findData(Event)) { // need to retrieve data before clearing data, to know the event type
       const char* message = "mu2e::DeltaFinder_module::produce: data missing or incomplete";
       throw cet::exception("RECO")<< message << endl;
     }
+    if(_doTiming > 0) _watch->SetTime("init-event-data");
+    _data.InitEvent(&Event,_debugLevel);
+    if(_doTiming > 0) _watch->StopTime("init-event-data");
+//-----------------------------------------------------------------------------
+// process event
+//-----------------------------------------------------------------------------
 
     _data._nComboHits = _data.chcol->size();
     _data._nStrawHits = _sschColl->size();
@@ -243,6 +270,7 @@ namespace mu2e {
 // need to drop previously set 'energy' flag
 // flag collections are going away, keep this one as a temp storage
 //-----------------------------------------------------------------------------
+    if(_doTiming > 0) _watch->SetTime("finalize-results");
     vector<StrawHitFlag> up_chfcol(_data._nComboHits);
 
     for (int i=0; i<_data._nComboHits; i++) {
@@ -393,6 +421,7 @@ namespace mu2e {
 
       //      Event.put(std::move(outputSschColl),"StrawHits");
     }
+    if(_doTiming > 0) _watch->StopTime("finalize-results");
 //-----------------------------------------------------------------------------
 // 'ppii' - proton counting-based proxy to the stopped muon rate
 //-----------------------------------------------------------------------------
@@ -406,11 +435,14 @@ namespace mu2e {
 // moving in the end, after diagnostics plugin routines have been called - move
 // invalidates the original pointer...
 //-----------------------------------------------------------------------------
+    if(_doTiming > 0) _watch->SetTime("output");
     Event.put(std::move(outputChColl));
     if (_writeStrawHits == 1) Event.put(std::move(outputSschColl),"StrawHits");
 
     Event.put(std::move(tcColl));
     Event.put(std::move(ppii));
+    if(_doTiming > 0) _watch->StopTime("output");
+    if(_doTiming > 0) _watch->StopTime(__func__);
   }
 }
 //-----------------------------------------------------------------------------

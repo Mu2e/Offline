@@ -124,6 +124,12 @@ namespace mu2e {
     }
     double Calibration() { return _calibration; }
 
+    int NTimers() {
+      int ntimers = 0;
+      for(auto timer : _timers) if(timer.first != "AAA-TimeCalib") ++ntimers;
+      return ntimers;
+    }
+
     // Print a timer info
     void PrintTimer(const Timer_t& timer, std::ostream& os = std::cout, bool print_header = true) const {
       if(print_header) os << std::format("{:>30s}: {:>14s} {:>14s} {:>15s} {:>10s} {:>10s} {:>12s} {:>15s}\n", "Timer", "Time (s)", "Avg time (ms)", "Avg rate (kHz)",
@@ -171,10 +177,7 @@ namespace mu2e {
     double _calibration; // in microseconds
   };
 
-  std::ostream& operator<<(std::ostream& os, const StopWatch& watch) {
-    watch.Print(os);
-    return os;
-  }
+  std::ostream& operator<<(std::ostream& os, const StopWatch& watch);
 }
 
 #endif
