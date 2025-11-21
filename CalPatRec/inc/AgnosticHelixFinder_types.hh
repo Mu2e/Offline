@@ -53,6 +53,8 @@ namespace mu2e {
       bool    notOnLine = true;
       bool    uselessTripletSeed = false;
       bool    notOnSegment = true;
+      XYZVectorF pos; // position of the hit
+      const mu2e::ComboHit* hit = nullptr; // pointer to the hit
     };
 
     struct lineInfo {
@@ -61,6 +63,17 @@ namespace mu2e {
       ::LsqSums2            fitter;
       std::vector<size_t>   tcHitsIndices;
       std::vector<int>      helixPhiCorrections; // integer for 2pi ambiguity
+      lineInfo() {
+        tcHitsIndices      .reserve(10); // reserve some space for potential hits
+        helixPhiCorrections.reserve(10);
+        clear();
+      }
+      void clear() {
+        zMin = 0.f; zMax = 0.f;
+        fitter.clear();
+        tcHitsIndices.clear();
+        helixPhiCorrections.clear();
+      }
     };
 
     struct tripletPoint {
@@ -104,6 +117,9 @@ namespace mu2e {
       float xC = 0.;
       float yC = 0.;
       float radius = 0.;
+      seedCircleInfo() {
+        hits.reserve(10); // reserve some space for potential hits
+      }
     };
 
     struct tcInfo {
