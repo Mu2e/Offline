@@ -10,10 +10,6 @@
 #include "Offline/CRVConditions/inc/CRVOrdinal.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
-#include "art_root_io/TFileDirectory.h"
-#include "art_root_io/TFileService.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"

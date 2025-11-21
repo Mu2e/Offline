@@ -95,6 +95,16 @@ cet_build_plugin(CrvTimingStudies art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(PrintCrvChannelMap art::module
+    REG_SOURCE src/PrintCrvChannelMap_module.cc
+    LIBRARIES REG
+      Offline::CRVReco
+
+      Offline::CosmicRayShieldGeom
+      Offline::DataProducts
+      Offline::GeometryService
+)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_v11.fcl ${CURRENT_BINARY_DIR} fcl/prolog_v11.fcl)
 
 install_source(SUBDIRS src)
