@@ -26,6 +26,7 @@
 
 #include <TH1F.h>
 #include <TF1.h>
+#include <TTree.h>
 
 namespace mu2e
 {
@@ -70,7 +71,7 @@ namespace mu2e
 
   CrvPedestalFinder::CrvPedestalFinder(const Parameters& conf) :
     art::EDAnalyzer(conf),
-    _crvDigiModuleLabel(conf().crvDigiModuleLabel()), 
+    _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
     _firstSampleOnly(conf().firstSampleOnly()),
     _histBins(conf().histBins()),
     _histMin(conf().histMin()),
@@ -142,12 +143,21 @@ namespace mu2e
 
     outputFile<<std::endl;
 
-    //CRVTime table
+    //time offsets
+    art::ServiceHandle<art::TFileService> tfs;
+    TTree *treeTimeOffsets = tfs->make<TTree>("crvTimeOffsets","crvTimeOffsets");
+    size_t channel;
+    double offset;
+    treeTimeOffsets->Branch("channel", &channel);
+    treeTimeOffsets->Branch("timeOffset", &offset);
+
     outputFile<<"TABLE CRVTime"<<std::endl;
     outputFile<<"#channel, timeOffset"<<std::endl;
-    for(size_t channel=0; channel<_timeOffsets.size(); ++channel)
+    for(channel=0; channel<_timeOffsets.size(); ++channel)
     {
-      outputFile<<channel<<","<<_timeOffsets.at(channel)<<std::endl;
+      offset=_timeOffsets.at(channel);
+      outputFile<<channel<<","<<offset<<std::endl;  //write to temporary DB text file
+      treeTimeOffsets->Fill(); //fill tree
     }
 
     outputFile.close();
@@ -181,7 +191,7 @@ namespace mu2e
       if(_firstSampleOnly)
       {
         hist->Fill(iter->GetADCs().at(0));
-        continue;	
+        continue;
       }
 
       auto minmaxTest = std::minmax_element(iter->GetADCs().begin(),iter->GetADCs().end());

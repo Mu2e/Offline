@@ -1,0 +1,37 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : printChannelMaps
+
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : 1
+}
+
+services :
+{
+  @table::Services.SimAndReco
+}
+
+physics :
+{
+  analyzers:
+  {
+    Print :
+    {
+      module_type                 : PrintCrvChannelMap
+    }
+  }
+
+  an : [Print]
+
+  trigger_paths: []
+  end_paths:     [an]
+}
+
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_run1.txt"
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
