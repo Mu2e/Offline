@@ -278,7 +278,7 @@ void TValHistE::Draw(Option_t* Opt) {
   TText* tr3 = new TText();
   r = (fEff1->GetEntries()>0.0?
        fEff2->GetEntries()/fEff1->GetEntries() : 1.0);
-  snprintf(tstring, sizeof(tstring),"N %10g %10g %6f",
+  snprintf(tstring, sizeof(tstring), "N %10g %10g %6f",
           fEff1->GetEntries(),fEff2->GetEntries(),r);
   tr3->SetNDC();
   tr3->SetText(0.13,0.81,tstring);

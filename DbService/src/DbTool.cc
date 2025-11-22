@@ -3145,7 +3145,7 @@ int mu2e::DbTool::parseArgs() {
         // then par did not have an argument, treat as a binary arg
         _argMap[par] = "y";
         // std::cout << "set " << par << " to y " <<std::endl;
-        par = a.substr(2, a.size() - 2);  // current word is the next par
+        par = a.substr(2);  // current word is the next par
         // std::cout << "par2  = "<< par<< std::endl;
       } else {
         _argMap[par] = a;

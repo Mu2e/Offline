@@ -240,7 +240,7 @@ void TValHist2::Draw(Option_t* Opt) {
   double r;
   TText* tr1 = new TText();
   r = (fHist1->GetMean()!=0.0? fHist2->GetMean()/fHist1->GetMean() : 1.0);
-  snprintf(tstring, sizeof(tstring),"M %10g %10g %6f   U %10g %10g",
+  snprintf(tstring, sizeof(tstring), "M %10g %10g %6f   U %10g %10g",
           fHist1->GetMean(),fHist2->GetMean(),r,
           fHist1->GetBinContent(0),fHist2->GetBinContent(0));
   tr1->SetNDC();
@@ -252,7 +252,7 @@ void TValHist2::Draw(Option_t* Opt) {
   TText* tr2 = new TText();
   r = (fHist1->GetRMS()>0.0? fHist2->GetRMS()/fHist1->GetRMS() : 1.0);
   int iover = fHist1->GetNbinsX()+1;
-  snprintf(tstring, sizeof(tstring),"R %10g %10g %6f   O %10g %10g",
+  snprintf(tstring, sizeof(tstring), "R %10g %10g %6f   O %10g %10g",
           fHist1->GetRMS(),fHist2->GetRMS(),r,
           fHist1->GetBinContent(iover),fHist2->GetBinContent(iover));
   tr2->SetNDC();
@@ -264,7 +264,7 @@ void TValHist2::Draw(Option_t* Opt) {
   TText* tr3 = new TText();
   r = (fHist1->GetEntries()>0.0?
        fHist2->GetEntries()/fHist1->GetEntries() : 1.0);
-  snprintf(tstring, sizeof(tstring),"N %10g %10g %6f",
+  snprintf(tstring, sizeof(tstring), "N %10g %10g %6f",
           fHist1->GetEntries(),fHist2->GetEntries(),r);
   tr3->SetNDC();
   tr3->SetText(0.13,0.81,tstring);

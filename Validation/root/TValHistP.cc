@@ -275,7 +275,7 @@ void TValHistP::Draw(Option_t* Opt) {
   TText* tr3 = new TText();
   r = (fProf1->GetEntries()>0.0?
        fProf2->GetEntries()/fProf1->GetEntries() : 1.0);
-  snprintf(tstring, sizeof(tstring),"N %10g %10g %6f",
+  snprintf(tstring, sizeof(tstring), "N %10g %10g %6f",
           fProf1->GetEntries(),fProf2->GetEntries(),r);
   tr3->SetNDC();
   tr3->SetText(0.13,0.81,tstring);
