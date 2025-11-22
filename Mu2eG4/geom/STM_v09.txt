@@ -10,7 +10,7 @@
 bool stm.downstream.build = true;
 double stm.downstream.halfLength = 2219.15;
 double stm.downstream.halfWidth = 2000.0;
-double stm.downstream.halfHeight = 2312.416;
+double stm.downstream.halfHeight = 2312.416;  //Not used any more. The height is obtained from yOfFloorSurface.below.mu2eOrigin in mu2eHall_v03.txt
 string stm.downstream.material = "G4_AIR";
 
 //Make Updates from STM_v03
