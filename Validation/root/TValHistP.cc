@@ -219,7 +219,7 @@ void TValHistP::Draw(Option_t* Opt) {
   if (GetKsProb() > fPar.GetLoose()) color = kOrange;
   if (GetKsProb() > fPar.GetTight()) color = kGreen;
   if (GetStatus() == fPerfect) color = kGreen + 2;
-  sprintf(tstring, "KS=%8.6f", GetKsProb());
+  snprintf(tstring, sizeof(tstring), "KS=%8.6f", GetKsProb());
   TText* t1 = new TText();
   t1->SetNDC();
   t1->SetText(0.15, 0.91, tstring);
@@ -232,7 +232,7 @@ void TValHistP::Draw(Option_t* Opt) {
   if (GetFrProb() > fPar.GetLoose()) color = kOrange;
   if (GetFrProb() > fPar.GetTight()) color = kGreen;
   if (GetStatus() == fPerfect) color = kGreen + 2;
-  sprintf(tstring, "FR=%8.6f", GetFrProb());
+  snprintf(tstring, sizeof(tstring), "FR=%8.6f", GetFrProb());
   TText* t2 = new TText();
   t2->SetNDC();
   t2->SetText(0.32, 0.91, tstring);
@@ -242,7 +242,7 @@ void TValHistP::Draw(Option_t* Opt) {
   t2->Draw();
 
   TText* ts = new TText();
-  sprintf(tstring, "%s/%s \"%s\"", GetTag().Data(), GetName(), GetTitle());
+  snprintf(tstring, sizeof(tstring), "%s/%s \"%s\"", GetTag().Data(), GetName(), GetTitle());
   ts->SetNDC();
   ts->SetText(0.10, 0.95, tstring);
   ts->SetTextSize(fFontScale * 0.035);
@@ -252,7 +252,7 @@ void TValHistP::Draw(Option_t* Opt) {
   double r;
   TText* tr1 = new TText();
   r = (fSum1 != 0 ? fSum2 / fSum1 : 0.0);
-  sprintf(tstring, "N %10d %10d %6f   U %10g %10g", int(fSum1), int(fSum2), r,
+  snprintf(tstring, sizeof(tstring), "N %10d %10d %6f   U %10g %10g", int(fSum1), int(fSum2), r,
           fProf1->GetBinEntries(0), fProf2->GetBinEntries(0));
   tr1->SetNDC();
   tr1->SetText(0.13, 0.87, tstring);
@@ -263,7 +263,7 @@ void TValHistP::Draw(Option_t* Opt) {
   TText* tr2 = new TText();
   r = (ymean1 != 0.0 ? ymean2 / ymean1 : 0.0);
   int iover = fProf1->GetNbinsX() + 1;
-  sprintf(tstring, "Y %10g %10g %6f   O %10g %10g", ymean1, ymean2, r,
+  snprintf(tstring, sizeof(tstring), "Y %10g %10g %6f   O %10g %10g", ymean1, ymean2, r,
           fProf1->GetBinEntries(iover), fProf2->GetBinEntries(iover));
   tr2->SetNDC();
   tr2->SetText(0.13, 0.84, tstring);
@@ -275,7 +275,7 @@ void TValHistP::Draw(Option_t* Opt) {
   TText* tr3 = new TText();
   r = (fProf1->GetEntries()>0.0?
        fProf2->GetEntries()/fProf1->GetEntries() : 1.0);
-  sprintf(tstring,"N %10g %10g %6f",
+  snprintf(tstring, sizeof(tstring),"N %10g %10g %6f",
           fProf1->GetEntries(),fProf2->GetEntries(),r);
   tr3->SetNDC();
   tr3->SetText(0.13,0.81,tstring);

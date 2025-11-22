@@ -3138,7 +3138,7 @@ int mu2e::DbTool::parseArgs() {
         std::cout << "Could not parse args at " << a << std::endl;
         return 1;
       }
-      par = a.substr(2, par.size() - 2);
+      par = a.substr(2);
       // std::cout << "par1  = "<< par<< std::endl;
     } else {
       if (a.substr(0, 2) == "--") {
