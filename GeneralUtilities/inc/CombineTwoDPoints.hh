@@ -13,8 +13,9 @@
 namespace mu2e {
   class CombineTwoDPoints{
     struct CWT {
-      TwoDWeight wt_; // weight
-      double dchi0_; // chisquared contribution
+      TwoDWeight wt_{}; // weight
+      double dchi0_{0}; // chisquared contribution
+      CWT() = default;
       CWT(TwoDWeight const& wt, double dchi0) : wt_(wt), dchi0_(dchi0) {}
     };
 
