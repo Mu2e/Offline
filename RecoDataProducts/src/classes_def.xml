@@ -172,6 +172,14 @@
  <class name="mu2e::BkgClusterCollection"/>
  <class name="art::Wrapper<mu2e::BkgClusterCollection>"/>
 
+ <class name="mu2e::TwoDPoint"/>
+ <class name="art::Wrapper<mu2e::TwoDPoint>"/>
+ <class name="mu2e::CombineTwoDPoints"/>
+ <class name="art::Wrapper<mu2e::CombineTwoDPoints>"/>
+ <class name="mu2e::TwoDWeight"/>
+ <class name="art::Wrapper<mu2e::TwoDWeight>"/>
+ <class name="mu2e::CombineTwoDPoints::CWT"/>
+ <class name="std::map<unsigned long, mu2e::CombineTwoDPoints::CWT>"/>
 
 <!--  ********* tracking output  ********* -->
 
