@@ -1,10 +1,72 @@
-#
-# prolog.fcl for fcl paramaters that will be used in STM simulation modules
-#
+# Defines standard paramaters used in STM simulation modules
+# Adapted by: Pawel Plesniak
+
+# TODOs before Pawel uploads:
+# - Review all parameters for correctness
+# - Add comments where necessary
+# - Verify that all necessary parameters are included
+# - Simplify the ROOTAnalysisDump data product names by defining them separately here, once the simulation generats them correctly
+# - SimParticlemv -> SimParticles
+# - StepPointMCsTag -> StepPointMCs
 
 #include "Offline/STMReco/fcl/prolog.fcl"
+#include "Production/JobConfig/pileup/STM/prolog.fcl"
 BEGIN_PROLOG
 
+# Data product definitions
+DataProducts : {
+    # Data products generated in Stage 1 of the simulation
+    Stage1 : {
+        StepPointMCs : @local::STMSimDataProducts.Stage1.CompressedOutput.StepPointMCs
+        SimParticles : @local::STMSimDataProducts.Stage1.CompressedOutput.SimParticles
+        EndVirtualdetectorID : @local::STMPileup.ResamplingProducer.VirtualDetectorID
+    }
+
+    # Data products generated in Stage 2 of the simulation
+    Stage2 : {
+        StepPointMCs : {
+            Virtualdetector : @local::STMSimDataProducts.Stage2.CompressedOutput.StepPointMCs.Virtualdetector
+            Detector : @local::STMSimDataProducts.Stage2.CompressedOutput.StepPointMCs.Detector
+        }
+        SimParticles : @local::STMSimDataProducts.Stage2.CompressedOutput.SimParticles
+        EndVirtualdetectorID : {
+            HPGe : 90
+            LaBr : 89
+        }
+    }
+
+    # Data products used in mixing from POT frame to microspill frame
+    MixingStepPointMCTags : {
+        StepPointMCsTagEle : "STMStepMixerEle:STMDet"
+        StepPointMCsTagMu : "STMStepMixerMu:STMDet"
+        StepPointMCsTag1809 : "STMStepMixer1809:STMDet"
+    }
+
+    # Data products generated in STM waveform generation and analysis
+    Waveforms : {
+        HPGe : {
+            uSpill : "DigiHPGe:"
+            concatenated : "concatenateWaveformsHPGe:"
+            ZS : "ZSHPGe:"
+        }
+        LaBr : {
+            uSpill : "DigiLaBr:"
+            concatenated : "concatenateWaveformsLaBr:"
+            ZS : "ZSLaBr:"
+        }
+    }
+
+    # Data products generated in STM MWD analysis
+    PeakEnergies : {
+        HPGe : "MWDHPGe:"
+        LaBr : "MWDLaBr:"
+    }
+
+    # Miscellaneous parameters
+    nMicrospillsPerSpill : 31858
+}
+
+## Simulation parameters
 # Geometry, all in mm
 ComponentPositions : { # In beam order
     Beam : {
@@ -43,73 +105,30 @@ ComponentPositions : { # In beam order
     }
 }
 
-# Stage 1 propagation parameters
-ResamplingProducer : {
-    StepPointMCsTag : "g4run:virtualdetector"
-    VirtualDetectorID : 101
-}
-ResamplingFilter : {
-    StepPointMCsTag : "compressDetStepMCsSTM"
-}
-VirtualDetectorCounter : {
-    StepPointMCsTag : "g4run:virtualdetector"
-    virtualDetectorIDs : [88, 89, 90, 100, 101]
-}
-
-# ShiftVirtualDetectorStepPointMCs_module.cc parameters
-ShiftVD101Steps : {
-    StepPointMCsTag : "compressDetStepMCsSTM:virtualdetector"
-    VirtualDetectorID : 101
-    InputRadius : 200 # VD101 aperture radius
-    OutputRadius : 3.98942280401 # SSC aperture radius
-    HPGeUpStr : { # Position just upstream of absorber centered on the HPGe SSC aperture
-        x : -3944.6
-        y : 0.0
-        z : 39906.0
-    }
-    LaBrUpStr : { # Position just upstream of SSC centered on the Labr SSC aperture
-        x : -3863.4
-        y : 0.0
-        z : 40300.9
-    }
-    pdgID : 0
-}
-
-# Mixing parameters
-MixSTMEvents : {
-    extendedMean2BB : 3.93e7 # Copied from Production/JobConfig/mixing/TwoBB.fcl
-    cutMax2BB : 2.36e8 # Copied from Production/JobConfig/mixing/TwoBB.fcl
-    extendedMean1BB : 1.58e7 # Copied from Production/JobConfig/mixing/OneBB.fcl
-    cutMax1BB : 9.48e7 # Copied from Production/JobConfig/mixing/OneBB.fcl
-    SDF : 0.6
-    nPOTs : 26919873604557116
-    nMicroSpills : 690253169
-    meanEventsPerPOTFactors : {
-        EleBeamCat : 5.465876332164181e-11
-        MuBeamCat : 7.887481312841522e-13
-        TargetStopsCat1809 : 3.114418308224206e-16
-    }
-}
+# Waveform generation and digitization parameters
 STMMCAnalysis : {
     MixedEventsTags : {
-        StepPointMCsTagEle : "STMStepMixerEle:STMDet"
-        StepPointMCsTagMu : "STMStepMixerMu:STMDet"
-        StepPointMCsTag1809 : "STMStepMixer1809:STMDet"
+        StepPointMCsTagEle : @local::DataProducts.MixingStepPointMCTags.StepPointMCsTagEle
+        StepPointMCsTagMu : @local::DataProducts.MixingStepPointMCTags.StepPointMCsTagMu
+        StepPointMCsTag1809 : @local::DataProducts.MixingStepPointMCTags.StepPointMCsTag1809
     }
     ZS : {
         HPGe : {
             stmWaveformDigisTag : {
-                concatenated : "concatenateWaveformsHPGe:"
-                uSpill : "DigiHPGe:"
+                uSpill : @local::DataProducts.Waveforms.HPGe.uSpill
+                concatenated : @local::DataProducts.Waveforms.HPGe.concatenated
             }
             tbefore : @local::STM.HPGe.tbefore
             tafter : @local::STM.HPGe.tafter
             threshold : @local::STM.HPGe.threshold
-            window : @local::STM.HPGe.window # TODO - when using the optimized number from STMReco, the gradients were fluctuating between the minimum band of an int16_t and 0, but this disappeared when set to 50. Figure out why.
+            window : @local::STM.HPGe.window
             naverage : @local::STM.HPGe.naverage
         }
         LaBr : {
-            stmWaveformDigisTag : "DigiLaBr:"
+            stmWaveformDigisTag : {
+                uSpill : @local::DataProducts.Waveforms.LaBr.uSpill
+                concatenated : @local::DataProducts.Waveforms.LaBr.concatenated
+            }
             tbefore : @local::STM.LaBr.tbefore
             tafter : @local::STM.LaBr.tafter
             threshold : @local::STM.HPGe.threshold
@@ -120,8 +139,8 @@ STMMCAnalysis : {
     MWD : {
         HPGe : {
             stmWaveformDigisTag : {
-                ZS: "ZSHPGe:"
-                concatenated: "concatenateWaveformsHPGe:"
+                concatenated: @local::DataProducts.Waveforms.HPGe.concatenated
+                ZS: @local::DataProducts.Waveforms.HPGe.ZS
             }
             tau : @local::STM.HPGe.tau
             M : @local::STM.HPGe.M
@@ -136,40 +155,96 @@ STMMCAnalysis : {
                 full: @local::STM.HPGe.defaultBaselineSD
                 suppressed: 0
             }
-            STMMWDDigiTag : "MWDHPGe:"
+            STMMWDDigiTag : @local::DataProducts.PeakEnergies.HPGe
         }
         LaBr : {
-            stmWaveformDigisTag : "ZSLaBr:"
+            stmWaveformDigisTag : {
+                concatenated: @local::DataProducts.Waveforms.LaBr.concatenated
+                ZS: @local::DataProducts.Waveforms.LaBr.ZS
+            }
             tau : @local::STM.HPGe.tau
             M : @local::STM.HPGe.M
             L : @local::STM.HPGe.L
             nsigma_cut : @local::STM.HPGe.nsigma_cut
             thresholdgrad : @local::STM.HPGe.thresholdgrad
-            defaultBaselineMean : @local::STM.HPGe.defaultBaselineMean
-            defaultBaselineSD : @local::STM.HPGe.defaultBaselineSD
-            STMMWDDigiTag : "MWDLaBr:"
+            defaultBaselineMean : { # TODO - this should be the pedestal
+                full : @local::STM.HPGe.defaultBaselineMean
+                suppressed : 0
+            }
+            defaultBaselineSD : { # TODO - this should be NoiseSD converted to ADC bins
+                full: @local::STM.HPGe.defaultBaselineSD
+                suppressed: 0
+            }
+            STMMWDDigiTag : @local::DataProducts.PeakEnergies.LaBr
         }
     }
 }
 
-# MakeTree_module.cc parameters
-SimplifyStage1Data : {
-    StepPointMCsTag : "compressDetStepMCsSTM:"
-    StepPointMCsTag1809 : "compressDetStepMCsSTM:virtualdetector"
-    SimParticlemvTag : "compressDetStepMCsSTM:"
-    VirtualDetectorID : 101
-}
-SimplifyStage2Data : {
-    StepPointMCsTagSTMDet : "compressSTMDet:STMDet"
-    StepPointMCsTagVirtualdetector : "compressSTMDet:virtualdetector"
-    SimParticlemvTag : "compressSTMDet:"
-    VirtualDetectorID : {
-        HPGe : 90
-        LaBr : 89
+# ROOTAnalysisDump.fcl parameters
+ROOTAnalysisDump : {
+    Stage1 : {
+        StepPointMCsTag : @local::DataProducts.Stage1.StepPointMCs
+        SimParticlemvTag : @local::DataProducts.Stage1.SimParticles
+        VirtualDetectorID : @local::DataProducts.Stage1.EndVirtualdetectorID
     }
-    DetectorName : {
-        HPGe : "HPGe"
-        LaBr : "LaBr"
+    Stage2 : {
+        StepPointMCsTagVirtualdetector : @local::DataProducts.Stage2.StepPointMCs.Virtualdetector
+        StepPointMCsTagSTMDet : @local::DataProducts.Stage2.StepPointMCs.Detector
+        SimParticlemvTag : @local::DataProducts.Stage2.SimParticles
+        VirtualDetectorID : {
+            HPGe : @local::DataProducts.Stage2.EndVirtualdetectorID.HPGe
+            LaBr : @local::DataProducts.Stage2.EndVirtualdetectorID.LaBr
+        }
+        DetectorName : {
+            HPGe : "HPGe"
+            LaBr : "LaBr"
+        }
+    }
+    HPGeAnalysis: {
+        MicrospillHPGeWaveformTag : @local::DataProducts.Waveforms.HPGe.uSpill
+        ZSWaveformTag : @local::DataProducts.Waveforms.HPGe.ZS
+        MWDResultsTag : @local::DataProducts.PeakEnergies.HPGe
+    }
+    LaBrAnalysis: {
+        MicrospillHPGeWaveformTag : @local::DataProducts.Waveforms.LaBr.uSpill
+        ZSWaveformTag : @local::DataProducts.Waveforms.LaBr.ZS
+        MWDResultsTag : @local::DataProducts.PeakEnergies.LaBr
+    }
+    SimParticleVirtualDetectorBacktrace : {
+        StepPointMCsTags : {
+            Stage1 : @local::DataProducts.Stage1.StepPointMCs
+            Stage2 : @local::DataProducts.Stage2.StepPointMCs
+        }
+        StartVirtualDetectorID : {
+            Stage1 : @local::DataProducts.Stage1.EndVirtualdetectorID
+            Stage2 : {
+                HPGe : @local::DataProducts.Stage2.EndVirtualdetectorID.HPGe
+                LaBr : @local::DataProducts.Stage2.EndVirtualdetectorID.LaBr
+            }
+        }
+        TraceVirtualdetectorIds : {
+            Stage1: [101, 100, 10, 9, 8]
+            Stage2: [90, 101, 100, 10, 9, 8]
+        }
+    }
+}
+
+# For analysis studies, you should only need to edit lines between the "edit lines" comments
+######################################## Start of edit lines ########################################
+
+# Mixing parameters
+MixSTMEvents : {
+    extendedMean2BB : 3.93e7    # Copied from Production/JobConfig/mixing/TwoBB.fcl
+    cutMax2BB : 2.36e8          # Copied from Production/JobConfig/mixing/TwoBB.fcl
+    extendedMean1BB : 1.58e7    # Copied from Production/JobConfig/mixing/OneBB.fcl
+    cutMax1BB : 9.48e7          # Copied from Production/JobConfig/mixing/OneBB.fcl
+    SDF : 0.6                   # Copied from Production/JobConfig/mixing/OneBB.fcl
+    nPOTs : 26919873604557116   # Effective number of POTs, correcting for the resampling factor
+    nMicroSpills : 690253169
+    meanEventsPerPOTFactors : {
+        EleBeamCat : 5.465876332164181e-11
+        MuBeamCat : 7.887481312841522e-13
+        TargetStopsCat1809 : 3.114418308224206e-16
     }
 }
 
@@ -180,24 +255,39 @@ STMDAQParameters : {
         LaBr : 370.370370370 # MSPS - copied from Offline/STMConditions/fcl/prolog.fcl
     }
 }
+
+# HPGe waveform generation parameters
 HPGeDigitization : {
-    EnergyPerADCBin : 0.5 # keV/bin
-    PreamplifierNoiseSD : 0.32 # mV
+    EnergyPerADCBin : 1 # keV/bin
+    PreamplifierNoiseSD : 0.0 # mV
     DecayConstant : 50 # us
-    resetEventNumber : 31858
+    resetEventNumber : @local::DataProducts.nMicrospillsPerSpill
     microspillBufferLengthCount : 1000
     concatenation : {
-        STMWaveformDigisTag : "DigiHPGe:"
-        nMerge : 31858
-        filterTag : "concatenateWaveformsHPGe:"
+        STMWaveformDigisTag : @local::DataProducts.Waveforms.HPGe.uSpill
+        nMerge : @local::DataProducts.nMicrospillsPerSpill
+        filterTag : @local::DataProducts.Waveforms.HPGe.ZS
     }
 }
 
-# Normalization parameter determination studies
-# Detector efficiency simulation
+# LaBr waveform generation parameters - not implemented yet
+LaBrDigitization : {
+    EnergyPerADCBin : @nil # keV/bin
+    PreamplifierNoiseSD : @nil # mV
+    DecayConstant : @nil # us
+    resetEventNumber : @nil
+    microspillBufferLengthCount : @nil
+    concatenation : {
+        STMWaveformDigisTag : @local::DataProducts.Waveforms.LaBr.uSpill
+        nMerge : @nil
+        filterTag : @local::DataProducts.Waveforms.LaBr.ZS
+    }
+}
+
+# Detector efficiency simulation parameters
 Efficiency : {
     NPhotons : 1e7
-    PhotonEnergy : @nil #1.809 # MeV
+    PhotonEnergy : @nil # MeV
     OutputFilename : "nts.owner.Absorber.Spectrum.sequencer.root"
     ST : {
         x : -3904.0 # mm
@@ -229,5 +319,6 @@ Efficiency : {
         }
     }
 }
+######################################### End of edit lines #########################################
 
 END_PROLOG
