@@ -24,8 +24,8 @@ namespace mu2e {
         // front/back = z positions
         // edge = top/bottom positions
         // surf = left/right positions
-        EMC_Disk_0_SurfIn = 300, EMC_Disk_0_SurfOut, EMC_Disk_1_SurfIn, EMC_Disk_1_SurfOut,
-        EMC_Disk_0_EdgeIn, EMC_Disk_0_EdgeOut,EMC_Disk_1_EdgeIn, EMC_Disk_1_EdgeOut,  EMC_0_FrontIn, EMC_0_FrontOut,    EMC_1_FrontIn, EMC_1_FrontOut, EMC_2_FrontIn, EMC_2_FrontOut, EMC_3_FrontIn, EMC_3_FrontOut
+        EMC_Disk_0_Outer = 300, EMC_Disk_0_Inner, EMC_Disk_1_Inner, EMC_Disk_1_Outer,
+        EMC_Disk_0_Front, EMC_Disk_1_Front, EMC_Disk_0_Back, EMC_Disk_1_Back
 
       };
 

@@ -18,52 +18,29 @@ namespace mu2e {
         // default constructor with nominal geometry
         Calorimeter();
         // return by reference
-        auto const& EMC_Disk_0_SurfIn() const { return *EMC_Disk_0_SurfIn_; }
-        auto const& EMC_Disk_0_SurfOut() const { return *EMC_Disk_0_SurfOut_; }
-        auto const& EMC_Disk_1_SurfIn() const { return *EMC_Disk_1_SurfIn_; }
-        auto const& EMC_Disk_1_SurfOut() const  { return *EMC_Disk_1_SurfOut_;  }
+        auto const& EMC_Disk_0_Outer() const { return *EMC_Disk_0_Outer_;}
+        auto const& EMC_Disk_0_Inner() const { return *EMC_Disk_0_Inner_;}
+        auto const& EMC_Disk_1_Inner() const { return *EMC_Disk_1_Inner_;}
+        auto const& EMC_Disk_1_Outer() const { return *EMC_Disk_1_Outer_;}
 
-        auto const& EMC_Disk_0_EdgeIn() const { return *EMC_Disk_0_EdgeIn_; }
-        auto const& EMC_Disk_0_EdgeOut() const { return *EMC_Disk_0_EdgeOut_; }
-        auto const& EMC_Disk_1_EdgeIn() const { return *EMC_Disk_1_EdgeIn_; }
-        auto const& EMC_Disk_1_EdgeOut() const  { return *EMC_Disk_1_EdgeOut_;  }
+        auto const& EMC_Disk_0_Front() const { return *EMC_Disk_0_Front_;}
+        auto const& EMC_Disk_1_Front() const { return *EMC_Disk_1_Front_;}
+        auto const& EMC_Disk_0_Back() const  { return *EMC_Disk_0_Back_;}
+        auto const& EMC_Disk_1_Back() const  { return *EMC_Disk_1_Back_;}
 
-        auto const& EMC_0_FrontIn() const { return *EMC_0_FrontIn_; }
-        auto const& EMC_0_FrontOut() const { return *EMC_0_FrontOut_; }
-        auto const& EMC_1_FrontIn() const { return *EMC_1_FrontIn_; }
-        auto const& EMC_1_FrontOut() const  { return *EMC_1_FrontOut_;  }
-
-        auto const& EMC_2_FrontIn() const { return *EMC_2_FrontIn_; }
-        auto const& EMC_2_FrontOut() const { return *EMC_2_FrontOut_; }
-        auto const& EMC_3_FrontIn() const { return *EMC_3_FrontIn_; }
-        auto const& EMC_3_FrontOut() const  { return *EMC_3_FrontOut_;  }
-
-// return by ptr
-        auto const& EMC_Disk_0_SurfInPtr() const { return EMC_Disk_0_SurfIn_;}
-        auto const& EMC_Disk_0_SurfOutPtr() const { return EMC_Disk_0_SurfOut_;}
-        auto const& EMC_Disk_1_SurfInPtr() const { return EMC_Disk_1_SurfIn_;}
-        auto const& EMC_Disk_1_SurfOutPtr() const  { return EMC_Disk_1_SurfOut_;}
-
-        auto const& EMC_Disk_0_EdgeInPtr() const { return EMC_Disk_0_EdgeIn_;}
-        auto const& EMC_Disk_0_EdgeOutPtr() const { return EMC_Disk_0_EdgeOut_;}
-        auto const& EMC_Disk_1_EdgeInPtr() const { return EMC_Disk_1_EdgeIn_;}
-        auto const& EMC_Disk_1_EdgeOutPtr() const  { return EMC_Disk_1_EdgeOut_;}
-
-        auto const& EMC_0_FrontInPtr() const { return EMC_0_FrontIn_;}
-        auto const& EMC_0_FrontOutPtr() const { return EMC_0_FrontOut_;}
-        auto const& EMC_1_FrontInPtr() const { return EMC_1_FrontIn_;}
-        auto const& EMC_1_FrontOutPtr() const  { return EMC_1_FrontOut_;}
-
-        auto const& EMC_2_FrontInPtr() const { return EMC_2_FrontIn_;}
-        auto const& EMC_2_FrontOutPtr() const { return EMC_2_FrontOut_;}
-        auto const& EMC_3_FrontInPtr() const { return EMC_3_FrontIn_;}
-        auto const& EMC_3_FrontOutPtr() const  { return EMC_3_FrontOut_;}
+        // return by ptr
+        auto const& EMC_Disk_0_OuterPtr() const { return EMC_Disk_0_Outer_;}
+        auto const& EMC_Disk_0_InnerPtr() const { return EMC_Disk_0_Inner_;}
+        auto const& EMC_Disk_1_InnerPtr() const { return EMC_Disk_1_Inner_;}
+        auto const& EMC_Disk_1_OuterPtr() const { return EMC_Disk_1_Outer_;}
+        auto const& EMC_Disk_0_FrontPtr() const { return EMC_Disk_0_Front_;}
+        auto const& EMC_Disk_1_FrontPtr() const { return EMC_Disk_1_Front_;}
+        auto const& EMC_Disk_0_BackPtr() const  { return EMC_Disk_0_Back_;}
+        auto const& EMC_Disk_1_BackPtr() const  { return EMC_Disk_1_Back_;}
 
       private:
-        CylPtr EMC_Disk_0_SurfIn_, EMC_Disk_0_SurfOut_, EMC_Disk_1_SurfIn_, EMC_Disk_1_SurfOut_, EMC_Disk_0_EdgeIn_, EMC_Disk_0_EdgeOut_,EMC_Disk_1_EdgeIn_, EMC_Disk_1_EdgeOut_; // active volume boundary in XY amd YZ
-
-        DiskPtr EMC_0_FrontIn_, EMC_0_FrontOut_, EMC_1_FrontIn_, EMC_1_FrontOut_, EMC_2_FrontIn_, EMC_2_FrontOut_, EMC_3_FrontIn_, EMC_3_FrontOut_;
-
+        CylPtr EMC_Disk_0_Outer, EMC_Disk_0_Inner, EMC_Disk_1_Inner, EMC_Disk_1_Outer;
+        DiskPtr EMC_Disk_0_Front, EMC_Disk_1_Front, EMC_Disk_0_Back, EMC_Disk_1_Back;
     };
   }
 }
