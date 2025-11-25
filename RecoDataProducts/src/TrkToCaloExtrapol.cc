@@ -15,8 +15,8 @@
 
 
 // #include "BTrk/BaBar/BaBar.hh"
-// #include "BTrk/TrkBase/HelixParams.hh"
-// #include "BTrk/TrkBase/HelixTraj.hh"
+#include "Offline/BTrkLegacy/inc/HelixParams.hh"
+#include "Offline/BTrkLegacy/inc/HelixTraj.hh"
 
 
 using namespace std;
@@ -145,18 +145,19 @@ namespace mu2e {
   double TrkToCaloExtrapol::fitConsistency() const{
     return _trk->chisqConsistency().consistency();
   }
-
+  /*
   HepPoint TrkToCaloExtrapol::entrancePosition() const{
     return _trk->position(_pathLengthEntrance);
   }
-
+  */
   BbrPointErr TrkToCaloExtrapol::entrancePositionErr() const{
     return _trk->positionErr(_pathLengthEntrance);
   }
-
+  /* 
   HepPoint TrkToCaloExtrapol::exitPosition() const{
     return _trk->position(_pathLengthExit);
   }
+  */
 
   BbrPointErr TrkToCaloExtrapol::exitPositionErr() const{
     return _trk->positionErr(_pathLengthExit);

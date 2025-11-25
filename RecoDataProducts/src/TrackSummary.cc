@@ -8,11 +8,11 @@
 
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
-#include "BTrk/TrkBase/HelixTraj.hh"
+//#include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 
-namespace mu2e {
-
+namespace mu2e { 
+  /* TODO: Delete if OK. Also check if can use BTrkLegacy HelixParams to substitute
   TrackSummary::HelixParams::HelixParams(const TrkSimpTraj& ltraj)
     : d0_(ltraj.parameters()->parameter()[d0Index])
     , phi0_(ltraj.parameters()->parameter()[phi0Index])
@@ -21,7 +21,7 @@ namespace mu2e {
     , tanDip_(ltraj.parameters()->parameter()[tanDipIndex])
     , covariance_(ltraj.parameters()->covariance())
   {}
-
+  */
   double TrackSummary::HelixParams::radius() const {
     // can check for division by zero here
     return 1./omega_;
@@ -35,12 +35,12 @@ namespace mu2e {
     static const double pi = 4.*atan(1.); // M_PI is not in the standard
     return 2 * pi * radius() * tanDip_;
   }
-
+  
   double TrackSummary::fitcon() const {
     ChisqConsistency cs(chi2(), ndof());
     return cs.significanceLevel();
   }
-
+  
   void TrackSummary::addState(const TrackSummary::TrackStateAtPoint& st) {
     states_.emplace_back(st);
   }

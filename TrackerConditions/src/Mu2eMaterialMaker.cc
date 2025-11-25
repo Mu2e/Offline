@@ -3,7 +3,7 @@
 
 #include "Offline/TrackerConditions/inc/Mu2eMaterial.hh"
 #include "Offline/TrackerConditions/inc/Mu2eMaterialMaker.hh"
-#include "BTrk/BaBar/ExternalInfo.hh"
+#include "Offline/BTrkLegacy/inc/ExternalInfo.hh"
 
 
 using namespace std;

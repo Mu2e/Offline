@@ -15,7 +15,6 @@
 
 
 //tracker includes
-#include "BTrk/KalmanTrack/KalRep.hh"
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 

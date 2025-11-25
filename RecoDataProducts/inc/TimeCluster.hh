@@ -14,7 +14,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
 // BTrk includes
-#include "BTrk/TrkBase/TrkT0.hh"
+#include "Offline/BTrkLegacy/inc/TrkT0.hh"
 // c++
 #include <vector>
 namespace mu2e {

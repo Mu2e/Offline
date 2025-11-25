@@ -53,10 +53,10 @@ using namespace std;
 #include <boost/shared_array.hpp>
 
 using namespace CLHEP;
-#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrk/BaBar/ExternalInfo.hh"
+//#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+//#include "Offline/BTrkData/inc/TrkStrawHit.hh"
+//#include "BTrk/KalmanTrack/KalRep.hh"
+#include "Offline/BTrkLegacy/inc/ExternalInfo.hh"
 
 namespace mu2e_eventdisplay
 {
@@ -911,7 +911,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       }
     }
   }
-
+  /*
   const mu2e::KalRepCollection *kalRepHits=contentSelector->getSelectedHitCollection<mu2e::KalRepCollection>();
   if(kalRepHits!=nullptr)
   {
@@ -991,6 +991,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     }
   }
 
+  */
   // KalSeed hits
   const mu2e::KalSeedCollection *kalSeedsWithHits=contentSelector->getSelectedHitCollection<mu2e::KalSeedCollection>();
   if(kalSeedsWithHits!=NULL)
@@ -1271,7 +1272,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       _tracks.push_back(shape);
     }
   }
-
+  /*
   trackInfos.clear();
   std::vector<const mu2e::KalRepCollection*> kalRepCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::KalRepCollection>(trackInfos);
   for(unsigned int i=0; i<kalRepCollectionVector.size(); i++)
@@ -1373,7 +1374,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         info->setText(3,Form("t0 %gns  d0 %gmm  rmax %gmm",t0/CLHEP::ns,d0/CLHEP::mm,rmax/CLHEP::mm));
     }
   }
-
+  */
   // KalSeed tracks
   trackInfos.clear();
   std::vector<const mu2e::KalSeedCollection*> kalSeedCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::KalSeedCollection>(trackInfos);

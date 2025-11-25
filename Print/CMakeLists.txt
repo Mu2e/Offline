@@ -20,7 +20,6 @@ cet_make_library(
       src/EventWindowMarkerPrinter.cc
       src/GenParticlePrinter.cc
       src/HelixSeedPrinter.cc
-      src/KalRepPrinter.cc
       src/KalSeedPrinter.cc
       src/MCTrajectoryPrinter.cc
       src/PhysicalVolumePrinter.cc

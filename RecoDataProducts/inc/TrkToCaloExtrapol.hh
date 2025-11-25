@@ -15,7 +15,6 @@
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Matrix/Matrix.h"
-#include "BTrk/BbrGeom/HepPoint.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
@@ -23,12 +22,6 @@
 #include "BTrk/BbrGeom/BbrLorentzVectorErr.hh"
 
 //tracker includes
-#include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrk/KalmanTrack/KalHit.hh"
-
-#include "BTrk/BaBar/BaBar.hh"
-#include "BTrk/TrkBase/HelixParams.hh"
-#include "BTrk/TrkBase/HelixTraj.hh"
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 // C++ includes
@@ -83,9 +76,9 @@ namespace mu2e {
     double                                      tOriginErr() const;
     CLHEP::Hep3Vector                     entranceMomentum() const;
     BbrVectorErr                       entranceMomentumErr() const;
-    HepPoint                              entrancePosition() const;
+    //HepPoint                              entrancePosition() const; #TODO: Check if can delete
     BbrPointErr                        entrancePositionErr() const;
-    HepPoint                                  exitPosition() const;
+    //HepPoint                                  exitPosition() const;
     BbrPointErr                            exitPositionErr() const;
     CLHEP::Hep3Vector                             momentum() const;
     BbrVectorErr                               momentumErr() const;

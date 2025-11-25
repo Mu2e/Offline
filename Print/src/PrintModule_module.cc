@@ -25,7 +25,7 @@
 #include "Offline/Print/inc/CrvStepPrinter.hh"
 #include "Offline/Print/inc/EventWindowMarkerPrinter.hh"
 #include "Offline/Print/inc/GenParticlePrinter.hh"
-#include "Offline/Print/inc/KalRepPrinter.hh"
+//#include "Offline/Print/inc/KalRepPrinter.hh"
 #include "Offline/Print/inc/KalSeedPrinter.hh"
 #include "Offline/Print/inc/MCTrajectoryPrinter.hh"
 #include "Offline/Print/inc/PhysicalVolumePrinter.hh"
@@ -137,8 +137,8 @@ class PrintModule : public art::EDAnalyzer {
         fhicl::Name("trkCaloIntersectPrinter")};
     fhicl::Table<ProductPrinter::Config> trackSummaryPrinter{
         fhicl::Name("trackSummaryPrinter")};
-    fhicl::Table<ProductPrinter::Config> kalRepPrinter{
-        fhicl::Name("kalRepPrinter")};
+    //fhicl::Table<ProductPrinter::Config> kalRepPrinter{
+    //    fhicl::Name("kalRepPrinter")};
     fhicl::Table<ProductPrinter::Config> comboHitPrinter{
         fhicl::Name("comboHitPrinter")};
     fhicl::Table<ProductPrinter::Config> timeClusterPrinter{
@@ -241,7 +241,7 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
       make_unique<TrkCaloIntersectPrinter>(conf().trkCaloIntersectPrinter()));
   _printers.push_back(
       make_unique<TrackSummaryPrinter>(conf().trackSummaryPrinter()));
-  _printers.push_back(make_unique<KalRepPrinter>(conf().kalRepPrinter()));
+  //_printers.push_back(make_unique<KalRepPrinter>(conf().kalRepPrinter())); TODO: Check if OK
   _printers.push_back(make_unique<ComboHitPrinter>(conf().comboHitPrinter()));
   _printers.push_back(make_unique<TimeClusterPrinter>(conf().timeClusterPrinter()));
   _printers.push_back(make_unique<HelixSeedPrinter>(conf().helixSeedPrinter()));
