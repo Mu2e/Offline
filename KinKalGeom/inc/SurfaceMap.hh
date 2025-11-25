@@ -40,6 +40,7 @@ namespace mu2e {
       KinKalGeom::StoppingTarget st_;
       KinKalGeom::DetectorSolenoid ds_;
       KinKalGeom::TestCRV tcrv_;
+      KinKalGeom::Calo calo_;
       // the actual map
       std::multimap<SurfaceId,SurfacePtr> map_;
   };

@@ -17,32 +17,53 @@ namespace mu2e {
         using DiskPtr = std::shared_ptr<KinKal::Disk>;
         // default constructor with nominal geometry
         Calorimeter();
-        // accessors - d0 - disk 0, d1 - disk 1
         // return by reference
-        auto const& d0_outer() const { return *d0_outer_; }
-        auto const& d0_inner() const { return *d0_inner_; }
-        auto const& d0_front() const { return *d0_front_; }
-        auto const& d0_back() const  { return *d0_back_;  }
+        auto const& EMC_Disk_0_SurfIn() const { return *EMC_Disk_0_SurfIn_; }
+        auto const& EMC_Disk_0_SurfOut() const { return *EMC_Disk_0_SurfOut_; }
+        auto const& EMC_Disk_1_SurfIn() const { return *EMC_Disk_1_SurfIn_; }
+        auto const& EMC_Disk_1_SurfOut() const  { return *EMC_Disk_1_SurfOut_;  }
 
-        auto const& d1_outer() const { return *d1_outer_; }
-        auto const& d1_inner() const { return *d1_inner_; }
-        auto const& d1_front() const { return *d1_front_; }
-        auto const& d1_back() const  { return *d1_back_;  }
+        auto const& EMC_Disk_0_EdgeIn() const { return *EMC_Disk_0_EdgeIn_; }
+        auto const& EMC_Disk_0_EdgeOut() const { return *EMC_Disk_0_EdgeOut_; }
+        auto const& EMC_Disk_1_EdgeIn() const { return *EMC_Disk_1_EdgeIn_; }
+        auto const& EMC_Disk_1_EdgeOut() const  { return *EMC_Disk_1_EdgeOut_;  }
 
-        // return by ptr
-        auto const& d0outerPtr() const { return d0_outer_; }
-        auto const& d0innerPtr() const { return d0_inner_; }
-        auto const& d0frontPtr() const { return d0_front_; }
-        auto const& d0backPtr() const  { return d0_back_;  }
+        auto const& EMC_0_FrontIn() const { return *EMC_0_FrontIn_; }
+        auto const& EMC_0_FrontOut() const { return *EMC_0_FrontOut_; }
+        auto const& EMC_1_FrontIn() const { return *EMC_1_FrontIn_; }
+        auto const& EMC_1_FrontOut() const  { return *EMC_1_FrontOut_;  }
 
-        auto const& d1outerPtr() const { return d1_outer_; }
-        auto const& d1innerPtr() const { return d1_inner_; }
-        auto const& d1frontPtr() const { return d1_front_; }
-        auto const& d1backPtr() const  { return d1_back_;  }
+        auto const& EMC_2_FrontIn() const { return *EMC_2_FrontIn_; }
+        auto const& EMC_2_FrontOut() const { return *EMC_2_FrontOut_; }
+        auto const& EMC_3_FrontIn() const { return *EMC_3_FrontIn_; }
+        auto const& EMC_3_FrontOut() const  { return *EMC_3_FrontOut_;  }
+
+// return by ptr
+        auto const& EMC_Disk_0_SurfInPtr() const { return EMC_Disk_0_SurfIn_;}
+        auto const& EMC_Disk_0_SurfOutPtr() const { return EMC_Disk_0_SurfOut_;}
+        auto const& EMC_Disk_1_SurfInPtr() const { return EMC_Disk_1_SurfIn_;}
+        auto const& EMC_Disk_1_SurfOutPtr() const  { return EMC_Disk_1_SurfOut_;}
+
+        auto const& EMC_Disk_0_EdgeInPtr() const { return EMC_Disk_0_EdgeIn_;}
+        auto const& EMC_Disk_0_EdgeOutPtr() const { return EMC_Disk_0_EdgeOut_;}
+        auto const& EMC_Disk_1_EdgeInPtr() const { return EMC_Disk_1_EdgeIn_;}
+        auto const& EMC_Disk_1_EdgeOutPtr() const  { return EMC_Disk_1_EdgeOut_;}
+
+        auto const& EMC_0_FrontInPtr() const { return EMC_0_FrontIn_;}
+        auto const& EMC_0_FrontOutPtr() const { return EMC_0_FrontOut_;}
+        auto const& EMC_1_FrontInPtr() const { return EMC_1_FrontIn_;}
+        auto const& EMC_1_FrontOutPtr() const  { return EMC_1_FrontOut_;}
+
+        auto const& EMC_2_FrontInPtr() const { return EMC_2_FrontIn_;}
+        auto const& EMC_2_FrontOutPtr() const { return EMC_2_FrontOut_;}
+        auto const& EMC_3_FrontInPtr() const { return EMC_3_FrontIn_;}
+        auto const& EMC_3_FrontOutPtr() const  { return EMC_3_FrontOut_;}
 
       private:
-        CylPtr d0_outer_, d0_inner_, d1_outer_, d1_inner_; // active volume boundary
-        DiskPtr d0_front_, d0_back_, d1_front_, d1_back_; // disk front and back
+        CylPtr EMC_Disk_0_SurfIn_, EMC_Disk_0_SurfOut_, EMC_Disk_1_SurfIn_, EMC_Disk_1_SurfOut_, EMC_Disk_0_EdgeIn_, EMC_Disk_0_EdgeOut_,EMC_Disk_1_EdgeIn_, EMC_Disk_1_EdgeOut_; // active volume boundary in XY amd YZ
+
+        DiskPtr EMC_0_FrontIn_, EMC_0_FrontOut_, EMC_1_FrontIn_, EMC_1_FrontOut_, EMC_2_FrontIn_, EMC_2_FrontOut_, EMC_3_FrontIn_, EMC_3_FrontOut_;
+
     };
   }
 }

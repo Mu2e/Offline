@@ -27,10 +27,14 @@ namespace mu2e {
     for(size_t ifoil=0;ifoil < st_.foils().size();++ifoil){
       map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::ST_Foils,ifoil),std::static_pointer_cast<Surface>(st_.foilPtr(ifoil))));
     }
-    // test CRV; Planes are numbered by their vertical (y) position
+// test CRV; Planes are numbered by their vertical (y) position
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,0),std::static_pointer_cast<Surface>(tcrv_.t1Ptr())));
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,1),std::static_pointer_cast<Surface>(tcrv_.ex1Ptr())));
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,2),std::static_pointer_cast<Surface>(tcrv_.t2Ptr())));
+
+    //calo FIXME - need to remove the frontPtr
+ map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_0_SurfIn),std::static_pointer_cast<Surface>(calo_.EMC_Disk_0_SurfInPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_0_SurfOut),std::static_pointer_cast<Surface>(calo_.EMC_Disk_0_SurfOutPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_1_SurfIn),std::static_pointer_cast<Surface>(calo_.EMC_Disk_1_SurfInPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_1_SurfOut),std::static_pointer_cast<Surface>(calo_.EMC_Disk_1_SurfOutPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_0_EdgeIn),std::static_pointer_cast<Surface>(calo_.EMC_Disk_0_EdgeInPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_0_EdgeOut),std::static_pointer_cast<Surface>(calo_.EMC_Disk_0_EdgeOutPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_1_EdgeIn),std::static_pointer_cast<Surface>(calo_.EMC_Disk_1_EdgeInPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_1_EdgeOut),std::static_pointer_cast<Surface>(calo_.EMC_Disk_1_EdgeOutPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_0_FrontIn),std::static_pointer_cast<Surface>(calo_.EMC_0_FrontInPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_0_FrontOut),std::static_pointer_cast<Surface>(calo_.EMC_0_FrontOutPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_1_FrontIn),std::static_pointer_cast<Surface>(calo_.EMC_1_FrontInPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_1_FrontOut),std::static_pointer_cast<Surface>(calo_.EMC_1_FrontOutPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_2_FrontIn),std::static_pointer_cast<Surface>(calo_.EMC_2_FrontInPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_2_FrontOut),std::static_pointer_cast<Surface>(calo_.EMC_2_FrontOutPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_3_FrontIn),std::static_pointer_cast<Surface>(calo_.EMC_3_FrontInPtr()))); map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_3_FrontOut),std::static_pointer_cast<Surface>(calo_.EMC_3_FrontOutPtr())));
+
   }
   void SurfaceMap::surfaces(SurfaceIdCollection const& ids,SurfacePairCollection& surfs) const {
     surfs.clear();

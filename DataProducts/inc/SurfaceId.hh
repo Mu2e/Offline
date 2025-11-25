@@ -21,7 +21,12 @@ namespace mu2e {
         OPA=95, TSDA, // Absorbers in the DS
         ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foils, ST_Wires, // stopping target bounding surfaces and components
         TCRV=200 // CRV test planes
-        CalD0_Front=300, CalD0_Back, CalD1_Front, CalD1_Back, CalD0_Inner, CalD0_Outer, CalD1_Inner, CalD1_Outer //calo VD
+        // front/back = z positions
+        // edge = top/bottom positions
+        // surf = left/right positions
+        EMC_Disk_0_SurfIn = 300, EMC_Disk_0_SurfOut, EMC_Disk_1_SurfIn, EMC_Disk_1_SurfOut,
+        EMC_Disk_0_EdgeIn, EMC_Disk_0_EdgeOut,EMC_Disk_1_EdgeIn, EMC_Disk_1_EdgeOut,  EMC_0_FrontIn, EMC_0_FrontOut,    EMC_1_FrontIn, EMC_1_FrontOut, EMC_2_FrontIn, EMC_2_FrontOut, EMC_3_FrontIn, EMC_3_FrontOut
+
       };
 
     static std::string const& typeName();
@@ -39,7 +44,7 @@ namespace mu2e {
       // forward some accessors
       auto const& id() const { return sid_; }
       int index() const { return index_; }
-      auto const& name() const { return sid_.name(); }
+      auto const& name() const { return sid_.name();}
 
       bool indexMatch(SurfaceId const& other) const { return index_ == other.index_ || index_ < 0 || other.index_ < 0; }
       bool indexCompare(SurfaceId const& other) const { return index_<0 || other.index_ < 0 ? false : index_ < other.index_; }
