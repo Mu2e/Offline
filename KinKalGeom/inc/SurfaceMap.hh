@@ -6,6 +6,7 @@
 #define KinKalGeom_SurfaceMap_hh
 #include "Offline/KinKalGeom/inc/Tracker.hh"
 #include "Offline/KinKalGeom/inc/StoppingTarget.hh"
+#include "Offline/KinKalGeom/inc/Calo.hh"
 #include "Offline/KinKalGeom/inc/DetectorSolenoid.hh"
 #include "Offline/KinKalGeom/inc/TestCRV.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
