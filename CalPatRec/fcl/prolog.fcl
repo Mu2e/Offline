@@ -235,7 +235,7 @@ CalPatRec : { @table::CalPatRec
             chCollTag                   : "makePH"              ## input CH coll
             sschCollTag                 : "makeSH"              ## input single-straw CH coll
             sdmcCollTag                 : "compressDigiMCs"     ## used for debug only
-
+            ewmTag                      : "EWMProducer"
             testHitMask                 : false                 ## off by default
             goodHitMask                 : [ "TimeDivision" ]    ## is there a point in using combohits made
                                                                 ## out of straw hits with an apriory wrong wdist ?

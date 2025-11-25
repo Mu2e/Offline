@@ -48,6 +48,8 @@ namespace mu2e {
   {
 
     _data    = Data;
+    _doTiming = _data->doTiming;
+    _watch = _data->watch;
 
     printf("DeltaFinderAlg created\n");
   }
@@ -77,6 +79,7 @@ namespace mu2e {
 // try to add more close hits to it (one hit per face)
 //-----------------------------------------------------------------------------
   void DeltaFinderAlg::completeSeed(DeltaSeed* Seed) {
+    if(_doTiming > 3) _watch->SetTime(__func__);
 //-----------------------------------------------------------------------------
 // loop over remaining faces, 'f2' - face in question
 // the time bins are 40 ns wide, only need to loop over hits in 3 of them
@@ -207,6 +210,7 @@ namespace mu2e {
       HitData_t* hd = Seed->HitData(face);
       if (hd) hd->fUsed = Seed->nHits();
     }
+    if(_doTiming > 3) _watch->StopTime(__func__);
   }
 
 //-----------------------------------------------------------------------------
@@ -214,6 +218,7 @@ namespace mu2e {
 // do not consider proton hits with eDep > _minHtEnergy
 //-----------------------------------------------------------------------------
   void DeltaFinderAlg::findSeeds(int Station, int Face) {
+    if(_doTiming > 1) _watch->SetTime("findSeeds(s,f)");
     float sigma_dt_2(64);  // 8 ns^2
 
     FaceZ_t* fz1 = _data->faceData(Station,Face);
@@ -228,6 +233,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       HitData_t*      hd1 = &fz1->fHitData[h1];
       if (hd1->Used() >= 3)                                           continue;
+      if(_doTiming > 2) _watch->Increment("findSeeds-per-hd");
 
       float  wx1 = hd1->fWx;
       float  wy1 = hd1->fWy;
@@ -390,12 +396,15 @@ namespace mu2e {
         if (seed_found >= 3) break;
       }
     }
+    if(_doTiming > 2) _watch->StopTime("findSeeds-per-hd");
+    if(_doTiming > 1) _watch->StopTime("findSeeds(s,f)");
   }
 
 //-----------------------------------------------------------------------------
 // TODO: update the time as more hits are added
 //-----------------------------------------------------------------------------
   void DeltaFinderAlg::findSeeds() {
+    if(_doTiming > 0) _watch->SetTime(__func__);
 
     for (int s=0; s<kNStations; ++s) {
       for (int face=0; face<kNFaces-1; face++) {
@@ -406,12 +415,14 @@ namespace mu2e {
       }
       pruneSeeds(s);
     }
+    if(_doTiming > 0) _watch->StopTime(__func__);
   }
 
 //-----------------------------------------------------------------------------
 // the process moves upstream
 //-----------------------------------------------------------------------------
   void DeltaFinderAlg::linkDeltaSeeds() {
+    if(_doTiming > 0) _watch->SetTime(__func__);
 
     for (int is=kNStations-1; is>=0; is--) {
 //-----------------------------------------------------------------------------
@@ -567,12 +578,14 @@ namespace mu2e {
 // at this point we have a set of delta candidates, which might need to be merged
 //-----------------------------------------------------------------------------
     mergeDeltaCandidates();
+    if(_doTiming > 0) _watch->StopTime(__func__);
   }
 
 //-----------------------------------------------------------------------------
 // merge Delta Candidates : check for duplicates !
 //-----------------------------------------------------------------------------
   int DeltaFinderAlg::mergeDeltaCandidates() {
+    if(_doTiming > 0) _watch->SetTime(__func__);
     int rc(0);
     float max_d2(20*20);  // mm^2, to be adjusted FIXME
 
@@ -618,6 +631,7 @@ namespace mu2e {
         dc2->SetIndex(-1000-dc1->Index());
       }
     }
+    if(_doTiming > 0) _watch->StopTime(__func__);
     return rc;
   }
 
@@ -628,21 +642,73 @@ namespace mu2e {
 // use only "good" hits
 //-----------------------------------------------------------------------------
   int DeltaFinderAlg::orderHits() {
+    if(_doTiming > 0) _watch->SetTime(__func__);
     ChannelID cx, co;
 //-----------------------------------------------------------------------------
 // vector of pointers to CH, ordered in time. Initial list is not touched
 //-----------------------------------------------------------------------------
     _data->_v.resize(_data->_nComboHits);
 
+    if(_doTiming > 1) _watch->SetTime("orderHits-sort-pointers");
+
+//-----------------------------------------------------------------------------
+// using a key idiom sort --> 25% faster than std::sort alone, but more memory:
+//-----------------------------------------------------------------------------
+
+    // // temporary vector of pairs: (time value, original pointer)
+    // std::vector<std::pair<float, const ComboHit*>> temp_pairs(_data->_nComboHits);
+    // for (int i = 0; i < _data->_nComboHits; ++i) {
+    //   temp_pairs[i].second = &(*_data->chcol)[i];          // pointer to the hit
+    //   temp_pairs[i].first  = temp_pairs[i].second->time(); // Use the time as the key for sorting
+    // }
+
+    // // 2. Sort the temporary vector of pairs using std::sort, with sort field in contiguous memory
+    // std::sort(temp_pairs.begin(), temp_pairs.end(),
+    //           [](const auto& a, const auto& b) {
+    //             return a.first < b.first;
+    //           });
+
+    // // 3. Copy the sorted pointers back to the original vector
+    // for (int i = 0; i < _data->_nComboHits; ++i) {
+    //   _data->_v[i] = temp_pairs[i].second;
+    // }
+
+//-----------------------------------------------------------------------------
+// using count sort --> x2 faster than std::sort, but requires float -> int mapping
+//-----------------------------------------------------------------------------
     for (int i=0; i<_data->_nComboHits; i++) {
       _data->_v[i] = &(*_data->chcol)[i];
     }
 
-    std::sort(_data->_v.begin(), _data->_v.end(),
-              [](const ComboHit*& a, const ComboHit*& b) { return a->time() < b->time(); });
+    // for temporary storage in sorting swaps
+    std::vector<const ComboHit*> sort_tmp(_data->_v.size());
+
+    // process all 4 bytes (shifts: 0, 8, 16, 24) --> O(N) sort time
+    for (int shift = 0; shift < 32; shift += 8) {
+      // need to swap input/output between each loop, use local references
+      // --> the final sorted data will be in _data->_v due to 4 sorting loops
+      const bool even = (shift / 8) % 2 == 0;
+      std::vector<const ComboHit*>& v1 = ( even) ? _data->_v : sort_tmp;
+      std::vector<const ComboHit*>& v2 = (!even) ? _data->_v : sort_tmp;
+      countingSortPass(v1, v2, shift);
+    }
+
+//-----------------------------------------------------------------------------
+// using default std::sort --> stable and fast, but requires pointer dereferencing
+//-----------------------------------------------------------------------------
+
+    // for (int i=0; i<_data->_nComboHits; i++) {
+    //   _data->_v[i] = &(*_data->chcol)[i];
+    // }
+
+    // std::sort(_data->_v.begin(), _data->_v.end(),
+    //           [](const ComboHit*& a, const ComboHit*& b) { return a->time() < b->time(); });
+
 //-----------------------------------------------------------------------------
 // at this point hits in '_v' are already ordered in time
 //-----------------------------------------------------------------------------
+    if(_doTiming > 1) _watch->StopTime("orderHits-sort-pointers");
+    if(_doTiming > 1) _watch->SetTime("orderHits-time-bins");
     for (int ih=0; ih<_data->_nComboHits; ih++) {
       const ComboHit* ch = _data->_v[ih];
 
@@ -664,7 +730,7 @@ namespace mu2e {
       int of       = co.Face;
       int op       = co.Panel;
 
-      if (_printErrors) {
+      if (_printErrors) { // FIXME: If these errors happen, why do we allow the following invalid array access?
         if ((os < 0) || (os >= kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
         if ((of < 0) || (of >= kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
         if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
@@ -681,7 +747,7 @@ namespace mu2e {
       fz->fHitData.push_back(HitData_t(ch,of));
       int time_bin = int (ch->time()/_timeBin);
 
-      if (time_bin < kMaxNTimeBins) {
+      if (time_bin < _data->_nTimeBins) {
         if (fz->fFirst[time_bin] < 0) fz->fFirst[time_bin] = loc;
         fz->fLast[time_bin] = loc;
       }
@@ -690,6 +756,8 @@ namespace mu2e {
       }
     }
 
+    if(_doTiming > 1) _watch->StopTime("orderHits-time-bins");
+    if(_doTiming > 0) _watch->StopTime(__func__);
     return 0;
   }
 
@@ -700,6 +768,7 @@ namespace mu2e {
 // also reject seeds with Chi2Tot > _maxChi2Tot=10
 //-----------------------------------------------------------------------------
   void DeltaFinderAlg::pruneSeeds(int Station) {
+    if(_doTiming > 1) _watch->SetTime(__func__);
 
     int nseeds =  _data->NSeeds(Station);
 
@@ -810,6 +879,7 @@ namespace mu2e {
         }
       }
     }
+    if(_doTiming > 1) _watch->StopTime(__func__);
   }
 
 //------------------------------------------------------------------------------
@@ -818,6 +888,7 @@ namespace mu2e {
 // extend them outwards by one station
 //-----------------------------------------------------------------------------
   int DeltaFinderAlg::recoverMissingHits() {
+    if(_doTiming > 0) _watch->SetTime(__func__);
 
     int ndelta = _data->nDeltaCandidates();
     for (int idelta=0; idelta<ndelta; idelta++) {
@@ -862,6 +933,7 @@ namespace mu2e {
       }
     }
 
+    if(_doTiming > 0) _watch->StopTime(__func__);
     return 0;
   }
 
@@ -869,6 +941,7 @@ namespace mu2e {
 // return 1 if a seed has been found , 0 otherwise
 //-----------------------------------------------------------------------------
   int DeltaFinderAlg::recoverSeed(DeltaCandidate* Delta, int LastStation, int Station) {
+    if(_doTiming > 1) _watch->SetTime(__func__);
     // int rc(0);
                                         // predicted time range for this station
     float tdelta = Delta->T0(Station);
@@ -925,6 +998,7 @@ namespace mu2e {
       // }
     }
 
+    if(_doTiming > 1) _watch->StopTime(__func__);
     return (closest_seed != nullptr);
   }
 
@@ -935,6 +1009,7 @@ namespace mu2e {
 // return 1 if something has been found
 //-----------------------------------------------------------------------------
   int DeltaFinderAlg::recoverStation(DeltaCandidate* Delta, int LastStation, int Station, int UseUsedHits, int RecoverSeeds) {
+    if(_doTiming > 1) _watch->SetTime(__func__);
 
                                         // predicted time range for this station
     float tdelta   = Delta->T0(Station);
@@ -954,7 +1029,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     if (RecoverSeeds) {
       int closest_seed_found = recoverSeed(Delta,LastStation,Station);
-      if (closest_seed_found == 1) return 1;
+      if (closest_seed_found == 1) {
+        if(_doTiming > 1) _watch->StopTime(__func__);
+        return 1;
+      }
     }
 //-----------------------------------------------------------------------------
 // no seeds found, look for single hits in the 'Station'
@@ -1137,12 +1215,14 @@ namespace mu2e {
       // }
       rc = 1;
     }
+    if(_doTiming > 1) _watch->StopTime(__func__);
                                         // return 1 if hits were added
     return rc;
   }
 
 //-----------------------------------------------------------------------------
   void  DeltaFinderAlg::run() {
+    if(_doTiming > 0) _watch->SetTime(__func__);
     orderHits();
 //-----------------------------------------------------------------------------
 // loop over all stations and find delta seeds - 2-3-4 combo hit stubs
@@ -1151,8 +1231,8 @@ namespace mu2e {
     findSeeds();
 //-----------------------------------------------------------------------------
 // link found seeds and create delta candidates
-// at this stage, extend seeds to pick up single its in neighbor stations
-// for single hits do not allo gaps
+// at this stage, extend seeds to pick up single hits in neighbor stations
+// for single hits do not allow gaps
 //-----------------------------------------------------------------------------
     linkDeltaSeeds();
 //-----------------------------------------------------------------------------
@@ -1224,6 +1304,7 @@ namespace mu2e {
 // last step: find protons (time clusters of high-ionization hits
 //-----------------------------------------------------------------------------
     if (_flagProtonHits != 0) findProtons();
+    if(_doTiming > 0) _watch->StopTime(__func__);
   }
 
 //-----------------------------------------------------------------------------
