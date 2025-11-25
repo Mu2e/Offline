@@ -21,6 +21,7 @@ namespace mu2e {
         OPA=95, TSDA, // Absorbers in the DS
         ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foils, ST_Wires, // stopping target bounding surfaces and components
         TCRV=200 // CRV test planes
+        CalD0_Front=300, CalD0_Back, CalD1_Front, CalD1_Back, CalD0_Inner, CalD0_Outer, CalD1_Inner, CalD1_Outer //calo VD
       };
 
     static std::string const& typeName();

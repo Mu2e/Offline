@@ -34,7 +34,15 @@ namespace mu2e {
     std::make_pair(SurfaceIdEnum::ST_Inner, "ST_Inner"),
     std::make_pair(SurfaceIdEnum::ST_Outer, "ST_Outer"),
     std::make_pair(SurfaceIdEnum::ST_Foils, "ST_Foils"),
-    std::make_pair(SurfaceIdEnum::TCRV, "TCRV")
+    std::make_pair(SurfaceIdEnum::TCRV, "TCRV"),
+    std::make_pair(SurfaceIdEnum::CalD0_Front, "CalD0_Front"),
+    std::make_pair(SurfaceIdEnum::CalD0_Back, "CalD0_Back"),
+    std::make_pair(SurfaceIdEnum::CalD1_Front, "CalD1_Front"),
+    std::make_pair(SurfaceIdEnum::CalD1_Back, "CalD1_Back"),
+    std::make_pair(SurfaceIdEnum::CalD0_Inner, "CalD0_Inner"),
+    std::make_pair(SurfaceIdEnum::CalD0_Outer "CalD0_Outer"),
+    std::make_pair(SurfaceIdEnum::CalD1_Inner, "CalD1_Inner"),
+    std::make_pair(SurfaceIdEnum::CalD1_Outer, "CalD1_Outer")
   };
   std::map<SurfaceIdEnum::enum_type,std::string> const& SurfaceIdDetail::names(){
     return nam;
