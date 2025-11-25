@@ -20,10 +20,7 @@ namespace mu2e {
         IPA=90, IPA_Front, IPA_Back,
         OPA=95, TSDA, // Absorbers in the DS
         ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foils, ST_Wires, // stopping target bounding surfaces and components
-        TCRV=200 // CRV test planes
-        // front/back = z positions
-        // edge = top/bottom positions
-        // surf = left/right positions
+        TCRV=200, // CRV test planes
         EMC_Disk_0_Outer = 300, EMC_Disk_0_Inner, EMC_Disk_1_Inner, EMC_Disk_1_Outer,
         EMC_Disk_0_Front, EMC_Disk_1_Front, EMC_Disk_0_Back, EMC_Disk_1_Back
 

@@ -36,14 +36,14 @@ namespace mu2e {
     std::make_pair(SurfaceIdEnum::ST_Foils, "ST_Foils"),
     std::make_pair(SurfaceIdEnum::TCRV, "TCRV"),
 
-    std::make_pair(SurfaceIdEnum::EMC_Disk_0_SurfIn, "EMC_Disk_0_Outer"),
-    std::make_pair(SurfaceIdEnum::EMC_Disk_0_SurfOut, "EMC_Disk_0_Inner"),
-    std::make_pair(SurfaceIdEnum::EMC_Disk_1_SurfIn, "EMC_Disk_1_Inner"),
-    std::make_pair(SurfaceIdEnum::EMC_Disk_1_SurfOut, "EMC_Disk_1_Outer"),
-    std::make_pair(SurfaceIdEnum::EMC_Disk_0_EdgeIn, "EMC_Disk_0_Front"),
-    std::make_pair(SurfaceIdEnum::EMC_Disk_0_EdgeOut "EMC_Disk_1_Front"),
-    std::make_pair(SurfaceIdEnum::EMC_Disk_1_EdgeIn, "EMC_Disk_0_Back"),
-    std::make_pair(SurfaceIdEnum::EMC_Disk_1_EdgeOut, "EMC_Disk_1_Back")
+    std::make_pair(SurfaceIdEnum::EMC_Disk_0_Outer, "EMC_Disk_0_Outer"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_0_Inner, "EMC_Disk_0_Inner"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_1_Inner, "EMC_Disk_1_Inner"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_1_Outer, "EMC_Disk_1_Outer"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_0_Front, "EMC_Disk_0_Front"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_1_Front, "EMC_Disk_1_Front"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_0_Back, "EMC_Disk_0_Back"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_1_Back, "EMC_Disk_1_Back")
   };
   std::map<SurfaceIdEnum::enum_type,std::string> const& SurfaceIdDetail::names(){
     return nam;

@@ -1,4 +1,4 @@
-// An art analyzer module for the initial calibration of interdetector timing.
+/* An art analyzer module for the initial calibration of interdetector timing.
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -126,4 +126,4 @@ namespace mu2e {
   }
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::InterdetectorTimeBootstrap)
+DEFINE_ART_MODULE(mu2e::InterdetectorTimeBootstrap)*/
