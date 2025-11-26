@@ -15,6 +15,7 @@ cet_build_plugin(CrvCalibration art::module
     LIBRARIES REG
       Offline::CRVReco
       art_root_io::TFileService_service
+      ROOT::Tree
 )
 
 cet_build_plugin(CrvCoincidenceFinder art::module
@@ -41,6 +42,7 @@ cet_build_plugin(CrvPedestalFinder art::module
     LIBRARIES REG
       Offline::CRVReco
       art_root_io::TFileService_service
+      ROOT::Tree
 )
 
 cet_build_plugin(CrvRecoPulsesFinder art::module
