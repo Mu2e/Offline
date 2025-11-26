@@ -14,9 +14,7 @@ using namespace mu2e;
 int main(int argc, char** argv) {
   // Set up ParseCLI with brief help string
   // Detailed help is provided in each command's subcommand definition
-  std::string helpstr = "A program to read and write the goodrun database";
-
-  ParseCLI cli(helpstr, true, false);
+  ParseCLI cli("A program to read and write the goodrun database", true, false);
 
   // Register global options (empty subcommand "")
   cli.addSubcommand("", "Global options");
@@ -69,11 +67,7 @@ int main(int argc, char** argv) {
   // Parse command line arguments
   int rc = cli.setArgs(argc, argv);
   if (rc != 0) {
-    if (rc == 999) {
-      // Help was printed by autohelp
-      return 1;
-    }
-    return rc;
+    return (rc == 999) ? 1 : rc;  // 999 means help was printed
   }
 
   // Get verbose level
@@ -136,10 +130,6 @@ int main(int argc, char** argv) {
     tool.lockList(listname);
   } else if( command == "print-list" ) {
     std::string listname = cli.getString("print-list", "listname");
-    if (listname.empty()) {
-      std::cout << "print-list requires a list name"<< std::endl;
-      return 1;
-    }
     GrlList ll = tool.list(listname);
     //ll.print(std::cout);
   } else {
