@@ -22,7 +22,6 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/VirtualDetector.hh"
-#include "Offline/Mu2eUtilities/inc/MVATools.hh"
 
 #include "Offline/CaloCluster/inc/ClusterUtils.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
@@ -58,8 +57,6 @@ namespace mu2e {
              fhicl::Atom<art::InputTag>     caloHitTruth          { Name("caloHitTruth"),           Comment("CaloHit truth name") };
              fhicl::Atom<art::InputTag>     caloClusterTruth      { Name("caloClusterTruth"),       Comment("caloCluster truth name") };
              fhicl::Atom<float>             minCluEnergy          { Name("minCluEnergy"),           Comment("Min cluster energy to write cluster") };
-             fhicl::Atom<bool>              fillMVA               { Name("fillMVA"),                Comment("Switch to fill MVA") };
-             fhicl::Table<MVATools::Config> caloMVA               { Name("caloMVA"),                Comment("MVA Configuration") };
              fhicl::Atom<int>               diagLevel             { Name("diagLevel"),              Comment("Diag Level"),0 };
          };
 
@@ -78,8 +75,6 @@ namespace mu2e {
        art::InputTag  caloHitTruthTag_;
        art::InputTag  caloClusterTruthTag_;
        float          minCluEnergy_;
-       bool           fillMVA_;
-       MVATools       caloMVA_;
        int            diagLevel_;
        int            nProcess_;
 
@@ -96,7 +91,7 @@ namespace mu2e {
 
        int   nCluster_,nCluSim_,cluNcrys_[ntupLen],cluDisk_[ntupLen];
        float cluEnergy_[ntupLen],cluEnergyErr_[ntupLen],cluTime_[ntupLen],cluTimeErr_[ntupLen],cluCogX_[ntupLen],cluCogY_[ntupLen],cluCogR_[ntupLen],
-             cluCogZ_[ntupLen],cluE1_[ntupLen],cluE2_[ntupLen],cluE9_[ntupLen],cluE25_[ntupLen],cluSecMom_[ntupLen],cluDR_[ntupLen],cluMVA_[ntupLen];
+             cluCogZ_[ntupLen],cluE1_[ntupLen],cluE2_[ntupLen],cluE9_[ntupLen],cluE25_[ntupLen],cluSecMom_[ntupLen],cluDR_[ntupLen];
        int   cluSplit_[ntupLen],cluConv_[ntupLen],cluSimIdx_[ntupLen],cluSimLen_[ntupLen];
 
        std::vector<std::vector<int> > cluList_;
@@ -117,16 +112,12 @@ namespace mu2e {
     caloHitTruthTag_    (config().caloHitTruth()),
     caloClusterTruthTag_(config().caloClusterTruth()),
     minCluEnergy_       (config().minCluEnergy()),
-    fillMVA_            (config().fillMVA()),
-    caloMVA_            (config().caloMVA()),
     diagLevel_          (config().diagLevel()),
     nProcess_(0),
     Ntup_(0)
   {}
 
   void CaloNNDiag::beginJob(){
-
-       if (fillMVA_) caloMVA_.initMVA();
 
        art::ServiceHandle<art::TFileService> tfs;
 
@@ -177,7 +168,6 @@ namespace mu2e {
        Ntup_->Branch("cluE25",       &cluE25_ ,      "cluE25[nCluster]/F");
        Ntup_->Branch("cluSecMom",    &cluSecMom_ ,   "cluSecMom[nCluster]/F");
        Ntup_->Branch("cluSplit",     &cluSplit_ ,    "cluSplit[nCluster]/I");
-       Ntup_->Branch("cluMVA",       &cluMVA_ ,      "cluMVA[nCluster]/F");
        Ntup_->Branch("cluConv",      &cluConv_ ,     "cluConv[nCluster]/I");
        Ntup_->Branch("cluList",      &cluList_);
 
@@ -249,10 +239,10 @@ namespace mu2e {
       const CaloClusterMCTruthAssn& caloClusterTruth(*caloClusterTruthHandle);
 
 
-      //SELECT  EVENTS WITH AT LEAST A CLUSTER ABOVE 70 MEV
+      //SELECT EVENTS WITH AT LEAST A CLUSTER ABOVE MINCLUENERGY_
       bool select(false);
       for (const auto& cluster : caloClusters) {
-          if (cluster.energyDep()>60) {select=true; break;}
+         if (cluster.energyDep()>minCluEnergy_) {select=true; break;}
       }
       if (!select) return;
 
@@ -396,21 +386,6 @@ namespace mu2e {
              }
           }
 
-          float outMVA(0);
-          if (fillMVA_){
-            std::vector<float> mvavars(9,0.0);
-            mvavars[0] = cluster.energyDep();
-            mvavars[1] = cluster.cog3Vector().perp();
-            mvavars[2] = cluster.time();
-            mvavars[3] = cluster.size();
-            mvavars[4] = cluUtil.e1() /cluster.energyDep();
-            mvavars[5] = cluUtil.e2() /cluster.energyDep();
-            mvavars[6] = cluUtil.e9() /cluster.energyDep();
-            mvavars[7] = cluUtil.e25()/cluster.energyDep();
-            mvavars[8] = cluUtil.secondMoment();
-            outMVA     = caloMVA_.evalMVA(mvavars);
-          }
-
           const CaloHit& seedHit    = CaloHits.at(cryList[0]);
           CLHEP::Hep3Vector seedPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(),cal.crystal(seedHit.crystalID()).position());
 
@@ -430,7 +405,6 @@ namespace mu2e {
           cluE25_[nCluster_]       = cluUtil.e25();
           cluSecMom_[nCluster_]    = cluUtil.secondMoment();
           cluSplit_[nCluster_]     = cluster.isSplit();
-          cluMVA_[nCluster_]       = outMVA;
           cluConv_[nCluster_]      = isConv;//ic == icMCIdx;
           cluList_.push_back(cryList);
 

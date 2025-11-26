@@ -12,10 +12,7 @@ CaloNNDiag : {
   caloHitTruth           : CaloHitTruthMatch
   caloClusterTruth       : CaloClusterTruthMatch
   minCluEnergy           : 0
-  fillMVA                : false
-  caloMVA                : { MVAWeights: "Offline/CaloFilters/data/FlatPhoton_ReLU.weights.xml" }
 }
-
 
 CaloNNTrain: {
   module_type             : CaloNNTrain
@@ -25,6 +22,7 @@ CaloNNTrain: {
   MCEdepCut               : 3
   diagLevel               : 0
 }
+
 
 CaloDiag : {
   analyzers : {

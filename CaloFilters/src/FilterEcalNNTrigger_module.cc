@@ -107,16 +107,16 @@ namespace mu2e {
 
         float secondMom = secondMoment(cal,hits);
 
-        std::vector<float> mvavars(9,0.0);
-        mvavars[0] = clusterIt->energyDep();
-        mvavars[1] = clusterIt->cog3Vector().perp();
-        mvavars[2] = clusterIt->time();
-        mvavars[3] = clusterIt->size();
-        mvavars[4] = e1/clusterIt->energyDep();
-        mvavars[5] = e2/clusterIt->energyDep();
-        mvavars[6] = e9/clusterIt->energyDep();
-        mvavars[7] = e25/clusterIt->energyDep();
-        mvavars[8] = secondMom;
+        std::vector<float> mvavars(8,0.0);
+        //mvavars[0] = clusterIt->energyDep();
+        mvavars[0] = clusterIt->cog3Vector().perp();
+        mvavars[1] = clusterIt->time();
+        mvavars[2] = clusterIt->size();
+        mvavars[3] = e1/clusterIt->energyDep();
+        mvavars[4] = e2/clusterIt->energyDep();
+        mvavars[5] = e9/clusterIt->energyDep();
+        mvavars[6] = e25/clusterIt->energyDep();
+        mvavars[7] = secondMom;
 
         float mvaout = caloBkgMVA_.evalMVA(mvavars);
         if (mvaout < minMVAScore_) continue;
