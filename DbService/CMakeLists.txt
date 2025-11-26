@@ -48,7 +48,6 @@ cet_make_exec(NAME runTool
 cet_make_exec(NAME grlTool
     SOURCE src/grlTool_main.cc
     LIBRARIES
-      Boost::program_options
       Offline::DbService      
 )
 
