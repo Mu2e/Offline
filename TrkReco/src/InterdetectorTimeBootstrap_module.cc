@@ -111,7 +111,6 @@ namespace mu2e {
           // Simple geometric match: check proximity
           if ((track_pos_at_calo - cluster_pos).mag() < _maxDeltaR) {
             // Calculate time difference
-            // Time of flight correction would be applied here in a real scenario
             double time_calo = cluster.time();
             // The track time needs to be adjusted for the time of flight from the track origin to the calo
             double time_track_extrapolated = track.time() + (track_pos_at_calo.mag() / 299.792458); // TOF in ns
