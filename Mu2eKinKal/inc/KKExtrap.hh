@@ -171,19 +171,21 @@ namespace mu2e {
     // record the standard tracker intersections
     static const SurfaceId d0_front("EMC_Disk_0_Front");
     static const SurfaceId d0_back("EMC_Disk_0_Back");
-
+    std::cout<<"extrapolating to calo d0"<<std::endl;
     if(tofront){
       // check the front piece first; that is usually correct
       // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
       auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
       auto frontinter = KinKal::intersect(fhel,*trkfrontptr_,fhel.range(),intertol_,fronttdir);
       if(frontinter.good()) ktrk.addIntersection(d0_front,frontinter);
+      std::cout<<"to front "<<std::endl;
     }
     if(toback){
       // start from the middle
       TimeRange brange = ftraj.range();
       auto backinter = KinKal::intersect(ftraj,*trkbackptr_,brange,intertol_,backtdir);
       if(backinter.good())ktrk.addIntersection(d0_back,backinter);
+      std::cout<<"to back "<<std::endl;
     }
   }
 
