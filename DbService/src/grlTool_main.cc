@@ -12,54 +12,9 @@
 using namespace mu2e;
 
 int main(int argc, char** argv) {
-  // Set up ParseCLI with help string
-  std::string helpstr = R"(
-A program to read and write the goodrun database
-  WORDNAMEs are category/subcategory/word and define an integer which
-           may have different values for each run
-  BITNAMEs are bits within a WORD, like "noise"=0x1
-
-**** bits ****
-
-define-word WORDNAME ["description"]
-    ex.: define-word shift/dqm/trk
-print-words
-
-define-bit WORDNAME BITNAME ["description"]
-    define a new bit associated to the given word
-    ex.: define-bit shift/dqm/trk noise
-print-bits [WORDNAME]
-
-set-word WORDNAME RUNRANGE BITNAME [BITNAME]
-    set a word with bits to indicate problems
-    later entries can override earlier ones
-    for run range text syntax see
-       https://mu2ewiki.fnal.gov/wiki/ConditionsData#Intervals_of_validity
-    # set this word to 0 (nothing bad), for one run, or run range
-    ex.: set-bits shift/dqm/trk 10500
-    ex.: set-bits shift/dqm/trk 10500-105010
-    # set this word, overriding previous word, only for these subruns
-    ex.: set-bits shift/dqm/trk 10500:50-10500:52 noise trips baddqm
-
-print-entries [WORDNAME] [RUNRANGE]
-
-gen-list COMMANDFILE [RUNTYPE]
-    apply list of bits selections in command file to runtype runs
-    and generate a goodrun list
-
-**** lists ****
-
-list-lists
-    list all defined GRL lists
-create-list LISTNAME [FILENAME]
-    define a list, if FILENAME is provided, then add those IoV's into the list
-extend-list LISTNAME IOV
-    add an IoV to a list. IoV in standard text format
-lock-list LISTNAME
-    prevent any new IoV's being added to the GRL
-print-list LISTNAME
-    print the IoV's in the list
-)";
+  // Set up ParseCLI with brief help string
+  // Detailed help is provided in each command's subcommand definition
+  std::string helpstr = "A program to read and write the goodrun database";
 
   ParseCLI cli(helpstr, true, false);
 
