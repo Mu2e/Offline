@@ -5,105 +5,77 @@
 
 #include "Offline/DbService/inc/GrlTool.hh"
 #include "Offline/DbService/inc/GrlList.hh"
-#include <boost/program_options.hpp>
+#include "Offline/GeneralUtilities/inc/ParseCLI.hh"
 #include <iomanip>
 #include <iostream>
 
 using namespace mu2e;
-namespace po = boost::program_options;
 
 int main(int argc, char** argv) {
-  // std::vector<std::string> words;
+  // Set up ParseCLI with brief help string
+  // Detailed help is provided in each command's subcommand definition
+  ParseCLI cli("A program to read and write the goodrun database", true, false);
 
-  // bool flags = false, conditions = false, longp = false, transitions = false;
-  // std::string run, time, type;
-  // int last = 0, days = 0;
-  int verbose = 0;
+  // Register global options (empty subcommand "")
+  cli.addSubcommand("", "Global options");
+  cli.addSwitch("", "verbose", "v", "verbose", true, "set verbose level (0-3)", "0");
 
-  po::options_description desc("Allowed options");
-  desc.add_options()("help,h", "describe arguments")
-    ("verbose,v", po::value<int>(&verbose), "set verbose level (0-3)");
-    //  ("verbose,v", po::value<std::vector<int>(), "Verbosity level (can be repeated)");
-  // ("verbose,v",  "more verbose");
+  // Register all command subcommands with proper help strings and switches
+  cli.addSubcommand("define-word", "define a word\n    ex.: define-word shift/dqm/trk");
+  cli.addSwitch("define-word", "wordname", "", "wordname", true, "WORDNAME (category/subcategory/word)", "", false, true);
+  cli.addSwitch("define-word", "description", "", "description", true, "optional description", "", false, false);
 
-  //(
-  //    "run,r", po::value(&run), "run range")(
-  //    "last,n", po::value(&last), "print last N runs")(
-  //    "type,y", po::value(&type), "comma-seperated list of run types")(
-  //    "time,t", po::value(&time), "Restrict times for print, see help")(
-  //    "days,d", po::value(&days), "restrict time to N days ago to now")(
-  //    "long,l", "print longer report")(
-  //    "conditions,c","also print conditions")(
-  //    "transitions,a","also print transitions");
+  cli.addSubcommand("print-words", "print all words");
 
-  po::variables_map vm;
-  po::parsed_options parsed = po::parse_command_line(argc, argv, desc);
-  po::store(parsed, vm);
-  po::notify(vm);
+  cli.addSubcommand("define-bit", "define a new bit associated to the given word\n    ex.: define-bit shift/dqm/trk noise");
+  cli.addSwitch("define-bit", "wordname", "", "wordname", true, "WORDNAME", "", false, true);
+  cli.addSwitch("define-bit", "bitname", "", "bitname", true, "BITNAME", "", false, true);
+  cli.addSwitch("define-bit", "description", "", "description", true, "optional description", "", false, false);
 
-  std::vector<std::string> unregistered =
-      po::collect_unrecognized(parsed.options, po::include_positional);
+  cli.addSubcommand("print-bits", "print bits");
+  cli.addSwitch("print-bits", "wordname", "", "wordname", true, "optional WORDNAME", "", false, false);
 
-  if (vm.count("help") && unregistered.empty()) {
-    std::cout <<
-        R"(
+  cli.addSubcommand("set-word", "set a word with bits to indicate problems\n    later entries can override earlier ones\n    for run range text syntax see https://mu2ewiki.fnal.gov/wiki/ConditionsData#Intervals_of_validity\n    ex.: set-word --wordname shift/dqm/trk --runrange 10500 --bitname noise --bitname trips");
+  cli.addSwitch("set-word", "wordname", "", "wordname", true, "WORDNAME", "", false, true);
+  cli.addSwitch("set-word", "runrange", "", "runrange", true, "RUNRANGE", "", false, true);
+  cli.addSwitch("set-word", "bitname", "", "bitname", true, "BITNAME (can be repeated)", "", true, true);
 
-  grTool [GLOBAL OPTIONS] command [OPTIONS]
+  cli.addSubcommand("print-entries", "print entries");
+  cli.addSwitch("print-entries", "wordname", "", "wordname", true, "optional WORDNAME", "", false, false);
+  cli.addSwitch("print-entries", "runrange", "", "runrange", true, "optional RUNRANGE", "", false, false);
 
-  A program to read and write the goodrun database
-    WORDNAMEs are category/subcategory/word and define an integer which
-             may have different values for each run
-    BITNAMEs are bits within a WORD, like "noise"=0x1
+  cli.addSubcommand("gen-list", "apply list of bits selections in command file to runtype runs\n    and generate a goodrun list");
+  cli.addSwitch("gen-list", "commandfile", "", "commandfile", true, "COMMANDFILE", "", false, true);
+  cli.addSwitch("gen-list", "runtype", "", "runtype", true, "optional RUNTYPE", "", false, false);
 
-  -h, --help   print help
+  cli.addSubcommand("list-lists", "list all defined GRL lists");
 
-  **** bits ****
+  cli.addSubcommand("create-list", "define a list, if FILENAME is provided, then add those IoV's into the list");
+  cli.addSwitch("create-list", "listname", "", "listname", true, "LISTNAME", "", false, true);
+  cli.addSwitch("create-list", "filename", "", "filename", true, "optional FILENAME with IoVs", "", false, false);
 
-  define-word WORDNAME ["description"]
-      ex.: define-word shift/dqm/trk
-  print-words
+  cli.addSubcommand("extend-list", "add an IoV to a list. IoV in standard text format");
+  cli.addSwitch("extend-list", "listname", "", "listname", true, "LISTNAME", "", false, true);
+  cli.addSwitch("extend-list", "iov", "", "iov", true, "IOV", "", false, true);
 
-  define-bit WORDNAME BITNAME ["description"]
-      define a new bit associated to the given word
-      ex.: define-bit shift/dqm/trk noise
-  print-bits [WORDNAME]
+  cli.addSubcommand("lock-list", "prevent any new IoV's being added to the GRL");
+  cli.addSwitch("lock-list", "listname", "", "listname", true, "LISTNAME", "", false, true);
 
-  set-word WORDNAME RUNRANGE BITNAME [BITNAME]
-      set a word with bits to indicate problems
-      later entries can override earlier ones
-      for run range text syntax see
-         https://mu2ewiki.fnal.gov/wiki/ConditionsData#Intervals_of_validity
-      # set this word to 0 (nothing bad), for one run, or run range
-      ex.: set-bits shift/dqm/trk 10500
-      ex.: set-bits shift/dqm/trk 10500-105010
-      # set this word, overriding previous word, only for these subruns
-      ex.: set-bits shift/dqm/trk 10500:50-10500:52 noise trips baddqm
+  cli.addSubcommand("print-list", "print the IoV's in the list");
+  cli.addSwitch("print-list", "listname", "", "listname", true, "LISTNAME", "", false, true);
 
-  print-entries [WORDNAME] [RUNRANGE]
-
-  gen-list COMMANDFILE [RUNTYPE]
-      apply list of bits selections in command file to runtype runs
-      and generate a goodrun list
-
-  **** lists ****
-
-  list-lists
-      list all defined GRL lists
-  create-list LISTNAME [FILENAME]
-      define a list, if FILENAME is provided, then add those IoV's into the list
-  extend-list LISTNAME IOV
-      add an IoV to a list. IoV in standard text format
-  lock-list LISTNAME
-      prevent any new IoV's being added to the GRL
-  print-list LISTNAME
-      print the IoV's in the list
-
-)" << std::endl;
-
-    return 1;
+  // Parse command line arguments
+  int rc = cli.setArgs(argc, argv);
+  if (rc != 0) {
+    return (rc == 999) ? 1 : rc;  // 999 means help was printed
   }
 
-  if (unregistered.empty()) {
+  // Get verbose level
+  int verbose = cli.getInt("", "verbose");
+
+  // Get subcommand (command name)
+  std::string command = cli.subcommand();
+  if (command.empty()) {
     std::cout << "Please specify a command\n";
     return 1;
   }
@@ -111,53 +83,55 @@ int main(int argc, char** argv) {
   GrlTool tool;
   tool.setVerbose(verbose);
 
-  std::string command = unregistered[0];
-  std::string arg1,arg2,arg3;
-  if (unregistered.size()>1) arg1 = unregistered[1];
-  if (unregistered.size()>2) arg2 = unregistered[2];
-  if (unregistered.size()>3) arg3 = unregistered[3];
-
   if( command == "define-word" ) {
-    tool.defineWord(arg1,arg2);
+    std::string wordname = cli.getString("define-word", "wordname");
+    std::string description = cli.getString("define-word", "description");
+    tool.defineWord(wordname, description);
   } else if( command == "print-words" ) {
     tool.words();
   } else if( command == "define-bit" ) {
-    tool.defineBit(arg1,arg2,arg3);
+    std::string wordname = cli.getString("define-bit", "wordname");
+    std::string bitname = cli.getString("define-bit", "bitname");
+    std::string description = cli.getString("define-bit", "description");
+    tool.defineBit(wordname, bitname, description);
   } else if( command == "print-bits" ) {
-    tool.bits(arg1);
+    std::string wordname = cli.getString("print-bits", "wordname");
+    tool.bits(wordname);
   } else if( command == "set-word" ) {
-    // any number of bit name, concatenate with commas
-    StringVec bitnames;
-    for (size_t i=3; i<unregistered.size(); i++) {
-      bitnames.push_back(unregistered[i]);
-    }
-    tool.setBits(arg1,arg2,bitnames);
+    std::string wordname = cli.getString("set-word", "wordname");
+    std::string runrange = cli.getString("set-word", "runrange");
+    StringVec bitnames = cli.getStrings("set-word", "bitname");
+    tool.setBits(wordname, runrange, bitnames);
   } else if( command == "print-entries" ) {
     tool.entries();
   } else if( command == "gen-list" ) {
-    tool.genList(arg1,arg2);
+    std::string commandfile = cli.getString("gen-list", "commandfile");
+    std::string runtype = cli.getString("gen-list", "runtype");
+    tool.genList(commandfile, runtype);
   } else if( command == "list-lists" ) {
     tool.lists();
   } else if( command == "create-list" ) {
-    GrlHeader hh(arg1); // arg1=list name
-    if (arg2.empty()) { // arg2 = file with IoVs
+    std::string listname = cli.getString("create-list", "listname");
+    std::string filename = cli.getString("create-list", "filename");
+    GrlHeader hh(listname);
+    if (filename.empty()) {
       GrlList newlist(hh);
       tool.createList(newlist);
     } else {
-      GrlList newlist(hh,arg2);
+      GrlList newlist(hh, filename);
       tool.createList(newlist);
     }
   } else if( command == "extend-list" ) {
-    tool.extendList(arg1,arg2); // name, iov
+    std::string listname = cli.getString("extend-list", "listname");
+    std::string iov = cli.getString("extend-list", "iov");
+    tool.extendList(listname, iov);
   } else if( command == "lock-list" ) {
-    tool.lockList(arg1); // name
+    std::string listname = cli.getString("lock-list", "listname");
+    tool.lockList(listname);
   } else if( command == "print-list" ) {
-    if (arg1.empty()) {
-      std::cout << "print- list requires a list name as first orgument"<< std::endl;
-    } else {
-      GrlList ll = tool.list(arg1);
-      //ll.print(std::cout);
-    }
+    std::string listname = cli.getString("print-list", "listname");
+    GrlList ll = tool.list(listname);
+    //ll.print(std::cout);
   } else {
     std::cout << "unknown command: " << command << std::endl;
     return 1;
