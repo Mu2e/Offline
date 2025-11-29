@@ -319,8 +319,9 @@ int GrlTool::bits(const std::string& name) {
 }
 
 //**************************************************
-int GrlTool::entries(const std::string& name, const std::string& bitname) {
+int GrlTool::entries(const std::string& name, const DbIoV& iov) {
   std::string command, result;
+  _result.clear();
   int rc = 0;
 
   std::string csv;
@@ -337,14 +338,20 @@ int GrlTool::entries(const std::string& name, const std::string& bitname) {
   }
 
   StringVec lines = DbUtil::splitCsvLines(csv);
+
   for (auto& line : lines) {
     StringVec words = DbUtil::splitCsv(line);
     // name, iov, value,eid, retired,create_date,create_user
     _entries.emplace_back(words[0], words[1], std::stoi(words[2]),
                           std::stoi(words[3]), std::stoi(words[4]), words[5],
                           words[6]);
+    if(name.empty() || words[0]==name) {
+      if(iov.isNull() || iov.isOverlapping(DbIoV(words[1]))>0 ) {
+        result.append(line+'\n');
+      }
+    }
   }
-  _result = csv;
+  _result = result;
   return 0;
 }
 
