@@ -229,10 +229,11 @@ int ParseCLI::setArgs(int argc, char** argv) {
   if(rc != 0) return rc;
 
   for (const auto& i : _items) {
-    if (i.required) {
-      if (i.values.size() == 0 && i.defaultstr.empty()) {
+    if (i.subcommand == _subcommand && i.required) {
+        if (i.values.size() == 0 && i.defaultstr.empty()) {
         std::cout << "Error: required subcommand " << i.subcommand << " name " << i.name
                   << " switch was required but not present\n";
+        return 1;
       }
     }
   }
@@ -306,7 +307,8 @@ int ParseCLI::autohelp() const {
     std::cout << "\n   subcommands:\n";
     for (const auto& ss : _subs) {
       if (!ss.subcommand.empty()) {
-        std::cout << "   " << ss.subcommand << " - " << ss.helpstr << "\n";
+        std::string shorthelp = ss.helpstr.substr(0,ss.helpstr.find('\n'));
+        std::cout << "   " << ss.subcommand << " - " << shorthelp << "\n";
       }
     }
   }

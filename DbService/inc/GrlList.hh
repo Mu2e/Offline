@@ -15,11 +15,10 @@ class GrlList {
  public:
   typedef std::vector<DbIoV> IoVVec;
 
-  explicit GrlList(const GrlHeader& header);
   GrlList(const GrlHeader& header, const IoVVec& grl);
   // text file containing one IoV per line (see wiki for format)
   // lines may be blank or begin with "#' for comments
-  GrlList(const GrlHeader& header, const std::string& filename);
+  GrlList(const GrlHeader& header, const std::string& filename = "");
   GrlList(const GrlList& other) = default;
 
   bool goodRun(uint32_t run);  // if part bad, this will return false
