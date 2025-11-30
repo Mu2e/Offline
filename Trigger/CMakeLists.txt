@@ -49,4 +49,10 @@ cet_build_plugin(ReadTriggerPath art::module
       Offline::Mu2eUtilities
 )
 
+cet_build_plugin(TriggerInfoToCollections art::module
+    REG_SOURCE src/TriggerInfoToCollections_module.cc
+    LIBRARIES REG
+      Offline::RecoDataProducts
+)
+
 install_source(SUBDIRS src)
