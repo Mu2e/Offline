@@ -157,6 +157,11 @@ namespace mu2e
         double peakCalib = hist->GetBinCenter(maxbinCalib);
 //FIXME        funcCalib.SetRange(peakCalib*0.8,peakCalib*1.2);
         funcCalib.SetRange(peakCalib*0.7,peakCalib*1.3);
+        if(hist->FindBin(peakCalib*0.7)==hist->FindBin(peakCalib*1.3))
+        {
+          calibValue[i]=-1;
+          continue;
+        }
         funcCalib.SetParameter(1,peakCalib);
         hist->Fit(&funcCalib, "0QR");
         calibValue[i]=funcCalib.GetParameter(1);

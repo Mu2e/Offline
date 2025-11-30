@@ -117,6 +117,7 @@ void LandauGauss(TH1F &h, float &mpv, float &fwhm, float &signals, float &chi2)
     float maxX=binSum/4;
     float fitRangeStart=0.7*maxX;  //0.6 @ 24
     float fitRangeEnd  =2.0*maxX;
+    if(maxX<15.0) maxX=15.0;
     if(fitRangeStart<15.0) fitRangeStart=15.0;
 
     //Parameters
