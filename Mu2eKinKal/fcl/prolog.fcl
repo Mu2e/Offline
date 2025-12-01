@@ -388,6 +388,7 @@ Mu2eKinKal : {
     BackToTracker : false
     ToOPA : true
     ToCaloD0 : true
+    ToCaloD1 : true
   }
 
   LHSEEDXTRAP : {

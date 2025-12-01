@@ -36,6 +36,7 @@ namespace mu2e {
       template <class KTRAJ> bool extrapolateST(KKTrack<KTRAJ>& ktrk,TimeDir trkdir) const;
       template <class KTRAJ> bool extrapolateTracker(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void toCaloD0(KKTrack<KTRAJ>& ktrk) const;
+      template <class KTRAJ> void toCaloD1(KKTrack<KTRAJ>& ktrk) const;
       template <class KTRAJ> bool extrapolateTSDA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void toOPA(KKTrack<KTRAJ>& ktrk, double tstart, TimeDir tdir) const;
 
@@ -47,8 +48,8 @@ namespace mu2e {
       AnnPtr tsdaptr_;
       DiskPtr trkfrontptr_, trkmidptr_, trkbackptr_;
       FruPtr opaptr_;
-      bool backToTracker_, toOPA_, toTrackerEnds_, upstream_, toCaloD0_;
-      ExtrapolateToZ TSDA_, trackerFront_, trackerBack_, calod0Front_, calod0Back_; // extrapolation predicate based on Z values
+      bool backToTracker_, toOPA_, toTrackerEnds_, upstream_, toCaloD0_, toCaloD1_;
+      ExtrapolateToZ TSDA_, trackerFront_, trackerBack_, calod0Front_, calod0Back_, calod1Front_, calod1Back_; // extrapolation predicate based on Z values
       ExtrapolateIPA extrapIPA_; // extrapolation to intersections with the IPA
       ExtrapolateST extrapST_; // extrapolation to intersections with the ST
       //ExtrapolateCalo ; // extrapolation to intersections with the Calo
@@ -72,11 +73,14 @@ namespace mu2e {
     toTrackerEnds_(extrapconfig.ToTrackerEnds()),
     upstream_(extrapconfig.Upstream()),
     toCaloD0_(extrapconfig.ToCaloD0()),
+    toCaloD1_(extrapconfig.ToCaloD1()),
     TSDA_(maxdt_,btol_,smap_.DS().upstreamAbsorber().center().Z(),debug_),
     trackerFront_(maxdt_,btol_,smap_.tracker().front().center().Z(),debug_),
     trackerBack_(maxdt_,btol_,smap_.tracker().back().center().Z(),debug_),
     calod0Front_(maxdt_,btol_,smap_.calo().EMC_Disk_0_Front().center().Z(),debug_),
     calod0Back_(maxdt_,btol_,smap_.calo().EMC_Disk_0_Back().center().Z(),debug_),
+    calod1Front_(maxdt_,btol_,smap_.calo().EMC_Disk_1_Front().center().Z(),debug_),
+    calod1Back_(maxdt_,btol_,smap_.calo().EMC_Disk_1_Back().center().Z(),debug_),
     extrapIPA_(maxdt_,btol_,intertol_,smap_.DS().innerProtonAbsorberPtr(),debug_),
     extrapST_(maxdt_,btol_,intertol_,smap_.ST(),debug_)
   {
@@ -89,6 +93,7 @@ namespace mu2e {
     auto const& ftraj = ktrk.fitTraj();
     if(toTrackerEnds_)toTrackerEnds(ktrk);
     if(toCaloD0_)toCaloD0(ktrk);
+    if(toCaloD1_)toCaloD1(ktrk);
     if(upstream_){
       auto dir0 = ftraj.direction(ftraj.t0());
       TimeDir tdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
@@ -166,8 +171,8 @@ namespace mu2e {
     auto dir0 = ftraj.direction(ftraj.t0());
     TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
     TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
-    auto tofront = ktrk.extrapolate(fronttdir,calod0Back_);
-    auto toback = ktrk.extrapolate(backtdir,calod0Front_);
+    auto tofront = ktrk.extrapolate(fronttdir,calod0Front_);
+    auto toback = ktrk.extrapolate(backtdir,calod0Back_);
     // record the standard tracker intersections
     static const SurfaceId d0_front("EMC_Disk_0_Front");
     static const SurfaceId d0_back("EMC_Disk_0_Back");
@@ -185,6 +190,34 @@ namespace mu2e {
       TimeRange brange = ftraj.range();
       auto backinter = KinKal::intersect(ftraj,*trkbackptr_,brange,intertol_,backtdir);
       if(backinter.good())ktrk.addIntersection(d0_back,backinter);
+      std::cout<<"to back "<<std::endl;
+    }
+  }
+
+   template <class KTRAJ> void KKExtrap::toCaloD1(KKTrack<KTRAJ>& ktrk) const {
+    auto const& ftraj = ktrk.fitTraj();
+    auto dir0 = ftraj.direction(ftraj.t0());
+    TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
+    TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
+    auto tofront = ktrk.extrapolate(fronttdir,calod1Front_);
+    auto toback = ktrk.extrapolate(backtdir,calod1Back_);
+    // record the standard tracker intersections
+    static const SurfaceId d1_front("EMC_Disk_1_Front");
+    static const SurfaceId d1_back("EMC_Disk_1_Back");
+    std::cout<<"extrapolating to calo d1"<<std::endl;
+    if(tofront){
+      // check the front piece first; that is usually correct
+      // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
+      auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
+      auto frontinter = KinKal::intersect(fhel,*trkfrontptr_,fhel.range(),intertol_,fronttdir);
+      if(frontinter.good()) ktrk.addIntersection(d1_front,frontinter);
+      std::cout<<"to front "<<std::endl;
+    }
+    if(toback){
+      // start from the middle
+      TimeRange brange = ftraj.range();
+      auto backinter = KinKal::intersect(ftraj,*trkbackptr_,brange,intertol_,backtdir);
+      if(backinter.good())ktrk.addIntersection(d1_back,backinter);
       std::cout<<"to back "<<std::endl;
     }
   }
