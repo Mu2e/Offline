@@ -47,6 +47,8 @@ namespace mu2e {
       KKMaterial const& kkmat_;
       AnnPtr tsdaptr_;
       DiskPtr trkfrontptr_, trkmidptr_, trkbackptr_;
+      DiskPtr calod0frontptr_, calod0backptr_;
+      DiskPtr calod1frontptr_, calod1backptr_;
       FruPtr opaptr_;
       bool backToTracker_, toOPA_, toTrackerEnds_, upstream_, toCaloD0_, toCaloD1_;
       ExtrapolateToZ TSDA_, trackerFront_, trackerBack_, calod0Front_, calod0Back_, calod1Front_, calod1Back_; // extrapolation predicate based on Z values
@@ -67,6 +69,10 @@ namespace mu2e {
     trkfrontptr_(smap_.tracker().frontPtr()),
     trkmidptr_(smap_.tracker().middlePtr()),
     trkbackptr_(smap_.tracker().backPtr()),
+    calod0frontptr_(smap_.calo().EMC_Disk_0_FrontPtr()),
+    calod0backptr_(smap_.calo().EMC_Disk_0_BackPtr()),
+    calod1frontptr_(smap_.calo().EMC_Disk_1_FrontPtr()),
+    calod1backptr_(smap_.calo().EMC_Disk_1_BackPtr()),
     opaptr_(smap_.DS().outerProtonAbsorberPtr()),
     backToTracker_(extrapconfig.BackToTracker()),
     toOPA_(extrapconfig.ToOPA()),
@@ -81,6 +87,7 @@ namespace mu2e {
     calod0Back_(maxdt_,btol_,smap_.calo().EMC_Disk_0_Back().center().Z(),debug_),
     calod1Front_(maxdt_,btol_,smap_.calo().EMC_Disk_1_Front().center().Z(),debug_),
     calod1Back_(maxdt_,btol_,smap_.calo().EMC_Disk_1_Back().center().Z(),debug_),
+
     extrapIPA_(maxdt_,btol_,intertol_,smap_.DS().innerProtonAbsorberPtr(),debug_),
     extrapST_(maxdt_,btol_,intertol_,smap_.ST(),debug_)
   {
@@ -183,14 +190,14 @@ namespace mu2e {
       // check the front piece first; that is usually correct
       // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
       auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-      auto frontinter = KinKal::intersect(fhel,*trkfrontptr_,fhel.range(),intertol_,fronttdir);
+      auto frontinter = KinKal::intersect(fhel,*calod0frontptr_,fhel.range(),intertol_,fronttdir);
       if(frontinter.good()) ktrk.addIntersection(d0_front,frontinter);
       std::cout<<"to front "<<std::endl;
     }
     if(tocaloback){
       // start from the middle
       TimeRange brange = ftraj.range();
-      auto backinter = KinKal::intersect(ftraj,*trkbackptr_,brange,intertol_,backtdir);
+      auto backinter = KinKal::intersect(ftraj,*calod0backptr_,brange,intertol_,backtdir);
       if(backinter.good())ktrk.addIntersection(d0_back,backinter);
       std::cout<<"to back "<<std::endl;
     }
@@ -213,14 +220,14 @@ namespace mu2e {
       // check the front piece first; that is usually correct
       // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
       auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-      auto frontinter = KinKal::intersect(fhel,*trkfrontptr_,fhel.range(),intertol_,fronttdir);
+      auto frontinter = KinKal::intersect(fhel,*calod1frontptr_,fhel.range(),intertol_,fronttdir);
       if(frontinter.good()) ktrk.addIntersection(d1_front,frontinter);
       std::cout<<"to front "<<std::endl;
     }
     if(tocaloback){
       // start from the middle
       TimeRange brange = ftraj.range();
-      auto backinter = KinKal::intersect(ftraj,*trkbackptr_,brange,intertol_,backtdir);
+      auto backinter = KinKal::intersect(ftraj,*calod1backptr_,brange,intertol_,backtdir);
       if(backinter.good())ktrk.addIntersection(d1_back,backinter);
       std::cout<<"to back "<<std::endl;
     }
