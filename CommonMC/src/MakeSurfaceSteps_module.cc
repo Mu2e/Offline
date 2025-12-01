@@ -65,7 +65,12 @@ namespace mu2e {
       vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_1_SurfIn)] = SurfaceId("EMC_Disk_1_Front");
       vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_0_SurfOut)] = SurfaceId("EMC_Disk_0_Back");
       vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_1_SurfOut)] = SurfaceId("EMC_Disk_1_Back");
-    }
+
+      vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_0_EdgeIn)] = SurfaceId("EMC_Disk_0_Inner");
+       vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_1_EdgeIn)] = SurfaceId("EMC_Disk_1_Inner");
+       vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_0_EdgeOut)] = SurfaceId("EMC_Disk_0_Outer");
+       vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_1_EdgeOut)] = SurfaceId("EMC_Disk_1_Outer");
+}
 
   void MakeSurfaceSteps::produce(art::Event& event) {
     std::cout<<"MakeSurfaceSteps ---> produce"<<std::endl;

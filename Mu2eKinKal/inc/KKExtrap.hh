@@ -171,13 +171,15 @@ namespace mu2e {
     auto dir0 = ftraj.direction(ftraj.t0());
     TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
     TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
-    auto tofront = ktrk.extrapolate(fronttdir,calod0Front_);
-    auto toback = ktrk.extrapolate(backtdir,calod0Back_);
+    std::cout<<"calod0Front_ "<<smap_.calo().EMC_Disk_0_Front().center().Z()<<std::endl;
+    std::cout<<"calod0Back_ "<<smap_.calo().EMC_Disk_0_Back().center().Z()<<std::endl;
+    auto tocalofront = ktrk.extrapolate(fronttdir,calod0Front_);
+    auto tocaloback = ktrk.extrapolate(backtdir,calod0Back_);
     // record the standard tracker intersections
     static const SurfaceId d0_front("EMC_Disk_0_Front");
     static const SurfaceId d0_back("EMC_Disk_0_Back");
     std::cout<<"extrapolating to calo d0"<<std::endl;
-    if(tofront){
+    if(tocalofront){
       // check the front piece first; that is usually correct
       // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
       auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
@@ -185,7 +187,7 @@ namespace mu2e {
       if(frontinter.good()) ktrk.addIntersection(d0_front,frontinter);
       std::cout<<"to front "<<std::endl;
     }
-    if(toback){
+    if(tocaloback){
       // start from the middle
       TimeRange brange = ftraj.range();
       auto backinter = KinKal::intersect(ftraj,*trkbackptr_,brange,intertol_,backtdir);
@@ -199,13 +201,15 @@ namespace mu2e {
     auto dir0 = ftraj.direction(ftraj.t0());
     TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
     TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
-    auto tofront = ktrk.extrapolate(fronttdir,calod1Front_);
-    auto toback = ktrk.extrapolate(backtdir,calod1Back_);
+    auto tocalofront = ktrk.extrapolate(fronttdir,calod1Front_);
+    auto tocaloback = ktrk.extrapolate(backtdir,calod1Back_);
+    std::cout<<"calod1Front_ "<<smap_.calo().EMC_Disk_1_Front().center().Z()<<std::endl;
+    std::cout<<"calod1Back_ "<<smap_.calo().EMC_Disk_1_Back().center().Z()<<std::endl;
     // record the standard tracker intersections
     static const SurfaceId d1_front("EMC_Disk_1_Front");
     static const SurfaceId d1_back("EMC_Disk_1_Back");
     std::cout<<"extrapolating to calo d1"<<std::endl;
-    if(tofront){
+    if(tocalofront){
       // check the front piece first; that is usually correct
       // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
       auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
@@ -213,7 +217,7 @@ namespace mu2e {
       if(frontinter.good()) ktrk.addIntersection(d1_front,frontinter);
       std::cout<<"to front "<<std::endl;
     }
-    if(toback){
+    if(tocaloback){
       // start from the middle
       TimeRange brange = ftraj.range();
       auto backinter = KinKal::intersect(ftraj,*trkbackptr_,brange,intertol_,backtdir);
