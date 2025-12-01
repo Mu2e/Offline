@@ -400,6 +400,7 @@ Mu2eKinKal : {
     BackToTracker : false
     ToOPA : false
     ToCaloD0 : true
+    ToCaloD1 : true
   }
 
   CENTRALHELIX : {
@@ -437,6 +438,8 @@ Mu2eKinKal : {
     MaxDt : 200.0 # (ns)
     MinV : 1e-5
     ToCRV : true
+    ToCaloD0 : true
+    ToCaloD1 : true
   }
 }
 
