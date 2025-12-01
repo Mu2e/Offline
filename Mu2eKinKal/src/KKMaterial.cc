@@ -14,19 +14,17 @@ namespace mu2e {
     gasmatname_(matconfig.strawGasMaterialName()),
     wirematname_(matconfig.strawWireMaterialName()),
     ipamatname_(matconfig.IPAMaterialName()),
-    stmatname_(matconfig.STMaterialName()),
-    eloss_((DetMaterial::energylossmode)matconfig.eloss()),
-    matdbinfo_(std::make_unique<MatDBInfo>(filefinder_,eloss_)) {
-      // std::cout << "Setting KinKal scattering Dahl-Lynch fraction to " << matconfig.dahlLynchScatteringFraction() << std::endl;
-      // MatEnv forces const-cast to change scattering parameter
-      matdbinfo_->findDetMaterial(wallmatname_)->setScatterFraction(matconfig.dahlLynchScatteringFraction());
-      matdbinfo_->findDetMaterial(gasmatname_)->setScatterFraction(matconfig.dahlLynchScatteringFraction());
-      matdbinfo_->findDetMaterial(wirematname_)->setScatterFraction(matconfig.dahlLynchScatteringFraction());
-      matdbinfo_->findDetMaterial(ipamatname_)->setScatterFraction(matconfig.dahlLynchScatteringFraction());
-      matdbinfo_->findDetMaterial(stmatname_)->setScatterFraction(matconfig.dahlLynchScatteringFraction());
+    stmatname_(matconfig.STMaterialName()) {
+      MatEnv::DetMaterialConfig dmconf;
+      dmconf.elossmode_ = (DetMaterial::energylossmode)matconfig.elossMode();
+      dmconf.scatterfrac_solid_ = matconfig.solidScatter();
+      dmconf.scatterfrac_gas_ = matconfig.gasScatter();
+      dmconf.ebrehmsfrac_ = matconfig.eBrehms();
+      matdbinfo_ = std::make_unique<MatDBInfo>(filefinder_,dmconf);
     }
 
   KKStrawMaterial const& KKMaterial::strawMaterial() const {
+    // deferred construction as this object depends on the tracker, which is created at beginJob
     if(smat_ == nullptr){
       Tracker const & tracker = *(GeomHandle<Tracker>());
       auto const& sprop = tracker.strawProperties();

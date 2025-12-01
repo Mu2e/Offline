@@ -52,6 +52,8 @@ class art::CaloHitsFromDataDTCEvents : public EDProducer {
 
 public:
   struct Config {
+    fhicl::Atom<int> data_type{fhicl::Name("dataType"),
+                               fhicl::Comment("Data type (0:standard, 1:debug, 2:counters)"), 0};
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level")};
     fhicl::Atom<float> digiSampling{fhicl::Name("digiSampling"),
                                     fhicl::Comment("calorimeter sampling period in ns")};
@@ -99,6 +101,7 @@ private:
                 std::unique_ptr<mu2e::CaloHitCollection> const& hits_calo,
                 std::unique_ptr<mu2e::CaloHitCollection> const& hits_caphri);
 
+  int data_type_;
   int diagLevel_;
 
   art::InputTag caloFragmentsTag_;
@@ -179,7 +182,7 @@ void art::CaloHitsFromDataDTCEvents::addPulse(
 
 art::CaloHitsFromDataDTCEvents::CaloHitsFromDataDTCEvents(
     const art::EDProducer::Table<Config>& config) :
-    art::EDProducer{config},
+    art::EDProducer{config}, data_type_(config().data_type()),
     diagLevel_(config().diagLevel()), digiSampling_(config().digiSampling()),
     deltaTPulses_(config().deltaTPulses()), hitEDepMax_(config().hitEDepMax()),
     hitEDepMin_(config().hitEDepMin()), caphriEDepMax_(config().caphriEDepMax()),
@@ -233,7 +236,9 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
   }
 
   if (numCalDecoders == 0) {
-    std::cout << "[CaloDigiFromDTCEvents::produce] found no Calorimeter decoders!" << std::endl;
+    if (diagLevel_ > 0) {
+      std::cout << "[CaloDigiFromDTCEvents::produce] found no Calorimeter decoders!" << std::endl;
+    }
     // Must put empty vectors anyway
     event.put(std::move(int_info));
     event.put(std::move(calo_hits), "calo");
@@ -271,71 +276,132 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
   // Loop through the ROCs of this caloDecoder
   for (size_t iROC = 0; iROC < cc.block_count(); iROC++) {
 
-    // only data_type 1 for now
-    // if (data_type_ == 1)
-    //
+    if (data_type_ == 0){
 
-    auto hits = cc.GetCalorimeterHitTestForTrigger(iROC);
-    if (hits == nullptr) {
-      mf::LogError("CaloHitsFromDataDTCEvents") << "Error retrieving Calorimeter data from block "
-                                                << iROC << "! Aborting processing of this block!";
-      continue;
-    }
-
-    // Loop through the hits of this ROC
-    total_hits += hits->size();
-    for (size_t hitIdx = 0; hitIdx < hits->size(); hitIdx++) {
-
-      mu2e::CalorimeterDataDecoder::CalorimeterHitTestDataPacket& thisHitPacket =
-          hits->at(hitIdx).first;
-      uint16_t thisHitPeak = hits->at(hitIdx).second;
-
-      // Check if hit was decoded correctly
-      auto errorCode = caloDAQUtil_.isHitGood(hits->at(hitIdx));
-      if (errorCode) {
-        failure_counter[errorCode]++;
-        total_hits_bad++;
-        if (diagLevel_ > 1) {
-          std::cout << "[CaloDigisFromDataDecoders] BAD calo hit! DTC: " << dtcID
-                    << ", ROC: " << iROC << ", hit number: " << hitIdx
-                    << " [failure code: " << errorCode << "]" << std::endl;
-          caloDAQUtil_.printCaloPulse(thisHitPacket);
-        }
+      auto hits = cc.GetCalorimeterHitsForTrigger(iROC);
+      if (hits == nullptr) {
+        mf::LogError("CaloHitsFromDataDTCEvents") << "Error retrieving Calorimeter data from block "
+                                                  << iROC << "! Aborting processing of this block!";
         continue;
       }
-      total_hits_good++;
 
-      if (diagLevel_ > 2) {
-        std::cout << "[CaloHitsFromDataDTCEvents] calo hit " << hitIdx << std::endl;
-        caloDAQUtil_.printCaloPulse(thisHitPacket);
-      }
+      // Loop through the hits of this ROC
+      total_hits += hits->size();
+      for (size_t hitIdx = 0; hitIdx < hits->size(); hitIdx++) {
 
-      // Fill the CaloHitCollection
-      mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
-      mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
-      uint16_t crystalID = offlineId.crystal().id();
-      uint16_t SiPMID = offlineId.id();
+        mu2e::CalorimeterDataDecoder::CalorimeterHitDataPacket& thisHitPacket = hits->at(hitIdx).first;
+        uint16_t thisHitPeak = hits->at(hitIdx).second;
 
-      size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
-      float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
-      float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];
-
-      bool isCaphri = offlineId.crystal().isCaphri();
-      if(!isCaphri) ++nhits[offlineId.crystal().disk()];
-
-      // Energy threshold depends on the crystal type
-      const float emin = (isCaphri) ? caphriEDepMin_ : hitEDepMin_;
-      const float emax = (isCaphri) ? caphriEDepMax_ : hitEDepMax_;
-
-      // FIX ME! WE NEED TO CHECK IF TEH PULSE IS SATURATED HERE
-      if (eDep >= emin && eDep < emax) {
-        addPulse(crystalID, time, eDep, calo_hits, caphri_hits);
-        evtEnergy += eDep;
-        if(isCaphri) {
-          int_info->addCaphriHit(eDep, crystalID);
+        // Check if hit was decoded correctly
+        auto errorCode = caloDAQUtil_.isHitGood(hits->at(hitIdx));
+        if (errorCode) {
+          failure_counter[errorCode]++;
+          total_hits_bad++;
+          if (diagLevel_ > 1) {
+            std::cout << "[CaloDigisFromDataDecoders] BAD calo hit! DTC: " << dtcID
+                      << ", ROC: " << iROC << ", hit number: " << hitIdx
+                      << " [failure code: " << errorCode << "]" << std::endl;
+            caloDAQUtil_.printCaloPulse(thisHitPacket);
+          }
+          continue;
         }
+        total_hits_good++;
+
+        if (diagLevel_ > 2) {
+          std::cout << "[CaloHitsFromDataDTCEvents] calo hit " << hitIdx << std::endl;
+          caloDAQUtil_.printCaloPulse(thisHitPacket);
+        }
+
+        // Fill the CaloHitCollection
+        mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
+        mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
+        uint16_t crystalID = offlineId.crystal().id();
+        uint16_t SiPMID = offlineId.id();
+
+        size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
+        float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
+        float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];
+
+        bool isCaphri = offlineId.crystal().isCaphri();
+        if(!isCaphri) ++nhits[offlineId.crystal().disk()];
+
+        // Energy threshold depends on the crystal type
+        const float emin = (isCaphri) ? caphriEDepMin_ : hitEDepMin_;
+        const float emax = (isCaphri) ? caphriEDepMax_ : hitEDepMax_;
+
+        // FIX ME! WE NEED TO CHECK IF THE PULSE IS SATURATED HERE
+        if (eDep >= emin && eDep < emax) {
+          addPulse(crystalID, time, eDep, calo_hits, caphri_hits);
+          evtEnergy += eDep;
+          if(isCaphri) {
+            int_info->addCaphriHit(eDep, crystalID);
+          }
+        }
+      } // End loop over hits
+
+    } else if (data_type_ == 1){
+
+      auto hits = cc.GetCalorimeterHitTestForTrigger(iROC);
+      if (hits == nullptr) {
+        mf::LogError("CaloHitsFromDataDTCEvents") << "Error retrieving Calorimeter data from block "
+                                                  << iROC << "! Aborting processing of this block!";
+        continue;
       }
-    } // End loop over hits
+
+      // Loop through the hits of this ROC
+      total_hits += hits->size();
+      for (size_t hitIdx = 0; hitIdx < hits->size(); hitIdx++) {
+
+        mu2e::CalorimeterDataDecoder::CalorimeterHitTestDataPacket& thisHitPacket = hits->at(hitIdx).first;
+        uint16_t thisHitPeak = hits->at(hitIdx).second;
+
+        // Check if hit was decoded correctly
+        auto errorCode = caloDAQUtil_.isHitGood(hits->at(hitIdx));
+        if (errorCode) {
+          failure_counter[errorCode]++;
+          total_hits_bad++;
+          if (diagLevel_ > 1) {
+            std::cout << "[CaloDigisFromDataDecoders] BAD calo hit! DTC: " << dtcID
+                      << ", ROC: " << iROC << ", hit number: " << hitIdx
+                      << " [failure code: " << errorCode << "]" << std::endl;
+            caloDAQUtil_.printCaloPulse(thisHitPacket);
+          }
+          continue;
+        }
+        total_hits_good++;
+
+        if (diagLevel_ > 2) {
+          std::cout << "[CaloHitsFromDataDTCEvents] calo hit " << hitIdx << std::endl;
+          caloDAQUtil_.printCaloPulse(thisHitPacket);
+        }
+
+        // Fill the CaloHitCollection
+        mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
+        mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
+        uint16_t crystalID = offlineId.crystal().id();
+        uint16_t SiPMID = offlineId.id();
+
+        size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
+        float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
+        float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];
+
+        bool isCaphri = offlineId.crystal().isCaphri();
+        if(!isCaphri) ++nhits[offlineId.crystal().disk()];
+
+        // Energy threshold depends on the crystal type
+        const float emin = (isCaphri) ? caphriEDepMin_ : hitEDepMin_;
+        const float emax = (isCaphri) ? caphriEDepMax_ : hitEDepMax_;
+
+        // FIX ME! WE NEED TO CHECK IF THE PULSE IS SATURATED HERE
+        if (eDep >= emin && eDep < emax) {
+          addPulse(crystalID, time, eDep, calo_hits, caphri_hits);
+          evtEnergy += eDep;
+          if(isCaphri) {
+            int_info->addCaphriHit(eDep, crystalID);
+          }
+        }
+      } // End loop over hits
+    }
   }   // End loop over ROCs
 
   // Store summary intensity info

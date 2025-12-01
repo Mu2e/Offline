@@ -31,6 +31,9 @@ BEGIN_PROLOG
       module_type               : CrvRecoPulsesFinder
       crvDigiModuleLabel        : "CrvDigi"
       NZSdata                   : false //use CrvDigis with NZS instance label
+      pedestalUndershootThreshold : 6.0 //if 1st ADC sample is below DB pedestal by this threshold value, use 1st ADC sample as pedestal.
+                                        //e.g. -10000 forces it to always use the 1st ADC sample.
+                                        //e.g. 10000 prevents it from using the 1st ADC sample.
       minADCdifference          : 40    //minimum ADC difference above pedestal to be considered for reconstruction
                                         //corresponds to 3.5 PEs
       defaultBeta               : 19.0  //19.0ns for regular pulses

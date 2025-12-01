@@ -26,6 +26,7 @@
 #include <TMath.h>
 #include <TH1F.h>
 #include <TF1.h>
+#include <TTree.h>
 
 namespace mu2e
 {
@@ -38,6 +39,10 @@ namespace mu2e
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("module label of the input CrvRecoPulses")};
+      fhicl::Atom<int>         histBinsPulseArea{Name("histBinsPulseArea"), Comment("pulseArea histogram bins"), 150};
+      fhicl::Atom<int>         histBinsPulseHeight{Name("histBinsPulseHeight"), Comment("pulseHeight histogram bins"), 150};
+      fhicl::Atom<double>      histMaxPulseArea{Name("histMaxPulseArea"), Comment("end range of pulseArea histogram"), 3000.0};
+      fhicl::Atom<double>      histMaxPulseHeight{Name("histMaxPulseHeight"), Comment("end range of pulseArea histogram"), 150.0};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
@@ -50,6 +55,8 @@ namespace mu2e
 
     private:
     std::string        _crvRecoPulsesModuleLabel;
+    int                _histBinsPulseArea, _histBinsPulseHeight;
+    double             _histMaxPulseArea, _histMaxPulseHeight;
     std::string        _tmpDBfileName;
     std::vector<TH1F*> _calibHistsPulseArea;
     std::vector<TH1F*> _calibHistsPulseHeight;
@@ -66,7 +73,12 @@ namespace mu2e
 
   CrvCalibration::CrvCalibration(const Parameters& conf) :
     art::EDAnalyzer(conf),
-    _crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()), _tmpDBfileName(conf().tmpDBfileName())
+    _crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
+    _histBinsPulseArea(conf().histBinsPulseArea()),
+    _histBinsPulseHeight(conf().histBinsPulseHeight()),
+    _histMaxPulseArea(conf().histMaxPulseArea()),
+    _histMaxPulseHeight(conf().histMaxPulseHeight()),
+    _tmpDBfileName(conf().tmpDBfileName())
   {
   }
 
@@ -87,13 +99,13 @@ namespace mu2e
       for(size_t SiPM=0; SiPM<CRVId::nChanPerBar; ++SiPM)
       {
         //produce histograms also for non-existing channels to get a continuously running index
-        size_t channelIndex=barIndex*4 + SiPM;
+        size_t channelIndex=barIndex*CRVId::nChanPerBar + SiPM;
         _calibHistsPulseArea.emplace_back(tfs->make<TH1F>(Form("crvCalibrationHistPulseArea_%lu",channelIndex),
                                                  Form("crvCalibrationHistPulseArea_%lu",channelIndex),
-                                                 150,0,3000));
+                                                 _histBinsPulseArea,0,_histMaxPulseArea));
         _calibHistsPulseHeight.emplace_back(tfs->make<TH1F>(Form("crvCalibrationHistPulseHeight_%lu",channelIndex),
                                                  Form("crvCalibrationHistPulseHeight_%lu",channelIndex),
-                                                 150,0,75));
+                                                 _histBinsPulseHeight,0,_histMaxPulseHeight));
         _pedestals[channelIndex]=0;
         _timeOffsets[channelIndex]=0;
       }
@@ -102,6 +114,13 @@ namespace mu2e
 
   void CrvCalibration::endJob()
   {
+    art::ServiceHandle<art::TFileService> tfs;
+    TTree *treePedestal = tfs->make<TTree>("crvPedestals","crvPedestals");
+    size_t channel;
+    double pedestal;
+    treePedestal->Branch("channel", &channel);
+    treePedestal->Branch("pedestal", &pedestal);
+
     TF1 funcCalib("f0", "gaus");
 
     std::ofstream outputFile;
@@ -109,7 +128,7 @@ namespace mu2e
     outputFile<<"TABLE CRVSiPM "<<_firstRunSubrun.first<<":"<<_firstRunSubrun.second<<"-"<<_lastRunSubrun.first<<":"<<_lastRunSubrun.second<<std::endl;
     outputFile<<"#channel, pedestal, calibPulseHeight, calibPulseArea"<<std::endl;
 
-    for(size_t channel=0; channel<_pedestals.size(); ++channel)
+    for(channel=0; channel<_pedestals.size(); ++channel)
     {
       TH1F *hist;
       double calibValue[2];
@@ -136,23 +155,33 @@ namespace mu2e
 
         int maxbinCalib = hist->GetMaximumBin();
         double peakCalib = hist->GetBinCenter(maxbinCalib);
-        funcCalib.SetRange(peakCalib*0.8,peakCalib*1.2);
+//FIXME        funcCalib.SetRange(peakCalib*0.8,peakCalib*1.2);
+        funcCalib.SetRange(peakCalib*0.7,peakCalib*1.3);
         funcCalib.SetParameter(1,peakCalib);
         hist->Fit(&funcCalib, "0QR");
         calibValue[i]=funcCalib.GetParameter(1);
       }
 
-      outputFile<<channel<<","<<_pedestals.at(channel)<<","<<calibValue[0]<<","<<calibValue[1]<<std::endl;
+      pedestal=_pedestals.at(channel);
+      outputFile<<channel<<","<<pedestal<<","<<calibValue[0]<<","<<calibValue[1]<<std::endl;  //write to DB text file
+      treePedestal->Fill(); //fill tree
     }
 
     outputFile<<std::endl;
 
-    //CRVTime table
+    //time offsets
+    TTree *treeTimeOffset = tfs->make<TTree>("crvTimeOffsets","crvTimeOffsets");
+    double offset;
+    treeTimeOffset->Branch("channel", &channel);
+    treeTimeOffset->Branch("timeOffset", &offset);
+
     outputFile<<"TABLE CRVTime"<<std::endl;
     outputFile<<"#channel, timeOffset"<<std::endl;
-    for(size_t channel=0; channel<_timeOffsets.size(); ++channel)
+    for(channel=0; channel<_timeOffsets.size(); ++channel)
     {
-      outputFile<<channel<<","<<_timeOffsets.at(channel)<<std::endl;
+      offset=_timeOffsets.at(channel);
+      outputFile<<channel<<","<<offset<<std::endl;  //write to DB text file
+      treeTimeOffset->Fill(); //fill tree
     }
 
     outputFile.close();

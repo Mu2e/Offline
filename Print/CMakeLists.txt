@@ -46,7 +46,7 @@ cet_make_library(
       src/TriggerResultsPrinter.cc
       src/TrkCaloIntersectPrinter.cc
     LIBRARIES PUBLIC
-      KinKal_General
+      KinKal::General
       Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService

@@ -1004,7 +1004,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       {
         const mu2e::TrkStrawHitSeed &hit = hits.at(j);
         int    sid = hit.strawId().asUint16();
-        double time = hit.hitTime();
+        double time = hit.time();
 
         std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
         if(straw!=_straws.end() && !std::isnan(time))

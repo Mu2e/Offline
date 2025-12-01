@@ -14,7 +14,7 @@
 #include <vector>
 namespace mu2e {
   struct KalIntersection {
-    KinKal::ParticleStateEstimate pstate_; // particle state at intersection point/time
+    KinKal::ParticleStateEstimate pstate_; // particle state at intersection point/time before traversing any material
     XYZVectorF bnom_; // Bfield at this intersection, needed to reconstitute trajectory
     SurfaceId surfid_; // which surface in the reco geometry was interestected
     KinKal::Intersection kkinter_; // kinkal intersection

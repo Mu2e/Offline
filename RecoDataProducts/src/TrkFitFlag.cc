@@ -48,6 +48,7 @@ namespace mu2e {
       bitnames[std::string("KKLine")]             = bit_to_mask(KKLine);
       bitnames[std::string("MCSeed")]             = bit_to_mask(MCSeed);
       bitnames[std::string("AmbiguousFitDir")]    = bit_to_mask(AmbFitDir);
+      bitnames[std::string("Regrown")]            = bit_to_mask(Regrown);
     }
     return bitnames;
   }

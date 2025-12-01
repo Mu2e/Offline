@@ -5,14 +5,14 @@ This directory contains some scripts that are useful for inspecting the geometry
 ## ```where_is_volume.C```
 This macro takes a string and will print all volumes that have that string in the name. It can take three arguments:
 * ```search_name``` is the name you are searching for (required)
-* ```gdmlname``` is the name of the GDML file you want to inspect (optional, default = ```mu2e.gdml```)
+* ```gdmlname``` is the name of the GDML file you want to inspect (optional, default = ```mu2e_common.gdml```)
 * ```verbose``` is a boolean to print additional information about the volume (optional, default = ```false```)
 
 Examples:
 ```
 root -l -b -q 'where_is_volume.C("VirtualDetector")'
-root -l -b -q 'where_is_volume.C("VirtualDetector","mu2e.gdml")'
-root -l -b -q 'where_is_volume.C("VirtualDetector","mu2e.gdml",true)'
+root -l -b -q 'where_is_volume.C("VirtualDetector","mu2e_common.gdml")'
+root -l -b -q 'where_is_volume.C("VirtualDetector","mu2e_common.gdml",true)'
 ```
 
 ## ```find_volume_at_point.C```
@@ -24,7 +24,7 @@ This macro takes an x, y, z position (in Mu2e global coordinates) and prints inf
 
 There are two functions defined in this macro. One can be used on the command line and takes the following arguments:
 * ```x, y, z``` is the position (required)
-* ```gdmlname``` is the name of the GDML file you want to inspect (optional, default = ```mu2e.gdml```)
+* ```gdmlname``` is the name of the GDML file you want to inspect (optional, default = ```mu2e_common.gdml```)
 * ```output_csv``` is a boolean for if you want the output printined in csv format (optional, default = ```false```)
    * note that this removes the memory addresses from the names of the volumes, which are used to distinguish different volumes that have the same name
 * ```out``` is an ```std::ostream``` if you want to redirect the output to a file (optional, default = ```std::cout```)
@@ -32,7 +32,7 @@ There are two functions defined in this macro. One can be used on the command li
 Examples:
 ```
 root -l -b -q 'find_volume_at_point.C(-3904,0,4000)'
-root -l -b -q 'find_volume_at_point.C(-3904,0,4000,"mu2e.gdml")'
+root -l -b -q 'find_volume_at_point.C(-3904,0,4000,"mu2e_common.gdml")'
 ````
 
 The other can be called from another macro so that you can ask for multiple points without having to reload the GDML each time. This takes the following arguments:

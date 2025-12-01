@@ -952,7 +952,6 @@ namespace mu2e {
                                               pSTMDnStrEnvParams.yHalfLength(),
                                               pSTMDnStrEnvParams.zHalfLength()};
 
-    G4ThreeVector stmDnStrEnvPositionInMu2e   = pSTMDnStrEnvParams.originInMu2e();
     G4ThreeVector stmDnStrEnvPositionInParent = pSTMDnStrEnvParams.originInMu2e() - parentCenterInMu2e;
 
     if (pSTMDnStrEnvParams.build()){

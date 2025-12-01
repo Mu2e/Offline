@@ -50,6 +50,34 @@ namespace mu2e {
       using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       KKStrawHit(BFieldMap const& bfield, PCA const& pca,
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
+      // clone op for reinstantiation
+      KKStrawHit(KKStrawHit<KTRAJ> const& rhs):
+          bfield_(rhs.bfield()),
+          whstate_(rhs.hitState()),
+          dVar_(driftVariance()),
+          dDdT_(driftVelocity()),
+          wire_(rhs.wire()),
+          ca_(
+            rhs.closestApproach().particleTraj(),
+            wire_,
+            rhs.closestApproach().hint(),
+            rhs.closestApproach().precision()
+          ),
+          resids_(rhs.refResiduals()),
+          chit_(rhs.hit()),
+          shindex_(rhs.strawHitIndex()),
+          straw_(rhs.straw()),
+          sresponse_(rhs.strawResponse()){
+        /**/
+      };
+      std::shared_ptr< KinKal::Hit<KTRAJ> > clone(CloneContext& context) const override{
+        auto rv = std::make_shared< KKStrawHit<KTRAJ> >(*this);
+        auto ca = rv->closestApproach();
+        auto trajectory = std::make_shared<KTRAJ>(ca.particleTraj());
+        ca.setTrajectory(trajectory);
+        rv->setClosestApproach(ca);
+        return rv;
+      };
       // Hit interface implementations
       void updateState(MetaIterConfig const& config,bool first) override;
       unsigned nResid() const override { return 3; } // potentially 2 residuals
@@ -62,6 +90,8 @@ namespace mu2e {
       void updateReference(PTRAJ const& ptraj) override;
       KTRAJPTR const& refTrajPtr() const override { return ca_.particleTrajPtr(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
+      // re-override; even though this is implemented in the base class
+      bool active() const override { return whstate_.active(); }
       // accessors
       auto const& closestApproach() const { return ca_; }
       auto const& hitState() const { return whstate_; }
@@ -79,6 +109,8 @@ namespace mu2e {
       auto updater() const { return whstate_.algo_; }
       void setState(WireHitState const& whstate); // allow cluster updaters to set the state directly
       DriftInfo fillDriftInfo(CA const& ca) const;
+      auto const& driftVariance() { return dVar_; }
+      auto const& driftVelocity() { return dDdT_; }
     private:
       BFieldMap const& bfield_; // drift calculation requires the BField for ExB effects
       WireHitState whstate_; // current state
@@ -97,6 +129,8 @@ namespace mu2e {
       StrawResponse const& sresponse_; // straw calibration information
       // utility functions
       void updateWHS(MetaIterConfig const& miconfig);
+      // clone support
+      void setClosestApproach(const CA& ca){ ca_ = ca; }
   };
 
   // struct to sort hits by time
@@ -189,8 +223,12 @@ namespace mu2e {
   }
 
   template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::fillDriftInfo(CA const& ca) const {
-    double lorentzAngle = Mu2eKinKal::LorentzAngle(ca.tpData(),ca.particleTraj().bnom().Unit());
-    return sresponse_.driftInfo(strawId(),ca.deltaT(),lorentzAngle);
+    if(ca.usable()){
+      double lorentzAngle = Mu2eKinKal::LorentzAngle(ca.tpData(),ca.particleTraj().bnom().Unit());
+      return sresponse_.driftInfo(strawId(),ca.deltaT(),lorentzAngle);
+    } else {
+      return DriftInfo();
+    }
   }
 
   template <class KTRAJ> VEC3 KKStrawHit<KTRAJ>::dRdX(unsigned ires) const {
@@ -215,22 +253,22 @@ namespace mu2e {
       if(whstate.constrainTOT()){
         double tvar = chit_.timeVar();
         double dt = ca_.deltaT() - chit_.driftTime();
-        resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,ca_.dTdP());
+        resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,ca_.dTdP());
       }
       // distance residual
       if(whstate.driftConstraint()){
         double dr = whstate.lrSign()*dinfo.rDrift_ - ca_.doca();
         DVEC dRdP = whstate.lrSign()*dDdT_*ca_.dTdP() -ca_.dDdP();
-        resids[Mu2eKinKal::dresid] = Residual(dr,dVar_,0.0,true,dRdP);
+        resids[Mu2eKinKal::dresid] = Residual(dr,dVar_,0.0,dRdP);
       } else {
         // Null LR ambiguity. interpret DOCA against the wire directly as the spatial residual
-        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),dVar_,0.0,true,ca_.dDdP());
+        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),dVar_,0.0,ca_.dDdP());
         // optionally use the null hit time measurement to constrain t0
         if(whstate.constrainAbsDriftDt()){
           double dt = ca_.deltaT() - sresponse_.strawDrift().D2T(fabs(ca_.doca()),dinfo.LorentzAngle_);
           double tvar = dinfo.driftTimeVar();
           // this overwrites the TOT time constraint, in principle both can be used TODO
-          resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,ca_.dTdP());
+          resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,ca_.dTdP());
         }
       }
 
@@ -256,7 +294,7 @@ namespace mu2e {
         double pdir_dot_sdir = ca_.sensorDirection().Dot(ca_.particleDirection());
         DVEC dLdP =  dx_dot_sdir + (dx_dot_sdir*pdir_dot_sdir - dx_dot_pdir - d_dot_dm)/(1-pdir_dot_sdir*pdir_dot_sdir)*pdir_dot_sdir;
         dLdP *= -1;
-        resids[Mu2eKinKal::lresid] = Residual(lresidval,lresidvar,0.0,true,dLdP);
+        resids[Mu2eKinKal::lresid] = Residual(lresidval,lresidvar,0.0,dLdP);
       }
 
     }

@@ -1,0 +1,206 @@
+// Original author David Norvil Brown, University of Louisville
+// Numbers based on Mu2e geometry 14 as of November 2014
+// Modified 02/09/2015 by Steve Boi - Moved east side TS shielding to proper
+//                                    location against building wall
+//                                  - Added and relocated north cap block
+// Sort boxes into "types"
+// 04/08/18: addition of CR passive absorbers (GG3) as described in doicdb-8322
+
+int ExtShieldUpstream.numberOfBoxTypes = 21;
+
+// How many of each type box to make
+int ExtShieldUpstream.nBoxType1 = 5;   // Block label  BRP-152
+int ExtShieldUpstream.nBoxType2 = 2;   // Block label  BRQ-152
+int ExtShieldUpstream.nBoxType3 = 1;   // Block label  BRR-152
+int ExtShieldUpstream.nBoxType4 = 1;   // Block label  BRR-132
+int ExtShieldUpstream.nBoxType5 = 1;   // Block label  BRN-264
+int ExtShieldUpstream.nBoxType6 = 8;   // Block label  BRW-175
+int ExtShieldUpstream.nBoxType7 = 2;   // Block label  CRN-262
+int ExtShieldUpstream.nBoxType8 = 2;   // Block label  CRW-262
+int ExtShieldUpstream.nBoxType9 = 0;   // Protection Collimator
+int ExtShieldUpstream.nBoxType10 = 1;  // Block label  BRP-152
+int ExtShieldUpstream.nBoxType11 = 2;  // Block label  BRP-152
+int ExtShieldUpstream.nBoxType12 = 1;  // Special block "1" for shielding CR muons
+int ExtShieldUpstream.nBoxType13 = 1;  // Special block "3" for shielding CR muons
+int ExtShieldUpstream.nBoxType14 = 1;  // Special block "5" for shielding CR muons
+int ExtShieldUpstream.nBoxType15 = 1;  // Borated poly: Outer CRV-U
+int ExtShieldUpstream.nBoxType16 = 1;  // Borated poly: Inner CRV-U
+int ExtShieldUpstream.nBoxType17 = 1;  // Borated poly: Inner CRV-TS
+int ExtShieldUpstream.nBoxType18 = 1;  // Borated poly: Outer CRV-TS
+int ExtShieldUpstream.nBoxType19 = 1;  // Borated poly: Outer CRV-TS-Ext
+int ExtShieldUpstream.nBoxType20 = 1;  // Remote handling room door
+int ExtShieldUpstream.nBoxType21 = 3;  // Remote handling room door
+
+
+// Dimensions in u, v, w for each type of box.  Dimensions should be in mm.
+// Dimensions should be reduced 10 mm from nominal in all directions
+// BRP-152 21"x46"x152" tall -> 533.4mm*3860.8mm*1168.4mm
+vector<double> ExtShieldUpstream.dimsType1 = {523,3850.8,1158};
+// BRQ-152 (east side only) -> 533.4mm*3860.8mm*584.2mm
+vector<double> ExtShieldUpstream.dimsType2 = {523,3850.8,574};
+// BRR-152 -> 381mm*3860.8mm*609.6mm
+vector<double> ExtShieldUpstream.dimsType3 = {371,3850.8,599};
+// BRR-132 NW corner column -> 609.6mm*3353mm*381mm
+vector<double> ExtShieldUpstream.dimsType4 = {599,3343,371};
+// BRN-264 isolation wall north -> 1003mm*584mm*6701mm
+vector<double> ExtShieldUpstream.dimsType5 = {993,574,6691};
+// BRW-175 west wall -> 838.2mm*4445mm*977.9mm
+vector<double> ExtShieldUpstream.dimsType6 = {849,5481.65,911.9};
+// CRN-262 shield cap north -> 1003mm*711mm*6655mm
+vector<double> ExtShieldUpstream.dimsType7 = {993,701,6645};
+// CRW-262 shield cap west -> 6655mm*711mm*977.9mm
+vector<double> ExtShieldUpstream.dimsType8 = {6855.5,147.65,911.9};
+// Protection Collimator -> 500mm*500mm*1500mm (nominal)
+vector<double> ExtShieldUpstream.dimsType9 = {500,500,1500};
+// BRP-152 21"x46"x152" tall -> 533.4mm*3860.8mm*1168.4mm
+vector<double> ExtShieldUpstream.dimsType10 = {523,3850.8,1158};
+// BRP-152 21"x46"x152" tall -> 533.4mm*3860.8mm*1168.4mm
+vector<double> ExtShieldUpstream.dimsType11 = {523,3850.8,1158};
+// Special block to shield CR muons
+vector<double> ExtShieldUpstream.dimsType12 = {403.4,3840.8,1009.6};
+vector<double> ExtShieldUpstream.dimsType13 = {803.9,3840.8,302.3};
+vector<double> ExtShieldUpstream.dimsType14 = {701.2,3840.8,269.4};
+// Borated poly
+vector<double> ExtShieldUpstream.dimsType15 = {6400.8,3302.1,25.4};
+vector<double> ExtShieldUpstream.dimsType16 = {6400.8,2743.2,25.4};
+vector<double> ExtShieldUpstream.dimsType17 = {6908.8,4876.6,25.4};
+vector<double> ExtShieldUpstream.dimsType18 = {5486.4,4978.6,25.4};
+vector<double> ExtShieldUpstream.dimsType19 = {1625.6,4978.6,25.4};
+vector<double> ExtShieldUpstream.dimsType20 = {609.6,4418,6426.2};
+//
+vector<double> ExtShieldUpstream.dimsType21 = {607,4110.05,1826.3};
+
+// "Tolerances" on the dimensions in u, v, and w for each type of box.
+// Tolerance here means the amount the size is changed from nominal, in mm.
+// MAXIMUM VALUE IS 10.0 mm.  Tolerances above that value will cause program
+// to terminate.
+vector<double> ExtShieldUpstream.tolsType1 =  {5.0,9.5,5.0}; // BRP-152
+vector<double> ExtShieldUpstream.tolsType2 =  {5.0,9.5,5.0}; // BRQ-152
+vector<double> ExtShieldUpstream.tolsType3 =  {5.0,9.5,5.0}; // BRR-152
+vector<double> ExtShieldUpstream.tolsType4 =  {5.0,9.5,5.0}; // BRP-132 NW
+vector<double> ExtShieldUpstream.tolsType5 =  {5.0,9.5,5.0}; // BRN-264
+vector<double> ExtShieldUpstream.tolsType6 =  {5.0,9.5,5.0}; // BRW-175
+vector<double> ExtShieldUpstream.tolsType7 =  {5.0,9.5,5.0}; // CRN-262
+vector<double> ExtShieldUpstream.tolsType8 =  {5.0,9.5,5.0}; // CRW-262
+vector<double> ExtShieldUpstream.tolsType9 =  {0.0,0.0,0.0}; // Pro-Coll
+vector<double> ExtShieldUpstream.tolsType10 = {5.0,9.5,5.0}; // BRP-152
+vector<double> ExtShieldUpstream.tolsType11 = {5.0,9.5,5.0}; // BRP-152
+vector<double> ExtShieldUpstream.tolsType12 = {5.0,9.5,5.0};
+vector<double> ExtShieldUpstream.tolsType13 = {5.0,9.5,5.0};
+vector<double> ExtShieldUpstream.tolsType14 = {5.0,9.5,5.0};
+vector<double> ExtShieldUpstream.tolsType15 = {0.0,0.0,0.0}; // Borated poly
+vector<double> ExtShieldUpstream.tolsType16 = {0.0,0.0,0.0}; // Borated poly
+vector<double> ExtShieldUpstream.tolsType17 = {0.0,0.0,0.0}; // Borated poly
+vector<double> ExtShieldUpstream.tolsType18 = {0.0,0.0,0.0}; // Borated poly
+vector<double> ExtShieldUpstream.tolsType19 = {0.0,0.0,0.0}; // Borated poly
+vector<double> ExtShieldUpstream.tolsType20 = {0.0,0.0,0.0}; // RHR door
+vector<double> ExtShieldUpstream.tolsType21 = {5.0,9.5,5.0};
+
+// Materials for each type of box.  Here, Barite and regular concrete.
+string ExtShieldUpstream.materialType1   = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType2   = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType3   = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType4   = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType5   = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType6   = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType7   = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType8   = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType9   = "G4_Fe";
+string ExtShieldUpstream.materialType10  = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType11  = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType12  = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType13  = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType14  = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType15  = "Polyethylene092B050d095";
+string ExtShieldUpstream.materialType16  = "Polyethylene092B050d095";
+string ExtShieldUpstream.materialType17  = "Polyethylene092B050d095";
+string ExtShieldUpstream.materialType18  = "Polyethylene092B050d095";
+string ExtShieldUpstream.materialType19  = "Polyethylene092B050d095";
+string ExtShieldUpstream.materialType20  = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType21  = "CONCRETE_MARS";
+
+// The center of the boxes in Mu2e Offline coordinates
+vector<double> ExtShieldUpstream.centerType1Box1 = {812.5,-382,-2997};// 5
+vector<double> ExtShieldUpstream.centerType1Box2 = {1345.5,-382,-2997};//BRP152
+vector<double> ExtShieldUpstream.centerType1Box3 = {812.5,-382,-1829};//BRP152
+vector<double> ExtShieldUpstream.centerType1Box4 = {1345.5,-382,-1829};//BRP152
+vector<double> ExtShieldUpstream.centerType1Box5 = {812.5,-382,2535.2};//BRP152
+vector<double> ExtShieldUpstream.centerType2Box1 = {812.5,-382,1659.2};//BRQ152
+vector<double> ExtShieldUpstream.centerType2Box2 = {1345.5,-382,2827.2};//BRQ152
+vector<double> ExtShieldUpstream.centerType3Box1 = {1802.5,-382,-1661.5};//BRR-152
+vector<double> ExtShieldUpstream.centerType4Box1 = {1258.5,-636,-3776.5};//BRR-132
+vector<double> ExtShieldUpstream.centerType5Box1 = {1052.5,1840,-223.8};//BRN-264
+vector<double> ExtShieldUpstream.centerType6Box1 = {116.6,433.325,-3087};//BRW-175
+vector<double> ExtShieldUpstream.centerType6Box2 = {-741.4,433.325,-3087};//BRW-175
+vector<double> ExtShieldUpstream.centerType6Box3 = {-1599.4,433.325,-3087};//BRW-175
+vector<double> ExtShieldUpstream.centerType6Box4 = {-2457.4,433.325,-3087};//BRW-175
+vector<double> ExtShieldUpstream.centerType6Box5 = {-3315.4,433.325,-3087};//BRW-175
+vector<double> ExtShieldUpstream.centerType6Box6 = {-4173.4,433.325,-3087};//BRW-175
+vector<double> ExtShieldUpstream.centerType6Box7 = {-5031.4,433.325,-3087};//BRW-175
+vector<double> ExtShieldUpstream.centerType6Box8 = {-5889.4,433.325,-3087};//BRW-175
+vector<double> ExtShieldUpstream.centerType7Box1 = {1052.5,2488,-238.5};//BRN-264
+vector<double> ExtShieldUpstream.centerType7Box2 = {1047.5,3199,-238.5};//BRN-264
+vector<double> ExtShieldUpstream.centerType8Box1 = {-2886.75,3257.975,-3087};//West
+vector<double> ExtShieldUpstream.centerType8Box2 = {-2886.75,3416.625,-3087};//Caps
+vector<double> ExtShieldUpstream.centerType9Box1 = {5261.4,237.3,-600.5};//protection collimator
+vector<double> ExtShieldUpstream.centerType10Box1 = {1345.5,-382,1951.2};//3
+vector<double> ExtShieldUpstream.centerType11Box1 = {1878.5,-382,-2550};//BRP152
+vector<double> ExtShieldUpstream.centerType11Box2 = {2411.5,-382,-2550};//BRP152
+// Special block to shield CR muons
+vector<double> ExtShieldUpstream.centerType12Box1 = {-2556.5,-381.4, 2417.8};
+vector<double> ExtShieldUpstream.centerType13Box1 = {-1484,-381.4, 1312};
+vector<double> ExtShieldUpstream.centerType14Box1 = {0.0,-381.4, -1186.1};
+// Borated poly
+vector<double> ExtShieldUpstream.centerType15Box1 = {-3018.2,1454.5,-2524.7};
+vector<double> ExtShieldUpstream.centerType16Box1 = {-2655.4,1175.1,-2260.6};
+vector<double> ExtShieldUpstream.centerType17Box1 = {-2909.4,2526.2,  203.2};
+vector<double> ExtShieldUpstream.centerType18Box1 = {-3620.6,2780.2,  213.6};
+vector<double> ExtShieldUpstream.centerType19Box1 = {-267.8 ,3031.47,  202.4};
+
+// Remote handling room door
+vector<double> ExtShieldUpstream.centerType20Box1 = {9381 ,-103, -12077.7};
+// North-East external TS shielding
+vector<double> ExtShieldUpstream.centerType21Box1 = {2531.4,-252.35,1591.45};
+vector<double> ExtShieldUpstream.centerType21Box2 = {2531.4,-252.35,2201.05};
+vector<double> ExtShieldUpstream.centerType21Box3 = {2531.4,-252.35,2810.65};
+
+// To move the shielding door in two directions to allow a small gap during remote handling operations.
+// To move in Z-direction (East-West) : apply 'OpenDistance' (double) between 0.0 (fully closed) and 6248.4 (fully open).
+// OpenDistance = 0.0; default case (fully closed)
+// To move in X-direction (towards north) : apply 'FrameGap' (double) between 0.0 (closed) and 254.0 (10" open).
+// FrameGap = 0.0; default case (closed position)
+//NB: Neither OpenDistance nor FrameGap can be supplied a negative value.
+
+
+double ExtShieldUpstream.OpenDistance = 0.0;
+double ExtShieldUpstream.FrameGap = 0.0;
+
+
+// The orientation of each detector.  See docdb xxx for details.
+string ExtShieldUpstream.orientationType1Box1 = "000";
+string ExtShieldUpstream.orientationType9Box1 = "550";
+// Borated poly
+string ExtShieldUpstream.orientationType17Box1 = "100";
+string ExtShieldUpstream.orientationType18Box1 = "100";
+string ExtShieldUpstream.orientationType19Box1 = "100";
+string ExtShieldUpstream.orientationType21Box1 = "010";
+string ExtShieldUpstream.orientationType21Box2 = "010";
+string ExtShieldUpstream.orientationType21Box3 = "010";
+
+// For the upstream, most are oriented with default orientation, so
+// don't need to specify all.
+
+bool  ExtShieldUpstream.visible = true;
+bool  ExtShieldUpstream.solid   = false;
+
+int   ExtShieldUpstream.verbosityLevel = 0;
+
+// This is a hack to allow the Mu2eBuilding to build - a dependence on
+// the old ExtNeutShieldLAbove consts was built in.  This should be seen
+// as a temporary fix!
+double ExtShieldUpstream.XExtentHack = 1250.0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
