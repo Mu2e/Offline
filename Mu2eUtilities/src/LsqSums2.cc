@@ -5,8 +5,10 @@
 #include <cmath>
 
 
-LsqSums2::LsqSums2() {
+LsqSums2::LsqSums2(double X0, double Y0) {
   clear();
+  fX0 = X0;
+  fY0 = Y0;
 }
 
 
@@ -77,12 +79,9 @@ void LsqSums2::removeSum(LsqSums2& Lsq) {
 
 double LsqSums2::dydx() {
 
-  double dfdz(0), D;
+  double dfdz(0);
   if (_qn > 1) {
-    D = sw*sx2 - sx*sx;
-
-    dfdz = sw*sxy - sy*sx;
-    dfdz /= D;
+    dfdz  = (sw*sxy-sy*sx)/(sw*sx2-sx*sx);
   }
 
   return dfdz;
@@ -100,23 +99,28 @@ double LsqSums2::dydxErr(){
   return slopeErr;
 }
 
-double LsqSums2::y0(){
-  double y0, D;
-  D = sw*sx2 - sx*sx;
-
-  y0 = sx2*sy - sx*sxy;
-  y0 /= D;
+//-----------------------------------------------------------------------------
+// for non-zero offsets, should return the intercept in the global coordinate system
+// the errors are calculated in the fit coordinate system, no extrapolation
+// this is what one mostly needs for the pattern recognition purposes
+//-----------------------------------------------------------------------------
+double LsqSums2::y0(double X) {
+  double dx = X-fX0;
+  double y0 = (fY0 + sy/sw) +dydx()*(dx-sx/sw);
 
   return y0;
 }
-
-double LsqSums2::y0Err(){
-  double interceptErr(0), N, D;
+//-----------------------------------------------------------------------------
+// calculate intercept error at a given X. Default: X=0
+//-----------------------------------------------------------------------------
+double LsqSums2::y0Err(double X) {
+  double interceptErr(0), D; // N;
   if (_qn > 2) {
-  N = sx2;
-  D = sw*sx2 - sx*sx;
-
-  interceptErr = std::sqrt(N/D);
+    // N = sx2;
+    D = sw*sx2 - sx*sx;
+    // interceptErr = std::sqrt(N/D);
+    double dx = X-fX0;
+    interceptErr = std::sqrt((1/sw)*(1+((dx*sw-sx)*(dx*sw-sx))/D));
   }
 
   return interceptErr;

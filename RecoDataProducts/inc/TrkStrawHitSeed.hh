@@ -8,6 +8,7 @@
 #include "Offline/RecoDataProducts/inc/HitT0.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/Mu2eKinKal/inc/KKSHFlag.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/DataProducts/inc/TrkTypes.hh"
@@ -68,7 +69,6 @@ namespace mu2e {
       // calculate the doca and phi relative to the straw envelope at POCA to wire
       auto ppoca = XYZVectorF(uptca.particlePoca().Vect());
       static XYZVectorF zdir(0.0,0.0,1.0); // relative to Z
-      
       auto wmid = XYZVectorF(straw.wirePosition());
       auto wdir = XYZVectorF(straw.wireDirection());
       auto delta = ppoca - wmid;
@@ -87,8 +87,11 @@ namespace mu2e {
       if(raddir.Dot(smid) < 0.0) raddir *= -1.0; // sign radially outwards
       _ustrawphi = atan2(cperp.Dot(raddir),cperp.Dot(zdir)); // angle around wire WRT z axis in range -pi,pi
       _ustrawdist = sqrt(cperp.mag2());
-
       _wdot = uptca.particleDirection().Dot(straw.wireDirection());
+      // set unbiased residual flags
+      if(udresid.active())_kkshflag.merge(KKSHFlag::goodudresid);
+      if(utresid.active())_kkshflag.merge(KKSHFlag::goodutresid);
+      if(ulresid.active())_kkshflag.merge(KKSHFlag::goodulresid);
     }
 
     //Legacy constructor for BTrk
@@ -114,22 +117,23 @@ namespace mu2e {
     auto const& flag() const { return _flag; }
     auto const& algorithm() const { return _algo; }
     auto strawHitState() const { return _ambig; }
-    auto hitTime() const { return _etime[_eend]; }
+    auto time() const { return _etime[_eend]; }
     auto energyDep() const { return _edep; }
     auto const& earlyEnd() const { return _eend; }
+    StrawEnd lateEnd() const { return _eend.otherEnd(); }
     auto wireDist() const { return _wdist; }
     auto wireRes() const { return _werr; }
     auto TOTDriftTime() const { return _tottdrift; }
-    auto particleTOCA() const { return _ptoca; }
-    auto sensorTOCA() const { return _stoca; }
+    auto particleToca() const { return _ptoca; }
+    auto sensorToca() const { return _stoca; }
     auto fitDOCA() const { return _udoca; }
     auto fitDOCAVar() const { return _udocavar; }
     auto fitDt() const { return _udt; }
-    auto fitTOCAVar() const { return _utocavar; }
+    auto fitTocaVar() const { return _utocavar; }
     auto refDOCA() const { return _rdoca; }
     auto refDOCAVar() const { return _rdocavar; }
     auto refDt() const { return _rdt; }
-    auto reTOCAVar() const { return _rtocavar; }
+    auto reTocaVar() const { return _rtocavar; }
     auto refPOCA_Upos() const { return _rupos; }
     auto driftRadius() const { return _rdrift; }
     auto radialErr() const { return _sderr; }
@@ -139,6 +143,10 @@ namespace mu2e {
     float signalTime() const { return _stime; }
     float wireDOCA() const { return _rdoca; }
     int ambig() const { return _ambig; }
+    // return a true WireHitState
+    WireHitState wireHitState() const {
+      return WireHitState(static_cast<WireHitState::State>(_ambig),static_cast<StrawHitUpdaters::algorithm>(_algo),_kkshflag);
+    }
     //
     //  Payload
     //

@@ -39,13 +39,15 @@ cet_make_library(
       BTrk_BbrGeom
       BTrk_KalmanTrack
       BTrk_ProbTools
-      KinKal_Trajectory
+      KinKal::Trajectory
 
       Offline::DataProducts
       Offline::GeneralUtilities
       Offline::KinKalGeom
       Offline::Mu2eKinKal
       Offline::TrackerConditions
+
+      artdaq-core-mu2e::Overlays
 )
 
 art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults

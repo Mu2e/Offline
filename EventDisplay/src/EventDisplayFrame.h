@@ -111,6 +111,7 @@ namespace mu2e_eventdisplay
     bool                _showMuonBeamStop, _showProtonAbsorber;
     bool                _wideband;
     bool                _extracted;
+    bool                _extractedCrvOnly;
 
     //bare pointers needed since ROOT manages these objects
     TGHorizontalFrame   *_mainFrame, *_footLine;

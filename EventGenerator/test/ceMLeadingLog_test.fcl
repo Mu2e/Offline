@@ -6,47 +6,20 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
+#include "Production/JobConfig/primary/CeMLeadingLog.fcl"
 
 process_name : CeMLeadingLogTest
 
-source       : { module_type : EmptyEvent }
-
-services : {
-    message               : @local::default_message
-    TFileService          : { fileName        : "nts.user.ceMLeadingLog_test.xxx.000001.root" }
-    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
-
-    GeometryService        : { inputFile      : "Production/JobConfig/common/geom_baseline.txt"  }
-    ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"       }
-    GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt"  }
-    BTrkHelper             : @local::BTrkHelperDefault
-    Mu2eG4Helper           : { }
-    SeedService            : { @table::automaticSeeds
-        baseSeed         :  8
-        maxUniqueEngines :  20
-    }
-
-    TimeTracker : {
-        printSummary : true
-        dbOutput : {
-            filename  : ""
-            overwrite : false
-        }
-    }
-}
+services.TFileService          : { fileName        : "nts.user.ceMLeadingLog_test.xxx.000001.root" }
+services.TimeTracker.printSummary : true
 services.scheduler.wantSummary: true
+services.SeedService.baseSeed : 101
 
-physics : {
-    producers: {
-        generate              : { @table::EventGenerator.producers.ceMLeadingLog
-            doHistograms              : true
-        }
-    }
+physics.filters.TargetStopResampler.fileNames : [
+  "/cvmfs/mu2e.opensciencegrid.org/DataFiles/Validation/sim.mu2e.MuminusStopsVal.MDC2025ac.001430_00000000.art"
+]
+physics.filters.TargetStopResampler.mu2e.MaxEventsToSkip: 0
 
-    p1            : [ generate ]
-
-    trigger_paths : [ p1 ]
-}
 #------------------------------------------------------------------------------
 # uncomment the next 2 lines if you want the DST file to be written out
 #-----------------------------------------------------------------------------

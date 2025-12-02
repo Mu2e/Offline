@@ -496,7 +496,10 @@ namespace mu2e {
      }
 
 
-      VolumeInfo vchip0 = nestBox(osm.str() + "chip0",
+      std::ostringstream Name;
+      Name<<"Ext"<<volNameSuffix<<"P"<<iplane<<"M"<<imodule;
+
+      VolumeInfo vchip0 = nestBox(Name.str() + "chip0",
                                   module.chipHalfSize(),
                                   findMaterialOrThrow("G4_Si"),
                                   pRot,
@@ -512,7 +515,7 @@ namespace mu2e {
                                   );
 
 
-      VolumeInfo vchip1 = nestBox(osm.str() + "chip1",
+      VolumeInfo vchip1 = nestBox(Name.str() + "chip1",
                                   module.chipHalfSize(),
                                   findMaterialOrThrow("G4_Si"),
                                   pRot,
