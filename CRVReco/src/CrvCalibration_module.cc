@@ -43,6 +43,8 @@ namespace mu2e
       fhicl::Atom<int>         histBinsPulseHeight{Name("histBinsPulseHeight"), Comment("pulseHeight histogram bins"), 150};
       fhicl::Atom<double>      histMaxPulseArea{Name("histMaxPulseArea"), Comment("end range of pulseArea histogram"), 3000.0};
       fhicl::Atom<double>      histMaxPulseHeight{Name("histMaxPulseHeight"), Comment("end range of pulseArea histogram"), 150.0};
+      fhicl::Atom<double>      fitRangeStart{Name("fitRangeStart"), Comment("low end of the 1PE fit range as fraction of peak"), 0.7};
+      fhicl::Atom<double>      fitRangeEnd{Name("fitRangeEnd"), Comment("high end of the 1PE fit range as fraction of peak"), 1.3};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
@@ -57,6 +59,7 @@ namespace mu2e
     std::string        _crvRecoPulsesModuleLabel;
     int                _histBinsPulseArea, _histBinsPulseHeight;
     double             _histMaxPulseArea, _histMaxPulseHeight;
+    double             _fitRangeStart, _fitRangeEnd;
     std::string        _tmpDBfileName;
     std::vector<TH1F*> _calibHistsPulseArea;
     std::vector<TH1F*> _calibHistsPulseHeight;
@@ -78,6 +81,8 @@ namespace mu2e
     _histBinsPulseHeight(conf().histBinsPulseHeight()),
     _histMaxPulseArea(conf().histMaxPulseArea()),
     _histMaxPulseHeight(conf().histMaxPulseHeight()),
+    _fitRangeStart(conf().fitRangeStart()),
+    _fitRangeEnd(conf().fitRangeEnd()),
     _tmpDBfileName(conf().tmpDBfileName())
   {
   }
@@ -156,8 +161,8 @@ namespace mu2e
         int maxbinCalib = hist->GetMaximumBin();
         double peakCalib = hist->GetBinCenter(maxbinCalib);
 //FIXME        funcCalib.SetRange(peakCalib*0.8,peakCalib*1.2);
-        funcCalib.SetRange(peakCalib*0.7,peakCalib*1.3);
-        if(hist->FindBin(peakCalib*0.7)==hist->FindBin(peakCalib*1.3))
+        funcCalib.SetRange(peakCalib*_fitRangeStart,peakCalib*_fitRangeEnd);
+        if(hist->FindBin(peakCalib*_fitRangeStart)==hist->FindBin(peakCalib*_fitRangeEnd))
         {
           calibValue[i]=-1;
           continue;

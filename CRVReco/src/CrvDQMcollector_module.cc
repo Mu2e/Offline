@@ -96,7 +96,8 @@ double LandauGaussFunction(double *x, double *par)
 
     return (par[2] * step * sum * invsq2pi / par[3]);
 }
-void LandauGauss(TH1F &h, float &mpv, float &fwhm, float &signals, float &chi2)
+void LandauGauss(TH1F &h, float &mpv, float &fwhm, float &signals, float &chi2,
+                 float PEfitRangeStart, float PEfitRangeEnd, float PEstart)
 {
     std::multimap<float,float> bins;  //binContent,binCenter
     for(int i=1; i<=h.GetNbinsX(); i++)
@@ -115,10 +116,10 @@ void LandauGauss(TH1F &h, float &mpv, float &fwhm, float &signals, float &chi2)
       if(nBins==4) break;
     }
     float maxX=binSum/4;
-    float fitRangeStart=0.7*maxX;  //0.6 @ 24
-    float fitRangeEnd  =2.0*maxX;
-    if(maxX<15.0) maxX=15.0;
-    if(fitRangeStart<15.0) fitRangeStart=15.0;
+    float fitRangeStart=PEfitRangeStart*maxX;  //0.6 @ 24
+    float fitRangeEnd  =PEfitRangeEnd*maxX;
+    if(maxX<PEstart) maxX=PEstart;
+    if(fitRangeStart<PEstart) fitRangeStart=PEstart;
 
     //Parameters
     Double_t startValues[4], parLimitsLow[4], parLimitsHigh[4];
@@ -191,6 +192,9 @@ namespace mu2e
       fhicl::Atom<int>    histDigisNZSBins{Name("histDigisNZSBins"), Comment("number of bins for NZS digis per channel and event histograms"), 200};
       fhicl::Atom<double> histDigisNZSStart{Name("histDigisNZSStart"), Comment("range start for NZS digis per channel and event histograms"), 0};
       fhicl::Atom<double> histDigisNZSEnd{Name("histDigisNZSEnd"), Comment("range end for NZS digis per channel and event histograms"), 0.1};
+      fhicl::Atom<double> PEfitRangeStart{Name("PEfitRangeStart"), Comment("low end of the PE MPV fit range as fraction of peak"), 0.7};
+      fhicl::Atom<double> PEfitRangeEnd{Name("PEfitRangeEnd"), Comment("high end of the PE MPV fit range as fraction of peak"), 2.0};
+      fhicl::Atom<double> PEstart{Name("PEstart"), Comment("lowest PE for fit"), 15.0};
     };
 
     typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -223,6 +227,9 @@ namespace mu2e
     int                _histDigisNZSBins;
     double             _histDigisNZSStart;
     double             _histDigisNZSEnd;
+    double             _PEfitRangeStart;
+    double             _PEfitRangeEnd;
+    double             _PEstart;
 
     int                _totalEvents;
     int                _totalEventsWithCoincidenceClusters;
@@ -279,6 +286,9 @@ namespace mu2e
     _histDigisNZSBins(conf().histDigisNZSBins()),
     _histDigisNZSStart(conf().histDigisNZSStart()),
     _histDigisNZSEnd(conf().histDigisNZSEnd()),
+    _PEfitRangeStart(conf().PEfitRangeStart()),
+    _PEfitRangeEnd(conf().PEfitRangeEnd()),
+    _PEstart(conf().PEstart()),
     _totalEvents(0),
     _totalEventsWithCoincidenceClusters(0),
     _totalEventsWithDAQerrors(0)
@@ -303,7 +313,7 @@ namespace mu2e
       float FWHM=0;
       float signals=0;
       float chi2=0;
-      LandauGauss(*_histPEs.at(channel), MPV, FWHM, signals, chi2);
+      LandauGauss(*_histPEs.at(channel), MPV, FWHM, signals, chi2, _PEfitRangeStart, _PEfitRangeEnd, _PEstart);
       _histPEsMPV.at(sectorNumber)->Fill(MPV);
     }
 
@@ -322,7 +332,7 @@ namespace mu2e
         float FWHM=0;
         float signals=0;
         float chi2=0;
-        LandauGauss(*_histPEsROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel), MPV, FWHM, signals, chi2);
+        LandauGauss(*_histPEsROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel), MPV, FWHM, signals, chi2, _PEfitRangeStart, _PEfitRangeEnd, _PEstart);
         _histPEsMPVROC.at(ROC-1)->Fill(ROCchannel,MPV);
 
         size_t portIndex=(ROC-1)*CRVId::nFEBPerROC+FEB-1;
