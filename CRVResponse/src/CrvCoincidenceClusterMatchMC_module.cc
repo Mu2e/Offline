@@ -127,8 +127,8 @@ namespace mu2e
       //get the event window length from the global constants
       auto ewmh = event.getValidHandle<mu2e::EventWindowMarker>(_ewmLabel);
       const bool onspill = ewmh->spillType() == EventWindowMarker::onspill;
-      const double event_window_length = (onspill) ? GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod() :
-                                         100.e3; //FIXME: off-spill default to 100 us
+      const double ewm_window_length = evmh->eventLength(); // get the offspill window length from the EWM, ~100 us
+      const double event_window_length = (onspill) ? GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod() : ewm_window_length;
 
       //loop through all reco pulses and try to find the MC information
       std::vector<CrvCoincidenceClusterMC::PulseInfo> pulses; //collection of all pulses (sim particle, energy dep.)
