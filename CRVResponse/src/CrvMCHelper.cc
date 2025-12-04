@@ -25,7 +25,8 @@ namespace mu2e
                                         double &visibleEnergyDeposited,
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
-                                        art::Ptr<SimParticle> &mostLikelySimParticle)
+                                        art::Ptr<SimParticle> &mostLikelySimParticle,
+                                        const double event_window_length)
   {
     visibleEnergyDeposited=0;
     std::map<art::Ptr<SimParticle>,double> simParticleMap;
@@ -59,14 +60,16 @@ namespace mu2e
     for(stepPointIter=steps.begin(); stepPointIter!=steps.end(); stepPointIter++)
     {
       const CrvStep &step = **stepPointIter;
-      double t = step.startTime();
-      if(firstLoop || earliestHitTime>t)
+      double t_s = step.startTime();
+      double t_e = step.endTime();
+      if(firstLoop || earliestHitTime>t_s)
       {
         firstLoop=false;
-        earliestHitTime=t;
+        earliestHitTime=t_s;
         earliestHitPos=step.startPosition();
       }
-      avgHitTime+=0.5*(step.startTime()+step.endTime())*step.visibleEDep();
+      // Need to account for time wrapping when calculating average time
+      avgHitTime+=std::fmod(0.5*(t_s+t_e), event_window_length)*step.visibleEDep();
       avgHitPos+=0.5*(step.startPosition()+step.endPosition())*step.visibleEDep();
     }
     if(visibleEnergyDeposited>0.0)
@@ -81,13 +84,14 @@ namespace mu2e
                                           double &visibleEnergyDeposited,
                                           double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                           double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
-                                          art::Ptr<SimParticle> &mostLikelySimParticle)
+                                          art::Ptr<SimParticle> &mostLikelySimParticle,
+                                          const double event_window_length)
   {
     std::set<art::Ptr<CrvStep> > steps;
 
     CrvMCHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, digis, steps);
     CrvMCHelper::GetInfoFromStepPoints(steps, visibleEnergyDeposited,
-                                     earliestHitTime, earliestHitPos, avgHitTime, avgHitPos, mostLikelySimParticle);
+                                     earliestHitTime, earliestHitPos, avgHitTime, avgHitPos, mostLikelySimParticle, event_window_length);
   }
 
 
