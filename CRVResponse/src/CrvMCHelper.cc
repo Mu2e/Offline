@@ -53,6 +53,9 @@ namespace mu2e
     }
 
     //get the event window length from the global constants
+    if (!ewmh.isValid()) {
+      throw cet::exception("CrvMCHelper") << "EventWindowMarker handle is not valid" << std::endl;
+    }
     const bool onspill = ewmh->spillType() == EventWindowMarker::onspill;
     const double ewm_window_length = ewmh->eventLength(); // get the offspill window length from the EWM, ~100 us
     const double event_window_length = (onspill) ? GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod() : ewm_window_length;
