@@ -23,13 +23,15 @@ namespace mu2e
                                       double &visibleEnergyDeposited,
                                       double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                       double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
-                                      art::Ptr<SimParticle> &mostLikelySimParticle);
+                                      art::Ptr<SimParticle> &mostLikelySimParticle,
+                                      const double event_window_length);
     static void GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
                                         const art::Handle<CrvDigiMCCollection> &digis,
                                         double &visibleEnergyDeposited,
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
-                                        art::Ptr<SimParticle> &mostLikelySimParticle);
+                                        art::Ptr<SimParticle> &mostLikelySimParticle,
+                                        const double event_window_length);
 
     private:
     CrvMCHelper();
