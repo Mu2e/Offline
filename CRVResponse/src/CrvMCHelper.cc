@@ -1,5 +1,8 @@
 #include "Offline/CRVResponse/inc/CrvMCHelper.hh"
 
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+
 namespace mu2e
 {
   void CrvMCHelper::GetStepPointsFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
@@ -26,7 +29,7 @@ namespace mu2e
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
                                         art::Ptr<SimParticle> &mostLikelySimParticle,
-                                        const double event_window_length)
+                                          const art::Handle<mu2e::EventWindowMarker>& ewmh)
   {
     visibleEnergyDeposited=0;
     std::map<art::Ptr<SimParticle>,double> simParticleMap;
@@ -48,6 +51,11 @@ namespace mu2e
         mostLikelySimParticle=simParticleIter->first;
       }
     }
+
+    //get the event window length from the global constants
+    const bool onspill = ewmh->spillType() == EventWindowMarker::onspill;
+    const double ewm_window_length = ewmh->eventLength(); // get the offspill window length from the EWM, ~100 us
+    const double event_window_length = (onspill) ? GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod() : ewm_window_length;
 
     //TODO: Is this still necessary? Removing it for now.
     //time folding is not applied here, but was used to create the digis, ...
@@ -85,13 +93,13 @@ namespace mu2e
                                           double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                           double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
                                           art::Ptr<SimParticle> &mostLikelySimParticle,
-                                          const double event_window_length)
+                                          const art::Handle<mu2e::EventWindowMarker>& ewmh)
   {
     std::set<art::Ptr<CrvStep> > steps;
 
     CrvMCHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, digis, steps);
     CrvMCHelper::GetInfoFromStepPoints(steps, visibleEnergyDeposited,
-                                     earliestHitTime, earliestHitPos, avgHitTime, avgHitPos, mostLikelySimParticle, event_window_length);
+                                       earliestHitTime, earliestHitPos, avgHitTime, avgHitPos, mostLikelySimParticle, ewmh);
   }
 
 
