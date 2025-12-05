@@ -48,7 +48,7 @@ namespace mu2e
         _hitpositions.push_back(pos);
        }
 
-       XYZVectorF               _pos;// ideally should be a 2d vec - FIXME
+       XYZVectorF               _pos;
        TwoDPoint                _point;//initial point
        CombineTwoDPoints        _cpoints;//combined points
        float                    _time = 0.0;//cluster time
