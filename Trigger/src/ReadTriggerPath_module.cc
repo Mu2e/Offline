@@ -338,6 +338,8 @@ namespace mu2e {
     //////////////////////////////////////////
     // Evaluate summary info
 
+    if(!_sumHist._hTrigInfo[0]) return; // histograms were not booked
+
     // trigger efficiencies
     _sumHist._hTrigInfo[0]->Scale(1./_nProcess);
     _sumHist._hTrigInfo[2]->Scale(1./_nProcess);

@@ -32,6 +32,11 @@ namespace mu2e {
     size_t    find(std::map<std::string, unsigned int> const& posmap, std::string const& name) const;
     size_t    findTrigPathID(std::string const& name) const;
 
+    size_t    getTrigBit(std::string const& name) const {
+      size_t pathID = findTrigPathID(name);
+      return getTrigBit(pathID);
+    }
+
     // Has ith path accepted the event?
     bool      accepted(std::string const& name) const;
 
