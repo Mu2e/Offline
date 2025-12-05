@@ -240,17 +240,6 @@ namespace mu2e
       for (const auto& chit : cluster.hits())
         chfcol[chit].merge(flag);
     }
-    /*for (auto& cluster : bkgccol) {
-        std::cout << "Cluster has " << cluster.hitposition().size() << " hit positions\n";
-        for (size_t i = 0; i < cluster.hitposition().size(); ++i) {
-          auto const& p = cluster.hitposition()[i];
-          std::cout << "  hit " << i
-                  << " pos = (" << p.x()
-                  << ", " << p.y()
-                  << ", " << p.z()
-                  << ")\n";
-        }
-        }*/
   }
 
 
