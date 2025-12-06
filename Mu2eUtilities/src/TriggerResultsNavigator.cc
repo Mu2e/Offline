@@ -65,8 +65,7 @@ namespace mu2e {
   TriggerResultsNavigator::getTrigBit(unsigned int const i) const
   {
     if (i>_trigPathsNames.size()) {
-      throw cet::exception("TRIG PATHID NOT FOUND");
-      //std::cout << "TRIG PATHID "<< i <<" NOT FOUND" <<std::endl;
+      throw cet::exception("TRIGGER") << "TRIG PATHID " << i << " NOT FOUND";
       return 0;
     }
     std::string   delimeter =":";
