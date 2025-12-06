@@ -85,7 +85,7 @@ namespace mu2e
       produces<ComboHitCollection>();
 
       if (savebkg_)
-      {
+        {
         produces<BkgClusterHitCollection>();
         produces<BkgClusterCollection>();
       }
@@ -144,7 +144,6 @@ namespace mu2e
     const ComboHitCollection& chcol = *chH.product();
     unsigned nch = chcol.size();
 
-
     // the primary output is either a deep copy of selected inputs or a flag collection on those
     // intermediate results: keep these on the heap unless requested for diagnostics later
     BkgClusterCollection bkgccol;
@@ -164,6 +163,7 @@ namespace mu2e
     if (savebkg_) {
       for (size_t ich=0;ich < nch; ++ich) {
         const ComboHit& ch = chcol[ich];
+        //StrawHitFlag const& flagbkg = chfcol[ich];
         int icl = findClusterIdx(bkgccol,ich);
         if (icl > -1) bkghitcol.emplace_back(BkgClusterHit(clusterer_->distance(bkgccol[icl],ch),ch.flag()));
         else          bkghitcol.emplace_back(BkgClusterHit(999.0,ch.flag()));
@@ -180,6 +180,7 @@ namespace mu2e
         chcol_out->reserve(nch);
         for(size_t ich=0;ich < nch; ++ich) {
           StrawHitFlag const& flag = chfcol[ich];
+          //std::cout<<"Before Flag = "<<flag<<std::endl;
           if (! filter_ || !flag.hasAnyProperty(bkgmsk_)) {
             // write out hits
             chcol_out->push_back(chcol[ich]);
@@ -230,15 +231,14 @@ namespace mu2e
   {
     for (auto& cluster : bkgccol) {
       clusterer_->classifyCluster(cluster,chcol);
-
       StrawHitFlag flag(StrawHitFlag::bkgclust);
       if (cluster.getKerasQ()> kerasQ_) {
         flag.merge(StrawHitFlag(StrawHitFlag::bkg));
         cluster._flag.merge(BkgClusterFlag::bkg);
       }
 
-      for (const auto& chit : cluster.hits()) chfcol[chit].merge(flag);
-
+      for (const auto& chit : cluster.hits())
+        chfcol[chit].merge(flag);
     }
   }
 
