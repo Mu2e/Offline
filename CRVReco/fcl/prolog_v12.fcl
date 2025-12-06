@@ -219,7 +219,7 @@ BEGIN_PROLOG
           maxSlope : 2
           maxSlopeDifference : 3
           coincidenceLayers : 4   //to suppress high rate
-          minClusterPEs : 100
+          minClusterPEs : 60
           initialClusterMaxDistance : 250
         },
         {
@@ -233,7 +233,7 @@ BEGIN_PROLOG
           maxSlope : 2
           maxSlopeDifference : 3
           coincidenceLayers : 3
-          minClusterPEs : 100
+          minClusterPEs : 60
           initialClusterMaxDistance : 250
         },
         {
@@ -289,7 +289,7 @@ BEGIN_PROLOG
           maxSlope : 3
           maxSlopeDifference : 3
           coincidenceLayers : 4   //to suppress high rate
-          minClusterPEs : 250  //higher threshold
+          minClusterPEs : 200  //higher threshold
           initialClusterMaxDistance : 100
         },
         {
@@ -303,7 +303,7 @@ BEGIN_PROLOG
           maxSlope : 3
           maxSlopeDifference : 3
           coincidenceLayers : 4   //to suppress high rate
-          minClusterPEs : 250  //higher threshold
+          minClusterPEs : 200  //higher threshold
           initialClusterMaxDistance : 100
         },
         {
@@ -317,7 +317,7 @@ BEGIN_PROLOG
           maxSlope :  0.01    //so that all slopes of 0 are included even if they appear as e.g. 1.0e-14
           maxSlopeDifference : 3
           coincidenceLayers : 4   //to suppress high rate
-          minClusterPEs : 120  //higher threshold
+          minClusterPEs : 60  //higher threshold
           initialClusterMaxDistance : 100
         },
         {
