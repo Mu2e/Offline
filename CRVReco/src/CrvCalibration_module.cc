@@ -221,11 +221,11 @@ namespace mu2e
 
     for(auto iter=crvRecoPulseCollection->begin(); iter!=crvRecoPulseCollection->end(); ++iter)
     {
-      if(!iter->GetRecoPulseFlags().none())
-      {
-        if(!iter->GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::noCalibConstPulseArea) &&
-           !iter->GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::noCalibConstPulseHeight)) continue;
-      }
+      //check for any error flags, but ignore calibration flags
+      auto flags = iter->GetRecoPulseFlags();
+      flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseArea,0);
+      flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseHeight,0);
+      if(!flags.none()) continue;
 
       int barIndex = iter->GetScintillatorBarIndex().asInt();
       int SiPM = iter->GetSiPMNumber();
