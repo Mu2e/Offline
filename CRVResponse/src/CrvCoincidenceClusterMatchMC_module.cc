@@ -124,11 +124,9 @@ namespace mu2e
       CLHEP::Hep3Vector     earliestHitPos;        //MC
       CLHEP::Hep3Vector     avgHitPos;             //MC
 
-      //get the event window length from the global constants
-      auto ewmh = event.getValidHandle<mu2e::EventWindowMarker>(_ewmLabel);
-      const bool onspill = ewmh->spillType() == EventWindowMarker::onspill;
-      const double ewm_window_length = ewmh->eventLength(); // get the offspill window length from the EWM, ~100 us
-      const double event_window_length = (onspill) ? GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod() : ewm_window_length;
+      //get the event window marker
+      art::Handle<mu2e::EventWindowMarker> ewmh;
+      event.getByLabel(_ewmLabel, ewmh);
 
       //loop through all reco pulses and try to find the MC information
       std::vector<CrvCoincidenceClusterMC::PulseInfo> pulses; //collection of all pulses (sim particle, energy dep.)
@@ -154,7 +152,7 @@ namespace mu2e
           //get the sim particle and deposited energy of this reco pulse
           CrvMCHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, visibleEnergyDepositedThisPulse,
                                                earliestHitTimeThisPulse, earliestHitPosThisPulse, avgHitTimeThisPulse,
-                                               avgHitPosThisPulse, simParticleThisPulse, event_window_length);
+                                               avgHitPosThisPulse, simParticleThisPulse, ewmh);
           if(_doNtuples) _ntupleHitTimes->Fill(iter->GetCrvSectorType(),crvRecoPulse->GetSiPMNumber(),avgHitPosThisPulse.x(),avgHitTimeThisPulse,
                                                crvRecoPulse->GetPulseTime(),crvRecoPulse->GetLEtime(),crvRecoPulse->GetPEs(),
                                                crvRecoPulse->GetRecoPulseFlags().none());
@@ -167,7 +165,7 @@ namespace mu2e
 
       //based on all step points, get the most likely sim particle, total energy, etc.
       CrvMCHelper::GetInfoFromStepPoints(steps, visibleEnergyDeposited, earliestHitTime, earliestHitPos,
-                                         avgHitTime, avgHitPos, simParticle, event_window_length);
+                                         avgHitTime, avgHitPos, simParticle, ewmh);
 
       //insert the cluster information into the vector of the crv coincidence clusters (collection of pulses, most likely sim particle, etc.)
       //if the cluster was caused by noise, the simParticle will be null, the visibleEnergyDeposited, earliest/average hit time and hit position will be 0
