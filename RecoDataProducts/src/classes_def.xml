@@ -135,10 +135,11 @@
 <!--  ********* tracking intermediate products  ********* -->
 
  <class name="mu2e::TimeCluster"/>
+ <class name="mu2e::TimeClusterPtr"/>
  <class name="mu2e::TimeClusterCollection"/>
- <class name="art::Ptr<mu2e::TimeCluster>"/>
- <class name="std::vector<art::Ptr<mu2e::TimeCluster> >"/>
+ <class name="mu2e::TimeClusterPtrCollection"/>
  <class name="art::Wrapper<mu2e::TimeClusterCollection>"/>
+ <class name="art::Wrapper<mu2e::TimeClusterPtrCollection>"/>
 
 
  <class name="mu2e::HelixVal"/>
@@ -152,10 +153,11 @@
  <class name="mu2e::RobustHelix"/>
  <class name="mu2e::HelixRecoDir"/>
  <class name="mu2e::HelixSeed"/>
+ <class name="mu2e::HelixSeedPtr"/>
  <class name="mu2e::HelixSeedCollection" />
- <class name="art::Ptr<mu2e::HelixSeed>"/>
- <class name="std::vector<art::Ptr<mu2e::HelixSeed> >"/>
+ <class name="mu2e::HelixSeedPtrCollection" />
  <class name="art::Wrapper<mu2e::HelixSeedCollection>"/>
+ <class name="art::Wrapper<mu2e::HelixSeedPtrCollection>"/>
 
  <class name="mu2e::BkgQual"/>
  <class name="mu2e::BkgQualCollection"/>
