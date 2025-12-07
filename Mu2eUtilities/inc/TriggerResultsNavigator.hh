@@ -32,9 +32,15 @@ namespace mu2e {
     size_t    find(std::map<std::string, unsigned int> const& posmap, std::string const& name) const;
     size_t    findTrigPathID(std::string const& name) const;
 
+    bool      validPath(std::string const& name) const {
+      size_t path_index = findTrigPath(name);
+      return path_index < _trigPathsNames.size();
+    }
+
     size_t    getTrigBit(std::string const& name) const {
-      size_t pathID = findTrigPathID(name);
-      return getTrigBit(pathID);
+      if(!validPath(name))
+        throw cet::exception("TRIGGER") << "TriggerResultsNavigator: Path name " <<  name << " not found";
+      return findTrigPathID(name);
     }
 
     // Has ith path accepted the event?
@@ -53,9 +59,9 @@ namespace mu2e {
 
   private:
     const art::TriggerResults*           _trigResults;
-    std::vector<std::string>             _trigPathsNames;
-    std::map<std::string, unsigned int>  _trigMap;
-    std::map<std::string, unsigned int>  _trigPathMap;
+    std::vector<std::string>             _trigPathsNames;  // vector of trigger path names
+    std::map<std::string, unsigned int>  _trigMap;         // map of trigger path name to index in TriggerResults
+    std::map<std::string, unsigned int>  _trigPathMap;     // map of trigger path name to path ID (bit)
   };
 
 
