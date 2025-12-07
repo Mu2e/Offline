@@ -13,7 +13,9 @@ namespace mu2e {
 // start building proton candidates from high-eDep delta seeds
 //-----------------------------------------------------------------------------
   int  DeltaFinderAlg::createProtonCandidates() {
+    if(_doTiming > 0) _watch->SetTime(__func__);
     int kMaxProtonGap(1);                                // inefficiency gap
+    PhiPrediction_t pred;                                // for phi predictions
 
     for (int station=kNStations-1; station>=0; station--) {
 
@@ -48,7 +50,6 @@ namespace mu2e {
 // if predicted phi = -100, prediction couldn't be made
 //-----------------------------------------------------------------------------
           int consistent(1);
-          PhiPrediction_t pred;
           pc->predictPhi(station,&pred);
           if (pred.fPhi > -99) {
 //-----------------------------------------------------------------------------
@@ -88,6 +89,7 @@ namespace mu2e {
       }
     }
 
+    if(_doTiming > 0) _watch->StopTime(__func__);
     return 0;
   }
 
@@ -95,10 +97,12 @@ namespace mu2e {
 // merge proton candidates with overlapping hit patterns
 //-----------------------------------------------------------------------------
   int  DeltaFinderAlg::resolveProtonOverlaps(std::vector<ProtonCandidate*>* Pc) {
+    if(_doTiming > 1) _watch->SetTime(__func__);
 //-----------------------------------------------------------------------------
 // assume no more than 100 overlapping hits per face
 //-----------------------------------------------------------------------------
-    HitData_t* ohit[kNStations][kNFaces][100];
+    constexpr int max_overlap = 100;
+    HitData_t* ohit[kNStations][kNFaces][max_overlap];
     int        novr[kNStations][kNFaces];
 
     int nprot = Pc->size();
@@ -140,7 +144,12 @@ namespace mu2e {
               for (int ih2=0; ih2<nhf2; ih2++) {
                 HitData_t* h2 = p2->hitData(is,face,ih2);
                 if (h1 == h2) {
-                  ohit[is][face][novr[is][face]] = h1;
+                  const int novr_fz = novr[is][face];
+                  if(novr_fz >= max_overlap) { // FIXME: Should this be an error?
+                    // throw std::runtime_error("Too many overlapping hits!");
+                    continue;
+                  }
+                  ohit[is][face][novr_fz] = h1;
                   novr[is][face] += 1;
                   noverlap       += 1;
                   break;
@@ -199,13 +208,16 @@ namespace mu2e {
       }
     }
 
+    if(_doTiming > 1) _watch->StopTime(__func__);
     return 0;
   }
 
 //-----------------------------------------------------------------------------
   int  DeltaFinderAlg::mergeNonOverlappingCandidates(std::vector<ProtonCandidate*>* Pc) {
+    if(_doTiming > 1) _watch->SetTime(__func__);
 
     int nprot = Pc->size();
+    PhiPrediction_t pred; // for phi predictions
 
     for (int i1=0; i1<nprot-1; i1++) {
       ProtonCandidate* p1 = Pc->at(i1);
@@ -258,21 +270,20 @@ namespace mu2e {
             ps = p1;
           }
 //-----------------------------------------------------------------------------
-// if gap is too largs, can't reliably extrapolate and predict phi, so do nothing
+// if gap is too large, can't reliably extrapolate and predict phi, so do nothing
 //-----------------------------------------------------------------------------
           if      (lmax < gap)                                        continue;
 //-----------------------------------------------------------------------------
 // gap is not too large, 'p' is the longest, use it to predict phi
 // figure the station to predict it to
 //-----------------------------------------------------------------------------
-          PhiPrediction_t pred;
           int s0 = ps->fLastStation;
           if (pl->fLastStation < ps->fFirstStation) s0 = ps->fFirstStation;
           pl->predictPhi(s0,&pred);
           float phi_s = ps->phi(s0);
           float dphi  = pred.fPhi-phi_s;
-          if (dphi >  M_PI) dphi -= 2*M_PI;
-          if (dphi < -M_PI) dphi += 2*M_PI;
+          if      (dphi >  M_PI) dphi -= 2*M_PI;
+          else if (dphi < -M_PI) dphi += 2*M_PI;
 
           if (fabs(dphi) > 0.3)                                       continue;
           if (_debugLevel > 0) {
@@ -284,13 +295,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // segments do overlap
 //-----------------------------------------------------------------------------
-          if (dt > 30)                                                  break;
+          if (dt > 30.f)                                                 break;
 //-----------------------------------------------------------------------------
 // segments are close in time, check phi in station=os1 (in the overlap region)
 //-----------------------------------------------------------------------------
           float phi1 = p1->phi(os1);
           float phi2 = p2->phi(os1);
-          if (fabs(phi1-phi2) > 0.3)                                  continue;
+          if (fabs(phi1-phi2) > 0.3f)                                 continue;
 //-----------------------------------------------------------------------------
 // the two segments are close in time- see how many false positives are there..
 // not many, can use...
@@ -303,11 +314,13 @@ namespace mu2e {
       }
     }
 
+    if(_doTiming > 1) _watch->StopTime(__func__);
     return 0;
   }
 
 //-----------------------------------------------------------------------------
   int  DeltaFinderAlg::mergeProtonCandidates() {
+    if(_doTiming > 1) _watch->SetTime(__func__);
 //-----------------------------------------------------------------------------
 // to speed up the execution, start from time-ordering the list
 //-----------------------------------------------------------------------------
@@ -338,11 +351,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     if (_mergePC) mergeNonOverlappingCandidates(&pc);
 
+    if(_doTiming > 1) _watch->StopTime(__func__);
     return 0;
   }
 
 //-----------------------------------------------------------------------------
   int  DeltaFinderAlg::findProtons() {
+    if(_doTiming > 0) _watch->SetTime(__func__);
 //-----------------------------------------------------------------------------
 // fill data structure with "proton" hits only (E > 3 keV)
     prepareProtonHits();
@@ -360,6 +375,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     if (_pickupProtonHits) recoverMissingProtonHits();
 
+    if(_doTiming > 0) _watch->StopTime(__func__);
     return 0;
   }
 
@@ -371,6 +387,7 @@ namespace mu2e {
   int  DeltaFinderAlg::recoverMissingProtonHits() {
 
     int npc = _data->nProtonCandidates();
+    PhiPrediction_t pred; // for phi predictions
     for (int ipc=0; ipc<npc; ipc++) {
       ProtonCandidate* pc = _data->protonCandidate(ipc);
 //-----------------------------------------------------------------------------
@@ -388,7 +405,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         float proton_time = pc->t0(station);
 
-        PhiPrediction_t pred;
         pc->predictPhi(station,&pred);
 
         for (int face=0; face<kNFaces; face++) {
@@ -451,12 +467,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
           if ((hd->fHit->energyDep() > _minProtonHitEDep) and (hd->fDeltaIndex < 0)) {
 
-            int nph = fz->nProtonHits();
             fz->fProtonHitData.push_back(hd);
 
-            int tbin = int (hd->fHit->time()/_timeBin) ;
-            if (fz->fPFirst[tbin] < 0) fz->fPFirst[tbin] = nph;
-            fz->fPLast[tbin] = nph;
+            // int nph = fz->nProtonHits();
+            // int tbin = int (hd->fHit->time()/_timeBin) ;
+            // if (fz->fPFirst[tbin] < 0) fz->fPFirst[tbin] = nph;
+            // fz->fPLast[tbin] = nph;
           }
         }
       }

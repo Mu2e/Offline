@@ -102,13 +102,7 @@ namespace mu2e {
         if(kalSeed.hasCaloCluster() && kalSeed.caloHit()._flag.hasAllProperties(StrawHitFlag::active)){
           auto const& tchs = kalSeed.caloHit();
           auto const& cc = tchs.caloCluster();
-          XYZVectorF trkmom;
-          auto ikseg = kalSeed.nearestSegment(tchs._rptoca);
-          if(ikseg != kalSeed.segments().end())
-            ikseg->mom(ikseg->localFlt(tchs.trkLen()),trkmom);
-          else
-            throw cet::exception("RECO")<<"mu2e::TrackPID: KalSeed segment missing" << endl;
-          // compute the energy difference, assuming an electron mass
+          XYZVectorD trkmom = kalSeed.nearestSegment(tchs._rptoca)->momentum3();
           features[0] = cc->energyDep() - sqrt(trkmom.Mag2());
           // move into detector coordinates.  Yikes!!
           XYZVectorF cpos = XYZVectorF(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e( cc->diskID(), cc->cog3Vector())));

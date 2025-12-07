@@ -16,12 +16,12 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
     FaceZ_t::FaceZ_t() {
-      for(int i = 0; i < kMaxNTimeBins; ++i) {
-        fFirst [i] = 0;
-        fLast  [i] = 0;
-        fPFirst[i] = 0;
-        fPLast [i] = 0;
-      }
+      memset(fFirst ,0,kMaxNTimeBins*sizeof(int));
+      memset(fLast  ,0,kMaxNTimeBins*sizeof(int));
+      // memset(fPFirst,0,kMaxNTimeBins*sizeof(int));
+      // memset(fPLast ,0,kMaxNTimeBins*sizeof(int));
+      fHitData.reserve(10);
+      fProtonHitData.reserve(10);
     }
 
 //-----------------------------------------------------------------------------
@@ -49,6 +49,14 @@ namespace mu2e {
       event      = Evt;
       debugLevel = DebugLevel;
 
+      // Check if it's an On-Spill or Off-Spill event, to determine the time bins
+      if(ewm && ewm->spillType() == EventWindowMarker::onspill) {
+        _nTimeBins = int(2000.f / timeBin);
+        if(_nTimeBins > kMaxNTimeBins) _nTimeBins = kMaxNTimeBins;
+      } else { // default to the maximum
+        _nTimeBins = kMaxNTimeBins;
+      }
+
       for (int is=0; is<kNStations; is++) {
         fListOfSeeds       [is].clear();
         fListOfProtonSeeds [is].clear();
@@ -56,15 +64,17 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // re-initialize faces
 //-----------------------------------------------------------------------------
+        if(doTiming > 2) watch->SetTime("FaceZ_t::clear");
         for (int face=0; face<kNFaces; face++) {
           FaceZ_t* fz = &fFaceData[is][face];
           fz->fHitData.clear() ;
           fz->fProtonHitData.clear() ;
-          memset(fz->fFirst ,0xff,kMaxNTimeBins*sizeof(int));
-          memset(fz->fLast  ,0xff,kMaxNTimeBins*sizeof(int));
-          memset(fz->fPFirst,0xff,kMaxNTimeBins*sizeof(int));
-          memset(fz->fPLast ,0xff,kMaxNTimeBins*sizeof(int));
+          memset(fz->fFirst ,0xff,_nTimeBins*sizeof(int));
+          memset(fz->fLast  ,0xff,_nTimeBins*sizeof(int));
+          // memset(fz->fPFirst,0xff,_nTimeBins*sizeof(int));
+          // memset(fz->fPLast ,0xff,_nTimeBins*sizeof(int));
         }
+        if(doTiming > 2) watch->StopTime("FaceZ_t::clear");
       }
 //-----------------------------------------------------------------------------
 // in case of a vector, 'clear()' erases it
@@ -322,5 +332,60 @@ namespace mu2e {
       return 0;
     }
 
+    // Utility function to convert a float to a sortable unsigned 32-bit integer key.
+    uint32_t floatToSortableInt(float f) {
+      uint32_t u;
+      // Type-pun safe conversion using memcpy (avoids strict aliasing violations)
+      memcpy(&u, &f, sizeof(float));
+
+      // If the number is negative, flip all bits *except* the sign bit logic
+      // The most significant bit indicates the sign (1 for negative)
+      if (u & 0x80000000) {
+        // For negative numbers, flip all *other* bits so they sort in reverse order
+        // within the negative range and before positive numbers in a standard
+        // unsigned integer sort.
+        u = ~u;
+      } else {
+        // For positive numbers, simply flip the sign bit itself to move them
+        // to the upper half of the unsigned integer range.
+        u |= 0x80000000;
+      }
+      return u;
+    }
+
+    // Function to perform a single pass of Counting Sort on a specific byte
+    void countingSortPass(std::vector<const ComboHit*>& input,
+                          std::vector<const ComboHit*>& output,
+                          const int byte_shift) {
+
+      constexpr int max_8_bit = 256; // uint8_t(-1) is 255
+      uint32_t count[max_8_bit];
+      memset(count, 0, sizeof(count));
+      const size_t n = input.size();
+      if(n == 0) return;
+
+      // Count the occurences of each byte value
+      for (size_t i = 0; i < n; i++) {
+        const float f = input[i]->time();
+        const uint32_t u = floatToSortableInt(f);
+        const uint8_t byte = (u >> byte_shift) & 0xFF;
+        count[byte]++;
+      }
+
+      // Re-map count[byte] to last location of that byte section
+      for (int i = 1; i < max_8_bit; i++) {
+        count[i] += count[i - 1];
+      }
+
+      // Fill the output array by iterating backwards in the location map
+      for (size_t i = n - 1; ; i--) {
+        const float f = input[i]->time();
+        const uint32_t u = floatToSortableInt(f);
+        const uint8_t byte = (u >> byte_shift) & 0xFF;
+        output[count[byte] - 1] = input[i]; // put the value in its mapped location by byte
+        count[byte]--; // next byte occurrence will go 1 before this one
+        if(i == 0) break; // do here by hand to avoid size_t(-1)
+      }
+    }
   }
 }

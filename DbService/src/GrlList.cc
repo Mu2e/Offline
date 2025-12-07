@@ -6,19 +6,15 @@
 using namespace mu2e;
 
 //**************************************************
-GrlList::GrlList(const GrlHeader& header) : _header(header) {}
-
-//**************************************************
 GrlList::GrlList(const GrlHeader& header, const IoVVec& grl) :
     _header(header), _grl(grl) {}
 
 //**************************************************
 GrlList::GrlList(const GrlHeader& header, const std::string& filename) :
     _header(header) {
-  if (filename.size() <= 0) {
-    throw cet::exception("GRLLIST_NO_FILE_NAME")
-        << "DbUtil::read called with no file name\n";
-  }
+
+  if (filename.empty()) return;
+
   std::ifstream myfile;
   myfile.open(filename);
   if (!myfile.is_open()) {

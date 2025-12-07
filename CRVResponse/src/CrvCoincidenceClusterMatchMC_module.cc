@@ -11,6 +11,9 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
 #include "Offline/MCDataProducts/inc/CrvCoincidenceClusterMC.hh"
@@ -44,6 +47,7 @@ namespace mu2e
       fhicl::Atom<std::string> crvCoincidenceClusterFinderModuleLabel{Name("crvCoincidenceClusterFinderModuleLabel"),
                                                                       Comment("label of CoincidenceClusterFinder module")};
       fhicl::Atom<std::string> crvWaveformsModuleLabel{Name("crvWaveformsModuleLabel"), Comment("label of CrvDigiMC module")};
+      fhicl::Atom<std::string> ewmLabel{Name("eventWindowMarkerModuleLabel"), Comment("label of EventWindowMarker module")};
       fhicl::Atom<bool> doNtuples{Name("doNtuples"), Comment("produce TNtuples")};
     };
     typedef art::EDProducer::Table<Config> Parameters;
@@ -59,6 +63,7 @@ namespace mu2e
                                                           //it is possible to have more than one instance of the CrvCoincidenceClusterFinder module
     std::string _crvWaveformsModuleLabel;  //module label of the CrvWaveform module.
                                            //this is optional. only needed, if MC information is required
+    std::string _ewmLabel; //module label of the EventWindowMarker module
 
     bool        _doNtuples;
     TNtuple    *_ntuple;
@@ -69,6 +74,7 @@ namespace mu2e
     art::EDProducer(config),
     _crvCoincidenceClusterFinderModuleLabel(config().crvCoincidenceClusterFinderModuleLabel()),
     _crvWaveformsModuleLabel(config().crvWaveformsModuleLabel()),
+    _ewmLabel(config().ewmLabel()),
     _doNtuples(config().doNtuples())
   {
     produces<CrvCoincidenceClusterMCCollection>();
@@ -118,6 +124,10 @@ namespace mu2e
       CLHEP::Hep3Vector     earliestHitPos;        //MC
       CLHEP::Hep3Vector     avgHitPos;             //MC
 
+      //get the event window marker
+      art::Handle<mu2e::EventWindowMarker> ewmh;
+      event.getByLabel(_ewmLabel, ewmh);
+
       //loop through all reco pulses and try to find the MC information
       std::vector<CrvCoincidenceClusterMC::PulseInfo> pulses; //collection of all pulses (sim particle, energy dep.)
       std::set<art::Ptr<CrvStep> > steps;  //collection of all crvSteps for total energy calculation
@@ -141,7 +151,8 @@ namespace mu2e
 
           //get the sim particle and deposited energy of this reco pulse
           CrvMCHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, visibleEnergyDepositedThisPulse,
-                                               earliestHitTimeThisPulse, earliestHitPosThisPulse, avgHitTimeThisPulse, avgHitPosThisPulse, simParticleThisPulse);
+                                               earliestHitTimeThisPulse, earliestHitPosThisPulse, avgHitTimeThisPulse,
+                                               avgHitPosThisPulse, simParticleThisPulse, ewmh);
           if(_doNtuples) _ntupleHitTimes->Fill(iter->GetCrvSectorType(),crvRecoPulse->GetSiPMNumber(),avgHitPosThisPulse.x(),avgHitTimeThisPulse,
                                                crvRecoPulse->GetPulseTime(),crvRecoPulse->GetLEtime(),crvRecoPulse->GetPEs(),
                                                crvRecoPulse->GetRecoPulseFlags().none());
@@ -153,7 +164,8 @@ namespace mu2e
       }//loop over reco pulses
 
       //based on all step points, get the most likely sim particle, total energy, etc.
-      CrvMCHelper::GetInfoFromStepPoints(steps, visibleEnergyDeposited, earliestHitTime, earliestHitPos, avgHitTime, avgHitPos, simParticle);
+      CrvMCHelper::GetInfoFromStepPoints(steps, visibleEnergyDeposited, earliestHitTime, earliestHitPos,
+                                         avgHitTime, avgHitPos, simParticle, ewmh);
 
       //insert the cluster information into the vector of the crv coincidence clusters (collection of pulses, most likely sim particle, etc.)
       //if the cluster was caused by noise, the simParticle will be null, the visibleEnergyDeposited, earliest/average hit time and hit position will be 0
