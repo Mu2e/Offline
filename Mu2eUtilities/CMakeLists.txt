@@ -44,6 +44,7 @@ cet_make_library(
       src/SimpleSpectrum.cc
       src/SortedStepPoints.cc
       src/STMUtils.cc
+      src/StopWatch.cc
       src/Table.cc
       src/TrackCuts.cc
       src/TrackerBFieldInfo.cc

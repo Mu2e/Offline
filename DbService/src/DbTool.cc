@@ -3138,14 +3138,14 @@ int mu2e::DbTool::parseArgs() {
         std::cout << "Could not parse args at " << a << std::endl;
         return 1;
       }
-      par = a.substr(2, par.size() - 2);
+      par = a.substr(2);
       // std::cout << "par1  = "<< par<< std::endl;
     } else {
       if (a.substr(0, 2) == "--") {
         // then par did not have an argument, treat as a binary arg
         _argMap[par] = "y";
         // std::cout << "set " << par << " to y " <<std::endl;
-        par = a.substr(2, a.size() - 2);  // current word is the next par
+        par = a.substr(2);  // current word is the next par
         // std::cout << "par2  = "<< par<< std::endl;
       } else {
         _argMap[par] = a;

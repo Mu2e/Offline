@@ -35,51 +35,84 @@ void LsqSums4::clear() {
 
 //-----------------------------------------------------------------------------
 void LsqSums4::addPoint(double XX, double YY, double W) {
-  double X, Y;
-                                        // move to COG to improve numerical accuracy
-  X = XX-fX0;
-  Y = YY-fY0;
+  // move to COG to improve numerical accuracy
+  const double X = XX-fX0;
+  const double Y = YY-fY0;
+
+  // Only compute these factors once
+  const double X2   = X * X;
+  const double Y2   = Y * Y;
+  const double XY   = X * Y;
+  const double W_X  = W * X;
+  const double W_Y  = W * Y;
+  const double W_X2 = W * X2;
+  const double W_Y2 = W * Y2;
 
   _qn   += 1;
-  sw    += W;
-  sx    += X*W;
-  sy    += Y*W;
-  sx2   += X*X*W;
-  sxy   += X*Y*W;
-  sy2   += Y*Y*W;
-  sx3   += X*X*X*W;
-  sx2y  += X*X*Y*W;
-  sxy2  += X*Y*Y*W;
-  sy3   += Y*Y*Y*W;
-  sx4   += X*X*X*X*W;
-  sx3y  += X*X*X*Y*W;
-  sx2y2 += X*X*Y*Y*W;
-  sxy3  += X*Y*Y*Y*W;
-  sy4   += Y*Y*Y*Y*W;
+  sw    += W;          // W
+  sx    += W_X;        // W * X
+  sy    += W_Y;        // W * Y
+  sx2   += W_X2;       // W * X * X
+  sxy   += W*XY;       // W * X * Y
+  sy2   += W_Y2;       // W * Y * Y
+  sx3   += W_X2 * X;   // W * X * X * X
+  sx2y  += W_X2 * Y;   // W * X * X * Y
+  sxy2  += W_Y2 * X;   // W * Y * Y * X
+  sy3   += W_Y2 * Y;   // W * Y * Y * Y
+  sx4   += W_X2 * X2;  // W * X * X * X * X
+  sx3y  += W_X2 * XY;  // W * X * X * X * Y
+  sx2y2 += W_X2 * Y2;  // W * X * X * Y * Y
+  sxy3  += W_Y2 * XY;  // W * Y * Y * Y * X
+  sy4   += W_Y2 * Y2;  // W * Y * Y * Y * Y
+
+  // _qn   += 1;
+  // sw    += W;
+  // sx    += X*W;
+  // sy    += Y*W;
+  // sx2   += X*X*W;
+  // sxy   += X*Y*W;
+  // sy2   += Y*Y*W;
+  // sx3   += X*X*X*W;
+  // sx2y  += X*X*Y*W;
+  // sxy2  += X*Y*Y*W;
+  // sy3   += Y*Y*Y*W;
+  // sx4   += X*X*X*X*W;
+  // sx3y  += X*X*X*Y*W;
+  // sx2y2 += X*X*Y*Y*W;
+  // sxy3  += X*Y*Y*Y*W;
+  // sy4   += Y*Y*Y*Y*W;
 }
 
 void LsqSums4::removePoint(double XX, double YY, double W) {
-  // move to COG
-  double X, Y;
-  X = XX-fX0;
-  Y = YY-fY0;
+  // move to COG to improve numerical accuracy
+  const double X = XX-fX0;
+  const double Y = YY-fY0;
+
+  // Only compute these factors once
+  const double X2   = X * X;
+  const double Y2   = Y * Y;
+  const double XY   = X * Y;
+  const double W_X  = W * X;
+  const double W_Y  = W * Y;
+  const double W_X2 = W * X2;
+  const double W_Y2 = W * Y2;
 
   _qn   -= 1;
-  sw    -= 1*W;
-  sx    -= X*W;
-  sy    -= Y*W;
-  sx2   -= X*X*W;
-  sxy   -= X*Y*W;
-  sy2   -= Y*Y*W;
-  sx3   -= X*X*X*W;
-  sx2y  -= X*X*Y*W;
-  sxy2  -= X*Y*Y*W;
-  sy3   -= Y*Y*Y*W;
-  sx4   -= X*X*X*X*W;
-  sx3y  -= X*X*X*Y*W;
-  sx2y2 -= X*X*Y*Y*W;
-  sxy3  -= X*Y*Y*Y*W;
-  sy4   -= Y*Y*Y*Y*W;
+  sw    -= W;          // W
+  sx    -= W_X;        // W * X
+  sy    -= W_Y;        // W * Y
+  sx2   -= W_X2;       // W * X * X
+  sxy   -= W*XY;       // W * X * Y
+  sy2   -= W_Y2;       // W * Y * Y
+  sx3   -= W_X2 * X;   // W * X * X * X
+  sx2y  -= W_X2 * Y;   // W * X * X * Y
+  sxy2  -= W_Y2 * X;   // W * Y * Y * X
+  sy3   -= W_Y2 * Y;   // W * Y * Y * Y
+  sx4   -= W_X2 * X2;  // W * X * X * X * X
+  sx3y  -= W_X2 * XY;  // W * X * X * X * Y
+  sx2y2 -= W_X2 * Y2;  // W * X * X * Y * Y
+  sxy3  -= W_Y2 * XY;  // W * Y * Y * Y * X
+  sy4   -= W_Y2 * Y2;  // W * Y * Y * Y * Y
 }
 
 //-----------------------------------------------------------------------------
