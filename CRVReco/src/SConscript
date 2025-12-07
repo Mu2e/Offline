@@ -24,6 +24,7 @@ mainlib = helper.make_mainlib ( [ 'CLHEP',
                                   'canvas',
                                   'cetlib',
                                   'cetlib_except',
+                                  'libSpectrum',
                                   rootlibs]
                               )
 
@@ -31,6 +32,7 @@ helper.make_dict_and_map( [ mainlib,
                        'art_root_io_tfile_support',
                        'art_root_io_TFileService',
                        'canvas',
+                       'libSpectrum',
                        rootlibs,
                        ] )
 
@@ -65,6 +67,7 @@ helper.make_plugins( [ mainlib,
                        'CLHEP',
                        rootlibs,
                        'boost_filesystem',
+                       'libSpectrum',
                        ] )
 
 # this tells emacs to view this file in python mode.
