@@ -40,6 +40,15 @@ namespace mu2e {
                                 KalSeedPtrCollection&     trkCol,
                                 HelixSeedPtrCollection&   hlxCol,
                                 TimeClusterPtrCollection& tclCol);
+
+    // Check if a given Ptr is already included in a vector of Ptrs
+    template <typename T> bool included(const art::Ptr<T>& ptr, const std::vector<art::Ptr<T>>& vec) {
+      for(const auto& vptr : vec) {
+        if(vptr == ptr) return true;
+      }
+      return false;
+    }
+
   private:
     std::string  _tag;
     int          _debug;
@@ -55,18 +64,20 @@ namespace mu2e {
     produces<TimeClusterPtrCollection>();
   }
 
+  // Fill the output Ptr collections from a TriggerInfo object
   void TriggerInfoToCollections::fillContainers(const TriggerInfo& info,
                                                 KalSeedPtrCollection&     trkCol,
                                                 HelixSeedPtrCollection&   hlxCol,
                                                 TimeClusterPtrCollection& tclCol) {
+    // Add each trigger info object content to the output collections if not already included
     for(auto ptr : info.tracks()) {
-      trkCol.push_back(ptr);
+      if(!included(ptr, trkCol)) trkCol.push_back(ptr);
     }
     for(auto ptr : info.helixes()) {
-      hlxCol.push_back(ptr);
+      if(!included(ptr, hlxCol)) hlxCol.push_back(ptr);
     }
     for(auto ptr : info.hitClusters()) {
-      tclCol.push_back(ptr);
+      if(!included(ptr, tclCol)) tclCol.push_back(ptr);
     }
   }
 
