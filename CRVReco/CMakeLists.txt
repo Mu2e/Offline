@@ -16,6 +16,7 @@ cet_build_plugin(CrvCalibration art::module
       Offline::CRVReco
       art_root_io::TFileService_service
       ROOT::Tree
+      ROOT::Spectrum
 )
 
 cet_build_plugin(CrvCoincidenceFinder art::module
