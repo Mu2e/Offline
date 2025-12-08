@@ -64,11 +64,9 @@ namespace mu2e
          continue;
        }
 
-       // Otherwisse assign it to the current cluster, then expand the cluster
        hitToCluster[i] = currentClusterID;
        BkgCluster thisCluster;
        thisCluster.addHit(idx[i]);
-
        // Extend the cluster by adding / expanding around neighbors
        for (const auto& j : neighbors) inspect.push(j);
 
@@ -125,7 +123,6 @@ namespace mu2e
     //unsigned nNeighbors(0);
     unsigned nNeighbors(chcol[idx[ihit]].nStrawHits()-1);
     neighbors.clear();
-
     float time0 = chcol[idx[ihit]].correctedTime();
     float x0    = chcol[idx[ihit]].pos().x();
     float y0    = chcol[idx[ihit]].pos().y();
@@ -175,16 +172,20 @@ namespace mu2e
     if (cluster.hits().size()==1) {
       int idx = cluster.hits().at(0);
       cluster.time(chcol[idx].correctedTime());
-      cluster.pos(XYZVectorF(chcol[idx].pos().x(),chcol[idx].pos().y(),0.0f));
+      cluster.pos(XYZVectorF(chcol[idx].pos().x(),chcol[idx].pos().y(),chcol[idx].pos().z()));
+      XYZVectorF hitpos(chcol[idx].pos().x(), chcol[idx].pos().y(), chcol[idx].pos().z());
+      cluster.addHitPosition(hitpos);
       return;
     }
 
-    float sumWeight(0),crho(0),cphi(0),ctime(0);
+    float sumWeight(0),crho(0),cphi(0),ctime(0), cz(0);
     for (auto& idx : cluster.hits()) {
       float weight = chcol[idx].nStrawHits();
       float dt     = chcol[idx].correctedTime();
       float dr     = sqrtf(chcol[idx].pos().perp2());
-
+      float dz     = chcol[idx].pos().z();
+      XYZVectorF hitpos(chcol[idx].pos().x(), chcol[idx].pos().y(), chcol[idx].pos().z());
+      cluster.addHitPosition(hitpos);
       float dp     = chcol[idx].phi();
       if (dp > M_PI)  dp -= 2*M_PI;
       if (dp < -M_PI) dp += 2*M_PI;
@@ -192,15 +193,16 @@ namespace mu2e
       ctime    += dt*weight;
       crho     += dr*weight;
       cphi     += dp*weight;
+      cz       += dz*weight;
       sumWeight += weight;
     }
 
     crho  /= sumWeight;
     cphi  /= sumWeight;
     ctime /= sumWeight;
-
+    cz    /= sumWeight;
     cluster.time(ctime);
-    cluster.pos(XYZVectorF(crho*cos(cphi),crho*sin(cphi),0.0f));
+    cluster.pos(XYZVectorF(crho*cos(cphi),crho*sin(cphi),cz));
   }
 
 
