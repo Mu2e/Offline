@@ -43,8 +43,21 @@ namespace mu2e {
       return findTrigPathID(name);
     }
 
+    std::string const& getTrigNameByBit(size_t const bit) const {
+      for (const auto& pair : _trigPathMap) {
+        if (pair.second == bit) {
+          return pair.first;
+        }
+      }
+      throw cet::exception("TRIGGER") << "TriggerResultsNavigator: Bit " <<  bit << " not found";
+    }
+
     // Has ith path accepted the event?
     bool      accepted(std::string const& name) const;
+    bool      accepted(unsigned int const bit) const {
+      auto name = getTrigNameByBit(bit);
+      return accepted(name);
+    }
 
     bool      wasrun(std::string const& name) const;
 
