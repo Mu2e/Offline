@@ -43,7 +43,9 @@
 #include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
 
@@ -109,6 +111,8 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> strawDigiMixer { fhicl::Name("strawDigiMixer") };
       fhicl::Table<CollectionMixerConfig> strawDigiADCWaveformMixer { fhicl::Name("strawDigiADCWaveformMixer") };
       fhicl::Table<CollectionMixerConfig> strawDigiMCMixer { fhicl::Name("strawDigiMCMixer") };
+      fhicl::Table<CollectionMixerConfig> crvDigiMixer { fhicl::Name("crvDigiMixer") };
+      fhicl::Table<CollectionMixerConfig> crvDigiMCMixer { fhicl::Name("crvDigiMCMixer") };  //needs to be index-matched with crvDigiMixer
       fhicl::Table<CollectionMixerConfig> eventWindowMarkerMixer { fhicl::Name("eventWindowMarkerMixer") };
       fhicl::OptionalTable<CosmicLivetimeMixerConfig> cosmicLivetimeMixer { fhicl::Name("cosmicLivetimeMixer") };
       fhicl::OptionalTable<VolumeInfoMixerConfig> volumeInfoMixer { fhicl::Name("volumeInfoMixer") };
@@ -170,6 +174,14 @@ namespace mu2e {
 
     bool mixStrawDigiMCs(std::vector<StrawDigiMCCollection const*> const& in,
                        StrawDigiMCCollection& out,
+                       art::PtrRemapper const& remap);
+
+    bool mixCrvDigis(std::vector<CrvDigiCollection const*> const& in,
+                       CrvDigiCollection& out,
+                       art::PtrRemapper const& remap);
+
+    bool mixCrvDigiMCs(std::vector<CrvDigiMCCollection const*> const& in,
+                       CrvDigiMCCollection& out,
                        art::PtrRemapper const& remap);
 
     bool mixEventWindowMarkers(std::vector<EventWindowMarker const*> const& in,

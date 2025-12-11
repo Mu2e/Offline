@@ -117,6 +117,16 @@ namespace mu2e {
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixStrawDigiMCs, *this);
     }
 
+    for(const auto& e: conf.crvDigiMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCrvDigis, *this);
+    }
+
+    for(const auto& e: conf.crvDigiMCMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCrvDigiMCs, *this);
+    }
+
     for(const auto& e: conf.eventWindowMarkerMixer().mixingMap()) {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixEventWindowMarkers, *this);
@@ -477,6 +487,22 @@ namespace mu2e {
       steps[StrawEnd::hv]  = remap(steps[StrawEnd::hv],  sgsOffset);
     }
 
+    return true;
+  }
+
+  bool Mu2eProductMixer::mixCrvDigis(std::vector<CrvDigiCollection const*> const& in,
+                     CrvDigiCollection& out,
+                     art::PtrRemapper const& remap)
+  {
+    art::flattenCollections(in, out);
+    return true;
+  }
+
+  bool Mu2eProductMixer::mixCrvDigiMCs(std::vector<CrvDigiMCCollection const*> const& in,
+                     CrvDigiMCCollection& out,
+                     art::PtrRemapper const& remap)
+  {
+    art::flattenCollections(in, out);
     return true;
   }
 
