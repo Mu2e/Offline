@@ -30,6 +30,7 @@ namespace mu2e
 
     const std::vector<double>                 &GetVoltages() const        {return _voltages;}
     const std::vector<art::Ptr<CrvStep> >     &GetCrvSteps() const        {return _steps;}
+    std::vector<art::Ptr<CrvStep> >           &GetCrvSteps()              {return _steps;}  //needed for mixer
     const art::Ptr<SimParticle>               &GetSimParticle() const     {return _simParticle;}
     double                                     GetStartTime() const       {return _startTime;}
     double                                     GetTDC0Time() const        {return _TDC0Time;}
