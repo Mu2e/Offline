@@ -43,7 +43,7 @@ namespace mu2e{
           fhicl::Name("CrvDigiCollections"),
           fhicl::Comment("art::InputTags of source CrvDigi")
         };
-        fhicl::Sequence<art::InputTag> crv_digimc_tags{   //needs to be index-matched with CrvDigiCollections
+        fhicl::Sequence<art::InputTag> crv_digimc_tags{   //needs to be empty or index-matched with CrvDigiCollections
           fhicl::Name("CrvDigiMCCollections"),
           fhicl::Comment("art::InputTags of source CrvDigiMC")
         };
@@ -97,7 +97,7 @@ namespace mu2e{
     for (const auto& tag: _crv_digi_tags) this->consumes<CrvDigiCollection>(tag);
     for (const auto& tag: _crv_digimc_tags) this->consumes<CrvDigiMCCollection>(tag);
     this->produces<CrvDigiCollection>();
-    this->produces<CrvDigiMCCollection>();
+    if(!_crv_digimc_tags.empty()) this->produces<CrvDigiMCCollection>();
   }
 
   void MergeDigis::produce(art::Event& event){
@@ -141,7 +141,9 @@ namespace mu2e{
 //(2) the order in which these collections are merged is identical for CrvDigiMC and CrvDigi
 //(3) ZS and NZS collections need to be kept separate  //TODO //FIXME
 
-    if(_crv_digi_tags.size()!=_crv_digimc_tags.size())
+    bool hasCrvDigiMCs = !_crv_digimc_tags.empty();
+
+    if(_crv_digi_tags.size()!=_crv_digimc_tags.size() && hasCrvDigiMCs)
       throw cet::exception("MergeDigis::mergeCrvDigis") << "mismatched number of CrvDigi and CrvDigiMC collections" << std::endl;
 
     size_t nCollections = _crv_digi_tags.size();
@@ -155,26 +157,29 @@ namespace mu2e{
 
 //Sort digis by channel number
 //Keep digi and digiMC as a pair to keep both index-matched during ordering
-    typedef std::pair<mu2e::CrvDigi, mu2e::CrvDigiMC> DigiPair;
+//Or have no digiMCs at all
+    typedef std::pair<mu2e::CrvDigi, std::optional<mu2e::CrvDigiMC> > DigiPair;
     std::map<size_t, std::vector<DigiPair> > digiPairMap;
     for(size_t iTag=0; iTag<nCollections; ++iTag)
     {
       const auto crvDigis = event.getValidHandle<CrvDigiCollection>(_crv_digi_tags.at(iTag));
-      const auto crvDigisMC = event.getValidHandle<CrvDigiMCCollection>(_crv_digimc_tags.at(iTag));
+      std::optional<const art::ValidHandle<CrvDigiMCCollection>> crvDigisMC = (hasCrvDigiMCs ? std::optional<const art::ValidHandle<CrvDigiMCCollection>>(event.getValidHandle<CrvDigiMCCollection>(_crv_digimc_tags.at(iTag))) : std::nullopt);
 
-      if(crvDigis->size()!=crvDigisMC->size())
-        throw cet::exception("MergeDigis::mergeCrvDigis") << "mismatched CrvDigi/CrvDigiMC collection sizes" << std::endl;
+      if(hasCrvDigiMCs)
+      {
+        if(crvDigis->size()!=crvDigisMC.value()->size())
+          throw cet::exception("MergeDigis::mergeCrvDigis") << "mismatched CrvDigi/CrvDigiMC collection sizes" << std::endl;
+      }
 
       for(size_t i=0; i<crvDigis->size(); ++i)
       {
         const auto &digi=crvDigis->at(i);
-        const auto &digiMC=crvDigisMC->at(i);
-
         const CRSScintillatorBarIndex &barIndex = digi.GetScintillatorBarIndex();
         int SiPM = digi.GetSiPMNumber();
         size_t channel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
 
-        digiPairMap[channel].emplace_back(digi,digiMC);
+        if(hasCrvDigiMCs) digiPairMap[channel].emplace_back(digi,crvDigisMC.value()->at(i));
+        else digiPairMap[channel].emplace_back(digi,std::nullopt);
       }
     }//loop through collections
 
@@ -215,20 +220,23 @@ namespace mu2e{
             if(hasDigi1 && !hasDigi2)
             {
               ADCs.push_back(digi1.GetADCs().at(j));
-              voltages.push_back(digiMC1.GetVoltages().at(j));
+              if(hasCrvDigiMCs) voltages.push_back(digiMC1.value().GetVoltages().at(j));
             }
             if(!hasDigi1 && hasDigi2)
             {
               ADCs.push_back(digi2.GetADCs().at(j-startOverlap));
-              voltages.push_back(digiMC2.GetVoltages().at(j-startOverlap));
+              if(hasCrvDigiMCs) voltages.push_back(digiMC2.value().GetVoltages().at(j-startOverlap));
             }
             if(hasDigi1 && hasDigi2)
             {
               //pedestal is included in both ADC values, but can be used only once. so it needs to be subtracted.
               int16_t ADC = digi1.GetADCs().at(j) + digi2.GetADCs().at(j-startOverlap) - pedestal;
-              double voltage = digiMC1.GetVoltages().at(j) + digiMC2.GetVoltages().at(j-startOverlap);
               ADCs.push_back(ADC);
-              voltages.push_back(voltage);
+              if(hasCrvDigiMCs)
+              {
+                double voltage = digiMC1.value().GetVoltages().at(j) + digiMC2.value().GetVoltages().at(j-startOverlap);
+                voltages.push_back(voltage);
+              }
             }
           }
 
@@ -241,26 +249,35 @@ namespace mu2e{
           uint8_t  ROC          = digi1.GetROC();
           uint8_t  FEB          = digi1.GetFEB();
           uint8_t  FEBchannel   = digi1.GetFEBchannel();
-          double   startTime    = digiMC1.GetStartTime();
-          double   TDC0Time     = digiMC1.GetTDC0Time();
 
-          std::vector<art::Ptr<CrvStep> > steps = digiMC1.GetCrvSteps();
-          steps.insert(steps.begin(),digiMC2.GetCrvSteps().begin(),digiMC2.GetCrvSteps().end()); //no duplicate crvSteps expected
-
-          //find simparticle with biggest contribution of visible deposited energy
-          std::map<art::Ptr<SimParticle>,double> simParticleMap;
-          for(auto stepsIter=steps.begin(); stepsIter!=steps.end(); ++stepsIter)
-          {
-            simParticleMap[(*stepsIter)->simParticle()]+=(*stepsIter)->visibleEDep();
-          }
+          double   startTime    = 0;
+          double   TDC0Time     = 0;
+          std::vector<art::Ptr<CrvStep> > steps;
           art::Ptr<SimParticle> simParticle;
-          double simParticleDepEnergy=0;
-          for(auto simParticleIter=simParticleMap.begin(); simParticleIter!=simParticleMap.end(); ++simParticleIter)
+
+          if(hasCrvDigiMCs)
           {
-            if(simParticleIter->second>simParticleDepEnergy)
+            startTime = digiMC1.value().GetStartTime();
+            TDC0Time  = digiMC1.value().GetTDC0Time();
+
+            //no duplicate crvSteps expected
+            steps.insert(steps.begin(),digiMC1.value().GetCrvSteps().begin(),digiMC1.value().GetCrvSteps().end());
+            steps.insert(steps.begin(),digiMC2.value().GetCrvSteps().begin(),digiMC2.value().GetCrvSteps().end());
+
+            //find simparticle with biggest contribution of visible deposited energy
+            std::map<art::Ptr<SimParticle>,double> simParticleMap;
+            for(auto stepsIter=steps.begin(); stepsIter!=steps.end(); ++stepsIter)
             {
-              simParticleDepEnergy=simParticleIter->second;
-              simParticle=simParticleIter->first;
+              simParticleMap[(*stepsIter)->simParticle()]+=(*stepsIter)->visibleEDep();
+            }
+            double simParticleDepEnergy=0;
+            for(auto simParticleIter=simParticleMap.begin(); simParticleIter!=simParticleMap.end(); ++simParticleIter)
+            {
+              if(simParticleIter->second>simParticleDepEnergy)
+              {
+                simParticleDepEnergy=simParticleIter->second;
+                simParticle=simParticleIter->first;
+              }
             }
           }
 
@@ -269,9 +286,17 @@ namespace mu2e{
           digiPairs.erase(digiPairs.begin()+i-1);
 
 //insert new digiPair
-          DigiPair newDigiPair(mu2e::CrvDigi(ADCs,startTDC,NZS,oddTimestamp,scintillatorBarIndex,SiPMNumber,ROC,FEB,FEBchannel),
-                               mu2e::CrvDigiMC(voltages,steps,simParticle,startTime,TDC0Time,NZS,scintillatorBarIndex,SiPMNumber));
-          digiPairs.insert(digiPairs.begin()+i-1, newDigiPair);
+          if(hasCrvDigiMCs)
+          {
+            DigiPair newDigiPair(mu2e::CrvDigi(ADCs,startTDC,NZS,oddTimestamp,scintillatorBarIndex,SiPMNumber,ROC,FEB,FEBchannel),
+                                 mu2e::CrvDigiMC(voltages,steps,simParticle,startTime,TDC0Time,NZS,scintillatorBarIndex,SiPMNumber));
+            digiPairs.insert(digiPairs.begin()+i-1, newDigiPair);
+          }
+          else
+          {
+            DigiPair newDigiPair(mu2e::CrvDigi(ADCs,startTDC,NZS,oddTimestamp,scintillatorBarIndex,SiPMNumber,ROC,FEB,FEBchannel),std::nullopt);
+            digiPairs.insert(digiPairs.begin()+i-1, newDigiPair);
+          }
 
 //the pair i (formerly pair i+1) needs to be checked with the newly created pair i-1
           --i; //for loop will increase i by 1 so that we are again back at the same index.
@@ -285,12 +310,12 @@ namespace mu2e{
         const auto &digiMC=digiPairs.at(i).second;
 
         crvDigisNew->emplace_back(digi);
-        crvDigisMCNew->emplace_back(digiMC);
+        if(hasCrvDigiMCs) crvDigisMCNew->emplace_back(digiMC.value());
       }
     }//loop over channel
 
     event.put(std::move(crvDigisNew));
-    event.put(std::move(crvDigisMCNew));
+    if(hasCrvDigiMCs) event.put(std::move(crvDigisMCNew));
   }//mergeCrvDigis
 
 } // namespace mu2e
