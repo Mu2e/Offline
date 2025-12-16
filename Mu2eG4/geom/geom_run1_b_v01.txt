@@ -1,0 +1,39 @@
+// Based off Mu2eG4/geom/geom_run1_a.txt
+// Run1B version with Trackr First
+
+#include "Offline/Mu2eG4/geom/geom_run1_a.txt"
+
+//-------------------------------------------
+// Run1B specific overrides
+//-------------------------------------------
+
+// Disable proton absorber, STM, and TSdA for Run1B
+bool hasProtonAbsorber  = false;
+bool hasSTM             = false;
+bool hasTSdA            = false;
+
+// Virtual detector option (set to false to disable)
+bool hasVirtualDetector = true; // some components, e.g. ProtonAbsorber assume vd presence now;
+
+// Stopping target configuration
+bool stoppingTarget.foilTarget_supportStructure = false;
+vector<double> stoppingTarget.halfThicknesses = { 3.175 };
+double stoppingTarget.holeRadius = 0.001;//21.5;
+
+// Coll51 material override - set to vacuum
+string ts.coll5.material1Name = "DSVacuum";
+
+// Calorimeter and tracker position settings
+double calorimeter.caloMotherZ0 = 8700;
+double calorimeter.caloMotherZ1 = 11220; // Default is 13220;
+vector<double> calorimeter.diskZMotherShift   = {0.0,2000};
+// Set stopping target position AFTER calorimeter configuration
+double stoppingTarget.z0InMu2e = 4185;
+vector<double> stoppingTarget.radii  =  {600.00};
+double tracker.mother.z0          = 7000; //10175.0;  // mm
+double tracker.z0                 = 7000; //10171.0; // 10200.0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

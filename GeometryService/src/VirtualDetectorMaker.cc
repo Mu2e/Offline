@@ -61,7 +61,7 @@ namespace mu2e {
 
       // Need some data from other subsystems
       GeomHandle<Beamline> bg;
-      double solenoidOffset = bg->solenoidOffset();
+      //double solenoidOffset = bg->solenoidOffset();
 
       // VD Coll1_In and Coll1_Out are at the front and back of
       // collimator 1, which is placed inside TS1.
@@ -191,12 +191,16 @@ namespace mu2e {
       if ( verbosityLevel > 0 ) {
         std::cout << "coll 5 " << coll5pos.z() << " " << deltaZ5.z() << " " << targetOffset.z() << " " << shift.z() << std::endl;
       }
+      /*
       const Hep3Vector STMOffset(targetOffset.x()-shift.x(),targetOffset.y()-shift.y(), targetOffset.z()-shift.z() - 0.5*( (coll5pos.z()+deltaZ5.z()) - (targetOffset.z()-shift.z()) ));
       vd->addVirtualDetector( VirtualDetectorId::STMUpstream,
                               ds2centerInMu2e,0,STMOffset);
 
+      */
 
 
+
+      /*
       if (c.getBool("hasTracker",false)){
 
         ostringstream vdName(VirtualDetectorId::name(VirtualDetectorId::TT_Mid));
@@ -226,8 +230,8 @@ namespace mu2e {
         vd->addVirtualDetector( VirtualDetectorId::TT_Mid,
                                  ttOffset, 0, vdTTMidOffset);
 
-        vd->addVirtualDetector( VirtualDetectorId::TT_MidInner,
-                                 ttOffset, 0, vdTTMidOffset);
+        // vd->addVirtualDetector( VirtualDetectorId::TT_MidInner,
+        //                         ttOffset, 0, vdTTMidOffset);
 
         //       if (verbosityLevel >0) {
         //         for ( int vdId=11; vdId<=12; ++vdId) {
@@ -293,7 +297,7 @@ namespace mu2e {
                                  ttOffset, 0, vdTTOutSurfOffset);
 
       }
-
+      */
       if(geom->hasElement<ExtMonFNALBuilding>() && c.getBool("extMonFNAL.filter.vd.enabled", false)) {
         CLHEP::Hep3Vector vzero;
         // These detectors will be placed in the collimator channels.
