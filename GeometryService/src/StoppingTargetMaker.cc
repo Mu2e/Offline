@@ -7,6 +7,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <algorithm>
 
 
 // Framework includes
@@ -232,17 +233,13 @@ namespace mu2e {
     // calculate the parameters of the enclosing cylinder
     //find the radius - maximum of foil radius + offset from axis
     double radius=-1;
-    /*
     for (unsigned int ifoil=0; ifoil<_targ->_foils.size(); ifoil++)
       {
         double rtest=_targ->_foils[ifoil].rOut() + _targ->_foils[ifoil].centerInDetectorSystem().perp();
-        radius=max(radius,rtest);
+        radius=std::max(radius,rtest);
       }
     // beef it up by a mm
     radius+=1;
-    */
-    // fix it to the diameter of the outer proton absorber
-    radius=_foilTarget_supportStructure_rOut - 0.001;
 
     // give it to the Target
     _targ->_radius=radius;
