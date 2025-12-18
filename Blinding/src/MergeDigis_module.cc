@@ -268,7 +268,7 @@ namespace mu2e{
             std::map<art::Ptr<SimParticle>,double> simParticleMap;
             for(auto stepsIter=steps.begin(); stepsIter!=steps.end(); ++stepsIter)
             {
-              simParticleMap[(*stepsIter)->simParticle()]+=(*stepsIter)->visibleEDep();
+              if((*stepsIter).isNonnull()) simParticleMap[(*stepsIter)->simParticle()]+=(*stepsIter)->visibleEDep();
             }
             double simParticleDepEnergy=0;
             for(auto simParticleIter=simParticleMap.begin(); simParticleIter!=simParticleMap.end(); ++simParticleIter)
