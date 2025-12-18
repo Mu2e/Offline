@@ -25,6 +25,7 @@
 #include "Offline/TrackerMC/inc/StrawDigiBundle.hh"
 #include "Offline/TrackerMC/inc/StrawDigiBundleCollection.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
+#include "Offline/CRVConditions/inc/CRVADCRange.hh"
 #include "Offline/CRVResponse/inc/CrvMCHelper.hh"
 
 namespace mu2e{
@@ -213,31 +214,37 @@ namespace mu2e{
 //combine ADCs and voltages
           std::vector<int16_t> ADCs;
           std::vector<double>  voltages;
+          ADCs.resize(lengthTotal);
+          voltages.resize(lengthTotal);
           for(size_t j=0; j<lengthTotal; ++j)
           {
             bool hasDigi1 = (j<length1);
             bool hasDigi2 = (startOverlap<=j && j<startOverlap+length2);
             if(hasDigi1 && !hasDigi2)
             {
-              ADCs.push_back(digi1.GetADCs().at(j));
-              if(hasCrvDigiMCs) voltages.push_back(digiMC1.value().GetVoltages().at(j));
+              ADCs.at(j)=digi1.GetADCs().at(j);
+              if(hasCrvDigiMCs) voltages.at(j)=digiMC1.value().GetVoltages().at(j);
             }
             if(!hasDigi1 && hasDigi2)
             {
-              ADCs.push_back(digi2.GetADCs().at(j-startOverlap));
-              if(hasCrvDigiMCs) voltages.push_back(digiMC2.value().GetVoltages().at(j-startOverlap));
+              ADCs.at(j)=digi2.GetADCs().at(j-startOverlap);
+              if(hasCrvDigiMCs) voltages.at(j)=digiMC2.value().GetVoltages().at(j-startOverlap);
             }
             if(hasDigi1 && hasDigi2)
             {
               //pedestal is included in both ADC values, but can be used only once. so it needs to be subtracted.
               int16_t ADC = digi1.GetADCs().at(j) + digi2.GetADCs().at(j-startOverlap) - pedestal;
-              ADCs.push_back(ADC);
+              ADCs.at(j)=ADC;
               if(hasCrvDigiMCs)
               {
                 double voltage = digiMC1.value().GetVoltages().at(j) + digiMC2.value().GetVoltages().at(j-startOverlap);
-                voltages.push_back(voltage);
+                voltages.at(j)=voltage;
               }
             }
+          }
+          for(size_t j=0; j<ADCs.size(); ++j)
+          {
+            if(ADCs.at(j)>CRVMaxADC) ADCs.at(j)=CRVMaxADC;
           }
 
 //combine other values
