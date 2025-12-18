@@ -335,9 +335,16 @@ namespace mu2e {
   VolumeInfo Mu2eWorld::constructTracker(){
 
     // The tracker is built inside this volume.
+    std::string theDS2("DS2Vacuum");
     std::string theDS3("DS3Vacuum");
-    if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
-    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo(theDS3);
+    if ( _config.getBool("inGaragePosition",false) ) {
+      theDS2 = "garageFakeDS2Vacuum";
+      theDS3 = "garageFakeDS3Vacuum";
+    }
+    // For Run1B, place tracker in DS2Vacuum to extend DS2Vacuum towards MBS
+    // Check if tracker should be in DS2Vacuum (Run1B configuration)
+    bool trackerInDS2 = _config.getBool("tracker.inDS2Vacuum", false);
+    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo(trackerInDS2 ? theDS2 : theDS3);
 
     // Construct one of the trackers.
     VolumeInfo trackerInfo;
@@ -764,10 +771,16 @@ namespace mu2e {
   VolumeInfo Mu2eWorld::constructCal(){
 
     // The calorimeter is built inside this volume.
+    std::string theDS2("DS2Vacuum");
     std::string theDS3("DS3Vacuum");
-    if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
-
-    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo(theDS3);
+    if ( _config.getBool("inGaragePosition",false) ) {
+      theDS2 = "garageFakeDS2Vacuum";
+      theDS3 = "garageFakeDS3Vacuum";
+    }
+    // For Run1B, place calorimeter in DS2Vacuum to extend DS2Vacuum towards MBS
+    // Check if calorimeter should be in DS2Vacuum (Run1B configuration)
+    bool calorimeterInDS2 = _config.getBool("calorimeter.inDS2Vacuum", false);
+    VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo(calorimeterInDS2 ? theDS2 : theDS3);
 
     // Construct one of the calorimeters.
     VolumeInfo calorimeterInfo;

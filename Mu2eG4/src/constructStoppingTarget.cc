@@ -76,31 +76,33 @@ namespace mu2e {
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
     //get the proton absorber elements to prevent overlaps
-    GeomHandle<MECOStyleProtonAbsorber> pabs;
     bool overlapPabs = false;
-    double cylinderRadius = target->cylinderRadius();
     double rAtZClosest, opaZCenter, opaR1, opaR2, opaHL, stZCenter, zclosest;
-    if(pabs->isAvailable(2)) { //there is the OPA in DS2
-      opaR1 = pabs->part(2).innerRadiusAtStart();
-      opaR2 = pabs->part(2).innerRadiusAtEnd();
-      if(!(cylinderRadius < opaR1 && cylinderRadius < opaR2)) { //could overlap
-        if(cylinderRadius > opaR1 && cylinderRadius > opaR2) {
-          throw cet::exception("GEOM") << "constructStoppingTarget::" << __func__
-                                       << ": Stopping target mother overlaps with OPA!\n";
-        }
-        //could overlap, so check if it does in this z range
-        opaZCenter = CLHEP::mm * pabs->part(2).center().z();
-        opaHL = pabs->part(2).halfLength();
-        stZCenter = target->centerInMu2e().z();
-        int side = (opaR1 <= opaR2) ? 1 : -1; //check which way the cone opens
-        zclosest = stZCenter - side*target->cylinderLength()/2.;
-        //make sure closest point is within OPA region
-        if(zclosest > opaZCenter + opaHL) zclosest = opaZCenter+opaHL;
-        else if(zclosest < opaZCenter - opaHL) zclosest = opaZCenter-opaHL;
-        rAtZClosest = opaR1 + (opaR2-opaR1)*(zclosest - (opaZCenter-opaHL))/(2.*opaHL); //linear radius change in z
-        if(rAtZClosest < cylinderRadius + 0.001) overlapPabs = true; //require a small buffer
-      } //end possible radius overlap check
-    } //end OPA is available check
+    if ( config.getBool("hasProtonAbsorber", true) ) {
+      GeomHandle<MECOStyleProtonAbsorber> pabs;
+      double cylinderRadius = target->cylinderRadius();
+      if(pabs->isAvailable(2)) { //there is the OPA in DS2
+        opaR1 = pabs->part(2).innerRadiusAtStart();
+        opaR2 = pabs->part(2).innerRadiusAtEnd();
+        if(!(cylinderRadius < opaR1 && cylinderRadius < opaR2)) { //could overlap
+          if(cylinderRadius > opaR1 && cylinderRadius > opaR2) {
+            throw cet::exception("GEOM") << "constructStoppingTarget::" << __func__
+                                         << ": Stopping target mother overlaps with OPA!\n";
+          }
+          //could overlap, so check if it does in this z range
+          opaZCenter = CLHEP::mm * pabs->part(2).center().z();
+          opaHL = pabs->part(2).halfLength();
+          stZCenter = target->centerInMu2e().z();
+          int side = (opaR1 <= opaR2) ? 1 : -1; //check which way the cone opens
+          zclosest = stZCenter - side*target->cylinderLength()/2.;
+          //make sure closest point is within OPA region
+          if(zclosest > opaZCenter + opaHL) zclosest = opaZCenter+opaHL;
+          else if(zclosest < opaZCenter - opaHL) zclosest = opaZCenter-opaHL;
+          rAtZClosest = opaR1 + (opaR2-opaR1)*(zclosest - (opaZCenter-opaHL))/(2.*opaHL); //linear radius change in z
+          if(rAtZClosest < cylinderRadius + 0.001) overlapPabs = true; //require a small buffer
+        } //end possible radius overlap check
+      } //end OPA is available check
+    }
 
     TubsParams targetMotherParams(0., target->cylinderRadius(), target->cylinderLength()/2.);
 
