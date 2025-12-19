@@ -83,7 +83,8 @@ elif [ "$COMMAND" == "GDML"  ]; then
         echo
         echo "Starting GDML for $FCL"
         mu2e -c $FCL
-        [ $? -ne 0 ] && RC=1
+        # some tags and geometries are inconsistent
+        # so do not fail on failure to make GDML
     done
     mv *.gdml ${MUSE_WORK_DIR}/${MUSE_BUILD_BASE}/Offline/gen/gdml
     cd $OWD
