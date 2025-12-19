@@ -1,10 +1,11 @@
-#ifndef scorerDelayedDose_h
-#define scorerDelayedDose_h 1
+#ifndef scorerDoseResidual_h
+#define scorerDoseResidual_h 1
 //
 // Custom scorer to calculate residual radiation dose using fluence-to-dose conversion tables
 // Author BE
 //
 #include "Offline/Mu2eG4/inc/scorerFTDConverter.hh"
+#include "Offline/Mu2eG4/inc/scorerDoseType.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 #include "G4VPrimitiveScorer.hh"
 #include "G4THitsMap.hh"
@@ -13,13 +14,14 @@
 
 namespace mu2e {
 
-  class scorerDelayedDose : public G4VPrimitiveScorer
+  class scorerDoseResidual : public G4VPrimitiveScorer
   {
      public:
-       scorerDelayedDose(const G4String& name,
+       scorerDoseResidual(const G4String& name,
+                         scorerDoseType type,
                          const Mu2eG4Config::Physics& configPhysics,
                          G4int depth = 0);
-       ~scorerDelayedDose() override = default;
+       ~scorerDoseResidual() override = default;
 
        void Initialize(G4HCofThisEvent*) override;
        void clear()                      override;

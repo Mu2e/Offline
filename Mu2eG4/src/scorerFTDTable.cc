@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <cmath>
 
 namespace mu2e{
 
@@ -32,6 +33,7 @@ namespace mu2e{
     getline(file,line);
     getline(file,line);
     getline(file,line);
+    getline(file,line);
 
     bool found(false);
     int iColumn(0);
@@ -48,17 +50,21 @@ namespace mu2e{
            <<", switching to ISO"<<"\n";
     }
 
+    // the fluence-to-dose conversion numbers in ICRP116 are given in pSv / cm2,
+    // transform in Sv / mm2 to be compatible with Geant4
+    // also store log of energy / coefficient for logarithmic interpolation
+    const double pico(1e-12);
     while (getline(file, line)){
       std::stringstream linestream(line);
       double number(0);
       linestream >> number;
       energies_.push_back(number);
+      lenergies_.push_back(log(number));
 
-      // the fluence-to-dose conversion numbers in ICRP113 are given in pSv / cm2,
-      // transform in Sv / mm2 to be compatible with Geant4
-      const double pico(1e-12);
       for (int i=1;i<=iColumn;++i) linestream >> number;
-      coeffs_.push_back(number*pico*CLHEP::cm*CLHEP::cm/CLHEP::mm/CLHEP::mm);
+      double coefficient = number*pico*CLHEP::cm*CLHEP::cm/CLHEP::mm/CLHEP::mm;
+      coeffs_.push_back(coefficient);
+      lcoeffs_.push_back(log(coefficient));
     }
 
     if (coeffs_.empty()) throw cet::exception("BADINPUT")<<"scorerFTDTable: wrong formatting in file "
@@ -80,6 +86,12 @@ namespace mu2e{
 
     size_t idx(0);
     while (energies_[idx+1]<energy) ++idx;
-    return (energy-energies_[idx])*(coeffs_[idx+1]-coeffs_[idx])/(energies_[idx+1]-energies_[idx]) + coeffs_[idx];
+
+    // log interpolation
+    float coeff = exp((log(energy)-lenergies_[idx])*(lcoeffs_[idx+1]-lcoeffs_[idx])/(lenergies_[idx+1]-lenergies_[idx]) + lcoeffs_[idx]);
+    return coeff;
+
+    // linear interpolation
+    //return (energy-energies_[idx])*(coeffs_[idx+1]-coeffs_[idx])/(energies_[idx+1]-energies_[idx]) + coeffs_[idx];
   }
 }

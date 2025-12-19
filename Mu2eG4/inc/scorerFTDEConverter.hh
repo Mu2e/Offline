@@ -5,7 +5,6 @@
 // taken from ICRP publication 116
 //
 #include "Offline/Mu2eG4/inc/scorerFTDTable.hh"
-#include "Offline/Mu2eG4/inc/scorerDoseType.hh"
 
 #include <vector>
 #include <string>
@@ -16,7 +15,7 @@ namespace mu2e{
   class scorerFTDConverter
   {
      public:
-        scorerFTDConverter(const scorerDoseType& type, const std::string& method = "ISO");
+        scorerFTDConverter(const std::string& method = "ISO");
         ~scorerFTDConverter() = default;
 
         void    print();
@@ -35,4 +34,24 @@ namespace mu2e{
   };
 
 }
+#endif
+
+
+
+
+#ifndef scorerFTDConverter_HH
+#define scorerFTDConverter_HH
+
+
+namespace mu2e
+{
+  class scorerFTDConverter
+  {
+    public:
+      virtual ~scorerFTDConverter() {};
+      virtual void  evaluate(int pdgCode, double energy)= 0;
+      virtual void  print() = 0;
+  };
+}
+
 #endif
