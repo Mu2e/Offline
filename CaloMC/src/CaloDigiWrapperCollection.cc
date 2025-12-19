@@ -99,7 +99,7 @@ namespace mu2e{
   // ejc: this overlaps _greatly_ with CaloDigiWrapperCollection
   // TODO this assumes a fixed overlap window, which does not apply for calo
   // here we need variable-length chain links --- -.-
-  void CaloDigiWrapperCollection::ResolveCollisions(CaloDigiWrapperCollection& rv){
+  void CaloDigiWrapperCollection::ResolveCollisions(sample_t max_adc, CaloDigiWrapperCollection& rv){
     // identify time-overlapped chains: this is a 3 step process
     // first, partition wrappers according to SiPMID_t
     std::map<SiPMID_t, CaloDigiWrapperCollection> unsorted_map;
@@ -150,12 +150,12 @@ namespace mu2e{
         for (const auto& wrapper: bucket){
           wrappers.Append(wrapper);
         }
-        this->ResolveCollision(wrappers, rv);
+        this->ResolveCollision(max_adc, wrappers, rv);
       }
     }
   }
 
-  void CaloDigiWrapperCollection::ResolveCollision(CaloDigiWrapperCollection& collided, CaloDigiWrapperCollection& rv){
+  void CaloDigiWrapperCollection::ResolveCollision(sample_t max_adc, CaloDigiWrapperCollection& collided, CaloDigiWrapperCollection& rv){
     // if only one digi present, then nothing to do
     if (collided.size() < 2){
       rv.Append(collided.front());
@@ -177,7 +177,6 @@ namespace mu2e{
     std::vector<sample_t> samples(length, 0);
 
     // sum each individual waveform into the total
-    // TODO this does not account for saturation
     for (const auto& wrapper: collided){
       const auto& digi = wrapper.Digi();
       const auto& waveform = digi.waveform();
@@ -185,6 +184,11 @@ namespace mu2e{
       for (size_t i = 0 ; i < waveform.size() ; i++){
         samples[i + shift] += waveform[i];
       }
+    }
+
+    // enforce saturation of waveforms from adc word size
+    for (size_t i = 0 ; i < samples.size() ; i++){
+      samples[i] = std::min(max_adc, samples[i]);
     }
 
     // now find the peak position

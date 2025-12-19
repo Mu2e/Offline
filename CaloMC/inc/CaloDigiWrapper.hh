@@ -11,6 +11,9 @@
 namespace mu2e{
   class CaloDigiWrapper{
     public:
+      using SiPMID_t = int;
+      using sample_t = int;
+      using pos_t = size_t;
       CaloDigiWrapper(const CaloDigi&);
       const CaloDigi& Digi() const;
 

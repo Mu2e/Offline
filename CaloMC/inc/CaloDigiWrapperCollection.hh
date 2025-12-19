@@ -21,9 +21,9 @@ namespace mu2e{
 
   class CaloDigiWrapperCollection{
     public:
-      using SiPMID_t = int;
-      using sample_t = int;
-      using pos_t = size_t;
+      using SiPMID_t = CaloDigiWrapper::SiPMID_t;
+      using sample_t = CaloDigiWrapper::sample_t;
+      using pos_t = CaloDigiWrapper::pos_t;
       // forwarded calls to underlying container
       size_t size() const;
       CDWC_iterator begin();
@@ -46,11 +46,12 @@ namespace mu2e{
 
       // identify sets of  digis with overlapping digitization windows, and
       // reduce each such set to a single digi, representing their "sum"
-      void ResolveCollisions(CaloDigiWrapperCollection&);
+      void ResolveCollisions(sample_t, CaloDigiWrapperCollection&);
 
     protected:
       std::vector<CaloDigiWrapper> _wrappers;
-      void ResolveCollision(CaloDigiWrapperCollection&,
+      void ResolveCollision(sample_t,
+                            CaloDigiWrapperCollection&,
                             CaloDigiWrapperCollection&);
 
     private:

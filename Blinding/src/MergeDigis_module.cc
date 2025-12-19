@@ -41,6 +41,10 @@ namespace mu2e{
           fhicl::Name("CaloDigiCollections"),
           fhicl::Comment("art::InputTags of source CaloDigis")
         };
+        fhicl::Atom<unsigned int> calo_adc_bits{
+          fhicl::Name("CalorimeterADCBitDepth"),
+          fhicl::Comment("Bit depth of calorimeter adc readings (temporary)")
+        };
       };
 
       using Parameters = art::EDProducer::Table<Config>;
@@ -54,6 +58,7 @@ namespace mu2e{
 
       // calorimeter
       std::vector<art::InputTag> _calo_digi_tags;
+      CaloDigiWrapper::sample_t _calo_max_adc;
 
     private:
       void produce(art::Event&);
@@ -64,7 +69,8 @@ namespace mu2e{
       art::EDProducer(config),
       _tracker_digi_tags(config().tracker_digi_tags()),
       _tracker_mc(config().tracker_mc()),
-      _calo_digi_tags(config().calo_digi_tags()){
+      _calo_digi_tags(config().calo_digi_tags()),
+      _calo_max_adc(1 << config().calo_adc_bits()){
     // tracker
     for (const auto& tag: _tracker_digi_tags){
       this->consumes<StrawDigiCollection>(tag);
@@ -127,7 +133,7 @@ namespace mu2e{
       wrappers.Append(*handle);
     }
     CaloDigiWrapperCollection calo_resolved;
-    wrappers.ResolveCollisions(calo_resolved);
+    wrappers.ResolveCollisions(_calo_max_adc, calo_resolved);
     auto calo_digis = calo_resolved.GetDigis();
     event.put(std::move(calo_digis));
 
