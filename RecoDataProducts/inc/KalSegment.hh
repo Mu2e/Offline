@@ -46,6 +46,7 @@ namespace mu2e {
     KinKal::TimeRange timeRange() const;
     auto tref() const { return _pstate.time(); }// note this is NOT t0; it is the reference time at which the trajectory was sampled
     double t0Val(TrkFitFlag const& flag = TrkFitFlag(TrkFitFlag::KKLoopHelix)) const;// this will give the local segment's t0, interpreted for the given trajectory type,  which is not necessarily the same as the track t0
+    double t0Var(TrkFitFlag const& flag) const;
     KinKal::VEC3 const& bnom() const { return _bnom; }
     double _tmin, _tmax; // time range
 // main payload is the particle state estimate.  this includes all the kinematic information to

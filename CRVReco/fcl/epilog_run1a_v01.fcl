@@ -1,0 +1,31 @@
+physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
+      [
+        {
+          CRVSector : "T1"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 20
+          maxTimeDifference : 20
+          minOverlapTimeAdjacentPulses : 30
+          minOverlapTime : 30
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
+          coincidenceLayers : 3
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+        },
+        {
+          CRVSector : "T2"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 20
+          maxTimeDifference : 20
+          minOverlapTimeAdjacentPulses : 30
+          minOverlapTime : 30
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
+          coincidenceLayers : 3
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+        }
+      ]

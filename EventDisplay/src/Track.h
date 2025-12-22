@@ -72,7 +72,7 @@ class Track: public VirtualShape
     _trackClassIndex=trackClassIndex;
     _trajectory=false;
     _line=boost::shared_ptr<EventDisplayPolyLine3D>(new EventDisplayPolyLine3D(mainframe, _info));
-    _line->SetLineWidth(3);
+    _line->SetLineWidth(2);
     _line->Draw();
     start();
   }

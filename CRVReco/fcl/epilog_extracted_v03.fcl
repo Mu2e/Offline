@@ -7,11 +7,12 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
           maxTimeDifference : 20  //ns
           minOverlapTimeAdjacentPulses : 30  //ns
           minOverlapTime : 30  //ns
-          minSlope :-11
-          maxSlope : 11  //width direction over thickness direction
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6  //width direction over thickness direction
+          maxSlopeDifference : 3
           coincidenceLayers : 2
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "T1"
@@ -20,11 +21,12 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
           maxTimeDifference : 20
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 2
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "T2"
@@ -33,10 +35,11 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
           maxTimeDifference : 20
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 2
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         }
       ]

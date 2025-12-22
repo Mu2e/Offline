@@ -71,38 +71,24 @@ if [ "$COMMAND" == "DEPS"  ]; then
     museDeps
     RC=$?
 elif [ "$COMMAND" == "GDML"  ]; then
+    # find gdml fcl files and make all GDML files, add to build dir
+    RC=0
     mkdir -p ${MUSE_BUILD_BASE}/Offline/gen/gdml
-    # if mu2e.gdml exists, save it
-    if [ -f mu2e.gdml ]; then
-        STR=$(date +%s)
-        echo "save existing mu2e.gdml: mv mu2e.gdml mu2e.gdml.$STR"
-        /bin/mv mu2e.gdml mu2e.gdml.$STR
-    fi
-
-    # make the standard gdml file
-    mu2e -c Offline/Mu2eG4/fcl/gdmldump.fcl;
-    [ $? -ne 0 ] && RC=1
-    /bin/mv mu2e.gdml ${MUSE_BUILD_BASE}/Offline/gen/gdml/mu2e.gdml
-    [ $? -ne 0 ] && RC=1
-
-    # make the extracted gdml file
-    TMPF=$(mktemp)
-    cp Offline/Mu2eG4/fcl/gdmldump.fcl $TMPF
-    echo "services.GeometryService.inputFile : \"Offline/Mu2eG4/geom/geom_common_extracted.txt\"" >> $TMPF
-    mu2e -c $TMPF
-    [ $? -ne 0 ] && RC=1
-    /bin/mv mu2e.gdml ${MUSE_BUILD_BASE}/Offline/gen/gdml/mu2e_extracted.gdml
-    [ $? -ne 0 ] && RC=1
-
-    # make the current gdml file
-    cp Offline/Mu2eG4/fcl/gdmldump.fcl $TMPF
-    echo "services.GeometryService.inputFile : \"Offline/Mu2eG4/geom/geom_common_current.txt\"" >> $TMPF
-    mu2e -c $TMPF
-    [ $? -ne 0 ] && RC=1
-    /bin/mv mu2e.gdml ${MUSE_BUILD_BASE}/Offline/gen/gdml/mu2e_current.gdml
-    [ $? -ne 0 ] && RC=1
-    rm -f $TMPF
-
+    FCLS=$(ls Offline/Mu2eG4/fcl/gdmldump_* )
+    OWD=$PWD
+    TWD=$(mktemp -d)
+    cd $TWD
+    for FCL in $FCLS
+    do
+        echo
+        echo "Starting GDML for $FCL"
+        mu2e -c $FCL
+        # some tags and geometries are inconsistent
+        # so do not fail on failure to make GDML
+    done
+    mv *.gdml ${MUSE_WORK_DIR}/${MUSE_BUILD_BASE}/Offline/gen/gdml
+    cd $OWD
+    rmdir $TWD
 elif [ "$COMMAND" == "TEST03"  ]; then
     # see if this fcl runs
     mu2e -c Offline/Mu2eG4/fcl/g4test_03.fcl -o /dev/null -T /dev/null

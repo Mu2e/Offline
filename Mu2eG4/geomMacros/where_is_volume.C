@@ -2,7 +2,7 @@
 // A macro to find the volume at a given point
 // see www.github.com/Mu2e/Offline/blob/main/Mu2eG4/geomMacros/README.md for important details
 //
-void where_is_volume(TString search_name, TString gdmlname = "mu2e.gdml", bool verbose = false) { // don't need to know the full real name, will look for volumes that contain this string
+void where_is_volume(TString search_name, TString gdmlname = "mu2e_common.gdml", bool verbose = false) { // don't need to know the full real name, will look for volumes that contain this string
   TGeoManager::SetDefaultUnits(TGeoManager::kG4Units); // default is kRootUnits which is cm, s, GeV; kG4Units are mm, ns, MeV
 
   TGeoManager *geom = TGeoManager::Import(gdmlname);

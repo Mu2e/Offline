@@ -1,41 +1,8 @@
-#include "Offline/fcl/minimalMessageService.fcl"
-#include "Offline/fcl/standardProducers.fcl"
-#include "Offline/fcl/standardServices.fcl"
-#include "Offline/CommonMC/fcl/prolog.fcl"
+#include "Offline/EventDisplay/fcl/EventDisplayBase.fcl"
 
-process_name : EventDisplay
-
-source :
-{
-  module_type : RootInput
-}
-
-services :
-{
-  @table::Services.Core
-}
-
-physics :
-{
-  analyzers:
-  {
-    eventdisplay:
-    {
-      module_type               : EventDisplay
-#      g4ModuleLabel             : "compressRecoMCs"
-      kalSeedStepSize           : 0.1
-      timeOffsets               : { inputs : [ ] }  #if the art file has no time maps
-      wideband                  : true
-    }
-  }
-
-  e1 : [eventdisplay]
-
-  end_paths      : [e1]
-}
-
-services.GeometryService.simulatedDetector.tool_type : "Mu2e"
-services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_WidebandExtracted.txt"
-services.ProditionsService.crvCalib.useDb: true
-services.DbService.textFile : ["Offline/CRVConditions/data/calib_widebandExtracted.txt"]
-#source.readParameterSets : false
+physics.analyzers.eventdisplay.extracted             : true
+services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_WidebandExtracted.txt"
+services.ProditionsService.crvStatus.useDb           : false
+services.ProditionsService.crvCalib.useDb            : true
+services.DbService.textFile                          : ["Offline/CRVConditions/data/calib_widebandExtracted.txt"]
+#services.ProditionsService.crvCalib.pedestal         : 0.0                 #for special cases (100.0 is default pedestal for simulations)

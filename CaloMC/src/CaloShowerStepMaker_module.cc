@@ -182,7 +182,7 @@ namespace mu2e {
           art::ServiceHandle<art::TFileService> tfs;
           hStartPos_  = tfs->make<TH2F>("hStartPos", "Sim start position",  1000,  5000, 15000, 200, 0, 1000);
           hStopPos_   = tfs->make<TH2F>("hStopPos",  "Sim stop position",   1000,  5000, 15000, 200, 0, 1000);
-          hStartPos2_ = tfs->make<TH1F>("hStartPos2","Sim stop position",   1000, 10000, 13000);
+          hStartPos2_ = tfs->make<TH1F>("hStartPos2","Sim start position",  1000, 10000, 13000);
           hStopPos2_  = tfs->make<TH1F>("hStopPos2", "Sim stop position",   1000, 10000, 13000);
           hZpos_      = tfs->make<TH1F>("hZpos",     "Step z pos",            20,     0,    20);
           hZpos2_     = tfs->make<TH2F>("hZpos2",    "Step z pos",            20,     0,    20, 100, 0, 5);

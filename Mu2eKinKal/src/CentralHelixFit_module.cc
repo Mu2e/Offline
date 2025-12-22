@@ -95,7 +95,7 @@ namespace mu2e {
   using KinKal::DMAT;
   using HPtr = art::Ptr<HelixSeed>;
   using CCPtr = art::Ptr<CaloCluster>;
-  using CCHandle = art::ValidHandle<CaloClusterCollection>;
+  using CCHandle = art::Handle<CaloClusterCollection>;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
 
   using KKConfig = Mu2eKinKal::KinKalConfig;
@@ -244,12 +244,13 @@ namespace mu2e {
 
   void CentralHelixFit::produce(art::Event& event ) {
     GeomHandle<Calorimeter> calo_h;
+    GeomHandle<mu2e::Tracker> nominalTracker_h;
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
-    auto cc_H = event.getValidHandle<CaloClusterCollection>(cccol_T_);
+    auto cc_H = event.getHandle<CaloClusterCollection>(cccol_T_);
     auto const& chcol = *ch_H;
     // create output
     unique_ptr<KKTRKCOL> kktrkcol(new KKTRKCOL );
@@ -362,7 +363,7 @@ namespace mu2e {
               }
               if(!degen){
                 sampleFit(*kktrk);
-                auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h);
+                auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h,*nominalTracker_h);
                 kkseedcol->push_back(kkseed);
                 // save (unpersistable) KKTrk in the event
                 kktrkcol->push_back(kktrk.release());

@@ -40,7 +40,7 @@ namespace mu2e {
       }
     }
 
-    //loop over trigResults to fill the map <string, unsigned int)
+    //loop over trigResults to fill the map <string, unsigned int>
     std::string   delimeter=":";
     for (unsigned int i=0; i< _trigPathsNames.size(); ++i){
       size_t       pos      = _trigPathsNames[i].find(delimeter);
@@ -55,19 +55,20 @@ namespace mu2e {
   std::string const
   TriggerResultsNavigator::getTrigPathName(unsigned int const i) const
   {
+    if (i >= _trigPathsNames.size()) {
+      throw cet::exception("TRIGGER") << "TRIG PATHID " << i << " NOT FOUND";
+    }
     std::string   delimeter =":";
     size_t        pos       = _trigPathsNames[i].find(delimeter);
-    if (pos > _trigPathsNames[i].length()) return "TRIG PATH NOT FOUND";
+    if (pos >= _trigPathsNames[i].length()) return "TRIG PATH NOT FOUND";
     return _trigPathsNames[i].substr(pos+1, _trigPathsNames[i].length());
   }
 
   size_t
   TriggerResultsNavigator::getTrigBit(unsigned int const i) const
   {
-    if (i>_trigPathsNames.size()) {
-      throw cet::exception("TRIG PATHID NOT FOUND");
-      //std::cout << "TRIG PATHID "<< i <<" NOT FOUND" <<std::endl;
-      return 0;
+    if (i>=_trigPathsNames.size()) {
+      throw cet::exception("TRIGGER") << "TRIG PATHID " << i << " NOT FOUND";
     }
     std::string   delimeter =":";
     size_t        pos       = _trigPathsNames[i].find(delimeter);
@@ -95,6 +96,8 @@ namespace mu2e {
   size_t
   TriggerResultsNavigator::findTrigPathID(std::string const& name) const
   {
+    if(!validPath(name))
+      throw cet::exception("TRIGGER") << "TriggerResultsNavigator: Path name " <<  name << " not found";
     return find(_trigPathMap, name);
   }
 
@@ -103,9 +106,8 @@ namespace mu2e {
   TriggerResultsNavigator::accepted(std::string const& name) const
   {
     size_t index = findTrigPath(name);
-    //    return _trigResults->accept(index);
     if (index == _trigResults->size()) return false;
-    else                             return _trigResults->accept(index);
+    return _trigResults->accept(index);
   }
 
   bool
@@ -158,18 +160,17 @@ namespace mu2e {
 
   void
   TriggerResultsNavigator::print() const {
-    std::cout << "TriggerResultsNaviogator Map" << std::endl;
-    std::cout << "//------------------------------------------//" << std::endl;
-    std::cout << "//  trig_pathName          id     accepted  //" << std::endl;
-    std::cout << "//------------------------------------------//" << std::endl;
+    std::cout << "TriggerResultsNavigator Map" << std::endl;
+    std::cout << "//------------------------------------------------//" << std::endl;
+    std::cout << "//      trig_pathName           id      accepted  //" << std::endl;
+    std::cout << "//------------------------------------------------//" << std::endl;
 
-    for  (unsigned int i=0; i< _trigPathsNames.size(); ++i){
-      std::string name     = _trigPathsNames[i];
-      size_t      index    = findTrigPath(name);
-      bool        good     = accepted(name);
+    for (unsigned i=0; i< getTrigPaths().size(); ++i) {
+      const std::string path = getTrigPathName(i);
+      const int bit = findTrigPathID(path);
+      const bool good = accepted(path);
       std::cout << std::right;
-      std::cout <<"//"<<std::setw(24) << name << std::setw(2) << index << (good == true ? 1:0) << "//"<< std::endl;
-      // %24s  %2li       %i    //\n", name.c_str(), index, good == true ? 1:0);
+      std::cout <<"//"<<std::setw(40) << path << std::setw(5) << bit << " " << good << " //"<< std::endl;
     }
 
   }

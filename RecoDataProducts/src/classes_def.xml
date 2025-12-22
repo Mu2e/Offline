@@ -11,6 +11,8 @@
 <!--  ********* beam  ********* -->
  <class name="mu2e::ProtonBunchTime"/>
  <class name="art::Wrapper<mu2e::ProtonBunchTime>"/>
+ <class name="mu2e::RecoProtonBunchIntensity"/>
+ <class name="art::Wrapper<mu2e::RecoProtonBunchIntensity>"/>
 
 <!--  ********* cosmics  ********* -->
  <class name="mu2e::TrackParams"/>
@@ -81,6 +83,12 @@
  <class name="std::vector<art::Ptr<mu2e::StrawHitFlag> >"/>
  <class name="art::Wrapper<mu2e::StrawHitFlagCollection>"/>
 
+ <class name="mu2e::StrawFlag"/>
+ <class name="mu2e::StrawFlagDetail"/>
+ <class name="art::Ptr<mu2e::StrawFlag>"/>
+ <class name="std::vector<art::Ptr<mu2e::StrawFlag> >"/>
+ <class name="art::Wrapper<mu2e::StrawFlagCollection>"/>
+
  <class name="mu2e::ComboHit"/>
  <class name="std::vector<mu2e::ComboHit>"/>
  <class name="art::ProductPtr<mu2e::ComboHitCollection>"/>
@@ -127,10 +135,11 @@
 <!--  ********* tracking intermediate products  ********* -->
 
  <class name="mu2e::TimeCluster"/>
+ <class name="mu2e::TimeClusterPtr"/>
  <class name="mu2e::TimeClusterCollection"/>
- <class name="art::Ptr<mu2e::TimeCluster>"/>
- <class name="std::vector<art::Ptr<mu2e::TimeCluster> >"/>
+ <class name="mu2e::TimeClusterPtrCollection"/>
  <class name="art::Wrapper<mu2e::TimeClusterCollection>"/>
+ <class name="art::Wrapper<mu2e::TimeClusterPtrCollection>"/>
 
 
  <class name="mu2e::HelixVal"/>
@@ -144,10 +153,11 @@
  <class name="mu2e::RobustHelix"/>
  <class name="mu2e::HelixRecoDir"/>
  <class name="mu2e::HelixSeed"/>
+ <class name="mu2e::HelixSeedPtr"/>
  <class name="mu2e::HelixSeedCollection" />
- <class name="art::Ptr<mu2e::HelixSeed>"/>
- <class name="std::vector<art::Ptr<mu2e::HelixSeed> >"/>
+ <class name="mu2e::HelixSeedPtrCollection" />
  <class name="art::Wrapper<mu2e::HelixSeedCollection>"/>
+ <class name="art::Wrapper<mu2e::HelixSeedPtrCollection>"/>
 
  <class name="mu2e::BkgQual"/>
  <class name="mu2e::BkgQualCollection"/>
@@ -164,6 +174,14 @@
  <class name="mu2e::BkgClusterCollection"/>
  <class name="art::Wrapper<mu2e::BkgClusterCollection>"/>
 
+ <class name="mu2e::TwoDPoint"/>
+ <class name="art::Wrapper<mu2e::TwoDPoint>"/>
+ <class name="mu2e::CombineTwoDPoints"/>
+ <class name="art::Wrapper<mu2e::CombineTwoDPoints>"/>
+ <class name="mu2e::TwoDWeight"/>
+ <class name="art::Wrapper<mu2e::TwoDWeight>"/>
+ <class name="mu2e::CombineTwoDPoints::CWT"/>
+ <class name="std::map<unsigned long, mu2e::CombineTwoDPoints::CWT>"/>
 
 <!--  ********* tracking output  ********* -->
 
@@ -193,12 +211,14 @@
 
  <class name="mu2e::TrkFitDirection"/>
  <class name="mu2e::TrkStrawHitSeed"/>
+ <class name="mu2e::TrkStrawHitCalib"/>
  <class name="mu2e::TrkCaloHitSeed"/>
  <class name="mu2e::TrkStraw"/>
  <class name="mu2e::KalSegment"/>
  <class name="mu2e::KKSHFlag"/>
  <class name="mu2e::KKSHFlagDetail"/>
  <class name="std::vector<mu2e::TrkStrawHitSeed>"/>
+ <class name="std::vector<mu2e::TrkStrawHitCalib>"/>
  <class name="std::vector<mu2e::TrkCaloHitSeed>"/>
  <class name="std::vector<mu2e::TrkStraw>"/>
  <class name="std::vector<mu2e::KalSegment>"/>
@@ -206,6 +226,28 @@
  <class name="KinKal::Intersection"/>
  <class name="mu2e::KalIntersection"/>
  <class name="mu2e::KalIntersectionCollection"/>
+
+
+<ioread sourceClass="mu2e::TrkStraw"
+  source="bool _active"
+  checksum="[0x7089f126]"
+  targetClass="mu2e::TrkStraw"
+  target="_flag">
+<![CDATA[
+  if(onfile._active)_flag.merge(mu2e::StrawFlagDetail::active);
+  ]]>
+</ioread>
+
+<!-- the dmom translation is not correct, as the total momentum isn't known. This is a flaw with the original data and can't be fixed -->
+<ioread sourceClass="mu2e::TrkStraw"
+  source="float _pfrac"
+  checksum="[0x7089f126]"
+  targetClass="mu2e::TrkStraw"
+  target="_dmom">
+<![CDATA[
+  _dmom = onfile._pfrac;
+  ]]>
+</ioread>
 
  <class name="mu2e::KalSeed"/>
  <class name="mu2e::KalSeedCollection"/>
@@ -353,14 +395,52 @@
         source="std::array<int16_t,8> _ADCs"
         checksum="[3596926525]"
         targetClass="mu2e::CrvDigi"
-        target="_ADCs, _NZS"
+        target="_ADCs, _NZS, _oddTimestamp, _ROC, _FEB, _FEBchannel"
         include="array, vector">
 <![CDATA[
   _ADCs.resize(onfile._ADCs.size());
   for(size_t i=0; i<onfile._ADCs.size(); ++i) _ADCs[i]=onfile._ADCs[i];
   _NZS=false;
+  _oddTimestamp=false;
+  _ROC=0;
+  _FEB=0;
+  _FEBchannel=0;
 ]]>
 </ioread>
+
+<ioread sourceClass="mu2e::CrvDigi"
+        source=""
+        checksum="[1961551691]"
+        targetClass="mu2e::CrvDigi"
+	target="_oddTimestamp, _ROC, _FEB, _FEBchannel">
+<![CDATA[
+  _oddTimestamp=false;
+  _ROC=0;
+  _FEB=0;
+  _FEBchannel=0;
+]]>
+</ioread>
+
+<ioread sourceClass="mu2e::CrvRecoPulse"
+        source=""
+        checksum="[587252082]"
+        targetClass="mu2e::CrvRecoPulse"
+	target="_pedestal,_pedestalFromDB, _ROC, _FEB, _FEBchannel">
+<![CDATA[
+  _pedestal=0;
+  _pedestalFromDB=true;
+  _ROC=0;
+  _FEB=0;
+  _FEBchannel=0;
+]]>
+</ioread>
+
+ <class name="mu2e::CRVDataDecoder::CRVROCStatusPacketFEBII" />
+ <class name="std::vector<mu2e::CRVDataDecoder::CRVROCStatusPacketFEBII>" />
+ <class name="mu2e::CrvStatus" />
+ <class name="std::vector<mu2e::CrvStatus>" />
+ <class name="mu2e::CrvStatusCollection" />
+ <class name="art::Wrapper<mu2e::CrvStatusCollection>" />
 
 <!--  ********* ExtMon  ********* -->
  <class name="mu2e::ExtMonFNALRawHit" />
@@ -425,13 +505,6 @@
  <class name="mu2e::RecoCount"/>
  <class name="art::Wrapper<mu2e::RecoCount>"/>
 
- <class name="mu2e::DAQerrorCodeDetail"/>
- <class name="mu2e::DAQerrorCode"/>
- <class name="mu2e::DAQerror" />
- <class name="std::vector<mu2e::DAQerror>" />
- <class name="mu2e::DAQerrorCollection" />
- <class name="art::Wrapper<mu2e::DAQerrorCollection>" />
-
 <!--  ********* STM ********* -->
  <class name="mu2e::STMWaveformDigi"/>
  <class name="mu2e::STMWaveformDigiCollection"/>
@@ -442,5 +515,8 @@
  <class name="mu2e::STMHit"/>
  <class name="mu2e::STMHitCollection"/>
  <class name="art::Wrapper<mu2e::STMHitCollection>"/>
+
+ <!--  ********* MTP ********* -->
+  <class name="mu2e::MTPHit"/>
 
 </lcgdict>

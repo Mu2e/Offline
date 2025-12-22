@@ -7,10 +7,12 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Data/CalorimeterDataDecoder.hh"
+#include "artdaq-core-mu2e/Overlays/Decoders/CalorimeterDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 #include <artdaq-core/Data/ContainerFragment.hh>
 #include <artdaq-core/Data/Fragment.hh>
+
+#include "Offline/DataProducts/inc/CaloConst.hh"
 
 #include <string>
 #include <vector>
@@ -22,15 +24,6 @@ class CaloDAQUtilities {
 public:
   CaloDAQUtilities(std::string ModuleName);
 
-  uint16_t getCrystalID(CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit) {
-    return Hit.DIRACB & 0x0FFF;
-  }
-  uint16_t getSiPMID(CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit) {
-    uint16_t crystalID = getCrystalID(Hit);
-    uint16_t sipmID = Hit.DIRACB >> 12;
-    return (crystalID * 2 + sipmID);
-  }
-
   enum CaloHitError {
     Good = 0,
     BeginMarker = 1,
@@ -39,7 +32,8 @@ public:
     NumberOfSamples = 4,
     MaxSampleIndex = 5,
     BoardID = 6,
-    ChannelID = 7
+    ChannelID = 7,
+    ErrorFlags = 8
   };
 
   std::string getCaloHitErrorName(CaloHitError error) {
@@ -60,13 +54,47 @@ public:
       return "BoardID";
     case ChannelID:
       return "ChannelID";
+    case ErrorFlags:
+      return "ErrorFlags";
     default:
       return "Unknown";
     }
   }
+  
 
-  CaloHitError isHitGood(std::pair<CalorimeterDataDecoder::CalorimeterHitTestDataPacket,
-                                   std::vector<uint16_t>> const& Hit) {
+  CaloHitError isHitGood(std::pair<CalorimeterDataDecoder::CalorimeterHitDataPacket, std::vector<uint16_t>> const& Hit) {
+    if (Hit.first.Reserved1 != 0xAAA)
+      return CaloHitError::BeginMarker;
+    if (Hit.first.ErrorFlags != 0)
+      return CaloHitError::ErrorFlags;
+    if (Hit.second.size() == 0)
+      return CaloHitError::WaveformSize;
+    if (Hit.first.NumberOfSamples != Hit.second.size())
+      return CaloHitError::NumberOfSamples;
+    if (Hit.first.IndexOfMaxDigitizerSample >= Hit.second.size())
+      return CaloHitError::MaxSampleIndex;
+    if (Hit.first.BoardID >= CaloConst::_nDIRAC)
+      return CaloHitError::BoardID;
+    if (Hit.first.ChannelID >= CaloConst::_nChPerDIRAC)
+      return CaloHitError::ChannelID;
+    return CaloHitError::Good;
+  }
+
+  CaloHitError isHitGood(std::pair<CalorimeterDataDecoder::CalorimeterHitDataPacket, uint16_t> const& Hit) {
+    if (Hit.first.Reserved1 != 0xAAA)
+      return CaloHitError::BeginMarker;
+    if (Hit.first.ErrorFlags != 0)
+      return CaloHitError::ErrorFlags;
+    if (Hit.second == 0)
+      return CaloHitError::WaveformSize;
+    if (Hit.first.BoardID >= CaloConst::_nDIRAC)
+      return CaloHitError::BoardID;
+    if (Hit.first.ChannelID >= CaloConst::_nChPerDIRAC)
+      return CaloHitError::ChannelID;
+    return CaloHitError::Good;
+  }
+
+  CaloHitError isHitGood(std::pair<CalorimeterDataDecoder::CalorimeterHitTestDataPacket, std::vector<uint16_t>> const& Hit) {
     if (Hit.first.BeginMarker != 0xAAA)
       return CaloHitError::BeginMarker;
     if (Hit.first.LastSampleMarker == 0)
@@ -77,24 +105,23 @@ public:
       return CaloHitError::NumberOfSamples;
     if (Hit.first.IndexOfMaxDigitizerSample >= Hit.second.size())
       return CaloHitError::MaxSampleIndex;
-    if (Hit.first.BoardID < 0 || Hit.first.BoardID >= 160)
+    if (Hit.first.BoardID >= CaloConst::_nDIRAC)
       return CaloHitError::BoardID;
-    if (Hit.first.ChannelID < 0 || Hit.first.ChannelID >= 20)
+    if (Hit.first.ChannelID >= CaloConst::_nChPerDIRAC)
       return CaloHitError::ChannelID;
     return CaloHitError::Good;
   }
 
-  CaloHitError
-  isHitGood(std::pair<CalorimeterDataDecoder::CalorimeterHitTestDataPacket, uint16_t> const& Hit) {
+  CaloHitError isHitGood(std::pair<CalorimeterDataDecoder::CalorimeterHitTestDataPacket, uint16_t> const& Hit) {
     if (Hit.first.BeginMarker != 0xAAA)
       return CaloHitError::BeginMarker;
     if (Hit.first.LastSampleMarker == 0)
       return CaloHitError::LastSampleMarker;
     if (Hit.second == 0)
       return CaloHitError::WaveformSize;
-    if (Hit.first.BoardID < 0 || Hit.first.BoardID >= 160)
+    if (Hit.first.BoardID >= CaloConst::_nDIRAC)
       return CaloHitError::BoardID;
-    if (Hit.first.ChannelID < 0 || Hit.first.ChannelID >= 20)
+    if (Hit.first.ChannelID >= CaloConst::_nChPerDIRAC)
       return CaloHitError::ChannelID;
     return CaloHitError::Good;
   }
@@ -108,10 +135,6 @@ public:
 
   void printWaveform(std::vector<uint16_t> const& Pulse);
 
-  void printAllHitInfo(int CrystalID, int SiPMID,
-                       std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header,
-                       CalorimeterDataDecoder::CalorimeterHitDataPacket const& Hit,
-                       uint16_t PulseMax);
 
   // Function to get art fragments from event
   artdaq::Fragments getFragments(art::Event& event) {

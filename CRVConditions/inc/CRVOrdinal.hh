@@ -25,9 +25,9 @@ class CRVOrdinal : virtual public ProditionsEntity {
   typedef std::vector<CRVROC> OnlineMap;
   // this is a 3-dim array: offline number = x[ROC][FEB][FEBchan]
   typedef std::array<std::array<std::array<std::uint16_t, CRVId::nChanPerFEB>,
-                                CRVId::nFEBPerROC>,
-                     CRVId::nROC>
-      OfflineMap;
+                                CRVId::nFEBPerROC+1>,   //FEB numbers start at 1
+                                CRVId::nROC+1>          //ROC numbers start at 1
+                                OfflineMap;
 
   CRVOrdinal(OnlineMap const& onMap, OfflineMap const& offMap) :
       ProditionsEntity(cxname), _onMap(onMap), _offMap(offMap) {}

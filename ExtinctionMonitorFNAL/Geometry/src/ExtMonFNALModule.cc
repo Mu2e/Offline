@@ -20,11 +20,13 @@ namespace mu2e {
   {
     ExtMonFNALPixelId res; // default constructed - invalid hit
 
-    const double chipXPitch = chip_.nColumns()*chip_.xPitch();
+    const double chipXPitch = (chip_.nColumns()-2)*chip_.xPitch() + chip_.xPitch_Edge() + chip_.xPitch_Mid();
     const double chipYPitch = chip_.nRows()*chip_.yPitch();
 
     const int icx = std::floor(xSensor/chipXPitch + nxChips()/2.);
     const int icy = std::floor(ySensor/chipYPitch + nyChips()/2.);
+
+    const int N_Columns=chip_.nColumns();
 
     if((0 <= icx)&&(unsigned(icx) < nxChips())&&(0 <= icy)&&(unsigned(icy) < nyChips())) {
 
@@ -32,12 +34,45 @@ namespace mu2e {
 
         // Assume no gaps between chips
         // x0 and y0 are the coordinates of the bottom left chip corner in the module frame
-        const double chipx0 = (icx - nxChips()/2.)*chip_.nColumns()*chip_.xPitch();
-        const double chipy0 = (icy - nyChips()/2.)*chip_.nRows()*chip_.yPitch();
+        const double chipx0 = (icx - nxChips()/2.)*chipXPitch;
+        const double chipy0 = (icy - nyChips()/2.)*chipYPitch;
 
         // Zero based pixel column and row numbers for the offline identifier
-        const int ix = std::floor((xSensor - chipx0)/chip_.xPitch());
+        //const int ix = std::floor((xSensor - chipx0)/chip_.xPitch());
         const int iy = std::floor((ySensor - chipy0)/chip_.yPitch());
+        int ix_=-1;
+
+        if(xSensor > (N_Columns-2)*chip_.xPitch()+chip_.xPitch_Mid())
+       {
+          ix_ = N_Columns - 1;
+       }
+
+        else if(xSensor>chip_.xPitch_Mid())
+       {
+          ix_ = floor((xSensor - chipx0 - chip_.xPitch_Mid())/chip_.xPitch()) + 1;
+       }
+
+        else if(xSensor>=0)
+       {
+          ix_ = 0;
+       }
+
+        else if(xSensor>=-chip_.xPitch_Mid())
+       {
+          ix_ = N_Columns - 1;
+       }
+
+        else if(xSensor>=  -(N_Columns-2)*chip_.xPitch()-chip_.xPitch_Mid() )
+       {
+          ix_ = floor((xSensor - chipx0 - chip_.xPitch_Edge())/chip_.xPitch()) + 1;
+       }
+
+        else
+       {
+          ix_ = 0;
+       }
+
+        const int ix = ix_;
 
         res = (0 <= ix)&&(unsigned(ix) < chip_.nColumns())&&(0 <= iy)&&(unsigned(iy) < chip_.nRows()) ?
            ExtMonFNALPixelId(cid, ix, iy) :

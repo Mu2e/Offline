@@ -125,6 +125,15 @@ namespace mu2e {
     for(const auto& e: conf.caloShowerSimMixer().mixingMap()) {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCaloShowerSims, *this);
+
+    for(const auto& e: conf.crvDigiMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCrvDigis, *this);
+    }
+
+    for(const auto& e: conf.crvDigiMCMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCrvDigiMCs, *this);
     }
 
     for(const auto& e: conf.eventWindowMarkerMixer().mixingMap()) {
@@ -399,11 +408,10 @@ namespace mu2e {
                                           CrvStepCollection& out,
                                           art::PtrRemapper const& remap)
   {
-    std::vector<CrvStepCollection::size_type> stepOffsets;
-    art::flattenCollections(in, out, stepOffsets);
+    art::flattenCollections(in, out, csOffsets_);
 
     for(CrvStepCollection::size_type i=0; i<out.size(); ++i) {
-      auto ie = getInputEventIndex(i, stepOffsets);
+      auto ie = getInputEventIndex(i, csOffsets_);
       auto& step = out[i];
       step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
       if(applyTimeOffset_){
@@ -492,6 +500,10 @@ namespace mu2e {
   bool Mu2eProductMixer::mixCaloDigis(std::vector<CaloDigiCollection const*> const& in,
                     CaloDigiCollection& out,
                     art::PtrRemapper const& remap)
+
+  bool Mu2eProductMixer::mixCrvDigis(std::vector<CrvDigiCollection const*> const& in,
+                     CrvDigiCollection& out,
+                     art::PtrRemapper const& remap)
   {
     art::flattenCollections(in, out);
     return true;
@@ -517,6 +529,22 @@ namespace mu2e {
         remapped.push_back(remap(steps[is], cssOffset));
       }
       sim.setCaloShowerSteps(std::move(remapped));
+
+  bool Mu2eProductMixer::mixCrvDigiMCs(std::vector<CrvDigiMCCollection const*> const& in,
+                     CrvDigiMCCollection& out,
+                     art::PtrRemapper const& remap)
+  {
+    std::vector<CrvDigiMCCollection::size_type> cdmcOffsets;
+    art::flattenCollections(in, out, cdmcOffsets);
+
+    // update internal art::Ptr<CrvStep>s
+    for (CrvDigiMCCollection::size_type i=0; i < out.size(); ++i) {
+      auto& cdmc = out[i];
+      auto ie = getInputEventIndex(i, cdmcOffsets);
+      auto csOffset = csOffsets_[ie];
+
+      auto& steps = cdmc.GetCrvSteps();
+      for(size_t j=0; j<steps.size(); ++j) steps[j] = remap(steps[j], csOffset);
     }
 
     return true;

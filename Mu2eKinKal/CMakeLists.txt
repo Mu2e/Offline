@@ -18,12 +18,12 @@ cet_make_library(
       src/WireHitState.cc
     LIBRARIES PUBLIC
       BLAS::BLAS
-      KinKal_General
-      KinKal_MatEnv
-      KinKal_Geometry
-      KinKal_Detector
-      KinKal_Trajectory
-      KinKal_Fit
+      KinKal::General
+      KinKal::MatEnv
+      KinKal::Geometry
+      KinKal::Detector
+      KinKal::Trajectory
+      KinKal::Fit
       Offline::BFieldGeom
       Offline::CalorimeterGeom
       Offline::ConfigTools
@@ -72,7 +72,19 @@ cet_build_plugin(LoopHelixFit art::module
       Offline::TrkReco
 
 )
+cet_build_plugin(RegrowLoopHelix art::module
+  REG_SOURCE src/RegrowLoopHelix_module.cc
+      LIBRARIES REG
+      Offline::Mu2eKinKal
+      Offline::TrkReco
+)
 
+cet_build_plugin(RegrowKinematicLine art::module
+  REG_SOURCE src/RegrowKinematicLine_module.cc
+      LIBRARIES REG
+      Offline::Mu2eKinKal
+      Offline::TrkReco
+)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgFinal.dat   ${CURRENT_BINARY_DIR} data/TrainBkgFinal.dat   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgSeed.dat   ${CURRENT_BINARY_DIR} data/TrainBkgSeed.dat   COPYONLY)

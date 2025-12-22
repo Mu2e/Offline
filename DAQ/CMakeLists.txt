@@ -1,3 +1,4 @@
+
 cet_make_library(
     SOURCE
       src/CaloDAQUtilities.cc
@@ -21,18 +22,12 @@ cet_build_plugin(ArtBinaryPacketsFromDigis art::module
       Offline::SeedService
 )
 
-cet_build_plugin(ProcessDTCAndCFOEvents art::module
-    REG_SOURCE src/ProcessDTCAndCFOEvents_module.cc
-    LIBRARIES REG
-      Offline::DAQ
-)
-
 cet_build_plugin(EventHeaderFromCFOFragment art::module
     REG_SOURCE src/EventHeaderFromCFOFragment_module.cc
     LIBRARIES REG
       Offline::DAQ
 )
-    
+
 
 cet_build_plugin(CaloHitsFromDTCEvents art::module
     REG_SOURCE src/CaloHitsFromDTCEvents_module.cc
@@ -42,6 +37,7 @@ cet_build_plugin(CaloHitsFromDTCEvents art::module
       Offline::CaloConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
+      Offline::DataProducts
 )
 
 cet_build_plugin(CaloDigisFromDTCEvents art::module
@@ -54,39 +50,6 @@ cet_build_plugin(CaloDigisFromDTCEvents art::module
       Offline::RecoDataProducts
       artdaq-core-mu2e::Data
       artdaq-core-mu2e::Data_dict
-)
-
-cet_build_plugin(CRVDigisFromDataDecoders art::module
-    REG_SOURCE src/CRVDigisFromDataDecoders_module.cc
-    LIBRARIES REG
-      Offline::DAQ
-
-      Offline::CRVConditions
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-      artdaq-core-mu2e::Data
-      artdaq-core-mu2e::Data_dict
-)
-
-cet_build_plugin(CRVGlobalRunDataFromDataDecoders art::module
-    REG_SOURCE src/CRVGlobalRunDataFromDataDecoders_module.cc
-    LIBRARIES REG
-      Offline::DAQ
-
-      Offline::CRVConditions
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-      artdaq-core-mu2e::Data
-      artdaq-core-mu2e::Data_dict
-)
-
-cet_build_plugin(DataDecodersAna art::module
-    REG_SOURCE src/DataDecodersAna_module.cc
-    LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::DAQ
-      Offline::DataProducts
-      ROOT::Hist
 )
 
 cet_build_plugin(DummyLumiInfoProducer art::module
@@ -106,6 +69,18 @@ cet_build_plugin(LumiInfoAna art::module
     artdaq-core-mu2e::Data_dict
 )
 
+cet_build_plugin(LumiStreamFilter art::module
+  REG_SOURCE src/LumiStreamFilter_module.cc
+  LIBRARIES REG
+  fhiclcpp::types
+  Offline::DAQ
+  Offline::RecoDataProducts
+  artdaq-core-mu2e::Data
+  artdaq-core-mu2e::Data_dict
+  TRACE::MF
+  ${ARTDAQ_DAQDATA_LIB}
+)
+
 cet_build_plugin(PrefetchDAQData art::module
     REG_SOURCE src/PrefetchDAQData_module.cc
     LIBRARIES REG
@@ -115,49 +90,98 @@ cet_build_plugin(PrefetchDAQData art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(ComboHitsFromDataDecoders art::module
-    REG_SOURCE src/ComboHitsFromDataDecoders_module.cc
-    LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::DAQ
-
-      Offline::ConditionsBase
-      Offline::ConditionsService
-      Offline::ConfigTools
-      Offline::DataProducts
-      Offline::GeometryService
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-      Offline::TrackerConditions
-      Offline::TrackerGeom
-      Offline::TrkHitReco
-)
-
-cet_build_plugin(StrawDigisFromDataDecoders art::module
-    REG_SOURCE src/StrawDigisFromDataDecoders_module.cc
-    LIBRARIES REG
-      Offline::DAQ
-
-      Offline::DataProducts
-      Offline::RecoDataProducts
-)
-
 cet_build_plugin(STMWaveformDigisFromFragments art::module
-    REG_SOURCE src/STMWaveformDigisFromFragments_module.cc
-    LIBRARIES REG
-      Offline::DAQ
-      Offline::ProditionsService
-      Offline::DataProducts
-      Offline::RecoDataProducts
-      BTrk_difAlgebra
+  REG_SOURCE src/STMWaveformDigisFromFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::ProditionsService
+  Offline::DataProducts
+  Offline::RecoDataProducts
+  BTrk_difAlgebra
 )
-
+    
 cet_build_plugin(StrawDigisFromArtdaqFragments art::module
   REG_SOURCE src/StrawDigisFromArtdaqFragments_module.cc
   LIBRARIES REG
   Offline::DAQ
-  Offline::DataProducts
   Offline::RecoDataProducts
+  Offline::DataProducts
+  artdaq-core-mu2e::Data
+  art_root_io::TFileService_service
+  ROOT::Hist
+  ROOT::Tree
+  ROOT::Core
+  ROOT::RIO
+  ROOT::Gui
+)
+
+cet_build_plugin(StrawHitFilter art::module
+  REG_SOURCE src/StrawHitFilter_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::RecoDataProducts
+  Offline::DataProducts
+  artdaq-core-mu2e::Data
+  art_root_io::TFileService_service
+  ROOT::Hist
+  ROOT::Tree
+  ROOT::Core
+  ROOT::RIO
+  ROOT::Gui
+)
+
+cet_build_plugin(StrawDigiFilter art::module
+  REG_SOURCE src/StrawDigiFilter_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::RecoDataProducts
+  Offline::DataProducts
+  artdaq-core-mu2e::Data
+  art_root_io::TFileService_service
+  ROOT::Hist
+  ROOT::Tree
+  ROOT::Core
+  ROOT::RIO
+  ROOT::Gui
+)
+
+cet_build_plugin(CrvDigisFromArtdaqFragments art::module
+  REG_SOURCE src/CrvDigisFromArtdaqFragments_module.cc
+  LIBRARIES REG
+    Offline::DAQ
+    Offline::DataProducts
+    Offline::RecoDataProducts
+    artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Overlays
+)
+
+cet_build_plugin(CrvDigisFromArtdaqFragmentsFEBII art::module
+  REG_SOURCE src/CrvDigisFromArtdaqFragmentsFEBII_module.cc
+  LIBRARIES REG
+    Offline::DAQ
+    Offline::DataProducts
+    Offline::RecoDataProducts
+    artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Data_dict
+    artdaq-core-mu2e::Overlays
+)
+
+cet_build_plugin(CrvGRdataFromArtdaqFragments art::module
+  REG_SOURCE src/CrvGRdataFromArtdaqFragments_module.cc
+  LIBRARIES REG
+    Offline::DAQ
+    Offline::DataProducts
+    Offline::RecoDataProducts
+    artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Data_dict
+    artdaq-core-mu2e::Overlays
+)
+
+cet_build_plugin(MTPHitsFromDTCEvents art::module
+    REG_SOURCE src/MTPHitsFromDTCEvents_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+      Offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

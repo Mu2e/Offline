@@ -38,6 +38,9 @@ int             crs.nModulesT2                   =   1;
 int             crs.nLayersT1                    =   1;
 int             crs.nLayersT2                    =   1;
 
+bool            crs.countersOnlyT1               =   true;  //no strongbacks or aluminum sheets
+bool            crs.countersOnlyT2               =   true;  //no strongbacks or aluminum sheets
+
 int             crs.nCountersPerModuleW1         =   16;  //per layer
 int             crs.nCountersPerModuleW2         =   16;
 int             crs.nCountersPerModuleW3         =   16;

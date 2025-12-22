@@ -63,9 +63,10 @@ namespace mu2e {
       TH1* _hTrigPaths  ; //trigger path names that are firing
       TH2* _hTrig2D     ; //trigger path acceptance correlation
       TH1* _hNPOT       ; //N(POT) without cuts, matching TrigPOTEff binning
-      TH1* _hTrigInfo   [kNTrigInfo   ]; //1D trigger information
+      TH1* _hTrigInfo   [kNTrigInfo  ]; //1D trigger information
       TH1* _hTrigModules[kMaxTriggers]; //cut-flow on the module chain for each trigger
       TH1* _hTrigPOTEff [kMaxTriggers]; //trigger efficiencies vs. N(POT)
+
 
       summaryInfoHist_() {
         // initialize each histogram to null
@@ -87,7 +88,7 @@ namespace mu2e {
     struct Config {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<int>               diagLevel          {Name("diagLevel"          ), Comment("turn tool on or off"                       ), 0 };
+      fhicl::Atom<int>               diagLevel          {Name("diagLevel"          ), Comment("Diagnostic printouts"                      ), 0 };
       fhicl::Sequence<std::string>   ignorePaths        {Name("ignorePaths"        ), Comment("Path tags to ignore in overlap/rejection"  ), {"Path"}}; //non-trigger paths typically contain "Path"
       fhicl::Atom<art::InputTag>     genCountTag        {Name("genCount"           ), Comment("GenEventCount label"                       ), "genCounter" };
       fhicl::Atom<art::InputTag>     PBITag             {Name("PBITag"             ), Comment("ProtonBunchIntensity label"                ), "PBISim" };
@@ -337,6 +338,8 @@ namespace mu2e {
     //////////////////////////////////////////
     // Evaluate summary info
 
+    if(!_sumHist._hTrigInfo[0]) return; // histograms were not booked
+
     // trigger efficiencies
     _sumHist._hTrigInfo[0]->Scale(1./_nProcess);
     _sumHist._hTrigInfo[2]->Scale(1./_nProcess);
@@ -439,6 +442,7 @@ namespace mu2e {
     auto const trigResultsH   = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults*trigResults = trigResultsH.product();
     TriggerResultsNavigator   trigNavig(trigResults);
+    if(_diagLevel > 1) trigNavig.print();
 
     //now set the value of _trigPaths
     _trigPaths = trigNavig.getTrigPaths();

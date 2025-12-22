@@ -7,6 +7,7 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 
 // Mu2e includes.
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
@@ -15,6 +16,8 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/MCDataProducts/inc/SumOfWeights.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include <iostream>
 #include <string>
@@ -28,14 +31,18 @@ namespace mu2e {
       struct Config {
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
-        fhicl::Atom<int> diagLevel{Name("diagLevel")};
-        fhicl::Atom<double> tmin{Name("tmin")};
-        fhicl::Atom<double> tmax{Name("tmax")};
-        fhicl::Atom<int> processCode{Name("processCode")};
-        fhicl::Atom<bool> isNull{Name("isNull")};
+        fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("Diagnostic print level"), 0};
+        fhicl::OptionalAtom<double> tmin{Name("tmin"), Comment("Selected pion minimum end time")};
+        fhicl::OptionalAtom<double> tmax{Name("tmax"), Comment("Selected pion maximum end time")};
+        fhicl::OptionalAtom<int> maxPions{Name("maxPions"), Comment("Maximum number of pion stops")};
+        fhicl::Atom<int> processCode{Name("processCode"), Comment("Pion end process code to select")};
+        fhicl::Atom<art::InputTag> simCollTag{Name("simParticles"),Comment("A SimParticleCollection with input stopped pions")};
+        fhicl::Atom<bool> isNull{Name("isNull"), Comment("Skip filtering is turned on"), false};
       };
       explicit PionFilter(const art::EDFilter::Table<Config>& config);
       virtual bool filter(art::Event& event) override;
+      virtual bool beginSubRun(art::SubRun& sr) override;
+      virtual bool endSubRun(art::SubRun& sr) override;
       virtual void beginJob() override;
       virtual void endJob() override;
 
@@ -44,60 +51,84 @@ namespace mu2e {
       int diagLevel_;
       double tmin_;
       double tmax_;
+      int maxPions_;
       int processCode_;
+      art::ProductToken<SimParticleCollection> const simsToken_;
       bool isNull_;
-      float _totalweight = 0;
-      float _selectedweight = 0;
-      int _ntot = 0;
-      int _nsel = 0;
+      SumOfWeights total_;
+      SumOfWeights selected_;
   };
 
   PionFilter::PionFilter(const art::EDFilter::Table<Config>& config) :
      EDFilter{config}
     , diagLevel_{config().diagLevel()}
-    , tmin_{config().tmin()}
-    , tmax_{config().tmax()}
     , processCode_{config().processCode()}
+    , simsToken_{consumes<SimParticleCollection>(config().simCollTag())}
     , isNull_{config().isNull()}
   {
+    if(!config().tmin(tmin_)) tmin_ = -1.e10;
+    if(!config().tmax(tmax_)) tmax_ =  1.e10;
+    if(!config().maxPions(maxPions_)) maxPions_ = -1;
+    produces<SumOfWeights, art::InSubRun>("total");
+    produces<SumOfWeights, art::InSubRun>("selected");
   }
 
   void PionFilter::beginJob(){
-      art::ServiceHandle<art::TFileService> tfs;
-
-}
+  }
 
   bool PionFilter::filter(art::Event& evt) {
       if(isNull_) return true;
       bool passed = false;
-      std::vector<art::Handle<SimParticleCollection>> vah = evt.getMany<SimParticleCollection>();
-      for (auto const& ah : vah) { //always one collection
-        for(const auto& aParticle : *ah){
-          art::Ptr<SimParticle> pp(ah, aParticle.first.asUint());
+      const auto simh = evt.getValidHandle<SimParticleCollection>(simsToken_);
+      const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
+      const std::vector<int> decayOffCodes = {PDGCode::pi_plus, PDGCode::pi_minus};
+      int npions(0);
+      for(const auto& aParticle : *simh){
+        const art::Ptr<SimParticle> pp(simh, aParticle.first.asUint());
 
-          float _endglobaltime = pp->endGlobalTime();
-          if( pp->stoppingCode() == processCode_ and std::abs(pp->pdgId()) == PDGCode::pi_plus){
-            const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
-            _totalweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
-            _ntot += 1;
-          }
-          if( pp->stoppingCode() == processCode_ and std::abs(pp->pdgId()) == PDGCode::pi_plus and _endglobaltime > tmin_ and _endglobaltime < tmax_ ){
+        // check if this is a pion of interest
+        if( pp->stoppingCode() == processCode_ and std::abs(pp->pdgId()) == PDGCode::pi_plus){
+          const float globalTime = pp->endGlobalTime();
+          const float tau = SimParticleGetTau::calculate(pp, decayOffCodes, gc);
+          const float weight = std::exp(-tau);
+
+          // count found pions
+          total_.add(weight);
+          ++npions;
+
+          // check additional filters
+          if(globalTime > tmin_ and globalTime < tmax_ ){
             passed = true;
-            const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
-            _selectedweight += exp(-1*pp->endProperTime() / gc.getParticleLifetime(pp->pdgId()));
-            _nsel += 1;
+            selected_.add(weight);
           }
         }
       }
-    return passed;
+
+      // check global filters
+      passed &= maxPions_ < 0 || npions <= maxPions_;
+
+      // return the result
+      return passed;
+  }
+
+  bool PionFilter::beginSubRun(art::SubRun&) {
+    total_   .reset();
+    selected_.reset();
+    return true;
+  }
+
+  bool PionFilter::endSubRun(art::SubRun& sr) {
+    sr.put(std::unique_ptr<SumOfWeights>(new SumOfWeights(total_   .sum(), total_   .count())), "total"   , art::fullSubRun());
+    sr.put(std::unique_ptr<SumOfWeights>(new SumOfWeights(selected_.sum(), selected_.count())), "selected", art::fullSubRun());
+    return true;
   }
 
   void PionFilter::endJob(){
      if(diagLevel_ > 0 ){
-      std::cout<<"Total weight for all stops "<<_totalweight<<std::endl;
-      std::cout<<"Total stops "<<_ntot<<std::endl;
-      std::cout<<"Selected weight for chosen stops "<<_selectedweight<<std::endl;
-      std::cout<<"Selected stops "<<_nsel<<std::endl;
+       std::cout<<"Total weight for all stops "<<total_.sum()<<std::endl;
+       std::cout<<"Total stops "<<total_.count()<<std::endl;
+       std::cout<<"Selected weight for chosen stops "<<selected_.sum()<<std::endl;
+       std::cout<<"Selected stops "<<selected_.count()<<std::endl;
     }
   }
 }

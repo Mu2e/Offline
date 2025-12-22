@@ -30,6 +30,7 @@ cet_set_compiler_flags(DIAGS VIGILANT
              -Wno-unused-parameter
              -Wno-non-virtual-dtor
              -Wno-extra
+             -Wreorder
 )
 
 if(DEFINED Offline_UPS_QUALIFIER_STRING)
@@ -44,9 +45,17 @@ endif()
 
 message("WITH_G4 SET TO ${WITH_G4}")
 
+# Create a variable to hold optional Online libraries
+find_package(artdaq)
+if(artdaq_FOUND) # only enable ONLINE_MODE if artdaq is found, so we can use artdaq libraries
+  message("ARTDAQ found, enabling ONLINE_MODE")
+  set(ARTDAQ_DAQDATA_LIB artdaq::DAQdata)
+  add_definitions("-DONLINE_MODE=1")
+endif()
+
 message("Creating link from ${CMAKE_CURRENT_SOURCE_DIR} to ${CMAKE_CURRENT_SOURCE_DIR}/Offline to satisfy includes")
 file(CREATE_LINK ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/Offline SYMBOLIC)
- 
+
 find_package(art_root_io REQUIRED EXPORT)
 find_package(GSL REQUIRED EXPORT)
 find_package(PostgreSQL REQUIRED EXPORT)
@@ -55,20 +64,24 @@ find_package(Boost COMPONENTS iostreams program_options REQUIRED EXPORT)
 find_package(XercesC REQUIRED EXPORT)
 find_package(BLAS REQUIRED EXPORT)
 find_package(artdaq-core-mu2e REQUIRED EXPORT)
-if( ${WITH_G4} ) 
-    message("--> ADDING G4 LIBS")	
+find_package(TRACE REQUIRED EXPORT)
+find_package(KinKal REQUIRED EXPORT)
+
+if( ${WITH_G4} )
+    message("--> ADDING G4 LIBS")
     find_package(Geant4 REQUIRED EXPORT)
 
-# TODO: Find or implement FindCRY.cmake
-include_directories($ENV{CRYHOME}/src)
-link_directories($ENV{CRYHOME}/lib)
+    # TODO: Find or implement FindCRY.cmake
+    include_directories($ENV{CRYHOME}/src)
+    link_directories($ENV{CRYHOME}/lib)
 endif()
 
 
 # BTrk and KinKal have non-standard Find*.cmake...
-include_directories($ENV{KINKAL_INC})
+if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/../KinKal/KinKalTargets.cmake)
+  include(${CMAKE_CURRENT_BINARY_DIR}/../KinKal/KinKalTargets.cmake)
+endif()
 include_directories($ENV{BTRK_INC})
-link_directories($ENV{KINKAL_LIB})
 link_directories($ENV{BTRK_LIB})
 
 include(ArtDictionary)
@@ -93,8 +106,10 @@ add_subdirectory(CaloFilters)
 add_subdirectory(CaloMC)
 add_subdirectory(CaloReco)
 add_subdirectory(CalorimeterGeom)
+add_subdirectory(CaloVisualizer)
 add_subdirectory(CalPatRec)
 add_subdirectory(CommonMC)
+add_subdirectory(CommonReco)
 add_subdirectory(Compression)
 add_subdirectory(ConditionsBase)
 add_subdirectory(ConditionsService)
@@ -106,6 +121,7 @@ add_subdirectory(CRVConfig)
 add_subdirectory(CRVFilters)
 add_subdirectory(CRVReco)
 add_subdirectory(CRVResponse)
+add_subdirectory(CRVTools)
 add_subdirectory(DAQ)
 add_subdirectory(DAQConditions)
 add_subdirectory(DAQConfig)
@@ -131,7 +147,7 @@ add_subdirectory(MCDataProducts)
 add_subdirectory(MECOStyleProtonAbsorberGeom)
 add_subdirectory(Mu2e)
 add_subdirectory(Mu2eBTrk)
-if( ${WITH_G4} ) 
+if( ${WITH_G4} )
     message("---> ADDING G4 DIRS")
     add_subdirectory(EventGenerator)
     add_subdirectory(Mu2eG4)

@@ -52,6 +52,7 @@ namespace mu2e
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("module label for CrvDigis")};
       fhicl::Atom<bool> NZSdata{Name("NZSdata"), Comment("use digis with the NZS instance label")};  //false
+      fhicl::Atom<float> pedestalUndershootThreshold{Name("pedestalUndershootThreshold"), Comment("if 1st ADC sample is below DB pedestal by this threshold value, use 1st ADC sample as pedestal. E.g. -10000 forces it to always use the 1st ADC sample.")};  //6.0
       fhicl::Atom<float> minADCdifference{Name("minADCdifference"), Comment("minimum ADC difference above pedestal to be considered for reconstruction")};  //40
       fhicl::Atom<float> defaultBeta{Name("defaultBeta"), Comment("initialization value for fit and default value for invalid fits (regular pulses: 19.0ns, dark counts for calibration: 12.0ns)")};
       fhicl::Atom<float> minBeta{Name("minBeta"), Comment("smallest accepted beta for valid fit [ns]")};  //5.0ns
@@ -85,6 +86,7 @@ namespace mu2e
 
     std::string _crvDigiModuleLabel;
     bool        _NZSdata;
+    float       _pedestalUndershootThreshold;
     art::InputTag _eventWindowMarkerTag;
     art::InputTag _protonBunchTimeTag;
 
@@ -104,6 +106,7 @@ namespace mu2e
     art::EDProducer(conf),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
     _NZSdata(conf().NZSdata()),
+    _pedestalUndershootThreshold(conf().pedestalUndershootThreshold()),
     _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeTag(conf().protonBunchTimeTag()),
     _timeOffsetScale(conf().timeOffsetScale()),
@@ -170,7 +173,10 @@ namespace mu2e
     {
       const CrvDigi &digi = crvDigiCollection->at(waveformIndex);
       const CRSScintillatorBarIndex &barIndex = digi.GetScintillatorBarIndex();
-      int SiPM = digi.GetSiPMNumber();
+      uint8_t SiPM = digi.GetSiPMNumber();
+      uint8_t ROC = digi.GetROC();
+      uint8_t FEB = digi.GetFEB();
+      uint8_t FEBchannel = digi.GetFEBchannel();
       uint16_t startTDC = digi.GetStartTDC();
       std::vector<int16_t> ADCs=digi.GetADCs();
       std::vector<size_t> waveformIndices;
@@ -178,13 +184,14 @@ namespace mu2e
 
       //checking following digis whether they are a continuation of the current digis
       //if that is the case, append the next digis
+      //requires that digis belonging to the same channel are grouped together and ordered by timestamp
       while(++waveformIndex<crvDigiCollection->size())
       {
         const CrvDigi &nextDigi = crvDigiCollection->at(waveformIndex);
         if(barIndex!=nextDigi.GetScintillatorBarIndex()) break;
         if(SiPM!=nextDigi.GetSiPMNumber()) break;
-        if(startTDC+ADCs.size()!=nextDigi.GetStartTDC()) break;
-        for(size_t i=0; i<nextDigi.GetADCs().size(); ++i) ADCs.push_back(nextDigi.GetADCs()[i]);
+        if(startTDC+ADCs.size()!=nextDigi.GetStartTDC()) break;  //checks that the next waveform begins right after the previous one
+        ADCs.insert(ADCs.end(),nextDigi.GetADCs().begin(),nextDigi.GetADCs().end()); //append the waveform
         waveformIndices.push_back(waveformIndex);
       }
 
@@ -197,6 +204,12 @@ namespace mu2e
       }
 
       double pedestal = calib.pedestal(channel);
+      double pedestalFromDB = true;
+      if(pedestal-((float)ADCs.at(0))>_pedestalUndershootThreshold) //pulse seems to be in an undershoot. get pedestal from 1st ADC sample instead of DB.
+      {
+        pedestal=ADCs.at(0);
+        pedestalFromDB=false;
+      }
       double calibPulseArea = calib.pulseArea(channel);
       double calibPulseHeight = calib.pulseHeight(channel);
       double timeOffset = 0.0;
@@ -243,7 +256,7 @@ namespace mu2e
 
         crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags,
                                              PEsNoFit, pulseTimeNoFit, pulseStart, pulseEnd,
-                                             waveformIndices, barIndex, SiPM);
+                                             waveformIndices, barIndex, SiPM, ROC, FEB, FEBchannel, pedestal, pedestalFromDB);
       }
 
     }

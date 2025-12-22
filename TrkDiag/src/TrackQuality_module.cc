@@ -36,6 +36,7 @@ using CLHEP::HepVector;
 namespace TMVA_SOFIE_TrkQual_ANN1 {
   class Session;
 }
+
 namespace mu2e
 {
 
@@ -125,7 +126,7 @@ namespace mu2e
         ++nmat;
         if (i_straw->active()) {
           ++nmatactive;
-          radlen += i_straw->radLen();
+          radlen += i_straw->_radlen;
         }
       }
 
@@ -151,7 +152,8 @@ namespace mu2e
         features[5] = -9999;
       }
 
-      auto mvaout = mva_->infer(features.data());
+      std::vector<float> mvaout = mva_->infer(features.data());
+
       if (!entrance_found) {
         mvaout[0] = 0; // this is not a good track
       }

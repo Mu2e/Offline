@@ -9,7 +9,7 @@ BEGIN_PROLOG
 BD : {
   module_type : BkgDiag
   StrawDigiMCCollection : "compressDigiMCs"
-  ComboHitCollection : "FlagBkgHits"
+  ComboHitCollection : "makeSTH"
   BkgClusterCollection:"FlagBkgHits"
   BkgClusterHitCollection:"FlagBkgHits"
   MCPrimary : compressDigiMCs

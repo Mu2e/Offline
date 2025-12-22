@@ -2,13 +2,18 @@
 #include <limits>
 namespace mu2e {
 
+  const double KalSeed::_regrowtol(1e-3); // 1 ps minimum for regrown segments
+
   KalSeed::LHPTPtr KalSeed::loopHelixFitTrajectory() const {
     if(loopHelixFit() && segments().size() > 0){
       // initialize the piecewise trajectory with the front segment
       LHPTPtr ptraj(new KalSeed::LHPT(segments().front().loopHelix()));
       auto iseg = segments().begin(); ++iseg;
       while(iseg != segments().end()){
-        if(!iseg->timeRange().null())ptraj->append(iseg->loopHelix());
+        if(iseg->timeRange().range() > _regrowtol ){
+          auto trajptr = std::make_shared<KinKal::LoopHelix>(iseg->loopHelix());
+          ptraj->add(trajptr); // note this call resolves the phi0 ambiguity
+        }
         ++iseg;
       }
       return ptraj;
@@ -22,7 +27,10 @@ namespace mu2e {
       CHPTPtr ptraj(new KalSeed::CHPT(segments().front().centralHelix()));
       auto iseg = segments().begin(); ++iseg;
       while(iseg != segments().end()){
-        if(!iseg->timeRange().null())ptraj->append(iseg->centralHelix());
+        if(iseg->timeRange().range() > _regrowtol ){
+          auto trajptr = std::make_shared<KinKal::CentralHelix>(iseg->centralHelix());
+          ptraj->add(trajptr);
+        }
         ++iseg;
       }
       return ptraj;
@@ -36,7 +44,10 @@ namespace mu2e {
       KLPTPtr ptraj(new KalSeed::KLPT(segments().front().kinematicLine()));
       auto iseg = segments().begin(); ++iseg;
       while(iseg != segments().end()){
-        if(!iseg->timeRange().null())ptraj->append(iseg->kinematicLine());
+        if(iseg->timeRange().range() > _regrowtol ){
+          auto trajptr = std::make_shared<KinKal::KinematicLine>(iseg->kinematicLine());
+          ptraj->add(trajptr);
+        }
         ++iseg;
       }
       return ptraj;
@@ -114,6 +125,7 @@ namespace mu2e {
 // start with the middle
     t0 = timeRange().mid();
     auto iseg = nearestSegment(t0);
+    t0 = iseg->t0Val(_status);
     auto oldseg = segments().end();
     unsigned ntest(0);
     while((!iseg->timeRange().inRange(t0)) && iseg != oldseg && ntest < segments().size()){
@@ -129,6 +141,12 @@ namespace mu2e {
     double t0;
     t0Segment(t0);
     return t0;
+  }
+
+  double KalSeed::t0Var() const {
+    double t0;
+    auto segiter = t0Segment(t0);
+    return segiter->t0Var(_status);
   }
 
   // deprecated legacy functions

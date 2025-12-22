@@ -46,6 +46,7 @@ namespace mu2e
       fhicl::Atom<double> maxSlopeDifference{Name("maxSlopeDifference"), Comment("maximum slope difference between layers allowed for a coincidence")};
       fhicl::Atom<int> coincidenceLayers{Name("coincidenceLayers"), Comment("number of layers required for a coincidence")};
       fhicl::Atom<double> minClusterPEs{Name("minClusterPEs"), Comment("minimum number of PEs in a cluster required for storage")};
+      fhicl::Atom<double> initialClusterMaxDistance{Name("initialClusterMaxDistance"), Comment("maximum distances between hits to be considered for a hit cluster at initial clustering process")};
     };
     struct Config
     {
@@ -54,7 +55,6 @@ namespace mu2e
       fhicl::Atom<int> verboseLevel{Name("verboseLevel"), Comment("verbose level")};
       fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("module label of the input CrvRecoPulses")};
       //cluster settings
-      fhicl::Atom<double> initialClusterMaxDistance{Name("initialClusterMaxDistance"), Comment("maximum distances between hits to be considered for a hit cluster at initial clustering process")};
       fhicl::Atom<double> clusterMaxTimeDifference{Name("clusterMaxTimeDifference"), Comment("maximum time difference between hits to be considered for a hit cluster (when overlap option is not used)")};
       fhicl::Atom<double> clusterMinOverlapTime{Name("clusterMinOverlapTime"), Comment("minimum overlap time between hits to be considered for a hit cluster (when overlap option is used)")};
       //sector-specific coincidence settings
@@ -82,7 +82,6 @@ namespace mu2e
     int                      _verboseLevel;
     std::string              _crvRecoPulsesModuleLabel;
 
-    double                   _initialClusterMaxDistance;
     double                   _initialClusterMaxTimeDifference;
     double                   _initialClusterMinOverlapTime;
     double                   _clusterMaxTimeDifference;
@@ -120,6 +119,7 @@ namespace mu2e
       double      minSlope, maxSlope, maxSlopeDifference;
       int         coincidenceLayers;
       double      minClusterPEs;
+      double      initialClusterMaxDistance;
     };
     std::map<int,sectorCoincidenceProperties> _sectorMap;
 
@@ -178,7 +178,6 @@ namespace mu2e
     art::EDProducer(conf),
     _verboseLevel(conf().verboseLevel()),
     _crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
-    _initialClusterMaxDistance(conf().initialClusterMaxDistance()),
     _clusterMaxTimeDifference(conf().clusterMaxTimeDifference()),
     _clusterMinOverlapTime(conf().clusterMinOverlapTime()),
     _sectorConfig(conf().sectorConfig()),
@@ -263,6 +262,7 @@ namespace mu2e
       s.maxSlopeDifference              = sectorConfigIter->maxSlopeDifference();
       s.coincidenceLayers               = sectorConfigIter->coincidenceLayers();
       s.minClusterPEs                   = sectorConfigIter->minClusterPEs();
+      s.initialClusterMaxDistance       = sectorConfigIter->initialClusterMaxDistance();
 
       _sectorMap[i]=s;
     }
@@ -294,6 +294,9 @@ namespace mu2e
       const CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse->GetScintillatorBarIndex();
       int sectorNumber, moduleNumber, layerNumber, barNumber;
       CrvHelper::GetCrvCounterInfo(CRS, crvBarIndex, sectorNumber, moduleNumber, layerNumber, barNumber);
+
+      //ignore pulses from modules that have a number of layers other than 4.
+      if(CRS->getCRSScintillatorShield(sectorNumber).getModule(moduleNumber).nLayers()!=CRVId::nLayers) continue;
 
       //sector properties
       std::map<int,sectorCoincidenceProperties>::const_iterator sIter = _sectorMap.find(sectorNumber);
@@ -337,7 +340,7 @@ namespace mu2e
                                                     sector.maxTimeDifferenceAdjacentPulses, sector.maxTimeDifference,
                                                     sector.minOverlapTimeAdjacentPulses, sector.minOverlapTime,
                                                     sector.minSlope, sector.maxSlope, sector.maxSlopeDifference, sector.coincidenceLayers,
-                                                    sector.minClusterPEs,_initialClusterMaxDistance);
+                                                    sector.minClusterPEs,sector.initialClusterMaxDistance);
     }
 
     //loop through all crv sectors types

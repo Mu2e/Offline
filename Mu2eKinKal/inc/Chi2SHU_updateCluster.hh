@@ -57,7 +57,7 @@ namespace mu2e {
           RESIDCOL resids;
           // compute residuals using this state (still WRT the reference parameters)
           DVEC dpvec = cparams.parameters() - shptr->referenceParameters().parameters();
-          shptr->setResiduals(miconfig,whstate,resids);
+          shptr->setResiduals(whstate,resids);
           // only use distance residual
           auto const& resid = resids[Mu2eKinKal::dresid];
           if(resid.active()) {
@@ -72,7 +72,7 @@ namespace mu2e {
               pvar = resid.parameterVariance();
             }
             // Use the unbiased residual to compute the chisq
-            Residual uresid(uresidval,resid.variance(),pvar,resid.active(),resid.dRdP());
+            Residual uresid(uresidval,resid.variance(),pvar,resid.dRdP(),resid.active());
             chisq += uresid.chisq();
             ++ndof;
           }

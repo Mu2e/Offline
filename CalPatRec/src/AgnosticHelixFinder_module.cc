@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // AgnosticHelixFinder
-// M. Stortini & E. Martinez
+// M. Stortini, E. Martinez, N. Mazotov
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "Offline/CalPatRec/inc/AgnosticHelixFinder_types.hh"
@@ -34,6 +34,7 @@
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 #include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 #include "Offline/Mu2eUtilities/inc/HelixTool.hh"
+#include "Offline/Mu2eUtilities/inc/StopWatch.hh"
 
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 
@@ -50,6 +51,7 @@ namespace mu2e {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
       fhicl::Atom<int>             diagLevel              {Name("diagLevel"            ), Comment("turn tool on or off"         )  };
+      fhicl::Atom<int>             doTiming               {Name("doTiming"             ), Comment("Analyze processing time"     ), 0};
       fhicl::Atom<art::InputTag>   chCollLabel            {Name("chCollLabel"          ), Comment("combo hit collection label"  )  };
       fhicl::Atom<art::InputTag>   tcCollLabel            {Name("tcCollLabel"          ), Comment("time cluster coll label"     )  };
       fhicl::Atom<art::InputTag>   ccCollLabel            {Name("ccCollLabel"          ), Comment("Calo Cluster coll label"     )  };
@@ -71,6 +73,7 @@ namespace mu2e {
       fhicl::Atom<float>           minTripletArea         {Name("minTripletArea"       ), Comment("triangle area of triplet"    )  };
       fhicl::Atom<float>           maxSeedCircleResidual  {Name("maxSeedCircleResidual"), Comment("add hits to triplet circle"  )  };
       fhicl::Atom<int>             minSeedCircleHits      {Name("minSeedCircleHits"    ), Comment("min hits to continue search" )  };
+      fhicl::Atom<int>             maxSeedCircleHits      {Name("maxSeedCircleHits"    ), Comment("max hits to include in the seed" ), -1  };
       fhicl::Atom<float>           maxDphiDz              {Name("maxDphiDz"            ), Comment("used finding phi-z segment"  )  };
       fhicl::Atom<float>           maxSeedLineGap         {Name("maxSeedLineGap"       ), Comment("used finding phi-z segment"  )  };
       fhicl::Atom<float>           maxZWindow             {Name("maxZWindow"           ), Comment("used finding phi-z segment"  )  };
@@ -98,57 +101,13 @@ namespace mu2e {
       fhicl::Table<AgnosticHelixFinderTypes::Config> diagPlugin  {Name("diagPlugin"), Comment("diag plugin"                   )  };
     };
 
-    struct cHit {
-      int     hitIndice = 0; // index of point in _chColl
-      float   circleError2 = 1.0;
-      float   helixPhi = 0.0;
-      float   helixPhiError2 = 0.0;
-      int     helixPhiCorrection = 0;
-      bool    inHelix = false;
-      bool    used = false; // whether or not hit is used in fits
-      bool    isolated = false;
-      bool    averagedOut = false;
-      bool    highEDep = false; // avoid hits in tripleting that are most likely protons
-      bool    notOnLine = true;
-      bool    uselessTripletSeed = false;
-      bool    notOnSegment = true;
-    };
-
-    struct tripletPoint {
-      XYZVectorF   pos;
-      int          hitIndice;
-    };
-
-    struct triplet {
-      tripletPoint i;
-      tripletPoint j;
-      tripletPoint k;
-    };
-
-    struct lineInfo {
-      float                 zMin;
-      float                 zMax;
-      ::LsqSums2            fitter;
-      std::vector<size_t>   tcHitsIndices;
-      std::vector<int>      helixPhiCorrections; // integer for 2pi ambiguity
-    };
-
-    enum LoopCondition {
-      CONTINUE,
-      BREAK,
-      GOOD
-    };
-
-    enum HitType {
-      CALOCLUSTER = -1,
-      STOPPINGTARGET = -2
-    };
-
   private:
     //-----------------------------------------------------------------------------
     // tool on or off
     //-----------------------------------------------------------------------------
     int _diagLevel;
+    int _doTiming;
+    std::unique_ptr<StopWatch> _watch;
 
     //-----------------------------------------------------------------------------
     // event object labels
@@ -173,23 +132,29 @@ namespace mu2e {
     int      _intenseClusterThresh;
     bool     _doIsolationFlag;
     float    _isoRad;
+    float    _isoRadSq;
     int      _isoMinHitsNear;
     bool     _doAverageFlag;
     bool     _doEDepFlag;
     float    _eDepFlagThresh;
     float    _minDistCut;
+    float    _minDistCutSq;
     float    _minTripletSeedZ;
     float    _minTripletDz;
     float    _maxTripletDz;
     float    _minTripletDist;
+    float    _minTripletDistSq;
     float    _minTripletArea;
     float    _maxSeedCircleResidual;
+    float    _maxSeedCircleResidualSq;
     int      _minSeedCircleHits;
+    int      _maxSeedCircleHits;
     float    _maxDphiDz;
     float    _maxSeedLineGap;
     float    _maxZWindow;
     int      _minLineSegmentHits;
     float    _segMultiplier;
+    float    _segMultiplierSq;
     float    _maxSegmentChi2;
     float    _max2PiAmbigResidual;
     float    _maxPhiZResidual;
@@ -198,12 +163,15 @@ namespace mu2e {
     float    _maxCircleRecoverSigma;
     float    _maxLineRecoverSigma;
     float    _caloClusterSigma;
+    float    _caloClusterSigmaSq;
     int      _minNHelixStrawHits;
     int      _minNHelixComboHits;
     float    _minHelixPerpMomentum;
     float    _maxHelixPerpMomentum;
     float    _minHelixMomentum;
+    float    _minHelixMomentumSq;
     float    _maxHelixMomentum;
+    float    _maxHelixMomentumSq;
     float    _chi2LineSaveThresh;
     float    _maxEDepAvg;
     float    _tzSlopeSigThresh;
@@ -215,7 +183,7 @@ namespace mu2e {
     art::Handle<CaloClusterCollection>   _ccHandle;
     const mu2e::Calorimeter*             _calorimeter;
     const mu2e::Tracker*                 _tracker;
-    art::Event*                          _event;
+    art::Handle<TimeClusterCollection>   _tcCollH;
 
     //-----------------------------------------------------------------------------
     // stuff for doing helix search
@@ -227,6 +195,9 @@ namespace mu2e {
     ::LsqSums2                    _lineFitter;
     std::vector<lineInfo>         _seedPhiLines;
     float                         _bz0;
+    float                         _bz0Conv; // with conversion factor
+    float                         _bz0ConvSq; // with conversion factor, squared
+    float                         _caloZOffset;
     bool                          _intenseEvent;
     bool                          _intenseCluster;
 
@@ -239,7 +210,8 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     // constants
     //-----------------------------------------------------------------------------
-    static constexpr float mmTconversion = CLHEP::c_light/1000.0;
+    static constexpr float _mmTconversion   = CLHEP::c_light/1000.0;
+    static constexpr double        _twopi   = 2.*M_PI;
 
     //-----------------------------------------------------------------------------
     // functions
@@ -258,29 +230,29 @@ namespace mu2e {
     // helper functions
     //-----------------------------------------------------------------------------
     bool         findData                  (const art::Event& e);
-    XYZVectorF   getPos                    (size_t& tcHitsIndex);
-    void         computeCircleError2       (size_t& tcHitsIndex, float& xC, float& yC);
-    float        computeCircleResidual2    (size_t& tcHitsIndex, float& xC, float& yC, float& rC);
-    void         computeHelixPhi           (size_t& tcHitsIndex, float& xC, float& yC);
-    float        computeHelixMomentum2     (float& radius, float& dphidz);
-    float        computeHelixPerpMomentum  (float& radius);
+    const XYZVectorF& getPos               (size_t tcHitsIndex);
+    void         computeCircleError2       (size_t tcHitsIndex, float xC, float yC);
+    float        computeCircleResidual2    (size_t tcHitsIndex, float xC, float yC, float rC);
+    void         computeHelixPhi           (size_t tcHitsIndex, float xC, float yC);
+    float        computeHelixMomentum2     (float radius, float dphidz);
+    float        computeHelixPerpMomentum  (float radius);
     void         tcHitsFill                (size_t tc);
     void         setFlags                  ();
     void         resetFlags                ();
-    void         findHelix                 (size_t tc, HelixSeedCollection& HSColl, bool& findAnotherHelix);
-    bool         passesFlags               (size_t& tcHitsIndex);
-    void         setTripletI               (size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome);
-    void         setTripletJ               (size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome);
-    void         setTripletK               (size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome);
-    void         initTriplet               (triplet& trip, LoopCondition& outcome);
+    bool         findHelix                 (size_t tc, HelixSeedCollection& HSColl);
+    bool         passesFlags               (size_t tcHitsIndex);
+    void         setTripletI               (size_t tcHitsIndex, triplet& trip, LoopCondition& outcome);
+    void         setTripletJ               (size_t tcHitsIndex, triplet& trip, LoopCondition& outcome);
+    void         setTripletK               (size_t tcHitsIndex, triplet& trip, LoopCondition& outcome);
+    void         initTriplet               (const triplet& trip, LoopCondition& outcome);
     void         initSeedCircle            (LoopCondition& outcome);
     void         initHelixPhi              ();
     void         findSeedPhiLines          (LoopCondition& outcome);
-    float        underEstimateSlope        (float& phi1, float& phi1Err2, float& phi2, float& phi2Err2, float& dz);
+    float        underEstimateSlope        (float phi1, float phi1Err2, float phi2, float phi2Err2, float dz);
     void         resolve2PiAmbiguities     ();
-    void         refinePhiLine             (size_t lineIndex, bool& removals);
+    bool         refinePhiLine             (size_t lineIndex);
     void         initFinalSeed             (LoopCondition& outcome);
-    void         recoverPoints             (bool& recoveries);
+    bool         recoverPoints             ();
     void         checkHelixViability       (LoopCondition& outcome);
     void         saveHelix                 (size_t tc, HelixSeedCollection& HSColl);
     bool         validHelixDirection       (TrkFitDirection::FitDirection direction);
@@ -293,6 +265,7 @@ namespace mu2e {
   AgnosticHelixFinder::AgnosticHelixFinder(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config},
     _diagLevel                     (config().diagLevel()                             ),
+    _doTiming                      (config().doTiming()                              ),
     _chLabel                       (config().chCollLabel()                           ),
     _tcLabel                       (config().tcCollLabel()                           ),
     _ccLabel                       (config().ccCollLabel()                           ),
@@ -314,6 +287,7 @@ namespace mu2e {
     _minTripletArea                (config().minTripletArea()                        ),
     _maxSeedCircleResidual         (config().maxSeedCircleResidual()                 ),
     _minSeedCircleHits             (config().minSeedCircleHits()                     ),
+    _maxSeedCircleHits             (config().maxSeedCircleHits()                     ),
     _maxDphiDz                     (config().maxDphiDz()                             ),
     _maxSeedLineGap                (config().maxSeedLineGap()                        ),
     _maxZWindow                    (config().maxZWindow()                            ),
@@ -337,8 +311,20 @@ namespace mu2e {
     _maxEDepAvg                    (config().maxEDepAvg()                            ),
     _tzSlopeSigThresh              (config().tzSlopeSigThresh()                      )
   {
+    // to cache the evaluations
+    _minTripletDistSq = _minTripletDist * _minTripletDist;
+    _maxSeedCircleResidualSq = _maxSeedCircleResidual * _maxSeedCircleResidual;
+    _caloClusterSigmaSq = _caloClusterSigma * _caloClusterSigma;
+    _isoRadSq = _isoRad * _isoRad;
+    _minDistCutSq = _minDistCut * _minDistCut;
+    _minHelixMomentumSq = _minHelixMomentum * _minHelixMomentum;
+    _maxHelixMomentumSq = _maxHelixMomentum * _maxHelixMomentum;
+    _segMultiplierSq = _segMultiplier * _segMultiplier;
 
-    // convert the helix direction names into enums
+    // reserve a reasonable amount of space for future hit collections
+    _tcHits.reserve(200);
+
+      // convert the helix direction names into enums
     for(auto helix_dir : config().validHelixDirections()) {
       _validHelixDirections.push_back(TrkFitDirection::fitDirectionFromName(helix_dir));
     }
@@ -347,8 +333,11 @@ namespace mu2e {
     consumes<CaloClusterCollection>  (_ccLabel);
     produces<HelixSeedCollection>    ();
 
-    if (_diagLevel == 1) _hmanager = art::make_tool<ModuleHistToolBase>(config().diagPlugin, "diagPlugin");
+    if (_diagLevel > 0) _hmanager = art::make_tool<ModuleHistToolBase>(config().diagPlugin, "diagPlugin");
     else _hmanager = std::make_unique<ModuleHistToolBase>();
+
+    // For timing analysis
+    if(_doTiming) _watch = std::make_unique<StopWatch>();
 
     if (_useStoppingTarget == true) { _stopTargPos.SetCoordinates(0.0, 0.0, std::numeric_limits<float>::max()); }
 
@@ -363,9 +352,15 @@ namespace mu2e {
   // beginJob
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::beginJob() {
-    if (_diagLevel == 1) {
+    if (_diagLevel > 0) {
       art::ServiceHandle<art::TFileService> tfs;
       _hmanager->bookHistograms(tfs);
+    }
+    // calibrate the timing speed
+    if(_doTiming) {
+      printf("[AgnosticHelixFinder::%s] Calibrating timing...\n", __func__);
+      _watch->Calibrate();
+      printf("[AgnosticHelixFinder::%s] Calibrating time = %.3g us\n", __func__, _watch->Calibration());
     }
   }
 
@@ -384,149 +379,184 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0, 0.0, 0.0));
     _bz0 = bfmgr->getBField(vpoint_mu2e).z();
+    _bz0Conv = _bz0 * _mmTconversion;
+    _bz0ConvSq = _bz0Conv * _bz0Conv;
+
+    // Offset for calo cluster z positions
+    double offset = _calorimeter->caloInfo().getDouble("diskCaseZLength");
+    offset += _calorimeter->caloInfo().getDouble("BPPipeZOffset");
+    offset += _calorimeter->caloInfo().getDouble("BPHoleZLength");
+    offset += _calorimeter->caloInfo().getDouble("FEEZLength");
+    offset /= 2.0;
+    _caloZOffset = offset;
   }
 
   //-----------------------------------------------------------------------------
-  // find input things
+  // find input data
   //-----------------------------------------------------------------------------
   bool AgnosticHelixFinder::findData(const art::Event& evt) {
+    if(_doTiming) _watch->Increment(__func__);
 
     auto chCollH = evt.getValidHandle<ComboHitCollection>(_chLabel);
-    if (chCollH.product() != 0) {
-      _chColl = chCollH.product();
-    } else { _chColl = 0; }
+    _chColl = chCollH.product();
 
-    auto _tcCollH = evt.getValidHandle<TimeClusterCollection>(_tcLabel);
-    if (_tcCollH.product() != 0) {
-      _tcColl = _tcCollH.product();
-    } else { _tcColl = 0; }
+    auto tcCollH = evt.getValidHandle<TimeClusterCollection>(_tcLabel);
+    _tcColl = tcCollH.product();
+     // save for art::Ptr creation
+    evt.getByLabel(_tcLabel, _tcCollH);
 
-    if (evt.getByLabel(_ccLabel, _ccHandle)) {
-      _ccColl = _ccHandle.product();
-    } else { _ccColl = NULL; }
+    // Calorimeter cluster collection is no longer used
+    // if (evt.getByLabel(_ccLabel, _ccHandle)) {
+    //   _ccColl = _ccHandle.product();
+    // } else { _ccColl = nullptr; }
 
-    return (_tcColl != 0);
+
+    // prepare diagnostic tool data members
+    if (_diagLevel > 0) {
+      _diagInfo.nHelices = 0;
+      _diagInfo.timeClusterData.clear();
+      _diagInfo.helixSeedData.clear();
+      _diagInfo.lineSegmentData.clear();
+      _diagInfo.hseed = nullptr;
+      _diagInfo.event = &evt;
+      _diagInfo.tcHits = &_tcHits;
+      _diagInfo.seedPhiLines = &_seedPhiLines;
+      _diagInfo.circleFitter = &_circleFitter;
+      _diagInfo.lineFitter = &_lineFitter;
+      _diagInfo.chColl = _chColl;
+      _diagInfo.tcColl = _tcColl;
+      _diagInfo.diagLevel = _diagLevel;
+      _diagInfo.bz0 = _bz0;
+      _hmanager->fillHistograms(&_diagInfo, DIAG::kBegin);
+    }
+    if(_doTiming) _watch->StopTime(__func__);
+
+    return (_tcColl) && (_chColl); // require a time cluster collection and a combo hit collection
   }
 
   //-----------------------------------------------------------------------------
   // event entry point
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::produce(art::Event& event) {
+    if(_doTiming) _watch->Increment(__func__);
 
-    // set the event and prepare hsColl
-    _event = &event;
+    // Prepare the helix collection
     std::unique_ptr<HelixSeedCollection> hsColl(new HelixSeedCollection);
 
-    // get the necessary data to do helix search
-    bool dataExists = findData(event);
+    // get the necessary data to do helix search and then search for helices
+    if (findData(event)) {
 
-    // prepare diagnostic tool data members
-    if (_diagLevel == 1) {
-      _diagInfo.nHelices = 0;
-      _diagInfo.timeClusterData.clear();
-      _diagInfo.helixSeedData.clear();
-      _diagInfo.lineSegmentData.clear();
-    }
+      // flag whether event is intense or not
+      _intenseEvent = (int) _tcColl->size() > _intenseEventThresh;
+      if(_diagLevel > 1)
+        printf("[AgnosticHelixFinder::%s] Event %i:%i:%i: N(time clusters) = %zu\n", __func__, event.run(), event.subRun(), event.event(), _tcColl->size());
 
-    // flag whether event is intense or not
-    if ((int)_tcColl->size() > _intenseEventThresh) {
-      _intenseEvent = true;
-    } else { _intenseEvent = false; }
-
-    // do helix search
-    bool continueSearch = true;
-
-    // search for helix
-    if (dataExists) {
       for (size_t i = 0; i < _tcColl->size(); i++) {
+        if(_doTiming) _watch->Increment("per-time cluster");
         // check to see if cluster is a busy one
-        _intenseCluster = false;
-        // if cluster is busy or event is intense then only process time cluster if it has calo cluster
-        if ((int)_tcColl->at(i).nhits() > _intenseClusterThresh) { _intenseCluster = true; }
-        if (_intenseEvent == true || _intenseCluster == true) {
-          if (_tcColl->at(i).hasCaloCluster() == false) { continue; }
+        // if cluster is busy or event is intense then only process the time cluster if it has calo cluster
+        const auto& tc = _tcColl->at(i);
+        _intenseCluster = (int) tc.nhits() > _intenseClusterThresh;
+        if (_intenseEvent || _intenseCluster) {
+          if (!tc.hasCaloCluster()) {
+            if(_diagLevel > 1)
+              printf("  --> Skipping time cluster (%zu hits) without a calo cluster\n", tc.nhits());
+            continue;
+          }
         }
-        tcInfo timeClusterInfo;
-        int nHelicesInitial = _diagInfo.nHelices;
-        _tcHits.clear();
-        tcHitsFill(i);
-        continueSearch = true;
-        while (continueSearch == true) {
-          findHelix(i, *hsColl, continueSearch);
-          if (_findMultipleHelices == false) { continueSearch = false; }
-        }
-        if (_diagLevel == 1) {
+        const int nHelicesInitial = _diagInfo.nHelices; // Only valid if diagLevel > 0, for diagnostic tracking
+        tcHitsFill(i); // Initialize the list of hits in the time cluster
+        while(findHelix(i, *hsColl) && _findMultipleHelices); // Exit the search if no helix is found or after finding a helix if not configured for multi-helix reco
+
+        if (_diagLevel > 0) {
+          tcInfo timeClusterInfo;
           timeClusterInfo.nHelices = _diagInfo.nHelices - nHelicesInitial;
           timeClusterInfo.nComboHits = _tcColl->at(i).nhits();
           timeClusterInfo.nStrawHits = _tcColl->at(i).nStrawHits();
           _diagInfo.timeClusterData.push_back(timeClusterInfo);
+          _hmanager->fillHistograms(&_diagInfo, DIAG::kTimeCluster);
+          _diagInfo.helixSeedData.clear(); // clear for the next time cluster
         }
       }
+    } else if(_diagLevel > 0) {
+      printf("[AgnosticHelixFinder::%s] %i:%i:%i Event data not found!\n", __func__, event.run(), event.subRun(), event.event());
+    }
+    if(_doTiming) _watch->StopTime("per-time cluster");
+
+    // fill necessary data members for diagnostic tool
+    if (_diagLevel > 0) {
+      _diagInfo.nTimeClusters = _tcColl->size();
+      for(auto& hseed : *hsColl) _diagInfo.helixSeedData.push_back(hsInfo(_bz0, hseed));
+      _hmanager->fillHistograms(&_diagInfo, DIAG::kEnd);
     }
 
     // put helix seed collection into the event record
+    if(_doTiming) _watch->Increment("output");
     event.put(std::move(hsColl));
+    if(_doTiming) _watch->StopTime ("output");
 
-    // fill necessary data members for diagnostic tool
-    if (_diagLevel == 1) {
-      _diagInfo.nTimeClusters = _tcColl->size();
-      _hmanager->fillHistograms(&_diagInfo);
-    }
+    if(_doTiming) _watch->StopTime(__func__);
   }
 
   //-----------------------------------------------------------------------------
   // endJob
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::endJob() {}
+  void AgnosticHelixFinder::endJob() {
+    if(_doTiming) {
+      for(int itest = 0; itest < 100000; ++itest) _watch->Increment("AAA-TimeTest"); // put at the top a reference for timing impacts
+      _watch->StopTime("AAA-TimeTest");
+      std::cout << "[AgnosticHelixFinder::" << __func__ << "::" <<
+        moduleDescription().moduleLabel() << "] Timing:\n" << *_watch;
+    }
+  }
 
   //-----------------------------------------------------------------------------
   // get pointer to position of hit given some index in _tcHits
   //-----------------------------------------------------------------------------
-  XYZVectorF AgnosticHelixFinder::getPos(size_t& tcHitsIndex) {
-
-    int hitIndice = _tcHits[tcHitsIndex].hitIndice;
-
-    if (hitIndice >= 0) { return _chColl->at(hitIndice).pos(); }
-    if (hitIndice == HitType::STOPPINGTARGET) { return _stopTargPos; }
-    if (hitIndice == HitType::CALOCLUSTER) { return _caloPos; }
-
-    XYZVectorF p(0.0,0.0,0.0);
-    return p;
-
+  inline const XYZVectorF& AgnosticHelixFinder::getPos(size_t tcHitsIndex) {
+    return _tcHits[tcHitsIndex].pos;
+    // const int hitIndice = _tcHits[tcHitsIndex].hitIndice;
+    // if (hitIndice == HitType::STOPPINGTARGET) { return _stopTargPos; }
+    // if (hitIndice == HitType::CALOCLUSTER) { return _caloPos; }
+    // return _chColl->at(hitIndice).pos();
   }
 
   //-----------------------------------------------------------------------------
   // updates circleError of hit given some circle parameters
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::computeCircleError2(size_t& tcHitsIndex, float& xC, float& yC) {
+  void AgnosticHelixFinder::computeCircleError2(size_t tcHitsIndex, float xC, float yC) {
 
-    int hitIndice = _tcHits[tcHitsIndex].hitIndice;
+    auto& tcHit = _tcHits[tcHitsIndex];
+    int hitIndice = tcHit.hitIndice;
 
     if (hitIndice == HitType::CALOCLUSTER) {
-      _tcHits[tcHitsIndex].circleError2 = _caloClusterSigma * _caloClusterSigma;
-    } else {
-      float transVar = _chColl->at(hitIndice).transVar();
-      float x = getPos(tcHitsIndex).x();
-      float y = getPos(tcHitsIndex).y();
+      tcHit.circleError2 = _caloClusterSigmaSq;
+    } else if(hitIndice >= 0) {
+      const auto& hit = *(tcHit.hit);
+      float transVar = hit.transVar();
+      const auto& pos = hit.pos();
+      float x = pos.x();
+      float y = pos.y();
       float dx = x - xC;
       float dy = y - yC;
-      float dxn = dx * _chColl->at(hitIndice).vDir().x() + dy * _chColl->at(hitIndice).vDir().y();
+      const auto& vdir = hit.vDir();
+      float dxn = dx * vdir.x() + dy *vdir.y();
       float costh2 = dxn * dxn / (dx * dx + dy * dy);
-      float sinth2 = 1 - costh2;
-      _tcHits[tcHitsIndex].circleError2 =
-        _chColl->at(hitIndice).wireVar()*sinth2 + transVar*costh2;
+      float sinth2 = 1.f - costh2;
+      tcHit.circleError2 = hit.wireVar()*sinth2 + transVar*costh2;
     }
   }
 
   //-----------------------------------------------------------------------------
   // compute residual between point an circle
   //-----------------------------------------------------------------------------
-  float AgnosticHelixFinder::computeCircleResidual2(size_t& tcHitsIndex, float& xC, float& yC, float& rC) {
+  float AgnosticHelixFinder::computeCircleResidual2(size_t tcHitsIndex, float xC, float yC, float rC) {
 
-    float xP = getPos(tcHitsIndex).x();
-    float yP = getPos(tcHitsIndex).y();
-    float deltaDistance = std::abs(rC - std::sqrt((xP - xC) * (xP - xC) + (yP - yC) * (yP - yC)));
-    float circleSigma2 = _tcHits[tcHitsIndex].circleError2;
+    const auto& pos = getPos(tcHitsIndex);
+    const float x = pos.x() - xC;
+    const float y = pos.y() - yC;
+    const float deltaDistance = rC - std::sqrt(x*x + y*y); // sign lost since it's squared
+    const float circleSigma2 = _tcHits[tcHitsIndex].circleError2;
 
     return deltaDistance * deltaDistance / circleSigma2;
   }
@@ -534,137 +564,174 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // compute phi relative to helix center, and set helixPhiError
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::computeHelixPhi(size_t& tcHitsIndex, float& xC, float& yC) {
+  void AgnosticHelixFinder::computeHelixPhi(size_t tcHitsIndex, float xC, float yC) {
 
-    int hitIndice = _tcHits[tcHitsIndex].hitIndice;
+    auto& tcHit = _tcHits[tcHitsIndex];
+    const int hitIndice = tcHit.hitIndice;
+    const auto& pos = tcHit.pos;
 
-    float X = getPos(tcHitsIndex).x() - xC;
-    float Y = getPos(tcHitsIndex).y() - yC;
-    _tcHits[tcHitsIndex].helixPhi = polyAtan2(Y, X);
-    if (_tcHits[tcHitsIndex].helixPhi < 0) {
-      _tcHits[tcHitsIndex].helixPhi = _tcHits[tcHitsIndex].helixPhi + 2 * M_PI;
+    const float X = pos.x() - xC;
+    const float Y = pos.y() - yC;
+    const float Rsq = X * X + Y * Y;
+    tcHit.helixPhi = polyAtan2(Y, X);
+    if (tcHit.helixPhi < 0.) {
+      tcHit.helixPhi += _twopi;
     }
     // find phi error and initialize it
     // find phi error by projecting errors onto vector tangent to circle
-    float deltaS2(0);
+    float deltaS2(0.f);
     if (hitIndice == HitType::CALOCLUSTER) {
-      deltaS2 = _caloClusterSigma * _caloClusterSigma;
+      deltaS2 = _caloClusterSigmaSq;
     } else {
-      float tanVecX = Y / std::sqrt(X * X + Y * Y);
-      float tanVecY = -X / std::sqrt(X * X + Y * Y);
-      float wireErr = _chColl->at(hitIndice).wireRes();
-      float wireVecX = _chColl->at(hitIndice).uDir().x();
-      float wireVecY = _chColl->at(hitIndice).uDir().y();
+      const auto& hit = *(tcHit.hit);
+      const float R = std::sqrt(Rsq);
+      const auto& udir = hit.uDir();
+      const float ux = udir.x();
+      const float uy = udir.y();
+      float tanVecX = Y / R;
+      float tanVecY = -X / R;
+      float wireErr = hit.wireRes();
+      float wireVecX = ux;
+      float wireVecY = uy;
       float projWireErr = wireErr * (wireVecX * tanVecX + wireVecY * tanVecY);
-      float transErr = _chColl->at(hitIndice).transRes();
-      float transVecX = _chColl->at(hitIndice).uDir().y();
-      float transVecY = -_chColl->at(hitIndice).uDir().x();
+      float transErr = hit.transRes();
+      float transVecX = uy;
+      float transVecY = -ux;
       float projTransErr = transErr * (transVecX * tanVecX + transVecY * tanVecY);
       deltaS2 = projWireErr * projWireErr + projTransErr * projTransErr;
     }
-    _tcHits[tcHitsIndex].helixPhiError2 = deltaS2 / (X * X + Y * Y);
+    tcHit.helixPhiError2 = deltaS2 / Rsq;
   }
 
   //-----------------------------------------------------------------------------
   // function to compute helix momentum^2 given some circle radius and line slope
   //-----------------------------------------------------------------------------
-  float AgnosticHelixFinder::computeHelixMomentum2(float& radius, float& dphidz) {
+  inline float AgnosticHelixFinder::computeHelixMomentum2(float radius, float dphidz) {
 
-    float lambda = 1.0 / dphidz;
+    float lambda = 1.f / dphidz;
 
-    return (radius * radius + lambda * lambda) * _bz0 * _bz0 * mmTconversion * mmTconversion;
+    return (radius * radius + lambda * lambda) * _bz0ConvSq;
   }
 
   //-----------------------------------------------------------------------------
   // function to compute helix transverse momentum given circle radius and b-field
   //-----------------------------------------------------------------------------
-  float AgnosticHelixFinder::computeHelixPerpMomentum(float& radius) {
+  inline float AgnosticHelixFinder::computeHelixPerpMomentum(float radius) {
 
-    return radius * _bz0 * mmTconversion;
+    return radius * _bz0Conv;
   }
 
   //-----------------------------------------------------------------------------
   // fill vector with hits to search for helix
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::tcHitsFill(size_t tc) {
+  void AgnosticHelixFinder::tcHitsFill(size_t itc) {
+    if(_doTiming) _watch->SetTime(__func__);
+    _tcHits.clear(); // clear the initial list
 
+    const auto& tc = _tcColl->at(itc);
     size_t sortStartIndex = 0;
 
     // push back stopping target if it is to be used
     if (_useStoppingTarget == true) {
       cHit hit;
       hit.hitIndice = HitType::STOPPINGTARGET;
+      hit.pos = _stopTargPos;
       _tcHits.push_back(hit);
       sortStartIndex++;
     }
 
     // push back calo cluster if it exists in time cluster
-    if (_tcColl->at(tc).hasCaloCluster()) {
-      const art::Ptr<CaloCluster> cl = _tcColl->at(tc).caloCluster();
-      const CaloCluster*cluster = cl.get();
-      if (cluster != nullptr){
+    if (tc.hasCaloCluster()) {
+      const art::Ptr<CaloCluster> cl = tc.caloCluster();
+      if (cl.isNonnull()) {
         cHit hit;
         hit.hitIndice = HitType::CALOCLUSTER;
         CLHEP::Hep3Vector gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(), cl->cog3Vector());
         CLHEP::Hep3Vector tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
-        double offset = _calorimeter->caloInfo().getDouble("diskCaseZLength");
-        offset += _calorimeter->caloInfo().getDouble("BPPipeZOffset");
-        offset += _calorimeter->caloInfo().getDouble("BPHoleZLength");
-        offset += _calorimeter->caloInfo().getDouble("FEEZLength");
-        offset /= 2.0;
-        _caloPos.SetCoordinates(tpos.x(), tpos.y(), tpos.z() - offset);
+        _caloPos.SetCoordinates(tpos.x(), tpos.y(), tpos.z() - _caloZOffset);
+        hit.pos = _caloPos;
         _tcHits.push_back(hit);
         sortStartIndex++;
       }
     }
 
     // fill hits from time cluster
-    for (size_t i = 0; i < _tcColl->at(tc)._strawHitIdxs.size(); i++) {
+    for (size_t i = 0; i < tc._strawHitIdxs.size(); i++) {
       cHit hit;
-      hit.hitIndice = _tcColl->at(tc)._strawHitIdxs[i];
+      hit.hitIndice = tc._strawHitIdxs[i];
+      hit.hit = &(_chColl->at(hit.hitIndice));
+      hit.pos = hit.hit->pos();
       _tcHits.push_back(hit);
     }
 
-    // order from largest z to smallest z (skip over stopping target and calo cluster since they
-    // aren't in _chColl)
+    // order from largest z to smallest z (leave the stopping target and calo cluster hits at the front)
     std::sort(_tcHits.begin() + sortStartIndex, _tcHits.end(), [&](const cHit& a, const cHit& b) {
-      return _chColl->at(a.hitIndice).pos().z() > _chColl->at(b.hitIndice).pos().z();
+      return a.pos.z() > b.pos.z();
     });
+
+    // For diagnostics
+    if(_diagLevel > 0) {
+      _diagInfo.targPos = _stopTargPos;
+      _diagInfo.caloPos = _caloPos;
+      _diagInfo.tc = &tc;
+    }
+    if(_doTiming) _watch->Increment(__func__);
   }
 
   //-----------------------------------------------------------------------------
   // logic for setting certain flags on hits
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::setFlags() {
+    if(!_doIsolationFlag && !_doAverageFlag && !_doEDepFlag) return; // nothing to flag
 
     // do isolation, average, and eDepFlag flagging
-    if (_doIsolationFlag == true || _doAverageFlag == true || _doEDepFlag == true) {
-      for (size_t i = 0; i < _tcHits.size(); i++) {
-        if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) { continue; }
-        int hitIndice = _tcHits[i].hitIndice;
-        float hitEnergy = _chColl->at(hitIndice).energyDep();
-        if (_doEDepFlag == true && hitEnergy > _eDepFlagThresh) { _tcHits[i].highEDep = true; }
-        if (_doIsolationFlag == true || _doAverageFlag == true) {
-          int nHitsNear = 0;
-          XYZVectorF seedPos = getPos(i);
-          for (size_t j = 0; j < _tcHits.size(); j++) {
-            if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice < 0) { continue; }
-            if (j == i) { continue; }
-            XYZVectorF testPos = getPos(j);
-            // do isolation flagging
-            if (_doIsolationFlag == true) {
-              if ((seedPos-testPos).Perp2() < _isoRad * _isoRad) { nHitsNear++; }
-              if (nHitsNear < _isoMinHitsNear) { _tcHits[i].isolated = true; }
-              else { _tcHits[i].isolated = false; }
+    const size_t ntcHits = _tcHits.size();
+    for (size_t i = 0; i < ntcHits; i++) {
+      auto& tcHit_i = _tcHits[i];
+      const int index_i = tcHit_i.hitIndice;
+      if (tcHit_i.inHelix
+          || index_i == HitType::STOPPINGTARGET
+          || index_i == HitType::CALOCLUSTER) { continue; }
+
+      // test for high energy deposition
+      tcHit_i.highEDep = _doEDepFlag && tcHit_i.hit->energyDep() > _eDepFlagThresh;
+
+      // check for isolated hits or average out nearby hits
+      if (_doIsolationFlag == true || _doAverageFlag == true) {
+        int nHitsNear = 0;
+        const auto& seedPos = getPos(i);
+        tcHit_i.isolated = _doIsolationFlag;
+        for (size_t j = 0; j < ntcHits; j++) {
+          if(j == i) continue; // don't check against itself
+          if(!tcHit_i.isolated) { // passed isolation check already
+            if(!_doAverageFlag || tcHit_i.averagedOut) break; // nothing left to check
+            if(j < i) {  // skip ahead since early js would be checked against this hit already for averaging out
+              j = i;
+              continue;
             }
-            // do averaging out
-            if (_doAverageFlag == true) {
-              if (_tcHits[i].averagedOut == true) { continue; }
-              if (_tcHits[j].averagedOut == true) { continue; }
-              if ((seedPos-testPos).Perp2() <= _minDistCut * _minDistCut) { _tcHits[j].averagedOut = true; }
-           }
-         }
-       }
+          }
+          auto& tcHit_j = _tcHits[j];
+          if(!tcHit_i.isolated && tcHit_j.averagedOut) continue; // nothing to do
+
+          const int index_j = tcHit_j.hitIndice;
+          if (tcHit_j.inHelix
+              || index_j == HitType::STOPPINGTARGET
+              || index_j == HitType::CALOCLUSTER) { continue; }
+          const auto& testPos = getPos(j);
+          const float perp2 = (std::pow(seedPos.x() - testPos.x(),2) + // compute by hand to avoid object creation
+                               std::pow(seedPos.y() - testPos.y(),2));
+          // do isolation flagging unless already identified as non-isolated
+          if (tcHit_i.isolated) {
+            if (perp2 < _isoRadSq) { nHitsNear++; } // if near the hit i, increment the counter
+            tcHit_i.isolated = nHitsNear < _isoMinHitsNear;
+          }
+          // do averaging out
+          if (_doAverageFlag == true) {
+            if (tcHit_i.averagedOut == true) { continue; }
+            if (tcHit_j.averagedOut == true) { continue; }
+            if (perp2 <= _minDistCutSq) { tcHit_j.averagedOut = true; }
+          }
+        }
       }
     }
   }
@@ -686,33 +753,34 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // logic to find helix
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::findHelix(size_t tc, HelixSeedCollection& HSColl, bool& findAnotherHelix) {
+  bool AgnosticHelixFinder::findHelix(size_t tc, HelixSeedCollection& HSColl) {
+    if(_doTiming) _watch->SetTime(__func__);
 
     // clear line and circle fitters
     _circleFitter.clear();
     _lineFitter.clear();
 
-    // by default we set findAnotherHelix to false, if we find a helix then this will be set to true
-    findAnotherHelix = false;
-
     // set flags before starting search so that we know what hits to use for tripletting
     if (_doIsolationFlag == true || _doAverageFlag == true) { setFlags(); }
 
     // now we loop over triplets
-    bool foundPhiZRemoval = true;
-    bool pointRecovered = true;
+    LoopCondition loopCondition;
+    triplet tripletInfo;
     for (size_t i = 0; i < _tcHits.size() - 2; i++) {
+      if(_doTiming > 1) _watch->Increment("triplet-i");
+      if(_doTiming > 2) _watch->StopTime ("triplet-j");
       bool uselessSeed = true;
-      triplet tripletInfo;
-      LoopCondition loopCondition;
       setTripletI(i, tripletInfo, loopCondition);
       if (loopCondition == CONTINUE) { continue; }
       if (loopCondition == BREAK) { break; }
       for (size_t j = i + 1; j < _tcHits.size() - 1; j++) {
+        if(_doTiming > 2) _watch->Increment("triplet-j");
+        if(_doTiming > 3) _watch->StopTime ("triplet-k");
         setTripletJ(j, tripletInfo, loopCondition);
         if (loopCondition == CONTINUE) { continue; }
         if (loopCondition == BREAK) { break; }
         for (size_t k = j + 1; k < _tcHits.size(); k++) {
+          if(_doTiming > 3) _watch->Increment("triplet-k");
           setTripletK(k, tripletInfo, loopCondition);
           if (loopCondition == CONTINUE) { continue; }
           if (loopCondition == BREAK) { break; }
@@ -732,15 +800,11 @@ namespace mu2e {
           // refine the seed phi lines by removing the worst hits
           for (size_t ii = 0; ii < _seedPhiLines.size(); ii++) {
             if ((int)_seedPhiLines[ii].tcHitsIndices.size() < _minFinalSeedHits) { continue; }
-            foundPhiZRemoval = true;
-            while (foundPhiZRemoval == true) {
-              refinePhiLine(ii, foundPhiZRemoval);
-            }
+            while (refinePhiLine(ii)); // while refinements are still made, keep going
           }
           initFinalSeed(loopCondition);
           if (loopCondition == CONTINUE) { continue; }
-          pointRecovered = true;
-          while (pointRecovered == true) { recoverPoints(pointRecovered); }
+          while (recoverPoints()); // while points are recovered, keep trying to recover
           checkHelixViability(loopCondition);
           if (loopCondition == CONTINUE) { continue; }
           // before saving helix we make sure it has enough hits
@@ -750,38 +814,52 @@ namespace mu2e {
           int nComboHitsInTimeCluster = 0;
           // compute number of usable hits in time cluster, and number of hits in candidate helix
           for (size_t q = 0; q < _tcHits.size(); q++) {
-            if (_tcHits[q].inHelix == true || _tcHits[q].hitIndice < 0) { continue; }
-            int hitIndice = _tcHits[q].hitIndice;
-            nStrawHitsInTimeCluster = nStrawHitsInTimeCluster + _chColl->at(hitIndice).nStrawHits();
-            nComboHitsInTimeCluster = nComboHitsInTimeCluster + 1;
-            if (_tcHits[q].used == false) { continue; }
-            nStrawHitsInHelix = nStrawHitsInHelix + _chColl->at(hitIndice).nStrawHits();
-            nComboHitsInHelix = nComboHitsInHelix + 1;
+            if (_tcHits[q].inHelix == true || _tcHits[q].hitIndice == HitType::STOPPINGTARGET
+                || _tcHits[q].hitIndice == HitType::CALOCLUSTER) { continue; }
+            const auto& tcHit = _tcHits[q];
+            const int nStrawHitsInHit = tcHit.hit->nStrawHits();
+            nStrawHitsInTimeCluster += nStrawHitsInHit;
+            ++nComboHitsInTimeCluster;
+            if (tcHit.used == false) { continue; }
+            nStrawHitsInHelix += nStrawHitsInHit;
+            ++nComboHitsInHelix;
           }
           if (nStrawHitsInHelix >= _minNHelixStrawHits && nComboHitsInHelix >= _minNHelixComboHits) {
             saveHelix(tc, HSColl);
-            if (_diagLevel == 1) { _diagInfo.nHelices++; }
+            if (_diagLevel > 0) { _diagInfo.nHelices++; }
             // we only want to search for another helix if we have enough remaining hits after saving helix
-            int remainingStrawHits = nStrawHitsInTimeCluster - nStrawHitsInHelix;
-            int remainingComboHits = nComboHitsInTimeCluster - nComboHitsInHelix;
-            if (remainingStrawHits < _minNHelixStrawHits || remainingComboHits < _minNHelixComboHits) {
-              return;
-            } else {
-              findAnotherHelix = true;
-              if (_doAverageFlag == true) { resetFlags(); }
-              return;
-            }
+            const int remainingStrawHits = nStrawHitsInTimeCluster - nStrawHitsInHelix;
+            const int remainingComboHits = nComboHitsInTimeCluster - nComboHitsInHelix;
+            const bool findAnotherHelix = remainingStrawHits >= _minNHelixStrawHits && remainingComboHits >= _minNHelixComboHits;
+            if(findAnotherHelix && _doAverageFlag) resetFlags(); // reset flags if needed
+
+            // Helix found, so we can exit this search
+            if(_doTiming > 0) _watch->StopTime(__func__);
+            if(_doTiming > 1) _watch->StopTime("triplet-i");
+            if(_doTiming > 2) _watch->StopTime("triplet-j");
+            if(_doTiming > 3) _watch->StopTime("triplet-k");
+            return findAnotherHelix;
+          } else if(_diagLevel > 4) {
+            printf("Helix hits: Failed with %i straw hits (%i combo hits)\n", nStrawHitsInHelix, nComboHitsInHelix);
           }
-        }
-      }
+        } // end triplet k loop
+      } // end triplet j loop
       _tcHits[i].uselessTripletSeed = uselessSeed;
-    }
+    } // end triplet i loop
+
+    if(_doTiming > 0) _watch->StopTime(__func__);
+    if(_doTiming > 1) _watch->StopTime("triplet-i");
+    if(_doTiming > 2) _watch->StopTime("triplet-j");
+    if(_doTiming > 3) _watch->StopTime("triplet-k");
+
+    // No helix found, no need to continue searching in this time cluster
+    return false;
   }
 
   //-----------------------------------------------------------------------------
   // check flags to see if point is good for triplet-ing with
   //-----------------------------------------------------------------------------
-  bool AgnosticHelixFinder::passesFlags(size_t& tcHitsIndex) {
+  bool AgnosticHelixFinder::passesFlags(size_t tcHitsIndex) {
 
     if (_tcHits[tcHitsIndex].inHelix == true) { return false; }
     if (_tcHits[tcHitsIndex].uselessTripletSeed == true) { return false; }
@@ -796,19 +874,19 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // set ith point of triplet, return outcome value which can be used to direct for loops
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::setTripletI(size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome) {
+  void AgnosticHelixFinder::setTripletI(size_t tcHitsIndex, triplet& trip, LoopCondition& outcome) {
 
-    // set info for point
-    trip.i.pos = getPos(tcHitsIndex);
-    trip.i.hitIndice = _tcHits[tcHitsIndex].hitIndice;
+    // don't clone the data until necessary
+    const auto& pos = getPos(tcHitsIndex);
+    const int index = _tcHits[tcHitsIndex].hitIndice;
 
     // check if point should break for loop
-    if (trip.i.pos.z() < _minTripletSeedZ) {
+    if (pos.z() < _minTripletSeedZ) {
       outcome = BREAK;
       return;
     }
     if (_intenseEvent == true || _intenseCluster == true) {
-      if (trip.i.hitIndice >= 0) {
+      if (index != HitType::CALOCLUSTER && index != HitType::STOPPINGTARGET) {
         outcome = BREAK;
         return;
       }
@@ -820,37 +898,48 @@ namespace mu2e {
       return;
     }
 
+    // set info for the point
+    trip.i.pos = pos;
+    trip.i.hitIndice = index;
+
     outcome = GOOD;
   }
 
   //-----------------------------------------------------------------------------
   // set jth point of triplet, return outcome value which can be used to direct for loops
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::setTripletJ(size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome) {
+  void AgnosticHelixFinder::setTripletJ(size_t tcHitsIndex, triplet& trip, LoopCondition& outcome) {
+    // don't clone the data until necessary
+    const auto& pos = getPos(tcHitsIndex);
+    const int index = _tcHits[tcHitsIndex].hitIndice;
 
-    // set info for point
-    trip.j.pos = getPos(tcHitsIndex);
-    trip.j.hitIndice = _tcHits[tcHitsIndex].hitIndice;
-    float dz12 = trip.i.pos.z() - trip.j.pos.z();
+    const float dz12 = trip.i.pos.z() - pos.z();
 
     // check if point should break for loop
-    if (trip.i.hitIndice >= 0 && dz12 > _maxTripletDz) {
-      outcome = BREAK;
-      return;
+    if (trip.i.hitIndice != HitType::CALOCLUSTER && trip.i.hitIndice != HitType::STOPPINGTARGET){
+        if (dz12 > _maxTripletDz) {
+          outcome = BREAK;
+          return;
+        }
     }
     if (_intenseEvent == true || _intenseCluster == true) {
-      if (trip.i.hitIndice == HitType::STOPPINGTARGET && trip.j.hitIndice >= 0) {
-        outcome = BREAK;
-        return;
+      if (trip.i.hitIndice == HitType::STOPPINGTARGET && index != HitType::CALOCLUSTER) {
+          outcome = BREAK;
+          return;
       }
     }
 
     // check if point should be continued on
     if (!passesFlags(tcHitsIndex) || dz12 < _minTripletDz ||
-        (trip.i.pos-trip.j.pos).Perp2() < _minTripletDist * _minTripletDist) {
+        (std::pow(trip.i.pos.x()-pos.x(),2) + std::pow(trip.i.pos.y() - pos.y(), 2)) < _minTripletDistSq) {
+        // (trip.i.pos - pos).Perp2() < _minTripletDistSq) {
       outcome = CONTINUE;
       return;
     }
+
+    // set info for the point
+    trip.j.pos = pos;
+    trip.j.hitIndice = index;
 
     outcome = GOOD;
   }
@@ -858,26 +947,33 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // set kth point of triplet, return outcome value which can be used to direct for loops
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::setTripletK(size_t& tcHitsIndex, triplet& trip, LoopCondition& outcome) {
+  void AgnosticHelixFinder::setTripletK(size_t tcHitsIndex, triplet& trip, LoopCondition& outcome) {
 
-    // set info for point
-    trip.k.pos = getPos(tcHitsIndex);
-    trip.k.hitIndice = _tcHits[tcHitsIndex].hitIndice;
-    float dz23 = trip.j.pos.z() - trip.k.pos.z();
+    // don't clone the data until necessary
+    const auto& pos = getPos(tcHitsIndex);
+    const int index = _tcHits[tcHitsIndex].hitIndice;
+
+    const float dz23 = trip.j.pos.z() - pos.z();
 
     // check if point should break for loop
-    if (trip.j.hitIndice >= 0 && dz23 > _maxTripletDz) {
-      outcome = BREAK;
-      return;
+    if (trip.j.hitIndice != HitType::CALOCLUSTER && trip.j.hitIndice != HitType::STOPPINGTARGET){
+        if(dz23 > _maxTripletDz) {
+          outcome = BREAK;
+          return;
+        }
     }
 
     // check if point should be continued on
     if (!passesFlags(tcHitsIndex) || dz23 < _minTripletDz ||
-        (trip.i.pos-trip.k.pos).Perp2() < _minTripletDist * _minTripletDist ||
-        (trip.j.pos-trip.k.pos).Perp2() < _minTripletDist * _minTripletDist) {
+        (trip.i.pos-pos).Perp2() < _minTripletDistSq ||
+        (trip.j.pos-pos).Perp2() < _minTripletDistSq) {
       outcome = CONTINUE;
       return;
     }
+
+    // set the info for point
+    trip.k.pos = pos;
+    trip.k.hitIndice = index;
 
     outcome = GOOD;
   }
@@ -885,8 +981,8 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // finding circle from triplet
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::initTriplet(triplet& trip, LoopCondition& outcome) {
-
+  void AgnosticHelixFinder::initTriplet(const triplet& trip, LoopCondition& outcome) {
+    if(_doTiming > 4) _watch->SetTime(__func__);
     _circleFitter.addPoint(trip.i.pos.x(), trip.i.pos.y());
     _circleFitter.addPoint(trip.j.pos.x(), trip.j.pos.y());
     _circleFitter.addPoint(trip.k.pos.x(), trip.k.pos.y());
@@ -896,12 +992,25 @@ namespace mu2e {
     float pt = computeHelixPerpMomentum(radius);
     if (pt < _minHelixPerpMomentum || pt > _maxHelixPerpMomentum) { outcome = CONTINUE; }
     else { outcome = GOOD; }
+
+    if(_diagLevel > 0) { // diagnose triplets
+      _diagInfo.tripInfo.trip = trip;
+      _diagInfo.tripInfo.radius = radius;
+      _diagInfo.tripInfo.xC = _circleFitter.x0();
+      _diagInfo.tripInfo.yC = _circleFitter.y0();
+      _diagInfo.loopCondition = outcome;
+
+      _hmanager->fillHistograms(&_diagInfo, DIAG::kTriplet);
+    }
+    if(_doTiming > 4) _watch->StopTime(__func__);
+
   }
 
   //-----------------------------------------------------------------------------
   // start with initial seed circle
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::initSeedCircle(LoopCondition& outcome) {
+    if(_doTiming > 4) _watch->SetTime(__func__);
 
     // get triplet circle parameters then clear fitter
     float xC = _circleFitter.x0();
@@ -912,30 +1021,44 @@ namespace mu2e {
     // project error bars onto the triplet circle found and add to fitter those within defined max
     // residual
     for (size_t i = 0; i < _tcHits.size(); i++) {
-      if (_tcHits[i].inHelix == true) { continue; }
-      if (_tcHits[i].hitIndice == HitType::STOPPINGTARGET) {
-        _tcHits[i].used = false;
+      auto& hit = _tcHits[i];
+      if (hit.inHelix) { continue; }
+      if (hit.hitIndice == HitType::STOPPINGTARGET) {
+        hit.used = false;
         continue;
       }
+      if(_doTiming > 5) _watch->SetTime("initSeedCircle-error");
       computeCircleError2(i, xC, yC);
-      if (computeCircleResidual2(i, xC, yC, rC) < _maxSeedCircleResidual * _maxSeedCircleResidual) {
-        float wP = 1.0 / (_tcHits[i].circleError2);
-        _circleFitter.addPoint(getPos(i).x(), getPos(i).y(), wP);
-        _tcHits[i].used = true;
+      if(_doTiming > 5) _watch->StopTime("initSeedCircle-error");
+      if ((_maxSeedCircleHits < 0 || _circleFitter.qn() < _maxSeedCircleHits) &&
+          computeCircleResidual2(i, xC, yC, rC) < _maxSeedCircleResidualSq) {
+        const float wP = 1.f / (hit.circleError2);
+        const auto& pos = getPos(i);
+        if(_doTiming > 5) _watch->SetTime("initSeedCircle-fitter");
+        _circleFitter.addPoint(pos.x(), pos.y(), wP);
+        if(_doTiming > 5) _watch->StopTime("initSeedCircle-fitter");
+        hit.used = true;
       } else {
-        _tcHits[i].used = false;
+        hit.used = false;
       }
     }
 
     // check if there are enough hits to continue with search
     if (_circleFitter.qn() < _minSeedCircleHits) { outcome = CONTINUE;}
     else { outcome = GOOD; }
+
+    if(_diagLevel > 0) {
+      _diagInfo.loopCondition = outcome;
+      _hmanager->fillHistograms(&_diagInfo, DIAG::kCircle);
+    }
+    if(_doTiming > 4) _watch->StopTime(__func__);
   }
 
   //-----------------------------------------------------------------------------
   // function to initialize phi info relative to helix center in _tcHits
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::initHelixPhi() {
+    if(_doTiming > 4) _watch->SetTime(__func__);
 
     float xC = _circleFitter.x0();
     float yC = _circleFitter.y0();
@@ -948,46 +1071,60 @@ namespace mu2e {
       computeHelixPhi(i, xC, yC);
       _tcHits[i].helixPhiCorrection = 0;
     }
+    if(_doTiming > 4) _watch->StopTime(__func__);
   }
 
   //-----------------------------------------------------------------------------
   // function to find seed phi lines
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::findSeedPhiLines(LoopCondition& outcome) {
+    if(_doTiming > 4) _watch->SetTime(__func__);
 
     _seedPhiLines.clear();
     lineSegmentInfo lsInfo;
 
-    float rC = _circleFitter.radius();
+    const float rC = _circleFitter.radius();
 
-    float lastAddedNegativePhi = 0.0;
-    float lastAddedNegativePhiError2 = 0.0;
-    float lastAddedNegativeZ = 0.0;
-    float lastAddedPositivePhi = 0.0;
-    float lastAddedPositivePhiError2 = 0.0;
-    float lastAddedPositiveZ = 0.0;
-    float maxHitGap = 0.0;
+    float lastAddedNegativePhi = 0.f;
+    float lastAddedNegativePhiError2 = 0.f;
+    float lastAddedNegativeZ = 0.f;
+    float lastAddedPositivePhi = 0.f;
+    float lastAddedPositivePhiError2 = 0.f;
+    float lastAddedPositiveZ = 0.f;
+    float maxHitGap = 0.f; // For diagnostics
 
     // seed point
-    for (size_t i = 0; i < _tcHits.size() - _minLineSegmentHits; i++) {
-      if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) { continue; }
-      if (_tcHits[i].used == false) { continue; }
-      if (_tcHits[i].notOnSegment == false) { continue; }
-      float seedZ = getPos(i).z();
-      float seedPhi = _tcHits[i].helixPhi;
-      float seedError2 = _tcHits[i].helixPhiError2;
-      float seedWeight = 1.0 / (seedError2);
+    lineInfo positiveLine; // for negative/positive slope hypotheses
+    lineInfo negativeLine;
+    const size_t ntcHits = _tcHits.size();
+    const size_t max_index = ntcHits - _minLineSegmentHits; // max + 1
+    for (size_t i = 0; i < max_index; i++) {
+      auto& tcHit_i = _tcHits[i];
+      if (tcHit_i.inHelix == true || tcHit_i.used == false
+          || tcHit_i.notOnSegment == false
+          || tcHit_i.hitIndice == HitType::STOPPINGTARGET
+          || tcHit_i.hitIndice == HitType::CALOCLUSTER) { continue; }
+
+      if(_doTiming > 5) _watch->SetTime("findSeedPhiLines-seed");
+
+      float seedZ = tcHit_i.pos.z();
+      float seedPhi = tcHit_i.helixPhi;
+      float seedError2 = tcHit_i.helixPhiError2;
+      float seedWeight = 1.f / (seedError2);
+
       // initialize line for both positive and negative slopes
-      lineInfo _positiveLine;
-      _positiveLine.tcHitsIndices.push_back(i);
-      _positiveLine.helixPhiCorrections.push_back(0);
-      _positiveLine.zMax = seedZ;
-      _positiveLine.fitter.addPoint(seedZ, seedPhi, seedWeight);
-      lineInfo _negativeLine;
-      _negativeLine.tcHitsIndices.push_back(i);
-      _negativeLine.helixPhiCorrections.push_back(0);
-      _negativeLine.zMax = seedZ;
-      _negativeLine.fitter.addPoint(seedZ, seedPhi, seedWeight);
+      positiveLine.clear();
+      positiveLine.tcHitsIndices.push_back(i);
+      positiveLine.helixPhiCorrections.push_back(0);
+      positiveLine.zMax = seedZ;
+      positiveLine.fitter.addPoint(seedZ, seedPhi, seedWeight);
+
+      negativeLine.clear();
+      negativeLine.tcHitsIndices.push_back(i);
+      negativeLine.helixPhiCorrections.push_back(0);
+      negativeLine.zMax = seedZ;
+      negativeLine.fitter.addPoint(seedZ, seedPhi, seedWeight);
+
       // make clear phi for the most recently added point to fitter
       lastAddedNegativePhi = seedPhi;
       lastAddedNegativePhiError2 = seedError2;
@@ -995,104 +1132,122 @@ namespace mu2e {
       lastAddedPositivePhi = seedPhi;
       lastAddedPositivePhiError2 = seedError2;
       lastAddedPositiveZ = seedZ;
-      // now loop over test point
-      for (size_t j = i + 1; j < _tcHits.size(); j++) {
-        if (_tcHits[j].inHelix == true || _tcHits[j].hitIndice < 0) { continue; }
-        if (_tcHits[j].used == false) { continue; }
-        float testZ = getPos(j).z();
-        if (testZ == seedZ) { continue; }
-        if (std::abs(seedZ - testZ) > _maxZWindow) { break; }
+
+      // now loop over test points
+      for (size_t j = i + 1; j < ntcHits; j++) {
+        auto& tcHit_j = _tcHits[j];
+        if (tcHit_j.inHelix == true || tcHit_j.used == false
+            || tcHit_j.hitIndice == HitType::STOPPINGTARGET
+            || tcHit_j.hitIndice == HitType::CALOCLUSTER) { continue; }
+
+         // Note: looping in decreasing z order, so seed z,last positive z, and last negative z >= test z
+        float testZ = tcHit_j.pos.z();
+        if (seedZ - testZ > _maxZWindow) { break; }
         float positiveDeltaZ = lastAddedPositiveZ - testZ;
         float negativeDeltaZ = lastAddedNegativeZ - testZ;
         if (positiveDeltaZ > _maxSeedLineGap && negativeDeltaZ > _maxSeedLineGap) { break; }
-        float testPhi = _tcHits[j].helixPhi;
-        float testError2 = _tcHits[j].helixPhiError2;
-        float testWeight = 1.0 / (testError2);
-        float positiveDiff = std::abs(lastAddedPositivePhi - testPhi);
-        float positiveDiffError = std::sqrt(lastAddedPositivePhiError2 + testError2);
-        float negativeDiff = std::abs(lastAddedNegativePhi - testPhi);
-        float negativeDiffError = std::sqrt(lastAddedNegativePhiError2 + testError2);
-        if ((lastAddedPositivePhi > testPhi || positiveDiff < positiveDiffError) && positiveDeltaZ <= _maxSeedLineGap) {
-          if (positiveDiff >= positiveDiffError && std::abs((lastAddedPositivePhi-testPhi)/positiveDeltaZ) > _maxDphiDz) {
-            if (underEstimateSlope(lastAddedPositivePhi,lastAddedPositivePhiError2,testPhi,testError2,positiveDeltaZ) > _maxDphiDz) {
-              continue;
-            }
-          }
-          _positiveLine.tcHitsIndices.push_back(j);
-          _positiveLine.helixPhiCorrections.push_back(0);
-          _positiveLine.zMin = testZ;
-          _positiveLine.fitter.addPoint(testZ, testPhi, testWeight);
-          lastAddedPositivePhi = testPhi;
-          lastAddedPositivePhiError2 = testError2;
-          if (positiveDeltaZ > maxHitGap) { maxHitGap = positiveDeltaZ; }
-        }
-        if ((testPhi > lastAddedNegativePhi || negativeDiff < negativeDiffError) && negativeDeltaZ <= _maxSeedLineGap) {
-          if (negativeDiff >= negativeDiffError && std::abs((lastAddedNegativePhi-testPhi)/positiveDeltaZ) > _maxDphiDz) {
-            if (underEstimateSlope(lastAddedNegativePhi,lastAddedNegativePhiError2,testPhi,testError2,negativeDeltaZ) > _maxDphiDz) {
-              continue;
-            }
-          }
-          _negativeLine.tcHitsIndices.push_back(j);
-          _negativeLine.helixPhiCorrections.push_back(0);
-          _negativeLine.zMin = testZ;
-          _negativeLine.fitter.addPoint(testZ, testPhi, testWeight);
-          lastAddedNegativePhi = testPhi;
-          lastAddedNegativePhiError2 = testError2;
-        }
-      }
 
-      if (_positiveLine.fitter.qn() >= _minLineSegmentHits && _positiveLine.fitter.dydx() <= _maxDphiDz) {
-        float dphidz = _positiveLine.fitter.dydx();
+        float testPhi              = tcHit_j.helixPhi;
+        float testPhiError2        = tcHit_j.helixPhiError2;
+        float testWeight           = 1.f / (testPhiError2);
+        float positiveDiff         = lastAddedPositivePhi - testPhi; // sign dropped in squaring
+        float positiveDiffSq       = positiveDiff*positiveDiff; // faster than sqrt(error)
+        float positiveDiffErrorSq  = lastAddedPositivePhiError2 + testPhiError2;
+        float negativeDiff         = lastAddedNegativePhi - testPhi; // sign dropped in squaring
+        float negativeDiffSq       = negativeDiff*negativeDiff; // faster than sqrt(error)
+        float negativeDiffErrorSq  = lastAddedNegativePhiError2 + testPhiError2;
+
+        // Test adding the hit to the positive line
+        bool add_to_positive = ((lastAddedPositivePhi > testPhi || positiveDiffSq < positiveDiffErrorSq)
+                                && positiveDeltaZ <= _maxSeedLineGap && positiveDeltaZ > 1.e-10);
+        add_to_positive &= (positiveDiffSq < positiveDiffErrorSq || std::abs((lastAddedPositivePhi-testPhi)/positiveDeltaZ) <= _maxDphiDz
+                            || underEstimateSlope(lastAddedPositivePhi,lastAddedPositivePhiError2,testPhi,testPhiError2,positiveDeltaZ) <= _maxDphiDz);
+        if(add_to_positive) {
+          positiveLine.tcHitsIndices.push_back(j);
+          positiveLine.helixPhiCorrections.push_back(0);
+          positiveLine.zMin = testZ;
+          positiveLine.fitter.addPoint(testZ, testPhi, testWeight);
+          lastAddedPositivePhi = testPhi;
+          lastAddedPositivePhiError2 = testPhiError2;
+          if (_diagLevel > 0 && positiveDeltaZ > maxHitGap) { maxHitGap = positiveDeltaZ; } // for diagnostics, focus on positive lines
+        }
+
+        // Test adding the hit to the negative line
+        bool add_to_negative = ((testPhi > lastAddedNegativePhi || negativeDiffSq < negativeDiffErrorSq)
+                                && negativeDeltaZ <= _maxSeedLineGap && negativeDeltaZ > 1.e-10);
+        add_to_negative &= (negativeDiffSq < negativeDiffErrorSq || std::abs((lastAddedNegativePhi-testPhi)/positiveDeltaZ) <= _maxDphiDz
+                             || underEstimateSlope(lastAddedNegativePhi,lastAddedNegativePhiError2,testPhi,testPhiError2,negativeDeltaZ) <= _maxDphiDz);
+        if(add_to_negative) {
+          negativeLine.tcHitsIndices.push_back(j);
+          negativeLine.helixPhiCorrections.push_back(0);
+          negativeLine.zMin = testZ;
+          negativeLine.fitter.addPoint(testZ, testPhi, testWeight);
+          lastAddedNegativePhi = testPhi;
+          lastAddedNegativePhiError2 = testPhiError2;
+        }
+      } // end hit j loop
+
+      if (positiveLine.fitter.qn() >= _minLineSegmentHits && positiveLine.fitter.dydx() <= _maxDphiDz) {
+        float dphidz = positiveLine.fitter.dydx();
         float p2 = computeHelixMomentum2(rC, dphidz);
-        if ((seedPhi - lastAddedPositivePhi) * (seedPhi - lastAddedPositivePhi) >
-            _segMultiplier * _segMultiplier * seedError2 &&
-            p2 > _minHelixMomentum * _minHelixMomentum &&
-            p2 < _maxHelixMomentum * _maxHelixMomentum &&
-            _positiveLine.fitter.chi2Dof() <= _maxSegmentChi2) {
-          _seedPhiLines.push_back(_positiveLine);
-          if (_diagLevel == 1) {
-            lsInfo.chi2dof = _positiveLine.fitter.chi2Dof();
+        const float dphi = (seedPhi - lastAddedPositivePhi);
+        if (dphi*dphi > _segMultiplierSq * seedError2 &&
+            p2 > _minHelixMomentumSq &&
+            p2 < _maxHelixMomentumSq &&
+            positiveLine.fitter.chi2Dof() <= _maxSegmentChi2) {
+          // Accept the positive seed phi line
+          _seedPhiLines.push_back(positiveLine);
+          if (_diagLevel > 0) {
+            lsInfo.chi2dof = positiveLine.fitter.chi2Dof();
             lsInfo.maxHitGap = maxHitGap;
             _diagInfo.lineSegmentData.push_back(lsInfo);
           }
-          for (size_t n = 0; n < _positiveLine.tcHitsIndices.size(); n++) {
-            _tcHits[_positiveLine.tcHitsIndices[n]].notOnSegment = false;
+          for (size_t n = 0; n < positiveLine.tcHitsIndices.size(); n++) {
+            _tcHits[positiveLine.tcHitsIndices[n]].notOnSegment = false;
           }
         }
       }
-      if (_negativeLine.fitter.qn() >= _minLineSegmentHits && std::abs(_negativeLine.fitter.dydx()) <= _maxDphiDz) {
-        float dphidz = _negativeLine.fitter.dydx();
+      if (negativeLine.fitter.qn() >= _minLineSegmentHits && std::abs(negativeLine.fitter.dydx()) <= _maxDphiDz) {
+        float dphidz = negativeLine.fitter.dydx();
         float p2 = computeHelixMomentum2(rC, dphidz);
-        if ((seedPhi - lastAddedNegativePhi) * (seedPhi - lastAddedNegativePhi) >
-            _segMultiplier * _segMultiplier * seedError2 &&
-            p2 > _minHelixMomentum * _minHelixMomentum &&
-            p2 < _maxHelixMomentum * _maxHelixMomentum &&
-            _negativeLine.fitter.chi2Dof() <= _maxSegmentChi2) {
-          _seedPhiLines.push_back(_negativeLine);
-          for (size_t n = 0; n < _negativeLine.tcHitsIndices.size(); n++) {
-            _tcHits[_negativeLine.tcHitsIndices[n]].notOnSegment = false;
+        const float dphi = (seedPhi - lastAddedNegativePhi);
+        if (dphi*dphi > _segMultiplierSq * seedError2 &&
+            p2 > _minHelixMomentumSq &&
+            p2 < _maxHelixMomentumSq &&
+            negativeLine.fitter.chi2Dof() <= _maxSegmentChi2) {
+          // Accept the negative seed phi line
+          _seedPhiLines.push_back(negativeLine);
+          for (size_t n = 0; n < negativeLine.tcHitsIndices.size(); n++) {
+            _tcHits[negativeLine.tcHitsIndices[n]].notOnSegment = false;
           }
         }
       }
+      if(_doTiming > 5) _watch->StopTime("findSeedPhiLines-seed");
     }
 
     // check if we found any lines
     if (_seedPhiLines.size() == 0) { outcome = CONTINUE; }
     else { outcome = GOOD; }
 
+    if(_diagLevel > 0) {
+      _diagInfo.loopCondition = outcome;
+      _hmanager->fillHistograms(&_diagInfo, DIAG::kSegments);
+    }
+
+    if(_doTiming > 4) _watch->StopTime(__func__);
   }
 
   //-----------------------------------------------------------------------------
   // function to find seed phi lines
   //-----------------------------------------------------------------------------
-  float AgnosticHelixFinder::underEstimateSlope(float& phi1, float& phi1Err2, float& phi2, float& phi2Err2, float& dz) {
+  float AgnosticHelixFinder::underEstimateSlope(float phi1, float phi1Err2, float phi2, float phi2Err2, float dz) {
 
     float slope = 0.0;
     float phi1Err = std::sqrt(phi1Err2);
     float phi2Err = std::sqrt(phi2Err2);
 
     if (phi2 > phi1) { slope = std::abs(((phi2-phi2Err)-(phi1+phi1Err))/(dz)); }
-    if (phi2 < phi1) { slope = std::abs(((phi2+phi2Err)-(phi1-phi1Err))/(dz)); }
+    else             { slope = std::abs(((phi2+phi2Err)-(phi1-phi1Err))/(dz)); }
 
     return slope;
 
@@ -1102,6 +1257,7 @@ namespace mu2e {
   // function to resolve 2 Pi Ambiguities for each seed phi line found
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::resolve2PiAmbiguities() {
+    if(_doTiming > 4) _watch->SetTime(__func__);
 
     for (size_t i = 0; i < _seedPhiLines.size(); i++) {
       float lineSlope = _seedPhiLines[i].fitter.dydx();
@@ -1126,8 +1282,8 @@ namespace mu2e {
         if (alreadyInLine == true) { continue; }
         // find integer needed for 2pi correction
         float deltaPhi = lineSlope * testZ + lineIntercept - testPhi;
-        int n = std::round(deltaPhi / (2 * M_PI));
-        testPhi = testPhi + 2 * M_PI * n;
+        int n = std::round(deltaPhi / (_twopi));
+        testPhi = testPhi + _twopi * n;
         // now see if 2pi corrected phi is consistent with line
         deltaPhi = std::abs(lineSlope * testZ + lineIntercept - testPhi);
         float error2 =
@@ -1141,12 +1297,14 @@ namespace mu2e {
         }
       }
     }
+    if(_doTiming > 4) _watch->StopTime(__func__);
   }
 
   //-----------------------------------------------------------------------------
   // function for refining the phi line that was found
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::refinePhiLine(size_t lineIndex, bool& removals) {
+  bool AgnosticHelixFinder::refinePhiLine(size_t lineIndex) {
+    if(_doTiming > 4) _watch->SetTime(__func__);
 
     float largestResidual2 = 0.0;
     size_t rmIndex = 0;
@@ -1154,7 +1312,7 @@ namespace mu2e {
     for (size_t i = 0; i < _seedPhiLines[lineIndex].tcHitsIndices.size(); i++) {
       size_t tcHitsIndex = _seedPhiLines[lineIndex].tcHitsIndices[i];
       float pointPhi =
-        _tcHits[tcHitsIndex].helixPhi + 2 * M_PI * _seedPhiLines[lineIndex].helixPhiCorrections[i];
+        _tcHits[tcHitsIndex].helixPhi + _twopi * _seedPhiLines[lineIndex].helixPhiCorrections[i];
       float pointZ = getPos(tcHitsIndex).z();
       float linePhi =
         _seedPhiLines[lineIndex].fitter.dydx() * pointZ + _seedPhiLines[lineIndex].fitter.y0();
@@ -1167,31 +1325,34 @@ namespace mu2e {
       }
     }
 
+    bool res = false;
     if (largestResidual2 > _maxPhiZResidual * _maxPhiZResidual) {
       size_t tcHitsIndex = _seedPhiLines[lineIndex].tcHitsIndices[rmIndex];
       float z = getPos(tcHitsIndex).z();
       float phi = _tcHits[tcHitsIndex].helixPhi +
-        2 * M_PI * _seedPhiLines[lineIndex].helixPhiCorrections[rmIndex];
+        _twopi * _seedPhiLines[lineIndex].helixPhiCorrections[rmIndex];
       float weight = 1.0 / (_tcHits[tcHitsIndex].helixPhiError2);
       _seedPhiLines[lineIndex].fitter.removePoint(z, phi, weight);
       _seedPhiLines[lineIndex].tcHitsIndices.erase(_seedPhiLines[lineIndex].tcHitsIndices.begin() +
                                                    rmIndex);
       _seedPhiLines[lineIndex].helixPhiCorrections.erase(
                                                          _seedPhiLines[lineIndex].helixPhiCorrections.begin() + rmIndex);
-      removals = true;
+      res = true;
     }
-    else { removals = false; }
+    if(_doTiming > 4) _watch->StopTime(__func__);
+    return res;
   }
 
   //-----------------------------------------------------------------------------
   // initialize final circle / line seed prior to hit recovery
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::initFinalSeed(LoopCondition& outcome) {
+    if(_doTiming > 4) _watch->SetTime(__func__);
 
     // make note of number of hits on circle before circle gets updated using the line info
     float seedCircleHits = _circleFitter.qn();
 
-    // first find best phi line
+    // first find best phi line by N(hits), and then chi^2/dof for equal N(hits)
     size_t bestLineIndex = 0;
     size_t nHitsMost = 0;
     float chi2dof = 0.0;
@@ -1235,7 +1396,7 @@ namespace mu2e {
     float nLineHits = _lineFitter.qn();
     float nHitsRatio = seedCircleHits/nLineHits;
 
-    if (_diagLevel == 1) {
+    if (_diagLevel > 0) {
       finalLineInfo lInfo;
       lInfo.nHitsRatio = nHitsRatio;
       _diagInfo.lineInfoData.push_back(lInfo);
@@ -1245,12 +1406,18 @@ namespace mu2e {
     if (_circleFitter.qn() < _minFinalSeedHits || nHitsRatio > _maxNHitsRatio) { outcome = CONTINUE;}
     else { outcome = GOOD; }
 
+    if(_diagLevel > 0) {
+      _diagInfo.loopCondition = outcome;
+      _hmanager->fillHistograms(&_diagInfo, DIAG::kLine);
+    }
+    if(_doTiming > 4) _watch->StopTime(__func__);
   }
 
   //-----------------------------------------------------------------------------
   // recover points
   //-----------------------------------------------------------------------------
-  void AgnosticHelixFinder::recoverPoints(bool& recoveries) {
+  bool AgnosticHelixFinder::recoverPoints() {
+    if(_doTiming > 4) _watch->SetTime(__func__);
 
     float xC = _circleFitter.x0();
     float yC = _circleFitter.y0();
@@ -1261,7 +1428,7 @@ namespace mu2e {
 
     float smallestResidual2 = 0.0;
     size_t addIndex = 0;
-    recoveries = false;
+    bool recoveries = false;
 
     // first check hits for best recovery
     for (size_t i = 0; i < _tcHits.size(); i++) {
@@ -1279,18 +1446,18 @@ namespace mu2e {
       float zP = getPos(i).z();
       float phiSigma2 = _tcHits[i].helixPhiError2;
       float phiDistance = lineSlope * zP + lineIntercept - phiP;
-      int n = std::round(phiDistance / (2 * M_PI));
+      int n = std::round(phiDistance / (_twopi));
       _tcHits[i].helixPhiCorrection = n;
-      phiP = phiP + 2 * M_PI * n;
+      phiP = phiP + _twopi * n;
       phiDistance = std::abs(lineSlope * zP + lineIntercept - phiP);
       float phiResidual2 = phiDistance * phiDistance / phiSigma2;
       if (phiResidual2 > _maxLineRecoverSigma * _maxLineRecoverSigma) { continue; }
       float residual2 = phiResidual2 + circleResidual2;
-      if (residual2 < smallestResidual2 || recoveries == false) {
+      if (residual2 < smallestResidual2 || !recoveries) {
         smallestResidual2 = residual2;
         addIndex = i;
       }
-      recoveries = true;
+      recoveries = true; // flag that at least one recovery was made
     }
 
     // add point to circle fitter to update circle parameters
@@ -1298,7 +1465,7 @@ namespace mu2e {
     // update circle with new weights
     // recompute phis / phi errors
     // update line
-    if (recoveries == true) {
+    if (recoveries) {
       _tcHits[addIndex].used = true;
       float w = 1.0 / (_tcHits[addIndex].circleError2);
       _circleFitter.addPoint(getPos(addIndex).x(), getPos(addIndex).y(), w);
@@ -1327,34 +1494,42 @@ namespace mu2e {
         float phiWeight = 1.0 / (_tcHits[i].helixPhiError2);
         float phiP = _tcHits[i].helixPhi;
         float deltaPhi = lineSlope * zP + lineIntercept - phiP;
-        _tcHits[i].helixPhiCorrection = std::round(deltaPhi / (2 * M_PI));
-        phiP = phiP + _tcHits[i].helixPhiCorrection * 2 * M_PI;
+        _tcHits[i].helixPhiCorrection = std::round(deltaPhi / (_twopi));
+        phiP = phiP + _tcHits[i].helixPhiCorrection * _twopi;
         _lineFitter.addPoint(zP, phiP, phiWeight);
       }
     }
+    if(_diagLevel > 0) _hmanager->fillHistograms(&_diagInfo, DIAG::kRecover);
+    if(_doTiming > 4) _watch->StopTime(__func__);
+    return recoveries;
   }
 
   //-----------------------------------------------------------------------------
   // check if helix is savable based on fcl defined cuts
   //-----------------------------------------------------------------------------
   void AgnosticHelixFinder::checkHelixViability(LoopCondition& outcome) {
+    if(_doTiming > 4) _watch->SetTime(__func__);
 
     // first check if line has good enough fit
     if (_lineFitter.chi2Dof() > _chi2LineSaveThresh) {
       outcome = CONTINUE;
-      return;
+    } else {
+      // if line fit was good enough make sure momenta are within allowable range
+      float radius = _circleFitter.radius();
+      float slope = _lineFitter.dydx();
+      float mom2 = computeHelixMomentum2(radius, slope);
+      float pt = computeHelixPerpMomentum(radius);
+      if (mom2 < _minHelixMomentumSq ||
+          mom2 > _maxHelixMomentumSq || pt < _minHelixPerpMomentum ||
+          pt > _maxHelixPerpMomentum) { outcome = CONTINUE; }
+      else { outcome = GOOD; }
     }
 
-    // if line fit was good enough make sure momenta are within allowable range
-    float radius = _circleFitter.radius();
-    float slope = _lineFitter.dydx();
-    float mom2 = computeHelixMomentum2(radius, slope);
-    float pt = computeHelixPerpMomentum(radius);
-    if (mom2 < _minHelixMomentum * _minHelixMomentum ||
-        mom2 > _maxHelixMomentum * _maxHelixMomentum || pt < _minHelixPerpMomentum ||
-        pt > _maxHelixPerpMomentum) { outcome = CONTINUE; }
-    else { outcome = GOOD; }
-
+    if(_diagLevel > 0) {
+      _diagInfo.loopCondition = outcome;
+      _hmanager->fillHistograms(&_diagInfo, DIAG::kViability);
+    }
+    if(_doTiming > 4) _watch->StopTime(__func__);
   }
 
   //-----------------------------------------------------------------------------
@@ -1363,7 +1538,6 @@ namespace mu2e {
   void AgnosticHelixFinder::saveHelix(size_t tc, HelixSeedCollection& HSColl) {
     HelixSeed hseed;
     hseed._t0 = _tcColl->at(tc)._t0;
-    auto _tcCollH = _event->getValidHandle<TimeClusterCollection>(_tcLabel);
     hseed._timeCluster = art::Ptr<mu2e::TimeCluster>(_tcCollH, tc);
     hseed._hhits.setParent(_chColl->parent());
 
@@ -1371,14 +1545,14 @@ namespace mu2e {
     // also add points to linear fitter to get t0
     ::LsqSums2 fitter;
     for (size_t i = 0; i < _tcHits.size(); i++) {
-      if (_tcHits[i].inHelix == true || _tcHits[i].hitIndice < 0) { continue; }
-      if (_tcHits[i].used == false) { continue; }
-      if (_tcHits[i].used == true) { _tcHits[i].inHelix = true; }
-      int hitIndice = _tcHits[i].hitIndice;
-      const ComboHit* hit = &_chColl->at(hitIndice);
-      fitter.addPoint(hit->pos().z(), hit->correctedTime(), 1 / (hit->timeRes() * hit->timeRes()));
-      ComboHit hhit(*hit);
-      hhit._hphi = _tcHits[i].helixPhi + _tcHits[i].helixPhiCorrection * 2 * M_PI;
+      if (_tcHits[i].inHelix == true || _tcHits[i].used == false
+          || _tcHits[i].hitIndice == HitType::STOPPINGTARGET
+          || _tcHits[i].hitIndice == HitType::CALOCLUSTER) { continue; }
+      _tcHits[i].inHelix = true;
+      const ComboHit& hit = *(_tcHits[i].hit);
+      fitter.addPoint(hit.pos().z(), hit.correctedTime(), 1 / (hit.timeRes() * hit.timeRes()));
+      ComboHit hhit(hit);
+      hhit._hphi = _tcHits[i].helixPhi + _tcHits[i].helixPhiCorrection * _twopi;
       hseed._hhits.push_back(hhit);
     }
     float eDepAvg = hseed._hhits.eDepAvg();
@@ -1391,9 +1565,9 @@ namespace mu2e {
     CLHEP::Hep3Vector center(x0, y0, 0);
     float dfdz = _lineFitter.dydx();
 
-    hseed._helix._fz0 = _lineFitter.y0();
-    if (hseed._helix._fz0 > M_PI) { hseed._helix._fz0 = hseed._helix._fz0 - 2 * M_PI; }
-    if (hseed._helix._fz0 < -M_PI) { hseed._helix._fz0 = hseed._helix._fz0 + 2 * M_PI; }
+    hseed._helix._fz0 = std::fmod(_lineFitter.y0(), _twopi);
+    if     (hseed._helix._fz0 >  M_PI) { hseed._helix._fz0 = hseed._helix._fz0 - _twopi; }
+    else if(hseed._helix._fz0 < -M_PI) { hseed._helix._fz0 = hseed._helix._fz0 + _twopi; }
     hseed._helix._rcent = center.perp();
     hseed._helix._fcent = center.phi();
     hseed._helix._radius = _circleFitter.radius();
@@ -1407,11 +1581,9 @@ namespace mu2e {
     hseed._status.merge(TrkFitFlag::helixOK);
     hseed._status.merge(TrkFitFlag::APRHelix);
 
-    // take care of plotting if _diagLevel = 1
-    if (_diagLevel == 1) {
-      hsInfo hsi;
-      hsi.eDepAvg = eDepAvg;
-      _diagInfo.helixSeedData.push_back(hsi);
+    if(_diagLevel > 0) { // diagnostics for all helix seeds, independent of success
+      _diagInfo.hseed = &hseed;
+      _hmanager->fillHistograms(&_diagInfo, DIAG::kHelix);
     }
 
     if (eDepAvg > _maxEDepAvg) return;
@@ -1429,6 +1601,11 @@ namespace mu2e {
 
     // push back the helix seed to the helix seed collection
     HSColl.emplace_back(hseed);
+
+    if(_diagLevel > 0) { // diagnostics for accepted helix seeds
+      _diagInfo.helixSeedData.push_back(hsInfo(_bz0, hseed)); // list of helices per time cluster
+      _hmanager->fillHistograms(&_diagInfo, DIAG::kFinal);
+    }
 
   }
 

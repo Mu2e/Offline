@@ -10,7 +10,9 @@
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
+#include "Offline/CRVConditions/inc/CRVADCRange.hh"
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
+#include "Offline/CRVConditions/inc/CRVOrdinal.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
@@ -58,6 +60,8 @@ namespace mu2e
     double      _ADCconversionFactor;
     int         _pedestal;
     bool        _simulateNZS;
+
+    mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
   };
 
   CrvDigitizer::CrvDigitizer(const Parameters& conf) :
@@ -80,6 +84,8 @@ namespace mu2e
     event.getByLabel(_crvWaveformsModuleLabel,"",crvDigiMCCollection[0]);
     if(_simulateNZS) event.getByLabel(_crvWaveformsModuleLabel,"NZS",crvDigiMCCollection[1]);
 
+    auto const& channelMap = _channelMap_h.get(event.id());
+
     for(int i=0; i<(_simulateNZS?2:1); ++i)
     {
       for(CrvDigiMCCollection::const_iterator iter=crvDigiMCCollection[i]->begin(); iter!=crvDigiMCCollection[i]->end(); iter++)
@@ -87,6 +93,13 @@ namespace mu2e
         const CrvDigiMC &crvDigiMC = *iter;
         const CRSScintillatorBarIndex &barIndex = crvDigiMC.GetScintillatorBarIndex();
         const int SiPM = crvDigiMC.GetSiPMNumber();
+
+        uint16_t offlineChannel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
+        CRVROC   onlineChannel  = channelMap.online(offlineChannel);
+        uint8_t  roc            = onlineChannel.ROC();
+        uint8_t  feb            = onlineChannel.FEB();
+        uint8_t  febChannel     = onlineChannel.FEBchannel();
+
         const std::vector<double> &voltages = crvDigiMC.GetVoltages();
         double startTime = crvDigiMC.GetStartTime();
         double TDC0time = crvDigiMC.GetTDC0Time();
@@ -97,11 +110,11 @@ namespace mu2e
         //the waveform generator makes sure that the start time - TDC0time is a multiple of the digitization period
         startTime-=TDC0time;
 
-        _makeCrvDigis->SetWaveform(voltages,_ADCconversionFactor,_pedestal, startTime, CRVDigitizationPeriod);
+        _makeCrvDigis->SetWaveform(voltages,_ADCconversionFactor,_pedestal, startTime, CRVDigitizationPeriod, CRVMinADC, CRVMaxADC);
         const std::vector<int16_t> &ADCs = _makeCrvDigis->GetADCs();
         uint16_t startTDC = _makeCrvDigis->GetTDC();
 
-        crvDigiCollection[i]->emplace_back(ADCs, startTDC, NZS, barIndex, SiPM);
+        crvDigiCollection[i]->emplace_back(ADCs, startTDC, NZS, false, barIndex, SiPM, roc, feb, febChannel);
       }
 
       event.put(std::move(crvDigiCollection[i]),(i==1?"NZS":""));

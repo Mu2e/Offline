@@ -1,11 +1,11 @@
 string dirt.upToGradeLevel.W.name     = "dirtUpToGradeLevelW";
 string dirt.upToGradeLevel.W.material = "MBOverburden";
 double dirt.upToGradeLevel.W.offsetFromMu2eOrigin.x   = 947.40;
-double dirt.upToGradeLevel.W.offsetFromFloorSurface.y = 7531.10;
+double dirt.upToGradeLevel.W.offsetFromFloorSurface.y = 7454.9;
 double dirt.upToGradeLevel.W.offsetFromMu2eOrigin.z   = -3581.40;
 vector<int> dirt.upToGradeLevel.W.xreplace ={21 ,22 };
 vector<int> dirt.upToGradeLevel.W.yreplace ={20 ,21 ,22 ,23 };
-double dirt.upToGradeLevel.W.yHalfThickness           = 241.30;
+double dirt.upToGradeLevel.W.yHalfThickness           = 165.1;
 vector<double> dirt.upToGradeLevel.W.xPositions = {
 -2921.00, // 0
 -4140.20, // 1
@@ -30,8 +30,8 @@ vector<double> dirt.upToGradeLevel.W.xPositions = {
 -19065.88, // 20
 -50000.00, // 21
 -50000.00, // 22
--2921.10, // 23
--2921.10, // 24
+-1270.10, // 23
+-1270.10, // 24
 -15282.54, // 25
 -27111.19, // 26
 -27025.14, // 27

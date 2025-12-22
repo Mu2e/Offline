@@ -1,10 +1,3 @@
-# Run CrvDigisFromFragments module to convert artdaq::Fragment collections
-# into CRV collections.
-# Usage: mu2e -c DAQ/test/CrvDigisFromFragmentsTest.fcl -s <input root files> -n '-1'
-#
-#
-# Contact person G. Pezzullo, R. Ehrlich
-
 #include "mu2e-trig-config/core/trigProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
 
@@ -26,23 +19,15 @@ physics :
 {
   producers :
   {
-    genFrags :
-    {
-       module_type  : ProcessDTCAndCFOEvents
-       diagLevel    : 10
-       makeCaloFrag : 0
-       makeTrkFrag  : 0
-       makeCRVFrag  : 1
-    }
     CrvDigi :
     {
-      module_type : CRVDigisFromDataDecoders
-      crvTag      : "genFrags"
-      diagLevel   : 2
+      module_type   : CrvDigisFromArtdaqFragments
+      diagLevel     : 10
+      useSubsystem0 : true
     }
   }
 
-  t1 : [ genFrags, CrvDigi]
+  t1 : [ CrvDigi]
   e1 : [ outfile ]
 
   trigger_paths  : [t1]
@@ -55,7 +40,7 @@ outputs:
   outfile :
   {
     module_type   :   RootOutput
-    fileName      :   "digis_from_frags_crv.art"
+    fileName      :   "crvDigis.art"
   }
 }
 

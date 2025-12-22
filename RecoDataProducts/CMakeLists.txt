@@ -8,7 +8,6 @@ cet_make_library(
       src/CrvDAQerror.cc
       src/CrvDigi.cc
       src/CrvRecoPulse.cc
-      src/DAQerror.cc
       src/ExtMonFNALRawCluster.cc
       src/ExtMonFNALRawHit.cc
       src/ExtMonFNALRecoCluster.cc
@@ -17,6 +16,7 @@ cet_make_library(
       src/ExtMonFNALTrkParam.cc
       src/ExtMonUCITofHit.cc
       src/HelixVal.cc
+      src/IntensityInfoCalo.cc
       src/KalSeed.cc
       src/KalSegment.cc
       src/PIDProduct.cc
@@ -25,6 +25,7 @@ cet_make_library(
       src/StrawDigiFlag.cc
       src/StrawHit.cc
       src/StrawHitFlag.cc
+      src/StrawFlag.cc
       src/TrackClusterMatch.cc
       src/TrackSummary.cc
       src/TrkCaloHitPID.cc
@@ -38,13 +39,15 @@ cet_make_library(
       BTrk_BbrGeom
       BTrk_KalmanTrack
       BTrk_ProbTools
-      KinKal_Trajectory
-      
+      KinKal::Trajectory
+
       Offline::DataProducts
       Offline::GeneralUtilities
       Offline::KinKalGeom
       Offline::Mu2eKinKal
       Offline::TrackerConditions
+
+      artdaq-core-mu2e::Overlays
 )
 
 art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults

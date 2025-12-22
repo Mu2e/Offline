@@ -30,6 +30,8 @@ namespace mu2e
        auto const&                  points() const  {return _cpoints;  }
        auto const&                  time() const {return _time; }
        auto const&                  hits() const {return _hits; }
+       auto const&                  hitposition() const {return _hitpositions; }
+       auto &                       hitposition() {return _hitpositions; }
        auto &                       hits()       {return _hits; }
 
        void pos(XYZVectorF const& pos)                                      {_pos = pos;}
@@ -42,12 +44,16 @@ namespace mu2e
         _cpoints.addPoint(point,_cpoints.nPoints());
         _pos = _cpoints.point().pos3();
        }
+       void addHitPosition(XYZVectorF const& pos) {
+        _hitpositions.push_back(pos);
+       }
 
-       XYZVectorF               _pos;// ideally should be a 2d vec - FIXME
+       XYZVectorF               _pos;
        TwoDPoint                _point;//initial point
        CombineTwoDPoints        _cpoints;//combined points
        float                    _time = 0.0;//cluster time
        std::vector<unsigned>    _hits;
+       std::vector<XYZVectorF>    _hitpositions;
        BkgClusterFlag           _flag = BkgClusterFlag(BkgClusterFlag::update);
        float                    _kerasQ = -0.5; //result of keras result for the cluster
        distMethod               _distMethod;//which distMethod used to create the cluster
@@ -57,4 +63,3 @@ namespace mu2e
 
 }
 #endif
-
