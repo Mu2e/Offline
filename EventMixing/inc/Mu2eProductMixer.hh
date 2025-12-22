@@ -186,6 +186,8 @@ namespace mu2e {
 
     bool mixCaloShowerSims(std::vector<CaloShowerSimCollection const*> const& in,
                        CaloShowerSimCollection& out,
+                       art::PtrRemapper const& remap);
+
     bool mixCrvDigis(std::vector<CrvDigiCollection const*> const& in,
                        CrvDigiCollection& out,
                        art::PtrRemapper const& remap);

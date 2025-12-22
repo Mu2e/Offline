@@ -68,14 +68,15 @@ namespace mu2e{
       std::vector<art::InputTag> _tracker_digi_tags;
       bool _tracker_mc;
       ProditionsHandle<StrawElectronics> _tracker_conditions_handle;
-      // crv
-      std::vector<art::InputTag> _crv_digi_tags;
-      std::vector<art::InputTag> _crv_digimc_tags;
-      ProditionsHandle<CRVCalib>  _crv_calib_handle;
 
       // calorimeter
       std::vector<art::InputTag> _calo_digi_tags;
       CaloDigiWrapper::sample_t _calo_max_adc;
+
+      // crv
+      std::vector<art::InputTag> _crv_digi_tags;
+      std::vector<art::InputTag> _crv_digimc_tags;
+      ProditionsHandle<CRVCalib>  _crv_calib_handle;
 
     private:
       void produce(art::Event&);
