@@ -361,7 +361,6 @@ namespace mu2e {
                                             CaloShowerStepCollection& out,
                                             art::PtrRemapper const& remap)
   {
-    std::vector<CaloShowerStepCollection::size_type> cssOffsets_;
     art::flattenCollections(in, out, cssOffsets_);
 
     for(CaloShowerStepCollection::size_type i=0; i<out.size(); ++i) {
