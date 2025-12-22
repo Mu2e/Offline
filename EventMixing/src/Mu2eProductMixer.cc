@@ -125,6 +125,7 @@ namespace mu2e {
     for(const auto& e: conf.caloShowerSimMixer().mixingMap()) {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCaloShowerSims, *this);
+    }
 
     for(const auto& e: conf.crvDigiMixer().mixingMap()) {
       helper.declareMixOp

@@ -49,6 +49,7 @@ namespace mu2e{
         fhicl::Atom<unsigned int> calo_adc_bits{
           fhicl::Name("CalorimeterADCBitDepth"),
           fhicl::Comment("Bit depth of calorimeter adc readings (temporary)")
+        };
         fhicl::Sequence<art::InputTag> crv_digi_tags{
           fhicl::Name("CrvDigiCollections"),
           fhicl::Comment("art::InputTags of source CrvDigi")
