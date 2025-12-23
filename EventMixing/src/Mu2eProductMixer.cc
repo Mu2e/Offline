@@ -534,6 +534,10 @@ namespace mu2e {
         remapped.push_back(remap(steps[is], cssOffset));
       }
       sim.setCaloShowerSteps(std::move(remapped));
+    }
+
+    return true;
+  }
 
   bool Mu2eProductMixer::mixCrvDigiMCs(std::vector<CrvDigiMCCollection const*> const& in,
                      CrvDigiMCCollection& out,
