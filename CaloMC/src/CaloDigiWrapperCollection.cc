@@ -96,9 +96,6 @@ namespace mu2e{
     return rv;
   }
 
-  // ejc: this overlaps _greatly_ with CaloDigiWrapperCollection
-  // TODO this assumes a fixed overlap window, which does not apply for calo
-  // here we need variable-length chain links --- -.-
   void CaloDigiWrapperCollection::ResolveCollisions(sample_t max_adc, CaloDigiWrapperCollection& rv){
     // identify time-overlapped chains: this is a 3 step process
     // first, partition wrappers according to SiPMID_t
