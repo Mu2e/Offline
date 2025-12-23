@@ -501,6 +501,10 @@ namespace mu2e {
   bool Mu2eProductMixer::mixCaloDigis(std::vector<CaloDigiCollection const*> const& in,
                     CaloDigiCollection& out,
                     art::PtrRemapper const& remap)
+  {
+    art::flattenCollections(in, out);
+    return true;
+  }
 
   bool Mu2eProductMixer::mixCrvDigis(std::vector<CrvDigiCollection const*> const& in,
                      CrvDigiCollection& out,
