@@ -4,6 +4,8 @@ cet_make_library(
       src/CaloPhotonPropagation.cc
       src/CaloWFExtractor.cc
       src/ShowerStepUtil.cc
+      src/CaloDigiWrapper.cc
+      src/CaloDigiWrapperCollection.cc
     LIBRARIES PUBLIC
       
       Offline::CalorimeterGeom
