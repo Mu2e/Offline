@@ -89,7 +89,7 @@ namespace mu2e{
       _tracker_digi_tags(config().tracker_digi_tags()),
       _tracker_mc(config().tracker_mc()),
       _calo_digi_tags(config().calo_digi_tags()),
-      _calo_max_adc(1 << config().calo_adc_bits()),
+      _calo_max_adc((1 << config().calo_adc_bits()) - 1),
       _crv_digi_tags(config().crv_digi_tags()),
       _crv_digimc_tags(config().crv_digimc_tags()){
     // tracker
