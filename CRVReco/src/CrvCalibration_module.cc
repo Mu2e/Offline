@@ -50,7 +50,7 @@ namespace mu2e
       fhicl::Atom<int>         spectrumNPeaks{Name("spectrumNPeaks"), Comment("maximum number of peaks searched by TSpectrum. numbers less then 4 result in warnings"), 6};
       fhicl::Atom<double>      spectrumPeakSigma{Name("spectrumPeakSigma"), Comment("TSpectrum search parameter sigma"), 4.0};
       fhicl::Atom<double>      spectrumPeakThreshold{Name("spectrumPeakThreshold"), Comment("TSpectrum search parameter threshold"), 0.01};
-      fhicl::Atom<double>      peakRatioTolerance{Name("peakRatioTolerance"), Comment("allowed deviation of the ratio between 1PE peak and 2PE peak from 2.0"), 0.1};
+      fhicl::Atom<double>      peakRatioTolerance{Name("peakRatioTolerance"), Comment("allowed deviation of the ratio between 1PE peak and 2PE peak from 2.0"), 0.2};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 

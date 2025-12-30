@@ -31,7 +31,9 @@ MakeCrvRecoPulses::MakeCrvRecoPulses(float minADCdifference, float defaultBeta, 
                                      _pulseThreshold(pulseThreshold),
                                      _pulseAreaThreshold(pulseAreaThreshold),
                                      _doublePulseSeparation(doublePulseSeparation)
-{}
+{
+  if(_pulseAreaThreshold>_minADCdifference) _pulseAreaThreshold=_minADCdifference;
+}
 
 void MakeCrvRecoPulses::FillGraphAndFindPeaks(const std::vector<int16_t> &waveform, uint16_t startTDC,
                                               float digitizationPeriod, float pedestal,
