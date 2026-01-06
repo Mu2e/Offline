@@ -30,14 +30,12 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<int>  diagLevel{ Name("DiagLevel"), Comment("Diagonstic Level"), 0};
-        fhicl::Atom<bool> printFirst{ Name("PrintFirst"), Comment("Print the TriggerResults on the first event"), false};
-        fhicl::Atom<bool> noFilter{ Name("NoFilter"), Comment("If true, do not filter any events"), false};
-        fhicl::Atom<string> processName{Name("ProcessName"), Comment("Process which generated TriggerResults")};
-        fhicl::Sequence<string> triggerNames{ Name("TriggerNames"),
-          Comment("Trigger line names to test; if any of these are set the event will pass the filter"), vector<string>()};
-        fhicl::Sequence<unsigned> triggerBits{ Name("TriggerBits"),
-          Comment("Trigger line bits to test; if any of these are set the event will pass the filter"), vector<unsigned>()};
+        fhicl::Atom<int>          diagLevel   {Name("DiagLevel")   , Comment("Diagonstic Level"), 0};
+        fhicl::Atom<bool>         printFirst  {Name("PrintFirst")  , Comment("Print the TriggerResults on the first event"), false};
+        fhicl::Atom<bool>         noFilter    {Name("NoFilter")    , Comment("If true, do not filter any events"), false};
+        fhicl::Atom<string>       processName {Name("ProcessName") , Comment("Process which generated TriggerResults")};
+        fhicl::Sequence<string>   triggerNames{Name("TriggerNames"), Comment("Trigger line names to test; if any of these are set the event will pass the filter"), vector<string>()};
+        fhicl::Sequence<unsigned> triggerBits {Name("TriggerBits") , Comment("Trigger line bits to test; if any of these are set the event will pass the filter"), vector<unsigned>()};
       };
 
       using Parameters = art::EDFilter::Table<Config>;
@@ -96,10 +94,10 @@ namespace mu2e {
     const size_t nbits = (use_bits) ? _tbits.size() : _tnames.size();
     for(size_t itrig = 0; itrig < nbits; itrig++) {
       try {
-        auto const& tname = (use_bits) ? tnav.getTrigNameByBit(_tbits[itrig]) : _tnames[itrig];
+        auto const& tname = (use_bits) ? tnav.getTrigPathNameByBit(_tbits[itrig]) : _tnames[itrig];
         const bool accepted = tnav.accepted(tname);
         if(_diag>1) printf("[TriggerResultsFilter::%s] Trigger %s (bit %zu) accepted = %o\n",
-                           __func__, tname.c_str(), tnav.getTrigBit(tname), accepted);
+                           __func__, tname.c_str(), tnav.getTrigBitByName(tname), accepted);
         if(accepted) {
           passed = true;
           _nset[itrig]++;
