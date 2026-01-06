@@ -62,8 +62,9 @@ namespace mu2e
     void analyze(const art::Event& e);
     void beginRun(const art::Run&);
     void endJob();
-    template<size_t N>
-    bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, std::array<TF1,N> &functions, double &SPEpeak, double minPeak);
+//    template<size_t N>
+//    bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, std::array<TF1,N> &functions, double &SPEpeak, double minPeak);
+    bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak);
 
     private:
     std::string        _crvRecoPulsesModuleLabel;
@@ -149,7 +150,8 @@ namespace mu2e
     treePedestal->Branch("channel", &channel);
     treePedestal->Branch("pedestal", &pedestal);
 
-    std::array functions={TF1("calibPeak1","gaus"), TF1("calibPeak2","gaus"), TF1("calibPeak3","gaus")}; //only need to fit three peaks
+//    std::array functions={TF1("calibPeak1","gaus"), TF1("calibPeak2","gaus"), TF1("calibPeak3","gaus")}; //only need to fit three peaks
+    TF1 function("calibPeak","gaus");
     TSpectrum spectrum(_spectrumNPeaks); //any value of 3 or less results in a "Peak buffer full" warning.
 
     std::ofstream outputFile;
@@ -167,7 +169,8 @@ namespace mu2e
         else hist=_calibHistsPulseHeight.at(channel);
 
         double SPEpeak=-1;
-        if(!FindSPEpeak(hist, spectrum, functions, SPEpeak, (i==0?_minPeakPulseHeight:_minPeakPulseArea)))
+//        if(!FindSPEpeak(hist, spectrum, functions, SPEpeak, (i==0?_minPeakPulseHeight:_minPeakPulseArea)))
+        if(!FindSPEpeak(hist, spectrum, function, SPEpeak, (i==0?_minPeakPulseHeight:_minPeakPulseArea)))
         {
           calibValue[i]=-1;
           continue;
@@ -238,6 +241,33 @@ namespace mu2e
     }
   }
 
+  bool CrvCalibration::FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak)
+  {
+    if(hist->GetEntries()<_minHistEntries) return false; //not enough data
+
+    size_t nPeaks = spectrum.Search(hist,_spectrumPeakSigma,"nodraw",_spectrumPeakThreshold);
+    if(nPeaks==0) return false;
+
+    //peaks are returned sorted by Y
+    double *peaksX = spectrum.GetPositionX();
+    double x=peaksX[0];
+    if(x<minPeak)
+    {
+      if(nPeaks==1) return false;
+      x=peaksX[1];
+      if(x<minPeak) return false;
+    }
+
+    if(hist->FindBin(x*_fitRangeStart)==hist->FindBin(x*_fitRangeEnd)) return false; //fit range start/end are in the same bin
+    function.SetRange(x*_fitRangeStart,x*_fitRangeEnd);
+    function.SetParameter(1,x);
+    hist->Fit(&function, "QR");
+    SPEpeak = function.GetParameter(1);
+
+    return true;
+  }
+
+/*
   template<size_t N>
   bool CrvCalibration::FindSPEpeak(TH1F *hist, TSpectrum &spectrum, std::array<TF1,N> &functions, double &SPEpeak, double minPeak)
   {
@@ -275,6 +305,7 @@ namespace mu2e
 
     return true;
   }
+*/
 
 } // end namespace mu2e
 
