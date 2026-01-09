@@ -63,7 +63,7 @@ namespace mu2e {
       using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using PTRAJPTR = std::unique_ptr<PTRAJ>;
       using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
-      using TCA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
+      using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using KKHIT = KinKal::Measurement<KTRAJ>;
       using KKMAT = KinKal::Material<KTRAJ>;
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
@@ -245,7 +245,7 @@ namespace mu2e {
         auto sline = Mu2eKinKal::strawLine(straw,pca.particleToca()); // line down the straw axis center
         CAHint hint(pca.particleToca(),pca.sensorToca());
         PCA spca(ptraj, sline, hint, tprec_ );
-        exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),spca.localClosestApproach(),smat,straw));
+        exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),static_cast<CA const&>(spca),smat,straw));
       }
       if(hits.back()->hitState().usable())ngood++;
     }
@@ -298,7 +298,7 @@ namespace mu2e {
             }
           }
         }
-        exings.push_back(std::make_shared<KKSTRAWXING>(shptr,pca.localClosestApproach(),smat,straw,sx.active()));
+        exings.push_back(std::make_shared<KKSTRAWXING>(shptr,static_cast<CA>(pca),smat,straw,sx.active()));
         if(sx.active())nsactive++;
       }
     }
@@ -405,7 +405,7 @@ namespace mu2e {
                     auto sline = Mu2eKinKal::strawLine(straw,pca.particleToca()); // line down the straw axis center
                     CAHint hint(pca.particleToca(),pca.sensorToca());
                     PCA spca(ptraj, sline, hint, tprec_ );
-                    addexings.push_back(std::make_shared<KKSTRAWXING>(addhits.back(),spca.localClosestApproach(),smat,straw));
+                    addexings.push_back(std::make_shared<KKSTRAWXING>(addhits.back(),static_cast<CA>(spca),smat,straw));
                   } else {
                     // find this straw xing
                     for(auto& sx : kktrk.strawXings()) {
@@ -417,7 +417,7 @@ namespace mu2e {
                           auto sline = Mu2eKinKal::strawLine(straw,pca.particleToca()); // line down the straw axis center
                           CAHint hint(pca.particleToca(),pca.sensorToca());
                           PCA spca(ptraj, sline, hint, tprec_ );
-                          addexings.push_back(std::make_shared<KKSTRAWXING>(addhits.back(),spca.localClosestApproach(),smat,straw));
+                          addexings.push_back(std::make_shared<KKSTRAWXING>(addhits.back(),static_cast<CA>(spca),smat,straw));
                         }
                         break;
                       }
@@ -475,7 +475,7 @@ namespace mu2e {
                 double doca = fabs(pca.doca());
                 double dsig = std::max(0.0,doca-strawradius_)/sqrt(pca.docaVar());
                 if(doca < maxStrawDoca_ && dsig < maxStrawDocaCon_ && du < straw.halfLength() + maxStrawUposBuff_){
-                  addexings.push_back(std::make_shared<KKSTRAWXING>(shptr,pca.localClosestApproach(),smat,straw));
+                  addexings.push_back(std::make_shared<KKSTRAWXING>(shptr,static_cast<CA>(pca),smat,straw));
                   oldstraws.insert(straw.id());
                 }
               } // not existing straw cut
@@ -532,7 +532,7 @@ namespace mu2e {
                       double doca = fabs(pca.doca());
                       double dsig = std::max(0.0,doca-strawradius_)/sqrt(pca.docaVar());
                       if(doca < maxStrawDoca_ && dsig < maxStrawDocaCon_ && du < straw.halfLength() + maxStrawUposBuff_){
-                        addexings.push_back(std::make_shared<KKSTRAWXING>(shptr,pca.localClosestApproach(),smat,straw));
+                        addexings.push_back(std::make_shared<KKSTRAWXING>(shptr,static_cast<CA>(pca),smat,straw));
                         oldstraws.insert(straw.id());
                       }
                     } // not existing straw cut

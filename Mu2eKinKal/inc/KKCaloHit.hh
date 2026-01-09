@@ -82,8 +82,7 @@ namespace mu2e {
   };
 
   template <class KTRAJ> KKCaloHit<KTRAJ>::KKCaloHit(CCPtr caloCluster,  PCA const& pca, double tvar, double wvar) :    caloCluster_(caloCluster), axis_(pca.sensorTraj()), tvar_(tvar), wvar_(wvar),
-    ca_(pca.localTraj(),axis_,pca.precision(),pca.tpData(),pca.dDdP(),pca.dTdP()) {
-    }
+    ca_(static_cast<CA const&>(pca)){}
 
   template <class KTRAJ> Residual const& KKCaloHit<KTRAJ>::refResidual(unsigned ires) const {
     if(ires !=0)throw cet::exception("RECO")<<"mu2e::KKCaloHit: Invalid residual" << std::endl;
@@ -97,7 +96,7 @@ namespace mu2e {
     // from which it's impossible to ever get back to the correct one.  Active loop checking might be useful eventually too TODO
     //    if(ca_.usable()) tphint = CAHint(ca_.particleToca(),ca_.sensorToca());
     PCA pca(ptraj,axis_,tphint,precision());
-    ca_ = pca.localClosestApproach();
+    ca_ = static_cast<CA>(pca);
     rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,rresid_.dRdP(),ca_.usable());
   }
 

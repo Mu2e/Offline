@@ -139,7 +139,7 @@ namespace mu2e {
       tphint = shptr_->closestApproach().hint();
     }
     PCA pca(ptraj,axis_,tphint,precision());
-    ca_ = pca.localClosestApproach();
+    ca_ = static_cast<CA>(pca);
   }
 
   template <class KTRAJ> Parameters KKStrawXing<KTRAJ>::params() const {

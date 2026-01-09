@@ -144,7 +144,7 @@ namespace mu2e {
   template <class KTRAJ> KKStrawHit<KTRAJ>::KKStrawHit(BFieldMap const& bfield, PCA const& pca,
       ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse) :
     bfield_(bfield), whstate_(WireHitState::null), wire_(pca.sensorTraj()),
-    ca_(pca.localTraj(),wire_,pca.precision(),pca.tpData(),pca.dDdP(),pca.dTdP()),
+    ca_(static_cast<CA const&>(pca)),
     chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse)
   {
     if(!pca.usable())whstate_.state_ = WireHitState::unusable;
@@ -175,7 +175,7 @@ namespace mu2e {
       dz = straw().origin().z() - pca.particlePoca().Z();
       if((!pca.usable()) || fabs(dz) >  maxdz) whstate_.state_ = WireHitState::unusable;// give up on 2nd try
     }
-    ca_ = pca.localClosestApproach();
+    ca_ = static_cast<CA>(pca);
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
