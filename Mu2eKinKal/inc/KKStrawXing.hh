@@ -81,6 +81,7 @@ namespace mu2e {
       auto const& config() const { return sxconfig_; }
       auto const& closestApproach() const { return ca_; }
       auto const& strawMaterial() const { return smat_; }
+      auto strawAxis() const { return ca_.sensorTrajPtr(); }
       auto precision() const { return ca_.precision(); }
       auto const& straw() const { return straw_; }
       auto const& strawId() const { return straw_.id(); }
@@ -90,7 +91,6 @@ namespace mu2e {
     private:
       StrawXingUpdater sxconfig_; // cache of most recent update
       KKSTRAWHITPTR shptr_; // reference to associated StrawHit
-      SensorLine axis_; // straw axis, expressed as a timeline
       KKStrawMaterial const& smat_;
       Straw const& straw_; // reference to straw object, to allow follolwing geometry
       CA ca_; // result of most recent TPOCA
@@ -106,10 +106,9 @@ namespace mu2e {
 
   template <class KTRAJ> KKStrawXing<KTRAJ>::KKStrawXing(KKSTRAWHITPTR const& strawhit, CA const& ca, KKStrawMaterial const& smat, Straw const& straw,bool active) :
     shptr_(strawhit),
-    axis_(ca.sensorTraj()),
     smat_(smat),
     straw_(straw),
-    ca_(ca.particleTraj(),axis_,ca.hint(),ca.precision()),
+    ca_(ca),
     toff_(smat.wireRadius()/ca.particleTraj().speed(ca.particleToca())), // locate the effect to 1 side of the wire to avoid overlap with hits
     active_(active),
     varscale_(1.0)
@@ -117,10 +116,10 @@ namespace mu2e {
 
   template <class KTRAJ> KKStrawXing<KTRAJ>::KKStrawXing(KKSTRAWHITPTR const& strawhit, KKStrawMaterial const& smat) :
     shptr_(strawhit),
-    axis_(Mu2eKinKal::strawLine(strawhit->straw(),strawhit->closestApproach().particleToca())),
     smat_(smat),
     straw_(strawhit->straw()),
-    ca_(strawhit->closestApproach().particleTraj(),axis_,strawhit->closestApproach().hint(),strawhit->closestApproach().precision()),
+    ca_(strawhit->closestApproach().particleTrajPtr(),Mu2eKinKal::strawLine(strawhit->straw(),strawhit->closestApproach().particleToca()),
+        strawhit->closestApproach().hint(),strawhit->closestApproach().precision()),
     toff_(smat.wireRadius()/strawhit->closestApproach().particleTraj().speed(strawhit->closestApproach().particleToca())),
     active_(strawhit->active()),
     varscale_(1.0)
@@ -132,13 +131,13 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(PTRAJ const& ptraj) {
-    CAHint tphint(axis_.timeAtMidpoint(),axis_.timeAtMidpoint());
+    CAHint tphint(strawAxis()->timeAtMidpoint(),strawAxis()->timeAtMidpoint());
     if(ca_.usable()){
       tphint = ca_.hint();
     }else if(shptr_ && shptr_->closestApproach().usable()){
       tphint = shptr_->closestApproach().hint();
     }
-    PCA pca(ptraj,axis_,tphint,precision());
+    PCA pca(ptraj,strawAxis(),tphint,precision());
     ca_ = static_cast<CA>(pca);
   }
 
@@ -183,7 +182,7 @@ namespace mu2e {
     }
     if(detail > 1){
       ost << " Axis ";
-      axis_.print(ost,0);
+      strawAxis()->print(ost,0);
     }
     ost << std::endl;
   }
