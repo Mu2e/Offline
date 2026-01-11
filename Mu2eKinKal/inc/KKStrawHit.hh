@@ -2,7 +2,7 @@
 #define Mu2eKinKal_KKStrawHit_hh
 //
 //  class representing a straw sensor measurement.  It assumes a (possibly displaced)
-//  circular outer cathode locally parallel to the wire()->  All the work is done in the WireHit parent.
+//  circular outer cathode locally parallel to the wire. All the work is done in the WireHit parent.
 //  Used as part of the kinematic Kalman fit
 //
 // mu2eKinKal classes
