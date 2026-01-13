@@ -87,11 +87,13 @@ void STMPrintFragments::analyze(const Event& event)
   for (auto& frag : *STMFragments) {
     ++frag_counter;
 
-    auto stm_frag = static_cast<mu2e::STMFragment>(frag);
-    //    const auto dataBegin = stm_frag.dataBegin();
-    const auto stmDataBegin = stm_frag.GetTHdr();//reinterpret_cast<int16_t const*>(dataBegin);
-    for (size_t i = 0; i < 100; ++i) {
-      std::cout << "Frag #" << frag_counter << ": *(stmDataBegin+" << i << ") = " << *(stmDataBegin+i) << std::endl;
+    //    auto stm_frag = static_cast<mu2e::STMFragment>(frag);
+    const auto dataBegin = frag.dataBegin();
+    const auto dataEnd = frag.dataEnd();
+    const auto stmDataBegin = reinterpret_cast<int16_t const*>(dataBegin);
+    const auto stmDataEnd = reinterpret_cast<int16_t const*>(dataEnd);
+    for (auto i = stmDataBegin; i != stmDataEnd; ++i) {
+      std::cout << "Frag #" << frag_counter << ": *(stmDataBegin+" << i - stmDataBegin << ") = " << *i << std::endl;
     }
 
     // //    std::cout << "Trigger Header Address: " << stm_frag.GetTHdr() << std::endl;
