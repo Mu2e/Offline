@@ -35,16 +35,17 @@ namespace mu2e {
     double                      peak_fitTime2 () const { return _peak_fitTime2; }
     double                      peak_sep      () const { return _peak_sep; }
     const std::vector<int16_t>& adcs   () const { return _adcs; }
-    
+    void set_data ( size_t n_data, int16_t const* data ) { _adcs.resize(n_data); std::copy(data, data+n_data, _adcs.begin()); } // TODO: remove this method
+
   private:
     int16_t  _DetID;
     uint64_t _EWT;
     uint64_t _DTCtime;
     uint64_t _ADCtime;
     uint32_t _trigTimeOffset; // time offset from EWT? to first ADC value [ct]
-    double   _peak_fitTime1; // fit time of first rising edge (ns)
-    double   _peak_fitTime2; // fit time of second rising edge (ns)
-    double   _peak_sep; // separation time (ns)
+    double   _peak_fitTime1; // fit time of first rising edge (ns) // TODO: remove this parameter
+    double   _peak_fitTime2; // fit time of second rising edge (ns)  // TODO: remove this parameter
+    double   _peak_sep; // separation time (ns)  // TODO: remove this parameter
     std::vector<int16_t> _adcs; // vector of ADC values for the waveform
   };
 

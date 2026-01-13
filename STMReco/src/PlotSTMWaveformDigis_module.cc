@@ -57,7 +57,7 @@ namespace mu2e {
     _subtractPedestal(config().subtractPedestal()),
     _xAxis(config().xAxis()),
     _verbosityLevel(config().verbosityLevel()),
-    _channel(STMUtils::getChannel(config().stmWaveformDigisTag()))
+    _channel(STMChannel::findByName("HPGe")) // FIXME: don't hardcode this probably don't want to do what we had before and try to infer it from the art::InputTag like this "STMUtils::getChannel(config().stmWaveformDigisTag()))"
   { }
 
   void PlotSTMWaveformDigis::analyze(const art::Event& event) {
@@ -77,7 +77,7 @@ namespace mu2e {
 
     for (const auto& adcs : *waveformsHandle) {
       histname.str("");
-      histname << "evt" << event.event() << "_adcs" << count;
+      histname << "evt" << event.event() << "_waveform" << count;
       histtitle.str("");
       histtitle << "Event " << event.event() << " Waveform " << count << " (" << _channel.name() << ")";
 

@@ -9,8 +9,6 @@ process_name : STMDigiFromFragment
 source : {
    module_type : RootInput
    fileNames   : @nil
-
-   # firstEvent  : 500
    maxEvents   : -1
 }
 
@@ -18,10 +16,10 @@ source : {
 physics : {
 
    producers : {
-      makeSTMDigisHPGe : {
-         module_type : STMWaveformDigisFromFragments
+      makeSTMDigis : {
+         module_type : STMDigisFromFragments
          stmTag : "daq:STM"
-         }
+      }
    }
 
    analyzers  : {
@@ -31,15 +29,16 @@ physics : {
    #    module_type : FragmentWatcher
    #    mode_bitmask : 7
    #    }
-    stm :
+    stmPrint :
     {
       module_type : STMPrintFragments
     }
 
    }
 
-   t1 : [  ] # makeSTMDigisHPGe ]
-   e1 : [ stm, stmOutput ]
+  t1 : [ makeSTMDigis ]
+#  e1 : [ stmOutput ]
+   e1 : [ stmPrint, stmOutput ]
    #e1 : [ frag, stmOutput ]
 
    trigger_paths  : [t1]
@@ -50,7 +49,8 @@ physics : {
 outputs : {
    stmOutput : {
       module_type : RootOutput
-      fileName : "dig.stm.art"
-      outputCommands : [ "drop *_*_*_*", "keep mu2e::STMWaveformDigis_*_*_*" ]
+    fileName : "dig.stm.art"
+    outputCommands : [ "keep *_*_*_*", "drop artdaq::*_*_*_*" ]
+#      outputCommands : [ "drop *_*_*_*", "keep mu2e::STMWaveformDigis_*_*_*" ]
    }
 }

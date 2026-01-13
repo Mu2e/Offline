@@ -21,40 +21,33 @@ physics: {
   producers : {  }
   filters : {  }
   analyzers : {
-    plotHPGeWaveformDigis : {
+    plotRawWaveformDigis : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "FromSTMTestBeamData:HPGe"
+      stmWaveformDigisTag : "makeSTMDigis:raw"
       subtractPedestal : false
       verbosityLevel : 0
-      xAxis : "event_time"
+      xAxis : "sample_number"
     }
-    plotLaBrWaveformDigis : {
+    plotZSWaveformDigis : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "FromSTMTestBeamData:LaBr"
+      stmWaveformDigisTag : "makeSTMDigis:zs"
       subtractPedestal : false
       verbosityLevel : 0
-      xAxis : "event_time"
+      xAxis : "sample_number"
     }
 
-    plotHPGeWaveformDigisZP : {
+    plotMWDWaveformDigis : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "zeroSuppressHPGe"
+      stmWaveformDigisTag : "makeSTMDigis:mwd"
       subtractPedestal : false
       verbosityLevel : 0
-      xAxis : "event_time"
-    }
-    plotLaBrWaveformDigisZP : {
-      module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "zeroSuppressLaBr"
-      subtractPedestal : false
-      verbosityLevel : 0
-      xAxis : "event_time"
+      xAxis : "sample_number"
     }
   }
   # setup paths
   trigger_paths: [  ]
-  anaPath : [ plotHPGeWaveformDigis, plotLaBrWaveformDigis,
-    plotHPGeWaveformDigisZP, plotLaBrWaveformDigisZP ]
+  anaPath : [ plotRawWaveformDigis, plotZSWaveformDigis,
+    plotMWDWaveformDigis ]
   end_paths: [anaPath]
 }
 
