@@ -48,8 +48,9 @@ namespace mu2e{
 
     size_t count = 0;
     auto steps = event.getValidHandle<StrawGasStepCollection>(_stepsTag);
-    for (size_t i=0;i<steps->size();i++){
-      if (!trackerStatus->noSignal(steps->at(i).strawId()))
+    auto const& stepcol = *steps;
+    for (auto const& step : stepcol){
+      if (!trackerStatus->noSignal(step.strawId()))
         count += 1;
     }
     return count >= _minSteps;
