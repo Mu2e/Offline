@@ -7,6 +7,7 @@
 #include "KinKal/Detector/ResidualHit.hh"
 #include "KinKal/Trajectory/SensorLine.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
+#include "KinKal/Trajectory/ClosestApproach.hh"
 // mu2e includes
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 // art includes
@@ -22,8 +23,8 @@ namespace mu2e {
   template <class KTRAJ> class KKCaloHit : public KinKal::ResidualHit<KTRAJ> {
     public:
       using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
-      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
       using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
+      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
       using HIT = KinKal::Hit<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       // clone op for reinstantiation
@@ -56,7 +57,7 @@ namespace mu2e {
       Residual const& timeResidual() const { return rresid_; }
       CA unbiasedClosestApproach() const;
       // the line encapsulates both the measurement value (through t0), and the light propagation model (through the velocity)
-      auto sensorAxis() const { return ca_.sensorTrajPtr(); }
+      auto const& sensorAxis() const { return ca_.sensorTraj(); }
       auto const& closestApproach() const { return ca_; }
       auto timeVariance() const { return tvar_; }
       auto widthVariance() const { return wvar_; }
@@ -71,6 +72,7 @@ namespace mu2e {
       Residual rresid_; // residual WRT most recent reference parameters
       // clone support
       void setClosestApproach(const CA& ca){ ca_ = ca; }
+      auto sensorAxisPtr() const { return ca_.sensorTrajPtr(); }
   };
 
   template <class KTRAJ> KKCaloHit<KTRAJ>::KKCaloHit(CCPtr caloCluster,  PCA const& pca, double tvar, double wvar) :    caloCluster_(caloCluster), tvar_(tvar), wvar_(wvar),
@@ -83,12 +85,10 @@ namespace mu2e {
 
   template <class KTRAJ> void KKCaloHit<KTRAJ>::updateReference(PTRAJ const& ptraj) {
     // compute PCA
-    CAHint tphint( sensorAxis()->measurementTime(), sensorAxis()->measurementTime());
-    // don't update the hint: initial T0 values can be very poor, which can push the CA calculation onto the wrong helix loop,
-    // from which it's impossible to ever get back to the correct one.  Active loop checking might be useful eventually too TODO
-    //    if(ca_.usable()) tphint = CAHint(ca_.particleToca(),ca_.sensorToca());
-    PCA pca(ptraj,sensorAxis(),tphint,precision());
-    ca_ = static_cast<CA>(pca);
+    auto mtime = sensorAxis().measurementTime();
+    CAHint tphint(mtime,mtime);
+    PCA pca(ptraj,sensorAxisPtr(),tphint,precision());
+    ca_ = pca;
     rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,rresid_.dRdP(),ca_.usable());
   }
 
@@ -97,25 +97,26 @@ namespace mu2e {
     // early in the fit when t0 has very large errors.
     // If it is inconsistent with the crystal position try to adjust it back using a better hint.
     auto ppos = ca_.particlePoca().Vect();
-    auto sstart = sensorAxis()->start();
-    auto send = sensorAxis()->end();
+    auto const& saxis = sensorAxis();
+    auto sstart = saxis.start();
+    auto send = saxis.end();
     // tolerance should come from the miconfig.  Should also test relative to the error. TODO
-    double tol = 1.0*sensorAxis()->length();
-    double sdist = (ppos-sstart).Dot(sensorAxis()->direction());
-    double edist = (ppos-send).Dot(sensorAxis()->direction());
+    double tol = 1.0*saxis.length();
+    double sdist = (ppos-sstart).Dot(saxis.direction());
+    double edist = (ppos-send).Dot(saxis.direction());
     if( sdist < -tol || edist > tol) {
       // adjust hint to the middle of the crystal and try again
-      double sspeed = ca_.particleTraj().velocity(ca_.particleToca()).Dot(sensorAxis()->direction());
+      double sspeed = ca_.particleTraj().velocity(ca_.particleToca()).Dot(saxis.direction());
       auto tphint = ca_.hint();
       tphint.particleToca_ -= 0.5*(sdist+edist)/sspeed;
-      tphint.sensorToca_ = sensorAxis()->timeAtMidpoint();
-      ca_ = CA(ca_.particleTrajPtr(),sensorAxis(),tphint,precision());
+      tphint.sensorToca_ = saxis.timeAtMidpoint();
+      ca_ = CA(ca_.particleTrajPtr(),sensorAxisPtr(),tphint,precision());
     }
     if(ca_.usable()){
       // residual is just delta-T at CA.
       double totvar = tvar_;
       // the variance includes the intrinsic measurement variance and the tranvserse position resolution (which couples to the relative direction)
-      double speed = sensorAxis()->speed(ca_.sensorToca()); // signal propagation speed along the crystal
+      double speed = saxis.speed(ca_.sensorToca()); // signal propagation speed along the crystal
       double s2 = speed*speed;
       double cost = ca_.dirDot();  // cosine of angle between track and crystal axis
       double cost2 = cost*cost;
@@ -124,7 +125,7 @@ namespace mu2e {
       if(sint2 > 1e-2) {
         totvar += cost2*wvar_/(s2*sint2);
       } else {
-        double ldt = sensorAxis()->length()/speed; // time to go the full length of the crystal
+        double ldt = saxis.length()/speed; // time to go the full length of the crystal
         double invvar2 = std::max(s2*sint2/(cost2*wvar_), 12/(ldt*ldt));
         totvar += 1.0/invvar2;
       }
@@ -141,7 +142,7 @@ namespace mu2e {
     auto const& ca = this->closestApproach();
     auto uparams = HIT::unbiasedParameters();
     auto utraj = std::make_shared<KTRAJ>(uparams,ca.particleTraj());
-    return CA(utraj,sensorAxis(),ca.hint(),ca.precision());
+    return CA(utraj,sensorAxisPtr(),ca.hint(),ca.precision());
   }
 
   template<class KTRAJ> void KKCaloHit<KTRAJ>::print(std::ostream& ost, int detail) const {
@@ -152,7 +153,7 @@ namespace mu2e {
     ost << " KKCaloHit time " << this->time() << " tvar " << tvar_ << " wvar " << wvar_ << std::endl;
     if(detail > 0){
       ost << "Axis ";
-      sensorAxis()->print(ost,detail);
+      sensorAxis().print(ost,detail);
     }
   }
 

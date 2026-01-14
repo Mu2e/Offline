@@ -46,8 +46,8 @@ namespace mu2e {
       using RESIDHIT = KinKal::ResidualHit<KTRAJ>;
       using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
-      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
       using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
+      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
       KKStrawHit(BFieldMap const& bfield, PCA const& pca,
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
       // clone op for reinstantiation
@@ -89,7 +89,7 @@ namespace mu2e {
       // accessors
       auto const& closestApproach() const { return ca_; }
       auto const& hitState() const { return whstate_; }
-      auto wire() const { return ca_.sensorTrajPtr(); }
+      auto const& wire() const { return ca_.sensorTraj(); }
       auto const& bfield() const { return bfield_; }
       auto precision() const { return ca_.precision(); }
       auto const& hit() const { return chit_; }
@@ -124,6 +124,7 @@ namespace mu2e {
       void updateWHS(MetaIterConfig const& miconfig);
       // clone support
       void setClosestApproach(const CA& ca){ ca_ = ca; }
+      auto wirePtr() const { return ca_.sensorTrajPtr(); }
   };
 
   // struct to sort hits by time
@@ -151,20 +152,21 @@ namespace mu2e {
     auto const& ca = this->closestApproach();
     auto uparams = HIT::unbiasedParameters();
     auto utraj = std::make_shared<KTRAJ>(uparams,ca.particleTraj());
-    return CA(utraj,wire(),ca.hint(),ca.precision());
+    return CA(utraj,wirePtr(),ca.hint(),ca.precision());
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateReference(PTRAJ const& ptraj) {
     // if we already computed PCA in the previous iteration, use that to set the hint.  This speeds convergence
     // otherwise use the time at the center of the wire, corrected for drift
-    CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(wire()->timeAtMidpoint()-chit_.driftTime(),wire()->timeAtMidpoint());
-    PCA pca(ptraj,wire(),tphint,precision());
+    auto mtime =wire().timeAtMidpoint();
+    CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(mtime-chit_.driftTime(),mtime);
+    PCA pca(ptraj,wirePtr(),tphint,precision());
     // check that we're on the right branch: we can move off if t0 changes a lot between iterations
     double dz = straw().origin().z() - ca_.particlePoca().Z();
     double maxdz(100.0);// need a better absolute scale; should come from KTRAJ FIXME
     if((!pca.usable()) || fabs(dz) >  maxdz) {
-      tphint = CAHint(Mu2eKinKal::zTime(ptraj,straw().origin().z(),wire()->timeAtMidpoint()), wire()->timeAtMidpoint());
-      pca = PCA(ptraj,wire(),tphint,precision());
+      tphint = CAHint(Mu2eKinKal::zTime(ptraj,straw().origin().z(),mtime-chit_.driftTime()),mtime);
+      pca = PCA(ptraj,wirePtr(),tphint,precision());
       dz = straw().origin().z() - pca.particlePoca().Z();
       if((!pca.usable()) || fabs(dz) >  maxdz) whstate_.state_ = WireHitState::unusable;// give up on 2nd try
     }
@@ -268,7 +270,7 @@ namespace mu2e {
       if (whstate.constrainLong()){
         VEC3 udir(chit_.uDir().x(),chit_.uDir().y(),chit_.uDir().z());
 
-        double calong = (ca_.sensorPoca().Vect() - wire()->middle()).Dot(ca_.sensorDirection());
+        double calong = (ca_.sensorPoca().Vect() - wire().middle()).Dot(ca_.sensorDirection());
 
         double lresidval = calong - chit_.wireDist();
         if (ca_.sensorDirection().Dot(udir) < 0){
