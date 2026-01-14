@@ -6,7 +6,9 @@
 #include "art_root_io/TFileService.h"
 
 // data
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 
 // DAQ data
@@ -22,7 +24,27 @@ namespace mu2e {
   protected:
 
   public:
-    explicit PrefetchDAQData(fhicl::ParameterSet const&);
+    struct Config {
+      using  Name    = fhicl::Name;
+      using  Comment = fhicl::Comment;
+      fhicl::Atom<int>         debugLevel            {Name("debugLevel"            ), Comment("debugLevel"            ), 0};
+      fhicl::Atom<int>         fetchCaloDigis        {Name("fetchCaloDigis"        ), Comment("fetchCaloDigis"        )};
+      fhicl::Atom<int>         fetchStrawDigis       {Name("fetchStrawDigis"       ), Comment("fetchStrawDigis"       )};
+      fhicl::Atom<int>         fetchCaloFragments    {Name("fetchCaloFragments"    ), Comment("fetchCaloFragments"    )};
+      fhicl::Atom<int>         fetchTrkFragments     {Name("fetchTrkFragments"     ), Comment("fetchTrkFragments"     )};
+      fhicl::Atom<int>         fetchAllFragments     {Name("fetchAllFragments"     ), Comment("fetchAllFragments"     )};
+      fhicl::Atom<int>         fetchEWM              {Name("fetchEWM"              ), Comment("fetchEWM"              )};
+      fhicl::Atom<int>         fetchPBT              {Name("fetchPBT"              ), Comment("fetchPBT"              )};
+      fhicl::Atom<std::string> caloDigiCollectionTag {Name("caloDigiCollectionTag" ), Comment("caloDigiCollectionTag" )};
+      fhicl::Atom<std::string> strawDigiCollectionTag{Name("strawDigiCollectionTag"), Comment("strawDigiCollectionTag")};
+      fhicl::Atom<std::string> caloFragmentTag       {Name("caloFragmentTag"       ), Comment("caloFragmentTag"       )};
+      fhicl::Atom<std::string> trkFragmentTag        {Name("trkFragmentTag"        ), Comment("trkFragmentTag"        )};
+      fhicl::Atom<std::string> pbtTag                {Name("pbtTag"                ), Comment("pbtTag"                )};
+      fhicl::Atom<std::string> ewmTag                {Name("ewmTag"                ), Comment("ewmTag"                )};
+    };
+
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit PrefetchDAQData(const Parameters&);
     virtual ~PrefetchDAQData();
     virtual void beginJob();
     virtual void produce( art::Event& e);
@@ -41,32 +63,42 @@ namespace mu2e {
     int   _fetchCaloFragments;
     int   _fetchTrkFragments;
     int   _fetchAllFragments;
+    int   _fetchEWM;
+    int   _fetchPBT;
 
     art::InputTag                  _cdTag;
     art::InputTag                  _sdTag;
     art::InputTag                  _cfTag;
     art::InputTag                  _tfTag;
+    art::InputTag                  _ewmTag;
+    art::InputTag                  _pbtTag;
                                         // cache of event objects
     const CaloDigiCollection*      _cdcol;
     const StrawDigiCollection*     _sdcol;
     const artdaq::Fragments*       _cfcol;
     const artdaq::Fragments*       _tfcol;
+    const EventWindowMarker*       _ewm;
+    const ProtonBunchTime*         _pbt;
     int                            _eventNum;
   };
 
   //-----------------------------------------------------------------------------
-  PrefetchDAQData::PrefetchDAQData(fhicl::ParameterSet const& pset):
-    art::EDProducer(pset),
-    _debugLevel        (pset.get<int>        ("debugLevel")),
-    _fetchCaloDigis    (pset.get<int>        ("fetchCaloDigis" )),
-    _fetchStrawDigis   (pset.get<int>        ("fetchStrawDigis")),
-    _fetchCaloFragments(pset.get<int>        ("fetchCaloFragments")),
-    _fetchTrkFragments (pset.get<int>        ("fetchTrkFragments")),
-    _fetchAllFragments (pset.get<int>        ("fetchAllFragments")),
-    _cdTag             (pset.get<std::string>("caloDigiCollectionTag")),
-    _sdTag             (pset.get<std::string>("strawDigiCollectionTag")),
-    _cfTag             (pset.get<std::string>("caloFragmentTag")),
-    _tfTag             (pset.get<std::string>("trkFragmentTag"))
+  PrefetchDAQData::PrefetchDAQData(const Parameters& config):
+    art::EDProducer(config),
+    _debugLevel        (config().debugLevel()),
+    _fetchCaloDigis    (config().fetchCaloDigis()),
+    _fetchStrawDigis   (config().fetchStrawDigis()),
+    _fetchCaloFragments(config().fetchCaloFragments()),
+    _fetchTrkFragments (config().fetchTrkFragments()),
+    _fetchAllFragments (config().fetchAllFragments()),
+    _fetchEWM          (config().fetchEWM()),
+    _fetchPBT          (config().fetchPBT()),
+    _cdTag             (config().caloDigiCollectionTag()),
+    _sdTag             (config().strawDigiCollectionTag()),
+    _cfTag             (config().caloFragmentTag()),
+    _tfTag             (config().trkFragmentTag()),
+    _ewmTag            (config().ewmTag()),
+    _pbtTag            (config().pbtTag())
   {}
 
   PrefetchDAQData::~PrefetchDAQData() {
@@ -93,6 +125,8 @@ namespace mu2e {
     _sdcol   = 0;
     _cfcol   = 0;
     _tfcol   = 0;
+    _ewm     = 0;
+    _pbt     = 0;
 
     if (_fetchCaloDigis) {
       auto cdH = evt.getValidHandle<CaloDigiCollection>(_cdTag);
@@ -122,7 +156,17 @@ namespace mu2e {
         }
       }
     }
-      //-----------------------------------------------------------------------------
+
+    if (_fetchEWM) {
+      auto handle = evt.getValidHandle<EventWindowMarker>(_ewmTag);
+      _ewm = handle.product();
+    }
+
+    if (_fetchPBT) {
+      auto handle = evt.getValidHandle<ProtonBunchTime>(_pbtTag);
+      _pbt = handle.product();
+    }
+//-----------------------------------------------------------------------------
 // prefetch data
 //-----------------------------------------------------------------------------
     if (_cdcol) {
