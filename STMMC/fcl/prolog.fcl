@@ -266,7 +266,7 @@ HPGeDigitization : {
     concatenation : {
         STMWaveformDigisTag : @local::DataProducts.Waveforms.HPGe.uSpill
         nMerge : @local::DataProducts.nMicrospillsPerSpill
-        filterTag : @local::DataProducts.Waveforms.HPGe.ZS
+        filterTag : @local::DataProducts.Waveforms.HPGe.concatenated
     }
 }
 
@@ -280,7 +280,7 @@ LaBrDigitization : {
     concatenation : {
         STMWaveformDigisTag : @local::DataProducts.Waveforms.LaBr.uSpill
         nMerge : @nil
-        filterTag : @local::DataProducts.Waveforms.LaBr.ZS
+        filterTag : @local::DataProducts.Waveforms.LaBr.concatenated
     }
 }
 

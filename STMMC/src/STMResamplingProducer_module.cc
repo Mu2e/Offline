@@ -44,7 +44,7 @@ namespace mu2e {
     art::EDProducer{conf},
     StepPointMCsToken(consumes<StepPointMCCollection>(conf().stepPointMCsTag())),
     virtualDetectorID(conf().virtualDetectorID()) {
-      produces<StepPointMCCollection>();
+      produces<StepPointMCCollection>("virtualdetector");
     };
 
   void STMResamplingProducer::produce(art::Event& event) {
@@ -63,7 +63,7 @@ namespace mu2e {
     // Update counter
     includedStepPointMCs += outputStepPointMCs->size();
     // Add the new data products to the event
-    event.put(std::move(outputStepPointMCs));
+    event.put(std::move(outputStepPointMCs), "virtualdetector");
     return;
   };
 

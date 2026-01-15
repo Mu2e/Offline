@@ -1,4 +1,13 @@
-
+# Executes the full HPGe waveform generation and analysis chain on STMMC data
+# Outline:
+#  1. DigiHPGe - generates HPGe waveforms from StepPointMCs
+#  2. concatenateWaveformsHPGe - concatenates microspill waveforms into spill waveforms
+#  3. (optional) ZSHPGe - zero-suppresses the concatenated waveforms
+#  4. MWDHPGe - performs moving window deconvolution on the concatenated (or zero-suppressed) waveforms
+#  5. Ou1tputs the MWD digis to a ROOT file
+# Note - each module is documented in the _module.cc file. This is the clearest way to understand what each module does and what parameters it takes.
+# Usage:
+#  1. Select which data you want to run with or without zero suppression by replacing "@nil" in trigger_paths (keeping the [BRAKCETS]!) with the single analyer you want to run, e.g. trigger_paths: [digitization_path_ZS]
 # Original author: Pawel Plesniak
 
 #include "Offline/fcl/standardServices.fcl"
@@ -17,6 +26,7 @@ services : @local::Services.Sim
 physics : {
   producers : {
     DigiHPGe : {
+      # Digitize the StepPointMCs from the HPGe crystals into waveforms
       module_type : HPGeWaveformsFromStepPointMCs
       StepPointMCsTagEle : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTagEle
       StepPointMCsTagMu : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTagMu
@@ -27,17 +37,20 @@ physics : {
       risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant
       microspillBufferLengthCount : @local::HPGeDigitization.microspillBufferLengthCount
       makeTTree : false
+      makeADCPlot : false
       timeOffset : 0
       resetEventNumber : @local::HPGeDigitization.resetEventNumber
       verbosityLevel : 0
     }
     concatenateWaveformsHPGe : {
+      # Concatenate the microspill waveforms into macrospill waveforms
       module_type : ConcatenateDigitizedWaveforms
       STMWaveformDigisTag : @local::HPGeDigitization.concatenation.STMWaveformDigisTag
       nMerge : @local::HPGeDigitization.concatenation.nMerge
       makeTTree : false
     }
     ZSHPGe : {
+      # Apply zero-suppression to the concatenated waveforms
       module_type : STMZeroSuppression
       stmWaveformDigisTag : @local::STMMCAnalysis.ZS.HPGe.stmWaveformDigisTag.concatenated
       tbefore : @local::STMMCAnalysis.ZS.HPGe.tbefore
@@ -50,6 +63,7 @@ physics : {
       makeTTreeWaveforms: false
     }
     MWDHPGe : {
+      # Perform moving window deconvolution on the concatenated (or zero-suppressed) waveforms to determine the pulse energies
       module_type : STMMovingWindowDeconvolution
       stmWaveformDigisTag : @local::STMMCAnalysis.MWD.HPGe.stmWaveformDigisTag.concatenated
       tau : @local::STMMCAnalysis.MWD.HPGe.tau
@@ -60,7 +74,7 @@ physics : {
       defaultBaselineMean : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineMean.suppressed
       defaultBaselineSD : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineSD.suppressed
       makeTTreeMWD: false
-      makeTTreeEnergies: false
+      makeTTreeEnergies: true
       TTreeEnergyCalib : @local::HPGeDigitization.EnergyPerADCBin
       verbosityLevel : 0
       xAxis : ""
@@ -72,21 +86,22 @@ physics : {
       STMWaveformDigisTag : @local::HPGeDigitization.concatenation.filterTag
     }
   }
-  digitization_path : [DigiHPGe, concatenateWaveformsHPGe, concatenationFilterHPGe, ZSHPGe, MWDHPGe]
-  trigger_paths : [digitization_path]
-  output_path : [compressedOutput]
-  end_paths : [output_path]
+  digitization_path_no_ZS : [DigiHPGe, concatenateWaveformsHPGe, concatenationFilterHPGe, MWDHPGe]
+  digitization_path_ZS : [DigiHPGe, concatenateWaveformsHPGe, concatenationFilterHPGe, ZSHPGe, MWDHPGe]
+  trigger_paths : ["digitization_path_ZS"]  # Populate me! TODO - make me @nil before git push
+  # output_path : [compressedOutput]
+  # end_paths : [output_path]
 }
 
 outputs : {
   compressedOutput : {
     module_type : RootOutput
     fileName : "dts.owner.HPGeReco.version.sequencer.art"
-    SelectEvents: ["digitization_path"]
-    outputCommands: [
-        "drop *_*_*_*",
-        "keep mu2e::STMMWDDigis_MWDHPGe_*_HPGeReco"
-    ]
+    SelectEvents: [@nil] # Populate me!
+    # outputCommands: [
+    #     "drop *_*_*_*",
+    #     "keep mu2e::STMMWDDigis_MWDHPGe_*_HPGeReco"
+    # ]
   }
 }
 

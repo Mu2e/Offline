@@ -56,11 +56,12 @@ namespace mu2e {
       art::ProductToken<StepPointMCCollection> StepPointMCsToken;
       art::ProductToken<SimParticleCollection> SimParticlemvToken;
       GlobalConstantsHandle<ParticleDataList> pdt;
-      int pdgId = 0, consecutiveEmptyFileCounter = 0, consecutiveEmptyFileThreshold = 0;
+      int pdgId = 0, consecutiveEmptyFileCounter = 0, consecutiveEmptyFileThreshold = 0, simParticleId=0;
       double x = 0.0, y = 0.0, z = 0.0, mass = 0.0, Ekin = 0.0, Etot = 0.0, time = 0.0, p = 0.0, p2 = 0.0, px = 0.0, py = 0.0, pz = 0.0;
       VolumeId_type virtualdetectorId = 0;
       TTree* ttree;
       std::map<int, int> pdgIds; // <id, count>
+      uint simParticleIdKey = 0;
   };
 
   VirtualDetectorTree::VirtualDetectorTree(const Parameters& conf) :
@@ -84,6 +85,7 @@ namespace mu2e {
       ttree->Branch("mass", &mass, "mass/D"); // MeV/c^2
       ttree->Branch("Ekin", &Ekin, "Ekin/D"); // MeV
       ttree->Branch("Etot", &Etot, "Etot/D"); // MeV
+      ttree->Branch("SimParticleId", &simParticleId, "SimParticleId/i");
     };
 
   void VirtualDetectorTree::analyze(const art::Event& event) {
@@ -125,6 +127,7 @@ namespace mu2e {
       mass = pdt->particle(pdgId).mass();
       Etot = std::sqrt(p2 + mass * mass); // Total energy
       Ekin = Etot - mass; // Subtract the rest mass
+      simParticleId = particle.id().asInt();
       if (Ekin < 0)
         throw cet::exception("LogicError", "Energy is negative");
       ttree->Fill();

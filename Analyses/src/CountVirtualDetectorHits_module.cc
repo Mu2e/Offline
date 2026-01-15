@@ -51,10 +51,17 @@ namespace mu2e {
     : art::EDAnalyzer(conf),
       StepPointMCsToken(consumes<StepPointMCCollection>(conf().stepPointMCsTag())),
       enabledVDs(conf().enabledVDs()) {
-        // Create list of unique enabled virtual detectors
-        std::set<int> enabledVDsSet(enabledVDs.begin(), enabledVDs.end());
+        // Create list of unique enabled virtual detectors, preserving the order
+        std::vector<int> unqiueEnabledVDsVec;;
+        std::unordered_set<int> uniqueEnabledVDsSet;
+        for (const int & enabledVD : enabledVDs) {
+          if (uniqueEnabledVDsSet.find(enabledVD) == uniqueEnabledVDsSet.end()) {
+            uniqueEnabledVDsSet.insert(enabledVD);
+            unqiueEnabledVDsVec.push_back(enabledVD);
+          };
+        };
         enabledVDs.clear();
-        enabledVDs.insert(enabledVDs.end(), enabledVDsSet.begin(), enabledVDsSet.end());
+        enabledVDs = unqiueEnabledVDsVec;
 
         // Insert _enabledVDs.size() zeros into the counter vector
         nVDs = enabledVDs.size();
