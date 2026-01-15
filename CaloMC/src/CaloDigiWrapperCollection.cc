@@ -112,7 +112,7 @@ namespace mu2e{
     std::map<SiPMID_t, CaloDigiWrapperCollection> wrappers_map;
     for (const auto& pair: unsorted_map){
       const auto& id = pair.first;
-      auto& wrappers = pair.second;
+      const auto& wrappers = pair.second;
       std::vector<CaloDigiWrapper*> sortable(wrappers.size());
       for (size_t i = 0 ; i < wrappers.size() ; i++){
         sortable[i] = const_cast<CaloDigiWrapper*>(&wrappers[i]);
