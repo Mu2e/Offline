@@ -53,6 +53,7 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn,
       // then add it to the vector as a DbLiveTable
       if (current.get() != nullptr) {
         current->fill(csv, saveCsv);
+        current->hashCsv();
         for (auto const& ii : iovv) {
           coll.emplace_back(ii, current, -1, -1);
         }
@@ -114,6 +115,7 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn,
   // then add it to the vector as a DbLiveTable
   if (current.get() != nullptr) {
     current->fill(csv, saveCsv);
+    current->hashCsv();
     for (auto const& ii : iovv) {
       coll.emplace_back(ii, current, -1, -1);
     }
@@ -289,4 +291,34 @@ std::string mu2e::DbUtil::timeString() {
      << mtm->tm_year % 100 << " " << std::setw(2) << mtm->tm_hour << ":"
      << std::setw(2) << mtm->tm_min << ":" << std::setw(2) << mtm->tm_sec;
   return ss.str();
+}
+
+// ****************************************************************
+// return a hash of the the csv of a table
+std::string mu2e::DbUtil::hash(const std::string& csv) {
+  std::string nominal;
+  nominal.reserve(csv.size());
+  std::vector<std::string> lines = mu2e::DbUtil::splitCsvLines(csv);
+  for (auto const& line : lines) {
+    bool qcontent = (line.size()>0 && line[0]!='#');
+    bool qtable = (line.size()>=5 && line.substr(0,5)=="TABLE");
+    if(qcontent && ! qtable) {
+      std::vector<std::string> words = splitCsv(line);
+      for(auto const& word : words) {
+        std::string temp = word;
+        boost::trim(temp);
+        if(temp.size()>1) {
+          // in addition to removing surounding whitespace, also remove
+          // whitespace of quoted string since this happens on commit
+          if(temp[0]=='"' && temp[temp.size()-1]=='"') {
+            temp = temp.substr(1,temp.size()-2);
+            boost::trim(temp);
+          }
+        }
+        nominal=nominal.append(temp);
+      }
+    }
+  }
+  std::string fullhash = std::to_string( std::hash<std::string>()(nominal) );
+  return fullhash.substr(0,16);
 }
