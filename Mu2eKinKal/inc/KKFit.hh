@@ -63,7 +63,7 @@ namespace mu2e {
       using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using PTRAJPTR = std::unique_ptr<PTRAJ>;
       using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
-      using TCA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
+      using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using KKHIT = KinKal::Measurement<KTRAJ>;
       using KKMAT = KinKal::Material<KTRAJ>;
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
@@ -100,7 +100,7 @@ namespace mu2e {
       bool regrowComponents(KalSeed const& kseed, ComboHitCollection const& chcol, mu2e::IndexMap const& strawindexmap,
           Tracker const& tracker,Calorimeter const& calo, StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
           PTRAJPTR& ptraj, KKSTRAWHITCOL& strawhits, KKCALOHITCOL& calohits, KKSTRAWXINGCOL& exings, DOMAINCOL& domains) const;
-      SensorLine caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const; // should come from CaloCluster TODO
+      std::shared_ptr<SensorLine> caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const; // should come from CaloCluster TODO
       bool makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PTRAJ const& pktraj, KKCALOHITCOL& hits) const;
       // extend a track with a new configuration, optionally searching for and adding hits and straw material
       void extendTrack(Config const& config, BFieldMap const& kkbf, Tracker const& tracker,
@@ -229,7 +229,7 @@ namespace mu2e {
       auto wline = Mu2eKinKal::hitLine(combohit,straw,strawresponse); // points from the signal to the straw center
       double htime = combohit.correctedTime();
       // use the hit z position to estimate the particle time.
-      auto hpos = wline.position3(htime);
+      auto hpos = wline->position3(htime);
       auto ppos = ptraj.position3(htime);
       auto vel = ptraj.velocity(htime);
       double ptime = htime;
@@ -245,7 +245,7 @@ namespace mu2e {
         auto sline = Mu2eKinKal::strawLine(straw,pca.particleToca()); // line down the straw axis center
         CAHint hint(pca.particleToca(),pca.sensorToca());
         PCA spca(ptraj, sline, hint, tprec_ );
-        exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),spca.localClosestApproach(),smat,straw));
+        exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),static_cast<CA const&>(spca),smat,straw));
       }
       if(hits.back()->hitState().usable())ngood++;
     }
@@ -298,7 +298,7 @@ namespace mu2e {
             }
           }
         }
-        exings.push_back(std::make_shared<KKSTRAWXING>(shptr,pca.localClosestApproach(),smat,straw,sx.active()));
+        exings.push_back(std::make_shared<KKSTRAWXING>(shptr,static_cast<CA>(pca),smat,straw,sx.active()));
         if(sx.active())nsactive++;
       }
     }
@@ -316,7 +316,7 @@ namespace mu2e {
     return ngood >= minNStrawHits_;
   }
 
-  template <class KTRAJ> SensorLine KKFit<KTRAJ>::caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const {
+  template <class KTRAJ> std::shared_ptr<SensorLine> KKFit<KTRAJ>::caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const {
     // move cluster COG into the tracker frame.  COG is at the front face of the disk
     CLHEP::Hep3Vector cog = calo.geomUtil().mu2eToTracker(calo.geomUtil().diskFFToMu2e( cluster.diskID(), cluster.cog3Vector()));
     // project this along the crystal axis to the SIPM, which is at the back.  This is the point the time measurement corresponds to
@@ -325,22 +325,22 @@ namespace mu2e {
     VEC3 crystalF2B = VEC3(0.0,0.0,lcrystal); // this should come directly from the calogeometry, TODO
     VEC3 sipmcog = ffcog + crystalF2B;
     // create the SensorLine trajectory from this information: signal goes towards the sipm
-    return SensorLine(sipmcog,ffcog,cluster.time()+caloDt_,caloPropSpeed_);
+    return std::make_shared<SensorLine>(sipmcog,ffcog,cluster.time()+caloDt_,caloPropSpeed_);
   }
 
   template <class KTRAJ> bool KKFit<KTRAJ>::makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PTRAJ const& pktraj, KKCALOHITCOL& hits) const {
     bool retval(false);
     auto caxis = caloAxis(*cluster,calo);
     // find the time the seed traj passes the middle of the crystal to form the hint
-    auto pmid = caxis.position3(caxis.timeAtMidpoint());
+    auto pmid = caxis->position3(caxis->timeAtMidpoint());
     double zt = Mu2eKinKal::zTime(pktraj,pmid.Z(),pktraj.range().end());
-    CAHint hint( zt, caxis.measurementTime());
+    CAHint hint( zt, caxis->measurementTime());
     // compute a preliminary PCA between the seed trajectory and the cluster axis
     auto pca = PCA(pktraj, caxis, hint, tprec_ );
     if(pca.usable() && fabs(pca.doca()) < maxCaloDoca_ && fabs(pca.deltaT()) < maxCaloDt_){
       // check that CA is within the active volume of the calorimeter
-      double dz = pca.sensorPoca().Z() - caxis.position3(caxis.measurementTime()).Z();
-      if( dz > -caxis.length() -maxCaloDoca_ && dz < maxCaloDoca_) {
+      double dz = pca.sensorPoca().Z() - caxis->position3(caxis->measurementTime()).Z();
+      if( dz > -caxis->length() -maxCaloDoca_ && dz < maxCaloDoca_) {
         //        double tvar = cluster->timeErr()*cluster->timeErr(); the returned value seems unphysically smalL, ~70 ps.
         double tvar = caloTimeRes_*caloTimeRes_; // temporary kludge, this number comes from MDC2020 sim studies.  FIXME
         double wvar = caloPosRes_*caloPosRes_;
@@ -389,8 +389,8 @@ namespace mu2e {
             if(fabs(strawhit.correctedTime()-zt) < maxStrawHitDt_) {      // compare the measured time with the estimate from the fit
               const Straw& straw = tracker.getStraw(strawhit.strawId());
               auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse);
-              double psign = wline.direction().Dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
-              double htime = wline.measurementTime() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed(wline.timeAtMidpoint());
+              double psign = wline->direction().Dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
+              double htime = wline->measurementTime() - (straw.halfLength()-psign*strawhit.wireDist())/wline->speed(wline->timeAtMidpoint());
               CAHint hint(zt,htime);
               // compute PCA between the trajectory and this straw
               PCA pca(ptraj, wline, hint, tprec_ );
@@ -405,7 +405,7 @@ namespace mu2e {
                     auto sline = Mu2eKinKal::strawLine(straw,pca.particleToca()); // line down the straw axis center
                     CAHint hint(pca.particleToca(),pca.sensorToca());
                     PCA spca(ptraj, sline, hint, tprec_ );
-                    addexings.push_back(std::make_shared<KKSTRAWXING>(addhits.back(),spca.localClosestApproach(),smat,straw));
+                    addexings.push_back(std::make_shared<KKSTRAWXING>(addhits.back(),static_cast<CA>(spca),smat,straw));
                   } else {
                     // find this straw xing
                     for(auto& sx : kktrk.strawXings()) {
@@ -417,7 +417,7 @@ namespace mu2e {
                           auto sline = Mu2eKinKal::strawLine(straw,pca.particleToca()); // line down the straw axis center
                           CAHint hint(pca.particleToca(),pca.sensorToca());
                           PCA spca(ptraj, sline, hint, tprec_ );
-                          addexings.push_back(std::make_shared<KKSTRAWXING>(addhits.back(),spca.localClosestApproach(),smat,straw));
+                          addexings.push_back(std::make_shared<KKSTRAWXING>(addhits.back(),static_cast<CA>(spca),smat,straw));
                         }
                         break;
                       }
@@ -475,7 +475,7 @@ namespace mu2e {
                 double doca = fabs(pca.doca());
                 double dsig = std::max(0.0,doca-strawradius_)/sqrt(pca.docaVar());
                 if(doca < maxStrawDoca_ && dsig < maxStrawDocaCon_ && du < straw.halfLength() + maxStrawUposBuff_){
-                  addexings.push_back(std::make_shared<KKSTRAWXING>(shptr,pca.localClosestApproach(),smat,straw));
+                  addexings.push_back(std::make_shared<KKSTRAWXING>(shptr,static_cast<CA>(pca),smat,straw));
                   oldstraws.insert(straw.id());
                 }
               } // not existing straw cut
@@ -532,7 +532,7 @@ namespace mu2e {
                       double doca = fabs(pca.doca());
                       double dsig = std::max(0.0,doca-strawradius_)/sqrt(pca.docaVar());
                       if(doca < maxStrawDoca_ && dsig < maxStrawDocaCon_ && du < straw.halfLength() + maxStrawUposBuff_){
-                        addexings.push_back(std::make_shared<KKSTRAWXING>(shptr,pca.localClosestApproach(),smat,straw));
+                        addexings.push_back(std::make_shared<KKSTRAWXING>(shptr,static_cast<CA>(pca),smat,straw));
                         oldstraws.insert(straw.id());
                       }
                     } // not existing straw cut
@@ -576,15 +576,15 @@ namespace mu2e {
         // create PCA from this cluster and the traj
         auto caxis = caloAxis(cc,calo);
         // find the time the seed traj passes the middle of the crystal to form the hint
-        auto pmid = caxis.position3(caxis.timeAtMidpoint());
+        auto pmid = caxis->position3(caxis->timeAtMidpoint());
         double zt = Mu2eKinKal::zTime(ptraj,pmid.Z(),ptraj.range().end());
-        CAHint hint( zt, caxis.timeAtMidpoint());
+        CAHint hint( zt, caxis->timeAtMidpoint());
         // compute closest approach between the fit trajectory and the cluster axis
         auto pca = PCA(ptraj, caxis, hint, tprec_ );
         if(pca.usable() && fabs(pca.doca()) < maxCaloDoca_ && fabs(pca.deltaT()) < maxCaloDt_){
           // check that the position is within the active position of the crystal
-          double dz = pca.sensorPoca().Z() - caxis.position3(caxis.measurementTime()).Z();
-          if( dz > -caxis.length() -maxCaloDoca_ && dz < maxCaloDoca_) {
+          double dz = pca.sensorPoca().Z() - caxis->position3(caxis->measurementTime()).Z();
+          if( dz > -caxis->length() -maxCaloDoca_ && dz < maxCaloDoca_) {
             art::Ptr<CaloCluster> ccPtr = art::Ptr<CaloCluster>(cchandle,icc);
             //            double tvar = cc.timeErr()*cc.timeErr();
             double tvar = caloTimeRes_*caloTimeRes_;
