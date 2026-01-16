@@ -99,7 +99,28 @@ cet_build_plugin(STMWaveformDigisFromFragments art::module
   Offline::RecoDataProducts
   BTrk_difAlgebra
 )
-    
+
+cet_build_plugin(STMDigisFromFragments art::module
+  REG_SOURCE src/STMDigisFromFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::ProditionsService
+  Offline::DataProducts
+  Offline::RecoDataProducts
+  BTrk_difAlgebra
+)
+
+cet_build_plugin(STMPrintFragments art::module
+  REG_SOURCE src/STMPrintFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::ProditionsService
+  Offline::DataProducts
+  Offline::RecoDataProducts
+  BTrk_difAlgebra
+)
+
+
 cet_build_plugin(StrawDigisFromArtdaqFragments art::module
   REG_SOURCE src/StrawDigisFromArtdaqFragments_module.cc
   LIBRARIES REG
@@ -184,6 +205,8 @@ cet_build_plugin(MTPHitsFromDTCEvents art::module
       Offline::RecoDataProducts
 )
 
+install(DIRECTORY test DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/DAQ)
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/DAQ/fcl)
+install_fhicl(SUBDIRS test GLOB SUBDIRNAME Offline/DAQ/test)

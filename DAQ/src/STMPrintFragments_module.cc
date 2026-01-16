@@ -92,6 +92,8 @@ void STMPrintFragments::analyze(const Event& event)
     const auto dataEnd = frag.dataEnd();
     const auto stmDataBegin = reinterpret_cast<int16_t const*>(dataBegin);
     const auto stmDataEnd = reinterpret_cast<int16_t const*>(dataEnd);
+    auto frag_id = frag.fragmentID();
+    std::cout << "frag_id = " << frag_id << std::endl;
     for (auto i = stmDataBegin; i != stmDataEnd; ++i) {
       std::cout << "Frag #" << frag_counter << ": *(stmDataBegin+" << i - stmDataBegin << ") = " << *i << std::endl;
     }
