@@ -1,3 +1,5 @@
+// Prefetch DAQ data to avoid fetch times impacting module timing evaluations
+
 // framework
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -12,8 +14,6 @@
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 
 // DAQ data
-//#include "artdaq-core-mu2e/Overlays/FragmentType.hh"
-//#include "artdaq-core-mu2e/Overlays/TrackerDataDecoder.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
 
@@ -27,20 +27,21 @@ namespace mu2e {
     struct Config {
       using  Name    = fhicl::Name;
       using  Comment = fhicl::Comment;
-      fhicl::Atom<int>         debugLevel            {Name("debugLevel"            ), Comment("debugLevel"            ), 0};
-      fhicl::Atom<int>         fetchCaloDigis        {Name("fetchCaloDigis"        ), Comment("fetchCaloDigis"        )};
-      fhicl::Atom<int>         fetchStrawDigis       {Name("fetchStrawDigis"       ), Comment("fetchStrawDigis"       )};
-      fhicl::Atom<int>         fetchCaloFragments    {Name("fetchCaloFragments"    ), Comment("fetchCaloFragments"    )};
-      fhicl::Atom<int>         fetchTrkFragments     {Name("fetchTrkFragments"     ), Comment("fetchTrkFragments"     )};
-      fhicl::Atom<int>         fetchAllFragments     {Name("fetchAllFragments"     ), Comment("fetchAllFragments"     )};
-      fhicl::Atom<int>         fetchEWM              {Name("fetchEWM"              ), Comment("fetchEWM"              )};
-      fhicl::Atom<int>         fetchPBT              {Name("fetchPBT"              ), Comment("fetchPBT"              )};
-      fhicl::Atom<std::string> caloDigiCollectionTag {Name("caloDigiCollectionTag" ), Comment("caloDigiCollectionTag" )};
-      fhicl::Atom<std::string> strawDigiCollectionTag{Name("strawDigiCollectionTag"), Comment("strawDigiCollectionTag")};
-      fhicl::Atom<std::string> caloFragmentTag       {Name("caloFragmentTag"       ), Comment("caloFragmentTag"       )};
-      fhicl::Atom<std::string> trkFragmentTag        {Name("trkFragmentTag"        ), Comment("trkFragmentTag"        )};
-      fhicl::Atom<std::string> pbtTag                {Name("pbtTag"                ), Comment("pbtTag"                )};
-      fhicl::Atom<std::string> ewmTag                {Name("ewmTag"                ), Comment("ewmTag"                )};
+
+      fhicl::Atom<int>         debugLevel            {Name("debugLevel"            ), Comment("Debug output verbosity level"), 0};
+      fhicl::Atom<bool>        fetchCaloDigis        {Name("fetchCaloDigis"        ), Comment("Prefetch calorimeter digi collections")};
+      fhicl::Atom<bool>        fetchStrawDigis       {Name("fetchStrawDigis"       ), Comment("Prefetch straw tracker digi collections")};
+      fhicl::Atom<bool>        fetchCaloFragments    {Name("fetchCaloFragments"    ), Comment("Prefetch calorimeter DAQ fragments")};
+      fhicl::Atom<bool>        fetchTrkFragments     {Name("fetchTrkFragments"     ), Comment("Prefetch tracker DAQ fragments")};
+      fhicl::Atom<bool>        fetchAllFragments     {Name("fetchAllFragments"     ), Comment("Prefetch all available DAQ fragments regardless of subdetector-specific fetch flags" )};
+      fhicl::Atom<bool>        fetchEWM              {Name("fetchEWM"              ), Comment("Prefetch EventWindowMarker")};
+      fhicl::Atom<bool>        fetchPBT              {Name("fetchPBT"              ), Comment("Prefetch ProtonBunchTime")};
+      fhicl::Atom<std::string> caloDigiCollectionTag {Name("caloDigiCollectionTag" ), Comment("Input tag for the calorimeter digi collection")};
+      fhicl::Atom<std::string> strawDigiCollectionTag{Name("strawDigiCollectionTag"), Comment("Input tag for the straw tracker digi collection")};
+      fhicl::Atom<std::string> caloFragmentTag       {Name("caloFragmentTag"       ), Comment("Input tag for the calorimeter DAQ fragment collection")};
+      fhicl::Atom<std::string> trkFragmentTag        {Name("trkFragmentTag"        ), Comment("Input tag for the tracker DAQ fragment collection")};
+      fhicl::Atom<std::string> pbtTag                {Name("pbtTag"                ), Comment("Input tag for the ProtonBunchTime")};
+      fhicl::Atom<std::string> ewmTag                {Name("ewmTag"                ), Comment("Input tag for the EventWindowMarker")};
     };
 
     using Parameters = art::EDProducer::Table<Config>;
@@ -58,13 +59,13 @@ namespace mu2e {
     bool findData(const art::Event& e);
                                         // control flags
     int   _debugLevel;
-    int   _fetchCaloDigis;
-    int   _fetchStrawDigis;
-    int   _fetchCaloFragments;
-    int   _fetchTrkFragments;
-    int   _fetchAllFragments;
-    int   _fetchEWM;
-    int   _fetchPBT;
+    bool  _fetchCaloDigis;
+    bool  _fetchStrawDigis;
+    bool  _fetchCaloFragments;
+    bool  _fetchTrkFragments;
+    bool  _fetchAllFragments;
+    bool  _fetchEWM;
+    bool  _fetchPBT;
 
     art::InputTag                  _cdTag;
     art::InputTag                  _sdTag;
@@ -82,7 +83,7 @@ namespace mu2e {
     int                            _eventNum;
   };
 
-  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
   PrefetchDAQData::PrefetchDAQData(const Parameters& config):
     art::EDProducer(config),
     _debugLevel        (config().debugLevel()),
@@ -128,6 +129,9 @@ namespace mu2e {
     _ewm     = 0;
     _pbt     = 0;
 
+//-----------------------------------------------------------------------------
+// Retrieve the data from the event
+//-----------------------------------------------------------------------------
     if (_fetchCaloDigis) {
       auto cdH = evt.getValidHandle<CaloDigiCollection>(_cdTag);
       _cdcol = cdH.product();
@@ -166,8 +170,9 @@ namespace mu2e {
       auto handle = evt.getValidHandle<ProtonBunchTime>(_pbtTag);
       _pbt = handle.product();
     }
+
 //-----------------------------------------------------------------------------
-// prefetch data
+// prefetch data within the collections
 //-----------------------------------------------------------------------------
     if (_cdcol) {
       int ncd = _cdcol->size();
@@ -218,6 +223,3 @@ namespace mu2e {
 DEFINE_ART_MODULE(PrefetchDAQData)
 
 }
-
-
-
