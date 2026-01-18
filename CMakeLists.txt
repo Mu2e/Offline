@@ -82,6 +82,25 @@ if( ${WITH_G4} )
     link_directories($ENV{CRYHOME}/lib)
 endif()
 
+if( ${BUILD_PYTHON_INTERFACE} ) 
+    message("--> Adding SWIG calls to generate Python interface")
+    find_package(SWIG REQUIRED EXPORT)
+    include(${SWIG_USE_FILE})
+
+    # Find the Python interpreter and development files
+    find_package(Python3 COMPONENTS Interpreter Development)
+    if(NOT Python3_FOUND)
+      message(FATAL_ERROR "Python3 not found. Please install Python3 development files.")
+    endif()
+    
+    # Define these ONCE here so they are available everywhere
+    set(PYTHON_VER "${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}")
+    set(PYTHON_INSTALL_DIR "lib/python${PYTHON_VER}/site-packages" CACHE INTERNAL "Python install destination")
+
+    include(${CMAKE_CURRENT_SOURCE_DIR}/scripts/build/cmake/Mu2eSwigHelper.cmake)
+    
+    message("--> Python install directory set to: ${PYTHON_INSTALL_DIR}")
+endif()
 
 # BTrk and KinKal have non-standard Find*.cmake...
 if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/../KinKal/KinKalTargets.cmake)
