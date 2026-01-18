@@ -13,7 +13,7 @@ cet_make_library(
       Offline::GeneralUtilities
 )
 
-if( ${BUILD_PYTHON_INTERFACE} ) 
+if( BUILD_PYTHON_INTERFACE ) 
     mu2e_swig(DbTables_swig src/pywrap.i DbTables)
 endif()
 

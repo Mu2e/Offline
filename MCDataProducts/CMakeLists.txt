@@ -36,7 +36,7 @@ art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
       Offline::MCDataProducts
     )
 
-if( ${BUILD_PYTHON_INTERFACE} ) 
+if( BUILD_PYTHON_INTERFACE ) 
     mu2e_swig(MCDataProducts_swig src/pywrap.i MCDataProducts)
 endif()
 

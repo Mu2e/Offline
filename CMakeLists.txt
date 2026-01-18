@@ -82,7 +82,9 @@ if( ${WITH_G4} )
     link_directories($ENV{CRYHOME}/lib)
 endif()
 
-if( ${BUILD_PYTHON_INTERFACE} ) 
+# empty defaults to off
+option(BUILD_PYTHON_INTERFACE "Generate Python bindings via SWIG" FALSE)
+if( BUILD_PYTHON_INTERFACE ) 
     message("--> Adding SWIG calls to generate Python interface")
     find_package(SWIG REQUIRED EXPORT)
     include(${SWIG_USE_FILE})

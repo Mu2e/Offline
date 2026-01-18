@@ -81,7 +81,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/create.sql ${CURRENT_BINARY_DIR}
 
 install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/DbService)
 
-if( ${BUILD_PYTHON_INTERFACE} ) 
+if( BUILD_PYTHON_INTERFACE ) 
     mu2e_swig(DbService_swig src/pywrap.i DbService)
 endif()
 

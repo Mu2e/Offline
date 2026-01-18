@@ -27,7 +27,7 @@ art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
      Offline::DataProducts
 )
 
-if( ${BUILD_PYTHON_INTERFACE} ) 
+if( BUILD_PYTHON_INTERFACE ) 
     mu2e_swig(DataProducts_swig src/pywrap.i DataProducts)
 endif()
 

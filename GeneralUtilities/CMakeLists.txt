@@ -47,7 +47,7 @@ cet_make_exec(NAME TwoDPointTest
       
 )
 
-if( ${BUILD_PYTHON_INTERFACE} ) 
+if( BUILD_PYTHON_INTERFACE ) 
     mu2e_swig(GeneralUtilities_swig src/pywrap.i GeneralUtilities)
 endif()
 
