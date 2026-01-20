@@ -49,10 +49,10 @@ namespace mu2e
       fhicl::Atom<double>      minPeakPulseArea{Name("minPeakPulseArea"), Comment("minimum accepted SPE peak for pulseArea histogram"), 250.0};
       fhicl::Atom<double>      minPeakPulseHeight{Name("minPeakPulseHeight"), Comment("minimum accepted SPE peak for pulseHeight histogram"), 10.0};
       fhicl::Atom<int>         minHistEntries{Name("minHistEntries"), Comment("minimum number of entries required for a fit"), 100};
-      fhicl::Atom<int>         spectrumNPeaks{Name("spectrumNPeaks"), Comment("maximum number of peaks searched by TSpectrum. numbers less then 4 result in warnings"), 100};
+      fhicl::Atom<int>         spectrumNPeaks{Name("spectrumNPeaks"), Comment("maximum number of peaks searched by TSpectrum"), 100};
       fhicl::Atom<double>      spectrumPeakSigma{Name("spectrumPeakSigma"), Comment("TSpectrum search parameter sigma"), 4.0};
       fhicl::Atom<double>      spectrumPeakThreshold{Name("spectrumPeakThreshold"), Comment("TSpectrum search parameter threshold"), 0.01};
-      fhicl::Atom<double>      peakRatioTolerance{Name("peakRatioTolerance"), Comment("allowed deviation of the ratio between 1PE peak and 2PE peak from 2.0"), 0.2};
+      //fhicl::Atom<double>      peakRatioTolerance{Name("peakRatioTolerance"), Comment("allowed deviation of the ratio between 1PE peak and 2PE peak from 2.0"), 0.2};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
@@ -76,7 +76,7 @@ namespace mu2e
     int                _spectrumNPeaks;
     double             _spectrumPeakSigma;
     double             _spectrumPeakThreshold;
-    double             _peakRatioTolerance;
+//    double             _peakRatioTolerance;
     std::string        _tmpDBfileName;
     std::vector<TH1F*> _calibHistsPulseArea;
     std::vector<TH1F*> _calibHistsPulseHeight;
@@ -106,7 +106,7 @@ namespace mu2e
     _spectrumNPeaks(conf().spectrumNPeaks()),
     _spectrumPeakSigma(conf().spectrumPeakSigma()),
     _spectrumPeakThreshold(conf().spectrumPeakThreshold()),
-    _peakRatioTolerance(conf().peakRatioTolerance()),
+//    _peakRatioTolerance(conf().peakRatioTolerance()),
     _tmpDBfileName(conf().tmpDBfileName())
   {
   }
@@ -245,10 +245,15 @@ namespace mu2e
   {
     if(hist->GetEntries()<_minHistEntries) return false; //not enough data
 
-    size_t nPeaks = spectrum.Search(hist,_spectrumPeakSigma,"nodraw",_spectrumPeakThreshold);
-    if(nPeaks==0) return false;
+    int nPeaks = spectrum.Search(hist,_spectrumPeakSigma,"nodraw",_spectrumPeakThreshold);
+    if(nPeaks<=0) return false;
 
     //peaks are returned sorted by Y
+    //from our long-time experience:
+    //-SPE peak is either the highest peak or second highest peak
+    //-if the SPE peak is the second highest, then the highest peak comes from the baseline
+    //-the peak from the baseline is always below the minPeak threshold, while the SPE peak is not
+    //-the minPeak threshold may have to be adjusted for non-standard bias voltages
     double *peaksX = spectrum.GetPositionX();
     double x=peaksX[0];
     if(x<minPeak)

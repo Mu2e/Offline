@@ -113,6 +113,7 @@ namespace mu2e
       uint16_t febChannel     = onlineChannel.FEBchannel();
 
       uint16_t fpgaIndex      = ((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+(feb-1)*CRVId::nChanPerFEB+febChannel)/(CRVId::nChanPerFEB/CRVId::nFPGAPerFEB);
+//      uint16_t fpgaIndex      = ((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+(feb-1)*CRVId::nChanPerFEB+febChannel)/(CRVId::nChanPerFEB/8);
 
       fpgaTimes[fpgaIndex].push_back(recoPulseTime);
     }
