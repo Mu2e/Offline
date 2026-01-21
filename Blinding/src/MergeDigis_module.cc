@@ -24,6 +24,8 @@
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
 #include "Offline/TrackerMC/inc/StrawDigiBundle.hh"
 #include "Offline/TrackerMC/inc/StrawDigiBundleCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/CaloMC/inc/CaloDigiWrapperCollection.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/CRVConditions/inc/CRVADCRange.hh"
 #include "Offline/CRVResponse/inc/CrvMCHelper.hh"
@@ -39,6 +41,14 @@ namespace mu2e{
         fhicl::Atom<bool> tracker_mc{
           fhicl::Name("MergeStrawDigiMCs"),
           fhicl::Comment("True/false to merge tracker MC truth")
+        };
+        fhicl::Sequence<art::InputTag> calo_digi_tags{
+          fhicl::Name("CaloDigiCollections"),
+          fhicl::Comment("art::InputTags of source CaloDigis")
+        };
+        fhicl::Atom<unsigned int> calo_adc_bits{
+          fhicl::Name("CalorimeterADCBitDepth"),
+          fhicl::Comment("Bit depth of calorimeter adc readings (temporary)")
         };
         fhicl::Sequence<art::InputTag> crv_digi_tags{
           fhicl::Name("CrvDigiCollections"),
@@ -58,6 +68,11 @@ namespace mu2e{
       std::vector<art::InputTag> _tracker_digi_tags;
       bool _tracker_mc;
       ProditionsHandle<StrawElectronics> _tracker_conditions_handle;
+
+      // calorimeter
+      std::vector<art::InputTag> _calo_digi_tags;
+      CaloDigiWrapper::sample_t _calo_max_adc;
+
       // crv
       std::vector<art::InputTag> _crv_digi_tags;
       std::vector<art::InputTag> _crv_digimc_tags;
@@ -73,9 +88,10 @@ namespace mu2e{
       art::EDProducer(config),
       _tracker_digi_tags(config().tracker_digi_tags()),
       _tracker_mc(config().tracker_mc()),
+      _calo_digi_tags(config().calo_digi_tags()),
+      _calo_max_adc((1 << config().calo_adc_bits()) - 1),
       _crv_digi_tags(config().crv_digi_tags()),
       _crv_digimc_tags(config().crv_digimc_tags()){
-
     // tracker
     for (const auto& tag: _tracker_digi_tags){
       this->consumes<StrawDigiCollection>(tag);
@@ -84,6 +100,18 @@ namespace mu2e{
     this->produces<StrawDigiCollection>();
     this->produces<StrawDigiADCWaveformCollection>();
 
+    // calorimeter...
+    for (const auto& tag: _calo_digi_tags){
+      this->consumes<CaloDigiCollection>(tag);
+    }
+    this->produces<CaloDigiCollection>();
+
+    // crv...
+    for (const auto& tag: _crv_digi_tags) this->consumes<CrvDigiCollection>(tag);
+    for (const auto& tag: _crv_digimc_tags) this->consumes<CrvDigiMCCollection>(tag);
+    this->produces<CrvDigiCollection>();
+
+
     // mc truth
     if (_tracker_mc){
       for (const auto& tag: _tracker_digi_tags){
@@ -91,14 +119,9 @@ namespace mu2e{
       }
       this->produces<StrawDigiMCCollection>();
     }
-
-    // calorimeter...
-
-    // crv...
-    for (const auto& tag: _crv_digi_tags) this->consumes<CrvDigiCollection>(tag);
-    for (const auto& tag: _crv_digimc_tags) this->consumes<CrvDigiMCCollection>(tag);
-    this->produces<CrvDigiCollection>();
-    if(!_crv_digimc_tags.empty()) this->produces<CrvDigiMCCollection>();
+    if(!_crv_digimc_tags.empty()){
+      this->produces<CrvDigiMCCollection>();
+    }
   }
 
   void MergeDigis::produce(art::Event& event){
@@ -129,7 +152,18 @@ namespace mu2e{
       event.put(std::move(dgmc));
     }
 
-    // calorimeter...
+    // calorimeter: two easy steps:
+    //   i) read all digis into a CaloDigiWrapperCollection
+    //  ii) defer collision resolution to that collection
+    CaloDigiWrapperCollection wrappers;
+    for (const auto& tag: _calo_digi_tags){
+      auto handle = event.getValidHandle<CaloDigiCollection>(tag);
+      wrappers.Append(*handle);
+    }
+    CaloDigiWrapperCollection calo_resolved;
+    wrappers.ResolveCollisions(_calo_max_adc, calo_resolved);
+    auto calo_digis = calo_resolved.GetDigis();
+    event.put(std::move(calo_digis));
 
     // crv...
     mergeCrvDigis(event);

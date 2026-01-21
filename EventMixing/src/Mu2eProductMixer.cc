@@ -117,6 +117,16 @@ namespace mu2e {
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixStrawDigiMCs, *this);
     }
 
+    for(const auto& e: conf.caloDigiMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCaloDigis, *this);
+    }
+
+    for(const auto& e: conf.caloShowerSimMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCaloShowerSims, *this);
+    }
+
     for(const auto& e: conf.crvDigiMixer().mixingMap()) {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCrvDigis, *this);
@@ -361,11 +371,10 @@ namespace mu2e {
                                             CaloShowerStepCollection& out,
                                             art::PtrRemapper const& remap)
   {
-    std::vector<CaloShowerStepCollection::size_type> stepOffsets;
-    art::flattenCollections(in, out, stepOffsets);
+    art::flattenCollections(in, out, cssOffsets_);
 
     for(CaloShowerStepCollection::size_type i=0; i<out.size(); ++i) {
-      auto ie = getInputEventIndex(i, stepOffsets);
+      auto ie = getInputEventIndex(i, cssOffsets_);
       auto& step = out[i];
       step.setSimParticle( remap(step.simParticle(), simOffsets_[ie]) );
       if(applyTimeOffset_){
@@ -489,11 +498,44 @@ namespace mu2e {
     return true;
   }
 
+  bool Mu2eProductMixer::mixCaloDigis(std::vector<CaloDigiCollection const*> const& in,
+                    CaloDigiCollection& out,
+                    art::PtrRemapper const& remap)
+  {
+    art::flattenCollections(in, out);
+    return true;
+  }
+
   bool Mu2eProductMixer::mixCrvDigis(std::vector<CrvDigiCollection const*> const& in,
                      CrvDigiCollection& out,
                      art::PtrRemapper const& remap)
   {
     art::flattenCollections(in, out);
+    return true;
+  }
+
+  bool Mu2eProductMixer::mixCaloShowerSims(std::vector<CaloShowerSimCollection const*> const& in,
+                       CaloShowerSimCollection& out,
+                       art::PtrRemapper const& remap)
+  {
+    std::vector<CaloShowerSimCollection::size_type> cssimOffsets;
+    art::flattenCollections(in, out, cssimOffsets);
+
+    // remap art::Ptrs
+    for (CaloShowerSimCollection::size_type i=0; i < out.size(); ++i) {
+      auto& sim = out[i];
+      auto ie = getInputEventIndex(i, cssimOffsets);
+      auto cssOffset = cssOffsets_[ie];
+
+      // remap CaloShowerSteps
+      auto& steps = sim.caloShowerSteps();
+      CaloShowerSim::StepPtrs remapped;
+      for (size_t is = 0 ; is < steps.size(); is++){
+        remapped.push_back(remap(steps[is], cssOffset));
+      }
+      sim.setCaloShowerSteps(std::move(remapped));
+    }
+
     return true;
   }
 
