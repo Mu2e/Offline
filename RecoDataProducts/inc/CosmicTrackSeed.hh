@@ -34,8 +34,8 @@ namespace mu2e {
     std::vector<TrkStrawHitSeed> const& trkstrawhits() const { return _trkstrawhits;}
     std::vector<TrkStrawHitSeed>  _trkstrawhits; //vector of associated trkstrawhits
   };
-   typedef std::vector<mu2e::CosmicTrackSeed> CosmicTrackSeedCollection;
-   typedef std::vector<art::Ptr<mu2e::CosmicTrackSeed>> CosmicTrackSeedPtrCollection;
+   using CosmicTrackSeedCollection = std::vector<mu2e::CosmicTrackSeed>;
+   using CosmicTrackSeedPtrCollection = std::vector<art::Ptr<mu2e::CosmicTrackSeed>>;
 }
 
 #endif /* RecoDataProducts_CosmicTrackSeed_hh */
