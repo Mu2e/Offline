@@ -237,6 +237,14 @@ cet_build_plugin(StrawDigiMCFilter art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(StrawGasStepFilter art::module
+    REG_SOURCE src/StrawGasStepFilter_module.cc
+    LIBRARIES REG
+      Offline::MCDataProducts
+      Offline::ProditionsService
+      Offline::TrackerConditions
+)
+
 cet_build_plugin(TrackerStepPointFilter art::module
     REG_SOURCE src/TrackerStepPointFilter_module.cc
     LIBRARIES REG

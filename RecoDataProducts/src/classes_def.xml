@@ -27,6 +27,7 @@
  <class name="art::Ptr<mu2e::CosmicTrackSeed>"/>
  <class name="std::vector<art::Ptr<mu2e::CosmicTrackSeed> >"/>
  <class name="art::Wrapper<mu2e::CosmicTrackSeedCollection>"/>
+ <class name="art::Wrapper<mu2e::CosmicTrackSeedPtrCollection>"/>
 
 <!--  ********* calorimeter  ********* -->
  <class name="mu2e::CaloDigi"/>
@@ -62,12 +63,14 @@
  <class name="mu2e::CaloClusterCollection"/>
  <class name="art::Ptr<mu2e::CaloCluster>"/>
  <class name="art::Wrapper<mu2e::CaloClusterCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloClusterPtrCollection>"/>
 
  <class name="mu2e::CaloTrigSeed"/>
  <class name="std::vector<art::Ptr<mu2e::CaloTrigSeed> >"/>
  <class name="mu2e::CaloTrigSeedCollection"/>
  <class name="art::Ptr<mu2e::CaloTrigSeed>"/>
  <class name="art::Wrapper<mu2e::CaloTrigSeedCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloTrigSeedPtrCollection>"/>
 
 <!--  ********* straws  ********* -->
  <class name="mu2e::StrawHit"/>

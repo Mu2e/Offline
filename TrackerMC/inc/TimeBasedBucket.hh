@@ -18,7 +18,7 @@ namespace mu2e{
   template<typename T>
   class TimeBasedBucket{
     public:
-      TimeBasedBucket(double);
+      TimeBasedBucket();
 
       // forwarded calls to underlying container
       size_t size() const;
@@ -28,12 +28,12 @@ namespace mu2e{
       TBB_const_iterator<T> end() const;
 
       // whether a candidate item "fits" into this bucket's gross time window
-      bool Accepts(T);
+      bool Accepts(T, double);
       // insertion --- assumes that appends are pre-sorted
-      void Append(T);
+      void Append(T, double);
     protected:
       std::vector<T> _container;
-      double _window;
+      std::vector<double> _windows;
     private:
       /**/
   };
@@ -49,7 +49,7 @@ namespace mu2e{
   template <typename T>
   class TimeBasedBuckets{
     public:
-      TimeBasedBuckets(double);
+      TimeBasedBuckets();
 
       // forwarded calls to underlying container
       size_t size() const;
@@ -59,16 +59,15 @@ namespace mu2e{
       TBBS_const_iterator<T> end() const;
 
       // insertion
-      void Insert(T);
+      void Insert(T, double);
     protected:
       std::vector< TimeBasedBucket<T> > _buckets;
-      double _window;
     private:
       /**/
   };
 
   template <typename T>
-  TimeBasedBucket<T>::TimeBasedBucket(double window): _window(window){
+  TimeBasedBucket<T>::TimeBasedBucket(){
     /**/
   }
 
@@ -106,15 +105,15 @@ namespace mu2e{
 
   // whether a candidate item "fits" into this bucket's gross time window
   template <typename T>
-  bool TimeBasedBucket<T>::Accepts(T candidate){
+  bool TimeBasedBucket<T>::Accepts(T candidate, double window){
     // empty bucket rejects nothing
     if (this->size() < 1){
       return true;
     }
 
     // otherwise, check between first/last times, accounting for windowing
-    double lower = _container.front().time() - _window;
-    double upper = _container.back().time() + _window;
+    double lower = _container.front().time() - window;
+    double upper = _container.back().time() + _windows.back();
     double now = candidate.time();
     bool rv = (lower <= now) && (now <= upper);
     return rv;
@@ -122,12 +121,13 @@ namespace mu2e{
 
   // insertion --- assumes that appends are pre-sorted
   template<typename T>
-  void TimeBasedBucket<T>::Append(T candidate){
+  void TimeBasedBucket<T>::Append(T candidate, double window){
     _container.push_back(candidate);
+    _windows.push_back(window);
   }
 
   template<typename T>
-  TimeBasedBuckets<T>::TimeBasedBuckets(double window): _window(window){
+  TimeBasedBuckets<T>::TimeBasedBuckets(){
     /**/
   }
 
@@ -165,12 +165,12 @@ namespace mu2e{
 
   // insertion
   template<typename T>
-  void TimeBasedBuckets<T>::Insert(T item){
+  void TimeBasedBuckets<T>::Insert(T item, double window){
     // if the item belongs in a preexisting bucket, put it there
     bool inserted = false;
     for (auto& bucket: (*this)){
-      if (bucket.Accepts(item)){
-        bucket.Append(item);
+      if (bucket.Accepts(item, window)){
+        bucket.Append(item, window);
         inserted = true;
         return;
       }
@@ -178,9 +178,9 @@ namespace mu2e{
 
     // otherwise, this item defines a new bucket
     if (!inserted){
-      TimeBasedBucket<T> bucket(_window);
+      TimeBasedBucket<T> bucket;
       _buckets.push_back(bucket);
-      this->Insert(item);
+      this->Insert(item, window);
     }
   }
 }
