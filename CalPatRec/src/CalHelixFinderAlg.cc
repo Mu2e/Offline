@@ -15,7 +15,6 @@
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "art_root_io/TFileService.h"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
-#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
@@ -191,6 +190,8 @@ namespace mu2e {
     bitnames.push_back("Outlier");
     bitnames.push_back("OtherBackground");
     //mu2e::ComboHit::_useflag = StrawHitFlag(bitnames);
+    _calorimeter = nullptr;
+    _tracker = nullptr;
   }
 
 //-----------------------------------------------------------------------------
@@ -252,8 +253,7 @@ namespace mu2e {
     fCaloTime        = cl->time();
     fCaloX           = tpos.x();
     fCaloY           = tpos.y();
-    float     offset = _calorimeter->caloInfo().getDouble("diskCaseZLength")/2. + (_calorimeter->caloInfo().getDouble("BPPipeZOffset") + _calorimeter->caloInfo().getDouble("BPHoleZLength")+ _calorimeter->caloInfo().getDouble("FEEZLength"))/2. - _calorimeter->caloInfo().getDouble("FPCarbonZLength") - _calorimeter->caloInfo().getDouble("FPFoamZLength");
-    fCaloZ           = tpos.z()-offset;
+    fCaloZ           = tpos.z()-fCaloOffset;
   }
 
 
@@ -754,8 +754,8 @@ namespace mu2e {
 
     float phi, phi_ref(-1e10), z_ref, dphi, dz;
 
-    //    float hist[20], minX(0), maxX(0.01), stepX(0.0005), nbinsX(20); // make it 20 bins
-    float hist[50], minX(0), maxX(0.025), stepX(0.0005), nbinsX(50); // make it 20 bins: gianipez test 2019-09-23
+    constexpr int nbinsX(50);
+    float hist[nbinsX], minX(0), maxX(0.025), stepX((maxX - minX)/nbinsX); // histogram binning
 
     XYZVectorF* center = &Helix._center;
     XYZVectorF  pos_ref;
@@ -769,18 +769,21 @@ namespace mu2e {
              center->x(), center->y(), Helix._radius,Helix._nStrawHits);
     }
 
-    int       nstations, nhits[30], nstations_with_hits(0);
-    float     phiVec[30], zVec[30], weight(0);
+    constexpr int max_station_index = 30; // safe value, larger than N(stations)
+    const int nstations = StrawId::_nstations;
+    if(max_station_index < nstations) throw cet::exception("RECO") << "More stations than written to handle!";
 
-    nstations = StrawId::_nstations;
+    int       nhits [max_station_index], nstations_with_hits(0);
+    float     phiVec[max_station_index], zVec[max_station_index], weight(0);
+
 
     for (int i=0; i<nstations+1; i++) {
-      phiVec[i] = 0;
-      zVec  [i] = 0;
-      nhits [i] = 0;
+      phiVec[i] = 0.f;
+      zVec  [i] = 0.f;
+      nhits [i] = 0.f;
     }
 
-    for (int i=0; i<nbinsX; i++) hist[i] = 0;
+    for (int i=0; i<nbinsX; i++) hist[i] = 0.f;
 //-----------------------------------------------------------------------------
 // calorimeter cluster - point number nstations+1
 //-----------------------------------------------------------------------------
@@ -870,8 +873,13 @@ namespace mu2e {
         dz   = zVec[j] - z_ref;
 
         if(std::fabs(dz) < 10e-10)         continue;
-        if((dz < 0.) && (!Helix._timeCluster->hasCaloCluster())) {
-          dz = -dz;
+        if (dz < 0.) {
+          if(!Helix._timeCluster->hasCaloCluster()) { // in the case we're using a tracker hit, just take the absolute |dz|
+            dz = -dz;
+          } else { // if not using a tracker hit as a cluster, then throw an error
+            throw cet::exception("RECO") << "Delta z < 0: z(cluster) = " << zCl
+                                         << " z(1) = " << z_ref << " z(2) = " << zVec[j] << "\n";
+          }
         }
 
         float dphidz =dphi/dz*_dfdzsign; //HERE
@@ -882,7 +890,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         int n(0), nmax(0), nmin(0), nchoices = 0;
 
-        float x = dphidz + n*2*M_PI/dz;
+        float x = dphidz;
         if (x < _minDfDz) {
 //-----------------------------------------------------------------------------
 // for n=0, x < _minDfDz
@@ -899,11 +907,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // for n=0,   _xMin <= x < _xMax
 //-----------------------------------------------------------------------------
-        while (x < _maxDfDz) {
-          nmax = n;
-          if ((x > _minDfDz) && (x < _maxDfDz)) nchoices += 1;
-          n += 1;
-          x += 2*M_PI/dz;
+          while (x < _maxDfDz) {
+            nmax = n;
+            if ((x > _minDfDz) && (x < _maxDfDz)) nchoices += 1;
+            n += 1;
+            x += 2*M_PI/dz;
           }
 
           nmin = 0;
@@ -936,8 +944,8 @@ namespace mu2e {
 // histogram is from
 //-----------------------------------------------------------------------------
         for (int n=nmin; n<=nmax; n++) { //
-          float x = dphidz + n*2*M_PI/dz;
-          int bin = (x-minX)/stepX;
+          const float x = dphidz + n*2.*M_PI/dz;
+          const int bin = std::min(nbinsX, int((x-minX)/stepX));
           hist[bin] += weight;
         }
       }
@@ -1581,6 +1589,12 @@ namespace mu2e {
 // points in filled array are ordered in Z coordinate
 //-------------------------------------------------------------------------
   void CalHelixFinderAlg::fillFaceOrderedHits(CalHelixFinderData& Helix) {
+
+//-----------------------------------------------------------------------------
+// Ensure the tracker and calorimeter utils are available
+//-----------------------------------------------------------------------------
+    if(!_tracker    ) throw cet::exception("RECO") << ": Tracker util not initialized!\n";
+    if(!_calorimeter) throw cet::exception("RECO") << ": Calorimeter util not initialized!\n";
 
 //-----------------------------------------------------------------------------
 // set the CaloCluster of CalHelixFinderAlg: this info is stored in the TimeCluster
