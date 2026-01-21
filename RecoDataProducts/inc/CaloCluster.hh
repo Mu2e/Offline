@@ -54,6 +54,7 @@ namespace mu2e {
    };
 
    using CaloClusterCollection = std::vector<mu2e::CaloCluster>;
+   using CaloClusterPtrCollection = std::vector<art::Ptr<mu2e::CaloCluster>>;
 }
 
 #endif

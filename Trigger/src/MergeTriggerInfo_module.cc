@@ -14,6 +14,9 @@
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/CaloTrigSeed.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 // C++
 #include <vector>
 #include <memory>
@@ -28,8 +31,8 @@ namespace mu2e {
     using  Name    = fhicl::Name;
     using  Comment = fhicl::Comment;
     struct Config {
-      fhicl::Atom<int> debug   { Name("debugLevel"), Comment("Debug Level"), 0};
-      fhicl::Atom<int> doDeepCopy{ Name("doDeepCopy")  , Comment("Ntupleing mode"), 0};
+      fhicl::Atom<int> debug     { Name("debugLevel"), Comment("Debug Level"), 0};
+      fhicl::Atom<int> doDeepCopy{ Name("doDeepCopy"), Comment("Produce cloned object collections"), 0};
     };
 
     using        Parameters = art::EDProducer::Table<Config>;
@@ -42,22 +45,28 @@ namespace mu2e {
 
   MergeTriggerInfo::MergeTriggerInfo(const Parameters& config) :
     art::EDProducer{config},
-    _debug   (config().debug()),
+    _debug     (config().debug()),
     _doDeepCopy(config().doDeepCopy())
   {
-    produces<TriggerInfoCollection>    ();
+    produces<TriggerInfoCollection>();
     if (_doDeepCopy == 1){
-      produces<KalSeedCollection>();
-      produces<HelixSeedCollection>();
-      produces<TimeClusterCollection>();
+      produces<KalSeedCollection        >();
+      produces<HelixSeedCollection      >();
+      produces<TimeClusterCollection    >();
+      produces<CaloClusterCollection    >();
+      produces<CaloTrigSeedCollection   >();
+      produces<CosmicTrackSeedCollection>();
     }
   }
 
   void MergeTriggerInfo::produce(art::Event& event) {
-    std::unique_ptr<TriggerInfoCollection>   tiCol(new TriggerInfoCollection);
-    std::unique_ptr<KalSeedCollection>       ksCol(new KalSeedCollection);
-    std::unique_ptr<HelixSeedCollection>     hsCol(new HelixSeedCollection);
-    std::unique_ptr<TimeClusterCollection>   tcCol(new TimeClusterCollection);
+    std::unique_ptr<TriggerInfoCollection>     tiCol(new TriggerInfoCollection);
+    std::unique_ptr<KalSeedCollection>         ksCol((_doDeepCopy) ? new KalSeedCollection         : nullptr);
+    std::unique_ptr<HelixSeedCollection>       hsCol((_doDeepCopy) ? new HelixSeedCollection       : nullptr);
+    std::unique_ptr<TimeClusterCollection>     tcCol((_doDeepCopy) ? new TimeClusterCollection     : nullptr);
+    std::unique_ptr<CaloClusterCollection>     ccCol((_doDeepCopy) ? new CaloClusterCollection     : nullptr);
+    std::unique_ptr<CaloTrigSeedCollection>    ctCol((_doDeepCopy) ? new CaloTrigSeedCollection    : nullptr);
+    std::unique_ptr<CosmicTrackSeedCollection> csCol((_doDeepCopy) ? new CosmicTrackSeedCollection : nullptr);
 
     std::vector<art::Handle<TriggerInfo> > list_of_triggerInfo = event.getMany<TriggerInfo>();
 
@@ -71,18 +80,12 @@ namespace mu2e {
         std::cout << "["<<moduleDescription().moduleLabel() << "] helices, tracks: "<< trigInfo.tracks().size() << " " << trigInfo.helixes().size() << std::endl;
       }
       if (_doDeepCopy == 1){
-        for (auto trkPtr: trigInfo.tracks()){
-          KalSeed trk(*trkPtr.get());
-          ksCol->push_back(trk);
-        }
-        for (auto hsPtr : trigInfo.helixes()){
-          HelixSeed hs(*hsPtr.get());
-          hsCol->push_back(hs);
-        }
-        for (auto tcPtr : trigInfo.hitClusters()){
-          TimeCluster tc(*tcPtr.get());
-          tcCol->push_back(tc);
-        }
+        for(auto ptr : trigInfo.tracks       ()) ksCol->push_back(*(ptr.get()));
+        for(auto ptr : trigInfo.helixes      ()) hsCol->push_back(*(ptr.get()));
+        for(auto ptr : trigInfo.hitClusters  ()) tcCol->push_back(*(ptr.get()));
+        for(auto ptr : trigInfo.caloClusters ()) ccCol->push_back(*(ptr.get()));
+        for(auto ptr : trigInfo.caloTrigSeeds()) ctCol->push_back(*(ptr.get()));
+        for(auto ptr : trigInfo.cosmics      ()) csCol->push_back(*(ptr.get()));
       }
       tiCol->push_back(trigInfo);
     }
@@ -92,6 +95,9 @@ namespace mu2e {
       event.put(std::move(ksCol));
       event.put(std::move(hsCol));
       event.put(std::move(tcCol));
+      event.put(std::move(ccCol));
+      event.put(std::move(ctCol));
+      event.put(std::move(csCol));
     }
   }
 }
