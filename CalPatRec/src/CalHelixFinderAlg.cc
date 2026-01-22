@@ -494,7 +494,10 @@ namespace mu2e {
         dphi = phiVec[j]-phi_ref;
         dz   = zVec[j] - z_ref;
 
+        // ensure the z values are set and non-overlapping
         if(std::fabs(dz) < 10e-10)         continue;
+
+        // check the sign of the dz makes sense
         if (dz < 0.) {
           if(!Helix._timeCluster->hasCaloCluster()) { // in the case we're using a tracker hit, just take the absolute |dz|
             dz = -dz;
@@ -568,32 +571,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // for all points different from the first one need to choose the turn number
 //-----------------------------------------------------------------------------
-        dphi = phiVec[i]-(phi0+zVec[i]*_hdfdz);
-        float dphi_min = dphi;
-
-        int n= 0;
-        while (1) {
-          n += 1;
-          float dphi = phiVec[i]+2*M_PI*n-(phi0+zVec[i]*_hdfdz);
-          if (fabs(dphi) < fabs(dphi_min)) dphi_min = dphi;
-          else break;
-        }
-
-        n=0;
-        while (1) {
-          n -= 1;
-          float dphi = phiVec[i]+2*M_PI*n-(phi0+zVec[i]*_hdfdz);
-          if (fabs(dphi) < fabs(dphi_min)) dphi_min = dphi;
-          else break;
-        }
 
         const float phi0_shifted = phi0+zVec[i]*_hdfdz;
-        const float dphi_v2 = phiVec[i] - phi0_shifted;
+        dphi = phiVec[i] - phi0_shifted;
         // find the minimum delta phi between the two phi values
-        const int nrot = std::abs((dphi_v2 + M_PI) / (2.*M_PI));
-        const float dphi_min_v2 = (dphi_v2 < -M_PI) ? dphi_v2 + (nrot+1)*2.*M_PI : dphi_v2 - nrot*2.*M_PI;
-        if(std::fabs(dphi_min_v2 - dphi_min) > 1.e-3)
-          printf("CalHelixFinder: dphi = %7.3f (%7.3f) pi, nrot = %3i, dphi_min = %6.3f (%6.3f) pi\n", dphi/M_PI, dphi_v2/M_PI, nrot, dphi_min/M_PI, dphi_min_v2/M_PI);
+        const int nrot = std::abs((dphi + M_PI) / (2.*M_PI));
+        const float dphi_min = (dphi < -M_PI) ? dphi + (nrot+1)*2.*M_PI : dphi - nrot*2.*M_PI;
 
         sdphi += dphi_min;
         sn += 1;
