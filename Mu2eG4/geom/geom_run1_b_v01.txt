@@ -41,6 +41,7 @@ vector<double> stoppingTarget.radii  =  {600.00};
 double tracker.mother.z0          = 7000;  // mm - dpalo position
 double tracker.mother.halfLength  = 1640;  // mm - increased to fully contain end rings (upstream +1606±25.4, downstream -1614±25.4)
 double tracker.z0                 = 7000;
+double mu2e.detectorSystemZ0      = 7000;  // Must match tracker.z0 for Run1B
 
 // Place tracker and calorimeter in DS2Vacuum (instead of DS3Vacuum) for Run1B
 // This extends DS2Vacuum towards MBS and fixes the overlap issue
