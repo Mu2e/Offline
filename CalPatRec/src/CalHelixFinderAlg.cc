@@ -834,24 +834,20 @@ namespace mu2e {
       helCenter = XYZVectorF( Helix._sxy.x0(), Helix._sxy.y0(), 0);
     }
 
-    float zCl   = fCaloZ;
-    float dx    = (fCaloX - helCenter.x());
-    float dy    = (fCaloY - helCenter.y());
-    float phiCl = polyAtan2(dy, dx);
-    if (phiCl < 0) phiCl = phiCl + 2*M_PI;
+    const float zCl    = fCaloZ;
+    const float dx     = (fCaloX - helCenter.x());
+    const float dy     = (fCaloY - helCenter.y());
+    const float phiCl0 = polyAtan2(dy, dx);
 
-    float deltaPhi = zCl*dfdz + phi0 - phiCl;
-    while (deltaPhi > M_PI){
-      phiCl   += 2*M_PI;
-      deltaPhi = zCl*dfdz + phi0 - phiCl;
-    }
-    while (deltaPhi < -M_PI){
-      phiCl   -= 2*M_PI;
-      deltaPhi = zCl*dfdz + phi0 - phiCl;
-    }
+    const float phi0_shifted = phi0 + zCl*dfdz;
+    const float dphi = phi0_shifted - phiCl0;
+    // find the minimum delta phi between the two phi values
+    const int nrot = std::abs((dphi + M_PI) / (2.*M_PI));
+    const float dphi_min = (dphi < -M_PI) ? dphi   + (nrot+1)*2.*M_PI : dphi   - nrot*2.*M_PI;
+    const float phiCl    = (dphi < -M_PI) ? phiCl0 - (nrot+1)*2.*M_PI : phiCl0 + nrot*2.*M_PI;
 
-//check residual before adding to the LSqsum
-    float xdphi  = fabs(deltaPhi)/_sigmaPhi;
+    //check residual before adding to the LSqsum
+    float xdphi  = fabs(dphi_min)/_sigmaPhi;
 
 // weight_cl of 10 corresponds to an uncertainty of 0.1 in phi(cluster),
 // which means sigma(R-phi) of about 2-3 cm, about right
@@ -864,7 +860,7 @@ namespace mu2e {
 
     if (_debug > 5) {
       printf("[CalHelixFinderAlg::doLinearFitPhiZ] %08x %2i %6i %3i %12.5f %12.5f %10.5f %10.3f %10.3f %10.3f %10.5f %10.5f %5.3f\n",
-             0, 1, 0, 0,  zCl, phiCl, deltaPhi, xdphi, 0., 0., dfdz, 0., 0.);
+             0, 1, 0, 0,  zCl, phiCl, dphi_min, xdphi, 0., 0., dfdz, 0., 0.);
     }
 
   }
