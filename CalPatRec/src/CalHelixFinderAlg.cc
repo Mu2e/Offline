@@ -3406,22 +3406,19 @@ namespace mu2e {
 //
 //-----------------------------------------------------------------------------
   void CalHelixFinderAlg::resolve2PiAmbiguity(ComboHit* Hit, XYZVectorF& Center, float &Phi_ref, float &DPhi){
-    float dx      = (Hit->_pos.x() - Center.x());
-    float dy      = (Hit->_pos.y() - Center.y());
-    float phi     = polyAtan2(dy, dx);
-    if (phi < 0) phi = phi + 2*M_PI;
-    DPhi    = Phi_ref - phi;
-    // resolve 2PI ambiguity
-    while (DPhi > M_PI) {
-      phi += 2*M_PI;
-      DPhi = Phi_ref - phi;
-    }
-    while (DPhi < -M_PI) {
-      phi -= 2*M_PI;
-      DPhi = Phi_ref - phi;
-    }
+    const float dx   = (Hit->_pos.x() - Center.x());
+    const float dy   = (Hit->_pos.y() - Center.y());
+    const float phi  = polyAtan2(dy, dx);
+
+    const float dphi = Phi_ref - phi;
+    // find the minimum delta phi between the two phi values
+    const int nrot = std::abs((dphi + M_PI) / (2.*M_PI));
+    const float dphi_min = (dphi < -M_PI) ? dphi + (nrot+1)*2.*M_PI : dphi - nrot*2.*M_PI;
+    const float phi_rot  = (dphi < -M_PI) ? phi  - (nrot+1)*2.*M_PI : phi  + nrot*2.*M_PI;
+
     // store the corrected value of phi
-    Hit->_hphi = phi;
+    Hit->_hphi = phi_rot;
+    DPhi = dphi_min;
 
   }
   // void CalHelixFinderAlg::resolve2PiAmbiguity(CalHelixFinderData& Helix,const XYZVectorF& Center, float DfDz, float Phi0){
