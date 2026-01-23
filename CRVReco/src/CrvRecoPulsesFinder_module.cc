@@ -115,6 +115,10 @@ namespace mu2e
     _useTimeOffsetDB(conf().useTimeOffsetDB()),
     _ignoreChannels(conf().ignoreChannels())
   {
+    if(conf().pulseAreaThreshold()>conf().minADCdifference())
+      throw cet::exception("CRVRECO_BAD_CONFIG")
+      << "CrvRecoPulseFinder pulseAreaThreshold " << conf().pulseAreaThreshold()
+      << "  larger than minADCdifference " << conf().minADCdifference();
     produces<CrvRecoPulseCollection>(_NZSdata?"NZS":"");
     _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(conf().minADCdifference(),
                                                                                                     conf().defaultBeta(),
