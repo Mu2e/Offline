@@ -1,0 +1,53 @@
+# Split an art file based on the trigger results into MC triggerable and triggered streams
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : SplitTriggerResults
+
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+}
+
+physics : {
+  filters : {
+    Triggered       : { # High momentum track triggers
+      module_type   : TriggerResultsFilter
+      ProcessName   : "Digitize"
+      TriggerNames  : [ "apr_TrkDe_80m70p", "cpr_TrkDe_80m70p", "tpr_TrkDe_80m70p" ]
+      # TriggerBits : [  210,                160,                110               ]
+    }
+    Triggerable     : { # MC truth selections for high momentum particles in the tracker or high energy in the calo
+      module_type   : TriggerResultsFilter
+      ProcessName   : "Digitize"
+      TriggerNames  : [ "TriggerableLHPath", "TriggerableTwoTrackPath", "TriggerableCaloPath" ]
+      # TriggerBits : [  20,                  21,                        25                   ]
+    }
+  }
+
+  Triggered     : [ Triggered   ]
+  Triggerable   : [ Triggerable ]
+  EndPath       : [ TriggeredOutput, TriggerableOutput ]
+  trigger_paths : [ Triggered, Triggerable ]
+  end_paths     : [ EndPath ]
+}
+
+outputs : {
+  TriggeredOutput  : {
+    module_type    : RootOutput
+    SelectEvents   : [ Triggered ]
+    # More trivial splitting, but doesn't exercise the TriggerResultsFilter module
+    # SelectEvents  : [ "Digitize:apr_TrkDe_80m70p", "Digitize:cpr_TrkDe_80m70p", "Digitize:tpr_TrkDe_80m70p" ]
+    outputCommands :   [ "keep *_*_*_*" ]
+    fileName       : "dig.user.Triggered.version.%6r_%8#.art"
+  }
+  TriggerableOutput : {
+    module_type     : RootOutput
+    SelectEvents    : [ Triggerable ]
+    # More trivial splitting, but doesn't exercise the TriggerResultsFilter module
+    # SelectEvents  : [ "Digitize:TriggerableLHPath", "Digitize:TriggerableTwoTrackPath", "Digitize:TriggerableCaloPath" ]
+    outputCommands  :   [ "keep *_*_*_*" ]
+    fileName        : "dig.user.Triggerable.version.%6r_%8#.art"
+  }
+}
