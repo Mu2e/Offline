@@ -3202,19 +3202,13 @@ namespace mu2e {
     Phi0        = polyAtan2(dy2,dx2);
 //-----------------------------------------------------------------------------
 // this assumes that the helix is right-handed, *FIXME*
-// make sure that we are lookign for a particle which makes close to expected
+// make sure that we are looking for a particle which makes close to expected
 // number of turns
 //-----------------------------------------------------------------------------
     float dphi32 = polyAtan2(dy3,dx3) - Phi0;
     if (dphi32*_dfdzsign < 0.) dphi32 += 2.*M_PI;
 
-    //    float exp_dphi = _mpDfDz*dz32;
-
-    //check id DfDz is within the range
-    if ( (fabs(DfDz32) < _minDfDz) || (fabs(DfDz32) > _maxDfDz)) DfDz32 = _mpDfDz;
-
     DfDz32 = dphi32/dz32;
-
     float   diff      = fabs(DfDz32 - _mpDfDz);
     float   diff_plus = fabs( (dphi32 + 2.*M_PI)/dz32 -_mpDfDz );
     while ( diff_plus < diff ){
@@ -3262,24 +3256,6 @@ namespace mu2e {
   void  CalHelixFinderAlg::calculateDfDz(float phi0, float phi1, float z0, float z1, float& DfDz) {
     float   deltaPhi  = TVector2::Phi_mpi_pi(phi1-phi0);
     DfDz               = deltaPhi/(z1-z0);
-
-    // 2018-01-02: don't do that!
-    // float   diff      = fabs(DfDz - _mpDfDz);
-    // float   diff_plus = fabs((deltaPhi + 2.*M_PI)/(z1-z0) -_mpDfDz);
-    // while (diff_plus < diff) {
-    //   deltaPhi  = deltaPhi + 2.*M_PI;
-    //   DfDz      = deltaPhi/(z1-z0);
-    //   diff      = fabs(DfDz - _mpDfDz);
-    //   diff_plus = fabs( (deltaPhi + 2.*M_PI)/(z1-z0) -_mpDfDz );
-    // }
-
-    // float   diff_minus = fabs((deltaPhi - 2.*M_PI)/(z1-z0) -_mpDfDz);
-    // while (diff_minus < diff) {
-    //   deltaPhi   = deltaPhi - 2.*M_PI;
-    //   DfDz       = deltaPhi/(z1-z0);
-    //   diff       = fabs(DfDz - _mpDfDz);
-    //   diff_minus = fabs( (deltaPhi - 2.*M_PI)/(z1-z0) -_mpDfDz );
-    // }
   }
 
 //-----------------------------------------------------------------------------
@@ -3419,55 +3395,7 @@ namespace mu2e {
     // store the corrected value of phi
     Hit->_hphi = phi_rot;
     DPhi = dphi_min;
-
   }
-  // void CalHelixFinderAlg::resolve2PiAmbiguity(CalHelixFinderData& Helix,const XYZVectorF& Center, float DfDz, float Phi0){
-
-  //   const XYZVectorF*  pos;
-  //   float         z, phi, phi_ref, dphi, dx, dy;
-
-  //   FaceZ_t*        facez(0);
-  //   PanelZ_t*       panelz(0);
-  //   mu2e::ComboHit* hit(0);
-
-  //   for (int f=0; f<StrawId::_ntotalfaces;  ++f){
-  //     facez     = &Helix._oTracker[f];
-  //     for (int p=0; p<FaceZ_t::kNPanels; ++p){
-  //         panelz = &facez->panelZs[p];//Helix._oTracker[p];
-  //         int  nhits          = panelz->nChHits();
-  //         for (int i=0; i<nhits; ++i){
-  //           hit = &panelz->_chHitsToProcess.at(i);
-  //           pos = &hit->_pos;
-  //           z   = pos->z();
-
-  //           dx  = (pos->x() - Center.x());
-  //           dy  = (pos->y() - Center.y());
-  //           phi = polyAtan2(dy, dx);
-  //           if (phi < 0) phi = phi + 2*M_PI;//phi = TVector2::Phi_0_2pi(phi);
-  //           // predicted value of phi
-  //           phi_ref = z*DfDz + Phi0;
-  //           // signed residual
-  //           dphi    = phi_ref - phi;
-  //           // resolve the 2PI ambiguity
-  //           while (dphi > M_PI) {
-  //             phi += 2*M_PI;
-  //             dphi = phi_ref - phi;
-  //           }
-  //           while (dphi < -M_PI) {
-  //             phi -= 2*M_PI;
-  //             dphi = phi_ref - phi;
-  //           }
-  //           // store the corrected value of phi
-  //           // _phiCorrected[i] = phi;
-  //         }
-
-  //     }
-  //   }
-  //                 // don't know
-  //   _phiCorrectedDefined = 0;
-  // }
-
-
 
 //---------------------------------------------------------------------------
 // reset track paramters
