@@ -117,9 +117,9 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
   }
 
   if(ewm_) {
-    constexpr double tick = 5.; // clock ticks -> ns
+    constexpr double tick = 25.; // clock ticks -> ns
     ewm->_spillType   = (evtHdr->isOnSpill()) ? mu2e::EventWindowMarker::SpillType::onspill : mu2e::EventWindowMarker::SpillType::offspill;
-    ewm->_eventLength = tick*evtHdr->eventDuration;
+    ewm->_eventLength = tick * evtHdr->eventDuration;
   }
 
   event.put(std::move(evtHdr));
