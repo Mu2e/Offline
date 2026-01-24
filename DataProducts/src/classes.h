@@ -61,3 +61,4 @@
 
 // General
 #include "Offline/DataProducts/inc/SurfaceId.hh"
+#include "Offline/DataProducts/inc/FilterFraction.hh"

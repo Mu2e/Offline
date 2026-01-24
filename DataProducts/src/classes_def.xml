@@ -63,4 +63,6 @@
  <class name="mu2e::SurfaceIdEnum"/>
  <class name="mu2e::SurfaceId"/>
 
+ <class name="mu2e::FilterFraction"/>
+
 </lcgdict>
