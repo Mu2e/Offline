@@ -151,7 +151,6 @@ namespace mu2e {
     art::Handle<T> handle;
     if(!event.getByLabel(tag, handle)) {
       TLOG(TLVL_WARNING) << ": Unable to find handle for " << typeid(T).name() << " with tag " << tag;
-      std::cout << "[OccupancyFilter::" << __func__ << "]: Unable to find handle for " << typeid(T).name() << " with tag " << tag << std::endl;
       return true; // don't filter if it's missing, as it's not high occupancy
     }
 
@@ -161,8 +160,6 @@ namespace mu2e {
     const bool passed = nobj < max_size;
     TLOG(TLVL_DEBUG + 3) << ":  handle " << typeid(T).name() << " with tag " << tag
                          << " has size " << nobj << " and result " << passed;
-    std::cout << "[OccupancyFilter::" << __func__ << "]:  handle " << typeid(T).name() << " with tag " << tag
-              << " has size " << nobj << " and result " << passed << std::endl;
     if(!passed) TLOG(TLVL_DEBUG + 4) << ":  handle " << typeid(T).name() << " with tag " << tag
                                      << " has size " << nobj << " and fails the check (max = " << max_size << ")";
     return passed;
