@@ -8,9 +8,7 @@
 %include "math.i"
 %include "stdint.i"
 
-%apply const std::string& {std::string* foo};
-%ignore operator <<;
-%ignore operator int8_t;
+%ignore *::operator<<;
 
 %{
 #include "Offline/DataProducts/inc/StrawEnd.hh"

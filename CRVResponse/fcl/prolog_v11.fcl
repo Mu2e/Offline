@@ -175,6 +175,7 @@ BEGIN_PROLOG
       module_type                            : CrvCoincidenceClusterMatchMC
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
       crvWaveformsModuleLabel                : "CrvWaveforms"
+      eventWindowMarkerModuleLabel           : "EWMProducer"
       doNtuples                              : false
     }
     CrvPlot:

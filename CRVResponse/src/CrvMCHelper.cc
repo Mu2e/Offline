@@ -1,5 +1,8 @@
 #include "Offline/CRVResponse/inc/CrvMCHelper.hh"
 
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+
 namespace mu2e
 {
   void CrvMCHelper::GetStepPointsFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
@@ -25,7 +28,8 @@ namespace mu2e
                                         double &visibleEnergyDeposited,
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
-                                        art::Ptr<SimParticle> &mostLikelySimParticle)
+                                        art::Ptr<SimParticle> &mostLikelySimParticle,
+                                          const art::Handle<mu2e::EventWindowMarker>& ewmh)
   {
     visibleEnergyDeposited=0;
     std::map<art::Ptr<SimParticle>,double> simParticleMap;
@@ -48,6 +52,14 @@ namespace mu2e
       }
     }
 
+    //get the event window length from the global constants
+    if (!ewmh.isValid()) {
+      throw cet::exception("CrvMCHelper") << "EventWindowMarker handle is not valid" << std::endl;
+    }
+    const bool onspill = ewmh->spillType() == EventWindowMarker::onspill;
+    const double ewm_window_length = ewmh->eventLength(); // get the offspill window length from the EWM, ~100 us
+    const double event_window_length = (onspill) ? GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod() : ewm_window_length;
+
     //TODO: Is this still necessary? Removing it for now.
     //time folding is not applied here, but was used to create the digis, ...
     //so we need to avoid that some step points from a different micro bunch
@@ -59,14 +71,16 @@ namespace mu2e
     for(stepPointIter=steps.begin(); stepPointIter!=steps.end(); stepPointIter++)
     {
       const CrvStep &step = **stepPointIter;
-      double t = step.startTime();
-      if(firstLoop || earliestHitTime>t)
+      double t_s = step.startTime();
+      double t_e = step.endTime();
+      if(firstLoop || earliestHitTime>t_s)
       {
         firstLoop=false;
-        earliestHitTime=t;
+        earliestHitTime=t_s;
         earliestHitPos=step.startPosition();
       }
-      avgHitTime+=0.5*(step.startTime()+step.endTime())*step.visibleEDep();
+      // Need to account for time wrapping when calculating average time
+      avgHitTime+=std::fmod(0.5*(t_s+t_e), event_window_length)*step.visibleEDep();
       avgHitPos+=0.5*(step.startPosition()+step.endPosition())*step.visibleEDep();
     }
     if(visibleEnergyDeposited>0.0)
@@ -81,13 +95,14 @@ namespace mu2e
                                           double &visibleEnergyDeposited,
                                           double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                           double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
-                                          art::Ptr<SimParticle> &mostLikelySimParticle)
+                                          art::Ptr<SimParticle> &mostLikelySimParticle,
+                                          const art::Handle<mu2e::EventWindowMarker>& ewmh)
   {
     std::set<art::Ptr<CrvStep> > steps;
 
     CrvMCHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, digis, steps);
     CrvMCHelper::GetInfoFromStepPoints(steps, visibleEnergyDeposited,
-                                     earliestHitTime, earliestHitPos, avgHitTime, avgHitPos, mostLikelySimParticle);
+                                       earliestHitTime, earliestHitPos, avgHitTime, avgHitPos, mostLikelySimParticle, ewmh);
   }
 
 

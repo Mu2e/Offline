@@ -9,6 +9,7 @@
 #include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "art/Framework/Principal/Handle.h"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
 namespace mu2e
 {
@@ -23,13 +24,15 @@ namespace mu2e
                                       double &visibleEnergyDeposited,
                                       double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                       double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
-                                      art::Ptr<SimParticle> &mostLikelySimParticle);
+                                      art::Ptr<SimParticle> &mostLikelySimParticle,
+                                      const art::Handle<mu2e::EventWindowMarker>& ewmh);
     static void GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
                                         const art::Handle<CrvDigiMCCollection> &digis,
                                         double &visibleEnergyDeposited,
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         double &avgHitTime, CLHEP::Hep3Vector &avgHitPos,
-                                        art::Ptr<SimParticle> &mostLikelySimParticle);
+                                        art::Ptr<SimParticle> &mostLikelySimParticle,
+                                        const art::Handle<mu2e::EventWindowMarker>& ewmh);
 
     private:
     CrvMCHelper();

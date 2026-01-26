@@ -14,7 +14,7 @@ class MakeCrvDigis
     MakeCrvDigis() {}
     ~MakeCrvDigis() {}
 
-    void SetWaveform(const std::vector<double> &waveform, double ADCconversionFactor, int pedestal, double startTime, double digitizationPrecision);
+    void SetWaveform(const std::vector<double> &waveform, double ADCconversionFactor, int pedestal, double startTime, double digitizationPrecision, int minADC, int maxADC);
 
     std::vector<int16_t> GetADCs() {return _ADCs;}
     const std::vector<int16_t> &GetADCs() const {return _ADCs;}

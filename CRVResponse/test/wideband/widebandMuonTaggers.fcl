@@ -129,11 +129,12 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {  #irrelevant, but coincidence finder requires some numbers
           CRVSector : "M1"
@@ -142,11 +143,12 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {  #irrelevant, but coincidence finder requires some numbers
           CRVSector : "M2"
@@ -155,11 +157,12 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {  #irrelevant, but coincidence finder requires some numbers
           CRVSector : "T1"
@@ -168,11 +171,12 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {  #irrelevant, but coincidence finder requires some numbers
           CRVSector : "T2"
@@ -181,11 +185,12 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig:
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         }
       ]
 

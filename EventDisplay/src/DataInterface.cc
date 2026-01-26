@@ -233,8 +233,10 @@ void DataInterface::fillGeometry()
 
   if(geom->hasElement<mu2e::Tracker>())
   {
-//Straws
     mu2e::GeomHandle<mu2e::Tracker> tracker;
+    double trackerOffset = tracker->g4Tracker()->z0() - _detSysOrigin.z();
+
+//Straws
     const auto& allStraws = tracker->getStraws();
     // for(const auto & elem : allStraws)
     for (size_t i = 0; i<tracker->nStraws(); ++i)
@@ -245,7 +247,7 @@ void DataInterface::fillGeometry()
       const CLHEP::Hep3Vector& d = s.getDirection();
       double x = p.x();
       double y = p.y();
-      double z = p.z();
+      double z = p.z()+trackerOffset;
       double theta = d.theta();
       double phi = d.phi();
       double l = s.halfLength();
@@ -277,8 +279,8 @@ void DataInterface::fillGeometry()
     info->setText(0,"Tracker Support Structure");
     info->setText(1,Form("Inner Radius %.f mm  Outer Radius %.f mm",innerRadius/CLHEP::mm,outerRadius/CLHEP::mm));
     info->setText(2,Form("Length %.f mm",2.0*zHalfLength/CLHEP::mm));
-    info->setText(3,Form("Center at x: 0 mm, y: 0 mm, z: 0 mm"));
-    boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,0, 0,0,0,
+    info->setText(3,Form("Center at x: 0 mm, y: 0 mm, z: %.f mm",trackerOffset));
+    boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,trackerOffset, 0,0,trackerOffset,
                                           zHalfLength,innerRadius,outerRadius, NAN,
                                           _geometrymanager, _topvolume, _mainframe, info, true));
     shape->makeGeometryVisible(true);
@@ -295,8 +297,8 @@ void DataInterface::fillGeometry()
     infoEnvelope->setText(0,"Tracker Envelope");
     infoEnvelope->setText(1,Form("Inner Radius %.f mm  Outer Radius %.f mm",innerRadius/CLHEP::mm,outerRadius/CLHEP::mm));
     infoEnvelope->setText(2,Form("Length %.f mm",2.0*zHalfLength/CLHEP::mm));
-    infoEnvelope->setText(3,Form("Center at x: 0 mm, y: 0 mm, z: 0 mm"));
-    boost::shared_ptr<Cylinder> shapeEnvelope(new Cylinder(0,0,0, 0,0,0,
+    infoEnvelope->setText(3,Form("Center at x: 0 mm, y: 0 mm, z: %.f mm",trackerOffset));
+    boost::shared_ptr<Cylinder> shapeEnvelope(new Cylinder(0,0,trackerOffset, 0,0,trackerOffset,
                                                   zHalfLength,innerRadius,outerRadius, NAN,
                                                   _geometrymanager, _topvolume, _mainframe, infoEnvelope, true));
     shapeEnvelope->makeGeometryVisible(true);
