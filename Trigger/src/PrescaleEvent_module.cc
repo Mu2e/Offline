@@ -17,12 +17,13 @@
 #include "fhiclcpp/types/Table.h"
 #include "canvas/Utilities/InputTag.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-// #include "RecoDataProducts/inc/TriggerInfo.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/DataProducts/inc/FilterFraction.hh"
 #include "artdaq-core-mu2e/Data/EventHeader.hh"
 
 #include <memory>
 #include <iostream>
+#include <string>
 
 namespace mu2e
 {
@@ -40,9 +41,10 @@ namespace mu2e
     };
 
     struct EventMode {
-      EventWindowMarker::SpillType _type;
-      int _prescale;
-      EventMode(EventWindowMarker::SpillType type, int prescale) : _type(type), _prescale(prescale) {}
+      EventWindowMarker::SpillType type_;
+      int prescale_;
+      std::string name_;
+      EventMode(EventWindowMarker::SpillType type, int prescale, std::string const& name ) : type_(type), prescale_(prescale), name_(name) {}
     };
 
     struct Config {
@@ -63,68 +65,66 @@ namespace mu2e
     PrescaleEvent & operator = (PrescaleEvent &&) = delete;
 
     bool filter(art::Event & e) override;
-    virtual bool endRun(art::Run& run ) override;
+    bool endSubRun(art::SubRun& subrun ) override;
 
   private:
 
-    art::ProductToken<EventWindowMarker> const _ewmtoken;
-    std::vector<EventMode> _eventMode;
-    int                    _debug;
-    unsigned               _nevt, _npass;
-
+    art::ProductToken<EventWindowMarker> const ewmtoken_;
+    std::vector<EventMode>              eventMode_;
+    std::vector<uint64_t>     nevt_, npass_;
+    int                                 debug_;
   };
 
   PrescaleEvent::PrescaleEvent(Parameters const & config) :
     art::EDFilter{config},
-    _ewmtoken{consumes<EventWindowMarker>(config().EWM())},
-    _debug         (config().debug()),
-    _nevt(0), _npass(0){
+    ewmtoken_{consumes<EventWindowMarker>(config().EWM())},
+    nevt_(config().eventMode().size(),0),
+    npass_(config().eventMode().size(),0),
+    debug_         (config().debug()) {
     for(const auto& mode : config().eventMode()) {
-      if(mode.eventMode() == "OffSpill") _eventMode.push_back(EventMode(EventWindowMarker::offspill, mode.prescale()));
-      else if(mode.eventMode() == "OnSpill") _eventMode.push_back(EventMode(EventWindowMarker::onspill, mode.prescale()));
+      if(mode.eventMode() == "OffSpill") eventMode_.push_back(EventMode(EventWindowMarker::offspill, mode.prescale(),mode.eventMode()));
+      else if(mode.eventMode() == "OnSpill") eventMode_.push_back(EventMode(EventWindowMarker::onspill, mode.prescale(),mode.eventMode()));
       else throw cet::exception("TRIGGER") << "Unknown prescale mode " << mode.eventMode();
+      produces<mu2e::FilterFraction,art::InSubRun>(mode.eventMode());
     }
   }
 
   inline bool PrescaleEvent::filter(art::Event & e)
   {
-    ++_nevt;
-
     // Check for the prescale corresponding to the current event mode
-    auto ewmH = e.getValidHandle(_ewmtoken);
+    auto ewmH = e.getValidHandle(ewmtoken_);
     const EventWindowMarker& ewm(*ewmH);
-    int ps(0); // default to filtering all events
-    for (const auto& mode : _eventMode) {
-      uint8_t spillType = mode._type;
+    for (size_t imode = 0; imode < eventMode_.size(); imode++){
+      auto const& mode = eventMode_[imode];
+      uint8_t spillType = mode.type_;
       if (spillType == ewm.spillType()){
-        ps = mode._prescale;
-        break;
+        ++nevt_[imode];
+    // Apply the prescale
+        bool retval = e.event() % mode.prescale_ == 0;
+        if (retval) ++npass_[imode];
+        return retval;
       }
     }
-
-    // Default to false
-    bool retval(false);
-
-    // Apply the prescale, if requested for this event type
-    if(ps > 0) {
-      retval = e.event() % ps == 0;
-      if (retval){
-        ++_npass;
-      }
-    }
-
-    // Return the result
-    return retval;
+    // If no matching event type is found, return false
+    return false;
   }
 
-  bool PrescaleEvent::endRun( art::Run& run ) {
-    if(_debug > 0){
-      std::cout << moduleDescription().moduleLabel() << " passed " << _npass << " events out of " << _nevt
-                << " for a ratio of " << ((_nevt > 0) ? float(_npass)/float(_nevt) : 0.f) << std::endl;
+  bool PrescaleEvent::endSubRun( art::SubRun& subrun ) {
+    for (size_t imode = 0; imode < eventMode_.size(); imode++){
+      auto const& mode = eventMode_[imode];
+      double frac = 1.0/double(mode.prescale_);
+      auto ff = std::make_unique<FilterFraction>(FilterFraction::constant, frac, nevt_[imode],npass_[imode]);
+      subrun.put(std::move(ff),mode.name_,art::fullSubRun());
+      if(debug_ > 0){
+        std::cout << moduleDescription().moduleLabel() << " mode " << mode.name_ << " passed " << npass_[imode] << " events out of " << nevt_[imode]
+          << " for a ratio of " << ((nevt_[imode] > 0) ? double(npass_[imode])/double(nevt_[imode]) : 0.f) << std::endl;
+      }
+      // reset
+      npass_[imode] = 0; nevt_[imode] = 0;
     }
     return true;
   }
-
 }
+
 using mu2e::PrescaleEvent;
 DEFINE_ART_MODULE(PrescaleEvent)

@@ -40,7 +40,6 @@ namespace mu2e
       RandomPrescaleFilter & operator = (RandomPrescaleFilter &&) = delete;
 
       bool filter(art::Event & e) override;
-      bool endRun(art::Run& run ) override;
       bool endSubRun(art::SubRun& subrun ) override;
 
     private:
@@ -48,7 +47,7 @@ namespace mu2e
       CLHEP::RandFlat randflat_;
       int debug_;
       double frac_;
-      unsigned nevt_, npass_;
+      uint64_t nevt_, npass_;
   };
 
   RandomPrescaleFilter::RandomPrescaleFilter(const Parameters& conf) :
@@ -71,17 +70,13 @@ namespace mu2e
   }
 
   bool RandomPrescaleFilter::endSubRun( art::SubRun& subrun ) {
-    auto ff = std::make_unique<FilterFraction>(FilterFraction::constant,frac_, double(npass_)/double(nevt_));
+    auto ff = std::make_unique<FilterFraction>(FilterFraction::constant,frac_, nevt_,npass_);
     subrun.put(std::move(ff),"",art::fullSubRun());
-    return true;
-  }
-
-
-  bool RandomPrescaleFilter::endRun( art::Run& run ) {
     if(debug_ > 0 && nevt_ > 0){
       std::cout << moduleDescription().moduleLabel() << " passed " << npass_ << " events out of " << nevt_ << " for a ratio of " << float(npass_)/float(nevt_) << std::endl;
-
     }
+    // reset
+    npass_ = 0; nevt_ = 0;
     return true;
   }
 
