@@ -69,7 +69,7 @@ void mu2e::FilterFractionPrinter::Print(const mu2e::FilterFraction& obj,
                                         int ind, std::ostream& os) {
   os << std::setiosflags(std::ios::fixed | std::ios::right);
 
-  os << "  Type" << obj.type() << " Nominal fraction " << obj.nominalFraction() << " Actual Fraction " << obj.actualFraction()  <<  " N Seen " << obj.nSeen() << std::endl;
+  os << " Type " << obj.type() << " Nominal fraction " << obj.nominalFraction() << " Actual Fraction " << obj.actualFraction()  <<  " N Seen " << obj.nSeen() << std::endl;
 }
 
 void mu2e::FilterFractionPrinter::PrintHeader(const std::string& tag,
