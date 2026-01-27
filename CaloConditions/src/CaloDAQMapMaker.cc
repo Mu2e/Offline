@@ -34,8 +34,9 @@ namespace mu2e {
     CaloDAQMap::OfflineArray offline2Raw;
     uint16_t oid,rid,nRead(0);
 
-    ordFile >> rid >> oid;
-    while (!ordFile.eof()) {
+    while (!ordFile.eof()){
+      ordFile >> rid >> oid;
+      if (ordFile.eof()) break;
 
       if(rid >= CaloConst::_nRawChannel) {
         throw cet::exception("CALODAQMAPMAKER_RANGE") << "CaloDAQMapMaker read invalid rawId" << rid << endl;
@@ -51,8 +52,6 @@ namespace mu2e {
       if(oid < CaloConst::_nChannel) {
         offline2Raw[oid] = CaloRawSiPMId(rid);
       }
-
-      ordFile >> rid >> oid;
 
     }
 
