@@ -29,6 +29,7 @@
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 
 using namespace std;
 using CLHEP::Hep3Vector;
@@ -57,6 +58,7 @@ namespace mu2e
       art::InputTag _stTag;
       art::InputTag _mcdigisTag;
       art::InputTag _digisTag;
+      art::InputTag _tcTag;
       // cache of event objects
       const StrawHitCollection* _shcol;
       const ComboHitCollection* _chcol;
@@ -64,6 +66,7 @@ namespace mu2e
       const StrawDigiMCCollection *_mcdigis;
       const StrawDigiCollection *_digis;
       const StrawDigiADCWaveformCollection *_digiadcs;
+      const TimeClusterCollection* _tccol;
       // strawhit tuple variables
       TTree *_shdiag;
       Int_t _eventid, _subrunid, _runid;
@@ -99,6 +102,8 @@ namespace mu2e
       Int_t _digipeak;
       Float_t _digipedestal;
       Int_t _digitdc[2], _digitot[2];
+      Int_t _intimecluster;
+      bool _tcfilter;
       ProditionsHandle<StrawElectronics> _strawele_h;
       // helper array
       StrawEnd _end[2];
@@ -116,6 +121,8 @@ namespace mu2e
     _pbtmcTag(pset.get<art::InputTag>("ProtonBunchTimeMC","EWMProducer")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _digisTag(pset.get<art::InputTag>("StrawDigiCollection","makeSD")),
+    _tcTag(pset.get<string>("TimeClusterCollection","")),
+    _tcfilter(pset.get<bool>("TCFilter",false)),
     _end{StrawEnd::cal,StrawEnd::hv}
   {
     if(pset.get<bool>("TestStrawId",false)) {
@@ -157,6 +164,7 @@ namespace mu2e
     _digiadcs = 0;
     _pbt = 0;
     _pbtmc = 0;
+    _tccol = 0;
     // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol = shH.product();
@@ -180,6 +188,9 @@ namespace mu2e
     }
     auto pbtHandle = evt.getValidHandle<ProtonBunchTime>(_pbtTag);
     _pbt = pbtHandle.product()->pbtime_;
+    auto const& tch = evt.getHandle<TimeClusterCollection>(_tcTag);
+    if(tch.isValid())
+      _tccol = tch.product();
     return _shcol != 0 && _chcol != 0 && (_shfcol != 0 || !_useshfcol) && (_mcdigis != 0  || !_mcdiag) && ((_digis != 0 && _digiadcs != 0) || !_digidiag);
   }
 
@@ -227,6 +238,7 @@ namespace mu2e
     _shdiag->Branch("delay",&_delay,"delaycal/F:delayhv/F");
     _shdiag->Branch("threshold",&_threshold,"thresholdcal/F:thresholdhv/F");
     _shdiag->Branch("adcgain",&_adcgain,"adcgain/F");
+    _shdiag->Branch("intimecluster",&_intimecluster,"intimecluster/I");
     if(_mcdiag){
       _shdiag->Branch("mcshpos.",&_mcshp);
       _shdiag->Branch("mcopos.",&_mcop);
@@ -277,7 +289,20 @@ namespace mu2e
     const Tracker& tracker = *GeomHandle<Tracker>(); //FIXME switch to aligned
     static const double rstraw = tracker.strawOuterRadius();
     unsigned nstrs = _chcol->size();
+    std::vector<int> intimecluster(nstrs,0);
+    if (_tccol){
+      for (size_t itc=0;itc<_tccol->size();itc++){
+        auto const& tc = _tccol->at(itc);
+        for (size_t j=0;j<tc.hits().size();j++){
+          intimecluster[tc.hits()[j]] = 1;
+        }
+      }
+    }
+
     for(unsigned istr=0; istr<nstrs;++istr){
+      _intimecluster = intimecluster[istr];
+      if (_tcfilter && !_intimecluster)
+        continue;
       StrawHit const& sh = _shcol->at(istr);
       ComboHit const& ch = _chcol->at(istr);
       StrawHitFlag shf = ch.flag();
