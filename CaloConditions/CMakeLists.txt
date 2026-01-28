@@ -17,7 +17,7 @@ cet_make_library(
 )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/nominal.txt ${CURRENT_BINARY_DIR} data/nominal.txt)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/caloDMAP_20250827.dat ${CURRENT_BINARY_DIR} data/caloDMAP_20250827.dat)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/caloDMAP_nominal.dat ${CURRENT_BINARY_DIR} data/caloDMAP_nominal.dat)
 
 install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/CaloConditions)
 
