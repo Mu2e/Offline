@@ -425,3 +425,10 @@ CREATE TABLE cal.cosmicenergycalibinfo
 GRANT SELECT ON cal.cosmicenergycalibinfo TO PUBLIC;
 GRANT INSERT ON cal.cosmicenergycalibinfo TO cal_role;
 
+CREATE TABLE cal.energycalib
+  (cid INTEGER,
+   roid INTEGER, adc2mev NUMERIC,
+   CONSTRAINT cal_energycalib_pk PRIMARY KEY (cid,roid) );
+GRANT SELECT ON cal.energycalib TO PUBLIC;
+GRANT INSERT ON cal.energycalib TO cal_role;
+
