@@ -6,12 +6,9 @@
 
 #include "CLHEP/Matrix/Vector.h"
 
-// BaBar
-#include "BTrk/BaBar/BaBar.hh"
-//#include "BTrk/TrkBase/HelixTraj.hh"
-#include "BTrk/ProbTools/ChisqConsistency.hh"
+#include "KinKal/General/Chisq.hh"
 
-namespace mu2e { 
+namespace mu2e {
   /* TODO: Delete if OK. Also check if can use BTrkLegacy HelixParams to substitute
   TrackSummary::HelixParams::HelixParams(const TrkSimpTraj& ltraj)
     : d0_(ltraj.parameters()->parameter()[d0Index])
@@ -35,12 +32,12 @@ namespace mu2e {
     static const double pi = 4.*atan(1.); // M_PI is not in the standard
     return 2 * pi * radius() * tanDip_;
   }
-  
+
   double TrackSummary::fitcon() const {
-    ChisqConsistency cs(chi2(), ndof());
-    return cs.significanceLevel();
+    KinKal::Chisq cs(chi2(), ndof());
+    return cs.probability();
   }
-  
+
   void TrackSummary::addState(const TrackSummary::TrackStateAtPoint& st) {
     states_.emplace_back(st);
   }

@@ -1,4 +1,4 @@
-#include "BTrkLegacy/inc/ExternalInfo.hh"
+#include "Offline/BTrkLegacy/inc/ExternalInfo.hh"
 
 #include <stdexcept>
 

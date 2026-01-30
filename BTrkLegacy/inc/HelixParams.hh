@@ -11,6 +11,7 @@ namespace mu2e {
 
       HelixParams(const CLHEP::HepVector& pvec, const CLHEP::HepSymMatrix& pcov) : parvec(pvec), parcov(pcov) {}
       ~HelixParams(){}
+      HelixParams* clone() const { return new HelixParams(*this); }
 
       double d0() const                              {return parvec[d0Index];}
       double phi0() const                            {return parvec[phi0Index];}

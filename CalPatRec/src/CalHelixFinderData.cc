@@ -2,7 +2,7 @@
 
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/CalPatRec/inc/CalHelixFinderData.hh"
-#include "BTrk/TrkBase/HelixTraj.hh"
+#include "Offline/BTrkLegacy/inc/HelixParams.hh"
 
 using CLHEP::HepVector;
 using CLHEP::HepSymMatrix;

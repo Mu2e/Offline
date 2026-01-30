@@ -21,7 +21,7 @@
 
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
 
-#include "BTrkLegacy/inc/TrkParticle.hh"
+#include "Offline/BTrkLegacy/inc/TrkParticle.hh"
 // mu2e tracking
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 

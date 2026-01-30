@@ -1,9 +1,9 @@
 // particle description used for tracking
 // the implementation depends on the mu2e conditions service, but
 // not the interface
-#include "BTrk/TrkBase/TrkParticle.hh"
-#include "BTrkLegacy/inc/ExternalInfo.hh"
-#include "BTrkLegacy/inc/ParticleInfoInterface.hh"
+#include "Offline/BTrkLegacy/TrkParticle.hh"
+#include "Offline/BTrkLegacy/inc/ExternalInfo.hh"
+#include "Offline/BTrkLegacy/inc/ParticleInfoInterface.hh"
 
 #include <cmath>
 
