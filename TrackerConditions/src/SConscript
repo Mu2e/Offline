@@ -13,7 +13,6 @@ rootlibs  = env['ROOTLIBS'] #jb
 helper=mu2e_helper(env);
 
 mainlib = helper.make_mainlib ( [
-  'mu2e_ConditionsService',
   'mu2e_GeometryService',
   'mu2e_BFieldGeom',
   'mu2e_Mu2eBTrk',

@@ -36,7 +36,6 @@ cet_build_plugin(FlagBkgHits art::module
       art_root_io::TFileService_service
       Offline::TrkHitReco
       
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::DataProducts
       Offline::MCDataProducts
@@ -81,7 +80,6 @@ cet_build_plugin(StrawHitReco art::module
       Offline::TrkHitReco
       
       Offline::ConditionsBase
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::DataProducts
       Offline::GeometryService

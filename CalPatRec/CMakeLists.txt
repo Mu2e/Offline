@@ -17,7 +17,6 @@ cet_make_library(
       Offline::BFieldGeom
       Offline::BTrkData
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts
@@ -35,7 +34,6 @@ cet_build_plugin(AgnosticHelixFinder art::module
       
       Offline::BFieldGeom
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::GeometryService
       Offline::Mu2eUtilities
@@ -50,7 +48,6 @@ cet_build_plugin(CalHelixFinder art::module
       
       Offline::BFieldGeom
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::GeometryService
       Offline::Mu2eUtilities
@@ -64,7 +61,6 @@ cet_build_plugin(CalTimePeakFinder art::module
       Offline::CalPatRec
       
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::GeometryService
       Offline::Mu2eUtilities
@@ -78,7 +74,6 @@ cet_build_plugin(ComboHitFilter art::module
       Offline::CalPatRec
       
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::GeometryService
       Offline::MCDataProducts
       Offline::Mu2eUtilities
@@ -91,7 +86,6 @@ cet_build_plugin(DeltaFinderAna art::module
     LIBRARIES REG
       Offline::CalPatRec
       
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts
@@ -105,7 +99,6 @@ cet_build_plugin(DeltaFinder art::module
       Offline::CalPatRec
       
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::GeometryService
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
@@ -143,7 +136,6 @@ cet_build_plugin(PrefetchData art::module
     LIBRARIES REG
       Offline::CalPatRec
       
-      Offline::ConditionsService
       Offline::GeometryService
       Offline::MCDataProducts
       Offline::Mu2eUtilities
