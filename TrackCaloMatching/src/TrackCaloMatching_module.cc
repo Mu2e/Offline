@@ -18,7 +18,6 @@
 // conditions
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"

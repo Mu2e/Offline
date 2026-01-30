@@ -17,7 +17,6 @@
 #include "art/Utilities/make_tool.h"
 #include "art/Framework/Principal/Run.h"
 // conditions
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"

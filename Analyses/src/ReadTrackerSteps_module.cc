@@ -15,7 +15,6 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 // Mu2e includes
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
