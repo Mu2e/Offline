@@ -33,6 +33,7 @@ cet_set_compiler_flags(DIAGS VIGILANT
              -Wreorder
 )
 
+
 if(DEFINED Offline_UPS_QUALIFIER_STRING)
   string(FIND ${Offline_UPS_QUALIFIER_STRING} "trig" TRIG_BUILD)
   # TRIG_BUILD will be -1 if trig qualifier not found
@@ -43,7 +44,12 @@ if(DEFINED Offline_UPS_QUALIFIER_STRING)
   endif()
 endif()
 
-message("WITH_G4 SET TO ${WITH_G4}")
+if(NOT DEFINED WITH_G4)
+  message("WITH_G4 UNDEFINED, SET TO FALSE")
+  set(WITH_G4 FALSE)
+else()
+  message("WITH_G4 SET TO ${WITH_G4}")
+endif()
 
 # Create a variable to hold optional Online libraries
 find_package(artdaq)
@@ -76,6 +82,27 @@ if( ${WITH_G4} )
     link_directories($ENV{CRYHOME}/lib)
 endif()
 
+# empty defaults to off
+option(BUILD_PYTHON_INTERFACE "Generate Python bindings via SWIG" FALSE)
+if( BUILD_PYTHON_INTERFACE ) 
+    message("--> Adding SWIG calls to generate Python interface")
+    find_package(SWIG REQUIRED EXPORT)
+    include(${SWIG_USE_FILE})
+
+    # Find the Python interpreter and development files
+    find_package(Python3 COMPONENTS Interpreter Development)
+    if(NOT Python3_FOUND)
+      message(FATAL_ERROR "Python3 not found. Please install Python3 development files.")
+    endif()
+    
+    # Define these ONCE here so they are available everywhere
+    set(PYTHON_VER "${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}")
+    set(PYTHON_INSTALL_DIR "lib/python${PYTHON_VER}/site-packages" CACHE INTERNAL "Python install destination")
+
+    include(${CMAKE_CURRENT_SOURCE_DIR}/scripts/build/cmake/Mu2eSwigHelper.cmake)
+    
+    message("--> Python install directory set to: ${PYTHON_INSTALL_DIR}")
+endif()
 
 # BTrk and KinKal have non-standard Find*.cmake...
 if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/../KinKal/KinKalTargets.cmake)

@@ -18,6 +18,7 @@
 
 #include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 // #include "CalPatRec/inc/CalTimePeak.hh"
 //#include "CalPatRec/inc/CalHelixPoint.hh"
 #include "Offline/CalPatRec/inc/CalHelixFinderData.hh"
@@ -91,6 +92,7 @@ namespace mu2e {
     float                     fCaloX;
     float                     fCaloY;
     float                     fCaloZ;
+    float                     fCaloOffset;
 
     //    std::vector<CalHelixPoint> _xyzp;        // normally includes only hits from the time peak
 //-----------------------------------------------------------------------------
@@ -312,8 +314,6 @@ namespace mu2e {
     // bool findHelix                    (CalHelixFinderData& Helix, const CalTimePeak* TimePeak);
     bool findHelix                    (CalHelixFinderData& Helix);
     int  findDfDz                     (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
-    int  findDfDz_1                   (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
-    int  findDfDz_2                   (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
     void findTrack                    (HitInfo_t&         SeedIndex,
                                        CalHelixFinderData& Helix,
                                        int                 UseMPVdfdz     = 0);
@@ -325,7 +325,15 @@ namespace mu2e {
 // setters
 //-----------------------------------------------------------------------------
     void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
-    void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
+    void  setCalorimeter(const Calorimeter* Cal    ) {
+      _calorimeter = Cal;
+      fCaloOffset = (_calorimeter->caloInfo().getDouble("diskCaseZLength")/2.
+                     + (  _calorimeter->caloInfo().getDouble("BPPipeZOffset")
+                        + _calorimeter->caloInfo().getDouble("BPHoleZLength")
+                        + _calorimeter->caloInfo().getDouble("FEEZLength"))/2.
+                     - _calorimeter->caloInfo().getDouble("FPCarbonZLength") - _calorimeter->caloInfo().getDouble("FPFoamZLength")
+                     );
+    }
 //-----------------------------------------------------------------------------
 // diagnostics
 //-----------------------------------------------------------------------------

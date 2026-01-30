@@ -51,7 +51,6 @@ namespace mu2e {
     _doTiming = _data->doTiming;
     _watch = _data->watch;
 
-    printf("DeltaFinderAlg created\n");
   }
 //-----------------------------------------------------------------------------
 // make sure the two hits used to make a new seed are not a part of an already found seed

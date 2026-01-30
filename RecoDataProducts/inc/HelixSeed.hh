@@ -41,6 +41,8 @@ namespace mu2e {
     float                    _eDepAvg =0;  // average energy deposition from helix hits
   };
    typedef std::vector<mu2e::HelixSeed> HelixSeedCollection;
+   typedef art::Ptr<mu2e::HelixSeed> HelixSeedPtr;
+   typedef std::vector<mu2e::HelixSeedPtr> HelixSeedPtrCollection;
 } // namespace mu2e
 
 #endif /* RecoDataProducts_HelixSeed_hh */

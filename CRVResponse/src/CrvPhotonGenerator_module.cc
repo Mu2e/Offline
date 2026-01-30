@@ -303,7 +303,7 @@ namespace mu2e
           double t2 = step.endTime();
           if(isnan(t1) || isnan(t2)) continue;  //This situation was observed once. Not sure how it happened.
 
-          if(!_simulateNZS)  //no steps will be removed for NZS
+          if(!_simulateNZS && spillType==EventWindowMarker::SpillType::onspill)  //remove steps that will never produce digis (if on-spill and not NZS) to save time
           {
             //time wrap around eventWindowStart which is far away from any steps that need to be used
             double t1Tmp = fmod(t1-eventWindowStart,_microBunchPeriod)+eventWindowStart;

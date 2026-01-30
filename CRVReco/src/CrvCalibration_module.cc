@@ -27,6 +27,7 @@
 #include <TH1F.h>
 #include <TF1.h>
 #include <TTree.h>
+#include <TSpectrum.h>
 
 namespace mu2e
 {
@@ -39,10 +40,17 @@ namespace mu2e
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("module label of the input CrvRecoPulses")};
-      fhicl::Atom<int>         histBinsPulseArea{Name("histBinsPulseArea"), Comment("pulseArea histogram bins"), 150};
-      fhicl::Atom<int>         histBinsPulseHeight{Name("histBinsPulseHeight"), Comment("pulseHeight histogram bins"), 150};
+      fhicl::Atom<int>         histBinsPulseArea{Name("histBinsPulseArea"), Comment("pulseArea histogram bins"), 300};
+      fhicl::Atom<int>         histBinsPulseHeight{Name("histBinsPulseHeight"), Comment("pulseHeight histogram bins"), 300};
       fhicl::Atom<double>      histMaxPulseArea{Name("histMaxPulseArea"), Comment("end range of pulseArea histogram"), 3000.0};
       fhicl::Atom<double>      histMaxPulseHeight{Name("histMaxPulseHeight"), Comment("end range of pulseArea histogram"), 150.0};
+      fhicl::Atom<double>      fitRangeStart{Name("fitRangeStart"), Comment("low end of the 1PE fit range as fraction of peak"), 0.8};
+      fhicl::Atom<double>      fitRangeEnd{Name("fitRangeEnd"), Comment("high end of the 1PE fit range as fraction of peak"), 1.2};
+      fhicl::Atom<int>         minHistEntries{Name("minHistEntries"), Comment("minimum number of entries required for a fit"), 100};
+      fhicl::Atom<int>         spectrumNPeaks{Name("spectrumNPeaks"), Comment("maximum number of peaks searched by TSpectrum. numbers less then 4 result in warnings"), 6};
+      fhicl::Atom<double>      spectrumPeakSigma{Name("spectrumPeakSigma"), Comment("TSpectrum search parameter sigma"), 4.0};
+      fhicl::Atom<double>      spectrumPeakThreshold{Name("spectrumPeakThreshold"), Comment("TSpectrum search parameter threshold"), 0.01};
+      fhicl::Atom<double>      peakRatioTolerance{Name("peakRatioTolerance"), Comment("allowed deviation of the ratio between 1PE peak and 2PE peak from 2.0"), 0.1};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
@@ -52,11 +60,18 @@ namespace mu2e
     void analyze(const art::Event& e);
     void beginRun(const art::Run&);
     void endJob();
+    bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, double &SPEpeak);
 
     private:
     std::string        _crvRecoPulsesModuleLabel;
     int                _histBinsPulseArea, _histBinsPulseHeight;
     double             _histMaxPulseArea, _histMaxPulseHeight;
+    double             _fitRangeStart, _fitRangeEnd;
+    int                _minHistEntries;
+    int                _spectrumNPeaks;
+    double             _spectrumPeakSigma;
+    double             _spectrumPeakThreshold;
+    double             _peakRatioTolerance;
     std::string        _tmpDBfileName;
     std::vector<TH1F*> _calibHistsPulseArea;
     std::vector<TH1F*> _calibHistsPulseHeight;
@@ -78,6 +93,13 @@ namespace mu2e
     _histBinsPulseHeight(conf().histBinsPulseHeight()),
     _histMaxPulseArea(conf().histMaxPulseArea()),
     _histMaxPulseHeight(conf().histMaxPulseHeight()),
+    _fitRangeStart(conf().fitRangeStart()),
+    _fitRangeEnd(conf().fitRangeEnd()),
+    _minHistEntries(conf().minHistEntries()),
+    _spectrumNPeaks(conf().spectrumNPeaks()),
+    _spectrumPeakSigma(conf().spectrumPeakSigma()),
+    _spectrumPeakThreshold(conf().spectrumPeakThreshold()),
+    _peakRatioTolerance(conf().peakRatioTolerance()),
     _tmpDBfileName(conf().tmpDBfileName())
   {
   }
@@ -121,7 +143,8 @@ namespace mu2e
     treePedestal->Branch("channel", &channel);
     treePedestal->Branch("pedestal", &pedestal);
 
-    TF1 funcCalib("f0", "gaus");
+    TF1 funcCalib("SPEpeak", "gaus");
+    TSpectrum spectrum(_spectrumNPeaks); //any value of 3 or less results in a "Peak buffer full" warning.
 
     std::ofstream outputFile;
     outputFile.open(_tmpDBfileName);
@@ -137,26 +160,19 @@ namespace mu2e
         if(i==1) hist=_calibHistsPulseArea.at(channel);
         else hist=_calibHistsPulseHeight.at(channel);
 
-        if(hist->GetEntries()<100) //not enough data
+        double peakCalib=0;
+        if(!FindSPEpeak(hist, spectrum, peakCalib))
         {
           calibValue[i]=-1;
           continue;
         }
 
-/*
-        int n=hist->GetNbinsX();
-        double overflow=hist->GetBinContent(0)+hist->GetBinContent(n+1);
-        if(overflow/((double)hist->GetEntries())>0.1) //too much underflow/overflow. something may be wrong.
+        funcCalib.SetRange(peakCalib*_fitRangeStart,peakCalib*_fitRangeEnd);
+        if(hist->FindBin(peakCalib*_fitRangeStart)==hist->FindBin(peakCalib*_fitRangeEnd)) //fit range start/end are in the same bin
         {
           calibValue[i]=-1;
           continue;
         }
-*/
-
-        int maxbinCalib = hist->GetMaximumBin();
-        double peakCalib = hist->GetBinCenter(maxbinCalib);
-//FIXME        funcCalib.SetRange(peakCalib*0.8,peakCalib*1.2);
-        funcCalib.SetRange(peakCalib*0.7,peakCalib*1.3);
         funcCalib.SetParameter(1,peakCalib);
         hist->Fit(&funcCalib, "0QR");
         calibValue[i]=funcCalib.GetParameter(1);
@@ -211,11 +227,11 @@ namespace mu2e
 
     for(auto iter=crvRecoPulseCollection->begin(); iter!=crvRecoPulseCollection->end(); ++iter)
     {
-      if(!iter->GetRecoPulseFlags().none())
-      {
-        if(!iter->GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::noCalibConstPulseArea) &&
-           !iter->GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::noCalibConstPulseHeight)) continue;
-      }
+      //check for any error flags, but ignore calibration flags
+      auto flags = iter->GetRecoPulseFlags();
+      flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseArea,0);
+      flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseHeight,0);
+      if(!flags.none()) continue;
 
       int barIndex = iter->GetScintillatorBarIndex().asInt();
       int SiPM = iter->GetSiPMNumber();
@@ -223,6 +239,32 @@ namespace mu2e
       _calibHistsPulseArea.at(channelIndex)->Fill(iter->GetPulseBeta()*iter->GetPulseHeight()*TMath::E());
       _calibHistsPulseHeight.at(channelIndex)->Fill(iter->GetPulseHeight());
     }
+  }
+
+  bool CrvCalibration::FindSPEpeak(TH1F *hist, TSpectrum &spectrum, double &SPEpeak)
+  {
+    if(hist->GetEntries()<_minHistEntries) return false; //not enough data
+
+    int nPeaks = spectrum.Search(hist,_spectrumPeakSigma,"nodraw",_spectrumPeakThreshold);
+    if(nPeaks==0) return false;
+
+    //peaks are not returned sorted
+    double *peaksX = spectrum.GetPositionX();
+    double *peaksY = spectrum.GetPositionY();
+    std::vector<std::pair<double,double> > peaks;
+    for(int iPeak=0; iPeak<nPeaks; ++iPeak) peaks.emplace_back(peaksX[iPeak],peaksY[iPeak]);
+    std::sort(peaks.begin(),peaks.end(), [](const std::pair<double,double> &a, const std::pair<double,double> &b) {return a.first<b.first;});
+
+    int peakToUse=0;
+    if(nPeaks>1 && peaks[0].first>0)   //if more than one peak is found, the first peak could be due to baseline fluctuations
+                                       //never seen peaks at 0, but still checking to avoid division by 0.
+    {
+      if(fabs(peaks[1].first/peaks[0].first-2.0)>_peakRatioTolerance) peakToUse=1; //2nd peak is not twice the 1st peak, so the 1st peak is not the SPE peak
+                                                                                   //assume that the 2nd peak is the SPE peak
+                                                                                   //we have never seen that the 3rd peak was the SPE peak - no need to test it
+    }
+    SPEpeak = peaks[peakToUse].first;
+    return true;
   }
 
 } // end namespace mu2e
