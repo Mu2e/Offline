@@ -13,17 +13,9 @@ private:
 public:
   HelixTraj(const CLHEP::HepVector& pvec,const CLHEP::HepSymMatrix& pcov ) : pvec_(pvec), pcov_(pcov)
   {
-    //  Make sure the dimensions of the input matrix and vector are correct
-    /*
-    if( pvec.num_row() != NHLXPRM || pcov.num_row() != NHLXPRM ){
-    ErrMsg(fatal) 
-        << "HelixTraj: incorrect constructor vector/matrix dimension" << endmsg;
-    }
-    */
-
     if (omega() == 0.0) pvec_[omegaIndex] = 1.e-9;
   }
-  HelixTraj( const HelixTraj& h ) : pvec_(h.pvec_), pcov_(h.pcov_) 
+  HelixTraj( const HelixTraj& h ) : pvec_(h.pvec_), pcov_(h.pcov_)
   {
   }
 

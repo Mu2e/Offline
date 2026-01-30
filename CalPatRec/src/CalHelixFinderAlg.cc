@@ -7,9 +7,7 @@
 //  [00:13] : Giani
 //  [14:15] : Pasha - parameters of fit with non-equal weights
 //
-// the following has to come before other BaBar includes
-///////////////////////////////////////////////////////////////////////////////
-#include "BTrkLegacy/inc/HelixTraj.hh"
+#include "BTrkLegacy/inc/HelixParams.hh"
 #include "Offline/CalPatRec/inc/CalHelixFinderAlg.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "art_root_io/TFileService.h"

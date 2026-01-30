@@ -337,12 +337,6 @@
  <class name="art::Ptr<mu2e::TrkCaloMatch>" />
  <class name="art::Wrapper<mu2e::TrkCaloMatchCollection>"/>
 
- <class name="mu2e::TrkToCaloExtrapol" />
- <class name="mu2e::TrkToCaloExtrapolCollection" />
- <class name="art::Ptr<mu2e::TrkToCaloExtrapol>"/>
- <class name="std::vector<art::Ptr<mu2e::TrkToCaloExtrapol> >" />
- <class name="art::Wrapper<mu2e::TrkToCaloExtrapolCollection>" />
-
  <class name="mu2e::TrackClusterMatch" />
  <class name="std::vector<mu2e::TrackClusterMatch>"  />
  <class name="art::Wrapper<mu2e::TrackClusterMatchCollection>" />

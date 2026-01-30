@@ -67,7 +67,6 @@
 #include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
 #include "Offline/RecoDataProducts/inc/TrkCaloMatch.hh"
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
-#include "Offline/RecoDataProducts/inc/TrkToCaloExtrapol.hh"
 #include "Offline/RecoDataProducts/inc/TrackClusterMatch.hh"
 
 // CRV
