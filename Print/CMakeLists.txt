@@ -40,7 +40,6 @@ cet_make_library(
       src/StrawHitPrinter.cc
       src/SurfaceStepPrinter.cc
       src/TimeClusterPrinter.cc
-      src/TrackClusterMatchPrinter.cc
       src/TrackSummaryPrinter.cc
       src/TriggerInfoPrinter.cc
       src/TriggerResultsPrinter.cc
