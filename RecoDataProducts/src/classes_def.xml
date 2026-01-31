@@ -191,15 +191,6 @@
  <class name="mu2e::TrkFitFlag"/>
  <class name="mu2e::TrkFitFlagDetail"/>
 
- <class name="mu2e::TrkExtTrajPoint" />
- <class name="std::vector<mu2e::TrkExtTrajPoint>" />
- <class name="mu2e::TrkExtTraj" />
- <class name="std::vector<mu2e::TrkExtTraj>" />
- <class name="mu2e::TrkExtTrajCollection" />
- <class name="art::Ptr<mu2e::TrkExtTrajPoint>" />
- <class name="art::Ptr<mu2e::TrkExtTraj>" />
- <class name="art::Wrapper<mu2e::TrkExtTrajCollection>" />
-
  <class name="mu2e::TrackSummary::HelixParams"/>
  <class name="mu2e::TrackSummary::TrackStateAtPoint"/>
  <class name="std::vector<mu2e::TrackSummary::TrackStateAtPoint>"/>
@@ -207,10 +198,6 @@
  <class name="std::vector<mu2e::TrackSummary>"/>
  <class name="art::Wrapper<std::vector<mu2e::TrackSummary> >"/>
  <class name="art::Ptr<mu2e::TrackSummary>" />
-
- <class name="mu2e::KalRepPtr"/>
- <class name="mu2e::KalRepPtrCollection" persistent="false"/>
- <class name="art::Wrapper<mu2e::KalRepPtrCollection>"/>
 
  <class name="mu2e::TrkFitDirection"/>
  <class name="mu2e::TrkStrawHitSeed"/>
@@ -309,33 +296,10 @@
  <class name="std::vector<art::Ptr<mu2e::AlgorithmID> >"/>
  <class name="art::Wrapper<mu2e::AlgorithmIDCollection>"/>
 
-
- <class name="std::pair<art::Ptr<mu2e::KalRepPtr>,art::Ptr<mu2e::TrackSummary> >" />
- <class name="std::pair<art::Ptr<mu2e::TrackSummary>,art::Ptr<mu2e::KalRepPtr> >" />
- <class name="std::vector<std::pair<art::Ptr<mu2e::KalRepPtr>,art::Ptr<mu2e::TrackSummary> > >" />
- <class name="std::vector<std::pair<art::Ptr<mu2e::TrackSummary>,art::Ptr<mu2e::KalRepPtr> > >" />
-
- <class name="art::Assns<mu2e::KalRepPtr,mu2e::TrackSummary,void>" persistent="false"  />
- <class name="art::Assns<mu2e::TrackSummary,mu2e::KalRepPtr,void>" persistent="false"  />
- <class name="art::Wrapper<art::Assns<mu2e::KalRepPtr,mu2e::TrackSummary,void> >" />
- <class name="art::Wrapper<art::Assns<mu2e::TrackSummary,mu2e::KalRepPtr,void> >" />
-
-
 <!--  ********* extrapolation and PID  ********* -->
- <class name="mu2e::TrkCaloIntersect" />
- <class name="std::vector<mu2e::TrkCaloIntersect>" />
- <class name="mu2e::TrkCaloIntersectCollection" />
- <class name="art::Ptr<mu2e::TrkCaloIntersect>" />
- <class name="art::Wrapper<mu2e::TrkCaloIntersectCollection>"/>
 
  <class name="mu2e::TrackCaloMatchInfo" />
  <class name="std::vector<mu2e::TrackCaloMatchInfo>" />
-
- <class name="mu2e::TrkCaloMatch" />
- <class name="std::vector<mu2e::TrkCaloMatch>" />
- <class name="mu2e::TrkCaloMatchCollection" />
- <class name="art::Ptr<mu2e::TrkCaloMatch>" />
- <class name="art::Wrapper<mu2e::TrkCaloMatchCollection>"/>
 
  <class name="mu2e::TrackClusterMatch" />
  <class name="std::vector<mu2e::TrackClusterMatch>"  />
@@ -345,16 +309,6 @@
  <class name="mu2e::PIDProductCollection" />
  <class name="art::Ptr<mu2e::PIDProduct>" />
  <class name="art::Wrapper<mu2e::PIDProductCollection>" />
-
- <class name="std::pair<art::Ptr<mu2e::KalRepPtr>,art::Ptr<mu2e::CaloCluster> >" />
- <class name="std::pair<art::Ptr<mu2e::CaloCluster>,art::Ptr<mu2e::KalRepPtr> >" />
-
- <class name="art::Assns<mu2e::KalRepPtr,mu2e::CaloCluster, mu2e::TrackCaloMatchInfo>" />
- <class name="art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr, mu2e::TrackCaloMatchInfo>" />
- <class name="art::Assns<mu2e::KalRepPtr,mu2e::CaloCluster,void>" />
- <class name="art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr,void>" />
- <class name="art::Wrapper<art::Assns<mu2e::KalRepPtr,mu2e::CaloCluster, mu2e::TrackCaloMatchInfo> >" />
- <class name="art::Wrapper<art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr, mu2e::TrackCaloMatchInfo> >" />
 
 <!--  ********* CRV  ********* -->
  <class name="mu2e::CrvDigi" />

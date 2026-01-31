@@ -20,7 +20,6 @@
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
-#include "BTrk/BField/BField.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"

@@ -1,9 +1,10 @@
 // particle description used for tracking
 // the implementation depends on the mu2e conditions service, but
 // not the interface
-#include "Offline/BTrkLegacy/TrkParticle.hh"
-#include "Offline/BTrkLegacy/inc/ExternalInfo.hh"
-#include "Offline/BTrkLegacy/inc/ParticleInfoInterface.hh"
+#include "Offline/BTrkLegacy/inc/TrkParticle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include <cmath>
 
@@ -24,33 +25,45 @@ TrkParticle::operator =(TrkParticle const& other) {
 }
 
 
+using mu2e::PDGCodeDetail;
+using mu2e::ParticleDataList;
+using mu2e::GlobalConstantsHandle;
 double
 TrkParticle::mass() const {
-// avoid calling the Particle Data table on each call by buffering results in statics
+  static bool first=true;
+  static double e_mass;
+  static double mu_mass;
+  static double pi_mass;
+  static double K_mass;
+  static double p_mass;
+  if(first){
+    auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
+    e_mass = ptable->particle(PDGCodeDetail::e_plus).mass();
+    mu_mass = ptable->particle(PDGCodeDetail::mu_plus).mass();
+    pi_mass = ptable->particle(PDGCodeDetail::pi_plus).mass();
+    K_mass = ptable->particle(PDGCodeDetail::K_plus).mass();
+    p_mass = ptable->particle(PDGCodeDetail::proton).mass();
+    first = false;
+  }
   double retval(-1.0);
   switch (_type) {
     case e_minus: case e_plus: {
-      static double e_mass = ExternalInfo::particleInfoInstance()->mass( e_plus );
       return e_mass;
     }
 
     case mu_minus: case mu_plus: {
-      static double mu_mass = ExternalInfo::particleInfoInstance()->mass( mu_plus );
       return mu_mass;
     }
 
     case pi_minus: case pi_plus: {
-      static double pi_mass = ExternalInfo::particleInfoInstance()->mass( pi_plus );
       return pi_mass;
     }
 
     case K_minus: case K_plus: {
-      static double K_mass = ExternalInfo::particleInfoInstance()->mass( K_plus );
       return K_mass;
     }
 
     case anti_p_minus: case p_plus: {
-      static double p_mass = ExternalInfo::particleInfoInstance()->mass( p_plus );
       return p_mass;
     }
 
@@ -62,19 +75,24 @@ TrkParticle::mass() const {
 
 double
 TrkParticle::charge() const {
-// avoid calling the Particle Data table on each call by buffering results in statics
+  static bool first=true;
+  static double minus_charge;
+  static double plus_charge;
+  if(first){
+    auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
+    minus_charge = ptable->particle(PDGCodeDetail::e_minus).charge();
+    plus_charge = ptable->particle(PDGCodeDetail::e_plus).charge();
+    first = false;
+  }
   double retval(0.0);
   switch (_type) {
     case e_minus: case mu_minus: case pi_minus: case K_minus: case anti_p_minus: {
-      static double minus_charge = ExternalInfo::particleInfoInstance()->charge( e_minus );
       return minus_charge;
     }
 
     case e_plus: case mu_plus: case pi_plus: case K_plus: case p_plus: {
-      static double plus_charge = ExternalInfo::particleInfoInstance()->charge( e_plus );
       return plus_charge;
     }
-
     default: {
     }
   }
@@ -84,8 +102,6 @@ TrkParticle::charge() const {
 
 std::string const&
 TrkParticle::name() const {
-// I can't use HepPDT for the names as those include Latex characters and so conflict
-// with many standard software lexicons (like root).
   switch (_type) {
     case e_minus: {
       static std::string e_minus_name = "eMinus";

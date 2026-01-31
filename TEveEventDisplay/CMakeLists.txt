@@ -6,7 +6,6 @@ cet_make_library(
       src/TEveMu2eCluster.cc
       src/TEveMu2eCRV.cc
       src/TEveMu2eCRVEvent.cc
-      src/TEveMu2eCustomHelix.cc
       src/TEveMu2eDataInterface.cc
       src/TEveMu2eHit.cc
       src/TEveMu2eMainWindow.cc
@@ -16,7 +15,6 @@ cet_make_library(
       src/TEveMu2eStraightTrack.cc
       src/TEveMu2eTracker.cc
     LIBRARIES PUBLIC
-      BTrk_difAlgebra
       Offline::ConfigTools
       Offline::GeometryService
       Offline::GlobalConstantsService
@@ -31,7 +29,7 @@ cet_build_plugin(TEveEventDisplay art::module
       art_root_io::TFileService_service
       Offline::TEveEventDisplay
       Offline::TEveEventDisplay_dict
-      
+
 )
 
 cet_build_plugin(TEveGDMLTest art::module
@@ -40,7 +38,7 @@ cet_build_plugin(TEveGDMLTest art::module
       art_root_io::TFileService_service
       Offline::TEveEventDisplay
       Offline::TEveEventDisplay_dict
-      
+
 )
 
 cet_build_plugin(TEveNonGDMLTest art::module
@@ -49,7 +47,7 @@ cet_build_plugin(TEveNonGDMLTest art::module
       art_root_io::TFileService_service
       Offline::TEveEventDisplay
       Offline::TEveEventDisplay_dict
-      
+
 )
 
 art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults

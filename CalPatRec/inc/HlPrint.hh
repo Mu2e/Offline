@@ -12,8 +12,6 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 
-class KalRep;
-
 namespace mu2e {
 
   class StrawHit;

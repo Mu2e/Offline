@@ -7,15 +7,12 @@ cet_make_library(
       src/TrkTimeCalculator.cc
       src/TrkUtilities.cc
     LIBRARIES PUBLIC
-      BTrk_difAlgebra
       Offline::BFieldGeom
-      Offline::BTrkData
       Offline::CalorimeterGeom
       Offline::ConditionsService
       Offline::DataProducts
       Offline::GeneralUtilities
       Offline::GeometryService
-      Offline::Mu2eBTrk
       Offline::Mu2eUtilities
       Offline::ProditionsService
       Offline::RecoDataProducts
@@ -78,25 +75,6 @@ cet_build_plugin(SelectSameTrack art::module
       Offline::TrkReco
       Offline::RecoDataProducts
 )
-
-#cet_build_plugin(TrkRecoMcUtils art::tool
-#    REG_SOURCE src/TrkRecoMcUtils_tool.cc
-#    LIBRARIES REG
-      #Offline::TrkReco
-      #Offline::BTrkData
-      #Offline::ConditionsService
-      #Offline::MCDataProducts
-      #Offline::Mu2eUtilities
-      #Offline::RecoDataProducts
-      #Offline::TrackerGeom
-#)
-
-#art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
-#    CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
-#    CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
-#     DICTIONARY_LIBRARIES
-#      Offline::TrkReco
-#)
 
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)

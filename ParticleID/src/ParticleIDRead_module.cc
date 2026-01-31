@@ -21,10 +21,6 @@
 
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
 
-#include "Offline/BTrkLegacy/inc/TrkParticle.hh"
-// mu2e tracking
-#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
-
 //ROOT
 #include "TTree.h"
 
@@ -45,8 +41,6 @@ namespace mu2e {
 
     // Module label of the module that performed the fits.
     std::string _fitterModuleLabel;
-    TrkParticle _tpart;
-    TrkFitDirection _fdir;
 
     // Control level of printout.
     int _verbosity;

@@ -9,8 +9,6 @@
 #include "CLHEP/Matrix/SymMatrix.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
-
 #include "Offline/CalPatRec/inc/CalTimePeakFinder_types.hh"
 #include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"

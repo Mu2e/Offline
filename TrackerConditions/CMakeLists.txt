@@ -17,7 +17,6 @@ cet_make_library(
       src/TrackerPanelMap.cc
       src/TrackerPanelMapMaker.cc
     LIBRARIES PUBLIC
-      BTrk_MatEnv
       Offline::BFieldGeom
       Offline::DAQConditions
       Offline::DataProducts

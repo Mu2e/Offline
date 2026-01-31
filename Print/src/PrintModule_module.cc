@@ -25,7 +25,6 @@
 #include "Offline/Print/inc/CrvStepPrinter.hh"
 #include "Offline/Print/inc/EventWindowMarkerPrinter.hh"
 #include "Offline/Print/inc/GenParticlePrinter.hh"
-//#include "Offline/Print/inc/KalRepPrinter.hh"
 #include "Offline/Print/inc/KalSeedPrinter.hh"
 #include "Offline/Print/inc/MCTrajectoryPrinter.hh"
 #include "Offline/Print/inc/PhysicalVolumePrinter.hh"
@@ -53,7 +52,6 @@
 #include "Offline/Print/inc/TrackSummaryPrinter.hh"
 #include "Offline/Print/inc/TriggerInfoPrinter.hh"
 #include "Offline/Print/inc/TriggerResultsPrinter.hh"
-#include "Offline/Print/inc/TrkCaloIntersectPrinter.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 
 using namespace std;
@@ -238,10 +236,7 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
   _printers.push_back(
       make_unique<TrackClusterMatchPrinter>(conf().trackClusterMatchPrinter()));
   _printers.push_back(
-      make_unique<TrkCaloIntersectPrinter>(conf().trkCaloIntersectPrinter()));
-  _printers.push_back(
       make_unique<TrackSummaryPrinter>(conf().trackSummaryPrinter()));
-  //_printers.push_back(make_unique<KalRepPrinter>(conf().kalRepPrinter())); TODO: Check if OK
   _printers.push_back(make_unique<ComboHitPrinter>(conf().comboHitPrinter()));
   _printers.push_back(make_unique<TimeClusterPrinter>(conf().timeClusterPrinter()));
   _printers.push_back(make_unique<HelixSeedPrinter>(conf().helixSeedPrinter()));

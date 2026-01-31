@@ -1,8 +1,10 @@
 cet_make_library(
     SOURCE
-      src/ExternalInfo.cc
       src/TrkParticle.cc
     LIBRARIES PUBLIC
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GlobalConstantsService
 )
 
 install_source(SUBDIRS src)

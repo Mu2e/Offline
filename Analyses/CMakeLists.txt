@@ -69,17 +69,6 @@ cet_build_plugin(CaloHitFinderInspect art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(CaloTrackMatchExample art::module
-    REG_SOURCE src/CaloTrackMatchExample_module.cc
-    LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::CalorimeterGeom
-      Offline::GeometryService
-      Offline::GlobalConstantsService
-      Offline::MCDataProducts
-      Offline::RecoDataProducts
-)
-
 cet_build_plugin(CollectionSizeAnalyzer art::module
     REG_SOURCE src/CollectionSizeAnalyzer_module.cc
     LIBRARIES REG
@@ -106,20 +95,6 @@ cet_build_plugin(CORSIKAGenPlots art::module
       Offline::GlobalConstantsService
       Offline::MCDataProducts
       Offline::Mu2eUtilities
-)
-
-cet_build_plugin(CosmicAnalysis art::module
-    REG_SOURCE src/CosmicAnalysis_module.cc
-    LIBRARIES REG
-
-
-      Offline::BTrkData
-      Offline::CosmicRayShieldGeom
-      Offline::DataProducts
-      Offline::GeometryService
-      Offline::MCDataProducts
-      Offline::Mu2eUtilities
-      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CosmicFilter art::module

@@ -143,11 +143,6 @@ physics :{
         #inputTags : [ "TrackSummaryMaker" ] # select instances
       }
 
-      kalRepPrinter : {
-        verbose: 0   # 0 - 5 (5 is KalRep printAll)
-        #inputTags : [ "TRFDeM" ] # select instances
-      }
-
       kalSeedPrinter : {
         verbose: 4   # 0,1,2,3,4
         #inputTags : [ "KFFDeM" ] # select instances

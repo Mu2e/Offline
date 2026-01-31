@@ -34,11 +34,7 @@ cet_make_library(
       src/TrkFitDirection.cc
       src/TrkFitFlag.cc
       src/TrkQual.cc
-      src/TrkToCaloExtrapol.cc
     LIBRARIES PUBLIC
-      BTrk_BbrGeom
-      BTrk_KalmanTrack
-      BTrk_ProbTools
       KinKal::Trajectory
 
       Offline::DataProducts

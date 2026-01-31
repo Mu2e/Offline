@@ -46,8 +46,6 @@
 #include "Offline/RecoDataProducts/inc/KKLine.hh"
 
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
-#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "Offline/RecoDataProducts/inc/KKLoopHelix.hh"
 #include "Offline/RecoDataProducts/inc/KKCentralHelix.hh"
 #include "Offline/RecoDataProducts/inc/TrackSummaryRecoMap.hh"
@@ -64,8 +62,6 @@
 #include "Offline/RecoDataProducts/inc/MVAResult.hh"
 
 // extrapolation and PID
-#include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
-#include "Offline/RecoDataProducts/inc/TrkCaloMatch.hh"
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
 #include "Offline/RecoDataProducts/inc/TrackClusterMatch.hh"
 

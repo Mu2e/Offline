@@ -53,10 +53,6 @@ using namespace std;
 #include <boost/shared_array.hpp>
 
 using namespace CLHEP;
-//#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-//#include "Offline/BTrkData/inc/TrkStrawHit.hh"
-//#include "BTrk/KalmanTrack/KalRep.hh"
-#include "Offline/BTrkLegacy/inc/ExternalInfo.hh"
 
 namespace mu2e_eventdisplay
 {
@@ -74,9 +70,6 @@ DataInterface::DataInterface(EventDisplayFrame *mainframe, double kalStepSize):
     _showNeutrinos=true;
     _showNeutrons=true;
     _showOthers=true;
-
-    _particleInfo = make_unique<mu2e::ParticleInfo>();
-    ExternalInfo::set(_particleInfo.get());
 }
 
 DataInterface::~DataInterface()
@@ -913,87 +906,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       }
     }
   }
-  /*
-  const mu2e::KalRepCollection *kalRepHits=contentSelector->getSelectedHitCollection<mu2e::KalRepCollection>();
-  if(kalRepHits!=nullptr)
-  {
-    boost::shared_ptr<TGraphErrors> residualGraph(new TGraphErrors());
-    residualGraph->SetTitle("Residual Graph");
-
-    for(unsigned int i=0; i<kalRepHits->size(); i++)
-    {
-      const KalRep &particle = kalRepHits->at(i);
-      TrkHitVector const& hots = particle.hitVector();
-      if(hots.size() > 0)
-      {
-        _numberHits+=hots.size();
-        for(auto iter=hots.begin(); iter!=hots.end(); iter++)
-        {
-          const TrkHit *hitOnTrack = *iter;
-          const mu2e::TrkStrawHit* strawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hitOnTrack);
-          if(strawHit)
-          {
-            int    sid=strawHit->straw().id().asUint16();
-            double time = strawHit->time();
-            double hitT0 = strawHit->hitT0()._t0; //this is the time the hit "arrived at the straw"
-                                              //don't know what the other times are
-            double strawtime = strawHit->comboHit().time();
-            double driftRadius = strawHit->driftRadius();
-            const HepPoint &p=strawHit->hitTraj()->position(strawHit->hitLen());
-            double theta = strawHit->straw().getDirection().theta();
-            double phi = strawHit->straw().getDirection().phi();
-
-            double residual, residualError;
-            if(strawHit->resid(residual, residualError))
-            {
-              int n=residualGraph->GetN();
-              residualGraph->SetPoint(n,p.z(),residual);
-              residualGraph->SetPointError(n,0,residualError);
-            }
-
-            std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
-            if(straw!=_straws.end() && !std::isnan(time))
-            {
-              double previousStartTime=straw->second->getStartTime();
-              if(std::isnan(previousStartTime))
-              {
-                findBoundaryT(_hitsTimeMinmax, hitT0);  //is it Ok to exclude all following hits from the time window?
-                straw->second->setStartTime(hitT0);
-                straw->second->getComponentInfo()->setText(1,Form("hitT0(s): %gns",hitT0/CLHEP::ns));
-                straw->second->getComponentInfo()->setText(2,Form("hit time(s): %gns",time/CLHEP::ns));
-                straw->second->getComponentInfo()->setText(3,Form("strawhit time(s): %gns",strawtime/CLHEP::ns));
-                residualGraph->GetXaxis()->SetTitle("z [mm]");
-                residualGraph->GetYaxis()->SetTitle("Residual [??]");
-                straw->second->getComponentInfo()->getHistVector().push_back(boost::dynamic_pointer_cast<TObject>(residualGraph));
-                _hits.push_back(straw->second);
-              }
-              else
-              {
-                straw->second->getComponentInfo()->expandLine(1,Form("%gns",hitT0/CLHEP::ns));
-                straw->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
-                straw->second->getComponentInfo()->expandLine(3,Form("%gns",strawtime/CLHEP::ns));
-              }
-
-              const boost::shared_ptr<std::string> strawname=straw->second->getComponentInfo()->getName();
-              boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-              info->setName(Form("Drift Radius for %s",strawname->c_str()));
-              info->setText(0,strawname->c_str());
-              info->setText(1,Form("Drift Radius %gcm",driftRadius/CLHEP::cm));
-              boost::shared_ptr<Cylinder> driftradius(new Cylinder(p.x(),p.y(),p.z(),
-                                                          phi+TMath::Pi()/2.0,theta,0,
-                                                          5, //the halflength of 5 has no meaning
-                                                          0,driftRadius,hitT0,
-                                                          _geometrymanager, _topvolume, _mainframe, info, false));
-              _components.push_back(driftradius);
-              _driftradii.push_back(driftradius);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  */
   // KalSeed hits
   const mu2e::KalSeedCollection *kalSeedsWithHits=contentSelector->getSelectedHitCollection<mu2e::KalSeedCollection>();
   if(kalSeedsWithHits!=NULL)
@@ -1274,109 +1186,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       _tracks.push_back(shape);
     }
   }
-  /*
-  trackInfos.clear();
-  std::vector<const mu2e::KalRepCollection*> kalRepCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::KalRepCollection>(trackInfos);
-  for(unsigned int i=0; i<kalRepCollectionVector.size(); i++)
-  {
-    const mu2e::KalRepCollection *kalReps=kalRepCollectionVector[i];
-    for(unsigned int j=0; j<kalReps->size(); j++)
-    {
-      KalRep const* kalrep = kalReps->get(j);
-        int trackclass=trackInfos[i].classID;
-        int trackclassindex=trackInfos[i].index;
-        std::string trackcollection=trackInfos[i].entryText;
-        int particleid=kalrep->particleType().particleType();
-        std::string particlename=ptable->particle(particleid).name();
-        std::string c=Form("Kalman Track %i  %s  (%s)",j,particlename.c_str(),trackcollection.c_str());
-        boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-        info->setName(c.c_str());
-        info->setText(0,c.c_str());
-
-        double hitcount=0;
-        double offset=0;
-        TrkHitVector const& hots=kalrep->hitVector();
-        if(hots.size()>0)
-        {
-          boost::shared_ptr<TGraphErrors> residualGraph(new TGraphErrors());
-          residualGraph->SetTitle("Residual Graph");
-          for(auto iter=hots.begin(); iter!=hots.end(); iter++)
-          {
-            const TrkHit *hitOnTrack = *iter;
-            const mu2e::TrkStrawHit* strawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hitOnTrack);
-            if(strawHit)
-            {
-              double strawTime   = strawHit->hitT0()._t0/CLHEP::ns;
-              double trackTime   = strawTime*CLHEP::ns;  //TODO: add correction for drift time
-              double weight= strawHit->weight();
-              double fltLen= strawHit->fltLen();
-              const HepPoint &p=strawHit->hitTraj()->position(strawHit->hitLen());
-              double t     = kalrep->arrivalTime(fltLen);
-              offset+=(trackTime-t)*weight;
-              hitcount+=weight;
-
-              double residual, residualError;
-              if(strawHit->resid(residual, residualError))
-              {
-                int n=residualGraph->GetN();
-                residualGraph->SetPoint(n,p.z(),residual);
-                residualGraph->SetPointError(n,0,residualError);
-              }
-            }
-          }
-          residualGraph->GetXaxis()->SetTitle("z [mm]");
-          residualGraph->GetYaxis()->SetTitle("Residual [??]");
-          info->getHistVector().push_back(boost::dynamic_pointer_cast<TObject>(residualGraph));
-        }
-        if(hitcount>0) offset/=hitcount; else offset=0;
-
-        double fltLMin=kalrep->startValidRange();
-        double fltLMax=kalrep->endValidRange();
-        double p1=kalrep->momentum(fltLMin).mag();
-        double p2=kalrep->momentum(fltLMax).mag();
-        double x1=kalrep->position(fltLMin).x();
-        double y1=kalrep->position(fltLMin).y();
-        double z1=kalrep->position(fltLMin).z();
-        double x2=kalrep->position(fltLMax).x();
-        double y2=kalrep->position(fltLMax).y();
-        double z2=kalrep->position(fltLMax).z();
-        double t1=kalrep->arrivalTime(fltLMin)+offset;
-        double t2=kalrep->arrivalTime(fltLMax)+offset;
-        boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
-                                                 particleid, trackclass, trackclassindex, p1,
-                                                 _geometrymanager, _topvolume, _mainframe, info, false));
-        _components.push_back(track);
-        _tracks.push_back(track);
-
-        double fltStep = (fltLMax - fltLMin)/400.0;
-        for(unsigned int step = 0; step <= 400.0; step++)
-        {
-          double fltL = fltLMin + step*fltStep;
-          double   t = kalrep->arrivalTime(fltL)+offset;
-          HepPoint p = kalrep->position(fltL);
-          findBoundaryT(_tracksTimeMinmax, t);
-          findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
-          track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
-        }
-
-        int charge = kalrep->charge();
-        double t0=kalrep->t0().t0();
-        double firsthitfltlen = kalrep->lowFitRange();
-        double lasthitfltlen = kalrep->hiFitRange();
-        double entlen = min(firsthitfltlen,lasthitfltlen);
-        double loclen(0.0);
-        const TrkSimpTraj* ltraj = kalrep->localTrajectory(entlen,loclen);
-        const CLHEP::HepVector &params=ltraj->parameters()->parameter();
-        double d0 = params[0];
-        double om = params[2];
-        double rmax = d0+2.0/om;
-
-        info->setText(1,Form("Charge %i",charge));
-        info->setText(2,Form("Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV));
-        info->setText(3,Form("t0 %gns  d0 %gmm  rmax %gmm",t0/CLHEP::ns,d0/CLHEP::mm,rmax/CLHEP::mm));
-    }
-  }
-  */
   // KalSeed tracks
   trackInfos.clear();
   std::vector<const mu2e::KalSeedCollection*> kalSeedCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::KalSeedCollection>(trackInfos);

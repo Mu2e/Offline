@@ -16,7 +16,6 @@ babarlibs = env['BABARLIBS']
 mainlib = helper.make_mainlib ( [] )
 # Fixme: split into link lists for each module.
 helper.make_plugins( [ mainlib,
-  'mu2e_Mu2eBTrk',
   'mu2e_Mu2eUtilities',
   'mu2e_SeedService',
   'mu2e_ConditionsService',

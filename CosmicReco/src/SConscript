@@ -14,8 +14,6 @@ rootlibs  = env['ROOTLIBS']
 babarlibs = env['BABARLIBS']
 extrarootlibs = [ 'TMVA' , 'Minuit' , 'XMLIO', 'Minuit2', 'Geom', 'Geom', 'GeomPainter', 'Ged']
 mainlib = helper.make_mainlib ( [
-    'mu2e_BTrkData',
-    'mu2e_Mu2eBTrk',
     'mu2e_Mu2eUtilities',
     'mu2e_ConditionsService',
     'mu2e_GeometryService',

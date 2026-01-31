@@ -160,7 +160,6 @@ namespace mu2e {
 
       // double                            _helixChi2;
 
-      // TrkParticle                       _tpart;
       // TrkFitDirection                   _fdir;
 
       const ComboHitCollection*         _chcol;

@@ -18,7 +18,6 @@
 
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-//#include "MCDataProducts/inc/StatusG4.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
@@ -46,11 +45,7 @@
 #include "TH2.h"
 
 // Mu2e includes.
-#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
-
-
 
 #include <cmath>
 #include <iostream>
@@ -118,7 +113,6 @@ namespace mu2e {
        std::string _trkPatRecModuleLabel;
        std::string _instanceName;
 
-       TrkParticle _tpart;
        TrkFitDirection _fdir;
 
 
@@ -159,13 +153,12 @@ namespace mu2e {
     _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel","CaloClusterMakerNew")),
     _virtualDetectorLabel(pset.get<string>("virtualDetectorName","virtualdetector")),
     _trkPatRecModuleLabel(pset.get<string>("trkPatRecModuleLabel","TPRDownstreameMinus")),
-    _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _hviewxy(0),_hviewxz(0),
     _Ntup(0)
 
   {
-    _instanceName = _fdir.name() + _tpart.name();
+    _instanceName = _fdir.name();
   }
 
   void CaloCalib::beginJob(){

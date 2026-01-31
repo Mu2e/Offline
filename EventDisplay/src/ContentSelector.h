@@ -28,7 +28,6 @@
 #include <vector>
 
 using namespace CLHEP;
-#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
 #include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 
 namespace mu2e_eventdisplay
@@ -50,8 +49,6 @@ class ContentSelector
   std::vector<art::Handle<mu2e::CrvDigiCollection> > _crvDigisVector;
   std::vector<art::Handle<mu2e::SimParticleCollection> > _simParticleVector;
   std::vector<art::Handle<mu2e::MCTrajectoryCollection> > _mcTrajectoryVector;
-  std::vector<art::Handle<mu2e::KalRepCollection> > _trkRecoTrkVector;
-  std::vector<art::Handle<mu2e::KalRepCollection> > _hitOnTrackVector; //Hits on Tracks are stored inside of KalRep
   std::vector<art::Handle<mu2e::KalSeedCollection> > _kalSeedTrkVector;
   std::vector<art::Handle<mu2e::KalSeedCollection> > _kalSeedHitVector;
   std::vector<art::Handle<mu2e::TrkExtTrajCollection> > _trkExtTrajVector;

@@ -24,9 +24,6 @@ namespace art {
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
-#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
-
 #include "Offline/CalPatRec/inc/CalTimePeakFinder_types.hh"
 
 // Mu2e
