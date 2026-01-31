@@ -48,7 +48,6 @@
 #include "Offline/Print/inc/TimeClusterPrinter.hh"
 #include "Offline/Print/inc/HelixSeedPrinter.hh"
 #include "Offline/Print/inc/CosmicTrackSeedPrinter.hh"
-#include "Offline/Print/inc/TrackClusterMatchPrinter.hh"
 #include "Offline/Print/inc/TrackSummaryPrinter.hh"
 #include "Offline/Print/inc/TriggerInfoPrinter.hh"
 #include "Offline/Print/inc/TriggerResultsPrinter.hh"
@@ -129,8 +128,6 @@ class PrintModule : public art::EDAnalyzer {
         fhicl::Name("bkgClusterPrinter")};
     fhicl::Table<ProductPrinter::ConfigE> bkgQualPrinter{
         fhicl::Name("bkgQualPrinter")};
-    fhicl::Table<ProductPrinter::Config> trackClusterMatchPrinter{
-        fhicl::Name("trackClusterMatchPrinter")};
     fhicl::Table<ProductPrinter::Config> trkCaloIntersectPrinter{
         fhicl::Name("trkCaloIntersectPrinter")};
     fhicl::Table<ProductPrinter::Config> trackSummaryPrinter{
@@ -233,8 +230,6 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
   _printers.push_back(
       make_unique<BkgClusterPrinter>(conf().bkgClusterPrinter()));
   _printers.push_back(make_unique<BkgQualPrinter>(conf().bkgQualPrinter()));
-  _printers.push_back(
-      make_unique<TrackClusterMatchPrinter>(conf().trackClusterMatchPrinter()));
   _printers.push_back(
       make_unique<TrackSummaryPrinter>(conf().trackSummaryPrinter()));
   _printers.push_back(make_unique<ComboHitPrinter>(conf().comboHitPrinter()));

@@ -301,10 +301,6 @@
  <class name="mu2e::TrackCaloMatchInfo" />
  <class name="std::vector<mu2e::TrackCaloMatchInfo>" />
 
- <class name="mu2e::TrackClusterMatch" />
- <class name="std::vector<mu2e::TrackClusterMatch>"  />
- <class name="art::Wrapper<mu2e::TrackClusterMatchCollection>" />
-
  <class name="mu2e::PIDProduct" />
  <class name="mu2e::PIDProductCollection" />
  <class name="art::Ptr<mu2e::PIDProduct>" />

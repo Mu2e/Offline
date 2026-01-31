@@ -28,7 +28,6 @@
 #include <vector>
 
 using namespace CLHEP;
-#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 
 namespace mu2e_eventdisplay
 {
@@ -51,7 +50,6 @@ class ContentSelector
   std::vector<art::Handle<mu2e::MCTrajectoryCollection> > _mcTrajectoryVector;
   std::vector<art::Handle<mu2e::KalSeedCollection> > _kalSeedTrkVector;
   std::vector<art::Handle<mu2e::KalSeedCollection> > _kalSeedHitVector;
-  std::vector<art::Handle<mu2e::TrkExtTrajCollection> > _trkExtTrajVector;
   art::Handle<mu2e::PhysicalVolumeInfoMultiCollection> _physicalVolumesMulti;
   art::Handle<mu2e::ProtonBunchTime> _protonBunchTime;
   bool _hasPhysicalVolumesMulti;

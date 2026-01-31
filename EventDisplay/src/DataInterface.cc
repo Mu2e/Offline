@@ -35,7 +35,6 @@ using namespace std;
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "Offline/StoppingTargetGeom/inc/TargetFoil.hh"
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
@@ -1303,47 +1302,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
   // TrkExt track
   trackInfos.clear();
-  std::vector<const mu2e::TrkExtTrajCollection*> trkExtTrajCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::TrkExtTrajCollection>(trackInfos);
-  for(unsigned int i=0; i<trkExtTrajCollectionVector.size(); i++)
-  {
-    // Read a TrkExtTrajCollection
-    const mu2e::TrkExtTrajCollection & trkExtTrajCollection = *trkExtTrajCollectionVector[i];
-    for(unsigned int j=0; j<trkExtTrajCollection.size(); j++)
-    {
-      // read a TrkExtTraj
-      const mu2e::TrkExtTraj &trkExtTraj = trkExtTrajCollection.at(j);
-      int particleid=11;
-      int trackclass=trackInfos[i].classID;
-      int trackclassindex=trackInfos[i].index;
-      std::string trackcollection=trackInfos[i].entryText;
-
-      std::string particlename=ptable->particle(particleid).name();
-      boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-      std::string c=Form("TrkExt Trajectory %i  %s  (%s)", trkExtTraj.id(), particlename.c_str(),trackcollection.c_str());
-      info->setName(c.c_str());
-      info->setText(0,c.c_str());
-
-      double p1 = trkExtTraj.front().momentum().mag();
-      double x1 = trkExtTraj.front().x();
-      double y1 = trkExtTraj.front().y();
-      double z1 = trkExtTraj.front().z();
-      double x2 = trkExtTraj.back().x();
-      double y2 = trkExtTraj.back().y();
-      double z2 = trkExtTraj.back().z();
-      double t1 = 0;
-      double t2 = 0;
-      boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
-                                               particleid, trackclass, trackclassindex, p1,
-                                               _geometrymanager, _topvolume, _mainframe, info, false));
-      _components.push_back(track);
-      _tracks.push_back(track);
-
-      for (unsigned int k = 0 ; k < trkExtTraj.size() ; k+=10) {
-        const mu2e::TrkExtTrajPoint & trkExtTrajPoint = trkExtTraj[k];
-        track->addTrajectoryPoint(trkExtTrajPoint.x(), trkExtTrajPoint.y(), trkExtTrajPoint.z(), 0);
-      }
-    }
-  }
 }
 
 void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &contentSelector,

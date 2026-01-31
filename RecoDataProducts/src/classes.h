@@ -63,7 +63,6 @@
 
 // extrapolation and PID
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
-#include "Offline/RecoDataProducts/inc/TrackClusterMatch.hh"
 
 // CRV
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"

@@ -30,7 +30,6 @@ namespace mu2e {
   class StepPointMC;
   class StrawDigiMC;
   class StrawGasStep;
-  class TrackClusterMatch;
   class TrkCaloHit;
   class TrkStrawHit;
   class TrkPrintUtils;
