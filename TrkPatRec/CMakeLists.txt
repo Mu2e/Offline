@@ -35,7 +35,6 @@ cet_build_plugin(KalSeedFit art::module
       
       Offline::BFieldGeom
       Offline::BTrkData
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeneralUtilities
       Offline::GeometryService

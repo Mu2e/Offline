@@ -35,7 +35,6 @@ mainlib = helper.make_mainlib ( [
 
 helper.make_plugins( [
     mainlib,
-    'mu2e_ConditionsService',
     'mu2e_GeometryService',
     'mu2e_MCDataProducts',
     'mu2e_RecoDataProducts',

@@ -30,7 +30,6 @@ cet_build_plugin(TrackCaloMatching art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::GeometryService
       Offline::RecoDataProducts
       ROOT::Physics
@@ -50,7 +49,6 @@ cet_build_plugin(TrkExtrapol art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::GeometryService
       Offline::MCDataProducts
       Offline::RecoDataProducts
