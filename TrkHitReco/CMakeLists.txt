@@ -79,7 +79,6 @@ cet_build_plugin(StrawHitReco art::module
       art_root_io::TFileService_service
       Offline::TrkHitReco
       
-      Offline::ConditionsBase
       Offline::ConfigTools
       Offline::DataProducts
       Offline::GeometryService
