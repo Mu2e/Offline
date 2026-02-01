@@ -11,7 +11,6 @@ Import('mu2e_helper')
 helper=mu2e_helper(env)
 
 rootlibs  = env['ROOTLIBS']
-babarlibs = env['BABARLIBS']
 extrarootlibs = [ 'TMVA' , 'Minuit' , 'XMLIO', 'Minuit2', 'Geom', 'Geom', 'GeomPainter', 'Ged']
 mainlib = helper.make_mainlib ( [
     'mu2e_Mu2eUtilities',
@@ -27,7 +26,6 @@ mainlib = helper.make_mainlib ( [
     'mu2e_DataProducts',
     'mu2e_GeneralUtilities',
     'mu2e_GeomPrimitives',
-    babarlibs,
     'art_Framework_Core',
     'art_Framework_Principal',
     'art_Framework_Services_Registry',
@@ -68,7 +66,6 @@ helper.make_plugins( [
    'mu2e_TrkReco',
    'mu2e_GeomPrimitives',
    'mu2e_DbTables',
-   babarlibs,
    'art_Framework_Core',
    'art_Framework_Principal',
    'art_Framework_Services_Registry',

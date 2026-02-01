@@ -9,7 +9,6 @@ import os
 Import('env')
 Import('mu2e_helper')
 
-babarlibs = env['BABARLIBS']
 rootlibs = env['ROOTLIBS']
 
 helper=mu2e_helper(env);
@@ -22,7 +21,6 @@ libs =  [
     'mu2e_ConfigTools',
     'mu2e_DbTables',
     'mu2e_GeneralUtilities',
-    babarlibs,
     'art_Framework_Core',
     'art_Framework_Principal',
     'art_Framework_Services_Registry',

@@ -9,13 +9,11 @@ Import('mu2e_helper')
 
 helper=mu2e_helper(env)
 
-babarlibs = env['BABARLIBS']
 rootlibs = env['ROOTLIBS']
 extrarootlibs = [ 'Geom', 'Geom', 'GeomPainter', 'Ged' ]
 
 userlibs = [ rootlibs,
              extrarootlibs,
-             babarlibs,
                           'mu2e_DataProducts',
                           'mu2e_TrkReco',
                           'mu2e_Mu2eUtilities',

@@ -9,7 +9,6 @@ import os
 Import('env')
 Import('mu2e_helper')
 
-babarlibs     = env['BABARLIBS']
 rootlibs      = env['ROOTLIBS']
 extrarootlibs = ['TMVA' , 'Minuit' , 'XMLIO' ]
 
@@ -32,7 +31,6 @@ mainlib = helper.make_mainlib( [ 'mu2e_CalPatRec_dict',
                                  'mu2e_DataProducts',
                                  'mu2e_GlobalConstantsService_GlobalConstantsService_service',
                                  'mu2e_GlobalConstantsService',
-                                 babarlibs,
                                  'art_Framework_Core',
                                  'art_Framework_Principal',
                                  'art_Framework_Services_Registry',
@@ -66,7 +64,6 @@ helper.make_plugins( [ mainlib,
                        'mu2e_DataProducts',
                        'mu2e_ConfigTools',
                        'mu2e_GeneralUtilities',
-                       babarlibs,
                        'mu2e_GlobalConstantsService_GlobalConstantsService_service',
                        'mu2e_GlobalConstantsService',
                        'art_Framework_Core',
