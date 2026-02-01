@@ -14,6 +14,7 @@ cet_make_library(
       src/TEveMu2eProjectionInterface.cc
       src/TEveMu2eStraightTrack.cc
       src/TEveMu2eTracker.cc
+      src/TEveMu2eCustomHelix.cc
     LIBRARIES PUBLIC
       Offline::ConfigTools
       Offline::GeometryService

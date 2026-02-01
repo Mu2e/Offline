@@ -23,6 +23,7 @@ cet_make_library(
       Offline::RecoDataProducts
       Offline::TrackerGeom
       Offline::TrkReco
+      Offline::BTrkLegacy
       ROOT::Physics
 )
 

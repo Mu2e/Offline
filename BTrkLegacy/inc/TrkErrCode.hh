@@ -3,25 +3,25 @@
 //      $Id: TrkErrCode.hh,v 1.13 2004/08/06 06:31:40 bartoldu Exp $
 //
 // Description:
-//     Encapsulate error/success status of tracking operations.  
-//       Either failure() or success() will be non-zero, but not both.  
-//       Failure => no valid answer available. 
-//       Success => a valid answer has been 
-//       provided, even if it wasn't exactly what you asked for.  The 
-//       value of failure() or success() distinguishes different 
-//       failure/success modes.  A string describing the success/failure 
-//       mode can also be provided, and printed by the user.  
-//       
-//       Note that if this string is provided by the called function, 
-//       it _must_ be a pointer to a statically stored string (which includes 
-//       string literals).  E.g. 
+//     Encapsulate error/success status of tracking operations.
+//       Either failure() or success() will be non-zero, but not both.
+//       Failure => no valid answer available.
+//       Success => a valid answer has been
+//       provided, even if it wasn't exactly what you asked for.  The
+//       value of failure() or success() distinguishes different
+//       failure/success modes.  A string describing the success/failure
+//       mode can also be provided, and printed by the user.
+//
+//       Note that if this string is provided by the called function,
+//       it _must_ be a pointer to a statically stored string (which includes
+//       string literals).  E.g.
 //           TrkErrCode err;
 //           err.setFailure(10,"Forgot to tie my shoelaces.");
 //           return err;
 //       is valid.
 //
-//     Several codes have predefined meanings and strings; strings 
-//       supplied for them will be ignored.  Strings for codes >= 10 
+//     Several codes have predefined meanings and strings; strings
+//       supplied for them will be ignored.  Strings for codes >= 10
 //       can be supplied by users.  Predefined:
 //     failure = 1 -- "Arithmetic error."
 //             = 2 -- "Failed to converge."
@@ -57,12 +57,12 @@ public:
   TrkErrCode(const TrkErrCode&);
   TrkErrCode& operator=(const TrkErrCode&);
 
-  // access 
+  // access
   int failure() const                            {return _failure;}
   int success() const                            {return _success;}
-  const std::string& message() const 
+  const std::string& message() const
   {
-    return (_string != 0) ? *_string : _nullStr; 
+    return (_string != 0) ? *_string : _nullStr;
   }
   void print(std::ostream& ostr) const;
 
@@ -71,7 +71,7 @@ public:
     if (_string != 0) delete _string;
     if (str != 0) {
       _string= new std::string(str);
-    } 
+    }
     else {
       _string = 0;
     }

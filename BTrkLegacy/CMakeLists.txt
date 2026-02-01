@@ -1,6 +1,7 @@
 cet_make_library(
     SOURCE
       src/TrkParticle.cc
+      src/TrkErrCode.cc
     LIBRARIES PUBLIC
       Offline::DataProducts
       Offline::GeneralUtilities

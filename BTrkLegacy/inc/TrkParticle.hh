@@ -33,7 +33,6 @@ class TrkParticle {
     type particleType() const { return _type; }
     bool operator == (TrkParticle const& other) const { return _type == other._type; }
     bool operator != (TrkParticle const& other) const { return ! this->operator==(other); }
-    TrkParticle & operator =(TrkParticle const& other);
     // return basic information
     double mass() const;
     double charge() const;

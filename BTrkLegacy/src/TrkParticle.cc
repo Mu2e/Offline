@@ -16,15 +16,6 @@ TrkParticle::TrkParticle(TrkParticle const& other) : _type(other._type)
 
 TrkParticle::~TrkParticle() {}
 
-TrkParticle&
-TrkParticle::operator =(TrkParticle const& other) {
-  if(this != &other){
-    _type = other._type;
-  }
-  return *this;
-}
-
-
 using mu2e::PDGCodeDetail;
 using mu2e::ParticleDataList;
 using mu2e::GlobalConstantsHandle;

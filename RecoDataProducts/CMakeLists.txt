@@ -28,8 +28,6 @@ cet_make_library(
       src/StrawFlag.cc
       src/TrackSummary.cc
       src/TrkCaloHitPID.cc
-      src/TrkExtTraj.cc
-      src/TrkExtTrajPoint.cc
       src/TrkFitDirection.cc
       src/TrkFitFlag.cc
       src/TrkQual.cc

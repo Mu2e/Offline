@@ -191,14 +191,6 @@
  <class name="mu2e::TrkFitFlag"/>
  <class name="mu2e::TrkFitFlagDetail"/>
 
- <class name="mu2e::TrackSummary::HelixParams"/>
- <class name="mu2e::TrackSummary::TrackStateAtPoint"/>
- <class name="std::vector<mu2e::TrackSummary::TrackStateAtPoint>"/>
- <class name="mu2e::TrackSummary"/>
- <class name="std::vector<mu2e::TrackSummary>"/>
- <class name="art::Wrapper<std::vector<mu2e::TrackSummary> >"/>
- <class name="art::Ptr<mu2e::TrackSummary>" />
-
  <class name="mu2e::TrkFitDirection"/>
  <class name="mu2e::TrkStrawHitSeed"/>
  <class name="mu2e::TrkStrawHitCalib"/>
@@ -297,9 +289,6 @@
  <class name="art::Wrapper<mu2e::AlgorithmIDCollection>"/>
 
 <!--  ********* extrapolation and PID  ********* -->
-
- <class name="mu2e::TrackCaloMatchInfo" />
- <class name="std::vector<mu2e::TrackCaloMatchInfo>" />
 
  <class name="mu2e::PIDProduct" />
  <class name="mu2e::PIDProductCollection" />
