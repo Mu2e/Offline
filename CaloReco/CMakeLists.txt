@@ -36,10 +36,13 @@ cet_build_plugin(CaloRecoDigiMaker art::module
     LIBRARIES REG
       Offline::CaloReco
       
+      Offline::DbService
+      Offline::DbTables
       Offline::ConditionsService
       Offline::DAQConditions
       Offline::ProditionsService
       Offline::RecoDataProducts
+      Offline::CaloConditions
 )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)
