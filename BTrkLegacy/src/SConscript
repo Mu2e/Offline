@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+#
+#
+#
+# Original author Rob Kutschke.
+#
+
+import os, re
+Import('env')
+
+Import('mu2e_helper')
+
+helper=mu2e_helper(env)
+
+mainlib = helper.make_mainlib ( [
+    ] )
+
+helper.make_plugins( [
+    mainlib,
+    ] )
+
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:
