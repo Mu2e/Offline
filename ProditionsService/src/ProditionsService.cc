@@ -85,10 +85,6 @@ ProditionsService::ProditionsService(Parameters const& sTable,
   auto atcs =
     std::make_shared<mu2e::AlignedTrackerCacheSim>(_config.alignedTrackerSim());
   _caches[atcs->name()+"Sim"] = atcs;
-  //auto mmc = std::make_shared<mu2e::Mu2eMaterialCache>(_config.mu2eMaterial());
-  //_caches[mmc->name()] = mmc;
-  //auto mdc = std::make_shared<mu2e::Mu2eDetectorCache>(_config.mu2eDetector());
-  //_caches[mdc->name()] = mdc;
   auto cdc =
       std::make_shared<mu2e::CaloDAQMapCache>(_config.caloDAQConditions());
   _caches[cdc->name()] = cdc;
