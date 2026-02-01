@@ -17,7 +17,6 @@ mainlib = helper.make_mainlib ( [] )
 helper.make_plugins( [ mainlib,
   'mu2e_Mu2eUtilities',
   'mu2e_SeedService',
-  'mu2e_ConditionsService',
   'mu2e_GeometryService',
   'mu2e_BFieldGeom',
   'mu2e_TrackerGeom',

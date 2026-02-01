@@ -32,7 +32,6 @@ helper.make_plugins( [
   'mu2e_DbService',
   'mu2e_DbTables',
   'mu2e_TrackerConditions',
-  'mu2e_ConditionsService',
   'art_Framework_Core',
   'art_Framework_Principal',
   'art_Framework_Services_Registry',

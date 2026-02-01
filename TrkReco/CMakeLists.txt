@@ -9,7 +9,6 @@ cet_make_library(
     LIBRARIES PUBLIC
       Offline::BFieldGeom
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeneralUtilities
       Offline::GeometryService
@@ -74,6 +73,13 @@ cet_build_plugin(SelectSameTrack art::module
       art_root_io::tfile_support
       Offline::TrkReco
       Offline::RecoDataProducts
+)
+
+art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
+    CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
+    CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
+     DICTIONARY_LIBRARIES
+      Offline::TrkReco
 )
 
 install_source(SUBDIRS src)

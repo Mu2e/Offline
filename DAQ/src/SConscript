@@ -16,8 +16,7 @@ helper=mu2e_helper(env);
 
 rootlibs = env['ROOTLIBS']
 
-mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
-                                  'mu2e_GeometryService',
+mainlib = helper.make_mainlib ( [ 'mu2e_GeometryService',
                                   'mu2e_RecoDataProducts',
                                   'mu2e_CaloConditions',
                                   'mu2e_CalorimeterGeom',
@@ -50,7 +49,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
 exclude_files = [ ]
 helper.make_plugins( [ mainlib,
                        'mu2e_Mu2eUtilities',
-                       'mu2e_ConditionsService',
                        'mu2e_TrackerConditions',
                        'mu2e_CaloConditions',
                        'mu2e_GeometryService',

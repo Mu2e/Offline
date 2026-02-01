@@ -13,7 +13,6 @@ rootlibs = env['ROOTLIBS']
 
 mainlib = helper.make_mainlib ( [ 'mu2e_Validation_root',
   'mu2e_Mu2eUtilities',
-  'mu2e_ConditionsService',
   'mu2e_GeometryService',
   'mu2e_TrackerGeom',
   'mu2e_TrackerConditions',
@@ -43,7 +42,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_Validation_root',
 
 helper.make_plugins( [ mainlib,'mu2e_Validation_root',
   'mu2e_GeometryService',
-  'mu2e_ConditionsService',
   'mu2e_Mu2eUtilities',
   'mu2e_GeneralUtilities',
   'mu2e_MCDataProducts',

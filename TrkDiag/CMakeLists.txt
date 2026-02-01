@@ -96,8 +96,6 @@ cet_build_plugin(StrawHitDiag art::module
     REG_SOURCE src/StrawHitDiag_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts

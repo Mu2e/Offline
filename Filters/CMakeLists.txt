@@ -24,7 +24,6 @@ cet_build_plugin(CompressPhysicalVolumes art::module
 cet_build_plugin(CompressStepPointMCs art::module
     REG_SOURCE src/CompressStepPointMCs_module.cc
     LIBRARIES REG      
-      Offline::ConditionsService
       Offline::MCDataProducts
       Offline::Mu2eUtilities
 )
@@ -33,7 +32,6 @@ cet_build_plugin(CosmicMixingFilter art::module
     REG_SOURCE src/CosmicMixingFilter_module.cc
     LIBRARIES REG
       Offline::BFieldGeom
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::GlobalConstantsService
@@ -45,7 +43,6 @@ cet_build_plugin(CosmicMixingFilter art::module
 cet_build_plugin(DetectorStepFilter art::module
     REG_SOURCE src/DetectorStepFilter_module.cc
     LIBRARIES REG
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::MCDataProducts
 )

@@ -15,7 +15,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 // conditions
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 // utiliities

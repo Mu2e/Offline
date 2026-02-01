@@ -112,7 +112,7 @@ dioLLWeight : {
   genParticleTag : "compressDigiMCs"
   genParticlePdgId : 11
   genParticleGenId : dioTail
-  spectrumFileName : "Offline/ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
+  spectrumFileName : "Offline/EventGenerator/data/czarnecki_szafron_Al_2016.tbl"
   BinCenter : false
 }
 genCountLogger: { module_type: GenEventCountReader }
