@@ -7,6 +7,7 @@ cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
       inc/TimeAndPhiClusterFinder_types.hh
       inc/TrkHitFilter.hh
     LIBRARIES INTERFACE
+)
 
 cet_build_plugin(RobustHelixFinder art::module
     REG_SOURCE src/RobustHelixFinder_module.cc

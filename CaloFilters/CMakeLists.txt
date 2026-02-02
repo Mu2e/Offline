@@ -29,16 +29,6 @@ cet_build_plugin(CaloLikelihood art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(EcalTriggerPreselect art::module
-    REG_SOURCE src/EcalTriggerPreselect_module.cc
-    LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::CalorimeterGeom
-      Offline::GeometryService
-      Offline::MCDataProducts
-      Offline::RecoDataProducts
-)
-
 cet_build_plugin(FilterEcalMixedTrigger art::module
     REG_SOURCE src/FilterEcalMixedTrigger_module.cc
     LIBRARIES REG

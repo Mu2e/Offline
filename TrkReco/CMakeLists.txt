@@ -75,13 +75,6 @@ cet_build_plugin(SelectSameTrack art::module
       Offline::RecoDataProducts
 )
 
-art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
-    CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
-    CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
-     DICTIONARY_LIBRARIES
-      Offline::TrkReco
-)
-
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/TrkReco/fcl)
