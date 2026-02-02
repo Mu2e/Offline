@@ -7,6 +7,8 @@
 #include "cetlib/map_vector.h"
 #include "boost/array.hpp"
 #include <vector>
+#include <utility>
+#include <TString.h>
 
 // PDG
 #include "Offline/DataProducts/inc/PDGCode.hh"

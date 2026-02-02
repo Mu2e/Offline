@@ -51,7 +51,6 @@
 #include "Offline/TrackerConditions/inc/Mu2eDetector.hh"
 
 #include "Offline/ParticleID/inc/PIDUtilities.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 
 using namespace std;

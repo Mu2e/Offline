@@ -28,19 +28,10 @@ mainlib = helper.make_mainlib ( [ 'CLHEP',
                                   rootlibs]
                               )
 
-helper.make_dict_and_map( [ mainlib,
-                       'art_root_io_tfile_support',
-                       'art_root_io_TFileService',
-                       'canvas',
-                       'libSpectrum',
-                       rootlibs,
-                       ] )
-
 helper.make_plugins( [ mainlib,
                        'mu2e_SeedService',
                        'mu2e_Mu2eUtilities',
                        'mu2e_GeometryService',
-                       'mu2e_ConditionsService',
                        'mu2e_DAQConditions',
                        'mu2e_GlobalConstantsService',
                        'mu2e_RecoDataProducts',

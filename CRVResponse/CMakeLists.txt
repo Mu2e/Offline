@@ -18,7 +18,6 @@ cet_build_plugin(CrvCoincidenceClusterMatchMC art::module
       art_root_io::TFileService_service
       Offline::CRVResponse
 
-      Offline::ConditionsService
       Offline::CosmicRayShieldGeom
       Offline::DataProducts
       Offline::GeometryService
@@ -46,7 +45,6 @@ cet_build_plugin(CrvPhotonGenerator art::module
     LIBRARIES REG
       Offline::CRVResponse
 
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::CosmicRayShieldGeom
       Offline::DAQConditions
@@ -64,7 +62,6 @@ cet_build_plugin(CrvPlot art::module
       art_root_io::TFileService_service
       Offline::CRVResponse
 
-      Offline::ConditionsService
       Offline::CosmicRayShieldGeom
       Offline::CRVConditions
       Offline::DataProducts
@@ -79,7 +76,6 @@ cet_build_plugin(CrvSiPMChargeGenerator art::module
     LIBRARIES REG
       Offline::CRVResponse
 
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::CosmicRayShieldGeom
       Offline::DAQConditions

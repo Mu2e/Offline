@@ -29,7 +29,7 @@ using namespace std;
 namespace mu2e {
 
   ShankerWatanabeSpectrum::ShankerWatanabeSpectrum() :
-    _table ( loadTable<2,false>( ConfigFileLookupPolicy()("Offline/ConditionsService/data/watanabe.tbl" ) ) )
+    _table ( loadTable<2,false>( ConfigFileLookupPolicy()("Offline/EventGenerator/data/watanabe.tbl" ) ) )
   {
     _wanaEndPoint    = _table(0,0);
     _wanaEndPointVal = _table(0,1);

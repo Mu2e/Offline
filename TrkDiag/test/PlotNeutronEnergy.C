@@ -38,7 +38,7 @@ void neutrons(TTree* sh) {
   sh->Project("npscat","sqrt(mcpopos.x^2+mcpopos.y^2):mcpopos.z",pneutscat);
   sh->Project("npother","sqrt(mcpopos.x^2+mcpopos.y^2):mcpopos.z",pneutother);
 
-  TGraph* ngen = new TGraph("Offline/ConditionsService/data/neutronSpectrum.txt");
+  TGraph* ngen = new TGraph("Offline/EventGenerator/data/neutronSpectrum.txt");
   ngen->SetMarkerStyle(20);
   ngen->SetMarkerColor(kCyan);
   ngen->SetMarkerSize(1);

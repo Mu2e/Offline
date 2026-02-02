@@ -9,7 +9,6 @@ Import('mu2e_helper')
 helper=mu2e_helper(env);
 
 mainlib = helper.make_mainlib ( [
-    'mu2e_ConditionsService',
     'mu2e_GeometryService',
     'mu2e_DataProducts',
     'art_Framework_Services_Registry',
