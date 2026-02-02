@@ -17,11 +17,6 @@ helper = mu2e_helper(env)
 
 mainlib = helper.make_mainlib([
   'mu2e_TrkReco',
-<<<<<<< HEAD
-  'mu2e_ConditionsService',
-=======
-  'mu2e_BTrkData',
->>>>>>> main
   'mu2e_TrackerConditions',
   'mu2e_GeometryService',
   'mu2e_BFieldGeom',
@@ -53,11 +48,6 @@ mainlib = helper.make_mainlib([
 helper.make_plugins([mainlib,
   'mu2e_Mu2eUtilities',
   'mu2e_TrkReco',
-<<<<<<< HEAD
-  'mu2e_ConditionsService',
-=======
-  'mu2e_BTrkData',
->>>>>>> main
   'mu2e_TrackerConditions',
   'mu2e_GeometryService',
   'mu2e_BFieldGeom',
