@@ -1,7 +1,5 @@
 cet_make_library(
     SOURCE
-#      src/PanelAmbigStructs.cc
-#      src/PanelStateIterator.cc
       src/RobustHelixFinderData.cc
       src/RobustHelixFit.cc
       src/TrkTimeCalculator.cc

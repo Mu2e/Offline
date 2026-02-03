@@ -277,32 +277,6 @@ TrkPatRec : { @table::TrkPatRec
       @table::TrkPatRec.RobustMultiHelixFinder
       TimeClusterCollection  : "TimeClusterFinderUpi"
    }
-
-   # pattern recognition internals
-
-
-TrkPatRec : { @table::TrkPatRec
-   # Final fit of merged Helices : these depend on TrkPatRec
-   MHFinalFitDeM                : {
-      @table::TrkPatRec.KFFDeM
-      SeedCollection : MHSeedFitDem
-   }
-
-   MHFinalFitDeP                :  {
-      @table::TrkPatRec.KFFDeP
-      SeedCollection : MHSeedFitDep
-   }
-
-   MHFinalFitDmuM               : {
-      @table::TrkPatRec.KFFDmuM
-      SeedCollection : MHSeedFitDmm
-   }
-   #
-   MHFinalFitDmuP                :  {
-      @table::TrkPatRec.KFFDmuP
-      SeedCollection : MHSeedFitDmp
-   }
-
 }
 
 # Declare a table with all the modules needed for track reconstruction
