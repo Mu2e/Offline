@@ -72,9 +72,7 @@ TrkPID : {
 }
 # this module only makes sense for downstream electron fits
 TrkPIDDeM          : @local::TrkPID
-TrkPIDDeM.KalSeedCollection : "KFFDeM"
 TrkPIDDeP          : @local::TrkPID
-TrkPIDDeP.KalSeedCollection : "KFFDeP"
 
 TrkDiag : {
   analyzers : {
