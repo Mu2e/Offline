@@ -24,7 +24,13 @@ art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
     CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
     CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
      DICTIONARY_LIBRARIES
-      Offline::DataProducts
+     Offline::DataProducts
 )
+
+if( BUILD_PYTHON_INTERFACE ) 
+    mu2e_swig(DataProducts_swig src/pywrap.i DataProducts)
+endif()
+
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)

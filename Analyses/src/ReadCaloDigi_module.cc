@@ -31,7 +31,6 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"

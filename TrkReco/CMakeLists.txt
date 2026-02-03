@@ -20,7 +20,6 @@ cet_make_library(
       Offline::BFieldGeom
       Offline::BTrkData
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeneralUtilities
       Offline::GeometryService
@@ -93,7 +92,6 @@ cet_build_plugin(TrkRecoMcUtils art::tool
     LIBRARIES REG
       Offline::TrkReco
       Offline::BTrkData
-      Offline::ConditionsService
       Offline::MCDataProducts
       Offline::Mu2eUtilities
       Offline::RecoDataProducts

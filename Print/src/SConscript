@@ -14,7 +14,6 @@ rootlibs  = env['ROOTLIBS']
 babarlibs = env['BABARLIBS']
 
 mainlib = helper.make_mainlib ( [ 'mu2e_GeometryService',
-  'mu2e_ConditionsService',
   'mu2e_Mu2eUtilities',
   'mu2e_GeneralUtilities',
   'mu2e_MCDataProducts',
@@ -46,7 +45,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeometryService',
 helper.make_plugins( [ mainlib,
   'mu2e_MCDataProducts',
   'mu2e_RecoDataProducts',
-  'mu2e_ConditionsService',
   'mu2e_DataProducts',
   'mu2e_GeneralUtilities',
   'art_Framework_Core',
