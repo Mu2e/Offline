@@ -303,12 +303,6 @@ TrkPatRec : { @table::TrkPatRec
       MultiHelixFinderUmu        : { @table::TrkPatRec.MultiHelixFinderUmu}
       MultiHelixFinderUpi        : { @table::TrkPatRec.MultiHelixFinderUpi}
 
-      # configuration for using the sequence with MergeHelix
-      # Only downstream: upstream can't be seeded by a cluster!
-      MHFinalFitDeM   : { @table::TrkPatRec.MHFinalFitDeM}
-      MHFinalFitDeP   : { @table::TrkPatRec.MHFinalFitDeP}
-      MHFinalFitDmuM        : { @table::TrkPatRec.MHFinalFitDmuM}
-      MHFinalFitDmuP    : { @table::TrkPatRec.MHFinalFitDmuP }
    }
 }
 END_PROLOG
