@@ -100,7 +100,7 @@ namespace mu2e
       if (spillType == ewm.spillType()){
         ++nevt_[imode];
     // Apply the prescale
-        bool retval = e.event() % mode.prescale_ == 0;
+        bool retval = mode.prescale_ > 0 ? e.event() % mode.prescale_ == 0 : false;
         if (retval) ++npass_[imode];
         return retval;
       }
@@ -112,9 +112,7 @@ namespace mu2e
   bool PrescaleEvent::endSubRun( art::SubRun& subrun ) {
     for (size_t imode = 0; imode < eventMode_.size(); imode++){
       auto const& mode = eventMode_[imode];
-      double frac = 0.0;
-      if(mode.prescale_ >= 0.0)frac = 1.0/double(mode.prescale_);
-
+      double frac = mode.prescale_ > 0 ? 1.0/double(mode.prescale_) : 0;
       auto ff = std::make_unique<FilterFraction>(FilterFraction::constant, frac, nevt_[imode],npass_[imode]);
       subrun.put(std::move(ff),mode.name_,art::fullSubRun());
       if(debug_ > 0){
