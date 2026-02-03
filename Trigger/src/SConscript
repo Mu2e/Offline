@@ -17,7 +17,6 @@ extrarootlibs = [ 'Geom', 'TMVA' , 'Minuit' , 'XMLIO' ]
 mainlib = helper.make_mainlib ( [] )
 
 helper.make_plugins( [ mainlib,
-                       'mu2e_TrkExt',
                        'mu2e_TrkDiag',
                        'mu2e_Mu2eUtilities',
                        'mu2e_CaloCluster',

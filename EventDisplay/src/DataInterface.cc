@@ -1300,7 +1300,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     }
   }
 
-  // TrkExt track
   trackInfos.clear();
 }
 
