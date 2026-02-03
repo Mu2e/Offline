@@ -129,15 +129,6 @@ physics :{
       timeClusterPrinter : {
         verbose: 1   # 0, 1
       }
-      trackClusterMatchPrinter : {
-        verbose: 2   # 0, 1, 2
-        #inputTags : [ "TrackCaloMatchingDem" ] # select instances
-      }
-      trkCaloIntersectPrinter : {
-        verbose: 1   # 0, 1
-        #inputTags : [ "TrackCaloIntersectionDem" ] # select instances
-      }
-
       trackSummaryPrinter : {
         verbose: 4   # 0 - 4
         #inputTags : [ "TrackSummaryMaker" ] # select instances

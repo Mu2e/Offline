@@ -38,7 +38,7 @@ TCD : {
   VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
   MCPrimary : compressDigiMCs
   T0Calculator : {
-    TrkToCaloTimeOffset : @local::TrackCaloMatching.DtOffset
+    TrkToCaloTimeOffset : 0.0
     CaloTimeErr : 0.5
     StrawHitBeta : 1.0
   }
