@@ -34,7 +34,6 @@ cet_build_plugin(EcalTriggerPreselect art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::GeometryService
       Offline::MCDataProducts
       Offline::RecoDataProducts
@@ -45,7 +44,6 @@ cet_build_plugin(FilterEcalMixedTrigger art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::GeometryService
       Offline::RecoDataProducts
@@ -56,7 +54,6 @@ cet_build_plugin(FilterEcalMVATrigger art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::GeometryService
       Offline::RecoDataProducts

@@ -412,7 +412,7 @@ CREATE TABLE cal.cosmicenergycalib
   (cid INTEGER,
    roid INTEGER, peak NUMERIC, errpeak NUMERIC,
    width NUMERIC, errwidth NUMERIC, sigma NUMERIC, errsigma NUMERIC,
-   chisq NUMERIC,nhits INTEGER,
+   chisq NUMERIC, ndf INTEGER, nhits INTEGER,
    CONSTRAINT cal_cosmicenergycalib_pk PRIMARY KEY (cid,roid) );
 GRANT SELECT ON cal.cosmicenergycalib TO PUBLIC;
 GRANT INSERT ON cal.cosmicenergycalib TO cal_role;
@@ -424,4 +424,11 @@ CREATE TABLE cal.cosmicenergycalibinfo
    create_user TEXT NOT NULL );
 GRANT SELECT ON cal.cosmicenergycalibinfo TO PUBLIC;
 GRANT INSERT ON cal.cosmicenergycalibinfo TO cal_role;
+
+CREATE TABLE cal.energycalib
+  (cid INTEGER,
+   roid INTEGER, adc2mev NUMERIC,
+   CONSTRAINT cal_energycalib_pk PRIMARY KEY (cid,roid) );
+GRANT SELECT ON cal.energycalib TO PUBLIC;
+GRANT INSERT ON cal.energycalib TO cal_role;
 

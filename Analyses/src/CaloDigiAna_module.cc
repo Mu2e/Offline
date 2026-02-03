@@ -25,7 +25,6 @@
 
 // Mu2e includes.
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"

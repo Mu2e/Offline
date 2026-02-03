@@ -13,7 +13,6 @@ helper=mu2e_helper(env)
 babarlibs = env['BABARLIBS']
 
 mainlib = helper.make_mainlib ( [
-    'mu2e_ConditionsService',
     'mu2e_TrackerConditions',
     'mu2e_RecoDataProducts',
     babarlibs,
