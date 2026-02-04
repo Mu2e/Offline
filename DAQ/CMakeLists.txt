@@ -97,9 +97,8 @@ cet_build_plugin(STMWaveformDigisFromFragments art::module
   Offline::ProditionsService
   Offline::DataProducts
   Offline::RecoDataProducts
-  BTrk_difAlgebra
 )
-    
+
 cet_build_plugin(StrawDigisFromArtdaqFragments art::module
   REG_SOURCE src/StrawDigisFromArtdaqFragments_module.cc
   LIBRARIES REG

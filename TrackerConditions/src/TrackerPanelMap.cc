@@ -29,7 +29,7 @@ namespace mu2e {
       }
     }
   }
-  
+
   void TrackerPanelMap::print(ostream& out) const {
   }
 

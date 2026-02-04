@@ -10,7 +10,7 @@
 #include "Offline/DataProducts/inc/Helicity.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
 // BTrk
-#include "BTrk/TrkBase/HelixParams.hh"
+#include "Offline/BTrkLegacy/inc/HelixParams.hh"
 // CLHEP
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"

@@ -26,19 +26,12 @@ cet_make_library(
       src/StrawHit.cc
       src/StrawHitFlag.cc
       src/StrawFlag.cc
-      src/TrackClusterMatch.cc
       src/TrackSummary.cc
       src/TrkCaloHitPID.cc
-      src/TrkExtTraj.cc
-      src/TrkExtTrajPoint.cc
       src/TrkFitDirection.cc
       src/TrkFitFlag.cc
       src/TrkQual.cc
-      src/TrkToCaloExtrapol.cc
     LIBRARIES PUBLIC
-      BTrk_BbrGeom
-      BTrk_KalmanTrack
-      BTrk_ProbTools
       KinKal::Trajectory
 
       Offline::DataProducts

@@ -42,7 +42,6 @@ services :
   }
 
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
-  BTrkHelper             : @local::BTrkHelperDefault
 
 } # close of services block
 
