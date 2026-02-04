@@ -96,26 +96,20 @@ void STMDigisFromFragments::produce(Event& event)
   const auto STMFragments = STMFragmentsH.product();
 
   for (const auto& frag : *STMFragments) {
-    auto frag_id = frag.fragmentID();
-    //    const auto& stm_frag = static_cast<mu2e::STMFragment>(frag);
-    const auto dataBegin = frag.dataBegin();
-    const auto dataEnd = frag.dataEnd();
-    const auto stmDataBegin = reinterpret_cast<int16_t const*>(dataBegin);
-    const auto stmDataEnd = reinterpret_cast<int16_t const*>(dataEnd);
-    auto n_data = stmDataEnd - stmDataBegin; // TODO: read from the STMFragment itself
+    const auto& stm_frag = static_cast<mu2e::STMFragment>(frag);
 
     mu2e::STMWaveformDigi stm_waveform;
 
-    if (frag_id == 100) {
-      stm_waveform.set_data(n_data-mu2e::STMFragment::RAW_HEADER_LEN, stmDataBegin+mu2e::STMFragment::RAW_HEADER_LEN);
+    if (stm_frag.isRaw()) {
+      stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
       raw_waveform_digis->emplace_back(stm_waveform);
     }
-    else if (frag_id == 101) {
-      stm_waveform.set_data(n_data-mu2e::STMFragment::ZS_HEADER_LEN, stmDataBegin+mu2e::STMFragment::ZS_HEADER_LEN);
+    else if (stm_frag.isZS()) {
+      stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
       zs_waveform_digis->emplace_back(stm_waveform);
     }
-    else if (frag_id == 102) {
-      stm_waveform.set_data(n_data-mu2e::STMFragment::MWD_HEADER_LEN, stmDataBegin+mu2e::STMFragment::MWD_HEADER_LEN);
+    else if (stm_frag.isMWD()) {
+      stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
       mwd_waveform_digis->emplace_back(stm_waveform);
     }
   }
