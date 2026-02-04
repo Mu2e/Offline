@@ -237,7 +237,7 @@ namespace mu2e {
     }
 
     bool isFEBTracker() const{
-      return (_id == Tracker_FEB_0_SurfIn );
+      return (_id >= Tracker_FEB_0_SurfIn && _id <= Tracker_FEB_18_SurfIn );
     }
 
     bool isVaneCalorimeter0() const{

@@ -271,7 +271,7 @@ namespace mu2e {
       }
 
       bool opaflag = false;
-      double opaz0, opaz1, opari0, opari1;
+      double opaz0=0., opaz1=0., opari0=0., opari1=0.;
       if ( _config.getBool("hasProtonAbsorber", true) ) {
         GeomHandle<MECOStyleProtonAbsorber> pageom;
         if ( pageom->isAvailable(ProtonAbsorberId::opabs1) ) {
@@ -361,7 +361,7 @@ namespace mu2e {
       }
 
       bool opaflag = false;
-      double opaz0, opaz1, opari0, opari1;
+      double opaz0=0., opaz1=0., opari0=0., opari1=0.;
       if ( _config.getBool("hasProtonAbsorber", true) ) {
         GeomHandle<MECOStyleProtonAbsorber> pageom;
         if ( pageom->isAvailable(ProtonAbsorberId::opabs1) ) {
@@ -1895,7 +1895,7 @@ vdParamsInnerFEB,downstreamVacuumMaterial,0,posInnerFEB,caloFEBParent,vdIdFEBEdg
       }
 
       bool opaflag = false;
-      double opaz0, opaz1, opari0, opari1;
+      double opaz0=0., opaz1=0., opari0=0., opari1=0.;
       if ( _config.getBool("hasProtonAbsorber", true) ) {
         GeomHandle<MECOStyleProtonAbsorber> pageom;
         if ( pageom->isAvailable(ProtonAbsorberId::opabs1) ) {
@@ -1958,7 +1958,7 @@ vdParamsInnerFEB,downstreamVacuumMaterial,0,posInnerFEB,caloFEBParent,vdIdFEBEdg
       }
 
       bool opaflag = false;
-      double opaz0, opaz1, opari0, opari1;
+      double opaz0=0., opaz1=0., opari0=0., opari1=0.;
       if ( _config.getBool("hasProtonAbsorber", true) ) {
         GeomHandle<MECOStyleProtonAbsorber> pageom;
         if ( pageom->isAvailable(ProtonAbsorberId::opabs1) ) {
@@ -2022,7 +2022,7 @@ vdParamsInnerFEB,downstreamVacuumMaterial,0,posInnerFEB,caloFEBParent,vdIdFEBEdg
       }
 
       bool opaflag = false;
-      double opaz0, opaz1, opari0, opari1;
+      double opaz0=0., opaz1=0., opari0=0., opari1=0.;
       if ( _config.getBool("hasProtonAbsorber", true) ) {
         GeomHandle<MECOStyleProtonAbsorber> pageom;
         if ( pageom->isAvailable(ProtonAbsorberId::opabs1) ) {
