@@ -19,6 +19,7 @@ cet_make_library(
       src/CrvStepPrinter.cc
       src/EventWindowMarkerPrinter.cc
       src/GenParticlePrinter.cc
+      src/FilterFractionPrinter.cc
       src/HelixSeedPrinter.cc
       src/KalRepPrinter.cc
       src/KalSeedPrinter.cc
@@ -87,21 +88,21 @@ cet_build_plugin(DataProductDump art::module
     REG_SOURCE src/DataProductDump_module.cc
     LIBRARIES REG
       Offline::Print
-      
+
 )
 
 cet_build_plugin(PrintModule art::module
     REG_SOURCE src/PrintModule_module.cc
     LIBRARIES REG
       Offline::Print
-      
+
 )
 
 cet_build_plugin(RunSubrunEvent art::module
     REG_SOURCE src/RunSubrunEvent_module.cc
     LIBRARIES REG
       Offline::Print
-      
+
 )
 
 
