@@ -90,16 +90,6 @@ cet_build_plugin(PrefetchDAQData art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(STMWaveformDigisFromFragments art::module
-  REG_SOURCE src/STMWaveformDigisFromFragments_module.cc
-  LIBRARIES REG
-  Offline::DAQ
-  Offline::ProditionsService
-  Offline::DataProducts
-  Offline::RecoDataProducts
-  BTrk_difAlgebra
-)
-
 cet_build_plugin(STMDigisFromFragments art::module
   REG_SOURCE src/STMDigisFromFragments_module.cc
   LIBRARIES REG
