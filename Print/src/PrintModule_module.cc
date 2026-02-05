@@ -25,7 +25,6 @@
 #include "Offline/Print/inc/CrvStepPrinter.hh"
 #include "Offline/Print/inc/EventWindowMarkerPrinter.hh"
 #include "Offline/Print/inc/GenParticlePrinter.hh"
-#include "Offline/Print/inc/KalRepPrinter.hh"
 #include "Offline/Print/inc/KalSeedPrinter.hh"
 #include "Offline/Print/inc/MCTrajectoryPrinter.hh"
 #include "Offline/Print/inc/PhysicalVolumePrinter.hh"
@@ -49,11 +48,9 @@
 #include "Offline/Print/inc/TimeClusterPrinter.hh"
 #include "Offline/Print/inc/HelixSeedPrinter.hh"
 #include "Offline/Print/inc/CosmicTrackSeedPrinter.hh"
-#include "Offline/Print/inc/TrackClusterMatchPrinter.hh"
 #include "Offline/Print/inc/TrackSummaryPrinter.hh"
 #include "Offline/Print/inc/TriggerInfoPrinter.hh"
 #include "Offline/Print/inc/TriggerResultsPrinter.hh"
-#include "Offline/Print/inc/TrkCaloIntersectPrinter.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 
 using namespace std;
@@ -131,14 +128,12 @@ class PrintModule : public art::EDAnalyzer {
         fhicl::Name("bkgClusterPrinter")};
     fhicl::Table<ProductPrinter::ConfigE> bkgQualPrinter{
         fhicl::Name("bkgQualPrinter")};
-    fhicl::Table<ProductPrinter::Config> trackClusterMatchPrinter{
-        fhicl::Name("trackClusterMatchPrinter")};
     fhicl::Table<ProductPrinter::Config> trkCaloIntersectPrinter{
         fhicl::Name("trkCaloIntersectPrinter")};
     fhicl::Table<ProductPrinter::Config> trackSummaryPrinter{
         fhicl::Name("trackSummaryPrinter")};
-    fhicl::Table<ProductPrinter::Config> kalRepPrinter{
-        fhicl::Name("kalRepPrinter")};
+    //fhicl::Table<ProductPrinter::Config> kalRepPrinter{
+    //    fhicl::Name("kalRepPrinter")};
     fhicl::Table<ProductPrinter::Config> comboHitPrinter{
         fhicl::Name("comboHitPrinter")};
     fhicl::Table<ProductPrinter::Config> timeClusterPrinter{
@@ -236,12 +231,7 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
       make_unique<BkgClusterPrinter>(conf().bkgClusterPrinter()));
   _printers.push_back(make_unique<BkgQualPrinter>(conf().bkgQualPrinter()));
   _printers.push_back(
-      make_unique<TrackClusterMatchPrinter>(conf().trackClusterMatchPrinter()));
-  _printers.push_back(
-      make_unique<TrkCaloIntersectPrinter>(conf().trkCaloIntersectPrinter()));
-  _printers.push_back(
       make_unique<TrackSummaryPrinter>(conf().trackSummaryPrinter()));
-  _printers.push_back(make_unique<KalRepPrinter>(conf().kalRepPrinter()));
   _printers.push_back(make_unique<ComboHitPrinter>(conf().comboHitPrinter()));
   _printers.push_back(make_unique<TimeClusterPrinter>(conf().timeClusterPrinter()));
   _printers.push_back(make_unique<HelixSeedPrinter>(conf().helixSeedPrinter()));

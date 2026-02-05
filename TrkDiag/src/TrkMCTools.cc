@@ -9,7 +9,6 @@
 
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "BTrk/TrkBase/TrkHelixUtils.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"

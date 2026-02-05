@@ -12,7 +12,6 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
-#include "BTrk/BField/BField.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "CLHEP/Matrix/Vector.h"
 

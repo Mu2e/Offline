@@ -16,7 +16,6 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
-#include "BTrk/TrkBase/TrkErrCode.hh"
 
 
 namespace mu2e
