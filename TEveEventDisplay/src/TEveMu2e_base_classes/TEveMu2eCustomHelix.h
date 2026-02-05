@@ -6,7 +6,6 @@
 #include <TEveLine.h>
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 
 using namespace mu2e;
 
@@ -21,16 +20,11 @@ namespace mu2e {
 
       KalSeed fKalSeed_;
       HelixSeed fHelixSeed_;
-      TrkExtTraj fTrkExtTraj_;
 
       void DrawHelixTrack();
       void Draw2DProjection();
 
       void SetSeedInfo(KalSeed seed);
-      void SetPostionAndDirectionFromHelixSeed(double zpos);
-      void SetPostionAndDirectionFromKalRep(double zpos);
-      void SetMomentumExt();
-      void SetParticleExt();
 
       XYZVectorF Direction_;
       XYZVectorF Position_;

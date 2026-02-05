@@ -1,12 +1,9 @@
 cet_make_library(
     SOURCE
-      src/TrkCaloDiag.cc
-      src/TrkComp.cc
       src/TrkMCTools.cc
     LIBRARIES PUBLIC
-      
+
       Offline::BFieldGeom
-      Offline::BTrkData
       Offline::ConfigTools
       Offline::DataProducts
       Offline::GeometryService
@@ -22,7 +19,7 @@ cet_build_plugin(BinnedSpectrumWeight art::module
     REG_SOURCE src/BinnedSpectrumWeight_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-      
+
       Offline::ConfigTools
       Offline::MCDataProducts
       Offline::Mu2eUtilities
@@ -33,7 +30,7 @@ cet_build_plugin(BkgDiag art::module
     REG_SOURCE src/BkgDiag_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-      
+
       Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts
@@ -44,7 +41,7 @@ cet_build_plugin(ComboHitDiag art::module
     REG_SOURCE src/ComboHitDiag_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-      
+
       Offline::GeometryService
       Offline::MCDataProducts
       Offline::ProditionsService
@@ -56,7 +53,7 @@ cet_build_plugin(HelixDiag art::module
     REG_SOURCE src/HelixDiag_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-      
+
       Offline::BFieldGeom
       Offline::GeneralUtilities
       Offline::GeometryService
@@ -71,7 +68,7 @@ cet_build_plugin(ProtonBunchTimeDiag art::module
     REG_SOURCE src/ProtonBunchTimeDiag_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-      
+
       Offline::DataProducts
       Offline::MCDataProducts
       Offline::RecoDataProducts
@@ -81,7 +78,7 @@ cet_build_plugin(RMCWeight art::module
     REG_SOURCE src/RMCWeight_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-      
+
       Offline::ConfigTools
       Offline::MCDataProducts
       Offline::Mu2eUtilities
@@ -99,7 +96,6 @@ cet_build_plugin(StrawHitDiag art::module
     REG_SOURCE src/StrawHitDiag_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-      
       Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts
@@ -113,7 +109,7 @@ cet_build_plugin(StrawResponseTest art::module
     REG_SOURCE src/StrawResponseTest_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-      
+
       Offline::ProditionsService
       Offline::TrackerConditions
 )
@@ -122,7 +118,7 @@ cet_build_plugin(TimeClusterDiag art::module
     REG_SOURCE src/TimeClusterDiag_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-      
+
       Offline::CalorimeterGeom
       Offline::GeneralUtilities
       Offline::GeometryService
@@ -135,7 +131,7 @@ cet_build_plugin(TrackPID art::module
     REG_SOURCE src/TrackPID_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-      
+
       Offline::CalorimeterGeom
       Offline::GeometryService
       Offline::Mu2eUtilities
@@ -146,7 +142,7 @@ cet_build_plugin(TrackQuality art::module
     REG_SOURCE src/TrackQuality_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-      
+
       Offline::AnalysisConditions
       Offline::GlobalConstantsService
       Offline::Mu2eUtilities
@@ -159,7 +155,7 @@ cet_build_plugin(TrkGeomTest art::module
     REG_SOURCE src/TrkGeomTest_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-      
+
       Offline::GeometryService
       Offline::ProditionsService
       Offline::TrackerConditions
@@ -170,7 +166,7 @@ cet_build_plugin(TrkRecoDiag art::module
     REG_SOURCE src/TrkRecoDiag_module.cc
     LIBRARIES REG
       Offline::TrkDiag
-      
+
       Offline::BFieldGeom
       Offline::GeneralUtilities
       Offline::GeometryService

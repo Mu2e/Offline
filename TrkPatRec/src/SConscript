@@ -11,14 +11,12 @@ Import('mu2e_helper')
 
 extrarootlibs = [ 'TMVA', 'Minuit', 'XMLIO']
 
-babarlibs = env['BABARLIBS']
 rootlibs = env['ROOTLIBS']
 
 helper = mu2e_helper(env)
 
-mainlib = helper.make_mainlib(['mu2e_Mu2eBTrk',
+mainlib = helper.make_mainlib([
   'mu2e_TrkReco',
-  'mu2e_BTrkData',
   'mu2e_TrackerConditions',
   'mu2e_GeometryService',
   'mu2e_BFieldGeom',
@@ -29,7 +27,6 @@ mainlib = helper.make_mainlib(['mu2e_Mu2eBTrk',
   'mu2e_DataProducts',
   'mu2e_GeneralUtilities',
   #                                  'mu2e_CalPatRec',
-  babarlibs,
   'art_Framework_Core',
   'art_Framework_Principal',
   'art_Framework_Services_Registry',
@@ -49,10 +46,8 @@ mainlib = helper.make_mainlib(['mu2e_Mu2eBTrk',
   ])
 
 helper.make_plugins([mainlib,
-  'mu2e_Mu2eBTrk',
   'mu2e_Mu2eUtilities',
   'mu2e_TrkReco',
-  'mu2e_BTrkData',
   'mu2e_TrackerConditions',
   'mu2e_GeometryService',
   'mu2e_BFieldGeom',
@@ -67,7 +62,6 @@ helper.make_plugins([mainlib,
   'mu2e_GeomPrimitives',
 
   # 'mu2e_CalPatRec',
-  babarlibs,
   'art_Framework_Core',
   'art_Framework_Principal',
   'art_Framework_Services_Registry',

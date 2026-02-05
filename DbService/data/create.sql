@@ -406,6 +406,29 @@ GRANT INSERT ON crv.time TO crv_role;
 -- cal schema tables
 --
 
+--- reco tables
+
+CREATE TABLE cal.energycalib
+  (cid INTEGER,
+   roid INTEGER, adc2mev NUMERIC,
+   CONSTRAINT cal_energycalib_pk PRIMARY KEY (cid,roid) );
+GRANT SELECT ON cal.energycalib TO PUBLIC;
+GRANT INSERT ON cal.energycalib TO cal_role;
+
+CREATE TABLE cal.channels
+  (cid INTEGER,
+   rawid INTEGER, roid INTEGER,
+   CONSTRAINT cal_channels_pk PRIMARY KEY (cid,rawid) );
+GRANT SELECT ON cal.channels TO PUBLIC;
+GRANT INSERT ON cal.channels TO cal_role;
+
+CREATE TABLE cal.channelstatus
+  (cid INTEGER,
+   roid INTEGER, status TEXT,
+   CONSTRAINT cal_channelstatus_pk PRIMARY KEY (cid,roid) );
+GRANT SELECT ON cal.channelstatus TO PUBLIC;
+GRANT INSERT ON cal.channelstatus TO cal_role;
+
 --- archive and adhoc tables
 
 CREATE TABLE cal.cosmicenergycalib
@@ -425,10 +448,4 @@ CREATE TABLE cal.cosmicenergycalibinfo
 GRANT SELECT ON cal.cosmicenergycalibinfo TO PUBLIC;
 GRANT INSERT ON cal.cosmicenergycalibinfo TO cal_role;
 
-CREATE TABLE cal.energycalib
-  (cid INTEGER,
-   roid INTEGER, adc2mev NUMERIC,
-   CONSTRAINT cal_energycalib_pk PRIMARY KEY (cid,roid) );
-GRANT SELECT ON cal.energycalib TO PUBLIC;
-GRANT INSERT ON cal.energycalib TO cal_role;
 
