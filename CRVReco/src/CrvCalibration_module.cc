@@ -46,11 +46,13 @@ namespace mu2e
       fhicl::Atom<double>      histMaxPulseHeight{Name("histMaxPulseHeight"), Comment("end range of pulseArea histogram"), 150.0};
       fhicl::Atom<double>      fitRangeStart{Name("fitRangeStart"), Comment("low end of the 1PE fit range as fraction of peak"), 0.8};
       fhicl::Atom<double>      fitRangeEnd{Name("fitRangeEnd"), Comment("high end of the 1PE fit range as fraction of peak"), 1.2};
+      fhicl::Atom<double>      minPeakPulseArea{Name("minPeakPulseArea"), Comment("minimum accepted SPE peak for pulseArea histogram"), 250.0};
+      fhicl::Atom<double>      minPeakPulseHeight{Name("minPeakPulseHeight"), Comment("minimum accepted SPE peak for pulseHeight histogram"), 10.0};
       fhicl::Atom<int>         minHistEntries{Name("minHistEntries"), Comment("minimum number of entries required for a fit"), 100};
-      fhicl::Atom<int>         spectrumNPeaks{Name("spectrumNPeaks"), Comment("maximum number of peaks searched by TSpectrum. numbers less then 4 result in warnings"), 6};
+      fhicl::Atom<int>         spectrumNPeaks{Name("spectrumNPeaks"), Comment("maximum number of peaks searched by TSpectrum"), 100};
       fhicl::Atom<double>      spectrumPeakSigma{Name("spectrumPeakSigma"), Comment("TSpectrum search parameter sigma"), 4.0};
       fhicl::Atom<double>      spectrumPeakThreshold{Name("spectrumPeakThreshold"), Comment("TSpectrum search parameter threshold"), 0.01};
-      fhicl::Atom<double>      peakRatioTolerance{Name("peakRatioTolerance"), Comment("allowed deviation of the ratio between 1PE peak and 2PE peak from 2.0"), 0.1};
+      //fhicl::Atom<double>      peakRatioTolerance{Name("peakRatioTolerance"), Comment("allowed deviation of the ratio between 1PE peak and 2PE peak from 2.0"), 0.2};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
@@ -60,7 +62,9 @@ namespace mu2e
     void analyze(const art::Event& e);
     void beginRun(const art::Run&);
     void endJob();
-    bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, double &SPEpeak);
+//    template<size_t N>
+//    bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, std::array<TF1,N> &functions, double &SPEpeak, double minPeak);
+    bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak);
 
     private:
     std::string        _crvRecoPulsesModuleLabel;
@@ -68,10 +72,11 @@ namespace mu2e
     double             _histMaxPulseArea, _histMaxPulseHeight;
     double             _fitRangeStart, _fitRangeEnd;
     int                _minHistEntries;
+    double             _minPeakPulseArea, _minPeakPulseHeight;
     int                _spectrumNPeaks;
     double             _spectrumPeakSigma;
     double             _spectrumPeakThreshold;
-    double             _peakRatioTolerance;
+//    double             _peakRatioTolerance;
     std::string        _tmpDBfileName;
     std::vector<TH1F*> _calibHistsPulseArea;
     std::vector<TH1F*> _calibHistsPulseHeight;
@@ -96,10 +101,12 @@ namespace mu2e
     _fitRangeStart(conf().fitRangeStart()),
     _fitRangeEnd(conf().fitRangeEnd()),
     _minHistEntries(conf().minHistEntries()),
+    _minPeakPulseArea(conf().minPeakPulseArea()),
+    _minPeakPulseHeight(conf().minPeakPulseHeight()),
     _spectrumNPeaks(conf().spectrumNPeaks()),
     _spectrumPeakSigma(conf().spectrumPeakSigma()),
     _spectrumPeakThreshold(conf().spectrumPeakThreshold()),
-    _peakRatioTolerance(conf().peakRatioTolerance()),
+//    _peakRatioTolerance(conf().peakRatioTolerance()),
     _tmpDBfileName(conf().tmpDBfileName())
   {
   }
@@ -143,7 +150,8 @@ namespace mu2e
     treePedestal->Branch("channel", &channel);
     treePedestal->Branch("pedestal", &pedestal);
 
-    TF1 funcCalib("SPEpeak", "gaus");
+//    std::array functions={TF1("calibPeak1","gaus"), TF1("calibPeak2","gaus"), TF1("calibPeak3","gaus")}; //only need to fit three peaks
+    TF1 function("calibPeak","gaus");
     TSpectrum spectrum(_spectrumNPeaks); //any value of 3 or less results in a "Peak buffer full" warning.
 
     std::ofstream outputFile;
@@ -160,22 +168,14 @@ namespace mu2e
         if(i==1) hist=_calibHistsPulseArea.at(channel);
         else hist=_calibHistsPulseHeight.at(channel);
 
-        double peakCalib=0;
-        if(!FindSPEpeak(hist, spectrum, peakCalib))
+        double SPEpeak=-1;
+//        if(!FindSPEpeak(hist, spectrum, functions, SPEpeak, (i==0?_minPeakPulseHeight:_minPeakPulseArea)))
+        if(!FindSPEpeak(hist, spectrum, function, SPEpeak, (i==0?_minPeakPulseHeight:_minPeakPulseArea)))
         {
           calibValue[i]=-1;
           continue;
         }
-
-        funcCalib.SetRange(peakCalib*_fitRangeStart,peakCalib*_fitRangeEnd);
-        if(hist->FindBin(peakCalib*_fitRangeStart)==hist->FindBin(peakCalib*_fitRangeEnd)) //fit range start/end are in the same bin
-        {
-          calibValue[i]=-1;
-          continue;
-        }
-        funcCalib.SetParameter(1,peakCalib);
-        hist->Fit(&funcCalib, "0QR");
-        calibValue[i]=funcCalib.GetParameter(1);
+        calibValue[i]=SPEpeak;
       }
 
       pedestal=_pedestals.at(channel);
@@ -241,31 +241,76 @@ namespace mu2e
     }
   }
 
-  bool CrvCalibration::FindSPEpeak(TH1F *hist, TSpectrum &spectrum, double &SPEpeak)
+  bool CrvCalibration::FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak)
   {
     if(hist->GetEntries()<_minHistEntries) return false; //not enough data
 
     int nPeaks = spectrum.Search(hist,_spectrumPeakSigma,"nodraw",_spectrumPeakThreshold);
-    if(nPeaks==0) return false;
+    if(nPeaks<=0) return false;
 
-    //peaks are not returned sorted
+    //peaks are returned sorted by Y
+    //from our long-time experience:
+    //-SPE peak is either the highest peak or second highest peak
+    //-if the SPE peak is the second highest, then the highest peak comes from the baseline
+    //-the peak from the baseline is always below the minPeak threshold, while the SPE peak is not
+    //-the minPeak threshold may have to be adjusted for non-standard bias voltages
     double *peaksX = spectrum.GetPositionX();
-    double *peaksY = spectrum.GetPositionY();
-    std::vector<std::pair<double,double> > peaks;
-    for(int iPeak=0; iPeak<nPeaks; ++iPeak) peaks.emplace_back(peaksX[iPeak],peaksY[iPeak]);
-    std::sort(peaks.begin(),peaks.end(), [](const std::pair<double,double> &a, const std::pair<double,double> &b) {return a.first<b.first;});
-
-    int peakToUse=0;
-    if(nPeaks>1 && peaks[0].first>0)   //if more than one peak is found, the first peak could be due to baseline fluctuations
-                                       //never seen peaks at 0, but still checking to avoid division by 0.
+    double x=peaksX[0];
+    if(x<minPeak)
     {
-      if(fabs(peaks[1].first/peaks[0].first-2.0)>_peakRatioTolerance) peakToUse=1; //2nd peak is not twice the 1st peak, so the 1st peak is not the SPE peak
-                                                                                   //assume that the 2nd peak is the SPE peak
-                                                                                   //we have never seen that the 3rd peak was the SPE peak - no need to test it
+      if(nPeaks==1) return false;
+      x=peaksX[1];
+      if(x<minPeak) return false;
     }
-    SPEpeak = peaks[peakToUse].first;
+
+    if(hist->FindBin(x*_fitRangeStart)==hist->FindBin(x*_fitRangeEnd)) return false; //fit range start/end are in the same bin
+    function.SetRange(x*_fitRangeStart,x*_fitRangeEnd);
+    function.SetParameter(1,x);
+    hist->Fit(&function, "QR");
+    SPEpeak = function.GetParameter(1);
+
     return true;
   }
+
+/*
+  template<size_t N>
+  bool CrvCalibration::FindSPEpeak(TH1F *hist, TSpectrum &spectrum, std::array<TF1,N> &functions, double &SPEpeak, double minPeak)
+  {
+    if(hist->GetEntries()<_minHistEntries) return false; //not enough data
+
+    size_t nPeaks = spectrum.Search(hist,_spectrumPeakSigma,"nodraw",_spectrumPeakThreshold);
+    if(nPeaks==0) return false;
+
+    //peaks are returned sorted by Y
+    double *peaksX = spectrum.GetPositionX();
+    std::vector<double> fittedPeaks;
+    for(size_t iPeak=0; iPeak<nPeaks && iPeak<functions.size(); ++iPeak)
+    {
+      double x=peaksX[iPeak];
+      if(hist->FindBin(x*_fitRangeStart)==hist->FindBin(x*_fitRangeEnd)) continue; //fit range start/end are in the same bin
+      functions[iPeak].SetRange(x*_fitRangeStart,x*_fitRangeEnd);
+      functions[iPeak].SetParameter(1,x);
+      hist->Fit(&functions[iPeak], "QR+");
+      fittedPeaks.emplace_back(functions[iPeak].GetParameter(1));
+    }
+    if(fittedPeaks.size()==0) return false;
+
+    int peakToUse=-1;
+    //only need to test two highest peaks (=first two entries in vector)
+    //one of the peaks could be due to baseline fluctuations
+    for(size_t iPeak=0; iPeak<fittedPeaks.size() && iPeak<2; ++iPeak)
+    for(size_t jPeak=iPeak+1; jPeak<fittedPeaks.size(); ++jPeak)
+    {
+      if(fabs(fittedPeaks.at(jPeak)/fittedPeaks.at(iPeak)-2.0)<_peakRatioTolerance) peakToUse=iPeak;
+    }
+    if(peakToUse==-1) return false;
+    if(fittedPeaks.at(peakToUse)<minPeak) return false;
+
+    SPEpeak = fittedPeaks.at(peakToUse);
+
+    return true;
+  }
+*/
 
 } // end namespace mu2e
 

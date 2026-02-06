@@ -411,10 +411,10 @@ namespace mu2e
                                             Form("crvDigiRatesNZS_ROC%zu",ROC),
                                             CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB));
     }
-    _hist2DPEsMPVROC=tfs->make<TH2F>("crvPEsMPV","crvPEsMPV", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
-    _hist2DDigiRatesROC=tfs->make<TH2F>("crvDigiRates","crvDigiRates", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
-    _hist2DDigiRatesROCNZS=tfs->make<TH2F>("crvDigiRatesNZS","crvDigiRatesNZS", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
-    _histCoincidenceClusters=tfs->make<TH1I>("crvCoincidencesClusters","crvCoincidenceClusters",10,0,10);
+    _hist2DPEsMPVROC=tfs->make<TH2F>("crvPEsMPV","crvPEsMPV:FEBchannel:FEB", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
+    _hist2DDigiRatesROC=tfs->make<TH2F>("crvDigiRates","crvDigiRates:FEBchannel:FEB", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
+    _hist2DDigiRatesROCNZS=tfs->make<TH2F>("crvDigiRatesNZS","crvDigiRatesNZS:FEBchannel:FEB", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
+    _histCoincidenceClusters=tfs->make<TH1I>("crvCoincidencesClusters","crvCoincidenceClusters:sectorType",10,0,10);
 
     _treeMetaData=tfs->make<TTree>("crvMetaData","crvMetaData");
     _treeMetaData->Branch("runNumberStart",&_firstRunSubrun.first);
