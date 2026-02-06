@@ -78,8 +78,8 @@ namespace mu2e {
 
     double _mass;
     BinnedSpectrum    spectrum_;
-    RandomUnitSphere*   randomUnitSphere_;
-    CLHEP::RandGeneral* randSpectrum_;
+    std::unique_ptr<RandomUnitSphere>   randomUnitSphere_;
+    std::unique_ptr<CLHEP::RandGeneral> randSpectrum_;
     double endPointEnergy_;
 
   };
@@ -109,8 +109,8 @@ namespace mu2e {
         <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id : "<<pid_<<std::endl;
     }
 
-    randomUnitSphere_ = new RandomUnitSphere(eng_);
-    randSpectrum_ = new CLHEP::RandGeneral(eng_, spectrum_.getPDF(), spectrum_.getNbins());
+    randomUnitSphere_ = std::make_unique<RandomUnitSphere>(eng_);
+    randSpectrum_ = std::make_unique<CLHEP::RandGeneral>(eng_, spectrum_.getPDF(), spectrum_.getNbins());
   }
 
   //================================================================
