@@ -41,14 +41,15 @@ namespace mu2e {
       cout << "CalCalibMaker::fromDb making CalCalib\n";
     }
 
-    size_t nChan = CaloConst::_nChannelDB;
+    size_t nChan = CaloConst::_nChannel;
+    size_t nChanDB = CaloConst::_nChannelDB;
 
     if (_config.verbose()) {
-      cout << "CalCalibMaker::fromDb checking for " << nChan << " channels\n";
+      cout << "CalCalibMaker::fromDb checking for " << nChanDB << " channels\n";
     }
 
-    // require the db tables are the same length as geometry
-    if (ecalib.nrow() != nChan || tcalib.nrow() != nChan) {
+    // check the db tables length (TODO remove?)
+    if (ecalib.nrow() != nChanDB || tcalib.nrow() != nChanDB) {
       throw cet::exception("CALCALIBMAKE_BAD_N_CHANNEL")
       << "CalCalibMaker::fromDb bad channel counts: "
       << "  geometry: " << nChan
@@ -59,6 +60,7 @@ namespace mu2e {
 
     CalCalib::CalibVec cvec;
 
+    //Loop up to _nChannel (skip the spare DB channels)
     for (CaloConst::CaloSiPMId_type ind=0; ind<nChan; ind++) {
       auto roid = CaloSiPMId(ind);
       cvec.emplace_back(ecalib.row(roid).ADC2MeV(), tcalib.row(roid).tcorr());
