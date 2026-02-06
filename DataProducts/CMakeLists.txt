@@ -6,6 +6,7 @@ cet_make_library(
       src/CrystalId.cc
       src/ExtMonFNALChipId.cc
       src/ExtMonFNALPixelId.cc
+      src/FilterFraction.cc
       src/GenVector.cc
       src/PDGCode.cc
       src/STMChannel.cc
@@ -27,7 +28,7 @@ art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
      Offline::DataProducts
 )
 
-if( BUILD_PYTHON_INTERFACE ) 
+if( BUILD_PYTHON_INTERFACE )
     mu2e_swig(DataProducts_swig src/pywrap.i DataProducts)
 endif()
 
