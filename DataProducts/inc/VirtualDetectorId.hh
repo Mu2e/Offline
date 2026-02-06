@@ -88,6 +88,28 @@ namespace mu2e {
       STM_Final, // 114
       STM_UpStrHole, //115
       STM_UpStrLarge, //116
+      EMC_Source, // 117
+      EMC_Source2, // 118
+      EMC_0_Front, // 119
+      Tracker_FEB_0_SurfIn, // 120 before tracker station 0
+      Tracker_FEB_1_SurfIn, // 121 before tracker station 1
+      Tracker_FEB_2_SurfIn, // 122 before tracker station 2
+      Tracker_FEB_3_SurfIn, // 123 before tracker station 3
+      Tracker_FEB_4_SurfIn, // 124 before tracker station 4
+      Tracker_FEB_5_SurfIn, // 125 before tracker station 5
+      Tracker_FEB_6_SurfIn, // 126 before tracker station 6
+      Tracker_FEB_7_SurfIn, // 127 before tracker station 7
+      Tracker_FEB_8_SurfIn, // 128 before tracker station 8
+      Tracker_FEB_9_SurfIn, // 129 before tracker station 9
+      Tracker_FEB_10_SurfIn, // 130 before tracker station 10
+      Tracker_FEB_11_SurfIn, // 131 before tracker station 11
+      Tracker_FEB_12_SurfIn, // 132 before tracker station 12
+      Tracker_FEB_13_SurfIn, // 133 before tracker station 13
+      Tracker_FEB_14_SurfIn, // 134 before tracker station 14
+      Tracker_FEB_15_SurfIn, // 135 before tracker station 15
+      Tracker_FEB_16_SurfIn, // 136 before tracker station 16
+      Tracker_FEB_17_SurfIn, // 137 before tracker station 17
+      Tracker_FEB_18_SurfIn, // 138 after tracker station 17
       lastEnum
     };
 
@@ -139,7 +161,29 @@ namespace mu2e {
       "PTM_1_In", "PTM_2_In", \
       "STM_Final", \
       "STM_UpStrHole", \
-      "STM_UpStrLarge"
+      "STM_UpStrLarge", \
+      "EMC_Source", \
+      "EMC_Source2", \
+      "EMC_0_Front", \
+      "Tracker_FEB_0_SurfIn", \
+      "Tracker_FEB_1_SurfIn", \
+      "Tracker_FEB_2_SurfIn", \
+      "Tracker_FEB_3_SurfIn", \
+      "Tracker_FEB_4_SurfIn", \
+      "Tracker_FEB_5_SurfIn", \
+      "Tracker_FEB_6_SurfIn", \
+      "Tracker_FEB_7_SurfIn", \
+      "Tracker_FEB_8_SurfIn", \
+      "Tracker_FEB_9_SurfIn", \
+      "Tracker_FEB_10_SurfIn", \
+      "Tracker_FEB_11_SurfIn", \
+      "Tracker_FEB_12_SurfIn", \
+      "Tracker_FEB_13_SurfIn", \
+      "Tracker_FEB_14_SurfIn", \
+      "Tracker_FEB_15_SurfIn", \
+      "Tracker_FEB_16_SurfIn", \
+      "Tracker_FEB_17_SurfIn", \
+      "Tracker_FEB_18_SurfIn"
   public:
 
     // The most important c'tor and accessor methods are first.
@@ -190,6 +234,10 @@ namespace mu2e {
 
     bool isTrackerBack() const {
       return ( _id == TT_Back || _id == IT_VD_EndCap_Back );
+    }
+
+    bool isFEBTracker() const{
+      return (_id >= Tracker_FEB_0_SurfIn && _id <= Tracker_FEB_18_SurfIn );
     }
 
     bool isVaneCalorimeter0() const{

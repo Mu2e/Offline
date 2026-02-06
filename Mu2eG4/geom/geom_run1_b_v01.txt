@@ -37,6 +37,11 @@ vector<double> calorimeter.diskZMotherShift   = {0.0,2000};
 // Set stopping target position AFTER calorimeter configuration
 double stoppingTarget.z0InMu2e = 4185;
 vector<double> stoppingTarget.radii  =  {600.00};
+// Set position of EMC Source Virtual Detectors
+double zEMCSourceInMu2e = 5300.;
+double zEMCSource2InMu2e = 4800.;
+double zEMC0Front = 8695.;
+
 // Tracker positions - matching dpalo/main
 double tracker.mother.z0          = 7000;  // mm - dpalo position
 double tracker.mother.halfLength  = 1640;  // mm - increased to fully contain end rings (upstream +1606±25.4, downstream -1614±25.4)
