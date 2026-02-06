@@ -6,7 +6,6 @@
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalTable.h"
 
@@ -23,8 +22,6 @@
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 
 // C++
-#include <iostream>
-#include <memory>
 #include <string>
 #include <typeinfo>
 
@@ -44,17 +41,22 @@ namespace mu2e {
       fhicl::Atom<int>          maxSize{Name("maxSize"), Comment("Maximum collection size")};
     };
 
+    struct FragmentCutConfig { // no tag needed here
+      using Name    = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<int>          maxSize{Name("maxSize"), Comment("Maximum collection size")};
+    };
+
     // Main configuration
     struct Config {
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::OptionalTable<CutConfig>  comboHits {Name("comboHits") , Comment("Tracker combo hits selection")};
-      fhicl::OptionalTable<CutConfig>  strawHits {Name("strawHits") , Comment("Tracker straw hits selection")};
-      fhicl::OptionalTable<CutConfig>  strawDigis{Name("strawDigis"), Comment("Tracker straw digis selection")};
-      fhicl::OptionalTable<CutConfig>  caloHits  {Name("caloHits")  , Comment("Calorimeter hits selection")};
-      fhicl::OptionalTable<CutConfig>  caloDigis {Name("caloDigis") , Comment("Calorimeter digis selection")};
-      fhicl::OptionalTable<CutConfig>  fragments {Name("fragments") , Comment("Fragments selection")};
-      fhicl::Atom<int>                 diagLevel {Name("diagLevel") , Comment("Diagnostic printout level"), 0};
+      fhicl::OptionalTable<CutConfig>          comboHits {Name("comboHits") , Comment("Tracker combo hits selection")};
+      fhicl::OptionalTable<CutConfig>          strawHits {Name("strawHits") , Comment("Tracker straw hits selection")};
+      fhicl::OptionalTable<CutConfig>          strawDigis{Name("strawDigis"), Comment("Tracker straw digis selection")};
+      fhicl::OptionalTable<CutConfig>          caloHits  {Name("caloHits")  , Comment("Calorimeter hits selection")};
+      fhicl::OptionalTable<CutConfig>          caloDigis {Name("caloDigis") , Comment("Calorimeter digis selection")};
+      fhicl::OptionalTable<FragmentCutConfig>  fragments {Name("fragments") , Comment("Fragments selection")};
     };
 
     using Parameters = art::EDFilter::Table<Config>;
@@ -77,19 +79,18 @@ namespace mu2e {
     bool                     _filterCaloHits;
     bool                     _filterCaloDigis;
     bool                     _filterFragments;
-    int                      _diagLevel;
 
-    int                      _maxComboHits;
+    int                      _maxComboHits = -1;
     std::string              _tagComboHits;
-    int                      _maxStrawHits;
+    int                      _maxStrawHits = -1;
     std::string              _tagStrawHits;
-    int                      _maxStrawDigis;
+    int                      _maxStrawDigis = -1;
     std::string              _tagStrawDigis;
-    int                      _maxCaloHits;
+    int                      _maxCaloHits = -1;
     std::string              _tagCaloHits;
-    int                      _maxCaloDigis;
+    int                      _maxCaloDigis = -1;
     std::string              _tagCaloDigis;
-    int                      _maxFragments;
+    int                      _maxFragments = -1;
 
     // Data
     int                      _nevt, _npass;
@@ -105,7 +106,6 @@ namespace mu2e {
     , _filterCaloHits  (conf().caloHits  ())
     , _filterCaloDigis (conf().caloDigis ())
     , _filterFragments (conf().fragments ())
-    , _diagLevel(conf().diagLevel())
     , _nevt(0)
     , _npass(0)
   {
@@ -135,7 +135,7 @@ namespace mu2e {
     }
 
     TLOG(TLVL_DEBUG + 1) << ":"
-                         << " filter combo hits = "   << _filterComboHits << " max = " << _maxComboHits
+                         << " filter combo hits = "   << _filterComboHits  << " max = " << _maxComboHits
                          << " filter straw hits = "   << _filterStrawHits  << " max = " << _maxStrawHits
                          << " filter straw digis = "  << _filterStrawDigis << " max = " << _maxStrawDigis
                          << " filter calo hits =   "  << _filterCaloHits   << " max = " << _maxCaloHits
@@ -157,7 +157,7 @@ namespace mu2e {
     // Check the collection
     const T* collection = handle.product();
     const size_t nobj = collection->size();
-    const bool passed = nobj < max_size;
+    const bool passed = nobj <= max_size;
     TLOG(TLVL_DEBUG + 3) << ":  handle " << typeid(T).name() << " with tag " << tag
                          << " has size " << nobj << " and result " << passed;
     if(!passed) TLOG(TLVL_DEBUG + 4) << ":  handle " << typeid(T).name() << " with tag " << tag
@@ -168,7 +168,6 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // Check if the fragment collection passes the selection
   bool OccupancyFilter::check_fragments(const art::Event& event, const size_t max_size) {
-    if(max_size == 0) return false; // impossible to pass
 
     // Get all fragment handles
     std::vector<art::Handle<artdaq::Fragments>> fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
@@ -188,18 +187,16 @@ namespace mu2e {
             break;
           }
 
-          for (size_t ii = 0; ii < contf.block_count(); ++ii) {
-            nfragments += contf[ii]->size();
-            if(nfragments >= max_size) {
-              TLOG(TLVL_DEBUG + 10) << ": Reached maximum fragments at " << nfragments;
-              return false; // stop processing if we ever fail
-            }
+          nfragments += contf.block_count();
+          if(nfragments > max_size) {
+            TLOG(TLVL_DEBUG + 10) << ": Reached maximum fragments at " << nfragments;
+            return false; // stop processing if we ever fail
           }
         }
       } else { // directly a list of fragments
         if (handle->front().type() == mu2e::FragmentType::DTCEVT) {
           nfragments += handle->size();
-          if(nfragments >= max_size) {
+          if(nfragments > max_size) {
             TLOG(TLVL_DEBUG + 10) << ": Reached maximum fragments at " << nfragments;
             return false; // stop processing if we ever fail
           }
@@ -242,6 +239,7 @@ namespace mu2e {
     // Print a summary of the filter results
     const float rate = (_nevt > 0) ? float(_npass)/float(_nevt) : 0.f;
     TLOG(TLVL_DEBUG + 2) << "passed " << _npass << " events out of " << _nevt << " for a ratio of " << rate;
+    _nevt = 0; _npass = 0; // reset for the next run
     return true;
   }
 }
