@@ -25,7 +25,8 @@ cet_build_plugin(ArtBinaryPacketsFromDigis art::module
 cet_build_plugin(EventHeaderFromCFOFragment art::module
     REG_SOURCE src/EventHeaderFromCFOFragment_module.cc
     LIBRARIES REG
-      Offline::DAQ
+    Offline::DAQ
+    Offline::DataProducts
 )
 
 
@@ -79,6 +80,17 @@ cet_build_plugin(LumiStreamFilter art::module
   artdaq-core-mu2e::Data_dict
   TRACE::MF
   ${ARTDAQ_DAQDATA_LIB}
+)
+
+cet_build_plugin(OccupancyFilter art::module
+    REG_SOURCE src/OccupancyFilter_module.cc
+    LIBRARIES REG
+    artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Overlays
+    fhiclcpp::types
+    Offline::DAQ
+    Offline::RecoDataProducts
+    TRACE::MF
 )
 
 cet_build_plugin(PrefetchDAQData art::module
