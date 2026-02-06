@@ -132,8 +132,6 @@ class PrintModule : public art::EDAnalyzer {
         fhicl::Name("trkCaloIntersectPrinter")};
     fhicl::Table<ProductPrinter::Config> trackSummaryPrinter{
         fhicl::Name("trackSummaryPrinter")};
-    //fhicl::Table<ProductPrinter::Config> kalRepPrinter{
-    //    fhicl::Name("kalRepPrinter")};
     fhicl::Table<ProductPrinter::Config> comboHitPrinter{
         fhicl::Name("comboHitPrinter")};
     fhicl::Table<ProductPrinter::Config> timeClusterPrinter{
