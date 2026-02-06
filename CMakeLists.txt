@@ -108,8 +108,6 @@ endif()
 if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/../KinKal/KinKalTargets.cmake)
   include(${CMAKE_CURRENT_BINARY_DIR}/../KinKal/KinKalTargets.cmake)
 endif()
-include_directories($ENV{BTRK_INC})
-link_directories($ENV{BTRK_LIB})
 
 include(ArtDictionary)
 include(BuildPlugins)
