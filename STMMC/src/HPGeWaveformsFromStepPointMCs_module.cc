@@ -1,6 +1,11 @@
 // Simulates the electronics response of the HPGe detector. Simulates the pulse height, decay tail, and ADC digitization. Generates one STMWaveformDigi per micropulse.
 // Model based heavily on example provided in docDb 43617
 // See docDb 51487 for full documentation
+// Remaining TODOs for future development:
+//  - Include the commented out includes correctly
+//  - Implement the makeADCPlot functionality correctly
+//  - Implement different sampling frequencies correctly
+//  - Remove the implementation of stepPositionTolerance, it is a hack to address a position resolution I did not have time to fully address
 // Original author: Pawel Plesniak
 
 // stdlib includes
@@ -45,6 +50,7 @@
 // ROOT includes
 #include "art_root_io/TFileService.h"
 #include "TTree.h"
+#include "TGraph.h"
 
 
 namespace mu2e {
@@ -62,6 +68,7 @@ namespace mu2e {
       fhicl::Atom<double> risingEdgeDecayConstant{ Name("risingEdgeDecayConstant"), Comment("Rising edge decay time [us]")};
       fhicl::OptionalAtom<int> microspillBufferLengthCount{ Name("microspillBufferLengthCount"), Comment("Number of microspills to buffer ahead for, in number of microspills")};
       fhicl::OptionalAtom<bool> makeTTree{ Name("makeTTree"), Comment("Controls whether to make the TTree with branches chargeCollected, chargeDecayed, ADC, eventId, time")};
+      fhicl::OptionalAtom<bool> makeADCPlot{ Name("makeADCPlot"), Comment("Controls whether to make a plot of the generated ADC values")};
       fhicl::OptionalAtom<double> timeOffset{ Name("timeOffset"), Comment("For debugging, adds the named time offset in [ns], used for testing analysis algorithms")};
       fhicl::OptionalAtom<uint> resetEventNumber{ Name("resetEventNumber"), Comment("Simulates the off-spill period by resetting the inter-event last decayed charge to zero")};
       fhicl::OptionalAtom<uint> verbosityLevel{ Name("verbosityLevel"), Comment("Controls verbosity")};
@@ -75,6 +82,7 @@ namespace mu2e {
     void decayCharge();
     void addNoise();
     void digitize();
+    void endJob();
 
     // fhicl variables
     art::ProductToken<StepPointMCCollection> StepPointMCsTokenEle, StepPointMCsTokenMu, StepPointMCsToken1809;  // Token of StepPointMCs in STMDet
@@ -83,6 +91,7 @@ namespace mu2e {
     double noiseSD = 0;                                                                                         // Standard deviation of ADC noise [mV]
     double risingEdgeDecayConstant = 0;                                                                         // [us]
     bool makeTTree = false;                                                                                     // Controls whether an analysis TTree is made
+    bool makeADCPlot = false;                                                                                   // Controls whether the ADC graph is made
     double timeOffset = 0.0;                                                                                    // Used for debugging [ns]
     uint resetEventNumber = 0;                                                                                  // Event ID at which to reset the charge amplitude
     int verbosityLevel = 0;                                                                                     // How much output to generate
@@ -155,6 +164,10 @@ namespace mu2e {
     std::vector<double> _chargeCarryOver;                                                                       // Temporary buffer that will store _chargeCollected over the course of the next event
     std::vector<int16_t> _adcs;                                                                                 // Buffer for storing the ADC values to put into the STMWaveformDigi
 
+    // Debugging variables
+    double waveform_time = 0.0;                                                                                  // Time of start of waveform for debugging. TODO - REMOVE ME!
+    int32_t kept_events = 0, dropped_events = 0;                                                            // Counters for debugging
+
     // Offline utilities
     // TODO: include the prodition to get the sampling frequency
     // mu2e::STMChannel::enum_type _HPGeChannel = static_cast<mu2e::STMChannel::enum_type>(1);
@@ -205,7 +218,7 @@ namespace mu2e {
         // Assign the approrpiate time offset
         timeOffset = conf().timeOffset() ? *(conf().timeOffset()) : 0.0;
 
-        // Assign TTrees
+        // Assign optional ROOT parameters
         makeTTree = conf().makeTTree() ? *(conf().makeTTree()) : false;
         if (makeTTree) {
           art::ServiceHandle<art::TFileService> tfs;
@@ -216,7 +229,15 @@ namespace mu2e {
           ttree->Branch("eventId", &eventId, "eventId/i");
           ttree->Branch("time", &time, "time/i");
         };
+        makeADCPlot = conf().makeADCPlot() ? *(conf().makeADCPlot()) : false;
+        if (makeADCPlot) {
+          throw cet::exception("IMPLEMENT", "makeADCPlot functionality not yet implemented correctly\n");
+          art::ServiceHandle<art::TFileService> tfs;
+          TTree* adcTree = tfs->make<TTree>("adcTree", "HPGeWaveformsFromStepPointMCs ADC Tree");
+          adcTree->Branch("ADC", &ADC, "ADC/D");
+        };
 
+        // Assign optional variables
         resetEventNumber = conf().resetEventNumber() ? *(conf().resetEventNumber()) : 0;
       };
 
@@ -230,6 +251,7 @@ namespace mu2e {
       std::cout << std::left << "\t\t" << std::setw(60) << "risingEdgeDecayConstant [us]"         << risingEdgeDecayConstant                  << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "microspillBufferLengthCount"          << microspillBufferLengthCount              << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "makeTTree"                            << makeTTree                                << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "makeADCPlot"                          << makeADCPlot                              << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "timeOffset [ns]"                      << timeOffset                               << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "resetEventNumber"                     << resetEventNumber                         << std::endl;
       std::cout << "\tDerived parameters: " << std::endl;
@@ -249,27 +271,18 @@ namespace mu2e {
 
   void HPGeWaveformsFromStepPointMCs::produce(art::Event& event) {
     eventId = event.id().event();
-    // Get the hits in the detector
-    std::vector<StepPointMC> StepsEle = event.getProduct(StepPointMCsTokenEle);
-    std::vector<StepPointMC> StepsMu = event.getProduct(StepPointMCsTokenMu);
-    std::vector<StepPointMC> Steps1809 = event.getProduct(StepPointMCsToken1809);
+    // Simulation takes the POT time as t = 0, and has sequential microspills (events). The trigger time offset is not used here, left as a TODO
+    // Create the STMWaveformDigi and insert all the relevant attributes
+    // TODO - this only keeps accurate time if the sampling is 320MHz. Needs to be rewritten to work for other times
+    if (std::abs(fADC - 320) > 1e-12)
+      throw cet::exception("RANGE") << "Currently only fADC of 320 MHz is supported (got " << fADC << " MHz)\n";
+    nADCs = 542;
 
-    // Add a collection of charge depositions to _charge
-    for(const StepPointMC& step : StepsEle){
-      if (step.ionizingEdep() != 0)
-          depositCharge(step);
-    };
-    for(const StepPointMC& step : StepsMu){
-      if (step.ionizingEdep() != 0)
-          depositCharge(step);
-    };
-    for(const StepPointMC& step : Steps1809){
-      if (step.ionizingEdep() != 0)
-          depositCharge(step);
-    };
-
-    // Decay all of the collected charges
-    decayCharge();
+    // Assign the variables for time and number of ADCs
+    eventTimeBuffer = eventId % 5;
+    if (!(eventTimeBuffer == 0 || eventTimeBuffer == 3))
+      nADCs++;
+    eventTime += nADCs;
 
     // Update the last event decayed charge before the noise so the noise isn't added twice
     if (resetEventNumber != 0 && eventId == resetEventNumber) {
@@ -278,6 +291,71 @@ namespace mu2e {
     }
     else
       lastEventEndDecayedCharge = _chargeDecayed.back();
+
+    // Update the parameters to carry over to the next event
+    _chargeCollected.clear();
+    _chargeCollected.assign(_chargeCarryOver.begin(), _chargeCarryOver.end());
+    _chargeCollected.insert(_chargeCollected.end(), nADCs, 0);
+    _chargeCarryOver.clear();
+    _chargeCarryOver.assign(_chargeCollected.begin() + nADCs, _chargeCollected.end());
+
+    // Clear previous buffer vectors
+    _chargeDecayed.clear();
+    _chargeDecayed.insert(_chargeDecayed.end(), nADCs, 0);
+    _adcs.clear();
+    _adcs.insert(_adcs.end(), nADCs, 0);
+
+    // Reset waveform time for debugging
+    waveform_time = 0.0;
+
+    // Get the hits in the detector
+    std::vector<StepPointMC> StepsEle = event.getProduct(StepPointMCsTokenEle);
+    std::vector<StepPointMC> StepsMu = event.getProduct(StepPointMCsTokenMu);
+    std::vector<StepPointMC> Steps1809 = event.getProduct(StepPointMCsToken1809);
+
+    // If there are no hits, produce an empty STMWaveformDigiCollection and return
+    if (StepsEle.size() == 0 && StepsMu.size() == 0 && Steps1809.size() == 0) {
+      std::vector<int16_t> emptyAdcs(nADCs, static_cast<int16_t>(0));
+      STMWaveformDigi _waveformDigi(0.0, emptyAdcs);
+      std::unique_ptr<STMWaveformDigiCollection> outputDigis(new STMWaveformDigiCollection);
+      outputDigis->emplace_back(_waveformDigi);
+      event.put(std::move(outputDigis));
+      dropped_events++;
+      return;
+    }
+    kept_events++;
+
+    // Add a collection of charge depositions to _charge
+    for(const StepPointMC& step : StepsEle){
+      if (step.ionizingEdep() != 0) {
+        depositCharge(step);
+      if (step.time() < waveform_time)
+        waveform_time = step.time();
+      };
+    };
+    // Process the collected charge for each step
+    for (const StepPointMC& step : StepsEle) {
+      if (step.ionizingEdep() != 0) {
+        depositCharge(step);
+        if (step.time() < waveform_time)
+          waveform_time = step.time();
+      }
+    }
+    for(const StepPointMC& step : StepsMu){
+      if (step.ionizingEdep() != 0)
+          depositCharge(step);
+      if (step.time() < waveform_time)
+        waveform_time = step.time();
+    };
+    for(const StepPointMC& step : Steps1809){
+      if (step.ionizingEdep() != 0)
+          depositCharge(step);
+      if (step.time() < waveform_time)
+        waveform_time = step.time();
+    };
+
+    // Decay all of the collected charges
+    decayCharge();
 
     // Add preamplifier electronics noise with SD defined in noiseSD
     addNoise();
@@ -291,15 +369,8 @@ namespace mu2e {
         throw cet::exception("LogicError", "ADC values too high!");
     };
 
-    // Simulation takes the POT time as t = 0, and has sequential microspills (events). The trigger time offset is not used here, left as a TODO
-    // Create the STMWaveformDigi and insert all the relevant attributes
-    // TODO - this only keeps accurate time if the sampling is 320MHz. Needs to be rewritten to work for other times
-    eventTimeBuffer = eventId % 5;
-    if (eventTimeBuffer == 0 || (eventId % 3) == 0)
-      eventTime += nADCs + 1;
-    else
-      eventTime += nADCs;
-    STMWaveformDigi _waveformDigi(eventTime, _adcs);
+    // STMWaveformDigi _waveformDigi(eventTime, _adcs);
+    STMWaveformDigi _waveformDigi(waveform_time, _adcs);
     std::unique_ptr<STMWaveformDigiCollection> outputDigis(new STMWaveformDigiCollection);
     outputDigis->emplace_back(_waveformDigi);
 
@@ -315,15 +386,21 @@ namespace mu2e {
       };
     };
 
-    // Update the parameters to carry over to the next event
-    _chargeCarryOver.clear();
-    _chargeCarryOver.assign(_chargeCollected.begin() + nADCs, _chargeCollected.end());
-    _chargeCollected.clear();
-    _chargeCollected.assign(_chargeCarryOver.begin(), _chargeCarryOver.end());
-    _chargeCollected.insert(_chargeCollected.end(), nADCs, 0);
-    // Clear previous buffer vectors
-    std::fill(_chargeDecayed.begin(), _chargeDecayed.end(), 0);
-    std::fill(_adcs.begin(), _adcs.end(), 0);
+    // Make the ADC plot if appropriate
+    if (makeADCPlot) {
+      // NOTE - THIS DOES NOT CURRENTLY FUNCTION, AND I DO NOT HAVE TIME TO FIX IT RIGHT NOW
+      std::stringstream histsuffix;
+      histsuffix.str("");
+      histsuffix << "_evt" << event.event();
+
+      art::ServiceHandle<art::TFileService> tfs;
+      std::vector<double> _adc_double = std::vector<double>(_adcs.begin(), _adcs.end());
+      TGraph* g_adcs = tfs->make<TGraph>(nADCs, _adc_double.data());
+      g_adcs->SetName(("g_adcs"+histsuffix.str()).c_str());
+      // g_adcs->SetTitle("ADC Values");
+      // for (uint i = 0; i < nADCs; i++)
+      //   g_adcs->SetPoint(i, i, _adcs[i]);
+    };
 
     // Add the STMWaveformDigi to the event
     event.put(std::move(outputDigis));
@@ -479,6 +556,14 @@ namespace mu2e {
       _adcs[i] = ADC > ADCMax ? static_cast<int16_t>(std::round(ADC)) : ADCMax;
     };
     return;
+  };
+
+  void HPGeWaveformsFromStepPointMCs::endJob() {
+    mf::LogInfo log("STMResamplingFilter summary");
+    log << "=====HPGeWaveformsFromStepPointMCs summary=====\n";
+    log << "No. kept events:      " << kept_events    << "\n";
+    log << "No. discarded events: " << dropped_events << "\n";
+    log << "===============================================\n";
   };
 }; // namespace mu2e
 
