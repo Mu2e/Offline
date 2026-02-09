@@ -76,7 +76,6 @@ cet_build_plugin(ProtonBunchTimeMCFromProtonBunchTime art::module
 cet_build_plugin(SelectRecoMC art::module
     REG_SOURCE src/SelectRecoMC_module.cc
     LIBRARIES REG
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts

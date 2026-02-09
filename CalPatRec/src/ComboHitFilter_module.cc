@@ -16,7 +16,6 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 // conditions
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 // data

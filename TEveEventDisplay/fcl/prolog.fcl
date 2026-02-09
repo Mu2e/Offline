@@ -22,7 +22,6 @@ TEveEventDisplayBase : {
       CaloHitCollection  :  NULL
       HelixSeedCollection       :  "HelixFinderDe:Negative"
       KalSeedCollection         :  ["KFFDeM"]
-      TrkExtTrajCollection      :  NULL
       MCTrajectoryCollection    :  "compressRecoMCs"
       addHits                   : true
       addTrkHits                   : true
@@ -31,7 +30,6 @@ TEveEventDisplayBase : {
       addCrvHits                  : true
       addCosmicSeedFit          : false
       addClusters                  : true
-      addTrkExtTrajs                  : false
       addMCTraj                  : true
       addKKTracks                : false
     }
@@ -63,7 +61,6 @@ TEveEventDisplayUpstream : {
       MCTrajectoryCollection      : "g4run"
       HelixSeedCollection         : NULL
       KalSeedCollection           : [NULL]
-      TrkExtTrajCollection        : NULL
       addHits                                       : false
       addTrkHits                                     : false
       addTimeClusters             : false
@@ -90,7 +87,6 @@ TEveEventDisplayCosmics : { # for stright cosmic for alignment (ordinary cosmics
       CaloHitCollection  :  NULL
       HelixSeedCollection       :  NULL
       KalSeedCollection         :  []
-      TrkExtTrajCollection      :  NULL
       MCTrajectoryCollection    :  NULL #"compressDigiMCs"
       addHits 			            : false
       addTrkHits 			            : false
@@ -99,7 +95,6 @@ TEveEventDisplayCosmics : { # for stright cosmic for alignment (ordinary cosmics
       addCrvHits			          : true
       addCosmicSeedFit	        : false
       addClusters			          : false
-      addTrkExtTrajs		        : false
       addMCTraj				          : false
    }
     show :{

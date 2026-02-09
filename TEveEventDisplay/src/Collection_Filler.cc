@@ -11,7 +11,6 @@ namespace mu2e{
     cryHitTag_(conf.cryHitTag()),
     hseedTag_(conf.hseedTag()),
     kalseedTag_(conf.kalseedTag()),
-    trkexttrajTag_(conf.trkexttrajTag()),
     mctrajTag_(conf.mctrajTag()),
     addHits_(conf.addHits()),
     addTimeClusters_(conf.addTimeClusters()),
@@ -20,7 +19,6 @@ namespace mu2e{
     addClusters_(conf.addClusters()),
     addCrvHits_(conf.addCrvHits()),
     addCosmicSeedFit_(conf.addCosmicSeedFit()),
-    addTrkExtTrajs_(conf.addTrkExtTrajs()),
     RecoOnly_(conf.RecoOnly()),
     FillAll_(conf.FillAll()),
     addMCTraj_(conf.addMCTraj()),
@@ -86,10 +84,6 @@ namespace mu2e{
     if(FillAll_ or RecoOnly_ or (addCrvHits_ and CollectionName==CRVRecoPulses)){
       auto chH = evt.getValidHandle<mu2e::CrvRecoPulseCollection>(crvcoinTag_);
       data.crvcoincol = chH.product();
-    }
-    if(FillAll_ or RecoOnly_ or (addTrkExtTrajs_ and CollectionName==TrkExtTrajectories)){
-      auto chH = evt.getValidHandle<mu2e::TrkExtTrajCollection>(trkexttrajTag_);
-      data.trkextcol = chH.product();
     }
   }
 

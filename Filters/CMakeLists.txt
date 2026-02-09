@@ -14,17 +14,6 @@ cet_build_plugin(CaloShowerSimFilter art::module
       Offline::MCDataProducts
 )
 
-cet_build_plugin(ChooseTrackFilter art::module
-    REG_SOURCE src/ChooseTrackFilter_module.cc
-    LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::CalorimeterGeom
-      Offline::DataProducts
-      Offline::GeometryService
-      Offline::MCDataProducts
-      Offline::RecoDataProducts
-)
-
 cet_build_plugin(CompressPhysicalVolumes art::module
     REG_SOURCE src/CompressPhysicalVolumes_module.cc
     LIBRARIES REG
@@ -35,7 +24,6 @@ cet_build_plugin(CompressPhysicalVolumes art::module
 cet_build_plugin(CompressStepPointMCs art::module
     REG_SOURCE src/CompressStepPointMCs_module.cc
     LIBRARIES REG      
-      Offline::ConditionsService
       Offline::MCDataProducts
       Offline::Mu2eUtilities
 )
@@ -44,7 +32,6 @@ cet_build_plugin(CosmicMixingFilter art::module
     REG_SOURCE src/CosmicMixingFilter_module.cc
     LIBRARIES REG
       Offline::BFieldGeom
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::GlobalConstantsService
@@ -56,7 +43,6 @@ cet_build_plugin(CosmicMixingFilter art::module
 cet_build_plugin(DetectorStepFilter art::module
     REG_SOURCE src/DetectorStepFilter_module.cc
     LIBRARIES REG
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::MCDataProducts
 )
@@ -261,13 +247,6 @@ cet_build_plugin(TriggerResultsFilter art::module
     REG_SOURCE src/TriggerResultsFilter_module.cc
     LIBRARIES REG
       Offline::Mu2eUtilities
-)
-
-cet_build_plugin(TrkPatRecFilter art::module
-    REG_SOURCE src/TrkPatRecFilter_module.cc
-    LIBRARIES REG
-      Offline::MCDataProducts
-      Offline::RecoDataProducts
 )
 
 cet_build_plugin(TrkQualFilter art::module

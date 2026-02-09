@@ -60,7 +60,7 @@ public:
       return "Unknown";
     }
   }
-  
+
 
   CaloHitError isHitGood(std::pair<CalorimeterDataDecoder::CalorimeterHitDataPacket, std::vector<uint16_t>> const& Hit) {
     if (Hit.first.Reserved1 != 0xAAA)

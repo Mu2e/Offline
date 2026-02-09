@@ -38,7 +38,7 @@ TCD : {
   VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
   MCPrimary : compressDigiMCs
   T0Calculator : {
-    TrkToCaloTimeOffset : @local::TrackCaloMatching.DtOffset
+    TrkToCaloTimeOffset : 0.0
     CaloTimeErr : 0.5
     StrawHitBeta : 1.0
   }
@@ -72,9 +72,7 @@ TrkPID : {
 }
 # this module only makes sense for downstream electron fits
 TrkPIDDeM          : @local::TrkPID
-TrkPIDDeM.KalSeedCollection : "KFFDeM"
 TrkPIDDeP          : @local::TrkPID
-TrkPIDDeP.KalSeedCollection : "KFFDeP"
 
 TrkDiag : {
   analyzers : {
@@ -112,7 +110,7 @@ dioLLWeight : {
   genParticleTag : "compressDigiMCs"
   genParticlePdgId : 11
   genParticleGenId : dioTail
-  spectrumFileName : "Offline/ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
+  spectrumFileName : "Offline/EventGenerator/data/czarnecki_szafron_Al_2016.tbl"
   BinCenter : false
 }
 genCountLogger: { module_type: GenEventCountReader }

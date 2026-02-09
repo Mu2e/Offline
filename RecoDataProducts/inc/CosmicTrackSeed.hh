@@ -2,7 +2,7 @@
 #define RecoDataProducts_CosmicTrackSeed_hh
 
 // Mu2e includes
-#include "BTrk/TrkBase/TrkT0.hh"
+#include "Offline/BTrkLegacy/inc/TrkT0.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/TrkStrawHitSeed.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrack.hh"

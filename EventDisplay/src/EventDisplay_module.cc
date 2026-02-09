@@ -24,7 +24,6 @@
 #include "Offline/EventDisplay/src/RootFileManager.h"
 
 using namespace CLHEP;
-#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
 
 namespace mu2e
 {
@@ -42,9 +41,6 @@ namespace mu2e
                                                          const std::string &classNameToCheck,
                                                          const mu2e_eventdisplay::EventDisplayFrame *_frame,
                                                          bool &showEvent);
-    void checkMinimumHitsKalman(const art::Event &event,
-                                const mu2e_eventdisplay::EventDisplayFrame *_frame,
-                                bool &showEvent);
     mu2e_eventdisplay::EventDisplayFrame *_frame;
     bool _firstLoop;
 
@@ -108,7 +104,6 @@ namespace mu2e
         checkMinimumHits<mu2e::StepPointMCCollection>(event, "<StepPointMC>", _frame, showEvent);
         checkMinimumHits<mu2e::StrawHitCollection>(event, "<mu2e::StrawHit>", _frame, showEvent);
         checkMinimumHits<mu2e::StrawHitCollection>(event, "<StrawHit>", _frame, showEvent);
-        checkMinimumHitsKalman(event, _frame, showEvent);
         if(showEvent) _frame->setEvent(event,_firstLoop,calib);
       }
     }
@@ -135,32 +130,6 @@ namespace mu2e
       if(event.getByLabel(moduleLabel,productInstanceName,hits))
       {
         if(static_cast<int>(hits->size()) < _frame->getMinimumHits())
-        {
-          std::cout<<"event skipped, since it doesn't have enough hits"<<std::endl;
-          showEvent=false;
-        }
-      }
-    }
-  }
-
-  void EventDisplay::checkMinimumHitsKalman(const art::Event &event,
-                                            const mu2e_eventdisplay::EventDisplayFrame *_frame, bool &showEvent)
-  {
-    std::string className, moduleLabel, productInstanceName;
-    bool hasSelectedHits=_frame->getSelectedHitsName(className, moduleLabel, productInstanceName);
-    if(hasSelectedHits && ((className.find("<KalRep>")!=std::string::npos) || (className.find("<mu2e::KalRep>")!=std::string::npos)))
-    {
-      art::Handle<mu2e::KalRepCollection> kalmantrackCollection;
-      if(event.getByLabel(moduleLabel,productInstanceName,kalmantrackCollection))
-      {
-        int numberHits=0;
-        for(unsigned int i=0; i<kalmantrackCollection->size(); i++)
-        {
-          KalRep const* particle = kalmantrackCollection->get(i);
-          TrkHitVector const& hots = particle->hitVector();
-          numberHits+=hots.size();
-        }
-        if(numberHits < _frame->getMinimumHits())
         {
           std::cout<<"event skipped, since it doesn't have enough hits"<<std::endl;
           showEvent=false;

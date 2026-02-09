@@ -3,15 +3,12 @@ cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
       inc/ProditionsHandle.hh
       inc/ProditionsService.hh
     LIBRARIES INTERFACE
-      BTrk_MatEnv
-      BTrk_difAlgebra
 
       Offline::AnalysisConfig
       Offline::CaloConfig
       Offline::CRVConfig
       Offline::DAQConfig
       Offline::DbTables
-      Offline::Mu2eBTrk
       Offline::Mu2eInterfaces
       Offline::SimulationConfig
       Offline::STMConfig
@@ -23,7 +20,7 @@ cet_build_plugin(ProditionsService art::service
     REG_SOURCE src/ProditionsService_service.cc
     LIBRARIES PUBLIC
       Offline::ProditionsService
-      
+
       Offline::AnalysisConditions
       Offline::CaloConditions
       Offline::CRVConditions
@@ -39,7 +36,7 @@ cet_build_plugin(ProditionsTest art::module
     REG_SOURCE src/ProditionsTest_module.cc
     LIBRARIES REG
       Offline::ProditionsService
-      
+
       Offline::CRVConditions
 )
 

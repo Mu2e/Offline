@@ -13,7 +13,6 @@ helper=mu2e_helper(env)
 XERCESC_LIBS = [ 'xerces-c' ]
 
 rootlibs = env['ROOTLIBS']
-babarlibs = env['BABARLIBS']
 mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   'mu2e_GeometryService',
                                   'mu2e_GlobalConstantsService',
@@ -25,7 +24,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   'mu2e_ConfigTools',
                                   'mu2e_GeneralUtilities',
                                   'mu2e_TrackerGeom',
-                                  'BTrk_BbrGeom',
                                   'gsl',
                                   'art_Persistency_Common',
                                   'art_Persistency_Provenance',
@@ -47,7 +45,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   'cetlib_except',
                                   'hep_concurrency',
                                   rootlibs,
-                                  babarlibs
                                   ] )
 
 # This tells emacs to view this file in python mode.

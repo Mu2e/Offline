@@ -9,8 +9,6 @@
 // Modern CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 
-// Ancient CLHEP, copied from BaBar
-#include "BTrk/BbrGeom/HepPoint.h"
 
 namespace mu2e {
 

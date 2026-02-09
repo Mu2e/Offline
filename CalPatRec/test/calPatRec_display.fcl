@@ -52,7 +52,6 @@ services : {
     #GeometryService        : { inputFile : "murat/geom/geom_common_BaF2_r_1_1.txt" }
     ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
     GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
-    BTrkHelper             : @local::BTrkHelperDefault
     Mu2eG4Helper           : { }
     SeedService            : @local::automaticSeeds
 }

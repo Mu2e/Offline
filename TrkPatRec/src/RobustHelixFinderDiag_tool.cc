@@ -2,9 +2,6 @@
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Offline/TrkReco/inc/RobustHelixFit.hh"
 
-#include "BTrk/KalmanTrack/KalHit.hh"
-#include "BTrk/KalmanTrack/KalRep.hh"
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 
 #include "art/Utilities/ToolMacros.h"
 #include "art/Utilities/make_tool.h"

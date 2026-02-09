@@ -266,32 +266,4 @@ namespace mu2e {
       }
 
     }
-
-   double StrawResponse::BTrk_driftDistanceToTime(StrawId strawId, double ddist, double phi) const {
-     return _strawDrift->D2T(ddist,phi);
-  }
-
-   double StrawResponse::BTrk_driftInstantSpeed(StrawId strawId, double ddist, double phi) const {
-     return _strawDrift->GetInstantSpeedFromD(ddist);
-   }
-
-   double StrawResponse::BTrk_driftDistanceError(StrawId strawId, double ddist, double phi) const {
-     static const std::vector<double> derr = {0.363559, 0.362685, 0.359959, 0.349385,
-       0.336731, 0.321784, 0.302363, 0.282691, 0.268223, 0.252673, 0.238557,
-       0.229172, 0.2224, 0.219224, 0.217334, 0.212797, 0.210303, 0.209876,
-       0.208739, 0.207411, 0.208738, 0.209646, 0.210073, 0.207101, 0.20431,
-       0.203994, 0.202931, 0.19953, 0.196999, 0.194559, 0.191766, 0.187725,
-       0.185959, 0.181423, 0.17848, 0.171357, 0.171519, 0.168422, 0.161338,
-       0.156641, 0.151196, 0.146546, 0.144069, 0.139858, 0.135838, 0.13319,
-       0.132159, 0.130062, 0.123545, 0.120212 };
-     static double rstraw(2.5);
-     double doca = std::min(fabs(ddist),rstraw);
-     size_t idoca = std::min(derr.size()-1,size_t(floor(derr.size()*(doca/rstraw))));
-     return derr[idoca];
-   }
-
-   double StrawResponse::BTrk_driftTimeToDistance(StrawId strawId, double dtime, double phi) const {
-     return _strawDrift->T2D(dtime,phi);
-   }
-
 }

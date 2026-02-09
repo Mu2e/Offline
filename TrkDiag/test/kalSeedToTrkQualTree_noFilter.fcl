@@ -28,10 +28,8 @@ physics : {
     kalSeedToTrkQualTree : {
       module_type: KalSeedToTrkQualTree
 
-      kalFinalTag : "KFFDeM"
       strawDigiMCTag: "makeSD"
       stepPointMCTag: "detectorFilter:virtualdetector"
-      trkQualTag : "KFFDeM"
 
       usingCondensedCollections : false
       #      indexMapTag : "kalSeedFilter"

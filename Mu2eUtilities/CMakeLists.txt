@@ -16,7 +16,6 @@ cet_make_library(
       src/GeneratorSummaryHistograms.cc
       src/HelixTool.cc
       src/HistTrackSum.cc
-      src/KalRepInstanceNameDecoder.cc
       src/LsqSums2.cc
       src/LsqSums4.cc
       src/McUtilsToolBase.cc
@@ -51,7 +50,6 @@ cet_make_library(
       src/TrackPatRecType.cc
       src/TrackTool.cc
       src/TriggerResultsNavigator.cc
-      src/TrkSpecies.cc
       src/TwoLinePCA.cc
       src/TwoLinePCA_XYZ.cc
       src/VectorVolume.cc

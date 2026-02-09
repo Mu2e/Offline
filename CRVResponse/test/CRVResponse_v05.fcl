@@ -8,7 +8,6 @@ source :
 {
   module_type : RootInput
   inputCommands: ["keep *",
-                  "drop *KalRepPayload*_*_*_*",
                   "drop *CaloCrystalOnlyHit*_*_*_*",
                   "drop *Crv*_*_*_*"]
 }

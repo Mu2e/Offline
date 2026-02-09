@@ -18,7 +18,7 @@ namespace mu2e {
 
   class TrackSummary {
   public:
-
+    
     //================================================================
     class HelixParams {
     public:
@@ -54,7 +54,7 @@ namespace mu2e {
       double tanDip_;
       CLHEP::HepSymMatrix covariance_;
     };
-
+    
     //================================================================
     class TrackStateAtPoint {
     public:

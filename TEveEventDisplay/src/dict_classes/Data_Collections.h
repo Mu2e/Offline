@@ -10,8 +10,6 @@
 //Kalman Tracks
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
-#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 //Tracker Hits:
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 //CRV:
@@ -48,7 +46,6 @@ namespace mu2e{
       const CaloHitCollection* cryHitcol = 0;
       const HelixSeedCollection* hseedcol = 0;
       const KalSeedCollection* kalseedcol = 0;
-      const TrkExtTrajCollection* trkextcol = 0;
       std::vector<const KalSeedCollection*> track_list;
       std::vector<std::string> track_labels;
       std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple;

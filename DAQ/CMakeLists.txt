@@ -25,7 +25,8 @@ cet_build_plugin(ArtBinaryPacketsFromDigis art::module
 cet_build_plugin(EventHeaderFromCFOFragment art::module
     REG_SOURCE src/EventHeaderFromCFOFragment_module.cc
     LIBRARIES REG
-      Offline::DAQ
+    Offline::DAQ
+    Offline::DataProducts
 )
 
 
@@ -81,6 +82,17 @@ cet_build_plugin(LumiStreamFilter art::module
   ${ARTDAQ_DAQDATA_LIB}
 )
 
+cet_build_plugin(OccupancyFilter art::module
+    REG_SOURCE src/OccupancyFilter_module.cc
+    LIBRARIES REG
+    artdaq-core-mu2e::Data
+    artdaq-core-mu2e::Overlays
+    fhiclcpp::types
+    Offline::DAQ
+    Offline::RecoDataProducts
+    TRACE::MF
+)
+
 cet_build_plugin(PrefetchDAQData art::module
     REG_SOURCE src/PrefetchDAQData_module.cc
     LIBRARIES REG
@@ -97,8 +109,8 @@ cet_build_plugin(STMDigisFromFragments art::module
   Offline::ProditionsService
   Offline::DataProducts
   Offline::RecoDataProducts
-  BTrk_difAlgebra
 )
+
 
 cet_build_plugin(STMPrintFragments art::module
   REG_SOURCE src/STMPrintFragments_module.cc
@@ -109,7 +121,6 @@ cet_build_plugin(STMPrintFragments art::module
   Offline::RecoDataProducts
   BTrk_difAlgebra
 )
-
 
 cet_build_plugin(StrawDigisFromArtdaqFragments art::module
   REG_SOURCE src/StrawDigisFromArtdaqFragments_module.cc

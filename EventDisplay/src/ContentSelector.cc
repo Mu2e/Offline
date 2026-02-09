@@ -21,16 +21,11 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
 
   entry=_hitBox->FindEntry("StrawHit:makeSH:");
   if(entry==nullptr) entry=_hitBox->FindEntry("StrawHit:makeDcH:");
-  if(entry==nullptr) entry=_hitBox->FindEntry("KalRep:TrkPatRec:DownstreameMinus");
   if(entry!=nullptr) _hitBox->Select(entry->EntryId());
 
   entry=_caloHitBox->FindEntry("CaloHit:CaloHitsMaker:");
   if(entry!=nullptr) _caloHitBox->Select(entry->EntryId());
 
-  entry=_trackBox->FindEntry("TrkExtTraj:TrkExt:");
-  if(entry!=nullptr) _trackBox->Select(entry->EntryId());
-  entry=_trackBox->FindEntry("KalRep:TrkPatRec:DownstreameMinus");
-  if(entry!=nullptr) _trackBox->Select(entry->EntryId());
   entry=_trackBox->FindEntry("SimParticle:g4run:");
   if(entry!=nullptr) _trackBox->Select(entry->EntryId());
 
@@ -75,8 +70,6 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   newEntries.push_back(nothingSelected);
   createNewEntries<mu2e::StepPointMCCollection>(_stepPointMCVector, event, "StepPointMC", newEntries, 1);
   createNewEntries<mu2e::StrawHitCollection>(_strawHitVector, event, "StrawHit", newEntries, 2);
-  createNewEntries<mu2e::KalRepCollection>(_hitOnTrackVector, event, "KalRep", newEntries, 3);
-  createNewEntries<mu2e::KalSeedCollection>(_kalSeedHitVector, event, "KalSeed", newEntries, 4);
 
   if(newEntries!=_hitEntries)
   {
@@ -153,8 +146,6 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
 //Track Selection
   newEntries.clear();
   createNewEntries<mu2e::SimParticleCollection>(_simParticleVector, event, "SimParticle", newEntries, 1);
-  createNewEntries<mu2e::KalRepCollection>(_trkRecoTrkVector, event, "KalRep", newEntries, 2);
-  createNewEntries<mu2e::TrkExtTrajCollection>(_trkExtTrajVector, event, "TrkExtTraj", newEntries, 3);
   createNewEntries<mu2e::KalSeedCollection>(_kalSeedTrkVector, event, "KalSeed", newEntries, 4);
 
   if(newEntries!=_trackEntries)
@@ -258,9 +249,6 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
     case 2 : if(typeid(CollectionType)!=typeid(mu2e::StrawHitCollection)) return(nullptr);
              if(index>=static_cast<int>(_strawHitVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_strawHitVector[index].product()));
-    case 3 : if(typeid(CollectionType)!=typeid(mu2e::KalRepCollection)) return(nullptr);
-             if(index>=static_cast<int>(_hitOnTrackVector.size())) return(nullptr);
-             return(reinterpret_cast<const CollectionType*>(_hitOnTrackVector[index].product()));
     case 4 : if(typeid(CollectionType)!=typeid(mu2e::KalSeedCollection)) return(nullptr);
              if(index>=static_cast<int>(_kalSeedHitVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_kalSeedHitVector[index].product()));
@@ -277,7 +265,6 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
 }
 template const mu2e::StepPointMCCollection* ContentSelector::getSelectedHitCollection<mu2e::StepPointMCCollection>() const;
 template const mu2e::StrawHitCollection*    ContentSelector::getSelectedHitCollection<mu2e::StrawHitCollection>() const;
-template const mu2e::KalRepCollection*  ContentSelector::getSelectedHitCollection<mu2e::KalRepCollection>() const;
 template const mu2e::KalSeedCollection*  ContentSelector::getSelectedHitCollection<mu2e::KalSeedCollection>() const;
 
 template<typename CollectionType>
@@ -379,18 +366,6 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
                t.productId=_simParticleVector[index].id();
                v.push_back(t);
                break;
-      case 2 : if(typeid(CollectionType)!=typeid(mu2e::KalRepCollection)) break;
-               if(index>=static_cast<int>(_trkRecoTrkVector.size())) break;
-               to_return.push_back(reinterpret_cast<const CollectionType*>(_trkRecoTrkVector[index].product()));
-               t.productId=_trkRecoTrkVector[index].id();
-               v.push_back(t);
-               break;
-      case 3 : if(typeid(CollectionType)!=typeid(mu2e::TrkExtTrajCollection)) break;
-               if(index>=static_cast<int>(_trkExtTrajVector.size())) break;
-               to_return.push_back(reinterpret_cast<const CollectionType*>(_trkExtTrajVector[index].product()));
-               t.productId=_trkExtTrajVector[index].id();
-               v.push_back(t);
-               break;
       case 4 : if(typeid(CollectionType)!=typeid(mu2e::KalSeedCollection)) break;
                if(index>=static_cast<int>(_kalSeedTrkVector.size())) break;
                to_return.push_back(reinterpret_cast<const CollectionType*>(_kalSeedTrkVector[index].product()));
@@ -402,8 +377,6 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
   return(to_return);
 }
 template std::vector<const mu2e::SimParticleCollection*> ContentSelector::getSelectedTrackCollection<mu2e::SimParticleCollection>(std::vector<trackInfoStruct> &v) const;
-template std::vector<const mu2e::KalRepCollection*> ContentSelector::getSelectedTrackCollection<mu2e::KalRepCollection>(std::vector<trackInfoStruct> &v) const;
-template std::vector<const mu2e::TrkExtTrajCollection*> ContentSelector::getSelectedTrackCollection<mu2e::TrkExtTrajCollection>(std::vector<trackInfoStruct> &v) const;
 template std::vector<const mu2e::KalSeedCollection*> ContentSelector::getSelectedTrackCollection<mu2e::KalSeedCollection>(std::vector<trackInfoStruct> &v) const;
 
 const mu2e::PhysicalVolumeInfoMultiCollection* ContentSelector::getPhysicalVolumeInfoMultiCollection() const

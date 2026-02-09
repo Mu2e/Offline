@@ -46,8 +46,7 @@ physics: {
   }
   # setup paths
   trigger_paths: [  ]
-  anaPath : [ plotRawWaveformDigis, plotZSWaveformDigis,
-    plotMWDWaveformDigis ]
+  anaPath : [ plotRawWaveformDigis, plotZSWaveformDigis,  plotMWDWaveformDigis ]
   end_paths: [anaPath]
 }
 

@@ -1,6 +1,6 @@
 #include "Offline/CaloReco/inc/CaloTemplateWFProcessor.hh"
 #include "Offline/CaloReco/inc/CaloTemplateWFUtil.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
 

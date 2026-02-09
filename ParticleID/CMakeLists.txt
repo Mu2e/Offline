@@ -10,21 +10,6 @@ cet_make_library(
       Offline::GeneralUtilities
 )
 
-cet_build_plugin(ParticleID art::module
-    REG_SOURCE src/ParticleID_module.cc
-    LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::ParticleID
-      
-      Offline::BTrkData
-      Offline::ConditionsService
-      Offline::ConfigTools
-      Offline::GeometryService
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-      Offline::TrackerConditions
-)
-
 cet_build_plugin(ParticleIDRead art::module
     REG_SOURCE src/ParticleIDRead_module.cc
     LIBRARIES REG

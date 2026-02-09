@@ -340,7 +340,7 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
       } // End loop over hits
 
     } else if (data_type_ == 1){
-    
+
       auto hits = cc.GetCalorimeterHitTestForTrigger(iROC);
       if (hits == nullptr) {
         mf::LogError("CaloHitsFromDataDTCEvents") << "Error retrieving Calorimeter data from block "

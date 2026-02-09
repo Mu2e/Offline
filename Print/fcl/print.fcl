@@ -49,9 +49,7 @@ physics :{
       trackSummaryPrinter : {
         verbose: 3
       }
-      kalRepPrinter : {
-        verbose: 3
-      }
+
       kalSeedPrinter : {
         verbose: 3
       }
