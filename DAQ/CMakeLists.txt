@@ -188,8 +188,8 @@ cet_build_plugin(CrvGRdataFromArtdaqFragments art::module
     artdaq-core-mu2e::Overlays
 )
 
-cet_build_plugin(MTPHitsFromDTCEvents art::module
-    REG_SOURCE src/MTPHitsFromDTCEvents_module.cc
+cet_build_plugin(MSDHitsFromDTCEvents art::module
+    REG_SOURCE src/MSDHitsFromDTCEvents_module.cc
     LIBRARIES REG
       Offline::DAQ
       Offline::RecoDataProducts
