@@ -82,7 +82,7 @@ namespace mu2e {
             digiSampling_      (config().digiSampling()),
             bufferDigi_        (config().bufferDigi()),
             startTimeBuffer_   (config().digiSampling()*config().bufferDigi()),
-            maxADCCounts_      (1 << config().nBits()),
+            maxADCCounts_      ((1 << config().nBits()) - 1),
             pulseShape_        (CaloPulseShape(config().digiSampling())),
             wfExtractor_       (config().bufferDigi(),config().nBinsPeak(),config().minPeakADC(),config().bufferDigi()),
             engine_            (createEngine(art::ServiceHandle<SeedService>()->getSeed())),

@@ -9,11 +9,12 @@
 #include "fhiclcpp/types/Atom.h"
 #include "canvas/Utilities/InputTag.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
 #include "art_root_io/TFileService.h"
 
 #include <utility>
 #include <numeric>
+#include <algorithm>
+#include <cctype>
 // root
 #include "TH1F.h"
 #include "TF1.h"
@@ -39,10 +40,16 @@ namespace mu2e {
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit PlotSTMWaveformDigis(const Parameters& conf);
-
+     
     private:
+    void beginJob() override;//For _hist
+    void endJob() override; //For printing counter
     void analyze(const art::Event& e) override;
-
+    
+    TH1F* _hist;
+    int ZeroLengthCount = 0;
+    art::InputTag _stmWaveformDigisTag;
+    
     art::ProductToken<STMWaveformDigiCollection> _stmWaveformDigisToken;
     bool _subtractPedestal;
     std::string _xAxis;
@@ -53,12 +60,27 @@ namespace mu2e {
 
   PlotSTMWaveformDigis::PlotSTMWaveformDigis(const Parameters& config )  :
     art::EDAnalyzer{config},
+    _stmWaveformDigisTag{config().stmWaveformDigisTag()},
     _stmWaveformDigisToken(consumes<STMWaveformDigiCollection>(config().stmWaveformDigisTag())),
     _subtractPedestal(config().subtractPedestal()),
     _xAxis(config().xAxis()),
     _verbosityLevel(config().verbosityLevel()),
     _channel(STMChannel::findByName("HPGe")) // FIXME: don't hardcode this probably don't want to do what we had before and try to infer it from the art::InputTag like this "STMUtils::getChannel(config().stmWaveformDigisTag()))"
   { }
+
+  void PlotSTMWaveformDigis::beginJob(){
+
+    art::ServiceHandle<art::TFileService> tfs;
+    std::string X = std::string(_stmWaveformDigisTag.instance());
+    std::transform(X.begin(),X.end(),X.begin(), toupper);
+    std::string hWaveLength_title = "Waveform Lengths for " + X + " Pulses";
+    _hist = tfs->make<TH1F>("hWaveLength", hWaveLength_title.c_str() ,1000,0,1000);
+    
+    }
+
+  void PlotSTMWaveformDigis::endJob(){
+    std::cout<< " Zero length Waveforms Count =  "<< ZeroLengthCount <<std::endl;
+    }
 
   void PlotSTMWaveformDigis::analyze(const art::Event& event) {
 
@@ -73,30 +95,43 @@ namespace mu2e {
       std::cout << _channel.name() << " Pedestal = " << pedestal << std::endl;
     }
 
+
     const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
 
-    for (const auto& adcs : *waveformsHandle) {
+    for (const auto& waveform : *waveformsHandle) {
+
       histname.str("");
       histname << "evt" << event.event() << "_waveform" << count;
       histtitle.str("");
       histtitle << "Event " << event.event() << " Waveform " << count << " (" << _channel.name() << ")";
 
-      Binning binning = STMUtils::getBinning(adcs, _xAxis, nsPerCt);
-      TH1F* hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), binning.nbins(),binning.low(),binning.high());
+      if (waveform.adcs().size() == 0){
+	  ZeroLengthCount++;
+      } else {
+	_hist->Fill(waveform.adcs().size()); //_hist was created outside so there should be no problem here
+	  
+        Binning binning = STMUtils::getBinning(waveform, _xAxis, nsPerCt);
+        TH1F* hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), binning.nbins(),binning.low(),binning.high());
+	
+	for(size_t i_adc = 0; i_adc < waveform.adcs().size();++i_adc){
 
-      for (size_t i_adc = 0; i_adc < adcs.adcs().size(); ++i_adc) {
-        const auto adc = adcs.adcs().at(i_adc);
+          const auto adc = waveform.adcs().at(i_adc);
 
-        auto content = adc;
-        if (_subtractPedestal) {
-          content -= pedestal;
-        }
-
-        hWaveform->SetBinContent(i_adc+1, content); // bins start numbering at 1
+	  auto content = adc;
+	  if (_subtractPedestal) {
+	    content -= pedestal;
+	  }
+	  
+	  hWaveform->SetBinContent(i_adc+1,content);
+	  }
+	  
+	}
+       
       }
+
       ++count;
     }
-  }
 }
+    
 
 DEFINE_ART_MODULE(mu2e::PlotSTMWaveformDigis)
