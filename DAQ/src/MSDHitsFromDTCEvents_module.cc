@@ -104,7 +104,6 @@ void art::MSDHitsFromDTCEvents::produce(Event& event) {
             decoder.GetMobileSyncPackets(blockIndex);
         // get number of hits in packet
         const unsigned nHitsInPacket = decoder.GetNHitsPerPacket();
-        std::cout << "firmware version has " << nHitsInPacket << " hits per packet" << std::endl;
         if (_debugLevel > 4) {
           std::cout << "      block " << blockIndex << " has " << dataPacketsVec.size()
                     << " packets\n";
