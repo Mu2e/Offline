@@ -117,19 +117,14 @@ void art::MSDHitsFromDTCEvents::produce(Event& event) {
             mu2e::MSDHit msdHit;
             if (decoder.GetHitTime(&packet, hit, hitTime)) {
               msdHit.setTime(hitTime);
-            }
-            if (decoder.GetHitTOT(&packet, hit, hitTOT)) {
-              msdHit.setTOT(hitTOT);
-            }
-            if (msdHit.hasTime() || msdHit.hasTOT()) {
+              if (decoder.GetHitTOT(&packet, hit, hitTOT)) {
+                msdHit.setTOT(hitTOT);
+              }
               msd_hits->emplace_back(msdHit);
               if (_debugLevel > 0) {
                 std::cout << "Hit " << hit << " in packet: time = " << msdHit.time()
                           << " ns, TOT = " << msdHit.tot() << " ns" << std::endl;
               }
-            } else if (_debugLevel > 1) {
-              std::cout << "Hit " << hit << " in packet is invalid: time = " << hitTime
-                        << " ns, TOT = " << hitTOT << " ns" << std::endl;
             }
           }
         }
