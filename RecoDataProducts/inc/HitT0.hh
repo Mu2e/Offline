@@ -6,7 +6,7 @@
 #ifndef RecoDataProducts_HitT0_HH
 #define RecoDataProducts_HitT0_HH
 #include <Rtypes.h>
-#include "BTrk/TrkBase/TrkT0.hh"
+#include "Offline/BTrkLegacy/inc/TrkT0.hh"
 namespace mu2e {
   struct HitT0 {
     Float_t _t0; // t0 value

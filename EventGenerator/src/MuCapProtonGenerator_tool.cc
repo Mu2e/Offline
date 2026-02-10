@@ -40,9 +40,9 @@ namespace mu2e {
 
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material) override {
       _rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureProtonRate(material);
-      _randomUnitSphere = new RandomUnitSphere(eng);
-      _randomPoissonQ = new CLHEP::RandPoissonQ(eng, _rate);
-      _randSpectrum = new CLHEP::RandGeneral(eng, _spectrum.getPDF(), _spectrum.getNbins());
+      _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng);
+      _randomPoissonQ = std::make_unique<CLHEP::RandPoissonQ>(eng, _rate);
+      _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
     }
 
   private:
@@ -53,9 +53,9 @@ namespace mu2e {
     BinnedSpectrum    _spectrum;
     SpectrumVar       _spectrumVariable;
 
-    CLHEP::RandPoissonQ* _randomPoissonQ;
-    RandomUnitSphere*   _randomUnitSphere;
-    CLHEP::RandGeneral* _randSpectrum;
+    std::unique_ptr<CLHEP::RandPoissonQ> _randomPoissonQ;
+    std::unique_ptr<RandomUnitSphere>    _randomUnitSphere;
+    std::unique_ptr<CLHEP::RandGeneral>  _randSpectrum;
   };
 
   std::vector<ParticleGeneratorTool::Kinematic> MuCapProtonGenerator::generate() {

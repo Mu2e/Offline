@@ -21,7 +21,6 @@ cet_make_library(
       src/GenParticlePrinter.cc
       src/FilterFractionPrinter.cc
       src/HelixSeedPrinter.cc
-      src/KalRepPrinter.cc
       src/KalSeedPrinter.cc
       src/MCTrajectoryPrinter.cc
       src/PhysicalVolumePrinter.cc
@@ -42,11 +41,9 @@ cet_make_library(
       src/StrawHitPrinter.cc
       src/SurfaceStepPrinter.cc
       src/TimeClusterPrinter.cc
-      src/TrackClusterMatchPrinter.cc
       src/TrackSummaryPrinter.cc
       src/TriggerInfoPrinter.cc
       src/TriggerResultsPrinter.cc
-      src/TrkCaloIntersectPrinter.cc
     LIBRARIES PUBLIC
       KinKal::General
       Offline::ConditionsService

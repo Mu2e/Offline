@@ -9,7 +9,6 @@
 #include <iostream>
 
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
-#include "BTrk/BField/BField.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "CLHEP/Matrix/Vector.h"

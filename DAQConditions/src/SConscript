@@ -13,10 +13,8 @@ rootlibs  = env['ROOTLIBS'] #jb
 helper=mu2e_helper(env);
 
 mainlib = helper.make_mainlib ( [
-                                    'mu2e_ConditionsService',
                                     'mu2e_GeometryService',
                                     'mu2e_BFieldGeom',
-                                    'mu2e_Mu2eBTrk',
                                     'mu2e_TrackerGeom',
 
                                     'mu2e_MCDataProducts',
@@ -25,10 +23,7 @@ mainlib = helper.make_mainlib ( [
 
                                   'mu2e_DataProducts',
                                   'mu2e_GeneralUtilities',
-                                    'BTrk_BaBar',
-                                    'BTrk_MatEnv',
-                                    'BTrk_DetectorModel',
-                                    'art_Framework_Services_Registry',
+                                  'art_Framework_Services_Registry',
                                   'art_root_io_tfile_support',
                                   'art_Utilities',
                                   'canvas',

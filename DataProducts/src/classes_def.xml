@@ -8,6 +8,7 @@
 
  <class name="std::vector<cet::map_vector_key>"/>
  <class name="boost::array<double,5>"/>
+ <class name="std::pair<TString,int>"/>
 
 <!--  ********* PDG  ********* -->
   <class name="mu2e::PDGCodeDetail"/>

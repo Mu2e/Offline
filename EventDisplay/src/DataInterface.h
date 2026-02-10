@@ -13,7 +13,6 @@
 #include "Offline/EventDisplay/src/ContentSelector.h"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Offline/Mu2eBTrk/inc/ParticleInfo.hh"
 #include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
 #include <TObject.h>
@@ -92,8 +91,6 @@ class DataInterface
   bool _showOthers;
   mu2e::StrawHitFlag _hitFlagSetting;
   double _kalStepSize;
-
-  std::unique_ptr<mu2e::ParticleInfo> _particleInfo;
 
   void createGeometryManager();
   void removeAllComponents();

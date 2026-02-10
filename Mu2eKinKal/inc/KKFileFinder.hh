@@ -35,8 +35,6 @@ namespace mu2e {
 
     private:
 
-      // mutable because BTrk want to hold this with
-      // a const pointer, but this needs to alter its internal state
       mutable ConfigFileLookupPolicy policy_;
 
       std::string elementsBaseName_;
