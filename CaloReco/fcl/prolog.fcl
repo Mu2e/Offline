@@ -1,6 +1,8 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
+#include "Offline/CaloReco/fcl/common.fcl"
+
 
 BEGIN_PROLOG
 
@@ -16,6 +18,8 @@ CaloReco : {
 
    TemplateProcessor :
    {
+      pulseFileName      : @local::pulseFileName
+      pulseHistName      : @local::pulseHistName
       windowPeak         : 3
       minPeakAmplitude   : 24
       numNoiseBins       : 5

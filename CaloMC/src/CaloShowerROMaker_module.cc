@@ -15,7 +15,6 @@
 #include "Offline/DataProducts/inc/CrystalId.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
-#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -92,9 +91,13 @@ namespace mu2e {
              fhicl::Sequence<art::InputTag>  caloShowerStepCollection { Name("caloShowerStepCollection"), Comment("Compressed shower inputs for calo crystals") };
              fhicl::Atom<art::InputTag>      ewMarkerTag              { Name("eventWindowMarker"),        Comment("EventWindowMarker producer") };
              fhicl::Atom<art::InputTag>      pbtmcTag                 { Name("protonBunchTimeMC"),        Comment("ProtonBunchTimeMC producer") };
+             fhicl::Atom<std::string>        propagationFileName      { Name("propagationFileName"),      Comment("Photon propagation file name")};
+             fhicl::Atom<std::string>        propagationHistName      { Name("propagationHistName"),      Comment("Photon propagation hist name")};
              fhicl::Atom<float>              digitizationStart        { Name("digitizationStart"),        Comment("Minimum time of hit to be digitized") };
              fhicl::Atom<float>              digitizationEnd          { Name("digitizationEnd"),          Comment("Maximum time of hit to be digitized") };
              fhicl::Atom<float>              digitizationBuffer       { Name("digitizationBuffer"),       Comment("Digi time buffer for photon propagation inside crystal") };
+             fhicl::Atom<float>              crystalNonUniformity     { Name("crystalNonUniformity"),     Comment("LRU parameter 0") };
+             fhicl::Atom<float>              pePerMeV                 { Name("readoutPEPerMeV"),          Comment("Number of pe / MeV for Readout") };
              fhicl::Atom<bool>               LRUCorrection            { Name("LRUCorrection"),            Comment("Include LRU corrections") };
              fhicl::Atom<bool>               BirksCorrection          { Name("BirksCorrection"),          Comment("Include Birks corrections") };
              fhicl::Atom<bool>               PEStatCorrection         { Name("PEStatCorrection"),         Comment("Include PE Poisson fluctuations") };
@@ -104,19 +107,21 @@ namespace mu2e {
 
          explicit CaloShowerROMaker(const art::EDProducer::Table<Config>& config) :
             EDProducer{config},
-            ewMarkerTag_        (config().ewMarkerTag()),
-            pbtmcTag_           (config().pbtmcTag()),
-            digitizationStart_  (config().digitizationStart()),
-            digitizationEnd_    (config().digitizationEnd()),
-            digitizationBuffer_ (config().digitizationEnd()),
-            LRUCorrection_      (config().LRUCorrection()),
-            BirksCorrection_    (config().BirksCorrection()),
-            PEStatCorrection_   (config().PEStatCorrection()),
-            addTravelTime_      (config().addTravelTime()),
-            diagLevel_          (config().diagLevel()),
-            engine_             (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
-            randPoisson_        (engine_),
-            photonProp_         (engine_)
+            ewMarkerTag_         (config().ewMarkerTag()),
+            pbtmcTag_            (config().pbtmcTag()),
+            digitizationStart_   (config().digitizationStart()),
+            digitizationEnd_     (config().digitizationEnd()),
+            digitizationBuffer_  (config().digitizationEnd()),
+            crystalNonUniformity_(config().crystalNonUniformity()),
+            pePerMeV_            (config().pePerMeV()),
+            LRUCorrection_       (config().LRUCorrection()),
+            BirksCorrection_     (config().BirksCorrection()),
+            PEStatCorrection_    (config().PEStatCorrection()),
+            addTravelTime_       (config().addTravelTime()),
+            diagLevel_           (config().diagLevel()),
+            engine_              (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
+            randPoisson_         (engine_),
+            photonProp_          (config().propagationFileName(),config().propagationHistName(),engine_)
          {
 
              for (auto const& tag : config().caloShowerStepCollection()) crystalShowerTokens_.push_back(consumes<CaloShowerStepCollection>(tag));
@@ -137,7 +142,7 @@ namespace mu2e {
 
          void  makeReadoutHits   (const StepHandles&, CaloShowerROCollection&, CaloShowerSimCollection&, const EventWindowMarker&,
                                   const ProtonBunchTimeMC&, float timeFromProtonsToDRMarker);
-         float LRUCorrection     (int crystalID, float normalizedPosZ, float edepInit, const ConditionsHandle<CalorimeterCalibrations>&);
+         float LRUCorrection     (int crystalID, float normalizedPosZ, float edepInit);
          void  dumpCaloShowerSim (const CaloShowerSimCollection& caloShowerSims);
 
          std::vector<art::ProductToken<CaloShowerStepCollection>> crystalShowerTokens_;
@@ -146,6 +151,8 @@ namespace mu2e {
          float                   digitizationStart_;
          float                   digitizationEnd_;
          float                   digitizationBuffer_;
+         float                   crystalNonUniformity_;
+         float                   pePerMeV_;
          bool                    LRUCorrection_;
          bool                    BirksCorrection_;
          bool                    PEStatCorrection_;
@@ -222,7 +229,6 @@ namespace mu2e {
                                           const ProtonBunchTimeMC& pbtmc, float timeFromProtonsToDRMarker)
   {
       GlobalConstantsHandle<ParticleDataList>  pdt;
-      ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
       float mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
 
@@ -267,14 +273,13 @@ namespace mu2e {
 
               float edep_corr(step.energyDepG4());
               if (BirksCorrection_) edep_corr = step.energyDepBirks();
-              if (LRUCorrection_)   edep_corr = LRUCorrection(crystalID, posZ/cryhalflength, edep_corr, calorimeterCalibrations);
+              if (LRUCorrection_)   edep_corr = LRUCorrection(crystalID, posZ/cryhalflength, edep_corr);
 
               // Generate individual PEs and their arrival times
               for (int i=0; i<nROs; ++i)
               {
                   int SiPMID = SiPMIDBase + i;
-                  float peMeV = calorimeterCalibrations->peMeV(SiPMID);
-                  int NPE     = randPoisson_.fire(edep_corr*peMeV);
+                  int NPE     = randPoisson_.fire(edep_corr*pePerMeV_);
                   if (NPE==0) continue;
 
                   std::vector<float> PETime(NPE,hitTime);
@@ -289,7 +294,7 @@ namespace mu2e {
                   if (diagLevel_ > 1) for (const auto& time : PETime) hTime_->Fill(2.0*cryhalflength-posZ,time-hitTime);
 
                   diagSum.totNPE     += NPE;
-                  diagSum.totEdepNPE += double(NPE)/peMeV/2.0; //average between the two RO
+                  diagSum.totEdepNPE += double(NPE)/pePerMeV_/2.0; //average between the two RO
               }
               diagSum.totEdep     += step.energyDepG4();
               diagSum.totEdepCorr += edep_corr;
@@ -359,11 +364,9 @@ namespace mu2e {
   //----------------------------------------------------------------------------------------------------------------------------------
   // apply a correction of type Energy = ((1-s)*Z/HL+s)*energy where Z position along the crystal, HL is the crystal half-length
   // and s is the intercept at Z=0 (i.e. non-uniformity factor, e.g. 5% -> s = 1.05)
-  float CaloShowerROMaker::LRUCorrection(int crystalID, float normalizedPosZ, float edepInit,
-                                         const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
+  float CaloShowerROMaker::LRUCorrection(int crystalID, float normalizedPosZ, float edepInit)
   {
-      float alpha  = calorimeterCalibrations->LRUpar0(crystalID);
-      float factor = (1.0-alpha)*normalizedPosZ +alpha;
+      float factor = (1.0-crystalNonUniformity_)*normalizedPosZ + crystalNonUniformity_;
       float edep   = edepInit*factor;
 
       if (diagLevel_ > 2) std::cout<<"[CaloShowerROMaker::LRUCorrection] before / after LRU -> edep_corr = "

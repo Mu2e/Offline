@@ -1,6 +1,6 @@
 #include "Offline/Mu2eUtilities/inc/CaloPulseShape.hh"
-#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include "TFile.h"
 #include "TH2F.h"
@@ -11,9 +11,15 @@
 
 namespace mu2e {
 
-
-   CaloPulseShape::CaloPulseShape(double digiSampling) :
-      nSteps_(100), digiStep_(digiSampling/double(nSteps_)),nBinShape_(0), pulseVec_(), deltaT_(0.), digitizedPulse_()
+   CaloPulseShape::CaloPulseShape(const std::string& fileName, const std::string& histName, double digiSampling) :
+      fileName_(fileName),
+      histName_(histName),
+      nSteps_(100),
+      digiStep_(digiSampling/double(nSteps_)),
+      nBinShape_(0),
+      pulseVec_(),
+      deltaT_(0.),
+      digitizedPulse_()
    {}
 
    //----------------------------------------------------------------------------------------------------------------------
@@ -22,16 +28,14 @@ namespace mu2e {
 
        pulseVec_.clear();
 
-       // Get the pulse shape histogram
-       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
-       std::string fileName = calorimeterCalibrations->pulseFileName();
-       std::string histName = calorimeterCalibrations->pulseHistName();
+       ConfigFileLookupPolicy resolveFullPath;
+       std::string fullFileName = resolveFullPath(fileName_);
 
        std::unique_ptr<TH1F> pshape(nullptr);
-       TFile pulseFile(fileName.c_str());
-       if (pulseFile.IsOpen()) pshape.reset((TH1F*) pulseFile.Get(histName.c_str()));
-       if (!pshape) throw cet::exception("CATEGORY")<<"CaloPulseShape:: Hitsogram "<<histName.c_str()
-                                                    <<" from file "<<fileName.c_str()<<" does not exist";
+       TFile pulseFile(fullFileName.c_str());
+       if (pulseFile.IsOpen()) pshape.reset((TH1F*) pulseFile.Get(histName_.c_str()));
+       if (!pshape) throw cet::exception("CATEGORY")<<"CaloPulseShape:: Hitsogram "<<histName_.c_str()
+                                                    <<" from file "<<fileName_.c_str()<<" does not exist";
        pshape->SetDirectory(0);
        pulseFile.Close();
 

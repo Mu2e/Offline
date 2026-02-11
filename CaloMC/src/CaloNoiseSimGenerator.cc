@@ -1,6 +1,5 @@
 #include "Offline/CaloMC/inc/CaloNoiseSimGenerator.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
@@ -32,11 +31,13 @@ namespace mu2e {
      noiseRinDark_  (config.rinNphotPerNs() + config.darkNphotPerNs()),
      noiseElec_     (config.elecNphotPerNs()),
      minPeakADC_    (config.minPeakADC()),
+     pePerMeV_      (config.pePerMeV()),
+     MeVToADC_      (1.0/config.ADCToMeV()),
      randPoisson_   (engine),
      randGauss_     (engine),
      randFlat_      (engine),
      nMaxFragment_  (config.nMaxFragment()),
-     pulseShape_    (digiSampling_),
+     pulseShape_    (config.pulseFileName(),config.pulseHistName(),digiSampling_),
      diagLevel_     (config.diagLevel())
    {}
 
@@ -52,8 +53,7 @@ namespace mu2e {
    //------------------------------------------------------------------------------------------------------------------
    void CaloNoiseSimGenerator::generateWF(std::vector<double>& wfVector)
    {
-       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
-       double scaleFactor = calorimeterCalibrations->MeV2ADC(iRO_)/calorimeterCalibrations->peMeV(iRO_);
+       float scaleFactor(MeVToADC_/pePerMeV_);
 
        std::fill(wfVector.begin(),wfVector.end(),0);
 

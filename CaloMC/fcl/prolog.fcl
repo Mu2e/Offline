@@ -13,12 +13,16 @@ CaloMC : {
    NoiseGenerator :
    {
       noiseWFSize             : 10000
+      pulseFileName           : @local::pulseFileName
+      pulseHistName           : @local::pulseHistName
       elecNphotPerNs          : 0.18
       rinNphotPerNs           : 0.36
       darkNphotPerNs          : 0.60
       digiSampling            : @local::HitMakerDigiSampling
       nMaxFragment            : 1000
       minPeakADC              : @local::HitMakerMinPeakADC
+      readoutPEPerMeV         : @local::readoutPEPerMeV
+      ADCToMeV                : @local::ADCToMeV
       diagLevel               : 0
    }
 }
@@ -43,11 +47,15 @@ CaloMC : { @table::CaloMC
    {
       module_type              : CaloShowerROMaker
       caloShowerStepCollection : ["CaloShowerStepMaker"]
+      propagationFileName      : "OfflineData/ConditionsService/CsI-propag-2020-07-29.root"
+      propagationHistName      : "h_zposTime"
       eventWindowMarker        : EWMProducer
       protonBunchTimeMC        : EWMProducer
       digitizationStart        : @local::HitMakerDigitizationStart
       digitizationEnd          : @local::HitMakerDigitizationEnd
       digitizationBuffer       : 10
+      crystalNonUniformity     : 1.05
+      readoutPEPerMeV          : @local::readoutPEPerMeV
       LRUCorrection            : true
       BirksCorrection          : true
       PEStatCorrection         : true
@@ -61,6 +69,8 @@ CaloMC : { @table::CaloMC
       caloShowerROCollection  : CaloShowerROMaker
       eventWindowMarker       : EWMProducer
       protonBunchTimeMC       : EWMProducer
+      pulseFileName           : @local::pulseFileName
+      pulseHistName           : @local::pulseHistName
       digitizationStart       : @local::HitMakerDigitizationStart
       digitizationEnd         : @local::HitMakerDigitizationEnd
       addNoise                : true
@@ -71,19 +81,24 @@ CaloMC : { @table::CaloMC
       minPeakADC              : @local::HitMakerMinPeakADC
       nBinsPeak               : 2
       bufferDigi              : 16
+      readoutPEPerMeV         : @local::readoutPEPerMeV
+      ADCToMeV                : @local::ADCToMeV
       diagLevel               : 0
    }
 
    CaloHitTruthMatch:
    {
-      module_type               : CaloHitTruthMatch
-      caloShowerSimCollection   : CaloShowerROMaker
-      caloHitCollection         : CaloHitMaker
-      primaryParticle           : FindMCPrimary
-      digiSampling              : @local::HitMakerDigiSampling
-      minAmplitude              : 32
-      fillDetailedMC            : false
-      diagLevel                 : 0
+      module_type             : CaloHitTruthMatch
+      caloShowerSimCollection : CaloShowerROMaker
+      caloHitCollection       : CaloHitMaker
+      primaryParticle         : FindMCPrimary
+      pulseFileName           : @local::pulseFileName
+      pulseHistName           : @local::pulseHistName
+      digiSampling            : @local::HitMakerDigiSampling
+      minAmplitude            : 32
+      ADCToMeV                : @local::ADCToMeV
+      fillDetailedMC          : false
+      diagLevel               : 0
    }
 
    CaloClusterTruthMatch:
