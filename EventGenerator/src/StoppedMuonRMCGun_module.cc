@@ -65,7 +65,7 @@ namespace mu2e {
     art::RandomNumberGenerator::base_engine_t& eng_;
     const double czmax_;
     const double czmin_;
-    CLHEP::RandGeneral*  randSpectrum_;
+    std::unique_ptr<CLHEP::RandGeneral>  randSpectrum_;
     RandomUnitSphere     randUnitSphere_;
     RandomUnitSphere     randUnitSphereExt_; //For photons, to limit cosz
     CLHEP::RandFlat      randFlat_;
@@ -147,7 +147,7 @@ namespace mu2e {
     // initialize binned spectrum - this needs to be done right
     parseSpectrumShape(psphys_);
 
-    randSpectrum_ = new CLHEP::RandGeneral(eng_, spectrum_.getPDF(), spectrum_.getNbins());
+    randSpectrum_ = std::make_unique<CLHEP::RandGeneral>(eng_, spectrum_.getPDF(), spectrum_.getNbins());
 
     if ( doHistograms_ ) {
       art::ServiceHandle<art::TFileService> tfs;
@@ -168,7 +168,6 @@ namespace mu2e {
 
   //================================================================
   StoppedMuonRMCGun::~StoppedMuonRMCGun() {
-    delete randSpectrum_;
   }
 
   //================================================================

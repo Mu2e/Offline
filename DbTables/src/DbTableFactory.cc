@@ -10,6 +10,7 @@
 #include "Offline/DbTables/inc/SimEfficiencies2.hh"
 
 #include "Offline/DbTables/inc/CalChannels.hh"
+#include "Offline/DbTables/inc/CalChannelStatus.hh"
 #include "Offline/DbTables/inc/CalSourceEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalCosmicEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalCosmicEnergyCalibInfo.hh"
@@ -98,6 +99,8 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVTime());
   }  else if (name=="CalChannels") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalChannels());
+  }  else if (name=="CalChannelStatus") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalChannelStatus());
   }  else if (name=="CalSourceEnergyCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalSourceEnergyCalib());
   } else if (name=="CalCosmicEnergyCalib") {
