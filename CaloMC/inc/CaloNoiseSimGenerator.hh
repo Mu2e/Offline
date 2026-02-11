@@ -50,7 +50,7 @@ namespace mu2e {
         void                         plotNoise(const std::string& name);
 
         const std::vector<double>&   noise()    const {return waveform_;}
-        int                          pedestal() const {return pedestal_;}
+        double                       pedestal() const {return pedestal_;}
 
 
      private:

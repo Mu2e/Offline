@@ -85,6 +85,7 @@ namespace mu2e {
             digiSampling_      (config().digiSampling()),
             bufferDigi_        (config().bufferDigi()),
             startTimeBuffer_   (config().digiSampling()*config().bufferDigi()),
+            maxADCCounts_      ((1 << config().nBits()) -1),
             pePerMeV_          (config().pePerMeV()),
             MeVToADC_          (1.0/config().ADCToMeV()),
             pulseShape_        (CaloPulseShape(config().pulseFileName(),config().pulseHistName(),config().digiSampling())),
@@ -113,7 +114,7 @@ namespace mu2e {
        void makeDigitization  (const CaloShowerROCollection&, CaloDigiCollection&, const EventWindowMarker&, const ProtonBunchTimeMC&);
        bool fillROHits        (unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection&, const ProtonBunchTimeMC&);
        void generateSpotNoise (std::vector<double>& waveform);
-       void buildOutputDigi   (unsigned iRO, std::vector<double>& waveform, int pedestal, CaloDigiCollection&);
+       void buildOutputDigi   (unsigned iRO, std::vector<double>& waveform, double pedestal, CaloDigiCollection&);
        void diag0             (unsigned, const std::vector<int>&);
        void diag1             (unsigned, double, size_t, const std::vector<int>&, int);
        void plotWF            (const std::vector<int>& waveform,    const std::string& pname, int pedestal);
@@ -296,11 +297,13 @@ namespace mu2e {
 
 
   //-------------------------------------------------------------------------------------------------------------------
-  void CaloDigiMaker::buildOutputDigi(unsigned iRO, std::vector<double>& waveform, int pedestal, CaloDigiCollection& caloDigiColl)
+  void CaloDigiMaker::buildOutputDigi(unsigned iRO, std::vector<double>& waveform, double pedestal, CaloDigiCollection& caloDigiColl)
   {
        // round the waveform into non-null integers and apply maxADC cut
        std::vector<int> wf(waveform.size(),0);
-       for (unsigned i=0; i<waveform.size(); ++i) {if (waveform[i] > pedestal) wf[i] = std::min(maxADCCounts_, int(waveform[i] - pedestal));}
+       for (size_t i=0; i<waveform.size(); ++i) {
+         if (waveform[i] > pedestal) wf[i] = std::min(maxADCCounts_, int(waveform[i] - pedestal));
+       }
        if (diagLevel_ > 2) diag0(iRO, wf);
 
        //extract hits start / stop times

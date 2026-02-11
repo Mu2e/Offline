@@ -82,7 +82,7 @@ namespace mu2e {
        for (auto& val : wfVector) val += randGauss_.fire(0.0,noiseADC);
 
        //estimate pedestal for this waveform - set it to theoretical value for the time being
-       pedestal_ = int(noiseRinDark_*digiSampling_*std::accumulate(pulse.begin(),pulse.end(),0.0)*scaleFactor);
+       pedestal_ = std::floor(noiseRinDark_*digiSampling_*std::accumulate(pulse.begin(),pulse.end(),0.0)*scaleFactor);
    }
 
    //------------------------------------------------------------------------------------------------------------------
