@@ -589,6 +589,8 @@ chi2dXY = bestHelix.fita_zt_;
     //final dz/dphi and dz/dt refit
     fit_dzdp(helix,chcol,helicity);
     fit_dzdt(helix,chcol);
+    if (abs(helix.fita_zp_)<1e-3 || abs(helix.fita_zt_)<1e-3) {helix.hitIndices_.clear(); helix.nStrawHits_=0; return;}
+    if (!std::isnormal(helix.fita_zp_)  || !std::isnormal(helix.fita_zt_))  {helix.hitIndices_.clear(); helix.nStrawHits_=0; return;}
 
     helix.nStrawHits_=0;
     for (const auto& ich : helix.hitIndices_) helix.nStrawHits_ += chcol[ich].nStrawHits();
@@ -691,6 +693,8 @@ chi2dXY = bestHelix.fita_zt_;
 
     float fa = zphiFitter.fa();
     float fb = zphiFitter.fb();
+
+    if (fabs(fa) < 1e-3) return;
     if ((helicity==Helicity::poshel && fa<1e-3) || (helicity==Helicity::neghel  && fa>-1e-3)) return;
 
     circle.fita_zp_ = fa;
