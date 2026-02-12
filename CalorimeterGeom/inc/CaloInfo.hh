@@ -2,6 +2,8 @@
 // Contains data for the calorimeter class. The non-critical fields are saved into maps, and a few performance critical fields
 // accessed throughout the code are cached for efficiency.
 //
+// Look at the wiki for a list of valid keys
+//
 // Original author B. Echenard
 //
 #ifndef CalorimeterGeom_CaloInfo_hh
