@@ -4,7 +4,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/types/Sequence.h"
 
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"

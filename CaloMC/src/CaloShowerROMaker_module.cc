@@ -13,7 +13,6 @@
 #include "Offline/CaloMC/inc/CaloPhotonPropagation.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/DataProducts/inc/CrystalId.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"

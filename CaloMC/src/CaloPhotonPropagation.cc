@@ -1,7 +1,6 @@
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CaloMC/inc/CaloPhotonPropagation.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 

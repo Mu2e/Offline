@@ -17,7 +17,6 @@
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CaloMC/inc/CaloNoiseSimGenerator.hh"
 #include "Offline/CaloMC/inc/CaloWFExtractor.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"

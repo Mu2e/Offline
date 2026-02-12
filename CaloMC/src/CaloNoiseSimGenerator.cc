@@ -1,5 +1,4 @@
 #include "Offline/CaloMC/inc/CaloNoiseSimGenerator.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"

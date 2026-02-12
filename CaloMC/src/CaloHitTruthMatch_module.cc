@@ -7,7 +7,6 @@
 #include "art_root_io/TFileDirectory.h"
 #include "fhiclcpp/types/Atom.h"
 
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/MCDataProducts/inc/CaloEDepMC.hh"
 #include "Offline/MCDataProducts/inc/CaloHitMC.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
