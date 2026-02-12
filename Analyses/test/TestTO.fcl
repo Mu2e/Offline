@@ -35,7 +35,6 @@ services :
 
   ConditionsService :
   {
-    conditionsfile : "Offline/Mu2eG4/test/conditions_01_it.txt"
   }
 
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }

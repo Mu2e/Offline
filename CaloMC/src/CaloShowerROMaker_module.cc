@@ -110,7 +110,7 @@ namespace mu2e {
             pbtmcTag_            (config().pbtmcTag()),
             digitizationStart_   (config().digitizationStart()),
             digitizationEnd_     (config().digitizationEnd()),
-            digitizationBuffer_  (config().digitizationEnd()),
+            digitizationBuffer_  (config().digitizationBuffer()),
             crystalNonUniformity_(config().crystalNonUniformity()),
             pePerMeV_            (config().pePerMeV()),
             LRUCorrection_       (config().LRUCorrection()),

@@ -12,7 +12,7 @@ CaloReco : {
       windowPeak       : 3
       minPeakAmplitude : 5
       shiftTime        : 57.5
-      scaleFactor      : 0.0625
+      scaleFactor      : @local::ADCToMeV
       diagLevel        : 0
    }
 

@@ -9,7 +9,6 @@ process_name : SimParticleAnalyzer
 services : {
    message : @local::default_message
    GeometryService : { inputFile : "Offline/Mu2eG4/geom/geom_common.txt" }
-   ConditionsService :{ conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
    GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 }
 

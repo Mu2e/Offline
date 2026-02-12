@@ -18,7 +18,6 @@ services : {
     TFileService : { fileName : "digiTuning.root" }
     RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
 
-    ConditionsService : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
     GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
     SeedService       : @local::automaticSeeds
 }

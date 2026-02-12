@@ -6,6 +6,7 @@ BEGIN_PROLOG
   pulseFileName                : "OfflineData/ConditionsService/CsI-waveform-2020-02-12.root"
   pulseHistName                : "h_waveform"
   readoutPEPerMeV              : 30.0
+  MeVToADC                     : 16
   ADCToMeV                     : 0.0625
 END_PROLOG
 

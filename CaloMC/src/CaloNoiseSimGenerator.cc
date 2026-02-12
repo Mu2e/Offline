@@ -31,7 +31,7 @@ namespace mu2e {
      noiseElec_     (config.elecNphotPerNs()),
      minPeakADC_    (config.minPeakADC()),
      pePerMeV_      (config.pePerMeV()),
-     MeVToADC_      (1.0/config.ADCToMeV()),
+     MeVToADC_      (config.MeVToADC()),
      randPoisson_   (engine),
      randGauss_     (engine),
      randFlat_      (engine),

@@ -43,7 +43,7 @@ namespace mu2e {
              fhicl::Atom<std::string>    pulseHistName            { Name("pulseHistName"),            Comment("Calo pulse hist name") };
              fhicl::Atom<double>         digiSampling             { Name("digiSampling"),             Comment("Digitization time sampling") };
              fhicl::Atom<double>         minAmplitude             { Name("minAmplitude"),             Comment("Minimum amplitude of waveform to define hit length") };
-             fhicl::Atom<double>         ADCToMeV                 { Name("ADCToMeV"),                 Comment("ADC to MeV conversion factor") };
+             fhicl::Atom<double>         MeVToADC                 { Name("MeVToADC"),       Comment("MeV to ADC conversion factor") };
              fhicl::Atom<bool>           fillDetailedMC           { Name("fillDetailedMC"),           Comment("Fill SimParticle - SimShower Assn map")};
              fhicl::Atom<int>            diagLevel                { Name("diagLevel"),                Comment("Diag Level"),0 };
          };
@@ -58,7 +58,7 @@ namespace mu2e {
            pulseHistName_      (config().pulseHistName()),
            digiSampling_       (config().digiSampling()),
            minAmplitude_       (config().minAmplitude()),
-           MeVToADC_           (1.0/config().ADCToMeV()),
+           MeVToADC_           (config().MeVToADC()),
            fillDetailedMC_     (config().fillDetailedMC()),
            diagLevel_          (config().diagLevel())
         {

@@ -32,7 +32,7 @@ namespace mu2e {
             fhicl::Atom<double>      darkNphotPerNs { Name("darkNphotPerNs"), Comment("SiPM Dark noise number of PE / ns ") };
             fhicl::Atom<double>      digiSampling   { Name("digiSampling"),   Comment("Digitization time sampling") };
             fhicl::Atom<double>      pePerMeV       { Name("readoutPEPerMeV"),Comment("Number of pe / MeV for Readout") };
-            fhicl::Atom<double>      ADCToMeV       { Name("ADCToMeV"),       Comment("ADC to MeV conversion factor") };
+            fhicl::Atom<double>      MeVToADC       { Name("MeVToADC"),       Comment("MeV to ADC conversion factor") };
             fhicl::Atom<unsigned>    noiseWFSize    { Name("noiseWFSize"),    Comment("Noise WF size") };
             fhicl::Atom<unsigned>    nMaxFragment   { Name("nMaxFragment"),   Comment("maximum number of wf generated for extracting noise fragments ") };
             fhicl::Atom<int>         minPeakADC     { Name("minPeakADC"),     Comment("Minimum ADC hits of local peak to digitize") };

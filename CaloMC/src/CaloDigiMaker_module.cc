@@ -66,7 +66,7 @@ namespace mu2e {
              fhicl::Atom<bool>          addRandomNoise       { Name("addRandomNoise"),         Comment("Add random salt and pepper noise") };
              fhicl::Atom<double>        digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") };
              fhicl::Atom<double>        pePerMeV             { Name("readoutPEPerMeV"),        Comment("Number of pe / MeV for Readout") };
-             fhicl::Atom<double>        ADCToMeV             { Name("ADCToMeV"),               Comment("ADC to MeV conversion factor") };
+             fhicl::Atom<double>        MeVToADC             { Name("MeVToADC"),               Comment("MeV to ADC conversion factor") };
              fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") };
              fhicl::Atom<unsigned>      nBinsPeak            { Name("nBinsPeak"),              Comment("Window size for finding local maximum to digitize wf") };
              fhicl::Atom<int>           minPeakADC           { Name("minPeakADC"),             Comment("Minimum ADC hits of local peak to digitize") };
@@ -86,7 +86,7 @@ namespace mu2e {
             startTimeBuffer_   (config().digiSampling()*config().bufferDigi()),
             maxADCCounts_      ((1 << config().nBits()) -1),
             pePerMeV_          (config().pePerMeV()),
-            MeVToADC_          (1.0/config().ADCToMeV()),
+            MeVToADC_          (config().MeVToADC()),
             pulseShape_        (CaloPulseShape(config().pulseFileName(),config().pulseHistName(),config().digiSampling())),
             wfExtractor_       (config().bufferDigi(),config().nBinsPeak(),config().minPeakADC(),config().bufferDigi()),
             engine_            (createEngine(art::ServiceHandle<SeedService>()->getSeed())),

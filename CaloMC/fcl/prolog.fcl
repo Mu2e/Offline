@@ -22,7 +22,7 @@ CaloMC : {
       nMaxFragment            : 1000
       minPeakADC              : @local::HitMakerMinPeakADC
       readoutPEPerMeV         : @local::readoutPEPerMeV
-      ADCToMeV                : @local::ADCToMeV
+      MeVToADC                : @local::MeVToADC
       diagLevel               : 0
    }
 }
@@ -82,7 +82,7 @@ CaloMC : { @table::CaloMC
       nBinsPeak               : 2
       bufferDigi              : 16
       readoutPEPerMeV         : @local::readoutPEPerMeV
-      ADCToMeV                : @local::ADCToMeV
+      MeVToADC                : @local::MeVToADC
       diagLevel               : 0
    }
 
@@ -96,7 +96,7 @@ CaloMC : { @table::CaloMC
       pulseHistName           : @local::pulseHistName
       digiSampling            : @local::HitMakerDigiSampling
       minAmplitude            : 32
-      ADCToMeV                : @local::ADCToMeV
+      MeVToADC                : @local::MeVToADC
       fillDetailedMC          : false
       diagLevel               : 0
    }
