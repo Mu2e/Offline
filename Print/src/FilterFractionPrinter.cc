@@ -12,29 +12,7 @@ void mu2e::FilterFractionPrinter::PrintSubRun(art::SubRun const& subrun, std::os
   if (tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector<art::Handle<FilterFraction> > ffl = subrun.getMany<FilterFraction>();
-    for (auto const& cl : ffl) Print(cl);
-    // also look for sampled instances
-    auto ffs = subrun.getMany<art::Sampled<FilterFraction>>();
-    if(ffs.size() > 0){
-      for (auto const& ff : ffs){
-        std::cout << "FilterFraction with tag " << ff->originalInputTag() << std::endl;
-        auto sinfomh = subrun.getHandle<art::SampledSubRunInfo>("SamplingInput");
-        if(sinfomh.isValid()){
-          auto const& sinfom = *sinfomh;
-          for(auto sinfoit = sinfom.begin(); sinfoit != sinfom.end(); ++sinfoit) {
-            if(sinfoit->first.find("Cosmic") != std::string::npos){
-              std::cout << "With SubRunInfo entry for dataset " << sinfoit->first << " Has the following FilterFractions: " << std::endl;
-              for(auto const& sr : sinfoit->second.ids){
-                std::cout << sr << " : ";
-                auto ffp = ff->get(sinfoit->first,sr);
-                if(!ffp.empty()) Print(*ffp);
-              }
-            }
-          }
-        }
-      }
-    }
-
+    for (auto const& ff : ffl) Print(ff);
   } else {
     // print requested instances
     for (const auto& tag : tags()) {
@@ -65,7 +43,7 @@ void mu2e::FilterFractionPrinter::Print(
 }
 
 void mu2e::FilterFractionPrinter::Print(const mu2e::FilterFraction& obj,
-                                        int ind, std::ostream& os) {
+    int ind, std::ostream& os) {
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   os << " Fraction passing filter " << obj.filterFraction()  <<  " N Seen " << obj.nSeen();
   if(obj.chained())os << " chained";
@@ -73,7 +51,7 @@ void mu2e::FilterFractionPrinter::Print(const mu2e::FilterFraction& obj,
 }
 
 void mu2e::FilterFractionPrinter::PrintHeader(const std::string& tag,
-                                              std::ostream& os) {
+    std::ostream& os) {
   if (verbose() < 1) return;
   os << "\nProductPrint " << tag << "\n";
 }
