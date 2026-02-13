@@ -71,6 +71,7 @@ TrkPatRec : { @table::TrkPatRec
       MinHitSelect           : 50
       MinCutMVA              : 0.1
       SplitPhi               : true
+      RequirePhi             : false
       MaxDeltaPhi            : 0.3
       MaxNdiff               : 1
       Diag                   : 0
