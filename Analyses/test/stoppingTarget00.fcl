@@ -32,10 +32,6 @@ services :
     inputFile : "Offline/Mu2eG4/test/beamline_geom03a_readback.txt"
   }
 
-  ConditionsService :
-  {
-  }
-
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
 }

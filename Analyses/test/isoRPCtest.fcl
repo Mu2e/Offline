@@ -43,10 +43,6 @@ services :
     inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
   }
 
-  ConditionsService :
-  {
-  }
-
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 } # close of services block
 

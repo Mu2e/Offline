@@ -16,7 +16,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+//#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
