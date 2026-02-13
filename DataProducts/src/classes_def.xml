@@ -62,6 +62,8 @@
 <!--  ********* filter  ********* -->
  <class name="mu2e::FilterFraction"/>
  <class name="art::Wrapper<mu2e::FilterFraction>" />
+ <class name="mu2e::PrescaleFilterFraction"/>
+ <class name="art::Wrapper<mu2e::PrescaleFilterFraction>" />
 
 <!--  ********* general  ********* -->
  <class name="mu2e::SurfaceIdDetail"/>

@@ -9,6 +9,7 @@ cet_make_library(
       src/FilterFraction.cc
       src/GenVector.cc
       src/PDGCode.cc
+      src/PrescaleFilterFraction.cc
       src/STMChannel.cc
       src/StrawEnd.cc
       src/StrawId.cc

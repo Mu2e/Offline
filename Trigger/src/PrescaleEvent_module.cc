@@ -18,7 +18,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
-#include "Offline/DataProducts/inc/FilterFraction.hh"
+#include "Offline/DataProducts/inc/PrescaleFilterFraction.hh"
 #include "artdaq-core-mu2e/Data/EventHeader.hh"
 
 #include <memory>
@@ -42,9 +42,10 @@ namespace mu2e
 
     struct EventMode {
       EventWindowMarker::SpillType type_;
-      int prescale_;
+      uint32_t prescale_;
       std::string name_;
-      EventMode(EventWindowMarker::SpillType type, int prescale, std::string const& name ) : type_(type), prescale_(prescale), name_(name) {}
+      EventMode(EventWindowMarker::SpillType type, int prescale, std::string const& name ) : type_(type),
+      prescale_(static_cast<uint32_t>(std::max(0,prescale))), name_(name) {}
     };
 
     struct Config {
@@ -85,7 +86,7 @@ namespace mu2e
       if(mode.eventMode() == "OffSpill") eventMode_.push_back(EventMode(EventWindowMarker::offspill, mode.prescale(),mode.eventMode()));
       else if(mode.eventMode() == "OnSpill") eventMode_.push_back(EventMode(EventWindowMarker::onspill, mode.prescale(),mode.eventMode()));
       else throw cet::exception("TRIGGER") << "Unknown prescale mode " << mode.eventMode();
-      produces<mu2e::FilterFraction,art::InSubRun>(mode.eventMode());
+      produces<mu2e::PrescaleFilterFraction,art::InSubRun>(mode.eventMode());
     }
   }
 
@@ -112,13 +113,14 @@ namespace mu2e
   bool PrescaleEvent::endSubRun( art::SubRun& subrun ) {
     for (size_t imode = 0; imode < eventMode_.size(); imode++){
       auto const& mode = eventMode_[imode];
-      double frac = mode.prescale_ > 0 ? 1.0/double(mode.prescale_) : 0;
-      auto ff = std::make_unique<FilterFraction>(FilterFraction::constant, frac, nevt_[imode],npass_[imode]);
+      auto ff = std::make_unique<PrescaleFilterFraction>(mode.prescale_, nevt_[imode],npass_[imode]);
       subrun.put(std::move(ff),mode.name_,art::fullSubRun());
       if(debug_ > 0){
+        double frac = mode.prescale_ > 0 ? 1.0/double(mode.prescale_) : 0.0;
         std::cout << moduleDescription().moduleLabel() << " mode " << mode.name_ << " passed " << npass_[imode] << " events out of " << nevt_[imode]
-          << " for a ratio of " << ((nevt_[imode] > 0) ? double(npass_[imode])/double(nevt_[imode]) : 0.f) << std::endl;
-      }
+          << " for a ratio of " << ((nevt_[imode] > 0) ? double(npass_[imode])/double(nevt_[imode]) : 0.f)
+          << " with an expected fraction of " << frac  << std::endl;
+       }
       // reset
       npass_[imode] = 0; nevt_[imode] = 0;
     }

@@ -9,32 +9,26 @@
 namespace mu2e {
   class FilterFraction {
     public:
-      enum FilterType { constant=0, nonominal, chained, unknown};
-      // chained means multiple filtering steps have been chained together
-      FilterFraction(FilterType type, double nominal, uint64_t nseen, uint64_t npassed) :
-        type_(type),nominal_(nominal), nseen_(nseen), npassed_(npassed) {}
-      // use this constructor when there is no nominal selection fraction
-      FilterFraction(uint64_t nseen, uint64_t npassed) :
-        type_(nonominal),nominal_(-1.0), nseen_(nseen), npassed_(npassed) {}
+      FilterFraction(uint64_t nseen, uint64_t npassed) : nseen_(nseen), npassed_(npassed) {}
       // default
       FilterFraction(){}
+      virtual ~FilterFraction(){}
       // accessors
-      FilterType type() const { return type_; }
-      bool hasNominalValue() const { return type() == nonominal; }
-      double nominalFraction() const { return nominal_; }
-      double actualFraction() const { return nseen_ > 0 ? double(npassed_)/double(nseen_) : 0.0; }
+      double filterFraction() const { return nseen_ > 0 ? double(npassed_)/double(nseen_) : 0.0; }
       uint64_t nSeen() const { return nseen_; }
       uint64_t nPassed() const { return npassed_; }
+      bool chained() const { return chained_; }
       // concatenate multiple subruns in the same path
       FilterFraction& operator +=(FilterFraction const& other);
       FilterFraction operator + (FilterFraction const& other) const;
-      // concatenate with an upstream filter. The values must match!
+      // concatenate with an upstream filter
       FilterFraction chain(FilterFraction const& upstream) const;
     private:
-      FilterType type_ = unknown; // type of filtering performed
-      double nominal_ = -1; // nominal fraction (<1) of events expected to be kept by the filter
       uint64_t nseen_ = 0; // number of events processed by this filter
       uint64_t npassed_ = 0; // number of events passed by this filter
+      bool chained_ = false; // is this product the result of a chain of filters?
+    protected:
+      void setChained() { chained_ = true; }
   };
 }
 #endif

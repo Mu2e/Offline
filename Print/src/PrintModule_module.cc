@@ -19,6 +19,7 @@
 #include "Offline/Print/inc/ComboHitPrinter.hh"
 #include "Offline/Print/inc/CosmicLivetimePrinter.hh"
 #include "Offline/Print/inc/FilterFractionPrinter.hh"
+#include "Offline/Print/inc/PrescaleFilterFractionPrinter.hh"
 #include "Offline/Print/inc/CrvCoincidenceClusterPrinter.hh"
 #include "Offline/Print/inc/CrvDigiMCPrinter.hh"
 #include "Offline/Print/inc/CrvDigiPrinter.hh"
@@ -77,6 +78,8 @@ class PrintModule : public art::EDAnalyzer {
         fhicl::Name("CosmicLivetimePrinter")};
     fhicl::Table<ProductPrinter::Config> FilterFractionPrinter{
         fhicl::Name("FilterFractionPrinter")};
+    fhicl::Table<ProductPrinter::Config> PrescaleFilterFractionPrinter{
+        fhicl::Name("PrescaleFilterFractionPrinter")};
     fhicl::Table<ProductPrinter::Config> EventWindowMarkerPrinter{
         fhicl::Name("EventWindowMarkerPrinter")};
     fhicl::Table<ProductPrinter::Config> genParticlePrinter{
@@ -188,6 +191,8 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
       make_unique<CosmicLivetimePrinter>(conf().CosmicLivetimePrinter()));
   _printers.push_back(
       make_unique<FilterFractionPrinter>(conf().FilterFractionPrinter()));
+  _printers.push_back(
+      make_unique<PrescaleFilterFractionPrinter>(conf().PrescaleFilterFractionPrinter()));
   _printers.push_back(
       make_unique<EventWindowMarkerPrinter>(conf().EventWindowMarkerPrinter()));
   _printers.push_back(

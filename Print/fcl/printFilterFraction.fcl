@@ -23,6 +23,9 @@ physics :{
       FilterFractionPrinter : {
         verbose : 1
       }
+      PrescaleFilterFractionPrinter : {
+        verbose : 1
+      }
     } # printModule
 
 
