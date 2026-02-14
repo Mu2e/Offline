@@ -22,6 +22,8 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
+      fhicl::Atom<double>       czmin   {Name("czmin")   , Comment("Restrict cos(theta_z) minimum"), -1.};
+      fhicl::Atom<double>       czmax   {Name("czmax")   , Comment("Restrict cos(theta_z) maximum"),  1.};
       fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
     };
     typedef art::ToolConfigTable<PhysConfig> Parameters;
@@ -29,6 +31,8 @@ namespace mu2e {
     explicit DIOGenerator(Parameters const& conf) :
       _pdgId(PDGCode::e_minus),
       _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgId).mass()),
+      _czmin(conf().czmin()),
+      _czmax(conf().czmax()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
     {
       // compute normalization
@@ -64,7 +68,7 @@ namespace mu2e {
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&) override {
-      _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng);
+      _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng, _czmin, _czmax);
       _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
     }
 
@@ -72,6 +76,7 @@ namespace mu2e {
     PDGCode::type _pdgId;
     double _mass;
 
+    double _czmin, _czmax;
     BinnedSpectrum    _spectrum;
 
     std::unique_ptr<RandomUnitSphere>   _randomUnitSphere;
