@@ -24,6 +24,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
@@ -52,6 +53,7 @@ namespace mu2e
       art::InputTag _shTag;
       art::InputTag _chTag;
       art::InputTag _shfTag;
+      art::InputTag _tcTag;
       art::InputTag _pbtTag;
       art::InputTag _pbtmcTag;
       art::InputTag _stTag;
@@ -61,6 +63,7 @@ namespace mu2e
       const StrawHitCollection* _shcol;
       const ComboHitCollection* _chcol;
       const StrawHitFlagCollection* _shfcol;
+      const TimeClusterCollection* _tccol;
       const StrawDigiMCCollection *_mcdigis;
       const StrawDigiCollection *_digis;
       const StrawDigiADCWaveformCollection *_digiadcs;
@@ -88,6 +91,7 @@ namespace mu2e
       Double_t _mcsptime;
       Double_t _mcptime;
       Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _dead, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
+      Int_t _intimecluster;
       Int_t _sid, _plane, _panel, _layer, _straw;
       Float_t _shwres, _shtres;
       Bool_t _mcxtalk;
@@ -99,6 +103,7 @@ namespace mu2e
       Int_t _digipeak;
       Float_t _digipedestal;
       Int_t _digitdc[2], _digitot[2];
+      bool _tcfilter;
       ProditionsHandle<StrawElectronics> _strawele_h;
       // helper array
       StrawEnd _end[2];
@@ -112,10 +117,12 @@ namespace mu2e
     _shTag(pset.get<string>("StrawHitCollection","makeSH")),
     _chTag(pset.get<string>("ComboHitCollection","makeSH")),
     _shfTag(pset.get<string>("StrawHitFlagCollection")),
+    _tcTag(pset.get<string>("TimeClusterCollection","")),
     _pbtTag(pset.get<art::InputTag>("ProtonBunchTime","PBTFSD")),
     _pbtmcTag(pset.get<art::InputTag>("ProtonBunchTimeMC","EWMProducer")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _digisTag(pset.get<art::InputTag>("StrawDigiCollection","makeSD")),
+    _tcfilter(pset.get<bool>("TCFilter",false)),
     _end{StrawEnd::cal,StrawEnd::hv}
   {
     if(pset.get<bool>("TestStrawId",false)) {
@@ -152,6 +159,7 @@ namespace mu2e
     _shcol = 0;
     _chcol = 0;
     _shfcol = 0;
+    _tccol = 0;
     _mcdigis = 0;
     _digis = 0;
     _digiadcs = 0;
@@ -166,6 +174,9 @@ namespace mu2e
       auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
       _shfcol = shfH.product();
     }
+    auto const& tch = evt.getHandle<TimeClusterCollection>(_tcTag);
+    if(tch.isValid())
+      _tccol = tch.product();
     if(_mcdiag){
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
       _mcdigis = mcdH.product();
@@ -218,6 +229,7 @@ namespace mu2e
     _shdiag->Branch("elecxtalk",&_elecxtalk,"elecxtalk/I");
     _shdiag->Branch("isolated",&_isolated,"isolated/I");
     _shdiag->Branch("calosel",&_calosel,"calosel/I");
+    _shdiag->Branch("intimecluster",&_intimecluster,"intimecluster/I");
     _shdiag->Branch("pdist",&_pdist,"pdist/F");
     _shdiag->Branch("pperp",&_pperp,"pperp/F");
     _shdiag->Branch("pmom",&_pmom,"pmom/F");
@@ -277,6 +289,15 @@ namespace mu2e
     const Tracker& tracker = *GeomHandle<Tracker>(); //FIXME switch to aligned
     static const double rstraw = tracker.strawOuterRadius();
     unsigned nstrs = _chcol->size();
+    std::vector<int> intimecluster(nstrs,0);
+    if (_tccol){
+      for (size_t itc=0;itc<_tccol->size();itc++){
+        auto const& tc = _tccol->at(itc);
+        for (size_t j=0;j<tc.hits().size();j++){
+          intimecluster[tc.hits()[j]] = 1;
+        }
+      }
+    }
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawHit const& sh = _shcol->at(istr);
       ComboHit const& ch = _chcol->at(istr);
@@ -312,6 +333,9 @@ namespace mu2e
       _isolated = shf.hasAllProperties(StrawHitFlag::isolated);
       _bkg = shf.hasAllProperties(StrawHitFlag::bkg);
       _bkgclust = shf.hasAllProperties(StrawHitFlag::bkgclust);
+      _intimecluster = intimecluster[istr];
+      if (_tcfilter && !_intimecluster)
+        continue;
       _rho = ch.posCLHEP().perp();
       // get calibration values from proditions
       _delay[StrawEnd::cal] = strawele.getTimeOffsetStrawCal(straw.id().uniqueStraw());

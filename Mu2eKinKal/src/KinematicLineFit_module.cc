@@ -35,6 +35,7 @@
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KKLine.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/KinKalGeom/inc/SurfaceMap.hh"
 // KinKal
@@ -117,6 +118,7 @@ namespace mu2e {
       fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
       fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for surface intersections (mm)") };
       fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Time buffer for sample intersections (nsec)") };
+      fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"") };
     };
 
     // Extrapolation configuration
@@ -159,6 +161,7 @@ namespace mu2e {
     int print_;
     float seedmom_;
     PDGCode::type fpart_;
+    TrkFitDirection fdir_;
     KKFIT kkfit_; // fit helper
     KKMaterial kkmat_; // material helper
     DMAT seedcov_; // seed covariance matrix
@@ -237,6 +240,9 @@ namespace mu2e {
         // extrapolate to the front of the tracker
         TCRV_ = ExtrapolateTCRV(maxdt,btol,intertol_,minv,smap.TCRV(),debug);
       }
+      // read fit direction
+      std::string fdir;
+      if(settings().modSettings().fitDirection(fdir))fdir_ = fdir;
 
       if(print_ > 0) std::cout << config_;
 
@@ -355,6 +361,13 @@ namespace mu2e {
     KinKal::VEC4 pos(hseed._track.MinuitParams.A0, 0, hseed._track.MinuitParams.B0, hseed._t0._t0);
     XYZVectorF mom3(hseed._track.MinuitParams.A1, -1, hseed._track.MinuitParams.B1);
     mom3 = mom3.Unit()*seedmom_;
+    if (fdir_ == TrkFitDirection::FitDirection::downstream){
+      if (mom3.z() < 0)
+        mom3 *= -1;
+    }else if (fdir_ == TrkFitDirection::FitDirection::upstream){
+      if (mom3.z() > 0)
+        mom3 *= -1;
+    }
     KinKal::MOM4 mom(mom3.x(),mom3.y(),mom3.z(),mass_);
 
     auto seedtraj = KTRAJ(pos,mom,charge_,bnom,Mu2eKinKal::timeBounds(hseed.hits()));
