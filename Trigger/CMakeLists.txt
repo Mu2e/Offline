@@ -28,7 +28,6 @@ cet_build_plugin(ReadTriggerInfo art::module
     LIBRARIES REG
       
       Offline::BFieldGeom
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::GlobalConstantsService
@@ -47,6 +46,12 @@ cet_build_plugin(ReadTriggerPath art::module
       Offline::MCDataProducts
       Offline::RecoDataProducts
       Offline::Mu2eUtilities
+)
+
+cet_build_plugin(TriggerInfoToCollections art::module
+    REG_SOURCE src/TriggerInfoToCollections_module.cc
+    LIBRARIES REG
+      Offline::RecoDataProducts
 )
 
 install_source(SUBDIRS src)

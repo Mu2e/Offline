@@ -8,7 +8,7 @@
 
 #include "Offline/CaloConditions/inc/CaloDAQMap.hh"
 #include "Offline/CaloConfig/inc/CaloDAQMapConfig.hh"
-
+#include "Offline/DbTables/inc/CalChannels.hh"
 
 namespace mu2e {
 
@@ -18,7 +18,7 @@ namespace mu2e {
   public:
     CaloDAQMapMaker(CaloDAQMapConfig const& config):_config(config) {}
     ptr_t fromFcl();
-    ptr_t fromDb();
+    ptr_t fromDb(CalChannels::cptr_t cch_p);
 
   private:
 

@@ -21,8 +21,9 @@ namespace mu2e {
 
   TriggerResultsNavigator::TriggerResultsNavigator(const art::TriggerResults* trigResults):
     _trigResults(trigResults){
-    auto const  id   = trigResults->parameterSetID();
+
     // Simplest thing: ParameterSetRegistry has correct ParameterSet
+    auto const  id   = trigResults->parameterSetID();
     fhicl::ParameterSet pset;
     fhicl::ParameterSetRegistry::get(id, pset);
 
@@ -32,87 +33,102 @@ namespace mu2e {
       auto nid = pset_pair.second.id();
       assert(nid == pset_pair.first);
 
+      // if this is the trigger results parameter set ID, get the trigger path list
       if(nid == id) {
         pset = pset_pair.second;
-        if (pset.has_key("trigger_paths")){
-          _trigPathsNames = pset.get<std::vector<std::string>>("trigger_paths",std::vector<std::string>());
+        if(pset.has_key("trigger_paths")) {
+          _trigPathsNames = pset.get<std::vector<std::string>>("trigger_paths");
         }
       }
     }
 
-    //loop over trigResults to fill the map <string, unsigned int)
+    //loop over trigResults to fill the map <string, unsigned int>
     std::string   delimeter=":";
-    for (unsigned int i=0; i< _trigPathsNames.size(); ++i){
-      size_t       pos      = _trigPathsNames[i].find(delimeter);
-      unsigned int bit      = std::stoi(_trigPathsNames[i].substr(0, pos));
-      std::string  pathName = _trigPathsNames[i].substr(pos+1, _trigPathsNames[i].length());
-      _trigMap.insert(std::pair<std::string, unsigned int>(pathName, i));
-      _trigPathMap.insert(std::pair<std::string, unsigned int>(pathName, bit));
+    for (size_t index = 0; index < _trigPathsNames.size(); ++index){
+      const std::string& path = _trigPathsNames.at(index);
+      size_t       pos        = path.find(delimeter);
+      if(pos == std::string::npos)
+        throw cet::exception("TRIGGER") << "No path bit found for  path " << _trigPathsNames.at(index);
+      unsigned int bit        = std::stoi(path.substr(0, pos));
+      std::string  pathName   = path.substr(pos+1, path.length());
+      _trigMap        .insert(std::pair<std::string, unsigned int>(pathName, index));
+      _trigPathMap    .insert(std::pair<std::string, unsigned int>(pathName, bit));
+      _indexToPathName.insert(std::pair<unsigned int, std::string>(index, pathName));
+      _bitToPathName  .insert(std::pair<unsigned int, std::string>(bit, pathName));
+      _bitToIndex     .insert(std::pair<unsigned int, unsigned int>(bit, index));
     }
   }
 
 
-  std::string const
-  TriggerResultsNavigator::getTrigPathName(unsigned int const i) const
+  std::string const&
+  TriggerResultsNavigator::getTrigPathNameByIndex(unsigned int const index) const
   {
-    std::string   delimeter =":";
-    size_t        pos       = _trigPathsNames[i].find(delimeter);
-    if (pos > _trigPathsNames[i].length()) return "TRIG PATH NOT FOUND";
-    return _trigPathsNames[i].substr(pos+1, _trigPathsNames[i].length());
-  }
-
-  size_t
-  TriggerResultsNavigator::getTrigBit(unsigned int const i) const
-  {
-    if (i>_trigPathsNames.size()) {
-      throw cet::exception("TRIG PATHID NOT FOUND");
-      //std::cout << "TRIG PATHID "<< i <<" NOT FOUND" <<std::endl;
-      return 0;
+    if(!_indexToPathName.contains(index)) {
+      throw cet::exception("TRIGGER") << "TRIG PATH INDEX " << index << " NOT FOUND";
     }
-    std::string   delimeter =":";
-    size_t        pos       = _trigPathsNames[i].find(delimeter);
-    unsigned int  bit       = std::stoi(_trigPathsNames[i].substr(0, pos));
-    return bit;
+    return _indexToPathName.at(index);
   }
 
-  size_t
-  TriggerResultsNavigator::findTrigPath(std::string const& name) const
+  std::string const&
+  TriggerResultsNavigator::getTrigPathNameByBit(unsigned int const bit) const
   {
-    return find(_trigMap, name);
-  }
-
-  size_t
-  TriggerResultsNavigator::find(std::map<std::string, unsigned int> const& posmap, std::string const& name) const
-  {
-    auto const pos = posmap.find(name);
-    if (pos == posmap.cend()) {
-      return posmap.size();
-    } else {
-      return pos->second;
+    if(!_bitToPathName.contains(bit)) {
+      throw cet::exception("TRIGGER") << "TRIG PATH BIT " << bit << " NOT FOUND";
     }
+    return _bitToPathName.at(bit);
   }
 
   size_t
-  TriggerResultsNavigator::findTrigPathID(std::string const& name) const
+  TriggerResultsNavigator::getTrigBitByIndex(unsigned int const index) const
   {
-    return find(_trigPathMap, name);
+    if(!_indexToPathName.contains(index)) {
+      throw cet::exception("TRIGGER") << "TRIG PATH INDEX " << index << " NOT FOUND";
+    }
+    return _trigPathMap.at(_indexToPathName.at(index));
+  }
+
+  size_t
+  TriggerResultsNavigator::getTrigBitByName(const std::string& name) const
+  {
+    if(!_trigPathMap.contains(name)) {
+      throw cet::exception("TRIGGER") << "TRIG PATH NAME " << name << " NOT FOUND";
+    }
+    return _trigPathMap.at(name);
+  }
+
+  // Return the trigger path index, if found
+  size_t
+  TriggerResultsNavigator::getTrigPathIndex(std::string const& name) const
+  {
+    if(!_trigMap.count(name)) return NOTFOUND;
+    return _trigMap.at(name);
+  }
+  size_t
+  TriggerResultsNavigator::getTrigPathIndex(const size_t bit) const
+  {
+    if(!_bitToPathName.count(bit)) return NOTFOUND;
+    return _trigMap.at(_bitToPathName.at(bit));
   }
 
   // Has ith path accepted the event?
   bool
   TriggerResultsNavigator::accepted(std::string const& name) const
   {
-    size_t index = findTrigPath(name);
-    //    return _trigResults->accept(index);
-    if (index == _trigResults->size()) return false;
-    else                             return _trigResults->accept(index);
+    if(!_trigPathMap.count(name)) return false;
+    return _trigResults->accept(getTrigPathIndex(name));
+  }
+
+  bool
+  TriggerResultsNavigator::accepted(unsigned int const bit) const {
+    if(!_bitToIndex.count(bit)) return false;
+    return _trigResults->accept(getTrigPathIndex(bit));
   }
 
   bool
   TriggerResultsNavigator::wasrun(std::string const& name) const
   {
-    size_t index = findTrigPath(name);
-    return _trigResults->wasrun(index);
+    if(!_trigPathMap.count(name)) return false;
+    return _trigResults->wasrun(getTrigPathIndex(name));
   }
 
   std::vector<std::string>
@@ -132,28 +148,30 @@ namespace mu2e {
 
   unsigned
   TriggerResultsNavigator::indexLastModule(std::string const& name) const{
-    size_t index = findTrigPath(name);
-    return _trigResults->index(index);
+    if(!_trigPathMap.count(name)) return -1;
+    return _trigResults->index(getTrigPathIndex(name));
    }
 
   std::string
   TriggerResultsNavigator::nameLastModule (std::string const& name) const{
     unsigned                    indexLast  = indexLastModule(name);
-    std::vector<std::string>    modulesVec = triggerModules(name);
+    std::vector<std::string>    modulesVec;
+    if(indexLast != unsigned(-1)) modulesVec = triggerModules(name);
 
-    if ( modulesVec.size() == 0) {
+    if(modulesVec.empty()) {
       std::string nn = "PATH "+name+" NOT FOUND";
       std::cout << "[TriggerResultsNavigator::nameLastModule] " << nn << std::endl;
       return nn;
-    }else {
+    } else {
       return modulesVec[indexLast];
     }
   }
 
   art::hlt::HLTState
   TriggerResultsNavigator::state(std::string const& name) const{
-    size_t index = findTrigPath(name);
-    return _trigResults->state(index);
+    if(!_trigPathMap.count(name))
+      throw cet::exception("TRIGGER") << "Path " << name << " not found!";
+    return _trigResults->state(getTrigPathIndex(name));
   }
 
   void
@@ -163,9 +181,10 @@ namespace mu2e {
     std::cout << "//      trig_pathName           id      accepted  //" << std::endl;
     std::cout << "//------------------------------------------------//" << std::endl;
 
-    for (unsigned i=0; i< getTrigPaths().size(); ++i) {
-      const std::string path = getTrigPathName(i);
-      const int bit = findTrigPathID(path);
+    const size_t npaths = getTrigPaths().size();
+    for (size_t i = 0; i < npaths; ++i) {
+      const std::string path = getTrigPathNameByIndex(i);
+      const int bit = getTrigBitByName(path);
       const bool good = accepted(path);
       std::cout << std::right;
       std::cout <<"//"<<std::setw(40) << path << std::setw(5) << bit << " " << good << " //"<< std::endl;

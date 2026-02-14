@@ -6,7 +6,7 @@
 //
 
 // Mu2e includes
-#include "BTrk/TrkBase/TrkT0.hh"
+#include "Offline/BTrkLegacy/inc/TrkT0.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/RobustHelix.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
@@ -41,6 +41,8 @@ namespace mu2e {
     float                    _eDepAvg =0;  // average energy deposition from helix hits
   };
    typedef std::vector<mu2e::HelixSeed> HelixSeedCollection;
+   typedef art::Ptr<mu2e::HelixSeed> HelixSeedPtr;
+   typedef std::vector<mu2e::HelixSeedPtr> HelixSeedPtrCollection;
 } // namespace mu2e
 
 #endif /* RecoDataProducts_HelixSeed_hh */

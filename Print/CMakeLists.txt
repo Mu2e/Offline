@@ -20,7 +20,6 @@ cet_make_library(
       src/EventWindowMarkerPrinter.cc
       src/GenParticlePrinter.cc
       src/HelixSeedPrinter.cc
-      src/KalRepPrinter.cc
       src/KalSeedPrinter.cc
       src/MCTrajectoryPrinter.cc
       src/PhysicalVolumePrinter.cc
@@ -41,11 +40,9 @@ cet_make_library(
       src/StrawHitPrinter.cc
       src/SurfaceStepPrinter.cc
       src/TimeClusterPrinter.cc
-      src/TrackClusterMatchPrinter.cc
       src/TrackSummaryPrinter.cc
       src/TriggerInfoPrinter.cc
       src/TriggerResultsPrinter.cc
-      src/TrkCaloIntersectPrinter.cc
     LIBRARIES PUBLIC
       KinKal::General
       Offline::ConditionsService
@@ -87,21 +84,21 @@ cet_build_plugin(DataProductDump art::module
     REG_SOURCE src/DataProductDump_module.cc
     LIBRARIES REG
       Offline::Print
-      
+
 )
 
 cet_build_plugin(PrintModule art::module
     REG_SOURCE src/PrintModule_module.cc
     LIBRARIES REG
       Offline::Print
-      
+
 )
 
 cet_build_plugin(RunSubrunEvent art::module
     REG_SOURCE src/RunSubrunEvent_module.cc
     LIBRARIES REG
       Offline::Print
-      
+
 )
 
 
