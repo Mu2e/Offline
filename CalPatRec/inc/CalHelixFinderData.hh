@@ -4,8 +4,8 @@
 
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 
-#include "BTrk/TrkBase/TrkErrCode.hh"
-#include "BTrk/TrkBase/TrkParticle.hh"
+#include "Offline/BTrkLegacy/inc/TrkErrCode.hh"
+#include "Offline/BTrkLegacy/inc/TrkParticle.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
@@ -14,12 +14,11 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/DataProducts/inc/Helicity.hh"
-
 #include "Offline/TrkReco/inc/TrkFaceData.hh"
+#include "Offline/BTrkLegacy/inc/HelixParams.hh"
 
 #include <array>
 
-class HelixTraj;
 
 namespace mu2e {
 

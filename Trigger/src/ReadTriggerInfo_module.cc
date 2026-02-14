@@ -472,7 +472,7 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------------//
   void ReadTriggerInfo::trigPathVal(const int Index, TriggerResultsNavigator& trigNavig, summaryInfoHist_& Hist) {
-    const std::string path = trigNavig.getTrigPathName(Index);
+    const std::string path = trigNavig.getTrigPathNameByIndex(Index);
     const unsigned lastModule = trigNavig.indexLastModule(path);
     auto h = Hist._hTrigModules[Index];
     if(!h) throw cet::exception("BADCONFIG") << __func__ << ": Trigger path index " << Index << " is out of bounds for initialized histograms\n";
@@ -793,17 +793,17 @@ namespace mu2e {
     //initialize bin labels
     if(_sumHist._hTrigInfo[30]->Integral() <= 0.) {
       for (unsigned int i=0; i< trigNavig.getTrigPaths().size(); ++i) {
-        const std::string path = trigNavig.getTrigPathName(i);
+        const std::string path = trigNavig.getTrigPathNameByIndex(i);
         _sumHist._hTrigInfo[30]->GetXaxis()->SetBinLabel(_sumHist._hTrigInfo[30]->FindBin(i), path.c_str());
       }
     }
 
     //fill the histogram with the accepted trigger bits
     for (unsigned int i=0; i< trigNavig.getTrigPaths().size(); ++i) {
-      const std::string path = trigNavig.getTrigPathName(i);
+      const std::string path = trigNavig.getTrigPathNameByIndex(i);
       if(trigNavig.accepted(path)) {
-        _sumHist._hTrigBits->Fill(trigNavig.findTrigPath(path));
-        _sumHist._hTrigInfo[15]->Fill(trigNavig.findTrigPathID(path)); //accepted path IDs
+        _sumHist._hTrigBits->Fill(trigNavig.getTrigPathIndex(path));
+        _sumHist._hTrigInfo[15]->Fill(trigNavig.getTrigBitByName(path)); //accepted path IDs
         _sumHist._hTrigInfo[30]->Fill(i);
       }
     }
@@ -863,7 +863,7 @@ namespace mu2e {
 
     // Loop through all trigger paths, storing trigger info
     for (unsigned i=0; i < _trigPaths.size(); ++i) {
-      std::string pathName = trigNavig.getTrigPathName(i);
+      std::string pathName = trigNavig.getTrigPathNameByIndex(i);
       std::string& path = pathName;
       if(_diagLevel > 1) printf("[ReadTriggerInfo::%s] : Checking path %s\n", __func__, path.c_str());
 

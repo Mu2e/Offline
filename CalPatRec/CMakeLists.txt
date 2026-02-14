@@ -10,12 +10,10 @@ cet_make_library(
       src/DeltaFinder_types.cc
       src/DeltaSeed.cc
       src/HlPrint_ComboHit.cc
-      src/ObjectDumpUtils.cc
       src/ProtonCandidate.cc
     LIBRARIES PUBLIC
-      
+
       Offline::BFieldGeom
-      Offline::BTrkData
       Offline::CalorimeterGeom
       Offline::DataProducts
       Offline::GeometryService
@@ -24,6 +22,7 @@ cet_make_library(
       Offline::RecoDataProducts
       Offline::TrackerGeom
       Offline::TrkReco
+      Offline::BTrkLegacy
       ROOT::Physics
 )
 
@@ -31,7 +30,7 @@ cet_build_plugin(AgnosticHelixFinder art::module
     REG_SOURCE src/AgnosticHelixFinder_module.cc
     LIBRARIES REG
         Offline::CalPatRec
-      
+
       Offline::BFieldGeom
       Offline::CalorimeterGeom
       Offline::ConfigTools
@@ -45,7 +44,7 @@ cet_build_plugin(CalHelixFinder art::module
     REG_SOURCE src/CalHelixFinder_module.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
+
       Offline::BFieldGeom
       Offline::CalorimeterGeom
       Offline::ConfigTools
@@ -59,7 +58,7 @@ cet_build_plugin(CalTimePeakFinder art::module
     REG_SOURCE src/CalTimePeakFinder_module.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
+
       Offline::CalorimeterGeom
       Offline::ConfigTools
       Offline::GeometryService
@@ -72,7 +71,7 @@ cet_build_plugin(ComboHitFilter art::module
     REG_SOURCE src/ComboHitFilter_module.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
+
       Offline::CalorimeterGeom
       Offline::GeometryService
       Offline::MCDataProducts
@@ -85,7 +84,6 @@ cet_build_plugin(DeltaFinderAna art::module
     REG_SOURCE src/DeltaFinderAna_module.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
       Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts
@@ -97,7 +95,7 @@ cet_build_plugin(DeltaFinder art::module
     REG_SOURCE src/DeltaFinder_module.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
+
       Offline::CalorimeterGeom
       Offline::GeometryService
       Offline::Mu2eUtilities
@@ -105,25 +103,11 @@ cet_build_plugin(DeltaFinder art::module
       Offline::TrackerGeom
 )
 
-cet_build_plugin(MergeHelixFinder art::module
-    REG_SOURCE src/MergeHelixFinder_module.cc
-    LIBRARIES REG
-      Offline::CalPatRec
-      
-      Offline::BTrkData
-      Offline::CalorimeterGeom
-      Offline::ConfigTools
-      Offline::GeometryService
-      Offline::Mu2eUtilities
-      Offline::RecoDataProducts
-      Offline::TrkReco
-)
-
 cet_build_plugin(PhiClusterFinder art::module
     REG_SOURCE src/PhiClusterFinder_module.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
+
       Offline::ConfigTools
       Offline::GeneralUtilities
       Offline::Mu2eUtilities
@@ -135,7 +119,6 @@ cet_build_plugin(PrefetchData art::module
     REG_SOURCE src/PrefetchData_module.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
       Offline::GeometryService
       Offline::MCDataProducts
       Offline::Mu2eUtilities
@@ -147,7 +130,7 @@ cet_build_plugin(TZClusterFinder art::module
     REG_SOURCE src/TZClusterFinder_module.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
+
       Offline::ConfigTools
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
@@ -157,7 +140,7 @@ cet_build_plugin(CalHelixFinderDiag art::tool
     REG_SOURCE src/CalHelixFinderDiag_tool.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
+
       Offline::MCDataProducts
       Offline::Mu2eUtilities
 )
@@ -166,7 +149,7 @@ cet_build_plugin(AgnosticHelixFinderDiag art::tool
     REG_SOURCE src/AgnosticHelixFinderDiag_tool.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
+
       Offline::MCDataProducts
       Offline::Mu2eUtilities
 )
@@ -176,8 +159,7 @@ cet_build_plugin(CalTimePeakFinderDiag art::tool
     REG_SOURCE src/CalTimePeakFinderDiag_tool.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
-      Offline::BTrkData
+
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
       Offline::TrackerGeom
@@ -187,7 +169,7 @@ cet_build_plugin(DeltaFinderDiag art::tool
     REG_SOURCE src/DeltaFinderDiag_tool.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
+
       Offline::DataProducts
       Offline::MCDataProducts
       Offline::Mu2eUtilities
@@ -197,7 +179,7 @@ cet_build_plugin(MergePatRecDiag art::tool
     REG_SOURCE src/MergePatRecDiag_tool.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
+
       Offline::Mu2eUtilities
 )
 
@@ -205,7 +187,7 @@ cet_build_plugin(PhiClusterFinderDiag art::tool
     REG_SOURCE src/PhiClusterFinderDiag_tool.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
+
       Offline::MCDataProducts
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
@@ -221,7 +203,7 @@ cet_build_plugin(TZClusterFinderDiag art::tool
     REG_SOURCE src/TZClusterFinderDiag_tool.cc
     LIBRARIES REG
       Offline::CalPatRec
-      
+
       Offline::MCDataProducts
       Offline::Mu2eUtilities
       Offline::RecoDataProducts

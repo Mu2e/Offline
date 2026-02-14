@@ -76,6 +76,7 @@ namespace mu2e {
           fhicl::Atom<unsigned>                   minHitSelect           {Name("MinHitSelect"),           Comment("Minimun hits to copy full time cluster without any filtering") };
           fhicl::Atom<float>                      minCutMVA              {Name("MinCutMVA"),              Comment("Minimun value of NN output to keep hit") };
           fhicl::Atom<bool>                       splitPhi               {Name("SplitPhi"),               Comment("Split time cluster with phi info") };
+          fhicl::Atom<bool>                       reqphi                 {Name("RequirePhi"),             Comment("Don't include time clusters before split into phi clusters") };
           fhicl::Atom<float>                      maxDeltaPhi            {Name("MaxDeltaPhi"),            Comment("Max delta phi between consecutive hits in cluster") };
           fhicl::Atom<int>                        maxNdiff               {Name("MaxNdiff"),               Comment("Max difference of number of hits between duplicated clusters") };
           fhicl::Atom<int>                        diag                   {Name("Diag"),                   Comment("Diag level"), 0 };
@@ -108,6 +109,7 @@ namespace mu2e {
       unsigned                                        minHitSelect_;
       float                                           minCutMVA_;
       bool                                            splitPhi_;
+      bool                                            reqphi_;
       float                                           maxDeltaPhi_;
       int                                             maxNdiff_;
       int                                             diag_;
@@ -164,6 +166,7 @@ namespace mu2e {
     minHitSelect_        (config().minHitSelect()),
     minCutMVA_           (config().minCutMVA()),
     splitPhi_            (config().splitPhi()),
+    reqphi_              (config().reqphi()),
     maxDeltaPhi_         (config().maxDeltaPhi()),
     maxNdiff_            (config().maxNdiff()),
     diag_                (config().diag()),
@@ -235,12 +238,14 @@ namespace mu2e {
 
 
       //flag duplicated sequences so that we don't save them
-      flagDuplicates(chcol,timeCandidates,phiCandidates);
+      if (!reqphi_)
+        flagDuplicates(chcol,timeCandidates,phiCandidates);
 
 
       // Finally create the timeClusters
       tccol.reserve(64);
-      fillTCcol(timeCandidates,chcol,tccol);
+      if (!reqphi_)
+        fillTCcol(timeCandidates,chcol,tccol);
       fillTCcol(phiCandidates,chcol,tccol);
 
       if (diag_) fillDiag(timeCandidates, chcol, tccol);
@@ -388,7 +393,7 @@ namespace mu2e {
            // Sort hits in ascending azimuthal angle
            auto& hits = tc.strawIdx_;
            sort(hits.begin(),hits.end(),[&chPhi](const int a, const int b){return chPhi[a]<chPhi[b];});
-           if (hits.size()<minNSHits_) return;
+           if (hits.size()<minNSHits_) continue;
 
            // Start by fast forwarding to first large gap in phi.
            // note: (idx+vector_size)%vector_size maps negative and overflow indices -> valid vector indices
