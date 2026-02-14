@@ -2,7 +2,6 @@
 
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/TrkReco/inc/RobustHelixFinderData.hh"
-#include "BTrk/TrkBase/HelixTraj.hh"
 
 using CLHEP::HepVector;
 using CLHEP::HepSymMatrix;

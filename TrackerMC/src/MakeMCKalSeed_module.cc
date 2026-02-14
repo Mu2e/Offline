@@ -17,7 +17,6 @@
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
-#include "BTrk/BField/BField.hh"
 // utiliities
 // persistent data
 #include "Offline/MCDataProducts/inc/SimParticle.hh"

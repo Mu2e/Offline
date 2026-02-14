@@ -41,6 +41,7 @@ CaloReco : { @table::CaloReco
       processorStrategy   : "TemplateFit"
       digiSampling        : @local::HitMakerDigiSampling
       ProtonBunchTimeTag  : "EWMProducer"
+      UseProtonBunchTime  : true
       maxChi2Cut          : 2.0
       maxPlots            : 50
       diagLevel           : 0

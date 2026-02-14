@@ -1,3 +1,4 @@
+/*
 #ifndef TrkPatRec_KalSeedFit_types_hh
 #define TrkPatRec_KalSeedFit_types_hh
 
@@ -35,3 +36,4 @@ namespace mu2e {
   }
 }
 #endif
+*/
