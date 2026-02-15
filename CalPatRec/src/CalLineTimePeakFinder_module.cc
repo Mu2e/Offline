@@ -102,8 +102,8 @@ namespace mu2e {
       fhicl::Atom<int>                           min_tc_hits            {Name("MinTimeClusterHits"),         Comment("Min NHits in TimeCluster") };
       fhicl::Atom<float>                         min_calo_cluster_energy{Name("MinCaloClusterEnergy"),       Comment("Min Calo Cluster Energy") };
       fhicl::Atom<float>                         max_edep_avg           {Name("MaxEDepAvg"),                 Comment("Max Avg EDep") };
-      fhicl::Atom<float>                         hit_time_sigma_thresh  {Name("HitTimeSigmaThresh"),         Comment("Time consistency threshold for hits to be added to the line (in sigma)") };
-      fhicl::Atom<float>                         hit_xy_dist_thresh     {Name("HitXYDistThresh"),            Comment("Spatial consistency threshold for hits to be added to the line (in mm)")};
+      fhicl::Atom<float>                         hit_time_sigma_thresh  {Name("HitTimeSigmaThresh"),         Comment("Time consistency threshold for hits to be added to the cluster (in sigma)") };
+      fhicl::Atom<float>                         hit_xy_dist_thresh     {Name("HitXYDistThresh"),            Comment("Spatial consistency threshold for hits to be added to the cluster (in mm)")};
       fhicl::Atom<float>                         stopping_target_radius {Name("StoppingTargetRadius"),       Comment("Radius of the stopping target in cone-making (in mm)")};
       fhicl::Atom<std::string>                   fit_direction          {Name("FitDirection"),               Comment("Fit Direction in Search (\"downstream\" or \"upstream\")") };
     };
@@ -263,7 +263,7 @@ namespace mu2e {
     const size_t n_hits = combo_hit_col_->size();
     hit_indices.reserve(100);
     for(size_t i_hit = 0; i_hit < n_hits; ++i_hit) {
-      if(hits_used_in_tcs_.count(i_hit) > 0) continue; // this hit has already been used in a line, so skip it
+      if(hits_used_in_tcs_.count(i_hit) > 0) continue; // this hit has already been used in a cluster, so skip it
       const auto& hit = combo_hit_col_->at(i_hit);
       if(!isGoodHit(hit)) continue; // skip hits that don't pass selection
       const CLHEP::Hep3Vector hit_pos(hit.pos().x(), hit.pos().y(), hit.pos().z());
@@ -311,7 +311,7 @@ namespace mu2e {
     const bool valid_data = findData(event);
 
     //-----------------------------------------------------------------------------
-    // Search in each time cluster for line candidates
+    // Search around each calo cluster for time peaks
     //-----------------------------------------------------------------------------
 
     if(valid_data) {
