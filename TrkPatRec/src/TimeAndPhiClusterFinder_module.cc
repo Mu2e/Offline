@@ -267,7 +267,7 @@ namespace mu2e {
       }
       auto sortFcn = [&chcol](unsigned i1, unsigned i2){return chcol[i1].correctedTime() < chcol[i2].correctedTime();};
       sort(chGood.begin(),chGood.end(),sortFcn);
-
+      if(chGood.empty()) return;
 
       // Fill the time histogram with hit corrected times (add buffer to hist boundaries). Add calo hits if requested
       float tmax     = chcol[chGood.back()].correctedTime() + 4*maxTimeDT_;
