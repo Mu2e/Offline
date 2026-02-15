@@ -58,6 +58,7 @@ namespace mu2e {
 
   void ConcatenationFilter::endJob() {
     mf::LogInfo log("ConcatenationFilter summary");
+    log << "\n";
     log << "==========ConcatenationFilter summary==========\n";
     log << std::left << std::setw(25) << "\tNo. input events:"      << inputEvents     << "\n";
     log << std::left << std::setw(25) << "\tNo. kept events:"       << keptEvents      << "\n";

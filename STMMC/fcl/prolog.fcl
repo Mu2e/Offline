@@ -211,7 +211,7 @@ ROOTAnalysisDump : {
         MWDResultsTag : @local::DataProducts.PeakEnergies.LaBr
     }
     SimParticleVirtualDetectorBacktrace : {
-        StepPointMCsTags : {
+        StepPointMCsTag : {
             Stage1 : @local::DataProducts.Stage1.StepPointMCs
             Stage2 : @local::DataProducts.Stage2.StepPointMCs
         }

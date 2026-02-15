@@ -69,19 +69,19 @@ physics: {
     #   EnergyWindowSize : 0.1
     # }
 
-    # HPGe waveform and analysis ROOT files
-    HPGeWaveforms : {
+    # HPGe energy depositions in crystal - MC truth
+    HPGeEDeps : {
       module_type : HPGeTree
-      StepPointMCsTag : @local::ROOTAnalysisDump.Stage2.StepPointMCsTagSTMDet
-      SimParticlemvTag : @local::ROOTAnalysisDump.Stage2.SimParticlemvTag
+      StepPointMCsTag : "compressSTMDet:STMDet"
+      SimParticlemvTag : "compressSTMDet:"
       Detector: @local::ROOTAnalysisDump.Stage2.DetectorName.HPGe
     }
-    HPGeZSWaveforms : {
-      module_type : @nil # Doesn't exist yet!
-      StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagSTMDet
-      SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag # TODO: Remove the SimParticle dependency
-      Detector: @local::SimplifyStage2Data.DetectorName.HPGe
-    }
+#    HPGeZSWaveforms : {
+#      module_type : @nil # Doesn't exist yet!
+#      StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagSTMDet
+#      SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag # TODO: Remove the SimParticle dependency
+#      Detector: @local::SimplifyStage2Data.DetectorName.HPGe
+#    }
     HPGeMWDspectra : {
       module_type : MWDTree
       STMMWDDigiTag : @local::STMMCAnalysis.MWD.HPGe.STMMWDDigiTag
@@ -100,8 +100,8 @@ physics: {
     }
   }
 
-  o1 : [@nil] # Populate me!
+  o1 : ["HPGeEDeps"] # Populate me!
   end_paths: [o1]
 }
 
-services.TFileService.fileName : @nil # Populate me!
+services.TFileService.fileName : "tree.root" # Populate me!
