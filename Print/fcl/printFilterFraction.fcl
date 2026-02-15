@@ -20,7 +20,10 @@ physics :{
       PrintEvent : false
       verbose : 0
       PrintSubRun : true
-      CosmicLivetimePrinter : {
+      FilterFractionPrinter : {
+        verbose : 1
+      }
+      PrescaleFilterFractionPrinter : {
         verbose : 1
       }
     } # printModule

@@ -13,6 +13,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "CLHEP/Random/RandFlat.h"
+#include "Offline/DataProducts/inc/PrescaleFilterFraction.hh"
 
 namespace mu2e
 {
@@ -22,7 +23,7 @@ namespace mu2e
     public:
 
       struct Config {
-        fhicl::Atom<float> nPrescale { fhicl::Name("nPrescale"), fhicl::Comment("Average number of events to process for 1 to pass the filter"), 1.0};
+        fhicl::Atom<unsigned> nPrescale { fhicl::Name("nPrescale"), fhicl::Comment("Average number of events to process for 1 to pass the filter")};
         fhicl::Atom<int>   debugLevel{ fhicl::Name("debugLevel"),fhicl::Comment("debug level"),0 };
       };
       using Parameters = art::EDFilter::Table<Config>;
@@ -39,13 +40,14 @@ namespace mu2e
       RandomPrescaleFilter & operator = (RandomPrescaleFilter &&) = delete;
 
       bool filter(art::Event & e) override;
-      virtual bool endRun(art::Run& run ) override;
+      bool endSubRun(art::SubRun& subrun ) override;
 
     private:
       art::RandomNumberGenerator::base_engine_t& engine_;
       CLHEP::RandFlat randflat_;
       int debug_;
-      unsigned nevt_, npass_;
+      uint32_t prescale_;
+      uint64_t nevt_, npass_;
   };
 
   RandomPrescaleFilter::RandomPrescaleFilter(const Parameters& conf) :
@@ -53,8 +55,11 @@ namespace mu2e
     engine_(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
     randflat_( engine_, 0.0, conf().nPrescale() ),
     debug_(conf().debugLevel()),
+    prescale_(conf().nPrescale()),
     nevt_(0), npass_(0)
-    {}
+    {
+      produces<mu2e::FilterFraction,art::InSubRun>();
+    }
 
   inline bool RandomPrescaleFilter::filter(art::Event & event)
   {
@@ -64,10 +69,15 @@ namespace mu2e
     return retval;
   }
 
-  bool RandomPrescaleFilter::endRun( art::Run& run ) {
+  bool RandomPrescaleFilter::endSubRun( art::SubRun& subrun ) {
+    auto ff = std::make_unique<PrescaleFilterFraction>(prescale_, nevt_,npass_);
+    subrun.put(std::move(ff),"",art::fullSubRun());
     if(debug_ > 0 && nevt_ > 0){
-      std::cout << moduleDescription().moduleLabel() << " passed " << npass_ << " events out of " << nevt_ << " for a ratio of " << float(npass_)/float(nevt_) << std::endl;
+      double frac = prescale_ > 0 ? 1.0/double(prescale_) : 0.0;
+      std::cout << moduleDescription().moduleLabel() << " passed " << npass_ << " events out of " << nevt_ << " for a ratio of " << float(npass_)/float(nevt_) << " with an expected fraction of " << frac  << std::endl;
     }
+    // reset
+    npass_ = 0; nevt_ = 0;
     return true;
   }
 

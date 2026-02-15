@@ -59,9 +59,16 @@
  <class name="mu2e::STMTestBeamEventInfo" />
  <class name="art::Wrapper<mu2e::STMTestBeamEventInfo>" />
 
- <!--  ********* general  ********* -->
+<!--  ********* filter  ********* -->
+ <class name="mu2e::FilterFraction"/>
+ <class name="art::Wrapper<mu2e::FilterFraction>" />
+ <class name="mu2e::PrescaleFilterFraction"/>
+ <class name="art::Wrapper<mu2e::PrescaleFilterFraction>" />
+
+<!--  ********* general  ********* -->
  <class name="mu2e::SurfaceIdDetail"/>
  <class name="mu2e::SurfaceIdEnum"/>
  <class name="mu2e::SurfaceId"/>
+
 
 </lcgdict>

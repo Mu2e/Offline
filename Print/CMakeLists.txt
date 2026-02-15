@@ -19,6 +19,8 @@ cet_make_library(
       src/CrvStepPrinter.cc
       src/EventWindowMarkerPrinter.cc
       src/GenParticlePrinter.cc
+      src/FilterFractionPrinter.cc
+      src/PrescaleFilterFractionPrinter.cc
       src/HelixSeedPrinter.cc
       src/KalSeedPrinter.cc
       src/MCTrajectoryPrinter.cc
