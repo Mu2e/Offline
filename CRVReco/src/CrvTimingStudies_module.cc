@@ -10,6 +10,7 @@
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/CRVConditions/inc/CRVOrdinal.hh"
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -49,6 +50,7 @@ namespace mu2e
     {
       fhicl::Atom<std::string> crvRecoPulsesModuleLabel{ Name("crvRecoPulseModuleLabel"), Comment("CrvRecoPulse Label")};
       fhicl::Atom<double>      PEthreshold{ Name("PEthreshold"), Comment("PE threshold")};
+      fhicl::Atom<bool>        removeTimeOffsets{ Name("removeTimeOffsets"), Comment("remove time offsets added by reco")};
     };
 
     using Parameters = art::EDAnalyzer::Table<Config>;
@@ -61,16 +63,19 @@ namespace mu2e
     private:
     std::string   _crvRecoPulsesModuleLabel;
     double        _PEthreshold;
+    bool          _removeTimeOffsets;
 
     std::map<std::pair<int,int>,TH1F*>  _histTimeDiffs;
 
     ProditionsHandle<CRVOrdinal> _crvChannelMap_h;
+    ProditionsHandle<CRVCalib>   _calib_h;
   };
 
   CrvTimingStudies::CrvTimingStudies(const Parameters& conf) :
     art::EDAnalyzer{conf},
     _crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
-    _PEthreshold(conf().PEthreshold())
+    _PEthreshold(conf().PEthreshold()),
+    _removeTimeOffsets(conf().removeTimeOffsets())
   {
   }
 
@@ -92,6 +97,54 @@ namespace mu2e
     if(!event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection)) return;
 
     auto const& crvChannelMap = _crvChannelMap_h.get(event.id());
+    auto const& calib = _calib_h.get(event.id());
+
+    static bool firstEvent=true;
+    if(firstEvent)
+    {
+      firstEvent=false;
+
+      //store channel map, pedestals and calibration constants in the file,
+      //so that it can later be used to write a full calibration set
+      //of pedestals, calib consts, and time offsets
+
+      GeomHandle<CosmicRayShield> CRS;
+      const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
+      art::ServiceHandle<art::TFileService> tfs;
+
+      TTree *treeChannelMap = tfs->make<TTree>("channelMap","channelMap");
+      size_t channel;
+      int    roc, feb, febChannel;
+      treeChannelMap->Branch("channel", &channel);
+      treeChannelMap->Branch("roc", &roc);
+      treeChannelMap->Branch("feb", &feb);
+      treeChannelMap->Branch("febChannel", &febChannel);
+
+      for(channel=0; channel<counters.size()*CRVId::nChanPerBar; ++channel)
+      {
+        if(!crvChannelMap.onlineExists(channel)) continue;
+        CRVROC onlineChannel  = crvChannelMap.online(channel);
+        roc         = onlineChannel.ROC();
+        feb         = onlineChannel.FEB();
+        febChannel  = onlineChannel.FEBchannel();
+        treeChannelMap->Fill();
+      }
+
+      TTree *treeCalib = tfs->make<TTree>("crvCalib","crvCalib");
+      double pedestal, calibPulseHeight, calibPulseArea;
+      treeCalib->Branch("channel", &channel);
+      treeCalib->Branch("pedestal", &pedestal);
+      treeCalib->Branch("calibPulseHeight", &calibPulseHeight);
+      treeCalib->Branch("calibPulseArea", &calibPulseArea);
+
+      for(channel=0; channel<counters.size()*CRVId::nChanPerBar; ++channel)
+      {
+        pedestal = calib.pedestal(channel);
+        calibPulseHeight = calib.pulseHeight(channel);
+        calibPulseArea = calib.pulseArea(channel);
+        treeCalib->Fill();
+      }
+    }
 
     int previousOfflineChannel=-1;
     std::map<uint16_t,std::vector<double> > fpgaTimes;
@@ -113,7 +166,12 @@ namespace mu2e
       uint16_t febChannel     = onlineChannel.FEBchannel();
 
       uint16_t fpgaIndex      = ((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+(feb-1)*CRVId::nChanPerFEB+febChannel)/(CRVId::nChanPerFEB/CRVId::nFPGAPerFEB);
-//      uint16_t fpgaIndex      = ((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+(feb-1)*CRVId::nChanPerFEB+febChannel)/(CRVId::nChanPerFEB/8);
+
+      if(_removeTimeOffsets) //remove time offsets introduced during reconstruction to see the "pure" time differences, e.g. to generate new time calibration tables
+      {
+        double timeOffset = calib.timeOffset(offlineChannel);
+        recoPulseTime-=timeOffset;
+      }
 
       fpgaTimes[fpgaIndex].push_back(recoPulseTime);
     }
@@ -140,10 +198,7 @@ namespace mu2e
         art::ServiceHandle<art::TFileService> tfs;
         _histTimeDiffs[histIndex] = tfs->make<TH1F>(Form("fpgaTimeDiff_%i_%i",fpga1->first,fpga2->first),
                                                     Form("Time Diffs between FGPAs %i and %i;time difference [ns];Counts",fpga1->first,fpga2->first),
-                                                    100,-50,50);
-//        _histTimeDiffs[histIndex] = tfs->make<TH1F>(Form("AFETimeDiff_%i_%i",fpga1->first,fpga2->first),
-//                                                    Form("Time Diffs between AFEs %i and %i;time difference [ns];Counts",fpga1->first,fpga2->first),
-//                                                    100,-50,50);
+                                                    300,-150,150);
       }
 
       double timeDiff=fpga1->second-fpga2->second;

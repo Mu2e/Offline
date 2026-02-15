@@ -52,7 +52,7 @@ namespace mu2e
       fhicl::Atom<int>         spectrumNPeaks{Name("spectrumNPeaks"), Comment("maximum number of peaks searched by TSpectrum"), 100};
       fhicl::Atom<double>      spectrumPeakSigma{Name("spectrumPeakSigma"), Comment("TSpectrum search parameter sigma"), 4.0};
       fhicl::Atom<double>      spectrumPeakThreshold{Name("spectrumPeakThreshold"), Comment("TSpectrum search parameter threshold"), 0.01};
-      //fhicl::Atom<double>      peakRatioTolerance{Name("peakRatioTolerance"), Comment("allowed deviation of the ratio between 1PE peak and 2PE peak from 2.0"), 0.2};
+      fhicl::Atom<double>      maxFitDifference{Name("maxFitDifference"), Comment("maximum Difference between the TSpectrum peak and the fitted peak. Indicates fit problems."), 100.0};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
@@ -62,8 +62,6 @@ namespace mu2e
     void analyze(const art::Event& e);
     void beginRun(const art::Run&);
     void endJob();
-//    template<size_t N>
-//    bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, std::array<TF1,N> &functions, double &SPEpeak, double minPeak);
     bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak);
 
     private:
@@ -76,7 +74,7 @@ namespace mu2e
     int                _spectrumNPeaks;
     double             _spectrumPeakSigma;
     double             _spectrumPeakThreshold;
-//    double             _peakRatioTolerance;
+    double             _maxFitDifference;
     std::string        _tmpDBfileName;
     std::vector<TH1F*> _calibHistsPulseArea;
     std::vector<TH1F*> _calibHistsPulseHeight;
@@ -85,9 +83,6 @@ namespace mu2e
 
     std::vector<double> _pedestals;
     std::vector<double> _timeOffsets;
-
-    std::pair<int,int>  _firstRunSubrun;
-    std::pair<int,int>  _lastRunSubrun;
   };
 
 
@@ -106,7 +101,7 @@ namespace mu2e
     _spectrumNPeaks(conf().spectrumNPeaks()),
     _spectrumPeakSigma(conf().spectrumPeakSigma()),
     _spectrumPeakThreshold(conf().spectrumPeakThreshold()),
-//    _peakRatioTolerance(conf().peakRatioTolerance()),
+    _maxFitDifference(conf().maxFitDifference()),
     _tmpDBfileName(conf().tmpDBfileName())
   {
   }
@@ -150,13 +145,12 @@ namespace mu2e
     treePedestal->Branch("channel", &channel);
     treePedestal->Branch("pedestal", &pedestal);
 
-//    std::array functions={TF1("calibPeak1","gaus"), TF1("calibPeak2","gaus"), TF1("calibPeak3","gaus")}; //only need to fit three peaks
     TF1 function("calibPeak","gaus");
-    TSpectrum spectrum(_spectrumNPeaks); //any value of 3 or less results in a "Peak buffer full" warning.
+    TSpectrum spectrum(_spectrumNPeaks);
 
     std::ofstream outputFile;
     outputFile.open(_tmpDBfileName);
-    outputFile<<"TABLE CRVSiPM "<<_firstRunSubrun.first<<":"<<_firstRunSubrun.second<<"-"<<_lastRunSubrun.first<<":"<<_lastRunSubrun.second<<std::endl;
+    outputFile<<"TABLE CRVSiPM"<<std::endl;
     outputFile<<"#channel, pedestal, calibPulseHeight, calibPulseArea"<<std::endl;
 
     for(channel=0; channel<_pedestals.size(); ++channel)
@@ -169,7 +163,6 @@ namespace mu2e
         else hist=_calibHistsPulseHeight.at(channel);
 
         double SPEpeak=-1;
-//        if(!FindSPEpeak(hist, spectrum, functions, SPEpeak, (i==0?_minPeakPulseHeight:_minPeakPulseArea)))
         if(!FindSPEpeak(hist, spectrum, function, SPEpeak, (i==0?_minPeakPulseHeight:_minPeakPulseArea)))
         {
           calibValue[i]=-1;
@@ -220,10 +213,7 @@ namespace mu2e
         _pedestals[channelIndex] = calib.pedestal(channelIndex);
         _timeOffsets[channelIndex] = calib.timeOffset(channelIndex);
       }
-
-      _firstRunSubrun=std::pair<int,int>(event.run(),event.subRun());
     }
-    _lastRunSubrun=std::pair<int,int>(event.run(),event.subRun());
 
     for(auto iter=crvRecoPulseCollection->begin(); iter!=crvRecoPulseCollection->end(); ++iter)
     {
@@ -269,48 +259,10 @@ namespace mu2e
     hist->Fit(&function, "QR");
     SPEpeak = function.GetParameter(1);
 
+    if(fabs(SPEpeak-x)>_maxFitDifference) return false;
+    if(SPEpeak<minPeak) return false;
     return true;
   }
-
-/*
-  template<size_t N>
-  bool CrvCalibration::FindSPEpeak(TH1F *hist, TSpectrum &spectrum, std::array<TF1,N> &functions, double &SPEpeak, double minPeak)
-  {
-    if(hist->GetEntries()<_minHistEntries) return false; //not enough data
-
-    size_t nPeaks = spectrum.Search(hist,_spectrumPeakSigma,"nodraw",_spectrumPeakThreshold);
-    if(nPeaks==0) return false;
-
-    //peaks are returned sorted by Y
-    double *peaksX = spectrum.GetPositionX();
-    std::vector<double> fittedPeaks;
-    for(size_t iPeak=0; iPeak<nPeaks && iPeak<functions.size(); ++iPeak)
-    {
-      double x=peaksX[iPeak];
-      if(hist->FindBin(x*_fitRangeStart)==hist->FindBin(x*_fitRangeEnd)) continue; //fit range start/end are in the same bin
-      functions[iPeak].SetRange(x*_fitRangeStart,x*_fitRangeEnd);
-      functions[iPeak].SetParameter(1,x);
-      hist->Fit(&functions[iPeak], "QR+");
-      fittedPeaks.emplace_back(functions[iPeak].GetParameter(1));
-    }
-    if(fittedPeaks.size()==0) return false;
-
-    int peakToUse=-1;
-    //only need to test two highest peaks (=first two entries in vector)
-    //one of the peaks could be due to baseline fluctuations
-    for(size_t iPeak=0; iPeak<fittedPeaks.size() && iPeak<2; ++iPeak)
-    for(size_t jPeak=iPeak+1; jPeak<fittedPeaks.size(); ++jPeak)
-    {
-      if(fabs(fittedPeaks.at(jPeak)/fittedPeaks.at(iPeak)-2.0)<_peakRatioTolerance) peakToUse=iPeak;
-    }
-    if(peakToUse==-1) return false;
-    if(fittedPeaks.at(peakToUse)<minPeak) return false;
-
-    SPEpeak = fittedPeaks.at(peakToUse);
-
-    return true;
-  }
-*/
 
 } // end namespace mu2e
 
