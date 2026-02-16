@@ -388,35 +388,35 @@ void STMMovingWindowDeconvolution::find_peaks() {
     lowest_height_time = -1;
     bool is_armed = true; // NEW: Ensure we cross ABOVE threshold before re-arming
 
-    for(i = M; i < nADCs; i++){
-        // Only allow a new peak if we are 'armed' (meaning we've been above threshold)
-        if (is_armed && averaged_data[i] < trigger_threshold) {
-            if (averaged_data[i] < lowest_height) {
-                lowest_height = averaged_data[i];
-                lowest_height_time = i;
-            }
-        }
-        else if (averaged_data[i] >= trigger_threshold) {
-            // If we are above threshold, we are officially 'armed' and ready for a new pulse
-            is_armed = true;
+    for(i = M; i < nADCs; i++) {
+      // Only allow a new peak if we are 'armed' (meaning we've been above threshold)
+      if (is_armed && averaged_data[i] < trigger_threshold) {
+          if (averaged_data[i] < lowest_height) {
+              lowest_height = averaged_data[i];
+              lowest_height_time = i;
+          }
+      }
+      else if (averaged_data[i] >= trigger_threshold) {
+        // If we are above threshold, we are officially 'armed' and ready for a new pulse
+        is_armed = true;
 
-            // If we just finished a pulse, record it
-            if (lowest_height_time != -1)
-                double amplitude = std::abs(lowest_height - baseline_mean);
-                if (amplitude >= 200.0) {
-                    peak_heights.push_back(lowest_height - baseline_mean);
-                    peak_times.push_back(lowest_height_time);
-                    // Move forward
-                    i += (M + 2 * L);
-                    is_armed = false; // Force the algorithm to wait for baseline crossing
-                    if (i >= nADCs) break;
-                }
-                lowest_height = 0;
-                lowest_height_time = -1;
-            }
-        }
-    }
-}
+        // If we just finished a pulse, record it
+        if (lowest_height_time != -1) {
+            double amplitude = std::abs(lowest_height - baseline_mean);
+            if (amplitude >= 200.0) {
+                peak_heights.push_back(lowest_height - baseline_mean);
+                peak_times.push_back(lowest_height_time);
+                // Move forward
+                i += (M + 2 * L);
+                is_armed = false; // Force the algorithm to wait for baseline crossing
+                if (i >= nADCs) break;
+            };
+            lowest_height = 0;
+            lowest_height_time = -1;
+        };
+      };
+    };
+  };
 
   void STMMovingWindowDeconvolution::endJob() {
     mf::LogInfo log("MWD summary");

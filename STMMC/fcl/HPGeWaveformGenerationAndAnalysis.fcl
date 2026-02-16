@@ -75,7 +75,7 @@ physics : {
       thresholdgrad : @local::STMMCAnalysis.MWD.HPGe.thresholdgrad
       defaultBaselineMean : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineMean.suppressed
       defaultBaselineSD : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineSD.suppressed
-      makeTTreeMWD: false
+      makeTTreeMWD: true
       makeTTreeEnergies: false
       TTreeEnergyCalib : @local::HPGeDigitization.EnergyPerADCBin
       verbosityLevel : 1
@@ -110,4 +110,4 @@ outputs : {
 
 services.scheduler.wantSummary: true
 services.SeedService.baseSeed : 1
-# services.TFileService.fileName : "nts.owner.HPGeRecoTree.version.sequencer.root"
+services.TFileService.fileName : "nts.owner.HPGeRecoTree.version.sequencer.root"

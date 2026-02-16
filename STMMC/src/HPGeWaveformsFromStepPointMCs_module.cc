@@ -480,7 +480,7 @@ namespace mu2e {
     N_ehPairs = -1.0 * step.ionizingEdep() * 1e6 / epsilonGe; // 1e6 converts MeV to eV. -1.0 as this is a decreasing peak
 
     // Define parameters required for charge deposition. Constants A and B are defined here for code brevity
-    uint tIndex = (step.time() + timeOffset) / tADC + 1000, tIndexStart = tIndex;
+    uint tIndex = (step.time() + timeOffset) / tADC, tIndexStart = tIndex;
     const double A = N_ehPairs / log(R2/R1);
     const double Be = electronDriftVelocity / R0;
     const double Bh = holeDriftVelocity / R0;
