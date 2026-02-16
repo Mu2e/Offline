@@ -101,7 +101,6 @@ namespace mu2e {
       fhicl::Atom<std::string>                   calo_cluster_coll_tag  {Name("CaloClusterCollectionLabel"), Comment("CaloCluster Collection Label") };
       fhicl::Atom<int>                           min_tc_hits            {Name("MinTimeClusterHits"),         Comment("Min NHits in TimeCluster") };
       fhicl::Atom<float>                         min_calo_cluster_energy{Name("MinCaloClusterEnergy"),       Comment("Min Calo Cluster Energy") };
-      fhicl::Atom<float>                         max_edep_avg           {Name("MaxEDepAvg"),                 Comment("Max Avg EDep") };
       fhicl::Atom<float>                         hit_time_sigma_thresh  {Name("HitTimeSigmaThresh"),         Comment("Time consistency threshold for hits to be added to the cluster (in sigma)") };
       fhicl::Atom<float>                         hit_xy_dist_thresh     {Name("HitXYDistThresh"),            Comment("Spatial consistency threshold for hits to be added to the cluster (in mm)")};
       fhicl::Atom<float>                         stopping_target_radius {Name("StoppingTargetRadius"),       Comment("Radius of the stopping target in cone-making (in mm)")};
@@ -116,7 +115,6 @@ namespace mu2e {
 
     int                                   min_tc_hits_;            // N(hits) in the time cluster
     float                                 min_calo_cluster_energy_;    // min energy of the associated calo cluster
-    float                                 max_edep_avg_;           // max avg hit energy deposition
     float                                 hit_time_sigma_thresh_;  // time consistency threshold for hits to be added to the cluster
     float                                 hit_xy_dist_thresh_;     // spatial consistency threshold for hits to be added to the cluster
     float                                 stopping_target_radius_; // radius of the stopping target in cone-making (in mm)
@@ -166,7 +164,6 @@ namespace mu2e {
     , calo_cluster_tag_(config().calo_cluster_coll_tag())
     , min_tc_hits_(config().min_tc_hits())
     , min_calo_cluster_energy_(config().min_calo_cluster_energy())
-    , max_edep_avg_(config().max_edep_avg())
     , hit_time_sigma_thresh_(config().hit_time_sigma_thresh())
     , hit_xy_dist_thresh_(config().hit_xy_dist_thresh())
     , fit_dir_(config().fit_direction())
