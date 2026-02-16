@@ -63,7 +63,7 @@ namespace mu2e {
       std::cout << "Restricted Spectrum min " << _spectrum.getAbscissa(0) << " max " << _spectrum.getAbscissa(_spectrum.getNbins()-1) << std::endl;
       std::cout << "Full Spectrum min " << fullspect.getAbscissa(0) << " max " << fullspect.getAbscissa(fullspect.getNbins()-1) << std::endl;
       std::cout << "Restricted Spectrum integral " << integral << std::endl;
-      std::cout << "Restricted Spectrum integral*cos(theta_z) restriction " << integral*((_cmax - _czmin)/2.) << std::endl;
+      std::cout << "Restricted Spectrum integral*cos(theta_z) restriction " << integral*((_czmax - _czmin)/2.) << std::endl;
       std::cout << "Full Spectrum integral " << fullintegral << std::endl;
       std::cout << "Sampled spectrum fraction " << integral/fullintegral << std::endl;
       std::cout << "Sampled spectrum fraction (with cos(theta_z)) " << (integral/fullintegral)*((_czmax - _czmin)/2.) << std::endl;
