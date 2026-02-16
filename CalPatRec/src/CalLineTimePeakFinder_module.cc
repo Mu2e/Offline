@@ -1,7 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Calorimeter-driven straight line time peak finding
 // Michael MacKenzie (2026)
-// Based on CalHelixFinder, P. Murat and G. Pezzullo
 ///////////////////////////////////////////////////////////////////////////////
 
 // framework
@@ -11,16 +10,12 @@
 #include "fhiclcpp/ParameterSet.h"
 
 // Offline
-#include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
 
-#include "Offline/DataProducts/inc/Helicity.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
@@ -28,12 +23,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 // C++
-#include <iostream>
 #include <vector>
-#include <set>
-
-using CLHEP::HepVector;
-using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
@@ -81,7 +71,6 @@ namespace mu2e {
     art::Handle<ComboHitCollection>       combo_hit_col_handle_;    // handle for input combo hit collection
     art::Handle<CaloClusterCollection>    calo_cluster_col_handle_; // handle for input calo cluster collection
 
-    const Tracker*                        tracker_     ;            // tracker geometry
     const Calorimeter*                    calorimeter_ ;            // calorimeter geometry
     const StoppingTarget*                 stopping_target_;         // stopping target geometry
     CLHEP::Hep3Vector                     target_pos_;              // position of the target center for seeding
@@ -91,10 +80,8 @@ namespace mu2e {
     explicit CalLineTimePeakFinder(const art::EDProducer::Table<Config>& config);
     virtual ~CalLineTimePeakFinder();
 
-    virtual void beginJob();
     virtual void beginRun(art::Run&   run   );
     virtual void produce (art::Event& event );
-    virtual void endJob();
     //-----------------------------------------------------------------------------
     // helper functions
     //-----------------------------------------------------------------------------
@@ -134,14 +121,7 @@ namespace mu2e {
   }
 
   //-----------------------------------------------------------------------------
-  void CalLineTimePeakFinder::beginJob() {
-  }
-
-  //-----------------------------------------------------------------------------
   void CalLineTimePeakFinder::beginRun(art::Run& ) {
-    mu2e::GeomHandle<mu2e::Tracker> th;
-    tracker_ = th.get();
-
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     calorimeter_ = ch.get();
 
@@ -199,8 +179,9 @@ namespace mu2e {
 
     CLHEP::Hep3Vector seed_dir = (downstream) ? cl_pos - target_pos_ : target_pos_ - cl_pos;
     const double seed_dir_mag = seed_dir.mag();
-    if(seed_dir_mag <= 0.) return; // can't define a seed direction, so return false{
+    if(seed_dir_mag <= 0.) return; // can't define a seed direction
     seed_dir *= 1./seed_dir_mag; // normalize the seed direction
+    if(std::fabs(seed_dir.z()) < 1.e-3) return; // too sharp of a slope (shouldn't be possible)
     if(diag_level_ > 1) {
       printf("[CalLineTimePeakFinder::%s] CaloCluster time = %.2f, position = (%.1f, %.1f, %.1f), seed direction = (%.2f, %.2f, %.2f)\n",
              __func__, cl_time, cl_pos.x(), cl_pos.y(), cl_pos.z(), seed_dir.x(), seed_dir.y(), seed_dir.z());
@@ -322,12 +303,6 @@ namespace mu2e {
     tc._pos = tc_pos;
     tc._t0._t0 = avg_t0;
     tc._t0._t0err = std::sqrt(std::max(0., t0sq  - avg_t0*avg_t0));
-  }
-
-  //-----------------------------------------------------------------------------
-  //
-  //-----------------------------------------------------------------------------
-  void CalLineTimePeakFinder::endJob() {
   }
 
 } // end namespace mu2e
