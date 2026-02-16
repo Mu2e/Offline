@@ -8,76 +8,30 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Utilities/make_tool.h"
-#include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
 
 // Offline
-#include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "Offline/TrkReco/inc/TrkFaceData.hh"
 
 #include "Offline/DataProducts/inc/Helicity.hh"
-#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
-// BaBar
-#include "BTrk/BaBar/BaBar.hh"
-#include "BTrk/BField/BField.hh"
-#include "BTrk/BField/BFieldFixed.hh"
-#include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "BTrk/BaBar/BbrStringUtils.hh"
-#include "BTrk/ProbTools/ChisqConsistency.hh"
-#include "BTrk/TrkBase/HelixParams.hh"
-#include "BTrk/TrkBase/TrkErrCode.hh"
-#include "BTrk/TrkBase/TrkMomCalculator.hh"
-#include "BTrk/TrkBase/TrkParticle.hh"
-#include "BTrk/TrkBase/TrkPoca.hh"
-
-// boost
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/median.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/moment.hpp>
-#include <boost/algorithm/string.hpp>
-
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 
-// ROOT
-#include "TROOT.h"
-#include "TFolder.h"
-#include "TMath.h"
-#include "TFile.h"
-#include "TH1F.h"
-#include "TApplication.h"
-#include "TFolder.h"
-#include "TVector2.h"
-#include "TSystem.h"
-#include "TInterpreter.h"
-
 // C++
 #include <iostream>
-#include <fstream>
-#include <string>
-#include <memory>
-#include <functional>
-#include <float.h>
 #include <vector>
 #include <set>
-#include <map>
 
-using namespace boost::accumulators;
 using CLHEP::HepVector;
 using CLHEP::Hep3Vector;
 
@@ -96,30 +50,30 @@ namespace mu2e {
     {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<int>                           diag_level             {Name("DiagLevel"),                  Comment("Diagnostic output level"),0 };
-      fhicl::Atom<art::InputTag>                 hit_coll_tag           {Name("ComboHitCollectionLabel"),    Comment(" Combo Hit Collection Label") };
-      fhicl::Atom<std::string>                   calo_cluster_coll_tag  {Name("CaloClusterCollectionLabel"), Comment("CaloCluster Collection Label") };
-      fhicl::Atom<int>                           min_tc_hits            {Name("MinTimeClusterHits"),         Comment("Min NHits in TimeCluster") };
-      fhicl::Atom<float>                         min_calo_cluster_energy{Name("MinCaloClusterEnergy"),       Comment("Min Calo Cluster Energy") };
-      fhicl::Atom<float>                         hit_time_sigma_thresh  {Name("HitTimeSigmaThresh"),         Comment("Time consistency threshold for hits to be added to the cluster (in sigma)") };
-      fhicl::Atom<float>                         hit_xy_dist_thresh     {Name("HitXYDistThresh"),            Comment("Spatial consistency threshold for hits to be added to the cluster (in mm)")};
-      fhicl::Atom<float>                         stopping_target_radius {Name("StoppingTargetRadius"),       Comment("Radius of the stopping target in cone-making (in mm)")};
-      fhicl::Atom<std::string>                   fit_direction          {Name("FitDirection"),               Comment("Fit Direction in Search (\"downstream\" or \"upstream\")") };
+      fhicl::Atom<int>             diag_level             {Name("DiagLevel"),                  Comment("Diagnostic output level"),0 };
+      fhicl::Atom<art::InputTag>   hit_coll_tag           {Name("ComboHitCollectionLabel"),    Comment(" Combo Hit Collection Label") };
+      fhicl::Atom<std::string>     calo_cluster_coll_tag  {Name("CaloClusterCollectionLabel"), Comment("CaloCluster Collection Label") };
+      fhicl::Atom<int>             min_tc_hits            {Name("MinTimeClusterHits"),         Comment("Min NHits in TimeCluster") };
+      fhicl::Atom<float>           min_calo_cluster_energy{Name("MinCaloClusterEnergy"),       Comment("Min Calo Cluster Energy") };
+      fhicl::Atom<float>           hit_time_sigma_thresh  {Name("HitTimeSigmaThresh"),         Comment("Time consistency threshold for hits to be added to the cluster (in sigma)") };
+      fhicl::Atom<float>           hit_xy_sigma_thresh    {Name("HitXYSigmaThresh"),           Comment("Spatial consistency threshold for hits to be added to the cluster (in sigma)")};
+      fhicl::Atom<float>           stopping_target_radius {Name("StoppingTargetRadius"),       Comment("Radius of the stopping target in cone-making (in mm)")};
+      fhicl::Atom<std::string>     fit_direction          {Name("FitDirection"),               Comment("Fit Direction in Search (\"downstream\" or \"upstream\")") };
     };
 
     //-----------------------------------------------------------------------------
     // Inputs
     //-----------------------------------------------------------------------------
-    art::InputTag                         hit_tag_;                // input hit collection label
-    art::InputTag                         calo_cluster_tag_;       // input calo cluster collection label
+    art::InputTag                         hit_tag_;                 // input hit collection label
+    art::InputTag                         calo_cluster_tag_;        // input calo cluster collection label
+    int                                   min_tc_hits_;             // N(hits) in the time cluster
+    float                                 min_calo_cluster_energy_; // min energy of the associated calo cluster
+    float                                 hit_time_sigma_thresh_;   // time consistency threshold for hits to be added to the cluster
+    float                                 hit_xy_sigma_thresh_;     // spatial consistency threshold for hits to be added to the cluster
+    float                                 stopping_target_radius_;  // radius of the stopping target in cone-making (in mm)
+    TrkFitDirection                       fit_dir_;                 // fit direction in search
+    int                                   diag_level_;              // diagnostic output
 
-    int                                   min_tc_hits_;            // N(hits) in the time cluster
-    float                                 min_calo_cluster_energy_;    // min energy of the associated calo cluster
-    float                                 hit_time_sigma_thresh_;  // time consistency threshold for hits to be added to the cluster
-    float                                 hit_xy_dist_thresh_;     // spatial consistency threshold for hits to be added to the cluster
-    float                                 stopping_target_radius_; // radius of the stopping target in cone-making (in mm)
-    TrkFitDirection                       fit_dir_;                // fit direction in search
-    int                                   diag_level_;             // diagnostic output
     //-----------------------------------------------------------------------------
     // Data
     //-----------------------------------------------------------------------------
@@ -165,7 +119,7 @@ namespace mu2e {
     , min_tc_hits_(config().min_tc_hits())
     , min_calo_cluster_energy_(config().min_calo_cluster_energy())
     , hit_time_sigma_thresh_(config().hit_time_sigma_thresh())
-    , hit_xy_dist_thresh_(config().hit_xy_dist_thresh())
+    , hit_xy_sigma_thresh_(config().hit_xy_sigma_thresh())
     , fit_dir_(config().fit_direction())
     , diag_level_(config().diag_level())
    {
@@ -285,7 +239,7 @@ namespace mu2e {
         printf("  Expected position at hit z: (%.1f, %.1f, %.1f), hit position: (%.1f, %.1f, %.1f), x-y distance = %.2f, target cone = %.2f, sigma = %.2f\n",
                pos_at_hit.x(), pos_at_hit.y(), pos_at_hit.z(), hit_pos.x(), hit_pos.y(), hit_pos.z(), x_y_dist, cone, xy_sigma);
       }
-      if(xy_sigma > hit_xy_dist_thresh_) continue; // hit is not consistent with the seed
+      if(xy_sigma > hit_xy_sigma_thresh_) continue; // hit is not consistent with the seed
       tc._strawHitIdxs.push_back(i_hit);
     }
   }

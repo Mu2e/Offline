@@ -488,6 +488,19 @@ CalPatRec : { @table::CalPatRec
             }
         }
 
+        CalTimeClusterFinder : {
+            module_type                : CalLineTimePeakFinder
+            DiagLevel                  : 1
+            ComboHitCollectionLabel    : "makeSH"
+            CaloClusterCollectionLabel : "CaloClusterMaker"
+            MinTimeClusterHits         : 8
+            MinCaloClusterEnergy       : 50.
+            HitTimeSigmaThresh         : 5.
+            HitXYSigmaThresh           : 5.
+            StoppingTargetRadius       : 200.
+            FitDirection               : "downstream"
+        }
+
         AgnosticHelixFinder : {
             module_type : AgnosticHelixFinder
             diagLevel               : 0
