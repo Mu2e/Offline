@@ -36,9 +36,6 @@ using CLHEP::HepVector;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
-  class Calorimeter;
-  class Tracker;
-  class ModuleHistToolBase;
 
   class CalLineTimePeakFinder : public art::EDProducer {
   protected:
@@ -58,6 +55,7 @@ namespace mu2e {
       fhicl::Atom<float>           hit_time_sigma_thresh  {Name("HitTimeSigmaThresh"),         Comment("Time consistency threshold for hits to be added to the cluster (in sigma)") };
       fhicl::Atom<float>           hit_xy_sigma_thresh    {Name("HitXYSigmaThresh"),           Comment("Spatial consistency threshold for hits to be added to the cluster (in sigma)")};
       fhicl::Atom<float>           stopping_target_radius {Name("StoppingTargetRadius"),       Comment("Radius of the stopping target in cone-making (in mm)")};
+      fhicl::Atom<float>           particle_beta          {Name("ParticleBeta"),               Comment("Particle beta for distance to time (0-1)"), 1.};
       fhicl::Atom<std::string>     fit_direction          {Name("FitDirection"),               Comment("Fit Direction in Search (\"downstream\" or \"upstream\")") };
     };
 
@@ -71,14 +69,13 @@ namespace mu2e {
     float                                 hit_time_sigma_thresh_;   // time consistency threshold for hits to be added to the cluster
     float                                 hit_xy_sigma_thresh_;     // spatial consistency threshold for hits to be added to the cluster
     float                                 stopping_target_radius_;  // radius of the stopping target in cone-making (in mm)
+    float                                 particle_beta_;           // particle beta (v/c)
     TrkFitDirection                       fit_dir_;                 // fit direction in search
     int                                   diag_level_;              // diagnostic output
 
     //-----------------------------------------------------------------------------
     // Data
     //-----------------------------------------------------------------------------
-    const art::Event*                     event_;
-
     const ComboHitCollection*             combo_hit_col_;           // input combo hit collection
     const CaloClusterCollection*          calo_cluster_col_;        // input calo cluster collection
     art::Handle<ComboHitCollection>       combo_hit_col_handle_;    // handle for input combo hit collection
@@ -90,7 +87,6 @@ namespace mu2e {
     CLHEP::Hep3Vector                     target_pos_;              // position of the target center for seeding
     double                                calo_d0_offset_;          // z offset of the calorimeter disk 0 from the tracker system
     double                                calo_d1_offset_;          // z offset of the calorimeter disk 1 from the tracker system
-    std::unordered_set<size_t>            hits_used_in_tcs_;        // set of hit indices that have already been used in time clusters
   public:
     explicit CalLineTimePeakFinder(const art::EDProducer::Table<Config>& config);
     virtual ~CalLineTimePeakFinder();
@@ -110,7 +106,7 @@ namespace mu2e {
   };
 
   //-----------------------------------------------------------------------------
-  // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
+  // module constructor, parameter defaults are defined in CalPatRec/fcl/prolog.fcl
   //-----------------------------------------------------------------------------
   CalLineTimePeakFinder::CalLineTimePeakFinder(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}
@@ -120,6 +116,8 @@ namespace mu2e {
     , min_calo_cluster_energy_(config().min_calo_cluster_energy())
     , hit_time_sigma_thresh_(config().hit_time_sigma_thresh())
     , hit_xy_sigma_thresh_(config().hit_xy_sigma_thresh())
+    , stopping_target_radius_(config().stopping_target_radius())
+    , particle_beta_(config().particle_beta())
     , fit_dir_(config().fit_direction())
     , diag_level_(config().diag_level())
    {
@@ -165,7 +163,6 @@ namespace mu2e {
   bool CalLineTimePeakFinder::findData(const art::Event& evt) {
     combo_hit_col_ = nullptr;
     calo_cluster_col_ = nullptr;
-    hits_used_in_tcs_.clear();
 
     evt.getByLabel(hit_tag_, combo_hit_col_handle_);
     if(!combo_hit_col_handle_.isValid()) {
@@ -210,16 +207,16 @@ namespace mu2e {
     }
 
     // Look for hits consistent this seed position and direction, and add them to the seed
-    std::vector<size_t> hit_indices;
     const size_t n_hits = combo_hit_col_->size();
-    hit_indices.reserve(100);
     for(size_t i_hit = 0; i_hit < n_hits; ++i_hit) {
-      if(hits_used_in_tcs_.count(i_hit) > 0) continue; // this hit has already been used in a cluster, so skip it
       const auto& hit = combo_hit_col_->at(i_hit);
       if(!isGoodHit(hit)) continue; // skip hits that don't pass selection
       const CLHEP::Hep3Vector hit_pos(hit.pos().x(), hit.pos().y(), hit.pos().z());
       const double hit_time = hit.correctedTime();
-      const double time_at_hit = cl_time + (hit_pos - cl_pos).dot(seed_dir) / CLHEP::c_light; // time at the hit position based on the seed direction and cluster time
+      const double dz = hit_pos.z() - cl_pos.z(); // distance along z to the hit
+      const double dr = dz/seed_dir.z(); // distance along the trajectory to the hit location in z
+      const double dt = dr / (particle_beta_*CLHEP::c_light); // time of flight to the hit z location
+      const double time_at_hit = cl_time + dt; // expected time at the hit z position
       const double time_unc = std::sqrt(hit.timeRes()*hit.timeRes() + cl.timeErr()*cl.timeErr()); // uncertainty on the time difference between the hit and the expected time based on the seed
       const double time_sigma = std::abs((hit_time - time_at_hit) / time_unc); // number of sigma the hit time is from the expected time based on the seed
       if(diag_level_ > 2) {
@@ -229,8 +226,7 @@ namespace mu2e {
       if(time_sigma > hit_time_sigma_thresh_) continue; // hit is not consistent with the seed, so skip it
 
       // next check if the hit is consistent in space
-      const double dz = (seed_dir.z() > 0.) ? hit_pos.z() - cl_pos.z() : cl_pos.z() - hit_pos.z(); // z distance from the cluster to the hit along the seed direction
-      const CLHEP::Hep3Vector pos_at_hit = cl_pos + dz * seed_dir; // position along the seed direction at the same z as the hit
+      const CLHEP::Hep3Vector pos_at_hit = cl_pos + dr * seed_dir; // position along the seed direction at the same z as the hit
       const double x_y_dist = (hit_pos - pos_at_hit).perp(); // distance in the x-y plane between the hit and the expected position based on the seed
       const double cone = std::abs(dz/dz_target) * stopping_target_radius_; // radius of the cone in the x-y plane at the hit z based on the seed direction and cluster position
       const double xy_unc = std::sqrt(hit.transVar() + hit.wireVar()); // uncertainty in the hit position in the x-y plane
@@ -248,9 +244,6 @@ namespace mu2e {
   // event entry point
   //-----------------------------------------------------------------------------
   void CalLineTimePeakFinder::produce(art::Event& event ) {
-
-    // diagnostic info
-    event_     = &event;
 
     // output collection
     std::unique_ptr<TimeClusterCollection> out_tcs(new TimeClusterCollection);
@@ -314,7 +307,6 @@ namespace mu2e {
     double t0sq = 0.;
     double weight = 0.;
     for(size_t hit_index : tc._strawHitIdxs) {
-      hits_used_in_tcs_.insert(hit_index); // add this hit index to the set of hits used in time clusters
       const auto& hit = combo_hit_col_->at(hit_index);
       tc._nsh += hit.nStrawHits();
       tc_pos += hit.pos() * hit.nStrawHits();
@@ -322,11 +314,14 @@ namespace mu2e {
       t0sq += std::pow(hit.correctedTime(), 2) * hit.nStrawHits();
       weight += hit.nStrawHits();
     }
-    avg_t0 /= weight;
-    t0sq /= weight;
-    tc._pos = tc_pos / weight;
+    if(weight > 0.) {
+      avg_t0 /= weight;
+      t0sq /= weight;
+      tc_pos /= weight;
+    }
+    tc._pos = tc_pos;
     tc._t0._t0 = avg_t0;
-    tc._t0._t0err = std::sqrt(t0sq  - avg_t0*avg_t0);
+    tc._t0._t0err = std::sqrt(std::max(0., t0sq  - avg_t0*avg_t0));
   }
 
   //-----------------------------------------------------------------------------
