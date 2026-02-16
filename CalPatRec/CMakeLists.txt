@@ -67,6 +67,20 @@ cet_build_plugin(CalTimePeakFinder art::module
       Offline::TrackerGeom
 )
 
+cet_build_plugin(CalLineTimePeakFinder art::module
+    REG_SOURCE src/CalLineTimePeakFinder_module.cc
+    LIBRARIES REG
+      Offline::CalPatRec
+
+      Offline::CalorimeterGeom
+      Offline::ConfigTools
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
+      Offline::StoppingTargetGeom
+)
+
 cet_build_plugin(ComboHitFilter art::module
     REG_SOURCE src/ComboHitFilter_module.cc
     LIBRARIES REG
