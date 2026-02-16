@@ -32,7 +32,10 @@ MakeCrvRecoPulses::MakeCrvRecoPulses(float minADCdifference, float defaultBeta, 
                                      _pulseAreaThreshold(pulseAreaThreshold),
                                      _doublePulseSeparation(doublePulseSeparation)
 {
-  if(_pulseAreaThreshold>_minADCdifference) _pulseAreaThreshold=_minADCdifference;
+  if(_pulseAreaThreshold>_minADCdifference)
+      throw cet::exception("CRVRECO_BAD_CONFIG")
+      << "MakeCrvRecoPulses pulseAreaThreshold " << _pulseAreaThreshold
+      << "  larger than minADCdifference " << _minADCdifference;
 }
 
 void MakeCrvRecoPulses::FillGraphAndFindPeaks(const std::vector<int16_t> &waveform, uint16_t startTDC,

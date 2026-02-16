@@ -52,7 +52,7 @@ namespace mu2e
       fhicl::Atom<int>         spectrumNPeaks{Name("spectrumNPeaks"), Comment("maximum number of peaks searched by TSpectrum"), 100};
       fhicl::Atom<double>      spectrumPeakSigma{Name("spectrumPeakSigma"), Comment("TSpectrum search parameter sigma"), 4.0};
       fhicl::Atom<double>      spectrumPeakThreshold{Name("spectrumPeakThreshold"), Comment("TSpectrum search parameter threshold"), 0.01};
-      fhicl::Atom<double>      maxFitDifference{Name("maxFitDifference"), Comment("maximum Difference between the TSpectrum peak and the fitted peak. Indicates fit problems."), 100.0};
+      fhicl::Atom<double>      maxFitDifference{Name("maxFitDifference"), Comment("maximum difference between the TSpectrum peak and the fitted peak. Indicates fit problems."), 100.0};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
@@ -150,6 +150,7 @@ namespace mu2e
 
     std::ofstream outputFile;
     outputFile.open(_tmpDBfileName);
+    if(!outputFile.is_open()) throw cet::exception("CRVCALIB") << "Couldn't create output txt file " << _tmpDBfileName << ".";
     outputFile<<"TABLE CRVSiPM"<<std::endl;
     outputFile<<"#channel, pedestal, calibPulseHeight, calibPulseArea"<<std::endl;
 

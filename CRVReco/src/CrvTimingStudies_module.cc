@@ -64,6 +64,7 @@ namespace mu2e
     std::string   _crvRecoPulsesModuleLabel;
     double        _PEthreshold;
     bool          _removeTimeOffsets;
+    bool          _firstEvent;
 
     std::map<std::pair<int,int>,TH1F*>  _histTimeDiffs;
 
@@ -75,7 +76,8 @@ namespace mu2e
     art::EDAnalyzer{conf},
     _crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
     _PEthreshold(conf().PEthreshold()),
-    _removeTimeOffsets(conf().removeTimeOffsets())
+    _removeTimeOffsets(conf().removeTimeOffsets()),
+    _firstEvent(true)
   {
   }
 
@@ -99,10 +101,9 @@ namespace mu2e
     auto const& crvChannelMap = _crvChannelMap_h.get(event.id());
     auto const& calib = _calib_h.get(event.id());
 
-    static bool firstEvent=true;
-    if(firstEvent)
+    if(_firstEvent)
     {
-      firstEvent=false;
+      _firstEvent=false;
 
       //store channel map, pedestals and calibration constants in the file,
       //so that it can later be used to write a full calibration set
@@ -197,7 +198,7 @@ namespace mu2e
       {
         art::ServiceHandle<art::TFileService> tfs;
         _histTimeDiffs[histIndex] = tfs->make<TH1F>(Form("fpgaTimeDiff_%i_%i",fpga1->first,fpga2->first),
-                                                    Form("Time Diffs between FGPAs %i and %i;time difference [ns];Counts",fpga1->first,fpga2->first),
+                                                    Form("Time Diffs between FPGAs %i and %i;time difference [ns];Counts",fpga1->first,fpga2->first),
                                                     300,-150,150);
       }
 
