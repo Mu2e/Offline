@@ -1,0 +1,60 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMMC/fcl/prolog.fcl"
+
+# This module simulates N photon(s) being fired upstream of the HPGe detector to validate the behaviour of the digitizer and analysis tools
+# Original author : Pawel Plesniak
+
+process_name: FirePhotonToDetector
+source : {
+  module_type : EmptyEvent
+  maxEvents : 1
+}
+
+services : {
+  # @local::Services.Sim
+  @table::Services.Core
+  @table::Services.SimOnly
+  message: @local::default_message
+  GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
+}
+
+physics: {
+  producers : {
+    generate : {
+      module_type : PhotonGun
+      x : @local::DigitizationTester.HPGe.x
+      y : @local::DigitizationTester.HPGe.y
+      z : @local::DigitizationTester.HPGe.z
+      E : 1.809 #@nil
+      verbose : true
+    }
+    g4run : @local::g4run
+  }
+
+  p1 : [ generate, g4run ]
+  trigger_paths : [ p1 ]
+  o1 : [ out ]
+  end_paths: [ o1 ]
+}
+
+outputs : {
+  out : {
+    module_type : RootOutput
+    fileName : "FirePhotonToDetector.art"
+    outputCommands: [
+        "drop *_*_*_*",
+        "keep mu2e::StepPointMCs_g4run_STMDet_FirePhotonToDetector",
+        "keep mu2e::SimParticlemv_g4run__FirePhotonToDetector"
+    ]
+  }
+}
+
+# physics.producers.g4run.physics.physicsListName: "QGSP_BERT_EMZ"
+physics.producers.g4run.SDConfig.enableSD: [STMDet]
+services.SeedService.baseSeed         :  18
+services.SeedService.maxUniqueEngines :  20
+# services.TFileService.fileName : @local::Efficiency.OutputFilename
+physics.producers.g4run.debug.trackingVerbosityLevel : 1
+physics.producers.g4run.debug.steppingVerbosityLevel : 1

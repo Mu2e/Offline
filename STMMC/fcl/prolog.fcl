@@ -259,10 +259,10 @@ STMDAQParameters : {
 # HPGe waveform generation parameters
 HPGeDigitization : {
     EnergyPerADCBin : 1 # keV/bin
-    PreamplifierNoiseSD : 0.0 # mV
+    PreamplifierNoiseSD : 0.32 # mV
     DecayConstant : 50 # us
     resetEventNumber : @local::DataProducts.nMicrospillsPerSpill
-    microspillBufferLengthCount : 1000
+    microspillBufferLengthCount : 2
     concatenation : {
         STMWaveformDigisTag : @local::DataProducts.Waveforms.HPGe.uSpill
         nMerge : @local::DataProducts.nMicrospillsPerSpill
@@ -317,6 +317,16 @@ Efficiency : {
             y : 0.0 # mm
             z : 40264.5 # mm
         }
+    }
+}
+DigitizationTester: { # For firing photons into the detector to validate the behaviour of the relevant algorithms
+    HPGe: {
+        x : -3958.55 # mm
+        y : 0.0      # mm
+        z : 40584.95  # mm
+        deltax : -1.0 # MeV/c
+        deltay : 0.0  # MeV/c
+        deltaz : 1.0  # MeV/c
     }
 }
 ######################################### End of edit lines #########################################

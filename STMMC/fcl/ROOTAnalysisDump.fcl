@@ -100,7 +100,7 @@ physics: {
     }
   }
 
-  o1 : ["HPGeEDeps"] # Populate me!
+  o1 : ["HPGeMWDspectra"] # Populate me!
   end_paths: [o1]
 }
 

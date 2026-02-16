@@ -140,6 +140,9 @@ namespace mu2e {
 
     // Summary data
     uint processedEvents = 0, processedWaveforms = 0, foundPeaks = 0;
+
+    // Debugging variables
+    double waveform_time_microspill_frame = 0.0;
   };
 
   STMMovingWindowDeconvolution::STMMovingWindowDeconvolution(const Parameters& conf) :
@@ -191,7 +194,8 @@ namespace mu2e {
 
   void STMMovingWindowDeconvolution::beginJob() {
     if (verbosityLevel) {
-      std::cout << "STM Moving Window Deconvolution" << std::endl;
+      std::cout << std::endl;
+      std::cout << "=======================================STM HPGe digitization parameters=======================================" << std::endl;
       std::cout << "\tAlgorithm parameters" << std::endl;
       std::cout << std::left << "\t\t" << std::setw(15) << "tau"            << tau           << std::endl;
       std::cout << std::left << "\t\t" << std::setw(15) << "M"              << M             << std::endl;
@@ -201,6 +205,7 @@ namespace mu2e {
       std::cout << "\tChannel: " << std::endl;
       std::cout << std::left << "\t\t" << std::setw(15) << "Name" << channel.name()                  << std::endl;
       std::cout << std::left << "\t\t" << std::setw(15) << "ID"   << static_cast<int>(channel.id())  << std::endl;
+      std::cout << "==============================================================================================================" << std::endl;
       std::cout << std::endl; // buffer line
     };
   };
@@ -240,11 +245,13 @@ namespace mu2e {
       differentiate();
       average();
       calculate_baseline();
+      baseline_mean = 0.0;
+      baseline_stddev = 2.0;
       find_peaks();
 
       nPeaks = peak_heights.size();
       foundPeaks += nPeaks;
-      if (nPeaks && verbosityLevel) // TODO - change to verbosityLevel
+      if (verbosityLevel > 0)
         std::cout << "MWD: found " << nPeaks << " peaks in event " << event.id() << std::endl;
       for (i = 0; i < nPeaks; ++i) {
         mwd_energy = (peak_heights[i] < ADCMax) ? ADCMax : static_cast<int16_t>(peak_heights[i]); // When saturating the int16_t limit, deconvolution goes below the int16_t limit so the energy turns negative. This clips the energy and the limit
@@ -339,59 +346,95 @@ namespace mu2e {
     };
   };
 
-  void STMMovingWindowDeconvolution::calculate_baseline() {
+void STMMovingWindowDeconvolution::calculate_baseline() {
     i = M;
     foundBaselineData = false;
     using namespace boost::accumulators;
     accumulator_set<double, stats<tag::mean, tag::variance> > acc_data_without_peaks;
-    // Remove peaks so that we can calculate the baseline of the averaged data
-    while (i < nADCs){
-      gradient = averaged_data[i + 1] - averaged_data[i];
-      if(gradient < thresholdgrad) // if the gradient is too sharp (i.e. we have hit a peak)
-        i += (M + 2 * L); // jump ahead a little bit
-      else {
-        acc_data_without_peaks(averaged_data[i]);
-        i++;
-        foundBaselineData = true;
-      };
-    };
-    baseline_mean   = foundBaselineData ? extract_result<tag::mean>(acc_data_without_peaks) : defaultBaselineMean;
-    baseline_stddev = foundBaselineData ? std::sqrt(extract_result<tag::variance>(acc_data_without_peaks)) : defaultBaselineSD;
-  };
 
-  void STMMovingWindowDeconvolution::find_peaks() {
-    threshold_cut = baseline_mean - nsigma_cut * baseline_stddev;
+    // Safety: stop one sample early to allow for the i+1 gradient check
+    while (i < nADCs - 1) {
+        gradient = averaged_data[i + 1] - averaged_data[i];
+
+        // Use -1.0 to skip pulses while keeping the baseline calculation stable
+        if (gradient < thresholdgrad) {
+            i += (static_cast<unsigned long int>(M) + 2 * static_cast<unsigned long int>(L));
+            if (i >= nADCs) break;
+        }
+        else {
+            acc_data_without_peaks(averaged_data[i]);
+            i++;
+            foundBaselineData = true;
+        }
+    }
+
+    if (foundBaselineData) {
+        baseline_mean = extract_result<tag::mean>(acc_data_without_peaks);
+        double calculated_sd = std::sqrt(extract_result<tag::variance>(acc_data_without_peaks));
+
+        // DEBUG: Force a tiny floor since NoiseSD is 0.0
+        baseline_stddev = std::max(calculated_sd, 2.0);
+    } else {
+        baseline_mean   = defaultBaselineMean;
+        baseline_stddev = defaultBaselineSD;
+    }
+}
+
+void STMMovingWindowDeconvolution::find_peaks() {
+    // 1. Use a more conservative trigger for the recovery phase.
+    double trigger_threshold = baseline_mean - 100.0;
+
     lowest_height = 0;
-    lowest_height_time = -1; // in clock ticks
+    lowest_height_time = -1;
+    bool is_armed = true; // NEW: Ensure we cross ABOVE threshold before re-arming
 
     for(i = M; i < nADCs; i++){
-      if (averaged_data[i] < threshold_cut) { // the waveforms are negative so if we go below this threshold we have seen a peak
-        if (averaged_data[i] < averaged_data[i - 1] && averaged_data[i] < lowest_height){ // if the current value is lower than the previous value and lower than the lowest value we've seen so far
-          lowest_height = averaged_data[i]; // record the lowest height
-          if (lowest_height_time == -1)
-            lowest_height_time = i; // record the time we cross the threshold
+        // Only allow a new peak if we are 'armed' (meaning we've been above threshold)
+        if (is_armed && averaged_data[i] < trigger_threshold) {
+            if (averaged_data[i] < lowest_height) {
+                lowest_height = averaged_data[i];
+                lowest_height_time = i;
+            }
         }
-        else
-          continue;
-      };
-      if (lowest_height_time == -1) // this will be true if we haven't seen a peak yet
-        continue;
-      else if (averaged_data[i] > threshold_cut) { // if we have seen a peak and go above the cut
-        peak_heights.push_back(lowest_height - baseline_mean);
-        peak_times.push_back(lowest_height_time); // ct
-        lowest_height_time = -1; // reset to 0 so we can find a new peak
-        lowest_height = 0;
-      };
-    };
-  };
+        else if (averaged_data[i] >= trigger_threshold) {
+            // If we are above threshold, we are officially 'armed' and ready for a new pulse
+            is_armed = true;
+
+            // If we just finished a pulse, record it
+            if (lowest_height_time != -1)
+                double amplitude = std::abs(lowest_height - baseline_mean);
+                if (amplitude >= 200.0) {
+                    peak_heights.push_back(lowest_height - baseline_mean);
+                    peak_times.push_back(lowest_height_time);
+                    // Move forward
+                    i += (M + 2 * L);
+                    is_armed = false; // Force the algorithm to wait for baseline crossing
+                    if (i >= nADCs) break;
+                }
+                lowest_height = 0;
+                lowest_height_time = -1;
+            }
+        }
+    }
+}
 
   void STMMovingWindowDeconvolution::endJob() {
     mf::LogInfo log("MWD summary");
+    log << "\n";
     log << "==================MWD summary==================\n";
     log << std::left << std::setw(25) << "\tProcessed events: "     << processedEvents    << "\n";
     log << std::left << std::setw(25) << "\tProcessed waveforms: "  << processedWaveforms << "\n";
     log << std::left << std::setw(25) << "\tFound peaks: "          << foundPeaks         << "\n";
     log << "===============================================\n";
+    if (verbosityLevel) {
+      log << "\n";
+      log << "==================Parameters==================\n";
+      log << std::left << std::setw(25) << "\tnsPerCt: "            << nsPerCt            << "\n";
+      log << std::left << std::setw(25) << "\tPedestal: "           << pedestal           << "\n";
+      log << std::left << std::setw(25) << "\tBaseline mean: "      << baseline_mean      << "\n";
+      log << std::left << std::setw(25) << "\tBaseline std dev: "   << baseline_stddev    << "\n";
+      log << "===============================================\n";
+    }
     return;
   };
 

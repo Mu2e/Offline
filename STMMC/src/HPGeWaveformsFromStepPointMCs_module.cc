@@ -100,6 +100,7 @@ namespace mu2e {
     const double feedbackCapacitance = 1e-12;                                                                   // [Farads]
     const double epsilonGe = 2.96;                                                                              // Energy required to generate an eh pair in Ge at 77K [eV]
     const double micropulseTime = 1695.0;                                                                       // [ns]
+    const double preamplifier_rise_time = 80.0;                                                                 // [ns]
 
     // Define physics constants
     const double _e = 1.602176634e-19;                                                                          // Electric charge constant [Coulombs]
@@ -108,7 +109,8 @@ namespace mu2e {
 
     // ADC variables
     double chargeToADC = 0;                                                                                     // Conversion factor from charge built in capacitor to ADC determined voltage, multiply by this value to get from charge built to ADC voltage.
-    uint nADCs = 0;                                                                                             // Number of ADC values in an event
+    uint nADCs = 0;                                                                                             // Number of ADC values in an event, can change to account for timing variations
+    uint nADCs_init = 0;                                                                                        // Number of ADC values in an event, is fixed
     const int16_t ADCMax = static_cast<int16_t>((-1 * std::pow(2, 15)) + 1);                                    // Maximum ADC value, power is 15 not 16 as using int16_t not uint16_t
     double ADC = 0;                                                                                             // iterator variable
     uint32_t eventTimeBuffer = 0;                                                                               // Multiple of event ids to store
@@ -146,7 +148,8 @@ namespace mu2e {
     double electronTravelTime = 0, holeTravelTime = 0;                                                          // Drift times [ns]
     uint32_t electronTravelTimeSteps = 0, holeTravelTimeSteps = 0;                                              // Drift times [steps]
     double decayExp = 0;                                                                                        // Amount of decay with each tADC
-    double lastEventEndDecayedCharge = 0;                                                                       // Carry over for starting new microspill waveforms [charge carrier pairs]
+    double lastEventEndDecayedCharge = 0;                                                                       // Carry over the charge stored in the crystal from the previous event
+    double lastEventEndIntegratedCharge = 0;                                                                    // Carry over for integrated charge stored in the preamplifier
     int microspillBufferLengthCount = 0;                                                                        // Buffer to store the charge deposits that are allocated to this event but happen after the microspill ends e.g. 844keV
     const int defaultMicrospillBufferLengthCount = 2;                                                           // Default value for the microspill buffer length
 
@@ -185,19 +188,19 @@ namespace mu2e {
       noiseSD(conf().noiseSD()),
       risingEdgeDecayConstant(conf().risingEdgeDecayConstant()) {
         produces<STMWaveformDigiCollection>();
-        if (defaultMicrospillBufferLengthCount < 2)
-          throw cet::exception("RANGE", "defaultMicrospillBufferLengthCount has to be more than 1\n");
-
         crystalCentrePosition.set(crystalCentreX, crystalCentreY, crystalCentreZ);
         tADC = 1e3/fADC; // 1e3 converts [us] to [ns] as fADC is in [MHz]
 
         // Assign optional variables
         microspillBufferLengthCount = conf().microspillBufferLengthCount() ? *(conf().microspillBufferLengthCount()) : defaultMicrospillBufferLengthCount;
+        if (defaultMicrospillBufferLengthCount < 2)
+          throw cet::exception("RANGE", "defaultMicrospillBufferLengthCount has to be at least 1!\n");
         verbosityLevel = conf().verbosityLevel() ? *(conf().verbosityLevel()) : 0;
 
         // Determine the number of ADC values in each STMWaveformDigi. Increase the number by one due to truncation. At 320MHz, this will be 543 ADC values per microbunch
         double _nADCs = (micropulseTime/tADC) + 1;
-        nADCs = (int) _nADCs;
+        nADCs = (uint) _nADCs;
+        nADCs_init = nADCs;
         _charge.insert(_charge.begin(), nADCs * microspillBufferLengthCount, 0.);
         _chargeCollected.insert(_chargeCollected.begin(), nADCs * microspillBufferLengthCount, 0.);
         _chargeCarryOver.insert(_chargeCarryOver.begin(), nADCs * (microspillBufferLengthCount - 1), 0.);
@@ -243,7 +246,8 @@ namespace mu2e {
 
   void HPGeWaveformsFromStepPointMCs::beginJob() {
     if (verbosityLevel) {
-      std::cout << "STM HPGe digitization parameters" << std::endl;
+      std::cout << std::endl;
+      std::cout << "=======================================STM HPGe digitization parameters=======================================" << std::endl;
       std::cout << "\tInput parameters" << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "fAD [MHz]"                            << fADC                                     << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "EnergyPerADCBin [keV/bin]"            << ADCToEnergy                              << std::endl;
@@ -258,6 +262,7 @@ namespace mu2e {
       std::cout << std::left << "\t\t" << std::setw(60) << "tADC [ns]"                            << tADC                                     << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "nADCs"                                << nADCs                                    << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "NoiseSD [charge carriers]"            << noiseSD                                  << std::endl;
+      std::cout << std::left << "\t\t" << std::setw(60) << "NoiseSD [ADC bins]"                   << noiseSD * chargeToADC                    << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "chargeToADC [bin/charge carrier]"     << chargeToADC                              << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range [V]"                    << "[+1, -1]"                               << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [V]"               << "[0, -1]"                                << std::endl;
@@ -265,6 +270,7 @@ namespace mu2e {
       std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [charge carriers]" << "[0, " << ADCMax/chargeToADC << "]"      << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "Voltage range used [C]"               << "[0, " << ADCMax * _e/chargeToADC << "]" << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "Energy range [keV]"                   << "[0, " << -1*ADCMax * ADCToEnergy << "]" << std::endl;
+      std::cout << "==============================================================================================================" << std::endl;
       std::cout << std::endl; // buffer line
     };
   };
@@ -276,21 +282,19 @@ namespace mu2e {
     // TODO - this only keeps accurate time if the sampling is 320MHz. Needs to be rewritten to work for other times
     if (std::abs(fADC - 320) > 1e-12)
       throw cet::exception("RANGE") << "Currently only fADC of 320 MHz is supported (got " << fADC << " MHz)\n";
-    nADCs = 542;
+    nADCs = nADCs_init;
 
     // Assign the variables for time and number of ADCs
     eventTimeBuffer = eventId % 5;
     if (!(eventTimeBuffer == 0 || eventTimeBuffer == 3))
       nADCs++;
-    eventTime += nADCs;
 
     // Update the last event decayed charge before the noise so the noise isn't added twice
     if (resetEventNumber != 0 && eventId == resetEventNumber) {
-      lastEventEndDecayedCharge = 0;
+      lastEventEndDecayedCharge = 0.0;
+      lastEventEndIntegratedCharge = 0.0;
       std::fill(_chargeCarryOver.begin(), _chargeCarryOver.end(), 0);
     }
-    else
-      lastEventEndDecayedCharge = _chargeDecayed.back();
 
     // Update the parameters to carry over to the next event
     _chargeCollected.clear();
@@ -333,14 +337,6 @@ namespace mu2e {
         waveform_time = step.time();
       };
     };
-    // Process the collected charge for each step
-    for (const StepPointMC& step : StepsEle) {
-      if (step.ionizingEdep() != 0) {
-        depositCharge(step);
-        if (step.time() < waveform_time)
-          waveform_time = step.time();
-      }
-    }
     for(const StepPointMC& step : StepsMu){
       if (step.ionizingEdep() != 0)
           depositCharge(step);
@@ -369,14 +365,13 @@ namespace mu2e {
         throw cet::exception("LogicError", "ADC values too high!");
     };
 
-    // STMWaveformDigi _waveformDigi(eventTime, _adcs);
-    STMWaveformDigi _waveformDigi(waveform_time, _adcs);
+    STMWaveformDigi _waveformDigi(eventTime, _adcs);
     std::unique_ptr<STMWaveformDigiCollection> outputDigis(new STMWaveformDigiCollection);
     outputDigis->emplace_back(_waveformDigi);
 
     // Make the ttree if appropriate
     if (makeTTree) {
-      time = _waveformDigi.trigTimeOffset() - 1;
+      time = eventTime;
       for (uint i = 0; i < nADCs; i++) {
         chargeCollected = _chargeCollected[i];
         chargeDecayed = _chargeDecayed[i];
@@ -404,6 +399,9 @@ namespace mu2e {
 
     // Add the STMWaveformDigi to the event
     event.put(std::move(outputDigis));
+
+    // Update the event time for the next waveform
+    eventTime += nADCs;
     return;
   };
 
@@ -482,7 +480,7 @@ namespace mu2e {
     N_ehPairs = -1.0 * step.ionizingEdep() * 1e6 / epsilonGe; // 1e6 converts MeV to eV. -1.0 as this is a decreasing peak
 
     // Define parameters required for charge deposition. Constants A and B are defined here for code brevity
-    uint tIndex = (step.time() + timeOffset) / tADC, tIndexStart = tIndex;
+    uint tIndex = (step.time() + timeOffset) / tADC + 1000, tIndexStart = tIndex;
     const double A = N_ehPairs / log(R2/R1);
     const double Be = electronDriftVelocity / R0;
     const double Bh = holeDriftVelocity / R0;
@@ -513,7 +511,8 @@ namespace mu2e {
     };
 
     // Allocate the rest of the charge for one more entry for the continuity
-    _charge[tIndex] = N_ehPairs;
+    for (uint i = tIndex; i < _charge.size(); i++)
+        _charge[i] = _charge[tIndex - 1];
     tIndex++;
 
     // Update _chargeCollected. First case is treated separately as there is no charge deposited in the previous step
@@ -530,10 +529,28 @@ namespace mu2e {
   };
 
   void HPGeWaveformsFromStepPointMCs::decayCharge() {
-    _chargeDecayed[0] = lastEventEndDecayedCharge * decayExp + _chargeCollected[0];
-    for (uint t = 1; t < nADCs; t++)
-      _chargeDecayed[t] = _chargeDecayed[t-1] * decayExp + _chargeCollected[t];
-    return;
+    // Convert time constants to samples based on 320MHz clock, 80ns is the approximate ORTEC GMX preamplifier rise time
+    const double tau_rise_samples = preamplifier_rise_time / tADC;  // Convert this to ADC steps
+    const double riseExp = 1.0 / (1.0 + tau_rise_samples);
+
+    // Carry over the current in the last time step
+    double currentDecayed = lastEventEndDecayedCharge;
+
+    // Holiding variable
+    double currentIntegrated = lastEventEndIntegratedCharge;
+
+    for (uint t = 0; t < nADCs; t++) {
+        // Discharge the capacitor, add the next contribution of the step
+        currentDecayed = currentDecayed * decayExp + _chargeCollected[t];
+
+        // Smooth out the waveform accounting for the finite bandwidth of the preamplifier
+        currentIntegrated = riseExp * currentDecayed + (1.0 - riseExp) * currentIntegrated;
+
+        // Store the results
+        _chargeDecayed[t] = currentIntegrated;
+    }
+    lastEventEndDecayedCharge = currentDecayed;
+    lastEventEndIntegratedCharge = currentIntegrated;
   };
 
   void HPGeWaveformsFromStepPointMCs::addNoise() {
@@ -553,13 +570,14 @@ namespace mu2e {
     // Convert the charge deposition to ADC voltage output.
     for (uint i = 0; i < nADCs; i++) {
       ADC = _chargeDecayed[i] * chargeToADC;
-      _adcs[i] = ADC > ADCMax ? static_cast<int16_t>(std::round(ADC)) : ADCMax;
+      _adcs[i] = (ADC > ADCMax) ? static_cast<int16_t>(std::round(ADC)) : ADCMax;
     };
     return;
   };
 
   void HPGeWaveformsFromStepPointMCs::endJob() {
     mf::LogInfo log("STMResamplingFilter summary");
+    log << "\n";
     log << "=====HPGeWaveformsFromStepPointMCs summary=====\n";
     log << "No. kept events:      " << kept_events    << "\n";
     log << "No. discarded events: " << dropped_events << "\n";
