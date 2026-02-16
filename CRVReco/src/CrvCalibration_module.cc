@@ -52,7 +52,10 @@ namespace mu2e
       fhicl::Atom<int>         spectrumNPeaks{Name("spectrumNPeaks"), Comment("maximum number of peaks searched by TSpectrum"), 100};
       fhicl::Atom<double>      spectrumPeakSigma{Name("spectrumPeakSigma"), Comment("TSpectrum search parameter sigma"), 4.0};
       fhicl::Atom<double>      spectrumPeakThreshold{Name("spectrumPeakThreshold"), Comment("TSpectrum search parameter threshold"), 0.01};
-      fhicl::Atom<double>      maxFitDifference{Name("maxFitDifference"), Comment("maximum difference between the TSpectrum peak and the fitted peak. Indicates fit problems."), 100.0};
+      fhicl::Atom<double>      maxFitDifferencePulseArea{Name("maxFitDifferencePulseArea"),
+                                   Comment("maximum difference between the TSpectrum peak and the fitted peak (for pulse areas). Indicates fit problems."), 100.0};
+      fhicl::Atom<double>      maxFitDifferencePulseHeight{Name("maxFitDifferencePulseHeight"),
+                                   Comment("maximum difference between the TSpectrum peak and the fitted peak (for pulse heights). Indicates fit problems."), 4.0};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
@@ -62,7 +65,7 @@ namespace mu2e
     void analyze(const art::Event& e);
     void beginRun(const art::Run&);
     void endJob();
-    bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak);
+    bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak, double maxFitDifference);
 
     private:
     std::string        _crvRecoPulsesModuleLabel;
@@ -74,7 +77,7 @@ namespace mu2e
     int                _spectrumNPeaks;
     double             _spectrumPeakSigma;
     double             _spectrumPeakThreshold;
-    double             _maxFitDifference;
+    double             _maxFitDifferencePulseArea, _maxFitDifferencePulseHeight;
     std::string        _tmpDBfileName;
     std::vector<TH1F*> _calibHistsPulseArea;
     std::vector<TH1F*> _calibHistsPulseHeight;
@@ -101,7 +104,8 @@ namespace mu2e
     _spectrumNPeaks(conf().spectrumNPeaks()),
     _spectrumPeakSigma(conf().spectrumPeakSigma()),
     _spectrumPeakThreshold(conf().spectrumPeakThreshold()),
-    _maxFitDifference(conf().maxFitDifference()),
+    _maxFitDifferencePulseArea(conf().maxFitDifferencePulseArea()),
+    _maxFitDifferencePulseHeight(conf().maxFitDifferencePulseHeight()),
     _tmpDBfileName(conf().tmpDBfileName())
   {
   }
@@ -157,18 +161,14 @@ namespace mu2e
     for(channel=0; channel<_pedestals.size(); ++channel)
     {
       TH1F *hist;
-      double calibValue[2];
+      double calibValue[2]={-1,-1};
       for(int i=0; i<2; ++i) //loop over hisograms with pulse areas and pulse heights
       {
         if(i==1) hist=_calibHistsPulseArea.at(channel);
         else hist=_calibHistsPulseHeight.at(channel);
 
         double SPEpeak=-1;
-        if(!FindSPEpeak(hist, spectrum, function, SPEpeak, (i==0?_minPeakPulseHeight:_minPeakPulseArea)))
-        {
-          calibValue[i]=-1;
-          continue;
-        }
+        if(!FindSPEpeak(hist, spectrum, function, SPEpeak, (i==0?_minPeakPulseHeight:_minPeakPulseArea), (i==0?_maxFitDifferencePulseHeight:_maxFitDifferencePulseArea))) continue;
         calibValue[i]=SPEpeak;
       }
 
@@ -232,7 +232,7 @@ namespace mu2e
     }
   }
 
-  bool CrvCalibration::FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak)
+  bool CrvCalibration::FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak, double maxFitDifference)
   {
     if(hist->GetEntries()<_minHistEntries) return false; //not enough data
 
@@ -260,7 +260,7 @@ namespace mu2e
     hist->Fit(&function, "QR");
     SPEpeak = function.GetParameter(1);
 
-    if(fabs(SPEpeak-x)>_maxFitDifference) return false;
+    if(fabs(SPEpeak-x)>maxFitDifference) return false;
     if(SPEpeak<minPeak) return false;
     return true;
   }
