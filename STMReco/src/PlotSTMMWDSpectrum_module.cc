@@ -17,6 +17,7 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include <utility>
 // root
+#include "TH2F.h"
 #include "TH1F.h"
 #include "TF1.h"
 #include "TTree.h"
@@ -43,6 +44,9 @@ namespace mu2e {
     void beginJob() override;
     void analyze(const art::Event& e) override;
 
+    TH2F* _twoDhist; //Histograms of Energy vs binned event
+    int eventCount = 0;
+    
     TH1D* _mwdSpectrum;
     art::ProductToken<STMMWDDigiCollection> _stmMWDDigisToken;
   };
@@ -56,16 +60,22 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
     // create histograms
     _mwdSpectrum=tfs->make<TH1D>("mwdSpectrum", "MWD Spectrum", 1000, 0, 1e4);
+    _twoDhist=tfs->make<TH2F>("twoDhist","Pulse Height vs events;Event Bins; Pulse Height",
+			    1000,0,1000,     // X-axis scale
+			    1000,0,1e5);   // Y-axis scale
   }
 
   void PlotSTMMWDSpectrum::analyze(const art::Event& event) {
 
     auto mwdDigisHandle = event.getValidHandle(_stmMWDDigisToken);
-
+    int binBlock = eventCount/100;
+    
     for (const auto& mwdDigi : *mwdDigisHandle) {
       auto energy = mwdDigi.energy();
       _mwdSpectrum->Fill(energy);
+      _twoDhist->Fill(binBlock, energy);
     }
+    ++eventCount;
   }
 }
 

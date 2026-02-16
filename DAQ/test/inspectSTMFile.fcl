@@ -37,8 +37,8 @@ physics : {
    }
 
   t1 : [ makeSTMDigis ]
-#  e1 : [ stmOutput ]
-   e1 : [ stmPrint, stmOutput ]
+    e1 : [ stmOutput ]
+  # e1 : [ stmPrint, stmOutput ]
    #e1 : [ frag, stmOutput ]
 
    trigger_paths  : [t1]

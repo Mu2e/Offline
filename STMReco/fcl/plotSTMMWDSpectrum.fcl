@@ -23,12 +23,12 @@ physics: {
     }
     plotLaBrMWDSpectrum : {
       module_type : PlotSTMMWDSpectrum
-      stmMWDDigisTag : "mwdLaBr"
+      stmMWDDigisTag : "makeSTMDigis:mwd"
     }
   }
   # setup paths
   trigger_paths: [  ]
-  anaPath : [ plotHPGeMWDSpectrum, plotLaBrMWDSpectrum ]
+  anaPath : [ plotLaBrMWDSpectrum ]
   end_paths: [anaPath]
 }
 

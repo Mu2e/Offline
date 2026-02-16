@@ -46,7 +46,7 @@ namespace mu2e {
     void endJob() override; //For printing counter
     void analyze(const art::Event& e) override;
     
-    TH1F* _hist;
+    TH1F* _hist; //Hist for WaveLength
     int ZeroLengthCount = 0;
     art::InputTag _stmWaveformDigisTag;
     

@@ -79,7 +79,7 @@ STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config
   // Set the size of the vector
   produces<mu2e::STMWaveformDigiCollection>("raw");
   produces<mu2e::STMWaveformDigiCollection>("zs");
-  produces<mu2e::STMWaveformDigiCollection>("mwd"); // TODO: we should create an STMMWDDigi collection instead of STMWaveformDigis for this
+  produces<mu2e::STMMWDDigiCollection>("mwd"); // TODO: we should create an STMMWDDigi collection instead of STMWaveformDigis for this
 }
 
 // ----------------------------------------------------------------------
@@ -89,7 +89,8 @@ void STMDigisFromFragments::produce(Event& event)
 {
   std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_waveform_digis(new mu2e::STMWaveformDigiCollection);
   std::unique_ptr<mu2e::STMWaveformDigiCollection> zs_waveform_digis(new mu2e::STMWaveformDigiCollection);
-  std::unique_ptr<mu2e::STMWaveformDigiCollection> mwd_waveform_digis(new mu2e::STMWaveformDigiCollection);
+  std::unique_ptr<mu2e::STMMWDDigiCollection> mwd_digis(new mu2e::STMMWDDigiCollection);
+  // std::unique_ptr<mu2e::STMWaveformDigiCollection> mwd_waveform_digis(new mu2e::STMWaveformDigiCollection);//Original
 
   art::Handle<artdaq::Fragments> STMFragmentsH;
   event.getByLabel(_stmFragmentsTag, STMFragmentsH);
@@ -109,14 +110,31 @@ void STMDigisFromFragments::produce(Event& event)
       zs_waveform_digis->emplace_back(stm_waveform);
     }
     else if (stm_frag.isMWD()) {
-      stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
-      mwd_waveform_digis->emplace_back(stm_waveform);
+
+      int n_MWD_digis = stm_frag.payloadWords(); //number read -> to digis
+           
+      for (int i_MWD = 0 ; i_MWD < n_MWD_digis; ++i_MWD){
+
+	auto const* pointer  = stm_frag.payloadBegin(); //tells where to read data
+        int16_t i_pointer = pointer[i_MWD]; //Retrives value of ith index of pointer
+
+	mu2e::STMMWDDigi mwd_digi(0,i_pointer);
+
+	mwd_digis->emplace_back(mwd_digi);
+	//mu2e::STMMWDDigi mwd_digi(0,i_pointer);
+	//mwd_digi->emplace_back(mwd_digi);
+
+       
+	//stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());//original
+	//mwd_waveform_digis->emplace_back(stm_waveform);}//original
+      }
     }
+    
   }
 
   event.put(std::move(raw_waveform_digis), "raw");
   event.put(std::move(zs_waveform_digis), "zs");
-  event.put(std::move(mwd_waveform_digis), "mwd");
+  event.put(std::move(mwd_digis), "mwd");
 
 } // produce()
 
