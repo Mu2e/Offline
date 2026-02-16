@@ -1,4 +1,5 @@
 #include "art/Utilities/ToolMacros.h"
+#include "cetlib_except/exception.h"
 
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
