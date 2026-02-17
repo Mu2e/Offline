@@ -58,7 +58,7 @@ namespace mu2e
     prescale_(conf().nPrescale()),
     nevt_(0), npass_(0)
     {
-      produces<mu2e::FilterFraction,art::InSubRun>();
+      produces<mu2e::PrescaleFilterFraction,art::InSubRun>();
     }
 
   inline bool RandomPrescaleFilter::filter(art::Event & event)
