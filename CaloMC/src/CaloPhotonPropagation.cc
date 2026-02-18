@@ -34,7 +34,7 @@ namespace mu2e {
        TH2F *hist(0);
        TFile file(fullFileName.c_str());
           if (file.IsOpen()) hist = (TH2F*) file.Get(histName_.c_str());
-          if (!hist) throw cet::exception("CATEGORY")<<"CaloROStepMaker:: Hitsogram "<<histName_.c_str()
+          if (!hist) throw cet::exception("CATEGORY")<<"CaloROStepMaker:: Histogram "<<histName_.c_str()
                                                      <<" from file "<<fileName_.c_str()<<" does not exist\n";
           hist->SetDirectory(0);
        file.Close();

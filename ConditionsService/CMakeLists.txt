@@ -17,6 +17,7 @@ cet_build_plugin(ConditionsService art::service
 )
 
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/conditions_01.txt		      ${CURRENT_BINARY_DIR} data/conditions_01.txt		     )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/pid_ele_dt_v4_2_4.tab		      ${CURRENT_BINARY_DIR} data/pid_ele_dt_v4_2_4.tab		     )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/pid_ele_ep_vs_path_v4_2_4.tab	      ${CURRENT_BINARY_DIR} data/pid_ele_ep_vs_path_v4_2_4.tab	     )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/pid_ele_xs_v4_2_4.tab		      ${CURRENT_BINARY_DIR} data/pid_ele_xs_v4_2_4.tab		     )
