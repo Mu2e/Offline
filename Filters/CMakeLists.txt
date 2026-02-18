@@ -23,7 +23,7 @@ cet_build_plugin(CompressPhysicalVolumes art::module
 
 cet_build_plugin(CompressStepPointMCs art::module
     REG_SOURCE src/CompressStepPointMCs_module.cc
-    LIBRARIES REG      
+    LIBRARIES REG
       Offline::MCDataProducts
       Offline::Mu2eUtilities
 )
@@ -233,12 +233,6 @@ cet_build_plugin(StrawGasStepFilter art::module
 
 cet_build_plugin(TrackerStepPointFilter art::module
     REG_SOURCE src/TrackerStepPointFilter_module.cc
-    LIBRARIES REG
-      Offline::MCDataProducts
-)
-
-cet_build_plugin(TrackSummaryTruthUpdater art::module
-    REG_SOURCE src/TrackSummaryTruthUpdater_module.cc
     LIBRARIES REG
       Offline::MCDataProducts
 )
