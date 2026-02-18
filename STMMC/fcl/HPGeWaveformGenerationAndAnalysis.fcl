@@ -33,7 +33,7 @@ physics : {
       StepPointMCsTag1809 : @local::STMMCAnalysis.MixedEventsTags.StepPointMCsTag1809
       # StepPointMCsTagEle: "g4run:STMDet" # DEBUGGING TODO - remove me!
       fADC : @local::STMDAQParameters.samplingFrequencies.HPGe #TODO - make this module work with multiple frequencies
-      EnergyPerADCBin : @local::HPGeDigitization.EnergyPerADCBin
+      EnergyPerADCBin : 10 # @local::HPGeDigitization.EnergyPerADCBin
       NoiseSD : 0.0 # @local::HPGeDigitization.PreamplifierNoiseSD
       risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant
       microspillBufferLengthCount : @local::HPGeDigitization.microspillBufferLengthCount

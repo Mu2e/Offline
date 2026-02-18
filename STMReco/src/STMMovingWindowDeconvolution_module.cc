@@ -115,6 +115,14 @@ namespace mu2e {
     double sum = 0.0;                         // variable part of avarege()
     int count = 0;                            // counter variable
     int16_t mwd_energy = 0;
+    bool _isFirstWaveform = true;
+    double _last_ADC = 0.0;
+    double _last_deconvolved = 0.0;
+    // Rolling history buffers to bridge the gap between chunks
+    std::deque<double> _deconvolved_history;    // Stores last M samples
+    std::deque<double> _differentiated_history; // Stores last L samples
+    double _last_average = 0.0; // Stores the last average value from previous chunk
+
 
     // Peak finding variables
     double baseline_mean = 0.0;
@@ -139,7 +147,7 @@ namespace mu2e {
     uint eventId = 0, waveformID = 0;
 
     // Summary data
-    uint processedEvents = 0, processedWaveforms = 0, foundPeaks = 0;
+    uint processedEvents = 0, processedWaveforms = 0, foundPeaks = 0, processedADCs;
 
     // Debugging variables
     double waveform_time_microspill_frame = 0.0;
@@ -235,6 +243,7 @@ namespace mu2e {
       nADCs = ADCs.size();
       processedWaveforms++;
       waveformID++;
+      processedADCs+=nADCs;
 
       if (M > nADCs)
         M = nADCs;
@@ -245,8 +254,9 @@ namespace mu2e {
       differentiate();
       average();
       calculate_baseline();
-      baseline_mean = 0.0;
-      baseline_stddev = 2.0;
+      // CHANGE HERE
+      // baseline_mean = 0.0;
+      // baseline_stddev = 2.0;
       find_peaks();
 
       nPeaks = peak_heights.size();
@@ -293,58 +303,96 @@ namespace mu2e {
   };
 
 
-  void STMMovingWindowDeconvolution::deconvolve() {
-    if (verbosityLevel > 4) {
-      std::cout << "MWD: input ADCs (" << ADCs.size() << "): ";
-      for (int16_t data : ADCs)
-        std::cout << data << ", ";
-      std::cout << "\n" << std::endl;
-    };
+void STMMovingWindowDeconvolution::deconvolve() {
+  // Handle the boundary (Index 0)
+  if (_isFirstWaveform) {
     deconvolved_data.push_back(ADCs[0] - pedestal);
-    for(i = 1; i < nADCs; i++)
-      deconvolved_data.push_back((ADCs[i] - pedestal) - timeFactor * (ADCs[i - 1] - pedestal) + deconvolved_data[i - 1]);
-    if (verbosityLevel > 4) {
-      std::cout << "MWD: deconvoluted data (" << deconvolved_data.size() << "): ";
-      for (double data : deconvolved_data)
-        std::cout << data << ", ";
-      std::cout << "\n" << std::endl;
-    };
-  };
+    _isFirstWaveform = false;
+  } else {
+    // Stitch to the previous chunk's last known state
+    deconvolved_data.push_back((ADCs[0] - pedestal) - timeFactor * (_last_ADC - pedestal) + _last_deconvolved);
+  }
 
-  void STMMovingWindowDeconvolution::differentiate() {
-    for (i = 0; i < M; i++)
-      differentiated_data.push_back(deconvolved_data[i]);
-    for (i = M; i < nADCs; i++)
-      differentiated_data.push_back(deconvolved_data[i] - deconvolved_data[i - M]);
-    if (verbosityLevel > 4) {
-      std::cout << "MWD: differentiated data (" << differentiated_data.size() << "): ";
-      for (double data : differentiated_data)
-        std::cout << data << ", ";
-      std::cout << "\n" << std::endl;
-    };
-  };
+  // Process the rest of the vector
+  for(i = 1; i < nADCs; i++)
+    deconvolved_data.push_back((ADCs[i] - pedestal) - timeFactor * (ADCs[i - 1] - pedestal) + deconvolved_data[i - 1]);
 
-  void STMMovingWindowDeconvolution::average() {
-    // sum the first L-1 elements of differentiated data
-    // and set the first L-1 elements of averaged data
-    sum = 0.0;
-    for (i = 0; i < L - 1; i++) {
-      sum += differentiated_data[i];
-      averaged_data.push_back(differentiated_data[i]); // TODO: should this be divided by sum/i?
-    };
-    sum += differentiated_data[L - 1];
-    averaged_data.push_back(sum/L);
-    for (i = L; i < nADCs; ++i) {
-      sum += differentiated_data[i] - differentiated_data[i - L]; // move the sum across one sample
-      averaged_data.push_back(sum/L);
-    };
-    if (verbosityLevel > 4) {
-      std::cout << "MWD: averaged data (" << averaged_data.size() << "): ";
-      for (double data : averaged_data)
-        std::cout << data << ", ";
-      std::cout << "\n" << std::endl;
-    };
-  };
+  // Save state for the next chunk
+  _last_ADC = ADCs.back();
+  _last_deconvolved = deconvolved_data.back();
+}
+
+void STMMovingWindowDeconvolution::differentiate() {
+  double subtrahend = 0.0;
+
+  for (i = 0; i < nADCs; i++) {
+    if (i >= M) {
+      // Standard case: Look back inside current vector
+      subtrahend = deconvolved_data[i - M];
+    } else {
+      // Boundary case: Look back into history buffer
+      // If history is empty (very first event), assume 0. Otherwise fetch from deque.
+      if (_deconvolved_history.size() >= M) {
+        // The deque stores the LAST M samples.
+        // If i=0, we need the sample from M steps ago (index 0 of deque)
+        subtrahend = _deconvolved_history[i];
+      } else {
+        subtrahend = deconvolved_data[0]; // Fallback for very first start
+      }
+    }
+    differentiated_data.push_back(deconvolved_data[i] - subtrahend);
+  }
+
+  // Update History Buffer for the NEXT chunk
+  // We need to keep the LAST M samples of the current deconvolved_data
+  for (double val : deconvolved_data) {
+    _deconvolved_history.push_back(val);
+    if (_deconvolved_history.size() > M) _deconvolved_history.pop_front();
+  }
+}
+
+void STMMovingWindowDeconvolution::average() {
+  // We use a recursive moving average: Avg[i] = Avg[i-1] + (New - Old)/L
+
+  for(i = 0; i < nADCs; i++) {
+      double added_val = differentiated_data[i];
+      double removed_val = 0.0;
+
+      if (i >= L) {
+          // Standard case: remove the sample L steps back in the current vector
+          removed_val = differentiated_data[i - L];
+      } else {
+          // Boundary case: Look into history buffer
+          if (_differentiated_history.size() >= L) {
+             // The deque stores the LAST L samples from the previous chunk.
+             // If i=0, we need the oldest sample in history (index 0).
+             // If i=1, we need index 1, etc.
+             removed_val = _differentiated_history[i];
+          } else {
+             removed_val = 0.0; // Startup case (first event ever)
+          }
+      }
+
+      // Get the previous average.
+      // If i=0, use the stored average from the end of the previous chunk.
+      double prev_avg = (i == 0) ? _last_average : averaged_data.back();
+
+      // Calculate new average
+      double new_avg = prev_avg + (added_val - removed_val) / L;
+      averaged_data.push_back(new_avg);
+  }
+
+  // Update State for the NEXT chunk
+  if (!averaged_data.empty()) {
+      _last_average = averaged_data.back();
+  }
+
+  // Update History Buffer
+  for (double val : differentiated_data) {
+    _differentiated_history.push_back(val);
+    if (_differentiated_history.size() > L) _differentiated_history.pop_front();
+  }
+}
 
 void STMMovingWindowDeconvolution::calculate_baseline() {
     i = M;
@@ -373,7 +421,9 @@ void STMMovingWindowDeconvolution::calculate_baseline() {
         double calculated_sd = std::sqrt(extract_result<tag::variance>(acc_data_without_peaks));
 
         // DEBUG: Force a tiny floor since NoiseSD is 0.0
-        baseline_stddev = std::max(calculated_sd, 2.0);
+        // baseline_stddev = std::max(calculated_sd, 2.0); // NOTE - THIS WAS FOR DEBUGGING ONLY
+
+        baseline_stddev = calculated_sd;
     } else {
         baseline_mean   = defaultBaselineMean;
         baseline_stddev = defaultBaselineSD;
@@ -425,6 +475,8 @@ void STMMovingWindowDeconvolution::find_peaks() {
     log << std::left << std::setw(25) << "\tProcessed events: "     << processedEvents    << "\n";
     log << std::left << std::setw(25) << "\tProcessed waveforms: "  << processedWaveforms << "\n";
     log << std::left << std::setw(25) << "\tFound peaks: "          << foundPeaks         << "\n";
+    log << std::left << std::setw(25) << "\tnADCs: "                << nADCs              << "\n";
+    log << std::left << std::setw(25) << "\tprocessedADCs: "        << processedADCs      << "\n";
     log << "===============================================\n";
     if (verbosityLevel) {
       log << "\n";

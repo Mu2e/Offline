@@ -318,37 +318,28 @@ namespace mu2e {
     std::vector<StepPointMC> Steps1809 = event.getProduct(StepPointMCsToken1809);
 
     // If there are no hits, produce an empty STMWaveformDigiCollection and return
-    if (StepsEle.size() == 0 && StepsMu.size() == 0 && Steps1809.size() == 0) {
-      std::vector<int16_t> emptyAdcs(nADCs, static_cast<int16_t>(0));
-      STMWaveformDigi _waveformDigi(0.0, emptyAdcs);
-      std::unique_ptr<STMWaveformDigiCollection> outputDigis(new STMWaveformDigiCollection);
-      outputDigis->emplace_back(_waveformDigi);
-      event.put(std::move(outputDigis));
-      dropped_events++;
-      return;
-    }
-    kept_events++;
+    bool hasHits = (!StepsEle.empty() || !StepsMu.empty() || !Steps1809.empty());
 
-    // Add a collection of charge depositions to _charge
-    for(const StepPointMC& step : StepsEle){
-      if (step.ionizingEdep() != 0) {
-        depositCharge(step);
-      if (step.time() < waveform_time)
-        waveform_time = step.time();
-      };
-    };
-    for(const StepPointMC& step : StepsMu){
-      if (step.ionizingEdep() != 0)
-          depositCharge(step);
-      if (step.time() < waveform_time)
-        waveform_time = step.time();
-    };
-    for(const StepPointMC& step : Steps1809){
-      if (step.ionizingEdep() != 0)
-          depositCharge(step);
-      if (step.time() < waveform_time)
-        waveform_time = step.time();
-    };
+    if (hasHits) {
+        kept_events++;
+        // Add a collection of charge depositions to _charge
+        for(const StepPointMC& step : StepsEle) {
+           if (step.ionizingEdep() != 0) depositCharge(step);
+           if (step.time() < waveform_time) waveform_time = step.time();
+        }
+        for(const StepPointMC& step : StepsMu) {
+           if (step.ionizingEdep() != 0) depositCharge(step);
+           if (step.time() < waveform_time) waveform_time = step.time();
+        }
+        for(const StepPointMC& step : Steps1809) {
+           if (step.ionizingEdep() != 0) depositCharge(step);
+           if (step.time() < waveform_time) waveform_time = step.time();
+        }
+    } else {
+        dropped_events++;
+        // We do nothing here. _chargeCollected is already 0s from initialization.
+        // We just proceed to decayCharge().
+    }
 
     // Decay all of the collected charges
     decayCharge();
@@ -576,11 +567,11 @@ namespace mu2e {
   };
 
   void HPGeWaveformsFromStepPointMCs::endJob() {
-    mf::LogInfo log("STMResamplingFilter summary");
+    mf::LogInfo log("HPGeWaevfrmsFromStepPointMCs");
     log << "\n";
     log << "=====HPGeWaveformsFromStepPointMCs summary=====\n";
-    log << "No. kept events:      " << kept_events    << "\n";
-    log << "No. discarded events: " << dropped_events << "\n";
+    log << std::left << std::setw(25) << "\tNo. kept events:      " << kept_events    << "\n";
+    log << std::left << std::setw(25) << "\tNo. discarded events: " << dropped_events << "\n";
     log << "===============================================\n";
   };
 }; // namespace mu2e
