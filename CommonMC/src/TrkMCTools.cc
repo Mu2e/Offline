@@ -2,7 +2,7 @@
 // Namespace for collecting tools used in MC truth evaluation
 // Original author: Dave Brown (LBNL) 8/10/2016
 //
-#include "Offline/TrkDiag/inc/TrkMCTools.hh"
+#include "Offline/CommonMC/inc/TrkMCTools.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"

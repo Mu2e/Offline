@@ -39,7 +39,7 @@
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/TrackerGeom/inc/Straw.hh"
-#include "Offline/TrkDiag/inc/TrkMCTools.hh"
+#include "Offline/CommonMC/inc/TrkMCTools.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"

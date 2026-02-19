@@ -28,7 +28,6 @@ cet_build_plugin(CosmicAnalyzer art::module
       Offline::Mu2eUtilities
       Offline::ProditionsService
       Offline::RecoDataProducts
-      Offline::TrkDiag
 )
 
 cet_build_plugin(CosmicFitDisplay art::module
@@ -42,7 +41,6 @@ cet_build_plugin(CosmicFitDisplay art::module
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
       Offline::TrackerGeom
-      Offline::TrkDiag
       ROOT::Geom
 )
 
@@ -60,7 +58,6 @@ cet_build_plugin(CosmicMCRecoDiff art::module
       Offline::RecoDataProducts
       Offline::TrackerConditions
       Offline::TrackerGeom
-      Offline::TrkDiag
 )
 
 cet_build_plugin(CosmicMuonInfo art::module
@@ -105,7 +102,6 @@ cet_build_plugin(CosmicTrackDetails art::module
       Offline::RecoDataProducts
       Offline::TrackerConditions
       Offline::TrackerGeom
-      Offline::TrkDiag
 )
 
 cet_build_plugin(CosmicTrackDiag art::module
@@ -120,7 +116,6 @@ cet_build_plugin(CosmicTrackDiag art::module
       Offline::Mu2eUtilities
       Offline::ProditionsService
       Offline::RecoDataProducts
-      Offline::TrkDiag
 )
 
 cet_build_plugin(CosmicTrackFinder art::module

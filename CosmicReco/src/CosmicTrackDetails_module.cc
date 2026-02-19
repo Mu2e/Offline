@@ -12,6 +12,7 @@
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "Offline/CosmicReco/inc/CosmicTrackMCInfo.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/CosmicReco/inc/ComboHitInfoMC.hh"
 
 //Mu2e Data Prods:
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
@@ -24,14 +25,12 @@
 #include "Offline/DataProducts/inc/GenVector.hh"
 
 //Utilities
-#include "Offline/TrkDiag/inc/TrkMCTools.hh"
 #include "Offline/CosmicReco/inc/DriftFitUtils.hh"
 #include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 
 // Mu2e diagnostics
-#include "Offline/TrkDiag/inc/ComboHitInfo.hh"
 #include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
