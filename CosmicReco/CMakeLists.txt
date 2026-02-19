@@ -16,20 +16,6 @@ cet_make_library(
       ROOT::Minuit2
 )
 
-cet_build_plugin(CosmicAnalyzer art::module
-    REG_SOURCE src/CosmicAnalyzer_module.cc
-    LIBRARIES REG
-      Offline::CosmicReco
-
-      Offline::DataProducts
-      Offline::GeneralUtilities
-      Offline::GeometryService
-      Offline::MCDataProducts
-      Offline::Mu2eUtilities
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-)
-
 cet_build_plugin(CosmicFitDisplay art::module
     REG_SOURCE src/CosmicFitDisplay_module.cc
     LIBRARIES REG
@@ -44,21 +30,6 @@ cet_build_plugin(CosmicFitDisplay art::module
       ROOT::Geom
 )
 
-cet_build_plugin(CosmicMCRecoDiff art::module
-    REG_SOURCE src/CosmicMCRecoDiff_module.cc
-    LIBRARIES REG
-      Offline::CosmicReco
-
-      Offline::DataProducts
-      Offline::GeneralUtilities
-      Offline::GeometryService
-      Offline::MCDataProducts
-      Offline::Mu2eUtilities
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-      Offline::TrackerConditions
-      Offline::TrackerGeom
-)
 
 cet_build_plugin(CosmicMuonInfo art::module
     REG_SOURCE src/CosmicMuonInfo_module.cc
@@ -86,22 +57,6 @@ cet_build_plugin(CosmicShowerFilter art::module
       Offline::ProditionsService
       Offline::RecoDataProducts
       Offline::TrackerConditions
-)
-
-cet_build_plugin(CosmicTrackDetails art::module
-    REG_SOURCE src/CosmicTrackDetails_module.cc
-    LIBRARIES REG
-      Offline::CosmicReco
-
-      Offline::DataProducts
-      Offline::GeneralUtilities
-      Offline::GeometryService
-      Offline::MCDataProducts
-      Offline::Mu2eUtilities
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-      Offline::TrackerConditions
-      Offline::TrackerGeom
 )
 
 cet_build_plugin(CosmicTrackDiag art::module
