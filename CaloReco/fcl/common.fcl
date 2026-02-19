@@ -1,7 +1,12 @@
 BEGIN_PROLOG
   HitMakerDigitizationStart    : 450.
   HitMakerDigitizationEnd      : 1795
-  HitMakerDigiSampling   : 5
-  HitMakerMinPeakADC     : 16
+  HitMakerDigiSampling         : 5
+  HitMakerMinPeakADC           : 16
+  pulseFileName                : "OfflineData/ConditionsService/CsI-waveform-2020-02-12.root"
+  pulseHistName                : "h_waveform"
+  readoutPEPerMeV              : 30.0
+  MeVToADC                     : 16.0
+  ADCToMeV                     : 0.0625
 END_PROLOG
 

@@ -1,7 +1,6 @@
 cet_make_library(
     SOURCE
       src/ConditionsService.cc
-      src/CalorimeterCalibrations.cc
     LIBRARIES PUBLIC
       
       Offline::ConfigTools

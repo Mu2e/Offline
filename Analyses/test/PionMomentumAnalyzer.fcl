@@ -8,7 +8,6 @@ source: { module_type: RootInput }
 services: {
    message: @local::default_message
    TFileService: { fileName: "nts.owner.pionMomentum.ver.seq.root" }
-   ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"      }
    GlobalConstantsService: { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
    GeometryService        : { inputFile      : "Production/JobConfig/common/geom_baseline.txt" }
 }
