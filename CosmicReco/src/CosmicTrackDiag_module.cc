@@ -30,7 +30,6 @@
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
 // Mu2e diagnostics
-#include "Offline/TrkDiag/inc/ComboHitInfo.hh"
 #include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
