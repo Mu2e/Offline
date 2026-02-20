@@ -1,6 +1,6 @@
 cet_make_library(
     SOURCE
-    src/TrkMCTools.cc
+      src/TrkMCTools.cc
     LIBRARIES PUBLIC
       Offline::BFieldGeom
       Offline::ConfigTools
