@@ -1,0 +1,37 @@
+// Based off Mu2eG4/geom/geom_run1_a.txt
+// Run1B version with tracker and calo in nominal location
+
+#include "Offline/Mu2eG4/geom/geom_run1_a.txt"
+
+//-------------------------------------------
+// Run1B specific overrides
+//-------------------------------------------
+
+// Disable proton absorber, STM, and TSdA for Run1B
+bool hasProtonAbsorber  = false;
+bool hasSTM             = false;
+bool hasTSdA            = false;
+
+// Virtual detector option (set to false to disable)
+bool hasVirtualDetector = true; // Re-enable virtual detectors
+
+// Stopping target configuration
+bool stoppingTarget.foilTarget_supportStructure = false;
+vector<double> stoppingTarget.halfThicknesses = { 3.175 };
+vector<double> stoppingTarget.radii  =  {600.00};
+double stoppingTarget.holeRadius = 0.001;//21.5;
+double stoppingTarget.z0InMu2e = 4185;
+
+// Coll51 material override - set to vacuum
+string ts.coll5.material1Name = "DSVacuum";
+
+
+//rail fix
+// Disable rails completely for Run1B (use very small value to avoid zero-length solid errors)
+double ds.lengthRail2   = 0.1; // Effectively disabled - DS2 rails
+double ds.lengthRail3   = 0.1; // Effectively disabled - DS3 rails
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
