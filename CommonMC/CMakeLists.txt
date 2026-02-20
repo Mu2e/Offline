@@ -1,3 +1,19 @@
+cet_make_library(
+    SOURCE
+    src/TrkMCTools.cc
+    LIBRARIES PUBLIC
+      Offline::BFieldGeom
+      Offline::ConfigTools
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::ParticleID
+      Offline::RecoDataProducts
+      Offline::SeedService
+      Offline::TrackerGeom
+)
+
 cet_build_plugin(CosmicTimeOffset art::module
     REG_SOURCE src/CosmicTimeOffset_module.cc
     LIBRARIES REG
