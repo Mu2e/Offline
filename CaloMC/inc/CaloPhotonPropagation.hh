@@ -13,7 +13,7 @@ namespace mu2e {
     class CaloPhotonPropagation
     {
         public:
-          CaloPhotonPropagation(CLHEP::HepRandomEngine& engine);
+          CaloPhotonPropagation(const std::string& fileName, const std::string& histName, CLHEP::HepRandomEngine& engine);
 
           void  buildTable  ();
           float propTimeSimu(float z);
@@ -26,6 +26,8 @@ namespace mu2e {
          unsigned                 nZDiv_;
          float                    dzTime_;
          CLHEP::RandFlat          randFlat_;
+         std::string              fileName_;
+         std::string              histName_;
          float                    lightSpeed_;
     };
 

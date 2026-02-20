@@ -28,7 +28,6 @@ services : {
     }
 
     ConditionsService: {
-        conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
         printConfig : true
         configStatsVerbosity : 0
     }

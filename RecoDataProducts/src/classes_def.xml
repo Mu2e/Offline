@@ -452,7 +452,9 @@
  <class name="mu2e::STMHitCollection"/>
  <class name="art::Wrapper<mu2e::STMHitCollection>"/>
 
- <!--  ********* MTP ********* -->
-  <class name="mu2e::MTPHit"/>
+ <!--  ********* MSD ********* -->
+  <class name="mu2e::MSDHit"/>
+  <class name="mu2e::MSDHitCollection"/>
+  <class name="art::Wrapper<mu2e::MSDHitCollection>"/>
 
 </lcgdict>
