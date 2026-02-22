@@ -56,6 +56,7 @@ BEGIN_PROLOG
                                         //threshold used to determine the pulse area for the no-fit option
       doublePulseSeparation     : 0.25  //25% of both ADC peaks of the double pulse
                                         //threshold at which double pulses can be separated in the no-fit option
+      useTimeOffsetDB           : true   //applies time offsets from the DB
       timeOffsetScale           : 1.0    //scale factor for the time offsets from the database
                                          //examples:
                                          //-if a database table of measured time offset is used,
@@ -63,10 +64,7 @@ BEGIN_PROLOG
                                          //-if a database table of a random gaussian distribution of time offsets
                                          // with a sigma equal to 1ns is used and one wants to run a simulation with a sigma of 0.5ns,
                                          // then the scale factor should be set to 0.5 (i.e. scaled to a sigma of 50%)
-      timeOffsetCutoffLow       :-3.0    //the time offsets are cut off at -3ns
-      timeOffsetCutoffHigh      : 3.0    //the time offsets are cut off at +3ns
                                          //note: if measured time offsets are used, the cutoffs should be set to the maximum values
-      useTimeOffsetDB           : true   //applies time offsets from the DB
       ignoreChannels            : true   //ignore channels that have status bit 1 ("ignore channels") in CRVstatus DB
     }
 
