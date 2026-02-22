@@ -46,16 +46,16 @@ namespace mu2e
       fhicl::Atom<double>      histMaxPulseHeight{Name("histMaxPulseHeight"), Comment("end range of pulseArea histogram"), 150.0};
       fhicl::Atom<double>      fitRangeStart{Name("fitRangeStart"), Comment("low end of the 1PE fit range as fraction of peak"), 0.8};
       fhicl::Atom<double>      fitRangeEnd{Name("fitRangeEnd"), Comment("high end of the 1PE fit range as fraction of peak"), 1.2};
-      fhicl::Atom<double>      minPeakPulseArea{Name("minPeakPulseArea"), Comment("minimum accepted SPE peak for pulseArea histogram"), 300.0};
+      fhicl::Atom<double>      minPeakPulseArea{Name("minPeakPulseArea"), Comment("minimum accepted SPE peak for pulseArea histogram"), 280.0};
       fhicl::Atom<double>      minPeakPulseHeight{Name("minPeakPulseHeight"), Comment("minimum accepted SPE peak for pulseHeight histogram"), 10.0};
       fhicl::Atom<int>         minHistEntries{Name("minHistEntries"), Comment("minimum number of entries required for a fit"), 100};
       fhicl::Atom<int>         spectrumNPeaks{Name("spectrumNPeaks"), Comment("maximum number of peaks searched by TSpectrum"), 100};
       fhicl::Atom<double>      spectrumPeakSigma{Name("spectrumPeakSigma"), Comment("TSpectrum search parameter sigma"), 4.0};
       fhicl::Atom<double>      spectrumPeakThreshold{Name("spectrumPeakThreshold"), Comment("TSpectrum search parameter threshold"), 0.01};
       fhicl::Atom<double>      maxFitDifferencePulseArea{Name("maxFitDifferencePulseArea"),
-                                   Comment("maximum difference between the TSpectrum peak and the fitted peak (for pulse areas). Indicates fit problems."), 75.0};
+                                   Comment("maximum difference between the TSpectrum peak and the fitted peak (for pulse areas). Indicates fit problems."), 80.0};
       fhicl::Atom<double>      maxFitDifferencePulseHeight{Name("maxFitDifferencePulseHeight"),
-                                   Comment("maximum difference between the TSpectrum peak and the fitted peak (for pulse heights). Indicates fit problems."), 2.5};
+                                   Comment("maximum difference between the TSpectrum peak and the fitted peak (for pulse heights). Indicates fit problems."), 3.0};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
