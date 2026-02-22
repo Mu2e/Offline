@@ -55,7 +55,7 @@ namespace mu2e
       fhicl::Atom<double>      maxFitDifferencePulseArea{Name("maxFitDifferencePulseArea"),
                                    Comment("maximum difference between the TSpectrum peak and the fitted peak (for pulse areas). Indicates fit problems."), 75.0};
       fhicl::Atom<double>      maxFitDifferencePulseHeight{Name("maxFitDifferencePulseHeight"),
-                                   Comment("maximum difference between the TSpectrum peak and the fitted peak (for pulse heights). Indicates fit problems."), 3.0};
+                                   Comment("maximum difference between the TSpectrum peak and the fitted peak (for pulse heights). Indicates fit problems."), 2.5};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
